@@ -1,6 +1,7 @@
 // Event music by Tokyo date and hour (docs/design.md#event-music), and K.K.'s song list (#kk-slider).
 import { describe, expect, it } from 'vitest';
-import { EVENT_MUSIC_IDS, eventMusicAt, fourthThursday } from './events.ts';
+import { EVENT_MUSIC_IDS, eventMusicAt } from './events.ts';
+import { nthWeekday } from '#lib/time/dates.ts';
 import { kkPick, kkTracks } from './kk.ts';
 import { AUDIO } from './manifest.ts';
 
@@ -20,13 +21,8 @@ describe('event music schedule (Tokyo)', () => {
     expect(eventMusicAt(new Date('2026-10-31T07:59:59Z'))).toBeNull();
   });
   it('the 4th Thursday of November, 2026–2030', () => {
-    expect([2026, 2027, 2028, 2029, 2030].map(fourthThursday)).toEqual([26, 25, 23, 22, 28]);
-    for (const y of [2026, 2027, 2028, 2029, 2030]) {
-      const d = new Date(Date.UTC(y, 10, fourthThursday(y)));
-      expect(d.getUTCDay()).toBe(4);
-      expect(d.getUTCDate()).toBeGreaterThan(21);
-      expect(d.getUTCDate()).toBeLessThanOrEqual(28);
-    }
+    expect([2026, 2027, 2028, 2029, 2030].map((y) => nthWeekday(y, 11, 4, 4))).toEqual(['2026-11-26', '2027-11-25', '2028-11-23', '2029-11-22', '2030-11-28']);
+    for (const y of [2026, 2027, 2028, 2029, 2030]) expect(eventMusicAt(new Date(`${nthWeekday(y, 11, 4, 4)}T12:00:00+09:00`))).toEqual({ id: 'turkey-day' });
   });
   it('Turkey Day: 09:00 to midnight on that Thursday only', () => {
     expect(at('2026-11-26T08:59:59')).toBeNull();

@@ -16,6 +16,8 @@
   // once (≤ 6 nodes each), each removed after ≤ 1.1 s; nothing runs while idle but the night's shower timer.
   //   ?shower (dev or ?demo): a shower 1.5 s after the night sky shows, then every 8 s (the e2e's hook).
   // Decorative and pointer-only (aria-hidden, no focus stops).
+  import { timers } from './timers.ts';
+  import { hookFlag, islandSeed } from './devHooks.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { seasonArt, type SeasonItem } from '#lib/art.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
@@ -31,12 +33,12 @@
   import TapeDeck from './TapeDeck.svelte';
   import Cake from './Cake.svelte';
   import { water } from './sceneDay.ts';
-  import { ISLAND_SEED, findArt } from './beach.ts';
+  import { findArt } from './beach.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
-  import { addDays, localDateAt } from '#lib/time/dates.ts';
+  import { addDays } from '#lib/time/dates.ts';
   import { nextStarMs, showerAt } from './meteor.ts';
   import { weather } from './weatherNow.svelte.ts';
-  import { eggTime, eventAt, forcedEvent } from './events.ts';
+  import { eggTime, eventNow } from './events.ts';
   import { eggInBalloon } from './eggs.ts';
   import { LONG_REACH, approach } from './avatar.ts';
 
@@ -89,7 +91,7 @@
   const TAP_ID = 'scene-tap';
   let fx = $state<Fx[]>([]);
   let seq = 0;
-  const timers = new Set<ReturnType<typeof setTimeout>>();
+  const { later, after, clear } = timers();
   const night = $derived(tod === 'night');
   const roll = (n: number) => Math.random() * n < 1;
   let critters = $state<ReturnType<typeof Critters>>();
@@ -101,23 +103,7 @@
   /** The shooting star crossing now: a tap in the sky before `until` is a wish on it (NH), once. */
   let streak: { until: number; wished: boolean } | null = null;
 
-  function later(fn: () => void, ms: number) {
-    const id = setTimeout(() => {
-      timers.delete(id);
-      fn();
-    }, ms);
-    timers.add(id);
-  }
-  $effect(() => () => {
-    for (const id of timers) clearTimeout(id);
-    timers.clear();
-  });
-
-  /** Run `fn` after my villager's walk (now when it didn't walk). */
-  function after(ms: number, fn: () => void) {
-    if (ms) later(fn, ms);
-    else fn();
-  }
+  $effect(() => clear);
 
   function spawn(f: Omit<Fx, 'id'>, ms = LIFE_MS) {
     const id = ++seq;
@@ -316,7 +302,7 @@
     const to = sea || !spot ? x : spot[0] / k;
     const id = ++seq;
     // Bunny Day's celebrations: now and then the balloon carried NH's sky egg instead of its present
-    const c = minuteNow(), egg = eggTime(eventAt(localDateAt(c.getTime()), jst(c).hour, forcedEvent())) && eggInBalloon();
+    const egg = eggTime(eventNow(minuteNow())) && eggInBalloon();
     drops = [...drops.slice(-1), { id, x, y, dx: to - x, dy: Math.max(0, land - y), size: d.size * 1.2, sea, art: egg ? findArt('sky-egg') : 'deco/present' }];
     if (sea) {
       later(() => (drops = drops.filter((p) => p.id !== id)), 2000);
@@ -371,12 +357,10 @@
   // The night sky's shooting stars (stars.ts): on a clear night (no rain or snow: weatherNow.svelte.ts) (NH's star hours) a shower every 3–8 minutes of
   // on-screen night, the first soon after the night sky shows; on a meteor shower's night (meteor.ts, Celeste's) one
   // every 3–8 s. Not while covered or hidden (the countdown holds).
-  const q = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
-  const hooks = import.meta.env.DEV || q.has('demo');
-  const islandSeed = (hooks && q.get('seed')) || ISLAND_SEED;
+  const seed = islandSeed(), forceShower = hookFlag('shower');
   const shower = $derived.by(() => {
-    const c = minuteNow(), date = localDateAt(c.getTime());
-    return showerAt(date, addDays(date, -1), jst(c).hour, islandSeed, hooks && q.has('shower'));
+    const c = minuteNow(), date = dayKey(c);
+    return showerAt(date, addDays(date, -1), jst(c).hour, seed, forceShower);
   });
   $effect(() => {
     if (!night || !shower || !enabled()) return;

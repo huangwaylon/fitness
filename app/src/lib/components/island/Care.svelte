@@ -6,12 +6,14 @@
   // The weeds derive from the Tokyo date (care.ts), so both phones broadly see the same; what this phone pulled is its
   // own (sceneDay.ts). SceneTaps mounts this inside the stage and asks it about each tap after the finds (`tap`).
   // Cheap: static art; one-shot Web Animations / CSS on a tap; the clock is the scene's minute tick.
+  import { timers } from './timers.ts';
+  import { islandSeed } from './devHooks.ts';
+  import { su } from './scene.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { jst, minuteNow } from '#lib/time/clock.ts';
-  import { localDateAt } from '#lib/time/dates.ts';
+  import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
-  import { ISLAND_SEED, digSpots, findArt } from './beach.ts';
+  import { digSpots, findArt } from './beach.ts';
   import { ROCK, rockTap, weedsAt, type Weed } from './care.ts';
   import { take, takenOn } from './sceneDay.ts';
   import { approach } from './avatar.ts';
@@ -24,13 +26,11 @@
   }
   let { scene, enabled, rockBug }: Props = $props();
 
-  const q = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
-  const seed = ((import.meta.env.DEV || q.has('demo')) && q.get('seed')) || ISLAND_SEED;
-  const U = (n: number) => `calc(${n.toFixed(1)} * var(--su))`;
+  const seed = islandSeed();
 
   let pulled = $state(0);
   const clock = $derived(minuteNow());
-  const date = $derived(localDateAt(clock.getTime()));
+  const date = $derived(dayKey(clock));
   const weeds = $derived.by<Weed[]>(() => {
     void pulled;
     const { hour, minute } = jst(clock);
@@ -50,17 +50,13 @@
   interface Fx { n: number; kind: 'pull' | 'spark' | 'strike'; x: number; y: number; flip?: boolean }
   let fx = $state<Fx[]>([]);
   let seq = 0;
-  const timers = new Set<ReturnType<typeof setTimeout>>();
+  const { later, after, clear } = timers();
   function spawn(f: Omit<Fx, 'n'>, ms: number) {
     const n = ++seq;
     fx = [...fx.slice(-2), { ...f, n }];
-    const id = setTimeout(() => {
-      timers.delete(id);
-      fx = fx.filter((x) => x.n !== n);
-    }, ms);
-    timers.add(id);
+    later(() => (fx = fx.filter((x) => x.n !== n)), ms);
   }
-  $effect(() => () => timers.forEach(clearTimeout));
+  $effect(() => clear);
   let rockEl = $state<HTMLElement>();
   // A weed that sprouts while the island is open pops up out of the lawn; the ones already there when it opens just stand.
   let opened = false;
@@ -74,15 +70,6 @@
     opened = true;
   });
 
-  /** After my villager's walk there (avatar.ts; 0 when it doesn't walk). */
-  function after(ms: number, fn: () => void) {
-    if (!ms) return fn();
-    const id = setTimeout(() => {
-      timers.delete(id);
-      fn();
-    }, ms);
-    timers.add(id);
-  }
   /** Weeds being walked to (a second tap meanwhile does nothing). */
   const going = new Set<string>();
   function pull(w: Weed) {
@@ -127,16 +114,16 @@
 </script>
 
 <div class="care" aria-hidden="true">
-  <span class="item rock" data-care="rock" style:translate="{U(ROCK.x)} {U(ROCK.y)}">
-    <span bind:this={rockEl}><OfficialArt key={findArt('rock')} size={U(ROCK.h)} /></span>
+  <span class="item rock" data-care="rock" style:translate="{su(ROCK.x)} {su(ROCK.y)}">
+    <span bind:this={rockEl}><OfficialArt key={findArt('rock')} size={su(ROCK.h)} /></span>
   </span>
   {#each shown as w (w.uid)}
-    <span class="item weed" class:flip={w.flip} class:sprout={sprouts(w.uid)} data-care="weed" style:translate="{U(w.x)} {U(w.y)}"><i class="shade"></i>{@render tuft()}</span>
+    <span class="item weed" class:flip={w.flip} class:sprout={sprouts(w.uid)} data-care="weed" style:translate="{su(w.x)} {su(w.y)}"><i class="shade"></i>{@render tuft()}</span>
   {/each}
   {#each fx as f (f.n)}
-    <span class="item fx-{f.kind}" class:flip={f.flip} style:translate="{U(f.x)} {U(f.y)}">
+    <span class="item fx-{f.kind}" class:flip={f.flip} style:translate="{su(f.x)} {su(f.y)}">
       {#if f.kind === 'strike'}
-        <span class="strike"><OfficialArt key={findArt('shovel')} size={U(26)} eager /></span>
+        <span class="strike"><OfficialArt key={findArt('shovel')} size={su(26)} eager /></span>
       {:else if f.kind === 'pull'}
         <span class="up">{@render tuft()}</span>
         <i class="clod" style:--dx="-1"></i><i class="clod" style:--dx="1"></i>

@@ -4,12 +4,12 @@
 // change carries over; parameterised (`walkGeo(extra)`) for the spots that come and go and for the tests. A straight
 // segment when it stays in the mask and misses every obstacle, else the shortest way through the nodes (a visibility
 // graph of ~15 points: no nav-mesh, nothing per frame).
+import type { Box } from './geom.ts';
 import { BED_ROWS, BED_X, CENTRE_STAGE, HEDGE_BASE, PLATEAU, POND, TREE, VILLAGER } from './scene.ts';
 import { BEACH } from './beach.ts';
 import { ROCK } from './care.ts';
 
 export type Pt = readonly [number, number];
-export interface Box { x0: number; x1: number; y0: number; y1: number }
 
 export interface WalkGeo {
   /** Walkable ground (their union). */

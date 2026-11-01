@@ -8,6 +8,7 @@
   // blooms (the bud squashes, the flower pops open with a bounce, petal bits and a glint, a soft pop) once per phone
   // (fruit-day's `bloomed`), so a reload finds it open; buds again at the next Tokyo day.
   // A tap wiggles a flower (SceneTaps.svelte finds it by data-flower="row-col").
+  import { timers } from './timers.ts';
   import { onDestroy, untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
@@ -34,17 +35,8 @@
   /** The bloom's petal bits fly out at these angles (deg from straight up). */
   const BITS = [-70, -30, 5, 40, 78];
 
-  const timers = new Set<ReturnType<typeof setTimeout>>();
-  onDestroy(() => {
-    for (const id of timers) clearTimeout(id);
-  });
-  const later = (ms: number, f: () => void) => {
-    const id = setTimeout(() => {
-      timers.delete(id);
-      f();
-    }, ms);
-    timers.add(id);
-  };
+  const { later, clear } = timers();
+  onDestroy(clear);
 
   /** Today (the model's Tokyo day; the gallery has no view) and this phone's record of the flowers it has shown open. */
   const date = $derived(week.view?.today ?? dayKey(minuteNow()));
@@ -94,7 +86,7 @@
       first = false;
       if (!due.length) return;
       for (const id of due) queued.add(`${d}|${id}`);
-      due.forEach((id, k) => later(wait + k * 150, () => bloom(d, id)));
+      due.forEach((id, k) => later(() => bloom(d, id), wait + k * 150));
     });
   });
   function bloom(d: string, id: string) {
@@ -102,7 +94,7 @@
     rec = markBloomed(d, id);
     opening = [...opening, id];
     cue('flower-bloom');
-    later(1400, () => (opening = opening.filter((o) => o !== id)));
+    later(() => (opening = opening.filter((o) => o !== id)), 1400);
   }
 </script>
 

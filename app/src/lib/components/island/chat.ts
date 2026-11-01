@@ -1,6 +1,7 @@
 // Villager chats (docs/design.md "Villager chats"): what my villager says when I tap them, after NH's personalities.
 // Pure: a pick of an i18n key (and its params) from the pools in ja.json / en.json, `chat.<mood>.<n>`, now and then a
 // line about the day (the hour and today's goals: never ベル), a sleepy one at night. Kid-friendly and short.
+import { pickOne } from '#lib/random.ts';
 import type { Personality } from '#lib/villagers/species.ts';
 import type { EventId } from './events.ts';
 
@@ -61,7 +62,7 @@ export function chatLine(mood: Mood, ctx: ChatCtx, r: () => number, last?: strin
     : r() < DAY_ODDS ? dayLines(ctx) : Array.from({ length: LINES[mood] }, (_, i) => ({ key: `chat.${mood}.${i}` }));
   const fresh = pool.filter((l) => l.key !== last);
   const from = fresh.length ? fresh : pool;
-  return from[Math.floor(r() * from.length)];
+  return pickOne(from, r);
 }
 
 /** A roster entry's mood: its personality, or `special` for the special characters. */

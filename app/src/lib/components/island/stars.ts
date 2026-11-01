@@ -2,6 +2,7 @@
 // of shooting stars crosses the sky now and then; a tap while one streaks across is a wish, and each wish brings a star
 // fragment to the beach the next morning. Pure: when the showers come, how many streaks each brings, where a streak may
 // run (sky only, never over the UI), and the wishes' ledger (sceneDay.ts keeps it in localStorage per phone).
+import type { Box } from './geom.ts';
 import { inHours } from './critters.ts';
 
 /** NH's shooting-star hours (Tokyo clock). */
@@ -27,7 +28,6 @@ export function showerPlan(r: () => number): number[] {
 export const STREAK_MS = 900;
 export const WISH_MS = 1300;
 
-export interface Box { x0: number; x1: number; y0: number; y1: number }
 /** A streak: where it starts (px), its heading (deg, clockwise from +x: NH's fall to the lower left) and length (px). */
 export interface Streak { x: number; y: number; angle: number; len: number }
 

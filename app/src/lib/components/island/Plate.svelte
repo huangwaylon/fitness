@@ -8,6 +8,7 @@
   // it sits low in the middle instead, like NH's text box; with no room anywhere it's skipped.
   //   <Plate {scene} x={u} y={u} art="critters/sea-bass" parts={[line, note]} ondone={…} />   (x, y: the source, stage u)
   // Used by the critters' catches and the beach finds; the parent keys it per catch and sits it in a layer at --z-taps.
+  import { su } from './scene.ts';
   import { onMount, tick } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { place, stageGeo } from './placement.ts';
@@ -30,7 +31,6 @@
   // svelte-ignore state_referenced_locally
   let pg = $state<PagerState>({ pages: paginate(parts), page: 0, shown: 0 });
   let el = $state<HTMLElement>();
-  const U = (n: number) => `calc(${n.toFixed(1)} * var(--su))`;
   /** Further than this from the catch (px) and the plate goes low in the middle instead (NH's box). */
   const NEAR_PX = 150;
   const typedNow = $derived(split(pg));
@@ -84,7 +84,7 @@
 </script>
 
 <span class="mover catch" class:placed={at.placed} data-fx="catch" bind:this={el}
-  style:translate="{U(at.x)} {U(at.y)}" style:--dx={U(at.dx)} style:--dy={U(at.dy)}>
+  style:translate="{su(at.x)} {su(at.y)}" style:--dx={su(at.dx)} style:--dy={su(at.dy)}>
   <button type="button" class="catch-plate" data-sfx="tick" data-page={pg.page} data-pages={pg.pages.length} aria-label={pg.pages.join(' ')} onclick={tapIt}>
     <span class="catch-icon"><OfficialArt key={art} size="clamp(40px, calc(46 * var(--su)), 48px)" eager /></span>
     <span class="catch-say" aria-hidden="true">

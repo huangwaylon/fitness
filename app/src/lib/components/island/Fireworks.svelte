@@ -12,9 +12,10 @@
   // after 2.7 s; at most 4 bursts at once; between bursts nothing but one timer. Paused with the scene (data-paused), and
   // no new ones while covered or hidden. In its layer's px.
   //   ?fireworks (dev or ?demo): a show now, whatever the date (the e2e's hook).
+  import { timers } from './timers.ts';
+  import { hookFlag } from './devHooks.ts';
   import { untrack } from 'svelte';
-  import { jst, minuteNow } from '#lib/time/clock.ts';
-  import { localDateAt } from '#lib/time/dates.ts';
+  import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
   import { uiBoxes } from './placement.ts';
   import { ISLAND_TOP_U } from './scene.ts';
@@ -33,14 +34,13 @@
   }
   let { enabled, forced = false, allMet = false, cheer }: Props = $props();
 
-  const q = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
-  const pinned = q.has('fireworks') && (import.meta.env.DEV || q.has('demo'));
+  const pinned = hookFlag('fireworks');
   const rand = Math.random;
 
   const clock = $derived(minuteNow());
   const t = $derived(jst(clock));
   const show = $derived(forced || pinned ? 'show' : showAt(t.month, t.day, t.weekday, t.hour));
-  const date = $derived(localDateAt(clock.getTime()));
+  const date = $derived(dayKey(clock));
 
   interface Live { id: number; x: number; y: number; rad: number; rise: number; shape: Shape; sparks: Spark[] }
   let bursts = $state<Live[]>([]);
@@ -50,18 +50,8 @@
   const RISE_MS = 700;
   const LIFE_MS = 2700;
 
-  const timers = new Set<ReturnType<typeof setTimeout>>();
-  function later(fn: () => void, ms: number) {
-    const id = setTimeout(() => {
-      timers.delete(id);
-      fn();
-    }, ms);
-    timers.add(id);
-  }
-  $effect(() => () => {
-    for (const id of timers) clearTimeout(id);
-    timers.clear();
-  });
+  const { later, clear } = timers();
+  $effect(() => clear);
 
   /** Send one up: to a free spot of the sky (or `at`, client px, a tap). False when there's no room. */
   function launch(at?: { x: number; y: number }): boolean {

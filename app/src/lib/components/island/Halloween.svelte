@@ -5,10 +5,9 @@
   // is measured clear of them on this screen; a covered spot isn't shown). Jack is a visitor (Visitor.svelte).
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
-  import { HALLOWEEN_SPOTS, PUMPKIN_U } from './scene.ts';
+  import { HALLOWEEN_SPOTS, PUMPKIN_U, su } from './scene.ts';
 
   let { scene, night }: { scene?: HTMLElement; night: boolean } = $props();
-  const U = (n: number) => `calc(${n.toFixed(1)} * var(--su))`;
 
   /** The spots clear of every control on this screen (measured once laid out, again on a resize). */
   let spots = $state<(readonly [number, number])[]>([]);
@@ -28,9 +27,9 @@
 <div class="halloween" class:night data-halloween={night ? 'night' : 'day'} aria-hidden="true">
   {#if night}<div class="wash"></div>{/if}
   {#each spots as [x, y], i (`${x},${y}`)}
-    <span class="pumpkin" data-pumpkin style:translate="{U(x)} {U(y)}" style:--i={i}>
+    <span class="pumpkin" data-pumpkin style:translate="{su(x)} {su(y)}" style:--i={i}>
       {#if night}<span class="glow"></span>{/if}
-      <span class="art"><OfficialArt key={night ? 'deco/spooky-lantern' : 'deco/pumpkin'} size={U(PUMPKIN_U)} /></span>
+      <span class="art"><OfficialArt key={night ? 'deco/spooky-lantern' : 'deco/pumpkin'} size={su(PUMPKIN_U)} /></span>
     </span>
   {/each}
 </div>

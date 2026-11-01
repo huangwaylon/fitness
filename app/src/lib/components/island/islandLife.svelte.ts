@@ -1,6 +1,8 @@
 // The island's life, outside the scene's markup: reactions from the view diff, the greeting and startup
 // beats, naps at night, the motion bus, idle life, the balloon present's schedule and the page-visibility pause. Create one per
 // live scene during its init (`new IslandLife(...)`); it cleans up with the component.
+import { firstOn } from './dayRecord.ts';
+import { hookFlag } from './devHooks.ts';
 import { onMount, untrack } from 'svelte';
 import type { PersonId, RingFruit, WeekView } from '#lib/types.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
@@ -12,7 +14,7 @@ import { goalMoves } from './wander.ts';
 import { on } from '../motion/bus.svelte.ts';
 import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
 import type { ReactionId } from '../motion/reactions.ts';
-import { localKV, SCENE, writeRaw, type KV } from '#lib/sync/storage.ts';
+import { SCENE } from '#lib/sync/storage.ts';
 
 /** Thursday–Saturday under this many ベル this week: the low-week encouragement beat (R15). */
 const LOW_WEEK_BELLS = 6;
@@ -36,23 +38,7 @@ const stage = (pct: number): number => (pct >= 100 ? 3 : pct >= 60 ? 2 : pct >= 
 const asleepHour = (d: Date) => jst(d).hour >= 22 || jst(d).hour < 5;
 
 /** True the first time `key` is seen today on this device. */
-function once(key: string): boolean {
-  const k = SCENE.beat(key);
-  const day = dayKey();
-  const kv = localKV();
-  if (safeGet(kv, k) === day) return false;
-  writeRaw(kv, k, day);
-  return true;
-}
-
-/** Storage that throws on access (Safari, blocked) reads as empty: the beat plays, nothing breaks. */
-function safeGet(kv: KV | null, k: string): string | null {
-  try {
-    return kv?.getItem(k) ?? null;
-  } catch {
-    return null;
-  }
-}
+const once = (key: string): boolean => firstOn(SCENE.beat(key), dayKey());
 
 export class IslandLife {
   /** The page is hidden (the scene pauses its animations). */
@@ -208,10 +194,9 @@ export class IslandLife {
     });
 
     // `?balloon` (dev or ?demo only): float one now, at any time of day, to look at it.
-    const q = new URLSearchParams(location.search);
-    if (q.has('balloon') && (import.meta.env.DEV || q.has('demo'))) this.later(() => (this.balloon = true), 400);
+    if (hookFlag('balloon')) this.later(() => (this.balloon = true), 400);
     // `?wander` (dev or ?demo only): the partner sets off on an outing now (the e2e's hook)
-    if (q.has('wander') && (import.meta.env.DEV || q.has('demo'))) this.later(() => wander('partner'), 3200); // after the opening beats
+    if (hookFlag('wander')) this.later(() => wander('partner'), 3200); // after the opening beats
 
     const onVis = () => (this.hidden = document.hidden);
     document.addEventListener('visibilitychange', onVis);

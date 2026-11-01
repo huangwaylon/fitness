@@ -3,26 +3,9 @@
 // derives from the Tokyo date and the time of day plus a seed, so both phones broadly see the same island; what one
 // phone picked up is hidden there only (the caller keeps that list). Nothing here counts for anything: a pick-up is a
 // caption, an icon and (the first time) a ずかん `find`, never ベル.
-import { mulberry32 } from '#lib/random.ts';
+import { pickOne, shuffle, weighted } from '#lib/random.ts';
+import { ISLAND_SEED, dayRand } from './daySeed.ts';
 import { shoreY } from './scene.ts';
-
-/** The island's own seed (`?seed=` in the demo varies it). */
-export const ISLAND_SEED = 'island-fund';
-
-/** A seeded PRNG for one stream of one day. */
-export function dayRand(date: string, stream: string, seed = ISLAND_SEED): () => number {
-  let h = 2166136261;
-  for (const c of `${seed}|${date}|${stream}`) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0;
-  return mulberry32(h);
-}
-
-/** A weighted pick from [id, weight] pairs. */
-export function weighted<T extends string>(list: readonly (readonly [T, number])[], r: () => number): T {
-  const total = list.reduce((s, [, w]) => s + w, 0);
-  let x = r() * total;
-  for (const [id, w] of list) if ((x -= w) < 0) return id;
-  return list[list.length - 1][0];
-}
 
 // ---------- catalogs (official NH items; art in static/art/finds/, names under beach.name.<id>) ----------
 
@@ -106,10 +89,7 @@ type Pt = { x: number; y: number };
 function beachSpot(r: () => number, near: readonly Pt[], { first, edge = false }: { first?: number; edge?: boolean } = {}): Pt {
   const x0 = BEACH.x0 + 6 + r() * 5, n = Math.floor((BEACH.x1 - 6 - x0) / 5) + 1;
   const xs = Array.from({ length: n }, (_, k) => x0 + k * 5);
-  for (let i = xs.length - 1; i > 0; i--) {
-    const j = Math.floor(r() * (i + 1));
-    [xs[i], xs[j]] = [xs[j], xs[i]];
-  }
+  shuffle(xs, r);
   if (first !== undefined) xs.unshift(first);
   let best: Pt = { x: xs[0], y: BEACH.y1 }, bestD = -1;
   const tenth = (v: number) => Math.round(v * 10) / 10;
@@ -192,7 +172,7 @@ export function digSpots(date: string, dug: ReadonlySet<string>, seed = ISLAND_S
   const out: DigSpot[] = [];
   const used = new Set<number>();
   for (let i = 0; i < 60 && out.length < atOnce; i++) {
-    const fossil = FOSSILS[Math.floor(r() * FOSSILS.length)];
+    const fossil = pickOne(FOSSILS, r);
     let spot = Math.floor(r() * DIG_SPOTS.length);
     const uid = `f${i}`;
     if (dug.has(uid)) continue;
@@ -250,10 +230,7 @@ const FRAGMENT_SLOTS = 8;
 const SLOTS = (date: string, seed: string): number[] => {
   const r = dayRand(date, 'fragment-slots', seed);
   const s = Array.from({ length: FRAGMENT_SLOTS }, (_, i) => i);
-  for (let i = s.length - 1; i > 0; i--) {
-    const j = Math.floor(r() * (i + 1));
-    [s[i], s[j]] = [s[j], s[i]];
-  }
+  shuffle(s, r);
   return s;
 };
 

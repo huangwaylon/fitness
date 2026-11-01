@@ -7,6 +7,7 @@
 // up from the shore, float or fly down from the sky, or appear) when their visit starts and leave the same way when
 // it's over. The director (motion/director.svelte.ts, actor 'visitor') moves them; Visitor.svelte draws them.
 import type { EmoteIcon } from '#lib/art.ts';
+import { pickOne, shuffle } from '#lib/random.ts';
 import type { FxKind, Motion } from '../motion/reactions.ts';
 import type { VisitorId } from './visitors.ts';
 import type { Pt } from './walkGraph.ts';
@@ -101,7 +102,7 @@ export function pickAct(id: VisitorId, s: BeatState, rnd: () => number): Visitor
 /** One of their emotes, never the last one again. */
 export function pickEmote(id: VisitorId, rnd: () => number, last?: EmoteIcon | null): EmoteIcon {
   const list = BEHAVIOUR[id].emotes.filter((e) => e !== last);
-  return list[Math.floor(rnd() * list.length)];
+  return pickOne(list, rnd);
 }
 
 /** Where a stroll may end: around their spot within their radius, in front of it or level with it (never back toward
@@ -111,10 +112,7 @@ export function strollSpots(home: Pt, roam: number, rnd: () => number): Pt[] {
   const out: Pt[] = [];
   for (const [fx, fy] of [[1, 0], [-1, 0], [0.7, 0.45], [-0.7, 0.45], [0.45, 0.2], [-0.45, 0.2], [0, 0.5]] as const)
     out.push([Math.round(home[0] + fx * roam), Math.round(home[1] + fy * roam * 0.5)]);
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(rnd() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
+  shuffle(out, rnd);
   return out;
 }
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { easter, eggTime, eventAt, festivale, nthWeekday, turkeyDay } from './events.ts';
+import { eggTime, eventAt, festivale, turkeyDay } from './events.ts';
+import { easter, nthWeekday } from '#lib/time/dates.ts';
 import { EGG_ODDS, eggInBalloon, eggInDig, eggOnLine } from './eggs.ts';
 import { HOSTS, visitorAt } from './visitors.ts';
 import { addDays } from '#lib/time/dates.ts';

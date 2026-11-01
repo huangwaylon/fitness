@@ -4,7 +4,8 @@
 // days: heavy fog at 07:00 on autumn-to-spring mornings (October to March) and the aurora on winter nights, never on
 // a meteor shower's night. A weather day runs 05:00 → 05:00 (NH's day), seeded by its date (beach.ts dayRand), so
 // both phones agree. Pure; the island's state is weatherNow.svelte.ts. Nothing here pays: no ベル.
-import { ISLAND_SEED, dayRand, weighted } from './beach.ts';
+import { weighted } from '#lib/random.ts';
+import { ISLAND_SEED, dayRand } from './daySeed.ts';
 import { showerNight } from './meteor.ts';
 import { addDays } from '#lib/time/dates.ts';
 

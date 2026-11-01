@@ -3,8 +3,8 @@
 // every control (the ribbon and its tails, the jar beside it, the sync chip, the trees, the fruit rows, the villagers),
 // a tree's popup and しずえ's box, measured live with getBoundingClientRect. A speech balloon stands by its speaker
 // (placeBy: NH's rule, nearness first); a plate or a caption by the point it's about (place).
+import { hits, type Box } from './geom.ts';
 
-export interface Box { x0: number; x1: number; y0: number; y1: number }
 
 
 /** The stage's box, the px → u factor and what of the stage is on screen (u). */
@@ -41,7 +41,6 @@ function guards(skip?: (el: Element) => boolean): Box[] {
 /** The UI nothing of ours may cover (client px): every control (the fireworks keep their bursts off it). */
 export const uiBoxes = (): Box[] => guards();
 
-const hits = (a: Box, b: Box): boolean => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
 
 /** The guards in stage units, grown by `pad` u (`skip`: leave some out). */
 export function guardsU(g: StageGeo, pad: number, skip?: (el: Element) => boolean): Box[] {

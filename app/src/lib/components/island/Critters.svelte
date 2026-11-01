@@ -25,22 +25,26 @@
   //   ?critter=fish | pond | <fish id> | <pond fish id> | <bug id> (dev or ?demo): one now, staying until caught (the
   //   e2e's hook); ?flea: a tap
   //   on my villager always sends a flea off it.
+  import CatchPlate from './CatchPlate.svelte';
+  import { cardFor, type CatchCard } from './catchCard.ts';
+  import { timers } from './timers.ts';
+  import { pickOne } from '#lib/random.ts';
+  import { hook, hookFlag } from './devHooks.ts';
   import { weather } from './weatherNow.svelte.ts';
   import { onMount, untrack } from 'svelte';
-  import Plate from './Plate.svelte';
   import { artUrl } from '#lib/art.ts';
   import { jst, now } from '#lib/time/clock.ts';
-  import { HEDGE_BASE, HEDGE_X, BUSH_U, PLATEAU, POND, SAND, TREE, shoreY, type Tod } from './scene.ts';
+  import { BUSH_U, HEDGE_BASE, HEDGE_X, PLATEAU, POND, SAND, shoreY, su, TREE, type Tod } from './scene.ts';
   import { hitStage, sceneSfx } from './sceneTaps.ts';
-  import { guardsU, stageGeo, type Box, type StageGeo } from './placement.ts';
+  import type { Box } from './geom.ts';
+  import { guardsU, stageGeo, type StageGeo } from './placement.ts';
   import { recordFind } from '#lib/store/actions.ts';
   import { catchLine, loadLines, loadNames } from './catchLine.ts';
   import { BEACH, findArt } from './beach.ts';
-  import { eggTime, eventAt, forcedEvent } from './events.ts';
+  import { eggTime, eventNow } from './events.ts';
   import { eggOnLine } from './eggs.ts';
-  import { localDateAt } from '#lib/time/dates.ts';
   import { LONG_REACH, approach, goHomeLater, turnTo } from './avatar.ts';
-  import { HOLD_MS, actors, holdUp, putAway, useTool } from '../motion/director.svelte.ts';
+  import { actors, useTool } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from './sea.ts';
   import {
@@ -91,12 +95,10 @@
     /** Netted: it holds still until the swing lands (my villager is on its way). */
     held?: boolean;
   }
-  interface Card { n: number; x: number; y: number; art: string; parts: string[] }
   /** `held`: the net is in my villager's hand (no floating one). */
   interface Net { n: number; x: number; y: number; held?: boolean }
 
   // Everything in stage units (u: 390 across), drawn with calc(n × --su).
-  const U = (n: number) => `calc(${n.toFixed(1)} * var(--su))`;
   const rand = Math.random;
   const between = (a: number, b: number) => a + rand() * (b - a);
   const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
@@ -105,7 +107,7 @@
   let fishes = $state<Record<Water, Fish | null>>({ sea: null, pond: null });
   let cast = $state<Cast | null>(null);
   let bug = $state<Bug | null>(null);
-  let card = $state<Card | null>(null);
+  let card = $state<CatchCard | null>(null);
   let net = $state<Net | null>(null);
   /** A spot of bubbles in the sea: something to dive for. */
   let bubbles = $state<{ n: number; item: DiveItem; x: number; y: number; box: Box } | null>(null);
@@ -123,17 +125,9 @@
   const night = $derived(tod === 'night');
 
   // ---------- timers (all cleared when the critters leave) ----------
-  const timers = new Set<ReturnType<typeof setTimeout>>();
-  function later(fn: () => void, ms: number) {
-    const id = setTimeout(() => {
-      timers.delete(id);
-      fn();
-    }, ms);
-    timers.add(id);
-  }
+  const pending = timers(), later = pending.later;
   function clearAll() {
-    for (const id of timers) clearTimeout(id);
-    timers.clear();
+    pending.clear();
     fishes = { sea: null, pond: null };
     cast = bug = card = net = dig = bubbles = diving = null;
   }
@@ -424,11 +418,11 @@
     const fin = f && c ? fishEls[f.water]?.querySelector('.fin') : null;
     if (fin && f && c) {
       const dx = Math.sign(c.x - f.x) * 2;
-      fin.animate([{ translate: '-50% -50%' }, { translate: `calc(-50% + ${U(dx)}) -50%`, offset: 0.3 }, { translate: '-50% -50%' }], { duration: 380, easing: 'ease-out' });
+      fin.animate([{ translate: '-50% -50%' }, { translate: `calc(-50% + ${su(dx)}) -50%`, offset: 0.3 }, { translate: '-50% -50%' }], { duration: 380, easing: 'ease-out' });
     }
     bobEl?.animate(
-      [{ translate: '0 0', rotate: '0deg' }, { translate: `0 ${U(0.9)}`, rotate: '-9deg', offset: 0.25 },
-        { translate: `0 ${U(0.2)}`, rotate: '7deg', offset: 0.55 }, { translate: '0 0', rotate: '0deg' }],
+      [{ translate: '0 0', rotate: '0deg' }, { translate: `0 ${su(0.9)}`, rotate: '-9deg', offset: 0.25 },
+        { translate: `0 ${su(0.2)}`, rotate: '7deg', offset: 0.55 }, { translate: '0 0', rotate: '0deg' }],
       { duration: 380, easing: 'ease-out' }
     );
   }
@@ -488,7 +482,7 @@
     // a ladybug or a mantis sits on a flower's head (the orchid mantis on a white one if the beds have any)
     let heads = flight === 'flower' ? flowerHeads(g, guardsU(g, 8)) : [];
     if (id === 'orchid-mantis' && heads.some((h) => h.white)) heads = heads.filter((h) => h.white);
-    const head = heads.length ? heads[Math.floor(rand() * heads.length)] : null;
+    const head = heads.length ? pickOne(heads, rand) : null;
     const area = flight === 'flower' ? head && { x0: head.x, x1: head.x, y0: head.y, y1: head.y }
       : flight === 'perch' ? trunk(g, side)
       : ground === 'beach' ? beach(g)
@@ -529,7 +523,7 @@
       const x = clamp(b.x + Math.sign(p.x - b.x || 1) * Math.min(Math.abs(p.x - b.x), between(14, 30)), b.area.x0, b.area.x1);
       const y = clamp(b.y + between(-8, 8), b.area.y0, b.area.y1);
       Object.assign(b, { ms: 420, flip: x > b.x, x, y });
-      hopEl?.animate([{ translate: '0 0' }, { translate: `0 ${U(-9)}`, offset: 0.45 }, { translate: '0 0' }], { duration: 420, easing: 'ease-out' });
+      hopEl?.animate([{ translate: '0 0' }, { translate: `0 ${su(-9)}`, offset: 0.45 }, { translate: '0 0' }], { duration: 420, easing: 'ease-out' });
       return later(fly, 420 + between(1400, 2800));
     }
     if (b.flight === 'burrow') return; // under its mound, chirping, until it's dug up or done
@@ -548,7 +542,7 @@
       } else if ((b.hops = (b.hops ?? 0) + 1) > (b.rest ?? 2)) {
         const g = geo();
         const heads = g ? flowerHeads(g, b.keep).filter((h) => Math.abs(h.x - b.x) < 120) : [];
-        const h = heads[Math.floor(rand() * heads.length)];
+        const h = pickOne(heads, rand);
         if (h) {
           const ms = between(1100, 1600);
           Object.assign(b, { ms, flip: h.x > b.x, x: h.x, y: h.y - 2 });
@@ -688,12 +682,11 @@
     // Bunny Day's celebrations: now and then a fish on the line (the sea's or the pond's) is NH's water egg (a caption
     // only, no find)
     const t0 = now();
-    if (kind === 'fish' && eggTime(eventAt(localDateAt(t0.getTime()), jst(t0).hour, forcedEvent())) && eggOnLine(rand)) {
+    if (kind === 'fish' && eggTime(eventNow(t0)) && eggOnLine(rand)) {
       const n = ++seq;
       await loadNames().catch(() => {});
       if (seq !== n) return;
-      card = { n, x, y, art: findArt('water-egg'), parts: [t('beach.fished', { name: t('beach.name.water-egg') })] };
-      holdUp('mine', findArt('water-egg'), HOLD_MS);
+      card = cardFor(n, x, y, findArt('water-egg'), t('beach.fished', { name: t('beach.name.water-egg') }));
       return;
     }
     // the shared ずかん: the first catch of each fish (the sea's or the pond's), bug or sea creature (junk isn't a find;
@@ -705,8 +698,7 @@
     const text = pearl ? await loadNames().then(() => t('beach.picked', { name: t('beach.name.pearl') }), () => '') : await catchLine(item as Catch);
     if (seq !== n) return;
     const art = pearl ? findArt(item) : critterArt(item as Catch);
-    card = { n, x, y, art, parts: added ? [text, t('zukan.added')] : [text] };
-    holdUp('mine', art, HOLD_MS);
+    card = cardFor(n, x, y, art, text, added);
   }
 
   /** A tap on the scene (client px), before SceneTaps' own flourishes: true when a critter took it. */
@@ -824,9 +816,9 @@
   // tab (and the critters leave), and resumes where it was.
   let remaining = nextSpawnMs(rand, true);
   /** `?critter=` (dev or ?demo) shows that one alone: no ambient visits around it, so it can be looked at and tested. */
-  const pinned = typeof location !== 'undefined' && ['critter', 'sea'].some((k) => new URLSearchParams(location.search).has(k)) && (import.meta.env.DEV || new URLSearchParams(location.search).has('demo'));
+  const pinned = hookFlag('critter') || hookFlag('sea');
   /** `?flea` (dev or ?demo): every tap on my villager sends a flea hopping off it (the e2e's hook). */
-  const forceFlea = typeof location !== 'undefined' && new URLSearchParams(location.search).has('flea') && (import.meta.env.DEV || new URLSearchParams(location.search).has('demo'));
+  const forceFlea = hookFlag('flea');
   $effect(() => {
     if (!scene || !enabled() || pinned) return;
     let started = performance.now();
@@ -854,9 +846,8 @@
   });
 
   onMount(() => {
-    const q = new URLSearchParams(location.search);
-    const want = q.get('critter'), dive = q.get('sea');
-    if (!(want || dive) || !(import.meta.env.DEV || q.has('demo'))) return;
+    const want = hook('critter'), dive = hook('sea');
+    if (!(want || dive)) return;
     // a fish waits for a free spot in its water (the layout may still be settling): a few tries
     let tries = 0;
     const fishFor = async (water: Water, id?: FishId | PondFishId) => {
@@ -891,29 +882,29 @@
 <div class="sea-life" aria-hidden="true">
   {#if bubbles}
     <!-- NH's dive spot: little bubbles rising and popping at the surface -->
-    <span class="mover bubbles" data-bubbles={bubbles.item} style:translate="{U(bubbles.x)} {U(bubbles.y)}">
-      {#each [[-3, 0], [2.5, 0.5], [-0.5, 1], [4, 1.5]] as [dx, d], i (i)}<i style:--dx={U(dx)} style:animation-delay="{d * 0.45}s"></i>{/each}
+    <span class="mover bubbles" data-bubbles={bubbles.item} style:translate="{su(bubbles.x)} {su(bubbles.y)}">
+      {#each [[-3, 0], [2.5, 0.5], [-0.5, 1], [4, 1.5]] as [dx, d], i (i)}<i style:--dx={su(dx)} style:animation-delay="{d * 0.45}s"></i>{/each}
     </span>
   {/if}
   {#if diving}
     {@const d = diving}
-    <span class="mover dive" class:gone={d.gone} data-dive={d.chase ? 'chase' : 'splash'} style:translate="{U(d.x)} {U(d.y)}" style:transition-duration="{d.ms}ms">
+    <span class="mover dive" class:gone={d.gone} data-dive={d.chase ? 'chase' : 'splash'} style:translate="{su(d.x)} {su(d.y)}" style:transition-duration="{d.ms}ms">
       {#if !d.chase}<i class="ripple big"></i><span class="splash">{#each [-62, -30, 0, 30, 62] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
-      {:else}<span class="shadow"><i class="fin" style:--w={U(shadowLen(d.size))}>{@render teardrop()}</i></span>{/if}
+      {:else}<span class="shadow"><i class="fin" style:--w={su(shadowLen(d.size))}>{@render teardrop()}</i></span>{/if}
     </span>
   {/if}
   {#each WATERS as w (w)}
     {@const f = fishes[w]}
     {#if f}
       <span class="mover shadow {f.shape ? `is-${f.shape}` : ''} {w}" class:gone={f.gone} class:dash={f.dash} class:spurt={f.spurt} data-critter={w === 'sea' ? 'fish' : 'pond'}
-        bind:this={fishEls[w]} style:translate="{U(f.x)} {U(f.y)}" style:transition-duration="{f.ms}ms" style:--w={U(sizeU(f))}>
+        bind:this={fishEls[w]} style:translate="{su(f.x)} {su(f.y)}" style:transition-duration="{f.ms}ms" style:--w={su(sizeU(f))}>
         <i class="fin" class:flip={f.flip}>{@render teardrop()}</i>
       </span>
     {/if}
   {/each}
   {#if cast}
     <span class="mover bobber" data-bobber={cast.under ? 'bite' : cast.landed ? 'wait' : 'cast'} class:under={cast.under}
-      style:translate="{U(cast.x)} {U(cast.y)}" style:--fx={U(cast.sx - cast.x)} style:--fy={U(cast.sy - cast.y)}>
+      style:translate="{su(cast.x)} {su(cast.y)}" style:--fx={su(cast.sx - cast.x)} style:--fy={su(cast.sy - cast.y)}>
       {#key cast.rings}{#if cast.rings}<i class="ripple" class:big={cast.under}></i>{/if}{/key}
       {#if cast.under}
         <i class="ripple big late"></i>
@@ -929,7 +920,7 @@
   {#if bug}
     {@const b = bug}
     <span class="mover bug {b.flight} {b.id}" class:gone={b.gone} class:fled={b.fled} class:sat={b.sat} data-critter={b.id} bind:this={bugEl}
-      style:translate="{U(b.x)} {U(b.y)}" style:transition-duration={b.fled ? null : `${b.ms}ms`} style:--ms="{b.ms}ms">
+      style:translate="{su(b.x)} {su(b.y)}" style:transition-duration={b.fled ? null : `${b.ms}ms`} style:--ms="{b.ms}ms">
       <span class="hopper" bind:this={hopEl}>
         <span class="face" class:flip={b.flip}>
           {#if Sprite}<Sprite id={b.id} flight={b.flight} sat={b.sat} stalk={b.stalk} />{/if}
@@ -950,24 +941,21 @@
   {#if dig}
     {#key dig.n}
       <!-- the mound dug open: clods of earth fly up -->
-      <span class="mover digfx" style:translate="{U(dig.x)} {U(dig.y)}">{#each [-50, -15, 20, 55] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
+      <span class="mover digfx" style:translate="{su(dig.x)} {su(dig.y)}">{#each [-50, -15, 20, 55] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
     {/key}
   {/if}
   {#if cast?.under}
     <!-- over the land and the tint, so the 「！」 is never hidden behind the beach -->
-    <span class="mover" style:translate="{U(cast.bx ?? cast.x)} {U(cast.y)}"><span class="bang" data-bite>！</span></span>
+    <span class="mover" style:translate="{su(cast.bx ?? cast.x)} {su(cast.y)}"><span class="bang" data-bite>！</span></span>
   {/if}
   {#if net}
     {#key net.n}
-      <span class="mover netfx" data-net={net.held ? 'held' : 'float'} style:translate="{U(net.x)} {U(net.y)}">
+      <span class="mover netfx" data-net={net.held ? 'held' : 'float'} style:translate="{su(net.x)} {su(net.y)}">
         <svg class:held={net.held} viewBox="-20 -20 40 40"><path class="handle" d="M6 6 L19 19" /><circle class="hoop" cx="-1" cy="-1" r="9.5" /><path class="mesh" d="M-10 -1 H8 M-1 -10 V8 M-7.5 -7.5 L5.5 5.5 M-7.5 5.5 L5.5 -7.5" /></svg>
       </span>
     {/key}
   {/if}
-  {#if card}
-    {@const c = card}
-    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.parts} ondone={() => card?.n === c.n && ((card = null), putAway('mine'))} />{/key}
-  {/if}
+  <CatchPlate {scene} bind:card />
 </div>
 
 <style>

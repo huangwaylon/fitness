@@ -17,6 +17,8 @@
   // tree is tapped, or a tap lands elsewhere. A quick run of canopy taps (the third within 1.2 s, and each quick tap after) is NH's shake instead: the
   // popup closes, the tree rustles and `onshake` asks the scene what falls (treeShake.ts: a branch, now and then a wasp
   // nest). `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate` sparkles a fruit.
+  import { pickUp } from '../motion/transitions.ts';
+  import { timers } from './timers.ts';
   import { onDestroy, untrack } from 'svelte';
   import type { PersonWeekView, RingFruit } from '#lib/types.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
@@ -62,17 +64,8 @@
   const detailId = $props.id();
   let picked = $state<RingFruit | null>(null);
   let taps = $state(0);
-  const timers = new Set<ReturnType<typeof setTimeout>>();
-  onDestroy(() => {
-    for (const id of timers) clearTimeout(id);
-  });
-  const later = (ms: number, f: () => void) => {
-    const id = setTimeout(() => {
-      timers.delete(id);
-      f();
-    }, ms);
-    timers.add(id);
-  };
+  const { later, clear } = timers();
+  onDestroy(clear);
   let leaves = $state<{ n: number; x: number; y: number }[]>([]);
   let leafN = 0;
   let treeEl: HTMLElement | null = $state(null);
@@ -152,11 +145,11 @@
       first = false;
       if (!due.length) return;
       for (const f of due) queued.add(`${d}|${f}`);
-      later(wait, () => {
+      later(() => {
         if (rec.date !== d) return;
         shake(true);
-        due.forEach((f, k) => later(250 + k * 150, () => drop(d, f)));
-      });
+        due.forEach((f, k) => later(() => drop(d, f), 250 + k * 150));
+      }, wait);
     });
   });
   function drop(d: string, f: RingFruit) {
@@ -165,8 +158,8 @@
     falling = [...falling, f];
     cue('fruit-land');
     const s = spots.find((p) => p.f === f);
-    if (s) later(290, () => addFx('puff', s.gx, s.gy + FRUIT_U * 0.4));
-    later(1600, () => (falling = falling.filter((g) => g !== f)));
+    if (s) later(() => addFx('puff', s.gx, s.gy + FRUIT_U * 0.4), 290);
+    later(() => (falling = falling.filter((g) => g !== f)), 1600);
   }
 
   /** Short effects on the stage: dust where a fruit lands, sparkles where one is picked up. */
@@ -178,13 +171,6 @@
   const dropFx = (n: number) => (fx = fx.filter((e) => e.n !== n));
 
   /** NH's pick-up: the fruit hops up and shrinks away (an out transition: transform and opacity only). */
-  function pickUp(_el: Element) {
-    return {
-      duration: 340,
-      css: (tt: number, v: number) =>
-        `transform: translateY(${(-60 * Math.sin(v * Math.PI * 0.6)).toFixed(1)}%) scale(${(1 - 0.7 * v * v).toFixed(3)}); opacity: ${Math.min(1, tt * 3).toFixed(2)}`
-    };
-  }
   /** Picks up a fallen fruit: gone from this phone until the next Tokyo day (no ベル: those come from the goal). */
   function collect(f: RingFruit) {
     const s = spots.find((p) => p.f === f);
@@ -192,10 +178,10 @@
     // my villager walks over and picks it up (avatar.ts)
     going.add(f);
     const { ms } = approach(s.gx, s.gy, { motion: 'squish' });
-    later(ms, () => {
+    later(() => {
       going.delete(f);
       pick(f);
-    });
+    }, ms);
   }
   /** Fruit my villager is walking to. */
   const going = new Set<RingFruit>();
@@ -218,7 +204,7 @@
     const a = ++leafN, b = ++leafN;
     const y = BASE - H * 0.55;
     leaves = [...leaves.slice(-2), { n: a, x: x - W * 0.3, y }, { n: b, x: x + W * 0.28, y }];
-    later(2000, () => (leaves = leaves.filter((l) => l.n !== a && l.n !== b)));
+    later(() => (leaves = leaves.filter((l) => l.n !== a && l.n !== b)), 2000);
   }
 
   // React to `shakeN` only (shake() reads and writes `leaves`, which must not become a dependency).

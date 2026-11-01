@@ -3,7 +3,8 @@
 // seasonal: a day in October or December brings one now and then. Pure and seeded by the date (beach.ts dayRand), so
 // both phones see the same; what a phone picked up is its own (sceneDay.ts). Cosmetic: no ベル and no ずかん `find`
 // (the ずかん has no kind for them; docs/decisions.md "Mushrooms are cosmetic").
-import { ISLAND_SEED, dayRand, weighted } from './beach.ts';
+import { weighted } from '#lib/random.ts';
+import { ISLAND_SEED, dayRand } from './daySeed.ts';
 import { TREE } from './scene.ts';
 
 /** NH's four ground mushrooms with their spawn weights (Nookipedia "Mushroom", a 3-star island: the elegant one rare). */

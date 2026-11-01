@@ -1,5 +1,6 @@
+import type { Box } from './geom.ts';
 import { describe, expect, it } from 'vitest';
-import { GAP, NEAR, SNUG, TAIL_IN, spotBy, type Box } from './placement.ts';
+import { GAP, NEAR, SNUG, TAIL_IN, spotBy } from './placement.ts';
 
 // a 390 × 844 phone; a visitor at centre stage (head at y 418), the museum straight above it, the trees either side
 const area: Box = { x0: 8, x1: 382, y0: 4, y1: 840 };

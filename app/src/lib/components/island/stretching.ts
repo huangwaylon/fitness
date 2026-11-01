@@ -4,7 +4,8 @@
 // stretches in sync (Posture Warm-Up, Side Bends, Jump: ~6 s), once a day per phone, then the deck goes for the day.
 // No ベル. This phone's record of the day is in localStorage (sync/storage.ts SCENE.stretch): losing it only brings the
 // deck back.
-import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
+import { SCENE } from '#lib/sync/storage.ts';
+import { dayRecord } from './dayRecord.ts';
 import type { Motion } from '../motion/reactions.ts';
 
 /** The three stretches, in order (NH's names: Posture Warm-Up, Side Bends, Jump), each POSE_MS long. */
@@ -16,27 +17,19 @@ export const MORNING = { from: 6, to: 8 } as const;
 
 export const isMorning = (hour: number): boolean => hour >= MORNING.from && hour < MORNING.to;
 
-interface Day { date: string; morning: boolean; done: boolean }
-
-const read = (date: string): Day => {
-  const d = readJson<Day>(localKV(), SCENE.stretch);
-  return d && d.date === date ? { date, morning: !!d.morning, done: !!d.done } : { date, morning: false, done: false };
-};
+const day = dayRecord(SCENE.stretch, { morning: false, done: false });
 
 /** Note that the island was open at `hour` on `date` (a morning opening brings the deck out for the day). */
 export function sawIsland(date: string, hour: number): void {
-  const d = read(date);
-  if (isMorning(hour) && !d.morning) writeJson(localKV(), SCENE.stretch, { ...d, morning: true });
+  if (isMorning(hour) && !day.read(date).morning) day.patch(date, { morning: true });
 }
 
 /** Today's stretch has played on this phone. */
-export function stretched(date: string): void {
-  writeJson(localKV(), SCENE.stretch, { ...read(date), done: true });
-}
+export const stretched = (date: string): void => day.patch(date, { done: true });
 
 /** Whether the tape deck is out at `hour`: not yet played today, and either of us met Exercise today or the island was
  *  opened in the morning (now, or earlier today). */
 export function deckOut(date: string, hour: number, exerciseMet: boolean): boolean {
-  const d = read(date);
+  const d = day.read(date);
   return !d.done && (exerciseMet || d.morning || isMorning(hour));
 }

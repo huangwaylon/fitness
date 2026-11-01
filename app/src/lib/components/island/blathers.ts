@@ -3,6 +3,7 @@
 // drowsy, by night lively; when either of us found something in the last week, he mostly mentions the latest find.
 // Our own short lines in his manner (「ホー！」, polite and a little professorial), ja/en. Pure: the component picks the
 // hour, the latest find's name and the roll.
+import { pickOne } from '#lib/random.ts';
 
 /** NH's owl keeps the island's night hours (design.md "Environment": night 19–05). */
 export const awake = (hour: number): boolean => hour >= 19 || hour < 5;
@@ -20,5 +21,5 @@ export function blathersLine(hour: number, recentFind: boolean, r: () => number,
   const mood = awake(hour) ? 'night' : 'day';
   if (recentFind && r() < 0.6) return `museum.${mood}.find`;
   const keys = Array.from({ length: GREETINGS }, (_, i) => `museum.${mood}.${i}`).filter((k) => k !== last);
-  return keys[Math.floor(r() * keys.length)];
+  return pickOne(keys, r);
 }

@@ -28,6 +28,8 @@
   // down from the sky, or appearing) and leave when it ends; on a page's first paint they're simply there.
   // `?arrive` (dev or ?demo): the arrival plays on load; `?leave=<ms>`: the visit ends after that long; `?stroll`: a
   // stroll now; `?meet`: the partner comes over now.
+  import { dayRecord } from './dayRecord.ts';
+  import { shuffle } from '#lib/random.ts';
   import { tick, untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Emote from '../characters/Emote.svelte';
@@ -38,22 +40,23 @@
   import { BEHAVIOUR, EDGE_FADE_MS, MUMBLES, POP_MS, VISITOR_SPEED, nudge, pickAct, pickEmote, strollSpots, tapMotion, wayMs, type Way } from './visitorLife.ts';
   import { depthZ, type Pt } from './walkGraph.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
-  import { jst, minuteNow, now } from '#lib/time/clock.ts';
+  import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
   import { addDays, localDateAt } from '#lib/time/dates.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { kkPick, kkTracks, type KKTrack } from '#lib/sound/kk.ts';
   import { playKK, sound, stopKK } from '#lib/sound/sound.svelte.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { clearAt, guardsU, place, stageGeo } from './placement.ts';
-  import { ISLAND_SEED, zodiacOf } from './beach.ts';
+  import { zodiacOf } from './beach.ts';
+  import { hook, hookFlag, hookOneOf, islandSeed } from './devHooks.ts';
   import { approach, meetVisitor, presence, shore, villagerFree, visitorRoute, visitorWalkable } from './avatar.ts';
   import { showerAt } from './meteor.ts';
-  import { BED_ROWS, CENTRE_STAGE, VILLAGER } from './scene.ts';
+  import { BED_ROWS, CENTRE_STAGE, su, VILLAGER } from './scene.ts';
   import { VISITORS, visitorAt, visitorLine, type VisitorId } from './visitors.ts';
   import { eventAt, forcedEvent } from './events.ts';
   import type { Choice } from './pager.ts';
   import { stretch } from '../motion/stretch.svelte.ts';
-  import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
+  import { SCENE } from '#lib/sync/storage.ts';
   import { critterArt, type FishId } from './critters.ts';
   import { daysUntil } from './wedding.ts';
 
@@ -67,14 +70,11 @@
   }
   let { scene, enabled, say: rawSay, ontrick }: Props = $props();
 
-  const q = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
-  const hooks = import.meta.env.DEV || q.has('demo');
-  const seed = (hooks && q.get('seed')) || ISLAND_SEED;
-  const want = hooks ? (q.get('visitor') as VisitorId | null) : null;
+  const seed = islandSeed();
+  const want = hookOneOf('visitor', VISITORS);
   const force = forcedEvent();
   /** `?shower` (dev or ?demo): tonight is a meteor shower's night. */
-  const forceShower = hooks && q.has('shower');
-  const U = (n: number) => `calc(${n.toFixed(1)} * var(--su))`;
+  const forceShower = hookFlag('shower');
 
   /** NH heights relative to a villager (VILLAGER.h): K.K. stands about as tall, Daisy Mae is a child, Wisp a small
    *  ghost floating a little off the ground, Gulliver a tall seagull. */
@@ -99,8 +99,8 @@
 
   const clock = $derived(minuteNow());
   const who = $derived.by<VisitorId | null>(() => {
-    if (want && VISITORS.includes(want)) return want;
-    const date = localDateAt(clock.getTime());
+    if (want) return want;
+    const date = dayKey(clock);
     const { hour, weekday } = jst(clock);
     const prev = addDays(date, -1);
     return visitorAt(date, prev, hour, weekday, seed, eventAt(date, hour, force), showerAt(date, prev, hour, seed, forceShower));
@@ -108,7 +108,7 @@
   /** `?leave=<ms>` (dev or ?demo): the visit ends after that long (the departure's hook). */
   let gone = $state(false);
   $effect(() => {
-    const ms = hooks ? Number(q.get('leave')) : 0;
+    const ms = Number(hook('leave'));
     if (!ms) return;
     const t = setTimeout(() => (gone = true), ms);
     return () => clearTimeout(t);
@@ -123,7 +123,7 @@
   let edge = $state(false);
   /** Arrivals in the page's first moments are a pop in place (they were already here); `?arrive` plays it. */
   const bornAt = Date.now();
-  const forceArrive = hooks && q.has('arrive');
+  const forceArrive = hookFlag('arrive');
   let liveArrival = false;
   $effect(() => {
     const t = target;
@@ -376,10 +376,11 @@
 
   // dev hooks: a stroll now, the partner coming over now (after the opening beats)
   $effect(() => {
-    if (!hooks || !(q.has('stroll') || q.has('meet')) || !shown) return;
+    const meetNow = hookFlag('meet');
+    if (!(meetNow || hookFlag('stroll')) || !shown) return;
     let t: ReturnType<typeof setTimeout>, tries = 0;
     const go = () => {
-      const ok = q.has('meet') ? meet(shown!) : stroll();
+      const ok = meetNow ? meet(shown!) : stroll();
       if (!ok && ++tries < 12) t = setTimeout(go, 700);
     };
     t = setTimeout(go, 3000);
@@ -511,21 +512,18 @@
    *  (Critters tells the scene: `island:catch`) makes him happy, and after that he chats. This phone's own record of the
    *  day (scene-franklin), so a reload keeps it. */
   function franklin(name: string, target: Element, colour: string) {
-    const d = franklinDay(today());
+    const d = franklinDay.read(today());
     if (d.fed) {
       last = visitorLine('franklin', Math.random, last);
       return say(name, t(last), target, { colour });
     }
     const parts = met.has('franklin') || d.asked ? [t('chat.sp.franklin.ask')] : [t('chat.sp.franklin.intro'), t('chat.sp.franklin.ask')];
     met.add('franklin');
-    writeJson(localKV(), SCENE.franklin, { ...d, asked: true });
+    franklinDay.patch(d.date, { asked: true });
     say(name, parts, target, { colour });
   }
-  const today = () => localDateAt(now().getTime());
-  function franklinDay(date: string): { date: string; asked: boolean; fed: boolean } {
-    const d = readJson<{ date: string; asked: boolean; fed: boolean }>(localKV(), SCENE.franklin);
-    return d && d.date === date ? d : { date, asked: false, fed: false };
-  }
+  const today = () => dayKey(now());
+  const franklinDay = dayRecord(SCENE.franklin, { asked: false, fed: false });
   let thanksTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => () => clearTimeout(thanksTimer));
   $effect(() => {
@@ -533,9 +531,9 @@
     if (!host) return;
     const onCatch = (e: Event) => {
       const fish = (e as CustomEvent<{ kind: string; id: string }>).detail?.id;
-      const d = franklinDay(today());
+      const d = franklinDay.read(today());
       if (shown !== 'franklin' || !fish || !d.asked || d.fed) return;
-      writeJson(localKV(), SCENE.franklin, { ...d, fed: true });
+      franklinDay.patch(d.date, { fed: true });
       // after the catch's plate has had its moment: his joy, the fish over his head, his thanks
       clearTimeout(thanksTimer);
       thanksTimer = setTimeout(() => {
@@ -608,7 +606,7 @@
     if (!target) return;
     const rest = kkTracks.filter((s) => !from.includes(s));
     const pool = rest.length >= 2 ? rest : kkTracks;
-    const two = [...pool].sort(() => Math.random() - 0.5).slice(0, 2);
+    const two = shuffle([...pool], Math.random).slice(0, 2);
     const more = kkTracks.length > 2 ? [{ label: t('visitor.other'), pick: () => request(colour, [...from, ...two]) }] : [];
     say(t('visitor.kk-slider'), t('chat.sp.kk-slider.which'), target, { colour, choices: [...two.map((s) => ({ label: titleOf(s), pick: () => void perform(s, colour) })), ...more] });
   }
@@ -714,19 +712,19 @@
   <div class="visitors" class:beach={!spot.stage} style:z-index={z} aria-hidden="true">
     <span class="visitor {shown}" class:show={!!playing} class:walking={st.walking} class:edge data-visitor={shown} data-stage={spot.stage || undefined}
       data-phase={phase} data-way={way} data-asleep={sleeping ? (spot.lie ? 'lie' : 'stand') : undefined} data-motion={st.motion ?? undefined} bind:this={el}
-      style:translate="{U(st.x)} {U(st.y)}" style:transition-duration="{st.walkMs}ms" style:--h={U(spot.h)} style:--lift={U(spot.stage ? (FLOAT[shown] ?? 0) : 0)}
+      style:translate="{su(st.x)} {su(st.y)}" style:transition-duration="{st.walkMs}ms" style:--h={su(spot.h)} style:--lift={su(spot.stage ? (FLOAT[shown] ?? 0) : 0)}
       style:--breath="{b.breath}ms" style:--step="{st.stepMs}ms" style:--flip={facing.flip} style:--lean={facing.lean}>
       <i class="shade"></i>
       {#if shown === 'wisp'}<i class="glow"></i>{/if}
       {#if shown === 'reese'}
         <!-- Reese and Cyrus, side by side, under their heart float -->
         <span class="art pair"><span class="face"><span class="body" bind:this={bodyEl}><span class="idle">
-          <span class="one"><OfficialArt key="villagers/reese" size={U(spot.h)} /></span><span class="one cyrus"><OfficialArt key="villagers/cyrus" size={U(spot.h * 1.05)} /></span>
+          <span class="one"><OfficialArt key="villagers/reese" size={su(spot.h)} /></span><span class="one cyrus"><OfficialArt key="villagers/cyrus" size={su(spot.h * 1.05)} /></span>
         </span></span></span></span>
         <span class="float" data-heart-float>{@render heart()}</span>
       {:else}
         <span class="art"><span class="face" class:turning={st.motion === 'turn'}><span class="body" bind:this={bodyEl}><span class="idle">
-          <OfficialArt key={ART[shown] ?? `villagers/${shown}`} size={U(spot.h)} />
+          <OfficialArt key={ART[shown] ?? `villagers/${shown}`} size={su(spot.h)} />
         </span></span></span></span>
       {/if}
       <!-- emotes and fx over the head (never mirrored or squashed with the body), puffs at the feet -->
@@ -742,7 +740,7 @@
         <!-- Jack's joy at a treat: the candy pops up over his head in a little spooky sparkle -->
         {#key treat}
           <span class="treat" data-treat>
-            <span class="candy"><OfficialArt key={treatArt} size={U(22)} eager /></span>
+            <span class="candy"><OfficialArt key={treatArt} size={su(22)} eager /></span>
             {#each [0, 1, 2, 3, 4] as i (i)}<i style:--i={i}></i>{/each}
           </span>
         {/key}

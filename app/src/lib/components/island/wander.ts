@@ -1,6 +1,7 @@
 // The villagers' own wandering (docs/design.md "Walking"), the pure part: the points of interest a villager wanders to,
 // the pick, where a follower stands beside the other and when two are close enough to chat. island/avatar.ts walks
 // them; idle life decides when.
+import { pickOne } from '#lib/random.ts';
 import type { PersonId, WeekView } from '#lib/types.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { todayPct } from './progress.ts';
@@ -42,7 +43,7 @@ export function pois(g: WalkGeo, visitor: boolean): Poi[] {
 /** A point of interest to wander to: any of `list` not where it already stands (30u), at random. */
 export function pickPoi(list: readonly Poi[], from: Pt, rnd: () => number): Poi | null {
   const far = list.filter((p) => Math.hypot(p.at[0] - from[0], p.at[1] - from[1]) > 30);
-  return far.length ? far[Math.floor(rnd() * far.length)] : null;
+  return far.length ? pickOne(far, rnd) : null;
 }
 
 /** Side by side with a villager standing at `at`: beside it on either side (the side nearer `from` first), else just

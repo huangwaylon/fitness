@@ -3,6 +3,7 @@
 // the centre stage with a heart float and count down: 「けっこんしき まで あと 100日！」. On the day: confetti, fireworks at
 // night and both villagers in a wedding pose. Every June Sunday (NH's Wedding Season) a wedding arch stands behind the
 // centre stage. Pure (dates only). No ベル.
+import { daysBetween } from '#lib/time/dates.ts';
 import { addDays } from '#lib/time/dates.ts';
 
 /** Our wedding day (Tokyo). */
@@ -14,10 +15,8 @@ const COUPLE_HOURS = { from: 6, to: 24 } as const;
 /** The wedding night's fireworks, from this hour. */
 export const FIREWORKS_FROM = 19;
 
-const dayMs = (d: string): number => Date.UTC(Number(d.slice(0, 4)), Number(d.slice(5, 7)) - 1, Number(d.slice(8, 10)));
-
 /** Whole days from `date` to the wedding (negative after it). */
-export const daysUntil = (date: string, wedding = WEDDING): number => Math.round((dayMs(wedding) - dayMs(date)) / 86_400_000);
+export const daysUntil = (date: string, wedding = WEDDING): number => daysBetween(date, wedding);
 
 /** The milestone on `date` (days to go), or null. */
 export function milestoneOn(date: string, wedding = WEDDING): number | null {

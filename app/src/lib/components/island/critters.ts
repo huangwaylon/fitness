@@ -4,6 +4,7 @@
 // timers): Critters.svelte owns the motion and the timers and asks this module what happens. Nothing here counts for
 // anything: a catch is a caption and an icon, never ベル or a write.
 
+import { pickOne, weighted } from '#lib/random.ts';
 import type { SeaId } from './sea.ts';
 import type { Sky } from './weather.ts';
 
@@ -249,11 +250,7 @@ export const oddsAt = (c: Seasonal, month: number, hour: number, sky: Sky = 'cle
 /** A weighted pick among the ids that can come at (month, hour, sky), or null. `r` is a uniform [0, 1) source. */
 export function pick<K extends string>(table: Record<K, Seasonal>, month: number, hour: number, r: () => number, sky: Sky = 'clear'): K | null {
   const live = (Object.keys(table) as K[]).map((k) => [k, oddsAt(table[k], month, hour, sky)] as const).filter(([, w]) => w > 0);
-  const total = live.reduce((s, [, w]) => s + w, 0);
-  if (!total) return null;
-  let x = r() * total;
-  for (const [k, w] of live) if ((x -= w) < 0) return k;
-  return live[live.length - 1][0];
+  return live.length ? weighted(live, r) : null;
 }
 
 /** The fish under a new shadow (always someone: the sea bass never takes a day off). */
@@ -261,7 +258,7 @@ export const pickFish = (month: number, hour: number, r: () => number, sky: Sky 
 
 /** What the line brings up from a `fish` shadow: the fish, or 1 in JUNK_ODDS a piece of junk. */
 export function hookItem<F extends FishId | PondFishId>(fish: F, r: () => number): F | JunkId {
-  return r() * JUNK_ODDS < 1 ? JUNK[Math.floor(r() * JUNK.length)] : fish;
+  return r() * JUNK_ODDS < 1 ? pickOne(JUNK, r) : fish;
 }
 
 /** An ambient bug for (month, hour, sky), or null when nobody is about (with the moths out every night, never in NH's
@@ -275,7 +272,7 @@ export function bushBug(month: number, hour: number, r: () => number, sky: Sky =
   if (oddsAt(BUGS.moth, month, hour, sky) > 0) return 'moth';
   if (oddsAt(BUGS.ladybug, month, hour, sky) > 0 && r() < 0.25) return 'ladybug';
   const flutter = (Object.keys(BUGS) as BugId[]).filter((k) => k.endsWith('-butterfly') && oddsAt(BUGS[k], month, hour, sky) > 0);
-  return flutter.length ? flutter[Math.floor(r() * flutter.length)] : null;
+  return flutter.length ? pickOne(flutter, r) : null;
 }
 
 /** A tap on my villager: a flea hops off now and then (NH: villagers sometimes have fleas), 1 in FLEA_ODDS, ×IN_SEASON

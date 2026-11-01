@@ -2,8 +2,10 @@
 // a watered bed can grow the next day, the rock by the hedge. Pure and seeded by the date (beach.ts dayRand), so both
 // phones broadly see the same weeds and hybrids; what a phone pulled or watered is its own (sceneDay.ts). Nothing here
 // counts for anything: no ベル, no find.
+import { pickOne } from '#lib/random.ts';
 import type { FlowerId } from '#lib/art.ts';
-import { ISLAND_SEED, LAWN, dayRand } from './beach.ts';
+import { LAWN } from './beach.ts';
+import { ISLAND_SEED, dayRand } from './daySeed.ts';
 
 /** A weed sprouts on any free spot of the lawn (beach.ts LAWN: a dig spot takes its spot first). */
 const WEED_SPOTS = LAWN;
@@ -54,7 +56,7 @@ export function hybridFor(date: string, wateredYesterday: readonly string[], row
   if (r() >= HYBRID_ODDS) return null;
   const cell = [...wateredYesterday].sort()[Math.floor(r() * wateredYesterday.length)];
   const options = HYBRIDS[rowFlower(Number(cell.split('-')[0]))];
-  return { cell, flower: options[Math.floor(r() * options.length)] };
+  return { cell, flower: pickOne(options, r) };
 }
 
 /** A tap on the rock by the hedge: a clonk, 1 in 4 a sparkle (NH's money rock, without the money), 1 in 8 a pill bug

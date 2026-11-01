@@ -10,6 +10,8 @@ const STAGE_H = 360;
 
 /** Stage units → CSS length (relative to the stage width; the stage is the container). */
 export const u = (n: number): string => `${((n * 100) / STAGE_W).toFixed(3)}cqw`;
+/** Stage units → CSS length through `--su` (one unit, set on the layer that uses it). */
+export const su = (n: number): string => `calc(${n.toFixed(1)} * var(--su))`;
 
 export type Tod = 'dawn' | 'day' | 'dusk' | 'night';
 
