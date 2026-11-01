@@ -328,7 +328,7 @@ describe('events', () => {
     const ok = [
       { type: 'spend', data: { spendId: 's1', item: 'snack', bells: 8 } },
       { type: 'spend', data: { spendId: 's7', item: 'dinner', bells: 15 } },
-      ...['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal'].map((key) => ({ type: 'pref', data: { key, value: null } })),
+      ...['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal', 'stepsGoal'].map((key) => ({ type: 'pref', data: { key, value: null } })),
       { type: 'harvest', data: { week: '2026-10-26' } },
       ...['fish', 'bug', 'sea', 'fossil', 'shell', 'fragment', 'item', 'recipe'].map((kind) => ({ type: 'find', data: { kind, id: 'sea-bass' } })),
       { type: 'find', data: { kind: 'fossil', id: 't-rex-skull' } },
@@ -389,6 +389,7 @@ describe('voids and person-bearing events', () => {
   it('`person` (whose goal): A or B on the goal prefs only; refused anywhere else', () => {
     const ok = [
       { type: 'pref', data: { person: 'B', key: 'moveGoal', value: 450 } },
+      { type: 'pref', data: { person: 'B', key: 'stepsGoal', value: 10000 } },
       { type: 'pref', data: { person: 'A', key: 'goalWeight', value: null } }
     ];
     ok.forEach((e, i) => expect(a('event', { id: `p${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: true }));

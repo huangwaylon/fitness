@@ -6,7 +6,7 @@ import { RING_FRUITS, RULES, STRETCH, stretchOf } from '#lib/config/rules.ts';
 import type { LocalDate, PersonId, RingBells, RingFruit, WeekKey } from '#lib/types.ts';
 import { weekDays } from '#lib/time/dates.ts';
 
-/** One day's raw metrics (null = no row) and the person's Move goal in force that day. */
+/** One day's raw metrics (null = no row) and the person's Move and steps goals in force that day. */
 export interface EarnDay {
   date: LocalDate;
   steps: number | null;
@@ -18,6 +18,8 @@ export interface EarnDay {
   standMin: number | null;
   /** kcal (`pref` moveGoal in force that day, else PEOPLE[p].moveGoal). */
   moveGoal: number;
+  /** Steps (`pref` stepsGoal in force that day, else STEPS_GOAL.fallback). */
+  stepsGoal: number;
 }
 
 /** One person's week as of some time: the inputs `earnWeek` needs (dates outside the week are ignored). */
@@ -44,6 +46,7 @@ export interface DayEarning {
   moveGoal: number;
   standMin: number | null;
   steps: number | null;
+  stepsGoal: number;
 }
 
 export interface WeekEarning {
@@ -73,8 +76,9 @@ export const noneMet = (): Record<RingFruit, boolean> => ({ pear: false, peach: 
 
 /**
  * One person's ベル for a week. A goal is met at or above it: 🍐 kcal ≥ the Move goal in force that day, 🍑 Watch
- * exercise minutes ≥ 60 (fractions count), 🍒 whole Stand minutes ≥ 120, 🍎 steps ≥ 8,000; and stretched at or above
- * 1.5 × the same (900 kcal for a 600 goal, 90 min, 180 min, 12,000 steps), paying がんばり up to its cap. A day with no
+ * exercise minutes ≥ 60 (fractions count), 🍒 whole Stand minutes ≥ 120, 🍎 steps ≥ the steps goal in force that day
+ * (8,000 unless set); and stretched at or above 1.5 × the same (900 kcal for a 600 goal, 90 min, 180 min, 12,000 steps
+ * for 8,000), paying がんばり up to its cap. A day with no
  * row meets nothing.
  */
 export function earnWeek(input: EarnInput): WeekEarning {
@@ -89,22 +93,23 @@ export function earnWeek(input: EarnInput): WeekEarning {
     const moveKcal = m?.moveKcal ?? null;
     const standMin = m?.standMin ?? null;
     const moveGoal = m?.moveGoal ?? 0;
+    const stepsGoal = m?.stepsGoal ?? 0;
     const ex = Math.max(0, m?.exerciseMin ?? 0);
     const met: Record<RingFruit, boolean> = {
       pear: moveGoal > 0 && (moveKcal ?? 0) >= moveGoal,
       peach: ex >= g.exerciseMin,
       cherry: Math.floor(standMin ?? 0) >= g.standMin,
-      apple: (steps ?? 0) >= g.steps
+      apple: stepsGoal > 0 && (steps ?? 0) >= stepsGoal
     };
     const stretched: Record<RingFruit, boolean> = {
       pear: met.pear && (moveKcal ?? 0) >= stretchOf(moveGoal),
       peach: met.peach && ex >= stretchOf(g.exerciseMin),
       cherry: met.cherry && Math.floor(standMin ?? 0) >= stretchOf(g.standMin),
-      apple: met.apple && (steps ?? 0) >= stretchOf(g.steps)
+      apple: met.apple && (steps ?? 0) >= stretchOf(stepsGoal)
     };
     const stretch = Math.min(STRETCH.cap, RING_FRUITS.filter((f) => stretched[f]).length * STRETCH.perGoal);
     const bells = RING_FRUITS.filter((f) => met[f]).length * RULES.perGoal + stretch;
-    return { date, bells, met, stretched, stretch, exerciseMin: Math.floor(ex), moveKcal, moveGoal, standMin, steps };
+    return { date, bells, met, stretched, stretch, exerciseMin: Math.floor(ex), moveKcal, moveGoal, standMin, steps, stepsGoal };
   });
   return { person: input.person, weekKey: input.weekKey, days };
 }

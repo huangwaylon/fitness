@@ -127,12 +127,12 @@ describe('a day: more never pays less', () => {
     const date = weekDays(wk)[2];
     const day: EarnDay = {
       date, steps: f === 'apple' ? v : null, exerciseMin: f === 'peach' ? v : null, moveKcal: f === 'pear' ? v : null,
-      standMin: f === 'cherry' ? v : null, moveGoal: 600
+      standMin: f === 'cherry' ? v : null, moveGoal: 600, stepsGoal: 8000
     };
     return earnWeek({ person: 'A', weekKey: wk, days: [day] }).days[2].bells;
   };
   const goalOf = (f: RingFruit): number =>
-    f === 'peach' ? RULES.goals.exerciseMin : f === 'pear' ? 600 : f === 'cherry' ? RULES.goals.standMin : RULES.goals.steps;
+    f === 'peach' ? RULES.goals.exerciseMin : f === 'pear' ? 600 : f === 'cherry' ? RULES.goals.standMin : 8000;
 
   for (const f of RING_FRUITS) {
     it(`${f}: 0 below the goal, 1 from the goal on, 2 from 1.5× on`, () => {

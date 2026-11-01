@@ -45,6 +45,20 @@ describe('reduce: events', () => {
     expect(s.prefs).toEqual({ A: {}, B: {} });
   });
 
+  it('pref stepsGoal: a whole 500 steps in 1,000–30,000 per person, in at order; anything else is ignored', () => {
+    const goal = (when: string, person: PersonId, value: unknown) => ev(when, person, 'pref', { key: 'stepsGoal', value });
+    const s = reduce(rows([
+      goal(at(WK, '09:00'), 'A', 10000),
+      goal(at(WK, '10:00'), 'A', 500), goal(at(WK, '10:00'), 'A', 30500), goal(at(WK, '10:00'), 'A', 8250), goal(at(WK, '10:00'), 'A', 8000.5),
+      goal(at(WK, '10:00'), 'A', '9000'), goal(at(WK, '10:00'), 'A', null),
+      goal(at(WK, '12:30'), 'A', 1000), goal(at(WK, '12:00'), 'B', 30000)
+    ]));
+    expect(s.stepsGoals.A.map((x) => x.v)).toEqual([10000, 1000]);
+    expect(s.stepsGoals.B.map((x) => x.v)).toEqual([30000]);
+    expect(s.moveGoals).toEqual({ A: [], B: [] });
+    expect(s.prefs).toEqual({ A: {}, B: {} });
+  });
+
   it('spend and spend_void: a reward at its price, string ids, first id wins, either of us voids, once', () => {
     const buy = (spendId: unknown, extra: object = {}) => ({ spendId, item: 'snack', bells: 8, ...extra });
     const s = reduce(rows([

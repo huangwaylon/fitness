@@ -5,7 +5,7 @@ import { PEOPLE, RING_FRUITS, RULES } from '#lib/config/rules.ts';
 import { noneMet, ringBells, type WeekEarning } from '#lib/scoring/bells.ts';
 import { walletAt, weekBells, weekSum, type WeekBells } from './bells.ts';
 import { addDays, jstMs, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
-import { firstWeek, moveGoalOn, partnerOf, provisionalMs, type State } from './state.ts';
+import { firstWeek, moveGoalOn, partnerOf, provisionalMs, stepsGoalOn, type State } from './state.ts';
 
 /** Which week's harvest is open at t, given the confirmations so far (Sunday 19:30 until both tapped). */
 function harvestWeekAt(s: State, t: number, confirms: Map<WeekKey, Set<PersonId>>): WeekKey | null {
@@ -34,13 +34,13 @@ function replayHarvests(s: State, now: number): Map<WeekKey, Set<PersonId>> {
 // ---------- view ----------
 
 /** A ring fruit's progress today. */
-function ringView(e: WeekEarning, key: RingFruit, today: LocalDate, moveGoal: number): RingProgress {
+function ringView(e: WeekEarning, key: RingFruit, today: LocalDate, moveGoal: number, stepsGoal: number): RingProgress {
   const d = e.days.find((x) => x.date === today);
   const amount: Record<RingFruit, [today: number, goal: number]> = {
     pear: [d?.moveKcal ?? 0, d?.moveGoal ?? moveGoal],
     peach: [d?.exerciseMin ?? 0, RULES.goals.exerciseMin],
     cherry: [d?.standMin ?? 0, RULES.goals.standMin],
-    apple: [d?.steps ?? 0, RULES.goals.steps]
+    apple: [d?.steps ?? 0, d?.stepsGoal ?? stepsGoal]
   };
   return { today: amount[key][0], goal: amount[key][1], met: d?.met[key] ?? false, stretched: d?.stretched[key] ?? false };
 }
@@ -49,7 +49,8 @@ function ringView(e: WeekEarning, key: RingFruit, today: LocalDate, moveGoal: nu
 function personView(s: State, person: PersonId, e: WeekEarning, today: LocalDate, weekBells: number): PersonWeekView {
   const pref = s.prefs[person];
   const moveGoal = moveGoalOn(s, person, today);
-  const rings = Object.fromEntries(RING_FRUITS.map((k) => [k, ringView(e, k, today, moveGoal)])) as PersonWeekView['rings'];
+  const stepsGoal = stepsGoalOn(s, person, today);
+  const rings = Object.fromEntries(RING_FRUITS.map((k) => [k, ringView(e, k, today, moveGoal, stepsGoal)])) as PersonWeekView['rings'];
   const d = e.days.find((x) => x.date === today);
   return {
     person,
@@ -59,6 +60,7 @@ function personView(s: State, person: PersonId, e: WeekEarning, today: LocalDate
     weekBells,
     rings,
     moveGoal,
+    stepsGoal,
     lastSyncAt: s.lastSync[person]
   };
 }

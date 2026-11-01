@@ -14,18 +14,19 @@
 
   let { view }: { view: WeekView } = $props();
   const moveGoal = $derived(view.people[view.me].moveGoal);
+  const stepsGoal = $derived(view.people[view.me].stepsGoal);
   /** Each fruit's daily goal. */
   const goal = (f: RingFruit): string =>
     f === 'peach' ? t('help.goal.min', { n: RULES.goals.exerciseMin })
     : f === 'pear' ? t('help.goal.kcal', { n: formatNum(moveGoal) })
     : f === 'cherry' ? t('help.goal.min', { n: RULES.goals.standMin })
-    : t('help.goal.steps', { n: formatNum(RULES.goals.steps) });
+    : t('help.goal.steps', { n: formatNum(stepsGoal) });
   /** Each fruit's がんばり target (1.5 × the goal; kcal rounded up, as a fraction of a kcal never shows). */
   const stretch = (f: RingFruit): string =>
     f === 'peach' ? t('help.stretch.min', { n: stretchOf(RULES.goals.exerciseMin) })
     : f === 'pear' ? t('help.stretch.kcal', { n: formatNum(Math.ceil(stretchOf(moveGoal))) })
     : f === 'cherry' ? t('help.stretch.min', { n: stretchOf(RULES.goals.standMin) })
-    : t('help.stretch.steps', { n: formatNum(stretchOf(RULES.goals.steps)) });
+    : t('help.stretch.steps', { n: formatNum(stretchOf(stepsGoal)) });
 
   /** The protein tip (not tracked): 1.6 g per kg a day, per person from their goal weight (else their
    *  latest weigh-in), rounded to 5 g; just the rule when neither is known. */

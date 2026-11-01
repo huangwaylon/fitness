@@ -6,7 +6,7 @@ import type { DayBells, LocalDate, PersonId, ShopItemId, WeekKey } from '#lib/ty
 import { RULES } from '#lib/config/rules.ts';
 import { addDays, localDateAt, weekDays, weekKeyOf } from '#lib/time/dates.ts';
 import { earnWeek, noneMet, togetherDays, type EarnInput, type WeekEarning } from '#lib/scoring/bells.ts';
-import { finalMs, firstWeek, moveGoalOn, rowsUpTo, type State } from './state.ts';
+import { finalMs, firstWeek, moveGoalOn, rowsUpTo, stepsGoalOn, type State } from './state.ts';
 import { metricAsOf } from './inputs.ts';
 
 /** `t` for an open week: every row counts. */
@@ -26,7 +26,8 @@ function earnInput(s: State, person: PersonId, wk: WeekKey, t: number): EarnInpu
       exerciseMin: metricAsOf(s, person, date, 'exercise_min', t),
       moveKcal: metricAsOf(s, person, date, 'move_kcal', t),
       standMin: metricAsOf(s, person, date, 'stand_min', t),
-      moveGoal: moveGoalOn(s, person, date, t)
+      moveGoal: moveGoalOn(s, person, date, t),
+      stepsGoal: stepsGoalOn(s, person, date, t)
     }))
   };
 }

@@ -64,6 +64,8 @@ export interface PersonWeekView {
   rings: Record<RingFruit, RingProgress>;
   /** The person's Move goal in force today, kcal (`pref` moveGoal; default ウェイ 600, うめ 400). */
   moveGoal: number;
+  /** The person's steps goal in force today (`pref` stepsGoal; default 8,000). */
+  stepsGoal: number;
   lastSyncAt: string | null;
 }
 

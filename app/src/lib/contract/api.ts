@@ -52,12 +52,12 @@ export const isMetricKey = (v: unknown): v is MetricKey => v === 'weight' || isA
 
 /**
  * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`,
- * `goalWeight` (kg) and `moveGoal` (kcal).
+ * `goalWeight` (kg), `moveGoal` (kcal) and `stepsGoal` (steps).
  */
-export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal'] as const;
+export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal', 'stepsGoal'] as const;
 
-/** The `pref` keys either person may set for either person (`data.person`): the two goals. The rest are the sender's own. */
-const PERSON_PREF_KEYS = ['goalWeight', 'moveGoal'] as const;
+/** The `pref` keys either person may set for either person (`data.person`): the goals. The rest are the sender's own. */
+const PERSON_PREF_KEYS = ['goalWeight', 'moveGoal', 'stepsGoal'] as const;
 
 export const isPersonId = (v: unknown): v is PersonId => v === 'A' || v === 'B';
 

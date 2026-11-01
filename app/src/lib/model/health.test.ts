@@ -262,4 +262,14 @@ describe('one person at a time', () => {
     expect(metricStats(hs, 'B', 'move', r)).toMatchObject({ avg: 300, met: 3, days: 6 });
     expect(metricStats(hs, 'A', 'steps', r)).toMatchObject({ avg: 10000, met: 6 });
   });
+
+  it('the steps goal line and goal days follow each day’s steps goal (8,000 until set)', () => {
+    const metrics: MetricRow[] = [];
+    for (let i = 0; i < 7; i++) metrics.push(...day('A', addDays('2026-10-24', i), { steps: 10000, ex: 70, kcal: 700, stand: 130 }));
+    const hs = series(rows(metrics, [[jst('2026-10-27', '21:00'), 'B', 'g1', 'pref', JSON.stringify({ person: 'A', key: 'stepsGoal', value: 12000 })]]));
+    const r = rangeFor('week', TODAY, hs.from);
+    expect(bucketValues(hs, 'A', 'steps', r).map((x) => x.goal)).toEqual([8000, 8000, 12000, 12000, 12000, 12000, 12000]); // 12,000 from 10-27 on
+    expect(bucketValues(hs, 'B', 'steps', r).map((x) => x.goal)).toEqual(Array(7).fill(8000));
+    expect(metricStats(hs, 'A', 'steps', r)).toMatchObject({ avg: 10000, met: 2, days: 6 }); // 10-25 and 10-26 (today isn't counted)
+  });
 });

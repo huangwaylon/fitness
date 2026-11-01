@@ -1,5 +1,6 @@
 <script lang="ts">
-  // Type a goal for きろく: a goal weight (decimal, 20–300 kg) or the Move goal (whole kcal, 100–2,000).
+  // Type a goal for きろく: a goal weight (decimal, 20–300 kg), the Move goal (whole kcal, 100–2,000) or the steps
+  // goal (1,000–30,000 by 500).
   // A 16px+ field (iOS doesn't zoom) with the right keypad (`inputmode`), the old value grey, then NH's choice list
   // ▶ けってい / (目標をなくす) / やめる. `parse` turns the text into a value or null (shown as the hint in coral).
   import ChoiceList from '../ui/ChoiceList.svelte';
@@ -10,8 +11,8 @@
     sub: string;
     /** The value now, shown grey (null = none yet). */
     old: number | null;
-    /** The field's unit and keypad: kg (decimal) or kcal (numeric). */
-    unit: 'kg' | 'kcal';
+    /** The field's unit and keypad: kg (decimal), kcal or steps (numeric). */
+    unit: 'kg' | 'kcal' | 'steps';
     parse: (text: string) => number | null;
     /** The allowed range, in words. */
     hint: string;
@@ -26,6 +27,7 @@
   const v = $derived(parse(text));
   const bad = $derived(tried && v === null);
   const oldText = $derived(old === null ? null : unit === 'kg' ? old.toFixed(1) : String(old));
+  const unitText = $derived(unit === 'steps' ? t('goal.stepsUnit') : unit);
   let input: HTMLInputElement | undefined = $state();
   $effect(() => input?.focus());
 
@@ -37,12 +39,12 @@
 
 <form class="wi" onsubmit={(e) => { e.preventDefault(); ok(); }}>
   <div class="screen card">
-    <label class="top" for="wi-v"><b>{label}</b>{#if sub}<span class="sub money">{sub}</span>{/if}{#if oldText !== null}<span class="old money">({oldText} {unit})</span>{/if}</label>
+    <label class="top" for="wi-v"><b>{label}</b>{#if sub}<span class="sub money">{sub}</span>{/if}{#if oldText !== null}<span class="old money">({oldText} {unitText})</span>{/if}</label>
     <div class="field">
       <input id="wi-v" data-sfx="none" bind:this={input} bind:value={text} type="text" inputmode={unit === 'kg' ? 'decimal' : 'numeric'}
-        autocomplete="off" enterkeyhint="done" placeholder={oldText ?? (unit === 'kg' ? '00.0' : '000')} aria-invalid={bad}
+        autocomplete="off" enterkeyhint="done" placeholder={oldText ?? (unit === 'kg' ? '00.0' : unit === 'steps' ? '0000' : '000')} aria-invalid={bad}
         aria-describedby="wi-hint" maxlength="6" size="6" />
-      <span class="unit" aria-hidden="true">{unit}</span>
+      <span class="unit" aria-hidden="true">{unitText}</span>
     </div>
     <p id="wi-hint" class="hint" class:bad>{hint}</p>
   </div>

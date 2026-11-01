@@ -11,7 +11,7 @@ import { isWeightKg, roundKg, type FindKind } from '#lib/contract/api.ts';
 import { findKey, findsView } from '#lib/model/finds.ts';
 import { addToTally, latestByDay } from '#lib/model/tally.ts';
 import { localDateAt } from '#lib/time/dates.ts';
-import { MOVE_GOAL, shopPrice } from '#lib/config/rules.ts';
+import { MOVE_GOAL, isStepsGoal, shopPrice } from '#lib/config/rules.ts';
 
 /** 買う！ and its とりけす wait this long before they are sent, with もとに戻す on the banner. */
 const UNDO_MS = 5000;
@@ -79,6 +79,15 @@ export function setMoveGoal(person: PersonId, kcal: number): SendResult {
   const value = Math.round(kcal);
   if (!Number.isFinite(value) || value < MOVE_GOAL.min || value > MOVE_GOAL.max) return { ok: false };
   return week.send('pref', { person, key: 'moveGoal', value });
+}
+
+/**
+ * A daily steps goal: a whole STEPS_GOAL.step (500) in 1,000–30,000. It applies from today on, never to earlier days.
+ * `{ok:false}` for anything else.
+ */
+export function setStepsGoal(person: PersonId, steps: number): SendResult {
+  if (!isStepsGoal(steps)) return { ok: false };
+  return week.send('pref', { person, key: 'stepsGoal', value: steps });
 }
 
 export function setLanguage(locale: Locale) {

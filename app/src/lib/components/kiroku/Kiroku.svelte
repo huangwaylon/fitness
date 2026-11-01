@@ -7,10 +7,10 @@
   // Everything is computed from the store's reduced model, lazily for the opened day.
   import { tick } from 'svelte';
   import type { PersonId } from '#lib/types.ts';
-  import { MOVE_GOAL } from '#lib/config/rules.ts';
+  import { MOVE_GOAL, STEPS_GOAL } from '#lib/config/rules.ts';
   import { bellsLedger, dayDetail } from '#lib/model/history.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { setGoalWeight, setMoveGoal } from '#lib/store/actions.ts';
+  import { setGoalWeight, setMoveGoal, setStepsGoal } from '#lib/store/actions.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import DayDetail from './DayDetail.svelte';
   import BellsLog from './BellsLog.svelte';
@@ -22,13 +22,14 @@
   import { findsView } from '#lib/model/finds.ts';
   import { tallyTotals } from '#lib/model/tally.ts';
   import Avatar from '../characters/Avatar.svelte';
-  import { parseKcalInput, parseKgInput } from './fmt.ts';
+  import { parseKcalInput, parseKgInput, parseStepsInput } from './fmt.ts';
   import { t, formatNum } from '#lib/i18n/index.ts';
 
   type Screen =
     | { k: 'day'; date: string }
     | { k: 'goal'; p: PersonId }
     | { k: 'moveGoal'; p: PersonId }
+    | { k: 'stepsGoal'; p: PersonId }
     | { k: 'zukan'; kind: ZukanKind };
 
   let { level = $bindable(0) }: { level?: number } = $props();
@@ -107,6 +108,11 @@
     void refocus('move-goal');
     if (setMoveGoal(p, kcal).ok) toasts.show(t('goal.moveSaved'), 2500, { reaction: 'pleased' });
   }
+  function saveStepsGoal(p: PersonId, steps: number) {
+    back();
+    void refocus('steps-goal');
+    if (setStepsGoal(p, steps).ok) toasts.show(t('goal.stepsSaved'), 2500, { reaction: 'pleased' });
+  }
 </script>
 
 <!-- A goal screen opens with whose goal it sets (either person sets either person's). -->
@@ -123,8 +129,8 @@
         <h2 class="sec">{t('panel.bells')}</h2>
         <BellsLog ledger={money} {order} {names} {villagers} onday={(date) => go({ k: 'day', date })} />
       {/if}
-      <GoalCard person={goalP} {order} {names} {villagers} moveGoal={view.people[goalP].moveGoal} goalWeight={m.state.prefs[goalP].goalWeight ?? null}
-        onperson={(p) => (goalPick = p)} onmove={() => go({ k: 'moveGoal', p: goalP })} onweight={() => go({ k: 'goal', p: goalP })} />
+      <GoalCard person={goalP} {order} {names} {villagers} moveGoal={view.people[goalP].moveGoal} stepsGoal={view.people[goalP].stepsGoal} goalWeight={m.state.prefs[goalP].goalWeight ?? null}
+        onperson={(p) => (goalPick = p)} onmove={() => go({ k: 'moveGoal', p: goalP })} onsteps={() => go({ k: 'stepsGoal', p: goalP })} onweight={() => go({ k: 'goal', p: goalP })} />
       <!-- the shared ずかん: what either of us has caught, dug up or picked up on the island -->
       <h2 class="sec" data-sec="zukan">{t('zukan.title')}</h2>
       <ZukanCard finds={findsView(m.state)} onopen={(kind) => go({ k: 'zukan', kind })} />
@@ -143,6 +149,11 @@
       {@render who(s.p)}
       <ValueInput label={t('goal.move')} sub={t('goal.moveNote')} old={view.people[s.p].moveGoal} unit="kcal" parse={parseKcalInput}
         hint={t('goal.moveRange', { min: MOVE_GOAL.min, max: formatNum(MOVE_GOAL.max) })} onok={(kcal) => saveMoveGoal(s.p, kcal)} oncancel={back} />
+    {:else if top.k === 'stepsGoal'}
+      {@const s = top}
+      {@render who(s.p)}
+      <ValueInput label={t('goal.steps')} sub={t('goal.moveNote')} old={view.people[s.p].stepsGoal} unit="steps" parse={parseStepsInput}
+        hint={t('goal.stepsRange', { min: formatNum(STEPS_GOAL.min), max: formatNum(STEPS_GOAL.max), step: STEPS_GOAL.step })} onok={(n) => saveStepsGoal(s.p, n)} oncancel={back} />
     {/if}
   {/if}
   </div>

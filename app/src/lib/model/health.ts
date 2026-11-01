@@ -12,7 +12,7 @@
 //   average → the last week's, else the first weigh-in → the last), and from it the goal month.
 // - Today is still running (a partial day): it is drawn (an outlined bar) but stays out of the stats.
 // - A goal is met as on the stamp card: kcal ≥ that day's Move goal, exercise ≥ 60, whole Stand minutes ≥ 120, steps ≥
-//   8,000. Days met / days recorded.
+//   that day's steps goal (8,000 unless set). Days met / days recorded.
 // - Periods end on an anchor day (today until ‹): 1週 = 7 days and 1か月 = 30 days by day, 3か月 = 13 weeks by week
 //   (ending on the anchor), 1年 = 12 calendar months by month, すべて = every month since the first record. The
 //   previous period is the same length just before (1年: the 12 months before).
@@ -20,7 +20,7 @@ import type { LocalDate, PersonId, RingFruit } from '#lib/types.ts';
 import { RULES } from '#lib/config/rules.ts';
 import { addDays, daysBetween, localDateAt } from '#lib/time/dates.ts';
 import type { ActivityMetric } from '#lib/contract/api.ts';
-import { moveGoalOn, type State } from './state.ts';
+import { moveGoalOn, stepsGoalOn, type State } from './state.ts';
 import { metricAsOf } from './inputs.ts';
 import { plainChange, project, weighIns, type PlainChange, type WeighIn, type WeightProjection } from './weight.ts';
 
@@ -38,8 +38,10 @@ const DAYS: Partial<Record<Period, number>> = { week: 7, month: 30, quarter: 91 
 /** One person's days, index i = `from` + i days: Apple Health's value as is, null = no row. */
 interface PersonSeries {
   values: Record<Metric, (number | null)[]>;
-  /** The Move goal in force each day (the other goals are fixed). */
+  /** The Move goal in force each day (Exercise and Stand are fixed). */
   moveGoal: number[];
+  /** The steps goal in force on day i. */
+  stepsGoal: number[];
   /** That day's weigh-in (kg), null without one. */
   kg: (number | null)[];
   /** The weight goal (shown only). */
@@ -79,22 +81,23 @@ function buildSeries(s: State, to: LocalDate, now: number): HealthSeries {
   const n = daysBetween(from, to) + 1;
   const person = (p: PersonId): PersonSeries => {
     const values = { move: [], exercise: [], stand: [], steps: [] } as Record<Metric, (number | null)[]>;
-    const moveGoal: number[] = [];
+    const moveGoal: number[] = [], stepsGoal: number[] = [];
     const kgBy = new Map(weighIns(s, p, now).map((x) => [x.date, x.kg] as const));
     const kg: (number | null)[] = [];
     for (let i = 0, d = from; i < n; i++, d = addDays(d, 1)) {
       for (const m of METRICS) values[m].push(metricAsOf(s, p, d, ROW[m], now));
       moveGoal.push(moveGoalOn(s, p, d));
+      stepsGoal.push(stepsGoalOn(s, p, d));
       kg.push(kgBy.get(d) ?? null);
     }
-    return { values, moveGoal, kg, goalWeight: s.prefs[p].goalWeight ?? null };
+    return { values, moveGoal, stepsGoal, kg, goalWeight: s.prefs[p].goalWeight ?? null };
   };
   return { from, to, activityFrom, any, people: { A: person('A'), B: person('B') } };
 }
 
 /** A metric's goal on day i. */
 const goalOf = (ps: PersonSeries, m: Metric, i: number): number =>
-  m === 'move' ? ps.moveGoal[i] : m === 'exercise' ? RULES.goals.exerciseMin : m === 'stand' ? RULES.goals.standMin : RULES.goals.steps;
+  m === 'move' ? ps.moveGoal[i] : m === 'exercise' ? RULES.goals.exerciseMin : m === 'stand' ? RULES.goals.standMin : ps.stepsGoal[i];
 
 /** The stamp card's rule (scoring/bells.ts earnWeek). */
 function metGoal(m: Metric, v: number, goal: number): boolean {
