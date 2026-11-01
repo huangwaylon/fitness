@@ -2,7 +2,7 @@
 // demo's two players are two tabs of one browser (`?demo` and `?demo&as=B`), sharing it the way two phones do over
 // the relay (sync/live-local.ts plays the room: first claim wins, the day's world kept for a tab opening later).
 // Every tree shakes (NH's three quick taps): an oak's branch, a palm's coconuts; the partner's tab sees the shake,
-// their villager walks over, and what's picked up on one tab is gone on the other.
+// their villager turns to it where it stands, and what's picked up on one tab is gone on the other.
 import { FLOWERS } from '../src/lib/components/island/world.ts';
 import { expect, test, type Page } from '@playwright/test';
 
@@ -103,7 +103,7 @@ test('two players see the same island, not mirrored: A (ウェイ) on the left, 
   await ctx.close();
 });
 
-test('two players: a shake on one tab plays on the other (their villager walks over), and a pick-up there is gone here', async ({ browser }) => {
+test('two players: a shake on one tab plays on the other (their villager stays where it is), and a pick-up there is gone here', async ({ browser }) => {
   test.setTimeout(60_000);
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const a = await ctx.newPage(), b = await ctx.newPage();
@@ -113,8 +113,9 @@ test('two players: a shake on one tab plays on the other (their villager walks o
   await a.waitForTimeout(400);
   await shake(a, 'oak-m1');
   await expect(a.locator('button[data-branch="oak-m1"]')).toHaveCount(1, { timeout: 3000 });
-  // B's tab: A's villager (B's partner) runs to the oak and the branch falls beside it
+  // B's tab: the oak shakes and the branch falls beside it; A's villager (B's partner) doesn't run over
   await expect(b.locator('button[data-branch="oak-m1"]')).toHaveCount(1, { timeout: 6000 });
+  await expect(b.locator('[data-actor="partner"].walking')).toHaveCount(0);
   await b.waitForTimeout(800);
   await b.locator('button[data-branch="oak-m1"]').click();
   await expect(b.locator('button[data-branch]')).toHaveCount(0, { timeout: 3000 });

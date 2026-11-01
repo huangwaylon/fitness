@@ -175,7 +175,8 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await expect(page.locator('.if-scene button.vil').nth(1)).toBeVisible({ timeout: 15_000 });
   await step('島', 'partner villager (→ the high-five)', () => page.locator('.if-scene button.vil').nth(1).tap(), ['villager-tap']);
   await expect(dlg).toHaveCount(0); // no card
-  await expect.poll(() => page.evaluate(() => (window as unknown as { __cues: string[] }).__cues.includes('emote-joy')), { timeout: 6000 }).toBe(true);
+  // in place: the hop's joyful sound comes with the tap (the step's log has it after the tap's own cue)
+  expect(log.at(-1)?.[2]).toContain('emote-joy');
   await page.waitForTimeout(2000);
 
   // the island panel (tap the ribbon)

@@ -222,12 +222,14 @@ couple visiting on milestone days. Why: they never change, both phones agree, an
 The tape deck comes out on a day either of us met 🍑 Exercise or on a morning opening; a tap makes everyone stretch
 once a day. Why: NH's most fitness-like ritual tied to the goal that is exercise, paying nothing.
 
-### My villager walks to what I tap
-Walk-then-act on the existing taps, snappy (≤ 0.9 s, none over 1.2 s), the outcome decided at the tap; a tap on bare
-ground runs it there (200 u/s, the camera following), where it stays for the session; a door or a visitor across the
-island is a run too. With the relay, my tap-to-walk replays on the partner's phone (the destination only; their
-planner walks it). Why: every tap keeps its meaning, timing games never wait, and NH's island is walked, not panned
-past.
+### Only a tap on empty ground walks my villager
+A tap on an interactable (a tree, a pond, a bug, a find, a door, a visitor, the partner) acts in place: my villager
+turns to it and the action plays at the target, its tool there (no walk-then-act); a tap on bare ground runs it there
+(200 u/s, the camera staying put), where it stays for the day. With the relay, my tap-to-walk replays on the
+partner's phone (the destination only; their planner walks it), and their doings play at the target here without
+their villager running over. Why: the user ("only move the character if the tapped spot is not an interactable
+object… when we click trees, ponds, etc., the character moves there and gets in the way"); every tap keeps its
+meaning and nothing waits for a walk.
 
 ### Ambient life from the clock
 What the island does on its own is a function of the Tokyo date, the 10-second slot and the shared world, with PRNGs
@@ -304,7 +306,7 @@ textures a live SVG can't afford in 40 bands, and a picture per band costs less 
 
 ### Buildings are doors; one render family
 Resident Services, Nook's Cranny, Able Sisters, the museum, the airport and the campsite are NH's map icons (one
-family; the true museum render went); a tap walks to the door, NH's character answers and its feature opens
+family; the true museum render went); a tap on it (in place) and NH's character answers and its feature opens
 (せってい, ごほうび, むらびと, the ずかん, つうしん). The panel keeps its せってい tab and the HUD is unchanged. Why: the user's
 call (keep the tab, add the doors); the back of the island gets a reason to visit.
 

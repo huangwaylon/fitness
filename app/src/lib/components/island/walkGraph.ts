@@ -240,22 +240,9 @@ export function routeLength(from: Pt, pts: readonly Pt[]): number {
   return len;
 }
 
-/** Walk speeds (u/s): to a tapped thing (a short, snappy action walk), running where a tap sends it (spec §4), and
+/** Walk speeds (u/s): brisk (a goal met walks to its tree, the meet-up), running where a tap sends it (spec §4), and
  *  strolling (idle outings, visitors). */
 export const SPEED = { action: 240, run: 200, wander: 90 } as const;
-/** An action walk's duration bounds (ms), and the longest walk worth making (longer: turn and act from where you are);
- *  `far`: a walk to somewhere set apart may take a little longer. */
-export const ACTION_MS = { min: 150, max: 900, cap: 1200, far: 1450 } as const;
-
-/** How long an action walk of `len` u takes (ms): at SPEED.action, clamped to 150–900; null when it would take over
- *  1.2 s (no walk: turn and act); 0 when already there. `far`: up to 1.45 s, unclamped above. */
-export function actionMs(len: number, far = false): number | null {
-  if (len < 4) return 0;
-  const raw = (len / SPEED.action) * 1000;
-  if (raw > (far ? ACTION_MS.far : ACTION_MS.cap)) return null;
-  return Math.min(far ? ACTION_MS.far : ACTION_MS.max, Math.max(ACTION_MS.min, raw));
-}
-
 /** A wander's duration (ms) at SPEED.wander. */
 export const wanderMs = (len: number): number => (len / SPEED.wander) * 1000;
 

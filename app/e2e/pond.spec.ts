@@ -66,7 +66,7 @@ for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
     expect(await page.evaluate(({ x, y }) => !document.elementFromPoint(x, y)?.closest('button'), f)).toBe(true);
     await page.screenshot({ path: `/tmp/world-build/critters-pond-${vp.width}.png` });
     await fish(page, '[data-critter="pond"]', { x: vp.width / 2, y: vp.height * 0.55 });
-    // (when my villager walked round to the pond's back bank: it stands behind the water, the rod in hand)
+    // (in place: the line runs from the bank)
     const plate = page.locator('[data-fx="catch"]');
     await expect(plate).toContainText(said('carp'));
     await expect(shadow).toHaveCount(0);

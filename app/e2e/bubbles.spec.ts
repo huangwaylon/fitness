@@ -33,10 +33,10 @@ async function tapAt(page: Page, sel: string, fy = 0.5) {
   const r = (await page.locator(sel).boundingBox())!;
   await page.mouse.click(r.x + r.width / 2, r.y + r.height * fy);
 }
-/** Gulliver sleeps face down until the fifth nudge (NH): the first tap walks my villager over, four more wake him. */
+/** Gulliver sleeps face down until the fifth nudge (NH): five taps wake him. */
 async function wakeGulliver(page: Page, sel: string) {
   await tapAt(page, sel);
-  await page.waitForTimeout(1100);
+  await page.waitForTimeout(400);
   for (let i = 1; i < 5; i++) {
     await tapAt(page, sel);
     await page.waitForTimeout(250);

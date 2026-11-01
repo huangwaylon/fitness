@@ -51,7 +51,7 @@
   import { EDGE, clearAt, guardsU, place, stageGeo } from './placement.ts';
   import { zodiacOf } from './beach.ts';
   import { hook, hookFlag } from './devHooks.ts';
-  import { approach, meetVisitor, presence, villagerFree, visitorRoute, visitorWalkable } from './avatar.ts';
+  import { meetVisitor, turnTo, presence, villagerFree, visitorRoute, visitorWalkable } from './avatar.ts';
   import { su, VILLAGER } from './scene.ts';
   import { BUILDINGS, CENTRE_STAGE } from './world.ts';
   import { useWorld } from './camera.svelte.ts';
@@ -644,16 +644,13 @@
       }
       return false;
     }
-    // my villager walks over to talk (avatar.ts); they speak once it's there (a tap meanwhile is the same tap)
+    // in place (only a tap on empty ground walks): my villager turns to them and they answer (a tap meanwhile is the
+    // same tap)
     if (talkTimer) return true;
-    // it stands beside them, not on them: the figure's half-width plus a villager's (a pair is wider)
-    const { ms } = approach(spot.x, spot.z, { reach: [hwU + 22, hwU + 36], long: true });
+    turnTo(spot.x);
     if (sleeping) {
       // a nudge: he twitches and mumbles in his sleep; the fifth wakes him (NH)
-      talkTimer = setTimeout(() => {
-        talkTimer = undefined;
-        nudgeGulliver();
-      }, ms);
+      nudgeGulliver();
       return true;
     }
     // back on their spot if they'd strolled off (the balloon anchors to them there), turned to my villager with a
@@ -669,7 +666,7 @@
     talkTimer = setTimeout(() => {
       talkTimer = undefined;
       void talk(id);
-    }, Math.max(ms, backMs + TURN_MS));
+    }, backMs + TURN_MS);
     return true;
   }
   /** The little hop before a line (ms). */

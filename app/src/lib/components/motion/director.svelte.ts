@@ -9,8 +9,6 @@ import { cue } from '#lib/sound/cues.ts';
 
 /** Which way an actor looks: as drawn ('home'), toward the middle of the island ('in'), or left / right. */
 export type Facing = 'home' | 'in' | 'l' | 'r';
-/** A tool in my villager's hand (NH: out of the pocket for the job). */
-export type Tool = 'can' | 'shovel' | 'net' | 'rod';
 type Pt = readonly [number, number];
 
 interface ActorState {
@@ -37,8 +35,6 @@ interface ActorState {
   /** Where the villager lives on the island (stage units). */
   home: Pt;
   walking: boolean;
-  tool: Tool | null;
-  toolN: number;
   /** NH's hold-up: the item's art over the head. */
   holding: { art: string; n: number } | null;
   asleep: boolean;
@@ -51,7 +47,7 @@ interface ActorState {
 
 const blank = (): ActorState => ({
   motion: null, motionN: 0, emote: null, emoteN: 0, emoteHold: false, fx: [], face: 'home', x: 0, y: 0, from: [0, 0], t0: 0, walkMs: 0,
-  stepMs: 640, home: [0, 0], walking: false, tool: null, toolN: 0, holding: null, asleep: false, pose: null, present: false,
+  stepMs: 640, home: [0, 0], walking: false, holding: null, asleep: false, pose: null, present: false,
   busyUntil: 0
 });
 
@@ -125,7 +121,6 @@ export function cancel(id: ActorId) {
   const a = actors[id];
   a.motion = null;
   a.walking = false; // a segment under way slides on to its end and stops there
-  a.tool = null;
   a.pose = null;
   a.busyUntil = 0;
   walks[id].clear();
@@ -412,14 +407,6 @@ export function walkTo(id: ActorId, pts: readonly Pt[], o: WalkOpts = {}): numbe
   return total;
 }
 
-/** A tool out for `ms` (my villager's watering can, shovel, net or rod). */
-export function useTool(id: ActorId, tool: Tool | null, ms = 900) {
-  const a = actors[id];
-  a.tool = tool;
-  const n = ++a.toolN;
-  if (tool) later(id, ms, () => actors[id].toolN === n && (actors[id].tool = null));
-}
-
 /** How long a hold-up lasts by default (ms): about a catch plate's first page. */
 export const HOLD_MS = 3200;
 
@@ -428,7 +415,6 @@ export function holdUp(id: ActorId, art: string, ms = HOLD_MS) {
   const a = actors[id];
   if (a.asleep) return;
   const n = (a.holding?.n ?? 0) + 1;
-  a.tool = null;
   a.holding = { art, n };
   a.busyUntil = Math.max(a.busyUntil, Date.now() + ms);
   setMotion(id, 'holdup');

@@ -10,7 +10,7 @@
   // time nets one (the net's swing, NH's catch line on the plate, the shared ずかん's wasp); too late and they sting
   // (`onsting`: the scene gives that villager a fright and a sweat drop), then fly off. Nothing here pays ベル.
   // Shared (docs/backend.md#shared-world): my shake's outcome goes to the partner (world.share), and theirs plays here:
-  // their villager runs to the tree and shakes it, the same drop falls, their wasps charge them. What lies (branches,
+  // their villager turns to the tree and it shakes, the same drop falls, their wasps charge them. What lies (branches,
   // coconuts) is the shared day's, so a reload or the partner's phone finds it there; a pick-up or a catch by either of
   // us takes it on both phones (first wins). `?shake=nest|branch|bagworm|spider|coconut` (dev or ?demo) makes the next
   // shake drop that (the e2e's hook). Everything is a world node beside its tree; the swarm's node follows the
@@ -41,7 +41,7 @@
     DANGLE_MS, SWARM_DELAY_MS, SWARM_MS, bearsCoconuts, dropAt, dropIds, fallen, lastNestOf, netsSwarm, shakeDrop, wireDrop,
     type ShakeDrop, type ShakeTree
   } from './treeShake.ts';
-  import { approach, partnerAct, turnTo } from './avatar.ts';
+  import { partnerTurnTo, turnTo } from './avatar.ts';
   import { livePos } from '../motion/director.svelte.ts';
   import { tellPartner } from './partnerNews.ts';
 
@@ -102,7 +102,7 @@
   // the dev hook: the next shake drops this (a bagworm or a spider: that bug)
   let forced: string | undefined = hookOneOf('shake', ['nest', 'branch', 'bagworm', 'spider', 'coconut']) ?? undefined;
 
-  /** My villager shook `tree` (it has walked up to it): roll what falls by its kind, share it, play it. */
+  /** My villager shook `tree` (where it stands: a tap acts in place): roll what falls by its kind, share it, play it. */
   export function shaken(tree: ShakeTree) {
     const d = world.day, now = world.now();
     const bugForced = forced === 'bagworm' || forced === 'spider' ? forced : undefined;
@@ -152,18 +152,12 @@
   /** A tap on the dangling bug: netted (the net's swing, NH's catch line, a ずかん find), unless the partner has it. */
   function netDangler() {
     const d = dangler;
-    if (!d || d.up || netting) return;
+    if (!d || d.up) return;
     // first wins: claimed at the tap (the relay's first claim is the catch: the partner's phone hears it)
     if (!world.share({ kind: 'catch', what: d.bug, id: d.id, at: [Math.round(d.x), Math.round(d.y)], how: 'net' }).fresh) return;
-    // my villager walks over with the net (avatar.ts); caught at the tap, swung on arrival
-    netting = true;
-    const { ms } = approach(d.x, d.y, { tool: 'net', toolMs: 450 });
-    later(() => swingAt(d), ms);
-  }
-  let netting = false;
-  function swingAt(d: NonNullable<typeof dangler>) {
-    netting = false;
-    if (dangler === d) dangler = null;
+    // in place: my villager turns to it and the net swings at the bug; caught at the tap
+    turnTo(d.x);
+    dangler = null;
     // the partner's claim reached the relay first: theirs (their villager holds it up)
     const c = caught(world.day, d.id);
     if (c && c.who !== world.me) return;
@@ -180,8 +174,8 @@
     }, 160);
   }
 
-  /** The swarm's world point now: from the nest to the villager's face where its feet are this frame (mine has usually
-   *  walked over to shake the tree, and may still be moving), easing in. */
+  /** The swarm's world point now: from the nest to the villager's face where its feet are this frame (it may be
+   *  walking somewhere), easing in. */
   function swarmAt(): [number, number, number] {
     const s = swarm;
     if (!s) return [0, 0, 0];
@@ -250,48 +244,42 @@
     }, 160);
   }
 
-  /** Branches and coconuts my villager is walking to. */
-  const going = new Set<string>();
-  /** My villager walks over (avatar.ts) and picks it up (a pop, gone; a coconut held up with its line). First wins:
-   *  claimed at the tap. */
+  /** A tap picks it up where it lies (a pop, gone; a coconut held up with its line), my villager turning to it
+   *  (avatar.ts). First wins: claimed at the tap. */
   function pick(id: string) {
     const b = lyingNow.find((x) => x.id === id);
-    if (!b || going.has(id)) return;
+    if (!b) return;
     const coconut = b.what === 'coconut';
     if (coconut) void loadNames().catch(() => {});
     if (!world.share({ kind: 'pick', id, what: b.what, at: [Math.round(b.x), Math.round(b.z)] }).fresh) return;
-    going.add(id);
-    const { ms } = approach(b.x, b.z, { motion: 'squish' });
-    later(() => {
-      going.delete(id);
-      take(dayKey(), id);
-      pickedN++;
-      sceneSfx('twig');
-      if (!coconut) return;
-      const n = ++seq;
-      const [sx, sy] = w.screenU(b.x, b.z, 4);
-      void loadNames().then(() => (card = cardFor(n, sx, sy, 'finds/coconut', t('beach.picked', { name: t('beach.name.coconut') }))), () => {});
-    }, ms);
+    turnTo(b.x);
+    take(dayKey(), id);
+    pickedN++;
+    sceneSfx('twig');
+    if (!coconut) return;
+    const n = ++seq;
+    const [sx, sy] = w.screenU(b.x, b.z, 4);
+    void loadNames().then(() => (card = cardFor(n, sx, sy, 'finds/coconut', t('beach.picked', { name: t('beach.name.coconut') }))), () => {});
   }
 
-  // The partner's shakes and catches (the shared day's news): their villager runs to the tree and shakes it, the same
+  // The partner's shakes and catches (the shared day's news): their villager turns to the tree and it shakes, the same
   // drop falls; they net the dangling bug or their wasps, or pick up a branch or a coconut, and it's gone here too.
   onMount(() =>
     world.on(({ e, live }) => {
       if (e.kind === 'shake') {
         const tree = treeOf(e.tree);
         if (!tree || !live) return;
-        const { ms } = partnerAct(tree.x, tree.z + 14, { motion: 'shake' });
-        later(() => {
-          rustle?.(tree);
-          play(tree, 'partner', e.drop);
-        }, ms);
+        partnerTurnTo(tree.x);
+        rustle?.(tree);
+        play(tree, 'partner', e.drop);
       } else if (e.kind === 'catch' && e.id && /^(dg|ws):/.test(e.id)) {
         const d = dangler;
         if (d?.id === e.id) {
           dangler = null;
           if (live) {
-            partnerAct(d.x, d.y, { tool: 'net', toolMs: 450 });
+            partnerTurnTo(d.x);
+            net = { n: ++seq, x: d.x, z: d.y, lift: DANGLE_UP };
+            later(() => (net = null), 420);
             tellPartner({ art: critterArt(d.bug), verb: 'caught', name: `critter.name.${d.bug}`, x: d.x, z: d.y, lift: DANGLE_UP });
           }
         }
@@ -306,7 +294,7 @@
       } else if (e.kind === 'pick' && /^(br|co):/.test(e.id) && live) {
         const b = fallen(world.day.shakes, treeOf, () => false).find((x) => x.id === e.id);
         if (!b) return;
-        partnerAct(b.x, b.z, { motion: 'squish' });
+        partnerTurnTo(b.x);
         if (b.what === 'coconut') tellPartner({ art: 'finds/coconut', verb: 'picked', name: 'beach.name.coconut', x: b.x, z: b.z });
       }
     })

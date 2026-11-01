@@ -1,6 +1,6 @@
 import type { Box } from './geom.ts';
 import { describe, expect, it } from 'vitest';
-import { ACTION_MS, actionMs, actionSpots, facingFor, nearestWalkable, route, routeLength, segmentClear, walkGeo, walkable, wanderMs, type Pt, type WalkGeo } from './walkGraph.ts';
+import { actionSpots, facingFor, nearestWalkable, route, routeLength, segmentClear, walkGeo, walkable, wanderMs, type Pt, type WalkGeo } from './walkGraph.ts';
 import { plan } from './avatar.ts';
 import { CAMPSITE, FLOWERS, CLIFF, GOAL_TREES, HOMES, POND, RIVER, ROCK, inRiver } from './world.ts';
 
@@ -100,14 +100,6 @@ describe('a parameterised geometry', () => {
 });
 
 describe('timing', () => {
-  it('an action walk runs at 240 u/s, clamped to 150–900 ms; over 1.2 s there is no walk', () => {
-    expect(actionMs(2)).toBe(0);
-    expect(actionMs(12)).toBe(ACTION_MS.min);
-    expect(actionMs(120)).toBe(500);
-    expect(actionMs(240)).toBe(ACTION_MS.max);
-    expect(actionMs(288)).toBe(ACTION_MS.max);
-    expect(actionMs(289)).toBeNull();
-  });
   it('a wander runs at 90 u/s', () => expect(wanderMs(90)).toBe(1000));
 });
 
@@ -119,21 +111,14 @@ describe('action spots and the plan', () => {
     for (const [x, z] of spots) expect(walkable(g, x, z)).toBe(true);
     expect(spots[0][0]).toBeLessThan(196); // homeA (132) is to the left
   });
-  it('the plan takes the nearest clear spot and its route, timed', () => {
+  it('the plan takes the nearest clear spot and its route, at 240 u/s', () => {
     const p = plan(g, g.nodes.homeA, 160, 300, () => true)!;
-    expect(p.ms).toBeGreaterThanOrEqual(ACTION_MS.min);
-    expect(p.ms).toBeLessThanOrEqual(ACTION_MS.max);
     sound(g, g.nodes.homeA, p.pts as Pt[]);
-  });
-  it('nowhere clear to stand, or too far: no walk', () => {
-    expect(plan(g, g.nodes.homeA, 160, 300, () => false)).toBeNull();
     const wide: WalkGeo = { zones: [{ x0: 0, x1: 1000, y0: 0, y1: 100 }], obstacles: [], nodes: {}, pad: 8 };
-    expect(plan(wide, [0, 50], 600, 50, () => true)).toBeNull();
     expect(plan(wide, [0, 50], 200, 50, () => true)!.ms).toBeCloseTo(((200 - 26) / 240) * 1000, 0);
   });
-  it('a given spot (the angler’s) is used as is', () => {
-    const p = plan(g, g.nodes.homeB, 200, -30, () => true, [200, 20])!;
-    expect(p.pts.at(-1)).toEqual([200, 20]);
+  it('nowhere clear to stand: no walk', () => {
+    expect(plan(g, g.nodes.homeA, 160, 300, () => false)).toBeNull();
   });
 });
 

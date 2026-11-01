@@ -157,7 +157,7 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
   await expect(page.locator('.if-scene [data-fruit]')).toHaveCount(8);
 });
 
-test('partner: a tap is a high-five, no card: mine walks up beside them, both hop, it is sent once', async ({ page }) => {
+test('partner: a tap is a high-five in place, no card: a sparkle flies between them, both hop, it is sent once', async ({ page }) => {
   await page.goto('?demo');
   await islandReady(page);
   const vil = page.locator('.if-scene button.vil').nth(1);
@@ -165,18 +165,21 @@ test('partner: a tap is a high-five, no card: mine walks up beside them, both ho
   await expect(vil).toHaveAttribute('aria-label', 'うめと ハイタッチ');
   const sent = () => page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).filter((e: { type: string }) => e.type === 'highfive').length);
   const before = await sent();
-  const apart = async () => {
-    const [m, p] = await Promise.all(['mine', 'partner'].map((id) => page.locator(`[data-actor="${id}"] .vil`).boundingBox()));
-    return Math.abs(m!.x - p!.x);
-  };
-  const home = await apart(); // at home, 130u apart
+  // each villager's feet: its world node's transform (a hop moves only what's inside)
+  const feet = () => Promise.all(['mine', 'partner'].map((id) => page.locator(`[data-actor="${id}"]`).evaluate((el) => {
+    const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
+    return [Math.round(m.m41), Math.round(m.m42)];
+  })));
+  const home = await feet();
   await vil.click();
   await vil.click(); // a second tap while it's under way adds nothing
   await expect(page.locator('dialog[open]')).toHaveCount(0); // no card
-  // both hop face to face with the sparkles, and it's sent
-  for (const id of ['mine', 'partner']) await expect(page.locator(`[data-actor="${id}"] .fx.sparkles`).first()).toBeAttached({ timeout: 6000 });
+  // a sparkle flies from mine to them; both hop face to face with the sparkles, and it's sent
+  await expect(page.locator('[data-zap]')).toBeAttached();
+  for (const id of ['mine', 'partner']) await expect(page.locator(`[data-actor="${id}"] .fx.sparkles`).first()).toBeAttached({ timeout: 2000 });
   await expect(page.getByText('うめさんに ハイタッチ！')).toBeVisible();
-  expect(await apart()).toBeLessThan(home * 0.6); // mine walked up beside them (a step: 40u)
+  await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
+  expect(await feet()).toEqual(home); // nobody walked
   await expect.poll(sent).toBe(before + 1);
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 });

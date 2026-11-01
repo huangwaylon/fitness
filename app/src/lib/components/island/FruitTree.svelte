@@ -36,7 +36,7 @@
   import { fruitDay, fruitFilter, fruitId, markDropped, markPicked, stageOf } from './fruitDay.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { shakeTap } from './treeShake.ts';
-  import { approach, partnerAct } from './avatar.ts';
+  import { partnerTurnTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { taken as takenBy } from '#lib/sync/world-day.ts';
 
@@ -193,20 +193,14 @@
   /** Picks up a fallen fruit: gone from this phone until the next Tokyo day (no ベル: those come from the goal). */
   function collect(f: RingFruit) {
     const s = spots.find((p) => p.f === f);
-    if (!s || s.stage !== 'ground' || going.has(f)) return;
+    if (!s || s.stage !== 'ground') return;
     // first wins: claimed at the tap (the partner's phone sees it picked up, by my villager)
     const sid = `fr:${fruitId(person.person, f)}`;
     if (!shared.share({ kind: 'pick', id: sid, what: `fruit:${f}`, at: [Math.round(s.gx), Math.round(s.gz)] }).fresh) return;
-    // my villager walks over and picks it up (avatar.ts)
-    going.add(f);
-    const { ms } = approach(s.gx, s.gz, { motion: 'squish' });
-    later(() => {
-      going.delete(f);
-      pick(f);
-    }, ms);
+    // picked up where it lies, my villager turning to it (avatar.ts)
+    turnTo(s.gx);
+    pick(f);
   }
-  /** Fruit my villager is walking to. */
-  const going = new Set<RingFruit>();
   function pick(f: RingFruit) {
     const s = spots.find((p) => p.f === f);
     if (!s || s.stage !== 'ground') return;
@@ -230,17 +224,15 @@
     later(() => (leaves = leaves.filter((l) => l.n !== a && l.n !== b)), 2000);
   }
 
-  // The partner picks up a fallen fruit (the shared day's news, just now): their villager walks over, it pops and is gone.
+  // The partner picks up a fallen fruit (the shared day's news, just now): their villager turns to it, it pops and is gone.
   onMount(() =>
     shared.on(({ e, live }) => {
       if (e.kind !== 'pick' || !e.id.startsWith(`fr:${person.person}:`)) return;
       const f = e.id.slice(5 + person.person.length) as RingFruit, s = spots.find((p) => p.f === f);
       if (!s || !live) return;
-      const { ms } = partnerAct(s.gx, s.gz, { motion: 'squish' });
-      later(() => {
-        cue('fruit-pick');
-        addFx('sparkles', s.gx, s.gz, FRUIT_U * 0.4);
-      }, ms);
+      partnerTurnTo(s.gx);
+      cue('fruit-pick');
+      addFx('sparkles', s.gx, s.gz, FRUIT_U * 0.4);
     })
   );
 
