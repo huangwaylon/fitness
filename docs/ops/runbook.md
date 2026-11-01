@@ -1,6 +1,6 @@
 # Runbook
 
-Three pieces, no server of our own (plus an optional live relay, §10, which also pushes sheet changes, §11):
+Three pieces, no server of our own (plus an optional live relay, §10, which also pushes sheet changes, §11, and sends the goal notification, §12):
 - **The data:** the Google Sheet *Island Fund* (append-only rows in `metrics`, `events`, `uploads`).
 - **The backend:** the Apps Script bound to it, deployed as a web app (one `/exec` URL, keys `KEY_A`/`KEY_B`).
 - **The app:** a static PWA on GitHub Pages that computes everything in the browser from the rows.
@@ -169,3 +169,32 @@ that the owner hasn't authorized breaks every request (*Authorization is require
 
 Check: with the app open on one phone, run the other's Shortcut; the steps update within a few seconds. Off switch:
 remove the scope and redeploy (or `npx wrangler delete`): the script pauses itself and polling carries on.
+
+## 12. Notifications (VAPID)
+The goal notification ([backend.md](../backend.md#notifications)) goes out from the relay, signed with a VAPID key
+pair: the public half is `VAPID_PUBLIC` in `relay/wrangler.toml` (production and `env.test`) and `PUSH_PUBLIC_KEY` in
+`app/src/lib/sync/push.ts`; the private scalar is the Worker secret `VAPID_PRIVATE` (both copies).
+
+**Turn it on (each phone, iOS 16.4+):** open しまの貯金箱 from the Home Screen icon (not a Safari tab) → tap today's
+ベル ribbon → **せってい** → **つうち** → tap 「うめの ぜんぶ たっせいを しらせる」 (or ウェイの) → **許可 / Allow**. The
+switch turns green once the relay has the subscription. Turned off by mistake in iOS: Settings → Notifications →
+しまの貯金箱 → Allow Notifications, then tap the switch again. Each phone opts in for itself; a person's own report
+always goes, the partner's switch decides whether it buzzes.
+
+**Rotate the key** (a leak, or the private key lost; every phone has to tap the switch again only if the old key is
+gone, see below):
+1. From `relay/`: `node --input-type=module -e "const k=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign']);console.log(Buffer.from(await crypto.subtle.exportKey('raw',k.publicKey)).toString('base64url'));console.error((await crypto.subtle.exportKey('jwk',k.privateKey)).d)" 2>vapid-private.txt`
+   prints the public key and writes the private scalar to `vapid-private.txt` (keep it out of git; delete it after).
+2. `npx wrangler secret put VAPID_PRIVATE < vapid-private.txt` and the same with `--env test`; put the public key in
+   `wrangler.toml` (both places) and `PUSH_PUBLIC_KEY`; `rm vapid-private.txt`.
+3. `npm run deploy:test`, `npm run deploy`, then deploy the app (§1). Between the relay deploy and each phone's next
+   launch, pushes to that phone fail (the push service refuses the new key for a subscription made with the old one:
+   the relay answers `failed` and keeps the subscription); at launch the app sees its subscription's key differs, makes
+   a new one and hands it over by itself, so nobody has to tap anything.
+
+**Check by hand:** the smoke test (§10) covers the endpoints' refusals. The whole path once: with the app on two
+devices (or one phone and Chrome on a Mac, each paired as one of us) turn つうち on the receiving one, then on the other
+let the day reach all four goals (or, from a console there, `fetch('https://island-fund-relay.island-fund-relay.workers.dev/push/goal', {method: 'POST', body: JSON.stringify({key: localStorage['island.key'], date: '<today, Tokyo>', both: false, name: 'test'})}).then(r => r.json())`
+→ `{outcome: 'sent'}`; that spends the day for that person). **Logs:** `npx wrangler tail` shows a push service's
+refusals (`push <host> <status>`). **Off switch:** `npx wrangler secret delete VAPID_PRIVATE` (reports answer
+`failed`, nothing is sent); the switches stay as they are.

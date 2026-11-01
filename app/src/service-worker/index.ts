@@ -1,7 +1,9 @@
-// Island Fund service worker: caches the app shell so the PWA opens offline. (No web push: docs/decisions.md#no-alerts.)
+// Island Fund service worker: caches the app shell so the PWA opens offline, and shows the partner's goal notifications
+// (docs/backend.md#notifications).
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
+import { notificationFor, openApp } from './notify.ts';
 import { AUDIO_CACHE, SHELL, isAudio, isCritterArt, isFont, isMusic, isVillagerArt, keepShell, lruEvict, precachable, staleCaches } from './caches.ts';
 
 // The app may live under a base path (GitHub Pages: /fitness/); the registration scope carries it.
@@ -134,4 +136,16 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith((async () => (await cached(req)) ?? fetch(req))());
+});
+
+// A goal notification from the relay (sync/push.ts subscribed this phone): shown at once, one per day (its tag).
+self.addEventListener('push', (event) => {
+  const n = notificationFor(event.data, SCOPE);
+  event.waitUntil(self.registration.showNotification(n.title, n.options));
+});
+
+// A tap on it: the app comes forward (the island shows the day as usual).
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(openApp(self.clients, SCOPE));
 });

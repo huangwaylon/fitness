@@ -61,9 +61,20 @@ would conflict with Health.
 ### No privacy rules
 Everything is visible to both people. Why: two people, one game.
 
-### No alerts
-No notifications, reminders or web push; only in-app confirmations (undo, a failed save). Why: the app is opened by
-choice.
+### One notification: the partner met every goal
+(Replaces *No alerts*, 2026-11.) The only notification is a Web Push to my phone when my partner's day reaches all four
+goals (「うめが きょうの もくひょうを 4つ ぜんぶ たっせい！」, or 「ふたりで ぜんぶ たっせい！」 when mine already had),
+at most once a day per person, never 22:00–08:00 Tokyo, and only on a phone whose せってい → つうち switch is on (off by
+default). No reminders, nothing about my own day, nothing else; in-app confirmations (undo, a failed save) stay as
+they were. The achiever's own phone notices (goals are computed on the phone, so no backend change) and asks the
+relay, which keeps the subscriptions, dedupes, applies the quiet hours and sends (`relay/`, RFC 8291/8292 with
+WebCrypto, no library). A report in quiet hours is skipped, not held for 08:00: a morning buzz about last night is
+noise, and the island shows it anyway. Why: the one moment worth hearing about at once is the other person finishing,
+and the reason not to notify (the app is opened by choice) still rules out everything else. Limits: the achiever's
+app must open after the Shortcut's sync to notice (an everyday app opening runs the Shortcut, not ours), and an
+iPhone needs iOS 16.4+ and the Home Screen app. Not done: detecting it on the relay from Apps Script's notify (it would
+need the health data there) or on the partner's phone (that phone would have to be open, when the island already
+shows it with the fruit and flowers).
 
 ## Economy
 

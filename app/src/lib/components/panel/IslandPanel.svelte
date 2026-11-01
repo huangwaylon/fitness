@@ -7,7 +7,7 @@
 <script lang="ts">
   // The island panel: tap today's ベル ribbon → it slides down from the top with everything that isn't on the island
   // itself, in three tabs pinned under the title bar (design.md "Panel"): けんこう (the Health data over time, its own
-  // chunk loaded with the tab; the panel opens on it), きろく (the ベル ledger, then the goals) and せってい (むらびと, サウンド, ことば,
+  // chunk loaded with the tab; the panel opens on it), きろく (the ベル ledger, then the goals) and せってい (むらびと, サウンド, つうち, ことば,
   // つうしん, あそびかた). A few things push a level with ‹ in the title
   // bar (a week, a day, the villager picker, the full guide); ✕, the backdrop and Esc close it. The wallet stays on the
   // jar and per-fruit detail in the tree popups (one home per datum).
@@ -19,6 +19,7 @@
   import VillagerPicker from './VillagerPicker.svelte';
   import HelpGuide from './HelpGuide.svelte';
   import SoundSection from './SoundSection.svelte';
+  import NotifySection from './NotifySection.svelte';
   import LangSection from './LangSection.svelte';
   import SyncSection from './SyncSection.svelte';
   import { week } from '#lib/store/week.svelte.ts';
@@ -132,6 +133,7 @@
         </div>
       </section>
       <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound">{t('panel.sound')}</h2><SoundSection /></section>
+      <section class="sec" aria-labelledby="sec-notify"><h2 id="sec-notify">{t('panel.notify')}</h2><NotifySection {view} /></section>
       <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang">{t('panel.lang')}</h2><LangSection /></section>
       <section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync">{t('panel.sync')}</h2><SyncSection {view} /></section>
       <section class="sec" aria-labelledby="sec-help">
