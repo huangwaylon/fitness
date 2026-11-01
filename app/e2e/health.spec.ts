@@ -16,13 +16,13 @@ async function openHealth(page: Page, query = '?demo') {
 }
 const range = (page: Page) => sheet(page).locator('.health .nav .rl b');
 
-test('the tab: one person at a time, a card per metric, steps first, then 体重, then the rings; averages over every day with data', async ({ page }) => {
+test('the tab: one person at a time, a card per metric, steps first, then the body (体重, 体脂肪率, BMI, 除脂肪体重), then the rings; averages over every day with data', async ({ page }) => {
   await openHealth(page);
   await expect(sheet(page).locator('[data-period=week]')).toHaveAttribute('aria-pressed', 'true'); // it opens on 1週
   await sheet(page).locator('[data-period=month]').click();
   await expect(sheet(page).locator('.health > *').first()).toHaveClass(/who/); // whose data comes first
   await expect(sheet(page).locator('.health .wk')).toHaveCount(0); // no week card: the charts carry the trends
-  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', '体重', 'ムーブ', 'エクササイズ', 'スタンド']);
+  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', '体重', '体脂肪率', 'BMI', '除脂肪体重', 'ムーブ', 'エクササイズ', 'スタンド']);
   await expect(range(page)).toHaveText('10/2–10/31'); // 1か月 = the 30 days to today
   const move = sheet(page).locator('.mc[data-metric=move]');
   await expect(move.locator('.srow')).toHaveCount(1);
@@ -113,6 +113,36 @@ test('体重: the period’s plain change (first week → last week, else first 
   await expect(chg).not.toContainText('1週間に');
   await expect(card).not.toContainText('ながれ');
   await expect(card.locator('.note')).toHaveCount(0);
+});
+
+test('the body cards: each its average, count and plain change in its unit, its own chart, per person; a tap shows a day', async ({ page }) => {
+  await openHealth(page);
+  await sheet(page).locator('[data-period=month]').click();
+  const units = { body_fat_pct: /^\d+\.\d%$/, bmi: /^\d+\.\d$/, lean_kg: /^\d+\.\d kg$/ } as const;
+  const deltas = { body_fat_pct: /^[+−±]\d+\.\d%$/, bmi: /^[+−±]\d+\.\d$/, lean_kg: /^[+−±]\d+\.\d kg$/ } as const;
+  for (const [m, unit] of Object.entries(units) as [keyof typeof units, RegExp][]) {
+    const card = sheet(page).locator(`.bc[data-metric=${m}]`);
+    await card.scrollIntoViewIfNeeded();
+    await expect(card).toHaveAttribute('data-person', 'A');
+    await expect(card.locator('.chips > div').first().locator('.money')).toHaveText(unit);
+    await expect(card.locator('.chips .n').first()).toHaveText(/^\d+回の記録$/);
+    await expect(card.locator('.chg .money')).toHaveText(deltas[m]);
+    await expect(card.locator('.chg .basis')).toHaveText('最初の週→最後の週');
+    expect(await card.locator('circle.dot.pA').count()).toBeGreaterThan(15);
+    await expect(card.getByRole('img', { name: new RegExp(`^ウェイの${await card.locator('h3').textContent()} `) })).toHaveCount(1);
+  }
+  // a tap on the last day's dot: that day's value in the callout
+  const fat = sheet(page).locator('.bc[data-metric=body_fat_pct]');
+  const chart = fat.locator('.chart');
+  const dot = await fat.locator('circle.dot').last().boundingBox();
+  const cb = (await chart.boundingBox())!;
+  await chart.click({ position: { x: dot!.x - cb.x + dot!.width / 2, y: cb.height / 2 } });
+  await expect(chart.locator('.tip .money')).toHaveText(units.body_fat_pct);
+  // うめ's: her colour and numbers
+  await sheet(page).locator('.health .who [data-who=B]').click();
+  await expect(fat).toHaveAttribute('data-person', 'B');
+  await expect(fat.locator('circle.dot.pA')).toHaveCount(0);
+  expect(await fat.locator('circle.dot.pB').count()).toBeGreaterThan(15);
 });
 
 test('period: 1週 by day, 3か月 by week, 1年 by month; ‹ › page through and きょう comes back', async ({ page }) => {

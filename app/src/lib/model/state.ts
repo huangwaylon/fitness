@@ -8,8 +8,8 @@ import { isTally } from '#lib/contract/tally.ts';
 import type { TallyRow } from './tally.ts';
 import { rowAt } from './snapshot.ts';
 import {
-  DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isActivityMetric, isWeightKg, roundKg, WEIGHT_KG,
-  type ActivityMetric, type EventType, type FindKind, type SnapshotRows
+  BODY_BOUNDS, DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isActivityMetric, isBodyMetric, isWeightKg, roundKg, WEIGHT_KG,
+  type ActivityMetric, type BodyMetric, type EventType, type FindKind, type SnapshotRows
 } from '#lib/contract/api.ts';
 
 export const partnerOf = (p: PersonId): PersonId => (p === 'A' ? 'B' : 'A');
@@ -61,6 +61,11 @@ export interface State {
    * person, keyed by date, ascending `at`. A day's weight is its latest row (`model/weight.ts`).
    */
   weights: Record<PersonId, Map<LocalDate, Timed<number>[]>>;
+  /**
+   * The body metrics (body fat %, BMI, lean body mass), apart like weight and never read by the economy: per person and
+   * metric, date → rows, ascending `at`, one decimal, within BODY_BOUNDS. A day's value is its latest row.
+   */
+  body: Record<PersonId, Record<BodyMetric, Map<LocalDate, Timed<number>[]>>>;
   /** Accepted `spend_void`s (by either person, once per buy, after it). */
   spendVoids: { at: number; person: PersonId; spendId: string }[];
   harvests: { at: number; person: PersonId; week: WeekKey }[];
@@ -157,12 +162,15 @@ const weekOf = (d: LocalDate): WeekKey => {
   return wk;
 };
 
+const bodyMaps = (): Record<BodyMetric, Map<LocalDate, Timed<number>[]>> => ({ body_fat_pct: new Map(), bmi: new Map(), lean_kg: new Map() });
+
 /** Index and validate all rows. Rows are only ever appended, so nothing here depends on "now". */
 export function reduce(r: SnapshotRows, rev: string | null = null): State {
   const s: State = {
     metrics: { A: new Map(), B: new Map() },
     bellSpends: [],
     weights: { A: new Map(), B: new Map() },
+    body: { A: bodyMaps(), B: bodyMaps() },
     spendVoids: [],
     harvests: [],
     highfives: [],
@@ -197,6 +205,9 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     if (metric === 'weight') {
       if (value < WEIGHT_KG.min || value > WEIGHT_KG.max) continue;
       push(s.weights[person], date, { at, v: roundKg(value) });
+    } else if (isBodyMetric(metric)) {
+      if (value < BODY_BOUNDS[metric].min || value > BODY_BOUNDS[metric].max) continue;
+      push(s.body[person][metric], date, { at, v: roundKg(value) });
     } else if (isActivityMetric(metric)) {
       let day = s.metrics[person].get(date);
       if (!day) s.metrics[person].set(date, (day = {}));

@@ -4,10 +4,10 @@
 //
 // A day's value as of T is its latest row stamped at or before T (`metricAsOf`, `latestAt`; rows sorted by `at`, ties
 // in sheet order). A locked week's earnings read it as of the lock, so per (person, date, metric) the latest row at
-// or before the lock is kept, and the latest overall (the day's current value). Weight is read only as of now, so
-// only its newest row per (person, date) is kept.
+// or before the lock is kept, and the latest overall (the day's current value). Weight and the body metrics are read
+// only as of now, so only their newest row per (person, date, metric) is kept.
 import type { PersonId } from '#lib/types.ts';
-import { DATE_RE, type EventRow, type MetricRow, type SnapshotRows } from '#lib/contract/api.ts';
+import { DATE_RE, isActivityMetric, type EventRow, type MetricRow, type SnapshotRows } from '#lib/contract/api.ts';
 import { weekKeyOf } from '#lib/time/dates.ts';
 import { finalMs } from './state.ts';
 import { rowAt } from './snapshot.ts';
@@ -44,7 +44,7 @@ export function compactRows(rows: SnapshotRows, now: number): SnapshotRows {
   };
   for (const list of groups.values()) {
     latestBy(list, Infinity);
-    if (list[0].row[3] !== 'weight') latestBy(list, finalMs(weekKeyOf(String(list[0].row[2]))));
+    if (isActivityMetric(list[0].row[3])) latestBy(list, finalMs(weekKeyOf(String(list[0].row[2]))));
   }
   const events = latestTallies(rows.events);
   if (keep.size === rows.metrics.length && events === rows.events) return rows;

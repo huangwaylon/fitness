@@ -6,7 +6,7 @@
   import type { PersonId } from '#lib/types.ts';
   import { weightBuckets, weightStats, type HealthSeries, type Range } from '#lib/model/health.ts';
   import { t } from '#lib/i18n/index.ts';
-  import WeightChart from './WeightChart.svelte';
+  import DotChart from './DotChart.svelte';
   import { kgDelta, kgText, monthText } from '../kiroku/fmt.ts';
   import { rangeLabel } from './fmt.ts';
 
@@ -45,7 +45,7 @@
   {:else}
     <p class="none">{t('health.noData')}</p>
   {/if}
-  <WeightChart person={p} {range} buckets={b} goal={ps.goalWeight} today={hs.to}
+  <DotChart id="weight" person={p} {range} buckets={b} fmt={kgText} goal={ps.goalWeight} today={hs.to}
     label={t('health.weight.chartLabel', { name, range: rangeLabel(range, hs.to), kg: s.avg === null ? t('health.noData') : kgText(s.avg) })}
     {selected} {onselect} {onswipe} {slide} />
   {#if s.projection && range.to === hs.to}
