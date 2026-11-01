@@ -5,6 +5,8 @@
 // here is pure data: the terrain bake (scripts/terrain.ts), the scene's sprites, the walk graph and the critters all
 // read the same constants.
 
+import SCATTER from './scatter.json' with { type: 'json' };
+
 export type Pt = readonly [number, number];
 
 /** The plan's extent (the baked terrain covers it; wider than the land so the perspective never shows an edge). */
@@ -128,12 +130,9 @@ export const ROCK: Pt = [112, 478];
 /** Fossil dig spots: six lawn spots, four on the front lawn in clear view from まえ (in front of the villagers and the
  *  trees, by the beach) and two behind the trees, off the canopies' columns (on a short screen the HUD stands over
  *  those). */
-export const DIG_SPOTS: readonly Pt[] = [[150, 162], [244, 164], [66, 150], [326, 152], [140, 440], [236, 462]];
-/** Lawn spots for weeds (z 120…900, off paths, flowers, trunks and water). */
-export const LAWN_SPOTS: readonly Pt[] = [
-  [96, 150], [300, 150], [20, 280], [372, 280], [120, 400], [270, 380], [40, 430], [350, 420], [230, 500], [150, 520],
-  [300, 520], [140, 690], [262, 702], [128, 852], [232, 828]
-];
+export const DIG_SPOTS: readonly Pt[] = [[150, 162], [244, 164], [24, 180], [326, 152], [140, 440], [236, 462]];
+/** Lawn spots for weeds (both sections' open lawn, off paths, flowers, trunks and water: scatter.json, scripts/layout.ts). */
+export const LAWN_SPOTS = SCATTER.lawn as unknown as readonly Pt[];
 /** The seasonal hedge along the stream's front bank, between the lawn and おく, with a gap for the path and the bridge
  *  (its streetlamps). */
 export const HEDGE_Z = 600;
@@ -163,6 +162,9 @@ export interface Scenery {
   z: number;
   h: number;
   flip?: boolean;
+  /** Its footprint on the ground [width, depth] (u), centred on its feet: a walk obstacle and a spot a decoration may
+   *  not take (else one from its kind). */
+  foot?: readonly [number, number];
 }
 const s = (id: string, kind: SceneryKind, key: string, x: number, z: number, h: number, flip = false): Scenery => ({ id, kind, key, x, z, h, flip });
 export const SCENERY: readonly Scenery[] = [
@@ -173,7 +175,7 @@ export const SCENERY: readonly Scenery[] = [
   s('palm-1', 'palm', 'trees/palm', 2, 64, 96), s('palm-2', 'palm', 'trees/palm', 392, 70, 92, true),
   s('palm-3', 'palm', 'trees/palm', 44, 2, 70, true),
   s('plumeria-w', 'bush', 'bushes/white-plumeria', 100, 122, 34), s('plumeria-p', 'bush', 'bushes/pink-plumeria', 292, 122, 34),
-  s('oak-m1', 'oak', 'oak', 268, 516, 112), s('cedar-m1', 'cedar', 'trees/cedar', 20, 470, 140),
+  s('oak-m1', 'oak', 'oak', 328, 494, 112), s('cedar-m1', 'cedar', 'trees/cedar', 34, 442, 140),
   // おく, uncluttered (open lawn between the pieces), NH's decor (scripts/fetch-assets.ts): streetlamps at the bridge's front corners, the month's bushes either side of
   // the path (`month-bush-a|b`: scene.ts hedgePair), the pond on the west with a flat rock and a clump by it, the bamboo
   // grove on the east by the stream, an oak and cedars at the edges, the campsite's tent in its clearing with its sign,
@@ -181,10 +183,10 @@ export const SCENERY: readonly Scenery[] = [
   // campfire on the clearing's east side (clear of centre stage and the tent's door) with two log stools at it
   s('lamp-b1', 'prop', 'deco/streetlamp', 168, 612, 46), s('lamp-b2', 'prop', 'deco/streetlamp', 222, 612, 46),
   s('bush-m1', 'bush', 'month-bush-a', 152, 716, 34), s('bush-m2', 'bush', 'month-bush-b', 240, 724, 34),
-  s('rock-m1', 'rock', 'deco/flat-rock', 148, 818, 12),
-  s('bamboo-1', 'bamboo', 'trees/bamboo', 290, 804, 66), s('bamboo-2', 'bamboo', 'trees/bamboo', 322, 794, 72, true),
-  s('bamboo-3', 'bamboo', 'trees/bamboo', 306, 824, 70, true),
-  s('cedar-k1', 'cedar', 'trees/cedar', 2, 700, 140),
+  s('rock-m1', 'rock', 'deco/flat-rock', 142, 764, 12),
+  s('bamboo-1', 'bamboo', 'trees/bamboo', 294, 774, 66), s('bamboo-2', 'bamboo', 'trees/bamboo', 326, 764, 72, true),
+  s('bamboo-3', 'bamboo', 'trees/bamboo', 310, 794, 70, true),
+  s('cedar-k1', 'cedar', 'trees/cedar', 8, 694, 140),
   s('oak-k1', 'oak', 'oak', 36, 904, 116), s('cedar-k2', 'cedar', 'trees/cedar', -2, 1000, 144),
   s('camp-sign', 'prop', 'deco/campsite-sign', 92, 930, 30),
   s('bush-k1', 'bush', 'bushes/holly', 114, 1000, 32), s('bush-k2', 'bush', 'bushes/holly', 282, 1000, 32),
@@ -198,16 +200,40 @@ export const SCENERY: readonly Scenery[] = [
   s('cedar-f4', 'cedar', 'trees/cedar', 214, 1170, 130), s('cedar-f5', 'cedar', 'trees/cedar', 284, 1112, 126), s('cedar-f6', 'cedar', 'trees/cedar', 130, 1200, 124)
 ];
 
+/** The decor's spots (docs/design.md "Decor"): NH's outdoor furniture standing for good and the seasonal pieces that
+ *  take turns in a spot of their own (a seasonal piece never adds a spot). Every spot is a walk obstacle all year, so
+ *  a decoration a player puts down never stands where a seasonal piece will come. foot: [width, depth] in u. */
+export interface DecorSlot {
+  id: string;
+  x: number;
+  z: number;
+  foot: readonly [number, number];
+}
+export const DECOR_SLOTS: readonly DecorSlot[] = [
+  // まえ: the one bench at the left grass edge, facing the sea; summer's beach chair and sandcastle on the east beach
+  // (clear of the finds and Gulliver); a snowboy on the lawn after a snow day
+  { id: 'bench-mae', x: 40, z: 130, foot: [52, 14] },
+  { id: 'beach-chair', x: 340, z: 76, foot: [56, 22] },
+  { id: 'sandcastle', x: 330, z: -6, foot: [26, 18] },
+  { id: 'snowboy', x: 252, z: 336, foot: [28, 20] },
+  // おく: a hammock by the pond's front (the illuminated tree in its weeks), the log bench on the pond's back bank
+  // (the blossom week's picnic set) with the rod stand, a pond stone where the flat rock lies in its weeks, the pump,
+  // the shishi-odoshi between the bamboo and the stream, the pull-up bar stand on the east lawn by the stream, the
+  // firewood by the tent
+  { id: 'hammock', x: 98, z: 700, foot: [56, 16] },
+  { id: 'bench-pond', x: 86, z: 824, foot: [56, 16] },
+  { id: 'rod-stand', x: 34, z: 818, foot: [22, 10] },
+  { id: 'pump', x: 250, z: 806, foot: [24, 14] },
+  { id: 'shishi', x: 332, z: 816, foot: [26, 18] },
+  { id: 'pullup', x: 330, z: 902, foot: [28, 12] },
+  { id: 'firewood', x: 140, z: 962, foot: [18, 12] }
+];
+
 // ---- wild flowers ---------------------------------------------------------------------------------------------------
 
 /** NH's flowers growing wild over the lawn: clumps of 2–5 of one kind (scene.ts WILD: the season's), on open grass off
  *  the paths and the sand, few on the front lawn, a few more round the campsite's ground. [centre x, z, how many]. */
-const CLUMPS: readonly (readonly [number, number, number])[] = [
-  // まえ: four small clumps, clear of the trees' canopies and the villagers
-  [165, 390, 2], [250, 420, 2], [62, 530, 3], [356, 480, 3],
-  // おく: by the pond, the bamboo's lawn, by the path, the clearing's west side, the stream's bank
-  [46, 716, 4], [236, 772, 2], [266, 866, 5], [96, 868, 2], [324, 952, 4]
-];
+const CLUMPS = SCATTER.clumps as unknown as readonly (readonly [number, number, number])[];
 /** A clump's flowers round its centre (u), by how many: loose, a little wider than deep (the ground's foreshortening). */
 const CLUMP_AT: Record<number, readonly Pt[]> = {
   2: [[-8, -2], [9, 3]],

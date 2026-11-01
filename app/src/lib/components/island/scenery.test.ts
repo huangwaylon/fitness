@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { artKeys } from '#lib/art.ts';
 import {
-  BUILDINGS, CENTRE_STAGE, CLIFF, DIG_SPOTS, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAWN_SPOTS, PATHS, POND, ROCK, SCENERY, SPRING, TAPE_DECK,
+  BUILDINGS, CENTRE_STAGE, CLIFF, DECOR_SLOTS, DIG_SPOTS, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAWN_SPOTS, PATHS, POND, ROCK, SCENERY, SPRING, TAPE_DECK,
   flowerById, riverNear, inOval, onGrass, onLand, type Pt
 } from './world.ts';
 import { LIT_ART, WILD, sceneryKey, wildFlower } from './scene.ts';
@@ -104,5 +104,32 @@ describe('the wild flowers', () => {
     for (const s of SCENERY) expect(Math.hypot(f.x - s.x, f.z - s.z), s.id).toBeGreaterThan(s.kind === 'oak' || s.kind === 'cedar' ? 26 : 20);
     // not hidden behind a goal tree's canopy
     for (const [x, z] of Object.values(GOAL_TREES)) expect(Math.abs(f.x - x) < 52 && f.z > z && f.z < z + 170).toBe(false);
+  });
+});
+
+describe('the layout’s balance (scripts/layout.ts)', () => {
+  const centres = [...Map.groupBy(FLOWERS, (f) => f.clump).values()].map((fs) => [fs.reduce((s, f) => s + f.x, 0) / fs.length, fs.reduce((s, f) => s + f.z, 0) / fs.length] as Pt);
+  const trees = SCENERY.filter((s) => s.kind === 'oak' || s.kind === 'cedar');
+  it('keeps each kind its own gap: clumps apart, trees apart, the scatter clear of trunks and the decor', () => {
+    for (let i = 0; i < centres.length; i++) for (let j = i + 1; j < centres.length; j++) expect(Math.hypot(centres[i][0] - centres[j][0], centres[i][1] - centres[j][1])).toBeGreaterThan(70);
+    for (let i = 0; i < trees.length; i++) for (let j = i + 1; j < trees.length; j++) expect(Math.hypot(trees[i].x - trees[j].x, trees[i].z - trees[j].z), `${trees[i].id} ${trees[j].id}`).toBeGreaterThan(70);
+    for (const [x, z] of centres) {
+      for (const t of trees) expect(Math.hypot(t.x - x, t.z - z)).toBeGreaterThan(48);
+      for (const d of DECOR_SLOTS) expect(Math.hypot(d.x - x, d.z - z), d.id).toBeGreaterThan(d.foot[0] / 2 + 30);
+    }
+    for (const [x, z] of LAWN_SPOTS) for (const d of DECOR_SLOTS) expect(Math.hypot(d.x - x, d.z - z), d.id).toBeGreaterThan(d.foot[0] / 2 + 20);
+    for (let i = 0; i < LAWN_SPOTS.length; i++) for (let j = i + 1; j < LAWN_SPOTS.length; j++) expect(Math.hypot(LAWN_SPOTS[i][0] - LAWN_SPOTS[j][0], LAWN_SPOTS[i][1] - LAWN_SPOTS[j][1])).toBeGreaterThan(50);
+  });
+  it('leaves no dead zone: every open bit of lawn is within 90u of something', () => {
+    const pts: Pt[] = [
+      ...SCENERY.map((s) => [s.x, s.z] as Pt), ...DECOR_SLOTS.map((d) => [d.x, d.z] as Pt), ...FLOWERS.map((f) => [f.x, f.z] as Pt), ...LAWN_SPOTS, ...DIG_SPOTS,
+      ...Object.values(HOMES), ...Object.values(GOAL_TREES), ...HEDGE_XS.map((x) => [x, HEDGE_Z] as Pt), TAPE_DECK, ROCK, CENTRE_STAGE
+    ];
+    for (let z = 112; z < CLIFF.z0 - 20; z += 10) for (let x = -10; x <= 400; x += 10) {
+      if (!onGrass(x, z) || Object.values(GOAL_TREES).some(([tx, tz]) => Math.abs(x - tx) < 56 && z > tz && z < tz + 175)) continue;
+      const water = riverNear(x, z), edge = [[90, 0], [-90, 0], [0, 90], [0, -90]].some(([a, b]) => !onGrass(x + a, z + b));
+      const near = edge || water.d - water.hw < 90 || inOval(POND, x, z, 90) || PATHS.dirt.some((l) => segDist(l, x, z) < 100) || pts.some(([a, b]) => Math.hypot(a - x, b - z) < 90);
+      expect(near, `${x},${z}`).toBe(true);
+    }
   });
 });
