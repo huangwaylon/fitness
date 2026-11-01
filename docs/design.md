@@ -293,14 +293,17 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
 
 ### Buildings
 
-`island/doors.ts`, `island/Scenery.svelte`, `island/Museum.svelte`. A building is one tap: my villager walks (or runs,
+`island/buildings.ts`, `island/Scenery.svelte`, `island/Museum.svelte`, `e2e/tapwalk.spec.ts`. A building is one tap: my villager walks (or runs,
 the camera following) to its door, NH's character inside answers in the balloon (its tail at the door, their colour
 on the name tag) and when it closes the feature opens. Resident Services: しずえ (たぬきち 22:00–05:00) → せってい;
 Nook's Cranny: まめきち・つぶきち → ごほうび; Able Sisters: あさみ → the むらびと picker; Dodo Airlines: モーリー →
 つうしん (せってい at its sync section); the museum: フータ → the ずかん ([Museum](#museum)); the campsite: who is
 visiting today. The panel keeps its せってい tab too (`ui.door` asks the panel for the section). **Wilbur** stands on the
 dock while my partner has the app open (the relay's presence, the phone's one socket; `?wilbur` shows him); a tap and
-he says so.
+he says so, in his radio talk (「…オーバー！」). The lines are short and in each character's NH voice: しずえ polite and
+bright (「あっ、…さん！」), たぬきち's だなも, the Nooklings' echo (「いらっしゃいませ〜！」「…ませ〜！」), あさみ's shop talk
+(her sister busy in the back), モーリー's "Hey hey hey!" (はいはーい！) at the gateway to the skies; a line may name my
+villager.
 
 ### Environment
 
@@ -714,19 +717,23 @@ The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there a
 
 ### Walking
 
-`island/walkGraph.ts`, `island/wander.ts` (pure), `island/avatar.ts`, `motion/director.svelte.ts` `walkTo`,
-`e2e/movement.spec.ts`, `e2e/world.spec.ts`.
+`island/walkGraph.ts`, `island/nav.ts`, `island/tapWalk.ts`, `island/wander.ts` (pure), `island/avatar.ts`,
+`motion/director.svelte.ts` `walkTo`, `e2e/movement.spec.ts`, `e2e/world.spec.ts`, `e2e/tapwalk.spec.ts`.
 
 - **My villager is me:** a tap on something to do walks my villager there first, then the action plays where it
   stands (the bush shaken, the can, the shovel, the rod, the net; a visitor speaks once it's there). A flea is tapped
   off my villager itself: no walk.
-- **Tap-to-walk** (anywhere on the ground nothing else took): my villager runs there (200 u/s) along the walk graph,
-  over the bridges and up the stairs; a tap on the water or anywhere off the ground goes to the nearest walkable point
-  within 40u (the bank, facing the water). A cream ring marks the spot and shrinks away (NH has none: the least
-  feedback). It stays there for the session (`sessionStorage`: the next open finds it home).
-- **Camera follow:** when the runner or its destination is out of the band under the HUD and above the foot, the
-  scroller eases after it (lerp 0.12 a frame; snapping off meanwhile, back 300 ms after); any touch takes the camera
-  back. A tree's popup needing room above its canopy eases the camera up the island too, and lets go when it closes.
+- **Tap-to-walk** (anywhere on the ground nothing else took; `tapWalk.ts planTap` over `nav.ts`): my villager runs
+  there (200 u/s), over the bridges and up the stairs. A tap that isn't walkable snaps: a building's footprint to its
+  door (and knocks: its character answers, as a tap on the building does), water (sea, river, pond, spring) to the
+  nearest bank facing the water, anything else to the nearest walkable point within 40u; ground nobody can reach (the
+  sand east of the river, walled in by its cedars) to the nearest reachable point, facing it. The partner's relayed
+  walks replay the same planner. A cream ring marks the spot and shrinks away (NH has none: the least feedback). It
+  stays there for the session (`sessionStorage`: the next open finds it home).
+- **Camera follow** (`tapWalk.ts Follow`): when the runner or its destination is out of the band [HUD bottom + 80,
+  vh − 90], or the tap was far round the log (θ > 35°, a tiny target near the horizon), the scroller eases (lerp 0.12
+  a frame) toward the camera that keeps the runner in the band and leans as far toward the destination as that allows;
+  snapping is off meanwhile and back 300 ms after arrival; any touch takes the camera back. A tree's popup needing room above its canopy eases the camera up the island too, and lets go when it closes.
   The camera never moves for the partner or a visitor.
 - **Snappy actions:** 240 u/s, a walk clamped to 150–900 ms; one over 1.2 s (or with nowhere clear to stand) isn't
   made: the villager turns to it. A building's door or a visitor across the island is a run instead. The outcome is
@@ -741,7 +748,18 @@ The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there a
   the cliff face, building footprints, trunks, beds, the rock, bushes or props. Rasterised once on a 4u grid; named
   nodes (homes, the trees, the shore, both ends of each bridge and of the stairs, every door, the pondside, the river's
   casting spots, centre stage) and the obstacles' padded corners make a visibility graph built once (~15 ms); a
-  straight segment when clear, else Dijkstra through it.
+  straight segment when clear, else Dijkstra through it. Action walks and outings use it.
+- **Navigation for taps** (`nav.ts`): the same ground as convex polygons grown by an 8u pad (the river a chain of
+  quads cut at the bridges' decks, the pond a 16-gon, the cliff two strips either side of the stairs, the footprints,
+  trunks, beds, bushes, props, the hedge, the fences, the bamboo, the rocks; off the land is the sea, and the land is convex, so two points on
+  it see each other unless a polygon is between). Nodes: the polygons' corners a step outside plus the named nodes
+  (the walk mask's names, so a relayed node id means the same); only bitangent edges up to 320u are kept. ~400 nodes,
+  ~2,060 edges, 119 polygons; built in ~2.8 ms (median, M-series Mac; the walk mask's grid takes ~80 ms there), a
+  tap's snap and A* p50 0.05 ms, p95 0.15 ms (`nav.test.ts` holds the budget). Each node knows its connected region, so a tap
+  never aims at a pocket nobody can reach.
+- **Footsteps** by the ground under the walker (`tapWalk.ts stepCue` over `world.ts surfaceAt`): grass, sand, snow
+  (grass and dirt in winter), the shops' brick, the plaza's and the stone bridge's stone, the log bridge's and the
+  dock's wood (a hollow knock); a rainy day splashes on all but wood.
 - **Rendering:** the feet are a world node whose position is read each frame from the director (`livePos`: along the
   current segment by the clock) while anyone walks, the one rAF; depth from the feet's z every frame. Facing by
   direction (`LOOKS_RIGHT`; `NO_MIRROR` renders lean instead of flipping). The walk cycle is `if-walkbounce`, a dust

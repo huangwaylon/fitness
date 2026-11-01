@@ -45,8 +45,10 @@
   import { resolveLook } from '#lib/villagers/look.ts';
   import { IslandLife } from './islandLife.svelte.ts';
   import { BEDS, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
-  import { BUILDINGS, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, GOAL_TREES, HOMES, surfaceAt, type BuildingId } from './world.ts';
-  import { doorLine, type DoorOpens } from './doors.ts';
+  import { CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, GOAL_TREES, HOMES, surfaceAt, type BuildingId } from './world.ts';
+  import { WILBUR_AT, doorAt, doorLine, wilburShows, type DoorOpens } from './buildings.ts';
+  import { Follow, RING_MS, stepCue } from './tapWalk.ts';
+  import { nav } from './nav.ts';
   import { LIVE_URL, liveRelay } from '#lib/sync/live.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { visitorNow } from './visitors.ts';
@@ -301,16 +303,21 @@
   // ---- tap-to-walk (spec §4): a tap on the ground sends my villager there; a cream ring marks the spot ----
   let rings = $state<{ n: number; x: number; z: number }[]>([]);
   let ringN = 0;
-  /** SceneTaps' last step: the tap landed on the ground at (x, z) and nothing else took it. */
+  /** SceneTaps' last step: the tap landed on the ground at (x, z) and nothing else took it. A tap at a building's foot
+   *  knocks at its door (walk there, then its character answers). */
   function walkThere(x: number, z: number, _hit: SceneHit): boolean {
     if (!live || covered || actors.mine.asleep) return false;
+    const from = livePos('mine');
     const r = sendTo(x, z);
     if (!r) return false;
     relay?.send({ kind: 'walk', to: [Math.round(r.to[0]), Math.round(r.to[1])] });
     const n = ++ringN;
     rings = [...rings.slice(-1), { n, x: r.to[0], z: r.to[1] }];
-    life.later(() => (rings = rings.filter((g) => g.n !== n)), 450);
-    follow(r.to);
+    life.later(() => (rings = rings.filter((g) => g.n !== n)), RING_MS + 50);
+    follow.start(from[1], r.to[1], world.screenAt(x, z).theta);
+    const b = r.snap.kind === 'door' ? r.snap.building : undefined;
+    const el = b && sceneEl?.querySelector<HTMLElement>(`[data-building="${b}"] .door`);
+    if (b && el) life.later(() => knock(b, el), r.ms + 120);
     return true;
   }
 
@@ -322,52 +329,21 @@
     if (e !== edge) edge = e;
   }
 
-  // ---- camera follow: while my villager runs somewhere the camera can't see, the scroller eases after it ----
-  /** The band the walker should stay in (px): under the HUD, above the foot. */
+  // ---- camera follow (tapWalk.ts): while my villager runs somewhere the camera can't see, the scroller eases after it ----
+  /** The top chrome's bottom edge (px): the follow band starts 80px under it. */
   let hudBottom = 0;
-  let chase: { to: readonly [number, number]; until: number } | null = null;
-  let snapBack: ReturnType<typeof setTimeout> | undefined;
-  function follow(to: readonly [number, number]) {
-    if (!scroller) return;
-    const [, z] = livePos('mine');
-    const top = hudBottom + 80, bottom = world.view.vh - 90;
-    const out = (zz: number, x: number) => {
-      const p = world.screenAt(x, zz);
-      return !p.visible || p.sy < top || p.sy > bottom;
-    };
-    if (!out(to[1], to[0]) && !out(z, livePos('mine')[0])) return;
-    chase = { to, until: performance.now() + 15_000 };
-    clearTimeout(snapBack);
-    scroller.style.scrollSnapType = 'none';
-    world.kick();
-  }
-  function stopFollow() {
-    if (!chase) return;
-    chase = null;
-    clearTimeout(snapBack);
-    snapBack = setTimeout(() => scroller && (scroller.style.scrollSnapType = ''), 300);
-  }
-  /** One frame of the chase: ease camZ toward the walker (lerp 0.12), clamped to the scroller's range. */
-  function chaseStep(): boolean {
-    if (!chase || !scroller) return false;
-    const [x, z] = livePos('mine');
-    const walking = inMotion('mine');
-    if (!walking || performance.now() > chase.until) {
-      stopFollow();
-      return false;
-    }
-    const top = hudBottom + 80, bottom = world.view.vh - 90;
-    const p = world.screenAt(x, z), d = world.screenAt(chase.to[0], chase.to[1]);
-    // keep the walker in the band; lead toward the destination while it is out of sight up the island
-    const want = p.sy < top || p.sy > bottom || !d.visible || d.sy < top ? z + (chase.to[1] > z ? 120 : -60) : world.view.camZ;
-    const cam = world.view.camZ + (Math.min(CAM_MAX, Math.max(camMin, want)) - world.view.camZ) * 0.12;
-    if (Math.abs(cam - world.view.camZ) > 0.2) scroller.scrollTop = scrollFor(cam, CAM_MAX, world.view.s);
-    return true;
-  }
+  const follow = new Follow({
+    cam: () => world.view.camZ,
+    range: () => [camMin, CAM_MAX],
+    view: () => ({ P: world.P, pivot: world.view.pivot, vh: world.view.vh, s: world.view.s, hudBottom }),
+    moveTo: (z) => scroller && (scroller.scrollTop = scrollFor(z, CAM_MAX, world.view.s)),
+    snap: (on) => scroller && (!on || (!pinned && !held)) && (scroller.style.scrollSnapType = on ? '' : 'none'),
+    kick: () => world.kick()
+  });
   function onScroll() {
     world.kick();
     clearTimeout(settle);
-    if (!chase) talk?.hold(true);
+    if (!follow.active) talk?.hold(true);
     settle = setTimeout(() => {
       world.rest.z = Math.round(world.view.camZ);
       talk?.hold(false);
@@ -381,14 +357,14 @@
     if (!scroller) return;
     measure();
     world.onTick(() => {
-      const chasing = live && chaseStep();
+      const chasing = live && follow.step(livePos('mine')[1], inMotion('mine'));
       if (scroller) world.view.camZ = live ? camAt(scroller.scrollTop, camMin, CAM_MAX, world.view.s) : camMin;
       if (live) edgeCheck();
       return anyMoving() || chasing;
     });
     hudBottom = document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? 0;
     // any touch takes the camera back from the chase
-    const grab = () => stopFollow();
+    const grab = () => follow.stop();
     scroller.addEventListener('touchstart', grab, { passive: true });
     scroller.addEventListener('wheel', grab, { passive: true });
     flushSync(); // the track's height for this screen, before scrolling to its foot
@@ -432,13 +408,15 @@
       },
       at: (x: number, z: number) => world.clientAt(x, z), P: world.P,
       /** Put my villager at a world point (e2e: the depth order). */
-      put: (x: number, z: number) => (place('mine', x, z), world.kick())
+      put: (x: number, z: number) => (place('mine', x, z), world.kick()),
+      /** My villager's feet now (e2e: tap-to-walk), whether the camera is following it, the snapping now. */
+      mine: () => livePos('mine'), following: () => follow.active, snapping: () => scroller?.style.scrollSnapType ?? ''
     };
     return () => {
       offMove();
       scroller?.removeEventListener('touchstart', grab);
       scroller?.removeEventListener('wheel', grab);
-      clearTimeout(snapBack);
+      follow.dispose();
       ro.disconnect();
       clearTimeout(settle);
       world.stop();
@@ -459,11 +437,8 @@
     const offStep = onStep((id) => {
       if (covered || life.hidden) return;
       const [x, z] = livePos(id);
-      const k = surfaceAt(x, z);
-      if (k === 'sea' || k === 'water') return;
-      if (raining()) cue('footstep-splash');
-      else if (k === 'sand') cue('footstep-sand');
-      else cue(season === 'winter' ? 'footstep-snow' : 'footstep-grass');
+      const c = stepCue(surfaceAt(x, z), season === 'winter', raining());
+      if (c) cue(c);
     });
     return () => {
       offStep();
@@ -495,11 +470,11 @@
   const relay = live && LIVE_URL && !week.demo ? liveRelay() : null;
   $effect(() => {
     if (!relay) return;
-    const offStatus = relay.onStatus((st) => (partnerHere = st.connected && st.peer));
+    const offStatus = relay.onStatus((st) => (partnerHere = wilburShows(st, !!week.demo)));
     // the partner's tap-to-walk: their villager runs there here too (a node id or a world point)
     const offWalk = relay.on((m) => {
       if (m.kind !== 'walk' || m.who !== view.partner || covered) return;
-      const to = typeof m.to === 'string' ? walkGeo().nodes[m.to] : m.to;
+      const to = typeof m.to === 'string' ? nav().named[m.to] : m.to;
       if (to) partnerTo(to[0], to[1]);
     });
     return () => {
@@ -520,24 +495,25 @@
   let lastDoor: string | undefined;
   function building(id: BuildingId, el: HTMLElement) {
     if (!live || covered) return;
+    const door = doorAt(id);
+    let { ms, walked } = approach(door[0], door[1] + 12, { spot: door, far: true });
+    if (!walked) {
+      // too far for an action walk: run there (tap-to-walk), the camera following
+      const from = livePos('mine'), r = sendTo(door[0], door[1]);
+      if (r) (ms = r.ms), follow.start(from[1], r.to[1], world.screenAt(door[0], door[1]).theta);
+    }
+    life.later(() => knock(id, el), ms + 120);
+  }
+  /** At the door: NH's character inside answers (the balloon's tail at the door), then the feature opens. */
+  function knock(id: BuildingId, el: HTMLElement) {
+    if (covered) return;
     const line = doorLine(id, jst(now()).hour, Math.random, lastDoor);
     if (!line) return;
     lastDoor = line.key;
-    const b = BUILDINGS.find((x) => x.id === id)!;
-    const door = walkGeo().nodes[`door-${id}`] ?? [b.x, b.z - 16];
-    let { ms, walked } = approach(b.x, b.z - 4, { spot: door, far: true });
-    if (!walked) {
-      // too far for an action walk: run there (tap-to-walk), the camera following
-      const r = sendTo(door[0], door[1]);
-      if (r) (ms = r.ms), follow(r.to);
-    }
     const guest = id === 'campsite' ? visitorNow(minuteNow()) : null;
-    const text = guest ? t('world.door.campsite.guest', { name: t(`visitor.${guest}`) }) : t(line.key);
-    life.later(() => {
-      if (covered) return;
-      cue('tick');
-      talk?.say(t(line.name), text, el, { colour: line.colour, ondone: () => open(line.opens) });
-    }, ms + 120);
+    const text = guest ? t('world.door.campsite.guest', { name: t(`visitor.${guest}`) }) : t(line.key, { name: view.people[view.me].villagerName });
+    cue('tick');
+    talk?.say(t(line.name), text, el, { colour: line.colour, ondone: () => open(line.opens) });
   }
   function open(what: DoorOpens) {
     if (covered || !what) return;
@@ -617,7 +593,7 @@
         {/each}
 
         {#if wilbur}
-          <div class="wilbur" data-wilbur {@attach world.at({ x: 404, z: -22, h: 64 })}>
+          <div class="wilbur" data-wilbur {@attach world.at({ x: WILBUR_AT[0], z: WILBUR_AT[1], h: 64 })}>
             <button type="button" class="npc" data-sfx="self" aria-label={t('world.npc.wilbur')} onclick={(e) => wilburTap(e.currentTarget)}>
               <OfficialArt key="villagers/wilbur" size={u(64)} />
             </button>

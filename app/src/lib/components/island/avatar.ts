@@ -13,8 +13,10 @@ import { actors, addFx, applyStep, awayFromHome, busy, faceToward, later, place,
 import { cue } from '#lib/sound/cues.ts';
 import { FOLLOW_MS, MAX_HOPS, MEET, POI_LINGER, adjacent, besideSpots, pickPoi, pois, shouldFollow, type PoiKind } from './wander.ts';
 import type { ActorId, Motion } from '../motion/reactions.ts';
-import { REACH, SPEED, actionMs, actionSpots, nearestWalkable, route, routeLength, walkGeo, walkable, type Pt, type WalkGeo } from './walkGraph.ts';
+import { REACH, SPEED, actionMs, actionSpots, route, routeLength, walkGeo, walkable, type Pt, type WalkGeo } from './walkGraph.ts';
 import type { EmoteIcon } from '#lib/art.ts';
+import { nav } from './nav.ts';
+import { planTap, type TapPlan } from './tapWalk.ts';
 
 export interface AvatarCtx {
   geo: () => WalkGeo;
@@ -175,44 +177,37 @@ export function approach(tx: number, ty: number, o: ApproachOpts = {}): Approach
   return { ms: p.ms, walked: true };
 }
 
-/** Tap-to-walk (spec §4): my villager runs (SPEED.run) to the tapped ground, or to the nearest walkable point within
- *  40u of it (a tap on the water: the bank, facing the water), along the walk graph (bridges, stairs), and stays there
- *  for the session. Null when there's nowhere to go. */
-export function sendTo(x: number, z: number): { to: Pt; ms: number } | null {
+/** Tap-to-walk (spec §4, tapWalk.ts): my villager runs (200 u/s) to the tapped ground, a building's door (its
+ *  footprint), the nearest bank facing the water (water) or the nearest walkable point within 40u (anything else),
+ *  over the bridges and the stairs (nav.ts), and stays there for the session. Null when there's nowhere to go. */
+export function sendTo(x: number, z: number): TapPlan | null {
   const c = ctx, me = actors.mine;
   if (!c || !c.enabled() || me.asleep) return null;
-  const g = c.geo(), to = nearestWalkable(g, Math.round(x), Math.round(z), 40);
-  if (!to) return null;
-  const from = c.where('mine');
-  const pts = route(g, from, to);
-  if (!pts) return null;
+  // nav.ts snaps the tap (a building's door, a bank facing the water, the nearest walkable point) and finds the way
+  const from = c.where('mine'), p = planTap(nav(), from, x, z, c.geo().extra);
+  if (!p) return null;
   steered.mine = Date.now();
   clearTimeout(homeTimers.mine);
   c.hush?.();
-  const off = Math.hypot(to[0] - x, to[1] - z) > 6;
-  const face = off && Math.abs(x - to[0]) >= 3 ? (x < to[0] ? 'l' : 'r') : undefined;
-  const ms = walkTo('mine', pts, { speed: SPEED.run, from, face });
+  const ms = walkTo('mine', p.pts, { speed: SPEED.run, from, face: p.snap.face });
   me.busyUntil = Math.max(me.busyUntil, Date.now() + ms);
-  keepStay(Math.hypot(to[0] - me.home[0], to[1] - me.home[1]) <= 8 ? null : to);
+  keepStay(Math.hypot(p.to[0] - me.home[0], p.to[1] - me.home[1]) <= 8 ? null : p.to);
   away.since ||= Date.now();
   clearTimeout(followTimer);
   followTimer = setTimeout(checkFollow, Math.max(0, away.since + FOLLOW_MS - Date.now()) + ms + 50);
-  return { to, ms };
+  return { ...p, ms };
 }
 
 /** The partner tapped somewhere on their phone (the relay's `walk`, world units): their villager here runs there too,
- *  along the same walk graph from where it stands (no positions are sent). */
+ *  by the same planner from where it stands (no positions are sent). */
 export function partnerTo(x: number, z: number): boolean {
   const c = ctx;
   if (!c || !c.enabled() || actors.partner.asleep) return false;
-  const g = c.geo(), to = nearestWalkable(g, Math.round(x), Math.round(z), 40);
-  if (!to) return false;
-  const from = c.where('partner');
-  const pts = route(g, from, to);
-  if (!pts) return false;
+  const from = c.where('partner'), p = planTap(nav(), from, x, z, c.geo().extra);
+  if (!p) return false;
   steered.partner = Date.now();
   clearTimeout(homeTimers.partner);
-  walkTo('partner', pts, { speed: SPEED.run, from });
+  walkTo('partner', p.pts, { speed: SPEED.run, from, face: p.snap.face });
   return true;
 }
 
