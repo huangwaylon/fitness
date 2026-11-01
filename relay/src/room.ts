@@ -41,6 +41,8 @@ export const BURST = 20;
 export const PER_SEC = 20;
 /** At most this many sockets at once (two people, a few tabs, room to reconnect). */
 export const MAX_SOCKETS = 8;
+/** A person's phrases (`say`) at most one this often (ms): a newer one within it goes nowhere (the phone waits 1.5 s). */
+export const SAY_GAP_MS = 1000;
 
 export class RoomCore<S extends Sock> {
   private readonly buckets = new WeakMap<S, Bucket>();
@@ -50,6 +52,8 @@ export class RoomCore<S extends Sock> {
   private claims = new Set<string>();
   private nests = new Map<string, number>();
   private day = -1;
+  /** When each person's last phrase went out (presence only: not kept). */
+  private said = new Map<Who, number>();
 
   constructor(private readonly io: RoomIO<S>, private ring: Kept[] = []) {
     for (const e of ring) this.lastT = Math.max(this.lastT, e.t);
@@ -125,13 +129,19 @@ export class RoomCore<S extends Sock> {
       const had = this.fresh().find((e) => e.who === who && e.c === c && JSON.stringify(bare(e)) === same);
       if (had) return this.ack(s, c, had.t, true);
     }
+    if (intent.kind === 'say') {
+      // presence only, gently limited (the room's bucket is for bursts of world taps)
+      if (now - (this.said.get(who) ?? -Infinity) < SAY_GAP_MS) return;
+      this.said.set(who, now);
+    }
     const out: Relayed = { ...intent, v, who, t: this.stamp() };
     // the shared world (v2): a claim already made today, a second nest within the hour, or a walk older than the one
     // kept goes nowhere
     if (v === 2 && stored && !this.admit(out, c)) return c !== undefined ? this.ack(s, c, out.t, false) : undefined;
     // to the partner first, then kept: a message sent after a storage write waits for it (the output gate)
-    // a walk's target means another thing in each version (stage units in v1, world units in v2): only to its own
-    for (const p of this.authed(other(who))) if (out.kind !== 'walk' || this.vOf(p) === v) this.send(p, out);
+    // a walk's target means another thing in each version (stage units in v1, world units in v2): only to its own; a
+    // phrase (v2) only to a phone that speaks it
+    for (const p of this.authed(other(who))) if ((out.kind !== 'walk' && out.kind !== 'say') || this.vOf(p) === v) this.send(p, out);
     if (stored) this.keep(c !== undefined ? { ...out, c } : out);
     if (c !== undefined) this.ack(s, c, out.t, true);
   }

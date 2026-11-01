@@ -33,6 +33,9 @@
   import Balloon from './Balloon.svelte';
   import SceneTaps from './SceneTaps.svelte';
   import Talk from './Talk.svelte';
+  import Says from './Says.svelte';
+  import SayPicker from './SayPicker.svelte';
+  import { rememberSay, sayGate } from './say.ts';
   import TreeShakes from './TreeShakes.svelte';
   import PartnerNews from './PartnerNews.svelte';
   import { HATS, birthdaysOn, isBirthday } from './birthday.ts';
@@ -165,9 +168,49 @@
   // `live` is fixed per scene (the gallery's thumbnails are never live).
   // svelte-ignore state_referenced_locally
   const life = new IslandLife({ view: () => view, live, covered: () => covered, night: () => tod === 'night', day: () => tod === 'day' });
-  // A tap on mine hops (R9) and says nothing (it was too easy to tap by accident); now and then a flea hops off it.
-  // The speech balloon (Talk) is for the island's other speakers: the campsite's door, the visitors.
+  // A tap on mine squishes (R9; now and then a flea hops off it) and opens the phrase picker by it (SayPicker): a pick
+  // hops it and shows the phrase in its balloon (Says) for a few seconds, here and on the partner's phone (the relay's
+  // `say`, presence only: at most one per 1.5 s, the newer waiting). The speech balloon (Talk) is for the island's other
+  // speakers: the campsite's door, the visitors.
   let talk = $state<ReturnType<typeof Talk>>();
+  let says = $state<ReturnType<typeof Says>>();
+  /** My villager's element while its picker is open. */
+  let picking = $state<HTMLElement | null>(null);
+  const vilEls = $state<Record<'mine' | 'partner', HTMLElement | undefined>>({ mine: undefined, partner: undefined });
+  /** The name tag's colour: the person's (tokens.css --person-a / --person-b). */
+  const SAY_TAG: Record<PersonId, string> = { A: '#2F86BD', B: '#D2701F' };
+  function openPicker(el: HTMLElement) {
+    if (!live || covered || decorating) return;
+    picking = el;
+    // it stays where it is while I choose (idle life leaves it be)
+    actors.mine.busyUntil = Math.max(actors.mine.busyUntil, Date.now() + 60_000);
+  }
+  /** `by`: the pointerdown that closed it (on the scenery that tap only closes: SceneTaps). */
+  function closePicker(by?: Event) {
+    if (!picking) return;
+    picking = null;
+    if (by) closedBy = by;
+    actors.mine.busyUntil = Math.min(actors.mine.busyUntil, Date.now() + 1200);
+  }
+  $effect(() => {
+    // a sheet over the island, decorating, or my villager setting off (a walk home): the picker goes
+    if (picking && (covered || decorating || actors.mine.walking)) untrack(() => closePicker());
+  });
+  /** Show `text` over a villager (mine: picked here; the partner's: from the relay) and hop it. */
+  function showSay(id: 'mine' | 'partner', text: string) {
+    const el = vilEls[id], sd = sides[id];
+    if (!el || covered) return;
+    says?.say(id, text, el, { name: sd.person.villagerName, colour: SAY_TAG[sd.person.person] });
+    if (!actors[id].asleep && !actors[id].walking) applyStep(id, { actor: id, motion: 'hop' });
+  }
+  function pickSay(text: string, own: boolean) {
+    closePicker();
+    if (own) rememberSay(text);
+    showSay('mine', text);
+    sayOut.say(text);
+  }
+  const sayOut = sayGate((text) => void (relay ?? demoRelay)?.send({ kind: 'say', text }));
+  $effect(() => () => sayOut.stop());
   /** The scenery taps (a tap on my villager may send a flea hopping off it). */
   let sceneTaps = $state<ReturnType<typeof SceneTaps>>();
   // A tap on the partner is a high-five (NH's reaction, no card), in place (only a tap on empty ground walks): both
@@ -395,9 +438,11 @@
     world.kick();
     clearTimeout(settle);
     talk?.hold(true);
+    says?.hold(true);
     settle = setTimeout(() => {
       world.rest.z = Math.round(world.view.camZ);
       talk?.hold(false);
+      says?.hold(false);
     }, 140);
   }
   /** Put the camera at a world z at once (the e2e hook). */
@@ -622,6 +667,14 @@
     return () => (off(), clearTimeout(soon));
   });
   $effect(() => () => link?.detach());
+  // the partner's phrases, live (never replayed: a phone opening later hears none)
+  $effect(() => {
+    const r = relay ?? demoRelay;
+    if (!live || !r) return;
+    return r.on((m) => {
+      if (m.kind === 'say' && m.who === view.partner) untrack(() => showSay('partner', m.text));
+    });
+  });
   /** When each of the partner's changes arrived here (e2e, the hooks on). */
   const heardAt: Record<string, number> = {};
   /** The decorations as both phones must have them (e2e: the two-phone harness): each item's id, kind, spot and facing. */
@@ -730,6 +783,10 @@
 
 <div class="if-scene scene" bind:this={sceneEl} data-decorating={decorating || undefined} data-season={season} data-tod={tod} data-sky={live ? weather.sky : undefined} data-paused={life.hidden || undefined}
   data-covered={covered || undefined} data-live={live || undefined} style:--horizon-y="{horizonPx}px" style:--sky-h="{horizonPx + 6}px">
+  {#if picking && sceneEl}
+    <!-- what my villager says: outside the scroller (its field's focus never scrolls the island), over the stage -->
+    <SayPicker scene={sceneEl} anchor={picking} onpick={pickSay} onclose={closePicker} />
+  {/if}
   {#if live && FireworksC}<FireworksC bind:this={fireworks} enabled={() => !covered && !life.hidden} forced={life.devFireworks || wedding.fireworks} {allMet} {cheer} />{/if}
 
   <div class="scroller" bind:this={scroller} onscroll={onScroll} data-world-scroller>
@@ -770,7 +827,8 @@
           {@const sd = sides[id]}
           <div class="actor" class:walking={live && actors[id].walking} data-actor={id} data-seat={seated[id]} data-rep={repping[id] || undefined} style:--seat-drop={u(SEAT_DROP)} style:--rep-lift={u(9)} data-person={sd.person.person} data-stung={stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : '0s'}
             {@attach world.at(live ? { x: sd.home[0], z: sd.home[1], h: VILLAGER.h, live: () => livePos(id), always: true } : { x: sd.home[0], z: sd.home[1], h: VILLAGER.h })}>
-            <button type="button" class="vil" disabled={!live} data-sfx="self"
+            <button type="button" class="vil" disabled={!live} data-sfx="self" bind:this={vilEls[id]}
+              aria-haspopup={id === 'mine' && live ? 'dialog' : undefined} aria-expanded={id === 'mine' && live ? !!picking : undefined}
               aria-label={id === 'mine'
                 ? t('island.me', { name: sd.person.villagerName, bells: formatBells(sd.person.today.bells) })
                 : t('island.highfive', { name: sd.person.villagerName })}
@@ -778,6 +836,7 @@
                 if (id === 'mine') {
                   sceneTaps?.villagerTap(e.currentTarget);
                   life.tapMine();
+                  openPicker(e.currentTarget);
                 } else highFiveTap();
               }}>
               <Villager person={sd.person.person} villager={sd.person.villager} size={u(VILLAGER.h)} eager
@@ -814,6 +873,7 @@
             skyTap={(x, y) => !!fireworks?.tap(x, y)}
             say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={trick} tree={treeTap} />
           <Talk bind:this={talk} scene={sceneEl} />
+          <Says bind:this={says} scene={sceneEl} />
           {#if hookFlag('hit')}
             <!-- ?hit: every tap target drawn over the island (its own chunk) -->
             {#await import('./HitOverlay.svelte') then m}<m.default scene={sceneEl} />{/await}

@@ -50,8 +50,8 @@ panel](#panel)) with the jar on its right, the two centred in the sky; a sync ch
   ふたりでぜんぶ as a +2 under the jar; all of it waits while something covers the scene. Tap → ごほうび (the island zooms
   into the jar and ごほうび grows out of it; live CSS, no View Transition: its snapshot of the banded ground striped on iPhone).
 - **Centre stage:** the plaza's middle (`world.ts` `CENTRE_STAGE`, ひろば), where visitors stand.
-- **Villagers:** mine hops when tapped and says nothing; a tap on the partner's is a high-five
-  ([Villager taps](#villager-taps)). Neither opens a sheet.
+- **Villagers:** a tap on mine opens its phrase picker (a phrase shows in its balloon on both phones); a tap on the
+  partner's is a high-five ([Villager taps](#villager-taps)). Neither opens a sheet.
 - Controls are real buttons with `aria-label`, ≥ 44px (villagers 64px); focus order = visual order.
 
 ### Wallet
@@ -775,9 +775,21 @@ plate for every discovery (catches, finds, a present, its first-find page): the 
 ### Villager taps
 
 A tap on my villager is a squish with a ♪ and the tap sound (R9), and in NH's flea months now and then a flea hops off
-it ([Critters](#critters)); it opens no balloon and no sheet (it was too easy to tap by accident). The speech balloon
-(`island/Talk.svelte`) is for the island's other speakers: the doors, the visitors, Blathers, Wilbur. One balloon at a
-time.
+it ([Critters](#critters)); it opens the phrase picker by it (`island/SayPicker.svelte`, `island/say.ts`,
+`e2e/say.spec.ts`), never a sheet. The picker is a small cream card in the reactions wheel's spirit, standing by my
+villager by the balloons' rule (never under the HUD; above the keyboard while one is up; outside the scroller, so its
+field never scrolls the island): 「なにを いう？」 and ✕, six presets in two columns (やっほー！ おつかれさま！
+がんばろう！ やったね！ いっしょに あるこう！ おやすみ〜), my own last three (kept on this phone, `island.says`), and
+「じぶんで かく…」: a field of at most 20 characters (cut only when the IME isn't composing; a counter), もどる and
+いう; Enter sends. Every target ≥ 44px. ✕, Esc or a tap elsewhere closes it, as a tree's popup: on the ground that tap
+only closes (nobody walks), on a control it still acts (the flea is netted), on my villager it only closes. A pick
+closes it, hops my villager and shows the phrase in its balloon for 4 s (`island/Says.svelte`: Talk's cream balloon,
+the name on a tag in the person's colour, its tail at the villager, clear of its emote and the other villager's; it
+follows a walk, steps aside while the camera moves; text, never markup; taps go through it). A newer phrase replaces
+it. On the partner's phone the same balloon shows over my villager there, which hops too (the relay's `say`, presence
+only: a phone that is closed simply never sees it, one opening later doesn't either; at most one per 1.5 s, the newer
+waiting). No sound beyond the UI cues, no ベル. The speech balloon (`island/Talk.svelte`) is for the island's other
+speakers: the doors, the visitors, Blathers, Wilbur. One balloon at a time.
 
 A tap on the partner's villager is a **ハイタッチ** straight away (no card), in place: the tap sound, they stop where
 they are (either woken first if asleep), a sparkle flies in an arc from my villager to them, and both turn to each

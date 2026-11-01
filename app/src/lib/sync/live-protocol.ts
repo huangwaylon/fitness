@@ -92,7 +92,10 @@ export type Intent =
   | { kind: 'drag'; id: string; x: number; z: number; f: number; it?: string; end?: true }
   /** My villager in the tent (presence only, like a drag): `in` whether it's inside; a walk there (`from` → `via` → `to`,
    *  model units of the room, set off at `s` on the relay's clock, `ms` long), or where it stands (`to` alone). */
-  | { kind: 'tent'; in: boolean; to?: Pt; from?: Pt; via?: Pt[]; s?: number; ms?: number };
+  | { kind: 'tent'; in: boolean; to?: Pt; from?: Pt; via?: Pt[]; s?: number; ms?: number }
+  /** A phrase my villager says (v2; docs/design.md "Villager taps"): its speech balloon over it on both phones for a
+   *  few seconds. Presence only: never kept, never replayed, never in the sheet. `text` as cleanSay leaves it. */
+  | { kind: 'say'; text: string };
 
 /** A decor op on the wire (contract/decor.ts DecorOp, or the tent's with `sc: 't'`, contract/tent.ts; checked here
  *  again: the Worker bundles this file alone). */
@@ -163,6 +166,21 @@ const DECOR_ID = /^d[0-9a-z]{6,24}$/;
 const TENT_TILES = [0, 7] as const;
 const TENT_U = [-40, 40] as const;
 const isTentPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], TENT_U) && within(x[1], TENT_U);
+
+/** A phrase's length at most (code points; NH's balloon scale). */
+export const SAY_MAX = 20;
+/** What a phrase never carries: control characters (a newline, a tab: a space), line and paragraph separators, bidi
+ *  controls, invisible spaces, lone surrogates. (The emoji joiner and the variation selectors stay: emoji need them.) */
+const SAY_BREAK = /[\t\n\v\f\r\u0085\u2028\u2029]/gu;
+const SAY_STRIP = /[\p{Cc}\p{Cs}\u00AD\u061C\u180E\u200B\u200E\u200F\u202A-\u202E\u2060-\u2064\u2066-\u206F\uFEFF\uFFF9-\uFFFB]/gu;
+
+/** A phrase as both phones and the relay keep it: NFC, every control and invisible character out (a run of blanks one
+ *  space), trimmed, at most SAY_MAX code points; null when nothing is left (or it isn't text). */
+export function cleanSay(s: unknown): string | null {
+  if (typeof s !== 'string' || s.length > 4 * MAX_BYTES) return null;
+  const t = s.normalize('NFC').replace(SAY_BREAK, ' ').replace(SAY_STRIP, '').replace(/\s{2,}/gu, ' ').trim();
+  return Array.from(t).slice(0, SAY_MAX).join('').trim() || null;
+}
 
 type Obj = Record<string, unknown>;
 const isObj = (x: unknown): x is Obj => typeof x === 'object' && x !== null && !Array.isArray(x);
@@ -242,6 +260,10 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
         kind: 'tent', in: o.in, ...(o.to !== undefined ? { to: o.to as Pt } : {}), ...(o.from !== undefined ? { from: o.from as Pt } : {}),
         ...(o.via !== undefined ? { via: o.via as Pt[] } : {}), ...(o.s !== undefined ? { s: o.s as number } : {}), ...(o.ms !== undefined ? { ms: o.ms as number } : {})
       };
+    case 'say': {
+      const text = v === 1 ? null : cleanSay(o.text);
+      return text ? { kind: 'say', text } : null;
+    }
     default:
       return null;
   }

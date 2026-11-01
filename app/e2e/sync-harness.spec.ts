@@ -223,3 +223,35 @@ test('two phones, one island: a scripted session leaves both (and a phone openin
   if (m) console.log(`[relay] A's socket: ${m.sent} sent (${m.sentBytes} B), ${m.recv} received (${m.recvBytes} B), ${m.resent} resent, acks median ${med(m.ackMs)} ms, ${m.pending} waiting`);
   await close();
 });
+
+test('a phrase is presence: the partner sees it over my villager at once, a phone opening later never', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const { open, ctxB, close } = await phones(browser);
+  const a = await open('A'), b = await open('B');
+  for (const p of [a, b]) await expect.poll(() => w<{ connected: boolean; peer: boolean } | null>(p, 'status').then((s) => !!s?.connected && s.peer), { timeout: 10_000 }).toBe(true);
+  await a.waitForTimeout(2600); // the opening beats are over
+  const said = b.locator('[data-say="partner"]');
+  // a preset, each way
+  for (const [from, to, name] of [[a, b, 'やっほー！'], [b, a, 'おつかれさま！']] as const) {
+    await from.locator('[data-actor="mine"] .vil').click();
+    const t0 = Date.now();
+    await from.getByRole('dialog', { name: 'なにを いう？' }).getByRole('button', { name }).click();
+    await expect(to.locator('[data-say="partner"]')).toHaveText(new RegExp(name), { timeout: 2000 });
+    console.log(`[${RELAY ? 'relay' : 'demo'}] say → there: ${Date.now() - t0} ms (the click included)`);
+    await expect(from.locator('[data-say="mine"]')).toHaveText(new RegExp(name));
+  }
+  // my own words, cleaned on the way
+  await a.waitForTimeout(1600); // (one per 1.5 s)
+  await a.locator('[data-actor="mine"] .vil').click();
+  await a.getByRole('button', { name: 'じぶんで かく…' }).click();
+  await a.locator('[data-say-field]').fill(' ジム\u202Eいこう ');
+  await a.locator('[data-say-field]').press('Enter');
+  await expect(said.locator('.text')).toHaveText('ジムいこう', { timeout: 2000 });
+  await expect(said.locator('.who')).toHaveText('ウェイ');
+  // gone after a few seconds, and never replayed to a phone opening later
+  await expect(said).toHaveCount(0, { timeout: 5500 });
+  const c = await open('B', RELAY ? await browser.newContext(CTX) : ctxB);
+  await c.waitForTimeout(1500);
+  await expect(c.locator('[data-say]')).toHaveCount(0);
+  await close();
+});

@@ -4,7 +4,7 @@
   // The day needs zero taps (the Watch and the Shortcut fill the trees);
   // ハイタッチ lives with the partner's villager: a tap on them and mine walks over for it (no card).
   // The app asks no daily questions: the band under the scene is しずえ's, and her dialogue box shows only when she has
-  // news (the harvest). Tap the jar → the wallet (ごほうび); a tree → its popup; the partner → a high-five; my villager → a hop.
+  // news (the harvest). Tap the jar → the wallet (ごほうび); a tree → its popup; the partner → a high-five; my villager → its phrase picker.
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';

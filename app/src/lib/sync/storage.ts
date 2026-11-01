@@ -58,7 +58,9 @@ export const DEVICE = {
   locale: 'island.locale',
   /** localStorage: `{ on, endpoint?, lang?, at? }`: せってい's つうち switch and what the relay was last given
    *  (sync/push.ts; off by default). */
-  push: 'island.push'
+  push: 'island.push',
+  /** localStorage: `[text…]`: my own phrases for my villager's balloon, the last few, newest first (island/say.ts). */
+  says: 'island.says'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */
