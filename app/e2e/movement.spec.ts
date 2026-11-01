@@ -65,13 +65,14 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
 
 test('a second tap re-targets the walk from where the villager is', async ({ page }) => {
   await open(page);
-  const a = await centre(page, '[data-care="weed"]', 1), b = await centre(page, '[data-care="weed"]', 0);
+  // across the lawn to the partner's bed, then (mid-walk) back to my own: it turns from where it is
+  const a = await centre(page, '[data-flower="1-3"]'), b = await centre(page, '[data-flower="0-0"]');
   await page.mouse.click(a.x, a.y - 4);
   await page.waitForTimeout(150);
   await page.mouse.click(b.x, b.y - 4);
   await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0, { timeout: 2000 });
   const f = await feet(page);
-  expect(Math.hypot(f.x - b.x, f.y - b.y)).toBeLessThan(60);
+  expect(Math.hypot(f.x - b.x, f.y - b.y)).toBeLessThan(110); // the can reaches across a bed
   expect(await overlaps(page)).toEqual([]);
 });
 
@@ -167,9 +168,13 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await page.goto('?demo&date=2026-11-04T12:00&visitor=jingle&critter=none');
     await expect(ribbon(page)).toBeVisible();
     await page.waitForTimeout(800);
+    // a host stands on centre stage, in the plaza (ひろば)
+    await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(860));
+    await page.waitForTimeout(400);
     const v = await centre(page, '[data-visitor="jingle"] .art');
     await page.mouse.click(v.x, v.y);
-    await expect(page.locator('[data-fx="talk"].placed')).toBeVisible({ timeout: 3000 });
+    // from home it's a run across the river to the plaza (a few seconds), then the host speaks
+    await expect(page.locator('[data-fx="talk"].placed')).toBeVisible({ timeout: 8000 });
     await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
     // their middle is still theirs: no villager of mine under it
     const onTop = await page.evaluate(({ x, y }) => document.elementsFromPoint(x, y).some((e) => e.closest('[data-actor="mine"]')), v);

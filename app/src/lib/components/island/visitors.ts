@@ -58,3 +58,15 @@ export function visitorLine(id: VisitorId, r: () => number, last?: string): stri
 
 /** How long Jack's trick (a goofy face on my villager) lasts. */
 export const TRICK_MS = 60_000;
+
+/** Where the visitor's feet are now (world x, z), while one is on the island: Visitor.svelte sets it (mid-walk
+ *  included), null when nobody is here. */
+export const visitorPlace: { where: (() => readonly [number, number]) | null } = { where: null };
+
+/** Whether today's visitor is on screen (しずえ's box says where the guest is when not: 「きょうは K.K.が ひろばに
+ *  きてるよ！」): `w` is the live island's World (camera.svelte.ts `live()`); null when no visitor is out (or no island).
+ *  Not reactive: read it when the camera settles (World.rest.z) or when the box opens. */
+export function visitorInView(w: { inView(x: number, z: number, pad?: number): boolean } | null, pad = -24): boolean | null {
+  const p = visitorPlace.where?.();
+  return p && w ? w.inView(p[0], p[1], pad) : null;
+}

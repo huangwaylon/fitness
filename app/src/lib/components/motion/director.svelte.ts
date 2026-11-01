@@ -23,12 +23,13 @@ interface ActorState {
   emoteHold: boolean;
   fx: { kind: FxKind; n: number }[];
   face: Facing;
-  /** Where the feet are (stage units): the spot the CSS transition is heading for. */
+  /** Where the feet are heading (world units, x across and y = the world's z, into the island): the current segment's
+   *  end. The scene moves the feet from `from` to here over `walkMs` from `t0` (livePos). */
   x: number;
   y: number;
-  /** The feet's y the depth (z) is taken from: set at a segment's start walking toward the camera, at its end walking
-   *  away, so the villager never pops in front of what it's still behind. */
-  zy: number;
+  /** The current segment's start and when it started (performance.now()). */
+  from: Pt;
+  t0: number;
   /** The current segment's duration (ms; 0 = a snap). */
   walkMs: number;
   /** One walk cycle (two steps), ms. */
@@ -49,7 +50,7 @@ interface ActorState {
 }
 
 const blank = (): ActorState => ({
-  motion: null, motionN: 0, emote: null, emoteN: 0, emoteHold: false, fx: [], face: 'home', x: 0, y: 0, zy: 0, walkMs: 0,
+  motion: null, motionN: 0, emote: null, emoteN: 0, emoteHold: false, fx: [], face: 'home', x: 0, y: 0, from: [0, 0], t0: 0, walkMs: 0,
   stepMs: 640, home: [0, 0], walking: false, tool: null, toolN: 0, holding: null, asleep: false, pose: null, present: false,
   busyUntil: 0
 });
@@ -295,8 +296,21 @@ export function place(id: ActorId, x: number, y: number) {
   const a = actors[id];
   for (const c of walks[id]) c();
   walks[id].clear();
-  Object.assign(a, { x, y, zy: y, walkMs: 0, walking: false });
+  Object.assign(a, { x, y, from: [x, y], t0: 0, walkMs: 0, walking: false });
 }
+
+const clock = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+
+/** Where an actor's feet are right now (world units): along the current segment, by the clock. */
+export function livePos(id: ActorId, t = clock()): Pt {
+  const a = actors[id];
+  if (!a.walkMs) return [a.x, a.y];
+  const k = Math.min(1, Math.max(0, (t - a.t0) / a.walkMs));
+  return [a.from[0] + (a.x - a.from[0]) * k, a.from[1] + (a.y - a.from[1]) * k];
+}
+
+/** Still on its way along a segment (the scene keeps placing it). */
+export const inMotion = (id: ActorId, t = clock()): boolean => actors[id].walkMs > 0 && t < actors[id].t0 + actors[id].walkMs;
 
 /** Called at each step of a walk (the scene plays a footstep: grass or sand), at most one per STEP_GAP_MS. */
 let stepHook: ((id: ActorId, x: number, y: number) => void) | null = null;
@@ -323,9 +337,18 @@ interface WalkOpts {
   face?: Facing;
 }
 
-/** Walk an actor along `pts` (stage units; design.md "Walking"): one CSS transition of transform per segment (no rAF),
- *  facing the way it goes, the walk bounce, a dust puff and a footstep every other step, depth from the feet's y. A new
- *  walk replaces the last; returns the total ms. */
+/** A segment started (the scene keeps its one rAF running while anyone is on the way). */
+let moved: ((id: ActorId) => void) | null = null;
+export function onMove(fn: typeof moved): () => void {
+  moved = fn;
+  return () => {
+    if (moved === fn) moved = null;
+  };
+}
+
+/** Walk an actor along `pts` (world units; design.md "Walking"): segment by segment (the scene moves the feet each
+ *  frame: livePos), facing the way it goes, the walk bounce, a dust puff and a footstep every other step. A new walk
+ *  replaces the last; returns the total ms. */
 export function walkTo(id: ActorId, pts: readonly Pt[], o: WalkOpts = {}): number {
   const a = actors[id];
   for (const c of walks[id]) c();
@@ -362,14 +385,15 @@ export function walkTo(id: ActorId, pts: readonly Pt[], o: WalkOpts = {}): numbe
     const prev = at;
     const seg = () => {
       if (Math.abs(p[0] - prev[0]) >= 3) a.face = p[0] < prev[0] ? 'l' : 'r';
+      a.from = t === 0 ? livePos(id) : prev;
+      a.t0 = clock();
       a.walkMs = Math.round(ms);
       a.x = p[0];
       a.y = p[1];
-      if (p[1] >= prev[1]) a.zy = p[1];
+      moved?.(id);
     };
     if (t === 0) seg();
     else own(t, seg);
-    if (p[1] < prev[1]) own(t + ms, () => (a.zy = p[1]));
     t += ms;
     at = p;
   });
@@ -459,7 +483,7 @@ export function resetAll() {
   for (const id of ['mine', 'partner', 'host', 'visitor'] as const) {
     const { present, home } = actors[id];
     cancel(id);
-    Object.assign(actors[id], blank(), { present, home, x: home[0], y: home[1], zy: home[1] });
+    Object.assign(actors[id], blank(), { present, home, x: home[0], y: home[1], from: home });
   }
 }
 

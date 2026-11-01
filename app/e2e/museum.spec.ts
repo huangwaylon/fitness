@@ -8,10 +8,19 @@ const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,
 const museum = (page: Page) => page.getByRole('button', { name: 'はくぶつかん：ずかんを ひらく' });
 const lines = (mood: 'day' | 'night') => [0, 1, 2].map((i) => (ja as Record<string, string>)[`museum.${mood}.${i}`]);
 
-async function open(page: Page, q: string) {
+/** The camera to world z (おく 1380: the museum; ひろば 860: the pond). */
+async function go(page: Page, z: number) {
+  await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
+  await page.waitForTimeout(300);
+}
+
+async function open(page: Page, q: string, cam = 1380) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo${q}`);
   await expect(ribbon(page)).toBeVisible();
+  await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
+  await page.waitForTimeout(500);
+  await go(page, cam);
 }
 
 for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
@@ -49,7 +58,7 @@ test('by day Blathers is drowsy; tapping his box away opens the ずかん in き
 test('at night he is lively and mentions the latest find; left alone the box closes and the ずかん opens', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   // a carp caught just now (the demo's own store)
-  await open(page, '&date=2026-11-04T21:00&critter=carp');
+  await open(page, '&date=2026-11-04T21:00&critter=carp', 860);
   await expect(page.locator('[data-critter="pond"]')).toBeAttached();
   await page.waitForTimeout(600);
   const f = await page.locator('[data-critter="pond"]').evaluate((el) => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top }; });
@@ -62,6 +71,7 @@ test('at night he is lively and mentions the latest find; left alone the box clo
   await expect(plate).toBeVisible();
   for (let i = 0; i < 6 && (await page.locator('[data-fx="catch"]').count()); i++) await plate.click().catch(() => {});
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
+  await go(page, 1380);
   // three in five he talks about it: tap until he does (a greeting otherwise, also lively)
   const night = lines('night');
   let mentioned = false;

@@ -5,7 +5,7 @@
 // (the ずかん has no kind for them; docs/decisions.md "Mushrooms are cosmetic").
 import { weighted } from '#lib/random.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
-import { TREE } from './scene.ts';
+import { GOAL_TREES } from './world.ts';
 
 /** NH's four ground mushrooms with their spawn weights (Nookipedia "Mushroom", a 3-star island: the elegant one rare). */
 export const MUSHROOMS = [['skinny-mushroom', 35], ['round-mushroom', 30], ['flat-mushroom', 30], ['elegant-mushroom', 5]] as const;
@@ -15,12 +15,13 @@ export const RARE_ODDS = 1 / 20;
 /** How often a day in October or December brings a mushroom (November: every day). */
 export const OFF_SEASON_ODDS = 1 / 8;
 
-/** Beside each trunk on the lawn, between the canopy and the fruit row (stage units: x, the foot's y), so they follow
- *  the trees; Finds shows one only where this screen's controls leave room (measured). */
-const TRUNK_DX = 21, TRUNK_UP = 18;
-export const MUSHROOM_SPOTS: readonly (readonly [number, number])[] = [TREE.x.A, TREE.x.B].flatMap((x) => [
-  [x - TRUNK_DX, TREE.base - TRUNK_UP], [x + TRUNK_DX, TREE.base - TRUNK_UP]
-] as const);
+/** Beside each goal tree's trunk on the lawn, on its inner side (world units: x, z), so they follow the trees: just past
+ *  the canopy's and the fruit row's spans (a tap there would go to the tree), level with the trunk and a step behind it.
+ *  Finds shows one only where this screen's controls leave room (measured). */
+export const MUSHROOM_SPOTS: readonly (readonly [number, number])[] = [GOAL_TREES.A, GOAL_TREES.B].flatMap(([x, z]) => {
+  const inner = x < 195 ? 1 : -1;
+  return [[x + inner * 58, z + 4], [x + inner * 66, z + 22]] as const;
+});
 
 const monthOf = (date: string): number => Number(date.slice(5, 7));
 

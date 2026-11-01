@@ -1,15 +1,19 @@
 <script lang="ts">
   // Seasonal particles (design.md "Particles and events"), transform/opacity only, ONE animation each (the side-to-side
   // flutter is folded into the fall keyframes; ≤ 3 particles in the idle budget): cherry-blossom
-  // petals, autumn maple leaves (2, 3 in festival week), snowflakes on a snow day (3), all official art; summer nights get
-  // our fireflies (stage units, so pass mode="fireflies" inside the stage). The falling layer is a size
-  // container, so the fall distance is in cqh of the whole scene.
+  // petals, autumn maple leaves (2, 3 in festival week), snowflakes on a snow day (3), all official art, falling in
+  // screen space; summer nights get our fireflies, world nodes over the grass in front of the camera where it settled
+  // (mode="fireflies", inside the stage), and on Toy Day (Dec 24) the same layer sets two presents beside the goal trees.
+  // The falling layer is a size container, so the fall distance is in cqh of the whole scene.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
   import { seasonArt } from '#lib/art.ts';
-  import { u, type Tod } from './scene.ts';
+  import { eventsAt, u, type Tod } from './scene.ts';
   import { mulberry32 } from '#lib/random.ts';
+  import { minuteNow } from '#lib/time/clock.ts';
+  import { useWorld } from './camera.svelte.ts';
+  import { GOAL_TREES, onGrass, surfaceAt, type Pt } from './world.ts';
 
   interface Props {
     season: Season;
@@ -48,8 +52,20 @@
       };
     });
   });
-  const FIREFLIES_ALL = [[60, 200], [268, 222], [104, 132]];
-  const FIREFLIES = $derived(quiet ? FIREFLIES_ALL.slice(0, 1) : FIREFLIES_ALL);
+  const w = useWorld();
+  /** The fireflies: over the grass a little in front of the camera's pivot when it settles (world x, dz from camZ,
+   *  lift u), kept off the paths, the plaza and the water; ≤ 3 (idle budget). */
+  const FIREFLY_AT: readonly [number, number, number][] = [[60, -70, 34], [300, -40, 26], [128, 60, 40], [250, 110, 30], [40, 150, 36]];
+  const FIREFLIES = $derived.by(() => {
+    if (mode !== 'fireflies') return [];
+    const z0 = w.rest.z;
+    const out = FIREFLY_AT.map(([x, dz, lift]) => [x, Math.round(z0 + dz), lift] as const).filter(([x, z]) => onGrass(x, z) && surfaceAt(x, z) === 'grass').slice(0, 3);
+    return quiet ? out.slice(0, 1) : out;
+  });
+  /** Toy Day's presents (NH's Dec 24), one on each side of the path, inward of the goal trees and clear of their
+   *  canopies and fruit rows (controls) at 390 and 320 wide. */
+  const toyDay = $derived(mode === 'fireflies' && eventsAt(minuteNow()).toyDay);
+  const TOYS: readonly Pt[] = [[GOAL_TREES.A[0] + 88, GOAL_TREES.A[1] + 28], [GOAL_TREES.B[0] - 90, GOAL_TREES.B[1] + 28]];
 </script>
 
 {#if mode === 'fall' && kind}
@@ -61,8 +77,16 @@
     {/each}
   </div>
 {:else if mode === 'fireflies' && season === 'summer' && tod === 'night' && !raining}
-  {#each FIREFLIES as [x, y], i (i)}
-    <span class="ff" style:left={u(x)} style:top={u(y)} style:animation-duration="{3 + (i % 3)}s" style:animation-delay="{-i * 0.7}s"></span>
+  {#each FIREFLIES as [x, z, lift], i (`${i}:${x},${z}`)}
+    <!-- above the time-of-day tint (IslandScene's .stage --z-tint 60000080): they glow -->
+    <span class="node" aria-hidden="true" {@attach w.at({ x, z, lift, h: 10, zi: 60_000_081 })}>
+      <span class="ff" style:animation-duration="{3 + (i % 3)}s" style:animation-delay="{-i * 0.7}s"></span>
+    </span>
+  {/each}
+{/if}
+{#if toyDay}
+  {#each TOYS as [x, z] (x)}
+    <span class="node toy" data-toy aria-hidden="true" {@attach w.at({ x, z, h: 24 })}><span class="art"><OfficialArt key="deco/present" size={u(18)} /></span></span>
   {/each}
 {/if}
 
@@ -77,9 +101,12 @@
     80% { transform: translate(calc(var(--sx) * -1), 86cqh) rotate(calc(var(--rot) * .8)); }
     100% { transform: translate(0, 110cqh) rotate(var(--rot)); }
   }
-  /* above the time-of-day tint (z 80): fireflies glow */
+  /* world nodes (camera.svelte.ts places them): a firefly's glow, a present at its foot */
+  .node { width: 0; height: 0; pointer-events: none; line-height: 0; }
+  .toy .art { position: absolute; left: 0; bottom: 0; translate: -50% 4%; filter: drop-shadow(0 1.5px 1px rgba(80, 50, 20, .3)); }
+  .toy .art :global(.official) { max-width: none; }
   .ff {
-    position: absolute; z-index: 82; width: 4.4px; height: 4.4px; margin: -2.2px; border-radius: 50%;
+    position: absolute; width: 4.4px; height: 4.4px; margin: -2.2px; border-radius: 50%;
     background: var(--firefly); box-shadow: 0 0 6px var(--firefly-glow); pointer-events: none;
     animation: firefly 4s var(--ease-idle) infinite alternate;
   }

@@ -7,19 +7,38 @@ async function islandReady(page: Page) {
   await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
 }
 
-/** Stage units (390 × 360, scene.ts) → page px. */
-const stagePoint = (page: Page, ux: number, uy: number) =>
-  page.locator('.if-scene .stage').evaluate((st, [x, y]) => {
-    const r = st.getBoundingClientRect();
-    return { x: r.left + (x * r.width) / 390, y: r.top + (y * r.width) / 390 };
-  }, [ux, uy]);
+type W = { at: (x: number, z: number) => [number, number]; go: (z: number) => void };
+/** A world point (world.ts units: x across, z into the island) → client px, the camera where it is. */
+const worldPoint = async (page: Page, x: number, z: number) => {
+  await page.waitForFunction(() => (window as unknown as { __world?: W }).__world);
+  const [cx, cy] = await page.evaluate(([x, z]) => (window as unknown as { __world: W }).__world.at(x, z), [x, z]);
+  return { x: cx, y: cy };
+};
+/** Open lawn at まえ: behind the partner's head, in front of the dig spots, between the trees. */
+const lawn = (page: Page) => worldPoint(page, 240, 380);
+/** The sea in front of the beach (まえ's foot), left of the beach's finds: as far out as this screen shows. */
+const sea = (page: Page) =>
+  page.evaluate(() => {
+    const w = (window as unknown as { __world: W }).__world;
+    for (let z = -40; z < -8; z += 2) {
+      const [x, y] = w.at(60, z);
+      if (y < innerHeight - 16) return { x, y };
+    }
+    const [x, y] = w.at(60, -8);
+    return { x, y };
+  });
 
-/** The open sea just under the horizon (the scene's --horizon-y, which can sit above the stage's own). */
-const openSea = (page: Page) =>
-  page.locator('.if-scene .stage').evaluate((st) => {
-    const cs = getComputedStyle(st);
-    const r = st.getBoundingClientRect();
-    return { x: r.left + r.width * 0.7, y: r.top + parseFloat(cs.getPropertyValue('--if-hy')) - parseFloat(cs.getPropertyValue('--if-st')) + 14 };
+/** A point on the sun / moon the finger can reach: its core (the middle 70%: SceneTaps' reach), where nothing of the
+ *  HUD lies over the sky (the ribbon's row can overlap a low orb on a short sky). */
+const orb = (page: Page) =>
+  page.locator('.if-scene .orb').evaluate((el) => {
+    const b = el.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2, r = b.width * 0.3;
+    for (let d = 0; d <= r; d += 4)
+      for (const [dx, dy] of [[0, d], [0, -d], [d, 0], [-d, 0], [d, d], [-d, d], [d, -d], [-d, -d]]) {
+        const hit = document.elementFromPoint(cx + dx, cy + dy);
+        if (hit?.closest('.if-scene') && !hit.closest('button')) return { x: cx + dx, y: cy + dy };
+      }
+    return { x: cx, y: cy };
   });
 
 const centre = (page: Page, sel: string) =>
@@ -30,7 +49,7 @@ const centre = (page: Page, sel: string) =>
 
 test('scenery taps play a flourish and change nothing; trees, villagers and the jar still work', async ({ page }) => {
   // a fixed midday (Tokyo): without it the orb is the moon from 19:00 and the sun row below fails every evening
-  await page.goto('?demo&date=2026-11-04T12:00');
+  await page.goto('?demo&date=2026-11-04T12:00&critter=none');
   await islandReady(page);
   const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
   const jar = page.locator('.hud-jar');
@@ -38,17 +57,18 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   const jarLabel = await jar.getAttribute('aria-label');
   const url = page.url();
 
+  // (open lawn is a walk: my villager runs there, its tap ring on the ground instead of a dust puff)
   const taps: [string, () => Promise<{ x: number; y: number }>, string][] = [
-    ['bush', () => stagePoint(page, 283, 40), 'bush'], // a bush on the right of the back row (the museum stands in the middle)
-    ['flower', () => stagePoint(page, 63, 283), 'flower'],
-    ['grass', () => stagePoint(page, 195, 228), 'grass'],
-    ['sea', () => openSea(page), 'splash'],
-    ['sun', () => centre(page, '.if-scene .orb'), 'sun']
+    ['bush', () => centre(page, '[data-bush="plumeria-w"]'), '[data-fx="bush"]'], // the white plumeria at the beach's edge
+    ['flower', () => centre(page, '[data-flower="1-0"]'), '[data-fx="flower"]'],
+    ['grass', () => lawn(page), '.if-scene .tap-ring'],
+    ['sea', () => sea(page), '[data-fx="splash"]'],
+    ['sun', () => orb(page), '[data-fx="sun"]']
   ];
-  for (const [name, at, fx] of taps) {
+  for (const [name, at, sel] of taps) {
     const { x, y } = await at();
     await page.mouse.click(x, y);
-    await expect(page.locator(`[data-fx="${fx}"]`), name).toHaveCount(1);
+    await expect(page.locator(sel), name).toHaveCount(1);
     await expect(page.locator('dialog[open]'), name).toHaveCount(0);
   }
   // a flourish is gone within ~1 s, and nothing else moved
@@ -60,7 +80,7 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   // the trees: a canopy tap opens its popup; a tap on the scenery then only closes it (no flourish)
   await page.locator('button.canopy').first().click();
   await expect(page.locator('.detail')).toHaveCount(1);
-  const g = await stagePoint(page, 195, 228);
+  const g = await lawn(page);
   await page.mouse.click(g.x, g.y);
   await expect(page.locator('.detail')).toHaveCount(0);
   await expect(page.locator('[data-fx]')).toHaveCount(0);
@@ -83,18 +103,17 @@ test('night sky: the moon twinkles; a tap in the open sky lights a star (shootin
   await page.goto('?demo&date=2026-11-04T22:00');
   await islandReady(page);
   await expect(page.locator('.if-scene[data-tod="night"]')).toHaveCount(1);
-  const moon = await centre(page, '.if-scene .orb');
+  const moon = await orb(page);
   await page.mouse.click(moon.x, moon.y);
   await expect(page.locator('[data-fx="moon"]')).toHaveCount(1);
   await expect(page.locator('[data-fx="shoot"]')).toHaveCount(0);
   await expect(page.locator('[data-fx]')).toHaveCount(0, { timeout: 2500 });
   // the open sky, away from the moon and the clouds: a star twinkles where the finger was
-  const sky = await page.locator('.if-scene .stage').evaluate((st) => {
-    const r = st.getBoundingClientRect();
+  const sky = await page.locator('.if-scene').evaluate((sc) => {
+    const r = sc.getBoundingClientRect(), horizon = r.top + parseFloat(getComputedStyle(sc).getPropertyValue('--horizon-y'));
     const o = document.querySelector('.if-scene .orb')!.getBoundingClientRect();
     const clouds = [...document.querySelectorAll('.if-scene .cloud')].map((c) => c.getBoundingClientRect());
-    const top = Math.max(r.top - 40, document.querySelector('.if-scene')!.getBoundingClientRect().top + 60);
-    for (let y = top; y < r.top + 20; y += 8)
+    for (let y = r.top + 60; y < horizon - 10; y += 8)
       for (let x = r.left + 30; x < r.right - 30; x += 12) {
         const clear = (b: DOMRect) => Math.abs(x - (b.left + b.width / 2)) > Math.max(44, b.width) / 2 + 10 || Math.abs(y - (b.top + b.height / 2)) > Math.max(44, b.height) / 2 + 10;
         const hit = document.elementFromPoint(x, y);

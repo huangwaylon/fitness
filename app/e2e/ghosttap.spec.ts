@@ -48,6 +48,10 @@ test('after the museum opened the ずかん, back from ごほうび leaves the p
   await notch(page);
   await page.goto('?demo&date=2026-11-04T12:00');
   await expect(ribbon(page)).toBeVisible();
+  // the museum stands at おく: the camera there first
+  await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
+  await page.evaluate(() => (window as unknown as { __world: { go: (z: number) => void } }).__world.go(1380));
+  await page.waitForTimeout(400);
   await museum(page).click();
   const box = page.locator('[data-fx="talk"]');
   await box.click(); // finish the page

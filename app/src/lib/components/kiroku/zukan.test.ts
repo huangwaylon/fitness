@@ -25,12 +25,12 @@ describe('the ずかん', () => {
       }
     }
   });
-  it('counts NH’s catalogue: 80 fish (34 sea, 46 pond), 70 bugs, 40 sea creatures, 73 fossils, 9 shells (the pearl from diving)', () => {
+  it('counts NH’s catalogue: 80 fish (34 sea, 46 pond), 74 bugs (the four palm beetles added), 40 sea creatures, 73 fossils, 9 shells (the pearl from diving)', () => {
     expect(entries('fish')).toHaveLength(80);
     // in NH's critterpedia order: the freshwater fish first
     expect(entries('fish').slice(0, 3).map((e) => e.id)).toEqual(['bitterling', 'pale-chub', 'crucian-carp']);
     expect(entries('fish').at(-1)!.id).toBe('coelacanth');
-    expect(entries('bug')).toHaveLength(70);
+    expect(entries('bug')).toHaveLength(74);
     expect(entries('fossil')).toHaveLength(73);
     expect(entries('sea')).toHaveLength(40);
     expect(entries('shell')).toHaveLength(9);

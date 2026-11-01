@@ -1,19 +1,19 @@
-// The pond's fish (docs/design.md "Pond"): NH's freshwater fish, the river's, the river mouth's, the clifftop's and the
-// pond's, all in the one small pond at the back of the island (it has no river). Its own chunk, loaded with the pond's
-// first shadow (Critters.svelte), so the island's first load doesn't carry it; the ずかん's page imports it too.
-// Like the sea fish (critters.ts FISH): NH's northern-hemisphere months only weight the odds (×IN_SEASON), the hours
-// still hold, a low weight is a rare fish. Months, hours, shadows and where NH keeps each from the game's data (the
-// ACNH data spreadsheet, as on Nookipedia); the weights are ours. A catch is a ずかん find, never ベル.
+// The fresh-water fish (docs/design.md "Fishing"): NH's 46, each in the water NH keeps it in (world.ts freshWhere): the
+// pond, the river, the river mouth (the wide reach on the west beach) or the clifftop (the river above the cliff and the
+// spring). Its own chunk, loaded with the first fresh-water shadow (Critters.svelte), so the island's first load doesn't
+// carry it; the ずかん's page imports it too. Like the sea fish (critters.ts FISH): NH's northern-hemisphere months only
+// weight the odds (×IN_SEASON), the hours still hold, a low weight is a rare fish. Months, hours, shadows and locations
+// from the game's data (the ACNH data spreadsheet, as on Nookipedia); the weights are ours. A catch is a ずかん find,
+// never ベル.
 import { ALL_DAY, ALL_YEAR, pick, span, type Fish, type PondFishId } from './critters.ts';
+import type { FreshWhere } from './world.ts';
 
 export type { PondFishId };
 
-/** Where NH keeps it: its river, the river mouth, the clifftop river, a pond (here they all come to the pond). */
-type Water = 'river' | 'mouth' | 'clifftop' | 'pond';
-
-/** NH's 46 freshwater fish in the game's critterpedia order. Deviations from NH: all of them come to the pond; the
- *  clifftop char and cherry salmon keep their spring hours (4 pm – 9 am) in autumn too (NH: all day then). */
-export const POND_FISH: Record<PondFishId, Fish & { water: Water }> = {
+/** NH's 46 freshwater fish in the game's critterpedia order, each with NH's location (`water`; the char, NH's clifftop
+ *  river and ponds, takes the most specific: the clifftop). Deviations from NH: the clifftop char and cherry salmon
+ *  keep their spring hours (4 pm – 9 am) in autumn too (NH: all day then). */
+export const POND_FISH: Record<PondFishId, Fish & { water: FreshWhere }> = {
   bitterling: { months: span(11, 3), hours: ALL_DAY, size: 1, weight: 3, water: 'river' },
   'pale-chub': { months: ALL_YEAR, hours: [9, 16], size: 1, weight: 4, water: 'river' },
   'crucian-carp': { months: ALL_YEAR, hours: ALL_DAY, size: 2, weight: 5, water: 'river' },
@@ -62,6 +62,25 @@ export const POND_FISH: Record<PondFishId, Fish & { water: Water }> = {
   sturgeon: { months: span(9, 3), hours: ALL_DAY, size: 6, weight: 0.4, water: 'mouth' }
 };
 
-/** The fish under a new pond shadow (always someone: the crucian carp is about all day, all year). */
+/** Who swims in a water, as in NH: the pond holds the pond fish; the river the river fish; the river mouth and the
+ *  clifftop are the river too, so their own fish (the salmon, the sturgeon; the char, the golden trout) come with the
+ *  river's. */
+export function freshPool(where: FreshWhere): PondFishId[] {
+  return (Object.keys(POND_FISH) as PondFishId[]).filter((id) => {
+    const w = POND_FISH[id].water;
+    return w === where || (w === 'river' && (where === 'mouth' || where === 'clifftop'));
+  });
+}
+const pools = new Map<FreshWhere, Record<string, Fish>>();
+const poolOf = (where: FreshWhere) => {
+  let p = pools.get(where);
+  if (!p) pools.set(where, (p = Object.fromEntries(freshPool(where).map((id) => [id, POND_FISH[id]]))));
+  return p;
+};
+/** The fish under a new shadow in `where` (always someone: the carp and the crucian carp are about all day, all year,
+ *  in the pond and the rivers). */
+export const pickFresh = (where: FreshWhere, month: number, hour: number, r: () => number): PondFishId =>
+  (pick(poolOf(where), month, hour, r) as PondFishId | null) ?? (where === 'pond' ? 'carp' : 'crucian-carp');
+/** Any fresh-water fish (every water's together). */
 export const pickPondFish = (month: number, hour: number, r: () => number): PondFishId =>
   pick(POND_FISH, month, hour, r) ?? 'crucian-carp';

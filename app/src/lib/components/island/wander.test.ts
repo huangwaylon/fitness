@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WeekView } from '#lib/types.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { FOLLOW_MS, adjacent, besideSpots, goalMoves, pickPoi, pois, shouldFollow } from './wander.ts';
-import { walkGeo, walkable } from './walkGraph.ts';
+import { walkGeo, walkable, type WalkGeo } from './walkGraph.ts';
 
 describe('points of interest', () => {
   const g = walkGeo();
@@ -19,8 +19,8 @@ describe('points of interest', () => {
     expect(names).toContain('shoreL');
   });
   it('a later spot (a pondside) is a point of interest as soon as it exists', () => {
-    const back = walkGeo({ zones: [{ x0: 60, x1: 330, y0: 40, y1: 80 }], nodes: { pondside: [300, 60] } });
-    expect(pois(back, false).map((p) => p.name)).toContain('pondside');
+    const more = walkGeo({ nodes: { lookout: [300, 420] } });
+    expect(pois(more, false).map((p) => p.name)).toContain('lookout');
   });
   it('the pick is never where it already stands', () => {
     const list = pois(g, false);
@@ -39,8 +39,8 @@ describe('follow and chat', () => {
     expect(shouldFollow(10_000, 30_000, false)).toBe(false);
   });
   it('side by side: beside mine on the side the partner comes from first, all walkable', () => {
-    const at = [190, 230] as const;
-    const s = besideSpots(g, at, [260, 297]);
+    const at = [190, 270] as const;
+    const s = besideSpots(g, at, [262, 214]);
     expect(s.length).toBeGreaterThan(1);
     expect(s[0][0]).toBeGreaterThan(at[0]);
     for (const [x, y] of s) expect(walkable(g, x, y)).toBe(true);
@@ -80,10 +80,10 @@ describe('the walkers (avatar.ts on a stand-in scene)', () => {
   async function scene() {
     const d = await import('../motion/director.svelte.ts');
     const a = await import('./avatar.ts');
-    const { VILLAGER } = await import('./scene.ts');
+    const { HOMES } = await import('./world.ts');
     d.resetAll();
-    d.setHome('mine', VILLAGER.x.A, VILLAGER.foot);
-    d.setHome('partner', VILLAGER.x.B, VILLAGER.foot);
+    d.setHome('mine', HOMES.A[0], HOMES.A[1]);
+    d.setHome('partner', HOMES.B[0], HOMES.B[1]);
     const g = walkGeo();
     const off = a.attachAvatar({ geo: () => g, clear: () => true, where: (id) => [d.actors[id].x, d.actors[id].y], enabled: () => true });
     return { d, a, off };
@@ -91,7 +91,7 @@ describe('the walkers (avatar.ts on a stand-in scene)', () => {
 
   it('mine away over 8 s (a line out, one tap after another): the partner comes over, they chat; home together', async () => {
     const { d, a, off } = await scene();
-    const r = a.approach(80, 196, { linger: 15_000 }); // beside the left tree, a while (a line out, taps one after another)
+    const r = a.approach(100, 300, { linger: 15_000 }); // by the left tree, a while (a line out, taps one after another)
     expect(r.walked).toBe(true);
     expect(d.actors.mine.walking).toBe(true);
     await vi.advanceTimersByTimeAsync(r.ms + 100);
@@ -113,7 +113,7 @@ describe('the walkers (avatar.ts on a stand-in scene)', () => {
     expect(near.ms).toBeLessThanOrEqual(900);
     await vi.advanceTimersByTimeAsync(20_000);
     off();
-    const g = walkGeo({ zones: [{ x0: 0, x1: 2000, y0: 250, y1: 320 }] });
+    const g: WalkGeo = { zones: [{ x0: 0, x1: 2000, y0: 150, y1: 320 }], obstacles: [], nodes: {}, pad: 8 };
     const off2 = a.attachAvatar({ geo: () => g, clear: () => true, where: (id) => [d.actors[id].x, d.actors[id].y], enabled: () => true });
     const far = a.approach(1500, 300);
     expect(far).toEqual({ ms: 0, walked: false });
@@ -136,7 +136,7 @@ describe('the walkers (avatar.ts on a stand-in scene)', () => {
     const ms = a.goalWalk('partner');
     expect(ms).toBeGreaterThan(0);
     await vi.advanceTimersByTimeAsync(ms + 10);
-    expect(d.actors.partner.y).toBeLessThan(d.actors.partner.home[1]); // up by the trees
+    expect(d.actors.partner.y).toBeGreaterThan(d.actors.partner.home[1]); // back by the trees
     await vi.advanceTimersByTimeAsync(30_000);
     const meet = a.meetUp();
     expect(meet).toBeGreaterThan(0);
@@ -149,7 +149,7 @@ describe('the walkers (avatar.ts on a stand-in scene)', () => {
 
   it('a sheet freezes the walkers where they are; uncovered they wander home', async () => {
     const { d, a, off } = await scene();
-    a.approach(80, 196);
+    a.approach(100, 300);
     a.freeze();
     expect(d.actors.mine.walking).toBe(false);
     a.thaw();

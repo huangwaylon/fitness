@@ -1,0 +1,103 @@
+<script lang="ts">
+  // The island's still scenery (docs/design.md "World"): the trees that aren't goal trees (oaks, cedars, palms), the
+  // bushes (the river-bank hedge of the month, the plumeria at the beach, the plaza's and the museum's), the plaza's
+  // and the shops' props, the log fence along the cliff top, and the six buildings (one NH map-icon family), each an
+  // upright world node at its feet. An oak is two nodes (its trunk and its canopy, the canopy's depth 14u nearer), so a
+  // villager just in front of the trunk covers it while the leaves cover their head. Contact shadows are baked into the
+  // ground. A bush answers a tap (SceneTaps finds it by data-bush); a building is a door (`onbuilding`).
+  import OfficialArt from '../characters/OfficialArt.svelte';
+  import { art, treeArt } from '#lib/art.ts';
+  import type { Season } from '#lib/ui-state/theme.svelte.ts';
+  import type { Foliage } from '#lib/ui-state/season.ts';
+  import { t } from '#lib/i18n/index.ts';
+  import { BUILDINGS, HEDGE_XS, HEDGE_Z, SCENERY, type BuildingId, type Scenery } from './world.ts';
+  import { hedgePair } from './scene.ts';
+  import { useWorld } from './camera.svelte.ts';
+
+  interface Props {
+    season: Season;
+    foliage: Foliage;
+    month: number;
+    /** False in the gallery's thumbnails (nothing answers a tap). */
+    live?: boolean;
+    /** A building's door was tapped (the art's element, for a balloon's tail). */
+    onbuilding?: (id: BuildingId, el: HTMLElement) => void;
+    /** Hide a building's own node (the museum is drawn by Museum.svelte, with its snow and Blathers). */
+    skip?: readonly BuildingId[];
+  }
+  let { season, foliage, month, live = true, onbuilding, skip = [] }: Props = $props();
+  const w = useWorld();
+
+  /** The oak render's trunk and canopy (the summer render and the seasonal ones share the shape). */
+  const TRUNK = 'polygon(29% 53%, 71% 53%, 72% 84%, 88% 89%, 88% 100%, 12% 100%, 12% 89%, 28% 84%)';
+  const CANOPY = 'polygon(0 0, 100% 0, 100% 67%, 66% 67%, 66% 56%, 34% 56%, 34% 67%, 0 67%)';
+  const BUSH_H = 40;
+  const hedge = $derived.by((): Scenery[] => {
+    const [a, b] = hedgePair(month);
+    return HEDGE_XS.map((x, i) => ({ id: `hedge-${i}`, kind: 'bush', key: `bushes/${i % 2 ? b : a}`, x, z: HEDGE_Z, h: BUSH_H }));
+  });
+  const keyOf = (s: Scenery) => (s.kind === 'oak' ? treeArt(foliage) : s.key);
+  const winter = $derived(season === 'winter');
+  const wOf = (key: string, h: number) => {
+    const a = art(key);
+    return a ? (h * a.w) / a.h : h;
+  };
+</script>
+
+{#snippet sprite(s: Scenery, clip: string | null = null, part = 'body')}
+  {@const key = keyOf(s)}
+  <div class="spr" data-scenery-id={s.id} data-kind={s.kind} data-part={part} {@attach w.at({ x: s.x, z: s.z, h: s.h, dz: part === 'canopy' ? -14 : 0 })}>
+    <span class="art" class:flip={s.flip} class:snow={winter && s.kind === 'bush'} class:bush={s.kind === 'bush'} data-bush={s.kind === 'bush' ? s.id : undefined}
+      style:height="calc({s.h} * var(--u))" style:width="calc({wOf(key, s.h)} * var(--u))" style:clip-path={clip}>
+      <OfficialArt {key} size="calc({s.h} * var(--u))" eager={s.z < 1200} />
+    </span>
+  </div>
+{/snippet}
+
+{#each [...SCENERY, ...hedge] as s (s.id)}
+  {#if s.kind === 'oak'}
+    {@render sprite(s, TRUNK, 'trunk')}
+    {@render sprite(s, CANOPY, 'canopy')}
+  {:else}
+    {@render sprite(s)}
+  {/if}
+{/each}
+
+{#each BUILDINGS as b (b.id)}
+  {#if !skip.includes(b.id)}
+    <div class="spr building" data-building={b.id} {@attach w.at({ x: b.x, z: b.z, h: b.h })}>
+      <button type="button" class="door" disabled={!live} data-sfx="self" data-scenery aria-label={t(`world.building.${b.id}`)}
+        style:height="calc({b.h} * var(--u))" style:width="calc({wOf(b.key, b.h)} * var(--u))"
+        onclick={(e) => onbuilding?.(b.id, e.currentTarget)}>
+        <OfficialArt key={b.key} size="calc({b.h} * var(--u))" eager={b.z < 1200} />
+      </button>
+    </div>
+  {/if}
+{/each}
+
+<style>
+  .spr { width: 0; height: 0; transform-origin: 0 0; will-change: transform; pointer-events: none; }
+  .art, .door {
+    position: absolute; left: 0; bottom: 0; translate: -50% 0; display: flex; justify-content: center; align-items: flex-end;
+    line-height: 0; pointer-events: none;
+  }
+  .art :global(.official), .door :global(.official) { max-width: none; }
+  .art.bush { pointer-events: auto; cursor: pointer; }
+  .art.flip :global(.official) { transform: scaleX(-1); }
+  .door {
+    appearance: none; border: 0; padding: 0; margin: 0; background: none; cursor: pointer; pointer-events: auto;
+    -webkit-tap-highlight-color: transparent; border-radius: 10% 10% 4% 4%;
+  }
+  .door:disabled { cursor: default; pointer-events: none; }
+  .door:active :global(.official) { transform: scale(.98, .985); transform-origin: 50% 100%; }
+  .door:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  /* winter: snow settles on the bushes' tops */
+  .art.snow::after {
+    content: ''; position: absolute; left: 6%; right: 6%; top: -3%; height: 30%;
+    background:
+      radial-gradient(ellipse 24% 48% at 24% 66%, #FFF 92%, transparent 100%),
+      radial-gradient(ellipse 30% 56% at 50% 50%, #FFF 92%, transparent 100%),
+      radial-gradient(ellipse 24% 48% at 76% 66%, #FFF 92%, transparent 100%);
+    filter: drop-shadow(0 1.5px 0 rgba(150, 175, 210, .5));
+  }
+</style>

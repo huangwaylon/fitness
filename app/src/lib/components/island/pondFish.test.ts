@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { POND_FISH, pickPondFish, type PondFishId } from './pondFish.ts';
+import { POND_FISH, freshPool, pickFresh, pickPondFish, type PondFishId } from './pondFish.ts';
 import { FISH, IN_SEASON, caption, findKind, oddsAt } from './critters.ts';
 import { mulberry32 } from '#lib/random.ts';
 import ja from '#lib/i18n/catch.ja.json';
@@ -26,6 +26,23 @@ describe('the pond fish (NH freshwater, northern hemisphere)', () => {
     expect(POND_FISH.bitterling.size).toBe(1);
     expect(POND_FISH.arapaima.size).toBe(6);
     expect(POND_FISH.sturgeon.size).toBe(6);
+  });
+  it("by where you cast, NH's locations: the pond's 12 in the pond; the river's 27 in the river, at its mouth and on the clifftop, with the mouth's and the clifftop's own", () => {
+    const pond = freshPool('pond'), river = freshPool('river'), mouth = freshPool('mouth'), cliff = freshPool('clifftop');
+    expect(pond.sort()).toEqual(['carp', 'catfish', 'crawfish', 'frog', 'gar', 'giant-snakehead', 'goldfish', 'killifish', 'koi', 'pop-eyed-goldfish', 'ranchu-goldfish', 'tadpole']);
+    expect(river).toHaveLength(27);
+    expect(river).toContain('crucian-carp'); // NH: a river fish
+    expect(river).toContain('soft-shelled-turtle');
+    expect(mouth.filter((id) => !river.includes(id)).sort()).toEqual(['king-salmon', 'salmon', 'sturgeon']);
+    expect(cliff.filter((id) => !river.includes(id)).sort()).toEqual(['char', 'cherry-salmon', 'golden-trout', 'stringfish']);
+    expect(pond.some((id) => river.includes(id))).toBe(false);
+    // a pick keeps to its water (and someone is always about)
+    const r = mulberry32(4);
+    for (const wh of ['pond', 'river', 'mouth', 'clifftop'] as const)
+      for (const hour of [3, 12, 20]) for (let i = 0; i < 300; i++) expect(freshPool(wh), `${wh} ${hour}`).toContain(pickFresh(wh, 7, hour, r));
+    const sep = new Set(Array.from({ length: 4000 }, () => pickFresh('mouth', 9, 12, r)));
+    expect(sep.has('salmon')).toBe(true);
+    expect(sep.has('carp')).toBe(false);
   });
   it('seeded: the same rolls bring the same fish', () => {
     expect(tally(10, 22, 500, 3)).toEqual(tally(10, 22, 500, 3));

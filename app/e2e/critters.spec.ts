@@ -34,6 +34,15 @@ const at = (page: Page, sel: string) =>
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   });
 
+/** Cast at the swimming shadow (where it is now: it dawdles, so a tap may land just behind it; once more then). */
+async function cast(page: Page) {
+  for (let i = 0; i < 3; i++) {
+    const f = await at(page, '[data-critter="fish"]');
+    await page.mouse.click(f.x, f.y);
+    if (await page.locator('[data-bobber="wait"]').waitFor({ state: 'attached', timeout: 1500 }).then(() => true, () => false)) return;
+  }
+  await expect(page.locator('[data-bobber="wait"]')).toBeAttached();
+}
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 
 test('a tap pops the balloon; its present falls onto the island and lies there until a tap picks it up', async ({ page }) => {
@@ -53,6 +62,8 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
   await expect(gift).toHaveCount(1);
   const g = (await gift.locator(':scope > *').boundingBox())!;
   for (const other of await page.locator('[data-care], [data-find]:not([data-find="present"])').all()) {
+    // (a world node out of view keeps its last box: only what is on screen counts)
+    if (!(await other.evaluate((e) => (e as HTMLElement).checkVisibility({ visibilityProperty: true })))) continue;
     const o = (await other.boundingBox())!;
     if (!o) continue;
     const d = Math.hypot(o.x + o.width / 2 - (g.x + g.width / 2), o.y + o.height - (g.y + g.height));
@@ -86,6 +97,10 @@ test('fishing: react to the 「！」 and a tap anywhere on the sea catches the 
   await expect(fish).toBeAttached();
   await page.waitForTimeout(500); // faded in
   const f = await at(page, '[data-critter="fish"]');
+  // the shadow swims in the sea in front of the front beach (nearer than the shoreline, seen from まえ)
+  const shore = await page.evaluate(() => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(195, 0)[1]);
+  expect(f.y).toBeGreaterThan(shore);
+  expect(f.y).toBeLessThan(844);
   await page.mouse.click(f.x + (f.x < 195 ? 40 : -40), f.y); // a cast beside the shadow, not on it
   await expect(page.locator('[data-bobber]')).toBeAttached();
   await expect(page.locator('[data-bite]')).toHaveText('！', { timeout: 10_000 });
@@ -108,6 +123,8 @@ test('fishing: react to the 「！」 and a tap anywhere on the sea catches the 
   const caught = page.locator('[data-fx="catch"]');
   await expect(caught).toHaveCount(1);
   await expect(caught).toContainText('釣'); // every sea fish's line says it (釣り上げた, 一本釣りだ…), whichever came
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: '/tmp/world-build/critters-catch.png' });
   await expect(page.locator('[data-bobber]')).toHaveCount(0);
   await expect(page.locator('[data-bite]')).toHaveCount(0);
   await expect(fish).toHaveCount(0);
@@ -121,9 +138,7 @@ test('fishing: a first early tap only makes the fish hesitate (it still bites); 
   const before = await open(page, '&critter=fish');
   await expect(page.locator('[data-critter="fish"]')).toBeAttached();
   await page.waitForTimeout(500);
-  const f = await at(page, '[data-critter="fish"]');
-  await page.mouse.click(f.x, f.y);
-  await expect(page.locator('[data-bobber="wait"]')).toBeAttached();
+  await cast(page);
   await page.waitForTimeout(200);
   await seaTap(page); // still swimming up to it: too early, but only the first time
   await page.waitForTimeout(300);
@@ -142,9 +157,7 @@ test('fishing: after a hesitation the fish comes back and bites, and the bite st
   await open(page, '&critter=fish');
   await expect(page.locator('[data-critter="fish"]')).toBeAttached();
   await page.waitForTimeout(500);
-  const f = await at(page, '[data-critter="fish"]');
-  await page.mouse.click(f.x, f.y);
-  await expect(page.locator('[data-bobber="wait"]')).toBeAttached();
+  await cast(page);
   await page.waitForTimeout(200);
   await seaTap(page);
   await expect(page.locator('[data-bite]')).toBeAttached({ timeout: 12_000 });
@@ -219,7 +232,7 @@ test('a stag beetle perches on a trunk at night and is netted', async ({ page })
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
 });
 
-test('a balloon floats by on its own in the daytime (the first in 30–60 s), in the lane under the ribbon', async ({ page }) => {
+test('a balloon floats by on its own in the daytime (the first in 30–60 s), in the sky lane over the ribbon', async ({ page }) => {
   await page.clock.install();
   await open(page, '');
   await expect(page.locator('.fly')).toHaveCount(0);
@@ -228,11 +241,12 @@ test('a balloon floats by on its own in the daytime (the first in 30–60 s), in
   await expect(fly).toBeAttached();
   const box = await page.evaluate(() => {
     const f = document.querySelector('.fly')!, rib = document.querySelector('.ribbon-wrap')!.getBoundingClientRect();
-    const b = document.querySelector('.fly .balloon')!.getBoundingClientRect(), band = f.parentElement!.getBoundingClientRect();
-    return { top: f.getBoundingClientRect().top, ribbon: rib.bottom, bottom: b.bottom, band: band.bottom };
+    const b = document.querySelector('.fly .balloon')!.getBoundingClientRect();
+    return { top: b.top, bottom: b.bottom, ribbon: rib.top };
   });
-  expect(box.top).toBeGreaterThanOrEqual(box.ribbon + 6);
-  expect(box.bottom).toBeLessThanOrEqual(box.band + 8);
+  // the island's ground reaches up to the horizon, under the ribbon: the balloon crosses the sky above the ribbon
+  expect(box.top).toBeGreaterThanOrEqual(0);
+  expect(box.bottom).toBeLessThanOrEqual(box.ribbon);
 });
 
 test('fish shadows: one teardrop each, NH’s sizes reading apart (a clownfish tiny, a whale shark huge)', async ({ page }) => {

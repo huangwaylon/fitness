@@ -14,21 +14,31 @@ async function open(page: Page, q = '') {
   await page.waitForTimeout(2600); // the opening beats are over
 }
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
+/** A point of the left tree's canopy the finger reaches (its middle, else the nearest part the popup leaves open). */
+const canopyAt = (page: Page) =>
+  page.locator('button.canopy').first().evaluate((el) => {
+    const b = el.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+    for (let d = 0; d < b.height / 2; d += 4)
+      for (const [dx, dy] of [[0, d], [0, -d], [d, 0], [-d, 0], [d, d], [-d, d]])
+        if (document.elementFromPoint(cx + dx, cy + dy)?.closest('button.canopy') === el) return { x: cx + dx, y: cy + dy };
+    return { x: cx, y: cy };
+  });
 async function shake(page: Page) {
-  const c = (await page.locator('button.canopy').first().boundingBox())!;
   for (let i = 0; i < 3; i++) {
-    await page.mouse.click(c.x + c.width / 2, c.y + c.height / 2);
+    const c = await canopyAt(page);
+    await page.mouse.click(c.x, c.y);
     await page.waitForTimeout(120);
   }
 }
 
 test('one tap opens the popup and drops nothing; two close it; the third quick tap shakes the tree', async ({ page }) => {
   await open(page, '&shake=nest');
-  const c = (await page.locator('button.canopy').first().boundingBox())!;
-  await page.mouse.click(c.x + c.width / 2, c.y + c.height / 2);
+  let c = await canopyAt(page);
+  await page.mouse.click(c.x, c.y);
   await expect(page.locator('.detail')).toBeVisible();
   await page.waitForTimeout(1300); // a run has to be quick: this starts over
-  await page.mouse.click(c.x + c.width / 2, c.y + c.height / 2);
+  c = await canopyAt(page);
+  await page.mouse.click(c.x, c.y);
   await expect(page.locator('.detail')).toHaveCount(0);
   await expect(page.locator('[data-nest]')).toHaveCount(0);
   await shake(page);

@@ -14,8 +14,13 @@ async function open(page: Page, date: string) {
   await page.goto(`?demo&date=${date}`);
   await expect(ribbon(page)).toBeVisible();
 }
+/** A tap where an element is (a world node: Playwright's own click would scroll the island's sticky stage to it). */
+async function tap(page: Page, l: ReturnType<Page['locator']>) {
+  const r = (await l.boundingBox())!;
+  await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
+}
 async function popup(page: Page, tree: number) {
-  await page.locator('button.canopy').nth(tree).click();
+  await tap(page, page.locator('button.canopy').nth(tree));
   const pop = page.locator('.detail');
   await expect(pop).toBeVisible();
   await pop.evaluate((e) => Promise.all(e.getAnimations().map((a) => a.finished))); // its pop-in, for the screenshots
@@ -59,7 +64,8 @@ test('the cap: three goals at 1.5× all show the same chip, the ledger pays +2 w
   expect(box.x).toBeGreaterThanOrEqual(0);
   expect(box.x + box.width).toBeLessThanOrEqual(390);
   await page.screenshot({ path: '/tmp/stretch/popup-cap.png' });
-  await pop.click(); // a tap on the popup closes it
+  await tap(page, pop); // a tap on the popup closes it
+  await page.waitForTimeout(700); // the camera back from making room for it
   const other = await popup(page, 0);
   await expect(other.locator('.sum .v')).toHaveText(['+4', /^\+4\sベル$/]);
   await expect(other.locator('.sum .k')).toHaveText(['もくひょう', 'ウェイの きょう']);

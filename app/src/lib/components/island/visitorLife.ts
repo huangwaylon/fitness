@@ -2,9 +2,9 @@
 // its weight (CSS, Visitor.svelte); on idle life's beat (motion/idleLife.svelte.ts, the villagers' scheduler) one small
 // thing: its NH signature (K.K. strums on, Jack twirls, Zipper hops, Pavé dances, Celeste looks up at the stars, …), an
 // emote of its own, a look toward the nearest villager, a stroll for the ones who roam in NH (Daisy Mae, Franklin,
-// Zipper, Celeste, within a small radius of centre stage) or, now and then, a villager comes over to say hello
+// Zipper, Celeste, within a small radius of their spot) or, now and then, a villager comes over to say hello
 // (island/avatar.ts meetVisitor). Gulliver sleeps face down until he's been nudged five times (NH). They arrive (walk
-// up from the shore, float or fly down from the sky, or appear) when their visit starts and leave the same way when
+// from the campsite along the paths, float or fly down from the sky, or appear) when their visit starts and leave the same way when
 // it's over. The director (motion/director.svelte.ts, actor 'visitor') moves them; Visitor.svelte draws them.
 import type { EmoteIcon } from '#lib/art.ts';
 import { pickOne, shuffle } from '#lib/random.ts';
@@ -12,7 +12,7 @@ import type { FxKind, Motion } from '../motion/reactions.ts';
 import type { VisitorId } from './visitors.ts';
 import type { Pt } from './walkGraph.ts';
 
-/** How a visitor comes and goes: up from the shore on foot (or hopping), floating or flying down from the sky (and back
+/** How a visitor comes and goes: from the campsite on foot (or hopping), floating or flying down from the sky (and back
  *  up), appearing where they stand (K.K. on his stool, Gulliver already washed up), or Jack's spooky puff. */
 export type Way = 'walk' | 'hop' | 'float' | 'fly' | 'appear' | 'spook';
 
@@ -38,7 +38,7 @@ export const BEHAVIOUR: Record<VisitorId, Behaviour> = {
   // K.K. on his stool: strums (CSS), a nod to the beat now and then, notes floating off the guitar
   'kk-slider': { roam: 0, arrive: 'appear', leave: 'appear', breath: 2800, emotes: ['mark-note', 'glee'], signature: { motion: 'nod', fx: 'notes' }, drawn: null, hello: 'mark-note' },
   // Daisy Mae: shifts the turnip bundle on her head and hums; strolls about selling (NH: she walks around the island)
-  'daisy-mae': { roam: 30, arrive: 'walk', leave: 'walk', breath: 2600, emotes: ['mark-note', 'glee', 'mark-sweat'], signature: { motion: 'wiggle', fx: 'notes' }, drawn: 'r', hello: 'glee' },
+  'daisy-mae': { roam: 64, arrive: 'walk', leave: 'walk', breath: 2600, emotes: ['mark-note', 'glee', 'mark-sweat'], signature: { motion: 'wiggle', fx: 'notes' }, drawn: 'r', hello: 'glee' },
   // Wisp: floats and drifts with a flicker (CSS); a shy little wobble
   wisp: { roam: 0, arrive: 'float', leave: 'float', breath: 3200, emotes: ['mark-sweat', 'mark-question', 'mark-note'], signature: { motion: 'wiggle', fx: 'glint' }, drawn: null, hello: 'mark-sweat' },
   // Gulliver: asleep face down (NH); awake, he looks about, lost
@@ -46,15 +46,15 @@ export const BEHAVIOUR: Record<VisitorId, Behaviour> = {
   // Jack: a theatrical sway (CSS), a twirl, a spooky glint
   jack: { roam: 0, arrive: 'spook', leave: 'spook', breath: 2700, emotes: ['mark-question', 'glee', 'mark-sparkle'], signature: { motion: 'twirl', fx: 'sparkles' }, drawn: null, hello: 'glee' },
   // Celeste: looks up at the sky (and points when a star falls: Visitor.svelte), strolls under it
-  celeste: { roam: 26, arrive: 'fly', leave: 'fly', breath: 2900, emotes: ['inspiration', 'mark-sparkle', 'glee'], signature: { motion: 'lookup', emote: 'mark-sparkle' }, drawn: null, hello: 'inspiration' },
+  celeste: { roam: 40, arrive: 'fly', leave: 'fly', breath: 2900, emotes: ['inspiration', 'mark-sparkle', 'glee'], signature: { motion: 'lookup', emote: 'mark-sparkle' }, drawn: null, hello: 'inspiration' },
   // Franklin: a flap and a bob, looks around for something to cook, waddles about
-  franklin: { roam: 28, arrive: 'walk', leave: 'walk', breath: 2500, emotes: ['curiosity', 'thought', 'mark-question'], signature: { motion: 'flap', emote: 'curiosity' }, drawn: null, hello: 'glee' },
+  franklin: { roam: 48, arrive: 'walk', leave: 'walk', breath: 2500, emotes: ['curiosity', 'thought', 'mark-question'], signature: { motion: 'flap', emote: 'curiosity' }, drawn: null, hello: 'glee' },
   // Jingle: bounces (CSS) with a jingle of sparkle
   jingle: { roam: 0, arrive: 'walk', leave: 'walk', breath: 2400, emotes: ['glee', 'mark-sparkle', 'mark-note'], signature: { motion: 'hop', fx: 'glint' }, drawn: null, hello: 'glee' },
   // Pavé: dance steps all day (Festivale, CSS) and a bigger samba with confetti
   pave: { roam: 0, arrive: 'walk', leave: 'walk', breath: 2400, emotes: ['glee', 'mark-note', 'mark-sparkle'], signature: { motion: 'samba', fx: 'confetti' }, drawn: null, hello: 'mark-note' },
   // Zipper: hops on the spot (CSS) and hops about
-  zipper: { roam: 30, arrive: 'hop', leave: 'hop', breath: 2500, emotes: ['glee', 'mark-heart', 'mark-note'], signature: { motion: 'hop2', fx: 'sparkles' }, drawn: null, hello: 'glee' },
+  zipper: { roam: 48, arrive: 'hop', leave: 'hop', breath: 2500, emotes: ['glee', 'mark-heart', 'mark-note'], signature: { motion: 'hop2', fx: 'sparkles' }, drawn: null, hello: 'glee' },
   // Reese and Cyrus: lean toward each other (CSS), a nuzzle with hearts
   reese: { roam: 0, arrive: 'walk', leave: 'walk', breath: 3000, emotes: ['mark-heart', 'love', 'mark-note'], signature: { motion: 'nuzzle', fx: 'hearts' }, drawn: null, hello: 'mark-heart' }
 };
@@ -105,13 +105,14 @@ export function pickEmote(id: VisitorId, rnd: () => number, last?: EmoteIcon | n
   return pickOne(list, rnd);
 }
 
-/** Where a stroll may end: around their spot within their radius, in front of it or level with it (never back toward
- *  the trees' canopies), shuffled; the caller keeps the ones that are walkable and clear of the UI. */
+/** Where a stroll may end (world x, z): around their spot within their radius, in front of it (toward the camera,
+ *  smaller z) or level with it, so they stay in sight; shuffled; the caller keeps the ones that are walkable and clear
+ *  of the UI. */
 export function strollSpots(home: Pt, roam: number, rnd: () => number): Pt[] {
   if (!roam) return [];
   const out: Pt[] = [];
-  for (const [fx, fy] of [[1, 0], [-1, 0], [0.7, 0.45], [-0.7, 0.45], [0.45, 0.2], [-0.45, 0.2], [0, 0.5]] as const)
-    out.push([Math.round(home[0] + fx * roam), Math.round(home[1] + fy * roam * 0.5)]);
+  for (const [fx, fz] of [[1, 0], [-1, 0], [0.7, 0.45], [-0.7, 0.45], [0.45, 0.2], [-0.45, 0.2], [0, 0.5]] as const)
+    out.push([Math.round(home[0] + fx * roam), Math.round(home[1] - fz * roam * 0.5)]);
   shuffle(out, rnd);
   return out;
 }
@@ -119,9 +120,9 @@ export function strollSpots(home: Pt, roam: number, rnd: () => number): Pt[] {
 /** The little move before a line (a hop; K.K. nods from his stool, Wisp wobbles, Gulliver starts). */
 export const tapMotion = (id: VisitorId): Motion => (id === 'kk-slider' ? 'nod' : id === 'wisp' ? 'wiggle' : id === 'gulliver' ? 'surprise' : 'hop');
 
-/** Strolling speed (u/s): slower than a villager's wander (NH's visitors amble); arriving from the shore a little
- *  quicker; back to their spot before a line, briskly. */
-export const VISITOR_SPEED = { stroll: 48, arrive: 80, back: 160 } as const;
+/** Strolling speed (u/s): slower than a villager's wander (NH's visitors amble); arriving from the campsite at the
+ *  world's stroll (spec §4: 90 u/s); back to their spot before a line, briskly. */
+export const VISITOR_SPEED = { stroll: 48, arrive: 90, back: 160 } as const;
 
 /** Gulliver wakes on the fifth nudge (NH: talk to him five times). */
 export const GULLIVER_WAKE = 5;
@@ -137,7 +138,7 @@ export const MUMBLES = 3;
  *  VISITOR_SPEED.arrive. On a page's first paint a visitor is simply there (a short pop in place, `POP_MS`). */
 export const WAY_MS: Record<Exclude<Way, 'walk' | 'hop'>, number> = { float: 2200, fly: 1600, appear: 900, spook: 1200 };
 export const POP_MS = 700;
-/** The fade at the end of a walk off (and the start of one on) at the water's edge (ms). */
+/** The fade at the end of a walk off (and the start of one on) at the campsite's door (ms). */
 export const EDGE_FADE_MS = 500;
 
 /** An arrival or departure's length (ms): a walk by its route's length, else the way's own. */
@@ -146,5 +147,3 @@ export function wayMs(way: Way, routeLen = 0): number {
   return WAY_MS[way];
 }
 
-/** Where a walk on starts (and a walk off ends): the water's edge in front of their spot. */
-export const shoreFor = (home: Pt, shoreY: number): Pt => [Math.round(home[0]), Math.round(shoreY)];

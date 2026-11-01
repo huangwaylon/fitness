@@ -31,7 +31,10 @@ const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] 
 test('a tap on the bubbles dives: a slow one (seaweed) is caught, NH’s line, a ずかん find, no ベル', async ({ page }) => {
   const bells = await open(page, '&sea=seaweed');
   const b = await at(page, '[data-bubbles]');
-  // the bubbles sit in the open sea, on no control
+  // the bubbles sit in the open sea in front of the beach (nearer than the shoreline, seen from まえ), on no control
+  const shore = await page.evaluate(() => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(195, 0)[1]);
+  expect(b.y).toBeGreaterThan(shore);
+  expect(b.y).toBeLessThan(844);
   expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.className ?? '', b)).toBe('');
   await page.mouse.click(b.x, b.y);
   // the splash lives for under half a second after the walk: the catch and the splash's cue are what stay
@@ -40,7 +43,7 @@ test('a tap on the bubbles dives: a slow one (seaweed) is caught, NH’s line, a
   expect(await finds(page)).toEqual([{ kind: 'sea', id: 'seaweed' }]);
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-splash', 'scene-catch']));
   await expect(ribbon(page)).toHaveAttribute('aria-label', bells!);
-  await page.screenshot({ path: '/tmp/more-catch/dive-caught-390.png' });
+  await page.screenshot({ path: '/tmp/world-build/critters-dive-caught.png' });
 });
 
 test('a quick one (a lobster) darts off as a shadow; a second tap on it in time catches it', async ({ page }) => {
@@ -48,9 +51,9 @@ test('a quick one (a lobster) darts off as a shadow; a second tap on it in time 
   await open(page, '&sea=lobster');
   const b = await at(page, '[data-bubbles]');
   await page.mouse.click(b.x, b.y);
-  await expect(page.locator('[data-dive="chase"]')).toBeAttached({ timeout: 2000 });
+  await expect(page.locator('[data-dive="chase"]')).toBeAttached({ timeout: 3000 }); // the walk to the water's edge, then the dive
   await page.waitForTimeout(350); // it has darted
-  await page.screenshot({ path: '/tmp/more-catch/dive-chase-390.png' });
+  await page.screenshot({ path: '/tmp/world-build/critters-dive-chase.png' });
   const s = await at(page, '[data-dive="chase"]');
   await page.mouse.click(s.x, s.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('lobster'));
@@ -61,7 +64,7 @@ test('left alone, a darting one gets away', async ({ page }) => {
   await open(page, '&sea=lobster');
   const b = await at(page, '[data-bubbles]');
   await page.mouse.click(b.x, b.y);
-  await expect(page.locator('[data-dive="chase"]')).toBeAttached({ timeout: 2000 });
+  await expect(page.locator('[data-dive="chase"]')).toBeAttached({ timeout: 3000 }); // the walk to the water's edge, then the dive
   await page.waitForTimeout(CHASE_MS.fast + 1200);
   await expect(page.locator('[data-dive]')).toHaveCount(0);
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
@@ -73,7 +76,7 @@ test('now and then the bubbles hold a pearl: picked up, a shell in the ずかん
   await open(page, '&sea=pearl');
   const b = await at(page, '[data-bubbles]');
   await page.mouse.click(b.x, b.y);
-  await expect(page.locator('[data-dive="chase"]')).toBeAttached({ timeout: 2000 });
+  await expect(page.locator('[data-dive="chase"]')).toBeAttached({ timeout: 3000 }); // the walk to the water's edge, then the dive
   await page.waitForTimeout(350);
   const s = await at(page, '[data-dive="chase"]');
   await page.mouse.click(s.x, s.y);
@@ -84,5 +87,5 @@ test('now and then the bubbles hold a pearl: picked up, a shell in the ずかん
   await expect(page.locator('[data-zukan="shell"]')).toContainText('1 / 9');
   await expect(page.locator('[data-zukan="sea"]')).toContainText('0 / 40');
   await expect(page.locator('[data-zukan="sea"]')).toContainText('うみのさち');
-  await page.screenshot({ path: '/tmp/more-catch/zukan-rows-390.png' });
+  await page.screenshot({ path: '/tmp/world-build/critters-zukan-rows.png' });
 });

@@ -5,7 +5,7 @@ import { pickOne } from '#lib/random.ts';
 import type { PersonId, WeekView } from '#lib/types.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { todayPct } from './progress.ts';
-import { CENTRE_STAGE, TREE } from './scene.ts';
+import { HOMES } from './world.ts';
 import { walkable, type Pt, type WalkGeo } from './walkGraph.ts';
 
 /** My villager away this long (ms) and the partner comes over. */
@@ -25,15 +25,19 @@ const BASE_POIS: Record<string, PoiKind> = {
   treeA: 'tree', treeB: 'tree', outA: 'tree', outB: 'tree', backA: 'spot', backB: 'spot', rock: 'rock',
   shoreL: 'shore', shoreC: 'shore', shoreR: 'shore', centreStage: 'stage'
 };
-const FIXED = new Set(['homeA', 'homeB', 'midA', 'midB', 'centre', 'backC', 'backOutA', 'backOutB', 'rampTop', 'pondFoot', 'pondTurn', 'pondLane', 'pondTop', ...Object.keys(BASE_POIS)]);
+const FIXED = new Set(['homeA', 'homeB', 'midA', 'midB', 'centre', 'stoneS', 'stoneN', 'logS', 'logN', 'stairS', 'stairN', 'riverEast', 'riverBend', 'mouth', 'clifftop', ...Object.keys(BASE_POIS)]);
 
-/** Where a villager may wander now. With a visitor on the island, centre stage (a visitor's spot) and the shore in
- *  front of it are left to them. */
-export function pois(g: WalkGeo, visitor: boolean): Poi[] {
+/** How far from home a villager wanders on its own (u). */
+const POI_RANGE = 600;
+
+/** Where a villager may wander now (within POI_RANGE of `home`, when given). With a visitor on the island, centre stage
+ *  (a visitor's spot) and the shore in front of it are left to them. Doors aren't points of interest. */
+export function pois(g: WalkGeo, visitor: boolean, home?: Pt): Poi[] {
   const out: Poi[] = [];
   for (const [name, at] of Object.entries(g.nodes)) {
-    const kind = BASE_POIS[name] ?? (FIXED.has(name) ? null : 'spot');
+    const kind = BASE_POIS[name] ?? (FIXED.has(name) || name.startsWith('door-') ? null : 'spot');
     if (!kind) continue;
+    if (home && Math.hypot(at[0] - home[0], at[1] - home[1]) > POI_RANGE) continue;
     if (visitor && (name === 'centreStage' || name === 'shoreC')) continue;
     if (walkable(g, at[0], at[1])) out.push({ name, at, kind });
   }
@@ -50,7 +54,7 @@ export function pickPoi(list: readonly Poi[], from: Pt, rnd: () => number): Poi 
  *  in front. */
 export function besideSpots(g: WalkGeo, at: Pt, from: Pt): Pt[] {
   const s = from[0] <= at[0] ? -1 : 1;
-  return ([[s * 40, 0], [-s * 40, 0], [s * 52, 6], [-s * 52, 6], [s * 30, 22], [-s * 30, 22]] as const)
+  return ([[s * 40, 0], [-s * 40, 0], [s * 52, -6], [-s * 52, -6], [s * 30, -22], [-s * 30, -22]] as const)
     .map(([dx, dy]) => [Math.round(at[0] + dx), Math.round(at[1] + dy)] as Pt)
     .filter(([x, y]) => walkable(g, x, y));
 }
@@ -61,11 +65,11 @@ export const adjacent = (a: Pt, b: Pt): boolean => Math.hypot(a[0] - b[0], a[1] 
 export const shouldFollow = (awaySince: number, now: number, partnerFree: boolean): boolean =>
   awaySince > 0 && now - awaySince >= FOLLOW_MS && partnerFree;
 
-/** The two meet in the middle of the lawn for ふたりでぜんぶ's high-five: a step apart either side of centre stage's
- *  column, on the lawn in front of the trees. */
+/** The two meet in the middle of the lawn for ふたりでぜんぶ's high-five: a step apart either side of the island's
+ *  middle, between their homes and the trees. */
 export const MEET: { mine: Pt; partner: Pt } = {
-  mine: [CENTRE_STAGE.x - 20, TREE.base + 46],
-  partner: [CENTRE_STAGE.x + 20, TREE.base + 46]
+  mine: [175, HOMES.A[1] + 48],
+  partner: [215, HOMES.B[1] + 48]
 };
 
 const allMet = (v: WeekView, pid: PersonId) => RING_FRUITS.every((f) => todayPct(v.people[pid].rings[f]) >= 100);

@@ -1,30 +1,40 @@
 <script lang="ts">
-  // The island's critters (docs/design.md "Scene interactions"), after NH: now and then (a visit every 8–15 s the
-  // island is on screen) a fish shadow swims in the sea off the beach, another in the pond at the back (NH's freshwater
-  // fish, pondFish.ts: its own chunk, fetched with the pond's first shadow), or a bug of the season and hour comes by; a
-  // shaken bush sometimes lets a butterfly or a moth out. Nothing counts: a catch is an official icon and NH's caption.
-  //   Fishing, the same in either water (critters.ts `Water`: the sea's box or the pond's oval): a tap in the water near a
-  //   shadow (CAST_U) casts a bobber (a line from the beach, or the pond's front rim); the fish swims up,
-  //   nibbles 0–3 times (small wiggles of the bobber) and bites: the bobber is yanked under with a splash, its own
-  //   sound and NH's 「！」 over it. While the bobber is out any tap is the reel: on the bite (within 1.6 s) it catches
-  //   the fish; a first tap any earlier only makes it hesitate (it backs off, comes back, nibbles and bites later), a
-  //   second early tap or none in time and it flees. 1 in 14 the line brings up a boot, a tire or a can.
+  // The island's critters (docs/design.md "Scene interactions", "Critters"), after NH, in the rolling-log world
+  // (world.ts units: x across, z into the island): now and then (a visit every 8–15 s the island is on screen) a fish
+  // shadow swims in the sea in front of the front beach (seen from まえ), another in a fresh water in view, NH's fresh
+  // water by where it is (the pond, the river's reaches, the river mouth on the west beach, the clifftop river and the
+  // spring: pondFish.ts, its own chunk, fetched with the first such shadow), or a bug of the season and hour comes by
+  // where NH keeps it; a shaken bush sometimes lets a butterfly or a moth out. A catch is an official icon and NH's
+  // line, and the first of each a ずかん find (never ベル).
+  //   Fishing, the same in every water (critters.ts `Water`): a tap in the water near a shadow (CAST_U) walks my villager
+  //   to its fishing spot (the beach in front, z ≈ 18, facing the sea; the pond's back bank, walkGraph's pondside; the
+  //   river's bank) and casts a bobber; the fish swims up, nibbles 0–3 times (small wiggles of the bobber) and bites: the
+  //   bobber is yanked under with a splash, its own sound and NH's 「！」 over it. While the bobber is out any tap is the
+  //   reel: on the bite (within 1.6 s) it catches the fish; a first tap any earlier only makes it hesitate (it backs
+  //   off, comes back, nibbles and bites later), a second early tap or none in time and it flees. 1 in 14 the line
+  //   brings up a boot, a tire or a can.
   //   Diving (island/sea.ts, loaded with the first bubble spot): 1 sea turn in 4 brings a spot of bubbles rising instead
   //   of a shadow; a tap on it is a dive (a splash, a ripple): a slow sea creature is caught; a quick one darts off as a
   //   shadow and a second tap on it in time catches it, or it gets away. Now and then the spot holds NH's pearl.
-  //   Bugs (NH's by month and hour): butterflies, a bee or a ladybug over the flower beds, a dragonfly over the hedge,
-  //   fireflies on summer nights, grasshoppers, crickets and mantises in the grass, a cicada perched on a trunk.
-  //   Bugs: a tap on one swings the net (caught); a tap close by startles it away. A tarantula or a scorpion (night,
-  //   the grass) rears up at the first tap; a tap while it's reared and it charges off; once it settles, a tap nets it.
-  //   A mole cricket chirps under a mound of earth: a tap digs it up. A tap on my villager now and then sends a flea
-  //   hopping off it (`fromVillager`).
-  // SceneTaps.svelte mounts this inside the stage and routes taps here first (`tap`), and a shaken bush (`fromBush`).
-  // Cheap: ≤ 1 fish in each water + 1 bug; they move by CSS transitions between waypoints a timer picks every second or few (no rAF),
-  // with one wing / fin loop each while on screen; nothing exists between visits but one timer. Covered or hidden:
-  // they all leave at once and the countdown holds. Decorative, pointer-only.
-  //   ?critter=fish | pond | <fish id> | <pond fish id> | <bug id> (dev or ?demo): one now, staying until caught (the
-  //   e2e's hook); ?flea: a tap
-  //   on my villager always sends a flea off it.
+  //   Bugs (NH's by month and hour, where NH keeps them: critters.ts bugPlace): cicadas and beetles on the trunks of the
+  //   goal trees, the oaks and the cedars, NH's palm beetles on the palms, butterflies and the bee over the flower beds
+  //   (now and then resting on a flower), a ladybug or a mantis on a flower's head, the moth round the lamps at night,
+  //   dragonflies and fireflies near the water, grasshoppers, crickets and the night's tarantula and scorpion in the
+  //   grass, the hermit crab and the wharf roach on the beach, the water bugs on the pond and the river's still reach.
+  //   A bug only comes where the camera can see it, clear of every control.
+  //   Bugs: a tap on one swings the net (caught); a tap close by startles it away. A tarantula or a scorpion rears up at
+  //   the first tap; a tap while it's reared and it charges off; once it settles, a tap nets it. A mole cricket chirps
+  //   under a mound of earth: a tap digs it up. A tap on my villager now and then sends a flea hopping off it.
+  // Each critter is a world node (camera.svelte.ts) at its spot: a fish shadow a flat ground mark, a bug, the bobber and
+  // the bubbles upright. They move inside their node by CSS transitions between waypoints a timer picks every second or
+  // few, in the node's local units (a flat node's local y is −z; an upright one's −z·ground − lift), so nothing runs
+  // per frame. Taps are hit-tested against their live boxes (getBoundingClientRect works through the transforms).
+  // SceneTaps.svelte mounts this inside the stage and routes taps here first (`tap`, client px), a shaken bush
+  // (`fromBush`), a tap on my villager (`fromVillager`) and the rock (`fromRock`). Covered or hidden: they all leave at
+  // once and the countdown holds. Decorative, pointer-only.
+  //   ?critter=fish | pond | river | mouth | clifftop | <fish id> | <fresh fish id> | <bug id> (dev or ?demo): one now,
+  //   staying until caught (the e2e's hook; it comes where the camera can see it if it can, else at its place);
+  //   ?sea=<id>|pearl: a bubble spot; ?flea: a tap on my villager always sends a flea off it.
   import CatchPlate from './CatchPlate.svelte';
   import { cardFor, type CatchCard } from './catchCard.ts';
   import { timers } from './timers.ts';
@@ -34,27 +44,32 @@
   import { onMount, untrack } from 'svelte';
   import { artUrl } from '#lib/art.ts';
   import { jst, now } from '#lib/time/clock.ts';
-  import { BUSH_U, HEDGE_BASE, HEDGE_X, PLATEAU, POND, SAND, shoreY, su, TREE, type Tod } from './scene.ts';
-  import { hitStage, sceneSfx } from './sceneTaps.ts';
+  import { su, type Tod } from './scene.ts';
+  import { hitWorld, sceneSfx } from './sceneTaps.ts';
   import type { Box } from './geom.ts';
-  import { guardsU, stageGeo, type StageGeo } from './placement.ts';
+  import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { recordFind } from '#lib/store/actions.ts';
   import { catchLine, loadLines, loadNames } from './catchLine.ts';
-  import { BEACH, findArt } from './beach.ts';
+  import { findArt } from './beach.ts';
   import { eggTime, eventNow } from './events.ts';
   import { eggOnLine } from './eggs.ts';
   import { LONG_REACH, approach, goHomeLater, turnTo } from './avatar.ts';
-  import { actors, useTool } from '../motion/director.svelte.ts';
+  import { actors, livePos, useTool } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from './sea.ts';
+  import { OVER, useWorld } from './camera.svelte.ts';
+  import { ROCK, SEA_BOX, surfaceAt } from './world.ts';
+  import { nearestWalkable, walkGeo } from './walkGraph.ts';
   import {
-    BUGS, CAST_U, FISH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_REACH, POND_SHADOW, REAR_MS, STAY_MS, bitePlan, bushBug, castPhase, critterArt,
-    findKind, shadowLen, fleaJumps, hesitatePlan, hookItem, netSwing, nextSpawnMs, oddsAt, pickBug, pickFish, pondBox, pondCast, reel, spawnKind,
-    stalkTap, waterAt, type BitePlan, type BugId, type Catch, type FishId, type Flight, type JunkId, type Oval, type StalkState, type Water
+    BUGS, BUSHES, CAST_U, FISH, FLOWER_CELLS, FRESH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS, bitePlan,
+    bugPlace, bushBug, castInto, castPhase, critterArt, findKind, freshAreas, shadowLen, fleaJumps, hesitatePlan, hookItem, netSwing, nextSpawnMs,
+    oddsAt, patches, perches, pickBug, pickFish, reel, spawnKind, stalkTap, swimAt, waterAt, type BitePlan, type BugId, type BugPlace, type Catch,
+    type FishId, type Flight, type JunkId, type Patch, type StalkState, type Swim, type Water
   } from './critters.ts';
   import type { PondFishId } from './pondFish.ts';
+  import { RIVER, riverNear, type FreshWhere } from './world.ts';
 
-  const WATERS: readonly Water[] = ['sea', 'pond'];
+  const WATERS: readonly Water[] = ['sea', ...FRESH];
 
   interface Props {
     scene?: HTMLElement;
@@ -63,27 +78,43 @@
     enabled: () => boolean;
   }
   let { scene, tod, enabled }: Props = $props();
+  const w = useWorld();
 
+  /** A world point (units) and its height above the ground. */
+  interface P3 { x: number; z: number; lift: number }
   interface Fish {
-    item: FishId | PondFishId | JunkId; water: Water; size: number; shape?: 'narrow' | 'fin'; x: number; y: number; ms: number; flip: boolean; box: Box;
-    /** Spots in its water a control covers (the pond under a canopy on a small phone): it never swims there. */
-    keep: Box[]; gone: boolean; dash: boolean;
+    n: number; item: FishId | PondFishId | JunkId; water: Water; size: number; shape?: 'narrow' | 'fin';
+    /** Where it is heading (world) and how long that takes; its node's anchor (its spawn point). */
+    x: number; z: number; ms: number; ax: number; az: number;
+    /** Heading: mirrored (head right) and turned toward where it swims (deg, −90…90 on screen). */
+    flip: boolean; rot: number;
+    area: Swim; gone: boolean; dash: boolean;
     /** Closing in on a bobber in short darts (NH): each one quick off the mark, easing in. */
     spurt?: boolean;
   }
   interface Cast {
     /** The shadow it was cast to (its water). */
     fish: Fish;
-    x: number; y: number; sx: number; sy: number; landed: boolean; t0: number; plan: BitePlan | null; under: boolean; rings: number;
-    /** Where the 「！」 shows (u): over the bobber, kept on screen. */
-    bx?: number;
+    /** Where the bobber is (world) and where the line starts, relative to it (local units: the rod's tip, measured,
+     *  or the bank). */
+    x: number; z: number; fx: number; fy: number;
+    /** The bank the line starts from when my villager didn't walk there (world). */
+    sx: number; sz: number;
+    landed: boolean; t0: number; plan: BitePlan | null; under: boolean; rings: number;
+    /** The 「！」's nudge (px) keeping it on screen. */
+    bdx: number;
     /** Bumped by each new plan (and a hesitation): the old plan's timers check it and stand down. */
     gen: number;
     /** A first tap before the bite made the fish hesitate: the next early one scares it off. */
     hesitated: boolean;
   }
   interface Bug {
-    id: BugId; flight: Flight; x: number; y: number; ms: number; flip: boolean; gone: boolean; area: Box; keep: Box[];
+    n: number; id: BugId; flight: Flight; place: BugPlace;
+    /** Where it is (world, lift above the ground), its node's anchor and the ground's foreshortening there. */
+    x: number; z: number; lift: number; ax: number; az: number; g: number;
+    ms: number; flip: boolean; gone: boolean;
+    /** Its patch (null: it stays put: a perch, a flower head) and a check for a spot in it (on screen, clear). */
+    patch: Patch | null; ok: (p: P3) => boolean;
     /** Sat down: a cicada on its trunk, a butterfly resting on a flower (its wings slowly open and close). */
     sat: boolean;
     /** A butterfly's hops since it last rested on a flower, and how many it makes before the next rest. */
@@ -92,27 +123,33 @@
     fled?: boolean;
     /** A tarantula's or a scorpion's mood (stalkTap). */
     stalk?: StalkState;
-    /** Netted: it holds still until the swing lands (my villager is on its way). */
-    held?: boolean;
+    /** Netted: it holds still where it was seen (its translate frozen) until the swing lands. */
+    held?: boolean; freeze?: string;
   }
-  /** `held`: the net is in my villager's hand (no floating one). */
+  /** `held`: the net is in my villager's hand (no floating one). Stage units (the screen's overlay). */
   interface Net { n: number; x: number; y: number; held?: boolean }
 
-  // Everything in stage units (u: 390 across), drawn with calc(n × --su).
   const rand = Math.random;
   const between = (a: number, b: number) => a + rand() * (b - a);
   const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+  /** A node's inner offset (local units: before the node's perspective scale). */
+  const loc = (dx: number, dy: number) => `calc(${dx.toFixed(2)} * var(--u)) calc(${dy.toFixed(2)} * var(--u))`;
+  const fishLoc = (f: Fish) => loc(f.x - f.ax, -(f.z - f.az));
+  const bugLoc = (b: Bug) => loc(b.x - b.ax, -(b.z - b.az) * b.g - b.lift);
+  /** Over the tint at night (a firefly glows): between --z-tint and --z-taps inside the stage. */
+  const NIGHT_Z = 60000081;
 
-  /** One shadow in the sea and one in the pond, at most. */
-  let fishes = $state<Record<Water, Fish | null>>({ sea: null, pond: null });
+  /** One shadow in the sea and one in each fresh water, at most. */
+  const none = (): Record<Water, Fish | null> => ({ sea: null, pond: null, river: null, mouth: null, clifftop: null });
+  let fishes = $state<Record<Water, Fish | null>>(none());
   let cast = $state<Cast | null>(null);
   let bug = $state<Bug | null>(null);
   let card = $state<CatchCard | null>(null);
   let net = $state<Net | null>(null);
   /** A spot of bubbles in the sea: something to dive for. */
-  let bubbles = $state<{ n: number; item: DiveItem; x: number; y: number; box: Box } | null>(null);
+  let bubbles = $state<{ n: number; item: DiveItem; x: number; z: number } | null>(null);
   /** A dive: the splash, then (a quick one) its shadow darting off, catchable until `until`. */
-  let diving = $state<{ n: number; item: DiveItem; x: number; y: number; ms: number; size: number; chase: boolean; until: number; gone: boolean } | null>(null);
+  let diving = $state<{ n: number; item: DiveItem; x: number; z: number; ax: number; az: number; ms: number; size: number; chase: boolean; until: number; gone: boolean } | null>(null);
   /** The sea creatures' module (island/sea.ts): loaded with the first bubble spot, out of the island's first load. */
   let S: typeof import('./sea.ts') | null = null;
   let seaChunk: Promise<typeof import('./sea.ts')> | null = null;
@@ -122,98 +159,72 @@
   let seq = 0;
   let bugEl = $state<HTMLElement>();
   let hopEl = $state<HTMLElement>();
+  let chaseEl = $state<HTMLElement>();
   const night = $derived(tod === 'night');
 
   // ---------- timers (all cleared when the critters leave) ----------
   const pending = timers(), later = pending.later;
   function clearAll() {
     pending.clear();
-    fishes = { sea: null, pond: null };
+    fishes = none();
     cast = bug = card = net = dig = bubbles = diving = null;
   }
 
   // ---------- geometry ----------
   const geo = () => stageGeo(scene);
-  /** Where a shadow can swim on one side (−1 left, 1 right): the open sea off the front beach, just past the foam, down
-   *  to above the screen's bottom edge and しずえ's box; where that's too shallow (a short browser viewport), the strip
-   *  of side sea beside the island; null when neither has room. */
-  function seaBox(g: StageGeo, side: -1 | 1): Box | null {
-    const [f0, f1] = side < 0 ? [0.06, 0.44] : [0.56, 0.94];
-    const x0 = g.left + g.w * f0, x1 = g.left + g.w * f1;
-    const news = document.querySelector('.news')?.getBoundingClientRect();
-    const floor = Math.min(g.bottom - 16 * g.k, news?.height ? (news.top - g.r.top) * g.k - 6 : Infinity);
-    // deep enough water: well past the foam (the bobber never lands in it), as far out as the screen allows
-    const y0 = Math.max(shoreY(x0), shoreY(x1)) + 22;
-    const y1 = Math.min(y0 + 70, floor);
-    if (y1 - y0 >= 12) return { x0, x1, y0, y1 };
-    // the side sea: beyond the sand's straight edge, alongside the lawn
-    const [sx0, sx1] = side < 0 ? [g.left + 6 * g.k, SAND.x0 - 8] : [SAND.x1 + 8, g.right - 6 * g.k];
-    return sx1 - sx0 >= 12 ? { x0: sx0, x1: sx1, y0: 130, y1: Math.min(290, floor) } : null;
-  }
-  /** Sea beyond the beach (in front of it, or beside the island). */
-  const offshore = (x: number, y: number) => y > shoreY(x) || x < SAND.x0 || x > SAND.x1;
-  const inBox = (b: Box) => ({ x: between(b.x0, b.x1), y: between(b.y0, b.y1) });
-  /** The open places a bug keeps to: the flower beds, the hedge tops, the grass in front of the beds. */
-  const BEDS: Box[] = [{ x0: 45, x1: 110, y0: 212, y1: 285 }, { x0: 280, x1: 345, y0: 212, y1: 285 }];
-  const HEDGE: Box = { x0: 50, x1: 340, y0: HEDGE_BASE - 66, y1: HEDGE_BASE - 34 };
-  /** The open lawn between the hedge and the beds, where a dragonfly darts and hovers (NH: over open ground). */
-  const LAWN: Box = { x0: 60, x1: 330, y0: 110, y1: 200 };
-  /** NH's butterflies that land on flowers now and then (the moths, the bee and the mosquito keep flying). */
-  const LANDS = (id: BugId) => /butterfly|birdwing|bluebottle|emperor/.test(id);
-  /** The bed flowers' heads (u), measured from the beds as drawn (a bud's or a bloom's), clear of the guards: where a
-   *  ladybug or a mantis sits and a butterfly rests. `side` keeps to one bed; the orchid mantis prefers white flowers. */
-  function flowerHeads(g: StageGeo, keep: Box[], side?: -1 | 1): { x: number; y: number; white: boolean }[] {
-    const out: { x: number; y: number; white: boolean }[] = [];
-    for (const el of scene?.querySelectorAll<HTMLElement>('[data-flower]') ?? []) {
-      const r = el.getBoundingClientRect();
-      if (!r.width) continue;
-      const x = (r.left + r.width / 2 - g.r.left) * g.k, y = (r.top + r.height * 0.16 - g.r.top) * g.k;
-      if (side && Math.sign(x - 195) !== side) continue;
-      if (keep.some((b) => x > b.x0 && x < b.x1 && y > b.y0 && y < b.y1)) continue;
-      out.push({ x, y, white: !!el.querySelector('img[src*="white"]') });
-    }
-    return out;
-  }
-  const GRASS: Box[] = [{ x0: 48, x1: 112, y0: 250, y1: 306 }, { x0: 278, x1: 342, y0: 250, y1: 306 }];
-  /** The front beach (a crab, a wharf roach): the sand between the cliff's foot and the foam, on screen. */
-  function beach(g: StageGeo): Box | null {
-    const x0 = Math.max(g.left + 16, 66), x1 = Math.min(g.right - 16, 324);
-    const y0 = PLATEAU.y1 + 15, y1 = Math.min(shoreY(195) - 6, g.bottom - 12 * g.k);
-    return x1 - x0 > 20 && y1 - y0 >= 4 ? { x0, x1, y0, y1 } : null;
-  }
-  /** Bugs that don't fly in: a cicada's shell, a walking stick (they're on their trunk already). */
-  const STILL = new Set<BugId>(['cicada-shell', 'walking-stick']);
-  /** A crawler's pace: how far it goes at a time (u) and how long that takes (ms). A hermit crab scuttles, a tiger beetle
-   *  runs, a snail or a walking leaf barely moves, a stink bug ambles over the flowers. */
-  const PACE: Partial<Record<BugId, [number, number, number]>> = {
-    'hermit-crab': [30, 450, 700], 'tiger-beetle': [34, 260, 420], snail: [8, 3500, 5000], 'walking-leaf': [6, 3000, 4200],
-    stinkbug: [10, 2200, 3200], 'man-faced-stink-bug': [10, 2200, 3200], tarantula: [14, 1800, 2600], scorpion: [16, 1600, 2400],
-    // on the pond: the pondskater skates in quick glides, the diving beetle paddles, the giant water bug lurks
-    pondskater: [12, 260, 420], 'diving-beetle': [8, 900, 1400], 'giant-water-bug': [5, 1800, 2600]
+  /** The controls nothing of ours covers (stage units), grown by `pad` u. */
+  const guards = (pad: number): Box[] => {
+    const g = geo();
+    return g ? guardsU(g, pad) : [];
   };
-  /** A cicada's perch: the visible trunk of a tree, midway between its canopy and its fruit row (both buttons, measured:
-   *  the row's 44px tap target reaches up the trunk on a small phone), so a tap on the cicada (a finger's fuzzy hit
-   *  included) lands on neither; null when the gap is under 20px. */
-  function trunk(g: StageGeo, side: -1 | 1): Box | null {
-    const tree = scene?.querySelectorAll<HTMLElement>('.canopy')[side < 0 ? 0 : 1];
-    const row = scene?.querySelectorAll<HTMLElement>('.row-btn')[side < 0 ? 0 : 1];
-    if (!tree || !row) return null;
-    const top = tree.getBoundingClientRect().bottom, bottom = row.getBoundingClientRect().top;
-    if (bottom - top < 20) return null;
-    const y = ((top + bottom) / 2 - g.r.top) * g.k, x = side < 0 ? TREE.x.A : TREE.x.B;
-    return { x0: x - 2, x1: x + 2, y0: y - 1.5, y1: y + 1.5 };
+  /** A world point is on screen (inside its edges, below the horizon) and, with `keep`, a box of half-size hw × hh
+   *  units round it (at its perspective scale) is clear of every control. */
+  function seen(x: number, z: number, lift: number, keep: Box[] | null, hw = 8, hh = 8): boolean {
+    const p = w.screenAt(x, z, lift), v = w.view;
+    if (!w.inView(x, z, -12)) return false;
+    if (p.sy < v.horizon + 6 || p.sy > v.vh - 10 || p.sx < 10 || p.sx > v.vw - 10) return false;
+    if (!keep) return true;
+    const [ux, uy] = w.screenU(x, z, lift);
+    return clearAt(keep, ux, uy, hw * p.scale, hh * p.scale);
   }
-
-  /** A spot in `area` clear of the guards (null when there's none to be found). */
-  function freeIn(area: Box, keep: Box[]): { x: number; y: number } | null {
-    for (let i = 0; i < 48; i++) { // the lawn is mostly controls on a small phone: enough tries to find its gaps
-      const p = inBox(area);
-      if (!keep.some((b) => p.x > b.x0 && p.x < b.x1 && p.y > b.y0 && p.y < b.y1)) return p;
+  /** A world point in stage units (the catch plate's point). */
+  const stageAt = (x: number, z: number, lift = 0) => {
+    const [sx, sy] = w.screenU(x, z, lift);
+    return { x: sx, y: sy };
+  };
+  /** An element's centre in stage units. */
+  function stageOf(el: Element): { x: number; y: number } | null {
+    const g = geo(), r = el.getBoundingClientRect();
+    return g ? { x: (r.left + r.width / 2 - g.r.left) * g.k, y: (r.top + r.height / 2 - g.r.top) * g.k } : null;
+  }
+  /** A point in a patch passing `ok` (null when there's none to be found: enough tries to find a small phone's gaps). */
+  function freeIn(a: Patch, ok: (p: P3) => boolean): P3 | null {
+    for (let i = 0; i < 48; i++) {
+      const p = { x: between(a.x0, a.x1), z: between(a.z0, a.z1), lift: between(a.l0, a.l1) };
+      if (ok(p)) return p;
     }
     return null;
   }
-  /** A shadow's length (u): NH's sizes 1–6 (critters.ts SHADOW_U); the eels' thin shadow is long. */
-  const sizeU = (f: Fish) => shadowLen(f.size, f.shape) * (f.water === 'pond' ? POND_SHADOW : 1);
+  function freeSwim(a: Swim, ok: (x: number, z: number) => boolean): { x: number; z: number } | null {
+    for (let i = 0; i < 40; i++) {
+      const p = swimAt(a, between(-1, 1), between(-1, 1));
+      if (ok(p.x, p.z)) return p;
+    }
+    return null;
+  }
+  /** In that water, clear of its edge. */
+  const inWater = (water: Water, x: number, z: number) =>
+    water === 'sea' ? z <= -14 && surfaceAt(x, z) === 'sea' : waterAt(x, z, false, -4) === water;
+  /** A shadow's length (u): NH's sizes 1–6 (critters.ts SHADOW_U); the eels' thin shadow is long; smaller in fresh water. */
+  const sizeU = (f: Fish) => shadowLen(f.size, f.shape) * (f.water === 'sea' ? 1 : POND_SHADOW);
+  /** Where a shadow may swim to now: in its water, on screen, clear of the controls. */
+  const swimOk = (f: { water: Water; size: number; shape?: 'narrow' | 'fin' }, keep: Box[]) => (x: number, z: number) =>
+    inWater(f.water, x, z) && seen(x, z, 0, keep, sizeU(f as Fish) / 2, 4);
+  /** The swim patches of a water whose middle is on screen. */
+  const areasOf = (water: Water): Swim[] => (water === 'sea' ? [SEA_SWIM] : freshAreas(water));
+  const inViewArea = (a: Swim) => [0, -0.7, 0.7].some((s) => [0, -0.8, 0.8].some((t) => { const p = swimAt(a, s, t); return w.inView(p.x, p.z, -16); }));
+  /** The sea's water in front of the beach is on screen (まえ). */
+  const seaInView = () => [60, 165, 270].some((x) => w.inView(x, -20, -16));
 
   /** The bugs' sprites (BugSprite.svelte): loaded with the first bug of a session, out of the island's first load. */
   let Sprite = $state<typeof import('./BugSprite.svelte').default | null>(null);
@@ -226,58 +237,67 @@
   }
 
   // ---------- fish ----------
-  /** The pond's water on the stage (u), or null when this screen has none. */
-  const pond = (): Oval | null => POND;
-  /** The pond's fish table: its own chunk, fetched with the pond's first shadow. */
+  /** The fresh-water fish table: its own chunk, fetched with the first fresh-water shadow. */
   let pondChunk: Promise<typeof import('./pondFish.ts')> | null = null;
   const loadPond = () => (pondChunk ??= import('./pondFish.ts'));
 
-  /** A shadow in the sea (off the front beach, or beside the island) or in the pond, `want` being one of that water's
-   *  fish (`?critter=`). */
-  async function spawnFish(water: Water, stay = true, want?: FishId | PondFishId): Promise<boolean> {
-    const g = geo();
-    if (!g || fishes[water]) return !!fishes[water];
+  /** A shadow in `water` where the camera can see it (`pinned`: or anywhere in it), `want` being one of its fish. */
+  async function spawnFish(water: Water, stay = true, want?: FishId | PondFishId, pinned = false): Promise<boolean> {
+    if (fishes[water]) return true;
     const { month, hour } = jst(now());
-    let box: Box | null, keep: Box[] = [], id: FishId | PondFishId, look: { size: number; shape?: 'narrow' | 'fin' };
+    let id: FishId | PondFishId, look: { size: number; shape?: 'narrow' | 'fin' };
     if (water === 'sea') {
-      const side = rand() < 0.5 ? -1 : 1;
-      box = seaBox(g, side) ?? seaBox(g, side < 0 ? 1 : -1);
       id = want ?? pickFish(month, hour, rand, weather.sky);
       look = FISH[id as FishId];
     } else {
-      const o = pond();
-      if (!o) return false;
-      box = pondBox(o);
-      // a canopy over the pond on a small phone: the spots under the control itself aren't tappable (its 6px of padding
-      // would cover the whole pond at 320 × 568)
-      keep = guardsU(g, -6 * g.k);
-      const { POND_FISH, pickPondFish } = await loadPond();
-      if (fishes.pond || !enabled()) return !!fishes.pond;
-      id = want ?? pickPondFish(month, hour, rand);
+      const { POND_FISH, pickFresh } = await loadPond();
+      if (fishes[water] || !enabled()) return !!fishes[water];
+      id = want ?? pickFresh(water, month, hour, rand);
       look = POND_FISH[id as PondFishId];
     }
-    const p = box && freeIn(box, keep);
-    if (!box || !p) return false;
+    const ok = swimOk({ water, ...look }, guards(4));
+    // the nearer reaches first (by the horizon a shadow is a speck), in a random order
+    const far = (a: Swim) => (w.screenAt(a.cx, a.cz).ground < 0.6 ? 1 : 0);
+    const areas = areasOf(water).filter(inViewArea).map((a) => [a, far(a) + rand()] as const).sort((a, b) => a[1] - b[1]).map(([a]) => a);
+    let area: Swim | null = null, p: { x: number; z: number } | null = null;
+    for (const a of areas) if ((p = freeSwim(a, ok))) { area = a; break; }
+    if (!p && pinned) {
+      // nowhere on screen: at its water all the same (the e2e brings the camera to it)
+      area = areas[0] ?? areasOf(water)[0];
+      p = { x: area.cx, z: area.cz };
+    }
+    if (!area || !p) return false;
     // a dev hook's fish (kept until caught: `stay` false) is always a fish, never junk
     const item = want ?? (stay ? hookItem(id, rand) : id);
     preload(critterArt(item));
     void loadLines().catch(() => {});
-    const f: Fish = { item, water, size: look.size, shape: look.shape, ...p, ms: 0, flip: rand() < 0.5, box, keep, gone: false, dash: false };
+    const f: Fish = { n: ++seq, item, water, size: look.size, shape: look.shape, ...p, ax: p.x, az: p.z, ms: 0, flip: rand() < 0.5, rot: 0, area, gone: false, dash: false };
     fishes[water] = f;
-    later(() => swim(f), 400);
-    if (stay) later(() => leaveFish(f), STAY_MS.fish);
+    const fp = fishes[water]!; // the state's proxy (the timers compare against it)
+    later(() => swim(fp), 400);
+    if (stay) later(() => leaveFish(fp), STAY_MS.fish);
     return true;
+  }
+  /** Turn a shadow toward (x, z): head right (mirrored) or left, tilted along the way it swims. */
+  function face(f: Fish, x: number, z: number) {
+    const dx = x - f.x, dy = -(z - f.z);
+    if (Math.hypot(dx, dy) < 0.5) return;
+    const a = (Math.atan2(dy, dx) * 180) / Math.PI;
+    f.flip = Math.abs(a) <= 90;
+    f.rot = f.flip ? a : a > 0 ? a - 180 : a + 180;
+  }
+  /** Swim to (x, z) over ms. */
+  function swimTo(f: Fish, x: number, z: number, ms: number) {
+    face(f, x, z);
+    Object.assign(f, { x, z, ms });
   }
   /** A slow wander to another spot in its patch of water (NH shadows dawdle), unless it's busy with a bobber. */
   function swim(f: Fish) {
     if (fishes[f.water] !== f || f.gone) return;
     if (cast?.fish !== f) {
       f.spurt = false;
-      const p = freeIn(f.box, f.keep) ?? f;
-      f.ms = clamp(Math.hypot(p.x - f.x, p.y - f.y) * (f.water === 'pond' ? 160 : 110), 2500, 6000);
-      f.flip = p.x > f.x;
-      f.x = p.x;
-      f.y = p.y;
+      const p = freeSwim(f.area, swimOk(f, guards(4))) ?? f;
+      swimTo(f, p.x, p.z, clamp(Math.hypot(p.x - f.x, p.z - f.z) * (f.water === 'sea' ? 110 : 160), 2500, 6000));
     }
     later(() => swim(f), f.ms + between(600, 2200));
   }
@@ -293,9 +313,13 @@
     cast = null;
     sceneSfx('flee');
     if (!f || fishes[f.water] !== f) return;
-    const dx = c ? Math.sign(f.x - c.x) || 1 : f.flip ? 1 : -1;
-    const run = f.water === 'pond' ? 14 : 40; // the pond is small: it dives instead of darting off
-    Object.assign(f, { ms: 650, dash: true, gone: true, flip: dx > 0, x: f.x + dx * run, y: f.y + between(-3, f.water === 'pond' ? 3 : 10) });
+    const p = fishNow(f) ?? f;
+    const d = c ? Math.hypot(p.x - c.x, p.z - c.z) || 1 : 1;
+    const [ux, uz] = c ? [(p.x - c.x) / d, (p.z - c.z) / d] : [f.flip ? 1 : -1, 0];
+    const run = f.water === 'sea' ? 40 : 14; // a small water: it dives instead of darting off
+    Object.assign(f, { x: p.x, z: p.z });
+    swimTo(f, p.x + ux * run, p.z + uz * run, 650);
+    Object.assign(f, { dash: true, gone: true });
     later(() => fishes[f.water] === f && (fishes[f.water] = null), 700);
   }
 
@@ -303,50 +327,56 @@
   let casting = false;
   /** …or to dive at the bubbles. */
   let diveWalk = false;
-  function castAt(f: Fish, x: number, y: number) {
-    let to: Throw, spot: readonly [number, number];
-    const o = pond();
-    let far = false;
-    if (f.water === 'pond' && o) {
-      // the line starts at the pond's front rim if my villager can't get there; it walks round to the back bank behind
-      // the water (the front rim is under the left tree's canopy) and fishes from there (walkGraph's pondside)
-      to = pondCast(o, x, y);
-      spot = [Math.round(clamp(to.x, o.cx - o.rx + 8, o.cx + 7)), 32]; // (further right it would stand in front of the museum)
-      far = true;
-    } else {
-      // the angler stands on the beach: in front, a little toward the middle; beside the island, on its sand edge
-      const front = y > shoreY(x);
-      const side = x < 195 ? 1 : -1;
-      const [sx, sy] = front ? [x + side * 10, shoreY(x + side * 10) - 4] : [x < 195 ? SAND.x0 + 6 : SAND.x1 - 6, y - 8];
-      to = { x: front ? x : x < 195 ? Math.min(x, SAND.x0 - 6) : Math.max(x, SAND.x1 + 6), y: front ? Math.max(y, shoreY(x) + 16) : y, sx, sy };
-      spot = [Math.round(clamp(sx, BEACH.x0 + 4, BEACH.x1 - 4)), Math.round(Math.min(sy + 2, BEACH.y1 - 1))];
-    }
+  /** Where the angler stands to cast at a bobber at (x, z) in `water` (world): on the beach in front of it, facing the
+   *  sea; the pond's back bank (walkGraph's pondside: in front, my villager would hide the little pond); the river's
+   *  bank, the far one where the channel runs across (the line in view), else the island's side. */
+  function anglerSpot(water: Water, x: number, z: number): readonly [number, number] {
+    if (water === 'sea') return [Math.round(clamp(x, SEA_BOX.x0 + 20, SEA_BOX.x1)), 18];
+    const g = walkGeo();
+    if (water === 'pond') return g.nodes.pondside;
+    const r = riverNear(x, z), [ax, az] = RIVER[r.i], [bx, bz] = RIVER[r.i + 1];
+    const len = Math.hypot(bx - ax, bz - az) || 1, ux = (bx - ax) / len, uz = (bz - az) / len;
+    let [nx, nz] = [-uz, ux];
+    if (Math.abs(nz) > 0.4 ? nz < 0 : nx * (195 - x) < 0) [nx, nz] = [-nx, -nz];
+    const reach = Math.max(r.hw, 18) + 14;
+    return nearestWalkable(g, x + nx * reach, z + nz * reach, 30) ?? nearestWalkable(g, x, z, 90) ?? [x, z];
+  }
+  function castAt(f: Fish, x: number, z: number) {
+    const to = castInto(f.water, x, z);
+    const spot = anglerSpot(f.water, to.x, to.z);
     // my villager walks to that spot (avatar.ts), rod in hand, and casts from there
     casting = true;
-    const { ms } = approach(to.x, to.y, { spot, tool: 'rod', toolMs: 20_000, linger: 20_000, far });
-    if (ms) later(() => throwLine(f, to), ms);
-    else throwLine(f, to);
+    const { ms } = approach(to.x, to.z, { spot: [Math.round(spot[0]), Math.round(spot[1])], tool: 'rod', toolMs: 20_000, linger: 20_000, far: f.water !== 'sea' });
+    const th = { ...to, sx: spot[0], sz: spot[1] };
+    if (ms) later(() => throwLine(f, th), ms);
+    else throwLine(f, th);
   }
-  /** Where the bobber lands and where the line starts (u). */
-  interface Throw { x: number; y: number; sx: number; sy: number }
-  /** The tip of the rod in my villager's hand (u), measured (it mirrors with the facing and swings as it casts), or null
-   *  when the rod isn't out (no walk: the line starts at the water's edge instead). */
-  function rodTip(): { x: number; y: number } | null {
-    const g = geo(), path = scene?.querySelector<SVGPathElement>('[data-actor="mine"] [data-tool="rod"] .handle');
+  /** The tip of the rod in my villager's hand (client px), measured (it mirrors with the facing and swings as it
+   *  casts), or null when the rod isn't out (no walk: the line starts at the bank instead). */
+  function rodTip(): readonly [number, number] | null {
+    const path = scene?.querySelector<SVGPathElement>('[data-actor="mine"] [data-tool="rod"] .handle');
     const m = path?.getScreenCTM();
-    if (!g || !m) return null;
+    if (!m) return null;
     const p = new DOMPoint(30, -34).matrixTransform(m);
-    return { x: (p.x - g.r.left) * g.k, y: (p.y - g.r.top) * g.k };
+    return [p.x, p.y];
+  }
+  /** The line's start relative to the bobber (its node's local units): the rod's tip, or the bank. */
+  function lineFrom(c: Cast): [number, number] {
+    const [bx, by] = w.clientAt(c.x, c.z), k = w.scaleAt(c.x, c.z) * w.view.s;
+    const [tx, ty] = rodTip() ?? w.clientAt(c.sx, c.sz, 6);
+    return [(tx - bx) / k, (ty - by) / k];
   }
   /** The line runs from the rod's tip (measured once the rod is out and again once its cast swing is done). */
   function lineFromRod(c: Cast) {
-    const tip = rodTip();
-    if (tip && cast === c) Object.assign(c, { sx: tip.x, sy: tip.y });
+    if (cast !== c) return;
+    [c.fx, c.fy] = lineFrom(c);
   }
-  function throwLine(f: Fish, to: Throw) {
+  function throwLine(f: Fish, to: { x: number; z: number; sx: number; sz: number }) {
     casting = false;
     if (fishes[f.water] !== f || f.gone) return putRodAway();
-    cast = { fish: f, ...to, landed: false, t0: 0, plan: null, under: false, rings: 0, gen: 0, hesitated: false };
+    const c0: Cast = { fish: f, ...to, fx: 0, fy: 0, landed: false, t0: 0, plan: null, under: false, rings: 0, bdx: 0, gen: 0, hesitated: false };
+    [c0.fx, c0.fy] = lineFrom(c0);
+    cast = c0;
     sceneSfx('cast');
     sceneSfx('plop');
     const thrown = cast;
@@ -358,7 +388,7 @@
       c.landed = true;
       c.t0 = performance.now();
       c.rings++;
-      const d = Math.hypot(f.x - c.x, f.y - c.y);
+      const d = Math.hypot(f.x - c.x, f.z - c.z);
       if (d > NOTICE_U || fishes[f.water] !== f) return later(() => cast === c && (cast = null), 9000); // nobody noticed
       follow(c, f, bitePlan(d, rand));
     }, 300);
@@ -371,34 +401,36 @@
     c.plan = plan;
     const live = () => cast === c && c.gen === gen;
     const at = (ms: number) => Math.max(0, ms - (performance.now() - c.t0));
-    const d = Math.hypot(f.x - c.x, f.y - c.y) || 1;
-    const ux = (c.x - f.x) / d, uy = (c.y - f.y) / d;
+    const from = fishNow(f) ?? f;
+    const d = Math.hypot(from.x - c.x, from.z - c.z) || 1;
+    const ux = (c.x - from.x) / d, uz = (c.z - from.z) / d;
     const len = sizeU(f) * 0.5;
     // NH: the shadow turns to the bobber, then closes in over 2–3 short darts (450–700 ms each, a long one first) with
     // pauses between them (300–600 ms), nose to the bobber by plan.arrive (all scaled down if that's sooner)
-    const from = fishNow(f) ?? f, end = { x: c.x - ux * len, y: c.y - uy * len * 0.6 };
-    Object.assign(f, { ms: 0, x: from.x, y: from.y, flip: c.x > from.x, spurt: true });
+    const end = { x: c.x - ux * len, z: c.z - uz * len };
+    Object.assign(f, { ms: 0, x: from.x, z: from.z, spurt: true });
+    face(f, c.x, c.z);
     const n = d > 60 ? 3 : 2, share = n === 3 ? [0.5, 0.82, 1] : [0.62, 1];
     const moves = share.map(() => between(450, 700)), pauses = share.slice(1).map(() => between(300, 600));
     const total = [...moves, ...pauses].reduce((a, b) => a + b, 0), avail = at(plan.arrive);
     const k = Math.min(1, avail / total);
     let t = Math.max(0, avail - total * k); // a beat to turn and look first
     moves.forEach((m, i) => {
-      later(() => live() && Object.assign(f, { ms: m * k, x: from.x + (end.x - from.x) * share[i], y: from.y + (end.y - from.y) * share[i] }), t);
+      later(() => live() && Object.assign(f, { ms: m * k, x: from.x + (end.x - from.x) * share[i], z: from.z + (end.z - from.z) * share[i] }), t);
       t += (m + (pauses[i] ?? 0)) * k;
     });
     for (const t of plan.nibbles)
       later(() => {
         if (!live()) return;
         c.rings++;
-        nibble(f, c);
+        nibble(f);
         sceneSfx('nibble');
       }, at(t));
     later(() => {
       if (!live()) return;
       // NH's 「！」 (the phone's cue: NH has only the plunk) kept inside the screen, 8px from its sides
-      const g = geo(), half = g ? (14 + 8) * g.k : 0;
-      c.bx = g ? clamp(c.x, g.left + half, g.right - half) : c.x;
+      const cx = w.clientAt(c.x, c.z)[0] - w.view.left, half = 22;
+      c.bdx = clamp(cx, half, w.view.vw - half) - cx;
       c.under = true;
       c.rings++;
       sceneSfx('bite');
@@ -407,23 +439,27 @@
   }
 
   let bobEl = $state<HTMLElement>();
-  const fishEls: Record<Water, HTMLElement | undefined> = $state({ sea: undefined, pond: undefined });
-  /** The shadow's position on screen right now (u), mid-transition included. */
-  function fishNow(f: Fish): { x: number; y: number } | null {
-    const g = geo(), r = fishEls[f.water]?.getBoundingClientRect();
-    return g && r ? { x: (r.left - g.r.left) * g.k, y: (r.top - g.r.top) * g.k } : null;
+  const fishEls: Partial<Record<Water, HTMLElement>> = $state({});
+  /** Where the shadow is right now (world), mid-transition included: its node's anchor plus its inner offset. */
+  function fishNow(f: Fish): { x: number; z: number } | null {
+    const el = fishEls[f.water];
+    if (!el) return null;
+    const [lx, ly] = getComputedStyle(el).translate.split(' ').map(parseFloat);
+    if (!Number.isFinite(lx)) return null;
+    const s = w.view.s;
+    return { x: f.ax + lx / s, z: f.az - (Number.isFinite(ly) ? ly : 0) / s };
   }
   /** A nibble: the bobber twitches, a small gentle wiggle (nothing like the bite's plunge). */
-  function nibble(f?: Fish, c?: Cast) {
-    // the shadow's nose bumps the bobber (2u toward it and back), in step with the bobber's twitch
-    const fin = f && c ? fishEls[f.water]?.querySelector('.fin') : null;
-    if (fin && f && c) {
-      const dx = Math.sign(c.x - f.x) * 2;
-      fin.animate([{ translate: '-50% -50%' }, { translate: `calc(-50% + ${su(dx)}) -50%`, offset: 0.3 }, { translate: '-50% -50%' }], { duration: 380, easing: 'ease-out' });
+  function nibble(f?: Fish) {
+    // the shadow's nose bumps the bobber (2u toward its head and back), in step with the bobber's twitch
+    const fin = f ? fishEls[f.water]?.querySelector('.fin') : null;
+    if (fin && f) {
+      const dx = f.flip ? 2 : -2;
+      fin.animate([{ translate: '-50% -50%' }, { translate: `calc(-50% + ${dx} * var(--u)) -50%`, offset: 0.3 }, { translate: '-50% -50%' }], { duration: 380, easing: 'ease-out' });
     }
     bobEl?.animate(
-      [{ translate: '0 0', rotate: '0deg' }, { translate: `0 ${su(0.9)}`, rotate: '-9deg', offset: 0.25 },
-        { translate: `0 ${su(0.2)}`, rotate: '7deg', offset: 0.55 }, { translate: '0 0', rotate: '0deg' }],
+      [{ translate: '0 0', rotate: '0deg' }, { translate: '0 calc(.9 * var(--u))', rotate: '-9deg', offset: 0.25 },
+        { translate: '0 calc(.2 * var(--u))', rotate: '7deg', offset: 0.55 }, { translate: '0 0', rotate: '0deg' }],
       { duration: 380, easing: 'ease-out' }
     );
   }
@@ -444,8 +480,8 @@
       nibble();
       // from where it is now (it may still be swimming up), straight back from the bobber
       const p = fishNow(f) ?? f;
-      const d = Math.hypot(p.x - c.x, p.y - c.y) || 1;
-      Object.assign(f, { ms: HESITATE_MS, x: p.x + ((p.x - c.x) / d) * HESITATE_U, y: p.y + ((p.y - c.y) / d) * HESITATE_U * 0.6 });
+      const d = Math.hypot(p.x - c.x, p.z - c.z) || 1;
+      Object.assign(f, { ms: HESITATE_MS, x: p.x + ((p.x - c.x) / d) * HESITATE_U, z: p.z + ((p.z - c.z) / d) * HESITATE_U });
       const plan = hesitatePlan(ms, rand);
       return later(() => cast === c && fishes[f.water] === f && follow(c, f, plan), HESITATE_MS);
     }
@@ -454,7 +490,8 @@
     if (r === 'reel') return;
     if (fishes[f.water] === f) fishes[f.water] = null;
     sceneSfx('catch');
-    show(f.item, c.x, c.y);
+    const at = stageAt(c.x, c.z);
+    show(f.item, at.x, at.y);
   }
 
   /** The line's in (caught, gone or never cast): the rod goes away and my villager heads home in a while. */
@@ -468,69 +505,145 @@
   });
 
   // ---------- bugs ----------
-  /** A bug comes on; false when there's nowhere clear for it on this screen right now. */
-  function spawnBug(id: BugId | null, from?: { x: number; y: number }, stay = true): boolean {
-    const g = geo();
-    if (!id || !g || bug) return !!bug;
+  /** Bugs that don't fly in: a cicada's shell, a walking stick (they're on their trunk already). */
+  const STILL = new Set<BugId>(['cicada-shell', 'walking-stick']);
+  /** NH's butterflies that land on flowers now and then (the moths, the bee and the mosquito keep flying). */
+  const LANDS = (id: BugId) => /butterfly|birdwing|bluebottle|emperor/.test(id);
+  /** A crawler's pace: how far it goes at a time (u) and how long that takes (ms). A hermit crab scuttles, a tiger beetle
+   *  runs, a snail or a walking leaf barely moves, a stink bug ambles over the flowers. */
+  const PACE: Partial<Record<BugId, [number, number, number]>> = {
+    'hermit-crab': [30, 450, 700], 'tiger-beetle': [34, 260, 420], snail: [4, 3500, 5000], 'walking-leaf': [6, 3000, 4200],
+    stinkbug: [10, 2200, 3200], 'man-faced-stink-bug': [10, 2200, 3200], tarantula: [14, 1800, 2600], scorpion: [16, 1600, 2400],
+    // on the water: the pondskater skates in quick glides, the diving beetle paddles, the giant water bug lurks
+    pondskater: [12, 260, 420], 'diving-beetle': [8, 900, 1400], 'giant-water-bug': [5, 1800, 2600]
+  };
+  /** The ground a place's bugs keep to (the spot's surface), if any. */
+  function groundOk(place: BugPlace, x: number, z: number): boolean {
+    if (place === 'water') return waterAt(x, z, false, -3) !== null;
+    const s = surfaceAt(x, z);
+    if (place === 'beach') return s === 'sand';
+    if (place === 'grass' || place === 'under-tree' || place === 'rock') return s === 'grass' || s === 'dirt';
+    if (place === 'water-air') return true;
+    return s !== 'sea';
+  }
+  /** The bed flowers' heads (world, lift measured from the flower as drawn: a bud's or a bloom's): where a ladybug or a
+   *  mantis sits and a butterfly rests. The orchid mantis prefers white flowers. */
+  function flowerHeads(): (P3 & { white: boolean })[] {
+    const out: (P3 & { white: boolean })[] = [];
+    const s = w.view.s;
+    for (const c of FLOWER_CELLS) {
+      const el = scene?.querySelector<HTMLElement>(`[data-flower="${c.cell}"]`);
+      const r = el?.getBoundingClientRect();
+      if (!el || !r?.width) continue;
+      const foot = w.clientAt(c.x, c.z)[1], k = w.scaleAt(c.x, c.z) * s;
+      out.push({ x: c.x, z: c.z, lift: Math.max(6, (foot - (r.top + r.height * 0.16)) / k), white: !!el.querySelector('img[src*="white"]') });
+    }
+    return out;
+  }
+  /** A trunk spot for a percher, on screen and clear of the tree's own buttons (the canopy, the fruit row): up the
+   *  trunk, then a little lower or higher where a button covers it. */
+  function perchSpot(palm: boolean, keep: Box[], pinned: boolean): P3 | null {
+    const all = perches(palm), spots: P3[] = [];
+    for (const p of all)
+      for (const f of [1, 0.85, 1.15, 0.7]) {
+        const s = { x: p.x + p.dx, z: p.z - 1, lift: p.lift * f };
+        if (seen(s.x, s.z, s.lift, keep, 5, 6)) {
+          spots.push(s);
+          break;
+        }
+      }
+    if (spots.length) return pickOne(spots, rand);
+    if (!pinned) return null;
+    // nowhere on screen: the nearest trunk ahead of the camera all the same
+    const p = [...all].sort((a, b) => Math.abs(a.z - w.view.camZ - 150) - Math.abs(b.z - w.view.camZ - 150))[0];
+    return p ? { x: p.x + p.dx, z: p.z - 1, lift: p.lift } : null;
+  }
+
+  /** A bug comes on where NH keeps it and the camera can see it (`pinned`: or at its place anyway); false when there's
+   *  nowhere clear for it right now. `from`: it flies (or hops) in from there (a shaken bush, my villager, the rock),
+   *  keeping to `area`. */
+  function spawnBug(id: BugId | null, o: { from?: P3; area?: Patch; stay?: boolean; pinned?: boolean } = {}): boolean {
+    const { from, area, stay = true, pinned = false } = o;
+    if (!id || bug) return !!bug;
     void loadSprite();
     preload(critterArt(id));
     void loadLines().catch(() => {});
-    const flight = BUGS[id].flight;
-    // a flea hops off a villager into the grass on its side
-    const side = from && id === 'flea' ? (from.x < 195 ? -1 : 1) : rand() < 0.5 ? -1 : 1;
-    const ground = BUGS[id].ground;
-    const o = pond();
-    // a ladybug or a mantis sits on a flower's head (the orchid mantis on a white one if the beds have any)
-    let heads = flight === 'flower' ? flowerHeads(g, guardsU(g, 8)) : [];
-    if (id === 'orchid-mantis' && heads.some((h) => h.white)) heads = heads.filter((h) => h.white);
-    const head = heads.length ? pickOne(heads, rand) : null;
-    const area = flight === 'flower' ? head && { x0: head.x, x1: head.x, y0: head.y, y1: head.y }
-      : flight === 'perch' ? trunk(g, side)
-      : ground === 'beach' ? beach(g)
-      : ground === 'pond' ? o && pondBox(o)
-      : id === 'flea' || flight === 'stalk' || flight === 'burrow' ? GRASS[side < 0 ? 0 : 1]
-      : flight === 'dart' && !from ? LAWN
-      : from || id === 'moth' ? HEDGE
-      : flight === 'hop' || ground === 'grass' ? GRASS[side < 0 ? 0 : 1] : BEDS[side < 0 ? 0 : 1];
-    if (!area) return false;
-    // flyers come in from the side of their patch; a firefly blinks on, a grasshopper is just there in the grass
-    // its patch, minus the controls (measured once: the villagers and the jar don't move far); a cicada's trunk spot
-    // is already measured clear of the tree's buttons
-    // (on the pond, only the controls themselves: a canopy's top comes close to its water)
-    // on the pond, only the controls themselves (a canopy's padding comes over its water, as for the pond's fish)
-    const keep = flight === 'perch' || flight === 'flower' ? [] : guardsU(g, ground === 'pond' ? -6 * g.k : 16);
-    const spot = freeIn(area, keep);
+    const flight = BUGS[id].flight, place = bugPlace(id);
+    let spot: P3 | null = null, patch: Patch | null = null;
+    const keep = guards(flight === 'perch' || flight === 'flower' ? 4 : 10);
+    const ok = (p: P3) => groundOk(place, p.x, p.z) && seen(p.x, p.z, p.lift, keep);
+    if (flight === 'perch') spot = perchSpot(BUGS[id].tree === 'palm', keep, pinned);
+    else if (flight === 'flower') {
+      // a ladybug or a mantis sits on a flower's head (the orchid mantis on a white one if the beds have any)
+      let heads = flowerHeads();
+      const shown = heads.filter((h) => seen(h.x, h.z, h.lift, keep, 5, 5));
+      if (shown.length || !pinned) heads = shown;
+      if (id === 'orchid-mantis' && heads.some((h) => h.white)) heads = heads.filter((h) => h.white);
+      spot = heads.length ? pickOne(heads, rand) : null;
+    } else {
+      let list = area ? [area] : patches(place);
+      // the moth round a lamp; where there's none on screen, round a bush
+      if (place === 'lights' && !list.some((a) => seen((a.x0 + a.x1) / 2, (a.z0 + a.z1) / 2, a.l0, null))) list = patches('bush').map((a) => ({ ...a, l0: a.l0 + 6, l1: a.l1 + 30 }));
+      for (const a of [...list].sort(() => rand() - 0.5)) {
+        const p = freeIn(a, ok);
+        if (p) {
+          spot = p;
+          patch = a;
+          break;
+        }
+      }
+      if (!spot && (pinned || area) && list.length) {
+        patch = list.find((a) => w.inView((a.x0 + a.x1) / 2, (a.z0 + a.z1) / 2)) ?? list[0];
+        spot = { x: (patch.x0 + patch.x1) / 2, z: (patch.z0 + patch.z1) / 2, lift: patch.l0 };
+      }
+    }
     if (!spot) return false;
+    const shown = seen(spot.x, spot.z, spot.lift, null);
     // a firefly blinks on, a grasshopper or a crawler is just there, a shell or a walking stick is on its trunk already
     const inPlace = flight === 'drift' || flight === 'flower' || flight === 'hop' || flight === 'crawl' || flight === 'stalk' || flight === 'burrow' || STILL.has(id);
-    const start = from ?? (inPlace ? spot : { x: side < 0 ? g.left - 16 : g.right + 16, y: spot.y - (flight === 'perch' ? 40 : 0) });
-    bug = { id, flight, ...start, ms: 0, flip: side < 0, gone: false, area, keep, sat: false, hops: 0, rest: 2 + Math.floor(rand() * 2), ...(flight === 'stalk' && { stalk: 'calm' as const }) };
+    // flyers come in from the nearer side of the screen (a percher from above its trunk)
+    const side = w.screenAt(spot.x, spot.z).sx < w.view.vw / 2 ? -1 : 1;
+    const start = from ?? (inPlace ? spot : { x: spot.x + side * 300, z: spot.z, lift: spot.lift + (flight === 'perch' ? 40 : 0) });
+    bug = {
+      n: ++seq, id, flight, place, ...start, ax: spot.x, az: spot.z, g: Math.max(0.2, w.screenAt(spot.x, spot.z).ground), ms: 0, flip: side < 0,
+      gone: false, patch: flight === 'perch' || flight === 'flower' ? null : patch, ok: shown ? ok : (p) => groundOk(place, p.x, p.z), sat: false,
+      hops: 0, rest: 2 + Math.floor(rand() * 2), ...(flight === 'stalk' && { stalk: 'calm' as const })
+    };
+    // a perch or a flower is its one spot
+    if (!bug.patch) bug.patch = { x0: spot.x, x1: spot.x, z0: spot.z, z1: spot.z, l0: spot.lift, l1: spot.lift };
     later(fly, 60);
     if (stay) later(() => bugLeave(), STAY_MS.bug);
     return true;
   }
+  function go(b: Bug, p: P3, ms: number) {
+    Object.assign(b, { ms, flip: p.x > b.x, x: p.x, z: p.z, lift: p.lift });
+  }
   function fly() {
     const b = bug;
-    if (!b || b.gone || b.held) return;
-    const p = freeIn(b.area, b.keep);
+    if (!b || b.gone || b.held || !b.patch) return;
+    const p = freeIn(b.patch, b.ok);
     if (!p) return later(fly, 1000); // nowhere else clear just now: it stays where it is a while
     if (b.flight === 'perch') {
       // in to the trunk, then it sits there and sings until it's netted, startled or done
-      Object.assign(b, { ms: 1500, flip: p.x > b.x, x: p.x, y: p.y });
-      return later(() => bug === b && (b.sat = true), 1500);
+      go(b, p, b.x === p.x && b.lift === p.lift ? 0 : 1500);
+      return later(() => bug === b && (b.sat = true), b.ms);
     }
     if (b.flight === 'hop') {
       // a short hop along the grass toward a free spot, then a sit
-      const x = clamp(b.x + Math.sign(p.x - b.x || 1) * Math.min(Math.abs(p.x - b.x), between(14, 30)), b.area.x0, b.area.x1);
-      const y = clamp(b.y + between(-8, 8), b.area.y0, b.area.y1);
-      Object.assign(b, { ms: 420, flip: x > b.x, x, y });
-      hopEl?.animate([{ translate: '0 0' }, { translate: `0 ${su(-9)}`, offset: 0.45 }, { translate: '0 0' }], { duration: 420, easing: 'ease-out' });
+      // (off a villager, or wherever it isn't clear: the first hop goes straight to a clear spot in the grass)
+      const a = b.patch, away = b.lift > 0 || !b.ok({ x: b.x, z: b.z, lift: 0 });
+      const x = away ? p.x : clamp(b.x + Math.sign(p.x - b.x || 1) * Math.min(Math.abs(p.x - b.x), between(14, 30)), a.x0, a.x1);
+      const z = away ? p.z : clamp(b.z + between(-8, 8), a.z0, a.z1);
+      const next = { x, z, lift: 0 };
+      if (!away && !b.ok(next)) return later(fly, 600); // a hop onto a control: it waits and tries again
+      go(b, next, 420);
+      hopEl?.animate([{ translate: '0 0' }, { translate: '0 calc(-9 * var(--u))', offset: 0.45 }, { translate: '0 0' }], { duration: 420, easing: 'ease-out' });
       return later(fly, 420 + between(1400, 2800));
     }
     if (b.flight === 'burrow') return; // under its mound, chirping, until it's dug up or done
     if (b.flight === 'flower') {
       // flown in from a shaken bush: down onto its flower; else it's just there, sitting still (a slow bob)
-      Object.assign(b, { ms: b.x === p.x && b.y === p.y ? 0 : 1200, flip: p.x > b.x, x: p.x, y: p.y });
+      go(b, p, b.x === p.x && b.z === p.z && b.lift === p.lift ? 0 : 1200);
       return;
     }
     if (b.flight === 'flutter' && LANDS(b.id)) {
@@ -541,12 +654,11 @@
         b.hops = 0;
         b.rest = 2 + Math.floor(rand() * 2);
       } else if ((b.hops = (b.hops ?? 0) + 1) > (b.rest ?? 2)) {
-        const g = geo();
-        const heads = g ? flowerHeads(g, b.keep).filter((h) => Math.abs(h.x - b.x) < 120) : [];
-        const h = pickOne(heads, rand);
+        const keep = guards(4);
+        const h = pickOne(flowerHeads().filter((h) => Math.abs(h.x - b.x) < 120 && Math.abs(h.z - b.z) < 120 && seen(h.x, h.z, h.lift, keep, 5, 5)), rand);
         if (h) {
           const ms = between(1100, 1600);
-          Object.assign(b, { ms, flip: h.x > b.x, x: h.x, y: h.y - 2 });
+          go(b, { ...h, lift: h.lift + 2 }, ms);
           later(() => bug === b && !b.gone && !b.held && (b.sat = true), ms);
           return later(fly, ms + between(2000, 4000));
         }
@@ -557,83 +669,83 @@
       // tarantula holds still
       if (b.stalk === 'rear') return later(fly, 600);
       const [reach, m0, m1] = PACE[b.id] ?? [18, 1600, 2600];
-      const crab = b.id === 'hermit-crab';
-      const x = clamp(b.x + clamp(p.x - b.x, -reach, reach), b.area.x0, b.area.x1);
-      const y = clamp(b.y + clamp(p.y - b.y, -reach / 3, reach / 3), b.area.y0, b.area.y1);
+      const a = b.patch, crab = b.id === 'hermit-crab';
+      const x = clamp(b.x + clamp(p.x - b.x, -reach, reach), a.x0, a.x1);
+      const z = clamp(b.z + clamp(p.z - b.z, -reach / 2, reach / 2), a.z0, a.z1);
       const ms = between(m0, m1);
-      Object.assign(b, { ms, flip: crab ? b.flip : x > b.x, x, y });
+      Object.assign(b, { ms, flip: crab ? b.flip : x > b.x, x, z, lift: p.lift });
       return later(fly, ms + between(1200, 3200));
     }
     const ms = b.flight === 'dart' ? between(240, 380) : b.flight === 'drift' ? between(2600, 4000) : between(1100, 1800);
-    Object.assign(b, { ms, flip: p.x > b.x, x: p.x, y: p.y });
+    go(b, p, ms);
     later(fly, ms + (b.flight === 'dart' ? between(900, 2000) : 0)); // a dragonfly hovers between darts
   }
   /** Off to the nearer side, up a little, fading (a firefly or a cricket just fades where it is). */
   function bugLeave(fast = false, away?: number) {
-    const b = bug, g = geo();
-    if (!b || b.gone || b.held || !g) return;
+    const b = bug;
+    if (!b || b.gone || b.held) return;
     b.gone = true;
     const ground = b.flight === 'crawl' || b.flight === 'stalk';
+    const dir = away ?? (w.screenAt(b.x, b.z).sx < w.view.vw / 2 ? -1 : 1);
     if (b.flight === 'drift' || b.flight === 'burrow' || ((b.flight === 'hop' || ground || STILL.has(b.id)) && !fast)) {
       b.ms = 900;
     } else if (ground) {
       // startled: it scurries off along the ground and is gone
-      const dir = away ?? (b.x < 195 ? -1 : 1);
       Object.assign(b, { ms: 700, fled: true, flip: dir > 0, x: b.x + dir * 26 });
     } else if (fast) {
       // startled: it rises 40u up and away, in full view, and fades only at the end
-      const dir = away ?? (b.x < 195 ? -1 : 1);
-      Object.assign(b, { ms: 800, sat: false, fled: true, flip: dir > 0, x: clamp(b.x + dir * 50, g.left + 12, g.right - 12), y: Math.max(10, b.y - 40) });
+      Object.assign(b, { ms: 800, sat: false, fled: true, flip: dir > 0, x: b.x + dir * 50, lift: b.lift + 40 });
     } else {
-      const dir = away ?? (b.x < 195 ? -1 : 1);
-      Object.assign(b, { ms: 1600, sat: false, flip: dir > 0, x: dir < 0 ? g.left - 20 : g.right + 20, y: Math.max(10, b.y - 30) });
+      Object.assign(b, { ms: 1600, sat: false, flip: dir > 0, x: b.x + dir * 300, lift: b.lift + 30 });
     }
     later(() => bug === b && (bug = null), b.ms + 50);
   }
 
-  /** A pill bug (or, in its hours, a centipede) crawls out from under the rock by the hedge (Care's rock tap). */
-  export function fromRock(x: number, y: number) {
+  /** A pill bug (or, in its hours, a centipede) crawls out from under the rock (Care's rock tap). */
+  export function fromRock(_x?: number, _y?: number) {
     if (bug) return;
     const { hour } = jst(now());
     const id: BugId = oddsAt(BUGS.centipede, 1, hour) > 0 ? 'centipede' : 'pill-bug';
-    void loadSprite();
-    preload(critterArt(id));
-    // a little patch of lawn by the rock, in front of the hedge
-    const area = { x0: x - 18, x1: x + 20, y0: y - 9, y1: y - 3 }; // in front of the rock's foot
-    bug = { id, flight: 'crawl', x: x + 8, y: y - 4, ms: 0, flip: false, gone: false, area, keep: [], sat: false };
-    later(fly, 300);
-    later(() => bugLeave(), STAY_MS.bug);
+    // a little patch of lawn in front of the rock's foot
+    spawnBug(id, { from: { x: ROCK[0] + 8, z: ROCK[1] - 6, lift: 0 }, area: patches('rock')[0] });
   }
 
-  /** A tap on my villager (IslandScene via SceneTaps): now and then a flea hops off it into the grass (NH's fleas). */
-  export function fromVillager(el: Element) {
-    const g = geo();
-    if (bug || !g || !(forceFlea || fleaJumps(jst(now()).month, rand))) return;
-    const r = el.getBoundingClientRect();
-    spawnBug('flea', { x: (r.left + r.width / 2 - g.r.left) * g.k, y: (r.top + r.height * 0.3 - g.r.top) * g.k });
+  /** A tap on my villager (IslandScene via SceneTaps): now and then a flea hops off it (NH's fleas) into the grass
+   *  round its feet. */
+  export function fromVillager(_el?: Element) {
+    if (bug || !(forceFlea || fleaJumps(jst(now()).month, rand))) return;
+    flea();
+  }
+  function flea(stay = true) {
+    const [x, z] = livePos('mine');
+    return spawnBug('flea', { from: { x, z, lift: 34 }, area: { x0: x - 90, x1: x + 90, z0: z - 50, z1: z + 16, l0: 0, l1: 0 }, stay });
   }
 
-  /** A shaken bush lets a bug out now and then (SceneTaps' bush tap). */
-  export function fromBush(i: number) {
+  /** A shaken bush lets a bug out now and then (SceneTaps' bush tap: its scenery id, 'hedge-<i>', or the hedge's
+   *  index): it flutters round that bush. */
+  export function fromBush(which: string | number) {
     if (bug) return;
+    const id = typeof which === 'number' ? `hedge-${which}` : which;
+    const b = BUSHES.find((s) => s.id === id);
+    if (!b) return;
     const { month, hour } = jst(now());
-    spawnBug(bushBug(month, hour, rand, weather.sky), { x: HEDGE_X[i], y: HEDGE_BASE - BUSH_U * 0.7 });
+    spawnBug(bushBug(month, hour, rand, weather.sky), { from: { x: b.x, z: b.z, lift: b.h * 0.7 }, area: { x0: b.x - 30, x1: b.x + 30, z0: b.z - 14, z1: b.z + 14, l0: 20, l1: 50 } });
   }
 
   // ---------- diving ----------
-  /** A spot of bubbles rises somewhere off the beach (where a shadow would swim), with a sea creature (or a pearl) under it. */
-  async function spawnBubbles(stay = true, want?: string) {
+  /** A spot of bubbles rises in the sea in front of the beach (where a shadow would swim, on screen), with a sea
+   *  creature (or a pearl) under it. */
+  async function spawnBubbles(stay = true, want?: string, pinned = false) {
     const m = await loadSea().catch(() => null);
-    const g = geo();
-    if (!m || !g || fishes.sea || bubbles || diving) return;
-    const side = rand() < 0.5 ? -1 : 1;
-    const box = seaBox(g, side) ?? seaBox(g, side < 0 ? 1 : -1);
-    if (!box) return;
+    if (!m || fishes.sea || bubbles || diving) return;
+    const ok = (x: number, z: number) => inWater('sea', x, z) && seen(x, z, 0, guards(8), 16, 6);
+    const p = freeSwim(SEA_SWIM, ok) ?? (pinned ? { x: SEA_SWIM.cx, z: -24 } : null);
+    if (!p) return;
     const { month, hour } = jst(now());
     const item = (want as DiveItem | undefined) ?? m.pickDive(month, hour, rand);
     preload(item === m.PEARL ? findArt(item) : critterArt(item));
     void loadLines().catch(() => {});
-    const b = { n: ++seq, item, box, ...inBox(box) };
+    const b = { n: ++seq, item, ...p };
     bubbles = b;
     if (stay) later(() => bubbles?.n === b.n && (bubbles = null), m.BUBBLE_STAY_MS);
   }
@@ -645,18 +757,17 @@
     const speed = m.speedOf(b.item);
     const out = m.dive(speed, rand);
     const size = b.item === m.PEARL ? 1 : m.SEA[b.item].size;
-    const d = { n: ++seq, item: b.item, x: b.x, y: b.y, ms: 0, size, chase: false, until: 0, gone: false };
+    const d = { n: ++seq, item: b.item, x: b.x, z: b.z, ax: b.x, az: b.z, ms: 0, size, chase: false, until: 0, gone: false };
     diving = d;
     later(() => {
       if (diving?.n !== d.n) return;
       if (out === 'catch') return caught(d);
-      // a quick one: its shadow darts off a little way (and, clean away, keeps going)
-      // within its patch of sea (on screen), away from the nearer edge if it's close
-      const room = { l: d.x - b.box.x0, r: b.box.x1 - d.x };
+      // a quick one: its shadow darts off a little way in the sea, away from the nearer edge of its water if it's close
+      const room = { l: d.x - SEA_BOX.x0, r: SEA_BOX.x1 - d.x };
       const dir = room.l < 30 ? 1 : room.r < 30 ? -1 : rand() < 0.5 ? -1 : 1;
-      const dx = dir * Math.min(between(26, 40), Math.max(room.l, room.r)), dy = between(-8, 8);
+      const dx = dir * between(26, 40), dz = between(-8, 8);
       const window = out === 'escape' ? 0 : m.CHASE_MS[speed];
-      diving = { ...d, chase: true, ms: 320, x: clamp(d.x + dx, b.box.x0, b.box.x1), y: clamp(d.y + dy, b.box.y0, b.box.y1), until: performance.now() + 320 + window };
+      diving = { ...d, chase: true, ms: 320, x: d.x + dx, z: Math.min(-14, d.z + dz), until: performance.now() + 320 + window };
       if (out === 'escape') return later(() => getAway(d.n), 350);
       later(() => getAway(d.n), 320 + window);
     }, 450);
@@ -665,23 +776,23 @@
     const d = diving;
     if (d?.n !== n) return;
     sceneSfx('flee');
-    diving = { ...d, ms: 650, gone: true, x: d.x + Math.sign(d.x - 195 || 1) * 40 };
+    diving = { ...d, ms: 650, gone: true, x: d.x + Math.sign(d.x - d.ax || 1) * 40 };
     later(() => diving?.n === n && (diving = null), 700);
   }
   function caught(d: NonNullable<typeof diving>) {
     diving = null;
     sceneSfx('catch');
-    void show(d.item, d.x, d.y);
+    const at = stageAt(d.x, d.z);
+    void show(d.item, at.x, at.y);
   }
 
   // ---------- the catch ----------
-  /** The catch held up: NH's caption on a plate with the official icon, popping up out of the catch at (x, y) (u)
-   *  (Plate.svelte places it clear of every control). */
+  /** The catch held up: NH's caption on a plate with the official icon, popping up out of the catch at (x, y) (stage
+   *  units) (Plate.svelte places it clear of every control). */
   async function show(item: Catch | DiveItem, x: number, y: number) {
     const pearl = item === 'pearl';
     const kind = pearl ? 'shell' : S && item in S.SEA ? 'sea' : findKind(item as FishId | PondFishId | JunkId | BugId);
-    // Bunny Day's celebrations: now and then a fish on the line (the sea's or the pond's) is NH's water egg (a caption
-    // only, no find)
+    // Bunny Day's celebrations: now and then a fish on the line (any water's) is NH's water egg (a caption only, no find)
     const t0 = now();
     if (kind === 'fish' && eggTime(eventNow(t0)) && eggOnLine(rand)) {
       const n = ++seq;
@@ -690,8 +801,8 @@
       card = cardFor(n, x, y, findArt('water-egg'), t('beach.fished', { name: t('beach.name.water-egg') }));
       return;
     }
-    // the shared ずかん: the first catch of each fish (the sea's or the pond's), bug or sea creature (junk isn't a find;
-    // the pearl is a shell) gets a second page saying so
+    // the shared ずかん: the first catch of each fish, bug or sea creature (junk isn't a find; the pearl is a shell) gets
+    // a second page saying so
     const added = kind ? recordFind(kind, item) : false;
     // a fish tells the island (Turkey Day: Franklin is waiting for one)
     if (kind === 'fish') scene?.dispatchEvent(new CustomEvent('island:catch', { detail: { kind: 'fish', id: item } }));
@@ -716,11 +827,11 @@
       const r = bugEl.getBoundingClientRect();
       const d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
       const swing = netSwing(d, Math.max(r.width, r.height));
-      const bx = (r.left + r.width / 2 - g.r.left) * g.k, by = (r.top + r.height / 2 - g.r.top) * g.k;
+      const at = { x: (r.left + r.width / 2 - g.r.left) * g.k, y: (r.top + r.height / 2 - g.r.top) * g.k };
       if (b.flight === 'stalk' && b.stalk) {
         // NH's tarantula: it rears up when it's come at, charges if you keep coming; settled again, it can be netted
         const act = stalkTap(b.stalk, swing);
-        if (act === 'rear' || act === 'charge') turnTo(bx); // no walk: its mood is the game
+        if (act === 'rear' || act === 'charge') turnTo(b.x); // no walk: its mood is the game
         if (act === 'rear') {
           b.stalk = 'rear';
           later(() => bug === b && b.stalk === 'rear' && (b.stalk = 'settled'), REAR_MS);
@@ -728,10 +839,10 @@
         }
         if (act === 'charge') {
           sceneSfx('bug-flee');
-          const tx = (px - g.r.left) * g.k, ty = (py - g.r.top) * g.k;
-          const dx = Math.sign(tx - b.x) || 1;
+          const to = w.worldAtClient(px, py) ?? b;
+          const dx = Math.sign(to.x - b.x) || 1;
           b.stalk = 'calm';
-          Object.assign(b, { ms: 220, flip: dx > 0, x: b.x + clamp(tx - b.x, -16, 16), y: b.y + clamp(ty - b.y, -6, 6) });
+          Object.assign(b, { ms: 220, flip: dx > 0, x: b.x + clamp(to.x - b.x, -16, 16), z: b.z + clamp(to.z - b.z, -8, 8) });
           later(() => bugLeave(true, -dx), 260);
           return true;
         }
@@ -742,14 +853,15 @@
         if (swing !== 'catch') return false;
         if (b.held) return true;
         b.held = true;
-        const { ms } = approach(bx, by, { tool: 'shovel', toolMs: 640 });
+        const { ms } = approach(b.x, b.z, { tool: 'shovel', toolMs: 640 });
         later(() => {
-          dig = { n: ++seq, x: bx, y: by };
+          const p = (bugEl && stageOf(bugEl)) ?? at;
+          dig = { n: ++seq, ...p };
           sceneSfx('dig');
           if (bug === b) bug = null;
           later(() => {
             sceneSfx('catch');
-            show(b.id, bx, by);
+            show(b.id, p.x, p.y);
           }, 260);
           later(() => (dig = null), 700);
         }, ms);
@@ -757,19 +869,18 @@
       }
       if (swing === 'catch') {
         if (b.held) return true;
-        const x = (r.left + r.width / 2 - g.r.left) * g.k, y = (r.top + r.height / 2 - g.r.top) * g.k;
         // it holds still where it is (mid-flight included) while my villager walks over with the net (avatar.ts)
-        const cs = getComputedStyle(bugEl).translate.split(' ').map(parseFloat);
-        if (cs.length >= 2 && cs.every(Number.isFinite)) Object.assign(b, { x: cs[0] * g.k, y: cs[1] * g.k });
-        Object.assign(b, { held: true, ms: 0 });
-        const { ms, walked } = approach(x, y, { tool: 'net', toolMs: 450, reach: LONG_REACH });
+        const cs = getComputedStyle(bugEl).translate;
+        Object.assign(b, { held: true, ms: 0, freeze: cs && cs !== 'none' ? cs : undefined });
+        const { ms, walked } = approach(b.x, b.z, { tool: 'net', toolMs: 450, reach: LONG_REACH });
         later(() => {
-          net = { n: ++seq, x, y, held: walked };
+          const p = (bugEl && stageOf(bugEl)) ?? at;
+          net = { n: ++seq, ...p, held: walked };
           sceneSfx('net');
           later(() => {
             if (bug === b) bug = null;
             sceneSfx('catch');
-            show(b.id, x, y);
+            show(b.id, p.x, p.y);
           }, walked ? 420 : 160); // in hand, the swing finishes before the hold-up
           later(() => (net = null), 420);
         }, ms);
@@ -781,32 +892,41 @@
         bugLeave(true, px < r.left + r.width / 2 ? 1 : -1);
       }
     }
-    const x = (px - g.r.left) * g.k, y = (py - g.r.top) * g.k;
-    const reach = Math.max(S?.DIVE_U ?? 30, 22 * g.k); // a 44px target at least
-    const d = diving;
-    if (d?.chase && !d.gone && performance.now() <= d.until && Math.hypot(x - d.x, y - d.y) <= reach * 1.2) {
-      turnTo(d.x); // no walk: the chase is a timing game
-      sceneSfx('splash');
-      caught(d);
-      return true;
+    const dv = diving;
+    if (dv?.chase && !dv.gone && chaseEl && performance.now() <= dv.until) {
+      const r = chaseEl.getBoundingClientRect(), reach = Math.max((S?.DIVE_U ?? 30) * w.scaleAt(dv.x, dv.z) * w.view.s, 22);
+      if (Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2)) <= reach * 1.2) {
+        turnTo(dv.x); // no walk: the chase is a timing game
+        sceneSfx('splash');
+        caught(dv);
+        return true;
+      }
     }
+    const at = w.worldAtClient(px, py);
+    if (!at) return false;
+    const sea = hitWorld(at.x, at.z).kind === 'sea';
     const spot = bubbles;
-    if (spot && S && hitStage(x, y).kind === 'sea' && Math.hypot(x - spot.x, y - spot.y) <= reach) {
-      if (diveWalk) return true;
-      // my villager walks down to the water's edge (avatar.ts), hops and dives; the chase after it never walks
-      diveWalk = true;
-      const edge = [Math.round(clamp(spot.x, BEACH.x0 + 4, BEACH.x1 - 4)), BEACH.y1 - 1] as const;
-      const { ms } = approach(spot.x, spot.y, { spot: edge, motion: 'hop' });
-      later(() => {
-        diveWalk = false;
-        if (bubbles === spot) diveAt(spot);
-      }, ms);
-      return true;
+    if (spot && S && sea) {
+      const [bx, by] = w.clientAt(spot.x, spot.z), reach = Math.max(S.DIVE_U * w.scaleAt(spot.x, spot.z) * w.view.s, 22);
+      if (Math.hypot(px - bx, py - by) <= reach) {
+        if (diveWalk) return true;
+        // my villager walks down to the water's edge (avatar.ts), hops and dives; the chase after it never walks
+        diveWalk = true;
+        const { ms } = approach(spot.x, spot.z, { spot: anglerSpot('sea', spot.x, spot.z), motion: 'hop' });
+        later(() => {
+          diveWalk = false;
+          if (bubbles === spot) diveAt(spot);
+        }, ms);
+        return true;
+      }
     }
-    const w = waterAt(pond(), x, y, offshore(x, y) && hitStage(x, y).kind === 'sea', POND_REACH);
-    const f = w && fishes[w];
-    if (f && !f.gone && Math.hypot(x - f.x, y - f.y) < CAST_U) {
-      castAt(f, x, y);
+    const water = waterAt(at.x, at.z, sea);
+    const f = water && fishes[water];
+    // near where it's heading, or where it's seen now (it glides between waypoints: the eye goes by the latter)
+    const seenAt = water ? scene?.querySelector(`[data-shadow-of="${water}"] [data-critter]`)?.getBoundingClientRect() : null;
+    const nearSeen = !!seenAt && Math.hypot(px - (seenAt.left + seenAt.width / 2), py - (seenAt.top + seenAt.height / 2)) < CAST_U * w.scaleAt(at.x, at.z) * w.view.s;
+    if (f && !f.gone && (Math.hypot(at.x - f.x, at.z - f.z) < CAST_U || nearSeen)) {
+      castAt(f, at.x, at.z);
       return true;
     }
     return false;
@@ -820,6 +940,8 @@
   const pinned = hookFlag('critter') || hookFlag('sea');
   /** `?flea` (dev or ?demo): every tap on my villager sends a flea hopping off it (the e2e's hook). */
   const forceFlea = hookFlag('flea');
+  /** The fresh waters on screen without a shadow (only waters near the view get a turn). */
+  const freshOpen = (): FreshWhere[] => FRESH.filter((wh) => !fishes[wh] && areasOf(wh).some(inViewArea));
   $effect(() => {
     if (!scene || !enabled() || pinned) return;
     let started = performance.now();
@@ -830,9 +952,10 @@
     };
     const visit = () => {
       const { month, hour } = jst(now());
-      const kind = spawnKind({ sea: !!(fishes.sea || bubbles || diving), pond: !!fishes.pond || !pond(), bug: !!bug }, pickBug(month, hour, () => 0, weather.sky) !== null, rand);
+      const open = freshOpen();
+      const kind = spawnKind({ sea: !!(fishes.sea || bubbles || diving) || !seaInView(), fresh: !open.length, bug: !!bug }, pickBug(month, hour, () => 0, weather.sky) !== null, rand);
       if (kind === 'fish') void spawnFish('sea');
-      else if (kind === 'pond') void spawnFish('pond');
+      else if (kind === 'fresh') void spawnFish(pickOne(open, rand)!);
       else if (kind === 'sea') void spawnBubbles();
       else if (kind === 'bug') spawnBug(pickBug(month, hour, rand, weather.sky));
       remaining = nextSpawnMs(rand);
@@ -849,26 +972,26 @@
   onMount(() => {
     const want = hook('critter'), dive = hook('sea');
     if (!(want || dive)) return;
-    // a fish waits for a free spot in its water (the layout may still be settling): a few tries
+    // a critter waits for the world to be measured and a free spot (the layout may still be settling): a few tries; the
+    // last ones take its place even off screen
     let tries = 0;
     const fishFor = async (water: Water, id?: FishId | PondFishId) => {
-      if (!(await spawnFish(water, false, id)) && ++tries < 10) later(() => void fishFor(water, id), 400);
+      if (!(await spawnFish(water, false, id, tries >= 4)) && ++tries < 10) later(() => void fishFor(water, id), 400);
     };
-    // a bug, too, waits for a clear spot (the layout settling, a walk under way)
     const bugFor = (id: BugId) => {
-      if (!spawnBug(id, undefined, false) && ++tries < 10) later(() => bugFor(id), 400);
+      if (!spawnBug(id, { stay: false, pinned: tries >= 4 }) && ++tries < 10) later(() => bugFor(id), 400);
     };
     const go = () => {
-      if (!enabled()) return later(go, 300);
+      if (!enabled() || !w.rest.ready) return later(go, 300);
       // ?sea=<id> | pearl | (anything else: the usual pick)
-      if (dive !== null) void loadSea().then((m) => spawnBubbles(false, dive in m.SEA || dive === m.PEARL ? dive : undefined));
+      if (dive !== null) void loadSea().then((m) => spawnBubbles(false, dive in m.SEA || dive === m.PEARL ? dive : undefined, true));
       else if (want === 'fish') void fishFor('sea');
       else if (!want) return;
-      else if (want === 'pond') void fishFor('pond');
+      else if ((FRESH as readonly string[]).includes(want)) void fishFor(want as FreshWhere);
       else if (want in FISH) void fishFor('sea', want as FishId);
-      else if (want === 'flea') spawnBug('flea', { x: 150, y: 250 }, false);
+      else if (want === 'flea') flea(false);
       else if (want in BUGS && BUGS[want as BugId].flight !== 'dangle') bugFor(want as BugId);
-      else void loadPond().then(({ POND_FISH }) => { if (want in POND_FISH) void fishFor('pond', want as PondFishId); });
+      else void loadPond().then(({ POND_FISH }) => { if (want in POND_FISH) void fishFor(POND_FISH[want as PondFishId].water, want as PondFishId); });
     };
     later(go, 600);
     return clearAll;
@@ -880,78 +1003,103 @@
   <svg viewBox="0 0 100 42" preserveAspectRatio="none"><path d="M3 21 C3 8 20 2 38 3 C56 4 68 11 80 17 L96 8 C99 16 99 26 96 34 L80 25 C68 31 56 38 38 39 C20 40 3 34 3 21 Z" /></svg>
 {/snippet}
 
-<div class="sea-life" aria-hidden="true">
+<!-- world nodes (camera.svelte.ts): no wrapper with a stacking order of its own, so each sits at its depth among the
+     island's things -->
+<div class="critters" aria-hidden="true">
+  {#each WATERS as wt (wt)}
+    {@const f = fishes[wt]}
+    {#if f}
+      {#key f.n}
+        <!-- a flat ground mark at its spawn point; it swims inside the node (local x = across, local y = −z) -->
+        <div class="node" data-shadow-of={wt} {@attach w.at({ x: f.ax, z: f.az, mode: 'flat', h: 10 })}>
+          <span class="mover shadow {f.shape ? `is-${f.shape}` : ''} {wt}" class:gone={f.gone} class:dash={f.dash} class:spurt={f.spurt}
+            data-critter={wt === 'sea' ? 'fish' : 'pond'} data-water={wt} bind:this={fishEls[wt]}
+            style:translate={fishLoc(f)} style:transition-duration="{f.ms}ms" style:--w="calc({sizeU(f).toFixed(1)} * var(--u))">
+            <i class="turn" style:rotate="{f.rot.toFixed(1)}deg"><i class="fin" class:flip={f.flip}>{@render teardrop()}</i></i>
+          </span>
+        </div>
+      {/key}
+    {/if}
+  {/each}
   {#if bubbles}
-    <!-- NH's dive spot: little bubbles rising and popping at the surface -->
-    <span class="mover bubbles" data-bubbles={bubbles.item} style:translate="{su(bubbles.x)} {su(bubbles.y)}">
-      {#each [[-3, 0], [2.5, 0.5], [-0.5, 1], [4, 1.5]] as [dx, d], i (i)}<i style:--dx={su(dx)} style:animation-delay="{d * 0.45}s"></i>{/each}
-    </span>
+    {#key bubbles.n}
+      <!-- NH's dive spot: little bubbles rising and popping at the surface -->
+      <div class="node" {@attach w.at({ x: bubbles.x, z: bubbles.z, h: 12 })}>
+        <span class="mover bubbles" data-bubbles={bubbles.item}>
+          {#each [[-3, 0], [2.5, 0.5], [-0.5, 1], [4, 1.5]] as [dx, d], i (i)}<i style:--dx="calc({dx} * var(--u))" style:animation-delay="{d * 0.45}s"></i>{/each}
+        </span>
+      </div>
+    {/key}
   {/if}
   {#if diving}
     {@const d = diving}
-    <span class="mover dive" class:gone={d.gone} data-dive={d.chase ? 'chase' : 'splash'} style:translate="{su(d.x)} {su(d.y)}" style:transition-duration="{d.ms}ms">
-      {#if !d.chase}<i class="ripple big"></i><span class="splash">{#each [-62, -30, 0, 30, 62] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
-      {:else}<span class="shadow"><i class="fin" style:--w={su(shadowLen(d.size))}>{@render teardrop()}</i></span>{/if}
-    </span>
-  {/if}
-  {#each WATERS as w (w)}
-    {@const f = fishes[w]}
-    {#if f}
-      <span class="mover shadow {f.shape ? `is-${f.shape}` : ''} {w}" class:gone={f.gone} class:dash={f.dash} class:spurt={f.spurt} data-critter={w === 'sea' ? 'fish' : 'pond'}
-        bind:this={fishEls[w]} style:translate="{su(f.x)} {su(f.y)}" style:transition-duration="{f.ms}ms" style:--w={su(sizeU(f))}>
-        <i class="fin" class:flip={f.flip}>{@render teardrop()}</i>
-      </span>
-    {/if}
-  {/each}
-  {#if cast}
-    <span class="mover bobber" data-bobber={cast.under ? 'bite' : cast.landed ? 'wait' : 'cast'} class:under={cast.under}
-      style:translate="{su(cast.x)} {su(cast.y)}" style:--fx={su(cast.sx - cast.x)} style:--fy={su(cast.sy - cast.y)}>
-      {#key cast.rings}{#if cast.rings}<i class="ripple" class:big={cast.under}></i>{/if}{/key}
-      {#if cast.under}
-        <i class="ripple big late"></i>
-        <!-- the bite's splash: seven drops, 14u high -->
-        <span class="splash big">{#each [-75, -50, -25, 0, 25, 50, 75] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
+    {#key d.n}
+      {#if !d.chase}
+        <div class="node" {@attach w.at({ x: d.ax, z: d.az, h: 20 })}>
+          <span class="mover dive" data-dive="splash"><i class="ripple big"></i><span class="splash">{#each [-62, -30, 0, 30, 62] as a (a)}<i style:--a="{a}deg"></i>{/each}</span></span>
+        </div>
+      {:else}
+        <div class="node" {@attach w.at({ x: d.ax, z: d.az, mode: 'flat', h: 10 })}>
+          <span class="mover dive" class:gone={d.gone} data-dive="chase" bind:this={chaseEl} style:translate={loc(d.x - d.ax, -(d.z - d.az))} style:transition-duration="{d.ms}ms">
+            <span class="shadow"><i class="fin" style:--w="calc({shadowLen(d.size)} * var(--u))">{@render teardrop()}</i></span>
+          </span>
+        </div>
       {/if}
-      <span class="float" bind:this={bobEl}><i class="ball"></i></span>
-    </span>
+    {/key}
   {/if}
-</div>
-
-<div class="air-life" class:night aria-hidden="true">
+  {#if cast}
+    {@const c = cast}
+    <!-- the bobber, upright where it landed; the line from the rod's tip (or the bank) is drawn in its node -->
+    <div class="node" {@attach w.at({ x: c.x, z: c.z, h: 24 })}>
+      <span class="mover bobber" data-bobber={c.under ? 'bite' : c.landed ? 'wait' : 'cast'} class:under={c.under}
+        style:--fx="calc({c.fx.toFixed(1)} * var(--u))" style:--fy="calc({c.fy.toFixed(1)} * var(--u))">
+        <svg class="line" class:landed={c.landed} width="1" height="1">
+          <!-- from the rod's tip to the bobber, slack: it sags 8u in the middle -->
+          <path transform="scale({w.rest.s})" d="M{c.fx.toFixed(1)} {c.fy.toFixed(1)} Q{(c.fx / 2).toFixed(1)} {(c.fy / 2 + 8).toFixed(1)} 0 -1.5" />
+        </svg>
+        {#key c.rings}{#if c.rings}<i class="ripple" class:big={c.under}></i>{/if}{/key}
+        {#if c.under}
+          <i class="ripple big late"></i>
+          <!-- the bite's splash: seven drops, 14u high -->
+          <span class="splash big">{#each [-75, -50, -25, 0, 25, 50, 75] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
+        {/if}
+        <span class="float" bind:this={bobEl}><i class="ball"></i></span>
+      </span>
+    </div>
+    {#if c.under}
+      <!-- NH's 「！」 over every world thing at its true size, nudged inside the screen -->
+      <div class="node" {@attach w.at({ x: c.x, z: c.z, h: 40, zi: OVER, inv: true, always: true })}>
+        <span class="inv"><span class="bang" data-bite style:left="{c.bdx.toFixed(1)}px">！</span></span>
+      </div>
+    {/if}
+  {/if}
   {#if bug}
     {@const b = bug}
-    <span class="mover bug {b.flight} {b.id}" class:gone={b.gone} class:fled={b.fled} class:sat={b.sat} data-critter={b.id} bind:this={bugEl}
-      style:translate="{su(b.x)} {su(b.y)}" style:transition-duration={b.fled ? null : `${b.ms}ms`} style:--ms="{b.ms}ms">
-      <span class="hopper" bind:this={hopEl}>
-        <span class="face" class:flip={b.flip}>
-          {#if Sprite}<Sprite id={b.id} flight={b.flight} sat={b.sat} stalk={b.stalk} />{/if}
+    {#key b.n}
+      <div class="node" {@attach w.at({ x: b.ax, z: b.az, h: 80, dz: -16, zi: night ? NIGHT_Z : undefined })}>
+        <span class="mover bug {b.flight} {b.id}" class:night class:gone={b.gone} class:fled={b.fled} class:sat={b.sat} data-critter={b.id} data-place={b.place} bind:this={bugEl}
+          style:translate={b.freeze ?? bugLoc(b)} style:transition-duration={b.fled ? null : `${b.ms}ms`} style:--ms="{b.ms}ms">
+          <span class="hopper" bind:this={hopEl}>
+            <span class="face" class:flip={b.flip}>
+              {#if Sprite}<Sprite id={b.id} flight={b.flight} sat={b.sat} stalk={b.stalk} />{/if}
+            </span>
+          </span>
         </span>
-      </span>
-    </span>
+      </div>
+    {/key}
   {/if}
 </div>
 
 <div class="held">
-  {#if cast}
-    <!-- over the land (the angler stands on it), under the 「！」 -->
-    <svg class="line" class:landed={cast.landed} viewBox="0 0 390 360" preserveAspectRatio="none">
-      <!-- from the rod's tip to the bobber, slack: it sags 8u in the middle -->
-      <path d="M{cast.sx} {cast.sy} Q{(cast.sx + cast.x) / 2} {(cast.sy + cast.y) / 2 + 8} {cast.x} {cast.y - 1.5}" />
-    </svg>
-  {/if}
   {#if dig}
     {#key dig.n}
       <!-- the mound dug open: clods of earth fly up -->
-      <span class="mover digfx" style:translate="{su(dig.x)} {su(dig.y)}">{#each [-50, -15, 20, 55] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
+      <span class="fx digfx" style:translate="{su(dig.x)} {su(dig.y)}">{#each [-50, -15, 20, 55] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
     {/key}
-  {/if}
-  {#if cast?.under}
-    <!-- over the land and the tint, so the 「！」 is never hidden behind the beach -->
-    <span class="mover" style:translate="{su(cast.bx ?? cast.x)} {su(cast.y)}"><span class="bang" data-bite>！</span></span>
   {/if}
   {#if net}
     {#key net.n}
-      <span class="mover netfx" data-net={net.held ? 'held' : 'float'} style:translate="{su(net.x)} {su(net.y)}">
+      <span class="fx netfx" data-net={net.held ? 'held' : 'float'} style:translate="{su(net.x)} {su(net.y)}">
         <svg class:held={net.held} viewBox="-20 -20 40 40"><path class="handle" d="M6 6 L19 19" /><circle class="hoop" cx="-1" cy="-1" r="9.5" /><path class="mesh" d="M-10 -1 H8 M-1 -10 V8 M-7.5 -7.5 L5.5 5.5 M-7.5 5.5 L5.5 -7.5" /></svg>
       </span>
     {/key}
@@ -960,33 +1108,31 @@
 </div>
 
 <style>
-  .sea-life, .air-life, .held { position: absolute; inset: 0; pointer-events: none; --su: calc(100cqw / 390); }
-  /* the sea's life sits in the water: over the sea (z 0), under the ground's beach edge order is moot (it keeps off the
-     sand), and under the time-of-day tint like the sea itself */
-  .sea-life { z-index: 1; }
-  /* bugs fly over the hedge, flowers and villagers; at night above the tint (z 80) so a firefly glows */
-  .air-life { z-index: var(--z-leaf); }
-  .air-life.night { z-index: var(--z-taps); }
-  .held { z-index: var(--z-taps); }
-  .mover {
+  /* no z-index, no transform: the nodes inside keep the stage's stacking context (their depth orders them) */
+  .critters { position: absolute; inset: 0; pointer-events: none; }
+  .held { position: absolute; inset: 0; pointer-events: none; z-index: var(--z-taps); --su: calc(100cqw / 390); }
+  .node { width: 0; height: 0; pointer-events: none; }
+  .mover, .fx {
     position: absolute; left: 0; top: 0; width: 0; height: 0;
     transition-property: translate, opacity; transition-timing-function: cubic-bezier(.45, .05, .55, .95);
   }
-  .mover > * { position: absolute; }
+  .mover > *, .fx > * { position: absolute; }
   .flip { scale: -1 1; }
 
-  /* fish shadow: NH's dark oval with a tail (head to the left unless flipped), fading in, a slow tail wag */
+  /* fish shadow: NH's dark teardrop (head to the left unless flipped), turned the way it swims, fading in, a slow tail
+     wag */
   .shadow { animation: fade-in 1.4s ease-out both; }
   .shadow.gone { opacity: 0; transition-duration: 1.1s, 1.1s; }
   .shadow.spurt { transition-timing-function: cubic-bezier(.2, .7, .3, 1); }
   .shadow.dash { transition-timing-function: cubic-bezier(.2, .7, .4, 1); transition-duration: .65s, .6s; }
+  .turn { display: block; left: 0; top: 0; width: 0; height: 0; transition: rotate .5s ease-out; }
   .fin {
-    display: block; left: 0; top: 0; width: var(--w); height: calc(var(--w) * .42); translate: -50% -50%;
+    position: absolute; display: block; left: 0; top: 0; width: var(--w); height: calc(var(--w) * .42); translate: -50% -50%;
     animation: wag 1.3s ease-in-out infinite alternate;
   }
-  .fin svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: rgba(10, 36, 70, .55); filter: blur(calc(1.5 * var(--su))); }
-  /* the pond's are smaller and seen through shallower water: a sharper edge */
-  .pond .fin svg { fill: rgba(10, 36, 70, .62); filter: blur(calc(.7 * var(--su))); }
+  .fin svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: rgba(10, 36, 70, .55); filter: blur(calc(1.5 * var(--u))); }
+  /* the fresh waters' are smaller and seen through shallower water: a sharper edge */
+  .shadow:not(.sea) .fin svg { fill: rgba(10, 36, 70, .62); filter: blur(calc(.7 * var(--u))); }
   /* NH's long thin shadow (the eels) and the fin cutting the surface (the sharks, the sunfish, the suckerfish): a dark
      sail over the shadow's front half with a thin white wake at its foot */
   .is-narrow .fin { height: calc(var(--w) * .18); }
@@ -1000,55 +1146,58 @@
 
   /* the dive spot: bubbles rise from a point and pop; the dive: a splash, then a quick one's shadow darting off */
   .bubbles i {
-    position: absolute; left: var(--dx); top: 0; width: calc(3.2 * var(--su)); height: calc(3.2 * var(--su)); margin: calc(-1.6 * var(--su));
+    position: absolute; left: var(--dx); top: 0; width: calc(3.2 * var(--u)); height: calc(3.2 * var(--u)); margin: calc(-1.6 * var(--u));
     border-radius: 50%; border: 1px solid rgba(255, 255, 255, .9); background: rgba(255, 255, 255, .25);
     animation: bubble 1.8s ease-out infinite both;
   }
-  @keyframes bubble { from { transform: translateY(calc(2 * var(--su))) scale(.4); opacity: 0; } 25% { opacity: 1; } 80% { opacity: .9; } to { transform: translateY(calc(-5 * var(--su))) scale(1.15); opacity: 0; } }
+  @keyframes bubble { from { transform: translateY(calc(2 * var(--u))) scale(.4); opacity: 0; } 25% { opacity: 1; } 80% { opacity: .9; } to { transform: translateY(calc(-5 * var(--u))) scale(1.15); opacity: 0; } }
   .dive.mover { transition-timing-function: cubic-bezier(.2, .7, .4, 1); }
   .dive.gone { opacity: 0; }
   .dive .shadow { animation: fade-in .2s ease-out both; }
+  .dive .fin svg { fill: rgba(10, 36, 70, .55); }
 
-  /* the line: a thin arc from the beach to the bobber, drawn once the bobber lands */
-  .line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; opacity: 0; transition: opacity .25s; }
+  /* the line: a thin arc from the rod to the bobber, drawn once the bobber lands */
+  .line { left: 0; top: 0; overflow: visible; opacity: 0; transition: opacity .25s; }
   .line.landed { opacity: 1; }
   .line path { fill: none; stroke: rgba(255, 255, 255, .6); stroke-width: 1px; vector-effect: non-scaling-stroke; }
-  /* the bobber: NH's red-and-white float, arcing in from the beach, then bobbing; under on the bite */
+  /* the bobber: NH's red-and-white float, arcing in from the rod, then bobbing; under on the bite */
   .bobber .float { left: 0; top: 0; transform-origin: 50% 100%; animation: cast .3s cubic-bezier(.3, .2, .6, 1) both; }
   @keyframes cast {
-    from { transform: translate(var(--fx), var(--fy)) translateY(calc(-14 * var(--su))); }
-    50% { transform: translate(calc(var(--fx) * .5), calc(var(--fy) * .5)) translateY(calc(-16 * var(--su))); }
+    from { transform: translate(var(--fx), var(--fy)) translateY(calc(-14 * var(--u))); }
+    50% { transform: translate(calc(var(--fx) * .5), calc(var(--fy) * .5)) translateY(calc(-16 * var(--u))); }
   }
   .ball {
-    display: block; width: calc(8 * var(--su)); height: calc(8 * var(--su)); margin: calc(-6.4 * var(--su)) 0 0 calc(-4 * var(--su));
+    display: block; width: calc(8 * var(--u)); height: calc(8 * var(--u)); margin: calc(-6.4 * var(--u)) 0 0 calc(-4 * var(--u));
     border-radius: 50%; background: linear-gradient(180deg, #F2484A 0 48%, #FFFDF6 52%); box-shadow: inset -1px -1px 0 rgba(0, 0, 0, .12);
     animation: bob 1.5s ease-in-out .3s infinite alternate;
   }
-  @keyframes bob { from { transform: translateY(calc(-.6 * var(--su))); } to { transform: translateY(calc(.6 * var(--su))); } }
+  @keyframes bob { from { transform: translateY(calc(-.6 * var(--u))); } to { transform: translateY(calc(.6 * var(--u))); } }
   /* the bite: the bobber is yanked under (a plunge, then only a dark smudge where it went), a splash, a second ring and
      NH's 「！」 popping up over it: the moment to tap */
   .under .ball { animation: plunge .22s cubic-bezier(.5, 0, .9, .5) both; }
   @keyframes plunge {
     0% { transform: translateY(0); scale: 1; opacity: 1; }
-    30% { transform: translateY(calc(-1.6 * var(--su))); scale: 1.05; }
-    100% { transform: translateY(calc(4.5 * var(--su))); scale: .7 .5; opacity: .2; }
+    30% { transform: translateY(calc(-1.6 * var(--u))); scale: 1.05; }
+    100% { transform: translateY(calc(4.5 * var(--u))); scale: .7 .5; opacity: .2; }
   }
   .ripple.late { animation-delay: .25s; }
   .splash { left: 0; top: 0; }
   .splash.big i { animation: drop-big .6s cubic-bezier(.2, .7, .4, 1) both; }
-  @keyframes drop-big { from { transform: translateY(0) scale(.4); opacity: 1; } 60% { opacity: 1; } to { transform: translateY(calc(-14 * var(--su))) scale(.7); opacity: 0; } }
+  @keyframes drop-big { from { transform: translateY(0) scale(.4); opacity: 1; } 60% { opacity: 1; } to { transform: translateY(calc(-14 * var(--u))) scale(.7); opacity: 0; } }
   .splash i {
-    position: absolute; left: calc(-1.3 * var(--su)); top: calc(-1.6 * var(--su)); width: calc(2.6 * var(--su)); height: calc(3.6 * var(--su));
+    position: absolute; left: calc(-1.3 * var(--u)); top: calc(-1.6 * var(--u)); width: calc(2.6 * var(--u)); height: calc(3.6 * var(--u));
     border-radius: 50% 50% 45% 45%; background: rgba(255, 255, 255, .92); rotate: var(--a); transform-origin: 50% 100%;
     animation: drop .55s cubic-bezier(.2, .7, .4, 1) both;
   }
   @keyframes drop {
     from { transform: translateY(0) scale(.4); opacity: 1; }
     60% { opacity: 1; }
-    to { transform: translateY(calc(-11 * var(--su))) scale(.7); opacity: 0; }
+    to { transform: translateY(calc(-11 * var(--u))) scale(.7); opacity: 0; }
   }
+  /* the 「！」 node is drawn at its true size: --inv undoes the node's perspective scale */
+  .inv { position: absolute; left: 0; top: 0; width: 0; height: 0; scale: var(--inv, 1); transform-origin: 0 0; }
   .bang {
-    left: 0; top: 0; translate: -50% -100%; margin-top: calc(-12 * var(--su));
+    position: absolute; left: 0; top: 0; translate: -50% -100%; margin-top: -24px;
     display: grid; place-items: center; width: clamp(26px, calc(27 * var(--su)), 28px); aspect-ratio: 1; border-radius: 50%;
     background: #FFFDF6; box-shadow: 0 2px 0 rgba(150, 110, 70, .35), 0 0 0 2px #F2484A inset;
     font: 900 clamp(16px, calc(17 * var(--su)), 18px) / 1 var(--font-ui); color: #E8383A;
@@ -1056,10 +1205,10 @@
   }
   @keyframes bang { from { transform: scale(.2); opacity: 0; } 40% { opacity: 1; } }
   .ripple {
-    display: block; left: 0; top: 0; width: calc(18 * var(--su)); height: calc(6 * var(--su)); margin: calc(-3 * var(--su)) 0 0 calc(-9 * var(--su));
+    display: block; left: 0; top: 0; width: calc(18 * var(--u)); height: calc(6 * var(--u)); margin: calc(-3 * var(--u)) 0 0 calc(-9 * var(--u));
     border: 1.4px solid rgba(255, 255, 255, .85); border-radius: 50%; animation: ripple .8s ease-out both;
   }
-  .ripple.big { width: calc(28 * var(--su)); height: calc(9 * var(--su)); margin: calc(-4.5 * var(--su)) 0 0 calc(-14 * var(--su)); }
+  .ripple.big { width: calc(28 * var(--u)); height: calc(9 * var(--u)); margin: calc(-4.5 * var(--u)) 0 0 calc(-14 * var(--u)); }
   @keyframes ripple { from { transform: scale(.2); opacity: 1; } to { transform: scale(1.3); opacity: 0; } }
 
   /* bugs: the motion (the sprites are BugSprite.svelte, loaded with the first bug) */
@@ -1071,9 +1220,9 @@
   .flutter.sat .hopper { animation: none; }
   /* a ladybug or a mantis on a flower head: a 1u bob every 2.4 s */
   .flower .hopper { animation: perch-bob 2.4s ease-in-out infinite; }
-  @keyframes perch-bob { 0%, 100% { transform: none; } 50% { transform: translateY(calc(-1 * var(--su))); } }
+  @keyframes perch-bob { 0%, 100% { transform: none; } 50% { transform: translateY(calc(-1 * var(--u))); } }
   .flower.mover { transition-timing-function: cubic-bezier(.3, .6, .4, 1); }
-  @keyframes flutter { from { transform: translateY(calc(-2.5 * var(--su))); } to { transform: translateY(calc(2 * var(--su))); } }
+  @keyframes flutter { from { transform: translateY(calc(-2.5 * var(--u))); } to { transform: translateY(calc(2 * var(--u))); } }
   .dart.mover { transition-timing-function: cubic-bezier(.2, .8, .3, 1); }
   .perch.mover { transition-timing-function: cubic-bezier(.3, .6, .4, 1); }
   .crawl { animation: fade-in .8s ease-out both; }
@@ -1088,7 +1237,7 @@
   }
   @keyframes clod { from { transform: translateY(0) scale(.6); opacity: 1; } 60% { opacity: 1; } to { transform: translateY(calc(-14 * var(--su))) scale(.9); opacity: 0; } }
   /* at night the bugs sit above the tint: dim them like the island (a firefly keeps its light) */
-  .night .bug:not(.drift) .face { filter: brightness(.8) saturate(.85); }
+  .bug.night:not(.drift) .face { filter: brightness(.8) saturate(.85); }
 
   /* the net: one swing across the bug */
   .netfx svg.held { display: none; }
@@ -1097,5 +1246,4 @@
   .mesh { stroke: rgba(255, 255, 255, .6); stroke-width: .5; }
   .handle { stroke: #B88A55; stroke-width: 2.2; stroke-linecap: round; }
   @keyframes swing { 0% { transform: rotate(-70deg); opacity: 0; } 20% { opacity: 1; } 70% { transform: rotate(25deg); opacity: 1; } 100% { transform: rotate(32deg); opacity: 0; } }
-
 </style>
