@@ -54,7 +54,7 @@
   });
   const w = useWorld();
   /** The fireflies: over the grass a little in front of the camera's pivot when it settles (world x, dz from camZ,
-   *  lift u), kept off the paths, the plaza and the water; ≤ 3 (idle budget). */
+   *  lift u), kept off the paths and the water; ≤ 3 (idle budget). */
   const FIREFLY_AT: readonly [number, number, number][] = [[60, -70, 34], [300, -40, 26], [128, 60, 40], [250, 110, 30], [40, 150, 36]];
   const FIREFLIES = $derived.by(() => {
     if (mode !== 'fireflies') return [];

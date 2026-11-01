@@ -1,7 +1,7 @@
 // The world's measurements (opt-in: WORLD_PERF=1 npx playwright test e2e/world-perf.spec.ts): fling-scroll frame times
 // at 4x CPU throttling on the iPhone 13 viewport (an independent rAF sampler during the gesture: p95, max, frames over
 // 33 ms, long tasks, the projector's style writes per frame), nothing pending once still, and screenshots of each stop
-// (まえ, ひろば, おく) at 390 × 844 and 320 × 568, by day, at night, in rain and in snow, into /tmp/world-build/.
+// (まえ, おく) at 390 × 844 and 320 × 568, by day, at night, in rain and in snow, into /tmp/world-build/.
 // Numbers go to /tmp/world-build/perf.json.
 import { expect, test, type Page } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -75,7 +75,7 @@ for (const [w, h] of [[390, 844], [320, 568]])
       await page.goto(`?demo&${q}`);
       await page.waitForFunction(() => (window as unknown as { __world?: W }).__world);
       await page.waitForTimeout(1500);
-      for (const [name, cam] of [['mae', 150], ['hiroba', 860], ['oku', 1380]] as const) {
+      for (const [name, cam] of [['mae', -13], ['oku', 642]] as const) {
         await page.evaluate((z) => (window as unknown as { __world: W }).__world.go(z), cam);
         await page.waitForTimeout(1200);
         await page.screenshot({ path: `${OUT}/${name}-${look}-${w}x${h}.png` });

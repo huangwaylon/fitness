@@ -20,12 +20,12 @@ export type PoiKind = 'tree' | 'rock' | 'shore' | 'stage' | 'spot';
 export interface Poi { name: string; at: Pt; kind: PoiKind }
 
 /** The fixed points of interest (walkGraph nodes): beside and behind the trees, the rock, the shore (stares at the
- *  sea), centre stage. Extra nodes a later layout adds (a pondside, a museum door) are points of interest too. */
+ *  sea), centre stage. Extra nodes a later layout adds (a pondside) are points of interest too. */
 const BASE_POIS: Record<string, PoiKind> = {
   treeA: 'tree', treeB: 'tree', outA: 'tree', outB: 'tree', backA: 'spot', backB: 'spot', rock: 'rock',
   shoreL: 'shore', shoreC: 'shore', shoreR: 'shore', centreStage: 'stage'
 };
-const FIXED = new Set(['homeA', 'homeB', 'midA', 'midB', 'centre', 'stoneS', 'stoneN', 'logS', 'logN', 'stairS', 'stairN', 'riverEast', 'riverBend', 'mouth', 'clifftop', ...Object.keys(BASE_POIS)]);
+const FIXED = new Set(['homeA', 'homeB', 'midA', 'midB', 'centre', 'stairS', 'stairN', 'riverEast', 'riverBend', 'mouth', 'clifftop', ...Object.keys(BASE_POIS)]);
 
 /** How far from home a villager wanders on its own (u). */
 const POI_RANGE = 600;

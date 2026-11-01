@@ -6,7 +6,7 @@
 <script lang="ts">
   // Visitors (docs/design.md "Visitors"), after NH: K.K. Slider with his guitar on Saturday nights, Daisy Mae on Sunday
   // mornings, Wisp floating by on some nights (see-through, a slow bob), Gulliver on some days. Most stand at centre
-  // stage (world.ts CENTRE_STAGE: the plaza's middle, seen from ひろば); Gulliver lies washed up on the front beach and
+  // stage (world.ts CENTRE_STAGE: the campsite's clearing, seen from おく); Gulliver lies washed up on the front beach and
   // Daisy Mae wanders the front lawn (both seen from まえ), as in NH. Each is one world node (camera.svelte.ts) at the
   // villagers' scale (their NH height relative to a villager), with the same contact shadow. A tap: their introduction
   // the first time, then one of their lines (no trading, no ベル).

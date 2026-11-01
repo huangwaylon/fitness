@@ -1,10 +1,10 @@
 <script lang="ts">
   // The ground (docs/design.md "World"): the island's plan baked into raster chunks at build time (scripts/terrain.ts:
-  // the sea's rings, the beach, the grass, paths, the plaza, the river, the pond, the cliff, the bridges' decks and the
+  // the sea's rings, the beach, the grass, paths, the campsite's clearing, the stream, the pond, the cliff and the
   // still things' contact shadows), one set per look (the season's, and the petals' and the fallen leaves' weeks: scripts/terrain-seasons.ts), drawn by 40 bands bent onto the log: each band is a slice of its
   // chunk, squashed into a trapezoid by one matrix3d (roll.ts band + quadMatrix; 1px overlap hides the seams). Only
-  // the bands in view are shown. Chunks 0–3 (まえ and ひろば) load at once, 4–7 (おく, the tier above, the back sea)
-  // when the camera nears them or the browser is idle after the first paint. Nothing animates in here: the live water
+  // the bands in view are shown. Chunks 0–5 (まえ and おく up to the cliff) load at once, 6–7 (the tier above,
+  // the back beach and sea) when the camera nears them or the browser is idle after the first paint. Nothing animates in here: the live water
   // is its own layer (WorldWater).
   import { asset } from '$app/paths';
   import { onMount } from 'svelte';
@@ -14,7 +14,7 @@
   import { BANDS, BAND_D, PLAN } from './world.ts';
   import { useWorld } from './camera.svelte.ts';
 
-  let { season, foliage, lazyFrom = 500 }: { season: Season; foliage?: Foliage; lazyFrom?: number } = $props();
+  let { season, foliage, lazyFrom = 300 }: { season: Season; foliage?: Foliage; lazyFrom?: number } = $props();
   /** The ground's look (scripts/terrain-seasons.ts): the season's, or its dressed set in the cherry-blossom days (petals
    *  on the ground) and the fall foliage's weeks (maple leaves). */
   const look = $derived(season === 'spring' && foliage === 'blossom' ? 'spring-petals' : season === 'autumn' && foliage === 'fall' ? 'autumn-leaves' : season);
@@ -26,7 +26,7 @@
   const PER = TERRAIN ? Math.round(TERRAIN.chunkD / BAND_D) : 5;
   const CHUNK_D = TERRAIN?.chunkD ?? BAND_D * 5;
   /** The front chunks load at once; the back ones when the camera nears them. */
-  const EAGER = 4;
+  const EAGER = 6;
 
   const w = useWorld();
   /** Far first: a nearer band paints over its 1px overlap. */

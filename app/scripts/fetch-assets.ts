@@ -88,27 +88,15 @@ const SPECS: Record<string, Spec> = {
   'bushes/white-plumeria': [128, 'White-Plumeria_Bush_NH_Icon.png'],
   'bushes/pink-plumeria': [128, 'Pink-Plumeria_Bush_NH_Icon.png'],
   // Island decorations.
-  // NH's buildings as their map icons (320×256 at one scale: never upscaled, so trimmed (TRIM) they still match, each
-  // standing on its slab's bottom edge)
+  // NH's map icons (320×256 at one scale: never upscaled, so trimmed (TRIM) they still match, each standing on its
+  // slab's bottom edge): the airport (the pairing page) and the campsite (the island's one building)
   'deco/airport': [320, 'Airport_(Blue)_NH_Map_Icon.png'],
-  'deco/resident-services': [320, 'Resident_Services_NH_Map_Icon.png'],
-  'deco/nooks-cranny': [320, "Nook's_Cranny_(Upgraded)_NH_Map_Icon.png"],
-  'deco/able-sisters': [320, 'Able_Sisters_NH_Map_Icon.png'],
-  'deco/museum-icon': [320, 'Museum_(Upgraded)_NH_Map_Icon.png'],
   'deco/campsite': [320, 'Campsite_NH_Map_Icon.png'],
-  // the plaza's and paths' furniture (NH's catalog icons, trimmed: TRIM)
-  'deco/banner-lamp': [128, 'Street_Lamp_with_Banners_(Bronze_-_Green)_NH_Icon.png'],
+  // the paths' furniture (NH's catalog icons, trimmed: TRIM)
   'deco/streetlamp': [128, 'Streetlamp_NH_Icon.png'],
-  'deco/bulletin-board': [128, 'Bulletin_Board_(Standard_-_Scenery)_NH_Icon.png'],
-  'deco/plaza-bench': [128, 'Plaza_Bench_(Classic)_NH_Icon.png'],
-  'deco/signpost': [128, 'Signpost_(Shop)_NH_Icon.png'],
   'deco/campsite-sign': [128, 'Campsite_Sign_NH_Icon.png'],
-  'deco/log-fence': [128, 'Log_Fence_NH_Icon.png'],
-  // phase 3's decor (world.ts SCENERY): fences, garden lanterns, NH's bamboo (its catalog icon is the only render),
+  // phase 3's decor (world.ts SCENERY): garden lanterns, NH's bamboo (its catalog icon is the only render),
   // garden rocks
-  'deco/fence-wooden': [128, 'Simple_Wooden_Fence_NH_Icon.png'],
-  'deco/fence-corral': [128, 'Corral_Fence_NH_Icon.png'],
-  'deco/fence-bamboo': [128, 'Bamboo_Lattice_Fence_NH_Icon.png'],
   'deco/garden-lantern': [128, 'Garden_Lantern_NH_Icon.png'],
   'deco/garden-lantern-white': [128, 'Garden_Lantern_(White)_NH_Icon.png'],
   'trees/bamboo': [128, 'Bamboo_Tree_NH_Icon.png'],
@@ -239,8 +227,7 @@ SPECS['presents/diy-recipe'] = [96, 'DIY_Recipe_NH_Inv_Icon.png'];
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
  *  scene sizes are true to the tile unit (docs/design.md#world). */
 const TRIM = ['bushes/', 'flowers/', 'finds/rock', 'deco/pumpkin', 'deco/spooky-lantern', 'deco/tape-deck', 'deco/wedding-arch', 'deco/birthday-', 'deco/party-popper', 'trees/palm', 'trees/cedar',
-  'deco/airport', 'deco/resident-services', 'deco/nooks-cranny', 'deco/able-sisters', 'deco/museum-icon', 'deco/campsite',
-  'deco/banner-lamp', 'deco/streetlamp', 'deco/bulletin-board', 'deco/plaza-bench', 'deco/signpost', 'deco/campsite-sign', 'deco/log-fence', 'deco/fence-', 'deco/garden-', 'trees/bamboo', 'deco/flat-rock', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
+  'deco/airport', 'deco/campsite', 'deco/streetlamp', 'deco/campsite-sign', 'deco/garden-', 'trees/bamboo', 'deco/flat-rock', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
 /** Villager renders are trimmed too (not the round icons; Hamlet's padded render is cropped by lib/art.ts BOX). */
 const trims = (key: string) =>
   TRIM.some((p) => key.startsWith(p)) || (key.startsWith('villagers/') && !key.endsWith('-icon') && key !== 'villagers/hamlet');

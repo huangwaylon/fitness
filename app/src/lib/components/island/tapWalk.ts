@@ -172,15 +172,13 @@ export class Follow {
 // ---- footsteps ----------------------------------------------------------------------------------------------------------
 
 /** A footstep's cue by the ground under the walker (world.ts surfaceAt): grass (snow in winter), sand, a dirt path, the
- *  shops' brick, the plaza's and the stone bridge's stone, the log bridge's and the dock's wood; a rainy day splashes
- *  on anything but wood; none in water (a wading frame never happens, but a walker caught at a bank stays silent). */
+ *  stairs' stone; a rainy day splashes; none in water (a wading frame never happens, but a walker caught at a bank
+ *  stays silent). */
 export function stepCue(surface: Surface, winter: boolean, rain: boolean): Cue | null {
   if (surface === 'sea' || surface === 'water') return null;
-  if (surface === 'wood') return 'footstep-wood';
   if (rain) return 'footstep-splash';
   if (winter && (surface === 'grass' || surface === 'dirt')) return 'footstep-snow';
   if (surface === 'sand') return 'footstep-sand';
-  if (surface === 'brick') return 'footstep-brick';
   if (surface === 'stone') return 'footstep-stone';
   return 'footstep-grass';
 }

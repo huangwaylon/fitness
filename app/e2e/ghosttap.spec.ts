@@ -6,7 +6,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
-const museum = (page: Page) => page.getByRole('button', { name: 'はくぶつかん：ずかんを ひらく' });
 const panel = (page: Page) => page.locator('dialog[open]');
 const center = async (page: Page, sel: string) => {
   const b = (await page.locator(sel).boundingBox())!;
@@ -43,30 +42,6 @@ async function roundTrip(page: Page, tap: (x: number, y: number) => Promise<void
   await expect(panel(page)).toHaveCount(0);
   await expect(ribbon(page)).toHaveAttribute('aria-expanded', 'false');
 }
-
-test('after the museum opened the ずかん, back from ごほうび leaves the panel shut (touch taps)', async ({ page }) => {
-  await notch(page);
-  await page.goto('?demo&date=2026-11-04T12:00');
-  await expect(ribbon(page)).toBeVisible();
-  // the museum stands at おく: the camera there first
-  await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
-  await page.evaluate(() => (window as unknown as { __world: { go: (z: number) => void } }).__world.go(1380));
-  await page.waitForTimeout(400);
-  await museum(page).click();
-  const box = page.locator('[data-fx="talk"]');
-  await box.click(); // finish the page
-  await box.click(); // close it: the ずかん opens
-  await expect(panel(page)).toHaveCount(1);
-  await page.keyboard.press('Escape');
-  await expect(panel(page)).toHaveCount(0);
-  await page.waitForTimeout(600);
-  await roundTrip(page, (x, y) => page.touchscreen.tap(x, y));
-  await roundTrip(page, (x, y) => pointerTap(page, x, y));
-  // the ribbon still opens it, on the tab it had (きろく's top, not the ずかん asked for earlier)
-  await ribbon(page).click();
-  await expect(panel(page)).toHaveCount(1);
-  await expect(page.locator('dialog[open] [data-sec="zukan"]')).not.toBeInViewport();
-});
 
 test('no tap falls through to the HUD: ‹ 島へ over the ribbon, and the panel ✕', async ({ page }) => {
   await notch(page);

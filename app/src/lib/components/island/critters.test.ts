@@ -5,7 +5,7 @@ import {
   FRESH, SEA_SWIM, bugPlace, freshAreas, patches, perches, swimAt, type BugId, type FishId
 } from './critters.ts';
 import { mulberry32 } from '#lib/random.ts';
-import { CLIFF, POND, SCENERY, SEA_BOX, SPRING, freshWhere, inOval, inRiver, riverNear, surfaceAt } from './world.ts';
+import { CLIFF, POND, RIVER, SCENERY, SEA_BOX, SPRING, freshWhere, inOval, inRiver, riverNear, surfaceAt } from './world.ts';
 import jaMain from '#lib/i18n/ja.json';
 import enMain from '#lib/i18n/en.json';
 import jaNames from '#lib/i18n/catch.ja.json';
@@ -302,14 +302,15 @@ describe('captions', () => {
 });
 
 describe('the waters (world units): the sea, the pond, the river, its mouth, the clifftop', () => {
-  it('a tap in the pond is the pond, on the river the river (its mouth on the west beach, the clifftop above the cliff), off the island the sea, on the land neither', () => {
+  it('a tap in the pond is the pond, on the stream the river (its mouth on the east beach, the clifftop at the falls’ pool and above the cliff), off the island the sea, on the land neither', () => {
     expect(waterAt(POND.x, POND.z, false)).toBe('pond');
     expect(waterAt(POND.x + POND.rx + 8, POND.z, false)).toBe('pond'); // a finger's slack round the rim
     expect(waterAt(POND.x + POND.rx + 30, POND.z, false)).toBeNull();
-    expect(waterAt(372, 1000, false)).toBe('river');
-    expect(waterAt(195, 640, false)).toBe('river');
-    expect(waterAt(-30, 624, false)).toBe('mouth');
-    expect(waterAt(372, CLIFF.z1 + 100, false)).toBe('clifftop');
+    expect(waterAt(RIVER[6][0], RIVER[6][1], false)).toBe('river');
+    expect(waterAt(195, 640, false)).toBeNull();
+    expect(waterAt(RIVER[11][0], RIVER[11][1], false)).toBe('mouth');
+    expect(waterAt(RIVER[1][0], RIVER[1][1], false)).toBe('clifftop');
+    expect(waterAt(372, CLIFF.z0 - 20, false)).toBe('clifftop'); // the falls' pool
     expect(waterAt(SPRING.x, SPRING.z, false)).toBe('clifftop'); // the spring
     expect(waterAt(195, -60, true)).toBe('sea');
     expect(waterAt(195, 400, false)).toBeNull();
@@ -326,10 +327,12 @@ describe('the waters (world units): the sea, the pond, the river, its mouth, the
         }
       }
     }
-    // the river: both reaches (the east run and the crossing)
+    // the river: the reach below the falls' pool, down to the bend
     const river = freshAreas('river');
     expect(river.some((a) => a.cz > 900 && a.cx > 350)).toBe(true);
-    expect(river.some((a) => a.cz < 700 && a.cx < 260)).toBe(true);
+    expect(river.some((a) => a.cz < 800)).toBe(true);
+    // the clifftop's shadows swim in the falls' pool, in view (the upper tier is beyond the horizon)
+    for (const a of freshAreas('clifftop')) expect(a.cz).toBeLessThan(CLIFF.z0);
     // the sea's water is in front of the front beach
     const p = swimAt(SEA_SWIM, 0, 1);
     expect(p.z).toBeLessThan(-10);
@@ -344,7 +347,7 @@ describe('the waters (world units): the sea, the pond, the river, its mouth, the
       const c = castInto('pond', x, z);
       expect(inOval(POND, c.x, c.z, -POND.rz * 0.2), `${x},${z}`).toBe(true);
     }
-    for (const [x, z] of [[372 + 20, 1000], [195, 640 - 20], [-30, 640]]) {
+    for (const [x, z] of [[RIVER[6][0] + 20, RIVER[6][1]], [RIVER[8][0] - 20, RIVER[8][1]], [RIVER[11][0], RIVER[11][1] - 30]]) {
       const c = castInto(freshWhere(x, z) === 'mouth' ? 'mouth' : 'river', x, z), r = riverNear(c.x, c.z);
       expect(r.d, `${x},${z}`).toBeLessThanOrEqual(r.hw * 0.56);
     }

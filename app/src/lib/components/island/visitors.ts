@@ -63,8 +63,7 @@ export const TRICK_MS = 60_000;
  *  included), null when nobody is here. */
 export const visitorPlace: { where: (() => readonly [number, number]) | null } = { where: null };
 
-/** Whether today's visitor is on screen (しずえ's box says where the guest is when not: 「きょうは K.K.が ひろばに
- *  きてるよ！」): `w` is the live island's World (camera.svelte.ts `live()`); null when no visitor is out (or no island).
+/** Whether today's visitor is on screen: `w` is the live island's World (camera.svelte.ts `live()`); null when no visitor is out (or no island).
  *  Not reactive: read it when the camera settles (World.rest.z) or when the box opens. */
 export function visitorInView(w: { inView(x: number, z: number, pad?: number): boolean } | null, pad = -24): boolean | null {
   const p = visitorPlace.where?.();

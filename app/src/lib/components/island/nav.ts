@@ -1,20 +1,20 @@
 // Navigation on the rolling-log island (spec §4, docs/design.md "Walking"): where a tap sends my villager and the way
 // there. Pure, from world.ts's constants, so a layout change carries over.
-//   Obstacles: convex polygons grown by PAD (8u, half a walker's footprint): the river as a chain of quads along its
-//   centreline (cut where the two bridges cross it), the pond and the spring as 16- and 12-gons, the cliff as two
-//   strips either side of the stairs, the buildings' footprints, the trunks, beds, bushes, the rock, the props, the
-//   hedge, the fences, the bamboo and the rocks (walkGraph.ts's sizes). The sea is everything off the land (a convex rounded rectangle, so a straight walk between two
+//   Obstacles: convex polygons grown by PAD (8u, half a walker's footprint): the stream as a chain of quads along its
+//   centreline, the pond and the spring as 16- and 12-gons, the cliff as two strips either side of the stairs, the
+//   campsite's footprint, the trunks, beds, bushes, the rock, the props, the
+//   hedge, the bamboo and the rocks (walkGraph.ts's sizes). The sea is everything off the land (a convex rounded rectangle, so a straight walk between two
 //   points on land stays on land).
-//   Nodes: the obstacles' corners (a step outside them) plus named ones (homes, doors, the bridges' and the stairs'
-//   ends, the shore, the pondside, the riverbank's casting spots, centre stage). Their visibility graph is built once
+//   Nodes: the obstacles' corners (a step outside them) plus named ones (homes, the campsite's door, the stairs' ends,
+//   the shore, the pondside, the riverbank's casting spots, centre stage). Their visibility graph is built once
 //   (only bitangent edges: an edge that would cut into its own corner's polygon is never on a shortest way); a walk
 //   is a straight segment when it is clear, else A* over the graph plus the start and the goal.
 //   Snapping: an unwalkable tap goes to its building's door (a footprint), the nearest bank facing the water (water),
 //   or the nearest walkable point within 40u (anything else).
 import type { Box } from './geom.ts';
 import {
-  BED_XS, BED_ZS, BRIDGES, BUILDINGS, CENTRE_STAGE, CLIFF, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, RIVER, ROCK,
-  SCENERY, SHORE_Z, SPRING, TAPE_DECK, inOval, inRiver, onLand, type BuildingId, type Pt
+  BED_XS, BED_ZS, BUILDINGS, CENTRE_STAGE, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, RIVER, ROCK,
+  SCENERY, SHORE_Z, TAPE_DECK, inOval, inRiver, onLand, SPRING, type BuildingId, type Pt
 } from './world.ts';
 import { art } from '#lib/art.ts';
 
@@ -30,8 +30,6 @@ const EDGE_MAX = 320;
 const CORNER_OUT = 2;
 /** Feet keep this far inside the shoreline (the wet sand is outside it: standing at its edge is fine). */
 const SHORE_IN = 1;
-/** The bridges' rails: the deck is walkable this far in from its edges. */
-const RAIL = 6;
 
 /** A convex obstacle polygon (padded), with its bounding box. */
 interface Poly {
@@ -162,63 +160,30 @@ const widthOf = (key: string, h: number) => {
   return a ? (h * a.w) / a.h : h;
 };
 
-/** A building's footprint on the ground (unpadded): its width × depth behind the door line. The airport stands on the
- *  shore's curve with its dock in front, so its footprint starts a pad behind the door line (its door on the sand). */
+/** A building's footprint on the ground (unpadded): its width × depth behind the door line. */
 export function footprint(id: BuildingId): Box {
   const b = BUILDINGS.find((q) => q.id === id)!;
   const w = widthOf(b.key, b.h);
-  return { x0: b.x - w / 2 + 4, x1: b.x + w / 2 - 4, y0: id === 'airport' ? b.z + PAD : b.z - 2, y1: b.z + b.depth };
+  return { x0: b.x - w / 2 + 4, x1: b.x + w / 2 - 4, y0: b.z - 2, y1: b.z + b.depth };
 }
 
-/** Where a building's door is: a step in front of the door line (the airport's a little closer, its dock behind). */
+/** Where a building's door is: a step in front of the door line. */
 export function doorOf(id: BuildingId): Pt {
   const b = BUILDINGS.find((q) => q.id === id)!;
-  return [b.x, id === 'airport' ? b.z - 4 : b.z - 16];
+  return [b.x, b.z - 16];
 }
 
-/** The river as convex quads along its centreline, the reach across the island cut where the bridges cross it. */
+/** The stream as convex quads along its centreline. */
 function riverQuads(): Poly[] {
   const out: Poly[] = [];
-  // the centreline with each bridge's deck cut out: [a, b] pieces of segments, each with its widths
-  type Seg = { a: Pt; b: Pt; wa: number; wb: number };
-  let segs: Seg[] = [];
+  // each segment a quad: offset ±(half-width + pad) square to it, overlapping its neighbours by a pad at the joints
+  // (so a bend leaves no gap)
   for (let i = 0; i < RIVER.length - 1; i++) {
-    const [ax, az, aw] = RIVER[i], [bx, bz, bw] = RIVER[i + 1];
-    segs.push({ a: [ax, az], b: [bx, bz], wa: aw, wb: bw });
-  }
-  for (const br of BRIDGES) {
-    const lo = br.x - br.w / 2 + RAIL, hi = br.x + br.w / 2 - RAIL;
-    const next: Seg[] = [];
-    for (const s of segs) {
-      const zMid = (s.a[1] + s.b[1]) / 2;
-      const spans = zMid >= br.z0 && zMid <= br.z1 && Math.min(s.a[0], s.b[0]) < hi && Math.max(s.a[0], s.b[0]) > lo;
-      if (!spans) {
-        next.push(s);
-        continue;
-      }
-      // keep the parts of the segment outside the deck's x-range [lo, hi]
-      const at = (x: number): Seg['a'] => {
-        const t = (x - s.a[0]) / (s.b[0] - s.a[0]);
-        return [x, s.a[1] + (s.b[1] - s.a[1]) * t];
-      };
-      const wAt = (x: number) => s.wa + (s.wb - s.wa) * ((x - s.a[0]) / (s.b[0] - s.a[0]));
-      const [l, r] = s.a[0] < s.b[0] ? [s.a, s.b] : [s.b, s.a];
-      const [wl, wr] = s.a[0] < s.b[0] ? [s.wa, s.wb] : [s.wb, s.wa];
-      if (l[0] < lo) next.push({ a: l, b: at(lo), wa: wl, wb: wAt(lo) });
-      if (r[0] > hi) next.push({ a: at(hi), b: r, wa: wAt(hi), wb: wr });
-    }
-    segs = next;
-  }
-  // each piece a quad: offset ±(half-width + pad) square to the piece, overlapping its neighbours by a pad at the
-  // joints (so a bend leaves no gap)
-  for (const s of segs) {
-    const dx = s.b[0] - s.a[0], dz = s.b[1] - s.a[1], L = Math.hypot(dx, dz) || 1;
+    const [ax, az, wa] = RIVER[i], [bx, bz, wb] = RIVER[i + 1];
+    const dx = bx - ax, dz = bz - az, L = Math.hypot(dx, dz) || 1;
     const ux = dx / L, uz = dz / L, nx = -uz, nz = ux;
-    // extend along the river at joints, not at a bridge's cut (the deck stays open) nor past the mouth
-    const cut = (p: Pt) => BRIDGES.some((br) => Math.abs(Math.abs(p[0] - br.x) - (br.w / 2 - RAIL)) < 0.01 && p[1] >= br.z0 && p[1] <= br.z1);
-    const ea = cut(s.a) ? 0 : PAD, eb = cut(s.b) ? 0 : PAD;
-    const ha = s.wa / 2 + PAD, hb = s.wb / 2 + PAD;
-    const a: Pt = [s.a[0] - ux * ea, s.a[1] - uz * ea], b: Pt = [s.b[0] + ux * eb, s.b[1] + uz * eb];
+    const ha = wa / 2 + PAD, hb = wb / 2 + PAD;
+    const a: Pt = [ax - ux * PAD, az - uz * PAD], b: Pt = [bx + ux * PAD, bz + uz * PAD];
     out.push(poly([
       [a[0] + nx * ha, a[1] + nz * ha], [b[0] + nx * hb, b[1] + nz * hb], [b[0] - nx * hb, b[1] - nz * hb], [a[0] - nx * ha, a[1] - nz * ha]
     ], 'water'));
@@ -240,7 +205,6 @@ function obstacles(): Poly[] {
     else if (s.kind === 'bush') out.push(rect(box(s.x, s.z, 16, 7, 7), 'thing'));
     else if (s.kind === 'bamboo') out.push(rect(box(s.x, s.z, 7, 4, 4), 'thing'));
     else if (s.kind === 'rock') out.push(rect(box(s.x, s.z, 10, 5, 5), 'thing'));
-    else if (s.kind === 'fence') out.push(rect(box(s.x, s.z, 22, 3, 3), 'thing'));
     else out.push(rect(box(s.x, s.z, Math.max(5, widthOf(s.key, s.h) * 0.36), 4, 4), 'thing'));
   }
   for (const x of HEDGE_XS) out.push(rect(box(x, HEDGE_Z, 18, 7, 7), 'thing'));
@@ -252,7 +216,6 @@ function obstacles(): Poly[] {
 /** The named nodes (walkGraph.ts's names, so a node id over the relay means the same on either build). */
 function namedNodes(): Record<string, Pt> {
   const [ax, az] = HOMES.A, [bx, bz] = HOMES.B, [tax, taz] = GOAL_TREES.A, [tbx, tbz] = GOAL_TREES.B;
-  const [stone, log] = BRIDGES;
   const nodes: Record<string, Pt> = {
     homeA: [ax, az], homeB: [bx, bz], centre: [195, az + 30],
     midA: [ax, az + 60], midB: [bx, bz + 60],
@@ -260,12 +223,12 @@ function namedNodes(): Record<string, Pt> {
     backA: [tax + 30, taz + 60], backB: [tbx - 30, tbz + 60],
     rock: [ROCK[0] + 24, ROCK[1] - 4],
     shoreL: [96, SHORE_Z + 22], shoreC: [195, SHORE_Z + 20], shoreR: [270, SHORE_Z + 22],
-    stoneS: [stone.x, stone.z0 - 12], stoneN: [stone.x, stone.z1 + 12], logS: [log.x, log.z0 - 12], logN: [log.x, log.z1 + 12],
     stairS: [(CLIFF.stair[0] + CLIFF.stair[1]) / 2, CLIFF.z0 - 14], stairN: [(CLIFF.stair[0] + CLIFF.stair[1]) / 2, CLIFF.z1 + 14],
     centreStage: [CENTRE_STAGE[0], CENTRE_STAGE[1]],
     pondside: [POND.x + 4, POND.z + POND.rz + 14],
-    // the riverbank's casting spots: the plaza's bank of the east reach, the bend, the mouth, the clifftop by the spring
-    riverEast: [342, 900], riverBend: [330, 700], mouth: [-14, 596], clifftop: [SPRING.x - 44, SPRING.z - 24]
+    // the stream's casting spots: its west bank below the falls, the bend, the mouth (the east beach south of it), the
+    // falls' pool (NH's clifftop: the upper tier is beyond the horizon)
+    riverEast: [340, 880], riverBend: [356, 742], mouth: [414, 668], clifftop: [CLIFF.fall[0] - 14, CLIFF.z0 - FALLS_POOL + 18]
   };
   for (const b of BUILDINGS) nodes[`door-${b.id}`] = doorOf(b.id);
   return nodes;
@@ -530,10 +493,10 @@ export interface Snap {
 
 /** The water at a point (unpadded), or null. */
 export function waterAt(x: number, z: number): WaterKind | null {
-  if (!onLand(x, z)) return BRIDGES.some((b) => Math.abs(x - b.x) <= b.w / 2 && z >= b.z0 && z <= b.z1) ? null : 'sea';
+  if (!onLand(x, z)) return 'sea';
   if (inOval(POND, x, z)) return 'pond';
   if (inOval(SPRING, x, z)) return 'spring';
-  if (inRiver(x, z) && !BRIDGES.some((b) => Math.abs(x - b.x) <= b.w / 2 && z >= b.z0 && z <= b.z1)) return 'river';
+  if (inRiver(x, z)) return 'river';
   return null;
 }
 

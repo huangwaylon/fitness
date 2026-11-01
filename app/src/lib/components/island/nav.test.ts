@@ -1,14 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { PAD, buildingAt, reachable, clear, doorOf, findPath, footprint, nav, nearestWalkable, pathLength, snapTap, walkable, waterAt, type Nav } from './nav.ts';
-import { BRIDGES, BUILDINGS, CLIFF, HOMES, LAND, POND, ROCK, SHORE_Z, inOval, inRiver, onLand, riverNear, type Pt } from './world.ts';
+import { BUILDINGS, CENTRE_STAGE, CLIFF, HOMES, LAND, POND, RIVER, ROCK, SHORE_Z, inOval, inRiver, onLand, riverNear, type Pt } from './world.ts';
 
 const g = nav();
 
 /** The raw ground at a point, from world.ts alone (not nav's polygons): what a walk must never touch. */
 function forbidden(x: number, z: number): string | null {
-  const deck = BRIDGES.some((b) => Math.abs(x - b.x) <= b.w / 2 && z >= b.z0 && z <= b.z1);
   if (!onLand(x, z)) return 'sea';
-  if (!deck && inRiver(x, z)) return 'river';
+  if (inRiver(x, z)) return 'river';
   if (inOval(POND, x, z)) return 'pond';
   if (z >= CLIFF.z0 && z <= CLIFF.z1 && !(x >= CLIFF.stair[0] && x <= CLIFF.stair[1]) && !(x >= CLIFF.fall[0] && x <= CLIFF.fall[1])) return 'cliff';
   for (const b of BUILDINGS) {
@@ -32,19 +31,6 @@ function sound(from: Pt, pts: readonly Pt[]) {
   }
 }
 
-/** Where a route crosses the river's west–east reach (its centreline near z 640, x 120…330): the crossing x's. */
-function riverCrossings(from: Pt, pts: readonly Pt[]): number[] {
-  const out: number[] = [];
-  let at = from;
-  for (const p of pts) {
-    for (const zc of [640]) {
-      if ((at[1] - zc) * (p[1] - zc) < 0) out.push(at[0] + ((p[0] - at[0]) * (zc - at[1])) / (p[1] - at[1]));
-    }
-    at = p;
-  }
-  return out;
-}
-
 /** A deterministic random (mulberry32). */
 function rng(seed: number) {
   return () => {
@@ -64,12 +50,11 @@ function randomWalkable(r: () => number, n: Nav): Pt {
 }
 
 describe('the obstacles', () => {
-  it('water, the cliff face, building footprints, trunks and the rock are not walkable; the bridges, the stairs and the lawn are', () => {
+  it('water, the cliff face, the tent, trunks and the rock are not walkable; the stairs and the lawn are', () => {
     expect(walkable(g, HOMES.A[0], HOMES.A[1])).toBe(true);
     expect(walkable(g, POND.x, POND.z)).toBe(false);
-    expect(walkable(g, 195, 640 + 30)).toBe(true); // the plaza side of the stone bridge
-    for (const b of BRIDGES) for (const z of [b.z0 + 2, 640, b.z1 - 2]) expect(walkable(g, b.x, z), `${b.id} ${z}`).toBe(true);
-    expect(walkable(g, 150, 642)).toBe(false); // the river between the bridges
+    expect(walkable(g, 195, 640)).toBe(true); // the lawn between the sections (no river across the island)
+    for (const i of [5, 7, 9]) expect(walkable(g, RIVER[i][0], RIVER[i][1]), `stream ${i}`).toBe(false);
     expect(walkable(g, 250, (CLIFF.z0 + CLIFF.z1) / 2)).toBe(false); // the cliff face
     expect(walkable(g, (CLIFF.stair[0] + CLIFF.stair[1]) / 2, (CLIFF.z0 + CLIFF.z1) / 2)).toBe(true); // the stairs
     expect(walkable(g, ROCK[0], ROCK[1])).toBe(false);
@@ -82,14 +67,13 @@ describe('the obstacles', () => {
     for (let i = 0; i < 4000; i++) {
       const [x, z] = randomWalkable(r, g);
       const near = riverNear(x, z);
-      const deck = BRIDGES.some((b) => Math.abs(x - b.x) <= b.w / 2 && z >= b.z0 - PAD && z <= b.z1 + PAD);
-      if (!deck) expect(near.d - near.hw, `${x}, ${z}`).toBeGreaterThan(PAD - 0.5);
+      expect(near.d - near.hw, `${x}, ${z}`).toBeGreaterThan(PAD - 0.5);
       expect(inOval(POND, x, z, PAD - 0.5)).toBe(false);
     }
   });
 
-  it('names every door, both ends of each bridge and of the stairs, the homes, the shore and the casting spots, all walkable', () => {
-    const names = ['homeA', 'homeB', 'stoneS', 'stoneN', 'logS', 'logN', 'stairS', 'stairN', 'shoreL', 'shoreC', 'shoreR', 'pondside', 'riverEast', 'riverBend', 'mouth', 'clifftop', 'centreStage'];
+  it('names the campsite’s door, both ends of the stairs, the homes, the shore and the casting spots, all walkable', () => {
+    const names = ['homeA', 'homeB', 'stairS', 'stairN', 'shoreL', 'shoreC', 'shoreR', 'pondside', 'riverEast', 'riverBend', 'mouth', 'clifftop', 'centreStage'];
     for (const b of BUILDINGS) names.push(`door-${b.id}`);
     for (const n of names) {
       const p = g.named[n];
@@ -97,7 +81,7 @@ describe('the obstacles', () => {
       expect(walkable(g, p[0], p[1]), n).toBe(true);
     }
     expect(g.named.homeA).toEqual([...HOMES.A]);
-    expect(g.named['door-rs']).toEqual(doorOf('rs'));
+    expect(g.named['door-campsite']).toEqual(doorOf('campsite'));
   });
 });
 
@@ -107,38 +91,27 @@ describe('paths', () => {
     expect(clear(g, [...HOMES.A], [...HOMES.B])).toBe(true);
   });
 
-  it('crosses the river only on a bridge, both ways, from anywhere on the lawn to anywhere in the plaza', () => {
+  it('walks from anywhere on the lawn to anywhere by the campsite, both ways, never through water', () => {
     const r = rng(11);
     for (let i = 0; i < 60; i++) {
-      const a: Pt = [20 + r() * 350, 130 + r() * 440], b: Pt = [80 + r() * 230, 700 + r() * 360];
-      if (!walkable(g, a[0], a[1]) || !walkable(g, b[0], b[1])) continue;
+      const a: Pt = [20 + r() * 350, 130 + r() * 440], b: Pt = [20 + r() * 320, 640 + r() * 360];
+      if (!reachable(g, a[0], a[1]) || !reachable(g, b[0], b[1])) continue;
       for (const [s, t] of [[a, b], [b, a]] as const) {
         const p = findPath(g, s, t);
         expect(p, `${s} → ${t}`).not.toBeNull();
         sound(s, p!);
-        for (const x of riverCrossings(s, p!)) expect(BRIDGES.some((br) => Math.abs(x - br.x) <= br.w / 2), `crossed at x ${x}`).toBe(true);
       }
     }
   });
 
-  it('the main walk from home to centre stage goes over the stone bridge', () => {
+  it('the main walk from home to centre stage is short (the path up the middle)', () => {
     const p = findPath(g, [...HOMES.A], g.named.centreStage)!;
     sound([...HOMES.A], p);
-    const xs = riverCrossings([...HOMES.A], p);
-    expect(xs).toHaveLength(1);
-    expect(Math.abs(xs[0] - BRIDGES[0].x)).toBeLessThanOrEqual(BRIDGES[0].w / 2);
+    expect(pathLength([...HOMES.A], p)).toBeLessThan(Math.hypot(CENTRE_STAGE[0] - HOMES.A[0], CENTRE_STAGE[1] - HOMES.A[1]) * 1.15);
   });
 
-  it('the partner’s side takes the log bridge to the east bank of the plaza', () => {
-    const p = findPath(g, [...HOMES.B], [320, 760])!;
-    sound([...HOMES.B], p);
-    const xs = riverCrossings([...HOMES.B], p);
-    expect(xs).toHaveLength(1);
-    expect(Math.abs(xs[0] - BRIDGES[1].x)).toBeLessThanOrEqual(BRIDGES[1].w / 2);
-  });
-
-  it('climbs to the campsite by the stairs', () => {
-    const from = g.named['door-museum'], p = findPath(g, from, g.named['door-campsite'])!;
+  it('climbs to the upper tier by the stairs', () => {
+    const from = g.named['door-campsite'], p = findPath(g, from, [60, CLIFF.z1 + 30])!;
     expect(p).not.toBeNull();
     sound(from, p);
     let at = from, crossed = 0;
@@ -185,8 +158,8 @@ describe('paths', () => {
   });
 
   it('walks around a visitor standing on centre stage (an extra box)', () => {
-    const v = [{ x0: 177, x1: 213, y0: 892, y1: 910 }];
-    const from = g.named.stoneN, to: Pt = [195, 960];
+    const [cx, cz] = CENTRE_STAGE, v = [{ x0: cx - 18, x1: cx + 18, y0: cz - 8, y1: cz + 10 }];
+    const from: Pt = [cx, cz - 60], to = g.named['door-campsite'];
     expect(clear(g, from, to)).toBe(true);
     expect(clear(g, from, to, v)).toBe(false);
     const p = findPath(g, from, to, v)!;
@@ -196,8 +169,8 @@ describe('paths', () => {
       expect(clear(g, at, q, v)).toBe(true);
       at = q;
     }
-    expect(walkable(g, 195, 900, v)).toBe(false);
-    expect(snapTap(g, 195, 900, v)?.kind).toBe('near');
+    expect(walkable(g, cx, cz, v)).toBe(false);
+    expect(snapTap(g, cx, cz, v)?.kind).toBe('near');
   });
 });
 
@@ -215,14 +188,14 @@ describe('snapping a tap', () => {
   });
 
   it('river water goes to the nearest bank, facing the water', () => {
-    const s = snapTap(g, 150, 646)!; // mid-river, between the bridges
+    const [mx, mz] = RIVER[6], s = snapTap(g, mx, mz)!; // mid-stream
     expect(s.kind).toBe('bank');
     expect(s.water).toBe('river');
     expect(walkable(g, s.to[0], s.to[1])).toBe(true);
-    expect(Math.hypot(s.to[0] - 150, s.to[1] - 646)).toBeLessThan(15 + PAD + 4);
-    // the east reach: the plaza's bank, facing the water (the sand beyond it is a pocket nobody can reach)
+    expect(Math.hypot(s.to[0] - mx, s.to[1] - mz)).toBeLessThan(RIVER[6][2] / 2 + PAD + 4);
+    // the west bank, facing the water (the strip beyond it is a pocket nobody can reach)
     for (const x of [365, 380]) {
-      const e = snapTap(g, x, 1000)!;
+      const e = snapTap(g, x, 900)!;
       expect(e.kind).toBe('bank');
       expect(e.to[0]).toBeLessThan(372 - 15);
       expect(e.face).toBe('r');
@@ -242,14 +215,14 @@ describe('snapping a tap', () => {
     expect(far.kind).toBe('bank');
     expect(walkable(g, far.to[0], far.to[1])).toBe(true);
     expect(waterAt(160, -300)).toBe('sea');
-    expect(waterAt(BRIDGES[0].x, 640)).toBeNull();
+    expect(waterAt(195, 640)).toBeNull();
   });
 
-  it('a pocket nobody can walk to (the sand east of the river, walled in by cedars) sends you to the nearest main ground, facing it', () => {
-    expect(walkable(g, 404, 1100)).toBe(true);
-    expect(reachable(g, 404, 1100)).toBe(false);
-    expect(findPath(g, [...HOMES.A], [404, 1100])).toBeNull();
-    const s = snapTap(g, 404, 1100)!;
+  it('a pocket nobody can walk to (the strip east of the stream, walled in by the cliff and the mouth) sends you to the nearest main ground, facing it', () => {
+    expect(walkable(g, 404, 900)).toBe(true);
+    expect(reachable(g, 404, 900)).toBe(false);
+    expect(findPath(g, [...HOMES.A], [404, 900])).toBeNull();
+    const s = snapTap(g, 404, 900)!;
     expect(s.kind).toBe('near');
     expect(reachable(g, s.to[0], s.to[1])).toBe(true);
     expect(s.to[0]).toBeLessThan(372);
@@ -276,7 +249,7 @@ describe('performance budget (spec §4: the graph ≤ 5 ms at load, a query ≤ 
     builds.sort((a, b) => a - b);
     const r = rng(5), times: number[] = [];
     for (let i = 0; i < 400; i++) {
-      const a = randomWalkable(r, n), b: Pt = [LAND.x0 + r() * (LAND.x1 - LAND.x0), -60 + r() * 2200];
+      const a = randomWalkable(r, n), b: Pt = [LAND.x0 + r() * (LAND.x1 - LAND.x0), -60 + r() * (LAND.z1 + 60)];
       const t0 = performance.now();
       const s = snapTap(n, b[0], b[1]);
       if (s) findPath(n, a, s.to);

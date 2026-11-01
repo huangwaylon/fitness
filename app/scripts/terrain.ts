@@ -1,9 +1,9 @@
 // The island's baked ground (docs/design.md "World"): the whole flat plan of world.ts (sea rings, beach, grass, the
-// river and pond with their banks, paths, the plaza, the cliff with its stairs and the waterfall's rocks, the bridges'
-// decks, the airport's dock, building aprons and the contact shadows of everything still) painted by one fragment
-// shader (seeded noise, signed distances, soft masks: no outlines) in the installed Chrome (WebGL2), cut into 8
-// chunks along z per look (the four seasons, the blossom days' petals and the fall foliage's leaves: terrain-seasons.ts) and written as WebP. Plus the upright sprites that stand at the bridges' and the dock's
-// near edges, so they read raised.
+// stream and pond with their banks, paths, the campsite's worn clearing, the cliff with its stairs and the waterfall's
+// rocks, and the contact shadows of everything still) painted by one fragment shader (seeded noise, signed distances,
+// soft masks: no outlines) in the installed Chrome (WebGL2), cut into 8 chunks along z per look (the four seasons, the
+// blossom days' petals and the fall foliage's leaves: terrain-seasons.ts) and written as WebP. Plus the cliff's
+// upright face, a sprite standing at its foot.
 //
 // Usage (from app/): node scripts/terrain.ts [--season=summer] [--chunk=3] [--no-sprites]
 //   → static/terrain/<season>/<i>.webp, static/terrain/sprites/*.webp, src/lib/components/island/terrain.json
@@ -15,7 +15,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync }
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { LOOKS, baseOf, dressDefines, dressGeometry, SEASON_GLSL } from './terrain-seasons.ts';
-import { BUILDINGS, BRIDGES, CLIFF, DOCK, FACE_H, GOAL_TREES, GRASS, HEDGE_XS, HEDGE_Z, LAND, PATHS, PLAN, PLAZA, POND, RIVER, ROCK, SCENERY, SPRING, TREE_H, BAND_D } from '../src/lib/components/island/world.ts';
+import { BUILDINGS, CAMPSITE, CLIFF, FACE_H, GOAL_TREES, GRASS, HEDGE_XS, HEDGE_Z, LAND, PATHS, PLAN, POND, RIVER, ROCK, SCENERY, SPRING, TREE_H, BAND_D } from '../src/lib/components/island/world.ts';
 
 const APP = join(import.meta.dirname, '..');
 const OUT = join(APP, 'static', 'terrain');
@@ -78,7 +78,7 @@ const riverItems = riverPts.map((p, i) => {
 
 // art sizes (for widths from heights): the manifest, else the world mockups' table
 const manifest = JSON.parse(readFileSync(join(APP, 'static', 'art', 'manifest.json'), 'utf8')).files as Record<string, { w: number; h: number }>;
-const FALLBACK: Record<string, [number, number]> = { 'deco/resident-services': [306, 242], 'deco/nooks-cranny': [294, 209], 'deco/able-sisters': [301, 230], 'deco/campsite': [281, 168], 'deco/airport': [280, 246], 'deco/museum-icon': [289, 210], 'trees/palm': [2623, 2479], 'trees/cedar': [1514, 2951], oak: [509, 640], 'deco/banner-lamp': [60, 116], 'deco/streetlamp': [16, 109], 'deco/plaza-bench': [112, 95], 'deco/bulletin-board': [115, 94], 'deco/signpost': [77, 94], 'deco/campsite-sign': [84, 109], 'deco/log-fence': [114, 88] };
+const FALLBACK: Record<string, [number, number]> = { 'deco/campsite': [281, 168], 'trees/palm': [2623, 2479], 'trees/cedar': [1514, 2951], oak: [509, 640], 'deco/streetlamp': [16, 109], 'deco/campsite-sign': [84, 109] };
 const aspect = (key: string) => {
   const m = manifest[key === 'oak' ? 'trees/oak-summer' : key];
   const s = m ? [m.w, m.h] : FALLBACK[key] ?? [100, 100];
@@ -96,45 +96,27 @@ for (const s of SCENERY) {
   else if (s.kind === 'cedar') { sh(s.x + 0.05 * s.h, s.z - 0.02 * s.h, 0.2 * s.h, 0.085 * s.h, 0.55); sh(s.x, s.z, 0.07 * s.h, 0.03 * s.h, 0.45); }
   else if (s.kind === 'palm') { sh(s.x + 0.14 * s.h, s.z - 0.07 * s.h, 0.3 * s.h, 0.11 * s.h, 0.42); sh(s.x + 0.01 * s.h, s.z, 0.07 * s.h, 0.03 * s.h, 0.5); }
   else if (s.kind === 'bush') sh(s.x + 0.08 * s.h, s.z - 0.03 * s.h, 0.6 * s.h, 0.25 * s.h, 0.6);
-  else if (s.kind === 'fence') sh(s.x + 1.5, s.z - 0.5, w * 0.52, 3.2, 0.5);
   else sh(s.x + 0.1 * w, s.z - 1, Math.max(5, w * 0.48), Math.max(2.6, w * 0.16), 0.55);
 }
 for (const x of HEDGE_XS) sh(x + 3, HEDGE_Z - 1.5, 21, 8.5, 0.6);
 sh(ROCK[0] + 2, ROCK[1] - 1, 16, 6.5, 0.6);
 
 // buildings: [x, z, half width, depth]
-const bld = Object.fromEntries(BUILDINGS.map((b) => [b.id, { ...b, w: b.h * aspect(b.key) }]));
-const B = (id: string) => bld[id];
 const buildingsGlsl = BUILDINGS.map((b) => v4(b.x, b.z, (b.h * aspect(b.key)) / 2, b.depth));
-
-const S = BRIDGES.find((b) => b.kind === 'stone')!, L = BRIDGES.find((b) => b.kind === 'log')!;
-/** The brick paths' last stretch to the shops' doors (the plan's paths stop short of them). */
-const doorSpurs = (['cranny', 'able'] as const).map((id) => {
-  const end = PATHS.brick.flatMap((l) => [l[0], l[l.length - 1]]).reduce((a, b) => (Math.hypot(b[0] - B(id).x, b[1] - B(id).z) < Math.hypot(a[0] - B(id).x, a[1] - B(id).z) ? b : a));
-  return [end, [B(id).x, B(id).z - 4]] as const;
-});
+const campW = CAMPSITE.h * aspect(CAMPSITE.key);
 
 function geometry(): string {
   return [
     arr('vec4', 'RV', riverItems),
     arr('vec4', 'DIRT', segments(PATHS.dirt, 8)),
-    arr('vec4', 'BRICK', segments([...PATHS.brick, ...doorSpurs], 8)),
     arr('vec4', 'SHADOW', shadows),
     arr('vec4', 'BLD', buildingsGlsl),
     `const vec4 LANDR = ${v4(LAND.x0, LAND.z0, LAND.x1, LAND.z1)}; const float LAND_R = ${f(LAND.r)};`,
     `const vec4 GRASSR = ${v4(GRASS.x0, GRASS.z0, GRASS.x1, GRASS.z1)}; const float GRASS_R = ${f(GRASS.r)};`,
     `const vec4 POND = ${v4(POND.x, POND.z, POND.rx, POND.rz)}; const vec4 SPRING = ${v4(SPRING.x, SPRING.z, SPRING.rx, SPRING.rz)};`,
-    `const vec4 PLAZA = ${v4(PLAZA.x, PLAZA.z, PLAZA.rx, PLAZA.rz)};`,
     `const vec4 CLIFFR = ${v4(CLIFF.x0, CLIFF.z0, CLIFF.x1, CLIFF.z1)}; const vec2 STAIR = ${v2(CLIFF.stair[0], CLIFF.stair[1])}; const vec2 FALL = ${v2(CLIFF.fall[0], CLIFF.fall[1])};`,
-    `const vec4 SBRIDGE = ${v4(S.x, S.z0, S.z1, S.w)}; const vec4 LBRIDGE = ${v4(L.x, L.z0, L.z1, L.w)};`,
-    `const vec4 DOCK = ${v4(DOCK.x0, DOCK.z0, DOCK.x1, DOCK.z1)};`,
-    // aprons: RS (flagstones), the Cranny and Able Sisters (bricks), the museum (flagstones), the campsite (dirt), the airport (flagstones)
-    `const vec4 AP_RS = ${v4(B('rs').x, B('rs').z - 20, B('rs').w / 2 + 4, 24)};`,
-    `const vec4 AP_CR = ${v4(B('cranny').x, B('cranny').z - 7, 19, 8)};`,
-    `const vec4 AP_AB = ${v4(B('able').x, B('able').z - 7, 19, 8)};`,
-    `const vec4 AP_MU = ${v4(B('museum').x, B('museum').z - 26, B('museum').w * 0.32, 30)};`,
-    `const vec4 AP_CA = ${v4(B('campsite').x, B('campsite').z - 12, B('campsite').w * 0.5, 22)};`,
-    `const vec4 AP_AI = ${v4(B('airport').x - 6, B('airport').z - 4, B('airport').w * 0.34, 12)};`
+    // the campsite's worn clearing (dirt) in front of the tent
+    `const vec4 AP_CA = ${v4(CAMPSITE.x, CAMPSITE.z - 30, campW * 0.5, 40)};`
   ].join('\n');
 }
 
@@ -163,7 +145,7 @@ in vec2 a; void main(){ gl_Position = vec4(a, 0.0, 1.0); }`;
 const LIB = /* glsl */ `
 uniform vec2 uOrigin;   // world (x, z) at the canvas's bottom-left pixel corner
 uniform float uPx;      // pixels per unit
-uniform int uMode;      // 0 terrain, 1 stone bridge face, 2 log ends, 3 dock front
+uniform int uMode;      // 0 terrain, 4 the cliff's face
 uniform vec2 uSize;     // sprite size in units
 out vec4 outColor;
 
@@ -217,7 +199,6 @@ float AAW;  // half a pixel in units
 float landD(vec2 p){ return roundRect(p, LANDR, LAND_R) + 2.6*gn(p/46.0, 3) + 1.2*gn(p/15.0, 4); }
 float grassD(vec2 p){ return roundRect(p, GRASSR, GRASS_R) + 2.2*gn(p/40.0, 5) + 0.9*gn(p/9.0, 6); }
 float dirtD(vec2 p){ float d = 1e5; for (int i = 0; i < N_DIRT; i++) d = min(d, segD(p, DIRT[i])); return d; }
-float brickD(vec2 p){ float d = 1e5; for (int i = 0; i < N_BRICK; i++) d = min(d, segD(p, BRICK[i])); return d; }
 
 struct Riv { float s; float hw; float nz; float along; float across; vec2 n; };
 Riv river(vec2 p){
@@ -433,39 +414,6 @@ vec3 dirtCol(vec2 p, float pd, float hw){
   c *= 1.0 - 0.15*smoothstep(-3.5, 0.0, pd);
   return c;
 }
-// NH running-bond bricks, axis aligned like the game's tile; varied tones, mortar, worn chips and a soft bevel
-vec3 brickCol(vec2 p, out float keep, float pdCentre){
-  float bw = 7.2, bh = 3.6;
-  float row = floor(p.y/bh);
-  float off = mod(row, 2.0)*0.5*bw;
-  float col = floor((p.x + off)/bw);
-  vec2 lc = vec2(p.x + off - col*bw, p.y - row*bh);
-  ivec2 id = ivec2(int(col), int(row));
-  float tone = h1(id, 501), t2 = h1(id, 502);
-  vec3 base = mix(vec3(0.78,0.45,0.33), vec3(0.85,0.56,0.41), tone);
-  base = mix(base, vec3(0.66,0.36,0.28), step(0.84, t2)*0.8);
-  base = mix(base, vec3(0.90,0.65,0.48), step(t2, 0.1)*0.7);
-  // its edge distance with chipped corners
-  float rad = 0.45 + 0.55*h1(id, 503);
-  float e = boxD(lc, vec2(bw, bh)*0.5, vec2(bw, bh)*0.5 - 0.36, rad) + 0.2*gn(p*1.4, 504) + 0.1*gn(p*4.0, 510);
-  vec2 n = (lc - vec2(bw, bh)*0.5)/vec2(bw, bh);
-  vec3 c = base*(1.0 + 0.07*gn(p/1.1 + vec2(id)*3.1, 505) + 0.05*gn(p/0.35, 506));
-  float rim = smoothstep(-1.0, -0.05, e);
-  c *= 1.0 + 0.24*rim*(n.y*1.7 - n.x*0.7);                        // bevel: lit far/left edges, shaded near/right
-  c *= 1.0 - 0.06*dot(n, n);
-  c = mix(c, c*0.86 + vec3(0.07,0.06,0.05), smoothstep(0.4, 0.8, gn(p/6.0, 507))*0.4); // worn dusty patches
-  vec3 mortar = vec3(0.76,0.68,0.57)*(1.0 + 0.07*gn(p/0.7, 508));
-  mortar = mix(mortar*0.72, mortar, smoothstep(-0.05, 0.35, e));    // the joint's depth beside each brick
-  c = mix(mortar, c, aa(e, AAW*1.3));
-  // bricks at the path's edge may be missing
-  keep = step(pdCentre, -2.5) + step(-2.5, pdCentre)*step(0.42, h1(id, 509));
-  return c;
-}
-float brickPd(vec2 p){ // the path distance at this pixel's brick centre
-  float bw = 7.2, bh = 3.6; float row = floor(p.y/bh); float off = mod(row, 2.0)*0.5*bw; float col = floor((p.x + off)/bw);
-  vec2 ctr = vec2(col*bw + 0.5*bw - off, row*bh + 0.5*bh);
-  return brickD(ctr) - 12.0;
-}
 // light flagstones: a random-ashlar of big and small stones (12u cells split into one, two or four), varied tone,
 // worn rounded corners, fine joints
 vec3 flagCol(vec2 p, float s){
@@ -561,14 +509,14 @@ vec3 rockBlob(vec2 p, vec2 c0, vec2 r, vec3 col, vec3 base, int seed){
 vec3 terrain(vec2 p){
   float dL = landD(p);
   Riv rv = river(p);
-  float isMouth = step(p.x, 12.0)*step(p.y, 760.0);
+  float isMouth = step(378.0, p.x)*step(p.y, 790.0);
   // ---- beach and sea
   vec3 c;
   if (dL > 14.0) c = seaCol(p, dL);
   else c = shoreCol(p, dL, sandCol(p, dL), aa(rv.s - 3.0, 4.0)*isMouth);
 
   // ---- the river mouth fans into the shallows
-  if (dL > -8.0 && p.x < 20.0){
+  if (dL > -8.0 && p.x > 410.0){
     float fan = (1.0 - smoothstep(-4.0, 30.0, rv.s + 0.6*fbm(p/9.0, 941, 2)*10.0)) * isMouth * smoothstep(0.0, 14.0, dL) * (1.0 - smoothstep(60.0, 120.0, dL));
     c = mix(c, vec3(0.50,0.86,0.89), fan*0.4);
   }
@@ -586,23 +534,6 @@ vec3 terrain(vec2 p){
 #endif
   c = mix(c, g, aG);
 
-  // ---- the plaza and building aprons (flagstones)
-  float pz = ellD(p, PLAZA) + 1.2*gn(p/9.0, 901) + 0.5*gn(p/2.0, 902);
-  if (pz < 6.0){
-    c *= 1.0 - 0.18*smoothstep(5.0, 0.0, pz);
-    vec3 fc = flagCol(p, 7.5);
-    // the curb ring: larger blocks around the rim
-    float ang = atan((p.y - PLAZA.y)/PLAZA.w, (p.x - PLAZA.x)/PLAZA.z);
-    float ci = floor(ang*30.0/3.14159 + 0.5*gn(p/30.0, 903));
-    vec3 curb = mix(vec3(0.86,0.79,0.62), vec3(0.91,0.85,0.70), h1(ivec2(int(ci), 3), 904))*(1.0 + 0.05*gn(p/1.0, 905));
-    float cfr = fract(ang*30.0/3.14159 + 0.5*gn(p/30.0, 903));
-    curb = mix(curb*0.8, curb, smoothstep(0.0, 0.06, cfr)*smoothstep(1.0, 0.94, cfr));
-    fc = mix(fc, curb, smoothstep(-5.6, -5.0, pz));
-    fc = mix(fc, fc*0.78, smoothstep(-6.0, -5.4, pz)*smoothstep(-4.8, -5.4, pz));
-    fc *= 1.0 - 0.1*smoothstep(-1.5, 0.0, pz);
-    c = mix(c, fc, aa(pz, AAW));
-  }
-
   // ---- dirt paths (fading into the sand at the beach end) and the campsite's worn patch
   float dd = dirtD(p);
   float pd = dd - 12.0 + 2.4*fbm(p/9.0, 921, 2) + 1.1*gn(p/3.0, 922) + 0.55*gn(p/1.1, 920) + 0.25*gn(p/0.45, 919);
@@ -611,9 +542,7 @@ vec3 terrain(vec2 p){
   if (ca < pd){ pd = ca; hw = 18.0; }
   if (pd < 5.0){
     float onG = smoothstep(4.0, -6.0, dG);
-    // where a path meets the plaza it gives way to the paving, its dust drifting over the curb
-    float inPlaza = 1.0 - smoothstep(-3.0, 2.0, pz + 1.6*gn(p/3.0, 918));
-    c = mix(c, c*0.86, smoothstep(2.2, 0.0, pd)*(1.0 - aa(pd, AAW))*onG*(1.0 - inPlaza));   // the grass's shade at the edge
+    c = mix(c, c*0.86, smoothstep(2.2, 0.0, pd)*(1.0 - aa(pd, AAW))*onG);   // the grass's shade at the edge
     vec3 dc = dirtCol(p, pd, hw);
 #if WINTER
     dc = mix(dc, vec3(0.95,0.96,1.0), smoothstep(0.1, 0.6, fbm(p/5.0, 924, 3) + 0.25*smoothstep(-5.0, 0.0, pd))*0.7);
@@ -622,7 +551,7 @@ vec3 terrain(vec2 p){
     // crumbs of earth and pebbles scattered into the grass beside it
     vec2 cg = floor(p/1.9); vec2 cr = h2(ivec2(cg), 917);
     float crumb = aa(length(p - (cg + 0.25 + 0.5*h2(ivec2(cg), 916))*1.9) - 0.3 - 0.35*cr.y, AAW)*step(cr.x, 0.5)*(1.0 - smoothstep(0.0, 3.0, pd))*step(0.0, pd);
-    c = mix(c, mix(dc, vec3(0.62,0.50,0.36), 0.4), crumb*onG*0.85*(1.0 - inPlaza));
+    c = mix(c, mix(dc, vec3(0.62,0.50,0.36), 0.4), crumb*onG*0.85);
     // grass tufts encroaching over the edge
     vec2 gq = floor(p/2.3); vec2 r = h2(ivec2(gq), 925);
     vec2 lq = p - (gq + 0.2 + 0.6*h2(ivec2(gq), 926))*2.3;
@@ -631,31 +560,8 @@ vec3 terrain(vec2 p){
     float tz = step(r.x, 0.78)*smoothstep(-4.5, -1.4, pd);
     dc = mix(dc, dc*0.72, aa(min(blade(lq - vec2(0.45,-0.45), 0.6, th), 9.0), AAW*2.0)*tz*0.45);
     dc = mix(dc, mix(GRASS, GRASS_HI, 0.3 + 0.4*r.y)*(0.88 + 0.12*lq.y/th), tuft*tz*onG);
-    c = mix(c, dc, a*smoothstep(14.0, 2.0, dG)*(1.0 - inPlaza));
-    // its dust over the flagstones at the junction
-    float dust = (1.0 - smoothstep(-2.0, 6.0, pd))*inPlaza*smoothstep(-0.2, 0.5, fbm(p/3.0, 915, 3) + 0.3*smoothstep(0.0, -6.0, pz + 2.0) - 0.1);
-    c = mix(c, dirtCol(p, -6.0, 12.0), dust*0.55*smoothstep(-12.0, -2.0, pz));
+    c = mix(c, dc, a*smoothstep(14.0, 2.0, dG));
   }
-
-  // ---- brick paths and the shops' brick aprons
-  float bd = brickD(p) - 12.0;
-  float bap = min(boxD(p, AP_CR.xy, AP_CR.zw, 10.0), boxD(p, AP_AB.xy, AP_AB.zw, 10.0));
-  float bAll = min(bd, bap);
-  if (bAll < 4.0){
-    c = mix(c, c*0.82, smoothstep(3.0, 0.0, bAll)*(1.0 - aa(bAll, AAW)));
-    float keep; float bpc = min(brickPd(p), bap < bd ? bap : 1e5);
-    vec3 bc = brickCol(p, keep, min(bpc, bap < 0.0 ? -10.0 : 1e5));
-#if WINTER
-    bc = mix(bc, vec3(0.95,0.96,1.0), smoothstep(0.2, 0.7, fbm(p/4.0, 931, 3))*0.55);
-#endif
-    float a = aa(bAll + 0.4*gn(p/2.0, 932), AAW) * keep;
-    c = mix(c, c*0.7, aa(bAll, 1.0)*(1.0 - keep)*0.4);  // the bed of a missing brick
-    c = mix(c, bc, a);
-  }
-
-  float ap = min(boxD(p, AP_RS.xy, AP_RS.zw, 8.0), min(boxD(p, AP_MU.xy, AP_MU.zw, 9.0), boxD(p, AP_AI.xy, AP_AI.zw, 4.0)));
-  ap += 0.8*gn(p/6.0, 911);
-  if (ap < 5.0){ c *= 1.0 - 0.16*smoothstep(4.0, 0.0, ap); vec3 fc = flagCol(p, 6.5); fc *= 1.0 - 0.1*smoothstep(-1.5, 0.0, ap); c = mix(c, fc, aa(ap, AAW)); }
 
   // ---- water: the river (not over the cliff), the pond, the spring
   float inCliff = step(CLIFFR.y, p.y)*step(p.y, CLIFFR.w);
@@ -688,7 +594,7 @@ vec3 terrain(vec2 p){
     c = mix(c, vec3(1.0), (1.0 - smoothstep(0.0, 1.0, abs(ws - 0.8 - 0.5*gn(p/3.0, 960))))*(1.0 - bankGrass)*(1.0 - seaT)*0.5*smoothstep(-0.2, 0.4, gn(p/2.0, 961)));
     vec3 wc = waterCol(p, depthT, la);
     // toward the mouth the river takes the sea's shallow colours, then the sea's own
-    float mouth = smoothstep(5.0, -45.0, p.x)*isMouth;
+    float mouth = smoothstep(415.0, 465.0, p.x)*isMouth;
     wc = mix(wc, mix(vec3(0.38,0.78,0.90), vec3(0.52,0.86,0.89), 1.0 - depthT), mouth*0.7);
     if (seaT > 0.0) wc = mix(wc, seaCol(p, max(dL, 10.0)), seaT);
     // near banks: a shadow strip under the grass lip; far banks: the earth face, its grass hanging over
@@ -849,7 +755,7 @@ vec3 terrain(vec2 p){
   }
 
   // ---- the seasonal dressing (terrain-seasons.ts): petals, leaves, clover, tufts, the snow's drifts and banks
-  c = dress(p, c, dL, dG, aG, pz, pd, bAll, ws);
+  c = dress(p, c, dL, dG, aG, pd, ws);
 
   // ---- contact shadows (light from the upper left)
   float sa = shadowAt(p);
@@ -859,251 +765,12 @@ vec3 terrain(vec2 p){
 #endif
   c = mix(c, c*tint, sa*0.9);
 
-  // ---- the stone bridge's deck: rounded cobbles between dressed curbs, lighter on its crown
-  {
-    vec2 ctrS = vec2(SBRIDGE.x, 0.5*(SBRIDGE.y + SBRIDGE.z));
-    vec2 q = p - ctrS;
-    vec2 hb = vec2(0.5*SBRIDGE.w, 0.5*(SBRIDGE.z - SBRIDGE.y));
-    float ey = abs(q.y)/hb.y;
-    float hx = hb.x + 2.2*smoothstep(0.72, 1.0, ey);              // the abutments flare
-    float d = max(abs(q.x) - hx, abs(q.y) - hb.y) + 0.25*gn(p*0.9, 1005);
-    // its shadow on the water, to the right and toward us
-    float sd = boxD(p, ctrS + vec2(5.0, -2.5), vec2(hb.x + 1.0, hb.y - 7.0), 5.0);
-    c = mix(c, c*vec3(0.55,0.62,0.72), (1.0 - smoothstep(-4.0, 4.0, sd))*0.65*(1.0 - aa(d, AAW)));
-    c = mix(c, c*0.72, (1.0 - smoothstep(0.0, 2.5, d))*0.6);       // contact
-    if (d < 1.0){
-      float crown = 1.0 - ey*ey;
-      vec4 v = voro(p/3.3, 1001, 0.85);
-      float tt = h1(ivec2(v.zw), 1002);
-      vec3 st = mix(vec3(0.64,0.63,0.60), vec3(0.77,0.76,0.72), tt);
-      st = mix(st, vec3(0.70,0.66,0.58), step(0.85, tt)*0.5);
-      st *= 1.0 + 0.16*(1.0 - smoothstep(0.0, 0.5, v.y)) - 0.06;     // domed cobbles
-      vec2 cg = p/3.3 - (v.zw + 0.5);
-      st *= 1.0 + 0.10*dot(normalize(cg + 1e-4), vec2(-0.6, 0.6))*smoothstep(0.15, 0.45, v.y);
-      st = mix(vec3(0.50,0.49,0.46), st, smoothstep(0.04, 0.14, v.x));
-      st = stoneCol(p, st);
-      st *= 0.78 + 0.3*crown + 0.05*sign(q.y);
-      // the curbs: dressed blocks, raised; the left one shades the deck beside it, the right one's inner face is lit
-      float ci = hx - abs(q.x);
-      float cw = 4.6;
-      float bk = floor((p.y + (q.x > 0.0 ? 4.0 : 0.0))/8.0);
-      vec3 curb = mix(vec3(0.76,0.75,0.71), vec3(0.85,0.84,0.80), h1(ivec2(int(bk), int(q.x > 0.0)), 1003));
-      curb = stoneCol(p, curb);
-      float cf = fract((p.y + (q.x > 0.0 ? 4.0 : 0.0))/8.0);
-      curb = mix(curb*0.66, curb, smoothstep(0.0, 0.035, cf)*smoothstep(1.0, 0.965, cf));
-      curb *= 1.0 + 0.16*smoothstep(cw, 0.6, ci)*(q.x < 0.0 ? 1.0 : 0.4) - 0.14*smoothstep(1.2, 0.0, ci);  // lit top, its outer edge rounds off
-      curb *= 0.9 + 0.14*crown;
-      vec3 face = curb*(q.x > 0.0 ? 0.95 : 0.62);                    // the inner face
-      float inner = smoothstep(cw - 0.1, cw + 0.1, ci)*(1.0 - smoothstep(cw + 1.0, cw + 1.2, ci));
-      st = mix(st, st*0.66, (1.0 - smoothstep(cw + 1.2, cw + 4.0, ci))*step(q.x, 0.0)*0.7);   // the left curb's shadow
-      st = mix(st, face, inner);
-      st = mix(st, curb, 1.0 - smoothstep(cw - 0.1, cw + 0.1, ci));
-      // stone thresholds at both ends
-      float th = hb.y - abs(q.y);
-      vec3 thr = mix(vec3(0.74,0.73,0.69), vec3(0.82,0.81,0.77), h1(ivec2(int(floor(p.x/7.0)), int(q.y > 0.0)), 1006));
-      thr = stoneCol(p, thr)*(1.0 - 0.25*smoothstep(3.0, 0.0, th)*0.0);
-      thr = mix(thr*0.68, thr, smoothstep(0.0, 0.05, fract(p.x/7.0)));
-      st = mix(st, thr, (1.0 - smoothstep(3.4, 3.7, th))*smoothstep(cw - 0.2, cw + 0.2, ci));
-      st = mix(st, st*0.7, (1.0 - smoothstep(3.7, 4.5, th))*smoothstep(3.6, 3.7, th));
-#if WINTER
-      st = mix(st, vec3(0.95,0.96,1.0), smoothstep(0.15, 0.6, fbm(p/3.0, 1004, 3) + 0.2*crown)*0.6);
-#endif
-      st *= 1.0 - 0.18*smoothstep(-1.2, 0.0, d);
-      c = mix(c, st, aa(d, AAW));
-    }
-  }
-  // ---- the log bridge: five lashed logs along the crossing
-  {
-    vec2 ctr = vec2(LBRIDGE.x, 0.5*(LBRIDGE.y + LBRIDGE.z));
-    vec2 hb = vec2(0.5*LBRIDGE.w, 0.5*(LBRIDGE.z - LBRIDGE.y));
-    float sd = boxD(p, ctr + vec2(4.0, -2.0), hb - vec2(0.0, 5.0), 3.0);
-    float bdk = boxD(p, ctr, hb, 2.0);
-    c = mix(c, c*vec3(0.6,0.66,0.75), (1.0 - smoothstep(-3.0, 3.0, sd))*0.6*(1.0 - aa(bdk, AAW)));
-    float lw = LBRIDGE.w/5.0;
-    float lx = (p.x - (LBRIDGE.x - hb.x))/lw;
-    float li = floor(lx), lf = lx - li;
-    if (li >= 0.0 && li < 5.0){
-      ivec2 lid = ivec2(int(li), 7);
-      float zl0 = LBRIDGE.y + 1.5*(h1(lid, 1011) - 0.5), zl1 = LBRIDGE.z + 1.5*(h1(lid, 1012) - 0.5);
-      float u = lf*2.0 - 1.0;                         // across the log, -1..1
-      float endD = max(zl0 - p.y, p.y - zl1);
-      float r = sqrt(max(0.0, 1.0 - u*u));
-      vec3 bark = mix(vec3(0.66,0.40,0.22), vec3(0.76,0.48,0.27), h1(lid, 1013));
-      bark *= 1.0 + 0.16*gn(vec2(p.x*1.6, p.y/3.5), 1014) + 0.06*gn(p/0.5, 1015);
-      bark *= 0.62 + 0.5*r + 0.2*(-u)*r;                            // round: lit from the left
-      bark = mix(bark, bark*1.25 + 0.04, smoothstep(0.5, 0.8, r)*smoothstep(0.0, -0.6, u)*0.5);
-      // rope lashings near both ends
-      float rz = min(abs(p.y - (LBRIDGE.y + 5.0)), abs(p.y - (LBRIDGE.z - 5.0)));
-      vec3 rope = vec3(0.86,0.74,0.52)*(0.75 + 0.35*r)*(0.85 + 0.15*sin((p.y + p.x*0.6)*5.0));
-      bark = mix(bark, rope, 1.0 - smoothstep(1.0, 1.5, rz));
-      // cut ends: lighter end grain at the far end (seen from above, a sliver)
-      bark = mix(bark, vec3(0.88,0.70,0.48), smoothstep(-1.2, -0.4, endD)*step(p.y, zl1 + 1.0)*step(ctr.y, p.y)*0.7);
-#if WINTER
-      bark = mix(bark, vec3(0.95,0.97,1.0), smoothstep(0.55, 0.9, r)*smoothstep(-0.3, 0.3, gn(p/2.0, 1016))*0.8);
-#endif
-      float logA = aa(endD + (1.0 - r)*0.8, AAW)*aa(abs(u) - 0.97, 0.03);
-      c = mix(c, c*0.6, aa(endD - 1.0, 1.0)*0.4);
-      c = mix(c, bark, logA);
-    }
-  }
-  // ---- the airport's dock: planks across, posts, its shadow on the sea
-  {
-    vec2 ctr = 0.5*(DOCK.xy + DOCK.zw), hb = 0.5*(DOCK.zw - DOCK.xy);
-    float sd = boxD(p, ctr + vec2(3.5, -6.0), hb, 2.0);
-    c = mix(c, c*vec3(0.62,0.70,0.82), (1.0 - smoothstep(-4.0, 4.0, sd))*0.55*smoothstep(0.0, 6.0, dL));
-    float d = boxD(p, ctr, hb, 1.0);
-    if (d < 1.5){
-      float pw = 4.8;
-      float row = floor((p.y - DOCK.y)/pw), fr = fract((p.y - DOCK.y)/pw);
-      float off = h1(ivec2(int(row), 3), 1021)*40.0;
-      float seg = floor((p.x - DOCK.x + off)/40.0), sf = fract((p.x - DOCK.x + off)/40.0);
-      ivec2 bid = ivec2(int(row), int(seg));
-      vec3 wood = mix(vec3(0.76,0.52,0.32), vec3(0.84,0.60,0.38), h1(bid, 1022));
-      wood = mix(wood, vec3(0.70,0.46,0.28), step(0.8, h1(bid, 1023))*0.7);
-      float grain = gn(vec2(p.x/7.0, p.y*2.2 + 3.0*gn(vec2(p.x/18.0, row), 1024)), 1025);
-      wood *= 1.0 + 0.09*grain + 0.04*gn(vec2(p.x/0.7, p.y*4.0), 1026);
-      wood = mix(wood, wood*1.18 + 0.03, smoothstep(0.75, 0.92, fr));              // lit far edge
-      wood *= 1.0 - 0.18*(1.0 - smoothstep(0.0, 0.2, fr));                          // shade near edge
-      wood = mix(wood, wood*0.88 + vec3(0.06,0.06,0.05), smoothstep(0.3, 0.8, fbm(p/8.0, 1027, 2))*0.35); // weathering
-      // gaps and butt joints
-      float gap = 1.0 - smoothstep(0.0, 0.07, fr);
-      float joint = 1.0 - smoothstep(0.0, 0.012, min(sf, 1.0 - sf));
-      vec3 under = vec3(0.20,0.24,0.28);
-      wood = mix(wood, under, max(gap, joint)*0.9);
-      // nails at the stringers and joints
-      for (int k = 0; k < 4; k++){
-        float nx = DOCK.x + 6.0 + float(k)*36.0;
-        vec2 nq = vec2(p.x - nx, (fr - 0.5)*pw);
-        float nd = min(length(nq - vec2(0.0, 1.2)), length(nq - vec2(0.0, -1.2)));
-        wood = mix(wood, vec3(0.3,0.24,0.2), aa(nd - 0.34, AAW));
-        wood = mix(wood, vec3(0.8,0.75,0.68), aa(length(nq - vec2(-0.1, 1.3)) - 0.12, AAW)*0.6);
-      }
-      // posts (end grain)
-      for (int k = 0; k < 4; k++){
-        float px = DOCK.x + 3.5 + float(k)*37.7;
-        for (int m = 0; m < 2; m++){
-          vec2 pc = vec2(px, m == 0 ? DOCK.y + 3.2 : DOCK.w - 3.2);
-          float rr = length(p - pc);
-          vec3 post = mix(vec3(0.86,0.68,0.46), vec3(0.74,0.55,0.35), 0.5 + 0.5*sin(rr*6.0))*(1.0 + 0.2*dot(normalize(p - pc + 1e-3), vec2(-0.6, 0.6))*smoothstep(1.5, 3.0, rr));
-          post = mix(post, vec3(0.45,0.30,0.20), smoothstep(2.6, 3.1, rr));
-          wood = mix(wood*0.75, wood, smoothstep(3.2, 4.2, rr));
-          wood = mix(wood, post, aa(rr - 3.3, AAW));
-        }
-      }
-#if WINTER
-      wood = mix(wood, vec3(0.95,0.97,1.0), smoothstep(0.1, 0.6, fbm(p/4.0, 1028, 3))*0.5*(1.0 - gap));
-#endif
-      wood *= 1.0 - 0.2*smoothstep(-1.5, 0.0, d);
-      c = mix(c, wood, aa(d, AAW));
-    }
-  }
-
   // ---- a painterly breath of light over the land
   c *= 1.0 + 0.035*fbm(p/120.0, 1101, 2)*smoothstep(4.0, -4.0, dL);
   return c;
 }
 
 // ---- sprites ----
-vec4 stoneFace(vec2 u){   // u: x 0..W, y 0..H up
-  float W = uSize.x, H = uSize.y;
-  float x = u.x - 0.5*W;
-  float topY = H - 3.2*pow(abs(x)/(0.5*W), 2.2);
-  float topD = u.y - topY;
-  float archR = 0.5*W - 10.0;
-  vec2 aq = vec2(x/archR, u.y/(H*0.52));
-  float archD = (length(aq) - 1.0)*H*0.52;
-  vec3 c;
-  // wall of ashlar blocks
-  float row = floor(u.y/2.6); float off = mod(row, 2.0)*2.6;
-  float col = floor((u.x + off)/5.2);
-  vec2 lc = vec2(u.x + off - col*5.2, u.y - row*2.6);
-  vec3 st = mix(vec3(0.66,0.65,0.62), vec3(0.76,0.75,0.71), h1(ivec2(int(col), int(row)), 1201));
-  float e = boxD(lc, vec2(2.6, 1.3), vec2(2.4, 1.1), 0.5) + 0.1*gn(u*2.0, 1202);
-  st *= 1.0 + 0.18*smoothstep(-0.6, 0.0, e)*((lc.y - 1.3)/1.3*0.8 - (lc.x - 2.6)/2.6*0.3);
-  st = mix(vec3(0.46,0.45,0.43), st, aa(e, 0.12));
-  // voussoirs around the arch
-  float ang = atan(aq.y, aq.x);
-  float vk = floor(ang/0.2);
-  vec3 vs = mix(vec3(0.72,0.71,0.67), vec3(0.80,0.79,0.75), h1(ivec2(int(vk), 9), 1203));
-  float vfr = fract(ang/0.2);
-  vs = mix(vec3(0.46,0.45,0.43), vs, smoothstep(0.0, 0.08, vfr)*smoothstep(1.0, 0.92, vfr));
-  vs *= 1.0 - 0.15*sat(archD/2.2);
-  st = mix(st, vs, aa(archD - 2.4, 0.15));
-  // the coping
-  float cop = aa(-(topD + 1.8), 0.15);
-  vec3 cp = mix(vec3(0.80,0.79,0.75), vec3(0.86,0.85,0.81), h1(ivec2(int(floor(u.x/6.5)), 3), 1204));
-  cp = mix(cp*0.75, cp, smoothstep(0.0, 0.05, fract(u.x/6.5)));
-  cp *= 1.0 + 0.18*sat((topD + 1.8)/1.8);
-  st = mix(st, cp, cop);
-  st = mix(st, st*0.7, (1.0 - smoothstep(0.0, 0.6, -(topD + 1.8)))*(1.0 - cop)*0.6);   // its shadow
-  st *= 1.0 + 0.05*gn(u/0.9, 1205) + 0.03*gn(u/0.3, 1206);
-  st *= 0.9 + 0.1*sat(u.y/2.5);
-#if WINTER
-  st = mix(st, vec3(0.96,0.97,1.0), aa(-(topD + 0.9 + 0.3*gn(u*1.5, 1207)), 0.15));
-#endif
-  // the arch's shadowed underside, the water glinting behind it
-  vec3 dark = mix(vec3(0.16,0.27,0.38), vec3(0.10,0.17,0.26), sat(u.y/(H*0.5)));
-  dark = mix(dark, vec3(0.35,0.62,0.82), smoothstep(1.2, 0.0, u.y)*0.7);
-  float inArch = aa(archD, 0.15);
-  c = mix(st, dark, inArch);
-  float a = aa(topD, 0.15)*mix(1.0, 0.94, inArch);
-  return vec4(c, a);
-}
-vec4 logEnds(vec2 u){
-  float W = uSize.x;
-  vec4 o = vec4(0.0);
-  for (int i = 0; i < 5; i++){
-    float lw = W/5.0;
-    float rad = 0.5*lw*(0.96 + 0.08*h1(ivec2(i, 1), 1301));
-    vec2 ctr = vec2(lw*(float(i) + 0.5), rad + 0.15);
-    vec2 q = u - ctr; float r = length(q);
-    float rings = 0.5 + 0.5*sin(r*5.5 + 0.8*gn(q*0.8 + float(i)*5.0, 1302));
-    vec3 c = mix(vec3(0.89,0.71,0.47), vec3(0.74,0.53,0.32), rings*0.85);
-    c = mix(c, vec3(0.93,0.79,0.58), (1.0 - smoothstep(0.0, rad*0.4, r))*0.5);
-    c = mix(c, c*0.8, smoothstep(0.5, 0.9, gn(vec2(atan(q.y, q.x)*3.0, r), 1303))*0.4); // radial checks
-    c *= 1.0 + 0.16*dot(q/rad, vec2(-0.55, 0.65));
-    // bark rim
-    c = mix(c, vec3(0.45,0.28,0.16)*(1.0 + 0.2*gn(q*3.0, 1304)), smoothstep(rad - 0.75, rad - 0.55, r));
-#if WINTER
-    c = mix(c, vec3(0.96,0.97,1.0), smoothstep(0.55, 0.75, q.y/rad)*0.9);
-#endif
-    float a = aa(r - rad, 0.12);
-    o = vec4(mix(o.rgb, c, a), max(o.a, a));
-  }
-  return o;
-}
-vec4 dockFront(vec2 u){
-  float W = uSize.x, H = uSize.y;
-  vec4 o = vec4(0.0);
-  // the shade under the deck, between the posts
-
-  o = vec4(vec3(0.10,0.16,0.20), 0.55*smoothstep(H - 7.0, H - 3.6, u.y));
-  // the fascia board
-  float fb = step(H - 3.4, u.y);
-  vec3 wood = vec3(0.70,0.47,0.29)*(1.0 + 0.10*gn(vec2(u.x/6.0, u.y*2.0), 1401) + 0.05*gn(u/0.5, 1402));
-  wood *= mix(0.80, 1.12, sat((u.y - (H - 3.4))/3.4));
-  float seam = fract(u.x/30.0 + 0.13);
-  wood = mix(wood*0.6, wood, smoothstep(0.0, 0.01, seam)*smoothstep(1.0, 0.99, seam));
-  o = mix(o, vec4(wood, 1.0), fb);
-  // posts
-  for (int k = 0; k < 4; k++){
-    float px = 3.5 + float(k)*37.7;
-    float d = abs(u.x - px) - 2.8;
-    float r = sat(1.0 - abs(u.x - px)/2.8);
-    vec3 post = vec3(0.64,0.43,0.27)*(0.62 + 0.5*sqrt(r) + 0.2*sign(px - u.x)*sqrt(r));
-    post *= 1.0 + 0.12*gn(vec2(u.x*1.5, u.y/3.0), 1403);
-    post = mix(post, vec3(0.20,0.30,0.24), (1.0 - smoothstep(0.0, 3.5, u.y))*0.8);   // wet, algae at the waterline
-    post = mix(post, post*1.25, step(H - 0.6, u.y));                                  // its sawn top
-    float pa = aa(d, 0.12)*mix(0.7, 1.0, smoothstep(0.0, 1.5, u.y));
-    o = mix(o, vec4(post, 1.0), pa);
-  }
-#if WINTER
-  o.rgb = mix(o.rgb, vec3(0.96,0.97,1.0), step(H - 0.8, u.y)*0.85);
-#endif
-  return o;
-}
-
-// the cliff's upright face: u.x 0…414 (world x −12…402), u.y 0 (its foot at z 1806) … H (the tier-2 grass's lip)
 vec4 cliffFace(vec2 u){
   float W = uSize.x, H = uSize.y;
   float stL = STAIR.x + 12.0, stR = STAIR.y + 12.0, fL = FALL.x - 1.0 + 12.0, fR = FALL.y + 1.0 + 12.0;
@@ -1249,7 +916,7 @@ void main(){
     if (uMode == 0) acc += vec4(terrain(p), 1.0);
     else {
       vec2 u = pix/uPx;
-      vec4 s = uMode == 1 ? stoneFace(u) : uMode == 2 ? logEnds(u) : uMode == 3 ? dockFront(u) : cliffFace(u);
+      vec4 s = cliffFace(u);
       acc += vec4(s.rgb*s.a, s.a);
     }
   }
@@ -1316,9 +983,6 @@ window.setup = (vert, frags) => {
 
 /** Sprites: [name, mode, width u, height u] (bottom edge on the ground at the structure's near edge). */
 const SPRITES = [
-  { name: 'bridge-stone', mode: 1, w: S.w + 8, h: 12, z: S.z0, x: S.x },
-  { name: 'bridge-log', mode: 2, w: L.w, h: (L.w / 5) * 1.05, z: L.z0, x: L.x },
-  { name: 'dock-front', mode: 3, w: DOCK.x1 - DOCK.x0, h: 11, z: DOCK.z0, x: (DOCK.x0 + DOCK.x1) / 2 },
   { name: 'cliff-face', mode: 4, w: CLIFF.x1 - CLIFF.x0, h: FACE_H, z: CLIFF.z0, x: (CLIFF.x0 + CLIFF.x1) / 2 }
 ];
 

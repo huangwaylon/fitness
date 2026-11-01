@@ -1,8 +1,9 @@
 // Birthdays (docs/design.md "Birthdays"): on one of ours (config: ウェイ Oct 6, うめ Mar 4) NH's birthday hats on both
-// villagers, the cake in front of centre stage (world.ts CAKE, seen from ひろば; a tap: its music box, the candles out for the day), confetti the first
+// villagers, the cake in front of centre stage (world.ts CAKE, the campsite's clearing seen from おく; a tap: its music box, the candles out for the day), confetti the first
 // time the island opens, しずえ's line; an NH villager's own birthday puts the hat on that villager and a line in its
 // chats. Nothing over a control; no ベル.
 import { expect, test, type Page } from '@playwright/test';
+import { CAKE } from '../src/lib/components/island/world.ts';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
 /** The controls under a thing's corners and middle (a building's door behind a world prop is the world's, not a control over it). */
@@ -12,7 +13,7 @@ const under = (page: Page, sel: string) =>
     const pts = [[b.left + 2, b.top + 2], [b.right - 2, b.top + 2], [b.left + 2, b.bottom - 2], [b.right - 2, b.bottom - 2], [(b.left + b.right) / 2, (b.top + b.bottom) / 2]];
     return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('[data-building]')).map((e) => e.className));
   }, sel);
-/** The camera to a world z (150 まえ, 860 ひろば), settled. */
+/** The camera to a world z (まえ, 642 おく: the campsite's clearing), settled. */
 async function camera(page: Page, z: number) {
   await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world);
   // (again until it holds: the scene may still re-fit its camera as it settles in)
@@ -43,9 +44,9 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await expect(ribbon(page)).toBeVisible();
     const bells = await ribbon(page).getAttribute('aria-label');
     await expect(page.locator('.vil [data-hat]')).toHaveCount(2);
-    await camera(page, 860);
+    await camera(page, 642);
     await expect(page.locator('[data-cake="lit"] .official')).toBeVisible();
-    expect(await offFrom(page, '[data-cake]', 195, 860)).toBeLessThan(2);
+    expect(await offFrom(page, '[data-cake]', CAKE[0], CAKE[1])).toBeLessThan(2);
     expect(await under(page, '[data-cake] .official')).toEqual([]);
     await expect(page.locator('.fxa.confetti').first()).toBeAttached({ timeout: 4000 });
     await expect(page.locator('.news')).toContainText('さん、おたんじょうび おめでとう！');

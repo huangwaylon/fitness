@@ -16,7 +16,7 @@ const segDist = (line: readonly Pt[], x: number, z: number) => {
   }
   return d;
 };
-/** The phase-3 decor (and anything after it) is checked strictly; the earlier scenery keeps its own placements. */
+/** おく's scenery (from the hedge gap's lamps on) is checked strictly; まえ's earlier scenery keeps its own placements. */
 const P3 = SCENERY.slice(SCENERY.findIndex((s) => s.id === 'lamp-b1'));
 
 describe('scenery placement', () => {
@@ -26,7 +26,7 @@ describe('scenery placement', () => {
     expect(r.d - r.hw).toBeGreaterThan(10);
     for (const o of [POND, SPRING]) expect(inOval(o, s.x, s.z, 14)).toBe(false);
     expect(s.z < CLIFF.z0 - 12 || s.z > CLIFF.z1 + 8).toBe(true);
-    for (const line of [...PATHS.dirt, ...PATHS.brick]) expect(segDist(line, s.x, s.z)).toBeGreaterThan(20);
+    for (const line of PATHS.dirt) expect(segDist(line, s.x, s.z)).toBeGreaterThan(20);
     for (const b of BUILDINGS) expect(Math.abs(s.x - b.x) < b.h * 0.75 && s.z > b.z - 10 && s.z < b.z + b.depth + 10).toBe(false);
     const spots: Pt[] = [...Object.values(HOMES), ...Object.values(GOAL_TREES), ...DIG_SPOTS, ...LAWN_SPOTS];
     for (const [x, z] of spots) expect(Math.hypot(s.x - x, s.z - z)).toBeGreaterThan(24);
@@ -35,9 +35,9 @@ describe('scenery placement', () => {
   it('keeps ids unique', () => {
     expect(new Set(SCENERY.map((s) => s.id)).size).toBe(SCENERY.length);
   });
-  it('still walks from home to every door (the airport’s is reached off the graph, as walkGraph.test)', () => {
+  it('still walks from home to the campsite’s door and the falls’ pool', () => {
     const g = walkGeo();
-    for (const n of Object.keys(g.nodes).filter((k) => (k.startsWith('door-') && k !== 'door-airport') || k === 'clifftop')) expect(route(g, HOMES.A, g.nodes[n]), n).not.toBeNull();
+    for (const n of Object.keys(g.nodes).filter((k) => k.startsWith('door-') || k === 'clifftop')) expect(route(g, HOMES.A, g.nodes[n]), n).not.toBeNull();
   });
 });
 
@@ -49,9 +49,10 @@ describe('scenery keys by season', () => {
       expect(keys.has(sceneryKey(s.key, season, m)), `${s.key} in ${season}/${m}`).toBe(true);
     }
   });
-  it('dress the cedar and the buildings in snow in winter only', () => {
+  it('dress the cedar and the campsite in snow in winter only', () => {
     expect(sceneryKey('trees/cedar', 'winter', 1)).toBe('trees/cedar-winter');
-    expect(sceneryKey('deco/airport', 'summer', 7)).toBe('deco/airport');
+    expect(sceneryKey('deco/campsite', 'winter', 1)).toBe('deco/campsite-winter');
+    expect(sceneryKey('deco/campsite', 'summer', 7)).toBe('deco/campsite');
     for (const v of Object.values(LIT_ART)) expect(keys.has(v)).toBe(true);
   });
   it('give each meadow clump a mix of the season’s flowers', () => {

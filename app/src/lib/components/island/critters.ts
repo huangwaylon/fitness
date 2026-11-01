@@ -8,7 +8,7 @@ import { pickOne, weighted } from '#lib/random.ts';
 import type { SeaId } from './sea.ts';
 import type { Sky } from './weather.ts';
 import {
-  BEACH_BOX, BED_XS, BED_ZS, BRIDGES, CLIFF, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SHORE_Z, SPRING, TREE_H, freshWhere, inOval,
+  BEACH_BOX, BED_XS, BED_ZS, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SHORE_Z, SPRING, TREE_H, freshWhere, inOval,
   riverNS, riverNear, type FreshWhere
 } from './world.ts';
 
@@ -340,7 +340,7 @@ export const STAY_MS = { fish: 45_000, bug: 18_000 } as const;
 // ---------- the water: the sea, the pond, the river ----------
 
 /** Where a shadow swims (world.ts): the sea in front of the front beach, or a fresh water by NH's locations: the pond,
- *  the river, the river mouth (the wide reach on the west beach), the clifftop (the river above the cliff, the spring). */
+ *  the river, the river mouth (the wide reach on the east beach), the clifftop (the falls' pool and above). */
 export type Water = 'sea' | FreshWhere;
 export const FRESH: readonly FreshWhere[] = ['pond', 'river', 'mouth', 'clifftop'];
 
@@ -410,16 +410,14 @@ function reaches(i0: number, i1: number, step: number, keep: (x: number, z: numb
   }
   return out;
 }
-const offBridges = (x: number, z: number) => !BRIDGES.some((b) => Math.abs(x - b.x) < b.w / 2 + 16 && z > b.z0 - 16 && z < b.z1 + 16);
-/** Where a fresh water's shadows swim (world): the pond's open middle; the river's reaches (the east run below the
- *  waterfall and the crossing, clear of the bridges); the mouth's wide reach on the west beach; the clifftop river and
- *  the spring. */
+/** Where a fresh water's shadows swim (world): the pond's open middle; the stream's reaches below the falls' pool; the
+ *  mouth's wide reach on the east beach; the falls' pool (NH's clifftop: the upper tier is beyond the horizon). */
 export function freshAreas(where: FreshWhere): Swim[] {
   if (where === 'pond') return [{ cx: POND.x, cz: POND.z, ux: 1, uz: 0, L: POND.rx * 0.55, W: POND.rz * 0.4 }];
   if (where === 'clifftop')
-    return [...reaches(0, RIVER.length - 1, 60, (x, z) => z > CLIFF.z1 + 14 && z < SPRING.z - SPRING.rz), { cx: SPRING.x, cz: SPRING.z, ux: 1, uz: 0, L: SPRING.rx * 0.5, W: SPRING.rz * 0.4 }];
+    return reaches(0, RIVER.length - 1, 24, (x, z) => z > CLIFF.z0 - FALLS_POOL && z < CLIFF.z0 - 6);
   if (where === 'mouth') return reaches(0, RIVER.length - 1, 44, (x, z) => freshWhere(x, z) === 'mouth');
-  return reaches(0, RIVER.length - 1, 90, (x, z) => z < CLIFF.z0 - 16 && freshWhere(x, z) === 'river' && offBridges(x, z));
+  return reaches(0, RIVER.length - 1, 80, (x, z) => z < CLIFF.z0 - FALLS_POOL - 8 && freshWhere(x, z) === 'river');
 }
 
 /** A patch a bug keeps to (world): x0…x1 across, z0…z1 deep, l0…l1 units above the ground. */
@@ -438,7 +436,7 @@ export function perches(palm: boolean): Perch[] {
   return [...goal, ...scenery];
 }
 
-/** The bushes (the river-bank hedge and the scenery's): x, z and height. */
+/** The bushes (the hedge and the scenery's): x, z and height. */
 export const BUSHES: readonly { id: string; x: number; z: number; h: number }[] = [
   ...HEDGE_XS.map((x, i) => ({ id: `hedge-${i}`, x, z: HEDGE_Z, h: 40 })),
   ...SCENERY.filter((s) => s.kind === 'bush').map((s) => ({ id: s.id, x: s.x, z: s.z, h: s.h }))
@@ -446,11 +444,12 @@ export const BUSHES: readonly { id: string; x: number; z: number; h: number }[] 
 /** The flower beds' cells (FlowerBeds' data-flower="row-col"): row 0 the back row. */
 export const FLOWER_CELLS: readonly { cell: string; x: number; z: number }[] = BED_ZS.flatMap((z, r) => [...BED_XS.A, ...BED_XS.B].map((x, c) => ({ cell: `${r}-${c}`, x, z })));
 const beds = (l0: number, l1: number) => [BED_XS.A, BED_XS.B].map(([a, b]) => ({ x0: a - 16, x1: b + 16, z0: BED_ZS[1] - 8, z1: BED_ZS[0] + 8, l0, l1 }));
-/** The open lawn (off the beds, the trunks and the paths' middle): まえ's and the bank before the plaza. */
+/** The open lawn (off the beds, the trunks and the paths' middle): まえ's and the campsite's ground. */
 const LAWN: Patch[] = [
   { x0: 22, x1: 100, z0: 262, z1: 318, l0: 0, l1: 0 }, { x0: 292, x1: 368, z0: 262, z1: 318, l0: 0, l1: 0 },
   { x0: 40, x1: 172, z0: 372, z1: 560, l0: 0, l1: 0 }, { x0: 218, x1: 350, z0: 372, z1: 560, l0: 0, l1: 0 },
-  { x0: 76, x1: 176, z0: 690, z1: 790, l0: 0, l1: 0 }, { x0: 214, x1: 300, z0: 690, z1: 780, l0: 0, l1: 0 }
+  { x0: 96, x1: 172, z0: 632, z1: 700, l0: 0, l1: 0 }, { x0: 216, x1: 300, z0: 632, z1: 700, l0: 0, l1: 0 },
+  { x0: 214, x1: 268, z0: 760, z1: 840, l0: 0, l1: 0 }
 ];
 
 /** Where a bug of `place` keeps to (not the trunks or the flower heads: `perches`, FLOWER_CELLS). */
@@ -463,12 +462,12 @@ export function patches(place: BugPlace): Patch[] {
     case 'water-air':
       return [
         patch(POND.x, POND.z, POND.rx, POND.rz, 10, 36),
-        ...reaches(3, 13, 120, (x, z) => z < CLIFF.z0 - 40).map((a) => patch(a.cx, a.cz, Math.abs(a.uz) > 0.7 ? a.W * 2 + 8 : 30, Math.abs(a.uz) > 0.7 ? 40 : a.W * 2 + 6, 10, 34))
+        ...reaches(3, RIVER.length - 1, 100, (x, z) => z < CLIFF.z0 - 40 && x < 420).map((a) => patch(a.cx, a.cz, Math.abs(a.uz) > 0.7 ? a.W * 2 + 8 : 30, Math.abs(a.uz) > 0.7 ? 40 : a.W * 2 + 6, 10, 34))
       ];
     case 'water':
       return [
         { x0: POND.x - POND.rx * 0.6, x1: POND.x + POND.rx * 0.6, z0: POND.z - POND.rz * 0.5, z1: POND.z + POND.rz * 0.5, l0: 0, l1: 0 },
-        ...[750, 840, 930, 1020].map((z) => { const r = riverNS(z)!; return patch(r.x, z, r.hw * 0.45, 26); })
+        ...[790, 860, 930, 1000].map((z) => { const r = riverNS(z)!; return patch(r.x, z, r.hw * 0.45, 26); })
       ];
     case 'beach': return [{ x0: BEACH_BOX.x0 - 40, x1: BEACH_BOX.x1, z0: BEACH_BOX.z0, z1: BEACH_BOX.z1 - 10, l0: 0, l1: 0 }];
     case 'rock': return [{ x0: ROCK[0] - 18, x1: ROCK[0] + 20, z0: ROCK[1] - 14, z1: ROCK[1] - 6, l0: 0, l1: 0 }];

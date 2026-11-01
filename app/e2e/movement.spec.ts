@@ -41,10 +41,15 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
   test(`a tap on a weed: my villager walks there, then pulls it; it never stands over a control (${w}px)`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await open(page);
-    const home = await feet(page);
     const weeds = page.locator('[data-care="weed"]');
+    // the lawn runs on up to the campsite: the camera half way up it, then the weed nearest the screen's middle
+    await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(300));
+    await page.waitForTimeout(500);
+    const home = await feet(page);
+    const p = await page.locator('[data-care="weed"]').evaluateAll((els) => els.filter((el) => el.checkVisibility({ visibilityProperty: true })).map((el) => el.getBoundingClientRect())
+      .map((r) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 })).filter((q) => q.y > 150 && q.y < innerHeight - 30)
+      .sort((a, b) => Math.abs(a.y - innerHeight * 0.5) - Math.abs(b.y - innerHeight * 0.5))[0]);
     const n = await weeds.count();
-    const p = await centre(page, '[data-care="weed"]', 1);
     await page.mouse.click(p.x, p.y - 4);
     // under way: walking, the weed still there, the villager still a ≥ 44px button
     await expect(page.locator('[data-actor="mine"].walking')).toBeAttached();
@@ -168,12 +173,12 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await page.goto('?demo&date=2026-11-04T12:00&visitor=jingle&critter=none');
     await expect(ribbon(page)).toBeVisible();
     await page.waitForTimeout(800);
-    // a host stands on centre stage, in the plaza (ひろば)
-    await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(860));
+    // a host stands on centre stage, the campsite's clearing (おく)
+    await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(642));
     await page.waitForTimeout(400);
     const v = await centre(page, '[data-visitor="jingle"] .art');
     await page.mouse.click(v.x, v.y);
-    // from home it's a run across the river to the plaza (a few seconds), then the host speaks
+    // from home it's a run up the path to the campsite (a few seconds), then the host speaks
     await expect(page.locator('[data-fx="talk"].placed')).toBeVisible({ timeout: 8000 });
     await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
     // their middle is still theirs: no villager of mine under it

@@ -1261,47 +1261,11 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Zebra_Turkeyfish_NH_Icon.png"
     },
-    "deco/able-sisters": {
-      "path": "deco/able-sisters.webp",
-      "w": 305,
-      "h": 234,
-      "source": "https://nookipedia.com/wiki/File:Able_Sisters_NH_Map_Icon.png"
-    },
-    "deco/able-sisters-lit": {
-      "path": "deco/able-sisters-lit.webp",
-      "w": 305,
-      "h": 234,
-      "source": "derived from https://nookipedia.com/wiki/File:Able_Sisters_NH_Map_Icon.png (lit windows: scripts/derive-art.ts)"
-    },
-    "deco/able-sisters-winter": {
-      "path": "deco/able-sisters-winter.webp",
-      "w": 305,
-      "h": 234,
-      "source": "derived from https://nookipedia.com/wiki/File:Able_Sisters_NH_Map_Icon.png (snow: scripts/derive-art.ts)"
-    },
     "deco/airport": {
       "path": "deco/airport.webp",
       "w": 284,
       "h": 250,
       "source": "https://nookipedia.com/wiki/File:Airport_(Blue)_NH_Map_Icon.png"
-    },
-    "deco/airport-lit": {
-      "path": "deco/airport-lit.webp",
-      "w": 284,
-      "h": 250,
-      "source": "derived from https://nookipedia.com/wiki/File:Airport_(Blue)_NH_Map_Icon.png (lit windows: scripts/derive-art.ts)"
-    },
-    "deco/airport-winter": {
-      "path": "deco/airport-winter.webp",
-      "w": 284,
-      "h": 250,
-      "source": "derived from https://nookipedia.com/wiki/File:Airport_(Blue)_NH_Map_Icon.png (snow: scripts/derive-art.ts)"
-    },
-    "deco/banner-lamp": {
-      "path": "deco/banner-lamp.webp",
-      "w": 64,
-      "h": 120,
-      "source": "https://nookipedia.com/wiki/File:Street_Lamp_with_Banners_(Bronze_-_Green)_NH_Icon.png"
     },
     "deco/birthday-cake": {
       "path": "deco/birthday-cake.webp",
@@ -1320,12 +1284,6 @@
       "w": 96,
       "h": 68,
       "source": "https://nookipedia.com/wiki/File:Birthday_Hat_(Pink)_NH_Icon.png"
-    },
-    "deco/bulletin-board": {
-      "path": "deco/bulletin-board.webp",
-      "w": 119,
-      "h": 98,
-      "source": "https://nookipedia.com/wiki/File:Bulletin_Board_(Standard_-_Scenery)_NH_Icon.png"
     },
     "deco/campsite": {
       "path": "deco/campsite.webp",
@@ -1350,24 +1308,6 @@
       "w": 285,
       "h": 172,
       "source": "derived from https://nookipedia.com/wiki/File:Campsite_NH_Map_Icon.png (snow: scripts/derive-art.ts)"
-    },
-    "deco/fence-bamboo": {
-      "path": "deco/fence-bamboo.webp",
-      "w": 118,
-      "h": 107,
-      "source": "https://nookipedia.com/wiki/File:Bamboo_Lattice_Fence_NH_Icon.png"
-    },
-    "deco/fence-corral": {
-      "path": "deco/fence-corral.webp",
-      "w": 118,
-      "h": 97,
-      "source": "https://nookipedia.com/wiki/File:Corral_Fence_NH_Icon.png"
-    },
-    "deco/fence-wooden": {
-      "path": "deco/fence-wooden.webp",
-      "w": 116,
-      "h": 75,
-      "source": "https://nookipedia.com/wiki/File:Simple_Wooden_Fence_NH_Icon.png"
     },
     "deco/flat-rock": {
       "path": "deco/flat-rock.webp",
@@ -1399,59 +1339,11 @@
       "h": 64,
       "source": "derived (drawn: scripts/derive-art.ts)"
     },
-    "deco/log-fence": {
-      "path": "deco/log-fence.webp",
-      "w": 118,
-      "h": 92,
-      "source": "https://nookipedia.com/wiki/File:Log_Fence_NH_Icon.png"
-    },
-    "deco/museum-icon": {
-      "path": "deco/museum-icon.webp",
-      "w": 293,
-      "h": 214,
-      "source": "https://nookipedia.com/wiki/File:Museum_(Upgraded)_NH_Map_Icon.png"
-    },
-    "deco/museum-icon-lit": {
-      "path": "deco/museum-icon-lit.webp",
-      "w": 293,
-      "h": 214,
-      "source": "derived from https://nookipedia.com/wiki/File:Museum_(Upgraded)_NH_Map_Icon.png (lit windows: scripts/derive-art.ts)"
-    },
-    "deco/museum-icon-winter": {
-      "path": "deco/museum-icon-winter.webp",
-      "w": 293,
-      "h": 214,
-      "source": "derived from https://nookipedia.com/wiki/File:Museum_(Upgraded)_NH_Map_Icon.png (snow: scripts/derive-art.ts)"
-    },
-    "deco/nooks-cranny": {
-      "path": "deco/nooks-cranny.webp",
-      "w": 298,
-      "h": 213,
-      "source": "https://nookipedia.com/wiki/File:Nook's_Cranny_(Upgraded)_NH_Map_Icon.png"
-    },
-    "deco/nooks-cranny-lit": {
-      "path": "deco/nooks-cranny-lit.webp",
-      "w": 298,
-      "h": 213,
-      "source": "derived from https://nookipedia.com/wiki/File:Nook's_Cranny_(Upgraded)_NH_Map_Icon.png (lit windows: scripts/derive-art.ts)"
-    },
-    "deco/nooks-cranny-winter": {
-      "path": "deco/nooks-cranny-winter.webp",
-      "w": 298,
-      "h": 213,
-      "source": "derived from https://nookipedia.com/wiki/File:Nook's_Cranny_(Upgraded)_NH_Map_Icon.png (snow: scripts/derive-art.ts)"
-    },
     "deco/party-popper": {
       "path": "deco/party-popper.webp",
       "w": 87,
       "h": 87,
       "source": "https://nookipedia.com/wiki/File:Party_Popper_NH_Inv_Icon.png"
-    },
-    "deco/plaza-bench": {
-      "path": "deco/plaza-bench.webp",
-      "w": 116,
-      "h": 99,
-      "source": "https://nookipedia.com/wiki/File:Plaza_Bench_(Classic)_NH_Icon.png"
     },
     "deco/present": {
       "path": "deco/present.webp",
@@ -1464,30 +1356,6 @@
       "w": 96,
       "h": 93,
       "source": "https://nookipedia.com/wiki/File:Orange_Pumpkin_NH_Inv_Icon.png"
-    },
-    "deco/resident-services": {
-      "path": "deco/resident-services.webp",
-      "w": 310,
-      "h": 246,
-      "source": "https://nookipedia.com/wiki/File:Resident_Services_NH_Map_Icon.png"
-    },
-    "deco/resident-services-lit": {
-      "path": "deco/resident-services-lit.webp",
-      "w": 310,
-      "h": 246,
-      "source": "derived from https://nookipedia.com/wiki/File:Resident_Services_NH_Map_Icon.png (lit windows: scripts/derive-art.ts)"
-    },
-    "deco/resident-services-winter": {
-      "path": "deco/resident-services-winter.webp",
-      "w": 310,
-      "h": 246,
-      "source": "derived from https://nookipedia.com/wiki/File:Resident_Services_NH_Map_Icon.png (snow: scripts/derive-art.ts)"
-    },
-    "deco/signpost": {
-      "path": "deco/signpost.webp",
-      "w": 81,
-      "h": 98,
-      "source": "https://nookipedia.com/wiki/File:Signpost_(Shop)_NH_Icon.png"
     },
     "deco/spooky-lantern": {
       "path": "deco/spooky-lantern.webp",

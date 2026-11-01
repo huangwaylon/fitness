@@ -1,5 +1,5 @@
 // The fresh-water fish (docs/design.md "Fishing"): NH's 46, each in the water NH keeps it in (world.ts freshWhere): the
-// pond, the river, the river mouth (the wide reach on the west beach) or the clifftop (the river above the cliff and the
+// pond, the river, the river mouth (the wide reach on the east beach) or the clifftop (the falls' pool, the river above the cliff and the
 // spring). Its own chunk, loaded with the first fresh-water shadow (Critters.svelte), so the island's first load doesn't
 // carry it; the ずかん's page imports it too. Like the sea fish (critters.ts FISH): NH's northern-hemisphere months only
 // weight the odds (×IN_SEASON), the hours still hold, a low weight is a rare fish. Months, hours, shadows and locations

@@ -1,6 +1,6 @@
 // Speech balloons by their speakers (docs/design.md "Dialogue"): every speaker's balloon stands by them, the tail at
 // them, never over the HUD, never off screen, never over the speaker's face; it follows a speaker who moves. The bug: a
-// visitor's balloon floated above the museum, 100px+ off their head.
+// visitor's balloon floated above a building (the museum then), 100px+ off their head.
 import { expect, test, type Page } from '@playwright/test';
 
 /** The balloon against its speaker and the HUD (the controls outside the stage). */
@@ -42,7 +42,7 @@ async function wakeGulliver(page: Page, sel: string) {
     await page.waitForTimeout(250);
   }
 }
-/** The camera to world z (ひろば 860: centre stage, where most visitors stand; おく 1380: the museum). */
+/** The camera to world z (おく 642: centre stage, where most visitors stand, in front of the campsite). */
 async function go(page: Page, z: number) {
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await page.waitForTimeout(400);
@@ -55,23 +55,23 @@ for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
   test.describe(`at ${vp.width}`, () => {
     test.use({ viewport: vp });
     for (const [v, at] of [['gulliver', '12:00'], ['kk-slider', '21:00'], ['wisp', '22:00'], ['jack', '21:00'], ['reese', '12:00'], ['daisy-mae', '09:00']] as const)
-      test(`${v}: the balloon by their head, not floated above the museum`, async ({ page }) => {
+      test(`${v}: the balloon by their head, not floated above the campsite`, async ({ page }) => {
         await page.goto(`?demo&date=2026-11-04T${at}&visitor=${v}&critter=none`);
         const art = `[data-visitor="${v}"] .art`;
         // Gulliver washes up on the front beach and Daisy Mae wanders the front lawn (まえ); the rest take centre stage
-        if (v !== 'gulliver' && v !== 'daisy-mae') await go(page, 860);
+        if (v !== 'gulliver' && v !== 'daisy-mae') await go(page, 642);
         await expect(page.locator(art)).toBeVisible();
         if (v === 'gulliver') await wakeGulliver(page, art);
         else await tapAt(page, art, 0.3);
         await balloon(page);
         await expectBy(page, art, 56); // GAP + NEAR, and a little
       });
-    test('Blathers at the museum', async ({ page }) => {
+    test('the campsite’s door', async ({ page }) => {
       await page.goto('?demo&date=2026-11-04T21:00&critter=none');
-      await go(page, 1380);
-      await page.getByRole('button', { name: 'はくぶつかん：ずかんを ひらく' }).click();
+      await go(page, 642);
+      await page.locator('[data-building="campsite"] .door').click();
       await balloon(page);
-      await expectBy(page, '.museum .art', 56);
+      await expectBy(page, '[data-building="campsite"] .door', 56);
     });
   });
 }

@@ -2,14 +2,13 @@
 // across, z into the island), the obstacles on it and a graph of named nodes to route around them. Pure, built from
 // world.ts, so a layout change carries over; parameterised (`walkGeo(extra)`) for what comes and goes (a visitor) and
 // for the tests.
-// Ground: land (sand and grass), the plaza, both bridges and the cliff's stairs; not the sea, the river (but for the
-// bridges), the pond, the spring, the cliff face (but for the stairs), building footprints, trunks, beds, the rock,
-// bushes and props. The static part is rasterised once (a 4u grid, ~5 ms) so a segment test is a few lookups; a
+// Ground: land (sand and grass) and the cliff's stairs; not the sea, the stream, the pond, the spring, the cliff face
+// (but for the stairs), the campsite's footprint, trunks, beds, the rock, bushes and props. The static part is rasterised once (a 4u grid, ~5 ms) so a segment test is a few lookups; a
 // visitor's box is tested on top. Routing: a straight segment when it is clear, else the shortest way through the
 // nodes (named ones and the padded corners of the obstacles): a visibility graph precomputed once, Dijkstra per walk.
 import type { Box } from './geom.ts';
 import {
-  BED_XS, BED_ZS, BRIDGES, BUILDINGS, CENTRE_STAGE, CLIFF, DOCK, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, POND, ROCK,
+  BED_XS, BED_ZS, BUILDINGS, CENTRE_STAGE, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, ROCK,
   SCENERY, SHORE_Z, SPRING, TAPE_DECK, inOval, inRiver, onLand, type Pt
 } from './world.ts';
 import { art } from '#lib/art.ts';
@@ -43,7 +42,7 @@ export interface WalkExtra {
 
 const PAD = 8;
 const CELL = 4;
-const GX0 = -60, GX1 = 452, GZ0 = -60, GZ1 = 2270;
+const GX0 = LAND.x0 - 20, GX1 = LAND.x1 + 22, GZ0 = LAND.z0 - 30, GZ1 = LAND.z1 + 20;
 
 interface Grid { w: number; h: number; ok: Uint8Array }
 interface Vis { pts: Pt[]; names: string[]; adj: number[][] | null }
@@ -64,7 +63,6 @@ function staticObstacles(): Box[] {
     else if (s.kind === 'bamboo') out.push(box(s.x, s.z, 7, 4, 4));
     else if (s.kind === 'rock') out.push(box(s.x, s.z, 10, 5, 5));
     else if (s.kind === 'bush') out.push(box(s.x, s.z, 16, 7, 7));
-    else if (s.kind === 'fence') out.push(box(s.x, s.z, 22, 3, 3));
     else out.push(box(s.x, s.z, Math.max(5, widthOf(s.key, s.h) * 0.36), 4, 4));
   }
   for (const x of HEDGE_XS) out.push(box(x, HEDGE_Z, 18, 7, 7));
@@ -78,13 +76,11 @@ function staticObstacles(): Box[] {
 }
 
 const inBox = (b: Box, x: number, z: number, pad = 0) => x > b.x0 - pad && x < b.x1 + pad && z > b.y0 - pad && z < b.y1 + pad;
-const onBridge = (x: number, z: number) => BRIDGES.some((b) => Math.abs(x - b.x) <= b.w / 2 - 6 && z >= b.z0 - 2 && z <= b.z1 + 2);
 const onStairs = (x: number, z: number) => x >= CLIFF.stair[0] + 4 && x <= CLIFF.stair[1] - 4 && z >= CLIFF.z0 - 6 && z <= CLIFF.z1 + 6;
 
 /** The ground itself, before obstacles: land, off the water and the cliff face. */
 function ground(x: number, z: number): boolean {
-  if (onBridge(x, z) || onStairs(x, z)) return true;
-  if (x >= DOCK.x0 && x <= DOCK.x1 && z >= DOCK.z0 && z < DOCK.z1 - 4) return false;
+  if (onStairs(x, z)) return true;
   if (!onLand(x, z)) return false;
   if (z >= CLIFF.z0 - 6 && z <= CLIFF.z1 + 4 && x >= CLIFF.x0 - 20 && x <= CLIFF.x1 + 20) return false;
   if (inOval(POND, x, z, 4) || inOval(SPRING, x, z, 4)) return false;
@@ -107,8 +103,8 @@ function build() {
     for (let i = 0; i < w; i++) {
       const x = GX0 + (i + 0.5) * CELL;
       if (!ground(x, z)) continue;
-      // bridges and stairs cut through whatever they cross
-      if (!onBridge(x, z) && !onStairs(x, z) && obstacles.some((o) => inBox(o, x, z, PAD))) continue;
+      // the stairs cut through whatever they cross
+      if (!onStairs(x, z) && obstacles.some((o) => inBox(o, x, z, PAD))) continue;
       ok[j * w + i] = 1;
     }
   }
@@ -116,8 +112,8 @@ function build() {
   return shared;
 }
 
-/** The named nodes: homes, the goal trees, the rock, the shore, the bridges' and the stairs' ends, the doors, the
- *  pondside, the riverbank's casting spots, centre stage. */
+/** The named nodes: homes, the goal trees, the rock, the shore, the stairs' ends, the campsite's door, the pondside,
+ *  the stream's casting spots, centre stage. */
 function namedNodes(): Record<string, Pt> {
   const [ax, az] = HOMES.A, [bx, bz] = HOMES.B, [tax, taz] = GOAL_TREES.A, [tbx, tbz] = GOAL_TREES.B;
   const nodes: Record<string, Pt> = {
@@ -127,13 +123,12 @@ function namedNodes(): Record<string, Pt> {
     backA: [tax + 30, taz + 60], backB: [tbx - 30, tbz + 60],
     rock: [ROCK[0] + 24, ROCK[1] - 4],
     shoreL: [96, SHORE_Z + 22], shoreC: [195, SHORE_Z + 20], shoreR: [270, SHORE_Z + 22],
-    stoneS: [195, BRIDGES[0].z0 - 12], stoneN: [195, BRIDGES[0].z1 + 12], logS: [296, BRIDGES[1].z0 - 12], logN: [296, BRIDGES[1].z1 + 12],
     stairS: [60, CLIFF.z0 - 14], stairN: [60, CLIFF.z1 + 14],
     centreStage: [CENTRE_STAGE[0], CENTRE_STAGE[1]],
     pondside: [POND.x + 4, POND.z + POND.rz + 14],
-    riverEast: [342, 900], riverBend: [330, 700], mouth: [-14, 596], clifftop: [SPRING.x - 44, SPRING.z - 24]
+    riverEast: [340, 880], riverBend: [356, 742], mouth: [414, 668], clifftop: [CLIFF.fall[0] - 14, CLIFF.z0 - FALLS_POOL + 18]
   };
-  for (const b of BUILDINGS) nodes[`door-${b.id}`] = [b.x, b.id === 'airport' ? b.z - 4 : b.z - 16];
+  for (const b of BUILDINGS) nodes[`door-${b.id}`] = [b.x, b.z - 16];
   return nodes;
 }
 

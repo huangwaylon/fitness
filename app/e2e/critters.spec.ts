@@ -233,7 +233,7 @@ test('a stag beetle perches on a trunk at night and is netted', async ({ page })
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
 });
 
-test('a balloon floats by on its own in the daytime (the first in 30–60 s), in the sky lane over the ribbon', async ({ page }) => {
+test('a balloon floats by on its own in the daytime (the first in 30–60 s), in the sky lane under the ribbon', async ({ page }) => {
   await page.clock.install();
   await open(page, '');
   await expect(page.locator('.fly')).toHaveCount(0);
@@ -243,11 +243,12 @@ test('a balloon floats by on its own in the daytime (the first in 30–60 s), in
   const box = await page.evaluate(() => {
     const f = document.querySelector('.fly')!, rib = document.querySelector('.ribbon-wrap')!.getBoundingClientRect();
     const b = document.querySelector('.fly .balloon')!.getBoundingClientRect();
-    return { top: b.top, bottom: b.bottom, ribbon: rib.top };
+    const hy = parseFloat(getComputedStyle(document.querySelector('.if-scene')!).getPropertyValue('--horizon-y'));
+    return { top: b.top, bottom: b.bottom, ribbon: rib.bottom, hy };
   });
-  // the island's ground reaches up to the horizon, under the ribbon: the balloon crosses the sky above the ribbon
-  expect(box.top).toBeGreaterThanOrEqual(0);
-  expect(box.bottom).toBeLessThanOrEqual(box.ribbon);
+  // the ribbon sits high in the sky, the horizon well under it: the balloon crosses the sky between them
+  expect(box.top).toBeGreaterThanOrEqual(box.ribbon);
+  expect(box.bottom).toBeLessThanOrEqual(box.hy + 8);
 });
 
 test('fish shadows: one teardrop each, NH’s sizes reading apart (a clownfish tiny, a whale shark huge)', async ({ page }) => {

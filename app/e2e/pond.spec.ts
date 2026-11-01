@@ -33,7 +33,7 @@ const pond = (page: Page) => page.evaluate(({ x, z, rx, rz }) => {
   return { x: cx, y: cy, w: r - l, h: near - far };
 }, POND);
 
-async function open(page: Page, q: string, z: number = CAMS.hiroba) {
+async function open(page: Page, q: string, z: number = CAMS.oku) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=2026-11-04T21:00${q}`);
   await expect(ribbon(page)).toBeVisible();
@@ -84,7 +84,7 @@ for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
   });
 }
 
-test('the river at ひろば: a river fish (NH: River) in its reach, cast from the bank, caught with its line', async ({ page }) => {
+test('the stream at おく: a river fish (NH: River) in its reach, cast from the bank, caught with its line', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await open(page, '&critter=river');
   const shadow = page.locator('[data-critter="pond"][data-water="river"]');
@@ -92,7 +92,7 @@ test('the river at ひろば: a river fish (NH: River) in its reach, cast from t
   await page.waitForTimeout(600);
   const f = await at(page, '[data-water="river"]');
   expect(f.x).toBeGreaterThan(0), expect(f.x).toBeLessThan(390), expect(f.y).toBeLessThan(844);
-  await page.screenshot({ path: '/tmp/world-build/critters-river-860.png' });
+  await page.screenshot({ path: '/tmp/world-build/critters-river.png' });
   await fish(page, '[data-water="river"]', { x: 195, y: 500 });
   await expect(page.locator('[data-fx="catch"]')).toContainText('釣', { timeout: 4000 });
   const got = (await finds(page)) as { kind: string; id: string }[];
@@ -103,7 +103,7 @@ test('the river at ひろば: a river fish (NH: River) in its reach, cast from t
 
 test("NH's own waters: the salmon at the river mouth, the char on the clifftop, the koi in the pond", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const [id, water, z] of [['salmon', 'mouth', CAMS.mae], ['char', 'clifftop', CAMS.oku], ['koi', 'pond', CAMS.hiroba]] as const) {
+  for (const [id, water, z] of [['salmon', 'mouth', CAMS.oku], ['char', 'clifftop', CAMS.oku], ['koi', 'pond', CAMS.oku]] as const) {
     expect(POND_FISH[id].water).toBe(water);
     await open(page, `&critter=${id}`, z);
     const s = page.locator(`[data-critter="pond"][data-water="${water}"]`);
@@ -112,7 +112,7 @@ test("NH's own waters: the salmon at the river mouth, the char on the clifftop, 
     const p = await at(page, `[data-water="${water}"]`);
     expect(p.x, id).toBeGreaterThan(-20), expect(p.x, id).toBeLessThan(410);
     expect(p.y, id).toBeGreaterThan(0), expect(p.y, id).toBeLessThan(844);
-    if (water === 'clifftop') await page.screenshot({ path: '/tmp/world-build/critters-clifftop-1380.png' });
+    if (water === 'clifftop') await page.screenshot({ path: '/tmp/world-build/critters-clifftop.png' });
   }
 });
 
@@ -147,7 +147,7 @@ test('water bugs: a pondskater skates on the pond on a summer day; a tap nets it
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto('?demo&date=2026-07-04T12:00&critter=pondskater');
   await expect(ribbon(page)).toBeVisible();
-  await cam(page, CAMS.hiroba);
+  await cam(page, CAMS.oku);
   const bug = page.locator('[data-critter="pondskater"]');
   await expect(bug).toBeAttached();
   await page.waitForTimeout(800);

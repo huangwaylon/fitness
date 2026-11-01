@@ -52,7 +52,7 @@
 {/if}
 
 <style>
-  /* ---- the sky (outside the stage: positioned against the scene, the sky band's height) ---- */
+  /* ---- the sky (the stage's backdrop, under the world: the sky band's height) ---- */
   .overcast {
     position: absolute; inset: 0 0 auto 0; height: var(--sky-h); z-index: 0; pointer-events: none;
     background: linear-gradient(180deg, var(--oc-top), var(--oc-hz));
@@ -91,7 +91,8 @@
   /* ---- the stage (the whole viewport; z over the time-of-day tint, under the scenery taps and every control: the
      stage's own tokens, IslandScene) ---- */
   .wet, .precip, .fog { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-  .wet { top: calc(var(--horizon-y) - 2px); z-index: var(--z-tint); mix-blend-mode: multiply; background: #AEB8C8; opacity: .55; }
+  /* the wet day's darkening: over the whole stage like the time-of-day tint, fading out up the sky (no edge) */
+  .wet { z-index: var(--z-tint); mix-blend-mode: multiply; background: #AEB8C8; opacity: .55; -webkit-mask-image: var(--tint-mask); mask-image: var(--tint-mask); }
   .wet[data-sky='heavy'] { background: #97A2B4; opacity: .65; }
   .wet[data-sky='snow'] { background: #DCE2EA; opacity: .5; }
   .precip { z-index: calc(var(--z-tint) + 1); }

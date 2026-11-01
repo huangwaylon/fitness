@@ -1,7 +1,7 @@
-// Tap-to-walk and the buildings' doors (spec §3–4, docs/design.md "Walking", "Buildings"): a tap on the ground sends
-// my villager there along nav.ts's way (over a bridge, never through the river), a cream ring marks the spot, the
-// camera follows a run it can't see (snapping off meanwhile, back after; a touch takes it back), and a building is
-// one tap: walk to its door, its NH character answers, the feature opens.
+// Tap-to-walk and the campsite's door (spec §3–4, docs/design.md "Walking", "Buildings"): a tap on the ground sends
+// my villager there along nav.ts's way (never through the water), a cream ring marks the spot, the camera follows a
+// run it can't see (snapping off meanwhile, back after; a touch takes it back), and the campsite is one tap: walk to
+// its door, its line about today's guest.
 import { expect, test, type Page } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 
@@ -9,7 +9,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 
 type W = {
   go(z: number): void; cam(): number; at(x: number, z: number): [number, number]; put(x: number, z: number): void;
-  mine(): [number, number]; following(): boolean; snapping(): string;
+  mine(): [number, number]; following(): boolean; snapping(): string; stops(): number[];
 };
 const call = <T,>(page: Page, fn: (w: W, a: number[]) => T, args: number[] = []) =>
   page.evaluate(([f, a]) => new Function('w', 'a', `return (${f})(w, a)`)((window as unknown as { __world: W }).__world, a), [fn.toString(), args] as const) as Promise<T>;
@@ -48,37 +48,29 @@ async function track(page: Page, ms = 8000): Promise<[number, number][]> {
   }, ms);
 }
 
-test('a tap in the plaza runs my villager there over a bridge, never through the river; a ring marks the spot', async ({ page }) => {
-  await open(page, undefined, 420);
-  const [x, y] = await call(page, (w) => w.at(195, 760));
+test('a tap by the campsite runs my villager up the path, never through the water; a ring marks the spot', async ({ page }) => {
+  await open(page, undefined, 300);
+  const [x, y] = await call(page, (w) => w.at(240, 860));
   await page.mouse.click(x, y);
   await expect(page.locator('.tap-ring')).toHaveCount(1);
   await shot(page, 'tap-ring');
   const path = await track(page);
   const end = path.at(-1)!;
-  expect(Math.hypot(end[0] - 195, end[1] - 760)).toBeLessThan(3);
-  // where the walk crossed the river's reach (z 640): on the stone bridge (x 195 ± 22) or the log bridge (296 ± 17)
-  let crossings = 0;
-  for (let i = 1; i < path.length; i++) {
-    const [ax, az] = path[i - 1], [bx, bz] = path[i];
-    if ((az - 640) * (bz - 640) > 0 || az === bz) continue;
-    const cx = ax + ((bx - ax) * (640 - az)) / (bz - az);
-    expect(Math.abs(cx - 195) <= 22 || Math.abs(cx - 296) <= 17, `crossed at x ${cx.toFixed(1)}`).toBe(true);
-    crossings++;
-  }
-  expect(crossings).toBe(1);
-  await shot(page, 'after-bridge');
+  expect(Math.hypot(end[0] - 240, end[1] - 860)).toBeLessThan(3);
+  // never in the pond (74, 772: rx 46, rz 26)
+  for (const [px, pz] of path) expect(((px - 74) / 46) ** 2 + ((pz - 772) / 26) ** 2).toBeGreaterThan(1);
+  await shot(page, 'after-run');
 });
 
 test('a tap on the pond walks to its bank, facing the water; the walk stays for the session', async ({ page }) => {
-  await open(page, undefined, 760);
-  const [x, y] = await call(page, (w) => w.at(44, 772));
+  await open(page, undefined, 560);
+  const [x, y] = await call(page, (w) => w.at(74, 772));
   await page.mouse.click(x, y);
   const end = (await track(page)).at(-1)!;
-  // on the bank: out of the water (rx 40, rz 22) by the pad, within reach of it
-  const d = Math.hypot((end[0] - 44) / 40, (end[1] - 772) / 22);
+  // on the bank: out of the water (rx 46, rz 26) by the pad, within reach of it
+  const d = Math.hypot((end[0] - 74) / 46, (end[1] - 772) / 26);
   expect(d).toBeGreaterThan(1);
-  expect(Math.hypot(end[0] - 44, end[1] - 772)).toBeLessThan(80);
+  expect(Math.hypot(end[0] - 74, end[1] - 772)).toBeLessThan(80);
   await page.reload();
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await page.waitForTimeout(400);
@@ -88,9 +80,10 @@ test('a tap on the pond walks to its bank, facing the water; the walk stays for 
 
 test('the camera follows a run up the island (snapping off), gives it back after, and a touch takes it back at once', async ({ page }) => {
   await open(page);
-  expect(await call(page, (w) => w.cam())).toBe(114);
-  // far up the plaza: a far tap (θ > 35°), the camera eases there with the walker
-  const [x, y] = await call(page, (w) => w.at(195, 800));
+  const [front] = await call(page, (w) => w.stops());
+  expect(await call(page, (w) => w.cam())).toBe(front);
+  // far up by the campsite: a far tap (θ > 35°), the camera eases there with the walker
+  const [x, y] = await call(page, (w) => w.at(240, 860));
   await page.mouse.click(x, y);
   await expect.poll(() => call(page, (w) => w.following())).toBe(true);
   expect(await call(page, (w) => w.snapping())).toBe('none');
@@ -106,45 +99,32 @@ test('the camera follows a run up the island (snapping off), gives it back after
   await shot(page, 'followed');
   await expect.poll(() => call(page, (w) => w.snapping())).toBe('');
 
-  // a touch on the scroller ends a follow at once (a far tap up the island from where the camera now rests)
-  const [x2, y2] = await call(page, (w) => w.at(195, w.cam() + 700));
+  // a touch on the scroller ends a follow at once (my villager back home, out of view: a far tap up by the campsite)
+  await call(page, (w) => w.put(132, 214));
+  const [x2, y2] = await call(page, (w) => w.at(150, 860));
   await page.mouse.click(x2, y2);
   await expect.poll(() => call(page, (w) => w.following())).toBe(true);
   await page.locator('[data-world-scroller]').dispatchEvent('touchstart');
   expect(await call(page, (w) => w.following())).toBe(false);
 });
 
-test('Able Sisters: walk to the door, あさみ answers, then the むらびと picker opens', async ({ page }) => {
-  await open(page, undefined, 1260);
-  await page.locator('[data-building="able"] .door').click();
+test('the campsite: walk to the door, its line about today’s guest (nobody inside)', async ({ page }) => {
+  await open(page, '&date=2026-07-01T10:00&visitor=none', 642);
+  await page.locator('[data-building="campsite"] .door').click();
   const box = page.locator('[data-fx="talk"]');
-  await expect(box).toContainText('あさみ', { timeout: 8000 });
+  await expect(box).toContainText('キャンプサイト', { timeout: 8000 });
   const end = await call(page, (w) => w.mine());
-  expect(Math.hypot(end[0] - 282, end[1] - (1338 - 16))).toBeLessThan(30);
-  await shot(page, 'able-door');
+  expect(Math.hypot(end[0] - 196, end[1] - (984 - 16))).toBeLessThan(30);
+  await shot(page, 'campsite-door');
+  for (let i = 0; i < 4 && (await box.count()); i++) await box.click().catch(() => {});
   await expect(page.locator('dialog[open]')).toHaveCount(0);
-  for (let i = 0; i < 4 && (await box.count()); i++) await box.click().catch(() => {});
-  await expect(page.locator('dialog[open]')).toHaveCount(1);
-  await expect(page.locator('dialog[open]').getByRole('radio').first()).toBeVisible();
-  await shot(page, 'able-picker');
 });
 
-test('Resident Services by night: たぬきち answers with his だなも, then せってい opens', async ({ page }) => {
-  await open(page, '&date=2026-07-01T23:00', 900);
-  await page.locator('[data-building="rs"] .door').click();
-  const box = page.locator('[data-fx="talk"]');
-  await expect(box).toContainText('たぬきち', { timeout: 8000 });
-  expect(await box.getAttribute('aria-label')).toMatch(/だなも/);
-  await shot(page, 'rs-night');
-  for (let i = 0; i < 4 && (await box.count()); i++) await box.click().catch(() => {});
-  await expect(page.locator('dialog[open] .tab[data-tab=settings]')).toHaveAttribute('aria-pressed', 'true');
-});
-
-test('a tap at a building’s foot knocks at its door (the footprint snaps to the door)', async ({ page }) => {
-  await open(page, undefined, 1260);
-  // the ground just inside the Cranny's footprint, beside its art (taps on the art itself are the door button's)
+test('a tap at the tent’s foot knocks at its door (the footprint snaps to the door)', async ({ page }) => {
+  await open(page, '&date=2026-07-01T10:00&visitor=none', 642);
+  // the ground just inside the tent's footprint (taps on the art itself are the door button's)
   await page.addStyleTag({ content: '[data-building] .door { pointer-events: none !important; }' });
-  const [x, y] = await call(page, (w) => w.at(100, 1340));
+  const [x, y] = await call(page, (w) => w.at(150, 1000));
   await page.mouse.click(x, y);
-  await expect(page.locator('[data-fx="talk"]')).toContainText('まめきち', { timeout: 8000 });
+  await expect(page.locator('[data-fx="talk"]')).toContainText('キャンプサイト', { timeout: 8000 });
 });

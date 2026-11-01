@@ -7,7 +7,7 @@
   // after a read's length. One at a time; a new line replaces the last. It stands by its speaker, the tail pointing at
   // them (placement.ts placeBy, NH's rule for every speaker): above the head when there's room, else beside, else below,
   // at most NEAR px off, never over the HUD, しずえ's box, a tree's popup, the speaker or off the safe area (what gives
-  // way first: the museum, then the island's things, then the villagers); it follows the speaker while it talks and
+  // way first: the campsite, then the island's things, then the villagers); it follows the speaker while it talks and
   // closes if they go (my villager hushes as it sets off walking). The box is sized for its longest page, so it never
   // jumps between pages.
   // A line may end on a choice (NH's answers: Jack's 「キャンディを あげる」): its answers show in a row at the balloon's

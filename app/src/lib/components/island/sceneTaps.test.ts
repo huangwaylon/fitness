@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { hitWorld } from './sceneTaps.ts';
-import { BRIDGES, LAND, POND, SPRING } from './world.ts';
+import { LAND, POND, RIVER, SPRING } from './world.ts';
 
 describe('hitWorld', () => {
   it('finds the sea in front of the shoreline and past the side beaches', () => {
@@ -20,9 +20,9 @@ describe('hitWorld', () => {
     expect(hitWorld(POND.x + POND.rx + 3, POND.z).kind).not.toBe('pond');
     expect(hitWorld(SPRING.x, SPRING.z)).toEqual({ kind: 'pond' });
   });
-  it('finds the river, but a bridge is dry ground', () => {
-    expect(hitWorld(120, 648)).toEqual({ kind: 'river' });
+  it('finds the stream, and the lawn where the old river crossed', () => {
+    expect(hitWorld(RIVER[6][0], RIVER[6][1])).toEqual({ kind: 'river' });
     expect(hitWorld(372, 1000)).toEqual({ kind: 'river' });
-    for (const b of BRIDGES) expect(hitWorld(b.x, (b.z0 + b.z1) / 2)).toEqual({ kind: 'grass' });
+    expect(hitWorld(120, 648)).toEqual({ kind: 'grass' });
   });
 });

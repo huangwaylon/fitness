@@ -26,19 +26,18 @@
   import { ROSTER } from '#lib/villagers/roster.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { resetHealth } from '../health/healthLast.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
 
   /** A level of the panel's own (きろく keeps its own levels: week → day, the weight trend, a goal). */
   let push = $state<'villager' | 'help' | null>(null);
-  let kiroku: { back: () => boolean; showZukan: () => Promise<void> } | undefined = $state();
+  let kiroku: { back: () => boolean } | undefined = $state();
   /** How deep きろく is (0 = its first screen): the other sections show only at the very top. */
   let kirokuLevel = $state(0);
   let body: HTMLElement | undefined = $state();
   let savedTop = 0;
-  /** Every opening from the ribbon starts on けんこう (a door or the museum picks its own tab): closing resets it. */
+  /** Every opening from the ribbon starts on けんこう: closing resets it. */
   let tab = $state<Tab>('health');
   /** けんこう's code: its own chunk, fetched when the tab is first shown. */
   let healthTab: Promise<typeof import('../health/Health.svelte')> | null = null;
@@ -84,32 +83,6 @@
     tab = 'health';
     resetHealth();
   }
-
-  // The museum's door (design.md "Museum"): きろく's ずかん, at its top level, scrolled to.
-  $effect(() => {
-    if (!ui.zukan) return;
-    ui.zukan = false; // answered: a remount (back from ごほうび) doesn't ask again
-    open = true; // mounted already, this may run before the HUD's own effect sees the ask
-    push = null;
-    tab = 'kiroku';
-    void tick().then(() => kiroku?.showZukan());
-  });
-
-  // A building's door (design.md "World"): せってい, at the むらびと picker or at つうしん.
-  $effect(() => {
-    const d = ui.door;
-    if (!d) return;
-    ui.door = null;
-    open = true;
-    push = null;
-    tab = 'settings';
-    void tick().then(() => {
-      if (d === 'villager') return go('villager');
-      const sec = d === 'sync' ? body?.querySelector<HTMLElement>('#sec-sync') : null;
-      if (sec) body?.scrollTo({ top: sec.offsetTop - 8 });
-      else body?.scrollTo({ top: 0 });
-    });
-  });
 
   // The panel's open and close tunes. It mounts on the first tap of the ribbon (Hud), already open: that is an open too.
   let wasOpen = false;

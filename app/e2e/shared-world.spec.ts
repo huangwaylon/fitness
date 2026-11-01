@@ -58,11 +58,11 @@ test('every tree shakes: three quick taps on an oak drop a branch beside it; one
 
 test('a palm drops its two coconuts, once a day: a tap picks one up (NH’s line)', async ({ page }) => {
   await open(page, '&shake=coconut');
-  await shake(page, 'palm-2');
+  await shake(page, 'palm-3');
   const nuts = page.locator('button[data-coconut]');
   await expect(nuts).toHaveCount(2, { timeout: 3000 });
   await page.waitForTimeout(700);
-  await nuts.first().click();
+  await nuts.last().click(); // (the two lie side by side, the later one on top)
   await expect(page.locator('[data-fx="catch"]')).toContainText('ヤシのみを ひろった！', { timeout: 4000 });
   await expect(nuts).toHaveCount(1);
 });

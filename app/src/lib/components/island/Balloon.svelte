@@ -57,14 +57,14 @@
     gone = setTimeout(() => ondone?.(), 650);
   }
   /** Where the present lands (world x, z): with the sea under the balloon (the ground three quarters down the screen
-   *  below it is off the island) it drops into the sea (null); else the open grass in view nearest under it (a 12u grid over the view, low on the
+   *  below it, halfway between the horizon and the screen's foot, is off the island) it drops into the sea (null); else the open grass in view nearest under it (a 12u grid over the view, low on the
    *  screen first), ≥ 44px clear of every control and 28px of what stands or lies on the lawn (bushes, flowers, finds,
    *  weeds, a pumpkin, the cake, the visitor); failing that, the lawn spot nearest
    *  the view's middle; null (the sea) when none is in view either. `cx`: the balloon's client x. */
   function landing(cx: number): Pt | null {
     if (!w) return null;
     const v = w.view, sx = cx - v.left;
-    const below = w.worldAt(sx, v.vh * 0.75);
+    const below = w.worldAt(sx, v.horizon + (v.vh - v.horizon) * 0.5);
     if (below && !onLand(below.x, below.z)) return null;
     // every control on screen (client px; a world node out of view is hidden but keeps a stale box)
     const g = stageGeo(document.querySelector<HTMLElement>('.if-scene[data-live]') ?? undefined);
@@ -98,13 +98,13 @@
   const BITS = [body, '#FFD84D', light, '#6FCFF6', body, '#FF8DBE', shade, '#8FD16A'];
 
   onMount(() => {
-    // no room above the HUD (the ribbon, 4px clear) or the present would sink past the horizon (a sky too short for
+    // no room under the HUD (the ribbon, 4px clear) or the present would sink past the horizon (a sky too short for
     // even the smallest balloon): no balloon this time
     const hud = document.querySelector('.ribbon-wrap')?.getBoundingClientRect();
     const r = fly?.getBoundingClientRect();
     const band = fly?.parentElement?.getBoundingClientRect();
     const short = !!r && !!band && r.bottom > band.bottom + 8;
-    if (!r || short || (hud && hud.height && r.bottom > hud.top - 4)) ondone?.();
+    if (!r || short || (hud && hud.height && r.top < hud.bottom + 4)) ondone?.();
     // the island's scroller (the camera) lies over the fixed sky, so a tap on the balloon reaches the scene, not this
     // button: the scene's clicks are checked against it first (capture), a 44px reach (the button stays for the keyboard)
     const scene = fly?.closest<HTMLElement>('.if-scene');
@@ -175,13 +175,14 @@
 <style>
   /* the balloon's size: everything below is in em (the balloon's width) */
   .fly {
-    /* the lane: from 6px under the band's top (the safe area) to 8px over the ribbon (--hud-top is the screen's); the
-       balloon with its present (2.6em) as big as that lane holds, between 14px and 34px across, at a random height
-       within any room to spare */
-    --room: calc(var(--hud-top) - var(--safe-top) - 14px);
+    /* the lane: from 6px under the ribbon (--hud-bottom, the screen's) to 8px over the horizon (the band starts at the
+       safe area); the balloon with its present (2.6em) as big as that lane holds, between 14px and 34px across, at a
+       random height within any room to spare */
+    --lane: calc(var(--hud-bottom, var(--safe-top)) - var(--safe-top));
+    --room: calc(var(--horizon-y) - var(--hud-bottom, var(--safe-top)) - 14px);
     --bw: max(14px, min(clamp(22px, 7.6cqw, 34px), calc(var(--room) / 2.65)));
     position: absolute; z-index: 3; left: 0; font-size: var(--bw);
-    top: calc(6px + var(--alt) * max(0px, var(--room) - 2.65em));
+    top: calc(var(--lane) + 6px + var(--alt) * max(0px, var(--room) - 2.65em));
     animation: across 22s linear both; will-change: transform;
   }
   .fly.rtl { animation-name: across-rtl; }
