@@ -3,7 +3,8 @@ export type Locale = 'ja' | 'en';
 
 export const i18n = $state<{ locale: Locale }>({ locale: 'ja' });
 
-export function setLocale(locale: Locale): void {
+/** Switch the strings now (index.ts setLocale loads English first). */
+export function applyLocale(locale: Locale): void {
   i18n.locale = locale;
   if (typeof document !== 'undefined') document.documentElement.lang = locale;
 }

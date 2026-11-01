@@ -8,7 +8,7 @@ import type { EventType } from '#lib/contract/api.ts';
 import { buildWeekView } from '#lib/model/week.ts';
 import { setLocale } from '#lib/i18n/index.ts';
 import { minuteNow } from '#lib/time/clock.ts';
-import { DEMO, sessionKV, writeRaw } from '#lib/sync/storage.ts';
+import { DEMO, DEVICE, localKV, readJson, sessionKV, writeJson, writeRaw } from '#lib/sync/storage.ts';
 import { GAS_CONFIGURED } from '#lib/sync/transport.ts';
 import { composeModel, type ComposedModel } from './view.ts';
 import { LiveBackend } from './live.ts';
@@ -74,6 +74,7 @@ class WeekStore implements Host {
     this.model = m;
     this.view = v;
     setLocale(v.locale);
+    if (readJson(localKV(), DEVICE.locale) !== v.locale) writeJson(localKV(), DEVICE.locale, v.locale);
   }
 
   #start(): void {

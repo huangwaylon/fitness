@@ -130,7 +130,7 @@ and `"action": "ingest"` (`docs/ops/shortcut-health-sync.md`).
 ### Storage keys
 
 `sync/storage.ts` registers every key: live `island.key`, `island.me`, `island.queue`, `island.acked`; the demo
-`island-demo.*` (it can never touch a live key); per device `island.sound`. If storage fails (full, private mode) the
+`island-demo.*` (it can never touch a live key); per device `island.sound` and `island.locale` (the language last shown, so an English launch loads its strings before the first paint). If storage fails (full, private mode) the
 data lives in memory for the session and a banner says so once. Pairing as a different person clears the cache, queue
 and acked list. `sync/transport.ts` `post()` never throws (20 s timeout; network failure = `offline`; timeout,
 non-2xx or non-JSON = `unavailable`).
@@ -218,14 +218,14 @@ intents, never data of record: the sheet path above is unchanged and still catch
 
 `app/src/service-worker/` (pure rules in `caches.ts`).
 
-- **Install:** precaches built JS/CSS and static files except fonts, audio, the art manifest and villager art beyond
-  the two defaults. Non-hashed files and the shell are fetched with `cache: 'reload'` (past Pages' 10-minute HTTP
+- **Install:** precaches built JS/CSS and static files except fonts, audio, the art manifest, the app icons, villager art
+  beyond the two defaults and the critters', finds' and presents' art (all cached on first use). Non-hashed files and the shell are fetched with `cache: 'reload'` (past Pages' 10-minute HTTP
   cache).
 - **Activate:** keeps the current shell (`island-shell-<version>`), the previous one (an old page loads its lazy chunks
   from it) and the runtime caches; deletes the rest.
 - **Navigations:** network first; the cached shell offline or after 3 s. A response becomes this version's shell only
   if it has none, so an old worker never stores a newer build's HTML.
-- **Runtime:** fonts and villager art cache-first on first use; audio (`island-audio-v1`) cache-first with the 3 most
+- **Runtime:** fonts, villager, critter, find and present art cache-first on first use; audio (`island-audio-v1`) cache-first with the 3 most
   recent music files (the hours, event music, K.K.'s songs) kept; Range requests pass through. Other GETs: this version's cache, the previous one, then the
   network. The Apps Script backend is cross-origin and always live.
 

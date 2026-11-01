@@ -31,7 +31,10 @@ export const DEMO = {
 /** This phone's own preferences (not data, never synced; shared by the live app and the demo). */
 export const DEVICE = {
   /** localStorage: `{ music, sfx, volume }` (lib/sound/settings.ts; all off by default). */
-  sound: 'island.sound'
+  sound: 'island.sound',
+  /** localStorage: the language last shown (`ja` / `en`), so an English launch loads its strings before the first paint
+   *  (the `locale` pref stays the truth). */
+  locale: 'island.locale'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */

@@ -8,8 +8,11 @@
 // Zipper on the first and last days of Bunny Day. On the wedding countdown's milestone days (wedding.ts) Reese and Cyrus
 // come together (one visitor, `reese`, drawn as the pair).
 import { pickOne } from '#lib/random.ts';
+import { dayKey, jst } from '#lib/time/clock.ts';
+import { addDays } from '#lib/time/dates.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
-import { eventAt, type EventId, type EventNow } from './events.ts';
+import { hookFlag, hookOneOf, islandSeed } from './devHooks.ts';
+import { eventAt, forcedEvent, type EventId, type EventNow } from './events.ts';
 import { showerAt } from './meteor.ts';
 import { coupleAt } from './wedding.ts';
 
@@ -36,6 +39,15 @@ export function visitorAt(date: string, prevDate: string, hour: number, weekday:
   if (hour >= 20 || hour < 4) return dayRand(hour < 4 ? prevDate : date, 'wisp', seed)() < VISIT_ODDS ? 'wisp' : null;
   if (hour >= 6 && hour < 18) return dayRand(date, 'gulliver', seed)() < VISIT_ODDS ? 'gulliver' : null;
   return null;
+}
+
+/** Who visits at a scene-clock moment, the dev hooks included (`?visitor=`, `?event=`, `?shower`, `?seed=`). */
+export function visitorNow(clock: Date): VisitorId | null {
+  const want = hookOneOf('visitor', VISITORS);
+  if (want) return want;
+  const date = dayKey(clock), prev = addDays(date, -1), seed = islandSeed();
+  const { hour, weekday } = jst(clock);
+  return visitorAt(date, prev, hour, weekday, seed, eventAt(date, hour, forcedEvent()), showerAt(date, prev, hour, seed, hookFlag('shower')));
 }
 
 /** A visitor's line on a tap (an i18n key): one of theirs, never the last one again. */

@@ -17,20 +17,44 @@ function appVersion(): string {
   return `${new Date().toISOString().slice(0, 10)}.${sha}`;
 }
 
-/** The art manifest is bundled into the main chunk (lib/art.ts): ship only each key's size, `{ key: [w, h] }` (every
- *  file is `<key>.webp`, so the path is implied), not the `source` credit URLs (they stay in static/art/manifest.json
- *  for the runbook). ~1,000 keys (440 villagers × render + icon): a third of the object form. */
+/** The art manifest is bundled into the main chunk (lib/art.ts): ship only each key's size, packed per folder (every
+ *  file is `<key>.webp`, so the path is implied; the `source` credit URLs stay in static/art/manifest.json for the
+ *  runbook). Per folder (`villagers`, and `villagers/*-icon` for the `-icon` keys): its most common size, the height most
+ *  of the rest share, the names at the common size and `name:w` / `name:w:h` for the others; art.ts unpacks it.
+ *  ~1,300 keys in 13 KB instead of 40. */
+type Packed = Record<string, [w: number, h: number, h2: number, plain: string, odd: string]>;
 const slimArtManifest: Plugin = {
   name: 'slim-art-manifest',
   enforce: 'pre',
   transform(code, id) {
     if (!id.split('?')[0].endsWith('/static/art/manifest.json')) return;
     const { files } = JSON.parse(code) as { files: Record<string, { path: string; w: number; h: number }> };
-    const slim = Object.fromEntries(Object.entries(files).map(([k, { path, w, h }]) => {
+    const groups = new Map<string, Map<string, [number, number]>>();
+    for (const [k, { path, w, h }] of Object.entries(files)) {
       if (path !== `${k}.webp`) throw new Error(`static/art/manifest.json: ${k} is not at ${k}.webp (lib/art.ts assumes it)`);
-      return [k, [w, h]];
-    }));
-    return { code: JSON.stringify({ files: slim }), map: null };
+      const cut = k.lastIndexOf('/'), icon = k.endsWith('-icon');
+      const g = icon ? `${k.slice(0, cut)}/*-icon` : k.slice(0, cut), n = k.slice(cut + 1, icon ? -5 : undefined);
+      if (/[,:]/.test(n)) throw new Error(`static/art/manifest.json: ${k} has a , or : (the packing's separators)`);
+      if (!groups.has(g)) groups.set(g, new Map());
+      groups.get(g)!.set(n, [w, h]);
+    }
+    const commonest = <T>(xs: T[]): T => {
+      const n = new Map<string, [T, number]>();
+      for (const x of xs) { const k = String(x); n.set(k, [x, (n.get(k)?.[1] ?? 0) + 1]); }
+      return [...n.values()].sort((a, b) => b[1] - a[1])[0][0];
+    };
+    const packed: Packed = {};
+    for (const [g, items] of groups) {
+      const [w, h] = commonest([...items.values()]);
+      const h2 = commonest([...items.values()].map((s) => s[1]));
+      const plain: string[] = [], odd: string[] = [];
+      for (const [n, [iw, ih]] of items) {
+        if (iw === w && ih === h) plain.push(n);
+        else odd.push(ih === h2 ? `${n}:${iw}` : `${n}:${iw}:${ih}`);
+      }
+      packed[g] = [w, h, h2, plain.join(','), odd.join(',')];
+    }
+    return { code: JSON.stringify({ files: packed }), map: null };
   }
 };
 

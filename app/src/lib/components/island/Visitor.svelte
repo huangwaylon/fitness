@@ -40,20 +40,18 @@
   import { BEHAVIOUR, EDGE_FADE_MS, MUMBLES, POP_MS, VISITOR_SPEED, nudge, pickAct, pickEmote, strollSpots, tapMotion, wayMs, type Way } from './visitorLife.ts';
   import { depthZ, type Pt } from './walkGraph.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
-  import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
-  import { addDays, localDateAt } from '#lib/time/dates.ts';
+  import { dayKey, minuteNow, now } from '#lib/time/clock.ts';
+  import { localDateAt } from '#lib/time/dates.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { kkPick, kkTracks, type KKTrack } from '#lib/sound/kk.ts';
   import { playKK, sound, stopKK } from '#lib/sound/sound.svelte.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { clearAt, guardsU, place, stageGeo } from './placement.ts';
   import { zodiacOf } from './beach.ts';
-  import { hook, hookFlag, hookOneOf, islandSeed } from './devHooks.ts';
+  import { hook, hookFlag } from './devHooks.ts';
   import { approach, meetVisitor, presence, shore, villagerFree, visitorRoute, visitorWalkable } from './avatar.ts';
-  import { showerAt } from './meteor.ts';
   import { BED_ROWS, CENTRE_STAGE, su, VILLAGER } from './scene.ts';
-  import { VISITORS, visitorAt, visitorLine, type VisitorId } from './visitors.ts';
-  import { eventAt, forcedEvent } from './events.ts';
+  import { visitorLine, visitorNow, type VisitorId } from './visitors.ts';
   import type { Choice } from './pager.ts';
   import { stretch } from '../motion/stretch.svelte.ts';
   import { SCENE } from '#lib/sync/storage.ts';
@@ -70,11 +68,6 @@
   }
   let { scene, enabled, say: rawSay, ontrick }: Props = $props();
 
-  const seed = islandSeed();
-  const want = hookOneOf('visitor', VISITORS);
-  const force = forcedEvent();
-  /** `?shower` (dev or ?demo): tonight is a meteor shower's night. */
-  const forceShower = hookFlag('shower');
 
   /** NH heights relative to a villager (VILLAGER.h): K.K. stands about as tall, Daisy Mae is a child, Wisp a small
    *  ghost floating a little off the ground, Gulliver a tall seagull. */
@@ -98,13 +91,7 @@
   const CYRUS_TAG = '#4DDCD9';
 
   const clock = $derived(minuteNow());
-  const who = $derived.by<VisitorId | null>(() => {
-    if (want) return want;
-    const date = dayKey(clock);
-    const { hour, weekday } = jst(clock);
-    const prev = addDays(date, -1);
-    return visitorAt(date, prev, hour, weekday, seed, eventAt(date, hour, force), showerAt(date, prev, hour, seed, forceShower));
-  });
+  const who = $derived(visitorNow(clock));
   /** `?leave=<ms>` (dev or ?demo): the visit ends after that long (the departure's hook). */
   let gone = $state(false);
   $effect(() => {

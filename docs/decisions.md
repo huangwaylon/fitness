@@ -119,8 +119,8 @@ The service worker precaches the build (not audio, fonts or art beyond the defau
 3 s fallback and keeps one previous version for a stale page's chunks. Why: the app opens instantly and offline.
 
 ### Japanese first
-Japanese by default, English per person (`pref` `locale`); strings in `ja.json` / `en.json`, with けんこう's and the
-catch names in their own lazily loaded catalogs. Why: both live in Japan, and the first load stays small.
+Japanese by default, English per person (`pref` `locale`); strings in `ja.json` / `en.json` (English loaded when first
+asked for), with けんこう's and the catch names in their own lazily loaded catalogs. Why: both live in Japan, and the first load stays small.
 
 ### Always animated
 No reduced-motion variants anywhere. Why: the user's call, and one code path is simpler.

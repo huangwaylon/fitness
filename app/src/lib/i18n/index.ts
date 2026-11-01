@@ -1,12 +1,31 @@
 // Tiny homegrown i18n: two flat catalogs, `{param}` interpolation, ベル formatting (dates and times: format.ts).
+// Japanese is bundled; English is its own chunk, loaded the first time it's asked for.
 import ja from './ja.json';
-import en from './en.json';
-import { i18n, setLocale, type Locale } from './state.svelte.ts';
+import { applyLocale, i18n, type Locale } from './state.svelte.ts';
 
-export { i18n, setLocale, type Locale };
+export { i18n, type Locale };
 
 type Catalog = Record<string, string>;
-const catalogs: Record<Locale, Catalog> = { ja, en };
+const catalogs: Record<Locale, Catalog> = { ja, en: {} };
+
+let english: Promise<void> | null = null;
+/** Load the English catalog (once). Lazily loaded parts may have added their English strings already: they stay. */
+export const loadEnglish = (): Promise<void> =>
+  (english ??= import('./en.json').then(
+    (m) => void (catalogs.en = { ...m.default, ...catalogs.en }),
+    (e: unknown) => {
+      english = null;
+      throw e;
+    }
+  ));
+
+let wanted: Locale = 'ja';
+/** Switch the language: Japanese at once, English once its catalog is in (until then the strings stay Japanese). */
+export function setLocale(locale: Locale): void {
+  wanted = locale;
+  if (locale === 'ja') return applyLocale('ja');
+  void loadEnglish().then(() => wanted === 'en' && applyLocale('en'), () => {});
+}
 
 type Params = Record<string, string | number | null | undefined>;
 
