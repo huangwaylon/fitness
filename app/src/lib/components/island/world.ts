@@ -167,9 +167,11 @@ export interface Scenery {
 const s = (id: string, kind: SceneryKind, key: string, x: number, z: number, h: number, flip = false): Scenery => ({ id, kind, key, x, z, h, flip });
 export const SCENERY: readonly Scenery[] = [
   // まえ, kept clear (the health lawn, its trees, open lawn and the path; the sea wide in front): the island's
-  // two palms, at the front beach's outer edges by the water (clear of the lawn, the finds and the sea view),
-  // plumeria at the grass edge, an oak and a cedar behind the lawn
-  s('palm-1', 'palm', 'trees/palm', 26, 40, 116), s('palm-3', 'palm', 'trees/palm', 366, 46, 110, true),
+  // the island's only palms, by the front beach: a pair at its outer corners, small enough and far enough out to
+  // leave the lawn, the finds and the sea view open, and a young one by the water on the left; plumeria at the grass
+  // edge, an oak and a cedar behind the lawn
+  s('palm-1', 'palm', 'trees/palm', 2, 64, 96), s('palm-2', 'palm', 'trees/palm', 392, 70, 92, true),
+  s('palm-3', 'palm', 'trees/palm', 44, 2, 70, true),
   s('plumeria-w', 'bush', 'bushes/white-plumeria', 100, 122, 34), s('plumeria-p', 'bush', 'bushes/pink-plumeria', 292, 122, 34),
   s('oak-m1', 'oak', 'oak', 268, 516, 112), s('cedar-m1', 'cedar', 'trees/cedar', 20, 470, 140),
   // おく, uncluttered (open lawn between the pieces), NH's decor (scripts/fetch-assets.ts): streetlamps at the bridge's front corners, the month's bushes either side of

@@ -109,7 +109,8 @@ test('NH’s flower bugs: a ladybug and a mantis sit still on a flower’s head 
     await page.waitForTimeout(900);
     const p = await at(page, `[data-critter="${id}"]`);
     expect(await onFlowerHead(page, p), id).toBe(true);
-    expect(await clear(page, p)).toBe('');
+    // clear of every control (a wandering villager may pass in front of it for a moment)
+    await expect.poll(() => clear(page, p), { timeout: 8000 }).toBe('');
     await page.waitForTimeout(1500);
     const q = await at(page, `[data-critter="${id}"]`);
     expect(Math.hypot(q.x - p.x, q.y - p.y), 'it sits still (a 1u bob)').toBeLessThan(3);

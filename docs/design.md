@@ -278,15 +278,16 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   campsite's worn clearing, the meandering stream and pond (dark channel, light shallows, muddy banks, overhanging
   grass), the stream's mouth fanning into the shallows on the west beach, the stone bridge's deck (NH's own model seen
   from straight above, `bridges/stone-deck` and its snowy look from `scripts/models.ts`, drawn as a texture with its
-  soft shadow on the water), the cliff's strata, the stairs and every still thing's contact shadow. 8 chunks of 362.5u per look (2 px a unit), drawn by 40 bands bent onto the log (`WorldGround`); chunks 0–3
+  soft shadow on the water), the cliff's strata, the stairs and every still thing's contact shadow. 8 chunks of 270u per look (2 px a unit), drawn by 40 bands bent onto the log (`WorldGround`); chunks 0–3
   at once, 4–7 when the camera nears them or the browser is idle; only the day's look loads. **Six looks**, each
-  dressed by `scripts/terrain-seasons.ts` (painted over the ground, under the contact shadows): spring (clover, 491 KB),
-  **spring-petals** in the blossom days Apr 1–10 (cherry petals heaped under the blossoming oaks, along the paths' edges
-  and the plaza's curb, a thin scatter elsewhere; 571 KB), summer (lush: tall tufts, clover, deeper green; 516 KB),
-  autumn (dry patches in the warm grass; 446 KB), **autumn-leaves** in the fall foliage Oct 16 – Dec 10 (maple leaves
-  heaped under the oaks and blown along the paths; 543 KB), winter (snow in soft drifts lit from the upper left and
+  dressed by `scripts/terrain-seasons.ts` (painted over the ground, under the contact shadows): spring (clover, 286 KB),
+  **spring-petals** in the blossom days Apr 1–10 (cherry petals heaped under the blossoming oaks, along the paths' edges,
+  a thin scatter elsewhere; 333 KB), summer (lush: tall tufts, clover, deeper green; 302 KB),
+  autumn (dry patches in the warm grass; 260 KB), **autumn-leaves** in the fall foliage Oct 16 – Dec 10 (maple leaves
+  heaped under the oaks and blown along おく's paths; the front lawn tidier, small piles close under its trees and a
+  few strays; none on the sand; 291 KB), winter (snow in soft drifts lit from the upper left and
   blue in their lee, banks along the paths with their shade on the path, snow thinning out over the sand, the banks
-  snowy to the water's edge: NH's rivers never freeze; 405 KB). Time of day is never baked (the tint does it). Upright sprites stand at
+  snowy to the water's edge: NH's rivers never freeze; 233 KB). Time of day is never baked (the tint does it). Upright sprites stand at
   the near edges: the cliff's face (40u tall, world.ts FACE_H: three broken layers scored top to bottom by NH's rounded
   ribs and grooves, a thick scalloped grass lip with long drooping tufts, eight carved stone steps with lit rounded
   noses and moss in the joints, mossy boulders at its foot); the stone bridge's near end (`WorldWater`: NH's model
@@ -297,7 +298,8 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   mist), glints twinkling on the open sea, flow streaks down the river, the pond's lily pads and ripple (petals
   or maple leaves afloat in their weeks, and riding the river: NH's petal and leaf icons, one every ~50u from the falls'
   pool to the mouth, none under the bridge, each 36u downstream over 15 s, turning): CSS only, held still under a sheet and while hidden.
-- **Layout** (`world.ts`): まえ: the wide front beach, a palm at each of its outer edges by the water, plumeria at the
+- **Layout** (`world.ts`): まえ: the wide front beach with the island's only palms (three, out of the way: one at each of its outer corners and a
+  young one by the water on the left; the palm beetles keep to them), plumeria at the
   grass edge, the villagers' homes A (132, 214, ウェイ) and B (262, 214, うめ) on both phones (never mirrored per phone) with the goal trees on their outer sides (60 / 332,
   216), the tape deck between them, the rock, the dig spots, an oak and a cedar behind the lawn, the hedge at z 600 with
   streetlamps at the bridge's front corners. One dirt path runs up the middle from the beach to the campsite's
