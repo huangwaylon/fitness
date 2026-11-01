@@ -70,7 +70,7 @@
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from './sea.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
-  import { ROCK, SEA_BOX, SHORE_Z, flowerById } from './world.ts';
+  import { GOAL_TREES, ROCK, SEA_BOX, SHORE_Z, flowerById } from './world.ts';
   import { nearestWalkable, walkGeo } from './walkGraph.ts';
   import {
     BUGS, BUSHES, CAST_U, FISH, FRESH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS, bitePlan,
@@ -582,6 +582,14 @@
       const shown = heads.filter((h) => seen(h.x, h.z, h.lift, keep, 5, 5));
       if (shown.length || !pinned) heads = shown;
       if (id === 'orchid-mantis' && heads.some((h) => h.white)) heads = heads.filter((h) => h.white);
+      // away from the villagers: they idle and wander round where they stand, and one passing in front would take the
+      // tap meant for the bug; the half of the heads farthest from them
+      const vils = [...document.querySelectorAll('[data-actor]')].map((el) => el.getBoundingClientRect()).filter((r) => r.width);
+      const far = (h: { x: number; z: number; lift: number }) => {
+        const q = w.screenAt(h.x, h.z, h.lift);
+        return Math.min(Infinity, ...vils.map((r) => Math.hypot(q.sx - (r.left + r.width / 2 - w.view.left), q.sy - (r.top + r.height / 2 - w.view.top))));
+      };
+      if (vils.length && heads.length > 1) heads = [...heads].sort((a, b) => far(b) - far(a)).slice(0, Math.ceil(heads.length / 2));
       spot = heads.length ? pickOne(heads, rand) : null;
     } else {
       let list = area ? [area] : patches(place);
@@ -748,12 +756,14 @@
     putBug(id, 'rock', ROCK[0] + 8, ROCK[1] - 6);
   }
 
+  /** The goal trees' fruit lies here once met (its row is a button): a flea never lands under it. */
+  const FRUIT_GROUND: Patch[] = Object.values(GOAL_TREES).map(([x, z]) => ({ x0: x - 48, x1: x + 48, z0: z - 34, z1: z + 6, l0: 0, l1: 0 }));
   /** Where a bug put down by a person's doing comes from and keeps to: out of a bush, from under the rock, off a
    *  villager (`src`), from (x, z). */
   function putFrom(src: string, x: number, z: number): { from: P3; area: Patch; avoid?: Patch[] } {
     if (src === 'rock') return { from: { x, z, lift: 0 }, area: patches('rock')[0] };
     // off the villager it hopped from, never back under its button (its figure stands up the screen from its feet)
-    if (src === 'flea') return { from: { x, z, lift: 34 }, area: { x0: x - 90, x1: x + 90, z0: z - 50, z1: z + 16, l0: 0, l1: 0 }, avoid: [{ x0: x - 30, x1: x + 30, z0: z - 8, z1: z + 48, l0: 0, l1: 0 }] };
+    if (src === 'flea') return { from: { x, z, lift: 34 }, area: { x0: x - 90, x1: x + 90, z0: z - 50, z1: z + 16, l0: 0, l1: 0 }, avoid: [{ x0: x - 30, x1: x + 30, z0: z - 8, z1: z + 48, l0: 0, l1: 0 }, ...FRUIT_GROUND] };
     const b = BUSHES.find((s) => Math.abs(s.x - x) < 2 && Math.abs(s.z - z) < 2), h = b?.h ?? 40;
     return { from: { x, z, lift: h * 0.7 }, area: { x0: x - 30, x1: x + 30, z0: z - 14, z1: z + 14, l0: 20, l1: 50 } };
   }
