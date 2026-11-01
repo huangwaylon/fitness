@@ -520,9 +520,28 @@ export function setAsleep(id: ActorId, asleep: boolean) {
   }
 }
 
-/** Wake a dozing villager for 10 s (R14), then back to sleep. */
-export function wake(id: 'mine' | 'partner') {
+/** How long a woken villager stays up (ms). */
+export const WAKE_MS = 10_000;
+/** Whether it's sleeping time now (islandLife: the night's hours on the relay's clock, the same on both phones): a woken
+ *  villager goes back to sleep after WAKE_MS only then. */
+let sleepy: () => boolean = () => true;
+export function setSleepClock(fn: () => boolean): void {
+  sleepy = fn;
+}
+/** A villager was woken here (a tap, a high-five): the scene tells the other phone (villagerSync), whose own wake of it
+ *  is `remote`. */
+let woken: ((id: 'mine' | 'partner') => void) | null = null;
+export function onWake(fn: typeof woken): () => void {
+  woken = fn;
+  return () => {
+    if (woken === fn) woken = null;
+  };
+}
+
+/** Wake a dozing villager for WAKE_MS (R14; `ms`: what's left of a wake on the other phone), then back to sleep. */
+export function wake(id: 'mine' | 'partner', o: { remote?: boolean; ms?: number } = {}) {
   const a = actors[id];
+  if (!o.remote) woken?.(id);
   cancel(id);
   a.asleep = false;
   a.fx = a.fx.filter((f) => f.kind !== 'zzz');
@@ -532,7 +551,7 @@ export function wake(id: 'mine' | 'partner') {
   setEmote(id, 'shocked');
   addFx(id, 'sweat');
   cue('emote-surprise');
-  later(id, 10_000, () => setAsleep(id, true));
+  later(id, o.ms ?? WAKE_MS, () => setAsleep(id, sleepy()));
 }
 
 /** Reset everything (scene unmount). */

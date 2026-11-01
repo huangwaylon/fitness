@@ -463,7 +463,9 @@ picked up is gone on both, what a shake drops lies on both, each villager stands
   the same spot, at the same time, along the same way, facing the same way at its end), catching up when a message
   is late and walking off a small gap, so both phones have each villager at the same point (a two-tab check: within
   a step under way, the same point at the end). While the partner has the island open their villager follows only
-  their phone (`island/villagerSync.ts`, [backend](backend.md#shared-world)).
+  their phone (`island/villagerSync.ts`, [backend](backend.md#shared-world)). Asleep and awake too: both doze off at
+  22:00 and wake at 05:00 at the same moment; a villager woken on one phone is awake on both for the same 10 s, and
+  Gulliver woken by either of us is up on both for the day.
 - **One layout, not mirrored:** A (ウェイ) lives on the left and B (うめ) on the right on both phones, whichever of us
   holds it: the homes, the goal trees, the meeting spots are by person, never by "mine / the partner's", and every
   shared id is by person or by where the thing stands (a flower's `fl:<x>:<z>`); `?demo` and `?demo&as=B` show the

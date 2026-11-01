@@ -84,14 +84,44 @@ describe('the partner’s walk played here', () => {
 });
 
 describe('two phones linked through a relay', () => {
+  it('a wake here is told with its time; there it wakes the same villager for what is left, and both sleep again then', async () => {
+    const d = await load();
+    d.resetAll();
+    d.setSleepClock(() => true);
+    for (const id of ['mine', 'partner'] as const) d.setAsleep(id, true);
+    const told: unknown[] = [];
+    const link = d.linkVillagers({ share: (w) => void told.push(w), me: () => 'B', serverNow: () => 70_000, enabled: () => true });
+    d.wake('partner'); // a high-five here wakes A's villager (my partner): A's phone hears it
+    expect(told).toEqual([{ kind: 'act', act: 'wake', id: 'A', at: 70_000 }]);
+    link.detach();
+    // A's phone (me A): its own villager wakes for the 10 s less the 3 s the message took, then sleeps
+    d.setAsleep('mine', true);
+    expect(d.playWake({ id: 'A', at: 70_000 }, 'A', 73_000)).toBe(true);
+    expect(d.actors.mine.asleep).toBe(false);
+    await vi.advanceTimersByTimeAsync(6900);
+    expect(d.actors.mine.asleep).toBe(false);
+    await vi.advanceTimersByTimeAsync(200);
+    expect(d.actors.mine.asleep).toBe(true);
+    // too late (over already) or awake: nothing
+    expect(d.playWake({ id: 'A', at: 0 }, 'A', 73_000)).toBe(false);
+    // past the night's end: a woken villager stays up
+    d.setSleepClock(() => false);
+    d.setAsleep('partner', true);
+    d.playWake({ id: 'B', at: 80_000 }, 'A', 80_000);
+    await vi.advanceTimersByTimeAsync(10_100);
+    expect(d.actors.partner.asleep).toBe(false);
+    d.setSleepClock(() => true);
+  });
+
   it('every move of mine is told (a burst as one), and the other phone ends with my villager where mine is', async () => {
     const d = await load();
     d.resetAll();
     d.setHome('mine', 132, 214);
     d.setHome('partner', 262, 214);
     const told: Walk[] = [];
+    const woke: unknown[] = [];
     let clock = 50_000;
-    const link = d.linkVillagers({ share: (w) => void told.push(w), serverNow: () => clock, enabled: () => true });
+    const link = d.linkVillagers({ share: (w) => void (w.kind === 'walk' ? told.push(w) : woke.push(w)), me: () => 'A', serverNow: () => clock, enabled: () => true });
     d.walkTo('mine', [[132, 400], [200, 500]], { ms: 1500, face: 'l' });
     await Promise.resolve();
     expect(told).toEqual([{ kind: 'walk', to: [200, 500], from: [132, 214], via: [[132, 400]], s: 50_000, ms: 1500, f: 'l' }]);

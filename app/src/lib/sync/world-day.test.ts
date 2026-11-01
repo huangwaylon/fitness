@@ -189,4 +189,16 @@ describe('the shared day: two phones on the relay', () => {
     expect(apply(d, { kind: 'walk', to: [1, 2], who: 'A', t: T0 }, 'B').fresh).toBe(true);
     expect(apply(d, { kind: 'walk', to: [3, 4], who: 'A', t: T0 - 5 }, 'B').fresh).toBe(false); // an older one
   });
+
+  it('a sleeping visitor woken by either of us is up on both phones, once (by whoever woke him first)', () => {
+    const { A, B, tick } = island();
+    A.open();
+    B.open();
+    expect(A.act({ kind: 'world', op: 'woke', id: 'gulliver' })).toBe(true);
+    tick();
+    B.drain();
+    expect(B.act({ kind: 'world', op: 'woke', id: 'gulliver' })).toBe(false);
+    expect(A.day.woke).toEqual({ gulliver: 'A' });
+    expect(B.day.woke).toEqual({ gulliver: 'A' });
+  });
 });

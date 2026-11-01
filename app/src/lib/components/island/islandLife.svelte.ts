@@ -7,14 +7,14 @@ import { onMount, untrack } from 'svelte';
 import type { PersonId, RingFruit, WeekView } from '#lib/types.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { dayScore, todayPct } from './progress.ts';
-import { actors, react, resetAll, setAsleep, wake } from '../motion/director.svelte.ts';
+import { actors, react, resetAll, setAsleep, setSleepClock, wake } from '../motion/director.svelte.ts';
 import { startIdleLife } from '../motion/idleLife.svelte.ts';
 import { ambientPois, ambientVillager, goalWalk, meetUp, outing, presence, steered, wander } from './avatar.ts';
 import { goalMoves } from './wander.ts';
 import { partnerHere, relayOffset } from './ambientClock.ts';
 import type { VillagerState } from './ambient.ts';
 import { on } from '../motion/bus.svelte.ts';
-import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
+import { dayKey, jst, now } from '#lib/time/clock.ts';
 import type { ReactionId } from '../motion/reactions.ts';
 import { SCENE } from '#lib/sync/storage.ts';
 
@@ -38,6 +38,7 @@ const balloonMs = (first = false, r = Math.random): number => (first ? 20_000 + 
 /** Four ripeness stages of a fruit's day (a stage-up is R7): < 25% · < 60% · < 100% · the goal. */
 const stage = (pct: number): number => (pct >= 100 ? 3 : pct >= 60 ? 2 : pct >= 25 ? 1 : 0);
 const asleepHour = (d: Date) => jst(d).hour >= 22 || jst(d).hour < 5;
+const HOUR_MS = 3600_000;
 
 /** True the first time `key` is seen today on this device. */
 const once = (key: string): boolean => firstOn(SCENE.beat(key), dayKey());
@@ -70,13 +71,28 @@ export class IslandLife {
       });
     });
 
-    // Naps 22:00–5:00, checked at each new minute (a tap wakes a villager for a moment; director.svelte.ts).
+    // Naps 22:00–5:00 on the relay's clock (the same moment on both phones; a tap wakes a villager for a moment, on
+    // both: director.svelte.ts wake, villagerSync): put to sleep or woken at the hour it turns, not at every minute
+    // (that put a woken villager back to sleep early).
+    const sleepyNow = () => asleepHour(new Date(now().getTime() + relayOffset()));
+    setSleepClock(sleepyNow);
     $effect(() => {
-      const s = asleepHour(minuteNow());
-      untrack(() => {
-        setAsleep('mine', s);
-        setAsleep('partner', s);
-      });
+      let was: boolean | null = null;
+      let timer: ReturnType<typeof setTimeout>;
+      const tick = () => {
+        const s = sleepyNow();
+        if (s !== was) {
+          was = s;
+          untrack(() => {
+            setAsleep('mine', s);
+            setAsleep('partner', s);
+          });
+        }
+        const t = now().getTime() + relayOffset();
+        timer = setTimeout(tick, HOUR_MS - (((t % HOUR_MS) + HOUR_MS) % HOUR_MS) + 30);
+      };
+      tick();
+      return () => clearTimeout(timer);
     });
 
     // Balloon present (NH): one floats by in the daytime every 2–3 minutes of on-screen time, the first after 30–60 s.

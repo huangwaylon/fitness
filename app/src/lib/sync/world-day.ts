@@ -54,11 +54,13 @@ export interface WorldDay {
   wishes: Record<string, Partial<Record<Who, number>>>;
   /** The wishes folded (`who:t`), so a replay counts none twice. */
   wished: string[];
+  /** Sleeping visitors woken today (`gulliver`), by whom: awake on both phones for the day. */
+  woke: Record<string, Who>;
   /** Each person's last walk: where their villager is going (or stands), the very walk when it came with it. */
   walks: Partial<Record<Who, { to: Target; t: number } & Partial<Omit<Walk, 'kind' | 'to' | 'at'>>>>;
 }
 
-export const emptyDay = (day: number): WorldDay => ({ day, claims: {}, puts: {}, shakes: [], watered: {}, wishes: {}, wished: [], walks: {} });
+export const emptyDay = (day: number): WorldDay => ({ day, claims: {}, puts: {}, shakes: [], watered: {}, wishes: {}, wished: [], walks: {}, woke: {} });
 
 /** What folding one event did: `fresh` it changed the day (not a repeat); `beat` an earlier claim of the same thing
  *  by the other person that this one overrides (the relay heard theirs first: I lost the race), or null. */
@@ -114,6 +116,11 @@ export function apply(d: WorldDay, e: DayEvent, me: Who | null, row = false): Ap
       if (e.op === 'watered') {
         if (d.watered[e.id]) return SAME;
         d.watered[e.id] = e.who;
+        return { fresh: true, beat: null };
+      }
+      if (e.op === 'woke') {
+        if (d.woke[e.id]) return SAME;
+        d.woke[e.id] = e.who;
         return { fresh: true, beat: null };
       }
       if (e.op === 'wished') {

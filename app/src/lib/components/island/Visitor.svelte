@@ -61,6 +61,7 @@
   import { SCENE } from '#lib/sync/storage.ts';
   import { critterArt, type FishId } from './critters.ts';
   import { daysUntil } from './wedding.ts';
+  import { world as shared } from '#lib/store/world.svelte.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -131,8 +132,14 @@
   });
 
   /** Gulliver asleep (NH: face down on the beach until he's been nudged five times); the day he was woken (this
-   *  session's), so a scene remount keeps him up. */
-  let woke = $state(wokeOn === localDateAt(now().getTime()));
+   *  session's), so a scene remount keeps him up; woken by either of us, he's up on both phones (the shared day's
+   *  `woke`, docs/backend.md#shared-world). */
+  let woke = $state(wokeOn === localDateAt(now().getTime()) || !!shared.day.woke.gulliver);
+  $effect(() =>
+    shared.on(({ e, live: now }) => {
+      if (e.kind === 'world' && e.op === 'woke' && e.id === 'gulliver' && !woke) upGulliver(now && shown === 'gulliver');
+    })
+  );
   let nudges = 0;
   const sleeping = $derived(shown === 'gulliver' && !woke);
 
@@ -686,6 +693,19 @@
     const r = mumbleEl.getBoundingClientRect(), w = mumbleEl.offsetWidth, x0 = r.left + (r.width - w) / 2 - untrack(() => mumbleShift);
     mumbleShift = Math.max(EDGE - x0, Math.min(0, innerWidth - EDGE - (x0 + w)));
   });
+  /** Gulliver is up (`show`: with the jump, the sweat and a look about: woken here, or just now on the other phone). */
+  function upGulliver(show: boolean) {
+    woke = true;
+    wokeOn = localDateAt(now().getTime());
+    st.fx = st.fx.filter((f) => f.kind !== 'zzz');
+    if (!show) return;
+    cue('emote-surprise');
+    setMotion('visitor', 'surprise');
+    setEmote('visitor', 'surprise');
+    addFx('visitor', 'sweat');
+    // up on his feet (the pose eases upright), a look about (then, woken here, his introduction)
+    later('visitor', 700, () => faceToward('visitor', actors.mine.x));
+  }
   function nudgeGulliver() {
     const r = nudge(nudges);
     nudges = r.taps;
@@ -699,16 +719,9 @@
       return;
     }
     mumble = null;
-    woke = true;
-    wokeOn = localDateAt(now().getTime());
-    st.fx = st.fx.filter((f) => f.kind !== 'zzz');
-    cue('emote-surprise');
-    setMotion('visitor', 'surprise');
-    setEmote('visitor', 'surprise');
-    addFx('visitor', 'sweat');
+    shared.share({ kind: 'world', op: 'woke', id: 'gulliver' });
+    upGulliver(true);
     speakingUntil = Date.now() + 20_000;
-    // up on his feet (the pose eases upright), a look about, then his introduction
-    later('visitor', 700, () => faceToward('visitor', actors.mine.x));
     talkTimer = setTimeout(() => {
       talkTimer = undefined;
       void talk('gulliver');
