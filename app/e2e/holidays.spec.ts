@@ -2,6 +2,7 @@
 // (events.ts): Franklin on Turkey Day (he asks for a fish; the next catch makes him happy), Jingle on Toy Day, Pavé at
 // Festivale, Zipper on Bunny Day's first and last days; Bunny Day's eggs in a dig spot. No ベル.
 import { expect, test, type Page } from '@playwright/test';
+import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -47,7 +48,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
   });
 
 test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and he stays happy after a reload', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-26T10:00&critter=fish');
+  await page.goto('?demo&date=2026-11-26T10:00&critter=sea-bass');
   await expect(ribbon(page)).toBeVisible();
   const bells = await ribbon(page).getAttribute('aria-label');
   await tapOn(page, '[data-visitor="franklin"] .art');
@@ -64,7 +65,7 @@ test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and 
   await page.waitForTimeout(300);
   const b = await at(page, '[data-bobber]');
   await page.mouse.click(b.x < 195 ? 366 : 24, b.y);
-  await expect(page.locator('[data-fx="catch"]')).toContainText(/釣り上げた|釣れた/);
+  await expect(page.locator('[data-fx="catch"]')).toContainText(CATCH_LINES['sea-bass'][0].split('\n')[0]);
   await expect(page.locator('[data-treat]')).toBeAttached({ timeout: 6000 });
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('ありがとう', { timeout: 6000 });
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('scene-franklin') ?? '{}'))).toMatchObject({ date: '2026-11-26', asked: true, fed: true });
