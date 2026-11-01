@@ -245,3 +245,57 @@ const w4 = await b3.next((m) => m.kind === 'walk');
 check(w4.v === 2 && (w4.to as number[])[1] === 860 && w4.who === 'A', 'v2 → v2: a world walk arrives');
 a4.ws.close(1000);
 b3.ws.close(1000);
+
+// The shared world (docs/backend.md#shared-world): a claim's first comes through, a second of the same id goes nowhere;
+// the day's world reaches a phone that opens later; one nest per tree per hour. Ids unique per run (the test room keeps
+// its day).
+const run = Date.now().toString(36);
+const sa = new Client();
+sa.v = 2;
+await sa.open();
+sa.send({ kind: 'hello', key: KEY_A });
+await sa.next((m) => m.kind === 'welcome');
+const sb = new Client();
+sb.v = 2;
+await sb.open();
+sb.send({ kind: 'hello', key: KEY_B });
+await sb.next((m) => m.kind === 'welcome');
+await pause(300); // B's last socket may still be closing: no presence to wait for
+const claims: number[] = [];
+for (let i = 0; i < Math.min(N, 10); i++) {
+  const id = `smk${run}${i}`;
+  const p0 = performance.now();
+  sa.send({ kind: 'catch', what: 'sea-bass', id, at: [120, -40], how: 'rod' });
+  const got = await sb.next((m) => m.kind === 'catch' && m.id === id);
+  claims.push(performance.now() - p0);
+  // B taps the same fish a moment later: the relay already gave it to A
+  sb.send({ kind: 'catch', what: 'sea-bass', id, at: [120, -40], how: 'rod' });
+  if (i === 0) check(got.who === 'A' && got.how === 'rod', 'a catch reaches the partner with where and how');
+  await pause(120);
+}
+console.log(`     catch A → B: ${stats(claims)}`);
+check(!sa.inbox.some((m) => m.kind === 'catch'), "B's claims of what A caught first never reach A (first wins)");
+const tree = `smk-${run}`;
+sa.send({ kind: 'shake', tree, drop: 'nest' });
+await sb.next((m) => m.kind === 'shake' && m.tree === tree);
+sb.send({ kind: 'shake', tree, drop: 'nest' });
+sb.send({ kind: 'shake', tree, drop: 'branch' });
+const sh = await sa.next((m) => m.kind === 'shake' && m.tree === tree);
+check(sh.drop === 'branch', 'a second nest from the same tree within the hour is refused, a branch comes through');
+sa.send({ kind: 'pick', id: `p${run}`, what: 'shell:conch', at: [150, 40] });
+sa.send({ kind: 'walk', to: [195, 900] });
+await sb.next((m) => m.kind === 'walk' && m.who === 'A');
+const sinceDay = Date.now() - 60_000;
+sb.ws.close(1000);
+await sa.next((m) => m.kind === 'presence' && m.on === false);
+const sb2 = new Client();
+sb2.v = 2;
+await sb2.open();
+const tl = performance.now();
+sb2.send({ kind: 'hello', key: KEY_B, since: sinceDay });
+await sb2.next((m) => m.kind === 'welcome');
+const late = await sb2.next((m) => m.kind === 'pick' && m.id === `p${run}`);
+const lastWalk = await sb2.next((m) => m.kind === 'walk' && m.who === 'A');
+check(late.who === 'A' && (lastWalk.to as number[])[1] === 900, `a phone opening later hears the day's world (${(performance.now() - tl).toFixed(0)} ms)`);
+sa.ws.close(1000);
+sb2.ws.close(1000);

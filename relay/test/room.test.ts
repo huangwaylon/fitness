@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CLOSE, type ServerMsg } from '../../app/src/lib/sync/live-protocol.ts';
-import { HELLO_MS, MAX_SOCKETS, RING_AGE_MS, RING_MAX, RoomCore, type Meta, type RoomIO } from '../src/room.ts';
+import { HELLO_MS, MAX_SOCKETS, RING_MAX, RoomCore, type Meta, type RoomIO } from '../src/room.ts';
 
 const KEY_A = 'a1'.repeat(16);
 const KEY_B = 'b2'.repeat(16);
@@ -136,7 +136,7 @@ describe('the island room', () => {
     const t1 = (b.sent.at(-1) as { t: number }).t;
     say(a, { kind: 'world', op: 'dug', id: 'd2' }); // same ms: still a later t
     say(b, { kind: 'world', op: 'fruit-collected', id: 'f1' });
-    say(a, { kind: 'walk', to: 'shoreC' }); // not a world event: not kept
+    say(a, { kind: 'walk', to: 'shoreC' }); // a v1 walk (stage units): not kept
     b.close();
     room.close(b);
     const b2 = join(KEY_B, t1);
@@ -147,9 +147,9 @@ describe('the island room', () => {
     expect(b3.kinds()).toEqual(['welcome']);
   });
 
-  it('keeps the last 50 world events, none older than 6 h, across a restart', () => {
+  it('keeps today’s last 400 world events (Tokyo’s day), across a restart', () => {
     const a = join(KEY_A);
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < RING_MAX + 10; i++) {
       now += 100;
       say(a, { kind: 'world', op: 'weed-pulled', id: `w${i}` });
     }
@@ -158,10 +158,10 @@ describe('the island room', () => {
     expect(ring[0].id).toBe('w10');
     // a hibernation wake rebuilds the room from storage
     room = new RoomCore(io(), saved.at(-1) as never);
-    now = ring[0].t + RING_AGE_MS;
     const b = join(KEY_B, 0);
-    expect(b.sent.filter((m) => m.kind === 'world')).toHaveLength(50);
-    now = ring.at(-1)!.t + RING_AGE_MS + 1;
+    expect(b.sent.filter((m) => m.kind === 'world')).toHaveLength(RING_MAX);
+    // Tokyo midnight: a new day's world starts empty (1970-01-01 15:00 UTC)
+    now = 15 * 3600_000;
     const b2 = join(KEY_B, 0);
     expect(b2.sent.filter((m) => m.kind === 'world')).toHaveLength(0);
   });
@@ -305,5 +305,128 @@ describe('two protocol versions (v2: the rolling-log world)', () => {
     say2(a, { kind: 'walk', to: [1.5, 2] });
     expect(b.sent.map((m) => (m as { to: unknown }).to)).toEqual([[-230, 2500], 'bridgeStoneN']);
     expect(a.closed).toBeNull();
+  });
+});
+
+describe('the shared world (v2, docs/backend.md#shared-world)', () => {
+  const join2 = (key: string, since?: number) => {
+    const s = new FakeSock();
+    socks.push(s);
+    room.open(s);
+    room.message(s, JSON.stringify({ v: 2, kind: 'hello', key, ...(since !== undefined ? { since } : {}) }));
+    return s;
+  };
+  const say2 = (s: FakeSock, m: object) => room.message(s, JSON.stringify({ v: 2, ...m }));
+  const bye = (s: FakeSock) => {
+    s.close();
+    room.close(s);
+  };
+  // 2026-11-01 12:00 Tokyo
+  beforeEach(() => {
+    now = Date.UTC(2026, 10, 1, 3);
+    room = new RoomCore(io());
+  });
+
+  it('the first claim of a critter or a thing wins; a later one of the same id goes nowhere and isn’t kept', () => {
+    const a = join2(KEY_A);
+    const b = join2(KEY_B);
+    a.sent = [];
+    b.sent = [];
+    say2(a, { kind: 'catch', what: 'sea-bass', id: 'fish:4321', at: [120, -40], how: 'rod' });
+    say2(b, { kind: 'catch', what: 'sea-bass', id: 'fish:4321', at: [120, -40], how: 'rod' }); // lost the race
+    expect(b.sent).toEqual([{ v: 2, kind: 'catch', what: 'sea-bass', id: 'fish:4321', at: [120, -40], how: 'rod', who: 'A', t: now }]);
+    expect(a.sent).toEqual([]);
+    say2(b, { kind: 'pick', id: 's4560', what: 'shell:conch', at: [150, 40] });
+    say2(a, { kind: 'pick', id: 's4560', what: 'shell:conch', at: [150, 40] });
+    expect(a.sent.map((m) => m.kind)).toEqual(['pick']);
+    expect(b.sent).toHaveLength(1);
+    // a put and a pick of the same id are different claims (a present lands, then it's opened)
+    say2(a, { kind: 'put', id: 'p1', what: 'present', at: [200, 300] });
+    say2(b, { kind: 'pick', id: 'p1', what: 'present:item:froggy-chair', at: [200, 300] });
+    expect(b.sent.at(-1)).toMatchObject({ kind: 'put', id: 'p1' });
+    expect(a.sent.at(-1)).toMatchObject({ kind: 'pick', id: 'p1' });
+    expect((saved.at(-1) as unknown[]).length).toBe(4);
+  });
+
+  it('keeps the world while the partner is away, and replays it (theirs, not my own) to a phone that opens later', () => {
+    const a = join2(KEY_A);
+    say2(a, { kind: 'catch', what: 'tarantula', id: 'bug:77', at: [60, 300], how: 'net' });
+    say2(a, { kind: 'shake', tree: 'oak-p1', drop: 'branch' });
+    say2(a, { kind: 'walk', to: [100, 500] });
+    say2(a, { kind: 'walk', to: [195, 900] }); // replaces the last
+    say2(a, { kind: 'emote', emote: 'glee' }); // not the world's
+    say2(a, { kind: 'catch', what: 'koi' }); // no id: nothing to claim, not kept
+    const b = join2(KEY_B, 0);
+    expect(b.sent.map((m) => m.kind)).toEqual(['welcome', 'catch', 'shake', 'walk']);
+    expect(b.sent.at(-1)).toMatchObject({ kind: 'walk', to: [195, 900], who: 'A' });
+    const a2 = join2(KEY_A, 0); // my own phone again: nothing of mine
+    expect(a2.kinds()).toEqual(['welcome']);
+    bye(b);
+    const tb = (b.sent.at(-1) as { t: number }).t;
+    say2(a2, { kind: 'pick', id: 'w3', what: 'weed' });
+    const b2 = join2(KEY_B, tb); // since: only what came after
+    expect(b2.kinds()).toEqual(['welcome', 'pick']);
+  });
+
+  it('at most one nest per tree per hour', () => {
+    const a = join2(KEY_A);
+    const b = join2(KEY_B);
+    say2(a, { kind: 'shake', tree: 'oak-k1', drop: 'nest' });
+    now += 30 * 60_000;
+    say2(b, { kind: 'shake', tree: 'oak-k1', drop: 'nest' }); // half an hour on: refused
+    say2(b, { kind: 'shake', tree: 'cedar-k1', drop: 'nest' }); // another tree: fine
+    now += 30 * 60_000;
+    say2(b, { kind: 'shake', tree: 'oak-k1', drop: 'nest' }); // the hour is up
+    expect(a.sent.filter((m) => m.kind === 'shake').map((m) => (m as { tree: string }).tree)).toEqual(['cedar-k1', 'oak-k1']);
+    // the rule survives a restart
+    room = new RoomCore(io(), saved.at(-1) as never);
+    const a2 = join2(KEY_A);
+    const b2 = join2(KEY_B);
+    a2.sent = [];
+    now += 10 * 60_000;
+    say2(b2, { kind: 'shake', tree: 'oak-k1', drop: 'nest' });
+    say2(b2, { kind: 'shake', tree: 'oak-k1', drop: 'branch' });
+    expect(a2.sent.map((m) => (m as { drop: string }).drop)).toEqual(['branch']);
+  });
+
+  it('a new Tokyo day forgets yesterday’s claims and walks', () => {
+    const a = join2(KEY_A);
+    const b = join2(KEY_B);
+    say2(a, { kind: 'pick', id: 'f1', what: 'fossil:amber' });
+    say2(a, { kind: 'walk', to: [100, 500] });
+    now = Date.UTC(2026, 10, 1, 15); // 2026-11-02 00:00 Tokyo
+    b.sent = [];
+    say2(a, { kind: 'pick', id: 'f1', what: 'fossil:ammonite' }); // today's f1 is another dig spot
+    expect(b.sent.map((m) => m.kind)).toEqual(['pick']);
+    const b2 = join2(KEY_B, 0);
+    expect(b2.kinds()).toEqual(['welcome', 'pick']);
+  });
+
+  it('the shared world’s kinds are v2 only, and a v1 phone never gets a v2 walk replayed', () => {
+    const a = join(KEY_A);
+    say(a, { kind: 'pick', id: 'w1', what: 'weed' });
+    say(a, { kind: 'catch', what: 'koi', id: 'x', how: 'rod' });
+    expect(saved).toHaveLength(0);
+    bye(a);
+    const a2 = join2(KEY_A);
+    say2(a2, { kind: 'walk', to: [100, 500] });
+    say2(a2, { kind: 'pick', id: 'w1', what: 'weed' });
+    const b1 = join(KEY_B, 0);
+    expect(b1.kinds()).toEqual(['welcome', 'pick']);
+  });
+
+  it('keeps each shared intent within the size budget (≤ 100 bytes sent, ≤ 140 relayed)', () => {
+    const t = Date.UTC(2026, 10, 1, 3);
+    for (const m of [
+      { kind: 'catch', what: 'giant-trevally', id: 'fish:4294967295', at: [-230, 2500], how: 'flee' },
+      { kind: 'pick', id: 's86399999', what: 'fossil:left-quetzal-wing', at: [-230, 2500] },
+      { kind: 'put', id: 'bug:fh:86399999', what: 'bug:emperor-butterfly', at: [-230, 2500] },
+      { kind: 'shake', tree: 'cedar-t4', drop: 'bagworm' },
+      { kind: 'act', act: 'cast', id: 'fish:4294967295', pt: [-230, 2500] }
+    ]) {
+      const out = JSON.stringify({ v: 2, ...m });
+      expect(out.length, out).toBeLessThanOrEqual(100);
+      expect(JSON.stringify({ v: 2, ...m, who: 'A', t }).length).toBeLessThanOrEqual(140);
+    }
   });
 });
