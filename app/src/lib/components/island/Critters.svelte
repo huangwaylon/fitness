@@ -60,7 +60,7 @@
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from './sea.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
-  import { ROCK, SEA_BOX, surfaceAt } from './world.ts';
+  import { ROCK, SEA_BOX, SHORE_Z, surfaceAt } from './world.ts';
   import { nearestWalkable, walkGeo } from './walkGraph.ts';
   import {
     BUGS, BUSHES, CAST_U, FISH, FLOWER_CELLS, FRESH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS, bitePlan,
@@ -335,7 +335,7 @@
    *  sea; the pond's back bank (walkGraph's pondside: in front, my villager would hide the little pond); the river's
    *  bank, the far one where the channel runs across (the line in view), else the island's side. */
   function anglerSpot(water: Water, x: number, z: number): readonly [number, number] {
-    if (water === 'sea') return [Math.round(clamp(x, SEA_BOX.x0 + 20, SEA_BOX.x1)), 18];
+    if (water === 'sea') return [Math.round(clamp(x, SEA_BOX.x0 + 20, SEA_BOX.x1)), SHORE_Z + 18];
     const g = walkGeo();
     if (water === 'pond') return g.nodes.pondside;
     const r = riverNear(x, z), [ax, az] = RIVER[r.i], [bx, bz] = RIVER[r.i + 1];
@@ -743,7 +743,7 @@
     const m = await loadSea().catch(() => null);
     if (!m || fishes.sea || bubbles || diving) return;
     const ok = (x: number, z: number) => inWater('sea', x, z) && seen(x, z, 0, guards(8), 16, 6);
-    const p = freeSwim(SEA_SWIM, ok) ?? (pinned ? { x: SEA_SWIM.cx, z: -24 } : null);
+    const p = freeSwim(SEA_SWIM, ok) ?? (pinned ? { x: SEA_SWIM.cx, z: SHORE_Z - 24 } : null);
     if (!p) return;
     const { month, hour } = jst(now());
     const item = (want as DiveItem | undefined) ?? m.pickDive(month, hour, r);

@@ -5,7 +5,7 @@ import {
   FRESH, SEA_SWIM, bugPlace, freshAreas, patches, perches, swimAt, type BugId, type FishId
 } from './critters.ts';
 import { mulberry32 } from '#lib/random.ts';
-import { POND, SCENERY, SEA_BOX, freshWhere, inOval, inRiver, riverNear, surfaceAt } from './world.ts';
+import { CLIFF, POND, SCENERY, SEA_BOX, SPRING, freshWhere, inOval, inRiver, riverNear, surfaceAt } from './world.ts';
 import jaMain from '#lib/i18n/ja.json';
 import enMain from '#lib/i18n/en.json';
 import jaNames from '#lib/i18n/catch.ja.json';
@@ -309,8 +309,8 @@ describe('the waters (world units): the sea, the pond, the river, its mouth, the
     expect(waterAt(372, 1000, false)).toBe('river');
     expect(waterAt(195, 640, false)).toBe('river');
     expect(waterAt(-30, 624, false)).toBe('mouth');
-    expect(waterAt(372, 1950, false)).toBe('clifftop');
-    expect(waterAt(372, 2010, false)).toBe('clifftop'); // the spring
+    expect(waterAt(372, CLIFF.z1 + 100, false)).toBe('clifftop');
+    expect(waterAt(SPRING.x, SPRING.z, false)).toBe('clifftop'); // the spring
     expect(waterAt(195, -60, true)).toBe('sea');
     expect(waterAt(195, 400, false)).toBeNull();
   });

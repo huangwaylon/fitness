@@ -55,7 +55,9 @@
       // flat on the lawn: clear of the controls themselves (their 6px tap padding may run over a tuft)
       const keep = guardsU(g, -5 * g.k, (el) => !!el.closest('[data-actor]') || !shownNow(el));
       shown = list.filter((d) => {
-        if (!w.inView(d.x, d.y)) return true;
+        // anywhere it's drawn on screen, the horizon's sinking edge too (under the HUD on a short phone)
+        const p = w.screenAt(d.x, d.y);
+        if (!p.visible || p.sx < 0 || p.sx > w.view.vw || p.sy < 0 || p.sy > w.view.vh) return true;
         const k = w.scaleAt(d.x, d.y), [sx, sy] = w.screenU(d.x, d.y, 5);
         return clearAt(keep, sx, sy, 6 * k, 5 * k);
       });

@@ -21,7 +21,7 @@ const P3 = SCENERY.slice(SCENERY.findIndex((s) => s.id === 'lamp-b1'));
 
 describe('scenery placement', () => {
   it.each(P3.map((s) => [s.id, s] as const))('%s stands clear', (_, s) => {
-    expect(onLand(s.x, s.z) && onGrass(s.x, s.z)).toBe(true);
+    expect(onLand(s.x, s.z) && (s.kind === 'palm' || onGrass(s.x, s.z))).toBe(true); // palms grow on the sand
     const r = riverNear(s.x, s.z);
     expect(r.d - r.hw).toBeGreaterThan(10);
     for (const o of [POND, SPRING]) expect(inOval(o, s.x, s.z, 14)).toBe(false);

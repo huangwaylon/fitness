@@ -53,7 +53,7 @@ async function toAnswers(page: Page) {
 test('Oct 31 by day: pumpkins on the lawn and around the plaza, clear of every control; no Jack, no lanterns', async ({ page }) => {
   await page.goto('?demo&date=2026-10-31T16:59&critter=none');
   await expect(ribbon(page)).toBeVisible();
-  await camera(page, 150);
+  await camera(page, 114);
   await expect(page.locator('[data-halloween="day"] .pumpkin .art:visible').first()).toBeVisible();
   expect(await page.locator('.pumpkin').count()).toBeGreaterThanOrEqual(3);
   expect(await under(page, '.pumpkin .art')).toEqual([]);
@@ -116,7 +116,7 @@ test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ p
   await expect(page.locator('[data-tricked]')).toHaveCount(1);
   await expect(page.locator('[data-fx="talk"].placed .sr')).toContainText('イタズラ');
   // my villager (at home, まえ) wears it
-  await camera(page, 150);
+  await camera(page, 114);
   await page.waitForTimeout(600);
   await page.screenshot({ path: '/tmp/halloween/jack-trick-390.png' });
   // only my villager's face, on the left

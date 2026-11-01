@@ -58,7 +58,7 @@ test('behind a building it is hidden, in front of it it covers it', async ({ pag
 test('the camera is the scroller: three stops, the sprites follow it, nothing runs once it stops', async ({ page }) => {
   await page.goto('?demo&season=summer');
   await world(page);
-  expect(await call(page, (w) => w.cam())).toBe(150); // まえ: the bottom of the scroller
+  expect(await call(page, (w) => w.cam())).toBe(114); // まえ: the bottom of the scroller
   expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight)).toBe(true);
   /** The transforms of the scenery shown now, by id. */
   const shown = () => page.locator('[data-scenery-id]').evaluateAll((els) =>
@@ -74,7 +74,7 @@ test('the camera is the scroller: three stops, the sprites follow it, nothing ru
   // once still, no frame is pending (polled: on a slow runner the snap's smooth scroll, or an ambient beat that sets a
   // villager walking, can still be under way)
   await expect.poll(() => call(page, (w) => w.idle()), { timeout: 10_000 }).toBe(true);
-  for (const z of [860, 1380, 150]) {
+  for (const z of [860, 1440, 114]) {
     await call(page, (w, [z]) => w.go(z), [z]);
     await page.waitForTimeout(300);
     expect(Math.round(await call(page, (w) => w.cam()))).toBe(z);

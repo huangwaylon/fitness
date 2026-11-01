@@ -88,7 +88,7 @@ test('a tap on the pond walks to its bank, facing the water; the walk stays for 
 
 test('the camera follows a run up the island (snapping off), gives it back after, and a touch takes it back at once', async ({ page }) => {
   await open(page);
-  expect(await call(page, (w) => w.cam())).toBe(150);
+  expect(await call(page, (w) => w.cam())).toBe(114);
   // far up the plaza: a far tap (θ > 35°), the camera eases there with the walker
   const [x, y] = await call(page, (w) => w.at(195, 800));
   await page.mouse.click(x, y);

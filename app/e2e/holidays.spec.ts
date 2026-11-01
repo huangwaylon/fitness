@@ -70,7 +70,7 @@ test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and 
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('サンクスギビング', { timeout: 4000 });
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('さかなが 1ぴき');
   await readAll(page);
-  await camera(page, 150);
+  await camera(page, 114);
   // fish one: cast beside the shadow, reel in on the bite
   const fish = page.locator('[data-critter="fish"]');
   await expect(fish).toBeAttached();
@@ -100,7 +100,7 @@ test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and 
 test('Toy Day: two presents beside the goal trees (まえ)', async ({ page }) => {
   await page.goto('?demo&date=2026-12-24T12:00&critter=none');
   await expect(ribbon(page)).toBeVisible();
-  await camera(page, 150);
+  await camera(page, 114);
   await expect(page.locator('[data-toy]')).toHaveCount(2);
   await expect(page.locator('[data-toy] .art').first()).toBeVisible();
   expect(await under(page, '[data-toy] .art')).toEqual([]);

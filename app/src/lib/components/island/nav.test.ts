@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PAD, buildingAt, reachable, clear, doorOf, findPath, footprint, nav, nearestWalkable, pathLength, snapTap, walkable, waterAt, type Nav } from './nav.ts';
-import { BRIDGES, BUILDINGS, CLIFF, HOMES, LAND, POND, ROCK, inOval, inRiver, onLand, riverNear, type Pt } from './world.ts';
+import { BRIDGES, BUILDINGS, CLIFF, HOMES, LAND, POND, ROCK, SHORE_Z, inOval, inRiver, onLand, riverNear, type Pt } from './world.ts';
 
 const g = nav();
 
@@ -70,8 +70,8 @@ describe('the obstacles', () => {
     expect(walkable(g, 195, 640 + 30)).toBe(true); // the plaza side of the stone bridge
     for (const b of BRIDGES) for (const z of [b.z0 + 2, 640, b.z1 - 2]) expect(walkable(g, b.x, z), `${b.id} ${z}`).toBe(true);
     expect(walkable(g, 150, 642)).toBe(false); // the river between the bridges
-    expect(walkable(g, 250, 1828)).toBe(false); // the cliff face
-    expect(walkable(g, (CLIFF.stair[0] + CLIFF.stair[1]) / 2, 1828)).toBe(true); // the stairs
+    expect(walkable(g, 250, (CLIFF.z0 + CLIFF.z1) / 2)).toBe(false); // the cliff face
+    expect(walkable(g, (CLIFF.stair[0] + CLIFF.stair[1]) / 2, (CLIFF.z0 + CLIFF.z1) / 2)).toBe(true); // the stairs
     expect(walkable(g, ROCK[0], ROCK[1])).toBe(false);
     for (const b of BUILDINGS) expect(walkable(g, b.x, b.z + 20), b.id).toBe(false);
     expect(walkable(g, 195, -40)).toBe(false); // the sea
@@ -234,10 +234,10 @@ describe('snapping a tap', () => {
     expect(p).toMatchObject({ kind: 'bank', water: 'pond' });
     expect(walkable(g, p.to[0], p.to[1])).toBe(true);
     expect(p.face).toBe('l');
-    const s = snapTap(g, 195, -20)!;
+    const s = snapTap(g, 195, SHORE_Z - 20)!;
     expect(s).toMatchObject({ kind: 'bank', water: 'sea' });
-    expect(s.to[1]).toBeGreaterThan(0);
-    expect(s.to[1]).toBeLessThan(20);
+    expect(s.to[1]).toBeGreaterThan(SHORE_Z);
+    expect(s.to[1]).toBeLessThan(SHORE_Z + 20);
     const far = snapTap(g, 160, -300)!;
     expect(far.kind).toBe('bank');
     expect(walkable(g, far.to[0], far.to[1])).toBe(true);
@@ -262,9 +262,9 @@ describe('snapping a tap', () => {
     expect(s.kind).toBe('near');
     expect(walkable(g, s.to[0], s.to[1])).toBe(true);
     expect(Math.hypot(s.to[0] - ROCK[0], s.to[1] - ROCK[1])).toBeLessThanOrEqual(40);
-    const c = snapTap(g, 250, 1828)!; // the cliff face: below or above it
+    const c = snapTap(g, 250, (CLIFF.z0 + CLIFF.z1) / 2)!; // the cliff face: below or above it
     expect(c.kind).toBe('near');
-    expect(nearestWalkable(g, 250, 1828, 4)).toBeNull();
+    expect(nearestWalkable(g, 250, (CLIFF.z0 + CLIFF.z1) / 2, 4)).toBeNull();
   });
 });
 

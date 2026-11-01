@@ -7,7 +7,7 @@
   // weeks, on the pond and riding the river). The bridges' and the dock's upright front faces stand at their near edges, so they read raised.
   import { asset } from '$app/paths';
   import { useWorld } from './camera.svelte.ts';
-  import { BRIDGES, CLIFF, DOCK, FACE_H, FALL_H, POND, RIVER } from './world.ts';
+  import { BRIDGES, CLIFF, DOCK, FACE_H, FALL_H, POND, RIVER, SHORE_Z } from './world.ts';
   import ShoreWash from './ShoreWash.svelte';
   import Waterfall from './Waterfall.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -18,9 +18,9 @@
 
   /** Glints on the open sea: in front of the beach, along both sides and behind the island. [x, z] */
   const GLINTS: [number, number][] = [
-    [40, -90], [170, -150], [290, -70], [-120, -40], [430, -180], [110, -260],
+    [40, -120], [170, -180], [290, -100], [-120, -70], [430, -210], [110, -290],
     [-150, 420], [540, 520], [-160, 980], [550, 1120], [-150, 1560], [545, 1700],
-    [60, 2300], [300, 2260], [-80, 2380], [470, 2340]
+    [60, 2520], [300, 2480], [-80, 2600], [470, 2560]
   ];
   /** Flow streaks: along the river every ~60u, alternately either side of its middle, heading downstream. */
   const STREAKS = (() => {
@@ -75,7 +75,7 @@
 </script>
 
 <div class="water" aria-hidden="true" data-world-water>
-  <div class="node" {@attach w.at({ mode: 'quad', x: 0, z: 0, box: { x0: 70, x1: 320, z0: -24, z1: 16 } })}>
+  <div class="node" {@attach w.at({ mode: 'quad', x: 0, z: 0, box: { x0: 70, x1: 320, z0: SHORE_Z - 24, z1: SHORE_Z + 16 } })}>
     <ShoreWash x0={70} x1={320} />
   </div>
   <!-- the cliff's upright face (rock strata, the grass lip, the stairs carved in, the falls' wet niche) and the falls
