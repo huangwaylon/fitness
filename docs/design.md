@@ -50,8 +50,8 @@ panel](#panel)) with the jar on its right, the two centred in the sky; a sync ch
   ふたりでぜんぶ as a +2 under the jar; all of it waits while something covers the scene. Tap → ごほうび (the page zooms
   about the jar, which morphs into the hero jar).
 - **Centre stage:** the plaza's middle (`world.ts` `CENTRE_STAGE`, ひろば), where visitors stand.
-- **Villagers:** mine hops when tapped and says nothing ([Villager taps](#villager-taps)); the partner's opens their
-  card.
+- **Villagers:** mine hops when tapped and says nothing; a tap on the partner's is a high-five
+  ([Villager taps](#villager-taps)). Neither opens a sheet.
 - Controls are real buttons with `aria-label`, ≥ 44px (villagers 64px); focus order = visual order.
 
 ### Wallet
@@ -121,7 +121,6 @@ trainer, one person at a time, computed on read.
 
 - One sheet skin (`ui/Sheet.svelte`, a native `<dialog>`): tan paper, cream cards (navy at night), sticky title bar,
   one CTA in a sticky footer above the keyboard.
-- **Partner card:** face, one line about their day, ハイタッチ.
 - **Harvest** (`sheets/HarvestOverlay.svelte`): from Sunday 19:30 until both have tapped, the week's recap: each
   person's ベル, the ふたりでぜんぶ days and the total; 受け取る → the coins fall into the jar (ceremony only). ✕ = あとで.
 - **Pair** (`routes/pair`): paste the key, or open a `#key=` link in the installed app.
@@ -546,6 +545,14 @@ A tap on my villager is a squish with a ♪ and the tap sound (R9), and in NH's 
 it ([Critters](#critters)); it opens no balloon and no sheet (it was too easy to tap by accident). The speech balloon
 (`island/Talk.svelte`) is for the island's other speakers: the doors, the visitors, Blathers, Wilbur. One balloon at a
 time.
+
+A tap on the partner's villager is a **ハイタッチ** straight away (no card): the tap sound, then my villager walks up a
+step beside them (`approach`, running if it's far) while they wait where they are (either woken first if asleep),
+and both hop face to face with the sparkles and one joyful sound (R4, which never waits behind another reaction).
+Then it's sent: the `highfive` event (the store, synced as before), the banner 「うめさんに ハイタッチ！」 on this
+phone, and on theirs 「ウェイさんからハイタッチ！」 with their villager's R5. A tap while one is under way adds
+nothing. Their numbers and when their data last arrived are on their tree's popup (the card's one line about their
+day went with it). Off screen, the edge chip by the screen's side (「うめの ほうへ」) still brings the camera to them.
 
 ### Visitors
 

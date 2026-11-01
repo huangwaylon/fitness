@@ -43,7 +43,7 @@ export interface Step {
 }
 
 export type ReactionId =
-  | 'R1' | 'R2' | 'R3' | 'R4' | 'R5' | 'R6' | 'R7' | 'R8' | 'R9' | 'R10' | 'R11' | 'R12' | 'R13' | 'R14'
+  | 'R1' | 'R2' | 'R3' | 'R4' | 'R5' | 'R6' | 'R7' | 'R8' | 'R9' | 'R11' | 'R12' | 'R13' | 'R14'
   | 'R15' | 'R16' | 'R17' | 'R18' | 'R19';
 
 export interface Reaction {
@@ -73,16 +73,15 @@ export const REACTIONS: Record<ReactionId, Reaction> = {
     { actor: 'partner', at: 900, motion: 'hop', emote: 'mark-note' },
     { actor: 'mine', at: 600, motion: 'nod' }
   ] },
-  R4: { name: 'high-five sent', ms: 2200, steps: [
-    { actor: 'mine', motion: 'hop', emote: 'mark-sparkle', fx: 'sparkles', face: 'other', cue: 'emote-joy' },
-    { actor: 'mine', at: 1600, face: 'home' }
+  R4: { name: 'high-five (a tap on the partner)', ms: 2200, steps: [
+    { actor: 'both', motion: 'hop', emote: 'mark-sparkle', fx: 'sparkles', face: 'other', cue: 'emote-joy' },
+    { actor: 'both', at: 1600, face: 'home' }
   ] },
   R5: { name: 'high-five received', ms: 2400, steps: [{ actor: 'mine', motion: 'hop2', emote: 'love', fx: 'hearts', cue: 'emote-love' }] },
   R6: { name: 'fruit ripe', ms: 2200, steps: [{ actor: 'mine', motion: 'proud', emote: 'mark-sparkle', fx: 'sparkles', cue: 'emote-joy' }] },
   R7: { name: 'fruit stage up', ms: 2200, steps: [{ actor: 'mine', motion: 'nod', emote: 'inspiration', cue: 'emote-idea' }] },
   R8: { name: 'all ripe', ms: 2400, steps: [{ actor: 'mine', motion: 'dance', emote: 'glee', fx: 'confetti', cue: 'emote-joy' }] },
   R9: { name: 'tap mine', ms: 2200, steps: [{ actor: 'mine', motion: 'squish', emote: 'mark-note', cue: 'villager-tap' }] },
-  R10: { name: 'tap partner', ms: 2200, steps: [{ actor: 'partner', motion: 'squish', emote: 'mark-heart', cue: 'villager-tap' }] },
   R11: { name: 'morning stretch', ms: 2200, steps: [
     { actor: 'mine', motion: 'stretch', emote: 'mark-sparkle' },
     { actor: 'partner', at: 500, motion: 'stretch', emote: 'mark-note' }

@@ -81,9 +81,9 @@ describe('event queue', () => {
     react('R3'); // partner data arrives meanwhile: queued
     react('R3'); // duplicate: dropped
     expect(queuedEvents()).toEqual(['R3']);
-    const n = actors.partner.motionN;
-    react('R10'); // tapping the partner plays now
-    expect(actors.partner.motionN).toBe(n + 1);
+    const n = actors.mine.motionN;
+    react('R9'); // tapping my villager plays now
+    expect(actors.mine.motionN).toBe(n + 1);
     await vi.advanceTimersByTimeAsync(2_700);
     expect(queuedEvents()).toEqual([]);
     expect(actors.partner.emote).toBe('surprise'); // R3 started after R2 + the gap

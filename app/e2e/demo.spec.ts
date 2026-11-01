@@ -151,25 +151,34 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
   await expect(pop.locator('.sum .k.tot')).toHaveText('ウェイの きょう');
   await expect(pop.locator('.sum [data-v=total]')).toHaveText(/^\+?\d\sベル$/);
   await expect(pop.locator('.duo')).toHaveText(/^\s*ふたりで ぜんぶ まで：あと [1-8]つ$|^\s*ふたりで ぜんぶ！\s*\+2\s*ふたりに$/);
-  // its last line: when this person's data last arrived (one home: not on the partner card)
+  // its last line: when this person's data last arrived (one home: the tree popup)
   await expect(pop.locator('.sync')).toHaveText(/^\d{2}:\d{2} に とどいた$|^きのう \d{2}:\d{2}$|^\d+\/\d+$|^まだ とどいていません$/);
   // each tree's four fruits (in the canopy, or fallen once met: e2e/trees.spec.ts)
   await expect(page.locator('.if-scene [data-fruit]')).toHaveCount(8);
 });
 
-test('partner: a villager card (their line, ハイタッチ), no numbers and no sync time (those are on their tree)', async ({ page }) => {
+test('partner: a tap is a high-five, no card: mine walks up beside them, both hop, it is sent once', async ({ page }) => {
   await page.goto('?demo');
   await islandReady(page);
   const vil = page.locator('.if-scene button.vil').nth(1);
   await expect(vil).toBeEnabled(); // after the opening beats
+  await expect(vil).toHaveAttribute('aria-label', 'うめと ハイタッチ');
+  const sent = () => page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).filter((e: { type: string }) => e.type === 'highfive').length);
+  const before = await sent();
+  const apart = async () => {
+    const [m, p] = await Promise.all(['mine', 'partner'].map((id) => page.locator(`[data-actor="${id}"] .vil`).boundingBox()));
+    return Math.abs(m!.x - p!.x);
+  };
+  const home = await apart(); // at home, 130u apart
   await vil.click();
-  const card = sheet(page);
-  await expect(card.getByRole('heading', { name: 'うめ' })).toBeVisible(); // the title bar
-  await expect(card.locator('.say')).not.toBeEmpty();
-  await expect(card.getByText(/とどいた|とどいていません/)).toHaveCount(0);
-  await expect(card.getByText(/ベル/)).toHaveCount(0);
-  await card.getByRole('button', { name: /ハイタッチ/ }).click();
+  await vil.click(); // a second tap while it's under way adds nothing
+  await expect(page.locator('dialog[open]')).toHaveCount(0); // no card
+  // both hop face to face with the sparkles, and it's sent
+  for (const id of ['mine', 'partner']) await expect(page.locator(`[data-actor="${id}"] .fx.sparkles`).first()).toBeAttached({ timeout: 6000 });
   await expect(page.getByText('うめさんに ハイタッチ！')).toBeVisible();
+  expect(await apart()).toBeLessThan(home * 0.6); // mine walked up beside them (a step: 40u)
+  await expect.poll(sent).toBe(before + 1);
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
 });
 
 test('きろく: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from today on; either person’s', async ({ page }) => {
@@ -255,15 +264,6 @@ test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (to
   await expect(page.locator('.if-scene button.vil').nth(1)).toBeEnabled();
   const box = async (sel: ReturnType<Page['locator']>) => (await sel.boundingBox())!;
   const vw = page.viewportSize()!.width;
-  // the partner's card: ✕ top-right
-  await page.locator('.if-scene button.vil').nth(1).click();
-  let close = sheet(page).locator('.navbar .close');
-  await expect(close).toBeVisible();
-  let b = await box(close);
-  expect(b.width).toBeGreaterThanOrEqual(44);
-  expect(b.x + b.width).toBeGreaterThan(vw - 40);
-  await close.click();
-  await expect(page.locator('dialog[open]')).toHaveCount(0);
   // the panel: two tabs and ✕ at its top level, ‹ + ✕ one level in (a day, the picker, the guide), ‹ goes back
   await openPanel(page);
   const bar = sheet(page).locator('.titlebar');
@@ -276,7 +276,7 @@ test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (to
   for (const push of ['villager', 'help']) {
     await sheet(page).locator(`[data-push=${push}]`).click();
     await expect(bar.locator('.back')).toBeVisible();
-    b = await box(bar.locator('.back'));
+    const b = await box(bar.locator('.back'));
     expect(b.width).toBeGreaterThanOrEqual(44);
     await bar.locator('.back').click();
     await expect(sheet(page).locator(`[data-push=${push}]`)).toBeVisible();
@@ -295,8 +295,11 @@ test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (to
   await page.locator('.hud-jar').click();
   await expect(page.locator('.jar-screen a.back')).toBeVisible();
   await page.locator('.shop button.item:not([aria-disabled="true"])').first().click();
-  close = sheet(page).locator('.navbar .close');
+  const close = sheet(page).locator('.navbar .close');
   await expect(close).toBeVisible();
+  const c = await box(close);
+  expect(c.width).toBeGreaterThanOrEqual(44);
+  expect(c.x + c.width).toBeGreaterThan(vw - 40);
   await close.click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await page.locator('.jar-screen a.back').click();

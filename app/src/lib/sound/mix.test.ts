@@ -89,7 +89,7 @@ describe('the catalogue and the cue table', () => {
   });
   it('only events and taps sound: the startup beats, naps and the dance are silent', () => {
     for (const rid of ['R2', 'R11', 'R12', 'R13', 'R15', 'R16', 'R19'] as const) expect(REACTIONS[rid].steps.some((s) => s.cue)).toBe(false);
-    for (const rid of ['R9', 'R10', 'R17'] as const) expect(REACTIONS[rid].steps.some((s) => s.cue)).toBe(true);
+    for (const rid of ['R4', 'R9', 'R17'] as const) expect(REACTIONS[rid].steps.some((s) => s.cue)).toBe(true);
   });
   it('island sounds wait while the scene is covered; UI sounds never do', () => {
     for (const c of ['tree-shake', 'fruit-land', 'coin-land', 'bells-arrive', 'emote-joy', 'announce'] as const) expect(CUES[c].world).toBe(true);
