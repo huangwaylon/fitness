@@ -102,7 +102,7 @@ test('fishing: react to the 「！」 and a tap anywhere on the sea catches the 
   await seaTap(page);
   const caught = page.locator('[data-fx="catch"]');
   await expect(caught).toHaveCount(1);
-  await expect(caught).toContainText(/釣り上げた|釣れた/);
+  await expect(caught).toContainText('釣'); // every sea fish's line says it (釣り上げた, 一本釣りだ…), whichever came
   await expect(page.locator('[data-bobber]')).toHaveCount(0);
   await expect(page.locator('[data-bite]')).toHaveCount(0);
   await expect(fish).toHaveCount(0);
