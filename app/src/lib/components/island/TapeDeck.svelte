@@ -11,6 +11,7 @@
   import { TAPE_DECK } from './world.ts';
   import { useWorld } from './camera.svelte.ts';
   import { shownNow } from './sceneTaps.ts';
+  import { MIN_HIT, grow, inside } from './hitbox.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { cue } from '#lib/sound/cues.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
@@ -87,8 +88,7 @@
     const r = el?.querySelector('.radio')?.getBoundingClientRect();
     // (out of view its node is hidden but keeps its last box: no tap there)
     if (!spot || !r || !enabled() || !w.inView(spot[0], spot[1])) return false;
-    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    if (Math.abs(px - cx) > Math.max(22, r.width / 2 + 6) || Math.abs(py - cy) > Math.max(22, r.height / 2 + 6)) return false;
+    if (!inside(grow(r, MIN_HIT, 6), px, py)) return false;
     if (!playing) play();
     return true;
   }

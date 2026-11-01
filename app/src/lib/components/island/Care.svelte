@@ -23,6 +23,7 @@
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { taken as takenBy, takenByOthers } from '#lib/sync/world-day.ts';
   import { onMount } from 'svelte';
+  import { hitOf, hitSources, pick, type HitBox } from './hitbox.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -143,21 +144,26 @@
     })
   );
 
-  /** A tap on the scene (client px), after the finds: true when the care took it. Reach: a 44px target around where
-   *  it is on screen now. */
+  /** The weeds in view and the rock with their tap boxes (hitbox.ts: what each draws, at least 44px). */
+  function targets(): { box: HitBox | null; z: number; kind: string; go: () => void }[] {
+    const el = (sel: string, x: number, z: number) => (w.inView(x, z, 20) ? hitOf(scene?.querySelector(sel)) : null);
+    return [
+      ...shown.map((it) => ({ box: el(`[data-care="weed"][data-uid="${it.uid}"]`, it.x, it.y), z: it.y, kind: 'weed', go: () => pull(it) })),
+      { box: el('[data-care="rock"]', ROCK.x, ROCK.y), z: ROCK.y, kind: 'rock', go: hitRock }
+    ];
+  }
+  $effect(() => {
+    const list = () => targets().flatMap((t) => (t.box ? [{ box: t.box, kind: t.kind }] : []));
+    hitSources.add(list);
+    return () => void hitSources.delete(list);
+  });
+  /** A tap on the scene (client px), after the finds: true when the care took it (on its tap box; in front wins). */
   export function tap(px: number, py: number): boolean {
     if (!enabled()) return false;
-    const reach = 22;
-    const d = (x: number, z: number, up: number) => {
-      if (!w.inView(x, z, 20)) return Infinity;
-      const [cx, cy] = w.clientAt(x, z, up);
-      return Math.hypot(cx - px, cy - py);
-    };
-    const weed = shown.map((it) => ({ it, d: d(it.x, it.y, 4) })).filter((h) => h.d <= reach).sort((a, b) => a.d - b.d)[0];
-    if (weed) return (pull(weed.it), true);
-    const rockR = Math.max(reach, ROCK.h * w.scaleAt(ROCK.x, ROCK.y) * w.view.s);
-    if (d(ROCK.x, ROCK.y, ROCK.h / 2) <= rockR) return (hitRock(), true);
-    return false;
+    const best = pick(targets(), px, py);
+    if (!best) return false;
+    best.go();
+    return true;
   }
 </script>
 
@@ -169,7 +175,7 @@
 </div>
 {#each shown as d (d.uid)}
   <div class="node" aria-hidden="true" {@attach w.at({ x: d.x, z: d.y, h: 14 })}>
-    <span class="item weed" class:flip={d.flip} class:sprout={sprouts(d.uid)} data-care="weed"><i class="shade"></i>{@render tuft()}</span>
+    <span class="item weed" class:flip={d.flip} class:sprout={sprouts(d.uid)} data-care="weed" data-uid={d.uid}><i class="shade"></i>{@render tuft()}</span>
   </div>
 {/each}
 {#each fx as f (f.n)}

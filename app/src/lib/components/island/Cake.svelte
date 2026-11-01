@@ -11,6 +11,7 @@
   import { CAKE } from './world.ts';
   import { useWorld } from './camera.svelte.ts';
   import { blowOut, candlesOut } from './birthday.ts';
+  import { MIN_HIT, grow, inside } from './hitbox.ts';
 
   // `scene` is SceneTaps' (unused: the cake is a world node)
   let { enabled, on }: { scene?: HTMLElement; enabled: () => boolean; on: boolean } = $props();
@@ -29,8 +30,7 @@
   export function tap(px: number, py: number): boolean {
     const r = el?.querySelector('.cake')?.getBoundingClientRect();
     if (!on || !r || !enabled() || !w.inView(CAKE[0], CAKE[1])) return false;
-    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    if (Math.abs(px - cx) > Math.max(22, r.width / 2 + 6) || Math.abs(py - cy) > Math.max(22, r.height / 2 + 6)) return false;
+    if (!inside(grow(r, MIN_HIT, 6), px, py)) return false;
     cue('birthday-cake');
     if (!out) {
       out = true;

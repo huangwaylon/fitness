@@ -67,12 +67,17 @@
   };
   /** The oak's trunk and canopy as their own renders (else the one image cut by TRUNK / CANOPY). */
   const layered = (key: string) => !!art(`${key}-trunk`);
+  /** A tree's trunk tap area round its foot, as shares of its height (wide, tall): the trunk and its base down to the
+   *  ground, at least 44px wide on screen (--inv); the leaves have their own (.hit). Unclipped by the layer's box. */
+  const TRUNK_HIT: Partial<Record<Scenery['kind'], readonly [number, number]>> = { oak: [0.32, 0.6], cedar: [0.24, 0.42], palm: [0.3, 0.72] };
+  const trunkHit = (s: Scenery, part: string) => (live && (part === 'trunk' || (part === 'body' && s.kind !== 'oak')) ? TRUNK_HIT[s.kind] : undefined);
 </script>
 
 {#snippet sprite(s: Scenery, clip: string | null = null, part = 'body')}
   {@const base = keyOf(s)}
   {@const key = part !== 'body' && layered(base) ? `${base}-${part}` : base}
-  <div class="spr" data-scenery-id={s.id} data-kind={s.kind} data-part={part} {@attach w.at({ x: s.x, z: s.z, h: s.h, dz: part === 'canopy' ? -14 : 0 })}>
+  {@const th = trunkHit(s, part)}
+  <div class="spr" data-scenery-id={s.id} data-kind={s.kind} data-part={part} {@attach w.at({ x: s.x, z: s.z, h: s.h, dz: part === 'canopy' ? -14 : 0, inv: !!th })}>
     <span class="art" class:flip={s.flip} class:snow={winter && s.kind === 'bush' && !P[key]} class:bush={s.kind === 'bush'} data-bush={s.kind === 'bush' ? s.id : undefined}
       style={at3d(key, s.h, s.flip)} style:height="calc({s.h} * var(--u))" style:width="calc({wOf(key, s.h)} * var(--u))"
       style:clip-path={layered(base) ? inset3d(key, s.flip) : clip}>
@@ -82,6 +87,10 @@
         <i class="hit {s.kind}" data-tree={s.id}></i>
       {/if}
     </span>
+    {#if th}
+      <!-- its trunk and base answer a tap too (the same tree) -->
+      <i class="hit-trunk" data-tree={s.id} data-tree-part="trunk" style:width="max(calc({th[0] * s.h} * var(--u)), calc(45px * var(--inv, 1)))" style:height="calc({th[1] * s.h} * var(--u))"></i>
+    {/if}
   </div>
 {/snippet}
 
@@ -154,9 +163,11 @@
   .art :global(.official), .door :global(.official) { max-width: none; }
   .art.bush { pointer-events: auto; cursor: pointer; }
   /* a tree's tap area: its leaves (not the art's whole box: the sand and grass round it stay the ground's) */
-  .hit { position: absolute; pointer-events: auto; cursor: pointer; left: 18%; right: 18%; top: 4%; bottom: 46%; border-radius: 45%; }
-  .hit.cedar { left: 26%; right: 26%; top: 6%; bottom: 30%; }
-  .hit.palm { left: 14%; right: 14%; top: 0; bottom: 62%; }
+  .hit { position: absolute; pointer-events: auto; cursor: pointer; left: 8%; right: 8%; top: 2%; bottom: 40%; border-radius: 42%; }
+  .hit.cedar { left: 16%; right: 16%; top: 2%; bottom: 32%; }
+  .hit.palm { left: 6%; right: 6%; top: 0; bottom: 58%; }
+  /* the trunk and its base, down to a little below the foot */
+  .hit-trunk { position: absolute; left: 0; bottom: calc(-4 * var(--u)); translate: -50% 0; pointer-events: auto; cursor: pointer; border-radius: 40% 40% 30% 30%; }
   .art.flip :global(.official) { transform: scaleX(-1); }
   .lit { transition: opacity 1.2s ease; }
   .glow { position: absolute; left: 0; translate: -50% 0; line-height: 0; mix-blend-mode: screen; }

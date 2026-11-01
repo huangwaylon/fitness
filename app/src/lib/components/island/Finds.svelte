@@ -32,6 +32,7 @@
   import { sceneSfx, shownNow } from './sceneTaps.ts';
   import { loadNames } from './catchLine.ts';
   import { guardsU, clearAt, place, stageGeo } from './placement.ts';
+  import { hitOf, hitSources, pick, type HitBox } from './hitbox.ts';
   import { bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
   import { take, takenOn, wish as addWish, wishes } from './sceneDay.ts';
   import { fragmentDay, fragmentsDue } from './stars.ts';
@@ -357,30 +358,33 @@
     })
   );
 
-  /** A tap on the scene (client px), after the critters: true when a find took it. Reach: a 44px target around where
-   *  the item is on screen now (`up`: its middle's height above its foot, u). */
+  /** Every find lying in view and its tap box (hitbox.ts: what it draws, at least 44px), in front first on a tie. */
+  function targets(): { box: HitBox | null; z: number; kind: string; go: () => void }[] {
+    const box = (uid: string, x: number, z: number) => (w.inView(x, z, 20) ? hitOf(scene?.querySelector(`[data-find][data-uid="${uid}"]`)) : null);
+    const one = (kind: string, it: { uid: string; x: number; y: number }, go: () => void) => ({ box: box(it.uid, it.x, it.y), z: it.y, kind, go });
+    return [
+      ...shells.map((s) => one('shell', s, () => pickShell(s))),
+      ...fragments.map((f) => one('fragment', f, () => pickFragment(f))),
+      ...(bottle ? [one('bottle', bottle, () => pickBottle(bottle!))] : []),
+      ...visibleSpots.map((s) => one('dig', s, () => digUp(s))),
+      ...visibleMushrooms.map((m) => one('mushroom', m, () => pickMushroom(m))),
+      ...presents.map((p) => one('present', p, () => openPresent(p)))
+    ];
+  }
+  $effect(() => {
+    const list = () => targets().flatMap((t) => (t.box ? [{ box: t.box, kind: t.kind }] : []));
+    hitSources.add(list);
+    return () => void hitSources.delete(list);
+  });
+  /** A tap on the scene (client px), after the critters: true when a find took it (on its tap box; in front wins). */
   export function tap(px: number, py: number): boolean {
     if (!enabled()) return false;
-    const reach = 22;
-    type Hit = { d: number; go: () => void };
-    const hit = (x: number, z: number, up: number, go: () => void): Hit[] => {
-      if (!w.inView(x, z, 20)) return [];
-      const [cx, cy] = w.clientAt(x, z, up);
-      return [{ d: Math.hypot(cx - px, cy - py), go }];
-    };
-    const hits: Hit[] = [
-      ...shells.flatMap((s) => hit(s.x, s.y, 3, () => pickShell(s))),
-      ...fragments.flatMap((f) => hit(f.x, f.y, 3, () => pickFragment(f))),
-      ...(bottle ? hit(bottle.x, bottle.y, 3, () => pickBottle(bottle!)) : []),
-      ...visibleSpots.flatMap((s) => hit(s.x, s.y, 0, () => digUp(s))),
-      ...visibleMushrooms.flatMap((m) => hit(m.x, m.y, 6, () => pickMushroom(m))),
-      ...presents.flatMap((p) => hit(p.x, p.y, p.size / 2, () => openPresent(p)))
-    ];
-    const best = hits.filter((h) => h.d <= reach).sort((a, b) => a.d - b.d)[0];
+    const best = pick(targets(), px, py);
     if (!best) return false;
     best.go();
     return true;
   }
+
 
   /** The items lying on this screen that a control covers (measured when the camera settles, once the projector has
    *  placed everything): a dig spot or a mushroom shows only where it's clear of every control, as on the old stage (a
@@ -445,7 +449,7 @@
   <!-- NH's dig spot: a dark, uneven star-shaped crack in the soil (jagged arms of unequal length, little side cracks),
        a lighter lip of earth under each, foreshortened -->
   <div class="node" aria-hidden="true" {@attach w.at({ x: s.x, z: s.y, mode: 'flat', h: 12 })}>
-    <span class="item spot" data-find="fossil">
+    <span class="item spot" data-find="fossil" data-uid={s.uid}>
       <svg viewBox="-10 -10 20 20">
         <path class="lip" d={CRACK} transform="translate(0 .8)" /><path class="crack" d={CRACK} />
       </svg>
@@ -454,19 +458,19 @@
 {/each}
 {#each visibleMushrooms as m (m.uid)}
   <div class="node" aria-hidden="true" {@attach w.at({ x: m.x, z: m.y, h: 14 })}>
-    <span class="item mush" class:flip={m.flip} data-find="mushroom" data-id={m.id}>
+    <span class="item mush" class:flip={m.flip} data-find="mushroom" data-id={m.id} data-uid={m.uid}>
       <OfficialArt key={findArt(m.id)} size="calc(13 * var(--su))" />
     </span>
   </div>
 {/each}
 {#each presents as p (p.uid)}
   <div class="node" aria-hidden="true" {@attach w.at({ x: p.x, z: p.y, h: p.size })}>
-    <span class="item gift" data-find="present"><OfficialArt key={p.art} size={su(p.size)} eager /></span>
+    <span class="item gift" data-find="present" data-uid={p.uid}><OfficialArt key={p.art} size={su(p.size)} eager /></span>
   </div>
 {/each}
 {#each shells as s (s.uid)}
   <div class="node" aria-hidden="true" {@attach w.at({ x: s.x, z: s.y, h: 12 })}>
-    <span class="item shell" class:fresh={fresh(s.uid)} data-find="shell" data-id={s.id} style:--tilt="{s.tilt}deg">
+    <span class="item shell" class:fresh={fresh(s.uid)} data-find="shell" data-id={s.id} data-uid={s.uid} style:--tilt="{s.tilt}deg">
       <OfficialArt key={findArt(s.id)} size="calc(14 * var(--su))" />
     </span>
   </div>
@@ -474,7 +478,7 @@
 {#each fragments as f, k (f.uid)}
   <!-- NH's beach glimmer: a star fragment twinkles now and then (every 3–5 s, out of step) -->
   <div class="node" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, h: 14 })}>
-    <span class="item frag" data-find="fragment" data-id={f.id} style:--tw="{3 + ((k * 7) % 5) * 0.5}s" style:--twd="{-k * 1.3}s">
+    <span class="item frag" data-find="fragment" data-id={f.id} data-uid={f.uid} style:--tw="{3 + ((k * 7) % 5) * 0.5}s" style:--twd="{-k * 1.3}s">
       <OfficialArt key={findArt(f.id)} size="calc(12 * var(--su))" />
       <svg class="twinkle" viewBox="0 0 24 24"><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>
     </span>
@@ -483,7 +487,7 @@
 {#if bottle}
   <!-- at the water's edge, half in the foam: it rocks with the waves, a small ring of foam now and then -->
   <div class="node" aria-hidden="true" {@attach w.at({ x: bottle.x, z: bottle.y, h: 12 })}>
-    <span class="item bottle" data-find="bottle">
+    <span class="item bottle" data-find="bottle" data-uid={bottle.uid}>
       <i class="foam"></i>
       <span class="rock"><OfficialArt key={findArt('message-bottle')} size="calc(15 * var(--su))" /></span>
     </span>
