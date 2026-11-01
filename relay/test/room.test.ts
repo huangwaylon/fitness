@@ -279,4 +279,31 @@ describe('two protocol versions (v2: the rolling-log world)', () => {
     say2(b2, { kind: 'walk', to: [195, 900] });
     expect(a.sent).toEqual([{ v: 2, kind: 'walk', to: [195, 900], who: 'B', t: expect.any(Number) }]);
   });
+
+  it('closes an unknown version before or after the hello with a reason that says so, and a switch mid-socket', () => {
+    const x = new FakeSock();
+    socks.push(x);
+    room.open(x);
+    room.message(x, JSON.stringify({ v: 3, kind: 'hello', key: KEY_A }));
+    expect(x.closed).toEqual({ code: CLOSE.version, reason: 'protocol version 3 unsupported (relay speaks 1, 2)' });
+    const a = join(KEY_A);
+    say(a, { kind: 'emote', emote: 'glee', v: 2 }); // spoke v1 in its hello
+    expect(a.closed?.code).toBe(CLOSE.version);
+    const b = join2(KEY_B);
+    room.message(b, JSON.stringify({ v: 1, kind: 'hello', key: KEY_B }));
+    expect(b.closed?.code).toBe(CLOSE.version);
+  });
+
+  it('relays v2 walks only to points within the world plan', () => {
+    const a = join2(KEY_A);
+    const b = join2(KEY_B);
+    b.sent = [];
+    say2(a, { kind: 'walk', to: [-230, 2500] });
+    say2(a, { kind: 'walk', to: 'bridgeStoneN' });
+    say2(a, { kind: 'walk', to: [621, 0] });
+    say2(a, { kind: 'walk', to: [0, -401] });
+    say2(a, { kind: 'walk', to: [1.5, 2] });
+    expect(b.sent.map((m) => (m as { to: unknown }).to)).toEqual([[-230, 2500], 'bridgeStoneN']);
+    expect(a.closed).toBeNull();
+  });
 });

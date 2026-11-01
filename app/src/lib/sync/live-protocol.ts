@@ -12,6 +12,13 @@ export type LiveV = (typeof LIVE_VS)[number];
 /** Anything longer is dropped unread by both sides. */
 export const MAX_BYTES = 256;
 
+/**
+ * The world's plan extent (world units; island/world.ts PLAN, kept equal by its test): a v2 walk's point lies within it.
+ * Here because the Worker bundles this file alone (and sync/ may not import components/).
+ */
+export const WORLD_X = [-230, 620] as const;
+export const WORLD_Z = [-400, 2500] as const;
+
 export type Who = 'A' | 'B';
 
 /** What my villager did with a tap (phase 2 maps these to the director's walk-then-act). */
@@ -22,7 +29,8 @@ export type Act = (typeof ACTS)[number];
 export const WORLD_OPS = ['weed-pulled', 'fruit-collected', 'dug', 'present-opened', 'watered', 'shaken'] as const;
 export type WorldOp = (typeof WORLD_OPS)[number];
 
-/** A walk-graph node id or a world point (v2: world units x, z, integers; v1: stage units). */
+/** A walk-graph node id or a point: v2 a world point [x, z] (integers within WORLD_X × WORLD_Z), v1 a stage point
+ *  (integers, |n| ≤ 100,000). */
 export type Target = string | readonly [number, number];
 
 /** The intents a client sends; the relay stamps `who` and `t` and passes them to the other person only. */
@@ -91,16 +99,21 @@ const isObj = (x: unknown): x is Obj => typeof x === 'object' && x !== null && !
 const isTime = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x) && x >= 0 && x < 1e14;
 const isId = (x: unknown): x is string => typeof x === 'string' && ID.test(x);
 const isCoord = (x: unknown): x is number => Number.isInteger(x) && Math.abs(x as number) <= 100_000;
-const isTarget = (x: unknown): x is Target =>
-  isId(x) || (Array.isArray(x) && x.length === 2 && isCoord(x[0]) && isCoord(x[1]));
+const within = (x: unknown, [lo, hi]: readonly [number, number]): boolean => Number.isInteger(x) && (x as number) >= lo && (x as number) <= hi;
+/** A world point within the plan's extent. @public (tests) */
+export const isWorldPt = (x: unknown): x is readonly [number, number] =>
+  Array.isArray(x) && x.length === 2 && within(x[0], WORLD_X) && within(x[1], WORLD_Z);
+/** A walk's target in version `v`: a node id, or a point in that version's units. */
+const isTarget = (x: unknown, v: LiveV): x is Target =>
+  isId(x) || (v === 1 ? Array.isArray(x) && x.length === 2 && isCoord(x[0]) && isCoord(x[1]) : isWorldPt(x));
 const opt = <T>(o: Obj, k: string, ok: (x: unknown) => x is T): boolean => o[k] === undefined || ok(o[k]);
 const oneOf = <T extends string>(list: readonly T[]) => (x: unknown): x is T => list.includes(x as T);
 
-/** The intent in `o`, rebuilt from its known fields only (anything extra is dropped), or null. */
-function intentOf(o: Obj): Intent | null {
+/** The intent in `o` (of version `v`), rebuilt from its known fields only (anything extra is dropped), or null. */
+function intentOf(o: Obj, v: LiveV): Intent | null {
   switch (o.kind) {
     case 'walk':
-      if (!isTarget(o.to) || !opt(o, 'at', isTime)) return null;
+      if (!isTarget(o.to, v) || !opt(o, 'at', isTime)) return null;
       return { kind: 'walk', to: o.to, ...(o.at !== undefined ? { at: o.at as number } : {}) };
     case 'act':
       if (!oneOf(ACTS)(o.act) || !opt(o, 'id', isId) || !opt(o, 'at', isTime)) return null;
@@ -142,8 +155,20 @@ export function parseClient(raw: unknown): ClientMsg | null {
     return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}) };
   }
   if (o.kind === 'ping') return isTime(o.c) ? { v, kind: 'ping', c: o.c } : null;
-  const i = intentOf(o);
+  const i = intentOf(o, v);
   return i && { v, ...i };
+}
+
+/** The `v` of a message in a version the relay doesn't speak (that phone should reload, not keep sending), else null.
+ *  @public (relay/) */
+export function otherVersion(raw: unknown): number | null {
+  if (typeof raw !== 'string' || raw.length > MAX_BYTES) return null;
+  try {
+    const o: unknown = JSON.parse(raw);
+    return isObj(o) && typeof o.v === 'number' && !(LIVE_VS as readonly number[]).includes(o.v) ? o.v : null;
+  } catch {
+    return null;
+  }
 }
 
 const isWho = (x: unknown): x is Who => x === 'A' || x === 'B';
@@ -183,6 +208,6 @@ export function parseServer(raw: unknown): ServerMsg | null {
     }
   }
   if (!isWho(o.who)) return null;
-  const i = intentOf(o);
+  const i = intentOf(o, LIVE_V);
   return i && { ...i, v: LIVE_V, who: o.who, t };
 }

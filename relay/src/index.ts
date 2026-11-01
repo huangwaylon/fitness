@@ -2,7 +2,7 @@
 // Durable Object, the island room, which relays each person's intents to the other. The room uses the WebSocket
 // Hibernation API, so an idle connection costs nothing; a phone connects only while the app is on screen.
 import { DurableObject } from 'cloudflare:workers';
-import { LIVE_V, MAX_BYTES, parseNotice, type Notice, type Relayed, type Who } from '../../app/src/lib/sync/live-protocol.ts';
+import { LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type Relayed, type Who } from '../../app/src/lib/sync/live-protocol.ts';
 import { originAllowed } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
 import { HELLO_MS, RoomCore, type Meta } from './room.ts';
@@ -129,7 +129,7 @@ export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
     if (url.pathname === '/health') {
-      return Response.json({ ok: true, v: LIVE_V, t: Date.now() }, { headers: { 'Cache-Control': 'no-store' } });
+      return Response.json({ ok: true, v: LIVE_V, versions: LIVE_VS, t: Date.now() }, { headers: { 'Cache-Control': 'no-store' } });
     }
     if (url.pathname === '/notify') return notify(req, env);
     if (isPushPath(url.pathname)) {

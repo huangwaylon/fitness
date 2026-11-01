@@ -39,8 +39,10 @@ class Client {
       this.ws.addEventListener('error', () => rej(new Error('connect failed')));
     });
   }
+  /** The protocol version this client speaks (live-protocol.ts LIVE_VERSIONS). */
+  v = 1;
   send(m: object) {
-    this.ws.send(JSON.stringify({ v: 1, ...m }));
+    this.ws.send(JSON.stringify({ v: this.v, ...m }));
   }
   next(pred: (m: Msg) => boolean, ms = 5000): Promise<Msg> {
     const i = this.inbox.findIndex(pred);
@@ -70,8 +72,8 @@ function check(ok: boolean, what: string) {
 const { KEY_A, KEY_B } = keys();
 const http = URL_.replace(/^ws/, 'http');
 
-const health = await fetch(new URL('/health', http)).then((r) => r.json() as Promise<{ ok: boolean; t: number }>);
-check(health.ok === true, '/health answers ok');
+const health = await fetch(new URL('/health', http)).then((r) => r.json() as Promise<{ ok: boolean; t: number; versions?: number[] }>);
+check(health.ok === true, `/health answers ok (versions ${health.versions?.join(', ') ?? '1'})`);
 
 const bad = await fetch(http, { headers: { Origin: 'https://evil.test' } });
 check(bad.status === 403, `a foreign origin is refused (${bad.status})`);
@@ -209,3 +211,37 @@ check(staleGoal.status === 200 && sg.outcome === 'stale' && staleGoal.headers.ge
 
 a2.ws.close(1000);
 b2.ws.close(1000);
+
+// Protocol versions (docs/backend.md#live-relay, "Versions"): a v2 phone beside a v1 one hears the shared kinds in its
+// own version, never the other's walks; a v2 walk reaches a v2 partner; a version nobody speaks is closed 4004.
+const v3 = new Client();
+await v3.open();
+v3.v = 3;
+v3.send({ kind: 'hello', key: KEY_A });
+check((await v3.closed) === 4004, 'a v3 hello is closed with 4004');
+
+const a3 = new Client();
+await a3.open();
+a3.send({ kind: 'hello', key: KEY_A });
+await a3.next((m) => m.kind === 'welcome');
+const b3 = new Client();
+b3.v = 2;
+await b3.open();
+b3.send({ kind: 'hello', key: KEY_B });
+const wb3 = await b3.next((m) => m.kind === 'welcome');
+check(wb3.v === 2 && wb3.peer === true, 'a v2 hello is welcomed in v2');
+a3.send({ kind: 'walk', to: [120, 340] });
+a3.send({ kind: 'emote', emote: 'glee' });
+const e3 = await b3.next((m) => m.kind === 'emote' || m.kind === 'walk');
+check(e3.kind === 'emote' && e3.v === 2 && e3.who === 'A', "v1 → v2: the emote arrives in v2, the stage walk doesn't");
+const a4 = new Client();
+a4.v = 2;
+await a4.open();
+a4.send({ kind: 'hello', key: KEY_A });
+await a4.next((m) => m.kind === 'welcome');
+check((await a3.closed) === 4002, 'a v2 A replaces the v1 one (4002)');
+a4.send({ kind: 'walk', to: [195, 860] });
+const w4 = await b3.next((m) => m.kind === 'walk');
+check(w4.v === 2 && (w4.to as number[])[1] === 860 && w4.who === 'A', 'v2 → v2: a world walk arrives');
+a4.ws.close(1000);
+b3.ws.close(1000);
