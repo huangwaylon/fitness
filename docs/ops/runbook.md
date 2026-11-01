@@ -127,13 +127,14 @@ The art in `app/static/art/` comes from Nookipedia. Edit `SPECS` in `app/scripts
 and ~2,000 icons) is rebuilt with `npm run catalog:build` (`app/scripts/catalog.ts`; `-- --data` skips the icons); it
 prints anything the two sources disagree on.
 
-The 3D-rendered art (the campsite, trees, bushes, lamps, rocks: [design](../design.md#official-art))
+The 3D-rendered art (the campsite, trees, bushes, lamps, rocks, the stone bridge: [design](../design.md#official-art))
 comes from NH's own models, a folder of `<Model>.Nin_NX_NVN` folders (Collada `.dae` + PNG textures) kept outside the
 repo. Edit `JOBS` in `app/scripts/models.ts`, then `cd app && NH_MODELS=~/Downloads/Model npm run models`
 (`-- --only=trees/` for some keys, `--png=/tmp/x` keeps the PNGs; needs Google Chrome and `cwebp`). It copies only the
 folders it names into a scratch dir, renders them in Chrome and writes `static/art/<key>.webp`, their manifest entries
 (source "rendered") and `src/lib/components/island/models.json`; ~4 s for all. Never commit anything from the model
-folder itself. `assets:fetch` keeps rendered entries; a key moved to the renders leaves `SPECS`.
+folder itself. `assets:fetch` keeps rendered entries; a key moved to the renders leaves `SPECS`. The stone bridge's deck
+(`bridges/stone-deck`) is baked into the ground: after re-rendering it, run `npm run terrain` too.
 
 ## 9. What the sheet should hold
 Exactly three tabs, `metrics`, `events` and `uploads`, with the headers in [backend.md](../backend.md#tabs) (the script

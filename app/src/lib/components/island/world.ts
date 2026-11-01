@@ -42,14 +42,25 @@ export const AHEAD = 900;
 
 // ---- water ----------------------------------------------------------------------------------------------------------
 
-/** The stream's centreline [x, z, width]: the spring on the upper tier, the falls over the cliff, a short meander down
- *  the east side and out through the east beach (the mouth, widening into the sea). */
+/** The stream's centreline [x, z, width]: the spring on the upper tier, the falls over the cliff, a meander down the
+ *  east side, then a wide bend west across the island between the health lawn and おく (under the stone bridge on the
+ *  path) and out through the west beach (the mouth, widening into the sea). */
 export const RIVER: readonly (readonly [number, number, number])[] = [
   [364, 1146, 20], [368, 1108, 24], [372, 1082, 32], [372, 1040, 36],
   // the reach below the falls meanders gently, its width breathing (NH's rivers are never ruler-straight)
-  [377, 990, 30], [366, 930, 33], [378, 870, 29], [367, 812, 32], [376, 768, 31],
-  [394, 736, 36], [420, 714, 48], [448, 700, 66], [490, 690, 88], [540, 684, 100]
+  [377, 990, 30], [366, 930, 33], [378, 870, 29], [367, 812, 32], [374, 762, 30],
+  // the bend, and the reach across (a gentle wave, the bridge at x 195)
+  [358, 714, 31], [318, 678, 30], [258, 654, 29], [195, 646, 30], [134, 652, 31], [76, 646, 30], [26, 636, 33],
+  // the mouth on the west beach
+  [-12, 628, 42], [-44, 620, 56], [-82, 614, 80], [-132, 608, 100]
 ];
+/** The stone bridge where the path crosses the stream (NH's stone bridge, scripts/models.ts bridges/stone-deck baked
+ *  into the ground, its near end upright: bridges/stone-front): centred on x, the deck from z0 (its near end) to z1,
+ *  w wide (NH's proportions: 30.2 × 40.8 model units, 1.18u each). The deck is walkable `RAIL` in from its sides. */
+export const BRIDGE = { x: 195, z0: 622, z1: 670, w: 35.5 } as const;
+export const BRIDGE_RAIL = 5;
+/** Whether (x, z) is on the bridge's deck (`inset` in from its sides, e.g. the rails). */
+export const onBridge = (x: number, z: number, inset = 0): boolean => Math.abs(x - BRIDGE.x) <= BRIDGE.w / 2 - inset && z >= BRIDGE.z0 && z <= BRIDGE.z1;
 /** The spring on the upper tier the stream rises from. */
 export const SPRING = { x: 364, z: 1152, rx: 28, rz: 16 } as const;
 /** The pond (an oval of water), with lily pads: west of the path to the campsite. */
@@ -121,9 +132,10 @@ export const DIG_SPOTS: readonly Pt[] = [[150, 162], [244, 164], [66, 150], [326
 /** Lawn spots for weeds (z 120…900, off paths, flowers, trunks and water). */
 export const LAWN_SPOTS: readonly Pt[] = [
   [96, 150], [300, 150], [20, 280], [372, 280], [120, 400], [270, 380], [40, 430], [350, 420], [230, 500], [150, 520],
-  [300, 520], [140, 680], [262, 664], [128, 852], [232, 828]
+  [300, 520], [140, 690], [262, 702], [128, 852], [232, 828]
 ];
-/** The seasonal hedge between the lawn and the campsite's ground, with a gap for the path (its streetlamps). */
+/** The seasonal hedge along the stream's front bank, between the lawn and おく, with a gap for the path and the bridge
+ *  (its streetlamps). */
 export const HEDGE_Z = 600;
 export const HEDGE_XS: readonly number[] = [36, 80, 124, 266, 310];
 /** Beach finds lie at z 10…90 on x 120…300. */
@@ -160,16 +172,16 @@ export const SCENERY: readonly Scenery[] = [
   s('palm-1', 'palm', 'trees/palm', 26, 40, 116), s('palm-3', 'palm', 'trees/palm', 366, 46, 110, true),
   s('plumeria-w', 'bush', 'bushes/white-plumeria', 100, 122, 34), s('plumeria-p', 'bush', 'bushes/pink-plumeria', 292, 122, 34),
   s('oak-m1', 'oak', 'oak', 268, 516, 112), s('cedar-m1', 'cedar', 'trees/cedar', 20, 470, 140),
-  // おく, uncluttered (open lawn between the pieces), NH's decor (scripts/fetch-assets.ts): streetlamps at the hedge's gap, the month's bushes either side of
+  // おく, uncluttered (open lawn between the pieces), NH's decor (scripts/fetch-assets.ts): streetlamps at the bridge's front corners, the month's bushes either side of
   // the path (`month-bush-a|b`: scene.ts hedgePair), the pond on the west with a flat rock and a clump by it, the bamboo
   // grove on the east by the stream, an oak and cedars at the edges, the campsite's tent in its clearing with its sign,
   // garden lanterns either side of the clearing and white ones at the stairs' foot, a rock at the cliff's foot
-  s('lamp-b1', 'prop', 'deco/streetlamp', 166, 606, 46), s('lamp-b2', 'prop', 'deco/streetlamp', 226, 606, 46),
+  s('lamp-b1', 'prop', 'deco/streetlamp', 168, 612, 46), s('lamp-b2', 'prop', 'deco/streetlamp', 222, 612, 46),
   s('bush-m1', 'bush', 'month-bush-a', 152, 716, 34), s('bush-m2', 'bush', 'month-bush-b', 240, 724, 34),
   s('rock-m1', 'rock', 'deco/flat-rock', 148, 818, 12),
   s('bamboo-1', 'bamboo', 'trees/bamboo', 290, 804, 66), s('bamboo-2', 'bamboo', 'trees/bamboo', 322, 794, 72, true),
   s('bamboo-3', 'bamboo', 'trees/bamboo', 306, 824, 70, true),
-  s('cedar-k1', 'cedar', 'trees/cedar', 16, 642, 140),
+  s('cedar-k1', 'cedar', 'trees/cedar', 2, 700, 140),
   s('oak-k1', 'oak', 'oak', 36, 904, 116), s('cedar-k2', 'cedar', 'trees/cedar', -2, 1000, 144),
   s('camp-sign', 'prop', 'deco/campsite-sign', 92, 930, 30),
   s('bush-k1', 'bush', 'bushes/holly', 114, 1000, 32), s('bush-k2', 'bush', 'bushes/holly', 282, 1000, 32),
@@ -188,8 +200,8 @@ export const SCENERY: readonly Scenery[] = [
 const CLUMPS: readonly (readonly [number, number, number])[] = [
   // まえ: four small clumps, clear of the trees' canopies and the villagers
   [165, 390, 2], [250, 420, 2], [62, 530, 3], [356, 480, 3],
-  // おく: the pond's west bank, the bamboo's lawn, by the path, the clearing's west side, the stream's bank
-  [10, 724, 4], [236, 772, 2], [266, 866, 5], [96, 868, 2], [324, 952, 4]
+  // おく: by the pond, the bamboo's lawn, by the path, the clearing's west side, the stream's bank
+  [46, 716, 4], [236, 772, 2], [266, 866, 5], [96, 868, 2], [324, 952, 4]
 ];
 /** A clump's flowers round its centre (u), by how many: loose, a little wider than deep (the ground's foreshortening). */
 const CLUMP_AT: Record<number, readonly Pt[]> = {
@@ -219,8 +231,8 @@ export const flowerById = (id: string): Flower | undefined => FLOWERS.find((f) =
 
 // ---- geometry helpers -----------------------------------------------------------------------------------------------
 
-/** The stream's half-width and centre x at z along its north–south reach, or null off it (z ≥ 768, before it turns to
- *  the mouth). */
+/** The stream's half-width and centre x at z along its north–south reach, or null off it (z ≥ 768, before it bends
+ *  west). */
 export function riverNS(z: number): { x: number; hw: number } | null {
   for (let i = 0; i < RIVER.length - 1 && RIVER[i][1] > 768; i++) {
     const a = RIVER[i], b = RIVER[i + 1];
@@ -256,11 +268,11 @@ export const inOval = (o: { x: number; z: number; rx: number; rz: number }, x: n
   ((x - o.x) / (o.rx + grow)) ** 2 + ((z - o.z) / (o.rz + grow)) ** 2 <= 1;
 
 /** NH's freshwater location of a cast at (x, z): the pond, the clifftop (above the cliff, or the falls' pool at its
- *  foot: the upper tier is beyond the horizon), the river mouth (the wide reach on the east beach) or the river. */
+ *  foot: the upper tier is beyond the horizon), the river mouth (the wide reach on the west beach) or the river. */
 export function freshWhere(x: number, z: number): FreshWhere {
   if (inOval(POND, x, z, 12)) return 'pond';
   if (z > CLIFF.z0 - FALLS_POOL) return 'clifftop';
-  if (x > 396 && z < 770) return 'mouth';
+  if (x < -6 && z < 700) return 'mouth';
   return 'river';
 }
 
@@ -291,6 +303,7 @@ function polyDist(line: readonly Pt[], x: number, z: number): number {
 export type Surface = 'sea' | 'sand' | 'grass' | 'dirt' | 'stone' | 'water';
 /** What the ground is at (x, z): footsteps and taps pick their sound and flourish from it. */
 export function surfaceAt(x: number, z: number): Surface {
+  if (onBridge(x, z)) return 'stone';
   if (!onLand(x, z)) return 'sea';
   if (inRiver(x, z) || inOval(POND, x, z) || inOval(SPRING, x, z)) return 'water';
   if (x >= CLIFF.stair[0] && x <= CLIFF.stair[1] && z >= CLIFF.z0 - 4 && z <= CLIFF.z1 + 4) return 'stone';

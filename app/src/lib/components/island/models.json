@@ -1,4 +1,8 @@
 {
+  "bridges/stone-deck": {"ax":0.5,"ay":0.5,"mu":[30.2,40.8]},
+  "bridges/stone-deck-winter": {"ax":0.5,"ay":0.5,"mu":[30.2,40.8]},
+  "bridges/stone-front": {"ax":0.5,"ay":1,"mu":[30.1,21.6]},
+  "bridges/stone-front-winter": {"ax":0.5,"ay":1,"mu":[30.1,21.6]},
   "bushes/blue-hydrangea": {"ax":0.4831,"ay":0.8863,"mu":[10.9,10.4]},
   "bushes/blue-hydrangea-winter": {"ax":0.4831,"ay":0.8863,"mu":[10.9,10.4]},
   "bushes/holly": {"ax":0.4752,"ay":0.9334,"mu":[11.6,10.6]},

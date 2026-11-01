@@ -274,10 +274,11 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   popup, a bite's 「！」) stand over everything at their true size. Only nodes in [camZ − 260, camZ + 900] are shown.
 - **The ground** is baked (`scripts/terrain.ts`, `npm run terrain`: one WebGL shader in Chrome, seeded noise, distance
   fields with soft noisy edges, 4× supersampling, no outlines; `cwebp`): the sea's turquoise rings, wet sand and lacy
-  foam, the speckled sand, NH's grass with leaf flecks, ragged dirt paths with tufts and pebbles, running-bond brick
-  paths, the flagstone plaza and aprons, the meandering river and pond (dark channel, light shallows, muddy banks,
-  overhanging grass), the cliff's strata, the stairs, the bridges' decks, the dock and every still thing's contact
-  shadow. 8 chunks of 362.5u per look (2 px a unit), drawn by 40 bands bent onto the log (`WorldGround`); chunks 0–3
+  foam, the speckled sand, NH's grass with leaf flecks, ragged dirt paths with tufts and pebbles, the
+  campsite's worn clearing, the meandering stream and pond (dark channel, light shallows, muddy banks, overhanging
+  grass), the stream's mouth fanning into the shallows on the west beach, the stone bridge's deck (NH's own model seen
+  from straight above, `bridges/stone-deck` and its snowy look from `scripts/models.ts`, drawn as a texture with its
+  soft shadow on the water), the cliff's strata, the stairs and every still thing's contact shadow. 8 chunks of 362.5u per look (2 px a unit), drawn by 40 bands bent onto the log (`WorldGround`); chunks 0–3
   at once, 4–7 when the camera nears them or the browser is idle; only the day's look loads. **Six looks**, each
   dressed by `scripts/terrain-seasons.ts` (painted over the ground, under the contact shadows): spring (clover, 491 KB),
   **spring-petals** in the blossom days Apr 1–10 (cherry petals heaped under the blossoming oaks, along the paths' edges
@@ -288,19 +289,23 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   snowy to the water's edge: NH's rivers never freeze; 405 KB). Time of day is never baked (the tint does it). Upright sprites stand at
   the near edges: the cliff's face (40u tall, world.ts FACE_H: three broken layers scored top to bottom by NH's rounded
   ribs and grooves, a thick scalloped grass lip with long drooping tufts, eight carved stone steps with lit rounded
-  noses and moss in the joints, mossy boulders at its foot), the bridges' fronts, the dock's. The pond's edge wanders
+  noses and moss in the joints, mossy boulders at its foot); the stone bridge's near end (`WorldWater`: NH's model
+  seen level, its top 36%: the end posts and the deck's lip, `bridges/stone-front`, snowy in winter). The pond's edge wanders
   and reed clumps (a few cattails) grow on its far and west banks.
 - **The live water** (`WorldWater`): the shore's foam wash (`ShoreWash`), the waterfall's sheets, foam and mist
   (`Waterfall`: 50u wide and 45u tall, layered sheets with two slow translucent curtains, a wide foam pool, spray and
   mist), glints twinkling on the open sea, flow streaks down the river, the pond's lily pads and ripple (petals
-  or maple leaves afloat in their weeks, and riding the river: NH's petal and leaf icons, one every ~50u along the east
-  reach and the crossing, each 36u downstream over 15 s, turning): CSS only, held still under a sheet and while hidden.
+  or maple leaves afloat in their weeks, and riding the river: NH's petal and leaf icons, one every ~50u from the falls'
+  pool to the mouth, none under the bridge, each 36u downstream over 15 s, turning): CSS only, held still under a sheet and while hidden.
 - **Layout** (`world.ts`): まえ: the wide front beach, a palm at each of its outer edges by the water, plumeria at the
   grass edge, the villagers' homes A (132, 214, ウェイ) and B (262, 214, うめ) on both phones (never mirrored per phone) with the goal trees on their outer sides (60 / 332,
   216), the tape deck between them, the rock, the dig spots, an oak and a cedar behind the lawn, the hedge at z 600 with
-  streetlamps at its gap. One dirt path runs up the middle from the beach to the campsite's clearing, and on to the
-  stairs. The stream rises at the spring on the upper tier, falls through the cliff (x 351…393) and meanders down the
-  east side to its mouth on the east beach. おく: the month's bushes either side of the path, the pond (74, 772) with a
+  streetlamps at the bridge's front corners. One dirt path runs up the middle from the beach to the campsite's
+  clearing, and on to the stairs. The stream rises at the spring on the upper tier, falls through the cliff (x
+  351…393), meanders down the east side, bends west at z ≈ 700 and crosses the island between the health lawn and おく
+  (z ≈ 645, its width breathing 29–33u), under the stone bridge where the path crosses it (`BRIDGE`: x 195, z
+  622…670, 35.5u wide: NH's 30.2 × 40.8 model units at 1.18u each), out to its mouth on the west beach (fishing: the
+  river along both reaches, the mouth's wide water, the falls' pool). おく: the month's bushes either side of the path, the pond (74, 772) with a
   flat rock, the bamboo grove by the stream, the campsite's tent (196, 984) in its worn clearing with its sign, hollies
   and garden lanterns, white lanterns at the stairs' foot, the cliff (z 1040…1080) with its stairs (x 36…84), a cedar
   forest on the upper tier.
@@ -821,9 +826,8 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
   from the bank). A catch or a find is held up over my villager's head where it stands. A flea is tapped off my
   villager itself.
 - **Tap-to-walk** (a tap on grass or sand that nothing else took; `tapWalk.ts planTap` over `nav.ts`): my villager runs
-  there (200 u/s), over the bridges and up the stairs. A tap on ground it can't stand on snaps to the nearest walkable
-  point within 40u; ground nobody can reach (the sand east of the river, walled in by its cedars) to the nearest
-  reachable point, facing it. Water never walks (it ripples), and a building's footprint knocks at its door in place.
+  there (200 u/s), over the bridge and up the stairs. A tap on ground it can't stand on snaps to the nearest walkable
+  point within 40u; ground nobody can reach to the nearest reachable point, facing it. Water never walks (it ripples), and a building's footprint knocks at its door in place.
   The partner's relayed walks replay the same planner (their softer ring where they tapped). A cream ring marks the
   spot and shrinks away (NH has none: the least feedback). It stays there for the rest of the Tokyo day
   (`island-stay` in localStorage, with the date; a new day finds it home), and so does it on the partner's phone: the
@@ -834,13 +838,13 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
 - **Sheets and hiding:** a sheet stops everyone where they are; uncovered, the outings wander back; hidden over 30 s,
   they're back on return. A balloon opens only over a villager standing still, and steps aside while the camera
   scrolls.
-- **Walk mask** (`walkGeo`): land, the plaza, both bridges and the stairs; not the sea, the river, the pond, the spring,
+- **Walk mask** (`walkGeo`): land, the bridge's deck (inside its rails) and the stairs; not the sea, the river, the pond, the spring,
   the cliff face, building footprints, trunks, the rock, bushes or props. Rasterised once on a 4u grid; named
-  nodes (homes, the trees, the shore, both ends of each bridge and of the stairs, every door, the pondside, the river's
+  nodes (homes, the trees, the shore, both ends of the bridge and of the stairs, every door, the pondside, the river's
   casting spots, centre stage) and the obstacles' padded corners make a visibility graph built once (~15 ms); a
   straight segment when clear, else Dijkstra through it. Outings, goal walks and the meet-up use it.
 - **Navigation for taps** (`nav.ts`): the same ground as convex polygons grown by an 8u pad (the river a chain of
-  quads cut at the bridges' decks, the pond a 16-gon, the cliff two strips either side of the stairs, the footprints,
+  quads cut at the bridge's deck, the pond a 16-gon, the cliff two strips either side of the stairs, the footprints,
   trunks, bushes, props, the hedge, the fences, the bamboo, the rocks; off the land is the sea, and the land is convex, so two points on
   it see each other unless a polygon is between). Nodes: the polygons' corners a step outside plus the named nodes
   (the walk mask's names, so a relayed node id means the same); only bitangent edges up to 320u are kept. ~400 nodes,
@@ -848,8 +852,7 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
   tap's snap and A* p50 0.05 ms, p95 0.15 ms (`PERF=1 npx vitest run nav` checks the budget; CI only catches blow-ups). Each node knows its connected region, so a tap
   never aims at a pocket nobody can reach.
 - **Footsteps** by the ground under the walker (`tapWalk.ts stepCue` over `world.ts surfaceAt`): grass, sand, snow
-  (grass and dirt in winter), the shops' brick, the plaza's and the stone bridge's stone, the log bridge's and the
-  dock's wood (a hollow knock); a rainy day splashes on all but wood.
+  (grass and dirt in winter), the stairs' and the stone bridge's stone; a rainy day splashes.
 - **Rendering:** the feet are a world node whose position is read each frame from the director (`livePos`: along the
   current segment by the clock) while anyone walks, the one rAF; depth from the feet's z every frame. Facing by
   direction (`LOOKS_RIGHT`; `NO_MIRROR` renders lean instead of flipping). The walk cycle is `if-walkbounce`, a dust
@@ -911,8 +914,9 @@ about 3 px per world unit of the height it's drawn at. Every look of one thing s
 another. Outputs keep the scene's art keys (`trees/oak-summer`, `bushes/holly`, `deco/campsite`…) plus their looks:
 `-winter` (the scene picks it in winter when it exists), `-lit`, and the oak's `-trunk` / `-canopy` layers (its two
 nodes, a villager between them). `island/models.json` holds where each stands (its feet or door point as fractions of
-the image, `Scenery`'s anchor) and its size in model units. NH has no model of the plumeria or the campsite sign: those stay catalog icons. The pipeline
-also has NH's fences, benches, signposts and bridges (top-down, for the terrain bake) when the world wants them.
+the image, `Scenery`'s anchor) and its size in model units. NH has no model of the plumeria or the campsite sign: those stay catalog icons. The stone
+bridge is rendered twice: its deck from straight above (`bridges/stone-deck`, the terrain bake's texture, never shown
+or precached by the app) and its near end seen level (`bridges/stone-front`, an upright piece).
 
 ## Sound
 
