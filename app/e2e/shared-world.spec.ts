@@ -90,3 +90,28 @@ test('two players: a shake on one tab plays on the other (their villager walks o
   await expect(c.locator('button[data-branch]')).toHaveCount(0);
   await ctx.close();
 });
+
+test('two players: a bug netted on one tab is gone on the other, where their villager holds it up with the line', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const a = await ctx.newPage(), b = await ctx.newPage();
+  for (const [p, as] of [[a, ''], [b, '&as=B']] as const) {
+    await p.goto(`?demo&date=2026-05-10T12:00&critter=ladybug${as}`);
+    await expect(p.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
+  }
+  for (const p of [a, b]) await expect(p.locator('[data-critter="ladybug"]')).toBeAttached({ timeout: 6000 });
+  await a.waitForTimeout(900);
+  const r = await a.locator('[data-critter="ladybug"]').evaluate((el) => {
+    const x = el.getBoundingClientRect();
+    return { x: x.left + x.width / 2, y: x.top + x.height / 2 };
+  });
+  await a.mouse.click(r.x, r.y);
+  await expect(a.locator('[data-fx="catch"]')).toContainText('テントウムシ', { timeout: 4000 });
+  // B: gone, and A's villager (B's partner) holds it up: 「〇〇が テントウムシを つかまえた！」
+  await expect(b.locator('[data-critter="ladybug"]')).toHaveCount(0, { timeout: 5000 });
+  await expect(b.locator('[data-fx="catch"], [data-partner-news]').first()).toContainText('テントウムシを つかまえた！', { timeout: 5000 });
+  // the shared day has it as A's
+  const day = JSON.parse((await b.evaluate(() => localStorage.getItem('island-demo.world.B')))!) as { events: { kind: string; id?: string; who: string }[] };
+  expect(day.events).toContainEqual(expect.objectContaining({ kind: 'catch', id: 'hook:ladybug', who: 'A' }));
+  await ctx.close();
+});

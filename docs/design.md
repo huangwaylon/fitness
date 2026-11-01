@@ -462,12 +462,18 @@ picked up is gone on both, what a shake drops lies on both, each villager stands
 
 ### Critters
 
-`island/Critters.svelte`, `island/critters.ts`, `e2e/critters.spec.ts`. NH species on the Tokyo clock, for fun and
-frequent, and the same on both phones (ambient life's 10-second slots, `island/ambient.ts`, docs/backend.md "Ambient
-life"): the sea holds a shadow or, 1 turn in 4, bubbles most of the time, a fresh water in view its own shadow
-([Pond](#pond)), and a bug comes by every so often, each of the same kind and species on both phones and leaving at the
-same boundary; this phone shows each where its camera sees it (covered or hidden, the critters leave; back, those still
-staying are there); ≤ 1 in each water and 1 bug. **Seasons are a flavour, not a gate:** any species in any month, 3× likelier in its NH
+`island/Critters.svelte`, `island/critters.ts`, `island/critterPath.ts`, `e2e/critters.spec.ts`. NH species on the Tokyo
+clock, for fun and frequent, and the same on both phones (ambient life's 10-second slots, `island/ambient.ts`,
+docs/backend.md "Ambient life"): the sea holds a shadow or, 1 turn in 4, bubbles most of the time, a fresh water its
+own shadow ([Pond](#pond)), and a bug comes by every so often, each of the same kind and species on both phones and
+leaving at the same boundary. **Where it is, is the world's** ([Shared world](#shared-world)): its seed picks the fresh
+water, the swim patch, the trunk, the flower head or the patch of grass, and every glide, hop, dart, rest and landing
+at its time after it came (`critterPath.ts`), so both phones have it at the same spot doing the same thing, and a phone
+opening mid-stay finds it where the other shows it; each phone shows it when its camera sees that spot (covered or
+hidden, the critters leave; back, those still staying are there); ≤ 1 in each water and 1 bug. A catch or an escape
+is shared by the critter's id (first wins): it's gone on both phones, and on the partner's their villager runs over
+and nets it, reels it in, dives or digs, and holds it up. A bug out of a shaken bush, from under the rock or off my
+villager is put on the island for both (`put`), its moves from its id. **Seasons are a flavour, not a gate:** any species in any month, 3× likelier in its NH
 northern-hemisphere months; hours still hold.
 
 - **Fishing** (the sea in front of the beach, seen from まえ, or a fresh water: `critters.ts` `Water`): a shadow (NH
@@ -485,7 +491,8 @@ northern-hemisphere months; hours still hold.
   mound (a tap digs it up); the tarantula and the scorpion at night, gentle: the first tap makes one rear up, a second
   while reared makes it charge off, and once it settles a tap nets it; a flea hops off my villager 1 in 10 taps
   (Apr–Nov); the pondskater, diving beetle and giant water bug on the pond and the river's still reach. A tap nets one;
-  within 80px it startles away. Bugs keep clear of every control. Left out: the blue weevil beetle, the giraffe stag
+  within 80px it startles away (on both phones). A bug a dev hook brings keeps clear of every control; one of ambient
+  life's sits where its seed puts it (a tap on it comes first, before a control under it). Left out: the blue weevil beetle, the giraffe stag
   and the horned hercules (no icons), the dung beetle, the ant and the fly
   ([decisions.md](decisions.md#the-rest-of-nhs-bugs-what-the-island-can-hold)).
 - **Diving** (`island/sea.ts`, NH's 40 sea creatures, loaded with the first bubble spot; `e2e/dive.spec.ts`): 1 turn in
@@ -544,8 +551,8 @@ and its mouth, and the spring and the river above the cliff.
   (salmon, king salmon, sturgeon) and the clifftop's 4 (char, cherry salmon, golden trout, stringfish); as in NH the
   river's own also come to the mouth and the clifftop. `FRESH`, its own chunk fetched with the first freshwater shadow.
   Season weights the odds, hours hold, rare = low weight.
-- **Visits:** as often as the sea's (their own slot), one shadow per water, to a water in view (nearer reaches first),
-  45 s if nobody fishes, drawn at 0.65 of the sea's size; my villager fishes from the pond's bank (`pondside`) or the
+- **Visits:** as often as the sea's (their own slot), one shadow per water, to the water and reach its seed picks
+  (the same on both phones, in view or not: `critterPath.ts` freshWater), 45 s if nobody fishes, drawn at 0.65 of the sea's size; my villager fishes from the pond's bank (`pondside`) or the
   river's nearest bank.
 - **Its bugs:** the pondskater and diving beetle by day in summer, the giant water bug at night.
 - **The catch:** a ずかん `find` of kind `fish`, like the sea's.

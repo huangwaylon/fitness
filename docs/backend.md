@@ -277,13 +277,16 @@ show the same island without a message (decisions: *Ambient life from the clock*
 - **Critters** (`spawnsIn(date, slot)`, `crittersAt(date, slot)`): per channel (the sea: a shadow or bubbles,
   `BUBBLE_SHARE`; fresh water; bugs) a slot brings one with odds 0.6 / 0.6 / 0.5 when the last one's stay is over, at
   `at` ms into the slot, staying 4–5 slots (bubbles 3, a bug 2); the stays are chained per 10-minute block from the date
-  and slot alone, ending within it, so a phone opening mid-stay finds the ones still there. `Critters.svelte` shows
-  each where its camera sees that water or patch (the fresh water among those in view), or not at all.
+  and slot alone, ending within it, so a phone opening mid-stay finds the ones still there. Where each is comes from its
+  seed too (`critterPath.ts`: the fresh water, its swim patch or the bug's spot, and its itinerary, each move at a time
+  after it came, `legAt` for a phone joining mid-stay), never from a camera; `Critters.svelte` places it there and
+  each phone shows it when its camera sees that spot. Its id is `<kind>:<slot>` ([Shared world](#shared-world)).
 - **Agreement and its limits:** the same inputs give the same slot (tested with shuffled inputs and skewed clocks).
   The phones differ where their inputs do: a clock offset off by more than the 500 ms margin, a walk sent within
-  ~20 ms of a boundary, a villager's position from before the phones met, a local skip (a sheet, a reaction playing,
-  the 3-minute slow-down), and the camera (each phone shows the critters its view holds). What a person does by hand
-  stays local: a cast's bite plan, a dive's outcome, a line read, a tap's reaction, a balloon, a shooting star.
+  ~20 ms of a boundary, a local skip (a sheet, a reaction playing, the 3-minute slow-down), and the camera (each phone
+  shows what its view holds of the same world). What a person does by hand plays on their phone as it always did (a
+  cast's bite plan and its hesitation, a dive's chase, a tarantula rearing, a line read, a balloon, a shooting star);
+  its outcome is shared ([Shared world](#shared-world)).
 
 ## Shared world
 
@@ -312,7 +315,11 @@ a person does is a small intent over the relay, kept by the room for the day, fo
 - **The demo** (`sync/live-local.ts`): the demo's two players are two tabs of one browser (`?demo`, `?demo&as=B`);
   a BroadcastChannel carries the intents and the sending tab plays the room's rules on a log in localStorage
   (`island-demo.relay`), so the e2e's two-player tests (`e2e/shared-world.spec.ts`) run on it without a network.
-- **What's shared:** where each villager stands (the last walk: a phone opening later puts the partner's villager
+- **What's shared:** the critters: each where its seed puts it ([Ambient life](#ambient-life)), and its catch or
+  escape by its id (`catch {what, id: <kind>:<slot>, at, how}`: `rod`, `net`, `dive`, `dig`, or `flee`, claimed at the
+  tap so the relay's first wins; my cast as an `act` so my villager walks down with the rod on the other phone too), a
+  bug out of a bush, from under the rock or off a villager as a `put` (`bug:<id>:<bush|rock|flea>`, its itinerary
+  from its id); where each villager stands (the last walk: a phone opening later puts the partner's villager
   there; mine stays where I sent it for the day), the partner's tap ring, and every tree's shakes: the outcome
   (`shake {tree, drop}`), what it left lying (a branch `br:<tree>:<k>`, coconuts `co:<tree>:0|1`, named from the
   day's shakes so both phones agree), a dangling bug (`dg:<tree>:<k>`) and the nest's wasps (`ws:<tree>:<k>`) as

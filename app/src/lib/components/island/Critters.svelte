@@ -21,7 +21,10 @@
   //   (now and then resting on a flower), a ladybug or a mantis on a flower's head, the moth round the lamps at night,
   //   dragonflies and fireflies near the water, grasshoppers, crickets and the night's tarantula and scorpion in the
   //   grass, the hermit crab and the wharf roach on the beach, the water bugs on the pond and the river's still reach.
-  //   A bug only comes where the camera can see it, clear of every control.
+  //   Where each is, is the shared world's (critterPath.ts, docs/backend.md#shared-world): a slot's critter is placed in
+  //   the world and walked through its stay from its seed, the same on both phones, and each phone shows what its
+  //   camera sees of it; a catch or an escape is shared by the critter's id (first wins), and the partner's plays here:
+  //   their villager runs over and nets it, reels it in or dives for it, and holds it up.
   //   Bugs: a tap on one swings the net (caught); a tap close by startles it away. A tarantula or a scorpion rears up at
   //   the first tap; a tap while it's reared and it charges off; once it settles, a tap nets it. A mole cricket chirps
   //   under a mound of earth: a tap digs it up. A tap on my villager now and then sends a flea hopping off it.
@@ -55,16 +58,21 @@
   import { findArt } from './beach.ts';
   import { eggTime, eventNow } from './events.ts';
   import { eggOnLine } from './eggs.ts';
-  import { LONG_REACH, approach, goHomeLater, turnTo } from './avatar.ts';
+  import { LONG_REACH, approach, goHomeLater, partnerAct, turnTo } from './avatar.ts';
+  import { world as shared } from '#lib/store/world.svelte.ts';
+  import { caught } from '#lib/sync/world-day.ts';
+  import type { How } from '#lib/sync/live-protocol.ts';
+  import { LANDS, PACE, STILL, bubblesAt, bugPath, critterId, fishPath, freshWater, groundOk, inWater, legAt, type Leg } from './critterPath.ts';
+  import { tellPartner } from './partnerNews.ts';
   import { actors, livePos, useTool } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from './sea.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
-  import { ROCK, SEA_BOX, SHORE_Z, surfaceAt } from './world.ts';
+  import { ROCK, SEA_BOX, SHORE_Z } from './world.ts';
   import { nearestWalkable, walkGeo } from './walkGraph.ts';
   import {
     BUGS, BUSHES, CAST_U, FISH, FLOWER_CELLS, FRESH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS, bitePlan,
-    bugPlace, bushBug, castInto, castPhase, critterArt, findKind, freshAreas, shadowLen, fleaJumps, hesitatePlan, hookItem, netSwing, 
+    bugPlace, bushBug, castInto, castPhase, critterArt, findKind, freshAreas, shadowLen, fleaJumps, hesitatePlan, hookItem, netSwing,
     oddsAt, patches, perches, pickBug, pickFish, reel, stalkTap, swimAt, waterAt, type BitePlan, type BugId, type BugPlace, type Catch,
     type FishId, type Flight, type JunkId, type Patch, type StalkState, type Swim, type Water
   } from './critters.ts';
@@ -93,6 +101,8 @@
     area: Swim; gone: boolean; dash: boolean;
     /** Closing in on a bobber in short darts (NH): each one quick off the mark, easing in. */
     spurt?: boolean;
+    /** The shared world's (critterPath.ts): its id (its catch is shared), its itinerary and when it came (relay ms). */
+    cid?: string; legs?: Leg[]; t0?: number;
   }
   interface Cast {
     /** The shadow it was cast to (its water). */
@@ -127,7 +137,12 @@
     stalk?: StalkState;
     /** Netted: it holds still where it was seen (its translate frozen) until the swing lands. */
     held?: boolean; freeze?: string;
+    /** The shared world's (critterPath.ts): its id, its itinerary and when it came (relay ms). */
+    cid?: string; legs?: Leg[]; t0?: number;
   }
+  /** A shared critter's id and where its itinerary comes from: its seed, when it came (relay ms) and how long it stays
+   *  in all (ms). */
+  interface Shared { cid?: string; path?: { seed: number; t0: number; total: number } }
   /** `held`: the net is in my villager's hand (no floating one). Stage units (the screen's overlay). */
   interface Net { n: number; x: number; y: number; held?: boolean }
 
@@ -149,9 +164,9 @@
   let card = $state<CatchCard | null>(null);
   let net = $state<Net | null>(null);
   /** A spot of bubbles in the sea: something to dive for. */
-  let bubbles = $state<{ n: number; item: DiveItem; x: number; z: number } | null>(null);
+  let bubbles = $state<{ n: number; item: DiveItem; x: number; z: number; cid?: string } | null>(null);
   /** A dive: the splash, then (a quick one) its shadow darting off, catchable until `until`. */
-  let diving = $state<{ n: number; item: DiveItem; x: number; z: number; ax: number; az: number; ms: number; size: number; chase: boolean; until: number; gone: boolean } | null>(null);
+  let diving = $state<{ n: number; item: DiveItem; x: number; z: number; ax: number; az: number; ms: number; size: number; chase: boolean; until: number; gone: boolean; cid?: string } | null>(null);
   /** The sea creatures' module (island/sea.ts): loaded with the first bubble spot, out of the island's first load. */
   let S: typeof import('./sea.ts') | null = null;
   let seaChunk: Promise<typeof import('./sea.ts')> | null = null;
@@ -214,9 +229,6 @@
     }
     return null;
   }
-  /** In that water, clear of its edge. */
-  const inWater = (water: Water, x: number, z: number) =>
-    water === 'sea' ? z <= -14 && surfaceAt(x, z) === 'sea' : waterAt(x, z, false, -4) === water;
   /** A shadow's length (u): NH's sizes 1–6 (critters.ts SHADOW_U); the eels' thin shadow is long; smaller in fresh water. */
   const sizeU = (f: Fish) => shadowLen(f.size, f.shape) * (f.water === 'sea' ? 1 : POND_SHADOW);
   /** Where a shadow may swim to now: in its water, on screen, clear of the controls. */
@@ -243,12 +255,13 @@
   let pondChunk: Promise<typeof import('./pondFish.ts')> | null = null;
   const loadPond = () => (pondChunk ??= import('./pondFish.ts'));
 
-  /** A shadow in `water` where the camera can see it (`pinned`: or anywhere in it), `want` being one of its fish. */
-  /** `stay`: how long it stays (ms; true: STAY_MS.fish, false: until caught); `r`: what it is (ambient life's seeded
-   *  species, the same on both phones). */
-  async function spawnFish(water: Water, stay: boolean | number = true, want?: FishId | PondFishId, pinned = false, r = rand): Promise<boolean> {
+  /** A shadow in `water`, `want` being one of its fish: a shared one (`o.path`) where its seed puts it, wherever that is
+   *  (the projector shows it when the camera sees it); else (a dev hook's) where the camera can see it (`pinned`: or
+   *  anywhere in it). `stay`: how long it stays (ms; true: STAY_MS.fish, false: until caught); `r`: what it is
+   *  (ambient life's seeded species, the same on both phones). */
+  async function spawnFish(water: Water, stay: boolean | number = true, want?: FishId | PondFishId, pinned = false, r = rand, o: Shared & { month?: number; hour?: number } = {}): Promise<boolean> {
     if (fishes[water]) return true;
-    const { month, hour } = jst(now());
+    const t = jst(now()), month = o.month ?? t.month, hour = o.hour ?? t.hour;
     let id: FishId | PondFishId, look: { size: number; shape?: 'narrow' | 'fin' };
     if (water === 'sea') {
       id = want ?? pickFish(month, hour, r, weather.sky);
@@ -259,26 +272,40 @@
       id = want ?? pickFresh(water, month, hour, r);
       look = POND_FISH[id as PondFishId];
     }
-    const ok = swimOk({ water, ...look }, guards(4));
-    // the nearer reaches first (by the horizon a shadow is a speck), in a random order
-    const far = (a: Swim) => (w.screenAt(a.cx, a.cz).ground < 0.6 ? 1 : 0);
-    const areas = areasOf(water).filter(inViewArea).map((a) => [a, far(a) + rand()] as const).sort((a, b) => a[1] - b[1]).map(([a]) => a);
-    let area: Swim | null = null, p: { x: number; z: number } | null = null;
-    for (const a of areas) if ((p = freeSwim(a, ok))) { area = a; break; }
-    if (!p && pinned) {
-      // nowhere on screen: at its water all the same (the e2e brings the camera to it)
-      area = areas[0] ?? areasOf(water)[0];
-      p = { x: area.cx, z: area.cz };
+    let area: Swim | null = null, p: { x: number; z: number } | null = null, anchor: { x: number; z: number } | null = null;
+    let legs: Leg[] | undefined;
+    if (o.path) {
+      // the shared world's: from its seed, where it is now in its stay
+      const path = fishPath(o.path.seed, water, o.path.total);
+      area = path.area;
+      anchor = path.start;
+      legs = path.legs;
+      p = legAt(legs, { ...path.start, lift: 0 }, shared.now() - o.path.t0).at;
+    } else {
+      const ok = swimOk({ water, ...look }, guards(4));
+      // the nearer reaches first (by the horizon a shadow is a speck), in a random order
+      const far = (a: Swim) => (w.screenAt(a.cx, a.cz).ground < 0.6 ? 1 : 0);
+      const areas = areasOf(water).filter(inViewArea).map((a) => [a, far(a) + rand()] as const).sort((a, b) => a[1] - b[1]).map(([a]) => a);
+      for (const a of areas) if ((p = freeSwim(a, ok))) { area = a; break; }
+      if (!p && pinned) {
+        // nowhere on screen: at its water all the same (the e2e brings the camera to it)
+        area = areas[0] ?? areasOf(water)[0];
+        p = { x: area.cx, z: area.cz };
+      }
     }
     if (!area || !p) return false;
+    anchor ??= p;
     // a dev hook's fish (kept until caught: `stay` false) is always a fish, never junk
     const item = want ?? (stay ? hookItem(id, r) : id);
     preload(critterArt(item));
     void loadLines().catch(() => {});
-    const f: Fish = { n: ++seq, item, water, size: look.size, shape: look.shape, ...p, ax: p.x, az: p.z, ms: 0, flip: rand() < 0.5, rot: 0, area, gone: false, dash: false };
+    const f: Fish = {
+      n: ++seq, item, water, size: look.size, shape: look.shape, x: p.x, z: p.z, ax: anchor.x, az: anchor.z, ms: 0, flip: rand() < 0.5, rot: 0, area,
+      gone: false, dash: false, ...(o.cid ? { cid: o.cid } : {}), ...(legs ? { legs, t0: o.path!.t0 } : {})
+    };
     fishes[water] = f;
     const fp = fishes[water]!; // the state's proxy (the timers compare against it)
-    later(() => swim(fp), 400);
+    later(() => swim(fp), legs ? 60 : 400);
     if (stay) later(() => leaveFish(fp), stay === true ? STAY_MS.fish : stay);
     return true;
   }
@@ -295,9 +322,22 @@
     face(f, x, z);
     Object.assign(f, { x, z, ms });
   }
-  /** A slow wander to another spot in its patch of water (NH shadows dawdle), unless it's busy with a bobber. */
+  /** A slow wander to another spot in its patch of water (NH shadows dawdle), unless it's busy with a bobber: a shared
+   *  one along its itinerary, leg by leg at its time (the same on both phones). */
   function swim(f: Fish) {
     if (fishes[f.water] !== f || f.gone) return;
+    if (f.legs && f.t0 !== undefined) {
+      const e = shared.now() - f.t0;
+      const k = f.legs.findIndex((l) => l.t + l.ms > e);
+      if (k < 0) return;
+      const l = f.legs[k];
+      if (l.t > e) return later(() => swim(f), l.t - e);
+      if (cast?.fish !== f) {
+        f.spurt = false;
+        swimTo(f, l.x, l.z, Math.max(0, l.t + l.ms - e));
+      }
+      return later(() => swim(f), Math.max(0, l.t + l.ms - e) + 20);
+    }
     if (cast?.fish !== f) {
       f.spurt = false;
       const p = freeSwim(f.area, swimOk(f, guards(4))) ?? f;
@@ -311,12 +351,13 @@
     f.gone = true;
     later(() => fishes[f.water] === f && (fishes[f.water] = null), 1200);
   }
-  /** The fish is spooked: a quick dart away from the bobber and gone. */
+  /** The fish is spooked: a quick dart away from the bobber and gone (on both phones: it got away). */
   function flee() {
     const c = cast, f = c?.fish;
     cast = null;
     sceneSfx('flee');
     if (!f || fishes[f.water] !== f) return;
+    claim(f.cid, f.item, f.x, f.z, 'flee');
     const p = fishNow(f) ?? f;
     const d = c ? Math.hypot(p.x - c.x, p.z - c.z) || 1 : 1;
     const [ux, uz] = c ? [(p.x - c.x) / d, (p.z - c.z) / d] : [f.flip ? 1 : -1, 0];
@@ -350,6 +391,8 @@
     const spot = anglerSpot(f.water, to.x, to.z);
     // my villager walks to that spot (avatar.ts), rod in hand, and casts from there
     casting = true;
+    // the partner's phone: my villager walks down to the water with the rod out too
+    if (f.cid) shared.share({ kind: 'act', act: 'cast', id: f.cid, pt: [Math.round(to.x), Math.round(to.z)] });
     const { ms } = approach(to.x, to.z, { spot: [Math.round(spot[0]), Math.round(spot[1])], tool: 'rod', toolMs: 20_000, linger: 20_000, far: f.water !== 'sea' });
     const th = { ...to, sx: spot[0], sz: spot[1] };
     if (ms) later(() => throwLine(f, th), ms);
@@ -493,9 +536,11 @@
     sceneSfx('reel');
     if (r === 'reel') return;
     if (fishes[f.water] === f) fishes[f.water] = null;
+    // first wins: the partner reeling in the same shadow a moment before has it (their news says so here)
+    if (!claim(f.cid, f.item, c.x, c.z, 'rod')) return;
     sceneSfx('catch');
     const at = stageAt(c.x, c.z);
-    show(f.item, at.x, at.y);
+    show(f.item, at.x, at.y, f.cid);
   }
 
   /** The line's in (caught, gone or never cast): the rod goes away and my villager heads home in a while. */
@@ -509,27 +554,7 @@
   });
 
   // ---------- bugs ----------
-  /** Bugs that don't fly in: a cicada's shell, a walking stick (they're on their trunk already). */
-  const STILL = new Set<BugId>(['cicada-shell', 'walking-stick']);
-  /** NH's butterflies that land on flowers now and then (the moths, the bee and the mosquito keep flying). */
-  const LANDS = (id: BugId) => /butterfly|birdwing|bluebottle|emperor/.test(id);
-  /** A crawler's pace: how far it goes at a time (u) and how long that takes (ms). A hermit crab scuttles, a tiger beetle
-   *  runs, a snail or a walking leaf barely moves, a stink bug ambles over the flowers. */
-  const PACE: Partial<Record<BugId, [number, number, number]>> = {
-    'hermit-crab': [30, 450, 700], 'tiger-beetle': [34, 260, 420], snail: [4, 3500, 5000], 'walking-leaf': [6, 3000, 4200],
-    stinkbug: [10, 2200, 3200], 'man-faced-stink-bug': [10, 2200, 3200], tarantula: [14, 1800, 2600], scorpion: [16, 1600, 2400],
-    // on the water: the pondskater skates in quick glides, the diving beetle paddles, the giant water bug lurks
-    pondskater: [12, 260, 420], 'diving-beetle': [8, 900, 1400], 'giant-water-bug': [5, 1800, 2600]
-  };
-  /** The ground a place's bugs keep to (the spot's surface), if any. */
-  function groundOk(place: BugPlace, x: number, z: number): boolean {
-    if (place === 'water') return waterAt(x, z, false, -3) !== null;
-    const s = surfaceAt(x, z);
-    if (place === 'beach') return s === 'sand';
-    if (place === 'grass' || place === 'under-tree' || place === 'rock') return s === 'grass' || s === 'dirt';
-    if (place === 'water-air') return true;
-    return s !== 'sea';
-  }
+  // (what they are and how they move: critterPath.ts STILL, LANDS, PACE, groundOk)
   /** The bed flowers' heads (world, lift measured from the flower as drawn: a bud's or a bloom's): where a ladybug or a
    *  mantis sits and a butterfly rests. The orchid mantis prefers white flowers. */
   function flowerHeads(): (P3 & { white: boolean })[] {
@@ -566,12 +591,13 @@
   /** A bug comes on where NH keeps it and the camera can see it (`pinned`: or at its place anyway); false when there's
    *  nowhere clear for it right now. `from`: it flies (or hops) in from there (a shaken bush, my villager, the rock),
    *  keeping to `area`. */
-  function spawnBug(id: BugId | null, o: { from?: P3; area?: Patch; stay?: boolean | number; pinned?: boolean } = {}): boolean {
+  function spawnBug(id: BugId | null, o: { from?: P3; area?: Patch; avoid?: Patch[]; stay?: boolean | number; pinned?: boolean } & Shared = {}): boolean {
     const { from, area, stay = true, pinned = false } = o;
     if (!id || bug) return !!bug;
     void loadSprite();
     preload(critterArt(id));
     void loadLines().catch(() => {});
+    if (o.path) return sharedBug(id, o, o.path);
     const flight = BUGS[id].flight, place = bugPlace(id);
     let spot: P3 | null = null, patch: Patch | null = null;
     const keep = guards(flight === 'perch' || flight === 'flower' ? 4 : 10);
@@ -611,7 +637,7 @@
     bug = {
       n: ++seq, id, flight, place, ...start, ax: spot.x, az: spot.z, g: Math.max(0.2, w.screenAt(spot.x, spot.z).ground), ms: 0, flip: side < 0,
       gone: false, patch: flight === 'perch' || flight === 'flower' ? null : patch, ok: shown ? ok : (p) => groundOk(place, p.x, p.z), sat: false,
-      hops: 0, rest: 2 + Math.floor(rand() * 2), ...(flight === 'stalk' && { stalk: 'calm' as const })
+      hops: 0, rest: 2 + Math.floor(rand() * 2), ...(flight === 'stalk' && { stalk: 'calm' as const }), cid: o.cid
     };
     // a perch or a flower is its one spot
     if (!bug.patch) bug.patch = { x0: spot.x, x1: spot.x, z0: spot.z, z1: spot.z, l0: spot.lift, l1: spot.lift };
@@ -619,12 +645,46 @@
     if (stay) later(() => bugLeave(), stay === true ? STAY_MS.bug : stay);
     return true;
   }
+  /** A shared bug: where its seed puts it (critterPath.ts bugPath), wherever that is (the projector shows it when the
+   *  camera sees it), and where in its stay it is now. */
+  function sharedBug(id: BugId, o: { from?: P3; area?: Patch; avoid?: Patch[]; stay?: boolean | number } & Shared, p: NonNullable<Shared['path']>): boolean {
+    const white = flowerHeads().filter((h) => h.white).map((h) => FLOWER_CELLS.find((c) => c.x === h.x && c.z === h.z)?.cell ?? '');
+    const path = bugPath(id, p.seed, p.total, { from: o.from, area: o.area, white, avoid: o.avoid });
+    if (!path) return false;
+    const e = shared.now() - p.t0, { k, at } = legAt(path.legs, path.start, e);
+    const spot = path.spot, last = k >= 0 ? path.legs[k] : null;
+    bug = {
+      n: ++seq, id, flight: path.flight, place: path.place, ...at, ax: spot.x, az: spot.z, g: Math.max(0.2, w.screenAt(spot.x, spot.z).ground), ms: 0,
+      flip: spot.x >= 195, gone: false, patch: path.patch, ok: (q) => groundOk(path.place, q.x, q.z), sat: !!last?.sat && e >= last.t + last.ms,
+      ...(path.flight === 'stalk' && { stalk: 'calm' as const }), cid: o.cid, legs: path.legs, t0: p.t0
+    };
+    later(fly, 60);
+    const stay = o.stay ?? true;
+    if (stay) later(() => bugLeave(), stay === true ? STAY_MS.bug : stay);
+    return true;
+  }
   function go(b: Bug, p: P3, ms: number) {
     Object.assign(b, { ms, flip: p.x > b.x, x: p.x, z: p.z, lift: p.lift });
+  }
+  /** A shared bug's next move, at its time (critterPath.ts): the same moves at the same moments on both phones. */
+  function flyLegs(b: Bug, legs: Leg[], t0: number) {
+    if (b.stalk === 'rear') return later(fly, 600); // reared up at my tap: it holds still
+    const e = shared.now() - t0;
+    const k = legs.findIndex((l) => l.t + l.ms > e);
+    if (k < 0) return;
+    const l = legs[k];
+    if (l.t > e) return later(fly, l.t - e);
+    const left = Math.max(0, l.t + l.ms - e);
+    b.sat = false;
+    go(b, l, left);
+    if (l.hop) hopEl?.animate([{ translate: '0 0' }, { translate: '0 calc(-9 * var(--u))', offset: 0.45 }, { translate: '0 0' }], { duration: Math.max(120, left), easing: 'ease-out' });
+    if (l.sat) later(() => bug === b && !b.gone && !b.held && (b.sat = true), left);
+    later(fly, left + 20);
   }
   function fly() {
     const b = bug;
     if (!b || b.gone || b.held || !b.patch) return;
+    if (b.legs && b.t0 !== undefined) return flyLegs(b, b.legs, b.t0);
     const p = freeIn(b.patch, b.ok);
     if (!p) return later(fly, 1000); // nowhere else clear just now: it stays where it is a while
     if (b.flight === 'perch') {
@@ -711,7 +771,33 @@
     const { hour } = jst(now());
     const id: BugId = oddsAt(BUGS.centipede, 1, hour) > 0 ? 'centipede' : 'pill-bug';
     // a little patch of lawn in front of the rock's foot
-    spawnBug(id, { from: { x: ROCK[0] + 8, z: ROCK[1] - 6, lift: 0 }, area: patches('rock')[0] });
+    putBug(id, 'rock', ROCK[0] + 8, ROCK[1] - 6);
+  }
+
+  /** Where a bug put down by a person's doing comes from and keeps to: out of a bush, from under the rock, off a
+   *  villager (`src`), from (x, z). */
+  function putFrom(src: string, x: number, z: number): { from: P3; area: Patch; avoid?: Patch[] } {
+    if (src === 'rock') return { from: { x, z, lift: 0 }, area: patches('rock')[0] };
+    // off the villager it hopped from, never back under its button (its figure stands up the screen from its feet)
+    if (src === 'flea') return { from: { x, z, lift: 34 }, area: { x0: x - 90, x1: x + 90, z0: z - 50, z1: z + 16, l0: 0, l1: 0 }, avoid: [{ x0: x - 30, x1: x + 30, z0: z - 8, z1: z + 48, l0: 0, l1: 0 }] };
+    const b = BUSHES.find((s) => Math.abs(s.x - x) < 2 && Math.abs(s.z - z) < 2), h = b?.h ?? 40;
+    return { from: { x, z, lift: h * 0.7 }, area: { x0: x - 30, x1: x + 30, z0: z - 14, z1: z + 14, l0: 20, l1: 50 } };
+  }
+  /** A string's seed (FNV-1a): a put bug's itinerary from its id, the same on both phones. */
+  const seedOf = (id: string) => {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < id.length; i++) h = Math.imul(h ^ id.charCodeAt(i), 0x01000193);
+    return h >>> 0;
+  };
+  /** A bug out of a bush, from under the rock or off my villager: shared (a `put`, so it comes out on the partner's
+   *  phone too, and either of us may net it), its itinerary from its id. */
+  function putBug(id: BugId, src: 'bush' | 'rock' | 'flea', x: number, z: number, stay: boolean | number = true): boolean {
+    const t0 = shared.now();
+    const cid = `b${(shared.me ?? 'A').toLowerCase()}${t0.toString(36)}`;
+    const at: [number, number] = [Math.round(x), Math.round(z)];
+    if (!spawnBug(id, { ...putFrom(src, at[0], at[1]), stay, cid, path: { seed: seedOf(cid), t0, total: typeof stay === 'number' ? stay : STAY_MS.bug } })) return false;
+    shared.share({ kind: 'put', id: cid, what: `bug:${id}:${src}`, at });
+    return true;
   }
 
   /** A tap on my villager (IslandScene via SceneTaps): now and then a flea hops off it (NH's fleas) into the grass
@@ -722,6 +808,7 @@
   }
   function flea(stay = true) {
     const [x, z] = livePos('mine');
+    if (stay) return putBug('flea', 'flea', x, z);
     return spawnBug('flea', { from: { x, z, lift: 34 }, area: { x0: x - 90, x1: x + 90, z0: z - 50, z1: z + 16, l0: 0, l1: 0 }, stay });
   }
 
@@ -733,23 +820,25 @@
     const b = BUSHES.find((s) => s.id === id);
     if (!b) return;
     const { month, hour } = jst(now());
-    spawnBug(bushBug(month, hour, rand, weather.sky), { from: { x: b.x, z: b.z, lift: b.h * 0.7 }, area: { x0: b.x - 30, x1: b.x + 30, z0: b.z - 14, z1: b.z + 14, l0: 20, l1: 50 } });
+    const bid = bushBug(month, hour, rand, weather.sky);
+    if (bid) putBug(bid, 'bush', b.x, b.z);
   }
 
   // ---------- diving ----------
   /** A spot of bubbles rises in the sea in front of the beach (where a shadow would swim, on screen), with a sea
    *  creature (or a pearl) under it. */
-  async function spawnBubbles(stay: boolean | number = true, want?: string, pinned = false, r = rand) {
+  async function spawnBubbles(stay: boolean | number = true, want?: string, pinned = false, r = rand, o: Shared & { month?: number; hour?: number } = {}) {
     const m = await loadSea().catch(() => null);
     if (!m || fishes.sea || bubbles || diving) return;
     const ok = (x: number, z: number) => inWater('sea', x, z) && seen(x, z, 0, guards(8), 16, 6);
-    const p = freeSwim(SEA_SWIM, ok) ?? (pinned ? { x: SEA_SWIM.cx, z: SHORE_Z - 24 } : null);
+    // the shared world's spot (from its seed, on both phones), else one on screen
+    const p = o.path ? bubblesAt(o.path.seed) : freeSwim(SEA_SWIM, ok) ?? (pinned ? { x: SEA_SWIM.cx, z: SHORE_Z - 24 } : null);
     if (!p) return;
-    const { month, hour } = jst(now());
+    const t = jst(now()), month = o.month ?? t.month, hour = o.hour ?? t.hour;
     const item = (want as DiveItem | undefined) ?? m.pickDive(month, hour, r);
     preload(item === m.PEARL ? findArt(item) : critterArt(item));
     void loadLines().catch(() => {});
-    const b = { n: ++seq, item, ...p };
+    const b = { n: ++seq, item, ...p, ...(o.cid ? { cid: o.cid } : {}) };
     bubbles = b;
     if (stay) later(() => bubbles?.n === b.n && (bubbles = null), stay === true ? m.BUBBLE_STAY_MS : stay);
   }
@@ -761,11 +850,11 @@
     const speed = m.speedOf(b.item);
     const out = m.dive(speed, rand);
     const size = b.item === m.PEARL ? 1 : m.SEA[b.item].size;
-    const d = { n: ++seq, item: b.item, x: b.x, z: b.z, ax: b.x, az: b.z, ms: 0, size, chase: false, until: 0, gone: false };
+    const d = { n: ++seq, item: b.item, x: b.x, z: b.z, ax: b.x, az: b.z, ms: 0, size, chase: false, until: 0, gone: false, cid: b.cid };
     diving = d;
     later(() => {
       if (diving?.n !== d.n) return;
-      if (out === 'catch') return caught(d);
+      if (out === 'catch') return dived(d);
       // a quick one: its shadow darts off a little way in the sea, away from the nearer edge of its water if it's close
       const room = { l: d.x - SEA_BOX.x0, r: SEA_BOX.x1 - d.x };
       const dir = room.l < 30 ? 1 : room.r < 30 ? -1 : rand() < 0.5 ? -1 : 1;
@@ -776,24 +865,28 @@
       later(() => getAway(d.n), 320 + window);
     }, 450);
   }
-  function getAway(n: number) {
+  function getAway(n: number, theirs = false) {
     const d = diving;
     if (d?.n !== n) return;
+    if (!theirs) claim(d.cid, d.item, d.x, d.z, 'flee');
     sceneSfx('flee');
     diving = { ...d, ms: 650, gone: true, x: d.x + Math.sign(d.x - d.ax || 1) * 40 };
     later(() => diving?.n === n && (diving = null), 700);
   }
-  function caught(d: NonNullable<typeof diving>) {
+  function dived(d: NonNullable<typeof diving>) {
     diving = null;
+    if (!claim(d.cid, d.item, d.x, d.z, 'dive')) return;
     sceneSfx('catch');
     const at = stageAt(d.x, d.z);
-    void show(d.item, at.x, at.y);
+    void show(d.item, at.x, at.y, d.cid);
   }
 
   // ---------- the catch ----------
   /** The catch held up: NH's caption on a plate with the official icon, popping up out of the catch at (x, y) (stage
    *  units) (Plate.svelte places it clear of every control). */
-  async function show(item: Catch | DiveItem, x: number, y: number) {
+  async function show(item: Catch | DiveItem, x: number, y: number, cid?: string) {
+    // the partner's claim reached the relay first: it's theirs (their villager holds it up here: the news)
+    if (!stillMine(cid)) return;
     const pearl = item === 'pearl';
     const kind = pearl ? 'shell' : S && item in S.SEA ? 'sea' : findKind(item as FishId | PondFishId | JunkId | BugId);
     // Bunny Day's celebrations: now and then a fish on the line (any water's) is NH's water egg (a caption only, no find)
@@ -817,6 +910,94 @@
     card = cardFor(n, x, y, art, text, added);
   }
 
+  // ---------- the shared world ----------
+  /** Claim a shared critter as mine (`how`: caught by, or `flee`: it got away): false when the partner has it already
+   *  (first wins). A critter without a shared id (a dev hook's) is always mine. */
+  function claim(cid: string | undefined, what: string, x: number, z: number, how: How): boolean {
+    if (!cid) return true;
+    return shared.share({ kind: 'catch', what, id: cid, at: [Math.round(x), Math.round(z)], how }).fresh;
+  }
+  /** Still mine when its moment comes: the partner's claim may have reached the relay first. */
+  const stillMine = (cid?: string) => !cid || (caught(shared.day, cid)?.who ?? shared.me) === shared.me;
+  /** The partner has it (caught, or it got away from them). */
+  const theirs = (cid?: string) => !!cid && !stillMine(cid);
+
+  /** What a shared catch's line names and shows. */
+  const nameOf = (what: string, how?: How) =>
+    what === 'pearl' ? 'beach.name.pearl' : how === 'dive' || (S && what in S.SEA) ? `sea.name.${what}` : `critter.name.${what}`;
+  const artOf = (what: string) => (what === 'pearl' ? findArt('pearl') : critterArt(what as Catch));
+  const verbOf = (how?: How) => (how === 'rod' ? 'fished' : how === 'dive' ? 'dived' : how === 'dig' ? 'dug' : 'caught') as 'fished' | 'dived' | 'dug' | 'caught';
+
+  /** The partner's catch (or a critter that got away from them), heard over the relay: gone here too. Just now (`live`):
+   *  their villager runs over and nets it, reels it in, digs it up or dives for it, then holds it up (or, out of view,
+   *  the notice at the edge); `beat`: I tapped it too, and the relay heard them first. */
+  function theirCatch(e: { what: string; id?: string; at?: readonly [number, number]; how?: How }, live: boolean, beat: boolean) {
+    const id = e.id, how = e.how;
+    const f = WATERS.map((wt) => fishes[wt]).find((x) => !!x && x.cid === id) ?? null;
+    const b = bug && bug.cid === id ? bug : null;
+    const bb = bubbles && bubbles.cid === id ? bubbles : null;
+    const dv = diving && diving.cid === id ? diving : null;
+    // my line was out for it: it's theirs now
+    if (f && cast?.fish === f) cast = null;
+    if (how === 'flee') {
+      if (f && fishes[f.water] === f) {
+        Object.assign(f, { dash: true, gone: true });
+        swimTo(f, f.x + (f.flip ? 30 : -30), f.z, 650);
+        later(() => fishes[f.water] === f && (fishes[f.water] = null), 700);
+      }
+      if (b && bug === b) bugLeave(true);
+      if (bb && bubbles === bb) bubbles = null;
+      if (dv) getAway(dv.n, true);
+      return;
+    }
+    const at = e.at ?? (f ? [f.x, f.z] : b ? [b.x, b.z] : bb ? [bb.x, bb.z] : null);
+    const gone = () => {
+      if (f && fishes[f.water] === f) {
+        f.gone = true;
+        later(() => fishes[f.water] === f && (fishes[f.water] = null), 500);
+      }
+      if (b && bug === b) bug = null;
+      if (bb && bubbles === bb) bubbles = null;
+      if (dv && diving === dv) diving = null;
+    };
+    if (!live || !at) return gone();
+    const [x, z] = at;
+    if (b) Object.assign(b, { held: true, ms: 0 });
+    let ms: number;
+    if (how === 'rod') ms = partnerAct(x, z, { spot: anglerSpot(f?.water ?? waterAt(x, z, true) ?? 'sea', x, z), tool: 'rod', toolMs: 1800 }).ms + 900;
+    else if (how === 'dive') ms = partnerAct(x, z, { spot: anglerSpot('sea', x, z), motion: 'hop' }).ms + 450;
+    else if (how === 'dig') ms = partnerAct(x, z, { tool: 'shovel', toolMs: 640 }).ms + 260;
+    else ms = partnerAct(x, z, { tool: 'net', toolMs: 450, reach: LONG_REACH }).ms + 300;
+    later(() => {
+      gone();
+      if (how === 'rod' || how === 'dive') sceneSfx('splash');
+      tellPartner({ art: artOf(e.what), verb: beat ? 'beat' : verbOf(how), name: nameOf(e.what, how), x, z });
+    }, ms);
+  }
+
+  /** A bug the partner's doing put on the island (out of a bush, from under the rock, off their villager): it comes
+   *  out here too, along the same itinerary (from its id), while its stay lasts. */
+  function theirBug(e: { id: string; what: string; at: readonly [number, number]; t: number }) {
+    const [, bid, src] = e.what.split(':');
+    if (!bid || !(bid in BUGS) || bug) return;
+    const left = STAY_MS.bug - (shared.now() - e.t);
+    if (left < 1000 || caught(shared.day, e.id)) return;
+    spawnBug(bid as BugId, { ...putFrom(src ?? 'bush', e.at[0], e.at[1]), stay: left, cid: e.id, path: { seed: seedOf(e.id), t0: e.t, total: STAY_MS.bug } });
+  }
+
+  onMount(() =>
+    shared.on(({ e, live, beat }) => {
+      if (!enabled() && e.kind !== 'catch') return;
+      if (e.kind === 'catch' && e.id && !/^(dg|ws):/.test(e.id)) theirCatch(e, live, !!beat);
+      else if (e.kind === 'put' && e.what.startsWith('bug:')) theirBug(e);
+      else if (e.kind === 'act' && e.act === 'cast' && live && e.pt) {
+        // the partner casts: their villager walks down to the water with the rod out (their bite is theirs)
+        const [x, z] = e.pt, wt = waterAt(x, z, true) ?? 'sea';
+        partnerAct(x, z, { spot: anglerSpot(wt, x, z), tool: 'rod', toolMs: 8000, linger: 8000, far: wt !== 'sea' });
+      }
+    })
+  );
+
   /** A tap on the scene (client px), before SceneTaps' own flourishes: true when a critter took it. */
   export function tap(px: number, py: number): boolean {
     if (casting) return true;
@@ -827,6 +1008,8 @@
     const g = geo();
     if (!g) return false;
     const b = bug;
+    // the partner has it already (their villager is on the way): a tap here takes nothing
+    if (b && theirs(b.cid)) return true;
     if (b && !b.gone && bugEl) {
       const r = bugEl.getBoundingClientRect();
       const d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
@@ -842,6 +1025,7 @@
           return true;
         }
         if (act === 'charge') {
+          claim(b.cid, b.id, b.x, b.z, 'flee');
           sceneSfx('bug-flee');
           const to = w.worldAtClient(px, py) ?? b;
           const dx = Math.sign(to.x - b.x) || 1;
@@ -856,6 +1040,7 @@
         // over with the shovel first (avatar.ts).
         if (swing !== 'catch') return false;
         if (b.held) return true;
+        if (!claim(b.cid, b.id, b.x, b.z, 'dig')) return true;
         b.held = true;
         const { ms } = approach(b.x, b.z, { tool: 'shovel', toolMs: 640 });
         later(() => {
@@ -865,7 +1050,7 @@
           if (bug === b) bug = null;
           later(() => {
             sceneSfx('catch');
-            show(b.id, p.x, p.y);
+            show(b.id, p.x, p.y, b.cid);
           }, 260);
           later(() => (dig = null), 700);
         }, ms);
@@ -873,6 +1058,8 @@
       }
       if (swing === 'catch') {
         if (b.held) return true;
+        // first wins: claimed at the tap (the relay's first claim is the catch)
+        if (!claim(b.cid, b.id, b.x, b.z, 'net')) return true;
         // it holds still where it is (mid-flight included) while my villager walks over with the net (avatar.ts)
         const cs = getComputedStyle(bugEl).translate;
         Object.assign(b, { held: true, ms: 0, freeze: cs && cs !== 'none' ? cs : undefined });
@@ -884,14 +1071,15 @@
           later(() => {
             if (bug === b) bug = null;
             sceneSfx('catch');
-            show(b.id, p.x, p.y);
+            show(b.id, p.x, p.y, b.cid);
           }, walked ? 420 : 160); // in hand, the swing finishes before the hold-up
           later(() => (net = null), 420);
         }, ms);
         return true;
       }
       if (swing === 'startle') {
-        // it flies off; the tap still lands where it was meant (a visitor, a shell, the grass)
+        // it flies off (on both phones); the tap still lands where it was meant (a visitor, a shell, the grass)
+        claim(b.cid, b.id, b.x, b.z, 'flee');
         sceneSfx('bug-flee');
         bugLeave(true, px < r.left + r.width / 2 ? 1 : -1);
       }
@@ -902,7 +1090,7 @@
       if (Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2)) <= reach * 1.2) {
         turnTo(dv.x); // no walk: the chase is a timing game
         sceneSfx('splash');
-        caught(dv);
+        dived(dv);
         return true;
       }
     }
@@ -910,7 +1098,7 @@
     if (!at) return false;
     const sea = hitWorld(at.x, at.z).kind === 'sea';
     const spot = bubbles;
-    if (spot && S && sea) {
+    if (spot && S && sea && !theirs(spot.cid)) {
       const [bx, by] = w.clientAt(spot.x, spot.z), reach = Math.max(S.DIVE_U * w.scaleAt(spot.x, spot.z) * w.view.s, 22);
       if (Math.hypot(px - bx, py - by) <= reach) {
         if (diveWalk) return true;
@@ -925,7 +1113,8 @@
       }
     }
     const water = waterAt(at.x, at.z, sea);
-    const f = water && fishes[water];
+    const f0 = water && fishes[water];
+    const f = f0 && !theirs(f0.cid) ? f0 : null;
     // near where it's heading, or where it's seen now (it glides between waypoints: the eye goes by the latter)
     const seenAt = water ? scene?.querySelector(`[data-shadow-of="${water}"] [data-critter]`)?.getBoundingClientRect() : null;
     const nearSeen = !!seenAt && Math.hypot(px - (seenAt.left + seenAt.width / 2), py - (seenAt.top + seenAt.height / 2)) < CAST_U * w.scaleAt(at.x, at.z) * w.view.s;
@@ -950,20 +1139,25 @@
   const freshOpen = (): FreshWhere[] => FRESH.filter((wh) => !fishes[wh] && areasOf(wh).some(inViewArea));
   /** The first look at the slots after the island shows (ms): the scene measured and the camera placed by then. */
   const FIRST_LOOK_MS = 3000;
-  /** A slot's critter comes now, staying until the end of its last slot (`end`, the relay's ms). */
-  function visit(c: Spawn, end: number) {
-    const stay = end - (now().getTime() + relayOffset());
+  /** A slot's critter comes now, staying until the end of its last slot (`end`, the relay's ms), where its seed puts it
+   *  in the world (critterPath.ts: the same on both phones; this camera shows it if it sees it), unless one of us has
+   *  caught it (or it got away) today. */
+  function visit(c: Spawn, date: string, end: number) {
+    const stay = end - shared.now();
     if (stay < 1000) return;
-    const { month, hour } = jst(now());
+    const cid = critterId(c);
+    if (caught(shared.day, cid)) return;
+    const t0 = slotStart(date, c.slot) + c.at;
+    const o = { cid, path: { seed: c.seed, t0, total: end - t0 }, month: +date.slice(5, 7), hour: Math.floor(c.slot / 360) };
     const r = spawnRand(c);
     if (c.kind === 'fish') {
-      if (seaInView() && !fishes.sea && !bubbles && !diving) void spawnFish('sea', stay, undefined, false, r);
+      if (!fishes.sea && !bubbles && !diving) void spawnFish('sea', stay, undefined, false, r, o);
     } else if (c.kind === 'bubbles') {
-      if (seaInView() && !fishes.sea && !bubbles && !diving) void spawnBubbles(stay, undefined, false, r);
+      if (!fishes.sea && !bubbles && !diving) void spawnBubbles(stay, undefined, false, r, o);
     } else if (c.kind === 'fresh') {
-      const open = freshOpen();
-      if (open.length) void spawnFish(pickOne(open, r)!, stay, undefined, false, r);
-    } else if (!bug) spawnBug(pickBug(month, hour, r, weather.sky), { stay });
+      const wt = freshWater(c);
+      if (!fishes[wt]) void spawnFish(wt, stay, undefined, false, r, o);
+    } else if (!bug) spawnBug(pickBug(o.month, o.hour, r, weather.sky), { stay, ...o });
   }
   $effect(() => {
     if (!scene || !enabled() || pinned) return;
@@ -973,8 +1167,8 @@
       const t = slotAt(now().getTime(), relayOffset());
       for (const c of crittersAt(t.date, t.slot)) {
         const end = slotStart(t.date, c.slot + c.slots);
-        if (c.slot === t.slot && c.at > t.into) later(() => visit(c, end), c.at - t.into);
-        else if (first || c.slot === t.slot) visit(c, end);
+        if (c.slot === t.slot && c.at > t.into) later(() => visit(c, t.date, end), c.at - t.into);
+        else if (first || c.slot === t.slot) visit(c, t.date, end);
       }
       // a moment past the boundary, so the next reading is in the next slot
       id = setTimeout(() => slotNow(false), msToNextSlot(now().getTime(), relayOffset()) + 20);
@@ -993,16 +1187,18 @@
     // a critter waits for the world to be measured and a free spot (the layout may still be settling): a few tries; the
     // last ones take its place even off screen
     let tries = 0;
+    // a hook's critter is shared too (its id the hook's: the demo's other tab, opened with the same hook, has the same one)
+    const cid = `hook:${want ?? dive}`;
     const fishFor = async (water: Water, id?: FishId | PondFishId) => {
-      if (!(await spawnFish(water, false, id, tries >= 4)) && ++tries < 10) later(() => void fishFor(water, id), 400);
+      if (!(await spawnFish(water, false, id, tries >= 4, rand, { cid })) && ++tries < 10) later(() => void fishFor(water, id), 400);
     };
     const bugFor = (id: BugId) => {
-      if (!spawnBug(id, { stay: false, pinned: tries >= 4 }) && ++tries < 10) later(() => bugFor(id), 400);
+      if (!spawnBug(id, { stay: false, pinned: tries >= 4, cid }) && ++tries < 10) later(() => bugFor(id), 400);
     };
     const go = () => {
       if (!enabled() || !w.rest.ready) return later(go, 300);
       // ?sea=<id> | pearl | (anything else: the usual pick)
-      if (dive !== null) void loadSea().then((m) => spawnBubbles(false, dive in m.SEA || dive === m.PEARL ? dive : undefined, true));
+      if (dive !== null) void loadSea().then((m) => spawnBubbles(false, dive in m.SEA || dive === m.PEARL ? dive : undefined, true, rand, { cid }));
       else if (want === 'fish') void fishFor('sea');
       else if (!want) return;
       else if ((FRESH as readonly string[]).includes(want)) void fishFor(want as FreshWhere);
