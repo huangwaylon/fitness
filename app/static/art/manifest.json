@@ -1,5 +1,5 @@
 {
-  "version": 43,
+  "version": 44,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -1626,6 +1626,12 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Capricorn_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/coconut": {
+      "path": "finds/coconut.webp",
+      "w": 64,
+      "h": 64,
+      "source": "https://nookipedia.com/wiki/File:Coconut_NH_Inv_Icon.png"
     },
     "finds/conch": {
       "path": "finds/conch.webp",

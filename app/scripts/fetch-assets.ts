@@ -145,6 +145,8 @@ const SPECS: Record<string, Spec> = {
   'season/snowflake': [64, 'Snowflake_NH_Inv_Icon.png'],
   // a shaken tree's branch, on the ground to pick up (island/TreeShakes.svelte)
   'finds/tree-branch': [64, 'Tree_Branch_NH_Inv_Icon.png'],
+  // a shaken palm's coconuts (NH: a coconut palm drops its two when shaken)
+  'finds/coconut': [64, 'Coconut_NH_Inv_Icon.png'],
 };
 // Scene critters (docs/design.md#scene-interactions): the critterpedia icon of each catch (fish, bugs, junk), shown
 // ~36px for a moment after a catch and only loaded then (island/critters.ts critterArt).

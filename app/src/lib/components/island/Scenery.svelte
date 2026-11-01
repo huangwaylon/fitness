@@ -4,7 +4,8 @@
   // and the shops' props, the log fence along the cliff top, and the six buildings (one NH map-icon family), each an
   // upright world node at its feet. An oak is two nodes (its trunk and its canopy, the canopy's depth 14u nearer), so a
   // villager just in front of the trunk covers it while the leaves cover their head. Contact shadows are baked into the
-  // ground. A bush answers a tap (SceneTaps finds it by data-bush); a building is a door (`onbuilding`).
+  // ground. A bush answers a tap (SceneTaps finds it by data-bush), and so does a tree's leaves (data-tree: a rustle,
+  // three quick taps shake it); a building is a door (`onbuilding`).
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { art, treeArt } from '#lib/art.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
@@ -56,6 +57,10 @@
     <span class="art" class:flip={s.flip} class:snow={winter && s.kind === 'bush'} class:bush={s.kind === 'bush'} data-bush={s.kind === 'bush' ? s.id : undefined}
       style:height="calc({s.h} * var(--u))" style:width="calc({wOf(key, s.h)} * var(--u))" style:clip-path={clip}>
       <OfficialArt {key} size="calc({s.h} * var(--u))" eager={s.z < 1200} />
+      {#if live && (s.kind === 'cedar' || s.kind === 'palm' || part === 'canopy')}
+        <!-- its leaves answer a tap (SceneTaps: a rustle; three quick taps shake it) -->
+        <i class="hit {s.kind}" data-tree={s.id}></i>
+      {/if}
     </span>
   </div>
 {/snippet}
@@ -106,6 +111,10 @@
   }
   .art :global(.official), .door :global(.official) { max-width: none; }
   .art.bush { pointer-events: auto; cursor: pointer; }
+  /* a tree's tap area: its leaves (not the art's whole box: the sand and grass round it stay the ground's) */
+  .hit { position: absolute; pointer-events: auto; cursor: pointer; left: 18%; right: 18%; top: 4%; bottom: 46%; border-radius: 45%; }
+  .hit.cedar { left: 26%; right: 26%; top: 6%; bottom: 30%; }
+  .hit.palm { left: 14%; right: 14%; top: 0; bottom: 62%; }
   .art.flip :global(.official) { transform: scaleX(-1); }
   .lit { transition: opacity 1.2s ease; }
   .glow { position: absolute; left: 0; translate: -50% 0; line-height: 0; mix-blend-mode: screen; }

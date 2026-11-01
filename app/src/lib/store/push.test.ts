@@ -24,7 +24,10 @@ vi.mock('#lib/sync/live.ts', () => ({
     start: () => void relay.started++,
     stop: () => void relay.stopped++,
     send: (i: unknown) => (relay.sent.push(i), true),
-    onChange: (fn: (c: unknown) => void) => (relay.listeners.push(fn), () => {})
+    onChange: (fn: (c: unknown) => void) => (relay.listeners.push(fn), () => {}),
+    // the shared island listens too (store/world.svelte.ts)
+    on: () => () => {},
+    serverNow: () => Date.now()
   })
 }));
 

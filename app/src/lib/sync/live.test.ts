@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { LIVE_URL, backoff, bestOffset, createLive, type Live, type LiveEnv, type LiveStatus } from './live.ts';
-import type { Relayed } from './live-protocol.ts';
+import { LIVE_URL, backoff, bestOffset, createLive, type Live, type LiveEnv, type LiveStatus, type SinceStore } from './live.ts';
+import { dayStart, tokyoDay, type Relayed } from './live-protocol.ts';
 
 const KEY = 'ab'.repeat(32);
 
@@ -58,9 +58,15 @@ const env: LiveEnv = {
 
 let key: string | null;
 let live: Live;
+/** The `since` kept across reloads (the test's own store). */
+let kept: { day: number; t: number } | null;
+const since: SinceStore = {
+  get: (now) => (kept && kept.day === tokyoDay(now) ? kept.t : dayStart(tokyoDay(now))),
+  set: (t) => void (kept = { day: tokyoDay(t), t })
+};
 
 function make(url = 'wss://relay.test/room'): Live {
-  return createLive({ url, key: () => key, WebSocket: FakeWS as never, env });
+  return createLive({ url, key: () => key, WebSocket: FakeWS as never, env, since });
 }
 
 beforeEach(() => {
@@ -70,6 +76,7 @@ beforeEach(() => {
   visible = true;
   online = true;
   key = KEY;
+  kept = null;
   live = make();
 });
 
@@ -85,7 +92,8 @@ describe('live: connecting', () => {
     live.start();
     expect(FakeWS.all).toHaveLength(1);
     last().open();
-    expect(last().sent[0]).toEqual({ v: 2, kind: 'hello', key: KEY });
+    // a page's first hello asks for today's whole shared world (from Tokyo midnight)
+    expect(last().sent[0]).toEqual({ v: 2, kind: 'hello', key: KEY, since: dayStart(tokyoDay(Date.now())) });
     last().recv({ kind: 'welcome', me: 'A', peer: false, t: Date.now() });
     expect(live.status()).toEqual({ connected: true, me: 'A', peer: false });
     expect(seen.at(-1)).toEqual({ connected: true, me: 'A', peer: false });
@@ -183,21 +191,26 @@ describe('live: connecting', () => {
 });
 
 describe('live: messages', () => {
-  it('sends intents only while the partner is there, world ops whenever connected', () => {
+  it('sends intents only while the partner is there, the shared world (and walks) whenever connected', () => {
     live.start();
     expect(live.send({ kind: 'emote', emote: 'glee' })).toBe(false); // not connected
     last().welcome(false);
-    expect(live.send({ kind: 'walk', to: [10, 20] })).toBe(false); // partner away
+    expect(live.send({ kind: 'emote', emote: 'glee' })).toBe(false); // partner away
+    expect(live.send({ kind: 'walk', to: [10, 20] })).toBe(true); // kept: where my villager stands
     expect(live.send({ kind: 'world', op: 'weed-pulled', id: 'w1' })).toBe(true); // kept for their reconnect
+    expect(live.send({ kind: 'pick', id: 's1', what: 'shell:conch' })).toBe(true);
+    expect(live.send({ kind: 'catch', what: 'koi' })).toBe(false); // no id: nothing the room keeps
     last().recv({ kind: 'presence', who: 'B', on: true, t: Date.now() });
     expect(live.status().peer).toBe(true);
-    expect(live.send({ kind: 'walk', to: [10, 20] })).toBe(true);
+    expect(live.send({ kind: 'emote', emote: 'glee' })).toBe(true);
     expect(last().sent.slice(1)).toEqual([
+      { v: 2, kind: 'walk', to: [10, 20] },
       { v: 2, kind: 'world', op: 'weed-pulled', id: 'w1' },
-      { v: 2, kind: 'walk', to: [10, 20] }
+      { v: 2, kind: 'pick', id: 's1', what: 'shell:conch' },
+      { v: 2, kind: 'emote', emote: 'glee' }
     ]);
     last().recv({ kind: 'presence', who: 'B', on: false, t: Date.now() });
-    expect(live.send({ kind: 'walk', to: [10, 20] })).toBe(false);
+    expect(live.send({ kind: 'emote', emote: 'glee' })).toBe(false);
   });
 
   it('refuses a malformed or oversized intent, and a stalled socket', () => {
@@ -229,14 +242,29 @@ describe('live: messages', () => {
     expect(got).toHaveLength(1);
   });
 
-  it('asks for the world ops it missed since the last one it saw', () => {
+  it('asks for the shared world it missed since the last change it heard, across a reload too', () => {
     live.start();
     last().welcome();
     last().recv({ kind: 'world', op: 'dug', id: 'd1', who: 'B', t: 1_790_000_000_500 });
+    last().recv({ kind: 'pick', id: 'w1', what: 'weed', who: 'B', t: 1_790_000_000_600 });
+    last().recv({ kind: 'emote', emote: 'glee', who: 'B', t: 1_790_000_000_700 }); // not the world's
     last().drop();
     vi.advanceTimersByTime(2000);
     last().open();
-    expect(last().sent[0]).toEqual({ v: 2, kind: 'hello', key: KEY, since: 1_790_000_000_500 });
+    expect(last().sent[0]).toEqual({ v: 2, kind: 'hello', key: KEY, since: 1_790_000_000_600 });
+    // the page reloads: the kept since
+    live.stop();
+    live = make();
+    live.start();
+    last().open();
+    expect(last().sent[0]).toMatchObject({ kind: 'hello', since: 1_790_000_000_600 });
+    // the next Tokyo day: from its midnight
+    live.stop();
+    vi.setSystemTime(dayStart(tokyoDay(Date.now()) + 1) + 5000);
+    live = make();
+    live.start();
+    last().open();
+    expect(last().sent[0]).toMatchObject({ kind: 'hello', since: dayStart(tokyoDay(Date.now())) });
   });
 
   it('reports sheet changes: the push (mine too) and the partner\'s nudge, never as intents', () => {

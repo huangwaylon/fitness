@@ -35,11 +35,12 @@
   import SceneTaps from './SceneTaps.svelte';
   import Talk from './Talk.svelte';
   import TreeShakes from './TreeShakes.svelte';
+  import PartnerNews from './PartnerNews.svelte';
   import { HATS, birthdaysOn, isBirthday } from './birthday.ts';
   import { FIREWORKS_FROM, archOn, weddingDay } from './wedding.ts';
   import { eventAt, forcedEvent } from './events.ts';
   import { TRICK_MS } from './visitors.ts';
-  import { STUNG_SWEAT_MS } from './treeShake.ts';
+  import { STUNG_SWEAT_MS, goalTree, shakeTap, treeById, type ShakeTree } from './treeShake.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import { IslandLife } from './islandLife.svelte.ts';
@@ -49,6 +50,8 @@
   import { Follow, RING_MS, stepCue } from './tapWalk.ts';
   import { nav } from './nav.ts';
   import { LIVE_URL, liveRelay } from '#lib/sync/live.ts';
+  import { createLocalLive } from '#lib/sync/live-local.ts';
+  import { world as shared } from '#lib/store/world.svelte.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { visitorNow } from './visitors.ts';
   import { World, dropLive, provideWorld } from './camera.svelte.ts';
@@ -61,7 +64,7 @@
   import { actors, applyStep, busy, inMotion, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { walkGeo } from './walkGraph.ts';
-  import { approach, attachAvatar, partnerTo, presence, freeze, sendTo, snapHome, stayingAt, thaw, SNAP_HOME_MS } from './avatar.ts';
+  import { approach, attachAvatar, partnerRestsAt, partnerTo, presence, freeze, sendTo, snapHome, stayingAt, thaw, SNAP_HOME_MS } from './avatar.ts';
   import type { SceneHit } from './sceneTaps.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { flushSync, onMount, untrack } from 'svelte';
@@ -297,8 +300,14 @@
   const anyMoving = () => inMotion('mine') || inMotion('partner') || inMotion('visitor');
 
   // ---- tap-to-walk (spec §4): a tap on the ground sends my villager there; a cream ring marks the spot ----
-  let rings = $state<{ n: number; x: number; z: number }[]>([]);
+  let rings = $state<{ n: number; x: number; z: number; partner?: boolean }[]>([]);
   let ringN = 0;
+  /** The cream ring where a tap sent a villager (`partner`: theirs, from their phone). */
+  function ring(x: number, z: number, partner = false) {
+    const n = ++ringN;
+    rings = [...rings.slice(-1), { n, x, z, partner }];
+    life.later(() => (rings = rings.filter((g) => g.n !== n)), RING_MS + 50);
+  }
   /** SceneTaps' last step: the tap landed on the ground at (x, z) and nothing else took it. A tap at a building's foot
    *  knocks at its door (walk there, then its character answers). */
   function walkThere(x: number, z: number, _hit: SceneHit): boolean {
@@ -306,10 +315,9 @@
     const from = livePos('mine');
     const r = sendTo(x, z);
     if (!r) return false;
-    relay?.send({ kind: 'walk', to: [Math.round(r.to[0]), Math.round(r.to[1])] });
-    const n = ++ringN;
-    rings = [...rings.slice(-1), { n, x: r.to[0], z: r.to[1] }];
-    life.later(() => (rings = rings.filter((g) => g.n !== n)), RING_MS + 50);
+    // the partner's phone runs mine there too, and the relay keeps it (where mine stands, for a phone opening later)
+    shared.share({ kind: 'walk', to: [Math.round(r.to[0]), Math.round(r.to[1])] });
+    ring(r.to[0], r.to[1]);
     follow.start(from[1], r.to[1], world.screenAt(x, z).theta);
     const b = r.snap.kind === 'door' ? r.snap.building : undefined;
     const el = b && sceneEl?.querySelector<HTMLElement>(`[data-building="${b}"] .door`);
@@ -450,12 +458,39 @@
     wasCovered = c;
     untrack(() => (c ? freeze() : thaw()));
   });
-  // A shaken tree: my villager walks up to its trunk and shakes it (avatar.ts), then what falls falls.
+  // A shaken tree: my villager walks up to its trunk and shakes it (avatar.ts), then what falls falls (TreeShakes:
+  // every tree on the island, its drop by its kind; the goal trees' canopies count their own taps, FruitTree).
+  /** A tree by id where it stands on this phone (a goal tree by its person's slot). */
+  const treeOf = (id: string): ShakeTree | null => treeById(id, (p) => slot(p));
   function shakeTree(pid: PersonId) {
-    const t = GOAL_TREES[slot(pid)];
-    const { ms } = approach(t[0], t[1], { motion: 'shake' });
-    if (ms) life.later(() => shakes?.shaken(pid, slot(pid)), ms);
-    else shakes?.shaken(pid, slot(pid));
+    shakeAt(goalTree(pid, slot(pid)));
+  }
+  function shakeAt(tr: ShakeTree) {
+    const { ms } = approach(tr.x, tr.z, { motion: 'shake' });
+    if (ms) life.later(() => shakes?.shaken(tr), ms);
+    else shakes?.shaken(tr);
+  }
+  /** Any other tree (SceneTaps' tap on its art): a tap rustles it; the third quick one is a shake (treeShake.ts). */
+  const treeTaps: Record<string, number[]> = {};
+  function treeTap(id: string): boolean {
+    const tr = treeOf(id);
+    if (!live || covered || !tr || tr.kind === 'goal') return false;
+    const run = shakeTap(treeTaps[id] ?? [], Date.now());
+    treeTaps[id] = run.taps;
+    rustle(tr, true);
+    if (run.shake) shakeAt(tr);
+    return true;
+  }
+  /** A tree rustles (a tap, a shake: the partner's too): a goal tree its own way (FruitTree), any other here. */
+  function rustle(tr: ShakeTree, sound = false) {
+    const g = /^goal-([AB])$/.exec(tr.id);
+    if (g) return void life.shakeN[g[1] as PersonId]++;
+    if (sound) cue('tree-shake');
+    for (const el of sceneEl?.querySelectorAll<HTMLElement>(`[data-scenery-id="${tr.id}"] .art`) ?? []) {
+      for (const a of el.getAnimations()) if (a.id === 'rustle') a.cancel();
+      el.animate([{ rotate: '0deg' }, { rotate: '-2.6deg', offset: 0.18 }, { rotate: '2deg', offset: 0.42 }, { rotate: '-1.1deg', offset: 0.68 }, { rotate: '0deg' }],
+        { duration: 560, easing: 'ease-out', id: 'rustle' });
+    }
   }
   // Wilbur stands on the airport's dock while my partner has the app open (the relay's presence, NH's only cue for it:
   // docs/design.md "World"). The phone's one relay socket (sync/live.ts liveRelay, shared with the sync's push); never
@@ -464,19 +499,40 @@
   /** The relay, when there is one (never in the demo): presence, and the partner's walks (spec §4, LIVE_V 2). */
   // svelte-ignore state_referenced_locally
   const relay = live && LIVE_URL && !week.demo ? liveRelay() : null;
+  // The shared island (docs/backend.md#shared-world, store/world.svelte.ts): the day's changes, mine and the partner's,
+  // over this relay; in the demo the two players' tabs share it (sync/live-local.ts: `?demo` and `?demo&as=B`).
+  // svelte-ignore state_referenced_locally
+  const demoRelay = live && week.demo ? createLocalLive(view.me) : null;
+  $effect(() => {
+    if (!live) return;
+    const me = view.me;
+    untrack(() => {
+      shared.attach(relay ?? demoRelay, me, !!week.demo);
+      demoRelay?.start();
+    });
+  });
+  $effect(() => () => demoRelay?.stop());
   $effect(() => {
     if (!relay) return;
-    const offStatus = relay.onStatus((st) => (partnerHere = wilburShows(st, !!week.demo)));
-    // the partner's tap-to-walk: their villager runs there here too (a node id or a world point)
-    const offWalk = relay.on((m) => {
-      if (m.kind !== 'walk' || m.who !== view.partner || covered) return;
-      const to = typeof m.to === 'string' ? nav().named[m.to] : m.to;
-      if (to) partnerTo(to[0], to[1]);
+    return relay.onStatus((st) => (partnerHere = wilburShows(st, !!week.demo)));
+  });
+  /** A node id or a world point (a walk's target). */
+  const pointOf = (to: string | readonly [number, number]) => (typeof to === 'string' ? nav().named[to] : to);
+  onMount(() => {
+    if (!live) return;
+    // where the partner sent their villager earlier today (a phone opening later: the shared day's last walk)
+    const w0 = shared.day.walks[view.partner];
+    const p0 = w0 && pointOf(w0.to);
+    if (p0) partnerRestsAt(p0[0], p0[1]);
+    return shared.on(({ e, live: now }) => {
+      if (e.kind !== 'walk' || e.who !== view.partner) return;
+      const to = pointOf(e.to);
+      if (!to) return;
+      // the partner's tap-to-walk: their villager runs there here too (its ring where they tapped); an older one (the
+      // day's, heard on opening) just puts it there
+      if (!now || covered) return partnerRestsAt(to[0], to[1]);
+      if (partnerTo(to[0], to[1])) ring(to[0], to[1], true);
     });
-    return () => {
-      offStatus();
-      offWalk();
-    };
   });
   const wilbur = $derived(live && (partnerHere || hookFlag('wilbur')));
   function wilburTap(el: HTMLElement) {
@@ -606,7 +662,7 @@
 
         {#each rings as r (r.n)}
           <!-- where a tap sent my villager: a cream ring on the ground, shrinking out (NH has none; the least feedback) -->
-          <div class="ring-node" {@attach world.at({ mode: 'flat', x: r.x, z: r.z, h: 4, zi: 8 })}><i class="tap-ring"></i></div>
+          <div class="ring-node" {@attach world.at({ mode: 'flat', x: r.x, z: r.z, h: 4, zi: 8 })}><i class="tap-ring" class:partner={r.partner} data-ring={r.partner ? 'partner' : 'mine'}></i></div>
         {/each}
 
         <Particles {season} {foliage} {tod} quiet={asleepNow} mode="fireflies" raining={live && raining()} />
@@ -615,10 +671,12 @@
           <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy} walk={walkThere}
             exercise={view.people.A.rings.peach.met || view.people.B.rings.peach.met} cake={bday.length > 0}
             skyTap={(x, y) => !!fireworks?.tap(x, y)}
-            say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={trick} />
+            say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={trick} tree={treeTap} />
           <Talk bind:this={talk} scene={sceneEl} />
           <!-- what a shaken tree drops: a branch, now and then a wasp nest -->
-          <TreeShakes bind:this={shakes} scene={sceneEl} onsting={sting} />
+          <TreeShakes bind:this={shakes} scene={sceneEl} onsting={sting} {treeOf} rustle={(tr) => rustle(tr, true)} />
+          <!-- the partner's catches and finds: their villager holds it up here, or a notice at the edge -->
+          <PartnerNews scene={sceneEl} />
         {/if}
         <div class="tint"></div>
         {#if live && WeatherC}<WeatherC where="stage" />{/if}
@@ -715,5 +773,7 @@
     border: calc(3 * var(--u)) solid #FFF7DE; box-shadow: 0 0 0 1px rgba(120, 90, 40, .18); animation: tap-ring 400ms ease-out both;
   }
   @keyframes tap-ring { from { transform: scale(1); opacity: .95; } to { transform: scale(.35); opacity: 0; } }
+  /* the partner's: their phone's tap, a softer ring */
+  .tap-ring.partner { border-color: #DDEFFF; opacity: .8; }
   .scene[data-covered] .fall :global(*) { animation-play-state: paused !important; }
 </style>

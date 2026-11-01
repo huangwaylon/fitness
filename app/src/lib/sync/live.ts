@@ -1,9 +1,9 @@
 // The live relay's client (docs/backend.md#live-relay): one WebSocket to the island room while the app is on screen,
 // closed when it is hidden or offline (zero cost then), reconnecting with backoff, estimating the relay's clock from
-// pings. send() is a no-op unless the socket is up (and, for anything but a world op, the partner is there too); it
+// pings. send() is a no-op unless the socket is up (and, for what the room doesn't keep, the partner is there too); it
 // never throws and never waits. Plain TS: the socket, the visibility source and the key are injectable for tests.
-import { getKey } from './storage.ts';
-import { CLOSE, LIVE_V, MAX_BYTES, parseClient, parseServer, type Intent, type Notice, type Relayed, type Who } from './live-protocol.ts';
+import { LIVE, getKey, localKV, readJson, writeJson } from './storage.ts';
+import { CLOSE, LIVE_V, MAX_BYTES, dayStart, isStored, parseClient, parseServer, tokyoDay, type Intent, type Notice, type Relayed, type Who } from './live-protocol.ts';
 
 /** The relay's socket URL; VITE_LIVE_URL overrides it (empty = live off). */
 export const LIVE_URL: string = (import.meta.env?.VITE_LIVE_URL as string | undefined) ?? 'wss://island-fund-relay.island-fund-relay.workers.dev/room';
@@ -37,16 +37,37 @@ export interface LiveOptions {
   key: () => string | null;
   WebSocket?: typeof WebSocket;
   env?: LiveEnv;
+  /** The relay time of the last shared-world change this phone heard (the hello's `since`), kept across reloads: a
+   *  phone opening later hears today's world from there (docs/backend.md#shared-world). Default: localStorage. */
+  since?: SinceStore;
 }
+
+/** Where `since` is kept: `get()` the last heard today (or today's start: the whole day), `set(t)` after each one. */
+export interface SinceStore {
+  get(now: number): number;
+  set(t: number): void;
+}
+
+/** `since` in localStorage (`island.liveSince` = `{day, t}`), a new Tokyo day starting from its midnight. */
+const storedSince: SinceStore = {
+  get(now) {
+    const d = tokyoDay(now), s = readJson<{ day?: unknown; t?: unknown }>(localKV(), LIVE.since);
+    return s && s.day === d && typeof s.t === 'number' && Number.isFinite(s.t) ? s.t : dayStart(d);
+  },
+  set(t) {
+    writeJson(localKV(), LIVE.since, { day: tokyoDay(t), t });
+  }
+};
 
 export interface Live {
   /** Begin following visibility: connected while shown, closed while hidden. */
   start(): void;
   /** Close and stop following. */
   stop(): void;
-  /** Send an intent; false when it went nowhere (not connected, partner away, too big or malformed). */
+  /** Send an intent; false when it went nowhere (not connected, the partner away for an intent the room doesn't keep,
+   *  too big or malformed). */
   send(i: Intent): boolean;
-  /** The partner's relayed intents (world ops missed while away included, on reconnect). */
+  /** The partner's relayed intents (today's shared world missed while away included, on connect: older `t`). */
   on(fn: (m: Relayed) => void): () => void;
   /** Sheet changes (docs/backend.md#push). */
   onChange(fn: (c: SheetChange) => void): () => void;
@@ -103,6 +124,7 @@ export function createLive(o: LiveOptions): Live {
   const url = o.url ?? LIVE_URL;
   const WS = o.WebSocket ?? (typeof WebSocket !== 'undefined' ? WebSocket : undefined);
   const env = o.env ?? documentEnv();
+  const since = o.since ?? storedSince;
 
   let ws: WebSocket | null = null;
   let st: LiveStatus = { connected: false, me: null, peer: false };
@@ -118,7 +140,8 @@ export function createLive(o: LiveOptions): Live {
   const sent = new Set<number>(); // the c (Date.now() at sending) of each ping awaiting its pong
   let samples: { rtt: number; off: number }[] = [];
   let offset = 0;
-  let lastWorld: number | undefined;
+  /** The last shared-world change heard (the hello's `since`): read when the page loads, so a later open hears the day. */
+  let lastWorld = since.get(Date.now());
   const subs = new Set<(m: Relayed) => void>();
   const changeSubs = new Set<(c: SheetChange) => void>();
   const changed = (c: SheetChange) => {
@@ -196,7 +219,9 @@ export function createLive(o: LiveOptions): Live {
     s.onopen = () => {
       const key = o.key();
       if (!key) return drop();
-      raw({ v: LIVE_V, kind: 'hello', key, ...(lastWorld !== undefined ? { since: lastWorld } : {}) });
+      // a new Tokyo day since the page loaded: that day's whole world
+      lastWorld = Math.max(lastWorld, dayStart(tokyoDay(Date.now() + offset)));
+      raw({ v: LIVE_V, kind: 'hello', key, since: lastWorld });
     };
     s.onmessage = (e: MessageEvent) => {
       const m = parseServer(e.data);
@@ -225,7 +250,7 @@ export function createLive(o: LiveOptions): Live {
         default:
           if (m.who === st.me) return;
           if (m.kind === 'saved') return changed({ who: m.who, what: 'event' });
-          if (m.kind === 'world') lastWorld = Math.max(lastWorld ?? 0, m.t);
+          if (isStored(m) && m.t > lastWorld) since.set((lastWorld = m.t));
           for (const f of subs) safe(() => f(m));
       }
     };
@@ -272,7 +297,8 @@ export function createLive(o: LiveOptions): Live {
       drop();
     },
     send(i) {
-      if (!st.connected || (!st.peer && i.kind !== 'world')) return false;
+      // what the room keeps (the shared world, a walk) goes even with the partner away: they hear it when they open
+      if (!st.connected || (!st.peer && !isStored(i))) return false;
       const m = { v: LIVE_V, ...i };
       const s = JSON.stringify(m);
       if (s.length > MAX_BYTES || !parseClient(s)) return false;

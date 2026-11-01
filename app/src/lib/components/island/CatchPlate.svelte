@@ -10,8 +10,9 @@
 
   function done(n: number) {
     if (card?.n !== n) return;
+    const who = card.who ?? 'mine';
     card = null;
-    putAway('mine');
+    putAway(who);
   }
 </script>
 

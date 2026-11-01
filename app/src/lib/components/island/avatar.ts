@@ -17,6 +17,7 @@ import { REACH, SPEED, actionMs, actionSpots, route, routeLength, walkGeo, walka
 import type { EmoteIcon } from '#lib/art.ts';
 import { nav } from './nav.ts';
 import { planTap, type TapPlan } from './tapWalk.ts';
+import { dayKey } from '#lib/time/clock.ts';
 
 export interface AvatarCtx {
   geo: () => WalkGeo;
@@ -46,14 +47,16 @@ export const steered: Partial<Record<Villager, number>> = {};
 const otherOf = (id: Villager): Villager => (id === 'mine' ? 'partner' : 'mine');
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
-/** Where a tap sent my villager (spec §4): it stays there for the session (sessionStorage), not wandering home; the
- *  next open finds it home again. */
+/** Where a tap sent my villager (spec §4): it stays there for the rest of the Tokyo day (localStorage, with the date),
+ *  not wandering home, and the partner's phone shows it there too (the relay keeps each person's last walk: docs/
+ *  backend.md#shared-world); a new day finds it home. */
 const STAY_KEY = 'island-stay';
 let stayAt: Pt | null = readStay();
 function readStay(): Pt | null {
   try {
-    const v = JSON.parse(globalThis.sessionStorage?.getItem(STAY_KEY) ?? 'null');
-    return Array.isArray(v) && v.length === 2 && v.every(Number.isFinite) ? [v[0], v[1]] : null;
+    const v = JSON.parse(globalThis.localStorage?.getItem(STAY_KEY) ?? 'null') as { date?: string; at?: unknown } | null;
+    const at = v?.at;
+    return v?.date === dayKey() && Array.isArray(at) && at.length === 2 && at.every(Number.isFinite) ? [at[0], at[1]] : null;
   } catch {
     return null;
   }
@@ -61,16 +64,18 @@ function readStay(): Pt | null {
 function keepStay(p: Pt | null) {
   stayAt = p;
   try {
-    if (p) globalThis.sessionStorage?.setItem(STAY_KEY, JSON.stringify(p));
-    else globalThis.sessionStorage?.removeItem(STAY_KEY);
+    if (p) globalThis.localStorage?.setItem(STAY_KEY, JSON.stringify({ date: dayKey(), at: p }));
+    else globalThis.localStorage?.removeItem(STAY_KEY);
   } catch {
     /* private mode: kept in memory only */
   }
 }
-/** Where my villager rests this session: where a tap sent it, else its home. */
-const restOf = (id: Villager): Pt => (id === 'mine' && stayAt ? stayAt : actors[id].home);
-/** Where my villager stands at the start (the scene mounting): where a tap sent it this session, if anywhere. */
-export const stayingAt = (): Pt | null => stayAt;
+/** Where the partner sent their villager today (their last walk, live or replayed by the relay), if anywhere. */
+let partnerStay: Pt | null = null;
+/** Where a villager rests: where its person sent it today, else its home. */
+const restOf = (id: Villager): Pt => (id === 'mine' ? stayAt : partnerStay) ?? actors[id].home;
+/** Where my villager stands at the start (the scene mounting): where a tap sent it today, if anywhere. */
+export const stayingAt = (): Pt | null => (stayAt && readStay() ? stayAt : null);
 
 /** How far apart the villagers may be for the partner to come over (u): a walk across the island is too far. */
 const FOLLOW_RANGE = 600;
@@ -199,17 +204,70 @@ export function sendTo(x: number, z: number): TapPlan | null {
 }
 
 /** The partner tapped somewhere on their phone (the relay's `walk`, world units): their villager here runs there too,
- *  by the same planner from where it stands (no positions are sent). */
+ *  by the same planner from where it stands (no positions are sent), and rests there for the day, as on their phone. */
 export function partnerTo(x: number, z: number): boolean {
   const c = ctx;
   if (!c || !c.enabled() || actors.partner.asleep) return false;
   const from = c.where('partner'), p = planTap(nav(), from, x, z, c.geo().extra);
   if (!p) return false;
   steered.partner = Date.now();
+  partnerStay = restAt(p.to, actors.partner.home);
   clearTimeout(homeTimers.partner);
   walkTo('partner', p.pts, { speed: SPEED.run, from, face: p.snap.face });
   return true;
 }
+
+/** The partner's villager rests where they sent it earlier today (the relay's replay of their last walk, or the sheet's
+ *  day row): put there at once, no walk (a phone opening later finds it where their phone has it). */
+export function partnerRestsAt(x: number, z: number): void {
+  const p = planTap(nav(), [x, z], x, z, []);
+  const to = p?.to ?? [x, z];
+  partnerStay = restAt(to, actors.partner.home);
+  if (!actors.partner.walking && !busy('partner')) {
+    clearTimeout(homeTimers.partner);
+    place('partner', to[0], to[1]);
+  }
+}
+/** A rest spot (null: home, within 8u of it). */
+const restAt = (p: Pt, home: Pt): Pt | null => (Math.hypot(p[0] - home[0], p[1] - home[1]) <= 8 ? null : [p[0], p[1]]);
+
+/** The partner did something on their phone (the shared world: a catch, a pick-up, a shake): their villager here runs
+ *  over too, from wherever it stands (the spot needn't be on screen; at most PARTNER_MS on the way), and plays it there
+ *  with its tool, then rests where they sent it. `ms`: when it's there (0: it plays where it stands, asleep or with
+ *  nowhere to go). */
+export function partnerAct(tx: number, ty: number, o: ApproachOpts = {}): Approach {
+  const c = ctx, them = actors.partner;
+  if (!c || !c.enabled() || them.asleep) return { ms: 0, walked: false };
+  const from = c.where('partner');
+  steered.partner = Date.now();
+  const run = plan(c.geo(), from, tx, ty, () => true, o.spot, o.reach, false);
+  const act = () => {
+    if (o.tool) useTool('partner', o.tool, o.toolMs);
+    if (o.motion) setMotion('partner', o.motion);
+  };
+  if (!run) {
+    faceToward('partner', tx);
+    act();
+    return { ms: 0, walked: false };
+  }
+  clearTimeout(homeTimers.partner);
+  const end = run.pts.at(-1) ?? from;
+  const len = routeLength(from, run.pts);
+  const ms = len < 2 ? 0 : Math.min(PARTNER_MS, (len / SPEED.run) * 1000);
+  const face = Math.abs(tx - end[0]) < 3 ? undefined : tx < end[0] ? 'l' : 'r';
+  if (ms) {
+    walkTo('partner', run.pts, { ms, from, face });
+    setTimeout(act, ms);
+  } else {
+    if (face) them.face = face;
+    act();
+  }
+  them.busyUntil = Math.max(them.busyUntil, Date.now() + ms + (o.toolMs ?? 600));
+  goHomeLater('partner', ms + (o.toolMs ?? 0) + (o.linger ?? LINGER[0] + Math.random() * (LINGER[1] - LINGER[0])));
+  return { ms, walked: true };
+}
+/** The partner's villager hurries: a walk to what they did takes at most this long (ms). */
+const PARTNER_MS = 3000;
 
 /** Turn my villager to face a target (an action that never walks: the reel, a wasp). */
 export function turnTo(tx: number): void {
