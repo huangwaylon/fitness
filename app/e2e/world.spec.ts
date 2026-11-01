@@ -42,11 +42,11 @@ async function topAt(page: Page, x: number, z: number, fy: number) {
 
 test('a villager behind a tree is hidden by it; just in front it covers the trunk and the canopy covers its head', async ({ page }) => {
   await open(page, 300);
-  // the oak behind the lawn at (268, 516)
-  expect(await topAt(page, 268, 532, 0.55)).toMatch(/^oak-m1:/);
-  expect(await topAt(page, 268, 508, 0.92)).toBe('mine');
-  expect(await topAt(page, 268, 508, 0.08)).toBe('oak-m1:canopy');
-  expect(await topAt(page, 268, 466, 0.1)).toBe('mine');
+  // the oak behind the lawn at (328, 494)
+  expect(await topAt(page, 328, 510, 0.55)).toMatch(/^oak-m1:/);
+  expect(await topAt(page, 328, 486, 0.92)).toBe('mine');
+  expect(await topAt(page, 328, 486, 0.08)).toBe('oak-m1:canopy');
+  expect(await topAt(page, 328, 444, 0.1)).toBe('mine');
 });
 
 test('behind a building it is hidden, in front of it it covers it', async ({ page }) => {

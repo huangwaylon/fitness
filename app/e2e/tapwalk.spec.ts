@@ -50,13 +50,13 @@ async function track(page: Page, ms = 8000): Promise<[number, number][]> {
 
 test('a tap by the campsite runs my villager up the path, never through the water; a ring marks the spot', async ({ page }) => {
   await open(page, undefined, 300);
-  const [x, y] = await call(page, (w) => w.at(180, 800));
+  const [x, y] = await call(page, (w) => w.at(196, 840));
   await page.mouse.click(x, y);
   await expect(page.locator('.tap-ring')).toHaveCount(1);
   await shot(page, 'tap-ring');
   const path = await track(page);
   const end = path.at(-1)!;
-  expect(Math.hypot(end[0] - 180, end[1] - 800)).toBeLessThan(3);
+  expect(Math.hypot(end[0] - 196, end[1] - 840)).toBeLessThan(3);
   // never in the pond (74, 772: rx 46, rz 26)
   for (const [px, pz] of path) expect(((px - 74) / 46) ** 2 + ((pz - 772) / 26) ** 2).toBeGreaterThan(1);
   await shot(page, 'after-run');
@@ -71,10 +71,10 @@ test('a tap on the pond ripples and walks nowhere; a walk stays for the session'
   await expect(page.locator('.tap-ring')).toHaveCount(0);
   expect((await track(page, 1500)).at(-1)).toEqual(home);
   // a tap on the grass beside it walks there, and it's still there after a reload
-  const [gx, gy] = await call(page, (w) => w.at(150, 760));
+  const [gx, gy] = await call(page, (w) => w.at(126, 738));
   await page.mouse.click(gx, gy);
   const end = (await track(page)).at(-1)!;
-  expect(Math.hypot(end[0] - 150, end[1] - 760)).toBeLessThan(3);
+  expect(Math.hypot(end[0] - 126, end[1] - 738)).toBeLessThan(3);
   await page.reload();
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await page.waitForTimeout(400);

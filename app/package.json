@@ -24,7 +24,8 @@
     "terrain:preview": "node scripts/terrain-preview.ts",
     "bench": "node scripts/bench-model.ts",
     "knip": "knip",
-    "models": "node scripts/models.ts"
+    "models": "node scripts/models.ts",
+    "layout": "node scripts/layout.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",

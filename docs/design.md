@@ -301,18 +301,30 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
 - **Layout** (`world.ts`): まえ: the wide front beach with the island's only palms (three, out of the way: one at each of its outer corners and a
   young one by the water on the left; the palm beetles keep to them), plumeria at the
   grass edge, the villagers' homes A (132, 214, ウェイ) and B (262, 214, うめ) on both phones (never mirrored per phone) with the goal trees on their outer sides (60 / 332,
-  216), the tape deck between them, the rock, the dig spots, an oak and a cedar behind the lawn, the hedge at z 600 with
+  216), the tape deck between them, the rock, the dig spots, a cedar (34, 442) and an oak (328, 494) behind the lawn on
+  either side, set back so their canopies leave the hedge in view, the hedge at z 600 with
   streetlamps at the bridge's front corners. One dirt path runs up the middle from the beach to the campsite's
   clearing, and on to the stairs. The stream rises at the spring on the upper tier, falls through the cliff (x
   351…393), meanders down the east side, bends west at z ≈ 700 and crosses the island between the health lawn and おく
   (z ≈ 645, its width breathing 29–33u), under the stone bridge where the path crosses it (`BRIDGE`: x 195, z
   622…670, 35.5u wide: NH's 30.2 × 40.8 model units at 1.18u each), out to its mouth on the west beach (fishing: the
   river along both reaches, the mouth's wide water, the falls' pool). おく: the month's bushes either side of the path, the pond (74, 772) with a
-  flat rock, the bamboo grove by the stream, the campsite's tent (196, 984) in its worn clearing with its sign, hollies
+  flat rock on its east shore, the bamboo grove by the stream's bend (forward of the campfire, so the clearing's east
+  side isn't one heap), the campsite's tent (196, 984) in its worn clearing with its sign, hollies
   and garden lanterns, white lanterns at the stairs' foot, the cliff (z 1040…1080) with its stairs (x 36…84), a cedar
   forest on the upper tier.
-  **Wild flowers** (`world.ts` FLOWERS, `Flowers.svelte`): NH's flowers in nine clumps of 2–5 of one kind over the
-  open lawn (four small ones on the front lawn, the rest round おく's ground), never on sand or a path; the season's
+  **Balance** (`scripts/layout.ts`, `npm run layout` → `island/scatter.json`): the trees, the bushes, the props and the
+  decor's spots are composed by hand in focal groups (the goal trees at the homes, the pond's corner, the campsite's
+  clearing, the bamboo by the stream, the bridge with its lamps and the hedge), each section's mass balanced across the
+  path; what fills between them is scattered: the wild flowers' clumps and the weeds' lawn spots by seeded
+  best-candidate sampling (a Poisson-disk sampler: each pick the open-lawn candidate farthest from everything there,
+  the picks taking turns either side of the path), every kind keeping its own gap (a clump 80u from a clump, 52u from a
+  trunk, 72u from the bamboo, 40u from a prop; a weed spot 64u from the next), none under a canopy, behind a villager's
+  spot, where a goal tree's fruit falls, in the villagers' stage in front of the homes or off the screen's edge.
+  `scenery.test` checks the gaps and that no open lawn is more than 90u from anything (no dead zones). Rerun it after
+  moving a composed piece, then `npm run terrain` (the shadows).
+  **Wild flowers** (`world.ts` FLOWERS, `Flowers.svelte`): NH's flowers in seven clumps of 2–5 of one kind over the
+  open lawn (four small ones on the front lawn, three round おく's ground), never on sand or a path; the season's
   kinds in turn (`scene.ts` WILD: tulips and hyacinths, lilies and roses, cosmos and mums, pansies and windflowers
   blooming on under the snow), 30u (pansies, windflowers, mums lower, lilies taller), each with a baked soft shadow.
   Each flower's id is where it stands (`fl:<x>:<z>`): watering, hybrids and the flower bugs key on it.

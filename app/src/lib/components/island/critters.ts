@@ -455,9 +455,9 @@ const beds = (l0: number, l1: number, grow: number) => {
 /** The open lawn (off the beds, the trunks and the paths' middle): まえ's and the campsite's ground. */
 const LAWN: Patch[] = [
   { x0: 22, x1: 100, z0: 262, z1: 318, l0: 0, l1: 0 }, { x0: 292, x1: 368, z0: 262, z1: 318, l0: 0, l1: 0 },
-  { x0: 40, x1: 172, z0: 372, z1: 560, l0: 0, l1: 0 }, { x0: 218, x1: 350, z0: 372, z1: 560, l0: 0, l1: 0 },
-  { x0: 96, x1: 172, z0: 676, z1: 706, l0: 0, l1: 0 }, { x0: 216, x1: 296, z0: 690, z1: 712, l0: 0, l1: 0 },
-  { x0: 214, x1: 268, z0: 760, z1: 840, l0: 0, l1: 0 }
+  { x0: 60, x1: 172, z0: 372, z1: 560, l0: 0, l1: 0 }, { x0: 218, x1: 290, z0: 372, z1: 560, l0: 0, l1: 0 },
+  { x0: 128, x1: 172, z0: 668, z1: 700, l0: 0, l1: 0 }, { x0: 216, x1: 296, z0: 690, z1: 712, l0: 0, l1: 0 },
+  { x0: 260, x1: 300, z0: 748, z1: 784, l0: 0, l1: 0 }, { x0: 214, x1: 240, z0: 836, z1: 880, l0: 0, l1: 0 }
 ];
 
 /** Where a bug of `place` keeps to (not the trunks or the flower heads: `perches`, FLOWERS). */
