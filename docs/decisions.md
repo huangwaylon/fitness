@@ -39,6 +39,16 @@ outbox), so a relay outage loses liveness, never data. Why: Apps Script can't pu
 faster would burn its quota; the Free plan needs no payment method, the Hibernation API makes idle sockets free, and
 the edge is in Tokyo (~20 ms one way). Firebase RTDB (Spark) was the fallback.
 
+### Push through the relay
+When the sheet changes, the Apps Script POSTs a small signed notice (`what`, `who`, newest `at`, `rev`) to the relay,
+which tells the open phones to fetch now; a phone also nudges its partner over the socket after an acked event. The
+signing secret is derived from both person keys, so only the two servers can sign and nothing new is provisioned.
+Polling is unchanged, so the push only adds immediacy. Why: a partner's steps, goals and buys show within a second
+instead of at the next open, for ~150 relay requests a day. Not done: caching the snapshot at the edge (the app
+already paints from IndexedDB, most polls return nothing, and hand edits fire `onEdit`, a simple trigger that can't
+notify, so an edge copy could serve stale rows) and serving the app's writes through the Worker (a second path for
+data of record).
+
 ### Shortcut health sync
 Each iPhone runs one built-in Shortcut posting daily totals (`steps` and `steps_watch`, `exercise_minutes`, `calories`,
 `stand_minutes`, `weight`), triggered when an everyday app opens (Health can't be read while locked). Latest wins: any
