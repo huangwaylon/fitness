@@ -43,8 +43,8 @@ export const isFind = (d: Record<string, unknown>): boolean => isFindKind(d.kind
  */
 export type ActivityMetric = 'steps' | 'exercise_min' | 'move_kcal' | 'stand_min';
 /**
- * The body metrics besides weight, from Apple Health's body measurements (the Shortcut's `body_fat`, `bmi`,
- * `lean_mass`), each with one decimal: `body_fat_pct` Body Fat Percentage in %, `bmi` Body Mass Index (no unit),
+ * The body metrics besides weight, from Apple Health's body measurements (the Shortcut's `body_fat_percentage`,
+ * `body_mass_index`, `lean_body_mass`), each with one decimal: `body_fat_pct` Body Fat Percentage in %, `bmi` Body Mass Index (no unit),
  * `lean_kg` Lean Body Mass in kg. Trends only, like weight: they never earn ベル; a day's value is its latest row.
  */
 export type BodyMetric = 'body_fat_pct' | 'bmi' | 'lean_kg';

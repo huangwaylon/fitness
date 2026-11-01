@@ -9,9 +9,9 @@
 //     "calories": "251.3\n…",                   that day's active energy in kcal (the Move ring) → metric move_kcal
 //     "stand_minutes": "58\n…",                 that day's Stand Time in minutes → metric stand_min
 //     "weight": "0\n68.4\n…",                  that day's Body Mass in kg; 0 = no weigh-in
-//     "body_fat": "0\n22.3\n…",                that day's Body Fat Percentage → body_fat_pct (%; 0.223 = 22.3 %); 0 = none
-//     "bmi": "0\n22.8\n…",                     that day's Body Mass Index → bmi; 0 = none
-//     "lean_mass": "0\n52.1\n…" }             that day's Lean Body Mass in kg → lean_kg; 0 = none
+//     "body_fat_percentage": "0\n22.3\n…",     that day's Body Fat Percentage → body_fat_pct (%; 0.223 = 22.3 %); 0 = none
+//     "body_mass_index": "0\n22.8\n…",         that day's Body Mass Index → bmi; 0 = none
+//     "lean_body_mass": "0\n52.1\n…" }        that day's Lean Body Mass in kg → lean_kg; 0 = none
 //
 // Steps: Shortcuts' "Find Health Samples" sums every source's samples, so the iPhone's and the Watch's steps would be
 // counted twice (Health de-duplicates them; Shortcuts doesn't). The Shortcut sends each device's list, and a day's steps
@@ -82,9 +82,9 @@ const COLUMNS = [
   { field: 'calories', metric: 'move_kcal' },
   { field: 'stand_minutes', metric: 'stand_min' },
   { field: 'weight', metric: 'weight' },
-  { field: 'body_fat', metric: 'body_fat_pct' },
-  { field: 'bmi', metric: 'bmi' },
-  { field: 'lean_mass', metric: 'lean_kg' }
+  { field: 'body_fat_percentage', metric: 'body_fat_pct' },
+  { field: 'body_mass_index', metric: 'bmi' },
+  { field: 'lean_body_mass', metric: 'lean_kg' }
 ] as const;
 
 /** Parse a Shortcut body (already JSON-parsed). Throws ShapeError when nothing usable or the shape is wrong. */
@@ -129,6 +129,6 @@ export function parseShortcut(body: unknown): ParsedBody {
     });
   }
 
-  if (!sent.length) throw new ShapeError('nothing to save: send dates with steps, steps_watch, exercise_minutes, calories, stand_minutes, weight, body_fat, bmi or lean_mass');
+  if (!sent.length) throw new ShapeError('nothing to save: send dates with steps, steps_watch, exercise_minutes, calories, stand_minutes, weight, body_fat_percentage, body_mass_index or lean_body_mass');
   return { metrics, skipped, warnings };
 }

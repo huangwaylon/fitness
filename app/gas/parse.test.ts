@@ -117,11 +117,11 @@ describe('parseShortcut: the official body', () => {
   });
 });
 
-describe('parseShortcut: the body metrics (body_fat, bmi, lean_mass)', () => {
+describe('parseShortcut: the body metrics (body_fat_percentage, body_mass_index, lean_body_mass)', () => {
   const DATES = 'Oct 28, 2026\nOct 29, 2026\nOct 30, 2026';
 
-  it('aligned to dates like weight, 0 = no sample; one decimal; body_fat → body_fat_pct, lean_mass → lean_kg', () => {
-    const r = parseShortcut({ dates: DATES, body_fat: '0\n22.34\n21.9', bmi: '22.81\n0\n0', lean_mass: '0\n0\n52.06' });
+  it('aligned to dates like weight, 0 = no sample; one decimal; body_fat_percentage → body_fat_pct, lean_body_mass → lean_kg', () => {
+    const r = parseShortcut({ dates: DATES, body_fat_percentage: '0\n22.34\n21.9', body_mass_index: '22.81\n0\n0', lean_body_mass: '0\n0\n52.06' });
     expect(r).toEqual({
       metrics: [
         { date: '2026-10-29', metric: 'body_fat_pct', value: 22.3 },
@@ -135,15 +135,15 @@ describe('parseShortcut: the body metrics (body_fat, bmi, lean_mass)', () => {
   });
 
   it('body fat as a fraction (≤ 1) is ×100; as a percent, with or without its sign, as is', () => {
-    const r = parseShortcut({ dates: DATES, body_fat: '0.223\n22.3%\n0.2' });
+    const r = parseShortcut({ dates: DATES, body_fat_percentage: '0.223\n22.3%\n0.2' });
     expect(r.metrics.map((m) => m.value)).toEqual([22.3, 22.3, 20]);
     expect(r.skipped).toBe(0);
     // a percent sign means a percent: 0.5 % is no body fat anyone has
-    expect(parseShortcut({ dates: 'Oct 28, 2026', body_fat: '0.5%' }).metrics).toEqual([]);
+    expect(parseShortcut({ dates: 'Oct 28, 2026', body_fat_percentage: '0.5%' }).metrics).toEqual([]);
   });
 
   it('outside the bounds (body fat 2–70 %, BMI 10–60, lean 10–150 kg) is skipped with a warning; unreadable lines too', () => {
-    const r = parseShortcut({ dates: DATES, body_fat: '1.5\n70\n71', bmi: '9.9\n60\n61', lean_mass: '10\n151\nabc' });
+    const r = parseShortcut({ dates: DATES, body_fat_percentage: '1.5\n70\n71', body_mass_index: '9.9\n60\n61', lean_body_mass: '10\n151\nabc' });
     expect(r.metrics).toEqual([
       { date: '2026-10-29', metric: 'body_fat_pct', value: 70 },
       { date: '2026-10-29', metric: 'bmi', value: 60 },
@@ -151,21 +151,21 @@ describe('parseShortcut: the body metrics (body_fat, bmi, lean_mass)', () => {
     ]);
     expect(r.skipped).toBe(6);
     expect(r.warnings).toEqual([
-      'body_fat: 1.5 on 2026-10-28 is outside 2–70; skipped',
-      'body_fat: 71 on 2026-10-30 is outside 2–70; skipped',
-      'bmi: 9.9 on 2026-10-28 is outside 10–60; skipped',
-      'bmi: 61 on 2026-10-30 is outside 10–60; skipped',
-      'lean_mass: 151 on 2026-10-29 is outside 10–150; skipped'
+      'body_fat_percentage: 1.5 on 2026-10-28 is outside 2–70; skipped',
+      'body_fat_percentage: 71 on 2026-10-30 is outside 2–70; skipped',
+      'body_mass_index: 9.9 on 2026-10-28 is outside 10–60; skipped',
+      'body_mass_index: 61 on 2026-10-30 is outside 10–60; skipped',
+      'lean_body_mass: 151 on 2026-10-29 is outside 10–150; skipped'
     ]);
   });
 
   it('a list whose length differs from dates is dropped with a warning; a body without them (an older Shortcut) is as before', () => {
-    const r = parseShortcut({ ...BODY, bmi: '22.8', lean_mass: '0\n0\n52' });
-    expect(r.warnings).toEqual(['bmi: 1 lines but 3 dates; bmi not saved']);
+    const r = parseShortcut({ ...BODY, body_mass_index: '22.8', lean_body_mass: '0\n0\n52' });
+    expect(r.warnings).toEqual(['body_mass_index: 1 lines but 3 dates; body_mass_index not saved']);
     expect(r.metrics.filter((m) => m.metric === 'bmi')).toEqual([]);
     expect(r.metrics.at(-1)).toEqual({ date: '2026-10-30', metric: 'lean_kg', value: 52 });
     expect(parseShortcut(BODY).metrics.map((m) => m.metric)).not.toContain('bmi');
-    expect(parseShortcut({ dates: 'Oct 28, 2026', lean_mass: '50' }).metrics).toEqual([{ date: '2026-10-28', metric: 'lean_kg', value: 50 }]);
-    expect(() => parseShortcut({ dates: 'Oct 28, 2026', body_fat: [0.2] })).toThrow(/body_fat: expected Text/);
+    expect(parseShortcut({ dates: 'Oct 28, 2026', lean_body_mass: '50' }).metrics).toEqual([{ date: '2026-10-28', metric: 'lean_kg', value: 50 }]);
+    expect(() => parseShortcut({ dates: 'Oct 28, 2026', body_fat_percentage: [0.2] })).toThrow(/body_fat_percentage: expected Text/);
   });
 });
