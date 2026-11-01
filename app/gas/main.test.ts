@@ -239,6 +239,19 @@ describe('ingest', () => {
     ]);
   });
 
+  it('the body metrics: generic metric rows, latest wins like weight, and the snapshot carries them', () => {
+    const bb = (fat: string) => ({ dates: 'Oct 27, 2026 at 7:00 AM', body_fat: fat, bmi: '22.8', lean_mass: '52.1' });
+    expect(a('ingest', bb('0.223'))).toEqual({ ok: true, metrics: 3 });
+    tick();
+    expect(a('ingest', bb('22.3'))).toEqual({ ok: true, metrics: 0 }); // the same 22.3 %, as a percent this time
+    tick();
+    expect(a('ingest', bb('21.9'))).toEqual({ ok: true, metrics: 1 });
+    expect(data('metrics').map((r) => [r[2], r[3], r[4]])).toEqual([
+      ['2026-10-27', 'body_fat_pct', 22.3], ['2026-10-27', 'bmi', 22.8], ['2026-10-27', 'lean_kg', 52.1], ['2026-10-27', 'body_fat_pct', 21.9]
+    ]);
+    expect(a('snapshot').rows.metrics.map((r: unknown[]) => r[3])).toEqual(['body_fat_pct', 'bmi', 'lean_kg', 'body_fat_pct']);
+  });
+
   it('dates stay text in the sheet (cells are plain-text formatted)', () => {
     a('ingest', REAL);
     expect(typeof data('metrics')[0][2]).toBe('string');

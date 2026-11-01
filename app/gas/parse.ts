@@ -8,7 +8,10 @@
 //     "exercise_minutes": "22\n…",              that day's total
 //     "calories": "251.3\n…",                   that day's active energy in kcal (the Move ring) → metric move_kcal
 //     "stand_minutes": "58\n…",                 that day's Stand Time in minutes → metric stand_min
-//     "weight": "0\n68.4\n…" }                 that day's Body Mass in kg; 0 = no weigh-in
+//     "weight": "0\n68.4\n…",                  that day's Body Mass in kg; 0 = no weigh-in
+//     "body_fat": "0\n22.3\n…",                that day's Body Fat Percentage → body_fat_pct (%; 0.223 = 22.3 %); 0 = none
+//     "bmi": "0\n22.8\n…",                     that day's Body Mass Index → bmi; 0 = none
+//     "lean_mass": "0\n52.1\n…" }             that day's Lean Body Mass in kg → lean_kg; 0 = none
 //
 // Steps: Shortcuts' "Find Health Samples" sums every source's samples, so the iPhone's and the Watch's steps would be
 // counted twice (Health de-duplicates them; Shortcuts doesn't). The Shortcut sends each device's list, and a day's steps
@@ -16,8 +19,11 @@
 //
 // Only these fields are read (`key` and `action` are main.ts's); every daily one is optional. A list whose length
 // differs from `dates` is dropped with a warning and the rest is kept; a value above METRIC_BOUNDS (e.g. kcal > 10,000,
-// stand > 1,440) is skipped. It runs in Apps Script (bundled into apps-script/Code.js) and in Node tests: plain ES2019.
-import { isRec, METRIC_BOUNDS, roundKg, WEIGHT_KG, type MetricKey } from '../src/lib/contract/api.ts';
+// stand > 1,440) is skipped, and so is a weight or body value outside WEIGHT_KG / BODY_BOUNDS.
+//
+// Body fat: Shortcuts may write Health's percentage as a fraction (0.223) or as a percent (22.3, or "22.3%"). A
+// plausible body fat is 2–70 %, so a value of at most 1 can only be a fraction: it is ×100. Stored as % with one decimal. It runs in Apps Script (bundled into apps-script/Code.js) and in Node tests: plain ES2019.
+import { BODY_BOUNDS, isBodyMetric, isRec, METRIC_BOUNDS, roundKg, WEIGHT_KG, type MetricKey } from '../src/lib/contract/api.ts';
 
 interface ParsedMetric { date: string; metric: MetricKey; value: number }
 interface ParsedBody {
@@ -75,7 +81,10 @@ const COLUMNS = [
   { field: 'exercise_minutes', metric: 'exercise_min' },
   { field: 'calories', metric: 'move_kcal' },
   { field: 'stand_minutes', metric: 'stand_min' },
-  { field: 'weight', metric: 'weight' }
+  { field: 'weight', metric: 'weight' },
+  { field: 'body_fat', metric: 'body_fat_pct' },
+  { field: 'bmi', metric: 'bmi' },
+  { field: 'lean_mass', metric: 'lean_kg' }
 ] as const;
 
 /** Parse a Shortcut body (already JSON-parsed). Throws ShapeError when nothing usable or the shape is wrong. */
@@ -97,9 +106,10 @@ export function parseShortcut(body: unknown): ParsedBody {
     }
     values.forEach((raw, i) => {
       const day = days[i];
-      const n = amount(raw);
+      // body fat may come with its percent sign
+      const n = amount(metric === 'body_fat_pct' ? raw.replace(/\s*%$/, '') : raw);
       if (!day || n === null) { skipped++; return; }
-      if (metric !== 'weight') {
+      if (metric !== 'weight' && !isBodyMetric(metric)) {
         // a ceiling: one bad line must not reach the ベル (it would earn until the next sync)
         const v = Math.round(n);
         if (v > METRIC_BOUNDS[metric]) { skipped++; warnings.push(`${field}: ${v} on ${day} is above ${METRIC_BOUNDS[metric]}; skipped`); return; }
@@ -111,13 +121,14 @@ export function parseShortcut(body: unknown): ParsedBody {
         metrics.push({ date: day, metric, value: v });
         return;
       }
-      if (n === 0) return; // no weigh-in that day
-      const kg = roundKg(n);
-      if (kg < WEIGHT_KG.min || kg > WEIGHT_KG.max) { skipped++; return; }
-      metrics.push({ date: day, metric, value: kg });
+      if (n === 0) return; // no weigh-in (no sample) that day
+      const v = roundKg(metric === 'body_fat_pct' && n <= 1 && !raw.endsWith('%') ? n * 100 : n);
+      const { min, max } = metric === 'weight' ? WEIGHT_KG : BODY_BOUNDS[metric];
+      if (v < min || v > max) { skipped++; warnings.push(`${field}: ${v} on ${day} is outside ${min}–${max}; skipped`); return; }
+      metrics.push({ date: day, metric, value: v });
     });
   }
 
-  if (!sent.length) throw new ShapeError('nothing to save: send dates with steps, steps_watch, exercise_minutes, calories, stand_minutes or weight');
+  if (!sent.length) throw new ShapeError('nothing to save: send dates with steps, steps_watch, exercise_minutes, calories, stand_minutes, weight, body_fat, bmi or lean_mass');
   return { metrics, skipped, warnings };
 }
