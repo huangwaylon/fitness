@@ -102,7 +102,8 @@ trainer, one person at a time, computed on read.
 - **Whose data:** two avatar pills (this phone's person first and chosen on opening; kept for the session).
 - **Controls:** 1週 · 1か月 · 3か月 · 1年 · すべて (1週 on every opening; kept while the panel stays open), then a sticky row: ‹ the
   visible range (「10/2–10/31」; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」 under it) › and きょう.
-- **A card per metric** (🍎 歩数, 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド): the goal; 1日の平均 with 前の期間より ↑/↓ %;
+- **Cards, in this order** (`model/health.ts` CARDS, the user's): 🍎 歩数, 体重, then 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド.
+- **A card per activity metric**: the goal; 1日の平均 with 前の期間より ↑/↓ %;
   目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key.
 - **Chart** (`BarChart`, SVG): a bar per day (1週, 1か月), per week (3か月: 13) or per calendar month (1年, すべて), each
   the bucket's daily average, in the person's colour (ウェイ blue `--person-a`, うめ orange `--person-b`); solid when

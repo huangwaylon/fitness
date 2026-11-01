@@ -16,13 +16,13 @@ async function openHealth(page: Page, query = '?demo') {
 }
 const range = (page: Page) => sheet(page).locator('.health .nav .rl b');
 
-test('the tab: one person at a time, a card per metric, steps first, then 体重; averages over every day with data', async ({ page }) => {
+test('the tab: one person at a time, a card per metric, steps first, then 体重, then the rings; averages over every day with data', async ({ page }) => {
   await openHealth(page);
   await expect(sheet(page).locator('[data-period=week]')).toHaveAttribute('aria-pressed', 'true'); // it opens on 1週
   await sheet(page).locator('[data-period=month]').click();
   await expect(sheet(page).locator('.health > *').first()).toHaveClass(/who/); // whose data comes first
   await expect(sheet(page).locator('.health .wk')).toHaveCount(0); // no week card: the charts carry the trends
-  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド', '体重']);
+  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', '体重', 'ムーブ', 'エクササイズ', 'スタンド']);
   await expect(range(page)).toHaveText('10/2–10/31'); // 1か月 = the 30 days to today
   const move = sheet(page).locator('.mc[data-metric=move]');
   await expect(move.locator('.srow')).toHaveCount(1);
