@@ -581,11 +581,11 @@
       <div class="snap" data-snap="hiroba" style:top="{scrollFor(CAMS.hiroba, CAM_MAX, s)}px"></div>
       <div class="snap end" data-snap="mae" style:bottom="0"></div>
       <div class="stage" style:height="{vh}px" style:--u="{s}px" style:--su="{s}px">
-        <WorldGround {season} />
+        <WorldGround {season} {foliage} />
         <WorldWater floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null} night={tod === 'night'} winter={season === 'winter'} />
         <div class="haze" aria-hidden="true"></div>
 
-        <Scenery {season} {foliage} {month} {live} onbuilding={building} skip={['museum']} />
+        <Scenery {season} {foliage} {month} {live} {tod} onbuilding={building} skip={['museum']} />
         <Museum {live} snow={season === 'winter'} say={(name, parts, from, o) => talk?.say(name, parts, from, o)} />
 
         {#each ['A', 'B'] as const as pid (pid)}

@@ -104,6 +104,17 @@ const SPECS: Record<string, Spec> = {
   'deco/signpost': [128, 'Signpost_(Shop)_NH_Icon.png'],
   'deco/campsite-sign': [128, 'Campsite_Sign_NH_Icon.png'],
   'deco/log-fence': [128, 'Log_Fence_NH_Icon.png'],
+  // phase 3's decor (world.ts SCENERY): fences, garden lanterns, NH's bamboo (its catalog icon is the only render),
+  // garden rocks
+  'deco/fence-wooden': [128, 'Simple_Wooden_Fence_NH_Icon.png'],
+  'deco/fence-corral': [128, 'Corral_Fence_NH_Icon.png'],
+  'deco/fence-bamboo': [128, 'Bamboo_Lattice_Fence_NH_Icon.png'],
+  'deco/garden-lantern': [128, 'Garden_Lantern_NH_Icon.png'],
+  'deco/garden-lantern-white': [128, 'Garden_Lantern_(White)_NH_Icon.png'],
+  'trees/bamboo': [128, 'Bamboo_Tree_NH_Icon.png'],
+  'deco/garden-rock': [128, 'Garden_Rock_NH_Icon.png'],
+  'deco/flat-rock': [128, 'Flat_Garden_Rock_NH_Icon.png'],
+  'deco/tall-rock': [128, 'Tall_Garden_Rock_NH_Icon.png'],
   'deco/present': [96, 'Present_NH_Inv_Icon.png'],
   // Halloween (Oct 31): NH's orange pumpkin by day, the orange spooky lantern (a jack-o'-lantern) from 17:00, the candy
   // Jack is given; Jack himself (the 3D model: his NH artwork is a small crop; a visitor only, so not in the roster).
@@ -216,6 +227,11 @@ for (const [id, file] of Object.entries(FIND_FILES)) SPECS[`finds/${id}`] = [96,
 for (const f of ['Purple Tulips', 'Black Tulips', 'Orange Tulips', 'Pink Roses', 'Orange Roses', 'Black Roses', 'Purple Roses', 'Blue Roses',
   'Orange Cosmos', 'Black Cosmos', 'Pink Mums', 'Green Mums', 'Blue Pansies', 'Purple Pansies'])
   SPECS[`flowers/${f.toLowerCase().replace(/ /g, '-')}`] = [128, `${f.replace(/ /g, '_')}_NH_Inv_Icon.png`];
+// The meadow's wild flowers (island/scene.ts MEADOW), the season's species in turn.
+for (const f of ['Pink Hyacinths', 'Purple Hyacinths', 'White Hyacinths', 'White Tulips', 'Pink Tulips', 'White Lilies', 'Orange Lilies', 'Pink Lilies',
+  'Yellow Lilies', 'White Cosmos', 'Yellow Cosmos', 'Red Cosmos', 'White Mums', 'Yellow Mums', 'Red Mums', 'White Pansies', 'Yellow Pansies', 'Red Pansies',
+  'Red Windflowers', 'Purple Windflowers', 'White Windflowers'])
+  SPECS[`flowers/${f.toLowerCase().replace(/ /g, '-')}`] = [128, `${f.replace(/ /g, '_')}_NH_Inv_Icon.png`];
 // NH's DIY recipe card, held up when a balloon's present held a recipe (island/Finds.svelte; the presents' own icons are the
 // catalogue's, scripts/catalog.ts).
 SPECS['presents/diy-recipe'] = [96, 'DIY_Recipe_NH_Inv_Icon.png'];
@@ -223,7 +239,7 @@ SPECS['presents/diy-recipe'] = [96, 'DIY_Recipe_NH_Inv_Icon.png'];
  *  scene sizes are true to the tile unit (docs/design.md#world). */
 const TRIM = ['bushes/', 'flowers/', 'finds/rock', 'deco/pumpkin', 'deco/spooky-lantern', 'deco/tape-deck', 'deco/wedding-arch', 'deco/birthday-', 'deco/party-popper', 'trees/palm', 'trees/cedar',
   'deco/airport', 'deco/resident-services', 'deco/nooks-cranny', 'deco/able-sisters', 'deco/museum-icon', 'deco/campsite',
-  'deco/banner-lamp', 'deco/streetlamp', 'deco/bulletin-board', 'deco/plaza-bench', 'deco/signpost', 'deco/campsite-sign', 'deco/log-fence', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
+  'deco/banner-lamp', 'deco/streetlamp', 'deco/bulletin-board', 'deco/plaza-bench', 'deco/signpost', 'deco/campsite-sign', 'deco/log-fence', 'deco/fence-', 'deco/garden-', 'trees/bamboo', 'deco/flat-rock', 'deco/tall-rock', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
 /** Villager renders are trimmed too (not the round icons; Hamlet's padded render is cropped by lib/art.ts BOX). */
 const trims = (key: string) =>
   TRIM.some((p) => key.startsWith(p)) || (key.startsWith('villagers/') && !key.endsWith('-icon') && key !== 'villagers/hamlet');
@@ -362,7 +378,7 @@ async function main() {
   console.log(`${Object.keys(SPECS).length} assets, ${todo.length} to fetch`);
   // Drop manifest entries (and files) the UI no longer uses.
   for (const [key, e] of Object.entries(manifest.files)) {
-    if (SPECS[key]) continue;
+    if (SPECS[key] || e.source.startsWith('derived')) continue; // derived art is scripts/derive-art.ts's
     rmSync(join(OUT, e.path), { force: true });
     delete manifest.files[key];
   }

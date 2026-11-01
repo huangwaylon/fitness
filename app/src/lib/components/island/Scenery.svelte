@@ -11,7 +11,7 @@
   import type { Foliage } from '#lib/ui-state/season.ts';
   import { t } from '#lib/i18n/index.ts';
   import { BUILDINGS, HEDGE_XS, HEDGE_Z, SCENERY, type BuildingId, type Scenery } from './world.ts';
-  import { hedgePair } from './scene.ts';
+  import { GLOW_AT, LIT_ART, hedgePair, sceneryKey, type Tod } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
 
   interface Props {
@@ -24,8 +24,10 @@
     onbuilding?: (id: BuildingId, el: HTMLElement) => void;
     /** Hide a building's own node (the museum is drawn by Museum.svelte, with its snow and Blathers). */
     skip?: readonly BuildingId[];
+    /** At dusk and night the buildings' windows and the lamps light up. */
+    tod?: Tod;
   }
-  let { season, foliage, month, live = true, onbuilding, skip = [] }: Props = $props();
+  let { season, foliage, month, live = true, onbuilding, skip = [], tod = 'day' }: Props = $props();
   const w = useWorld();
 
   /** The oak render's trunk and canopy (the summer render and the seasonal ones share the shape). */
@@ -36,7 +38,11 @@
     const [a, b] = hedgePair(month);
     return HEDGE_XS.map((x, i) => ({ id: `hedge-${i}`, kind: 'bush', key: `bushes/${i % 2 ? b : a}`, x, z: HEDGE_Z, h: BUSH_H }));
   });
-  const keyOf = (s: Scenery) => (s.kind === 'oak' ? treeArt(foliage) : s.key);
+  const keyOf = (s: Scenery) => (s.kind === 'oak' ? treeArt(foliage) : sceneryKey(s.key, season, month));
+  /** Lights: the windows and lamps (over the time-of-day tint, as the fireflies: between --z-tint and --z-taps). */
+  const lit = $derived(tod === 'night' ? 1 : tod === 'dusk' ? 0.7 : 0);
+  const NIGHT_Z = 60000081;
+  const lamps = SCENERY.filter((s) => GLOW_AT[s.key]);
   const winter = $derived(season === 'winter');
   const wOf = (key: string, h: number) => {
     const a = art(key);
@@ -69,11 +75,28 @@
       <button type="button" class="door" disabled={!live} data-sfx="self" data-scenery aria-label={t(`world.building.${b.id}`)}
         style:height="calc({b.h} * var(--u))" style:width="calc({wOf(b.key, b.h)} * var(--u))"
         onclick={(e) => onbuilding?.(b.id, e.currentTarget)}>
-        <OfficialArt key={b.key} size="calc({b.h} * var(--u))" eager={b.z < 1200} />
+        <OfficialArt key={sceneryKey(b.key, season, month)} size="calc({b.h} * var(--u))" eager={b.z < 1200} />
       </button>
     </div>
   {/if}
 {/each}
+
+{#if lit}
+  {#each BUILDINGS as b (b.id)}
+    {#if LIT_ART[b.key]}
+      <div class="spr lit" data-lit={b.id} style:opacity={lit} {@attach w.at({ x: b.x, z: b.z, h: b.h, zi: NIGHT_Z })}>
+        <span class="art" style:height="calc({b.h} * var(--u))" style:width="calc({wOf(b.key, b.h)} * var(--u))">
+          <OfficialArt key={LIT_ART[b.key]} size="calc({b.h} * var(--u))" />
+        </span>
+      </div>
+    {/if}
+  {/each}
+  {#each lamps as l (l.id)}
+    <div class="spr lit" data-glow={l.id} style:opacity={lit} {@attach w.at({ x: l.x, z: l.z, h: l.h, zi: NIGHT_Z })}>
+      <span class="glow" style:bottom="calc({l.h * GLOW_AT[l.key] - 22} * var(--u))"><OfficialArt key="deco/lamp-glow" size="calc(44 * var(--u))" /></span>
+    </div>
+  {/each}
+{/if}
 
 <style>
   .spr { width: 0; height: 0; transform-origin: 0 0; will-change: transform; pointer-events: none; }
@@ -84,6 +107,9 @@
   .art :global(.official), .door :global(.official) { max-width: none; }
   .art.bush { pointer-events: auto; cursor: pointer; }
   .art.flip :global(.official) { transform: scaleX(-1); }
+  .lit { transition: opacity 1.2s ease; }
+  .glow { position: absolute; left: 0; translate: -50% 0; line-height: 0; mix-blend-mode: screen; }
+  .glow :global(.official) { max-width: none; }
   .door {
     appearance: none; border: 0; padding: 0; margin: 0; background: none; cursor: pointer; pointer-events: auto;
     -webkit-tap-highlight-color: transparent; border-radius: 10% 10% 4% 4%;

@@ -4,7 +4,7 @@ import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
 import { notificationFor, openApp } from './notify.ts';
-import { AUDIO_CACHE, SHELL, isAudio, isCritterArt, isFont, isMusic, isVillagerArt, keepShell, lruEvict, precachable, staleCaches } from './caches.ts';
+import { AUDIO_CACHE, SHELL, isAudio, isCritterArt, isDecorArt, isFont, isMusic, isVillagerArt, keepShell, lruEvict, precachable, staleCaches } from './caches.ts';
 
 // The app may live under a base path (GitHub Pages: /fitness/); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -116,8 +116,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // fonts, villagers and critters: cached on first use (critters share the villagers' on-use art cache)
-  if (isFont(url.pathname) || isVillagerArt(url.pathname) || isCritterArt(url.pathname)) {
+  // fonts, villagers, critters and the decor: cached on first use (critters and the decor share the villagers' on-use art cache)
+  if (isFont(url.pathname) || isVillagerArt(url.pathname) || isCritterArt(url.pathname) || isDecorArt(url.pathname)) {
     const font = isFont(url.pathname);
     event.respondWith(
       (async () => {

@@ -19,6 +19,7 @@
     "gas:build": "node gas/build.ts",
     "gas:deploy": "node gas/deploy.ts",
     "heads": "node scripts/heads.ts",
+    "assets:derive": "node scripts/derive-art.ts",
     "terrain": "node scripts/terrain.ts",
     "terrain:preview": "node scripts/terrain-preview.ts",
     "bench": "node scripts/bench-model.ts",

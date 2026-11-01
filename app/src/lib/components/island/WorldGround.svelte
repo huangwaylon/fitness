@@ -1,7 +1,7 @@
 <script lang="ts">
   // The ground (docs/design.md "World"): the island's plan baked into raster chunks at build time (scripts/terrain.ts:
   // the sea's rings, the beach, the grass, paths, the plaza, the river, the pond, the cliff, the bridges' decks and the
-  // still things' contact shadows), one set per season, drawn by 40 bands bent onto the log: each band is a slice of its
+  // still things' contact shadows), one set per look (the season's, and the petals' and the fallen leaves' weeks: scripts/terrain-seasons.ts), drawn by 40 bands bent onto the log: each band is a slice of its
   // chunk, squashed into a trapezoid by one matrix3d (roll.ts band + quadMatrix; 1px overlap hides the seams). Only
   // the bands in view are shown. Chunks 0–3 (まえ and ひろば) load at once, 4–7 (おく, the tier above, the back sea)
   // when the camera nears them or the browser is idle after the first paint. Nothing animates in here: the live water
@@ -9,11 +9,15 @@
   import { asset } from '$app/paths';
   import { onMount } from 'svelte';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
+  import type { Foliage } from '#lib/ui-state/season.ts';
   import { band, quadMatrix } from './roll.ts';
   import { BANDS, BAND_D, PLAN } from './world.ts';
   import { useWorld } from './camera.svelte.ts';
 
-  let { season, lazyFrom = 500 }: { season: Season; lazyFrom?: number } = $props();
+  let { season, foliage, lazyFrom = 500 }: { season: Season; foliage?: Foliage; lazyFrom?: number } = $props();
+  /** The ground's look (scripts/terrain-seasons.ts): the season's, or its dressed set in the cherry-blossom days (petals
+   *  on the ground) and the fall foliage's weeks (maple leaves). */
+  const look = $derived(season === 'spring' && foliage === 'blossom' ? 'spring-petals' : season === 'autumn' && foliage === 'fall' ? 'autumn-leaves' : season);
 
   interface Terrain { px: number; chunkD: number; chunks: number; seasons: string[]; bytes?: Record<string, number[]> }
   /** The bake's manifest (absent before the first bake: the bands then show plain colours). */
@@ -31,7 +35,7 @@
   /** A season's chunk: its URL carries the bake's byte count, so a new bake is a new URL (the art cache outlives builds). */
   const src = (c: number) => {
     if (!TERRAIN) return null;
-    const ss = TERRAIN.seasons.includes(season) ? season : 'summer';
+    const ss = TERRAIN.seasons.includes(look) ? look : TERRAIN.seasons.includes(season) ? season : 'summer';
     return `${asset(`terrain/${ss}/${c}.webp` as Parameters<typeof asset>[0])}?v=${TERRAIN.bytes?.[ss]?.[c] ?? 0}`;
   };
 
@@ -82,7 +86,7 @@
     };
   });
   $effect(() => {
-    void season;
+    void look;
     for (const b of st) b.tf = '';
     w.invalidate();
   });

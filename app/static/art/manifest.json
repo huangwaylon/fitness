@@ -1,5 +1,5 @@
 {
-  "version": 42,
+  "version": 43,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -1267,11 +1267,35 @@
       "h": 234,
       "source": "https://nookipedia.com/wiki/File:Able_Sisters_NH_Map_Icon.png"
     },
+    "deco/able-sisters-lit": {
+      "path": "deco/able-sisters-lit.webp",
+      "w": 305,
+      "h": 234,
+      "source": "derived from https://nookipedia.com/wiki/File:Able_Sisters_NH_Map_Icon.png (lit windows: scripts/derive-art.ts)"
+    },
+    "deco/able-sisters-winter": {
+      "path": "deco/able-sisters-winter.webp",
+      "w": 305,
+      "h": 234,
+      "source": "derived from https://nookipedia.com/wiki/File:Able_Sisters_NH_Map_Icon.png (snow: scripts/derive-art.ts)"
+    },
     "deco/airport": {
       "path": "deco/airport.webp",
       "w": 284,
       "h": 250,
       "source": "https://nookipedia.com/wiki/File:Airport_(Blue)_NH_Map_Icon.png"
+    },
+    "deco/airport-lit": {
+      "path": "deco/airport-lit.webp",
+      "w": 284,
+      "h": 250,
+      "source": "derived from https://nookipedia.com/wiki/File:Airport_(Blue)_NH_Map_Icon.png (lit windows: scripts/derive-art.ts)"
+    },
+    "deco/airport-winter": {
+      "path": "deco/airport-winter.webp",
+      "w": 284,
+      "h": 250,
+      "source": "derived from https://nookipedia.com/wiki/File:Airport_(Blue)_NH_Map_Icon.png (snow: scripts/derive-art.ts)"
     },
     "deco/banner-lamp": {
       "path": "deco/banner-lamp.webp",
@@ -1309,11 +1333,71 @@
       "h": 172,
       "source": "https://nookipedia.com/wiki/File:Campsite_NH_Map_Icon.png"
     },
+    "deco/campsite-lit": {
+      "path": "deco/campsite-lit.webp",
+      "w": 285,
+      "h": 172,
+      "source": "derived from https://nookipedia.com/wiki/File:Campsite_NH_Map_Icon.png (lit windows: scripts/derive-art.ts)"
+    },
     "deco/campsite-sign": {
       "path": "deco/campsite-sign.webp",
       "w": 88,
       "h": 113,
       "source": "https://nookipedia.com/wiki/File:Campsite_Sign_NH_Icon.png"
+    },
+    "deco/campsite-winter": {
+      "path": "deco/campsite-winter.webp",
+      "w": 285,
+      "h": 172,
+      "source": "derived from https://nookipedia.com/wiki/File:Campsite_NH_Map_Icon.png (snow: scripts/derive-art.ts)"
+    },
+    "deco/fence-bamboo": {
+      "path": "deco/fence-bamboo.webp",
+      "w": 118,
+      "h": 107,
+      "source": "https://nookipedia.com/wiki/File:Bamboo_Lattice_Fence_NH_Icon.png"
+    },
+    "deco/fence-corral": {
+      "path": "deco/fence-corral.webp",
+      "w": 118,
+      "h": 97,
+      "source": "https://nookipedia.com/wiki/File:Corral_Fence_NH_Icon.png"
+    },
+    "deco/fence-wooden": {
+      "path": "deco/fence-wooden.webp",
+      "w": 116,
+      "h": 75,
+      "source": "https://nookipedia.com/wiki/File:Simple_Wooden_Fence_NH_Icon.png"
+    },
+    "deco/flat-rock": {
+      "path": "deco/flat-rock.webp",
+      "w": 100,
+      "h": 42,
+      "source": "https://nookipedia.com/wiki/File:Flat_Garden_Rock_NH_Icon.png"
+    },
+    "deco/garden-lantern": {
+      "path": "deco/garden-lantern.webp",
+      "w": 58,
+      "h": 103,
+      "source": "https://nookipedia.com/wiki/File:Garden_Lantern_NH_Icon.png"
+    },
+    "deco/garden-lantern-white": {
+      "path": "deco/garden-lantern-white.webp",
+      "w": 58,
+      "h": 103,
+      "source": "https://nookipedia.com/wiki/File:Garden_Lantern_(White)_NH_Icon.png"
+    },
+    "deco/garden-rock": {
+      "path": "deco/garden-rock.webp",
+      "w": 97,
+      "h": 83,
+      "source": "https://nookipedia.com/wiki/File:Garden_Rock_NH_Icon.png"
+    },
+    "deco/lamp-glow": {
+      "path": "deco/lamp-glow.webp",
+      "w": 64,
+      "h": 64,
+      "source": "derived (drawn: scripts/derive-art.ts)"
     },
     "deco/log-fence": {
       "path": "deco/log-fence.webp",
@@ -1327,11 +1411,35 @@
       "h": 214,
       "source": "https://nookipedia.com/wiki/File:Museum_(Upgraded)_NH_Map_Icon.png"
     },
+    "deco/museum-icon-lit": {
+      "path": "deco/museum-icon-lit.webp",
+      "w": 293,
+      "h": 214,
+      "source": "derived from https://nookipedia.com/wiki/File:Museum_(Upgraded)_NH_Map_Icon.png (lit windows: scripts/derive-art.ts)"
+    },
+    "deco/museum-icon-winter": {
+      "path": "deco/museum-icon-winter.webp",
+      "w": 293,
+      "h": 214,
+      "source": "derived from https://nookipedia.com/wiki/File:Museum_(Upgraded)_NH_Map_Icon.png (snow: scripts/derive-art.ts)"
+    },
     "deco/nooks-cranny": {
       "path": "deco/nooks-cranny.webp",
       "w": 298,
       "h": 213,
       "source": "https://nookipedia.com/wiki/File:Nook's_Cranny_(Upgraded)_NH_Map_Icon.png"
+    },
+    "deco/nooks-cranny-lit": {
+      "path": "deco/nooks-cranny-lit.webp",
+      "w": 298,
+      "h": 213,
+      "source": "derived from https://nookipedia.com/wiki/File:Nook's_Cranny_(Upgraded)_NH_Map_Icon.png (lit windows: scripts/derive-art.ts)"
+    },
+    "deco/nooks-cranny-winter": {
+      "path": "deco/nooks-cranny-winter.webp",
+      "w": 298,
+      "h": 213,
+      "source": "derived from https://nookipedia.com/wiki/File:Nook's_Cranny_(Upgraded)_NH_Map_Icon.png (snow: scripts/derive-art.ts)"
     },
     "deco/party-popper": {
       "path": "deco/party-popper.webp",
@@ -1363,6 +1471,18 @@
       "h": 246,
       "source": "https://nookipedia.com/wiki/File:Resident_Services_NH_Map_Icon.png"
     },
+    "deco/resident-services-lit": {
+      "path": "deco/resident-services-lit.webp",
+      "w": 310,
+      "h": 246,
+      "source": "derived from https://nookipedia.com/wiki/File:Resident_Services_NH_Map_Icon.png (lit windows: scripts/derive-art.ts)"
+    },
+    "deco/resident-services-winter": {
+      "path": "deco/resident-services-winter.webp",
+      "w": 310,
+      "h": 246,
+      "source": "derived from https://nookipedia.com/wiki/File:Resident_Services_NH_Map_Icon.png (snow: scripts/derive-art.ts)"
+    },
     "deco/signpost": {
       "path": "deco/signpost.webp",
       "w": 81,
@@ -1380,6 +1500,12 @@
       "w": 20,
       "h": 113,
       "source": "https://nookipedia.com/wiki/File:Streetlamp_NH_Icon.png"
+    },
+    "deco/tall-rock": {
+      "path": "deco/tall-rock.webp",
+      "w": 74,
+      "h": 122,
+      "source": "https://nookipedia.com/wiki/File:Tall_Garden_Rock_NH_Icon.png"
     },
     "deco/tape-deck": {
       "path": "deco/tape-deck.webp",
@@ -2089,6 +2215,12 @@
       "h": 104,
       "source": "https://nookipedia.com/wiki/File:Orange_Cosmos_NH_Inv_Icon.png"
     },
+    "flowers/orange-lilies": {
+      "path": "flowers/orange-lilies.webp",
+      "w": 103,
+      "h": 103,
+      "source": "https://nookipedia.com/wiki/File:Orange_Lilies_NH_Inv_Icon.png"
+    },
     "flowers/orange-pansies": {
       "path": "flowers/orange-pansies.webp",
       "w": 95,
@@ -2113,6 +2245,18 @@
       "h": 104,
       "source": "https://nookipedia.com/wiki/File:Pink_Cosmos_NH_Inv_Icon.png"
     },
+    "flowers/pink-hyacinths": {
+      "path": "flowers/pink-hyacinths.webp",
+      "w": 61,
+      "h": 114,
+      "source": "https://nookipedia.com/wiki/File:Pink_Hyacinths_NH_Inv_Icon.png"
+    },
+    "flowers/pink-lilies": {
+      "path": "flowers/pink-lilies.webp",
+      "w": 103,
+      "h": 103,
+      "source": "https://nookipedia.com/wiki/File:Pink_Lilies_NH_Inv_Icon.png"
+    },
     "flowers/pink-mums": {
       "path": "flowers/pink-mums.webp",
       "w": 90,
@@ -2124,6 +2268,18 @@
       "w": 83,
       "h": 104,
       "source": "https://nookipedia.com/wiki/File:Pink_Roses_NH_Inv_Icon.png"
+    },
+    "flowers/pink-tulips": {
+      "path": "flowers/pink-tulips.webp",
+      "w": 66,
+      "h": 107,
+      "source": "https://nookipedia.com/wiki/File:Pink_Tulips_NH_Inv_Icon.png"
+    },
+    "flowers/purple-hyacinths": {
+      "path": "flowers/purple-hyacinths.webp",
+      "w": 62,
+      "h": 117,
+      "source": "https://nookipedia.com/wiki/File:Purple_Hyacinths_NH_Inv_Icon.png"
     },
     "flowers/purple-mums": {
       "path": "flowers/purple-mums.webp",
@@ -2149,6 +2305,30 @@
       "h": 107,
       "source": "https://nookipedia.com/wiki/File:Purple_Tulips_NH_Inv_Icon.png"
     },
+    "flowers/purple-windflowers": {
+      "path": "flowers/purple-windflowers.webp",
+      "w": 79,
+      "h": 105,
+      "source": "https://nookipedia.com/wiki/File:Purple_Windflowers_NH_Inv_Icon.png"
+    },
+    "flowers/red-cosmos": {
+      "path": "flowers/red-cosmos.webp",
+      "w": 78,
+      "h": 104,
+      "source": "https://nookipedia.com/wiki/File:Red_Cosmos_NH_Inv_Icon.png"
+    },
+    "flowers/red-mums": {
+      "path": "flowers/red-mums.webp",
+      "w": 90,
+      "h": 105,
+      "source": "https://nookipedia.com/wiki/File:Red_Mums_NH_Inv_Icon.png"
+    },
+    "flowers/red-pansies": {
+      "path": "flowers/red-pansies.webp",
+      "w": 95,
+      "h": 95,
+      "source": "https://nookipedia.com/wiki/File:Red_Pansies_NH_Inv_Icon.png"
+    },
     "flowers/red-roses": {
       "path": "flowers/red-roses.webp",
       "w": 83,
@@ -2161,11 +2341,83 @@
       "h": 107,
       "source": "https://nookipedia.com/wiki/File:Red_Tulips_NH_Inv_Icon.png"
     },
+    "flowers/red-windflowers": {
+      "path": "flowers/red-windflowers.webp",
+      "w": 79,
+      "h": 105,
+      "source": "https://nookipedia.com/wiki/File:Red_Windflowers_NH_Inv_Icon.png"
+    },
+    "flowers/white-cosmos": {
+      "path": "flowers/white-cosmos.webp",
+      "w": 78,
+      "h": 104,
+      "source": "https://nookipedia.com/wiki/File:White_Cosmos_NH_Inv_Icon.png"
+    },
+    "flowers/white-hyacinths": {
+      "path": "flowers/white-hyacinths.webp",
+      "w": 62,
+      "h": 117,
+      "source": "https://nookipedia.com/wiki/File:White_Hyacinths_NH_Inv_Icon.png"
+    },
+    "flowers/white-lilies": {
+      "path": "flowers/white-lilies.webp",
+      "w": 103,
+      "h": 103,
+      "source": "https://nookipedia.com/wiki/File:White_Lilies_NH_Inv_Icon.png"
+    },
+    "flowers/white-mums": {
+      "path": "flowers/white-mums.webp",
+      "w": 90,
+      "h": 105,
+      "source": "https://nookipedia.com/wiki/File:White_Mums_NH_Inv_Icon.png"
+    },
+    "flowers/white-pansies": {
+      "path": "flowers/white-pansies.webp",
+      "w": 95,
+      "h": 95,
+      "source": "https://nookipedia.com/wiki/File:White_Pansies_NH_Inv_Icon.png"
+    },
     "flowers/white-roses": {
       "path": "flowers/white-roses.webp",
       "w": 83,
       "h": 104,
       "source": "https://nookipedia.com/wiki/File:White_Roses_NH_Inv_Icon.png"
+    },
+    "flowers/white-tulips": {
+      "path": "flowers/white-tulips.webp",
+      "w": 66,
+      "h": 107,
+      "source": "https://nookipedia.com/wiki/File:White_Tulips_NH_Inv_Icon.png"
+    },
+    "flowers/white-windflowers": {
+      "path": "flowers/white-windflowers.webp",
+      "w": 79,
+      "h": 105,
+      "source": "https://nookipedia.com/wiki/File:White_Windflowers_NH_Inv_Icon.png"
+    },
+    "flowers/yellow-cosmos": {
+      "path": "flowers/yellow-cosmos.webp",
+      "w": 78,
+      "h": 104,
+      "source": "https://nookipedia.com/wiki/File:Yellow_Cosmos_NH_Inv_Icon.png"
+    },
+    "flowers/yellow-lilies": {
+      "path": "flowers/yellow-lilies.webp",
+      "w": 103,
+      "h": 103,
+      "source": "https://nookipedia.com/wiki/File:Yellow_Lilies_NH_Inv_Icon.png"
+    },
+    "flowers/yellow-mums": {
+      "path": "flowers/yellow-mums.webp",
+      "w": 90,
+      "h": 105,
+      "source": "https://nookipedia.com/wiki/File:Yellow_Mums_NH_Inv_Icon.png"
+    },
+    "flowers/yellow-pansies": {
+      "path": "flowers/yellow-pansies.webp",
+      "w": 95,
+      "h": 95,
+      "source": "https://nookipedia.com/wiki/File:Yellow_Pansies_NH_Inv_Icon.png"
     },
     "flowers/yellow-tulips": {
       "path": "flowers/yellow-tulips.webp",
@@ -2395,11 +2647,23 @@
       "h": 64,
       "source": "https://nookipedia.com/wiki/File:Snowflake_NH_Inv_Icon.png"
     },
+    "trees/bamboo": {
+      "path": "trees/bamboo.webp",
+      "w": 73,
+      "h": 126,
+      "source": "https://nookipedia.com/wiki/File:Bamboo_Tree_NH_Icon.png"
+    },
     "trees/cedar": {
       "path": "trees/cedar.webp",
       "w": 215,
       "h": 420,
       "source": "https://nookipedia.com/wiki/File:Cedar_Tree_NH.png"
+    },
+    "trees/cedar-winter": {
+      "path": "trees/cedar-winter.webp",
+      "w": 215,
+      "h": 420,
+      "source": "derived from https://nookipedia.com/wiki/File:Cedar_Tree_NH.png (snow: scripts/derive-art.ts)"
     },
     "trees/oak-fall": {
       "path": "trees/oak-fall.webp",
