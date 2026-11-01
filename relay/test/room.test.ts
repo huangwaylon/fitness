@@ -409,8 +409,8 @@ describe('the shared world (v2, docs/backend.md#shared-world)', () => {
 
   it('a walk carries the very walk: where from, the way, when it set off and how long', () => {
     const a = join2(KEY_A), b = join2(KEY_B);
-    say2(a, { kind: 'walk', to: [195, 900], from: [132, 214], via: [[160, 400], [190, 700]], s: now - 30, ms: 2400 });
-    expect(b.sent.at(-1)).toMatchObject({ kind: 'walk', to: [195, 900], from: [132, 214], via: [[160, 400], [190, 700]], s: now - 30, ms: 2400, who: 'A' });
+    say2(a, { kind: 'walk', to: [195, 900], from: [132, 214], via: [[160, 400], [190, 700]], s: now - 30, ms: 2400, f: 'home' });
+    expect(b.sent.at(-1)).toMatchObject({ kind: 'walk', to: [195, 900], from: [132, 214], via: [[160, 400], [190, 700]], s: now - 30, ms: 2400, f: 'home', who: 'A' });
     const n = b.sent.length;
     say2(a, { kind: 'walk', to: [195, 900], via: Array.from({ length: 13 }, () => [1, 1]) });
     say2(a, { kind: 'walk', to: [195, 900], ms: 60_001 });

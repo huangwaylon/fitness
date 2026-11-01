@@ -216,8 +216,9 @@ intents, never data of record: the sheet path above is unchanged and still catch
 - **Protocol** (`app/src/lib/sync/live-protocol.ts`, imported by both sides and checked by the same parsers): JSON,
   `v: 2` (the rolling-log world; the relay still speaks `v: 1` to an older phone, answering each socket in the version
   of its hello), ≤ 256 bytes (an intent ~60–100; a `replay` ≤ 16,000). Intents: `walk {to: node id | [x, z], at?,
-  from?, via?, s?, ms?}` (v2: world units, where the villager is going, and with `from`, `via` (≤ 12 waypoints), `s`
-  (when it set off, the relay's clock) and `ms` (how long, ≤ 60 s; 0 = put there) the very walk, [Shared
+  from?, via?, s?, ms?, f?}` (v2: world units, where the villager is going, and with `from`, `via` (≤ 10 waypoints), `s`
+  (when it set off, the relay's clock), `ms` (how long, ≤ 60 s; 0 = put there) and `f` (the facing at its end: `home`,
+  `in`, `l`, `r`) the very walk, [Shared
   world](#shared-world) "Villagers"; integers within the plan `WORLD_X` −230…620 × `WORLD_Z` −400…2500, equal to
   `island/world.ts` PLAN; v1: stage units, |n| ≤ 100,000; a walk never crosses versions), `act {act, id?, at?, pt?}`,
   `catch {what, id?, at?, how?}`, `emote {emote}`, `world {op, id}` (`weed-pulled`, `fruit-collected`, `dug`,
