@@ -16,8 +16,8 @@
 // - A goal is met as on the stamp card: kcal ≥ that day's Move goal, exercise ≥ 60, whole Stand minutes ≥ 120, steps ≥
 //   that day's steps goal (8,000 unless set). Days met / days recorded.
 // - Periods end on an anchor day (today until ‹): 1週 = 7 days and 1か月 = 30 days by day, 3か月 = 13 weeks by week
-//   (ending on the anchor), 1年 = 12 calendar months by month, すべて = every month since the first record. The
-//   previous period is the same length just before (1年: the 12 months before).
+//   (ending on the anchor), 1年 = 12 calendar months by month. The previous period is the same length just before
+//   (1年: the 12 months before).
 import type { LocalDate, PersonId, RingFruit } from '#lib/types.ts';
 import { RULES } from '#lib/config/rules.ts';
 import { addDays, daysBetween, localDateAt } from '#lib/time/dates.ts';
@@ -43,9 +43,9 @@ export const CARDS = { activity: METRICS, body: ['weight', ...BODY] } as const s
 export const METRIC_FRUIT: Record<Metric, RingFruit> = { move: 'pear', exercise: 'peach', stand: 'cherry', steps: 'apple' };
 const ROW: Record<Metric, ActivityMetric> = { move: 'move_kcal', exercise: 'exercise_min', stand: 'stand_min', steps: 'steps' };
 
-export const PERIODS = ['week', 'month', 'quarter', 'year', 'all'] as const;
+export const PERIODS = ['week', 'month', 'quarter', 'year'] as const;
 export type Period = (typeof PERIODS)[number];
-/** Day-based periods: their length in days (1年 and すべて go by calendar month). */
+/** Day-based periods: their length in days (1年 goes by calendar month). */
 const DAYS: Partial<Record<Period, number>> = { week: 7, month: 30, quarter: 91 };
 
 /** One person's days, index i = `from` + i days: Apple Health's value as is, null = no row. */
@@ -139,7 +139,6 @@ export interface Range {
   buckets: Bucket[];
 }
 
-const monthStart = (d: LocalDate): LocalDate => `${d.slice(0, 8)}01`;
 /** The first day of the month `k` months from d's. */
 function addMonths(d: LocalDate, k: number): LocalDate {
   const y = Number(d.slice(0, 4)), m = Number(d.slice(5, 7)) - 1 + k;
@@ -148,8 +147,8 @@ function addMonths(d: LocalDate, k: number): LocalDate {
 }
 const monthEnd = (d: LocalDate): LocalDate => addDays(addMonths(d, 1), -1);
 
-/** The period ending on `anchor` (`first`: the first record, for すべて). */
-export function rangeFor(period: Period, anchor: LocalDate, first: LocalDate): Range {
+/** The period ending on `anchor`. */
+export function rangeFor(period: Period, anchor: LocalDate): Range {
   const len = DAYS[period];
   if (len) {
     const from = addDays(anchor, -len + 1);
@@ -158,31 +157,27 @@ export function rangeFor(period: Period, anchor: LocalDate, first: LocalDate): R
     for (let d = from; d <= anchor; d = addDays(d, step)) buckets.push({ from: d, to: addDays(d, step - 1) });
     return { period, from, to: anchor, unit: step === 7 ? 'week' : 'day', buckets };
   }
-  const from = period === 'year' ? addMonths(anchor, -11) : monthStart(first < anchor ? first : anchor);
+  const from = addMonths(anchor, -11);
   const buckets: Bucket[] = [];
   for (let d = from; d <= anchor; d = addMonths(d, 1)) buckets.push({ from: d, to: monthEnd(d) < anchor ? monthEnd(d) : anchor });
   return { period, from, to: anchor, unit: 'month', buckets };
 }
 
-/** The anchor one period back (dir −1) or on (+1), never past `today`. すべて doesn't move. */
+/** The anchor one period back (dir −1) or on (+1), never past `today`. */
 export function shiftAnchor(period: Period, anchor: LocalDate, dir: -1 | 1, today: LocalDate): LocalDate {
   const len = DAYS[period];
-  let next: LocalDate;
-  if (len) next = addDays(anchor, dir * len);
-  else if (period === 'year') next = monthEnd(addMonths(anchor, dir * 12));
-  else return anchor;
+  const next = len ? addDays(anchor, dir * len) : monthEnd(addMonths(anchor, dir * 12));
   return next > today ? today : next;
 }
 
 /** Whether ‹ has anything to show (a record before this period) and › anything newer. */
 export function canShift(r: Range, first: LocalDate, today: LocalDate): { back: boolean; on: boolean } {
-  return { back: r.period !== 'all' && r.from > first, on: r.period !== 'all' && r.to < today };
+  return { back: r.from > first, on: r.to < today };
 }
 
-/** The previous period of equal length (null for すべて). */
-export function previousRange(r: Range, first: LocalDate): Range | null {
-  if (r.period === 'all') return null;
-  return rangeFor(r.period, addDays(r.from, -1), first);
+/** The previous period of equal length. */
+export function previousRange(r: Range): Range {
+  return rangeFor(r.period, addDays(r.from, -1));
 }
 
 // ---------- stats ----------
@@ -262,8 +257,8 @@ function rawStats(hs: HealthSeries, p: PersonId, m: Metric, from: LocalDate, to:
 /** A period's numbers for one person and metric, with the change against the previous period. */
 export function metricStats(hs: HealthSeries, p: PersonId, m: Metric, r: Range): MetricStats {
   const cur = rawStats(hs, p, m, r.from, r.to);
-  const prevR = previousRange(r, hs.from);
-  const prev = prevR && prevR.to >= hs.from ? rawStats(hs, p, m, prevR.from, prevR.to) : null;
+  const prevR = previousRange(r);
+  const prev = prevR.to >= hs.from ? rawStats(hs, p, m, prevR.from, prevR.to) : null;
   const change = cur.avg !== null && prev?.avg ? (cur.avg - prev.avg) / prev.avg : null;
   return { ...cur, change };
 }

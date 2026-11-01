@@ -277,7 +277,7 @@ for (const [w, h] of [[390, 844], [320, 568]]) {
   test(`${w}x${h}, two years of data: nothing overflows, every control is a thumb’s size, the range row stays put`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await openHealth(page, '?demo&weeks=104');
-    for (const per of ['week', 'month', 'quarter', 'year', 'all']) for (const g of ['body', 'activity']) {
+    for (const per of ['week', 'month', 'quarter', 'year']) for (const g of ['body', 'activity']) {
       await sheet(page).locator(`[data-period=${per}]`).click();
       await sheet(page).locator(`[data-group=${g}]`).click();
       const m = await page.evaluate(() => {

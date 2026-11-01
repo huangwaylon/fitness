@@ -34,7 +34,7 @@ function monthLabel(d: LocalDate, withYear = true): string {
   return new Intl.DateTimeFormat('en-US', { month: 'short', ...(withYear ? { year: 'numeric' } : {}), timeZone: 'UTC' }).format(new Date(`${d}T00:00:00Z`));
 }
 
-/** The visible range: `10/2–10/31`, with the year when it isn't this year's (`2025/12/30–1/5`); months for 1年 and すべて. */
+/** The visible range: `10/2–10/31`, with the year when it isn't this year's (`2025/12/30–1/5`); months for 1年. */
 export function rangeLabel(r: Range, today: LocalDate): string {
   if (r.unit === 'month') return t('kiroku.range', { a: monthLabel(r.from), b: monthLabel(r.to) });
   const y = (d: LocalDate) => d.slice(0, 4);
