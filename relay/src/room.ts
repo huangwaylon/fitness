@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, LIVE_V, LIVE_VS, otherVersion, parseClient, type LiveV, type Notice, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
+import { CLOSE, LIVE_V, LIVE_VS, NEST_GAP_MS, claimOf, isStored, otherVersion, parseClient, tokyoDay, type LiveV, type Notice, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
 
@@ -24,15 +24,15 @@ export interface RoomIO<S extends Sock> {
   setMeta(s: S, m: Meta): void;
   keys: Keys;
   now(): number;
-  /** Persist the world-event ring (fire and forget). */
+  /** Persist the day's world (fire and forget). */
   save(ring: Relayed[]): void;
 }
 
 /** A socket must say hello within this long. */
 export const HELLO_MS = 10_000;
-/** World events kept for a reconnecting phone: the last RING_MAX, none older than RING_AGE_MS. */
-export const RING_MAX = 50;
-export const RING_AGE_MS = 6 * 3600_000;
+/** The day's world kept for a phone that opens later (docs/backend.md#shared-world): today's (Tokyo) changes, the
+ *  last RING_MAX, and each person's last walk. */
+export const RING_MAX = 400;
 /** Per connection: a burst of 20, 20 a second after that. */
 export const BURST = 20;
 export const PER_SEC = 20;
@@ -43,8 +43,14 @@ export class RoomCore<S extends Sock> {
   private readonly buckets = new WeakMap<S, Bucket>();
   private lastT = 0;
 
+  /** Today's claims (live-protocol claimOf: first wins) and each tree's last nest, from the ring. */
+  private claims = new Set<string>();
+  private nests = new Map<string, number>();
+  private day = -1;
+
   constructor(private readonly io: RoomIO<S>, private ring: Relayed[] = []) {
     for (const e of ring) this.lastT = Math.max(this.lastT, e.t);
+    this.fresh();
   }
 
   /** The relay's clock, strictly increasing so a `since` never skips or repeats an event. */
@@ -108,7 +114,9 @@ export class RoomCore<S extends Sock> {
     if (msg.kind === 'ping') return this.send(s, { v: LIVE_V, kind: 'pong', c: msg.c, t: now });
     const { v, ...intent } = msg;
     const out: Relayed = { ...intent, v, who: meta.who, t: this.stamp() };
-    if (out.kind === 'world') this.remember(out);
+    // the shared world (v2): a claim already made today, or a second nest within the hour, goes nowhere
+    if (v === 2 && isStored(out) && !this.remember(out)) return;
+    if (v === 1 && out.kind === 'world') this.remember(out);
     // a walk's target means another thing in each version (stage units in v1, world units in v2): only to its own
     for (const p of this.authed(other(meta.who))) if (out.kind !== 'walk' || this.vOf(p) === v) this.send(p, out);
   }
@@ -132,7 +140,7 @@ export class RoomCore<S extends Sock> {
     const t = this.io.now();
     this.send(s, { v: LIVE_V, kind: 'welcome', me: who, peer: peers.length > 0, t });
     if (since !== undefined) {
-      for (const e of this.fresh()) if (e.t > since && e.who !== who) this.send(s, e);
+      for (const e of this.fresh()) if (e.t > since && e.who !== who && (e.kind !== 'walk' || e.v === v)) this.send(s, e);
     }
     if (!was.length) for (const p of peers) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
   }
@@ -178,14 +186,36 @@ export class RoomCore<S extends Sock> {
     return this.io.sockets().filter((s) => this.io.meta(s)?.opened !== 0).length < MAX_SOCKETS;
   }
 
+  /** Today's world (a new Tokyo day starts empty): the ring, its claims and nests rebuilt when the day turns. */
   private fresh(): Relayed[] {
-    const cutoff = this.io.now() - RING_AGE_MS;
-    return this.ring.filter((e) => e.t >= cutoff);
+    const today = tokyoDay(this.io.now());
+    if (today === this.day) return this.ring;
+    this.day = today;
+    this.ring = this.ring.filter((e) => tokyoDay(e.t) === today);
+    this.claims.clear();
+    this.nests.clear();
+    for (const e of this.ring) this.index(e);
+    return this.ring;
   }
 
-  private remember(e: Relayed): void {
-    this.ring = [...this.fresh(), e].slice(-RING_MAX);
+  private index(e: Relayed): void {
+    const c = claimOf(e);
+    if (c) this.claims.add(c);
+    if (e.kind === 'shake' && e.drop === 'nest') this.nests.set(e.tree, Math.max(this.nests.get(e.tree) ?? 0, e.t));
+  }
+
+  /** Keep a change in the day's world; false when the world refuses it (claimed already, a nest too soon). A walk
+   *  replaces its person's last one. */
+  private remember(e: Relayed): boolean {
+    const ring = this.fresh();
+    const c = claimOf(e);
+    if (c && this.claims.has(c)) return false;
+    if (e.kind === 'shake' && e.drop === 'nest' && e.t - (this.nests.get(e.tree) ?? -Infinity) < NEST_GAP_MS) return false;
+    const keep = e.kind === 'walk' ? ring.filter((x) => !(x.kind === 'walk' && x.who === e.who)) : ring;
+    this.ring = [...keep, e].slice(-RING_MAX);
+    this.index(e);
     this.io.save(this.ring);
+    return true;
   }
 }
 

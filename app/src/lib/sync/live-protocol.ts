@@ -21,23 +21,44 @@ export const WORLD_Z = [-400, 2500] as const;
 
 export type Who = 'A' | 'B';
 
-/** What my villager did with a tap (phase 2 maps these to the director's walk-then-act). */
-export const ACTS = ['weed', 'water', 'dig', 'shake', 'fruit', 'present', 'cast', 'net', 'talk', 'visitor', 'star', 'tap'] as const;
+/** What my villager did with a tap (the partner's villager plays it too: walk there, the tool, the motion): `id` names
+ *  the thing (a bush, the rock, a shadow being cast at), `at` where it is (a world point). */
+export const ACTS = ['weed', 'water', 'dig', 'shake', 'fruit', 'present', 'cast', 'net', 'talk', 'visitor', 'star', 'tap', 'bush', 'rock'] as const;
 export type Act = (typeof ACTS)[number];
 
-/** A change to the shared island, applied at once on the other phone (and persisted through the outbox in phase 2). */
-export const WORLD_OPS = ['weed-pulled', 'fruit-collected', 'dug', 'present-opened', 'watered', 'shaken'] as const;
+/** A change to the shared island (docs/backend.md#shared-world): `watered` a flower bed's cell, `wished` on a shooting
+ *  star (its id the morning the fragment comes), the rest kept for older phones. */
+export const WORLD_OPS = ['weed-pulled', 'fruit-collected', 'dug', 'present-opened', 'watered', 'shaken', 'wished'] as const;
 export type WorldOp = (typeof WORLD_OPS)[number];
+
+/** How a critter left the island (a `catch`): netted, reeled in, dived for, dug up (a mole cricket), netted out of the
+ *  air (a wasp), or it got away (`flee`: startled, a fish spooked, a quick one out of reach). */
+export const HOWS = ['net', 'rod', 'dive', 'dig', 'swarm', 'flee'] as const;
+export type How = (typeof HOWS)[number];
+
+/** What a shaken tree dropped (a `shake`): nothing, a branch, a wasp nest, a bagworm or a spider on its thread,
+ *  coconuts (a palm's). */
+export const DROPS = ['none', 'branch', 'nest', 'bagworm', 'spider', 'coconut'] as const;
+export type Drop = (typeof DROPS)[number];
+
+/** A world point (v2: integer world units within the plan). */
+export type Pt = readonly [number, number];
 
 /** A walk-graph node id or a point: v2 a world point [x, z] (integers within WORLD_X × WORLD_Z), v1 a stage point
  *  (integers, |n| ≤ 100,000). */
 export type Target = string | readonly [number, number];
 
-/** The intents a client sends; the relay stamps `who` and `t` and passes them to the other person only. */
+/** The intents a client sends; the relay stamps `who` and `t` and passes them to the other person only. The shared
+ *  world's (v2, docs/backend.md#shared-world): `catch` (a critter by its shared id: caught or gone, first wins), `pick`
+ *  (a thing on the ground by its id: picked up, dug, pulled or opened, first wins), `put` (something this phone put in
+ *  the world: a present landed, a bug out of a bush), `shake` (a tree's outcome), and `act`'s `pt` (where to play it). */
 export type Intent =
   | { kind: 'walk'; to: Target; at?: number }
-  | { kind: 'act'; act: Act; id?: string; at?: number }
-  | { kind: 'catch'; what: string; id?: string }
+  | { kind: 'act'; act: Act; id?: string; at?: number; pt?: Pt }
+  | { kind: 'catch'; what: string; id?: string; at?: Pt; how?: How }
+  | { kind: 'pick'; id: string; what: string; at?: Pt }
+  | { kind: 'put'; id: string; what: string; at: Pt }
+  | { kind: 'shake'; tree: string; drop: Drop }
   | { kind: 'emote'; emote: string }
   | { kind: 'world'; op: WorldOp; id: string }
   /** I just wrote rows to the sheet (an event was acked): the partner refetches the snapshot now. */
@@ -89,6 +110,8 @@ export const CLOSE = {
 } as const;
 
 const ID = /^[\w:.-]{1,32}$/;
+/** What was caught, picked or put: a token, `kind:id` (a find's) or `kind:id:id` (a present's catalog item). */
+const WHAT = /^[a-z][\w:.-]{0,63}$/;
 const TOKEN = /^[a-z][a-z0-9-]{0,23}$/;
 const KEY = /^[0-9a-f]{32,128}$/;
 const AT = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/;
@@ -98,6 +121,7 @@ type Obj = Record<string, unknown>;
 const isObj = (x: unknown): x is Obj => typeof x === 'object' && x !== null && !Array.isArray(x);
 const isTime = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x) && x >= 0 && x < 1e14;
 const isId = (x: unknown): x is string => typeof x === 'string' && ID.test(x);
+const isWhat = (x: unknown): x is string => typeof x === 'string' && WHAT.test(x);
 const isCoord = (x: unknown): x is number => Number.isInteger(x) && Math.abs(x as number) <= 100_000;
 const within = (x: unknown, [lo, hi]: readonly [number, number]): boolean => Number.isInteger(x) && (x as number) >= lo && (x as number) <= hi;
 /** A world point within the plan's extent. @public (tests) */
@@ -116,11 +140,23 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
       if (!isTarget(o.to, v) || !opt(o, 'at', isTime)) return null;
       return { kind: 'walk', to: o.to, ...(o.at !== undefined ? { at: o.at as number } : {}) };
     case 'act':
-      if (!oneOf(ACTS)(o.act) || !opt(o, 'id', isId) || !opt(o, 'at', isTime)) return null;
-      return { kind: 'act', act: o.act, ...(o.id !== undefined ? { id: o.id as string } : {}), ...(o.at !== undefined ? { at: o.at as number } : {}) };
+      if (!oneOf(ACTS)(o.act) || !opt(o, 'id', isId) || !opt(o, 'at', isTime) || (v === 1 && o.pt !== undefined) || !opt(o, 'pt', isWorldPt)) return null;
+      return { kind: 'act', act: o.act, ...(o.id !== undefined ? { id: o.id as string } : {}), ...(o.at !== undefined ? { at: o.at as number } : {}), ...(o.pt !== undefined ? { pt: o.pt as Pt } : {}) };
     case 'catch':
       if (!isId(o.what) || !opt(o, 'id', isId)) return null;
-      return { kind: 'catch', what: o.what, ...(o.id !== undefined ? { id: o.id as string } : {}) };
+      // where and how are the shared world's (v2)
+      if (v === 1 && (o.at !== undefined || o.how !== undefined)) return null;
+      if (!opt(o, 'at', isWorldPt) || !opt(o, 'how', oneOf(HOWS))) return null;
+      return { kind: 'catch', what: o.what, ...(o.id !== undefined ? { id: o.id as string } : {}), ...(o.at !== undefined ? { at: o.at as Pt } : {}), ...(o.how !== undefined ? { how: o.how as How } : {}) };
+    case 'pick':
+      if (v === 1 || !isId(o.id) || !isWhat(o.what) || !opt(o, 'at', isWorldPt)) return null;
+      return { kind: 'pick', id: o.id, what: o.what, ...(o.at !== undefined ? { at: o.at as Pt } : {}) };
+    case 'put':
+      if (v === 1 || !isId(o.id) || !isWhat(o.what) || !isWorldPt(o.at)) return null;
+      return { kind: 'put', id: o.id, what: o.what, at: o.at };
+    case 'shake':
+      if (v === 1 || !isId(o.tree) || !oneOf(DROPS)(o.drop)) return null;
+      return { kind: 'shake', tree: o.tree, drop: o.drop };
     case 'emote':
       if (typeof o.emote !== 'string' || !TOKEN.test(o.emote)) return null;
       return { kind: 'emote', emote: o.emote };
@@ -210,4 +246,30 @@ export function parseServer(raw: unknown): ServerMsg | null {
   if (!isWho(o.who)) return null;
   const i = intentOf(o, LIVE_V);
   return i && { ...i, v: LIVE_V, who: o.who, t };
+}
+
+// ---------- the shared world's day (docs/backend.md#shared-world) ----------
+
+/** Tokyo's offset from UTC (no daylight saving): the island's day starts at Tokyo midnight. */
+const TOKYO_MS = 9 * 3600_000;
+const DAY_MS = 86_400_000;
+/** The Tokyo day (days since the epoch) a relay time falls in: the room keeps one day's world. */
+export const tokyoDay = (t: number): number => Math.floor((t + TOKYO_MS) / DAY_MS);
+/** When Tokyo day `d` begins (ms since the epoch). */
+export const dayStart = (d: number): number => d * DAY_MS - TOKYO_MS;
+
+/** At most one wasp nest per tree per hour (NH), on both phones: the relay refuses a second within the hour. */
+export const NEST_GAP_MS = 3600_000;
+
+/** Whether the room keeps an intent in the day's world (replayed to a phone that opens later): the shared world's
+ *  changes and each person's last walk (where their villager stands). */
+export const isStored = (i: Intent): boolean =>
+  i.kind === 'world' || i.kind === 'pick' || i.kind === 'put' || i.kind === 'shake' || i.kind === 'walk' || (i.kind === 'catch' && i.id !== undefined);
+
+/** What an intent claims for the day, if anything: a critter (by its shared id), a thing on the ground, a thing put
+ *  down. The first claim the relay hears wins; a later one of the same key is dropped (never relayed, never kept). */
+export function claimOf(i: Intent): string | null {
+  if (i.kind === 'catch') return i.id !== undefined ? `catch:${i.id}` : null;
+  if (i.kind === 'pick' || i.kind === 'put') return `${i.kind}:${i.id}`;
+  return null;
 }
