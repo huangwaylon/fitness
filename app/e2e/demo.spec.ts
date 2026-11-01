@@ -510,3 +510,59 @@ test('the jar sits beside today’s ribbon: one row centred as a group, both ≥
   await page.locator('.hud-jar').click();
   await expect(page.locator('.jar-screen')).toBeVisible();
 });
+
+/** Rows (device px) across the ground's middle whose mean luminance jumps against the rows 2 above and below: the
+ *  bands' seams, or stripes. */
+async function seams(page: Page): Promise<number> {
+  const png = await page.screenshot({ clip: { x: 0, y: 330, width: 393, height: 300 }, animations: 'allow' });
+  return page.evaluate(async (b64) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${b64}`;
+    await img.decode();
+    const c = new OffscreenCanvas(img.width, img.height), g = c.getContext('2d')!;
+    g.drawImage(img, 0, 0);
+    const d = g.getImageData(0, 0, c.width, c.height).data, rows: number[] = [];
+    for (let y = 0; y < c.height; y++) {
+      let s = 0;
+      for (let x = 0; x < c.width; x++) { const i = (y * c.width + x) * 4; s += d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11; }
+      rows.push(s / c.width);
+    }
+    let n = 0;
+    for (let y = 2; y < rows.length - 2; y++) if (Math.abs(rows[y] - (rows[y - 2] + rows[y + 2]) / 2) > 10) n++;
+    return n;
+  }, png.toString('base64'));
+}
+
+for (const at of ['2026-10-28T12:00', '2026-10-28T21:00'])
+  test(`島 ⇄ ごほうび zooms live about the jar: no View Transition snapshot, no stripes over the ground (${at.slice(-5)})`, async ({ page }) => {
+    await page.goto(`?demo&date=${at}`);
+    await islandReady(page);
+    await page.waitForTimeout(1000); // the ground's chunks in
+    // a View Transition's snapshot is a fresh paint of the ground's matrix3d bands, which WebKit flattens into stripes
+    await page.evaluate(() => {
+      const w = window as unknown as { vts: number };
+      w.vts = 0;
+      const real = document.startViewTransition?.bind(document);
+      if (real) document.startViewTransition = ((cb?: ViewTransitionUpdateCallback) => (w.vts++, real(cb))) as typeof document.startViewTransition;
+    });
+    const still = await seams(page);
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Animation.enable');
+    await cdp.send('Animation.setPlaybackRate', { playbackRate: 0.1 });
+    const root = page.locator('html');
+    await page.locator('.hud-jar').click();
+    await expect(root).toHaveAttribute('data-leave', 'in');
+    await page.waitForTimeout(250); // the island mid-push, live
+    expect(await seams(page)).toBeLessThanOrEqual(still + 3);
+    await expect(root).toHaveAttribute('data-enter', 'in', { timeout: 5000 });
+    await expect(page.locator('.jar-screen')).toBeVisible();
+    await expect(root).not.toHaveAttribute('data-enter', /./, { timeout: 8000 });
+    await page.locator('.jar-screen a.back').click();
+    await expect(root).toHaveAttribute('data-leave', 'out');
+    await expect(root).toHaveAttribute('data-enter', 'out', { timeout: 5000 });
+    await expect(page.locator('.if-scene')).toBeVisible();
+    await page.waitForTimeout(1200); // the island mid-pull
+    expect(await seams(page)).toBeLessThanOrEqual(still + 3);
+    await expect(root).not.toHaveAttribute('data-enter', /./, { timeout: 8000 });
+    expect(await page.evaluate(() => (window as unknown as { vts: number }).vts)).toBe(0);
+  });

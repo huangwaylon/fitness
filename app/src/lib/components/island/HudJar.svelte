@@ -154,9 +154,9 @@
   /** Press squash (pointer down), released with a springy overshoot. */
   let pressed = $state(false);
 
-  /** Tap: squash (pointer down, 80ms), spring back, the villagers glance up at the jar (R18) during the morph
-   *  and, 90ms later (no dead wait), the route changes: the page zooms about the jar (ui-state/jarTransition.ts)
-   *  and this jar morphs into the ごほうび hero jar (<Jar name="jar">). */
+  /** Tap: squash (pointer down, 80ms), spring back, the villagers glance up at the jar (R18) during the zoom
+   *  and, 90ms later (no dead wait), the route changes: the island zooms into the jar and ごほうび grows out of it
+   *  (ui-state/jarTransition.ts). */
   function tap() {
     pressed = false;
     react('R18');
@@ -167,7 +167,7 @@
 <button type="button" class="hud-jar" class:pressed aria-label={t('island.jar', { bells: formatBells(target) })} data-sfx="self" onclick={tap}
   onpointerdown={() => (pressed = true)} onpointerup={() => (pressed = false)} onpointerleave={() => (pressed = false)} onpointercancel={() => (pressed = false)}>
   <span class="squash" bind:this={squashEl} onanimationend={() => squashEl?.classList.remove('catch')}>
-    <span class="art" bind:this={artEl}><Jar {fill} width="100%" name="jar" /></span>
+    <span class="art" bind:this={artEl}><Jar {fill} width="100%" /></span>
   </span>
   <b class="money">{formatNum(plate.current)}</b><svg class="go" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" /><path d="M6.4 4.6 L11 8 L6.4 11.4 Z" /></svg>
   {#if gain}

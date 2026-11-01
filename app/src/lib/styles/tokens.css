@@ -345,10 +345,3 @@
   90.9% { transform: none; opacity: 1; } 100% { transform: scale(.8); opacity: 0; }
 }
 @keyframes if-twinkle { 0%,100% { transform: scale(.2); opacity: 0; } 50% { transform: none; opacity: 1; } }
-
-/* Jar ⇄ ごほうび shared element: the HUD's jar carries view-transition-name: jar (<Jar name="jar">);
-   when the ごほうび hero jar carries it too, it morphs jar-to-jar on top of the page zoom (ui-state/jarTransition.ts,
-   data-vt in / out / fade). In: 320ms, back: 280ms, both cubic-bezier(.4,0,.2,1). */
-::view-transition-group(jar) { animation-duration: 320ms; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
-::view-transition-old(jar), ::view-transition-new(jar) { animation-duration: 320ms; height: 100%; }
-:root[data-vt="out"]::view-transition-group(jar), :root[data-vt="out"]::view-transition-old(jar), :root[data-vt="out"]::view-transition-new(jar) { animation-duration: 280ms; }

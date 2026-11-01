@@ -1,7 +1,7 @@
 <script lang="ts">
   // ごほうび, the shared wallet (Nook's Cranny, about spending only; the route keeps its /jar path): the page's title bar
-  // (‹ 島へ top-left, the title centred: design.md "Navigation"), a hero (the island's jar, so the route change still
-  // morphs one into the other, over the wallet's balance: the number on the island's plate), then the two rewards as
+  // (‹ 島へ top-left, the title centred: design.md "Navigation"), a hero (the island’s jar, so the route change grows
+  // the page out of it, over the wallet's balance: the number on the island's plate), then the two rewards as
   // big tiles. Buying asks first, then shows at once and waits 5 s with とりけす on the banner before it is sent.
   // Under them the buys so far (Purchases), each erasable by either of us (asked first; the ベル go back, with とりけす
   // on the banner). The day-by-day ledger lives in きろく. No しずえ here.
@@ -58,7 +58,7 @@
     </div>
 
     <div class="hero">
-      <span class="bigjar"><Jar fill={walletFill(balance)} width="calc(var(--jar-h) * 54 / 68)" name="jar" /></span>
+      <span class="bigjar"><Jar fill={walletFill(balance)} width="calc(var(--jar-h) * 54 / 68)" /></span>
       <small class="cap">{t('wallet.balance')}</small>
       <Bells bells={balance} class="total" />
     </div>
