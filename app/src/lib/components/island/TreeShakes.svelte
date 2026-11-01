@@ -22,6 +22,7 @@
   import { hookOneOf } from './devHooks.ts';
   import { onDestroy, onMount } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
+  import { take, takenOn } from './sceneDay.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
   import { recordFind } from '#lib/store/actions.ts';
@@ -34,7 +35,7 @@
   import { waspMusic } from '#lib/sound/sound.svelte.ts';
   import { critterArt, type BugId } from './critters.ts';
   import { catchLine, loadLines, loadNames } from './catchLine.ts';
-  import { jst } from '#lib/time/clock.ts';
+  import { dayKey, jst } from '#lib/time/clock.ts';
   import { artUrl } from '#lib/art.ts';
   import {
     DANGLE_MS, SWARM_DELAY_MS, SWARM_MS, bearsCoconuts, dropAt, dropIds, fallen, lastNestOf, netsSwarm, shakeDrop, wireDrop,
@@ -86,8 +87,16 @@
    *  fell while this island watched (only those fall; the rest just lie there). */
   const lyingNow = $derived.by(() => {
     const d = world.day;
-    return fallen(d.shakes, treeOf, (id) => !!taken(d, id));
+    void pickedN;
+    const mine = takenOn(dayKey());
+    // the partner's pick-up takes it at once; mine once my villager has got there (this phone's record)
+    return fallen(d.shakes, treeOf, (id) => {
+      const c = taken(d, id);
+      return !!c && (c.who !== world.me || mine.has(id));
+    });
   });
+  /** What I picked up here (this phone's record of the day: a reload finds it gone), bumped to re-derive. */
+  let pickedN = $state(0);
   const dropping = new SvelteSet<string>();
 
   // the dev hook: the next shake drops this (a bagworm or a spider: that bug)
@@ -255,6 +264,8 @@
     const { ms } = approach(b.x, b.z, { motion: 'squish' });
     later(() => {
       going.delete(id);
+      take(dayKey(), id);
+      pickedN++;
       sceneSfx('twig');
       if (!coconut) return;
       const n = ++seq;

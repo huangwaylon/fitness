@@ -58,7 +58,9 @@ export type Intent =
   | { kind: 'catch'; what: string; id?: string; at?: Pt; how?: How }
   | { kind: 'pick'; id: string; what: string; at?: Pt }
   | { kind: 'put'; id: string; what: string; at: Pt }
-  | { kind: 'shake'; tree: string; drop: Drop }
+  /** `at`: when the shaker's phone shook it (its own clock), the shake's identity on both phones and in the sheet's
+   *  day row, so a shake heard twice (the relay, the row) is one. */
+  | { kind: 'shake'; tree: string; drop: Drop; at?: number }
   | { kind: 'emote'; emote: string }
   | { kind: 'world'; op: WorldOp; id: string }
   /** I just wrote rows to the sheet (an event was acked): the partner refetches the snapshot now. */
@@ -155,8 +157,8 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
       if (v === 1 || !isId(o.id) || !isWhat(o.what) || !isWorldPt(o.at)) return null;
       return { kind: 'put', id: o.id, what: o.what, at: o.at };
     case 'shake':
-      if (v === 1 || !isId(o.tree) || !oneOf(DROPS)(o.drop)) return null;
-      return { kind: 'shake', tree: o.tree, drop: o.drop };
+      if (v === 1 || !isId(o.tree) || !oneOf(DROPS)(o.drop) || !opt(o, 'at', isTime)) return null;
+      return { kind: 'shake', tree: o.tree, drop: o.drop, ...(o.at !== undefined ? { at: o.at as number } : {}) };
     case 'emote':
       if (typeof o.emote !== 'string' || !TOKEN.test(o.emote)) return null;
       return { kind: 'emote', emote: o.emote };

@@ -42,6 +42,7 @@ wallet cover is a read-time rule in the model, which ignores an invalid row.
 | `pref` | `{key, value, person?}` | `locale` (`ja`/`en`), `villagerName` (1–20), `villager` (roster id), `goalWeight` (20–300 kg, one decimal, or null), `moveGoal` (integer 100–2,000), `stepsGoal` (1,000–30,000, a multiple of 500) |
 | `find` | `{kind, id}` | the island's scenery for the shared ずかん: `kind` ∈ `fish` · `bug` · `sea` · `fossil` · `shell` · `fragment` · `item` · `recipe` (`FIND_KINDS`; the last two: what a balloon's present held), `id` a catalog id (`[a-z][a-z0-9-]{0,47}`; the lists live in the client, so they can grow without a redeploy). Never ベル |
 | `tally` | `{date, counts}` | one person's counts of one Tokyo day for the ずかん's 「×12」 (`contract/tally.ts`): `date` a real date not after tomorrow (server's Tokyo date), `counts` 1–300 keys `kind:id` (a find's kind and id) → whole 1–999. One row per person and day: see **Tally** below. Never ベル |
+| `island` | `{date, taken, puts, shakes, watered, wishes, at?}` | one person's part of one Tokyo day's shared island ([Shared world](#shared-world), `contract/island.ts`): ids picked up, dug, pulled or opened (≤ 400), things put down `[id, what, x, z]` (≤ 60), shakes that left something `[tree, drop, at]` (≤ 120), flower bed cells watered `A.0-1`, wishes by the morning they bring a fragment, where their villager stands (`[x, z]` within the plan); `date` not after tomorrow. One row per person and day, replaced like a tally. Never ベル |
 
 **Finds:** the client sends a `find` only the first time either person finds that `kind:id` (the model holds queued
 events too, so a second catch before the ack sends nothing; a race between the two phones only adds a duplicate the
@@ -315,6 +316,14 @@ a person does is a small intent over the relay, kept by the room for the day, fo
 - **The demo** (`sync/live-local.ts`): the demo's two players are two tabs of one browser (`?demo`, `?demo&as=B`);
   a BroadcastChannel carries the intents and the sending tab plays the room's rules on a log in localStorage
   (`island-demo.relay`), so the e2e's two-player tests (`e2e/shared-world.spec.ts`) run on it without a network.
+- **The sheet's day row** (`island` event, [Events](#events); `store/actions.ts sendIslandDay`): my part of the day
+  (`rowOf`: what I took, put down, shook, watered and wished, where my villager stands), sent whole when it grows,
+  held 2 minutes (a busy stretch is one request), one row per person and day on the sheet (the older one deleted, as
+  a tally's). The model keeps each person's latest (`state.islandDays`); the store folds today's (what the relay
+  didn't bring: both apps closed past the relay's day, an outage), yesterday's watering (today's hybrids grow from both
+  people's) and the wishes for the mornings to come (`applyRow`; a claim known from a row becomes news when the
+  relay's own arrives, so the partner's animation still plays). A shake carries `at`, the shaker's own time, its
+  identity on both phones and in the row.
 - **What's shared:** the critters: each where its seed puts it ([Ambient life](#ambient-life)), and its catch or
   escape by its id (`catch {what, id: <kind>:<slot>, at, how}`: `rod`, `net`, `dive`, `dig`, or `flee`, claimed at the
   tap so the relay's first wins; my cast as an `act` so my villager walks down with the rod on the other phone too), a
@@ -323,7 +332,16 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   there; mine stays where I sent it for the day), the partner's tap ring, and every tree's shakes: the outcome
   (`shake {tree, drop}`), what it left lying (a branch `br:<tree>:<k>`, coconuts `co:<tree>:0|1`, named from the
   day's shakes so both phones agree), a dangling bug (`dg:<tree>:<k>`) and the nest's wasps (`ws:<tree>:<k>`) as
-  critters to catch, the nest rule.
+  critters to catch, the nest rule; the day's things on the ground (shells, fragments, the bottle, dig spots and the
+  next one, mushrooms, weeds, fallen goal fruit `fr:<person>:<fruit>`, branches, coconuts: `pick {id, what, at}`), a
+  balloon's present (`put` where it lands; its contents in the opener's `pick`), watered flowers (`world watered`, by
+  whose bed), wishes (`world wished`, by the morning), a bush shaken and the rock struck (`act` with `pt`, played by the
+  partner's villager).
+- **Still each phone's own:** the camera (each shows what its view holds of the same world), a balloon's flight and
+  where this phone's lands (its present is shared once down), shooting stars and the night's showers' timing, the
+  visitor's lines and a tap on them, a cast's bite plan and hesitation, a dive's chase, a tarantula rearing, the plates
+  and lines read, a startup beat, sounds. These are what one person does or watches by hand, or decoration timed per
+  screen; their outcomes (a catch, a find) are shared.
 - **Budget** (Free plan): an intent is ≤ 100 bytes sent (tested), ≤ 140 relayed. A busy day of two people (~300
   walks, ~200 catches and pick-ups, ~50 shakes) is ~550 incoming messages: ~28 DO requests (20:1), ~550 storage writes
   (of 100,000 rows/day), and a replay on each open (outgoing messages are free). Nothing per frame.

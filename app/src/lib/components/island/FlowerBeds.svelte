@@ -21,7 +21,8 @@
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { WATERED, wateredOn } from './sceneDay.ts';
+  import { WATERED, localCell, wateredOn } from './sceneDay.ts';
+  import { world as shared } from '#lib/store/world.svelte.ts';
 
   interface Props {
     season: Season;
@@ -50,11 +51,17 @@
       if (rec.date !== d) rec = fruitDay(d);
     });
   });
-  /** The cells watered today (NH: a watered flower keeps a glitter for the rest of the day). */
-  let watered = $state<string[]>([]);
+  /** The cells watered today (NH: a watered flower keeps a glitter for the rest of the day), by either of us (the shared
+   *  day's: each person's bed is on the left of their own phone). */
+  let mineWatered = $state<string[]>([]);
+  const watered = $derived.by(() => {
+    const me = people[0].person;
+    const theirs = date === dayKey() ? Object.keys(shared.day.watered).map((id) => localCell(id, me)).filter((c): c is string => !!c) : [];
+    return [...new Set([...mineWatered, ...theirs])];
+  });
   $effect(() => {
     const d = date;
-    const read = () => (watered = wateredOn(d));
+    const read = () => (mineWatered = wateredOn(d));
     read();
     document.addEventListener(WATERED, read);
     return () => document.removeEventListener(WATERED, read);

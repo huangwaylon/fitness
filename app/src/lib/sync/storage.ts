@@ -21,7 +21,12 @@ export const LIVE = {
    *  hello's `since`, so a reload hears only what's new). */
   since: 'island.liveSince',
   /** `{ day, events }`: today's shared world as this phone folded it (store/world.svelte.ts: mine and the partner's). */
-  world: 'island.world'
+  world: 'island.world',
+  /** `{ <morning>: { A?, B? } }`: both people's wishes on shooting stars by the morning each brings its fragment
+   *  (store/world.svelte.ts: kept past the day they were made in). */
+  wishes: 'island.wishes',
+  /** `{ day, watered }`: yesterday's watered flower bed cells, both people's (store/world.svelte.ts: today's hybrids). */
+  worldPrev: 'island.worldPrev'
 } as const;
 
 export const DEMO = {

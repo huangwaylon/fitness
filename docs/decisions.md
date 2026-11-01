@@ -236,6 +236,22 @@ leader and nothing stored, and it costs nothing when one phone is alone. Where a
 and what a person does by hand stays on their phone. Not done: streaming ambient moves over the relay (a message per
 beat and a leader to elect).
 
+### A shared world: the seed for what comes, the relay for what we do
+Both phones show the same island. What comes by itself is a function of the date, the 10-second slot and world
+coordinates: a critter's water, spot and every move after it came (`island/critterPath.ts`), the day's shells, dig
+spots and weeds (as before), each phone showing what its camera sees of it. What a person does is a small intent
+(`catch`, `pick`, `put`, `shake`, `world`, `walk`, `act`: ≤ 100 bytes) that the relay keeps for the Tokyo day and
+replays to a phone that opens later; both phones fold the day's intents in the relay's order into the same day
+(`sync/world-day.ts`), so first wins: of two people tapping the same bug, the relay refuses the second claim and the
+other phone sees it caught by them. The sheet keeps one cheap row per person and day (`island`, replaced like a
+tally) for when the relay has nothing. Why: per-camera placement made the phones disagree on where (and so whether)
+a critter was, and only the outcome of a person's action has to cross: a seed costs nothing, an intent per action is
+far below the Free plan (a busy day ~550 messages, ~28 DO requests), and the relay already orders them, so no leader,
+no clock sync beyond the pings, nothing per frame. The relay's day is presence-grade (it may be gone); the sheet row
+is the record. Not done: streaming positions or the interactive moments (a cast's bite, a dive's chase, a tarantula's
+mood stay on the phone that taps; their outcome is shared), a rejection message to the losing phone (the winner's own
+intent tells it), every event to the sheet (a day row instead), sharing the balloon's flight.
+
 ### Visitors are the director's fourth actor
 The visitor moves through the same director, idle life and walk graph as the villagers, with CSS loops for continuous
 life. Why: one animation system, and pausing under a sheet or a hidden page already applies.

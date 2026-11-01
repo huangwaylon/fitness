@@ -19,7 +19,7 @@ export const NUMERIC_COLUMNS: Record<TabName, readonly string[]> = {
 };
 
 /** The event types the server accepts and the model reads (anything else is refused with `bad_request`). */
-export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'highfive', 'pref', 'find', 'tally'] as const;
+export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'highfive', 'pref', 'find', 'tally', 'island'] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
 /**

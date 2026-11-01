@@ -19,7 +19,7 @@
   // nest). `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate` sparkles a fruit.
   import { pickUp } from '../motion/transitions.ts';
   import { timers } from './timers.ts';
-  import { onDestroy, untrack } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import type { PersonWeekView, RingFruit } from '#lib/types.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
@@ -37,7 +37,9 @@
   import { fruitDay, fruitFilter, fruitId, markDropped, markPicked, stageOf } from './fruitDay.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { shakeTap } from './treeShake.ts';
-  import { approach } from './avatar.ts';
+  import { approach, partnerAct } from './avatar.ts';
+  import { world as shared } from '#lib/store/world.svelte.ts';
+  import { taken as takenBy } from '#lib/sync/world-day.ts';
 
   interface Props {
     person: PersonWeekView;
@@ -127,7 +129,11 @@
   const spots = $derived(
     RING_FRUITS.map((f, i) => {
       const r = ring(f);
-      const stage = stageOf(fruitId(person.person, f), r.met, rec);
+      // picked up by either of us today (the shared day's `fr:<person>:<fruit>`) is gone on both phones
+      const id = fruitId(person.person, f), by = date === dayKey() ? takenBy(shared.day, `fr:${id}`) : null;
+      // the partner's pick-up takes it at once; mine once my villager has got there (rec.picked)
+      const gone = !!by && by.who !== shared.me;
+      const stage = gone && r.met ? 'gone' : stageOf(id, r.met, rec);
       // hanging: [dx, up] in the canopy's frame; on the ground: its own spot (gx, gz) in front of the trunk
       const tx = TREE_FRUIT[i][0], up = TREE_FRUIT[i][1];
       const gx = x + lean + FRUIT_SPOTS[i][0], gz = z + FRUIT_SPOTS[i][1];
@@ -189,6 +195,9 @@
   function collect(f: RingFruit) {
     const s = spots.find((p) => p.f === f);
     if (!s || s.stage !== 'ground' || going.has(f)) return;
+    // first wins: claimed at the tap (the partner's phone sees it picked up, by my villager)
+    const sid = `fr:${fruitId(person.person, f)}`;
+    if (!shared.share({ kind: 'pick', id: sid, what: `fruit:${f}`, at: [Math.round(s.gx), Math.round(s.gz)] }).fresh) return;
     // my villager walks over and picks it up (avatar.ts)
     going.add(f);
     const { ms } = approach(s.gx, s.gz, { motion: 'squish' });
@@ -221,6 +230,20 @@
     leaves = [...leaves.slice(-2), { n: a, x: -W * 0.3, y }, { n: b, x: W * 0.28, y }];
     later(() => (leaves = leaves.filter((l) => l.n !== a && l.n !== b)), 2000);
   }
+
+  // The partner picks up a fallen fruit (the shared day's news, just now): their villager walks over, it pops and is gone.
+  onMount(() =>
+    shared.on(({ e, live }) => {
+      if (e.kind !== 'pick' || !e.id.startsWith(`fr:${person.person}:`)) return;
+      const f = e.id.slice(5 + person.person.length) as RingFruit, s = spots.find((p) => p.f === f);
+      if (!s || !live) return;
+      const { ms } = partnerAct(s.gx, s.gz, { motion: 'squish' });
+      later(() => {
+        cue('fruit-pick');
+        addFx('sparkles', s.gx, s.gz, FRUIT_U * 0.4);
+      }, ms);
+    })
+  );
 
   // React to `shakeN` only (shake() reads and writes `leaves`, which must not become a dependency).
   $effect(() => {

@@ -52,20 +52,21 @@ export function compactRows(rows: SnapshotRows, now: number): SnapshotRows {
 }
 
 /**
- * `events` without the tallies a later one of the same person and day replaced (the server deletes those, a cached
- * phone keeps them: model/tally.ts reads only the latest). Returns `events` itself when none was replaced.
+ * `events` without the day rows (tallies, island days) a later one of the same type, person and day replaced (the
+ * server deletes those, a cached phone keeps them: the model reads only the latest). Returns `events` itself when none
+ * was replaced.
  */
 function latestTallies(events: EventRow[]): EventRow[] {
   const latest = new Map<string, { at: number; i: number }>();
   const tallies: number[] = [];
   events.forEach((row, i) => {
-    if (row[3] !== 'tally') return;
+    if (row[3] !== 'tally' && row[3] !== 'island') return;
     const at = rowAt(row);
     let date: unknown;
     try { date = (JSON.parse(String(row[4])) as { date?: unknown }).date; } catch { return; }
     if (at === null || typeof date !== 'string') return;
     tallies.push(i);
-    const k = `${row[1]}|${date}`;
+    const k = `${row[3]}|${row[1]}|${date}`;
     const prev = latest.get(k);
     if (!prev || at >= prev.at) latest.set(k, { at, i });
   });

@@ -5,6 +5,7 @@ import type { LocalDate, PersonId, ShopItemId, WeekKey } from '#lib/types.ts';
 import { CUTOFFS, LIMITS, MOVE_GOAL, PEOPLE, STEPS_GOAL, isStepsGoal, shopPrice } from '#lib/config/rules.ts';
 import { addDays, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
 import { isTally } from '#lib/contract/tally.ts';
+import { isIslandDay, type IslandDayData } from '#lib/contract/island.ts';
 import type { TallyRow } from './tally.ts';
 import { rowAt } from './snapshot.ts';
 import {
@@ -75,6 +76,9 @@ export interface State {
   /** Each person's day tallies (`tally`: the ずかん's counts, model/tally.ts), in server order, replaced rows included
    *  (a day's latest wins). Never read by the economy. */
   tallies: TallyRow[];
+  /** Each person's island days (`island`: their part of a day's shared island, contract/island.ts), in server order,
+   *  replaced rows included (a day's latest wins: `latestIslandDay`). Never read by the economy. */
+  islandDays: IslandDayRow[];
   prefs: Record<PersonId, Prefs>;
   /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
   moveGoals: Record<PersonId, Timed<number>[]>;
@@ -176,6 +180,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     highfives: [],
     finds: [],
     tallies: [],
+    islandDays: [],
     prefs: { A: {}, B: {} },
     moveGoals: { A: [], B: [] },
     stepsGoals: { A: [], B: [] },
@@ -267,6 +272,9 @@ const ON_EVENT: Record<EventType, OnEvent> = {
   tally(s, person, at, d) {
     if (isTally(d)) s.tallies.push({ at, person, date: d.date, counts: d.counts });
   },
+  island(s, person, at, d) {
+    if (isIslandDay(d)) s.islandDays.push({ at, person, data: d });
+  },
   pref(s, person, at, d) {
     if (d.key === 'moveGoal') {
       // An integer kcal in MOVE_GOAL; anything else is ignored (the previous goal stays).
@@ -317,4 +325,18 @@ export function latestAt<T>(list: Timed<T>[] | undefined, t: number): T | undefi
   if (!list) return undefined;
   for (let i = list.length - 1; i >= 0; i--) if (list[i].at <= t) return list[i].v;
   return undefined;
+}
+
+/** One person's island day as the sheet has it (an `island` row). */
+export interface IslandDayRow {
+  at: number;
+  person: PersonId;
+  data: IslandDayData;
+}
+
+/** `person`'s latest island day of `date` (a later row of the same day replaces an earlier one), or null. */
+export function latestIslandDay(rows: readonly IslandDayRow[], person: PersonId, date: string): IslandDayRow | null {
+  let best: IslandDayRow | null = null;
+  for (const r of rows) if (r.person === person && r.data.date === date && (!best || r.at >= best.at)) best = r;
+  return best;
 }

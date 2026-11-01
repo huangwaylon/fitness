@@ -301,7 +301,7 @@ describe('two protocol versions (v2: the rolling-log world)', () => {
     say2(a, { kind: 'walk', to: [-230, 2500] });
     say2(a, { kind: 'walk', to: 'bridgeStoneN' });
     say2(a, { kind: 'walk', to: [621, 0] });
-    say2(a, { kind: 'walk', to: [0, -401] });
+    say2(a, { kind: 'walk', to: [0, -461] });
     say2(a, { kind: 'walk', to: [1.5, 2] });
     expect(b.sent.map((m) => (m as { to: unknown }).to)).toEqual([[-230, 2500], 'bridgeStoneN']);
     expect(a.closed).toBeNull();
@@ -421,7 +421,7 @@ describe('the shared world (v2, docs/backend.md#shared-world)', () => {
       { kind: 'catch', what: 'giant-trevally', id: 'fish:4294967295', at: [-230, 2500], how: 'flee' },
       { kind: 'pick', id: 's86399999', what: 'fossil:left-quetzal-wing', at: [-230, 2500] },
       { kind: 'put', id: 'bug:fh:86399999', what: 'bug:emperor-butterfly', at: [-230, 2500] },
-      { kind: 'shake', tree: 'cedar-t4', drop: 'bagworm' },
+      { kind: 'shake', tree: 'cedar-t4', drop: 'bagworm', at: 1_793_527_259_353 },
       { kind: 'act', act: 'cast', id: 'fish:4294967295', pt: [-230, 2500] }
     ]) {
       const out = JSON.stringify({ v: 2, ...m });

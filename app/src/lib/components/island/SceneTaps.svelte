@@ -38,7 +38,8 @@
   import Finds from './Finds.svelte';
   import Care from './Care.svelte';
   import type { Choice } from './pager.ts';
-  import { water } from './sceneDay.ts';
+  import { localCell, sharedCell, water } from './sceneDay.ts';
+  import { world as shared } from '#lib/store/world.svelte.ts';
   import { findArt } from './beach.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { addDays } from '#lib/time/dates.ts';
@@ -46,7 +47,8 @@
   import { weather } from './weatherNow.svelte.ts';
   import { eggTime, eventNow } from './events.ts';
   import { eggInBalloon } from './eggs.ts';
-  import { LONG_REACH, approach } from './avatar.ts';
+  import { LONG_REACH, approach, partnerAct } from './avatar.ts';
+  import { onMount } from 'svelte';
 
   interface Props {
     /** The .if-scene element (the listener's home; the stage, orb and clouds are found inside it). */
@@ -260,8 +262,11 @@
     }
   }
 
-  /** A bush: my villager walks up to it and gives it a shake (avatar.ts), then THAT bush rustles and sheds. */
+  /** A bush: my villager walks up to it and gives it a shake (avatar.ts), then THAT bush rustles and sheds (and on the
+   *  partner's phone my villager shakes it too). */
   function bush(el: HTMLElement, b: { x: number; z: number; h: number }) {
+    const id = el.dataset.bush;
+    if (id) shared.share({ kind: 'act', act: 'bush', id, pt: [Math.round(b.x), Math.round(b.z)] });
     const { ms } = approach(b.x, b.z, { motion: 'shake' });
     after(ms, () => {
       jiggle(el, RUSTLE, 520, BUSH_ORIGIN);
@@ -279,6 +284,9 @@
     // NH: butterflies by day among the flowers (not in winter); fireflies on summer nights
     const rare = night ? (season === 'summer' && roll(2) ? 'firefly' : undefined) : season !== 'winter' && roll(8) ? 'butterfly' : undefined;
     water(dayKey(), `${row}-${col}`);
+    // the partner's phone: the flower glitters there too (whose bed it is, theirs or mine), my villager waters it
+    const cell = sharedCell(`${row}-${col}`, shared.me ?? 'A');
+    if (cell) shared.share({ kind: 'world', op: 'watered', id: cell });
     // my villager walks over with the watering can (then the can is in its hand, not floating over the bloom)
     const { ms, walked } = approach(fx0, fz, { tool: 'can', toolMs: 900, reach: LONG_REACH });
     after(ms, () => {
@@ -425,6 +433,36 @@
     }
     return null;
   }
+
+  // The partner's bush shakes and waterings (the shared day's news, just now): their villager walks over and does it,
+  // then the bush rustles or the flower glitters here too.
+  onMount(() =>
+    shared.on(({ e, live }) => {
+      if (!live || !enabled()) return;
+      if (e.kind === 'act' && e.act === 'bush' && e.id) {
+        const b = bushAt(e.id), el = scene?.querySelector<HTMLElement>(`[data-bush="${e.id}"]`);
+        if (!b) return;
+        const { ms } = partnerAct(b.x, b.z, { motion: 'shake' });
+        after(ms, () => {
+          jiggle(el, RUSTLE, 520, BUSH_ORIGIN);
+          spawn({ kind: 'bush', x: b.x, y: b.z, lift: b.h * 0.62, v: shed(season) });
+          sceneSfx('bush');
+        });
+      } else if (e.kind === 'world' && e.op === 'watered') {
+        const cell = localCell(e.id, shared.me ?? 'A')?.split('-').map(Number);
+        if (!cell) return;
+        const [row, col] = cell, fx0 = [...BED_XS.A, ...BED_XS.B][col], fz = BED_ZS[row];
+        if (fx0 === undefined || fz === undefined) return;
+        const el = scene?.querySelector<HTMLElement>(`[data-flower="${row}-${col}"]`);
+        const { ms } = partnerAct(fx0, fz, { tool: 'can', toolMs: 900, reach: LONG_REACH });
+        after(ms, () => {
+          jiggle(el, WIGGLE, 620, FLOWER_ORIGIN);
+          spawn({ kind: 'flower', x: fx0, y: fz, lift: FLOWER_U * 0.72, color: PETAL[row ? BEDS[season].front : BEDS[season].back], flip: fx0 > 195, held: true });
+          sceneSfx('water');
+        });
+      }
+    })
+  );
 
   // The listeners live on the scene (a click after a drag never comes: the scroll took it).
   $effect(() => {

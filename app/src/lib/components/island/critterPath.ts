@@ -162,7 +162,10 @@ export function bugPath(id: BugId, seed: number, stayMs: number, o: BugOpts = {}
   const r = subRand(seed, 3);
   const flight = BUGS[id].flight, place = bugPlace(id);
   const off = o.avoid ?? [];
-  const ok = (p: P3) => groundOk(place, p.x, p.z) && !off.some((a) => p.x >= a.x0 && p.x <= a.x1 && p.z >= a.z0 && p.z <= a.z1);
+  // a percher's trunk and a flower's head are its spot, whatever the ground at its foot
+  const ok = flight === 'perch' || flight === 'flower'
+    ? () => true
+    : (p: P3) => groundOk(place, p.x, p.z) && !off.some((a) => p.x >= a.x0 && p.x <= a.x1 && p.z >= a.z0 && p.z <= a.z1);
   let spot: P3 | null = null, patch: Patch | null = null;
   if (flight === 'perch') {
     const all = perches(BUGS[id].tree === 'palm');

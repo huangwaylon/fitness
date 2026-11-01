@@ -53,3 +53,18 @@ export function wateredOn(date: string): string[] {
   const g = readJson<Garden>(localKV(), SCENE.garden);
   return g && g.date === date ? (g.watered ?? []) : [];
 }
+
+/** A flower bed cell's shared id: whose bed and the cell in it (`A.0-1`), from this phone's `row-col` (columns 0–1 the
+ *  left bed, mine; 2–3 the right, the partner's: each phone has its own bed on the left). */
+export function sharedCell(cell: string, me: 'A' | 'B'): string | null {
+  const m = /^(\d)-(\d)$/.exec(cell);
+  if (!m) return null;
+  const c = +m[2];
+  return `${c < 2 ? me : me === 'A' ? 'B' : 'A'}.${m[1]}-${c % 2}`;
+}
+/** This phone's `row-col` of a shared cell id (sharedCell's inverse), or null. */
+export function localCell(id: string, me: 'A' | 'B'): string | null {
+  const m = /^([AB])\.(\d)-([01])$/.exec(id);
+  if (!m) return null;
+  return `${m[2]}-${+m[3] + (m[1] === me ? 0 : 2)}`;
+}

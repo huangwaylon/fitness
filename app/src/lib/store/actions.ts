@@ -143,3 +143,21 @@ export function recordFind(kind: FindKind, id: string): boolean {
   if (findsView(m.state).has(findKey(kind, id))) return false;
   return week.send('find', { kind, id }).ok;
 }
+
+// ---- The shared island's day on the sheet (docs/backend.md#shared-world): one `island` row per person and day, sent
+// again (all of it) when it grows, held two minutes so a busy stretch is one request (the server keeps the newest).
+
+/** An island day waits this long before it is sent; the next change replaces it within the same window. */
+const ISLAND_HOLD_MS = 120_000;
+let islandHeld: { date: LocalDate; until: number; undo: () => boolean } | null = null;
+
+/** My part of the shared island's day `date` (store/world.svelte.ts rowOf), for the sheet. */
+export function sendIslandDay(date: LocalDate, row: object): void {
+  if (!week.model) return;
+  const now = Date.now();
+  const same = islandHeld && islandHeld.date === date && islandHeld.until > now ? islandHeld : null;
+  const holdMs = same ? same.until - now : ISLAND_HOLD_MS;
+  same?.undo();
+  const r = week.send('island', { date, ...row }, { holdMs });
+  islandHeld = r.undo ? { date, until: now + holdMs, undo: r.undo } : null;
+}

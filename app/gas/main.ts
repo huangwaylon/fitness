@@ -8,6 +8,7 @@
 import { parseShortcut } from './parse.ts';
 import { jstMs, localDateAt, parseInstant, ZONE_OFFSET_MS } from '../src/lib/time/dates.ts';
 import { isTally } from '../src/lib/contract/tally.ts';
+import { isIslandDay } from '../src/lib/contract/island.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import { shopPrice } from '../src/lib/config/rules.ts';
 import {
@@ -526,11 +527,12 @@ function event(me: PersonId, body: Rec): EventReply {
     const sh = tab('events');
     const last = sh.getLastRow();
     noteRows(sh, 'events', last);
-    // id, and for a void also type and data (columns 3–5); for a tally also the person (columns 2–5).
-    const tally = type === 'tally';
-    const rows = last >= 2 ? sh.getRange(2, tally ? 2 : 3, last - 1, type === 'spend_void' ? 3 : tally ? 4 : 1).getValues() : [];
-    for (const r of rows) if (text(r[tally ? 1 : 0]) === id) return { ok: true, duplicate: true };
-    if (tally) dropTallies(sh, rows, me, data.date as string);
+    // id, and for a void also type and data (columns 3–5); for a day row (a tally, an island day) also the person
+    // (columns 2–5).
+    const daily = type === 'tally' || type === 'island';
+    const rows = last >= 2 ? sh.getRange(2, daily ? 2 : 3, last - 1, type === 'spend_void' ? 3 : daily ? 4 : 1).getValues() : [];
+    for (const r of rows) if (text(r[daily ? 1 : 0]) === id) return { ok: true, duplicate: true };
+    if (daily) dropDaily(sh, rows, me, type, data.date as string);
     if (type === 'spend_void') {
       const v = voidTarget(rows, data.spendId as string);
       // A void must name a buy on the sheet; a second void of the same buy (the other phone got there first) changes
@@ -561,22 +563,24 @@ function validEventData(type: string, d: Rec): boolean {
       return isFind(d);
     case 'tally':
       return isTally(d, localDateAt(Date.now()));
+    case 'island':
+      return isIslandDay(d, localDateAt(Date.now()));
     default:
       return true;
   }
 }
 
 /**
- * A tally is one row per person and day (docs/backend.md#tally): before the new one is appended, delete `me`'s older
- * tally rows of `date`, from the events tab's `[person, id, type, data]` rows (only rows whose data mentions the date
- * are parsed). The rows below move up, still in `at` order, so a `since` read stays a tail; the script records the new
- * last row itself, so no revision bump. A phone that cached a deleted row keeps it harmlessly: the model reads only a
- * day's latest tally (model/tally.ts).
+ * A tally and an island day are one row per person and day (docs/backend.md#tally, #shared-world): before the new one
+ * is appended, delete `me`'s older rows of that `type` and `date`, from the events tab's `[person, id, type, data]`
+ * rows (only rows whose data mentions the date are parsed). The rows below move up, still in `at` order, so a `since`
+ * read stays a tail; the script records the new last row itself, so no revision bump. A phone that cached a deleted
+ * row keeps it harmlessly: the model reads only a day's latest (model/tally.ts, model/state.ts islandDays).
  */
-function dropTallies(sh: GAS.Sheet, rows: unknown[][], me: PersonId, date: string): void {
+function dropDaily(sh: GAS.Sheet, rows: unknown[][], me: PersonId, type: string, date: string): void {
   const old: number[] = [];
   rows.forEach((r, i) => {
-    if (text(r[2]) !== 'tally' || text(r[0]) !== me) return;
+    if (text(r[2]) !== type || text(r[0]) !== me) return;
     const raw = text(r[3]);
     if (!raw.includes(date)) return;
     let d: unknown;

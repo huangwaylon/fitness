@@ -375,9 +375,10 @@ person's flowers through one Tokyo day (a quick run of canopy taps shakes it: [S
   (grayscale = 1 − share, washed lighter while grey).
 - **Falling:** met, the tree shakes and the fruit drops to the ground in front of the trunk with a thud and a puff;
   once per phone, the first time the island shows it met; a reload finds it lying there.
-- **Picking up:** a tap on a fallen fruit picks it up (a hop, a sparkle, a pop), gone on this phone until the next
-  Tokyo day. Either person may pick up either tree's fruit; cosmetic, never synced. The fruit row is one button: a tap
-  within 22u of a fallen fruit picks up the nearest, else it opens the popup.
+- **Picking up:** a tap on a fallen fruit picks it up (a hop, a sparkle, a pop), gone on both phones until the next
+  Tokyo day (the shared day's `fr:<person>:<fruit>`; our villager picks it up on the other). Either person may pick up
+  either tree's fruit; cosmetic (no ベル). The fruit row is one button: a tap within 22u of a fallen fruit picks up the
+  nearest, else it opens the popup.
 - **Goal flowers:** each 2 × 2 bed belongs to the person standing beside it, one flower per goal (`BED_FRUIT`: 🍐
   back-left, 🍑 back-right, 🍒 front-left, 🍎 front-right) in the season's species. Not met: a swaying bud. Met: it
   blooms once per phone (a squash, a pop, petal bits, a glint, `flower-bloom`); a reload finds it open.
@@ -418,7 +419,9 @@ and counts for nothing (no ベル, state, navigation or writes); one `click` lis
 reaches it); ≤ 4 flourishes at once, drawn as world nodes where the tap landed; taps on controls are ignored; nothing
 while covered or hidden; decorative, `aria-hidden`, pointer-only. What nothing else took is a walk ([Walking](#walking)).
 
-A bush jiggles and sheds seasonal leaves (1 in 10 a bug flies out); a flower is watered ([Island care](#island-care));
+A bush jiggles and sheds seasonal leaves (1 in 10 a bug flies out; on the partner's phone our villager shakes it too,
+the same bug: [Shared world](#shared-world)); a tree's leaves rustle (three quick taps shake it: [Shaking a
+tree](#shaking-a-tree)); a flower is watered ([Island care](#island-care));
 the sea ripples (1 in 10 a fish shadow); sand leaves footprints; grass puffs dust (snow in winter); a cloud squishes;
 the sun glints; the moon bobs; the night sky twinkles (and grants a wish while a shooting star crosses: [Shooting
 stars](#shooting-stars)); the pond rings.
@@ -510,8 +513,10 @@ northern-hemisphere months; hours still hold.
 ### Beach finds
 
 `island/Finds.svelte`, `island/beach.ts`, `island/sceneDay.ts`, `e2e/finds.spec.ts`. The day's items derive from the
-Tokyo date and time plus a seed, so both phones broadly agree; what a phone picks up is hidden there only (`scene-day`),
-and the first of each shell, fossil and fragment is a ずかん `find`.
+Tokyo date and time plus a seed, so both phones agree; what either of us picks up, digs or opens is gone on both
+([Shared world](#shared-world): a `pick`, claimed at the tap, first wins; this phone keeps its own in `scene-day` too),
+the next dig spot is the same on both, and on the other phone our villager walks over, picks it up and holds it up with
+the line. The first of each shell, fossil and fragment is a ずかん `find`, written when it's picked up (and still ours).
 
 - **Seashells** (NH's eight; the summer shell rare, likelier June–September): one washes up every 60–120 s, the newest
   three lie on the sand. A tap picks it up: 「タカラガイを ひろった！」.
@@ -524,21 +529,24 @@ and the first of each shell, fossil and fragment is a ずかん `find`.
 - **Mushrooms** (`island/mushrooms.ts`): every November day 1–2 beside the trunks (1 in 8 October and December days
   one), NH's weights; a tap picks one up. 1 in 20 November dig spots hold the rare mushroom. Cosmetic: no `find`.
 - **Message bottle:** every 8–14 minutes one rocks at the water's edge for 6; a tap reads its note (16 kind notes).
-- **Star fragments:** each wish on a shooting star is one fragment on the beach the next morning (from 05:00, at most
-  8), now and then a large one or the season's zodiac fragment (twice as likely after a meteor shower), twinkling now
-  and then.
+- **Star fragments:** each wish on a shooting star, either of ours (`wished`, kept by the store past its day and in
+  the sheet's day row), is one fragment on the beach the next morning (from 05:00, at most 8), now and then a large one
+  or the season's zodiac fragment (twice as likely after a meteor shower), twinkling now and then.
+- **A balloon's present:** where it lands it's put on the island for both (`put`; the balloon itself is each phone's
+  own); either opens it, what's inside decided at the tap and shown on the other phone too (「うめが ○○を てにいれた！」).
 
 ### Island care
 
 `island/Care.svelte`, `island/care.ts`, `e2e/care.spec.ts` (no ベル, no find):
 
 - **Weeds** sprout every 30–60 minutes on the lawn's free spots (`LAWN`), the newest three at a time; a tap pulls one
-  (`scene-weed`).
-- **Watering:** a flower tap is NH's watering can (a tilt, drops, a glint; `scene-water`); a flower watered today
-  glitters for the day (`wateredOn`). A bed watered today has a 1 in 4 chance of a hybrid colour in one watered cell
-  tomorrow (NH's hybrids, simplified; `scene-garden`).
-- **The rock** (on the health lawn behind the left tree): a tap clonks it with the shovel; 1 in 4 a sparkle, 1 in 8
-  a pill bug or a centipede crawls out.
+  (`scene-weed`), gone on both phones (our villager pulls it on the other).
+- **Watering:** a flower tap is NH's watering can (a tilt, drops, a glint; `scene-water`); a flower watered today, by
+  either of us, glitters for the day on both phones (`wateredOn` and the shared day's `watered`, by whose bed: `A.0-1`;
+  each phone has its own bed on the left). The beds watered yesterday, both people's, have a 1 in 4 chance of a hybrid
+  colour in one watered cell today, the same one on both phones (NH's hybrids, simplified; `scene-garden`).
+- **The rock** (on the health lawn behind the left tree): a tap clonks it with the shovel (on both phones); 1 in 4 a
+  sparkle, 1 in 8 a pill bug or a centipede crawls out (on both: a `put`).
 - Weeds, dig spots and the rock are measured clear of the controls on each screen (a covered spot isn't shown).
 
 ### Pond
