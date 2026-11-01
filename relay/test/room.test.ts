@@ -94,9 +94,9 @@ describe('the island room', () => {
     expect(a.closed).toBeNull();
   });
 
-  it('closes a client speaking another protocol version', () => {
+  it('closes a client speaking a protocol version it doesn’t know', () => {
     const a = join(KEY_A);
-    room.message(a, JSON.stringify({ v: 2, kind: 'walk', to: 'x' }));
+    room.message(a, JSON.stringify({ v: 3, kind: 'walk', to: 'x' }));
     expect(a.closed?.code).toBe(CLOSE.version);
   });
 
@@ -239,5 +239,44 @@ describe('the island room', () => {
     expect(room.roomFor()).toBe(false);
     now += HELLO_MS;
     expect(room.roomFor()).toBe(true); // the silent ones were swept
+  });
+});
+
+describe('two protocol versions (v2: the rolling-log world)', () => {
+  const join2 = (key: string) => {
+    const s = new FakeSock();
+    socks.push(s);
+    room.open(s);
+    room.message(s, JSON.stringify({ v: 2, kind: 'hello', key }));
+    return s;
+  };
+  const say2 = (s: FakeSock, m: object) => room.message(s, JSON.stringify({ v: 2, ...m }));
+
+  it('answers each phone in its own version', () => {
+    const a = join2(KEY_A);
+    expect(a.sent).toEqual([{ v: 2, kind: 'welcome', me: 'A', peer: false, t: now }]);
+    const b = join(KEY_B);
+    expect(b.sent[0]).toMatchObject({ v: 1, kind: 'welcome', peer: true });
+    expect(a.sent.at(-1)).toEqual({ v: 2, kind: 'presence', who: 'B', on: true, t: now });
+    expect(room.notify({ what: 'event', who: 'B', at: '2026-11-01T00:00:00.000Z', rev: 'r1' })).toBe(2);
+    expect(a.sent.at(-1)).toMatchObject({ v: 2, kind: 'changed' });
+    expect(b.sent.at(-1)).toMatchObject({ v: 1, kind: 'changed' });
+  });
+
+  it('a walk (world units in v2, stage units in v1) reaches only the same version; everything else crosses', () => {
+    const a = join2(KEY_A);
+    const b1 = join(KEY_B);
+    a.sent = [];
+    b1.sent = [];
+    say2(a, { kind: 'walk', to: [195, 900] });
+    expect(b1.sent).toEqual([]);
+    say2(a, { kind: 'emote', emote: 'glee' });
+    expect(b1.sent).toEqual([{ v: 1, kind: 'emote', emote: 'glee', who: 'A', t: expect.any(Number) }]);
+    say(b1, { kind: 'walk', to: [120, 340] });
+    expect(a.sent).toEqual([]);
+    const b2 = join2(KEY_B); // the partner's phone reloads into v2 (replacing its v1 socket)
+    a.sent = [];
+    say2(b2, { kind: 'walk', to: [195, 900] });
+    expect(a.sent).toEqual([{ v: 2, kind: 'walk', to: [195, 900], who: 'B', t: expect.any(Number) }]);
   });
 });
