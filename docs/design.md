@@ -328,6 +328,11 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   hanging fruit 20u · ground fruit 24u.
 - **Fixed outside the log:** the sky (to the horizon), the HUD, the weather, the fireworks and the shooting stars;
   a haze where the ground meets the sky; one tint for the time of day over the land.
+- **The tint at the source** (IslandScene): the ground takes it as one multiply plane; every world node but a light
+  takes the same multiply as an SVG colour-matrix filter on what it draws (each image, svg and drawn bit; a wrapper's
+  ::before / ::after), never on a wrapper, so a tap's shake, a hop or a bob, which WebKit draws in a layer of its own,
+  stays tinted (on the wrapper, a tapped bush or tree flashed bright at night). A leaf's own filter takes the tint
+  first (`var(--leaf-tint,)`). `e2e/world.spec.ts` checks no moving thing sits under a tinted wrapper.
 - **Cost:** nothing runs when still: a scroll frame, a walk (one rAF while someone is on the way) or a change places
   what moved; style writes only when a value changes. Measured at 4× CPU throttling: see `docs/decisions.md`.
 

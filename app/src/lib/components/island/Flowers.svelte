@@ -74,7 +74,7 @@
   .b { display: block; transform-origin: 50% 100%; }
   .wet {
     position: absolute; left: 62%; top: 8%; width: calc(8 * 100cqw / 390); height: auto; fill: #FFFBE8;
-    filter: drop-shadow(0 0 2px rgba(190, 230, 255, .9)); opacity: 0; animation: wet-glint var(--wd) ease-out var(--wo) infinite;
+    filter: var(--leaf-tint,) drop-shadow(0 0 2px rgba(190, 230, 255, .9)); opacity: 0; animation: wet-glint var(--wd) ease-out var(--wo) infinite;
   }
   @keyframes wet-glint { 0%, 84% { transform: scale(0) rotate(0); opacity: 0; } 91% { transform: scale(1) rotate(40deg); opacity: 1; } 100% { transform: scale(0) rotate(90deg); opacity: 0; } }
 </style>

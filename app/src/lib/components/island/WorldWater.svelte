@@ -151,7 +151,7 @@
   /* a four-point glint twinkling on the sea: 1.6 s of a 4.8 s cycle, each out of step */
   .glint {
     position: absolute; left: 0; bottom: 0; width: calc(12 * var(--u)); height: calc(12 * var(--u)); translate: -50% 0; fill: #FFFFFF;
-    opacity: 0; filter: drop-shadow(0 0 2px rgba(255, 255, 255, .9)); animation: sea-glint 4.8s ease-in-out infinite;
+    opacity: 0; filter: var(--leaf-tint,) drop-shadow(0 0 2px rgba(255, 255, 255, .9)); animation: sea-glint 4.8s ease-in-out infinite;
   }
   @keyframes sea-glint {
     0%, 66% { transform: scale(0) rotate(0); opacity: 0; } 76% { transform: scale(1) rotate(30deg); opacity: .95; }
@@ -171,7 +171,7 @@
   .float { position: absolute; left: 0; top: 0; transform-origin: 0 0; opacity: 0; animation: ride 15s linear infinite; }
   .leaf {
     position: absolute; left: 0; top: 0; translate: -50% -50%; line-height: 0; display: block;
-    filter: drop-shadow(.6px .9px 0 rgba(20, 60, 110, .35)); animation: turn 15s ease-in-out infinite;
+    filter: var(--leaf-tint,) drop-shadow(.6px .9px 0 rgba(20, 60, 110, .35)); animation: turn 15s ease-in-out infinite;
   }
   .leaf :global(.official) { max-width: none; }
   @keyframes ride {

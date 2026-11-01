@@ -78,7 +78,7 @@
     left: 0; right: 0; top: calc(1 * var(--u)); bottom: 0;
     background: linear-gradient(180deg, rgba(225, 250, 250, .55), rgba(170, 236, 240, .22) 35%, rgba(126, 221, 230, 0) 75%);
   }
-  .foam { left: 0; top: calc(-1.5 * var(--u)); width: 100%; height: calc(9 * var(--u)); fill: #FFFFFF; filter: drop-shadow(0 calc(.4 * var(--u)) 0 rgba(255, 255, 255, .35)); }
+  .foam { left: 0; top: calc(-1.5 * var(--u)); width: 100%; height: calc(9 * var(--u)); fill: #FFFFFF; filter: var(--leaf-tint,) drop-shadow(0 calc(.4 * var(--u)) 0 rgba(255, 255, 255, .35)); }
 
   /* up 7u in 1.8 s (ease-out), hold .6 s, back down in 2.4 s (ease-in), thinning as it goes */
   @keyframes wash-run {

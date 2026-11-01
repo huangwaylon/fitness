@@ -207,7 +207,7 @@
   .node { width: 0; height: 0; pointer-events: none; }
   .item { position: absolute; left: 0; top: 0; width: 0; height: 0; }
   .item > * { position: absolute; left: 0; top: 0; line-height: 0; }
-  .rock > :global(*) { translate: -50% -92%; transform-origin: 50% 100%; filter: drop-shadow(0 2px 1px rgba(60, 70, 40, .3)); }
+  .rock > :global(*) { translate: -50% -92%; transform-origin: 50% 100%; filter: var(--leaf-tint,) drop-shadow(0 2px 1px rgba(60, 70, 40, .3)); }
   .rock :global(.official) { max-width: none; }
   .weed svg, .up svg { width: calc(20 * var(--su)); translate: -50% -92%; overflow: visible; }
   .flip svg { scale: -1 1; }

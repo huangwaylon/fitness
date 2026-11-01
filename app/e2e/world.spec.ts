@@ -112,11 +112,47 @@ test('at night a lamp’s light sorts with its lamp: a tree in front covers it, 
   const z = await page.evaluate(() => {
     const zi = (sel: string) => Number(getComputedStyle(document.querySelector(sel)!).zIndex);
     const f = (sel: string) => getComputedStyle(document.querySelector(sel)!).filter;
-    return { glow: zi('[data-glow="lantern-3"]'), lamp: zi('[data-scenery-id="lantern-3"]'), canopy: zi('[data-scenery-id="oak-k1"][data-part="canopy"]'), lit: f('[data-glow="lantern-3"]'), tree: f('[data-scenery-id="oak-k1"]') };
+    return { glow: zi('[data-glow="lantern-3"]'), lamp: zi('[data-scenery-id="lantern-3"]'), canopy: zi('[data-scenery-id="oak-k1"][data-part="canopy"]'), lit: f('[data-glow="lantern-3"]'), tree: f('[data-scenery-id="oak-k1"] img') };
   });
   expect(z.glow).toBeGreaterThan(z.lamp);
   expect(z.glow).toBeLessThan(z.canopy);
   // the light is never tinted; the tree is (the time of day's tint, at the source)
   expect(z.lit).toBe('none');
   expect(z.tree).toMatch(/url/);
+});
+
+test('at night the tint is on what each thing draws, never on what a tap reaction moves (it stays tinted while it moves)', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-04T22:00&critter=none');
+  await world(page);
+  await call(page, (w) => w.go(380));
+  await page.waitForTimeout(600);
+  // tap reactions: a bush's shake, an oak's rustle, my villager's squish (and the villagers' own loops)
+  const tap = async (sel: string) => {
+    const b = (await page.locator(sel).first().boundingBox())!;
+    await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  };
+  await tap('.stage [data-bush]');
+  await tap('[data-tree="oak-m1"]:not([data-tree-part])');
+  await tap('[data-actor="mine"] .vil'); // a squish
+  await page.waitForTimeout(100);
+  const bad = await page.evaluate(() => {
+    const out: string[] = [];
+    // (an svg's parts are drawn with it: no layer of their own)
+    const moving = document.getAnimations().map((a) => (a.effect as KeyframeEffect | null)?.target).filter((t): t is Element => !!t?.closest?.('.stage .wn') && !t.parentElement?.closest('svg'));
+    for (const t of moving) {
+      // no ancestor up to (and including) its world node carries the tint: WebKit's layer for the move would escape it
+      for (let e: Element | null = t.parentElement; e && !e.matches('.stage'); e = e.parentElement) {
+        if (getComputedStyle(e).filter.includes('url(')) out.push(`${t.tagName}.${t.getAttribute('class')} under ${e.tagName}.${e.getAttribute('class')}`);
+        if (e.classList.contains('wn')) break;
+      }
+    }
+    return { moving: moving.length, out };
+  });
+  expect(bad.moving).toBeGreaterThan(0);
+  expect(bad.out).toEqual([]);
+  // what they draw is tinted: the bush's and the oak's images; a lamp's light is not
+  for (const sel of ['.stage [data-bush] img', '[data-scenery-id="oak-m1"] img']) {
+    expect(await page.locator(sel).first().evaluate((e) => getComputedStyle(e).filter)).toContain('url(');
+  }
+  expect(await page.locator('[data-glow] img').first().evaluate((e) => getComputedStyle(e).filter)).toBe('none');
 });

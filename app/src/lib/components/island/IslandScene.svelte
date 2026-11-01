@@ -630,7 +630,7 @@
 
   <div class="scroller" bind:this={scroller} onscroll={onScroll} data-world-scroller>
     <div class="track" style:height="{trackH}px">
-      <div class="stage" style:height="{vh}px" style:--u="{s}px" style:--su="{s}px" style:--tod-filter={shade ? `url(#${fid})` : 'none'}>
+      <div class="stage" style:height="{vh}px" style:--u="{s}px" style:--su="{s}px" style:--tod-filter={shade ? `url(#${fid})` : undefined}>
         <svg class="defs" aria-hidden="true" width="0" height="0">
           <filter id={fid} color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values={shadeMatrix || '1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0'} /></filter>
         </svg>
@@ -781,8 +781,14 @@
     -webkit-mask-image: var(--tint-mask); mask-image: var(--tint-mask);
   }
   .stage { --tint-mask: linear-gradient(to bottom, transparent calc(var(--horizon-y) - 70px), #000 calc(var(--horizon-y) - 16px)); }
-  /* every world node tints itself (the same multiply as the plane), but the lights */
-  .stage :global(.wn) { filter: var(--tod-filter); }
+  /* every world node is tinted (the same multiply as the plane), but the lights: on what it draws, never on a wrapper:
+     each leaf (an image, an svg, a drawn bit with no child; a wrapper's ::before / ::after). A wrapper an animation
+     moves gets its own compositing layer in WebKit, which an ancestor's url() filter doesn't reach: on the node, a
+     tapped bush or tree flashed untinted at night for its shake. Specificity 0: a leaf's own filter wins and takes the
+     tint first (`filter: var(--leaf-tint,) drop-shadow(…)`); day: no --tod-filter, no filter. */
+  :where(.stage) :global(:where(.wn) :where(svg, :not(svg *, button, .hit, .hit-trunk):not(:has(*)))) { --leaf-tint: var(--tod-filter); filter: var(--leaf-tint); }
+  :where(.stage) :global(:where(.wn) :where(:not(svg *, [data-hit-min]):has(*))::before),
+  :where(.stage) :global(:where(.wn) :where(:not(svg *, [data-hit-min]):has(*))::after) { filter: var(--tod-filter); }
   .fall { filter: var(--tod-filter); }
   .defs { position: absolute; width: 0; height: 0; overflow: hidden; }
   /* villager contact shadow: radial, surface-coloured, 0.30h × 0.06h, +6% right and down; dusk: stretched to the right */

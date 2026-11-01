@@ -114,7 +114,7 @@
   .deck { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none; }
   .deck > * { position: absolute; left: 0; top: 0; line-height: 0; }
   .radio { translate: -50% -94%; transform-origin: 50% 100%; animation: deck-in .5s var(--ease-bounce) both; }
-  .radio :global(.official) { max-width: none; filter: drop-shadow(0 2px 1px rgba(60, 70, 40, .3)); }
+  .radio :global(.official) { max-width: none; filter: var(--leaf-tint,) drop-shadow(0 2px 1px rgba(60, 70, 40, .3)); }
   @keyframes deck-in { from { transform: scale(.4); opacity: 0; } }
   /* the tape playing: the deck thumps on the beat */
   .playing .radio { animation: thump .5s ease-in-out infinite; }

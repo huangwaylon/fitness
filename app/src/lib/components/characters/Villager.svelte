@@ -162,14 +162,14 @@
   /* Jack's trick: party nose glasses (鼻めがね) over the face, popping on with a wobble */
   .tricked {
     position: absolute; translate: -50% -38%; height: auto; overflow: visible; /* the lenses' middle on the eyes' line */
-    filter: drop-shadow(0 1px 1px rgb(40 20 30 / .3)); transform-origin: 50% 40%; animation: trick-on 520ms var(--ease-bounce) both;
+    filter: var(--leaf-tint,) drop-shadow(0 1px 1px rgb(40 20 30 / .3)); transform-origin: 50% 40%; animation: trick-on 520ms var(--ease-bounce) both;
   }
   @keyframes trick-on { from { transform: scale(.2) rotate(-20deg); opacity: 0; } 50% { opacity: 1; } }
   @keyframes puff-up { from { transform: scale(.2); opacity: 0; } 40% { opacity: 1; } }
   /* NH's birthday hat: perched on the top of the head, a little tilted, popping on */
   .hat { position: absolute; translate: -50% -90%; rotate: -8deg; line-height: 0; animation: puff-up 420ms var(--ease-bounce) both; } /* its brim on the head's top */
   .right .hat { rotate: 8deg; }
-  .hat :global(.official) { max-width: none; filter: drop-shadow(0 1px 1px rgba(80, 50, 40, .3)); }
+  .hat :global(.official) { max-width: none; filter: var(--leaf-tint,) drop-shadow(0 1px 1px rgba(80, 50, 40, .3)); }
   .body.bob { animation: if-bob 2400ms var(--ease-idle) infinite; animation-delay: var(--bob-delay, 0s); }
   .body.sleep { animation: if-breath-slow 4000ms var(--ease-idle) infinite; }
   .body.walk { animation: if-walkbounce var(--step, 640ms) linear infinite; }
@@ -180,7 +180,7 @@
     position: absolute; z-index: 2; left: 50%; bottom: 97%; line-height: 0; translate: -50% 0; pointer-events: none;
     animation: held-rise 520ms cubic-bezier(.3, .8, .4, 1.2) 120ms both, held-bob 1800ms ease-in-out 700ms infinite;
   }
-  .held-up :global(.official) { max-width: none; filter: drop-shadow(0 2px 2px rgb(60 40 20 / .3)); }
+  .held-up :global(.official) { max-width: none; filter: var(--leaf-tint,) drop-shadow(0 2px 2px rgb(60 40 20 / .3)); }
   @keyframes held-rise { from { transform: translateY(60%) scale(.4); opacity: 0; } 50% { opacity: 1; } to { transform: none; opacity: 1; } }
   @keyframes held-bob { 0%, 100% { transform: none; } 50% { transform: translateY(-5%); } }
   .body:global([data-act='holdup']) { animation: if-holdup 1600ms var(--ease-soft) both; }

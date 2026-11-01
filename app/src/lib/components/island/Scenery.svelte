@@ -193,6 +193,6 @@
       radial-gradient(ellipse 24% 48% at 24% 66%, #FFF 92%, transparent 100%),
       radial-gradient(ellipse 30% 56% at 50% 50%, #FFF 92%, transparent 100%),
       radial-gradient(ellipse 24% 48% at 76% 66%, #FFF 92%, transparent 100%);
-    filter: drop-shadow(0 1.5px 0 rgba(150, 175, 210, .5));
+    filter: var(--tod-filter,) drop-shadow(0 1.5px 0 rgba(150, 175, 210, .5));
   }
 </style>

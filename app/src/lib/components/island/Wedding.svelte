@@ -46,6 +46,6 @@
 <style>
   /* a world node behind centre stage (its depth: behind the visitors and the cake, in front of the tent) */
   .arch { width: 0; height: 0; line-height: 0; pointer-events: none; }
-  .arch > :global(*) { position: absolute; left: 0; top: 0; translate: -50% -96%; filter: drop-shadow(0 2px 1.5px rgba(80, 60, 40, .3)); }
+  .arch > :global(*) { position: absolute; left: 0; top: 0; translate: -50% -96%; filter: var(--leaf-tint,) drop-shadow(0 2px 1.5px rgba(80, 60, 40, .3)); }
   .arch :global(.official) { max-width: none; }
 </style>

@@ -103,7 +103,7 @@
   }
   /* world nodes (camera.svelte.ts places them): a firefly's glow, a present at its foot */
   .node { width: 0; height: 0; pointer-events: none; line-height: 0; }
-  .toy .art { position: absolute; left: 0; bottom: 0; translate: -50% 4%; filter: drop-shadow(0 1.5px 1px rgba(80, 50, 20, .3)); }
+  .toy .art { position: absolute; left: 0; bottom: 0; translate: -50% 4%; filter: var(--leaf-tint,) drop-shadow(0 1.5px 1px rgba(80, 50, 20, .3)); }
   .toy .art :global(.official) { max-width: none; }
   .ff {
     position: absolute; width: 4.4px; height: 4.4px; margin: -2.2px; border-radius: 50%;
