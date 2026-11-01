@@ -255,6 +255,23 @@ is the record. Not done: streaming positions or the interactive moments (a cast'
 mood stay on the phone that taps; their outcome is shared), a rejection message to the losing phone (the winner's own
 intent tells it), every event to the sheet (a day row instead), sharing the balloon's flight.
 
+### Decor is a last-writer-wins map, the sheet keeps each item's latest op
+The island's decorations ([Decorating](design.md#decorating)) are persistent, shared by both of us, either may move
+or remove any. Each change is one op carrying the item's whole state (`{id, at, item, x, z, f, p}`) or its removal
+(`{id, at, rm}`); the layout is the ops merged by id: a removal beats everything (ids are never reused: an undo puts a
+new one down), else the latest `at` on the relay's clock, then B over A (`contract/decor.ts`). The merge is commutative
+and idempotent, so it doesn't matter which way an op arrives first (the relay live, its day's replay, the sheet's
+snapshot, my own optimistic copy): both phones and a reload reach the same layout. The relay only carries the ops
+(`decor`, kept in the day's ring for a phone opening later that day); the sheet is the record across days and keeps
+only each item's latest op (the script deletes the older rows: at most one row per item ever placed), checks the
+item, the spot's bounds and the cap of 30. The island refuses a spot that is taken, off the ground, on a tap-critical
+spot or that would wall anyone in; a race of two people dropping on one spot at once leaves both standing until one
+is moved. Why: the layout lives for months, so a day-scoped fold (the shared world's) doesn't fit, and a whole-layout
+row would let two phones overwrite each other's change; per-item last-writer-wins needs no leader, no clock beyond the
+pings and no history, and its rows stay as few as the items. Not done: first-wins for two moves of one item (it needs
+each op's history, which compaction drops: the later move wins on both phones), drag positions streamed live (only
+the confirmed spot crosses).
+
 ### Visitors are the director's fourth actor
 The visitor moves through the same director, idle life and walk graph as the villagers, with CSS loops for continuous
 life. Why: one animation system, and pausing under a sheet or a hidden page already applies.

@@ -515,6 +515,50 @@ describe('island (the shared island: one row per person and day)', () => {
   });
 });
 
+describe('decor (the island\'s decorations: each item\'s latest op)', () => {
+  const T = 1_793_000_000_000;
+  const set = (id: string, at: number, more: Record<string, unknown> = {}) =>
+    ({ id: `dc-${id}-${at}`, type: 'decor', data: { id, at, item: 'tanuki', x: 120, z: 480, f: 0, p: T, ...more } });
+  const rm = (id: string, at: number) => ({ id: `dc-${id}-${at}-rm`, type: 'decor', data: { id, at, rm: true } });
+  const ops = () => data('events').filter((r) => r[3] === 'decor').map((r) => [r[1], JSON.parse(String(r[4]))]);
+
+  it('checks the shape: a known item, a whole spot on the island, a facing, an id', () => {
+    expect(a('event', set('d000001', T))).toEqual({ ok: true });
+    for (const [i, more] of [
+      { item: 'sofa' }, { x: 999 }, { z: 1.5 }, { f: 4 }, { p: T + 50 }, { extra: 1 }, { id: 'nope' }
+    ].entries()) expect(a('event', { ...set('d000002', T + i), data: { ...set('d000002', T + i).data, ...more } }), JSON.stringify(more)).toEqual({ ok: false, error: 'bad_request' });
+    expect(a('event', { id: 'r1', type: 'decor', data: { id: 'd000003', at: T, rm: true, x: 1 } })).toEqual({ ok: false, error: 'bad_request' });
+  });
+
+  it('keeps only each item\'s latest op: a move replaces the place, an older op is acknowledged and dropped', () => {
+    a('event', set('d000001', T));
+    tick();
+    b('event', set('d000009', T + 5, { item: 'birdbath' }));
+    tick();
+    expect(b('event', set('d000001', T + 10, { x: 144 }))).toEqual({ ok: true });
+    expect(ops()).toEqual([['B', expect.objectContaining({ id: 'd000009' })], ['B', expect.objectContaining({ id: 'd000001', x: 144 })]]);
+    // a move made earlier (offline) arrives late: stale
+    expect(a('event', set('d000001', T + 7, { x: 96 }))).toEqual({ ok: true, duplicate: true });
+    expect(ops()).toHaveLength(2);
+  });
+
+  it('a removal is final: it replaces the item\'s row and a later move of it changes nothing', () => {
+    a('event', set('d000001', T));
+    expect(b('event', rm('d000001', T + 3))).toEqual({ ok: true });
+    expect(ops()).toEqual([['B', { id: 'd000001', at: T + 3, rm: true }]]);
+    expect(a('event', set('d000001', T + 9))).toEqual({ ok: true, duplicate: true });
+    expect(ops()).toHaveLength(1);
+  });
+
+  it('refuses a new item past the cap (30), but a move of one still goes', () => {
+    for (let k = 0; k < 30; k++) a('event', set(`d${String(k).padStart(6, '0')}`, T + k));
+    expect(a('event', set('d999999', T + 100))).toEqual({ ok: false, error: 'bad_request', detail: 'decor full' });
+    expect(a('event', set('d000004', T + 101, { x: 300 }))).toEqual({ ok: true });
+    a('event', rm('d000005', T + 102));
+    expect(a('event', set('d999999', T + 103))).toEqual({ ok: true });
+  });
+});
+
 describe('snapshot', () => {
   it('returns every row of both people as compact arrays, then only rows after `since`', () => {
     a('ingest', REAL);

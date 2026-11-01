@@ -6,6 +6,7 @@ import { CUTOFFS, LIMITS, MOVE_GOAL, PEOPLE, STEPS_GOAL, isStepsGoal, shopPrice 
 import { addDays, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
 import { isTally } from '#lib/contract/tally.ts';
 import { isIslandDay, type IslandDayData } from '#lib/contract/island.ts';
+import { decorOpOf, type DecorEntry } from '#lib/contract/decor.ts';
 import type { TallyRow } from './tally.ts';
 import { rowAt } from './snapshot.ts';
 import {
@@ -79,6 +80,9 @@ export interface State {
   /** Each person's island days (`island`: their part of a day's shared island, contract/island.ts), in server order,
    *  replaced rows included (a day's latest wins: `latestIslandDay`). Never read by the economy. */
   islandDays: IslandDayRow[];
+  /** The island's decorations (`decor`: each item's ops, contract/decor.ts), in server order; the layout is their merge
+   *  (store/decor.svelte.ts). Never read by the economy. */
+  decor: DecorEntry[];
   prefs: Record<PersonId, Prefs>;
   /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
   moveGoals: Record<PersonId, Timed<number>[]>;
@@ -181,6 +185,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     finds: [],
     tallies: [],
     islandDays: [],
+    decor: [],
     prefs: { A: {}, B: {} },
     moveGoals: { A: [], B: [] },
     stepsGoals: { A: [], B: [] },
@@ -274,6 +279,10 @@ const ON_EVENT: Record<EventType, OnEvent> = {
   },
   island(s, person, at, d) {
     if (isIslandDay(d)) s.islandDays.push({ at, person, data: d });
+  },
+  decor(s, person, _at, d) {
+    const op = decorOpOf(d);
+    if (op) s.decor.push({ ...op, who: person } as DecorEntry);
   },
   pref(s, person, at, d) {
     if (d.key === 'moveGoal') {

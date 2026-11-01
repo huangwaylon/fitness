@@ -481,6 +481,12 @@ picked up is gone on both, what a shake drops lies on both, each villager stands
 - **Late and alone:** a phone opening later hears the day from the relay (and keeps it: a reload needs only what's
   new); with the relay unreachable each phone keeps its own and they catch up when it's back.
 
+### Decorating
+
+`contract/decor.ts`, `store/decor.svelte.ts`, `island/decor.ts` ([backend](backend.md#events), decisions: *Decor is a
+last-writer-wins map*). Either of us puts NH's outdoor furniture on the island (ten items, at most 30 on it), moves it
+and takes it away; both phones show the same layout, kept for good (not day-scoped).
+
 ### Critters
 
 `island/Critters.svelte`, `island/critters.ts`, `island/critterPath.ts`, `e2e/critters.spec.ts`. NH species on the Tokyo

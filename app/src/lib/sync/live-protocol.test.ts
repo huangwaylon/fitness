@@ -198,3 +198,26 @@ describe('live protocol: the very walk, acks and the day in one replay', () => {
     expect(parseServer(j2({ kind: 'walk', to: [1, 2], who: 'B', t: 4, pad: 'x'.repeat(300), note: '"kind":"replay"' }))).toBeNull();
   });
 });
+
+describe('live protocol: decorations (v2)', () => {
+  const T = 1_793_000_000_000;
+  const set = { kind: 'decor', id: 'dmh1abc2a', at: T, item: 'stone-lantern', x: 120, z: 480, f: 3, p: T };
+  it('takes a set (its whole state) and a removal, known fields only; the room keeps both; nothing claimed', () => {
+    expect(parseClient(j2({ ...set, c: T, extra: 1 }))).toEqual({ v: 2, c: T, ...set });
+    expect(parseClient(j2({ kind: 'decor', id: 'dmh1abc2a', at: T, rm: true }))).toEqual({ v: 2, kind: 'decor', id: 'dmh1abc2a', at: T, rm: true });
+    expect(parseServer(j2({ ...set, who: 'B', t: T + 3 }))).toEqual({ v: 2, ...set, who: 'B', t: T + 3 });
+    expect(isStored({ ...set, kind: 'decor' } as never)).toBe(true);
+    expect(claimOf({ ...set, kind: 'decor' } as never)).toBeNull();
+  });
+  it('refuses v1, a bad id, item, spot or facing, a removal with rm other than true', () => {
+    for (const bad of [
+      j({ ...set }), j2({ ...set, id: 'x1' }), j2({ ...set, item: 'Sofa' }), j2({ ...set, x: 1.5 }), j2({ ...set, z: 99999 }), j2({ ...set, f: 4 }),
+      j2({ ...set, p: undefined }), j2({ kind: 'decor', id: 'dmh1abc2a', at: T, rm: 1 }), j2({ kind: 'decor', id: 'dmh1abc2a', rm: true })
+    ]) expect(parseClient(bad), bad).toBeNull();
+  });
+  it('fits the size budget numbered and relayed', () => {
+    const big = { ...set, id: 'd' + 'z'.repeat(24), item: 'garden-wagon', x: -230, z: -460 };
+    expect(j2({ ...big, c: 1e15 - 1 }).length).toBeLessThanOrEqual(MAX_BYTES);
+    expect(j2({ ...big, who: 'B', t: T }).length).toBeLessThanOrEqual(MAX_BYTES);
+  });
+});
