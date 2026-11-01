@@ -2,6 +2,7 @@
 // components render from (Villager / Host read it; nothing here touches the DOM). Reactions and idle
 // life call `play()`; every motion starts and ends at `transform: none` (the CSS keyframes do that),
 // and a new step on an actor preempts whatever it was doing.
+import { pickOne } from '#lib/random.ts';
 import type { EmoteIcon } from '#lib/art.ts';
 import { HOST_TAP, MOTION_MS, REACTIONS, type ActorId, type FxKind, type Motion, type ReactionId, type Step } from './reactions.ts';
 import { cue } from '#lib/sound/cues.ts';
@@ -468,6 +469,6 @@ export function hostTap() {
   cancel('host');
   actors.host.busyUntil = Date.now() + EMOTE_MS;
   setMotion('host', 'hop');
-  setEmote('host', HOST_TAP[Math.floor(Math.random() * HOST_TAP.length)]);
+  setEmote('host', pickOne(HOST_TAP, Math.random));
   cue('host-tap');
 }

@@ -1,6 +1,7 @@
+import type { Box } from './geom.ts';
 import { describe, expect, it } from 'vitest';
 import {
-  CELEBRATE_HOUR, MAX_R, MIN_R, burstPlan, burstSpot, celebrationDue, isMidnight, nextBurstMs, showAt, volley, type Box, type Shape
+  CELEBRATE_HOUR, MAX_R, MIN_R, burstPlan, burstSpot, celebrationDue, isMidnight, nextBurstMs, showAt, volley, type Shape
 } from './fireworks.ts';
 import { mulberry32 } from '#lib/random.ts';
 

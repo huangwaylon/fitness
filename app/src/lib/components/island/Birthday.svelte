@@ -10,19 +10,22 @@
   import { addFx, setEmote } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { firstConfetti } from './birthday.ts';
+  import { sceneSfx } from './sceneTaps.ts';
+  import { timers } from './timers.ts';
   import { VILLAGER, u } from './scene.ts';
 
   let { view, people, date }: { view: WeekView; people: PersonId[]; date: string } = $props();
 
   const side = (p: PersonId): 'mine' | 'partner' => (p === view.me ? 'mine' : 'partner');
+  const { later, clear } = timers();
   onMount(() => {
-    if (!untrack(() => firstConfetti(date))) return;
-    const t = setTimeout(() => {
-      for (const id of ['mine', 'partner'] as const) addFx(id, 'confetti');
-      for (const p of untrack(() => people)) setEmote(side(p), 'glee');
-      cue('harvest-receive');
-    }, 1400);
-    return () => clearTimeout(t);
+    if (untrack(() => firstConfetti(date)))
+      later(() => {
+        for (const id of ['mine', 'partner'] as const) addFx(id, 'confetti');
+        for (const p of untrack(() => people)) setEmote(side(p), 'glee');
+        cue('harvest-receive');
+      }, 1400);
+    return clear;
   });
 
   // a party popper when the birthday person meets a goal
@@ -41,8 +44,8 @@
         const s = side(p), n = ++seq;
         pops = [...pops.slice(-1), { n, side: s }];
         addFx(s, 'confetti');
-        cue('scene-balloon');
-        setTimeout(() => (pops = pops.filter((x) => x.n !== n)), 1600);
+        sceneSfx('balloon');
+        later(() => (pops = pops.filter((x) => x.n !== n)), 1600);
       }
     });
   });

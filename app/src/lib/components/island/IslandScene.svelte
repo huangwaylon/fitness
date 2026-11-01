@@ -29,6 +29,7 @@
   // .if-scene) to place overlays.
   // Life (islandLife.svelte.ts): the motion bus (emit('highfive-sent') etc.), reactions to the `view` diff (partner
   // data, fruit stages, a received high-five), naps, the balloon; idle life runs while `live` and not `paused`.
+  import { hookFlag } from './devHooks.ts';
   import type { PersonId, PersonWeekView, WeekView } from '#lib/types.ts';
   import Villager from '../characters/Villager.svelte';
   import { formatBells, t } from '#lib/i18n/index.ts';
@@ -66,7 +67,7 @@
   import { BEDS, CENTRE_STAGE, TREE, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
   import { HYBRIDS, hybridFor } from './care.ts';
   import { garden } from './sceneDay.ts';
-  import { addDays, localDateAt } from '#lib/time/dates.ts';
+  import { addDays } from '#lib/time/dates.ts';
   import { actors, applyStep, busy, onStep, setEmote, setHome, setMotion } from '../motion/director.svelte.ts';
   import { hitStage } from './sceneTaps.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -75,7 +76,7 @@
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { onMount, untrack } from 'svelte';
   import type { ActorId } from '../motion/reactions.ts';
-  import { jst, minuteNow, now } from '#lib/time/clock.ts';
+  import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
 
   interface Props {
     view: WeekView;
@@ -107,10 +108,10 @@
   const ev = $derived(eventsAt(clock));
   // NH's dated events (events.ts): Halloween's pumpkins all day, Jack, the lanterns and the villagers' lines at night
   const forced = forcedEvent();
-  const nhEvent = $derived(eventAt(localDateAt(clock.getTime()), jst(clock).hour, forced));
+  const nhEvent = $derived(eventAt(dayKey(clock), jst(clock).hour, forced));
   // the wedding countdown (wedding.ts): the arch on June Sundays, the day itself, its fireworks at night
   const wedding = $derived.by(() => {
-    const date = localDateAt(clock.getTime()), { hour, weekday } = jst(clock);
+    const date = dayKey(clock), { hour, weekday } = jst(clock);
     return { date, arch: archOn(date, weekday), day: weddingDay(date), fireworks: weddingDay(date) && hour >= FIREWORKS_FROM };
   });
 
@@ -183,7 +184,7 @@
     talk?.say(p.villagerName, pages, btn, { avoid: [{ x0: r.left - 6, x1: r.right + 6, y0: r.top - 56, y1: r.bottom }], colour: entry?.colour });
   }
   // Island care: a flower watered yesterday can show a hybrid colour today (care.ts; `?hybrid` in the demo shows one).
-  const today = $derived(localDateAt(clock.getTime()));
+  const today = $derived(dayKey(clock));
   // Birthdays (birthday.ts): ours from the people config (both villagers wear NH's birthday hat, the cake, the
   // confetti, a popper on a goal), and an NH villager's own from the roster's birthdays (a small chunk of its own,
   // loaded with the island, never with the first load or the roster): that villager wears the hat and says so.
@@ -198,8 +199,7 @@
   const hybrid = $derived.by(() => {
     if (!live) return null;
     const row = (r: number) => (r ? BEDS[season].front : BEDS[season].back);
-    const q = new URLSearchParams(location.search);
-    if (q.has('hybrid') && (import.meta.env.DEV || q.has('demo'))) return { cell: '0-1', flower: HYBRIDS[row(0)][0] };
+    if (hookFlag('hybrid')) return { cell: '0-1', flower: HYBRIDS[row(0)][0] };
     return garden(today, addDays(today, -1), (w) => hybridFor(today, w, row)).hybrid;
   });
   // Shaking a tree (TreeShakes): its wasps sting the villager on their side: a fright (a 「！」), then a sweat drop.

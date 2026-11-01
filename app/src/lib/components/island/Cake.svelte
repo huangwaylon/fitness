@@ -8,11 +8,10 @@
   import { minuteNow } from '#lib/time/clock.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
-  import { CENTRE_STAGE } from './scene.ts';
+  import { CENTRE_STAGE, su } from './scene.ts';
   import { blowOut, candlesOut } from './birthday.ts';
 
   let { scene, enabled, on }: { scene?: HTMLElement; enabled: () => boolean; on: boolean } = $props();
-  const U = (n: number) => `calc(${n.toFixed(1)} * var(--su))`;
   /** Its height (u) and where it may stand (its foot): in front of the centre stage, else behind it by the hedge. */
   const CAKE_U = 22;
   const SPOTS: readonly (readonly [number, number])[] = [[CENTRE_STAGE.x, CENTRE_STAGE.base + 30], [CENTRE_STAGE.x - 22, CENTRE_STAGE.base - 70]];
@@ -59,8 +58,8 @@
 </script>
 
 {#if on && spot}
-  <span class="party" bind:this={el} data-cake={out ? 'out' : 'lit'} style:translate="{U(spot[0])} {U(spot[1])}" aria-hidden="true">
-    <span class="cake"><OfficialArt key="deco/birthday-cake" size={U(CAKE_U)} /></span>
+  <span class="party" bind:this={el} data-cake={out ? 'out' : 'lit'} style:translate="{su(spot[0])} {su(spot[1])}" aria-hidden="true">
+    <span class="cake"><OfficialArt key="deco/birthday-cake" size={su(CAKE_U)} /></span>
     {#if !out}
       <!-- the candles' flames, over the five candles of NH's cake -->
       <span class="flames">{#each [-0.32, -0.16, 0, 0.16, 0.32] as dx, i (i)}<i style:--dx={dx} style:--i={i}></i>{/each}</span>

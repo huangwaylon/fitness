@@ -1,7 +1,8 @@
+import type { Box } from './geom.ts';
 import { describe, expect, it } from 'vitest';
 import {
   BIG_ODDS, MAX_FRAGMENTS, STREAK_MS, WISH_MS, addWish, fragmentDay, fragmentsDue, inStarHours, nextShowerMs, showerPlan,
-  streakPath, type Box, type Streak
+  streakPath, type Streak
 } from './stars.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { mulberry32 } from '#lib/random.ts';

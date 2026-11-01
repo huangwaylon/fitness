@@ -133,6 +133,20 @@ export function jstMs(date: LocalDate, hour: number, minute: number): number {
 /** Whole days from `a` to `b`. */
 export const daysBetween = (a: LocalDate, b: LocalDate): number => Math.round((dateMs(b) - dateMs(a)) / DAY_MS);
 
+/** The date of the `n`th `weekday` (0 = Sunday) of a month (1–12). */
+export function nthWeekday(year: number, month: number, weekday: number, n: number): LocalDate {
+  const first = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
+  return ymd(new Date(Date.UTC(year, month - 1, 1 + ((weekday - first + 7) % 7) + (n - 1) * 7)));
+}
+
+/** Western Easter Sunday of a year (the Gregorian computus, Meeus/Jones/Butcher). */
+export function easter(year: number): LocalDate {
+  const a = year % 19, b = Math.floor(year / 100), c = year % 100, d = Math.floor(b / 4), e = b % 4;
+  const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+  return ymd(new Date(Date.UTC(year, Math.floor((h + l - 7 * m + 114) / 31) - 1, ((h + l - 7 * m + 114) % 31) + 1)));
+}
+
 /** Whether a date's `MM-DD` falls in [from, to] (inclusive), handling ranges that wrap past New Year. */
 export function inMonthDayRange(date: LocalDate, from: string, to: string): boolean {
   const md = date.slice(5);

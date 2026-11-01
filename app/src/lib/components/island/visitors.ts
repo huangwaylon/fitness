@@ -7,7 +7,8 @@
 // slot on their day (events.ts): Franklin on Turkey Day (he asks for a fish), Jingle on Toy Day, Pavé at Festivale,
 // Zipper on the first and last days of Bunny Day. On the wedding countdown's milestone days (wedding.ts) Reese and Cyrus
 // come together (one visitor, `reese`, drawn as the pair).
-import { ISLAND_SEED, dayRand } from './beach.ts';
+import { pickOne } from '#lib/random.ts';
+import { ISLAND_SEED, dayRand } from './daySeed.ts';
 import { eventAt, type EventId, type EventNow } from './events.ts';
 import { showerAt } from './meteor.ts';
 import { coupleAt } from './wedding.ts';
@@ -40,7 +41,7 @@ export function visitorAt(date: string, prevDate: string, hour: number, weekday:
 /** A visitor's line on a tap (an i18n key): one of theirs, never the last one again. */
 export function visitorLine(id: VisitorId, r: () => number, last?: string): string {
   const keys = Array.from({ length: VISITOR_LINES }, (_, i) => `chat.sp.${id}.${i}`).filter((k) => k !== last);
-  return keys[Math.floor(r() * keys.length)];
+  return pickOne(keys, r);
 }
 
 /** How long Jack's trick (a goofy face on my villager) lasts. */

@@ -1,5 +1,6 @@
+import type { Box } from './geom.ts';
 import { describe, expect, it } from 'vitest';
-import { ACTION_MS, actionMs, actionSpots, depthZ, facingFor, route, routeLength, segmentClear, walkGeo, walkable, wanderMs, type Box, type Pt, type WalkGeo } from './walkGraph.ts';
+import { ACTION_MS, actionMs, actionSpots, depthZ, facingFor, route, routeLength, segmentClear, walkGeo, walkable, wanderMs, type Pt, type WalkGeo } from './walkGraph.ts';
 import { plan } from './avatar.ts';
 import { BED_ROWS, POND, TREE, VILLAGER } from './scene.ts';
 

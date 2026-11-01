@@ -8,6 +8,7 @@
   // colours, and the present drops onto the island (SceneTaps.svelte draws the fall: this sends it `island:present`
   // with where the present was). No points, no caption. Paused while the page is hidden or covered; reduced
   // motion: none (it ends at once). Night / dawn / dusk: dimmed / warmed like the clouds. The parent mounts it.
+  import { pickOne } from '#lib/random.ts';
   import { onMount } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
@@ -29,7 +30,7 @@
   ];
   const GOLD = ['#F2C33F', '#FFEA9A', '#C28A1C', '#FFF4C4'];
   const gold = Math.random() < 0.05;
-  const [body, light, shade, rim] = gold ? GOLD : COLOURS[Math.floor(Math.random() * COLOURS.length)];
+  const [body, light, shade, rim] = gold ? GOLD : pickOne(COLOURS, Math.random);
   // The breeze blows either way; the altitude varies within whatever room the lane has to spare.
   const ltr = Math.random() < 0.5;
   const alt = Math.random();

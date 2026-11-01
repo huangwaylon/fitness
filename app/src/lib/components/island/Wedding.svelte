@@ -4,16 +4,16 @@
   // greet the island in a wedding pose: they turn to each other, bow and glow with hearts, under a burst of confetti
   // (the confetti the first time the island opens that day on this phone). Fireworks at night: IslandScene's sky.
   // Reese and Cyrus are visitors (Visitor.svelte). Decoration only: no taps, no ベル.
+  import { firstOn } from './dayRecord.ts';
   import { onMount } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
-  import { CENTRE_STAGE } from './scene.ts';
-  import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
+  import { CENTRE_STAGE, su } from './scene.ts';
+  import { SCENE } from '#lib/sync/storage.ts';
   import { actors, addFx, later, setEmote, setMotion } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
 
   let { scene, arch, day, date }: { scene?: HTMLElement; arch: boolean; day: boolean; date: string } = $props();
-  const U = (n: number) => `calc(${n.toFixed(1)} * var(--su))`;
   /** The arch: its height (u) and where it stands (its foot), just behind the centre stage. */
   const ARCH_U = 74, ARCH = { x: CENTRE_STAGE.x, y: CENTRE_STAGE.base - 6 };
 
@@ -34,8 +34,7 @@
   // the day itself: the wedding pose on opening, and the confetti once a day on this phone
   onMount(() => {
     if (!day) return;
-    const first = readJson<string>(localKV(), SCENE.wedding) !== date;
-    if (first) writeJson(localKV(), SCENE.wedding, date);
+    const first = firstOn(SCENE.wedding, date);
     const t = setTimeout(() => {
       for (const id of ['mine', 'partner'] as const) {
         actors[id].face = 'in';
@@ -53,7 +52,7 @@
 
 {#if arch && archOk}
   <div class="wedding" aria-hidden="true">
-    <span class="arch" data-arch style:translate="{U(ARCH.x)} {U(ARCH.y)}"><OfficialArt key="deco/wedding-arch" size={U(ARCH_U)} /></span>
+    <span class="arch" data-arch style:translate="{su(ARCH.x)} {su(ARCH.y)}"><OfficialArt key="deco/wedding-arch" size={su(ARCH_U)} /></span>
   </div>
 {/if}
 

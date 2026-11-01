@@ -2,7 +2,7 @@
 // week before Easter and the day itself) eggs turn up where NH hides them: a balloon carries a sky egg instead of its
 // present now and then, a dig spot holds an earth egg, a fish on the line is a water egg. Cosmetic: a caption, never ベル,
 // never a ずかん find. Pure (the dig spot's from the date, so both phones agree; the rest at the moment).
-import { ISLAND_SEED, dayRand } from './beach.ts';
+import { ISLAND_SEED, dayRand } from './daySeed.ts';
 
 /** NH's three eggs the island can hold (earth: dug up; sky: from a balloon; water: on the line). */
 export const EGGS = ['earth-egg', 'sky-egg', 'water-egg'] as const;

@@ -2,7 +2,7 @@
 // at most one a week, and Celeste comes to watch it (20:00–04:00). Shooting stars cross every 3–8 s instead of in a
 // shower every few minutes (stars.ts); each wish is a fragment as any night, the season's zodiac one likelier. Pure
 // and seeded by the week (beach.ts dayRand), so both phones agree. No ベル.
-import { ISLAND_SEED, dayRand } from './beach.ts';
+import { ISLAND_SEED, dayRand } from './daySeed.ts';
 import { addDays, weekKeyOf } from '#lib/time/dates.ts';
 
 /** About one night in ten (NH: Celeste at most once a week): a week has a shower with this chance, on one of its seven

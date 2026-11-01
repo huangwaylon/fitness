@@ -1,8 +1,10 @@
-// What's inside a balloon's present (docs/design.md "Scene interactions", Balloon): NH's balloon presents hold a piece of
+// What's inside a balloon's present (docs/design.md "Balloon"): NH's balloon presents hold a piece of
 // furniture, clothing, a DIY recipe or Bells; here never Bells (scenery never pays), and nothing is kept: it's held up
 // over my villager's head while its plate reads 「◯◯を てにいれた！」, then gone. Pure: the pick takes its random source.
 // Names: `present.name.<id>` in the catch catalogs (i18n/catch.*.json); art: `presents/<id>` (official icons,
 // scripts/fetch-assets.ts), one DIY recipe card for every recipe.
+import { pickOne, weighted } from '#lib/random.ts';
+import { inMonthDayRange } from '#lib/time/dates.ts';
 
 /** A dated window (MM-DD, inclusive; `from` > `to` wraps past New Year). */
 type Window = readonly [string, string];
@@ -57,19 +59,16 @@ export const PRESENTS = {
 } as const satisfies Record<string, Present>;
 export type PresentId = keyof typeof PRESENTS;
 
-const inWindow = ([from, to]: Window, md: string): boolean => (from <= to ? md >= from && md <= to : md >= from || md <= to);
 
 /** What's inside a present opened on `date` (YYYY-MM-DD): in a seasonal recipe window, half the time that season's
  *  recipe; else a piece of furniture or clothing, ×IN_SEASON in its months. `r`: a uniform [0, 1) source. */
 export function pickPresent(date: string, r: () => number): PresentId {
-  const md = date.slice(5), month = Number(date.slice(5, 7));
+  const month = Number(date.slice(5, 7));
   const entries = Object.entries(PRESENTS) as [PresentId, Present][];
-  const recipes = entries.filter(([, p]) => p.kind === 'recipe' && p.window && inWindow(p.window, md));
-  if (recipes.length && r() < RECIPE_SHARE) return recipes[Math.floor(r() * recipes.length)][0];
+  const recipes = entries.filter(([, p]) => p.kind === 'recipe' && p.window && inMonthDayRange(date, ...p.window));
+  if (recipes.length && r() < RECIPE_SHARE) return pickOne(recipes, r)[0];
   const items = entries.filter(([, p]) => p.kind === 'item').map(([id, p]) => [id, (p.weight ?? 1) * (p.months?.includes(month) ? IN_SEASON : 1)] as const);
-  let x = r() * items.reduce((s, [, w]) => s + w, 0);
-  for (const [id, w] of items) if ((x -= w) < 0) return id;
-  return items[items.length - 1][0];
+  return weighted(items, r);
 }
 
 /** Its art: the item's official icon, or NH's DIY recipe card for a recipe. */

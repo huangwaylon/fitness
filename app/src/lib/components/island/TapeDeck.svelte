@@ -6,10 +6,11 @@
   // motion/stretch.svelte.ts), ♪ rising from the deck; once a day per phone, then the deck goes for the day. No ベル.
   // A scene item like the visitors (aria-hidden, a 44px reach): SceneTaps asks it about each tap (`tap`).
   //   ?stretch (dev or ?demo) brings the deck out now.
+  import { hookFlag } from './devHooks.ts';
+  import { su } from './scene.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { cue } from '#lib/sound/cues.ts';
-  import { jst, minuteNow } from '#lib/time/clock.ts';
-  import { localDateAt } from '#lib/time/dates.ts';
+  import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { POSES, POSE_MS, STRETCH_MS, deckOut, sawIsland, stretched } from './stretching.ts';
   import { groupStretch } from '../motion/stretch.svelte.ts';
@@ -23,9 +24,7 @@
   }
   let { scene, enabled, exercise }: Props = $props();
 
-  const q = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
-  const want = (import.meta.env.DEV || q.has('demo')) && q.has('stretch');
-  const U = (n: number) => `calc(${n.toFixed(1)} * var(--su))`;
+  const want = hookFlag('stretch');
 
   /** Where the deck may stand (stage units: x, foot y), in order: on the lawn in front of the hedge, behind centre stage
    *  (between the rock and the back weed spot, clear above a visitor's head), else between the villagers' feet. */
@@ -34,7 +33,7 @@
   const HW = 12.5, UP = 18;
 
   const clock = $derived(minuteNow());
-  const date = $derived(localDateAt(clock.getTime()));
+  const date = $derived(dayKey(clock));
   /** Bumped when today's stretch is done (the deck re-derives). */
   let bump = $state(0);
   let playing = $state(false);
@@ -83,8 +82,8 @@
 </script>
 
 {#if out && spot}
-  <span class="deck" class:playing data-stretch={playing ? 'on' : 'ready'} bind:this={el} style:translate="{U(spot[0])} {U(spot[1])}" aria-hidden="true">
-    <span class="radio"><OfficialArt key="deco/tape-deck" size={U(UP)} /></span>
+  <span class="deck" class:playing data-stretch={playing ? 'on' : 'ready'} bind:this={el} style:translate="{su(spot[0])} {su(spot[1])}" aria-hidden="true">
+    <span class="radio"><OfficialArt key="deco/tape-deck" size={su(UP)} /></span>
     {#if playing}
       <span class="notes" style:--total="{STRETCH_MS}ms">{#each [0, 1, 2, 3] as i (i)}<i style:--i={i}>♪</i>{/each}</span>
     {:else}

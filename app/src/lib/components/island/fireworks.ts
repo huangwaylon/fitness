@@ -4,6 +4,8 @@
 // the sky over the sea behind the island, never over the UI; a tap in the sky during a show sends one more where it
 // was tapped. NH's shapes: round peonies and rings, hearts, stars, a gold willow, and now and then a pixel pattern
 // like the custom-design fireworks Isabelle launches. Pure: the schedule, the shapes and where a burst may open.
+import { hits, type Box } from './geom.ts';
+import { pickOne, weighted } from '#lib/random.ts';
 
 export type Show = 'show' | 'countdown';
 
@@ -56,13 +58,6 @@ const PATTERNS: readonly (readonly string[])[] = [
   ['....#...', '...#....', '.##.##..', '#######.', '#######.', '#######.', '.#####..', '..#.#...']
 ];
 
-const pickOf = <T>(list: readonly T[], r: () => number): T => list[Math.floor(r() * list.length)];
-function weighted(r: () => number): Shape {
-  const total = SHAPES.reduce((s, [, w]) => s + w, 0);
-  let x = r() * total;
-  for (const [s, w] of SHAPES) if ((x -= w) < 0) return s;
-  return 'peony';
-}
 const ring = (n: number, rad: number, c: string, phase = 0): Spark[] =>
   Array.from({ length: n }, (_, i) => {
     const a = phase + (i / n) * Math.PI * 2;
@@ -70,9 +65,9 @@ const ring = (n: number, rad: number, c: string, phase = 0): Spark[] =>
   });
 
 /** A burst for the next shell (unit radius: the caller scales it to the room it has). */
-export function burstPlan(r: () => number, shape: Shape = weighted(r)): Burst {
-  const c1 = pickOf(COLOURS, r);
-  let c2 = pickOf(COLOURS, r);
+export function burstPlan(r: () => number, shape: Shape = weighted(SHAPES, r)): Burst {
+  const c1 = pickOne(COLOURS, r);
+  let c2 = pickOne(COLOURS, r);
   if (c2 === c1) c2 = COLOURS[(COLOURS.indexOf(c1) + 3) % COLOURS.length];
   switch (shape) {
     case 'peony':
@@ -101,7 +96,7 @@ export function burstPlan(r: () => number, shape: Shape = weighted(r)): Burst {
         })
       };
     case 'pattern': {
-      const p = pickOf(PATTERNS, r);
+      const p = pickOne(PATTERNS, r);
       const sparks: Spark[] = [];
       p.forEach((row, y) => [...row].forEach((ch, x) => ch === '#' && sparks.push({ x: (x - 3.5) / 3.8, y: (y - 3.5) / 3.8, c: c1 })));
       return { shape, sparks };
@@ -111,8 +106,6 @@ export function burstPlan(r: () => number, shape: Shape = weighted(r)): Burst {
 
 // ---------- where a burst may open ----------
 
-export interface Box { x0: number; x1: number; y0: number; y1: number }
-const hits = (a: Box, b: Box): boolean => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
 
 /** A burst's room at its biggest and smallest (px radius). */
 export const MAX_R = 58;
@@ -138,7 +131,7 @@ export function burstSpot(sky: Box, avoid: readonly Box[], r: () => number, at?:
     const ok: [number, number][] = [];
     for (let x = sky.x0 + rad; x <= sky.x1 - rad; x += 6) for (let y = sky.y0 + rad; y <= sky.y1 - rad - FALL; y += 6) if (fits(x, y)) ok.push([x, y]);
     if (ok.length) {
-      const [x, y] = ok[Math.floor(r() * ok.length)];
+      const [x, y] = pickOne(ok, r);
       return { x, y, rad };
     }
   }

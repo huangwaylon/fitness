@@ -1,17 +1,12 @@
 // Event music (docs/design.md#event-music): on NH's event days its own track replaces the hourly one, by Tokyo date
 // and hour like the hours (hourly.ts). Pure. The wasps' chase and sting (sound.svelte.ts waspMusic) and K.K.'s songs
 // (kk.ts) cut in over whatever plays and hand back to it.
-import { jst } from '#lib/time/clock.ts';
+import { dayKey, jst } from '#lib/time/clock.ts';
+import { nthWeekday } from '#lib/time/dates.ts';
 
 /** The tracks under static/audio/manifest.json `events.<id>`. */
 export type EventMusicId = 'halloween' | 'turkey-day' | 'happy-new-year' | 'new-year-0am' | 'new-year-2am' | 'new-years-day' | 'bee-chase' | 'bee-stung';
 export const EVENT_MUSIC_IDS: readonly EventMusicId[] = ['halloween', 'turkey-day', 'happy-new-year', 'new-year-0am', 'new-year-2am', 'new-years-day', 'bee-chase', 'bee-stung'];
-
-/** The day of November that is its 4th Thursday (Turkey Day). */
-export function fourthThursday(year: number): number {
-  const weekday = new Date(Date.UTC(year, 10, 1)).getUTCDay();
-  return 1 + ((4 - weekday + 7) % 7) + 21;
-}
 
 /** An event's track for the moment: `id` loops in place of the hour's; `intro` is a one-shot heard first when the
  *  event has only just begun (the midnight jingle). */
@@ -33,7 +28,7 @@ const INTRO_WINDOW_MIN = 2;
 export function eventMusicAt(d: Date): EventMusic | null {
   const { year, month, day, hour, minute } = jst(d);
   if (month === 10 && day === 31 && hour >= 17) return { id: 'halloween' };
-  if (month === 11 && day === fourthThursday(year) && hour >= 9) return { id: 'turkey-day' };
+  if (dayKey(d) === nthWeekday(year, 11, 4, 4) && hour >= 9) return { id: 'turkey-day' };
   if (month === 1 && day === 1) {
     if (hour < 2) return hour === 0 && minute < INTRO_WINDOW_MIN ? { id: 'new-year-0am', intro: 'happy-new-year' } : { id: 'new-year-0am' };
     if (hour < 5) return { id: 'new-year-2am' };

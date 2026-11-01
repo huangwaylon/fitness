@@ -5,7 +5,8 @@
 // villagers/birthdays.ts) puts a hat on that villager and a birthday line in its chats. Pure. No ベル.
 import { PEOPLE } from '#lib/config/rules.ts';
 import type { PersonId } from '#lib/types.ts';
-import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
+import { SCENE } from '#lib/sync/storage.ts';
+import { dayRecord } from './dayRecord.ts';
 
 const leap = (y: number): boolean => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
 
@@ -24,19 +25,13 @@ export const birthdaysOn = (date: string, people: Record<PersonId, { birthday: s
 /** The party hat each person's villager wears (NH's birthday hats: mine pink, the partner's blue). */
 export const HATS = { mine: 'deco/birthday-hat-pink', partner: 'deco/birthday-hat-blue' } as const;
 
-interface Day { date: string; confetti: boolean; candles: boolean }
-
-const read = (date: string): Day => {
-  const d = readJson<Day>(localKV(), SCENE.birthday);
-  return d && d.date === date ? { date, confetti: !!d.confetti, candles: !!d.candles } : { date, confetti: false, candles: false };
-};
+const day = dayRecord(SCENE.birthday, { confetti: false, candles: false });
 /** The birthday's confetti on this phone: true the first time (it then won't burst again that day). */
 export function firstConfetti(date: string): boolean {
-  const d = read(date);
-  if (d.confetti) return false;
-  writeJson(localKV(), SCENE.birthday, { ...d, confetti: true });
+  if (day.read(date).confetti) return false;
+  day.patch(date, { confetti: true });
   return true;
 }
 /** The cake's candles are out on this phone today. */
-export const candlesOut = (date: string): boolean => read(date).candles;
-export const blowOut = (date: string): void => void writeJson(localKV(), SCENE.birthday, { ...read(date), candles: true });
+export const candlesOut = (date: string): boolean => day.read(date).candles;
+export const blowOut = (date: string): void => day.patch(date, { candles: true });

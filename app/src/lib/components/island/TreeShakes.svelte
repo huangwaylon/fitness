@@ -8,9 +8,13 @@
   // for SWARM_MS. A tap on them in time nets one (the net's swing, NH's catch line on the plate, the shared ずかん's
   // wasp); too late and they sting (`onsting`: the scene gives that villager a fright and a sweat drop), then fly off.
   // Nothing here pays ベル. `?shake=nest|branch|bagworm|spider` (dev or ?demo) makes the next shake drop that (the e2e's hook).
+  import CatchPlate from './CatchPlate.svelte';
+  import { cardFor, type CatchCard } from './catchCard.ts';
+  import { pickUp } from '../motion/transitions.ts';
+  import { timers } from './timers.ts';
+  import { hookOneOf } from './devHooks.ts';
   import { onDestroy } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import Plate from './Plate.svelte';
   import type { PersonId } from '#lib/types.ts';
   import { t } from '#lib/i18n/index.ts';
   import { recordFind } from '#lib/store/actions.ts';
@@ -26,7 +30,7 @@
     DANGLE_MS, SWARM_DELAY_MS, SWARM_MS, lastNest, markNest, netsSwarm, shakeDrop, shakenBug, type ShakeDrop
   } from './treeShake.ts';
   import { approach, turnTo } from './avatar.ts';
-  import { HOLD_MS, actors, holdUp, putAway } from '../motion/director.svelte.ts';
+  import { actors } from '../motion/director.svelte.ts';
 
   type Side = 'mine' | 'partner';
   interface Props {
@@ -36,17 +40,8 @@
   }
   let { scene, onsting }: Props = $props();
 
-  const timers = new Set<ReturnType<typeof setTimeout>>();
-  onDestroy(() => {
-    for (const id of timers) clearTimeout(id);
-  });
-  const later = (ms: number, f: () => void) => {
-    const id = setTimeout(() => {
-      timers.delete(id);
-      f();
-    }, ms);
-    timers.add(id);
-  };
+  const { later, clear } = timers();
+  onDestroy(clear);
 
   /** Where things land beside a trunk (u): clear of the canopy's and the fruit row's buttons (the grass between them). */
   const FOOT = TREE.base - 14;
@@ -63,17 +58,12 @@
   let branches = $state<{ n: number; pid: PersonId; x: number; y: number }[]>([]);
   let swarm = $state<{ n: number; side: Side; x0: number; y0: number; x1: number; y1: number; at: number; stung: boolean } | null>(null);
   let net = $state<{ n: number; x: number; y: number } | null>(null);
-  let card = $state<{ n: number; x: number; y: number; text: string | string[]; art: string } | null>(null);
+  let card = $state<CatchCard | null>(null);
   let swarmEl = $state<HTMLElement>();
   let dangler = $state<{ n: number; pid: PersonId; id: 'bagworm' | 'spider'; x: number; y: number; up: boolean } | null>(null);
 
   // the dev hook: the next shake drops this (a bagworm or a spider: that bug)
-  let forced: string | undefined = (() => {
-    if (typeof location === 'undefined') return undefined;
-    const q = new URLSearchParams(location.search);
-    const v = q.get('shake');
-    return (import.meta.env.DEV || q.has('demo')) && v && ['nest', 'branch', 'bagworm', 'spider'].includes(v) ? v : undefined;
-  })();
+  let forced: string | undefined = hookOneOf('shake', ['nest', 'branch', 'bagworm', 'spider']) ?? undefined;
 
   /** A shake of `pid`'s tree, standing on `slot` (A: the left, beside my villager; B: the right, the partner's). */
   export function shaken(pid: PersonId, slot: 'A' | 'B') {
@@ -92,18 +82,18 @@
       if (url) new Image().src = url;
       const d = { n: ++seq, pid, id, x: tx + out * DANGLE_DX, y: DANGLE_Y, up: false };
       dangler = d;
-      later(DANGLE_MS, () => dangler?.n === d.n && (dangler = { ...d, up: true }));
-      later(DANGLE_MS + 900, () => dangler?.n === d.n && (dangler = null));
+      later(() => dangler?.n === d.n && (dangler = { ...d, up: true }), DANGLE_MS);
+      later(() => dangler?.n === d.n && (dangler = null), DANGLE_MS + 900);
     } else if (drop === 'branch') {
       branches = [...branches, { n: ++seq, pid, x: tx - out * BRANCH_DX, y: FOOT }];
-      later(520, () => sceneSfx('twig'));
+      later(() => sceneSfx('twig'), 520);
     } else if (drop === 'nest') {
       markNest(pid, now);
       void loadLines().catch(() => {});
       const nest = { n: ++seq, pid, x: tx + out * NEST_DX, y: FOOT, fading: false };
       nests = [...nests, nest];
-      later(560, () => (sceneSfx('nest'), waspMusic('nest')));
-      later(560 + SWARM_DELAY_MS, () => charge(nest.n, nest.x, nest.y - 10, slot));
+      later(() => (sceneSfx('nest'), waspMusic('nest')), 560);
+      later(() => charge(nest.n, nest.x, nest.y - 10, slot), 560 + SWARM_DELAY_MS);
     }
   }
 
@@ -114,7 +104,7 @@
     // my villager walks over with the net (avatar.ts); caught at the tap, swung on arrival
     netting = true;
     const { ms } = approach(d.x, d.y, { tool: 'net', toolMs: 450 });
-    later(ms, () => swingAt(d));
+    later(() => swingAt(d), ms);
   }
   let netting = false;
   function swingAt(d: NonNullable<typeof dangler>) {
@@ -122,15 +112,14 @@
     if (dangler === d) dangler = null;
     net = { n: ++seq, x: d.x, y: d.y };
     sceneSfx('net');
-    later(420, () => (net = null));
-    later(160, async () => {
+    later(() => (net = null), 420);
+    later(async () => {
       sceneSfx('catch');
       const added = recordFind('bug', d.id);
       const n = ++seq;
       const text = await catchLine(d.id as BugId);
-      card = { n, x: d.x, y: d.y, text: added ? [text, t('zukan.added')] : text, art: critterArt(d.id) };
-      holdUp('mine', critterArt(d.id), HOLD_MS);
-    });
+      card = cardFor(n, d.x, d.y, critterArt(d.id), text, added);
+    }, 160);
   }
 
   function charge(nestN: number, x: number, y: number, slot: 'A' | 'B') {
@@ -142,20 +131,20 @@
     swarm = { n, side, x0: x, y0: y, x1: vx, y1: vy - VILLAGER.h * 0.78, at: performance.now(), stung: false };
     sceneSfx('buzz');
     waspMusic('chase'); // NH's Chased by Bees cuts in over the island's music
-    later(SWARM_MS, () => {
+    later(() => {
       if (swarm?.n !== n) return;
       swarm = { ...swarm, stung: true };
       sceneSfx('sting');
       waspMusic('stung');
       onsting?.(side);
-      later(900, () => swarm?.n === n && (swarm = null));
+      later(() => swarm?.n === n && (swarm = null), 900);
       fadeNest(nestN);
-    });
+    }, SWARM_MS);
   }
 
   function fadeNest(n: number) {
-    later(1200, () => (nests = nests.map((s) => (s.n === n ? { ...s, fading: true } : s))));
-    later(1800, () => (nests = nests.filter((s) => s.n !== n)));
+    later(() => (nests = nests.map((s) => (s.n === n ? { ...s, fading: true } : s))), 1200);
+    later(() => (nests = nests.filter((s) => s.n !== n)), 1800);
   }
 
   /** A tap on the swarm: netted while it's on its way. */
@@ -171,25 +160,17 @@
     waspMusic('caught');
     const nest = nests.find((ns) => !ns.fading);
     if (nest) fadeNest(nest.n);
-    later(420, () => (net = null));
-    later(160, async () => {
+    later(() => (net = null), 420);
+    later(async () => {
       sceneSfx('catch');
       const added = recordFind('bug', 'wasp');
       const n = ++seq;
       const text = await catchLine('wasp');
-      card = { n, x, y, text: added ? [text, t('zukan.added')] : text, art: critterArt('wasp') };
-      holdUp('mine', critterArt('wasp'), HOLD_MS);
-    });
+      card = cardFor(n, x, y, critterArt('wasp'), text, added);
+    }, 160);
   }
 
   /** NH's pick-up: a hop and gone. */
-  function pickUp(_el: Element) {
-    return {
-      duration: 340,
-      css: (tt: number, v: number) =>
-        `transform: translateY(${(-60 * Math.sin(v * Math.PI * 0.6)).toFixed(1)}%) scale(${(1 - 0.7 * v * v).toFixed(3)}); opacity: ${Math.min(1, tt * 3).toFixed(2)}`
-    };
-  }
   /** Branches my villager is walking to. */
   const going = new Set<number>();
   /** My villager walks over (avatar.ts) and picks the branch up. */
@@ -198,11 +179,11 @@
     if (!b || going.has(n)) return;
     going.add(n);
     const { ms } = approach(b.x, b.y, { motion: 'squish' });
-    later(ms, () => {
+    later(() => {
       going.delete(n);
       sceneSfx('twig');
       branches = branches.filter((x) => x.n !== n);
-    });
+    }, ms);
   }
 </script>
 
@@ -278,10 +259,7 @@
       </span>
     {/key}
   {/if}
-  {#if card}
-    {@const c = card}
-    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.text} ondone={() => card?.n === c.n && ((card = null), putAway('mine'))} />{/key}
-  {/if}
+  <CatchPlate {scene} bind:card />
 </div>
 
 <style>

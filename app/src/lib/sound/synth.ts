@@ -4,7 +4,7 @@
 // are plain arpeggios and the announcement chime is the generic Japanese PA ピンポンパンポン (F-A-C-F).
 // A file in static/audio/manifest.json replaces the placeholder of its id.
 import type { SoundId } from './ids.ts';
-import { mulberry32 } from '#lib/random.ts';
+import { seeded } from '#lib/random.ts';
 
 type Wave = 'sine' | 'tri' | 'sq';
 
@@ -261,7 +261,6 @@ const RECIPES: Record<SoundId, Ev[]> = {
   ]
 };
 
-const seedOf = (s: string) => [...s].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261);
 
 const wave = (w: Wave, ph: number) => {
   const s = Math.sin(2 * Math.PI * ph);
@@ -321,7 +320,7 @@ export const durationOf = (id: SoundId): number => Math.max(...RECIPES[id].map((
 /** The placeholder of `id` as mono samples at `sr`, peaking at 0.8, with a 5 ms fade at the end (no click). */
 export function render(id: SoundId, sr: number): Float32Array {
   const out = new Float32Array(Math.ceil(durationOf(id) * sr));
-  const rand = mulberry32(seedOf(id));
+  const rand = seeded(id);
   for (const e of RECIPES[id]) {
     if (e.kind === 'tone') addTone(out, sr, e);
     else addNoise(out, sr, e, rand);

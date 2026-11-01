@@ -13,26 +13,29 @@
   // the clock is the scene's minute tick.
   //   ?find=bottle | fragment | mushroom | rare-mushroom (dev or ?demo): a bottle, this morning's fragments, a mushroom
   //   now, or the next dig spot's rare mushroom (the e2e's hooks); ?seed= varies the island's seed.
+  import CatchPlate from './CatchPlate.svelte';
+  import { cardFor, type CatchCard } from './catchCard.ts';
+  import { timers } from './timers.ts';
+  import { hook, islandSeed } from './devHooks.ts';
+  import { su } from './scene.ts';
   import { onMount, tick } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import Plate from './Plate.svelte';
   import { t } from '#lib/i18n/index.ts';
-  import { jst, minuteNow, now } from '#lib/time/clock.ts';
-  import { addDays, localDateAt } from '#lib/time/dates.ts';
+  import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
+  import { addDays } from '#lib/time/dates.ts';
   import { recordFind } from '#lib/store/actions.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { loadNames } from './catchLine.ts';
   import { guardsU, clearAt, place, stageGeo } from './placement.ts';
-  import { ISLAND_SEED, bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
+  import { bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
   import { take, takenOn, wish as addWish, wishes } from './sceneDay.ts';
   import { fragmentDay, fragmentsDue } from './stars.ts';
   import { showerNight } from './meteor.ts';
-  import { eggTime, eventAt, forcedEvent } from './events.ts';
+  import { eggTime, eventNow } from './events.ts';
   import { eggInDig } from './eggs.ts';
   import { MUSHROOM_SPOTS, mushroomsOn, rareMushroom, type Mushroom } from './mushrooms.ts';
   import { approach } from './avatar.ts';
   import { pickPresent, presentArt, presentLine } from './presents.ts';
-  import { HOLD_MS, holdUp, putAway } from '../motion/director.svelte.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -41,12 +44,9 @@
   }
   let { scene, enabled }: Props = $props();
 
-  const q = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
-  const hooks = import.meta.env.DEV || q.has('demo');
-  const seed = (hooks && q.get('seed')) || ISLAND_SEED;
-  const want = hooks ? q.get('find') : null;
+  const seed = islandSeed();
+  const want = hook('find');
 
-  const U = (n: number) => `calc(${n.toFixed(1)} * var(--su))`;
   /** A present's confetti: [angle from straight up, colour, distance (u)], wrapping-paper colours. */
   const CONFETTI: [number, string, number][] = [[-84, '#F2484A', 28], [-62, '#FFD23F', 34], [-40, '#4FC3F7', 31], [-18, '#8BD45B', 37],
     [4, '#F78FB3', 33], [24, '#FFD23F', 36], [46, '#F2484A', 30], [68, '#4FC3F7', 29], [86, '#8BD45B', 26], [-50, '#FFFFFF', 24],
@@ -63,7 +63,7 @@
   let holdTimer: ReturnType<typeof setTimeout> | undefined;
 
   const clock = $derived(minuteNow());
-  const date = $derived(localDateAt(clock.getTime()));
+  const date = $derived(dayKey(clock));
   const msOfDay = $derived.by(() => {
     const { hour, minute } = jst(clock);
     return (hour * 60 + minute) * 60_000 + clock.getSeconds() * 1000;
@@ -107,7 +107,7 @@
   const rare = (s: DigSpot): boolean => want === 'rare-mushroom' || rareMushroom(date, s.uid, seed);
   /** Whether a dig spot holds Bunny Day's earth egg (its celebrations only; `?find=earth-egg`: every one). */
   const egg = (s: DigSpot): boolean =>
-    want === 'earth-egg' || (eggTime(eventAt(date, jst(now()).hour, forcedEvent())) && eggInDig(date, s.uid, seed));
+    want === 'earth-egg' || (eggTime(eventNow()) && eggInDig(date, s.uid, seed));
   const fragments = $derived.by<Fragment[]>(() => {
     void taken;
     const gone = takenOn(date);
@@ -131,31 +131,19 @@
   interface Lift { n: number; x: number; y: number; art: string; tilt: number }
   /** `held`: the shovel is in my villager's hand (no floating one). */
   interface Dig { n: number; x: number; y: number; held?: boolean }
-  interface Card { n: number; x: number; y: number; art: string; parts: string[] }
   let lift = $state<Lift | null>(null);
   let dig = $state<Dig | null>(null);
-  let card = $state<Card | null>(null);
+  let card = $state<CatchCard | null>(null);
   let seq = 0;
-  const timers = new Set<ReturnType<typeof setTimeout>>();
-  function later(fn: () => void, ms: number) {
-    const id = setTimeout(() => {
-      timers.delete(id);
-      fn();
-    }, ms);
-    timers.add(id);
-  }
-  $effect(() => () => {
-    for (const id of timers) clearTimeout(id);
-    timers.clear();
-  });
+  const { later, clear } = timers();
+  $effect(() => clear);
 
   /** The plate, `delay` ms after the tap; a first find of its kind gets a second page saying it's in the ずかん. */
   function plate(x: number, y: number, art: string, text: () => string, delay = 0, added = false, hold = true) {
     const n = ++seq;
     const names = loadNames().catch(() => {});
     later(() => void names.then(() => {
-      card = { n, x, y, art, parts: added ? [text(), t('zukan.added')] : [text()] };
-      if (hold) holdUp('mine', art, HOLD_MS);
+      card = cardFor(n, x, y, art, text(), added, hold);
     }), delay);
   }
   function pickUp(uid: string, x: number, y: number, art: string, tilt: number) {
@@ -328,42 +316,42 @@
   {#each visibleSpots as s (s.uid)}
     <!-- NH's dig spot: a dark, uneven star-shaped crack in the soil (jagged arms of unequal length, little side cracks),
          a lighter lip of earth under each, foreshortened -->
-    <span class="item spot" data-find="fossil" style:translate="{U(s.x)} {U(s.y)}">
+    <span class="item spot" data-find="fossil" style:translate="{su(s.x)} {su(s.y)}">
       <svg viewBox="-10 -10 20 20">
         <path class="lip" d={CRACK} transform="translate(0 .8)" /><path class="crack" d={CRACK} />
       </svg>
     </span>
   {/each}
   {#each visibleMushrooms as m (m.uid)}
-    <span class="item mush" class:flip={m.flip} data-find="mushroom" data-id={m.id} style:translate="{U(m.x)} {U(m.y)}">
+    <span class="item mush" class:flip={m.flip} data-find="mushroom" data-id={m.id} style:translate="{su(m.x)} {su(m.y)}">
       <OfficialArt key={findArt(m.id)} size="calc(13 * var(--su))" />
     </span>
   {/each}
   {#each presents as p (p.uid)}
-    <span class="item gift" data-find="present" style:translate="{U(p.x)} {U(p.y)}"><OfficialArt key={p.art} size={U(p.size)} eager /></span>
+    <span class="item gift" data-find="present" style:translate="{su(p.x)} {su(p.y)}"><OfficialArt key={p.art} size={su(p.size)} eager /></span>
   {/each}
   {#each shells as s (s.uid)}
-    <span class="item shell" class:fresh={fresh(s.uid)} data-find="shell" data-id={s.id} style:translate="{U(s.x)} {U(s.y)}" style:--tilt="{s.tilt}deg">
+    <span class="item shell" class:fresh={fresh(s.uid)} data-find="shell" data-id={s.id} style:translate="{su(s.x)} {su(s.y)}" style:--tilt="{s.tilt}deg">
       <OfficialArt key={findArt(s.id)} size="calc(14 * var(--su))" />
     </span>
   {/each}
   {#each fragments as f, k (f.uid)}
     <!-- NH's beach glimmer: a star fragment twinkles now and then (every 3–5 s, out of step) -->
-    <span class="item frag" data-find="fragment" data-id={f.id} style:translate="{U(f.x)} {U(f.y)}" style:--tw="{3 + ((k * 7) % 5) * 0.5}s" style:--twd="{-k * 1.3}s">
+    <span class="item frag" data-find="fragment" data-id={f.id} style:translate="{su(f.x)} {su(f.y)}" style:--tw="{3 + ((k * 7) % 5) * 0.5}s" style:--twd="{-k * 1.3}s">
       <OfficialArt key={findArt(f.id)} size="calc(12 * var(--su))" />
       <svg class="twinkle" viewBox="0 0 24 24"><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>
     </span>
   {/each}
   {#if bottle}
     <!-- at the water's edge, half in the foam: it rocks with the waves, a small ring of foam now and then -->
-    <span class="item bottle" data-find="bottle" style:translate="{U(bottle.x)} {U(bottle.y)}">
+    <span class="item bottle" data-find="bottle" style:translate="{su(bottle.x)} {su(bottle.y)}">
       <i class="foam"></i>
       <span class="rock"><OfficialArt key={findArt('message-bottle')} size="calc(15 * var(--su))" /></span>
     </span>
   {/if}
   {#if dig}
     {#key dig.n}
-      <span class="item digfx" style:translate="{U(dig.x)} {U(dig.y)}">
+      <span class="item digfx" style:translate="{su(dig.x)} {su(dig.y)}">
         <i class="hole"></i>
         <!-- two strikes of the shovel, a burst of earth on each -->
         {#each [0, 1] as k (k)}{#each [-1, 0, 1] as dx, i (i)}<i class="clod" style:--dx={dx + k * 0.3} style:--i={i} style:--k={k}></i>{/each}{/each}
@@ -374,18 +362,18 @@
   {#if opening}
     {#key opening.n}
       <!-- the present pops open: the box squashes and its lid flies off, confetti and sparkles burst out -->
-      <span class="item opening" data-fx="present-open" style:translate="{U(opening.x)} {U(opening.y)}">
-        <span class="box"><OfficialArt key={opening.art} size={U(opening.size)} eager /></span>
-        {#each CONFETTI as [a, c, d], i (i)}<i class="bit" style:--a="{a}deg" style:--c={c} style:--d={U(d)} style:--i={i}></i>{/each}
+      <span class="item opening" data-fx="present-open" style:translate="{su(opening.x)} {su(opening.y)}">
+        <span class="box"><OfficialArt key={opening.art} size={su(opening.size)} eager /></span>
+        {#each CONFETTI as [a, c, d], i (i)}<i class="bit" style:--a="{a}deg" style:--c={c} style:--d={su(d)} style:--i={i}></i>{/each}
         {#each [[-12, -14, 0], [11, -18, 1], [2, -24, 2]] as [dx, dy, k] (k)}
-          <svg class="pop-spark" viewBox="0 0 24 24" style:--dx={U(dx)} style:--dy={U(dy)} style:--k={k}><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>
+          <svg class="pop-spark" viewBox="0 0 24 24" style:--dx={su(dx)} style:--dy={su(dy)} style:--k={k}><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>
         {/each}
       </span>
     {/key}
   {/if}
   {#if lift}
     {#key lift.n}
-      <span class="item lift" style:translate="{U(lift.x)} {U(lift.y)}" style:--tilt="{lift.tilt}deg"><OfficialArt key={lift.art} size="calc(14 * var(--su))" eager /></span>
+      <span class="item lift" style:translate="{su(lift.x)} {su(lift.y)}" style:--tilt="{lift.tilt}deg"><OfficialArt key={lift.art} size="calc(14 * var(--su))" eager /></span>
     {/key}
   {/if}
 </div>
@@ -394,10 +382,7 @@
   {#if note}
     {#key note.n}<span class="wish" class:placed={note.placed} data-fx="wish-note" bind:this={noteEl} style:left="{note.x}px" style:top="{note.y}px">{t('beach.wish')}</span>{/key}
   {/if}
-  {#if card}
-    {@const c = card}
-    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.parts} ondone={() => card?.n === c.n && ((card = null), putAway('mine'))} />{/key}
-  {/if}
+  <CatchPlate {scene} bind:card />
 </div>
 
 <style>

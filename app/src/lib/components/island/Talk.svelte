@@ -17,7 +17,8 @@
   // `ondone` runs once the box closes (tapped away, answered or read through; at once when there's no room for it),
   // not when a new line replaces it.
   import { tick } from 'svelte';
-  import { TAIL_IN, placeBy, type Box, type Side } from './placement.ts';
+  import type { Box } from './geom.ts';
+  import { TAIL_IN, placeBy, type Side } from './placement.ts';
   import { TYPE_MS, arrow, paginate, split, tagInk, tapBox, typeOne, typing, type Choice, type PagerState } from './pager.ts';
 
   let { scene }: { scene?: HTMLElement } = $props();
