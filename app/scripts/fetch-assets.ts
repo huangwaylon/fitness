@@ -62,46 +62,15 @@ const SPECS: Record<string, Spec> = {
   // Money UI.
   'money/bells': [128, '99k_Bells_NH_Inv_Icon.png'],
   'money/leaf': [128, 'Leaf_NH_Icon.png'],
-  // Trees: the hardwood in its four seasonal looks. The seasonal sources are only 329×409, so they ship at full
-  // resolution (never upscaled: the orchard draws them ≤ 104u ≈ 315 device px); summer has a big
-  // source and ships at 2× the drawn size.
-  'trees/oak-spring': [409, 'Oak_Tree_NH_Spring.png'],
-  'trees/oak-summer': [640, 'Oak_Tree_NH.png'],
-  'trees/oak-fall': [409, 'Oak_Tree_NH_Fall.png'],
-  'trees/oak-winter': [409, 'Oak_Tree_NH_Winter.png'],
-  // the beach's palms and the cliff's cedars: the official renders, trimmed to the tree (TRIM)
-  'trees/palm': [360, 'Palm_Tree_NH.png'],
-  'trees/cedar': [420, 'Cedar_Tree_NH.png'],
-  // The hedge (docs/design.md#world) uses the 3D catalog renders (`*_Bush_NH_Icon`,
-  // 128 px, the largest Nookipedia has), trimmed to the figure (TRIM), one species per season, two colours.
-  'bushes/pink-azalea': [128, 'Pink-Azalea_Bush_NH_Icon.png'],
-  'bushes/white-azalea': [128, 'White-Azalea_Bush_NH_Icon.png'],
-  'bushes/blue-hydrangea': [128, 'Blue-Hydrangea_Bush_NH_Icon.png'],
-  'bushes/pink-hydrangea': [128, 'Pink-Hydrangea_Bush_NH_Icon.png'],
-  'bushes/red-hibiscus': [128, 'Red-Hibiscus_Bush_NH_Icon.png'],
-  'bushes/yellow-hibiscus': [128, 'Yellow-Hibiscus_Bush_NH_Icon.png'],
-  'bushes/orange-tea-olive': [128, 'Orange-Tea-Olive_Bush_NH_Icon.png'],
-  'bushes/yellow-tea-olive': [128, 'Yellow-Tea-Olive_Bush_NH_Icon.png'],
-  'bushes/holly': [128, 'Holly_Bush_NH_Icon.png'],
-  'bushes/pink-camellia': [128, 'Pink-Camellia_Bush_NH_Icon.png'],
-  'bushes/red-camellia': [128, 'Red-Camellia_Bush_NH_Icon.png'],
+  // The trees, the hedge's and the campsite's bushes, the campsite, the lamps and the rocks are NH's own models rendered by
+  // scripts/models.ts (source "rendered"). NH has no model of the plumeria: its catalog renders (128 px, trimmed: TRIM).
   'bushes/white-plumeria': [128, 'White-Plumeria_Bush_NH_Icon.png'],
   'bushes/pink-plumeria': [128, 'Pink-Plumeria_Bush_NH_Icon.png'],
   // Island decorations.
-  // NH's map icons (320×256 at one scale: never upscaled, so trimmed (TRIM) they still match, each standing on its
-  // slab's bottom edge): the airport (the pairing page) and the campsite (the island's one building)
+  // NH's map icon of the airport (the pairing page; 320 px, trimmed: TRIM)
   'deco/airport': [320, 'Airport_(Blue)_NH_Map_Icon.png'],
-  'deco/campsite': [320, 'Campsite_NH_Map_Icon.png'],
   // the paths' furniture (NH's catalog icons, trimmed: TRIM)
-  'deco/streetlamp': [128, 'Streetlamp_NH_Icon.png'],
   'deco/campsite-sign': [128, 'Campsite_Sign_NH_Icon.png'],
-  // phase 3's decor (world.ts SCENERY): garden lanterns, NH's bamboo (its catalog icon is the only render),
-  // garden rocks
-  'deco/garden-lantern': [128, 'Garden_Lantern_NH_Icon.png'],
-  'deco/garden-lantern-white': [128, 'Garden_Lantern_(White)_NH_Icon.png'],
-  'trees/bamboo': [128, 'Bamboo_Tree_NH_Icon.png'],
-  'deco/garden-rock': [128, 'Garden_Rock_NH_Icon.png'],
-  'deco/flat-rock': [128, 'Flat_Garden_Rock_NH_Icon.png'],
   'deco/present': [96, 'Present_NH_Inv_Icon.png'],
   // Halloween (Oct 31): NH's orange pumpkin by day, the orange spooky lantern (a jack-o'-lantern) from 17:00, the candy
   // Jack is given; Jack himself (the 3D model: his NH artwork is a small crop; a visitor only, so not in the roster).
@@ -226,8 +195,8 @@ for (const f of ['Pink Hyacinths', 'Purple Hyacinths', 'White Hyacinths', 'White
 SPECS['presents/diy-recipe'] = [96, 'DIY_Recipe_NH_Inv_Icon.png'];
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
  *  scene sizes are true to the tile unit (docs/design.md#world). */
-const TRIM = ['bushes/', 'flowers/', 'finds/rock', 'deco/pumpkin', 'deco/spooky-lantern', 'deco/tape-deck', 'deco/wedding-arch', 'deco/birthday-', 'deco/party-popper', 'trees/palm', 'trees/cedar',
-  'deco/airport', 'deco/campsite', 'deco/streetlamp', 'deco/campsite-sign', 'deco/garden-', 'trees/bamboo', 'deco/flat-rock', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
+const TRIM = ['bushes/', 'flowers/', 'finds/rock', 'deco/pumpkin', 'deco/spooky-lantern', 'deco/tape-deck', 'deco/wedding-arch', 'deco/birthday-', 'deco/party-popper',
+  'deco/airport', 'deco/campsite-sign', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
 /** Villager renders are trimmed too (not the round icons; Hamlet's padded render is cropped by lib/art.ts BOX). */
 const trims = (key: string) =>
   TRIM.some((p) => key.startsWith(p)) || (key.startsWith('villagers/') && !key.endsWith('-icon') && key !== 'villagers/hamlet');
@@ -366,7 +335,7 @@ async function main() {
   console.log(`${Object.keys(SPECS).length} assets, ${todo.length} to fetch`);
   // Drop manifest entries (and files) the UI no longer uses.
   for (const [key, e] of Object.entries(manifest.files)) {
-    if (SPECS[key] || e.source.startsWith('derived')) continue; // derived art is scripts/derive-art.ts's
+    if (SPECS[key] || e.source.startsWith('derived') || e.source.startsWith('rendered')) continue; // derive-art.ts's and models.ts's
     rmSync(join(OUT, e.path), { force: true });
     delete manifest.files[key];
   }

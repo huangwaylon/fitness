@@ -310,12 +310,10 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   behind a bamboo lattice fence between Able Sisters and the museum, garden lanterns, a corral fence on the upper tier.
   `scenery.test` keeps every piece off the water, the paths, the footprints and the features' spots, and the walk
   reaching every door; bamboo and rocks are obstacles like the trees.
-- **Winter and night looks** (`scripts/derive-art.ts`, `npm run assets:derive`): NH has no snowy renders of the
-  buildings or the cedar, so each is derived from its official render, cut as the shipped one: the roof's (and the
-  signs', chimney's, awning's, posts') regions found by colour from seeds, snow laid from their top edges with a pile
-  into the air, drips over the eaves and the lip's shade below (`<art>-winter`, `trees/cedar-winter`); the windows'
-  glass found the same way lights up warm with a halo (`<art>-lit`), laid over the building at dusk (.7) and night,
-  over the tint (as the fireflies) like the lamps' glow (`deco/lamp-glow`, drawn).
+- **Winter and night looks** (`scripts/models.ts`, [Official art](#official-art)): NH's own snowy models (the campsite,
+  the trees, the bushes: `<art>-winter`) and the models' emissive light (the campsite's lantern and door, the lamps'
+  glass: `<art>-lit`), laid over at dusk (.7) and night, over the tint (as the fireflies), with the lamps' glow
+  (`deco/lamp-glow`, drawn: `scripts/derive-art.ts`).
 - **Sizes** (`scene.ts`): villager 80u · hardwood 120u · cedar 140–150u · palm ~110u · bush 34–40u · flower 30u ·
   hanging fruit 20u · ground fruit 24u.
 - **Fixed outside the log:** the sky (to the horizon), the HUD, the weather, the fireworks and the shooting stars;
@@ -894,6 +892,23 @@ screen; WebP, never upscaled. Manifest and helpers `lib/art.ts` (the build packs
 with the picker; `lib/villagers/look.ts`: ids, facing, defaults goldie and anchovy), host (しずえ, たぬきち), fruit,
 trees, bushes, flowers, particles, reactions, money, deco, critters, finds, presents. Ours: sky, sea, ground, the jar,
 effects, marks, UI sprites. Names follow the Japanese game; no Nintendo fonts.
+
+**The 3D renders** (`scripts/models.ts`, `scripts/models-page.js`, `npm run models`): what NH has a model of is drawn
+from it rather than from a Nookipedia icon: the campsite (its tent and deck; the door's foot on world.ts's door
+line), the trees (the oak in its four looks: spring is NH's cherry-blossom model, summer and fall are the same model
+tinted by its gradient's rows for the time of year, winter NH's snowy model; the cedar, palm and bamboo with their
+snowy models), the hedge's eleven bushes in bloom (the colour a row of the flowers' gradient; winter NH's snowy bush),
+the streetlamp and the garden lanterns (with `-lit`: the glass alone, lit, for dusk and night) and the garden and flat
+rocks. Each is rendered by
+three.js in the installed Chrome from the world's view (orthographic, 30° down), lit NH-style (a soft sky, a warm key
+from the upper left with soft shadows, a cool fill), its materials rebuilt from the model's textures (albedo or gray
+albedo × gradient, two-channel normals, the _Mix map's roughness and occlusion, per-material emissive weights), at
+about 3 px per world unit of the height it's drawn at. Every look of one thing shares one crop, so they lay over one
+another. Outputs keep the scene's art keys (`trees/oak-summer`, `bushes/holly`, `deco/campsite`…) plus their looks:
+`-winter` (the scene picks it in winter when it exists), `-lit`, and the oak's `-trunk` / `-canopy` layers (its two
+nodes, a villager between them). `island/models.json` holds where each stands (its feet or door point as fractions of
+the image, `Scenery`'s anchor) and its size in model units. NH has no model of the plumeria or the campsite sign: those stay catalog icons. The pipeline
+also has NH's fences, benches, signposts and bridges (top-down, for the terrain bake) when the world wants them.
 
 ## Sound
 

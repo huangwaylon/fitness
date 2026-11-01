@@ -312,10 +312,12 @@ Wilbur stands on the dock while the partner's app is open (the relay's presence 
 partner's villager replays my tap-to-walks. Why: NH-faithful, and no new UI.
 
 
-### Snowy roofs and lit windows are derived from the official renders
-NH has no winter or night renders of the buildings (Nookipedia's map icons come in one look) nor of the cedar, so
-`scripts/derive-art.ts` derives them from the official art: snow laid on the regions it finds by colour, the windows'
-glass lit warm. Overlaid SVG shapes (the museum's old roof snow) never matched a roofline; the derived art lays over
-its render pixel for pixel. The ground's petals, leaves and snow are ours like all terrain, in their own looks (the
-blossom days and the fall foliage get their own chunk sets), so only the day's look loads. Why: official art wherever
-it exists, and the user asked for a polished, detailed look over plain shapes.
+### The scenery is NH's own models, rendered
+The campsite, the trees, the bushes, the lamps and the rocks are NH's 3D models (Collada, from the game files the user
+supplied) rendered to sprites at the world's view by `scripts/models.ts`, in place of Nookipedia's icons and map icons.
+NH's snowy models and the models' emissive light give the winter and night looks that `derive-art.ts` used to paint
+onto the icons; each tree's gradient gives its seasons; an oak renders as trunk and canopy layers. Pre-rendered, not
+drawn at runtime: the world stays DOM sprites with no WebGL, no runtime cost and the same lazy loading, at ~3 px per
+unit (a WebGL layer would add ~145 KB of three.js, megabytes of models and a frame on every scroll, and couldn't
+interleave with the DOM sprites' depth order). The model files never enter the repo, only the renders. Why: the user
+asked for the game's own models ("let's use them going forward"), and they read as one family at every season.
