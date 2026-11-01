@@ -43,12 +43,19 @@ export const isFind = (d: Record<string, unknown>): boolean => isFindKind(d.kind
  */
 export type ActivityMetric = 'steps' | 'exercise_min' | 'move_kcal' | 'stand_min';
 /**
+ * The body metrics besides weight, from Apple Health's body measurements (the Shortcut's `body_fat`, `bmi`,
+ * `lean_mass`), each with one decimal: `body_fat_pct` Body Fat Percentage in %, `bmi` Body Mass Index (no unit),
+ * `lean_kg` Lean Body Mass in kg. Trends only, like weight: they never earn ベル; a day's value is its latest row.
+ */
+export type BodyMetric = 'body_fat_pct' | 'bmi' | 'lean_kg';
+/**
  * `weight`: body weight in kg with one decimal. A trend only: it never earns ベル; a day's value is its latest row,
  * like the activity metrics.
  */
-export type MetricKey = ActivityMetric | 'weight';
+export type MetricKey = ActivityMetric | 'weight' | BodyMetric;
 export const isActivityMetric = (v: unknown): v is ActivityMetric => v === 'steps' || v === 'exercise_min' || v === 'move_kcal' || v === 'stand_min';
-export const isMetricKey = (v: unknown): v is MetricKey => v === 'weight' || isActivityMetric(v);
+export const isBodyMetric = (v: unknown): v is BodyMetric => v === 'body_fat_pct' || v === 'bmi' || v === 'lean_kg';
+export const isMetricKey = (v: unknown): v is MetricKey => v === 'weight' || isActivityMetric(v) || isBodyMetric(v);
 
 /**
  * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`,
@@ -91,7 +98,14 @@ export const METRIC_BOUNDS = { steps: 100_000, exercise_min: 1_440, move_kcal: 1
 /** A plausible body weight in kg (inclusive): ingest skips anything else, a `goalWeight` outside it is refused. */
 export const WEIGHT_KG = { min: 20, max: 300 } as const;
 
-/** kg to one decimal (how weights are stored). */
+/** A plausible value of each body metric (inclusive): ingest skips anything else, the model ignores it. */
+export const BODY_BOUNDS: Record<BodyMetric, { min: number; max: number }> = {
+  body_fat_pct: { min: 2, max: 70 },
+  bmi: { min: 10, max: 60 },
+  lean_kg: { min: 10, max: 150 }
+};
+
+/** kg to one decimal (how weights are stored; the body metrics too). */
 export const roundKg = (v: number): number => Math.round(v * 10) / 10;
 
 /** A weight in kg: finite, within WEIGHT_KG, at most one decimal. */

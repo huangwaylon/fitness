@@ -116,3 +116,56 @@ describe('parseShortcut: the official body', () => {
     expect(() => parseShortcut({ dates: 'Oct 28, 2026', steps_watch: ['9000'] })).toThrow(/steps_watch: expected Text/);
   });
 });
+
+describe('parseShortcut: the body metrics (body_fat, bmi, lean_mass)', () => {
+  const DATES = 'Oct 28, 2026\nOct 29, 2026\nOct 30, 2026';
+
+  it('aligned to dates like weight, 0 = no sample; one decimal; body_fat → body_fat_pct, lean_mass → lean_kg', () => {
+    const r = parseShortcut({ dates: DATES, body_fat: '0\n22.34\n21.9', bmi: '22.81\n0\n0', lean_mass: '0\n0\n52.06' });
+    expect(r).toEqual({
+      metrics: [
+        { date: '2026-10-29', metric: 'body_fat_pct', value: 22.3 },
+        { date: '2026-10-30', metric: 'body_fat_pct', value: 21.9 },
+        { date: '2026-10-28', metric: 'bmi', value: 22.8 },
+        { date: '2026-10-30', metric: 'lean_kg', value: 52.1 }
+      ],
+      skipped: 0,
+      warnings: []
+    });
+  });
+
+  it('body fat as a fraction (≤ 1) is ×100; as a percent, with or without its sign, as is', () => {
+    const r = parseShortcut({ dates: DATES, body_fat: '0.223\n22.3%\n0.2' });
+    expect(r.metrics.map((m) => m.value)).toEqual([22.3, 22.3, 20]);
+    expect(r.skipped).toBe(0);
+    // a percent sign means a percent: 0.5 % is no body fat anyone has
+    expect(parseShortcut({ dates: 'Oct 28, 2026', body_fat: '0.5%' }).metrics).toEqual([]);
+  });
+
+  it('outside the bounds (body fat 2–70 %, BMI 10–60, lean 10–150 kg) is skipped with a warning; unreadable lines too', () => {
+    const r = parseShortcut({ dates: DATES, body_fat: '1.5\n70\n71', bmi: '9.9\n60\n61', lean_mass: '10\n151\nabc' });
+    expect(r.metrics).toEqual([
+      { date: '2026-10-29', metric: 'body_fat_pct', value: 70 },
+      { date: '2026-10-29', metric: 'bmi', value: 60 },
+      { date: '2026-10-28', metric: 'lean_kg', value: 10 }
+    ]);
+    expect(r.skipped).toBe(6);
+    expect(r.warnings).toEqual([
+      'body_fat: 1.5 on 2026-10-28 is outside 2–70; skipped',
+      'body_fat: 71 on 2026-10-30 is outside 2–70; skipped',
+      'bmi: 9.9 on 2026-10-28 is outside 10–60; skipped',
+      'bmi: 61 on 2026-10-30 is outside 10–60; skipped',
+      'lean_mass: 151 on 2026-10-29 is outside 10–150; skipped'
+    ]);
+  });
+
+  it('a list whose length differs from dates is dropped with a warning; a body without them (an older Shortcut) is as before', () => {
+    const r = parseShortcut({ ...BODY, bmi: '22.8', lean_mass: '0\n0\n52' });
+    expect(r.warnings).toEqual(['bmi: 1 lines but 3 dates; bmi not saved']);
+    expect(r.metrics.filter((m) => m.metric === 'bmi')).toEqual([]);
+    expect(r.metrics.at(-1)).toEqual({ date: '2026-10-30', metric: 'lean_kg', value: 52 });
+    expect(parseShortcut(BODY).metrics.map((m) => m.metric)).not.toContain('bmi');
+    expect(parseShortcut({ dates: 'Oct 28, 2026', lean_mass: '50' }).metrics).toEqual([{ date: '2026-10-28', metric: 'lean_kg', value: 50 }]);
+    expect(() => parseShortcut({ dates: 'Oct 28, 2026', body_fat: [0.2] })).toThrow(/body_fat: expected Text/);
+  });
+});
