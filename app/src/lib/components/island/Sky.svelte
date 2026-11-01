@@ -1,12 +1,12 @@
 <script lang="ts">
   // Sky (design.md "Environment"): a 3-stop gradient (top · mid at 55% · horizon, per time of day;
-  // season shifts by day) bleeding under the status bar; the sun low at the left (left 12%, 82% down the band, under
-  // the ribbon, which sits in the band's middle) as ONE soft radial glow, or the moon (a crescent with a soft
+  // season shifts by day) bleeding under the status bar; the sun at the left (left 12%, 46% down the band, under
+  // the ribbon, which sits at the band's top) as ONE soft radial glow, or the moon (a crescent with a soft
   // glow) + 10 stars (2 twinkle); two drifting soft clouds (Clouds.svelte), the balloon present and the fireworks
-  // (Fireworks.svelte, passed in as children). The sun / moon sit above the clouds, so a cloud never hides them. The visible band (below the
+  // (Fireworks.svelte, passed in as children). The sun / moon sit above the clouds, so a cloud never hides them; a tree top rising over the horizon does. The visible band (below the
   // safe area) is a size container named `sky`. Two layers in the stage (IslandScene): `sky`, the gradient, the bank,
-  // the clouds and the balloon, under the world and its time-of-day tint; `lights`, the sun or moon and the stars, over
-  // the tint (lights are never dimmed).
+  // the clouds and the balloon; `lights`, the sun or moon and the stars over it, high in the band (above the
+  // time-of-day tint's reach); both behind every world thing.
   import type { Snippet } from 'svelte';
   import Clouds from './Clouds.svelte';
   import type { Tod } from './scene.ts';
@@ -69,8 +69,8 @@
     position: absolute; inset: 0 0 auto 0; z-index: 0; height: var(--sky-h);
     background: linear-gradient(180deg, var(--sky-top), var(--sky-mid) 55%, var(--sky-hz));
   }
-  /* the lights: over the world's tint (the stage's --z-tint), under the taps */
-  .sky.lights { z-index: calc(var(--z-tint) + 1); background: none; pointer-events: none; }
+  /* the lights: the sun or moon and the stars, over the sky and behind every world thing */
+  .sky.lights { background: none; pointer-events: none; }
   .bank {
     position: absolute; left: 0; bottom: -8px; width: 100%; height: clamp(16px, 18cqh, 54px);
     opacity: calc(.9 * var(--cloud-op, 1)); pointer-events: none;
@@ -79,15 +79,15 @@
   /* sun / moon: glow box = 2.8 × the core (core 30 / glow 84 at 393, 26 / 72 compact, 22 / 60 at 320) */
   .orb {
     --glow: 84px;
-    position: absolute; z-index: 2; left: 12%; top: 82%; width: var(--glow); height: var(--glow); translate: -50% -50%;
+    position: absolute; z-index: 2; left: 12%; top: 46%; width: var(--glow); height: var(--glow); translate: -50% -50%;
     border-radius: 50%; pointer-events: none;
   }
   @media (max-height: 700px), (max-width: 359px) { .orb { --glow: 72px; } }
   @media (max-width: 339px) { .orb { --glow: 60px; } }
   /* a short sky: the glow hugs the horizon, under the ribbon */
-  @container sky (max-height: 150px) { .orb { top: 86%; } }
+  @container sky (max-height: 150px) { .orb { top: 52%; } }
   .sun { background: radial-gradient(closest-side, var(--sun-core) 0 35%, var(--sun-ring) 50%, transparent 100%); }
-  .sun.low { top: 86%; }
+  .sun.low { top: 62%; }
   .moon { background: radial-gradient(closest-side, var(--moon-glow) 45%, transparent 100%); display: grid; place-items: center; }
   /* crescent radius = glow / 2.2 / 2 */
   .moon svg { width: calc(var(--glow) / 2.2); height: auto; fill: var(--moon); overflow: visible; }

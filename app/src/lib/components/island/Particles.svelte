@@ -78,8 +78,8 @@
   </div>
 {:else if mode === 'fireflies' && season === 'summer' && tod === 'night' && !raining}
   {#each FIREFLIES as [x, z, lift], i (`${i}:${x},${z}`)}
-    <!-- above the time-of-day tint (IslandScene's .stage --z-tint 60000080): they glow -->
-    <span class="node" aria-hidden="true" {@attach w.at({ x, z, lift, h: 10, zi: 60_000_081 })}>
+    <!-- above the time-of-day tint (IslandScene's .stage --z-tint 60300000): they glow -->
+    <span class="node" aria-hidden="true" {@attach w.at({ x, z, lift, h: 10, zi: 60_310_000 })}>
       <span class="ff" style:animation-duration="{3 + (i % 3)}s" style:animation-delay="{-i * 0.7}s"></span>
     </span>
   {/each}

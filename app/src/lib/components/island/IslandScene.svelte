@@ -720,11 +720,13 @@
         <div class="snap" data-snap={q.id} style:top="{stopPx(q.z)}px"></div>
       {/each}
       <div class="stage" style:height="{vh}px" style:--u="{s}px" style:--su="{s}px">
-        <!-- the sky is the stage's backdrop, so the time-of-day tint over the world reaches up into its low band (no
-             edge at the horizon); its lights (the sun or moon, the stars) stand over the tint -->
+        <!-- the sky is the stage's backdrop, behind every world thing (a tree top rising over the horizon stands in front
+             of the sun or moon), so the time-of-day tint over the world reaches up into its low band (no edge at the
+             horizon); the sun or moon and the stars sit high in the sky, above the tint's reach -->
         <Sky {tod}>
           {#if life.balloon}<Balloon ondone={() => (life.balloon = false)} />{/if}
         </Sky>
+        <Sky {tod} layer="lights" />
         {#if live && WeatherC}<WeatherC where="sky" />{/if}
         <WorldGround {season} {foliage} />
         <WorldWater floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null} night={tod === 'night'} winter={season === 'winter'} />
@@ -787,7 +789,6 @@
           <PartnerNews scene={sceneEl} />
         {/if}
         <div class="tint"></div>
-        <Sky {tod} layer="lights" />
         {#if live && WeatherC}<WeatherC where="stage" />{/if}
         {#if live && nhEvent?.id === 'halloween' && HalloweenC}<HalloweenC scene={sceneEl} night={nhEvent.night} />{/if}
         {#if live && bday.length && BirthdayC}<BirthdayC {view} people={bday} date={today} />{/if}
@@ -823,8 +824,10 @@
   .stage {
     position: sticky; top: 0; width: 100%; overflow: hidden; container-type: inline-size; contain: layout paint;
     --if-st: 0px; --if-hy: var(--horizon-y);
-    /* the island's layers stand over every world thing (depths run to ~12M; camera.svelte.ts OVER is 50M) */
-    --z-fall: 60000050; --z-leaf: 60000070; --z-tint: 60000080; --z-taps: 60000082; --z-coin: 60000090; --z-popup: 60000095;
+    /* the island's layers stand over every world thing (depths run to ~12M; camera.svelte.ts OVER is 50M). Six
+       significant digits at most: the CSS minifier rounds a longer number (60000080 shipped as 60000100, so the
+       tint stood over the lights at 60000081); the lights (Scenery's, the fireflies', Halloween's) are 60310000 */
+    --z-fall: 60100000; --z-leaf: 60200000; --z-tint: 60300000; --z-taps: 60320000; --z-coin: 60400000; --z-popup: 60500000;
   }
   /* a little haze where the ground meets the sky */
   .haze {
@@ -845,14 +848,14 @@
   .vil:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
   /* ONE time-of-day layer: a multiply tint over the whole stage (the land, the sea, every sprite, the tree tops rising
-     over the horizon and the sky's low band, its backdrop here), fading out up the sky (its own table up there), so no
-     edge shows anywhere; the lights (the lit windows and lamps, the fireflies, the sun or moon and the stars, the
-     fireworks) stand over it. Day: none. */
+     over the horizon and the sky's low band, its backdrop here), fading out up the sky (its own table up there, the
+     sun or moon and the stars in it), so no edge shows anywhere; the lights (the lit windows and lamps, the fireflies,
+     the fireworks) stand over it. Day: none. */
   .tint {
     position: absolute; inset: 0; z-index: var(--z-tint); background: var(--tod-tint); mix-blend-mode: multiply; pointer-events: none;
     -webkit-mask-image: var(--tint-mask); mask-image: var(--tint-mask);
   }
-  .stage { --tint-mask: linear-gradient(to bottom, transparent calc(var(--horizon-y) - 170px), #000 calc(var(--horizon-y) - 100px)); }
+  .stage { --tint-mask: linear-gradient(to bottom, transparent calc(var(--horizon-y) - 120px), #000 calc(var(--horizon-y) - 50px)); }
   /* villager contact shadow: radial, surface-coloured, 0.30h × 0.06h, +6% right and down; dusk: stretched to the right */
   .vil :global(.shadow) {
     width: calc(var(--h) * .6); height: calc(var(--h) * .12); margin-left: calc(var(--h) * -.3); bottom: calc(var(--h) * -.05);
