@@ -102,7 +102,7 @@
   .catch-plate {
     appearance: none; border: 0; margin: 0; cursor: pointer; pointer-events: auto; text-align: left; -webkit-tap-highlight-color: transparent;
     left: 0; top: 0; translate: -50% -50%; display: flex; align-items: center; gap: 6px;
-    width: max-content; max-width: min(340px, calc(100vw - 24px)); padding: 3px 14px 3px 4px; border-radius: 22px;
+    width: max-content; max-width: min(340px, calc(100vw - 24px)); padding: 3px 22px 3px 4px; border-radius: 22px; /* the right pad keeps the ▼'s room */
     background: var(--plate); color: var(--plate-ink); box-shadow: 0 var(--lip-h) 0 var(--plate-lip);
     font: 700 clamp(13px, calc(14 * var(--su)), 15px) / 1.35 var(--font-ui); text-wrap: balance;
     animation: say .25s ease-out both;
@@ -118,7 +118,7 @@
   @keyframes lift { from { transform: translate(var(--dx), var(--dy)) scale(.4); opacity: 0; } 25% { opacity: 1; } }
   /* NH's "next" arrow */
   .next {
-    position: absolute; right: 9px; bottom: 3px; width: 10px; height: 7px; background: #F6A623;
+    position: absolute; right: 9px; bottom: 9px; width: 10px; height: 7px; background: #F6A623;
     clip-path: polygon(0 0, 100% 0, 50% 100%); filter: drop-shadow(0 1px 0 rgba(150, 90, 30, .35));
     animation: bob .6s ease-in-out infinite alternate;
   }

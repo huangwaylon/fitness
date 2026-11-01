@@ -174,11 +174,10 @@
       : chatLine(mood, { hour: jst(now()).hour, met, asleep, event }, Math.random, lastLine);
     if (line.key === 'chat.birthday') toldBday = true;
     lastLine = line.key;
-    // above the villager's head, clear of its emote (the ♪ of the tap) as it floats up
+    // right over the villager's head, like any speaker's (the tap's ♪ floats up behind it)
     if (actors.mine.walking) return; // it only speaks standing still
-    const r = btn.getBoundingClientRect();
     const pages = pagesOf(line).map((k) => t(k, line.params));
-    talk?.say(p.villagerName, pages, btn, { avoid: [{ x0: r.left - 6, x1: r.right + 6, y0: r.top - 56, y1: r.bottom }], colour: entry?.colour });
+    talk?.say(p.villagerName, pages, btn, { colour: entry?.colour });
   }
   // Island care: a flower watered yesterday can show a hybrid colour today (care.ts; `?hybrid` in the demo shows one).
   const today = $derived(dayKey(clock));

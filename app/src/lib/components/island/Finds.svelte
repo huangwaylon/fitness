@@ -380,7 +380,7 @@
 
 <div class="held">
   {#if note}
-    {#key note.n}<span class="wish" class:placed={note.placed} data-fx="wish-note" bind:this={noteEl} style:left="{note.x}px" style:top="{note.y}px">{t('beach.wish')}</span>{/key}
+    {#key note.n}<span class="wish if-caption" class:placed={note.placed} data-fx="wish-note" bind:this={noteEl} style:left="{note.x}px" style:top="{note.y}px">{t('beach.wish')}</span>{/key}
   {/if}
   <CatchPlate {scene} bind:card />
 </div>
@@ -463,12 +463,7 @@
     100% { transform: translate(calc(var(--dx) * 12 * var(--su)), calc(2 * var(--su))); opacity: 0; }
   }
   /* a wish: a small cream caption by the tap that floats up a little and fades (NH has no words for it: the moment) */
-  .wish {
-    position: absolute; translate: -50% -50%; width: max-content; padding: 5px 12px; border-radius: 999px;
-    background: var(--c-cream, #FFF9E3); color: var(--c-ink, #4A3A2C); font: 700 13px/1.3 var(--font-ui);
-    box-shadow: 0 2px 0 rgba(150, 110, 70, .28), 0 0 12px rgba(255, 246, 190, .55); pointer-events: none;
-    animation: wish-note 1.9s ease-out both;
-  }
+  .wish { translate: -50% -50%; box-shadow: 0 2px 0 var(--plate-lip), 0 0 12px rgba(255, 246, 190, .55); animation: wish-note 1.9s ease-out both; }
   .wish:not(.placed) { visibility: hidden; animation: none; }
   @keyframes wish-note { 0% { transform: translateY(6px) scale(.85); opacity: 0; } 15% { transform: none; opacity: 1; } 75% { opacity: 1; } 100% { transform: translateY(-10px); opacity: 0; } }
   /* picked up: it lifts off the sand and fades */

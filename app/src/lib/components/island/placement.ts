@@ -118,13 +118,28 @@ export function spotBy(w: number, h: number, from: Box, area: Box, tiers: readon
   return null;
 }
 
-/** The scene's safe area (client px): under the status bar, 4px inside its foot, 8px from the sides. */
+/** How far a balloon, a plate or a caption keeps from the screen's sides and foot (px). */
+export const EDGE = 12;
+/** The home indicator's inset (px), measured once with a probe (CSS env() can't be read from script). */
+let homeInset: number | null = null;
+function bottomInset(): number {
+  if (homeInset !== null) return homeInset;
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position: fixed; visibility: hidden; height: env(safe-area-inset-bottom, 0px)';
+  document.body.append(probe);
+  homeInset = probe.getBoundingClientRect().height;
+  probe.remove();
+  return homeInset;
+}
+
+/** The scene's safe area (client px): under the status bar, EDGE from the sides and from the foot (above the home
+ *  indicator). */
 function safeArea(scene: HTMLElement): Box {
   const s = scene.getBoundingClientRect();
   return {
-    x0: s.left + 8, x1: s.right - 8,
+    x0: s.left + EDGE, x1: s.right - EDGE,
     y0: Math.max(s.top, scene.querySelector('.band')?.getBoundingClientRect().top ?? s.top) + 4,
-    y1: s.bottom - 4
+    y1: s.bottom - EDGE - bottomInset()
   };
 }
 

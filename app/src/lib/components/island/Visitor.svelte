@@ -46,7 +46,7 @@
   import { kkPick, kkTracks, type KKTrack } from '#lib/sound/kk.ts';
   import { playKK, sound, stopKK } from '#lib/sound/sound.svelte.ts';
   import { sceneSfx } from './sceneTaps.ts';
-  import { clearAt, guardsU, place, stageGeo } from './placement.ts';
+  import { EDGE, clearAt, guardsU, place, stageGeo } from './placement.ts';
   import { zodiacOf } from './beach.ts';
   import { hook, hookFlag } from './devHooks.ts';
   import { approach, meetVisitor, presence, shore, villagerFree, visitorRoute, visitorWalkable } from './avatar.ts';
@@ -654,6 +654,15 @@
   let mumble = $state<{ n: number; key: string } | null>(null);
   let mumbleTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => () => clearTimeout(mumbleTimer));
+  // the sleep talk stays on screen: nudged in to keep EDGE from the sides (Gulliver may lie near one)
+  let mumbleEl = $state<HTMLElement>();
+  let mumbleShift = $state(0);
+  $effect(() => {
+    if (!mumble || !mumbleEl) return;
+    // its laid-out box (the pop-in animation scales it about its middle)
+    const r = mumbleEl.getBoundingClientRect(), w = mumbleEl.offsetWidth, x0 = r.left + (r.width - w) / 2 - untrack(() => mumbleShift);
+    mumbleShift = Math.max(EDGE - x0, Math.min(0, innerWidth - EDGE - (x0 + w)));
+  });
   function nudgeGulliver() {
     const r = nudge(nudges);
     nudges = r.taps;
@@ -720,7 +729,7 @@
         {#each st.fx as f (f.n)}
           <span class="fxa {f.kind}"><Fx kind={f.kind} dir={f.kind === 'zzz' ? -1 : 1} spread="calc(var(--h) * .55)" ondone={() => removeFx('visitor', f.n)} /></span>
         {/each}
-        {#if mumble}{#key mumble.n}<span class="mumble" data-mumble>{t(mumble.key)}</span>{/key}{/if}
+        {#if mumble}{#key mumble.n}<span class="mumble if-caption" data-mumble bind:this={mumbleEl} style:--shift="{mumbleShift}px">{t(mumble.key)}</span>{/key}{/if}
       </span>
       {#if playing}<span class="notes">{#each [0, 1, 2] as i (i)}<i style:--i={i}>♪</i>{/each}</span>{/if}
       {#if treat}
@@ -736,7 +745,7 @@
   </div>
 {/if}
 {#if playing && caption}
-  <span class="caption" class:placed={caption.placed} data-fx="kk-caption" bind:this={capEl} style:left="{caption.x}px" style:top="{caption.y}px">♪ {titleOf(playing)}</span>
+  <span class="caption if-caption" class:placed={caption.placed} data-fx="kk-caption" bind:this={capEl} style:left="{caption.x}px" style:top="{caption.y}px">♪ {titleOf(playing)}</span>
 {/if}
 
 <!-- the heart float: a pink heart balloon on a string, a highlight on its upper left (NH's soft item style) -->
@@ -918,11 +927,7 @@
   .fxa.zzz { left: calc(var(--h) * -.12); top: calc(var(--h) * .1); }
   .fxa.sweat { left: calc(var(--h) * .2); top: calc(var(--h) * .2); }
   .fxa.notes { left: calc(var(--h) * .18); top: calc(var(--h) * .12); }
-  .mumble {
-    position: absolute; left: 0; bottom: 4px; translate: -60% 0; white-space: nowrap; padding: 3px 9px; border-radius: 999px;
-    background: rgba(255, 249, 227, .92); color: var(--c-ink, #4A3A2C); font: 700 12px/1.2 var(--font-ui); box-shadow: 0 2px 0 rgba(150, 110, 70, .25);
-    animation: v-mumble 1.6s ease-out both;
-  }
+  .mumble { left: 0; bottom: 4px; translate: calc(-60% + var(--shift, 0px)) 0; animation: v-mumble 1.6s ease-out both; }
   @keyframes v-mumble { from { opacity: 0; transform: translateY(6px) scale(.8); } 15% { opacity: 1; transform: none; } 80% { opacity: 1; } to { opacity: 0; transform: translateY(-6px); } }
 
   /* the heart float over Reese and Cyrus */
@@ -960,10 +965,6 @@
     to { transform: rotate(var(--a)) translateX(calc(16 * var(--su))) scale(1); opacity: 0; }
   }
   /* 「♪ title」 */
-  .caption {
-    position: absolute; z-index: var(--z-taps); translate: -50% -50%; padding: 5px 12px; border-radius: 999px; white-space: nowrap;
-    background: rgba(255, 249, 227, .94); color: var(--c-ink, #4A3A2C); font: 700 13px/1.2 var(--font-ui); pointer-events: none;
-    box-shadow: 0 2px 0 rgba(150, 110, 70, .3); animation: v-appear .4s ease-out both;
-  }
+  .caption { z-index: var(--z-taps); translate: -50% -50%; animation: v-appear .4s ease-out both; }
   .caption:not(.placed) { visibility: hidden; }
 </style>

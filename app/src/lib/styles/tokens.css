@@ -237,6 +237,12 @@
   --tod-tint:#9AA4DE;
   --plate:#FFF6E0;
 }
+/* A short caption on the island (the wish, K.K.'s song, Gulliver's sleep talk): one cream pill, the plate's colours and
+   lip, one size; each places and animates its own. */
+.if-caption {
+  position: absolute; width: max-content; max-width: calc(100vw - 24px); padding: 5px 12px; border-radius: 999px; white-space: nowrap;
+  background: var(--plate); color: var(--plate-ink); font: 700 13px/1.3 var(--font-ui); box-shadow: 0 2px 0 var(--plate-lip); pointer-events: none;
+}
 /* Pause every scene animation while the tab is hidden (design.md "Particles and events"). */
 .if-scene[data-paused] *, .if-scene[data-paused] *::before, .if-scene[data-paused] *::after { animation-play-state: paused !important; }
 /* Under a sheet (the panel, a card) the endless loops hold still too: clouds, sea glints, stars, fireflies and the

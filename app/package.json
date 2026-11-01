@@ -17,6 +17,7 @@
     "audio:music": "node scripts/music.ts",
     "gas:build": "node gas/build.ts",
     "gas:deploy": "node gas/deploy.ts",
+    "heads": "node scripts/heads.ts",
     "bench": "node scripts/bench-model.ts",
     "knip": "knip"
   },
