@@ -6,14 +6,15 @@
 <script lang="ts">
   // けんこう (health, design.md "Kenkou"): the island panel's first tab (it opens on it), the Health data over time for
   // the personal trainer, one person at a time. First whose data (ウェイ / うめ, this phone's person by default;
-  // switching keeps the period and the range), then one period for every chart (1週 / 1か月 / 3か月 / 1年 / すべて) and
-  // a sticky row with ‹ the visible range › and きょう; then a card per metric in CARDS' order: 🍎 Steps, the body
-  // (体重, 体脂肪率, BMI, 除脂肪体重), then 🍐 Move, 🍑 Exercise, 🍒 Stand. A horizontal drag on any chart turns the page; a tap shows a bar's numbers.
+  // switching keeps the period and the range), then one period for every chart (1週 / 1か月 / 3か月 / 1年 / すべて), then
+  // which cards (かつどう / からだ, かつどう on each opening; switching keeps the period, range and person) and a sticky
+  // row with ‹ the visible range › and きょう; then a card per metric in the group's CARDS order: かつどう 🍎 Steps,
+  // 🍐 Move, 🍑 Exercise, 🍒 Stand; からだ 体重, 体脂肪率, BMI, 除脂肪体重. A horizontal drag on any chart turns the page; a tap shows a bar's numbers.
   // Read-only, computed on read from the store's model (model/health.ts); loaded with the tab, not with the island.
   import '#lib/i18n/kenkou.ts'; // the tab's strings, loaded with it
   import type { LocalDate, PersonId } from '#lib/types.ts';
   import { isBodyMetric, type BodyMetric } from '#lib/contract/api.ts';
-  import { CARDS, canShift, healthSeries, PERIODS, rangeFor, shiftAnchor, type Metric } from '#lib/model/health.ts';
+  import { CARDS, canShift, GROUPS, healthSeries, PERIODS, rangeFor, shiftAnchor, type Group, type Metric } from '#lib/model/health.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -32,6 +33,7 @@
   const villagers = $derived({ A: view?.people.A.villager ?? null, B: view?.people.B.villager ?? null } as Record<PersonId, string | null>);
 
   let period = $state<Period>(last.period);
+  let group = $state<Group>(last.group);
   let picked = $state<PersonId | null>(last.who);
   /** Whose data every card shows. */
   const who = $derived<PersonId>(picked ?? me);
@@ -50,6 +52,12 @@
     if (p === period) return;
     period = last.period = p;
     slide = 0;
+    sel = null;
+  }
+  /** The other cards: the same period, range and person. */
+  function setGroup(g: Group) {
+    if (g === group) return;
+    group = last.group = g;
     sel = null;
   }
   /** Another person: the same period and range, their numbers. */
@@ -95,6 +103,11 @@
         <button type="button" class="sb" aria-pressed={period === id} data-period={id} data-sfx={period === id ? 'none' : 'tick'} onclick={() => setPeriod(id)}>{t(`health.period.${id}`)}</button>
       {/each}
     </div>
+    <div class="seg" role="group" aria-label={t('health.group')}>
+      {#each GROUPS as id (id)}
+        <button type="button" class="sb" aria-pressed={group === id} data-group={id} data-sfx={group === id ? 'none' : 'tick'} onclick={() => setGroup(id)}>{t(`health.group.${id}`)}</button>
+      {/each}
+    </div>
 
     <div class="nav">
       <button type="button" class="nb" data-nav="back" aria-label={t('health.earlier')} aria-disabled={!can.back} data-sfx="tick" onclick={() => go(-1)}>
@@ -114,7 +127,7 @@
     {#if !hs.any}
       <section class="card empty"><p>{t('kiroku.empty')}</p></section>
     {:else}
-      {#each CARDS as k (k)}
+      {#each CARDS[group] as k (k)}
         {#if k === 'weight'}
           <WeightCard {hs} {range} p={who} name={names[who]} {slide} onswipe={swipe}
             selected={sel?.k === 'weight' ? sel.i : null} onselect={(i) => pick('weight', i)} />
@@ -126,7 +139,7 @@
             selected={sel?.k === k ? sel.i : null} onselect={(i) => pick(k, i)} />
         {/if}
       {/each}
-      <p class="note">{t('health.note')}</p>
+      {#if group === 'activity'}<p class="note">{t('health.note')}</p>{/if}
     {/if}
   {/if}
 </div>

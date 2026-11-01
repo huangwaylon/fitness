@@ -100,11 +100,13 @@ Esc close the panel.
 trainer, one person at a time, computed on read.
 
 - **Whose data:** two avatar pills (this phone's person first and chosen on opening; kept for the session).
-- **Controls:** 1週 · 1か月 · 3か月 · 1年 · すべて (1週 on every opening; kept while the panel stays open), then a sticky row: ‹ the
-  visible range (「10/2–10/31」; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」 under it) › and きょう.
-- **Cards, in this order** (`model/health.ts` CARDS, the user's "after steps, put weight next, then the other graphs"):
-  🍎 歩数, then the body kept together (体重, 体脂肪率, BMI, 除脂肪体重: what a scale writes at one weigh-in), then 🍐 ムーブ,
-  🍑 エクササイズ, 🍒 スタンド.
+- **Controls:** 1週 · 1か月 · 3か月 · 1年 · すべて (1週 on every opening; kept while the panel stays open), then かつどう ·
+  からだ, the same pills (かつどう on every opening, like the period; switching keeps the period, the range and whose
+  data), then a sticky row: ‹ the visible range (「10/2–10/31」; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」
+  under it) › and きょう.
+- **Cards, per group** (`model/health.ts` GROUPS and CARDS, the user's "activity metrics and body metrics"): かつどう
+  🍎 歩数, 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド (then the footnote); からだ 体重, 体脂肪率, BMI, 除脂肪体重 (what a
+  scale writes at one weigh-in).
 - **A card per activity metric**: the goal; 1日の平均 with 前の期間より ↑/↓ %;
   目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key.
 - **Chart** (`BarChart`, SVG): a bar per day (1週, 1か月), per week (3か月: 13) or per calendar month (1年, すべて), each
