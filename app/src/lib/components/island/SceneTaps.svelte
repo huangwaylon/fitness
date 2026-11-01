@@ -16,6 +16,9 @@
   // once (≤ 6 nodes each), each removed after ≤ 1.1 s; nothing runs while idle but the night's shower timer.
   //   ?shower (dev or ?demo): a shower 1.5 s after the night sky shows, then every 8 s (the e2e's hook).
   // Decorative and pointer-only (aria-hidden, no focus stops).
+  import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
+  import { visitorNow } from './visitors.ts';
+  import { deckOut } from './stretching.ts';
   import { timers } from './timers.ts';
   import { hookFlag, islandSeed } from './devHooks.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -28,10 +31,7 @@
   import Critters from './Critters.svelte';
   import Finds from './Finds.svelte';
   import Care from './Care.svelte';
-  import Visitor from './Visitor.svelte';
   import type { Choice } from './pager.ts';
-  import TapeDeck from './TapeDeck.svelte';
-  import Cake from './Cake.svelte';
   import { water } from './sceneDay.ts';
   import { findArt } from './beach.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
@@ -97,9 +97,15 @@
   let critters = $state<ReturnType<typeof Critters>>();
   let finds = $state<ReturnType<typeof Finds>>();
   let care = $state<ReturnType<typeof Care>>();
-  let visitor = $state<ReturnType<typeof Visitor>>();
-  let deck = $state<ReturnType<typeof TapeDeck>>();
-  let cakeEl = $state<ReturnType<typeof Cake>>();
+  let visitor = $state<{ tap(px: number, py: number): boolean }>();
+  let deck = $state<{ tap(px: number, py: number): boolean }>();
+  let cakeEl = $state<{ tap(px: number, py: number): boolean }>();
+  // Loaded the first time they're due (their chunks stay out of the first load), then kept: a visitor (who leaves
+  // the way they came), the tape deck (an Exercise day or a morning), a birthday's cake.
+  const visitorC = lazyComponent(() => import('./Visitor.svelte')), deckC = lazyComponent(() => import('./TapeDeck.svelte')), cakeC = lazyComponent(() => import('./Cake.svelte'));
+  const VisitorC = $derived(visitorC.get(!!visitorNow(minuteNow())));
+  const TapeDeckC = $derived(deckC.get(hookFlag('stretch') || deckOut(dayKey(minuteNow()), jst(minuteNow()).hour, exercise)));
+  const CakeC = $derived(cakeC.get(cake));
   /** The shooting star crossing now: a tap in the sky before `until` is a wish on it (NH), once. */
   let streak: { until: number; wished: boolean } | null = null;
 
@@ -402,9 +408,9 @@
 <Critters bind:this={critters} {scene} {tod} {enabled} />
 <Finds bind:this={finds} {scene} {enabled} />
 <Care bind:this={care} {scene} {enabled} rockBug={(x, y) => critters?.fromRock(x, y)} />
-<Visitor bind:this={visitor} {scene} {enabled} {say} {ontrick} />
-<TapeDeck bind:this={deck} {scene} {enabled} {exercise} />
-<Cake bind:this={cakeEl} {scene} {enabled} on={cake} />
+{#if VisitorC}<VisitorC bind:this={visitor} {scene} {enabled} {say} {ontrick} />{/if}
+{#if TapeDeckC}<TapeDeckC bind:this={deck} {scene} {enabled} {exercise} />{/if}
+{#if CakeC}<CakeC bind:this={cakeEl} {scene} {enabled} on={cake} />{/if}
 
 <div class="drops" aria-hidden="true">
   {#each drops as p (p.id)}

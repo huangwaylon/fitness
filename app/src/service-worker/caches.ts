@@ -26,19 +26,24 @@ export function lruEvict(keys: readonly string[]): string[] {
 
 export const isFont = (path: string): boolean => /\.(woff2?|ttf)$/.test(path);
 export const isVillagerArt = (path: string): boolean => path.includes('/art/villagers/');
-/** The island's scenery art: the catches (fish, bugs, junk), the beach finds (shells, fossils, fragments, the bottle)
- *  and the visitors' extras: shown only when one is about or in the ずかん, so cached on first use, not at install. */
-export const isCritterArt = (path: string): boolean => path.includes('/art/critters/') || path.includes('/art/finds/');
+/** The island's scenery art: the catches (fish, bugs, junk), the beach finds (shells, fossils, fragments, the bottle),
+ *  the balloon presents and the visitors' extras: shown only when one is about or in the ずかん, so cached on first use,
+ *  not at install. */
+export const isCritterArt = (path: string): boolean =>
+  path.includes('/art/critters/') || path.includes('/art/finds/') || path.includes('/art/presents/');
+/** The home-screen and install icons: the OS fetches them when the app is added, never the page offline (the favicon
+ *  only needs the network). */
+const isAppIcon = (path: string): boolean => path.includes('/icons/');
 /** The two default villagers' art is precached (lib/villagers/look.ts DEFAULT_VILLAGER); the rest is cached on use. */
 const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
 
 /** Whether a build file goes into the install-time precache. Paths come from `$app/manifest` relative to the base
  *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: font subsets (cached on first use),
- *  the bundled art and audio manifests, every villager but the defaults and every critter (both cached on first
- *  use), all audio (AUDIO_CACHE, on first play) and macOS litter. */
+ *  the bundled art and audio manifests, every villager but the defaults, every critter, find and present (all cached
+ *  on first use), all audio (AUDIO_CACHE, on first play), the app icons and macOS litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;
-  if (isFont(p) || isAudio(p) || isCritterArt(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
+  if (isFont(p) || isAudio(p) || isCritterArt(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
   return !isVillagerArt(p) || PRECACHED_VILLAGERS.test(p);
 }
 

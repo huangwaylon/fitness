@@ -43,8 +43,11 @@ describe('audio cache (LRU for music)', () => {
 });
 
 describe('precache', () => {
-  it('leaves the critters (fish, bugs, junk) and the beach finds out: they are cached on first use', () => {
-    for (const p of ['art/critters/sea-bass.webp', '/fitness/art/critters/common-butterfly.webp', 'art/finds/cowrie.webp', '/fitness/art/finds/t-rex-skull.webp']) expect(precachable(p)).toBe(false);
+  it('leaves the critters (fish, bugs, junk), the beach finds and the presents out: they are cached on first use', () => {
+    for (const p of ['art/critters/sea-bass.webp', '/fitness/art/critters/common-butterfly.webp', 'art/finds/cowrie.webp', '/fitness/art/finds/t-rex-skull.webp', 'art/presents/froggy-chair.webp']) expect(precachable(p)).toBe(false);
+  });
+  it('leaves the app icons out: the OS fetches them when the app is added', () => {
+    for (const p of ['icons/icon-192.png', 'icons/apple-touch-icon-180.png', '/fitness/icons/icon-512.webp']) expect(precachable(p)).toBe(false);
   });
   it('keeps the shell, the default villagers and the scene art', () => {
     for (const p of ['_app/immutable/entry/app.js', 'art/fruit/peach.webp', 'art/villagers/goldie.webp', 'art/villagers/anchovy-icon.webp', 'manifest.webmanifest']) {

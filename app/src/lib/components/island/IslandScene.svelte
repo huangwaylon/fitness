@@ -29,6 +29,8 @@
   // .if-scene) to place overlays.
   // Life (islandLife.svelte.ts): the motion bus (emit('highfive-sent') etc.), reactions to the `view` diff (partner
   // data, fruit stages, a received high-five), naps, the balloon; idle life runs while `live` and not `paused`.
+  import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
+  import { showAt } from './fireworks.ts';
   import { hookFlag } from './devHooks.ts';
   import type { PersonId, PersonWeekView, WeekView } from '#lib/types.ts';
   import Villager from '../characters/Villager.svelte';
@@ -45,16 +47,11 @@
   import FruitTree from './FruitTree.svelte';
   import FlowerBeds from './FlowerBeds.svelte';
   import Particles from './Particles.svelte';
-  import Weather from './Weather.svelte';
   import { raining, weather } from './weatherNow.svelte.ts';
   import Balloon from './Balloon.svelte';
-  import Fireworks from './Fireworks.svelte';
   import SceneTaps from './SceneTaps.svelte';
   import Talk from './Talk.svelte';
   import TreeShakes from './TreeShakes.svelte';
-  import Halloween from './Halloween.svelte';
-  import Wedding from './Wedding.svelte';
-  import Birthday from './Birthday.svelte';
   import { HATS, birthdaysOn, isBirthday } from './birthday.ts';
   import { FIREWORKS_FROM, archOn, weddingDay } from './wedding.ts';
   import { eventAt, forcedEvent } from './events.ts';
@@ -309,7 +306,7 @@
   }
   // Fireworks (design.md "Fireworks"): our volley when both of us met all four today; a villager cheers at a burst now
   // and then (awake and not busy with something else); a tap in the sky during a show sends one more (SceneTaps).
-  let fireworks = $state<ReturnType<typeof Fireworks>>();
+  let fireworks = $state<{ tap(px: number, py: number): boolean }>();
   const allMet = $derived((['A', 'B'] as const).every((p) => RING_FRUITS.every((f) => view.people[p].rings[f].met)));
   function cheer() {
     const id = Math.random() < 0.5 ? 'mine' : 'partner';
@@ -318,14 +315,23 @@
   }
   /* both villagers asleep: the zzz loops join the idle budget, so particles thin out to one */
   const asleepNow = $derived(actors.mine.asleep && actors.partner.asleep);
+  // The scenery that comes only on its days (the weather, the fireworks, an event's decorations): loaded the first time
+  // it's due, then kept, so its code stays out of the first load.
+  const weatherC = lazyComponent(() => import('./Weather.svelte')), fireworksC = lazyComponent(() => import('./Fireworks.svelte'));
+  const halloweenC = lazyComponent(() => import('./Halloween.svelte')), birthdayC = lazyComponent(() => import('./Birthday.svelte')), weddingC = lazyComponent(() => import('./Wedding.svelte'));
+  const WeatherC = $derived(weatherC.get(live && (weather.sky !== 'clear' || weather.fog || !!weather.rainbow || weather.aurora)));
+  const FireworksC = $derived(fireworksC.get(live && (life.devFireworks || hookFlag('fireworks') || wedding.fireworks || allMet || !!showAt(jst(clock).month, jst(clock).day, jst(clock).weekday, jst(clock).hour))));
+  const HalloweenC = $derived(halloweenC.get(live && nhEvent?.id === 'halloween'));
+  const BirthdayC = $derived(birthdayC.get(live && !!bday.length));
+  const WeddingC = $derived(weddingC.get(live && (wedding.arch || wedding.day)));
 </script>
 
 <div class="if-scene scene" bind:this={sceneEl} data-season={season} data-tod={tod} data-sky={live ? weather.sky : undefined} data-paused={life.hidden || undefined} data-covered={covered || undefined}>
   <Sky {tod}>
     {#if life.balloon}<Balloon ondone={() => (life.balloon = false)} />{/if}
   </Sky>
-  {#if live}<Weather where="sky" />{/if}
-  {#if live}<Fireworks bind:this={fireworks} enabled={() => !covered && !life.hidden} forced={life.devFireworks || wedding.fireworks} {allMet} {cheer} />{/if}
+  {#if live && WeatherC}<WeatherC where="sky" />{/if}
+  {#if live && FireworksC}<FireworksC bind:this={fireworks} enabled={() => !covered && !life.hidden} forced={life.devFireworks || wedding.fireworks} {allMet} {cheer} />{/if}
 
   <div class="stage">
     <Sea />
@@ -380,10 +386,10 @@
       <TreeShakes bind:this={shakes} scene={sceneEl} onsting={sting} />
     {/if}
     <div class="tint"></div>
-    {#if live}<Weather where="stage" />{/if}
-    {#if live && nhEvent?.id === 'halloween'}<Halloween scene={sceneEl} night={nhEvent.night} />{/if}
-    {#if live && bday.length}<Birthday {view} people={bday} date={today} />{/if}
-    {#if live && (wedding.arch || wedding.day)}<Wedding scene={sceneEl} arch={wedding.arch} day={wedding.day} date={wedding.date} />{/if}
+    {#if live && WeatherC}<WeatherC where="stage" />{/if}
+    {#if live && nhEvent?.id === 'halloween' && HalloweenC}<HalloweenC scene={sceneEl} night={nhEvent.night} />{/if}
+    {#if live && bday.length && BirthdayC}<BirthdayC {view} people={bday} date={today} />{/if}
+    {#if live && (wedding.arch || wedding.day) && WeddingC}<WeddingC scene={sceneEl} arch={wedding.arch} day={wedding.day} date={wedding.date} />{/if}
     <div class="fall"><Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} snowing={live ? weather.sky === 'snow' : undefined} /></div>
   </div>
 </div>

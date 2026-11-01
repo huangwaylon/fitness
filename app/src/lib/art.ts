@@ -15,8 +15,16 @@ interface ArtEntry {
   box?: [number, number, number, number];
 }
 
-/** key → [w, h]: the build ships the manifest slimmed (vite.config.ts slimArtManifest); the file is `<key>.webp`. */
-const FILES = manifest.files as unknown as Record<string, readonly [number, number]>;
+/** key → [w, h], unpacked from the build's packed manifest (vite.config.ts slimArtManifest); the file is `<key>.webp`. */
+const FILES: Record<string, readonly [number, number]> = {};
+for (const [g, [w, h, h2, plain, odd]] of Object.entries(manifest.files as unknown as Record<string, [number, number, number, string, string]>)) {
+  const key = g.endsWith('/*-icon') ? (n: string) => `${g.slice(0, -7)}/${n}-icon` : (n: string) => `${g}/${n}`;
+  for (const n of plain ? plain.split(',') : []) FILES[key(n)] = [w, h];
+  for (const e of odd ? odd.split(',') : []) {
+    const [n, ow, oh] = e.split(':');
+    FILES[key(n)] = [Number(ow), oh === undefined ? h2 : Number(oh)];
+  }
+}
 
 // Renders whose figure sits in a padded canvas: <OfficialArt> crops to this box so `size` means
 // "figure height" for every character. (Measured from the alpha channel; the rest are already tight.)

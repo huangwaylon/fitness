@@ -214,7 +214,9 @@ to the goal at ≥ 0.05 kg a week within 156 weeks (else 「あせらず、ゆ�
 
 ## Island scene
 
-`lib/components/island/*`: a Pocket Camp–style diorama in SVG/CSS around official renders. Light from the upper left;
+`lib/components/island/*`: a Pocket Camp–style diorama in SVG/CSS around official renders. What comes only on its days
+(a visitor, the tape deck, the cake, the weather, the fireworks, Halloween's, a birthday's and the wedding's decorations)
+is loaded the first time it's due (`ui-state/lazyComponent.svelte.ts`), so the first load carries none of it. Light from the upper left;
 each surface one fill, one gradient, one soft shade; no strokes on scenery. Only `transform` and `opacity` animate;
 everything pauses while hidden (`data-paused`), and a sheet pauses particles, critters and idle life
 (`data-covered`). Nothing on the island pays ベル.
@@ -656,7 +658,7 @@ from `visualViewport` (`ui/keyboardInset.ts`). Short screens scale the island do
 ## Official art
 
 Official NH renders only from `static/art/` through `<OfficialArt>`, with a fallback so a missing file never breaks a
-screen; WebP, never upscaled. Manifest and helpers `lib/art.ts` (the manifest ships as `{ key: [w, h] }`); files from
+screen; WebP, never upscaled. Manifest and helpers `lib/art.ts` (the build packs the manifest's sizes per folder: `vite.config.ts` `slimArtManifest`); files from
 `scripts/fetch-assets.ts`. Groups: villagers (all 417 + 23 special characters; roster `lib/villagers/roster.ts`, loaded
 with the picker; `lib/villagers/look.ts`: ids, facing, defaults goldie and anchovy), host (しずえ, たぬきち), fruit,
 trees, bushes, flowers, particles, reactions, money, deco, critters, finds, presents. Ours: sky, sea, ground, the jar,
