@@ -332,11 +332,14 @@
 </script>
 
 <!-- the tree: its trunk and its canopy, two world nodes (one art, clipped) -->
-<div class="node" data-tree-node={person.person} {@attach w.at({ x, z, h: H })}>
+<div class="node" data-tree-node={person.person} {@attach w.at({ x, z, h: H, inv: true })}>
   <div class="tree" bind:this={treeEl} style:width={u(W)} style:height={u(H)} style:clip-path={TRUNK}
     onanimationend={(e) => e.animationName === 'if-shake' && treeEl?.classList.remove('shaking')}>
     <span class="oak"><OfficialArt key={treeArt(foliage)} size={u(H)} priority /></span>
   </div>
+  <!-- the trunk and its base answer a tap as the canopy does (≥ 44px wide; one button for assistive tech: the canopy) -->
+  <button type="button" class="trunk-btn" style:width="max({u(W * 0.42)}, calc(45px * var(--inv, 1)))" style:height={u(H * 0.5)}
+    tabindex="-1" aria-hidden="true" data-sfx="self" onclick={() => tap(null)}></button>
 </div>
 <div class="node" {@attach w.at({ x, z, h: H, dz: -14 })}>
   <div class="tree" bind:this={canopyEl} style:width={u(W)} style:height={u(H)} style:clip-path={CANOPY}
@@ -501,7 +504,8 @@
   :global(.if-scene[data-covered]) :is(.glint, .glow) { animation-play-state: paused; }
   .fxa { position: absolute; left: 50%; top: 30%; width: 0; height: 0; }
   .fxa.at { left: 0; top: 0; pointer-events: none; }
-  .canopy, .row-btn {
+  .trunk-btn { left: 0; bottom: calc(-4 * var(--u)); translate: -50% 0; border-radius: 40% 40% 30% 30%; }
+  .canopy, .row-btn, .trunk-btn {
     position: absolute; appearance: none; border: 0; background: none; padding: 0;
     cursor: pointer; border-radius: 45%; -webkit-tap-highlight-color: transparent;
   }

@@ -705,6 +705,10 @@
             skyTap={(x, y) => !!fireworks?.tap(x, y)}
             say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={trick} tree={treeTap} />
           <Talk bind:this={talk} scene={sceneEl} />
+          {#if hookFlag('hit')}
+            <!-- ?hit: every tap target drawn over the island (its own chunk) -->
+            {#await import('./HitOverlay.svelte') then m}<m.default scene={sceneEl} />{/await}
+          {/if}
           <!-- what a shaken tree drops: a branch, now and then a wasp nest -->
           <TreeShakes bind:this={shakes} scene={sceneEl} onsting={sting} {treeOf} rustle={(tr) => rustle(tr, true)} />
           <!-- the partner's catches and finds: their villager holds it up here, or a notice at the edge -->

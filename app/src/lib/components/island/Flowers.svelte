@@ -46,8 +46,8 @@
 </script>
 
 {#each flowers as f (f.id)}
-  <div class="node" {@attach w.at({ x: f.x, z: f.z, h: f.h })}>
-    <span class="fl" data-flower={f.id} data-kind={f.kind} data-white={f.white || undefined}>
+  <div class="node" {@attach w.at({ x: f.x, z: f.z, h: f.h, inv: true })}>
+    <span class="fl" data-flower={f.id} data-hit-min data-kind={f.kind} data-white={f.white || undefined}>
       <span class="b"><OfficialArt key={f.key} size={u(f.h)} /></span>
       {#if season === 'winter'}<span class="cap"></span>{/if}
       {#if watered.has(f.id)}
@@ -66,6 +66,11 @@
   /* feet on the ground: the trimmed art's stem ends at its bottom edge */
   .node { width: 0; height: 0; transform-origin: 0 0; will-change: transform; pointer-events: none; }
   .fl { position: absolute; left: 0; top: 0; width: max-content; transform: translate(-50%, -96%); line-height: 0; pointer-events: auto; cursor: pointer; }
+  /* its tap target: the flower, at least 44px round its middle (--inv: 1 / the node's scale) */
+  .fl::after {
+    content: ''; position: absolute; left: 50%; top: 50%; translate: -50% -50%;
+    width: max(100%, calc(44px * var(--inv, 1))); height: max(100%, calc(44px * var(--inv, 1)));
+  }
   .b { display: block; transform-origin: 50% 100%; }
   .wet {
     position: absolute; left: 62%; top: 8%; width: calc(8 * 100cqw / 390); height: auto; fill: #FFFBE8;

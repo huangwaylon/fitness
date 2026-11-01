@@ -127,3 +127,51 @@ test('at night a spider can dangle instead; left alone it climbs back up into th
   await expect(page.locator('[data-dangle]')).toHaveCount(0);
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
 });
+
+/** A point low on a tap area (its base, `fy` of the way down) the finger reaches: nothing in front of it there. */
+const baseOf = (page: Page, sel: string, fy = 0.85) =>
+  page.locator(sel).first().evaluate((el, fy) => {
+    const b = el.getBoundingClientRect(), cx = b.left + b.width / 2;
+    for (let y = b.top + b.height * fy; y > b.top; y -= 3)
+      for (const dx of [0, -6, 6, -12, 12])
+        if (document.elementFromPoint(cx + dx, y) === el) return { x: cx + dx, y, w: b.width };
+    return null;
+  }, fy);
+
+test('a goal tree’s trunk and base answer a tap as its leaves do: the popup opens, a quick run shakes it', async ({ page }) => {
+  await open(page, '&shake=branch');
+  const p = (await baseOf(page, '[data-tree-node="A"] .trunk-btn'))!;
+  expect(p).not.toBeNull();
+  expect(p.w).toBeGreaterThanOrEqual(44);
+  await page.mouse.click(p.x, p.y);
+  await expect(page.locator('.detail')).toBeVisible();
+  await page.waitForTimeout(1300);
+  for (let i = 0; i < 3; i++) {
+    await page.mouse.click(p.x, p.y);
+    await page.waitForTimeout(120);
+  }
+  await expect(page.locator('.detail')).toHaveCount(0);
+  await expect(page.locator('button[data-branch]')).toHaveCount(1, { timeout: 3000 });
+});
+
+test('a plain tree’s trunk and base shake it on three quick taps (≥ 44px wide); one only rustles', async ({ page }) => {
+  await open(page, '&shake=branch');
+  await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(380));
+  await page.waitForTimeout(500);
+  const sel = '[data-tree="oak-m1"][data-tree-part="trunk"]';
+  const p = (await baseOf(page, sel))!;
+  expect(p).not.toBeNull();
+  expect(p.w).toBeGreaterThanOrEqual(44);
+  await page.mouse.click(p.x, p.y);
+  await page.waitForTimeout(1400);
+  await expect(page.locator('button[data-branch]')).toHaveCount(0);
+  const home = await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
+  for (let i = 0; i < 3; i++) {
+    await page.mouse.click(p.x, p.y);
+    await page.waitForTimeout(120);
+  }
+  await expect(page.locator('button[data-branch="oak-m1"]')).toHaveCount(1, { timeout: 3000 });
+  // a tap on the tree is no walk
+  expect(await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine())).toEqual(home);
+  await expect(page.locator('.tap-ring')).toHaveCount(0);
+});

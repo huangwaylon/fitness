@@ -46,6 +46,7 @@
   import { weather } from './weatherNow.svelte.ts';
   import { onMount } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
+  import { bodyRect, grow, hitSources, inside } from './hitbox.ts';
   import { artUrl } from '#lib/art.ts';
   import { jst, now } from '#lib/time/clock.ts';
   import { crittersAt, msToNextSlot, slotAt, slotStart, spawnRand, type Spawn } from './ambient.ts';
@@ -174,6 +175,14 @@
   let dig = $state<Net | null>(null);
   let seq = 0;
   let bugEl = $state<HTMLElement>();
+  $effect(() => {
+    const list = () => {
+      const r = bug && !bug.gone && bodyRect(bugEl);
+      return r ? [{ box: grow(r), kind: 'bug' }] : [];
+    };
+    hitSources.add(list);
+    return () => void hitSources.delete(list);
+  });
   let hopEl = $state<HTMLElement>();
   let chaseEl = $state<HTMLElement>();
   const night = $derived(tod === 'night');
@@ -976,9 +985,10 @@
     // the partner has it already (their villager is on the way): a tap here takes nothing
     if (b && theirs(b.cid)) return true;
     if (b && !b.gone && bugEl) {
-      const r = bugEl.getBoundingClientRect();
+      // what it draws (its mover is a 0 × 0 point): on its tap box (hitbox.ts, at least 44px) it's caught
+      const r = bodyRect(bugEl) ?? bugEl.getBoundingClientRect();
       const d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
-      const swing = netSwing(d, Math.max(r.width, r.height));
+      const swing = inside(grow(r), px, py) ? 'catch' : netSwing(d, Math.max(r.width, r.height));
       const at = { x: (r.left + r.width / 2 - g.r.left) * g.k, y: (r.top + r.height / 2 - g.r.top) * g.k };
       if (b.flight === 'stalk' && b.stalk) {
         // NH's tarantula: it rears up when it's come at, charges if you keep coming; settled again, it can be netted

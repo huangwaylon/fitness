@@ -398,8 +398,9 @@ nights are always fine.
 island shakes: the two goal trees and every oak, cedar and palm of the scenery (`SCENERY_TREES`; bamboo doesn't, as in
 NH).
 
-- **Tap or shake:** on a goal tree one canopy tap opens or closes the popup; on any other tree a tap on its leaves
-  (Scenery's `data-tree` hit area, the leaves only: the ground round it stays the ground's) rustles it. The third tap
+- **Tap or shake:** on a goal tree one tap on it (its canopy or its trunk) opens or closes the popup; on any other
+  tree a tap on its leaves or its trunk (Scenery's `data-tree` hit areas, down to its base: the ground further round it
+  stays the ground's; [Tap targets](#scene-interactions)) rustles it. The third tap
   within 1.2 s (and each quick tap after) is a shake: a goal tree's popup closes, the tree shakes where it stands and
   rustles (`tree-shake`), my villager turning to it (no walk).
 - **What falls, by the kind of tree (NH's):** a hardwood (an oak, a goal tree) or a cedar: 1 in 8 a wasp nest, else 1
@@ -431,6 +432,14 @@ tree](#shaking-a-tree)); a flower is watered ([Island care](#island-care));
 the sea ripples (1 in 10 a fish shadow); sand leaves footprints; grass puffs dust (snow in winter); a cloud squishes;
 the sun glints; the moon bobs; the night sky twinkles (and grants a wish while a shooting star crosses: [Shooting
 stars](#shooting-stars)); the pond rings.
+
+**Tap targets** (`island/hitbox.ts`, `e2e/hits.spec.ts`): everything tappable answers on its whole visible body,
+base included, at least 44 × 44px about its middle; in front wins. A tree is its leaves (Scenery's `.hit`, the canopy
+button) and its trunk down to a little below its foot (`.hit-trunk`, a goal tree's `.trunk-btn`; ≥ 44px wide on
+screen: `--inv`); a flower's `::after` grows it to 44px; what a module hit-tests itself (a shell, a fragment, the
+bottle, a dig spot, a mushroom, a present, a weed, the rock, a bug, the tape deck, the cake) is the box of what it
+draws (its img / svg: a node's anchor is a 0 × 0 point at its foot) grown to 44px (`hitOf`), the one in front (the
+smaller world z) when two overlap (`pick`). `?hit` draws them all ([Dev params](#dev-params)).
 
 ### Balloon
 
@@ -798,6 +807,7 @@ Read once by `island/devHooks.ts`. The island's hooks work in dev builds or with
 | `?find=bottle\|fragment\|mushroom\|rare-mushroom\|earth-egg` | A beach find now / every dig spot that |
 | `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid`, `?wander` | A balloon; a show; a meteor shower's night; the tape deck; a hybrid flower; the partner wanders |
 | `?wilbur` | Wilbur on the dock (as when the partner's app is open) |
+| `?hit` | Every tap target drawn over the island (magenta: the scene's elements; cyan: the boxes a module tests) |
 
 The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there at once, the stops' snapping off;
 `at(x, z)`: a world point's client px; `put(x, z)`: my villager there; `idle()`; `perf`; `stops()`: the sections'

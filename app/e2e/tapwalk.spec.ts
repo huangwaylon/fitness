@@ -50,13 +50,13 @@ async function track(page: Page, ms = 8000): Promise<[number, number][]> {
 
 test('a tap by the campsite runs my villager up the path, never through the water; a ring marks the spot', async ({ page }) => {
   await open(page, undefined, 300);
-  const [x, y] = await call(page, (w) => w.at(240, 860));
+  const [x, y] = await call(page, (w) => w.at(180, 800));
   await page.mouse.click(x, y);
   await expect(page.locator('.tap-ring')).toHaveCount(1);
   await shot(page, 'tap-ring');
   const path = await track(page);
   const end = path.at(-1)!;
-  expect(Math.hypot(end[0] - 240, end[1] - 860)).toBeLessThan(3);
+  expect(Math.hypot(end[0] - 180, end[1] - 800)).toBeLessThan(3);
   // never in the pond (74, 772: rx 46, rz 26)
   for (const [px, pz] of path) expect(((px - 74) / 46) ** 2 + ((pz - 772) / 26) ** 2).toBeGreaterThan(1);
   await shot(page, 'after-run');

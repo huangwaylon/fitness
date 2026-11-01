@@ -21,7 +21,7 @@ async function open(page: Page, q = '') {
 
 /** A point on a tree's leaves the finger reaches (its tap area's middle, else the nearest part nothing covers). */
 const leaves = (page: Page, id: string) =>
-  page.locator(`[data-tree="${id}"]`).evaluate((el) => {
+  page.locator(`[data-tree="${id}"]:not([data-tree-part])`).evaluate((el) => {
     const b = el.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2;
     for (let d = 0; d < b.height / 2; d += 3)
       for (const [dx, dy] of [[0, d], [0, -d], [d, 0], [-d, 0]])
