@@ -2,10 +2,17 @@
 // closed when it is hidden or offline (zero cost then), reconnecting with backoff, estimating the relay's clock from
 // pings. send() is a no-op unless the socket is up (and, for anything but a world op, the partner is there too); it
 // never throws and never waits. Plain TS: the socket, the visibility source and the key are injectable for tests.
-import { CLOSE, LIVE_V, MAX_BYTES, parseClient, parseServer, type Intent, type Relayed, type Who } from './live-protocol.ts';
+import { getKey } from './storage.ts';
+import { CLOSE, LIVE_V, MAX_BYTES, parseClient, parseServer, type Intent, type Notice, type Relayed, type Who } from './live-protocol.ts';
 
 /** The relay's socket URL; VITE_LIVE_URL overrides it (empty = live off). */
 export const LIVE_URL: string = (import.meta.env?.VITE_LIVE_URL as string | undefined) ?? 'wss://island-fund-relay.island-fund-relay.workers.dev/room';
+
+/**
+ * The sheet changed: Apps Script's push (`changed`, with the new rows' `at` and `rev`; anyone's write, mine too) or the
+ * partner's nudge after an acked event (`saved`: no `at`). Either way the snapshot is worth fetching now.
+ */
+export type SheetChange = Partial<Pick<Notice, 'what' | 'at' | 'rev'>> & { who: Who };
 
 export interface LiveStatus {
   /** The socket is up and the relay accepted my key. */
@@ -41,6 +48,8 @@ export interface Live {
   send(i: Intent): boolean;
   /** The partner's relayed intents (world ops missed while away included, on reconnect). */
   on(fn: (m: Relayed) => void): () => void;
+  /** Sheet changes (docs/backend.md#push). */
+  onChange(fn: (c: SheetChange) => void): () => void;
   /** Status changes (called at once with the current one). */
   onStatus(fn: (s: LiveStatus) => void): () => void;
   status(): LiveStatus;
@@ -111,6 +120,10 @@ export function createLive(o: LiveOptions): Live {
   let offset = 0;
   let lastWorld: number | undefined;
   const subs = new Set<(m: Relayed) => void>();
+  const changeSubs = new Set<(c: SheetChange) => void>();
+  const changed = (c: SheetChange) => {
+    for (const f of changeSubs) safe(() => f(c));
+  };
   const statusSubs = new Set<(s: LiveStatus) => void>();
 
   const setStatus = (s: Partial<LiveStatus>) => {
@@ -207,8 +220,11 @@ export function createLive(o: LiveOptions): Live {
         case 'presence':
           if (m.who !== st.me) setStatus({ peer: m.on });
           return;
+        case 'changed':
+          return changed({ who: m.who, what: m.what, at: m.at, rev: m.rev });
         default:
           if (m.who === st.me) return;
+          if (m.kind === 'saved') return changed({ who: m.who, what: 'event' });
           if (m.kind === 'world') lastWorld = Math.max(lastWorld ?? 0, m.t);
           for (const f of subs) safe(() => f(m));
       }
@@ -266,6 +282,10 @@ export function createLive(o: LiveOptions): Live {
       subs.add(fn);
       return () => void subs.delete(fn);
     },
+    onChange(fn) {
+      changeSubs.add(fn);
+      return () => void changeSubs.delete(fn);
+    },
     onStatus(fn) {
       statusSubs.add(fn);
       safe(() => fn(st));
@@ -282,4 +302,14 @@ function safe(f: () => void): void {
   } catch (e) {
     console.error('live:', e);
   }
+}
+
+let shared: Live | null = null;
+
+/**
+ * The phone's one relay socket, keyed by the paired key. Everything that talks to the relay shares it (the sync's push
+ * now, the island's presence later): a second socket of the same person would replace this one (4002).
+ */
+export function liveRelay(): Live {
+  return (shared ??= createLive({ key: getKey }));
 }

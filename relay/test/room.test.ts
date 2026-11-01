@@ -206,6 +206,34 @@ describe('the island room', () => {
     expect(a.closed).toBeNull();
   });
 
+  it('relays a saved nudge to the partner only', () => {
+    const a = join(KEY_A);
+    const b = join(KEY_B);
+    a.sent = [];
+    say(b, { kind: 'saved' });
+    expect(a.sent).toEqual([{ v: 1, kind: 'saved', who: 'B', t: now }]);
+    expect(b.kinds()).toEqual(['welcome']);
+  });
+
+  it('passes a sheet change to every connected person, the writer too, never to a socket before its hello', () => {
+    const a = join(KEY_A);
+    const b = join(KEY_B);
+    const quiet = join();
+    a.sent = [];
+    b.sent = [];
+    const n = { what: 'ingest', who: 'A', at: '2026-11-01T01:02:03.456Z', rev: 'r1' } as const;
+    expect(room.notify(n)).toBe(2);
+    const m = { v: 1, kind: 'changed', ...n, t: now };
+    expect(a.sent).toEqual([m]);
+    expect(b.sent).toEqual([m]);
+    expect(quiet.sent).toEqual([]);
+    a.close();
+    room.close(a);
+    b.close();
+    room.close(b);
+    expect(room.notify(n)).toBe(0); // nobody there: a no-op
+  });
+
   it('holds at most 8 sockets', () => {
     for (let i = 0; i < MAX_SOCKETS; i++) join();
     expect(room.roomFor()).toBe(false);
