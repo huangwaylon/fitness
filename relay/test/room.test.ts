@@ -376,6 +376,8 @@ describe('the shared world (v2, docs/backend.md#shared-world)', () => {
     say2(a, { kind: 'decor', id: 'dmh1abc2b', at: T + 9, rm: true });
     const b = join2(KEY_B, 0);
     expect(b.sent.filter((m) => m.kind === 'decor')).toEqual([
+      expect.objectContaining({ id: 'dmh1abc2a', x: 120, who: 'A' }), expect.objectContaining({ id: 'dmh1abc2a', x: 144 }), expect.objectContaining({ id: 'dmh1abc2b', rm: true })
+    ]);
   });
 
   it('the tent: its decor ops are kept with their scope; a drag and a villager inside are relayed live, never kept', () => {
