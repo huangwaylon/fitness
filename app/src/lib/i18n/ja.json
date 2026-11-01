@@ -401,8 +401,6 @@
   "world.snowboy.1": "ぼく とけちゃう まえに あそぼ！",
   "world.snowboy.2": "あたまの のりかた、 ばっちりでしょ？",
   "world.snowboy.melt": "すこし ちいさく なっちゃった…",
-  "world.door.campsite": "キャンプサイト。\nいまは だれも いないみたい",
-  "world.door.campsite.guest": "キャンプサイト。\nきょうは {name}が しまに きているよ",
   "panel.decor": "もようがえ",
   "panel.decorSummary": "家具を おいて しまを かざろう。ふたりの しまに のこるよ。",
   "panel.decorStart": "はじめる",
@@ -431,5 +429,9 @@
   "decor.item.signpost": "みちしるべ",
   "decor.item.wheelbarrow": "いちりんしゃ",
   "decor.hint": "かぐを えらんで しまに おこう",
-  "decor.hintMove": "おいた かぐは タップで うごかせるよ"
+  "decor.hintMove": "おいた かぐは タップで うごかせるよ",
+  "tent.title": "テント",
+  "tent.room": "テントのなか",
+  "tent.back": "島へ",
+  "tent.failed": "テントに はいれませんでした…"
 }

@@ -22,6 +22,7 @@
   import { startWeather } from '#lib/components/island/weatherNow.svelte.ts';
   import { startViewport } from '#lib/ui-state/viewport.ts';
   import { jarTransition } from '#lib/ui-state/jarTransition.ts';
+  import { doorTransition } from '#lib/ui-state/doorTransition.ts';
   import { lazy, safeReload } from '#lib/ui-state/reload.ts';
   import { startSound } from '#lib/sound/sound.svelte.ts';
   import { startTaps } from '#lib/sound/taps.ts';
@@ -32,7 +33,7 @@
 
   const route = $derived(routeOf(page.url.pathname));
   const onPair = $derived(route.startsWith('/pair'));
-  const pageKind = $derived(route.startsWith('/jar') ? 'jar' : 'island');
+  const pageKind = $derived(route.startsWith('/jar') ? 'jar' : route.startsWith('/tent') ? 'tent' : 'island');
 
   let laterFor = $state<string | null>(null);
   /** The harvest being finished: kept through the end card even after confirming drops it from the view. */
@@ -62,6 +63,8 @@
 
   // 島 ⇄ ごほうび: a zoom into the jar and back out of it.
   jarTransition();
+  // 島 ⇄ テント: NH's door, a black iris on the door we go through.
+  doorTransition();
 
   onMount(() => {
     const stopTheme = startTheme();
@@ -148,6 +151,7 @@
   .page { min-height: var(--vh-page); background: var(--bg); }
   /* 島: the island floats in the flat map sea, which runs on under the dialogue box and the action. */
   .page[data-page='island'] { background: var(--sea-flat); }
+  .page[data-page='tent'] { background: #2a1f17; }
   /* not set up / error: on the tan panel, not the sea (the soft ink line is only 2.1:1 on the sea blue) */
   .page[data-page='island']:has(> .state:not([aria-busy])) { background: var(--bg); }
   /* Not set up / error / loading: one figure, one line, one action. */

@@ -1,0 +1,93 @@
+import { describe, expect, it } from 'vitest';
+import { DOOR_TILES, HALF, ROOM, TILE, blocked, centreOf, clampIn, nearestFree, placeWhy, snapTo, tilesOf, walkPath, type Spot } from './grid.ts';
+import { ITEMS, STARTER, footprint } from './items.ts';
+
+const furniture = STARTER.filter((c) => !ITEMS[c].rug);
+const rugs = STARTER.filter((c) => ITEMS[c].rug);
+/** A starter piece of footprint w × d. */
+const sized = (w: number, d: number) => furniture.find((c) => ITEMS[c].w === w && ITEMS[c].d === d)!;
+const bed = sized(2, 2), one = sized(1, 1), long = sized(2, 1);
+
+describe('the room', () => {
+  it('is NH’s largest: the main room fully expanded, 8 × 8 tiles of 10 model units, the door in the front’s middle', () => {
+    expect(ROOM).toBe(8);
+    expect(TILE).toBe(10);
+    expect(HALF).toBe(40);
+    expect(DOOR_TILES).toEqual([[3, 7], [4, 7]]);
+  });
+
+  it('a piece covers its footprint’s tiles, turned a quarter at a time', () => {
+    expect(tilesOf({ item: long, x: 2, z: 3, f: 0 })).toEqual([[2, 3], [3, 3]]);
+    expect(tilesOf({ item: long, x: 2, z: 3, f: 1 })).toEqual([[2, 3], [2, 4]]);
+    expect(footprint(long, 3)).toEqual([1, 2]);
+    expect(centreOf({ item: bed, x: 0, z: 0, f: 0 })).toEqual([-30, -30]);
+  });
+
+  it('snaps a point to the footprint that centres there, inside the room', () => {
+    expect(snapTo(one, 0, 0.1, 0.1)).toEqual([4, 4]);
+    expect(snapTo(bed, 0, 0, 0)).toEqual([3, 3]);
+    expect(snapTo(bed, 0, 100, -100)).toEqual([6, 0]);
+  });
+});
+
+describe('placing', () => {
+  const room: Spot[] = [{ id: 'a', item: bed, x: 0, z: 0, f: 0 }, { id: 'r', item: rugs[0], x: 1, z: 1, f: 0 }];
+
+  it('inside the room, off the door’s tiles, not over another piece', () => {
+    expect(placeWhy(room, { item: one, x: 7, z: 7, f: 0 })).toBeNull();
+    expect(placeWhy(room, { item: long, x: 7, z: 0, f: 0 })).toBe('out');
+    expect(placeWhy(room, { item: one, x: 3, z: 7, f: 0 })).toBe('door');
+    expect(placeWhy(room, { item: one, x: 1, z: 1, f: 0 })).toBe('taken');
+    // a piece moved is measured without itself
+    expect(placeWhy(room, { id: 'a', item: bed, x: 1, z: 0, f: 0 })).toBeNull();
+  });
+
+  it('a rug lies under the furniture (and over the door’s tiles), never over another rug', () => {
+    expect(placeWhy(room, { item: one, x: 2, z: 2, f: 0 })).toBeNull();
+    const [w, d] = footprint(rugs[1], 0);
+    expect(placeWhy(room, { item: rugs[1], x: 1, z: 1, f: 0 })).toBe('rug');
+    expect(placeWhy([], { item: rugs[1], x: Math.max(0, 4 - Math.floor(w / 2)), z: ROOM - d, f: 0 })).toBeNull();
+  });
+
+  it('finds the free spot nearest a point, none in a full room', () => {
+    expect(nearestFree(room, one, 0, -22, -35)).toEqual([2, 0]);
+    const full: Spot[] = [];
+    for (let x = 0; x < ROOM; x++) for (let z = 0; z < ROOM; z++) if (!DOOR_TILES.some(([a, b]) => a === x && b === z)) full.push({ id: `p${x}${z}`, item: one, x, z, f: 0 });
+    expect(nearestFree(full, one, 0, 0, 0)).toBeNull();
+  });
+});
+
+describe('walking', () => {
+  it('blocks the furniture’s half-tile cells, never a rug’s', () => {
+    const b = blocked([{ item: bed, x: 0, z: 0, f: 0 }, { item: rugs[0], x: 3, z: 3, f: 0 }]);
+    expect(b.reduce((s, v) => s + v, 0)).toBe(16);
+  });
+
+  it('keeps off the walls', () => {
+    expect(clampIn([-50, 60])).toEqual([-37, 37]);
+  });
+
+  it('goes straight across an empty room, round a piece in the way, and stops short of one tapped under', () => {
+    expect(walkPath([], [-30, 30], [30, 30])).toEqual([[30, 30]]);
+    const wall: Spot[] = [0, 1, 2, 3, 4, 5].map((x) => ({ item: one, x, z: 4, f: 0 as const }));
+    const way = walkPath(wall, [-30, 30], [-30, -30]);
+    expect(way.at(-1)).toEqual([-30, -30]);
+    expect(way.length).toBeGreaterThan(1);
+    // every leg clear of the row of pieces (z 0…10 from x −40 to 20)
+    let a: readonly [number, number] = [-30, 30];
+    for (const p of way) {
+      for (let k = 0; k <= 20; k++) {
+        const x = a[0] + ((p[0] - a[0]) * k) / 20, z = a[1] + ((p[1] - a[1]) * k) / 20;
+        expect(x > 20 || z < 0 || z > 10, `${x},${z}`).toBe(true);
+      }
+      a = p;
+    }
+    const under = walkPath([{ item: bed, x: 3, z: 3, f: 0 }], [-30, 30], [0, 0]);
+    const end = under.at(-1)!;
+    expect(Math.max(Math.abs(end[0]), Math.abs(end[1]))).toBeGreaterThanOrEqual(10);
+  });
+
+  it('is already there: no way at all', () => {
+    expect(walkPath([], [0, 0], [0.2, 0.1])).toEqual([]);
+  });
+});

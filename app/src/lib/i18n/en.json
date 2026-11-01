@@ -401,8 +401,6 @@
   "world.snowboy.1": "Let’s play before I melt!",
   "world.snowboy.2": "My head sits just right, huh?",
   "world.snowboy.melt": "I’m getting a little smaller…",
-  "world.door.campsite": "The campsite.\nNobody seems to be here right now.",
-  "world.door.campsite.guest": "The campsite.\n{name} is visiting the island today.",
   "panel.decor": "Decorate",
   "panel.decorSummary": "Put furniture on the island. It stays, for both of you.",
   "panel.decorStart": "Start",
@@ -431,5 +429,9 @@
   "decor.item.signpost": "signpost",
   "decor.item.wheelbarrow": "wheelbarrow",
   "decor.hint": "Pick a piece to put on the island",
-  "decor.hintMove": "Tap a placed piece to move it"
+  "decor.hintMove": "Tap a placed piece to move it",
+  "tent.title": "Tent",
+  "tent.room": "Inside the tent",
+  "tent.back": "Island",
+  "tent.failed": "Couldn't get into the tent…"
 }

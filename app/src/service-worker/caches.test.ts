@@ -47,6 +47,8 @@ describe('precache', () => {
     for (const p of ['art/critters/sea-bass.webp', '/fitness/art/critters/common-butterfly.webp', 'art/finds/cowrie.webp', '/fitness/art/finds/t-rex-skull.webp', 'art/presents/froggy-chair.webp']) expect(precachable(p)).toBe(false);
   });
   it('leaves the app icons out: the OS fetches them when the app is added', () => {
+    // the tent's room: its models, surfaces and icons, cached on first use (megabytes: never at install)
+    for (const p of ['room/models/f4041.glb', '/fitness/room/wall/w4840.webp', 'room/floor/g5018.webp', 'room/icons/f4081.webp']) expect(precachable(p)).toBe(false);
     for (const p of ['icons/icon-192.png', 'icons/apple-touch-icon-180.png', '/fitness/icons/icon-512.webp']) expect(precachable(p)).toBe(false);
   });
   it('leaves the world’s winter and night looks and its decor out: cached on first use', () => {

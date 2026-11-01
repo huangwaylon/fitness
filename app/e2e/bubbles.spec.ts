@@ -66,13 +66,6 @@ for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
         await balloon(page);
         await expectBy(page, art, 56); // GAP + NEAR, and a little
       });
-    test('the campsite’s door', async ({ page }) => {
-      await page.goto('?demo&date=2026-11-04T21:00&critter=none');
-      await go(page, 642);
-      await page.locator('[data-building="campsite"] .door').click();
-      await balloon(page);
-      await expectBy(page, '[data-building="campsite"] .door', 56);
-    });
   });
 }
 

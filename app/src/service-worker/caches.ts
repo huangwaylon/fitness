@@ -38,6 +38,10 @@ export const isDecorArt = (path: string): boolean =>
   /\/art\/.+-(winter|lit)\.webp$/.test(path) ||
   /\/art\/(deco\/(fence-(wooden|corral|bamboo)|garden-(lantern|lantern-white|rock)|flat-rock|lamp-glow)|trees\/bamboo)\.webp$/.test(path) ||
   /\/art\/flowers\/[a-z-]+\.webp$/.test(path);
+/** The tent's room (docs/design.md "The tent"): its models, wallpapers, floors and icons, fetched as the tent shows
+ *  them and cached on first use in a cache of their own that outlives builds (a re-converted model has a new `?v=`). */
+export const ROOM_CACHE = 'island-room-v1';
+export const isRoomAsset = (path: string): boolean => path.includes('/room/');
 /** The bridge's deck seen from above: the terrain bake's input (scripts/terrain.ts), never shown by the app. */
 const isBakeArt = (path: string): boolean => /\/art\/bridges\/[a-z-]+-deck(-winter)?\.webp$/.test(path);
 /** The home-screen and install icons: the OS fetches them when the app is added, never the page offline (the favicon
@@ -49,10 +53,10 @@ const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
 /** Whether a build file goes into the install-time precache. Paths come from `$app/manifest` relative to the base
  *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: font subsets (cached on first use),
  *  the bundled art and audio manifests, every villager but the defaults, every critter, find and present (all cached
- *  on first use), all audio (AUDIO_CACHE, on first play), the bake's input art, the app icons and macOS litter. */
+ *  on first use), all audio (AUDIO_CACHE, on first play), the tent's room (ROOM_CACHE, on first use), the bake's input art, the app icons and macOS litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;
-  if (isFont(p) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isBakeArt(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
+  if (isFont(p) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isBakeArt(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
   return !isVillagerArt(p) || PRECACHED_VILLAGERS.test(p);
 }
 

@@ -402,8 +402,8 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
 ground; my villager turns to it where it stands, no walk): NH's character inside answers in the balloon (its tail at the door, their colour
 on the name tag) and when it closes the feature opens. Resident Services: しずえ (たぬきち 22:00–05:00) → せってい;
 Nook's Cranny: まめきち・つぶきち → ごほうび; Able Sisters: あさみ → the むらびと picker; Dodo Airlines: モーリー →
-つうしん (せってい at its sync section); the museum: フータ → the ずかん ([Museum](#museum)); the campsite: who is
-visiting today. The panel keeps its せってい tab too (`ui.door` asks the panel for the section). **Wilbur** stands on the
+つうしん (せってい at its sync section); the museum: フータ → the ずかん ([Museum](#museum)); the campsite: no line, straight
+in through its door to the tent's inside ([The tent](#the-tent)). The panel keeps its せってい tab too (`ui.door` asks the panel for the section). **Wilbur** stands on the
 dock while my partner has the app open (the relay's presence, the phone's one socket; `?wilbur` shows him); a tap and
 he says so, in his radio talk (「…オーバー！」). The lines are short and in each character's NH voice: しずえ polite and
 bright (「あっ、…さん！」), たぬきち's だなも, the Nooklings' echo (「いらっしゃいませ〜！」「…ませ〜！」), あさみ's shop talk
@@ -596,6 +596,35 @@ NH's outdoor furniture on the island, moves it and takes it away; both phones sh
   villager turns to it.
 - **Cost:** the renders are 1–3 KB each, fetched as an item first shows (the tray's ten with the mode); the mode is
   its own chunk. A drag moves one world node a frame while the finger is down; nothing runs when still.
+
+### The tent
+
+`routes/tent/+page.svelte`, `tent/TentRoom.svelte`, `tent/engine.ts` (three.js), `tent/grid.ts`, `tent/items.ts`,
+`ui-state/doorTransition.ts`, `scripts/room-models.ts`, `e2e/tent.spec.ts`. A tap on the campsite's tent (in place, my
+villager turns to it) goes inside: its own screen, truly 3D, behind NH's door (a black iris closes on the tent's door,
+stays black while the room's chunk and first frame come, opens out of the room's door; the way out the same,
+opening on the tent on the island, the camera where it was).
+
+- **The room:** NH's largest, the main room fully expanded: 8 × 8 tiles (Nookipedia's upgrade table: the main room
+  6 × 6 → 8 × 8, the second floor and basement 10 × 6 = 60 tiles, so 8 × 8 = 64 is the most floor), NH's own grid (a tile
+  10 model units: RoomMdlFloor8x8 is −40…40), walls four tiles high (RoomMdlWall), the door in the front edge's middle
+  (its two tiles stay clear), a doormat there. NH's fixed, slightly top-down room camera (47° down, a long 32° lens),
+  fitted so the whole room is in view between the back button and the foot's controls; a warm interior light (a
+  soft sky over a warm floor bounce, a key from the upper front left with soft shadows, a fill from the camera).
+- **The villagers** are billboards of their official renders (NH's 3D villagers would mean converting all 417:
+  too much to ship), 16 model units tall (a bed is 20 long), each with a soft round shadow, mirrored to face the way
+  they walk. A tap on the floor walks mine there (A* on half tiles round the furniture, the corners pulled straight;
+  30 units a second); a tap on a villager hops it; a tap on the doormat or ‹ 島へ goes back out.
+- **Cost:** three.js and the room's code are their own chunk, fetched only when the tent opens (the island never
+  loads them: `e2e/tent.spec.ts`); the device pixel ratio is capped at 2; frames are drawn on demand (a walk, a piece
+  popping in, a jiggle), none while still; everything is disposed on the way out (the WebGL context too).
+- **The models** (`npm run room-models`, NH_MODELS=~/Downloads/Model): NH's furniture, rugs, wallpapers and floors
+  converted from the game files to files the app serves (`static/room/`): each piece a glTF with NH's materials baked
+  into one WebP texture each (≤ 256 px; NH's gray albedo × its gradient, a little of its ambient occlusion, its
+  opacity as alpha; the emissive kept for lamps), quantised and meshopt-compressed by gltfpack, ≤ 40 KB aimed for
+  (≈ 18 KB on average); its footprint from the model's bounds, NH's catalogue size winning where they differ;
+  wallpapers 256 × 512 (two tiles across, the wall's height), floors 512² (four tiles); NH's own catalogue icons.
+  Cached by the service worker on first use (`island-room-v1`), never at install.
 
 ### Critters
 
