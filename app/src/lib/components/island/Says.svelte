@@ -4,13 +4,16 @@
   // brings it). Talk's balloon (cream, the soft lip, a tail to the speaker, the name on a tilted tag in the person's
   // colour), one per villager, a newer phrase replacing the one showing. It stands by its speaker by the one rule
   // (placement.ts placeBy), clear of the other villager's, follows the villager as it moves, and steps aside while the
-  // camera moves. Not a control: taps go through it. The text is text (never markup).
+  // camera moves. Not a control: taps go through it. The text is text (never markup). A home's room (TentRoom) uses it
+  // too: its villagers are in the room's 3D, so their speaker is a box worked out from the camera (a SaySpeaker), and
+  // with no island stage the balloons stand in the scene's own box.
   //   <Says bind:this={says} scene={el} />   says.say('mine', text, speakerEl, { name, colour })
   import { tick } from 'svelte';
   import { TAIL_IN, placeBy, type Side } from './placement.ts';
   import { tagInk } from './pager.ts';
   import { SAY_MS } from './say.ts';
   import type { Box } from './geom.ts';
+  import type { SaySpeaker } from './say.ts';
 
   let { scene }: { scene?: HTMLElement } = $props();
 
@@ -20,7 +23,7 @@
   const els = $state<Record<Id, HTMLElement | undefined>>({ mine: undefined, partner: undefined, third: undefined });
   let layer = $state<HTMLElement>();
   let seq = 0;
-  const speakers: Record<Id, Element | undefined> = { mine: undefined, partner: undefined, third: undefined };
+  const speakers: Record<Id, SaySpeaker | undefined> = { mine: undefined, partner: undefined, third: undefined };
   const seen: Record<Id, DOMRect | undefined> = { mine: undefined, partner: undefined, third: undefined };
   const timers: Record<Id, { end?: ReturnType<typeof setTimeout>; watch?: ReturnType<typeof setInterval> }> = { mine: {}, partner: {}, third: {} };
 
@@ -39,8 +42,8 @@
     }
   }
 
-  /** `text` over `id`'s villager (`from`: its element) for SAY_MS; a newer one replaces it. */
-  export async function say(id: Id, text: string, from: Element, o: { name: string; colour: string }) {
+  /** `text` over `id`'s villager (`from`: its element, or its box on screen) for SAY_MS; a newer one replaces it. */
+  export async function say(id: Id, text: string, from: SaySpeaker, o: { name: string; colour: string }) {
     halt(id);
     const n = ++seq;
     shown[id] = { n, text, name: o.name, colour: o.colour, x: 0, y: 0, tail: 0, side: 'top', placed: false, follow: false };
@@ -65,13 +68,13 @@
   /** Place `id`'s balloon by its speaker as it stands now; false when there's no room. */
   function at(id: Id, n: number): boolean {
     const s = shown[id], el = els[id], speaker = speakers[id];
-    const st = scene?.querySelector('.stage')?.getBoundingClientRect();
+    const st = (scene?.querySelector('.stage') ?? scene)?.getBoundingClientRect();
     if (!scene || !st || !s || s.n !== n || !el || !speaker) return false;
     const w = el.offsetWidth, h = el.offsetHeight;
     const src = (seen[id] = speaker.getBoundingClientRect());
     // never over the speaker or its emote, nor over the other villager's balloon
     const other = els[id === 'mine' ? 'partner' : 'mine'], extra = [boxOf(src, 4)];
-    const emote = speaker.querySelector('.emote')?.getBoundingClientRect();
+    const emote = speaker.querySelector?.('.emote')?.getBoundingClientRect();
     if (emote?.width) extra.push(boxOf(emote, 2));
     if (other && shown[id === 'mine' ? 'partner' : 'mine']?.placed) extra.push(boxOf(other.getBoundingClientRect(), 4));
     const p = placeBy(scene, w, h, boxOf(src), extra, layer);

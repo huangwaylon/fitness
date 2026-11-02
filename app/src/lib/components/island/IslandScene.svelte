@@ -42,7 +42,7 @@
   import Says from './Says.svelte';
   import SayPicker from './SayPicker.svelte';
   import SayButton from './SayButton.svelte';
-  import { rememberSay, sayGate } from './say.ts';
+  import { SAY_TAG, rememberSay, sayGate } from './say.ts';
   import { HIGHFIVE_LIVE_MS, heardHighFive } from './highFives.ts';
   import TreeShakes from './TreeShakes.svelte';
   import PartnerNews from './PartnerNews.svelte';
@@ -228,8 +228,6 @@
   /** The say button shows on the live island with nothing over it: no sheet, the harvest, a tree's popup, もようがえ. */
   const sayShown = $derived(live && !covered && !ui.decorating && !openTree && !ui.sheets.length);
   const vilEls = $state<Record<VillagerActor, HTMLElement | undefined>>({ mine: undefined, partner: undefined, third: undefined });
-  /** The name tag's colour: the person's (tokens.css --person-a / --person-b; the guest's lilac). */
-  const SAY_TAG: Record<Who, string> = { A: '#2F86BD', B: '#D2701F', G: '#8E6CC8' };
   function openPicker(el: HTMLElement) {
     if (!sayShown) return;
     picking = el;
@@ -863,7 +861,8 @@
     if (!live || !r) return;
     return r.on((m) => {
       if (m.who === castMe()) return;
-      if (m.kind === 'say') untrack(() => showSay(actorOf(m.who), m.text));
+      // (one said in a home's room, `sc`, is for the phones in there: not the island's)
+      if (m.kind === 'say') untrack(() => m.sc === undefined && showSay(actorOf(m.who), m.text));
       // (a high-five for me: the room sends each to whom it's for; an older one names nobody, the partner's)
       else if (m.kind === 'highfive') untrack(() => (m.to === undefined || m.to === castMe()) && partnerHighFive(m.at, m.who));
       // where their villager is: in the tent it's nowhere on the island (and its life here leaves it alone)

@@ -5,6 +5,17 @@
 import { DEVICE, localKV, readJson, writeJson, type KV } from '#lib/sync/storage.ts';
 import { cleanSay } from '#lib/sync/live-protocol.ts';
 
+/** Who a balloon stands by: a villager's element on the island, or (a home's room, its villagers in 3D) its box on
+ *  screen worked out each time it's asked, gone (`isConnected` false) once the villager is. */
+export interface SaySpeaker {
+  getBoundingClientRect(): DOMRect;
+  readonly isConnected: boolean;
+  querySelector?(sel: string): Element | null;
+}
+
+/** A balloon's name tag: the person's colour (tokens.css --person-a / --person-b; the guest's lilac). */
+export const SAY_TAG = { A: '#2F86BD', B: '#D2701F', G: '#8E6CC8' } as const;
+
 /** The preset phrases (i18n `say.<id>`): greetings and cheer, in the picker's order. */
 export const SAY_PRESETS = ['hi', 'otsukare', 'ganbaro', 'yatta', 'aruko', 'oyasumi'] as const;
 /** A phrase's balloon shows this long (ms). */

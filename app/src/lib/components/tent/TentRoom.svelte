@@ -6,6 +6,8 @@
   // out; もようがえ arranges the room (TentEdit). The room is both of ours (store/tent.svelte.ts: the relay live, the
   // sheet for good); the partner's villager is here while they are (each phone moves its own: the `tent` intent, the
   // very walk) or while they're away; what they drag moves here as they drag it (dragLink.ts). Nothing gives ベル.
+  // The say button at the bottom right opens the island's phrase picker: a phrase shows over my villager in here, and
+  // on the phones whose villager is in this room too (the relay's `say` with this room's `sc`; one place at a time).
   import { goto } from '$app/navigation';
   import { asset, resolve } from '$app/paths';
   import { url3d } from '../villager3d/manifest.ts';
@@ -14,6 +16,10 @@
   import TentEdit from './TentEdit.svelte';
   import HomePicker from '../homes/HomePicker.svelte';
   import HhaLetter from './HhaLetter.svelte';
+  import Says from '../island/Says.svelte';
+  import SayPicker from '../island/SayPicker.svelte';
+  import SayButton from '../island/SayButton.svelte';
+  import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '../island/say.ts';
   import { loadHha, rate, type HhaRating } from './hha.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import type { WeekView } from '#lib/types.ts';
@@ -35,7 +41,7 @@
   import { sendDecor } from '#lib/store/actions.ts';
   import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
-  import { tokyoDay, type Intent, type Pt as WirePt, type Relayed } from '#lib/sync/live-protocol.ts';
+  import { tokyoDay, type Intent, type SayScope, type Pt as WirePt, type Relayed } from '#lib/sync/live-protocol.ts';
   import { hook } from '../island/devHooks.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfFind } from './items.ts';
   import { DOOR_IN, HALF, centreOf, nearestFree, resolve as resolveRoom, walkPath, type Pt, type Resolved } from './grid.ts';
@@ -243,6 +249,66 @@
     }, 500);
   }
 
+  // ---- the phrases (island/say.ts): the say button opens the picker; a pick hops my villager and shows the phrase
+  //      over it for a few seconds, here and on the phones in this room too (`say` with this room's `sc`) ----
+  let says = $state<ReturnType<typeof Says>>();
+  /** ハニワくん's letter open (its rating, worked out as it opened). */
+  let letter = $state<HhaRating | null>(null);
+  let scene = $state<HTMLElement>();
+  /** The say button while its picker is open. */
+  let sayAt = $state<HTMLElement | null>(null);
+  let sayBtn = $state<HTMLButtonElement>();
+  /** The pointerdown that closed the picker: on the room it only closes (nobody walks, the camera stays). */
+  let sayClosedBy: Event | null = null;
+  /** Where a phrase said in here is: this room (the tent `t`, うめ's `u`, the guest's `v`). */
+  // svelte-ignore state_referenced_locally
+  const saySc: SayScope = home === 'B' ? 'u' : home === 'G' ? 'v' : 't';
+  /** As on the island: not in もようがえ, nor under a sheet or ハニワくん's letter. */
+  const sayShown = $derived(!!eng && !failed && !editing && !picking && !letter && !ui.sheets.length);
+  const sayId = (w: Who) => (w === me ? 'mine' : w === partner ? 'partner' : 'third');
+  /** A villager's box on screen as the room's camera has it now (Says asks it again as it follows): from the top of
+   *  its head (the engine's headPoint) down to its feet. Gone with the villager. */
+  function speakerOf(w: Who): SaySpeaker {
+    return {
+      get isConnected() {
+        return !!eng?.at(w);
+      },
+      getBoundingClientRect() {
+        const h = eng?.headPoint(w), at = eng?.at(w);
+        if (!eng || !h || !at) return new DOMRect();
+        const [hx, hy] = eng.client(h[0], h[1], h[2]), [, fy] = eng.client(at[0], 0, at[1]);
+        const tall = Math.max(12, fy - hy), wide = tall * 0.55;
+        return new DOMRect(hx - wide / 2, hy, wide, tall);
+      }
+    };
+  }
+  /** `text` over a villager in here (mine: picked here; another's: from the relay) and a hop. */
+  function showSay(w: Who, text: string) {
+    if (!eng?.at(w)) return;
+    says?.say(sayId(w), text, speakerOf(w), { name: nameOf(w), colour: SAY_TAG[w] });
+    if (!eng.walking(w) && !(w === me ? mySeat : theirSeats.has(w))) eng.hop(w);
+  }
+  function closeSay(by?: Event) {
+    if (!sayAt) return;
+    sayAt = null;
+    if (by) sayClosedBy = by;
+  }
+  function pickSay(text: string, own: boolean) {
+    closeSay();
+    if (own) rememberSay(text);
+    showSay(me, text);
+    sayOut.say(text);
+  }
+  const sayOut = sayGate((text) => void relay?.send({ kind: 'say', text, sc: saySc }));
+  $effect(() => () => sayOut.stop());
+  $effect(() => {
+    // もようがえ, a sheet or the letter: the picker goes with its button, the balloons too in もようがえ
+    if (sayAt && !sayShown) untrack(() => closeSay());
+  });
+  $effect(() => {
+    if (editing) untrack(() => says?.hush());
+  });
+
   // ---- the finger: a tap walks (or acts on what it's on); a drag turns the camera round the room (in the edit mode a
   //      drag that starts on a piece moves it instead); two fingers pinch to zoom and tilt ----
   const ptrs = new Map<number, { x: number; y: number }>();
@@ -262,6 +328,8 @@
   let longTimer: ReturnType<typeof setTimeout> | undefined;
   function onDown(e: PointerEvent) {
     clearTimeout(longTimer);
+    // the tap that closed the phrase picker only closes it
+    if (e === sayClosedBy) return void (sayClosedBy = null);
     canvas?.setPointerCapture(e.pointerId);
     // the first finger down: nothing else is (a pointer whose up never came, a lost capture, is forgotten)
     if (e.isPrimary) {
@@ -291,6 +359,7 @@
       clearTimeout(longTimer);
       gesture = { kind: 'pinch', ...spread() };
       eng?.moving(true);
+      says?.hold(true);
     }
   }
   function onMove(e: PointerEvent) {
@@ -303,6 +372,7 @@
       clearTimeout(longTimer);
       g.kind = 'orbit';
       eng.moving(true);
+      says?.hold(true);
     }
     if (g.kind === 'orbit') {
       eng.orbit(-(e.clientX - g.lx) * 0.0085, (e.clientY - g.ly) * 0.005);
@@ -331,6 +401,7 @@
     if (!ptrs.size) {
       gesture = null;
       eng?.moving(false);
+      says?.hold(false);
     } else if (g?.kind === 'pinch') {
       // one finger left: it turns the camera on from where it is
       const [p] = [...ptrs.values()];
@@ -344,6 +415,7 @@
     if (!ptrs.size) {
       gesture = null;
       eng?.moving(false);
+      says?.hold(false);
     }
   }
   function onWheel(e: WheelEvent) {
@@ -458,8 +530,6 @@
   $effect(() => void loadTentNames(i18n.locale).catch(() => {}));
 
   // ---- the Happy Home Academy (tent/hha.ts) ----
-  /** The letter open (its rating, worked out as it opened). */
-  let letter = $state<HhaRating | null>(null);
   const roomNow = () => ({ pieces: room.pieces, wall: room.wall, floor: room.floor, lights: room.lights });
   async function openLetter(): Promise<void> {
     const table = await loadHha().catch(() => null);
@@ -498,6 +568,8 @@
       offs.push(relay.on((m) => {
         if (m.who === me) return;
         if (m.kind === 'tent') heardTent(m);
+        // a phrase said in this room (one said on the island or in another home isn't for in here)
+        else if (m.kind === 'say' && m.sc === saySc) showSay(m.who, m.text);
         else if (m.kind === 'drag' && here(m)) heardDrag(m);
       }));
       offs.push(relay.onStatus((st) => {
@@ -606,6 +678,11 @@
       /** The partner has the app open (the relay's presence). */
       peer: () => peer,
       hit: (cx: number, cy: number) => eng?.hit(cx, cy),
+      /** The top of a villager's head in client px (a phrase's balloon stands by it). */
+      head: (w: Who) => {
+        const h = eng?.headPoint(w);
+        return h ? eng!.client(h[0], h[1], h[2]) : null;
+      },
       /** A point on a wall (0 back, 1 left, 2 right, 3 front; across from its left end and up) in client px. */
       /** The camera at rest and framed for what covers the canvas now (after the tray's re-centring). */
       still: () => !refit && !!eng?.still(),
@@ -655,14 +732,14 @@
   }
 </script>
 
-<main class="tent" data-tent data-room-home={home} data-editing={editing || undefined}>
+<main class="tent" bind:this={scene} data-tent data-room-home={home} data-editing={editing || undefined}>
   <h1 class="sr-only">{t('tent.title')}</h1>
   <canvas bind:this={canvas} class="room" data-room onpointerdown={onDown} onpointermove={onMove} onpointerup={onUp}
     onpointercancel={onCancel} onwheel={onWheel} aria-label={t('tent.room')}></canvas>
   <div class="top" bind:this={top}>
     {#if !editing}<NavButton kind="back" text={t('tent.back')} onclick={leave} sfx="self" />{/if}
   </div>
-  {#if home !== 'A'}<p class="whose" data-home={home}>{nameOf(home)}の いえ</p>{/if}
+  {#if home !== 'A'}<p class="whose" data-guard data-home={home}>{nameOf(home)}の いえ</p>{/if}
   {#if !editing && canEdit}
     <!-- NH's room light switch: the room's own light on or off (the lamps that are on light it then) -->
     <button type="button" class="switch" class:off={!room.lights} data-tent-lights={room.lights ? 'on' : 'off'} data-sfx="self"
@@ -705,6 +782,17 @@
         heldChanged();
       }} />
   {/if}
+  <Says bind:this={says} {scene} />
+  {#if sayAt && scene}
+    <SayPicker {scene} anchor={sayAt} onpick={pickSay} onclose={(e) => {
+      closeSay(e);
+      if (!e) sayBtn?.focus({ preventScroll: true }); // ✕ or Esc: the focus back on its button
+    }} />
+  {/if}
+  {#if sayShown}
+    <!-- the picker's door: bottom right, as on the island, above the foot's buttons -->
+    <div class="say-dock"><SayButton bind:el={sayBtn} open={!!sayAt} onopen={(el) => (sayAt = el)} /></div>
+  {/if}
   {#if letter}<HhaLetter rating={letter} onclose={() => (letter = null)} />{/if}
   {#if picking}<HomePicker bind:open={picking} who={home} />{/if}
   {#if failed}<p class="fail" role="alert">{t('tent.failed')}</p>{/if}
@@ -712,6 +800,8 @@
 
 <style>
   .foot :global(.look) { margin-right: 8px; }
+  /* the say button: bottom right, just above the foot's buttons (いえを かえる and もようがえ fill the foot's width) */
+  .say-dock { position: absolute; z-index: 3; right: calc(var(--safe-right, 0px) + 8px); bottom: calc(var(--safe-bottom, 0px) + 14px + 56px + 10px); }
   .whose {
     position: absolute; left: 50%; top: calc(var(--safe-top, 0px) + 70px); transform: translateX(-50%); margin: 0; padding: 6px 14px;
     border-radius: 999px; background: var(--c-cream); color: var(--c-ink); font-weight: 700; font-size: var(--fs-s, 13px); pointer-events: none;

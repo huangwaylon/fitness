@@ -128,6 +128,9 @@ export interface Tent {
   /** A villager turns toward a point (left or right) or hops (a tap on it). */
   face(who: Who, toward: Pt): void;
   hop(who: Who): void;
+  /** The top of a villager's head (model units; null: not in here): a speech balloon's anchor (Says, by way of the
+   *  camera). Now the top of its card (its render's head; the 3D model is as tall); the head bone's when it's switched. */
+  headPoint(who: Who): [number, number, number] | null;
   /** Turn the camera round the room's middle and tilt it (radians), zoom it (a factor: > 1 nearer); all clamped. */
   orbit(dAz: number, dPitch: number): void;
   zoom(f: number): void;
@@ -975,6 +978,15 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     w.v3?.act('hop');
     invalidate();
   }
+  const headV = new Vector3();
+  function headPoint(who: Who): [number, number, number] | null {
+    const w = villagers.get(who);
+    if (!w) return null;
+    // the card's top middle as it stands now (a hop, a seat, the camera's turn): its geometry is 0…1 up
+    w.card.updateMatrixWorld();
+    const p = w.card.localToWorld(headV.set(0, 1, 0));
+    return [p.x, p.y, p.z];
+  }
 
   // ---- the camera: NH's room camera to start with (the whole room in view, its floor's middle at the middle of
   //      what the controls leave of the screen), then the player's to turn round that middle, tilt and zoom, within
@@ -1461,7 +1473,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       place(w);
       invalidate();
     },
-    walk, walking: (who) => !!villagers.get(who)?.path, face, hop, hit, floorAt, client, orbit, zoom, resetView, isDefault, moving, centre,
+    walk, walking: (who) => !!villagers.get(who)?.path, face, hop, headPoint, hit, floorAt, client, orbit, zoom, resetView, isDefault, moving, centre,
     loading: () => pending,
     stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: cost.slice(), queued: !!raf }),
     ready,
