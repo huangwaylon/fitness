@@ -130,6 +130,33 @@ export function sit(t: number, body: Body, seed = 0): Pose {
   return p;
 }
 
+/** Sitting on a seat `h` model units over the floor (its hips' joint that high, the caller's: villager3d sitAt), NH's:
+ *  thighs forward, the hands in the lap, its back upright against the seat's back (`back`) or a little forward on a
+ *  stool. A seat higher than its shins leaves its feet dangling (swinging a little); a lower one has its feet on the
+ *  floor, the knees up as far as the seat is low (a cushion's: knees up, feet out). The hips are the group's origin:
+ *  no lift here. */
+export function sitOn(t: number, body: Body, h: number, back: boolean, seed = 0): Pose {
+  const p = arms(rest(), ARMS + 0.12, -0.55, 0.7);
+  breathe(p, t, 3400, 1);
+  const reach = body.shin + 0.25;
+  // the thigh raised above level by th (knees up) so that a shin hanging straight down just reaches the floor
+  const th = h >= reach ? 0 : Math.min(1.05, Math.asin(Math.min(1, (reach - h) / Math.max(0.5, body.thigh))));
+  const kick = h >= reach ? Math.sin(t / 520 + seed) * 0.22 : 0;
+  // (a deep, low seat: the knees a little apart)
+  const out = 0.06 + 0.25 * (th / 1.05);
+  p.j.Leg_1_L = [-1.5 - th, 0, -out];
+  p.j.Leg_1_R = [-1.5 - th, 0, out];
+  // the knee: the shin straight down (more bent the higher the thigh), or dangling and swinging
+  p.j.Leg_2_L = [1.5 + th + kick, 0, 0];
+  p.j.Leg_2_R = [1.5 + th - kick, 0, 0];
+  p.j.Ankle_L = [-0.15, 0, 0];
+  p.j.Ankle_R = [-0.15, 0, 0];
+  p.j.Spine_1 = [back ? -0.1 : 0.04, 0, 0];
+  const look = drift(t, seed);
+  p.j.Head = [0.05, 0.35 * look, 0.05 * drift(t * 1.2, seed + 2)];
+  return p;
+}
+
 /** How high a sitting villager's seat is (model units) over its origin: its hips stay over the origin (they're the
  *  pivot), its knees come forward and its feet hang under them. */
 export const seatOf = (b: Body): number => b.hip - b.thigh;
@@ -187,11 +214,11 @@ function fish(t: number, seed = 0): Pose {
   return p;
 }
 
-export function base(state: State, t: number, o: { phase: number; speed: number; body: Body; seed: number }): Pose {
+export function base(state: State, t: number, o: { phase: number; speed: number; body: Body; seed: number; seatH?: number; back?: boolean }): Pose {
   switch (state) {
     case 'fish': return fish(t, o.seed);
     case 'walk': return walk(t, o.phase, o.speed);
-    case 'sit': return sit(t, o.body, o.seed);
+    case 'sit': return o.seatH !== undefined ? sitOn(t, o.body, o.seatH, !!o.back, o.seed) : sit(t, o.body, o.seed);
     case 'lie': return lie(t, o.seed);
     case 'nap': return nap(t, o.seed);
     case 'doze': return doze(t, o.seed);

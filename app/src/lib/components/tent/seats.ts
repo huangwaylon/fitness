@@ -3,6 +3,7 @@
 // two), where each one is in the room, how high, which way it faces, and where to stand to get on it.
 import { ITEMS, footprint } from './items.ts';
 import { TILE, centreOf, type Facing, type Pt } from './grid.ts';
+import { anchorsOf, shapeOf, type Anchor } from '../villager3d/seats3d.ts';
 
 export interface Seat {
   /** The piece's id and which of its seats. */
@@ -15,6 +16,8 @@ export interface Seat {
   front: Pt;
   /** Where to stand to get on it: a step out in front. */
   from: Pt;
+  /** Where a 3D villager sits or lies on it (its model's own seat, from its geometry: villager3d/seats3d.ts). */
+  anchor?: Anchor;
 }
 
 /** A piece's seats as it stands (its spot in the room and its height off the floor, a thing on a table being none). */
@@ -27,6 +30,10 @@ export function seatsOf(p: { id: string; item: string; x: number; z: number; f: 
   const across: Pt = [Math.cos(a), -Math.sin(a)], front: Pt = [Math.sin(a), Math.cos(a)];
   const [w, d] = [m.w, m.d], y = Math.min(lie ? 7 : 6, m.h * (lie ? 0.7 : 0.55));
   void footprint;
+  // the model's own seats (its geometry's): where, how high, and where to step up to them
+  const own = anchorsOf(shapeOf('tent', p.item), { x: cx, z: cz, y: 0, yaw: a, s: 1 });
+  if (own.length === n)
+    return own.map((an, i) => ({ id: p.id, n: i, lie, at: [an.x, an.z] as Pt, y: an.y, front, from: an.from, anchor: an }));
   return Array.from({ length: n }, (_, i) => {
     const off = ((i + 0.5) / n - 0.5) * w * TILE;
     const at: Pt = [cx + across[0] * off, cz + across[1] * off];

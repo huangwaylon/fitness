@@ -165,7 +165,7 @@
     const p = spots().find((q) => q.id === id);
     return p ? (seatsOf(p)[n] ?? null) : null;
   };
-  const poseOf = (st: Seat): Pose => ({ at: st.at, y: st.y, lie: st.lie, front: st.front });
+  const poseOf = (st: Seat): Pose => ({ at: st.at, y: st.y, lie: st.lie, front: st.front, a: st.anchor });
   function sitOn(id: string) {
     const p = spots().find((q) => q.id === id);
     if (!p || !eng) return false;
