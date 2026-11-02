@@ -174,6 +174,8 @@ test('a note written is drawn on the face at once, and still after a reload', as
 
 for (const island of ['2d', '3d'] as const) {
   test(`「もどる」 sits under the HUD’s ribbon, never over it, and the face under both (${island})`, async ({ page }) => {
+    // (the 3D island loads its models and draws in software on CI: 20-odd s before the board opens)
+    if (island === '3d') test.setTimeout(60_000);
     await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&island=${island}`);
     await expect(ribbon(page)).toBeVisible();
     const hud = (await ribbon(page).boundingBox())!;
@@ -225,6 +227,7 @@ test('a note in the record’s snapshot is on the board when it opens', async ({
 });
 
 test('on the 3D island the face rides on the board’s cork, in front of NH’s notes', async ({ page }) => {
+  test.setTimeout(60_000);
   await pairedWithPost(page, '3d');
   const where = () => page.evaluate(() => (window as unknown as { __world3d?: { where(id: string): { x: number; y: number; z: number } | null } }).__world3d?.where('board') ?? null);
   await expect.poll(where, { timeout: 20_000 }).not.toBeNull();
