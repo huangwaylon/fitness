@@ -214,7 +214,7 @@ const isTentPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && 
 /** A phrase's length at most (code points; NH's balloon scale). */
 export const SAY_MAX = 20;
 /** Where a phrase is said (`say`'s `sc`): a home's room, the tent (`t`), うめ's (`u`) or the guest's (`v`); none, the island. */
-export const SAY_SCOPES = ['t', 'u', 'v'] as const;
+const SAY_SCOPES = ['t', 'u', 'v'] as const;
 export type SayScope = (typeof SAY_SCOPES)[number];
 /** What a phrase never carries: control characters (a newline, a tab: a space), line and paragraph separators, bidi
  *  controls, invisible spaces, lone surrogates. (The emoji joiner and the variation selectors stay: emoji need them.) */
