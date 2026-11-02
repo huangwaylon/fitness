@@ -10,13 +10,16 @@ test.use({ viewport: { width: 390, height: 844 } });
 
 type W = { go(z: number): void; at(x: number, z: number): [number, number]; mine(): [number, number]; partner(): [number, number] };
 const go = (page: Page, z: number) => page.evaluate((z) => (window as unknown as { __world: W }).__world.go(z), z);
+/** The island's camera at rest on these tabs (a tap's px only holds once it is). */
+const atRest = (...ps: Page[]) =>
+  Promise.all(ps.map((p) => expect.poll(() => p.evaluate(() => (window as unknown as { __world: { idle(): boolean } }).__world.idle()), { timeout: 5000 }).toBe(true)));
 const DATE = '2026-11-04T12:00';
 
 async function open(page: Page, q = '') {
   await page.goto(`?demo&date=${DATE}&critter=none${q}`);
   await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
-  await page.waitForTimeout(2600); // the opening beats are over
+  await page.waitForTimeout(2600); // the opening beats are over (no hook says the director's queue is empty yet: a time wait)
 }
 
 /** A point on a tree's leaves the finger reaches (its tap area's middle, else the nearest part nothing covers). */
@@ -32,28 +35,27 @@ async function shake(page: Page, id: string) {
   for (let i = 0; i < 3; i++) {
     const p = await leaves(page, id);
     await page.mouse.click(p.x, p.y);
-    await page.waitForTimeout(140);
+    await page.waitForTimeout(140); // (NH's three quick taps: the gesture's own pace)
   }
 }
 
 test('every tree shakes: three quick taps on an oak drop a branch beside it; one tap only rustles', async ({ page }) => {
   await open(page, '&shake=branch');
   await go(page, 380);
-  await page.waitForTimeout(400);
+  await atRest(page);
   const p = await leaves(page, 'oak-m1');
   await page.mouse.click(p.x, p.y);
-  await page.waitForTimeout(1400); // a run has to be quick: this one is over
+  await page.waitForTimeout(1400); // a run has to be quick: this one is over (proving no branch comes)
   await expect(page.locator('button[data-branch]')).toHaveCount(0);
   await shake(page, 'oak-m1');
   const twig = page.locator('button[data-branch="oak-m1"]');
   await expect(twig).toHaveCount(1, { timeout: 3000 });
-  await page.waitForTimeout(700);
-  await twig.click();
+  await twig.click(); // (once it has landed: a locator's click waits for it to stand still)
   await expect(twig).toHaveCount(0, { timeout: 3000 });
   // a reload finds today's island as it was: the branch is gone, and stays gone
   await page.reload();
   await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
-  await page.waitForTimeout(800);
+  await page.waitForTimeout(800); // (proving the branch doesn't come back)
   await expect(page.locator('button[data-branch]')).toHaveCount(0);
 });
 
@@ -62,7 +64,6 @@ test('a palm drops its two coconuts, once a day: a tap picks one up (NH’s line
   await shake(page, 'palm-3');
   const nuts = page.locator('button[data-coconut]');
   await expect(nuts).toHaveCount(2, { timeout: 3000 });
-  await page.waitForTimeout(700);
   await nuts.last().click(); // (the two lie side by side, the later one on top)
   await expect(page.locator('[data-fx="catch"]')).toContainText('ヤシのみを ひろった！', { timeout: 4000 });
   await expect(nuts).toHaveCount(1);
@@ -89,7 +90,7 @@ test('two players see the same island, not mirrored: A (ウェイ) on the left, 
     return out;
   }, [FLOWERS[0].id, FLOWERS[3].id]);
   for (const p of [a, b]) await go(p, 0);
-  await a.waitForTimeout(500);
+  await atRest(a, b);
   const [la, lb] = [await layout(a), await layout(b)];
   // my own villager is A's on tab A and B's on tab B, yet both stand where their person lives
   await expect(a.locator('[data-actor="mine"]')).toHaveAttribute('data-person', 'A');
@@ -117,20 +118,26 @@ test('two players: a tap-walk on one tab plays on the other from the same start 
   await open(a);
   await open(b, '&as=B');
   for (const p of [a, b]) await go(p, 300);
-  await a.waitForTimeout(400);
+  await atRest(a, b);
   for (const [tapper, watcher, tx, tz] of [[a, b, 240, 500], [b, a, 150, 560]] as const) {
+    // (the tapping tab in front: a tab behind has its frames held, its tap areas where the camera was)
+    await tapper.bringToFront();
+    await atRest(tapper);
     const [x, y] = await tapper.evaluate(([tx, tz]) => (window as unknown as { __world: W }).__world.at(tx, tz), [tx, tz]);
     await tapper.mouse.click(x, y);
     // under way: the two tabs have it within a few steps of each other (one frame and the evaluate's skew apart)
     let worst = 0;
     for (let i = 0; i < 8; i++) {
-      await tapper.waitForTimeout(150);
+      await tapper.waitForTimeout(150); // (a sample every 150 ms of the walk)
       const [p, q] = await Promise.all([feet(tapper, true), feet(watcher, false)]);
       worst = Math.max(worst, Math.hypot(p[0] - q[0], p[1] - q[1]));
     }
     console.log(`drift under way (worst of 8 samples): ${worst.toFixed(1)}u`);
     expect(worst).toBeLessThan(40);
-    await tapper.waitForTimeout(2500);
+    // the walk over on both tabs
+    const who = tapper === a ? 'A' : 'B';
+    for (const t of [tapper, watcher])
+      await expect.poll(() => t.evaluate((who) => (window as unknown as { __world: { state(): { villagers: Record<string, { walking: boolean }> } } }).__world.state().villagers[who].walking, who), { timeout: 8000 }).toBe(false);
     const [p, q] = await Promise.all([feet(tapper, true), feet(watcher, false)]);
     expect(Math.hypot(p[0] - q[0], p[1] - q[1])).toBeLessThan(1.5);
     expect(Math.hypot(p[0] - tx, p[1] - tz)).toBeLessThan(4);
@@ -159,7 +166,8 @@ test('two players: asleep at night on both tabs; a tap wakes my villager on both
   await a.mouse.click(v.x + v.width / 2, v.y + v.height * 0.6);
   for (const p of [a, b]) await expect(zzz(p, 'A')).toHaveCount(0, { timeout: 1500 });
   for (const p of [a, b]) await expect(zzz(p, 'B')).toHaveCount(1);
-  // ten seconds later: asleep again on both (the same moment: the wake's own time on each)
+  // ten seconds later: asleep again on both (the same moment: the wake's own time on each; two tabs' own clocks, so
+  // real time: proving it holds till then)
   await a.waitForTimeout(9000);
   for (const p of [a, b]) await expect(zzz(p, 'A')).toHaveCount(1, { timeout: 2500 });
   await ctx.close();
@@ -197,14 +205,13 @@ test('two players: a shake on one tab plays on the other (their villager stays w
   await open(a, '&shake=branch');
   await open(b, '&as=B');
   for (const p of [a, b]) await go(p, 380);
-  await a.waitForTimeout(400);
+  await atRest(a, b);
   await shake(a, 'oak-m1');
   await expect(a.locator('button[data-branch="oak-m1"]')).toHaveCount(1, { timeout: 3000 });
   // B's tab: the oak shakes and the branch falls beside it; A's villager (B's partner) doesn't run over
   await expect(b.locator('button[data-branch="oak-m1"]')).toHaveCount(1, { timeout: 6000 });
   await expect(b.locator('[data-actor="partner"].walking')).toHaveCount(0);
-  await b.waitForTimeout(800);
-  await b.locator('button[data-branch="oak-m1"]').click();
+  await b.locator('button[data-branch="oak-m1"]').click(); // (once it has landed: the click waits for it to stand still)
   await expect(b.locator('button[data-branch]')).toHaveCount(0, { timeout: 3000 });
   await expect(a.locator('button[data-branch]')).toHaveCount(0, { timeout: 3000 });
   // a third tab opening later (B's phone again) finds the day as it is: no branch, and the nest rule shared
