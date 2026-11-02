@@ -115,7 +115,7 @@ export interface Lights {
   /** The time of day's lamp level (0 day … 1 night), eased to. */
   level(v: number): void;
   /** One frame: true while something still fades. `cx, cz`: the view's centre on the ground (world). */
-  frame(t: number, cx: number, cz: number, R: number, pivotZ: number): boolean;
+  frame(t: number, cx: number, cz: number, R: number, pivotZ: number): boolean | 'ambient';
   /** How many point lights are lit (any share) and the lights' count (stats). */
   stats(): { points: number; lamps: number };
   dispose(): void;
@@ -166,7 +166,7 @@ export function createLights(scene: Scene): Lights {
     }
   }
 
-  function frame(t: number, cx: number, cz: number, R: number, pivotZ: number): boolean {
+  function frame(t: number, cx: number, cz: number, R: number, pivotZ: number): boolean | 'ambient' {
     const dt = last ? Math.min(100, t - last) : 16;
     last = t;
     let moving = false;
@@ -217,7 +217,8 @@ export function createLights(scene: Scene): Lights {
     halo.geo.getAttribute('aI').needsUpdate = true;
     pool.geo.getAttribute('aI').needsUpdate = true;
     halo.mesh.visible = pool.mesh.visible = lvl > 0 && spots.length > 0;
-    return moving || (fire && lvl > 0);
+    // (a fire's flicker is ambience)
+    return moving ? true : fire && lvl > 0 ? 'ambient' : false;
   }
 
   return {

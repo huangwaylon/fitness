@@ -63,7 +63,7 @@ interface Part {
 export interface Effects {
   spawn(kind: FxKind, x: number, z: number, lift?: number, o?: FxOpts): void;
   /** One frame: true while a flourish plays (not an ambient one). */
-  frame(t: number, camera: Camera): boolean;
+  frame(t: number, camera: Camera): boolean | 'ambient';
   /** How many play (with this tag). */
   count(tag?: string): number;
   /** Load every flourish's model now and put its textures and shaders on the GPU (the island's start, once idle): the
@@ -108,7 +108,8 @@ function glow(): Texture {
   return t;
 }
 
-export function createEffects(scene: Scene, ground: (x: number, z: number) => number): Effects {
+/** `onLoad`: a part's model is in (a frame to show it). */
+export function createEffects(scene: Scene, ground: (x: number, z: number) => number, onLoad?: () => void): Effects {
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
   const base = new URL(`room/world3d/`, new URL(document.baseURI)).href;
@@ -183,6 +184,8 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
 
   /** One particle of a source: from (x, y, z) with a velocity, living `life` ms, scaled s0 → s1. */
   function part(name: string, x: number, y: number, z: number, p: Partial<Part> & { tint?: string; life: number }) {
+    // (a spawn's tag on each of its parts: an ambient one's all ambient)
+    if (!p.tag && spawnTag) p = { ...p, tag: spawnTag };
     if (p.tag) coming.set(p.tag, (coming.get(p.tag) ?? 0) + 1);
     void load(name).then((src) => {
       if (p.tag) coming.set(p.tag, (coming.get(p.tag) ?? 1) - 1);
@@ -207,10 +210,20 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         s0: (p.s0 ?? 1) * k, s1: (p.s1 ?? 1) * k, face: p.face ?? true, flat: p.flat ?? false, sway: p.sway ?? 0, arc: p.arc ?? 0,
         blink: p.blink ?? false, tag: p.tag, fade: p.fade ?? true
       });
+      onLoad?.();
     });
   }
 
+  let spawnTag: string | undefined;
   function spawn(kind: FxKind, x: number, z: number, lift = 0, o: FxOpts = {}) {
+    spawnTag = o.tag;
+    try {
+      spawnOf(kind, x, z, lift, o);
+    } finally {
+      spawnTag = undefined;
+    }
+  }
+  function spawnOf(kind: FxKind, x: number, z: number, lift: number, o: FxOpts) {
     const y = ground(x, z) + lift, k = o.size ?? 1;
     switch (kind) {
       case 'dust': case 'sand': case 'snow': {
@@ -314,7 +327,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     }
   }
 
-  function frame(t: number, camera: Camera): boolean {
+  function frame(t: number, camera: Camera): boolean | 'ambient' {
     camera.getWorldQuaternion(q);
     for (let i = parts.length - 1; i >= 0; i--) {
       const p = parts[i], age = t - p.t0, k = age / p.life;
@@ -343,7 +356,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     }
     // (the ambient ones, the season's fall and the fireflies, are no motion to keep the island at full rate: the
     // water's 30 a second carries them)
-    return parts.some((p) => !p.tag);
+    return parts.some((p) => !p.tag) ? true : parts.length ? 'ambient' : false;
   }
 
   return {
