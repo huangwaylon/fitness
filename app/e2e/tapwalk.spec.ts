@@ -3,6 +3,7 @@
 // day, the camera stays where the finger left it; a tap on the water acts in place (no walk): a ripple. The tent's door
 // is the one exception: my villager walks up to it, then goes in.
 import { expect, test, type Page } from '@playwright/test';
+import { tapOn } from './island.ts';
 import { BUILDINGS } from '../src/lib/components/island/world.ts';
 import { mkdirSync } from 'node:fs';
 
@@ -11,11 +12,9 @@ const DOOR = ((b) => [b.x, b.z - 16] as const)(BUILDINGS.find((b) => b.id === 'c
 /** Where a villager stands just out of the tent (buildings.ts outOfTent): ±12 of the door, 30 in front. */
 const OUT = (who: 'A' | 'B') => [DOOR[0] + (who === 'A' ? -12 : 12), DOOR[1] - 30] as const;
 
-/** A tap on the tent (its upper part: a villager may stand in front of its door). */
+/** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
 async function tapTent(p: Page) {
-  const door = p.locator('[data-building="campsite"] .door');
-  const box = (await door.boundingBox())!;
-  await door.click({ position: { x: box.width * 0.5, y: box.height * 0.25 } });
+  await tapOn(p, p.locator('[data-building="campsite"] .door'));
 }
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -63,13 +62,14 @@ async function track(page: Page, ms = 8000): Promise<[number, number][]> {
 
 test('a tap by the campsite runs my villager up the path, never through the water; a ring marks the spot', async ({ page }) => {
   await open(page, undefined, 300);
-  const [x, y] = await call(page, (w) => w.at(196, 840));
+  // (clear of the day's weed at (221, 762): its thumb's 44 px box reaches far up the 3D island's far end)
+  const [x, y] = await call(page, (w) => w.at(196, 860));
   await page.mouse.click(x, y);
   await expect(page.locator('.tap-ring')).toHaveCount(1);
   await shot(page, 'tap-ring');
   const path = await track(page);
   const end = path.at(-1)!;
-  expect(Math.hypot(end[0] - 196, end[1] - 840)).toBeLessThan(3);
+  expect(Math.hypot(end[0] - 196, end[1] - 860)).toBeLessThan(3);
   // never in the pond (74, 772: rx 46, rz 26)
   for (const [px, pz] of path) expect(((px - 74) / 46) ** 2 + ((pz - 772) / 26) ** 2).toBeGreaterThan(1);
   await shot(page, 'after-run');

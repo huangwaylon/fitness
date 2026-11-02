@@ -7,6 +7,7 @@
 //   RELAY_E2E=1 npm run e2e -- sync-harness --workers=1   two browser contexts against the test relay (relay/.smoke-keys;
 //                                                         one at a time: each person's key opens one socket)
 import { expect, test, type Browser, type Page } from '@playwright/test';
+import { tapOn } from './island.ts';
 import { existsSync, readFileSync } from 'node:fs';
 import { BUILDINGS, CAMS, HOMES, SEATS } from '../src/lib/components/island/world.ts';
 
@@ -24,11 +25,9 @@ const DOOR = ((b) => [b.x, b.z - 16] as const)(BUILDINGS.find((b) => b.id === 'c
 /** Where a villager stands just out of the tent (buildings.ts outOfTent): ±12 of the door, 30 in front. */
 const OUT = (who: 'A' | 'B') => [DOOR[0] + (who === 'A' ? -12 : 12), DOOR[1] - 30] as const;
 
-/** A tap on the tent (its upper part: a villager may stand in front of its door). */
+/** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
 async function tapTent(p: Page) {
-  const door = p.locator('[data-building="campsite"] .door');
-  const box = (await door.boundingBox())!;
-  await door.click({ position: { x: box.width * 0.5, y: box.height * 0.25 } });
+  await tapOn(p, p.locator('[data-building="campsite"] .door'));
 }
 
 test.use({ viewport: { width: 390, height: 844 } });

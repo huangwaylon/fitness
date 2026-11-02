@@ -2,6 +2,7 @@
 // its own: the room's code and three.js come only then (the island never loads them); my villager walks where the
 // floor is tapped; the doormat and ‹ 島へ go back out, to the island as it was.
 import { expect, test, type Page } from '@playwright/test';
+import { is3d, tapOn } from './island.ts';
 import { BUILDINGS } from '../src/lib/components/island/world.ts';
 
 /** The edit tray open, and the room re-centred above it (a tap's px only holds once the camera is at rest). */
@@ -17,11 +18,9 @@ const DOOR = ((b) => [b.x, b.z - 16] as const)(BUILDINGS.find((b) => b.id === 'c
 /** Where a villager stands just out of the tent (buildings.ts outOfTent): ±12 of the door, 30 in front. */
 const OUT = (who: 'A' | 'B') => [DOOR[0] + (who === 'A' ? -12 : 12), DOOR[1] - 30] as const;
 
-/** A tap on the tent (its upper part: a villager may stand in front of its door). */
+/** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
 async function tapTent(p: Page) {
-  const door = p.locator('[data-building="campsite"] .door');
-  const box = (await door.boundingBox())!;
-  await door.click({ position: { x: box.width * 0.5, y: box.height * 0.25 } });
+  await tapOn(p, p.locator('[data-building="campsite"] .door'));
 }
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -46,15 +45,17 @@ async function enter(page: Page, aside = false) {
   await expect(page.locator('html')).not.toHaveAttribute('data-door', /./, { timeout: 4000 });
 }
 
-test('the island never loads the room; the tent does, opens through the door, and goes back out to the island as it was', async ({ page }) => {
+test('the 2D island never loads the room; the tent does, opens through the door, and goes back out to the island as it was', async ({ page }) => {
   const scripts: string[] = [];
   page.on('response', async (r) => {
     if (r.url().endsWith('.js')) scripts.push((await r.text().catch(() => '')).includes('WebGLRenderer') ? 'three' : 'other');
   });
   await page.goto(Q);
-  await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
-  await page.waitForTimeout(800);
-  expect(scripts).not.toContain('three');
+  // (the 3D island draws with three itself: only the 2D one never loads it)
+  if (!(await is3d(page))) {
+    await page.waitForTimeout(800); // (proving nothing loads three for a while)
+    expect(scripts).not.toContain('three');
+  }
   await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(642));
   await page.waitForTimeout(300);
   const cam = await page.evaluate(() => (window as unknown as { __world: { cam(): number } }).__world.cam());
@@ -98,8 +99,9 @@ test('a tap on the floor walks my villager there; ‹ 島へ goes back out; noth
     return !t.loading() && t.still() && !t.walking('A') && !t.stats().queued;
   });
   const f0 = (await tent(page, (t) => t.stats())).frames;
-  await page.waitForTimeout(600);
-  expect((await tent(page, (t) => t.stats())).frames).toBe(f0);
+  await page.waitForTimeout(600); // (proving nothing runs for a while)
+  // (but a 3D villager's blink: its face shut, then open, a frame each: tent/engine.ts's blinks)
+  expect((await tent(page, (t) => t.stats())).frames).toBeLessThanOrEqual(f0 + 2);
   // a drag turns the camera round the room (it walks nobody); the home button brings NH's view back
   const [cx, cy] = await tent(page, (t) => t.px(-20, 10));
   await page.mouse.move(cx, cy);

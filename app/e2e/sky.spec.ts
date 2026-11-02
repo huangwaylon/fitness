@@ -138,7 +138,8 @@ for (const [w, h] of [[393, 852], [320, 568]] as const)
   for (const [tod, at] of [['day', '12:00'], ['dusk', '17:00'], ['night', '21:00']] as const)
     test(`a tree in front of the ${tod === 'night' ? 'moon' : 'sun'} at ${w}px (${tod})`, async ({ page }) => {
       await page.setViewportSize({ width: w, height: h });
-      await open(page, `&date=2026-11-04T${at}&critter=none&weather=clear`);
+      // (2D only: the DOM's paint order; the 3D island's trees are in its canvas, over the sky's orb)
+      await open(page, `&date=2026-11-04T${at}&critter=none&weather=clear&island=2d`);
       // probe the paint order: the orb and the trees' art made hit-testable for it
       await page.addStyleTag({ content: '.if-scene .orb, [data-scenery-id] .art { pointer-events: auto !important; } .if-scene .hit { pointer-events: none !important; }' });
       await page.waitForTimeout(500);

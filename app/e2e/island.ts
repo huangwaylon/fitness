@@ -1,0 +1,42 @@
+// The island's two renderers in the specs (docs/ops/testing.md "E2E_ISLAND"): which one a page draws (`is3d`), the 3D
+// island's hooks (`w3`, window.__world3d: Island3D.svelte), and a tap on a DOM target only where it is that target's
+// (`tapOn`: in 3D the whole island is in view, so a villager or a visitor in front covers much of a small door).
+import { expect, type Locator, type Page } from '@playwright/test';
+
+/** The 3D island's test hooks (Island3D.svelte's window.__world3d), the parts the specs read. */
+export type W3 = {
+  loaded(): boolean;
+  camStill(): boolean;
+  stats(): { frames: number; calls: number; loading: number; lamps: number; points: number };
+  view(): { camZ: number; zoom: number; pitch: number; camX: number };
+  limits(): { min: number; max: number };
+  client(x: number, z: number, lift?: number): [number, number];
+  things(id: string): boolean;
+  where(id: string): { x: number; y: number; z: number; hidden: boolean; model: string } | null;
+};
+export const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()})(window.__world3d)`) as Promise<R>;
+
+/** The island drawn in 3D on this page (once the island is up): the 3D one's loaded too. */
+export async function is3d(page: Page): Promise<boolean> {
+  await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
+  if (!(await page.locator('.if-scene[data-r3]').count())) return false;
+  await page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
+  return true;
+}
+
+/** A tap on `target` at the first point of its box (row by row from the top) that hit-tests to it: never through
+ *  something standing in front of it (polled: a villager in front may still be walking). */
+export async function tapOn(page: Page, target: Locator) {
+  const find = () => target.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    for (let fy = 0.1; fy < 1; fy += 0.1)
+      for (const fx of [0.5, 0.35, 0.65, 0.2, 0.8]) {
+        const x = r.left + r.width * fx, y = r.top + r.height * fy;
+        if (el.contains(document.elementFromPoint(x, y))) return [x, y];
+      }
+    return null;
+  });
+  await expect.poll(find, { message: 'a point of the target not covered by anything in front of it' }).not.toBeNull();
+  const [x, y] = (await find())!;
+  await page.mouse.click(x, y);
+}
