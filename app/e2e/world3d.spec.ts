@@ -48,8 +48,9 @@ test('the 2D island never loads three; ?island=3d draws the island in 3D and a t
 
 /** A touch gesture in the page (gestures.ts reads pointer events): each frame the fingers' points, ~16 ms apart, in one
  *  evaluate (CI's software GL takes about a second for each CDP touch event: a drag of them ran a test out). `up`: the
- *  fingers lift after the last frame (at once: a fling if they were moving); else they stay down for `lift()`. */
-const touches = (page: Page, frames: [number, number][][], up = true) => page.evaluate(async ({ frames, up }) => {
+ *  fingers lift after the last frame (at once: a fling if they were moving; `still`: after a rest, no fling); else they
+ *  stay down for `lift()`. */
+const touches = (page: Page, frames: [number, number][][], up = true, still = false) => page.evaluate(async ({ frames, up, still }) => {
   const W = window as unknown as { __touch?: { el: Element; ids: number[]; at: [number, number][] } };
   const ev = (type: string, el: Element | Window, id: number, [x, y]: [number, number]) =>
     el.dispatchEvent(new PointerEvent(type, { pointerId: 10 + id, pointerType: 'touch', isPrimary: id === 0, clientX: x, clientY: y, button: 0, buttons: type === 'pointerup' ? 0 : 1, bubbles: true, cancelable: true, composed: true }));
@@ -61,8 +62,9 @@ const touches = (page: Page, frames: [number, number][][], up = true) => page.ev
     for (const i of ids) ev('pointermove', el, i, f[i]);
   }
   W.__touch = { el, ids, at: frames[frames.length - 1] };
+  if (up && still) await new Promise((r) => setTimeout(r, 120));
   if (up) for (const i of ids) ev('pointerup', el, i, frames[frames.length - 1][i]);
-}, { frames, up });
+}, { frames, up, still });
 const lift = (page: Page) => page.evaluate(() => {
   const t = (window as unknown as { __touch: { el: Element; ids: number[]; at: [number, number][] } }).__touch;
   for (const i of t.ids) t.el.dispatchEvent(new PointerEvent('pointerup', { pointerId: 10 + i, pointerType: 'touch', clientX: t.at[i][0], clientY: t.at[i][1], bubbles: true, cancelable: true }));
@@ -79,7 +81,7 @@ test('the 3D camera: at the default zoom one finger scrolls along the island onl
   expect((await w3(page, (w) => w.view())).camZ).toBeCloseTo(min, 0);
   // a diagonal drag: down the screen (into the island) and sideways; the camera's x never moves (the island stays centred)
   const [cx0] = await w3(page, (w) => w.client(195, 400));
-  await touches(page, line(12, (i) => [[120 + i * 10, 420 + i * 14]]));
+  await touches(page, line(6, (i) => [[120 + i * 20, 420 + i * 28]]));
   await idle(page);
   const after = await w3(page, (w) => w.view());
   expect(after.camZ).toBeGreaterThan(min + 60);
@@ -88,7 +90,7 @@ test('the 3D camera: at the default zoom one finger scrolls along the island onl
   expect(Math.abs(cx1 - cx0)).toBeLessThan(0.5);
   // a pinch apart zooms in, and stays a pinch (no scroll) though its fingers drift down together
   const z1 = after.camZ;
-  await touches(page, line(10, (i) => [[150 - i * 6, 400 + i * 2], [240 + i * 6, 420 + i * 2]]));
+  await touches(page, line(5, (i) => [[150 - i * 12, 400 + i * 4], [240 + i * 12, 420 + i * 4]]), true, true);
   await idle(page);
   const pinched = await w3(page, (w) => w.view());
   expect(pinched.zoom).toBeGreaterThan(1.2);
@@ -103,24 +105,24 @@ test('the 3D camera zoomed in: one finger pans sideways too, held over the islan
   await page.goto(`?${Q}&island=3d`);
   await ready(page);
   const drag = async (x0: number, dx: number, n: number) => {
-    await touches(page, line(n, (i) => [[x0 + i * dx, 500]]));
+    await touches(page, line(n, (i) => [[x0 + i * dx, 500]]), true, true);
     await idle(page);
   };
   // zoomed in, a sideways drag pans x (with the finger: the view moves right as it goes left), as far as the room lets it
   await w3(page, (w) => w.go(300, 1.5));
   expect(await w3(page, (w) => w.xRoom())).toBeGreaterThan(5);
-  await drag(300, -12, 10);
+  await drag(300, -30, 4);
   const panned = await w3(page, (w) => ({ ...w.view(), room: w.xRoom() }));
   expect(panned.camX).toBeGreaterThan(195 + 5);
   expect(panned.camX).toBeLessThanOrEqual(195 + panned.room + 0.01);
   // far past the edge: held at the island plus its sea margin
-  await drag(380, -35, 10);
+  await drag(380, -90, 4);
   const edge = await w3(page, (w) => ({ ...w.view(), room: w.xRoom() }));
   expect(edge.camX).toBeCloseTo(195 + edge.room, 1);
 
   // a pinch together past the default: it gives (zoomed out under 1 while held), x centred; let go, it springs back
   // to exactly the default, centred
-  await touches(page, line(10, (i) => [[60 + i * 12, 420], [330 - i * 12, 440]]), false);
+  await touches(page, line(5, (i) => [[60 + i * 24, 420], [330 - i * 24, 440]]), false);
   const held = await w3(page, (w) => w.view());
   expect(held.zoom).toBeLessThan(1);
   expect(held.camX).toBeCloseTo(195, 3);
@@ -130,7 +132,7 @@ test('the 3D camera zoomed in: one finger pans sideways too, held over the islan
   expect(back.zoom).toBeCloseTo(1, 4);
   expect(back.camX).toBeCloseTo(195, 4);
   // and at the default a sideways drag moves nothing sideways
-  await drag(300, -12, 10);
+  await drag(300, -30, 4);
   expect((await w3(page, (w) => w.view())).camX).toBeCloseTo(195, 4);
 });
 
