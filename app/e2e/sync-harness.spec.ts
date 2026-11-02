@@ -516,3 +516,38 @@ test('a lamp on a table, on both phones: on its top there, and along with the ta
   await ctxA.close();
   if (RELAY) await ctxB.close();
 });
+
+// Sitting and the lights (docs/design.md "The tent"): the partner sees me sit where I sit (one to a seat), and a lamp
+// switched off is off on both phones.
+test('in the tent: B sees A sit on the chair, and the lamp A switches off is off on B', async ({ browser }) => {
+  const ctxA = await browser.newContext(CTX);
+  const ctxB = RELAY ? await browser.newContext(CTX) : ctxA;
+  const open = async (who: 'A' | 'B', ctx: typeof ctxA) => {
+    const p = await ctx.newPage();
+    await p.goto('tent' + q(who));
+    await p.waitForFunction(() => ((window as unknown as { __tent?: TentHooks }).__tent?.stats()?.frames ?? 0) > 0);
+    return p;
+  };
+  const a = await open('A', ctxA);
+  await a.evaluate(() => localStorage.removeItem('island-demo.tent'));
+  const b = await open('B', ctxB);
+  type U = { fill(c: string[]): number; seat(): { id: string } | null; partnerSeat(): { id: string } | null; lights(): { pieces: { on: boolean }[] }; loading(): number };
+  const u = <R,>(p: Page, fn: (t: U & TentHooks) => R) => p.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
+  await a.bringToFront();
+  await u(a, (t) => t.fill(['f4039', 'f1432']));
+  await a.waitForFunction(() => (window as unknown as { __tent: U }).__tent.loading() === 0);
+  await expect.poll(() => u(b, (t) => t.pieces().length), { timeout: 4000 }).toBe(2);
+  await expect.poll(() => Promise.all([a, b].map((p) => p.evaluate(() => (window as unknown as { __tent: { peer(): boolean } }).__tent.peer()))), { timeout: 6000 }).toEqual([true, true]);
+  const ps = await u(a, (t) => t.pieces());
+  const chair = ps.find((p) => p.item === 'f4039')!, lamp = ps.find((p) => p.item === 'f1432')!;
+  let [x, y] = await tt(a, (t) => t.tile(0, 0));
+  [x, y] = await a.evaluate(([cx, cz]) => (window as unknown as { __tent: TentHooks }).__tent.tile(cx, cz), [chair.x, chair.z]);
+  await a.mouse.click(x, y);
+  await expect.poll(() => u(a, (t) => t.seat()?.id ?? null), { timeout: 6000 }).toBe(chair.id);
+  await expect.poll(() => u(b, (t) => t.partnerSeat()?.id ?? null), { timeout: 4000 }).toBe(chair.id);
+  [x, y] = await a.evaluate(([cx, cz]) => (window as unknown as { __tent: TentHooks }).__tent.tile(cx, cz), [lamp.x, lamp.z]);
+  await a.mouse.click(x, y);
+  await expect.poll(() => u(b, (t) => t.lights().pieces.map((p) => p.on)), { timeout: 4000 }).toEqual([false]);
+  await ctxA.close();
+  if (RELAY) await ctxB.close();
+});

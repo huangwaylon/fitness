@@ -466,5 +466,6 @@
   "tent.why.villager": "Someone's standing there",
   "tent.resetView": "Reset the view",
   "tent.tab.recent": "Recent",
-  "tent.hasThings": "Put away what's on it first"
+  "tent.hasThings": "Put away what's on it first",
+  "tent.lights": "Room light"
 }

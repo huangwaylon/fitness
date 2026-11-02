@@ -127,6 +127,11 @@ interface Piece {
   surface?: true;
   /** A small thing (the spreadsheet's Miscellaneous: what NH lets stand on a surface). */
   small?: true;
+  /** NH's interaction: sit on it (a chair, a sofa, a stool) or lie on it (a bed); how many at once. */
+  use?: 's' | 'l';
+  seats?: number;
+  /** It gives light (NH's lighting type, the fireplace): a switch. */
+  light?: true;
 }
 
 const furniture = [...(await sheet('Housewares')), ...(await sheet('Miscellaneous'))];
@@ -144,7 +149,16 @@ function piece(r: Raw, extra: Partial<Piece>): Piece | null {
   const id = Number(field(r, 'internalId'));
   if (!Number.isInteger(id)) return null;
   const surface = field(r, 'surface') === true, small = r.sourceSheet === 'Miscellaneous';
-  return { code: `f${id}`, folder, tex, icon, ...names(r), size: r.size, ...(surface ? { surface: true as const } : {}), ...(small ? { small: true as const } : {}), ...extra };
+  // NH's own interaction (the spreadsheet's `interact`): a Chair is sat on, a Bed lain on; a sofa seats one a tile, a
+  // double bed two
+  const it = field(r, 'interact'), use = it === 'Chair' ? 's' : it === 'Bed' ? 'l' : undefined;
+  const [sw, sd] = String(r.size ?? '1x1').split('x').map((n) => Math.max(1, Math.round(Number(n) || 1)));
+  const seats = use === 's' && r.tag === 'Sofa' ? sw : use === 'l' && sw >= 2 && sd >= 2 ? 2 : use ? 1 : undefined;
+  const light = !!field(r, 'lightingType') || r.tag === 'Fireplace';
+  return {
+    code: `f${id}`, folder, tex, icon, ...names(r), size: r.size, ...(surface ? { surface: true as const } : {}), ...(small ? { small: true as const } : {}),
+    ...(use ? { use, seats } : {}), ...(light ? { light: true as const } : {}), ...extra
+  };
 }
 
 const pieces = new Map<string, Piece>();
@@ -213,6 +227,11 @@ interface Meta {
   s?: 1;
   /** Small: may stand on a surface. */
   sm?: 1;
+  /** Sat on (s) or lain on (l), by n at once. */
+  u?: 's' | 'l';
+  n?: number;
+  /** A light (a switch). */
+  lt?: 1;
 }
 const prev = (existsSync(ITEMS) ? JSON.parse(readFileSync(ITEMS, 'utf8')) : { items: {} }) as { items: Record<string, Meta> };
 const metas: Record<string, Meta> = {};
@@ -221,8 +240,11 @@ for (const p of pieces.values()) if (prev.items[p.code]) metas[p.code] = prev.it
 function writeItems() {
   // NH's surface and small flags come from the spreadsheet each run (a --data run brings them up to date)
   const flags = (p: Piece, m: Meta): Meta => {
-    const { s: _s, sm: _sm, ...rest } = m;
-    return { ...rest, ...(p.surface ? { s: 1 as const } : {}), ...(p.small ? { sm: 1 as const } : {}) };
+    const { s: _s, sm: _sm, u: _u, n: _n, lt: _lt, ...rest } = m;
+    return {
+      ...rest, ...(p.surface ? { s: 1 as const } : {}), ...(p.small ? { sm: 1 as const } : {}),
+      ...(p.use ? { u: p.use, n: p.seats ?? 1 } : {}), ...(p.light ? { lt: 1 as const } : {})
+    };
   };
   const items = Object.fromEntries([...pieces.values()].filter((p) => metas[p.code]).map((p) => [p.code, flags(p, metas[p.code])]));
   const json = {
