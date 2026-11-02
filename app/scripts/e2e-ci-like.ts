@@ -9,7 +9,7 @@
 //   --tier render  the drawn smoke: real (software) GL, only the @render and @smoke tests
 //   --tier full    everything drawn, as the full tier after the deploy (quarantine left out)
 //   --repeat N     each test N times (--repeat-each; default 1; 5 before pushing a new or changed 3D or sync spec)
-//   --workers N    default CI's (4 in the logic tier, 3 drawn); try 6 to load the machine as a busy runner is
+//   --workers N    default 3 (CI's); try 6 to load the machine as a busy runner is
 //   --port P       E2E_PORT (default: a free one from 4600)
 // It builds first unless build-pages/ is newer than src/ (--no-build skips the check).
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -32,7 +32,7 @@ const flag = (name: string) => {
 };
 const tier = opt('--tier', 'logic');
 const repeat = opt('--repeat', '1');
-const workers = opt('--workers', tier === 'logic' ? '4' : '3');
+const workers = opt('--workers', '3');
 let port = opt('--port', '');
 const noBuild = flag('--no-build');
 if (!['logic', 'render', 'full'].includes(tier)) throw new Error(`--tier logic|render|full, not ${tier}`);
