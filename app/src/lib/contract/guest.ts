@@ -15,7 +15,8 @@ const isRec = (v: unknown): v is Rec => typeof v === 'object' && v !== null && !
 /**
  * Whether the guest may write this event: a `find` or a `tally` (its catches, credited to it), a `decor` op of the
  * tent's room (`sc: 't'`), its own home's room (`v`) or its own home's look (`h`, `hG`: contract/layout.ts
- * scopeMayWrite) and its own cosmetic `pref` (no `person`). Everything else (a buy, a void, a harvest, a goal, the
+ * scopeMayWrite), a `board` note (posting; editing and removing only its own: contract/board.ts boardMayWrite) and
+ * its own cosmetic `pref` (no `person`). Everything else (a buy, a void, a harvest, a goal, the
  * island's decor and its layout, an island day, a high-five row) is the members' alone: the record answers `forbidden`.
  * @public (relay/src/store.ts)
  */
@@ -23,6 +24,8 @@ export function guestMayWrite(type: string, d: Rec): boolean {
   switch (type) {
     case 'find':
     case 'tally':
+    case 'board':
+      // its catches; a note on the board (its own to edit and remove: the record checks, contract/board.ts)
       return true;
     case 'decor':
       return scopeMayWrite('G', d);
