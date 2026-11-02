@@ -102,10 +102,11 @@ interface Stats {
 
 /** The camera: vertical field of view (a long lens), the pitch at zoom 1 / fully in / fully out, the zoom's range. */
 const FOV = 30;
-const PITCH = { def: 58, near: 44, far: 63 };
+const PITCH = { def: 58, near: 40, far: 63 };
 /** The zoom's range: the default (1) is the widest the island rests at (the user: zoomed out past it, a pinch gives
- *  rubber-band resistance and springs back on release, ZOOM_BACK_MS). */
-const ZOOM = { min: 1, max: 1.8 };
+ *  rubber-band resistance and springs back on release, ZOOM_BACK_MS); fully in (the user: "increase the maximum zoom
+ *  level", 1.8 before) close enough for a villager's face and a flower: the camera ~420u off, its near plane 20. */
+const ZOOM = { min: 1, max: 3.2 };
 /** How far past a limit a pinch may go (eased back on release), as a factor (zooming out: further, a felt stretch). */
 const ZOOM_OVER = 1.12, ZOOM_UNDER = 1.2;
 /** A pinch released zoomed out past the default goes back to it over this, eased out (the user's approved move). */
@@ -132,6 +133,8 @@ const LAND_HAZE = [0.8, 1.35] as const;
 const HAZE_U = 800;
 /** The shadow map's box moves in steps of this (u): it redraws when it steps, not on every frame of a scroll. */
 const SHADOW_STEP = 40;
+/** The shadow box's least half width (u; its reach ahead 1.4 of it). */
+const SHADOW_MIN = 200;
 /** The cards lean back this share of the camera's pitch. */
 const LEAN = 0.42;
 const now = () => performance.now();
@@ -185,6 +188,8 @@ export interface Island3 {
   go(camZ: number, zoom?: number, free?: boolean, x?: number): void;
   /** How far the camera's x may be from the middle at this zoom (u): 0 at the default or wider. */
   xRoom(zoom?: number): number;
+  /** The zoom's range (the default, fully in). */
+  zoomRange(): { min: number; max: number };
   limits(): { min: number; max: number };
   /** The test hook's (docs/ops/testing.md): what's drawn now with a NaN in its bounds, or reaching far off the island
    *  (`reach` u past the ground's plan): a stray vertex (a quantized mesh baked wrong) draws a line across the screen. */
@@ -377,7 +382,8 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     const key = `${zq}:${kq}:${xq}:${todLook.sunAt}`;
     if (key !== shadowKey) {
       shadowKey = key;
-      const half = (VIEW_W / Math.max(ZOOM.min, kq - 0.0625)) * 0.75 + SHADOW_STEP;
+      // (zoomed right in the low pitch sees further ahead of the pivot than the width: at least SHADOW_MIN)
+      const half = Math.max(SHADOW_MIN, (VIEW_W / Math.max(ZOOM.min, kq - 0.0625)) * 0.75 + SHADOW_STEP);
       Object.assign(sun.shadow.camera, { left: -half, right: half, top: half * 1.4, bottom: -half * 1.1, near: 10, far: 1800 });
       sun.shadow.camera.updateProjectionMatrix();
       sun.position.set(xq + todLook.sunAt[0] * 700, todLook.sunAt[1] * 700, -zq - 120 + todLook.sunAt[2] * 700);
@@ -861,6 +867,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     },
     view: () => ({ camZ, zoom: zoomK, pitch, camX }),
     xRoom,
+    zoomRange: () => ({ ...ZOOM }),
     go(z, k, free, x) {
       if (free) {
         lim.min = Math.min(lim.min, z);
