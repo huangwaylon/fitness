@@ -8,7 +8,6 @@ A push to `main` that touches `app/**` (docs-only and relay-only pushes don't ru
 | `build` | `npm run build` once; its `build-pages/` is both the Pages artifact and the `site` artifact the e2e jobs test | yes |
 | `checks` | `npm run check`, `npm run knip`, `npx vitest run`, beside the build | yes |
 | `e2e` ×8 | Playwright in Chromium (iPhone 13 profile), the whole suite, on `site` served as Pages serves it (`scripts/serve-build.ts`), split by test (`fullyParallel`, 3 workers each) | yes, until WebKit is green across the board |
-| `e2e-webkit` ×5 | the same in **WebKit** as an iPhone 15 (the users' phones: an iPhone 15 and an iPhone 16 on Safari; Playwright's two profiles have the same viewport), on **macOS** runners: Safari's own WebKit (Linux's draws the island at about one frame a second, so its timing-bound specs fail there) | not yet: its failures show in the summary |
 | `deploy` | to Pages, once all of the above are green | — |
 
 - **Red main never deploys.** A newer push cancels an older run's checks (each job's own concurrency group), so a
@@ -16,9 +15,13 @@ A push to `main` that touches `app/**` (docs-only and relay-only pushes don't ru
 - **No silent retries.** `retries: 0`. A test that fails is run once more in its own step: passing then, it's named in the
   job summary and annotated on its spec as **flaky**, and the deploy goes on; failing again, or more than 5 failing in a
   shard (broken, not flaky), the job is red. Fix a flaky spec at its cause (below), don't wait for it to fail twice.
-- **The flake hunt** (`.github/workflows/e2e-flake-hunt.yml`): nightly, and Actions → *e2e flake hunt* → Run workflow
-  (with how many runs each). The whole suite in WebKit on macOS, each test 3× over, retries off; red when anything failed even
-  once, its summary lists them worst first. It gates nothing.
+- **WebKit, the users' browser** (Playwright's WebKit as an iPhone 15: the users' phones are an iPhone 15 and an iPhone 16
+  on Safari, and Playwright's two profiles have the same viewport), runs in **the flake hunt**
+  (`.github/workflows/e2e-flake-hunt.yml`) on **macOS** runners (Safari's own WebKit; Linux's draws the island at about
+  one frame a second, so its timing-bound specs fail there): nightly, and Actions → *e2e flake hunt* → Run workflow
+  (with how many runs each; 1 for a plain WebKit check). Too slow to gate each push yet (5 macOS runners, ~4 min);
+  once it's green across the board it replaces Chromium as the gate. Each test 3× over, retries off; red when anything
+  failed even once, its summary lists them worst first. It gates nothing.
 - Playwright's browsers are cached by its version; bumping `@playwright/test` downloads them once.
 
 ## Run it locally
