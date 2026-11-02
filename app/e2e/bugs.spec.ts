@@ -72,7 +72,7 @@ test('a mole cricket chirps under a mound in the grass; a tap digs it up', async
 });
 
 test('a tap on my villager sends a flea hopping off into the grass; a tap on it nets it', async ({ page }) => {
-  await open(page, '&date=2026-07-10T12:00&flea');
+  await open(page, '&date=2026-07-10T12:00&flea&critter=none'); // (no visiting bug: one out takes the flea's place)
   await page.waitForTimeout(2600); // the opening beats are over
   await page.locator('button.vil').first().click();
   const flea = page.locator('[data-critter="flea"]');
