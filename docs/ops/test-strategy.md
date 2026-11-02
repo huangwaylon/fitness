@@ -18,6 +18,20 @@ deploy.
 - Each newer push cancelled the older run, so in a burst of agent pushes nothing finished, and a red run blocked every
   deploy until someone fixed it.
 
+## Where we are (Nov 3, the first 11 runs on the new gate)
+
+| | Before (last 40 runs) | After (11 runs) |
+|---|---|---|
+| Runs green / red / cancelled | 2 / 22 / 14 | 10 / 1 / 0 |
+| A run, first job to live | ~5 min (4–6) | **~2.4 min** (median 146 s) |
+| Push to live, waiting behind the run before it included | ~5 min when green, hours when red | median 3.8 min (2.4–5.8) |
+| The gate's e2e (critical path) | 8 drawn shards, 75–235 s each, split by count | 12 logic shards ~80–110 s (timed) ∥ the drawn smoke ~100 s |
+| Red runs from 3D specs under SwiftShader | most of them | none so far (they pass with drawing off) |
+| Runs with a test rerun as flaky | about 2 in 3 (1–4 tests a run) | all 11 (3–5 of ~400 tests a run), mostly 2D specs with short waits: the next thing to fix |
+
+The single red run was popups' catch plate: its reel missed the 1.6 s bite window, now fixed in four specs by
+`reelOnBite`, and the test is quarantined until the full tier shows it green.
+
 ## The pyramid for this game
 
 | Layer | What | Where | Share |
@@ -98,16 +112,19 @@ apart (`RELAY_E2E=1`, nightly or on demand), not on every push.
   have no GPU passthrough, so WebGL is software there too. Logic mode removes the cost instead: SwiftShader only draws
   the 7 drawn tests, at DPR 1 with shadows off (already automatic on a software renderer).
 - **The gate** (what deploys): build ∥ checks (svelte-check, knip, vitest) ∥ the logic tier (12 shards) ∥ the drawn
-  smoke (1 runner). **The full tier** (every test drawn, the quarantine, visuals) runs after the deploy and on the
-  nightly, and flags failures in its summary. It never blocks the deploy.
-- **Shards by time, not count** (scripts/e2e-shards.ts): the build plans Playwright test lists from each test's time
-  on earlier runs (kept in a cache by the `timings` job), longest first onto the emptiest shard.
+  smoke (1 runner). **The full tier** (`e2e-full.yml`: every test drawn, the quarantine, later the visuals) runs as its
+  own workflow after each deploy run, and flags failures in its summary. It never blocks the deploy, and a cancelled
+  full tier never makes a deployed run look cancelled.
+- **Shards by time, not count** (scripts/e2e-shards.ts): each logic shard plans Playwright test lists from the
+  committed `e2e/timings.json`, longest first onto the emptiest shard, so every shard gets the same plan. The `timings`
+  job folds each run's times into an artifact and reports the spread. `npm run e2e:timings` refreshes the file. Each
+  shard builds the commit itself (~12 s), rather than waiting ~60 s for `build` and its artifact.
 - **Flakes:** no silent retries. A failed test runs once more. If it passes then, the run stays green but the test is
   named in the summary as flaky, and the owner **quarantines it at once**: tag `@quarantine` with an annotation
   (owner, date, the failure). Quarantined tests leave the gate and run in the full tier until fixed. The quarantine
   is a short list with names on it, not a place tests go to be forgotten.
-- **Newest green deploys:** one run at a time on `main` (a workflow-level concurrency group), never cancelled. A newer push waits, and any push still
-  waiting is replaced by the newest. So in a burst of pushes the running one finishes and deploys, then the newest
+- **Newest green deploys:** one run at a time on `main` (a workflow-level concurrency group), never cancelled. A
+  newer push waits, and any push still waiting is replaced by the newest. So in a burst of pushes the running one finishes and deploys, then the newest
   runs. That replaces the cancellation storm, where nothing finished.
 - **Test impact analysis** (later, if the gate grows): `playwright test --only-changed=origin/main` on PRs, plus a map
   from source areas to specs (tent/** → tent*.spec). For now the gate is fast enough to run it all on every push.
@@ -124,7 +141,21 @@ auto-rollback at this size. A red full tier is the next agent's first job, just 
 - Before pushing a new or changed e2e spec, run it under CI's conditions, several times over:
   `npm run e2e:ci-like -- e2e/x.spec.ts --repeat 5` (software GL, CI's workers, CI=1; `--tier render` for a drawn
   one, `--workers 6` to load the machine).
-- A test you see flake goes to `@quarantine` in that same push, with its owner. Don't rerun until it's green.
+- A test that fails twice (red main), or is named flaky run after run, goes to `@quarantine` in the next push, with
+  its owner (`npm run e2e:quarantine` lists them; `checks` fails if one has no owner). Don't rerun until it's green.
 - Each spec's header names its area. Its owner is whoever last changed that area's code (the engine agent owns
   world3d.spec, fishing3d, seats3d; the layout agent owns layout-island and island-edit).
 - Fix the cause: a missing hook, a wait on time, a tap where something wanders. Never loosen an assertion.
+
+## What's left (in order)
+
+1. **The 2D specs' flakes** (3–5 reruns a run): short waits, and taps where an ambient critter or a villager wanders. Pin
+   the scene and wait on state. Each one that fails twice in a week goes to the quarantine with an owner.
+2. **A "director idle" hook** (`__world.quiet()`: no opening beat or line queued), so the specs' remaining "the opening
+   beats are over" sleeps (2.6 s each, dozens of them) become a wait on state.
+3. **Rules into vitest:** the rule parts of holidays, celeste, finds, critters, bugs, weather and seasonal (above).
+4. **Visual snapshots:** a handful in the full tier, with baselines made on CI's image (a `--update-snapshots` run on
+   demand, its PNGs committed).
+5. **The full tier drawn on the layout's 3D island** (the layout specs time out drawn; they pass in logic mode), and an
+   `e2e-layout` tier (`E2E_ISLAND=3d E2E_LAYOUT=1`, non-gating) once the switch is close.
+6. **Test impact analysis** on PRs (`--only-changed`) if the gate grows past ~3 min again.
