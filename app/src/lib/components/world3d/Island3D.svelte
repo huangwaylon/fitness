@@ -652,7 +652,7 @@
     const W = window as unknown as { __world3d?: unknown };
     W.__world3d = {
       stats: () => e.stats(), view: () => e.view(), limits: () => e.limits(), loaded: () => loaded && !e.stats().loading,
-      go: (z: number, k?: number, x?: number) => e.go(z, k, false, x), pan: (dy: number, dx?: number) => (e.touching(true), e.pan(dy, dx), e.touching(false)), xRoom: (k?: number) => e.xRoom(k), touching: (on: boolean) => e.touching(on),
+      go: (z: number, k?: number, x?: number) => e.go(z, k, false, x), pan: (dy: number, dx?: number) => (e.touching(true), e.pan(dy, dx), e.touching(false)), xRoom: (k?: number) => e.xRoom(k), zoomRange: () => e.zoomRange(), touching: (on: boolean) => e.touching(on),
       zoom: (f: number) => e.zoom(f), fling: (vy: number, vx?: number) => e.fling(vy, vx), options: (o: Partial<Options>) => e.options(o),
       /** A world point on screen (client px), `lift` above the ground. */
       client: (x: number, z: number, lift = 0) => {

@@ -5,6 +5,8 @@ import { expect, test, type Page } from '@playwright/test';
 
 type W3 = {
   xRoom(k?: number): number;
+  zoomRange(): { min: number; max: number };
+  ground(cx: number, cy: number): { x: number; z: number } | null;
   stats(): { frames: number; calls: number; tris: number; dpr: number; loading: number; fps: number };
   loaded(): boolean;
   view(): { camZ: number; zoom: number; pitch: number; camX: number };
@@ -135,6 +137,21 @@ test('the 3D camera zoomed in: one finger pans sideways too, held over the islan
   // and at the default a sideways drag moves nothing sideways
   await drag(300, -30, 4);
   expect((await w3(page, (w) => w.view())).camX).toBeCloseTo(195, 4);
+
+  // fully in (the user: "increase the maximum zoom level"): 3.2, about 1.8× closer than the old 1.8; the pitch lower
+  // still, more room sideways but the view still over the island, and a tap's ground point where it is
+  const range = await w3(page, (w) => w.zoomRange());
+  expect(range).toEqual({ min: 1, max: 3.2 });
+  const at15 = await w3(page, (w) => (w.go(400, 1.5), { ...w.view(), room: w.xRoom() }));
+  const close = await w3(page, (w) => (w.go(400, 10), { ...w.view(), room: w.xRoom() }));
+  expect(close.zoom).toBeCloseTo(3.2, 4);
+  expect(close.pitch).toBeLessThan(at15.pitch);
+  expect(close.room).toBeGreaterThan(at15.room);
+  const mid = await w3(page, (w) => w.ground(196, 420));
+  expect(mid && Number.isFinite(mid.x) && Number.isFinite(mid.z)).toBe(true);
+  await w3(page, (w) => w.go(400, 3.2, 1000));
+  const side = await w3(page, (w) => ({ ...w.view(), room: w.xRoom() }));
+  expect(side.camX).toBeCloseTo(195 + side.room, 1);
 });
 
 test('/world3d, the POC\'s address, opens the island in 3D; ?island=2d the 2D island', async ({ page }) => {
@@ -311,7 +328,8 @@ test('one source for screen ↔ world: at the default, zoomed in panned sideways
       const fx0 = await w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx);
       await page.mouse.click(t.cx, t.cy);
       if (await expect.poll(async () => (await rings()).length, { timeout: 1500 }).toBeGreaterThan(0).then(() => true, () => false)) {
-        expect(await w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx)).toBeGreaterThan(fx0);
+        // (its 3D ring: polled, its model's part comes in a moment after the tap; the ambient ones come and go)
+        await expect.poll(() => w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx), { timeout: 3000 }).toBeGreaterThan(fx0);
         target = t;
         break;
       }
