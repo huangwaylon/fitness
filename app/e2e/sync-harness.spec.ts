@@ -461,10 +461,11 @@ test('one place at a time: A in the tent is gone from B’s island, there with B
   await b.getByRole('button', { name: '島へ' }).click();
   await b.waitForFunction(() => (window as unknown as { __world?: { state?: unknown } }).__world?.state);
   await expect.poll(() => inside(b), { timeout: 4000 }).toBeNull();
+  // (where A's own phone has it: both phones agree; A's own villager is A's phone's to move)
   await expect.poll(async () => {
-    const p = await w<[number, number]>(b, 'partner');
-    return Math.hypot(p[0] - OUT('A')[0], p[1] - OUT('A')[1]);
-  }, { timeout: 4000 }).toBeLessThan(3);
+    const p = await w<[number, number]>(b, 'partner'), m = await w<[number, number]>(a, 'mine');
+    return Math.hypot(p[0] - m[0], p[1] - m[1]);
+  }, { timeout: 6000 }).toBeLessThan(3);
   // A goes in again (right at the door: straight in) and its phone goes quiet: home on B's island after the timeout
   await door(a);
   await expect.poll(() => inside(b), { timeout: 6000 }).toBe('true');

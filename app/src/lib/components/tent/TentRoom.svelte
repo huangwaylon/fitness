@@ -305,6 +305,9 @@
   onMount(() => {
     let alive = true;
     room.attach(relay, me, demo);
+    // the shared island hears the partner while I'm in here too (their walks, their exit at the door): on the phone's
+    // one socket it already does; the demo's tabs have a relay per screen
+    shared.attach(relay, me, demo);
     room.sink = (op) => sendDecor(op);
     own?.start();
     const offs: (() => void)[] = [];
