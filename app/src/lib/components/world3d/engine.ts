@@ -854,6 +854,8 @@ export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((ren
       shadowsDirty = false;
     }
     if (!noDraw) renderer.render(scene, camera);
+    // (nothing drawn: the counts are none, whatever the layout's ground baked on the GPU as it was built)
+    else renderer.info.reset();
     cpu.push(now() - t);
     if (lastFrame) gaps.push(t - lastFrame);
     lastFrame = t;

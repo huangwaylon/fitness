@@ -117,13 +117,15 @@
   @keyframes snow { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 200px, 0); } }
   @keyframes snow-far { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 140px, 0); } }
 
-  .fog { z-index: calc(var(--z-tint) + 1); background: linear-gradient(180deg, #F4F6F8 0%, #F4F6F8b0 40%, #F4F6F888 100%); opacity: .75; }
+  /* NH's soft morning haze (the user: "morning fog is too strong"): the far end (the top of the view) softened, the
+     near and middle island clear; two light banks drifting over the far half */
+  .fog { z-index: calc(var(--z-tint) + 1); background: linear-gradient(180deg, #F4F6F8c0 0%, #F4F6F880 20%, #F4F6F830 42%, #F4F6F800 62%); opacity: .7; }
   .bank {
-    position: absolute; width: 90%; height: 40%; border-radius: 50%;
-    background: radial-gradient(closest-side, #ffffffd0, #ffffff00); animation: drift 38s ease-in-out infinite alternate; will-change: transform;
+    position: absolute; width: 90%; height: 26%; border-radius: 50%;
+    background: radial-gradient(closest-side, #ffffff70, #ffffff00); animation: drift 38s ease-in-out infinite alternate; will-change: transform;
   }
-  .b1 { left: -20%; top: 30%; }
-  .b2 { right: -25%; top: 62%; animation-duration: 52s; animation-delay: -20s; }
+  .b1 { left: -20%; top: 12%; }
+  .b2 { right: -25%; top: 30%; animation-duration: 52s; animation-delay: -20s; }
   @keyframes drift { from { transform: translateX(-12%); } to { transform: translateX(12%); } }
 
   :global(.if-scene[data-paused]) :is(.rain, .snow, .bank, .aurora i),
