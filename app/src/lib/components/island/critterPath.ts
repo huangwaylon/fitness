@@ -120,7 +120,7 @@ export function groundOk(place: BugPlace, x: number, z: number): boolean {
 
 /** The wild flowers' heads (world): where a ladybug or a mantis sits and a butterfly rests (a bloom's head, ~0.84 of
  *  a flower's height). */
-export const FLOWER_HEADS: readonly (P3 & { id: string })[] = FLOWERS.map((f) => ({ id: f.id, x: f.x, z: f.z, lift: Math.round(FLOWER_U * 0.84) }));
+export const flowerHeads = (): readonly (P3 & { id: string })[] => FLOWERS.map((f) => ({ id: f.id, x: f.x, z: f.z, lift: Math.round(FLOWER_U * 0.84) }));
 
 function freeIn(a: Patch, ok: (p: P3) => boolean, r: () => number): P3 | null {
   for (let i = 0; i < 48; i++) {
@@ -172,7 +172,7 @@ export function bugPath(id: BugId, seed: number, stayMs: number, o: BugOpts = {}
     const p = all.length ? pickOne(all, r) : null;
     if (p) spot = { x: p.x + p.dx, z: p.z - 1, lift: p.lift };
   } else if (flight === 'flower') {
-    const heads = id === 'orchid-mantis' && o.white?.length ? FLOWER_HEADS.filter((h) => o.white!.includes(h.id)) : FLOWER_HEADS;
+    const heads = id === 'orchid-mantis' && o.white?.length ? flowerHeads().filter((h) => o.white!.includes(h.id)) : flowerHeads();
     const h = pickOne(heads, r);
     if (h) spot = { x: h.x, z: h.z, lift: h.lift };
   } else {
@@ -245,7 +245,7 @@ export function bugPath(id: BugId, seed: number, stayMs: number, o: BugOpts = {}
         rest = 2 + Math.floor(r() * 2);
       } else if ((hops += 1) > rest) {
         // a flower of its own clump (its patch holds them)
-        const near = FLOWER_HEADS.filter((h) => h.x >= patch!.x0 && h.x <= patch!.x1 && h.z >= patch!.z0 && h.z <= patch!.z1);
+        const near = flowerHeads().filter((h) => h.x >= patch!.x0 && h.x <= patch!.x1 && h.z >= patch!.z0 && h.z <= patch!.z1);
         const h = near.length ? pickOne(near, r) : null;
         if (h) {
           const ms = between(r, 1100, 1600);

@@ -54,6 +54,7 @@
   import { meetVisitor, turnTo, presence, villagerFree, visitorRoute, visitorWalkable } from './avatar.ts';
   import { su, VILLAGER } from './scene.ts';
   import { BUILDINGS, CENTRE_STAGE } from './world.ts';
+  import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
   import { visitorLine, visitorNow, visitorPlace, type VisitorId } from './visitors.ts';
   import type { Choice } from './pager.ts';
@@ -86,7 +87,7 @@
    *  (left of the day's finds) and Daisy Mae on the front lawn between the tape deck and the dig spots (NH). */
   const SPOT: Partial<Record<VisitorId, Pt>> = { gulliver: [96, 30], 'daisy-mae': [206, 396] };
   /** The campsite's door: walkers arrive from it and leave into it (spec §3). */
-  const CAMP: Pt = ((b) => [b.x, b.z - 16] as Pt)(BUILDINGS.find((b) => b.id === 'campsite')!);
+  const camp = (): Pt => ((b) => [b.x, b.z - 16] as Pt)(BUILDINGS.find((b) => b.id === 'campsite')!);
   /** The partner comes over only to a visitor this near its home (u): never across the island to centre stage. */
   const MEET_NEAR = 600;
   const w = useWorld();
@@ -147,6 +148,7 @@
   const spot = $derived.by(() => {
     const id = shown;
     if (!id) return null;
+    void site.rev;
     const [x, z] = SPOT[id] ?? CENTRE_STAGE;
     return { x, z, h: VILLAGER.h * REL[id], stage: !SPOT[id], lie: id === 'gulliver' };
   });
@@ -196,7 +198,7 @@
     }
     phase = 'arrive';
     if (way === 'walk' || way === 'hop') {
-      const from = CAMP, pts = visitorRoute(from, at);
+      const from = camp(), pts = visitorRoute(from, at);
       if (pts) {
         placeActor('visitor', from[0], from[1]);
         edge = true;
@@ -237,7 +239,7 @@
       }
     };
     if (way === 'walk' || way === 'hop') {
-      const from = where(), to = CAMP, pts = visitorRoute(from, to);
+      const from = where(), to = camp(), pts = visitorRoute(from, to);
       if (pts) {
         walkTo('visitor', pts, { speed: VISITOR_SPEED.arrive, from, then: () => {
           edge = true;

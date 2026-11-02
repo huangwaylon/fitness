@@ -9,6 +9,7 @@
   import { localDateAt } from '#lib/time/dates.ts';
   import { su } from './scene.ts';
   import { CAKE } from './world.ts';
+  import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
   import { blowOut, candlesOut } from './birthday.ts';
   import { MIN_HIT, grow, inside } from './hitbox.ts';
@@ -25,11 +26,13 @@
   let puff = $state(0);
 
   let el = $state<HTMLElement>();
+  /** Its spot (world.ts CAKE, on the island's layout: site.rev). */
+  const at = $derived((void site.rev, CAKE));
 
   /** A tap on the scene (client px): true when the cake took it. */
   export function tap(px: number, py: number): boolean {
     const r = el?.querySelector('.cake')?.getBoundingClientRect();
-    if (!on || !r || !enabled() || !w.inView(CAKE[0], CAKE[1])) return false;
+    if (!on || !r || !enabled() || !w.inView(at[0], at[1])) return false;
     if (!inside(grow(r, MIN_HIT, 6), px, py)) return false;
     cue('birthday-cake');
     if (!out) {
@@ -42,7 +45,7 @@
 </script>
 
 {#if on}
-  <span class="party" bind:this={el} data-cake={out ? 'out' : 'lit'} aria-hidden="true" {@attach w.at({ x: CAKE[0], z: CAKE[1], h: CAKE_U + 20, m3: { key: 'deco/birthday-cake' } })}>
+  <span class="party" bind:this={el} data-cake={out ? 'out' : 'lit'} aria-hidden="true" {@attach w.at({ x: at[0], z: at[1], h: CAKE_U + 20, m3: { key: 'deco/birthday-cake' } })}>
     <span class="cake"><OfficialArt key="deco/birthday-cake" size={su(CAKE_U)} /></span>
     {#if !out}
       <!-- the candles' flames, over the five candles of NH's cake -->

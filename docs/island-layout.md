@@ -340,16 +340,29 @@ red over the river; no 🗑 for a one-off; none for the guest).
 6. **Walking:** `planTap(navOf(layout.current), …)` (rebuild the nav on a layout change, ~4 ms), feet from
    `ground.feet`. Named nodes: `homeA`, `homeB` (the villagers' spots), `centreStage`, `door-home-A|B|G`, the
    default's seats (`seatMaeL` … `stoolW`, `pullup`), `front-<id>` (a bulletin board's spot).
-7. **world.ts constants the island still reads** (the 2D island and the DOM overlays over the 3D canvas): `HOMES`,
-   `CAMS`, `CAM_MIN` / `CAM_MAX`, `CAMPSITE` / `BUILDINGS` (the tent's door), `CENTRE_STAGE`, `ARCH`, `CAKE`, `SEATS`,
-   `PULLUP_AT`, `FLOWERS`, `DECOR_SLOTS`, `GOAL_TREES`, `ROCK`, `TAPE_DECK`, `BRIDGE`, `POND`, `RIVER`, `SPRING`,
-   `CLIFF`, `FALLS_POOL`, `freshWhere` (fishing), `surfaceAt` (footsteps), `DIG_SPOTS`, `LAWN_SPOTS`, `BEACH_BOX`,
-   `SEA_BOX`, `LAND`, `PLAN`. For the 3D island each must come from the layout: the spots and seats from `navOf`'s
-   named nodes, the tent's door from `doorOf(layout, home-A)`, the flowers, the goal trees, the rock, the tape deck
-   and the decor's spots from `layout.objects` (by id or kind), the water a cast lands in from
-   `fieldOf(layout).surfaceAt(x, z)` (`sea`, `river`, `pond`) and a tile's tier (the clifftop), footsteps from the
-   same `surfaceAt`. The dig spots, the weeds' lawn spots and the beach's finds box are world.ts's still; I'll add
-   `openGrass(layout)` (free grass tiles) when the lead wants them derived.
+7. **The gameplay on the layout (landed): one switch, `island/site.svelte.ts` `site.on`.** On (the 3D island and, until
+   the cutover, `?layout` on the URL; `LAYOUT_3D` there flips it on for every 3D island), world.ts's geometry is the
+   layout's: `island/layoutWorld.ts worldOf(layout)` derives every value the island reads (`HOMES`, `CAMPSITE` /
+   `BUILDINGS` with `home-B` and `home-G`, `CENTRE_STAGE` / `ARCH` / `CAKE`, `SEATS` / `PULLUP_AT`, `SCENERY` (the
+   hedges among it), `DECOR_SLOTS`, `FLOWERS`, `GOAL_TREES`, `ROCK`, `TAPE_DECK`, `RIVER` (the centreline through its
+   tiles, spring to sea), `POND` / `SPRING` (their tiles' ovals), `CLIFF`, `BRIDGE`, `SHORE_Z`, `LAND`, `SEA_BOX`,
+   `BEACH_BOX`, `CAMS`, `LAWN_SPOTS` / `DIG_SPOTS`; and from the tiles: `surfaceAt`, `freshWhere`, `inRiver`,
+   `onLand`, `onGrass`), and world.ts `setWorld` swaps them in (ES live bindings: every import reads the new value; a
+   cache keys on `worldGen()`; a DOM overlay reads `site.rev` to follow a change). Off, world.ts's own (the 2D island,
+   which can't draw the layout). Each change of the layout re-derives it (`layout.on`), so the editor's moves show live.
+   - **The walk** is layout/nav.ts's: `nav.ts walkNav()` (the layout's grid with the island's named spots: `treeA`,
+     `pondside`, `door-campsite`… as before, each nudged to where a walker reaches) for a tap, and walkGraph.ts's geo
+     (`lnav`) for the idle walks and the visitors.
+   - **The homes:** a tap on `[data-building="home-B"|"home-G"]` walks up to its door and goes in to `/tent?home=B|G`
+     (the campsite's to `/tent`); back out, the room drops `home` from the URL.
+   - **The day's spots:** `useSpots(layoutSpots(...))` (beach.ts), so weeds and fossils lie on the layout's open grass.
+   - **The decorations:** Decor.svelte draws the layout's decoration objects (`m-<id>` and the phone's new ones) as tap
+     areas only (no `m3`: placeObjects draws them).
+   - **The engine's side** (Island3D / engine.ts, under the same `site.on`): `buildGround(site.layout)`,
+     `placeObjects(site.layout, day)`, the homes and structures attached, the camera's ends from `extentOf`, IslandEdit.
+     Until then `?layout` shows the gameplay on the long layout over world.ts's old ground.
+   - The e2e: `e2e/layout-island.spec.ts` (the doors, homes, named spots; off without `?layout`; うめ's home entered; a
+     tap walk in the long middle); unit: `island/layoutWorld.test.ts`.
 
 ## Not yet
 

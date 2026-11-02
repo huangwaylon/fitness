@@ -19,6 +19,7 @@
   import { useWorld } from './camera.svelte.ts';
   import PLACES from './models.json';
   import { pose3d } from './echo3d.ts';
+  import { site } from './site.svelte.ts';
 
   interface Props {
     season: Season;
@@ -43,17 +44,19 @@
   const TRUNK = 'polygon(29% 53%, 71% 53%, 72% 84%, 88% 89%, 88% 100%, 12% 100%, 12% 89%, 28% 84%)';
   const CANOPY = 'polygon(0 0, 100% 0, 100% 67%, 66% 67%, 66% 56%, 34% 56%, 34% 67%, 0 67%)';
   const BUSH_H = 40;
+  // (world.ts's values follow the island's layout: site.rev)
   const hedge = $derived.by((): Scenery[] => {
+    void site.rev;
     const [a, b] = hedgePair(month);
     return HEDGE_XS.map((x, i) => ({ id: `hedge-${i}`, kind: 'bush', key: `bushes/${i % 2 ? b : a}`, x, z: HEDGE_Z, h: BUSH_H }));
   });
   /** The fixed decor today (fixedDecor.ts): the decor's spots' pieces, and the scenery that takes a seasonal look. */
   const swaps = $derived(date ? swapsOn(date) : {});
-  const pieces = $derived(date ? piecesOn(date, hour, islandSeed(), ARCH) : []);
+  const pieces = $derived((void site.rev, date ? piecesOn(date, hour, islandSeed(), ARCH) : []));
   /** A piece whose shadow isn't baked into the ground (it comes and goes): its own soft shadow. */
-  const BAKED = new Set(DECOR_SLOTS.filter((d) => d.key).map((d) => d.key));
-  const fixtures = $derived(pieces.map((p): Scenery & { fixture: string; shade: boolean } => ({ id: `fx-${p.id}`, kind: 'prop', key: p.key, x: p.x, z: p.z, h: p.h, fixture: p.id, shade: !BAKED.has(p.key) })));
-  const scenery = $derived(SCENERY.map((s) => (swaps[s.id] ? { ...s, key: swaps[s.id].key, h: swaps[s.id].h } : s)));
+  const BAKED = $derived((void site.rev, new Set(DECOR_SLOTS.filter((d) => d.key).map((d) => d.key))));
+  const fixtures = $derived(pieces.map((p): Scenery & { fixture: string; shade: boolean } => ({ id: site.on ? p.id : `fx-${p.id}`, kind: 'prop', key: p.key, x: p.x, z: p.z, h: p.h, fixture: p.id, shade: !BAKED.has(p.key) })));
+  const scenery = $derived((void site.rev, SCENERY).map((s) => (swaps[s.id] ? { ...s, key: swaps[s.id].key, h: swaps[s.id].h } : s)));
   const glowOf = (key: string) => GLOW_AT[key] ?? LAMP_GLOW[key] ?? (key === 'deco/illumi-tree' ? 0.5 : 0);
   // The shishi-odoshi (docs/design.md "Decor"): every 15–25 s while it's in view, and on a tap (SceneTaps), its tube
   // tips (NH's own model posed: deco/shishiodoshi-tip), spills and knocks back on the stone: "kon". Local and cosmetic.
@@ -63,10 +66,10 @@
   function tip() {
     if (tipped) return;
     tipped = true;
-    pose3d('fx-shishi', 'deco/shishiodoshi-tip');
+    pose3d(site.on ? 'shishi' : 'fx-shishi', 'deco/shishiodoshi-tip');
     setTimeout(() => {
       tipped = false;
-      pose3d('fx-shishi', null);
+      pose3d(site.on ? 'shishi' : 'fx-shishi', null);
       if (shishiEl && shownNow(shishiEl)) sceneSfx('kon');
     }, TIP_MS);
   }
@@ -91,7 +94,8 @@
   /** A light's pool on the ground: over the ground's tint plane, under every upright thing. */
   const POOL_Z = 4;
   const lamps = $derived([...scenery, ...fixtures].filter((s) => glowOf(s.key)));
-  const fires = SCENERY.filter((s) => FIRE_AT[s.key]);
+  const fires = $derived((void site.rev, SCENERY).filter((s) => FIRE_AT[s.key]));
+  const buildings = $derived((void site.rev, BUILDINGS));
   const winter = $derived(season === 'winter');
   const wOf = (key: string, h: number) => {
     const a = art(key);
@@ -172,10 +176,10 @@
   {/if}
 {/each}
 
-{#each BUILDINGS as b (b.id)}
+{#each buildings as b (b.id)}
   <div class="spr building" data-building={b.id} {@attach w.at({ x: b.x, z: b.z, h: b.h, model: true })}>
     <button type="button" class="door" disabled={!live} data-sfx="self" data-scenery aria-label={t(`world.building.${b.id}`)}
-      style={at3d(b.key, b.h)} style:height="calc({b.h} * var(--u))" style:width="calc({wOf(b.key, b.h)} * var(--u))"
+      style={at3d(b.key, b.h)} style:height="calc({b.h} * var(--u))" style:width="calc({b.w ?? wOf(b.key, b.h)} * var(--u))"
       onclick={(e) => onbuilding?.(b.id, e.currentTarget)}>
       <OfficialArt key={sceneryKey(b.key, season, month)} size="calc({b.h} * var(--u))" eager />
     </button>
@@ -183,7 +187,7 @@
 {/each}
 
 {#if lit && !r3}
-  {#each BUILDINGS as b (b.id)}
+  {#each buildings as b (b.id)}
     {#if LIT_ART[b.key]}
       <div class="spr lit" data-lit={b.id} style:opacity={lit} {@attach w.at({ x: b.x, z: b.z, h: b.h, dz: -0.5, light: true })}>
         <span class="art" style={at3d(b.key, b.h)} style:height="calc({b.h} * var(--u))" style:width="calc({wOf(b.key, b.h)} * var(--u))">
@@ -236,7 +240,7 @@
     </div>
   {/each}
   {#if !r3}
-  {#each BUILDINGS as b (b.id)}
+  {#each buildings as b (b.id)}
     {#if LIT_ART[b.key]}
       <!-- the light from the tent's lantern on the clearing in front of it -->
       <div class="spr lit pool-node" data-pool={b.id} style:opacity={lit} {@attach w.at({ mode: 'flat', x: b.x - 40, z: b.z - 10, h: 4, zi: POOL_Z, light: true })}>

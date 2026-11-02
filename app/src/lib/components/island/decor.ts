@@ -12,7 +12,7 @@ import {
   ARCH, BEACH_BOX, BRIDGE, CAKE, CENTRE_STAGE, CLIFF, DECOR_U, DIG_SPOTS, FLOWERS, GOAL_TREES, HOMES, LAND, LAWN_SPOTS, POND, SPRING,
   inOval, onBridge, onLand, riverNear, type Pt
 } from './world.ts';
-import { MUSHROOM_SPOTS } from './mushrooms.ts';
+import { mushroomSpots } from './mushrooms.ts';
 import { fixedObstacles } from './walkGraph.ts';
 import { navWith, reachable } from './nav.ts';
 import PLACES from './models.json';
@@ -87,7 +87,7 @@ function keepOut() {
     ...Object.entries(base.named).map(([k, [x, z]]) => [x, z, /^(door|stair|bridge|river|mouth|clifftop|pondside|shore)/.test(k) ? 14 : 6] as [number, number, number]),
     ...DIG_SPOTS.map(([x, z]) => [x, z, 14] as [number, number, number]),
     ...LAWN_SPOTS.map(([x, z]) => [x, z, 8] as [number, number, number]),
-    ...MUSHROOM_SPOTS.map(([x, z]) => [x, z, 10] as [number, number, number]),
+    ...mushroomSpots().map(([x, z]) => [x, z, 10] as [number, number, number]),
     ...FLOWERS.map((f) => [f.x, f.z, 6] as [number, number, number]),
     [CENTRE_STAGE[0], CENTRE_STAGE[1], 30], [CAKE[0], CAKE[1], 24], [ARCH[0], ARCH[1], 24]
   ];

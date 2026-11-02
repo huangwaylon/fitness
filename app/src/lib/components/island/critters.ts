@@ -9,7 +9,7 @@ import type { SeaId } from './sea.ts';
 import type { Sky } from './weather.ts';
 import {
   BEACH_BOX, BRIDGE, CLIFF, FLOWERS, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SHORE_Z, SPRING, TREE_H, freshWhere, inOval,
-  riverNS, riverNear, type FreshWhere
+  LAWN_SPOTS, RIVER_BEND, onLayout, riverNS, riverNear, worldGen, type FreshWhere
 } from './world.ts';
 
 /** NH months (1–12) a critter is about, and its hours [from, to) in Tokyo time (to < from wraps past midnight). */
@@ -395,7 +395,10 @@ export interface Swim { cx: number; cz: number; ux: number; uz: number; L: numbe
 export const swimAt = (a: Swim, s: number, t: number): { x: number; z: number } => ({ x: a.cx + a.ux * s * a.L - a.uz * t * a.W, z: a.cz + a.uz * s * a.L + a.ux * t * a.W });
 
 /** The sea's fishing water: SEA_BOX, reaching in to just past the foam (from まえ only its near strip is on screen). */
-export const SEA_SWIM: Swim = { cx: (SEA_BOX.x0 + SEA_BOX.x1) / 2, cz: (SEA_BOX.z0 + SHORE_Z - 16) / 2, ux: 1, uz: 0, L: (SEA_BOX.x1 - SEA_BOX.x0) / 2, W: (SHORE_Z - 16 - SEA_BOX.z0) / 2 };
+export const SEA_SWIM: Swim = {
+  get cx() { return (SEA_BOX.x0 + SEA_BOX.x1) / 2; }, get cz() { return (SEA_BOX.z0 + SHORE_Z - 16) / 2; }, ux: 1, uz: 0,
+  get L() { return (SEA_BOX.x1 - SEA_BOX.x0) / 2; }, get W() { return (SHORE_Z - 16 - SEA_BOX.z0) / 2; }
+};
 
 /** Patches along the river's centreline from RIVER[i0] to RIVER[i1], one every `step` u, each a reach's stretch. */
 function reaches(i0: number, i1: number, step: number, keep: (x: number, z: number) => boolean): Swim[] {
@@ -451,7 +454,7 @@ export const perch3d = (p: Perch, f = 1): { x: number; z: number; lift: number }
 });
 
 /** The bushes (the hedge and the scenery's): x, z and height. */
-export const BUSHES: readonly { id: string; x: number; z: number; h: number }[] = [
+export const bushes = (): readonly { id: string; x: number; z: number; h: number }[] => [
   ...HEDGE_XS.map((x, i) => ({ id: `hedge-${i}`, x, z: HEDGE_Z, h: 40 })),
   ...SCENERY.filter((s) => s.kind === 'bush').map((s) => ({ id: s.id, x: s.x, z: s.z, h: s.h }))
 ];
@@ -473,13 +476,23 @@ const LAWN: Patch[] = [
   { x0: 260, x1: 300, z0: 748, z1: 784, l0: 0, l1: 0 }, { x0: 214, x1: 240, z0: 836, z1: 880, l0: 0, l1: 0 }
 ];
 
+/** The open lawn on the layout: a dozen of its open grass tiles, spread over the island. */
+let lawn3: { gen: number; patches: Patch[] } | null = null;
+function lawnOnLayout(): Patch[] {
+  if (lawn3?.gen === worldGen()) return lawn3.patches;
+  const step = Math.max(1, Math.floor(LAWN_SPOTS.length / 12));
+  const patches = LAWN_SPOTS.filter((_, i) => i % step === 0).map(([x, z]) => patch(x, z, 14, 12));
+  lawn3 = { gen: worldGen(), patches };
+  return patches;
+}
+
 /** Where a bug of `place` keeps to (not the trunks or the flower heads: `perches`, FLOWERS). */
 export function patches(place: BugPlace): Patch[] {
   switch (place) {
     case 'flowers': return beds(16, 44, 22);
     case 'beds': return beds(3, 7, 10);
     case 'lights': return SCENERY.filter((s) => s.kind === 'prop' && /lamp/.test(s.key)).map((s) => patch(s.x, s.z - 2, 16, 6, s.h * 0.75, s.h * 1.05));
-    case 'bush': return BUSHES.map((b) => patch(b.x, b.z - 1, 7, 2, b.h * 0.8, b.h * 0.86));
+    case 'bush': return bushes().map((b) => patch(b.x, b.z - 1, 7, 2, b.h * 0.8, b.h * 0.86));
     case 'water-air':
       return [
         patch(POND.x, POND.z, POND.rx, POND.rz, 10, 36),
@@ -488,12 +501,13 @@ export function patches(place: BugPlace): Patch[] {
     case 'water':
       return [
         { x0: POND.x - POND.rx * 0.6, x1: POND.x + POND.rx * 0.6, z0: POND.z - POND.rz * 0.5, z1: POND.z + POND.rz * 0.5, l0: 0, l1: 0 },
-        ...[790, 860, 930, 1000].map((z) => { const r = riverNS(z)!; return patch(r.x, z, r.hw * 0.45, 26); })
+        // four along the reach between its bend and the falls' pool
+        ...[0, 1, 2, 3].map((k) => RIVER_BEND + 20 + (k / 3) * (CLIFF.z0 - 40 - RIVER_BEND - 20)).flatMap((z) => { const r = riverNS(z); return r ? [patch(r.x, z, r.hw * 0.45, 26)] : []; })
       ];
     case 'beach': return [{ x0: BEACH_BOX.x0 - 40, x1: BEACH_BOX.x1, z0: BEACH_BOX.z0, z1: BEACH_BOX.z1 - 10, l0: 0, l1: 0 }];
     case 'rock': return [{ x0: ROCK[0] - 18, x1: ROCK[0] + 20, z0: ROCK[1] - 14, z1: ROCK[1] - 6, l0: 0, l1: 0 }];
     case 'under-tree': return perches(false).filter((p) => !/cedar/.test(p.tree)).map((p) => ({ x0: p.x - 20, x1: p.x + 20, z0: p.z - 18, z1: p.z - 8, l0: 0, l1: 0 }));
-    default: return LAWN;
+    default: return onLayout() ? lawnOnLayout() : LAWN;
   }
 }
 

@@ -47,7 +47,7 @@ export interface ShakeTree {
 const side = (x: number): -1 | 1 => (x < 195 ? -1 : 1);
 
 /** The scenery's trees (world.ts SCENERY: the oaks, the cedars, the palms; bamboo doesn't shake). */
-export const SCENERY_TREES: readonly ShakeTree[] = SCENERY.filter((s) => s.kind === 'oak' || s.kind === 'cedar' || s.kind === 'palm').map((s) => ({
+export const sceneryTrees = (): readonly ShakeTree[] => SCENERY.filter((s) => s.kind === 'oak' || s.kind === 'cedar' || s.kind === 'palm').map((s) => ({
   id: s.id, kind: s.kind as TreeKind, x: s.x, z: s.z, h: s.h, out: side(s.x)
 }));
 
@@ -59,7 +59,7 @@ export const goalTree = (person: 'A' | 'B'): ShakeTree =>
 export function treeById(id: string): ShakeTree | null {
   const g = /^goal-([AB])$/.exec(id);
   if (g) return goalTree(g[1] as 'A' | 'B');
-  return SCENERY_TREES.find((t) => t.id === id) ?? null;
+  return sceneryTrees().find((t) => t.id === id) ?? null;
 }
 
 // ---------- what falls ----------

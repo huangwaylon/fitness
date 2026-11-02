@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { mulberry32 } from '#lib/random.ts';
 import {
-  BUG_ODDS, NEST_GAP_MS, NEST_ODDS, SCENERY_TREES, SHAKE_WINDOW_MS, SWARM_MS, bearsCoconuts, dropIds, fallen, goalTree, lastNestOf, netsSwarm,
+  BUG_ODDS, NEST_GAP_MS, NEST_ODDS, sceneryTrees, SHAKE_WINDOW_MS, SWARM_MS, bearsCoconuts, dropIds, fallen, goalTree, lastNestOf, netsSwarm,
   shakeDrop, shakeTap, shakenBug, treeById, wireDrop
 } from './treeShake.ts';
 import { BUGS, pickBug } from './critters.ts';
@@ -83,10 +83,10 @@ describe('what a shake drops', () => {
 describe('every tree shakes, each its own way (NH)', () => {
   it("every oak, cedar and palm of the scenery is a tree to shake (bamboo isn't), its outer side by where it stands", () => {
     const kinds = SCENERY.filter((s) => ['oak', 'cedar', 'palm'].includes(s.kind));
-    expect(SCENERY_TREES.map((t) => t.id)).toEqual(kinds.map((s) => s.id));
-    expect(SCENERY_TREES.length).toBeGreaterThanOrEqual(12);
-    expect(SCENERY_TREES.some((t) => t.id.startsWith('bamboo'))).toBe(false);
-    for (const t of SCENERY_TREES) expect(t.out).toBe(t.x < 195 ? -1 : 1);
+    expect(sceneryTrees().map((t) => t.id)).toEqual(kinds.map((s) => s.id));
+    expect(sceneryTrees().length).toBeGreaterThanOrEqual(12);
+    expect(sceneryTrees().some((t) => t.id.startsWith('bamboo'))).toBe(false);
+    for (const t of sceneryTrees()) expect(t.out).toBe(t.x < 195 ? -1 : 1);
   });
   it("a goal tree is its person's, on their side on both phones (A's left, B's right)", () => {
     expect(goalTree('B')).toMatchObject({ id: 'goal-B', kind: 'goal', out: 1 });

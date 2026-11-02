@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { crittersAt, slotStart, SLOTS_PER_DAY } from './ambient.ts';
 import { BUGS, FRESH, bugPlace, patches, perches, type BugId } from './critters.ts';
-import { FLOWER_HEADS, bubblesAt, bugPath, critterId, fishPath, freshWater, groundOk, inWater, legAt } from './critterPath.ts';
+import { flowerHeads, bubblesAt, bugPath, critterId, fishPath, freshWater, groundOk, inWater, legAt } from './critterPath.ts';
 
 const DATE = '2026-11-04';
 
@@ -79,7 +79,7 @@ describe('the critters where both phones see them (from the spawn alone)', () =>
           expect(trunks.some((p) => Math.abs(p.x + p.dx - a.spot.x) < 1e-9 && Math.abs(p.z - 1 - a.spot.z) < 1e-9), id).toBe(true);
           expect(a.legs.at(-1)?.sat, id).toBe(true);
         } else if (flight === 'flower') {
-          expect(FLOWER_HEADS.some((h) => h.x === a.spot.x && h.z === a.spot.z), id).toBe(true);
+          expect(flowerHeads().some((h) => h.x === a.spot.x && h.z === a.spot.z), id).toBe(true);
         } else if (flight !== 'burrow') {
           const place = bugPlace(id);
           expect(patches(place).some((p) => a.spot.x >= p.x0 && a.spot.x <= p.x1 && a.spot.z >= p.z0 && a.spot.z <= p.z1), id).toBe(true);
@@ -95,7 +95,7 @@ describe('the critters where both phones see them (from the spawn alone)', () =>
 
   it('a butterfly lands on a flower now and then; a hopper hops; a firefly drifts; a bug out of a bush keeps by it', () => {
     const bfly = bugPath('common-butterfly', 7, 60_000)!;
-    expect(bfly.legs.some((l) => l.sat && FLOWER_HEADS.some((h) => h.x === l.x && h.z === l.z))).toBe(true);
+    expect(bfly.legs.some((l) => l.sat && flowerHeads().some((h) => h.x === l.x && h.z === l.z))).toBe(true);
     const hopper = bugPath('rice-grasshopper', 7, 18_000) ?? bugPath('grasshopper' as BugId, 7, 18_000);
     if (hopper) expect(hopper.legs.every((l) => l.hop)).toBe(true);
     const from = { x: 150, z: 700, lift: 24 }, area = { x0: 120, x1: 180, z0: 686, z1: 714, l0: 20, l1: 50 };

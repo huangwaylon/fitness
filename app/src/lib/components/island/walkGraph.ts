@@ -9,9 +9,11 @@
 import type { Box } from './geom.ts';
 import {
   BRIDGE, BRIDGE_RAIL, BUILDINGS, CENTRE_STAGE, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, ROCK,
-  DECOR_SLOTS, PULLUP_AT, SCENERY, SEATS, SHORE_Z, SPRING, TAPE_DECK, inOval, inRiver, onBridge, onLand, type Pt
+  DECOR_SLOTS, PULLUP_AT, SCENERY, SEATS, SHORE_Z, SPRING, TAPE_DECK, inOval, inRiver, onBridge, onLand, layoutNav, type Pt
 } from './world.ts';
 import { art } from '#lib/art.ts';
+import * as onGrid from '#lib/layout/nav.ts';
+import { walkNav } from './nav.ts';
 
 export type { Pt };
 
@@ -30,6 +32,8 @@ export interface WalkGeo {
   zones?: Box[];
   /** The static nodes' visibility graph (lazily built; shared by the island's geos). */
   vis?: Vis;
+  /** The island on its layout: its walk grid (layout/nav.ts) answers every test and finds every way instead. */
+  lnav?: onGrid.LayoutNav;
 }
 
 /** What stands on the ground besides the fixed scenery. */
@@ -157,6 +161,11 @@ function namedNodes(): Record<string, Pt> {
 
 /** The island's walk geometry from the world's constants. */
 export function walkGeo(extra: WalkExtra = {}): WalkGeo {
+  const ln = layoutNav();
+  if (ln) {
+    const n = walkNav();
+    return { obstacles: [], extra: extra.obstacles ?? [], nodes: { ...n.named, ...(extra.nodes ?? {}) }, pad: PAD, lnav: n as onGrid.LayoutNav };
+  }
   const s = build();
   const nodes = { ...namedNodes(), ...(extra.nodes ?? {}) };
   return { obstacles: s.obstacles, extra: extra.obstacles ?? [], nodes, pad: PAD, grid: s.grid, vis: s.vis };
@@ -169,6 +178,7 @@ function gridOk(g: Grid, x: number, z: number): boolean {
 
 /** On walkable ground and clear of every obstacle (grown by the footprint). */
 export function walkable(g: WalkGeo, x: number, z: number): boolean {
+  if (g.lnav) return onGrid.walkable(g.lnav, x, z, g.extra);
   if (g.extra?.some((o) => inBox(o, x, z, g.pad))) return false;
   if (g.grid) return gridOk(g.grid, x, z);
   return !!g.zones?.some((b) => inBox(b, x, z)) && !g.obstacles.some((o) => inBox(o, x, z, g.pad));
@@ -177,6 +187,7 @@ export function walkable(g: WalkGeo, x: number, z: number): boolean {
 /** A straight walk from a to b stays walkable (sampled every 3u). `loose`: the first stretch near `a` may be off the
  *  mask (a walker caught mid-step a little outside it). */
 export function segmentClear(g: WalkGeo, a: Pt, b: Pt, loose = 0): boolean {
+  if (g.lnav && !loose) return onGrid.clear(g.lnav, a, b, g.extra);
   const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
   const n = Math.max(1, Math.ceil(len / 3));
   for (let i = 0; i <= n; i++) {
@@ -212,6 +223,7 @@ function visGraph(g: WalkGeo): Vis {
 
 /** The way from `from` to `to`: the waypoints after `from` (ending at `to`), or null when there's none. */
 export function route(g: WalkGeo, from: Pt, to: Pt): Pt[] | null {
+  if (g.lnav) return onGrid.findPath(g.lnav, from, to, g.extra);
   if (!walkable(g, to[0], to[1])) return null;
   const loose = walkable(g, from[0], from[1]) ? 0 : 12;
   if (segmentClear(g, from, to, loose)) return [to];

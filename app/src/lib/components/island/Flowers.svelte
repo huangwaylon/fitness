@@ -8,6 +8,7 @@
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import { FLOWER_U, flowerScale, wildFlower, u } from './scene.ts';
   import { FLOWERS } from './world.ts';
+  import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
   import { flowerArt } from '#lib/art.ts';
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
@@ -37,7 +38,8 @@
   });
 
   const flowers = $derived(
-    FLOWERS.map((f, i) => {
+    // (world.ts's flowers follow the island's layout: site.rev)
+    (void site.rev, FLOWERS).map((f, i) => {
       const kind = wildFlower(f, season);
       const key = hybrid?.id === f.id ? `flowers/${hybrid.flower}` : flowerArt(kind);
       return { ...f, i, kind, key, h: FLOWER_U * flowerScale(kind), white: key.includes('white') };

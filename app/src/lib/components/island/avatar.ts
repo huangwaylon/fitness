@@ -14,7 +14,8 @@ import { FOLLOW_MS, MAX_HOPS, MEET, POI_LINGER, adjacent, besideSpots, pickPoi, 
 import type { ActorId } from '../motion/reactions.ts';
 import { REACH, SPEED, actionSpots, route, routeLength, walkGeo, walkable, type Pt, type WalkGeo } from './walkGraph.ts';
 import type { EmoteIcon } from '#lib/art.ts';
-import { nav } from './nav.ts';
+import { walkNav } from './nav.ts';
+import { worldGen } from './world.ts';
 import { planTap, type TapPlan } from './tapWalk.ts';
 import { dayKey } from '#lib/time/clock.ts';
 import { actorOf, guestPhone, otherMember, whoOf } from '#lib/ui-state/cast.ts';
@@ -97,7 +98,7 @@ export function arrive(from: Pt, to: Pt): void {
   actors.mine.face = 'home';
   place('mine', from[0], from[1]);
   // by the island's own planner (nav.ts: up the stairs, over the bridge), as a tap there would go
-  const p = c ? planTap(nav(), from, to[0], to[1], c.geo().extra) : null;
+  const p = c ? planTap(walkNav(), from, to[0], to[1], c.geo().extra) : null;
   if (p) walkTo('mine', p.pts, { speed: SPEED.wander, from, face: 'home' });
   else place('mine', to[0], to[1]);
 }
@@ -156,7 +157,7 @@ export function sendTo(x: number, z: number): TapPlan | null {
   const c = ctx, me = actors.mine;
   if (!c || !c.enabled() || me.asleep) return null;
   // nav.ts snaps the tap (a building's door, a bank facing the water, the nearest walkable point) and finds the way
-  const from = c.where('mine'), p = planTap(nav(), from, x, z, c.geo().extra);
+  const from = c.where('mine'), p = planTap(walkNav(), from, x, z, c.geo().extra);
   if (!p) return null;
   steered.mine = Date.now();
   clearTimeout(homeTimers.mine);
@@ -175,7 +176,7 @@ export function sendTo(x: number, z: number): TapPlan | null {
 export function partnerTo(x: number, z: number, id: Villager = 'partner'): boolean {
   const c = ctx;
   if (!c || !c.enabled() || actors[id].asleep) return false;
-  const from = c.where(id), p = planTap(nav(), from, x, z, c.geo().extra);
+  const from = c.where(id), p = planTap(walkNav(), from, x, z, c.geo().extra);
   if (!p) return false;
   steered[id] = Date.now();
   stays[id] = restAt(p.to, actors[id].home);
@@ -187,7 +188,7 @@ export function partnerTo(x: number, z: number, id: Villager = 'partner'): boole
 /** The partner's villager rests where they sent it earlier today (the relay's replay of their last walk, or the sheet's
  *  day row): put there at once, no walk (a phone opening later finds it where their phone has it). */
 export function partnerRestsAt(x: number, z: number, id: Villager = 'partner'): void {
-  const p = planTap(nav(), [x, z], x, z, []);
+  const p = planTap(walkNav(), [x, z], x, z, []);
   const to = p?.to ?? [x, z];
   stays[id] = restAt(to, actors[id].home);
   if (!actors[id].walking && !busy(id)) {
@@ -210,7 +211,7 @@ export function homeAgain(id: Villager): void {
 /** The way between two points on the island's nav, as a tap would go (planTap: the stairs, the bridge), without the
  *  visitor's spot (the same on every phone: villagerSync's walk home). Null when there's none. */
 export function homeRoute(from: Pt, to: Pt): Pt[] | null {
-  return planTap(nav(), from, to[0], to[1], [])?.pts ?? null;
+  return planTap(walkNav(), from, to[0], to[1], [])?.pts ?? null;
 }
 
 /** The partner did something on their phone (the shared world: a catch, a pick-up, a shake): their villager here turns
@@ -438,8 +439,8 @@ export function snapHome(): void {
 export const SNAP_HOME_MS = 30_000;
 
 // The visitor (Visitor.svelte, visitorLife.ts) walks on the island's open ground: its own spot isn't an obstacle to it.
-let openGeo: WalkGeo | null = null;
-const open = (): WalkGeo => (openGeo ??= walkGeo());
+let openGeo: { gen: number; geo: WalkGeo } | null = null;
+const open = (): WalkGeo => (openGeo?.gen === worldGen() ? openGeo : (openGeo = { gen: worldGen(), geo: walkGeo() })).geo;
 /** The visitor's way from `from` to `to` on the walk graph (null: none). */
 export const visitorRoute = (from: Pt, to: Pt): Pt[] | null => route(open(), from, to);
 /** Each villager as ambient life sees it (ambient.ts VillagerState): where it stands (rounded), its home, whether it is

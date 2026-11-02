@@ -3,7 +3,7 @@
 // villager to the door (nav.ts) and goes in. The partner's presence is their villager and the edge face (IslandScene),
 // not a character of its own.
 import { doorOf } from './nav.ts';
-import type { BuildingId, Pt } from './world.ts';
+import { CAMPSITE, type BuildingId, type Pt } from './world.ts';
 
 /** Where to stand to knock (nav.ts's door node). */
 export const doorAt = (id: BuildingId): Pt => doorOf(id);
@@ -22,7 +22,7 @@ export const outOfTent = (who: 'A' | 'B' | 'G'): Pt => {
 
 /** The guest's spot (docs/design.md "The guest"): by the campsite, NH's visitors' clearing, on the door's right. It has
  *  no home or tree of its own; this is where it stands once it has arrived. */
-export const GUEST_SPOT: Pt = [238, 950];
+export const guestSpot = (): Pt => [CAMPSITE.x + 42, CAMPSITE.z - 34];
 /** Where the guest's villager comes ashore each time its app opens: the front beach's right end, as off a boat at the
  *  shore, then it walks up the island to its spot. */
 export const GUEST_ARRIVAL: Pt = [300, 20];

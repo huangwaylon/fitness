@@ -6,8 +6,12 @@
 // read the same constants.
 
 import SCATTER from './scatter.json' with { type: 'json' };
+import type { LayoutNav } from '#lib/layout/nav.ts';
 
 export type Pt = readonly [number, number];
+type RoundRect = { readonly x0: number; readonly x1: number; readonly z0: number; readonly z1: number; readonly r: number };
+type Box4 = { readonly x0: number; readonly x1: number; readonly z0: number; readonly z1: number };
+type Oval = { readonly x: number; readonly z: number; readonly rx: number; readonly rz: number };
 
 /** The plan's extent (the baked terrain covers it; wider than the land so the perspective never shows an edge). */
 export const PLAN = { x0: -230, x1: 620, z0: -460, z1: 1700 } as const;
@@ -16,23 +20,24 @@ export const BANDS = 40;
 export const BAND_D = (PLAN.z1 - PLAN.z0) / BANDS;
 
 /** The island (land incl. beaches): a rounded rectangle with a 130u corner radius and a ±4u wobble. */
-export const LAND = { x0: -40, x1: 430, z0: -30, z1: 1260, r: 130 } as const;
+const LAND_2D = { x0: -40, x1: 430, z0: -30, z1: 1260, r: 130 } as const;
+export let LAND: RoundRect = LAND_2D;
 /** The front shoreline (the sea's edge in front of the beach). */
-export const SHORE_Z = LAND.z0;
+export let SHORE_Z: number = LAND.z0;
 /** The front beach (SHORE_Z … BEACH_FRONT, 140u: fishing and diving from it at まえ) is deeper than the side and back
  *  beaches. */
 const BEACH_FRONT = 110;
 const BEACH_SIDE = 30;
 /** The grass (tier 1 and tier 2 as one area; the cliff crosses it). */
-export const GRASS = { x0: LAND.x0 + BEACH_SIDE, x1: LAND.x1 - BEACH_SIDE, z0: BEACH_FRONT, z1: LAND.z1 - BEACH_SIDE, r: 90 } as const;
+export let GRASS: RoundRect = { x0: LAND.x0 + BEACH_SIDE, x1: LAND.x1 - BEACH_SIDE, z0: BEACH_FRONT, z1: LAND.z1 - BEACH_SIDE, r: 90 };
 
 /** The camera's two stops (camZ: the world z at the pivot line), front to back: まえ (home, the scroller's bottom: a
  *  wide band of sea, the beach, the health lawn; sections.ts fits it to the screen) and おく (the scroller's top: the campsite's clearing clear below
  *  the HUD, the pond, the bamboo grove and the falls; sections.ts raises it on a screen whose HUD would cover the
  *  campsite). */
-export const CAMS = { mae: 30, oku: 642 } as const;
-export const CAM_MIN = CAMS.mae;
-export const CAM_MAX = CAMS.oku;
+export let CAMS: { readonly mae: number; readonly oku: number } = { mae: 30, oku: 642 };
+export let CAM_MIN: number = CAMS.mae;
+export let CAM_MAX: number = CAMS.oku;
 /** The pivot line's share of the height, and the horizon's (the sky above it). */
 export const PIVOT = 0.72;
 export const SKY = 0.21;
@@ -47,7 +52,7 @@ export const AHEAD = 900;
 /** The stream's centreline [x, z, width]: the spring on the upper tier, the falls over the cliff, a meander down the
  *  east side, then a wide bend west across the island between the health lawn and おく (under the stone bridge on the
  *  path) and out through the west beach (the mouth, widening into the sea). */
-export const RIVER: readonly (readonly [number, number, number])[] = [
+export let RIVER: readonly (readonly [number, number, number])[] = [
   [364, 1146, 20], [368, 1108, 24], [372, 1082, 32], [372, 1040, 36],
   // the reach below the falls meanders gently, its width breathing (NH's rivers are never ruler-straight)
   [377, 990, 30], [366, 930, 33], [378, 870, 29], [367, 812, 32], [374, 762, 30],
@@ -56,17 +61,19 @@ export const RIVER: readonly (readonly [number, number, number])[] = [
   // the mouth on the west beach
   [-12, 628, 42], [-44, 620, 56], [-82, 614, 80], [-132, 608, 100]
 ];
+/** The z where the stream's north–south reach ends (it bends west there): riverNS's. */
+export let RIVER_BEND = 768;
 /** The stone bridge where the path crosses the stream (NH's stone bridge, scripts/models.ts bridges/stone-deck baked
  *  into the ground, its near end upright: bridges/stone-front): centred on x, the deck from z0 (its near end) to z1,
  *  w wide (NH's proportions: 30.2 × 40.8 model units, 1.18u each). The deck is walkable `RAIL` in from its sides. */
-export const BRIDGE = { x: 195, z0: 622, z1: 670, w: 35.5 } as const;
+export let BRIDGE: { readonly x: number; readonly z0: number; readonly z1: number; readonly w: number } = { x: 195, z0: 622, z1: 670, w: 35.5 };
 export const BRIDGE_RAIL = 5;
 /** Whether (x, z) is on the bridge's deck (`inset` in from its sides, e.g. the rails). */
 export const onBridge = (x: number, z: number, inset = 0): boolean => Math.abs(x - BRIDGE.x) <= BRIDGE.w / 2 - inset && z >= BRIDGE.z0 && z <= BRIDGE.z1;
 /** The spring on the upper tier the stream rises from. */
-export const SPRING = { x: 364, z: 1152, rx: 28, rz: 16 } as const;
+export let SPRING: Oval = { x: 364, z: 1152, rx: 28, rz: 16 };
 /** The pond (an oval of water), with lily pads: west of the path to the campsite. */
-export const POND = { x: 74, z: 772, rx: 46, rz: 26 } as const;
+export let POND: Oval = { x: 74, z: 772, rx: 46, rz: 26 };
 
 /** Where a freshwater cast lands, NH's locations (spec Q3): the pond, the river, its mouth, or the clifftop. */
 export type FreshWhere = 'pond' | 'river' | 'mouth' | 'clifftop';
@@ -75,7 +82,7 @@ export type FreshWhere = 'pond' | 'river' | 'mouth' | 'clifftop';
 
 /** The cliff to tier 2, behind the campsite: its face from z0 (foot) to z1 (top edge) across x0…x1; stone stairs and
  *  the falls cut it. */
-export const CLIFF = { z0: 1040, z1: 1080, x0: -12, x1: 402, stair: [36, 84] as Pt, fall: [351, 393] as Pt } as const;
+export let CLIFF: { readonly z0: number; readonly z1: number; readonly x0: number; readonly x1: number; readonly stair: Pt; readonly fall: Pt } = { z0: 1040, z1: 1080, x0: -12, x1: 402, stair: [36, 84], fall: [351, 393] };
 /** The cliff's upright face (a sprite at its foot) and the waterfall's height over it, in u. */
 export const FACE_H = 40;
 export const FALL_H = 45;
@@ -98,7 +105,7 @@ export const PATHS: { dirt: readonly (readonly Pt[])[] } = {
 // ---- buildings ------------------------------------------------------------------------------------------------------
 
 /** The one building left: the campsite (its tent), where visitors arrive and stay. */
-export type BuildingId = 'campsite';
+export type BuildingId = 'campsite' | 'home-B' | 'home-G';
 export interface Building {
   id: BuildingId;
   /** Art key (static/art). */
@@ -110,45 +117,47 @@ export interface Building {
   h: number;
   /** Footprint depth behind the door line (not walkable). */
   depth: number;
+  /** Its footprint's width (u), else its art's at its height. */
+  w?: number;
 }
-export const BUILDINGS: readonly Building[] = [{ id: 'campsite', key: 'deco/campsite', x: 196, z: 984, h: 80, depth: 40 }];
+export let BUILDINGS: readonly Building[] = [{ id: 'campsite', key: 'deco/campsite', x: 196, z: 984, h: 80, depth: 40 }];
 /** The campsite. */
-export const CAMPSITE = BUILDINGS[0];
+export let CAMPSITE: Building = BUILDINGS[0];
 
 // ---- まえ: the health lawn ------------------------------------------------------------------------------------------
 
 /** The villagers' home spots: A (ウェイ) on the left and B (うめ) on the right, on both phones. */
-export const HOMES = { A: [132, 214] as Pt, B: [262, 214] as Pt } as const;
+export let HOMES: { readonly A: Pt; readonly B: Pt } = { A: [132, 214], B: [262, 214] };
 /** Goal trees (hardwood, 120u), each beside its person's villager, on the outer side (their fruit, glints and popup
  *  are the day's goals). */
-export const GOAL_TREES = { A: [60, 216] as Pt, B: [332, 216] as Pt } as const;
+export let GOAL_TREES: { readonly A: Pt; readonly B: Pt } = { A: [60, 216], B: [332, 216] };
 export const TREE_H = 120;
 /** The tape deck, between the villagers. */
-export const TAPE_DECK: Pt = [195, 306];
+export let TAPE_DECK: Pt = [195, 306];
 /** The rock. */
-export const ROCK: Pt = [112, 478];
+export let ROCK: Pt = [112, 478];
 /** Fossil dig spots: six lawn spots, four on the front lawn in clear view from まえ (in front of the villagers and the
  *  trees, by the beach) and two behind the trees, off the canopies' columns (on a short screen the HUD stands over
  *  those). */
-export const DIG_SPOTS: readonly Pt[] = [[150, 162], [244, 164], [24, 180], [326, 152], [140, 440], [236, 462]];
+export let DIG_SPOTS: readonly Pt[] = [[150, 162], [244, 164], [24, 180], [326, 152], [140, 440], [236, 462]];
 /** Lawn spots for weeds (both sections' open lawn, off paths, flowers, trunks and water: scatter.json, scripts/layout.ts). */
-export const LAWN_SPOTS = SCATTER.lawn as unknown as readonly Pt[];
+export let LAWN_SPOTS: readonly Pt[] = SCATTER.lawn as unknown as readonly Pt[];
 /** The seasonal hedge along the stream's front bank, between the lawn and おく, with a gap for the path and the bridge
  *  (its streetlamps). */
-export const HEDGE_Z = 600;
-export const HEDGE_XS: readonly number[] = [36, 80, 124, 266, 310];
+export let HEDGE_Z = 600;
+export let HEDGE_XS: readonly number[] = [36, 80, 124, 266, 310];
 /** Beach finds lie at z 10…90 on x 120…300. */
-export const BEACH_BOX = { x0: 120, x1: 300, z0: -18, z1: 90 } as const;
+export let BEACH_BOX: Box4 = { x0: 120, x1: 300, z0: -18, z1: 90 };
 /** The sea's fishing water (in front of the shoreline, at the front of まえ). */
-export const SEA_BOX = { x0: 40, x1: 290, z0: -100, z1: -48 } as const;
+export let SEA_BOX: Box4 = { x0: 40, x1: 290, z0: -100, z1: -48 };
 
 // ---- おく: the campsite's clearing ------------------------------------------------------------------------------------
 
 /** Centre stage: the clearing in front of the campsite's tent, where visitors stand. */
-export const CENTRE_STAGE: Pt = [196, 898];
+export let CENTRE_STAGE: Pt = [196, 898];
 /** The wedding arch frames Reese and Cyrus, just behind them; the birthday cake stands in front of centre stage. */
-export const ARCH: Pt = [196, 922];
-export const CAKE: Pt = [196, 852];
+export let ARCH: Pt = [196, 922];
+export let CAKE: Pt = [196, 852];
 
 // ---- the scenery (still sprites: trees, bushes, props) ----------------------------------------------------------------
 
@@ -167,7 +176,7 @@ export interface Scenery {
   foot?: readonly [number, number];
 }
 const s = (id: string, kind: SceneryKind, key: string, x: number, z: number, h: number, flip = false): Scenery => ({ id, kind, key, x, z, h, flip });
-export const SCENERY: readonly Scenery[] = [
+export let SCENERY: readonly Scenery[] = [
   // まえ, kept clear (the health lawn, its trees, open lawn and the path; the sea wide in front): the island's
   // the island's only palms, by the front beach: a pair at its outer corners, small enough and far enough out to
   // leave the lawn, the finds and the sea view open, and a young one by the water on the left; plumeria at the grass
@@ -215,7 +224,7 @@ export interface DecorSlot {
   /** Its look all year (else only its seasons' pieces: fixedDecor.ts). */
   key?: string;
 }
-export const DECOR_SLOTS: readonly DecorSlot[] = [
+export let DECOR_SLOTS: readonly DecorSlot[] = [
   // まえ: the one bench at the left grass edge, facing the sea; summer's beach chair and sandcastle on the east beach
   // (clear of the finds and Gulliver); a snowboy on the lawn after a snow day
   { id: 'bench-mae', x: 40, z: 130, foot: [52, 14], key: 'deco/park-bench' },
@@ -246,13 +255,13 @@ const stool = (id: string): Pt => {
   const s = SCENERY.find((x) => x.id === id)!;
   return [s.x, s.z + 13];
 };
-export const SEATS: Record<string, Pt> = {
+export let SEATS: Readonly<Record<string, Pt>> = {
   seatMaeL: seat('bench-mae', -13), seatMaeR: seat('bench-mae', 13),
   seatPondL: seat('bench-pond', -14), seatPondR: seat('bench-pond', 14),
   stoolW: stool('stool-1'), stoolE: stool('stool-2')
 };
 /** Where a villager stands to do a pull-up (just behind the bar stand). */
-export const PULLUP_AT: Pt = seat('pullup', 0);
+export let PULLUP_AT: Pt = seat('pullup', 0);
 /** How far a seated villager sinks (u): the bench's seat (or the stool) covers its legs. */
 export const SEAT_DROP = 12;
 /** The seat (its name) a villager standing at (x, z) is on, or null. */
@@ -280,7 +289,7 @@ export interface Flower {
   clump: number;
 }
 /** Every wild flower (a small per-spot jitter of ±2u keeps a clump from looking stamped). */
-export const FLOWERS: readonly Flower[] = CLUMPS.flatMap(([cx, cz, n], clump) =>
+export let FLOWERS: readonly Flower[] = CLUMPS.flatMap(([cx, cz, n], clump) =>
   CLUMP_AT[n].map(([dx, dz], k) => {
     const h = ((cx * 73 + cz * 151 + k * 197) >>> 0) % 25;
     const x = Math.round(cx + dx + (h % 5) - 2), z = Math.round(cz + dz + Math.floor(h / 5) - 2);
@@ -295,7 +304,7 @@ export const flowerById = (id: string): Flower | undefined => FLOWERS.find((f) =
 /** The stream's half-width and centre x at z along its north–south reach, or null off it (z ≥ 768, before it bends
  *  west). */
 export function riverNS(z: number): { x: number; hw: number } | null {
-  for (let i = 0; i < RIVER.length - 1 && RIVER[i][1] > 768; i++) {
+  for (let i = 0; i < RIVER.length - 1 && RIVER[i][1] > RIVER_BEND; i++) {
     const a = RIVER[i], b = RIVER[i + 1];
     if (z <= a[1] && z >= b[1]) {
       const t = (a[1] - z) / (a[1] - b[1] || 1);
@@ -320,6 +329,7 @@ export function riverNear(x: number, z: number): { d: number; hw: number; i: num
 
 /** Whether (x, z) is on the river's water. */
 export function inRiver(x: number, z: number): boolean {
+  if (geo) return geo.inRiver(x, z);
   const r = riverNear(x, z);
   return r.d <= r.hw;
 }
@@ -331,6 +341,7 @@ export const inOval = (o: { x: number; z: number; rx: number; rz: number }, x: n
 /** NH's freshwater location of a cast at (x, z): the pond, the clifftop (above the cliff, or the falls' pool at its
  *  foot: the upper tier is beyond the horizon), the river mouth (the wide reach on the west beach) or the river. */
 export function freshWhere(x: number, z: number): FreshWhere {
+  if (geo) return geo.freshWhere(x, z);
   if (inOval(POND, x, z, 12)) return 'pond';
   if (z > CLIFF.z0 - FALLS_POOL) return 'clifftop';
   if (x < -6 && z < 700) return 'mouth';
@@ -345,9 +356,9 @@ function roundRectDist(r: { x0: number; x1: number; z0: number; z1: number; r: n
   return Math.hypot(Math.max(qx, 0), Math.max(qz, 0)) + Math.min(Math.max(qx, qz), 0) - r.r;
 }
 /** Whether (x, z) is on land (sand or grass). */
-export const onLand = (x: number, z: number): boolean => roundRectDist(LAND, x, z) <= 0;
+export const onLand = (x: number, z: number): boolean => (geo ? geo.onLand(x, z) : roundRectDist(LAND, x, z) <= 0);
 /** Whether (x, z) is on the grass (not the beach). */
-export const onGrass = (x: number, z: number): boolean => roundRectDist(GRASS, x, z) <= 0;
+export const onGrass = (x: number, z: number): boolean => (geo ? geo.onGrass(x, z) : roundRectDist(GRASS, x, z) <= 0);
 
 /** Distance from a point to a polyline. */
 function polyDist(line: readonly Pt[], x: number, z: number): number {
@@ -364,6 +375,7 @@ function polyDist(line: readonly Pt[], x: number, z: number): number {
 export type Surface = 'sea' | 'sand' | 'grass' | 'dirt' | 'stone' | 'water';
 /** What the ground is at (x, z): footsteps and taps pick their sound and flourish from it. */
 export function surfaceAt(x: number, z: number): Surface {
+  if (geo) return geo.surfaceAt(x, z);
   if (onBridge(x, z)) return 'stone';
   if (!onLand(x, z)) return 'sea';
   if (inRiver(x, z) || inOval(POND, x, z) || inOval(SPRING, x, z)) return 'water';
@@ -372,3 +384,49 @@ export function surfaceAt(x: number, z: number): Surface {
   for (const p of PATHS.dirt) if (polyDist(p, x, z) <= PATH_W / 2) return 'dirt';
   return 'grass';
 }
+
+// ---- the island's layout (the 3D island on the long layout: docs/island-layout.md "What the 3D integration must change" 7)
+
+/** Everything above that the layout gives instead (island/layoutWorld.ts worldOf): the values, and the tests that read
+ *  the layout's tiles rather than the shapes. */
+export interface WorldGeo {
+  LAND: RoundRect; SHORE_Z: number; GRASS: RoundRect; CAMS: { mae: number; oku: number };
+  RIVER: readonly (readonly [number, number, number])[]; RIVER_BEND: number; BRIDGE: typeof BRIDGE; SPRING: Oval; POND: Oval; CLIFF: typeof CLIFF;
+  BUILDINGS: readonly Building[]; HOMES: typeof HOMES; GOAL_TREES: typeof GOAL_TREES; TAPE_DECK: Pt; ROCK: Pt;
+  DIG_SPOTS: readonly Pt[]; LAWN_SPOTS: readonly Pt[]; HEDGE_Z: number; HEDGE_XS: readonly number[]; BEACH_BOX: Box4; SEA_BOX: Box4;
+  CENTRE_STAGE: Pt; ARCH: Pt; CAKE: Pt; SCENERY: readonly Scenery[]; DECOR_SLOTS: readonly DecorSlot[]; SEATS: Readonly<Record<string, Pt>>;
+  PULLUP_AT: Pt; FLOWERS: readonly Flower[];
+  inRiver(x: number, z: number): boolean; freshWhere(x: number, z: number): FreshWhere; onLand(x: number, z: number): boolean;
+  onGrass(x: number, z: number): boolean; surfaceAt(x: number, z: number): Surface;
+  /** The layout's walk grid (layout/nav.ts navOf): the walk's, in place of nav.ts's and walkGraph.ts's. */
+  nav: LayoutNav;
+}
+type Values = Omit<WorldGeo, 'inRiver' | 'freshWhere' | 'onLand' | 'onGrass' | 'surfaceAt' | 'nav'>;
+const snapshot = (): Values => ({
+  LAND, SHORE_Z, GRASS, CAMS, RIVER, RIVER_BEND, BRIDGE, SPRING, POND, CLIFF, BUILDINGS, HOMES, GOAL_TREES, TAPE_DECK, ROCK, DIG_SPOTS,
+  LAWN_SPOTS, HEDGE_Z, HEDGE_XS, BEACH_BOX, SEA_BOX, CENTRE_STAGE, ARCH, CAKE, SCENERY, DECOR_SLOTS, SEATS, PULLUP_AT, FLOWERS
+});
+/** @public (the layout's derivation reads the old island's looks and sizes by id) world.ts's own island, as above. */
+export const WORLD_2D: Readonly<Values> = snapshot();
+let geo: WorldGeo | null = null;
+let gen = 0;
+
+/** The island's geometry from now on: the layout's (worldOf), or null for world.ts's own (the 2D island). Every value
+ *  above is reassigned (an import reads the new one: a live binding); a cache of one keys on worldGen(). */
+export function setWorld(g: WorldGeo | null): void {
+  if (g === geo) return;
+  geo = g;
+  const v: Values = g ?? WORLD_2D;
+  ({ LAND, SHORE_Z, GRASS, CAMS, RIVER, RIVER_BEND, BRIDGE, SPRING, POND, CLIFF, BUILDINGS, HOMES, GOAL_TREES, TAPE_DECK, ROCK, DIG_SPOTS,
+    LAWN_SPOTS, HEDGE_Z, HEDGE_XS, BEACH_BOX, SEA_BOX, CENTRE_STAGE, ARCH, CAKE, SCENERY, DECOR_SLOTS, SEATS, PULLUP_AT, FLOWERS } = v);
+  CAMPSITE = BUILDINGS.find((b) => b.id === 'campsite') ?? BUILDINGS[0];
+  CAM_MIN = CAMS.mae;
+  CAM_MAX = CAMS.oku;
+  gen++;
+}
+/** The geometry's generation (bumped by each setWorld): a cache keyed on it is fresh. */
+export const worldGen = (): number => gen;
+/** Whether the island reads the layout now. */
+export const onLayout = (): boolean => geo !== null;
+/** The layout's walk grid while the island reads it, else null. */
+export const layoutNav = (): LayoutNav | null => geo?.nav ?? null;

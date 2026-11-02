@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MUSHROOMS, MUSHROOM_SPOTS, OFF_SEASON_ODDS, RARE_ODDS, mushroomsOn, rareMushroom } from './mushrooms.ts';
+import { MUSHROOMS, mushroomSpots, OFF_SEASON_ODDS, RARE_ODDS, mushroomsOn, rareMushroom } from './mushrooms.ts';
 import { DIG_SPOTS, LAWN } from './beach.ts';
 import { OAK_AR } from './scene.ts';
 import { FLOWERS, GOAL_TREES, HOMES, SCENERY, TAPE_DECK, onGrass, surfaceAt } from './world.ts';
@@ -51,9 +51,9 @@ describe('mushroom season', () => {
     for (const id of ['skinny-mushroom', 'round-mushroom', 'flat-mushroom']) expect(n[id]).toBeGreaterThan(40);
   });
   it('they grow beside the front lawn’s oak and cedar, past their canopies, away from the villagers, the dig spots, the weeds, the deck and the flowers', () => {
-    expect(MUSHROOM_SPOTS).toHaveLength(4);
+    expect(mushroomSpots()).toHaveLength(4);
     const trees = SCENERY.filter((s) => s.id === 'oak-m1' || s.id === 'cedar-m1');
-    for (const [x, z] of MUSHROOM_SPOTS) {
+    for (const [x, z] of mushroomSpots()) {
       const t = trees.reduce((a, b) => (Math.hypot(b.x - x, b.z - z) < Math.hypot(a.x - x, a.z - z) ? b : a));
       expect(Math.abs(x - t.x)).toBeLessThanOrEqual(70);
       expect(Math.abs(x - t.x)).toBeGreaterThan(t.h * (t.kind === 'oak' ? OAK_AR : 0.25) / 2 + 4); // past the canopy

@@ -41,7 +41,7 @@
   import { showerNight } from './meteor.ts';
   import { eggTime, eventNow } from './events.ts';
   import { eggInDig } from './eggs.ts';
-  import { MUSHROOM_SPOTS, mushroomsOn, rareMushroom, type Mushroom } from './mushrooms.ts';
+  import { mushroomSpots, mushroomsOn, rareMushroom, type Mushroom } from './mushrooms.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { lying, taken as takenBy, takenByOthers } from '#lib/sync/world-day.ts';
@@ -50,6 +50,7 @@
   import { giftTree } from './treeGifts.ts';
   import { treeById } from './treeShake.ts';
   import { SvelteSet } from 'svelte/reactivity';
+  import { site } from './site.svelte.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -113,6 +114,7 @@
   });
   const spots = $derived.by<DigSpot[]>(() => {
     void taken;
+    void site.rev;
     void digHold;
     const list = digSpots(date, goneOn(date), seed);
     return digHold > Date.now() && heldShown ? list.filter((s) => heldShown!.has(s.uid)) : list;
@@ -126,8 +128,9 @@
   });
   const mushrooms = $derived.by<Mushroom[]>(() => {
     void taken;
+    void site.rev;
     const gone = goneOn(date);
-    const list = want === 'mushroom' ? [{ uid: 'm-demo', id: 'round-mushroom' as const, x: MUSHROOM_SPOTS[0][0], y: MUSHROOM_SPOTS[0][1], flip: false }] : mushroomsOn(date, seed);
+    const list = want === 'mushroom' ? [{ uid: 'm-demo', id: 'round-mushroom' as const, x: mushroomSpots()[0][0], y: mushroomSpots()[0][1], flip: false }] : mushroomsOn(date, seed);
     return list.filter((m) => !gone.has(m.uid));
   });
   /** Whether a dig spot holds the rare mushroom (`?find=rare-mushroom`: every one). */

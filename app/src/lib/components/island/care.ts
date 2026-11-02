@@ -70,4 +70,4 @@ export function rockTap(r: () => number): 'clonk' | 'sparkle' | 'bug' {
   return x < 0.125 ? 'bug' : x < 0.375 ? 'sparkle' : 'clonk';
 }
 /** The rock (world.ts ROCK: on the health lawn behind the left tree; y = the world's z), 22u tall. */
-export const ROCK = { x: W_ROCK[0], y: W_ROCK[1], h: 22 } as const;
+export const ROCK = { get x() { return W_ROCK[0]; }, get y() { return W_ROCK[1]; }, h: 22 } as const;

@@ -5,7 +5,7 @@
 // caption, an icon and (the first time) a ずかん `find`, never ベル.
 import { pickOne, shuffle, weighted } from '#lib/random.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
-import { BEACH_BOX, DIG_SPOTS as DIGS, LAWN_SPOTS, SHORE_Z } from './world.ts';
+import { BEACH_BOX, DIG_SPOTS as DIGS, LAWN_SPOTS, SHORE_Z, worldGen } from './world.ts';
 import { daySpots } from '#lib/layout/spots.ts';
 import type { Layout } from '#lib/layout/model.ts';
 
@@ -79,9 +79,11 @@ export function zodiacOf(date: string): string {
 // ---------- where things lie (world units: x across, y = the world's z, docs/design.md "World") ----------
 
 /** The front beach between the grass and the foam (shells, the bottle, fragments). */
-export const BEACH = { x0: BEACH_BOX.x0, x1: BEACH_BOX.x1, y0: BEACH_BOX.z0 + 8, y1: BEACH_BOX.z1 } as const;
+export const BEACH = {
+  get x0() { return BEACH_BOX.x0; }, get x1() { return BEACH_BOX.x1; }, get y0() { return BEACH_BOX.z0 + 8; }, get y1() { return BEACH_BOX.z1; }
+};
 /** The water's edge (the bottle lies half in the foam). */
-const EDGE_Z = SHORE_Z + 3;
+const edgeZ = () => SHORE_Z + 3;
 /** The least gap (u) between two things lying on the front beach (shells, fragments, the bottle): about two of them
  *  side by side, so they never clump or touch. */
 export const BEACH_GAP = 34;
@@ -98,7 +100,7 @@ function beachSpot(r: () => number, near: readonly Pt[], { first, edge = false }
   let best: Pt = { x: xs[0], y: BEACH.y1 }, bestD = -1;
   const tenth = (v: number) => Math.round(v * 10) / 10;
   for (const x0 of xs) {
-    const x = tenth(x0), y = tenth(edge ? EDGE_Z : BEACH.y0 - 2 + r() * (BEACH.y1 - BEACH.y0 + 2));
+    const x = tenth(x0), y = tenth(edge ? edgeZ() : BEACH.y0 - 2 + r() * (BEACH.y1 - BEACH.y0 + 2));
     const d = Math.min(Infinity, ...near.map((p) => Math.hypot(p.x - x, p.y - y)));
     if (d >= BEACH_GAP) return { x, y };
     if (d > bestD) (best = { x, y }), (bestD = d);
@@ -114,7 +116,7 @@ export const DIG_SPOTS: readonly (readonly [number, number])[] = DIGS;
  *  seeded by the date (layout/spots.ts daySpots: the 3D island on the layout calls useSpots(layoutSpots(…))). The
  *  same on every phone either way. */
 type SpotSource = (date: string, seed: string) => { lawn: readonly (readonly [number, number])[]; dig: readonly (readonly [number, number])[] };
-const worldSpots: SpotSource = () => ({ lawn: LAWN, dig: DIG_SPOTS });
+const worldSpots: SpotSource = () => ({ lawn: LAWN_SPOTS, dig: DIGS });
 let source: SpotSource = worldSpots;
 /** @public (the 3D island on the layout) Today's spots from this source (null: world.ts's). */
 export function useSpots(s: SpotSource | null): void {
@@ -152,7 +154,7 @@ export function shellsAt(date: string, ms: number, seed = ISLAND_SEED, fragments
  *  last two shells, a bottle), so a new arrival never moves anything already lying there and both phones agree. */
 const days = new Map<string, { shells: Shell[]; bottles: Bottle[] }>();
 function beachDay(date: string, seed: string, fragments: readonly Fragment[]): { shells: Shell[]; bottles: Bottle[] } {
-  const key = `${date}|${seed}|${fragments.map((f) => `${f.x},${f.y}`).join(';')}`;
+  const key = `${date}|${seed}|${worldGen()}|${fragments.map((f) => `${f.x},${f.y}`).join(';')}`;
   const hit = days.get(key);
   if (hit) return hit;
   const DAY = 24 * 3600_000;
