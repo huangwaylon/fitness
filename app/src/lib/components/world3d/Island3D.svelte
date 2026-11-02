@@ -52,6 +52,8 @@
     /** The day's scenery (its swaps) and the fixed decor's pieces (Scenery's own). */
     scenery: readonly Scenery[];
     pieces: readonly Piece[];
+    /** Today's hybrid flower in its spot (care.ts). */
+    hybrid: { id: string; flower: string } | null;
     /** A wet day's darkening (0 … 1). */
     wet: number;
     cast: () => readonly Cast[];
@@ -68,7 +70,7 @@
     /** The camera is up and the island's models are in (once). */
     onready: () => void;
   }
-  let { world, scene, season, foliage, month, tod, scenery, pieces, wet, cast, enabled, start, onscroll, onhorizon, onfail, onready }: Props = $props();
+  let { world, scene, season, foliage, month, tod, scenery, pieces, hybrid, wet, cast, enabled, start, onscroll, onhorizon, onfail, onready }: Props = $props();
 
   let canvas = $state<HTMLCanvasElement>();
   let eng = $state.raw<Island3 | null>(null);
@@ -163,8 +165,8 @@
   $effect(() => {
     const e = eng;
     if (!e) return;
-    const day = { season, foliage, month, scenery, pieces, fruit: false };
-    const sig = `${season}|${foliage}|${month}|${scenery.map((s) => s.id + s.key).join()}|${pieces.map((p) => p.id + p.key).join()}`;
+    const day = { season, foliage, month, scenery, pieces, hybrid, fruit: false };
+    const sig = `${season}|${foliage}|${month}|${hybrid?.id}:${hybrid?.flower}|${scenery.map((s) => s.id + s.key).join()}|${pieces.map((p) => p.id + p.key).join()}`;
     if (sig === placed) return;
     placed = sig;
     untrack(() => {
