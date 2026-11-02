@@ -426,16 +426,29 @@ export interface Patch { x0: number; x1: number; z0: number; z1: number; l0: num
 const patch = (x: number, z: number, hx: number, hz: number, l0 = 0, l1 = l0): Patch => ({ x0: x - hx, x1: x + hx, z0: z - hz, z1: z + hz, l0, l1 });
 
 /** A trunk a bug perches on: where on it (lift: up the trunk, dx: off the foot's x where the trunk leans). */
-export interface Perch { tree: string; x: number; z: number; lift: number; dx: number; h: number }
+export interface Perch { tree: string; kind: 'oak' | 'cedar' | 'palm'; x: number; z: number; lift: number; dx: number; h: number }
 /** The trunks: NH's palm beetles on the palms; every other percher on the goal trees, the oaks and the cedars (their
  *  bare trunk under the leaves: an oak's lower half, a cedar's bottom third, a palm's lower third). */
 export function perches(palm: boolean): Perch[] {
   if (palm)
-    return SCENERY.filter((s) => s.kind === 'palm').map((s) => ({ tree: s.id, x: s.x, z: s.z, lift: s.h * 0.3, dx: (s.flip ? -1 : 1) * s.h * 0.03, h: s.h }));
-  const goal = (['A', 'B'] as const).map((k) => ({ tree: `goal-${k}`, x: GOAL_TREES[k][0], z: GOAL_TREES[k][1], lift: TREE_H * 0.28, dx: 0, h: TREE_H }));
-  const scenery = SCENERY.filter((s) => s.kind === 'oak' || s.kind === 'cedar').map((s) => ({ tree: s.id, x: s.x, z: s.z, lift: s.h * (s.kind === 'oak' ? 0.3 : 0.16), dx: 0, h: s.h }));
+    return SCENERY.filter((s) => s.kind === 'palm').map((s) => ({ tree: s.id, kind: 'palm' as const, x: s.x, z: s.z, lift: s.h * 0.3, dx: (s.flip ? -1 : 1) * s.h * 0.03, h: s.h }));
+  const goal = (['A', 'B'] as const).map((k) => ({ tree: `goal-${k}`, kind: 'oak' as const, x: GOAL_TREES[k][0], z: GOAL_TREES[k][1], lift: TREE_H * 0.28, dx: 0, h: TREE_H }));
+  const scenery = SCENERY.filter((s) => s.kind === 'oak' || s.kind === 'cedar').map((s) => ({ tree: s.id, kind: s.kind as 'oak' | 'cedar', x: s.x, z: s.z, lift: s.h * (s.kind === 'oak' ? 0.3 : 0.16), dx: 0, h: s.h }));
   return [...goal, ...scenery];
 }
+
+/** The 3D island's trunks (NH's tree models, fitted to the tree's height h; measured from the models' vertices): how
+ *  far up a percher sits, low enough that the canopy (a cedar's skirt is wide and low) leaves it in view from the
+ *  camera at every pitch (44°–63°), and how far out of the trunk's middle the bark's front is, the bug's belly on it. */
+export const PERCH_3D: Record<Perch['kind'], { lift: number; out: number }> = {
+  oak: { lift: 0.18, out: 0.11 },
+  cedar: { lift: 0.13, out: 0.09 },
+  palm: { lift: 0.19, out: 0.095 }
+};
+/** A perch on the 3D island: on the bark's front, toward the camera (`f`: a little lower or higher). */
+export const perch3d = (p: Perch, f = 1): { x: number; z: number; lift: number } => ({
+  x: p.x, z: p.z - PERCH_3D[p.kind].out * p.h, lift: PERCH_3D[p.kind].lift * p.h * f
+});
 
 /** The bushes (the hedge and the scenery's): x, z and height. */
 export const BUSHES: readonly { id: string; x: number; z: number; h: number }[] = [

@@ -77,7 +77,7 @@
   import {
     BUGS, BUSHES, CAST_U, FISH, FRESH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS, bitePlan,
     bugPlace, bushBug, castInto, castPhase, critterArt, findKind, freshAreas, shadowLen, fleaJumps, hesitatePlan, hookItem, netSwing,
-    oddsAt, patches, perches, pickBug, pickFish, reel, stalkTap, swimAt, waterAt, type BitePlan, type BugId, type BugPlace, type Catch,
+    oddsAt, patches, perch3d, perches, pickBug, pickFish, reel, stalkTap, swimAt, waterAt, type BitePlan, type BugId, type BugPlace, type Catch,
     type FishId, type Flight, type JunkId, type Patch, type StalkState, type Swim, type Water
   } from './critters.ts';
   import type { PondFishId } from './pondFish.ts';
@@ -561,7 +561,8 @@
     const all = perches(palm), spots: P3[] = [];
     for (const p of all)
       for (const f of [1, 0.85, 1.15, 0.7]) {
-        const s = { x: p.x + p.dx, z: p.z - 1, lift: p.lift * f };
+        // (on the 3D island: on the model's bark, toward the camera, under its canopy)
+        const s = w.rest.three ? perch3d(p, f) : { x: p.x + p.dx, z: p.z - 1, lift: p.lift * f };
         if (seen(s.x, s.z, s.lift, keep, 5, 6)) {
           spots.push(s);
           break;
@@ -571,7 +572,7 @@
     if (!pinned) return null;
     // nowhere on screen: the nearest trunk ahead of the camera all the same
     const p = [...all].sort((a, b) => Math.abs(a.z - w.view.camZ - 150) - Math.abs(b.z - w.view.camZ - 150))[0];
-    return p ? { x: p.x + p.dx, z: p.z - 1, lift: p.lift } : null;
+    return p ? (w.rest.three ? perch3d(p) : { x: p.x + p.dx, z: p.z - 1, lift: p.lift }) : null;
   }
 
   /** A bug comes on where NH keeps it and the camera can see it (`pinned`: or at its place anyway); false when there's
@@ -1013,7 +1014,8 @@
       // what it draws (its mover is a 0 × 0 point): on its tap box (hitbox.ts, at least 44px) it's caught
       const r = bodyRect(bugEl) ?? bugEl.getBoundingClientRect();
       const d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
-      const swing = inside(grow(r), px, py) ? 'catch' : netSwing(d, Math.max(r.width, r.height));
+      // (a percher on a trunk: a wider box, 56px, over the tree's own: the critters answer a tap first)
+      const swing = inside(grow(r, b.flight === 'perch' ? 56 : undefined), px, py) ? 'catch' : netSwing(d, Math.max(r.width, r.height));
       const at = { x: (r.left + r.width / 2 - g.r.left) * g.k, y: (r.top + r.height / 2 - g.r.top) * g.k };
       if (b.flight === 'stalk' && b.stalk) {
         // NH's tarantula: it rears up when it's come at, charges if you keep coming; settled again, it can be netted
@@ -1238,7 +1240,9 @@
   {/if}
   {#if bug}
     {@const b = bug}
-    <i class="m3n" {@attach w.at({ x: b.x, z: b.z, lift: b.lift, h: 4, always: true, m3: { key: `critters/${b.id}`, id: `bug-${b.n}`, ms: b.fled ? 900 : b.ms, yaw: b.flip ? Math.PI : 0, off: b.gone, art: () => bugEl } })}></i>
+    <i class="m3n" {@attach w.at({ x: b.x, z: b.z, lift: b.lift, h: 4, always: true, m3: { key: `critters/${b.id}`, id: `bug-${b.n}`, ms: b.fled ? 900 : b.ms, yaw: b.flip ? Math.PI : 0, off: b.gone, art: () => bugEl,
+      // perched on a trunk: flat on its bark, its back to the camera
+      pitch: b.sat && (b.place === 'trunk' || b.place === 'palm') ? (b.flip ? -1 : 1) * Math.PI / 2 : 0 } })}></i>
   {/if}
   {/if}
   {#each WATERS as wt (wt)}
