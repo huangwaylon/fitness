@@ -6,6 +6,8 @@
   import type { PersonId } from '#lib/types.ts';
   import { weightBuckets, weightStats, type HealthSeries, type Range } from '#lib/model/health.ts';
   import { t } from '#lib/i18n/index.ts';
+  import { BODY_ART } from '#lib/art.ts';
+  import OfficialArt from '../characters/OfficialArt.svelte';
   import DotChart from './DotChart.svelte';
   import { kgDelta, kgText, monthText } from '../kiroku/fmt.ts';
   import { rangeLabel } from './fmt.ts';
@@ -30,7 +32,7 @@
 
 <section class="card wc" data-metric="weight" data-person={p} aria-labelledby="mc-weight">
   <header>
-    <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-scale" /></svg></span>
+    <span class="ic"><OfficialArt key={BODY_ART.weight} size={24} /></span>
     <h3 id="mc-weight">{t('goal.weight')}</h3>
   </header>
   {#if s.n}
@@ -64,8 +66,7 @@
 <style>
   .wc { display: grid; gap: 10px; padding: 12px 14px 10px; }
   header { display: flex; align-items: center; gap: 8px; }
-  .ic { display: inline-flex; width: 24px; height: 24px; flex: none; color: var(--text-soft); }
-  .ic svg { width: 100%; height: 100%; }
+  .ic { display: inline-flex; flex: none; }
   h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; }
   .chips { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 8px; margin: 0; }
   .chips div { padding: 7px 10px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 28%, transparent); display: grid; gap: 3px; align-content: start; }

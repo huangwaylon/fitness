@@ -1,6 +1,6 @@
 <script lang="ts">
   // きろく (records, design.md "Kiroku"), the island panel's first tab: at its top the ベル ledger (this week by day,
-  // then the past weeks) and then 目標 (the Move and weight goals; the weight trend lives in けんこう);
+  // then the past weeks) and then 目標 (the Move, steps, weight and body fat goals; the trends live in けんこう);
   // a day or a goal push a level (`level` = how deep, bindable:
   // the panel shows its tabs only at 0 and its ‹ calls `back()`). Read-only (Apple Health is the source of
   // truth): the only inputs are the two goals (either person's: the goal screen names whose). The buys are on ごほうび.
@@ -8,9 +8,10 @@
   import { tick } from 'svelte';
   import type { PersonId, Who } from '#lib/types.ts';
   import { MOVE_GOAL, STEPS_GOAL } from '#lib/config/rules.ts';
+  import { BODY_FAT_GOAL } from '#lib/contract/api.ts';
   import { bellsLedger, dayDetail } from '#lib/model/history.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { setGoalWeight, setMoveGoal, setStepsGoal } from '#lib/store/actions.ts';
+  import { setGoalBodyFat, setGoalWeight, setMoveGoal, setStepsGoal } from '#lib/store/actions.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import DayDetail from './DayDetail.svelte';
   import BellsLog from './BellsLog.svelte';
@@ -22,13 +23,14 @@
   import { findsView } from '#lib/model/finds.ts';
   import { tallyTotals } from '#lib/model/tally.ts';
   import Avatar from '../characters/Avatar.svelte';
-  import { parseKcalInput, parseKgInput, parseStepsInput } from './fmt.ts';
+  import { parseKcalInput, parseKgInput, parsePctInput, parseStepsInput } from './fmt.ts';
   import { isGuest } from '#lib/ui-state/viewer.ts';
   import { t, formatNum } from '#lib/i18n/index.ts';
 
   type Screen =
     | { k: 'day'; date: string }
     | { k: 'goal'; p: PersonId }
+    | { k: 'fatGoal'; p: PersonId }
     | { k: 'moveGoal'; p: PersonId }
     | { k: 'stepsGoal'; p: PersonId }
     | { k: 'zukan'; kind: ZukanKind };
@@ -104,6 +106,11 @@
     void refocus('weight-goal');
     if (setGoalWeight(p, kg).ok) toasts.show(t(kg === null ? 'weight.goalCleared' : 'weight.goalSaved'), 2500, { reaction: 'pleased' });
   }
+  function saveFatGoal(p: PersonId, pct: number | null) {
+    back();
+    void refocus('fat-goal');
+    if (setGoalBodyFat(p, pct).ok) toasts.show(t(pct === null ? 'weight.goalCleared' : 'weight.goalSaved'), 2500, { reaction: 'pleased' });
+  }
   function saveMoveGoal(p: PersonId, kcal: number) {
     back();
     void refocus('move-goal');
@@ -130,8 +137,9 @@
         <h2 class="sec">{t('panel.bells')}</h2>
         <BellsLog ledger={money} {order} {names} {villagers} onday={(date) => go({ k: 'day', date })} />
       {/if}
-      <GoalCard person={goalP} {order} {names} {villagers} moveGoal={view.people[goalP].moveGoal} stepsGoal={view.people[goalP].stepsGoal} goalWeight={guest ? null : (m.state.prefs[goalP].goalWeight ?? null)} readonly={guest}
-        onperson={(p) => (goalPick = p)} onmove={() => go({ k: 'moveGoal', p: goalP })} onsteps={() => go({ k: 'stepsGoal', p: goalP })} onweight={() => go({ k: 'goal', p: goalP })} />
+      <GoalCard person={goalP} {order} {names} {villagers} moveGoal={view.people[goalP].moveGoal} stepsGoal={view.people[goalP].stepsGoal} goalWeight={guest ? null : (m.state.prefs[goalP].goalWeight ?? null)}
+        goalBodyFat={guest ? null : (m.state.prefs[goalP].goalBodyFat ?? null)} readonly={guest}
+        onperson={(p) => (goalPick = p)} onmove={() => go({ k: 'moveGoal', p: goalP })} onsteps={() => go({ k: 'stepsGoal', p: goalP })} onweight={() => go({ k: 'goal', p: goalP })} onbodyfat={() => go({ k: 'fatGoal', p: goalP })} />
       <!-- the shared ずかん: what either of us has caught, dug up or picked up on the island -->
       <h2 class="sec" data-sec="zukan">{t('zukan.title')}</h2>
       <ZukanCard finds={findsView(m.state)} onopen={(kind) => go({ k: 'zukan', kind })} />
@@ -139,7 +147,7 @@
       <Zukan kind={top.kind} finds={findsView(m.state)} counts={tallyTotals(m.state.tallies)} order={zOrder} names={zNames} villagers={zVillagers} />
     {:else if top.k === 'day' && day}
       <DayDetail d={day} {me} {partner} {names} {villagers} />
-    {:else if guest && (top.k === 'goal' || top.k === 'moveGoal' || top.k === 'stepsGoal')}
+    {:else if guest && (top.k === 'goal' || top.k === 'fatGoal' || top.k === 'moveGoal' || top.k === 'stepsGoal')}
       <!-- (never on the guest's phone: it sets no goal) -->
     {:else if top.k === 'goal'}
       {@const s = top}
@@ -147,6 +155,12 @@
       {@const goal = m.state.prefs[s.p].goalWeight ?? null}
       <ValueInput label={t('weight.goalWeight')} sub="" old={goal} unit="kg" parse={parseKgInput} hint={t('weight.range')}
         onok={(kg) => saveGoal(s.p, kg)} oncancel={back} extra={goal === null ? null : { label: t('weight.clearGoal'), run: () => saveGoal(s.p, null) }} />
+    {:else if top.k === 'fatGoal'}
+      {@const s = top}
+      {@render who(s.p)}
+      {@const goal = m.state.prefs[s.p].goalBodyFat ?? null}
+      <ValueInput label={t('weight.goalBodyFat')} sub="" old={goal} unit="%" parse={parsePctInput} hint={t('weight.fatRange', { min: BODY_FAT_GOAL.min, max: BODY_FAT_GOAL.max })}
+        onok={(pct) => saveFatGoal(s.p, pct)} oncancel={back} extra={goal === null ? null : { label: t('weight.clearGoal'), run: () => saveFatGoal(s.p, null) }} />
     {:else if top.k === 'moveGoal'}
       {@const s = top}
       {@render who(s.p)}

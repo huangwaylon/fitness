@@ -10,7 +10,6 @@
     <symbol id="i-island" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20 Q12 15 21 20"/><path d="M12 18 Q11 12 13 7"/><path d="M13 7 Q8 4 4 7 M13 7 Q18 3 21 7 M13 7 Q11 3 8 3 M13 7 Q16 9 17 12"/></g></symbol>
     <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6 L18 18 M18 6 L6 18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></symbol>
-    <symbol id="i-scale" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="16" rx="4"/><path d="M8 10 A4.5 4.5 0 0 1 16 10 Z"/><path d="M12 10 L13.6 7.6" stroke-linecap="round"/></g></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5 L10 17 L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <!-- app additions (same 2–2.6px brown-ink stroke language) -->
     <symbol id="i-globe" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12 H20.5 M12 3.5 Q7 12 12 20.5 Q17 12 12 3.5"/></g></symbol>

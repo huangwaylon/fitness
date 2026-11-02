@@ -6,7 +6,7 @@ import { queued } from '#lib/sync/queue.ts';
 import { setKey } from '#lib/sync/pairing.ts';
 import type { WeekView } from '#lib/types.ts';
 import { week } from './week.svelte.ts';
-import { buy, setGoalWeight, setMoveGoal, setStepsGoal, undoSpend } from './actions.ts';
+import { buy, setGoalBodyFat, setGoalWeight, setMoveGoal, setStepsGoal, undoSpend } from './actions.ts';
 import type { ShopItemId } from '#lib/types.ts';
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
@@ -75,6 +75,15 @@ describe('the goals name whose goal', () => {
     ]);
     // a goal is sent at once (no undo window)
     expect(queued().every((e) => e.nextAt === e.queuedAt)).toBe(true);
+  });
+  it('setGoalBodyFat: the same, in % within 3–60', () => {
+    expect(setGoalBodyFat('B', 18.04).ok).toBe(true);
+    expect(setGoalBodyFat('A', null).ok).toBe(true);
+    for (const bad of [2.9, 60.1, NaN]) expect(setGoalBodyFat('A', bad).ok).toBe(false);
+    expect(queued().map((e) => [e.type, e.data])).toEqual([
+      ['pref', { person: 'B', key: 'goalBodyFat', value: 18 }],
+      ['pref', { person: 'A', key: 'goalBodyFat', value: null }]
+    ]);
   });
 });
 

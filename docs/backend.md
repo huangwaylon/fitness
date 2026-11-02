@@ -260,7 +260,8 @@ steps, each deployed and green before the next, the old path working through eac
   since the last export (or nightly, whatever changed) it POSTs every row to the `/exec` URL (`EXPORT_URL`; the test
   copy has none) as `{action: 'export', t, sig, data}`, `data` the rows as ASCII JSON text and `sig` its signature
   (Apps Script can't read request headers); the script checks it (10 minutes' window) and rewrites the tabs under its
-  lock ([Tabs](#tabs)). 2026-11-02: 482 metrics, 267 events, 13 uploads in one call. The relay keeps no Google
+  lock ([Tabs](#tabs)). 2026-11-02: 482 metrics, 267 events, 13 uploads in one call. Every event row goes as it is, so a new pref
+  (`goalBodyFat`, 2026-11-02) is in the `events` tab with no change to the script. The relay keeps no Google
   credential.
 - **Push-driven:** after a write the object tells the room (`changed`, [Push](#push)); the room keeps the last one
   (`rec {at, rev}`, in its storage) and hands it to each phone in its `welcome`, so a phone that has it needn't fetch

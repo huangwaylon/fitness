@@ -124,6 +124,76 @@ test('けんこう: body weight (from Health, no logging by hand); its goal is s
   await expect(ribbon).toHaveAttribute('aria-label', bells!);
 });
 
+test('けんこう: the body fat goal, set in きろく (3–60 %), dashed on the body fat chart; cleared, no line', async ({ page }) => {
+  await page.goto('?demo');
+  await openPanel(page);
+  await sheet(page).locator('.tab[data-tab=health]').click();
+  await sheet(page).locator('[data-group=body]').click(); // からだ
+  const fat = sheet(page).locator('.bc[data-metric=body_fat_pct][data-person=A]');
+  await expect(fat.getByRole('heading', { name: '体脂肪率' })).toBeVisible();
+  await expect(fat.locator('line.goal')).toHaveCount(0); // no goal yet: no line, no label
+  await expect(fat).not.toContainText(/目標 \d/);
+  // BMI and lean mass never have one
+  await expect(sheet(page).locator('.bc[data-metric=bmi] .k-goal, .bc[data-metric=lean_kg] .k-goal')).toHaveCount(0);
+  await sheet(page).locator('.tab[data-tab=kiroku]').click();
+  const goals = sheet(page).locator('.goals');
+  await expect(goals).toContainText('体脂肪率');
+  await goals.getByRole('button', { name: '体脂肪率 ✎' }).click();
+  const input = sheet(page).getByRole('textbox');
+  await expect(input).toHaveAttribute('inputmode', 'decimal');
+  await input.fill('61');
+  await sheet(page).getByRole('button', { name: 'けってい' }).click();
+  await expect(input).toHaveAttribute('aria-invalid', 'true');
+  await expect(sheet(page).getByText('3〜60%で 入れてね')).toBeVisible();
+  await input.fill('19.5');
+  await sheet(page).getByRole('button', { name: 'けってい' }).click();
+  await expect(goals).toContainText('19.5%');
+  const saved = sheet(page).getByRole('status');
+  await expect(saved).toContainText('目標を決めました');
+  await saved.getByRole('button', { name: 'とじる' }).click();
+  await expect(saved).toHaveCount(0);
+  // drawn on the body fat chart as the weight goal is: the dashed line, its label and the key
+  await sheet(page).locator('.tab[data-tab=health]').click();
+  await expect(fat.locator('line.goal')).toHaveCount(1);
+  await expect(fat).toContainText('目標 19.5');
+  await expect(fat.locator('.key .k-goal')).toHaveCount(1);
+  // cleared: no line
+  await sheet(page).locator('.tab[data-tab=kiroku]').click();
+  await goals.getByRole('button', { name: '体脂肪率 ✎' }).click();
+  await sheet(page).getByRole('button', { name: '目標をなくす' }).click();
+  await expect(goals.locator('.row', { hasText: '体脂肪率' })).toContainText('まだ');
+  const cleared = sheet(page).getByRole('status');
+  await expect(cleared).toContainText('目標をなくしました');
+  await cleared.getByRole('button', { name: 'とじる' }).click();
+  await expect(cleared).toHaveCount(0);
+  await sheet(page).locator('.tab[data-tab=health]').click();
+  await expect(fat).toBeVisible();
+  await expect(fat.locator('line.goal')).toHaveCount(0);
+  await expect(fat).not.toContainText('目標 19.5');
+});
+
+test('けんこう: each からだ card wears its own NH item, as かつどう wears its fruit (no scale glyph left)', async ({ page }) => {
+  await page.goto('?demo');
+  await openPanel(page);
+  await sheet(page).locator('.tab[data-tab=health]').click();
+  await sheet(page).locator('[data-group=body]').click(); // からだ
+  const art = { weight: 'analog-kitchen-scale', body_fat_pct: 'exercise-ball', bmi: 'clipboard', lean_kg: 'weight-bench' };
+  for (const [metric, item] of Object.entries(art)) {
+    const img = sheet(page).locator(`[data-metric=${metric}][data-person=A] header .ic img`);
+    await expect(img, metric).toHaveCount(1);
+    await expect(img, metric).toHaveAttribute('src', new RegExp(`finds/items/${item}\\.webp`));
+    await img.scrollIntoViewIfNeeded();
+    await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0), { message: metric }).toBe(true);
+    expect((await sheet(page).locator(`[data-metric=${metric}][data-person=A] header .ic`).boundingBox())!.height, metric).toBeCloseTo(24, 0);
+  }
+  await expect(sheet(page).locator('use[href="#i-scale"]')).toHaveCount(0);
+  // the 目標 card's からだ rows too
+  await sheet(page).locator('.tab[data-tab=kiroku]').click();
+  await expect(sheet(page).locator('.goals .row img[src*="analog-kitchen-scale"]')).toHaveCount(1);
+  await expect(sheet(page).locator('.goals .row img[src*="exercise-ball"]')).toHaveCount(1);
+  await expect(sheet(page).locator('use[href="#i-scale"]')).toHaveCount(0);
+});
+
 test('tree popup: the four goals (steps first), today’s amount / the goal with ✓ once met (a がんばり chip at 1.5×, no numbers on the rows), the day\'s ledger and today’s ふたりで ぜんぶ', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-10-30T12:10:00+09:00') });
   await page.clock.resume();

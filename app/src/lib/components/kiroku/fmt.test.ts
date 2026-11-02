@@ -1,6 +1,6 @@
 // The きろく formatters: weights and the two goal fields.
 import { describe, expect, it } from 'vitest';
-import { kgDelta, kgText, parseKcalInput, parseKgInput, parseStepsInput } from './fmt.ts';
+import { kgDelta, kgText, parseKcalInput, parseKgInput, parsePctInput, parseStepsInput } from './fmt.ts';
 
 describe('weight text', () => {
   it('formats weights and changes with a true minus', () => {
@@ -17,6 +17,15 @@ describe('weight text', () => {
     expect(parseKgInput('68.45kg')).toBe(68.5);
     expect(parseKgInput('72')).toBe(72);
     for (const s of ['', '19', '301', 'abc', '68..4', '-70', '1e2']) expect(parseKgInput(s)).toBeNull();
+  });
+  it('reads a typed body fat goal', () => {
+    expect(parsePctInput('22.5')).toBe(22.5);
+    expect(parsePctInput(' 22,5 ')).toBe(22.5);
+    expect(parsePctInput('２２．５％')).toBe(22.5);
+    expect(parsePctInput('18.45%')).toBe(18.5);
+    expect(parsePctInput('3')).toBe(3);
+    expect(parsePctInput('60')).toBe(60);
+    for (const s of ['', '2.9', '60.1', '100', 'abc', '22..5', '-20', '1e1']) expect(parsePctInput(s)).toBeNull();
   });
 });
 
