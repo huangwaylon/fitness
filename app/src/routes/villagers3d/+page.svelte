@@ -76,8 +76,9 @@
     let gone = false, stop = () => {};
     void Promise.all([
       import('#lib/components/world3d/engine.ts'), import('#lib/components/world3d/ground.ts'), import('#lib/components/world3d/layout3d.ts'),
-      import('#lib/components/world3d/gestures.ts'), import('#lib/components/villager3d/villager3d.ts')
-    ]).then(([{ createIsland }, { WORLD_GROUND }, { island }, { attachGestures }, { createVillager, VILLAGER_S }]) => {
+      import('#lib/components/world3d/gestures.ts'), import('#lib/components/villager3d/villager3d.ts'), import('#lib/components/world3d/bend.ts'),
+      import('three')
+    ]).then(([{ createIsland }, { WORLD_GROUND }, { island }, { attachGestures }, { createVillager, VILLAGER_S }, { bend }, { Object3D }]) => {
       if (gone || !canvas || !sceneEl) return;
       let e: ReturnType<typeof createIsland>;
       try {
@@ -93,7 +94,17 @@
       const look = season === 'spring' && foliage === 'blossom' ? 'spring-petals' : season === 'autumn' && foliage === 'fall' ? 'autumn-leaves' : season;
       const ss = T.seasons.includes(look) ? look : season;
       eng.groundLook(Array.from({ length: T.chunks }, (_, c) => `${asset(`terrain/${ss}/${c}.webp` as Parameters<typeof asset>[0])}?v=${T.bytes?.[ss]?.[c] ?? 0}`));
-      void eng.place(island({ season, foliage, month: new Date().getMonth() + 1 }).insts);
+      // The villagers in the engine's scene: engine.ts (the integration lead's, untouched here) has no way in for a
+      // free-moving object but a rider on a model's instance (things.attach: the board's face's way), so they ride the
+      // bridge's under a holder that undoes the bridge's placement: world space inside it.
+      const holder = new Object3D(), world = new Object3D();
+      holder.add(world);
+      world.matrixAutoUpdate = false;
+      const unride = () => world.matrix.copy(holder.matrix).invert();
+      void eng.place(island({ season, foliage, month: new Date().getMonth() + 1 }).insts).then(() => {
+        eng.things.attach('bridge', holder);
+        unride();
+      });
       eng.tod(tod);
       // まえ, where the three stand (the shore a little under the screen's middle)
       eng.setLimits(SHORE_Z + 60, 1150);
@@ -122,7 +133,13 @@
         w.v = v;
         w.id = id;
         v.lift(LIFT[tod]);
-        w.off = eng.attach(v.group, { x: w.x, z: w.z });
+        v.group.traverse((n) => {
+          const m = (n as { material?: import('three').Material | import('three').Material[] }).material;
+          for (const x of m ? (Array.isArray(m) ? m : [m]) : []) bend(x);
+          n.frustumCulled = false;
+        });
+        world.add(v.group);
+        w.off = () => v.group.removeFromParent();
         v.set(keep === 'walk' ? 'idle' : keep);
         eng.kick();
       }
@@ -199,6 +216,8 @@
         const dt = last ? Math.min(50, t - last) : 16;
         last = t;
         const t0 = performance.now();
+        unride();
+        world.matrixWorldNeedsUpdate = true;
         for (const s of ['A', 'B', 'G'] as const) {
           const w = W[s], v = w.v;
           if (!v) continue;
@@ -327,6 +346,7 @@
           w.off();
           w.v?.dispose();
         }
+        eng.things.attach('bridge', null);
         eng.dispose();
         delete Wn.__villagers3d;
       };
