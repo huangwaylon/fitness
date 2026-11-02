@@ -560,7 +560,7 @@ DOM island's model, director, nav, sync and every overlay means only the drawing
 A small round button at the island's bottom right (NH's chat glyph, 36px in a 44px target) opens the phrase picker
 above it; a tap on my villager is only its squish (and now and then a flea). Why: the user ("instead of tapping our
 character… a small message icon on the bottom right… not too intrusive"); a moving villager is a hard target and a
-tap on it is play, not a menu. Not done: the tent (it has no balloons or relay phrases yet).
+tap on it is play, not a menu. The tent and the homes have it too (below).
 
 ### The bulletin board is a record event, its notes plain text (2026-11-02)
 NH's board (the user: "walk up to it to update its contents for everyone to see… the camera should zoom up to it"). Each
@@ -571,3 +571,13 @@ only, sanitised on both sides and only ever drawn as text (canvas `fillText`, Sv
 over the room's 256-byte messages, and the record's notice already reaches every open phone. The walk up is the tent
 door's exception, the camera's dolly the one automatic camera move (the user's ask), the latter the 3D lead's to add
 (board.md); until then, and on the 2D island, a sheet shows the same face.
+
+### A phrase is said in one place (2026-11-02)
+The say button is in the tent and every home too, its balloon over the speaker's villager in the room. `say` carries
+where it was said, an additive `sc` (`t` the tent, `u` うめ's, `v` the guest's room; none: the island), and each phone
+shows it only when it is in the same place: a room's phrase on the phones whose villager is in that room, an island's
+on the phones on the island. The phones filter it (the relay only checks and passes the field on; deployed first);
+an older phone sends none and is on the island, and ignores the field it doesn't know (the speaker in a room is hidden
+on its island anyway). The balloon's anchor in a room is one engine function, `headPoint(who)` (tent/engine.ts), for
+the 3D villagers' head bone. Why: the user ("add the say button inside the tent and houses"); one place at a time
+already holds for the villagers themselves, so a phrase follows its speaker. Not done: a phrase heard through a wall.
