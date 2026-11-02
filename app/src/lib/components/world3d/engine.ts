@@ -17,10 +17,10 @@ import {
   PCFSoftShadowMap, type Material
 } from 'three';
 import { bend, bendPoint, bendU, unbendRay } from './bend.ts';
-import { createWater, waterFog, waterU } from './water.ts';
+import { createWater, seaFog, waterFog, waterU } from './water.ts';
 import { createThings, type Things } from './things.ts';
 import { createCards, type Cards } from './cards.ts';
-import { createLights, type LampSpot, type Lights } from './lights.ts';
+import { createLights, lampFog, type LampSpot, type Lights } from './lights.ts';
 import type { Inst } from './layout3d.ts';
 
 type Tod = 'day' | 'dusk' | 'night';
@@ -80,6 +80,8 @@ const GROUND_K = 0xe2e2e2;
 const PIVOT_DROP = 0.16;
 /** The haze's start and end, as shares of the horizon's view depth. */
 const HAZE = [0.66, 1.0] as const;
+/** The land's (and the models'): only what stands by the horizon fades a little. */
+const LAND_HAZE = [0.8, 1.35] as const;
 /** …and the haze at most this deep (u): zoomed out, the island itself stays clear. */
 const HAZE_U = 800;
 /** The shadow map's box moves in steps of this (u): it redraws when it steps, not on every frame of a scroll. */
@@ -248,9 +250,14 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
     // NH's haze: the far sea (and what stands far off) fades into the sky's horizon colour, all of it by the log's
     // horizon, so the sea meets the sky in one soft line at every scroll and zoom (no hard band of open sea)
     const hd = horizonDepth();
-    fog.near = Math.max(hd * HAZE[0], hd - HAZE_U);
-    fog.far = hd * HAZE[1];
+    fog.near = hd * LAND_HAZE[0];
+    fog.far = hd * LAND_HAZE[1];
     waterFog(fog);
+    lampFog.near.value = fog.near;
+    lampFog.far.value = fog.far;
+    // (the sea's own, deeper: it meets the sky in the haze; the land only softens near the horizon)
+    seaFog.uFogNear.value = Math.max(hd * HAZE[0], hd - HAZE_U);
+    seaFog.uFogFar.value = hd * HAZE[1];
     // the shadow's box follows the pivot, as wide as the view, in steps (the shadow map redraws only when it steps)
     const zq = Math.round(camZ / SHADOW_STEP) * SHADOW_STEP, kq = Math.round(zoomK * 8) / 8;
     const key = `${zq}:${kq}:${todLook.sunAt}`;

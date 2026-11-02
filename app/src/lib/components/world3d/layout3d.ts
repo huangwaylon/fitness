@@ -7,7 +7,7 @@
 // face the camera), a little for a tree drawn flipped.
 import ISLAND_MODELS from '../island/models.json' with { type: 'json' };
 import {
-  BRIDGE, CAMPSITE, DECOR_SLOTS, DECOR_U, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, ROCK, SCENERY, TAPE_DECK, TREE_H, type Scenery
+  BRIDGE, CAMPSITE, DECOR_SLOTS, DECOR_U, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, SCENERY, TREE_H, type Scenery
 } from '../island/world.ts';
 import type { Piece } from '../island/fixedDecor.ts';
 import { FLOWER_U, TREE_FRUIT, TREE_FRUIT_U, flowerScale, hedgePair, wildFlower } from '../island/scene.ts';
@@ -119,9 +119,7 @@ export function island(day: Day): { insts: Inst[]; standins: Standin[] } {
   // the fixed decor: the day's pieces in their spots (NH's outdoor furniture at one scale), else world.ts's own
   const pieces = day.pieces ?? DECOR_SLOTS.filter((d) => d.key).map((d) => ({ id: d.id, key: d.key!, x: d.x, z: d.z, h: 30 }));
   for (const p of pieces) put(`fx-${p.id}`, p.key, p.x, p.z, p.h);
-  put('tape-deck', 'deco/tape-deck', TAPE_DECK[0], TAPE_DECK[1], 20);
-  const rock = assetFor('finds/rock')?.m ?? 'rock';
-  out.push({ id: 'rock', model: rock, x: ROCK[0], z: ROCK[1], scale: 26 / height(rock), tap: 'rock' });
+  // (the rock, the tape deck: the DOM island's nodes, drawn through their m3 keys: Care, TapeDeck)
   // the stone bridge (NH's 3-tile stone bridge, 1.18u a model unit), turned to span the stream along z
   out.push({ id: 'bridge', model: assetFor('bridges/stone-deck', winter)?.m ?? 'bridge-stone', x: BRIDGE.x, z: (BRIDGE.z0 + BRIDGE.z1) / 2, scale: 1.18, yaw: Math.PI / 2 });
   // the campsite's tent: its door on the door line

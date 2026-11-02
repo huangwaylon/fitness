@@ -38,6 +38,29 @@ export interface NodeSpec {
   /** The 3D island draws this thing as a model (a tree, a bush, a decoration): its node is the model's tap area, its
    *  art invisible, squashed upright as the model's height is foreshortened by the camera (world3d/). */
   model?: boolean;
+  /** The 3D island draws this thing as NH's model of this art key (world3d/assets.json), where the node is (its live
+   *  position too): the node's `[data-m3art]` art goes invisible once the model stands there (world3d/Island3D). `yaw`:
+   *  turned (radians); `grey`: drained toward grey (a fruit not grown yet, 0 … 1). */
+  m3?: M3 | null;
+}
+interface M3 {
+  key: string;
+  yaw?: number;
+  grey?: number;
+  /** Hidden in 3D for now (a fallen fruit mid-drop). */
+  off?: boolean;
+  /** Its instance's name (a reaction's echo finds it: echo3d.ts), else the node's own. */
+  id?: string;
+}
+/** A node the 3D island draws as a model: its id, its art key, where it is now. */
+export interface Model3 {
+  id: string;
+  m3: M3;
+  x: number;
+  z: number;
+  lift: number;
+  el: HTMLElement;
+  shown: boolean;
 }
 
 /** The 3D island's camera (world3d/engine.ts), when it draws the island: every node is placed through it instead of
@@ -61,6 +84,7 @@ export interface Proj3 {
 
 interface Node extends NodeSpec {
   el: HTMLElement;
+  id3: string;
   shown: boolean;
   tf: string;
   op: string;
@@ -86,6 +110,8 @@ export class World {
   readonly perf = { writes: 0, nodes: 0, frames: 0 };
 
   private nodes = new Set<Node>();
+  private m3s = new Set<Node>();
+  private seq3 = 0;
   private movers = new Set<Node>();
   private dirty = new Set<Node>();
   private raf = 0;
@@ -351,6 +377,14 @@ export class World {
     };
   }
 
+  /** The nodes the 3D island draws as models, where they are now (Island3D reads them each frame). */
+  *models3(): Generator<Model3> {
+    for (const n of this.m3s) {
+      const [x, z, lift] = n.live ? n.live() : [n.x, n.z, n.lift];
+      yield { id: n.m3!.id ?? n.id3, m3: n.m3!, x, z, lift: lift ?? n.lift ?? 0, el: n.el, shown: n.shown };
+    }
+  }
+
   /** No frame pending (e2e and perf: nothing runs when still). */
   idle(): boolean {
     return this.three ? this.three.idle() : this.raf === 0;
@@ -370,7 +404,7 @@ export class World {
     return (el: HTMLElement) => {
       // (a re-attach, its spec changed, finds the element as the last node left it: what's written there, so the first
       // place writes what differs, a fade or a cut included)
-      const n: Node = { ...spec, el, shown: el.style.visibility !== 'hidden', tf: '', op: el.style.opacity, clip: el.style.clipPath, zIndex: NaN, invS: '' };
+      const n: Node = { ...spec, el, id3: `m${++this.seq3}`, shown: el.style.visibility !== 'hidden', tf: '', op: el.style.opacity, clip: el.style.clipPath, zIndex: NaN, invS: '' };
       el.style.position = 'absolute';
       el.style.left = '0';
       el.style.top = '0';
@@ -385,6 +419,7 @@ export class World {
         el.style.transformOrigin = '0 0';
       }
       this.nodes.add(n);
+      if (n.m3) this.m3s.add(n);
       if (n.live) this.movers.add(n);
       if (n.mode !== 'quad') this.zOf(n, n.x, n.z);
       // placed at once when the camera is known (no flash at the origin)
@@ -394,6 +429,7 @@ export class World {
       this.kick();
       return () => {
         this.nodes.delete(n);
+        this.m3s.delete(n);
         this.movers.delete(n);
         this.dirty.delete(n);
       };

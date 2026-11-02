@@ -1143,6 +1143,7 @@
   .scene[data-r3] .scroller { overflow: hidden; touch-action: none; }
   .scene[data-r3] .tint { display: none; }
   .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .fl > .b, .tree > .oak)) { opacity: 0; }
+  .scene[data-r3] :global(.m3on :is([data-m3art], .official)) { opacity: 0; }
   .scene[data-r3] .vil :global(:is(.body > .official, .body > .silhouette, .shadow)) { opacity: 0; }
   .scene:not([data-live]) .scroller { overflow: hidden; }
   .track { position: relative; }

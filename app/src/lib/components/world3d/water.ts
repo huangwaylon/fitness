@@ -146,7 +146,7 @@ export function createWater(): WaterSet {
   const seaGeo = new PlaneGeometry(4200, 6000, 24, 150);
   seaGeo.rotateX(-Math.PI / 2);
   seaGeo.translate(195, SEA_Y, -1500);
-  const sea = new Mesh(seaGeo, mat(SEA_FRAG, { uLand: { value: [LAND.x0, LAND.x1, LAND.z0, LAND.z1] }, uLandR: { value: LAND.r } }));
+  const sea = new Mesh(seaGeo, mat(SEA_FRAG, { ...seaFog, uLand: { value: [LAND.x0, LAND.x1, LAND.z0, LAND.z1] }, uLandR: { value: LAND.r } }));
   sea.renderOrder = 1;
 
   // the river: a ribbon along the smoothed centreline, a little wider than its channel (the banks clip it); its
@@ -212,6 +212,9 @@ export function createWater(): WaterSet {
   for (const m of all) m.frustumCulled = false;
   return { sea, river, ponds, foam, all };
 }
+
+/** The open sea's haze (deeper than the land's: it meets the sky at the horizon; engine.ts sets it). */
+export const seaFog = { uFogNear: { value: 1200 }, uFogFar: { value: 3000 } };
 
 /** The water's fog follows the scene's. */
 export function waterFog(f: Fog) {

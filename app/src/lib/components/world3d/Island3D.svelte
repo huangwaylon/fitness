@@ -24,7 +24,9 @@
   import PLACES from '../island/models.json' with { type: 'json' };
   import { createIsland, type Island3, type Options } from './engine.ts';
   import { WORLD_GROUND } from './ground.ts';
-  import { island, type Standin } from './layout3d.ts';
+  import { island, type Inst, type Standin } from './layout3d.ts';
+  import { assetFor } from './assets.ts';
+  import { modelBounds } from './models3d.ts';
   import { attachGestures } from './gestures.ts';
   import { idlePose, motionPose } from './motion3d.ts';
   import type { CardSpec } from './cards.ts';
@@ -160,6 +162,45 @@
     return moving;
   }
 
+  // ---- what comes and goes (a find, a weed, a decoration, a fallen fruit): the DOM nodes with an `m3` key ----
+  interface Live3 {
+    m: string;
+    on: boolean;
+    x: number;
+    z: number;
+    lift: number;
+    yaw: number;
+    grey: number;
+  }
+  const live3 = new Map<string, Live3>();
+  const marked = new WeakMap<HTMLElement, boolean>();
+  let lamps3: LampSpot[] = [];
+  function mirror(e: Island3) {
+    const winter = season === 'winter', seen = new Set<string>(), add: Inst[] = [];
+    for (const n of world.models3()) {
+      const a = assetFor(n.m3.key, winter);
+      if (marked.get(n.el) !== !!a) {
+        marked.set(n.el, !!a);
+        n.el.classList.toggle('m3on', !!a);
+      }
+      if (!a) continue;
+      seen.add(n.id);
+      const b = modelBounds(a.m);
+      // a flier's model hangs by its middle at the node's height; the rest stand on their feet
+      const lift = n.lift - (a.anchor === 'centre' && b ? ((b.min[1] + b.max[1]) / 2) * a.s : 0);
+      const now: Live3 = { m: a.m, on: n.shown && !n.m3.off, x: n.x, z: n.z, lift, yaw: (n.m3.yaw ?? 0) + ((a.yaw ?? 0) * Math.PI) / 180, grey: n.m3.grey ?? 0 };
+      const was = live3.get(n.id);
+      if (!was || was.m !== now.m) add.push({ id: n.id, model: a.m, x: now.x, z: now.z, lift: now.lift, scale: a.s, yaw: now.yaw });
+      if (!was || was.m !== now.m || was.on !== now.on || was.x !== now.x || was.z !== now.z || was.lift !== now.lift || was.yaw !== now.yaw || was.grey !== now.grey)
+        e.things.over(n.id, { hidden: !now.on, x: now.x, z: now.z, lift: now.lift, yaw: now.yaw, grey: now.grey });
+      live3.set(n.id, now);
+    }
+    const gone = [...live3.keys()].filter((id) => !seen.has(id));
+    for (const id of gone) live3.delete(id);
+    if (gone.length) void e.things.remove(gone).then(() => e.glows(lamps3));
+    if (add.length) void e.things.set(add).then(() => e.glows(lamps3));
+  }
+
   // ---- the island's day: its models and stand-ins ----
   let placed = '';
   $effect(() => {
@@ -176,7 +217,7 @@
         loaded = true;
       });
       standins(st);
-      e.glows(standinLamps(st));
+      e.glows((lamps3 = standinLamps(st)));
       e.groundLook(groundUrls());
     });
   });
@@ -258,6 +299,7 @@
       const hz = e.horizon();
       if (!(Math.abs(hz - horizonWas) <= 0.5)) onhorizon((horizonWas = hz));
       const more = world.step(t);
+      mirror(e);
       return villagerCards(t) || more;
     });
     // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too

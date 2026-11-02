@@ -47,7 +47,7 @@
   {#if night}<div class="wash"></div>{/if}
   {#each SPOTS as [x, z], i (`${x},${z}`)}
     {#if !hidden.has(`${x},${z}`)}
-    <span class="pumpkin" data-pumpkin style:--i={i} {@attach w.at({ x, z, h: PUMPKIN_U + 20, light: night })}>
+    <span class="pumpkin" data-pumpkin style:--i={i} {@attach w.at({ x, z, h: PUMPKIN_U + 20, light: night, m3: { key: night ? 'deco/spooky-lantern' : 'deco/pumpkin' } })}>
       {#if night}<span class="glow"></span>{/if}
       <span class="art"><OfficialArt key={night ? 'deco/spooky-lantern' : 'deco/pumpkin'} size={su(PUMPKIN_U)} /></span>
     </span>
