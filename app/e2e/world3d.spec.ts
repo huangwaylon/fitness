@@ -70,7 +70,8 @@ const lift = (page: Page) => page.evaluate(() => {
   for (const i of t.ids) t.el.dispatchEvent(new PointerEvent('pointerup', { pointerId: 10 + i, pointerType: 'touch', clientX: t.at[i][0], clientY: t.at[i][1], bubbles: true, cancelable: true }));
 });
 const line = (n: number, f: (i: number) => [number, number][]) => Array.from({ length: n + 1 }, (_, i) => f(i));
-const idle = (page: Page) => expect.poll(() => page.evaluate(() => (window as unknown as { __world: { idle(): boolean } }).__world.idle()), { timeout: 20_000 }).toBe(true);
+/** The camera at rest (its own: a villager wandering by doesn't keep it waiting). */
+const idle = (page: Page) => expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { camStill(): boolean } }).__world3d.camStill()), { timeout: 20_000 }).toBe(true);
 
 test('the 3D camera: at the default zoom one finger scrolls along the island only, two pinch the zoom, nothing else moves it', async ({ page }) => {
   test.setTimeout(60_000);
