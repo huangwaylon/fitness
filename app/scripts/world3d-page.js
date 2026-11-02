@@ -135,7 +135,7 @@ async function bake(name, files, o) {
       b = gb;
     }
     if (m) {
-      const ao = 1 - AO * (1 - m[i + 2] / 255);
+      const ao = 1 - (o.noAo ? 0 : AO) * (1 - m[i + 2] / 255);
       r = linToSrgb(srgbToLin(r) * ao);
       g = linToSrgb(srgbToLin(g) * ao);
       b = linToSrgb(srgbToLin(b) * ao);

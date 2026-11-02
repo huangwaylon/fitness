@@ -41,27 +41,34 @@ pumpkin. Albedos whose alpha isn't an opacity (the mushrooms', the coconut's) ar
 Animation: none. NH's files have no clips (the .dae files hold the bind pose only), so the critters' idle motion
 (a flutter, a bob, a swim) stays the runtime's, as the 2D's. The visitors' arms are lowered from the bind pose.
 
-Not converted (see the table's last section): the villagers (billboards), Pavé, the plumeria (NH has none: the
-azaleas stand in), the particles, the emotes and the UI's art.
+Effects: the seasons' falling leaves, petals and snowflakes are NH's own (the ones a net catches: InsectAutumnLeaf,
+InsectSakurapetal, InsectSnowCrystal). NH's files have no effect models (no Eff*/Emo*), so the sparkle, the 「！」,
+the dust puff, the splash and its ripple are small stylised meshes in the 2D's colours, unlit, 2 KB each
+(`scripts/world3d-fx.ts`, the `fx/*` keys; flat ones face +z for the runtime to turn to the camera).
+
+Not converted (see the table's last section): the villagers (billboards), Pavé (not in the files), the emotes and the
+UI's art. The plumeria isn't in NH's files under any name: NH's hibiscus (the closest shape) stands in, in the
+plumeria's white and pink.
 
 ## The inventory
 
 <!-- assets:start -->
-528 keys, 408 models, 6.08 MB in all.
+536 keys, 418 models, 6.13 MB in all.
 
 | kind | keys | models | KB | loads |
 | --- | --- | --- | --- | --- |
 | find | 126 | 49 | 390 | with the island |
 | scenery | 4 | 2 | 68.2 | with the island |
-| bush | 24 | 22 | 261.7 | with the island |
+| bush | 24 | 24 | 287 | with the island |
 | sea | 40 | 40 | 495 | lazily (sea) |
 | bug | 75 | 75 | 1020 | lazily (bug) |
 | fish | 83 | 83 | 891.5 | lazily (fish) |
-| deco | 48 | 39 | 895.1 | with the island |
+| deco | 48 | 39 | 895.5 | with the island |
 | event | 6 | 6 | 115.2 | lazily (event) |
 | decor | 40 | 10 | 198.7 | with the island |
 | flower | 42 | 42 | 551.5 | with the island |
 | fruit | 4 | 4 | 47.9 | with the island |
+| fx | 8 | 8 | 22.9 | with the island |
 | shadow | 15 | 15 | 41.9 | with the island |
 | tree | 10 | 10 | 325.1 | with the island |
 | visitor | 11 | 11 | 926.5 | lazily (visitor) |
@@ -222,14 +229,14 @@ azaleas stand in), the particles, the emotes and the UI's art.
 | bushes/pink-camellia-winter | bushes/pink-camellia-winter | 3 | feet | 1×1 | 16 | 12.2 |  |
 | bushes/pink-hydrangea | bushes/pink-hydrangea | 3 | feet | 1×1 | 17 | 12.7 | winter: bushes/pink-hydrangea-winter |
 | bushes/pink-hydrangea-winter | bushes/pink-hydrangea-winter | 3 | feet | 1×1 | 16 | 10.7 |  |
-| bushes/pink-plumeria | bush-pink-azalea | 3 | feet | 1×1 | 16 | 14.2 | winter: bushes/pink-azalea-winter, stand-in |
+| bushes/pink-plumeria | bushes/pink-plumeria | 3 | feet | 1×1 | 16 | 12.6 | winter: bushes/red-hibiscus-winter, stand-in |
 | bushes/red-camellia | bushes/red-camellia | 3 | feet | 1×1 | 16 | 13.1 | winter: bushes/red-camellia-winter |
 | bushes/red-camellia-winter | bushes/red-camellia-winter | 3 | feet | 1×1 | 16 | 12.2 |  |
 | bushes/red-hibiscus | bush-red-hibiscus | 3 | feet | 1×1 | 16 | 12.9 | winter: bushes/red-hibiscus-winter |
 | bushes/red-hibiscus-winter | bushes/red-hibiscus-winter | 3 | feet | 1×1 | 16 | 11.4 |  |
 | bushes/white-azalea | bush-white-azalea | 3 | feet | 1×1 | 16 | 14 | winter: bushes/white-azalea-winter |
 | bushes/white-azalea-winter | bushes/white-azalea-winter | 3 | feet | 1×1 | 16 | 10.7 |  |
-| bushes/white-plumeria | bush-white-azalea | 3 | feet | 1×1 | 16 | 14 | winter: bushes/white-azalea-winter, stand-in |
+| bushes/white-plumeria | bushes/white-plumeria | 3 | feet | 1×1 | 16 | 12.7 | winter: bushes/red-hibiscus-winter, stand-in |
 | bushes/yellow-hibiscus | bushes/yellow-hibiscus | 3 | feet | 1×1 | 16 | 12.8 | winter: bushes/yellow-hibiscus-winter |
 | bushes/yellow-hibiscus-winter | bushes/yellow-hibiscus-winter | 3 | feet | 1×1 | 16 | 11.4 |  |
 | bushes/yellow-tea-olive | bushes/yellow-tea-olive | 3 | feet | 1×1 | 16 | 12.3 | winter: bushes/yellow-tea-olive-winter |
@@ -493,10 +500,10 @@ azaleas stand in), the particles, the emotes and the UI's art.
 | deco/sandcastle | deco/sandcastle | 3 | feet | 1×1 | 13 | 15.2 |  |
 | deco/shishiodoshi | shishiodoshi | 3 | feet | 1×1 | 15 | 17.7 |  |
 | deco/shishiodoshi-tip | deco/shishiodoshi-tip | 3 | feet | 1×1 | 15 | 17.7 |  |
-| deco/snowboy-0 | deco/snowboy-0 | 3 | feet | 1×1 | 15 | 16.2 |  |
-| deco/snowboy-1 | deco/snowboy-1 | 3 | feet | 1×1 | 15 | 18.3 |  |
-| deco/snowboy-2 | deco/snowboy-2 | 3 | feet | 2×2 | 21 | 18.5 |  |
-| deco/snowboy-3 | deco/snowboy-3 | 3 | feet | 2×2 | 23 | 18.3 |  |
+| deco/snowboy-0 | deco/snowboy-0 | 3 | feet | 1×1 | 15 | 16.3 |  |
+| deco/snowboy-1 | deco/snowboy-1 | 3 | feet | 1×1 | 15 | 18.4 |  |
+| deco/snowboy-2 | deco/snowboy-2 | 3 | feet | 2×2 | 21 | 18.6 |  |
+| deco/snowboy-3 | deco/snowboy-3 | 3 | feet | 2×2 | 23 | 18.4 |  |
 | deco/streetlamp | streetlamp | 3 | feet | 1×1 | 12 | 16.5 | lit |
 | deco/streetlamp-lit | streetlamp | 3 | feet | 1×1 | 12 | 16.5 | lit |
 | deco/tape-deck | tape-deck | 3 | feet | 1×1 | 12 | 16.7 |  |
@@ -613,6 +620,19 @@ azaleas stand in), the particles, the emotes and the UI's art.
 | fruit/peach | fruit-peach | 5.755 | feet |  | 12 | 13.1 |  |
 | fruit/pear | fruit-pear | 4.38 | feet |  | 12 | 12.9 |  |
 
+### fx
+
+| key | model | scale | anchor | foot | hit | KB | notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| fx/bang | fx/bang | 13.5 | centre |  | 14 | 2.1 |  |
+| fx/dust | fx/dust | 7.292 | feet |  | 12 | 2.3 |  |
+| fx/ripple | fx/ripple | 9 | feet |  | 12 | 2 |  |
+| fx/sparkle | fx/sparkle | 6 | centre |  | 12 | 1.8 |  |
+| fx/splash | fx/splash | 11.25 | feet |  | 12 | 2 |  |
+| season/maple-leaf | fx/maple-leaf | 2.286 | centre |  | 12 | 3.6 |  |
+| season/petal | fx/petal | 3.07 | centre |  | 12 | 3.4 |  |
+| season/snowflake | fx/snowflake | 2.288 | centre |  | 12 | 5.7 |  |
+
 ### shadow
 
 | key | model | scale | anchor | foot | hit | KB | notes |
@@ -669,12 +689,12 @@ azaleas stand in), the particles, the emotes and the UI's art.
 | keys | status |
 | --- | --- |
 | villagers/* | billboard: 391 villager models at ~100 KB each is over budget (the visitors have models) |
-| villagers/pave | billboard: Pavé isn’t in NH’s files |
-| bushes/white-plumeria, bushes/pink-plumeria | no plumeria in NH’s files (no other name either): NH’s white and pink azaleas stand in (`standIn`) |
+| villagers/pave | billboard: Pavé isn’t in NH’s files (none of the 31 special characters there is him) |
+| bushes/white-plumeria, bushes/pink-plumeria | no plumeria in NH’s files (no other name either): NH’s hibiscus (the closest shape) in the plumeria’s white and pink (`standIn`) |
 | trees/*-canopy, trees/*-trunk | 2D only: the 2D oak’s two layers; the 3D tree is one model |
-| season/petal, season/maple-leaf, season/snowflake | billboard: the falling particles stay sprites |
 | reactions/* | billboard: the villagers’ emotes |
-| deco/lamp-glow | billboard: an additive glow sprite |
+| deco/lamp-glow | billboard: an additive glow sprite (a light’s halo, not a thing) |
+| fx/* (sparkle, bang, dust, splash, ripple) | not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the 2D’s colours (scripts/world3d-fx.ts) |
 | deco/birthday-hat-pink, deco/birthday-hat-blue | 2D: worn by the villagers’ billboards |
 | deco/airport | not on the island: the pairing page’s map icon |
 | host/*, items/snack, items/dinner, money/* | not on the island: the panels’ and the HUD’s art |

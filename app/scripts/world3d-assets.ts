@@ -86,10 +86,10 @@ export interface Use {
   winter?: string;
   /** Loaded with its group, lazily (a critter: when one of the month's is about). */
   lazy?: 'bug' | 'fish' | 'sea' | 'event' | 'visitor';
-  /** No NH model of its own: another stands in (the plumeria: NH's azalea). */
+  /** No NH model of its own: another stands in (the plumeria: NH's hibiscus in its colours). */
   standIn?: true;
 }
-export type Cat = 'bug' | 'fish' | 'shadow' | 'sea' | 'find' | 'fruit' | 'flower' | 'bush' | 'tree' | 'deco' | 'decor' | 'event' | 'visitor' | 'scenery';
+export type Cat = 'bug' | 'fish' | 'shadow' | 'sea' | 'find' | 'fruit' | 'flower' | 'bush' | 'tree' | 'deco' | 'decor' | 'event' | 'visitor' | 'scenery' | 'fx';
 
 /** A conversion (scripts/world3d-models.ts Job) and the keys it serves. */
 export interface AssetJob {
@@ -107,6 +107,10 @@ export interface AssetJob {
   pose?: Record<string, [number, number, number]>;
   snow?: boolean;
   variant?: number;
+  /** No occlusion baked in (the snowboy). */
+  noAo?: boolean;
+  /** Not NH's: a stylised effect (scripts/world3d-fx.ts). */
+  fx?: 'sparkle' | 'bang' | 'dust' | 'splash' | 'ripple';
   uses: Use[];
 }
 
@@ -223,7 +227,7 @@ const flowers = FLOWER_KEYS.map((id): AssetJob => {
 });
 
 // the bushes in bloom (stage 3; the colour a row of the flowers' gradient: scripts/models.ts's rows), and in winter
-// NH's snowy bush; the plumeria isn't in NH's files: its azalea stands in
+// NH's snowy bush (the plumeria: below)
 const BUSH = [
   ['white-azalea', 'Azalea', 'Petal', 0.03, 2], ['pink-azalea', 'Azalea', 'Petal', 0.09, 2],
   ['red-hibiscus', 'Hibiscus', 'Flow', 0.03, 2], ['yellow-hibiscus', 'Hibiscus', 'Flow', 0.09, 2],
@@ -238,6 +242,13 @@ const bushes: AssetJob[] = BUSH.flatMap(([id, sp, part, r, snow]): AssetJob[] =>
   ...(POC_BUSH.has(id) ? [] : [{ name: `bushes/${id}`, parts: [[`PltBush${sp}`, `PltBush${sp}3`]], grdRows: { [part]: r }, uses: [{ key: `bushes/${id}`, cat: 'bush', s: DECOR_U, winter: `bushes/${id}-winter` }] } as AssetJob]),
   { name: `bushes/${id}-winter`, parts: [[`PltBush${sp}Snow`, `PltBush${sp}${snow}Snow`]], snow: true, uses: [{ key: `bushes/${id}-winter`, cat: 'bush', s: DECOR_U }] }
 ]);
+
+// the plumeria isn't in NH's files under any name: NH's hibiscus (its five broad petals, the closest shape) in the
+// plumeria's colours, the camellia's near-white and the azalea's pink rows; in winter the snowy hibiscus
+bushes.push(...([['white', 'PltBushCamellia', 'mPltBushCamelliaFlowColor', 1], ['pink', 'PltBushAzalea', 'mPltBushAzaleaPetalColor', 0]] as const).map(([c, f, grd, r]): AssetJob => ({
+  name: `bushes/${c}-plumeria`, parts: [['PltBushHibiscus', 'PltBushHibiscus3']], tex: [f], grdFile: { Flow: grd, Leaf: 'mPltBushHibiscusColor' }, grdRows: { Flow: row(r) },
+  uses: [{ key: `bushes/${c}-plumeria`, cat: 'bush', s: DECOR_U, standIn: true, winter: 'bushes/red-hibiscus-winter' }]
+})));
 
 // the trees' winter looks (NH's snowy trees: the snow drawn)
 const trees: AssetJob[] = ([['oak', 'Oak', 0.5], ['cedar', 'Cedar', 0.3], ['palm', 'Palm', 0.5], ['bamboo', 'Bamboo', 0.5]] as const).map(([id, t, r]) => ({
@@ -258,7 +269,7 @@ const decos: AssetJob[] = [
   deco('shishiodoshi-tip', 'FtrShishiodoshi', ['FtrShishiodoshiReBody0'], { pose: { Shishiodoshi: [35, 0, 0] } }),
   // the snowboy (NH's snowball body, its face on top) and its three days of melting
   ...([['SnowBall', 8.5, 0.75], ['SnowBall1Day', 7.5, 0.7], ['SnowBall2Day', 5.5, 0.62], ['SnowBall3Day', 3, 0.5]] as const).map(([body, up, k], i): AssetJob => ({
-    name: `deco/snowboy-${i}`, parts: [[body, body], ['SnowBallFaceC', 'SnowBallFaceC', [up, k]]], uses: [{ key: `deco/snowboy-${i}`, cat: 'deco', s: DECOR_U }]
+    name: `deco/snowboy-${i}`, parts: [[body, body], ['SnowBallFaceC', 'SnowBallFaceC', [up, k]]], noAo: true, uses: [{ key: `deco/snowboy-${i}`, cat: 'deco', s: DECOR_U }]
   })),
   // the campsite's tent in the snow
   { name: 'deco/campsite-winter', parts: [['StrcCampsiteTentA00', 'StrcCampsiteTentA00'], ['StrcCampsiteTentA00', 'StrcCampsiteTentA00Door0']], snow: true, maxTex: 512, tris: 8000, uses: [{ key: 'deco/campsite-winter', cat: 'deco', s: DECOR_U }] },
@@ -318,7 +329,18 @@ const board: AssetJob[] = [
   { name: 'deco/bbs-bird-day', parts: one('BbsBirdDay'), maxTex: 128, pose: { Arm_1_L: [0, 0, 78], Arm_1_R: [0, 0, 78] }, uses: [{ key: 'deco/bbs-bird-day', cat: 'deco', s: BOARD_S }] },
   { name: 'deco/bbs-bird-night', parts: one('BbsBirdNight'), maxTex: 128, pose: { Arm_1_L: [0, 0, 100], Arm_1_R: [0, 0, 100] }, uses: [{ key: 'deco/bbs-bird-night', cat: 'deco', s: BOARD_S }] }
 ];
-export const ASSETS: AssetJob[] = [...bugs, ...fish, ...sea, ...shadows, ...finds, ...flowers, ...bushes, ...trees, ...decos, ...decor, ...events, ...visitors, ...board];
+// the effects: the seasons' falling leaves, petals and snowflakes (NH's own: the ones a net catches), and the
+// stylised ones NH has no model for (scripts/world3d-fx.ts), their size the 2D's (u: the longest side)
+const fxs: AssetJob[] = [
+  { name: 'fx/maple-leaf', parts: one('InsectAutumnLeaf'), maxTex: 64, uses: [{ key: 'season/maple-leaf', cat: 'fx', h: 8, flat: true, anchor: 'centre' }] },
+  { name: 'fx/petal', parts: one('InsectSakurapetal'), maxTex: 64, uses: [{ key: 'season/petal', cat: 'fx', h: 7, flat: true, anchor: 'centre' }] },
+  { name: 'fx/snowflake', parts: one('InsectSnowCrystal'), maxTex: 64, uses: [{ key: 'season/snowflake', cat: 'fx', h: 7, flat: true, anchor: 'centre' }] },
+  ...([['sparkle', 12], ['bang', 27], ['dust', 14], ['splash', 18], ['ripple', 18]] as const).map(([fx, h]): AssetJob => ({
+    name: `fx/${fx}`, parts: [], fx, uses: [{ key: `fx/${fx}`, cat: 'fx', h, flat: true, anchor: fx === 'bang' || fx === 'sparkle' ? 'centre' : 'feet' }]
+  }))
+];
+
+export const ASSETS: AssetJob[] = [...bugs, ...fish, ...sea, ...shadows, ...finds, ...flowers, ...bushes, ...trees, ...decos, ...decor, ...events, ...visitors, ...board, ...fxs];
 
 /** The POC's models (models.json: static/room/world3d/<name>.glb) serving the island's keys as they are. */
 export const POC_USES: [string, Use[]][] = [
@@ -329,8 +351,6 @@ export const POC_USES: [string, Use[]][] = [
   ['palm', [{ key: 'trees/palm', cat: 'tree', s: DECOR_U, winter: 'trees/palm-winter' }]],
   ['bamboo', [{ key: 'trees/bamboo', cat: 'tree', s: DECOR_U, winter: 'trees/bamboo-winter' }]],
   ...[...POC_BUSH].map((id): [string, Use[]] => [`bush-${id}`, [{ key: `bushes/${id}`, cat: 'bush', s: DECOR_U, winter: `bushes/${id}-winter` }]]),
-  ['bush-white-azalea', [{ key: 'bushes/white-plumeria', cat: 'bush', s: DECOR_U, standIn: true, winter: 'bushes/white-azalea-winter' }]],
-  ['bush-pink-azalea', [{ key: 'bushes/pink-plumeria', cat: 'bush', s: DECOR_U, standIn: true, winter: 'bushes/pink-azalea-winter' }]],
   ...(['apple', 'cherry', 'peach', 'pear'] as const).map((f): [string, Use[]] => [`fruit-${f}`, [{ key: `fruit/${f}`, cat: 'fruit', h: 24 }]]),
   ['rock', [{ key: 'finds/rock', cat: 'find', h: 26 }]],
   ['garden-rock', [{ key: 'deco/garden-rock', cat: 'deco', s: DECOR_U }]],
@@ -346,7 +366,7 @@ export const POC_USES: [string, Use[]][] = [
 interface Meta { min: number[]; max: number[]; tris: number; kb: number; v: string; lit?: 1 }
 /** A model's budget (KB) by kind: the unit test holds every file to it (src/lib/components/world3d/assets.test.ts). */
 const BUDGET_KB: Record<Cat, number> = {
-  bug: 40, fish: 40, shadow: 4, sea: 40, find: 30, fruit: 30, flower: 24, bush: 90, tree: 160, deco: 120, decor: 120, event: 160, visitor: 120, scenery: 200
+  bug: 40, fish: 40, shadow: 4, sea: 40, find: 30, fruit: 30, flower: 24, bush: 90, tree: 160, deco: 120, decor: 120, event: 160, visitor: 120, scenery: 200, fx: 30
 };
 /** The tile (u): docs/island-layout.md. */
 const TILE = 30;
@@ -400,12 +420,12 @@ ${sorted(keys).map(([k, v]) => `    ${JSON.stringify(k)}: ${JSON.stringify(v)}`)
 /** The island's art without a model of its own (a key or a group `<group>/*`) and why: it stays a billboard (or 2D). */
 const NO_MODEL: [string, string][] = [
   ['villagers/*', 'billboard: 391 villager models at ~100 KB each is over budget (the visitors have models)'],
-  ['villagers/pave', 'billboard: Pavé isn’t in NH’s files'],
-  ['bushes/white-plumeria, bushes/pink-plumeria', 'no plumeria in NH’s files (no other name either): NH’s white and pink azaleas stand in (`standIn`)'],
+  ['villagers/pave', 'billboard: Pavé isn’t in NH’s files (none of the 31 special characters there is him)'],
+  ['bushes/white-plumeria, bushes/pink-plumeria', 'no plumeria in NH’s files (no other name either): NH’s hibiscus (the closest shape) in the plumeria’s white and pink (`standIn`)'],
   ['trees/*-canopy, trees/*-trunk', '2D only: the 2D oak’s two layers; the 3D tree is one model'],
-  ['season/petal, season/maple-leaf, season/snowflake', 'billboard: the falling particles stay sprites'],
   ['reactions/*', 'billboard: the villagers’ emotes'],
-  ['deco/lamp-glow', 'billboard: an additive glow sprite'],
+  ['deco/lamp-glow', 'billboard: an additive glow sprite (a light’s halo, not a thing)'],
+  ['fx/* (sparkle, bang, dust, splash, ripple)', 'not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the 2D’s colours (scripts/world3d-fx.ts)'],
   ['deco/birthday-hat-pink, deco/birthday-hat-blue', '2D: worn by the villagers’ billboards'],
   ['deco/airport', 'not on the island: the pairing page’s map icon'],
   ['host/*, items/snack, items/dinner, money/*', 'not on the island: the panels’ and the HUD’s art'],
