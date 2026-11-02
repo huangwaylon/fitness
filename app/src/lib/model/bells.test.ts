@@ -196,7 +196,7 @@ describe('buys: one of the two rewards, at its price, covered by the wallet; eit
     expect(wallet([ev(jst(MON, '09:59'), 'A', 'spend_void', { spendId: 's1' })]).wallet.spent).toBe(15);
     expect(wallet([ev(jst(MON, '10:05'), 'A', 'spend_void', { spendId: 'nope' })]).wallet.spent).toBe(15);
     // a void of something that isn't a buy (a high-five's id) is no void
-    const hf = ev(jst(MON, '10:01'), 'B', 'highfive', {});
+    const hf = ev(jst(MON, '10:01'), 'B', 'find', { kind: 'fish', id: 'dab' });
     expect(wallet([hf, ev(jst(MON, '10:05'), 'A', 'spend_void', { spendId: hf[2] })]).wallet.spent).toBe(15);
     // a second void (either of us) never returns the ベル twice
     const twice = wallet([ev(jst(MON, '10:05'), 'A', 'spend_void', { spendId: 's1' }), ev(jst(MON, '10:06'), 'B', 'spend_void', { spendId: 's1' })]);

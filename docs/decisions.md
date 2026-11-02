@@ -24,8 +24,8 @@ over; duplicate finds stay (the ずかん reads the first); an edge cache of the
 ### The sheet is an export
 The bound Google Sheet is a one-way copy: the relay's cron rewrites its tabs from the record after each change (within
 15 minutes) and every night, and a README tab and a note on each header say it is read-only. Its Apps Script web app
-only takes that export and forwards what still reaches the old `/exec` URL (an older app, a Shortcut not moved) to the
-record. The relay pushes (signed in the body, since Apps Script can't read headers) rather than Apps Script pulling,
+only takes that export (it forwarded the old `/exec` URL's requests to the record for the day of the move, until both
+phones were seen posting to the relay alone). The relay pushes (signed in the body, since Apps Script can't read headers) rather than Apps Script pulling,
 so no installable trigger or new Google scope was needed and the relay holds no Google credential. Why: a backup and
 something to look at, in the place the user already knows, without a second path for data of record. Not done:
 writing back from the sheet (an edit there goes nowhere); an installable time trigger pulling deltas (a possible later
@@ -346,8 +346,8 @@ storage), hands it over after the welcome of their next hello, and lets it go wh
 has passed. The receiving phone plays the same moment as the tapper's when it's fresh (≤ 8 s: their own villager stops
 there and says so, the sparkle from the tapper, hops, hearts), else the banner and R5; a local store of today's heard
 ones (`hf-got.<me>`) makes a resend or the held copy no news, and the banner fires on receipt, not on a count. The app
-sends no `highfive` event to the record any more (the reducer and EVENT_TYPES keep it a release for older phones; the
-record acknowledges and stores nothing). Why: the user ("improve the high five with the relay"; then "the count barely
+sends no `highfive` event to the record any more (it is no event type; the record still acknowledges one queued on a
+phone from before, and stores nothing). Why: the user ("improve the high five with the relay"; then "the count barely
 matters": online over the relay, offline one stored touch); through the sheet the partner's phone reacted 1–4 s later
 and a row per tap bought nothing, and an intent is ~45 bytes with no leader. Not done: a high-five while the relay is
 down (the moment plays here only), a count of the day's high-fives on screen.

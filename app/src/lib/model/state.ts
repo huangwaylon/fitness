@@ -73,7 +73,6 @@ export interface State {
   /** Accepted `spend_void`s (by either person, once per buy, after it). */
   spendVoids: { at: number; person: PersonId; spendId: string }[];
   harvests: { at: number; person: PersonId; week: WeekKey }[];
-  highfives: { at: number; person: PersonId }[];
   /** The island's finds (`find`: catches and pick-ups for the ずかん), in server order. Never read by the economy. */
   finds: { at: number; person: Who; kind: FindKind; id: string }[];
   /** Each person's day tallies (`tally`: the ずかん's counts, model/tally.ts), in server order, replaced rows included
@@ -187,7 +186,6 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     body: { A: bodyMaps(), B: bodyMaps() },
     spendVoids: [],
     harvests: [],
-    highfives: [],
     finds: [],
     tallies: [],
     islandDays: [],
@@ -260,7 +258,6 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     bellSpends: [...base.bellSpends],
     spendVoids: [...base.spendVoids],
     harvests: [...base.harvests],
-    highfives: [...base.highfives],
     finds: [...base.finds],
     tallies: [...base.tallies],
     islandDays: [...base.islandDays],
@@ -323,9 +320,6 @@ const ON_EVENT: Record<EventType, OnEvent> = {
   harvest: members((s, person, at, d) => {
     const week = normDate(d.week);
     if (week) s.harvests.push({ at, person, week });
-  }),
-  highfive: members((s, person, at) => {
-    s.highfives.push({ at, person });
   }),
   find(s, person, at, d) {
     if (isFind(d)) s.finds.push({ at, person, kind: d.kind as FindKind, id: d.id as string });

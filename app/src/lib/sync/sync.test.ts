@@ -97,20 +97,20 @@ describe('post', () => {
 describe('write queue', () => {
   it('persists events and sends them in order until acked (duplicates count as acked)', async () => {
     enqueue('pref', { key: 'moveGoal', value: 500 });
-    enqueue('highfive', {});
+    enqueue('harvest', { week: '2026-10-26' });
     expect(queued()).toHaveLength(2);
     let n = 0;
     handler = () => (++n === 2 ? { ok: true, duplicate: true } : { ok: true });
     const r = await flush();
     expect(r).toMatchObject({ sent: 2, remaining: 0 });
-    expect(calls.map((c) => c.type)).toEqual(['pref', 'highfive']);
+    expect(calls.map((c) => c.type)).toEqual(['pref', 'harvest']);
     expect(calls[0]).toMatchObject({ action: 'event', key: KEY, data: { key: 'moveGoal', value: 500 } });
     expect(typeof calls[0].id).toBe('string');
     expect(queued()).toEqual([]);
   });
   it('what is on the wire can no longer be undone; what is queued meanwhile can (and only the acked count)', async () => {
     const first = enqueue('pref', { key: 'moveGoal', value: 500 });
-    const second = enqueue('highfive', {});
+    const second = enqueue('harvest', { week: '2026-10-26' });
     let third: ReturnType<typeof enqueue> | null = null;
     handler = (body) => {
       // While the batch is on the wire, the user taps 取り消す on the second, and taps again and undoes that.
@@ -129,8 +129,8 @@ describe('write queue', () => {
   });
   it('keeps the event (and order) with a backoff on transient errors, then retries', async () => {
     let t = 1_000_000;
-    const a = enqueue('highfive', {}, t);
-    enqueue('highfive', {}, t);
+    const a = enqueue('harvest', { week: '2026-10-26' }, t);
+    enqueue('harvest', { week: '2026-10-26' }, t);
     handler = () => ({ ok: false, error: 'busy' });
     let r = await flush(() => t);
     expect(r).toMatchObject({ sent: 0, remaining: 2, error: 'busy' });
@@ -147,13 +147,13 @@ describe('write queue', () => {
   });
   it('drops events the server can never accept, and stops on unauthorized', async () => {
     enqueue('spend', { spendId: 'x', label: '', item: 'ice', bells: 0 });
-    enqueue('highfive', {});
+    enqueue('harvest', { week: '2026-10-26' });
     let n = 0;
     handler = () => (++n === 1 ? { ok: false, error: 'bad_request' } : { ok: false, error: 'unauthorized' });
     const r = await flush();
     expect(r.dropped.map((e) => e.type)).toEqual(['spend']);
     expect(r).toMatchObject({ sent: 0, remaining: 1, error: 'unauthorized' });
-    expect(queued()[0]).toMatchObject({ type: 'highfive', tries: 0 });
+    expect(queued()[0]).toMatchObject({ type: 'harvest', tries: 0 });
   });
   it('a held (undo-window) event does not block later events; it still goes once due', async () => {
     const t = 1_000_000;
@@ -171,7 +171,7 @@ describe('write queue', () => {
   it('a backed-off event still blocks everything after it, held or not (order kept)', async () => {
     const t = 1_000_000;
     handler = () => ({ ok: false, error: 'busy' });
-    const a = enqueue('highfive', {}, t);
+    const a = enqueue('harvest', { week: '2026-10-26' }, t);
     await flush(() => t);
     const retryAt = queued()[0].nextAt;
     enqueue('pref', { key: 'moveGoal', value: 500 }, t);
@@ -181,7 +181,7 @@ describe('write queue', () => {
     expect(calls).toHaveLength(0);
     expect(nextRetryAt(t + 1)).toBe(retryAt);
     await flush(() => retryAt);
-    expect(calls.map((c) => c.type)).toEqual(['highfive', 'pref']);
+    expect(calls.map((c) => c.type)).toEqual(['harvest', 'pref']);
     expect(calls[0].id).toBe(a.id);
   });
   it('holdEvent keeps a held event back while its banner is held, and releases it', async () => {
@@ -216,7 +216,7 @@ describe('write queue', () => {
     expect(calls.map((c) => c.id)).toEqual([later.id]);
   });
   it('a second flush while one is running shares it', async () => {
-    enqueue('highfive', {});
+    enqueue('harvest', { week: '2026-10-26' });
     const [x, y] = await Promise.all([flush(), flush()]);
     expect(x).toBe(y);
     expect(calls).toHaveLength(1);
@@ -230,7 +230,7 @@ describe('write queue', () => {
   it('retryNow: back online (or a sync tap), an event backed off for minutes goes at once; held ones keep their time', async () => {
     const t = 1_000_000;
     let now = t;
-    const a = enqueue('highfive', {}, t);
+    const a = enqueue('harvest', { week: '2026-10-26' }, t);
     const held = enqueue('harvest', { week: '2026-11-02' }, t, 5000);
     handler = () => ({ ok: false, error: 'offline' });
     for (let i = 0; i < 9; i++) {
@@ -248,7 +248,7 @@ describe('write queue', () => {
     expect(calls.map((c) => c.id)).toEqual([a.id, held.id]); // the held one was due by then anyway
   });
   it('an ack that lands after pairing as someone else is not kept as the new person’s', async () => {
-    enqueue('highfive', {});
+    enqueue('harvest', { week: '2026-10-26' });
     handler = () => {
       setKey('cd'.repeat(32), 'B');
       return { ok: true };
@@ -259,7 +259,7 @@ describe('write queue', () => {
     expect(queued()).toEqual([]);
   });
   it('pairing as the other person drops the old queue and cache', () => {
-    enqueue('highfive', {});
+    enqueue('harvest', { week: '2026-10-26' });
     setKey(KEY, 'A');
     expect(queued()).toHaveLength(1);
     setKey('cd'.repeat(32), 'B');
@@ -277,7 +277,7 @@ describe('snapshot cache', () => {
     const base = rowsA();
     const merged = mergeRows(base, {
       metrics: [['2026-11-02T01:00:00.000Z', 'A', '2026-11-02', 'steps', 5000], ['2026-11-02T03:00:00.000Z', 'A', '2026-11-02', 'steps', 7000]],
-      events: [['2026-11-02T01:00:00.000Z', 'A', 'e1', 'pref', '{"key":"locale","value":"en"}'], ['2026-11-02T00:30:00.000Z', 'B', 'e0', 'highfive', '{}']]
+      events: [['2026-11-02T01:00:00.000Z', 'A', 'e1', 'pref', '{"key":"locale","value":"en"}'], ['2026-11-02T00:30:00.000Z', 'B', 'e0', 'harvest', '{}']]
     });
     expect(merged.metrics.map((r) => r[4])).toEqual([5000, 7000]);
     expect(merged.events.map((r) => r[2])).toEqual(['e0', 'e1']);
@@ -307,7 +307,7 @@ describe('snapshot cache', () => {
   });
   it('a fresh refresh (the re-read after an ack) never reuses a request already in flight: one more follows it', async () => {
     let n = 0;
-    handler = () => ({ ok: true, me: 'A', now: '2026-11-02T02:00:00.000Z', rows: n++ ? { metrics: [], events: [['2026-11-02T01:30:00.000Z', 'A', 'acked', 'highfive', '{}']] } : rowsA() });
+    handler = () => ({ ok: true, me: 'A', now: '2026-11-02T02:00:00.000Z', rows: n++ ? { metrics: [], events: [['2026-11-02T01:30:00.000Z', 'A', 'acked', 'harvest', '{}']] } : rowsA() });
     const first = refreshSnapshot();
     const [x, y] = await Promise.all([refreshSnapshot(Date.now, true), refreshSnapshot(Date.now, true)]);
     await first;
@@ -375,8 +375,8 @@ describe('optimistic view', () => {
   it('live events are always mine: a stray `person` on a queued event never changes the sender', () => {
     const now = Date.parse('2026-11-04T12:00:00.000Z');
     const cache = applySnapshot(null, { me: 'A', rev: 'r1', now: '2026-11-04T12:00:00.000Z', rows: rowsA() }, now);
-    const ev = { id: 'p', type: 'highfive' as const, data: {}, queuedAt: now, tries: 0, nextAt: now, person: 'B' as const };
-    expect(composeModel(cache, [ev], now).state.highfives.map((h) => h.person)).toEqual(['A']);
+    const ev = { id: 'p', type: 'harvest' as const, data: { week: '2026-10-26' }, queuedAt: now, tries: 0, nextAt: now, person: 'B' as const };
+    expect(composeModel(cache, [ev], now).state.harvests.map((h) => h.person)).toEqual(["A"]);
   });
   it('the same event listed twice is applied once', () => {
     const now = Date.parse('2026-11-04T12:00:00.000Z');

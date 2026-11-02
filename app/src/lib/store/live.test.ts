@@ -57,11 +57,11 @@ describe('LiveBackend storage problems', () => {
     await b.refresh({});
     expect(h.offline || h.status === 'error').toBe(true); // the fake server is busy
     kv.full = true;
-    expect(b.send('highfive', {}, {}).ok).toBe(true);
+    expect(b.send('harvest', { week: '2026-10-26' }, {}).ok).toBe(true);
     expect(queued()).toHaveLength(1);
     expect(toasts.current?.text).toBe(t('state.storageFull'));
     toasts.dismiss();
-    b.send('highfive', {}, {});
+    b.send('harvest', { week: '2026-10-26' }, {});
     expect(toasts.current).toBeNull();
   });
 });
@@ -80,7 +80,7 @@ describe('LiveBackend refused events', () => {
     setKey('ab'.repeat(32), 'A');
     refusing();
     const b = new LiveBackend(host());
-    b.send('highfive', {}, {});
+    b.send('harvest', { week: '2026-10-26' }, {});
     await b.refresh({});
     expect(queued()).toHaveLength(0);
     expect(toasts.current?.text).toBe(t('state.saveFailed'));
@@ -124,7 +124,7 @@ describe('LiveBackend after a long time offline', () => {
         return new Response(JSON.stringify(reply(body)));
       }) as typeof fetch
     });
-    const ev = enqueue('highfive', {});
+    const ev = enqueue('harvest', { week: '2026-10-26' });
     for (let i = 0; i < 9; i++) {
       await flush(() => queued()[0].nextAt); // each retry fails offline: the backoff grows to minutes
     }

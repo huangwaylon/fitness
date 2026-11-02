@@ -2,7 +2,7 @@
 // on the fakes of the Apps Script services (fakes.ts).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHmac } from 'node:crypto';
-import { ABOUT_TAB, doPost, EXPORT_WINDOW_MS, MAX_BODY_CHARS, RECORD_API_URL } from './main.ts';
+import { ABOUT_TAB, doPost, EXPORT_WINDOW_MS, MAX_BODY_CHARS } from './main.ts';
 import { install, makeGas, type Gas } from './fakes.ts';
 
 const KEY_A = 'a'.repeat(64);
@@ -49,29 +49,15 @@ describe('health', () => {
   });
 });
 
-describe('the forward to the relay’s record', () => {
-  it('hands every other request on as it came, as ASCII, and its reply back as it is', () => {
-    const body = { key: KEY_A, action: 'event', id: 'e1', type: 'pref', data: { key: 'villagerName', value: 'うめ' } };
-    expect(post(body)).toEqual({ ok: true, echo: body });
-    const f = gas.state.fetches.at(-1)!;
-    expect(f.url).toBe(RECORD_API_URL);
-    expect(/^[\x20-\x7e]*$/.test(f.payload)).toBe(true);
-    const shortcut = { action: 'ingest', key: KEY_B, dates: 'Oct 2, 2026 at 7:25 AM', steps: '5' };
-    expect(post(shortcut)).toEqual({ ok: true, echo: shortcut });
-    expect(post({ key: KEY_A, action: 'export' })).toMatchObject({ ok: true, echo: { action: 'export' } }); // with a key: not the relay's
-    expect(gas.sheets.size).toBe(0); // nothing written here
+describe('a keyed request (the record is the relay’s)', () => {
+  it('is refused with where the record is, touching nothing and calling nobody', () => {
+    for (const action of ['snapshot', 'event', 'events', 'ingest', 'whoami', 'uploads']) {
+      expect(post({ key: 'a'.repeat(64), action }), action).toEqual({ ok: false, error: 'bad_request', detail: 'the record is at https://island-fund-relay.island-fund-relay.workers.dev/api' });
+    }
+    expect(post({ key: 'a'.repeat(64), action: 'export' })).toMatchObject({ ok: false, error: 'bad_request' }); // the relay's has no key
+    expect(gas.sheets.size).toBe(0);
+    expect(gas.state.fetches).toEqual([]);
     expect(gas.state.propReads).toBe(0);
-  });
-
-  it('a refusal comes back as the record gave it; an outage (an HTTP error, garbage, a throw) is unavailable', () => {
-    gas.state.record = () => ({ status: 200, text: '{"ok":false,"error":"unauthorized"}' });
-    expect(post({ key: 'f'.repeat(64), action: 'whoami' })).toEqual({ ok: false, error: 'unauthorized' });
-    gas.state.record = () => ({ status: 502, text: '<html>' });
-    expect(post({ key: KEY_A, action: 'snapshot' })).toEqual({ ok: false, error: 'unavailable', detail: 'record 502' });
-    gas.state.record = () => ({ status: 200, text: 'nope' });
-    expect(post({ key: KEY_A, action: 'snapshot' })).toEqual({ ok: false, error: 'unavailable' });
-    gas.state.relay = 'denied';
-    expect(post({ key: KEY_A, action: 'snapshot' })).toEqual({ ok: false, error: 'unavailable' });
   });
 });
 

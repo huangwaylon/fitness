@@ -51,7 +51,6 @@ export function syntheticRows(days: number): SnapshotRows {
     for (const p of people) last[p] = { date, steps: steps[p] };
     if (d % 7 === 6) {
       for (const p of people) events.push([at(date, '20:00'), p, `h:${p}${d}`, 'harvest', JSON.stringify({ week: wk })]);
-      events.push([at(date, '20:01'), 'A', `hf:${d}`, 'highfive', '{}']);
     }
     if (d % 30 === 10) {
       events.push([at(date, '22:30'), 'B', `s:${d}`, 'spend', JSON.stringify({ spendId: `s${d}`, item: 'snack', bells: 8 })]);

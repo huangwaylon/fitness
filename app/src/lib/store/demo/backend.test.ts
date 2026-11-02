@@ -29,7 +29,7 @@ beforeEach(() => {
 describe('demo isolation', () => {
   it('keeps its taps under island-demo.* and never touches the live queue or key', async () => {
     kv.m.set(LIVE.key, 'ab'.repeat(32));
-    const live = enqueue('highfive', {});
+    const live = enqueue('harvest', { week: '2026-10-26' });
     const before = new Map(kv.m);
     const h = host();
     const b = new DemoBackend(h, 'plain', 'A');
@@ -48,7 +48,7 @@ describe('demo isolation', () => {
   });
 
   it('reads only today’s taps', async () => {
-    kv.m.set(DEMO.events, JSON.stringify({ day: 'Mon Jan 01 2001', events: [{ id: 'old', type: 'highfive', data: {} }] }));
+    kv.m.set(DEMO.events, JSON.stringify({ day: 'Mon Jan 01 2001', events: [{ id: 'old', type: 'harvest', data: {} }] }));
     const b = new DemoBackend(host(), 'plain', 'B');
     await b.refresh();
     expect(b.events()).toEqual([]);

@@ -124,5 +124,4 @@ export interface WeekView {
   harvest: HarvestView | null;
   /** i18n key (`host.*`) for the host しずえ's one line, plus params. */
   host: { key: string; params?: Record<string, string | number> };
-  highFivesToday: number;
 }

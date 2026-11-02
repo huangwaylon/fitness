@@ -81,7 +81,7 @@ describe('compacted cache through applySnapshot', () => {
   it('passes rev to the model, except while a queued row is stamped before the latest lock (an old offline tap)', () => {
     const t = at(44, '04:10'); // Wednesday, 10 minutes after the lock
     const c = applySnapshot(null, { me: 'A', now: new Date(t - 3 * 3600_000).toISOString(), rev: 'r1', rows: between(all, 0, t - 3 * 3600_000) }, t - 3 * 3600_000);
-    const tap = (queuedAt: number) => ({ id: `q${queuedAt}`, type: 'highfive' as const, data: {}, queuedAt, tries: 0, nextAt: queuedAt });
+    const tap = (queuedAt: number) => ({ id: `q${queuedAt}`, type: 'harvest' as const, data: { week: '2026-10-26' }, queuedAt, tries: 0, nextAt: queuedAt });
     expect(composeModel(c, [], t).from?.rev).toBe(`r1@${c.rowsAt}`);
     expect(composeModel(c, [tap(t - 60_000)], t).from?.rev).toBe(`r1@${c.rowsAt}`);
     expect(composeModel(c, [tap(at(44, '03:00'))], t).from?.rev).toBeNull();

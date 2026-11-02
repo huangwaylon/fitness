@@ -20,8 +20,7 @@ accounts, **Share** them as **Viewer**, general access **Restricted**. Never *An
    - Replace `Code.gs` with all of [`app/apps-script/Code.js`](../../app/apps-script/Code.js) (a generated bundle:
      rebuild it with `cd app && npm run gas:build`, never edit it by hand).
    - Replace `appsscript.json` with [`app/apps-script/appsscript.json`](../../app/apps-script/appsscript.json): run as
-     the deployer, anyone may call, time zone `Asia/Tokyo`, scopes `spreadsheets.currentonly` (only this sheet) and,
-     while the forward is there, `script.external_request`.
+     the deployer, anyone may call, time zone `Asia/Tokyo`, one scope: `spreadsheets.currentonly` (only this sheet).
    - Save (⌘S).
 
 Optional, with clasp instead of pasting (not `clasp clone`, which overwrites the built file): `npx @google/clasp login`,
@@ -40,8 +39,7 @@ the sheet was the record) are unused and may be deleted.
 2. Description `v1`, **Execute as: Me**, **Who has access: Anyone** (the relay doesn't sign in to Google; the
    signature is the auth).
 3. **Deploy → Authorize access** → the account → *Google hasn't verified this app* → **Advanced** → **Go to Island
-   Fund web app (unsafe)** → **Allow**. The prompt should mention only "this spreadsheet" (and, with the forward,
-   "connect to an external service").
+   Fund web app (unsafe)** → **Allow**. The prompt should mention only "this spreadsheet".
 4. Copy the **Web app URL** (`https://script.google.com/macros/s/…/exec`) into `EXPORT_URL` in `relay/wrangler.toml`
    and deploy the relay ([runbook §10](runbook.md#10-deploy-the-live-relay)).
 

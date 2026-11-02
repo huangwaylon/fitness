@@ -5,7 +5,7 @@ Three pieces, no server of our own:
   a Durable Object's SQLite, §13), the live room (presence and the day's shared world) and the goal notification (§12).
 - **The app:** a static PWA on GitHub Pages that computes everything in the browser from the record's rows.
 - **The sheet:** the Google Sheet *Island Fund*, a read-only export of the record (§9), and its Apps Script web app (one
-  `/exec` URL) that takes the export and forwards what still reaches it.
+  `/exec` URL) that takes the export.
 
 The sheet's setup: [google-setup.md](google-setup.md). How it works: [backend.md](../backend.md).
 
@@ -150,8 +150,8 @@ deployed before the app: an older relay refuses the new kinds.
 
 ## 11. Turn on the push
 Done (2026-11-01), and since the record moved to the relay (2026-11-02) the push needs no Apps Script at all: the
-record tells the room after each write. The script's `script.external_request` scope (granted then, kept in
-`appsscript.json`) is what its forward and the export's reply use. Removing it would break both: don't.
+record tells the room after each write. The script's `script.external_request` scope went with its forward
+(2026-11-02): it makes no outgoing request.
 
 ## 12. Notifications (VAPID)
 The goal notification ([backend.md](../backend.md#notifications)) goes out from the relay, signed with a VAPID key
@@ -188,9 +188,7 @@ The record is the relay's `IslandStore` Durable Object ([backend.md](../backend.
 the repo): `KEY_A=… KEY_B=… node scripts/record.ts <command>` (`--test`: the test relay, `KEYS_FILE=.smoke-keys` for its
 keys). It signs `POST /admin` with the server-to-server secret.
 
-- **`counts`**: rows per table, the revision (`e1`, `e2`, …: the epoch), the newest `at`, and who came which way
-  (`usage`: `direct:A` straight from A's phone or Shortcut, `gas:B` forwarded by Apps Script; how many, the first, the
-  last and its action). The forward is retired once no `gas:` count has moved for a day.
+- **`counts`**: rows per table, the revision (`e1`, `e2`, …: the epoch), the newest `at`.
 - **`export`**: the export to the sheet now (`{"ok":true,"written":{"metrics":…,"events":…,"uploads":…}}`); the cron
   does it every 15 minutes when the record changed, and nightly at 03:00 Tokyo. `unauthorized`: Script Properties'
   keys differ from the relay's (§4). HTML in the log, or `HTTP …`: the script's authorization (§3).

@@ -20,25 +20,26 @@ describe('apps-script/Code.js', () => {
     expect(code).not.toMatch(/\brequire\(/);
   });
 
-  it('the manifest pins the current-sheet-only and external-request scopes and the anonymous web app', () => {
+  it('the manifest pins the current-sheet-only scope (no outgoing requests) and the anonymous web app', () => {
     const manifest = JSON.parse(readFileSync(new URL('../apps-script/appsscript.json', import.meta.url), 'utf8'));
     expect(manifest).toEqual({
       runtimeVersion: 'V8',
       timeZone: 'Asia/Tokyo',
       exceptionLogging: 'STACKDRIVER',
-      oauthScopes: ['https://www.googleapis.com/auth/spreadsheets.currentonly', 'https://www.googleapis.com/auth/script.external_request'],
+      oauthScopes: ['https://www.googleapis.com/auth/spreadsheets.currentonly'],
       webapp: { executeAs: 'USER_DEPLOYING', access: 'ANYONE_ANONYMOUS' }
     });
   });
 
-  it('runs in a bare V8 context with the fakes: health, the forward, garbage', () => {
+  it('runs in a bare V8 context with the fakes: health, a keyed request (not here any more), garbage', () => {
     const gas = makeGas();
     const ctx = vm.createContext({ ...gas.globals, console });
     vm.runInContext(code, ctx, { filename: 'Code.js' });
     const call = (body: unknown) =>
       JSON.parse(ctx.doPost({ postData: { contents: typeof body === 'string' ? body : JSON.stringify(body) } }).text);
     const key = 'a'.repeat(64);
-    expect(call({ key, action: 'snapshot' })).toEqual({ ok: true, echo: { key, action: 'snapshot' } });
+    expect(call({ key, action: 'snapshot' })).toMatchObject({ ok: false, error: 'bad_request', detail: expect.stringMatching(/workers\.dev\/api/) });
+    expect(gas.state.fetches).toEqual([]);
     expect(call('{oops')).toEqual({ ok: false, error: 'bad_request' });
     expect(JSON.parse(ctx.doPost(undefined).text)).toEqual({ ok: false, error: 'bad_request' });
     expect(call({ action: 'health' })).toEqual({ ok: true, build: buildHash() });
