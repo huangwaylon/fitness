@@ -26,6 +26,8 @@ import { keyOwner, type Keys } from './auth.ts';
 type Who = 'A' | 'B';
 type Rec = Record<string, unknown>;
 type Bind = string | number | null;
+/** How an /api request came: from a phone or a Shortcut itself, or forwarded by the Apps Script web app. */
+export type Via = 'direct' | 'gas';
 
 /** The SQL the store needs: Durable Objects' `ctx.storage.sql` (and node:sqlite in the tests). */
 export interface Sql {
@@ -132,6 +134,26 @@ export class StoreCore {
     return ms < this.lastAt;
   }
 
+  /** Where the request being handled came from: straight from a phone, or forwarded by Apps Script (its /exec URL). */
+  private via: Via = 'direct';
+
+  /**
+   * Count who still comes which way (the forward's retirement waits for a day without forwarded requests): per way and
+   * person, how many, the last one's time and action. In `meta` (`use:<via>:<who>`), shown by the admin `counts`.
+   */
+  private used(me: Who, action: string): void {
+    const k = `use:${this.via}:${me}`;
+    let u: { n: number; first: string; last: string; action: string } | null = null;
+    try { u = JSON.parse(this.meta(k) ?? 'null'); } catch { u = null; }
+    const now = new Date(this.io.now()).toISOString();
+    this.setMeta(k, JSON.stringify({ n: (u?.n ?? 0) + 1, first: u?.first ?? now, last: now, action }));
+  }
+
+  /** The counts of `used`. */
+  usage(): Record<string, unknown> {
+    return Object.fromEntries(this.io.sql.exec<{ k: string; v: string }>("SELECT k, v FROM meta WHERE k LIKE 'use:%' ORDER BY k").toArray().map((r) => [r.k.slice(4), JSON.parse(r.v)]));
+  }
+
   private underRateLimit(me: Who): boolean {
     const minute = Math.floor(this.io.now() / 60_000);
     if (this.rate.minute !== minute) this.rate = { minute, A: 0, B: 0 };
@@ -149,7 +171,8 @@ export class StoreCore {
   }
 
   /** An `/api` body as sent → its JSON reply. Never throws. */
-  handleText(text: string): string {
+  handleText(text: string, via: Via = 'direct'): string {
+    this.via = via;
     if (!text) return JSON.stringify(fail('bad_request'));
     let body: unknown;
     try {
@@ -193,6 +216,7 @@ export class StoreCore {
     const me = typeof body.key === 'string' && KEY_RE.test(body.key) ? keyOwner(body.key, this.io.keys) : null;
     if (!me) return fail('unauthorized');
     if (!this.underRateLimit(me)) return fail('busy');
+    this.used(me, String(body.action));
     switch (body.action) {
       case 'ingest': return this.ingest(me, body, bytes);
       case 'event': return this.event(me, body);

@@ -5,7 +5,7 @@
 // open phones.
 import { DurableObject } from 'cloudflare:workers';
 import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
-import { StoreCore, type Sql } from './store.ts';
+import { StoreCore, type Sql, type Via } from './store.ts';
 import { verifyNotify } from './notify.ts';
 import type { StoreRoom } from './storeRoute.ts';
 import type { Env } from './index.ts';
@@ -32,8 +32,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     this.ctx.waitUntil(Promise.resolve(room.notify(n)).then(() => undefined, (e) => console.warn('notify the room', e)));
   }
 
-  api(text: string): string {
-    return this.core.handleText(text);
+  api(text: string, via: Via = 'direct'): string {
+    return this.core.handleText(text, via);
   }
 
   /**
@@ -94,7 +94,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     const storage = this.ctx.storage;
     switch (o.op) {
       case 'counts':
-        return { ok: true, counts: this.core.counts(), rev: this.core.rev(), newest: this.core.newestAt() };
+        return { ok: true, counts: this.core.counts(), rev: this.core.rev(), newest: this.core.newestAt(), usage: this.core.usage() };
       case 'bookmark': {
         const ms = typeof o.ms === 'number' ? o.ms : 3600_000;
         return { ok: true, now: await storage.getCurrentBookmark(), ago: await storage.getBookmarkForTime(Date.now() - ms) };
