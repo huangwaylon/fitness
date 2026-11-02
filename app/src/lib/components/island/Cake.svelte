@@ -42,7 +42,7 @@
 </script>
 
 {#if on}
-  <span class="party" bind:this={el} data-cake={out ? 'out' : 'lit'} aria-hidden="true" {@attach w.at({ x: CAKE[0], z: CAKE[1], h: CAKE_U + 20 })}>
+  <span class="party" bind:this={el} data-cake={out ? 'out' : 'lit'} aria-hidden="true" {@attach w.at({ x: CAKE[0], z: CAKE[1], h: CAKE_U + 20, m3: { key: 'deco/birthday-cake' } })}>
     <span class="cake"><OfficialArt key="deco/birthday-cake" size={su(CAKE_U)} /></span>
     {#if !out}
       <!-- the candles' flames, over the five candles of NH's cake -->

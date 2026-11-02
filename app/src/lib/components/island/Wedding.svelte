@@ -40,7 +40,7 @@
 </script>
 
 {#if arch}
-  <span class="arch" data-arch aria-hidden="true" {@attach w.at({ x: ARCH[0], z: ARCH[1], h: ARCH_U })}><OfficialArt key="deco/wedding-arch" size={su(ARCH_U)} /></span>
+  <span class="arch" data-arch aria-hidden="true" {@attach w.at({ x: ARCH[0], z: ARCH[1], h: ARCH_U, m3: { key: 'deco/wedding-arch' } })}><OfficialArt key="deco/wedding-arch" size={su(ARCH_U)} /></span>
 {/if}
 
 <style>

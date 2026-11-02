@@ -95,7 +95,7 @@
 </script>
 
 {#if out && spot}
-  <div class="node" aria-hidden="true" {@attach w.at({ x: spot[0], z: spot[1], h: 40 })}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: spot[0], z: spot[1], h: 40, m3: { key: 'deco/tape-deck', id: 'tape-deck' } })}>
   <span class="deck" class:playing data-stretch={playing ? 'on' : 'ready'} bind:this={el}>
     <span class="radio"><OfficialArt key="deco/tape-deck" size={su(UP)} /></span>
     {#if playing}

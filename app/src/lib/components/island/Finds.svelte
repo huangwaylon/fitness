@@ -448,8 +448,8 @@
 {#each visibleSpots as s (s.uid)}
   <!-- NH's dig spot: a dark, uneven star-shaped crack in the soil (jagged arms of unequal length, little side cracks),
        a lighter lip of earth under each, foreshortened -->
-  <div class="node" aria-hidden="true" {@attach w.at({ x: s.x, z: s.y, mode: 'flat', h: 12 })}>
-    <span class="item spot" data-find="fossil" data-uid={s.uid}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: s.x, z: s.y, mode: 'flat', h: 12, m3: { key: 'finds/dig-spot' } })}>
+    <span class="item spot" data-m3art data-find="fossil" data-uid={s.uid}>
       <svg viewBox="-10 -10 20 20">
         <path class="lip" d={CRACK} transform="translate(0 .8)" /><path class="crack" d={CRACK} />
       </svg>
@@ -457,19 +457,19 @@
   </div>
 {/each}
 {#each visibleMushrooms as m (m.uid)}
-  <div class="node" aria-hidden="true" {@attach w.at({ x: m.x, z: m.y, h: 14 })}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: m.x, z: m.y, h: 14, m3: { key: findArt(m.id), yaw: m.flip ? Math.PI : 0 } })}>
     <span class="item mush" class:flip={m.flip} data-find="mushroom" data-id={m.id} data-uid={m.uid}>
       <OfficialArt key={findArt(m.id)} size="calc(26 * var(--su))" />
     </span>
   </div>
 {/each}
 {#each presents as p (p.uid)}
-  <div class="node" aria-hidden="true" {@attach w.at({ x: p.x, z: p.y, h: p.size })}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: p.x, z: p.y, h: p.size, m3: { key: p.art } })}>
     <span class="item gift" data-find="present" data-uid={p.uid}><OfficialArt key={p.art} size={su(p.size)} eager /></span>
   </div>
 {/each}
 {#each shells as s (s.uid)}
-  <div class="node" aria-hidden="true" {@attach w.at({ x: s.x, z: s.y, h: 12 })}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: s.x, z: s.y, h: 12, m3: { key: findArt(s.id), yaw: (s.tilt * Math.PI) / 180 } })}>
     <span class="item shell" class:fresh={fresh(s.uid)} data-find="shell" data-id={s.id} data-uid={s.uid} style:--tilt="{s.tilt}deg">
       <OfficialArt key={findArt(s.id)} size="calc(32 * var(--su))" />
     </span>
@@ -477,7 +477,7 @@
 {/each}
 {#each fragments as f, k (f.uid)}
   <!-- NH's beach glimmer: a star fragment twinkles now and then (every 3–5 s, out of step) -->
-  <div class="node" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, h: 14 })}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, h: 14, m3: { key: findArt(f.id) } })}>
     <span class="item frag" data-find="fragment" data-id={f.id} data-uid={f.uid} style:--tw="{3 + ((k * 7) % 5) * 0.5}s" style:--twd="{-k * 1.3}s">
       <OfficialArt key={findArt(f.id)} size="calc(24 * var(--su))" />
       <svg class="twinkle" viewBox="0 0 24 24"><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>
@@ -486,7 +486,7 @@
 {/each}
 {#if bottle}
   <!-- at the water's edge, half in the foam: it rocks with the waves, a small ring of foam now and then -->
-  <div class="node" aria-hidden="true" {@attach w.at({ x: bottle.x, z: bottle.y, h: 12 })}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: bottle.x, z: bottle.y, h: 12, m3: { key: findArt('message-bottle'), yaw: 0.6 } })}>
     <span class="item bottle" data-find="bottle" data-uid={bottle.uid}>
       <i class="foam"></i>
       <span class="rock"><OfficialArt key={findArt('message-bottle')} size="calc(28 * var(--su))" /></span>

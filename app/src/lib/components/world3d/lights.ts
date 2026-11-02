@@ -12,7 +12,8 @@ import {
   ShaderMaterial, type Scene
 } from 'three';
 import { BEND_GLSL, bendPoint, bendU } from './bend.ts';
-import { waterU } from './water.ts';
+/** The halos' and pools' haze: the land's (engine.ts), so a far lamp still glows where the land shows. */
+export const lampFog = { near: { value: 1200 }, far: { value: 3000 } };
 
 export interface LampSpot {
   id: string;
@@ -100,7 +101,7 @@ function sprites(vert: string, frag: string, order: number): { mesh: Mesh; geo: 
   geo.instanceCount = 0;
   const mat = new ShaderMaterial({
     vertexShader: vert, fragmentShader: frag, transparent: true, depthWrite: false, depthTest: true, blending: AdditiveBlending,
-    uniforms: { ...bendU, uFogNear: waterU.uFogNear, uFogFar: waterU.uFogFar }
+    uniforms: { ...bendU, uFogNear: lampFog.near, uFogFar: lampFog.far }
   });
   const mesh = new Mesh(geo, mat);
   mesh.frustumCulled = false;

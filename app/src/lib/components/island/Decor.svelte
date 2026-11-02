@@ -76,7 +76,7 @@
 {#each items as p (p.id)}
   {#if p.id !== hidden}
     {@const l = look(p.item, p.f)}
-    <div class="spr" data-decor-node={p.id} {@attach w.at({ x: p.x, z: p.z, h: l.h, inv: true })}>
+    <div class="spr" data-decor-node={p.id} {@attach w.at({ x: p.x, z: p.z, h: l.h, inv: true, m3: { key: l.key, id: `d:${p.id}` } })}>
       <button type="button" class="deco" class:editing data-decor={p.id} data-item={p.item} data-x={p.x} data-z={p.z} data-f={p.f} data-sfx="self" aria-label={t(`decor.item.${p.item}`)}
         style={l.style} style:height="calc({l.h} * var(--u))" style:width="calc({l.wd} * var(--u))"
         onclick={(e) => tap(e, p.x)} onpointerdown={(e) => editing && onpick?.(p.id, e)}>

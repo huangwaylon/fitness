@@ -25,6 +25,7 @@
   import { onMount } from 'svelte';
   import { hitOf, hitSources, pick, type HitBox } from './hitbox.ts';
   import { echo3d } from './echo3d.ts';
+  import { theme } from '#lib/ui-state/theme.svelte.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -172,14 +173,14 @@
 </script>
 
 <!-- each a world node at its foot (the anchor: a 0 × 0 point there) -->
-<div class="node" aria-hidden="true" {@attach w.at({ x: ROCK.x, z: ROCK.y, h: ROCK.h })}>
+<div class="node" aria-hidden="true" {@attach w.at({ x: ROCK.x, z: ROCK.y, h: ROCK.h, m3: { key: findArt('rock'), id: 'rock' } })}>
   <span class="item rock" data-care="rock">
     <span bind:this={rockEl}><OfficialArt key={findArt('rock')} size={su(ROCK.h)} /></span>
   </span>
 </div>
 {#each shown as d (d.uid)}
-  <div class="node" aria-hidden="true" {@attach w.at({ x: d.x, z: d.y, h: 14 })}>
-    <span class="item weed" class:flip={d.flip} class:sprout={sprouts(d.uid)} data-care="weed" data-uid={d.uid}><i class="shade"></i>{@render tuft()}</span>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: d.x, z: d.y, h: 14, m3: { key: `finds/weed-${theme.season === 'autumn' ? 'fall' : theme.season}`, yaw: d.flip ? Math.PI : 0 } })}>
+    <span class="item weed" data-m3art class:flip={d.flip} class:sprout={sprouts(d.uid)} data-care="weed" data-uid={d.uid}><i class="shade"></i>{@render tuft()}</span>
   </div>
 {/each}
 {#each fx as f (f.n)}
