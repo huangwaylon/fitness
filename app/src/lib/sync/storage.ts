@@ -34,7 +34,10 @@ export const LIVE = {
   tent: 'island.tent',
   /** `[entry…]`: the island's layout, each id's winning op (store/layout.svelte.ts: objects, terrain chunks, a reset,
    *  the homes' looks). */
-  layout: 'island.layout'
+  layout: 'island.layout',
+  /** `{ [who]: at }`: the newest board post (its last change, ms) this phone had seen when it last opened the board, by
+   *  who I am (components/board/posts.svelte.ts: the 「！」 over the board). */
+  boardSeen: 'island.boardSeen'
 } as const;
 
 export const DEMO = {
@@ -55,7 +58,9 @@ export const DEMO = {
   /** localStorage: the demo's tent (store/tent.svelte.ts), both players' tabs' (kept for good, as the sheet). */
   tent: 'island-demo.tent',
   /** localStorage: the demo's layout (store/layout.svelte.ts), both players' tabs'. */
-  layout: 'island-demo.layout'
+  layout: 'island-demo.layout',
+  /** localStorage: the demo's board seen marks (components/board/posts.svelte.ts), by player. */
+  boardSeen: 'island-demo.boardSeen'
 } as const;
 
 /** This phone's own preferences (not data, never synced; shared by the live app and the demo). */
