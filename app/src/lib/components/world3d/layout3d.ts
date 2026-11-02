@@ -134,7 +134,7 @@ export function island(day: Day): { insts: Inst[]; standins: Standin[] } {
   const surface = baseHeight(POND.x, POND.z) - WATER_DROP + 0.25;
   for (const [i, [sx, sy, r]] of [[18, 5, 6], [-14, 11, 4.4], [-22, -6, 3.6]].entries()) {
     const x = POND.x + sx, z = POND.z - sy;
-    out.push({ id: `lily-${i}`, model: 'proc/lily-pad', x, z, lift: surface - groundHeight(x, z), scale: r / 3, yaw: i * 2.1 });
+    out.push({ id: `lily-${i}`, model: keyModel('fx/lily-pad')?.m ?? 'proc/lily-pad', x, z, lift: surface - groundHeight(x, z), scale: r / 0.97, yaw: i * 2.1 });
   }
   {
     const x = POND.x + 19.5, z = POND.z - 3;
