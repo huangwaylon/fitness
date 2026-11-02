@@ -3,8 +3,12 @@
 // its state (walking, standing, sitting on a seat, dozing) and its moments (a hop, a high five, a surprise, a sting),
 // its face from its emote. A villager whose model hasn't loaded, or who has none (NH's 2.0 newcomers), is drawn as its
 // card meanwhile (Island3D: `cards`). Still, a villager holds its pose: its bones are posed only while something moves
-// (it walks, it acts, the camera moves) and for its blinks a few times a second, so the island idles as it did.
-import type { Object3D } from 'three';
+// (it walks, it acts, the camera moves); its blinks are a texture's offset, so the island idles as it did. What it
+// wears (a birthday hat, the party glasses: assets.json `joint` models, their origin NH's head joint) rides its head bone.
+import { MeshLambertMaterial, Color, type Mesh, type MeshStandardMaterial, type Object3D } from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import { keyModel, MODELS } from './models3d.ts';
 import { createVillager, VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
 import { url3d } from '../villager3d/manifest.ts';
 import { seatOf, type Action, type State } from '../villager3d/poses.ts';
@@ -34,6 +38,8 @@ export interface VSpec {
   emote: string | null;
   stung: boolean;
   shown: boolean;
+  /** What it wears on its head (an asset key: deco/birthday-hat-pink, accessories/party-glasses), or null. */
+  hat?: string | null;
   /** In the way of the board's focus (between the camera and the board): faded out. */
   away?: boolean;
 }
@@ -71,8 +77,6 @@ const turn = (a: number, b: number, dt: number, k: number) => {
   while (d < -Math.PI) d += Math.PI * 2;
   return a + d * Math.min(1, (k * dt) / 1000);
 };
-/** How often a still villager is posed (its blinks: ms). */
-const STILL_MS = 120;
 /** A fade out of the board's way, or back (ms). */
 const FADE_MS = 220;
 
@@ -86,9 +90,10 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     z: number;
     yaw: number;
     motionN: number;
-    lastStep: number;
     busyUntil: number;
     alpha: number;
+    posing: boolean;
+    hat: { key: string; obj: Object3D | null } | null;
   }
   const ws = new Map<string, W>();
   let lastT = 0, liftL = 0.32, disposed = false;
@@ -102,7 +107,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       w = undefined;
     }
     if (!w) {
-      const nw: W = { id: s.id, v: null, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, lastStep: 0, busyUntil: 0, alpha: 1 };
+      const nw: W = { id: s.id, v: null, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, alpha: 1, posing: true, hat: null };
       ws.set(s.slot, nw);
       const url = url3d(s.id, dir);
       if (url) {
@@ -121,6 +126,48 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     return w;
   }
 
+  const loader = new GLTFLoader();
+  loader.setMeshoptDecoder(MeshoptDecoder);
+  const wearBase = new URL('room/world3d/', new URL(document.baseURI)).href;
+  /** A worn model (once per key; each villager its own copy), its materials the villagers' Lambert. */
+  const worn = new Map<string, Promise<Object3D | null>>();
+  const wearOf = (key: string): Promise<Object3D | null> => {
+    let p = worn.get(key);
+    if (!p) {
+      const a = keyModel(key);
+      p = !a ? Promise.resolve(null) : loader.loadAsync(`${wearBase}${a.m}.glb?v=${MODELS[a.m]?.v ?? 0}`).then((g) => {
+        g.scene.traverse((n) => {
+          const m = n as Mesh;
+          if (!m.isMesh) return;
+          const s0 = m.material as MeshStandardMaterial;
+          m.material = new MeshLambertMaterial({ map: s0.map, color: s0.color, alphaTest: s0.alphaTest, side: s0.side, emissive: new Color(0xffffff), emissiveMap: s0.map, emissiveIntensity: liftL });
+          m.castShadow = false;
+          m.frustumCulled = false;
+        });
+        // (in the head bone's space, model units: the villager's own scale already on it)
+        g.scene.scale.setScalar(a.s / VILLAGER_S);
+        return g.scene;
+      }, () => null);
+      worn.set(key, p);
+    }
+    return p;
+  };
+  function wear(w: W, key: string | null) {
+    if ((w.hat?.key ?? null) === key) return;
+    w.hat?.obj?.removeFromParent();
+    w.hat = key ? { key, obj: null } : null;
+    if (!key) return kick();
+    const h = w.hat!;
+    void wearOf(key).then((src) => {
+      const head = w.v?.head();
+      if (!src || !head || w.hat !== h || disposed) return;
+      h.obj = src.clone();
+      head.add(h.obj);
+      w.v!.lift(liftL);
+      kick();
+    });
+  }
+
   function frame(t: number, specs: readonly VSpec[], active: boolean) {
     const dt = lastT ? Math.min(100, t - lastT) : 16;
     lastT = t;
@@ -135,6 +182,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       }
       v.group.visible = s.shown;
       if (!s.shown) continue;
+      wear(w, s.hat ?? null);
       // faded out of the board's way (and back), over FADE_MS
       const aim = s.away ? 0 : 1;
       if (w.alpha !== aim) {
@@ -168,11 +216,13 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       v.group.rotation.y = w.yaw;
       const busy = s.walking || t < w.busyUntil || Math.abs(dx) + Math.abs(dz) > 0.01;
       if (busy) moving = true;
-      // posed while anything moves; else a few times a second (its blinks), held between
-      if (active || busy || t - w.lastStep >= STILL_MS) {
-        w.lastStep = t;
+      // posed (its breathing, its moment, its walk) while anything moves; still, it holds its pose and only its face
+      // changes (a blink: a texture's offset and one redraw), so the island idles as it did
+      if (active || busy || w.posing) {
         v.step(t, s.walking ? moved : 0, s.walking ? (moved / Math.max(1, dt)) * 1000 : 0);
-      }
+        // (one more pose after it stops: the last frame's, settled)
+        w.posing = active || busy;
+      } else v.blink(t);
     }
     for (const [slot, w] of ws) if (!seen.has(slot)) {
       w.off();

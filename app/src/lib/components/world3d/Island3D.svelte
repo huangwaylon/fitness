@@ -53,6 +53,8 @@
     seat: string | null;
     stung: boolean;
     rep: boolean;
+    /** Its hat (an asset key: a birthday's), or null. */
+    hat?: string | null;
   }
 
   interface Props {
@@ -179,7 +181,7 @@
       specs.push({
         slot: c.id, id: look.id, x, z, y: feetOf(x, z), walking: a.walking, face: a.face, side: c.side, asleep: a.asleep,
         seat: c.seat ? seatTop(c.seat) : null, lift: c.rep ? pullLift(t) : 0, motion: a.motion, motionN: a.motionN, emote: a.emote, stung: c.stung, shown: c.shown,
-        away: inFocusWay(x, z)
+        away: inFocusWay(x, z), hat: c.hat
       });
     }
     const r = vil3?.frame(t, specs, active) ?? { cards: new Set<string>(specs.map((s) => s.slot)), moving: false };

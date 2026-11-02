@@ -1023,7 +1023,7 @@
   const pieces3 = $derived(piecesOn(today, jst(clock).hour, islandSeed(), ARCH));
   const cast3 = () => VILLAGERS.map((id) => ({
     id, person: sides[id].person.person, villager: sides[id].person.villager, side: sides[id].side,
-    shown: onIsland(id) && !inTent(id), seated: !!seated[id], seat: seated[id], stung: stung[id], rep: repping[id]
+    shown: onIsland(id) && !inTent(id), seated: !!seated[id], seat: seated[id], stung: stung[id], rep: repping[id], hat: live ? hatOf(id, sides[id].person) : null
   }));
 </script>
 

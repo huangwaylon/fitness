@@ -33,6 +33,8 @@ export interface Villager3D {
   face(f: Face | null): void;
   /** One frame at t (ms): `moved` the u walked since the last frame, `speed` (u/s) the walk's. True while it moves. */
   step(t: number, moved?: number, speed?: number): boolean;
+  /** Only its face at t (a blink, an expression: a texture's offset, no bones): true when it changed (a redraw). */
+  blink(t: number): boolean;
   /** The self-light (the island's time of day: engine.ts TOD lift). */
   lift(l: number): void;
   /** Its opacity (the board's focus fades one standing between the camera and the board): 1 drawn as ever. */
@@ -161,12 +163,27 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
   let cur: State = 'idle', prev: State = 'idle', since = -1e9, faceSet: Face | null = null;
   let act: { a: Action; t0: number } | null = null, phase = 0, lastT = 0, speed = 0, held: Pose | null = null;
   const o = { phase: 0, speed: 0, body: rig.body, seed };
-  const setCell = (f: (typeof faces)[number], i: number) => {
-    if (f.cell === i) return;
+  const setCell = (f: (typeof faces)[number], i: number): boolean => {
+    if (f.cell === i) return false;
     f.cell = i;
     const c = cellTransform(i, f.atlas[0], f.atlas[1], f.base);
     f.tex.offset.set(c.ox, c.oy);
     f.tex.repeat.set(c.sx, c.sy);
+    return true;
+  };
+  /** The face at t: its eye's and mouth's cells, a swapped face mesh, the sting's lump. */
+  const showFace = (t: number): boolean => {
+    const face = faceOf();
+    const eye = eyeAt(face, t, seed), mouth = mouthAt(face, t);
+    let changed = false;
+    for (const f of faces) changed = setCell(f, f.m.name === 'mEye' ? eye : mouth) || changed;
+    const was = swapShown;
+    showSwap(face);
+    if (lump && lump.visible !== (face === 'sting')) {
+      lump.visible = face === 'sting';
+      changed = true;
+    }
+    return changed || was !== swapShown;
   };
   const faceOf = (): Face => {
     if (act?.a === 'sting') return 'sting';
@@ -243,12 +260,13 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       inner.position.z = p.pitch ? Math.sin(p.pitch) * -6.5 * VILLAGER_S : 0;
       blob.scale.setScalar(p.pitch ? 30 : 17 * (1 - Math.min(0.4, p.y * 0.12)));
       blobMat.opacity = p.pitch ? 0.12 : 0.22;
-      const face = faceOf();
-      const eye = eyeAt(face, t, seed), mouth = mouthAt(face, t);
-      for (const f of faces) setCell(f, f.m.name === 'mEye' ? eye : mouth);
-      showSwap(face);
-      if (lump) lump.visible = face === 'sting';
+      showFace(t);
       return true;
+    },
+    blink(t) {
+      lastT = t;
+      if (act && t - act.t0 >= ACTION_MS[act.a]) act = null;
+      return showFace(t);
     },
     dispose() {
       group.removeFromParent();
