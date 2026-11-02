@@ -18,7 +18,7 @@ const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,
 async function open(page: Page, q = '') {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=2026-11-04T12:00${q}`);
-  await expect(ribbon(page)).toBeVisible();
+  await expect(ribbon(page)).toBeVisible({ timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
   await is3d(page); // (the 3D island up and its canopies where they'll stay: a while in software GL)
   await page.waitForTimeout(2600); // the opening beats are over
 }
