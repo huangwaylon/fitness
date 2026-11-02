@@ -1,7 +1,7 @@
 # The island's layout (customisable outdoors, homes and interiors)
 
-Status: **phases 1 (schema, ops, default migration, nav, validation, the store) and 2 (the 3D ground from the grid,
-the objects from the layout, the long island) landed**; next: the desktop editor (3), the homes and their interiors
+Status: **phases 1 (schema, ops, default migration, nav, validation, the store), 2 (the 3D ground from the grid, the
+objects from the layout, the long island) and 3 (the desktop editor) landed**; next: the homes and their interiors
 (4), phone editing (5). This file is the contract
 between the layout work (`app/src/lib/layout/`, `store/layout.svelte.ts`, `world3d/terrain.ts`, `world3d/objects.ts`,
 the editor, the homes) and the 3D integration (the scene, the camera, porting the island's features: the lead's
@@ -180,6 +180,35 @@ placeObjects(layout, day): { insts: Inst[]; standins: Standin[] }   // layout3d.
   day = { season, foliage, month, swaps?: swapsOn(date), pieces?: piecesOn(date, hour, seed), fruit? }
 extentOf(layout): { grid, land, shore, home }   // model.ts: the island's box, the front shoreline's z, ウェイ's door
 ```
+
+## The editor (phase 3)
+
+`/fitness/editor/` (`routes/editor/+page.svelte`, `components/editor/`: `Editor.svelte`, `plan.ts` the canvas,
+`edits.ts` the edits, `Preview3D.svelte`): unlinked, noindex, the members' only (the browser paired with the A or B key
+at `/fitness/pair`; the guest's key gets 「ウェイと うめだけが つかえます」, and the record refuses the guest's outdoor ops
+anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the phone).
+
+- **The plan:** the layout top-down, the back of the island at the top (as the phones see it): tiles in NH's map
+  colours (the higher a tier, the lighter), the cliffs' edges dark, a fall white, the objects by their icons at their
+  spots (a default piece where it stands today), the homes labelled with their doors, the named spots as pins; what's
+  wrong tinted on its tiles.
+- **The mouse:** えらぶ (V) picks up a piece and drags it on the grid (a group, if it's selected; shift adds to the
+  selection, a drag on empty ground draws a box); ぬる (B) paints a brush (くさ, すな, つち, いし, レンガ, いた, かわ, いけ,
+  うみ; sizes 1–3); がけ (C) raises or lowers the tiles a tier; おく places from the palette (each kind's icon; the
+  island's one-offs greyed while they stand) with its ghost green or red. The wheel or R turns what's held (a drag,
+  a placement); Delete takes the selection away (never a goal tree, a home, a named spot or a one-off).
+- **The keyboard:** ⌘Z / ⌘⇧Z (undo reverts one action over the island as it is now: the partner's changes since stay),
+  ⌘C / ⌘V (paste at the pointer), ⌘A, the arrows nudge, G the grid, the wheel zooms (⌘-wheel while placing), space and
+  drag (or a right / middle drag) pans, 0 the whole island, 1–3 the brush.
+- **Live:** each finished action (a drop, a stroke, a turn) goes out as layout ops at once (the store: the record
+  and the relay), so a phone holds it as it's made; a drag streams the piece's spot as presence (`drag`, `sc: 'o'`,
+  ~10 a second). The checks (validate.ts) run a moment after every change; a click on one selects its pieces and
+  centres its tiles. The 3D preview beside the plan is the island's own ground and models.
+- **Files:** JSON に かきだす / JSON を よみこむ (model.ts `toJson` / `fromJson`; an import is one action: undo takes it
+  back), はじめの しまに もどす behind a confirm (the reset op: every object and chunk op before it void, the homes' looks
+  kept).
+- **The e2e** (`e2e/editor.spec.ts`): a move reaches the other tab's layout live and stays across a reload; a stroke
+  and its undo / redo; R; Delete refusing a goal tree; placing (refused on the river); reset; the guest's door.
 
 ## What the 3D integration must change (the lead's files)
 
