@@ -39,6 +39,24 @@ the rest read the 3D island through `window.__world3d` (e2e/island.ts: `is3d`, `
    streak is skipped. The sun and the moon sit in the same sliver. Either the camera leaves more sky at night (or on a
    short screen), or the 3D island draws the streaks in its own sky (behind the trees, so they may cross them).
 
+## Open: CI's software GL (SwiftShader), the engine (the lead): the cutover's blocker
+
+CI's e2e draw in software (SwiftShader, one GPU process for every tab of the browser). Locally with
+`E2E_SWIFTSHADER=1 E2E_ISLAND=3d`: 108 failed at 6 workers, 38 at 3 (CI's), 17 at 1; the gating 2D suite passes.
+
+E1. **The 3D island never stops drawing.** Idle, even `?water=0&critter=none&visitor=none`, it draws 30 frames a
+   second on a GPU and ~14 in software (the water's 30 a second; the season's falling leaves). A second tab in the same
+   browser then opens 5–8× slower (its ribbon 6.5 s, its 3D island 23–36 s against 5 s): the two-phone specs
+   (shared-world, guest, decor, board, sync-harness) run out, and input lags (health.spec's drag: `mouse.move` out of
+   time). Wanted: on a software renderer (Island3D's swiftshader/llvmpipe check) the ambient motion off or a few frames
+   a second, and an idle island drawing nothing.
+E2. **Covered, it still draws**: with けんこう's popup over the island, ~14 frames a second in software. Wanted: no
+   frames while a sheet covers it (`enabled()` false), as the 2D island pauses.
+
+The specs meanwhile wait for the 3D island before they act (e2e/island.ts `is3d`), watch what comes and goes as it
+opens (`watchFor`/`sawIt`), and fast-forward the page's clock instead of running it frame by frame
+(`page.clock.fastForward`: under `runFor` each faked frame is drawn, a minute of them in software takes minutes).
+
 ## Hooks wanted (`window.__world3d`)
 
 - `lamps(): string[]`, the ids of the lamps lit now (things.ts `lamps()` with the level > 0). fixed-decor.spec checks a

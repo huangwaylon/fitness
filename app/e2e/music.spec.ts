@@ -2,6 +2,7 @@
 // its track plays instead of the hour's; the wasps' chase and sting cut in over the island's music; a tap on K.K. plays
 // one of his songs. Dates are mocked with ?date= (Tokyo). Checked by the files the engine fetches.
 import { expect, test, type Page } from '@playwright/test';
+import { is3d } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -17,6 +18,7 @@ async function open(page: Page, q: string): Promise<string[]> {
   });
   await page.goto(`?demo&date=${q}`);
   await expect(ribbon(page)).toBeVisible();
+  await is3d(page); // (the 3D island up: a while in software GL)
   return audio;
 }
 
@@ -60,7 +62,7 @@ test('the wasps: Chased by Bees cuts in as they come out, Stung by Bees after th
   await expect(page.locator('[data-stung]')).toHaveCount(1, { timeout: 3000 }); // no tap: stung
   await expect.poll(() => audio).toContain('music/bee-stung.m4a');
   // the hour's file was kept for the hand back: not fetched again (13 s of the page's clock, run on at once)
-  await page.clock.runFor(13_000);
+  await page.clock.fastForward(13_000); // (its timers, not its every frame: the 3D island would draw each, in software on CI)
   expect(audio.filter((p) => p === 'music/hour-12.m4a')).toHaveLength(1);
 });
 
