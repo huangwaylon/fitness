@@ -281,7 +281,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     const v: number[] = [];
     for (let i = 0; i <= ROOM; i++) {
       const p = -HALF + i * TILE;
-      v.push(p, 0.08, -HALF, p, 0.08, HALF, -HALF, 0.08, p, HALF, 0.08, p);
+      v.push(p, 0.4, -HALF, p, 0.4, HALF, -HALF, 0.4, p, HALF, 0.4, p);
     }
     const g = new BufferGeometry();
     g.setAttribute('position', new Float32BufferAttribute(v, 3));
@@ -415,7 +415,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   const heldBy = new Map<string, Held>();
   const heldMat = new LineBasicMaterial({ color: 0xffd84d, transparent: true, opacity: 0.95, depthWrite: false });
   const rect = (w: number, d: number) => {
-    const hw = (w * TILE) / 2 - 0.4, hd = (d * TILE) / 2 - 0.4, y = 0.15;
+    const hw = (w * TILE) / 2 - 0.4, hd = (d * TILE) / 2 - 0.4, y = 0.6;
     return new BufferGeometry().setAttribute('position', new Float32BufferAttribute([
       -hw, y, -hd, hw, y, -hd, hw, y, -hd, hw, y, hd, hw, y, hd, -hw, y, hd, -hw, y, hd, -hw, y, -hd
     ], 3));
@@ -459,7 +459,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
 
   // ---- the ghost: what's held, lifted, its footprint green or red ----
   const ghostRoot = new Group();
-  const footMat = new MeshBasicMaterial({ color: 0x78dc78, transparent: true, opacity: 0.45, depthWrite: false, side: DoubleSide });
+  // (over a rug: rugs sit a little over the floor, drawn nearer by their polygon offset)
+  const footMat = new MeshBasicMaterial({ color: 0x78dc78, transparent: true, opacity: 0.5, depthWrite: false, side: DoubleSide, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 });
   const foot = new Mesh(new PlaneGeometry(1, 1), footMat);
   foot.rotation.x = -Math.PI / 2;
   foot.renderOrder = 3;
@@ -482,9 +483,9 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     const [w, d] = footprint(g.item, g.f);
     const [cx, cz] = centreOf(g);
     foot.scale.set(w * TILE - 0.8, d * TILE - 0.8, 1);
-    foot.position.set(cx, 0.12, cz);
+    foot.position.set(cx, 0.5, cz);
     footMat.color.set(g.ok ? 0x78dc78 : 0xf05a50);
-    const hw = (w * TILE) / 2 - 0.4, hd = (d * TILE) / 2 - 0.4, y = 0.14;
+    const hw = (w * TILE) / 2 - 0.4, hd = (d * TILE) / 2 - 0.4, y = 0.6;
     ring.geometry.dispose();
     ring.geometry = new BufferGeometry().setAttribute('position', new Float32BufferAttribute([
       -hw, y, -hd, hw, y, -hd, hw, y, -hd, hw, y, hd, hw, y, hd, -hw, y, hd, -hw, y, hd, -hw, y, -hd
