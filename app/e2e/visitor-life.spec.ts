@@ -4,7 +4,7 @@
 // own way), and the partner comes over to say hello to a visitor near home (never across the island to centre stage).
 import { expect, test, type Page } from '@playwright/test';
 import { BUILDINGS } from '../src/lib/components/island/world.ts';
-import { is3d } from './island.ts';
+import { is3d, sawIt, watchFor } from './island.ts';
 
 /** The campsite's door, where the visitors come from and go back to (world x, z). */
 const CAMP = ((b) => [b.x, b.z - 16] as const)(BUILDINGS.find((b) => b.id === 'campsite')!);
@@ -105,9 +105,10 @@ test('arriving: from the campsite on foot along the paths (?arrive); leaving to 
   await page.clock.install({ time: new Date('2026-11-01T08:00:00+09:00') });
   await page.goto('?demo&date=2026-11-01T08:00&critter=none&arrive&leave=30000');
   const v = page.locator('[data-visitor="daisy-mae"]');
-  /** Runs the clock on until `ok` holds (at most `s` seconds of it). */
+  /** Runs the clock on until `ok` holds (at most `s` seconds of it): a second at a time, its timers fired but not its
+   *  every frame (fastForward: the walks are timed, and the 3D island would draw each of 60 frames, in software on CI) */
   const until = async (ok: () => Promise<boolean>, s: number) => {
-    for (let i = 0; i < s && !(await ok()); i++) await page.clock.runFor(1000);
+    for (let i = 0; i < s && !(await ok()); i++) await page.clock.fastForward(1000);
     expect(await ok()).toBe(true);
   };
   await expect(v).toHaveAttribute('data-phase', 'arrive');
@@ -115,15 +116,18 @@ test('arriving: from the campsite on foot along the paths (?arrive); leaving to 
   // from the campsite, out of sight from まえ: she comes into view on the lawn as she nears her spot (the 3D island
   // shows the whole island: she sets off from the campsite's door in view)
   const three = await is3d(page);
-  if (three) {
-    const door = await page.evaluate(([x, z]) => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x, z), CAMP);
-    const feet = (await v.boundingBox())!;
-    expect(Math.hypot(feet.x - door[0], feet.y - door[1])).toBeLessThan(60);
-  } else {
+  const door = three ? await page.evaluate(([x, z]) => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x, z), CAMP) : null;
+  const start = (await v.boundingBox())!;
+  if (!three) {
     await expect(v.locator('.art')).toBeHidden();
     await until(() => v.locator('.art').isVisible(), 26);
   }
   await until(async () => (await v.getAttribute('data-phase')) === 'here', 26);
+  if (door) {
+    // she set off from the campsite (its way out, in front of the door): nearer it than half her spot on the lawn is
+    const spot = (await v.boundingBox())!, off = (b: { x: number; y: number }) => Math.hypot(b.x - door[0], b.y - door[1]);
+    expect(off(start)).toBeLessThan(off(spot) / 2);
+  }
   // the visit ends 30 s after it began, however long the walk from the campsite took (the route's length moves with
   // the scenery the walk goes round)
   await until(async () => (await v.getAttribute('data-phase')) === 'leave', 32);
@@ -134,12 +138,15 @@ test('arriving: from the campsite on foot along the paths (?arrive); leaving to 
 
 for (const [id, way] of [['wisp', 'float'], ['celeste', 'fly'], ['jack', 'spook'], ['kk-slider', 'appear']] as const)
   test(`${id} arrives and leaves by ${way}`, async ({ page }) => {
+    // (each phase watched from the start: on a slow GPU the island may be up only once one has gone by)
+    const phase = (p: string) => `[data-visitor="${id}"][data-phase="${p}"]`;
+    await watchFor(page, ['arrive', 'here', 'leave'].map(phase));
     await page.goto(`?demo&date=2026-11-04T21:00&visitor=${id}&critter=none&arrive&leave=4000`);
     const v = page.locator(`[data-visitor="${id}"]`);
     await expect(v).toHaveAttribute('data-way', way);
-    await expect(v).toHaveAttribute('data-phase', 'arrive');
-    await expect(v).toHaveAttribute('data-phase', 'here', { timeout: 4000 });
-    await expect(v).toHaveAttribute('data-phase', 'leave', { timeout: 6000 });
+    expect(await sawIt(page, phase('arrive'))).toBe(true);
+    await expect.poll(() => sawIt(page, phase('here')), { timeout: 4000 }).toBe(true);
+    await expect.poll(() => sawIt(page, phase('leave')), { timeout: 6000 }).toBe(true);
     await expect(page.locator('[data-visitor]')).toHaveCount(0, { timeout: 4000 });
   });
 
@@ -162,6 +169,7 @@ test('the partner comes over to say hello to Daisy Mae on the lawn: they face ea
 test('nobody crosses the island to say hello at centre stage (the partner keeps within 600u)', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&visitor=jingle&critter=none&meet');
   await expect(ribbon(page)).toBeVisible();
+  await is3d(page); // (the 3D island up first: on a slow GPU it takes a while)
   await expect(page.locator('[data-visitor="jingle"]')).toHaveAttribute('data-phase', 'here', { timeout: 3000 });
   await page.waitForTimeout(6000);
   // still on the front lawn (an idle wander may take it about there), nowhere near the campsite
