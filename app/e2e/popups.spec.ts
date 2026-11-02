@@ -71,6 +71,8 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     test('a shell picked up', async ({ page }) => {
       await open(page, 'date=2026-11-04T12:00&critter=none');
       const s = await centre(page, '[data-find="shell"]');
+      // a villager wandering the beach may stand over it for a moment (the tap would be theirs): tap once it's clear
+      await expect.poll(() => page.evaluate(({ x, y }) => !document.elementFromPoint(x, y)?.closest('[data-actor]'), s), { timeout: 10_000 }).toBe(true);
       await page.mouse.click(s.x, s.y);
       await expect(page.locator(plate)).toBeVisible({ timeout: 4000 });
       await expectClear(page, plate);
