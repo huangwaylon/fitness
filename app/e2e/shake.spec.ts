@@ -5,6 +5,7 @@
 // forces the next shake's drop. Nothing changes ベル.
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
+import { is3d } from './island.ts';
 import { swollenEye, type HeadBox } from '../src/lib/villagers/heads.ts';
 import { LOOKS_RIGHT } from '../src/lib/villagers/facing.ts';
 import { ROSTER, type RosterId } from '../src/lib/villagers/roster.ts';
@@ -18,6 +19,7 @@ async function open(page: Page, q = '') {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=2026-11-04T12:00${q}`);
   await expect(ribbon(page)).toBeVisible();
+  await is3d(page); // (the 3D island up and its canopies where they'll stay: a while in software GL)
   await page.waitForTimeout(2600); // the opening beats are over
 }
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
@@ -172,10 +174,11 @@ test('at night a spider can dangle instead; left alone it climbs back up into th
   await page.clock.resume();
   await page.goto('?demo&date=2026-11-04T22:00&shake=spider');
   await expect(ribbon(page)).toBeVisible();
+  await is3d(page);
   await page.waitForTimeout(2600);
   await shake(page);
   await expect(page.locator('[data-dangle="spider"]')).toBeAttached();
-  await page.clock.runFor(11_500); // left alone (the page's clock, run on at once)
+  await page.clock.fastForward(11_500); // left alone (the page's clock, run on at once: its timers, not its every frame)
   await expect(page.locator('[data-dangle]')).toHaveCount(0);
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
 });

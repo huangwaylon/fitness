@@ -231,7 +231,7 @@ test('a balloon floats by on its own in the daytime (the first in 30–60 s), in
   await page.clock.install();
   await open(page, '');
   await expect(page.locator('.fly')).toHaveCount(0);
-  await page.clock.runFor(61_000);
+  await page.clock.fastForward(61_000); // (its timers, not its every frame: the 3D island would draw each, in software on CI)
   const fly = page.locator('.fly');
   await expect(fly).toBeAttached();
   const box = await page.evaluate(() => {
