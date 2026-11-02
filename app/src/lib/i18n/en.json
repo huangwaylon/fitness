@@ -555,5 +555,10 @@
   "tent.colour.Pink": "pink",
   "tent.colour.Blue": "blue",
   "tent.colour.Aqua": "aqua",
-  "tent.colour.Purple": "purple"
+  "tent.colour.Purple": "purple",
+  "guest.note": "You're visiting as a guest. Fish, catch bugs and have fun on their island!",
+  "guest.jarNote": "The jar is theirs: the two of them pick the rewards.",
+  "zukan.guestName": "{name} (guest)",
+  "guest.arrived": "{name} is visiting!",
+  "guest.welcome": "Welcome, guest! Make yourself at home on their island."
 }

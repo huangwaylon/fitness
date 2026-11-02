@@ -3,7 +3,8 @@
 // Activity rows start 8 weeks before this one (`?demo&weeks=N`: N; the economy's first week follows the data), with a
 // day now and then whose Watch rows never arrived (steps only), so けんこう has a 記録なし day. Deterministic per date
 // (a seeded RNG), so a reload shows the same history.
-import type { PersonId, ShopItemId } from '#lib/types.ts';
+import type { PersonId, ShopItemId, Who } from '#lib/types.ts';
+import { guestRows } from '#lib/contract/guest.ts';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import { addDays, jstMs, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import { provisionalMs } from '#lib/model/state.ts';
@@ -131,7 +132,9 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
 }
 
 /** A snapshot cache for the demo store (me = A, or B with `?demo&as=B`). */
-export function demoCache(now: number, me: PersonId = 'A', weeks = DEMO_WEEKS_BACK): SnapshotCache {
-  const rows = demoRows(now, Math.max(1, Math.min(260, Math.round(weeks))));
+export function demoCache(now: number, me: Who = 'A', weeks = DEMO_WEEKS_BACK): SnapshotCache {
+  const all = demoRows(now, Math.max(1, Math.min(260, Math.round(weeks))));
+  // the guest's (`?demo&as=G`): what the record would send its key, without the からだ rows (contract/guest.ts)
+  const rows = me === 'G' ? guestRows(all) : all;
   return { v: 1, me, rows, since: maxAt(rows), skewMs: 0, fetchedAt: now, demo: true };
 }

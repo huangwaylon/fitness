@@ -14,26 +14,26 @@
 
   let { scene }: { scene?: HTMLElement } = $props();
 
-  type Id = 'mine' | 'partner';
+  type Id = 'mine' | 'partner' | 'third';
   interface One { n: number; text: string; name: string; colour: string; x: number; y: number; tail: number; side: Side; placed: boolean; follow: boolean }
-  let shown = $state<Record<Id, One | null>>({ mine: null, partner: null });
-  const els = $state<Record<Id, HTMLElement | undefined>>({ mine: undefined, partner: undefined });
+  let shown = $state<Record<Id, One | null>>({ mine: null, partner: null, third: null });
+  const els = $state<Record<Id, HTMLElement | undefined>>({ mine: undefined, partner: undefined, third: undefined });
   let layer = $state<HTMLElement>();
   let seq = 0;
-  const speakers: Record<Id, Element | undefined> = { mine: undefined, partner: undefined };
-  const seen: Record<Id, DOMRect | undefined> = { mine: undefined, partner: undefined };
-  const timers: Record<Id, { end?: ReturnType<typeof setTimeout>; watch?: ReturnType<typeof setInterval> }> = { mine: {}, partner: {} };
+  const speakers: Record<Id, Element | undefined> = { mine: undefined, partner: undefined, third: undefined };
+  const seen: Record<Id, DOMRect | undefined> = { mine: undefined, partner: undefined, third: undefined };
+  const timers: Record<Id, { end?: ReturnType<typeof setTimeout>; watch?: ReturnType<typeof setInterval> }> = { mine: {}, partner: {}, third: {} };
 
   function halt(id: Id) {
     clearTimeout(timers[id].end);
     clearInterval(timers[id].watch);
     timers[id] = {};
   }
-  $effect(() => () => (halt('mine'), halt('partner')));
+  $effect(() => () => (halt('mine'), halt('partner'), halt('third')));
 
   /** Close a villager's balloon (or both). */
   export function hush(id?: Id) {
-    for (const i of id ? [id] : (['mine', 'partner'] as const)) {
+    for (const i of id ? [id] : (['mine', 'partner', 'third'] as const)) {
       halt(i);
       shown[i] = null;
     }
@@ -57,7 +57,7 @@
   export function hold(on: boolean) {
     if (on === held) return;
     held = on;
-    if (!on) for (const id of ['mine', 'partner'] as const) if (shown[id]?.placed && !at(id, shown[id]!.n)) hush(id);
+    if (!on) for (const id of ['mine', 'partner', 'third'] as const) if (shown[id]?.placed && !at(id, shown[id]!.n)) hush(id);
   }
 
   const boxOf = (r: DOMRect, pad = 0): Box => ({ x0: r.left - pad, x1: r.right + pad, y0: r.top - pad, y1: r.bottom + pad });
@@ -102,7 +102,7 @@
 </script>
 
 <div class="says" class:held bind:this={layer}>
-  {#each ['mine', 'partner'] as const as id (id)}
+  {#each ['mine', 'partner', 'third'] as const as id (id)}
     {@const s = shown[id]}
     {#if s}
       {#key s.n}

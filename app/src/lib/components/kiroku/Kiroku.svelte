@@ -23,6 +23,7 @@
   import { tallyTotals } from '#lib/model/tally.ts';
   import Avatar from '../characters/Avatar.svelte';
   import { parseKcalInput, parseKgInput, parseStepsInput } from './fmt.ts';
+  import { isGuest } from '#lib/ui-state/viewer.ts';
   import { t, formatNum } from '#lib/i18n/index.ts';
 
   type Screen =
@@ -55,6 +56,8 @@
   const zNames = $derived<Record<Who, string>>({ ...names, G: view?.guest.villagerName ?? 'G' });
   const zVillagers = $derived<Record<Who, string | null>>({ ...villagers, G: view?.guest.villager ?? null });
   const top = $derived(stack.at(-1) ?? null);
+  /** The guest's phone: the goals read-only, no weight goal (docs/design.md "The guest"). */
+  const guest = $derived(isGuest(view));
   /** Whose goals the 目標 card shows (null: mine). */
   let goalPick = $state<PersonId | null>(null);
   const goalP = $derived<PersonId>(goalPick ?? me);
@@ -127,7 +130,7 @@
         <h2 class="sec">{t('panel.bells')}</h2>
         <BellsLog ledger={money} {order} {names} {villagers} onday={(date) => go({ k: 'day', date })} />
       {/if}
-      <GoalCard person={goalP} {order} {names} {villagers} moveGoal={view.people[goalP].moveGoal} stepsGoal={view.people[goalP].stepsGoal} goalWeight={m.state.prefs[goalP].goalWeight ?? null}
+      <GoalCard person={goalP} {order} {names} {villagers} moveGoal={view.people[goalP].moveGoal} stepsGoal={view.people[goalP].stepsGoal} goalWeight={guest ? null : (m.state.prefs[goalP].goalWeight ?? null)} readonly={guest}
         onperson={(p) => (goalPick = p)} onmove={() => go({ k: 'moveGoal', p: goalP })} onsteps={() => go({ k: 'stepsGoal', p: goalP })} onweight={() => go({ k: 'goal', p: goalP })} />
       <!-- the shared ずかん: what either of us has caught, dug up or picked up on the island -->
       <h2 class="sec" data-sec="zukan">{t('zukan.title')}</h2>
@@ -136,6 +139,8 @@
       <Zukan kind={top.kind} finds={findsView(m.state)} counts={tallyTotals(m.state.tallies)} order={zOrder} names={zNames} villagers={zVillagers} />
     {:else if top.k === 'day' && day}
       <DayDetail d={day} {me} {partner} {names} {villagers} />
+    {:else if guest && (top.k === 'goal' || top.k === 'moveGoal' || top.k === 'stepsGoal')}
+      <!-- (never on the guest's phone: it sets no goal) -->
     {:else if top.k === 'goal'}
       {@const s = top}
       {@render who(s.p)}

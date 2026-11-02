@@ -4,7 +4,7 @@
 // op, which is the record). On the partner's phone it's held: lifted where my finger has it, eased between the
 // updates, not theirs to pick up; silent for SILENT_MS (or the partner gone) and it drops back where the room has it.
 // Plain TS: the relay's send and the clock come in.
-import type { Intent, Relayed } from '#lib/sync/live-protocol.ts';
+import type { Intent, Relayed, Who } from '#lib/sync/live-protocol.ts';
 import type { Facing } from './grid.ts';
 
 type Drag = Extract<Intent, { kind: 'drag' }>;
@@ -34,6 +34,8 @@ export interface HeldThere {
   /** When it was last heard (this phone's clock) and when the hold began (the relay's clock). */
   heard: number;
   since: number;
+  /** Whose finger (the partner's, the guest's, a member's on the guest's phone). */
+  who: Who;
 }
 
 export class DragLink {
@@ -99,7 +101,7 @@ export class DragLink {
     const was = this.#theirs.get(m.id);
     const item = m.it ?? was?.item ?? itemOf(m.id);
     if (!item) return false;
-    this.#theirs.set(m.id, { id: m.id, item, x: m.x, z: m.z, f: m.f as Facing, heard: this.#now(), since: was?.since ?? m.t });
+    this.#theirs.set(m.id, { id: m.id, item, x: m.x, z: m.z, f: m.f as Facing, heard: this.#now(), since: was?.since ?? m.t, who: m.who });
     return true;
   }
   /** What the partner holds now (the silent ones dropped): true when something was dropped. */

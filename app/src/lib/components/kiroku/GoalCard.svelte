@@ -24,8 +24,10 @@
     onmove: () => void;
     onsteps: () => void;
     onweight: () => void;
+    /** The guest's phone: the goals shown, never set, and no weight goal (a からだ figure). */
+    readonly?: boolean;
   }
-  let { person, order, names, villagers, moveGoal, stepsGoal, goalWeight, onperson, onmove, onsteps, onweight }: Props = $props();
+  let { person, order, names, villagers, moveGoal, stepsGoal, goalWeight, onperson, onmove, onsteps, onweight, readonly = false }: Props = $props();
 </script>
 
 <section class="card goals" aria-labelledby="goals-h">
@@ -43,20 +45,22 @@
     <span class="ic"><OfficialArt key={fruitArt('pear')} size={22} /></span>
     <span class="k">{t('goal.move')}</span>
     <b class="v money">{t('kiroku.kcal', { n: formatNum(moveGoal) })}</b>
-    <button type="button" class="pen-btn" data-sfx="page" data-focus="move-goal" aria-label="{names[person]} {t('goal.move')} ✎" onclick={onmove}><Glyph kind="pen" size={18} /></button>
+    {#if !readonly}<button type="button" class="pen-btn" data-sfx="page" data-focus="move-goal" aria-label="{names[person]} {t('goal.move')} ✎" onclick={onmove}><Glyph kind="pen" size={18} /></button>{/if}
   </div>
   <div class="row">
     <span class="ic"><OfficialArt key={fruitArt('apple')} size={22} /></span>
     <span class="k">{t('goal.steps')}</span>
     <b class="v money">{t('kiroku.steps', { n: formatNum(stepsGoal) })}</b>
-    <button type="button" class="pen-btn" data-sfx="page" data-focus="steps-goal" aria-label="{names[person]} {t('goal.steps')} ✎" onclick={onsteps}><Glyph kind="pen" size={18} /></button>
+    {#if !readonly}<button type="button" class="pen-btn" data-sfx="page" data-focus="steps-goal" aria-label="{names[person]} {t('goal.steps')} ✎" onclick={onsteps}><Glyph kind="pen" size={18} /></button>{/if}
   </div>
+  {#if !readonly}
   <div class="row">
     <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-scale" /></svg></span>
     <span class="k">{t('goal.weight')}</span>
     <b class="v money" class:none={goalWeight === null}>{goalWeight === null ? t('goal.notSet') : kgText(goalWeight)}</b>
     <button type="button" class="pen-btn" data-sfx="page" data-focus="weight-goal" aria-label="{names[person]} {t('goal.weight')} ✎" onclick={onweight}><Glyph kind="pen" size={18} /></button>
   </div>
+  {/if}
 </section>
 
 <style>

@@ -24,7 +24,8 @@
     spends: LedgerSpend[];
     names: Record<PersonId, string>;
     villagers: Record<PersonId, string | null>;
-    onerase: (s: LedgerSpend) => void;
+    /** Absent on the guest's phone: the buys shown, never erased. */
+    onerase?: (s: LedgerSpend) => void;
   }
   let { spends, names, villagers, onerase }: Props = $props();
 
@@ -40,7 +41,7 @@
   }
   function yes() {
     open = false;
-    if (ask) onerase(ask);
+    if (ask) onerase?.(ask);
   }
 </script>
 
@@ -61,9 +62,11 @@
           <span class="ic"><OfficialArt key={itemArt(s.item)} size="32px" /></span>
           <span class="lbl"><b>{label}</b><small class="meta">{@render when(s)}</small></span>
           <span class="money amt">{formatBells(-s.bells)}</span>
-          <button type="button" class="x" data-sfx="open" aria-label={t('wallet.erase', { label })} onclick={() => askErase(s)}>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
-          </button>
+          {#if onerase}
+            <button type="button" class="x" data-sfx="open" aria-label={t('wallet.erase', { label })} onclick={() => askErase(s)}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+            </button>
+          {/if}
         </li>
       {/each}
     </ul>

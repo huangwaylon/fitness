@@ -8,7 +8,7 @@
 //   world.on(fn)                 the partner's changes (`live`: it just happened: play it)
 //   world.day                    today's WorldDay (reactive through `world.rev`)
 import { emptyDay, apply, applyRow, rowOf, type Applied, type Claim, type DayEvent, type DayRow, type WorldDay } from '#lib/sync/world-day.ts';
-import { tokyoDay, type Intent, type Relayed, type Who } from '#lib/sync/live-protocol.ts';
+import { guestMaySend, tokyoDay, type Intent, type Relayed, type Who } from '#lib/sync/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { dayKey, now } from '#lib/time/clock.ts';
@@ -253,6 +253,8 @@ class SharedWorld {
   /** A change of mine: folded into the day (first wins: a thing the partner already has stays theirs, `fresh` false),
    *  kept, and sent (the relay keeps it for the partner, or tells them now). */
   share(i: Shared): Applied {
+    // the guest's phone makes no change the room would refuse it (a world op: watering, a wish; docs/backend.md#the-guest)
+    if (this.#me === 'G' && !guestMaySend(i)) return { fresh: false, beat: null };
     const me = this.#me ?? 'A';
     const t = this.now();
     // a shake carries when it was shaken (its identity on both phones and in the sheet's row)

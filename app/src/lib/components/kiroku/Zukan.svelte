@@ -15,6 +15,7 @@
   import { loadCatalogNames } from '#lib/i18n/catalog.ts';
   import { findKey, type FirstFind } from '#lib/model/finds.ts';
   import { countOf, type Totals } from '#lib/model/tally.ts';
+  import { GUEST } from '#lib/config/rules.ts';
   import { bare, entries, groups, isPresentKind, type Entry, type ZukanKind } from './zukan.ts';
 
   interface Props {
@@ -33,6 +34,17 @@
   const runs = $derived(groups(kind));
   const found = $derived(list.filter((e) => finds.has(findKey(kind, e.id))).length);
   const times = (id: string, person?: Who) => countOf(counts, findKey(kind, id), finds.has(findKey(kind, id)), person);
+  /** Who found an entry first, as its line says it (the guest with its tag: 「ゆき（おきゃくさん）」). */
+  const finder = (w: Who) => (w === 'G' && names.G !== GUEST.villager ? t('zukan.guestName', { name: names.G }) : names[w]);
+  /** How many of this page each of us found first (the head's summary: NH's museum plaque per donor). */
+  const firsts = $derived.by(() => {
+    const n: Record<Who, number> = { A: 0, B: 0, G: 0 };
+    for (const e of list) {
+      const f = finds.get(findKey(kind, e.id));
+      if (f) n[f.person]++;
+    }
+    return n;
+  });
 
   /** The catalogue's names (their own chunk, the language on screen); the other kinds' come with catch.ts. */
   let namesIn = $state<string | null>(null);
@@ -91,6 +103,14 @@
         <h3>{t(`zukan.kind.${kind}`)}</h3>
         <b class="money" class:all={found === list.length}>{found === list.length ? t('zukan.complete') : t('zukan.count', { n: found, total: list.length })}</b>
       </div>
+      {#if found && order.length > 2}
+        <!-- who found how many of this page first (once the guest has found anything: three people share it) -->
+        <span class="each firsts" data-zukan-firsts>
+          {#each order as p (p)}
+            <span class="one" data-zukan-first={p}><Avatar person={p} villager={villagers[p]} size={18} />{firsts[p]}</span>
+          {/each}
+        </span>
+      {/if}
       {#if pick}
         {@const f = finds.get(findKey(kind, pick.id))}
         {#if f}
@@ -98,7 +118,7 @@
             <span class="big"><OfficialArt key={pick.art} size={48} /></span>
             <div class="txt">
               <b class="nm">{bare(t(pick.name))} <span class="times" data-zukan-times>{t('zukan.times', { n: times(pick.id) })}</span></b>
-              <span class="who"><Avatar person={f.person} villager={villagers[f.person]} size={20} />{t('zukan.foundBy', { date: date(f.date), name: names[f.person] })}</span>
+              <span class="who"><Avatar person={f.person} villager={villagers[f.person]} size={20} />{t('zukan.foundBy', { date: date(f.date), name: finder(f.person) })}</span>
               <span class="each">
                 {#each order as p (p)}
                   <span class="one" data-zukan-person={p}><Avatar person={p} villager={villagers[p]} size={18} />{t('zukan.personTimes', { name: names[p], n: countOf(counts, findKey(kind, pick.id), false, p) })}</span>

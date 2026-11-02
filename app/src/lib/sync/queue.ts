@@ -1,7 +1,7 @@
 // The write queue (docs/backend.md#write-queue): events persisted in localStorage and replayed in order, with backoff,
 // until the server acks them. Undo windows (`holdMs`) are decided here.
 import type { EventType } from '#lib/contract/api.ts';
-import type { PersonId } from '#lib/types.ts';
+import type { Who } from '#lib/types.ts';
 import { LIVE, getKey, localKV, readJson, remove, writeJson } from './storage.ts';
 import { post, type GasError } from './transport.ts';
 
@@ -15,7 +15,7 @@ export interface QueuedEvent {
   /** Earliest next attempt (ms). */
   nextAt: number;
   /** Demo only: the sender when it isn't `me` (the demo's two players share one event list across tabs). */
-  person?: PersonId;
+  person?: Who;
   /** Client time the server acked it (ms): set once it left the queue for `ackedEvents()`. */
   ackedAt?: number;
 }

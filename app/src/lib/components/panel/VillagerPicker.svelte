@@ -21,12 +21,14 @@
   import { searchVillagers } from '#lib/villagers/search.ts';
   import { PERSONALITIES, SPECIAL, SPECIES } from '#lib/villagers/species.ts';
   import { t, i18n } from '#lib/i18n/index.ts';
+  import { mine, tagOf } from '#lib/ui-state/viewer.ts';
 
   let { view }: { view: WeekView } = $props();
 
-  const me = $derived(view.people[view.me]);
+  /** This phone's villager (the guest's own on the guest's phone: a guest pref). */
+  const me = $derived(mine(view));
   /** My current roster villager (prefs `villager`, else the per-person default). */
-  const current = $derived(resolveLook({ villager: me.villager, person: view.me }).id);
+  const current = $derived(resolveLook({ villager: me.villager, person: me.who }).id);
   const lang = $derived(i18n.locale === 'ja' ? 0 : 1);
   const vName = (id: RosterId) => (lang === 0 ? ROSTER[id].nameJa : ROSTER[id].nameEn);
   const vKind = (id: RosterId) => {
@@ -99,7 +101,7 @@
   <div class="head">
     <div class="preview">
       {#key current}
-        <span class="pv"><Villager person={view.me} villager={current} size={76} head={false} expression="cheer" eager /></span>
+        <span class="pv"><Villager person={me.who} villager={current} size={76} head={false} expression="cheer" eager /></span>
       {/key}
       <div class="side">
         <p class="who"><span class="vn">{vName(current)}</span> <span class="vk">{vKind(current)}</span></p>
@@ -119,7 +121,7 @@
   </div>
   <div class="scroll" {@attach grid}>
     {#if shown.length}
-      <div role="radiogroup" aria-label={t('panel.villager')} style:--tag={view.me === 'A' ? 'var(--c-yuzu)' : 'var(--c-mint)'} {@attach roving}>
+      <div role="radiogroup" aria-label={t('panel.villager')} style:--tag={tagOf(me.who)} {@attach roving}>
         {#each groups as g (g.label)}
           <h3 class="grp">{g.label}</h3>
           <div class="roster">
@@ -131,7 +133,7 @@
                   <span class="chip"><img data-src={src} alt="" width="128" height="128" decoding="async" draggable="false" {@attach lazy}
                     onerror={() => (failed[id] = true)} /></span>
                 {:else}
-                  <Avatar person={view.me} villager={id} size={64} />
+                  <Avatar person={me.who} villager={id} size={64} />
                 {/if}
                 {#if current === id}<svg class="ck" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}
               </button>

@@ -5,6 +5,7 @@
 import { loadNames } from './catchLine.ts';
 import { t } from '#lib/i18n/index.ts';
 import { week } from '#lib/store/week.svelte.ts';
+import type { Who } from '#lib/types.ts';
 
 /** How the partner got it: the caption's verb. */
 type PartnerVerb = 'caught' | 'fished' | 'dived' | 'picked' | 'dug' | 'got' | 'beat';
@@ -21,6 +22,8 @@ export interface PartnerNews {
   lift?: number;
   /** Their villager has it in hand (in view): hold it up. */
   hold?: boolean;
+  /** Whose (absent: the partner's; the guest's on a member's phone, a member's on the guest's). */
+  who?: Who;
 }
 
 let sink: ((n: PartnerNews, text: string) => void) | null = null;
@@ -31,10 +34,11 @@ export function setPartnerSink(fn: typeof sink): void {
 }
 
 /** The caption for the partner's news: 「{who}が {name}を つかまえた！」. */
-async function partnerCaption(n: Pick<PartnerNews, 'verb' | 'name'>): Promise<string> {
+async function partnerCaption(n: Pick<PartnerNews, 'verb' | 'name' | 'who'>): Promise<string> {
   await loadNames().catch(() => {});
   const v = week.view;
-  const who = v ? v.people[v.partner].villagerName : '';
+  const w = n.who ?? v?.partner;
+  const who = !v || !w ? '' : w === 'G' ? v.guest.villagerName : v.people[w].villagerName;
   const name = /^[a-z]+\.[\w.-]+$/.test(n.name) ? t(n.name) : n.name;
   return t(`world.partner.${n.verb}`, { who, name });
 }

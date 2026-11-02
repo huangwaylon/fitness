@@ -9,6 +9,7 @@
 // the start finds it on its way. Plain TS: the relay and the clock come in through `VillagerLink`.
 import { WAKE_MS, actors, along, isRemote, livePos, onOwnMove, onWake, place, setRemote, wake, walkTo, type Facing, type Move } from '../motion/director.svelte.ts';
 import { VIA_MAX, type Face, type Intent, type Pt, type Who } from '#lib/sync/live-protocol.ts';
+import { actorOfFor, whoOfFor, type VillagerActor } from '#lib/ui-state/cast.ts';
 
 type Walk = Extract<Intent, { kind: 'walk' }>;
 /** A villager woke (`id` whose, `at` when on the relay's clock). */
@@ -64,40 +65,41 @@ export function walkOf(m: Move, s: number): Walk {
   };
 }
 
-/** The partner's walk from the relay, played here on their villager (`now`: the relay's clock). Without the very walk
- *  (an older app: only `to`), null: the caller plans it. Returns how it was played. */
-export function playPartner(w: Walk, now: number, visible = true): 'walk' | 'catch-up' | 'jump' | 'put' | null {
+/** Another's walk from the relay (the partner's, or the third villager's: `id`), played here on their villager (`now`:
+ *  the relay's clock). Without the very walk (an older app: only `to`), null: the caller plans it. Returns how it was
+ *  played. */
+export function playPartner(w: Walk, now: number, visible = true, id: VillagerActor = 'partner'): 'walk' | 'catch-up' | 'jump' | 'put' | null {
   if (!Array.isArray(w.to) || !w.from || w.s === undefined || w.ms === undefined) return null;
   const to = w.to as Pt, pts: Pt[] = [...(w.via ?? []), to];
   const face = w.f as Facing | undefined;
   const { at, rest, left } = along(w.from, w.ms ? pts : [], w.ms, now - w.s);
-  const here = livePos('partner');
+  const here = livePos(id);
   if (!left) {
     // over by now: there already, or nearly (walked off briskly), else put there
     const d = dist(here, to);
-    if (d > 2 && d <= CATCH_U && visible && !actors.partner.asleep) {
-      walkTo('partner', [to], { ms: Math.min(CATCH_MS, (d / RUN_U_S) * 1000), from: here, face, remote: true });
+    if (d > 2 && d <= CATCH_U && visible && !actors[id].asleep) {
+      walkTo(id, [to], { ms: Math.min(CATCH_MS, (d / RUN_U_S) * 1000), from: here, face, remote: true });
       return 'catch-up';
     }
-    place('partner', to[0], to[1], true);
-    if (face) actors.partner.face = face;
+    place(id, to[0], to[1], true);
+    if (face) actors[id].face = face;
     return 'put';
   }
   if (!visible || dist(here, at) > JUMP_U) {
-    place('partner', at[0], at[1], true);
-    walkTo('partner', rest, { ms: left, from: at, face, remote: true });
+    place(id, at[0], at[1], true);
+    walkTo(id, rest, { ms: left, from: at, face, remote: true });
     return 'jump';
   }
   // from where it stands here, along the rest of the way, arriving when it does on their phone
-  walkTo('partner', rest, { ms: left, from: here, face, remote: true });
+  walkTo(id, rest, { ms: left, from: here, face, remote: true });
   return 'walk';
 }
 
 /** A villager woke on the partner's phone (a tap on theirs, a high-five): it wakes here too, for what's left of its
  *  WAKE_MS (the same moment it goes back to sleep on both). Returns whether it woke. */
 export function playWake(e: { id?: string; at?: number }, me: Who, now: number): boolean {
-  if (e.id !== 'A' && e.id !== 'B') return false;
-  const id = e.id === me ? 'mine' : 'partner';
+  if (e.id !== 'A' && e.id !== 'B' && e.id !== 'G') return false;
+  const id = actorOfFor(me, e.id);
   const left = WAKE_MS - Math.max(0, now - (e.at ?? now));
   if (left < 250 || !actors[id].asleep) return false;
   wake(id, { remote: true, ms: left });
@@ -105,12 +107,13 @@ export function playWake(e: { id?: string; at?: number }, me: Who, now: number):
 }
 
 /** Tell the partner's phone my villager's every move, and play theirs here (see the top). Returns the detach. */
-export function linkVillagers(link: VillagerLink): { detach(): void; partnerHere(on: boolean): void; joined(): void } {
+export function linkVillagers(link: VillagerLink): { detach(): void; partnerHere(on: boolean): void; here(id: VillagerActor, on: boolean): void; joined(): void } {
   /** My villager's current walk (as sent) and when it ends (the relay's clock). */
   let mine: Walk | null = null;
   let pending: Move | null = null;
   let resay: ReturnType<typeof setInterval> | null = null;
-  let here = false;
+  /** Who else has the island open (their villagers are the relay's to move here). */
+  const present = new Set<VillagerActor>();
   const say = (w: Walk) => {
     if (link.enabled()) link.share(w);
   };
@@ -130,12 +133,11 @@ export function linkVillagers(link: VillagerLink): { detach(): void; partnerHere
   // a wake here (mine tapped, or both at a high-five) wakes the same villager there
   const offWake = onWake((id) => {
     if (!link.enabled()) return;
-    const me = link.me();
-    link.share({ kind: 'act', act: 'wake', id: id === 'mine' ? me : me === 'A' ? 'B' : 'A', at: Math.round(link.serverNow()) });
+    link.share({ kind: 'act', act: 'wake', id: whoOfFor(link.me(), id), at: Math.round(link.serverNow()) });
   });
   const tick = () => {
     // a walk still under way, said again (a phone that missed its start finds it on its way)
-    if (!here || !mine || !mine.ms || link.serverNow() >= mine.s! + mine.ms) return;
+    if (!present.size || !mine || !mine.ms || link.serverNow() >= mine.s! + mine.ms) return;
     say(mine);
   };
   return {
@@ -144,24 +146,32 @@ export function linkVillagers(link: VillagerLink): { detach(): void; partnerHere
       offWake();
       if (resay) clearInterval(resay);
       resay = null;
-      setRemote('partner', false);
+      for (const id of present) setRemote(id, false);
+      present.clear();
     },
-    /** The partner has the island open (or not): while they do, their villager is the relay's to move here. */
+    /** The partner has the island open (or not): `here('partner', on)`. */
     partnerHere(on: boolean) {
-      if (on === here) return;
-      here = on;
+      this.here('partner', on);
+    },
+    /** Another has the island open (or not): while they do, their villager (`id`) is the relay's to move here. */
+    here(id: VillagerActor, on: boolean) {
+      if (on === present.has(id) || id === 'mine') return;
       if (on) {
+        present.add(id);
         // whatever this phone had their villager doing stops where it is; their phone says where it is
-        if (!isRemote('partner') && actors.partner.walking) {
-          const [x, z] = livePos('partner');
-          place('partner', x, z);
+        if (!isRemote(id) && actors[id].walking) {
+          const [x, z] = livePos(id);
+          place(id, x, z);
         }
         resay ??= setInterval(tick, RESAY_MS);
-      } else if (resay) {
-        clearInterval(resay);
-        resay = null;
+      } else {
+        present.delete(id);
+        if (!present.size && resay) {
+          clearInterval(resay);
+          resay = null;
+        }
       }
-      setRemote('partner', on);
+      setRemote(id, on);
       if (on) this.joined();
     },
     /** A partner arrived (or this phone did): my villager as it is, so their phone has it where mine does. */

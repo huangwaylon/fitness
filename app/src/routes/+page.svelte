@@ -20,6 +20,7 @@
   import { birthdaysOn } from '#lib/components/island/birthday.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { minuteNow } from '#lib/time/clock.ts';
+  import type { Who } from '#lib/types.ts';
 
   let panelOpen = $state(false);
 
@@ -52,11 +53,16 @@
     return h.confirmedBy.includes(view.me) ? hostLine('harvest_waiting', { name: view.people[view.partner].villagerName }) : hostLine('harvest_ready');
   });
 
-  // A tap on the partner's villager (IslandScene: in place, sent over the relay): the banner, and both hop (R4).
-  function sendHighFive() {
+  /** Whose villager name (the guest's too). */
+  const nameOf = (w: Who) => (!view ? '' : w === 'G' ? view.guest.villagerName : view.people[w].villagerName);
+  /** The banner's face: whose villager (the guest's too). */
+  const faceOf = (w: Who) => w;
+
+  // A tap on another's villager (IslandScene: in place, sent over the relay): the banner, and (the partner) both hop (R4).
+  function sendHighFive(who: Who) {
     if (!view) return;
-    toasts.show(t('island.highfiveSent', { name: view.people[view.partner].villagerName }), 1800, { person: view.partner, reaction: 'encouraging' });
-    emit('highfive-sent');
+    toasts.show(t('island.highfiveSent', { name: nameOf(who) }), 1800, { person: faceOf(who), reaction: 'encouraging' });
+    if (who === (view.viewer === 'G' ? 'A' : view.partner)) emit('highfive-sent');
   }
 
   // A failed save (the store's toast, by its code, not its wording) → my villager looks sheepish (R17).
@@ -67,13 +73,17 @@
   // My partner's high-five reached this phone (IslandScene: the relay's, live or held while I was away; once each):
   // the banner with their villager, but not over the harvest: it waits until that closes, and not over another
   // banner: one at a time.
-  let gotFive = $state(false);
+  let gotFive = $state<Who | null>(null);
   $effect(() => {
-    const v = week.view;
-    if (!gotFive || !v || ui.overlay || toasts.current) return;
-    gotFive = false;
-    later(() => toasts.show(t('island.highfiveGot', { name: v.people[v.partner].villagerName }), 3200, { person: v.partner, reaction: 'love' }), 700);
+    const v = week.view, from = gotFive;
+    if (!from || !v || ui.overlay || toasts.current) return;
+    gotFive = null;
+    later(() => toasts.show(t('island.highfiveGot', { name: nameOf(from) }), 3200, { person: faceOf(from), reaction: 'love' }), 700);
   });
+  // The guest's villager came ashore on my island (its app opened): a banner, NH's 「○○が あそびに きたよ！」
+  function guestArrived(name: string) {
+    if (!ui.overlay) toasts.show(t('guest.arrived', { name }), 2800, { person: 'G', reaction: 'joy' });
+  }
 </script>
 
 {#if view && me}
@@ -88,7 +98,7 @@
       {/snippet}
     </Hud>
     <div class="top">
-      <IslandScene {view} onhighfive={sendHighFive} onhighfivegot={() => (gotFive = true)} paused={panelOpen} />
+      <IslandScene {view} onhighfive={sendHighFive} onhighfivegot={(who) => (gotFive = who)} onguest={guestArrived} paused={panelOpen} />
     </div>
     <!-- しずえ's box, when she has news, floats over the sea at the bottom, so nothing in the scene moves when she speaks. -->
     {#if news}<div class="news"><Bubble text={news} host={false} /></div>{/if}

@@ -365,9 +365,16 @@ claims, the ずかん, the tent's decor, pairing.
   it out), and the room holds the last one per (sender, recipient) pair for a recipient who is away (`Held`, `<from>><to>`).
 - **Push:** none: `/push/*` answers the guest's key 403, so it neither subscribes nor reports a goal, and the members'
   `changed` notices reach it like anyone's (its own writes only to v3 phones).
+- **The phones** ([design](design.md#the-guest)): a member's draws the guest's villager while it's `here`, as a third
+  villager actor (`ui-state/cast.ts`: `mine`, `partner`, `third`; on the guest's phone `third` is B); the guest's
+  phone guards what it sends by the same rules (`week.send` by `guestMayWrite`, the socket by `guestMaySend`), so
+  nothing it may not do is queued or shown.
 - **Tests:** `relay/test/guest.test.ts` (the snapshot and deltas never carry a からだ row or the weight goal and do carry
   the activity; every forbidden write is refused and leaves nothing; the export has `G`'s rows; the room's three
-  villagers, the refusals, the high-fives' pairs); `model/guest.test.ts` (credit, first finds, counts, the view).
+  villagers, the refusals, the high-fives' pairs); `model/guest.test.ts` (credit, first finds, counts, the view);
+  `e2e/guest.spec.ts` (the guest's phone shows no からだ and none of a member's controls; its catch in a member's ずかん
+  credited to it; its tent piece in both members' tents; its villager on both islands only while open, still when
+  idle); `npm run smoke` (the test copy's guest key, when `.smoke-keys` has `KEY_C`).
 
 ## Ambient life
 

@@ -3,12 +3,13 @@
 // (live.ts) or, with `?demo` (or dev without VITE_RECORD_URL), generated rows (demo/backend.ts, loaded only then).
 import { untrack } from 'svelte';
 import { dev } from '$app/env';
-import type { WeekView } from '#lib/types.ts';
+import type { WeekView, Who } from '#lib/types.ts';
 import type { EventType } from '#lib/contract/api.ts';
+import { guestMayWrite } from '#lib/contract/guest.ts';
 import { buildWeekView } from '#lib/model/week.ts';
 import { setLocale } from '#lib/i18n/index.ts';
 import { minuteNow } from '#lib/time/clock.ts';
-import { DEMO, DEVICE, localKV, readJson, sessionKV, writeJson, writeRaw } from '#lib/sync/storage.ts';
+import { DEMO, DEVICE, getStoredMe, localKV, readJson, sessionKV, writeJson, writeRaw } from '#lib/sync/storage.ts';
 import { RECORD_CONFIGURED } from '#lib/sync/transport.ts';
 import { composeModel, type ComposedModel } from './view.ts';
 import { LiveBackend } from './live.ts';
@@ -26,9 +27,14 @@ class WeekStore implements Host {
   lastSync = $state<Date | null>(null);
   demo = $state<false | DemoMode>(false);
 
+  /** This phone is the guest's (docs/design.md "The guest"): paired with KEY_C, or the demo's `as=G`. */
+  get guest(): boolean {
+    return this.view ? this.view.viewer === 'G' : this.demo ? this.#demoMe === 'G' : getStoredMe() === 'G';
+  }
+
   #backend: Backend | null = null;
   #loadingBackend: Promise<Backend> | null = null;
-  #demoMe: 'A' | 'B' = 'A';
+  #demoMe: Who = 'A';
   #stopClock: (() => void) | null = null;
 
   /** Read `?demo` / `?demo=harvest` once; it sticks for the tab session. */
@@ -38,7 +44,8 @@ class WeekStore implements Host {
     if (p.has('demo')) {
       const mode: DemoMode = p.get('demo') === 'harvest' ? 'harvest' : 'plain';
       writeRaw(ss, DEMO.mode, mode);
-      writeRaw(ss, DEMO.as, p.get('as') === 'B' ? 'B' : 'A');
+      // `as=B`: うめ's phone; `as=G`: the guest's (docs/design.md "The guest")
+      writeRaw(ss, DEMO.as, p.get('as') === 'B' ? 'B' : p.get('as') === 'G' ? 'G' : 'A');
       writeRaw(ss, DEMO.weeks, p.get('weeks') ?? '');
       this.demo = mode;
       this.view = null;
@@ -52,7 +59,10 @@ class WeekStore implements Host {
     }
     // A build without the record's URL (VITE_LIVE_URL and VITE_RECORD_URL both emptied): a friendly screen, not errors.
     if (!this.demo && !RECORD_CONFIGURED) this.status = 'unconfigured';
-    if (this.demo) this.#demoMe = ss?.getItem(DEMO.as) === 'B' ? 'B' : 'A';
+    if (this.demo) {
+      const as = ss?.getItem(DEMO.as);
+      this.#demoMe = as === 'B' ? 'B' : as === 'G' ? 'G' : 'A';
+    }
   }
 
   /** The backend for this tab (the demo's is loaded only in the demo, so live users never download it). */
@@ -75,7 +85,7 @@ class WeekStore implements Host {
     this.model = m;
     this.view = v;
     // goal notifications (docs/backend.md#notifications): my all-four reported once a day; never from the demo
-    if (!this.demo) pushTick(v);
+    if (!this.demo && v.viewer !== 'G') pushTick(v);
     setLocale(v.locale);
     if (readJson(localKV(), DEVICE.locale) !== v.locale) writeJson(localKV(), DEVICE.locale, v.locale);
   }
@@ -114,6 +124,9 @@ class WeekStore implements Host {
    * until the server acks; the demo keeps it and never sends it. `holdMs`: an undo window (see SendResult).
    */
   send(type: EventType, data: Record<string, unknown>, opts: SendOptions = {}): SendResult {
+    // the guest's phone sends only what the record takes from it (its finds, tallies, the tent, its look): the rest
+    // would be refused `forbidden` (contract/guest.ts), so it never leaves the phone or shows
+    if (this.guest && !guestMayWrite(type, data)) return { ok: false };
     const b = this.#backend ?? (this.demo ? null : (this.#getBackend() as Backend));
     if (!b) return { ok: false }; // the demo is still loading: nothing on screen to act on yet
     return b.send(type, data, opts);

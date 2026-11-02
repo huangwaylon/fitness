@@ -136,11 +136,11 @@
       if (!live || !enabled()) return;
       if (e.kind === 'pick' && e.what === 'weed' && e.at) {
         const [x, z] = e.at;
-        partnerTurnTo(x);
+        partnerTurnTo(x, e.who);
         sceneSfx('weed');
         spawn({ kind: 'pull', x, y: z }, 700);
       } else if (e.kind === 'act' && e.act === 'rock') {
-        partnerTurnTo(ROCK.x);
+        partnerTurnTo(ROCK.x, e.who);
         strike(() => clonk('clonk'));
       }
     })

@@ -12,6 +12,7 @@
   import Bubble from '#lib/components/ui/Bubble.svelte';
   import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
   import { keyboardInset } from '#lib/components/ui/keyboardInset.ts';
+  import { toasts } from '#lib/ui-state/toast.svelte.ts';
 
   let code = $state('');
   let busy = $state(false);
@@ -45,6 +46,8 @@
       week.reset();
       void week.refresh();
       await goto(resolve('/'));
+      // the guest's key (docs/design.md "The guest"): a word of welcome to the island
+      if (r.me === 'G') toasts.show(t('guest.welcome'), 4200, { reaction: 'joy' });
     } else {
       msg = r.error === 'unauthorized' || r.error === 'bad_request' ? t('pair.wrong') : t('pair.wait');
       if (r.error === 'unauthorized') code = '';

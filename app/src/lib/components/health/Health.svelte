@@ -23,6 +23,7 @@
   import WeightCard from './WeightCard.svelte';
   import BodyCard from './BodyCard.svelte';
   import { rangeLabel } from './fmt.ts';
+  import { isGuest } from '#lib/ui-state/viewer.ts';
 
   const m = $derived(week.model);
   const view = $derived(week.view);
@@ -33,7 +34,10 @@
   const villagers = $derived({ A: view?.people.A.villager ?? null, B: view?.people.B.villager ?? null } as Record<PersonId, string | null>);
 
   let period = $state<Period>(last.period);
-  let group = $state<Group>(last.group);
+  let pickedGroup = $state<Group>(last.group);
+  /** The guest's phone has かつどう only (docs/design.md "The guest": never a からだ figure; its snapshot has none). */
+  const guest = $derived(isGuest(view));
+  const group = $derived<Group>(guest ? 'activity' : pickedGroup);
   let picked = $state<PersonId | null>(last.who);
   /** Whose data every card shows. */
   const who = $derived<PersonId>(picked ?? me);
@@ -56,8 +60,8 @@
   }
   /** The other cards: the same period, range and person. */
   function setGroup(g: Group) {
-    if (g === group) return;
-    group = last.group = g;
+    if (g === group || guest) return;
+    pickedGroup = last.group = g;
     sel = null;
   }
   /** Another person: the same period and range, their numbers. */
@@ -103,11 +107,13 @@
         <button type="button" class="sb" aria-pressed={period === id} data-period={id} data-sfx={period === id ? 'none' : 'tick'} onclick={() => setPeriod(id)}>{t(`health.period.${id}`)}</button>
       {/each}
     </div>
-    <div class="seg" role="group" aria-label={t('health.group')}>
-      {#each GROUPS as id (id)}
-        <button type="button" class="sb" aria-pressed={group === id} data-group={id} data-sfx={group === id ? 'none' : 'tick'} onclick={() => setGroup(id)}>{t(`health.group.${id}`)}</button>
-      {/each}
-    </div>
+    {#if !guest}
+      <div class="seg" role="group" aria-label={t('health.group')}>
+        {#each GROUPS as id (id)}
+          <button type="button" class="sb" aria-pressed={group === id} data-group={id} data-sfx={group === id ? 'none' : 'tick'} onclick={() => setGroup(id)}>{t(`health.group.${id}`)}</button>
+        {/each}
+      </div>
+    {/if}
 
     <div class="nav">
       <button type="button" class="nb" data-nav="back" aria-label={t('health.earlier')} aria-disabled={!can.back} data-sfx="tick" onclick={() => go(-1)}>
@@ -128,7 +134,9 @@
       <section class="card empty"><p>{t('kiroku.empty')}</p></section>
     {:else}
       {#each CARDS[group] as k (k)}
-        {#if k === 'weight'}
+        {#if guest && k !== 'steps' && k !== 'move' && k !== 'exercise' && k !== 'stand'}
+          <!-- (never on the guest's phone) -->
+        {:else if k === 'weight'}
           <WeightCard {hs} {range} p={who} name={names[who]} {slide} onswipe={swipe}
             selected={sel?.k === 'weight' ? sel.i : null} onselect={(i) => pick('weight', i)} />
         {:else if isBodyMetric(k)}

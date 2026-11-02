@@ -231,7 +231,7 @@
       if (e.kind !== 'pick' || !e.id.startsWith(`fr:${person.person}:`)) return;
       const f = e.id.slice(5 + person.person.length) as RingFruit, s = spots.find((p) => p.f === f);
       if (!s || !live) return;
-      partnerTurnTo(s.gx);
+      partnerTurnTo(s.gx, e.who);
       cue('fruit-pick');
       addFx('sparkles', s.gx, s.gz, FRUIT_U * 0.4);
     })

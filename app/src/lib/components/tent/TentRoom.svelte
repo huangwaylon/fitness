@@ -47,9 +47,15 @@
   let editing = $state(false);
   let edit = $state<ReturnType<typeof TentEdit>>();
   // svelte-ignore state_referenced_locally
-  const me: Who = view.me;
+  const me: Who = view.viewer;
   // svelte-ignore state_referenced_locally
-  const partner: Who = view.partner;
+  const partner: Who = view.viewer === 'G' ? 'A' : view.partner;
+  /** Everyone else who may be in here (the guest too, or the two members on the guest's phone: one place at a time). */
+  const others: Who[] = (['A', 'B', 'G'] as const).filter((w) => w !== me);
+  const nameOf = (w: Who) => (w === 'G' ? view.guest.villagerName : view.people[w].villagerName);
+  /** Where each of us stands in the room, a little apart (A left, B right, the guest in the middle). */
+  const sideX = (w: Who, k: number) => (w === 'A' ? -k : w === 'B' ? k : 0);
+  const faceOf = (w: Who) => (w === 'A' ? 1 : w === 'B' ? -1 : 1);
 
   // ---- the relay: the phone's one socket (the demo's two tabs share a channel; ?relay=&key= a test relay) ----
   const demo = !!week.demo;
@@ -67,8 +73,8 @@
   const spots = (): Resolved[] => resolveRoom(room.pieces.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, ...(p.on ? { on: p.on } : {}), ...(p.l !== undefined ? { l: p.l } : {}) })));
 
   function lookOf(who: Who): Look | null {
-    const p = view.people[who];
-    const l = resolveLook({ villager: p.villager, person: who });
+    const villager = who === 'G' ? view.guest.villager : view.people[who].villager;
+    const l = resolveLook({ villager, person: who });
     const key = villagerArt(l.id);
     const a = art(key), url = artUrl(key);
     return a && url ? { url, aspect: a.w / a.h, looksRight: l.looksRight, noMirror: l.noMirror } : null;
@@ -121,7 +127,9 @@
 
   // ---- sitting and lying (NH's chairs, sofas, beds: seats.ts): walk up to it, then on; one villager a seat, first wins ----
   let mySeat: (Seat & { s: number }) | null = null;
-  let partnerSeat: { id: string; n: number; s: number } | null = null;
+  /** The others' seats (one villager a seat, the first keeps it). */
+  const theirSeats = new Map<Who, { id: string; n: number; s: number }>();
+  const seatTaken = (id: string, n: number) => [...theirSeats.values()].some((st) => st.id === id && st.n === n);
   const seatAt = (id: string, n: number) => {
     const p = spots().find((q) => q.id === id);
     return p ? (seatsOf(p)[n] ?? null) : null;
@@ -131,7 +139,7 @@
     const p = spots().find((q) => q.id === id);
     if (!p || !eng) return false;
     const here = eng.at(me) ?? [0, 0];
-    const free = seatsOf(p).filter((st) => !(partnerSeat && partnerSeat.id === st.id && partnerSeat.n === st.n));
+    const free = seatsOf(p).filter((st) => !seatTaken(st.id, st.n));
     if (!free.length) {
       cue('boop');
       return true;
@@ -139,8 +147,8 @@
     if (mySeat && mySeat.id === id) return true;
     const st = free.sort((a, b) => Math.hypot(a.from[0] - here[0], a.from[1] - here[1]) - Math.hypot(b.from[0] - here[0], b.from[1] - here[1]))[0];
     walkTo(st.from, () => {
-      // still free (the partner may have got there first)
-      if (!eng || (partnerSeat && partnerSeat.id === st.id && partnerSeat.n === st.n)) return;
+      // still free (another may have got there first)
+      if (!eng || seatTaken(st.id, st.n)) return;
       mySeat = { ...st, s: relayNow() };
       eng.pose(me, poseOf(st));
       cue('scene-bench');
@@ -149,36 +157,43 @@
     return true;
   }
 
-  // ---- the partner's villager: here only while they're in the tent (store/where.svelte.ts), theirs to move ----
+  // ---- the others' villagers: each here only while they're in the tent (store/where.svelte.ts), theirs to move ----
   let peer = $state(false);
-  let partnerAt: Pt = [me === 'A' ? 9 : -9, 16];
+  /** Who else has the app open (the relay's presence). */
+  let hereNow: readonly Who[] = [];
+  const theirAt = new Map<Who, Pt>(others.map((w) => [w, [sideX(w, 9) || 0, 16] as Pt]));
   function partnerShown() {
     if (!eng) return;
-    const shown = where.partnerInTent;
-    eng.villager(partner, shown ? lookOf(partner) : null);
-    if (shown && !eng.walking(partner)) eng.put(partner, partnerAt, partner === 'A' ? 1 : -1);
+    for (const w of others) {
+      const shown = where.inTent[w];
+      eng.villager(w, shown ? lookOf(w) : null);
+      if (shown && !eng.walking(w)) eng.put(w, theirAt.get(w)!, faceOf(w));
+    }
   }
   function heardTent(m: Extract<Relayed, { kind: 'tent' }>) {
     where.heard(m);
     if (!eng) return;
-    if (m.to) partnerAt = m.to;
+    const w = m.who;
+    if (m.to) theirAt.set(w, m.to);
     partnerShown();
     // on a seat: one villager to a seat, the first to sit keeps it (I stand up if they were there first)
-    partnerSeat = m.in && m.seat !== undefined ? { id: m.seat, n: m.n ?? 0, s: m.s ?? m.t } : null;
-    if (partnerSeat) {
-      const st = seatAt(partnerSeat.id, partnerSeat.n);
-      if (mySeat && mySeat.id === partnerSeat.id && mySeat.n === partnerSeat.n && partnerSeat.s <= mySeat.s) {
+    const seat = m.in && m.seat !== undefined ? { id: m.seat, n: m.n ?? 0, s: m.s ?? m.t } : null;
+    if (seat) theirSeats.set(w, seat);
+    else theirSeats.delete(w);
+    if (seat) {
+      const st = seatAt(seat.id, seat.n);
+      if (mySeat && mySeat.id === seat.id && mySeat.n === seat.n && seat.s <= mySeat.s) {
         walkTo(mySeat.from);
         cue('boop');
       }
-      if (st) return void eng.pose(partner, poseOf(st));
+      if (st) return void eng.pose(w, poseOf(st));
     }
     if (!m.in || !m.to) return;
     if (m.from && m.s !== undefined && m.ms) {
       const ago = relayNow() - m.s;
-      if (ago < m.ms) eng.walk(partner, [...(m.via ?? []), m.to], { from: m.from, ago, ms: m.ms });
-      else eng.put(partner, m.to);
-    } else eng.put(partner, m.to);
+      if (ago < m.ms) eng.walk(w, [...(m.via ?? []), m.to], { from: m.from, ago, ms: m.ms });
+      else eng.put(w, m.to);
+    } else eng.put(w, m.to);
   }
 
   // ---- what the partner drags ----
@@ -373,7 +388,7 @@
     return () => ((refit = false), cancelAnimationFrame(id));
   });
   $effect(() => {
-    void where.partnerInTent;
+    for (const w of others) void where.inTent[w];
     untrack(() => partnerShown());
   });
   $effect(() => void loadTentNames(i18n.locale).catch(() => {}));
@@ -419,10 +434,12 @@
         else if (m.kind === 'drag') heardDrag(m);
       }));
       offs.push(relay.onStatus((st) => {
-        const was = peer;
-        peer = st.connected && st.peer;
-        if (peer && !was) sayWhere();
-        where.peer(peer);
+        const was = hereNow, here = st.connected ? st.here : [];
+        hereNow = here;
+        peer = here.length > 0;
+        // someone came: where I am in here, said to them
+        if (here.some((w) => !was.includes(w))) sayWhere();
+        for (const w of others) where.presence(w, here.includes(w));
         if (!peer && link.gone()) heldChanged();
         partnerShown();
       }));
@@ -434,7 +451,7 @@
       const p = room.byId(e.id);
       if (!p) return;
       eng.bump(e.id);
-      eng.face(partner, centreOf(p));
+      if (e.who !== me) eng.face(e.who, centreOf(p));
     }));
     const offDoor = provideDoor(() => (eng ? (([x, y]) => ({ x, y }))(eng.client(0, 0, HALF - 2)) : null));
     void import('./engine.ts').then(
@@ -445,10 +462,10 @@
         e.night(nightOf(theme.tod));
         e.villager(me, lookOf(me));
         // in at the door, a few steps into the room
-        e.put(me, DOOR_IN, me === 'A' ? 1 : -1);
+        e.put(me, DOOR_IN, faceOf(me));
         eng = e;
         partnerShown();
-        walkTo([me === 'A' ? -7 : 7, 22]);
+        walkTo([sideX(me, 7), me === 'G' ? 26 : 22]);
         void e.ready.then(() => alive && doorReady());
         // after the door's iris and the walk in
         hhaTimer = setTimeout(() => alive && !editing && rateOnEntry(), HHA_AFTER_MS);
@@ -514,7 +531,9 @@
       starter: () => STARTER,
       /** Where my villager sits or lies (null: standing), and the partner's. */
       seat: () => (mySeat ? { id: mySeat.id, n: mySeat.n, lie: mySeat.lie } : null),
-      partnerSeat: () => partnerSeat,
+      partnerSeat: () => theirSeats.get(partner) ?? null,
+      /** Anyone's villager in here (A, B or G), null when it isn't (e2e: the guest). */
+      who: (w: Who) => (eng?.at(w) ? { at: eng.at(w), walking: eng.walking(w) } : null),
       lights: () => ({ room: room.lights, pieces: room.pieces.filter((p) => ITEMS[p.item]?.lt).map((p) => ({ id: p.id, on: (p.l ?? 1) === 1 })) }),
       /** The partner has the app open (the relay's presence). */
       peer: () => peer,
@@ -604,8 +623,8 @@
     {/if}
   </div>
   {#if editing && eng}
-    <TentEdit bind:this={edit} eng={() => eng} {link} {finds} {relayNow} partnerName={view.people[partner].villagerName}
-      villagers={() => [eng?.at(me), eng?.at(partner)].filter((p): p is [number, number] => !!p)}
+    <TentEdit bind:this={edit} eng={() => eng} {link} {finds} {relayNow} holderName={(id) => nameOf(link.theirs().find((h) => h.id === id)?.who ?? partner)}
+      villagers={() => [eng?.at(me), ...others.map((w) => eng?.at(w))].filter((p): p is [number, number] => !!p)}
       ondone={() => {
         editing = false;
         heldChanged();

@@ -28,10 +28,11 @@
     villagers: () => readonly (readonly [number, number])[];
     /** The relay's clock (the hold's start: two people grabbing one piece). */
     relayNow: () => number;
-    partnerName: string;
+    /** The name of whoever else holds a piece (the partner, or with the guest here, the one holding it). */
+    holderName: (id: string) => string;
     ondone: () => void;
   }
-  let { eng, link, finds, villagers, relayNow, partnerName, ondone }: Props = $props();
+  let { eng, link, finds, villagers, relayNow, holderName, ondone }: Props = $props();
 
   type Tab = 'recent' | 'furniture' | 'rugs' | 'walled' | 'finds' | 'wall' | 'floor';
   /** The pieces I picked last (this phone's, newest first): NH's quick access to what's at hand. */
@@ -162,7 +163,7 @@
     if (!p) return false;
     if (link.heldThere(id)) {
       cue('boop');
-      toasts.show(t('tent.heldThere', { name: partnerName }), 2000);
+      toasts.show(t('tent.heldThere', { name: holderName(id) }), 2000);
       return false;
     }
     if (sel?.id === id) return true;
@@ -261,7 +262,7 @@
   export function partnerHolds(id: string, since: number): void {
     if (sel?.id !== id || since >= link.since) return;
     cancel(false);
-    toasts.show(t('tent.heldThere', { name: partnerName }), 2000);
+    toasts.show(t('tent.heldThere', { name: holderName(id) }), 2000);
   }
   /** The partner moved or took away the one I hold: let go of it. */
   export function changedThere(id: string, rm: boolean): void {
