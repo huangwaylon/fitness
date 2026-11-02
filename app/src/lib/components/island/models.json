@@ -28,8 +28,6 @@
   "deco/bamboo-shoot-lamp": {"ax":0.5,"ay":0.8549,"mu":[4.6,7.2]},
   "deco/bamboo-shoot-lamp-lit": {"ax":0.5,"ay":0.8549,"mu":[4.6,7.2]},
   "deco/beach-chair": {"ax":0.5016,"ay":0.7396,"mu":[19.6,9.1]},
-  "deco/bulletin-board": {"ax":0.0117,"ay":0.8566,"mu":[17,16.8]},
-  "deco/bulletin-board-winter": {"ax":0.0117,"ay":0.8566,"mu":[17,16.8]},
   "deco/campfire": {"ax":0.4998,"ay":0.7591,"mu":[16.7,15.6]},
   "deco/campfire-lit": {"ax":0.4998,"ay":0.7591,"mu":[16.7,15.6]},
   "deco/campsite": {"ax":0.5068,"ay":0.9994,"mu":[40.2,33.8]},
