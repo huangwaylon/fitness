@@ -62,6 +62,11 @@ Lost phone, leak, any doubt:
    export is signed with a secret derived from both keys, so until the two sides match the export is refused (§13).
 4. That person's app opens the pairing screen: paste the new key. Put it in their Shortcut's **Key** text too.
 
+The guest's key (`KEY_C`, §14) is the relay's only: `npx wrangler secret put KEY_C` (from `relay/`, it prompts) and the
+guest pastes the new one. No Script Property, no Shortcut, and the export's signature never involves it. To end the
+guest's visits: `npx wrangler secret delete KEY_C` (the next request is `unauthorized`: their app shows the pairing
+screen).
+
 ## 5. A new epoch (rev)
 The record's `rev` (`e1`, `e2`, …) is the data revision: when it changes, each phone drops its cache and refetches
 every row on its next sync. Nothing changes it by itself (nobody edits the record by hand); after a restore (§13),
@@ -204,3 +209,15 @@ On each iPhone: open https://huangwaylon.github.io/fitness/ in Safari → Share 
 the app from the icon, paste that person's key (the password manager). iOS gives the Home Screen app its own storage,
 so a key entered in Safari isn't seen there; a `…/fitness/#key=<key>` link works only when opened inside the installed
 app. Then the Shortcut: [shortcut-health-sync.md](shortcut-health-sync.md) §2–4.
+
+<a id="4b-the-guest"></a>**The guest** ([design](../design.md#the-guest)): the same steps with `KEY_C` (a Worker secret,
+§4; `openssl rand -hex 32`, kept in the password manager), and no Shortcut (the guest has no health data). Send them:
+
+> 1. iPhone の Safari で https://huangwaylon.github.io/fitness/ を ひらいて、きょうゆう → **ホーム画面に追加**。
+> 2. ホーム画面の しまの貯金箱 を ひらいて、この キーを はりつけて **つなぐ**：`<KEY_C>`
+> 3. せってい → むらびと で すきな むらびとと なまえを えらんでね。
+>
+> (English: open the link in Safari on the iPhone, Share → **Add to Home Screen**; open the app from the icon and
+> paste the key, then **Connect**; pick a villager and a name in Settings → Villager.)
+
+The app then opens on the island as 「おきゃくさん」; its villager comes ashore while its app is open.
