@@ -41,10 +41,19 @@ describe('lazy', () => {
 
   it('forgets a failed load (the next call retries) and reloads once', async () => {
     const load = vi.fn().mockRejectedValueOnce(new TypeError('Failed to fetch dynamically imported module')).mockResolvedValue('mod');
-    const get = lazy(load);
+    const get = lazy(load, async () => true);
     await expect(get()).rejects.toThrow(TypeError);
-    expect(reload).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(reload).toHaveBeenCalledTimes(1));
     expect(await get()).toBe('mod');
     expect(load).toHaveBeenCalledTimes(2);
+  });
+
+  it('reloads nothing on a page that is leaving (or offline): its next request fails too', async () => {
+    for (const alive of [async () => false, async () => { throw new TypeError('Load failed'); }]) {
+      const get = lazy(vi.fn().mockRejectedValue(new TypeError('Importing a module script failed.')), alive);
+      await expect(get()).rejects.toThrow(TypeError);
+    }
+    await new Promise((r) => setTimeout(r, 0));
+    expect(reload).not.toHaveBeenCalled();
   });
 });

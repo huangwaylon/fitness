@@ -1,8 +1,9 @@
-// Stale-build recovery: a lazy chunk that fails to load (the deploy replaced it) reloads the page once,
-// and the next open works; the failed import is not remembered.
+// Stale-build recovery: a lazy chunk that fails to load (the deploy replaced it) reloads the page once, and the next
+// open works; the failed import is not remembered. Not on a page that is leaving (its every load fails), nor offline.
 import { expect, test } from '@playwright/test';
 
-test('a failed panel chunk reloads the page once, then the panel opens', async ({ page }) => {
+// (in Chromium: playwright.config.ts)
+test('a failed panel chunk reloads the page once, then the panel opens', { tag: '@chromium' }, async ({ page }) => {
   await page.goto('?demo');
   const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
   await expect(ribbon).toBeVisible();
@@ -17,4 +18,18 @@ test('a failed panel chunk reloads the page once, then the panel opens', async (
   await page.waitForLoadState('load');
   await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
   await expect(page.locator('dialog[open]').locator('.health .mc').first()).toBeVisible(); // it opens on けんこう
+});
+
+test('a chunk that fails as the page leaves (or offline: every load fails) reloads nothing', async ({ page }) => {
+  await page.goto('?demo');
+  const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+  await expect(ribbon).toBeVisible();
+  await page.route('**/*', (route) => route.abort('failed'));
+  const navs: string[] = [];
+  page.on('framenavigated', (f) => f === page.mainFrame() && navs.push(f.url()));
+  await ribbon.click();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('island.reloadAt'))).toBeNull();
+  await page.waitForTimeout(1000);
+  expect(navs).toEqual([]);
+  expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt'))).toBeNull();
 });
