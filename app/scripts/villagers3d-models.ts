@@ -191,7 +191,15 @@ function pack(id: string, r: { gltf: string; tris: number }, maxTris: number, ou
 
 let total = 0;
 const failed: string[] = [];
-type R = { gltf: string; box: [number[], number[]]; tris: number; joints: number; uv: Record<string, number[]> };
+type R = { gltf: string; box: [number[], number[]]; tris: number; joints: number; uv: Record<string, number[]>; want: Record<string, boolean> };
+/** The GLB's materials that have no base colour though their source had one (the page's `want`): none, or it fails. */
+function untextured(glb: string, want: Record<string, boolean>): string[] {
+  const b = readFileSync(glb);
+  const j = JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString('utf8')) as { materials?: { name?: string; pbrMetallicRoughness?: { baseColorTexture?: object } }[] };
+  const mats = j.materials ?? [];
+  return Object.entries(want).filter(([n, w]) => w && !mats.some((m) => m.name === n && m.pbrMetallicRoughness?.baseColorTexture)).map(([n]) => n)
+    .concat(mats.filter((m) => want[m.name ?? ''] && !m.pbrMetallicRoughness?.baseColorTexture).map((m) => m.name!));
+}
 for (const [id, [body, tops, tex]] of todo) {
   const folders = [body!, tops, tex].filter((f): f is string => !!f);
   for (const f of folders) copy(f);
@@ -208,6 +216,8 @@ for (const [id, [body, tops, tex]] of todo) {
       });
       tris = size.tris;
       pack(id, r, size.tris, out);
+      const lost = [...new Set(untextured(out, r.want))];
+      if (lost.length) throw new Error(`untextured though the source has an albedo: ${lost.join(', ')}`);
       if (statSync(out).size / 1024 <= BUDGET_KB) break;
       console.log(`${id}: ${(statSync(out).size / 1024).toFixed(1)} KB, over budget: again, smaller`);
     }

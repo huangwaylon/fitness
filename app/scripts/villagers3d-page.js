@@ -82,10 +82,37 @@ function occlude(d, m) {
   }
 }
 
-/** A plain material (the body, a top): its albedo at ≤ maxTex, occluded, cut out by its _OP (green) if it has one. */
-async function plainMat(name, url, o) {
+/** A material's textures by the Collada's effects (material id → its diffuse image's file, less `_Alb.png`): NH's
+ *  materials don't always have textures of their own: mCapVis (the ears, the hair and the horns a hat hides: NH draws
+ *  it without one) samples mBody_Alb, mGlassCap mGlass_Alb, a hedgehog's or a kangaroo's mSoftmesh mBody_Alb or
+ *  mCloth_Alb. Looked up by the material's own name these were plain grey. */
+function albedos(xml) {
+  const doc = new DOMParser().parseFromString(xml, 'application/xml');
+  const files = new Map([...doc.querySelectorAll('library_images > image')].map((im) => [im.id, im.querySelector('init_from')?.textContent?.trim()]));
+  const out = new Map();
+  for (const m of doc.querySelectorAll('library_materials > material')) {
+    const fx = doc.getElementById(m.querySelector('instance_effect')?.getAttribute('url')?.slice(1) ?? '');
+    const p = fx && [...fx.querySelectorAll('newparam')].find((n) => /-diffuse$/.test(n.getAttribute('sid') ?? '') && n.querySelector('surface'));
+    const f = files.get(p?.querySelector('init_from')?.textContent?.trim() ?? '') ?? '';
+    const base = /^([A-Za-z0-9]+)_Alb(\.0)?\.png$/.exec(f)?.[1];
+    if (base) out.set(m.id, base);
+  }
+  return out;
+}
+
+/** A plain material (the body, a top): its albedo (`<base>_Alb.png`) at ≤ maxTex, occluded by `<base>_Mix`, cut out by
+ *  `<base>_OP`'s green if it has one. The texture is made once per base and shared (mCapVis and the tail wear the
+ *  body's own: one image in the GLB). */
+async function plainMat(name, base, url, o, cache) {
+  const key = url(`${base}_Alb.png`);
+  if (!cache.has(key)) cache.set(key, plainTex(base, url, o));
+  const t = await cache.get(key);
+  if (!t) return new THREE.MeshStandardMaterial({ ...std(name), color: 0xcccccc });
+  return new THREE.MeshStandardMaterial({ ...std(name), map: t.map, ...(t.cut ? { alphaTest: 0.45, side: THREE.DoubleSide } : {}) });
+}
+async function plainTex(name, url, o) {
   const alb = await bitmap(url(`${name}_Alb.png`));
-  if (!alb) return new THREE.MeshStandardMaterial({ ...std(name), color: 0xcccccc });
+  if (!alb) return null;
   const s = Math.min(1, o.maxTex / Math.max(alb.width, alb.height));
   const w = Math.max(4, Math.round(alb.width * s)), h = Math.max(4, Math.round(alb.height * s));
   const a = await opaqueAt(url(`${name}_Alb.png`), w, h);
@@ -100,7 +127,7 @@ async function plainMat(name, url, o) {
       if (p[i + 1] < 250) cut = true;
     }
   }
-  return new THREE.MeshStandardMaterial({ ...std(name), map: texOf(a), ...(cut ? { alphaTest: 0.45, side: THREE.DoubleSide } : {}) });
+  return { map: texOf(a), cut };
 }
 
 /** An expression atlas: `<name>_Alb.<i>.png` for every i, each a cell (cw × ch) of a cols-wide grid, row 0 at the top. */
@@ -125,10 +152,13 @@ const dae = new ColladaLoader();
 const exporter = new GLTFExporter();
 
 /** o: { body: [folder, dae], tops?: [folder, dae], topsTex?: folder, files: { [folder]: names[] }, maxTex, eye: [cols, w, h], mouth: [cols, w, h] }
- *  → { gltf (JSON, images as PNG data URIs), box, tris, joints, uv (the eyes' and mouth's uv ranges) }. */
+ *  → { gltf (JSON, images as PNG data URIs), box, tris, joints, uv (the eyes' and mouth's uv ranges), want (each
+ *  material: whether its source had an albedo) }. */
 window.convertVillager = async (o) => {
   const inFolder = (folder) => (n) => (o.files[folder]?.includes(n) ? `/src/${folder}/${n}` : null);
-  const body = (await dae.loadAsync(`/src/${o.body[0]}/${o.body[1]}.dae`)).scene;
+  const bodyDae = `/src/${o.body[0]}/${o.body[1]}.dae`;
+  const base = albedos(await (await fetch(bodyDae)).text());
+  const body = (await dae.loadAsync(bodyDae)).scene;
   body.updateMatrixWorld(true);
   const bones = new Map();
   body.traverse((n) => { if (n.isBone) bones.set(n.name, n); });
@@ -184,14 +214,19 @@ window.convertVillager = async (o) => {
   const bodyUrl = inFolder(o.body[0]);
   const topsUrl = o.topsTex ? inFolder(o.topsTex) : () => null;
   const uv = {};
+  /** each material's name → whether its source has a base colour (models.ts fails a GLB that lost one) */
+  const want = {};
+  const cache = new Map();
   let tris = 0;
   for (const m of skinned) {
     const name = m.userData.tops ? 'mTops' : (Array.isArray(m.material) ? m.material[0] : m.material).name || m.name.split('__').pop();
     let mat;
     if (name === 'mEye') mat = await atlasMat('mEye', bodyUrl, 16, o.eye[0], o.eye[1], o.eye[2]);
     else if (name === 'mMouth') mat = await atlasMat('mMouth', bodyUrl, 9, o.mouth[0], o.mouth[1], o.mouth[2]);
-    else if (name === 'mTops') mat = await plainMat('mTops', topsUrl, o);
-    else mat = await plainMat(name, bodyUrl, o);
+    else if (name === 'mTops') mat = await plainMat('mTops', 'mTops', topsUrl, o, cache);
+    else mat = await plainMat(name, base.get(name) ?? name, bodyUrl, o, cache);
+    const src = name === 'mEye' || name === 'mMouth' ? bodyUrl(`${name}_Alb.0.png`) : name === 'mTops' ? topsUrl('mTops_Alb.png') : bodyUrl(`${base.get(name) ?? name}_Alb.png`);
+    want[name] = (want[name] ?? false) || !!src;
     m.material = mat;
     // (a face mesh keeps its face: FaceGood:mBeak)
     const face = /^(Face(?:Bad|Good|Nothing))/.exec(m.name)?.[1];
@@ -224,7 +259,7 @@ window.convertVillager = async (o) => {
   const scene = new THREE.Scene();
   scene.add(body);
   const gltf = await exporter.parseAsync(scene, { binary: false, onlyVisible: true });
-  return { gltf: JSON.stringify(gltf), box: [box.min.toArray(), box.max.toArray()], tris: Math.round(tris), joints: bones.size, uv };
+  return { gltf: JSON.stringify(gltf), box: [box.min.toArray(), box.max.toArray()], tris: Math.round(tris), joints: bones.size, uv, want };
 };
 
 window.ready = true;
