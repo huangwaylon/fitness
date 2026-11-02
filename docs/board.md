@@ -72,14 +72,17 @@ interface Proj3 {
 - The board's model (`deco/bulletin-board`, `static/room/world3d/deco/bulletin-board.glb`, centred on its origin by the
   conversion) has its **cork face** at model x −6.85…6.80, y 3.49…13.52, z +0.30 (facing +z, toward the camera at
   yaw 0): NH's cork quad in `mBbs` (UV u 0.011…0.352, v 0.683…0.933 of `mBbs_Alb`; NH's own pinned notes sit just in
-  front of it at z +0.35). There is no separate material for it: the board's face is a plane laid over it at z +0.38
-  (`board/face3d.ts` `faceMesh(canvas)`: a `PlaneGeometry(13.6, 10)` at (0, 8.5, 0.38) with the CanvasTexture), handed to
-  `attach('board', mesh)`.
+  front of it, curled off the cork with their pins to z +1.02; the frame's front is at z +1.10 … +1.24). There is no
+  separate material for it: the board's face is a plane laid over it at z +1.08, in front of NH's notes and inside the
+  frame (`board/face3d.ts` `faceMesh(canvas)`: a `PlaneGeometry(13.6, 10)` translated to (0, 8.5, 1.08) **in its
+  geometry**, with the CanvasTexture), handed to `attach('board', mesh)`. `attach` sets the object's matrix to the
+  instance's, so a `position` on the mesh would be dropped: the offset lives in the geometry.
 - The board is drawn at 3.5 u a model unit (60u tall, two tiles wide: `BOARD_S`). The focus rect the board asks for:
-  the face's middle (0.38 × 3.5 u in front of the board's middle), `y` = 8.5 × 3.5 = 29.75 u, `w` = 13.6 × 3.5 = 47.6,
+  the face's middle (1.08 × 3.5 u in front of the board's middle), `y` = 8.5 × 3.5 = 29.75 u, `w` = 13.6 × 3.5 = 47.6,
   `h` = 10 × 3.5 = 35, `yaw` from the layout's `f`, `bottom` the controls' and the keyboard's height, `fill` 0.92.
 - The board's m3 instance id is `board` (the bird's `board-bird`); `attach('board', mesh)` is called once the 3D island
-  is up, `attach('board', null)` when it goes.
+  is up, `attach('board', null)` when it goes. (`world.three` isn't reactive: the board follows `world.rest.three`, the
+  flag that is, since the 3D island always comes up after the board.)
 - The bird (`deco/bbs-bird-day` / `deco/bbs-bird-night`) is an ordinary m3 node on the board's top (lift ≈ 65 u), its
   idle a turn of its yaw every few seconds.
 
@@ -88,8 +91,8 @@ interface Proj3 {
 - **Placement:** near the front of the beach, facing the sea-side camera (see the layout request).
 - **Walk up:** a tap on the board walks my villager to the spot in front of it (the tent door's way: the deliberate
   exception to "interactables act in place"), then the board opens.
-- **The board view:** in 3D the camera dollies and zooms to the face (≈600 ms); the back control (「もどる」) returns it to
-  exactly where it was. On the 2D island (and in 3D before `focus` exists): a sheet over the island showing the same
+- **The board view:** in 3D the camera dollies and zooms to the face (≈600 ms); the back control (「もどる」, top left
+  under the HUD's ribbon: `--hud-top` + 44 + the lip + 10 px, never over the ribbon) returns it to exactly where it was. On the 2D island (and in 3D before `focus` exists): a sheet over the island showing the same
   face (the very canvas the 3D texture is drawn from) with the same controls.
 - **Posts:** the newest first, four to a page as NH's notes (the author's villager name and icon, the date), 「‹」「›」
   and a swipe on the board page through older ones.
@@ -112,3 +115,10 @@ interface Proj3 {
 - Live: a post goes to the record at once; the record's notice reaches every open phone over the room, which fetch it
   (the room's 256-byte messages are too small for a post's text, so there is no live intent of its own).
 - The Sheet export carries the `board` rows like every event.
+
+## Checked (`app/e2e/board.spec.ts`)
+
+- The face's notes are a canvas: the specs read what it drew through `window.__board.drawn()` (the page's texts) and a
+  pixel of the 2D sheet's canvas (a note's paper, not bare cork), and `__board.face3()` (the 3D face's box in the scene:
+  on the cork, in front of NH's notes). A note shows at once when written, after a reload, and from the record's
+  snapshot (the relay mocked); 「もどる」 is under the ribbon and the face under both, on the 2D and the 3D island.

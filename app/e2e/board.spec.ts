@@ -107,7 +107,7 @@ test('a second phone sees the note at once; an author edits and takes down their
   await view(b).getByRole('button', { name: 'はがす' }).click();
   await view(b).getByRole('button', { name: 'ほんとうに はがす？' }).click();
   await expect(view(b).locator('[data-note]')).toHaveCount(0);
-  await expect(view(b)).toHaveAttribute('data-board-view', 'sheet');
+  await expect(view(b)).toHaveAttribute('data-board-view', process.env.E2E_ISLAND === '3d' ? '3d' : 'sheet');
   await close(b);
   // ウェイ's phone: both gone
   await openBoard(a);
@@ -139,4 +139,107 @@ test('the guest posts and edits its own, but can’t take down another’s', asy
   await note(a, 'おじゃましました').click();
   await expect(view(a).getByRole('button', { name: 'はがす' })).toBeVisible();
   await ctx.close();
+});
+
+// ---- what the face shows (the notes' buttons are only tap areas: the text is drawn on the canvas) ----
+type BoardHook = { drawn(): string[]; face3(): { min: number[]; max: number[] } | null };
+const drawn = (p: Page) => p.evaluate(() => (window as unknown as { __board: BoardHook }).__board.drawn());
+const face3 = (p: Page) => p.evaluate(() => (window as unknown as { __board: BoardHook }).__board.face3());
+/** The 2D sheet's face at its first note's header (right of the head, between the name and the date): the darkest of
+ *  its r, g, b (the cork's under 170, every note's paper over). */
+const paperAt = (p: Page) => p.evaluate(() => {
+  const c = document.querySelector('canvas[data-board-face]') as HTMLCanvasElement;
+  const [r, g, b] = c.getContext('2d')!.getImageData(420, 150, 1, 1).data;
+  return Math.min(r, g, b);
+});
+
+test('a note written is drawn on the face at once, and still after a reload', async ({ page }) => {
+  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&island=2d`);
+  await expect(ribbon(page)).toBeVisible();
+  await page.waitForFunction(() => (window as unknown as { __board?: unknown }).__board);
+  await openBoard(page);
+  expect(await drawn(page)).toEqual([]);
+  expect(await paperAt(page)).toBeLessThan(170);
+  await write(page, 'よみかえし テスト');
+  expect(await drawn(page)).toEqual(['よみかえし テスト']);
+  expect(await paperAt(page)).toBeGreaterThan(170);
+  await close(page);
+  await page.reload();
+  await expect(ribbon(page)).toBeVisible();
+  await openBoard(page);
+  await expect(note(page, 'よみかえし テスト')).toBeVisible();
+  expect(await drawn(page)).toEqual(['よみかえし テスト']);
+  expect(await paperAt(page)).toBeGreaterThan(170);
+});
+
+for (const island of ['2d', '3d'] as const) {
+  test(`「もどる」 sits under the HUD’s ribbon, never over it, and the face under both (${island})`, async ({ page }) => {
+    await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&island=${island}`);
+    await expect(ribbon(page)).toBeVisible();
+    const hud = (await ribbon(page).boundingBox())!;
+    await openBoard(page);
+    await expect(view(page)).toHaveAttribute('data-board-view', island === '2d' ? 'sheet' : '3d');
+    const back = (await view(page).getByRole('button', { name: /もどる/ }).boundingBox())!;
+    expect(back.y).toBeGreaterThanOrEqual(hud.y + hud.height);
+    // the face (its notes' tap areas lie over it, the sheet's canvas or the 3D board's, once the camera is there)
+    const face = view(page).getByRole('group', { name: 'けいじばん' });
+    await expect(face).toBeVisible({ timeout: 10_000 });
+    expect((await face.boundingBox())!.y).toBeGreaterThanOrEqual(back.y + back.height);
+  });
+}
+
+// ---- the record's posts on a paired phone (the relay mocked: its snapshot holds one of うめ's notes) ----
+const RELAY = 'https://island-fund-relay.island-fund-relay.workers.dev';
+async function pairedWithPost(page: Page, island: '2d' | '3d') {
+  const now = Date.now(), at = now - 3_600_000;
+  const iso = (ms: number) => new Date(ms).toISOString();
+  const snap = {
+    ok: true, me: 'A', now: iso(now), rev: 'e1',
+    rows: { metrics: [], events: [[iso(at), 'B', 'ev-board-1', 'board', JSON.stringify({ id: `b${at.toString(36)}abcd`, at, p: at, t: 'Hi!!' })]] }
+  };
+  await page.addInitScript(() => localStorage.setItem('island.key', 'ab'.repeat(16)));
+  await page.routeWebSocket(/\/room/, () => {});
+  await page.route(`${RELAY}/**`, (route) => {
+    let action = '';
+    try {
+      action = JSON.parse(route.request().postData() ?? '{}').action;
+    } catch { /* not JSON */ }
+    return route.fulfill({
+      status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' },
+      body: action === 'snapshot' ? JSON.stringify(snap) : '{"ok":true}'
+    });
+  });
+  await page.goto(`?critter=none&visitor=none&island=${island}`);
+  await page.waitForFunction(() => (window as unknown as { __board?: unknown }).__board);
+}
+
+test('a note in the record’s snapshot is on the board when it opens', async ({ page }) => {
+  await pairedWithPost(page, '2d');
+  await expect(page.locator('[data-board][data-unseen]')).toHaveCount(1, { timeout: 10_000 });
+  await openBoard(page);
+  await expect(note(page, 'Hi!!')).toBeVisible();
+  expect(await drawn(page)).toEqual(['Hi!!']);
+  expect(await paperAt(page)).toBeGreaterThan(170);
+  await write(page, 'みえる？');
+  expect(await drawn(page)).toEqual(['みえる？', 'Hi!!']);
+});
+
+test('on the 3D island the face rides on the board’s cork, in front of NH’s notes', async ({ page }) => {
+  await pairedWithPost(page, '3d');
+  const where = () => page.evaluate(() => (window as unknown as { __world3d?: { where(id: string): { x: number; y: number; z: number } | null } }).__world3d?.where('board') ?? null);
+  await expect.poll(where, { timeout: 20_000 }).not.toBeNull();
+  await expect.poll(() => face3(page), { timeout: 10_000 }).not.toBeNull();
+  const at = (await where())!, box = (await face3(page))!;
+  // the cork (board.md: model y 3.5…13.5 about x 0, at 3.5 u a unit), in front of NH's own notes (z +1.02, three's
+  // z: toward the camera)
+  const S = 3.5;
+  expect(Math.abs(box.min[1] - (at.y + 3.5 * S))).toBeLessThan(1);
+  expect(Math.abs(box.max[1] - (at.y + 13.5 * S))).toBeLessThan(1);
+  expect(Math.abs((box.min[0] + box.max[0]) / 2 - at.x)).toBeLessThan(1);
+  expect(box.min[2] - at.z).toBeGreaterThan(1.02 * S);
+  expect(box.min[2] - at.z).toBeLessThan(1.1 * S);
+  await openBoard(page);
+  await expect(view(page)).toHaveAttribute('data-board-view', '3d');
+  await expect(note(page, 'Hi!!')).toBeVisible();
+  expect(await drawn(page)).toEqual(['Hi!!']);
 });
