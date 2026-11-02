@@ -20,7 +20,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     this.core = new StoreCore({
       sql: ctx.storage.sql as unknown as Sql,
       tx: (fn) => ctx.storage.transactionSync(fn),
-      keys: { KEY_A: env.KEY_A, KEY_B: env.KEY_B },
+      keys: { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C },
       now: () => Date.now(),
       notify: (n) => this.tellRoom(n)
     });

@@ -1,7 +1,7 @@
 // Compute-on-read: validated state + "now" → the WeekView the UI renders (the island, the wallet, the harvest). The
 // ベル economy itself (earnings, the wallet, buys, the ledger) lives in bells.ts; golden.test.ts pins the views.
-import type { HarvestView, LocalDate, PersonId, PersonWeekView, RingFruit, RingProgress, TogetherView, WeekKey, WeekView } from '#lib/types.ts';
-import { PEOPLE, RING_FRUITS, RULES } from '#lib/config/rules.ts';
+import type { HarvestView, LocalDate, PersonId, PersonWeekView, RingFruit, RingProgress, TogetherView, WeekKey, WeekView, Who } from '#lib/types.ts';
+import { GUEST, PEOPLE, RING_FRUITS, RULES } from '#lib/config/rules.ts';
 import { noneMet, ringBells, type WeekEarning } from '#lib/scoring/bells.ts';
 import { walletAt, weekBells, weekSum, type WeekBells } from './bells.ts';
 import { addDays, jstMs, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
@@ -74,28 +74,33 @@ function togetherView(w: WeekBells, today: LocalDate): TogetherView {
 
 /** しずえ's line (usage.test.ts checks every key emitted here exists in ja and en). */
 function hostLine(v: Omit<WeekView, 'host'>): WeekView['host'] {
+  if (v.viewer === 'G') return { key: 'host.default' }; // the harvest is the members'
   if (v.harvest && !v.harvest.confirmedBy.includes(v.me)) return { key: 'host.harvest_ready', params: { bells: v.harvest.totalBells } };
   if (v.harvest) return { key: 'host.harvest_waiting', params: { name: v.people[v.partner].villagerName } };
   return { key: 'host.default' };
 }
 
 /**
- * The WeekView for `me` at `now` (server-clock ms). Rows stamped after `now` still count for open weeks (the server
- * clock may run ahead of the phone); `now` decides which harvests opened and weeks locked.
+ * The WeekView for `viewer` at `now` (server-clock ms). Rows stamped after `now` still count for open weeks (the server
+ * clock may run ahead of the phone); `now` decides which harvests opened and weeks locked. The guest's (`G`) is A's
+ * and B's as either of them would see it, with its own language and `viewer: 'G'`.
  */
-export function buildWeekView(s: State, me: PersonId, now: number): WeekView {
+export function buildWeekView(s: State, viewer: Who, now: number): WeekView {
+  const me: PersonId = viewer === 'G' ? 'A' : viewer;
   const today = localDateAt(now);
   const weekKey = weekKeyOf(today);
   const partner = partnerOf(me);
-  const locale = s.prefs[me].locale ?? 'ja';
+  const locale = s.prefs[viewer].locale ?? 'ja';
 
   const startOfToday = jstMs(today, 0, 0);
   const w = weekBells(s, weekKey, now);
   const sum = weekSum(w, today);
   const i = w.A.days.findIndex((d) => d.date === today);
   const base: Omit<WeekView, 'host'> = {
+    viewer,
     me,
     partner,
+    guest: { villagerName: s.prefs.G.villagerName ?? GUEST.villager, villager: s.prefs.G.villager ?? null },
     locale,
     weekKey,
     today,

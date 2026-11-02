@@ -48,15 +48,19 @@ function rowsAt(tMs: number): SnapshotRows {
 }
 
 /** Both people's views at t, from one reduce of the rows (the State is shared, as in the app). */
-const views = (t: string): Record<PersonId, WeekView> => {
+/** A view as pinned: the guest's fields left out. */
+type Pinned = Omit<WeekView, 'viewer' | 'guest'>;
+const views = (t: string): Record<PersonId, Pinned> => {
   const tMs = Date.parse(t);
   const s = reduce(rowsAt(tMs));
-  return { A: buildWeekView(s, 'A', tMs), B: buildWeekView(s, 'B', tMs) };
+  // (pinned without the guest's fields, which only ever add to it: the economy's views are as they were)
+  const bare = ({ viewer: _v, guest: _g, ...v }: WeekView) => v;
+  return { A: bare(buildWeekView(s, 'A', tMs)), B: bare(buildWeekView(s, 'B', tMs)) };
 };
 
 if (process.env.GOLDEN_UPDATE) {
   const dir = new URL('./fixtures/', import.meta.url);
-  const regen = <T>(keys: string[], f: (v: WeekView) => T) =>
+  const regen = <T>(keys: string[], f: (v: Pinned) => T) =>
     Object.fromEntries(keys.map((t) => { const v = views(t); return [t, { A: f(v.A), B: f(v.B) }]; }));
   const newViews = regen(Object.keys(VIEWS), (v) => v);
   const newDigests = regen(Object.keys(DIGESTS), digest);

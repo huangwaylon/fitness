@@ -86,7 +86,19 @@ The app asks nothing day to day and never enters health data. Why: the daily loo
 would conflict with Health.
 
 ### No privacy rules
-Everything is visible to both people. Why: two people, one game.
+Everything is visible to both people. Why: two people, one game. (The guest is the one exception: below.)
+
+### A guest, not a third member (2026-11-02)
+A third person plays as a visitor ([backend](backend.md#the-guest)): its own key (`KEY_C`, who `G`), its own villager
+and name, catching for the shared ずかん (credited to it), high-fives, phrases and the tent's decorating; it sees the
+members' activity, ベル, trees and きろく, never their bodies (weight, body fat, BMI, lean mass, the weight goal), and
+writes nothing of the economy (no ingest, buy, void, harvest, goal or island decoration). The server enforces it: the
+record leaves the からだ rows out of the guest's every snapshot and refuses its other writes `forbidden`, the room
+refuses its other intents. Why: the user ("more of a guest… they don't contribute to the bells… can't view [body]
+data… can modify the tent room"); a third member would have meant N people through the whole economy (the trees, the
+week's ベル, ふたりでぜんぶ, the goals), and a privacy rule only the UI kept would leak through the cache. The protocol
+went to v3 beside v2 (relay first), so a phone not yet updated plays on without hearing of the guest. Not done: more
+than one guest; the guest's villager in the members' ambient life (it moves only by its own phone).
 
 ### One notification: the partner met every goal
 (Replaces *No alerts*, 2026-11.) The only notification is a Web Push to my phone when my partner's day reaches all four

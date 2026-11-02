@@ -9,7 +9,7 @@
   // Every found tile shows its count.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Avatar from '../characters/Avatar.svelte';
-  import type { PersonId } from '#lib/types.ts';
+  import type { Who } from '#lib/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import '#lib/i18n/catch.ts'; // the entries' names (their own catalog, out of the island's first load)
   import { loadCatalogNames } from '#lib/i18n/catalog.ts';
@@ -22,17 +22,17 @@
     finds: Map<string, FirstFind>;
     /** How many of each we've had (the day tallies). */
     counts: Totals;
-    /** Me first: the order the counts are shown in. */
-    order: readonly PersonId[];
-    names: Record<PersonId, string>;
-    villagers: Record<PersonId, string | null>;
+    /** Me first: the order the counts are shown in (the guest last, once it has found anything). */
+    order: readonly Who[];
+    names: Record<Who, string>;
+    villagers: Record<Who, string | null>;
   }
   let { kind, finds, counts, order, names, villagers }: Props = $props();
 
   const list = $derived(entries(kind));
   const runs = $derived(groups(kind));
   const found = $derived(list.filter((e) => finds.has(findKey(kind, e.id))).length);
-  const times = (id: string, person?: PersonId) => countOf(counts, findKey(kind, id), finds.has(findKey(kind, id)), person);
+  const times = (id: string, person?: Who) => countOf(counts, findKey(kind, id), finds.has(findKey(kind, id)), person);
 
   /** The catalogue's names (their own chunk, the language on screen); the other kinds' come with catch.ts. */
   let namesIn = $state<string | null>(null);

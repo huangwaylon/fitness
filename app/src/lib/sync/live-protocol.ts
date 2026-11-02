@@ -3,10 +3,12 @@
 // Every message is one small JSON object (≤ MAX_BYTES), versioned by `v`, and checked by the same parsers on both
 // sides. No imports: the Worker bundles this file as is.
 
-export const LIVE_V = 2;
+export const LIVE_V = 3;
 /** @public (relay/) The versions the relay still speaks: v1 phones (before the rolling-log world) keep their push and presence; only a
- *  walk, whose target changed meaning (stage units in v1, world units in v2), never crosses versions. */
-export const LIVE_VS = [1, 2] as const;
+ *  walk, whose target changed meaning (stage units in v1, world units in v2), never crosses from v1. v3 is v2 with a
+ *  third person (the guest, `G`: docs/backend.md#the-guest): `who` may be `G`, the welcome lists who is `here`, a
+ *  high-five names whom it is `to`; a v2 phone hears nothing of the guest. */
+export const LIVE_VS = [1, 2, 3] as const;
 /** @public (relay/, sync/live.ts) */
 export type LiveV = (typeof LIVE_VS)[number];
 /** Anything longer is dropped unread by both sides (but a `replay`, the relay's day in one message: REPLAY_BYTES). */
@@ -26,7 +28,13 @@ export const WALK_MS_MAX = 60_000;
 export const WORLD_X = [-230, 620] as const;
 export const WORLD_Z = [-460, 2650] as const;
 
-export type Who = 'A' | 'B';
+/** Who is on the island: the two members, and the guest (`G`, v3 only). */
+export type Who = 'A' | 'B' | 'G';
+/** The two members. @public (relay/) */
+export type Member = 'A' | 'B';
+
+/** Whether a walk of version `a` means the same on a phone of version `b`: v2 and v3 are both world units. @public (relay/) */
+export const sameWalk = (a: LiveV, b: LiveV): boolean => a === b || (a >= 2 && b >= 2);
 
 /** What my villager did with a tap (the partner's villager plays it too: the tool, the motion): `id` names the thing (a
  *  bush, the rock, a shadow being cast at), `pt` where it is (a world point). `wake`: a dozing villager woke (`id` whose,
@@ -100,8 +108,9 @@ export type Intent =
   /** A high-five to the partner (v2; docs/design.md "Villager taps"): `at` when it was tapped, the relay's clock (its
    *  identity on both phones: a second hearing of it is the same one). Numbered (acked, sent again after a reconnect);
    *  relayed live, and while the partner is away the room holds the last one for them (HIGHFIVE_HOLD_MS), handing it
-   *  over at their next hello until their phone says `got`. Never in the sheet. */
-  | { kind: 'highfive'; at: number };
+   *  over at their next hello until their phone says `got`. Never in the sheet. `to` (v3): whose villager was tapped
+   *  (absent: the partner, member to member); the guest's always names it, and a member's to the guest does. */
+  | { kind: 'highfive'; at: number; to?: Who };
 
 /** A decor op on the wire (contract/decor.ts DecorOp, or the tent's with `sc: 't'`, contract/tent.ts; checked here
  *  again: the Worker bundles this file alone). */
@@ -125,7 +134,8 @@ export type Relayed = Intent & { v: LiveV; who: Who; t: number };
 /** Relay → client. `ack`: my intent `c` reached the room at `t` (`ok` false: refused, a claim already made, a nest too
  *  soon, a walk older than one it holds). `replay`: today's world since the hello's `since`, in the room's order. */
 export type ServerMsg =
-  | { v: LiveV; kind: 'welcome'; me: Who; peer: boolean; t: number; rec?: RecordMark }
+  /** `peer`: a member's partner is here (the guest's: either member). `here` (v3): everyone else who is. */
+  | { v: LiveV; kind: 'welcome'; me: Who; peer: boolean; t: number; rec?: RecordMark; here?: Who[] }
   | { v: LiveV; kind: 'pong'; c: number; t: number }
   | { v: LiveV; kind: 'ack'; c: number; t: number; ok: boolean }
   | { v: LiveV; kind: 'replay'; es: Relayed[]; t: number }
@@ -211,6 +221,7 @@ const isTarget = (x: unknown, v: LiveV): x is Target =>
 const isWalkMs = (x: unknown): x is number => Number.isInteger(x) && (x as number) >= 0 && (x as number) <= WALK_MS_MAX;
 const isVia = (x: unknown): x is Pt[] => Array.isArray(x) && x.length <= VIA_MAX && x.every(isWorldPt);
 const opt = <T>(o: Obj, k: string, ok: (x: unknown) => x is T): boolean => o[k] === undefined || ok(o[k]);
+const isWho = (x: unknown): x is Who => x === 'A' || x === 'B' || x === 'G';
 const oneOf = <T extends string>(list: readonly T[]) => (x: unknown): x is T => list.includes(x as T);
 
 /** The intent in `o` (of version `v`), rebuilt from its known fields only (anything extra is dropped), or null. */
@@ -281,7 +292,8 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
         ...(o.via !== undefined ? { via: o.via as Pt[] } : {}), ...(o.s !== undefined ? { s: o.s as number } : {}), ...(o.ms !== undefined ? { ms: o.ms as number } : {})
       };
     case 'highfive':
-      return v === 1 || !isTime(o.at) ? null : { kind: 'highfive', at: o.at };
+      if (v === 1 || !isTime(o.at) || (o.to !== undefined && (v < 3 || !isWho(o.to)))) return null;
+      return { kind: 'highfive', at: o.at, ...(o.to !== undefined ? { to: o.to as Who } : {}) };
     case 'say': {
       const text = v === 1 ? null : cleanSay(o.text);
       return text ? { kind: 'say', text } : null;
@@ -330,7 +342,6 @@ export function otherVersion(raw: unknown): number | null {
   }
 }
 
-const isWho = (x: unknown): x is Who => x === 'A' || x === 'B';
 
 /** A notice's fields from `o` (known fields only), or null. */
 function noticeOf(o: Obj): Notice | null {
@@ -372,7 +383,8 @@ export function parseServer(raw: unknown): ServerMsg | null {
     case 'welcome': {
       if (!isWho(o.me) || typeof o.peer !== 'boolean') return null;
       const rec = isObj(o.rec) ? noticeOf({ ...o.rec, what: 'event', who: o.me }) : null;
-      return { v: LIVE_V, kind: 'welcome', me: o.me, peer: o.peer, t, ...(rec ? { rec: { at: rec.at, rev: rec.rev } } : {}) };
+      const here = Array.isArray(o.here) ? o.here.filter(isWho).filter((w, i, l) => w !== o.me && l.indexOf(w) === i) : null;
+      return { v: LIVE_V, kind: 'welcome', me: o.me, peer: o.peer, t, ...(rec ? { rec: { at: rec.at, rev: rec.rev } } : {}), ...(here ? { here } : {}) };
     }
     case 'pong':
       return isTime(o.c) ? { v: LIVE_V, kind: 'pong', c: o.c, t } : null;
@@ -401,6 +413,23 @@ export const NEST_GAP_MS = 3600_000;
 
 /** A high-five the room holds for a partner who is away is theirs this long (ms); older, it's let go. @public (relay/) */
 export const HIGHFIVE_HOLD_MS = 24 * 3600_000;
+
+/**
+ * What the guest's phone may send (docs/backend.md#the-guest): a walk, an act, the shared world's claims (a catch, a
+ * pick-up, a put: a bug out of a bush, a present landing; a shake), a phrase, a high-five, the tent (inside, a drag,
+ * its decor). Not the island's decor, a world op (watering, a wish), an emote or a `saved` nudge: the room drops
+ * those from the guest. @public (relay/, sync/live.ts)
+ */
+export function guestMaySend(i: Intent): boolean {
+  switch (i.kind) {
+    case 'walk': case 'act': case 'catch': case 'pick': case 'put': case 'shake': case 'say': case 'highfive': case 'tent': case 'drag':
+      return true;
+    case 'decor':
+      return i.sc === 't';
+    default:
+      return false;
+  }
+}
 
 /** Whether a phone numbers an intent (keeps it until the room's ack, sends it again after a reconnect) and sends it
  *  with the partner away: what the room keeps, and a high-five (held for the partner). */

@@ -3,7 +3,7 @@
 // pings. send() is a no-op unless the socket is up (and, for what the room doesn't keep, the partner is there too); it
 // never throws and never waits. Plain TS: the socket, the visibility source and the key are injectable for tests.
 import { LIVE, getKey, localKV, readJson, writeJson } from './storage.ts';
-import { CLOSE, LIVE_V, MAX_BYTES, dayStart, isAcked, isStored, parseClient, parseServer, tokyoDay, type Intent, type Notice, type RecordMark, type Relayed, type Who } from './live-protocol.ts';
+import { CLOSE, LIVE_V, MAX_BYTES, dayStart, guestMaySend, isAcked, isStored, parseClient, parseServer, tokyoDay, type Intent, type Notice, type RecordMark, type Relayed, type Who } from './live-protocol.ts';
 
 /** The relay's socket URL; VITE_LIVE_URL overrides it (empty = live off). */
 export const LIVE_URL: string = (import.meta.env?.VITE_LIVE_URL as string | undefined) ?? 'wss://island-fund-relay.island-fund-relay.workers.dev/room';
@@ -19,8 +19,10 @@ export interface LiveStatus {
   connected: boolean;
   /** Who the relay says I am (null until welcomed). */
   me: Who | null;
-  /** My partner has the app open too. */
+  /** My partner has the app open too (the guest's phone: either member). The guest never counts for a member. */
   peer: boolean;
+  /** Everyone else who has the app open (v3: the guest too), sorted. */
+  here: readonly Who[];
   /** The record's last change as of the welcome (docs/backend.md#the-record), when the relay knew one. */
   rec?: RecordMark;
 }
@@ -154,7 +156,7 @@ export function createLive(o: LiveOptions): Live {
   const since = o.since ?? storedSince;
 
   let ws: WebSocket | null = null;
-  let st: LiveStatus = { connected: false, me: null, peer: false };
+  let st: LiveStatus = { connected: false, me: null, peer: false, here: [] };
   let running = false;
   let unwatch: (() => void) | null = null;
   let fails = 0;
@@ -185,7 +187,7 @@ export function createLive(o: LiveOptions): Live {
 
   const setStatus = (s: Partial<LiveStatus>) => {
     const next = { ...st, ...s };
-    if (next.connected === st.connected && next.me === st.me && next.peer === st.peer && next.rec === st.rec) return;
+    if (next.connected === st.connected && next.me === st.me && next.peer === st.peer && next.rec === st.rec && next.here.join() === st.here.join()) return;
     st = next;
     for (const f of statusSubs) safe(() => f(st));
   };
@@ -232,7 +234,7 @@ export function createLive(o: LiveOptions): Live {
         /* already closing */
       }
     }
-    setStatus({ connected: false, peer: false, rec: undefined });
+    setStatus({ connected: false, peer: false, here: [], rec: undefined });
   };
 
   const wanted = () => running && !parked && !!url && !!WS && env.visible() && env.online() && !!o.key();
@@ -275,7 +277,7 @@ export function createLive(o: LiveOptions): Live {
           fails = 0;
           offset = m.t - Date.now(); // a first guess until the pings refine it
           samples = [];
-          setStatus({ connected: true, me: m.me, peer: m.peer, rec: m.rec });
+          setStatus({ connected: true, me: m.me, peer: m.peer, here: m.here ?? (m.peer ? [partnerOf(m.me)] : []), rec: m.rec });
           for (const at of PING_MS) pings.push(setTimeout(ping, at));
           pingEvery = setInterval(ping, PING_EVERY_MS);
           // what never got its ack goes again (the relay acks a repeat without relaying it twice); another day's is
@@ -313,9 +315,11 @@ export function createLive(o: LiveOptions): Live {
           offset = bestOffset(samples);
           return;
         }
-        case 'presence':
-          if (m.who !== st.me) setStatus({ peer: m.on });
-          return;
+        case 'presence': {
+          if (m.who === st.me) return;
+          const here = [...new Set([...st.here.filter((w) => w !== m.who), ...(m.on ? [m.who] : [])])].sort();
+          return setStatus({ here, peer: peerOf(st.me, here) });
+        }
         case 'changed':
           return changed({ who: m.who, what: m.what, at: m.at, rev: m.rev });
         default:
@@ -332,7 +336,7 @@ export function createLive(o: LiveOptions): Live {
       mx.closed = e.code;
       ws = null;
       clearTimers();
-      setStatus({ connected: false, peer: false, rec: undefined });
+      setStatus({ connected: false, peer: false, here: [], rec: undefined });
       if (e.code === CLOSE.unauthorized || e.code === CLOSE.replaced || e.code === CLOSE.version) parked = true;
       else schedule();
     };
@@ -375,7 +379,9 @@ export function createLive(o: LiveOptions): Live {
       // hear it when they open), numbered, and is kept here until its ack: offline or dropped, it goes again after the
       // next welcome
       const kept = isAcked(i);
-      if (!kept && (!st.connected || !st.peer)) return false;
+      // the guest's phone sends only what it may (the room would refuse the rest: live-protocol guestMaySend)
+      if (st.me === 'G' && !guestMaySend(i)) return false;
+      if (!kept && (!st.connected || !st.here.length)) return false;
       const c = kept ? nextSeq() : undefined;
       const m = { v: LIVE_V, ...(c !== undefined ? { c } : {}), ...i };
       const s = JSON.stringify(m);
@@ -404,6 +410,13 @@ export function createLive(o: LiveOptions): Live {
     serverNow: () => Date.now() + offset,
     metrics: () => ({ ...mx, pending: outbox.size })
   };
+}
+
+/** A member's partner (the guest's phone: none, it sees both). */
+const partnerOf = (me: Who): Who => (me === 'A' ? 'B' : 'A');
+/** Whether `me`'s partner is among `here`: a member's the other member (never the guest), the guest's either member. */
+export function peerOf(me: Who | null, here: readonly Who[]): boolean {
+  return me === 'G' ? here.some((w) => w !== 'G') : here.includes(me === 'A' ? 'B' : 'A');
 }
 
 function safe(f: () => void): void {

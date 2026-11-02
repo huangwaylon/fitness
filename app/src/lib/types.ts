@@ -1,6 +1,12 @@
 // Shared contracts between scoring, the model, the Apps Script (type-only) and the UI. Keep this file dependency-free.
 
 export type PersonId = 'A' | 'B';
+/**
+ * Anyone with a key: the two members (PersonId) and the guest (`G`, docs/design.md "The guest"), a third person who
+ * plays on the island and in the tent but never earns or sees ベル or health. The economy, the trees, きろく and
+ * けんこう stay strictly A + B; presence, the finds, the ずかん's counts, cosmetic prefs and the tent's decor take a Who.
+ */
+export type Who = PersonId | 'G';
 /** Local calendar date in the person's zone (Asia/Tokyo), `YYYY-MM-DD`. */
 export type LocalDate = string;
 /** Monday of the Mon–Sun week, `YYYY-MM-DD`. */
@@ -89,9 +95,24 @@ export interface HarvestView {
   confirmedBy: PersonId[];
 }
 
+/** The guest as the island draws it (docs/design.md "The guest"): its own villager and name, 「おきゃくさん」 by default. */
+interface GuestLook {
+  villagerName: string;
+  /** Roster key; null = the guest's default. */
+  villager: string | null;
+}
+
 export interface WeekView {
+  /**
+   * Who holds this phone: a member (then the same as `me`), or the guest (`G`). On the guest's phone `me` and
+   * `partner` are just A and B (the members whose activity and ベル it looks at); it earns nothing, buys nothing,
+   * confirms no harvest and sets no goal, and its snapshot holds no からだ figure.
+   */
+  viewer: Who;
   me: PersonId;
   partner: PersonId;
+  /** The guest's villager (drawn while the guest has the island open). */
+  guest: GuestLook;
   locale: 'ja' | 'en';
   weekKey: WeekKey;
   today: LocalDate;

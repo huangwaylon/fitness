@@ -47,6 +47,9 @@ export const PEOPLE: Record<PersonId, { villager: string; moveGoal: number; birt
   B: { villager: 'うめ', moveGoal: 400, birthday: '03-04' }
 };
 
+/** The guest (docs/design.md "The guest"): the name its villager has until it picks one (its look: villagers/look.ts). */
+export const GUEST = { villager: 'おきゃくさん' } as const;
+
 /** A `pref` moveGoal: an integer kcal in this range (inclusive); anything else is ignored (the previous goal stays). */
 export const MOVE_GOAL = { min: 100, max: 2000 } as const;
 

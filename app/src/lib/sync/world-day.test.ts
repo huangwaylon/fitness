@@ -50,19 +50,19 @@ function island() {
       const s = new Sock();
       socks.push(s);
       room.open(s);
-      room.message(s, JSON.stringify({ v: 2, kind: 'hello', key: this.who === 'A' ? KEY_A : KEY_B, since, ...(batch ? { batch } : {}) }));
+      room.message(s, JSON.stringify({ v: 3, kind: 'hello', key: this.who === 'A' ? KEY_A : KEY_B, since, ...(batch ? { batch } : {}) }));
       this.sock = s;
       this.drain();
       for (const w of this.waiting.splice(0)) this.send(w);
     }
     send(w: { c: number; i: Intent }) {
       if (!this.sock) return void this.waiting.push(w);
-      room.message(this.sock, JSON.stringify({ v: 2, c: w.c, ...w.i }));
+      room.message(this.sock, JSON.stringify({ v: 3, c: w.c, ...w.i }));
       this.sent.push(w);
     }
     /** The last `k` sent again, as after a reconnect that missed their acks. */
     resendLast(k: number) {
-      for (const w of this.sent.slice(-k)) if (this.sock) room.message(this.sock, JSON.stringify({ v: 2, c: w.c, ...w.i }));
+      for (const w of this.sent.slice(-k)) if (this.sock) room.message(this.sock, JSON.stringify({ v: 3, c: w.c, ...w.i }));
     }
     close() {
       if (!this.sock) return;

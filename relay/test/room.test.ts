@@ -300,8 +300,8 @@ describe('two protocol versions (v2: the rolling-log world)', () => {
     const x = new FakeSock();
     socks.push(x);
     room.open(x);
-    room.message(x, JSON.stringify({ v: 3, kind: 'hello', key: KEY_A }));
-    expect(x.closed).toEqual({ code: CLOSE.version, reason: 'protocol version 3 unsupported (relay speaks 1, 2)' });
+    room.message(x, JSON.stringify({ v: 4, kind: 'hello', key: KEY_A }));
+    expect(x.closed).toEqual({ code: CLOSE.version, reason: 'protocol version 4 unsupported (relay speaks 1, 2, 3)' });
     const a = join(KEY_A);
     say(a, { kind: 'emote', emote: 'glee', v: 2 }); // spoke v1 in its hello
     expect(a.closed?.code).toBe(CLOSE.version);
@@ -614,7 +614,7 @@ describe('high-fives (v2: the relay only, never the sheet)', () => {
     say2(a, { kind: 'highfive', at: now - 5000, c: 1 });
     now += 60_000;
     say2(a, { kind: 'highfive', at: now - 10, c: 2 }); // a newer one replaces it
-    expect(held).toEqual({ B: { from: 'A', at: now - 10, t: now } });
+    expect(held).toEqual({ 'A>B': { from: 'A', to: 'B', at: now - 10, t: now } });
     const at = now - 10;
     now += 3600_000;
     const b = join2(KEY_B);
@@ -624,7 +624,7 @@ describe('high-fives (v2: the relay only, never the sheet)', () => {
     const b2 = join2(KEY_B); // never said got: again
     expect(fives(b2)).toHaveLength(1);
     say2(b2, { kind: 'got', at: at - 1 }); // not this one
-    expect(held.B).toBeDefined();
+    expect(held['A>B']).toBeDefined();
     say2(b2, { kind: 'got', at });
     expect(held).toEqual({});
     bye(b2);
@@ -640,7 +640,7 @@ describe('high-fives (v2: the relay only, never the sheet)', () => {
     room.message(b1, JSON.stringify({ v: 1, kind: 'hello', key: KEY_B }));
     say2(a, { kind: 'highfive', at: now });
     expect(fives(b1)).toEqual([]);
-    expect(held.B?.at).toBe(now);
+    expect(held['A>B']?.at).toBe(now);
     bye(b1);
     room = new RoomCore(io(), [], null, held); // the Durable Object woke again
     expect(fives(join2(KEY_B))).toHaveLength(1);

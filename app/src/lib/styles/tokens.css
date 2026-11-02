@@ -21,6 +21,7 @@
                                                            ~5.8:1 on a card); -lip is never a text colour */
   --c-yuzu:#FFD84D;  --c-yuzu-lip:#E6B22E;               /* the focus (ribbon, nameplates) */
   --c-mint:#7BD7C1;                                    /* NH map mint (bars track) */
+  --c-lilac:#CDB4F2;                                     /* the guest's chip (おきゃくさん) */
   --c-coral:#FF8F7A;                                     /* errors only */
   --person-a:#2F86BD; --person-b:#D2701F;           /* けんこう's charts: ウェイ blue, うめ orange (CVD-safe pair, >= 3:1 on the card) */
 

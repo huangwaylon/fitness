@@ -1,7 +1,7 @@
 // The sheet layout and the web-app API shapes (docs/backend.md#tabs, #api). Shared by the Apps
 // Script (app/gas/main.ts), the model and the client: row tuples, reply shapes and the validation regexes both sides
 // apply. Dependency-free (type imports only), since it is bundled into apps-script/Code.js.
-import type { PersonId } from '../types.ts';
+import type { PersonId, Who } from '../types.ts';
 
 export const TABS = {
   metrics: ['at', 'person', 'date', 'metric', 'value'],
@@ -68,13 +68,15 @@ export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'm
 const PERSON_PREF_KEYS = ['goalWeight', 'moveGoal', 'stepsGoal'] as const;
 
 export const isPersonId = (v: unknown): v is PersonId => v === 'A' || v === 'B';
+/** A member or the guest (`G`): who sent a row. */
+export const isWho = (v: unknown): v is Who => v === 'A' || v === 'B' || v === 'G';
 
 /**
  * Whose data an event changes: `data.person` when present (only on a goal `pref`, and it must be `A` or `B`), else the
  * sender. Null for a `person` that is invalid or on an event that doesn't take one (the script refuses it; the model
  * ignores the event). Shared by the Apps Script and the model.
  */
-export function eventSubject(type: string, d: Record<string, unknown>, sender: PersonId): PersonId | null {
+export function eventSubject(type: string, d: Record<string, unknown>, sender: Who): Who | null {
   if (d.person === undefined) return sender;
   if (!isPersonId(d.person) || type !== 'pref' || !(PERSON_PREF_KEYS as readonly unknown[]).includes(d.key)) return null;
   return d.person;
@@ -115,18 +117,21 @@ export const isWeightKg = (v: unknown): v is number =>
 
 /** `snapshot` rows: compact arrays in tab column order. `at` is ISO 8601 UTC with milliseconds (`…T…:…:….sssZ`). */
 export type MetricRow = [at: string, person: PersonId, date: string, metric: MetricKey, value: number];
-/** `data` is the JSON text exactly as stored in the cell. */
-export type EventRow = [at: string, person: PersonId, id: string, type: EventType, data: string];
+/** `data` is the JSON text exactly as stored in the cell. `person` the sender: a member, or the guest (`G`: only its
+ *  finds, tallies, cosmetic prefs and tent decor, contract/guest.ts). */
+export type EventRow = [at: string, person: Who, id: string, type: EventType, data: string];
 
 export interface SnapshotRows { metrics: MetricRow[]; events: EventRow[] }
 
-export type ApiError = 'unauthorized' | 'bad_request' | 'too_large' | 'busy' | 'unavailable';
+/** `forbidden`: the guest's key asked for something only a member may (an ingest, a buy, a goal: contract/guest.ts). */
+export type ApiError = 'unauthorized' | 'forbidden' | 'bad_request' | 'too_large' | 'busy' | 'unavailable';
 export type Fail = { ok: false; error: ApiError; detail?: string };
 
 /**
  * `rev` is the data revision (docs/backend.md#revision): when it differs from the one the client cached with, it
  * is another epoch (the record was rebuilt, or another backend answered), so drop the cache and fetch everything (no `since`).
  */
-export type SnapshotReply = { ok: true; me: PersonId; now: string; rev: string; rows: SnapshotRows } | Fail;
-/** `build`: hash of the deployed Code.js (`dev` unbundled), to tell which code the deployment runs. */
-export type WhoamiReply = { ok: true; me: PersonId; build: string } | Fail;
+export type SnapshotReply = { ok: true; me: Who; now: string; rev: string; rows: SnapshotRows } | Fail;
+/** `build`: hash of the deployed Code.js (`dev` unbundled), to tell which code the deployment runs. `me`: `G` for the
+ *  guest's key. */
+export type WhoamiReply = { ok: true; me: Who; build: string } | Fail;

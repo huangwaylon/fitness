@@ -1,6 +1,6 @@
 // Cached snapshot + still-queued events → the reduced state (optimistic: a tap shows at once, before the server acks it).
 import type { EventRow } from '#lib/contract/api.ts';
-import type { PersonId } from '#lib/types.ts';
+import type { Who } from '#lib/types.ts';
 import { foldEvents, lastLockAt, reduce, type State } from '#lib/model/state.ts';
 import type { QueuedEvent } from '#lib/sync/queue.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
@@ -8,7 +8,8 @@ import type { SnapshotCache } from '#lib/sync/cache.ts';
 /** The reduced state (cache + queue) and the server-clock "now": what the island and きろく (model/history.ts) read. */
 export interface ComposedModel {
   state: State;
-  me: PersonId;
+  /** Who this phone is (`G`: the guest). */
+  me: Who;
   now: number;
   /** What `state` was reduced from: an unchanged input reuses it (the minute tick only moves `now`). */
   readonly from?: { rows: SnapshotCache['rows']; demo: SnapshotCache['demo']; extra: string; rev: string | null };

@@ -30,7 +30,7 @@ class FakeWS {
     this.onopen?.();
   }
   recv(m: object) {
-    this.onmessage?.({ data: JSON.stringify({ v: 2, ...m }) });
+    this.onmessage?.({ data: JSON.stringify({ v: 3, ...m }) });
   }
   drop(code = 1006) {
     this.readyState = 3;
@@ -93,10 +93,30 @@ describe('live: connecting', () => {
     expect(FakeWS.all).toHaveLength(1);
     last().open();
     // a page's first hello asks for today's whole shared world (from Tokyo midnight)
-    expect(last().sent[0]).toEqual({ v: 2, kind: 'hello', key: KEY, since: dayStart(tokyoDay(Date.now())), batch: true });
+    expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: dayStart(tokyoDay(Date.now())), batch: true });
     last().recv({ kind: 'welcome', me: 'A', peer: false, t: Date.now() });
-    expect(live.status()).toEqual({ connected: true, me: 'A', peer: false });
-    expect(seen.at(-1)).toEqual({ connected: true, me: 'A', peer: false });
+    expect(live.status()).toEqual({ connected: true, me: 'A', peer: false, here: [] });
+    expect(seen.at(-1)).toEqual({ connected: true, me: 'A', peer: false, here: [] });
+    // the guest (v3) comes and goes: it is here, but it isn't the partner
+    last().recv({ kind: 'presence', who: 'G', on: true, t: Date.now() });
+    expect(live.status()).toMatchObject({ peer: false, here: ['G'] });
+    last().recv({ kind: 'presence', who: 'B', on: true, t: Date.now() });
+    expect(live.status()).toMatchObject({ peer: true, here: ['B', 'G'] });
+    last().recv({ kind: 'presence', who: 'G', on: false, t: Date.now() });
+    expect(live.status()).toMatchObject({ peer: true, here: ['B'] });
+  });
+
+  it('on the guest’s phone: either member is its peer, and it sends only what the guest may', () => {
+    live.start();
+    last().open();
+    last().recv({ kind: 'welcome', me: 'G', peer: true, here: ['A'], t: Date.now() });
+    expect(live.status()).toMatchObject({ me: 'G', peer: true, here: ['A'] });
+    const n = last().sent.length;
+    expect(live.send({ kind: 'world', op: 'watered', id: 'fl:1:2' })).toBe(false);
+    expect(live.send({ kind: 'decor', id: 'dabc1234', at: 1e12, item: 'tanuki', x: 1, z: 1, f: 0, p: 1e12 })).toBe(false);
+    expect(live.send({ kind: 'saved' })).toBe(false);
+    expect(live.send({ kind: 'say', text: 'やあ' })).toBe(true);
+    expect(last().sent.length).toBe(n + 1);
   });
 
   it('does nothing hidden, offline, without a key or without a URL', () => {
@@ -206,10 +226,10 @@ describe('live: messages', () => {
     // the kept ones numbered (their acks), in order
     const out = last().sent.slice(1);
     expect(out.map(({ c: _c, ...m }) => m)).toEqual([
-      { v: 2, kind: 'walk', to: [10, 20] },
-      { v: 2, kind: 'world', op: 'weed-pulled', id: 'w1' },
-      { v: 2, kind: 'pick', id: 's1', what: 'shell:conch' },
-      { v: 2, kind: 'emote', emote: 'glee' }
+      { v: 3, kind: 'walk', to: [10, 20] },
+      { v: 3, kind: 'world', op: 'weed-pulled', id: 'w1' },
+      { v: 3, kind: 'pick', id: 's1', what: 'shell:conch' },
+      { v: 3, kind: 'emote', emote: 'glee' }
     ]);
     const cs = out.map((m) => m.c as number | undefined);
     expect(cs[3]).toBeUndefined();
@@ -223,13 +243,13 @@ describe('live: messages', () => {
     last().welcome(false);
     expect(live.send({ kind: 'highfive', at: 1_790_000_000_000 })).toBe(true);
     const [hf] = last().sent.slice(1) as { kind: string; c?: number }[];
-    expect(hf).toMatchObject({ v: 2, kind: 'highfive', at: 1_790_000_000_000 });
+    expect(hf).toMatchObject({ v: 3, kind: 'highfive', at: 1_790_000_000_000 });
     expect(hf.c).toBeGreaterThan(0);
     const heard: Relayed[] = [];
     live.on((m) => heard.push(m));
     last().recv({ kind: 'highfive', at: 1_789_999_000_000, who: 'B', t: 1_789_999_000_010 });
     expect(heard.map((m) => m.kind)).toEqual(['highfive']);
-    expect(last().sent.at(-1)).toEqual({ v: 2, kind: 'got', at: 1_789_999_000_000 });
+    expect(last().sent.at(-1)).toEqual({ v: 3, kind: 'got', at: 1_789_999_000_000 });
   });
 
   it('keeps a kept intent until its ack: one sent offline or never acked goes again after the next welcome (the last walk only)', () => {
@@ -262,9 +282,9 @@ describe('live: messages', () => {
     live.start();
     last().welcome();
     last().recv({ kind: 'replay', t: 1_790_000_001_000, es: [
-      { v: 2, kind: 'pick', id: 'w1', what: 'weed', who: 'B', t: 1_790_000_000_500 },
-      { v: 2, kind: 'walk', to: [10, 20], who: 'A', t: 1_790_000_000_600 },
-      { v: 2, kind: 'pick', id: 'w2', what: 'weed', who: 'Q', t: 1_790_000_000_700 }
+      { v: 3, kind: 'pick', id: 'w1', what: 'weed', who: 'B', t: 1_790_000_000_500 },
+      { v: 3, kind: 'walk', to: [10, 20], who: 'A', t: 1_790_000_000_600 },
+      { v: 3, kind: 'pick', id: 'w2', what: 'weed', who: 'Q', t: 1_790_000_000_700 }
     ] });
     expect(got.map((m) => [m.kind, m.who])).toEqual([['pick', 'B'], ['walk', 'A']]);
     last().drop();
@@ -295,7 +315,7 @@ describe('live: messages', () => {
     last().recv({ kind: 'act', act: 'shake', id: 't2', who: 'A', t: 6 });
     last().recv({ kind: 'act', act: 'explode', who: 'B', t: 7 });
     last().onmessage?.({ data: 'garbage' });
-    expect(got).toEqual([{ v: 2, kind: 'act', act: 'shake', id: 't2', who: 'B', t: 5 }]);
+    expect(got).toEqual([{ v: 3, kind: 'act', act: 'shake', id: 't2', who: 'B', t: 5 }]);
     expect(err).toHaveBeenCalled();
     off();
     last().recv({ kind: 'emote', emote: 'glee', who: 'B', t: 8 });
@@ -311,7 +331,7 @@ describe('live: messages', () => {
     last().drop();
     vi.advanceTimersByTime(2000);
     last().open();
-    expect(last().sent[0]).toEqual({ v: 2, kind: 'hello', key: KEY, since: 1_790_000_000_600, batch: true });
+    expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: 1_790_000_000_600, batch: true });
     // the page reloads: the kept since
     live.stop();
     live = make();
@@ -341,7 +361,7 @@ describe('live: messages', () => {
     expect(changes).toEqual([n, { who: 'B', what: 'event' }]);
     expect(intents).toEqual([]);
     expect(live.send({ kind: 'saved' })).toBe(true);
-    expect(last().sent.at(-1)).toEqual({ v: 2, kind: 'saved' });
+    expect(last().sent.at(-1)).toEqual({ v: 3, kind: 'saved' });
     off();
     last().recv({ kind: 'changed', ...n, t: 8 });
     expect(changes).toHaveLength(2);

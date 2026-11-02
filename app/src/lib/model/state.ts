@@ -1,7 +1,7 @@
 // Snapshot rows → validated, indexed state. Whose goal a `pref` sets (`data.person`) and which buys are valid are
 // read-time rules here (an invalid or unknown event is ignored, not refused), so the sheet stays a dumb append-only log.
 // Health data comes only from the Shortcut's `metrics` rows: Apple Health is the source of truth.
-import type { LocalDate, PersonId, ShopItemId, WeekKey } from '#lib/types.ts';
+import type { LocalDate, PersonId, ShopItemId, WeekKey, Who } from '#lib/types.ts';
 import { CUTOFFS, LIMITS, MOVE_GOAL, PEOPLE, STEPS_GOAL, isStepsGoal, shopPrice } from '#lib/config/rules.ts';
 import { addDays, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
 import { isTally } from '#lib/contract/tally.ts';
@@ -11,7 +11,7 @@ import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import type { TallyRow } from './tally.ts';
 import { rowAt } from './snapshot.ts';
 import {
-  BODY_BOUNDS, DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isActivityMetric, isBodyMetric, isWeightKg, roundKg, WEIGHT_KG,
+  BODY_BOUNDS, DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isWho, isActivityMetric, isBodyMetric, isWeightKg, roundKg, WEIGHT_KG,
   type ActivityMetric, type BodyMetric, type EventRow, type EventType, type FindKind, type SnapshotRows
 } from '#lib/contract/api.ts';
 
@@ -74,7 +74,7 @@ export interface State {
   harvests: { at: number; person: PersonId; week: WeekKey }[];
   highfives: { at: number; person: PersonId }[];
   /** The island's finds (`find`: catches and pick-ups for the ずかん), in server order. Never read by the economy. */
-  finds: { at: number; person: PersonId; kind: FindKind; id: string }[];
+  finds: { at: number; person: Who; kind: FindKind; id: string }[];
   /** Each person's day tallies (`tally`: the ずかん's counts, model/tally.ts), in server order, replaced rows included
    *  (a day's latest wins). Never read by the economy. */
   tallies: TallyRow[];
@@ -87,7 +87,8 @@ export interface State {
   /** The tent's room (`decor` with `sc: 't'`: each piece's ops, the wallpaper's and the floor's, contract/tent.ts), in
    *  server order (store/tent.svelte.ts merges them). Never read by the economy. */
   tent: TentEntry[];
-  prefs: Record<PersonId, Prefs>;
+  /** Each person's prefs; the guest's (`G`) only ever hold its locale, name and villager (contract/guest.ts). */
+  prefs: Record<Who, Prefs>;
   /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
   moveGoals: Record<PersonId, Timed<number>[]>;
   /** Accepted `pref` stepsGoal per person, ascending `at` (`stepsGoalOn` picks the one in force). */
@@ -153,7 +154,7 @@ function sortedByAt<T extends readonly unknown[]>(rows: T[]): { r: T; at: number
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i];
     const at = rowAt(r, false);
-    if (at === null || !isPersonId(r[1])) continue;
+    if (at === null || !isWho(r[1])) continue;
     if (ordered && out.length && at < out[out.length - 1].at) ordered = false;
     out.push({ r, at, i });
   }
@@ -191,7 +192,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     islandDays: [],
     decor: [],
     tent: [],
-    prefs: { A: {}, B: {} },
+    prefs: { A: {}, B: {}, G: {} },
     moveGoals: { A: [], B: [] },
     stepsGoals: { A: [], B: [] },
     lastSync: { A: null, B: null },
@@ -214,6 +215,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
 
   for (const { r: row, at } of byAt(r.metrics ?? [])) {
     const [iso, person, d, metric, v] = row;
+    if (!isPersonId(person)) continue; // health is the members' alone
     const date = normDate(d);
     const value = num(v);
     if (!date || value === null) continue;
@@ -263,7 +265,7 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     islandDays: [...base.islandDays],
     decor: [...base.decor],
     tent: [...base.tent],
-    prefs: { A: { ...base.prefs.A }, B: { ...base.prefs.B } },
+    prefs: { A: { ...base.prefs.A }, B: { ...base.prefs.B }, G: { ...base.prefs.G } },
     moveGoals: { A: [...base.moveGoals.A], B: [...base.moveGoals.B] },
     stepsGoals: { A: [...base.stepsGoals.A], B: [...base.stepsGoals.B] },
     rev,
@@ -272,7 +274,7 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
   let last = baseAts.length ? baseAts[baseAts.length - 1] : -Infinity;
   for (const row of events) {
     const at = rowAt(row, false);
-    if (at === null || !isPersonId(row[1])) continue;
+    if (at === null || !isWho(row[1])) continue;
     if (at < last) return null; // not after the base: only a whole reduce orders it right
     last = at;
     s.ats[1].push(at);
@@ -288,43 +290,51 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
 // ---------- events ----------
 
 type Data = Record<string, unknown>;
-/** `person`: whose data the event changes (a goal's `data.person`, else the sender). */
-type OnEvent = (s: State, person: PersonId, at: number, d: Data) => void;
+/** `person`: whose data the event changes (a goal's `data.person`, else the sender: the guest's, `G`, too). */
+type OnEvent = (s: State, person: Who, at: number, d: Data) => void;
+type MemberEvent = (s: State, person: PersonId, at: number, d: Data) => void;
+/** A handler of the members' alone (the economy, a goal): the guest's row of it is ignored (the record refuses those
+ *  anyway: contract/guest.ts). */
+const members = (fn: MemberEvent): OnEvent => (s, person, at, d) => {
+  if (isPersonId(person)) fn(s, person, at, d);
+};
+/** The prefs the guest has (its villager, name and language): anything else of `G` is ignored. */
+const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager'];
 
 /** One handler per event type: each accepts (indexes) the event or ignores it. */
 const ON_EVENT: Record<EventType, OnEvent> = {
-  spend(s, person, at, d) {
+  spend: members((s, person, at, d) => {
     // A buy from the wallet: a SHOP item at exactly its price. Whether the wallet covered it is decided on read (bells.ts).
     const { spendId, item } = d;
     const bells = shopPrice(item);
     if (!isId(spendId) || bells === undefined || d.bells !== bells) return;
     if (s.bellSpends.some((x) => x.spendId === spendId)) return;
     s.bellSpends.push({ at, person, spendId, item: item as ShopItemId, bells });
-  },
-  spend_void(s, person, at, d) {
+  }),
+  spend_void: members((s, person, at, d) => {
     const spendId = d.spendId;
     if (!isId(spendId)) return;
     const sp = s.bellSpends.find((x) => x.spendId === spendId);
     // Either of us (one shared wallet), once, after the spend.
     if (!sp || sp.at > at || s.spendVoids.some((v) => v.spendId === spendId)) return;
     s.spendVoids.push({ at, person, spendId });
-  },
-  harvest(s, person, at, d) {
+  }),
+  harvest: members((s, person, at, d) => {
     const week = normDate(d.week);
     if (week) s.harvests.push({ at, person, week });
-  },
-  highfive(s, person, at) {
+  }),
+  highfive: members((s, person, at) => {
     s.highfives.push({ at, person });
-  },
+  }),
   find(s, person, at, d) {
     if (isFind(d)) s.finds.push({ at, person, kind: d.kind as FindKind, id: d.id as string });
   },
   tally(s, person, at, d) {
     if (isTally(d)) s.tallies.push({ at, person, date: d.date, counts: d.counts });
   },
-  island(s, person, at, d) {
+  island: members((s, person, at, d) => {
     if (isIslandDay(d)) s.islandDays.push({ at, person, data: d });
-  },
+  }),
   decor(s, person, _at, d) {
     if (d.sc === 't') {
       const t = tentOpOf(d);
@@ -335,13 +345,14 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     if (op) s.decor.push({ ...op, who: person } as DecorEntry);
   },
   pref(s, person, at, d) {
-    if (d.key === 'moveGoal') {
+    if (!isPersonId(person)) {
+      if (!GUEST_PREFS.includes(d.key)) return;
+    } else if (d.key === 'moveGoal') {
       // An integer kcal in MOVE_GOAL; anything else is ignored (the previous goal stays).
       const v = d.value;
       if (typeof v === 'number' && Number.isInteger(v) && v >= MOVE_GOAL.min && v <= MOVE_GOAL.max) s.moveGoals[person].push({ at, v });
       return;
-    }
-    if (d.key === 'stepsGoal') {
+    } else if (d.key === 'stepsGoal') {
       // A whole STEPS_GOAL.step in STEPS_GOAL's range; anything else is ignored (the previous goal stays).
       if (isStepsGoal(d.value)) s.stepsGoals[person].push({ at, v: d.value });
       return;
