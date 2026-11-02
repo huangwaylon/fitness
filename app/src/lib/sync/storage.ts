@@ -81,7 +81,10 @@ export const DEVICE = {
    *  the hint shows the first few times only; tent/TentEdit.svelte). */
   tentHoldHint: 'island.tentHoldHint',
   /** localStorage: `3d` | `2d`: how this phone draws the island (せってい's 3D switch; store/islandRender.svelte.ts). */
-  islandRender: 'island.render'
+  islandRender: 'island.render',
+  /** localStorage: `on`: the 3D island reads the layout, as `?layout` does, ahead of the cutover (the e2e's E2E_LAYOUT;
+   *  island/site.svelte.ts). */
+  islandLayout: 'island.layout'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */

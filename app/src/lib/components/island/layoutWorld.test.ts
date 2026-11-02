@@ -19,8 +19,9 @@ describe('worldOf: world.ts from the layout', () => {
     expect(camp.z).toBeGreaterThan(1350);
     expect(g.BUILDINGS.map((b) => b.id).sort()).toEqual(['campsite', 'home-B', 'home-G']);
     for (const b of g.BUILDINGS) expect(b.z).toBeGreaterThan(700);
-    // おく's camera stop as far in front of the tent as world.ts's
-    expect(camp.z - g.CAMS.oku).toBeCloseTo(W.WORLD_2D.BUILDINGS[0].z - W.WORLD_2D.CAMS.oku, -1);
+    // おく's camera stop: the 3D camera's far end, the tent's feet mid-screen
+    expect(camp.z - g.CAMS.oku).toBeGreaterThan(100);
+    expect(camp.z - g.CAMS.oku).toBeLessThan(200);
   });
   test('the front is where it was (the villagers, the goal trees, the beach and the sea), おく 420u back', () => {
     expect(near(g.HOMES.A, W.WORLD_2D.HOMES.A, 16)).toBe(true);

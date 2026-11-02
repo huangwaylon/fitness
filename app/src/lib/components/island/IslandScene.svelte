@@ -59,7 +59,7 @@
   import { CAMPSITE, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, PLAN, PULLUP_AT, SEAT_DROP, SHORE_Z, TREE_H, flowerById, freshWhere, seatAt, surfaceAt, worldGen, BUILDINGS, LAWN_SPOTS, type BuildingId } from './world.ts';
   import { GUEST_ARRIVAL, guestSpot, doorAt, outOfTent, partnerOnline } from './buildings.ts';
   import { site } from './site.svelte.ts';
-  import { spotsOn } from './beach.ts';
+  import { digSpots, spotsOn } from './beach.ts';
   import * as W from './world.ts';
   import { provideDoor } from '#lib/ui-state/doorTransition.ts';
   import { goto } from '$app/navigation';
@@ -82,7 +82,9 @@
   import { addDays } from '#lib/time/dates.ts';
   import { actors, addFx, applyStep, busy, inMotion, react, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { walkGeo } from './walkGraph.ts';
+  import { walkGeo, walkable } from './walkGraph.ts';
+  import { weedsAt } from './care.ts';
+  import { mushroomSpots } from './mushrooms.ts';
   import { arrive, attachAvatar, homeAgain, homeRoute, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, snapHome, stayingAt, stepOut, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
   import { where } from '#lib/store/where.svelte.ts';
   import { JOIN_SAY_MS, RUN_RING_U_S, homeAfter, linkVillagers, playPartner, playWake, setHomeAfter } from './villagerSync.ts';
@@ -652,8 +654,17 @@
       geo: () => ({
         CAMS: W.CAMS, SHORE_Z: W.SHORE_Z, POND: W.POND, SPRING: W.SPRING, CENTRE_STAGE: W.CENTRE_STAGE, ARCH: W.ARCH, CAKE: W.CAKE, HOMES: W.HOMES,
         GOAL_TREES: W.GOAL_TREES, ROCK: W.ROCK, TAPE_DECK: W.TAPE_DECK, SEATS: W.SEATS, PULLUP_AT: W.PULLUP_AT, BUILDINGS: W.BUILDINGS,
-        FLOWERS: W.FLOWERS, SCENERY: W.SCENERY, DECOR_SLOTS: W.DECOR_SLOTS, BRIDGE: W.BRIDGE, CLIFF: W.CLIFF
+        FLOWERS: W.FLOWERS, SCENERY: W.SCENERY, DECOR_SLOTS: W.DECOR_SLOTS, BRIDGE: W.BRIDGE, CLIFF: W.CLIFF, LAWN_SPOTS: W.LAWN_SPOTS
       }),
+      /** Whether (x, z) is open ground a tap there walks to (e2e: a spot for a tap-walk): walkable, `away` u from
+       *  today's weeds, dig spots and mushrooms, 30 from the scenery's and the decor's tap areas, 32 from a flower (a thumb-sized tap area far up the screen). */
+      free: (x: number, z: number, away = 45) => {
+        const ms = (jst(clock).hour * 60 + jst(clock).minute) * 60_000, seed = islandSeed();
+        const near = (ps: readonly (readonly [number, number])[], d: number) => ps.some(([px, pz]) => Math.hypot(px - x, pz - z) < d);
+        return walkable(walkGeo(), x, z) && !near([...weedsAt(today, ms, seed).map((w) => [w.x, w.y] as const), ...digSpots(today, new Set(), seed).map((d) => [d.x, d.y] as const), ...mushroomSpots()], away)
+          && !near([...W.SCENERY, ...W.DECOR_SLOTS].map((t) => [t.x, t.z] as const), 30) && !near([W.ROCK, W.TAPE_DECK, ...W.BUILDINGS.map((b) => [b.x, b.z + b.depth / 2] as const)], 40)
+          && !near(W.FLOWERS.map((f) => [f.x, f.z] as const), 32);
+      },
       /** Today's weed and dig spots (beach.ts spotsOn: the layout's open grass when on). */
       spots: () => spotsOn(today, islandSeed()),
       /** The island as both phones must have it (e2e: the two-phone checks): the shared day's canonical hash, and each

@@ -9,8 +9,10 @@
 //   site.rev      bumped by each change applied (a DOM overlay reading world.ts's values reads it to follow)
 //   site.sync()   apply what's due now (IslandScene calls it as it opens and on a change of the switch)
 // The switch: the 3D island (store/islandRender) and, until the cutover, `?layout` on the page's URL (kept for the
-// page load, like `?island=3d`). LAYOUT_3D flips it on for every 3D island at the cutover.
+// page load, like `?island=3d`) or `island.layout` = `on` in localStorage (the e2e's E2E_LAYOUT=1). LAYOUT_3D flips it
+// on for every 3D island at the cutover.
 import { islandRender } from '#lib/store/islandRender.svelte.ts';
+import { DEVICE, localKV } from '#lib/sync/storage.ts';
 import { layout } from '#lib/store/layout.svelte.ts';
 import { navOf, type LayoutNav } from '#lib/layout/nav.ts';
 import type { Layout } from '#lib/layout/model.ts';
@@ -20,7 +22,14 @@ import { layoutSpots, useSpots } from './beach.ts';
 
 /** The 3D island reads the layout without `?layout` (the cutover). */
 const LAYOUT_3D = false;
-const fromUrl = typeof location !== 'undefined' && new URLSearchParams(location.search).has('layout');
+const kept = (): boolean => {
+  try {
+    return localKV()?.getItem(DEVICE.islandLayout) === 'on';
+  } catch {
+    return false;
+  }
+};
+const fromUrl = (typeof location !== 'undefined' && new URLSearchParams(location.search).has('layout')) || kept();
 
 class Site {
   rev = $state(0);

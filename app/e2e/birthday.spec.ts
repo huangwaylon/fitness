@@ -3,8 +3,7 @@
 // time the island opens, しずえ's line; an NH villager's own birthday puts the hat on that villager and a line in its
 // chats. Nothing over a control; no ベル.
 import { expect, test, type Page } from '@playwright/test';
-import { CAKE } from '../src/lib/components/island/world.ts';
-import { sawIt, watchFor } from './island.ts';
+import { geo, sawIt, watchFor } from './island.ts';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
 /** The controls under a thing's corners and middle (a building's door behind a world prop is the world's, not a control over it). */
@@ -46,9 +45,9 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await expect(ribbon(page)).toBeVisible();
     const bells = await ribbon(page).getAttribute('aria-label');
     await expect(page.locator('.vil [data-hat]')).toHaveCount(2);
-    await camera(page, 642);
+    await camera(page, (await geo(page)).CAMS.oku);
     await expect(page.locator('[data-cake="lit"] .official')).toBeVisible();
-    expect(await offFrom(page, '[data-cake]', CAKE[0], CAKE[1])).toBeLessThan(2);
+    expect(await offFrom(page, '[data-cake]', ...(await geo(page)).CAKE)).toBeLessThan(2);
     expect(await under(page, '[data-cake] .official')).toEqual([]);
     // (watched from the start: on a slow GPU it may be over before the camera's there)
     await expect.poll(() => sawIt(page, '.fxa.confetti'), { timeout: 4000 }).toBe(true);

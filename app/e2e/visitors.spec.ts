@@ -3,7 +3,7 @@
 // hosts stand at centre stage (the campsite's clearing, seen from おく), Gulliver on the front beach and Daisy Mae on the front lawn
 // (seen from まえ), never under a control; a tap gives a line (an introduction first), no trading, no ベル.
 import { expect, test, type Page } from '@playwright/test';
-import { CAMS, CENTRE_STAGE } from '../src/lib/components/island/world.ts';
+import { geo } from './island.ts';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
 async function tapOn(page: Page, sel: string) {
@@ -72,9 +72,10 @@ test('K.K. comes on Saturday from 18:00 (not on Friday); with the music on he as
   await expect(ribbon(page)).toBeVisible();
   const bells = await ribbon(page).getAttribute('aria-label');
   // at centre stage: out of sight from まえ (only a speck on the horizon), seen from おく
-  await camera(page, 642);
+  const g = await geo(page);
+  await camera(page, g.CAMS.oku);
   await expect(page.locator('[data-visitor="kk-slider"] .art')).toBeVisible();
-  expect(await offFrom(page, 'kk-slider', 195, 900)).toBeLessThan(2);
+  expect(await offFrom(page, 'kk-slider', ...g.CENTRE_STAGE)).toBeLessThan(2);
   expect(await under(page, '[data-visitor="kk-slider"] .art')).toEqual([]);
   await tapOn(page, '[data-visitor="kk-slider"] .art');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('とたけけ');
@@ -102,7 +103,7 @@ test('K.K. comes on Saturday from 18:00 (not on Friday); with the music on he as
 test('K.K. with the music off just introduces himself', async ({ page }) => {
   await page.goto('?demo&date=2026-10-24T20:00&critter=none');
   await expect(ribbon(page)).toBeVisible();
-  await camera(page, 642);
+  await camera(page, (await geo(page)).CAMS.oku);
   await tapOn(page, '[data-visitor="kk-slider"] .art');
   await expect(page.locator('[data-fx="talk"].placed')).toHaveAttribute('data-pages', '2');
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('とたけけ だ');
@@ -111,10 +112,11 @@ test('K.K. with the music off just introduces himself', async ({ page }) => {
 for (const [w, h] of [[390, 844], [320, 568]] as const)
   test(`visitors stand where NH puts them (Daisy Mae on the front lawn, Gulliver on the beach, Wisp at centre stage) clear of every control; the first tap is an introduction (${w}px)`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
-    const at = { 'daisy-mae': [CAMS.mae, 206, 396], wisp: [CAMS.oku, CENTRE_STAGE[0], CENTRE_STAGE[1]], gulliver: [CAMS.mae, 96, 30] } as const;
     for (const [q, id, name] of [['2026-11-01T08:00&critter=none', 'daisy-mae', 'ウリ'], ['2026-11-04T22:00&visitor=wisp&critter=none', 'wisp', 'ゆうたろう'], ['2026-11-04T12:00&visitor=gulliver&critter=none', 'gulliver', 'ジョニー']] as const) {
       await page.goto(`?demo&date=${q}`);
       await expect(ribbon(page)).toBeVisible();
+      const { CAMS, CENTRE_STAGE } = await geo(page);
+      const at = { 'daisy-mae': [CAMS.mae, 206, 396], wisp: [CAMS.oku, CENTRE_STAGE[0], CENTRE_STAGE[1]], gulliver: [CAMS.mae, 96, 30] } as const;
       const [cam, x, z] = at[id];
       await camera(page, cam);
       await expect(page.locator(`[data-visitor="${id}"] .art`)).toBeVisible();
@@ -147,7 +149,8 @@ test('out of view, a visitor takes no tap: K.K. at centre stage seen from まえ
   await expect(ribbon(page)).toBeVisible();
   await camera(page, 114);
   // his feet: a speck sunk at the horizon (the ribbon stands over his head); a tap there just below the horizon
-  const [x, y] = await page.evaluate(() => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(195, 900));
+  const [sx, sz] = (await geo(page)).CENTRE_STAGE;
+  const [x, y] = await page.evaluate(([sx, sz]) => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(sx, sz), [sx, sz]);
   expect(y).toBeLessThan(200);
   await page.mouse.click(x, y + 3);
   await page.waitForTimeout(400);

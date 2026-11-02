@@ -10,7 +10,7 @@ import { FLOWER_U, TREE_FRUIT, TREE_FRUIT_U, flowerScale, hedgePair, wildFlower 
 import type { Piece } from '../island/fixedDecor.ts';
 import type { Inst, ModelName, Standin } from './layout3d.ts';
 import { assetFor } from './assets.ts';
-import { modelBounds } from './models3d.ts';
+import { keyModel, modelBounds } from './models3d.ts';
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
 import { kindDef } from '#lib/layout/catalog.ts';
 import { doorOf, facingVec, footOf, objMid, type Layout, type Obj } from '#lib/layout/model.ts';
@@ -97,8 +97,10 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
     // a look of the day in its place: a model, else a card
     const swap = day.swaps?.[o.id];
     if (swap) {
-      const m = PROP[swap.key];
+      const m = PROP[swap.key], k = m ? null : keyModel(swap.key, season === 'winter');
       if (m) thing(m, scaleOf(swap.key, m, swap.h));
+      // (a seasonal look of its own: NH's mushroom lamp, a pond stone… layout3d.ts's way, fitted to its height)
+      else if (k) thing(k.m as ModelName, swap.h / (MU[swap.key]?.mu[1] ?? modelH(k.m as ModelName)));
       else standins.push({ id: o.id, key: swap.key, x, z, h: swap.h, flip: o.f % 2 === 1 });
       continue;
     }
@@ -176,9 +178,11 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         if (!pieces && SEASONAL.has(o.k)) break;
         const key = piece?.key ?? `deco/${o.k}`;
         // its art key's model, else a model of the kind's own name (a new piece's: models.json), else a card
-        const m = PROP[key] ?? (!piece && has(o.k) ? o.k : undefined);
+        const m = PROP[key] ?? (!piece && has(o.k) ? o.k : undefined), k = m ? null : keyModel(key, season === 'winter');
         // the fixed decor's pieces at NH's furniture scale; the scenery's props at their drawn height
         if (m) thing(m, piece || (SLOT_KINDS.has(o.k) && SCENERY_H[o.id] === undefined) ? DECOR_U : scaleOf(key, m, h));
+        // (a seasonal piece of its own model: the picnic set, the illuminated tree, a snowboy… at its own scale)
+        else if (k) thing(k.m as ModelName, k.s);
         else standins.push({ id: o.id, key, x, z, h: piece?.h ?? h, flip: o.f % 2 === 1 });
       }
     }
