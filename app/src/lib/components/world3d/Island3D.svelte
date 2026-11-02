@@ -366,7 +366,7 @@
     const proj: Proj3 = {
       at: (x, z, lift) => e.at(x, z, lift), ground: (sx, sy) => e.groundAt(sx, sy), horizon: () => e.horizon(),
       rev: () => e.rev(), kick: () => e.kick(), idle: () => e.idle(),
-      focusOn: (t, o) => e.focusOn(t, o), restore: (ms) => e.restore(ms), attach: (obj, at) => e.attach(obj as Object3D, at)
+      focus: (f, ms) => e.frame(f, ms), unfocus: (ms) => e.restore(ms), attach: (id, obj) => e.things.attach(id, obj as Object3D | null)
     };
     world.useThree(proj);
     let camWas = NaN, horizonWas = NaN;

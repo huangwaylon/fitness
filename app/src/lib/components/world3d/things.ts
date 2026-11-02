@@ -6,7 +6,7 @@
 // map is its night light (lights.ts adds its halo and its pool).
 import {
   Color, InstancedBufferAttribute, InstancedMesh, Matrix4, MeshDepthMaterial, MeshLambertMaterial, Quaternion, RGBADepthPacking,
-  Vector3, type Material, type Mesh, type MeshStandardMaterial, type Scene
+  Vector3, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Scene
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -50,6 +50,9 @@ export interface Things {
   /** One frame (the wobbles): true while one runs. */
   frame(t: number): boolean;
   has(id: string): boolean;
+  /** Something of the scene's own on an instance (the board's face: docs/board.md), in its model's units, placed, turned,
+   *  scaled and bent with it; null takes it off. */
+  attach(id: string, obj: Object3D | null): void;
   /** Where an instance stands now (three's space) and whether it's hidden (the e2e). */
   groups(): unknown;
   where(id: string): { x: number; y: number; z: number; hidden: boolean; model: string } | null;
@@ -148,7 +151,19 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       im.instanceMatrix.needsUpdate = true;
       if (grey) grey.needsUpdate = true;
     }
+    // what rides on an instance (the board's face) goes with it
+    for (let i = 0; i < g.base.length; i++) {
+      if (only !== undefined && i !== only) continue;
+      const obj = riders.get(g.list[i].id);
+      if (obj) {
+        obj.matrix.copy(g.base[i]);
+        obj.matrixWorldNeedsUpdate = true;
+        if (!obj.parent) scene.add(obj);
+      }
+    }
   }
+  /** Objects riding on instances, by instance id (attach). */
+  const riders = new Map<string, Object3D>();
   function drop(g: Group) {
     for (const { im, grey } of g.meshes) {
       scene.remove(im);
@@ -297,6 +312,25 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     },
     frame,
     has: (id) => byId.has(id),
+    attach(id, obj) {
+      const was = riders.get(id);
+      if (was) {
+        scene.remove(was);
+        riders.delete(id);
+      }
+      if (obj) {
+        obj.matrixAutoUpdate = false;
+        obj.traverse((n) => {
+          const m = (n as Mesh).material as Material | Material[] | undefined;
+          for (const x of m ? (Array.isArray(m) ? m : [m]) : []) bend(x);
+          (n as Mesh).frustumCulled = false;
+        });
+        riders.set(id, obj);
+        const a = byId.get(id);
+        if (a) write(a.g, a.i);
+      }
+      changed();
+    },
     groups: () => [...groups.values()].map((g) => ({ name: g.name, n: g.list.length, meshes: g.meshes.map((m) => ({ count: m.im.count, vis: m.im.visible, inScene: !!m.im.parent, mat: (m.im.material as Material).visible })) })),
     where(id) {
       const a = byId.get(id);

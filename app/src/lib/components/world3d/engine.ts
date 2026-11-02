@@ -168,15 +168,15 @@ export interface Island3 {
    *  camera eases to it over `ms` (600), centred on it, `zoom` (2.2) and `pitch` (degrees, 30) its own; the finger does
    *  nothing until restore(), which eases back to exactly where the camera was. */
   focusOn(target: { x: number; z: number; lift?: number }, o?: { zoom?: number; pitch?: number; ms?: number }): Promise<void>;
+  /** The bulletin board's focus (docs/board.md): a rect (its middle x, z on the ground, y up, w × h u) framed face-on
+   *  in the screen above `bottom` px, filling `fill` of it; called again while focused it re-frames from where it is. */
+  frame(f: { x: number; z: number; y: number; w: number; h: number; yaw?: number; bottom?: number; fill?: number }, ms?: number): Promise<void>;
   restore(ms?: number): Promise<void>;
   focused(): boolean;
   /** A flourish in the world (effects.ts): a tap's dust, a splash, sparkles, a 「！」. */
   fx(kind: FxKind, x: number, z: number, lift?: number, o?: FxOpts): void;
   /** The GPU's name (a software renderer, CI's: the scene draws at its lightest). */
   gpu(): string;
-  /** Something of the scene's own in the world (the board's face with its posts): at (x, z) on the ground, `lift`
-   *  above it, turned `yaw`; its materials bent with the island. Returns its removal. */
-  attach(obj: Object3D, at: { x: number; z: number; lift?: number; yaw?: number }): () => void;
   /** The camera's ends for this screen (the scene fits them: まえ's shore, おく's campsite). */
   setLimits(min: number, max: number): void;
   // ---- the projection (the World's Proj3; px from the canvas's top-left) ----
@@ -299,14 +299,14 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
   };
   /** A focus (the bulletin board's: docs/decisions.md "The island in 3D"): the camera framing one thing, its own x,
    *  pitch, height and pivot drop, eased in (k 0 … 1) over the finger's camera. */
-  let fx = MID_X, fy = 0, fpitch = 0, fk = 0, drop = PIVOT_DROP;
+  let fx = MID_X, fy = 0, fpitch = 0, fk = 0, fdrop = 0, drop = PIVOT_DROP;
   function aim() {
     pitch = pitchAt(zoomK);
     if (fk > 0) pitch += (fpitch - pitch) * fk;
     const D = D0 / zoomK, cx = MID_X + (fx - MID_X) * fk, cy = fy * fk;
     camera.position.set(cx, cy + D * Math.sin(pitch), -camZ + D * Math.cos(pitch));
     camera.lookAt(cx, cy, -camZ);
-    const d = PIVOT_DROP * (1 - fk);
+    const d = PIVOT_DROP + (fdrop - PIVOT_DROP) * fk;
     if (d !== drop) {
       drop = d;
       camera.setViewOffset(W, H, 0, -drop * H, W, H);
@@ -508,30 +508,47 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
   }
 
   // ---- a focus: the camera frames one thing, then goes back exactly where it was (the board's; nothing else moves it) ----
+  interface Cam {
+    z: number;
+    k: number;
+    fk: number;
+    x: number;
+    y: number;
+    pitch: number;
+    drop: number;
+  }
   interface Move {
     t0: number;
     ms: number;
-    from: { z: number; k: number; fk: number };
-    to: { z: number; k: number; fk: number };
+    from: Cam;
+    to: Cam;
     done: () => void;
   }
   let focus: { back: { z: number; k: number } } | null = null, move: Move | null = null;
-  const ease = (k: number) => k * k * (3 - 2 * k);
-  function moveTo(to: Move['to'], ms: number): Promise<void> {
+  /** NH's dolly: a cubic in and out. */
+  const ease = (k: number) => (k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
+  const camNow = (): Cam => ({ z: camZ, k: zoomK, fk, x: fx, y: fy, pitch: fpitch, drop: fdrop });
+  function moveTo(to: Cam, ms: number): Promise<void> {
     move?.done();
     vel = 0;
     settling = false;
     return new Promise((done) => {
-      move = { t0: now(), ms: Math.max(1, ms), from: { z: camZ, k: zoomK, fk }, to, done };
+      move = { t0: now(), ms: Math.max(1, ms), from: camNow(), to, done };
       activity(ms + 100);
     });
   }
   function stepMove(t: number): boolean {
     if (!move) return false;
-    const m = move, k = ease(Math.min(1, (t - m.t0) / m.ms));
-    camZ = rawZ = m.from.z + (m.to.z - m.from.z) * k;
-    zoomK = rawK = m.from.k + (m.to.k - m.from.k) * k;
-    fk = m.from.fk + (m.to.fk - m.from.fk) * k;
+    const m = move, k = ease(Math.min(1, (t - m.t0) / m.ms)), lerp = (a: number, b: number) => a + (b - a) * k;
+    camZ = rawZ = lerp(m.from.z, m.to.z);
+    zoomK = rawK = lerp(m.from.k, m.to.k);
+    fk = lerp(m.from.fk, m.to.fk);
+    // (the framed point eases from where the last focus left it; the first one from the island's own view)
+    const first = m.from.fk === 0;
+    fx = first ? m.to.x : lerp(m.from.x, m.to.x);
+    fy = first ? m.to.y : lerp(m.from.y, m.to.y);
+    fpitch = first ? m.to.pitch : lerp(m.from.pitch, m.to.pitch);
+    fdrop = first ? m.to.drop : lerp(m.from.drop, m.to.drop);
     aim();
     if (k >= 1) {
       move = null;
@@ -540,17 +557,25 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     }
     return true;
   }
+  /** The bulletin board's (docs/board.md): look at a rect face-on, framed in the screen above `bottom`. */
+  function frameRect(f: { x: number; z: number; y: number; w: number; h: number; yaw?: number; bottom?: number; fill?: number }, ms = 600): Promise<void> {
+    if (!focus) focus = { back: { z: camZ, k: zoomK } };
+    const fill = f.fill ?? 0.9, bottom = Math.max(0, Math.min(H * 0.7, f.bottom ?? 0)), t = Math.tan(((FOV / 2) * Math.PI) / 180);
+    // the distance that fits its height in the free screen and its width across
+    const D = Math.max((f.h * H) / (fill * (H - bottom) * 2 * t), f.w / (fill * 2 * t * camera.aspect));
+    // a little from above, as NH's board view; its middle at the free screen's middle
+    const pitch = (8 * Math.PI) / 180;
+    return moveTo({ z: f.z, k: D0 / D, fk: 1, x: f.x, y: src.feet(f.x, f.z) + f.y, pitch, drop: -bottom / (2 * H) }, ms);
+  }
   function focusOn(target: { x: number; z: number; lift?: number }, o: { zoom?: number; pitch?: number; ms?: number } = {}): Promise<void> {
     if (!focus) focus = { back: { z: camZ, k: zoomK } };
-    fx = target.x;
-    fy = src.feet(target.x, target.z) + (target.lift ?? 0);
-    fpitch = ((o.pitch ?? 30) * Math.PI) / 180;
-    return moveTo({ z: target.z, k: o.zoom ?? 2.2, fk: 1 }, o.ms ?? 600);
+    const to = { z: target.z, k: o.zoom ?? 2.2, fk: 1, x: target.x, y: src.feet(target.x, target.z) + (target.lift ?? 0), pitch: ((o.pitch ?? 30) * Math.PI) / 180, drop: 0 };
+    return moveTo(to, o.ms ?? 600);
   }
   function restore(ms = 600): Promise<void> {
     if (!focus) return Promise.resolve();
     const back = focus.back;
-    return moveTo({ z: back.z, k: back.k, fk: 0 }, ms).then(() => {
+    return moveTo({ ...camNow(), z: back.z, k: back.k, fk: 0 }, ms).then(() => {
       focus = null;
       camZ = rawZ = back.z;
       zoomK = rawK = back.k;
@@ -721,7 +746,14 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
       activity();
     },
     limits: () => ({ min: lim.min, max: lim.max }),
-    focusOn, restore,
+    focusOn, restore, frame: frameRect,
+    setLimits(min, max) {
+      lim.min = min;
+      lim.max = Math.max(min, max);
+      camZ = rawZ = Math.max(lim.min, Math.min(lim.max, camZ));
+      aim();
+      activity();
+    },
     focused: () => !!focus,
     fx(kind, x, z, lift, o) {
       effects.spawn(kind, x, z, lift, o);
@@ -730,30 +762,6 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     gpu() {
       const gl = renderer.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info');
       return String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
-    },
-    attach(obj, at) {
-      obj.traverse((n) => {
-        const m = (n as Mesh).material as Material | Material[] | undefined;
-        for (const x of m ? (Array.isArray(m) ? m : [m]) : []) bend(x);
-        (n as Mesh).frustumCulled = false;
-      });
-      obj.position.set(at.x, src.feet(at.x, at.z) + (at.lift ?? 0), -at.z);
-      obj.rotation.y = at.yaw ?? 0;
-      scene.add(obj);
-      shadowsDirty = true;
-      kick();
-      return () => {
-        scene.remove(obj);
-        shadowsDirty = true;
-        kick();
-      };
-    },
-    setLimits(min, max) {
-      lim.min = min;
-      lim.max = Math.max(min, max);
-      camZ = rawZ = Math.max(lim.min, Math.min(lim.max, camZ));
-      aim();
-      activity();
     },
     at, groundAt, horizon,
     rev: () => rev,

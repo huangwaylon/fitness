@@ -110,12 +110,15 @@ export interface Proj3 {
   kick(): void;
   /** No frame pending. */
   idle(): boolean;
-  /** The bulletin board's focus (world3d/engine.ts focusOn: the camera frames it, the finger locked, and restore()
-   *  eases back to exactly where it was), and something of the scene's own in the 3D world (a three.js Object3D: the
-   *  board's face with its CanvasTexture; its removal returned). */
-  focusOn(target: { x: number; z: number; lift?: number }, o?: { zoom?: number; pitch?: number; ms?: number }): Promise<void>;
-  restore(ms?: number): Promise<void>;
-  attach(obj: object, at: { x: number; z: number; lift?: number; yaw?: number }): () => void;
+  /** The bulletin board's (docs/board.md "To the 3D lead"): dolly and zoom to look at a rect face-on (its middle x, z on
+   *  the ground, y above it, w × h u), framed in the screen above `bottom` px and filling `fill` of it, over `ms` (600):
+   *  the user's one exception to "x centred, nothing but the finger moves the camera"; the finger does nothing while
+   *  focused; called again it re-frames from where it is. unfocus() goes back to exactly the view the first focus left. */
+  focus?(f: { x: number; z: number; y: number; w: number; h: number; yaw?: number; bottom?: number; fill?: number }, ms?: number): Promise<void>;
+  unfocus?(ms?: number): Promise<void>;
+  /** A three.js object riding on a model instance by its id (the board's face plane with its CanvasTexture), in that
+   *  model's own units, placed, turned, scaled and bent with it; null takes it off. */
+  attach?(id: string, obj: object | null): void;
 }
 
 interface Node extends NodeSpec {
