@@ -132,7 +132,7 @@
     </span>
     {#if th}
       <!-- its trunk and base answer a tap too (the same tree) -->
-      <i class="hit-trunk" data-tree={s.id} data-tree-part="trunk" style:width="max(calc({th[0] * s.h} * var(--u)), calc(45px * var(--inv, 1)))" style:height="calc({th[1] * s.h} * var(--u))"></i>
+      <i class="hit-trunk" data-tree={s.id} data-tree-part="trunk" style:width="max(calc({th[0] * s.h} * var(--u)), calc(45px * var(--inv, 1)))" style:height="max(calc({th[1] * s.h} * var(--u)), calc(48px * var(--inv-y, 0)))"></i>
     {/if}
   </div>
 {/snippet}
@@ -210,6 +210,8 @@
       <span class="pool" style:width="calc({140 * k} * var(--u))"></span>
     </div>
   {/each}
+{/if}
+{#if lit}
   {#each fires as f (f.id)}
     {@const k = f.h / 40}
     <!-- the campfire's flames (its render's emissive look) flickering, a warm halo round them and their light on the
@@ -230,6 +232,7 @@
       <span class="pool fire-pool" style:width="calc({180 * k} * var(--u))"></span>
     </div>
   {/each}
+  {#if !r3}
   {#each BUILDINGS as b (b.id)}
     {#if LIT_ART[b.key]}
       <!-- the light from the tent's lantern on the clearing in front of it -->
@@ -238,6 +241,7 @@
       </div>
     {/if}
   {/each}
+  {/if}
 {/if}
 
 <style>

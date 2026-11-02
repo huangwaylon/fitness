@@ -126,7 +126,7 @@
     for (const s of list) {
       const at = GLOW_AT[s.key] ?? LAMP_GLOW[s.key] ?? (s.key === 'deco/illumi-tree' ? 0.5 : 0);
       if (!at) continue;
-      const gy = 'group' in ground ? ground.heightAt(s.x, s.z) : ground.height(s.x, s.z);
+      const gy = heightOf(s.x, s.z);
       out.push({ id: `s:${s.id}`, x: s.x, z: s.z - 1, y: gy + s.h * at, gy, kind: 'lamp', colour: 0xffd38a, glow: 12, pool: 34 });
     }
     return out;
@@ -173,39 +173,75 @@
   interface Live3 {
     m: string;
     on: boolean;
+    /** Where it's drawn now, and its move (from, to, start, length). */
     x: number;
     z: number;
     lift: number;
+    to: [number, number, number];
+    from: [number, number, number];
+    t0: number;
+    ms: number;
     yaw: number;
     grey: number;
+    art?: Element | null;
   }
   const live3 = new Map<string, Live3>();
-  const marked = new WeakMap<HTMLElement, boolean>();
+  const marked = new WeakMap<Element, boolean>();
   let lamps3: LampSpot[] = [];
-  function mirror(e: Island3) {
+  const smooth = (k: number) => k * k * (3 - 2 * k);
+  const heightOf = (x: number, z: number) => ('group' in ground ? ground.heightAt(x, z) : ground.height(x, z));
+  function mirror(e: Island3, t: number): boolean {
     const winter = season === 'winter', seen = new Set<string>(), add: Inst[] = [];
+    let moving = false;
     for (const n of world.models3()) {
       const a = assetFor(n.m3.key, winter);
-      if (marked.get(n.el) !== !!a) {
-        marked.set(n.el, !!a);
-        n.el.classList.toggle('m3on', !!a);
+      const art = n.m3.art ? n.m3.art() : n.el;
+      if (art && marked.get(art) !== !!a) {
+        marked.set(art, !!a);
+        art.classList.toggle('m3on', !!a);
       }
       if (!a) continue;
       seen.add(n.id);
       const b = modelBounds(a.m);
       // a flier's model hangs by its middle at the node's height; the rest stand on their feet
-      const lift = n.lift - (a.anchor === 'centre' && b ? ((b.min[1] + b.max[1]) / 2) * a.s : 0);
-      const now: Live3 = { m: a.m, on: n.shown && !n.m3.off, x: n.x, z: n.z, lift, yaw: (n.m3.yaw ?? 0) + ((a.yaw ?? 0) * Math.PI) / 180, grey: n.m3.grey ?? 0 };
-      const was = live3.get(n.id);
-      if (!was || was.m !== now.m) add.push({ id: n.id, model: a.m, x: now.x, z: now.z, lift: now.lift, scale: a.s, yaw: now.yaw });
-      if (!was || was.m !== now.m || was.on !== now.on || was.x !== now.x || was.z !== now.z || was.lift !== now.lift || was.yaw !== now.yaw || was.grey !== now.grey)
-        e.things.over(n.id, { hidden: !now.on, x: now.x, z: now.z, lift: now.lift, yaw: now.yaw, grey: now.grey });
-      live3.set(n.id, now);
+      const base = n.m3.y !== undefined ? n.m3.y - heightOf(n.x, n.z) : n.lift;
+      const lift = base - (a.anchor === 'centre' && b ? ((b.min[1] + b.max[1]) / 2) * a.s : 0);
+      const to: [number, number, number] = [n.x, n.z, lift];
+      let L = live3.get(n.id);
+      const fresh = !L || L.m !== a.m;
+      if (!L || fresh) {
+        const drop = n.m3.drop ?? 0;
+        L = { m: a.m, on: false, x: to[0], z: to[1], lift: to[2] + drop, to, from: [to[0], to[1], to[2] + drop], t0: t, ms: drop ? (n.m3.ms ?? 500) : 0, yaw: 0, grey: -1, art };
+        add.push({ id: n.id, model: a.m, x: to[0], z: to[1], lift: to[2], scale: a.s });
+        live3.set(n.id, L);
+      } else if (to[0] !== L.to[0] || to[1] !== L.to[1] || to[2] !== L.to[2]) {
+        L.from = [L.x, L.z, L.lift];
+        L.to = to;
+        L.t0 = t;
+        L.ms = n.m3.ms ?? 0;
+      }
+      const k = L.ms > 0 ? Math.min(1, (t - L.t0) / L.ms) : 1, q = smooth(k);
+      if (k < 1) moving = true;
+      const x = L.from[0] + (L.to[0] - L.from[0]) * q, z = L.from[1] + (L.to[1] - L.from[1]) * q, lf = L.from[2] + (L.to[2] - L.from[2]) * q;
+      let yaw = (n.m3.yaw ?? 0) + ((a.yaw ?? 0) * Math.PI) / 180;
+      if (n.m3.face === 'move') {
+        const dx = L.to[0] - L.from[0], dz = L.to[1] - L.from[1];
+        yaw += Math.hypot(dx, dz) > 0.5 ? Math.atan2(dx, -dz) : L.yaw - (n.m3.yaw ?? 0);
+      }
+      const on = n.shown && !n.m3.off, grey = n.m3.grey ?? 0;
+      if (fresh || on !== L.on || x !== L.x || z !== L.z || lf !== L.lift || yaw !== L.yaw || grey !== L.grey)
+        e.things.over(n.id, { hidden: !on, x, z, lift: lf, yaw, grey });
+      Object.assign(L, { on, x, z, lift: lf, yaw, grey, art });
     }
     const gone = [...live3.keys()].filter((id) => !seen.has(id));
-    for (const id of gone) live3.delete(id);
+    for (const id of gone) {
+      const art = live3.get(id)?.art;
+      if (art) (art.classList.remove('m3on'), marked.delete(art));
+      live3.delete(id);
+    }
     if (gone.length) void e.things.remove(gone).then(() => e.glows(lamps3));
     if (add.length) void e.things.set(add).then(() => e.glows(lamps3));
+    return moving;
   }
 
   // ---- the island's day: its models and stand-ins ----
@@ -240,7 +276,7 @@
 
   /** Put the camera at a world z at once (the e2e, IslandScene's goTo). */
   export function go(z: number, k?: number) {
-    eng?.go(z, k);
+    eng?.go(z, k, true);
   }
   /** The camera's two ends (まえ, おく). */
   export function limits(): { min: number; max: number } {
@@ -290,6 +326,9 @@
       return;
     }
     eng = e;
+    // a software renderer (no GPU: headless CI) draws a frame in seconds at the phone's pixel ratio: the lightest one, no
+    // shadow map (?shadows=1 keeps it)
+    if (num('dpr') === null && /swiftshader|llvmpipe|software/i.test(e.gpu())) e.options({ dpr: 1, shadows: q.get('shadows') === '1' });
     fitEnds(e);
     e.go(start ?? e.limits().min);
     const proj: Proj3 = {
@@ -309,8 +348,8 @@
       const hz = e.horizon();
       if (!(Math.abs(hz - horizonWas) <= 0.5)) onhorizon((horizonWas = hz));
       const more = world.step(t);
-      mirror(e);
-      return villagerCards(t) || more;
+      const moving = mirror(e, t);
+      return villagerCards(t) || more || moving;
     });
     // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
     listen3d((id, k) => {
@@ -338,7 +377,7 @@
         const r = canvas!.getBoundingClientRect();
         return e.groundAt(cx - r.left, cy - r.top);
       },
-      things: (id: string) => e.things.has(id),
+      things: (id: string) => e.things.has(id), where: (id: string) => e.things.where(id), groups: () => e.things.groups(), over: (id: string, o: Parameters<typeof e.things.over>[1]) => e.things.over(id, o),
       focus: (x: number, z: number, lift?: number) => e.focusOn({ x, z, lift }), restore: () => e.restore(), focused: () => e.focused()
     };
     return () => {

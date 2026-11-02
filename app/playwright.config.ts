@@ -33,7 +33,8 @@ export default defineConfig({
         browserName: 'chromium',
         channel: process.env.CI ? undefined : 'chrome',
         // the tent's room is WebGL: headless Chromium draws it in software (SwiftShader)
-        launchOptions: { args: ['--enable-unsafe-swiftshader'] }
+        // (E2E_SWIFTSHADER=1: software GL on a Mac too, as CI's Linux runners draw: a slow GPU's timing)
+        launchOptions: { args: ['--enable-unsafe-swiftshader', ...(process.env.E2E_SWIFTSHADER ? ['--use-angle=swiftshader', '--use-gl=angle'] : [])] }
       }
     }
   ],

@@ -45,9 +45,7 @@ test('the 2D island never loads three; ?island=3d draws the island in 3D and a t
   }, { timeout: 10_000 }).toBeLessThan(14);
 });
 
-// TODO(3D island agent): times out in CI's headless Chromium (software GL draws a frame in seconds); re-enable once the
-// 3D specs run at a lighter pixel ratio there.
-test.fixme('the 3D camera: one finger scrolls along the island only, two pinch the zoom, nothing else moves it', async ({ page }) => {
+test('the 3D camera: one finger scrolls along the island only, two pinch the zoom, nothing else moves it', async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto(`?${Q}&island=3d`);
   await ready(page);
@@ -92,8 +90,7 @@ test('/world3d, the POC\'s address, opens the island in 3D; without the flag the
   await expect(page.locator('canvas[data-w3d]')).toHaveCount(0);
 });
 
-// TODO(3D island agent): as above (CI's software GL).
-test.fixme('the board\'s focus: the camera frames a thing, the finger does nothing meanwhile, and restore() goes back exactly', async ({ page }) => {
+test('the board\'s focus: the camera frames a thing, the finger does nothing meanwhile, and restore() goes back exactly', async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto(`?${Q}&island=3d`);
   await ready(page);

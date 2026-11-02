@@ -1197,6 +1197,24 @@
 <!-- world nodes (camera.svelte.ts): no wrapper with a stacking order of its own, so each sits at its depth among the
      island's things -->
 <div class="critters" aria-hidden="true">
+  <!-- the 3D island's (world3d/Island3D: camera.svelte.ts m3): each critter NH's model where it is, moving as its
+       sprite does (the sprite stays as its tap box, invisible) -->
+  {#if w.rest.three}
+  {#each WATERS as wt (wt)}
+    {@const f = fishes[wt]}
+    {#if f}
+      <i class="m3n" {@attach w.at({ x: f.x, z: f.z, h: 4, always: true, m3: { key: f.shape ? `shadow/${f.shape}` : `shadow/${wt === 'sea' ? 'sea' : 'fresh'}-${Math.max(1, Math.min(6, Math.round(f.size)))}`, id: `fish-${wt}-${f.n}`, ms: f.ms, face: 'move', y: wt === 'sea' ? -2.5 : undefined, off: f.gone, art: () => fishEls[wt] } })}></i>
+    {/if}
+  {/each}
+  {#if diving?.chase}
+    {@const d = diving}
+    <i class="m3n" {@attach w.at({ x: d.x, z: d.z, h: 4, always: true, m3: { key: 'shadow/dive', id: `dive-${d.n}`, ms: d.ms, face: 'move', y: -2.5, off: d.gone, art: () => chaseEl } })}></i>
+  {/if}
+  {#if bug}
+    {@const b = bug}
+    <i class="m3n" {@attach w.at({ x: b.x, z: b.z, lift: b.lift, h: 4, always: true, m3: { key: `critters/${b.id}`, id: `bug-${b.n}`, ms: b.fled ? 900 : b.ms, yaw: b.flip ? Math.PI : 0, off: b.gone, art: () => bugEl } })}></i>
+  {/if}
+  {/if}
   {#each WATERS as wt (wt)}
     {@const f = fishes[wt]}
     {#if f}

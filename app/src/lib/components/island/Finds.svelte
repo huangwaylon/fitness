@@ -492,8 +492,8 @@
 {/each}
 {#each presents as p (p.uid)}
   <!-- a tree's present falls out of its canopy (from its height) and bounces where it lands (the 3D island's model
-       stands there once it has: m3 off while it falls) -->
-  <div class="node" aria-hidden="true" {@attach w.at({ x: p.x, z: p.y, h: p.size + p.from, m3: { key: p.art, off: falling.has(p.uid) } })}>
+       falls the same way: m3 drop) -->
+  <div class="node" aria-hidden="true" {@attach w.at({ x: p.x, z: p.y, h: p.size + p.from, m3: { key: p.art, id: `gift-${p.uid}`, drop: falling.has(p.uid) ? p.from : 0, ms: 520 } })}>
     <span class="item gift" class:fall={falling.has(p.uid)} data-find="present" data-uid={p.uid} data-tree-gift={p.tree} style:--from={su(-p.from)}><OfficialArt key={p.art} size={su(p.size)} eager /></span>
   </div>
 {/each}
