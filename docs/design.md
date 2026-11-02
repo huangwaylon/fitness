@@ -1324,8 +1324,9 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
 ## Small screens
 
 Compact = `(max-height: 700px) or (max-width: 359px)`, tiny = `(max-width: 339px)`; portrait; wider screens centre a
-480px column. No horizontal scroll at 320, inputs ≥ 16px (`inputs.test.ts`), targets ≥ 44px; the keyboard inset `--kb`
-from `visualViewport` (`ui/keyboardInset.ts`). Short screens scale the island down. Check at 393×852, 375×667 and
+480px column. No horizontal scroll at 320, inputs ≥ 16px (`inputs.test.ts`), targets ≥ 44px; the keyboard from
+`visualViewport` (`ui/keyboardInset.svelte.ts`: the `keyboardInset` store, the visible part above it, for any text
+field; `withKeyboardInset` sets `--kb`; never `innerHeight`, which iOS shrinks with the keyboard). Short screens scale the island down. Check at 393×852, 375×667 and
 320×568, day, dusk, night and winter.
 
 ## Official art

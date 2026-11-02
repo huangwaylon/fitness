@@ -5,6 +5,7 @@
 // もようがえ. Own text is capped at 20 characters and cleaned; it's shown as text. No ベル.
 //   SHOTS=<dir> npm run e2e -- say      also writes iPhone-sized screenshots to <dir>/say-*.png
 import { expect, test, type Page } from '@playwright/test';
+import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -162,6 +163,23 @@ test('my own words: at most 20, cleaned, shown as text, Enter sends, kept as a q
   await picker(page).locator('[data-say-recent]').click();
   await expect(balloon(page).locator('.text')).toHaveText('<b>ジム</b>いく！');
   expect(await page.evaluate(() => localStorage.getItem('island.says'))).toBe(JSON.stringify(['<b>ジム</b>いく！']));
+});
+
+test('じぶんで かく: the picker stays above the keyboard as it comes and goes (iOS: the simulated one)', async ({ page }) => {
+  await fakeKeyboard(page);
+  await open(page);
+  await sayBtn(page).click();
+  await picker(page).getByRole('button', { name: 'じぶんで かく…' }).click();
+  await expect(picker(page).locator('[data-say-field]')).toBeFocused();
+  await keyboard(page, KEYBOARD_PX);
+  await expect.poll(async () => (await aboveKeyboard(page, '[data-say-picker]')).ok).toBe(true);
+  expect((await aboveKeyboard(page, '[data-say-picker]')).bottom).toBeLessThanOrEqual(844 - KEYBOARD_PX);
+  await shot(page, 'keyboard');
+  // gone again: back over the button
+  await keyboard(page, 0);
+  const btn = (await sayBtn(page).boundingBox())!;
+  await expect.poll(async () => (await aboveKeyboard(page, '[data-say-picker]')).bottom).toBeLessThanOrEqual(btn.y);
+  expect((await aboveKeyboard(page, '[data-say-picker]')).bottom).toBeGreaterThan(844 - KEYBOARD_PX);
 });
 
 test('at night: the picker and the balloon in their cream, over the night tint', async ({ page }) => {

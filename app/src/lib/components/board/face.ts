@@ -9,6 +9,8 @@ import type { Who } from '#lib/types.ts';
 export const FACE_W = 1360;
 export const FACE_H = 1000;
 export const PER_PAGE = 4;
+/** The note being written, on the face as it's typed (BoardView's draft). */
+export const DRAFT_ID = 'draft';
 const PAD = 40, GAP = 36;
 const NOTE_W = (FACE_W - 2 * PAD - GAP) / 2, NOTE_H = (FACE_H - 2 * PAD - GAP) / 2;
 const FONT = '"Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", ui-rounded, system-ui, sans-serif';

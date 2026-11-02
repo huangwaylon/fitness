@@ -40,7 +40,7 @@ html[data-input='pointer'] :focus-visible .screen { outline: none !important; }
 /* iOS zooms on focus below 16px. A scoped `font:` shorthand beats this, so components use --fs-input
    (lib/inputs.test.ts fails on any input / textarea / select rule below 16px). */
 input, textarea, select { font-size: var(--fs-input); font-family: var(--font-ui); }
-/* keyboardInset scrolls a focused field into the part of the screen above the keyboard (--kb) */
+/* withKeyboardInset (ui/keyboardInset.svelte.ts) scrolls a focused field into the part of the screen above the keyboard (--kb) */
 input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb, 0px) + 12px); }
 .sr-only {
   position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;

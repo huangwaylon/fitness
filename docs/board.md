@@ -101,6 +101,19 @@ interface Proj3 {
   and a swipe on the board page through older ones.
 - **Writing:** 「かきこむ」 opens a field over the board (the board stays visible above the keyboard). At most
   **100 characters** (code points) and **4 lines**; plain text only, rendered as text (canvas `fillText`, never HTML).
+  The note is on the face as it's typed (`face.draft`: a new one first on page 1, its paper picked; an edit in its own
+  place), so the field and the note as it'll be are both in sight. While writing 「もどる」 steps aside (やめる and Esc
+  go back) and the face takes its room, from the safe area's foot down to the field.
+- **The keyboard (iOS):** the view is the visible part of the screen, not the layout viewport
+  (`ui/keyboardInset.svelte.ts`: the view's `top` and `height` from `visualViewport`), the controls in flow at its foot:
+  just above the keyboard and its suggestions bar, the home indicator's safe area dropped while it's up. The 2D sheet's
+  frame is as big as fits between (a size container); on the 3D island `focus`'s `top` and `bottom` are measured from
+  the canvas's rect to the edge's and the controls' rects, so iOS scrolling the page to the field (it does, even under
+  `overflow: hidden`) moves nothing out of sight. Fields are ≥ 16 px (no zoom on focus); `focus({ preventScroll })`.
+  Why: iOS never resizes the layout viewport for the keyboard, and `innerHeight` follows the visual viewport, so the
+  old `innerHeight − vv.height − vv.offsetTop` read 0 (measured in the iOS 26 simulator: innerHeight 714 → 377, vv
+  offsetTop 337, the fixed view's top scrolled to −337): the field rode on iOS's scroll alone, and the face, sized
+  for the visual viewport's height at the layout viewport's top, sat out of sight above it.
 - **Editing:** an author edits or deletes their own; ウェイ and うめ may delete anyone's; the guest posts and edits or
   deletes their own, nothing else.
 - **Notices:** a post by someone else since I last opened the board puts a 「！」 over it, cleared when I open it.
@@ -125,3 +138,8 @@ interface Proj3 {
   pixel of the 2D sheet's canvas (a note's paper, not bare cork), and `__board.face3()` (the 3D face's box in the scene:
   on the cork, in front of NH's notes). A note shows at once when written, after a reload, and from the record's
   snapshot (the relay mocked); 「もどる」 is under the ribbon and the face under both, on the 2D and the 3D island.
+- The keyboard: `e2e/keyboard.ts` stubs `visualViewport` as iOS changes it (336 px: an iPhone 15's keyboard and its
+  suggestions bar; `innerHeight` shrinks with it, the layout viewport stays) and draws a grey box where it would be.
+  Writing with it up, on both islands: the field and its controls lie in the visible part, the face (the typed note
+  drawn on it) above them; the keyboard gone, the controls at the screen's foot again; posted, the note on the face.
+  `SHOTS=<dir>` writes `board-keyboard-2d.png` / `-3d.png`.
