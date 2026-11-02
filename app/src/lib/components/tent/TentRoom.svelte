@@ -242,6 +242,9 @@
   // ---- the finger: a tap walks (or acts on what it's on); a drag turns the camera round the room (in the edit mode a
   //      drag that starts on a piece moves it instead); two fingers pinch to zoom and tilt ----
   const ptrs = new Map<number, { x: number; y: number }>();
+  /** When the finger did it (the event's own time: a busy frame between the press and the lift doesn't make a tap a
+   *  long one; a made-up event, now). */
+  const whenOf = (e: PointerEvent) => (e.timeStamp > 0 ? e.timeStamp : performance.now());
   type G = { kind: 'maybe' | 'orbit'; x0: number; y0: number; t0: number; lx: number; ly: number } | { kind: 'pinch'; d: number; my: number } | { kind: 'edit'; id: number };
   let gesture: G | null = null;
   /** The camera isn't NH's view (the reset button shows). */
@@ -267,7 +270,7 @@
     }
     ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (ptrs.size === 1) {
-      gesture = { kind: 'maybe', x0: e.clientX, y0: e.clientY, t0: Date.now(), lx: e.clientX, ly: e.clientY };
+      gesture = { kind: 'maybe', x0: e.clientX, y0: e.clientY, t0: whenOf(e), lx: e.clientX, ly: e.clientY };
       // holding a piece, a finger kept still on another one takes that one instead (a tap doesn't: NH's one at a time)
       if (editing && edit?.holding()) {
         const g0 = gesture, id = e.pointerId;
@@ -320,7 +323,7 @@
       return;
     }
     if (!ptrs.delete(e.pointerId)) return;
-    if (g?.kind === 'maybe' && Date.now() - g.t0 < 700) tap(e.clientX, e.clientY);
+    if (g?.kind === 'maybe' && whenOf(e) - g.t0 < 700) tap(e.clientX, e.clientY);
     if (!ptrs.size) {
       gesture = null;
       eng?.moving(false);
