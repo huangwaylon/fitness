@@ -208,6 +208,9 @@ for (const j of todo) {
 }
 await browser.close();
 if (probe) {
+  // the scratch copies of NH's files never outlive the run
+  rmSync(scratch, { recursive: true, force: true });
+  rmSync(work, { recursive: true, force: true });
   console.log(`${todo.length} models, ${(total / 1024 / 1024).toFixed(2)} MB → ${OUT}`);
   process.exit(0);
 }
