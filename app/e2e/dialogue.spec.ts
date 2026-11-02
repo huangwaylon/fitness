@@ -1,6 +1,7 @@
 // NH's dialogue box (docs/design.md "Dialogue"): the speech balloon and the catch plate type their text in, two lines a
 // page; a tap finishes the page, the next turns it (a ▼ bobs only while a page follows), the last tap closes it.
 import { expect, test, type Page } from '@playwright/test';
+import { reelOnBite } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 /** A tap on a scene figure (its layer lets taps through to the scene's own listener). */
@@ -59,10 +60,10 @@ test('the catch plate pages NH’s catch line (two lines a page) and, on a first
   const f = await fish.evaluate((el) => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top }; });
   await page.mouse.click(f.x + (f.x < 195 ? 40 : -40), f.y);
   const bobber = page.locator('[data-bobber]');
-  await expect(page.locator('[data-bite]')).toBeAttached({ timeout: 12_000 });
-  await page.waitForTimeout(300);
+  // the reel the moment it bites (the 1.6 s window: e2e/island.ts reelOnBite)
+  await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 }); // landed
   const b = await bobber.evaluate((el) => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top }; });
-  await page.mouse.click(b.x < 195 ? 366 : 24, b.y);
+  await reelOnBite(page, b.x < 195 ? 366 : 24, b.y);
   const plate = page.locator('[data-fx="catch"].placed .catch-plate');
   await expect(plate).toBeVisible();
   // カレイを 釣り上げたー / って、んん？ / これって よく見たら / ヒラメ・・・？ ヒラメなの？  + ずかんに のったよ！

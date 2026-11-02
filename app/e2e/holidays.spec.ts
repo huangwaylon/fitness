@@ -2,6 +2,7 @@
 // (events.ts): Franklin on Turkey Day (he asks for a fish; the next catch makes him happy), Jingle on Toy Day, Pavé at
 // Festivale, Zipper on Bunny Day's first and last days; Bunny Day's eggs in a dig spot. No ベル.
 import { expect, test, type Page } from '@playwright/test';
+import { reelOnBite } from './island.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -80,10 +81,10 @@ test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and 
   await expect.poll(async () => (await at(page, '[data-critter="fish"]')).y, { timeout: 10_000 }).toBeLessThan(vh - 24);
   const f = await at(page, '[data-critter="fish"]');
   await page.mouse.click(f.x + (f.x < 195 ? 40 : -40), f.y);
-  await expect(page.locator('[data-bite]')).toHaveText('！', { timeout: 12_000 });
-  await page.waitForTimeout(300);
+  // the reel the moment it bites (the 1.6 s window: e2e/island.ts reelOnBite)
+  await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 }); // landed
   const b = await at(page, '[data-bobber]');
-  await page.mouse.click(b.x < 195 ? 366 : 24, b.y);
+  await reelOnBite(page, b.x < 195 ? 366 : 24, b.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText(CATCH_LINES['sea-bass'][0].split('\n')[0]);
   await expect(page.locator('[data-treat]')).toBeAttached({ timeout: 6000 });
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('ありがとう', { timeout: 6000 });
