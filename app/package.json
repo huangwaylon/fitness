@@ -28,6 +28,7 @@
     "models": "node scripts/models.ts",
     "room-models": "node scripts/room-models.ts",
     "world3d-models": "node scripts/world3d-models.ts",
+    "world3d-sheet": "node scripts/world3d-sheet.ts",
     "layout": "node scripts/layout.ts",
     "layout:default": "node scripts/layout-default.ts",
     "home-models": "node scripts/home-models.ts"
