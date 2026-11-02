@@ -40,3 +40,17 @@ export async function tapOn(page: Page, target: Locator) {
   const [x, y] = (await find())!;
   await page.mouse.click(x, y);
 }
+
+/** Watch from the page's first script for things that come and go before a slow island (CI's software GL) lets the
+ *  spec look: `sawIt(page, sel)` says whether something matching `sel` was ever there. Before `goto`. */
+export async function watchFor(page: Page, sels: readonly string[]) {
+  await page.addInitScript((sels) => {
+    const W = window as unknown as { __saw?: Record<string, boolean> };
+    const saw: Record<string, boolean> = (W.__saw = Object.fromEntries(sels.map((s) => [s, false])));
+    const look = () => {
+      for (const s of sels) if (!saw[s] && document.querySelector(s)) saw[s] = true;
+    };
+    new MutationObserver(look).observe(document, { childList: true, subtree: true, attributes: true });
+  }, sels);
+}
+export const sawIt = (page: Page, sel: string) => page.evaluate((s) => !!(window as unknown as { __saw?: Record<string, boolean> }).__saw?.[s], sel);

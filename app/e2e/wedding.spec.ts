@@ -2,6 +2,7 @@
 // visit the centre stage with a heart float and count down; on the day, confetti, the wedding pose and fireworks at
 // night; every June Sunday NH's wedding arch stands behind the centre stage. Nothing over a control; no ベル.
 import { expect, test, type Page } from '@playwright/test';
+import { sawIt, watchFor } from './island.ts';
 import { ARCH } from '../src/lib/components/island/world.ts';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
@@ -70,9 +71,11 @@ test('no countdown the day before; the arch on a June Sunday, clear of every con
 });
 
 test('the wedding day: confetti and hearts on the villagers, Reese’s congratulations, fireworks at night', async ({ page }) => {
+  // (watched from the start: on a slow GPU the confetti may be over by the time the island's up)
+  await watchFor(page, ['.fxa.confetti']);
   await page.goto('?demo&date=2027-10-08T20:00&critter=none');
   await expect(ribbon(page)).toBeVisible();
-  await expect(page.locator('.fxa.confetti').first()).toBeAttached({ timeout: 4000 });
+  await expect.poll(() => sawIt(page, '.fxa.confetti'), { timeout: 4000 }).toBe(true);
   await expect(page.locator('.fxa.hearts').first()).toBeAttached();
   await expect(page.locator('[data-firework]').first()).toBeAttached({ timeout: 6000 }); // the show (Fireworks.svelte)
   await camera(page, 642);

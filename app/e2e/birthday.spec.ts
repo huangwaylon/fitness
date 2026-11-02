@@ -4,6 +4,7 @@
 // chats. Nothing over a control; no ベル.
 import { expect, test, type Page } from '@playwright/test';
 import { CAKE } from '../src/lib/components/island/world.ts';
+import { sawIt, watchFor } from './island.ts';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
 /** The controls under a thing's corners and middle (a building's door behind a world prop is the world's, not a control over it). */
@@ -40,6 +41,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
   test(`うめ's birthday: hats, the cake clear of every control, confetti and しずえ's wishes (${w}px)`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
+    await watchFor(page, ['.fxa.confetti']);
     await page.goto('?demo&date=2027-03-04T12:00&critter=none');
     await expect(ribbon(page)).toBeVisible();
     const bells = await ribbon(page).getAttribute('aria-label');
@@ -48,7 +50,8 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await expect(page.locator('[data-cake="lit"] .official')).toBeVisible();
     expect(await offFrom(page, '[data-cake]', CAKE[0], CAKE[1])).toBeLessThan(2);
     expect(await under(page, '[data-cake] .official')).toEqual([]);
-    await expect(page.locator('.fxa.confetti').first()).toBeAttached({ timeout: 4000 });
+    // (watched from the start: on a slow GPU it may be over before the camera's there)
+    await expect.poll(() => sawIt(page, '.fxa.confetti'), { timeout: 4000 }).toBe(true);
     await expect(page.locator('.news')).toContainText('さん、おたんじょうび おめでとう！');
     // the cake: a music box, and the candles out for the day
     await tapOn(page, '[data-cake] .official');
