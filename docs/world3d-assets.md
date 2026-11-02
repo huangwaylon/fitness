@@ -53,6 +53,14 @@ Held tools and accessories: the bug net, the rod and its bobber (NH's wooden one
 in the files; the fishing line is the runtime's, a line from the rod's tip), the birthday's cake hats (pink, blue)
 and NH's party glasses, at the villagers' scale, `anchor: joint`.
 
+Fishing (`world3d/fishing3d.ts`): Critters.svelte says each step of my line (cast, wait, bite, reel) and where its
+float is; my 3D villager (world3d/villagers.ts) holds NH's rod while the line is out (`VSpec.tool`, Island3D's), turned
+in its hand to point out over the water in the fishing pose, faces the float, swings it out on the cast, is tugged at
+the bite and reels in (the rod kept in hand till the reel is over). Within LINE_REACH (220u) of the float only:
+further off (a cast across the island) the line runs from the bank, as the 2D one, and nobody holds a rod. The float
+sinks 7u at the bite. The line is Island3D's (a bent `Line` from `tip()`); a tube line (thicker than a 1 px GL line on
+a 3× phone) is open for the lead.
+
 Not converted (see the table's last section): the villagers (billboards), Pavé (not in the files), the emotes and the
 UI's art. The plumeria isn't in NH's files under any name: NH's hibiscus (the closest shape) stands in, in the
 plumeria's white and pink.

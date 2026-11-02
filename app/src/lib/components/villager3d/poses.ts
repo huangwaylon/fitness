@@ -34,8 +34,8 @@ export interface Body {
 }
 
 export type State = 'idle' | 'walk' | 'sit' | 'lie' | 'nap' | 'doze' | 'fish';
-export type Action = 'hop' | 'wave' | 'highfive' | 'surprise' | 'sting';
-export const ACTION_MS: Record<Action, number> = { hop: 720, wave: 1700, highfive: 1000, surprise: 650, sting: 1400 };
+export type Action = 'hop' | 'wave' | 'highfive' | 'surprise' | 'sting' | 'cast' | 'tug' | 'reel';
+export const ACTION_MS: Record<Action, number> = { hop: 720, wave: 1700, highfive: 1000, surprise: 650, sting: 1400, cast: 620, tug: 420, reel: 700 };
 export const FADE_MS = 150;
 
 /** The arms lowered from NH's T (radians about z): by the sides, a little out. */
@@ -171,12 +171,14 @@ function doze(t: number, seed = 0): Pose {
   return p;
 }
 
+/** The rod's arm forward while fishing (radians about x): its hand at the chest. */
+const ROD_X = -1.05;
 /** Fishing (NH's): standing at the water, the rod's hand forward at the chest, the other at its side, watching the
  *  float, the rod's tip bobbing a touch with the breath. */
 function fish(t: number, seed = 0): Pose {
   const p = arms(rest());
   const b = breathe(p, t, 3000, 1);
-  p.j.Arm_1_R = [-1.05 + 0.03 * b, 0.25, ARMS - 0.55];
+  p.j.Arm_1_R = [ROD_X + 0.03 * b, 0.25, ARMS - 0.55];
   p.j.Arm_2_R = [0, 0.75, 0];
   p.j.Hand_R = [-0.2, 0, 0];
   p.j.Arm_1_L = [-0.15, 0, -ARMS];
@@ -260,6 +262,34 @@ export function action(a: Action, u: number): { p: Pose; w: number } {
       p.j.Head = [-0.15 * jump, 0, 0];
       p.y = 1.2 * jump;
       p.sq = 1 + 0.08 * jump;
+      return { p, w };
+    }
+    case 'cast': {
+      // the cast (NH's): the rod's arm up and back over the shoulder, then the whip forward and out, the body with it
+      const k = u / T, back = k < 0.4 ? ease(k / 0.4) : 1 - ease((k - 0.4) / 0.3), out = k < 0.4 ? 0 : Math.sin(clamp01((k - 0.4) / 0.6) * Math.PI);
+      p.j.Arm_1_R = [ROD_X - 1.3 * back + 0.3 * out, 0.25, ARMS - 0.55];
+      p.j.Arm_2_R = [0, 0.75 - 0.4 * back, 0];
+      p.j.Spine_1 = [-0.12 * back + 0.12 * out, 0.12 * back, 0];
+      p.j.Head = [0.1 * out, 0, 0];
+      return { p, w };
+    }
+    case 'tug': {
+      // the bite: the float goes under and the rod's tip is yanked down with it, a start
+      const k = u / T, dip = Math.sin(clamp01(k / 0.35) * Math.PI) * (1 - k);
+      p.j.Arm_1_R = [ROD_X + 0.45 * dip, 0.25, ARMS - 0.55];
+      p.j.Arm_2_R = [0, 0.75, 0];
+      p.j.Spine_1 = [0.12 * dip, 0, 0];
+      p.j.Head = [0.22 + 0.1 * dip, 0, 0];
+      return { p, w };
+    }
+    case 'reel': {
+      // the reel: the rod pulled up and back, leaning back with it, then down again
+      const k = u / T, up = Math.sin(clamp01(k / 0.75) * Math.PI);
+      p.j.Arm_1_R = [ROD_X - 1.0 * up, 0.25, ARMS - 0.55];
+      p.j.Arm_2_R = [0, 0.75 - 0.3 * up, 0];
+      p.j.Spine_1 = [-0.18 * up, 0, 0];
+      p.j.Head = [-0.12 * up, 0, 0];
+      p.y = 0.3 * up;
       return { p, w };
     }
     case 'sting': {

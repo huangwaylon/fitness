@@ -11,7 +11,8 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { keyModel, MODELS } from './models3d.ts';
 import { createVillager, VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
 import { url3d } from '../villager3d/manifest.ts';
-import { seatOf, type Action, type State } from '../villager3d/poses.ts';
+import { ACTION_MS, seatOf, type Action, type State } from '../villager3d/poses.ts';
+import { angling, type Phase } from './fishing3d.ts';
 import type { Face } from '../villager3d/faces.ts';
 import type { Motion } from '../motion/reactions.ts';
 
@@ -64,6 +65,10 @@ const ACT: Partial<Record<Motion, Action>> = {
   hop: 'hop', hop2: 'hop', leap: 'hop', twirl: 'hop', dance: 'hop', samba: 'hop', laugh: 'hop', flap: 'hop', squish: 'hop',
   surprise: 'surprise', twitch: 'surprise', nod: 'wave', bow: 'wave', proud: 'wave', wiggle: 'wave'
 };
+/** How far my villager may stand from its float and still hold the line (u: the beach from the lawn, not across the island). */
+const LINE_REACH = 220;
+/** My line's steps as my villager's moments (fishing3d.ts). */
+const ANGLE_ACT: Partial<Record<Phase, Action>> = { cast: 'cast', bite: 'tug', reel: 'reel' };
 /** Its emote as its face. */
 function faceOf(emote: string | null, stung: boolean): Face | null {
   if (stung) return 'sting';
@@ -99,6 +104,9 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     posing: boolean;
     hat: { key: string; obj: Object3D | null } | null;
     tool: { key: string; obj: Object3D | null } | null;
+    /** The fishing step last seen (fishing3d.ts angling.n) and how long the rod stays in hand after the reel. */
+    angleN: number;
+    rodUntil: number;
   }
   const ws = new Map<string, W>();
   let lastT = 0, liftL = 0.32, disposed = false;
@@ -112,7 +120,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       w = undefined;
     }
     if (!w) {
-      const nw: W = { id: s.id, v: null, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, alpha: 1, posing: true, hat: null, tool: null };
+      const nw: W = { id: s.id, v: null, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, alpha: 1, posing: true, hat: null, tool: null, angleN: angling.n, rodUntil: 0 };
       ws.set(s.slot, nw);
       const url = url3d(s.id, dir);
       if (url) {
@@ -204,7 +212,22 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       v.group.visible = s.shown;
       if (!s.shown) continue;
       wear(w, s.hat ?? null);
-      holdTool(w, s.tool ?? null);
+      // my cast (fishing3d.ts: Critters' steps): the rod's swing out, the tug at the bite, the reel (the rod kept in
+      // hand till it's over, though the line's gone)
+      if (s.slot === 'mine' && angling.n !== w.angleN) {
+        w.angleN = angling.n;
+        const a = ANGLE_ACT[angling.phase ?? 'wait'];
+        if (a && Math.hypot(angling.x - s.x, angling.z - s.z) < LINE_REACH) {
+          v.act(a);
+          w.busyUntil = t + ACTION_MS[a];
+          if (a === 'reel') w.rodUntil = t + ACTION_MS.reel;
+        }
+      }
+      // (only within a line's reach of the float: further off, the line runs from the bank, as Critters' 2D line, and
+      // its angler stands there empty-handed)
+      const reach = s.slot !== 'mine' || Math.hypot(angling.x - s.x, angling.z - s.z) < LINE_REACH;
+      const rod = reach && (s.tool === 'tools/rod' || (s.slot === 'mine' && (t < w.rodUntil || angling.phase === 'cast')));
+      holdTool(w, rod ? 'tools/rod' : (s.tool ?? null));
       // faded out of the board's way (and back), over FADE_MS
       const aim = s.away ? 0 : 1;
       if (w.alpha !== aim) {
@@ -217,11 +240,13 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       w.x = s.x;
       w.z = s.z;
       // which way: the way it walks; else the director's (left, right, inward), else toward the camera
+      // (fishing: toward the float)
       const want = s.walking && moved > 0.05 ? Math.atan2(dx, -dz)
+        : rod && angling.phase ? Math.atan2(angling.x - s.x, -(angling.z - s.z))
         : s.face === 'l' ? -1.1 : s.face === 'r' ? 1.1 : s.face === 'in' ? (s.side === 'left' ? 0.6 : -0.6) : 0;
       w.yaw = turn(w.yaw, s.seat !== null ? 0 : want, dt, s.walking ? 14 : 6);
       // its state, and its moment (the director's motion, once each)
-      const state: State = s.asleep ? (s.seat !== null ? 'nap' : 'doze') : s.seat !== null ? 'sit' : s.walking ? 'walk' : s.tool === 'tools/rod' ? 'fish' : 'idle';
+      const state: State = s.asleep ? (s.seat !== null ? 'nap' : 'doze') : s.seat !== null ? 'sit' : s.walking ? 'walk' : rod ? 'fish' : 'idle';
       if (v.state() !== state) w.posing = true;
       v.set(state);
       if (s.motionN !== w.motionN) {
@@ -255,6 +280,14 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     }
     return { cards, moving };
   }
+
+  // the e2e's (dev builds and ?demo): a 3D villager's state, what it holds and its tip (three's space)
+  if (import.meta.env.DEV || new URLSearchParams(location.search).has('demo'))
+    (window as unknown as { __villagers3?: unknown }).__villagers3 = {
+      state: (slot: string) => ws.get(slot)?.v?.state() ?? null,
+      tool: (slot: string) => (ws.get(slot)?.tool?.obj ? ws.get(slot)!.tool!.key : null),
+      tip: (slot: string) => ws.get(slot)?.v?.tip()?.toArray() ?? null
+    };
 
   return {
     frame,

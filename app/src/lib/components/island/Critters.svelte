@@ -39,6 +39,7 @@
   //   staying until caught (the e2e's hook; it comes where the camera can see it if it can, else at its place);
   //   ?sea=<id>|pearl: a bubble spot; ?flea: a tap on my villager always sends a flea off it.
   import { fx3d } from './fx3d.ts';
+  import { angle, angling } from '../world3d/fishing3d.ts';
   import CatchPlate from './CatchPlate.svelte';
   import { cardFor, type CatchCard } from './catchCard.ts';
   import { timers } from './timers.ts';
@@ -162,6 +163,14 @@
   const none = (): Record<Water, Fish | null> => ({ sea: null, pond: null, river: null, mouth: null, clifftop: null });
   let fishes = $state<Record<Water, Fish | null>>(none());
   let cast = $state<Cast | null>(null);
+  // the 3D island's angler (world3d/fishing3d.ts: my 3D villager's rod swings out, tugs at the bite, reels in); a reel
+  // stays said till the next cast
+  $effect(() => {
+    const c = cast;
+    if (c) angle(c.under ? 'bite' : c.landed ? 'wait' : 'cast', { x: c.x, z: c.z });
+    else if (angling.phase !== 'reel') angle(null);
+  });
+  onMount(() => () => angle(null));
   let bug = $state<Bug | null>(null);
   let card = $state<CatchCard | null>(null);
   let net = $state<Net | null>(null);
@@ -518,6 +527,7 @@
       const plan = hesitatePlan(ms, rand);
       return later(() => cast === c && fishes[f.water] === f && follow(c, f, plan), HESITATE_MS);
     }
+    angle('reel', c);
     cast = null;
     sceneSfx('reel');
     if (r === 'reel') return;
@@ -1220,7 +1230,7 @@
   {#if cast}
     {@const c = cast}
     <!-- the float on the water, sinking at the bite; the line from my villager's rod (or the bank) to it -->
-    <i class="m3n" {@attach w.at({ x: c.x, z: c.z, lift: c.under ? -2.2 : 0, h: 4, always: true, m3: { key: 'tools/bobber', id: 'bobber', water: true, ms: 160, off: !c.landed && !c.under, art: () => scene?.querySelector('[data-bobber]'),
+    <i class="m3n" {@attach w.at({ x: c.x, z: c.z, lift: c.under ? -7 : 0, h: 4, always: true, m3: { key: 'tools/bobber', id: 'bobber', water: true, ms: 160, off: !c.landed && !c.under, art: () => scene?.querySelector('[data-bobber]'),
       line: () => {
         const [mx, mz] = livePos('mine');
         return Math.hypot(mx - c.x, mz - c.z) < 90 ? [mx + (c.x - mx) * 0.12, mz + (c.z - mz) * 0.12, 34] as const : [c.sx, c.sz, 4] as const;
