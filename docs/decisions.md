@@ -402,3 +402,22 @@ the repo; the conversion is reproducible. The villagers stay billboards of their
 textures from blob URLs). Why: the user asked for a fully 3D room "the size of a large room in animal crossing" to
 furnish and walk in; the island's DOM world couldn't, a WebGL layer there would cost the island, and on its own screen
 it costs the island nothing. Model files public: the user's call.
+
+### The tent's room is the island's decor ops with a room scope; a drag is presence
+The tent's layout, wallpaper and floor are `decor` ops with `sc: 't'` (`contract/tent.ts`): the same event type, the same
+relay intent, the same last-writer-wins merge and the same latest-op-per-id record, but their own ids, tiles (0–7) and
+cap (40 pieces), so an old phone, which knows no scope, ignores them (its parser rejects the unknown key or the item).
+While a finger holds a piece its spot crosses as `drag` (≤ 10 a second, only when it moved, again each second while
+it rests) and my villager inside as `tent` (the very walk): presence only, relayed while the partner is there, never
+kept, replayed or written; the drop is the op, sent before the drag's end. The earlier of two holds on one piece
+keeps it; a hold unheard for 2 s drops back. Why: one record path for both rooms (the island's guarantees carry over:
+commutative, no leader), and the partner sees the room being arranged as NH's co-op does, for ~60 bytes a tenth of a
+second, without a row per finger move.
+
+### The tent's camera is the player's, its walls cut away
+The room opens at NH's fixed, slightly top-down view, and a drag turns the camera round the room's middle (a pinch
+zooms, 🏠 eases it back), within limits that keep the walls from clipping; the walls between the camera and the room
+are cut away. The villagers are their renders as billboards turned to the camera about the up axis (leaning back a
+little), alpha-tested and depth-sorted with the furniture. Why: the user asked for a perspective camera the player
+can move and rotate, "like NH's room camera but freer", and 2D villagers in 3D that hide behind a table and cover it in
+front.

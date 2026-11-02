@@ -143,3 +143,24 @@ test('edit: place a piece from the tray, turn it, drag it, put it away; the wall
   await expect.poll(() => te(page, (t) => t.pieces())).toEqual([]);
   await expect(page.getByRole('button', { name: 'とりけす' })).toBeVisible();
 });
+
+test('みつけた: what either of us found in a balloon that NH has a model of, newest first, placeable like the rest', async ({ page }) => {
+  await page.addInitScript(() => {
+    if (localStorage.getItem('island-demo.events')) return;
+    const at = Date.parse('2026-11-04T11:00:00+09:00');
+    const ev = (i: number, id: string, person: 'A' | 'B') => ({ id: `seed-${i}`, type: 'find', data: { kind: 'item', id }, queuedAt: at + i, tries: 0, nextAt: 0, ackedAt: at + i, person });
+    // the froggy chair has no model here: it isn't offered
+    localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-11-04', events: [ev(0, 'exercise-bike', 'A'), ev(1, 'froggy-chair', 'B'), ev(2, 'treadmill', 'B')] }));
+    localStorage.removeItem('island-demo.tent');
+  });
+  await page.goto('tent' + Q);
+  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await page.locator('[data-tent-edit-open]').click();
+  await page.locator('[data-tab="finds"]').click();
+  await expect(page.locator('[data-tent-item]')).toHaveCount(2);
+  expect(await page.locator('[data-tent-item]').evaluateAll((els) => els.map((e) => e.getAttribute('data-tent-item')))).toEqual(['f290', 'f287']);
+  await expect(page.locator('[data-tent-item="f287"]')).toHaveAccessibleName('エクササイズバイク');
+  await page.locator('[data-tent-item="f287"]').click();
+  await page.locator('[data-act="place"]').click();
+  await expect.poll(() => te(page, (t) => t.pieces().map((p) => p.item))).toEqual(['f287']);
+});
