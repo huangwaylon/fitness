@@ -212,6 +212,14 @@
       const in3 = c.shown && !card, node = scene.querySelector(`.actor[data-actor="${c.id}"]`);
       // (checked each frame: the node is the DOM island's, made anew when its villager comes back)
       if (node && node.hasAttribute('data-v3') !== in3) node.toggleAttribute('data-v3', in3);
+      // its tap area its model's core (IslandScene's [data-v3] .vil, in u), not the 2D render's: in front of the tent's
+      // door it covered most of it (docs/world3d-gaps.md 2)
+      const sz = in3 ? vil3?.size(c.id) : null;
+      if (node instanceof HTMLElement && sz) {
+        const [w, h] = sz.map(String);
+        if (node.style.getPropertyValue('--v3w') !== w) node.style.setProperty('--v3w', w);
+        if (node.style.getPropertyValue('--v3h') !== h) node.style.setProperty('--v3h', h);
+      }
       if (in3) marks3(eng, t, c.id, ...livePos(c.id));
       const base = c.shown && card && !inFocusWay(...livePos(c.id)) ? artCard(villagerArt(look.id) ?? '', VILLAGER.h) : null;
       if (!base) {
