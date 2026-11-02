@@ -45,7 +45,7 @@ wallet cover is a read-time rule in the model, which ignores an invalid row.
 | `spend_void` | `{spendId}` | from either person; the script refuses one naming no `spend` row and acknowledges a second void of the same buy as `duplicate` (nothing appended); the model takes the first after the spend |
 | `harvest` | `{week}` | a week key; counts only for the harvest open at the time |
 | `highfive` | `{}` | no longer stored: high-fives go over the relay only. An older app still posts them, so the script acknowledges one with `{ok:true}` and does nothing else (no lock, no row, no notify); never `bad_request`, which that app would show as a failed save. Old rows stay readable |
-| `pref` | `{key, value, person?}` | `locale` (`ja`/`en`), `villagerName` (1–20), `villager` (roster id), `goalWeight` (20–300 kg, one decimal, or null), `moveGoal` (integer 100–2,000), `stepsGoal` (1,000–30,000, a multiple of 500) |
+| `pref` | `{key, value, person?}` | `locale` (`ja`/`en`), `villagerName` (1–20), `villager` (roster id), `goalWeight` (20–300 kg, one decimal, or null), `goalBodyFat` (3–60 %, one decimal, or null), `moveGoal` (integer 100–2,000), `stepsGoal` (1,000–30,000, a multiple of 500) |
 | `find` | `{kind, id}` | the island's scenery for the shared ずかん: `kind` ∈ `fish` · `bug` · `sea` · `fossil` · `shell` · `fragment` · `item` · `recipe` (`FIND_KINDS`; the last two: what a balloon's present held), `id` a catalog id (`[a-z][a-z0-9-]{0,47}`; the lists live in the client, so they can grow without a redeploy). Never ベル |
 | `tally` | `{date, counts}` | one person's counts of one Tokyo day for the ずかん's 「×12」 (`contract/tally.ts`): `date` a real date not after tomorrow (server's Tokyo date), `counts` 1–300 keys `kind:id` (a find's kind and id) → whole 1–999. One row per person and day: see **Tally** below. Never ベル |
 | `island` | `{date, taken, puts, shakes, watered, wishes, at?}` | one person's part of one Tokyo day's shared island ([Shared world](#shared-world), `contract/island.ts`): ids picked up, dug, pulled or opened (≤ 400), things put down `[id, what, x, z]` (≤ 60), shakes that left something `[tree, drop, at]` (≤ 120), flowers watered (`fl:<x>:<z>`, world.ts FLOWERS, ≤ 40), wishes by the morning they bring a fragment, where their villager stands (`[x, z]` within the plan); `date` not after tomorrow. One row per person and day, replaced like a tally. Never ベル |
@@ -66,8 +66,10 @@ into totals per entry and per person; compaction drops replaced rows from the ca
 latest row of the day (another phone's or before a reload), so a send never lowers a count. Two people × a year ≈ 730
 rows of a few hundred bytes.
 
-`person` (`A`/`B`, whose goal; absent = the sender) is allowed only on the `goalWeight` / `moveGoal` / `stepsGoal` prefs
-(`eventSubject`, shared by both sides). The row's `person` column is always the sender. There are no health-data events:
+`person` (`A`/`B`, whose goal; absent = the sender) is allowed only on the `goalWeight` / `goalBodyFat` / `moveGoal` / `stepsGoal` prefs
+(`eventSubject`, shared by both sides). The row's `person` column is always the sender. A new pref key needs the
+relay first (the record refuses a key it doesn't know: `bad_request`); an app from before it reads such a row and
+ignores it (the model takes only the keys it knows), so `goalBodyFat` (2026-11-02) went relay first, then the app. There are no health-data events:
 Apple Health is the source of truth ([design.md](design.md#health-data)).
 
 ## API
@@ -232,7 +234,7 @@ steps, each deployed and green before the next, the old path working through eac
 - **Rules** (`app/src/lib/model/record.ts`): the shape checks the script had (`validEventData`); `at` =
   max(now, last + 1 ms), one per ingest, one per event; an event id once, forever (`ids`: a late retry of a replaced
   event is still a duplicate); **slots**, a later event of a slot replacing it (where the sheet deleted and appended): a
-  tally and an island day per sender and day, a cosmetic pref (`locale`, `villagerName`, `villager`, `goalWeight`) per
+  tally and an island day per sender and day, a cosmetic pref (`locale`, `villagerName`, `villager`, `goalWeight`, `goalBodyFat`) per
   subject, a goal (`moveGoal`, `stepsGoal`) per subject and Tokyo day of its `at` (the goal in force on each past day
   stays: `moveGoalOn`), a decoration per scope and id (by `decorAccept` / `tentAccept`). A pref the model ignores takes
   no slot. `highfive` is acknowledged and kept nowhere.
@@ -350,8 +352,8 @@ the ベル, きろく, けんこう and ふたりでぜんぶ stay strictly A + 
 claims, the ずかん, the tent's decor, pairing.
 
 - **What it sees** (the record, `contract/guest.ts guestRows`, applied to every `snapshot` and delta of the guest's key):
-  the members' activity (`steps`, `exercise_min`, `move_kcal`, `stand_min`), every event but the weight goal (`pref
-  goalWeight`): the goals and their history, the buys and voids (the jar, view-only), the harvests, the finds, tallies,
+  the members' activity (`steps`, `exercise_min`, `move_kcal`, `stand_min`), every event but the からだ goals (`pref
+  goalWeight`, `goalBodyFat`): the goals and their history, the buys and voids (the jar, view-only), the harvests, the finds, tallies,
   decorations, island days and cosmetic prefs. Never a からだ row: `weight`, `body_fat_pct`, `bmi`, `lean_kg`.
 - **What it writes** (`guestMayWrite`): `find` and `tally` (credited to `G`), the tent's `decor` (`sc: 't'`), its own
   `pref` `locale` / `villagerName` / `villager`. Anything else, and `ingest` / `uploads`, is `forbidden` (the queue drops
@@ -369,7 +371,7 @@ claims, the ずかん, the tent's decor, pairing.
   villager actor (`ui-state/cast.ts`: `mine`, `partner`, `third`; on the guest's phone `third` is B); the guest's
   phone guards what it sends by the same rules (`week.send` by `guestMayWrite`, the socket by `guestMaySend`), so
   nothing it may not do is queued or shown.
-- **Tests:** `relay/test/guest.test.ts` (the snapshot and deltas never carry a からだ row or the weight goal and do carry
+- **Tests:** `relay/test/guest.test.ts` (the snapshot and deltas never carry a からだ row or a からだ goal and do carry
   the activity; every forbidden write is refused and leaves nothing; the export has `G`'s rows; the room's three
   villagers, the refusals, the high-fives' pairs); `model/guest.test.ts` (credit, first finds, counts, the view);
   `e2e/guest.spec.ts` (the guest's phone shows no からだ and none of a member's controls; its catch in a member's ずかん

@@ -1,6 +1,6 @@
 // The guest (docs/design.md "The guest", docs/backend.md#the-guest): a third key, KEY_C, for a visitor who plays on the
 // island and in the tent, sees the members' activity and ベル, but never earns or spends and never sees their bodies
-// (weight, body fat, BMI, lean mass, the weight goal). These are the record's rules for that key, shared by the record
+// (weight, body fat, BMI, lean mass, the weight and body fat goals). These are the record's rules for that key, shared by the record
 // (relay/src/store.ts: what it accepts from the guest and what its snapshot leaves out) and the demo (`?demo&as=G`
 // shows what the guest's phone would get). Pure.
 import { isActivityMetric, type EventRow, type SnapshotRows } from './api.ts';
@@ -31,7 +31,10 @@ export function guestMayWrite(type: string, d: Rec): boolean {
   }
 }
 
-/** Whether an event row reaches the guest: all but the weight goal (`pref goalWeight`, a からだ figure). */
+/** The からだ goals (`pref`): never sent to the guest. */
+const BODY_GOAL_KEYS: readonly unknown[] = ['goalWeight', 'goalBodyFat'];
+
+/** Whether an event row reaches the guest: all but the からだ goals (`pref goalWeight` / `goalBodyFat`). */
 function guestSeesEvent(r: EventRow): boolean {
   if (r[3] !== 'pref') return true;
   let d: unknown;
@@ -40,12 +43,12 @@ function guestSeesEvent(r: EventRow): boolean {
   } catch {
     return false;
   }
-  return isRec(d) && d.key !== 'goalWeight';
+  return isRec(d) && !BODY_GOAL_KEYS.includes(d.key);
 }
 
 /**
  * The rows the guest's phone gets: the activity metrics (steps, Move, Exercise, Stand: the trees, the ribbon, きろく)
- * and every event but the weight goal. Never a からだ row: weight, body fat, BMI, lean mass.
+ * and every event but the からだ goals. Never a からだ row: weight, body fat, BMI, lean mass.
  */
 export function guestRows(rows: SnapshotRows): SnapshotRows {
   return { metrics: rows.metrics.filter((r) => isActivityMetric(r[3])), events: rows.events.filter(guestSeesEvent) };

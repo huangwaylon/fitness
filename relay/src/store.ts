@@ -232,7 +232,7 @@ export class StoreCore {
       if (Number.isNaN(ms)) return fail('bad_request');
       since = new Date(ms).toISOString();
     } else if (body.since !== undefined && body.since !== null && body.since !== '') return fail('bad_request');
-    // the guest's: the activity and the events, never a からだ row or the weight goal (contract/guest.ts)
+    // the guest's: the activity and the events, never a からだ row or a からだ goal (contract/guest.ts)
     const rows = this.rowsSince(since);
     return { ok: true, me, now: new Date(this.io.now()).toISOString(), rev: this.rev(), rows: me === 'G' ? guestRows(rows) : rows };
   }

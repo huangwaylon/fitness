@@ -332,7 +332,7 @@ if (KEY_C) {
     fetch(new URL('/api', http), { method: 'POST', headers: { Origin: ORIGIN }, body: JSON.stringify({ key, action, ...extra }) }).then((r) => r.json() as Promise<Record<string, unknown>>);
   const snap = await api(KEY_C, 'snapshot');
   const text = JSON.stringify(snap);
-  check(snap.ok === true && snap.me === 'G' && !/"(weight|body_fat_pct|bmi|lean_kg)"|goalWeight/.test(text), "the guest's snapshot has no からだ row and no weight goal");
+  check(snap.ok === true && snap.me === 'G' && !/"(weight|body_fat_pct|bmi|lean_kg)"|goalWeight|goalBodyFat/.test(text), "the guest's snapshot has no からだ row and no からだ goal");
   check((await api(KEY_C, 'ingest', { dates: 'Nov 1, 2026', steps: '1' })).error === 'forbidden', "the guest's ingest is forbidden");
   for (const c of [ga, gb, g]) c.ws.close(1000);
 }

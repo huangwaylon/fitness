@@ -32,6 +32,7 @@ describe('the guest’s rows', () => {
       ev(at(WK, '11:00'), 'G', 'pref', { key: 'villager', value: 'judy' }),
       ev(at(WK, '11:00'), 'G', 'pref', { key: 'villagerName', value: 'ゆき' }),
       ev(at(WK, '11:01'), 'G', 'pref', { key: 'goalWeight', value: 50 }),
+      ev(at(WK, '11:01'), 'G', 'pref', { key: 'goalBodyFat', value: 20 }),
       ev(at(WK, '11:02'), 'G', 'pref', { key: 'moveGoal', value: 300 }),
       ev(at(WK, '11:03'), 'G', 'spend', { spendId: 'x', item: 'snack', bells: 8 }),
       ev(at(WK, '11:04'), 'G', 'harvest', { week: WK }),
@@ -84,17 +85,20 @@ describe('guestRows (the record’s filter, contract/guest.ts)', () => {
     .map((m, i) => [at(WK), 'A', WK, m, 10 + i]);
   const events = [
     ev(at(WK), 'A', 'pref', { key: 'goalWeight', value: 65 }),
+    ev(at(WK), 'B', 'pref', { key: 'goalBodyFat', value: 22.5, person: 'A' }),
     ev(at(WK), 'A', 'pref', { key: 'moveGoal', value: 650 }),
     ev(at(WK), 'B', 'spend', { spendId: 's', item: 'snack', bells: 8 }),
     ev(at(WK), 'B', 'find', { kind: 'fish', id: 'koi' })
   ];
-  it('keeps the activity and every event but the weight goal; never a からだ row', () => {
+  it('keeps the activity and every event but the からだ goals (weight, body fat); never a からだ row', () => {
     const g = guestRows({ metrics, events });
     expect(g.metrics.map((r) => r[3])).toEqual(['steps', 'exercise_min', 'move_kcal', 'stand_min']);
-    expect(g.events).toEqual(events.slice(1));
+    expect(g.events).toEqual(events.slice(2));
     const s = reduce(g);
     expect([...s.weights.A.values()]).toEqual([]);
     expect([...s.body.A.body_fat_pct.values(), ...s.body.A.bmi.values(), ...s.body.A.lean_kg.values()]).toEqual([]);
     expect(s.prefs.A.goalWeight).toBeUndefined();
+    expect(s.prefs.A.goalBodyFat).toBeUndefined();
+    expect(JSON.stringify(g)).not.toContain('goalBodyFat');
   });
 });

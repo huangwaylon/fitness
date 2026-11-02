@@ -11,7 +11,7 @@ import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import type { TallyRow } from './tally.ts';
 import { rowAt } from './snapshot.ts';
 import {
-  BODY_BOUNDS, DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isWho, isActivityMetric, isBodyMetric, isWeightKg, roundKg, WEIGHT_KG,
+  BODY_BOUNDS, DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isWho, isActivityMetric, isBodyMetric, isWeightKg, isBodyFatGoal, roundKg, WEIGHT_KG,
   type ActivityMetric, type BodyMetric, type EventRow, type EventType, type FindKind, type SnapshotRows
 } from '#lib/contract/api.ts';
 
@@ -51,8 +51,9 @@ interface Timed<T> { at: number; v: T }
 /** A buy from the wallet: `{spendId, item, bells}`, a SHOP item at its price. */
 interface BellSpendRec { at: number; person: PersonId; spendId: string; item: ShopItemId; bells: number }
 
-/** `goalWeight`: the person's optional goal in kg, shown on the weight chart; never earns. */
-interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string; goalWeight?: number }
+/** `goalWeight` / `goalBodyFat`: the person's optional goals in kg / body fat %, shown on the weight / body fat
+ *  charts; never earn. */
+interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string; goalWeight?: number; goalBodyFat?: number }
 
 export interface State {
   /** Ingested activity rows per person: date → metric → rows, ascending `at` (no key string built per row). */
@@ -367,6 +368,10 @@ const ON_EVENT: Record<EventType, OnEvent> = {
       // A goal in kg, or null / '' to clear it; anything else is ignored (the previous goal stays).
       if (d.value === null || d.value === '') delete p.goalWeight;
       else if (isWeightKg(d.value)) p.goalWeight = d.value;
+    } else if (d.key === 'goalBodyFat') {
+      // A goal in body fat %, or null / '' to clear it; anything else is ignored (the previous goal stays).
+      if (d.value === null || d.value === '') delete p.goalBodyFat;
+      else if (isBodyFatGoal(d.value)) p.goalBodyFat = d.value;
     }
   }
 };

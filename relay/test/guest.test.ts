@@ -42,7 +42,7 @@ describe('the record and the guest', () => {
   const ev = (id: string, type: string, data: object) => ({ id, type, data });
   const tick = (ms = 1000) => (now += ms);
 
-  /** A day of the members' data: activity, every からだ metric, a weight goal, goals, a buy, a void, a harvest. */
+  /** A day of the members' data: activity, every からだ metric, the weight and body fat goals, goals, a buy, a void, a harvest. */
   function memberDay() {
     expect(a('ingest', {
       dates: 'Nov 1, 2026 at 7:11 AM', steps: '8564', exercise_minutes: '31', calories: '612', stand_minutes: '540',
@@ -54,6 +54,8 @@ describe('the record and the guest', () => {
     for (const [who, e] of [
       [a, ev('a1', 'pref', { key: 'goalWeight', value: 65 })],
       [b, ev('b1', 'pref', { key: 'goalWeight', value: 50, person: 'B' })],
+      [a, ev('a6', 'pref', { key: 'goalBodyFat', value: 18.5 })],
+      [b, ev('b5', 'pref', { key: 'goalBodyFat', value: 23, person: 'B' })],
       [a, ev('a2', 'pref', { key: 'moveGoal', value: 650 })],
       [b, ev('b2', 'pref', { key: 'stepsGoal', value: 9000, person: 'A' })],
       [a, ev('a3', 'spend', { spendId: 's1', item: 'snack', bells: 8 })],
@@ -67,7 +69,7 @@ describe('the record and the guest', () => {
     }
   }
 
-  it('whoami answers G; the guest’s snapshot has the activity and the ベル’s rows, never a からだ row or the weight goal', () => {
+  it('whoami answers G; the guest’s snapshot has the activity and the ベル’s rows, never a からだ row or a からだ goal', () => {
     memberDay();
     expect(g('whoami')).toMatchObject({ ok: true, me: 'G' });
     const full = a('snapshot');
@@ -77,13 +79,13 @@ describe('the record and the guest', () => {
     // the activity, both members', exactly as the members get it
     expect(metrics).toEqual((full.rows.metrics as unknown[][]).filter((r) => ['steps', 'exercise_min', 'move_kcal', 'stand_min'].includes(r[3] as string)));
     expect(metrics.map((r) => r[3]).sort()).toEqual(['exercise_min', 'move_kcal', 'stand_min', 'steps', 'steps']);
-    // no からだ: no weight, body fat, BMI or lean mass anywhere in the reply, nor the weight goal
+    // no からだ: no weight, body fat, BMI or lean mass anywhere in the reply, nor the weight or body fat goal
     const text = JSON.stringify(snap);
-    for (const m of ['weight', 'body_fat_pct', 'bmi', 'lean_kg', 'goalWeight']) expect(text, m).not.toContain(m);
-    for (const v of ['68.4', '52.3', '21.3', '22.9', '53.8', '24.1']) expect(text, v).not.toContain(v);
-    // the events but the weight goals: the goals, the buy, its void, the harvest, a name, a find
+    for (const m of ['weight', 'body_fat_pct', 'bmi', 'lean_kg', 'goalWeight', 'goalBodyFat']) expect(text, m).not.toContain(m);
+    for (const v of ['68.4', '52.3', '21.3', '22.9', '53.8', '24.1', '18.5']) expect(text, v).not.toContain(v);
+    // the events but the からだ goals: the goals, the buy, its void, the harvest, a name, a find
     expect((snap.rows.events as unknown[][]).map((r) => r[2])).toEqual(['a2', 'b2', 'a3', 'b3', 'a4', 'a5', 'b4']);
-    expect((full.rows.events as unknown[][]).map((r) => r[2])).toEqual(['a1', 'b1', 'a2', 'b2', 'a3', 'b3', 'a4', 'a5', 'b4']);
+    expect((full.rows.events as unknown[][]).map((r) => r[2])).toEqual(['a1', 'b1', 'a6', 'b5', 'a2', 'b2', 'a3', 'b3', 'a4', 'a5', 'b4']);
   });
 
   it('a delta (`since`) leaves them out too, the late ones included', () => {
@@ -93,7 +95,7 @@ describe('the record and the guest', () => {
     const d = g('snapshot', { since });
     expect(d.ok).toBe(true);
     expect((d.rows.metrics as unknown[][]).length).toBe(5);
-    expect(JSON.stringify(d)).not.toMatch(/weight|body_fat_pct|bmi|lean_kg|goalWeight/);
+    expect(JSON.stringify(d)).not.toMatch(/weight|body_fat_pct|bmi|lean_kg|goalWeight|goalBodyFat/);
   });
 
   it('takes the guest’s finds, tallies, tent decor and own cosmetic prefs, credited to G', () => {
@@ -129,6 +131,7 @@ describe('the record and the guest', () => {
       ev('x4', 'pref', { key: 'moveGoal', value: 500 }),
       ev('x5', 'pref', { key: 'stepsGoal', value: 8000, person: 'A' }),
       ev('x6', 'pref', { key: 'goalWeight', value: 60 }),
+      ev('x6f', 'pref', { key: 'goalBodyFat', value: 20 }),
       ev('x7', 'pref', { key: 'villagerName', value: 'うめ', person: 'B' }),
       ev('x8', 'decor', { id: 'dabc1234', at: T0, item: 'tanuki', x: 100, z: 200, f: 0, p: T0 }),
       ev('x9', 'island', { date: '2026-11-02', taken: [], puts: [], shakes: [], watered: [], wishes: {} }),

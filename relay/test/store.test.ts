@@ -139,13 +139,17 @@ describe('events', () => {
     b('event', ev('n4', 'pref', { key: 'villagerName', value: 'うめ' }));
     a('event', ev('w1', 'pref', { key: 'goalWeight', value: 60, person: 'B' }));
     b('event', ev('w2', 'pref', { key: 'goalWeight', value: null }));
+    a('event', ev('f1', 'pref', { key: 'goalBodyFat', value: 20, person: 'B' }));
+    b('event', ev('f2', 'pref', { key: 'goalBodyFat', value: 21.5 })); // B's own: replaces f1, latest only like the weight goal
+    a('event', ev('f3', 'pref', { key: 'goalBodyFat', value: 25 }));
+    a('event', ev('f4', 'pref', { key: 'goalBodyFat', value: 61 })); // past 60 %: ignored by the model, replaces nothing
     a('event', ev('g1', 'pref', { key: 'moveGoal', value: 400 }));
     a('event', ev('g2', 'pref', { key: 'moveGoal', value: 450 }));
     b('event', ev('g3', 'pref', { key: 'moveGoal', value: 500, person: 'A' })); // the same goal, set by the partner
     now = Date.parse('2026-11-02T15:00:00.000Z'); // 00:00 Tokyo, the next day
     a('event', ev('g4', 'pref', { key: 'moveGoal', value: 550 }));
     a('event', ev('k1', 'pref', { key: 'stepsGoal', value: 9000 }));
-    expect(events().map((r) => r[1])).toEqual(['n2', 'n3', 'n4', 'w2', 'g3', 'g4', 'k1']);
+    expect(events().map((r) => r[1])).toEqual(['n2', 'n3', 'n4', 'w2', 'f2', 'f3', 'f4', 'g3', 'g4', 'k1']);
   });
 
   it('decor keeps each item’s latest op: a beaten op is a duplicate, a removal final, a new item past the cap refused', () => {
