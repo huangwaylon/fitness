@@ -75,7 +75,7 @@ const line = (n: number, f: (i: number) => [number, number][]) => Array.from({ l
 /** The camera at rest (its own: a villager wandering by doesn't keep it waiting). */
 const idle = (page: Page) => expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { camStill(): boolean } }).__world3d.camStill()), { timeout: 20_000 }).toBe(true);
 
-test('the 3D camera: at the default zoom one finger scrolls along the island only, two pinch the zoom, nothing else moves it', async ({ page }) => {
+test('the 3D camera: at the default zoom one finger scrolls along the island only, two pinch the zoom, nothing else moves it', { tag: '@smoke' }, async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto(`?${Q}&island=3d`);
   await ready(page);
@@ -274,7 +274,7 @@ test('a goal tree\'s glints (all four met) stand whole on the 3D island: the can
   }
 });
 
-test('one source for screen ↔ world: at the default, zoomed in panned sideways and scrolled far, the tap areas sit on the 3D models, a ground tap walks where the camera says, and its ring is drawn once', async ({ page }) => {
+test('one source for screen ↔ world: at the default, zoomed in panned sideways and scrolled far, the tap areas sit on the 3D models, a ground tap walks where the camera says, and its ring is drawn once', { tag: '@smoke' }, async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto(`?${Q}&island=3d`);
   await ready(page);
