@@ -27,6 +27,7 @@
     "knip": "knip",
     "models": "node scripts/models.ts",
     "room-models": "node scripts/room-models.ts",
+    "world3d-models": "node scripts/world3d-models.ts",
     "layout": "node scripts/layout.ts"
   },
   "devDependencies": {
