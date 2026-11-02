@@ -458,7 +458,11 @@
 </main>
 
 <style>
-  .tent { position: relative; max-width: var(--col); margin: 0 auto; height: var(--vh-fill); overflow: hidden; background: #2a1f17; touch-action: none; }
+  .tent {
+    position: relative; max-width: var(--col); margin: 0 auto; height: var(--vh-fill); overflow: hidden; background: #2a1f17; touch-action: none;
+    /* the edit mode's plates: the island's cream at every hour (NH's game objects) */
+    --plate: var(--c-cream); --plate-lip: var(--c-lip); --plate-ink: var(--c-ink);
+  }
   .room { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; -webkit-tap-highlight-color: transparent; }
   .top { position: absolute; left: calc(var(--side) + var(--safe-left)); top: calc(var(--safe-top) + 8px); z-index: 2; min-height: var(--hit); }
   .foot {
