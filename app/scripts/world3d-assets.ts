@@ -76,8 +76,9 @@ export interface Use {
   s?: number;
   /** …a size (u): the model's longest side drawn this long (today's island's drawn size, so the 3D matches it). */
   h?: number;
-  /** Where its origin goes: its feet on the ground (the default), or its bounds' centre at a height (a flying bug). */
-  anchor?: 'feet' | 'centre';
+  /** Where its origin goes: its feet on the ground (the default), its bounds' centre at a height (a flying bug), or
+   *  (a held tool, an accessory) its origin is NH's hand or head joint: put it there. */
+  anchor?: 'feet' | 'centre' | 'joint';
   /** Lies flat on the ground (a dig spot, a shadow): casts no shadow. */
   flat?: true;
   /** Turned about the up axis (degrees: a decoration's facing). */
@@ -89,7 +90,7 @@ export interface Use {
   /** No NH model of its own: another stands in (the plumeria: NH's hibiscus in its colours). */
   standIn?: true;
 }
-export type Cat = 'bug' | 'fish' | 'shadow' | 'sea' | 'find' | 'fruit' | 'flower' | 'bush' | 'tree' | 'deco' | 'decor' | 'event' | 'visitor' | 'scenery' | 'fx';
+export type Cat = 'bug' | 'fish' | 'shadow' | 'sea' | 'find' | 'fruit' | 'flower' | 'bush' | 'tree' | 'deco' | 'decor' | 'event' | 'visitor' | 'scenery' | 'fx' | 'tool' | 'accessory';
 
 /** A conversion (scripts/world3d-models.ts Job) and the keys it serves. */
 export interface AssetJob {
@@ -110,7 +111,7 @@ export interface AssetJob {
   /** No occlusion baked in (the snowboy). */
   noAo?: boolean;
   /** Not NH's: a stylised effect (scripts/world3d-fx.ts). */
-  fx?: 'sparkle' | 'bang' | 'dust' | 'splash' | 'ripple';
+  fx?: 'sparkle' | 'bang' | 'dust' | 'splash' | 'ripple' | 'zzz' | 'sweat' | 'confetti' | 'flame' | 'lily-pad';
   uses: Use[];
 }
 
@@ -335,12 +336,30 @@ const fxs: AssetJob[] = [
   { name: 'fx/maple-leaf', parts: one('InsectAutumnLeaf'), maxTex: 64, uses: [{ key: 'season/maple-leaf', cat: 'fx', h: 8, flat: true, anchor: 'centre' }] },
   { name: 'fx/petal', parts: one('InsectSakurapetal'), maxTex: 64, uses: [{ key: 'season/petal', cat: 'fx', h: 7, flat: true, anchor: 'centre' }] },
   { name: 'fx/snowflake', parts: one('InsectSnowCrystal'), maxTex: 64, uses: [{ key: 'season/snowflake', cat: 'fx', h: 7, flat: true, anchor: 'centre' }] },
-  ...([['sparkle', 12], ['bang', 27], ['dust', 14], ['splash', 18], ['ripple', 18]] as const).map(([fx, h]): AssetJob => ({
-    name: `fx/${fx}`, parts: [], fx, uses: [{ key: `fx/${fx}`, cat: 'fx', h, flat: true, anchor: fx === 'bang' || fx === 'sparkle' ? 'centre' : 'feet' }]
-  }))
+  ...([['sparkle', 12], ['bang', 27], ['dust', 14], ['splash', 18], ['ripple', 18], ['zzz', 14], ['sweat', 8], ['confetti', 16], ['flame', 14], ['lily-pad', 12]] as const).map(([fx, h]): AssetJob => ({
+    name: `fx/${fx}`, parts: [], fx, uses: [{ key: `fx/${fx}`, cat: 'fx', h, flat: true, anchor: ['dust', 'splash', 'ripple', 'flame', 'lily-pad'].includes(fx) ? 'feet' : 'centre' }]
+  })),
+  // NH's heart and music note (its item icons: a love letter's heart, a song's note), for the emotes over a character
+  { name: 'fx/heart', parts: one('UnitIconLove'), maxTex: 64, uses: [{ key: 'fx/heart', cat: 'fx', h: 10, flat: true, anchor: 'centre' }] },
+  { name: 'fx/note', parts: one('UnitIconMusic'), maxTex: 64, uses: [{ key: 'fx/note', cat: 'fx', h: 10, flat: true, anchor: 'centre' }] }
 ];
 
-export const ASSETS: AssetJob[] = [...bugs, ...fish, ...sea, ...shadows, ...finds, ...flowers, ...bushes, ...trees, ...decos, ...decor, ...events, ...visitors, ...board, ...fxs];
+// the tools a villager holds (NH's wooden ones: the plain ones' textures aren't in the files): the bug net, the rod and
+// its bobber (the rod's own float: the line between them is the runtime's, a line), at the villagers' scale (the shovel
+// and the watering can are the finds')
+const tools: AssetJob[] = [
+  { name: 'tools/net', parts: one('ToolNetWood'), maxTex: 128, uses: [{ key: 'tools/net', cat: 'tool', s: VILLAGER_S, anchor: 'joint' }] },
+  { name: 'tools/rod', parts: [['ToolFishingrodWood', 'Main']], maxTex: 128, uses: [{ key: 'tools/rod', cat: 'tool', s: VILLAGER_S, anchor: 'joint' }] },
+  { name: 'tools/bobber', parts: [['ToolFishingrodWood', 'Sub']], maxTex: 64, uses: [{ key: 'tools/bobber', cat: 'tool', s: VILLAGER_S, anchor: 'centre' }] }
+];
+// the birthday's accessories (birthday.ts HATS: the birthday person's pink hat, the partner's blue; NH's party glasses
+// with their nose), at the villagers' scale, their origin NH's head joint
+const accessories: AssetJob[] = [
+  ...([['pink', 'CapHatBirthday0'], ['blue', 'CapHatBirthday1']] as const).map(([c, m]): AssetJob => ({ name: `accessories/birthday-hat-${c}`, parts: one(m), maxTex: 128, uses: [{ key: `deco/birthday-hat-${c}`, cat: 'accessory', s: VILLAGER_S, anchor: 'joint', lazy: 'event' }] })),
+  { name: 'accessories/party-glasses', parts: one('AccessoryGlassBirthday0'), maxTex: 128, uses: [{ key: 'accessories/party-glasses', cat: 'accessory', s: VILLAGER_S, anchor: 'joint', lazy: 'event' }] }
+];
+
+export const ASSETS: AssetJob[] = [...bugs, ...fish, ...sea, ...shadows, ...finds, ...flowers, ...bushes, ...trees, ...decos, ...decor, ...events, ...visitors, ...board, ...fxs, ...tools, ...accessories];
 
 /** The POC's models (models.json: static/room/world3d/<name>.glb) serving the island's keys as they are. */
 export const POC_USES: [string, Use[]][] = [
@@ -366,7 +385,7 @@ export const POC_USES: [string, Use[]][] = [
 interface Meta { min: number[]; max: number[]; tris: number; kb: number; v: string; lit?: 1 }
 /** A model's budget (KB) by kind: the unit test holds every file to it (src/lib/components/world3d/assets.test.ts). */
 const BUDGET_KB: Record<Cat, number> = {
-  bug: 40, fish: 40, shadow: 4, sea: 40, find: 30, fruit: 30, flower: 24, bush: 90, tree: 160, deco: 120, decor: 120, event: 160, visitor: 120, scenery: 200, fx: 30
+  bug: 40, fish: 40, shadow: 4, sea: 40, find: 30, fruit: 30, flower: 24, bush: 90, tree: 160, deco: 120, decor: 120, event: 160, visitor: 120, scenery: 200, fx: 30, tool: 40, accessory: 40
 };
 /** The tile (u): docs/island-layout.md. */
 const TILE = 30;
@@ -426,7 +445,6 @@ const NO_MODEL: [string, string][] = [
   ['reactions/*', 'billboard: the villagers’ emotes'],
   ['deco/lamp-glow', 'billboard: an additive glow sprite (a light’s halo, not a thing)'],
   ['fx/* (sparkle, bang, dust, splash, ripple)', 'not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the 2D’s colours (scripts/world3d-fx.ts)'],
-  ['deco/birthday-hat-pink, deco/birthday-hat-blue', '2D: worn by the villagers’ billboards'],
   ['deco/airport', 'not on the island: the pairing page’s map icon'],
   ['host/*, items/snack, items/dinner, money/*', 'not on the island: the panels’ and the HUD’s art'],
   ['finds/items/*, finds/recipes/*', 'not on the island: the balloon catalogue’s icons, on the catch plate'],

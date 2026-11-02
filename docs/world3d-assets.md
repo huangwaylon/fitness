@@ -21,7 +21,8 @@ sprite. This file is the inventory: every art key the island renders, its model,
 
 - `models`: per model its bounds (model units), triangles, KB, content hash (`?v=`), `lit` (an emissive: lights at night).
 - `keys`: per art key `m` (the model), `cat`, `s` (world units per model unit), `anchor` (`feet`: the origin on the
-  ground; `centre`: the bounds' centre at a height: a flying bug, a held fish, a balloon), `foot` (tiles of 30u,
+  ground; `centre`: the bounds' centre at a height: a flying bug, a held fish, a balloon; `joint`: the origin is NH's
+  hand or head joint: a held tool, a hat, the party glasses), `foot` (tiles of 30u,
   unturned), `hit` (tap radius, u; at least 12), `shadow` (casts one; not the flat things), `lit`, `yaw` (a
   decoration's facing: one model for its four 2D facings), `winter` (the key of its winter look), `lazy` (loaded with
   its group: `bug`, `fish`, `sea` per the month's critters, `event`, `visitor`), `standIn` (another's model).
@@ -44,7 +45,13 @@ Animation: none. NH's files have no clips (the .dae files hold the bind pose onl
 Effects: the seasons' falling leaves, petals and snowflakes are NH's own (the ones a net catches: InsectAutumnLeaf,
 InsectSakurapetal, InsectSnowCrystal). NH's files have no effect models (no Eff*/Emo*), so the sparkle, the 「！」,
 the dust puff, the splash and its ripple are small stylised meshes in the 2D's colours, unlit, 2 KB each
-(`scripts/world3d-fx.ts`, the `fx/*` keys; flat ones face +z for the runtime to turn to the camera).
+(`scripts/world3d-fx.ts`, the `fx/*` keys; flat ones face +z for the runtime to turn to the camera). So are the
+zzz, the sweat drop, the confetti, the campfire's flame (`lit`) and the pond's lily pad; the heart and the ♪ are
+NH's own (its item icons UnitIconLove, UnitIconMusic).
+
+Held tools and accessories: the bug net, the rod and its bobber (NH's wooden ones: the plain ones have no textures
+in the files; the fishing line is the runtime's, a line from the rod's tip), the birthday's cake hats (pink, blue)
+and NH's party glasses, at the villagers' scale, `anchor: joint`.
 
 Not converted (see the table's last section): the villagers (billboards), Pavé (not in the files), the emotes and the
 UI's art. The plumeria isn't in NH's files under any name: NH's hibiscus (the closest shape) stands in, in the
@@ -53,10 +60,11 @@ plumeria's white and pink.
 ## The inventory
 
 <!-- assets:start -->
-536 keys, 418 models, 6.13 MB in all.
+549 keys, 431 models, 6.22 MB in all.
 
 | kind | keys | models | KB | loads |
 | --- | --- | --- | --- | --- |
+| accessory | 3 | 3 | 52.6 | lazily (event) |
 | find | 126 | 49 | 390 | with the island |
 | scenery | 4 | 2 | 68.2 | with the island |
 | bush | 24 | 24 | 287 | with the island |
@@ -68,10 +76,19 @@ plumeria's white and pink.
 | decor | 40 | 10 | 198.7 | with the island |
 | flower | 42 | 42 | 551.5 | with the island |
 | fruit | 4 | 4 | 47.9 | with the island |
-| fx | 8 | 8 | 22.9 | with the island |
+| fx | 15 | 15 | 45.8 | with the island |
 | shadow | 15 | 15 | 41.9 | with the island |
+| tool | 3 | 3 | 18.3 | with the island |
 | tree | 10 | 10 | 325.1 | with the island |
 | visitor | 11 | 11 | 926.5 | lazily (visitor) |
+
+### accessory
+
+| key | model | scale | anchor | foot | hit | KB | notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| accessories/party-glasses | accessories/party-glasses | 5.4 | joint |  | 16 | 11.2 |  |
+| deco/birthday-hat-blue | accessories/birthday-hat-blue | 5.4 | joint |  | 29 | 20.6 |  |
+| deco/birthday-hat-pink | accessories/birthday-hat-pink | 5.4 | joint |  | 29 | 20.8 |  |
 
 ### find
 
@@ -625,10 +642,17 @@ plumeria's white and pink.
 | key | model | scale | anchor | foot | hit | KB | notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | fx/bang | fx/bang | 13.5 | centre |  | 14 | 2.1 |  |
+| fx/confetti | fx/confetti | 9.249 | centre |  | 12 | 1.9 |  |
 | fx/dust | fx/dust | 7.292 | feet |  | 12 | 2.3 |  |
+| fx/flame | fx/flame | 7.692 | feet |  | 12 | 2.1 | lit |
+| fx/heart | fx/heart | 2.985 | centre |  | 12 | 6.5 |  |
+| fx/lily-pad | fx/lily-pad | 6 | feet |  | 12 | 2 |  |
+| fx/note | fx/note | 2.933 | centre |  | 12 | 6.5 |  |
 | fx/ripple | fx/ripple | 9 | feet |  | 12 | 2 |  |
 | fx/sparkle | fx/sparkle | 6 | centre |  | 12 | 1.8 |  |
 | fx/splash | fx/splash | 11.25 | feet |  | 12 | 2 |  |
+| fx/sweat | fx/sweat | 4.211 | centre |  | 12 | 1.9 |  |
+| fx/zzz | fx/zzz | 5.785 | centre |  | 12 | 2 |  |
 | season/maple-leaf | fx/maple-leaf | 2.286 | centre |  | 12 | 3.6 |  |
 | season/petal | fx/petal | 3.07 | centre |  | 12 | 3.4 |  |
 | season/snowflake | fx/snowflake | 2.288 | centre |  | 12 | 5.7 |  |
@@ -652,6 +676,14 @@ plumeria's white and pink.
 | shadow/sea-4 | critters/shadows/sea-4 | 4.717 | feet |  | 20 | 2.8 |  |
 | shadow/sea-5 | critters/shadows/sea-5 | 5.09 | feet |  | 24 | 2.8 |  |
 | shadow/sea-6 | critters/shadows/sea-6 | 6.172 | feet |  | 32 | 2.8 |  |
+
+### tool
+
+| key | model | scale | anchor | foot | hit | KB | notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| tools/bobber | tools/bobber | 5.4 | centre |  | 12 | 4 |  |
+| tools/net | tools/net | 5.4 | joint |  | 20 | 7.9 |  |
+| tools/rod | tools/rod | 5.4 | joint |  | 12 | 6.4 |  |
 
 ### tree
 
@@ -695,7 +727,6 @@ plumeria's white and pink.
 | reactions/* | billboard: the villagers’ emotes |
 | deco/lamp-glow | billboard: an additive glow sprite (a light’s halo, not a thing) |
 | fx/* (sparkle, bang, dust, splash, ripple) | not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the 2D’s colours (scripts/world3d-fx.ts) |
-| deco/birthday-hat-pink, deco/birthday-hat-blue | 2D: worn by the villagers’ billboards |
 | deco/airport | not on the island: the pairing page’s map icon |
 | host/*, items/snack, items/dinner, money/* | not on the island: the panels’ and the HUD’s art |
 | finds/items/*, finds/recipes/* | not on the island: the balloon catalogue’s icons, on the catch plate |
