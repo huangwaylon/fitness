@@ -35,7 +35,9 @@
   import { idlePose, motionPose } from './motion3d.ts';
   import type { CardSpec } from './cards.ts';
   import type { LampSpot } from './lights.ts';
-  import { BufferGeometry, Float32BufferAttribute, Line, LineBasicMaterial, type Object3D } from 'three';
+  import { createVillagers, type VSpec, type Villagers3 } from './villagers.ts';
+  import { has3d } from '../villager3d/manifest.ts';
+  import { BufferGeometry, Float32BufferAttribute, Line, LineBasicMaterial, Vector3, type Object3D } from 'three';
   import type { FxKind } from './effects.ts';
 
   /** A villager on this island now (IslandScene's cast). */
@@ -47,6 +49,9 @@
     /** On the island and out of the tent. */
     shown: boolean;
     seated: boolean;
+    /** Its seat's name (world.ts SEATS: a bench's, a stool's), or null. */
+    seat: string | null;
+    stung: boolean;
     rep: boolean;
   }
 
@@ -147,13 +152,32 @@
     const k = (t % PULL_MS) / PULL_MS, up = (a: number, b: number, c: number, d: number) => (k < a || k > d ? 0 : k < b ? (k - a) / (b - a) : k <= c ? 1 : (d - k) / (d - c));
     return 9 * Math.max(up(0, 0.08, 0.16, 0.24), up(0.32, 0.4, 0.48, 0.56));
   }
-  function villagerCards(t: number): boolean {
+  /** The seats' tops (u): a bench's, a stool's (NH's park bench and log stool at 3u a model unit). */
+  const seatTop = (name: string) => (name.startsWith('stool') ? 9 : 13);
+  let vil3: Villagers3 | null = null;
+  /** ?v3d=0: the villagers as their cards (a comparison). */
+  const v3d = q.get('v3d') !== '0';
+  function villagerCards(t: number, active: boolean): boolean {
     if (!eng) return false;
     let moving = false;
     const swaying = scene.hasAttribute('data-show');
+    // NH's own 3D villagers where they have one (world3d/villagers.ts); a card for the rest, and while one loads
+    const specs: VSpec[] = [];
     for (const c of cast()) {
       const a = actors[c.id], look = resolveLook({ villager: c.villager, person: c.person });
-      const base = c.shown ? artCard(villagerArt(look.id) ?? '', VILLAGER.h) : null;
+      if (!v3d || !has3d(look.id)) continue;
+      const [x, z] = livePos(c.id);
+      specs.push({
+        slot: c.id, id: look.id, x, z, y: feetOf(x, z), walking: a.walking, face: a.face, side: c.side, asleep: a.asleep,
+        seat: c.seat ? seatTop(c.seat) : null, lift: c.rep ? pullLift(t) : 0, motion: a.motion, motionN: a.motionN, emote: a.emote, stung: c.stung, shown: c.shown
+      });
+    }
+    const r = vil3?.frame(t, specs, active) ?? { cards: new Set<string>(specs.map((s) => s.slot)), moving: false };
+    moving = r.moving;
+    for (const c of cast()) {
+      const a = actors[c.id], look = resolveLook({ villager: c.villager, person: c.person });
+      const card = !v3d || !has3d(look.id) || r.cards.has(c.id);
+      const base = c.shown && card ? artCard(villagerArt(look.id) ?? '', VILLAGER.h) : null;
       if (!base) {
         eng.cards.set(`v:${c.id}`, null);
         continue;
@@ -266,6 +290,10 @@
   let lamps3: LampSpot[] = [];
   const smooth = (k: number) => k * k * (3 - 2 * k);
   const heightOf = (x: number, z: number) => ('group' in ground ? ground.heightAt(x, z) : ground.height(x, z));
+  const feetOf = (x: number, z: number) => ('group' in ground ? (ground.feet ?? ground.heightAt)(x, z) : ground.feet(x, z));
+  /** The self-light of the island's models at each time of day (engine.ts TOD lift): the 3D villagers' too. */
+  const LIFT = { day: 0.32, dusk: 0.22, night: 0.08 } as const;
+  const todNow = () => (tod === 'night' ? 'night' : tod === 'dusk' || tod === 'dawn' ? 'dusk' : 'day');
   function mirror(e: Island3, t: number): boolean {
     const winter = season === 'winter', seen = new Set<string>(), add: Inst[] = [];
     let moving = false;
@@ -364,7 +392,7 @@
     const { kind, count } = ambient3;
     if (!kind || t < fallNext || e.fxCount('fall') >= count) return;
     fallNext = t + 900;
-    const z = e.view().camZ + rnd(-60, 420), drop = rnd(170, 230);
+    const z = e.view().camZ + rnd(40, 420), drop = rnd(90, 140);
     e.fx('fall', 195 + rnd(-190, 190), z, drop, { v: kind, tag: 'fall', ms: (drop / 18) * 1000, size: kind === 'snowflake' ? 1.1 : 1.3 });
   }
   const rnd = (a: number, b: number) => a + Math.random() * (b - a);
@@ -449,6 +477,7 @@
     untrack(() => {
       const hz = getComputedStyle(scene).getPropertyValue('--sky-hz').trim();
       e.tod(t3, w, hz);
+      vil3?.lift(LIFT[t3] * (1 - 0.35 * w));
     });
   });
 
@@ -515,7 +544,9 @@
       focus: (f, ms) => e.frame(f, ms), unfocus: (ms) => e.restore(ms), attach: (id, obj) => e.things.attach(id, obj as Object3D | null)
     };
     world.useThree(proj);
-    let camWas = NaN, horizonWas = NaN;
+    let camWas = NaN, horizonWas = NaN, revWas = -1;
+    vil3 = createVillagers((o) => e.add(o), asset('room/villagers3d/' as Parameters<typeof asset>[0]), () => e.kick());
+    vil3.lift(LIFT[todNow()]);
     e.onFrame((t) => {
       const z = e.view().camZ;
       world.view.camZ = z;
@@ -526,13 +557,15 @@
       const hz = e.horizon();
       if (!(Math.abs(hz - horizonWas) <= 0.5)) onhorizon((horizonWas = hz));
       const more = world.step(t);
+      const camMoved = e.rev() !== revWas;
+      revWas = e.rev();
       const moving = mirror(e, t);
       floats(e, t);
       fall(e, t);
       sky(e);
       const acting = characterCards(e, t);
       actorFx(e, t);
-      return villagerCards(t) || more || moving || acting;
+      return villagerCards(t, camMoved || more) || more || moving || acting;
     });
     // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
     listenFx3((kind, x, z, lift, o) => e.fx(kind, x, z, lift, o));
@@ -562,11 +595,13 @@
         const r = canvas!.getBoundingClientRect();
         return e.groundAt(cx - r.left, cy - r.top);
       },
-      things: (id: string) => e.things.has(id), where: (id: string) => e.things.where(id), groups: () => e.things.groups(), over: (id: string, o: Parameters<typeof e.things.over>[1]) => e.things.over(id, o),
+      things: (id: string) => e.things.has(id), where: (id: string) => e.things.where(id), groups: () => e.things.groups(), over: (id: string, o: Parameters<typeof e.things.over>[1]) => e.things.over(id, o), head: (slot: string) => { const h = vil3?.head(slot); if (!h) return null; const p = h.getWorldPosition(new Vector3()); return [p.x, p.y, p.z]; },
       focus: (x: number, z: number, lift?: number) => e.focusOn({ x, z, lift }), restore: () => e.restore(), focused: () => e.focused()
     };
     return () => {
       listen3d(null);
+      vil3?.dispose();
+      vil3 = null;
       listenPose3d(null);
       listenFx3(null);
       off();

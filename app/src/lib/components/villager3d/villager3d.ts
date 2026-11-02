@@ -104,6 +104,24 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
     }
   });
   const rig = rigOf(model);
+  // the faces NH swaps whole meshes for (a bird's beak, a deer's or a gorilla's muzzle: scripts/villagers3d-page.js
+  // keeps FaceNothing, FaceGood and FaceBad, named for their face): the one for the expression shows
+  const swaps: { kind: 'Nothing' | 'Good' | 'Bad'; mesh: Object3D }[] = [];
+  model.traverse((n) => {
+    const k = /^Face(Nothing|Good|Bad)/.exec(n.name)?.[1] as 'Nothing' | 'Good' | 'Bad' | undefined;
+    if (k && (n as Mesh).isMesh) swaps.push({ kind: k, mesh: n });
+    else if (k) n.traverse((c) => (c as Mesh).isMesh && swaps.push({ kind: k, mesh: c }));
+  });
+  let swapShown: string | null = null;
+  const showSwap = (face: Face) => {
+    if (!swaps.length) return;
+    const want = face === 'happy' || face === 'joy' ? 'Good' : face === 'sad' || face === 'cross' || face === 'sting' ? 'Bad' : 'Nothing';
+    const kind = swaps.some((s) => s.kind === want) ? want : 'Nothing';
+    if (kind === swapShown) return;
+    swapShown = kind;
+    for (const s of swaps) s.mesh.visible = s.kind === kind;
+  };
+  showSwap('neutral');
 
   // the sting's lump (NH's swollen eye): over the eye on the viewer's left, on the head bone
   const head = rig.bone('Head');
@@ -212,6 +230,7 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       const face = faceOf();
       const eye = eyeAt(face, t, seed), mouth = mouthAt(face, t);
       for (const f of faces) setCell(f, f.m.name === 'mEye' ? eye : mouth);
+      showSwap(face);
       if (lump) lump.visible = face === 'sting';
       return true;
     },

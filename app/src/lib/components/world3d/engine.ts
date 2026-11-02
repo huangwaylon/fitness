@@ -170,7 +170,7 @@ export interface Island3 {
   focusOn(target: { x: number; z: number; lift?: number }, o?: { zoom?: number; pitch?: number; ms?: number }): Promise<void>;
   /** The bulletin board's focus (docs/board.md): a rect (its middle x, z on the ground, y up, w × h u) framed face-on
    *  in the screen above `bottom` px, filling `fill` of it; called again while focused it re-frames from where it is. */
-  frame(f: { x: number; z: number; y: number; w: number; h: number; yaw?: number; bottom?: number; fill?: number }, ms?: number): Promise<void>;
+  frame(f: { x: number; z: number; y: number; w: number; h: number; yaw?: number; top?: number; bottom?: number; fill?: number }, ms?: number): Promise<void>;
   restore(ms?: number): Promise<void>;
   focused(): boolean;
   /** A flourish in the world (effects.ts): a tap's dust, a splash, sparkles, a 「！」. */
@@ -566,14 +566,15 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     return true;
   }
   /** The bulletin board's (docs/board.md): look at a rect face-on, framed in the screen above `bottom`. */
-  function frameRect(f: { x: number; z: number; y: number; w: number; h: number; yaw?: number; bottom?: number; fill?: number }, ms = 600): Promise<void> {
+  function frameRect(f: { x: number; z: number; y: number; w: number; h: number; yaw?: number; top?: number; bottom?: number; fill?: number }, ms = 600): Promise<void> {
     if (!focus) focus = { back: { z: camZ, k: zoomK } };
-    const fill = f.fill ?? 0.9, bottom = Math.max(0, Math.min(H * 0.7, f.bottom ?? 0)), t = Math.tan(((FOV / 2) * Math.PI) / 180);
-    // the distance that fits its height in the free screen and its width across
-    const D = Math.max((f.h * H) / (fill * (H - bottom) * 2 * t), f.w / (fill * 2 * t * camera.aspect));
+    const fill = f.fill ?? 0.9, bottom = Math.max(0, Math.min(H * 0.7, f.bottom ?? 0)), top = Math.max(0, Math.min(H * 0.5, f.top ?? 0));
+    const free = Math.max(H * 0.2, H - bottom - top), t = Math.tan(((FOV / 2) * Math.PI) / 180);
+    // the distance that fits its height in the free screen (between the HUD and the keyboard) and its width across
+    const D = Math.max((f.h * H) / (fill * free * 2 * t), f.w / (fill * 2 * t * camera.aspect));
     // a little from above, as NH's board view; its middle at the free screen's middle
     const pitch = (8 * Math.PI) / 180;
-    return moveTo({ z: f.z, k: D0 / D, fk: 1, x: f.x, y: src.feet(f.x, f.z) + f.y, pitch, drop: -bottom / (2 * H) }, ms);
+    return moveTo({ z: f.z, k: D0 / D, fk: 1, x: f.x, y: src.feet(f.x, f.z) + f.y, pitch, drop: (top - bottom) / (2 * H) }, ms);
   }
   function focusOn(target: { x: number; z: number; lift?: number }, o: { zoom?: number; pitch?: number; ms?: number } = {}): Promise<void> {
     if (!focus) focus = { back: { z: camZ, k: zoomK } };

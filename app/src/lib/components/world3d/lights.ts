@@ -8,10 +8,10 @@
 //     its light until another is clearly nearer), each fading in and out over FADE_MS: a light never snaps on or off.
 // All of it scales with the time of day's lamp level (0 by day), eased so dusk comes on softly.
 import {
-  AdditiveBlending, Color, InstancedBufferAttribute, InstancedBufferGeometry, Mesh, PlaneGeometry, PointLight,
+  Color, InstancedBufferAttribute, InstancedBufferGeometry, Mesh, PlaneGeometry, PointLight,
   ShaderMaterial, type Scene
 } from 'three';
-import { BEND_GLSL, bendPoint, bendU } from './bend.ts';
+import { BEND_GLSL, bendPoint, bendU, glow } from './bend.ts';
 /** The halos' and pools' haze: the land's (engine.ts), so a far lamp still glows where the land shows. */
 export const lampFog = { near: { value: 1200 }, far: { value: 3000 } };
 
@@ -99,10 +99,10 @@ function sprites(vert: string, frag: string, order: number): { mesh: Mesh; geo: 
   geo.setAttribute('aCol', new InstancedBufferAttribute(col, 3));
   geo.setAttribute('aI', new InstancedBufferAttribute(i, 1));
   geo.instanceCount = 0;
-  const mat = new ShaderMaterial({
-    vertexShader: vert, fragmentShader: frag, transparent: true, depthWrite: false, depthTest: true, blending: AdditiveBlending,
+  const mat = glow(new ShaderMaterial({
+    vertexShader: vert, fragmentShader: frag, transparent: true, depthWrite: false, depthTest: true,
     uniforms: { ...bendU, uFogNear: lampFog.near, uFogFar: lampFog.far }
-  });
+  }));
   const mesh = new Mesh(geo, mat);
   mesh.frustumCulled = false;
   mesh.renderOrder = order;

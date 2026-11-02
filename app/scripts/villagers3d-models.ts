@@ -38,6 +38,8 @@ const MOUTH: [number, number, number] = [3, 96, 48];
  *  SMALLER px, fewer triangles). */
 const BUDGET_KB = 100;
 const SMALLER = { maxTex: 192, tris: 4000 };
+/** …and smaller again (a special character with its three swapped faces: Saharah). */
+const SMALLEST = { maxTex: 128, tris: 3000 };
 
 /** roster id → [body folder, top's mesh folder or null, top's texture folder or null, why it has no model]. */
 type MapRow = [body: string | null, tops: string | null, tex: string | null, note?: string];
@@ -198,9 +200,11 @@ for (const [id, [body, tops, tex]] of todo) {
   let r: R | null = null, tris = TRIS;
   try {
     // over budget, once more smaller
-    for (const size of [{ maxTex: MAX_TEX, tris: TRIS }, SMALLER]) {
+    for (const size of [{ maxTex: MAX_TEX, tris: TRIS }, SMALLER, SMALLEST]) {
       r = await page.evaluate((o) => (window as unknown as { convertVillager: (o: unknown) => Promise<R> }).convertVillager(o), {
-        body: [F(body!), body], tops: tops ? [F(tops), tops] : null, topsTex: tex ? F(tex) : null, files, maxTex: size.maxTex, eye: EYE, mouth: MOUTH
+        body: [F(body!), body], tops: tops ? [F(tops), tops] : null, topsTex: tex ? F(tex) : null, files, maxTex: size.maxTex, eye: EYE, mouth: MOUTH,
+        // a special character's face at rest only (its three whole faces would be over budget): a villager's every one
+        swaps: !SPECIAL[id]
       });
       tris = size.tris;
       pack(id, r, size.tris, out);

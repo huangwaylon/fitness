@@ -132,9 +132,10 @@ window.convertVillager = async (o) => {
   body.updateMatrixWorld(true);
   const bones = new Map();
   body.traverse((n) => { if (n.isBone) bones.set(n.name, n); });
-  // never drawn: collision, placeholders, shadow cards; and a special character's other faces (FaceBad, FaceGood,
-  // FaceNothing: NH swaps whole meshes for theirs), as world3d-assets.ts's visitors hide them
-  const hidden = (n) => /^Face(Bad|Good|Nothing)/.test(n.name) || HIDE.has((Array.isArray(n.material) ? n.material[0] : n.material)?.name);
+  // never drawn: collision, placeholders, shadow cards. The faces NH swaps whole meshes for (FaceNothing, FaceGood,
+  // FaceBad: a bird's beak, a deer's or a gorilla's muzzle, a special character's face: their mBeak, or their mEye)
+  // are kept, each named for its face: villager3d.ts shows the one for the expression (FaceNothing at rest)
+  const hidden = (n) => (!o.swaps && /^Face(Bad|Good)/.test(n.name)) || HIDE.has((Array.isArray(n.material) ? n.material[0] : n.material)?.name);
   const gone = [];
   body.traverse((n) => { if (n.isMesh && hidden(n)) gone.push(n); });
   for (const n of gone) n.parent?.remove(n);
@@ -192,7 +193,9 @@ window.convertVillager = async (o) => {
     else if (name === 'mTops') mat = await plainMat('mTops', topsUrl, o);
     else mat = await plainMat(name, bodyUrl, o);
     m.material = mat;
-    m.name = name;
+    // (a face mesh keeps its face: FaceGood:mBeak)
+    const face = /^(Face(?:Bad|Good|Nothing))/.exec(m.name)?.[1];
+    m.name = face ? `${face}:${name}` : name;
     m.castShadow = false;
     const g = m.geometry;
     tris += (g.index ? g.index.count : g.attributes.position.count) / 3;

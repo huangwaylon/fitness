@@ -7,7 +7,7 @@ import type { Proj3 } from '../island/camera.svelte.ts';
 
 /** What the board needs of the 3D island (docs/board.md "To the 3D lead"): all optional, the lead's to add. */
 export type BoardProj = Proj3 & {
-  focus?(f: { x: number; z: number; y: number; w: number; h: number; yaw?: number; bottom?: number; fill?: number }, ms?: number): Promise<void>;
+  focus?(f: { x: number; z: number; y: number; w: number; h: number; yaw?: number; top?: number; bottom?: number; fill?: number }, ms?: number): Promise<void>;
   unfocus?(ms?: number): Promise<void>;
   attach?(id: string, obj: unknown): void;
 };
