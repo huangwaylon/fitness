@@ -8,6 +8,7 @@ A push to `main` that touches `app/**` (docs-only and relay-only pushes don't ru
 | `build` | `npm run build` once; its `build-pages/` is both the Pages artifact and the `site` artifact the e2e jobs test | yes |
 | `checks` | `npm run check`, `npm run knip`, `npx vitest run`, beside the build | yes |
 | `e2e` ×8 | Playwright in Chromium (iPhone 13 profile), the whole suite, on `site` served as Pages serves it (`scripts/serve-build.ts`), split by test (`fullyParallel`, 3 workers each) | yes, until WebKit is green across the board |
+| `e2e-3d` ×8 | the same suite on the 3D island (`E2E_ISLAND=3d`), ahead of the cutover; its failures in its job summary (docs/world3d-gaps.md) | no, until it's green |
 | `deploy` | to Pages, once all of the above are green | — |
 
 - **Red main never deploys.** A newer push cancels an older run's checks (each job's own concurrency group), so a
