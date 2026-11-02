@@ -37,7 +37,7 @@ const T = 1_000_000;
 describe('a batch to the record', () => {
   it('sends what may go now in one request, in queue order, skipping a held one and what follows it on its subject', async () => {
     const goal = enqueue('pref', { key: 'moveGoal', value: 450 }, T);
-    const buy = enqueue('spend', { spendId: 's1', item: 'snack', bells: 8 }, T, 5000); // held: the undo window
+    const buy = enqueue('spend', { spendId: 's1', item: 'snack', bells: 40 }, T, 5000); // held: the undo window
     const voidIt = enqueue('spend_void', { spendId: 's1' }, T); // waits for its buy
     const find = enqueue('find', { kind: 'fish', id: 'dab' }, T);
     const r = await flush(() => T);

@@ -59,11 +59,11 @@ panel](#panel)) with the jar on its right, the two centred in the sky; a sync ch
 ### Wallet
 
 ごほうび (`routes/jar/+page.svelte`, `wallet/Shop.svelte`): the jar over 「ふたりのベル」 and the balance, then two tiles
-with NH item art: 🍦 おやつ 8 ベル and 🍜 外食 15 ベル. One the wallet can't cover is sunk with あと N ベル. 買う！ asks
+with NH item art: 🍦 おやつ 40 ベル and 🍜 外食 70 ベル. One the wallet can't cover is sunk with あと N ベル. 買う！ asks
 first, applies at once and waits 5 s with とりけす before it is sent.
 
 「かいもの きろく」 (`wallet/Purchases.svelte`) lists the buys, newest first (art, name, day, who, price), ten at a time
-(「もっと見る」). ✕ on any line (either of us, any buy) asks NH-style (「このかいものを けしますか？ 8 ベル もどります」);
+(「もっと見る」). ✕ on any line (either of us, any buy) asks NH-style (「このかいものを けしますか？ 40 ベル もどります」);
 はい sends a `spend_void`, the ベル go back, and the banner carries とりけす for 5 s.
 
 ### Panel
@@ -194,9 +194,21 @@ line and goal days, あそびかた, and the all-four notification.
 
 ### Rewards
 
-Exactly two, one shared wallet (`SHOP`): 🍦 **おやつ 8 ベル** (`snack`) and 🍜 **外食 15 ベル** (`dinner`). A buy is
+Exactly two, one shared wallet (`SHOP`): 🍦 **おやつ 40 ベル** (`snack`) and 🍜 **外食 70 ベル** (`dinner`). A buy is
 `spend {spendId, item, bells}` with `bells` exactly the item's price (the server refuses anything else). Either person
 buys; either person undoes any buy (`spend_void`).
+
+Against the numbers check, each is something to save for (`scoring/bells.test.ts` pins it):
+
+| Week | ベル | Buys |
+|---|---|---|
+| Most | 98 | one 外食 (28 left) or two おやつ (18 left); never both (110) |
+| Perfect | 70 | exactly one 外食, or one おやつ (30 left) |
+| Typical | 52 | one おやつ (12 left); a 外食 takes about a week and a half. Three typical weeks (156): a 外食 and two おやつ, 6 left |
+| Lazy | 28 | nothing: an おやつ takes about a week and a half |
+
+So a typical pair has two おやつ and one 外食 every three weeks. (Before 2026-11-02: おやつ 8, 外食 15, two
+or three of each a week; a buy at the old prices is refused.)
 
 ### The first week
 

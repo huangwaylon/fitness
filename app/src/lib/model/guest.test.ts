@@ -34,7 +34,7 @@ describe('the guest’s rows', () => {
       ev(at(WK, '11:01'), 'G', 'pref', { key: 'goalWeight', value: 50 }),
       ev(at(WK, '11:01'), 'G', 'pref', { key: 'goalBodyFat', value: 20 }),
       ev(at(WK, '11:02'), 'G', 'pref', { key: 'moveGoal', value: 300 }),
-      ev(at(WK, '11:03'), 'G', 'spend', { spendId: 'x', item: 'snack', bells: 8 }),
+      ev(at(WK, '11:03'), 'G', 'spend', { spendId: 'x', item: 'snack', bells: 40 }),
       ev(at(WK, '11:04'), 'G', 'harvest', { week: WK }),
       ev(at(WK, '11:05'), 'G', 'decor', { sc: 't', id: 'dg1abc23', at: Date.parse(at(WK, '11:05')), item: 'f1234', x: 2, z: 3, f: 0, p: Date.parse(at(WK, '11:05')) })
     ]
@@ -87,7 +87,7 @@ describe('guestRows (the record’s filter, contract/guest.ts)', () => {
     ev(at(WK), 'A', 'pref', { key: 'goalWeight', value: 65 }),
     ev(at(WK), 'B', 'pref', { key: 'goalBodyFat', value: 22.5, person: 'A' }),
     ev(at(WK), 'A', 'pref', { key: 'moveGoal', value: 650 }),
-    ev(at(WK), 'B', 'spend', { spendId: 's', item: 'snack', bells: 8 }),
+    ev(at(WK), 'B', 'spend', { spendId: 's', item: 'snack', bells: 40 }),
     ev(at(WK), 'B', 'find', { kind: 'fish', id: 'koi' })
   ];
   it('keeps the activity and every event but the からだ goals (weight, body fat); never a からだ row', () => {

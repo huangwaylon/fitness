@@ -58,7 +58,7 @@ describe('the record and the guest', () => {
       [b, ev('b5', 'pref', { key: 'goalBodyFat', value: 23, person: 'B' })],
       [a, ev('a2', 'pref', { key: 'moveGoal', value: 650 })],
       [b, ev('b2', 'pref', { key: 'stepsGoal', value: 9000, person: 'A' })],
-      [a, ev('a3', 'spend', { spendId: 's1', item: 'snack', bells: 8 })],
+      [a, ev('a3', 'spend', { spendId: 's1', item: 'snack', bells: 40 })],
       [b, ev('b3', 'spend_void', { spendId: 's1' })],
       [a, ev('a4', 'harvest', { week: '2026-10-26' })],
       [a, ev('a5', 'pref', { key: 'villagerName', value: 'ウェイ' })],
@@ -125,7 +125,7 @@ describe('the record and the guest', () => {
     expect(g('ingest', { dates: 'Nov 1, 2026', steps: '100' })).toEqual({ ok: false, error: 'forbidden' });
     expect(g('uploads')).toEqual({ ok: false, error: 'forbidden' });
     const refused = [
-      ev('x1', 'spend', { spendId: 's2', item: 'dinner', bells: 15 }),
+      ev('x1', 'spend', { spendId: 's2', item: 'dinner', bells: 70 }),
       ev('x2', 'spend_void', { spendId: 's1' }),
       ev('x3', 'harvest', { week: '2026-10-26' }),
       ev('x4', 'pref', { key: 'moveGoal', value: 500 }),

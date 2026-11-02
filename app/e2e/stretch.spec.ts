@@ -112,7 +112,7 @@ test('きろく: a がんばり line under the day with each person\'s ベル; t
   await sheet(page).locator('.panel-body').screenshot({ path: '/tmp/stretch/day.png' });
 });
 
-test('あそびかた: the がんばり rule and each goal\'s 1.5× target', async ({ page }) => {
+test('あそびかた: the がんばり rule and each goal\'s 1.5× target; the two prices', async ({ page }) => {
   await open(page, '2026-11-03T12:00');
   await ribbon(page).click();
   await sheet(page).locator('.tab[data-tab=settings]').click();
@@ -120,6 +120,7 @@ test('あそびかた: the がんばり rule and each goal\'s 1.5× target', asy
   const howto = sheet(page).locator('.howto');
   await expect(howto).toContainText('目標の 1.5ばいまで できたら、がんばりで もう +1 ベル。1日 2 ベルまで！');
   await expect(howto.locator('.fruits small.st')).toHaveText(['がんばり 900 kcal', 'がんばり 90分', 'がんばり 180分', 'がんばり 12,000歩']);
+  await expect(howto).toContainText(/おやつは 40\sベル、外食は 70\sベル。/);
   await howto.screenshot({ path: '/tmp/stretch/howto.png' });
 });
 

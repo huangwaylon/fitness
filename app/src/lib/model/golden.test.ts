@@ -92,13 +92,13 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     expect(new Set(all.map((v) => v.people.A.moveGoal))).toEqual(new Set([600, 500]));
     expect(new Set(all.map((v) => v.people.B.moveGoal))).toEqual(new Set([400, 300]));
     const end = bellsLedger(reduce(ROWS), END);
-    // bs-wrong (5 ベル), bs-trip (no such reward) and bs-b28 (a 外食 beyond the wallet: 10 left) are ignored; B's void
-    // of A's dinner gives its 15 back (either of us may undo any buy).
+    // bs-wrong (8 ベル: the old おやつ price), bs-trip (no such reward) and bs-b13 (a 外食 beyond the wallet: 13 left)
+    // are ignored; B's void of A's dinner gives its 70 back (either of us may undo any buy).
     expect(end.spends.map((x) => [x.spendId, x.voided]).reverse()).toEqual([
       ['bs-early', false], ['bs-snack', true], ['bs-dinner', true], ['bs-snack-2', false],
-      ...['b10', 'b11', 'b12', 'b13', 'b14', 'b15', 'b16', 'b17', 'b18', 'b19', 'b20', 'b21', 'b22', 'b23', 'b24', 'b25', 'b26', 'b27'].map((id) => [`bs-${id}`, false])
+      ...['b10', 'b11', 'b12'].map((id) => [`bs-${id}`, false])
     ]);
-    expect(buildWeekView(reduce(ROWS), 'A', END).wallet.balance).toBe(10);
+    expect(buildWeekView(reduce(ROWS), 'A', END).wallet.balance).toBe(13);
     // がんばり in the ledger, capped at 2 where more were reached
     expect(end.days.some((d) => d.people.A.stretch === 2 || d.people.B.stretch === 2)).toBe(true);
     expect(end.days.every((d) => d.people.A.stretch <= 2 && d.people.B.stretch <= 2)).toBe(true);

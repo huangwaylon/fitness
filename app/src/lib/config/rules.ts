@@ -31,8 +31,8 @@ export const stretchOf = (goal: number): number => goal * STRETCH.multiplier;
 
 /** The two rewards (one shared wallet): a buy must name one of these ids at exactly its price. */
 export const SHOP = [
-  { id: 'snack', bells: 8 },
-  { id: 'dinner', bells: 15 }
+  { id: 'snack', bells: 40 },
+  { id: 'dinner', bells: 70 }
 ] as const satisfies readonly { id: ShopItemId; bells: number }[];
 
 /** A reward's price, or undefined for anything that isn't one. */

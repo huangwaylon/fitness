@@ -41,7 +41,7 @@ wallet cover is a read-time rule in the model, which ignores an invalid row.
 
 | type | data | Rules |
 |---|---|---|
-| `spend` | `{spendId, item, bells}` | `spendId` 1–128 chars; `item` `snack` with `bells` 8, or `dinner` with `bells` 15 |
+| `spend` | `{spendId, item, bells}` | `spendId` 1–128 chars; `item` `snack` with `bells` 40, or `dinner` with `bells` 70 |
 | `spend_void` | `{spendId}` | from either person; the script refuses one naming no `spend` row and acknowledges a second void of the same buy as `duplicate` (nothing appended); the model takes the first after the spend |
 | `harvest` | `{week}` | a week key; counts only for the harvest open at the time |
 | `pref` | `{key, value, person?}` | `locale` (`ja`/`en`), `villagerName` (1–20), `villager` (roster id), `goalWeight` (20–300 kg, one decimal, or null), `goalBodyFat` (3–60 %, one decimal, or null), `moveGoal` (integer 100–2,000), `stepsGoal` (1,000–30,000, a multiple of 500) |
