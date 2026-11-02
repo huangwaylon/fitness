@@ -7,10 +7,15 @@ import { defineConfig, devices } from '@playwright/test';
 
 const PORT = Number(process.env.E2E_PORT ?? 4173);
 const BASE = process.env.BASE_PATH ?? '/fitness';
-// E2E_ISLAND=3d: every test's phone draws the island in 3D (せってい's switch, kept in localStorage: docs/ops/testing.md)
-const ISLAND = process.env.E2E_ISLAND === '3d'
-  ? { storageState: { cookies: [], origins: [{ origin: `http://127.0.0.1:${PORT}`, localStorage: [{ name: 'island.render', value: '3d' }] }] } }
-  : {};
+// Each test's phone starts with these in localStorage:
+// E2E_ISLAND=3d: the island drawn in 3D (せってい's switch: docs/ops/testing.md);
+// E2E_RENDER=none: the logic mode, the 3D engines run every frame but draw nothing (src/lib/testMode.ts,
+// docs/ops/test-strategy.md): CI's software GL then costs nothing.
+const local = [
+  ...(process.env.E2E_ISLAND === '3d' ? [{ name: 'island.render', value: '3d' }] : []),
+  ...(process.env.E2E_RENDER === 'none' ? [{ name: 'e2e.render', value: 'none' }] : [])
+];
+const ISLAND = local.length ? { storageState: { cookies: [], origins: [{ origin: `http://127.0.0.1:${PORT}`, localStorage: local }] } } : {};
 
 export default defineConfig({
   testDir: 'e2e',

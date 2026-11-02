@@ -25,6 +25,7 @@ import { createCards, type Cards } from './cards.ts';
 import { createEffects, type FxKind, type FxOpts } from './effects.ts';
 import { createLights, lampFog, type LampSpot, type Lights } from './lights.ts';
 import type { Inst } from './layout3d.ts';
+import { drawOff } from '../../testMode.ts';
 
 type Tod = 'day' | 'dusk' | 'night';
 
@@ -100,6 +101,8 @@ interface Stats {
   /** What wanted the last frame (`~`: its ambience only), and whether the island is paused. */
   why: string[];
   paused: boolean;
+  /** False in the e2e's logic mode (testMode.ts drawOff): the frames run, nothing is drawn. */
+  drawn: boolean;
 }
 
 /** The camera: vertical field of view (a long lens), the pitch at zoom 1 / fully in / fully out, the zoom's range. */
@@ -248,6 +251,9 @@ export interface Island3 {
 
 export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Partial<Options> & { aa?: boolean } = {}): Island3 {
   const opts: Options = { dpr: Math.min(2, window.devicePixelRatio || 1), water: true, shadows: true, cap: 60, ambient: 30, ...init };
+  // the e2e's logic mode (testMode.ts): every frame runs (the scene, the cameras, the hooks), nothing is drawn
+  const noDraw = drawOff();
+  if (noDraw) Object.assign(opts, { dpr: 1, shadows: false });
   const renderer = new WebGLRenderer({ canvas, antialias: init.aa ?? true, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance', stencil: false });
   renderer.setPixelRatio(opts.dpr);
   renderer.setClearColor(0x000000, 0);
@@ -818,7 +824,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
       renderer.shadowMap.needsUpdate = true;
       shadowsDirty = false;
     }
-    renderer.render(scene, camera);
+    if (!noDraw) renderer.render(scene, camera);
     cpu.push(now() - t);
     if (lastFrame) gaps.push(t - lastFrame);
     lastFrame = t;
@@ -992,7 +998,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures,
         geometries: renderer.info.memory.geometries, dpr: renderer.getPixelRatio(), frames,
         loading: pending + things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count(),
-        fxShown: effects.shown(), why: [...why], paused
+        fxShown: effects.shown(), why: [...why], paused, drawn: !noDraw
       };
     },
     dispose() {

@@ -17,6 +17,7 @@ import { footprint, floorUrl, ITEMS, modelUrl, wallUrl } from './items.ts';
 import { createVillager, VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
 import { seatOf } from '../villager3d/poses.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
+import { drawOff } from '../../testMode.ts';
 
 /** The walls' height (RoomMdlWall: 40 model units, four tiles). */
 const WALL_H = 40;
@@ -210,10 +211,12 @@ function matTexture(): CanvasTexture {
 
 export function createTent(canvas: HTMLCanvasElement): Tent {
   const renderer = new WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
-  const dpr = Math.min(DPR_MAX, window.devicePixelRatio || 1);
+  // the e2e's logic mode (testMode.ts): every frame runs, nothing is drawn
+  const noDraw = drawOff();
+  const dpr = noDraw ? 1 : Math.min(DPR_MAX, window.devicePixelRatio || 1);
   renderer.setPixelRatio(dpr);
   renderer.outputColorSpace = SRGBColorSpace;
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = !noDraw;
   renderer.shadowMap.type = PCFSoftShadowMap;
   renderer.shadowMap.autoUpdate = false;
 
@@ -1460,7 +1463,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     }
     // pieces still popping change their shadows
     if (more && [...live.values()].some((l) => l.pop || l.bump)) shadowsDirty = true;
-    renderer.render(scene, camera);
+    if (!noDraw) renderer.render(scene, camera);
     // the frame's own cost (the CPU side: three's work and the GL calls), for the budget checks
     cost.push(now() - t);
     if (cost.length > 600) cost.shift();

@@ -38,8 +38,9 @@ for (const [water, q, cam, sel] of [
   test(`3D fishing in the ${water}: cast, the rod and its line, the bite, the catch`, async ({ page }) => {
     test.setTimeout(90_000);
     // TODO(3D engine): on CI's software GL my villager never takes out the rod (state 'idle', no tool, line 61's poll)
-    // though it passes under SwiftShader locally: fixme'd on CI so main deploys while the cause is found
-    test.fixme(!!process.env.CI, 'CI only: the rod never comes out under its software GL');
+    // though it passes under SwiftShader locally: fixme'd on CI's drawn runs while the cause is found; the logic tier
+    // (E2E_RENDER=none: nothing drawn, every frame as quick as a GPU's) runs it
+    test.fixme(!!process.env.CI && process.env.E2E_RENDER !== 'none', 'CI only: the rod never comes out under its software GL');
     await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
     await page.goto(`?demo&visitor=none&island=3d${q}`);
     await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
