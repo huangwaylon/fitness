@@ -252,6 +252,10 @@
 
 <style>
   .bv {
+    /* the island's HUD (its ribbon, きょう…ベル, and the jar) ends at its lip (+page.svelte --hud-bottom: the view lives
+       on <body>, so it's worked out here from the same tokens); 「もどる」 sits under it, never over the ribbon */
+    --hud-end: calc(var(--hud-top, calc(env(safe-area-inset-top, 0px) + 10px)) + var(--hit, 44px) + var(--lip-h, 4px));
+    --back-top: calc(var(--hud-end) + 10px);
     position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; font-family: var(--font-ui); color: #5A4632;
     background: linear-gradient(#8fd3e6ee, #bfe7c8ee); -webkit-user-select: none; user-select: none; touch-action: none;
     animation: bv-in .25s ease-out both;
@@ -259,15 +263,15 @@
   /* the 3D island's: the board itself is the view, only the controls over it */
   .bv.three { background: none; animation: none; }
   @keyframes bv-in { from { opacity: 0; } }
-  .stage { flex: 1; min-height: 0; display: grid; place-items: center; padding: calc(56px + env(safe-area-inset-top)) 12px 8px; height: calc(var(--vh) - 8px); box-sizing: border-box; }
+  .stage { flex: 1; min-height: 0; display: grid; place-items: center; padding: calc(var(--back-top) + 52px) 12px 8px; height: calc(var(--vh) - 8px); box-sizing: border-box; }
   .frame {
-    width: min(100%, 560px, calc((var(--vh) - var(--bar-h, 150px) - 80px) * 1.36)); background: #5E6B4C; border-radius: 14px; padding: 12px;
+    width: min(100%, 560px, calc((var(--vh) - var(--bar-h, 150px) - var(--back-top) - 76px) * 1.36)); background: #5E6B4C; border-radius: 14px; padding: 12px;
     box-shadow: inset 0 0 0 3px #47523A, 0 8px 0 #3E4733, 0 14px 30px rgba(30, 50, 30, .35); box-sizing: content-box;
   }
   .slot { width: 100%; height: 100%; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 6px rgba(0, 0, 0, .35); }
   .slot :global(canvas) { display: block; width: 100%; height: 100%; }
   .back {
-    position: absolute; left: 12px; top: calc(10px + env(safe-area-inset-top)); z-index: 2; padding: 8px 16px; border: 0; border-radius: 999px;
+    position: absolute; left: 12px; top: var(--back-top); z-index: 2; padding: 8px 16px; border: 0; border-radius: 999px;
     background: #FFF8E4; color: #6B5232; font: 700 16px / 1 var(--font-ui); box-shadow: 0 3px 0 #D9C8A2; min-height: 44px;
   }
   .notes { position: fixed; z-index: 1; }

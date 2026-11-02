@@ -37,11 +37,14 @@
   /** What the face shows (BoardView pages and picks). */
   const face = $state({ page: 0, selected: null as string | null, rev: 0 });
   let face3: Face3 | null = null;
+  /** What the face last drew (the e2e's hook: window.__board). */
+  let drawn: string[] = [];
   function draw() {
     if (!canvas) return;
     const posts = board.posts, pages = Math.max(1, Math.ceil(posts.length / PER_PAGE));
     const page = Math.min(face.page, pages - 1);
     const shown = posts.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
+    drawn = shown.map((p) => p.t);
     drawFace(canvas, {
       posts: shown, author: (who) => board.author(who), date: (p) => postDate(p.p), empty: t('board.empty'), selected: face.selected,
       redraw: () => face.rev++
@@ -62,6 +65,9 @@
 
   // ---- the 3D island: the face on the model (once the lead's attach is there) ----
   $effect(() => {
+    // (`w.three` itself isn't reactive: `rest.three` is the flag that follows it, so the face goes on when the 3D island
+    // comes up after the board did, which it always does)
+    void w.rest.three;
     const three = w.three as BoardProj | null;
     if (!three?.attach || !canvas) return;
     let gone = false;
@@ -77,6 +83,17 @@
       face3?.dispose();
       face3 = null;
     };
+  });
+
+  // ---- the e2e's hook: what the face drew, and where it is in 3D ----
+  onMount(() => {
+    const W = window as unknown as { __board?: unknown };
+    W.__board = {
+      drawn: () => drawn,
+      /** The 3D face's place in the scene (null: none, or not in it). */
+      face3: () => face3?.box() ?? null
+    };
+    return () => void delete W.__board;
   });
 
   // ---- the bird: a tiny idle (it looks about now and then) ----

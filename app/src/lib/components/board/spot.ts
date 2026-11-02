@@ -16,8 +16,10 @@ export type BoardProj = Proj3 & {
 const BOARD_SPOT = [150, 105] as const;
 /** The model's scale (u a model unit: scripts/world3d-assets.ts BOARD_S). */
 export const BOARD_S = 3.5;
-/** The face (the cork) in the model's units: its middle's height and how far in front of the origin, its size. */
-export const FACE = { y: 8.5, z: 0.38, w: 13.6, h: 10 } as const;
+/** The face (the cork) in the model's units: its middle's height and how far in front of the origin, its size. In front
+ *  of NH's own pinned notes and their pins (they stand off the cork to z +1.02) and inside the frame's opening (its
+ *  front at z +1.10 … +1.24), so they never show through the face. */
+export const FACE = { y: 8.5, z: 1.08, w: 13.6, h: 10 } as const;
 /** How tall the board stands (u), and how far in front of it a villager stands to read it. */
 export const BOARD_H = 17.21 * BOARD_S;
 export const READ_AT = 28;
