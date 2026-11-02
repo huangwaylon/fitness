@@ -36,12 +36,14 @@ for (const [water, q, cam, sel] of [
   ['pond', '&critter=pond&date=2026-11-04T21:00', CAMS.oku, '[data-critter="pond"][data-water="pond"]']
 ] as const) {
   test(`3D fishing in the ${water}: cast, the rod and its line, the bite, the catch`, async ({ page }) => {
-    test.setTimeout(60_000);
+    test.setTimeout(90_000);
     await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
     await page.goto(`?demo&visitor=none&island=3d${q}`);
     await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
     if (cam !== null) await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), cam);
     await expect(page.locator(sel)).toBeAttached({ timeout: 10_000 });
+    // my villager in 3D (its model in: under CI's software GL that takes a while), else it's a card and holds no rod
+    await expect.poll(() => v3(page, (v) => v.state('mine')), { timeout: 30_000 }).not.toBeNull();
     // the shadow drawn where its tap area is (it swims: a few px of lag between the two at most)
     await expect.poll(async () => apart(await drawnAt(page, sel, `fish-${water}-`)), { timeout: 8000 }).toBeLessThan(16);
     // my villager by the water (behind it: never over the shadow on screen), within a line's reach (across the island, the line runs from the bank: no rod in hand)
@@ -56,7 +58,7 @@ for (const [water, q, cam, sel] of [
     await expect(page.locator('[data-bobber]')).toBeAttached({ timeout: 3000 });
     await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
     // NH's rod in my villager's hand, fishing
-    await expect.poll(() => v3(page, (v) => [v.tool('mine'), v.state('mine')]), { timeout: 6000 }).toEqual(['tools/rod', 'fish']);
+    await expect.poll(() => v3(page, (v) => [v.tool('mine'), v.state('mine')]), { timeout: 15_000 }).toEqual(['tools/rod', 'fish']);
     expect(await v3(page, (v) => v.tip('mine')?.every(Number.isFinite))).toBe(true);
     await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 });
     // the float on the water where its node is
