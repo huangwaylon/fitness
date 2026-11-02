@@ -1250,7 +1250,7 @@
     {#if f}
       {#key f.n}
         <!-- a flat ground mark at its spawn point; it swims inside the node (local x = across, local y = −z) -->
-        <div class="node" data-shadow-of={wt} {@attach w.at({ x: f.ax, z: f.az, mode: 'flat', h: 10 })}>
+        <div class="node" data-shadow-of={wt} data-ax={Math.round(f.ax)} data-az={Math.round(f.az)} {@attach w.at({ x: f.ax, z: f.az, mode: 'flat', h: 10 })}>
           <span class="mover shadow {f.shape ? `is-${f.shape}` : ''} {wt}" class:gone={f.gone} class:dash={f.dash} class:spurt={f.spurt}
             data-critter={wt === 'sea' ? 'fish' : 'pond'} data-water={wt} bind:this={fishEls[wt]}
             style:translate={fishLoc(f)} style:transition-duration="{f.ms}ms" style:--w="calc({sizeU(f).toFixed(1)} * var(--u))">
