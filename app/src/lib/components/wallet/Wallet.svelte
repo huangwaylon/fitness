@@ -1,20 +1,17 @@
 <script lang="ts">
-  // ごほうび, the shared wallet (Nook's Cranny, about spending only; the route keeps its /jar path): the page's title bar
-  // (‹ 島へ top-left, the title centred: design.md "Navigation"), a hero (the island’s jar, so the route change grows
-  // the page out of it, over the wallet's balance: the number on the island's plate), then the two rewards as
-  // big tiles. Buying asks first, then shows at once and waits 5 s with とりけす on the banner before it is sent.
-  // Under them the buys so far (Purchases), each erasable by either of us (asked first; the ベル go back, with とりけす
-  // on the banner). The day-by-day ledger lives in きろく. No しずえ here.
-  import { resolve } from '$app/paths';
-  import Jar from '#lib/components/island/Jar.svelte';
-  import NavButton from '#lib/components/ui/NavButton.svelte';
-  import Shop from '#lib/components/wallet/Shop.svelte';
-  import BuyConfirm from '#lib/components/wallet/BuyConfirm.svelte';
-  import Purchases from '#lib/components/wallet/Purchases.svelte';
-  import Bells from '#lib/components/ui/Bells.svelte';
+  // ごほうび, the shared wallet (Nook's Cranny, about spending only): the island panel's middle tab (design.md
+  // "Wallet"). A hero (the island's jar over the wallet's balance), then the two rewards as big tiles. Buying asks
+  // first, then shows at once and waits 5 s with とりけす on the banner before it is sent. Under them the buys so far
+  // (Purchases), each erasable by either of us (asked first; the ベル go back, with とりけす on the banner). The
+  // day-by-day ledger lives in きろく.
+  import Jar from '../island/Jar.svelte';
+  import Shop from './Shop.svelte';
+  import BuyConfirm from './BuyConfirm.svelte';
+  import Purchases from './Purchases.svelte';
+  import Bells from '../ui/Bells.svelte';
   import type { PersonId, ShopItemId } from '#lib/types.ts';
   import { walletAt, type LedgerSpend } from '#lib/model/bells.ts';
-  import { walletFill } from '#lib/components/wallet/fill.ts';
+  import { walletFill } from './fill.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { buy as buyItem, undoBanner, undoSpend } from '#lib/store/actions.ts';
@@ -53,13 +50,7 @@
 </script>
 
 {#if view}
-  <main class="jar-screen" class:undoing={!!toasts.current?.action}>
-    <div class="top">
-      <NavButton kind="back" href={resolve('/')} text={t('jar.back')} />
-      <h1>{t('wallet.title')}</h1>
-      <span class="sp"></span>
-    </div>
-
+  <div class="wallet" data-wallet>
     <div class="hero">
       <span class="bigjar"><Jar fill={walletFill(balance)} width="calc(var(--jar-h) * 54 / 68)" /></span>
       <small class="cap">{t('wallet.balance')}</small>
@@ -73,23 +64,12 @@
       <Shop {balance} onbuy={(item) => (ask = item)} />
       <Purchases {spends} {names} {villagers} onerase={erase} />
     {/if}
-  </main>
+  </div>
 
   {#if !guest}<BuyConfirm item={ask} {balance} onconfirm={buy} onclose={() => (ask = null)} />{/if}
 {/if}
 
 <style>
-  .jar-screen {
-    max-width: var(--col); margin: 0 auto; min-height: var(--vh-page);
-    padding: calc(var(--safe-top) + 8px) calc(var(--side) + var(--safe-right)) calc(var(--pad-bottom) + 16px) calc(var(--side) + var(--safe-left));
-  }
-  /* the title bar: ‹ 島へ | the title, centred on the page | an equal spacer */
-  .top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 52px; gap: 8px; }
-  .top h1 { margin: 0; font-size: var(--fs-title); text-align: center; white-space: nowrap; }
-  .top > :global(.nav) { justify-self: start; }
-  /* the undo banner (56px, 16px over the bottom) never covers the last card */
-  .jar-screen.undoing { padding-bottom: calc(var(--pad-bottom) + 88px); }
-
   /* the hero: the island's jar over the wallet's balance (the plate's number, one per screen) */
   .hero { display: grid; justify-items: center; gap: 2px; padding: 2px 0 16px; color: var(--text); --jar-h: clamp(68px, calc(11 * var(--vh1)), 112px); }
   .bigjar { display: block; line-height: 0; margin-bottom: 4px; }

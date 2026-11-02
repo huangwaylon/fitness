@@ -51,6 +51,8 @@ const SPECS: Record<string, Spec> = {
   // The wallet's two rewards: soft serve (おやつ) and shoyu ramen (外食).
   'items/snack': [128, 'Soft_Serve_NH_Inv_Icon.png'],
   'items/dinner': [128, 'Shoyu_Ramen_NH_Icon.png'],
+  // The HUD's health button (けんこう): NH's red dumbbell.
+  'items/dumbbell': [128, 'Dumbbell_(Red)_NH_Icon.png'],
   // The wild flowers (island/scene.ts WILD): the NH inventory art of each, trimmed to the figure (TRIM).
   'flowers/red-tulips': [128, 'Red_Tulips_NH_Inv_Icon.png'],
   'flowers/yellow-tulips': [128, 'Yellow_Tulips_NH_Inv_Icon.png'],

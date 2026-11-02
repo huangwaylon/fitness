@@ -1,20 +1,21 @@
 <script module lang="ts">
-  type Tab = 'kiroku' | 'health' | 'settings';
+  export type Tab = 'kiroku' | 'rewards' | 'settings';
 </script>
 
 <script lang="ts">
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   // The island panel: tap today's ベル ribbon → it slides down from the top with everything that isn't on the island
-  // itself, in three tabs pinned under the title bar (design.md "Panel"): けんこう (the Health data over time, its own
-  // chunk loaded with the tab; the panel opens on it), きろく (the ベル ledger, then the goals) and せってい (むらびと, サウンド, つうち, ことば,
-  // つうしん, あそびかた). A few things push a level with ‹ in the title
-  // bar (a week, a day, the villager picker, the full guide); ✕, the backdrop and Esc close it. The wallet stays on the
-  // jar and per-fruit detail in the tree popups (one home per datum).
+  // itself, in three tabs pinned under the title bar (design.md "Panel"): きろく (the ベル ledger, the goals, the ずかん;
+  // the panel opens on it), ごほうび (the wallet: the jar, the shop, the buys) and せってい (むらびと, サウンド, つうち,
+  // ことば, つうしん, あそびかた). A few things push a level with ‹ in the title bar (a week, a day, the villager picker,
+  // the full guide); ✕, the backdrop and Esc close it. けんこう is the HUD's dumbbell's popup, and per-fruit detail
+  // lives in the tree popups (one home per datum).
   import { tick } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import Avatar from '../characters/Avatar.svelte';
   import Kiroku from '../kiroku/Kiroku.svelte';
+  import Wallet from '../wallet/Wallet.svelte';
   import VillagerPicker from './VillagerPicker.svelte';
   import HelpGuide from './HelpGuide.svelte';
   import SoundSection from './SoundSection.svelte';
@@ -28,10 +29,10 @@
   import { ROSTER } from '#lib/villagers/roster.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { resetHealth } from '../health/healthLast.ts';
   import { isGuest, mine } from '#lib/ui-state/viewer.ts';
 
-  let { open = $bindable() }: { open: boolean } = $props();
+  /** `start`: the tab of the first opening (the old /jar link opens on ごほうび); every later one starts on きろく. */
+  let { open = $bindable(), start = 'kiroku' }: { open: boolean; start?: Tab } = $props();
 
   /** A level of the panel's own (きろく keeps its own levels: week → day, the weight trend, a goal). */
   let push = $state<'villager' | 'help' | null>(null);
@@ -40,11 +41,9 @@
   let kirokuLevel = $state(0);
   let body: HTMLElement | undefined = $state();
   let savedTop = 0;
-  /** Every opening from the ribbon starts on けんこう: closing resets it. */
-  let tab = $state<Tab>('health');
-  /** けんこう's code: its own chunk, fetched when the tab is first shown. */
-  let healthTab: Promise<typeof import('../health/Health.svelte')> | null = null;
-  const loadHealth = () => (healthTab ??= import('../health/Health.svelte'));
+  /** Every opening from the ribbon starts on きろく: closing resets it. */
+  // svelte-ignore state_referenced_locally
+  let tab = $state<Tab>(start);
   function pick(to: Tab) {
     if (to === tab) return;
     tab = to;
@@ -81,13 +80,12 @@
     kiroku?.back();
   }
 
-  /** Closing ends its banner too, and the next open starts at the top, on けんこう at 1週 (the sheet unmounts its body). */
+  /** Closing ends its banner too, and the next open starts at the top, on きろく (the sheet unmounts its body). */
   function closed() {
     if (toasts.current) toasts.dismiss();
     push = null;
     kirokuLevel = 0;
-    tab = 'health';
-    resetHealth();
+    tab = 'kiroku';
   }
 
   // The panel's open and close tunes. It mounts on the first tap of the ribbon (Hud), already open: that is an open too.
@@ -105,7 +103,7 @@
   {#if !deep}
     <!-- A segmented switch (toggle buttons), pinned under the title bar while the tab scrolls -->
     <div class="tabs" role="group" aria-label={t('panel.title')}>
-      {#each ['health', 'kiroku', 'settings'] as const as id (id)}
+      {#each ['kiroku', 'rewards', 'settings'] as const as id (id)}
         <button type="button" class="tab" aria-pressed={tab === id} data-tab={id} data-sfx={tab === id ? 'none' : 'tick'} onclick={() => pick(id)}>{t(`panel.tab.${id}`)}</button>
       {/each}
     </div>
@@ -118,8 +116,8 @@
       <div class="page"><HelpGuide {view} /></div>
     {:else if view && me && tab === 'kiroku'}
       <Kiroku bind:this={kiroku} bind:level={kirokuLevel} />
-    {:else if view && me && tab === 'health'}
-      {#await loadHealth() then { default: Health }}<Health />{/await}
+    {:else if view && me && tab === 'rewards'}
+      <Wallet />
     {:else if view && me}
       <section class="sec" aria-labelledby="sec-villager">
         <h2 id="sec-villager">{t('panel.villager')}</h2>

@@ -6,7 +6,7 @@
 
 * { box-sizing: border-box; }
 /* The document is the scroller of the
-   scrolling pages (/jar, /pair, error), so the root has a stable svh min-height, no overscroll-behavior (iOS
+   scrolling pages (/pair, error), so the root has a stable svh min-height, no overscroll-behavior (iOS
    keeps its rubber band; only the island, which never scrolls, opts out) and overflow-x: clip on html
    (clip makes no scroll container and does not break sticky). */
 html, body { margin: 0; min-height: var(--vh-page); }
@@ -97,26 +97,6 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 }
 .pen-btn:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
 
-
-/* ---------- 島 ⇄ ごほうび (ui-state/jarTransition.ts) ----------
-   Live, about the jar (--vt-x / --vt-y), cubic-bezier(.4,0,.2,1) (the exits ease in): the page we leave plays its
-   exit (data-leave, held until the route changes), then the arriving one its entrance (data-enter). In: the island
-   pushes in toward the jar (scale 1.12, fading, 160ms), the wallet grows out of it (from .6, 320ms) and its blocks
-   rise 16px with a 40ms stagger; back: the wallet shrinks into the jar (to .9, 140ms), the island pulls back in
-   (from 1.12, 280ms). No snapshots (no View Transition): the ground's bands stay composited the whole way. */
-:root[data-leave] .page > main, :root[data-enter] .page > main { transform-origin: var(--vt-x, 50%) var(--vt-y, 70%); }
-:root[data-leave="in"] .page > main { animation: vt-push-out 160ms cubic-bezier(.4, 0, 1, 1) both; }
-:root[data-leave="out"] .page > main { animation: vt-shrink 140ms cubic-bezier(.4, 0, 1, 1) both; }
-:root[data-enter="in"] .page > main { animation: vt-grow 320ms cubic-bezier(.4, 0, .2, 1) both; }
-:root[data-enter="out"] .page > main { animation: vt-pull-in 280ms cubic-bezier(.4, 0, .2, 1) both; }
-:root[data-leave] .page { pointer-events: none; }
-:root[data-enter="in"] .jar-screen > :not(.top, .hero) { animation: vt-rise 320ms cubic-bezier(.4, 0, .2, 1) both; }
-:root[data-enter="in"] .jar-screen > :nth-child(n + 4) { animation-delay: 40ms; }
-@keyframes vt-push-out { to { transform: scale(1.12); opacity: 0; } }
-@keyframes vt-shrink { to { transform: scale(.9); opacity: 0; } }
-@keyframes vt-grow { from { transform: scale(.6); opacity: 0; } }
-@keyframes vt-pull-in { from { transform: scale(1.12); opacity: 0; } }
-@keyframes vt-rise { from { transform: translateY(16px); opacity: 0; } }
 
 /* ---------- 島 ⇄ テント (ui-state/doorTransition.ts) ----------
    NH's door: a black iris closes on the door we go through (260ms, easing in), stays black while the route changes

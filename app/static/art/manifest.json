@@ -1,5 +1,5 @@
 {
-  "version": 52,
+  "version": 53,
   "files": {
     "bridges/stone-deck": {
       "path": "bridges/stone-deck.webp",
@@ -2928,6 +2928,12 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Shoyu_Ramen_NH_Icon.png"
+    },
+    "items/dumbbell": {
+      "path": "items/dumbbell.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Dumbbell_(Red)_NH_Icon.png"
     },
     "items/snack": {
       "path": "items/snack.webp",

@@ -10,7 +10,8 @@
   // Focused inputs scroll to the centre. While open, the page behind is locked (scrollLock).
   // variant="top": the island panel, sliding down from under the ribbon (rounded at the bottom, the safe area on top).
   // It does not scroll itself: it is a flex column, and the panel puts its own title bar (with ‹) and its one
-  // scrolling body (`.panel-body`) inside.
+  // scrolling body (`.panel-body`) inside. variant="pop": the same full-height column (the health popup), grown out of
+  // the HUD's dumbbell (--pop-x / --pop-y on the root, set by the button) instead of sliding down.
   import { untrack, type Snippet } from 'svelte';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -25,7 +26,7 @@
     label: string;
     /** The title bar's title (centred). */
     title?: string;
-    variant?: 'paper' | 'top';
+    variant?: 'paper' | 'top' | 'pop';
     onclose?: () => void;
     children: Snippet;
     footer?: Snippet;
@@ -86,7 +87,7 @@
   {#if open}
     {#if hosts}<ToastHost />{/if}
     <div class="inner">
-      {#if variant !== 'top'}<div class="bar"><NavBar {title} onclose={() => dlg?.close()} /></div>{/if}
+      {#if variant === 'paper'}<div class="bar"><NavBar {title} onclose={() => dlg?.close()} /></div>{/if}
       {@render children()}
     </div>
     {#if footer}<div class="foot">{@render footer()}</div>{/if}
@@ -126,14 +127,19 @@
      (the home indicator's safe area inside its scroller's padding), so switching tabs never changes its height and no
      sliver of island shows under it; rounded at the bottom like the screen's corners. --body-pad is the scroller's
      bottom padding. */
-  dialog.top {
+  dialog.top, dialog.pop {
     --body-pad: calc(var(--safe-bottom) + 18px + var(--kb, 0px));
     margin: 0 auto; height: var(--vh-fill); max-height: none;
     border-radius: 0 0 var(--r-sheet) var(--r-sheet); box-shadow: var(--sh-float);
     overflow: hidden; display: none; flex-direction: column;
   }
   dialog.top[open] { display: flex; animation-name: down; }
-  dialog.top .inner {
+  /* the health popup grows out of the dumbbell (an eased zoom, no overshoot) */
+  dialog.pop[open] {
+    display: flex; transform-origin: var(--pop-x, 85%) var(--pop-y, 6%);
+    animation: pop 280ms cubic-bezier(.2, .8, .2, 1);
+  }
+  dialog.top .inner, dialog.pop .inner {
     flex: 1; min-height: 0; display: flex; flex-direction: column;
     padding: calc(var(--safe-top) + 8px) calc(var(--side) + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
   }
@@ -141,8 +147,9 @@
   dialog.toasting .inner { padding-bottom: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
   /* …and a footer's buttons (買う！, 保存) rise above it instead of sitting under it (the banner: 56px, 16px over the bottom) */
   dialog.toasting .foot { padding-bottom: calc(var(--pad-bottom) + 16px + 56px + var(--lip-h) + 10px); }
-  dialog.top.toasting .inner { padding-bottom: 0; }
-  dialog.top.toasting { --body-pad: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
+  dialog.top.toasting .inner, dialog.pop.toasting .inner { padding-bottom: 0; }
+  dialog.top.toasting, dialog.pop.toasting { --body-pad: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
   @keyframes down { from { transform: translateY(-100%); } to { transform: none; } }
+  @keyframes pop { from { opacity: 0; transform: scale(.08); } 40% { opacity: 1; } to { transform: none; } }
   @keyframes up { from { transform: translateY(100%); } to { transform: none; } }
 </style>

@@ -25,17 +25,24 @@ async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G', more = '') {
 test('the guest’s phone: the members’ activity and ベル, never a からだ figure, and nothing only a member does', async ({ page }) => {
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&as=G`);
   await expect(ribbon(page)).toBeVisible();
-  await ribbon(page).click();
   const panel = page.locator('dialog[open]');
-  // けんこう: かつどう only (no からだ switch, no weight or body card), both members' activity
-  await expect(panel.locator('[data-who="A"]')).toBeVisible();
+  // けんこう (the dumbbell's popup): かつどう only (no からだ switch, no weight or body card), both members' activity
+  await page.getByRole('button', { name: 'けんこう', exact: true }).click();
+  const whoSel = panel.locator('select[data-pick=who]');
+  await expect(whoSel).toBeVisible();
+  await expect(whoSel.locator('option')).toHaveText(['ウェイ', 'うめ']); // the two members, no guest option
+  await expect(panel.locator('select[data-pick=period]')).toBeVisible();
   await expect(panel.locator('[data-group]')).toHaveCount(0);
   await expect(panel.locator('.card').first()).toBeVisible();
   for (const text of ['からだ', '体重', '体脂肪率', 'BMI', '除脂肪体重', 'kg']) await expect(panel, text).not.toContainText(text);
-  await panel.locator('[data-who="B"]').click();
+  await whoSel.selectOption('B');
+  await expect(panel.locator('.mc[data-metric=steps]')).toHaveAttribute('data-person', 'B');
   await expect(panel).not.toContainText('体重');
+  await page.keyboard.press('Escape');
+  await expect(panel).toHaveCount(0);
   // きろく: the ベル ledger and the goals, read-only (no ✎, no weight or body fat goal)
-  await panel.locator('.tab[data-tab=kiroku]').click();
+  await ribbon(page).click();
+  await expect(panel.locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
   await expect(panel.locator('.goals')).toBeVisible();
   await expect(panel.locator('.goals .pen-btn')).toHaveCount(0);
   await expect(panel.locator('[data-focus="weight-goal"], [data-focus="fat-goal"]')).toHaveCount(0);
@@ -48,11 +55,13 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   await expect(panel.locator('#sec-notify, #sec-sync')).toHaveCount(0);
   await expect(panel.locator('#sec-lang')).toBeVisible();
   await page.keyboard.press('Escape');
-  // the jar: its balance and the buys, view-only (no shop, no erase)
-  await page.goto(`jar?demo&date=${DATE}&as=G`);
-  await expect(page.locator('[data-guest-jar]')).toBeVisible();
-  await expect(page.locator('[data-item]')).toHaveCount(0);
-  await expect(page.locator('[data-spend] .x')).toHaveCount(0);
+  // ごほうび: the jar's balance and the buys, view-only (no shop, no erase)
+  await ribbon(page).click();
+  await panel.locator('.tab[data-tab=rewards]').click();
+  await expect(panel.locator('[data-guest-jar]')).toBeVisible();
+  await expect(panel.locator('.hero .total')).toBeVisible();
+  await expect(panel.locator('[data-item]')).toHaveCount(0);
+  await expect(panel.locator('[data-spend] .x')).toHaveCount(0);
 });
 
 test('a guest’s catch is in the members’ ずかん at once, credited to the guest', async ({ browser }) => {

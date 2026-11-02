@@ -4,14 +4,13 @@
 </script>
 
 <script lang="ts">
-  // The passbook (like NH's ATM statement): everything ever earned, then the ledger by week, newest first, each with its
+  // The passbook (like NH's ATM statement): the ledger by week, newest first, each with its
   // earnings and one line per day: each person's four goals (bright = met, +1 each), the ふたりでぜんぶ star (+2) and the
   // day's ベル, with a がんばり line under it on a day either of us reached 1.5× of a goal (each person's +1 / +2 under
   // their goals); tap → the day. Earnings only: the buys live on ごほうび (wallet/Purchases.svelte).
   import type { PersonId, WeekKey } from '#lib/types.ts';
   import type { BellsLedger, LedgerDay } from '#lib/model/history.ts';
   import Avatar from '../characters/Avatar.svelte';
-  import Bells from '../ui/Bells.svelte';
   import GoalMarks from './GoalMarks.svelte';
   import { formatBells, t } from '#lib/i18n/index.ts';
   import { weekRange } from '#lib/i18n/format.ts';
@@ -44,11 +43,6 @@
 {#snippet star(on: boolean)}
   <svg class="star" class:on viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" /></svg>
 {/snippet}
-
-<section class="card earned">
-  <small>{t('kiroku.earnedAll')}</small>
-  <Bells bells={ledger.earned} class="eb" />
-</section>
 
 {#if !weeks.length}<p class="empty">{t('kiroku.empty')}</p>{/if}
 
@@ -92,9 +86,6 @@
 
 <style>
   .more { justify-self: center; }
-  .earned { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 12px 16px; margin-bottom: 6px; }
-  .earned small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .earned :global(.eb) { font-size: clamp(1.125rem, 5.6vw, var(--fs-title)); }
   .empty { text-align: center; color: var(--text-soft); font-weight: 700; }
   .week { margin-bottom: 6px; }
   h4 { display: flex; align-items: center; gap: 6px; margin: 0 4px 8px; font-size: var(--fs-body); color: var(--text-soft); }

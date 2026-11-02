@@ -21,7 +21,6 @@
   import { startTheme } from '#lib/ui-state/theme.svelte.ts';
   import { startWeather } from '#lib/components/island/weatherNow.svelte.ts';
   import { startViewport } from '#lib/ui-state/viewport.ts';
-  import { jarTransition } from '#lib/ui-state/jarTransition.ts';
   import { doorTransition } from '#lib/ui-state/doorTransition.ts';
   import { lazy, reloadUnlessLeaving, safeReload } from '#lib/ui-state/reload.ts';
   import { startSound } from '#lib/sound/sound.svelte.ts';
@@ -33,7 +32,7 @@
 
   const route = $derived(routeOf(page.url.pathname));
   const onPair = $derived(route.startsWith('/pair'));
-  const pageKind = $derived(route.startsWith('/jar') ? 'jar' : route.startsWith('/tent') ? 'tent' : 'island');
+  const pageKind = $derived(route.startsWith('/tent') ? 'tent' : 'island');
 
   let laterFor = $state<string | null>(null);
   /** The harvest being finished: kept through the end card even after confirming drops it from the view. */
@@ -61,8 +60,6 @@
     if (updated.current && !onPair && !showHarvest && !ui.sheets.length) safeReload();
   });
 
-  // 島 ⇄ ごほうび: a zoom into the jar and back out of it.
-  jarTransition();
   // 島 ⇄ テント: NH's door, a black iris on the door we go through.
   doorTransition();
 

@@ -1,18 +1,17 @@
 <script lang="ts">
-  // 島 Island: the scene full bleed under a light HUD: today's ベル ribbon at the top with the jar (the shared wallet)
-  // beside it, the pair centred; the ribbon is the focal point and the door to everything else (tap → the island panel slides down: きろく, むらびと, settings, あそびかた).
+  // 島 Island: the scene full bleed under a light HUD: today's ベル ribbon at the top with the health button (NH's
+  // dumbbell) beside it, the pair centred; the ribbon is the focal point and the door to everything else (tap → the
+  // island panel slides down: きろく, ごほうび, せってい).
   // The day needs zero taps (the Watch and the Shortcut fill the trees);
   // ハイタッチ lives with the partner's villager: a tap on them and mine walks over for it (no card).
   // The app asks no daily questions: the band under the scene is しずえ's, and her dialogue box shows only when she has
-  // news (the harvest). Tap the jar → the wallet (ごほうび); a tree → its popup; the partner → a high-five; the say button (bottom right) → the phrase picker.
+  // news (the harvest). Tap the dumbbell → けんこう (the health popup); a tree → its popup; the partner → a high-five; the say button (bottom right) → the phrase picker.
   import { onDestroy } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { resolve } from '$app/paths';
   import IslandScene from '#lib/components/island/IslandScene.svelte';
   import { emit } from '#lib/components/motion/bus.svelte.ts';
   import Bubble from '#lib/components/ui/Bubble.svelte';
   import Hud from '#lib/components/island/Hud.svelte';
-  import HudJar from '#lib/components/island/HudJar.svelte';
+  import HudCoins from '#lib/components/island/HudCoins.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -23,6 +22,7 @@
   import type { Who } from '#lib/types.ts';
 
   let panelOpen = $state(false);
+  let healthOpen = $state(false);
   /** しずえ's box's height while it shows: the island's say button (bottom right) stands over it. */
   let newsH = $state(0);
 
@@ -91,16 +91,13 @@
 {#if view && me}
   <main class="island" class:covered={ui.overlay} style:--news-lift={news && newsH ? `calc(${newsH}px + var(--gap) + 4px)` : null}>
     <h1 class="sr-only">{t('app.name')}</h1>
-    <!-- DOM order = focus / VoiceOver order = the visual order: the heading, today's ベル, the jar beside it, the scene (trees,
+    <!-- DOM order = focus / VoiceOver order = the visual order: the heading, today's ベル, the health button beside it, the scene (trees,
          villagers), then しずえ's box at the bottom. All are absolutely placed, so the order costs no layout; the stacking
          comes from the --z-* scale (tokens.css). -->
-    <Hud bells={view.wallet.today} bind:panelOpen>
-      {#snippet jar()}
-        <HudJar {view} covered={panelOpen || ui.overlay} onjar={() => goto(resolve('/jar'))} {later} />
-      {/snippet}
-    </Hud>
+    <Hud bells={view.wallet.today} bind:panelOpen bind:healthOpen {later} />
+    <HudCoins {view} covered={panelOpen || healthOpen || ui.overlay} {later} />
     <div class="top">
-      <IslandScene {view} onhighfive={sendHighFive} onhighfivegot={(who) => (gotFive = who)} onguest={guestArrived} paused={panelOpen} />
+      <IslandScene {view} onhighfive={sendHighFive} onhighfivegot={(who) => (gotFive = who)} onguest={guestArrived} paused={panelOpen || healthOpen} />
     </div>
     <!-- しずえ's box, when she has news, floats over the sea at the bottom, so nothing in the scene moves when she speaks. -->
     {#if news}<div class="news" bind:clientHeight={newsH}><Bubble text={news} host={false} /></div>{/if}
