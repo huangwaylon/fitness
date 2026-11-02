@@ -77,7 +77,19 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
       setStatus({ peer: true });
       if (!was) post({ k: 'hi', who: me }); // answer a newcomer at once
     } else if (w.k === 'bye' && w.who !== me) setStatus({ peer: false });
-    else if (w.k === 'm' && w.m.who !== me && !lostRace(w.m)) deliver(w.m);
+    else if (w.k === 'm' && w.m.who !== me) {
+      if (isStored(w.m)) relog(w.m);
+      if (!lostRace(w.m)) deliver(w.m);
+    }
+  };
+  /** The day's log is one localStorage value both tabs read and write: two writing at once keep one of the two. Each
+   *  tab puts what it hears from the other back in (the room's log holds every kept intent, as the relay's does). */
+  const relog = (m: Relayed) => {
+    const l = read();
+    if (l.day !== tokyoDay(m.t) || l.log.some((x) => x.who === m.who && x.t === m.t && x.kind === m.kind)) return;
+    const log = m.kind === 'walk' ? l.log.filter((x) => !(x.kind === 'walk' && x.who === m.who && x.t < m.t)) : l.log;
+    if (m.kind === 'walk' && log.some((x) => x.kind === 'walk' && x.who === m.who)) return; // a newer walk is there
+    writeJson(localKV(), DEMO.relay, { day: l.day, log: [...log, m].sort((x, y) => x.t - y.t).slice(-MAX) });
   };
   const bye = () => post({ k: 'bye', who: me });
   /** Two tabs claiming the same thing at once both kept it (each played the room on its own): the room's order is the
@@ -101,9 +113,20 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
         if (st.peer && Date.now() - heard > GONE_MS) setStatus({ peer: false });
       }, HELLO_MS);
       addEventListener('pagehide', bye);
-      // a tab opening later hears the day's world so far (the partner's), as a phone's hello would
+      // a tab opening later hears the day's world so far (the partner's), as a phone's hello would: of two claims of
+      // one thing (both tabs kept theirs, racing), only the room's winner (the earlier, then A's), as the relay keeps
       queueMicrotask(() => {
-        for (const m of read().log) if (m.who !== me) deliver(m);
+        const log = read().log;
+        const first = new Map<string, Relayed>();
+        for (const m of log) {
+          const c = claimOf(m), f = c ? first.get(c) : undefined;
+          if (c && (!f || m.t < f.t || (m.t === f.t && m.who < f.who))) first.set(c, m);
+        }
+        for (const m of log) {
+          const c = claimOf(m);
+          if (c && m.who === me) mine.set(c, { t: m.t });
+          if (m.who !== me && (!c || first.get(c) === m)) deliver(m);
+        }
       });
     },
     stop() {

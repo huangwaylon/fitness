@@ -6,15 +6,14 @@
 // Never read `e.parameter`: a key in the query string lands in Google's request logs. Keys go in the body only.
 // There is deliberately no `doGet`.
 import { parseShortcut } from './parse.ts';
-import { jstMs, localDateAt, parseInstant, ZONE_OFFSET_MS } from '../src/lib/time/dates.ts';
-import { isTally } from '../src/lib/contract/tally.ts';
-import { isIslandDay } from '../src/lib/contract/island.ts';
+import { auditNotes, auditRow } from './audit.ts';
+import { jstMs, parseInstant, ZONE_OFFSET_MS } from '../src/lib/time/dates.ts';
 import { decorAccept, decorOpOf, type DecorEntry } from '../src/lib/contract/decor.ts';
 import { tentAccept, tentOpOf, type TentEntry } from '../src/lib/contract/tent.ts';
 import type { PersonId } from '../src/lib/types.ts';
-import { shopPrice } from '../src/lib/config/rules.ts';
+import { validEventData } from '../src/lib/contract/record.ts';
 import {
-  eventSubject, EVENT_TYPES, isFind, isLocalDate, isId, isMetricKey, isPersonId, isRec, NUMERIC_COLUMNS, PREF_KEYS, TABS,
+  eventSubject, EVENT_TYPES, isId, isMetricKey, isPersonId, isRec, NUMERIC_COLUMNS, TABS,
   type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type SnapshotReply, type SnapshotRows,
   type TabName, type UploadsReply, type WhoamiReply
 } from '../src/lib/contract/api.ts';
@@ -424,24 +423,6 @@ function num(v: unknown): number | null {
 
 // ---------------------------------------------------------------- actions
 
-/**
- * The shape of an ingest body for the `uploads` audit: each field's type, list length and first item (40 chars), never
- * the key. Enough to see what a Shortcut really sends without storing the whole body twice.
- */
-function bodyShape(body: Rec): string {
-  const first = (v: unknown) => JSON.stringify(v)?.slice(0, 40) ?? '';
-  const parts = Object.entries(body).filter(([k]) => k !== 'key').map(([k, v]) => {
-    if (Array.isArray(v)) return `${k}:array[${v.length}] ${first(v[0])}`;
-    if (typeof v === 'string') {
-      const lines = v.split('\n');
-      return `${k}:text[${lines.length}] ${first(lines[0])}`;
-    }
-    if (isRec(v)) return `${k}:object{${Object.keys(v).join(',').slice(0, 80)}}`;
-    return `${k}:${typeof v} ${first(v)}`;
-  });
-  return parts.join('; ').slice(0, 2000);
-}
-
 const UPLOADS_SHOWN = 20;
 
 /** The caller's last 20 ingest audit rows, newest first (docs/ops/runbook.md §6: what did the Shortcut send?). */
@@ -456,10 +437,6 @@ function uploads(me: PersonId): UploadsReply {
     return { ok: true, rows };
   });
 }
-
-/** An `uploads` audit row: the body's shape, never the body itself. */
-const auditRow = (at: string, me: PersonId, status: string, bytes: number, notes: string, body: Rec): unknown[] =>
-  [at, me, status, bytes, `${notes.slice(0, 300)} | ${bodyShape(body)}`];
 
 function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
   let parsed: ReturnType<typeof parseShortcut>;
@@ -500,10 +477,7 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
     }
 
     appendRows(mSheet, 'metrics', newMetrics);
-    const notes = [
-      ...parsed.warnings,
-      parsed.skipped ? `${parsed.skipped} items skipped` : ''
-    ].filter(Boolean).join('; ');
+    const notes = auditNotes(parsed);
     appendRows(tab('uploads'), 'uploads', [auditRow(at, me, parsed.skipped ? 'partial' : 'ok', bytes, notes, body)]);
 
     return {
@@ -526,7 +500,7 @@ function event(me: PersonId, body: Rec): EventReply {
   const json = JSON.stringify(data);
   if (json.length > MAX_EVENT_DATA_CHARS) return fail('too_large');
   // `person` (whose goal a `pref` sets): only `A` / `B`, only on the goal prefs.
-  if (!eventSubject(body.type, data, me) || !validEventData(body.type, data)) return fail('bad_request');
+  if (!eventSubject(body.type, data, me) || !validEventData(body.type, data, Date.now())) return fail('bad_request');
   const type = body.type;
   return withLock((): EventReply => {
     const sh = tab('events');
@@ -553,34 +527,6 @@ function event(me: PersonId, body: Rec): EventReply {
     appendRows(sh, 'events', [[nextAt(), me, id, type, json]]);
     return { ok: true };
   });
-}
-
-/**
- * Shape checks per event type: a spend names one of the two rewards (SHOP) at exactly its price. Whether the wallet
- * covers it and the pref values stay read-time rules in the model (`model/state.ts`), so the sheet stays a dumb log.
- */
-function validEventData(type: string, d: Rec): boolean {
-  switch (type) {
-    case 'spend':
-      return isId(d.spendId) && shopPrice(d.item) !== undefined && d.bells === shopPrice(d.item);
-    case 'pref':
-      return (PREF_KEYS as readonly unknown[]).includes(d.key) && d.value !== undefined;
-    case 'harvest':
-      return isLocalDate(d.week);
-    case 'spend_void':
-      return isId(d.spendId);
-    case 'find':
-      return isFind(d);
-    case 'tally':
-      return isTally(d, localDateAt(Date.now()));
-    case 'island':
-      return isIslandDay(d, localDateAt(Date.now()));
-    case 'decor':
-      // the island's, or the tent's (`sc: 't'`: contract/tent.ts)
-      return decorOpOf(d) !== null || tentOpOf(d) !== null;
-    default:
-      return true;
-  }
 }
 
 /**

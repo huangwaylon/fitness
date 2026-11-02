@@ -237,6 +237,19 @@ describe('the shared day: two phones on the relay', () => {
     expect(shape(A.day)).toEqual(shape(B.day));
   });
 
+  it('a phone opening later folds a row written before its writer lost a race, then the relay’s winner: the winner’s', () => {
+    // A and B grab the same weed at once; the relay keeps B's. A's row went to the sheet before A heard it lost.
+    const staleA = { taken: ['w1'], puts: [], shakes: [], watered: [], wishes: {} };
+    for (const me of ['A', 'B'] as const) {
+      const d = emptyDay(DAY);
+      applyRow(d, staleA, 'A', T0 + 500, me);
+      expect(apply(d, { kind: 'pick', id: 'w1', what: 'weed', who: 'B', t: T0 }, me).fresh).toBe(true);
+      expect(taken(d, 'w1')?.who, me).toBe('B');
+      // the replay again changes nothing
+      expect(apply(d, { kind: 'pick', id: 'w1', what: 'weed', who: 'B', t: T0 }, me).fresh).toBe(false);
+    }
+  });
+
   it('ignores another day’s changes, and repeats', () => {
     const d = emptyDay(DAY);
     expect(apply(d, { kind: 'pick', id: 'w1', what: 'weed', who: 'A', t: dayStart(DAY) - 1 }, 'B').fresh).toBe(false);
