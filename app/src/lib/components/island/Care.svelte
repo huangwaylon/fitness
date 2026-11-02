@@ -27,6 +27,7 @@
   import { fx3d } from './fx3d.ts';
   import { echo3d } from './echo3d.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
+  import { site } from './site.svelte.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -44,6 +45,7 @@
   const date = $derived(dayKey(clock));
   const weeds = $derived.by<Weed[]>(() => {
     void pulled;
+    void site.rev;
     const { hour, minute } = jst(clock);
     // what was taken today: by me (once my villager got there: this phone's own record) and by the partner (the shared day)
     const gone = date === dayKey() ? takenOn(date).union(takenByOthers(shared.day, shared.me)) : takenOn(date);
@@ -178,7 +180,7 @@
 </script>
 
 <!-- each a world node at its foot (the anchor: a 0 × 0 point there) -->
-<div class="node" aria-hidden="true" {@attach w.at({ x: ROCK.x, z: ROCK.y, h: ROCK.h, m3: { key: findArt('rock'), id: 'rock' } })}>
+<div class="node" aria-hidden="true" {@attach w.at({ x: (void site.rev, ROCK.x), z: ROCK.y, h: ROCK.h, m3: { key: findArt('rock'), id: 'rock' } })}>
   <span class="item rock" data-care="rock">
     <span bind:this={rockEl}><OfficialArt key={findArt('rock')} size={su(ROCK.h)} /></span>
   </span>

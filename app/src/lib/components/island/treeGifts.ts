@@ -7,17 +7,17 @@
 // at the relay), so it lies on both phones and in the sheet's day row, and opening it is the present's `pick`.
 import type { Put } from '#lib/sync/world-day.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
-import { SCENERY_TREES, type ShakeTree } from './treeShake.ts';
+import { sceneryTrees, type ShakeTree } from './treeShake.ts';
 
 /** How many trees hold a present each day (NH's two). */
 export const GIFTS_A_DAY = 2;
 
 /** The trees that may hold one: the scenery's oaks and cedars (NH's hardwoods and cedars), in world.ts's order. */
-export const GIFT_TREES: readonly string[] = SCENERY_TREES.filter((t) => t.kind === 'oak' || t.kind === 'cedar').map((t) => t.id);
+export const giftTrees = (): readonly string[] => sceneryTrees().filter((t) => t.kind === 'oak' || t.kind === 'cedar').map((t) => t.id);
 
 /** The trees holding a present on `date` (YYYY-MM-DD): GIFTS_A_DAY of GIFT_TREES, seeded. */
 export function giftTreesOn(date: string, seed = ISLAND_SEED): string[] {
-  const r = dayRand(date, 'tree-gifts', seed), pool = [...GIFT_TREES], out: string[] = [];
+  const r = dayRand(date, 'tree-gifts', seed), pool = [...giftTrees()], out: string[] = [];
   while (out.length < GIFTS_A_DAY && pool.length) out.push(pool.splice(Math.floor(r() * pool.length), 1)[0]);
   return out;
 }

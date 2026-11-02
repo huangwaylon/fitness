@@ -15,7 +15,7 @@
   import { ROSTER, ROSTER_IDS } from '#lib/villagers/roster.ts';
   import { SPECIES } from '#lib/villagers/species.ts';
   import { DECOR_SLOTS, HOMES, SHORE_Z } from '#lib/components/island/world.ts';
-  import { nav } from '#lib/components/island/nav.ts';
+  import { walkNav } from '#lib/components/island/nav.ts';
   import { planTap } from '#lib/components/island/tapWalk.ts';
   import { SPEED } from '#lib/components/island/walkGraph.ts';
   import TERRAIN from '#lib/components/island/terrain.json' with { type: 'json' };
@@ -148,7 +148,7 @@
       /** Walk a villager to (x, z) by the island's way (nav.ts), then settle into `then`. */
       function walkTo(s: Slot, x: number, z: number, then: State | null = null): boolean {
         const w = W[s];
-        const p = planTap(nav(), [w.x, w.z], x, z);
+        const p = planTap(walkNav(), [w.x, w.z], x, z);
         if (!p) return false;
         // (up from a seat first: in front of it)
         if (w.lift) w.z = Math.min(w.z, (w.rest ? hammock.z : bench.z) - 22);

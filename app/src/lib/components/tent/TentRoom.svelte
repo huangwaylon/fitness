@@ -38,6 +38,7 @@
   import { where } from '#lib/store/where.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { outOfTent } from '../island/buildings.ts';
+  import { site } from '../island/site.svelte.ts';
   import { sendDecor } from '#lib/store/actions.ts';
   import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
@@ -478,11 +479,15 @@
     // out of the door: on the island my villager stands just outside the tent's door, facing out, on both phones (the
     // island's put, said here at once with the leaving)
     send({ kind: 'tent', in: false });
-    // the tent's door (world.ts's island), or this home's on the layout (a step out in front of it)
+    // the tent's door (world.ts's island, or the layout's: site.svelte.ts), or this home's on the layout (a step out in front of it)
+    site.sync();
     const [dx, dz] = home === 'A' ? outOfTent(me) : outOfHome();
     if (home === 'A') ui.fromTent = true;
     send({ kind: 'walk', to: [Math.round(dx), Math.round(dz)], from: [Math.round(dx), Math.round(dz)], s: Math.round(relayNow()), ms: 0, f: 'home' });
-    void goto(resolve('/') + location.search).finally(() => (leaving = false));
+    // (back to the island without the room's `home`)
+    const q = new URLSearchParams(location.search);
+    q.delete('home');
+    void goto(resolve('/') + (q.size ? `?${q}` : '')).finally(() => (leaving = false));
   }
   let leaving = false;
   /** Just out of this home's door on the layout (each of us to one side). */

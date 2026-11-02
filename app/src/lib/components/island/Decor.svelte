@@ -17,6 +17,11 @@
   import PLACES from './models.json';
   import { onMount } from 'svelte';
   import { echo3d } from './echo3d.ts';
+  import { site } from './site.svelte.ts';
+  import { layout } from '#lib/store/layout.svelte.ts';
+  import { objMid } from '#lib/layout/model.ts';
+  import { castMe } from '#lib/ui-state/cast.ts';
+  import { DECOR_ITEMS } from './decor.ts';
 
   interface Props {
     /** The decorate mode is on: a tap or a drag on an item picks it up. */
@@ -29,9 +34,21 @@
   let { editing = false, hidden = null, onpick }: Props = $props();
   const w = useWorld();
 
-  const items = $derived(decor.items);
+  // On the island's layout (site.svelte.ts) the decorations are its objects of the decorations' kinds (the old
+  // もようがえ's moved in as `m-<id>`, the phone's もようがえ's new ones): the 3D island draws them (world3d/objects.ts),
+  // the walk has them already (layout/nav.ts); here each is its tap area (a jiggle where it stands).
+  const KINDS: ReadonlySet<string> = new Set(DECOR_ITEMS);
+  const items = $derived.by((): readonly { id: string; item: DecorItem; x: number; z: number; f: Facing }[] => {
+    const l = site.layout;
+    if (!l) return decor.items;
+    return [...l.objects.values()].filter((o) => KINDS.has(o.k)).map((o) => {
+      const [x, z] = objMid(l, o);
+      return { id: o.id, item: o.k as DecorItem, x: Math.round(x), z: Math.round(z), f: o.f as Facing };
+    });
+  });
   // the walk goes round them (only the cells and graph they touch change)
   $effect(() => {
+    if (site.on) return;
     const boxes = items.map(blockOf);
     setWalkDecor(boxes);
     setNavDecor(boxes);
@@ -61,7 +78,20 @@
   let puffs = $state<{ n: number; x: number; z: number }[]>([]);
   let n = 0;
   onMount(() =>
+    layout.on(({ diff, who, live }) => {
+      // the partner's change on the layout, just made (any piece they put down or moved)
+      if (!live || !site.on || who === castMe()) return;
+      const l = layout.current, o = [...diff.objects.add, ...diff.objects.move].at(-1);
+      if (!o) return;
+      const [x, z] = objMid(l, o), k = ++n;
+      puffs = [...puffs.slice(-2), { n: k, x, z }];
+      partnerTurnTo(x, who);
+      setTimeout(() => (puffs = puffs.filter((p) => p.n !== k)), 700);
+    })
+  );
+  onMount(() =>
     decor.on(({ e, was, live }) => {
+      if (site.on) return;
       if (!live) return;
       const at = e.rm ? was : e;
       if (!at) return;
@@ -76,7 +106,7 @@
 {#each items as p (p.id)}
   {#if p.id !== hidden}
     {@const l = look(p.item, p.f)}
-    <div class="spr" data-decor-node={p.id} {@attach w.at({ x: p.x, z: p.z, h: l.h, inv: true, m3: { key: l.key, id: `d:${p.id}` } })}>
+    <div class="spr" data-decor-node={p.id} data-scenery-id={site.on ? p.id : undefined} {@attach w.at({ x: p.x, z: p.z, h: l.h, inv: true, m3: site.on ? null : { key: l.key, id: `d:${p.id}` } })}>
       <button type="button" class="deco" class:editing data-nopan={editing || undefined} data-decor={p.id} data-item={p.item} data-x={p.x} data-z={p.z} data-f={p.f} data-sfx="self" aria-label={t(`decor.item.${p.item}`)}
         style={l.style} style:height="calc({l.h} * var(--u))" style:width="calc({l.wd} * var(--u))"
         onclick={(e) => tap(e, p.x)} onpointerdown={(e) => editing && onpick?.(p.id, e)}>

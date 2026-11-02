@@ -75,7 +75,7 @@
   import { GOAL_TREES, ROCK, SEA_BOX, SHORE_Z, flowerById } from './world.ts';
   import { nearestWalkable, walkGeo } from './walkGraph.ts';
   import {
-    BUGS, BUSHES, CAST_U, FISH, FRESH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS, bitePlan,
+    BUGS, bushes, CAST_U, FISH, FRESH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS, bitePlan,
     bugPlace, bushBug, castInto, castPhase, critterArt, findKind, freshAreas, shadowLen, fleaJumps, hesitatePlan, hookItem, netSwing,
     oddsAt, patches, perch3d, perches, pickBug, pickFish, reel, stalkTap, swimAt, waterAt, type BitePlan, type BugId, type BugPlace, type Catch,
     type FishId, type Flight, type JunkId, type Patch, type StalkState, type Swim, type Water
@@ -772,14 +772,14 @@
 
   /** The goal trees' fruit lies here once met (its row is a button): a flea never lands under it. */
   // (the row button stands up the screen from that ground: its top edge is ~30u further in, measured at 390 × 844)
-  const FRUIT_GROUND: Patch[] = Object.values(GOAL_TREES).map(([x, z]) => ({ x0: x - 56, x1: x + 56, z0: z - 34, z1: z + 34, l0: 0, l1: 0 }));
+  const fruitGround = (): Patch[] => Object.values(GOAL_TREES).map(([x, z]) => ({ x0: x - 56, x1: x + 56, z0: z - 34, z1: z + 34, l0: 0, l1: 0 }));
   /** Where a bug put down by a person's doing comes from and keeps to: out of a bush, from under the rock, off a
    *  villager (`src`), from (x, z). */
   function putFrom(src: string, x: number, z: number): { from: P3; area: Patch; avoid?: Patch[] } {
     if (src === 'rock') return { from: { x, z, lift: 0 }, area: patches('rock')[0] };
     // off the villager it hopped from, never back under its button (its figure stands up the screen from its feet)
-    if (src === 'flea') return { from: { x, z, lift: 34 }, area: { x0: x - 90, x1: x + 90, z0: z - 50, z1: z + 16, l0: 0, l1: 0 }, avoid: [{ x0: x - 30, x1: x + 30, z0: z - 8, z1: z + 48, l0: 0, l1: 0 }, ...FRUIT_GROUND] };
-    const b = BUSHES.find((s) => Math.abs(s.x - x) < 2 && Math.abs(s.z - z) < 2), h = b?.h ?? 40;
+    if (src === 'flea') return { from: { x, z, lift: 34 }, area: { x0: x - 90, x1: x + 90, z0: z - 50, z1: z + 16, l0: 0, l1: 0 }, avoid: [{ x0: x - 30, x1: x + 30, z0: z - 8, z1: z + 48, l0: 0, l1: 0 }, ...fruitGround()] };
+    const b = bushes().find((s) => Math.abs(s.x - x) < 2 && Math.abs(s.z - z) < 2), h = b?.h ?? 40;
     return { from: { x, z, lift: h * 0.7 }, area: { x0: x - 30, x1: x + 30, z0: z - 14, z1: z + 14, l0: 20, l1: 50 } };
   }
   /** A string's seed (FNV-1a): a put bug's itinerary from its id, the same on both phones. */
@@ -816,7 +816,7 @@
   export function fromBush(which: string | number) {
     if (bug) return;
     const id = typeof which === 'number' ? `hedge-${which}` : which;
-    const b = BUSHES.find((s) => s.id === id);
+    const b = bushes().find((s) => s.id === id);
     if (!b) return;
     const { month, hour } = jst(now());
     const bid = bushBug(month, hour, rand, weather.sky);

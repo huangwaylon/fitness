@@ -14,9 +14,12 @@
 import type { Box } from './geom.ts';
 import {
   BRIDGE, BRIDGE_RAIL, BUILDINGS, CENTRE_STAGE, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, RIVER, ROCK,
-  DECOR_SLOTS, PULLUP_AT, SCENERY, SEATS, SHORE_Z, TAPE_DECK, inOval, inRiver, onLand, SPRING, onBridge, type BuildingId, type Pt
+  DECOR_SLOTS, PULLUP_AT, RIVER_BEND, SCENERY, SEATS, SHORE_Z, TAPE_DECK, inOval, inRiver, onLand, SPRING, onBridge, layoutNav, onLayout, worldGen,
+  type BuildingId, type Pt
 } from './world.ts';
 import { art } from '#lib/art.ts';
+import * as onGrid from '#lib/layout/nav.ts';
+import { BUILDING_OF, HOME_OF } from './layoutWorld.ts';
 
 /** How far feet keep from an obstacle (u). */
 export const PAD = 8;
@@ -162,6 +165,8 @@ const widthOf = (key: string, h: number) => {
 
 /** A building's footprint on the ground (unpadded): its width × depth behind the door line. */
 export function footprint(id: BuildingId): Box {
+  const ln = layoutNav(), d = ln?.doors[HOME_OF[id]];
+  if (d) return d.box;
   const b = BUILDINGS.find((q) => q.id === id)!;
   const w = widthOf(b.key, b.h);
   return { x0: b.x - w / 2 + 4, x1: b.x + w / 2 - 4, y0: b.z - 2, y1: b.z + b.depth };
@@ -169,6 +174,8 @@ export function footprint(id: BuildingId): Box {
 
 /** Where a building's door is: a step in front of the door line. */
 export function doorOf(id: BuildingId): Pt {
+  const ln = layoutNav(), d = ln?.doors[HOME_OF[id]];
+  if (d) return d.at;
   const b = BUILDINGS.find((q) => q.id === id)!;
   return [b.x, b.z - 16];
 }
@@ -251,13 +258,32 @@ function namedNodes(): Record<string, Pt> {
     pondside: [POND.x + 4, POND.z + POND.rz + 14],
     // the stream's casting spots: its west bank below the falls, the bend, the mouth (the west beach in front of it), the
     // falls' pool (NH's clifftop: the upper tier is beyond the horizon)
-    riverEast: [340, 880], riverBend: [330, 742], mouth: [-12, 596],
+    ...(onLayout() ? riverSpots() : { riverEast: [340, 880] as Pt, riverBend: [330, 742] as Pt, mouth: [-12, 596] as Pt }),
     bridgeS: [BRIDGE.x, BRIDGE.z0 - 12], bridgeN: [BRIDGE.x, BRIDGE.z1 + 12], clifftop: [CLIFF.fall[0] - 14, CLIFF.z0 - FALLS_POOL + 18],
     // the benches' and the stools' seats, the pull-up bar (world.ts SEATS)
     ...SEATS, pullup: PULLUP_AT
   };
   for (const b of BUILDINGS) nodes[`door-${b.id}`] = doorOf(b.id);
   return nodes;
+}
+
+/** The stream's casting spots on the layout's river: beside its north–south reach's middle, by its bend, the bank
+ *  at its mouth. */
+function riverSpots(): Record<'riverEast' | 'riverBend' | 'mouth', Pt> {
+  const ns = RIVER.filter((p) => p[1] > RIVER_BEND), across = RIVER.filter((p) => p[1] <= RIVER_BEND);
+  const at = (p: readonly number[] | undefined, dx: number, dz: number): Pt => (p ? [p[0] + dx, p[1] + dz] : [-1e5, -1e5]);
+  const m = ns[Math.floor(ns.length / 2)], bend = ns.at(-1), mouth = across.findLast((p) => p[2] <= 30) ?? across.at(-1);
+  return { riverEast: at(m, -(m?.[2] ?? 30) / 2 - 14, 0), riverBend: at(bend, -(bend?.[2] ?? 30) / 2 - 14, 18), mouth: at(mouth, 0, -(mouth?.[2] ?? 30) / 2 - 14) };
+}
+
+/** namedNodes() on the layout's grid: each moved to the nearest point a walker reaches (dropped when none is near). */
+function namedOnLayout(ln: onGrid.LayoutNav): Record<string, Pt> {
+  const out: Record<string, Pt> = {};
+  for (const [name, p] of Object.entries(namedNodes())) {
+    const q = onGrid.nearestWalkable(ln, p[0], p[1], 30, undefined, true);
+    if (q) out[name] = q;
+  }
+  return out;
 }
 
 // ---- the broad phase ------------------------------------------------------------------------------------------------
@@ -345,10 +371,20 @@ export function setNavDecor(boxes: readonly Box[]): void {
 
 /** The island's navigation, built once (cached; `fresh` rebuilds: the perf test; again when the decorations change). */
 let cached: Nav | null = null;
+let onIt: { gen: number; nav: onGrid.LayoutNav } | null = null;
 export function nav(fresh = false): Nav {
   if (cached && !fresh) return cached;
   cached = navWith(decorBoxes);
   return cached;
+}
+
+/** The walk's navigation now: the layout's walk grid while the island reads it (with the island's named spots: a node
+ *  over the relay means the same on both phones), else nav()'s. Either is planTap's. */
+export function walkNav(): Nav | onGrid.LayoutNav {
+  const ln = layoutNav();
+  if (!ln) return nav();
+  if (onIt?.gen !== worldGen()) onIt = { gen: worldGen(), nav: { ...ln, named: { ...namedOnLayout(ln), ...ln.named } } };
+  return onIt.nav;
 }
 
 /** The navigation with these decorations (uncached: whether a spot would wall anyone in, island/decor.ts). */
@@ -532,6 +568,11 @@ export interface Snap {
 
 /** The water at a point (unpadded), or null. */
 export function waterAt(x: number, z: number): WaterKind | null {
+  const ln = layoutNav();
+  if (ln) {
+    const w = onGrid.waterAt(ln, x, z);
+    return w === 'pond' && inOval(SPRING, x, z, 15) ? 'spring' : w;
+  }
   if (onBridge(x, z)) return null;
   if (!onLand(x, z)) return 'sea';
   if (inOval(POND, x, z)) return 'pond';
@@ -542,6 +583,11 @@ export function waterAt(x: number, z: number): WaterKind | null {
 
 /** The building whose footprint (unpadded, a few units grace) holds a point, or null. */
 export function buildingAt(x: number, z: number): BuildingId | null {
+  const ln = layoutNav();
+  if (ln) {
+    const id = onGrid.buildingAt(ln, x, z);
+    return id ? (BUILDING_OF[id] ?? null) : null;
+  }
   for (const b of BUILDINGS) {
     const f = footprint(b.id);
     if (x >= f.x0 - 2 && x <= f.x1 + 2 && z >= f.y0 - 2 && z <= f.y1 + 2) return b.id;

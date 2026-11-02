@@ -13,7 +13,7 @@ import {
   BUILDINGS, CENTRE_STAGE, CLIFF, DIG_SPOTS, DECOR_SLOTS, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAWN_SPOTS, PATHS, POND, ROCK, SCENERY, SPRING, TAPE_DECK,
   inOval, onGrass, riverNear, type Pt
 } from '../src/lib/components/island/world.ts';
-import { MUSHROOM_SPOTS } from '../src/lib/components/island/mushrooms.ts';
+import { mushroomSpots } from '../src/lib/components/island/mushrooms.ts';
 
 const OUT = join(import.meta.dirname, '..', 'src', 'lib', 'components', 'island', 'scatter.json');
 const SEED = 0x15_1a_2d;
@@ -54,7 +54,7 @@ const things: { x: number; z: number; kind: Kind; r: number }[] = [
   ...Object.values(HOMES).map(([x, z]) => ({ x, z, kind: 'home' as Kind, r: 0 })),
   { x: TAPE_DECK[0], z: TAPE_DECK[1], kind: 'home', r: 0 }, { x: CENTRE_STAGE[0], z: CENTRE_STAGE[1], kind: 'home', r: 20 },
   { x: ROCK[0], z: ROCK[1], kind: 'rock', r: 0 },
-  ...[...DIG_SPOTS, ...MUSHROOM_SPOTS].map(([x, z]) => ({ x, z, kind: 'spot' as Kind, r: 0 }))
+  ...[...DIG_SPOTS, ...mushroomSpots()].map(([x, z]) => ({ x, z, kind: 'spot' as Kind, r: 0 }))
 ];
 const hedge = HEDGE_XS.map((x) => [x, HEDGE_Z] as Pt);
 /** Whether a tree's canopy stands over (x, z) from the camera (the lawn just behind an oak or a cedar). */

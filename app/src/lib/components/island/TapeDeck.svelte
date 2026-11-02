@@ -9,6 +9,7 @@
   import { hookFlag } from './devHooks.ts';
   import { su } from './scene.ts';
   import { TAPE_DECK } from './world.ts';
+  import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
   import { shownNow } from './sceneTaps.ts';
   import { MIN_HIT, grow, inside } from './hitbox.ts';
@@ -52,6 +53,7 @@
   let spot = $state<readonly [number, number] | null>(null);
   $effect(() => {
     const show = out;
+    void site.rev;
     void w.rest.z;
     void w.rest.vw;
     if (!show) return void (spot = null);

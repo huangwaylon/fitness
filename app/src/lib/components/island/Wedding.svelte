@@ -9,6 +9,7 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { su } from './scene.ts';
   import { ARCH } from './world.ts';
+  import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
   import { SCENE } from '#lib/sync/storage.ts';
   import { actors, addFx, later, setEmote, setMotion } from '../motion/director.svelte.ts';
@@ -37,10 +38,12 @@
     }, 1600);
     return () => clearTimeout(t);
   });
+  /** The arch's spot (world.ts ARCH, on the island's layout: site.rev). */
+  const arch3 = $derived((void site.rev, ARCH));
 </script>
 
 {#if arch}
-  <span class="arch" data-arch aria-hidden="true" {@attach w.at({ x: ARCH[0], z: ARCH[1], h: ARCH_U, m3: { key: 'deco/wedding-arch' } })}><OfficialArt key="deco/wedding-arch" size={su(ARCH_U)} /></span>
+  <span class="arch" data-arch aria-hidden="true" {@attach w.at({ x: arch3[0], z: arch3[1], h: ARCH_U, m3: { key: 'deco/wedding-arch' } })}><OfficialArt key="deco/wedding-arch" size={su(ARCH_U)} /></span>
 {/if}
 
 <style>

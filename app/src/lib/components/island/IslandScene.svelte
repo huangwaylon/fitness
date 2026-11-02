@@ -56,13 +56,14 @@
   import { IslandLife } from './islandLife.svelte.ts';
   import { VILLAGER, eventsAt, u, wildFlower, type Tod } from './scene.ts';
   import { todayPct } from './progress.ts';
-  import { CAMPSITE, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, PLAN, PULLUP_AT, SEAT_DROP, SHORE_Z, TREE_H, flowerById, seatAt, surfaceAt, type BuildingId } from './world.ts';
-  import { GUEST_ARRIVAL, GUEST_SPOT, doorAt, outOfTent, partnerOnline } from './buildings.ts';
+  import { CAMPSITE, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, PLAN, PULLUP_AT, SEAT_DROP, SHORE_Z, TREE_H, flowerById, seatAt, surfaceAt, worldGen, BUILDINGS, type BuildingId } from './world.ts';
+  import { GUEST_ARRIVAL, guestSpot, doorAt, outOfTent, partnerOnline } from './buildings.ts';
+  import { site } from './site.svelte.ts';
   import { provideDoor } from '#lib/ui-state/doorTransition.ts';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { RING_MS, stepCue } from './tapWalk.ts';
-  import { buildingAt, nav } from './nav.ts';
+  import { buildingAt, walkNav } from './nav.ts';
   import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
   import { sendDecor, sendIslandDay } from '#lib/store/actions.ts';
@@ -149,10 +150,11 @@
   type Look = { person: Who; villagerName: string; villager: string | null; bells: number | null };
   const lookOf = (w: Who): Look => (w === 'G' ? { person: 'G', villagerName: view.guest.villagerName, villager: view.guest.villager, bells: null }
     : { person: w, villagerName: view.people[w].villagerName, villager: view.people[w].villager, bells: view.people[w].today.bells });
-  const homeOf = (w: Who): readonly [number, number] => (w === 'G' ? GUEST_SPOT : HOMES[w]);
+  const homeOf = (w: Who): readonly [number, number] => (w === 'G' ? guestSpot() : HOMES[w]);
   const VILLAGERS = ['mine', 'partner', 'third'] as const;
   const sides = $derived.by(() => {
     const viewer = view.viewer, whos: Record<VillagerActor, Who> = viewer === 'G' ? { mine: 'G', partner: 'A', third: 'B' } : { mine: view.me, partner: view.partner, third: 'G' };
+    void site.rev;
     return Object.fromEntries(VILLAGERS.map((id) => [id, { person: lookOf(whos[id]), home: homeOf(whos[id]), side: sideOf(whos[id]) }])) as Record<VillagerActor, { person: Look; home: readonly [number, number]; side: 'left' | 'right' }>;
   });
   /** Who else has the island open (the relay's presence): the guest's villager shows on a member's island only then. */
@@ -167,6 +169,16 @@
   // せってい's switch: store/islandRender.svelte.ts); the DOM island runs over its canvas as the taps and the overlays.
   let failed3 = $state(false);
   const r3 = $derived(live && islandRender.mode === '3d' && !failed3);
+  // the island on its layout (site.svelte.ts: the 3D island with the layout on): world.ts's geometry is the layout's
+  // from here on (before anything below reads it), and follows the switch (and the 2D fallback without WebGL)
+  // svelte-ignore state_referenced_locally
+  if (live) site.sync();
+  $effect(() => {
+    if (!live) return;
+    if (failed3) site.force = false;
+    void site.on;
+    untrack(() => site.sync());
+  });
   const island3dC = lazyComponent(() => import('../world3d/Island3D.svelte'));
   const Island3DC = $derived(island3dC.get(r3));
   let island3d = $state<{ go(z: number, k?: number): void; limits(): { min: number; max: number } }>();
@@ -409,6 +421,11 @@
   // Where each villager lives (the director walks them from there and back; design.md "Walking").
   // svelte-ignore state_referenced_locally
   if (live) for (const id of VILLAGERS) setHome(id, sides[id].home[0], sides[id].home[1]);
+  // (a home spot moved on the layout: there from now on)
+  $effect(() => {
+    const sd = sides;
+    if (live) untrack(() => VILLAGERS.forEach((id) => setHome(id, sd[id].home[0], sd[id].home[1])));
+  });
   // where a tap sent my villager this session (it stays there; the next open finds it home)
   let fromTentNow = false;
   // svelte-ignore state_referenced_locally
@@ -421,11 +438,12 @@
   // My villager walks to what I tap (avatar.ts): the walk geometry from the world's constants, a spot is fine when a
   // villager standing there covers no control or visitor and stays on screen, and the feet's live position (a walk
   // re-targets from mid-step). With a visitor on centre stage the villagers walk around them.
-  const geo = walkGeo();
+  let walk0: { gen: number; geo: ReturnType<typeof walkGeo> } | null = null;
+  const geo = () => (walk0?.gen === worldGen() ? walk0 : (walk0 = { gen: worldGen(), geo: walkGeo() })).geo;
   let visited: { at: string; geo: ReturnType<typeof walkGeo> } | null = null;
   function geoVisited() {
     const { x, y } = actors.visitor, at = x || y ? [x, y] : [CENTRE_STAGE[0], CENTRE_STAGE[1]];
-    if (visited?.at !== String(at)) visited = { at: String(at), geo: walkGeo({ obstacles: [{ x0: at[0] - 18, x1: at[0] + 18, y0: at[1] - 8, y1: at[1] + 10 }] }) };
+    if (visited?.at !== `${at}|${worldGen()}`) visited = { at: `${at}|${worldGen()}`, geo: walkGeo({ obstacles: [{ x0: at[0] - 18, x1: at[0] + 18, y0: at[1] - 8, y1: at[1] + 10 }] }) };
     return visited.geo;
   }
   const feet = (id: VillagerActor) => livePos(id);
@@ -623,6 +641,9 @@
       who: (w: Who) => (onIsland(actorOf(w)) && !inTent(actorOf(w)) ? livePos(actorOf(w)) : null),
       /** The scroller's two ends for this screen (まえ, おく). */
       stops: () => (world.three && island3d ? [island3d.limits().min, island3d.limits().max] : [camMin, camMax]),
+      /** The island on its layout (site.svelte.ts): whether it reads it, and where its doors, homes and centre stage are
+       *  (e2e: the long island). */
+      site: () => ({ on: site.on, doors: Object.fromEntries(BUILDINGS.map((b) => [b.id, doorAt(b.id)])), homes: HOMES, stage: CENTRE_STAGE, named: walkNav().named }),
       /** The island as both phones must have it (e2e: the two-phone checks): the shared day's canonical hash, and each
        *  person's villager (where it stands, rounded, and whether it dozes). */
       state: () => ({
@@ -652,12 +673,12 @@
 
   onMount(() => {
     if (!live) return;
-    const off = attachAvatar({ geo: () => (presence.visitor ? geoVisited() : geo), clear: standsClear, where: feet, enabled: () => !covered && !life.hidden, hush: () => talk?.hush() });
+    const off = attachAvatar({ geo: () => (presence.visitor ? geoVisited() : geo()), clear: standsClear, where: feet, enabled: () => !covered && !life.hidden, hush: () => talk?.hush() });
     // the guest's villager comes ashore once each time its app opens, and walks up to its spot by the campsite (the
     // members see it arrive); back from the tent or another screen it is where it was
     if (guestPhone() && !arrivedThisLoad && !actors.mine.walking) {
       arrivedThisLoad = true;
-      if (!fromTentNow) arrive(GUEST_ARRIVAL, GUEST_SPOT);
+      if (!fromTentNow) arrive(GUEST_ARRIVAL, guestSpot());
     }
     let hiddenAt = 0;
     const vis = () => {
@@ -783,7 +804,7 @@
     return relay.onStatus((st) => (partnerHere = partnerOnline(st, !!week.demo) && st.here.includes(whoOf('partner'))));
   });
   /** A node id or a world point (a walk's target). */
-  const pointOf = (to: string | readonly [number, number]) => (typeof to === 'string' ? nav().named[to] : to);
+  const pointOf = (to: string | readonly [number, number]) => (typeof to === 'string' ? walkNav().named[to] : to);
   // The villagers on both phones (villagerSync.ts): every move of mine goes over the relay as the very walk; the
   // partner's plays here from the same start at the same time, and while they have the island open their villager is
   // theirs to move (this phone's own life leaves it alone).
@@ -919,8 +940,9 @@
   // the door first (the walk goes over the relay like any), unless it's there already; a tap on anything else on the
   // way (it steers my villager anew) is the end of going in.
   function building(id: BuildingId, _el: HTMLElement) {
-    if (!live || covered || id !== 'campsite' || entering) return;
+    if (!live || covered || entering || (id !== 'campsite' && !BUILDINGS.some((b) => b.id === id))) return;
     const door = doorAt(id), at = livePos('mine');
+    const goIn = () => goInto(id);
     clearTimeout(walkingIn);
     if (Math.hypot(at[0] - door[0], at[1] - door[1]) <= TENT_NEAR_U) return goIn();
     const p = sendTo(door[0], door[1]);
@@ -948,24 +970,33 @@
     const el = sceneEl;
     if (!el) return;
     const tapped = (e: Event) => {
-      if (goingIn && !(e.target instanceof Element && e.target.closest('[data-building="campsite"]'))) goingIn = null;
+      if (goingIn && !(e.target instanceof Element && e.target.closest('[data-building]'))) goingIn = null;
     };
     el.addEventListener('pointerdown', tapped, true);
     return () => (el.removeEventListener('pointerdown', tapped, true), clearTimeout(walkingIn));
   });
-  function goIn() {
+  /** Through a home's door: the tent (ウェイ's, the campsite) or うめ's or the guest's home on the layout (its room:
+   *  `/tent?home=B|G`). */
+  function goInto(id: BuildingId) {
     if (entering) return;
-    turnTo(doorAt('campsite')[0]);
+    turnTo(doorAt(id)[0]);
     entering = true;
+    doorOn = id;
     ui.islandZ = world.view.camZ;
     cue('scene-bench');
-    void goto(resolve('/tent') + location.search).finally(() => (entering = false));
+    const q = new URLSearchParams(location.search);
+    q.delete('home');
+    if (id !== 'campsite') q.set('home', id.slice(-1));
+    const qs = q.toString();
+    void goto(resolve('/tent') + (qs ? `?${qs}` : '')).finally(() => (entering = false));
   }
   let entering = false;
+  /** The door going in through (the iris closes on it). */
+  let doorOn: BuildingId = 'campsite';
   // the tent's door for the iris (its button's middle on screen)
   onMount(() =>
     provideDoor(() => {
-      const r = sceneEl?.querySelector<HTMLElement>('[data-building="campsite"] .door')?.getBoundingClientRect();
+      const r = sceneEl?.querySelector<HTMLElement>(`[data-building="${doorOn}"] .door`)?.getBoundingClientRect();
       return r && r.width ? { x: r.left + r.width / 2, y: r.top + r.height * 0.7 } : null;
     })
   );
@@ -1016,10 +1047,13 @@
   let decorMode = $state<{ pick(id: string, e: PointerEvent): void; moving(): string | null }>();
   // what the 3D island draws today (Scenery's own: the scenery's seasonal swaps, the fixed decor's pieces)
   const scenery3 = $derived.by(() => {
+    void site.rev;
     const sw = swapsOn(today);
     return SCENERY.map((x) => (sw[x.id] ? { ...x, key: sw[x.id].key, h: sw[x.id].h } : x));
   });
-  const pieces3 = $derived(piecesOn(today, jst(clock).hour, islandSeed(), ARCH));
+  const pieces3 = $derived((void site.rev, piecesOn(today, jst(clock).hour, islandSeed(), ARCH)));
+  /** The goal trees' spots (world.ts's, on the island's layout: site.rev). */
+  const goalTrees = $derived((void site.rev, GOAL_TREES));
   const cast3 = () => VILLAGERS.map((id) => ({
     id, person: sides[id].person.person, villager: sides[id].person.villager, side: sides[id].side,
     shown: onIsland(id) && !inTent(id), seated: !!seated[id], seat: seated[id], stung: stung[id], rep: repping[id], hat: live ? hatOf(id, sides[id].person) : null
@@ -1070,7 +1104,7 @@
         <Scenery {season} {foliage} {month} {live} {tod} date={today} hour={jst(clock).hour} onbuilding={building} {r3} />
 
         {#each ['A', 'B'] as const as pid (pid)}
-          {@const t = GOAL_TREES[pid]}
+          {@const t = goalTrees[pid]}
           <FruitTree person={view.people[pid]} x={t[0]} z={t[1]} {foliage} shakeN={life.shakeN[pid]}
             celebrate={life.celebrate[pid]} open={openTree === pid} ontoggle={(on) => (openTree = on ? pid : null)}
             onshake={() => shakeTree(pid)} />

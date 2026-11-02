@@ -68,9 +68,9 @@ export const shouldFollow = (awaySince: number, now: number, partnerFree: boolea
 
 /** The two meet in the middle of the lawn for ふたりでぜんぶ's high-five: a step apart either side of the island's
  *  middle, between their homes and the trees (A on the left, B on the right, as their homes). */
-export const MEET: { A: Pt; B: Pt } = {
-  A: [175, HOMES.A[1] + 48],
-  B: [215, HOMES.B[1] + 48]
+export const MEET: { readonly A: Pt; readonly B: Pt } = {
+  get A(): Pt { return [175, HOMES.A[1] + 48]; },
+  get B(): Pt { return [215, HOMES.B[1] + 48]; }
 };
 
 const allMet = (v: WeekView, pid: PersonId) => RING_FRUITS.every((f) => todayPct(v.people[pid].rings[f]) >= 100);

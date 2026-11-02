@@ -5,7 +5,7 @@
 // their facing. A default object keeps today's size (world.ts's height for its id) wherever it is moved.
 import ISLAND_MODELS from '../island/models.json' with { type: 'json' };
 import W3D from './models.json' with { type: 'json' };
-import { CAMPSITE, DECOR_U, SCENERY, TREE_H } from '../island/world.ts';
+import { DECOR_U, TREE_H, WORLD_2D } from '../island/world.ts';
 import { FLOWER_U, TREE_FRUIT, TREE_FRUIT_U, flowerScale, hedgePair, wildFlower } from '../island/scene.ts';
 import type { Piece } from '../island/fixedDecor.ts';
 import type { Inst, ModelName, Standin } from './layout3d.ts';
@@ -61,7 +61,7 @@ const PROP: Record<string, ModelName> = {
   'deco/hammock': 'hammock', 'deco/firewood': 'firewood', 'deco/pullup': 'pullup', 'deco/pump': 'pump', 'deco/shishiodoshi': 'shishiodoshi'
 };
 /** world.ts's height for a default piece of scenery (its size wherever it goes). */
-const SCENERY_H: Record<string, number> = Object.fromEntries(SCENERY.map((s) => [s.id, s.h]));
+const SCENERY_H: Record<string, number> = Object.fromEntries(WORLD_2D.SCENERY.map((s) => [s.id, s.h]));
 const SEASONAL = new Set(['beach-chair', 'sandcastle', 'snowboy']);
 
 /** The fixed decor's kinds (world.ts DECOR_SLOTS): NH's furniture scale, as the decorations'. */
@@ -146,7 +146,7 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
       case 'home': {
         const style = layout.homes[o.id === 'home-B' ? 'B' : o.id === 'home-G' ? 'G' : 'A'];
         if (style.m !== 'campsite') break; // NH's tents and houses: world3d/home.ts
-        const scale = scaleOf(CAMPSITE.key, 'tent', CAMPSITE.h);
+        const scale = scaleOf(WORLD_2D.BUILDINGS[0].key, 'tent', WORLD_2D.BUILDINGS[0].h);
         const door = doorOf(layout, o).at;
         out.push({ id: o.id, model: 'tent', x: door[0], z: door[1] - 10 * scale, scale, yaw: (o.f * Math.PI) / 2, tap: 'tent' });
         break;

@@ -15,6 +15,7 @@
   import { useWorld } from './camera.svelte.ts';
   import { ambient3 } from './ambient3d.svelte.ts';
   import { HOMES, onGrass, surfaceAt, type Pt } from './world.ts';
+  import { site } from './site.svelte.ts';
 
   interface Props {
     season: Season;
@@ -76,7 +77,7 @@
   /** Toy Day's presents (NH's Dec 24), one on each side of the path, a step in front of each villager on its inner
    *  side, clear of the villagers and the goal trees' canopies and fruit rows (controls) at 390 and 320 wide. */
   const toyDay = $derived(mode === 'fireflies' && eventsAt(minuteNow()).toyDay);
-  const TOYS: readonly Pt[] = [[HOMES.A[0] + 42, HOMES.A[1] - 34], [HOMES.B[0] - 42, HOMES.B[1] - 34]];
+  const TOYS: readonly Pt[] = $derived((void site.rev, [[HOMES.A[0] + 42, HOMES.A[1] - 34], [HOMES.B[0] - 42, HOMES.B[1] - 34]]));
 </script>
 
 {#if mode === 'fall' && kind && !w.rest.three}

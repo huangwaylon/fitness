@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import room from '../tent/items.json';
 import { FURNITURE_CATEGORIES, ITEMS, treeFurniture, treeItem } from './catalog.ts';
-import { GIFTS_A_DAY, GIFT_TREES, giftAt, giftId, giftTree, giftTreesOn, holdsGift } from './treeGifts.ts';
-import { SCENERY_TREES, shakeDrop, treeById, wireDrop } from './treeShake.ts';
+import { GIFTS_A_DAY, giftTrees, giftAt, giftId, giftTree, giftTreesOn, holdsGift } from './treeGifts.ts';
+import { sceneryTrees, shakeDrop, treeById, wireDrop } from './treeShake.ts';
 import { addDays } from '#lib/time/dates.ts';
 import type { LocalDate } from '#lib/types.ts';
 import { apply, applyRow, emptyDay, lying, rowOf } from '#lib/sync/world-day.ts';
@@ -25,8 +25,8 @@ describe('the trees’ presents (NH: two trees a day hold furniture)', () => {
   });
 
   it('two a day, of the oaks and cedars only (not a palm, a goal tree or bamboo), each tree its turn', () => {
-    expect(GIFT_TREES.length).toBeGreaterThanOrEqual(GIFTS_A_DAY);
-    expect(GIFT_TREES).toEqual(SCENERY_TREES.filter((t) => t.kind === 'oak' || t.kind === 'cedar').map((t) => t.id));
+    expect(giftTrees().length).toBeGreaterThanOrEqual(GIFTS_A_DAY);
+    expect(giftTrees()).toEqual(sceneryTrees().filter((t) => t.kind === 'oak' || t.kind === 'cedar').map((t) => t.id));
     const seen = new Map<string, number>();
     for (const date of YEAR) {
       const trees = giftTreesOn(date);
@@ -39,7 +39,7 @@ describe('the trees’ presents (NH: two trees a day hold furniture)', () => {
       }
     }
     // every oak and cedar gets its days, about evenly
-    for (const t of GIFT_TREES) expect(seen.get(t) ?? 0, t).toBeGreaterThan(20);
+    for (const t of giftTrees()) expect(seen.get(t) ?? 0, t).toBeGreaterThan(20);
   });
 
   it('furniture only, from the presents’ catalogue, that the tent can place; never Bells; the shops’ season stock in season', () => {
@@ -68,7 +68,7 @@ describe('the trees’ presents (NH: two trees a day hold furniture)', () => {
     const date = '2026-11-04', [tree] = giftTreesOn(date), t = treeById(tree)!;
     const day = emptyDay(20_400);
     expect(holdsGift(date, tree, day.puts)).toBe(true);
-    const other = GIFT_TREES.find((x) => !giftTreesOn(date).includes(x))!;
+    const other = giftTrees().find((x) => !giftTreesOn(date).includes(x))!;
     expect(holdsGift(date, other, day.puts)).toBe(false);
     for (const r of [0, 0.5, 0.99]) expect(shakeDrop(() => r, 0, undefined, undefined, t.kind, false, true)).toBe('gift');
     // the dev hook's drops still come first; a palm or a goal tree never drops one; the hook can't force one
@@ -80,18 +80,18 @@ describe('the trees’ presents (NH: two trees a day hold furniture)', () => {
     expect(wireDrop('gift', 12, Math.random)).toBe('none');
     expect(giftTree(giftId(tree))).toBe(tree);
     expect(giftTree('pa123')).toBeNull();
-    for (const id of GIFT_TREES) expect(giftId(id)).toMatch(/^[\w:.-]{1,32}$/);
+    for (const id of giftTrees()) expect(giftId(id)).toMatch(/^[\w:.-]{1,32}$/);
     day.puts[giftId(tree)] = { id: giftId(tree), what: 'present', at: giftAt(t), who: 'A', t: 0 };
     expect(holdsGift(date, tree, day.puts)).toBe(false);
   });
 
   it('it lands in front of its trunk, and the sheet’s day row keeps it until it’s opened (the guest’s too)', () => {
-    for (const id of GIFT_TREES) {
+    for (const id of giftTrees()) {
       const t = treeById(id)!, [x, z] = giftAt(t);
       expect(Math.abs(x - t.x)).toBeLessThan(30);
       expect(z).toBeLessThan(t.z);
     }
-    const T = dayStart(20_400), d = emptyDay(20_400), tree = GIFT_TREES[0], at = giftAt(treeById(tree)!);
+    const T = dayStart(20_400), d = emptyDay(20_400), tree = giftTrees()[0], at = giftAt(treeById(tree)!);
     apply(d, { kind: 'put', id: giftId(tree), what: 'present', at, who: 'G', t: T + 1000 }, 'G');
     const row = rowOf(d, 'G');
     expect(row.puts).toEqual([[giftId(tree), 'present', ...at]]);

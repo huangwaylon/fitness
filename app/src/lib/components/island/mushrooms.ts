@@ -18,11 +18,12 @@ export const OFF_SEASON_ODDS = 1 / 8;
 /** Beside the front lawn's oak and cedar (world units: x, z), past their canopies' spans (a tap there would go to the
  *  tree), a step behind the trunk; the goal trees' sides are the villagers' and the fruit's. Finds shows one only where
  *  this screen's controls leave room (measured). */
-const at = (id: string, dx: number, dz: number): readonly [number, number] => {
-  const t = SCENERY.find((s) => s.id === id)!;
+const at = (id: string, kind: 'oak' | 'cedar', dx: number, dz: number): readonly [number, number] => {
+  // (moved off the island's layout: the first of its kind)
+  const t = SCENERY.find((s) => s.id === id) ?? SCENERY.find((s) => s.kind === kind) ?? { x: 195, z: 400 };
   return [t.x + dx, t.z + dz];
 };
-export const MUSHROOM_SPOTS: readonly (readonly [number, number])[] = [at('oak-m1', -54, 10), at('oak-m1', 62, 14), at('cedar-m1', 40, 6), at('cedar-m1', 50, 24)];
+export const mushroomSpots = (): readonly (readonly [number, number])[] => [at('oak-m1', 'oak', -54, 10), at('oak-m1', 'oak', 62, 14), at('cedar-m1', 'cedar', 40, 6), at('cedar-m1', 'cedar', 50, 24)];
 
 const monthOf = (date: string): number => Number(date.slice(5, 7));
 
@@ -33,7 +34,7 @@ export interface Mushroom { uid: string; id: MushroomId; x: number; y: number; f
 export function mushroomsOn(date: string, seed = ISLAND_SEED): Mushroom[] {
   const m = monthOf(date), r = dayRand(date, 'mushrooms', seed);
   const n = m === 11 ? (r() < 0.5 ? 1 : 2) : (m === 10 || m === 12) && r() < OFF_SEASON_ODDS ? 1 : 0;
-  const used = new Set<number>();
+  const used = new Set<number>(), MUSHROOM_SPOTS = mushroomSpots();
   return Array.from({ length: n }, (_, i) => {
     let spot = Math.floor(r() * MUSHROOM_SPOTS.length);
     while (used.has(spot)) spot = (spot + 1) % MUSHROOM_SPOTS.length;

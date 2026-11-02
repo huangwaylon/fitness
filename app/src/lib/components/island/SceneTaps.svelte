@@ -203,7 +203,7 @@
   /** A bush by its scenery id (world.ts SCENERY, or the river-bank hedge's `hedge-<i>`): its feet and height. */
   function bushAt(id: string): { x: number; z: number; h: number } | null {
     const m = /^hedge-(\d+)$/.exec(id);
-    if (m) return HEDGE_XS[+m[1]] === undefined ? null : { x: HEDGE_XS[+m[1]], z: HEDGE_Z, h: BUSH_U };
+    if (m && HEDGE_XS.length) return HEDGE_XS[+m[1]] === undefined ? null : { x: HEDGE_XS[+m[1]], z: HEDGE_Z, h: BUSH_U };
     const s = SCENERY.find((t) => t.id === id);
     return s ? { x: s.x, z: s.z, h: s.h } : null;
   }
