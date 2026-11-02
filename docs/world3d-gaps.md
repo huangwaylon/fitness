@@ -48,7 +48,11 @@ E1. **The 3D island never stops drawing.** Idle, even `?water=0&critter=none&vis
    second on a GPU and ~14 in software (the water's 30 a second; the season's falling leaves). A second tab in the same
    browser then opens 5–8× slower (its ribbon 6.5 s, its 3D island 23–36 s against 5 s): the two-phone specs
    (shared-world, guest, decor, board, sync-harness) run out, and input lags (health.spec's drag: `mouse.move` out of
-   time). Wanted: on a software renderer (Island3D's swiftshader/llvmpipe check) the ambient motion off or a few frames
+   time). Where (engine.ts frame()): with the water off the loop runs only while something reports `more`, yet a
+   summer noon with `?water=0&critter=none&visitor=none` still draws 30 a second on a GPU (60 frames in 2 s, no
+   flourish playing): Island3D's frame hook (world.step, mirror, characterCards, villagerCards) reports motion every
+   frame with nothing moving; November's falling leaves (stats().fx 6) make it 60. On CI (run 41463316947) the
+   3D suite failed ~230 of ~380 against 38 locally at 3 workers. Wanted: on a software renderer (Island3D's swiftshader/llvmpipe check) the ambient motion off or a few frames
    a second, and an idle island drawing nothing.
 E2. **Covered, it still draws**: with けんこう's popup over the island, ~14 frames a second in software. Wanted: no
    frames while a sheet covers it (`enabled()` false), as the 2D island pauses.
