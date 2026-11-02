@@ -17,6 +17,7 @@ import { dirname, extname, join, resolve, sep } from 'node:path';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { ASSETS, POC_USES, writeAssets, writeDoc, type Use } from './world3d-assets.ts';
+import { fxGltf, type Fx } from './world3d-fx.ts';
 
 const APP = join(import.meta.dirname, '..');
 /** Try a list of jobs from a JSON file instead (`--probe=jobs.json --out=dir`): GLBs only, the manifests untouched. */
@@ -55,6 +56,10 @@ interface Job {
   variant?: number;
   /** The winter look: the snow meshes (mWinterSnow) drawn. */
   snow?: boolean;
+  /** No occlusion baked in (the snowboy: NH's snow is white). */
+  noAo?: boolean;
+  /** Not NH's: one of scripts/world3d-fx.ts's stylised effects (a sparkle, a splash). */
+  fx?: Fx;
   /** The art keys it serves (scripts/world3d-assets.ts: the island's things, into assets.json; not the POC's models.json). */
   uses?: Use[];
 }
@@ -166,9 +171,9 @@ const assetMetas: Record<string, Meta> = existsSync(ASSET_META) ? (JSON.parse(re
 let total = 0;
 for (const j of todo) {
   const files = [...j.tex!, ...new Set(j.parts.map((p) => p[0]))].map((f) => [F(f), readdirSync(join(scratch, F(f)))]);
-  const r = await page.evaluate((o) => (window as unknown as { convert: (o: unknown) => Promise<{ gltf: string; box: [number[], number[]]; tris: number; lit: boolean }> }).convert(o), {
+  const r = j.fx ? { ...fxGltf(j.fx), lit: false } : await page.evaluate((o) => (window as unknown as { convert: (o: unknown) => Promise<{ gltf: string; box: [number[], number[]]; tris: number; lit: boolean }> }).convert(o), {
     parts: j.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), files, maxTex: j.maxTex ?? 256, maxEmi: 128,
-    grdRow: j.grdRow, grdRows: j.grdRows, grdBlock: j.grdBlock, hide: j.hide, alias: j.alias, flat: j.flat, pose: j.pose, grdFile: j.grdFile, snow: j.snow, variant: j.variant
+    grdRow: j.grdRow, grdRows: j.grdRows, grdBlock: j.grdBlock, hide: j.hide, alias: j.alias, flat: j.flat, pose: j.pose, grdFile: j.grdFile, snow: j.snow, variant: j.variant, noAo: j.noAo
   });
   const g = JSON.parse(r.gltf) as { buffers: { uri: string }[]; images?: { uri?: string; mimeType?: string }[]; textures?: { source?: number; extensions?: object }[]; extensionsUsed?: string[]; extensionsRequired?: string[] };
   const dir = join(work, j.name);
