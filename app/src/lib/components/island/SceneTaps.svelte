@@ -222,6 +222,9 @@
     if (downSwallowed) return void (downSwallowed = false);
     if (e.button > 0 || !enabled()) return;
     const t = e.target;
+    // a visitor standing in front of the campsite (K.K. and Jack at night) over its door: theirs, not the door's (the
+    // door's handler is delegated to the root, after this one; the 3D island's camera shows the door small behind them)
+    if (t instanceof Element && t.closest('[data-building] .door') && visitor?.tap(e.clientX, e.clientY)) return void e.stopPropagation();
     if (!(t instanceof Element) || t.closest('button, a, input, select, textarea, label, dialog, [role="button"], [tabindex]')) return;
     const stage = scene?.querySelector<HTMLElement>('.stage');
     if (!stage) return;
