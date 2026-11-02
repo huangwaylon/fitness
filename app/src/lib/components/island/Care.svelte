@@ -81,8 +81,7 @@
   const { later, after, clear } = timers();
   function spawn(f: Omit<Fx, 'n'>, ms: number) {
     // the 3D island's flourish (fx3d.ts): the weed's earth, the strike's dust and sparkle, the rock's glint
-    // (the strike's shovel stays the DOM's: a tool, with the 3D dust under it)
-    if (f.kind === 'strike') fx3d('dust', f.x, f.y, 0);
+    if (f.kind === 'strike' && fx3d('dust', f.x, f.y, 0) && fx3d('swing', f.x, f.y, 0, { v: 'shovel' })) f = { ...f, in3d: true };
     const d3 = f.kind === 'pull' ? fx3d('dust', f.x, f.y, 0, { v: '#b48a5a' }) : f.kind === 'spark' ? fx3d('sparkle', f.x, f.y, f.lift ?? 0) : false;
     if (d3) f = { ...f, in3d: true };
     const n = ++seq;

@@ -18,6 +18,7 @@
   // timers but the dig's short wait, the clock is the scene's minute tick.
   //   ?find=bottle | fragment | mushroom | rare-mushroom (dev or ?demo): a bottle, this morning's fragments, a mushroom
   //   now, or the next dig spot's rare mushroom (the e2e's hooks); ?seed= varies the island's seed.
+  import { fx3d } from './fx3d.ts';
   import CatchPlate from './CatchPlate.svelte';
   import { cardFor, type CatchCard } from './catchCard.ts';
   import { timers } from './timers.ts';
@@ -158,7 +159,7 @@
 
   // ---------- the moment of a find (world x, and y = the world's z; `lift` units above the ground) ----------
   interface Lift { n: number; x: number; y: number; lift: number; art: string; tilt: number }
-  interface Dig { n: number; x: number; y: number }
+  interface Dig { n: number; x: number; y: number; in3d?: boolean }
   let lift = $state<Lift | null>(null);
   let dig = $state<Dig | null>(null);
   let card = $state<CatchCard | null>(null);
@@ -335,7 +336,8 @@
       taken++;
       sceneSfx('dig');
       const n = ++seq;
-      dig = { n, x: s.x, y: s.y };
+      // (the 3D island's: two strikes of the shovel and the earth: fx3d.ts)
+      dig = { n, x: s.x, y: s.y, in3d: fx3d('swing', s.x, s.y, 0, { v: 'shovel' }) && fx3d('dust', s.x, s.y, 0, { v: '#b48a5a' }) };
       later(() => dig?.n === n && (dig = null), 6400);
       if (special) plate(s.x, s.y, 4, findArt(special), () => t('beach.dug', { name: t(`beach.name.${special}`) }), 650);
       else plate(s.x, s.y, 4, findArt(s.fossil), () => t('beach.fossil', { name: t(`beach.name.${s.fossil}`) }), 650, added);
@@ -356,7 +358,7 @@
       if (kind === 'fossil' || kind === 'dug') {
         partnerTurnTo(x, e.who);
         const n = ++seq;
-        dig = { n, x, y: z };
+        dig = { n, x, y: z, in3d: fx3d('swing', x, z, 0, { v: 'shovel' }) && fx3d('dust', x, z, 0, { v: '#b48a5a' }) };
         later(() => dig?.n === n && (dig = null), 6400);
         sceneSfx('dig');
         news({ art: findArt(id), verb: 'dug', name: `beach.name.${id}` });
@@ -524,11 +526,11 @@
 {/if}
 {#if dig}
   {#key dig.n}
-    <div class="node" aria-hidden="true" {@attach w.at({ x: dig.x, z: dig.y, mode: 'flat', h: 12 })}>
-      <span class="item digfx"><i class="hole"></i></span>
+    <div class="node" aria-hidden="true" {@attach w.at({ x: dig.x, z: dig.y, mode: 'flat', h: 12, m3: { key: 'finds/hole' } })}>
+      <span class="item digfx" data-m3art><i class="hole"></i></span>
     </div>
     <div class="node" aria-hidden="true" {@attach w.at({ x: dig.x, z: dig.y, h: 40, dz: -2 })}>
-      <span class="item digfx">
+      <span class="item digfx" class:in3d={dig.in3d}>
         <!-- two strikes of the shovel, a burst of earth on each -->
         {#each [0, 1] as k (k)}{#each [-1, 0, 1] as dx, i (i)}<i class="clod" style:--dx={dx + k * 0.3} style:--i={i} style:--k={k}></i>{/each}{/each}
         <span class="shovel"><OfficialArt key={findArt("shovel")} size="calc(30 * var(--su))" eager /></span>

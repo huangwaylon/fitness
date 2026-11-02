@@ -345,6 +345,9 @@
   {@const d = dangler}
   {#key d.n}
     <!-- a bagworm or a spider on its thread, out of the canopy beside the trunk: it drops, sways, and climbs back up -->
+    <!-- the 3D island's: the bug at its thread's end, the thread from the canopy -->
+    <i class="m3n" {@attach w.at({ x: d.x, z: d.y, lift: d.up ? d.from : DANGLE_UP, h: 4, always: true,
+      m3: { key: `critters/${d.bug}`, id: `dangle-${d.n}`, ms: 900, art: () => scene?.querySelector(`[data-dangle="${d.bug}"]`), line: () => [d.x, d.y, d.from] } })}></i>
     <div class="node" {@attach w.at({ x: d.x, z: d.y, h: d.from, dz: NEAR, inv: true })}>
       <span class="dangle {d.bug}" class:up={d.up} data-dangle={d.bug} style:top={u(-d.from)} style:--len={u(d.from - DANGLE_UP)}>
         <i class="thread"></i>
@@ -371,11 +374,11 @@
   {@const s = swarm}
   {#key s.n}
     <!-- the swarm: a ≥ 44px button over every world thing, flying from the nest to the villager's face (its live spot) -->
-    <div class="node" {@attach w.at({ x: s.x0, z: s.z0, lift: NEST_UP, h: FACE + 20, zi: OVER, inv: true, live: swarmAt })}>
+    <div class="node" {@attach w.at({ x: s.x0, z: s.z0, lift: NEST_UP, h: FACE + 20, zi: OVER, inv: true, live: swarmAt, m3: { key: 'proc/wasps', id: `swarm-${s.n}` } })}>
       <button type="button" class="swarm" class:stung={s.stung} class:theirs={s.side !== 'mine'} data-swarm={s.side} data-sfx="self" aria-label={t('shake.swarm')}
         style:--away={u(s.away * 120)} onclick={netIt}>
         {#each [[-11, -4, 0], [10, -9, 0.13], [1, 9, 0.26]] as [dx, dy, d], k (k)}
-          <svg class="wasp" viewBox="-8 -8 16 16" aria-hidden="true" style:--dx={u(dx)} style:--dy={u(dy)} style:animation-delay="-{d}s">
+          <svg class="wasp" data-m3art viewBox="-8 -8 16 16" aria-hidden="true" style:--dx={u(dx)} style:--dy={u(dy)} style:animation-delay="-{d}s">
             <g class="w"><ellipse cx="-2" cy="-4.2" rx="2" ry="3.4" transform="rotate(-25 -2 -4.2)" /><ellipse cx="2" cy="-4.2" rx="2" ry="3.4" transform="rotate(25 2 -4.2)" /></g>
             <ellipse cx="-2.6" cy=".2" rx="3.4" ry="2.6" fill="#F2B21E" />
             <path d="M-4.4 -2 V2.4 M-2.2 -2.5 V2.9" stroke="#2E2218" stroke-width="1.1" />

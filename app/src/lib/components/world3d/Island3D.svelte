@@ -19,22 +19,24 @@
   import { GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
   import { LAMP_GLOW, type Piece } from '../island/fixedDecor.ts';
   import type { Scenery } from '../island/world.ts';
-  import { listen3d } from '../island/echo3d.ts';
+  import { listen3d, listenPose3d } from '../island/echo3d.ts';
   import { listenFx3 } from '../island/fx3d.ts';
+  import { ambient3 } from '../island/ambient3d.svelte.ts';
   import TERRAIN from '../island/terrain.json' with { type: 'json' };
   import PLACES from '../island/models.json' with { type: 'json' };
   import { createIsland, type Ground, type Island3, type Options } from './engine.ts';
   import { WORLD_GROUND } from './ground.ts';
   import { island, type Inst, type Standin } from './layout3d.ts';
   import { assetFor } from './assets.ts';
-  import { modelBounds } from './models3d.ts';
+  import { keyModel, modelBounds } from './models3d.ts';
   import { FLOATS, floatAt } from './floats3d.ts';
   import { SEA_Y, WATER_DROP, baseHeight } from './ground.ts';
   import { attachGestures } from './gestures.ts';
   import { idlePose, motionPose } from './motion3d.ts';
   import type { CardSpec } from './cards.ts';
   import type { LampSpot } from './lights.ts';
-  import type { Object3D } from 'three';
+  import { BufferGeometry, Float32BufferAttribute, Line, LineBasicMaterial, type Object3D } from 'three';
+  import type { FxKind } from './effects.ts';
 
   /** A villager on this island now (IslandScene's cast). */
   export interface Cast {
@@ -174,6 +176,33 @@
     return moving;
   }
 
+  // ---- the characters' flourishes (the director's fx: sparkles, hearts, notes, confetti, a puff, a sleeper's zzz) ----
+  const FX3: Record<string, FxKind> = { sparkles: 'sparkle', hearts: 'hearts', notes: 'notes', confetti: 'confetti', puff: 'dust', glint: 'sparkle', zzz: 'zzz' };
+  const fxSeen = new Set<string>(), zzzAt: Record<string, number> = {};
+  function actorFx(e: Island3, t: number) {
+    for (const id of ['mine', 'partner', 'third', 'visitor'] as const) {
+      const a = actors[id];
+      if (!a.fx.length) continue;
+      const [x, z] = livePos(id);
+      for (const f of a.fx) {
+        const k = FX3[f.kind];
+        if (!k) continue;
+        if (f.kind === 'zzz') {
+          // a sleeper's zzz: one every couple of seconds while it sleeps
+          if (t - (zzzAt[id] ?? -Infinity) < 1900) continue;
+          zzzAt[id] = t;
+          e.fx('zzz', x + 8, z, VILLAGER.h * 0.75);
+          continue;
+        }
+        const key = `${id}:${f.n}`;
+        if (fxSeen.has(key)) continue;
+        fxSeen.add(key);
+        e.fx(k, x, z, VILLAGER.h * (f.kind === 'confetti' ? 0.6 : f.kind === 'puff' ? 0 : 0.7));
+      }
+    }
+    if (fxSeen.size > 200) fxSeen.clear();
+  }
+
   // ---- the other characters (a visitor): cards of their renders where their nodes are, posed by their actors ----
   let cards3 = new Set<string>();
   function characterCards(e: Island3, t: number): boolean {
@@ -198,7 +227,12 @@
         if (mp || a.walking) moving = true;
         pose = { lift: (mp?.lift ?? 0) + ip.lift, squash: (mp?.squash ?? 0) + ip.squash, tilt: (mp?.tilt ?? 0) + ip.tilt };
       }
-      e.cards.set(id, { ...base, x: n.x, z: n.z, flip: c.flip, shadow: 15, hidden: !n.shown, lift: (c.lift ?? 0) + pose.lift, squash: pose.squash, tilt: pose.tilt });
+      e.cards.set(id, { ...base, x: n.x - (c.also ? c.also.dx / 2 : 0), z: n.z, flip: c.flip, shadow: 15, hidden: !n.shown, lift: (c.lift ?? 0) + pose.lift, squash: pose.squash, tilt: pose.tilt });
+      const b2 = c.also ? artCard(c.also.key, c.also.h) : null;
+      if (c.also && b2) {
+        seen.add(`${id}:b`);
+        e.cards.set(`${id}:b`, { ...b2, x: n.x + c.also.dx / 2, z: n.z - 1, flip: c.flip, shadow: 15, hidden: !n.shown, lift: (c.lift ?? 0) + pose.lift, squash: pose.squash, tilt: -pose.tilt });
+      }
     }
     for (const id of cards3) if (!seen.has(id)) e.cards.set(id, null);
     cards3 = seen;
@@ -222,6 +256,12 @@
     art?: Element | null;
   }
   const live3 = new Map<string, Live3>();
+  /** The emitters' last flourish, the lines drawn (by node). */
+  const emitted = new Map<string, number>(), seenEmit = new Set<string>();
+  const lines = new Map<string, { obj: Line; off: () => void }>(), seenLine = new Set<string>();
+  const LINE_N = 12;
+  /** The water's surface at (x, z): the sea's level, or a stream's or a pond's (its banks less the drop). */
+  const waterY = (x: number, z: number) => Math.max(SEA_Y + 0.2, baseHeight(x, z) - WATER_DROP + 0.2);
   const marked = new WeakMap<Element, boolean>();
   let lamps3: LampSpot[] = [];
   const smooth = (k: number) => k * k * (3 - 2 * k);
@@ -230,17 +270,27 @@
     const winter = season === 'winter', seen = new Set<string>(), add: Inst[] = [];
     let moving = false;
     for (const n of world.models3()) {
-      const a = assetFor(n.m3.key, winter);
+      const a = n.m3.key ? keyModel(n.m3.key, winter) : null, drawn = !!a || !!n.m3.emit;
       const art = n.m3.art ? n.m3.art() : n.el;
-      if (art && marked.get(art) !== !!a) {
-        marked.set(art, !!a);
-        art.classList.toggle('m3on', !!a);
+      if (art && marked.get(art) !== drawn) {
+        marked.set(art, drawn);
+        art.classList.toggle('m3on', drawn);
+      }
+      // a flourish it gives off (bubbles, a firefly, flames), where it is
+      if (n.m3.emit && n.shown && !n.m3.off) {
+        const em = n.m3.emit, last = emitted.get(n.id) ?? -Infinity;
+        if (t - last >= em.every) {
+          emitted.set(n.id, t);
+          const y0 = n.m3.water ? waterY(n.x, n.z) - heightOf(n.x, n.z) : n.lift;
+          e.fx(em.kind as FxKind, n.x, n.z, y0 + (em.lift ?? 0), { v: em.v, size: em.size, ms: em.every * 1.5 });
+        }
+        seenEmit.add(n.id);
       }
       if (!a) continue;
       seen.add(n.id);
       const b = modelBounds(a.m);
       // a flier's model hangs by its middle at the node's height; the rest stand on their feet
-      const base = n.m3.y !== undefined ? n.m3.y - heightOf(n.x, n.z) : n.lift;
+      const base = n.m3.y !== undefined ? n.m3.y - heightOf(n.x, n.z) : n.m3.water ? waterY(n.x, n.z) - heightOf(n.x, n.z) + n.lift : n.lift;
       const lift = base - (a.anchor === 'centre' && b ? ((b.min[1] + b.max[1]) / 2) * a.s : 0);
       const to: [number, number, number] = [n.x, n.z, lift];
       let L = live3.get(n.id);
@@ -266,9 +316,37 @@
       }
       const on = n.shown && !n.m3.off, grey = n.m3.grey ?? 0;
       if (fresh || on !== L.on || x !== L.x || z !== L.z || lf !== L.lift || yaw !== L.yaw || grey !== L.grey)
-        e.things.over(n.id, { hidden: !on, x, z, lift: lf, yaw, grey });
+        e.things.over(n.id, { hidden: !on, x, z, lift: lf, yaw, grey, face: n.m3.face === 'camera' });
       Object.assign(L, { on, x, z, lift: lf, yaw, grey, art });
+      // its line (a fishing line, a thread): from where it starts to it, sagging a little
+      if (n.m3.line) {
+        let ln = lines.get(n.id);
+        if (!ln) {
+          const geo = new BufferGeometry().setAttribute('position', new Float32BufferAttribute(new Float32Array(LINE_N * 3), 3));
+          const obj = new Line(geo, new LineBasicMaterial({ color: 0xf6f1e4, transparent: true, opacity: 0.85 }));
+          ln = { obj, off: e.add(obj) };
+          lines.set(n.id, ln);
+        }
+        const [sx, sz, sl] = n.m3.line(), pos = ln.obj.geometry.getAttribute('position') as Float32BufferAttribute;
+        const y0 = heightOf(sx, sz) + sl, y1 = heightOf(x, z) + lf;
+        for (let i = 0; i < LINE_N; i++) {
+          const k = i / (LINE_N - 1), sag = Math.sin(k * Math.PI) * 6;
+          pos.setXYZ(i, sx + (x - sx) * k, y0 + (y1 - y0) * k - sag, -(sz + (z - sz) * k));
+        }
+        pos.needsUpdate = true;
+        ln.obj.visible = on;
+        seenLine.add(n.id);
+      }
     }
+    for (const [id, ln] of lines) if (!seenLine.has(id)) {
+      ln.off();
+      ln.obj.geometry.dispose();
+      (ln.obj.material as LineBasicMaterial).dispose();
+      lines.delete(id);
+    }
+    seenLine.clear();
+    for (const id of emitted.keys()) if (!seenEmit.has(id)) emitted.delete(id);
+    seenEmit.clear();
     const gone = [...live3.keys()].filter((id) => !seen.has(id));
     for (const id of gone) {
       const art = live3.get(id)?.art;
@@ -279,6 +357,17 @@
     if (add.length) void e.things.set(add).then(() => e.glows(lamps3));
     return moving;
   }
+
+  // ---- the season's fall (Particles' rules: ambient3d.svelte.ts): that many falling round the camera ----
+  let fallNext = 0;
+  function fall(e: Island3, t: number) {
+    const { kind, count } = ambient3;
+    if (!kind || t < fallNext || e.fxCount('fall') >= count) return;
+    fallNext = t + 900;
+    const z = e.view().camZ + rnd(-60, 420), drop = rnd(170, 230);
+    e.fx('fall', 195 + rnd(-190, 190), z, drop, { v: kind, tag: 'fall', ms: (drop / 18) * 1000, size: kind === 'snowflake' ? 1.1 : 1.3 });
+  }
+  const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
   // ---- petals or maple leaves on the stream in their weeks (floats3d.ts) ----
   let floatsOn: string | null = null;
@@ -296,6 +385,41 @@
       const y = Math.max(SEA_Y + 0.4, baseHeight(p.x, p.z) - WATER_DROP) + 0.4;
       e.things.over(f.id, { x: p.x, z: p.z, yaw: p.yaw, lift: y - heightOf(p.x, p.z), size: Math.max(0.01, p.show) }, false);
     }
+  }
+
+  // ---- what flies in the sky (the balloon and its present: data-m3sky): its model where the DOM's is, far out ----
+  const skyOn = new Map<string, string>();
+  let burst = false;
+  function sky(e: Island3) {
+    const els = scene.querySelectorAll<HTMLElement | SVGElement>('[data-m3sky]');
+    if (!els.length && !skyOn.size) return;
+    const cr = canvas!.getBoundingClientRect(), seen = new Set<string>(), add: Inst[] = [];
+    els.forEach((el, i) => {
+      const key = el.getAttribute('data-m3sky') ?? '', a = keyModel(key), b = a && modelBounds(a.m);
+      if (!a || !b) return;
+      const id = `sky:${i}`, r = el.getBoundingClientRect();
+      if (!r.height) return;
+      seen.add(id);
+      const p = e.skyPoint(r.left + r.width / 2 - cr.left, r.top + r.height / 2 - cr.top, 0.9);
+      const scale = r.height / p.px / (b.max[1] - b.min[1]);
+      // its middle at the DOM's middle
+      const lift = p.y - scale * ((b.max[1] + b.min[1]) / 2) - heightOf(p.x, p.z);
+      if (skyOn.get(id) !== a.m) {
+        skyOn.set(id, a.m);
+        add.push({ id, model: a.m, x: p.x, z: p.z, lift, scale });
+      }
+      e.things.over(id, { x: p.x, z: p.z, lift, size: 1, hidden: el.hasAttribute('data-popped') }, false);
+      // popped: a burst of confetti where it was (once)
+      if (el.hasAttribute('data-popped') && !burst && key.startsWith('balloon/')) {
+        burst = true;
+        e.fx('confetti', p.x, p.z, p.y - heightOf(p.x, p.z));
+      }
+    });
+    if (!els.length) burst = false;
+    const gone = [...skyOn.keys()].filter((id) => !seen.has(id));
+    for (const id of gone) skyOn.delete(id);
+    if (gone.length) void e.things.remove(gone);
+    if (add.length) void e.things.set(add);
   }
 
   // ---- the island's day: its models and stand-ins ----
@@ -404,11 +528,15 @@
       const more = world.step(t);
       const moving = mirror(e, t);
       floats(e, t);
+      fall(e, t);
+      sky(e);
       const acting = characterCards(e, t);
+      actorFx(e, t);
       return villagerCards(t) || more || moving || acting;
     });
     // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
     listenFx3((kind, x, z, lift, o) => e.fx(kind, x, z, lift, o));
+    listenPose3d((id, key) => e.things.swap(id, key ? (keyModel(key)?.m ?? null) : null));
     listen3d((id, k) => {
       if (e.things.has(id)) e.things.jiggle(id, k);
       else e.cards.jiggle(`s:${id}`, k);
@@ -439,6 +567,7 @@
     };
     return () => {
       listen3d(null);
+      listenPose3d(null);
       listenFx3(null);
       off();
       ro.disconnect();

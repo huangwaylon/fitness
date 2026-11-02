@@ -148,7 +148,7 @@
    *  in all (ms). */
   interface Shared { cid?: string; path?: { seed: number; t0: number; total: number } }
   /** The net swung at a bug (stage units: the screen's overlay). */
-  interface Net { n: number; x: number; y: number }
+  interface Net { n: number; x: number; y: number; in3d?: boolean }
 
   const rand = Math.random;
   const between = (a: number, b: number) => a + rand() * (b - a);
@@ -954,8 +954,9 @@
     // in place: their villager turns to it, and the net or the shovel shows at the catch (a reel or a dive: a splash)
     partnerTurnTo(x, e.who);
     const p = stageAt(x, z);
-    if (how === 'dig') dig = { n: ++seq, ...p };
-    else if (how !== 'rod' && how !== 'dive') net = { n: ++seq, ...p };
+    // (the 3D island's swing: fx3d.ts)
+    if (how === 'dig') dig = { n: ++seq, ...p, in3d: fx3d('swing', x, z, 0, { v: 'shovel' }) && fx3d('dust', x, z, 0, { v: '#b48a5a' }) };
+    else if (how !== 'rod' && how !== 'dive') net = { n: ++seq, ...p, in3d: fx3d('swing', x, z, 0, { v: 'net' }) };
     later(() => (net = dig = null), 700);
     const ms = how === 'rod' ? 900 : how === 'dive' ? 450 : how === 'dig' ? 260 : 300;
     later(() => {
@@ -1033,7 +1034,7 @@
         b.held = true;
         turnTo(b.x);
         const p = (bugEl && stageOf(bugEl)) ?? at;
-        dig = { n: ++seq, ...p };
+        dig = { n: ++seq, ...p, in3d: fx3d('swing', b.x, b.z, 0, { v: 'shovel' }) && fx3d('dust', b.x, b.z, 0, { v: '#b48a5a' }) };
         sceneSfx('dig');
         if (bug === b) bug = null;
         later(() => {
@@ -1052,7 +1053,7 @@
         Object.assign(b, { held: true, ms: 0, freeze: cs && cs !== 'none' ? cs : undefined });
         turnTo(b.x);
         const p = (bugEl && stageOf(bugEl)) ?? at;
-        net = { n: ++seq, ...p };
+        net = { n: ++seq, ...p, in3d: fx3d('swing', b.x, b.z, b.lift, { v: 'net', dir: b.x < 195 ? -1 : 1 }) };
         sceneSfx('net');
         later(() => {
           if (bug === b) bug = null;
@@ -1206,12 +1207,24 @@
   {#each WATERS as wt (wt)}
     {@const f = fishes[wt]}
     {#if f}
-      <i class="m3n" {@attach w.at({ x: f.x, z: f.z, h: 4, always: true, m3: { key: f.shape ? `shadow/${f.shape}` : `shadow/${wt === 'sea' ? 'sea' : 'fresh'}-${Math.max(1, Math.min(6, Math.round(f.size)))}`, id: `fish-${wt}-${f.n}`, ms: f.ms, face: 'move', y: wt === 'sea' ? -2.5 : undefined, off: f.gone, art: () => fishEls[wt] } })}></i>
+      <i class="m3n" {@attach w.at({ x: f.x, z: f.z, lift: -2.5, h: 4, always: true, m3: { key: f.shape ? `shadow/${f.shape}` : `shadow/${wt === 'sea' ? 'sea' : 'fresh'}-${Math.max(1, Math.min(6, Math.round(f.size)))}`, id: `fish-${wt}-${f.n}`, ms: f.ms, face: 'move', water: true, off: f.gone, art: () => fishEls[wt] } })}></i>
     {/if}
   {/each}
   {#if diving?.chase}
     {@const d = diving}
-    <i class="m3n" {@attach w.at({ x: d.x, z: d.z, h: 4, always: true, m3: { key: 'shadow/dive', id: `dive-${d.n}`, ms: d.ms, face: 'move', y: -2.5, off: d.gone, art: () => chaseEl } })}></i>
+    <i class="m3n" {@attach w.at({ x: d.x, z: d.z, h: 4, always: true, m3: { key: 'shadow/dive', id: `dive-${d.n}`, ms: d.ms, face: 'move', water: true, off: d.gone, art: () => chaseEl } })}></i>
+  {/if}
+  {#if bubbles}
+    <i class="m3n" {@attach w.at({ x: bubbles.x, z: bubbles.z, h: 4, always: true, m3: { key: '', water: true, emit: { kind: 'bubbles', every: 420 }, art: () => scene?.querySelector('[data-bubbles]') } })}></i>
+  {/if}
+  {#if cast}
+    {@const c = cast}
+    <!-- the float on the water, sinking at the bite; the line from my villager's rod (or the bank) to it -->
+    <i class="m3n" {@attach w.at({ x: c.x, z: c.z, lift: c.under ? -2.2 : 0, h: 4, always: true, m3: { key: 'proc/bobber', id: 'bobber', water: true, ms: 160, off: !c.landed && !c.under, art: () => scene?.querySelector('[data-bobber]'),
+      line: () => {
+        const [mx, mz] = livePos('mine');
+        return Math.hypot(mx - c.x, mz - c.z) < 90 ? [mx + (c.x - mx) * 0.12, mz + (c.z - mz) * 0.12, 34] as const : [c.sx, c.sz, 4] as const;
+      } } })}></i>
   {/if}
   {#if bug}
     {@const b = bug}
@@ -1306,12 +1319,12 @@
   {#if dig}
     {#key dig.n}
       <!-- the mound dug open: the shovel strikes, clods of earth fly up -->
-      <span class="fx digfx" style:translate="{su(dig.x)} {su(dig.y)}"><span class="shovel"><OfficialArt key={findArt('shovel')} size="calc(30 * var(--su))" eager /></span>{#each [-50, -15, 20, 55] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
+      <span class="fx digfx" class:in3d={dig.in3d} style:translate="{su(dig.x)} {su(dig.y)}"><span class="shovel"><OfficialArt key={findArt('shovel')} size="calc(30 * var(--su))" eager /></span>{#each [-50, -15, 20, 55] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
     {/key}
   {/if}
   {#if net}
     {#key net.n}
-      <span class="fx netfx" data-net="float" style:translate="{su(net.x)} {su(net.y)}">
+      <span class="fx netfx" class:in3d={net.in3d} data-net="float" style:translate="{su(net.x)} {su(net.y)}">
         <svg viewBox="-20 -20 40 40"><path class="handle" d="M6 6 L19 19" /><circle class="hoop" cx="-1" cy="-1" r="9.5" /><path class="mesh" d="M-10 -1 H8 M-1 -10 V8 M-7.5 -7.5 L5.5 5.5 M-7.5 5.5 L5.5 -7.5" /></svg>
       </span>
     {/key}

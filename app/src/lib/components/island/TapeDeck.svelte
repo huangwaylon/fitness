@@ -95,11 +95,11 @@
 </script>
 
 {#if out && spot}
-  <div class="node" aria-hidden="true" {@attach w.at({ x: spot[0], z: spot[1], h: 40, m3: { key: 'deco/tape-deck', id: 'tape-deck' } })}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: spot[0], z: spot[1], h: 40, m3: { key: 'deco/tape-deck', id: 'tape-deck', emit: playing ? { kind: 'notes', every: 1300, lift: 14 } : undefined } })}>
   <span class="deck" class:playing data-stretch={playing ? 'on' : 'ready'} bind:this={el}>
     <span class="radio"><OfficialArt key="deco/tape-deck" size={su(UP)} /></span>
     {#if playing}
-      <span class="notes" style:--total="{STRETCH_MS}ms">{#each [0, 1, 2, 3] as i (i)}<i style:--i={i}>♪</i>{/each}</span>
+      <span class="notes" data-m3art style:--total="{STRETCH_MS}ms">{#each [0, 1, 2, 3] as i (i)}<i style:--i={i}>♪</i>{/each}</span>
     {:else}
       <span class="hint">♪</span>
     {/if}

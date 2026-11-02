@@ -7,14 +7,15 @@
 // face the camera), a little for a tree drawn flipped.
 import ISLAND_MODELS from '../island/models.json' with { type: 'json' };
 import {
-  BRIDGE, CAMPSITE, DECOR_SLOTS, DECOR_U, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, SCENERY, TREE_H, type Scenery
+  BRIDGE, CAMPSITE, DECOR_SLOTS, DECOR_U, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, SCENERY, TREE_H, type Scenery
 } from '../island/world.ts';
 import type { Piece } from '../island/fixedDecor.ts';
 import { FLOWER_U, TREE_FRUIT, TREE_FRUIT_U, flowerScale, hedgePair, wildFlower } from '../island/scene.ts';
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
 import type { FlowerId } from '#lib/art.ts';
 import { assetFor } from './assets.ts';
-import { modelBounds } from './models3d.ts';
+import { keyModel, modelBounds } from './models3d.ts';
+import { WATER_DROP, baseHeight, groundHeight } from './ground.ts';
 
 /** A model (static/room/world3d/<name>.glb). */
 export type ModelName = string;
@@ -28,6 +29,8 @@ export interface Inst {
   yaw?: number;
   /** Tipped about its x axis (radians: a leaf lying flat on the water). */
   pitch?: number;
+  /** Turned to the camera (a flat flourish). */
+  face?: boolean;
   /** A tint for the petals (a flower's colour, on a model without its own colour). */
   tint?: number;
   /** Tappable: what it is (a tree jiggles). */
@@ -91,7 +94,7 @@ export function island(day: Day): { insts: Inst[]; standins: Standin[] } {
   const out: Inst[] = [], standins: Standin[] = [];
   /** A thing of the 2D island's height `h` (a tree, a bush: matched to its render), or at NH's furniture scale. */
   const put = (id: string, key: string, x: number, z: number, h: number, o: { fit?: boolean; flip?: boolean; tap?: Inst['tap']; yaw?: number } = {}) => {
-    const a = assetFor(key, winter);
+    const a = keyModel(key, winter);
     if (!a) return void standins.push({ id, key, x, z, h, flip: o.flip });
     const scale = o.fit ? scaleOf(key, a.m, h) : a.s;
     out.push({ id, model: a.m, x, z, scale, yaw: o.yaw ?? ((a.yaw ?? 0) * Math.PI) / 180, tap: o.tap ?? 'thing' });
@@ -127,6 +130,16 @@ export function island(day: Day): { insts: Inst[]; standins: Standin[] } {
   // the campsite's tent: its door on the door line
   const tent = assetFor(CAMPSITE.key, winter)?.m ?? 'tent', ts = scaleOf(CAMPSITE.key, 'tent', CAMPSITE.h);
   out.push({ id: 'tent', model: tent, x: CAMPSITE.x, z: CAMPSITE.z - 10 * ts, scale: ts, tap: 'tent' });
+  // the pond's lily pads and the pink flower on the biggest (WorldWater's), on the water
+  const surface = baseHeight(POND.x, POND.z) - WATER_DROP + 0.25;
+  for (const [i, [sx, sy, r]] of [[18, 5, 6], [-14, 11, 4.4], [-22, -6, 3.6]].entries()) {
+    const x = POND.x + sx, z = POND.z - sy;
+    out.push({ id: `lily-${i}`, model: 'proc/lily-pad', x, z, lift: surface - groundHeight(x, z), scale: r / 3, yaw: i * 2.1 });
+  }
+  {
+    const x = POND.x + 19.5, z = POND.z - 3;
+    out.push({ id: 'lily-flower', model: 'proc/lily-flower', x, z, lift: surface - groundHeight(x, z), scale: 1.7 });
+  }
   // the wild flowers, the season's kinds (each colour NH's own model; a hybrid in its spot today)
   for (const f of FLOWERS) {
     const id = (day.hybrid?.id === f.id ? day.hybrid.flower : wildFlower(f, season)) as FlowerId;

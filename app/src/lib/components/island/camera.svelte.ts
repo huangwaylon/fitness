@@ -54,6 +54,8 @@ interface C3 {
   flip?: boolean;
   actor?: 'visitor' | 'host';
   art?: () => Element | null | undefined;
+  /** A second figure beside it (Reese's Cyrus): its art, height and how far across (u). */
+  also?: { key: string; h: number; dx: number };
 }
 /** A node the 3D island draws as a card. */
 export interface Card3 {
@@ -75,10 +77,17 @@ interface M3 {
   ms?: number;
   /** Its height (world y), not on the ground: a fish's shadow under the sea's surface. */
   y?: number;
+  /** On the water's surface (a float, a lily pad), `lift` above it. */
+  water?: boolean;
+  /** It gives off a flourish every `every` ms where it is (a dive spot's bubbles, a firefly, the campfire's flames):
+   *  fx3d.ts' kinds; with no model of its own (`key` ''), only that. */
+  emit?: { kind: string; every: number; v?: string; size?: number; lift?: number };
+  /** A line from this point (world x, z, lift) to it: a fishing line, a bagworm's thread. */
+  line?: () => readonly [number, number, number];
   /** It comes falling from this many units up (over `ms`: a tree's present out of its canopy). */
   drop?: number;
-  /** Turned the way it moves (a fish), `yaw` added. */
-  face?: 'move';
+  /** Turned the way it moves (a fish), `yaw` added; or to the camera (a flat flourish: a sparkle). */
+  face?: 'move' | 'camera';
   /** The DOM art it stands for, when it isn't in this node (a critter's sprite in its mover): hidden once drawn. */
   art?: () => Element | null | undefined;
 }

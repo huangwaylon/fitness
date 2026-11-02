@@ -590,7 +590,7 @@
 
 <!-- a falling present: in its landing spot's node (behind whatever stands nearer), the fall drawn from the burst -->
 {#each drops as p (p.id)}
-  <div class="fxn" aria-hidden="true" {@attach w.at({ x: p.x, z: p.z, h: 40, always: true })}>
+  <div class="fxn" aria-hidden="true" {@attach w.at({ x: p.x, z: p.z, h: 40, always: true, m3: p.sea ? null : { key: p.art, id: `drop-${p.id}`, drop: 160, ms: 650 } })}>
     <span class="fx" data-fx="present" style:--dx="{p.dx.toFixed(1)}px" style:--dy="{p.dy.toFixed(1)}px" style:--gs="calc({p.size.toFixed(1)} * var(--su))">
       <span class="gift" class:sea={p.sea}><span class="drop-in"><OfficialArt key={p.art} size="100%" eager /></span></span>
       {#if p.sea}

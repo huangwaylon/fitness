@@ -13,6 +13,7 @@
   import { mulberry32 } from '#lib/random.ts';
   import { minuteNow } from '#lib/time/clock.ts';
   import { useWorld } from './camera.svelte.ts';
+  import { ambient3 } from './ambient3d.svelte.ts';
   import { HOMES, onGrass, surfaceAt, type Pt } from './world.ts';
 
   interface Props {
@@ -53,6 +54,16 @@
     });
   });
   const w = useWorld();
+  // the 3D island draws the fall itself (ambient3d.svelte.ts)
+  $effect(() => {
+    if (mode !== 'fall' || !w.rest.three) return;
+    ambient3.kind = kind;
+    ambient3.count = count;
+    return () => {
+      ambient3.kind = null;
+      ambient3.count = 0;
+    };
+  });
   /** The fireflies: over the grass a little in front of the camera's pivot when it settles (world x, dz from camZ,
    *  lift u), kept off the paths and the water; ≤ 3 (idle budget). */
   const FIREFLY_AT: readonly [number, number, number][] = [[60, -70, 34], [300, -40, 26], [128, 60, 40], [250, 110, 30], [40, 150, 36]];
@@ -68,7 +79,7 @@
   const TOYS: readonly Pt[] = [[HOMES.A[0] + 42, HOMES.A[1] - 34], [HOMES.B[0] - 42, HOMES.B[1] - 34]];
 </script>
 
-{#if mode === 'fall' && kind}
+{#if mode === 'fall' && kind && !w.rest.three}
   <div class="layer" aria-hidden="true">
     {#each items as p, i (i)}
       <span class="p" style:left="{p.x}%" style:animation-duration="{p.dur}s" style:animation-delay="{p.delay}s" style:--rot="{p.rot}deg" style:--sx="{p.sx}px">
@@ -79,14 +90,14 @@
 {:else if mode === 'fireflies' && season === 'summer' && tod === 'night' && !raining}
   {#each FIREFLIES as [x, z, lift], i (`${i}:${x},${z}`)}
     <!-- a light: never tinted (they glow), in their depth -->
-    <span class="node" aria-hidden="true" {@attach w.at({ x, z, lift, h: 10, light: true })}>
-      <span class="ff" style:animation-duration="{3 + (i % 3)}s" style:animation-delay="{-i * 0.7}s"></span>
+    <span class="node" aria-hidden="true" {@attach w.at({ x, z, lift, h: 10, light: true, m3: { key: '', emit: { kind: 'firefly', every: 5200 } } })}>
+      <span data-m3art class="ff" style:animation-duration="{3 + (i % 3)}s" style:animation-delay="{-i * 0.7}s"></span>
     </span>
   {/each}
 {/if}
 {#if toyDay}
   {#each TOYS as [x, z] (x)}
-    <span class="node toy" data-toy aria-hidden="true" {@attach w.at({ x, z, h: 24 })}><span class="art"><OfficialArt key="deco/present" size={u(18)} /></span></span>
+    <span class="node toy" data-toy aria-hidden="true" {@attach w.at({ x, z, h: 24, m3: { key: 'deco/present' } })}><span class="art"><OfficialArt key="deco/present" size={u(18)} /></span></span>
   {/each}
 {/if}
 
