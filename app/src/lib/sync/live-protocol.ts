@@ -105,8 +105,10 @@ export type Intent =
    *  or lying on a piece (`seat`: its id, `n`: which of its seats, `lie`), since `s`. */
   | { kind: 'tent'; in: boolean; to?: Pt; from?: Pt; via?: Pt[]; s?: number; ms?: number; seat?: string; n?: number; lie?: true; sc?: 'u' | 'v' }
   /** A phrase my villager says (v2; docs/design.md "Villager taps"): its speech balloon over it on both phones for a
-   *  few seconds. Presence only: never kept, never replayed, never in the sheet. `text` as cleanSay leaves it. */
-  | { kind: 'say'; text: string }
+   *  few seconds. Presence only: never kept, never replayed, never in the sheet. `text` as cleanSay leaves it. `sc`
+   *  (additive): where the speaker is, a home's room (`t` the tent, `u` うめ's, `v` the guest's; none: the island), so
+   *  it shows only to phones in the same place (one place at a time; an older phone, which sends none, is on the island). */
+  | { kind: 'say'; text: string; sc?: SayScope }
   /** A high-five to the partner (v2; docs/design.md "Villager taps"): `at` when it was tapped, the relay's clock (its
    *  identity on both phones: a second hearing of it is the same one). Numbered (acked, sent again after a reconnect);
    *  relayed live, and while the partner is away the room holds the last one for them (HIGHFIVE_HOLD_MS), handing it
@@ -211,6 +213,9 @@ const isTentPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && 
 
 /** A phrase's length at most (code points; NH's balloon scale). */
 export const SAY_MAX = 20;
+/** Where a phrase is said (`say`'s `sc`): a home's room, the tent (`t`), うめ's (`u`) or the guest's (`v`); none, the island. */
+export const SAY_SCOPES = ['t', 'u', 'v'] as const;
+export type SayScope = (typeof SAY_SCOPES)[number];
 /** What a phrase never carries: control characters (a newline, a tab: a space), line and paragraph separators, bidi
  *  controls, invisible spaces, lone surrogates. (The emoji joiner and the variation selectors stay: emoji need them.) */
 const SAY_BREAK = /[\t\n\v\f\r\u0085\u2028\u2029]/gu;
@@ -377,7 +382,8 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
       return { kind: 'highfive', at: o.at, ...(o.to !== undefined ? { to: o.to as Who } : {}) };
     case 'say': {
       const text = v === 1 ? null : cleanSay(o.text);
-      return text ? { kind: 'say', text } : null;
+      if (o.sc !== undefined && !SAY_SCOPES.includes(o.sc as SayScope)) return null;
+      return text ? { kind: 'say', text, ...(o.sc !== undefined ? { sc: o.sc as SayScope } : {}) } : null;
     }
     default:
       return null;

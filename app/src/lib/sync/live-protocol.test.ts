@@ -286,6 +286,10 @@ describe('live protocol: a phrase (v2 `say`, presence only)', () => {
     expect(parseClient(j({ kind: 'say', text: 'hi' }))).toBeNull();
     for (const text of [undefined, '', ' \n ', 3]) expect(parseClient(j2({ kind: 'say', text }))).toBeNull();
     expect(parseServer(j2({ kind: 'say', text: 'a\u202Eb', who: 'B', t: 9 }))).toEqual({ v: 3, kind: 'say', text: 'ab', who: 'B', t: 9 });
+    // where it was said (a home's room; none: the island), additive: kept through the relay, an unknown place refused
+    expect(parseClient(j2({ kind: 'say', text: 'やっほー！', sc: 'u' }))).toEqual({ v: 3, kind: 'say', text: 'やっほー！', sc: 'u' });
+    expect(parseServer(j2({ kind: 'say', text: 'hi', sc: 't', who: 'G', t: 9 }))).toEqual({ v: 3, kind: 'say', text: 'hi', sc: 't', who: 'G', t: 9 });
+    for (const sc of ['o', 'x', 1, null]) expect(parseClient(j2({ kind: 'say', text: 'hi', sc }))).toBeNull();
     expect(isStored({ kind: 'say', text: 'x' })).toBe(false);
     expect(claimOf({ kind: 'say', text: 'x' })).toBeNull();
     // twenty of the widest characters still fit a relayed message
