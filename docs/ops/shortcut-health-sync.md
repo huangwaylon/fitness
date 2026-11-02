@@ -1,14 +1,15 @@
 # Health sync (iOS Shortcut)
 
 Each iPhone sends its daily steps, exercise minutes, active energy, stand minutes, weight, body fat percentage, BMI and
-lean body mass to the sheet whenever
+lean body mass to the record (the relay, [backend.md](../backend.md#the-record)) whenever
 you open an app you use daily (e.g. LINE): Health is readable only while the phone is unlocked. Once per phone.
 
 **[U]** = unverified on a real phone (exact action names, whether runs are silent).
 
 ## 1. What the Shortcut sends
-`POST` to the `/exec` URL ([google-setup §4](google-setup.md#4-deploy-the-web-app)), Request Body **JSON**, no
-headers. Daily totals, one line per day, every field **Text**. The parser (`app/gas/parse.ts`) accepts only this:
+`POST` to `https://island-fund-relay.island-fund-relay.workers.dev/api` (the relay's record), Request Body **JSON**, no
+headers. The old `/exec` URL ([google-setup §4](google-setup.md#4-deploy-the-web-app)) still works: Apps Script hands
+the body on to the same place and the reply back. Daily totals, one line per day, every field **Text**. The parser (`app/gas/parse.ts`) accepts only this:
 
 ```json
 {
@@ -49,7 +50,7 @@ headers. Daily totals, one line per day, every field **Text**. The parser (`app/
 - Latest wins: each run replaces a day's values with Health's current totals (up or down), so re-sending is harmless
   and a corrected day is fixed by the next run. A locked week's ベル (after its Wednesday 04:00) never move.
 - Reply: `{"ok":true,"metrics":8}` (rows added), plus `skipped` / `warnings`. Errors: `unauthorized`,
-  `bad_request` (with a `detail`), `too_large` (over 1 MB), `busy` (lock, or over 120 requests/min), `unavailable`.
+  `bad_request` (with a `detail`), `too_large` (over 1 MB), `busy` (over 120 requests/min), `unavailable`.
 - Every run leaves a row in the `uploads` tab ([runbook §6](runbook.md#6-when-sync-fails)).
 
 ## 2. Build the Shortcut
@@ -68,7 +69,7 @@ Shortcuts → **+** → name it **しまの同期** [U: action names]:
 | 8a | **Find Health Samples** | **Body Fat Percentage** (体脂肪率), same as step 8 → **Value** → `BodyFatValues` (no sample = 0) |
 | 8b | **Find Health Samples** | **Body Mass Index** (ボディマス指数), same as step 8 → **Value** → `BMIValues` |
 | 8c | **Find Health Samples** | **Lean Body Mass** (除脂肪体重), same as step 8 → **Value** → `LeanValues` |
-| 9 | **Get Contents of URL** | the `/exec` URL, **POST**, Request Body **JSON**, each field type **Text**: `key` = Key, `action` = `ingest`, `dates` = Dates, `steps` = StepValues, `steps_watch` = StepWatchValues, `exercise_minutes` = ExValues, `calories` = CalValues, `stand_minutes` = StandValues, `weight` = WeightValues, `body_fat_percentage` = BodyFatValues, `body_mass_index` = BMIValues, `lean_body_mass` = LeanValues |
+| 9 | **Get Contents of URL** | `https://island-fund-relay.island-fund-relay.workers.dev/api`, **POST**, Request Body **JSON**, each field type **Text**: `key` = Key, `action` = `ingest`, `dates` = Dates, `steps` = StepValues, `steps_watch` = StepWatchValues, `exercise_minutes` = ExValues, `calories` = CalValues, `stand_minutes` = StandValues, `weight` = WeightValues, `body_fat_percentage` = BodyFatValues, `body_mass_index` = BMIValues, `lean_body_mass` = LeanValues |
 
 Every list must use the same range (the last 1 month), **Group by Day** and **Fill Missing** (a day without samples
 becomes a `0` line, not a missing one), so it lines up with `dates`. Keep Health's units in **kg** and **kcal** (Lean Body Mass follows the weight unit). Allow
@@ -98,6 +99,17 @@ On each iPhone, open **しまの同期** and:
 If the scale doesn't write BMI or lean body mass to Health, those lists are all `0`: harmless. To fill the past, run the
 §5 baseline with the three new queries set to 84 days too.
 
+### Moving an existing Shortcut to the relay (2026-11)
+The one change, on each phone (a minute; the key and every field stay as they are):
+1. Open **Shortcuts** → long-press **しまの同期** → **Edit** (編集).
+2. Scroll to the last action, **Get Contents of URL** (URLの内容を取得) (step 9).
+3. Tap the blue URL at its top (it starts with `https://script.google.com/macros/s/…/exec`), select all of it and
+   delete it, then type or paste exactly `https://island-fund-relay.island-fund-relay.workers.dev/api`.
+4. Leave **Method** POST, **Request Body** JSON and every field as they are. Tap **Done** (完了).
+5. Tap ▶ once. The result should read like `{"ok":true,"metrics":0}` (any number of metrics; nothing new is 0);
+   `unauthorized` means the key text in step 1 changed: put it back.
+Until a phone has done it, its Shortcut keeps working through the old URL (a second or two slower).
+
 ## 3. The automation
 Shortcuts → **Automation** → **+** → **App** → **LINE** (or the app you open most) → **Is Opened** → **Run
 Immediately**, **Notify When Run** off → **Run Shortcut しまの同期**. Do this on both phones.
@@ -119,7 +131,8 @@ trend.
 | Symptom | Fix |
 |---|---|
 | `unauthorized` | Wrong or rotated key in step 1 |
-| HTML instead of JSON | Script authorization lapsed: [google-setup §9](google-setup.md#9-day-8-authorization-check) |
+| HTML instead of JSON | Still on the old `/exec` URL and the script's authorization lapsed ([google-setup §9](google-setup.md#9-day-8-authorization-check)): move to `https://island-fund-relay.island-fund-relay.workers.dev/api` (§2) |
+| `not found` | The URL has a typo or extra characters: it must be exactly `https://island-fund-relay.island-fund-relay.workers.dev/api` |
 | `bad_request`, `…: expected Text` | That field is Number/Array in step 9: make it **Text** |
 | `warnings: ["weight: 1 lines but 31 dates…"]` | That list didn't use the same range, **Group by Day** and **Fill Missing** as `dates` (the same for `body_fat_percentage`, `body_mass_index`, `lean_body_mass`) |
 | `warnings: ["body_fat_percentage: 0.5 on … is outside 2–70…"]` | Body fat came through in an unexpected form: send the `uploads` row's first line to the developer |
