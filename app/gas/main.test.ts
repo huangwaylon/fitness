@@ -791,6 +791,13 @@ describe('the copy to the relay’s record, and the push (docs/backend.md#the-re
     expect(p.rows.uploads).toEqual([data('uploads').at(-1)]);
   });
 
+  it('the copy is ASCII (anything else escaped), so the signature holds whatever the encodings: a Shortcut’s dates carry U+202F', () => {
+    a('ingest', { dates: 'Oct 2, 2026 at 7:25\u202fAM', steps: '855' });
+    const f = gas.state.fetches[0];
+    expect(/^[\x20-\x7e]*$/.test(f.payload)).toBe(true);
+    expect(JSON.parse(f.payload).rows.uploads[0][4]).toContain('7:25\u202fAM');
+  });
+
   it('a run that synced nothing copies only its audit row, with no notice; a duplicate, a refusal or a read copies nothing', () => {
     a('event', { id: 'e1', ...PLAIN });
     a('ingest', day('Oct 28, 2026', 9000, 30));
