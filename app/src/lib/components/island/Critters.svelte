@@ -757,7 +757,8 @@
   }
 
   /** The goal trees' fruit lies here once met (its row is a button): a flea never lands under it. */
-  const FRUIT_GROUND: Patch[] = Object.values(GOAL_TREES).map(([x, z]) => ({ x0: x - 48, x1: x + 48, z0: z - 34, z1: z + 6, l0: 0, l1: 0 }));
+  // (the row button stands up the screen from that ground: its top edge is ~30u further in, measured at 390 × 844)
+  const FRUIT_GROUND: Patch[] = Object.values(GOAL_TREES).map(([x, z]) => ({ x0: x - 56, x1: x + 56, z0: z - 34, z1: z + 34, l0: 0, l1: 0 }));
   /** Where a bug put down by a person's doing comes from and keeps to: out of a bush, from under the rock, off a
    *  villager (`src`), from (x, z). */
   function putFrom(src: string, x: number, z: number): { from: P3; area: Patch; avoid?: Patch[] } {

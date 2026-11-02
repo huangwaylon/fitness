@@ -76,6 +76,10 @@ test('a tap on my villager sends a flea hopping off into the grass; a tap on it 
   await page.locator('button.vil').first().click();
   const flea = page.locator('[data-critter="flea"]');
   await expect(flea).toBeAttached();
+  // the same tap opened my villager's phrase picker (e2e/say.spec.ts): put away, as one would, before the net
+  await expect(page.locator('[data-say-picker]')).toBeVisible();
+  await page.locator('[data-say-close]').click();
+  await expect(page.locator('[data-say-picker]')).toHaveCount(0);
   await page.waitForTimeout(2600); // its first hop lands in the grass
   const p = await at(page, '[data-critter="flea"]');
   // clear of every control (the partner idling about may pass in front of it for a moment)
@@ -111,7 +115,7 @@ test('NH’s flower bugs: a ladybug and a mantis sit still on a flower’s head 
     const p = await at(page, `[data-critter="${id}"]`);
     expect(await onFlowerHead(page, p), id).toBe(true);
     // clear of every control (a wandering villager may pass in front of it for a moment)
-    await expect.poll(() => clear(page, p), { timeout: 8000 }).toBe('');
+  await expect.poll(() => clear(page, p), { timeout: 8000 }).toBe('');
     await page.waitForTimeout(1500);
     const q = await at(page, `[data-critter="${id}"]`);
     expect(Math.hypot(q.x - p.x, q.y - p.y), 'it sits still (a 1u bob)').toBeLessThan(3);
