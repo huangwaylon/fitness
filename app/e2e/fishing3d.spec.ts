@@ -60,13 +60,6 @@ for (const [water, q, cam, sel] of [
     await expect(page.locator('[data-bobber]')).toBeAttached({ timeout: 3000 });
     await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
     // NH's rod in my villager's hand, fishing
-    for (let i = 0; i < 6; i++) {
-      await page.waitForTimeout(1000);
-      console.log('DIAG', water, i, JSON.stringify(await page.evaluate(() => {
-        const w = window as unknown as { __villagers3: { last(s: string): unknown; state(s: string): string; tool(s: string): string }; __world3d: { stats(): unknown } };
-        return { last: w.__villagers3.last('mine'), state: w.__villagers3.state('mine'), tool: w.__villagers3.tool('mine'), stats: w.__world3d.stats(), bobber: document.querySelector('[data-bobber]')?.getAttribute('data-bobber'), mine: document.querySelector('[data-actor="mine"]')?.outerHTML.slice(0, 300) };
-      })));
-    }
     await expect.poll(() => v3(page, (v) => [v.tool('mine'), v.state('mine')]), { timeout: 15_000 }).toEqual(['tools/rod', 'fish']);
     expect(await v3(page, (v) => v.tip('mine')?.every(Number.isFinite))).toBe(true);
     await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 });
