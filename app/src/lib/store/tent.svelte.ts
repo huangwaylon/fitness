@@ -7,7 +7,7 @@
 //   tent.pieces / tent.wall / tent.floor  the room (reactive)
 //   tent.set(p) / tent.remove(id) / tent.surface(kind, code)   a change of mine: merged, kept, sent
 //   tent.on(fn)                           the partner's changes as they arrive
-import { TENT_FLOOR, TENT_MAX, TENT_WALL, mergeTent, tentLayout, tentOpOf, type TentEntry, type TentOp, type TentPiece } from '#lib/contract/tent.ts';
+import { TENT_FLOOR, TENT_MAX, TENT_ROOM, TENT_WALL, mergeTent, tentLayout, tentOpOf, type TentEntry, type TentOp, type TentPiece } from '#lib/contract/tent.ts';
 import type { Relayed, Who } from '#lib/sync/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
@@ -26,7 +26,7 @@ interface TentNews {
 class TentRoom {
   rev = $state(0);
   #map = new Map<string, TentEntry>();
-  #layout: ReturnType<typeof tentLayout> = { pieces: [], wall: null, floor: null };
+  #layout: ReturnType<typeof tentLayout> = { pieces: [], wall: null, floor: null, lights: true };
   #loaded = false;
   #relay: Live | null = null;
   #off: (() => void) | null = null;
@@ -78,6 +78,10 @@ class TentRoom {
   }
   get floor(): string | null {
     return this.#room().floor;
+  }
+  /** NH's room light switch (on unless switched off). */
+  get lights(): boolean {
+    return this.#room().lights;
   }
   /** How many more pieces fit. */
   get room(): number {
@@ -146,12 +150,14 @@ class TentRoom {
   }
 
   /** Place or move a piece (its whole state): false when it didn't take (a new piece past the cap, a removed one). */
-  set(p: { id: string; item: string; x: number; z: number; f: TentPiece['f']; p?: number; on?: string }): boolean {
+  set(p: { id: string; item: string; x: number; z: number; f: TentPiece['f']; p?: number; on?: string; l?: 0 | 1 }): boolean {
     const known = this.#map.get(p.id);
     if (known?.rm) return false;
     if (!known && this.room <= 0) return false;
     const at = this.#now(known?.at);
-    return !!this.#mine({ sc: 't', id: p.id, at, item: p.item, x: p.x, z: p.z, f: p.f, p: p.p ?? (known && !known.rm ? known.p : at), ...(p.on ? { on: p.on } : {}) });
+    return !!this.#mine({ sc: 't', id: p.id, at, item: p.item, x: p.x, z: p.z, f: p.f, p: p.p ?? (known && !known.rm ? known.p : at), ...(p.on ? { on: p.on } : {}),
+      // a light keeps its switch through a move (unless the move says otherwise)
+      ...((p.l ?? (known && !known.rm ? known.l : undefined)) !== undefined ? { l: (p.l ?? (known as { l?: 0 | 1 }).l)! } : {}) });
   }
 
   /** Take a piece away (final: an undo puts a new one down). */
@@ -170,6 +176,20 @@ class TentRoom {
     return !!this.#mine({ sc: 't', id, at, item: code, x: 0, z: 0, f: 0, p: known && !known.rm ? known.p : at });
   }
 
+  /** A light's switch (a lamp, the lantern, the fireplace): the piece's whole state again, its `l` flipped. */
+  switchLight(id: string, on: boolean): boolean {
+    const p = this.byId(id);
+    if (!p) return false;
+    return this.set({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, p: p.p, on: p.on, l: on ? 1 : 0 });
+  }
+  /** NH's room light switch. */
+  switchRoom(on: boolean): boolean {
+    if (this.lights === on) return false;
+    const known = this.#map.get(TENT_ROOM);
+    const at = this.#now(known?.at);
+    return !!this.#mine({ sc: 't', id: TENT_ROOM, at, item: on ? 'r1' : 'r0', x: 0, z: 0, f: 0, p: known && !known.rm ? known.p : at });
+  }
+
   on(fn: (n: TentNews) => void): () => void {
     this.#subs.add(fn);
     return () => void this.#subs.delete(fn);
@@ -182,7 +202,7 @@ class TentRoom {
     this.#relay = null;
     this.#me = null;
     this.#map.clear();
-    this.#layout = { pieces: [], wall: null, floor: null };
+    this.#layout = { pieces: [], wall: null, floor: null, lights: true };
     this.#loaded = false;
     this.#last = 0;
     this.#subs.clear();

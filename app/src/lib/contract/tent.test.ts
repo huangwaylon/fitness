@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TENT_FLOOR, TENT_MAX, TENT_WALL, mergeTent, tentAccept, tentLayout, tentOpOf, type TentEntry } from './tent.ts';
+import { TENT_FLOOR, TENT_MAX, TENT_ROOM, TENT_WALL, mergeTent, tentAccept, tentLayout, tentOpOf, type TentEntry } from './tent.ts';
 import { decorOpOf } from './decor.ts';
 
 const T0 = 1_790_000_000_000;
@@ -26,6 +26,16 @@ describe('a tent op', () => {
     expect(tentOpOf({ ...set('dlamp001', T0), on: 'dlamp001' })).toBeNull();
     expect(tentOpOf({ ...set('dlamp001', T0), on: 'x' })).toBeNull();
     expect(tentOpOf({ ...set(TENT_WALL, T0, { item: 'w4840', x: 0, z: 0 }), on: 'dtable01' })).toBeNull();
+  });
+
+  it('a light’s switch rides on its piece’s op; the room’s light switch is an op of its own', () => {
+    expect(tentOpOf({ ...set('dlamp001', T0, { item: 'f1432' }), l: 0 })).toMatchObject({ l: 0 });
+    expect(tentOpOf({ ...set('dlamp001', T0), l: 2 })).toBeNull();
+    expect(tentOpOf(set(TENT_ROOM, T0, { item: 'r0', x: 0, z: 0 }))).toMatchObject({ item: 'r0' });
+    expect(tentOpOf(set(TENT_ROOM, T0, { item: 'r7', x: 0, z: 0 }))).toBeNull();
+    const e = (o: object) => ({ ...tentOpOf(set(TENT_ROOM, T0, { item: 'r0', x: 0, z: 0, ...o }))!, who: 'A' as const });
+    expect(tentLayout([e({})]).lights).toBe(false);
+    expect(tentLayout([]).lights).toBe(true);
   });
 
   it('is never an island op, nor an island op a tent one (the scope keeps them apart on old phones too)', () => {
