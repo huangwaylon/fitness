@@ -1,5 +1,6 @@
-// The demo smoke test: the built app (`npm run build` first) under `vite preview`, on a phone viewport.
-// CI installs Playwright's Chromium; locally it uses the installed Google Chrome. `npm run e2e`.
+// The e2e suite: the built app (`npm run build` first; CI downloads the build job's artifact) served like GitHub Pages
+// (scripts/serve-build.ts), on a phone viewport. CI installs Playwright's Chromium; locally it uses the installed Google
+// Chrome. `npm run e2e`.
 import { defineConfig, devices } from '@playwright/test';
 
 const PORT = Number(process.env.E2E_PORT ?? 4173);
@@ -9,7 +10,7 @@ export default defineConfig({
   testDir: 'e2e',
   timeout: 30_000,
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? 'github' : 'list',
+  reporter: process.env.CI ? [['github'], ['list'], ['json', { outputFile: 'playwright-results.json' }]] : 'list',
   use: {
     ...devices['iPhone 13'],
     browserName: 'chromium',
@@ -22,7 +23,7 @@ export default defineConfig({
     timezoneId: 'Asia/Tokyo'
   },
   webServer: {
-    command: `npx vite preview --port ${PORT} --strictPort --host 127.0.0.1`,
+    command: `node scripts/serve-build.ts ${PORT} ${BASE}`,
     url: `http://127.0.0.1:${PORT}${BASE}/`,
     reuseExistingServer: !process.env.CI
   }
