@@ -317,6 +317,25 @@ relay), and stays far inside the Free plan. Not done: streaming positions per fr
 follow while both are here (left out rather than run on two phones at once), the visitor's beats beyond Gulliver's
 waking.
 
+### A villager whose phone is gone walks home, by the relay's clock (2026-11-02)
+When a member's phone has been gone from the relay for 3 minutes (`HOME_AFTER_MS`, villagerSync.ts), their villager
+walks home to its spot by its own tree (A left, B right) at a stroll, on every other phone; a phone opening later puts
+it where that walk has it by now (home when it's over). The walk is a function of three shared things only: when the
+room saw that person's last socket close (its clock: the `presence {on: false}`'s `t`, and the welcome's `gone {A, B,
+G}` for a phone that wasn't there, mine included), where their last walk of the day ended (the room's day: the
+replay), and the island's nav (planTap, as a tap goes). Till it sets off and on the way it stays the relay's
+(`setRemote`: no phone's follow, outing or snap moves it); home, it's ambient life's again (its outings, the night's
+doze: a villager asleep gets up for the walk and dozes again at home). A return within the 3 minutes cancels it; a
+return mid-walk takes it over from where it is: that phone works out the same walk from its welcome and walks the
+rest as its own (the other phone sees no jump), and tells nothing of its villager until then (no stale put first).
+Gone inside the tent (or a home), it leaves the interior at the same moment and comes out at its door (where its
+last island walk ended). The guest's villager isn't part of it (it leaves the island with its app). Why: the user
+("after a user is disconnected for long enough… walk the character back to their starting positions next to the
+trees"); a few minutes so a dropped connection isn't mistaken for leaving; the relay's clock and the room's last walk
+make every phone draw the same walk without a message, and a `gone` in the welcome is additive (an older phone
+ignores it). This phone's own socket dropping isn't anyone leaving: it changes nothing until the welcome says.
+Not done: the partner following mine while theirs is away and home (a per-phone follow, as before).
+
 ### Decor is a last-writer-wins map, the record keeps each item's latest op
 The island's decorations ([Decorating](design.md#decorating)) are persistent, shared by both of us, either may move
 or remove any. Each change is one op carrying the item's whole state (`{id, at, item, x, z, f, p}`) or its removal

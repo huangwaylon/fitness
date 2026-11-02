@@ -201,6 +201,17 @@ export function setPartnerRest(x: number, z: number, id: Villager = 'partner'): 
 }
 /** A rest spot (null: home, within 8u of it). */
 const restAt = (p: Pt, home: Pt): Pt | null => (Math.hypot(p[0] - home[0], p[1] - home[1]) <= 8 ? null : [p[0], p[1]]);
+/** A villager is home again (its phone was gone long enough: villagerSync's walk home): it rests at home, mine for
+ *  the rest of the day too. */
+export function homeAgain(id: Villager): void {
+  if (id === 'mine') keepStay(null);
+  else stays[id] = null;
+}
+/** The way between two points on the island's nav, as a tap would go (planTap: the stairs, the bridge), without the
+ *  visitor's spot (the same on every phone: villagerSync's walk home). Null when there's none. */
+export function homeRoute(from: Pt, to: Pt): Pt[] | null {
+  return planTap(nav(), from, to[0], to[1], [])?.pts ?? null;
+}
 
 /** The partner did something on their phone (the shared world: a catch, a pick-up, a shake): their villager here turns
  *  to it where it stands (no walking over, as on their own phone) and the result plays at the target. */

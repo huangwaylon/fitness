@@ -30,6 +30,19 @@ describe('where the partner’s villager is', () => {
     expect([where.partnerInTent, where.wentHome]).toEqual([false, 1]);
   });
 
+  it('by the relay’s leave time: out when it comes; this phone offline (no time known) waits', () => {
+    where.heard(tent(true));
+    where.presence('B', false, null);
+    vi.advanceTimersByTime(where.goneMs * 2);
+    expect(where.partnerInTent).toBe(true);
+    where.presence('B', false, 5000);
+    where.presence('B', false, 5000); // said again: the same moment
+    vi.advanceTimersByTime(4999);
+    expect(where.partnerInTent).toBe(true);
+    vi.advanceTimersByTime(1);
+    expect([where.partnerInTent, where.wentHome]).toEqual([false, 1]);
+  });
+
   it('a partner on the island going quiet changes nothing', () => {
     where.peer(false);
     vi.advanceTimersByTime(where.goneMs * 2);

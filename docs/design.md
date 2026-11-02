@@ -719,7 +719,8 @@ goes with the leaving).
   or the socket comes back; the island says `{in: false}` to a partner who arrives). A villager in the tent is nowhere
   on the partner's island (hidden, its life there, outings, follows and meet-ups leave it alone, no high-five or
   phrase can reach it); inside, the partner's villager is there only while the partner is. A phone that goes quiet
-  inside (closed, offline) has its villager home on the island again after 30 s (avatar.ts SNAP_HOME_MS).
+  inside (closed, offline) has its villager leave the tent 3 minutes after the relay saw it go: it comes out of the
+  door and walks home ([Walking](#walking) "A phone gone a while").
 
 - **The room:** NH's largest, the main room fully expanded: 8 × 8 tiles (Nookipedia's upgrade table: the main room
   6 × 6 → 8 × 8, the second floor and basement 10 × 6 = 60 tiles, so 8 × 8 = 64 is the most floor), NH's own grid (a tile
@@ -1218,6 +1219,11 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
   world](#shared-world)).
 - **The camera never moves for a walk** (nor for the partner or a visitor): only the finger scrolls.
 - **Hold-up:** a catch or a find is lifted over my villager's head (`if-holdup`) while its plate reads.
+- **A phone gone a while:** 3 minutes after the relay saw a member's phone go (the app closed or hidden, offline), their
+  villager walks home to its spot by its own tree at a stroll, on every phone the same (a phone opening later finds it
+  where that walk has it, or home), then lives there as any (idle beats, dozing at night: it gets up for the walk and
+  dozes again at home). Back within the 3 minutes, nothing happens; back mid-walk, their phone picks it up where it
+  is and walks the rest. Not the guest's: it leaves with its app (villagerSync.ts, [decisions](decisions.md)).
 - **Sheets and hiding:** a sheet stops everyone where they are; uncovered, the outings wander back; hidden over 30 s,
   they're back on return. A balloon opens only over a villager standing still, and steps aside while the camera
   scrolls.

@@ -95,15 +95,28 @@ describe('live: connecting', () => {
     // a page's first hello asks for today's whole shared world (from Tokyo midnight)
     expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: dayStart(tokyoDay(Date.now())), batch: true });
     last().recv({ kind: 'welcome', me: 'A', peer: false, t: Date.now() });
-    expect(live.status()).toEqual({ connected: true, me: 'A', peer: false, here: [] });
-    expect(seen.at(-1)).toEqual({ connected: true, me: 'A', peer: false, here: [] });
+    expect(live.status()).toEqual({ connected: true, me: 'A', peer: false, here: [], gone: {} });
+    expect(seen.at(-1)).toEqual({ connected: true, me: 'A', peer: false, here: [], gone: {} });
     // the guest (v3) comes and goes: it is here, but it isn't the partner
     last().recv({ kind: 'presence', who: 'G', on: true, t: Date.now() });
     expect(live.status()).toMatchObject({ peer: false, here: ['G'] });
     last().recv({ kind: 'presence', who: 'B', on: true, t: Date.now() });
     expect(live.status()).toMatchObject({ peer: true, here: ['B', 'G'] });
-    last().recv({ kind: 'presence', who: 'G', on: false, t: Date.now() });
+    last().recv({ kind: 'presence', who: 'G', on: false, t: 1_800_000_000_000 });
     expect(live.status()).toMatchObject({ peer: true, here: ['B'] });
+    // when they left, on the relay's clock (the walk home's start: villagerSync); back, forgotten
+    expect(live.status().gone).toEqual({ G: 1_800_000_000_000 });
+    last().recv({ kind: 'presence', who: 'G', on: true, t: Date.now() });
+    expect(live.status().gone).toEqual({});
+  });
+
+  it('the welcome’s `gone`: when those not here left, and my own last socket', () => {
+    live.start();
+    last().open();
+    last().recv({ kind: 'welcome', me: 'A', peer: false, here: [], gone: { A: 1_800_000_000_000, B: 1_799_000_000_000 }, t: Date.now() });
+    expect(live.status().gone).toEqual({ A: 1_800_000_000_000, B: 1_799_000_000_000 });
+    last().recv({ kind: 'presence', who: 'B', on: true, t: Date.now() });
+    expect(live.status().gone).toEqual({ A: 1_800_000_000_000 });
   });
 
   it('on the guest’s phone: either member is its peer, and it sends only what the guest may', () => {
