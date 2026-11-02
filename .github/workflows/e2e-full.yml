@@ -1,0 +1,74 @@
+# The full tier (docs/ops/test-strategy.md, docs/ops/testing.md): the whole e2e suite drawn (real software GL, as the
+# gate was until Nov 2026), the quarantine included, after each run of *Deploy UI to GitHub Pages* on main (the nightly
+# one too) and on demand. It never holds a deploy back, and its own workflow keeps the deploy run's result the gate's
+# alone. Its failures are in its summary and annotated on their specs; a red full tier is the next push's to fix. A
+# failed test is run once more (flaky or broken?). A newer run cancels an older one: only the newest commit matters.
+name: e2e full tier
+
+on:
+  workflow_run:
+    workflows: ['Deploy UI to GitHub Pages']
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-full
+  cancel-in-progress: true
+
+jobs:
+  e2e-full:
+    # (not after a cancelled run: a newer one is on its way)
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion != 'cancelled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6]
+    defaults:
+      run:
+        working-directory: app
+    env:
+      BASE_PATH: /${{ github.event.repository.name }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - id: pw
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - id: browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}-chromium-headless-shell
+      # (the runner image has Chrome, so Chromium's system libraries: no apt step)
+      - if: steps.browsers.outputs.cache-hit != 'true'
+        run: npx playwright install --only-shell chromium
+      - run: npm run build
+      - id: e2e
+        continue-on-error: true
+        run: npx playwright test --project=chromium --shard=${{ matrix.shard }}/6
+      - name: A failed test, once more (flaky or broken?)
+        if: steps.e2e.outcome == 'failure'
+        run: |
+          node scripts/e2e-report.ts playwright-results.json "Failed in the full tier (drawn), shard ${{ matrix.shard }}" >> "$GITHUB_STEP_SUMMARY"
+          cp playwright-results.json first-run.json 2>/dev/null || true
+          n=$(node -p "try { require('./test-results/.last-run.json').failedTests.length } catch { 0 }")
+          if [ "$n" -eq 0 ] || [ "$n" -gt 5 ]; then
+            echo "::error::$n tests failed: broken, not flaky (no rerun)"; exit 1
+          fi
+          npx playwright test --project=chromium --last-failed
+          echo "::warning::$n flaky e2e test(s) in the full tier, shard ${{ matrix.shard }}: failed, then passed; see the summary (docs/ops/testing.md)"
+          ANNOTATE=1 node scripts/e2e-report.ts first-run.json "Flaky e2e (full tier)"
+          node scripts/e2e-report.ts first-run.json "Flaky e2e (failed, then passed on a rerun): quarantine it and fix the cause, docs/ops/testing.md" >> "$GITHUB_STEP_SUMMARY"

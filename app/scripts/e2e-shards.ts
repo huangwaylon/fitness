@@ -8,8 +8,15 @@
 //   node scripts/e2e-shards.ts timings <out.json> <report.json…>
 //     the tests' times from Playwright JSON reports (failed and skipped runs left out), folded into <out.json>'s
 //     (a new time counts half: one slow run doesn't swing it).
+//   node scripts/e2e-shards.ts spread <report.json…>
+//     how long each shard's tests ran, as Markdown (the run's summary).
+//   node scripts/e2e-shards.ts refresh   (npm run e2e:timings)
+//     e2e/timings.json from the newest green run on main (its `e2e-timings` artifact, the timings job's): commit it
+//     when the shards drift apart (the run's summary says how far). The plan reads the committed file, so every shard
+//     of a run has the same plan (a cache restored by each shard could differ between them).
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 type Result = { status: string; duration: number };
@@ -44,7 +51,7 @@ if (cmd === 'timings') {
     const d = Math.round(ds.reduce((a, b) => a + b, 0) / ds.length);
     old[k] = old[k] ? Math.round((old[k] + d) / 2) : d;
   }
-  writeFileSync(outFile, JSON.stringify(Object.fromEntries(Object.entries(old).sort(([a], [b]) => a.localeCompare(b))), null, 0));
+  writeFileSync(outFile, JSON.stringify(Object.fromEntries(Object.entries(old).sort(([a], [b]) => a.localeCompare(b))), null, 1) + '\n');
   console.log(`${fresh.size} tests timed (${Object.keys(old).length} in ${outFile})`);
 } else if (cmd === 'plan') {
   const dash = rest.indexOf('--');
@@ -86,4 +93,17 @@ if (cmd === 'timings') {
   mkdirSync(outDir, { recursive: true });
   shards.forEach((s, i) => writeFileSync(join(outDir, `${i + 1}.txt`), s.lines.join('\n') + '\n'));
   console.log(`${all.length} tests in ${n} shards (${Object.keys(times).length ? 'timed' : 'untimed: by count'}): ` + shards.map((s) => `${s.n} tests ~${Math.round(s.ms / 1000)} s`).join(', '));
-} else throw new Error('usage: e2e-shards.ts plan|timings …');
+} else if (cmd === 'spread') {
+  // how long each shard's tests ran (its report's own duration), for the run's summary
+  const ds = rest.filter((f) => existsSync(f)).map((f) => (JSON.parse(readFileSync(f, 'utf8')) as { stats?: { duration?: number } }).stats?.duration ?? 0).filter((d) => d > 0);
+  const s = (ms: number) => `${Math.round(ms / 1000)} s`;
+  console.log(ds.length ? `### The logic tier's shards\n\n${ds.length} shards ran ${s(Math.min(...ds))} to ${s(Math.max(...ds))} (${ds.map(s).join(', ')}).${Math.max(...ds) > 1.3 * Math.min(...ds) ? ' Far apart: `npm run e2e:timings` and commit e2e/timings.json.' : ''}` : 'No shard reports.');
+} else if (cmd === 'refresh') {
+  const gh = (...a: string[]) => execFileSync('gh', a, { encoding: 'utf8' }).trim();
+  const id = gh('run', 'list', '--workflow', 'pages.yml', '--branch', 'main', '--status', 'success', '--limit', '1', '--json', 'databaseId', '--jq', '.[0].databaseId');
+  const dir = mkdtempSync(join(tmpdir(), 'e2e-timings-'));
+  gh('run', 'download', id, '--name', 'e2e-timings', '--dir', dir);
+  writeFileSync('e2e/timings.json', readFileSync(join(dir, 'e2e-timings.json'), 'utf8'));
+  rmSync(dir, { recursive: true });
+  console.log(`e2e/timings.json from run ${id}`);
+} else throw new Error('usage: e2e-shards.ts plan|timings|spread|refresh …');
