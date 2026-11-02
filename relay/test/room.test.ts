@@ -193,6 +193,47 @@ describe('the island room', () => {
     expect(a.sent).toHaveLength(1);
   });
 
+  it('keeps when each person left, for the welcome (v3): the partner gone, my own last socket; back, forgotten', () => {
+    const gone: unknown[] = [];
+    room = new RoomCore({ ...io(), saveGone: (g) => void gone.push(structuredClone(g)) });
+    const join3 = (key: string) => {
+      const s = new FakeSock();
+      socks.push(s);
+      room.open(s);
+      room.message(s, JSON.stringify({ v: 3, kind: 'hello', key }));
+      return s;
+    };
+    const a = join3(KEY_A);
+    expect(a.sent[0]).not.toHaveProperty('gone');
+    const b = join3(KEY_B);
+    const left = now;
+    b.close();
+    room.close(b);
+    expect(a.sent.at(-1)).toEqual({ v: 3, kind: 'presence', who: 'B', on: false, t: left });
+    expect(gone.at(-1)).toEqual({ B: left });
+    now += 60_000;
+    a.close();
+    room.close(a);
+    now += 60_000;
+    // a phone opening later hears when B left; A's own phone, when its last socket did
+    const a2 = join3(KEY_A);
+    expect(a2.sent[0]).toMatchObject({ kind: 'welcome', here: [], gone: { A: left + 60_000, B: left } });
+    expect(gone.at(-1)).toEqual({ B: left });
+    // the Durable Object woke again: the same
+    room = new RoomCore(io(), [], null, {}, gone.at(-1) as never);
+    socks = [];
+    const b2 = join3(KEY_B);
+    expect(b2.sent[0]).toMatchObject({ kind: 'welcome', gone: { B: left } });
+    const a3 = join3(KEY_A);
+    expect(a3.sent[0]).toMatchObject({ kind: 'welcome', here: ['B'] });
+    expect(a3.sent[0]).not.toHaveProperty('gone');
+    // a v1 or v2 phone hears no `gone`
+    b2.close();
+    room.close(b2);
+    const a1 = join(KEY_A);
+    expect(a1.sent[0]).not.toHaveProperty('gone');
+  });
+
   it('closes sockets that never say hello within 10 s and says when to look again', () => {
     const quiet = join();
     now += 4000;
