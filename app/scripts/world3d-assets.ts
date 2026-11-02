@@ -308,7 +308,17 @@ const visitors = Object.entries(VISITOR).map(([id, c]): AssetJob => ({
   uses: [{ key: `villagers/${id}`, cat: 'visitor', s: VILLAGER_S, lazy: 'visitor' }]
 }));
 
-export const ASSETS: AssetJob[] = [...bugs, ...fish, ...sea, ...shadows, ...finds, ...flowers, ...bushes, ...trees, ...decos, ...decor, ...events, ...visitors];
+// the island's bulletin board (docs/board.md): NH's board outside Resident Services (EvtobjBbs: its cork face at model
+// x −6.85…6.80, y 3.49…13.52, z +0.30 once centred), centred on its origin, in winter its snow; the bird that perches on
+// it, by day (BbsBirdDay) and by night (BbsBirdNight, an owl), its wings folded. All at the board's scale: 60u tall.
+const BOARD_S = 3.5;
+const board: AssetJob[] = [
+  { name: 'deco/bulletin-board', parts: [['EvtobjBbs', 'EvtobjBbs', [0, 1, -8.277, -4.203]]], maxTex: 512, uses: [{ key: 'deco/bulletin-board', cat: 'deco', s: BOARD_S, winter: 'deco/bulletin-board-winter' }] },
+  { name: 'deco/bulletin-board-winter', parts: [['EvtobjBbs', 'EvtobjBbs', [0, 1, -8.277, -4.203]]], maxTex: 512, snow: true, uses: [{ key: 'deco/bulletin-board-winter', cat: 'deco', s: BOARD_S }] },
+  { name: 'deco/bbs-bird-day', parts: one('BbsBirdDay'), maxTex: 128, pose: { Arm_1_L: [0, 0, 78], Arm_1_R: [0, 0, 78] }, uses: [{ key: 'deco/bbs-bird-day', cat: 'deco', s: BOARD_S }] },
+  { name: 'deco/bbs-bird-night', parts: one('BbsBirdNight'), maxTex: 128, pose: { Arm_1_L: [0, 0, 100], Arm_1_R: [0, 0, 100] }, uses: [{ key: 'deco/bbs-bird-night', cat: 'deco', s: BOARD_S }] }
+];
+export const ASSETS: AssetJob[] = [...bugs, ...fish, ...sea, ...shadows, ...finds, ...flowers, ...bushes, ...trees, ...decos, ...decor, ...events, ...visitors, ...board];
 
 /** The POC's models (models.json: static/room/world3d/<name>.glb) serving the island's keys as they are. */
 export const POC_USES: [string, Use[]][] = [
