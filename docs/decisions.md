@@ -5,39 +5,61 @@ code disagree, the code wins.
 
 ## Data and backend
 
-### Google Sheet backend
-One spreadsheet, *Island Fund*, with a bound Apps Script web app (`app/gas/main.ts`; scope `spreadsheets.currentonly`,
-runs as the owner, open to anyone) as its only reader and writer; it never hands out Google tokens. Why: free, nothing
-to host, and a leaked key reaches only Island data.
+### The record on the relay
+The data of record (metrics, events, the ingest audit) lives in a second Durable Object on the relay, `IslandStore`,
+in SQLite tables with keys and indexes: an event id is a primary key, `since` an index, and a tally, an island day, a
+cosmetic pref, a day's goal or a decoration a slot its later event replaces (the sheet deleted and appended). It runs
+on the Workers Free plan next to the island room, its own class so the two change apart. The API stayed the web app's
+(`{key, action}`), so the app and the Shortcuts only changed the URL, and the parser and shape rules are the script's
+own code (a golden test holds the record's ingest to what the script answered and wrote). Why: every keyed Apps Script
+request took the script lock and 1–15 s (an empty poll once 14.5 s, a full snapshot 4–8 s), the platform's floor alone
+is 1–4.7 s, a high-five cost two locked requests, and nobody edits the sheet by hand. On the relay a full snapshot
+takes ~0.1 s and an empty poll ~0.06 s, at about 1 % of the Free plan's daily requests and rows, with point-in-time
+recovery for 30 days. The move (2026-11-02) went in reversible steps (mirror, reads, writes, Shortcuts, export), the
+old path working through each, because the two phones update a day apart; the model's numbers from the sheet and the
+record were checked equal first. Not done: high-fives (relay-only now) and superseded cosmetic prefs were not carried
+over; duplicate finds stay (the ずかん reads the first); an edge cache of the snapshot (the record already answers in
+~60 ms from Tokyo's edge).
+
+### The sheet is an export
+The bound Google Sheet is a one-way copy: the relay's cron rewrites its tabs from the record after each change (within
+15 minutes) and every night, and a README tab and a note on each header say it is read-only. Its Apps Script web app
+only takes that export and forwards what still reaches the old `/exec` URL (an older app, a Shortcut not moved) to the
+record. The relay pushes (signed in the body, since Apps Script can't read headers) rather than Apps Script pulling,
+so no installable trigger or new Google scope was needed and the relay holds no Google credential. Why: a backup and
+something to look at, in the place the user already knows, without a second path for data of record. Not done:
+writing back from the sheet (an edit there goes nowhere); an installable time trigger pulling deltas (a possible later
+step if the push ever fails often).
 
 ### Per-person keys
-Two keys, `KEY_A` and `KEY_B`, in Script Properties; a key identifies the person. It travels in the POST body, never
-the URL; requests are `text/plain` (no CORS preflight). A phone pairs with a `#key=…` link or by typing the key. Why:
-no accounts for two people.
+Two keys, `KEY_A` and `KEY_B`, as Worker secrets (and Script Properties, which derive the export's signature); a key
+identifies the person. It travels in the POST body, never the URL; requests are `text/plain` (no CORS preflight). A
+phone pairs with a `#key=…` link or by typing the key. Why: no accounts for two people.
 
 ### Append-only, computed on read
-The sheet holds raw rows only (`metrics`, `events`, `uploads`). The server stamps each row with its own `at` and checks
-shapes; the app computes everything else (ベル, locks, the wallet) on read. Why: no ledger, no scheduler, the rules in
-one place.
+The record holds raw rows only (`metrics`, `events`, `uploads`). The server stamps each row with its own `at` and
+checks shapes; the app computes everything else (ベル, locks, the wallet) on read. Why: no ledger, no scheduler, the
+rules in one place.
 
 ### Local-first sync
-The app paints from a local snapshot and polls for rows newer than the last `at` it has (`since`); taps are optimistic
-and queue until sent; a changed `rev` (a hand edit) drops the cache. Why: Apps Script takes 1–4 s, and that must never
-block a tap.
+The app paints from a local snapshot (IndexedDB: a small meta record written each refresh, the rows only when they
+change) and polls for rows newer than the last `at` it has (`since`); taps are optimistic and queue until acked, the
+queue going in one batch whose reply carries each stored row, which goes into the cache at once; the cached rows are
+reduced once per row set and the queue folded over a copy. On opening it skips the fetch when the relay's welcome says
+it already has the record's last change. A changed `rev` (a rebuilt record) drops the cache. Why: a tap must never
+wait for the network, and an unchanged phone shouldn't fetch at all.
 
-### The script serves only what the app reads
-`snapshot` sends only rows of a known metric or event type and person, and the script puts each tab's header and
-column formats right itself. Why: the app never needs code for rows or layouts it doesn't produce, and a hand edit
-can't break a phone.
+### The record serves only what the app reads
+`snapshot` sends only rows of a known metric or event type and person, and the record accepts nothing else. Why: the
+app never needs code for rows it doesn't produce.
 
 ### Live relay on Cloudflare
-While both phones have the app open, each sees the other's villager act at once: a Worker with one SQLite-backed
+While both phones have the app open, each sees the other's villager act at once: a Worker with a SQLite-backed
 Durable Object (the island room, `relay/`) on the Workers Free plan relays small intents (where I tapped and what I
 did, never positions) between the two, over a WebSocket opened only while the app is visible and authenticated with
-the same person key as the sheet. It is presence only: the sheet stays the record (shared changes also go through the
-outbox), so a relay outage loses liveness, never data. Why: Apps Script can't push and takes seconds, polling it
-faster would burn its quota; the Free plan needs no payment method, the Hibernation API makes idle sockets free, and
-the edge is in Tokyo (~20 ms one way). Firebase RTDB (Spark) was the fallback.
+the person key. The room is presence and the day's shared world; the record is its own object (above), so a room
+outage loses liveness, never data. Why: the Free plan needs no payment method, the Hibernation API makes idle sockets
+free, and the edge is in Tokyo (~20 ms one way). Firebase RTDB (Spark) was the fallback.
 
 ### Relay versions side by side
 The relay speaks every protocol version in `LIVE_VS` at once (1 and 2): each socket keeps its hello's version, the
@@ -48,25 +70,11 @@ switch would cut presence and the push for whichever updates last, and a stage p
 The order is fixed: deploy the relay with the new version first, then the app; drop the old one once both run it.
 
 ### Push through the relay
-When the sheet changes, the Apps Script POSTs a small signed notice (`what`, `who`, newest `at`, `rev`) to the relay,
-which tells the open phones to fetch now; a phone also nudges its partner over the socket after an acked event. The
-signing secret is derived from both person keys, so only the two servers can sign and nothing new is provisioned.
-Polling is unchanged, so the push only adds immediacy. Why: a partner's steps, goals and buys show within a second
-instead of at the next open, for ~150 relay requests a day. Not done: caching the snapshot at the edge (the app
-already paints from IndexedDB, most polls return nothing, and hand edits fire `onEdit`, a simple trigger that can't
-notify, so an edge copy could serve stale rows) and serving the app's writes through the Worker (a second path for
-data of record).
-
-### The record on the relay
-The rows move from the sheet to a second Durable Object on the relay, `IslandStore`, with SQLite tables, keys and
-indexes; the sheet becomes a one-way export, a backup to look at. The API stays the web app's (`{key, action}`), so
-the app and the Shortcuts only change the URL; the parser and the shape rules are the script's own code. The move goes
-in reversible steps (mirror, reads, writes, Shortcuts, export), the old path working through each, because the two
-phones update a day apart. Why: every keyed Apps Script request took the script lock and 1–15 s (an empty poll once
-14.5 s, a full snapshot 4–8 s), the platform's floor alone is 1–4.7 s, and nobody edits the sheet by hand; on the
-relay a full snapshot takes ~0.1 s and an empty poll ~0.06 s, still on the Free plan (a day's requests, rows read and
-written are each well under 1 % of its limits), with point-in-time recovery for 30 days. Not done: high-fives
-(relay-only now) and superseded cosmetic prefs are not carried over; duplicate finds stay (the ずかん reads the first).
+When the record changes, it tells the room (`{what, who, at, rev}`), which tells the open phones to fetch now, and
+keeps the last one for each phone's next `welcome`. A signed `/notify` still takes the same notice from a server: the
+secret is derived from both person keys, so only the two servers can sign and nothing new is provisioned. Polling
+stays, so the push only adds immediacy. Why: a partner's steps, goals and buys show within a second instead of at the
+next open, and a phone that is already current skips its fetch. Not done: an edge copy of the snapshot (see above).
 
 ### Shortcut health sync
 Each iPhone runs one built-in Shortcut posting daily totals (`steps` and `steps_watch`, `exercise_minutes`, `calories`,
@@ -257,14 +265,14 @@ spots and weeds (as before), each phone showing what its camera sees of it. What
 (`catch`, `pick`, `put`, `shake`, `world`, `walk`, `act`: ≤ 100 bytes) that the relay keeps for the Tokyo day and
 replays to a phone that opens later; both phones fold the day's intents in the relay's order into the same day
 (`sync/world-day.ts`), so first wins: of two people tapping the same bug, the relay refuses the second claim and the
-other phone sees it caught by them. The sheet keeps one cheap row per person and day (`island`, replaced like a
+other phone sees it caught by them. The record keeps one cheap row per person and day (`island`, replaced like a
 tally) for when the relay has nothing. Why: per-camera placement made the phones disagree on where (and so whether)
 a critter was, and only the outcome of a person's action has to cross: a seed costs nothing, an intent per action is
 far below the Free plan (a busy day ~550 messages, ~28 DO requests), and the relay already orders them, so no leader,
-no clock sync beyond the pings, nothing per frame. The relay's day is presence-grade (it may be gone); the sheet row
+no clock sync beyond the pings, nothing per frame. The room's day is presence-grade (it may be gone); the record's row
 is the record. Not done: streaming positions or the interactive moments (a cast's bite, a dive's chase, a tarantula's
 mood stay on the phone that taps; their outcome is shared), a rejection message to the losing phone (the winner's own
-intent tells it), every event to the sheet (a day row instead), sharing the balloon's flight.
+intent tells it), every event to the record (a day row instead), sharing the balloon's flight.
 
 ### One island, each villager its own phone's (2026-11-01)
 The two phones show the same island, not mirrored: A (ウェイ) lives on the left and B (うめ) on the right on both,
@@ -284,15 +292,15 @@ relay), and stays far inside the Free plan. Not done: streaming positions per fr
 follow while both are here (left out rather than run on two phones at once), the visitor's beats beyond Gulliver's
 waking.
 
-### Decor is a last-writer-wins map, the sheet keeps each item's latest op
+### Decor is a last-writer-wins map, the record keeps each item's latest op
 The island's decorations ([Decorating](design.md#decorating)) are persistent, shared by both of us, either may move
 or remove any. Each change is one op carrying the item's whole state (`{id, at, item, x, z, f, p}`) or its removal
 (`{id, at, rm}`); the layout is the ops merged by id: a removal beats everything (ids are never reused: an undo puts a
 new one down), else the latest `at` on the relay's clock, then B over A (`contract/decor.ts`). The merge is commutative
-and idempotent, so it doesn't matter which way an op arrives first (the relay live, its day's replay, the sheet's
+and idempotent, so it doesn't matter which way an op arrives first (the relay live, its day's replay, the record's
 snapshot, my own optimistic copy): both phones and a reload reach the same layout. The relay only carries the ops
-(`decor`, kept in the day's ring for a phone opening later that day); the sheet is the record across days and keeps
-only each item's latest op (the script deletes the older rows: at most one row per item ever placed), checks the
+(`decor`, kept in the day's ring for a phone opening later that day); the record keeps them across days, and keeps
+only each item's latest op (its slot: at most one row per item ever placed), checks the
 item, the spot's bounds and the cap of 30. The island refuses a spot that is taken, off the ground, on a tap-critical
 spot or that would wall anyone in; a race of two people dropping on one spot at once leaves both standing until one
 is moved. Why: the layout lives for months, so a day-scoped fold (the shared world's) doesn't fit, and a whole-layout
@@ -308,7 +316,7 @@ life. Why: one animation system, and pausing under a sheet or a hidden page alre
 ### A villager's phrase is presence (2026-11-02)
 A tap on my villager opens a phrase picker (six presets, my own last few, a 20-character field); the pick shows over my
 villager on both phones for 4 s through one small relay intent, `say {text}` (v2), that the room relays live and keeps
-nowhere: not in the day's ring, not in a replay, not in the sheet or the outbox. Its text is cleaned by the same
+nowhere: not in the day's ring, not in a replay, not in the record or the outbox. Its text is cleaned by the same
 `cleanSay` on the phone, at the relay and on the receiving phone (controls, newlines, bidi tricks out, ≤ 20 code
 points) and rendered as text; the phone sends one per 1.5 s (a newer pick waits, replacing the waiting one), the room
 passes one per person per second. Only a v2 phone hears it; an older app's parser drops the unknown kind. Why: the
@@ -324,8 +332,8 @@ storage), hands it over after the welcome of their next hello, and lets it go wh
 has passed. The receiving phone plays the same moment as the tapper's when it's fresh (≤ 8 s: their own villager stops
 there and says so, the sparkle from the tapper, hops, hearts), else the banner and R5; a local store of today's heard
 ones (`hf-got.<me>`) makes a resend or the held copy no news, and the banner fires on receipt, not on a count. The app
-sends no `highfive` event to the sheet any more (the reducer and EVENT_TYPES keep it a release for older phones; the
-script acknowledges and stores nothing). Why: the user ("improve the high five with the relay"; then "the count barely
+sends no `highfive` event to the record any more (the reducer and EVENT_TYPES keep it a release for older phones; the
+record acknowledges and stores nothing). Why: the user ("improve the high five with the relay"; then "the count barely
 matters": online over the relay, offline one stored touch); through the sheet the partner's phone reacted 1–4 s later
 and a row per tap bought nothing, and an intent is ~45 bytes with no leader. Not done: a high-five while the relay is
 down (the moment plays here only), a count of the day's high-fives on screen.

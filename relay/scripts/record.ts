@@ -8,6 +8,7 @@
 //   bookmark [ms]       point-in-time recovery: the bookmark now and `ms` ago (default 1 h)
 //   restore <bookmark>  restore the record to a bookmark (then `rev`)
 //   rev                 a new epoch: every phone refetches everything
+//   export              the export to the sheet now (the cron does it every 15 minutes when the record changed)
 //   dump                every row as JSON on stdout (a backup: `> island-record-YYYY-MM-DD.json`)
 //   load <file>         a dump back into an empty record (import of every row)
 //   parity              the model's numbers per person from the sheet's snapshot and the record's: must be equal
@@ -87,6 +88,9 @@ switch (cmd) {
   case 'restore':
     console.log(JSON.stringify(await signed({ op: 'restore', bookmark: arg })));
     break;
+  case 'export':
+    console.log(JSON.stringify(await signed({ op: 'export' })));
+    break;
   case 'rev':
     console.log(JSON.stringify(await signed({ op: 'rev' })));
     break;
@@ -104,6 +108,6 @@ switch (cmd) {
     break;
   }
   default:
-    console.error('commands: counts | import-sheet | bookmark [ms] | restore <bookmark> | rev | dump | load <file> | parity  [--test]');
+    console.error('commands: counts | import-sheet | bookmark [ms] | restore <bookmark> | rev | export | dump | load <file> | parity  [--test]');
     process.exit(1);
 }
