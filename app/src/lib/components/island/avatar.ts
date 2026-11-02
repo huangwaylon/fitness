@@ -73,6 +73,14 @@ function keepStay(p: Pt | null) {
 let partnerStay: Pt | null = null;
 /** Where a villager rests: where its person sent it today, else its home. */
 const restOf = (id: Villager): Pt => (id === 'mine' ? stayAt : partnerStay) ?? actors[id].home;
+/** Out of the tent's door: my villager stands just outside it, facing out (as if it just stepped out), and stays there
+ *  (a put: the partner's phone has it there too). */
+export function stepOut(at: Pt): void {
+  keepStay(at);
+  steered.mine = Date.now();
+  actors.mine.face = 'home';
+  place('mine', at[0], at[1]);
+}
 /** Where my villager stands at the start (the scene mounting): where a tap sent it today, if anywhere. */
 export const stayingAt = (): Pt | null => (stayAt && readStay() ? stayAt : null);
 
@@ -189,6 +197,7 @@ function goHomeLater(id: 'mine' | 'partner', ms: number): void {
 }
 
 function goHome(id: Villager): void {
+  if (inside[id]) return;
   const c = ctx;
   const home = restOf(id), at = c?.where(id);
   if (!c || !at || Math.hypot(at[0] - home[0], at[1] - home[1]) <= 2) return id === 'mine' ? backHome() : undefined;
@@ -206,8 +215,15 @@ function backHome() {
   away.followed = false;
 }
 
-/** Free to set off on its own: awake, not busy, standing still. */
-const free = (id: Villager) => !actors[id].asleep && !busy(id) && !actors[id].walking;
+/** In the tent (docs/design.md "The tent": one place at a time): not on the island, so its life here leaves it alone. */
+const inside: Partial<Record<Villager, boolean>> = {};
+export function setInside(id: Villager, on: boolean): void {
+  inside[id] = on;
+  if (on) clearTimeout(homeTimers[id]);
+}
+
+/** Free to set off on its own: awake, not busy, standing still, on the island. */
+const free = (id: Villager) => !inside[id] && !actors[id].asleep && !busy(id) && !actors[id].walking;
 
 /** Mine has been away FOLLOW_MS: the partner comes over and stands beside it (then they chat). */
 function checkFollow() {
@@ -302,7 +318,7 @@ function chat(id: Villager) {
  *  the ms until it's there (0: it reacts where it stands). */
 export function goalWalk(id: Villager): number {
   const c = ctx;
-  if (!c || !c.enabled() || actors[id].asleep) return 0;
+  if (!c || !c.enabled() || actors[id].asleep || inside[id]) return 0;
   // their tree stands on their side (A's on the left): the one nearer their home
   const { treeA, treeB } = c.geo().nodes, hx = actors[id].home[0];
   const tx = Math.abs(treeA[0] - hx) <= Math.abs(treeB[0] - hx) ? treeA : treeB;
@@ -319,7 +335,7 @@ export function goalWalk(id: Villager): number {
 /** ふたりでぜんぶ: both walk to the middle of the lawn and high-five there. Returns the ms until the high-five. */
 export function meetUp(): number {
   const c = ctx;
-  if (!c || !c.enabled() || actors.mine.asleep || actors.partner.asleep) return 0;
+  if (!c || !c.enabled() || actors.mine.asleep || actors.partner.asleep || inside.mine || inside.partner) return 0;
   const g = c.geo();
   // each to the meeting spot on its own side (whose home is further left takes the left one: A's)
   const left = leftOf();

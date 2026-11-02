@@ -8,7 +8,19 @@
 //                                                         one at a time: each person's key opens one socket)
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { existsSync, readFileSync } from 'node:fs';
-import { CAMS, SEATS } from '../src/lib/components/island/world.ts';
+import { BUILDINGS, CAMS, HOMES, SEATS } from '../src/lib/components/island/world.ts';
+
+/** Where a villager stands at the tent's door (nav.ts doorOf). */
+const DOOR = ((b) => [b.x, b.z - 16] as const)(BUILDINGS.find((b) => b.id === 'campsite')!);
+/** Where a villager stands just out of the tent (buildings.ts outOfTent): ±12 of the door, 30 in front. */
+const OUT = (who: 'A' | 'B') => [DOOR[0] + (who === 'A' ? -12 : 12), DOOR[1] - 30] as const;
+
+/** A tap on the tent (its upper part: a villager may stand in front of its door). */
+async function tapTent(p: Page) {
+  const door = p.locator('[data-building="campsite"] .door');
+  const box = (await door.boundingBox())!;
+  await door.click({ position: { x: box.width * 0.5, y: box.height * 0.25 } });
+}
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -316,6 +328,8 @@ test('two phones in the tent: one room, A’s drag live on B (held there), the d
   await expect.poll(() => a.evaluate(([x, y]) => (window as unknown as { __tent: { hit(x: number, y: number): { kind: string } } }).__tent.hit(x, y)?.kind, [x, y]), { timeout: 4000 }).toBe('piece');
   await a.mouse.move(x, y);
   await a.mouse.down();
+  // A has it (a press on a placed piece picks it up)
+  await expect.poll(() => tt(a, (t) => t.edit()?.sel?.id ?? null), { timeout: 2000 }).toBe(p0.id);
   for (let k = 1; k <= 10; k++) {
     await a.mouse.move(x + ((x2 - x) * k) / 10, y + ((y2 - y) * k) / 10);
     await a.waitForTimeout(110);
@@ -397,4 +411,67 @@ test('a high-five over the relay: the partner plays the same moment at once, its
     await expect(d.getByText('ウェイさんからハイタッチ！')).toHaveCount(0);
   }
   await close();
+});
+
+// One place at a time (docs/design.md "The tent"): a villager in the tent is nowhere on the island, on both phones;
+// inside, the partner's villager is there only while the partner is; out of the door it stands at the tent's door on
+// both; a phone that goes quiet inside has its villager home again after the timeout.
+test('one place at a time: A in the tent is gone from B’s island, there with B inside, out at the door on both; quiet inside, home', async ({ browser }) => {
+  test.setTimeout(90_000);
+  const ctxA = await browser.newContext(CTX);
+  const ctxB = RELAY ? await browser.newContext(CTX) : ctxA;
+  const open = async (who: 'A' | 'B', ctx: typeof ctxA, extra = '') => {
+    const p = await ctx.newPage();
+    await p.goto(q(who) + extra);
+    await p.waitForFunction(() => (window as unknown as { __world?: { state?: unknown } }).__world?.state);
+    return p;
+  };
+  const a = await open('A', ctxA), b = await open('B', ctxB, '&tentgone=1500');
+  for (const p of [a, b]) await expect.poll(() => w<{ connected: boolean; peer: boolean } | null>(p, 'status').then((s) => !!s?.connected && s.peer), { timeout: 10_000 }).toBe(true);
+  const inside = (p: Page) => p.locator('[data-actor="partner"]').getAttribute('data-inside');
+  const door = async (p: Page) => {
+    await p.bringToFront();
+    await w(p, 'go', 642);
+    await p.waitForTimeout(300);
+    await tapTent(p);
+    await expect(p).toHaveURL(/\/tent\?/, { timeout: 10_000 });
+    await p.waitForFunction(() => ((window as unknown as { __tent?: TentHooks }).__tent?.stats()?.frames ?? 0) > 0);
+  };
+  expect(await inside(b)).toBeNull();
+  // A walks up to the tent and goes in: gone from B's island
+  await door(a);
+  await expect.poll(() => inside(b), { timeout: 6000 }).toBe('true');
+  // A's tent shows nobody else (B is on the island)
+  expect(await tt(a, (t) => t.partner())).toBeNull();
+  // B goes in: A is there
+  await door(b);
+  await expect.poll(() => tt(b, (t) => t.partner()), { timeout: 6000 }).not.toBeNull();
+  await expect.poll(() => tt(a, (t) => t.partner()), { timeout: 6000 }).not.toBeNull();
+  // A comes out: at the door on A's island, gone from B's tent
+  await a.bringToFront();
+  await a.getByRole('button', { name: '島へ' }).click();
+  await a.waitForFunction(() => (window as unknown as { __world?: { state?: unknown } }).__world?.state);
+  await expect.poll(async () => {
+    const at = await w<[number, number]>(a, 'mine');
+    return Math.hypot(at[0] - OUT('A')[0], at[1] - OUT('A')[1]);
+  }, { timeout: 3000 }).toBeLessThan(2);
+  await expect.poll(() => tt(b, (t) => t.partner()), { timeout: 4000 }).toBeNull();
+  // B comes out: A on B's island, at the door too
+  await b.bringToFront();
+  await b.getByRole('button', { name: '島へ' }).click();
+  await b.waitForFunction(() => (window as unknown as { __world?: { state?: unknown } }).__world?.state);
+  await expect.poll(() => inside(b), { timeout: 4000 }).toBeNull();
+  await expect.poll(async () => {
+    const p = await w<[number, number]>(b, 'partner');
+    return Math.hypot(p[0] - OUT('A')[0], p[1] - OUT('A')[1]);
+  }, { timeout: 4000 }).toBeLessThan(3);
+  // A goes in again (right at the door: straight in) and its phone goes quiet: home on B's island after the timeout
+  await door(a);
+  await expect.poll(() => inside(b), { timeout: 6000 }).toBe('true');
+  await a.close();
+  await expect.poll(() => inside(b), { timeout: 15_000 }).toBeNull();
+  const home = await w<[number, number]>(b, 'partner');
+  expect(Math.hypot(home[0] - HOMES.A[0], home[1] - HOMES.A[1])).toBeLessThan(3);
+  await ctxA.close();
+  if (RELAY) await ctxB.close();
 });

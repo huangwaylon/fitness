@@ -50,7 +50,7 @@
   import { VILLAGER, eventsAt, u, wildFlower, type Tod } from './scene.ts';
   import { todayPct } from './progress.ts';
   import { CAMPSITE, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, PLAN, PULLUP_AT, SEAT_DROP, SHORE_Z, TREE_H, flowerById, seatAt, surfaceAt, type BuildingId } from './world.ts';
-  import { doorAt, partnerOnline } from './buildings.ts';
+  import { doorAt, outOfTent, partnerOnline } from './buildings.ts';
   import { provideDoor } from '#lib/ui-state/doorTransition.ts';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -70,7 +70,8 @@
   import { actors, addFx, applyStep, busy, inMotion, react, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { walkGeo } from './walkGraph.ts';
-  import { attachAvatar, partnerRestsAt, partnerTo, presence, freeze, sendTo, setPartnerRest, snapHome, stayingAt, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
+  import { attachAvatar, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, snapHome, stayingAt, stepOut, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
+  import { where } from '#lib/store/where.svelte.ts';
   import { JOIN_SAY_MS, RUN_RING_U_S, linkVillagers, playPartner, playWake } from './villagerSync.ts';
   import { canonical, hash, type DayEvent } from '#lib/sync/world-day.ts';
   import type { SceneHit } from './sceneTaps.ts';
@@ -202,7 +203,8 @@
   /** Show `text` over a villager (mine: picked here; the partner's: from the relay) and hop it. */
   function showSay(id: 'mine' | 'partner', text: string) {
     const el = vilEls[id], sd = sides[id];
-    if (!el || covered) return;
+    // (a villager in the tent isn't on this screen: nothing to say it over)
+    if (!el || covered || (id === 'partner' && where.partnerInTent)) return;
     says?.say(id, text, el, { name: sd.person.villagerName, colour: SAY_TAG[sd.person.person] });
     if (!actors[id].asleep && !actors[id].walking) applyStep(id, { actor: id, motion: 'hop' });
   }
@@ -225,7 +227,7 @@
   let fiving = false;
   const FIVE_MS = 2400;
   function highFiveTap() {
-    if (!live || covered || fiving) return;
+    if (!live || covered || fiving || where.partnerInTent) return;
     fiving = true;
     cue('villager-tap');
     for (const id of ['mine', 'partner'] as const) if (actors[id].asleep) wake(id);
@@ -347,8 +349,10 @@
   // where a tap sent my villager this session (it stays there; the next open finds it home)
   // svelte-ignore state_referenced_locally
   if (live) {
+    // just out of the tent: at its door, facing out; else where a tap sent it this session
     const stay = stayingAt();
-    if (stay && !actors.mine.walking) place('mine', stay[0], stay[1]);
+    if (ui.takeFromTent()) stepOut(outOfTent(view.me));
+    else if (stay && !actors.mine.walking) place('mine', stay[0], stay[1]);
   }
   // My villager walks to what I tap (avatar.ts): the walk geometry from the world's constants, a spot is fine when a
   // villager standing there covers no control or visitor and stays on screen, and the feet's live position (a walk
@@ -690,9 +694,13 @@
   $effect(() => {
     const r = relay ?? demoRelay;
     if (!link || !r) return;
-    let up = false, soon: ReturnType<typeof setTimeout> | undefined;
+    let up = false, peerWas = false, soon: ReturnType<typeof setTimeout> | undefined;
     const off = r.onStatus((st) => {
       link.partnerHere(st.connected && st.peer);
+      where.peer(st.connected && st.peer);
+      // I'm on the island (not in the tent): said to a partner who arrives, whatever they last heard of me
+      if (st.connected && st.peer && !peerWas) r.send({ kind: 'tent', in: false });
+      peerWas = st.connected && st.peer;
       // (re)connected: once the day's replay is in, my villager as it is here (the room may hold an older walk of it,
       // from a session that ended elsewhere)
       if (st.connected && !up) soon = setTimeout(() => link.joined(), JOIN_SAY_MS);
@@ -701,6 +709,20 @@
     return () => (off(), clearTimeout(soon));
   });
   $effect(() => () => link?.detach());
+  // (`?tentgone=<ms>`: how long a partner gone quiet inside stays there; the e2e's)
+  if (hook('tentgone')) where.goneMs = Number(hook('tentgone')) || where.goneMs;
+  // one place at a time: the partner's villager in the tent is nowhere here; gone quiet inside, it's home again
+  $effect(() => {
+    const inTent = where.partnerInTent;
+    untrack(() => setInside('partner', inTent));
+  });
+  let homeSeen = where.wentHome;
+  $effect(() => {
+    const n = where.wentHome;
+    if (n === homeSeen || !live) return;
+    homeSeen = n;
+    untrack(() => place('partner', sides.partner.home[0], sides.partner.home[1], true));
+  });
   // the partner's phrases, live (never replayed: a phone opening later hears none)
   $effect(() => {
     const r = relay ?? demoRelay;
@@ -709,6 +731,8 @@
       if (m.who !== view.partner) return;
       if (m.kind === 'say') untrack(() => showSay('partner', m.text));
       else if (m.kind === 'highfive') untrack(() => partnerHighFive(m.at));
+      // where their villager is: in the tent it's nowhere on the island (and its life here leaves it alone)
+      else if (m.kind === 'tent') where.heard(m);
     });
   });
   /** When each of the partner's changes arrived here (e2e, the hooks on). */
@@ -752,11 +776,48 @@
     };
   });
   // The campsite's door (docs/design.md "Buildings", "The tent"): a tap goes into the tent, its own screen (the door's
-  // iris closes on it: ui-state/doorTransition.ts); the camera is kept for the way back out.
+  // iris closes on it: ui-state/doorTransition.ts); the camera is kept for the way back out. The one exception to "a
+  // tap on something acts in place" (the user: "we have to walk up to it before we enter it"): my villager walks up to
+  // the door first (the walk goes over the relay like any), unless it's there already; a tap on anything else on the
+  // way (it steers my villager anew) is the end of going in.
   function building(id: BuildingId, _el: HTMLElement) {
     if (!live || covered || id !== 'campsite' || entering) return;
-    // in place (only a tap on empty ground walks): my villager turns to the door, and in we go
-    turnTo(doorAt(id)[0]);
+    const door = doorAt(id), at = livePos('mine');
+    clearTimeout(walkingIn);
+    if (Math.hypot(at[0] - door[0], at[1] - door[1]) <= TENT_NEAR_U) return goIn();
+    const p = sendTo(door[0], door[1]);
+    if (!p) return goIn();
+    const token = (goingIn = {});
+    const check = () => {
+      // another tap since (anywhere but the tent): no going in
+      if (goingIn !== token) return;
+      const [x, z] = livePos('mine');
+      if (actors.mine.walking || inMotion('mine')) return void (walkingIn = setTimeout(check, 80));
+      if (Math.hypot(x - door[0], z - door[1]) <= TENT_NEAR_U) return goIn();
+      // stopped short (something on the island held my villager a moment, a reaction): on up to the door
+      const again = tries++ < 3 && sendTo(door[0], door[1]);
+      if (again) walkingIn = setTimeout(check, Math.max(80, again.ms - 40));
+    };
+    let tries = 0;
+    walkingIn = setTimeout(check, Math.max(0, p.ms - 40));
+  }
+  /** My villager this near the tent's door (u) goes straight in. */
+  const TENT_NEAR_U = 36;
+  let walkingIn: ReturnType<typeof setTimeout> | undefined;
+  /** The walk up to the tent under way (null: none, or a tap elsewhere ended it). */
+  let goingIn: object | null = null;
+  $effect(() => {
+    const el = sceneEl;
+    if (!el) return;
+    const tapped = (e: Event) => {
+      if (goingIn && !(e.target instanceof Element && e.target.closest('[data-building="campsite"]'))) goingIn = null;
+    };
+    el.addEventListener('pointerdown', tapped, true);
+    return () => (el.removeEventListener('pointerdown', tapped, true), clearTimeout(walkingIn));
+  });
+  function goIn() {
+    if (entering) return;
+    turnTo(doorAt('campsite')[0]);
     entering = true;
     ui.islandZ = world.view.camZ;
     cue('scene-bench');
@@ -861,7 +922,7 @@
 
         {#each ['mine', 'partner'] as const as id (id)}
           {@const sd = sides[id]}
-          <div class="actor" class:walking={live && actors[id].walking} data-actor={id} data-seat={seated[id]} data-rep={repping[id] || undefined} style:--seat-drop={u(SEAT_DROP)} style:--rep-lift={u(9)} data-person={sd.person.person} data-stung={stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : '0s'}
+          <div class="actor" class:walking={live && actors[id].walking} class:inside={id === 'partner' && where.partnerInTent} data-inside={(id === 'partner' && where.partnerInTent) || undefined} data-actor={id} data-seat={seated[id]} data-rep={repping[id] || undefined} style:--seat-drop={u(SEAT_DROP)} style:--rep-lift={u(9)} data-person={sd.person.person} data-stung={stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : '0s'}
             {@attach world.at(live ? { x: sd.home[0], z: sd.home[1], h: VILLAGER.h, live: () => livePos(id), always: true } : { x: sd.home[0], z: sd.home[1], h: VILLAGER.h })}>
             <button type="button" class="vil" disabled={!live} data-sfx="self" bind:this={vilEls[id]}
               aria-haspopup={id === 'mine' && live ? 'dialog' : undefined} aria-expanded={id === 'mine' && live ? !!picking : undefined}
@@ -881,7 +942,7 @@
           </div>
         {/each}
 
-        {#if live && edge && partnerHere}
+        {#if live && edge && partnerHere && !where.partnerInTent}
           <!-- the partner out of view: their villager's face at the edge they're off (a cue; the finger scrolls) -->
           <span class="edge {edge}" data-partner-edge={edge} aria-hidden="true">
             <Villager person={sides.partner.person.person} villager={sides.partner.person.villager} size={28} head />
@@ -968,6 +1029,8 @@
 
   /* the feet at the node's origin (camera.svelte.ts places it) */
   .actor { width: 0; height: 0; transform-origin: 0 0; }
+  /* in the tent: not on the island (one place at a time) */
+  .actor.inside { visibility: hidden; pointer-events: none; }
   /* seated: sunk behind the seat (the bench or the stool in front covers the legs) */
   .actor[data-seat] .vil { translate: -50% calc(2px + var(--seat-drop)); }
   /* at the bar: three pull-ups, a rest, again */

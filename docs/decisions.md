@@ -248,7 +248,9 @@ turns to it and the action plays at the target, its tool there (no walk-then-act
 partner's phone (the destination only; their planner walks it), and their doings play at the target here without
 their villager running over. Why: the user ("only move the character if the tapped spot is not an interactable
 object… when we click trees, ponds, etc., the character moves there and gets in the way"); every tap keeps its
-meaning and nothing waits for a walk.
+meaning and nothing waits for a walk. The tent's door is the one exception (2026-11): a tap on it walks my villager up to it first, then
+in (the user: "i want it to feel more physical, we have to walk up to it before we enter it"); near the door it goes
+straight in, and any other tap on the way ends it.
 
 ### Ambient life from the clock
 What the island does on its own is a function of the Tokyo date, the 10-second slot and the shared world, with PRNGs

@@ -1,9 +1,22 @@
 // Tap-to-walk and the campsite's door (spec §3–4, docs/design.md "Walking", "Buildings"): a tap on empty ground sends
 // my villager there along nav.ts's way (never through the water), a cream ring marks the spot, the walk stays for the
-// day, the camera stays where the finger left it; a tap on the water or the campsite acts in place (no walk): a
-// ripple, its line about today's guest.
+// day, the camera stays where the finger left it; a tap on the water acts in place (no walk): a ripple. The tent's door
+// is the one exception: my villager walks up to it, then goes in.
 import { expect, test, type Page } from '@playwright/test';
+import { BUILDINGS } from '../src/lib/components/island/world.ts';
 import { mkdirSync } from 'node:fs';
+
+/** Where my villager stands to go into the tent (nav.ts's door node). */
+const DOOR = ((b) => [b.x, b.z - 16] as const)(BUILDINGS.find((b) => b.id === 'campsite')!);
+/** Where a villager stands just out of the tent (buildings.ts outOfTent): ±12 of the door, 30 in front. */
+const OUT = (who: 'A' | 'B') => [DOOR[0] + (who === 'A' ? -12 : 12), DOOR[1] - 30] as const;
+
+/** A tap on the tent (its upper part: a villager may stand in front of its door). */
+async function tapTent(p: Page) {
+  const door = p.locator('[data-building="campsite"] .door');
+  const box = (await door.boundingBox())!;
+  await door.click({ position: { x: box.width * 0.5, y: box.height * 0.25 } });
+}
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -93,13 +106,35 @@ test('the camera never moves for a walk: a run up the island leaves it where the
   expect(await call(page, (w) => w.cam())).toBe(front);
 });
 
-test('the campsite: a tap goes into the tent in place, my villager staying where it is (no walk to the door)', async ({ page }) => {
+test('the campsite: a tap from far off walks my villager up to the door (no ring), then it goes in', async ({ page }) => {
   await open(page, '&date=2026-07-01T10:00&visitor=none', 642);
   const home = await call(page, (w) => w.mine());
-  await page.locator('[data-building="campsite"] .door').click();
-  expect(await call(page, (w) => w.mine())).toEqual(home);
+  await tapTent(page);
+  await page.waitForTimeout(300);
+  // on its way (not in yet), no ring: it's going in, not to a spot
+  expect(page.url()).not.toMatch(/\/tent\?/);
+  expect(await call(page, (w) => w.mine())).not.toEqual(home);
   await expect(page.locator('.tap-ring')).toHaveCount(0);
-  await expect(page).toHaveURL(/\/tent\?/);
+  await expect(page).toHaveURL(/\/tent\?/, { timeout: 8000 });
+});
+
+test('the campsite: near its door my villager goes straight in', async ({ page }) => {
+  await open(page, '&date=2026-07-01T10:00&visitor=none', 642);
+  const door = DOOR;
+  // (where it stands just out of the tent: buildings.ts outOfTent)
+  await call(page, (w, [x, z]) => w.put(x, z), [door[0] - 12, door[1] - 30]);
+  await tapTent(page);
+  await expect(page).toHaveURL(/\/tent\?/, { timeout: 1500 });
+});
+
+test('the campsite: a tap on the lawn on the way up is the end of going in', async ({ page }) => {
+  await open(page, '&date=2026-07-01T10:00&visitor=none', 642);
+  await tapTent(page);
+  await page.waitForTimeout(250);
+  const [x, y] = await call(page, (w) => w.at(120, 900));
+  await page.mouse.click(x, y);
+  await page.waitForTimeout(4000);
+  expect(page.url()).not.toMatch(/\/tent\?/);
 });
 
 test('a tap at the tent’s foot goes in too (the footprint is the campsite’s)', async ({ page }) => {
@@ -109,5 +144,5 @@ test('a tap at the tent’s foot goes in too (the footprint is the campsite’s)
   const [x, y] = await call(page, (w) => w.at(170, 1000));
   await page.mouse.click(x, y);
   await expect(page.locator('.tap-ring')).toHaveCount(0);
-  await expect(page).toHaveURL(/\/tent\?/);
+  await expect(page).toHaveURL(/\/tent\?/, { timeout: 8000 });
 });

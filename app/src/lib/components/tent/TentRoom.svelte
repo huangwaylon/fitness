@@ -22,6 +22,9 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { tent as room } from '#lib/store/tent.svelte.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
+  import { where } from '#lib/store/where.svelte.ts';
+  import { ui } from '#lib/ui-state/ui.svelte.ts';
+  import { outOfTent } from '../island/buildings.ts';
   import { sendDecor } from '#lib/store/actions.ts';
   import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
@@ -100,20 +103,18 @@
     sayWhere();
   }
 
-  // ---- the partner's villager: theirs to move while they're here, resting in the room while they're away ----
+  // ---- the partner's villager: here only while they're in the tent (store/where.svelte.ts), theirs to move ----
   let peer = $state(false);
-  /** The partner said they're in the tent (null: not since they came online). */
-  let partnerIn: boolean | null = null;
   let partnerAt: Pt = [me === 'A' ? 9 : -9, 16];
   function partnerShown() {
     if (!eng) return;
-    const shown = !peer || partnerIn === true;
+    const shown = where.partnerInTent;
     eng.villager(partner, shown ? lookOf(partner) : null);
     if (shown && !eng.walking(partner)) eng.put(partner, partnerAt, partner === 'A' ? 1 : -1);
   }
   function heardTent(m: Extract<Relayed, { kind: 'tent' }>) {
+    where.heard(m);
     if (!eng) return;
-    partnerIn = m.in;
     if (m.to) partnerAt = m.to;
     partnerShown();
     if (!m.in || !m.to) return;
@@ -263,6 +264,12 @@
     if (leaving) return;
     leaving = true;
     cue('scene-bench');
+    // out of the door: on the island my villager stands just outside the tent's door, facing out, on both phones (the
+    // island's put, said here at once with the leaving)
+    ui.fromTent = true;
+    send({ kind: 'tent', in: false });
+    const [dx, dz] = outOfTent(me);
+    send({ kind: 'walk', to: [Math.round(dx), Math.round(dz)], from: [Math.round(dx), Math.round(dz)], s: Math.round(relayNow()), ms: 0, f: 'home' });
     void goto(resolve('/') + location.search).finally(() => (leaving = false));
   }
   let leaving = false;
@@ -281,6 +288,10 @@
     if (m) untrack(() => room.rows(m.state.tent));
   });
   $effect(() => eng?.night(nightOf(theme.tod)));
+  $effect(() => {
+    void where.partnerInTent;
+    untrack(() => partnerShown());
+  });
   $effect(() => void loadTentNames(i18n.locale).catch(() => {}));
 
   onMount(() => {
@@ -298,10 +309,8 @@
       offs.push(relay.onStatus((st) => {
         const was = peer;
         peer = st.connected && st.peer;
-        if (peer && !was) {
-          partnerIn = null;
-          sayWhere();
-        }
+        if (peer && !was) sayWhere();
+        where.peer(peer);
         if (!peer && link.gone()) heldChanged();
         partnerShown();
       }));
