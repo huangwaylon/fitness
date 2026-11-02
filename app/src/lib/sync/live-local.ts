@@ -128,13 +128,13 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
       if (bc || typeof BroadcastChannel === 'undefined') return;
       bc = new BroadcastChannel(channel);
       bc.onmessage = onWire;
-      // when each tab last left (mine: my last time here), then I'm here
+      // when each tab last left (mine: my last time here, kept in the status for this start, as the relay's welcome
+      // has it: the status stays the same till someone comes or goes), then I'm here
       const was = readJson<Gone>(localKV(), DEMO.gone) ?? {};
       for (const w of ['A', 'B', 'G'] as const) if (typeof was[w] === 'number') left.set(w, was[w]!);
       const { [me]: _mine, ...rest } = was;
       writeJson(localKV(), DEMO.gone, rest);
       setStatus({ connected: true, me, gone: Object.fromEntries([...left].sort()) });
-      left.delete(me);
       post({ k: 'hi', who: me });
       timer = setInterval(() => {
         post({ k: 'hi', who: me });
