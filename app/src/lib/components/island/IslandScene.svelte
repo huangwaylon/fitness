@@ -93,6 +93,7 @@
   import { islandSeed } from './devHooks.ts';
   import { ARCH, SCENERY } from './world.ts';
   import { echo3d } from './echo3d.ts';
+  import { fx3d } from './fx3d.ts';
 
   interface Props {
     view: WeekView;
@@ -506,12 +507,14 @@
   const anyMoving = () => inMotion('mine') || inMotion('partner') || inMotion('third') || inMotion('visitor');
 
   // ---- tap-to-walk (spec §4): a tap on the ground sends my villager there; a cream ring marks the spot ----
-  let rings = $state<{ n: number; x: number; z: number; partner?: boolean }[]>([]);
+  let rings = $state<{ n: number; x: number; z: number; partner?: boolean; in3d?: boolean }[]>([]);
   let ringN = 0;
   /** The cream ring where a tap sent a villager (`partner`: theirs, from their phone). */
   function ring(x: number, z: number, partner = false) {
     const n = ++ringN;
-    rings = [...rings.slice(-1), { n, x, z, partner }];
+    // (the 3D island's: fx3d.ts)
+    const in3d = fx3d('ring', x, z, 0, { v: partner ? '#ddefff' : undefined });
+    rings = [...rings.slice(-1), { n, x, z, partner, in3d }];
     life.later(() => (rings = rings.filter((g) => g.n !== n)), RING_MS + 50);
   }
   /** SceneTaps' last step: the tap landed on the ground at (x, z) and nothing else took it. A tap at a building's foot
@@ -1113,14 +1116,14 @@
         {#if zap}
           {#key zap.n}
             <!-- the high-five's sparkle, flying from mine to the partner -->
-            <div class="zap-node" aria-hidden="true" {@attach world.at({ x: 0, z: 0, h: 20, live: zapAt, always: true, light: true })}>
-              <svg class="zap" viewBox="0 0 24 24" data-zap><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /><circle cx="12" cy="12" r="3" /></svg>
+            <div class="zap-node" aria-hidden="true" {@attach world.at({ x: 0, z: 0, h: 20, live: zapAt, always: true, light: true, m3: { key: 'fx/sparkle', id: `zap-${zap.n}`, face: 'camera' } })}>
+              <svg data-m3art class="zap" viewBox="0 0 24 24" data-zap><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /><circle cx="12" cy="12" r="3" /></svg>
             </div>
           {/key}
         {/if}
         {#each rings as r (r.n)}
           <!-- where a tap sent my villager: a cream ring on the ground, shrinking out (NH has none; the least feedback) -->
-          <div class="ring-node" {@attach world.at({ mode: 'flat', x: r.x, z: r.z, h: 4, zi: 8 })}><i class="tap-ring" class:partner={r.partner} data-ring={r.partner ? 'partner' : 'mine'}></i></div>
+          <div class="ring-node" {@attach world.at({ mode: 'flat', x: r.x, z: r.z, h: 4, zi: 8 })}><i class="tap-ring" class:partner={r.partner} class:in3d={r.in3d} data-ring={r.partner ? 'partner' : 'mine'}></i></div>
         {/each}
 
         <Particles {season} {foliage} {tod} quiet={asleepNow} mode="fireflies" raining={live && raining()} />
@@ -1185,6 +1188,11 @@
   .scene[data-r3] :global(.m3on :is([data-m3art], .official)) { opacity: 0; }
   .scene[data-r3] :global(.mover.m3on > *) { opacity: 0; }
   .scene[data-r3] :global(.in3d) { opacity: 0; }
+  .scene[data-r3] :global(.notes.m3on) { opacity: 0; }
+  /* what flies in the sky (the balloon and its present) is the canvas's where the DOM's is (Island3D sky) */
+  .scene[data-r3] :global(:is([data-m3sky], [data-m3sky-hide])) { opacity: 0; }
+  /* the characters' flourishes are the canvas's (world3d/Island3D actorFx); a sweat drop stays on the face */
+  .scene[data-r3] :global(:is(.actor, .visitor) .fxa:not(.sweat)) { opacity: 0; }
   .scene[data-r3] :global(.visitor:has(> .art.m3on) > .shade) { opacity: 0; }
   /* the campfire's light is the canvas's (its emissive, halo, pool and point light); its flames stay the DOM's */
   .scene[data-r3] :global(:is(.fire-halo, .embers, .fire-pool)) { display: none; }

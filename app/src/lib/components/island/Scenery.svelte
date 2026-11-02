@@ -18,6 +18,7 @@
   import { sceneSfx, shownNow } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
   import PLACES from './models.json';
+  import { pose3d } from './echo3d.ts';
 
   interface Props {
     season: Season;
@@ -62,8 +63,10 @@
   function tip() {
     if (tipped) return;
     tipped = true;
+    pose3d('fx-shishi', 'deco/shishiodoshi-tip');
     setTimeout(() => {
       tipped = false;
+      pose3d('fx-shishi', null);
       if (shishiEl && shownNow(shishiEl)) sceneSfx('kon');
     }, TIP_MS);
   }
@@ -216,13 +219,13 @@
     {@const k = f.h / 40}
     <!-- the campfire's flames (its render's emissive look) flickering, a warm halo round them and their light on the
          clearing; untinted, in the fire's depth, faded in at dusk -->
-    <div class="spr lit" data-lit={f.id} style:opacity={lit} {@attach w.at({ x: f.x, z: f.z, h: f.h, dz: -0.4, light: true })}>
+    <div class="spr lit" data-lit={f.id} style:opacity={lit} {@attach w.at({ x: f.x, z: f.z, h: f.h, dz: -0.4, light: true, m3: r3 ? { key: '', emit: { kind: 'flame', every: 120, lift: f.h * FIRE_AT[f.key] * 0.5, size: 0.9 } } : null })}>
       <span class="halo fire-halo" style:bottom="calc({f.h * FIRE_AT[f.key] - 60 * k} * var(--u))" style:width="calc({150 * k} * var(--u))"></span>
       <span class="art embers" style={at3d(`${f.key}-lit`, f.h, f.flip)} style:height="calc({f.h} * var(--u))" style:width="calc({wOf(`${f.key}-lit`, f.h)} * var(--u))">
         <OfficialArt key={`${f.key}-lit`} size="calc({f.h} * var(--u))" />
       </span>
       <!-- NH's flames over the logs: three tongues, each flickering out of step -->
-      <span class="flames" style:bottom="calc({f.h * FIRE_AT[f.key] - 8 * k} * var(--u))" style:--k={k}>
+      <span class="flames" data-m3art style:bottom="calc({f.h * FIRE_AT[f.key] - 8 * k} * var(--u))" style:--k={k}>
         <i class="tongue" style:--s="1" style:--x="0" style:--d="0s"></i>
         <i class="tongue" style:--s=".72" style:--x="-5" style:--d="-.4s"></i>
         <i class="tongue" style:--s=".66" style:--x="5" style:--d="-.9s"></i>

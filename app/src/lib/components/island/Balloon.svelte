@@ -37,7 +37,10 @@
   ];
   const GOLD = ['#F2C33F', '#FFEA9A', '#C28A1C', '#FFF4C4'];
   const gold = Math.random() < 0.05;
-  const [body, light, shade, rim] = gold ? GOLD : pickOne(COLOURS, Math.random);
+  const look = gold ? GOLD : pickOne(COLOURS, Math.random);
+  const [body, light, shade, rim] = look;
+  /** The 3D island's model of it (world3d/Island3D: data-m3sky), NH's balloon of about its colour. */
+  const model = `balloon/${gold ? 4 : COLOURS.indexOf(look) % 5}`;
   // The breeze blows either way; the altitude varies within whatever room the lane has to spare.
   const ltr = Math.random() < 0.5;
   const alt = Math.random();
@@ -132,13 +135,13 @@
     <span class="bob">
       <span class="rig">
         <span class="hang">
-          <svg class="string" viewBox="0 0 10 30" aria-hidden="true">
+          <svg class="string" data-m3sky-hide viewBox="0 0 10 30" aria-hidden="true">
             <path d="M5 0 C3.6 7 6.6 12 5.2 19 C4.4 23 5.4 26.5 5 30" fill="none" stroke="#9A8A72" stroke-width=".9"
               stroke-linecap="round" />
           </svg>
-          <span class="gift" bind:this={gift}><OfficialArt key="deco/present" size="100%" /></span>
+          <span class="gift" data-m3sky="deco/present" bind:this={gift}><OfficialArt key="deco/present" size="100%" /></span>
         </span>
-        <svg class="ball" viewBox="0 0 40 44" aria-hidden="true">
+        <svg class="ball" data-m3sky={model} data-popped={popped || undefined} viewBox="0 0 40 44" aria-hidden="true">
           <defs>
             <radialGradient id="{gid}-b" cx=".36" cy=".3" r=".78">
               <stop offset="0" stop-color={light} /><stop offset=".45" stop-color={body} />

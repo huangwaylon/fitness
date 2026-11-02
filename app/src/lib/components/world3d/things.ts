@@ -14,6 +14,7 @@ import { bend } from './bend.ts';
 import type { Inst, ModelName } from './layout3d.ts';
 import type { LampSpot } from './lights.ts';
 import { MODELS } from './models3d.ts';
+import { procScene } from './proc3d.ts';
 
 /** Where a lit model's light is (a share of its height), its colour and the halo's and pool's sizes (u). */
 const LAMP: Partial<Record<string, { at: number; kind: LampSpot['kind']; colour: number; glow: number; pool: number; dz?: number }>> = {
@@ -32,7 +33,7 @@ const LAMP: Partial<Record<string, { at: number; kind: LampSpot['kind']; colour:
   'events/countdown-board': { at: 0.6, kind: 'window', colour: 0xfff0c8, glow: 18, pool: 30 }
 };
 
-type Over = { hidden?: boolean; x?: number; z?: number; lift?: number; grey?: number; yaw?: number; pitch?: number; size?: number };
+type Over = { hidden?: boolean; x?: number; z?: number; lift?: number; grey?: number; yaw?: number; pitch?: number; size?: number; face?: boolean };
 
 export interface Things {
   /** The layout's things (a full list: only the models whose instances changed rebuild). */
@@ -51,6 +52,10 @@ export interface Things {
   /** One frame (the wobbles): true while one runs. */
   frame(t: number): boolean;
   has(id: string): boolean;
+  /** An instance shows another model for now (its pose: the shishi-odoshi tipped), or its own again (null). */
+  swap(id: string, model: string | null): void;
+  /** The camera turned: the billboards turn with it. */
+  camera(q: Quaternion): void;
   /** Something of the scene's own on an instance (the board's face: docs/board.md), in its model's units, placed, turned,
    *  scaled and bent with it; null takes it off. */
   attach(id: string, obj: Object3D | null): void;
@@ -69,6 +74,12 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   const gltfs = new Map<ModelName, Promise<GLTF | null>>();
   const model = (name: ModelName) => {
     let p = gltfs.get(name);
+    if (!p && name.startsWith('proc/')) {
+      // the island's own (proc3d.ts): built in code
+      const scene = procScene(name);
+      p = Promise.resolve(scene ? ({ scene } as unknown as GLTF) : null);
+      gltfs.set(name, p);
+    }
     if (!p) {
       pending++;
       p = loader.loadAsync(`${base}${name}.glb?v=${MODELS[name]?.v ?? 0}`).then((g) => (pending--, g), (e: unknown) => {
@@ -137,6 +148,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     if (ov?.hidden) return out.copy(ZERO);
     const x = ov?.x ?? o.x, z = ov?.z ?? o.z, lift = ov?.lift ?? o.lift ?? 0;
     tmpQ.setFromAxisAngle(UP, ov?.yaw ?? o.yaw ?? 0);
+    // turned to the camera (a flat flourish: a sparkle, a 「！」)
+    if (ov?.face ?? o.face) tmpQ.copy(camQ);
     const pitch = ov?.pitch ?? o.pitch ?? 0;
     if (pitch) tmpQ.multiply(tmpQ2.setFromAxisAngle(RIGHT, pitch));
     if (wobble) tmpQ.multiply(tmpQ2.setFromAxisAngle(FWD, wobble));
@@ -164,6 +177,18 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
         obj.matrixWorldNeedsUpdate = true;
         if (!obj.parent) scene.add(obj);
       }
+    }
+  }
+  /** The camera's turn (the billboards': `face`), and the instances that take it. */
+  const camQ = new Quaternion();
+  function camera(q: Quaternion) {
+    if (camQ.equals(q)) return;
+    camQ.copy(q);
+    for (const [id, a] of byId) {
+      const o = a.inst;
+      if (!(overs.get(id)?.face ?? o.face)) continue;
+      matOf(o, a.g.base[a.i]);
+      write(a.g, a.i);
     }
   }
   /** Objects riding on instances, by instance id (attach). */
@@ -316,6 +341,24 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     },
     frame,
     has: (id) => byId.has(id),
+    camera,
+    swap(id, model) {
+      const a = byId.get(id) ?? byId.get(`${id}#own`);
+      const inst = a?.inst ?? still.get(id) ?? extra.get(id);
+      if (!inst) return;
+      if (model) {
+        overs.set(id, { ...overs.get(id), hidden: true });
+        extra.set(`${id}#pose`, { ...inst, id: `${id}#pose`, model });
+      } else {
+        const o = overs.get(id);
+        if (o) overs.set(id, { ...o, hidden: false });
+        extra.delete(`${id}#pose`);
+      }
+      const b = byId.get(id);
+      if (b) (matOf(b.inst, b.g.base[b.i]), write(b.g, b.i));
+      void later();
+      changed();
+    },
     attach(id, obj) {
       const was = riders.get(id);
       if (was) {

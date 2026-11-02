@@ -743,7 +743,8 @@
   {@const b = BEHAVIOUR[shown]}
   <!-- one world node at the feet (camera.svelte.ts): its live position is the director's while it walks -->
   <span class="visitor {shown}" aria-hidden="true" {@attach w.at({ x: spot.x, z: spot.z, h: spot.h + 40, live: () => livePos('visitor'), always: true, inv: true,
-        c3: shown === 'reese' ? null : { key: ART[shown] ?? `villagers/${shown}`, h: spot.h, lift: FLOAT[shown] ?? 0, flip: facing.flip < 0, actor: 'visitor', art: () => el?.querySelector('.art') } })} class:show={!!playing} class:walking={st.walking} class:edge data-visitor={shown} data-stage={spot.stage || undefined}
+        m3: playing ? { key: '', emit: { kind: 'notes', every: 1100, lift: spot.h * 0.9 }, art: () => el?.querySelector('.notes') } : null,
+        c3: shown === 'reese' ? { key: 'villagers/reese', h: spot.h, lift: FLOAT[shown] ?? 0, flip: false, actor: 'visitor', art: () => el?.querySelector('.art'), also: { key: 'villagers/cyrus', h: spot.h * 1.05, dx: spot.h * 0.55 } } : { key: ART[shown] ?? `villagers/${shown}`, h: spot.h, lift: FLOAT[shown] ?? 0, flip: facing.flip < 0, actor: 'visitor', art: () => el?.querySelector('.art') } })} class:show={!!playing} class:walking={st.walking} class:edge data-visitor={shown} data-stage={spot.stage || undefined}
       data-phase={phase} data-way={way} data-asleep={sleeping ? (spot.lie ? 'lie' : 'stand') : undefined} data-motion={st.motion ?? undefined} bind:this={el}
       style:--h={su(spot.h)} style:--lift={su(FLOAT[shown] ?? 0)}
       style:--breath="{b.breath}ms" style:--step="{st.stepMs}ms" style:--flip={facing.flip} style:--lean={facing.lean}>

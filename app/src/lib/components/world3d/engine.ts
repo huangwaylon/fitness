@@ -175,6 +175,13 @@ export interface Island3 {
   focused(): boolean;
   /** A flourish in the world (effects.ts): a tap's dust, a splash, sparkles, a 「！」. */
   fx(kind: FxKind, x: number, z: number, lift?: number, o?: FxOpts): void;
+  /** Something of the scene's own in the world (a fishing line), bent with the island; its removal returned. */
+  add(obj: Object3D): () => void;
+  /** A screen point (canvas px) at `share` of the horizon's view depth, as a world point (unbent: x, z on the plan and
+   *  y its height) and the px a unit across there: a sky thing drawn where the DOM's is. */
+  skyPoint(sx: number, sy: number, share: number): { x: number; y: number; z: number; px: number };
+  /** How many flourishes play (with this ambient tag). */
+  fxCount(tag?: string): number;
   /** The GPU's name (a software renderer, CI's: the scene draws at its lightest). */
   gpu(): string;
   /** The camera's ends for this screen (the scene fits them: まえ's shore, おく's campsite). */
@@ -313,6 +320,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
       camera.updateProjectionMatrix();
     }
     camera.updateMatrixWorld();
+    things.camera(camera.quaternion);
     bendU.uBendZ.value = -camZ;
     // NH's haze: the far sea (and what stands far off) fades into the sky's horizon colour, all of it by the log's
     // horizon, so the sea meets the sky in one soft line at every scroll and zoom (no hard band of open sea)
@@ -755,6 +763,33 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
       activity();
     },
     focused: () => !!focus,
+    fxCount: (tag) => effects.count(tag),
+    skyPoint(sx, sy, share) {
+      const d = horizonDepth() * share;
+      v3.set((sx / W) * 2 - 1, -(sy / H) * 2 + 1, 0.5).unproject(camera);
+      const dir = v3.sub(camera.position).normalize();
+      // along the ray to that view depth
+      const fwd = new Vector3();
+      camera.getWorldDirection(fwd);
+      const t = d / Math.max(0.05, dir.dot(fwd));
+      const bx = camera.position.x + dir.x * t, by = camera.position.y + dir.y * t, bz = camera.position.z + dir.z * t;
+      // the bend undone (bend.ts bendPoint's inverse)
+      const R = bendU.uBendR.value, pz = -camZ, r = Math.hypot(by + R, pz - bz), th = Math.atan2(pz - bz, by + R);
+      return { x: bx, y: r - R, z: -(pz - th * R), px: focal / d };
+    },
+    add(obj) {
+      obj.traverse((n) => {
+        const m = (n as Mesh).material as Material | Material[] | undefined;
+        for (const x of m ? (Array.isArray(m) ? m : [m]) : []) bend(x);
+        n.frustumCulled = false;
+      });
+      scene.add(obj);
+      kick();
+      return () => {
+        scene.remove(obj);
+        kick();
+      };
+    },
     fx(kind, x, z, lift, o) {
       effects.spawn(kind, x, z, lift, o);
       activity(400);

@@ -25,3 +25,13 @@ export function echo3d(what: string | Element | null | undefined, strength = 1):
   const id = typeof what === 'string' ? what : thingOf(what);
   if (id) sink(id, strength);
 }
+
+let poser: ((id: string, key: string | null) => void) | null = null;
+/** The 3D island listens for poses (null: it's gone). */
+export function listenPose3d(fn: typeof poser): void {
+  poser = fn;
+}
+/** A thing takes another look for a moment (the shishi-odoshi tipped: its `-tip` model), or its own again (null). */
+export function pose3d(id: string, key: string | null): void {
+  poser?.(id, key);
+}
