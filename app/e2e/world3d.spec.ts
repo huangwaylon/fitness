@@ -30,7 +30,8 @@ test('the 2D island never loads three; ?island=3d draws the island in 3D and a t
   expect(scripts).not.toContain('three');
 
   await page.goto(`?${Q}&island=3d`);
-  await expect(page.locator('canvas[data-w3d]')).toBeVisible();
+  // (the 3D island's chunk and its first models: under CI's software GL beside other drawn tests, more than 5 s)
+  await expect(page.locator('canvas[data-w3d]')).toBeVisible({ timeout: 30_000 });
   await ready(page);
   expect(scripts).toContain('three');
   await expect(page.locator('.if-scene[data-r3]')).toBeVisible();

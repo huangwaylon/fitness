@@ -24,7 +24,7 @@ deploy.
 |---|---|---|---|
 | 1. Logic | pure functions and simulations: spawns, seeds, schedules, paths, scoring, sync merge | vitest (`*.test.ts`, 123 files) | the bulk |
 | 2. Logic-mode e2e | the real app in a browser, the gameplay and DOM tap areas live, **the 3D engines drawing nothing** (`E2E_RENDER=none`) | Playwright, the gate | most e2e |
-| 3. Drawn smoke | real WebGL: it draws, the camera, a tap lands on the model, the tent opens (`@render`, `@smoke`) | Playwright, the gate, 1 runner | ~10 tests |
+| 3. Drawn smoke | real WebGL: it draws, the camera, a tap lands on the model, the tent opens (`@render`, `@smoke`) | Playwright, the gate, 1 runner | 7 tests |
 | 4. Visual | screenshots at a fixed camera, time and seed, with a tolerance | Playwright `toHaveScreenshot`, full tier | a few |
 
 Best practice for WebGL games (Unity/Unreal's play-mode vs edit-mode tests, three.js projects' headless sims, the
@@ -53,9 +53,9 @@ Stays e2e, logic mode: anything that's a flow across the UI and the game (tap-wa
 decorating, tent editing, sheets and popups, sync between two phones, the HUD over the island, the 2D island while
 it's still the default).
 
-**3. Drawn smoke (`@render`, `@smoke`).** About ten tests with real (software) GL: the island draws and a lawn tap
+**3. Drawn smoke (`@render`, `@smoke`).** Seven tests with real (software) GL: the island draws and a lawn tap
 walks; the camera's scroll and pinch; screen ↔ world (the tap areas sit on the models); nothing strays or goes NaN; the
-night glows keep the canvas alpha; the tent opens and its floor tap walks; the villagers POC. These catch "it doesn't
+night glows keep the canvas alpha; and the tent opens and its floor tap walks. These catch "it doesn't
 draw" and "the projection is off". They're few, so they get one quiet runner and generous timeouts.
 
 **4. Visual snapshots (to add).** A handful of `toHaveScreenshot` tests, each one scene at a fixed camera
@@ -96,7 +96,7 @@ apart (`RELAY_E2E=1`, nightly or on demand), not on every push.
 
 - **GPU runners aren't worth it here.** GitHub's GPU runners (T4) are paid larger runners, and its macOS arm64 VMs
   have no GPU passthrough, so WebGL is software there too. Logic mode removes the cost instead: SwiftShader only draws
-  the ~10 drawn tests, at DPR 1 with shadows off (already automatic on a software renderer).
+  the 7 drawn tests, at DPR 1 with shadows off (already automatic on a software renderer).
 - **The gate** (what deploys): build ∥ checks (svelte-check, knip, vitest) ∥ the logic tier (12 shards) ∥ the drawn
   smoke (1 runner). **The full tier** (every test drawn, the quarantine, visuals) runs after the deploy and on the
   nightly, and flags failures in its summary. It never blocks the deploy.
