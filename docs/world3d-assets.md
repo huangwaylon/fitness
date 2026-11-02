@@ -57,6 +57,15 @@ Not converted (see the table's last section): the villagers (billboards), Pavé 
 UI's art. The plumeria isn't in NH's files under any name: NH's hibiscus (the closest shape) stands in, in the
 plumeria's white and pink.
 
+The villagers' own 3D models (the villager3d runtime, 411 of them) are converted apart, by `scripts/villagers3d-models.ts`
+and `scripts/villagers3d-page.js` into `app/static/room/villagers3d/<id>.glb` (≤ 100 KB each). A material's textures
+are the ones its Collada effect samples, not the ones named after it: NH's `mCapVis` (the ears, horns and hair a hat
+hides: 195 villagers) and `mGlassCap` sample `mBody_Alb` and `mGlass_Alb`, a hedgehog's or a kangaroo's `mSoftmesh`
+the body's or the cloth's; looked up by their own names they came out plain white (the user saw the ears). The texture
+is made once and shared (one image in the GLB), and the converter fails a villager whose GLB has a material without a
+base colour where the source has one. The 60 plain tops are the files' own: the clothing's texture isn't in them
+(Isabelle's and Redd's tops have none either).
+
 ## The inventory
 
 <!-- assets:start -->
