@@ -12,6 +12,9 @@ on:
   pull_request:
     paths: ['app/**', '.github/workflows/pages.yml']
   workflow_dispatch:
+  # nightly: the 3D island's suite (e2e-3d), until it's green and gates the cutover
+  schedule:
+    - cron: '17 18 * * *'
 
 # Least privilege: the build job (which runs dependency code: vite plugins, svelte-check, Playwright) can only read;
 # only the deploy job can publish.
@@ -146,9 +149,11 @@ jobs:
 
   # The same suite on the 3D island (E2E_ISLAND=3d: せってい's switch in each test's localStorage), ahead of the cutover
   # that makes it the default (docs/world3d-gaps.md). Not gating yet: it never holds the deploy back (not in deploy's
-  # needs, continue-on-error), and its failures are in its job summary; it gates once it's green.
+  # needs, continue-on-error), and its failures are in its job summary; it gates once it's green. Only nightly and on
+  # demand (`gh workflow run pages.yml`) until then: its 8 runners red on every push bought nothing.
   e2e-3d:
     needs: build
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     continue-on-error: true
@@ -196,7 +201,7 @@ jobs:
 
   deploy:
     needs: [build, checks, e2e]
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     # never cancelled halfway: a newer push's deploy waits for this one
     concurrency:

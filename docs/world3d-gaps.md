@@ -39,23 +39,24 @@ the rest read the 3D island through `window.__world3d` (e2e/island.ts: `is3d`, `
    streak is skipped. The sun and the moon sit in the same sliver. Either the camera leaves more sky at night (or on a
    short screen), or the 3D island draws the streaks in its own sky (behind the trees, so they may cross them).
 
-## Open: CI's software GL (SwiftShader), the engine (the lead): the cutover's blocker
+## CI's software GL (SwiftShader), the engine: the cutover's blocker
 
 CI's e2e draw in software (SwiftShader, one GPU process for every tab of the browser). Locally with
 `E2E_SWIFTSHADER=1 E2E_ISLAND=3d`: 108 failed at 6 workers, 38 at 3 (CI's), 17 at 1; the gating 2D suite passes.
 
-E1. **The 3D island never stops drawing.** Idle, even `?water=0&critter=none&visitor=none`, it draws 30 frames a
-   second on a GPU and ~14 in software (the water's 30 a second; the season's falling leaves). A second tab in the same
-   browser then opens 5–8× slower (its ribbon 6.5 s, its 3D island 23–36 s against 5 s): the two-phone specs
-   (shared-world, guest, decor, board, sync-harness) run out, and input lags (health.spec's drag: `mouse.move` out of
-   time). Where (engine.ts frame()): with the water off the loop runs only while something reports `more`, yet a
-   summer noon with `?water=0&critter=none&visitor=none` still draws 30 a second on a GPU (60 frames in 2 s, no
-   flourish playing): Island3D's frame hook (world.step, mirror, characterCards, villagerCards) reports motion every
-   frame with nothing moving; November's falling leaves (stats().fx 6) make it 60. On CI (run 41463316947) the
-   3D suite failed ~230 of ~380 against 38 locally at 3 workers. Wanted: on a software renderer (Island3D's swiftshader/llvmpipe check) the ambient motion off or a few frames
-   a second, and an idle island drawing nothing.
-E2. **Covered, it still draws**: with けんこう's popup over the island, ~14 frames a second in software. Wanted: no
-   frames while a sheet covers it (`enabled()` false), as the 2D island pauses.
+E1. **The 3D island never stops drawing** (fixed). It drew 30 a second idle with nothing moving on a GPU (~14 in
+   software), 60 in November (the falling leaves) and at night (the zzz). Causes: a part's `kick()` inside a frame
+   (a card's `set` each frame) scheduled the next frame, and an ambient flourish's spawn (the fall, a zzz) counted as
+   activity (60 a second for 400 ms). Now (engine.ts frame()): each part says what it wants (`Want`: true it moves,
+   the full rate; `'ambient'` only its ambience, the water, the fall, a fire's flicker, an emitter, a blink, at
+   `Options.ambient` a second, on a timer, no display frames woken between; false nothing), a kick from inside a
+   frame is that frame's own, and `stats().why` names what wanted the last one. On a software renderer the ambience
+   runs at 2 a second (`?ambient=` sets it anywhere). Measured (390 × 664, idle 4 s after load, frames a second):
+   GPU summer noon with the water off 30 (the villagers' blink: ambience), with it 30, November noon 30 (was 60),
+   November night 33 (was 61); SwiftShader 2, 2, 2.5 and 4 (was ~14). With the critters and visitors about, what
+   moves still draws at the full rate (13 a second in software).
+E2. **Covered, it still draws** (fixed): `Island3.pause(on)` from Island3D's `enabled()` (a sheet over the island):
+   0 frames in 3 s under けんこう's popup (`stats().paused`).
 
 The specs meanwhile wait for the 3D island before they act (e2e/island.ts `is3d`), watch what comes and goes as it
 opens (`watchFor`/`sawIt`), and fast-forward the page's clock instead of running it frame by frame

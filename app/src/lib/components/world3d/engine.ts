@@ -8,8 +8,10 @@
 //   The ground: the island's baked chunks on a heightfield (ground.ts, from the layout); the water live (water.ts).
 //   The things: NH's models (things.ts); the villagers and what has no model yet: cards (cards.ts).
 //   The lights: lights.ts (always-on emissive and halos, faded point lights). Water and shadows on by default.
-//   The frames: 60 a second while anything moves, 30 while only the water does, none hidden. The World's step runs in
-//   each frame before it draws, so the DOM moves with the picture.
+//   The frames: 60 a second while anything moves; while only the ambience does (the water, the season's fall, a fire's
+//   flicker, a sleeper's zzz, a blink) `ambient` a second (30; a software renderer's few); none when nothing does, none
+//   hidden or paused (a sheet over the island). The World's step runs in each frame before it draws, so the DOM moves
+//   with the picture.
 // Plain TS; world3d/Island3D.svelte drives it.
 import {
   Box3, BufferGeometry, Color, DirectionalLight, Float32BufferAttribute, Fog, HemisphereLight, Mesh, MeshLambertMaterial,
@@ -55,11 +57,15 @@ export interface BuiltGround {
   /** Where a walker's feet are (a bridge's deck); the ground's height if absent. */
   feet?(x: number, z: number): number;
   land: Land;
-  /** Called in each frame (its water's time, a paint stroke's rebuild): true while it wants frames. */
-  update?(t: number): boolean;
+  /** Called in each frame (its water's time, a paint stroke's rebuild): true while it moves (frames at the full rate),
+   *  'ambient' while only its ambience does (its water: the ambient rate), false when still. */
+  update?(t: number): Want;
   dispose?(): void;
 }
 export type Ground = GroundSource | BuiltGround;
+/** What a frame's part wants next: true something moves (the full rate), 'ambient' only its ambience (the ambient rate),
+ *  false nothing. */
+export type Want = boolean | 'ambient';
 const built = (g: Ground): g is BuiltGround => 'group' in g;
 
 export interface Options {
@@ -68,6 +74,8 @@ export interface Options {
   shadows: boolean;
   /** Frames a second at most (30 or 60). */
   cap: 30 | 60;
+  /** Frames a second while only the ambience moves (the water, the fall, a flicker): 0 none (it holds still). */
+  ambient: number;
 }
 interface Stats {
   fps: number;
@@ -87,6 +95,9 @@ interface Stats {
   lamps: number;
   /** The flourishes playing (effects.ts). */
   fx: number;
+  /** What wanted the last frame (`~`: its ambience only), and whether the island is paused. */
+  why: string[];
+  paused: boolean;
 }
 
 /** The camera: vertical field of view (a long lens), the pitch at zoom 1 / fully in / fully out, the zoom's range. */
@@ -212,19 +223,22 @@ export interface Island3 {
   horizon(): number;
   rev(): number;
   kick(): void;
-  /** Nothing moving (the water may still run at 30). */
+  /** Nothing moving (the ambience may still run at its rate). */
   idle(): boolean;
+  /** No frames at all while paused (a sheet over the island: the 2D island's pause); a frame at once when it ends. */
+  pause(on: boolean): void;
   /** The camera at rest: no finger, fling, spring back, settle or focus move under way (whatever else moves). */
   camStill(): boolean;
-  /** Called in every frame before it draws: true wants another (something moves). */
-  onFrame(fn: ((t: number) => boolean) | null): void;
+  /** Called in every frame before it draws: true wants another at the full rate (something moves), 'ambient' at the
+   *  ambient rate. */
+  onFrame(fn: ((t: number) => Want) | null): void;
   options(o: Partial<Options>): void;
   stats(): Stats;
   dispose(): void;
 }
 
 export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Partial<Options> & { aa?: boolean } = {}): Island3 {
-  const opts: Options = { dpr: Math.min(2, window.devicePixelRatio || 1), water: true, shadows: true, cap: 60, ...init };
+  const opts: Options = { dpr: Math.min(2, window.devicePixelRatio || 1), water: true, shadows: true, cap: 60, ambient: 30, ...init };
   const renderer = new WebGLRenderer({ canvas, antialias: init.aa ?? true, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance', stencil: false });
   renderer.setPixelRatio(opts.dpr);
   renderer.setClearColor(0x000000, 0);
@@ -307,7 +321,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
   const things = createThings(scene, src.height, (sh = true) => (sh && (shadowsDirty = true), kick()));
   const cards = createCards(scene, (sh) => (sh && (shadowsDirty = true), kick()));
   const lights = createLights(scene);
-  const effects = createEffects(scene, src.feet);
+  const effects = createEffects(scene, src.feet, () => kick());
   let extraGlows: readonly LampSpot[] = [];
   const relight = () => lights.set([...things.lamps(), ...extraGlows]);
   async function place(list: readonly Inst[]) {
@@ -689,31 +703,66 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
   }
 
   // ---- the frames ----
-  let raf = 0, frames = 0, disposed = false, shadowsDirty = true, pending = 0, activeUntil = 0, lastFrame = 0, busy = false;
-  let hook: ((t: number) => boolean) | null = null;
+  let raf = 0, timer: ReturnType<typeof setTimeout> | 0 = 0, frames = 0, disposed = false, shadowsDirty = true, pending = 0, activeUntil = 0, lastFrame = 0;
+  /** The last frame's: something moved (the full rate), only the ambience did. */
+  let busy = false, ambience = false, paused = false, inFrame = false;
+  let hook: ((t: number) => Want) | null = null;
   const cpu: number[] = [], gaps: number[] = [], stamps: number[] = [];
+  /** What wanted the last frames (the e2e's and perf's: which part keeps the island drawing). */
+  const why = new Set<string>();
   const activity = (ms = 300) => {
     activeUntil = Math.max(activeUntil, now() + ms);
     kick();
   };
+  /** A frame as soon as the display has one (a change from outside: a model in, a tap, the camera). A kick from inside
+   *  a frame is that frame's own (what it changed is drawn in it): its parts' wants say whether another follows. */
   function kick() {
-    if (!raf && !disposed) raf = requestAnimationFrame(frame);
+    if (inFrame || disposed) return;
+    if (timer) {
+      clearTimeout(timer);
+      timer = 0;
+    }
+    if (!raf) raf = requestAnimationFrame(frame);
   }
+  /** The next frame after `ms` (the ambient rate: no display frames woken in between). */
+  function later(ms: number) {
+    if (raf || timer || disposed) return;
+    if (ms <= 12) raf = requestAnimationFrame(frame);
+    else timer = setTimeout(() => {
+      timer = 0;
+      if (!raf && !disposed) raf = requestAnimationFrame(frame);
+    }, ms - 8);
+  }
+  const want = (w: Want, name: string) => {
+    if (w === true) busy = true, why.add(name);
+    else if (w === 'ambient') ambience = true, why.add(`~${name}`);
+  };
   function frame() {
     raf = 0;
-    if (disposed || document.hidden) return;
+    if (disposed || document.hidden || paused) return;
     const t = now();
     const active = touch || t < activeUntil || busy;
-    // 30 a second when only the water moves (or at the 30 cap): display frames in between are skipped
-    const minGap = !active || opts.cap === 30 ? 1000 / 30 - 4 : 1000 / 60 - 4;
-    if (lastFrame && t - lastFrame < minGap) {
+    // (at the 30 cap a display frame in between is skipped)
+    if (active && opts.cap === 30 && lastFrame && t - lastFrame < 1000 / 30 - 4) {
       raf = requestAnimationFrame(frame);
       return;
     }
+    inFrame = true;
+    busy = ambience = false;
+    why.clear();
+    try {
+      draw(t);
+    } finally {
+      inFrame = false;
+    }
+    // something moves: the next display frame; only the ambience (the water included): at its rate; else none
+    if (busy || touch || now() < activeUntil) raf = requestAnimationFrame(frame);
+    else if (ambience && opts.ambient > 0) later(Math.max(0, 1000 / opts.ambient - (now() - t)));
+  }
+  function draw(t: number) {
     // (the real time since the last frame, up to a quarter second: a slow GPU settles as soon as a fast one)
     const dt = lastFrame ? Math.min(250, t - lastFrame) : 16;
-    let more = false;
-    if (stepMove(t)) more = true;
+    want(stepMove(t), 'focus');
     // the fling: iOS's deceleration, firmer past an end
     if (!touch && (vel || velX) && !focus) {
       const step = Math.min(50, t - lastT);
@@ -731,23 +780,30 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
       }
       if (Math.abs(vel) < 0.01 && !velX) vel = 0;
       aim();
-      more = true;
+      want(true, 'fling');
     }
     if (!touch && !vel && !velX && !focus && !move) {
       if (settling || zoomBack || camZ < lim.min || camZ > lim.max || zoomK < ZOOM.min || zoomK > ZOOM.max) {
         settling = settle(dt);
-        more ||= settling;
+        want(settling, 'settle');
       }
-      if (!more) light(false);
+      if (!busy) light(false);
     }
     // (a wobbling model moves its shadow: the map redraws; a walker's is a blob)
-    if (things.frame(t)) more = shadowsDirty = true;
-    if (hook?.(t)) more = true;
-    if (cards.frame(pitch * LEAN, stretch, src.feet)) more = true;
-    if (effects.frame(t, camera)) more = true;
-    if (built(ground) && ground.update?.(t)) more = true;
-    if (lights.frame(t, camX, camZ + 110, bendU.uBendR.value, -camZ)) more = true;
-    if (opts.water) waterU.uTime.value = (t / 1000) % 3600;
+    if (things.frame(t)) {
+      shadowsDirty = true;
+      want(true, 'things');
+    }
+    if (hook) want(hook(t), 'scene');
+    want(cards.frame(pitch * LEAN, stretch, src.feet), 'cards');
+    want(effects.frame(t, camera), 'fx');
+    if (built(ground) && ground.update) want(ground.update(t), 'ground');
+    want(lights.frame(t, camX, camZ + 110, bendU.uBendR.value, -camZ), 'lights');
+    // the water: ambience (its time runs only while frames are drawn: none still, none in a pause)
+    if (opts.water && water.all.length && opts.ambient > 0) {
+      waterU.uTime.value = (t / 1000) % 3600;
+      want('ambient', 'water');
+    }
     if (opts.shadows && shadowsDirty) {
       renderer.shadowMap.needsUpdate = true;
       shadowsDirty = false;
@@ -761,13 +817,10 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     if (cpu.length > 300) cpu.shift();
     if (gaps.length > 300) gaps.shift();
     frames++;
-    busy = more;
-    // the water keeps the loop going (at 30 when still); without it, only what moves does
-    if (more || active || opts.water) kick();
   }
   const onVis = () => {
     lastFrame = 0;
-    if (!document.hidden) kick();
+    if (!document.hidden && !paused) kick();
   };
   document.addEventListener('visibilitychange', onVis);
   // a lost context (the phone reclaiming the GPU): three restores what it can; draw again once it's back
@@ -893,7 +946,9 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     fxWarmed: () => effects.warmed(),
     fx(kind, x, z, lift, o) {
       effects.spawn(kind, x, z, lift, o);
-      activity(400);
+      // (an ambient one, tagged: the fall, a sleeper's zzz, an emitter's, plays at the ambient rate)
+      if (o?.tag) kick();
+      else activity(400);
     },
     gpu() {
       const gl = renderer.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info');
@@ -903,6 +958,16 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     rev: () => rev,
     kick: () => kick(),
     camStill: () => !touch && !vel && !velX && !zoomBack && !settling && !move,
+    pause(on) {
+      if (on === paused) return;
+      paused = on;
+      lastFrame = 0;
+      if (on) {
+        if (raf) cancelAnimationFrame(raf);
+        if (timer) clearTimeout(timer);
+        raf = timer = 0;
+      } else kick();
+    },
     idle: () => !busy && !touch && !vel && !velX && !zoomBack && !settling && now() > activeUntil,
     onFrame(fn) {
       hook = fn;
@@ -914,12 +979,14 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
         fps: stamps.length, cpu: [pctl(cpu, 0.5), pctl(cpu, 0.95)], gap: [pctl(gaps, 0.5), pctl(gaps, 0.95)],
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures,
         geometries: renderer.info.memory.geometries, dpr: renderer.getPixelRatio(), frames,
-        loading: pending + things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count()
+        loading: pending + things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count(),
+        why: [...why], paused
       };
     },
     dispose() {
       disposed = true;
       cancelAnimationFrame(raf);
+      if (timer) clearTimeout(timer);
       document.removeEventListener('visibilitychange', onVis);
       canvas.removeEventListener('webglcontextlost', onLost);
       canvas.removeEventListener('webglcontextrestored', onRestored);

@@ -179,11 +179,13 @@
     const was = markAt[slot];
     // once each; a held one (a sleeper's, a surprise held) again as the last fades
     if (was && was.n === a.emoteN && !(a.emoteHold && t - was.t > 2000)) return;
+    // (a held one's repeats are ambience: they play at the ambient rate)
+    const again = !!was && was.n === a.emoteN;
     markAt[slot] = { n: a.emoteN, t };
     // over the head (NH's head joint is at the head's base: its top about as high again)
     const hb = vil3?.head(slot), feet = feetOf(x, z);
     const lift = hb ? (hb.getWorldPosition(headV).y - feet) * 2 + 10 : VILLAGER.h + 10;
-    e.fx('mark', x, z, lift, { v: m, ms: 2200 });
+    e.fx('mark', x, z, lift, { v: m, ms: 2200, tag: again ? 'mark' : undefined });
   }
   function villagerCards(t: number, active: boolean): boolean {
     if (!eng) return false;
@@ -249,7 +251,7 @@
           // a sleeper's zzz: one every couple of seconds while it sleeps
           if (t - (zzzAt[id] ?? -Infinity) < 1900) continue;
           zzzAt[id] = t;
-          e.fx('zzz', x + 8, z, VILLAGER.h * 0.75);
+          e.fx('zzz', x + 8, z, VILLAGER.h * 0.75, { tag: 'zzz' });
           continue;
         }
         const key = `${id}:${f.n}`;
@@ -331,10 +333,13 @@
   const todNow = () => (tod === 'night' ? 'night' : tod === 'dusk' || tod === 'dawn' ? 'dusk' : 'day');
   /** My cast is out (the bobber's node): my 3D villager holds NH's rod, its line from the rod's tip. */
   let fishing = false;
+  /** An emitter on the island now (bubbles, a firefly, flames): ambience. */
+  let emitting = false;
   function mirror(e: Island3, t: number): boolean {
     const winter = season === 'winter', seen = new Set<string>(), add: Inst[] = [];
     let moving = false;
     fishing = false;
+    emitting = false;
     for (const n of world.models3()) {
       const a = n.m3.key ? keyModel(n.m3.key, winter) : null, drawn = !!a || !!n.m3.emit;
       const art = n.m3.art ? n.m3.art() : n.el;
@@ -350,9 +355,11 @@
         if (t - last >= em.every) {
           emitted.set(n.id, t);
           const y0 = n.m3.water ? waterY(n.x, n.z) - heightOf(n.x, n.z) : n.lift;
-          e.fx(em.kind as FxKind, n.x, n.z, y0 + (em.lift ?? 0), { v: em.v, size: em.size, ms: em.every * 1.5 });
+          // (an emitter's flourishes are ambience: the ambient rate)
+          e.fx(em.kind as FxKind, n.x, n.z, y0 + (em.lift ?? 0), { v: em.v, size: em.size, ms: em.every * 1.5, tag: 'emit' });
         }
         seenEmit.add(n.id);
+        emitting = true;
       }
       if (!a) continue;
       seen.add(n.id);
@@ -529,6 +536,12 @@
     });
   });
 
+  // (a sheet over the island: no frames, as the 2D island pauses)
+  $effect(() => {
+    const e = eng, on = !enabled();
+    if (e) untrack(() => e.pause(on));
+  });
+
   /** Put the camera at a world z at once (the e2e, IslandScene's goTo). */
   export function go(z: number, k?: number) {
     eng?.go(z, k, true);
@@ -583,7 +596,12 @@
     eng = e;
     // a software renderer (no GPU: headless CI) draws a frame in seconds at the phone's pixel ratio: the lightest one, no
     // shadow map (?shadows=1 keeps it)
-    if (num('dpr') === null && /swiftshader|llvmpipe|software/i.test(e.gpu())) e.options({ dpr: 1, shadows: q.get('shadows') === '1' });
+    // and its ambience (the water, the fall, a flicker) a couple of frames a second: CI's tabs share one GPU process
+    // (?ambient= the frames a second of it, anywhere)
+    const soft = /swiftshader|llvmpipe|software/i.test(e.gpu());
+    if (num('dpr') === null && soft) e.options({ dpr: 1, shadows: q.get('shadows') === '1' });
+    const amb = num('ambient') ?? (soft ? 2 : null);
+    if (amb !== null) e.options({ ambient: Math.max(0, amb) });
     fitEnds(e);
     e.go(start ?? e.limits().min);
     const proj: Proj3 = {
@@ -613,7 +631,9 @@
       sky(e);
       const acting = characterCards(e, t);
       actorFx(e, t);
-      return villagerCards(t, camMoved || more) || more || moving || acting;
+      if (villagerCards(t, camMoved || more) || more || moving || acting) return true;
+      // the ambience (the ambient rate): the season's fall, the stream's floats, an emitter, a villager's blink
+      return ambient3.kind || floatsOn || emitting || cast().some((c) => c.shown) ? 'ambient' : false;
     });
     // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
     listenFx3((kind, x, z, lift, o) => e.fx(kind, x, z, lift, o));
