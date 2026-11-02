@@ -3,6 +3,11 @@
 // spot before a line (the balloon anchors to them there), they arrive from the campsite and leave to it (or by their
 // own way), and the partner comes over to say hello to a visitor near home (never across the island to centre stage).
 import { expect, test, type Page } from '@playwright/test';
+import { BUILDINGS } from '../src/lib/components/island/world.ts';
+import { is3d } from './island.ts';
+
+/** The campsite's door, where the visitors come from and go back to (world x, z). */
+const CAMP = ((b) => [b.x, b.z - 16] as const)(BUILDINGS.find((b) => b.id === 'campsite')!);
 
 test.use({ viewport: { width: 390, height: 844 } });
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
@@ -107,15 +112,23 @@ test('arriving: from the campsite on foot along the paths (?arrive); leaving to 
   };
   await expect(v).toHaveAttribute('data-phase', 'arrive');
   await expect(v).toHaveClass(/walking/);
-  // from the campsite, out of sight from まえ: she comes into view on the lawn as she nears her spot
-  await expect(v.locator('.art')).toBeHidden();
-  await until(() => v.locator('.art').isVisible(), 26);
+  // from the campsite, out of sight from まえ: she comes into view on the lawn as she nears her spot (the 3D island
+  // shows the whole island: she sets off from the campsite's door in view)
+  const three = await is3d(page);
+  if (three) {
+    const door = await page.evaluate(([x, z]) => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x, z), CAMP);
+    const feet = (await v.boundingBox())!;
+    expect(Math.hypot(feet.x - door[0], feet.y - door[1])).toBeLessThan(60);
+  } else {
+    await expect(v.locator('.art')).toBeHidden();
+    await until(() => v.locator('.art').isVisible(), 26);
+  }
   await until(async () => (await v.getAttribute('data-phase')) === 'here', 26);
   // the visit ends 30 s after it began, however long the walk from the campsite took (the route's length moves with
   // the scenery the walk goes round)
   await until(async () => (await v.getAttribute('data-phase')) === 'leave', 32);
   await expect(v).toHaveClass(/walking/);
-  await until(async () => !(await v.locator('.art').isVisible()), 20);
+  if (!three) await until(async () => !(await v.locator('.art').isVisible()), 20);
   await until(async () => (await page.locator('[data-visitor]').count()) === 0, 30);
 });
 

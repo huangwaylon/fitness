@@ -2,6 +2,7 @@
 // while snow lies on the ground (Dec 11 – Feb 24), petals floating on the pond in cherry-blossom week (Apr 1–10)
 // and maple leaves in maple week (Nov 16–25); none of it on an ordinary day.
 import { expect, test, type Page } from '@playwright/test';
+import { is3d, w3 } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -30,6 +31,11 @@ test('snow on the campsite’s tent in winter only', async ({ page }) => {
 for (const [date, floating] of [['2027-04-05T10:00', 'petal'], ['2026-11-20T10:00', 'maple'], ['2026-11-01T10:00', null]] as const)
   test(`the pond on ${date.slice(0, 10)}: ${floating ?? 'nothing'} floating`, async ({ page }) => {
     await open(page, date, 642);
-    if (floating) await expect(page.locator(`[data-floating="${floating}"]`)).toBeAttached();
+    if (await is3d(page)) {
+      // the 3D island: NH's petal or maple leaf riding the stream (world3d/floats3d.ts; none on its pond yet:
+      // docs/world3d-gaps.md)
+      const model = floating ? `fx/${floating === 'petal' ? 'petal' : 'maple-leaf'}` : undefined;
+      await expect.poll(() => w3(page, (w) => w.where('float-0')?.model)).toBe(model);
+    } else if (floating) await expect(page.locator(`[data-floating="${floating}"]`)).toBeAttached();
     else await expect(page.locator('[data-floating]')).toHaveCount(0);
   });
