@@ -13,7 +13,12 @@ import { localDateAt } from '../../app/src/lib/time/dates.ts';
 
 type Snap = Record<string, any>;
 
-const json = (v: unknown) => JSON.stringify(v, (_k, x) => (x instanceof Map ? [...x].sort() : x));
+/** Canonical JSON: maps as sorted entries, object keys sorted (a pref set later in another order is the same prefs). */
+const json = (v: unknown) => JSON.stringify(v, (_k, x) => {
+  if (x instanceof Map) return [...x].sort();
+  if (x && typeof x === 'object' && !Array.isArray(x)) return Object.fromEntries(Object.entries(x).sort(([a], [b]) => (a < b ? -1 : 1)));
+  return x;
+});
 
 /** What the app shows from a State at `now`, per part. */
 function views(s: State, now: number): Record<string, unknown> {
