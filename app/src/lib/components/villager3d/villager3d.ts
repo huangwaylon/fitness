@@ -11,7 +11,7 @@
 //   v.step(t, moved, speed) one frame: `moved` the u walked since the last (the stride follows it), `speed` u/s
 //   v.head()                the head bone (a balloon's, a hat's anchor)
 import {
-  CircleGeometry, Color, Mesh, MeshBasicMaterial, MeshLambertMaterial, Object3D, SphereGeometry, Vector3, type Bone, type Material,
+  Box3, Matrix4, CircleGeometry, Color, Mesh, MeshBasicMaterial, MeshLambertMaterial, Object3D, SphereGeometry, Vector3, type Bone, type Material,
   type MeshStandardMaterial, type SkinnedMesh, type Texture
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -40,6 +40,9 @@ export interface Villager3D {
   /** Its opacity (the board's focus fades one standing between the camera and the board): 1 drawn as ever. */
   opacity(a: number): void;
   head(): Bone | null;
+  /** Put something on its head (a hat: its origin its base, y up, in model units) or take it off (null): it rides the
+   *  head bone, upright as the head is at rest, its base on the head's top (a little sunk in). */
+  wear(obj: Object3D | null): void;
   /** Hold a pose as it is (a test's, a still): null lets the states and actions move it again. */
   hold(p: Pose | null): void;
   rig: Rig;
@@ -129,6 +132,15 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
 
   // the sting's lump (NH's swollen eye): over the eye on the viewer's left, on the head bone
   const head = rig.bone('Head');
+  // where a hat goes, from the rest pose (the model's own frame): the head's top over the head bone, as a matrix in the
+  // head bone's space (upright: the bone's own rest turn undone)
+  let hatAt: Matrix4 | null = null;
+  if (head) {
+    model.updateMatrixWorld(true);
+    const top = new Box3().setFromObject(model).max.y, hp = new Vector3().setFromMatrixPosition(head.matrixWorld);
+    hatAt = head.matrixWorld.clone().invert().multiply(new Matrix4().makeTranslation(hp.x, top - (top - hp.y) * 0.12, hp.z));
+  }
+  let worn: Object3D | null = null;
   let lump: Mesh | null = null;
   if (head && eyeBox) {
     const [a, b] = eyeBox as [Vector3, Vector3];
@@ -209,6 +221,15 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       faceSet = f;
     },
     head: () => head,
+    wear(obj) {
+      if (obj === worn) return;
+      worn?.removeFromParent();
+      worn = obj;
+      if (!obj || !head || !hatAt) return;
+      obj.matrixAutoUpdate = false;
+      obj.matrix.copy(hatAt).multiply(new Matrix4().makeScale(obj.scale.x, obj.scale.y, obj.scale.z));
+      head.add(obj);
+    },
     hold(p) {
       held = p;
     },
