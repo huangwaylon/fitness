@@ -9,14 +9,14 @@ type Suite = { title: string; specs?: Spec[]; suites?: Suite[] };
 const json = execFileSync('npx', ['playwright', 'test', '--list', '--reporter=json', '--project=chromium', '--grep', '@quarantine', '--pass-with-no-tests'], { encoding: 'utf8', maxBuffer: 64 << 20 });
 const report = JSON.parse(json.slice(json.indexOf('{'))) as { suites: Suite[] };
 const rows: { where: string; title: string; why: string | null }[] = [];
-const walk = (s: Suite) => {
+const walk = (s: Suite, path: string[]) => {
   for (const sp of s.specs ?? []) {
     const a = sp.tests.flatMap((t) => t.annotations ?? []).find((x) => x.type === 'quarantine');
-    rows.push({ where: `e2e/${sp.file}:${sp.line}`, title: sp.title, why: a?.description && /owner:/i.test(a.description) ? a.description : null });
+    rows.push({ where: `e2e/${sp.file}:${sp.line}`, title: [...path, sp.title].join(' › '), why: a?.description && /owner:/i.test(a.description) ? a.description : null });
   }
-  for (const c of s.suites ?? []) walk(c);
+  for (const c of s.suites ?? []) walk(c, c.title && !c.title.endsWith('.ts') ? [...path, c.title] : path);
 };
-for (const s of report.suites) walk(s);
+for (const s of report.suites) walk(s, []);
 
 console.log(`### The e2e quarantine (${rows.length})\n`);
 if (!rows.length) console.log('Empty.');

@@ -2,6 +2,7 @@
 // catch plate (a fish, its first-find page, a shell, a present), the wish's caption and Gulliver's sleep talk keep at
 // least 12px from the screen's sides and foot and never sit over the HUD (the ribbon, the jar, the sync chip).
 import { expect, test, type Page } from '@playwright/test';
+import { reelOnBite } from './island.ts';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
 const centre = (page: Page, sel: string) =>
@@ -47,15 +48,19 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
   test.describe(`at ${w}`, () => {
     test.use({ viewport: { width: w, height: h } });
 
-    test('the catch plate and its first-find page', async ({ page }) => {
+    test('the catch plate and its first-find page', {
+      tag: '@quarantine',
+      annotation: { type: 'quarantine', description: 'owner: engine agent (fishing, the catch plate), 2026-11-03: red main at 67f69641, the reel missed the 1.6 s bite under CI load; reelOnBite (e2e/island.ts) is the fix, back in the gate after 5 green full-tier runs' }
+    }, async ({ page }) => {
       await open(page, 'date=2026-11-04T21:00&critter=sea-bass');
       await expect(page.locator('[data-critter="fish"]')).toBeAttached();
       await page.waitForTimeout(500);
       const f = await centre(page, '[data-critter="fish"]');
       await page.mouse.click(f.x + (f.x < w / 2 ? 40 : -40), f.y);
-      await expect(page.locator('[data-bite]')).toBeAttached({ timeout: 12_000 });
+      // the reel, the moment it bites (the bobber's where the cast put it)
+      await expect(page.locator('[data-bobber]')).toBeAttached();
       const b = await centre(page, '[data-bobber]');
-      await page.mouse.click(b.x < w / 2 ? w - 20 : 20, b.y);
+      await reelOnBite(page, b.x < w / 2 ? w - 20 : 20, b.y);
       await expect(page.locator(plate)).toBeVisible();
       await expectClear(page, plate);
       // (a tap where it is: Playwright's own click would scroll the island's sticky stage to it, moving the camera)
