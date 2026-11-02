@@ -683,6 +683,17 @@ goes with the leaving).
   on or off with a tap, kept with the piece (its op's `l`) on both phones; it glows (its emissive) while on, and in the
   dark lights the room round it (up to four point lights). NH's room light switch (💡, top right) dims the room's own
   light; at night, or with it off, the room is lit by whatever is on.
+- **The Happy Home Academy** (`tent/hha.ts`, `HhaLetter.svelte`): the first time someone comes in through the door
+  after the room was changed that day (Tokyo's), ハニワくん's letter rates it, once a day on each phone; the ハニワ button
+  (top right) shows the rating as the room is now. Worked out from the shared room alone, so both phones agree: NH's
+  HHA base points from the spreadsheet (a second of the same thing half, a third nothing; the wallpaper and floor
+  too), a series of 3 or more (120 each, 600 more from 6: まるた, ラタン…), a theme and a colour that 4 or more and half the
+  pieces share (NH's concepts and catalogue colours: 80 and 60 each), the lights on (250, then 100 each up to four), the
+  space (the floor 30–65 % used 700, near it 300; something on a table, something on a wall, 200 each) and the kinds
+  of thing (60 each, up to 600). どうの ハニワ from 3,000, ぎん from 6,000, きん from 10,000 (a starter camp ≈ 1,900, a log
+  room ≈ 4,700, the log room grown and lit ≈ 8,500). One remark: what would help (empty, sparse, crowded, dark) or the
+  best of what's there, its series, theme or colour named. The numbers are their own chunk (`hha.json`, from
+  `npm run room-models`), fetched only for a rating. No ベル.
 - **Shared and kept:** the room is both of ours, live on both phones: each change is one op (the island's `decor` op
   with the room's scope, last writer wins, the sheet keeps each piece's latest: `contract/tent.ts`,
   [backend](backend.md#events)). While I hold a piece, the partner's phone sees it move as I move it (`drag`, ≤ 10 a

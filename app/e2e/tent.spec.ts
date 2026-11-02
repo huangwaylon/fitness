@@ -4,6 +4,12 @@
 import { expect, test, type Page } from '@playwright/test';
 import { BUILDINGS } from '../src/lib/components/island/world.ts';
 
+/** The edit tray open, and the room re-centred above it (a tap's px only holds once the camera is at rest). */
+async function openEdit(p: Page) {
+  await p.locator('[data-tent-edit-open]').click();
+  await p.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still());
+}
+
 const DOOR = ((b) => [b.x, b.z - 16] as const)(BUILDINGS.find((b) => b.id === 'campsite')!);
 /** Where a villager stands just out of the tent (buildings.ts outOfTent): ±12 of the door, 30 in front. */
 const OUT = (who: 'A' | 'B') => [DOOR[0] + (who === 'A' ? -12 : 12), DOOR[1] - 30] as const;
@@ -21,11 +27,13 @@ type T = { stats(): { frames: number; calls: number; tris: number; dpr: number }
 const tent = <R,>(page: Page, fn: (t: T) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
 const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
 
-/** Into the tent from the island: the camera up to the campsite, its door tapped. */
-async function enter(page: Page) {
+/** Into the tent from the island: the camera up to the campsite, its door tapped (`aside`: my villager, back out at
+ *  the door, stepped off it first, so the tap lands on the tent). */
+async function enter(page: Page, aside = false) {
   await page.goto(Q);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(642));
+  if (aside) await page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z), [DOOR[0] + 70, DOOR[1] - 40] as const);
   await page.waitForTimeout(300);
   await tapTent(page);
   // (my villager walks up to the door first)
@@ -106,7 +114,7 @@ const tile = (page: Page, x: number, z: number) => page.evaluate(([x, z]) => (wi
 test('edit: place a piece from the tray, turn it, drag it, put it away; the wallpaper; red where it can’t go; kept across a reload', async ({ page }) => {
   await enter(page);
   await page.evaluate(() => localStorage.removeItem('island-demo.tent'));
-  await page.locator('[data-tent-edit-open]').click();
+  await openEdit(page);
   await expect(page.locator('[data-tent-count]')).toHaveText('0/40');
   // the camping cot (2 × 1) as a ghost, tapped over to the back row, turned a quarter, placed
   await page.locator('[data-tent-item="f4081"]').click();
@@ -161,7 +169,7 @@ test('edit: place a piece from the tray, turn it, drag it, put it away; the wall
   await expect.poll(() => te(page, (t) => t.pieces().map((p) => p.item))).toEqual(['f4081']);
   expect(await te(page, (t) => t.surfaces().wall)).toBe(wall);
   // put away: picked up, 🗑, gone (とりけす on the banner)
-  await page.locator('[data-tent-edit-open]').click();
+  await openEdit(page);
   const p = (await te(page, (t) => t.pieces()))[0];
   [x, y] = await tile(page, p.x, p.z);
   await page.mouse.click(x, y);
@@ -182,7 +190,7 @@ test('みつけた: what either of us found in a balloon that NH has a model of,
   });
   await page.goto('tent' + Q);
   await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
-  await page.locator('[data-tent-edit-open]').click();
+  await openEdit(page);
   await page.locator('[data-tab="finds"]').click();
   await expect(page.locator('[data-tent-item]')).toHaveCount(2);
   expect(await page.locator('[data-tent-item]').evaluateAll((els) => els.map((e) => e.getAttribute('data-tent-item')))).toEqual(['f290', 'f287']);
@@ -199,7 +207,7 @@ test('on a table: a small thing stands on its top, rides along when the table mo
   await page.addInitScript(() => localStorage.removeItem('island-demo.tent'));
   await page.goto('tent' + Q);
   await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
-  await page.locator('[data-tent-edit-open]').click();
+  await openEdit(page);
   // the rattan low table (2 × 1) on tiles 1–2 of row 1
   await page.locator('[data-tent-item="f4054"]').click();
   let [x, y] = await tent(page, (t) => t.px(-20, -25));
@@ -280,7 +288,7 @@ test('on the walls: a clock from かべかけ hangs on the back wall; a tap on t
   await page.addInitScript(() => localStorage.getItem('tent-w') || (localStorage.removeItem('island-demo.tent'), localStorage.setItem('tent-w', '1')));
   await page.goto('tent' + Q);
   await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
-  await page.locator('[data-tent-edit-open]').click();
+  await openEdit(page);
   await page.locator('[data-tab="walled"]').click();
   await page.locator('[data-tent-item="f4037"]').click();
   await expect.poll(() => te(page, (t) => t.edit()?.sel)).toMatchObject({ item: 'f4037', f: 0 });
@@ -293,4 +301,41 @@ test('on the walls: a clock from かべかけ hangs on the back wall; a tap on t
   await page.reload();
   await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
   await expect.poll(() => te(page, (t) => t.pieces())).toEqual([expect.objectContaining({ item: 'f4037', f: 1 })]);
+});
+
+test('the HHA: the first time in after a day’s decorating, ハニワくん’s letter rates the room (its points and its ハニワ); once a day; its button shows it again', async ({ page }) => {
+  type H = { total: number; badge: string | null; note: { k: string; v?: string } };
+  const hha = () => page.evaluate(() => (window as unknown as { __tent: { hha(): Promise<H> } }).__tent.hha());
+  const out = async () => {
+    await page.getByRole('button', { name: '島へ' }).click();
+    await expect(page).toHaveURL(/\/fitness\/\?/);
+  };
+  const letter = page.locator('[data-tent-letter]');
+  // nothing decorated yet: no letter
+  await enter(page);
+  await page.waitForTimeout(2000);
+  await expect(letter).toHaveCount(0);
+  // a log room
+  await page.evaluate(() => (window as unknown as { __tent: { fill(c: string[]): number } }).__tent.fill(['f4041', 'f4040', 'f4039', 'f4038', 'f4042', 'f4044', 'f4036', 'f1432', 'f9563']));
+  const want = await hha();
+  expect(want.badge).not.toBeNull();
+  expect(want.note).toEqual({ k: 'series', v: 'log' });
+  await out();
+  // back in through the door: the letter
+  await enter(page, true);
+  await expect(letter).toBeVisible({ timeout: 5000 });
+  await expect(letter).toHaveAttribute('data-tent-letter', String(want.total));
+  await expect(letter).toHaveAttribute('data-badge', want.badge!);
+  await expect(letter.locator('[data-hha-total]')).toContainText(want.total.toLocaleString('ja-JP'));
+  await expect(letter.locator('[data-hha-note="series"]')).toContainText('まるた');
+  await expect(letter.locator('[data-hha-part="series"]')).toBeVisible();
+  await letter.locator('[data-hha-close]').click();
+  await expect(letter).toHaveCount(0);
+  // once a day: in again, no letter; the ハニワ button shows it
+  await out();
+  await enter(page, true);
+  await page.waitForTimeout(2000);
+  await expect(letter).toHaveCount(0);
+  await page.locator('[data-tent-hha]').click();
+  await expect(letter).toHaveAttribute('data-tent-letter', String(want.total));
 });

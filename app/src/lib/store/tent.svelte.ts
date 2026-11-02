@@ -83,6 +83,14 @@ class TentRoom {
   get lights(): boolean {
     return this.#room().lights;
   }
+  /** When the room was last changed: its latest op's time, the room's light switch aside (0: never). */
+  get changed(): number {
+    void this.rev;
+    this.#load();
+    let at = 0;
+    for (const e of this.#map.values()) if (e.id !== TENT_ROOM && e.at > at) at = e.at;
+    return at;
+  }
   /** How many more pieces fit. */
   get room(): number {
     return TENT_MAX - this.pieces.length;
