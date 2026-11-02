@@ -33,7 +33,7 @@ describe('layout ops (contract/layout.ts)', () => {
   test('who may write what (the record and the room alike)', () => {
     const cases: [Record<string, unknown>, string][] = [
       [{}, 'AB'], [{ sc: 'o' }, 'AB'], [{ sc: 'c' }, 'AB'], [{ sc: 'r' }, 'AB'],
-      [{ sc: 'h', id: 'hA' }, 'A'], [{ sc: 'h', id: 'hB' }, 'B'], [{ sc: 'h', id: 'hG' }, 'ABG'],
+      [{ sc: 'h', id: 'hA' }, 'A'], [{ sc: 'h', id: 'hB' }, 'B'], [{ sc: 'h', id: 'hG' }, 'G'],
       [{ sc: 't' }, 'ABG'], [{ sc: 'u' }, 'B'], [{ sc: 'v' }, 'G'], [{ sc: 'q' }, '']
     ];
     for (const [d, may] of cases)

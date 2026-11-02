@@ -4,6 +4,9 @@
   import { week } from '#lib/store/week.svelte.ts';
 
   const view = $derived(week.view);
+  // whose home (`?home=B`: うめ's house, `G` the guest's; none: the tent, ウェイ's)
+  const q = new URLSearchParams(location.search).get('home');
+  const home = q === 'B' || q === 'G' ? q : 'A';
 </script>
 
-{#if view}<TentRoom {view} />{/if}
+{#if view}<TentRoom {view} {home} />{/if}

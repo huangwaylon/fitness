@@ -31,7 +31,8 @@ const SELF: Record<string, string> = {
   'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick',
   'lib/components/island/TreeShakes.svelte': 'a branch → scene-twig; the wasps → scene-net, then scene-catch (too late: nothing)',
   'lib/components/island/Balloon.svelte': 'scene-balloon',
-  'lib/components/island/Scenery.svelte': 'the campsite’s door → tick as its line about today’s guest is said'
+  'lib/components/island/Scenery.svelte': 'the campsite’s door → tick as its line about today’s guest is said',
+  'lib/components/homes/HomePicker.svelte': 'これにする → confirm once the new look goes out (silent while it would not fit, or nothing changed)'
 };
 
 /** `none`: deliberately silent. */

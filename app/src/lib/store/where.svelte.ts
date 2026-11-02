@@ -18,8 +18,10 @@ const GONE_MS = 180_000;
 const none = (): Record<Who, boolean> => ({ A: false, B: false, G: false });
 
 class Where {
-  /** Whose villager is in the tent (anyone else's: mine is this screen's own). */
+  /** Whose villager is in the tent (anyone else's: mine is this screen's own): in any of the homes. */
   inTent = $state<Record<Who, boolean>>(none());
+  /** Which home each one is in (its owner: the tent's A, うめ's house B, the guest's G; the presence's `sc`), or null. */
+  home = $state<Record<Who, Who | null>>({ A: null, B: null, G: null });
   /** Bumped each time someone who went quiet inside is taken home. */
   homeN = $state<Record<Who, number>>({ A: 0, B: 0, G: 0 });
   #timers = new Map<Who, { timer: ReturnType<typeof setTimeout>; due: number }>();
@@ -39,6 +41,7 @@ class Where {
     if (m.kind !== 'tent') return;
     this.#clear(m.who);
     this.inTent[m.who] = m.in;
+    this.home[m.who] = m.in ? (m.sc === 'u' ? 'B' : m.sc === 'v' ? 'G' : 'A') : null;
   }
   /** Whether the partner is on the relay (`presence(partner, on)`). */
   peer(on: boolean): void {
@@ -55,6 +58,7 @@ class Where {
       this.#timers.delete(who);
       if (!this.inTent[who]) return;
       this.inTent[who] = false;
+      this.home[who] = null;
       this.homeN[who]++;
     }, Math.max(0, dueMs));
     this.#timers.set(who, { timer, due: Date.now() + dueMs });
@@ -68,6 +72,7 @@ class Where {
   reset(): void {
     for (const w of ['A', 'B', 'G'] as const) this.#clear(w);
     this.inTent = none();
+    this.home = { A: null, B: null, G: null };
     this.homeN = { A: 0, B: 0, G: 0 };
     this.goneMs = GONE_MS;
   }

@@ -26,8 +26,8 @@
 
   onMount(() => {
     let gone = false, stop = () => {};
-    void Promise.all([import('three'), import('three/examples/jsm/controls/OrbitControls.js'), import('../world3d/terrain.ts'), import('../world3d/objects.ts'), import('../world3d/things.ts'), import('../world3d/bend.ts'), import('../world3d/water.ts')]).then(
-      ([T, { OrbitControls }, { buildGround }, { placeObjects }, { createThings }, { bendU }, { waterU, waterFog }]) => {
+    void Promise.all([import('three'), import('three/examples/jsm/controls/OrbitControls.js'), import('../world3d/terrain.ts'), import('../world3d/objects.ts'), import('../world3d/things.ts'), import('../world3d/bend.ts'), import('../world3d/water.ts'), import('../world3d/home.ts')]).then(
+      ([T, { OrbitControls }, { buildGround }, { placeObjects, homePlaces }, { createThings }, { bendU, bend }, { waterU, waterFog }, { buildHome }]) => {
         if (gone || !canvas) return;
         let renderer: InstanceType<typeof T.WebGLRenderer>;
         try {
@@ -74,6 +74,36 @@
         const day = () => ({ season: seasonOf(look), foliage: look === 'autumn-leaves' ? 'fall' : look === 'spring-petals' ? 'blossom' : 'summer', month: new Date().getMonth() + 1, fruit: true });
         void things.place(placeObjects(cur, day()).insts);
         void ground.ready.then(() => (dirty = true));
+        // the homes from NH's parts: rebuilt when a style or a spot changes
+        const homes = new Map<string, { sig: string; g: InstanceType<typeof T.Group> | null }>();
+        function placeHomes(l: typeof cur) {
+          const want = homePlaces(l);
+          for (const [id, h] of homes) if (!want.some((p) => p.id === id)) {
+            if (h.g) scene.remove(h.g);
+            homes.delete(id);
+          }
+          for (const p of want) {
+            const sig = JSON.stringify(p);
+            const had = homes.get(p.id);
+            if (had?.sig === sig) continue;
+            const entry = { sig, g: null as InstanceType<typeof T.Group> | null };
+            homes.set(p.id, entry);
+            void buildHome(p.style).then((g) => {
+              if (!g || homes.get(p.id) !== entry) return;
+              if (had?.g) scene.remove(had.g);
+              g.traverse((n) => {
+                const mm = (n as InstanceType<typeof T.Mesh>).material;
+                if (mm && !Array.isArray(mm)) bend(mm);
+              });
+              g.position.set(p.x, ground.heightAt(p.x, p.z), -p.z);
+              g.rotation.y = p.yaw;
+              entry.g = g;
+              scene.add(g);
+              dirty = true;
+            });
+          }
+        }
+        placeHomes(cur);
         ontime?.({ build: performance.now() - t0 });
 
         let m: 'orbit' | 'phone' = mode;
@@ -155,6 +185,7 @@
             if (d.chunks.length) ground.rebuild(l, d.chunks);
             else if (d.objects.add.length || d.objects.move.length || d.objects.remove.length) ground.rebuild(l, []);
             void things.place(placeObjects(l, day()).insts);
+            placeHomes(l);
             ontime?.({ build: 0, update: performance.now() - t1 });
             dirty = true;
           },
@@ -174,7 +205,7 @@
         };
         let frames = 0, last = performance.now(), fps = 0;
         const info = () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures, geometries: renderer.info.memory.geometries, fps });
-        (window as unknown as { __preview?: unknown }).__preview = { pending: () => things.pending(), ready: () => ground.ready, dirty: () => dirty, info, frame: () => { frames++; const t = performance.now(); if (t - last > 1000) { fps = Math.round((frames * 1000) / (t - last)); frames = 0; last = t; } } };
+        (window as unknown as { __preview?: unknown }).__preview = { homes: () => [...homes.values()].filter((h) => h.g).length, pending: () => things.pending(), ready: () => ground.ready, dirty: () => dirty, info, frame: () => { frames++; const t = performance.now(); if (t - last > 1000) { fps = Math.round((frames * 1000) / (t - last)); frames = 0; last = t; } } };
         stop = () => {
           cancelAnimationFrame(raf);
           ro.disconnect();

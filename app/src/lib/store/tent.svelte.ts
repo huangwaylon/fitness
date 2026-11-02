@@ -7,6 +7,8 @@
 //   tent.pieces / tent.wall / tent.floor  the room (reactive)
 //   tent.set(p) / tent.remove(id) / tent.surface(kind, code)   a change of mine: merged, kept, sent
 //   tent.on(fn)                           the partner's changes as they arrive
+// The other homes' rooms are the same (docs/island-layout.md "Homes"): `rooms.B` うめ's house (`sc: 'u'`), `rooms.G`
+// the guest's (`v`); `rooms.A` is the tent's.
 import { TENT_FLOOR, TENT_MAX, TENT_ROOM, TENT_WALL, mergeTent, tentLayout, tentOpOf, type TentEntry, type TentOp, type TentPiece } from '#lib/contract/tent.ts';
 import type { Relayed, Who } from '#lib/sync/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
@@ -23,8 +25,15 @@ interface TentNews {
   live: boolean;
 }
 
+type RoomSc = 't' | 'u' | 'v';
+
 class TentRoom {
   rev = $state(0);
+  /** Which home's room: `t` the tent's (ウェイ's), `u` うめ's, `v` the guest's. */
+  readonly sc: RoomSc;
+  constructor(sc: RoomSc = 't') {
+    this.sc = sc;
+  }
   #map = new Map<string, TentEntry>();
   #layout: ReturnType<typeof tentLayout> = { pieces: [], wall: null, floor: null, lights: true };
   #loaded = false;
@@ -38,7 +47,8 @@ class TentRoom {
   sink: ((op: TentOp) => void) | null = null;
 
   #key(): string {
-    return this.#demo ? DEMO.tent : LIVE.tent;
+    const k = this.#demo ? DEMO.tent : LIVE.tent;
+    return this.sc === 't' ? k : `${k}.${this.sc}`;
   }
   #load(): void {
     if (this.#loaded) return;
@@ -53,7 +63,7 @@ class TentRoom {
     if (r.who !== 'A' && r.who !== 'B' && r.who !== 'G') return null;
     const { who, ...d } = r;
     const op = tentOpOf(d);
-    if (!op || op.sc !== 't') return null;
+    if (!op || op.sc !== this.sc) return null;
     const e = { ...op, who } as TentEntry;
     return mergeTent(this.#map, e) ? e : null;
   }
@@ -123,7 +133,7 @@ class TentRoom {
   }
 
   #heard(m: Relayed): void {
-    if (m.kind !== 'decor' || m.sc !== 't') return;
+    if (m.kind !== 'decor' || m.sc !== this.sc) return;
     this.#load();
     const { v: _v, t, kind: _k, ...d } = m;
     const was = this.byId(m.id) ?? null;
@@ -163,7 +173,7 @@ class TentRoom {
     if (known?.rm) return false;
     if (!known && this.room <= 0) return false;
     const at = this.#now(known?.at);
-    return !!this.#mine({ sc: 't', id: p.id, at, item: p.item, x: p.x, z: p.z, f: p.f, p: p.p ?? (known && !known.rm ? known.p : at), ...(p.on ? { on: p.on } : {}),
+    return !!this.#mine({ sc: this.sc, id: p.id, at, item: p.item, x: p.x, z: p.z, f: p.f, p: p.p ?? (known && !known.rm ? known.p : at), ...(p.on ? { on: p.on } : {}),
       // a light keeps its switch through a move (unless the move says otherwise)
       ...((p.l ?? (known && !known.rm ? known.l : undefined)) !== undefined ? { l: (p.l ?? (known as { l?: 0 | 1 }).l)! } : {}) });
   }
@@ -172,7 +182,7 @@ class TentRoom {
   remove(id: string): boolean {
     const known = this.#map.get(id);
     if (!this.byId(id) || !known) return false;
-    return !!this.#mine({ sc: 't', id, at: this.#now(known.at), rm: true });
+    return !!this.#mine({ sc: this.sc, id, at: this.#now(known.at), rm: true });
   }
 
   /** The wallpaper or the floor. */
@@ -181,7 +191,7 @@ class TentRoom {
     const known = this.#map.get(id);
     if (known && !known.rm && known.item === code) return false;
     const at = this.#now(known?.at);
-    return !!this.#mine({ sc: 't', id, at, item: code, x: 0, z: 0, f: 0, p: known && !known.rm ? known.p : at });
+    return !!this.#mine({ sc: this.sc, id, at, item: code, x: 0, z: 0, f: 0, p: known && !known.rm ? known.p : at });
   }
 
   /** A light's switch (a lamp, the lantern, the fireplace): the piece's whole state again, its `l` flipped. */
@@ -195,7 +205,7 @@ class TentRoom {
     if (this.lights === on) return false;
     const known = this.#map.get(TENT_ROOM);
     const at = this.#now(known?.at);
-    return !!this.#mine({ sc: 't', id: TENT_ROOM, at, item: on ? 'r1' : 'r0', x: 0, z: 0, f: 0, p: known && !known.rm ? known.p : at });
+    return !!this.#mine({ sc: this.sc, id: TENT_ROOM, at, item: on ? 'r1' : 'r0', x: 0, z: 0, f: 0, p: known && !known.rm ? known.p : at });
   }
 
   on(fn: (n: TentNews) => void): () => void {
@@ -219,4 +229,6 @@ class TentRoom {
 }
 
 /** The tent's room: one per phone. */
-export const tent = new TentRoom();
+export const tent = new TentRoom('t');
+/** Each home's room by its owner: ウェイ's the tent's, うめ's house's (`u`), the guest's (`v`). */
+export const rooms: Readonly<Record<Who, TentRoom>> = { A: tent, B: new TentRoom('u'), G: new TentRoom('v') };

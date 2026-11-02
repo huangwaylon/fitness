@@ -162,10 +162,22 @@ for (const f of todo) {
   execFileSync('node', [GLTFPACK, '-i', join(dir, 'm.gltf'), '-o', out, '-cc', '-ce', 'ext', '-km', ...si]);
   let bytes = statSync(out).size;
   const colours: Record<string, string[]> = { [first]: [] };
+  // each colour's swatch for a picker: its main material's albedo (the wall's, the roof's, the door's, the tent's), small
+  const main = (m: Map<string, string>) => [...m.keys()].find((k) => /^m(Wall|Roof|Door|Tent)/.test(k)) ?? [...m.keys()][0];
+  const swatch = (c: string, m: Map<string, string>) => {
+    const k = main(m), uri = k && m.get(k);
+    if (!uri) return;
+    const png = join(dir, `sw-${c}.png`), w = join(OUT, `${f.name}.${c}.swatch.webp`);
+    writeFileSync(png, Buffer.from(uri.split(',')[1], 'base64'));
+    execFileSync('cwebp', ['-quiet', '-q', '80', '-resize', '48', '48', png, '-o', w]);
+    bytes += statSync(w).size;
+  };
+  swatch(first, base);
   // each other colour: only its albedos that differ from the first's
   for (const [c, cparts] of rest) {
     const rc = await convert(f, cparts);
     const own = albedos(JSON.parse(rc.gltf) as GltfJson);
+    swatch(c, own);
     colours[c] = [];
     for (const [mat, uri] of own) {
       if (base.get(mat) === uri) continue;
@@ -185,6 +197,18 @@ for (const f of todo) {
   console.log(`${f.name}: ${(bytes / 1024).toFixed(1)} KB (${f.colours.length} colours), ${r.tris} tris, box ${r.box[0].map((n) => n.toFixed(1))} … ${r.box[1].map((n) => n.toFixed(1))}`);
 }
 await browser.close();
+// NH's own picker icons (its house-customising menu): each door's style and shape, the player house's walls and roofs
+for (const n of readdirSync(ROOT)) {
+  const m = /^Layout_House(Door|Wall|Roof)Icon_House(?:Door([A-Z][A-Za-z]*?)A([RS])|(Wall|Roof)PA04([A-Z][a-z]+)A)\.Nin_NX_NVN$/.exec(n);
+  if (!m) continue;
+  const name = m[1] === 'Door' ? `icon.door-${kebab(m[2])}-${m[3].toLowerCase()}` : `icon.${m[4].toLowerCase()}-pa04-${kebab(m[5])}`;
+  const src = join(ROOT, n), png = readdirSync(src).find((f) => /^[A-Za-z0-9_]+\.png$/.test(f));
+  if (!png) continue;
+  const tmp = join(scratch, `${name}.png`);
+  cpSync(join(src, png), tmp);
+  execFileSync('cwebp', ['-quiet', '-q', '82', '-resize', '72', '72', tmp, '-o', join(OUT, `${name}.webp`)]);
+  total += statSync(join(OUT, `${name}.webp`)).size;
+}
 const sorted = Object.fromEntries(Object.entries(metas).sort(([a], [b]) => a.localeCompare(b)));
 writeFileSync(META, `{\n  "_": "scripts/home-models.ts: NH's homes' parts (bounds in model units, triangles, KB with the colours' textures, content hash, each colour's swapped materials)",\n  "families": {\n${Object.entries(sorted).map(([k, m]) => `    ${JSON.stringify(k)}: ${JSON.stringify(m)}`).join(',\n')}\n  }\n}\n`);
 console.log(`${todo.length} families, ${(total / 1024 / 1024).toFixed(2)} MB`);

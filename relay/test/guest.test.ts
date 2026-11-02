@@ -307,8 +307,8 @@ describe('the room with three villagers (v3)', () => {
 });
 
 // The island's layout (docs/island-layout.md "Ops"): the outdoors (`sc` o, c, r) the members' alone; a home's look
-// (`h`) its owner's (the guest's also either member's); a home's room its owner's (`u` うめ's, `v` the guest's; the
-// tent's `t` all three). The record and the room both refuse the rest.
+// (`h`) and its room its owner's alone (`u` うめ's, `v` the guest's; the tent's room `t` all three). The record and the
+// room both refuse the rest.
 describe('the layout’s permissions', () => {
   let now: number;
   let store: StoreCore;
@@ -334,10 +334,10 @@ describe('the layout’s permissions', () => {
     expect(rows().map((r) => r[1])).toEqual(['G', 'G', 'G']);
   });
 
-  it('the record: the members write the outdoors; each only their own home (and either the guest’s look)', () => {
-    for (const [key, d] of [[KEY_A, obj()], [KEY_B, chunk], [KEY_A, look('A')], [KEY_B, look('B')], [KEY_A, look('G')], [KEY_B, room('u')]] as const)
+  it('the record: the members write the outdoors; each only their own home', () => {
+    for (const [key, d] of [[KEY_A, obj()], [KEY_B, chunk], [KEY_A, look('A')], [KEY_B, look('B')], [KEY_B, room('u')]] as const)
       expect(call(key, ev(d)), JSON.stringify(d)).toMatchObject({ ok: true });
-    for (const [key, d] of [[KEY_A, look('B')], [KEY_B, look('A')], [KEY_A, room('u')], [KEY_A, room('v')], [KEY_B, room('v')]] as const)
+    for (const [key, d] of [[KEY_A, look('B')], [KEY_B, look('A')], [KEY_A, look('G')], [KEY_B, look('G')], [KEY_A, room('u')], [KEY_A, room('v')], [KEY_B, room('v')]] as const)
       expect(call(key, ev(d)), JSON.stringify(d)).toEqual({ ok: false, error: 'forbidden' });
   });
 

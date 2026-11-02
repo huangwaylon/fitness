@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { CHUNKS_X, CHUNKS_Z, GRID, chunkIndex, chunkOf, chunkString, codeOf, codeOfChar, charOf, kindOf, tierOf, writeChunk, KINDS, TIERS, tileAt, tileMid } from './grid.ts';
 import { defaultLayout, doorOf, extentOf, layoutOf, objMid, opsBetween, toJson, fromJson, withChanges, footOf, type Obj } from './model.ts';
 import { CHUNK_COUNT, chunkMesh, stairsMesh } from './mesh.ts';
+import { DEFAULT_HOMES, FAMILIES, catalogue, homeFoot, knownStyle, partsOf } from './homes.ts';
 import { diffLayouts } from './diff.ts';
 import { heightAt, fieldOf, GRASS_Y } from './height.ts';
 import { navOf, findPath, snapTap, reachable, walkable } from './nav.ts';
@@ -287,5 +288,40 @@ describe('the long island (20 × 92) and its 3D ground (layout/mesh.ts)', () => 
     const ys = Array.from({ length: m.walls.pos.length / 3 }, (_, k) => m.walls.pos[k * 3 + 1]);
     expect(Math.max(...ys)).toBeCloseTo(40 + GRASS_Y, 0);
     expect(Math.min(...ys)).toBeLessThan(GRASS_Y + 0.5);
+  });
+});
+
+describe('the homes (layout/homes.ts)', () => {
+  const l = defaultLayout();
+  test('each style’s parts: NH’s families in their colours; a roof of another shape mended to the wall’s', () => {
+    expect(partsOf({ m: 'house', w: 'PA04Stucco.B', r: 'PA04Westerntile.C', d: 'Simple.R.A' })).toEqual([
+      { family: 'wall-pa04-stucco', colour: 'B' }, { family: 'roof-pa04-westerntile', colour: 'C' }, { family: 'door-simple-r', colour: 'A' }
+    ]);
+    const mended = partsOf({ m: 'house', w: 'NCJapanese.A', r: 'PA04Stone.A', d: 'Lattice.S.B' });
+    expect(mended[1].family).toMatch(/^roof-nc-/);
+    expect(mended[2]).toEqual({ family: 'door-lattice-s', colour: 'B' });
+    expect(partsOf({ m: 'tent-n', w: 'B' })).toEqual([{ family: 'tent-n', colour: 'B' }]);
+    expect(partsOf({ m: 'campsite' })).toEqual([]);
+    expect(knownStyle(DEFAULT_HOMES.B)).toBe(true);
+    expect(knownStyle({ m: 'house', w: 'NCJapanese.A', r: 'PA04Stone.A', d: 'Lattice.S.B' })).toBe(false);
+    const cat = catalogue();
+    expect(Object.keys(cat.walls).sort()).toEqual(['NA', 'NB', 'NC', 'ND', 'PA04']);
+    expect(cat.doors.length).toBe(14);
+    // every family's colours ship (scripts/home-models.ts: its GLB, its swatches)
+    for (const [f, fam] of Object.entries(FAMILIES)) expect(Object.keys(fam.colours).length, f).toBeGreaterThan(0);
+  });
+  test('a new look keeps the door where it was: the footprint grows round it (half a tile across for an even width)', () => {
+    const b = l.objects.get('home-B')!;
+    const door = doorOf(l, b);
+    for (const style of [{ m: 'tent-n', w: 'A' }, { m: 'house', w: 'NDSoil.A', r: 'NDStone.A', d: 'Simple.S.A' }, { m: 'house', w: 'NAMetal.C', r: 'NASlate.A', d: 'Window.R.D' }]) {
+      const l2 = withChanges(l, { homes: { B: style } });
+      const d2 = doorOf(l2, l2.objects.get('home-B')!);
+      expect(d2.at[1]).toBe(door.at[1]);
+      expect(Math.abs(d2.at[0] - door.at[0])).toBeLessThanOrEqual(15);
+      // the tile before the door (its anchor's) is still the way in
+      expect(d2.tiles).toContainEqual([b.x, b.z - 1]);
+      expect(footOf(l2, b)).toEqual([...homeFoot(style)]);
+      expect(validate(l2).filter((i) => i.level === 'error' && i.ids.includes('home-B'))).toEqual([]);
+    }
   });
 });

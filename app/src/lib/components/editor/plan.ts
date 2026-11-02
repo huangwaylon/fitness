@@ -3,7 +3,7 @@
 // pointer. Pure but for the canvas it draws on.
 import { GRID, TILE, idx, kindOf, tierOf, type Kind } from '#lib/layout/grid.ts';
 import { kindDef } from '#lib/layout/catalog.ts';
-import { doorOf, facingVec, footOf, objMid, type Layout, type Obj } from '#lib/layout/model.ts';
+import { doorOf, facingVec, footOf, objMid, originOf, type Layout, type Obj } from '#lib/layout/model.ts';
 import type { Issue } from '#lib/layout/validate.ts';
 
 export interface View {
@@ -191,7 +191,8 @@ function drawObj(ctx: CanvasRenderingContext2D, d: Draw, o: Obj, selected: boole
   if (!def) return;
   const [w, dd] = footOf(l, o);
   const T = TILE * v.s;
-  const [x, y] = toScreen(v, GRID.x0 + o.x * TILE, GRID.z0 + (o.z + dd) * TILE);
+  const [ox, oz] = originOf(l, o);
+  const [x, y] = toScreen(v, GRID.x0 + ox * TILE, GRID.z0 + (oz + dd) * TILE);
   const W = w * T, H = dd * T;
   ctx.globalAlpha = ghost ? 0.75 : 1;
   if (o.k === 'home') {
