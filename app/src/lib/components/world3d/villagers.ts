@@ -64,6 +64,9 @@ export interface Villagers3 {
    *  standing (NH's villagers: the head's base ~0.57 up the figure, the head and body ~0.6 as wide as tall), once it's
    *  stood once, or null. Island3D sizes its DOM card to it, not to the 2D render (docs/world3d-gaps.md 2). */
   size(slot: string): [number, number] | null;
+  /** The angler's line up (the e2e's): headings in plan (degrees, world x/z: atan2(dx, −dz)) of its facing, its rod
+   *  (hand → tip) and its line (tip → float), or null when it holds no aimed rod. */
+  angler(slot: string): { facing: number; rod: number; line: number } | null;
   dispose(): void;
 }
 
@@ -145,7 +148,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     return seats.get(name)!;
   };
   let lastT = 0, liftL = 0.32, disposed = false;
-  const headP = new V3();
+  const headP = new V3(), aimP = new V3();
   const debug = import.meta.env.DEV || new URLSearchParams(location.search).has('demo') ? new Map<string, unknown>() : null;
 
   function ensure(s: VSpec): W {
@@ -282,10 +285,29 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       w.z = s.z;
       // which way: the way it walks; else the director's (left, right, inward), else toward the camera
       // (fishing: toward the float)
-      const want = s.walking && moved > 0.05 ? Math.atan2(dx, -dz)
+      let want = s.walking && moved > 0.05 ? Math.atan2(dx, -dz)
         : rod && angling.phase ? Math.atan2(angling.x - s.x, -(angling.z - s.z))
         : s.face === 'l' ? -1.1 : s.face === 'r' ? 1.1 : s.face === 'in' ? (s.side === 'left' ? 0.6 : -0.6) : 0;
-      w.yaw = turn(w.yaw, s.seat !== null ? 0 : want, dt, s.walking ? 14 : 6);
+      // (fishing: straight at the float, turned to it quickly as the cast goes out; square on from the rod's hand, so
+      // the facing, the rod and the line are one line in plan: the hand's offset from the feet turned with the yaw)
+      const aiming = rod && !!angling.phase && s.seat === null;
+      if (aiming && !s.walking) {
+        const hp = v.hand();
+        if (hp) {
+          const c = Math.cos(-w.yaw), sn = Math.sin(-w.yaw), ox = hp.x - v.group.position.x, oz = hp.z - v.group.position.z;
+          // the hand in the body's own frame (three's), then where it is at a trial yaw
+          const lx = ox * c + oz * sn, lz = -ox * sn + oz * c;
+          for (let i = 0; i < 4; i++) {
+            const cw = Math.cos(want), sw = Math.sin(want);
+            const hx = s.x + lx * cw + lz * sw, hz = s.z - (-lx * sw + lz * cw);
+            want = Math.atan2(angling.x - hx, -(angling.z - hz));
+          }
+        }
+      }
+      const to = s.seat !== null ? 0 : want;
+      w.yaw = turn(w.yaw, to, dt, s.walking ? 14 : aiming ? 22 : 6);
+      const turning = Math.abs(Math.atan2(Math.sin(to - w.yaw), Math.cos(to - w.yaw))) > 0.005;
+      v.aim(aiming ? aimP.set(angling.x, 0, -angling.z) : null);
       // its state, and its moment (the director's motion, once each)
       // on a seat: on its model's own (villager3d sitAt: the villager sits down there itself), dozing off on it asleep
       const anchor = s.seat !== null ? anchorAt(s) : null;
@@ -311,7 +333,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
         v.group.position.set(s.x, s.y + lift, -s.z + (s.seat !== null ? 2 : 0));
         v.group.rotation.y = w.yaw;
       }
-      const busy = s.walking || t < w.busyUntil || Math.abs(dx) + Math.abs(dz) > 0.01;
+      const busy = s.walking || t < w.busyUntil || Math.abs(dx) + Math.abs(dz) > 0.01 || turning;
       if (busy) moving = true;
       // posed (its breathing, its moment, its walk) while anything moves; still, it holds its pose and only its face
       // changes (a blink: a texture's offset and one redraw), so the island idles as it did
@@ -348,6 +370,13 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     },
     head: (slot) => ws.get(slot)?.v?.head() ?? null,
     tip: (slot) => ws.get(slot)?.v?.tip() ?? null,
+    angler(slot) {
+      const w = ws.get(slot), v = w?.v, tip = v?.tip(), hand = v?.hand();
+      if (!w || !v || !tip || !hand || !angling.phase) return null;
+      const deg = (r: number) => (r * 180) / Math.PI;
+      // (three's z is the world's −z)
+      return { facing: deg(w.yaw), rod: deg(Math.atan2(tip.x - hand.x, tip.z - hand.z)), line: deg(Math.atan2(angling.x - tip.x, -(angling.z + tip.z))) };
+    },
     size(slot) {
       const w = ws.get(slot), v = w?.v;
       if (!w || !v) return null;

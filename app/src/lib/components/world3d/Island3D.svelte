@@ -689,7 +689,9 @@
       things: (id: string) => e.things.has(id), where: (id: string) => e.things.where(id), groups: () => e.things.groups(), over: (id: string, o: Parameters<typeof e.things.over>[1]) => e.things.over(id, o), head: (slot: string) => { const h = vil3?.head(slot); if (!h) return null; const p = h.getWorldPosition(new Vector3()); return [p.x, p.y, p.z]; },
       focus: (x: number, z: number, lift?: number) => e.focusOn({ x, z, lift }), restore: () => e.restore(), focused: () => e.focused(),
       /** The ids of the lamps lit now (a model's id; a stand-in's `s:` prefixed). */
-      lamps: () => e.lamps()
+      lamps: () => e.lamps(),
+      /** My angler's line up: its facing, its rod and its line's headings in plan (degrees), or null. */
+      angler: (slot = 'mine') => vil3?.angler(slot) ?? null
     };
     return () => {
       listen3d(null);

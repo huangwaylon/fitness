@@ -29,6 +29,8 @@ const SINK = 0.55;
 
 /** World units per model unit: an NH villager is 14.9 model units, the island's 80u (world3d-assets.ts VILLAGER_S). */
 export const VILLAGER_S = 5.4;
+/** A rod aimed at its float stands this far above level (NH's angler holds it ~40° up). */
+const ROD_UP = (40 * Math.PI) / 180, ROD_UP_MAX = (75 * Math.PI) / 180;
 
 export interface Villager3D {
   id: string;
@@ -54,6 +56,11 @@ export interface Villager3D {
   grip(obj: Object3D | null): void;
   /** The gripped tool's far end (a rod's tip: its lowest point as authored), world space (three's), or null. */
   tip(): Vector3 | null;
+  /** Point the gripped tool at a world point (three's space: the float), NH's angler's way: along the line from the
+   *  hand to it in plan, ROD_UP above level, so the line from its tip runs straight on to it; null: the grip's own. */
+  aim(at: Vector3 | null): void;
+  /** The hand's world position (three's), or null. */
+  hand(): Vector3 | null;
   /** Sit or lie on a seat (seats3d.ts: its anchor, in the group's parent's space): from where it stands it turns,
    *  steps back onto it and sits down, or climbs onto the bed and lies down (SIT_MS), the hips on the seat, the back to
    *  its back, the head on the pillow end, its feet down or dangling as the seat's height has them. While it's on one
@@ -165,7 +172,25 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
   }
   let worn: Object3D | null = null;
   const hand = rig.bone('Hand_R');
-  let held3: { obj: Object3D; tip: Vector3 } | null = null;
+  let held3: { obj: Object3D; tip: Vector3; q: Quaternion } | null = null;
+  let aimAt: Vector3 | null = null;
+  const aimV = new Vector3(), aimH = new Vector3(), aimQ = new Quaternion(), aimHQ = new Quaternion(), aimHQ_s = new Vector3();
+  /** The tool along the hand → target line in plan, ROD_UP above level (aim()). */
+  function orient() {
+    if (!held3 || !aimAt || !hand) return;
+    group.updateMatrixWorld(true);
+    hand.getWorldPosition(aimH);
+    aimV.set(aimAt.x - aimH.x, 0, aimAt.z - aimH.z);
+    const D = aimV.length();
+    if (D < 1e-3) return;
+    // (a float close in: the rod stands higher, its tip never out past the float: at most 0.7 of the way in plan)
+    const L = held3.tip.length() * held3.obj.getWorldScale(aimHQ_s).x;
+    const up = Math.min(ROD_UP_MAX, Math.max(ROD_UP, Math.acos(Math.min(1, (0.7 * D) / Math.max(1e-3, L)))));
+    aimV.normalize().multiplyScalar(Math.cos(up)).setY(Math.sin(up));
+    aimQ.setFromUnitVectors(aimH.copy(held3.tip).normalize(), aimV);
+    held3.obj.quaternion.copy(hand.getWorldQuaternion(aimHQ).invert().multiply(aimQ));
+    held3.obj.updateMatrixWorld(true);
+  }
   let lump: Mesh | null = null;
   if (head && eyeBox) {
     const [a, b] = eyeBox as [Vector3, Vector3];
@@ -332,7 +357,7 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       obj.updateMatrixWorld(true);
       const b = new Box3().setFromObject(obj, true);
       const tip = new Vector3((b.min.x + b.max.x) / 2, b.min.y, (b.min.z + b.max.z) / 2).divide(obj.scale);
-      held3 = { obj, tip };
+      held3 = { obj, tip, q: new Quaternion() };
       // NH's grip is its own animation's: here the tool is turned in the hand so that, in the fishing pose, it points
       // out in front and up (the rod over the water), and from there it follows the arm
       rig.apply(base('fish', lastT, o));
@@ -340,11 +365,18 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       const handQ = model.getWorldQuaternion(new Quaternion()).invert().multiply(hand.getWorldQuaternion(new Quaternion()));
       const along = tip.clone().normalize(), want = new Vector3(-0.2, 1.1, 1).normalize();
       obj.quaternion.copy(handQ.invert().multiply(new Quaternion().setFromUnitVectors(along, want)));
+      held3.q.copy(obj.quaternion);
       // (the hand's scale undone: the tool keeps its own size in the model's units)
       const hs = hand.getWorldScale(new Vector3()).divide(model.getWorldScale(new Vector3()));
       obj.scale.divide(hs);
       hand.add(obj);
     },
+    aim(at) {
+      aimAt = at ? (aimAt ?? new Vector3()).copy(at) : null;
+      if (!aimAt && held3) held3.obj.quaternion.copy(held3.q);
+      orient();
+    },
+    hand: () => (hand ? hand.getWorldPosition(new Vector3()) : null),
     tip() {
       if (!held3) return null;
       held3.obj.updateWorldMatrix(true, false);
@@ -435,6 +467,8 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       blobMat.opacity = p.pitch ? 0.12 : 0.22;
       showFace(t);
       // (still moving: a crossfade between states, an action under way, getting on or off a seat)
+      // the rod aimed at the float, once the pose and the body are set
+      orient();
       return k < 1 || !!act || moving;
     },
     blink(t) {

@@ -37,10 +37,6 @@ for (const [water, q, cam, sel] of [
 ] as const) {
   test(`3D fishing in the ${water}: cast, the rod and its line, the bite, the catch`, async ({ page }) => {
     test.setTimeout(90_000);
-    // TODO(3D engine): on CI's software GL my villager never takes out the rod (state 'idle', no tool, line 61's poll)
-    // though it passes under SwiftShader locally: fixme'd on CI's drawn runs while the cause is found; the logic tier
-    // (E2E_RENDER=none: nothing drawn, every frame as quick as a GPU's) runs it
-    test.fixme(!!process.env.CI && process.env.E2E_RENDER !== 'none', 'CI only: the rod never comes out under its software GL');
     await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
     await page.goto(`?demo&visitor=none&island=3d${q}`);
     await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
@@ -64,6 +60,15 @@ for (const [water, q, cam, sel] of [
     // NH's rod in my villager's hand, fishing
     await expect.poll(() => v3(page, (v) => [v.tool('mine'), v.state('mine')]), { timeout: 15_000 }).toEqual(['tools/rod', 'fish']);
     expect(await v3(page, (v) => v.tip('mine')?.every(Number.isFinite))).toBe(true);
+    // facing the float square on, the rod pointed at it and the line straight on from its tip, in plan (the user:
+    // "face straight towards the fish… hold the pole pointed in the direction of the fish, so the line is straight")
+    const lineUp = () => page.evaluate(() => {
+      const a = (window as unknown as { __world3d: { angler(): { facing: number; rod: number; line: number } | null } }).__world3d.angler();
+      if (!a) return Infinity;
+      const d = (x: number, y: number) => Math.abs(((x - y + 540) % 360) - 180);
+      return Math.max(d(a.facing, a.rod), d(a.rod, a.line), d(a.facing, a.line));
+    });
+    await expect.poll(lineUp, { timeout: 5000 }).toBeLessThan(5);
     await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 });
     // the float on the water where its node is
     await expect.poll(async () => apart(await drawnAt(page, '[data-bobber]', 'bobber')), { timeout: 4000 }).toBeLessThan(16);
