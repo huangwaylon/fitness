@@ -97,7 +97,7 @@ apart (`RELAY_E2E=1`, nightly or on demand), not on every push.
 - **GPU runners aren't worth it here.** GitHub's GPU runners (T4) are paid larger runners, and its macOS arm64 VMs
   have no GPU passthrough, so WebGL is software there too. Logic mode removes the cost instead: SwiftShader only draws
   the ~10 drawn tests, at DPR 1 with shadows off (already automatic on a software renderer).
-- **The gate** (what deploys): build ∥ checks (svelte-check, knip, vitest) ∥ the logic tier (8 shards) ∥ the drawn
+- **The gate** (what deploys): build ∥ checks (svelte-check, knip, vitest) ∥ the logic tier (12 shards) ∥ the drawn
   smoke (1 runner). **The full tier** (every test drawn, the quarantine, visuals) runs after the deploy and on the
   nightly, and flags failures in its summary. It never blocks the deploy.
 - **Shards by time, not count** (scripts/e2e-shards.ts): the build plans Playwright test lists from each test's time
