@@ -75,6 +75,9 @@ export const DEVICE = {
   /** localStorage: `{ [who]: day }`: the Tokyo day this phone last showed the tent's HHA letter, by who I am (the demo's
    *  tabs share it; tent/TentRoom.svelte). */
   tentRated: 'island.tentRated',
+  /** localStorage: how many times this phone said 「いまの かぐを おいてね」 (a tap on another piece while one is held:
+   *  the hint shows the first few times only; tent/TentEdit.svelte). */
+  tentHoldHint: 'island.tentHoldHint',
   /** localStorage: `3d` | `2d`: how this phone draws the island (せってい's 3D switch; store/islandRender.svelte.ts). */
   islandRender: 'island.render'
 } as const;

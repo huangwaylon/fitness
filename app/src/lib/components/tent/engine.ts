@@ -7,12 +7,12 @@
 import {
   AmbientLight, BoxGeometry, CanvasTexture, CircleGeometry, Color, DirectionalLight, DoubleSide, Group, HemisphereLight,
   LineBasicMaterial, LineSegments, BufferGeometry, Float32BufferAttribute, Material, Mesh, MeshBasicMaterial, MeshStandardMaterial,
-  Object3D, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, PointLight, Raycaster, RepeatWrapping, Scene, SRGBColorSpace,
-  Texture, TextureLoader, Vector2, Vector3, WebGLRenderer
+  Box3, Object3D, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, PointLight, Raycaster, RepeatWrapping, Scene, Sprite,
+  SpriteMaterial, SRGBColorSpace, Texture, TextureLoader, Vector2, Vector3, WebGLRenderer
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
-import { HALF, ROOM, TILE, centreOf, isWallItem, wallSpot, type Facing, type Pt, type Spot } from './grid.ts';
+import { HALF, ROOM, TILE, centreOf, isSurface, isWallItem, onTop, wallSpot, type Facing, type Pt, type Spot } from './grid.ts';
 import { footprint, floorUrl, ITEMS, modelUrl, wallUrl } from './items.ts';
 
 /** The walls' height (RoomMdlWall: 40 model units, four tiles). */
@@ -44,8 +44,9 @@ export interface Look {
 export type Hit = { kind: 'piece'; id: string } | { kind: 'villager'; who: Who } | { kind: 'door' } | { kind: 'floor'; x: number; z: number };
 export interface Placed extends Spot {
   id: string;
-  /** How high it stands (a surface's top: a small thing on a table). */
+  /** How high it stands (a surface's top: a small thing on a table), and its middle there (model units). */
   y?: number;
+  at?: readonly [number, number];
   /** A light's switch (1 on, 0 off; none: on, as it came). */
   l?: 0 | 1;
 }
@@ -62,8 +63,9 @@ export interface Ghost {
   z: number;
   f: Facing;
   ok: boolean;
-  /** On a surface: how high. */
+  /** On a surface: how high, and its middle there (model units). */
   y?: number;
+  at?: readonly [number, number];
   /** What stands on it (a table carried with its things): each one's slot and facing on it. */
   kids?: readonly { item: string; x: number; z: number; f: Facing }[];
 }
@@ -90,6 +92,15 @@ export interface Tent {
   /** The wall under client px and where on it (across from its left end, up; model units). */
   wallAt(cx: number, cy: number): { wall: number; u: number; y: number } | null;
   ghost(g: Ghost | null): void;
+  /** Whether client px is on what I hold: `on` its drawn shape, `near` it (its bounds on screen grown by `slop` px), or
+   *  not (null). */
+  onHeld(cx: number, cy: number, slop: number): 'on' | 'near' | null;
+  /** What I hold shakes its head (a tap on another piece while holding it). */
+  nudge(): void;
+  /** A footprint flashes red there a moment (a tap where what I hold can't go: it stays where it was). */
+  flash(g: Omit<Ghost, 'ok' | 'kids'> | null): void;
+  /** The point (model units) on the top of a surface under client px (not `except`, not a thing on a top), or null. */
+  surfacePoint(cx: number, cy: number, except?: string): [number, number] | null;
   /** The edit mode's grid on the floor. */
   grid(on: boolean): void;
   /** A piece jiggles where it stands (a tap). */
@@ -361,7 +372,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   /** Pieces not drawn where they stand: the one I'm moving, the ones the partner holds. */
   let hidden = new Set<string>();
   let pending = 0;
-  const placeRoot = (root: Group, s: Spot & { y?: number }, lift = 0) => {
+  const placeRoot = (root: Group, s: Spot & { y?: number; at?: readonly [number, number] }, lift = 0) => {
     // a wall thing in its wall's own frame (the wall's group: it goes with the wall when the wall is cut away)
     if (isWallItem(s.item)) {
       const [u, y] = wallSpot(s);
@@ -369,7 +380,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       root.rotation.set(0, 0, 0);
       return;
     }
-    const [cx, cz] = centreOf(s);
+    const [cx, cz] = s.at ?? centreOf(s);
     root.position.set(cx, (s.y ?? 0) + lift, cz);
     root.rotation.y = (s.f * Math.PI) / 2;
   };
@@ -508,7 +519,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   ghostRoot.add(ghostKids);
   let ghostTurn: { from: number; to: number; t0: number } | null = null;
   function ghost(g: Ghost | null) {
-    foot.visible = ring.visible = ghostRoot.visible = !!g;
+    foot.visible = ring.visible = ghostRoot.visible = handle.visible = !!g;
     if (!g) {
       ghostKey = '';
       ghostKidsKey = '[]';
@@ -558,7 +569,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       wallGhost = false;
     }
     const [w, d] = footprint(g.item, g.f);
-    const [cx, cz] = centreOf(g);
+    const [cx, cz] = g.at ?? centreOf(g);
     foot.scale.set(w * TILE - 0.8, d * TILE - 0.8, 1);
     foot.position.set(cx, (g.y ?? 0) + 0.5, cz);
     footMat.color.set(g.ok ? 0x78dc78 : 0xf05a50);
@@ -576,10 +587,9 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     if (kidsKey !== ghostKidsKey) {
       ghostKidsKey = kidsKey;
       ghostKids.clear();
-      const m = ITEMS[g.item], w = m?.w ?? 1, d = m?.d ?? 1, h = m?.h ?? 0;
       for (const k of g.kids ?? []) {
         const holder = new Group();
-        holder.position.set((k.x + 0.5 - w / 2) * TILE, h, (k.z + 0.5 - d / 2) * TILE);
+        holder.position.set(...onTop(g.item, k));
         holder.rotation.y = (k.f * Math.PI) / 2;
         ghostKids.add(holder);
         void model(k.item).then((mm) => {
@@ -608,6 +618,88 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       });
     }
     invalidate();
+  }
+  // ---- what I hold, made plain: a handle bobbing over it (NH's raised piece), a head-shake when a tap on another piece
+  //      is refused, and a red footprint flashed where a tap can't put it ----
+  const handleTex = (() => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 64;
+    const x = c.getContext('2d')!;
+    x.fillStyle = '#ffd84d';
+    x.strokeStyle = '#fff';
+    x.lineWidth = 6;
+    x.lineJoin = 'round';
+    x.beginPath();
+    x.moveTo(10, 14);
+    x.lineTo(54, 14);
+    x.lineTo(32, 52);
+    x.closePath();
+    x.stroke();
+    x.fill();
+    const t = new CanvasTexture(c);
+    t.colorSpace = SRGBColorSpace;
+    return t;
+  })();
+  const handle = new Sprite(new SpriteMaterial({ map: handleTex, depthTest: false, transparent: true }));
+  handle.scale.set(4.2, 4.2, 1);
+  handle.renderOrder = 6;
+  handle.visible = false;
+  scene.add(handle);
+  let nudgeT = 0;
+  function nudge() {
+    if (!ghostRoot.visible) return;
+    nudgeT = now();
+    invalidate();
+  }
+  const nopeMat = new MeshBasicMaterial({ color: 0xf05a50, transparent: true, opacity: 0, depthWrite: false, side: DoubleSide, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 });
+  const nope = new Mesh(new PlaneGeometry(1, 1), nopeMat);
+  nope.rotation.x = -Math.PI / 2;
+  nope.renderOrder = 3;
+  nope.visible = false;
+  scene.add(nope);
+  let nopeT = 0;
+  function flash(g: Omit<Ghost, 'ok' | 'kids'> | null) {
+    if (!g || isWallItem(g.item)) return void (nope.visible = false);
+    const [w, d] = footprint(g.item, g.f), [cx, cz] = g.at ?? centreOf(g);
+    nope.scale.set(w * TILE - 0.8, d * TILE - 0.8, 1);
+    nope.position.set(cx, (g.y ?? 0) + 0.55, cz);
+    nope.visible = true;
+    nopeT = now();
+    invalidate();
+  }
+  function onHeld(cx: number, cy: number, slop: number): 'on' | 'near' | null {
+    if (!ghostRoot.visible) return null;
+    toNdc(cx, cy);
+    if (ray.intersectObject(ghostRoot, true).length) return 'on';
+    return onScreen(ghostRoot, cx, cy, slop) ? 'near' : null;
+  }
+  /** Whether client px is on a thing's drawn shape (its bounds projected to the screen), grown by `slop` px. */
+  function onScreen(o: Object3D, cx: number, cy: number, slop: number): boolean {
+    o.updateMatrixWorld();
+    const b = new Box3().setFromObject(o);
+    if (b.isEmpty()) return false;
+    const r = canvas.getBoundingClientRect();
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (let i = 0; i < 8; i++) {
+      const v = new Vector3(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z).project(camera);
+      const sx = r.left + ((v.x + 1) / 2) * r.width, sy = r.top + ((1 - v.y) / 2) * r.height;
+      x0 = Math.min(x0, sx);
+      x1 = Math.max(x1, sx);
+      y0 = Math.min(y0, sy);
+      y1 = Math.max(y1, sy);
+    }
+    return cx >= x0 - slop && cx <= x1 + slop && cy >= y0 - slop && cy <= y1 + slop;
+  }
+  function surfacePoint(cx: number, cy: number, except?: string): [number, number] | null {
+    toNdc(cx, cy);
+    const tops = [...live.values()].filter((l) => shown(l) && !l.spot.on && l.spot.id !== except && isSurface(l.spot.item));
+    const h = ray.intersectObjects(tops.map((l) => l.root), true)[0];
+    if (!h) return null;
+    const id = h.object.userData.id as string | undefined, l = id ? live.get(id) : undefined;
+    if (!l) return null;
+    // kept on its tiles (a hit on its front face is at its edge)
+    const [w, d] = footprint(l.spot.item, l.spot.f), x0 = -HALF + l.spot.x * TILE, z0 = -HALF + l.spot.z * TILE;
+    return [Math.min(x0 + w * TILE - 1, Math.max(x0 + 1, h.point.x)), Math.min(z0 + d * TILE - 1, Math.max(z0 + 1, h.point.z))];
   }
   function grid(on: boolean) {
     gridLines.visible = on;
@@ -643,7 +735,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     pointLights.forEach((p, i) => {
       const x = dark ? lamps[i] : undefined;
       p.intensity = x ? 900 : 0;
-      if (x) p.position.set(x.l.root.position.x, (ITEMS[x.l.spot.item]?.h ?? 8) * 0.8 + 2, x.l.root.position.z);
+      if (x) p.position.set(x.l.root.position.x, x.l.root.position.y + (ITEMS[x.l.spot.item]?.h ?? 8) * 0.8 + 2, x.l.root.position.z);
     });
   }
   function room(on: boolean) {
@@ -1025,10 +1117,16 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     for (const h of ray.intersectObjects([...live.values()].filter(shown).map((l) => l.root), true)) {
       const id = h.object.userData.id as string | undefined;
       if (!id) continue;
-      if (!ITEMS[live.get(id)?.spot.item ?? '']?.rug) return id;
+      if (!ITEMS[live.get(id)?.spot.item ?? '']?.rug) return kidNear(cx, cy, id) ?? id;
       rug ??= id;
     }
     return rug ?? onTiles(cx, cy);
+  }
+  /** A small thing on `parent`'s top near client px (KID_SLOP): a near miss on a lamp is the lamp, not its table. */
+  const KID_SLOP = 10;
+  function kidNear(cx: number, cy: number, parent: string): string | null {
+    for (const l of live.values()) if (l.spot.on === parent && shown(l) && onScreen(l.root, cx, cy, KID_SLOP)) return l.spot.id;
+    return null;
   }
   /** The piece whose tiles are under client px (a tap between a model's legs, a piece still popping in): furniture
    *  before a rug. */
@@ -1150,6 +1248,23 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       else ghostRoot.position.y = ghostY + 3 + Math.sin(k * Math.PI) * 2.5;
       if (k < 1) more = true;
     }
+    if (ghostRoot.visible) {
+      // the head-shake: a few quick turns either way, dying out
+      const k = nudgeT ? (t - nudgeT) / 420 : 1;
+      if (k >= 1) nudgeT = 0;
+      else more = true;
+      ghostRoot.rotation.z = k < 1 ? Math.sin(k * Math.PI * 6) * 0.09 * (1 - k) : 0;
+      // the handle over its top (on a wall: over the thing); still (frames stay on demand)
+      ghostRoot.updateMatrixWorld();
+      handle.position.copy(ghostRoot.localToWorld(new Vector3(0, wallGhost ? (ITEMS[ghostKey]?.h ?? 5) / 2 + 3 : (ITEMS[ghostKey]?.h ?? 8) + 3.2, wallGhost ? 1 : 0)));
+      handle.visible = !!ghostBody;
+    }
+    if (nope.visible) {
+      const k = (t - nopeT) / 700;
+      nopeMat.opacity = k < 1 ? 0.6 * (1 - k * k) : 0;
+      if (k >= 1) nope.visible = false;
+      else more = true;
+    }
     if (framing) {
       // to the new framing (the edit tray opening or closing): the room glides to the middle of what's left
       const k = Math.min(1, (t - framing.t0) / 320), e = ease(k);
@@ -1216,7 +1331,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   night(0);
 
   return {
-    resize, still, surfaces, pieces, hide, held, pick, wallAt, ghost, grid, bump, room, pose, night, villager,
+    resize, still, surfaces, pieces, hide, held, pick, wallAt, ghost, onHeld, nudge, flash, surfacePoint, grid, bump, room, pose, night, villager,
     at: (who) => (villagers.get(who)?.pos.slice() as [number, number] | undefined) ?? null,
     put(who, p, f) {
       const w = villagers.get(who);
