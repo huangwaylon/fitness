@@ -1,0 +1,150 @@
+// The island's bulletin board (docs/board.md, docs/backend.md#events `board`): short notes anyone on the island
+// writes, kept in the record and shown on every phone. Each change is one op: a post set (`{id, at, p, t}`: posted or
+// edited, its whole text; `p` when it was first posted, `p = at` for a new one) or removed (`{id, at, rm: true}`,
+// final: an id never comes back). The posts are a merge of the ops by id (a removal beats everything, else the latest
+// `at`, then G over B over A): commutative, so the record and every phone reach the same board whatever order the ops
+// come in. Who may do what (`boardMayWrite`) and how many are kept (BOARD_MAX) are the record's rules, the phones apply
+// the same. Text is plain text, sanitised the same way on the phone and in the record (`cleanText`), and only ever
+// drawn as text. Shared by the record (relay/src/store.ts), the model and the board; pure and dependency-free.
+
+/** Who wrote it: the merge's tie-break is a fixed order, A < B < G. */
+type Who = 'A' | 'B' | 'G';
+
+/** A post's length at most (characters: code points, so an emoji is one) and its lines at most. NH's board takes
+ *  longer notes; on a phone's zoomed board four short lines read at a glance. */
+export const BOARD_CHARS = 100;
+export const BOARD_LINES = 4;
+/** At most this many posts kept (the record and the phones): a new one past them drops the oldest (by `p`). */
+export const BOARD_MAX = 50;
+
+export type BoardOp =
+  | { id: string; at: number; p: number; t: string; rm?: undefined }
+  | { id: string; at: number; rm: true };
+export type BoardEntry = BoardOp & { who: Who };
+/** A post as the board shows it: its author is `who` (only the author edits, so the latest set is theirs). */
+export interface Post {
+  id: string;
+  who: Who;
+  t: string;
+  /** First posted (ms). */
+  p: number;
+  /** Last changed (ms): later than `p` once edited. */
+  at: number;
+}
+
+const ID = /^b[0-9a-z]{6,24}$/;
+const isInt = (n: unknown, lo: number, hi: number): n is number => Number.isInteger(n) && (n as number) >= lo && (n as number) <= hi;
+/** A time in ms since the epoch (2001 … 5138). */
+const isMs = (n: unknown): n is number => isInt(n, 1e12, 1e14);
+
+/** Characters a note never keeps: C0 and C1 controls but the line break, DEL, the bidirectional overrides and isolates
+ *  (they reorder what others read), zero-width joiners' look-alikes that hide text, the BOM and lone surrogates. */
+const u4 = (n: number): string => `\\u${n.toString(16).padStart(4, '0')}`;
+const charClass = (ranges: readonly (readonly [number, number])[]): string => `[${ranges.map(([a, b]) => (a === b ? u4(a) : `${u4(a)}-${u4(b)}`)).join('')}]`;
+const STRIP = new RegExp(
+  `${charClass([[0x0, 0x8], [0xb, 0x1f], [0x7f, 0x9f], [0x200b, 0x200f], [0x202a, 0x202e], [0x2060, 0x2064], [0x2066, 0x2069], [0xfeff, 0xfeff], [0xfff9, 0xfffb]])}` +
+    '|[\\ud800-\\udbff](?![\\udc00-\\udfff])|(?<![\\ud800-\\udbff])[\\udc00-\\udfff]',
+  'g'
+);
+/** Line breaks of other kinds: CR (with or without LF), NEL, the line and paragraph separators. */
+const BREAKS = new RegExp(`\\r\\n?|${charClass([[0x85, 0x85], [0x2028, 0x2029]])}`, 'g');
+
+/**
+ * A note's text as the board keeps it: line breaks made `\n` (also `\r\n`, `\r`, U+2028/9), the control characters
+ * stripped, each line's trailing spaces and the whole's leading and trailing blank space trimmed, at most BOARD_LINES
+ * lines (the rest joined onto the last with a space) and BOARD_CHARS characters. '' when nothing is left. Idempotent.
+ */
+export function cleanText(raw: unknown): string {
+  if (typeof raw !== 'string') return '';
+  let s = raw.normalize('NFC').replace(BREAKS, '\n').replace(STRIP, '').replace(/\t/g, ' ');
+  let lines = s.split('\n').map((l) => l.replace(/\s+$/u, ''));
+  // no runs of blank lines (they'd only push the note's text off its paper)
+  lines = lines.filter((l, i) => l !== '' || (i > 0 && lines[i - 1] !== ''));
+  if (lines.length > BOARD_LINES) lines = [...lines.slice(0, BOARD_LINES - 1), lines.slice(BOARD_LINES - 1).filter(Boolean).join(' ')];
+  s = lines.join('\n').replace(/^\s+|\s+$/gu, '');
+  const cps = Array.from(s);
+  if (cps.length > BOARD_CHARS) s = cps.slice(0, BOARD_CHARS).join('').replace(/\s+$/u, '');
+  return s;
+}
+
+/** How many characters a note's text is (code points). */
+export const textLength = (s: string): number => Array.from(s).length;
+
+/** A new post's id. */
+export const newPostId = (at: number): string => `b${at.toString(36)}${Math.floor(Math.random() * 36 ** 4).toString(36).padStart(4, '0')}`;
+
+/** A `board` op's data, its known keys only, each well-formed (the text clean and not empty), or null. */
+export function boardOpOf(d: Record<string, unknown>): BoardOp | null {
+  if (typeof d.id !== 'string' || !ID.test(d.id) || !isMs(d.at)) return null;
+  const keys = Object.keys(d);
+  if (d.rm !== undefined) {
+    if (d.rm !== true || keys.some((k) => k !== 'id' && k !== 'at' && k !== 'rm')) return null;
+    return { id: d.id, at: d.at, rm: true };
+  }
+  if (keys.some((k) => !['id', 'at', 'p', 't'].includes(k))) return null;
+  if (!isMs(d.p) || d.p > d.at || typeof d.t !== 'string') return null;
+  const t = cleanText(d.t);
+  if (!t || t !== d.t) return null;
+  return { id: d.id, at: d.at, p: d.p, t };
+}
+
+/** Whether entry `a` beats `b` (the same id): a removal beats a set; else the later `at`, then G over B over A. */
+export function boardBeats(a: BoardEntry, b: BoardEntry): boolean {
+  if (!!a.rm !== !!b.rm) return !!a.rm;
+  if (a.at !== b.at) return a.at > b.at;
+  return a.who > b.who;
+}
+
+/** Merge an entry into the map (id → its winning entry): true when it changed it. */
+export function mergeBoard(m: Map<string, BoardEntry>, e: BoardEntry): boolean {
+  const was = m.get(e.id);
+  if (was && (was === e || !boardBeats(e, was))) return false;
+  m.set(e.id, e);
+  return true;
+}
+
+/** The posts: every one set and not removed, the newest BOARD_MAX by when they were first posted, newest first. */
+export function boardPosts(entries: Iterable<BoardEntry>): Post[] {
+  const out: Post[] = [];
+  for (const e of entries) if (!e.rm) out.push({ id: e.id, who: e.who, t: e.t, p: e.p, at: e.at });
+  out.sort((a, b) => b.p - a.p || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0));
+  return out.slice(0, BOARD_MAX);
+}
+
+/**
+ * Whether `who` may write this op, given the post it changes as held (null: none): a new post anyone (the guest too);
+ * an edit only its author; a removal its author or a member (ウェイ and うめ tidy the board; the guest only its own).
+ */
+export function boardMayWrite(who: Who, op: BoardOp, held: BoardEntry | null): boolean {
+  if (!held || held.rm) return true;
+  if (op.rm) return held.who === who || who !== 'G';
+  return held.who === who;
+}
+
+/**
+ * What the record does with a new op, given the posts it holds (each id's latest row, with who sent it):
+ * - `forbidden`: `boardMayWrite` says no (an edit of someone else's, the guest removing another's);
+ * - `stale`: acknowledged, nothing kept (an op that beats it is there; an edit or a removal of a post it doesn't hold:
+ *   dropped past the cap, or never seen; a post older than every one kept when the board is full);
+ * - `append`: kept (the same id's row replaced); `drop` names the post a new one pushes out (the oldest), if any.
+ */
+export function boardAccept(held: readonly BoardEntry[], e: BoardEntry): { v: 'append'; drop: string | null } | { v: 'stale' | 'forbidden' } {
+  const m = new Map<string, BoardEntry>();
+  for (const h of held) mergeBoard(m, h);
+  const was = m.get(e.id) ?? null;
+  // a removal is final: whatever comes after it changes nothing
+  if (was?.rm) return { v: 'stale' };
+  if (!boardMayWrite(e.who, e, was)) return { v: 'forbidden' };
+  if (was && !boardBeats(e, was)) return { v: 'stale' };
+  if (!was) {
+    // only a new post makes a row of its own (an edit's or a removal's post is gone, or never was)
+    if (e.rm || e.p !== e.at) return { v: 'stale' };
+    const live = boardPosts(m.values());
+    if (live.length >= BOARD_MAX) {
+      const oldest = live[live.length - 1];
+      if (e.p < oldest.p || (e.p === oldest.p && e.id < oldest.id)) return { v: 'stale' };
+      return { v: 'append', drop: oldest.id };
+    }
+  } else if (!e.rm && !was.rm && e.p !== was.p) return { v: 'stale' };
+  return { v: 'append', drop: null };
+}

@@ -8,6 +8,7 @@ import { isIslandDay } from '../contract/island.ts';
 import { decorOpOf } from '../contract/decor.ts';
 import { tentOpOf } from '../contract/tent.ts';
 import { layoutOpOf } from '../contract/layout.ts';
+import { boardOpOf } from '../contract/board.ts';
 import { isStepsGoal, LIMITS, MOVE_GOAL, shopPrice } from '../config/rules.ts';
 import { localDateAt } from '../time/dates.ts';
 import type { Who } from '../types.ts';
@@ -39,6 +40,9 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       // the island's decorations, a home's room (`sc` t, u, v: contract/tent.ts) or the layout (o, c, r, h:
       // contract/layout.ts)
       return decorOpOf(d) !== null || tentOpOf(d) !== null || layoutOpOf(d) !== null;
+    case 'board':
+      // a bulletin board post set or removed (contract/board.ts: its text already clean)
+      return boardOpOf(d) !== null;
     default:
       return true;
   }
@@ -67,7 +71,8 @@ export function prefTaken(key: unknown, v: unknown): boolean {
  * - a cosmetic `pref` (`locale`, `villagerName`, `villager`, `goalWeight`, `goalBodyFat`): its subject and key;
  * - a goal `pref` (`moveGoal`, `stepsGoal`): its subject, key and the Tokyo day it was made (`at`), so the goal in
  *   force on each past day stays (a goal applies from the day it's made; the last of a day is the one that counts);
- * - a `decor` op: its scope and item id (`decorAccept` / `tentAccept` decide whether it replaces).
+ * - a `decor` op: its scope and item id (`decorAccept` / `tentAccept` decide whether it replaces);
+ * - a `board` op: its post's id (`boardAccept` decides whether it replaces).
  * A pref the model would ignore takes no slot, so it never replaces one it takes. `subject`: `eventSubject`.
  */
 export function eventSlot(type: EventType | string, sender: Who, subject: Who, d: Rec, at: number): string | null {
@@ -77,6 +82,8 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
       return typeof d.date === 'string' ? `${type}|${sender}|${d.date}` : null;
     case 'decor':
       return typeof d.id === 'string' ? `decor|${typeof d.sc === 'string' ? d.sc : ''}|${d.id}` : null;
+    case 'board':
+      return typeof d.id === 'string' ? `board|${d.id}` : null;
     case 'pref':
       if (!prefTaken(d.key, d.value)) return null;
       return (LATEST_PREFS as readonly unknown[]).includes(d.key) ? `pref|${subject}|${d.key}` : `pref|${subject}|${d.key}|${localDateAt(at)}`;

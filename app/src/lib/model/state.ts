@@ -7,6 +7,7 @@ import { addDays, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/d
 import { isTally } from '#lib/contract/tally.ts';
 import { isIslandDay, type IslandDayData } from '#lib/contract/island.ts';
 import { decorOpOf, type DecorEntry } from '#lib/contract/decor.ts';
+import { boardOpOf, type BoardEntry } from '#lib/contract/board.ts';
 import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import type { TallyRow } from './tally.ts';
@@ -92,6 +93,9 @@ export interface State {
    *  contract/layout.ts), in server order (store/layout.svelte.ts merges them over the default). Never read by the
    *  economy. The homes' interiors (`sc` u and v) are rooms like the tent's, in `tent` with their scope. */
   layout: LayoutEntry[];
+  /** The bulletin board (`board`: each post's ops, contract/board.ts), in server order; the posts are their merge
+   *  (components/board/posts.svelte.ts). Never read by the economy. */
+  board: BoardEntry[];
   /** Each person's prefs; the guest's (`G`) only ever hold its locale, name and villager (contract/guest.ts). */
   prefs: Record<Who, Prefs>;
   /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
@@ -197,6 +201,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     decor: [],
     tent: [],
     layout: [],
+    board: [],
     prefs: { A: {}, B: {}, G: {} },
     moveGoals: { A: [], B: [] },
     stepsGoals: { A: [], B: [] },
@@ -270,6 +275,7 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     decor: [...base.decor],
     tent: [...base.tent],
     layout: [...base.layout],
+    board: [...base.board],
     prefs: { A: { ...base.prefs.A }, B: { ...base.prefs.B }, G: { ...base.prefs.G } },
     moveGoals: { A: [...base.moveGoals.A], B: [...base.moveGoals.B] },
     stepsGoals: { A: [...base.stepsGoals.A], B: [...base.stepsGoals.B] },
@@ -350,6 +356,10 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     }
     const op = decorOpOf(d);
     if (op) s.decor.push({ ...op, who: person } as DecorEntry);
+  },
+  board(s, person, _at, d) {
+    const op = boardOpOf(d);
+    if (op) s.board.push({ ...op, who: person } as BoardEntry);
   },
   pref(s, person, at, d) {
     if (!isPersonId(person)) {

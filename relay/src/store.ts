@@ -20,6 +20,7 @@ import {
 import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contract/decor.ts';
 import { tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
 import { isRoomScope, isVoid, layoutAccept, layoutOpOf, scopeMayWrite, type LayoutEntry } from '../../app/src/lib/contract/layout.ts';
+import { BOARD_MAX, boardAccept, boardOpOf, cleanText, type BoardEntry } from '../../app/src/lib/contract/board.ts';
 import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
 import { notifySecret, notifySig, verifyNotify } from './notify.ts';
 import { keyOwner, type Keys } from './auth.ts';
@@ -321,8 +322,10 @@ export class StoreCore {
     // High-fives go over the room only (2026-11-02): one still queued on a phone from before is acknowledged, not kept
     if (body.type === 'highfive') return me === 'G' ? fail('forbidden') : { ok: true };
     if (typeof body.type !== 'string' || !(EVENT_TYPES as readonly string[]).includes(body.type)) return fail('bad_request');
-    const data = body.data === undefined ? {} : body.data;
-    if (!isRec(data)) return fail('bad_request');
+    const sent = body.data === undefined ? {} : body.data;
+    if (!isRec(sent)) return fail('bad_request');
+    // a board note's text: plain text, sanitised here as on the phone (contract/board.ts cleanText)
+    const data: Rec = body.type === 'board' && typeof sent.t === 'string' ? { ...sent, t: cleanText(sent.t) } : sent;
     // the guest writes only its finds, tallies, the tent's decor and its own cosmetic prefs (contract/guest.ts)
     if (me === 'G' && !guestMayWrite(body.type, data)) return fail('forbidden');
     // a scoped decor op: the outdoors the members', a home's look and room its owner's (contract/layout.ts)
@@ -348,9 +351,21 @@ export class StoreCore {
           return { ok: true, duplicate: true };
         }
       }
+      let drop: string | null = null;
+      if (type === 'board') {
+        const v = this.boardTarget(me, data);
+        if (v.v === 'forbidden') return fail('forbidden');
+        if (v.v === 'stale') {
+          this.io.sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
+          return { ok: true, duplicate: true };
+        }
+        if (v.v === 'append') drop = v.drop;
+      }
       const at = this.nextAt();
+      if (drop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', `board|${drop}`);
       if (type === 'decor' && data.sc === 'r' && typeof data.at === 'number') this.dropVoided(data.at);
       this.put(id, at, me, type, json, eventSlot(type, me, subject, data, Date.parse(at)), null);
+      if (type === 'board' && data.rm === true) this.pruneBoard();
       return { ok: true, at };
     });
   }
@@ -397,6 +412,30 @@ export class StoreCore {
     if (kind === 'room') return tentAccept(held as TentEntry[], e as TentEntry);
     if (kind === 'layout') return layoutAccept(held as LayoutEntry[], e as LayoutEntry);
     return decorAccept(held as DecorEntry[], e as DecorEntry);
+  }
+
+  /** Every board row's op (each post's latest), with who sent it. */
+  private boardRows(): (BoardEntry & { seq: number })[] {
+    const out: (BoardEntry & { seq: number })[] = [];
+    for (const r of this.io.sql.exec<{ seq: number; person: string; data: string }>("SELECT seq, person, data FROM events WHERE type = 'board'").toArray()) {
+      let x: unknown;
+      try { x = JSON.parse(r.data); } catch { continue; }
+      const op = isRec(x) ? boardOpOf(x) : null;
+      if (op && isWho(r.person)) out.push({ ...op, who: r.person, seq: r.seq });
+    }
+    return out;
+  }
+
+  /** A board op against the posts the record holds (contract/board.ts boardAccept): who may, and the cap. */
+  private boardTarget(me: Who, d: Rec): ReturnType<typeof boardAccept> {
+    return boardAccept(this.boardRows(), { ...boardOpOf(d)!, who: me });
+  }
+
+  /** The removed posts' rows past BOARD_MAX (the oldest removals) are dropped: a removal only has to outlive the ops
+   *  that could still arrive for it (their ids stay known; an edit of a post the record doesn't hold is dropped). */
+  private pruneBoard(): void {
+    const gone = this.boardRows().filter((r) => r.rm).sort((a, b) => b.at - a.at || b.seq - a.seq);
+    for (const r of gone.slice(BOARD_MAX)) this.io.sql.exec('DELETE FROM events WHERE seq = ?', r.seq);
   }
 
   /** Every decor row (its seq, sender and data). */
@@ -456,7 +495,7 @@ export class StoreCore {
 
   private importEvent(r: unknown[], arrived: number): 'added' | 'had' | 'skipped' {
     const [at, person, id, type, raw] = r;
-    if (typeof at !== 'string' || !ISO_AT.test(at) || !isPersonId(person) || !isId(id) || typeof type !== 'string' || typeof raw !== 'string') return 'skipped';
+    if (typeof at !== 'string' || !ISO_AT.test(at) || !isWho(person) || !isId(id) || typeof type !== 'string' || typeof raw !== 'string') return 'skipped';
     if (!(EVENT_TYPES as readonly string[]).includes(type)) return 'skipped';
     if (this.known(id)) return 'had';
     let d: unknown;
@@ -464,12 +503,21 @@ export class StoreCore {
     const subject = isRec(d) ? eventSubject(type, d, person) : null;
     if (!isRec(d) || !subject) return 'skipped';
     const sql = this.io.sql;
+    if (type === 'board') {
+      if (!boardOpOf(d)) return 'skipped';
+      const v = this.boardTarget(person, d);
+      if (v.v !== 'append') {
+        sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
+        return 'had';
+      }
+      if (v.drop) sql.exec('DELETE FROM events WHERE slot = ?', `board|${v.drop}`);
+    }
     if (type === 'decor' && (decorOpOf(d) || tentOpOf(d) || layoutOpOf(d)) && this.decorTarget(person, d) !== 'append') {
       sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id); // beaten (or past the cap): only its id is kept
       return 'had';
     }
     const slot = eventSlot(type, person, subject, d, Date.parse(at));
-    if (slot && type !== 'decor') {
+    if (slot && type !== 'decor' && type !== 'board') {
       const held = sql.exec<{ at: string }>('SELECT at FROM events WHERE slot = ?', slot).toArray()[0];
       if (held && held.at >= at) {
         sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id); // a later one of the slot is there already
