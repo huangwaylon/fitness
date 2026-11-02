@@ -14,7 +14,7 @@ type V3 = {
 };
 const v3 = <R,>(page: Page, fn: (v: V3) => R) => page.evaluate(`(${fn.toString()})(window.__villagers3d)`) as Promise<R>;
 
-test('the 3D villagers POC draws three villagers, and a tap on the ground walks the chosen one', { tag: '@smoke' }, async ({ page }) => {
+test('the 3D villagers POC draws three villagers, and a tap on the ground walks the chosen one', { tag: '@render' }, async ({ page }) => {
   test.setTimeout(90_000);
   await page.goto('villagers3d/?demo&date=2026-11-04T12:00&a=goldie&b=anchovy&g=judy');
   await page.waitForFunction(() => (window as unknown as { __villagers3d?: V3 }).__villagers3d?.ready(), null, { timeout: 60_000 });
