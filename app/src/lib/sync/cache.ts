@@ -3,7 +3,7 @@
 // edited in the sheet) drops it and fetches everything. When IndexedDB is unavailable the cache lives in memory for the
 // session (reported).
 import type { PersonId } from '#lib/types.ts';
-import { DATE_RE, type SnapshotReply, type SnapshotRows } from '#lib/contract/api.ts';
+import { DATE_RE, type EventRow, type SnapshotReply, type SnapshotRows } from '#lib/contract/api.ts';
 import { emptyRows, maxAt, mergeRows } from '#lib/model/snapshot.ts';
 import { compactRows } from '#lib/model/compact.ts';
 import { finalMs, lastLockAt } from '#lib/model/state.ts';
@@ -207,6 +207,21 @@ export function clearCache(): Promise<void> {
 
 type Reply = { me: PersonId; now: string; rev: string; rows: Partial<SnapshotRows> };
 
+/**
+ * My events the record just stored, as the rows it holds (its `at`), into the cache at once: no re-read after an ack.
+ * `since` stays where it was, so the next poll still brings everything written after it (these rows again too: the
+ * merge keeps one). Returns the cache, or null when there is none.
+ */
+export function addOwnRows(rows: EventRow[]): SnapshotCache | null {
+  const c = mem;
+  if (!c) return null;
+  const merged = mergeRows(c.rows, { events: rows });
+  if (merged === c.rows) return c;
+  const next = { ...c, rows: merged };
+  void saveCache(next);
+  return next;
+}
+
 /** The later of two `since` values (ISO instants; null = none). */
 const laterAt = (a: string | null, b: string | null): string | null => (a === null ? b : b === null || Date.parse(a) >= Date.parse(b) ? a : b);
 
@@ -286,7 +301,9 @@ async function fetchAndMerge(clientNow: () => number): Promise<GasResult<{ cache
   // overwrite what pairing just reset (the refresh pairing starts fetches for the new key).
   if (getKey() !== key) return { ok: false, error: 'unavailable', detail: 'paired again during the fetch' };
   if (!r.ok) return r;
-  const cache = applySnapshot(since && !stale ? prev : null, r, clientNow());
+  // onto the cache as it is now: my own rows the record stored meanwhile (addOwnRows) are in it, `since` unmoved
+  const base = mem && prev && mem.me === prev.me && mem.since === prev.since ? mem : prev;
+  const cache = applySnapshot(since && !stale ? base : null, r, clientNow());
   void saveCache(cache);
   if (getStoredMe() !== r.me) storeMe(r.me);
   return { ok: true, cache };

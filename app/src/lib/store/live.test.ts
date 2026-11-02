@@ -240,3 +240,30 @@ describe('LiveBackend cold open after an ack (no flash of the old state)', () =>
     expect(pendingAcked({ ...cache, fetchedAt: NOW - 1000 + ACKED_MAX_UNSEEN_MS }, [ev])).toEqual([]);
   });
 });
+
+describe('LiveBackend against the relay’s record', () => {
+  it('an event the record stored is in the cache at once as its row: no re-read after the ack', async () => {
+    configureStorage({ local: new Mem() });
+    setKey('ab'.repeat(32), 'A');
+    const calls: string[] = [];
+    configureTransport({
+      url: 'https://script.example/exec', recordUrl: 'https://relay.example/api',
+      fetch: (async (_u: unknown, init?: RequestInit) => {
+        const body = JSON.parse(String(init?.body)) as { action: string; events?: { id: string }[] };
+        calls.push(body.action);
+        return new Response(JSON.stringify(body.action === 'events'
+          ? { ok: true, results: body.events!.map((e) => ({ id: e.id, ok: true, at: '2026-11-02T01:00:00.000Z' })) }
+          : { ok: true, me: 'A', now: '2026-11-02T00:59:00.000Z', rev: 'e1', rows: { metrics: [], events: [] } }));
+      }) as typeof fetch
+    });
+    const b = new LiveBackend(host());
+    await b.refresh({});
+    b.send('pref', { key: 'moveGoal', value: 450 }, {});
+    await vi.waitFor(() => expect(b.cache()?.rows.events).toHaveLength(1));
+    expect(b.cache()!.rows.events[0]).toEqual(['2026-11-02T01:00:00.000Z', 'A', expect.any(String), 'pref', '{"key":"moveGoal","value":450}']);
+    expect(b.cache()!.since).toBe(null); // unmoved: the next poll still brings what others wrote meanwhile
+    expect(b.events()).toEqual([]); // the acked copy gives way to the row
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(calls).toEqual(['snapshot', 'events']);
+  });
+});

@@ -3,7 +3,7 @@
 import type { EventReply, EventType } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 import { LIVE, getKey, localKV, readJson, remove, writeJson } from './storage.ts';
-import { post, type GasError } from './transport.ts';
+import { post, recordConfigured, type GasError } from './transport.ts';
 
 export interface QueuedEvent {
   id: string;
@@ -85,7 +85,7 @@ export function enqueue(type: EventType, data: Record<string, unknown>, now = Da
 /** Undo: drop a queued event that has not been sent yet. False if it already went out. */
 export function unqueue(id: string): boolean {
   const q = queued();
-  if (!q.some((x) => x.id === id) || flushingId === id) return false;
+  if (!q.some((x) => x.id === id) || flushingIds.has(id)) return false;
   saveQueue(q.filter((x) => x.id !== id));
   return true;
 }
@@ -94,7 +94,7 @@ export function unqueue(id: string): boolean {
 export function holdEvent(id: string, until: number): boolean {
   const q = queued();
   const ev = q.find((x) => x.id === id);
-  if (!ev || ev.tries > 0 || flushingId === id) return false;
+  if (!ev || ev.tries > 0 || flushingIds.has(id)) return false;
   saveQueue(q.map((x) => (x.id === id ? { ...x, nextAt: until } : x)));
   return true;
 }
@@ -117,12 +117,20 @@ export function backoffMs(tries: number, rand = Math.random): number {
   return Math.round(base * (0.8 + 0.4 * rand()));
 }
 
-/** `acked`: the events the server confirmed in this flush (not merely ones that left the queue, e.g. by undo). */
-interface FlushResult { sent: number; acked: QueuedEvent[]; dropped: QueuedEvent[]; remaining: number; error?: GasError }
+/**
+ * `acked`: the events the server confirmed in this flush (not merely ones that left the queue, e.g. by undo);
+ * `stored`: those the record wrote a row for just now, with its `at` (the row the next snapshot would bring).
+ */
+interface FlushResult { sent: number; acked: QueuedEvent[]; stored: { ev: QueuedEvent; at: string }[]; dropped: QueuedEvent[]; remaining: number; error?: GasError }
+
+/** At most this many events in one request to the record (its EVENTS_MAX). */
+const BATCH_MAX = 50;
+/** One event's answer in an `events` reply. */
+type EventResult = { id: string | null; ok: true; duplicate?: true; at?: string } | { id: string | null; ok: false; error: GasError; detail?: string };
 
 let flushing: Promise<FlushResult> | null = null;
-/** The event currently in flight (it can't be undone any more). */
-let flushingId: string | null = null;
+/** The events currently in flight (they can't be undone any more). */
+const flushingIds = new Set<string>();
 
 /** Still inside its undo window (never tried yet, not due): later events may pass it. */
 const isHeld = (ev: QueuedEvent, now: number): boolean => ev.tries === 0 && ev.nextAt > now;
@@ -168,43 +176,73 @@ function due(q: QueuedEvent[], now: number, skip: (ev: QueuedEvent) => boolean =
 export function flush(now: () => number = Date.now): Promise<FlushResult> {
   if (flushing) return flushing;
   const p = (async (): Promise<FlushResult> => {
-    let sent = 0;
-    const acked: QueuedEvent[] = [];
-    const dropped: QueuedEvent[] = [];
-    let error: GasError | undefined;
+    const out: FlushResult = { sent: 0, acked: [], stored: [], dropped: [], remaining: 0 };
     const tried = new Set<string>();
+    const ack = (ev: QueuedEvent, at?: string) => {
+      out.sent++;
+      out.acked.push(ev);
+      if (at) out.stored.push({ ev, at });
+      // into the acked list before it leaves the queue: closing the app between the two never loses it
+      keepAcked([...ackedEvents().filter((x) => x.id !== ev.id), { ...ev, ackedAt: now() }]);
+      saveQueue(queued().filter((x) => x.id !== ev.id));
+    };
+    const drop = (ev: QueuedEvent) => {
+      out.dropped.push(ev);
+      saveQueue(queued().filter((x) => x.id !== ev.id));
+    };
+    const backOff = (ev: QueuedEvent, error: GasError) => {
+      out.error = error;
+      if (error === 'unauthorized') return;
+      const tries = ev.tries + 1;
+      saveQueue(queued().map((x) => (x.id === ev.id ? { ...x, tries, nextAt: now() + backoffMs(tries) } : x)));
+    };
     for (;;) {
-      const { ev } = due(queued(), now(), (x) => tried.has(x.id));
-      if (!ev) break;
-      tried.add(ev.id);
-      flushingId = ev.id;
+      // what may go now, in send order: the record takes up to BATCH_MAX at once (in order), Apps Script one
+      const toRecord = recordConfigured();
+      const batch: QueuedEvent[] = [];
+      while (batch.length < (toRecord ? BATCH_MAX : 1)) {
+        const { ev } = due(queued(), now(), (x) => tried.has(x.id));
+        if (!ev) break;
+        tried.add(ev.id);
+        batch.push(ev);
+      }
+      if (!batch.length) break;
+      for (const ev of batch) flushingIds.add(ev.id);
       const key = getKey();
-      const r = await post<Extract<EventReply, { ok: true }>>('event', { id: ev.id, type: ev.type, data: ev.data });
-      flushingId = null;
+      const body = (ev: QueuedEvent) => ({ id: ev.id, type: ev.type, data: ev.data });
+      const r = toRecord
+        ? await post<{ results: EventResult[] }>('events', { events: batch.map(body) }, { to: 'record' })
+        : await post<Extract<EventReply, { ok: true }>>('event', body(batch[0]));
+      flushingIds.clear();
       // Paired as someone else meanwhile (setKey cleared the queue): the reply is the old person's, not ours to show.
       if (getKey() !== key) break;
-      const cur = queued();
-      if (r.ok) {
-        sent++;
-        acked.push(ev);
-        // into the acked list before it leaves the queue: closing the app between the two never loses it
-        keepAcked([...ackedEvents().filter((x) => x.id !== ev.id), { ...ev, ackedAt: now() }]);
-        saveQueue(cur.filter((x) => x.id !== ev.id));
-        continue;
+      if (!r.ok) {
+        // one event that can never succeed is dropped; a whole batch refused is odd (a record from before `events`):
+        // tried again later
+        if ((r.error === 'bad_request' || r.error === 'too_large') && !toRecord) {
+          drop(batch[0]);
+          continue;
+        }
+        backOff(batch[0], r.error === 'bad_request' || r.error === 'too_large' ? 'unavailable' : r.error);
+        break;
       }
-      if (r.error === 'bad_request' || r.error === 'too_large') {
-        dropped.push(ev);
-        saveQueue(cur.filter((x) => x.id !== ev.id));
-        continue;
+      const results: EventResult[] = toRecord ? ((r as { results?: EventResult[] }).results ?? []) : [{ id: batch[0].id, ...(r as { ok: true; duplicate?: true }) }];
+      let stop = false;
+      for (const [i, ev] of batch.entries()) {
+        const x = results[i];
+        if (x?.ok) ack(ev, x.at);
+        else if (x && (x.error === 'bad_request' || x.error === 'too_large')) drop(ev);
+        else {
+          // it and the rest wait (in order): the record already has any of them it took, and acks a repeat as a duplicate
+          backOff(ev, x?.error ?? 'unavailable');
+          stop = true;
+          break;
+        }
       }
-      error = r.error;
-      if (r.error !== 'unauthorized') {
-        const tries = ev.tries + 1;
-        saveQueue(cur.map((x) => (x.id === ev.id ? { ...x, tries, nextAt: now() + backoffMs(tries) } : x)));
-      }
-      break;
+      if (stop) break;
     }
-    return { sent, acked, dropped, remaining: queued().length, error };
+    out.remaining = queued().length;
+    return out;
   })();
   flushing = p;
   // cleared however it settles: a throw (storage) must not wedge every later flush

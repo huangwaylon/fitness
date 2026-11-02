@@ -74,6 +74,9 @@ export async function post<T extends object = object>(action: string, body: Reco
   }
 }
 
+/** Whether requests can go to the relay's record (else only Apps Script). */
+export const recordConfigured = (): boolean => recordUrl !== '';
+
 /**
  * A read from the relay's record, falling back to Apps Script when the relay can't be reached or answers with an
  * outage (`offline`, `unavailable`); a refusal (`unauthorized`, `bad_request`, …) is the answer. Without a record
@@ -87,5 +90,5 @@ export async function postRecord<T extends object = object>(action: string, body
 }
 
 export function whoami(key: string): Promise<GasResult<{ me: PersonId }>> {
-  return post<Extract<WhoamiReply, { ok: true }>>('whoami', {}, { key });
+  return postRecord<Extract<WhoamiReply, { ok: true }>>('whoami', {}, { key });
 }

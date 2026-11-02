@@ -3,7 +3,7 @@
 // pings. send() is a no-op unless the socket is up (and, for what the room doesn't keep, the partner is there too); it
 // never throws and never waits. Plain TS: the socket, the visibility source and the key are injectable for tests.
 import { LIVE, getKey, localKV, readJson, writeJson } from './storage.ts';
-import { CLOSE, LIVE_V, MAX_BYTES, dayStart, isAcked, isStored, parseClient, parseServer, tokyoDay, type Intent, type Notice, type Relayed, type Who } from './live-protocol.ts';
+import { CLOSE, LIVE_V, MAX_BYTES, dayStart, isAcked, isStored, parseClient, parseServer, tokyoDay, type Intent, type Notice, type RecordMark, type Relayed, type Who } from './live-protocol.ts';
 
 /** The relay's socket URL; VITE_LIVE_URL overrides it (empty = live off). */
 export const LIVE_URL: string = (import.meta.env?.VITE_LIVE_URL as string | undefined) ?? 'wss://island-fund-relay.island-fund-relay.workers.dev/room';
@@ -21,6 +21,8 @@ export interface LiveStatus {
   me: Who | null;
   /** My partner has the app open too. */
   peer: boolean;
+  /** The record's last change as of the welcome (docs/backend.md#the-record), when the relay knew one. */
+  rec?: RecordMark;
 }
 
 /** Where the page's visibility and connectivity come from (the document and window by default). */
@@ -183,7 +185,7 @@ export function createLive(o: LiveOptions): Live {
 
   const setStatus = (s: Partial<LiveStatus>) => {
     const next = { ...st, ...s };
-    if (next.connected === st.connected && next.me === st.me && next.peer === st.peer) return;
+    if (next.connected === st.connected && next.me === st.me && next.peer === st.peer && next.rec === st.rec) return;
     st = next;
     for (const f of statusSubs) safe(() => f(st));
   };
@@ -230,7 +232,7 @@ export function createLive(o: LiveOptions): Live {
         /* already closing */
       }
     }
-    setStatus({ connected: false, peer: false });
+    setStatus({ connected: false, peer: false, rec: undefined });
   };
 
   const wanted = () => running && !parked && !!url && !!WS && env.visible() && env.online() && !!o.key();
@@ -273,7 +275,7 @@ export function createLive(o: LiveOptions): Live {
           fails = 0;
           offset = m.t - Date.now(); // a first guess until the pings refine it
           samples = [];
-          setStatus({ connected: true, me: m.me, peer: m.peer });
+          setStatus({ connected: true, me: m.me, peer: m.peer, rec: m.rec });
           for (const at of PING_MS) pings.push(setTimeout(ping, at));
           pingEvery = setInterval(ping, PING_EVERY_MS);
           // what never got its ack goes again (the relay acks a repeat without relaying it twice); another day's is
@@ -330,7 +332,7 @@ export function createLive(o: LiveOptions): Live {
       mx.closed = e.code;
       ws = null;
       clearTimers();
-      setStatus({ connected: false, peer: false });
+      setStatus({ connected: false, peer: false, rec: undefined });
       if (e.code === CLOSE.unauthorized || e.code === CLOSE.replaced || e.code === CLOSE.version) parked = true;
       else schedule();
     };
