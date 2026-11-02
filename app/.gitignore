@@ -5,3 +5,4 @@ build-pages/
 apps-script/.clasp.json
 test-results/
 playwright-report/
+playwright-results.json

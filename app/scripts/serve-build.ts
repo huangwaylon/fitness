@@ -1,0 +1,78 @@
+// Serves build-pages/ the way GitHub Pages does, for the e2e tests: the exact bytes CI deploys (the build job's
+// artifact), under the base path, with 404.html (the SPA fallback) for any other path. No dependencies, starts at once.
+// `node scripts/serve-build.ts <port> [base]`.
+import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { readFile, stat } from 'node:fs/promises';
+import { extname, join, normalize } from 'node:path';
+
+const port = Number(process.argv[2] ?? 4173);
+const base = (process.argv[3] ?? process.env.BASE_PATH ?? '/fitness').replace(/\/$/, '');
+const root = join(import.meta.dirname, '..', 'build-pages');
+
+const TYPES: Record<string, string> = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json',
+  '.webmanifest': 'application/manifest+json',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.jpg': 'image/jpeg',
+  '.ico': 'image/x-icon',
+  '.woff2': 'font/woff2',
+  '.woff': 'font/woff',
+  '.mp3': 'audio/mpeg',
+  '.m4a': 'audio/mp4',
+  '.ogg': 'audio/ogg',
+  '.wav': 'audio/wav',
+  '.glb': 'model/gltf-binary',
+  '.bin': 'application/octet-stream',
+  '.wasm': 'application/wasm',
+  '.txt': 'text/plain; charset=utf-8'
+};
+
+async function file(path: string): Promise<string | undefined> {
+  try {
+    const s = await stat(path);
+    if (s.isFile()) return path;
+    if (s.isDirectory()) return file(join(path, 'index.html'));
+  } catch {
+    /* missing */
+  }
+  return undefined;
+}
+
+createServer((req, res) => {
+  serve(req, res).catch((e: unknown) => {
+    console.error(req.url, e);
+    if (!res.headersSent) res.writeHead(500);
+    res.end();
+  });
+}).listen(port, '127.0.0.1', () => console.log(`build-pages on http://127.0.0.1:${port}${base}/`));
+
+async function serve(req: IncomingMessage, res: ServerResponse) {
+  const url = new URL(req.url ?? '/', 'http://x');
+  const path = decodeURIComponent(url.pathname);
+  if (path === base) {
+    res.writeHead(301, { location: `${base}/${url.search}` }).end();
+    return;
+  }
+  const inBase = path.startsWith(`${base}/`);
+  const rel = inBase ? normalize(path.slice(base.length)).replace(/^(\.\.[/\\])+/, '') : '';
+  const hit = inBase ? await file(join(root, rel)) : undefined;
+  const served = hit ?? join(root, '404.html');
+  const body = await readFile(served);
+  const headers = { 'content-type': TYPES[extname(served)] ?? 'application/octet-stream', 'cache-control': 'no-store', 'accept-ranges': 'bytes' };
+  // WebKit's media elements ask for byte ranges (as Pages answers them)
+  const range = hit && /^bytes=(\d*)-(\d*)$/.exec(req.headers.range ?? '');
+  if (range && (range[1] || range[2])) {
+    const start = range[1] ? Number(range[1]) : Math.max(0, body.length - Number(range[2]));
+    const end = range[1] && range[2] ? Math.min(Number(range[2]), body.length - 1) : body.length - 1;
+    res.writeHead(206, { ...headers, 'content-range': `bytes ${start}-${end}/${body.length}` });
+    res.end(req.method === 'HEAD' ? undefined : body.subarray(start, end + 1));
+    return;
+  }
+  res.writeHead(hit ? 200 : 404, headers);
+  res.end(req.method === 'HEAD' ? undefined : body);
+}
