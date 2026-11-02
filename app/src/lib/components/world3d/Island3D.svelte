@@ -577,16 +577,35 @@
     e.go(v.camZ, v.zoom);
   }
 
+  /** A software renderer (no GPU: headless CI's SwiftShader, llvmpipe), asked of a throwaway context before the
+   *  island's own is made (its antialiasing is fixed at its making). */
+  function softwareGL(): boolean {
+    try {
+      const c = document.createElement('canvas'), gl = (c.getContext('webgl2') ?? c.getContext('webgl')) as WebGLRenderingContext | null;
+      if (!gl) return false;
+      const ext = gl.getExtension('WEBGL_debug_renderer_info');
+      const name = String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
+      return /swiftshader|llvmpipe|software/i.test(name);
+    } catch {
+      return false;
+    }
+  }
+
   onMount(() => {
     if (!canvas) return;
     let e: Island3;
+    // a software renderer draws a frame in a fraction of a second only at its lightest: half the pixels, no
+    // antialiasing, no shadow map (?dpr= ?aa= ?shadows=1 keep theirs), the ambience a couple of frames a second (CI's
+    // tabs share their runner's cores: at the phone's pixel ratio a frame took ~0.5 s)
+    const soft = softwareGL();
     try {
       e = createIsland(canvas, ground, {
-        dpr: num('dpr') ?? Math.min(2, window.devicePixelRatio || 1),
+        dpr: num('dpr') ?? (soft ? 0.5 : Math.min(2, window.devicePixelRatio || 1)),
         water: q.get('water') !== '0',
-        shadows: q.get('shadows') !== '0',
+        shadows: soft ? q.get('shadows') === '1' : q.get('shadows') !== '0',
         cap: num('cap') === 30 ? 30 : 60,
-        aa: q.get('aa') !== '0'
+        aa: q.get('aa') !== null ? q.get('aa') !== '0' : !soft
       });
     } catch (err) {
       console.warn('world3d', err);
@@ -594,12 +613,7 @@
       return;
     }
     eng = e;
-    // a software renderer (no GPU: headless CI) draws a frame in seconds at the phone's pixel ratio: the lightest one, no
-    // shadow map (?shadows=1 keeps it)
-    // and its ambience (the water, the fall, a flicker) a couple of frames a second: CI's tabs share one GPU process
-    // (?ambient= the frames a second of it, anywhere)
-    const soft = /swiftshader|llvmpipe|software/i.test(e.gpu());
-    if (num('dpr') === null && soft) e.options({ dpr: 1, shadows: q.get('shadows') === '1' });
+    // (?ambient= the frames a second of the ambience, anywhere)
     const amb = num('ambient') ?? (soft ? 2 : null);
     if (amb !== null) e.options({ ambient: Math.max(0, amb) });
     fitEnds(e);
