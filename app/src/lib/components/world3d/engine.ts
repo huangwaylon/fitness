@@ -25,7 +25,7 @@ import { createCards, type Cards } from './cards.ts';
 import { createEffects, type FxKind, type FxOpts } from './effects.ts';
 import { createLights, lampFog, type LampSpot, type Lights } from './lights.ts';
 import type { Inst } from './layout3d.ts';
-import { drawOff } from '../../testMode.ts';
+import { drawOff } from '../../ui-state/testMode.ts';
 
 type Tod = 'day' | 'dusk' | 'night';
 
