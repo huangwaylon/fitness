@@ -14,6 +14,7 @@ import { bend } from './bend.ts';
 import type { Inst, ModelName } from './layout3d.ts';
 import type { LampSpot } from './lights.ts';
 import { MODELS } from './models3d.ts';
+import { nightLift, nightTag } from './nightLift.ts';
 import { procScene } from './proc3d.ts';
 
 /** Where a lit model's light is (a share of its height), its colour and the halo's and pool's sizes (u). */
@@ -215,6 +216,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       const mesh = n as Mesh;
       if (!mesh.isMesh) return;
       const { m, depth } = lambert(mesh.material as Material, grey);
+      if (nightTag(m, name)) m.emissiveIntensity += nightLift(m, lampLevel);
       // (a greyable model's instances carry their grey: its own copy of the geometry, dropped with the group)
       const ga = grey ? new InstancedBufferAttribute(new Float32Array(insts.length), 1) : undefined;
       const geo = ga ? mesh.geometry.clone().setAttribute('aGrey', ga) : mesh.geometry;
@@ -337,7 +339,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       lampLevel = l;
       liftLevel = lift;
       for (const m of lit) m.emissiveIntensity = l;
-      for (const m of lifted) m.emissiveIntensity = lift * m.userData.lift;
+      for (const m of lifted) m.emissiveIntensity = lift * m.userData.lift + nightLift(m, l);
     },
     frame,
     has: (id) => byId.has(id),
