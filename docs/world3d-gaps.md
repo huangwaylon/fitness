@@ -51,6 +51,11 @@ The specs meanwhile wait for the 3D island before they act (e2e/island.ts `is3d`
 opens (`watchFor`/`sawIt`), and fast-forward the page's clock instead of running it frame by frame
 (`page.clock.fastForward`: under `runFor` each faked frame is drawn, a minute of them in software takes minutes).
 
+Since Nov 3 the gate's e2e run in **logic mode** (`E2E_RENDER=none`, docs/ops/test-strategy.md): the engines run every
+frame but draw nothing, so SwiftShader's cost is gone from all but the drawn smoke (`@render`/`@smoke`, 7 tests), and
+`runFor` is quick again (e2e/island.ts `step`). The whole suite drawn runs after each deploy in the full tier
+(e2e-full.yml). What fails only there (fishing3d, the layout specs) is a drawing-speed gap, not a gameplay one.
+
 ## Hooks (`window.__world3d`)
 
 - `lamps(): string[]` (provided): the ids of the lamps lit now (lights.ts `lit()`: a model's id, a stand-in's `s:`
