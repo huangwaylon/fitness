@@ -14,8 +14,8 @@ async function open(page: Page, date: string, cam: number) {
   await expect.poll(async () => {
     await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), cam);
     await page.waitForTimeout(250);
-    return page.evaluate(() => Math.round((window as unknown as { __world: { cam(): number } }).__world.cam()));
-  }, { timeout: 5000 }).toBe(cam);
+    return page.evaluate((z) => Math.abs((window as unknown as { __world: { cam(): number } }).__world.cam() - z), cam);
+  }, { timeout: 5000 }).toBeLessThan(1.5); // (WebKit scrolls by whole px: within a px of it)
   await page.waitForTimeout(250);
 }
 

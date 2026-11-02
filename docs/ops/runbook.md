@@ -10,12 +10,14 @@ First-time setup: [google-setup.md](google-setup.md). How it works: [backend.md]
 ## 1. Deploy the UI
 Push to `main`. Any change under `app/**` (or to the workflow) runs `.github/workflows/pages.yml`:
 
-1. `npm ci --ignore-scripts`, `npm run check`, `npm run knip`, `npx vitest run`
-2. `npm run build` with `VITE_GAS_URL` = the repo variable `GAS_URL` and `BASE_PATH=/fitness`
-3. `npm run e2e` (Playwright, Chromium) against that build
-4. deploy `app/build-pages/` to https://huangwaylon.github.io/fitness/
+1. `npm ci --ignore-scripts`, then beside each other: `npm run build` with `VITE_GAS_URL` = the repo variable `GAS_URL`
+   and `BASE_PATH=/fitness` (once), and `npm run check`, `npm run knip`, `npx vitest run`
+2. the e2e against that build: Playwright in Chromium (six shards, gating) and in WebKit as an iPhone 15 on macOS (five
+   shards, not gating until it's green across the board)
+3. deploy `app/build-pages/` to https://huangwaylon.github.io/fitness/
 
-A red step stops the deploy; pull requests run steps 1–3 only. Re-run: Actions → *Deploy UI to GitHub Pages* →
+A red step stops the deploy (a flaky test, one that fails and then passes once more, is annotated instead:
+[testing.md](testing.md)); pull requests run steps 1–2 only. Re-run: Actions → *Deploy UI to GitHub Pages* →
 **Run workflow**. Before a model change, also run `npm run bench` (year 3 compacted ≤ 15 ms).
 
 ## 2. Redeploy the Apps Script

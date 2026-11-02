@@ -991,6 +991,7 @@ Read once by `island/devHooks.ts`. The island's hooks work in dev builds or with
 | `?visitor=<id>`, `?arrive`, `?leave=<ms>`, `?stroll`, `?meet` | A visitor; its arrival; its departure; a stroll; the partner's hello |
 | `?critter=fish\|pond\|<fish>\|<pond fish>\|<bug>\|none`, `?sea=<id>\|pearl`, `?flea` | A critter now (kept until caught; ambient visits off); a dive spot; a flea on every villager tap |
 | `?shake=nest\|branch\|bagworm\|spider` | The next shake drops that |
+| `?rock=clonk\|sparkle\|bug` | Every rock tap has that outcome |
 | `?find=bottle\|fragment\|mushroom\|rare-mushroom\|earth-egg` | A beach find now / every dig spot that |
 | `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid`, `?wander` | A balloon; a show; a meteor shower's night; the tape deck; a hybrid flower; the partner wanders |
 | `?wilbur` | Wilbur on the dock (as when the partner's app is open) |
