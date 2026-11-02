@@ -31,6 +31,8 @@ npm run build                       # the e2e test the build, not the dev server
 npx playwright install webkit       # once per Playwright version
 E2E_PORT=4391 npm run e2e -- --project=webkit   # a free port (--project=chromium: the installed Chrome)
 E2E_PORT=4391 npm run e2e -- e2e/demo.spec.ts --project=webkit --repeat-each=10   # hunt a flake
+E2E_ISLAND=3d E2E_PORT=4391 npm run e2e -- --project=chromium   # every test on the 3D island (せってい's switch in localStorage)
+E2E_SWIFTSHADER=1 E2E_PORT=4391 npm run e2e -- e2e/world3d.spec.ts --project=chromium   # software GL, as CI's Linux draws
 ```
 
 ## Writing a stable spec

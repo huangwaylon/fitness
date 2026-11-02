@@ -302,7 +302,20 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   and the day's scenery and decor pieces (a card of today's art for what has no model yet); the villagers: cards of
   their renders posed from the director (`motion3d.ts`); the lights: `lights.ts`; the finger: `gestures.ts`. The ends
   are fitted per screen like the 2D ones (the shoreline 83% down at まえ, the campsite's feet half way at おく).
-  `window.__world3d` (stats, view, go, client, ground) for the e2e (`e2e/world3d.spec.ts`).
+  `window.__world3d` (stats, view, go, client, ground, where, focus) for the e2e (`e2e/world3d.spec.ts`).
+  - **What comes and goes** is drawn from the DOM island's own nodes (`camera.svelte.ts`): a node with an `m3` art key
+    stands as NH's model where the node is (its live position too; a move eases over `ms` as its sprite's CSS
+    transition; `drop` falls in from above; `y` an absolute height: a fish's shadow under the sea), and one with a
+    `c3` is a character's card (a visitor) posed by its actor; their DOM art goes invisible (`.m3on`) and stays as the
+    tap box. Finds, weeds, the rock, decorations, the tape deck, the events' pieces, the critters (the bugs at their
+    flight height, the fish shadows turned the way they swim), the goal trees' fruit (greyed until grown, falling as the
+    same model), a shaken tree's drops; the stream's petals and leaves (`floats3d.ts`).
+  - **Flourishes** (`effects.ts`, `island/fx3d.ts`): a tap's dust and splash, a bush's leaves, sparks, drops, sparkles,
+    the 「！」 of a bite: a few particles of NH's fx/* models in world space, depth-tested, fading; the DOM's own
+    `.in3d`, invisible. A DOM reaction on art the canvas draws (a jiggle, a rustle, a shake) moves the model too
+    (`island/echo3d.ts`).
+  - **The board's focus** (docs/board.md): `world.three.focus(rect)` / `unfocus()` / `attach(id, obj)`.
+  - On a software renderer (CI's headless Chromium) it draws at pixel ratio 1 without the shadow map.
 - **The projector** (`camera.svelte.ts` `World`): every upright thing is a node at its feet (`{@attach world.at(…)}`)
   placed by one tick: an upright billboard (translate + scale, faded near the horizon, sunk behind it), a flat mark
   (also squashed by the ground's foreshortening) or a ground quad (a matrix3d, like the bands). **One depth order**: the
