@@ -77,6 +77,14 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
   const detail = a.locator('[data-zukan-detail="common-butterfly"]');
   await expect(detail).toContainText('7/4 おきゃくさんが 見つけた');
   await expect(detail.locator('[data-zukan-person="G"]')).toContainText('おきゃくさん ×1', { timeout: 5000 });
+  // and after a reload, as it was: the record's rows say who found it
+  await a.reload();
+  await expect(ribbon(a)).toBeVisible();
+  await ribbon(a).click();
+  await a.locator('dialog[open] .tab[data-tab=kiroku]').click();
+  await a.locator('[data-zukan="bug"]').click();
+  await a.locator('button.tile[data-entry="common-butterfly"]').click();
+  await expect(a.locator('[data-zukan-detail="common-butterfly"]')).toContainText('7/4 おきゃくさんが 見つけた');
   await ctx.close();
 });
 
