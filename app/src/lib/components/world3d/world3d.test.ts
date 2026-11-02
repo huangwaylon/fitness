@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { bendPoint, unbendRay } from './bend.ts';
 import { CHUNKS, GRASS_Y, TIER, baseHeight, chunkGrid, feetY, groundHeight } from './ground.ts';
 import { layout } from './layout3d.ts';
-import W3D from './models.json' with { type: 'json' };
+import { MODELS } from './models3d.ts';
 import { BRIDGE, POND, SCENERY } from '../island/world.ts';
 
 describe('the 3D island’s ground', () => {
@@ -51,7 +51,7 @@ describe('the 3D island’s layout', () => {
     const list = layout('autumn', 'fall', 11);
     for (const s of SCENERY) expect(list.some((o) => o.id === s.id)).toBe(true);
     for (const o of list) {
-      expect(W3D.models[o.model]).toBeTruthy();
+      expect(MODELS[o.model]).toBeTruthy();
       expect(o.scale).toBeGreaterThan(0);
     }
   });

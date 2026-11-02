@@ -13,7 +13,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { bend } from './bend.ts';
 import type { Inst, ModelName } from './layout3d.ts';
 import type { LampSpot } from './lights.ts';
-import W3D from './models.json' with { type: 'json' };
+import { MODELS } from './models3d.ts';
 
 /** Where a lit model's light is (a share of its height), its colour and the halo's and pool's sizes (u). */
 const LAMP: Partial<Record<string, { at: number; kind: LampSpot['kind']; colour: number; glow: number; pool: number; dz?: number }>> = {
@@ -21,13 +21,25 @@ const LAMP: Partial<Record<string, { at: number; kind: LampSpot['kind']; colour:
   'garden-lantern': { at: 0.62, kind: 'lamp', colour: 0xffc070, glow: 9, pool: 26 },
   'garden-lantern-white': { at: 0.62, kind: 'lamp', colour: 0xfff0c8, glow: 9, pool: 26 },
   campfire: { at: 0.32, kind: 'fire', colour: 0xff9a4a, glow: 20, pool: 60 },
-  tent: { at: 0.3, kind: 'window', colour: 0xffd9a0, glow: 26, pool: 44, dz: -14 }
+  tent: { at: 0.3, kind: 'window', colour: 0xffd9a0, glow: 26, pool: 44, dz: -14 },
+  'deco/campsite-winter': { at: 0.3, kind: 'window', colour: 0xffd9a0, glow: 26, pool: 44, dz: -14 },
+  'deco/mushroom-lamp': { at: 0.86, kind: 'lamp', colour: 0xffd38a, glow: 11, pool: 30 },
+  'deco/nut-lamp': { at: 0.62, kind: 'lamp', colour: 0xffd38a, glow: 11, pool: 30 },
+  'deco/bamboo-shoot-lamp': { at: 0.5, kind: 'lamp', colour: 0xffd38a, glow: 11, pool: 30 },
+  'deco/illumi-tree': { at: 0.5, kind: 'lamp', colour: 0xfff0c8, glow: 22, pool: 40 },
+  'decor/stone-lantern': { at: 0.6, kind: 'lamp', colour: 0xffc070, glow: 9, pool: 26 },
+  'events/spooky-lantern': { at: 0.45, kind: 'fire', colour: 0xffa040, glow: 12, pool: 30 },
+  'events/countdown-board': { at: 0.6, kind: 'window', colour: 0xfff0c8, glow: 18, pool: 30 }
 };
 
 type Over = { hidden?: boolean; x?: number; z?: number; lift?: number; grey?: number; yaw?: number };
 
 export interface Things {
+  /** The layout's things (a full list: only the models whose instances changed rebuild). */
   place(list: readonly Inst[]): Promise<void>;
+  /** Add or change things beside the layout's (by id), and take them away. */
+  set(list: readonly Inst[]): Promise<void>;
+  remove(ids: readonly string[]): Promise<void>;
   /** Change one instance in place (hidden, moved, greyed). */
   over(id: string, o: Over | null): void;
   jiggle(id: string, strength?: number): void;
@@ -46,7 +58,6 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
   const base = new URL(`room/world3d/`, new URL(document.baseURI)).href;
-  const MODELS = W3D.models as Record<string, { max: number[]; v: string; lit?: number }>;
   let pending = 0, disposed = false;
   const gltfs = new Map<ModelName, Promise<GLTF | null>>();
   const model = (name: ModelName) => {
@@ -121,7 +132,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     tmpQ.setFromAxisAngle(UP, ov?.yaw ?? o.yaw ?? 0);
     if (wobble) tmpQ.multiply(tmpQ2.setFromAxisAngle(FWD, wobble));
     tmpS.set(o.scale * (1 + squash), o.scale * (1 - squash), o.scale * (1 + squash));
-    const y = lift + (o.model === 'bridge-stone' ? height(x, z - 30) - 1 : height(x, z));
+    const y = lift + (o.id === 'bridge' ? height(x, z - 30) - 1 : height(x, z));
     return out.compose(tmpV.set(x, y, -z), tmpQ, tmpS);
   }
   function write(g: Group, only?: number) {
@@ -181,9 +192,12 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     changed();
   }
   const want = new Map<ModelName, string>();
-  async function place(list: readonly Inst[]) {
+  /** What stands: the layout's (place) and what comes and goes (set / remove: a critter, a find, a decoration). */
+  let still = new Map<string, Inst>();
+  const extra = new Map<string, Inst>();
+  async function regroup() {
     const by = new Map<ModelName, Inst[]>();
-    for (const o of list) (by.get(o.model) ?? by.set(o.model, []).get(o.model)!).push(o);
+    for (const o of [...still.values(), ...extra.values()]) (by.get(o.model) ?? by.set(o.model, []).get(o.model)!).push(o);
     const jobs: Promise<void>[] = [];
     for (const [name, insts] of by) {
       const sig = insts.map(sigOf).join('|');
@@ -199,6 +213,13 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     }
     await Promise.all(jobs);
   }
+  async function place(list: readonly Inst[]) {
+    still = new Map(list.map((o) => [o.id, o]));
+    await regroup();
+  }
+  let queued: Promise<void> | null = null;
+  /** A model's instances rebuild once for all the changes in this task. */
+  const later = () => (queued ??= Promise.resolve().then(() => ((queued = null), regroup())));
 
   function lamps(): LampSpot[] {
     const out: LampSpot[] = [];
@@ -239,6 +260,17 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
 
   return {
     place,
+    set(list) {
+      for (const o of list) extra.set(o.id, o);
+      return later();
+    },
+    remove(ids) {
+      for (const id of ids) {
+        extra.delete(id);
+        overs.delete(id);
+      }
+      return later();
+    },
     over(id, o) {
       if (o) overs.set(id, { ...overs.get(id), ...o });
       else overs.delete(id);
