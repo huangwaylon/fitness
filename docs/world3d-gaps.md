@@ -31,6 +31,14 @@ the rest read the 3D island through `window.__world3d` (e2e/island.ts: `is3d`, `
    were WorldWater's SVG, which the 3D island doesn't mount. The spec checks the stream's (`where('float-0').model`)
    and says so.
 
+4. **The night sky is a sliver: few shooting stars** (celeste.spec "shooting stars every 3–8 s on a shower night":
+   1 in 24 s, ≥ 2 expected; fixme'd on the 3D island). Expected: on a shower night a streak every 3–8 s, across the
+   night sky clear of the controls. Is: at the default (whole-island) view on the iPhone 13 profile (390 × 664) the
+   horizon is at y ≈ 105 px and the HUD's ribbon spans 10–54 px, so SceneTaps' shootingStar() has a band of ~40 px
+   (band top + 6 to the horizon − 14) beside a wide ribbon: streakPath's 40 tries find no lane most times and the
+   streak is skipped. The sun and the moon sit in the same sliver. Either the camera leaves more sky at night (or on a
+   short screen), or the 3D island draws the streaks in its own sky (behind the trees, so they may cross them).
+
 ## Hooks wanted (`window.__world3d`)
 
 - `lamps(): string[]`, the ids of the lamps lit now (things.ts `lamps()` with the level > 0). fixed-decor.spec checks a
