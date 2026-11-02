@@ -154,7 +154,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
   };
   function wear(w: W, key: string | null) {
     if ((w.hat?.key ?? null) === key) return;
-    w.hat?.obj?.removeFromParent();
+    w.v?.wear(null);
     w.hat = key ? { key, obj: null } : null;
     if (!key) return kick();
     const h = w.hat!;
@@ -162,7 +162,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       const head = w.v?.head();
       if (!src || !head || w.hat !== h || disposed) return;
       h.obj = src.clone();
-      head.add(h.obj);
+      w.v!.wear(h.obj);
       w.v!.lift(liftL);
       kick();
     });
