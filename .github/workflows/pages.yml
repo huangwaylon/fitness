@@ -258,6 +258,9 @@ jobs:
     env:
       BASE_PATH: /${{ github.event.repository.name }}
       E2E_ISLAND: 3d
+      # the logic tier's way (docs/ops/test-strategy.md): the 3D island runs its frames and draws nothing; what needs the
+      # pixels (@render) is the drawn smoke's
+      E2E_RENDER: none
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
@@ -282,7 +285,7 @@ jobs:
           name: site
           path: app/build-pages
       - id: e2e
-        run: npx playwright test --project=chromium --shard=${{ matrix.shard }}/8
+        run: npx playwright test --project=chromium --grep-invert @render --shard=${{ matrix.shard }}/8
       - name: The failures, in the job summary
         if: failure() && steps.e2e.outcome == 'failure'
         run: node scripts/e2e-report.ts playwright-results.json "Failed on the 3D island (E2E_ISLAND=3d), shard ${{ matrix.shard }}" >> "$GITHUB_STEP_SUMMARY"
