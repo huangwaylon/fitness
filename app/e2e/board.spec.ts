@@ -294,5 +294,11 @@ for (const island of ['2d', '3d'] as const) {
     await expect(view(page).locator('[data-note]')).toHaveCount(1);
     expect(await drawn(page)).toEqual([text]);
     await expect.poll(async () => (await aboveKeyboard(page, '[data-board-face-box]')).ok, { timeout: 10_000 }).toBe(true);
+    // a draft given up (やめる) leaves the face as it was
+    await view(page).getByRole('button', { name: 'かきこむ' }).click();
+    await view(page).getByRole('textbox', { name: 'メモ' }).fill('やっぱり やめ');
+    expect(await drawn(page)).toEqual(['やっぱり やめ', text]);
+    await view(page).getByRole('button', { name: 'やめる' }).click();
+    expect(await drawn(page)).toEqual([text]);
   });
 }
