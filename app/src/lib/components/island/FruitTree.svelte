@@ -40,6 +40,7 @@
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { taken as takenBy } from '#lib/sync/world-day.ts';
+  import { fx3d } from './fx3d.ts';
   import { echo3d } from './echo3d.ts';
 
   interface Props {
@@ -186,10 +187,12 @@
   }
 
   /** Short effects on the stage: dust where a fruit lands, sparkles where one is picked up. */
-  let fx = $state<{ n: number; kind: 'puff' | 'sparkles'; x: number; z: number; lift: number }[]>([]);
+  let fx = $state<{ n: number; kind: 'puff' | 'sparkles'; x: number; z: number; lift: number; in3d: boolean }[]>([]);
   let fxN = 0;
   function addFx(kind: 'puff' | 'sparkles', fxX: number, fxZ: number, lift: number) {
-    fx = [...fx.slice(-3), { n: ++fxN, kind, x: fxX, z: fxZ, lift }];
+    // (the 3D island draws it: fx3d.ts)
+    const in3d = fx3d(kind === 'puff' ? 'dust' : 'sparkle', fxX, fxZ, lift);
+    fx = [...fx.slice(-3), { n: ++fxN, kind, x: fxX, z: fxZ, lift, in3d }];
   }
   const dropFx = (n: number) => (fx = fx.filter((e) => e.n !== n));
 
@@ -425,7 +428,7 @@
 
 {#each fx as e (e.n)}
   <div class="node" {@attach w.at({ x: e.x, z: e.z, lift: e.lift, h: 30, dz: -2 })}>
-    <span class="fxa at"><Fx kind={e.kind} spread={u(26)} ondone={() => dropFx(e.n)} /></span>
+    <span class="fxa at" class:in3d={e.in3d}><Fx kind={e.kind} spread={u(26)} ondone={() => dropFx(e.n)} /></span>
   </div>
 {/each}
 

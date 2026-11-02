@@ -24,6 +24,7 @@
   import { taken as takenBy, takenByOthers } from '#lib/sync/world-day.ts';
   import { onMount } from 'svelte';
   import { hitOf, hitSources, pick, type HitBox } from './hitbox.ts';
+  import { fx3d } from './fx3d.ts';
   import { echo3d } from './echo3d.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
 
@@ -74,11 +75,16 @@
   });
 
   /** A flourish at world (x, z = y), `lift` units up. */
-  interface Fx { n: number; kind: 'pull' | 'spark' | 'strike'; x: number; y: number; lift?: number; flip?: boolean }
+  interface Fx { n: number; kind: 'pull' | 'spark' | 'strike'; x: number; y: number; lift?: number; flip?: boolean; in3d?: boolean }
   let fx = $state<Fx[]>([]);
   let seq = 0;
   const { later, after, clear } = timers();
   function spawn(f: Omit<Fx, 'n'>, ms: number) {
+    // the 3D island's flourish (fx3d.ts): the weed's earth, the strike's dust and sparkle, the rock's glint
+    // (the strike's shovel stays the DOM's: a tool, with the 3D dust under it)
+    if (f.kind === 'strike') fx3d('dust', f.x, f.y, 0);
+    const d3 = f.kind === 'pull' ? fx3d('dust', f.x, f.y, 0, { v: '#b48a5a' }) : f.kind === 'spark' ? fx3d('sparkle', f.x, f.y, f.lift ?? 0) : false;
+    if (d3) f = { ...f, in3d: true };
     const n = ++seq;
     fx = [...fx.slice(-2), { ...f, n }];
     later(() => (fx = fx.filter((x) => x.n !== n)), ms);
@@ -185,7 +191,7 @@
 {/each}
 {#each fx as f (f.n)}
   <div class="node" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, lift: f.lift ?? 0, h: 30, dz: -2 })}>
-    <span class="item fx-{f.kind}" class:flip={f.flip}>
+    <span class="item fx-{f.kind}" class:in3d={f.in3d} class:flip={f.flip}>
       {#if f.kind === 'strike'}
         <span class="strike"><OfficialArt key={findArt('shovel')} size={su(26)} eager /></span>
       {:else if f.kind === 'pull'}

@@ -38,6 +38,7 @@
   //   ?critter=fish | pond | river | mouth | clifftop | <fish id> | <fresh fish id> | <bug id> (dev or ?demo): one now,
   //   staying until caught (the e2e's hook; it comes where the camera can see it if it can, else at its place);
   //   ?sea=<id>|pearl: a bubble spot; ?flea: a tap on my villager always sends a flea off it.
+  import { fx3d } from './fx3d.ts';
   import CatchPlate from './CatchPlate.svelte';
   import { cardFor, type CatchCard } from './catchCard.ts';
   import { timers } from './timers.ts';
@@ -115,8 +116,9 @@
     /** The bank the line starts from when my villager didn't walk there (world). */
     sx: number; sz: number;
     landed: boolean; t0: number; plan: BitePlan | null; under: boolean; rings: number;
-    /** The 「！」's nudge (px) keeping it on screen. */
+    /** The 「！」's nudge (px) keeping it on screen; the 3D island draws it (fx3d.ts: the DOM's invisible). */
     bdx: number;
+    bang3?: boolean;
     /** Bumped by each new plan (and a hesitation): the old plan's timers check it and stand down. */
     gen: number;
     /** A first tap before the bite made the fish hesitate: the next early one scares it off. */
@@ -463,6 +465,7 @@
       c.bdx = clamp(cx, half, w.view.vw - half) - cx;
       c.under = true;
       c.rings++;
+      c.bang3 = fx3d('bang', c.x, c.z, 26, { ms: plan.window }) && fx3d('splash', c.x, c.z, 0, { size: 0.8 });
       sceneSfx('bite');
     }, at(plan.bite));
     later(() => live() && flee(), at(plan.bite + plan.window)); // too late
@@ -1278,7 +1281,7 @@
     {#if c.under}
       <!-- NH's 「！」 over every world thing at its true size, nudged inside the screen -->
       <div class="node" {@attach w.at({ x: c.x, z: c.z, h: 40, zi: OVER, inv: true, always: true })}>
-        <span class="inv"><span class="bang" data-bite style:left="{c.bdx.toFixed(1)}px">！</span></span>
+        <span class="inv" class:in3d={c.bang3}><span class="bang" data-bite style:left="{c.bdx.toFixed(1)}px">！</span></span>
       </div>
     {/if}
   {/if}

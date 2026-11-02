@@ -311,8 +311,8 @@
 </script>
 
 {#each nests as s (s.n)}
-  <div class="node" {@attach w.at({ x: s.x, z: s.y, h: s.from, dz: NEAR })}>
-    <span class="drop nest" class:fading={s.fading} data-nest={s.tree} style:--from={u(-s.from)}>
+  <div class="node" {@attach w.at({ x: s.x, z: s.y, h: s.from, dz: NEAR, m3: { key: 'finds/wasp-nest', id: `nest-${s.n}`, drop: s.from, ms: 520, off: s.fading } })}>
+    <span data-m3art class="drop nest" class:fading={s.fading} data-nest={s.tree} style:--from={u(-s.from)}>
       <!-- NH's wasp nest: a papery grey-brown hive, banded, with its dark mouth -->
       <svg viewBox="0 0 24 28" aria-hidden="true">
         <path d="M12 1.5 C17.5 1.5 21.5 7 21.5 14 C21.5 21.5 17 26.5 12 26.5 C7 26.5 2.5 21.5 2.5 14 C2.5 7 6.5 1.5 12 1.5 Z" fill="#B49A78" />
@@ -327,7 +327,7 @@
 
 {#each lyingNow as b (b.id)}
   {@const from = (treeOf(b.tree)?.h ?? 120) * 0.55}
-  <div class="node" {@attach w.at({ x: b.x, z: b.z, h: from, dz: NEAR, inv: true })}>
+  <div class="node" {@attach w.at({ x: b.x, z: b.z, h: from, dz: NEAR, inv: true, m3: { key: b.what === 'branch' ? 'finds/tree-branch' : 'finds/coconut', id: `drop-${b.id}`, drop: dropping.has(b.id) ? from : 0, ms: 520 } })}>
     <span class="drop {b.what}" class:still={!dropping.has(b.id)} style:--from={u(-from)} out:pickUp>
       <OfficialArt key={b.what === 'branch' ? 'finds/tree-branch' : 'finds/coconut'} size={u(b.what === 'branch' ? 36 : 28)} eager />
     </span>

@@ -20,6 +20,7 @@ import { bend, bendPoint, bendU, unbendRay } from './bend.ts';
 import { createWater, seaFog, waterFog, waterU } from './water.ts';
 import { createThings, type Things } from './things.ts';
 import { createCards, type Cards } from './cards.ts';
+import { createEffects, type FxKind, type FxOpts } from './effects.ts';
 import { createLights, lampFog, type LampSpot, type Lights } from './lights.ts';
 import type { Inst } from './layout3d.ts';
 
@@ -84,6 +85,8 @@ interface Stats {
   zoom: number;
   points: number;
   lamps: number;
+  /** The flourishes playing (effects.ts). */
+  fx: number;
 }
 
 /** The camera: vertical field of view (a long lens), the pitch at zoom 1 / fully in / fully out, the zoom's range. */
@@ -167,6 +170,8 @@ export interface Island3 {
   focusOn(target: { x: number; z: number; lift?: number }, o?: { zoom?: number; pitch?: number; ms?: number }): Promise<void>;
   restore(ms?: number): Promise<void>;
   focused(): boolean;
+  /** A flourish in the world (effects.ts): a tap's dust, a splash, sparkles, a 「！」. */
+  fx(kind: FxKind, x: number, z: number, lift?: number, o?: FxOpts): void;
   /** The GPU's name (a software renderer, CI's: the scene draws at its lightest). */
   gpu(): string;
   /** Something of the scene's own in the world (the board's face with its posts): at (x, z) on the ground, `lift`
@@ -273,6 +278,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
   const things = createThings(scene, src.height, () => ((shadowsDirty = true), kick()));
   const cards = createCards(scene, (sh) => (sh && (shadowsDirty = true), kick()));
   const lights = createLights(scene);
+  const effects = createEffects(scene, src.feet);
   let extraGlows: readonly LampSpot[] = [];
   const relight = () => lights.set([...things.lamps(), ...extraGlows]);
   async function place(list: readonly Inst[]) {
@@ -643,6 +649,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     if (things.frame(t)) more = shadowsDirty = true;
     if (hook?.(t)) more = true;
     if (cards.frame(pitch * LEAN, stretch, src.feet)) more = true;
+    if (effects.frame(t, camera)) more = true;
     if (built(ground) && ground.update?.(t)) more = true;
     if (lights.frame(t, MID_X, camZ + 110, bendU.uBendR.value, -camZ)) more = true;
     if (opts.water) waterU.uTime.value = (t / 1000) % 3600;
@@ -716,6 +723,10 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     limits: () => ({ min: lim.min, max: lim.max }),
     focusOn, restore,
     focused: () => !!focus,
+    fx(kind, x, z, lift, o) {
+      effects.spawn(kind, x, z, lift, o);
+      activity(400);
+    },
     gpu() {
       const gl = renderer.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info');
       return String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
@@ -758,7 +769,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
         fps: stamps.length, cpu: [pctl(cpu, 0.5), pctl(cpu, 0.95)], gap: [pctl(gaps, 0.5), pctl(gaps, 0.95)],
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures,
         geometries: renderer.info.memory.geometries, dpr: renderer.getPixelRatio(), frames,
-        loading: pending + things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps
+        loading: pending + things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count()
       };
     },
     dispose() {
@@ -769,6 +780,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
       canvas.removeEventListener('webglcontextrestored', onRestored);
       things.dispose();
       cards.dispose();
+      effects.dispose();
       lights.dispose();
       for (const c of chunks) {
         c.geometry.dispose();
