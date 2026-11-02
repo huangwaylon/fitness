@@ -14,27 +14,19 @@ the rest read the 3D island through `window.__world3d` (e2e/island.ts: `is3d`, `
 
 ## Open: the island components (non-engine)
 
-2. **My villager in front of the tent covers most of its door** (tapwalk.spec "near its door my villager goes
-   straight in", tent.spec, sync-harness.spec "one place at a time"). Expected: a tap on the tent goes in. Is: with
-   my villager standing at the tent's way out (buildings.ts outOfTent: ±12, 30 in front of the door), its tap card
-   (`[data-actor] button.vil`, ~61 × 84 px at the far end) covers the upper ~2/3 of the door's button (~78 × 55 px).
-   A tap there is a tap on my villager (in front: right by depth), so only the door's lower corners go in. The specs
-   now tap the door where it is the door's (`tapOn`). Worth a look: the villager's DOM card is the 2D render's size;
-   sized to the 3D model's projected box (or the door's button sized to the tent's model) the tent would stay tappable
-   round a villager standing at it.
+2. **My villager in front of the tent covers most of its door** (fixed): a 3D villager's DOM card is its model's
+   core (villagers.ts size(): from its head's height standing, ~0.6 as wide; Island3D sets --v3w / --v3h, IslandScene's
+   [data-v3] .vil takes them, no 2D padding or 64 px least size): at the tent's way out the card is 27 × 45 px (was
+   40 × 56) and 42% of the door takes a tap (was 20%).
 
 ## Open: engine / scene (the lead)
 
 3. **No petals or maple leaves on the 3D pond** (fixed): floats3d.ts floats five on the pond too (`float-pond-0…4`,
    circling inside its banks over 90 s) beside the stream's; seasonal.spec checks the pond's.
 
-4. **The night sky is a sliver: few shooting stars** (celeste.spec "shooting stars every 3–8 s on a shower night":
-   1 in 24 s, ≥ 2 expected; fixme'd on the 3D island). Expected: on a shower night a streak every 3–8 s, across the
-   night sky clear of the controls. Is: at the default (whole-island) view on the iPhone 13 profile (390 × 664) the
-   horizon is at y ≈ 105 px and the HUD's ribbon spans 10–54 px, so SceneTaps' shootingStar() has a band of ~40 px
-   (band top + 6 to the horizon − 14) beside a wide ribbon: streakPath's 40 tries find no lane most times and the
-   streak is skipped. The sun and the moon sit in the same sliver. Either the camera leaves more sky at night (or on a
-   short screen), or the 3D island draws the streaks in its own sky (behind the trees, so they may cross them).
+4. **The night sky is a sliver: few shooting stars** (fixed): on the 3D island SceneTaps' shootingStar() lets a
+   streak cross on down over the island's far end (its band at least 150 px tall from under the HUD), so on the
+   390 × 664 profile a shower night brings its streaks; celeste.spec's shower runs on the 3D island again.
 
 ## CI's software GL (SwiftShader), the engine: the cutover's blocker
 
