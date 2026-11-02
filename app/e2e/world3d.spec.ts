@@ -290,28 +290,40 @@ test('one source for screen ↔ world: at the default, zoomed in panned sideways
     });
     await expect.poll(off, { message: name }).toEqual([]);
     // a tap on open lawn ahead: my villager sets off to the very ground the camera has under the finger
-    const target = await page.evaluate(() => {
+    const targets = await page.evaluate(() => {
       const w = (window as unknown as { __world3d: W3x }).__world3d;
-      // (off the middle's path: a tap on a path is no walk)
-      for (const [cx, cy] of [[110, 520], [290, 500], [120, 430], [280, 600], [90, 600]] as const) {
+      // open lawn in view (off the middle's path, a tap on which is no walk, and off the beach and the sea: a cast)
+      const z0 = w.view().camZ, out: { cx: number; cy: number; g: { x: number; z: number } }[] = [];
+      for (const dz of [60, 110, 160, 30, 210]) for (const x of [150, 240, 120, 270, 90, 300]) {
+        const [cx, cy] = w.client(x, z0 + dz);
+        if (cx < 30 || cx > innerWidth - 30 || cy < 160 || cy > innerHeight - 120) continue;
         const g = w.ground(cx, cy);
-        const el = document.elementFromPoint(cx, cy);
-        if (g && el?.matches('.stage')) return { cx, cy, g };
+        if (g && document.elementFromPoint(cx, cy)?.matches('.stage')) out.push({ cx, cy, g });
       }
-      return null;
+      return out;
     });
-    if (!target) continue;
     // (the island at rest: no moment of the opening's under way, which would take my villager its own way)
     await expect.poll(() => page.evaluate(() => (window as unknown as { __world: { idle(): boolean } }).__world.idle()), { timeout: 20_000 }).toBe(true);
-    const fx0 = await w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx);
-    await page.mouse.click(target.cx, target.cy);
+    const rings = () => page.evaluate(() => [...document.querySelectorAll('.tap-ring')].map((e) => +getComputedStyle(e).opacity));
+    // (the first that walks: a flower, a find or a weed there takes the tap instead)
+    let target: (typeof targets)[number] | null = null;
+    for (const t of targets.slice(0, 8)) {
+      const fx0 = await w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx);
+      await page.mouse.click(t.cx, t.cy);
+      if (await expect.poll(async () => (await rings()).length, { timeout: 1500 }).toBeGreaterThan(0).then(() => true, () => false)) {
+        expect(await w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx)).toBeGreaterThan(fx0);
+        target = t;
+        break;
+      }
+    }
+    if (!target) throw new Error(`${name}: no lawn tap walked: ${JSON.stringify(targets)} ${JSON.stringify(await page.evaluate(() => [(window as unknown as { __world: Wd }).__world.mine(), document.querySelector(".scene")?.getAttribute("data-covered"), document.querySelector("[role=dialog]")?.getAttribute("aria-label")]))}`);
     // its ring: the 3D island's, the DOM's hidden (its own animation once showed it through: two rings)
-    await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('.tap-ring')].map((e) => +getComputedStyle(e).opacity)), { message: `${name}: the DOM's ring` }).toEqual([0]);
-    expect(await w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx)).toBeGreaterThan(fx0);
+    expect((await rings()).every((o) => o === 0), `${name}: the DOM's ring`).toBe(true);
     // and my villager heads for the ground under the finger (the nav may snap it a little)
+    const g = target.g;
     await expect.poll(async () => {
       const [x, z] = await page.evaluate(() => (window as unknown as { __world: Wd }).__world.mine());
-      return Math.hypot(x - target.g.x, z - target.g.z);
+      return Math.hypot(x - g.x, z - g.z);
     }, { timeout: 8000, message: `${name}: walked to the tap` }).toBeLessThan(30);
   }
 });
