@@ -141,8 +141,9 @@ export interface Tent {
   client(x: number, y: number, z: number): [number, number];
   /** Pieces still loading. */
   loading(): number;
-  /** Frames drawn, and the last frame's draw calls and triangles (the e2e's budget). */
-  stats(): { frames: number; calls: number; tris: number; dpr: number; cost: number[] };
+  /** Frames drawn, and the last frame's draw calls and triangles (the e2e's budget); `queued`: a frame is asked for
+   *  (something moves: a walk, a camera glide, a model popping in). */
+  stats(): { frames: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean };
   /** The first frame was drawn (the room on screen). */
   ready: Promise<void>;
   dispose(): void;
@@ -786,8 +787,10 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       was.mat.map?.dispose();
       was.mat.dispose();
       villagers.delete(who);
+      invalidate();
     }
-    if (!look || villagers.has(who)) return invalidate();
+    // (the same look again, or none again: nothing to draw; the frames stay on demand)
+    if (!look || villagers.has(who)) return;
     const mat = new MeshBasicMaterial({ alphaTest: 0.5, side: DoubleSide });
     mat.visible = false;
     const card = new Mesh(cardGeo, mat);
@@ -1345,7 +1348,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     },
     walk, walking: (who) => !!villagers.get(who)?.path, face, hop, hit, floorAt, client, orbit, zoom, resetView, isDefault, moving, centre,
     loading: () => pending,
-    stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: cost.slice() }),
+    stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: cost.slice(), queued: !!raf }),
     ready,
     dispose() {
       disposed = true;

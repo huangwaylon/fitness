@@ -23,7 +23,7 @@ async function tapTent(p: Page) {
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-type T = { stats(): { frames: number; calls: number; tris: number; dpr: number }; mine(): [number, number]; walking(w: string): boolean; px(x: number, z: number, y?: number): [number, number]; loading(): number };
+type T = { stats(): { frames: number; calls: number; tris: number; dpr: number; queued: boolean }; still(): boolean; mine(): [number, number]; walking(w: string): boolean; px(x: number, z: number, y?: number): [number, number]; loading(): number };
 const tent = <R,>(page: Page, fn: (t: T) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
 const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
 
@@ -87,7 +87,12 @@ test('a tap on the floor walks my villager there; ‹ 島へ goes back out; noth
   await page.waitForFunction(() => !(window as unknown as { __tent: { walking(w: string): boolean } }).__tent.walking('A'), null, { timeout: 5000 });
   const [mx, mz] = await tent(page, (t) => t.mine());
   expect(Math.hypot(mx - 25, mz + 20)).toBeLessThan(1.5);
-  // still: no frames
+  // still: no frames (once the room is all in and at rest: on a slow GPU, CI's software GL, its models may still be
+  // loading and popping in when the walk ends)
+  await page.waitForFunction(() => {
+    const t = (window as unknown as { __tent: T }).__tent;
+    return !t.loading() && t.still() && !t.walking('A') && !t.stats().queued;
+  });
   const f0 = (await tent(page, (t) => t.stats())).frames;
   await page.waitForTimeout(600);
   expect((await tent(page, (t) => t.stats())).frames).toBe(f0);

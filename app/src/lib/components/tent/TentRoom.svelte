@@ -183,10 +183,11 @@
   const theirAt = new Map<Who, Pt>(others.map((w) => [w, [sideX(w, 9) || 0, 16] as Pt]));
   function partnerShown() {
     if (!eng) return;
+    // (called on every presence news: a villager already shown stays as it is, walking, sitting or standing)
     for (const w of others) {
-      const shown = where.inTent[w] && where.home[w] === home;
+      const shown = where.inTent[w] && where.home[w] === home, fresh = shown && !eng.at(w);
       eng.villager(w, shown ? lookOf(w) : null);
-      if (shown && !eng.walking(w)) eng.put(w, theirAt.get(w)!, faceOf(w));
+      if (fresh) eng.put(w, theirAt.get(w)!, faceOf(w));
     }
   }
   function heardTent(m: Extract<Relayed, { kind: 'tent' }>) {
