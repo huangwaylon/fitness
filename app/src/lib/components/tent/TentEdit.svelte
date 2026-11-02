@@ -195,6 +195,7 @@
   //      「いまの かぐを おいてね」), a drag from one turns the camera, and a long press (the screen's LONG_MS) puts
   //      what I hold down and takes that one; a tap off the room puts what I hold down. The screen hands its pointer
   //      events here. ----
+  const whenOf = (e: PointerEvent) => (e.timeStamp > 0 ? e.timeStamp : performance.now());
   let drag: { id: number; dx: number; dz: number; moved: boolean; held: boolean; x0: number; y0: number; t0: number; wall?: boolean; long?: boolean } | null = null;
   /** A near miss on what I hold (px round its drawn shape) is still it. */
   const HELD_SLOP = 14;
@@ -222,7 +223,7 @@
     if (sel && isWallItem(sel.item)) {
       const wp = g.wallAt(e.clientX, e.clientY), m = ITEMS[sel.item], u = (at[0] + m.w / 2) * TILE;
       if (onGhost() || (wp && wp.wall === sel.f && Math.abs(wp.u - u) <= (m.w * TILE) / 2 + 4)) {
-        drag = { id: e.pointerId, dx: 0, dz: 0, moved: false, held: true, x0: e.clientX, y0: e.clientY, t0: Date.now(), wall: true };
+        drag = { id: e.pointerId, dx: 0, dz: 0, moved: false, held: true, x0: e.clientX, y0: e.clientY, t0: whenOf(e), wall: true };
         return true;
       }
       return false;
@@ -239,7 +240,7 @@
   }
   /** The finger takes what I hold from where it is on it (a drag moves it from there). */
   function grab(e: PointerEvent, held: boolean, long = false) {
-    const base = { id: e.pointerId, moved: false, held, x0: e.clientX, y0: e.clientY, t0: Date.now(), long };
+    const base = { id: e.pointerId, moved: false, held, x0: e.clientX, y0: e.clientY, t0: whenOf(e), long };
     if (sel && isWallItem(sel.item)) return void (drag = { ...base, dx: 0, dz: 0, wall: true });
     const p = eng()?.floorAt(e.clientX, e.clientY);
     if (!sel || !p) return void (drag = { ...base, dx: 0, dz: 0 });
@@ -262,7 +263,8 @@
     grab(e, false, true);
     return true;
   }
-  /** A tap, not a drag: the finger stayed within TAP_PX and let go within TAP_MS. */
+  /** A tap, not a drag: the finger stayed within TAP_PX and let go within TAP_MS (by the events' own times: a busy frame
+   *  between the press and the lift doesn't make a tap a hold; a made-up event, now). */
   const TAP_PX = 8, TAP_MS = 450;
   export function move(e: PointerEvent): void {
     if (!drag || e.pointerId !== drag.id) return;
@@ -284,7 +286,7 @@
     if (!drag || e.pointerId !== drag.id) return false;
     const d = drag;
     drag = null;
-    const tap = !d.moved && !d.long && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) <= TAP_PX && Date.now() - d.t0 <= TAP_MS;
+    const tap = !d.moved && !d.long && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) <= TAP_PX && whenOf(e) - d.t0 <= TAP_MS;
     if (d.moved) cue('tick');
     // a tap on what I hold turns it a quarter, clockwise (NH's rotate); a tap that picked a piece up just picks it
     // (a wall thing's facing is its wall's: nothing to turn)
