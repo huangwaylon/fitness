@@ -60,8 +60,10 @@ function grdFor(name, all) {
 }
 
 async function materialsFor(name, files, o) {
+  // a material whose textures go by another name (`alias`: NH's fruit icons)
+  const tn = o.alias?.[name] ?? name;
   const find = (suffix) => {
-    for (const [folder, list] of files) if (list.includes(`${name}_${suffix}.png`)) return `/src/${folder}/${name}_${suffix}.png`;
+    for (const [folder, list] of files) if (list.includes(`${tn}_${suffix}.png`)) return `/src/${folder}/${tn}_${suffix}.png`;
     return null;
   };
   const all = files.flatMap(([f, l]) => l.filter((x) => x.endsWith('_Grd.png')).map((x) => `/src/${f}/${x}`));
@@ -111,6 +113,16 @@ async function materialsFor(name, files, o) {
         #endif`);
     };
     std.customProgramCacheKey = () => `grd-${name}`;
+  }
+  // `opaque`: the albedo's alpha isn't an opacity (NH's item icons keep something else there): drawn solid
+  if (o.opaque) {
+    std.alphaTest = 0;
+    const before = std.onBeforeCompile, key = std.customProgramCacheKey;
+    std.onBeforeCompile = (s, r) => {
+      before.call(std, s, r);
+      s.fragmentShader = s.fragmentShader.replace('#include <alphatest_fragment>', 'diffuseColor.a = 1.0;\n#include <alphatest_fragment>');
+    };
+    std.customProgramCacheKey = () => `opaque-${key.call(std)}`;
   }
   if (name === 'mMyDesign') std.color.set(0x7cc576);
   else if (grd && !alb) std.color.set(0xffffff);
@@ -309,12 +321,35 @@ window.renderSet = async (o) => {
       images[id] = canvas(s).toDataURL('image/png');
     } else images[id] = canvas(px(raw[id])).toDataURL('image/png');
   }
+  // `pad`: each image centred on a pad × pad square (an icon: NH's item icons' margin, whatever the model's shape)
+  if (o.pad) for (const [id, url] of Object.entries(images)) {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const k = document.createElement('canvas');
+    k.width = k.height = o.pad;
+    const g = k.getContext('2d'), x = Math.round((o.pad - cw) / 2), y = Math.round((o.pad - ch) / 2);
+    // `outline` [px, colour]: a dark rim round it, as NH's flat icons have (it reads on a dark panel too)
+    if (o.outline) {
+      const t = document.createElement('canvas');
+      t.width = t.height = o.pad;
+      const tg = t.getContext('2d');
+      for (let a = 0; a < 16; a++) tg.drawImage(img, x + Math.cos((a * Math.PI) / 8) * o.outline[0], y + Math.sin((a * Math.PI) / 8) * o.outline[0]);
+      tg.globalCompositeOperation = 'source-in';
+      tg.fillStyle = o.outline[1];
+      tg.fillRect(0, 0, o.pad, o.pad);
+      g.drawImage(t, 0, 0);
+    }
+    g.drawImage(img, x, y);
+    images[id] = k.toDataURL('image/png');
+  }
   const first = looks[0];
   const at = o.anchor === 'door' && first.door ? first.door.clone() : new THREE.Vector3(0, 0, 0).applyMatrix4(first.group.matrixWorld);
   at.y = box.min.y;
   const ndc = at.project(cam);
   const res = {
-    images, opaque, w: cw, h: ch, anchor: [((ndc.x + 1) / 2) * W - bx0, ((1 - ndc.y) / 2) * H - by0],
+    images, opaque, w: o.pad || cw, h: o.pad || ch,
+    anchor: [((ndc.x + 1) / 2) * W - bx0 + (o.pad ? Math.round((o.pad - cw) / 2) : 0), ((1 - ndc.y) / 2) * H - by0 + (o.pad ? Math.round((o.pad - ch) / 2) : 0)],
     units: [cw / ppu, ch / ppu], box: [box.min.toArray(), box.max.toArray()], tris: looks.map((l) => l.tris), mats: looks.map((l) => l.mats),
     ms: { load: Math.round(tLoad), render: Math.round(tRender), total: Math.round(performance.now() - t0) }
   };

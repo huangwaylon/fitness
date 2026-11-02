@@ -120,7 +120,7 @@ describe('official art (static/art/manifest.json)', () => {
   const keys = artKeys();
   /** Keys built by the helpers in lib/art.ts from a fixed list. */
   const built = new Set([
-    ...RING_FRUITS.map((f) => `fruit/${f}`),
+    ...RING_FRUITS.map((f) => `fruit3d/${f}`),
     ...ROSTER_IDS.flatMap((id) => [`villagers/${id}`, `villagers/${id}-icon`]),
     ...REACTIONS.map((r) => `reactions/${r}`),
     // the scene's catches (island/critters.ts critterArt)

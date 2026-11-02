@@ -47,6 +47,10 @@ interface Look {
   snowAlways?: boolean;
   /** Mesh or material names left out. */
   hide?: string[];
+  /** A material's textures by another name (NH's fruit icons). */
+  alias?: Record<string, string>;
+  /** The albedos' alpha isn't an opacity (NH's item icons): drawn solid. */
+  opaque?: boolean;
 }
 interface Job {
   looks: Look[];
@@ -63,6 +67,12 @@ interface Job {
   emiW?: Record<string, number>;
   emiDefault?: number;
   halo?: number;
+  /** An icon: the image centred on a pad × pad square (px). */
+  pad?: number;
+  /** An icon's dark rim [px, CSS colour]. */
+  outline?: [number, string];
+  /** The lights' strengths (scripts/models-page.js: hemi, key, fill, amb). */
+  light?: { hemi?: number; key?: number; fill?: number; amb?: number };
 }
 
 // NH's rows of the time of year in a tree's gradient (48 rows: 12 months × 4): spring green, summer, the fall colours.
@@ -185,6 +195,16 @@ JOBS.push(
   }
 );
 
+// the goal trees' fruit as icons (art.ts fruitArt: the tree's popup, けんこう's かつどう cards, きろく): NH's 3D fruit
+// (its dropped-fruit models) seen a little from above and turned, like NH's own item icons, on a square canvas with the
+// flat icons' margin (fruit/*: the same size wherever they're drawn), a dark rim so they read on a dark panel too,
+// lit a little brighter than the island's renders (the panels are flat paper, not the island's ground)
+const FRUIT_ALIAS = { mPear: 'mPltFruitFruitPear', mPltFruitPeach: 'mUnitIconPltFruitPeach', mPltFruitCherry02: 'mUnitIconPltFruitCherry02' };
+JOBS.push(...([['pear', 'Pear', 96, -30], ['peach', 'Peach', 84, 0], ['cherry', 'Cherry', 92, -30], ['apple', 'Apple', 92, -30]] as const).map(([id, m, px, rotY]): Job => ({
+  px, pad: 128, pitch: 20, rotY, anchor: 'origin', outline: [3, 'rgba(70,38,22,.9)'], light: { hemi: 2.8, key: 3.0, amb: 1.0 },
+  looks: [{ key: `fruit3d/${id}`, parts: [[`UnitIconPltFruit${m}`, `UnitIconPltFruit${m}`]], outputs: ['day'], alias: FRUIT_ALIAS, opaque: true }]
+})));
+
 // ---- the run ------------------------------------------------------------------------------------------------------
 
 const MODELS = process.env.NH_MODELS?.replace(/^~(?=\/)/, process.env.HOME ?? '~');
@@ -242,10 +262,10 @@ const report: string[] = [];
 for (const j of jobs) {
   const looks = j.looks.map((l) => {
     const fs = [...(l.tex ?? []), ...l.parts.map((p) => p[0]), ...SHARED].filter((f, i, a) => a.indexOf(f) === i && existsSync(join(scratch, F(f))));
-    return { name: l.key, parts: l.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), pose: l.pose, files: fs.map((f) => [F(f), readdirSync(join(scratch, F(f)))]), outputs: l.outputs, grdRow: l.grdRow ?? ROW.summer, grdRows: l.grdRows, grdBlock: l.grdBlock, snowAlways: l.snowAlways, hide: l.hide };
+    return { name: l.key, parts: l.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), pose: l.pose, files: fs.map((f) => [F(f), readdirSync(join(scratch, F(f)))]), outputs: l.outputs, grdRow: l.grdRow ?? ROW.summer, grdRows: l.grdRows, grdBlock: l.grdBlock, snowAlways: l.snowAlways, hide: l.hide, alias: l.alias, opaque: l.opaque };
   });
   const r = await page.evaluate((o) => (window as unknown as { renderSet: (o: unknown) => Promise<{ images: Record<string, string>; opaque: Record<string, number[]>; w: number; h: number; anchor: [number, number]; units: [number, number]; tris: number[]; ms: { total: number } }> }).renderSet(o), {
-    looks, pitch: j.pitch ?? 30, rotY: j.rotY, targetH: j.ppu ? undefined : j.px, ppu: j.ppu, nrm: 0.6, aoI: 0.6, anchor: j.anchor ?? 'origin', emiW: j.emiW, emiDefault: j.emiDefault, halo: j.halo
+    looks, pitch: j.pitch ?? 30, rotY: j.rotY, targetH: j.ppu ? undefined : j.px, ppu: j.ppu, nrm: 0.6, aoI: 0.6, anchor: j.anchor ?? 'origin', emiW: j.emiW, emiDefault: j.emiDefault, halo: j.halo, pad: j.pad, outline: j.outline, light: j.light
   });
   let bytes = 0;
   for (const [id, url] of Object.entries(r.images)) {
