@@ -704,7 +704,7 @@ NH's outdoor furniture on the island, moves it and takes it away; both phones sh
 
 `routes/tent/+page.svelte`, `tent/TentRoom.svelte`, `tent/TentEdit.svelte`, `tent/engine.ts` (three.js), `tent/grid.ts`,
 `tent/items.ts`, `tent/dragLink.ts`, `store/tent.svelte.ts`, `contract/tent.ts`, `ui-state/doorTransition.ts`,
-`scripts/room-models.ts`, `store/where.svelte.ts`, `e2e/tent.spec.ts`, `e2e/sync-harness.spec.ts`. A tap on the
+`scripts/room-models.ts`, `scripts/room-surfaces.ts`, `store/where.svelte.ts`, `e2e/tent.spec.ts`, `e2e/tent-surfaces.spec.ts`, `e2e/tent-hold.spec.ts`, `e2e/sync-harness.spec.ts`. A tap on the
 campsite's tent walks my villager up to its door (the one exception to "a tap on something acts in place", the user's:
 "we have to walk up to it before we enter it"; the walk goes over the relay like any, so the partner sees me walk up
 and vanish inside; within 36u of the door it goes straight in; a tap on anything else on the way is the end of going
@@ -752,23 +752,46 @@ goes with the leaving).
   ✓ おわる with the count (「3/40」). A tap on a piece's icon puts it down as a ghost on the free spot nearest my villager,
   lifted, its footprint on the floor green where it may stand and red where not, the bar above saying why
   (「でいりぐちは あけて おこう」, 「ほかの かぐと かさなります」, 「むらびとが いるよ」…); a finger on it (or on a placed piece,
-  which picks it up) drags it a tile at a time; a tap on the floor moves it there; ↻ まわす turns it a quarter (about
+  which picks it up) drags it a tile at a time; a tap on the floor moves it there (Holding, below); ↻ まわす turns it a quarter (about
   its middle); ✓ おく places it (greyed while red); 🗑 しまう takes a placed one back to the storage (とりけす on the banner
   for 5 s); ✕ やめる puts it back. A wallpaper or a floor is on at once. **Where:** on its whole tiles inside the room,
   off the door's two tiles, not over another piece or a villager; a rug lies under the furniture (and may cover the
   door's tiles), never over another rug. At most 40 pieces, shared (the wallpaper and the floor don't count): 64 tiles
   and the phone's draw budget.
 - **Turning:** ↻ or a tap on the piece I hold turns it a quarter clockwise (a tap: under 8 px and 450 ms; a drag
-  moves it; a tap on another piece picks that one), easing round.
-- **Table tops** (NH's surfaces): NH's surface flag and its small things come from the ACNH spreadsheet (the game
-  files have no params for it): a piece flagged `surface` (tables, desks, counters, shelves, dressers, the fireplace: 60
-  of the pieces, 12 of the starter set) holds small things (the spreadsheet's Miscellaneous, one tile: 126; the lantern,
-  the lamps, the kettle, the tea set…) on its top, one to a tile of its footprint, at its height (its model's top). A
-  small thing held over a surface goes on it (the footprint at the top); its op names the piece (`on`) and its slot
-  there, so moving or turning the table carries what's on it (the ghost carries them) in one op. NH's rule for putting
-  away: not with things on it (「うえの ものを さきに しまってね」). A thing on a table blocks neither the floor nor a walk.
-  A race (one of us puts the table away as the other puts a lamp on it) leaves the lamp on the floor at its slot's tile,
-  the same on both phones.
+  moves it), easing round.
+- **Holding** (NH's decorating: one thing held at a time; `TentEdit.svelte`): with nothing held a tap or a press on a
+  piece takes it up. While I hold one, the finger is for it alone: a press on it, or a near miss (its drawn shape on
+  screen and 14 px round it), drags it; a tap on the floor puts it there if it may stand there, else it stays where it
+  was and the spot flashes red, the bar saying why; a tap on another piece doesn't take that one (what I hold shakes
+  its head, and the first three times on this phone the bar says 「いまの かぐを おいてね」), except where what I hold goes
+  there (a small thing onto a table's top, a piece over a rug, a rug under a piece); a drag that starts on another
+  piece turns the camera; a long press (400 ms, the finger still) on another piece puts what I hold down (where it is
+  when it may stand there, else back where it was) and takes that one, with a pop, the finger dragging it on; a tap off
+  the room (a wall, the dark round it) puts what I hold down. The held piece has a yellow handle over it. A tap near a
+  small thing on a table (10 px round it) is the small thing, not the table.
+- **Table tops** (NH's surfaces): which pieces are surfaces and which things go on them come from the ACNH spreadsheet
+  (Norviah/animal-crossing's JSON; the game files have no params for it), never a hand list. NH's rules: a piece with
+  the spreadsheet's `surface` = true holds things (Housewares: tables, low tables, desks, counters, kitchens, chests,
+  dressers, wardrobes, low and open shelves, the bookshelves flagged, TV stands, stools, the fireplace; a few
+  Miscellaneous too: the cardboard box, the record box); a piece without it holds nothing however flat it looks (the
+  wooden bookshelf, the bamboo shelf, the vanities, the dining tables a few are). Only Miscellaneous things go on a
+  surface (lamps, the kettle, the tea set, a 2 × 1 one like the 50-inch TV on two tiles), one a tile, on its TOP only
+  (no inner shelves: NH has none), never on a thing that's itself on a table. Wall-mounted things are never surfaces
+  (the spreadsheet's Wall-mounted sheet has no surface column; NH's wall shelves hold nothing). 60 of the pieces here
+  (12 of the starter set) are surfaces, 126 small. **The top** is found from each surface's converted model, not its
+  bounds (`scripts/room-surfaces.ts`, `npm run room-models -- --surfaces`): rays straight down every half unit over
+  the footprint; the highest flat level that covers enough of it is the top (a vase or tool standing on it is no
+  level: the log shelves' top is 7.4, its bounds 11; the tool shelf's 18.8, not 23.1), a tile holds a thing where the
+  top covers its middle (the throwback hat table's brim and the open-frame kitchen's sink hold none), and a top
+  that's a roof over a working level open in front and clear above (the system kitchen's cabinets over its counter, the
+  loft bed over its desk) has its things on that level. items.json keeps each one's `sy` (height), `st` (the top's
+  rectangle) and `sl` (its tiles that hold); a thing stands at `sy`, its middle kept on the rectangle. A small thing
+  held over a surface goes on it (dragged over a tall one, it follows the finger on the top); its op names the piece
+  (`on`) and its slot there, so moving or turning the table carries what's on it (the ghost carries them) in one op.
+  NH's rule for putting away: not with things on it (「うえの ものを さきに しまってね」). A thing on a table blocks neither
+  the floor nor a walk. A race (one of us puts the table away as the other puts a lamp on it) leaves the lamp on the
+  floor at its slot's tile, the same on both phones.
 - **On the walls** (NH's wall-mounted things: the ACNH spreadsheet's Wall-mounted, 54 with a model here; ten in the
   starter set: the log, cuckoo, pendulum and ironwood clocks, the iron wall lamp and rack, the tool board, the
   corkboard, two wreaths): the かべかけ tab; a piece hangs on a wall's grid (a tile across, a 5-unit step up, never

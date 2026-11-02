@@ -150,10 +150,21 @@ test('edit: place a piece from the tray, turn it, drag it, put it away; the wall
   expect(held.x).toBeGreaterThanOrEqual(5);
   await page.locator('[data-act="place"]').click();
   await expect.poll(() => te(page, (t) => t.pieces()[0].x)).toBe(held.x);
-  // the doorway stays clear: red, the bar says why, ✓ greyed
+  // the doorway stays clear: a tap there leaves the stool where it was, the bar says why
   await page.locator('[data-tent-item="f4038"]').click();
+  const stool = (await te(page, (t) => t.edit()!.sel!));
   [x, y] = await tile(page, 3, 7);
   await page.mouse.click(x, y);
+  await expect(page.locator('[data-note="door"]')).toBeVisible();
+  expect(await te(page, (t) => t.edit()!.sel!)).toMatchObject({ x: stool.x, z: stool.z });
+  await expect(page.locator('[data-act="place"]')).not.toHaveAttribute('aria-disabled', 'true');
+  // dragged there: red, the bar says why, ✓ greyed
+  [x, y] = await tile(page, stool.x, stool.z);
+  const [dx, dy] = await tile(page, 3, 7);
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(dx, dy, { steps: 8 });
+  await page.mouse.up();
   await expect(page.locator('[data-why="door"]')).toBeVisible();
   await expect(page.locator('[data-act="place"]')).toHaveAttribute('aria-disabled', 'true');
   await page.locator('[data-act="cancel"]').click();

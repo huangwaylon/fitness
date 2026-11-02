@@ -485,6 +485,24 @@ as long.
 20 × 92 tiles: today's まえ in front, today's おく behind, and a new middle between them for the homes and what comes
 next. Why: the user, for room to build; the width (and so the camera's rules: vertical scroll, x centred) unchanged.
 
+### The tent's surfaces are NH's flag, their tops the model's geometry (2026-11-02)
+Which pieces hold things and which things go on them are the ACNH spreadsheet's (`surface`; the Miscellaneous sheet),
+the same data NH's community took from the game; nothing is added by hand (a flat-looking piece NH doesn't flag holds
+nothing, a wall shelf holds nothing: NH's Wall-mounted items have no surface). Where on a piece things stand is found
+from its converted model (rays down: the highest flat level, the tiles it covers, a roof over a working level giving
+way to it), kept in items.json, because the game files carry no surface heights and a model's bounds put things in
+the air over ornaments. The ops are unchanged (a slot is a tile of the piece's own footprint, a 2 × 1 thing's its
+back-left tile), so the relay and the record needed nothing. Why: the user asked for low shelves, low tables,
+bookshelves "and other flat surfaces… faithful to" NH.
+
+### The tent's edit mode holds one thing at a time (2026-11-02)
+Holding a piece, a tap on another doesn't take it (a head-shake, and a hint the first three times); a long press
+(400 ms) on another does, putting the held one down first; a drag from another turns the camera; a tap off the room
+puts the held one down; a near miss on the held one is it (14 px round its drawn shape). Before, any tap on any
+piece picked it, a tap meant for the floor next to a neighbour moved the wrong thing, a held piece's tall top fell
+through to whatever was behind it, and a drag that began on a neighbour grabbed it. Why: the user found it "too easy
+to accidentally select a different item"; NH's own decorating holds one item until it's put down.
+
 ### The tent's camera is the player's, its walls cut away
 The room opens at NH's fixed, slightly top-down view, and a drag turns the camera round the room's middle (a pinch
 zooms, 🏠 eases it back), within limits that keep the walls from clipping; the walls between the camera and the room

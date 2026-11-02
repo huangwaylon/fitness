@@ -226,7 +226,11 @@
     const [a, b] = [...ptrs.values()];
     return { d: Math.hypot(a.x - b.x, a.y - b.y), my: (a.y + b.y) / 2 };
   };
+  /** The edit mode's long press: held this still this long on another piece, it takes that one (TentEdit.longPress). */
+  const LONG_MS = 400;
+  let longTimer: ReturnType<typeof setTimeout> | undefined;
   function onDown(e: PointerEvent) {
+    clearTimeout(longTimer);
     canvas?.setPointerCapture(e.pointerId);
     // the first finger down: nothing else is (a pointer whose up never came, a lost capture, is forgotten)
     if (e.isPrimary) {
@@ -238,8 +242,22 @@
       return;
     }
     ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (ptrs.size === 1) gesture = { kind: 'maybe', x0: e.clientX, y0: e.clientY, t0: Date.now(), lx: e.clientX, ly: e.clientY };
-    else if (ptrs.size === 2) {
+    if (ptrs.size === 1) {
+      gesture = { kind: 'maybe', x0: e.clientX, y0: e.clientY, t0: Date.now(), lx: e.clientX, ly: e.clientY };
+      // holding a piece, a finger kept still on another one takes that one instead (a tap doesn't: NH's one at a time)
+      if (editing && edit?.holding()) {
+        const g0 = gesture, id = e.pointerId;
+        longTimer = setTimeout(() => {
+          const at = ptrs.get(id);
+          if (gesture !== g0 || g0.kind !== 'maybe' || ptrs.size !== 1 || !at) return;
+          if (edit?.longPress({ pointerId: id, clientX: at.x, clientY: at.y } as PointerEvent)) {
+            ptrs.clear();
+            gesture = { kind: 'edit', id };
+          }
+        }, LONG_MS);
+      }
+    } else if (ptrs.size === 2) {
+      clearTimeout(longTimer);
       gesture = { kind: 'pinch', ...spread() };
       eng?.moving(true);
     }
@@ -251,6 +269,7 @@
     if (!ptrs.has(e.pointerId)) return;
     ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (g.kind === 'maybe' && Math.hypot(e.clientX - g.x0, e.clientY - g.y0) > 10) {
+      clearTimeout(longTimer);
       g.kind = 'orbit';
       eng.moving(true);
     }
@@ -268,6 +287,7 @@
     }
   }
   function onUp(e: PointerEvent) {
+    clearTimeout(longTimer);
     const g = gesture;
     if (g?.kind === 'edit') {
       if (g.id !== e.pointerId) return;
@@ -287,6 +307,7 @@
     }
   }
   function onCancel(e: PointerEvent) {
+    clearTimeout(longTimer);
     if (gesture?.kind === 'edit') edit?.up(e);
     ptrs.delete(e.pointerId);
     if (!ptrs.size) {
@@ -312,16 +333,19 @@
       if (wp) return void edit.tapWall(wp.wall, wp.u, wp.y);
     }
     const h = eng.hit(cx, cy);
-    if (!h) return;
+    // off the room (a wall, the dark round it): what the edit mode holds is put down
+    if (!h) return void (editing && edit?.putDown());
     if (h.kind === 'villager') {
       eng.hop(h.who);
       cue('villager-tap');
       return;
     }
     if (editing) {
-      // the doormat is floor to the edit mode (its tiles are the door's: the bar says why a piece can't go there)
-      // (a piece under the finger, for a small thing held over a table: where it goes)
-      const f = h.kind === 'floor' ? [h.x, h.z] : h.kind === 'door' || h.kind === 'piece' ? eng.floorAt(cx, cy) : null;
+      // holding a piece: a tap on another one doesn't take it (TentEdit.tapPiece: a small thing goes onto a table's top,
+      // a piece over a rug; else a head-shake); the doormat is floor to the edit mode (its tiles are the door's: the bar
+      // says why a piece can't go there). (Holding nothing, the press on a piece already took it.)
+      if (h.kind === 'piece') return void edit?.tapPiece(h.id, cx, cy);
+      const f = h.kind === 'floor' ? [h.x, h.z] : eng.floorAt(cx, cy);
       if (f) edit?.tapFloor(f[0], f[1]);
       return;
     }
