@@ -19,6 +19,7 @@ import {
 } from '../../app/src/lib/contract/api.ts';
 import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contract/decor.ts';
 import { tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
+import { isRoomScope, isVoid, layoutAccept, layoutOpOf, scopeMayWrite, type LayoutEntry } from '../../app/src/lib/contract/layout.ts';
 import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
 import { notifySecret, notifySig, verifyNotify } from './notify.ts';
 import { keyOwner, type Keys } from './auth.ts';
@@ -324,6 +325,8 @@ export class StoreCore {
     if (!isRec(data)) return fail('bad_request');
     // the guest writes only its finds, tallies, the tent's decor and its own cosmetic prefs (contract/guest.ts)
     if (me === 'G' && !guestMayWrite(body.type, data)) return fail('forbidden');
+    // a scoped decor op: the outdoors the members', a home's look and room its owner's (contract/layout.ts)
+    if (body.type === 'decor' && !scopeMayWrite(me, data)) return fail('forbidden');
     const json = JSON.stringify(data);
     if (json.length > MAX_EVENT_DATA_CHARS) return fail('too_large');
     const subject = eventSubject(body.type, data, me);
@@ -339,13 +342,14 @@ export class StoreCore {
       }
       if (type === 'decor') {
         const v = this.decorTarget(me, data);
-        if (v === 'full') return fail('bad_request', data.sc === 't' ? 'tent full' : 'decor full');
+        if (v === 'full') return fail('bad_request', isRoomScope(data.sc) ? 'tent full' : data.sc ? 'layout full' : 'decor full');
         if (v === 'stale') {
           this.io.sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
           return { ok: true, duplicate: true };
         }
       }
       const at = this.nextAt();
+      if (type === 'decor' && data.sc === 'r' && typeof data.at === 'number') this.dropVoided(data.at);
       this.put(id, at, me, type, json, eventSlot(type, me, subject, data, Date.parse(at)), null);
       return { ok: true, at };
     });
@@ -379,19 +383,39 @@ export class StoreCore {
     return found ? 'ok' : 'missing';
   }
 
-  /** A decor op against the record's (each item's latest op): `stale`, `full` or `append` (contract/decor.ts decorAccept). */
+  /** A decor op against the record's (each id's latest op, per scope): `stale`, `full` or `append` (contract/decor.ts
+   *  decorAccept, contract/tent.ts tentAccept, contract/layout.ts layoutAccept). */
   private decorTarget(me: Who, d: Rec): 'append' | 'stale' | 'full' {
-    const tent = d.sc === 't';
-    const parse = (x: Rec) => (tent ? tentOpOf(x) : decorOpOf(x));
+    const kind = d.sc === undefined ? 'island' : isRoomScope(d.sc) ? 'room' : 'layout';
+    const parse = (x: Rec) => (kind === 'room' ? tentOpOf(x) : kind === 'layout' ? layoutOpOf(x) : decorOpOf(x));
     const e = { ...parse(d)!, who: me };
-    const held: (DecorEntry | TentEntry)[] = [];
-    for (const r of this.io.sql.exec<{ person: string; data: string }>("SELECT person, data FROM events WHERE type = 'decor'").toArray()) {
+    const held: (DecorEntry | TentEntry | LayoutEntry)[] = [];
+    for (const r of this.decorRows()) {
+      const op = parse(r.d);
+      if (op) held.push({ ...op, who: r.person } as DecorEntry | TentEntry | LayoutEntry);
+    }
+    if (kind === 'room') return tentAccept(held as TentEntry[], e as TentEntry);
+    if (kind === 'layout') return layoutAccept(held as LayoutEntry[], e as LayoutEntry);
+    return decorAccept(held as DecorEntry[], e as DecorEntry);
+  }
+
+  /** Every decor row (its seq, sender and data). */
+  private decorRows(): { seq: number; person: Who; d: Rec }[] {
+    const out: { seq: number; person: Who; d: Rec }[] = [];
+    for (const r of this.io.sql.exec<{ seq: number; person: string; data: string }>("SELECT seq, person, data FROM events WHERE type = 'decor'").toArray()) {
       let x: unknown;
       try { x = JSON.parse(r.data); } catch { continue; }
-      const op = isRec(x) && isWho(r.person) ? parse(x) : null;
-      if (op) held.push({ ...op, who: r.person } as DecorEntry | TentEntry);
+      if (isRec(x) && isWho(r.person)) out.push({ seq: r.seq, person: r.person, d: x });
     }
-    return tent ? tentAccept(held as TentEntry[], e as TentEntry) : decorAccept(held as DecorEntry[], e as DecorEntry);
+    return out;
+  }
+
+  /** A layout reset's rows: the objects' and the chunks' ops it voids are dropped (their ids stay known). */
+  private dropVoided(at: number): void {
+    for (const r of this.decorRows()) {
+      const op = layoutOpOf(r.d);
+      if (op && isVoid({ ...op, who: r.person }, at)) this.io.sql.exec('DELETE FROM events WHERE seq = ?', r.seq);
+    }
   }
 
   // ---------------------------------------------------------------- import
@@ -440,7 +464,7 @@ export class StoreCore {
     const subject = isRec(d) ? eventSubject(type, d, person) : null;
     if (!isRec(d) || !subject) return 'skipped';
     const sql = this.io.sql;
-    if (type === 'decor' && (decorOpOf(d) || tentOpOf(d)) && this.decorTarget(person, d) !== 'append') {
+    if (type === 'decor' && (decorOpOf(d) || tentOpOf(d) || layoutOpOf(d)) && this.decorTarget(person, d) !== 'append') {
       sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id); // beaten (or past the cap): only its id is kept
       return 'had';
     }

@@ -16,15 +16,17 @@ const ALLOW: Record<string, string[]> = {
   config: ['types'],
   scoring: ['types', 'contract', 'time', 'config'],
   model: DOMAIN,
+  // the island's layout (docs/island-layout.md): pure, over the contract's ops
+  layout: ['types', 'contract'],
   i18n: ['types', 'time', 'config'],
   sync: [...DOMAIN],
-  store: [...DOMAIN, 'sync', 'i18n', 'ui-state', 'random'],
+  store: [...DOMAIN, 'layout', 'sync', 'i18n', 'ui-state', 'random'],
   // store → ui-state (toasts), never back: ui-state importing store would close a cycle
   'ui-state': [...DOMAIN, 'i18n'],
   art: ['types', 'ui-state'],
   villagers: ['types', 'art', 'i18n'],
   sound: ['types', 'time', 'sync', 'i18n', 'random'],
-  components: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'random']
+  components: [...DOMAIN, 'layout', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'random']
 };
 
 function files(dir: string): string[] {

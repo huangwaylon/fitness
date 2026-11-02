@@ -4,6 +4,7 @@
 // (relay/src/store.ts: what it accepts from the guest and what its snapshot leaves out) and the demo (`?demo&as=G`
 // shows what the guest's phone would get). Pure.
 import { isActivityMetric, type EventRow, type SnapshotRows } from './api.ts';
+import { scopeMayWrite } from './layout.ts';
 
 /** The guest's own prefs: cosmetic only (never a goal, never another person's). */
 const GUEST_PREF_KEYS = ['locale', 'villagerName', 'villager'] as const;
@@ -12,9 +13,10 @@ type Rec = Record<string, unknown>;
 const isRec = (v: unknown): v is Rec => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /**
- * Whether the guest may write this event: a `find` or a `tally` (its catches, credited to it), a tent `decor` op
- * (`sc: 't'`) and its own cosmetic `pref` (no `person`). Everything else (a buy, a void, a harvest, a goal, the
- * island's decor, an island day, a high-five row) is the members' alone: the record answers `forbidden`.
+ * Whether the guest may write this event: a `find` or a `tally` (its catches, credited to it), a `decor` op of the
+ * tent's room (`sc: 't'`), its own home's room (`v`) or its own home's look (`h`, `hG`: contract/layout.ts
+ * scopeMayWrite) and its own cosmetic `pref` (no `person`). Everything else (a buy, a void, a harvest, a goal, the
+ * island's decor and its layout, an island day, a high-five row) is the members' alone: the record answers `forbidden`.
  * @public (relay/src/store.ts)
  */
 export function guestMayWrite(type: string, d: Rec): boolean {
@@ -23,7 +25,7 @@ export function guestMayWrite(type: string, d: Rec): boolean {
     case 'tally':
       return true;
     case 'decor':
-      return d.sc === 't';
+      return scopeMayWrite('G', d);
     case 'pref':
       return d.person === undefined && (GUEST_PREF_KEYS as readonly unknown[]).includes(d.key);
     default:

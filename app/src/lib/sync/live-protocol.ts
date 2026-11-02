@@ -94,14 +94,16 @@ export type Intent =
   /** An island decoration set (placed or moved: its whole state) or removed (`rm`), contract/decor.ts's op; `at` the
    *  sender's relay clock. Kept by the room for the day; the sheet keeps it for good. */
   | ({ kind: 'decor' } & DecorWire)
-  /** A piece of the tent's furniture being dragged (presence only: relayed to the partner while they're there, never
+  /** A piece of a home's furniture being dragged (`sc`: none the tent, `u` / `v` the other homes; `o` an outdoor
+   *  object, x and z its middle in world units) (presence only: relayed to the partner while they're there, never
    *  kept, replayed or written; the drop is its `decor` op): where the finger has it now (`x`, `z` model units of the
    *  room, the piece's middle), its facing, `it` the item when it isn't placed yet, `end` when the finger let go. */
-  | { kind: 'drag'; id: string; x: number; z: number; f: number; it?: string; end?: true }
-  /** My villager in the tent (presence only, like a drag): `in` whether it's inside; a walk there (`from` → `via` → `to`,
+  | { kind: 'drag'; id: string; x: number; z: number; f: number; it?: string; end?: true; sc?: 'u' | 'v' | 'o' }
+  /** My villager in a home (presence only, like a drag; `sc` which: none the tent, ウェイ's, `u` うめ's, `v` the
+   *  guest's): `in` whether it's inside; a walk there (`from` → `via` → `to`,
    *  model units of the room, set off at `s` on the relay's clock, `ms` long), or where it stands (`to` alone); sitting
    *  or lying on a piece (`seat`: its id, `n`: which of its seats, `lie`), since `s`. */
-  | { kind: 'tent'; in: boolean; to?: Pt; from?: Pt; via?: Pt[]; s?: number; ms?: number; seat?: string; n?: number; lie?: true }
+  | { kind: 'tent'; in: boolean; to?: Pt; from?: Pt; via?: Pt[]; s?: number; ms?: number; seat?: string; n?: number; lie?: true; sc?: 'u' | 'v' }
   /** A phrase my villager says (v2; docs/design.md "Villager taps"): its speech balloon over it on both phones for a
    *  few seconds. Presence only: never kept, never replayed, never in the sheet. `text` as cleanSay leaves it. */
   | { kind: 'say'; text: string }
@@ -112,11 +114,16 @@ export type Intent =
    *  (absent: the partner, member to member); the guest's always names it, and a member's to the guest does. */
   | { kind: 'highfive'; at: number; to?: Who };
 
-/** A decor op on the wire (contract/decor.ts DecorOp, or the tent's with `sc: 't'`, contract/tent.ts; checked here
- *  again: the Worker bundles this file alone). */
+/** A decor op on the wire: the island's decorations (no scope, contract/decor.ts), a home's room (`sc` t, u, v,
+ *  contract/tent.ts) or the island's layout (`sc` o, c, r, h, contract/layout.ts); checked here again (the Worker
+ *  bundles this file alone). */
 type DecorWire =
-  | { sc?: 't'; id: string; at: number; item: string; x: number; z: number; f: number; p: number; on?: string; l?: number; rm?: undefined }
-  | { sc?: 't'; id: string; at: number; rm: true };
+  | { sc?: 't' | 'u' | 'v'; id: string; at: number; item: string; x: number; z: number; f: number; p: number; on?: string; l?: number; rm?: undefined }
+  | { sc?: 't' | 'u' | 'v' | 'o'; id: string; at: number; rm: true }
+  | { sc: 'o'; id: string; at: number; k: string; x: number; z: number; f: number; s?: string; rm?: undefined }
+  | { sc: 'c'; id: string; at: number; g: string }
+  | { sc: 'r'; id: 'reset'; at: number }
+  | { sc: 'h'; id: string; at: number; m: string; w?: string; r?: string; d?: string };
 
 /** Client → relay. `hello` must come first (the person key; `since` = the last world event's `t` it has seen; `batch`:
  *  the day's world as `replay` messages, mine included). An intent's `c` (this phone's sequence number, increasing
@@ -187,6 +194,14 @@ const DECOR_ID = /^d[0-9a-z]{6,24}$/;
 /** The tent's room: its tiles (a `decor` op's x and z with `sc: 't'`) and its extent in model units (a drag, a walk). */
 const TENT_TILES = [0, 7] as const;
 const TENT_U = [-40, 40] as const;
+/** The layout's ids and tokens (contract/layout.ts). */
+const OBJ_ID = /^[A-Za-z0-9][A-Za-z0-9:._-]{0,31}$/;
+const CHUNK_ID = /^c[0-7]x[0-7]$/;
+const HOME_ID = /^h[ABG]$/;
+const PART = /^[A-Za-z0-9.]{1,24}$/;
+const CHUNK_G = /^[0-9a-z]{64}$/;
+const LAYOUT_TILES = [0, 63] as const;
+const ROOMS: readonly unknown[] = ['t', 'u', 'v'];
 const isTentPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], TENT_U) && within(x[1], TENT_U);
 
 /** A phrase's length at most (code points; NH's balloon scale). */
@@ -223,6 +238,47 @@ const isVia = (x: unknown): x is Pt[] => Array.isArray(x) && x.length <= VIA_MAX
 const opt = <T>(o: Obj, k: string, ok: (x: unknown) => x is T): boolean => o[k] === undefined || ok(o[k]);
 const isWho = (x: unknown): x is Who => x === 'A' || x === 'B' || x === 'G';
 const oneOf = <T extends string>(list: readonly T[]) => (x: unknown): x is T => list.includes(x as T);
+
+/** A layout op's fields (`sc` o, c, r, h: contract/layout.ts layoutOpOf's rules) from `o`, null when malformed, or
+ *  undefined when `o` isn't one (another scope, or none). */
+function layoutWire(o: Obj): DecorWire | null | undefined {
+  const id = o.id as string, at = o.at as number;
+  switch (o.sc) {
+    case 'o': {
+      if (!OBJ_ID.test(id)) return null;
+      if (o.rm !== undefined) return o.rm === true ? { sc: 'o', id, at, rm: true } : null;
+      if (typeof o.k !== 'string' || !TOKEN.test(o.k) || !within(o.x, LAYOUT_TILES) || !within(o.z, LAYOUT_TILES) || !within(o.f, [0, 3])) return null;
+      if (o.s !== undefined && (typeof o.s !== 'string' || !TOKEN.test(o.s))) return null;
+      return { sc: 'o', id, at, k: o.k, x: o.x as number, z: o.z as number, f: o.f as number, ...(o.s !== undefined ? { s: o.s as string } : {}) };
+    }
+    case 'c':
+      return CHUNK_ID.test(id) && typeof o.g === 'string' && CHUNK_G.test(o.g) ? { sc: 'c', id, at, g: o.g } : null;
+    case 'r':
+      return id === 'reset' ? { sc: 'r', id: 'reset', at } : null;
+    case 'h': {
+      if (!HOME_ID.test(id) || typeof o.m !== 'string' || !TOKEN.test(o.m)) return null;
+      const part = (k: 'w' | 'r' | 'd') => (o[k] === undefined ? {} : typeof o[k] === 'string' && PART.test(o[k] as string) ? { [k]: o[k] as string } : null);
+      const w = part('w'), r = part('r'), d = part('d');
+      return w && r && d ? { sc: 'h', id, at, m: o.m, ...w, ...r, ...d } : null;
+    }
+    default:
+      return undefined;
+  }
+}
+
+/** Whether `who` may send a `decor` op of this scope (contract/layout.ts scopeMayWrite, again here: the Worker bundles
+ *  this file alone): the outdoors and the island's decorations the members; a home's look its owner (the guest's also
+ *  either member); a room its owner's (the tent's all three). @public (relay/, sync/live.ts) */
+export function scopeMaySend(who: Who, sc: string | undefined, id: string): boolean {
+  switch (sc) {
+    case undefined: case 'o': case 'c': case 'r': return who !== 'G';
+    case 'h': return id === `h${who}` || (id === 'hG' && who !== 'G');
+    case 't': return true;
+    case 'u': return who === 'B';
+    case 'v': return who === 'G';
+    default: return false;
+  }
+}
 
 /** The intent in `o` (of version `v`), rebuilt from its known fields only (anything extra is dropped), or null. */
 function intentOf(o: Obj, v: LiveV): Intent | null {
@@ -265,28 +321,41 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
     case 'saved':
       return { kind: 'saved' };
     case 'decor': {
-      if (v === 1 || typeof o.id !== 'string' || !DECOR_ID.test(o.id) || !isTime(o.at) || (o.sc !== undefined && o.sc !== 't')) return null;
-      const sc = o.sc === 't' ? { sc: 't' as const } : {};
+      if (v === 1 || typeof o.id !== 'string' || !isTime(o.at)) return null;
+      const lay = layoutWire(o);
+      if (lay !== undefined) return lay && { kind: 'decor', ...lay };
+      if (!DECOR_ID.test(o.id) || (o.sc !== undefined && !ROOMS.includes(o.sc))) return null;
+      const room = o.sc !== undefined;
+      const sc = room ? { sc: o.sc as 't' | 'u' | 'v' } : {};
       if (o.rm !== undefined) return o.rm === true ? { kind: 'decor', ...sc, id: o.id, at: o.at, rm: true } : null;
-      const [xs, zs] = o.sc === 't' ? [TENT_TILES, TENT_TILES] : [WORLD_X, WORLD_Z];
+      const [xs, zs] = room ? [TENT_TILES, TENT_TILES] : [WORLD_X, WORLD_Z];
       if (typeof o.item !== 'string' || !TOKEN.test(o.item) || !within(o.x, xs) || !within(o.z, zs) || !within(o.f, [0, 3]) || !isTime(o.p)) return null;
-      // a tent piece on another's surface (`on`: that piece's id), a light's switch (`l`)
-      if (o.on !== undefined && (o.sc !== 't' || typeof o.on !== 'string' || !DECOR_ID.test(o.on))) return null;
-      if (o.l !== undefined && (o.sc !== 't' || (o.l !== 0 && o.l !== 1))) return null;
+      // a room's piece on another's surface (`on`: that piece's id), a light's switch (`l`)
+      if (o.on !== undefined && (!room || typeof o.on !== 'string' || !DECOR_ID.test(o.on))) return null;
+      if (o.l !== undefined && (!room || (o.l !== 0 && o.l !== 1))) return null;
       return {
         kind: 'decor', ...sc, id: o.id, at: o.at, item: o.item, x: o.x as number, z: o.z as number, f: o.f as number, p: o.p,
         ...(o.on !== undefined ? { on: o.on as string } : {}), ...(o.l !== undefined ? { l: o.l as number } : {})
       };
     }
-    case 'drag':
-      if (v === 1 || typeof o.id !== 'string' || !DECOR_ID.test(o.id) || !within(o.x, TENT_U) || !within(o.z, TENT_U) || !within(o.f, [0, 3])) return null;
+    case 'drag': {
+      if (v === 1 || typeof o.id !== 'string' || (o.sc !== undefined && o.sc !== 'u' && o.sc !== 'v' && o.sc !== 'o')) return null;
+      // an outdoor object's drag is in world units (its middle), a room piece's in the room's model units
+      const out = o.sc === 'o';
+      if (!(out ? OBJ_ID : DECOR_ID).test(o.id) || !within(o.x, out ? WORLD_X : TENT_U) || !within(o.z, out ? WORLD_Z : TENT_U) || !within(o.f, [0, 3])) return null;
       if ((o.it !== undefined && (typeof o.it !== 'string' || !TOKEN.test(o.it))) || (o.end !== undefined && o.end !== true)) return null;
-      return { kind: 'drag', id: o.id, x: o.x as number, z: o.z as number, f: o.f as number, ...(o.it !== undefined ? { it: o.it as string } : {}), ...(o.end ? { end: true as const } : {}) };
+      return {
+        kind: 'drag', id: o.id, x: o.x as number, z: o.z as number, f: o.f as number, ...(o.it !== undefined ? { it: o.it as string } : {}), ...(o.end ? { end: true as const } : {}),
+        ...(o.sc !== undefined ? { sc: o.sc as 'u' | 'v' | 'o' } : {})
+      };
+    }
     case 'tent':
       if (v === 1 || typeof o.in !== 'boolean' || !opt(o, 'to', isTentPt) || (o.from !== undefined && !isTentPt(o.from)) || !opt(o, 's', isTime) || !opt(o, 'ms', isWalkMs)) return null;
       if (o.via !== undefined && !(Array.isArray(o.via) && o.via.length <= VIA_MAX && o.via.every(isTentPt))) return null;
       if ((o.seat !== undefined && (typeof o.seat !== 'string' || !DECOR_ID.test(o.seat))) || !opt(o, 'n', (x): x is number => within(x, [0, 7])) || (o.lie !== undefined && o.lie !== true)) return null;
+      if (o.sc !== undefined && o.sc !== 'u' && o.sc !== 'v') return null;
       return {
+        ...(o.sc !== undefined ? { sc: o.sc as 'u' | 'v' } : {}),
         ...(o.seat !== undefined ? { seat: o.seat as string } : {}), ...(o.n !== undefined ? { n: o.n as number } : {}), ...(o.lie ? { lie: true as const } : {}),
         kind: 'tent', in: o.in, ...(o.to !== undefined ? { to: o.to as Pt } : {}), ...(o.from !== undefined ? { from: o.from as Pt } : {}),
         ...(o.via !== undefined ? { via: o.via as Pt[] } : {}), ...(o.s !== undefined ? { s: o.s as number } : {}), ...(o.ms !== undefined ? { ms: o.ms as number } : {})
@@ -416,8 +485,9 @@ export const HIGHFIVE_HOLD_MS = 24 * 3600_000;
 
 /**
  * What the guest's phone may send (docs/backend.md#the-guest): a walk, an act, the shared world's claims (a catch, a
- * pick-up, a put: a bug out of a bush, a present landing; a shake), a phrase, a high-five, the tent (inside, a drag,
- * its decor). Not the island's decor, a world op (watering, a wish), an emote or a `saved` nudge: the room drops
+ * pick-up, a put: a bug out of a bush, a present landing; a shake), a phrase, a high-five, the tent and its own home
+ * (inside, a drag, their rooms' decor, its home's look). Not the island's decor or its layout, a world op (watering, a
+ * wish), an emote or a `saved` nudge: the room drops
  * those from the guest. @public (relay/, sync/live.ts)
  */
 export function guestMaySend(i: Intent): boolean {
@@ -425,7 +495,7 @@ export function guestMaySend(i: Intent): boolean {
     case 'walk': case 'act': case 'catch': case 'pick': case 'put': case 'shake': case 'say': case 'highfive': case 'tent': case 'drag':
       return true;
     case 'decor':
-      return i.sc === 't';
+      return scopeMaySend('G', i.sc, i.id);
     default:
       return false;
   }
@@ -435,10 +505,14 @@ export function guestMaySend(i: Intent): boolean {
  *  with the partner away: what the room keeps, and a high-five (held for the partner). */
 export const isAcked = (i: Intent): boolean => isStored(i) || i.kind === 'highfive';
 
+/** A layout op (`sc` o, c, r, h): relayed live but never kept in the day's ring (an afternoon in the editor would push
+ *  the shared world out of it); the record keeps it, and a phone opening later reads it there. */
+const isLayoutIntent = (i: Intent): boolean => i.kind === 'decor' && (i.sc === 'o' || i.sc === 'c' || i.sc === 'r' || i.sc === 'h');
+
 /** Whether the room keeps an intent in the day's world (replayed to a phone that opens later): the shared world's
- *  changes and each person's last walk (where their villager stands). */
+ *  changes (not the layout's) and each person's last walk (where their villager stands). */
 export const isStored = (i: Intent): boolean =>
-  i.kind === 'world' || i.kind === 'decor' || i.kind === 'pick' || i.kind === 'put' || i.kind === 'shake' || i.kind === 'walk' || (i.kind === 'catch' && i.id !== undefined);
+  i.kind === 'world' || (i.kind === 'decor' && !isLayoutIntent(i)) || i.kind === 'pick' || i.kind === 'put' || i.kind === 'shake' || i.kind === 'walk' || (i.kind === 'catch' && i.id !== undefined);
 
 /** What an intent claims for the day, if anything: a critter (by its shared id), a thing on the ground, a thing put
  *  down. The first claim the relay hears wins; a later one of the same key is dropped (never relayed, never kept). */

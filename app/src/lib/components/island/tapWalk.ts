@@ -4,6 +4,7 @@
 //   my villager runs it at SPEED.run (walkGraph.ts: 200 u/s; idle strolls and visitors 90 u/s). The cream tap ring marks
 //   where it ends. The camera never moves for it (only the finger scrolls the island).
 import { findPath, pathLength, snapTap, type Extra, type Nav, type Snap } from './nav.ts';
+import * as onLayout from '#lib/layout/nav.ts';
 import type { Pt, Surface } from './world.ts';
 import { SPEED } from './walkGraph.ts';
 import type { Cue } from '#lib/sound/cues.ts';
@@ -20,16 +21,18 @@ export interface TapPlan {
   len: number;
   ms: number;
   /** How the tap was snapped (here, door, bank, near), the building whose door it is, the face on arrival. */
-  snap: Snap;
+  snap: Snap | onLayout.Snap;
 }
 
 /** The walk a tap at world (x, z) starts from `from`, or null when it goes nowhere (nothing walkable near, no way
- *  there, or already there). */
-export function planTap(g: Nav, from: Pt, x: number, z: number, extra?: Extra): TapPlan | null {
-  const snap = snapTap(g, x, z, extra);
+ *  there, or already there). `g`: today's island's nav, or a layout's (layout/nav.ts navOf: the same rules). */
+export function planTap(g: Nav | onLayout.LayoutNav, from: Pt, x: number, z: number, extra?: Extra): TapPlan | null {
+  const lay = onLayout.isLayoutNav(g) ? g : null;
+  const snap = lay ? onLayout.snapTap(lay, x, z, extra) : snapTap(g as Nav, x, z, extra);
   if (!snap) return null;
   const to: Pt = [Math.round(snap.to[0]), Math.round(snap.to[1])];
-  const pts = findPath(g, from, to, extra) ?? findPath(g, from, snap.to, extra);
+  const path = (p: Pt) => (lay ? onLayout.findPath(lay, from, p, extra) : findPath(g as Nav, from, p, extra));
+  const pts = path(to) ?? path(snap.to);
   if (!pts) return null;
   const len = pathLength(from, pts);
   if (len < 2 && snap.kind !== 'door') return null;

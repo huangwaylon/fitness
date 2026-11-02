@@ -28,7 +28,9 @@
     "models": "node scripts/models.ts",
     "room-models": "node scripts/room-models.ts",
     "world3d-models": "node scripts/world3d-models.ts",
-    "layout": "node scripts/layout.ts"
+    "layout": "node scripts/layout.ts",
+    "layout:default": "node scripts/layout-default.ts",
+    "home-models": "node scripts/home-models.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",

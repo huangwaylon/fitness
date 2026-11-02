@@ -67,6 +67,7 @@
   import { sendDecor, sendIslandDay } from '#lib/store/actions.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { decor } from '#lib/store/decor.svelte.ts';
+  import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
   import Decor from './Decor.svelte';
   import { World, dropLive, provideWorld } from './camera.svelte.ts';
   import { camAt, horizonAhead, scrollFor, solveCam } from './roll.ts';
@@ -726,6 +727,7 @@
     untrack(() => {
       shared.attach(relay ?? demoRelay, me, !!week.demo);
       decor.attach(relay ?? demoRelay, me, !!week.demo);
+      islandLayout.attach(relay ?? demoRelay, me, !!week.demo);
       demoRelay?.start();
     });
   });
@@ -735,9 +737,11 @@
     if (!live) return;
     shared.sink = (date, row) => sendIslandDay(date, row);
     decor.sink = (op) => sendDecor(op);
+    islandLayout.sink = (op) => sendDecor(op);
     return () => {
       shared.sink = null;
       decor.sink = null;
+      islandLayout.sink = null;
     };
   });
   // (only for a new State or a new day: the minute tick replaces the model but keeps its State, and these rows with it)
@@ -753,6 +757,7 @@
     untrack(() => {
       shared.rows(m.state.islandDays.map((r) => ({ at: r.at, person: r.person, data: r.data })));
       decor.rows(m.state.decor);
+      islandLayout.rows(m.state.layout);
     });
   });
   $effect(() => {

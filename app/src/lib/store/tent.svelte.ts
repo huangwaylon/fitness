@@ -53,7 +53,7 @@ class TentRoom {
     if (r.who !== 'A' && r.who !== 'B' && r.who !== 'G') return null;
     const { who, ...d } = r;
     const op = tentOpOf(d);
-    if (!op) return null;
+    if (!op || op.sc !== 't') return null;
     const e = { ...op, who } as TentEntry;
     return mergeTent(this.#map, e) ? e : null;
   }

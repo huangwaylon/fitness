@@ -31,7 +31,10 @@ export const LIVE = {
    *  answers, and what the relay brought since). */
   decor: 'island.decor',
   /** `[entry…]`: the tent's room, each piece's (and the wallpaper's and the floor's) winning op (store/tent.svelte.ts). */
-  tent: 'island.tent'
+  tent: 'island.tent',
+  /** `[entry…]`: the island's layout, each id's winning op (store/layout.svelte.ts: objects, terrain chunks, a reset,
+   *  the homes' looks). */
+  layout: 'island.layout'
 } as const;
 
 export const DEMO = {
@@ -50,7 +53,9 @@ export const DEMO = {
   /** localStorage: the demo's decorations (store/decor.svelte.ts), both players' tabs' (kept for good, as the sheet). */
   decor: 'island-demo.decor',
   /** localStorage: the demo's tent (store/tent.svelte.ts), both players' tabs' (kept for good, as the sheet). */
-  tent: 'island-demo.tent'
+  tent: 'island-demo.tent',
+  /** localStorage: the demo's layout (store/layout.svelte.ts), both players' tabs'. */
+  layout: 'island-demo.layout'
 } as const;
 
 /** This phone's own preferences (not data, never synced; shared by the live app and the demo). */
