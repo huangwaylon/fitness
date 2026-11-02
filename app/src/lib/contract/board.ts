@@ -124,13 +124,18 @@ export function boardMayWrite(who: Who, op: BoardOp, held: BoardEntry | null): b
 /**
  * What the record does with a new op, given the posts it holds (each id's latest row, with who sent it):
  * - `forbidden`: `boardMayWrite` says no (an edit of someone else's, the guest removing another's);
- * - `stale`: acknowledged, nothing kept (an op that beats it is there; an edit or a removal of a post it doesn't hold:
- *   dropped past the cap, or never seen; a post older than every one kept when the board is full);
+ * - `stale`: acknowledged, nothing kept (an op that beats it is there; anything after a removal; an edit or a removal
+ *   of a post it doesn't hold: dropped past the cap, or never seen; a post older than every one kept when it's full);
  * - `append`: kept (the same id's row replaced); `drop` names the post a new one pushes out (the oldest), if any.
  */
-export function boardAccept(held: readonly BoardEntry[], e: BoardEntry): { v: 'append'; drop: string | null } | { v: 'stale' | 'forbidden' } {
-  const m = new Map<string, BoardEntry>();
-  for (const h of held) mergeBoard(m, h);
+export function boardAccept(held: readonly BoardEntry[] | ReadonlyMap<string, BoardEntry>, e: BoardEntry): { v: 'append'; drop: string | null } | { v: 'stale' | 'forbidden' } {
+  let m: ReadonlyMap<string, BoardEntry>;
+  if (held instanceof Map) m = held;
+  else {
+    const mm = new Map<string, BoardEntry>();
+    for (const h of held as readonly BoardEntry[]) mergeBoard(mm, h);
+    m = mm;
+  }
   const was = m.get(e.id) ?? null;
   // a removal is final: whatever comes after it changes nothing
   if (was?.rm) return { v: 'stale' };
@@ -147,4 +152,17 @@ export function boardAccept(held: readonly BoardEntry[], e: BoardEntry): { v: 'a
     }
   } else if (!e.rm && !was.rm && e.p !== was.p) return { v: 'stale' };
   return { v: 'append', drop: null };
+}
+
+/** The board as the record keeps it, from its ops in the order they came (the model's rows, then this phone's queued
+ *  ones): each taken or not by the record's rules (`boardAccept`), so a phone shows what the record will. */
+export function boardFold(entries: Iterable<BoardEntry>): Map<string, BoardEntry> {
+  const m = new Map<string, BoardEntry>();
+  for (const e of entries) {
+    const r = boardAccept(m, e);
+    if (r.v !== 'append') continue;
+    if (r.drop) m.delete(r.drop);
+    m.set(e.id, e);
+  }
+  return m;
 }

@@ -70,6 +70,7 @@
   import { decor } from '#lib/store/decor.svelte.ts';
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
   import Decor from './Decor.svelte';
+  import Board from '../board/Board.svelte';
   import { World, dropLive, provideWorld } from './camera.svelte.ts';
   import { camAt, horizonAhead, scrollFor, solveCam } from './roll.ts';
   import { hybridFor, hybridsOf } from './care.ts';
@@ -1055,6 +1056,8 @@
 
         {#if live}
           <Decor editing={decorating} hidden={decorating ? (decorMode?.moving() ?? null) : null} onpick={(id, e) => decorMode?.pick(id, e)} />
+          <!-- the bulletin board on the front beach (docs/board.md): a tap walks up to it and opens it -->
+          <Board enabled={() => !covered && !life.hidden && !decorating} night={tod === 'night'} {season} />
           {#if decorating && DecorModeC && sceneEl}<DecorModeC bind:this={decorMode} scene={sceneEl} ondone={() => (ui.decorating = false)} />{/if}
         {/if}
 

@@ -1,5 +1,5 @@
 {
-  "version": 51,
+  "version": 52,
   "files": {
     "bridges/stone-deck": {
       "path": "bridges/stone-deck.webp",
@@ -1392,6 +1392,18 @@
       "w": 96,
       "h": 68,
       "source": "https://nookipedia.com/wiki/File:Birthday_Hat_(Pink)_NH_Icon.png"
+    },
+    "deco/bulletin-board": {
+      "path": "deco/bulletin-board.webp",
+      "w": 178,
+      "h": 176,
+      "source": "rendered from NH's model EvtobjBbs (scripts/models.ts)"
+    },
+    "deco/bulletin-board-winter": {
+      "path": "deco/bulletin-board-winter.webp",
+      "w": 178,
+      "h": 176,
+      "source": "rendered from NH's model EvtobjBbs (scripts/models.ts)"
     },
     "deco/campfire": {
       "path": "deco/campfire.webp",
