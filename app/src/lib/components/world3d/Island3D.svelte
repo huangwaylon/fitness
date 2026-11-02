@@ -22,7 +22,7 @@
   import { listen3d } from '../island/echo3d.ts';
   import TERRAIN from '../island/terrain.json' with { type: 'json' };
   import PLACES from '../island/models.json' with { type: 'json' };
-  import { createIsland, type Island3, type Options } from './engine.ts';
+  import { createIsland, type Ground, type Island3, type Options } from './engine.ts';
   import { WORLD_GROUND } from './ground.ts';
   import { island, type Inst, type Standin } from './layout3d.ts';
   import { assetFor } from './assets.ts';
@@ -31,6 +31,7 @@
   import { idlePose, motionPose } from './motion3d.ts';
   import type { CardSpec } from './cards.ts';
   import type { LampSpot } from './lights.ts';
+  import type { Object3D } from 'three';
 
   /** A villager on this island now (IslandScene's cast). */
   export interface Cast {
@@ -71,8 +72,14 @@
     onfail: () => void;
     /** The camera is up and the island's models are in (once). */
     onready: () => void;
+    /** What the camera's ends frame (the island layout's, once it lands; world.ts's today): まえ's shoreline and the
+     *  canopy that must clear the HUD there, おく's landmark (its feet half way down the screen, its top clear). */
+    /** The ground: world.ts's baked heightfield today, the layout's buildGround() once it lands. */
+    ground?: Ground;
+    ends?: { shore: number; canopy: readonly [number, number, number]; back: readonly [number, number, number] };
   }
-  let { world, scene, season, foliage, month, tod, scenery, pieces, hybrid, wet, cast, enabled, start, onscroll, onhorizon, onfail, onready }: Props = $props();
+  let { world, scene, season, foliage, month, tod, scenery, pieces, hybrid, wet, cast, enabled, start, onscroll, onhorizon, onfail, onready, ground = WORLD_GROUND,
+    ends = { shore: SHORE_Z, canopy: [GOAL_TREES.A[0], GOAL_TREES.A[1], TREE_H], back: [CAMPSITE.x, CAMPSITE.z, CAMPSITE.h] } }: Props = $props();
 
   let canvas = $state<HTMLCanvasElement>();
   let eng = $state.raw<Island3 | null>(null);
@@ -119,7 +126,7 @@
     for (const s of list) {
       const at = GLOW_AT[s.key] ?? LAMP_GLOW[s.key] ?? (s.key === 'deco/illumi-tree' ? 0.5 : 0);
       if (!at) continue;
-      const gy = WORLD_GROUND.height(s.x, s.z);
+      const gy = 'group' in ground ? ground.heightAt(s.x, s.z) : ground.height(s.x, s.z);
       out.push({ id: `s:${s.id}`, x: s.x, z: s.z - 1, y: gy + s.h * at, gy, kind: 'lamp', colour: 0xffd38a, glow: 12, pool: 34 });
     }
     return out;
@@ -248,7 +255,7 @@
     const v = e.view(), H = canvas?.clientHeight ?? 0;
     if (!H) return;
     const hud = Math.max(0, (document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? 0) - scene.getBoundingClientRect().top);
-    e.setLimits(-400, 1600);
+    e.setLimits(ends.shore - 400, ends.back[1] + 700);
     const syAt = (x: number, z: number, lift: number) => (cz: number) => (e.go(cz, 1), e.at(x, z, lift).sy);
     const solve = (f: (cz: number) => number, target: number, lo: number, hi: number) => {
       for (let i = 0; i < 28; i++) {
@@ -258,8 +265,10 @@
       }
       return Math.round((lo + hi) / 2);
     };
-    const min = Math.max(solve(syAt(195, SHORE_Z, 0), H * SHORE_AT, -400, 500), solve(syAt(GOAL_TREES.A[0], GOAL_TREES.A[1], TREE_H), hud + CLEAR, -400, 600));
-    const max = Math.max(solve(syAt(CAMPSITE.x, CAMPSITE.z, 0), H * CAMP_AT, min, 1600), solve(syAt(CAMPSITE.x, CAMPSITE.z, CAMPSITE.h), hud + CLEAR, min, 1600));
+    const { shore, canopy: [cx, cz, ch], back: [bx, bz, bh] } = ends;
+    const lo = shore - 400, hi = bz + 700;
+    const min = Math.max(solve(syAt(195, shore, 0), H * SHORE_AT, lo, shore + 530), solve(syAt(cx, cz, ch), hud + CLEAR, lo, cz + 400));
+    const max = Math.max(solve(syAt(bx, bz, 0), H * CAMP_AT, min, hi), solve(syAt(bx, bz, bh), hud + CLEAR, min, hi));
     e.setLimits(min, max);
     e.go(v.camZ, v.zoom);
   }
@@ -268,7 +277,7 @@
     if (!canvas) return;
     let e: Island3;
     try {
-      e = createIsland(canvas, WORLD_GROUND, {
+      e = createIsland(canvas, ground, {
         dpr: num('dpr') ?? Math.min(2, window.devicePixelRatio || 1),
         water: q.get('water') !== '0',
         shadows: q.get('shadows') !== '0',
@@ -285,7 +294,8 @@
     e.go(start ?? e.limits().min);
     const proj: Proj3 = {
       at: (x, z, lift) => e.at(x, z, lift), ground: (sx, sy) => e.groundAt(sx, sy), horizon: () => e.horizon(),
-      rev: () => e.rev(), kick: () => e.kick(), idle: () => e.idle()
+      rev: () => e.rev(), kick: () => e.kick(), idle: () => e.idle(),
+      focusOn: (t, o) => e.focusOn(t, o), restore: (ms) => e.restore(ms), attach: (obj, at) => e.attach(obj as Object3D, at)
     };
     world.useThree(proj);
     let camWas = NaN, horizonWas = NaN;
@@ -328,7 +338,8 @@
         const r = canvas!.getBoundingClientRect();
         return e.groundAt(cx - r.left, cy - r.top);
       },
-      things: (id: string) => e.things.has(id)
+      things: (id: string) => e.things.has(id),
+      focus: (x: number, z: number, lift?: number) => e.focusOn({ x, z, lift }), restore: () => e.restore(), focused: () => e.focused()
     };
     return () => {
       listen3d(null);

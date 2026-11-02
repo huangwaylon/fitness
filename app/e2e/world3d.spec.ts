@@ -6,7 +6,7 @@ import { expect, test, type Page } from '@playwright/test';
 type W3 = {
   stats(): { frames: number; calls: number; tris: number; dpr: number; loading: number; fps: number };
   loaded(): boolean;
-  view(): { camZ: number; zoom: number };
+  view(): { camZ: number; zoom: number; pitch: number };
   limits(): { min: number; max: number };
   client(x: number, z: number, lift?: number): [number, number];
   go(z: number, k?: number): void;
@@ -88,4 +88,25 @@ test('/world3d, the POC\'s address, opens the island in 3D; without the flag the
   await page.goto(`?${Q}`);
   await expect(page.locator('.if-scene')).toBeVisible();
   await expect(page.locator('canvas[data-w3d]')).toHaveCount(0);
+});
+
+test('the board\'s focus: the camera frames a thing, the finger does nothing meanwhile, and restore() goes back exactly', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.goto(`?${Q}&island=3d`);
+  await ready(page);
+  const before = await w3(page, (w) => w.view());
+  await page.evaluate(() => (window as unknown as { __world3d: { focus(x: number, z: number, l: number): Promise<void> } }).__world3d.focus(150, 60, 20));
+  const on = await w3(page, (w) => w.view());
+  expect(on.zoom).toBeGreaterThan(2);
+  // a drag while focused: nothing moves
+  await page.mouse.move(200, 400);
+  await page.mouse.down();
+  await page.mouse.move(200, 600, { steps: 8 });
+  await page.mouse.up();
+  expect((await w3(page, (w) => w.view())).camZ).toBeCloseTo(on.camZ, 3);
+  await page.evaluate(() => (window as unknown as { __world3d: { restore(): Promise<void> } }).__world3d.restore());
+  const after = await w3(page, (w) => w.view());
+  expect(after.camZ).toBe(before.camZ);
+  expect(after.zoom).toBe(before.zoom);
+  expect(after.pitch).toBe(before.pitch);
 });

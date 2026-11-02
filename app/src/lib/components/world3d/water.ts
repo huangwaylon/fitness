@@ -141,12 +141,14 @@ export interface WaterSet {
   all: Mesh[];
 }
 
-export function createWater(): WaterSet {
-  // the sea: far beyond the plan every way, rows dense enough along z for the bend to stay smooth
-  const seaGeo = new PlaneGeometry(4200, 6000, 24, 150);
+export function createWater(land: { x0: number; x1: number; z0: number; z1: number; r: number } = LAND): WaterSet {
+  // the sea: far beyond the land every way (past its far end by more than the horizon reaches), rows dense enough along
+  // z for the bend to stay smooth
+  const z0 = land.z0 - 1500, z1 = land.z1 + 3300, cx = (land.x0 + land.x1) / 2;
+  const seaGeo = new PlaneGeometry(4200, z1 - z0, 24, Math.ceil((z1 - z0) / 40));
   seaGeo.rotateX(-Math.PI / 2);
-  seaGeo.translate(195, SEA_Y, -1500);
-  const sea = new Mesh(seaGeo, mat(SEA_FRAG, { ...seaFog, uLand: { value: [LAND.x0, LAND.x1, LAND.z0, LAND.z1] }, uLandR: { value: LAND.r } }));
+  seaGeo.translate(cx, SEA_Y, -(z0 + z1) / 2);
+  const sea = new Mesh(seaGeo, mat(SEA_FRAG, { ...seaFog, uLand: { value: [land.x0, land.x1, land.z0, land.z1] }, uLandR: { value: land.r } }));
   sea.renderOrder = 1;
 
   // the river: a ribbon along the smoothed centreline, a little wider than its channel (the banks clip it); its
