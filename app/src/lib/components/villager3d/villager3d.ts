@@ -44,6 +44,10 @@ export interface Villager3D {
   /** Put something on its head (a hat: its origin its base, y up, in model units) or take it off (null): it rides the
    *  head bone, upright as the head is at rest, its base on the head's top (a little sunk in). */
   wear(obj: Object3D | null): void;
+  /** Put a tool in its right hand (an NH tool model: its origin NH's hand joint, as NH authors it), or take it out. */
+  grip(obj: Object3D | null): void;
+  /** The gripped tool's far end (a rod's tip: its lowest point as authored), world space (three's), or null. */
+  tip(): Vector3 | null;
   /** Hold a pose as it is (a test's, a still): null lets the states and actions move it again. */
   hold(p: Pose | null): void;
   rig: Rig;
@@ -142,6 +146,8 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
     hatAt = head.matrixWorld.clone().invert().multiply(new Matrix4().makeTranslation(hp.x, top - (top - hp.y) * 0.12, hp.z));
   }
   let worn: Object3D | null = null;
+  const hand = rig.bone('Hand_R');
+  let held3: { obj: Object3D; tip: Vector3 } | null = null;
   let lump: Mesh | null = null;
   if (head && eyeBox) {
     const [a, b] = eyeBox as [Vector3, Vector3];
@@ -230,6 +236,21 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       obj.matrixAutoUpdate = false;
       obj.matrix.copy(hatAt).multiply(new Matrix4().makeScale(obj.scale.x, obj.scale.y, obj.scale.z));
       head.add(obj);
+    },
+    grip(obj) {
+      if (obj === (held3?.obj ?? null)) return;
+      held3?.obj.removeFromParent();
+      held3 = null;
+      if (!obj || !hand) return;
+      // the tip: the vertex furthest down its length (NH's rods hang along −y from the grip)
+      const b = new Box3().setFromObject(obj, true);
+      held3 = { obj, tip: new Vector3((b.min.x + b.max.x) / 2, b.min.y, (b.min.z + b.max.z) / 2) };
+      hand.add(obj);
+    },
+    tip() {
+      if (!held3) return null;
+      held3.obj.updateWorldMatrix(true, false);
+      return held3.tip.clone().applyMatrix4(held3.obj.matrixWorld);
     },
     hold(p) {
       held = p;
