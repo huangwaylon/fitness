@@ -171,7 +171,7 @@ const assetMetas: Record<string, Meta> = existsSync(ASSET_META) ? (JSON.parse(re
 let total = 0;
 for (const j of todo) {
   const files = [...j.tex!, ...new Set(j.parts.map((p) => p[0]))].map((f) => [F(f), readdirSync(join(scratch, F(f)))]);
-  const r = j.fx ? { ...fxGltf(j.fx), lit: false } : await page.evaluate((o) => (window as unknown as { convert: (o: unknown) => Promise<{ gltf: string; box: [number[], number[]]; tris: number; lit: boolean }> }).convert(o), {
+  const r = j.fx ? { ...fxGltf(j.fx), lit: j.fx === 'flame' } : await page.evaluate((o) => (window as unknown as { convert: (o: unknown) => Promise<{ gltf: string; box: [number[], number[]]; tris: number; lit: boolean }> }).convert(o), {
     parts: j.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), files, maxTex: j.maxTex ?? 256, maxEmi: 128,
     grdRow: j.grdRow, grdRows: j.grdRows, grdBlock: j.grdBlock, hide: j.hide, alias: j.alias, flat: j.flat, pose: j.pose, grdFile: j.grdFile, snow: j.snow, variant: j.variant, noAo: j.noAo
   });

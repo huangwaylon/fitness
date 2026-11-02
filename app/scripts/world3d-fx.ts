@@ -1,9 +1,9 @@
 // The 3D island's effects that NH's files have no model for (scripts/world3d-assets.ts `fx`): a sparkle, the 「！」 over a
-// bite, a puff of dust, a splash and its ripple, as small stylised meshes in the 2D island's colours (Critters.svelte,
+// bite, a puff of dust, a splash and its ripple, a zzz, a sweat drop, confetti, a campfire's flame, the pond's lily pad, as small stylised meshes in the 2D island's colours (Critters.svelte,
 // Finds.svelte), flat-coloured and unlit, written as glTF for scripts/world3d-models.ts to pack like NH's models. Facing
 // +z where flat (the runtime turns them to the camera); 1 model unit ≈ the effect's radius.
 
-export type Fx = 'sparkle' | 'bang' | 'dust' | 'splash' | 'ripple';
+export type Fx = 'sparkle' | 'bang' | 'dust' | 'splash' | 'ripple' | 'zzz' | 'sweat' | 'confetti' | 'flame' | 'lily-pad';
 
 interface Part { pos: number[]; col: [number, number, number, number] }
 type V3 = [number, number, number];
@@ -86,6 +86,60 @@ function parts(fx: Fx): Part[] {
       return [{ pos: Array.from({ length: 8 }, (_, i) => drop((i / 8) * 2 * Math.PI, i % 2 ? 0.9 : 1.2, 0.09, 0.45)).flat(), col: hex(0xf4fbff, 0.9) }];
     case 'ripple':
       return [{ pos: ring(0.86, 1, 32, 0.01), col: hex(0xffffff, 0.85) }];
+    case 'zzz': {
+      // three Zs, small to big, rising to the right (Fx.svelte: --fx-zzz with a white rim)
+      const z = (x: number, y: number, k: number, d: number) => [
+        ...quad(x, y + 0.8 * k, x + 0.7 * k, y + k, d), ...quad(x, y, x + 0.7 * k, y + 0.2 * k, d),
+        // the diagonal: a slanted quad from the top right to the bottom left
+        x + 0.7 * k, y + 0.8 * k, d, x + 0.45 * k, y + 0.8 * k, d, x, y + 0.2 * k, d,
+        x + 0.7 * k, y + 0.8 * k, d, x, y + 0.2 * k, d, x + 0.25 * k, y + 0.2 * k, d
+      ];
+      const zs = [[-1, -1, 0.55], [-0.35, -0.3, 0.75], [0.35, 0.35, 0.95]] as const;
+      return [
+        { pos: zs.flatMap(([x, y, k]) => z(x - 0.06, y - 0.06, k + 0.12, 0)), col: hex(0xffffff) },
+        { pos: zs.flatMap(([x, y, k]) => z(x, y, k, 0.01)), col: hex(0x8f9ce6) }
+      ];
+    }
+    case 'sweat': {
+      // a drop: a round bottom and a point on top (--fx-sweat), a highlight
+      const rim: [number, number][] = [];
+      for (let i = 0; i <= 20; i++) { const a = Math.PI * (1 + i / 20); rim.push([0.6 * Math.cos(a), -0.3 + 0.6 * Math.sin(a)]); }
+      rim.push([0, 1]);
+      return [
+        { pos: fan(rim, 0, 0, -0.3), col: hex(0x8fd3f4) },
+        { pos: fan(circle(0.14, 8, -0.22, -0.2), 0.01, -0.22, -0.2), col: hex(0xffffff, 0.9) }
+      ];
+    }
+    case 'confetti':
+      // a burst's pieces (Finds.svelte CONFETTI's colours): small squares, each its own colour, scattered and tilted
+      return ([0xf2484a, 0xffd23f, 0x4fc3f7, 0x8bd45b, 0xff7fa8, 0xb388ff] as const).map((c, i) => {
+        const a = (i / 6) * 2 * Math.PI, [cx, cy] = [Math.cos(a) * 0.7, Math.sin(a) * 0.7], t = a * 1.7, r = 0.18;
+        const corner = (k: number): [number, number] => [cx + r * Math.cos(t + (k * Math.PI) / 2), cy + r * Math.sin(t + (k * Math.PI) / 2)];
+        return { pos: fan([corner(0), corner(1), corner(2), corner(3)], (i % 3) * 0.1 - 0.1, cx, cy), col: hex(c) };
+      });
+    case 'flame': {
+      // a campfire's flame: an orange tongue, a yellow core, two crossed cards (cheap: unlit, it glows by itself)
+      const tongue = (w: number, h: number, z: number) => {
+        const rim: [number, number][] = [];
+        for (let i = 0; i <= 12; i++) { const a = Math.PI * (1 + i / 12); rim.push([w * Math.cos(a), w * 0.6 + w * Math.sin(a)]); }
+        rim.push([0, h]);
+        return fan(rim, z, 0, w * 0.6);
+      };
+      /** The card turned a quarter about the up axis: (x, y, z) → (z, y, x). */
+      const turn = (pos: number[]) => pos.map((_, i) => (i % 3 === 0 ? pos[i + 2] : i % 3 === 2 ? pos[i - 2] : pos[i]));
+      const outer = tongue(0.55, 1.6, 0), inner = tongue(0.3, 1.0, 0.02);
+      return [
+        { pos: [...outer, ...turn(outer)], col: hex(0xff8a2a) },
+        { pos: [...inner, ...turn(inner)], col: hex(0xffe15a) }
+      ];
+    }
+    case 'lily-pad': {
+      // the pond's pad (WorldWater.svelte): a green disc lying on the water, a wedge cut out
+      const rim: [number, number][] = [];
+      for (let i = 0; i <= 28; i++) { const a = 0.35 + (i / 28) * (2 * Math.PI - 0.7); rim.push([Math.cos(a), Math.sin(a)]); }
+      const flat = (pos: number[]) => pos.map((v, i) => (i % 3 === 1 ? pos[i + 1] : i % 3 === 2 ? -pos[i - 1] : v));
+      return [{ pos: flat(fan(rim, 0.02)), col: hex(0x5db65a) }, { pos: flat(fan(circle(0.55, 16), 0.03)), col: hex(0x6cc468) }];
+    }
   }
 }
 

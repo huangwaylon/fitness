@@ -44,7 +44,7 @@ window.sheet = async ({ items, villager, cols, title }) => {
     const box = new THREE.Box3().setFromObject(model);
     const size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
     // feet: the origin on the ground; centre: the bounds' middle at a bug's flying height (half a villager up)
-    if (it.anchor === 'centre') model.position.set(-c.x, VH * 0.5 - c.y, -c.z);
+    if (it.anchor === 'centre' || it.anchor === 'joint') model.position.set(-c.x, VH * 0.5 - c.y, -c.z);
     else model.position.set(0, 0, 0);
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(it.night ? 0x1d2440 : 0xcfe3c2);

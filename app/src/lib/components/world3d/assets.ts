@@ -2,7 +2,7 @@
 // docs/world3d-assets.md): an art key → its model and how it stands in the world.
 import A from './assets.json' with { type: 'json' };
 
-export type AssetCat = 'bug' | 'fish' | 'shadow' | 'sea' | 'find' | 'fruit' | 'flower' | 'bush' | 'tree' | 'deco' | 'decor' | 'event' | 'visitor' | 'scenery' | 'fx';
+export type AssetCat = 'bug' | 'fish' | 'shadow' | 'sea' | 'find' | 'fruit' | 'flower' | 'bush' | 'tree' | 'deco' | 'decor' | 'event' | 'visitor' | 'scenery' | 'fx' | 'tool' | 'accessory';
 /** A model: its bounds (model units), triangles, KB, content hash (the URL's `?v=`), `lit`: an emissive for the night. */
 export interface AssetModel { min: number[]; max: number[]; tris: number; kb: number; v: string; lit?: number }
 export interface AssetKey {
@@ -11,8 +11,9 @@ export interface AssetKey {
   cat: AssetCat;
   /** World units per model unit. */
   s: number;
-  /** feet: its origin on the ground; centre: its bounds' centre at a height (a flying bug, a held fish). */
-  anchor: 'feet' | 'centre';
+  /** feet: its origin on the ground; centre: its bounds' centre at a height (a flying bug, a held fish); joint: its
+   *  origin is NH's hand or head joint (a held tool, a hat): put that at the hand or the head. */
+  anchor: 'feet' | 'centre' | 'joint';
   /** Its footprint in tiles (30u), unturned: [across, deep]. */
   foot?: [number, number];
   /** Its tap radius (u). */
