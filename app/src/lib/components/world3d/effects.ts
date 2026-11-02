@@ -7,8 +7,8 @@
 // canvas, a bubble), unlit (they're light), fading. The DOM island spawns them where it spawned its own
 // (island/fx3d.ts), whose art then goes invisible.
 import {
-  NormalBlending, CanvasTexture, Color, DoubleSide, Group, Matrix4, Mesh, MeshBasicMaterial, PlaneGeometry, Quaternion, RingGeometry, SphereGeometry,
-  SRGBColorSpace, type BufferGeometry, type Camera, type MeshStandardMaterial, type Scene, type Texture, type WebGLRenderer
+  NormalBlending, Scene, CanvasTexture, Color, DoubleSide, Group, Matrix4, Mesh, MeshBasicMaterial, PlaneGeometry, Quaternion, RingGeometry, SphereGeometry,
+  SRGBColorSpace, type BufferGeometry, type Camera, type MeshStandardMaterial, type Texture, type WebGLRenderer
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -153,24 +153,24 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     const names = [...new Set([...Object.keys(MODEL), 'ring', 'bubble', 'glow'])];
     const srcs = (await Promise.all(names.map(load))).filter((x): x is Src => !!x);
     if (disposed) return;
-    // each source once, in front of the camera, compiled and its texture uploaded, then gone (never drawn)
-    const g = new Group();
+    // each source once, compiled in a scene of its own (the island's fog: the same shaders) and its texture uploaded:
+    // never drawn, never in the island's scene
+    const warmScene = new Scene();
+    warmScene.fog = scene.fog;
     const mats: MeshBasicMaterial[] = [];
     for (const src of srcs) for (const s of src) {
       if (s.map) renderer.initTexture(s.map);
       const m = matFor(s);
       mats.push(m);
       const mesh = new Mesh(s.geo, m);
+      if (s.m) {
+        mesh.matrixAutoUpdate = false;
+        mesh.matrix.copy(s.m);
+      }
       mesh.frustumCulled = false;
-      g.add(mesh);
+      warmScene.add(mesh);
     }
-    scene.add(g);
-    try {
-      await renderer.compileAsync(scene, camera);
-    } catch {
-      renderer.compile(scene, camera);
-    }
-    scene.remove(g);
+    renderer.compile(warmScene, camera);
     for (const m of mats) m.dispose();
     warmed = true;
   }
