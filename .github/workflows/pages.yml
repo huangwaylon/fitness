@@ -132,7 +132,7 @@ jobs:
       - run: node scripts/e2e-shards.ts plan 12 shards e2e/timings.json -- --project=chromium --grep-invert "@render|@quarantine"
       - id: e2e
         continue-on-error: true
-        run: npx playwright test --project=chromium --workers=4 --test-list shards/${{ matrix.shard }}.txt
+        run: npx playwright test --project=chromium --test-list shards/${{ matrix.shard }}.txt
       # (each test's time, for the next run's plan: the first run's report)
       - if: always() && steps.e2e.outcome != 'skipped'
         run: cp playwright-results.json timings-${{ matrix.shard }}.json 2>/dev/null || true
