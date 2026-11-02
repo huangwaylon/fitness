@@ -700,6 +700,20 @@ NH's outdoor furniture on the island, moves it and takes it away; both phones sh
 - **Cost:** the renders are 1–3 KB each, fetched as an item first shows (the tray's ten with the mode); the mode is
   its own chunk. A drag moves one world node a frame while the finger is down; nothing runs when still.
 
+### The bulletin board
+
+`components/board/`, `contract/board.ts`, `e2e/board.spec.ts` ([board.md](board.md), [backend](backend.md#events) `board`).
+NH's island board (`EvtobjBbs`, its bird `BbsBirdDay` / `BbsBirdNight` on top in 3D) stands on the front beach, left of
+the shells' sand, facing the sea (the layout's `board` object once the layout has it: movable in the editor). A tap on
+it walks my villager up beside it (the tent door's exception to "interactables act in place"), then it opens: on the 3D
+island the camera dollies to its face (≈600 ms) and back to exactly where it was (the one automatic camera move, the
+user's: it needs the 3D lead's `focus`, board.md), else a sheet showing the same face. The face is a canvas (the 3D
+board's texture): NH's pinned notes, four a page, newest first, each with its author's villager head and name and the
+date; ‹ › and a swipe page. A tap on a note reads it whole, with かきなおす (its author) and はがす (its author, or ウェイ
+and うめ for anyone's: a second tap confirms). 「かきこむ」 opens a field above the keyboard: plain text, at most 4 lines and
+100 characters (NH's board takes more; four short lines read at a glance on the zoomed board). A 「！」 bobs over the board
+when someone else wrote since I last looked. Everyone, the guest too, writes; the record enforces who may change what.
+
 ### The tent
 
 `routes/tent/+page.svelte`, `tent/TentRoom.svelte`, `tent/TentEdit.svelte`, `tent/engine.ts` (three.js), `tent/grid.ts`,

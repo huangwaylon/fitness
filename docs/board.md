@@ -3,7 +3,9 @@
 NH's island board (`EvtobjBbs`, the green one outside Resident Services; the bird that perches on it, `BbsBirdDay` by
 day and `BbsBirdNight` at night): everyone on the island writes short notes on it, and everyone sees them at once.
 
-Status: **in progress** (this file is the contract between the board's files, the 3D integration lead and the layout).
+Status: **landed** (the record, the models, the board on the island, the 2D sheet; relay deployed). **Waiting on:** the
+layout's `board` kind and default object, and the 3D lead's `focus` / `unfocus` / `attach` (below). This file is the
+contract between the board's files, the 3D integration lead and the layout.
 
 ## What the user asked
 
@@ -25,11 +27,12 @@ that we see it clearly in 3D space and allow editing it." Then: "put the sign up
 ### To the layout agent: the board as a layout object
 
 - A catalog kind `board` (`layout/catalog.ts`): `{ k: 'board', group: 'structure', ja: 'けいじばん', en: 'Bulletin board',
-  w: 2, d: 1, block: true, foot: [48, 12], on: 'land', h: 52, icon: 'deco/bulletin-board', fixed: true }` (one on the
+  w: 2, d: 1, block: true, foot: [56, 12], on: 'land', h: 60, icon: 'deco/bulletin-board', fixed: true }` (one on the
   island, never deleted, moved and turned freely; `f` turns only its look: its face is its front).
-- A default object `{ id: 'board', k: 'board', x: 9, z: 3, f: 0 }` (tiles 9–10 × 3: on the beach in front of the lawn, a
-  little left of the middle, facing the sea-side camera; clear of palm-3, the sandcastle and the beach chair, so the
-  front stays clean). The rows in front of it (z 2) must stay walkable: a villager stands there to read it.
+- A default object `{ id: 'board', k: 'board', x: 5, z: 4, f: 0 }` (tiles 5–6 × 4, its middle x 90, z 45: on the beach
+  left of the shells' sand (world.ts BEACH_BOX x 120…300), between palm-3 and the lawn, facing the sea-side camera;
+  clear of the shells, the sandcastle and the beach chair, so the front stays clean). The tiles in front of it and to
+  its right (z 3, x 5–8) must stay walkable: a villager stands there to read it.
 - Until it lands the board reads `layout.pos('board') ?? BOARD_SPOT` (`board/spot.ts`), the same spot, so nothing moves
   when it does.
 
@@ -72,9 +75,13 @@ interface Proj3 {
   front of it at z +0.35). There is no separate material for it: the board's face is a plane laid over it at z +0.38
   (`board/face3d.ts` `faceMesh(canvas)`: a `PlaneGeometry(13.6, 10)` at (0, 8.5, 0.38) with the CanvasTexture), handed to
   `attach('board', mesh)`.
-- The focus rect the board asks for: the face's middle, `y` = 8.5 × 3 u, `w` = 13.6 × 3, `h` = 10 × 3 (the island's
-  furniture scale is 3 u a model unit), `yaw` from the layout's `f`.
-- The bird (`deco/bbs-bird-day` / `deco/bbs-bird-night`) is an ordinary m3 node on the board's top (lift 52 u).
+- The board is drawn at 3.5 u a model unit (60u tall, two tiles wide: `BOARD_S`). The focus rect the board asks for:
+  the face's middle (0.38 × 3.5 u in front of the board's middle), `y` = 8.5 × 3.5 = 29.75 u, `w` = 13.6 × 3.5 = 47.6,
+  `h` = 10 × 3.5 = 35, `yaw` from the layout's `f`, `bottom` the controls' and the keyboard's height, `fill` 0.92.
+- The board's m3 instance id is `board` (the bird's `board-bird`); `attach('board', mesh)` is called once the 3D island
+  is up, `attach('board', null)` when it goes.
+- The bird (`deco/bbs-bird-day` / `deco/bbs-bird-night`) is an ordinary m3 node on the board's top (lift ≈ 65 u), its
+  idle a turn of its yaw every few seconds.
 
 ## Behaviour
 
@@ -84,7 +91,7 @@ interface Proj3 {
 - **The board view:** in 3D the camera dollies and zooms to the face (≈600 ms); the back control (「もどる」) returns it to
   exactly where it was. On the 2D island (and in 3D before `focus` exists): a sheet over the island showing the same
   face (the very canvas the 3D texture is drawn from) with the same controls.
-- **Posts:** the newest first, four to a page as NH's notes (the author's villager name and icon, the date), 「◀」「▶」
+- **Posts:** the newest first, four to a page as NH's notes (the author's villager name and icon, the date), 「‹」「›」
   and a swipe on the board page through older ones.
 - **Writing:** 「かきこむ」 opens a field over the board (the board stays visible above the keyboard). At most
   **100 characters** (code points) and **4 lines**; plain text only, rendered as text (canvas `fillText`, never HTML).

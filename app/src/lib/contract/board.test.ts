@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BOARD_CHARS, BOARD_LINES, BOARD_MAX, boardAccept, boardBeats, boardMayWrite, boardOpOf, boardPosts, cleanText, mergeBoard, newPostId, textLength,
+  BOARD_CHARS, BOARD_LINES, BOARD_MAX, boardAccept, boardBeats, boardFold, boardMayWrite, boardOpOf, boardPosts, cleanText, mergeBoard, newPostId, textLength,
   type BoardEntry
 } from './board.ts';
 
@@ -74,6 +74,19 @@ describe('the merge', () => {
     expect(v).toHaveLength(BOARD_MAX);
     expect(v[0].id).toBe(`bm${String(BOARD_MAX + 6).padStart(6, '0')}`);
     expect(v.at(-1)!.id).toBe('bm000007');
+  });
+  it('the phone folds the ops as the record takes them (a forbidden edit, an op after a removal and the cap)', () => {
+    const ops = [
+      set('b1111111', 'A', T, 'ウェイの'), set('b1111111', 'G', T + 1, 'ゲストが', T), set('b2222222', 'G', T + 2, 'ゲストの'),
+      rm('b2222222', 'G', T + 3), set('b2222222', 'G', T + 4, 'もどれ', T + 2),
+      ...Array.from({ length: BOARD_MAX }, (_, i) => set(`bz${String(i).padStart(6, '0')}`, 'B', T + 10 + i))
+    ];
+    const posts = boardPosts(boardFold(ops).values());
+    expect(posts).toHaveLength(BOARD_MAX);
+    expect(posts.find((p) => p.id === 'b1111111')).toBeUndefined();
+    expect(posts.some((p) => p.t === 'ゲストが' || p.t === 'もどれ')).toBe(false);
+    const small = boardPosts(boardFold(ops.slice(0, 5)).values());
+    expect(small.map((p) => [p.id, p.t])).toEqual([['b1111111', 'ウェイの']]);
   });
 });
 

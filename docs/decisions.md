@@ -549,3 +549,13 @@ A small round button at the island's bottom right (NH's chat glyph, 36px in a 44
 above it; a tap on my villager is only its squish (and now and then a flea). Why: the user ("instead of tapping our
 character… a small message icon on the bottom right… not too intrusive"); a moving villager is a hard target and a
 tap on it is play, not a menu. Not done: the tent (it has no balloons or relay phrases yet).
+
+### The bulletin board is a record event, its notes plain text (2026-11-02)
+NH's board (the user: "walk up to it to update its contents for everyone to see… the camera should zoom up to it"). Each
+note is a `board` op, last writer wins per note, a removal final, as the decorations are; the record enforces who may
+(anyone posts; only the author edits; the author or a member takes down) and keeps 50 (a new one drops the oldest),
+and the phones fold by the same rules. 100 characters and 4 lines: legible at the zoomed board on a phone. Plain text
+only, sanitised on both sides and only ever drawn as text (canvas `fillText`, Svelte text). No live intent: a note is
+over the room's 256-byte messages, and the record's notice already reaches every open phone. The walk up is the tent
+door's exception, the camera's dolly the one automatic camera move (the user's ask), the latter the 3D lead's to add
+(board.md); until then, and on the 2D island, a sheet shows the same face.
