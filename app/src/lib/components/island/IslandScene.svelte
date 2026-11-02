@@ -56,7 +56,7 @@
   import { IslandLife } from './islandLife.svelte.ts';
   import { VILLAGER, eventsAt, u, wildFlower, type Tod } from './scene.ts';
   import { todayPct } from './progress.ts';
-  import { CAMPSITE, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, PLAN, PULLUP_AT, SEAT_DROP, SHORE_Z, TREE_H, flowerById, freshWhere, seatAt, surfaceAt, worldGen, BUILDINGS, type BuildingId } from './world.ts';
+  import { CAMPSITE, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, PLAN, PULLUP_AT, SEAT_DROP, SHORE_Z, TREE_H, flowerById, freshWhere, seatAt, surfaceAt, worldGen, BUILDINGS, LAWN_SPOTS, type BuildingId } from './world.ts';
   import { GUEST_ARRIVAL, guestSpot, doorAt, outOfTent, partnerOnline } from './buildings.ts';
   import { site } from './site.svelte.ts';
   import { spotsOn } from './beach.ts';
@@ -644,7 +644,7 @@
       stops: () => (world.three && island3d ? [island3d.limits().min, island3d.limits().max] : [camMin, camMax]),
       /** The island on its layout (site.svelte.ts): whether it reads it, and where its doors, homes and centre stage are
        *  (e2e: the long island). */
-      site: () => ({ on: site.on, doors: Object.fromEntries(BUILDINGS.map((b) => [b.id, doorAt(b.id)])), homes: HOMES, stage: CENTRE_STAGE, named: walkNav().named }),
+      site: () => ({ on: site.on, doors: Object.fromEntries(BUILDINGS.map((b) => [b.id, doorAt(b.id)])), homes: HOMES, stage: CENTRE_STAGE, named: walkNav().named, grass: LAWN_SPOTS }),
       /** What the ground is at a world point and the water a cast there lands in (world.ts: the layout's when on). */
       ground: (x: number, z: number) => ({ surface: surfaceAt(x, z), fresh: freshWhere(x, z) }),
       /** Today's weed and dig spots (beach.ts spotsOn: the layout's open grass when on). */

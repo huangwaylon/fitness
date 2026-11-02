@@ -3,7 +3,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { is3d, tapOn } from './island';
 
-type Site = { on: boolean; doors: Record<string, [number, number]>; homes: { A: [number, number]; B: [number, number] }; stage: [number, number]; named: Record<string, [number, number]> };
+type Site = { on: boolean; doors: Record<string, [number, number]>; homes: { A: [number, number]; B: [number, number] }; stage: [number, number]; named: Record<string, [number, number]>; grass: [number, number][] };
 const site = (page: Page) => page.evaluate(() => (window as unknown as { __world: { site(): Site } }).__world.site());
 const world = <R,>(page: Page, fn: string) => page.evaluate(`window.__world.${fn}`) as Promise<R>;
 const ISLAND = './?demo&island=3d&layout&visitor=none&critter=none&date=2026-11-04T12:00';
@@ -31,8 +31,6 @@ test('without ?layout the 3D island keeps world.ts’s island', async ({ page })
 });
 
 test('うめ’s home: a tap walks up to its door and goes in to its room', async ({ page }) => {
-  // TODO: until the engine draws buildGround(site.layout) (a tap's ground point is the old 3D ground's: CI's taps miss)
-  test.fixme(true, 'until the engine draws buildGround(site.layout)');
   await page.goto(ISLAND);
   expect(await is3d(page)).toBe(true);
   const door = (await site(page)).doors['home-B'];
@@ -44,21 +42,29 @@ test('うめ’s home: a tap walks up to its door and goes in to its room', asyn
   await expect(page.locator('[data-room-home="B"]')).toBeVisible();
 });
 
-test('a tap on the ground walks there on the layout’s walk', async ({ page }) => {
-  // TODO: until the engine draws buildGround(site.layout) (a tap's ground point is the old 3D ground's: CI's taps miss)
-  test.fixme(true, 'until the engine draws buildGround(site.layout)');
+test('a tap on the ground walks there on the layout’s walk (the long middle)', async ({ page }) => {
   await page.goto(ISLAND);
   expect(await is3d(page)).toBe(true);
-  // the lawn east of the path (where world.ts's old 3D ground, still drawn under ?layout, is as flat as the layout's:
-  // a tap's ground point is the drawn ground's)
-  await world(page, 'put(250, 380)');
-  await world(page, 'go(300)');
+  // two of the layout's open grass tiles in the middle, clear of the day's weeds and fossils (a tap there is theirs):
+  // from one, a tap on the other
+  const { lawn, dig } = await world<{ lawn: [number, number][]; dig: [number, number][] }>(page, 'spots()');
+  const day = [...lawn, ...dig], { grass } = await site(page);
+  const mid = grass.filter(([x, z]) => z > 820 && z < 1100 && day.every((p) => Math.hypot(p[0] - x, p[1] - z) > 45));
+  await world(page, 'go(860)');
   await expect.poll(() => page.evaluate('window.__world3d.camStill()')).toBe(true);
-  const [x, y] = await page.evaluate('window.__world3d.client(300, 470)') as [number, number];
+  // the target: on screen, nothing over it there (a home's tap area, a tree's)
+  const bare = await page.evaluate((pts) => pts.filter(([x, z]) => {
+    const [sx, sy] = (window as unknown as { __world3d: { client(x: number, z: number): [number, number] } }).__world3d.client(x, z);
+    const el = document.elementFromPoint(sx, sy);
+    return sy > 140 && sy < innerHeight - 90 && !!el && !el.closest('button, [data-tree], [data-bush], [data-scenery-id], [data-find], [data-care]');
+  }), mid);
+  const to = bare[0], from = mid.find((p) => Math.hypot(p[0] - to[0], p[1] - to[1]) > 80)!;
+  await world(page, `put(${from[0]}, ${from[1]})`);
+  const [x, y] = await page.evaluate(`window.__world3d.client(${to[0]}, ${to[1]})`) as [number, number];
   await page.mouse.click(x, y);
   await expect.poll(async () => {
     const [mx, mz] = await world<[number, number]>(page, 'mine()');
-    return Math.hypot(mx - 300, mz - 470);
+    return Math.hypot(mx - to[0], mz - to[1]);
   }, { timeout: 10_000 }).toBeLessThan(20);
 });
 
@@ -84,20 +90,30 @@ for (const water of ['sea', 'pond', 'river', 'mouth', 'clifftop'] as const)
   });
 
 test('a pond fish on the long layout: cast beside it, the bite, a tap catches it', async ({ page }) => {
-  // (a tap finds its ground point on the 3D ground: world.ts's old one, its cliff where the layout's pond is, until the
-  // engine draws buildGround(site.layout) under site.on)
-  test.fixme(true, 'needs the layout’s 3D ground (engine: buildGround under site.on)');
   await page.goto(`${ISLAND.replace('&critter=none', '')}&critter=carp`);
   expect(await is3d(page)).toBe(true);
   const node = page.locator('[data-shadow-of="pond"]');
   await expect(node).toBeAttached();
-  const z = await node.evaluate((el) => Number((el as HTMLElement).dataset.az));
+  const [x, z] = await node.evaluate((el) => [Number((el as HTMLElement).dataset.ax), Number((el as HTMLElement).dataset.az)]);
+  // my villager on the pond's back bank (within a line's reach), the camera on the pond
+  await world(page, `put(${x}, ${z + 45})`);
   await world(page, `go(${z - 140})`);
   await expect.poll(() => page.evaluate('window.__world3d.camStill()')).toBe(true);
-  const f = await page.locator('[data-critter="pond"]').evaluate((el) => {
-    const r = el.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  // the shadow drawn on the layout's pond (its model, where its tap area is): a tap beside it
+  const where = () => page.evaluate(() => {
+    const w = (window as unknown as { __world3d: { where(id: string): { x: number; y: number; z: number; hidden: boolean } | null; client(x: number, z: number, y?: number): [number, number] } }).__world3d;
+    for (let n = 0; n < 200; n++) {
+      const p = w.where(`fish-pond-${n}`);
+      if (p && !p.hidden) {
+        const [x, y] = w.client(p.x, -p.z, p.y);
+        return y > 0 && y < innerHeight ? { x, y } : null;
+      }
+    }
+    return null;
   });
+  await expect.poll(where).not.toBeNull();
+  await page.waitForTimeout(600); // (pond.spec's: the shadow settles into its swim)
+  const f = (await where())!;
   await page.mouse.click(f.x + 6, f.y);
   await expect(page.locator('[data-bobber]')).toBeAttached();
   await expect(page.locator('[data-bite]')).toHaveText('！', { timeout: 10_000 });
@@ -116,7 +132,7 @@ test('the day’s weeds and fossils lie on the layout’s open grass, all over t
   expect([...s.lawn, ...s.dig].some(([, z]) => z > 1050)).toBe(true);
 });
 
-test('the editor moves うめ’s home: the phone’s door and walk follow it live', async ({ context }) => {
+test('the editor moves うめ’s home: the phone’s door, walk and tap area follow it live', async ({ context }) => {
   // (no wait on the 3D island: the phone's layout and walk are the DOM's; CI's software GL is slow to load)
   test.slow();
   const DATE = '2026-11-04T12:00';
@@ -125,6 +141,20 @@ test('the editor moves うめ’s home: the phone’s door and walk follow it li
   await phone.goto(`${ISLAND}&as=B`);
   await phone.waitForFunction(() => (window as unknown as { __world?: { site?(): { on: boolean } } }).__world?.site?.().on);
   const before = (await site(phone)).doors['home-B'];
+  // its tap area (the door's node, projected on the layout's ground) before the move
+  expect(await is3d(phone)).toBe(true);
+  await phone.bringToFront();
+  await world(phone, `go(${before[1] - 120})`);
+  await expect.poll(() => phone.evaluate('window.__world3d.camStill()')).toBe(true);
+  // how far the door's tap area stands from where the camera draws the door (px): its node's foot against the door's
+  // point on the layout's ground
+  const off = () => phone.evaluate(() => {
+    const w = window as unknown as { __world: { site(): Site }; __world3d: { client(x: number, z: number): [number, number] } };
+    const [x, z] = w.__world.site().doors['home-B'], [sx, sy] = w.__world3d.client(x, z + 16);
+    const r = document.querySelector('[data-building="home-B"] .door')!.getBoundingClientRect();
+    return Math.hypot(r.left + r.width / 2 - sx, r.bottom - sy);
+  });
+  await expect.poll(off).toBeLessThan(30);
   await editor.goto(`editor/?demo&preview=0&date=${DATE}`);
   await editor.waitForFunction(() => (window as unknown as { __editor?: unknown }).__editor);
   await editor.bringToFront();
@@ -140,5 +170,8 @@ test('the editor moves うめ’s home: the phone’s door and walk follow it li
   await expect.poll(async () => (await site(phone)).doors['home-B'][1]).toBe(before[1] + 30);
   const s = await site(phone);
   expect(s.named['door-home-B']).toEqual(s.doors['home-B']);
+  // its tap area where the house now is
+  await phone.bringToFront();
+  await expect.poll(off).toBeLessThan(30);
 });
 
