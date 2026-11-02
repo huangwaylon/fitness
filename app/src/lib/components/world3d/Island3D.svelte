@@ -20,6 +20,7 @@
   import { LAMP_GLOW, type Piece } from '../island/fixedDecor.ts';
   import type { Scenery } from '../island/world.ts';
   import { listen3d } from '../island/echo3d.ts';
+  import { listenFx3 } from '../island/fx3d.ts';
   import TERRAIN from '../island/terrain.json' with { type: 'json' };
   import PLACES from '../island/models.json' with { type: 'json' };
   import { createIsland, type Ground, type Island3, type Options } from './engine.ts';
@@ -133,7 +134,7 @@
   }
 
   // ---- the villagers: cards of their renders (the director's state: where, which way, its motion) ----
-  const motionAt: Partial<Record<VillagerActor, { n: number; t0: number }>> = {};
+  const motionAt: Partial<Record<VillagerActor | 'visitor' | 'host', { n: number; t0: number }>> = {};
   const PULL_MS = 4200;
   /** The pull-up bar's three reps (IslandScene's keyframes): up at 8–16 % and 40–48 % of the cycle. */
   function pullLift(t: number): number {
@@ -166,6 +167,37 @@
         squash: (mp?.squash ?? 0) + ip.squash, tilt: (mp?.tilt ?? 0) + ip.tilt + sway
       });
     }
+    return moving;
+  }
+
+  // ---- the other characters (a visitor): cards of their renders where their nodes are, posed by their actors ----
+  let cards3 = new Set<string>();
+  function characterCards(e: Island3, t: number): boolean {
+    const seen = new Set<string>();
+    let moving = false;
+    for (const n of world.cards3()) {
+      const c = n.c3, base = artCard(c.key, c.h);
+      const art = c.art?.();
+      if (art && marked.get(art) !== !!base) {
+        marked.set(art, !!base);
+        art.classList.toggle('m3on', !!base);
+      }
+      if (!base) continue;
+      const id = `c:${n.id}`;
+      seen.add(id);
+      const a = c.actor ? actors[c.actor] : null;
+      let pose = { lift: 0, squash: 0, tilt: 0 };
+      if (a) {
+        const m = motionAt[c.actor!];
+        if (!m || m.n !== a.motionN) motionAt[c.actor!] = { n: a.motionN, t0: t };
+        const mp = a.motion ? motionPose(a.motion, t - motionAt[c.actor!]!.t0) : null, ip = idlePose(t, a.walking, a.asleep, a.stepMs || 640, 2.1);
+        if (mp || a.walking) moving = true;
+        pose = { lift: (mp?.lift ?? 0) + ip.lift, squash: (mp?.squash ?? 0) + ip.squash, tilt: (mp?.tilt ?? 0) + ip.tilt };
+      }
+      e.cards.set(id, { ...base, x: n.x, z: n.z, flip: c.flip, shadow: 15, hidden: !n.shown, lift: (c.lift ?? 0) + pose.lift, squash: pose.squash, tilt: pose.tilt });
+    }
+    for (const id of cards3) if (!seen.has(id)) e.cards.set(id, null);
+    cards3 = seen;
     return moving;
   }
 
@@ -349,9 +381,11 @@
       if (!(Math.abs(hz - horizonWas) <= 0.5)) onhorizon((horizonWas = hz));
       const more = world.step(t);
       const moving = mirror(e, t);
-      return villagerCards(t) || more || moving;
+      const acting = characterCards(e, t);
+      return villagerCards(t) || more || moving || acting;
     });
     // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
+    listenFx3((kind, x, z, lift, o) => e.fx(kind, x, z, lift, o));
     listen3d((id, k) => {
       if (e.things.has(id)) e.things.jiggle(id, k);
       else e.cards.jiggle(`s:${id}`, k);
@@ -382,6 +416,7 @@
     };
     return () => {
       listen3d(null);
+      listenFx3(null);
       off();
       ro.disconnect();
       e.onFrame(null);

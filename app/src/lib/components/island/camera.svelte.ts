@@ -42,6 +42,26 @@ export interface NodeSpec {
    *  position too): the node's `[data-m3art]` art goes invisible once the model stands there (world3d/Island3D). `yaw`:
    *  turned (radians); `grey`: drained toward grey (a fruit not grown yet, 0 … 1). */
   m3?: M3 | null;
+  /** The 3D island draws this character as a card of its render (a visitor: depth-tested like the villagers),
+   *  posed by its actor's motion; its art (`art`) invisible once the card stands there. */
+  c3?: C3 | null;
+}
+interface C3 {
+  key: string;
+  /** Its height (u) and how far it floats above the ground. */
+  h: number;
+  lift?: number;
+  flip?: boolean;
+  actor?: 'visitor' | 'host';
+  art?: () => Element | null | undefined;
+}
+/** A node the 3D island draws as a card. */
+export interface Card3 {
+  id: string;
+  c3: C3;
+  x: number;
+  z: number;
+  shown: boolean;
 }
 interface M3 {
   key: string;
@@ -128,6 +148,7 @@ export class World {
 
   private nodes = new Set<Node>();
   private m3s = new Set<Node>();
+  private c3s = new Set<Node>();
   private seq3 = 0;
   private movers = new Set<Node>();
   private dirty = new Set<Node>();
@@ -406,6 +427,14 @@ export class World {
     }
   }
 
+  /** The nodes the 3D island draws as cards. */
+  *cards3(): Generator<Card3> {
+    for (const n of this.c3s) {
+      const [x, z] = n.live ? n.live() : [n.x, n.z];
+      yield { id: n.id3, c3: n.c3!, x, z, shown: n.shown };
+    }
+  }
+
   /** No frame pending (e2e and perf: nothing runs when still). */
   idle(): boolean {
     return this.three ? this.three.idle() : this.raf === 0;
@@ -441,6 +470,7 @@ export class World {
       }
       this.nodes.add(n);
       if (n.m3) this.m3s.add(n);
+      if (n.c3) this.c3s.add(n);
       if (n.live) this.movers.add(n);
       if (n.mode !== 'quad') this.zOf(n, n.x, n.z);
       // placed at once when the camera is known (no flash at the origin)
@@ -451,6 +481,7 @@ export class World {
       return () => {
         this.nodes.delete(n);
         this.m3s.delete(n);
+        this.c3s.delete(n);
         this.movers.delete(n);
         this.dirty.delete(n);
       };

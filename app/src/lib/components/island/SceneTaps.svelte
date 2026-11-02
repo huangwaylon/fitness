@@ -50,6 +50,7 @@
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { t } from '#lib/i18n/index.ts';
   import { onMount } from 'svelte';
+  import { fx3d } from './fx3d.ts';
   import { echo3d } from './echo3d.ts';
 
   interface Props {
@@ -90,6 +91,8 @@
     x: number;
     y: number;
     lift?: number;
+    /** Drawn by the 3D island (its DOM art invisible). */
+    in3d?: boolean;
     /** bush: what it sheds; grass: 'snow' in winter; splash: 'pond' (a small one). */
     v?: string;
     /** a rare extra: 'butterfly' | 'firefly' | 'fish'. */
@@ -130,7 +133,21 @@
 
   $effect(() => clear);
 
+  /** The 3D island's flourish for a ground one (fx3d.ts): its DOM art then invisible. */
+  function in3d(f: Omit<Fx, 'id'>): boolean {
+    const lift = f.lift ?? 0;
+    switch (f.kind) {
+      case 'splash': return fx3d('splash', f.x, f.y, 0, { size: f.v === 'pond' ? 0.6 : 1 });
+      case 'sand': return fx3d('sand', f.x, f.y);
+      case 'grass': return fx3d(f.v === 'snow' ? 'snow' : 'dust', f.x, f.y, 0, { v: '#cfe8a6' });
+      case 'bush': return fx3d('leaves', f.x, f.y, lift, { v: f.v === 'leaf' ? undefined : f.v === 'snow' ? 'snowflake' : f.v === 'maple-leaf' || f.v === 'petal' || f.v === 'snowflake' ? f.v : undefined });
+      case 'fire': return fx3d('sparks', f.x, f.y, lift);
+      case 'flower': return fx3d('drops', f.x, f.y, 0) && fx3d('sparkle', f.x, f.y, 6, { size: 0.7 });
+      default: return false;
+    }
+  }
   function spawn(f: Omit<Fx, 'id'>, ms = LIFE_MS) {
+    if (!SKY_KINDS.includes(f.kind) && in3d(f)) f = { ...f, in3d: true };
     const id = ++seq;
     fx = [...fx.slice(-(MAX_FX - 1)), { ...f, id }];
     later(() => (fx = fx.filter((g) => g.id !== id)), ms);
@@ -590,7 +607,7 @@
 {#each groundFx as f (f.id)}
   {#if f.kind === 'splash' || f.kind === 'sand' || f.v === 'snow'}
     <div class="fxn" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, mode: 'flat', h: 12 })}>
-      <span class="fx {f.kind}" class:flip={f.flip} class:snow={f.v === 'snow'} class:small={f.v === 'pond'}>
+      <span class="fx {f.kind}" class:in3d={f.in3d} class:flip={f.flip} class:snow={f.v === 'snow'} class:small={f.v === 'pond'}>
         {#if f.kind === 'splash'}
           <i class="ring"></i><i class="ring late"></i>
           {#if f.rare === 'fish'}<i class="fish"></i>{/if}
@@ -601,7 +618,7 @@
     </div>
   {/if}
   <div class="fxn" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, lift: f.lift ?? 0, h: 40, dz: -4, light: f.kind === 'fire' })}>
-    <span class="fx {f.kind}" class:flip={f.flip} class:snow={f.v === 'snow'} class:small={f.v === 'pond'} data-fx={f.kind} style:--c={f.color}>
+    <span class="fx {f.kind}" class:in3d={f.in3d} class:flip={f.flip} class:snow={f.v === 'snow'} class:small={f.v === 'pond'} data-fx={f.kind} style:--c={f.color}>
       {#if f.kind === 'bush'}
         {#each [-1, 0.3, 1] as dx, i (i)}
           <span class="bit" style:--dx={dx} style:--i={i}>
