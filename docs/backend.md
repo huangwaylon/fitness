@@ -1,31 +1,37 @@
 # Island Fund: backend
 
-The Google Sheet, the Apps Script web app in front of it, and the client's sync. The contract (tabs, row tuples, reply
-shapes, bounds) is `app/src/lib/contract/api.ts`, shared by the script (`app/gas/`) and the client. After changing it,
-rebuild `Code.js` and redeploy (`docs/ops/google-setup.md`).
+The record (a Durable Object's SQLite on the relay), the Google Sheet it is exported to, the Apps Script web app in
+front of the sheet, and the client's sync. The contract (tabs, row tuples, reply shapes, bounds) is
+`app/src/lib/contract/api.ts`, shared by the record (`relay/src/store.ts`), the script (`app/gas/`) and the client.
 
 ## Overview
 
-The sheet is an append-only log. `app/gas/main.ts` and `parse.ts`, bundled by `npm run gas:build` into
-`app/apps-script/Code.js`, are its only reader and writer: they authenticate, validate shapes and append. There is no
-server-side economy and no config tab: the client caches the rows and derives every number on read. User actions are
-`event` rows sent through a persisted queue and shown at once. `appsscript.json`: V8, `Asia/Tokyo`, scope
-`spreadsheets.currentonly`; the web app accepts anonymous calls (the key is the auth).
+The record is an append-only log with slots (a later tally of the same day replaces the earlier one, and so on): the
+relay's `IslandStore` ([The record](#the-record)) is its only reader and writer. It authenticates, validates shapes,
+stamps `at` and appends; there is no server-side economy and no config: the client caches the rows and derives every
+number on read. User actions are `event` rows sent through a persisted queue and shown at once; health data comes from
+each phone's Shortcut (`ingest`). The Google Sheet is a one-way export of the record, rewritten by the relay's cron
+(a backup to look at; an edit there goes nowhere). Its Apps Script web app (`app/gas/main.ts` → `Code.js`) only
+forwards what still reaches its `/exec` URL to the record and takes the export. `appsscript.json`: V8, `Asia/Tokyo`,
+scopes `spreadsheets.currentonly` and `script.external_request`; the web app accepts anonymous calls (the key, or the
+relay's signature, is the auth).
 
 ## Tabs
 
-Row 1 is the header. The script keeps each tab's layout right (`heal`): a missing tab is created on first use, and on
-`whoami` and whenever a hand change is noticed it rewrites the header as `TABS` has it (any column right of it
-unlabelled) and formats each column as text or number (`NUMERIC_COLUMNS`; text so Sheets never turns dates into Dates). `at` is the request's server time, ISO 8601 UTC with milliseconds, strictly increasing
-and shared by all rows of one request. Dates are `YYYY-MM-DD` (Tokyo). The app never updates or deletes a row.
+The record's tables mirror the sheet's tabs ([The record](#the-record) "Where"). `at` is the record's time, ISO 8601
+UTC with milliseconds, strictly increasing (all rows of one ingest share it). Dates are `YYYY-MM-DD` (Tokyo).
 
 | Tab | Columns | Written by |
 |---|---|---|
 | `metrics` | `at`, `person`, `date`, `metric`, `value` | `ingest`; `metric` ∈ `steps` · `exercise_min` · `move_kcal` · `stand_min` · `weight` · `body_fat_pct` · `bmi` · `lean_kg` |
-| `events` | `at`, `person`, `id`, `type`, `data` (JSON text) | `event`; `id` client-generated |
+| `events` | `at`, `person`, `id`, `type`, `data` (JSON text) | `event` / `events`; `id` client-generated |
 | `uploads` | `at`, `person`, `status`, `bytes`, `error` | `ingest`'s audit: `ok` / `partial` / `error`, size, warnings and the body's shape (never the body or key) |
 
-`metrics` and `events` are synced to the client; `uploads` is read only by the `uploads` action.
+`metrics` and `events` are synced to the client; `uploads` is read only by the `uploads` action. **The sheet:** the
+same three tabs, rewritten whole by each export (row 1 the header, bold and frozen, with a note that the sheet is a
+read-only export; columns text or number as `NUMERIC_COLUMNS` has them, so Sheets never turns a date into a Date), and a
+`README` tab saying so in English and Japanese, with the export's time, the newest row's `at`, the revision and the
+row counts.
 
 ## Events
 
@@ -66,54 +72,45 @@ Apple Health is the source of truth ([design.md](design.md#health-data)).
 
 ## API
 
-`POST <exec url>`, body = JSON text, `Content-Type: text/plain` (no CORS preflight), `{key, action, ...}`. Every reply
-is JSON: `{ok:true, ...}` or `{ok:false, error, detail?}`, `error` ∈ `unauthorized` · `bad_request` · `too_large` ·
-`busy` · `unavailable`. `doPost` never throws (an uncaught error would return Google's HTML page). No `doGet`;
-`e.parameter` is never read (a key in a query string would reach Google's logs). Body cap 1,000,000 characters.
+`POST https://island-fund-relay.island-fund-relay.workers.dev/api`, body = JSON text (`text/plain` from a page: no CORS
+preflight; a Shortcut's `application/json` is fine), `{key, action, ...}`. Every reply is JSON with status 200:
+`{ok:true, ...}` or `{ok:false, error, detail?}`, `error` ∈ `unauthorized` · `bad_request` · `too_large` · `busy` ·
+`unavailable`. Body cap 1,000,000 characters. The old `/exec` URL takes the same bodies and forwards them
+([The record](#the-record) "Forward").
 
 | `action` | Request | Reply |
 |---|---|---|
 | `ingest` | the Shortcut's fields ([Ingest](#ingest)) | `{ok, metrics, skipped?, warnings?}` |
 | `event` | `id, type, data` | `{ok, duplicate?}`: a repeated `id` is acked as a duplicate, so retries are safe |
-| `snapshot` | `since?` (ISO: the max `at` cached) | `{ok, me, now, rev, rows:{metrics, events}}`: compact arrays in column order, rows with `at > since`, both people; only rows the client reads (a known metric or event type, person `A`/`B`) |
+| `events` | `events: [{id, type, data}, …]` (≤ 50) | `{ok, results: [{id, ok, duplicate?, at?} \| {id, ok: false, error, detail?}]}`: each kept in order as `event` would, `at` its stored row's |
+| `snapshot` | `since?` (ISO: the max `at` cached) | `{ok, me, now, rev, rows:{metrics, events}}`: compact arrays in column order, rows with `at > since`, both people |
 | `uploads` | | `{ok, rows:[{at, status, bytes, notes}]}`: the caller's last 20 audit rows, newest first |
-| `whoami` | | `{ok, me, build}` (pairing; creates missing tabs) |
-| `health` | no `key` | `{ok, build}`: no Properties, no lock, no sheet (the monitor) |
+| `whoami` | | `{ok, me, build}` (pairing) |
+| `health` | no `key` | `{ok, build: 'relay-1'}` (the Apps Script's `/exec` answers its own: `{ok, build}`, the first 12 hex chars of SHA-256 over `Code.js`, also on its line 3) |
 
-An unreadable `since` is `bad_request`; an unknown action too. `build` = the first 12 hex chars of SHA-256 over the
-bundle (`gas/build.ts`; `dev` unbundled), also on line 3 of `Code.js`.
+An unreadable `since` is `bad_request`; an unknown action too.
 
 ## Auth and limits
 
-- **Keys:** the caller is whichever Script Property `KEY_A` / `KEY_B` matches, in constant time; a key that isn't
-  32–128 hex characters is refused before any read. Keys are cached in `CacheService` for 5 minutes, so a rotated key
-  works up to 5 minutes more.
-- **Rate limit:** 120 requests per key per minute (a CacheService counter; a cache outage lets requests through).
-  Over it: `busy`.
+- **Keys:** the caller is whichever Worker secret `KEY_A` / `KEY_B` matches, in constant time; a key that isn't 32–128
+  hex characters is refused before any comparison. The same two keys are Script Properties (the export's signature is
+  derived from them): rotate both together ([runbook §4](ops/runbook.md#4-rotate-a-key)).
+- **Rate limit:** 120 requests per key per minute (in the record's memory). Over it: `busy`.
 
-## Locks and server state
+## Record state
 
-Every keyed action runs under the script lock (wait ≤ 10 s, else `busy`), so a snapshot never sees half a request's
-rows. Each locked request reads Script Properties once and writes them at most once, also after a failure:
-`LAST_AT` (the last `at`; the next is max(now, `LAST_AT` + 1 ms)), `ROWS` (each synced tab's last row as the script left
-it), `TAILS` (the `at` of each synced tab's last row) and `REV` ([Revision](#revision)).
-
-**Tail reads:** rows are appended in `at` order, so "rows after X" is a tail, read backwards in doubling chunks (256,
-512, …) until a chunk starts at or before X. `snapshot` with `since`, `ingest`'s comparison (from the day before the
-body's earliest date) and `uploads` read tails; a full `snapshot` and the `event` id dedupe read the whole tab. A `snapshot` with `since` reads no rows of a tab that is
-as the script left it (`ROWS`) and whose last row is not after `since` (`TAILS`): most polls read nothing.
+The record keeps its clock and revision in its `meta` table: `last_at` (the last `at`; the next is max(now,
+`last_at` + 1 ms)) and `rev` ([Revision](#revision)). A Durable Object runs one request at a time and each write is
+one SQLite transaction, so a snapshot never sees half of one; no lock. An ack is sent only after its transaction
+committed (the output gate).
 
 ## Revision
 
-`since` only finds appended rows, so a cache would miss a row deleted or corrected by hand. `REV` changes when, and
-only when, a synced tab changed outside the app:
-
-- rows added or deleted by hand (or a tab recreated): every read or append compares the tab's last row with `ROWS`;
-- cells edited by hand: the simple trigger `onEdit`;
-- manually: run `resync` from the script editor.
-
-`rev` is opaque (equality only). A `snapshot` whose `rev` or `me` differs from the cache's makes the client drop the
-cache (never the unsent queue) and fetch everything. Locked weeks' earnings are memoised per `rev`.
+`rev` is the record's epoch (`e1`, `e2`, …): it changes only when the record is rebuilt (a restore, or `node
+scripts/record.ts rev`). A `snapshot` whose `rev` or `me` differs from the cache's makes the client drop the cache
+(never the unsent queue) and fetch everything; the first read from the record after the sheet did the same once.
+Locked weeks' earnings are memoised per `rev`. Nothing edits the record by hand (the sheet's tabs are a copy), so
+there is no `onEdit` and no `resync` any more.
 
 ## Ingest
 
@@ -140,8 +137,8 @@ validated like the other lists (Text, length = `dates`, ≤ 100,000).
 **Latest wins:** Apple Health is the source of truth, so a row is appended whenever a value differs from the last row
 for (person, date, metric), lower or higher (weight with one decimal); the same value is never appended twice. The
 model reads a day's latest row ([design.md](design.md#health-data)); a locked week reads it as of its lock (Wednesday
-04:00), so a later sync never moves locked earnings. The Shortcut posts to the `/exec` URL with `"key"`
-and `"action": "ingest"` (`docs/ops/shortcut-health-sync.md`).
+04:00), so a later sync never moves locked earnings. The Shortcut posts to the record's `/api` with `"key"` and
+`"action": "ingest"` (`docs/ops/shortcut-health-sync.md`; the old `/exec` URL forwards).
 
 ## Client sync
 
@@ -172,7 +169,7 @@ lands after pairing again is dropped.
 On each merge `model/compact.ts` drops `metrics` rows of locked weeks the model can no longer read: per (person, date,
 metric) it keeps the latest row at the lock and the latest overall; per person the newest row. Weight keeps the newest
 row per day. Views are unchanged; ~90% of rows go. A `tally` replaced by a later one of the same person and day goes
-too (the sheet no longer has it).
+too (the record no longer has it).
 
 ### Write queue
 
@@ -211,10 +208,17 @@ an ack without a row (a duplicate, or Apps Script's) is followed by a `fresh` re
 <a id="the-record"></a>
 ## The record
 
-The data of record is moving from the sheet to the relay (decisions: *The record on the relay*), in five steps, each
-deployed and green before the next: **1. mirror** (done 2026-11-02), **2. the app reads from the relay** (done: `snapshot`
-to `/api`, Apps Script when the relay is down or answers an outage: `sync/transport.ts postRecord`; the first read there
-refetches everything once, the revision being the record's), **3. the app writes there** (done: the queue sends `events` to `/api`; Apps Script forwards every keyed request it still gets, an older app's and the Shortcuts', to `/api` and hands back its reply: `gas/main.ts forward`), **4. the Shortcuts post there** (the old URL forwards meanwhile: [shortcut §2](ops/shortcut-health-sync.md#moving-an-existing-shortcut-to-the-relay-2026-11)), 5. the sheet becomes a one-way export.
+The data of record moved from the sheet to the relay on 2026-11-02 (decisions: *The record on the relay*), in five
+steps, each deployed and green before the next, the old path working through each (the phones update a day apart):
+1. **mirror**: the script copied each write's rows here (`/import`), and the sheet's history was imported (`at` kept,
+   high-fives and superseded cosmetic prefs left out); the model's numbers from both were the same
+   ([runbook §13](ops/runbook.md#13-the-record) `parity`);
+2. **reads**: the app's snapshot from `/api`, Apps Script when the relay is down or answers an outage
+   (`sync/transport.ts postRecord`);
+3. **writes**: the queue's `events` to `/api`; Apps Script forwards every keyed request it still gets;
+4. **Shortcuts**: their URL is `/api` ([shortcut §2](ops/shortcut-health-sync.md#moving-an-existing-shortcut-to-the-relay-2026-11));
+   the old one forwards;
+5. **export**: the sheet is rewritten from the record; the script's own record code is gone.
 
 - **Where:** `relay/src/store.ts` (`StoreCore`, free of the Workers runtime), in its own SQLite-backed Durable Object,
   `IslandStore` (`idFromName('record')`, `storeObject.ts`), apart from the island room. Tables: `metrics` (`seq`, `at`,
@@ -226,45 +230,59 @@ refetches everything once, the revision being the record's), **3. the app writes
   Apps Script's; CORS for the allowed origins, none needed for a Shortcut. The Worker checks the origin, method and size
   only and hands the body to the object, which parses it, checks the key and answers (the Free plan gives a Worker ~10
   ms of CPU per request; the object far more). Rate limit 120 per key per minute.
-- **Rules** (`app/src/lib/model/record.ts`, shared with the script): the same shape checks (`validEventData`); `at` =
+- **Rules** (`app/src/lib/model/record.ts`): the shape checks the script had (`validEventData`); `at` =
   max(now, last + 1 ms), one per ingest, one per event; an event id once, forever (`ids`: a late retry of a replaced
   event is still a duplicate); **slots**, a later event of a slot replacing it (where the sheet deleted and appended): a
   tally and an island day per sender and day, a cosmetic pref (`locale`, `villagerName`, `villager`, `goalWeight`) per
   subject, a goal (`moveGoal`, `stepsGoal`) per subject and Tokyo day of its `at` (the goal in force on each past day
   stays: `moveGoalOn`), a decoration per scope and id (by `decorAccept` / `tentAccept`). A pref the model ignores takes
   no slot. `highfive` is acknowledged and kept nowhere.
-- **Ingest:** `gas/parse.ts` and the audit row (`gas/audit.ts`) as the script's; a day's latest row read from the
-  (person, date, metric) key over the body's days. `relay/test/ingest-golden.test.ts` runs a week of both phones'
-  Shortcut bodies (their real shapes: A's iPhone-only body with English dates, B's with the Watch's steps and Japanese
-  dates; made-up values) through the script (on its fakes) and the record: the same replies, rows, `at`s and audit rows.
+- **Ingest:** `app/gas/parse.ts` (unchanged from the script's) and the audit row (`relay/src/audit.ts`); a day's latest
+  row read from the (person, date, metric) key over the body's days. `relay/test/ingest-golden.test.ts` runs a week of
+  both phones' Shortcut bodies (their real shapes: A's iPhone-only body with English dates, B's with the Watch's steps
+  and Japanese dates; made-up values) and checks the record's replies, rows, `at`s and audit rows against what the
+  script answered and wrote for them (`fixtures/ingest-golden.json`, recorded before the script's ingest was removed).
 - **`since`:** answered from the `at` index; an empty poll reads one row (the revision). A row that arrived out of
-  `at` order (only while the script mirrors: two requests' copies racing) is marked `late` with its arrival time, and a
+  `at` order (an import's: while the script mirrored, two requests' copies could race) is marked `late` with its arrival time, and a
   poll also returns late rows that arrived after `since` − 10 s, so no phone misses one (the merge dedupes it).
 - **Revision:** `rev` is an epoch (`e1`, `e2`, …), changed only when the record is rebuilt (`node scripts/record.ts
   rev`, after a restore). Nothing edits the record by hand.
-- **Mirror (step 1):** after each write, outside the lock, the script POSTs the rows it appended (all three tabs, with
-  their `at`) and its notice to `POST /import`, signed like `/notify`; the object takes them by the same rules
-  (idempotent: a copy that lands twice adds nothing) and, when synced rows were new, passes the notice to the room
-  (the push, unchanged). This replaces the script's `/notify` call. A copy that doesn't land is filled in by
-  `import-sheet` again ([runbook §13](ops/runbook.md#13-the-record)).
-- **Measured** (2026-11-02, from Tokyo): a full snapshot 0.09–0.18 s for 73 KB (the sheet's: 2.8–3 s for 131 KB), an
-  empty poll 0.06 s (the sheet's: 2.1–2.2 s).
+- **Import:** `POST /import`, signed like `/notify` ([Push](#push) "Auth"), takes rows that already have their `at`
+  by the same rules (idempotent: a row that lands twice adds nothing): the sheet's history and, during step 1, the
+  script's copy of each write (sent as ASCII: a Shortcut's dates carry U+202F, and a copy with it failed the signature
+  until it was escaped). Also its admin ops (`{op}`: counts, bookmarks, restore, a new epoch, the export, a dump).
+- **Forward:** Apps Script hands every keyed request to `/api` (as ASCII JSON, the key in the body) and its reply
+  back as it is; anything but a JSON reply is `unavailable`, so a phone retries. Health stays its own.
+- **Export:** a cron (`*/15 * * * *` and `0 18 * * *`, `wrangler.toml`) asks the object to export: when `last_at` moved
+  since the last export (or nightly, whatever changed) it POSTs every row to the `/exec` URL (`EXPORT_URL`; the test
+  copy has none) as `{action: 'export', t, sig, data}`, `data` the rows as ASCII JSON text and `sig` its signature
+  (Apps Script can't read request headers); the script checks it (10 minutes' window) and rewrites the tabs under its
+  lock ([Tabs](#tabs)). 2026-11-02: 482 metrics, 267 events, 13 uploads in one call. The relay keeps no Google
+  credential.
+- **Push-driven:** after a write the object tells the room (`changed`, [Push](#push)); the room keeps the last one
+  (`rec {at, rev}`, in its storage) and hands it to each phone in its `welcome`, so a phone that has it needn't fetch
+  on opening ([When it syncs](#when-it-syncs)).
+- **Measured** (2026-11-02, curl from Tokyo): a full snapshot 0.09–0.18 s for 73 KB (the sheet's: 2.8–3 s for 131 KB;
+  4–8 s at busy times), an empty poll 0.06 s (the sheet's: 2.1–2.2 s, once 14.5 s). An event write through Apps Script
+  took two locked requests (the event and the 1.5 s re-read); to the record it is one `events` request, the row back
+  in its reply.
 - **Backups:** point-in-time recovery (30 days, on the Free plan) and `dump` / `load`: [runbook §13](ops/runbook.md#13-the-record).
 
 ## Live relay
 
-Presence between the two phones while both have the app open (decisions: *Live relay on Cloudflare*). It carries
-intents, never data of record: the sheet path above is unchanged and still catches an offline phone up.
+Presence between the two phones while both have the app open (decisions: *Live relay on Cloudflare*). The room
+carries intents, never data of record: the record ([The record](#the-record), its own object on the same Worker) still
+catches an offline phone up.
 
 - **Where:** `relay/` (its own package, outside the app's build): a Worker (`src/index.ts`) and one Durable Object,
   `IslandRoom` (`idFromName('island')`), SQLite-backed (`new_sqlite_classes`, the only kind the Free plan has).
   Production `wss://island-fund-relay.island-fund-relay.workers.dev/room`; a test copy, `island-fund-relay-test`, with
-  its own secrets and room for the smoke test. `GET /health` → `{ok, v, versions, t}`; `POST /notify` ([Push](#push));
-  `POST /push/*` ([Notifications](#notifications)).
+  its own secrets and room for the smoke test. `GET /health` → `{ok, v, versions, t}`; `POST /api` and `/import`
+  ([The record](#the-record)); `POST /notify` ([Push](#push)); `POST /push/*` ([Notifications](#notifications)).
 - **Admission:** the Worker accepts `/room` upgrades only from `ALLOWED_ORIGINS` (`https://huangwaylon.github.io`) and
   `http://localhost|127.0.0.1`; everything else 403. The origin only keeps other sites out; the key is the auth.
 - **Auth:** the first message is `hello {key, since?}`. The room compares it in constant time with the secrets
-  `KEY_A`/`KEY_B` (the same keys as Script Properties; unset = nobody gets in) and answers `welcome {me, peer, t}`, or
+  `KEY_A`/`KEY_B` (unset = nobody gets in) and answers `welcome {me, peer, t, rec?}` (`rec`: the record's last change), or
   closes 4001. No hello within 10 s (a DO alarm sweeps): 4003. A second socket of the same person replaces the first
   (4002, no presence flicker). At most 8 sockets.
 - **Protocol** (`app/src/lib/sync/live-protocol.ts`, imported by both sides and checked by the same parsers): JSON,
@@ -276,7 +294,7 @@ intents, never data of record: the sheet path above is unchanged and still catch
   world](#shared-world) "Villagers"; integers within the plan `WORLD_X` −230…620 × `WORLD_Z` −400…2500, equal to
   `island/world.ts` PLAN; v1: stage units, |n| ≤ 100,000; a walk never crosses versions), `act {act, id?, at?, pt?}`,
   `catch {what, id?, at?, how?}`, `emote {emote}`, `world {op, id}` (`weed-pulled`, `fruit-collected`, `dug`,
-  `present-opened`, `watered`, `shaken`, `wished`, `woke`), `saved {}` ([Push](#push)), `decor {id, at, item, x, z, f, p} | {id, at, rm}` (v2: a decoration set or removed, as the sheet's `decor` op, the tent's with `sc: 't'`; kept for the day and replayed, never claimed: the merge is commutative), `drag {id, x, z, f, it?, end?}` (v2: a tent piece under the finger, ~10 a second while it moves, ≤ 60 bytes; presence only: relayed while the partner is there, never kept, replayed or written), `tent {in, to?, from?, via?, s?, ms?}` (v2: my villager in the tent, its walk there in the room's model units; presence only) `highfive {at}` (v2: a high-five, `at` the tap on the relay's clock, numbered; relayed live, and with the partner away the room holds the last one for them in its storage (`held`, one per recipient, a newer one replacing it), sends it after the welcome of their next v2 hello, and lets it go at their `got {at}` or after a day; never the sheet; see [decisions](decisions.md#a-high-five-goes-over-the-relay-only-2026-11-02)) and `say {text}` (v2: a phrase over my villager, [Villager taps](design.md#villager-taps); presence only: relayed live to a v2 partner, never kept, replayed or sent to the sheet; `text` cleaned on both sides by `cleanSay`: NFC, no control, newline or bidi characters, blanks squeezed, trimmed, ≤ 20 code points, else dropped; the room passes one per person per second, the phone one per 1.5 s); the shared world's (v2 only, [Shared
+  `present-opened`, `watered`, `shaken`, `wished`, `woke`), `saved {}` ([Push](#push)), `decor {id, at, item, x, z, f, p} | {id, at, rm}` (v2: a decoration set or removed, as the record's `decor` op, the tent's with `sc: 't'`; kept for the day and replayed, never claimed: the merge is commutative), `drag {id, x, z, f, it?, end?}` (v2: a tent piece under the finger, ~10 a second while it moves, ≤ 60 bytes; presence only: relayed while the partner is there, never kept, replayed or written), `tent {in, to?, from?, via?, s?, ms?}` (v2: my villager in the tent, its walk there in the room's model units; presence only) `highfive {at}` (v2: a high-five, `at` the tap on the relay's clock, numbered; relayed live, and with the partner away the room holds the last one for them in its storage (`held`, one per recipient, a newer one replacing it), sends it after the welcome of their next v2 hello, and lets it go at their `got {at}` or after a day; never the record; see [decisions](decisions.md#a-high-five-goes-over-the-relay-only-2026-11-02)) and `say {text}` (v2: a phrase over my villager, [Villager taps](design.md#villager-taps); presence only: relayed live to a v2 partner, never kept, replayed or sent to the record; `text` cleaned on both sides by `cleanSay`: NFC, no control, newline or bidi characters, blanks squeezed, trimmed, ≤ 20 code points, else dropped; the room passes one per person per second, the phone one per 1.5 s); the shared world's (v2 only, [Shared
   world](#shared-world)): `pick {id, what, at?}`, `put {id, what, at}`, `shake {tree, drop}`. Relay-only: `changed {what, who, at, rev}`. The room drops any client-sent `who`/`t`, stamps its own (`t` strictly increasing) and sends it
   to the other person only. Any intent may carry `c`, the phone's sequence number (increasing through the day: its
   `Date.now()` at sending, or one more): the room answers the sender `ack {c, t, ok}` (`t` its stamp; `ok` false when
@@ -378,7 +396,7 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   the day's events; the demo's per tab) so a reload needs only what's new; `share(intent)` folds my change (refused
   when the partner already has it), keeps it and sends it; `on(fn)` the partner's, `live` when it happened in the last
   12 s (the island plays it: their villager turns to it and it plays at the target), else (heard on opening) it
-  only changes the island. My change goes to the relay first, at once (never behind the sheet's 2-minute hold), then
+  only changes the island. My change goes to the relay first, at once (never behind the record's 2-minute hold), then
   is folded and kept; my own heard back in the relay's replay is folded quietly. The day's record is written once per
   burst (a microtask after the last change: a replay of 300 changes is one write, not 300). Attached to the phone's
   one socket when the backend starts (`store/live.ts`), so the
@@ -392,9 +410,9 @@ a person does is a small intent over the relay, kept by the room for the day, fo
 - **The demo** (`sync/live-local.ts`): the demo's two players are two tabs of one browser (`?demo`, `?demo&as=B`);
   a BroadcastChannel carries the intents and the sending tab plays the room's rules on a log in localStorage
   (`island-demo.relay`), so the e2e's two-player tests (`e2e/shared-world.spec.ts`) run on it without a network.
-- **The sheet's day row** (`island` event, [Events](#events); `store/actions.ts sendIslandDay`): my part of the day
+- **The record's day row** (`island` event, [Events](#events); `store/actions.ts sendIslandDay`): my part of the day
   (`rowOf`: what I took, put down, shook, watered and wished, where my villager stands), sent whole when it grows,
-  held 2 minutes (a busy stretch is one request), one row per person and day on the sheet (the older one deleted, as
+  held 2 minutes (a busy stretch is one request), one row per person and day in the record (the older one replaced, as
   a tally's). The model keeps each person's latest (`state.islandDays`); the store folds today's (what the relay
   didn't bring: both apps closed past the relay's day, an outage), yesterday's watering (today's hybrids grow from both
   people's) and the wishes for the mornings to come (`applyRow`; a claim known from a row becomes news when the
@@ -434,9 +452,9 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   partner's villager).
 - **The decorations** (`store/decor.svelte.ts`, [Decorating](design.md#decorating)): not the day's, kept for good. Each
   change is one `decor` op, sent to the relay at once (kept in the day's ring, replayed to a phone opening later that
-  day) and to the sheet's queue (the record across days: each item's latest op); the store merges whatever arrives,
+  day) and to the record's queue (the record across days: each item's latest op); the store merges whatever arrives,
   from wherever, by id (`contract/decor.ts`), and keeps the merged map in localStorage (`island.decor`) so a reload
-  shows the layout before the sheet answers. My op's `at` is the relay's clock and always after the op it replaces
+  shows the layout before the record answers. My op's `at` is the relay's clock and always after the op it replaces
   (a phone whose clock is behind still moves what it saw).
 - **Still each phone's own:** the camera (each shows what its view holds of the same world), a balloon's flight and
   where this phone's lands (its present is shared once down), shooting stars and the night's showers' timing, the
@@ -466,32 +484,30 @@ a person does is a small intent over the relay, kept by the room for the day, fo
 
 ## Push
 
-While the app is on screen, a change to the sheet reaches the other phone in well under a second instead of at its next
-open (decisions: *Push through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) is unchanged, so
-without the relay (or before the push is turned on) the app behaves as before.
+While the app is on screen, a change to the record reaches the other phone in well under a second instead of at its
+next open (decisions: *Push through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) still catches
+up a phone that missed it.
 
-- **Apps Script → relay:** after a request that appended `metrics` or `events` rows (an `ingest` with a changed value,
-  a new `event`; never a duplicate, a refusal or a read), `doPost` POSTs `{what: 'ingest'|'event', who, at, rev}` (`at`
-  = the newest row's, `rev` = the revision) to `https://island-fund-relay.island-fund-relay.workers.dev/notify`, after
-  the lock is released (`gas/main.ts notifyRelay`). It needs the `script.external_request` scope
-  ([runbook §11](ops/runbook.md#11-turn-on-the-push)); until the script has it, `UrlFetchApp` throws, and that or any
-  reply but 204 pauses notifying for 10 minutes (CacheService `relay:pause`), so a write pays one cache read.
+- **Record → room:** after a write that added `metrics` or `events` rows (an `ingest` with a changed value, a new
+  event; never a duplicate, a refusal or a read), the record calls the room (an RPC between the two objects, after its
+  commit) with `{what: 'ingest'|'event', who, at, rev}` (`at` = the newest row's, `rev` the record's). `POST /notify`
+  (signed, below) still takes the same notice from a server.
 - **Auth:** the notify secret is HMAC-SHA256(key `"<KEY_A>:<KEY_B>"` trimmed and lower-cased,
   `island-relay-notify/1`), derived by both servers from the person keys they already hold; a phone holds only its own
   key, so it can't sign. Nothing to provision; rotating a key rotates it (the relay's and Script Properties' keys must
-  match, runbook §4). Each POST carries `X-Island-Time` (ms) and `X-Island-Sig` = HMAC-SHA256(key secret,
+  match, runbook §4). The same secret signs `/import` and the export. Each POST carries `X-Island-Time` (ms) and `X-Island-Sig` = HMAC-SHA256(key secret,
   `"<time>.<body>"`), hex; the relay refuses a signature more than 5 minutes off (401), a body over 256 bytes (413) or
   a bad notice (400), and answers 204 with `X-Island-Heard: <sockets>` (`relay/src/notify.ts`). The secret never
   travels and no key is in a URL or a log.
 - **Relay → phones:** the room sends `changed {what, who, at, rev, t}` to every authenticated socket, the writer's
   too (a Shortcut upload reaches its own phone). Nothing is stored.
 - **The nudge:** after the queue gets an ack, the phone sends `saved {}` over its socket; the room relays it to the
-  partner like any intent (only when they are there). It covers events before the Apps Script push is on, and stops
-  (sent and heeded) once a `changed` has reached the phone this session.
+  partner like any intent (only when they are there). It stops (sent and heeded) once a `changed` has reached the
+  phone this session (with the record, at once).
 - **Client** (`store/live.ts`, the one socket `sync/live.ts liveRelay()`, opened when the backend starts and
   reconnected on pairing): `onChange` → one `refresh({fresh: true})` 300 ms later (changes arriving together make one),
-  skipped when the cache already has it (same `rev`, `at` ≤ `since`) and for my own `event` (the re-read after the ack
-  fetches it). The CSP's `connect-src` allows the relay's `wss://` origin.
+  skipped when the cache already has it (same `rev`, `at` ≤ `since`) and for my own `event` (its row came back in
+  the ack). The CSP's `connect-src` allows the relay's `wss://` origin.
 - **Cost** (Free plan, measured by `npm run smoke`): one notify = 1 Worker request + 1 DO request; a nudge = 1/20 of a
   DO request. Budget for two phones: [Request budget](#request-budget).
 - **Measured** (from a Mac in Tokyo, test relay): notify POST → `changed` on both phones median 53–70 ms (max 92);
@@ -504,17 +520,25 @@ requests/day (a WebSocket connect is one, incoming messages count 20:1, outgoing
 (an idle hibernatable object is not billed), 5 M rows read and 100,000 rows written/day, 5 GB storage; KV 1,000
 writes/day (unused). A generous day for two phones:
 
-| Source | Count/day | Worker req | DO req | DO GB-s |
-|---|---|---|---|---|
-| Sockets (each show of the app) | 2 × 60 | 120 | 120 | ~150 (10 s awake each, 128 MB) |
-| Pings (every 60 s while shown, 2 × 2 h) | 240 | 0 | 12 | ~300 |
-| Notifies (2 Shortcuts hourly + 100 events) | ~150 | 150 | 150 | ~190 |
-| Nudges and intents (later: presence taps) | ~2,000 | 0 | 100 | ~100 |
-| Goal reports and subscriptions ([Notifications](#notifications)) | ~3 | 3 | 3 | ~1 |
-| **Total** | | **~270 (0.3 %)** | **~380 (0.4 %)** | **~740 (6 %)** |
+| Source | Count/day | Worker req | DO req | DO GB-s | Rows read | Rows written |
+|---|---|---|---|---|---|---|
+| Sockets (each show of the app) | 2 × 60 | 120 | 120 | ~150 (10 s awake each, 128 MB) | | |
+| Pings (every 60 s while shown, 2 × 2 h) | 240 | 0 | 12 | ~300 | | |
+| Intents kept for the day (the room's ring), nudges | ~2,000 | 0 | 100 | ~100 | | ~2,000 |
+| Record reads: snapshots (opens not current, pushes, taps; ~5 rows each, a full one ~750) | ~300 | 300 | 300 | ~30 | ~3,000 | |
+| Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
+| Shortcut ingests (2 phones, ~24 runs each; ~300 rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
+| The export (cron every 15 min; a dump when changed, ≤ 96, waiting ~3–8 s on Apps Script) | 97 | 97 | 97 | ~100 | ~75,000 | ~100 |
+| Goal reports and subscriptions ([Notifications](#notifications)) | ~3 | 3 | 3 | ~1 | | |
+| **Total** (Free plan limit) | | **~670 (0.7 % of 100,000)** | **~930 (0.9 % of 100,000)** | **~700 (5 % of 13,000)** | **~95,000 (1.9 % of 5 M)** | **~4,600 (4.6 % of 100,000)** |
 
-Duration is the binding limit and stays under a tenth of it even if the island's presence multiplies the traffic
-tenfold. Apps Script's side: one `UrlFetchApp` call per write, ~150 a day against the consumer quota of 20,000.
+Measured 2026-11-01 (a UTC day, test traffic included, before the record): Worker 1.8k requests, DO 9.9k (the
+smoke and latency runs), 3.7k rows written, 346 rows read, ~25 GB-s. Duration stays the binding limit and under a
+tenth of it even with the island's presence ten times busier; the export is the largest reader (a dump each time) and
+could send only the changed rows if it ever mattered. Storage: ~150 bytes a row, ~1 MB a year against 5 GB. Apps
+Script's side: a forward per request still sent to `/exec` (old apps, a Shortcut not moved yet) and ≤ 96 exports a day,
+against the consumer quota of 20,000 UrlFetch calls and 90 minutes of trigger time (the web app's requests don't count
+there).
 
 ## Notifications
 
@@ -590,6 +614,7 @@ day per person, never 22:00–08:00 Tokyo (decisions: *One notification: the par
 
 ## Tests
 
-`gas/main.test.ts` (a fake of the Apps Script services in `gas/fakes.ts`), `gas/parse.test.ts`, `gas/perf.test.ts`,
-`gas/bundle.test.ts`; queue, cache, sync and store tests; the golden fixtures (`GOLDEN_UPDATE=1` to regenerate) and
+`relay/test/store.test.ts`, `store-route.test.ts` and `ingest-golden.test.ts` (the record on node:sqlite);
+`gas/main.test.ts` (the forward and the export, on a fake of the Apps Script services in `gas/fakes.ts`),
+`gas/parse.test.ts`, `gas/bundle.test.ts`; queue (`queue-batch.test.ts`: the record's batches), cache, sync and store tests; the golden fixtures (`GOLDEN_UPDATE=1` to regenerate) and
 `npm run bench` for the model at year-3 volume.

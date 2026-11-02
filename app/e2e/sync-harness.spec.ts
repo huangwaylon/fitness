@@ -154,6 +154,14 @@ test('two phones, one island: a scripted session leaves both (and a phone openin
     const t0 = await from.evaluate((i) => ((window as unknown as { __world: W }).__world.share(i), Date.now()), i);
     const t1 = await arrived(to, key, key.includes(run) ? key.slice(key.indexOf(":") + 1) : key === "world:2026-11-05" ? "[\"2026-11-05\",1" : "\u0000", t0);
     note(`${(i as { kind: string }).kind} → there`, t1 && t1 - t0);
+    // For the CI agent (2026-11-02): `shake:oak-m1` was null here once, in the CI retry of 74fa10c's run (shard 4),
+    // and never in ~130 local runs (6 workers, repeat-each 16). The shake is the only change whose wait has no fallback
+    // needle (`\u0000`): it must arrive through heardAt, which IslandScene sets only when world.svelte.ts #heard finds
+    // it fresh. Ways it could not be: B already folded the same shake (tree, who and `at`) from A's island day row
+    // (applyRow marks it `row`, and the relay's copy only clears the mark: still fresh), or the tab's BroadcastChannel
+    // message came after the 4 s (a busy CI runner rendering two pages). If it comes back: log `w.canon()` shakes on B
+    // and A's `metrics()` at the failure, and give the shake the row's needle too (`oak-m1` in canon) to tell the two
+    // apart.
     expect(t1, key).not.toBeNull();
     await from.waitForTimeout(80);
   }

@@ -43,7 +43,9 @@ openssl rand -hex 32   # KEY_B
 Keep both in the shared password manager. **Project Settings → Script Properties → Add script property**: `KEY_A`
 and `KEY_B`. A key must be 32–128 hex characters.
 
-The script adds `LAST_AT`, `ROWS`, `TAILS` and `REV` itself. Leave them alone (`REV`: [runbook §5](runbook.md#5-resync-rev)).
+The two keys must equal the relay's (the record's: [runbook §4](runbook.md#4-rotate-a-key)); the script uses them only
+to check the relay's export. Old properties `LAST_AT`, `ROWS`, `TAILS`, `REV` (from when the sheet was the record) are
+unused and may be deleted.
 
 ## 4. Deploy the web app
 1. **Deploy → New deployment** → gear → **Web app**.

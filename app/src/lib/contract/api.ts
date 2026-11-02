@@ -125,8 +125,8 @@ export type Fail = { ok: false; error: ApiError; detail?: string };
 
 export type EventReply = { ok: true; duplicate?: true } | Fail;
 /**
- * `rev` is the data revision (docs/backend.md#revision): when it differs from the one the client cached with, rows
- * were changed by hand, so drop the cache and fetch everything (no `since`).
+ * `rev` is the data revision (docs/backend.md#revision): when it differs from the one the client cached with, it
+ * is another epoch (the record was rebuilt, or another backend answered), so drop the cache and fetch everything (no `since`).
  */
 export type SnapshotReply = { ok: true; me: PersonId; now: string; rev: string; rows: SnapshotRows } | Fail;
 /** `build`: hash of the deployed Code.js (`dev` unbundled), to tell which code the deployment runs. */
