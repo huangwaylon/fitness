@@ -113,8 +113,8 @@ trainer, one person at a time, computed on read.
   🍎 歩数, 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド (then the footnote); からだ 体重, 体脂肪率, BMI, 除脂肪体重 (what a
   scale writes at one weigh-in). As each activity card has its fruit, each からだ card has a catalogue icon
   (`art.ts` BODY_ART, 24px, decorative: the heading names it): 体重 the red kitchen scale (a scale, but NH's, and
-  readable on the cream and the night cards), 体脂肪率 the exercise ball (round and soft, never a judgement), BMI the
-  clipboard with its chart (an index you read off), 除脂肪体重 the weight bench (muscle).
+  readable on the cream and the night cards), 体脂肪率 the protein shaker, BMI the exercise bike, 除脂肪体重 the
+  weight bench (muscle): the user's picks.
 - **A card per activity metric**: the goal; 1日の平均 with 前の期間より ↑/↓ %;
   目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key.
 - **Chart** (`BarChart`, SVG): a bar per day (1週, 1か月), per week (3か月: 13) or per calendar month (1年), each
