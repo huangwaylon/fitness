@@ -9,6 +9,8 @@ import { DECOR_U, TREE_H, WORLD_2D } from '../island/world.ts';
 import { FLOWER_U, TREE_FRUIT, TREE_FRUIT_U, flowerScale, hedgePair, wildFlower } from '../island/scene.ts';
 import type { Piece } from '../island/fixedDecor.ts';
 import type { Inst, ModelName, Standin } from './layout3d.ts';
+import { assetFor } from './assets.ts';
+import { modelBounds } from './models3d.ts';
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
 import { kindDef } from '#lib/layout/catalog.ts';
 import { doorOf, facingVec, footOf, objMid, type Layout, type Obj } from '#lib/layout/model.ts';
@@ -25,6 +27,8 @@ export interface Day {
   pieces?: readonly Piece[];
   /** The goal trees' fruit as models (else the island's own). */
   fruit?: boolean;
+  /** Today's hybrid flower (care.ts): its spot (a flower's id) shows that flower. */
+  hybrid?: { id: string; flower: string } | null;
   /** The scene draws the bridges itself (structure.ts, NH's own models): none here. */
   structures?: boolean;
 }
@@ -33,6 +37,11 @@ const MU = ISLAND_MODELS as unknown as Record<string, { mu: [number, number] }>;
 const MODELS = W3D.models as Record<string, { min: number[]; max: number[] }>;
 const has = (m: string): m is ModelName => m in MODELS;
 const bounds = (m: ModelName) => MODELS[m].max[1] - Math.min(0, MODELS[m].min[1]);
+/** Any model's height (NH's asset models' bounds too: assets.json). */
+const modelH = (m: ModelName) => {
+  const b = modelBounds(m);
+  return b ? b.max[1] - Math.min(0, b.min[1]) : bounds(m);
+};
 const scaleOf = (key: string | null, model: ModelName, h: number) => h / (key && MU[key] ? MU[key].mu[1] : bounds(model));
 const COLOUR: Record<string, number> = {
   red: 0xe5463f, pink: 0xf6a0c4, white: 0xffffff, yellow: 0xffd84a, orange: 0xff9d3c, purple: 0x9c6fd9, blue: 0x7393f0, black: 0x4a3446, green: 0xa6d672, gold: 0xf3c24a
@@ -119,10 +128,13 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
       }
       case 'flower': {
         const clump = Number(o.s?.slice(1)) || 0;
-        const fid = wildFlower({ clump }, season);
+        // (today's hybrid in its spot; each colour NH's own model, as layout3d.ts: the POC's grey one tinted only for a
+        // colour NH's files have none of, a dark tint over it drew the flower near black)
+        const fid = day.hybrid?.id === o.id ? day.hybrid.flower : wildFlower({ clump }, season);
         const [colour, kind] = [fid.slice(0, fid.indexOf('-')), fid.slice(fid.indexOf('-') + 1)];
-        const m = FLOWER_MODEL[kind] ?? 'flower-cosmos';
-        thing(m, (FLOWER_U * 0.8 * flowerScale(fid)) / bounds(m), { yaw: ((Math.round(x) * 7 + Math.round(z) * 13) % 6) * 0.5, tint: COLOUR[colour] ?? 0xffffff });
+        const own = assetFor(`flowers/${fid}`)?.m as ModelName | undefined;
+        const m = own ?? FLOWER_MODEL[kind] ?? 'flower-cosmos';
+        thing(m, (FLOWER_U * 0.8 * flowerScale(fid as Parameters<typeof flowerScale>[0])) / modelH(m), { yaw: ((Math.round(x) * 7 + Math.round(z) * 13) % 6) * 0.5, tint: m === own ? undefined : (COLOUR[colour] ?? 0xffffff) });
         break;
       }
       case 'rock':

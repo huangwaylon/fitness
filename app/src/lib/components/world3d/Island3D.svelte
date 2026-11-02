@@ -554,7 +554,7 @@
     placed = sig;
     untrack(() => {
       const { insts, standins: st } = lay
-        ? placeObjects(lay, { season, foliage, month, pieces, swaps: Object.fromEntries(scenery.map((s) => [s.id, { key: s.key, h: s.h }])), fruit: false, structures: true })
+        ? placeObjects(lay, { season, foliage, month, pieces, hybrid, swaps: Object.fromEntries(scenery.map((s) => [s.id, { key: s.key, h: s.h }])), fruit: false, structures: true })
         : island(day);
       placedIds = lay ? new Set(insts.map((i) => i.id)) : new Set();
       void e.place(insts).then(() => {
