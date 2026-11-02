@@ -8,7 +8,7 @@ import {
   AmbientLight, BoxGeometry, CanvasTexture, CircleGeometry, Color, DirectionalLight, DoubleSide, Group, HemisphereLight,
   LineBasicMaterial, LineSegments, BufferGeometry, Float32BufferAttribute, Material, Mesh, MeshBasicMaterial, MeshStandardMaterial,
   Object3D, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, PointLight, Raycaster, RepeatWrapping, Scene, SRGBColorSpace,
-  Sprite, SpriteMaterial, Texture, TextureLoader, Vector2, Vector3, WebGLRenderer
+  Texture, TextureLoader, Vector2, Vector3, WebGLRenderer
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -26,6 +26,8 @@ const PITCH = 47;
 const FOV = 32;
 /** The device pixel ratio's cap (an iPhone's 3 costs too much for what it adds). */
 const DPR_MAX = 2;
+/** …and while the camera moves (a gesture under way). */
+const DPR_MOVING = 1.5;
 /** How many lamps light the room at night (a point light each, nearest the middle first). */
 const LIGHTS_MAX = 4;
 
@@ -61,8 +63,12 @@ export interface Tent {
   surfaces(wall: string, floor: string): void;
   /** What stands in the room (by id: new ones load and pop in, gone ones go, moved ones move). */
   pieces(list: readonly Placed[]): void;
-  /** Hide one piece (the one being moved), or none. */
-  hide(id: string | null): void;
+  /** Hide these pieces where they stand (the one I'm moving, the ones the partner holds). */
+  hide(ids: readonly string[]): void;
+  /** What the partner holds, where their finger has it (model units, the piece's middle): lifted, eased there. */
+  held(list: readonly { id: string; item: string; x: number; z: number; f: Facing }[]): void;
+  /** The piece under client px, a rug too (the edit mode's pick), furniture first. */
+  pick(cx: number, cy: number): string | null;
   ghost(g: Ghost | null): void;
   /** The edit mode's grid on the floor. */
   grid(on: boolean): void;
@@ -84,6 +90,14 @@ export interface Tent {
   /** A villager turns toward a point (left or right) or hops (a tap on it). */
   face(who: Who, toward: Pt): void;
   hop(who: Who): void;
+  /** Turn the camera round the room's middle and tilt it (radians), zoom it (a factor: > 1 nearer); all clamped. */
+  orbit(dAz: number, dPitch: number): void;
+  zoom(f: number): void;
+  /** Back to NH's view (eased); whether it's there. */
+  resetView(): void;
+  isDefault(): boolean;
+  /** A gesture under way (a lighter pixel ratio while the camera moves). */
+  moving(on: boolean): void;
   /** What a tap at client px hits, in front first. */
   hit(cx: number, cy: number): Hit | null;
   /** The floor point under client px (model units), or null off the floor. */
@@ -93,7 +107,7 @@ export interface Tent {
   /** Pieces still loading. */
   loading(): number;
   /** Frames drawn, and the last frame's draw calls and triangles (the e2e's budget). */
-  stats(): { frames: number; calls: number; tris: number; dpr: number };
+  stats(): { frames: number; calls: number; tris: number; dpr: number; cost: number[] };
   /** The first frame was drawn (the room on screen). */
   ready: Promise<void>;
   dispose(): void;
@@ -145,7 +159,7 @@ function matTexture(): CanvasTexture {
 }
 
 export function createTent(canvas: HTMLCanvasElement): Tent {
-  const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+  const renderer = new WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
   const dpr = Math.min(DPR_MAX, window.devicePixelRatio || 1);
   renderer.setPixelRatio(dpr);
   renderer.outputColorSpace = SRGBColorSpace;
@@ -174,49 +188,74 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   fill.position.set(10, 50, 140);
   scene.add(hemi, key, key.target, amb, fill);
 
-  // ---- the room: floor, three walls, their tops, the floor's front edge, the doormat ----
+  // ---- the room: the floor on its base and four walls (the front one with the door), each with its cut top; a wall
+  //      between the camera and the room is cut away (NH's Happy Home Paradise), so the room shows from any side ----
   const tex = new TextureLoader();
   const floorMat = new MeshStandardMaterial({ color: 0xd8c4a0, roughness: 0.95 });
   const wallMat = new MeshStandardMaterial({ color: 0xe8dcc6, roughness: 1 });
   const floor = new Mesh(new PlaneGeometry(ROOM * TILE, ROOM * TILE), floorMat);
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
-  const back = new Mesh(new PlaneGeometry(ROOM * TILE, WALL_H), wallMat);
-  back.position.set(0, WALL_H / 2, -HALF);
-  const left = new Mesh(new PlaneGeometry(ROOM * TILE, WALL_H), wallMat);
-  left.rotation.y = Math.PI / 2;
-  left.position.set(-HALF, WALL_H / 2, 0);
-  const right = new Mesh(new PlaneGeometry(ROOM * TILE, WALL_H), wallMat);
-  right.rotation.y = -Math.PI / 2;
-  right.position.set(HALF, WALL_H / 2, 0);
-  for (const w of [back, left, right]) w.receiveShadow = true;
-  // the walls' cut tops and the floor's front edge (NH's dark outer frame), and the step down at the door
   const trimMat = new MeshStandardMaterial({ color: 0x5b4330, roughness: 1 });
   const capMat = new MeshStandardMaterial({ color: 0xf1e6cf, roughness: 1 });
   const T = 2;
-  const caps = new Group();
-  const cap = (w: number, d: number, x: number, z: number) => {
-    const m = new Mesh(new BoxGeometry(w, 1, d), capMat);
-    m.position.set(x, WALL_H + 0.5, z);
-    const s = new Mesh(new BoxGeometry(w, WALL_H, d), trimMat);
-    s.position.set(x, WALL_H / 2, z);
-    caps.add(m, s);
+  const L = ROOM * TILE;
+  /** A wall's face from u0 to u1 along it and y0 to y1 up, its UVs the wallpaper's (two tiles across, the wall's height). */
+  const wallFace = (u0: number, u1: number, y0: number, y1: number) => {
+    const g = new PlaneGeometry(u1 - u0, y1 - y0);
+    g.translate((u0 + u1) / 2, (y0 + y1) / 2, 0);
+    const p = g.attributes.position, uv = g.attributes.uv;
+    for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + HALF) / (2 * TILE), p.getY(i) / WALL_H);
+    return g;
   };
-  // (a hair outside the walls: their faces never fight the wallpaper's)
-  const O = T / 2 + 0.15;
-  cap(ROOM * TILE + T * 2 + 0.3, T, 0, -HALF - O);
-  cap(T, ROOM * TILE + T, -HALF - O, -T / 2);
-  cap(T, ROOM * TILE + T, HALF + O, -T / 2);
-  const edge = new Mesh(new BoxGeometry(ROOM * TILE + T * 2, 4, T), trimMat);
-  edge.position.set(0, -2, HALF + T / 2);
+  interface Wall {
+    g: Group;
+    /** Its outward normal (x, z): cut away when the camera is out on that side. */
+    n: [number, number];
+  }
+  const walls: Wall[] = [];
+  /** A wall along u (−HALF…HALF), facing in; `door`: the front one's opening (two tiles wide, three high). */
+  function wall(n: [number, number], door = false): Wall {
+    const g = new Group();
+    const faces = door ? [wallFace(-HALF, -TILE, 0, WALL_H), wallFace(TILE, HALF, 0, WALL_H), wallFace(-TILE, TILE, 30, WALL_H)] : [wallFace(-HALF, HALF, 0, WALL_H)];
+    for (const f of faces) {
+      const m = new Mesh(f, wallMat);
+      m.receiveShadow = true;
+      g.add(m);
+    }
+    // its cut top and the dark frame just outside it (a hair off: their faces never fight the wallpaper's)
+    const top = new Mesh(new BoxGeometry(L + T * 2, 1, T), capMat);
+    top.position.set(0, WALL_H + 0.5, -T / 2 - 0.15);
+    const back = new Mesh(new BoxGeometry(L + T * 2, WALL_H, T), trimMat);
+    back.position.set(0, WALL_H / 2, -T / 2 - 0.15);
+    g.add(top, back);
+    // placed on its side of the room, turned to face in
+    g.position.set(-n[0] * -HALF, 0, -n[1] * -HALF);
+    g.rotation.y = Math.atan2(-n[0], -n[1]);
+    const w = { g, n };
+    walls.push(w);
+    scene.add(g);
+    return w;
+  }
+  wall([0, -1]);
+  wall([-1, 0]);
+  wall([1, 0]);
+  wall([0, 1], true);
+  const base = new Mesh(new BoxGeometry(L + T * 2 + 0.6, 4, L + T * 2 + 0.6), trimMat);
+  base.position.set(0, -2.01, 0);
   const mat = new Mesh(new PlaneGeometry(18, 6.5), new MeshStandardMaterial({ map: matTexture(), transparent: true, roughness: 1 }));
   mat.rotation.x = -Math.PI / 2;
   mat.position.set(0, 0.06, HALF - 3.6);
   mat.receiveShadow = true;
   mat.renderOrder = 1;
-  scene.add(floor, back, left, right, caps, edge, mat);
+  scene.add(floor, base, mat);
+  /** The walls between the camera and the room go (its side's outward normal toward the camera). */
+  function cutaway() {
+    const cx = Math.sin(view.az), cz = Math.cos(view.az);
+    for (const w of walls) w.g.visible = w.n[0] * cx + w.n[1] * cz < 0.25;
+  }
 
-  function surfaces(wall: string, fl: string) {
+  function surfaces(wallCode: string, fl: string) {
     const load = (url: string, m: MeshStandardMaterial, rx: number, ry: number) =>
       tex.loadAsync(url).then((t) => {
         if (disposed) return t.dispose();
@@ -231,8 +270,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
         shadowsDirty = true;
         invalidate();
       }, () => {});
-    // a wallpaper is two tiles across and the wall's height, a floor four tiles each way
-    if (wall !== cur.wall) void load(wallUrl((cur.wall = wall)), wallMat, (ROOM * TILE) / (2 * TILE), 1);
+    // a wallpaper's tiling is in the walls' UVs; a floor is four tiles each way
+    if (wallCode !== cur.wall) void load(wallUrl((cur.wall = wallCode)), wallMat, 1, 1);
     if (fl !== cur.floor) void load(floorUrl((cur.floor = fl)), floorMat, ROOM / 4, ROOM / 4);
   }
   const cur = { wall: '', floor: '' };
@@ -293,7 +332,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     lit: MeshStandardMaterial[];
   }
   const live = new Map<string, Live>();
-  let hidden: string | null = null;
+  /** Pieces not drawn where they stand: the one I'm moving, the ones the partner holds. */
+  let hidden = new Set<string>();
   let pending = 0;
   const placeRoot = (root: Group, s: Spot, lift = 0) => {
     const [cx, cz] = centreOf(s);
@@ -321,7 +361,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       const root = new Group();
       root.userData.id = s.id;
       placeRoot(root, s);
-      root.visible = hidden !== s.id;
+      root.visible = !hidden.has(s.id);
       const l: Live = { spot: s, root, body: null, pop: 0, bump: 0, on: null, lit: [] };
       live.set(s.id, l);
       scene.add(root);
@@ -354,15 +394,66 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     shadowsDirty = true;
     invalidate();
   }
-  function hide(id: string | null) {
-    if (hidden) {
-      const l = live.get(hidden);
-      if (l) l.root.visible = true;
-    }
-    hidden = id;
-    const l = id && live.get(id);
-    if (l) l.root.visible = false;
+  function hide(ids: readonly string[]) {
+    hidden = new Set(ids);
+    for (const [id, l] of live) l.root.visible = !hidden.has(id);
+    lights();
     shadowsDirty = true;
+    invalidate();
+  }
+
+  // ---- what the partner holds: lifted where their finger has it, a soft yellow footprint, eased between updates ----
+  interface Held {
+    item: string;
+    root: Group;
+    ring: LineSegments;
+    to: [number, number];
+    at: [number, number];
+    f: Facing;
+    t: number;
+  }
+  const heldBy = new Map<string, Held>();
+  const heldMat = new LineBasicMaterial({ color: 0xffd84d, transparent: true, opacity: 0.95, depthWrite: false });
+  const rect = (w: number, d: number) => {
+    const hw = (w * TILE) / 2 - 0.4, hd = (d * TILE) / 2 - 0.4, y = 0.15;
+    return new BufferGeometry().setAttribute('position', new Float32BufferAttribute([
+      -hw, y, -hd, hw, y, -hd, hw, y, -hd, hw, y, hd, hw, y, hd, -hw, y, hd, -hw, y, hd, -hw, y, -hd
+    ], 3));
+  };
+  function held(list: readonly { id: string; item: string; x: number; z: number; f: Facing }[]) {
+    const ids = new Set(list.map((h) => h.id));
+    for (const [id, h] of heldBy) if (!ids.has(id) || h.item !== list.find((x) => x.id === id)?.item) {
+      scene.remove(h.root, h.ring);
+      h.ring.geometry.dispose();
+      heldBy.delete(id);
+    }
+    for (const x of list) {
+      let h = heldBy.get(x.id);
+      if (!h) {
+        const root = new Group();
+        const [w, d] = footprint(x.item, x.f);
+        const ring = new LineSegments(rect(w, d), heldMat);
+        ring.renderOrder = 4;
+        // from where the piece stands (or straight where the finger is, a new one)
+        const from = live.get(x.id)?.root.position;
+        h = { item: x.item, root, ring, to: [x.x, x.z], at: from ? [from.x, from.z] : [x.x, x.z], f: x.f, t: now() };
+        heldBy.set(x.id, h);
+        scene.add(root, ring);
+        const hh = h;
+        void model(x.item).then((g) => {
+          if (!g || disposed || heldBy.get(x.id) !== hh) return;
+          root.add(g.scene.clone(true));
+          invalidate();
+        });
+      }
+      if (h.f !== x.f) {
+        const [w, d] = footprint(x.item, x.f);
+        h.ring.geometry.dispose();
+        h.ring.geometry = rect(w, d);
+      }
+      h.to = [x.x, x.z];
+      h.f = x.f;
+    }
     invalidate();
   }
 
@@ -470,64 +561,81 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     invalidate();
   }
 
-  // ---- the villagers ----
+  // ---- the villagers: billboards of their renders standing at their feet, turned to the camera about the up axis
+  //      only (and leaning back a little toward it, so a steep view doesn't squash them), cut out by alpha (depth
+  //      sorted with the furniture: behind a table it hides them, in front of it they cover it), a soft round shadow ----
   interface Walker {
     look: Look;
-    sprite: Sprite;
-    mat: SpriteMaterial;
+    card: Mesh;
+    mat: MeshBasicMaterial;
     shadow: Mesh;
     pos: [number, number];
     /** -1 left, 1 right. */
     face: number;
     path: { from: [number, number]; pts: Pt[]; t0: number; ms: number; lens: number[]; total: number } | null;
     hop: number;
+    /** The render's alpha, small (a tap hits the villager, not the clear around it). */
+    alpha: { w: number; h: number; a: Uint8ClampedArray } | null;
   }
   const villagers = new Map<Who, Walker>();
   const disc = softDisc();
+  const cardGeo = new PlaneGeometry(1, 1).translate(0, 0.5, 0);
+  const shadowGeo = new CircleGeometry(4.2, 24);
+  const shadowMat = new MeshBasicMaterial({ map: disc, transparent: true, depthWrite: false });
   function villager(who: Who, look: Look | null) {
     const was = villagers.get(who);
     if (was && (!look || was.look.url !== look.url)) {
-      scene.remove(was.sprite, was.shadow);
+      scene.remove(was.card, was.shadow);
       was.mat.map?.dispose();
       was.mat.dispose();
       villagers.delete(who);
     }
     if (!look || villagers.has(who)) return invalidate();
-    const mat = new SpriteMaterial({ alphaTest: 0.5, transparent: false });
-    const sprite = new Sprite(mat);
-    sprite.center.set(0.5, 0.02);
-    sprite.scale.set(VILLAGER_H * look.aspect, VILLAGER_H, 1);
-    sprite.userData.who = who;
-    sprite.renderOrder = 5;
-    const shadow = new Mesh(new CircleGeometry(4.2, 24), new MeshBasicMaterial({ map: disc, transparent: true, depthWrite: false }));
+    const mat = new MeshBasicMaterial({ alphaTest: 0.5, side: DoubleSide });
+    mat.visible = false;
+    const card = new Mesh(cardGeo, mat);
+    card.rotation.order = 'YXZ';
+    card.userData.who = who;
+    const shadow = new Mesh(shadowGeo, shadowMat);
     shadow.rotation.x = -Math.PI / 2;
     shadow.renderOrder = 2;
-    const w: Walker = { look, sprite, mat, shadow, pos: [who === 'A' ? -6 : 6, 20], face: who === 'A' ? 1 : -1, path: null, hop: 0 };
+    const w: Walker = { look, card, mat, shadow, pos: [who === 'A' ? -6 : 6, 20], face: who === 'A' ? 1 : -1, path: null, hop: 0, alpha: null };
     villagers.set(who, w);
-    scene.add(sprite, shadow);
+    scene.add(card, shadow);
     tex.loadAsync(look.url).then((t) => {
       if (disposed || villagers.get(who) !== w) return t.dispose();
       t.colorSpace = SRGBColorSpace;
       mat.map = t;
+      mat.visible = true;
       mat.needsUpdate = true;
-      setFace(w, w.face);
+      const img = t.image as CanvasImageSource & { width: number; height: number };
+      const ah = 48, aw = Math.max(1, Math.round((ah * img.width) / img.height));
+      const c = document.createElement('canvas');
+      c.width = aw;
+      c.height = ah;
+      const g = c.getContext('2d', { willReadFrequently: true });
+      if (g) {
+        g.drawImage(img, 0, 0, aw, ah);
+        const d = g.getImageData(0, 0, aw, ah).data, a = new Uint8ClampedArray(aw * ah);
+        for (let i = 0; i < a.length; i++) a[i] = d[i * 4 + 3];
+        w.alpha = { w: aw, h: ah, a };
+      }
       night(nightN);
+      place(w);
+      invalidate();
     }, () => {});
     place(w);
   }
   function setFace(w: Walker, face: number) {
     w.face = face;
-    const t = w.mat.map;
-    if (!t) return;
-    // as drawn the render looks left (most) or right; mirror it to face the other way (never a no-mirror one)
-    const flip = !w.look.noMirror && (face > 0) !== w.look.looksRight;
-    t.repeat.x = flip ? -1 : 1;
-    t.offset.x = flip ? 1 : 0;
-    t.wrapS = RepeatWrapping;
-    t.needsUpdate = true;
   }
-  function place(w: Walker, bob = 0) {
-    w.sprite.position.set(w.pos[0], bob, w.pos[1]);
+  /** As drawn the render looks left (most) or right; mirrored to face the other way (never a no-mirror one). The
+   *  facing is on screen: left and right as the camera sees them. */
+  function place(w: Walker, bob = 0, squash = 0) {
+    const flip = !w.look.noMirror && (w.face > 0) !== w.look.looksRight;
+    w.card.position.set(w.pos[0], bob, w.pos[1]);
+    w.card.rotation.set(view.pitch * 0.45, view.az, 0);
+    w.card.scale.set(VILLAGER_H * w.look.aspect * (flip ? -1 : 1) * (1 + squash), VILLAGER_H * (1 - squash), 1);
     w.shadow.position.set(w.pos[0], 0.1, w.pos[1]);
     const s = 1 - Math.min(0.3, bob / 8);
     w.shadow.scale.set(s, s, s);
@@ -554,7 +662,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     return ms;
   }
   /** Where a walk has a villager by now, and which way it's heading (null: over). */
-  function along(w: Walker, t: number): { p: [number, number]; dx: number; done: boolean } {
+  function along(w: Walker, t: number): { p: [number, number]; d: [number, number]; done: boolean } {
     const P = w.path!;
     const k = Math.min(1, (t - P.t0) / P.ms);
     let d = k * P.total, a: Pt = P.from;
@@ -562,17 +670,25 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       const b = P.pts[i];
       if (d <= P.lens[i] || i === P.pts.length - 1) {
         const f = P.lens[i] ? Math.min(1, d / P.lens[i]) : 1;
-        return { p: [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f], dx: b[0] - a[0], done: k >= 1 };
+        return { p: [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f], d: [b[0] - a[0], b[1] - a[1]], done: k >= 1 };
       }
       d -= P.lens[i];
       a = b;
     }
-    return { p: [P.from[0], P.from[1]], dx: 0, done: true };
+    return { p: [P.from[0], P.from[1]], d: [0, 0], done: true };
   }
+  /** Left (-1) or right (1) on screen for a heading (x, z) in the room, as the camera now looks. */
+  const screenSide = (dx: number, dz: number) => {
+    const s = dx * Math.cos(view.az) - dz * Math.sin(view.az);
+    return Math.abs(s) < 0.3 ? 0 : s > 0 ? 1 : -1;
+  };
   function face(who: Who, toward: Pt) {
     const w = villagers.get(who);
-    if (!w || Math.abs(toward[0] - w.pos[0]) < 0.5) return;
-    setFace(w, toward[0] > w.pos[0] ? 1 : -1);
+    if (!w) return;
+    const s = screenSide(toward[0] - w.pos[0], toward[1] - w.pos[1]);
+    if (!s) return;
+    setFace(w, s);
+    place(w);
     invalidate();
   }
   function hop(who: Who) {
@@ -582,24 +698,44 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     invalidate();
   }
 
-  // ---- the camera: fixed, the whole room in view between what covers the canvas ----
+  // ---- the camera: NH's room camera to start with (the whole room in view between what covers the canvas), then
+  //      the player's to turn round the room's middle, tilt and zoom, within limits (the walls never clip) ----
+  const DEF = { az: 0, pitch: (PITCH * Math.PI) / 180, k: 1 };
+  const PITCH_MIN = (28 * Math.PI) / 180, PITCH_MAX = (78 * Math.PI) / 180, K_MIN = 0.55, K_MAX = 1.35;
+  const view = { ...DEF };
+  const target = new Vector3(0, 6, 0);
+  /** The default view's distance (fitted to the screen) and its vertical offset (px). */
+  let baseD = 300, shiftY = 0;
+  let easing: { from: typeof DEF; t0: number } | null = null;
+  function aim() {
+    // a corner-on view of the square room is wider than a side-on one: the camera steps back to keep it in
+    const corner = Math.abs(Math.cos(view.az)) + Math.abs(Math.sin(view.az));
+    const d = baseD * view.k * (1 + (corner - 1) * 0.85);
+    camera.position.set(
+      target.x + Math.sin(view.az) * Math.cos(view.pitch) * d,
+      target.y + Math.sin(view.pitch) * d,
+      target.z + Math.cos(view.az) * Math.cos(view.pitch) * d
+    );
+    camera.lookAt(target);
+    camera.updateMatrixWorld(true);
+    cutaway();
+    for (const w of villagers.values()) place(w);
+  }
   function fit() {
     const W = canvas.clientWidth || 1, H = canvas.clientHeight || 1;
     renderer.setSize(W, H, false);
     camera.aspect = W / H;
-    const pitch = (PITCH * Math.PI) / 180;
-    const target = new Vector3(0, 6, 4);
-    const dir = new Vector3(0, Math.sin(pitch), Math.cos(pitch));
     const corners = [
       [-HALF - 2, 0, HALF + 2], [HALF + 2, 0, HALF + 2], [-HALF - 2, WALL_H + 1, -HALF - 2], [HALF + 2, WALL_H + 1, -HALF - 2],
       [-HALF - 2, WALL_H + 1, HALF], [HALF + 2, WALL_H + 1, HALF], [0, -4, HALF + 2]
     ].map(([x, y, z]) => new Vector3(x, y, z));
     const band = Math.max(0.3, (H - insets.top - insets.bottom) / H);
     camera.clearViewOffset();
+    const was = { ...view };
+    Object.assign(view, DEF);
     const box = (D: number) => {
-      camera.position.copy(target).addScaledVector(dir, D);
-      camera.lookAt(target);
-      camera.updateMatrixWorld(true);
+      baseD = D;
+      aim();
       camera.updateProjectionMatrix();
       let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
       for (const c of corners) {
@@ -619,14 +755,59 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     // the room's middle in the middle of the band
     const mid = ((b.y0 + b.y1) / 2 + 1) / 2; // 0 foot … 1 top, of the canvas
     const want = 1 - (insets.top + (H - insets.top - insets.bottom) / 2) / H;
-    camera.setViewOffset(W, H, 0, (want - mid) * H, W, H);
+    shiftY = (want - mid) * H;
+    camera.setViewOffset(W, H, 0, shiftY, W, H);
     camera.updateProjectionMatrix();
+    Object.assign(view, was);
+    aim();
     shadowsDirty = true;
     invalidate();
   }
   function resize(i?: Insets) {
     if (i) insets = i;
     fit();
+  }
+  const clampView = () => {
+    view.pitch = Math.min(PITCH_MAX, Math.max(PITCH_MIN, view.pitch));
+    view.k = Math.min(K_MAX, Math.max(K_MIN, view.k));
+    view.az = Math.atan2(Math.sin(view.az), Math.cos(view.az));
+  };
+  function orbit(dAz: number, dPitch: number) {
+    easing = null;
+    view.az += dAz;
+    view.pitch += dPitch;
+    clampView();
+    aim();
+    invalidate();
+  }
+  function zoom(f: number) {
+    easing = null;
+    view.k /= f;
+    clampView();
+    aim();
+    invalidate();
+  }
+  /** Back to NH's view, eased (the shortest way round). */
+  function resetView() {
+    easing = { from: { ...view }, t0: now() };
+    invalidate();
+  }
+  const isDefault = () => Math.abs(view.az) < 0.02 && Math.abs(view.pitch - DEF.pitch) < 0.02 && Math.abs(view.k - 1) < 0.02;
+  /** A gesture under way: a lighter pixel ratio while the camera moves, the full one when it rests. */
+  let movingNow = false, restTimer: ReturnType<typeof setTimeout> | undefined;
+  function moving(on: boolean) {
+    clearTimeout(restTimer);
+    if (on && !movingNow) {
+      movingNow = true;
+      renderer.setPixelRatio(Math.min(DPR_MOVING, dpr));
+      fit();
+    } else if (!on && movingNow) {
+      restTimer = setTimeout(() => {
+        movingNow = false;
+        renderer.setPixelRatio(dpr);
+        fit();
+      }, 160);
+    }
   }
 
   // ---- taps ----
@@ -636,6 +817,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   const toNdc = (cx: number, cy: number) => {
     const r = canvas.getBoundingClientRect();
     ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
+    // what changed since the last frame (a piece just placed, a frame not drawn yet) is where it is
+    scene.updateMatrixWorld();
     ray.setFromCamera(ndc, camera);
   };
   function floorAt(cx: number, cy: number): [number, number] | null {
@@ -644,12 +827,38 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     if (!p || Math.abs(p.x) > HALF || Math.abs(p.z) > HALF) return null;
     return [p.x, p.z];
   }
+  function pick(cx: number, cy: number): string | null {
+    toNdc(cx, cy);
+    let rug: string | null = null;
+    for (const h of ray.intersectObjects([...live.values()].filter((l) => l.root.visible).map((l) => l.root), true)) {
+      const id = h.object.userData.id as string | undefined;
+      if (!id) continue;
+      if (!ITEMS[live.get(id)?.spot.item ?? '']?.rug) return id;
+      rug ??= id;
+    }
+    return rug;
+  }
   function hit(cx: number, cy: number): Hit | null {
     toNdc(cx, cy);
-    const objs: Object3D[] = [...[...villagers.values()].map((v) => v.sprite), ...[...live.values()].filter((l) => l.root.visible).map((l) => l.root), mat];
+    const objs: Object3D[] = [...[...villagers.values()].map((v) => v.card), ...[...live.values()].filter((l) => l.root.visible).map((l) => l.root), mat];
     for (const h of ray.intersectObjects(objs, true)) {
       if (h.object === mat) return { kind: 'door' };
-      if (h.object.userData.who) return { kind: 'villager', who: h.object.userData.who as Who };
+      if (h.object.userData.who) {
+        // only where the render is drawn (a little grown: a 44 px finger)
+        const w = villagers.get(h.object.userData.who as Who);
+        if (w?.alpha && h.uv) {
+          const { w: aw, h: ah, a } = w.alpha;
+          const u = h.uv.x;
+          const px = Math.round(u * (aw - 1)), py = Math.round((1 - h.uv.y) * (ah - 1));
+          let solid = false;
+          for (let dy = -3; dy <= 3 && !solid; dy++) for (let dx = -3; dx <= 3 && !solid; dx++) {
+            const x = px + dx, y = py + dy;
+            if (x >= 0 && y >= 0 && x < aw && y < ah && a[y * aw + x] > 40) solid = true;
+          }
+          if (!solid) continue;
+        }
+        return { kind: 'villager', who: h.object.userData.who as Who };
+      }
       const id = h.object.userData.id as string | undefined;
       if (id && !ITEMS[live.get(id)?.spot.item ?? '']?.rug) return { kind: 'piece', id };
       if (id) {
@@ -668,6 +877,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
 
   // ---- the frames: on demand ----
   let raf = 0, frames = 0, disposed = false, shadowsDirty = true;
+  const cost: number[] = [];
   let readyFn: () => void = () => {};
   const ready = new Promise<void>((r) => (readyFn = r));
   function invalidate() {
@@ -705,20 +915,46 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       }
       l.body.scale.set(sx, sy, sx);
     }
+    for (const h of heldBy.values()) {
+      // eased toward the latest spot heard (updates come ~10 a second): a glide, not a jump
+      const dt = Math.min(100, t - h.t);
+      h.t = t;
+      const k = 1 - Math.exp(-dt / 70);
+      h.at = [h.at[0] + (h.to[0] - h.at[0]) * k, h.at[1] + (h.to[1] - h.at[1]) * k];
+      h.root.position.set(h.at[0], 3 + Math.sin(t / 260) * 0.6, h.at[1]);
+      h.root.rotation.y = (h.f * Math.PI) / 2;
+      h.ring.position.set(h.to[0], 0, h.to[1]);
+      more = true;
+    }
     if (ghostBody) {
       const k = Math.min(1, (t - ghostT) / POP_MS);
       ghostRoot.position.y = 3 + Math.sin(k * Math.PI) * 2.5;
       if (k < 1) more = true;
     }
+    if (easing) {
+      // back to NH's view
+      const k = Math.min(1, (t - easing.t0) / 420), e = ease(k), f = easing.from;
+      const dAz = Math.atan2(Math.sin(DEF.az - f.az), Math.cos(DEF.az - f.az));
+      view.az = f.az + dAz * e;
+      view.pitch = f.pitch + (DEF.pitch - f.pitch) * e;
+      view.k = f.k + (DEF.k - f.k) * e;
+      aim();
+      if (k >= 1) easing = null;
+      else more = true;
+    }
     for (const w of villagers.values()) {
-      let bob = 0;
+      let bob = 0, squash = 0;
       if (w.path) {
         const a = along(w, t);
         w.pos = a.p;
-        if (Math.abs(a.dx) > 0.3) setFace(w, a.dx > 0 ? 1 : -1);
+        const side = screenSide(a.d[0], a.d[1]);
+        if (side) setFace(w, side);
         if (a.done) w.path = null;
         else {
-          bob = Math.abs(Math.sin(((t - w.path.t0) / 1000) * Math.PI * 4.2)) * 0.9;
+          // NH's trot: a bob a step and a little squash as each foot lands (the renders have no walk frames)
+          const ph = ((t - w.path.t0) / 1000) * Math.PI * 4.2;
+          bob = Math.abs(Math.sin(ph)) * 0.9;
+          squash = Math.max(0, Math.cos(ph * 2)) * 0.04;
           more = true;
         }
       }
@@ -730,7 +966,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
           more = true;
         }
       }
-      place(w, bob);
+      place(w, bob, squash);
     }
     if (shadowsDirty) {
       renderer.shadowMap.needsUpdate = true;
@@ -739,6 +975,9 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     // pieces still popping change their shadows
     if (more && [...live.values()].some((l) => l.pop || l.bump)) shadowsDirty = true;
     renderer.render(scene, camera);
+    // the frame's own cost (the CPU side: three's work and the GL calls), for the budget checks
+    cost.push(now() - t);
+    if (cost.length > 600) cost.shift();
     frames++;
     if (frames === 1) readyFn();
     if (more) invalidate();
@@ -748,7 +987,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   night(0);
 
   return {
-    resize, surfaces, pieces, hide, ghost, grid, bump, toggle, night, villager,
+    resize, surfaces, pieces, hide, held, pick, ghost, grid, bump, toggle, night, villager,
     at: (who) => (villagers.get(who)?.pos.slice() as [number, number] | undefined) ?? null,
     put(who, p, f) {
       const w = villagers.get(who);
@@ -759,9 +998,9 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       place(w);
       invalidate();
     },
-    walk, walking: (who) => !!villagers.get(who)?.path, face, hop, hit, floorAt, client,
+    walk, walking: (who) => !!villagers.get(who)?.path, face, hop, hit, floorAt, client, orbit, zoom, resetView, isDefault, moving,
     loading: () => pending,
-    stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr }),
+    stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: cost.slice() }),
     ready,
     dispose() {
       disposed = true;

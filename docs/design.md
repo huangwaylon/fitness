@@ -599,32 +599,71 @@ NH's outdoor furniture on the island, moves it and takes it away; both phones sh
 
 ### The tent
 
-`routes/tent/+page.svelte`, `tent/TentRoom.svelte`, `tent/engine.ts` (three.js), `tent/grid.ts`, `tent/items.ts`,
-`ui-state/doorTransition.ts`, `scripts/room-models.ts`, `e2e/tent.spec.ts`. A tap on the campsite's tent (in place, my
+`routes/tent/+page.svelte`, `tent/TentRoom.svelte`, `tent/TentEdit.svelte`, `tent/engine.ts` (three.js), `tent/grid.ts`,
+`tent/items.ts`, `tent/dragLink.ts`, `store/tent.svelte.ts`, `contract/tent.ts`, `ui-state/doorTransition.ts`,
+`scripts/room-models.ts`, `e2e/tent.spec.ts`, `e2e/sync-harness.spec.ts`. A tap on the campsite's tent (in place, my
 villager turns to it) goes inside: its own screen, truly 3D, behind NH's door (a black iris closes on the tent's door,
-stays black while the room's chunk and first frame come, opens out of the room's door; the way out the same,
-opening on the tent on the island, the camera where it was).
+stays black while the room's chunk and first frame come, opens out of the room's door; the way out the same, opening
+on the tent on the island, the camera where it was).
 
 - **The room:** NH's largest, the main room fully expanded: 8 × 8 tiles (Nookipedia's upgrade table: the main room
   6 × 6 → 8 × 8, the second floor and basement 10 × 6 = 60 tiles, so 8 × 8 = 64 is the most floor), NH's own grid (a tile
-  10 model units: RoomMdlFloor8x8 is −40…40), walls four tiles high (RoomMdlWall), the door in the front edge's middle
-  (its two tiles stay clear), a doormat there. NH's fixed, slightly top-down room camera (47° down, a long 32° lens),
-  fitted so the whole room is in view between the back button and the foot's controls; a warm interior light (a
-  soft sky over a warm floor bounce, a key from the upper front left with soft shadows, a fill from the camera).
-- **The villagers** are billboards of their official renders (NH's 3D villagers would mean converting all 417:
-  too much to ship), 16 model units tall (a bed is 20 long), each with a soft round shadow, mirrored to face the way
-  they walk. A tap on the floor walks mine there (A* on half tiles round the furniture, the corners pulled straight;
-  30 units a second); a tap on a villager hops it; a tap on the doormat or ‹ 島へ goes back out.
-- **Cost:** three.js and the room's code are their own chunk, fetched only when the tent opens (the island never
-  loads them: `e2e/tent.spec.ts`); the device pixel ratio is capped at 2; frames are drawn on demand (a walk, a piece
-  popping in, a jiggle), none while still; everything is disposed on the way out (the WebGL context too).
+  10 model units: RoomMdlFloor8x8 is −40…40), four walls four tiles high (RoomMdlWall) on a dark base, the front one with
+  the door (two tiles wide, three high) and NH's doormat inside it; its two tiles stay clear.
+- **The camera** starts as NH's room camera (perspective, 47° down, a long 32° lens, from the front), fitted so the whole
+  room shows above the edit tray's room; then it's the player's: a drag on the room turns it round the room's middle and
+  tilts it (28°–78°), a pinch (or the wheel) zooms it (0.55–1.35 ×), the 🏠 button (shown once it moved) eases it back.
+  A corner-on view steps back to keep the square in; the walls between the camera and the room are cut away (Happy
+  Home Paradise's look), so the room shows from any side. A tap walks, a drag turns (in the edit mode a drag that
+  starts on a piece moves the piece instead).
+- **The light:** warm interior light (a soft sky over a warm floor bounce, a key from the upper front left casting the
+  room's one small shadow map, 1024², redrawn only when a piece changes, a fill from the camera's side); at dusk and
+  night dimmer and warmer, the lamps' emissive on and up to four warm point lights at the lamps (a tap turns a lamp on
+  or off).
+- **The villagers** are billboards of their official renders (NH's 3D villagers would mean converting all 417: too much
+  to ship), standing at their feet, turned to the camera about the up axis only (leaning back 45 % of the camera's tilt
+  so a steep view doesn't squash them), cut out by alpha test (depth sorted with the furniture: behind a table it hides
+  them, in front of it they cover it), 16 model units tall (a bed is 20 long), each with a soft round shadow, mirrored
+  to face the way they walk on screen. The renders have no walk frames: the walk is NH's trot, a bob and a squash a
+  step. A tap on the floor walks mine there (A* on half tiles round the furniture, rugs walkable, the corners pulled
+  straight; 30 units a second); a tap on a villager hops it (only where it's drawn, its alpha); a tap on a piece acts
+  in place (my villager turns to it, it jiggles, a lamp switches); the doormat or ‹ 島へ goes back out.
+- **The partner's villager** is theirs to move while they're in the tent (each walk of mine goes over the relay as the
+  `tent` intent, the very walk: from, the way, when, how long; a join hears where I am); while they're away (not on the
+  relay) their villager rests in the room where it last stood; while they're on the island it isn't here.
+- **もようがえ** (the foot's yellow button) arranges the room: the grid on the floor and the tray in the thumb's reach:
+  tabs かぐ (the starter set), ラグ, みつけた (every furniture either of us found in a balloon's present that NH has a model
+  of: the ずかん's カタログ, newest first), かべがみ, ゆか, over NH's own icons in two rows that scroll sideways (60 px), and
+  ✓ おわる with the count (「3/40」). A tap on a piece's icon puts it down as a ghost on the free spot nearest my villager,
+  lifted, its footprint on the floor green where it may stand and red where not, the bar above saying why
+  (「でいりぐちは あけて おこう」, 「ほかの かぐと かさなります」, 「むらびとが いるよ」…); a finger on it (or on a placed piece,
+  which picks it up) drags it a tile at a time; a tap on the floor moves it there; ↻ まわす turns it a quarter (about
+  its middle); ✓ おく places it (greyed while red); 🗑 しまう takes a placed one back to the storage (とりけす on the banner
+  for 5 s); ✕ やめる puts it back. A wallpaper or a floor is on at once. **Where:** on its whole tiles inside the room,
+  off the door's two tiles, not over another piece or a villager; a rug lies under the furniture (and may cover the
+  door's tiles), never over another rug. At most 40 pieces, shared (the wallpaper and the floor don't count): 64 tiles
+  and the phone's draw budget.
+- **Shared and kept:** the room is both of ours, live on both phones: each change is one op (the island's `decor` op
+  with the room's scope, last writer wins, the sheet keeps each piece's latest: `contract/tent.ts`,
+  [backend](backend.md#events)). While I hold a piece, the partner's phone sees it move as I move it (`drag`, ≤ 10 a
+  second, presence only): lifted where my finger has it, eased between the updates, a yellow footprint where it would
+  land, and not theirs to pick up (「ウェイが うごかしているよ」); if we grab one at once the earlier hold keeps it; silent
+  for 2 s (or the partner gone) it drops back where the room has it; the drop is the op, which lands before the drag's
+  end, so it never jumps back.
+- **Cost:** three.js and the room's code are their own chunk, fetched only when the tent opens (the island never loads
+  them: `e2e/tent.spec.ts`); no MSAA; the device pixel ratio capped at 2, 1.5 while the camera moves; frames are drawn
+  on demand (a walk, a gesture, a piece popping in, the partner's held piece), none while still; everything is disposed
+  on the way out (the WebGL context too). A full room (35 starter pieces and rugs): 71 draw calls, 49 k triangles; a
+  full turn of the camera at 1.5×: a frame's own cost p50 0.3 ms / p95 0.5 ms (Chrome, M-series), p50 2.8 / p95 4.2 ms
+  with 4× CPU throttling, frames 16.7 / 18.5 ms apart; Playwright's WebKit p95 1 ms, 17 ms apart (2026-11-02).
 - **The models** (`npm run room-models`, NH_MODELS=~/Downloads/Model): NH's furniture, rugs, wallpapers and floors
   converted from the game files to files the app serves (`static/room/`): each piece a glTF with NH's materials baked
   into one WebP texture each (≤ 256 px; NH's gray albedo × its gradient, a little of its ambient occlusion, its
   opacity as alpha; the emissive kept for lamps), quantised and meshopt-compressed by gltfpack, ≤ 40 KB aimed for
   (≈ 18 KB on average); its footprint from the model's bounds, NH's catalogue size winning where they differ;
   wallpapers 256 × 512 (two tiles across, the wall's height), floors 512² (four tiles); NH's own catalogue icons.
-  Cached by the service worker on first use (`island-room-v1`), never at install.
+  Cached by the service worker on first use (`island-room-v1`, a model's URL carrying its content hash), never at
+  install.
 
 ### Critters
 
