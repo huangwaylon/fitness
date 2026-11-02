@@ -86,7 +86,7 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   await expect(page.locator('.detail')).toHaveCount(0);
   await expect(page.locator('[data-fx]')).toHaveCount(0);
 
-  // neither villager opens a sheet (the partner is a high-five, mine opens its phrase picker)
+  // neither villager opens a sheet (the partner is a high-five, mine a squish)
   await page.locator('.if-scene button.vil').nth(1).click();
   await page.waitForTimeout(400);
   await expect(page.locator('dialog[open]')).toHaveCount(0);

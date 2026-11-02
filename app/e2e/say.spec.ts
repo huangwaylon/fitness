@@ -1,7 +1,8 @@
-// My villager's phrases (docs/design.md "Villager taps"): a tap on my villager squishes it and opens the picker by it
-// (six presets, my own last few, じぶんで かく…); a pick shows the phrase in a balloon over it for ~4 s (and on the
-// partner's phone: e2e/sync-harness.spec.ts). The picker never walks anyone, never sits under the HUD, closes on ✕, Esc
-// or a tap elsewhere. Own text is capped at 20 characters and cleaned; it's shown as text. No ベル.
+// My villager's phrases (docs/design.md "Villager taps"): the say button at the island's bottom right opens the picker
+// above it (six presets, my own last few, じぶんで かく…); a pick shows the phrase in a balloon over my villager for ~4 s
+// (and on the partner's phone: e2e/sync-harness.spec.ts). A tap on my villager only squishes it. The picker never
+// walks anyone, never sits under the HUD, closes on ✕, Esc or a tap elsewhere; the button hides under a sheet and in
+// もようがえ. Own text is capped at 20 characters and cleaned; it's shown as text. No ベル.
 //   SHOTS=<dir> npm run e2e -- say      also writes iPhone-sized screenshots to <dir>/say-*.png
 import { expect, test, type Page } from '@playwright/test';
 
@@ -9,6 +10,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
 const picker = (page: Page) => page.getByRole('dialog', { name: 'なにを いう？' });
+const sayBtn = (page: Page) => page.getByRole('button', { name: 'ひとこと いう' });
 const mine = (page: Page) => page.locator('[data-actor="mine"] .vil');
 const balloon = (page: Page) => page.locator('[data-say="mine"]');
 const shot = async (page: Page, name: string) => {
@@ -36,17 +38,54 @@ const clearOfHud = (page: Page) =>
     return !over && p.left >= 0 && p.right <= innerWidth && p.top >= 0 && p.bottom <= innerHeight;
   });
 
-test('a tap on my villager: its squish and the picker by it; a preset shows in its balloon for a few seconds', async ({ page }) => {
+test('the say button: small, bottom right, clear of the home indicator; a tap on my villager only squishes it', async ({ page }) => {
+  await open(page);
+  // a 44px target, a 36px disc drawn, 12px in from the side and the foot
+  const r = (await sayBtn(page).boundingBox())!;
+  expect([r.width, r.height]).toEqual([44, 44]);
+  const disc = await sayBtn(page).evaluate((el) => {
+    const s = getComputedStyle(el, '::before');
+    return [s.width, s.height];
+  });
+  expect(disc).toEqual(['36px', '36px']);
+  const vw = page.viewportSize()!;
+  expect(Math.round(vw.width - (r.x + r.width))).toBe(8);
+  expect(vw.height - (r.y + r.height)).toBeGreaterThanOrEqual(16);
+  expect(vw.height - (r.y + r.height)).toBeLessThan(80);
+  await expect(sayBtn(page)).toHaveAttribute('aria-expanded', 'false');
+  // clear of every other control
+  const over = await page.evaluate(() => {
+    const me = document.querySelector('[data-say-open]')!, a = me.getBoundingClientRect();
+    return [...document.querySelectorAll('button')].filter((b) => b !== me && b.checkVisibility()).filter((b) => {
+      const o = b.getBoundingClientRect();
+      return o.width && a.left < o.right && o.left < a.right && a.top < o.bottom && o.top < a.bottom;
+    }).map((b) => b.getAttribute('aria-label') ?? b.className);
+  });
+  expect(over).toEqual([]);
+  // my villager: the squish, no picker
+  await mine(page).click();
+  await expect(page.locator('[data-actor="mine"] .body[data-act="squish"]')).toBeAttached();
+  await page.waitForTimeout(400);
+  await expect(page.locator('[data-say-picker]')).toHaveCount(0);
+  await expect(mine(page)).not.toHaveAttribute('aria-haspopup');
+  await shot(page, 'button-day');
+});
+
+test('the say button: the picker above it; a preset shows in my villager’s balloon for a few seconds', async ({ page }) => {
   await open(page);
   const bells = await ribbon(page).getAttribute('aria-label');
   const home = await feet(page);
-  await mine(page).click();
-  await expect(page.locator('[data-actor="mine"] .body[data-act="squish"]')).toBeAttached();
+  await sayBtn(page).click();
   await expect(picker(page)).toBeVisible();
-  await expect(mine(page)).toHaveAttribute('aria-expanded', 'true');
+  await expect(sayBtn(page)).toHaveAttribute('aria-expanded', 'true');
   await expect(picker(page).locator('[data-say-preset]')).toHaveText(['やっほー！', 'おつかれさま！', 'がんばろう！', 'やったね！', 'いっしょに あるこう！', 'おやすみ〜']);
   expect(await clearOfHud(page)).toBe(true);
   await page.waitForTimeout(300); // its pop-in is over
+  // above the button, its right edge by the button's
+  const p = (await picker(page).boundingBox())!, s = (await sayBtn(page).boundingBox())!;
+  expect(p.y + p.height).toBeLessThanOrEqual(s.y);
+  expect(p.y + p.height).toBeGreaterThan(s.y - 24);
+  expect(Math.abs(p.x + p.width - (s.x + s.width))).toBeLessThanOrEqual(5);
   // every target a thumb’s size
   for (const b of await picker(page).locator('button').all()) {
     const r = (await b.boundingBox())!;
@@ -64,7 +103,7 @@ test('a tap on my villager: its squish and the picker by it; a preset shows in i
   expect(b.y + b.height).toBeLessThanOrEqual(v.y + 4);
   expect(Math.abs(b.x + b.width / 2 - (v.x + v.width / 2))).toBeLessThan(b.width / 2 + 40);
   // a newer one replaces it
-  await mine(page).click();
+  await sayBtn(page).click();
   await picker(page).getByRole('button', { name: 'やっほー！' }).click();
   await expect(balloon(page)).toHaveCount(1);
   await expect(balloon(page)).toHaveText(/やっほー！/);
@@ -75,16 +114,17 @@ test('a tap on my villager: its squish and the picker by it; a preset shows in i
   await expect(ribbon(page)).toHaveAttribute('aria-label', bells!);
 });
 
-test('the picker closes on ✕, Esc and a tap elsewhere (which walks nobody); a tap on my villager again only closes it', async ({ page }) => {
+test('the picker closes on ✕, Esc and a tap elsewhere (which walks nobody); the button again only closes it', async ({ page }) => {
   await open(page);
   const home = await feet(page);
-  await mine(page).click();
+  await sayBtn(page).click();
   await picker(page).getByRole('button', { name: 'とじる' }).click();
   await expect(picker(page)).toHaveCount(0);
-  await mine(page).click();
+  await expect(sayBtn(page)).toBeFocused();
+  await sayBtn(page).click();
   await page.keyboard.press('Escape');
   await expect(picker(page)).toHaveCount(0);
-  await mine(page).click();
+  await sayBtn(page).click();
   // open lawn
   const [x, y] = await page.evaluate(() => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(240, 380));
   await page.mouse.click(x, y);
@@ -92,16 +132,16 @@ test('the picker closes on ✕, Esc and a tap elsewhere (which walks nobody); a 
   await expect(page.locator('[data-ring="mine"]')).toHaveCount(0);
   await page.waitForTimeout(500);
   expect(await feet(page)).toEqual(home);
-  await mine(page).click();
+  await sayBtn(page).click();
   await expect(picker(page)).toBeVisible();
-  await mine(page).click();
+  await sayBtn(page).click();
   await expect(picker(page)).toHaveCount(0);
   await expect(balloon(page)).toHaveCount(0);
 });
 
 test('my own words: at most 20, cleaned, shown as text, Enter sends, kept as a quick pick', async ({ page }) => {
   await open(page);
-  await mine(page).click();
+  await sayBtn(page).click();
   await picker(page).getByRole('button', { name: 'じぶんで かく…' }).click();
   const field = picker(page).locator('[data-say-field]');
   await expect(field).toBeFocused();
@@ -117,7 +157,7 @@ test('my own words: at most 20, cleaned, shown as text, Enter sends, kept as a q
   await expect(balloon(page).locator('.text')).toHaveText('<b>ジム</b>いく！');
   await expect(balloon(page).locator('b:not(.who)')).toHaveCount(0); // text, never markup
   // the next time: a quick pick
-  await mine(page).click();
+  await sayBtn(page).click();
   await expect(picker(page).locator('[data-say-recent]')).toHaveText(['<b>ジム</b>いく！']);
   await picker(page).locator('[data-say-recent]').click();
   await expect(balloon(page).locator('.text')).toHaveText('<b>ジム</b>いく！');
@@ -126,7 +166,7 @@ test('my own words: at most 20, cleaned, shown as text, Enter sends, kept as a q
 
 test('at night: the picker and the balloon in their cream, over the night tint', async ({ page }) => {
   await open(page, '2026-11-04T22:00');
-  await mine(page).click();
+  await sayBtn(page).click();
   await expect(picker(page)).toBeVisible();
   const bg = await picker(page).evaluate((el) => getComputedStyle(el).backgroundColor);
   expect(bg).toBe('rgb(255, 249, 227)');
@@ -142,4 +182,19 @@ test('at night: the picker and the balloon in their cream, over the night tint',
   expect(z.says).toBeGreaterThan(z.tint);
   expect(z.filter).toBe('none');
   await shot(page, 'balloon-night');
+});
+
+test('the say button hides under the island panel and in もようがえ (its picker with it)', async ({ page }) => {
+  await open(page);
+  await sayBtn(page).click();
+  await expect(picker(page)).toBeVisible();
+  // the panel: the ribbon's tap closes the picker (a control: it still acts) and covers the island
+  await ribbon(page).click();
+  await expect(picker(page)).toHaveCount(0);
+  await expect(sayBtn(page)).toHaveCount(0);
+  // もようがえ
+  await page.locator('[data-tab="settings"]').click();
+  await page.locator('[data-decor-start]').click();
+  await expect(page.locator('[data-tray]')).toHaveCount(10);
+  await expect(sayBtn(page)).toHaveCount(0);
 });

@@ -35,7 +35,7 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 Top to bottom: the ribbon 「きょう +6 ベル」 (both people today, ふたりでぜんぶ included; counts up; tap → [the
 panel](#panel)) with the jar on its right, the two centred in the sky; a sync chip only when sync isn't ok; the scene;
-しずえ's box only with news. The island is NH's rolling log under them ([World](#world)): a drag scrolls it from まえ
+しずえ's box only with news; the say button at the bottom right. The island is NH's rolling log under them ([World](#world)): a drag scrolls it from まえ
 (home, the health lawn) back to ひろば and おく, a tap on empty ground walks my villager there.
 
 - **Trees:** one per person, today's four fruits in the canopy ([Trees](#trees)). A tap opens a popup: per goal (🍎
@@ -52,8 +52,13 @@ panel](#panel)) with the jar on its right, the two centred in the sky; a sync ch
   ふたりでぜんぶ as a +2 under the jar; all of it waits while something covers the scene. Tap → ごほうび (the island zooms
   into the jar and ごほうび grows out of it; live CSS, no View Transition: its snapshot of the banded ground striped on iPhone).
 - **Centre stage:** the plaza's middle (`world.ts` `CENTRE_STAGE`, ひろば), where visitors stand.
-- **Villagers:** a tap on mine opens its phrase picker (a phrase shows in its balloon on both phones); a tap on the
-  partner's is a high-five ([Villager taps](#villager-taps)). Neither opens a sheet.
+- **Villagers:** a tap on mine is a squish; a tap on the partner's is a high-five ([Villager taps](#villager-taps)).
+  Neither opens a sheet.
+- **Say button** (`island/SayButton.svelte`): a small round cream button at the scene's bottom right, NH's chat glyph
+  (a speech bubble with three dots, soft ink), 36px drawn in a 44px target, 12px in from the side and above the home
+  indicator; over しずえ's box while she speaks. It opens the phrase picker above it (a phrase shows over my villager
+  on both phones). Hidden under a sheet, the panel or the harvest, a tree's popup, and in もようがえ. The guest has it
+  too. Nothing else lives at the bottom right (the partner's edge face and the edge notice are centred).
 - Controls are real buttons with `aria-label`, ≥ 44px (villagers 64px); focus order = visual order.
 
 ### Wallet
@@ -961,15 +966,17 @@ plate for every discovery (catches, finds, a present, its first-find page): the 
 
 ### Villager taps
 
-A tap on my villager is a squish and the tap sound (R9; no ♪ any more: the picker is its answer), and in NH's flea months now and then a flea hops off
-it ([Critters](#critters)); it opens the phrase picker by it (`island/SayPicker.svelte`, `island/say.ts`,
-`e2e/say.spec.ts`), never a sheet. The picker is a small cream card in the reactions wheel's spirit, standing by my
-villager by the balloons' rule (never under the HUD; above the keyboard while one is up; outside the scroller, so its
+A tap on my villager is a squish and the tap sound (R9; no ♪), and in NH's flea months now and then a flea hops off
+it ([Critters](#critters)); nothing opens. The say button at the scene's bottom right ([Island](#island): 「ひとこと いう」)
+opens the phrase picker above it (`island/SayButton.svelte`, `island/SayPicker.svelte`, `island/say.ts`,
+`e2e/say.spec.ts`), never a sheet. The picker is a small cream card in the reactions wheel's spirit, standing above the
+button, its right edge at the button's (inside the screen; above the keyboard while one is up; outside the scroller, so its
 field never scrolls the island): 「なにを いう？」 and ✕, six presets in two columns (やっほー！ おつかれさま！
 がんばろう！ やったね！ いっしょに あるこう！ おやすみ〜), my own last three (kept on this phone, `island.says`), and
 「じぶんで かく…」: a field of at most 20 characters (cut only when the IME isn't composing; a counter), もどる and
 いう; Enter sends. Every target ≥ 44px. ✕, Esc or a tap elsewhere closes it, as a tree's popup: on the ground that tap
-only closes (nobody walks), on a control it still acts (the flea is netted), on my villager it only closes. A pick
+only closes (nobody walks), on a control it still acts (the flea is netted), on the button it only closes; ✕ and Esc
+give the focus back to the button. My villager stays put while it's open. A pick
 closes it, hops my villager and shows the phrase in its balloon for 4 s (`island/Says.svelte`: Talk's cream balloon,
 the name on a tag in the person's colour, its tail at the villager, clear of its emote and the other villager's; it
 follows a walk, steps aside while the camera moves; text, never markup; taps go through it). A newer phrase replaces

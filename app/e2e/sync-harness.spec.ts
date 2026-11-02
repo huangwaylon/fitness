@@ -259,7 +259,7 @@ test('a phrase is presence: the partner sees it over my villager at once, a phon
   const said = b.locator('[data-say="partner"]');
   // a preset, each way
   for (const [from, to, name] of [[a, b, 'やっほー！'], [b, a, 'おつかれさま！']] as const) {
-    await from.locator('[data-actor="mine"] .vil').click();
+    await from.getByRole('button', { name: 'ひとこと いう' }).click();
     const t0 = Date.now();
     await from.getByRole('dialog', { name: 'なにを いう？' }).getByRole('button', { name }).click();
     await expect(to.locator('[data-say="partner"]')).toHaveText(new RegExp(name), { timeout: 2000 });
@@ -268,7 +268,7 @@ test('a phrase is presence: the partner sees it over my villager at once, a phon
   }
   // my own words, cleaned on the way
   await a.waitForTimeout(1600); // (one per 1.5 s)
-  await a.locator('[data-actor="mine"] .vil').click();
+  await a.getByRole('button', { name: 'ひとこと いう' }).click();
   await a.getByRole('button', { name: 'じぶんで かく…' }).click();
   await a.locator('[data-say-field]').fill(' ジム\u202Eいこう ');
   await a.locator('[data-say-field]').press('Enter');

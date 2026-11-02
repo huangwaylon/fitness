@@ -4,7 +4,7 @@
   // The day needs zero taps (the Watch and the Shortcut fill the trees);
   // ハイタッチ lives with the partner's villager: a tap on them and mine walks over for it (no card).
   // The app asks no daily questions: the band under the scene is しずえ's, and her dialogue box shows only when she has
-  // news (the harvest). Tap the jar → the wallet (ごほうび); a tree → its popup; the partner → a high-five; my villager → its phrase picker.
+  // news (the harvest). Tap the jar → the wallet (ごほうび); a tree → its popup; the partner → a high-five; the say button (bottom right) → the phrase picker.
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -23,6 +23,8 @@
   import type { Who } from '#lib/types.ts';
 
   let panelOpen = $state(false);
+  /** しずえ's box's height while it shows: the island's say button (bottom right) stands over it. */
+  let newsH = $state(0);
 
   const view = $derived(week.view);
   const me = $derived(view ? view.people[view.me] : null);
@@ -87,7 +89,7 @@
 </script>
 
 {#if view && me}
-  <main class="island" class:covered={ui.overlay}>
+  <main class="island" class:covered={ui.overlay} style:--news-lift={news && newsH ? `calc(${newsH}px + var(--gap) + 4px)` : null}>
     <h1 class="sr-only">{t('app.name')}</h1>
     <!-- DOM order = focus / VoiceOver order = the visual order: the heading, today's ベル, the jar beside it, the scene (trees,
          villagers), then しずえ's box at the bottom. All are absolutely placed, so the order costs no layout; the stacking
@@ -101,7 +103,7 @@
       <IslandScene {view} onhighfive={sendHighFive} onhighfivegot={(who) => (gotFive = who)} onguest={guestArrived} paused={panelOpen} />
     </div>
     <!-- しずえ's box, when she has news, floats over the sea at the bottom, so nothing in the scene moves when she speaks. -->
-    {#if news}<div class="news"><Bubble text={news} host={false} /></div>{/if}
+    {#if news}<div class="news" bind:clientHeight={newsH}><Bubble text={news} host={false} /></div>{/if}
   </main>
 {/if}
 

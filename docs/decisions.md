@@ -506,3 +506,9 @@ steps, not on each frame of a scroll. Every lamp is always-on emissive with a ha
 go to the lights nearest the view's centre with hysteresis, fading over 400 ms, so a light never pops. Why: the user
 approved the POC on the phone ("redo the whole map such that it's all 3d. same as the tent room…"), and reusing the
 DOM island's model, director, nav, sync and every overlay means only the drawing and the hit-testing are new.
+
+### The phrases open from a say button, not my villager (2026-11-02)
+A small round button at the island's bottom right (NH's chat glyph, 36px in a 44px target) opens the phrase picker
+above it; a tap on my villager is only its squish (and now and then a flea). Why: the user ("instead of tapping our
+character… a small message icon on the bottom right… not too intrusive"); a moving villager is a hard target and a
+tap on it is play, not a menu. Not done: the tent (it has no balloons or relay phrases yet).
