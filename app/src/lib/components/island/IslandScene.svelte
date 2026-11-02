@@ -85,6 +85,10 @@
   import { flushSync, onMount, untrack } from 'svelte';
   import type { ActorId } from '../motion/reactions.ts';
   import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
+  import { islandRender } from '#lib/store/islandRender.svelte.ts';
+  import { piecesOn, swapsOn } from './fixedDecor.ts';
+  import { islandSeed } from './devHooks.ts';
+  import { ARCH, SCENERY } from './world.ts';
 
   interface Props {
     view: WeekView;
@@ -153,6 +157,15 @@
   const onIsland = (id: VillagerActor): boolean => id === 'mine' || whoOf(id) !== 'G' || hereNow.includes('G');
 
   const covered = $derived(paused || ui.overlay);
+  // The island in 3D (world3d/Island3D.svelte: its own chunk with three.js), when this phone draws it so (?island=3d,
+  // せってい's switch: store/islandRender.svelte.ts); the DOM island runs over its canvas as the taps and the overlays.
+  let failed3 = $state(false);
+  const r3 = $derived(live && islandRender.mode === '3d' && !failed3);
+  const island3dC = lazyComponent(() => import('../world3d/Island3D.svelte'));
+  const Island3DC = $derived(island3dC.get(r3));
+  let island3d = $state<{ go(z: number, k?: number): void; limits(): { min: number; max: number } }>();
+  /** Where the 3D camera opens (back from the tent: where it was). */
+  let start3 = $state<number | null>(null);
 
   // The trees' detail popups: at most one open (a tree's tap toggles it; the other tree's tap moves it there).
   // A tap anywhere else (the popup itself lets taps through, so tapping it closes it too) or Esc closes it; it never
@@ -384,7 +397,7 @@
   let camMin = $state<number>(CAM_MIN);
   /** おく, the scroller's top: camZ 470 (world.ts CAMS), further back on a screen whose HUD would cover the campsite. */
   let camMax = $state<number>(CAM_MAX);
-  const trackH = $derived(vh + (camMax - camMin) * s);
+  const trackH = $derived(r3 ? vh : vh + (camMax - camMin) * s);
 
   // Where each villager lives (the director walks them from there and back; design.md "Walking").
   // svelte-ignore state_referenced_locally
@@ -455,6 +468,15 @@
     world.fit(scroller.clientWidth, scroller.clientHeight, r.left, r.top);
     const keepCam = world.view.camZ;
     hudBottom = Math.max(0, (document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? 0) - world.view.top);
+    if (world.three) {
+      // the 3D camera has its own ends (world3d/engine.ts)
+      const l = island3d?.limits();
+      if (l) [camMin, camMax] = [l.min, l.max];
+      vh = world.view.vh;
+      s = world.view.s;
+      horizonPx = world.view.horizon;
+      return;
+    }
     const syAt = (x: number, z: number, lift = 0) => (cam: number) => ((world.view.camZ = cam), world.screenAt(x, z, lift).sy);
     // まえ: the shoreline SHORE_AT down the screen (a wide band of sea under the beach), unless that would put the goal
     // trees' canopies under the HUD (then as low as they stay CLEAR px under it)
@@ -529,19 +551,22 @@
   }
   /** Put the camera at a world z at once (the e2e hook). */
   function goTo(z: number) {
+    if (world.three) return island3d?.go(z);
     scroller?.scrollTo({ top: scrollFor(Math.min(camMax, Math.max(camMin, z)), camMax, s), behavior: 'instant' });
   }
   onMount(() => {
     if (!scroller) return;
     measure();
     world.onTick(() => {
-      if (scroller) world.view.camZ = live ? camAt(scroller.scrollTop, camMin, camMax, world.view.s) : camMin;
+      // (the 3D island's camera is its engine's: Island3D writes camZ in each of its frames)
+      if (scroller && !world.three) world.view.camZ = live ? camAt(scroller.scrollTop, camMin, camMax, world.view.s) : camMin;
       if (live) edgeCheck();
       return anyMoving();
     });
     flushSync(); // the track's height for this screen, before scrolling to its foot
     // back out of the tent: the camera where it was when we went in (else the scroller's foot, まえ)
     const back = live ? ui.takeIslandZ() : null;
+    start3 = back;
     const z0 = back === null ? camMin : Math.min(camMax, Math.max(camMin, back));
     scroller.scrollTop = scrollFor(z0, camMax, world.view.s);
     world.view.camZ = z0;
@@ -556,7 +581,7 @@
       const keep = world.view.camZ;
       measure();
       requestAnimationFrame(() => {
-        if (scroller && live) scroller.scrollTop = scrollFor(Math.min(camMax, Math.max(camMin, keep)), camMax, world.view.s);
+        if (scroller && live && !world.three) scroller.scrollTop = scrollFor(Math.min(camMax, Math.max(camMin, keep)), camMax, world.view.s);
         world.invalidate();
       });
     });
@@ -575,7 +600,7 @@
       /** Anyone's villager's feet now (A, B or G), null when it isn't on this island (e2e: the guest). */
       who: (w: Who) => (onIsland(actorOf(w)) && !inTent(actorOf(w)) ? livePos(actorOf(w)) : null),
       /** The scroller's two ends for this screen (まえ, おく). */
-      stops: () => [camMin, camMax],
+      stops: () => (world.three && island3d ? [island3d.limits().min, island3d.limits().max] : [camMin, camMax]),
       /** The island as both phones must have it (e2e: the two-phone checks): the shared day's canonical hash, and each
        *  person's villager (where it stands, rounded, and whether it dozes). */
       state: () => ({
@@ -946,9 +971,19 @@
   const decorModeC = lazyComponent(() => import('./DecorMode.svelte'));
   const DecorModeC = $derived(decorModeC.get(decorating));
   let decorMode = $state<{ pick(id: string, e: PointerEvent): void; moving(): string | null }>();
+  // what the 3D island draws today (Scenery's own: the scenery's seasonal swaps, the fixed decor's pieces)
+  const scenery3 = $derived.by(() => {
+    const sw = swapsOn(today);
+    return SCENERY.map((x) => (sw[x.id] ? { ...x, key: sw[x.id].key, h: sw[x.id].h } : x));
+  });
+  const pieces3 = $derived(piecesOn(today, jst(clock).hour, islandSeed(), ARCH));
+  const cast3 = () => VILLAGERS.map((id) => ({
+    id, person: sides[id].person.person, villager: sides[id].person.villager, side: sides[id].side,
+    shown: onIsland(id) && !inTent(id), seated: !!seated[id], rep: repping[id]
+  }));
 </script>
 
-<div class="if-scene scene" bind:this={sceneEl} data-decorating={decorating || undefined} data-season={season} data-tod={tod} data-sky={live ? weather.sky : undefined} data-paused={life.hidden || undefined}
+<div class="if-scene scene" bind:this={sceneEl} data-r3={r3 || undefined} data-decorating={decorating || undefined} data-season={season} data-tod={tod} data-sky={live ? weather.sky : undefined} data-paused={life.hidden || undefined}
   data-covered={covered || undefined} data-live={live || undefined} style:--horizon-y="{horizonPx}px" style:--sky-h="{horizonPx + 6}px">
   {#if picking && sceneEl}
     <!-- what my villager says: outside the scroller (its field's focus never scrolls the island), over the stage -->
@@ -970,11 +1005,19 @@
         </Sky>
         <Sky {tod} layer="lights" />
         {#if live && WeatherC}<WeatherC where="sky" />{/if}
-        <WorldGround {season} {foliage} />
-        <WorldWater floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null} night={tod === 'night'} winter={season === 'winter'} />
-        <div class="haze" aria-hidden="true"></div>
+        {#if r3}
+          {#if Island3DC && sceneEl}
+            <Island3DC bind:this={island3d} {world} scene={sceneEl} {season} {foliage} {month} {tod} scenery={scenery3} pieces={pieces3}
+              wet={weather.sky !== 'clear' ? WET[weather.sky][1] : 0} cast={cast3} enabled={() => !covered && !life.hidden}
+              start={start3} onscroll={onScroll} onhorizon={(px) => (horizonPx = px)} onfail={() => (failed3 = true)} />
+          {/if}
+        {:else}
+          <WorldGround {season} {foliage} />
+          <WorldWater floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null} night={tod === 'night'} winter={season === 'winter'} />
+          <div class="haze" aria-hidden="true"></div>
+        {/if}
 
-        <Scenery {season} {foliage} {month} {live} {tod} date={today} hour={jst(clock).hour} onbuilding={building} />
+        <Scenery {season} {foliage} {month} {live} {tod} date={today} hour={jst(clock).hour} onbuilding={building} {r3} />
 
         {#each ['A', 'B'] as const as pid (pid)}
           {@const t = GOAL_TREES[pid]}
@@ -1081,6 +1124,14 @@
     -webkit-overflow-scrolling: touch; scrollbar-width: none; touch-action: pan-y;
   }
   .scroller::-webkit-scrollbar { display: none; }
+  /* the 3D island: the finger is world3d/gestures.ts' (no native scroll, no page zoom); the canvas draws what the DOM's
+     art did: the ground, the water, the trees, the scenery, the flowers and the villagers' figures (their nodes stay
+     as the tap areas, their marks, balloons and popups over the canvas) */
+  .scene[data-r3] { touch-action: none; }
+  .scene[data-r3] .scroller { overflow: hidden; touch-action: none; }
+  .scene[data-r3] .tint { display: none; }
+  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .fl > .b, .tree > .oak)) { opacity: 0; }
+  .scene[data-r3] .vil :global(:is(.body > .official, .body > .silhouette, .shadow)) { opacity: 0; }
   .scene:not([data-live]) .scroller { overflow: hidden; }
   .track { position: relative; }
   /* the stage stays on screen while the track scrolls under it; its width is 390 units (cqw) and --u one unit */

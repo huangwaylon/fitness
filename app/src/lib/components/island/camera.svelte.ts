@@ -35,6 +35,28 @@ export interface NodeSpec {
   /** A light (a lamp's glow, a lit window, a firefly): sorted by its depth like any node, but never dimmed by the time
    *  of day's tint (IslandScene's --tod-filter skips it). */
   light?: boolean;
+  /** The 3D island draws this thing as a model (a tree, a bush, a decoration): its node is the model's tap area, its
+   *  art invisible, squashed upright as the model's height is foreshortened by the camera (world3d/). */
+  model?: boolean;
+}
+
+/** The 3D island's camera (world3d/engine.ts), when it draws the island: every node is placed through it instead of
+ *  roll.ts. Px are from the scene's top-left. */
+export interface Proj3 {
+  /** A world point `lift` units above the ground under it: where it is on screen, the px a unit across there (an upright
+   *  thing's scale), how much an upright `model` is foreshortened there (its height's px over k), the ground's
+   *  foreshortening (a flat mark's), its distance from the camera, and whether it's in front of the horizon. */
+  at(x: number, z: number, lift: number): { sx: number; sy: number; k: number; up: number; ground: number; depth: number; visible: boolean };
+  /** The ground under a screen point, or null in the sky. */
+  ground(sx: number, sy: number): { x: number; z: number } | null;
+  /** The horizon's height on screen (px from the top). */
+  horizon(): number;
+  /** Bumped on every camera move. */
+  rev(): number;
+  /** Ask for a frame (the engine runs the World's step in it, then draws). */
+  kick(): void;
+  /** No frame pending. */
+  idle(): boolean;
 }
 
 interface Node extends NodeSpec {
@@ -72,20 +94,34 @@ export class World {
   private win: [number, number] = [-Infinity, Infinity];
   private hook: ((ts: number) => boolean) | null = null;
   private ground: (() => void) | null = null;
+  /** The 3D island's camera, when it draws the island (null: roll.ts, the DOM island). */
+  three: Proj3 | null = null;
+
+  /** Draw through the 3D island's camera from now on (null: back to roll.ts). */
+  useThree(p: Proj3 | null): void {
+    this.three = p;
+    if (p) this.view.horizon = p.horizon();
+    this.invalidate();
+  }
 
   /** Fit the camera to a viewport (the scroller's size and its client offset). */
   fit(vw: number, vh: number, left = 0, top = 0): void {
     const s = vw / 390, v = this.view;
     Object.assign(v, { s, vw, vh, left, top, pivot: vh * PIVOT });
     this.P.R = Math.round(radiusFor(((PIVOT - SKY) * vh) / s, this.P.tilt, this.P.curve));
-    v.horizon = v.pivot - horizonUp(this.P) * s;
+    v.horizon = this.three ? this.three.horizon() : v.pivot - horizonUp(this.P) * s;
     Object.assign(this.rest, { s, vw, vh, horizon: v.horizon });
     this.invalidate();
   }
 
   /** Where a world point is on screen: px from the scene's top-left (lift: units above the ground, upright). */
   screenAt(x: number, z: number, lift = 0): Projected & { sx: number; sy: number } {
-    const v = this.view, pr = project(x, z, v.camZ, this.P);
+    const v = this.view;
+    if (this.three) {
+      const q = this.three.at(x, z, lift);
+      return { x: (q.sx - v.vw / 2) / v.s, y: (q.sy - v.pivot) / v.s, scale: q.k / v.s, ground: q.ground, depth: q.depth, theta: 0, visible: q.visible, fade: 1, sx: q.sx, sy: q.sy };
+    }
+    const pr = project(x, z, v.camZ, this.P);
     return { ...pr, sx: v.vw / 2 + pr.x * v.s, sy: v.pivot + pr.y * v.s - lift * pr.scale * v.s };
   }
 
@@ -98,6 +134,7 @@ export class World {
   /** The world point under a screen point (px from the scene's top-left), or null in the sky. */
   worldAt(sx: number, sy: number): { x: number; z: number } | null {
     const v = this.view;
+    if (this.three) return this.three.ground(sx, sy);
     const w = unproject((sx - v.vw / 2) / v.s, (v.pivot - sy) / v.s, v.camZ, this.P);
     return w && { x: w.x, z: w.z };
   }
@@ -115,18 +152,21 @@ export class World {
 
   /** The perspective scale at a world point. */
   scaleAt(x: number, z: number): number {
+    if (this.three) return this.three.at(x, z, 0).k / this.view.s;
     return project(x, z, this.view.camZ, this.P).scale;
   }
 
   /** Whether a world point is on screen (within `pad` px of it) and in front of the horizon. */
   inView(x: number, z: number, pad = 0): boolean {
     const p = this.screenAt(x, z), v = this.view;
+    if (this.three) return p.visible && p.sx > -pad && p.sx < v.vw + pad && p.sy > v.horizon - pad && p.sy < v.vh + pad;
     return p.visible && p.theta < (this.P.tilt - 2) * (Math.PI / 180) && p.sx > -pad && p.sx < v.vw + pad && p.sy > v.horizon - pad && p.sy < v.vh + pad;
   }
 
   /** The world z at the screen's bottom edge and at the horizon. */
   zRange(): [number, number] {
     const v = this.view, near = this.worldAt(v.vw / 2, v.vh)?.z ?? v.camZ - 300;
+    if (this.three) return [near, this.worldAt(v.vw / 2, v.horizon + 3)?.z ?? v.camZ + 600];
     return [near, v.camZ + horizonAhead(this.P)];
   }
 
@@ -145,6 +185,7 @@ export class World {
 
   private place(n: Node, x: number, z: number, lift: number): void {
     const v = this.view, { s, vw, vh, pivot } = v, mode = n.mode ?? 'up';
+    if (this.three) return this.place3(n, x, z, lift);
     if (mode === 'quad') return this.placeQuad(n);
     const pr = project(x, z, v.camZ, this.P);
     const h = n.h ?? 80;
@@ -165,6 +206,40 @@ export class World {
       const clip = cut > 0.3 ? `inset(-4000px -4000px ${(cut * s).toFixed(1)}px -4000px)` : '';
       if (clip !== n.clip) n.el.style.clipPath = n.clip = clip;
     }
+    if (n.inv) {
+      const iv = (1 / k).toFixed(3);
+      if (iv !== n.invS) n.el.style.setProperty('--inv', (n.invS = iv));
+    }
+  }
+
+  /** The 3D island's: through its camera, nothing faded or sunk (the haze and the horizon are its own). */
+  private place3(n: Node, x: number, z: number, lift: number): void {
+    const t = this.three!, v = this.view, mode = n.mode ?? 'up';
+    if (mode === 'quad') {
+      const b = n.box!;
+      const c = [t.at(b.x0, b.z1, 0), t.at(b.x1, b.z1, 0), t.at(b.x1, b.z0, 0), t.at(b.x0, b.z0, 0)];
+      if (c.every((q) => !q.visible) || c.every((q) => q.sy > v.vh + 2) || c.every((q) => q.sy < v.horizon - 4)) return this.hide(n);
+      this.show(n);
+      const m = quadMatrix((b.x1 - b.x0) * v.s, (b.z1 - b.z0) * v.s, c.flatMap((q) => [q.sx, q.sy]) as [number, number, number, number, number, number, number, number]);
+      const tf = `matrix3d(${m.map((q) => +q.toFixed(6)).join(',')})`;
+      if (tf !== n.tf) {
+        n.el.style.transform = n.tf = tf;
+        this.perf.writes++;
+      }
+      return;
+    }
+    const q = t.at(x, z, lift), h = n.h ?? 80, k = q.k / v.s;
+    if (!q.visible || q.sy - (h + lift) * q.k > v.vh + 40 || q.sy < -60 || q.sx < -400 || q.sx > v.vw + 400) return this.hide(n);
+    this.show(n);
+    const X = q.sx.toFixed(1), Y = q.sy.toFixed(1);
+    const ky = mode === 'flat' ? k * Math.max(0.02, q.ground) : n.model ? k * q.up : k;
+    const tf = ky === k ? `translate(${X}px,${Y}px) scale(${k.toFixed(4)})` : `translate(${X}px,${Y}px) scale(${k.toFixed(4)},${ky.toFixed(4)})`;
+    if (tf !== n.tf) {
+      n.el.style.transform = n.tf = tf;
+      this.perf.writes++;
+    }
+    if (n.op) n.el.style.opacity = n.op = '';
+    if (n.clip) n.el.style.clipPath = n.clip = '';
     if (n.inv) {
       const iv = (1 / k).toFixed(3);
       if (iv !== n.invS) n.el.style.setProperty('--inv', (n.invS = iv));
@@ -214,12 +289,20 @@ export class World {
 
   private tick = (ts: number) => {
     this.raf = 0;
+    if (this.step(ts)) this.raf = requestAnimationFrame(this.tick);
+  };
+
+  /** One frame of the projector: the scene's hook, then what moved (everything when the camera did). True: more
+   *  frames wanted (something moves). The 3D island's engine runs it in its own frame, before it draws. */
+  step(ts: number): boolean {
     this.perf.writes = 0;
     this.perf.frames++;
     const more = this.hook?.(ts) ?? false;
     const v = this.view;
-    if (v.camZ !== this.lastCam) {
-      this.lastCam = v.camZ;
+    const cam = this.three ? this.three.rev() : v.camZ;
+    if (cam !== this.lastCam) {
+      this.lastCam = cam;
+      if (this.three) v.horizon = this.three.horizon();
       this.win = [v.camZ - BEHIND, v.camZ + AHEAD];
       this.ground?.();
       for (const n of this.nodes) this.placeNode(n);
@@ -230,11 +313,12 @@ export class World {
       for (const n of this.movers) this.placeNode(n);
     }
     this.perf.nodes = this.nodes.size;
-    if (more || this.moving > 0) this.raf = requestAnimationFrame(this.tick);
-  };
+    return more || this.moving > 0;
+  }
 
   /** Ask for one frame (a scroll, a node changed). */
   kick(): void {
+    if (this.three) return this.three.kick();
     if (!this.raf && typeof requestAnimationFrame !== 'undefined') this.raf = requestAnimationFrame(this.tick);
   }
 
@@ -269,7 +353,7 @@ export class World {
 
   /** No frame pending (e2e and perf: nothing runs when still). */
   idle(): boolean {
-    return this.raf === 0;
+    return this.three ? this.three.idle() : this.raf === 0;
   }
 
   /** Stop (the scene unmounts). */
@@ -277,6 +361,7 @@ export class World {
     if (this.raf) cancelAnimationFrame(this.raf);
     this.raf = 0;
     this.hook = null;
+    this.three = null;
     this.ground = null;
   }
 

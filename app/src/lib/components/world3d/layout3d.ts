@@ -5,8 +5,9 @@
 import ISLAND_MODELS from '../island/models.json' with { type: 'json' };
 import W3D from './models.json' with { type: 'json' };
 import {
-  BRIDGE, CAMPSITE, DECOR_SLOTS, DECOR_U, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, ROCK, SCENERY, TAPE_DECK, TREE_H
+  BRIDGE, CAMPSITE, DECOR_SLOTS, DECOR_U, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, ROCK, SCENERY, TAPE_DECK, TREE_H, type Scenery
 } from '../island/world.ts';
+import type { Piece } from '../island/fixedDecor.ts';
 import { FLOWER_U, TREE_FRUIT, TREE_FRUIT_U, flowerScale, hedgePair, wildFlower } from '../island/scene.ts';
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
 
@@ -61,10 +62,38 @@ const PROP: Record<string, ModelName> = {
 const oakOf = (season: Season, foliage: string): ModelName =>
   season === 'spring' && foliage === 'blossom' ? 'oak-spring' : season === 'autumn' && foliage === 'fall' ? 'oak-fall' : 'oak-summer';
 
+/** A thing the 3D island has no model for yet: a card of today's art (cards.ts), its feet at (x, z). */
+export interface Standin {
+  id: string;
+  key: string;
+  x: number;
+  z: number;
+  h: number;
+  flip?: boolean;
+}
+
+/** What the island has today beyond world.ts's constants: the scenery with the day's swaps, the fixed decor's pieces
+ *  (fixedDecor.ts), the buildings' looks. */
+export interface Day {
+  season: Season;
+  foliage: string;
+  month: number;
+  scenery?: readonly Scenery[];
+  pieces?: readonly Piece[];
+  /** The goal trees' fruit as models (else the DOM island's own: its stages, its falls, its harvest). */
+  fruit?: boolean;
+}
+
 export function layout(season: Season, foliage: string, month: number): Inst[] {
+  return island({ season, foliage, month }).insts;
+}
+
+/** The whole island: its models, and its stand-ins (a card each) for what has none yet. */
+export function island(day: Day): { insts: Inst[]; standins: Standin[] } {
+  const { season, foliage, month } = day;
   const oak = oakOf(season, foliage);
-  const out: Inst[] = [];
-  for (const s of SCENERY) {
+  const out: Inst[] = [], standins: Standin[] = [];
+  for (const s of day.scenery ?? SCENERY) {
     const yaw = s.flip ? 0.9 : 0;
     if (s.kind === 'oak') out.push({ id: s.id, model: oak, x: s.x, z: s.z, scale: scaleOf(`trees/${oak}`, oak, s.h), yaw, tap: 'tree' });
     else if (s.kind === 'cedar' || s.kind === 'palm' || s.kind === 'bamboo') {
@@ -77,6 +106,7 @@ export function layout(season: Season, foliage: string, month: number): Inst[] {
     } else {
       const m = PROP[s.key];
       if (m) out.push({ id: s.id, model: m, x: s.x, z: s.z, scale: scaleOf(s.key, m, s.h), yaw: s.key === 'deco/log-stool' && s.flip ? 0.7 : 0, tap: 'thing' });
+      else standins.push({ id: s.id, key: s.key, x: s.x, z: s.z, h: s.h, flip: s.flip });
     }
   }
   // the seasonal hedge along the stream's front bank
@@ -90,15 +120,17 @@ export function layout(season: Season, foliage: string, month: number): Inst[] {
   for (const who of ['A', 'B'] as const) {
     const [x, z] = GOAL_TREES[who];
     out.push({ id: `goal-${who}`, model: oak, x, z, scale: scaleOf(`trees/${oak}`, oak, TREE_H), tap: 'tree' });
-    TREE_FRUIT.forEach(([dx, up], k) => {
+    if (day.fruit !== false) TREE_FRUIT.forEach(([dx, up], k) => {
       const m = FRUIT[k];
       out.push({ id: `fruit-${who}-${k}`, model: m, x: x + dx * 1.1, z: z - 48, lift: up - TREE_FRUIT_U * 0.4, scale: TREE_FRUIT_U / bounds(m) });
     });
   }
-  // the fixed decor (NH's outdoor furniture at one scale)
-  for (const d of DECOR_SLOTS) {
-    const m = d.key ? PROP[d.key] : undefined;
-    if (m) out.push({ id: d.id, model: m, x: d.x, z: d.z, scale: DECOR_U, tap: 'thing' });
+  // the fixed decor: the day's pieces in their spots (NH's outdoor furniture at one scale), else world.ts's own
+  const pieces = day.pieces ?? DECOR_SLOTS.filter((d) => d.key).map((d) => ({ id: d.id, key: d.key!, x: d.x, z: d.z, h: 0 }));
+  for (const p of pieces) {
+    const m = PROP[p.key], id = `fx-${p.id}`;
+    if (m) out.push({ id, model: m, x: p.x, z: p.z, scale: DECOR_U, tap: 'thing' });
+    else standins.push({ id, key: p.key, x: p.x, z: p.z, h: p.h });
   }
   out.push({ id: 'tape-deck', model: 'tape-deck', x: TAPE_DECK[0], z: TAPE_DECK[1], scale: DECOR_U, tap: 'thing' });
   out.push({ id: 'rock', model: 'rock', x: ROCK[0], z: ROCK[1], scale: 26 / bounds('rock'), tap: 'rock' });
@@ -113,5 +145,5 @@ export function layout(season: Season, foliage: string, month: number): Inst[] {
     const m = FLOWER_MODEL[kind] ?? 'flower-cosmos';
     out.push({ id: f.id, model: m, x: f.x, z: f.z, scale: (FLOWER_U * 0.8 * flowerScale(id)) / bounds(m), yaw: ((f.x * 7 + f.z * 13) % 6) * 0.5, tint: COLOUR[colour] ?? 0xffffff, tap: 'thing' });
   }
-  return out;
+  return { insts: out, standins };
 }

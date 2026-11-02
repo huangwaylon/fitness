@@ -278,6 +278,14 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   programmatic move (the end of a follow, a popup letting the camera go, the partner's edge face) eases onto a stop
   with snapping off and turns it back on there; a touch hands the camera to the finger at once. A resize keeps the
   section. Nothing runs per frame for it (the scroll events do the checking).
+- **In 3D** (`components/world3d/`, `?island=3d` or せってい → しまの えがきかた; docs/decisions.md "The island in 3D"):
+  `Island3D.svelte` puts a canvas under the stage's nodes (over the DOM sky: the sun and the moon stay behind the
+  world) and hands the projector its camera (`World.useThree`); the engine (`engine.ts`) runs the World's step in its
+  own frame (60 a second while anything moves, 30 while only the water does). The models: `layout3d.ts` from world.ts
+  and the day's scenery and decor pieces (a card of today's art for what has no model yet); the villagers: cards of
+  their renders posed from the director (`motion3d.ts`); the lights: `lights.ts`; the finger: `gestures.ts`. The ends
+  are fitted per screen like the 2D ones (the shoreline 83% down at まえ, the campsite's feet half way at おく).
+  `window.__world3d` (stats, view, go, client, ground) for the e2e (`e2e/world3d.spec.ts`).
 - **The projector** (`camera.svelte.ts` `World`): every upright thing is a node at its feet (`{@attach world.at(…)}`)
   placed by one tick: an upright billboard (translate + scale, faded near the horizon, sunk behind it), a flat mark
   (also squashed by the ground's foreshortening) or a ground quad (a matrix3d, like the bands). **One depth order**: the
