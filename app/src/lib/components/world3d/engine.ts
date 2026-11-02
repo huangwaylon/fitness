@@ -219,6 +219,8 @@ export interface Island3 {
    *  its origin on the ground at (x, z) (or at `y`), turned by `yaw`, bent with the island, casting shadows; again
    *  with the same id replaces it, null takes it away. */
   placeGroup(id: string, obj: Object3D | null, at?: { x: number; z: number; yaw?: number; y?: number }): void;
+  /** The ids of the groups placed (the e2e's). */
+  placedGroups(): string[];
   /** Something of the scene's own in the world (a fishing line), bent with the island; its removal returned. */
   add(obj: Object3D): () => void;
   /** A screen point (canvas px) at `share` of the horizon's view depth, as a world point (unbent: x, z on the plan and
@@ -987,6 +989,7 @@ export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((ren
       kick();
     },
     add: addObj,
+    placedGroups: () => [...groupsPlaced.keys()],
     warmFx: () => effects.warm(renderer, camera),
     fxWarmed: () => effects.warmed(),
     fx(kind, x, z, lift, o) {
