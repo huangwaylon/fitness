@@ -133,7 +133,7 @@
   }
 
   // ---- the finger: on the ghost (or a placed piece) it drags; the screen hands its pointer events here ----
-  let drag: { id: number; dx: number; dz: number; moved: boolean } | null = null;
+  let drag: { id: number; dx: number; dz: number; moved: boolean; held: boolean; x0: number; y0: number; t0: number } | null = null;
   /** A pointer went down on the room: true when the mode takes it (a drag). */
   export function down(e: PointerEvent): boolean {
     const g = eng();
@@ -144,15 +144,21 @@
       const [w, d] = footprint(sel.item, sel.f), [cx, cz] = centreOf({ item: sel.item, x: at[0], z: at[1], f: sel.f });
       return Math.abs(p[0] - cx) <= (w * TILE) / 2 + 4 && Math.abs(p[1] - cz) <= (d * TILE) / 2 + 4;
     };
-    if (!onGhost()) {
+    // a press on what I already hold (a tap there turns it); on another piece, that one is picked instead
+    let held = onGhost();
+    if (!held) {
       const id = g.pick(e.clientX, e.clientY);
-      if (!id || !pickPlaced(id)) return false;
+      if (!id) return false;
+      held = sel?.id === id;
+      if (!pickPlaced(id)) return false;
     }
     if (!sel || !p) return true;
     const [cx, cz] = centreOf({ item: sel.item, x: at[0], z: at[1], f: sel.f });
-    drag = { id: e.pointerId, dx: cx - p[0], dz: cz - p[1], moved: false };
+    drag = { id: e.pointerId, dx: cx - p[0], dz: cz - p[1], moved: false, held, x0: e.clientX, y0: e.clientY, t0: Date.now() };
     return true;
   }
+  /** A tap, not a drag: the finger stayed within TAP_PX and let go within TAP_MS. */
+  const TAP_PX = 8, TAP_MS = 450;
   export function move(e: PointerEvent): void {
     if (!drag || e.pointerId !== drag.id) return;
     const p = eng()?.floorAt(e.clientX, e.clientY);
@@ -160,14 +166,12 @@
   }
   export function up(e: PointerEvent): boolean {
     if (!drag || e.pointerId !== drag.id) return false;
-    const moved = drag.moved;
+    const d = drag;
     drag = null;
-    if (moved) cue('tick');
-    else {
-      // a tap on the ghost (no drag): it goes where the finger was
-      const p = eng()?.floorAt(e.clientX, e.clientY);
-      if (p) tapFloor(p[0], p[1]);
-    }
+    const tap = !d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) <= TAP_PX && Date.now() - d.t0 <= TAP_MS;
+    if (d.moved) cue('tick');
+    // a tap on what I hold turns it a quarter, clockwise (NH's rotate); a tap that picked a piece up just picks it
+    else if (tap && d.held) turn();
     return true;
   }
   /** A tap on the floor (no drag): the held piece goes there. */
@@ -188,11 +192,12 @@
   function turn() {
     if (!sel) return;
     const [cx, cz] = centreOf({ item: sel.item, x: at[0], z: at[1], f: sel.f });
-    sel.f = ((sel.f + 1) % 4) as Facing;
+    // clockwise seen from above (a quarter turn the other way about the up axis)
+    sel.f = ((sel.f + 3) % 4) as Facing;
     at = snapTo(sel.item, sel.f, cx, cz);
     check();
     show();
-    cue('tick');
+    cue('tick', { step: 5 });
   }
   function cancel(sound = true) {
     sel = null;

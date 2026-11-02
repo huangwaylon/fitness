@@ -115,10 +115,18 @@ test('edit: place a piece from the tray, turn it, drag it, put it away; the wall
   let [x, y] = await tent(page, (t) => t.px(-20, -25));
   await page.mouse.click(x, y);
   await expect.poll(() => te(page, (t) => t.edit()?.sel)).toMatchObject({ x: 1, z: 1 });
+  // ↻ turns it a quarter clockwise (seen from above: facing 0 → 3); so does a tap on it, the next quarter
   await page.locator('[data-act="turn"]').click();
-  await expect.poll(() => te(page, (t) => t.edit()?.sel?.f)).toBe(1);
+  await expect.poll(() => te(page, (t) => t.edit()?.sel?.f)).toBe(3);
+  const g = await te(page, (t) => t.edit()!.sel!);
+  [x, y] = await tile(page, g.x, g.z);
+  await page.mouse.click(x, y);
+  await expect.poll(() => te(page, (t) => t.edit()?.sel?.f)).toBe(2);
+  // and a drag doesn't turn it (back to facing 3 with ↻ ×3)
+  for (let i = 0; i < 3; i++) await page.locator('[data-act="turn"]').click();
+  await expect.poll(() => te(page, (t) => t.edit()?.sel?.f)).toBe(3);
   await page.locator('[data-act="place"]').click();
-  await expect.poll(() => te(page, (t) => t.pieces())).toEqual([expect.objectContaining({ item: 'f4081', f: 1 })]);
+  await expect.poll(() => te(page, (t) => t.pieces())).toEqual([expect.objectContaining({ item: 'f4081', f: 3 })]);
   const placed = (await te(page, (t) => t.pieces()))[0];
   await expect(page.locator('[data-tent-count]')).toHaveText('1/40');
   // a finger on it drags it, a tile at a time, and ✓ puts it there
