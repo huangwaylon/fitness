@@ -18,6 +18,10 @@ import ISLAND_MODELS from '../island/models.json' with { type: 'json' };
 import { DECOR_SLOTS, DECOR_U, SCENERY, seatAt } from '../island/world.ts';
 import type { Face } from '../villager3d/faces.ts';
 import type { Motion } from '../motion/reactions.ts';
+import { site } from '../island/site.svelte.ts';
+import { seatsOf } from '#lib/layout/nav.ts';
+import { objMid } from '#lib/layout/model.ts';
+import { kindDef } from '#lib/layout/catalog.ts';
 
 export interface VSpec {
   /** The slot (an actor: mine, partner, third, visitor) and the roster id it draws. */
@@ -96,6 +100,24 @@ function islandSeat(name: string, floor: number): Anchor | null {
   const s = slot ? DECOR_U : sc!.h / (MU[sc!.key]?.mu[1] ?? 4.2), yaw = sc?.flip ? 0.7 : 0;
   return anchorsOf(shapeOf('island', model), { x: p.x, z: -p.z, y: floor, yaw, s })[n] ?? null;
 }
+/** A seat on the layout (site.on): a bench's or a stool's of the layout's, default or new (layout/nav.ts seatsOf's
+ *  names: `seat-<id>-0|1`, `seat-<id>`), on its model as placeObjects stands it (NH's furniture scale, turned by its
+ *  facing). */
+const SEAT_KINDS = new Set(['park-bench', 'log-bench', 'log-stool']);
+function layoutSeat(name: string, floor: number): Anchor | null {
+  const l = site.on ? site.layout : null;
+  if (!l) return null;
+  for (const o of l.objects.values()) {
+    if (!SEAT_KINDS.has(o.k)) continue;
+    const i = seatsOf(l, o).findIndex(([n]) => n === name);
+    if (i < 0) continue;
+    // (the island's default stools keep their scenery's size: islandSeat's)
+    if (SEAT_ON[name] && !DECOR_SLOTS.some((d) => d.id === o.id)) return null;
+    const [x, z] = objMid(l, o), yaw = kindDef(o.k)?.turns ? (o.f * Math.PI) / 2 : o.f % 2 ? 0.9 : 0;
+    return anchorsOf(shapeOf('island', o.k), { x, z: -z, y: floor, yaw, s: DECOR_U })[i] ?? null;
+  }
+  return null;
+}
 /** My line's steps as my villager's moments (fishing3d.ts). */
 const ANGLE_ACT: Partial<Record<Phase, Action>> = { cast: 'cast', bite: 'tug', reel: 'reel' };
 /** Its emote as its face. */
@@ -144,8 +166,10 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
   const anchorAt = (s: VSpec): Anchor | null => {
     const name = seatAt(Math.round(s.x), Math.round(s.z));
     if (!name) return null;
-    if (!seats.has(name)) seats.set(name, islandSeat(name, s.y));
-    return seats.get(name)!;
+    // (on the layout, its seats move with it: keyed by its revision)
+    const key = `${name}@${site.on ? site.rev : ''}`;
+    if (!seats.has(key)) seats.set(key, layoutSeat(name, s.y) ?? islandSeat(name, s.y));
+    return seats.get(key)!;
   };
   let lastT = 0, liftL = 0.32, disposed = false;
   const headP = new V3(), aimP = new V3();
