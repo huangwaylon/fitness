@@ -703,8 +703,8 @@ NH's outdoor furniture on the island, moves it and takes it away; both phones sh
 ### The bulletin board
 
 `components/board/`, `contract/board.ts`, `e2e/board.spec.ts` ([board.md](board.md), [backend](backend.md#events) `board`).
-NH's island board (`EvtobjBbs`, its bird `BbsBirdDay` / `BbsBirdNight` on top in 3D) stands on the front beach, left of
-the shells' sand, facing the sea (the layout's `board` object once the layout has it: movable in the editor). A tap on
+NH's island board (`EvtobjBbs`, its bird `BbsBirdDay` / `BbsBirdNight` on top in 3D) stands on the front beach at the lawn's
+edge, by the path behind the shells' sand (clear of Gulliver's spot), facing the sea (the layout's `board` object once the layout has it: movable in the editor). A tap on
 it walks my villager up beside it (the tent door's exception to "interactables act in place"), then it opens: on the 3D
 island the camera dollies to its face (≈600 ms) and back to exactly where it was (the one automatic camera move, the
 user's: it needs the 3D lead's `focus`, board.md), else a sheet showing the same face. The face is a canvas (the 3D
