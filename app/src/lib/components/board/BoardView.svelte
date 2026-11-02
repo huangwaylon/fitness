@@ -68,7 +68,7 @@
   async function frame(ms: number) {
     if (mode !== '3d' || !three?.focus) return;
     const [fx, fz] = inFront(at, FACE.z * BOARD_S);
-    await three.focus({ x: fx, z: fz, y: FACE.y * BOARD_S, w: FACE.w * BOARD_S, h: FACE.h * BOARD_S, yaw: (at.f * Math.PI) / 2, bottom: kb + (bar?.offsetHeight ?? 0), fill: 0.92 }, ms);
+    await three.focus({ x: fx, z: fz, y: FACE.y * BOARD_S, w: FACE.w * BOARD_S, h: FACE.h * BOARD_S, yaw: (at.f * Math.PI) / 2, top: (document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? 0) + 10, bottom: kb + (bar?.offsetHeight ?? 0), fill: 0.92 }, ms);
     measure();
   }
 

@@ -4,7 +4,7 @@
 // z' = pivot − (R + y)·sin θ, y' = (R + y)·cos θ − R (three's z runs out of the screen: world z into the island is
 // three's −z). Exact (not the parabola), so a tall thing leans back with the ground, as NH's do. One shared uniform
 // pair: a frame updates it once. bendPoint() is the same on the CPU (taps, hit tests, overlays).
-import type { Material, WebGLProgramParametersWithUniforms } from 'three';
+import { AddEquation, CustomBlending, OneFactor, SrcAlphaFactor, ZeroFactor, type Material, type WebGLProgramParametersWithUniforms } from 'three';
 
 export const bendU = { uBendZ: { value: 0 }, uBendR: { value: 900 } };
 
@@ -69,4 +69,19 @@ export function unbendRay(o: readonly number[], d: readonly number[], h: number,
   if (py <= 0) return null;
   const th = Math.atan2(-pz, py);
   return [o[0] + t * d[0], pivotZ - R * th];
+}
+
+/** Light added over what's drawn, never touching the canvas's alpha. The island's canvas is transparent where the sky
+ *  is (the DOM's sky shows through): three's additive blending writes alpha there too, so a glow over the sky (a far
+ *  lamp's halo behind the trees, a firefly) came out as a black box. Colour added (by its alpha when `byAlpha`), alpha
+ *  kept: over the sky it composites as light. */
+export function glow<M extends Material>(m: M, byAlpha = false): M {
+  m.blending = CustomBlending;
+  m.blendEquation = AddEquation;
+  m.blendSrc = byAlpha ? SrcAlphaFactor : OneFactor;
+  m.blendDst = OneFactor;
+  m.blendEquationAlpha = AddEquation;
+  m.blendSrcAlpha = ZeroFactor;
+  m.blendDstAlpha = OneFactor;
+  return m;
 }

@@ -120,10 +120,10 @@ export interface Proj3 {
   /** No frame pending. */
   idle(): boolean;
   /** The bulletin board's (docs/board.md "To the 3D lead"): dolly and zoom to look at a rect face-on (its middle x, z on
-   *  the ground, y above it, w × h u), framed in the screen above `bottom` px and filling `fill` of it, over `ms` (600):
+   *  the ground, y above it, w × h u), framed in the screen between `top` and `bottom` px and filling `fill` of it, over `ms` (600):
    *  the user's one exception to "x centred, nothing but the finger moves the camera"; the finger does nothing while
    *  focused; called again it re-frames from where it is. unfocus() goes back to exactly the view the first focus left. */
-  focus?(f: { x: number; z: number; y: number; w: number; h: number; yaw?: number; bottom?: number; fill?: number }, ms?: number): Promise<void>;
+  focus?(f: { x: number; z: number; y: number; w: number; h: number; yaw?: number; top?: number; bottom?: number; fill?: number }, ms?: number): Promise<void>;
   unfocus?(ms?: number): Promise<void>;
   /** A three.js object riding on a model instance by its id (the board's face plane with its CanvasTexture), in that
    *  model's own units, placed, turned, scaled and bent with it; null takes it off. */

@@ -7,12 +7,12 @@
 // canvas, a bubble), unlit (they're light), fading. The DOM island spawns them where it spawned its own
 // (island/fx3d.ts), whose art then goes invisible.
 import {
-  AdditiveBlending, CanvasTexture, Color, DoubleSide, Group, Mesh, MeshBasicMaterial, PlaneGeometry, Quaternion, RingGeometry, SphereGeometry,
+  NormalBlending, CanvasTexture, Color, DoubleSide, Group, Matrix4, Mesh, MeshBasicMaterial, PlaneGeometry, Quaternion, RingGeometry, SphereGeometry,
   SRGBColorSpace, type BufferGeometry, type Camera, type MeshStandardMaterial, type Scene, type Texture
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
-import { bend } from './bend.ts';
+import { bend, glow as addLight } from './bend.ts';
 import { MODELS } from './models3d.ts';
 
 export type FxKind =
@@ -82,7 +82,8 @@ const SCALE: Record<string, number> = {
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 const CONFETTI = ['#ff6f91', '#ffd84a', '#6fd3ff', '#8be07a', '#c89cff', '#ff9d3c'];
 
-type Src = { geo: BufferGeometry; map: Texture | null; color: Color; add?: boolean }[];
+/** A source's meshes: their geometry (quantized by the converter: placed by its matrix, never baked), map and colour. */
+type Src = { geo: BufferGeometry; map: Texture | null; color: Color; add?: boolean; m?: Matrix4 }[];
 
 /** A soft round glow (a firefly). */
 function glow(): Texture {
@@ -123,7 +124,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
           const mesh = n as Mesh;
           if (!mesh.isMesh) return;
           const s = mesh.material as MeshStandardMaterial;
-          out.push({ geo: mesh.geometry.clone().applyMatrix4(mesh.matrixWorld), map: s.map, color: s.color.clone() });
+          out.push({ geo: mesh.geometry, map: s.map, color: s.color.clone(), m: mesh.matrixWorld.clone() });
         });
         return out;
       }, () => null);
@@ -147,9 +148,14 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
       for (const s of src) {
         const mat = bend(new MeshBasicMaterial({
           map: s.map, color: p.tint ? new Color(p.tint) : s.color, transparent: true, depthWrite: false, side: DoubleSide, alphaTest: s.add ? 0 : 0.02,
-          blending: s.add ? AdditiveBlending : undefined
+          blending: NormalBlending
         }));
+        if (s.add) addLight(mat, true);
         const mesh = new Mesh(s.geo, mat);
+        if (s.m) {
+          mesh.matrixAutoUpdate = false;
+          mesh.matrix.copy(s.m);
+        }
         mesh.frustumCulled = false;
         mesh.renderOrder = 7;
         obj.add(mesh);
