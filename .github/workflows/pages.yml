@@ -163,7 +163,7 @@ jobs:
           node scripts/e2e-report.ts first-run.json "Flaky e2e (failed, then passed on a rerun): fix the cause, docs/ops/testing.md" >> "$GITHUB_STEP_SUMMARY"
 
   # The logic tier (docs/ops/test-strategy.md): every test but the drawn ones (@render) and the quarantined
-  # (@quarantine), with the 3D engines drawing nothing (E2E_RENDER=none, src/lib/testMode.ts: the gameplay, cameras and
+  # (@quarantine), with the 3D engines drawing nothing (E2E_RENDER=none, src/lib/ui-state/testMode.ts: the gameplay, cameras and
   # tap areas all run, CI's software GL costs nothing), in shards balanced by time (the build's plan). A failed test is
   # run once more, as the e2e job does.
   e2e-logic:

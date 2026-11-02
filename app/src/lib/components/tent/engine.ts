@@ -17,7 +17,7 @@ import { footprint, floorUrl, ITEMS, modelUrl, wallUrl } from './items.ts';
 import { createVillager, VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
 import { seatOf } from '../villager3d/poses.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
-import { drawOff } from '../../testMode.ts';
+import { drawOff } from '../../ui-state/testMode.ts';
 
 /** The walls' height (RoomMdlWall: 40 model units, four tiles). */
 const WALL_H = 40;
