@@ -4,6 +4,7 @@ import { DEVICE, type KV } from '#lib/sync/storage.ts';
 import ja from '#lib/i18n/ja.json';
 import en from '#lib/i18n/en.json';
 import { SAY_MAX } from '#lib/sync/live-protocol.ts';
+import { REACTIONS } from '../motion/reactions.ts';
 
 const kv = (): KV & { m: Map<string, string> } => {
   const m = new Map<string, string>();
@@ -15,6 +16,10 @@ describe('my villager’s phrases', () => {
     expect(SAY_PRESETS).toHaveLength(6);
     for (const cat of [ja, en] as Record<string, string>[])
       for (const id of SAY_PRESETS) expect(Array.from(cat[`say.${id}`]).length, id).toBeLessThanOrEqual(SAY_MAX);
+  });
+
+  it('a tap on my villager squishes it with no ♪ (the picker is its answer; the user: "get rid of the music notes")', () => {
+    expect(REACTIONS.R9.steps).toEqual([{ actor: 'mine', motion: 'squish', cue: 'villager-tap' }]);
   });
 
   it('keeps my own last few, newest first, once each, cleaned', () => {

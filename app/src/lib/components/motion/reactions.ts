@@ -81,7 +81,7 @@ export const REACTIONS: Record<ReactionId, Reaction> = {
   R6: { name: 'fruit ripe', ms: 2200, steps: [{ actor: 'mine', motion: 'proud', emote: 'mark-sparkle', fx: 'sparkles', cue: 'emote-joy' }] },
   R7: { name: 'fruit stage up', ms: 2200, steps: [{ actor: 'mine', motion: 'nod', emote: 'inspiration', cue: 'emote-idea' }] },
   R8: { name: 'all ripe', ms: 2400, steps: [{ actor: 'mine', motion: 'dance', emote: 'glee', fx: 'confetti', cue: 'emote-joy' }] },
-  R9: { name: 'tap mine', ms: 2200, steps: [{ actor: 'mine', motion: 'squish', emote: 'mark-note', cue: 'villager-tap' }] },
+  R9: { name: 'tap mine', ms: 2200, steps: [{ actor: 'mine', motion: 'squish', cue: 'villager-tap' }] }, // no ♪: the phrase picker answers it
   R11: { name: 'morning stretch', ms: 2200, steps: [
     { actor: 'mine', motion: 'stretch', emote: 'mark-sparkle' },
     { actor: 'partner', at: 500, motion: 'stretch', emote: 'mark-note' }
