@@ -1,7 +1,8 @@
 // The layout editor (docs/island-layout.md "The editor"): the members' desktop editor at /editor/. A move in the
 // editor goes out as a layout op at once and a phone (the demo's other tab, as two phones over the relay) holds the
 // new layout live; a stroke paints tiles and undo takes it back; the guest is shown the door. The plan is a canvas,
-// so the spec finds things through window.__editor (where a tile or a world point is on screen).
+// so the spec finds things through window.__editor (where a tile or a world point is on screen). The 3D preview is off
+// (`preview=0`): CI's headless Chromium draws WebGL in software, a frame every few seconds, and it starves the page.
 import { expect, test, type Page } from '@playwright/test';
 
 test.use({ viewport: { width: 1440, height: 900 } });
@@ -15,7 +16,7 @@ type E = {
 const DATE = '2026-11-04T12:00';
 
 async function openEditor(page: Page, q = '') {
-  await page.goto(`editor/?demo&date=${DATE}${q}`);
+  await page.goto(`editor/?demo&preview=0&date=${DATE}${q}`);
   await expect(page.locator('[data-editor]')).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __editor?: unknown }).__editor);
 }

@@ -29,7 +29,8 @@
   let placeS = $state<string | undefined>(undefined);
   let placeF = $state<0 | 1 | 2 | 3>(0);
   let grid = $state(true);
-  let show3d = $state(true);
+  // the 3D preview beside the plan (`?preview=0`: none, the e2e's: a software GL draws it at a frame every few seconds)
+  let show3d = $state(new URLSearchParams(location.search).get('preview') !== '0');
   let selected = $state<Set<string>>(new Set());
   let issues = $state<Issue[]>([]);
   let focus = $state<Issue | null>(null);
