@@ -242,3 +242,20 @@ test('the 3D island draws what the 2D sprites did: no 2D art shows over it (a sc
     await page.waitForTimeout(120); // (sampling through the high five's 0.5 s zap and its marks)
   }
 });
+
+test('a goal tree\'s glints (all four met) stand whole on the 3D island: the canopy\'s node is squashed upright as the model, the stars not', async ({ page }) => {
+  await page.goto(`?demo&date=2026-11-04T23:00&critter=none&visitor=none&island=3d`);
+  await ready(page);
+  await expect(page.locator('.glints[data-tree]').first()).toBeAttached();
+  // each glint's aspect on screen (its canopy node's scale × its own), whatever the node's squash
+  const aspect = () => page.evaluate(() => [...document.querySelectorAll('.glints[data-tree] .glint')].map((g) => {
+    const m = new DOMMatrix(getComputedStyle(g.closest('.node')!).transform);
+    const s = getComputedStyle(g).scale.split(' ').map(Number), sx = s[0] || 1, sy = s[1] ?? sx;
+    return { squash: m.d / m.a, aspect: (m.d * sy) / (m.a * sx) };
+  }));
+  await expect.poll(async () => (await aspect()).length).toBeGreaterThan(0);
+  for (const a of await aspect()) {
+    expect(a.squash).toBeLessThan(0.9); // (the node is squashed: the camera looks down on the tree)
+    expect(Math.abs(a.aspect - 1)).toBeLessThan(0.02);
+  }
+});
