@@ -68,6 +68,8 @@ export interface Card3 {
 interface M3 {
   key: string;
   yaw?: number;
+  /** Tipped about its own x (radians): a bug flat on a trunk's bark. */
+  pitch?: number;
   grey?: number;
   /** Hidden in 3D for now (a fallen fruit mid-drop). */
   off?: boolean;

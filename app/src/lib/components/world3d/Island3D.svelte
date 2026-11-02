@@ -310,6 +310,7 @@
     t0: number;
     ms: number;
     yaw: number;
+    pitch?: number;
     grey: number;
     art?: Element | null;
   }
@@ -381,10 +382,10 @@
         const dx = L.to[0] - L.from[0], dz = L.to[1] - L.from[1];
         yaw += Math.hypot(dx, dz) > 0.5 ? Math.atan2(dx, -dz) : L.yaw - (n.m3.yaw ?? 0);
       }
-      const on = n.shown && !n.m3.off, grey = n.m3.grey ?? 0;
-      if (fresh || on !== L.on || x !== L.x || z !== L.z || lf !== L.lift || yaw !== L.yaw || grey !== L.grey)
-        e.things.over(n.id, { hidden: !on, x, z, lift: lf, yaw, grey, face: n.m3.face === 'camera' });
-      Object.assign(L, { on, x, z, lift: lf, yaw, grey, art });
+      const on = n.shown && !n.m3.off, grey = n.m3.grey ?? 0, pitch = n.m3.pitch ?? 0;
+      if (fresh || on !== L.on || x !== L.x || z !== L.z || lf !== L.lift || yaw !== L.yaw || grey !== L.grey || pitch !== (L.pitch ?? 0))
+        e.things.over(n.id, { hidden: !on, x, z, lift: lf, yaw, pitch, grey, face: n.m3.face === 'camera' });
+      Object.assign(L, { on, x, z, lift: lf, yaw, pitch, grey, art });
       // its line (a fishing line, a thread): from where it starts to it, sagging a little
       if (n.m3.line) {
         let ln = lines.get(n.id);

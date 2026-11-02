@@ -4,7 +4,8 @@
 // flowers. Each keeps clear of every control and is a ずかん find, never ベル. `?critter=<id>` brings one on at once.
 import { expect, test, type Page } from '@playwright/test';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
-import { REAR_MS } from '../src/lib/components/island/critters.ts';
+import { PERCH_3D, REAR_MS, perches } from '../src/lib/components/island/critters.ts';
+import { groundHeight } from '../src/lib/components/world3d/ground.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
 test.use({ viewport: { width: 390, height: 844 } });
@@ -164,5 +165,34 @@ test("NH's palm beetles on the palms at night (a horned atlas), the stags on a h
     await page.screenshot({ path: `/tmp/world-build/critters-bug-${place}.png` });
     await page.mouse.click(p.x, p.y);
     await expect(page.locator('[data-fx="catch"]')).toContainText(said(id).slice(0, 8), { timeout: 4000 }); // (a three-line line turns a page)
+  }
+});
+
+type W3 = { __world3d?: { loaded(): boolean; where(id: string): { x: number; y: number; z: number; hidden: boolean } | null; client(x: number, z: number, lift?: number): [number, number] } };
+test('on the 3D island a bug perched on a trunk sits on its bark, in view under the canopy, and a tap where it\'s drawn nets it (by day and at night)', async ({ page }) => {
+  test.setTimeout(60_000);
+  for (const [date, id, palm] of [['2026-07-10T12:00', 'robust-cicada', false], ['2026-07-10T22:00', 'saw-stag', false], ['2026-07-10T22:00', 'horned-atlas', true]] as const) {
+    await open(page, `&date=${date}&critter=${id}&visitor=none&island=3d`);
+    await page.waitForFunction(() => (window as unknown as W3).__world3d?.loaded(), null, { timeout: 30_000 });
+    await expect(page.locator(`[data-critter="${id}"].sat`)).toBeAttached({ timeout: 5000 });
+    // its model, and the trunk it's on: on the bark's front (out of the trunk toward the camera), under the canopy
+    const m = await page.evaluate(() => {
+      for (let n = 1; n < 40; n++) {
+        const at = (window as unknown as W3).__world3d!.where(`bug-${n}`);
+        if (at && !at.hidden) return at;
+      }
+      return null;
+    });
+    expect(m, id).not.toBeNull();
+    const [x, z] = [m!.x, -m!.z], lift = m!.y - groundHeight(x, z);
+    const p = perches(palm).sort((a, b) => Math.hypot(a.x - x, a.z - z) - Math.hypot(b.x - x, b.z - z))[0];
+    expect(Math.abs(x - p.x), id).toBeLessThan(2);
+    expect(p.z - z, `${id} out of the trunk`).toBeGreaterThan(PERCH_3D[p.kind].out * p.h * 0.9);
+    expect(lift, `${id} under the canopy`).toBeLessThan(PERCH_3D[p.kind].lift * p.h * 1.2);
+    // a tap where it's drawn (its model on screen) nets it, before the tree takes the tap
+    const [cx, cy] = await page.evaluate(([x, z, l]) => (window as unknown as W3).__world3d!.client(x, z, l), [x, z, lift]);
+    expect(await clear(page, { x: cx, y: cy }), id).toBe('');
+    await page.mouse.click(cx, cy);
+    await expect(page.locator('[data-fx="catch"]')).toContainText(said(id).slice(0, 8), { timeout: 4000 });
   }
 });
