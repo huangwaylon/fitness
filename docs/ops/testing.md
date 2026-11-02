@@ -9,7 +9,7 @@ The tiers and why: [test-strategy.md](test-strategy.md).
 |---|---|---|
 | `build` | `npm run build` once; its `build-pages/` is both the Pages artifact and the `site` artifact the e2e jobs test; plans the logic tier's shards by time (`scripts/e2e-shards.ts`) | yes |
 | `checks` | `npm run check`, `npm run knip`, `npx vitest run`, beside the build | yes |
-| `e2e-logic` ×8 | **the logic tier**: Playwright in Chromium (iPhone 13 profile), every test but `@render` and `@quarantine`, with the 3D engines drawing nothing (`E2E_RENDER=none`), on `site` served as Pages serves it (`scripts/serve-build.ts`), 3 workers each, shards balanced by each test's time on earlier runs (the `timings` job keeps them in a cache) | yes |
+| `e2e-logic` ×8 | **the logic tier**: Playwright in Chromium (iPhone 13 profile), every test but `@render` and `@quarantine`, with the 3D engines drawing nothing (`E2E_RENDER=none`), on `site` served as Pages serves it (`scripts/serve-build.ts`), 4 workers each (nothing drawn: no software GPU sharing the cores), shards balanced by each test's time on earlier runs (the `timings` job keeps them in a cache) | yes |
 | `e2e-render` | **the drawn smoke**: the `@render` and `@smoke` tests with real (software) GL, one runner | yes |
 | `deploy` | to Pages, once all of the above are green | — |
 | `e2e-full` ×6 | **the full tier**: the whole suite drawn (the quarantine too), after the deploy; its failures in its summary and on their specs | no |
@@ -57,7 +57,7 @@ npm run e2e:ci-like -- e2e/world3d.spec.ts --repeat 5   # as CI runs it (below)
 ## Before you push (a new or changed spec, or a change to the 3D engines, the tent or sync)
 1. `npm run check && npx vitest run && npm run knip` (all three gate the deploy; deps.test checks the folders' imports).
 2. `npm run e2e:ci-like -- e2e/the.spec.ts --repeat 5`: the logic tier as CI runs it (a fresh build if `src/` is newer,
-   software GL, CI's 3 workers, `CI=1`, a free port), each test 5×. For a drawn (`@render`/`@smoke`) test add
+   software GL, CI's workers, `CI=1`, a free port), each test 5×. For a drawn (`@render`/`@smoke`) test add
    `--tier render`; `--tier full` draws everything; `--workers 6` loads the machine as a busy runner is.
 3. All green, every time: push (`git pull --rebase origin main && git push origin HEAD:main`). One failure in 5 is a
    flake: fix it now, or quarantine it in the same push with its owner.
