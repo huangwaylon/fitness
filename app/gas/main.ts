@@ -288,6 +288,13 @@ function pushed<R extends { ok: boolean }>(me: PersonId, what: NoticeWhat, reply
 const hex = (bytes: number[]): string => bytes.map((b) => ((b + 256) % 256).toString(16).padStart(2, '0')).join('');
 
 /**
+ * JSON with every character past ASCII escaped as \uXXXX: the signature is over the text's bytes, and Apps Script's
+ * HMAC and UrlFetch need not agree with the relay on how to encode the rest (a Shortcut's "7:25 AM" has a narrow
+ * no-break space, U+202F: the first ingest's copy, 2026-11-02, didn't land, and paused the copies after it).
+ */
+export const asciiJson = (v: unknown): string => JSON.stringify(v).replace(/[^\x20-\x7e]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
+
+/**
  * POST `body` to the relay at `url`, signed (relay/src/notify.ts): secret = HMAC-SHA256(key "<KEY_A>:<KEY_B>", NOTIFY_LABEL),
  * signature = HMAC-SHA256(key secret, "<ms>.<body>"). A phone holds only its own key, so only the two servers can sign.
  * Best effort and never throws: the phones still poll. Any reply but `ok` (or a throw: no external-request scope, the
@@ -316,14 +323,14 @@ function signedPost(url: string, body: string, ok: number): number {
 }
 
 /** Tell the relay the sheet changed (`/notify`): the room passes it to the open phones. */
-const notifyRelay = (n: Notice): number => signedPost(RELAY_NOTIFY_URL, JSON.stringify(n), 204);
+const notifyRelay = (n: Notice): number => signedPost(RELAY_NOTIFY_URL, asciiJson(n), 204);
 
 /**
  * Copy a write's rows, with their `at`, to the relay's record (`/import`); with `notice` (synced rows among them) the
  * record tells the room. A copy that doesn't land (the relay down, a pause) is filled in later by the import again
  * (docs/ops/runbook.md#13-the-record), which skips what the record already has.
  */
-const mirrorToRecord = (rows: typeof copied, notice: Notice | null): number => signedPost(RELAY_IMPORT_URL, JSON.stringify({ rows, notice }), 200);
+const mirrorToRecord = (rows: typeof copied, notice: Notice | null): number => signedPost(RELAY_IMPORT_URL, asciiJson({ rows, notice }), 200);
 
 /**
  * Run once from the script editor after adding the `script.external_request` scope (docs/ops/runbook.md#11-turn-on-the-push):
