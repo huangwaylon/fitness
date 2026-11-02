@@ -8,7 +8,7 @@
 // (island/fx3d.ts), whose art then goes invisible.
 import {
   NormalBlending, CanvasTexture, Color, DoubleSide, Group, Matrix4, Mesh, MeshBasicMaterial, PlaneGeometry, Quaternion, RingGeometry, SphereGeometry,
-  SRGBColorSpace, type BufferGeometry, type Camera, type MeshStandardMaterial, type Scene, type Texture
+  SRGBColorSpace, type BufferGeometry, type Camera, type MeshStandardMaterial, type Scene, type Texture, type WebGLRenderer
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -17,10 +17,10 @@ import { MODELS } from './models3d.ts';
 
 export type FxKind =
   | 'dust' | 'sand' | 'snow' | 'splash' | 'ripple' | 'sparkle' | 'sparks' | 'bang' | 'leaves' | 'drops' | 'hearts'
-  | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'fall' | 'firefly' | 'flame';
+  | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'fall' | 'firefly' | 'flame' | 'mark';
 export interface FxOpts {
-  /** A season's leaf for `leaves` / `fall` (maple-leaf, petal, snowflake), the tool for `swing` (net, shovel), or a
-   *  tint (#rrggbb). */
+  /** A season's leaf for `leaves` / `fall` (maple-leaf, petal, snowflake), the tool for `swing` (net, shovel), a
+   *  villager's `mark` (sparkle, heart, note, zzz, bang, sweat), or a tint (#rrggbb). */
   v?: string;
   /** How long a held one (the 「！」) or an ambient one stays (ms). */
   ms?: number;
@@ -66,19 +66,26 @@ export interface Effects {
   frame(t: number, camera: Camera): boolean;
   /** How many play (with this tag). */
   count(tag?: string): number;
+  /** Load every flourish's model now and put its textures and shaders on the GPU (the island's start, once idle): the
+   *  first high five's sparkles draw whole in their first frame, not late or as blank quads. Resolves when done. */
+  warm(renderer: WebGLRenderer, camera: Camera): Promise<void>;
+  /** Every source loaded and its textures uploaded (the test hook's). */
+  warmed(): boolean;
   dispose(): void;
 }
 
 const MODEL: Record<string, string> = {
   dust: 'fx/dust', splash: 'fx/splash', ripple: 'fx/ripple', sparkle: 'fx/sparkle', bang: 'fx/bang',
   'maple-leaf': 'fx/maple-leaf', petal: 'fx/petal', snowflake: 'fx/snowflake', shovel: 'finds/shovel',
-  note: 'fx/note', heart: 'fx/heart', zzz: 'fx/zzz', confetti: 'fx/confetti', net: 'tools/net', flame: 'fx/flame'
+  note: 'fx/note', heart: 'fx/heart', zzz: 'fx/zzz', confetti: 'fx/confetti', net: 'tools/net', flame: 'fx/flame', sweat: 'fx/sweat'
 };
 /** World units a model unit (assets.json's `s` for each; the island's own at theirs). */
 const SCALE: Record<string, number> = {
   dust: 7.3, splash: 11.25, ripple: 9, sparkle: 6, bang: 13.5, 'maple-leaf': 2.3, petal: 3.1, snowflake: 2.3, shovel: 2.45,
-  ring: 17, note: 2.9, zzz: 5.8, heart: 3, confetti: 4, bubble: 1.6, glow: 5, net: 5.4, flame: 7.7
+  ring: 17, note: 2.9, zzz: 5.8, heart: 3, confetti: 4, bubble: 1.6, glow: 5, net: 5.4, flame: 7.7, sweat: 6
 };
+/** A villager's mark over its head (NH's float: about a third of its head across), world units across. */
+const MARK_U: Record<string, number> = { sparkle: 16, heart: 15, note: 14, zzz: 15, bang: 14, sweat: 11 };
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 const CONFETTI = ['#ff6f91', '#ffd84a', '#6fd3ff', '#8be07a', '#c89cff', '#ff9d3c'];
 
@@ -132,6 +139,41 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     got.set(name, p);
     return p;
   };
+  /** A source's material as a particle has it (one shader for all of them: the warm-up compiles it). */
+  const matFor = (s: Src[number], tint?: string) => {
+    const mat = bend(new MeshBasicMaterial({
+      map: s.map, color: tint ? new Color(tint) : s.color, transparent: true, depthWrite: false, side: DoubleSide, alphaTest: s.add ? 0 : 0.02,
+      blending: NormalBlending
+    }));
+    if (s.add) addLight(mat, true);
+    return mat;
+  };
+  let warmed = false;
+  async function warm(renderer: WebGLRenderer, camera: Camera) {
+    const names = [...new Set([...Object.keys(MODEL), 'ring', 'bubble', 'glow'])];
+    const srcs = (await Promise.all(names.map(load))).filter((x): x is Src => !!x);
+    if (disposed) return;
+    // each source once, in front of the camera, compiled and its texture uploaded, then gone (never drawn)
+    const g = new Group();
+    const mats: MeshBasicMaterial[] = [];
+    for (const src of srcs) for (const s of src) {
+      if (s.map) renderer.initTexture(s.map);
+      const m = matFor(s);
+      mats.push(m);
+      const mesh = new Mesh(s.geo, m);
+      mesh.frustumCulled = false;
+      g.add(mesh);
+    }
+    scene.add(g);
+    try {
+      await renderer.compileAsync(scene, camera);
+    } catch {
+      renderer.compile(scene, camera);
+    }
+    scene.remove(g);
+    for (const m of mats) m.dispose();
+    warmed = true;
+  }
   const parts: Part[] = [];
   /** Spawned but not yet loaded (an ambient count includes them). */
   const coming = new Map<string, number>();
@@ -146,11 +188,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
       if (!src || disposed) return;
       const obj = new Group(), mats: MeshBasicMaterial[] = [];
       for (const s of src) {
-        const mat = bend(new MeshBasicMaterial({
-          map: s.map, color: p.tint ? new Color(p.tint) : s.color, transparent: true, depthWrite: false, side: DoubleSide, alphaTest: s.add ? 0 : 0.02,
-          blending: NormalBlending
-        }));
-        if (s.add) addLight(mat, true);
+        const mat = matFor(s, p.tint);
         const mesh = new Mesh(s.geo, mat);
         if (s.m) {
           mesh.matrixAutoUpdate = false;
@@ -263,6 +301,12 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         part('flame', x + rnd(-3, 3) * k, y, z + rnd(-2, 2), { life: rnd(380, 560), vy: rnd(4, 9), s0: rnd(0.7, 1) * k, s1: 0.2 * k, spin: rnd(-1, 1), face: false });
         part('glow', x, y + 4, z, { life: 500, vy: 10, s0: 1.2 * k, s1: 0.3 * k, tint: '#ffa04a', face: true });
         return;
+      case 'mark': {
+        // a villager's floating mark: pops in over its head, bobs a little, fades (Emote.svelte's float)
+        const m = o.v && MODEL[o.v] ? o.v : 'sparkle', s = (MARK_U[m] ?? 14) / ((SCALE[m] ?? 5) * 2) * k;
+        part(m, x, y, z, { life: o.ms ?? 2200, s0: s * 0.4, s1: s, vy: 2, sway: 0.6, face: true });
+        return;
+      }
       case 'firefly':
         part('glow', x, y, z, { life: o.ms ?? rnd(5000, 8000), vx: rnd(-4, 4), vy: rnd(-1, 1), vz: rnd(-3, 3), sway: rnd(3, 6), s0: k, s1: k, blink: true, tag: o.tag });
         return;
@@ -302,7 +346,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
   }
 
   return {
-    spawn, frame,
+    spawn, frame, warm, warmed: () => warmed,
     count: (tag) => (tag ? parts.filter((p) => p.tag === tag).length + (coming.get(tag) ?? 0) : parts.length),
     dispose() {
       disposed = true;

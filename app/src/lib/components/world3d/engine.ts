@@ -197,6 +197,9 @@ export interface Island3 {
   /** A screen point (canvas px) at `share` of the horizon's view depth, as a world point (unbent: x, z on the plan and
    *  y its height) and the px a unit across there: a sky thing drawn where the DOM's is. */
   skyPoint(sx: number, sy: number, share: number): { x: number; y: number; z: number; px: number };
+  /** Every flourish's model loaded and on the GPU ahead of its first use (effects.ts warm): once, after the island loads. */
+  warmFx(): Promise<void>;
+  fxWarmed(): boolean;
   /** How many flourishes play (with this ambient tag). */
   fxCount(tag?: string): number;
   /** The GPU's name (a software renderer, CI's: the scene draws at its lightest). */
@@ -886,6 +889,8 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
         kick();
       };
     },
+    warmFx: () => effects.warm(renderer, camera),
+    fxWarmed: () => effects.warmed(),
     fx(kind, x, z, lift, o) {
       effects.spawn(kind, x, z, lift, o);
       activity(400);

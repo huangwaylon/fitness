@@ -480,6 +480,10 @@ export class World {
         el.style.height = `calc(${n.box.z1 - n.box.z0} * var(--u))`;
         el.style.transformOrigin = '0 0';
       }
+      // a node the 3D island draws as a model: its art hidden there from its first frame (IslandScene's [data-m3]), till
+      // the 3D island says it has no model for it (m3off): never a flash of the 2D sprite as it mounts (a weed coming
+      // into view)
+      el.toggleAttribute('data-m3', !!n.m3 && !n.m3.art);
       this.nodes.add(n);
       if (n.m3) this.m3s.add(n);
       if (n.c3) this.c3s.add(n);

@@ -1186,15 +1186,19 @@
   .scene[data-r3] { touch-action: none; }
   .scene[data-r3] .scroller { overflow: hidden; touch-action: none; }
   .scene[data-r3] .tint { display: none; }
-  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .fl > .b, .tree > .oak)) { opacity: 0; }
-  .scene[data-r3] :global(.m3on :is([data-m3art], .official)) { opacity: 0; }
-  .scene[data-r3] :global(.mover.m3on > *) { opacity: 0; }
-  .scene[data-r3] :global(.in3d) { opacity: 0; }
-  .scene[data-r3] :global(.notes.m3on) { opacity: 0; }
+  /* (!important: over an art's own animated opacity, a high five's zap, which else showed through as a blurry 2D star) */
+  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .fl > .b, .tree > .oak)) { opacity: 0 !important; }
+  .scene[data-r3] :global(.m3on :is([data-m3art], .official)) { opacity: 0 !important; }
+  .scene[data-r3] :global([data-m3]:not(.m3off) :is([data-m3art], .official)) { opacity: 0 !important; }
+  .scene[data-r3] :global(.mover.m3on > *) { opacity: 0 !important; }
+  .scene[data-r3] :global(.in3d) { opacity: 0 !important; }
+  .scene[data-r3] :global(.notes.m3on) { opacity: 0 !important; }
   /* what flies in the sky (the balloon and its present) is the canvas's where the DOM's is (Island3D sky) */
   .scene[data-r3] :global(:is([data-m3sky], [data-m3sky-hide])) { opacity: 0; }
   /* the characters' flourishes are the canvas's (world3d/Island3D actorFx); a sweat drop stays on the face */
-  .scene[data-r3] :global(:is(.actor, .visitor) .fxa:not(.sweat)) { opacity: 0; }
+  .scene[data-r3] :global(:is(.actor, .visitor) .fxa:not(.sweat)) { opacity: 0 !important; }
+  /* a 3D villager's marks are the canvas's (world3d/Island3D marks3: NH's models over its head); a ？ stays the DOM's */
+  .scene[data-r3] :global(.actor[data-v3] .float[data-mark]:not([data-mark='question'])) { opacity: 0 !important; }
   .scene[data-r3] :global(.visitor:has(> .art.m3on) > .shade) { opacity: 0; }
   /* the campfire's light is the canvas's (its emissive, halo, pool and point light); its flames stay the DOM's */
   .scene[data-r3] :global(:is(.fire-halo, .embers, .fire-pool)) { display: none; }

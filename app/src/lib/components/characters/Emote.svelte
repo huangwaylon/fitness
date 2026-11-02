@@ -25,7 +25,7 @@
 </script>
 
 {#if bare || isMark(id)}
-  <span class="float {tail}" class:hold class:still={!animate} style:--w={w} aria-hidden="true">
+  <span class="float {tail}" class:hold class:still={!animate} style:--w={w} aria-hidden="true" data-mark={isMark(id) ? id.slice(5) : undefined}>
     {#if isMark(id)}<Mark id={id.slice(5) as MarkId} />
     {:else}<OfficialArt key={reactionArt(id)} size="100%" eager />{/if}
   </span>
