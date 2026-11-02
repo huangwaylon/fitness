@@ -2,7 +2,7 @@
 // issue with its tiles, so the plan can mark them) and the default's test (none). Nothing here refuses a layout: the
 // record keeps whatever the members save; the phones walk what nav.ts derives from it.
 import { GRID, isWater, kindOf, tierOf, idx, onGrid, type Kind } from './grid.ts';
-import { doorOf, footOf, objMid, objTiles, type Layout, type Obj } from './model.ts';
+import { doorOf, footOf, objMid, objTiles, originOf, type Layout, type Obj } from './model.ts';
 import { kindDef } from './catalog.ts';
 import { HOME_IDS } from './homes.ts';
 import { blockBox, navOf, reachable, type LayoutNav } from './nav.ts';
@@ -31,8 +31,8 @@ function standBox(l: Layout, o: Obj): { x0: number; x1: number; y0: number; y1: 
     const [x, z] = objMid(l, o);
     return { x0: x - 6, x1: x + 6, y0: z - 4, y1: z + 4 };
   }
-  const [w, d] = footOf(l, o);
-  const x0 = GRID.x0 + o.x * 30, y0 = GRID.z0 + o.z * 30;
+  const [w, d] = footOf(l, o), [ox, oz] = originOf(l, o);
+  const x0 = GRID.x0 + ox * 30, y0 = GRID.z0 + oz * 30;
   return { x0: x0 + 1, x1: x0 + w * 30 - 1, y0: y0 + 1, y1: y0 + d * 30 - 1 };
 }
 const solid = (o: Obj) => {
@@ -108,7 +108,8 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
     }
     const d = doorOf(layout, o);
     const at = nav.doors[id]?.at;
-    if (d.tiles.some(([c, r]) => isWater(kindAt(layout, c, r)) || tierAt(layout, c, r) !== tierAt(layout, o.x, o.z)) || !at || !reachable(nav, at[0], at[1]))
+    const [hx, hz] = originOf(layout, o);
+    if (d.tiles.some(([c, r]) => isWater(kindAt(layout, c, r)) || tierAt(layout, c, r) !== tierAt(layout, hx, hz)) || !at || !reachable(nav, at[0], at[1]))
       add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [id], 'いえの とびらまで いけない', "A home's door can't be reached");
   }
   // what a villager uses from in front of it (the bulletin board): its front tiles clear and reachable

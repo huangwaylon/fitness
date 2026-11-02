@@ -4,7 +4,7 @@
 // sees it live.
 import { codeOf, idx, isWater, kindOf, onGrid, tierOf, TIERS, CHUNKS_X, CHUNKS_Z, chunkString, chunkXZ, CHUNK, GRID, type Kind } from '#lib/layout/grid.ts';
 import { footprintOf, kindDef } from '#lib/layout/catalog.ts';
-import { footOf, newObjId, withChanges, type Layout, type Obj } from '#lib/layout/model.ts';
+import { footOf, newObjId, originOf, withChanges, type Layout, type Obj } from '#lib/layout/model.ts';
 import { diffLayouts } from '#lib/layout/diff.ts';
 
 type Facing = Obj['f'];
@@ -55,8 +55,8 @@ export function place(l: Layout, k: string, c: number, r: number, f: Facing, s: 
 
 /** Whether an object's footprint lies on the grid. */
 function inGrid(l: Layout, o: Obj): boolean {
-  const [w, d] = footOf(l, o);
-  return o.x >= 0 && o.z >= 0 && o.x + w <= GRID.cols && o.z + d <= GRID.rows;
+  const [w, d] = footOf(l, o), [x, z] = originOf(l, o);
+  return x >= 0 && z >= 0 && x + w <= GRID.cols && z + d <= GRID.rows;
 }
 
 /** Move objects by whole tiles (each kept on the grid: a move that would take one off it is clamped for all). */
@@ -65,9 +65,9 @@ export function move(l: Layout, ids: Iterable<string>, dc: number, dr: number): 
   if (!os.length || (!dc && !dr)) return l;
   // clamp the step so every footprint stays on the grid
   for (const o of os) {
-    const [w, d] = footOf(l, o);
-    dc = Math.max(-o.x, Math.min(GRID.cols - w - o.x, dc));
-    dr = Math.max(-o.z, Math.min(GRID.rows - d - o.z, dr));
+    const [w, d] = footOf(l, o), [x, z] = originOf(l, o);
+    dc = Math.max(-x, Math.min(GRID.cols - w - x, dc));
+    dr = Math.max(-z, Math.min(GRID.rows - d - z, dr));
   }
   if (!dc && !dr) return l;
   return withChanges(l, { set: os.map((o) => ({ id: o.id, k: o.k, x: o.x + dc, z: o.z + dr, f: o.f, ...(o.s ? { s: o.s } : {}) })) });
@@ -130,8 +130,8 @@ export function inBox(l: Layout, c0: number, r0: number, c1: number, r1: number)
   const [a, b] = [Math.min(c0, c1), Math.max(c0, c1)], [p, q] = [Math.min(r0, r1), Math.max(r0, r1)];
   const out: string[] = [];
   for (const o of l.objects.values()) {
-    const [w, d] = footOf(l, o);
-    if (o.x <= b && o.x + w - 1 >= a && o.z <= q && o.z + d - 1 >= p) out.push(o.id);
+    const [w, d] = footOf(l, o), [x, z] = originOf(l, o);
+    if (x <= b && x + w - 1 >= a && z <= q && z + d - 1 >= p) out.push(o.id);
   }
   return out;
 }
@@ -140,8 +140,8 @@ export function inBox(l: Layout, c0: number, r0: number, c1: number, r1: number)
 export function objectAt(l: Layout, c: number, r: number): Obj | null {
   let best: Obj | null = null, area = Infinity;
   for (const o of l.objects.values()) {
-    const [w, d] = footOf(l, o);
-    if (c >= o.x && c < o.x + w && r >= o.z && r < o.z + d && w * d < area) {
+    const [w, d] = footOf(l, o), [x, z] = originOf(l, o);
+    if (c >= x && c < x + w && r >= z && r < z + d && w * d < area) {
       best = o;
       area = w * d;
     }

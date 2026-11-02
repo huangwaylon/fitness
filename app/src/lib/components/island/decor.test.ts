@@ -116,7 +116,9 @@ describe('decorations: the walk goes round them', () => {
     setWalkDecor([]);
     setNavDecor([]);
     console.log(`decor: mask ${(t1 - t0).toFixed(1)} ms, nav ${(t2 - t1).toFixed(1)} ms (${g.nodes.length} nodes), first route round one (the corner graph) ${(t3 - t2).toFixed(1)} ms`);
-    expect(t1 - t0).toBeLessThan(50);
-    expect(t2 - t1).toBeLessThan(200);
+    // generous: a sanity bound, not a benchmark (the full suite runs its files in parallel on a loaded machine;
+    // timing assertions stay out of the gates: docs/ops/testing.md). Alone it's a few ms.
+    expect(t1 - t0).toBeLessThan(400);
+    expect(t2 - t1).toBeLessThan(800);
   });
 });

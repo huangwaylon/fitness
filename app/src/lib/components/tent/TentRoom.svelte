@@ -11,6 +11,7 @@
   import { onMount, untrack } from 'svelte';
   import NavButton from '../ui/NavButton.svelte';
   import TentEdit from './TentEdit.svelte';
+  import HomePicker from '../homes/HomePicker.svelte';
   import HhaLetter from './HhaLetter.svelte';
   import { loadHha, rate, type HhaRating } from './hha.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
@@ -23,7 +24,9 @@
   import { doorReady, provideDoor } from '#lib/ui-state/doorTransition.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { tent as room } from '#lib/store/tent.svelte.ts';
+  import { rooms } from '#lib/store/tent.svelte.ts';
+  import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
+  import { doorOf as layoutDoor, facingVec } from '#lib/layout/model.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { where } from '#lib/store/where.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
@@ -39,7 +42,14 @@
   import { seatsOf, type Seat } from './seats.ts';
   import type { Look, Pose, Tent, Who } from './engine.ts';
 
-  let { view }: { view: WeekView } = $props();
+  // `home`: whose home this is (docs/island-layout.md "Homes"): ウェイ's the tent's room (as it always was), うめ's house's
+  // (`sc: 'u'`), the guest's (`v`); its owner arranges it (the tent's: all three), anyone may come in
+  let { view, home = 'A' }: { view: WeekView; home?: Who } = $props();
+  // svelte-ignore state_referenced_locally
+  const room = rooms[home];
+  /** The presence's scope for this home (none: the tent's, as before). */
+  // svelte-ignore state_referenced_locally
+  const homeSc = home === 'B' ? ('u' as const) : home === 'G' ? ('v' as const) : undefined;
 
   let canvas = $state<HTMLCanvasElement>();
   let eng = $state<Tent | null>(null);
@@ -66,7 +76,16 @@
   const own = demo ? (testRelay() ?? createLocalLive(me)) : null;
   const relay: Live | null = demo ? own : LIVE_URL ? liveRelay() : null;
   const relayNow = () => shared.now();
-  const send = (i: Intent) => relay?.send(i) ?? false;
+  // the tent's presence and drags as before; another home's say which (`sc`), so they show only in there
+  const send = (i: Intent) => relay?.send(homeSc && (i.kind === 'tent' || i.kind === 'drag') ? ({ ...i, sc: homeSc } as Intent) : i) ?? false;
+  /** Whether a relayed tent or drag is about this home. */
+  const here = (m: { sc?: string }) => (m.sc ?? undefined) === homeSc;
+  // svelte-ignore state_referenced_locally
+  const canEdit = home === 'A' || view.viewer === home;
+  /** いえを かえる: a home's look is its owner's alone. */
+  // svelte-ignore state_referenced_locally
+  const mine = view.viewer === home;
+  let picking = $state(false);
   const link = new DragLink((d) => send(d));
 
   /** The pieces where they stand in the room (a small thing on a table: on its top there). */
@@ -165,7 +184,7 @@
   function partnerShown() {
     if (!eng) return;
     for (const w of others) {
-      const shown = where.inTent[w];
+      const shown = where.inTent[w] && where.home[w] === home;
       eng.villager(w, shown ? lookOf(w) : null);
       if (shown && !eng.walking(w)) eng.put(w, theirAt.get(w)!, faceOf(w));
     }
@@ -173,6 +192,8 @@
   function heardTent(m: Extract<Relayed, { kind: 'tent' }>) {
     where.heard(m);
     if (!eng) return;
+    // in another home: shown nowhere here
+    if (!here(m)) return partnerShown();
     const w = m.who;
     if (m.to) theirAt.set(w, m.to);
     partnerShown();
@@ -358,7 +379,7 @@
       const at = spots().find((q) => q.id === h.id);
       if (at) eng.face(me, centreOf(at));
       eng.bump(h.id);
-      if (p && meta?.lt) {
+      if (p && meta?.lt && canEdit) {
         const on = (p.l ?? 1) !== 1;
         room.switchLight(p.id, on);
         cue(on ? 'toggle-on' : 'toggle-off');
@@ -374,13 +395,22 @@
     cue('scene-bench');
     // out of the door: on the island my villager stands just outside the tent's door, facing out, on both phones (the
     // island's put, said here at once with the leaving)
-    ui.fromTent = true;
     send({ kind: 'tent', in: false });
-    const [dx, dz] = outOfTent(me);
+    // the tent's door (world.ts's island), or this home's on the layout (a step out in front of it)
+    const [dx, dz] = home === 'A' ? outOfTent(me) : outOfHome();
+    if (home === 'A') ui.fromTent = true;
     send({ kind: 'walk', to: [Math.round(dx), Math.round(dz)], from: [Math.round(dx), Math.round(dz)], s: Math.round(relayNow()), ms: 0, f: 'home' });
     void goto(resolve('/') + location.search).finally(() => (leaving = false));
   }
   let leaving = false;
+  /** Just out of this home's door on the layout (each of us to one side). */
+  function outOfHome(): readonly [number, number] {
+    const l = islandLayout.current, o = l.objects.get(`home-${home}`);
+    if (!o) return outOfTent(me);
+    const [x, z] = layoutDoor(l, o).at, [fx, fz] = facingVec(o.f);
+    const side = me === 'A' ? -12 : me === 'B' ? 12 : 0;
+    return [x + fx * 30 - fz * side, z + fz * 30 + fx * side];
+  }
 
   // the room as the store has it: the pieces, the wallpaper and the floor
   $effect(() => {
@@ -397,7 +427,7 @@
   });
   $effect(() => {
     const m = week.model;
-    if (m) untrack(() => room.rows(m.state.tent));
+    if (m) untrack(() => (room.rows(m.state.tent), islandLayout.rows(m.state.layout)));
   });
   $effect(() => eng?.night(nightOf(theme.tod)));
   // the edit tray opening or closing: the usable band changes (after it has laid out)
@@ -445,6 +475,9 @@
   onMount(() => {
     let alive = true;
     room.attach(relay, me, demo);
+    // the island's layout too (a home's look changed in here goes out as its op; this home's door on the way out)
+    islandLayout.attach(relay, me, demo);
+    islandLayout.sink = (op) => sendDecor(op);
     // the shared island hears the partner while I'm in here too (their walks, their exit at the door): on the phone's
     // one socket it already does; the demo's tabs have a relay per screen
     shared.attach(relay, me, demo);
@@ -455,7 +488,7 @@
       offs.push(relay.on((m) => {
         if (m.who === me) return;
         if (m.kind === 'tent') heardTent(m);
-        else if (m.kind === 'drag') heardDrag(m);
+        else if (m.kind === 'drag' && here(m)) heardDrag(m);
       }));
       offs.push(relay.onStatus((st) => {
         const was = hereNow, here = st.connected ? st.here : [];
@@ -512,6 +545,7 @@
       ro.disconnect();
       offDoor();
       room.sink = null;
+      islandLayout.sink = null;
       own?.stop();
       eng?.dispose();
       eng = null;
@@ -611,14 +645,15 @@
   }
 </script>
 
-<main class="tent" data-tent data-editing={editing || undefined}>
+<main class="tent" data-tent data-room-home={home} data-editing={editing || undefined}>
   <h1 class="sr-only">{t('tent.title')}</h1>
   <canvas bind:this={canvas} class="room" data-room onpointerdown={onDown} onpointermove={onMove} onpointerup={onUp}
     onpointercancel={onCancel} onwheel={onWheel} aria-label={t('tent.room')}></canvas>
   <div class="top" bind:this={top}>
     {#if !editing}<NavButton kind="back" text={t('tent.back')} onclick={leave} sfx="self" />{/if}
   </div>
-  {#if !editing}
+  {#if home !== 'A'}<p class="whose" data-home={home}>{nameOf(home)}の いえ</p>{/if}
+  {#if !editing && canEdit}
     <!-- NH's room light switch: the room's own light on or off (the lamps that are on light it then) -->
     <button type="button" class="switch" class:off={!room.lights} data-tent-lights={room.lights ? 'on' : 'off'} data-sfx="self"
       aria-label={t('tent.lights')} aria-pressed={room.lights}
@@ -639,7 +674,13 @@
     </button>
   {/if}
   <div class="foot" bind:this={foot}>
-    {#if !editing}
+    {#if !editing && mine}
+      <button type="button" class="edit look" data-home-look data-sfx="open" onclick={() => (picking = true)}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7M5.5 9.5V20h13V9.5" /><path d="M10 20v-5h4v5" /></svg>
+        <span>いえを かえる</span>
+      </button>
+    {/if}
+    {#if !editing && canEdit}
       <button type="button" class="edit" data-tent-edit-open data-sfx="open" onclick={() => (editing = true)}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h16v5H4zM6 13V9a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4M6 18v2M18 18v2" /></svg>
         <span>{t('tent.edit')}</span>
@@ -655,10 +696,16 @@
       }} />
   {/if}
   {#if letter}<HhaLetter rating={letter} onclose={() => (letter = null)} />{/if}
+  {#if picking}<HomePicker bind:open={picking} who={home} />{/if}
   {#if failed}<p class="fail" role="alert">{t('tent.failed')}</p>{/if}
 </main>
 
 <style>
+  .foot :global(.look) { margin-right: 8px; }
+  .whose {
+    position: absolute; left: 50%; top: calc(var(--safe-top, 0px) + 70px); transform: translateX(-50%); margin: 0; padding: 6px 14px;
+    border-radius: 999px; background: var(--c-cream); color: var(--c-ink); font-weight: 700; font-size: var(--fs-s, 13px); pointer-events: none;
+  }
   .tent {
     position: relative; max-width: var(--col); margin: 0 auto; height: var(--vh-fill); overflow: hidden; background: #2a1f17; touch-action: none;
     /* the edit mode's plates: the island's cream at every hour (NH's game objects) */

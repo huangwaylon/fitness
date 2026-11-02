@@ -658,7 +658,9 @@ objects exactly where they stood, made twice as long (20 × 92): まえ at the f
 new middle, open grass for building, the stream running down its east side, the path through it, うめ's and the
 guest's houses with paths to their doors. Corners are round (NH's), cliffs are steps of 40u with NH's strata, a river
 stepping down a tier falls, stairs are stone steps; the 3D ground is built and baked from the layout on the phone
-(world3d/terrain.ts). The 2D island keeps world.ts's area until the 3D cutover. The members change the outdoors (the
+(world3d/terrain.ts). The 2D island keeps world.ts's area until the 3D cutover. Each home is its owner's: its look
+(いえを かえる: NH's player house or a villager's, wall, roof and door in their colours, the move-in tents, the campsite's
+tent) and its room (the tent's room system: うめ's house, the guest's), anyone welcome in. The members change the outdoors (the
 desktop editor, then the phone); each person changes only their own home's look and room (the guest: its own house
 and the tent).
 

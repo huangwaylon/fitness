@@ -522,6 +522,15 @@ piece picked it, a tap meant for the floor next to a neighbour moved the wrong t
 through to whatever was behind it, and a drag that began on a neighbour grabbed it. Why: the user found it "too easy
 to accidentally select a different item"; NH's own decorating holds one item until it's put down.
 
+### Every home is the tent's room; a home's look is its owner's alone (2026-11-02)
+うめ's house and the guest's are the tent's room system with their own scopes (`u`, `v`): the same 8 × 8 room, their
+own pieces, arranged by their owner alone (the tent's, ウェイ's, by all three as before). A home's look (NH's player
+house or a villager's in their parts and colours, the move-in tents, the campsite's tent) is its owner's alone to
+change, any time; its door is its anchor, so a new look grows round the door and the room is the same whatever the
+outside. A look that wouldn't fit where the home stands is refused in the picker. Why: the user asked for three homes,
+"the option for a user to swap out their home model as desired… keep it flexible", each changing only their own; one
+room system means every room has the tent's editing, its sync and its record path.
+
 ### The tent's camera is the player's, its walls cut away
 The room opens at NH's fixed, slightly top-down view, and a drag turns the camera round the room's middle (a pinch
 zooms, 🏠 eases it back), within limits that keep the walls from clipping; the walls between the camera and the room

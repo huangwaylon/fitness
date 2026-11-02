@@ -112,17 +112,30 @@ export function footOf(layout: Layout, o: Pick<Obj, 'id' | 'k' | 'f'>): [number,
   return def ? footprintOf(def, o.f) : [1, 1];
 }
 
+/** An object's footprint's back-left tile: its own (x, z); but a home's (x, z) is its door's tile (the front row's
+ *  middle, the left of two), so a new style's footprint grows round its door and the door stays where it was. */
+export function originOf(layout: Layout, o: Pick<Obj, 'id' | 'k' | 'x' | 'z' | 'f'>): [number, number] {
+  if (o.k !== 'home') return [o.x, o.z];
+  const [w, d] = footOf(layout, o);
+  switch (o.f) {
+    case 0: return [o.x - Math.floor((w - 1) / 2), o.z];
+    case 2: return [o.x - Math.floor((w - 1) / 2), o.z - d + 1];
+    case 1: return [o.x - w + 1, o.z - Math.floor((d - 1) / 2)];
+    default: return [o.x, o.z - Math.floor((d - 1) / 2)];
+  }
+}
+
 /** Where an object stands (u): its footprint's middle, plus the default's own offset. */
 export function objMid(layout: Layout, o: Obj): [number, number] {
-  const [w, d] = footOf(layout, o);
-  return [tileX(o.x) + (w * TILE) / 2 + (o.n?.[0] ?? 0), tileZ(o.z) + (d * TILE) / 2 + (o.n?.[1] ?? 0)];
+  const [w, d] = footOf(layout, o), [x0, z0] = originOf(layout, o);
+  return [tileX(x0) + (w * TILE) / 2 + (o.n?.[0] ?? 0), tileZ(z0) + (d * TILE) / 2 + (o.n?.[1] ?? 0)];
 }
 
 /** The tiles an object covers. */
 export function objTiles(layout: Layout, o: Obj): [number, number][] {
-  const [w, d] = footOf(layout, o);
+  const [w, d] = footOf(layout, o), [x0, z0] = originOf(layout, o);
   const out: [number, number][] = [];
-  for (let j = 0; j < d; j++) for (let i = 0; i < w; i++) out.push([o.x + i, o.z + j]);
+  for (let j = 0; j < d; j++) for (let i = 0; i < w; i++) out.push([x0 + i, z0 + j]);
   return out;
 }
 
@@ -139,19 +152,19 @@ export const facingVec = (f: number): [number, number] => [[0, -1], [1, 0], [0, 
 /** A home's door (or a bulletin board's front): the middle of its front edge (u), and the tiles just outside it that
  *  must stay clear. */
 export function doorOf(layout: Layout, o: Obj): { at: [number, number]; tiles: [number, number][] } {
-  const [w, d] = footOf(layout, o);
+  const [w, d] = footOf(layout, o), [ox, oz] = originOf(layout, o);
   const [mx, mz] = objMid(layout, o);
   const [fx, fz] = facingVec(o.f);
   const at: [number, number] = [mx + (fx * w * TILE) / 2, mz + (fz * d * TILE) / 2];
   // the front edge's middle tile (two for an even edge), one tile out
   const tiles: [number, number][] = [];
   if (fz !== 0) {
-    const r = fz < 0 ? o.z - 1 : o.z + d;
-    const c0 = o.x + Math.floor((w - 1) / 2), c1 = o.x + Math.floor(w / 2);
+    const r = fz < 0 ? oz - 1 : oz + d;
+    const c0 = ox + Math.floor((w - 1) / 2), c1 = ox + Math.floor(w / 2);
     for (let c = c0; c <= c1; c++) tiles.push([c, r]);
   } else {
-    const c = fx < 0 ? o.x - 1 : o.x + w;
-    const r0 = o.z + Math.floor((d - 1) / 2), r1 = o.z + Math.floor(d / 2);
+    const c = fx < 0 ? ox - 1 : ox + w;
+    const r0 = oz + Math.floor((d - 1) / 2), r1 = oz + Math.floor(d / 2);
     for (let r = r0; r <= r1; r++) tiles.push([c, r]);
   }
   return { at, tiles };

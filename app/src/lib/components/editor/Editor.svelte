@@ -13,6 +13,7 @@
   import { artUrl } from '#lib/art.ts';
   import type { Live } from '#lib/sync/live.ts';
   import Preview3D from './Preview3D.svelte';
+  import HomePicker from '../homes/HomePicker.svelte';
   import { draw, fitView, tileUnder, toScreen, toWorld, zoomAt, type View } from './plan.ts';
   import {
     brushTiles, cliff, copy, ghostFoot, inBox, move, objectAt, paint, paste, place, remove, removable, restyle, revert, rotate, sameLayout, wetAt, type Clip
@@ -38,6 +39,7 @@
   let sent = $state(0);
   let hover = $state<[number, number] | null>(null);
   let confirmReset = $state(false);
+  let picking = $state(false);
 
   /** The layout drawn: the store's, or a stroke's in progress. */
   let work = $state<Layout | null>(null);
@@ -612,6 +614,10 @@
         {/each}
       </ul>
     </section>
+    <section class="mine" data-my-home>
+      <h2>わたしの いえ <small>{store.home(me).m === 'house' ? `${store.home(me).w} · ${store.home(me).r} · ${store.home(me).d}` : store.home(me).m}</small></h2>
+      <button type="button" data-home-look onclick={() => (picking = true)}>いえを かえる</button>
+    </section>
     <section class="file">
       <div class="row">
         <button type="button" onclick={exportJson}>JSONに かきだす</button>
@@ -632,6 +638,7 @@
     </section>
   </aside>
 </div>
+{#if picking}<HomePicker bind:open={picking} who={me} />{/if}
 
 <style>
   .ed {
@@ -677,7 +684,7 @@
   }
   .p3d { height: 260px; border-radius: 12px; overflow: hidden; border: 2px solid var(--c-lip); }
   .bar { display: flex; gap: 6px; }
-  .inspect, .issues, .file { background: var(--c-card); border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+  .inspect, .issues, .file, .mine { background: var(--c-card); border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
   .issues ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; max-height: 240px; overflow-y: auto; }
   .issues li button { width: 100%; text-align: left; font-weight: 500; display: flex; flex-direction: column; gap: 1px; border-width: 1.5px; }
   .issues li button small { font-size: 11px; color: var(--c-ink-soft); }

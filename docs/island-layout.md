@@ -1,8 +1,8 @@
 # The island's layout (customisable outdoors, homes and interiors)
 
 Status: **phases 1 (schema, ops, default migration, nav, validation, the store), 2 (the 3D ground from the grid, the
-objects from the layout, the long island) and 3 (the desktop editor) landed**; next: the homes and their interiors
-(4), phone editing (5). This file is the contract
+objects from the layout, the long island), 3 (the desktop editor) and 4 (the homes, their looks and their rooms)
+landed**; next: phone editing (5). This file is the contract
 between the layout work (`app/src/lib/layout/`, `store/layout.svelte.ts`, `world3d/terrain.ts`, `world3d/objects.ts`,
 the editor, the homes) and the 3D integration (the scene, the camera, porting the island's features: the lead's
 `world3d/engine.ts` and the rest of `world3d/`).
@@ -44,9 +44,9 @@ the editor, the homes) and the 3D integration (the scene, the camera, porting th
   footprint's middle); an op (a move) always puts it on its tile, and `n` is gone. So reading positions from the
   layout instead of world.ts changes nothing on the island until someone moves something.
 - **Homes:** three, fixed ids `home-A` (ウェイ's, the campsite's tent), `home-B` (うめ's), `home-G` (the guest's).
-  Where a home stands is an object; how it looks is its **style** (`layout/homes.ts`: `{m, w?, r?, d?}`), its owner's.
-  The style's model sets the footprint (campsite 4 × 3, tents 3 × 3 / 4 × 3, a house 4 × 3); its door is the middle
-  of the front edge (`model.ts doorOf`), the tile(s) in front of it must stay clear.
+  Where a home stands is an object; how it looks is its **style** (`layout/homes.ts`: `{m, w?, r?, d?}`), its owner's
+  alone. A home's `(x, z)` is its door's tile (the front row's middle, the left of two: `model.ts originOf`), so a new
+  look's footprint grows round its door and the door stays put; see "Homes" below.
 - **The default layout** (`layout/default.json`, `npm run layout:default` from world.ts and scatter.json): today's
   island on the grid, world.ts's ids kept (`goal-A`, `hedge-3`, `bench-mae`, `fl:52:180`, `tape-deck`, `rock`,
   `bridge`, `stairs`; the campsite is `home-A`), made twice as long: today's まえ (the sea, the beach, the health
@@ -71,7 +71,7 @@ id's latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (i
 | `o` | an object set `{id, at, k, x, z, f, s?}` or gone `{id, at, rm: true}` (not final: a later set brings it back) | A, B |
 | `c` | a terrain chunk `{id: 'c<cx>x<cz>', at, g}`: `g` its 64 tiles, row by row, one character each | A, B |
 | `r` | a reset `{id: 'reset', at}`: every `o` and `c` op older than it is void (the default again); the record drops them | A, B |
-| `h` | a home's style `{id: 'hA'\|'hB'\|'hG', at, m, w?, r?, d?}` | its owner; `hG` also A and B |
+| `h` | a home's style `{id: 'hA'\|'hB'\|'hG', at, m, w?, r?, d?}` | its owner alone |
 | `t` | ウェイ's home's interior (the tent's room, as before) | A, B, G |
 | `u` | うめ's home's interior | B |
 | `v` | the guest's home's interior | G |
@@ -210,6 +210,38 @@ anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the pho
 - **The e2e** (`e2e/editor.spec.ts`): a move reaches the other tab's layout live and stays across a reload; a stroke
   and its undo / redo; R; Delete refusing a goal tree; placing (refused on the river); reset; the guest's door.
 
+## Homes (phase 4)
+
+- **The catalogue** (`layout/homes.ts`, `homes.json`; `npm run home-models` with NH_MODELS converts NH's House*
+  parts into `static/room/homes/`: 63 families, 2.8 MB, each part's GLB in its first colour, every other colour's
+  albedo beside it, a 48px swatch per colour, NH's own picker icons for the doors and the player house):
+  - `campsite`: today's campsite tent (ウェイ's by default);
+  - `tent-n` (`w` 'A' | 'B'): NH's move-in tent; `tent-p`: the player's first tent;
+  - `house`: NH's modular house, `w` a wall (`PA04Stucco.B`: the player house's four walls, or a villager house's:
+    NA ようふう, NB ログハウス, NC わふう, ND こや, each its materials), `r` the same shape's roof, `d` one of NH's 14 doors
+    (`Simple.R.A`: round or square), each part in its colours (6–10). A roof of another shape is mended to the wall's.
+  - Footprints by shape (3u a model unit: NH's 10 model units a tile): the player house 5 × 3, a villager house
+    4 × 3 (ND 4 × 4), the move-in tent 3 × 3, the player's tent and the campsite 4 × 3; the porch inside the front row.
+- **The defaults:** うめ's NH's player house (stucco, a western tile roof), the guest's a villager's log house (a
+  thatched roof), both in the middle with paths to their doors.
+- **Drawing them** (`world3d/home.ts buildHome(style)`: a Group of the three parts at 3u a model unit, NH's soft
+  Lambert, a lamp's own glow; `world3d/objects.ts homePlaces(layout)`: each built home's origin, its front wall's
+  middle, and its yaw; the campsite's tent stays placeObjects' instance).
+- **いえを かえる** (`components/homes/HomePicker.svelte`): the owner's own, in their home's room (the button by
+  もようがえ) and in the editor (わたしの いえ). The kind (いえ, テント, ちいさなテント, キャンプのテント), the shape, the wall's
+  and the roof's materials and colours (swatches; NH's icons for the player house), the door (NH's icons, round or
+  square, its colours); the house turning in a preview as it's chosen. A look that wouldn't fit where the home stands
+  (a footprint over something, off the land, over water, across a cliff, its door walled in) is refused there, so the
+  island stays valid; これにする sends the `h` op. Only the owner may (`scopeMayWrite`: `hA` A, `hB` B, `hG` G).
+- **The rooms:** every home's inside is the tent's room system (`routes/tent/?home=B|G`, `TentRoom.svelte`'s `home`;
+  `store/tent.svelte.ts` `rooms.A` the tent's `t`, `rooms.B` うめ's `u`, `rooms.G` the guest's `v`: their own pieces,
+  their own cap, the same ops), the same 8 × 8 room whatever the outside (so a new look never breaks a room). Its
+  owner arranges it (the tent's by all three) and switches its light; anyone may come in and see it. Presence says
+  which home (`tent` and `drag` with `sc`): one place at a time (`store/where.svelte.ts` `home`: who's in which).
+  Out of the door: just in front of that home's door on the layout.
+- **The e2e** (`e2e/homes.spec.ts`): うめ arranges her room (her piece in her room only, kept), the guest comes in and
+  sees it but can't arrange it; うめ swaps her house's look and the other phone holds it live; the guest swaps its own.
+
 ## What the 3D integration must change (the lead's files)
 
 1. **The ground:** `createIsland(canvas, ground)` takes a BuiltGround already (2c4e4b64): pass
@@ -230,10 +262,15 @@ anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the pho
    (bend R 1300) and the shadow box (it follows the camera) need nothing; the lights' nearest-6 budget is the same
    on a longer island (more lamps in all, the same 6 at a time); the sea plane is the Ground's (4200 × 6000 round
    the grid's middle, z 1290).
-5. **Walking:** `planTap(navOf(layout.current), …)` (rebuild the nav on a layout change, ~4 ms), feet from
+5. **The homes:** for each of `homePlaces(layout.current)`, `buildHome(style)` → `engine.attach(group, { x, z, yaw })`
+   (rebuild when its style or spot changes: `diff.homes`, a moved `home-*`). A tap on `home-B` / `home-G` walks to its
+   door (`navOf(...).named['door-home-B']`, a `door` snap: `building` the home's id) and, arrived, goes in through
+   the door's iris to `tent/?home=B` (the guest's: `?home=G`); the campsite's as today (`/tent`). Their lamps:
+   `homeTod(group, lamps)` in the time of day.
+6. **Walking:** `planTap(navOf(layout.current), …)` (rebuild the nav on a layout change, ~4 ms), feet from
    `ground.feet`. Named nodes: `homeA`, `homeB` (the villagers' spots), `centreStage`, `door-home-A|B|G`, the
    default's seats (`seatMaeL` … `stoolW`, `pullup`), `front-<id>` (a bulletin board's spot).
-6. **world.ts constants the island still reads** (the 2D island and the DOM overlays over the 3D canvas): `HOMES`,
+7. **world.ts constants the island still reads** (the 2D island and the DOM overlays over the 3D canvas): `HOMES`,
    `CAMS`, `CAM_MIN` / `CAM_MAX`, `CAMPSITE` / `BUILDINGS` (the tent's door), `CENTRE_STAGE`, `ARCH`, `CAKE`, `SEATS`,
    `PULLUP_AT`, `FLOWERS`, `DECOR_SLOTS`, `GOAL_TREES`, `ROCK`, `TAPE_DECK`, `BRIDGE`, `POND`, `RIVER`, `SPRING`,
    `CLIFF`, `FALLS_POOL`, `freshWhere` (fishing), `surfaceAt` (footsteps), `DIG_SPOTS`, `LAWN_SPOTS`, `BEACH_BOX`,

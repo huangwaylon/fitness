@@ -11,7 +11,8 @@ import type { Piece } from '../island/fixedDecor.ts';
 import type { Inst, ModelName, Standin } from './layout3d.ts';
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
 import { kindDef } from '#lib/layout/catalog.ts';
-import { doorOf, footOf, objMid, type Layout, type Obj } from '#lib/layout/model.ts';
+import { doorOf, facingVec, footOf, objMid, type Layout, type Obj } from '#lib/layout/model.ts';
+import { WHO_OF_HOME, homePorch, type HomeStyle } from '#lib/layout/homes.ts';
 
 export interface Day {
   season: Season;
@@ -163,4 +164,23 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
     }
   }
   return { insts: out, standins };
+}
+
+/** Where each home built from NH's parts stands (world3d/home.ts buildHome draws it): its model's origin (its front
+ *  wall's middle: the footprint's front edge, the porch in front of the wall inside it) and its turn. The campsite's
+ *  tent is placeObjects' (a model of the island's own). */
+export function homePlaces(layout: Layout): { id: string; style: HomeStyle; x: number; z: number; yaw: number }[] {
+  const out: { id: string; style: HomeStyle; x: number; z: number; yaw: number }[] = [];
+  for (const id of ['home-A', 'home-B', 'home-G'] as const) {
+    const o = layout.objects.get(id);
+    if (!o) continue;
+    const style = layout.homes[WHO_OF_HOME[id]];
+    if (style.m === 'campsite') continue;
+    const [mx, mz] = objMid(layout, o), [fx, fz] = facingVec(o.f);
+    const [w, d] = footOf(layout, o);
+    const half = (o.f % 2 ? w : d) * 15;
+    const back = half - homePorch(style);
+    out.push({ id, style, x: mx + fx * back, z: mz + fz * back, yaw: (o.f * Math.PI) / 2 });
+  }
+  return out;
 }

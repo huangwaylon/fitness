@@ -191,6 +191,8 @@ put('goal-B', 'goal-tree', GOAL_TREES.B[0], GOAL_TREES.B[1], { s: 'b' });
 const SLOT: Record<string, string> = { 'bench-mae': 'park-bench', 'bench-pond': 'log-bench', hammock: 'hammock', 'rod-stand': 'rod-stand', pump: 'pump', shishi: 'shishiodoshi', pullup: 'pullup', firewood: 'firewood', 'beach-chair': 'beach-chair', sandcastle: 'sandcastle', snowboy: 'snowboy' };
 for (const d of DECOR_SLOTS) put(d.id, SLOT[d.id], d.x, d.z);
 put('tape-deck', 'tape-deck', TAPE_DECK[0], TAPE_DECK[1]);
+// NH's bulletin board (docs/board.md): by the lawn's front edge near the path, facing the sea-side camera
+put('board', 'board', 150, 105, { exact: true });
 put('rock', 'rock', ROCK[0], ROCK[1]);
 put('bridge', 'bridge', BRIDGE.x, (BRIDGE.z0 + BRIDGE.z1) / 2, { s: 'stone' });
 // the stairs: up the cliff where its stone steps are (their back edge on the cliff's line)
@@ -218,13 +220,15 @@ mid('mid-oak-3', 'oak', 6, 61);
 mid('mid-cedar-4', 'cedar', 14, 63);
 mid('mid-oak-4', 'oak', 11, 68);
 mid('mid-cedar-5', 'cedar', 3, 70);
-mid('mid-bush-1', 'bush', 7, 47, 'holly');
+mid('mid-bush-1', 'bush', 8, 48, 'holly');
 mid('mid-bush-2', 'bush', 10, 57, 'white-azalea');
 mid('mid-bush-3', 'bush', 10, 44, 'pink-azalea');
 mid('mid-lamp-1', 'streetlamp', 8, 44);
 mid('mid-lamp-2', 'streetlamp', 10, 54);
 for (const [i, [c, r, n]] of ([[5, 31, 0], [6, 31, 0], [5, 32, 0], [12, 33, 3], [13, 34, 3], [12, 34, 3], [5, 65, 5], [6, 65, 5], [6, 66, 5]] as const).entries())
   mid(`mid-fl-${i + 1}`, 'flower', c, r, `c${n}`);
+// a home's (x, z) is its door's tile (model.ts originOf): the front row's middle, the left of two
+for (const o of objects) if (o.k === 'home') o.x += Math.floor((homeFoot(DEFAULT_HOMES[o.id.slice(-1) as 'A']).at(0)! - 1) / 2);
 put('spot-villager-A', 'spot', HOMES.A[0], HOMES.A[1], { s: 'villager-a' });
 put('spot-villager-B', 'spot', HOMES.B[0], HOMES.B[1], { s: 'villager-b' });
 put('spot-stage', 'spot', CENTRE_STAGE[0], CENTRE_STAGE[1], { s: 'stage' });
@@ -248,7 +252,8 @@ for (const o of objects) {
   const def = kindDef(o.k)!;
   const g = o.k === 'home' ? 'H' : o.k === 'bridge' ? 'B' : o.k === 'stairs' ? 'S' : def.group === 'tree' ? 'T' : def.group === 'flower' ? '*' : def.group === 'spot' ? '@' : 'x';
   const [w, d] = o.k === 'home' ? homeFoot(DEFAULT_HOMES[o.id.slice(-1) as 'A']) : footprintOf(def, o.f);
-  for (let j = 0; j < d; j++) for (let i = 0; i < w; i++) at.set(`${o.x + i},${o.z + j}`, g);
+  const x0 = o.k === 'home' ? o.x - Math.floor((w - 1) / 2) : o.x;
+  for (let j = 0; j < d; j++) for (let i = 0; i < w; i++) at.set(`${x0 + i},${o.z + j}`, g);
 }
 for (let r = GRID.rows - 1; r >= 0; r--) {
   let line = '';

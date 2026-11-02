@@ -8,7 +8,7 @@
 //   Snapping: a tap on walkable ground nobody can reach goes to the nearest reachable point; on a home, to its door;
 //   on water, to the nearest bank facing it; on anything else, the nearest walkable point within 40u.
 import { GRID, TILE, isWater, kindOf, tierOf, idx, onGrid, tileX, tileZ } from './grid.ts';
-import { doorOf, facingVec, footOf, objMid, type Layout, type Obj } from './model.ts';
+import { doorOf, facingVec, footOf, objMid, originOf, type Layout, type Obj } from './model.ts';
 import { kindDef } from './catalog.ts';
 
 type Pt = readonly [number, number];
@@ -75,8 +75,8 @@ export function blockBox(layout: Layout, o: Obj): Box | null {
     const [fw, fd] = def.turns && o.f % 2 ? [def.foot[1], def.foot[0]] : def.foot;
     return { x0: mx - fw / 2, x1: mx + fw / 2, y0: mz - fd / 2, y1: mz + fd / 2 };
   }
-  const nx = o.n?.[0] ?? 0, nz = o.n?.[1] ?? 0;
-  return { x0: tileX(o.x) + nx, x1: tileX(o.x + w) + nx, y0: tileZ(o.z) + nz, y1: tileZ(o.z + d) + nz };
+  const nx = o.n?.[0] ?? 0, nz = o.n?.[1] ?? 0, [x0, z0] = originOf(layout, o);
+  return { x0: tileX(x0) + nx, x1: tileX(x0 + w) + nx, y0: tileZ(z0) + nz, y1: tileZ(z0 + d) + nz };
 }
 
 /** The walk grid of a layout. */
