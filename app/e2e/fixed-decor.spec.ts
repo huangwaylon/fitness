@@ -15,8 +15,8 @@ async function open(page: Page, when: string, camZ: number) {
   await expect.poll(async () => {
     await page.evaluate((z) => (window as unknown as { __world: W }).__world.go(z), camZ);
     await page.waitForTimeout(250);
-    return page.evaluate((z) => Math.abs((window as unknown as { __world: W }).__world.cam() - z), camZ);
-  }, { timeout: 5000 }).toBeLessThan(1.5); // (WebKit scrolls by whole px: within a px of it)
+    return page.evaluate(() => Math.round((window as unknown as { __world: W }).__world.cam()));
+  }, { timeout: 5000 }).toBe(camZ);
 }
 const centre = (page: Page, sel: string) =>
   page.locator(sel).first().evaluate((el) => {

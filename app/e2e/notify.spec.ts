@@ -18,8 +18,6 @@ async function fakeBrowser(page: Page, o: { answer?: NotificationPermission; pus
       delete (window as { PushManager?: unknown }).PushManager;
       return;
     }
-    // (the Home Screen app's Web Push: Playwright's WebKit has no PushManager of its own)
-    if (!('PushManager' in window)) Object.defineProperty(window, 'PushManager', { value: class PushManager {}, configurable: true });
     let permission: NotificationPermission = 'default';
     class FakeNotification {
       static get permission() { return permission; }

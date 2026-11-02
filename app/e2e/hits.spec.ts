@@ -58,7 +58,7 @@ test('trees answer at their leaves and their base: a goal tree’s popup, an oak
 });
 
 test('a bush, a flower, the rock and a weed answer at their middle and their base', async ({ page }) => {
-  await open(page, '&rock=clonk'); // (no bug out from under the rock, to be netted by the next tap)
+  await open(page);
   await world(page, 'go', 380);
   await page.waitForTimeout(500);
   const home = await world<[number, number]>(page, 'mine');

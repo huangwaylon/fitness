@@ -14,7 +14,7 @@ npm run dev        # demo data unless VITE_GAS_URL is set in .env (see .env.exam
 npm test           # unit tests (vitest)
 npm run check      # svelte-check
 npm run build      # → build-pages/
-npm run e2e        # Playwright (WebKit) against the build (run npm run build first; docs/ops/testing.md)
+npm run e2e        # Playwright against the build (run npm run build first)
 npm run bench      # model timing at years 1 and 3
 npm run gas:build  # bundle app/gas → app/apps-script/Code.js
 npm run knip       # unused files, exports, dependencies
@@ -35,4 +35,4 @@ Needs Node ≥ 24.
 
 ## Docs
 - [Design](docs/design.md) · [Backend](docs/backend.md) · [Decisions](docs/decisions.md)
-- [Runbook](docs/ops/runbook.md) · [Testing](docs/ops/testing.md) · [Google setup](docs/ops/google-setup.md) · [Health sync Shortcut](docs/ops/shortcut-health-sync.md)
+- [Runbook](docs/ops/runbook.md) · [Google setup](docs/ops/google-setup.md) · [Health sync Shortcut](docs/ops/shortcut-health-sync.md)

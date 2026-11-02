@@ -26,8 +26,8 @@ async function camera(page: Page, z: number) {
   await expect.poll(async () => {
     await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
     await page.waitForTimeout(250);
-    return page.evaluate((z) => Math.abs((window as unknown as { __world: { cam(): number } }).__world.cam() - z), z);
-  }, { timeout: 5000 }).toBeLessThan(1.5); // (WebKit scrolls by whole px: within a px of z)
+    return page.evaluate(() => Math.round((window as unknown as { __world: { cam(): number } }).__world.cam()));
+  }, { timeout: 5000 }).toBe(z);
   await page.waitForTimeout(250);
 }
 /** The visitor node's transform (the projector's: where its feet are on screen). */

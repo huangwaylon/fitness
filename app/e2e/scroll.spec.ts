@@ -15,10 +15,10 @@ async function open(page: Page, q = '&date=2026-07-01T10:00') {
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await page.waitForTimeout(600);
 }
-/** A finger's scroll up the island by dy px (mobile WebKit has no wheel and Playwright no touch drag: the scroller's
- *  own native scroll, which is all the camera reads). */
 async function wheel(page: Page, dy: number) {
-  await page.locator('[data-world-scroller]').evaluate((e, dy) => e.scrollBy({ top: -dy, behavior: 'instant' }), dy);
+  const vp = page.viewportSize()!;
+  await page.mouse.move(vp.width / 2, vp.height * 0.55);
+  await page.mouse.wheel(0, -dy);
   await page.waitForTimeout(700);
 }
 /** The tops of what must stay clear of the HUD, and its bottom. */
