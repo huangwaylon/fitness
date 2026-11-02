@@ -815,7 +815,7 @@ plate for every discovery (catches, finds, a present, its first-find page): the 
 
 ### Villager taps
 
-A tap on my villager is a squish with a ♪ and the tap sound (R9), and in NH's flea months now and then a flea hops off
+A tap on my villager is a squish and the tap sound (R9; no ♪ any more: the picker is its answer), and in NH's flea months now and then a flea hops off
 it ([Critters](#critters)); it opens the phrase picker by it (`island/SayPicker.svelte`, `island/say.ts`,
 `e2e/say.spec.ts`), never a sheet. The picker is a small cream card in the reactions wheel's spirit, standing by my
 villager by the balloons' rule (never under the HUD; above the keyboard while one is up; outside the scroller, so its
