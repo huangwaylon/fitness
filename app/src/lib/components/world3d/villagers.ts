@@ -200,6 +200,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       w.yaw = turn(w.yaw, s.seat !== null ? 0 : want, dt, s.walking ? 14 : 6);
       // its state, and its moment (the director's motion, once each)
       const state: State = s.asleep ? (s.seat !== null ? 'nap' : 'doze') : s.seat !== null ? 'sit' : s.walking ? 'walk' : 'idle';
+      if (v.state() !== state) w.posing = true;
       v.set(state);
       if (s.motionN !== w.motionN) {
         w.motionN = s.motionN;
@@ -219,9 +220,10 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       // posed (its breathing, its moment, its walk) while anything moves; still, it holds its pose and only its face
       // changes (a blink: a texture's offset and one redraw), so the island idles as it did
       if (active || busy || w.posing) {
-        v.step(t, s.walking ? moved : 0, s.walking ? (moved / Math.max(1, dt)) * 1000 : 0);
-        // (one more pose after it stops: the last frame's, settled)
-        w.posing = active || busy;
+        // (posed till it settles: a state's crossfade, an action, and once more after it stops)
+        const going = v.step(t, s.walking ? moved : 0, s.walking ? (moved / Math.max(1, dt)) * 1000 : 0);
+        w.posing = active || busy || going;
+        if (going) moving = true;
       } else v.blink(t);
     }
     for (const [slot, w] of ws) if (!seen.has(slot)) {

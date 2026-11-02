@@ -655,6 +655,7 @@
       stats: () => eng?.stats(),
       loading: () => eng?.loading() ?? 0,
       mine: () => eng?.at(me),
+      v3: (who: Who) => eng?.v3(who) ?? null,
       at: (who: Who) => eng?.at(who),
       walking: (who: Who) => eng?.walking(who),
       /** A model point's client px. */
