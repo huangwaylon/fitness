@@ -9,7 +9,7 @@ import { compactRows } from '#lib/model/compact.ts';
 import { finalMs, lastLockAt } from '#lib/model/state.ts';
 import { weekKeyOf } from '#lib/time/dates.ts';
 import { getKey, getStoredMe, reportStorageProblem, storeMe } from './storage.ts';
-import { post, type GasResult } from './transport.ts';
+import { postRecord, type GasResult } from './transport.ts';
 
 export interface SnapshotCache {
   v: 1;
@@ -277,11 +277,11 @@ async function fetchAndMerge(clientNow: () => number): Promise<GasResult<{ cache
   const prev = await loadCache();
   const me = getStoredMe();
   const since = prev && (!me || prev.me === me) ? prev.since : null;
-  let r = await post<Extract<SnapshotReply, { ok: true }>>('snapshot', since ? { since } : {});
+  let r = await postRecord<Extract<SnapshotReply, { ok: true }>>('snapshot', since ? { since } : {});
   // Start over when the sheet was edited by hand since these rows were cached, or when the key answers for someone
   // else: a `since` page merged into nothing would pass for the whole history.
   const stale = r.ok && since && prev && (r.rev !== prev.rev || r.me !== prev.me);
-  if (stale) r = await post<Extract<SnapshotReply, { ok: true }>>('snapshot', {});
+  if (stale) r = await postRecord<Extract<SnapshotReply, { ok: true }>>('snapshot', {});
   // Paired again while this was in flight: the reply belongs to the old key, so neither its rows nor its `me` may
   // overwrite what pairing just reset (the refresh pairing starts fetches for the new key).
   if (getKey() !== key) return { ok: false, error: 'unavailable', detail: 'paired again during the fetch' };
