@@ -374,7 +374,7 @@
   {@const s = swarm}
   {#key s.n}
     <!-- the swarm: a ≥ 44px button over every world thing, flying from the nest to the villager's face (its live spot) -->
-    <div class="node" {@attach w.at({ x: s.x0, z: s.z0, lift: NEST_UP, h: FACE + 20, zi: OVER, inv: true, live: swarmAt, m3: { key: 'proc/wasps', id: `swarm-${s.n}` } })}>
+    <div class="node" {@attach w.at({ x: s.x0, z: s.z0, lift: NEST_UP, h: FACE + 20, zi: OVER, inv: true, live: swarmAt, m3: { key: 'critters/wasp-swarm', id: `swarm-${s.n}` } })}>
       <button type="button" class="swarm" class:stung={s.stung} class:theirs={s.side !== 'mine'} data-swarm={s.side} data-sfx="self" aria-label={t('shake.swarm')}
         style:--away={u(s.away * 120)} onclick={netIt}>
         {#each [[-11, -4, 0], [10, -9, 0.13], [1, 9, 0.26]] as [dx, dy, d], k (k)}

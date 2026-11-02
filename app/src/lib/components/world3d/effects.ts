@@ -14,7 +14,6 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { bend } from './bend.ts';
 import { MODELS } from './models3d.ts';
-import { procScene } from './proc3d.ts';
 
 export type FxKind =
   | 'dust' | 'sand' | 'snow' | 'splash' | 'ripple' | 'sparkle' | 'sparks' | 'bang' | 'leaves' | 'drops' | 'hearts'
@@ -72,36 +71,19 @@ export interface Effects {
 
 const MODEL: Record<string, string> = {
   dust: 'fx/dust', splash: 'fx/splash', ripple: 'fx/ripple', sparkle: 'fx/sparkle', bang: 'fx/bang',
-  'maple-leaf': 'fx/maple-leaf', petal: 'fx/petal', snowflake: 'fx/snowflake', shovel: 'finds/shovel'
+  'maple-leaf': 'fx/maple-leaf', petal: 'fx/petal', snowflake: 'fx/snowflake', shovel: 'finds/shovel',
+  note: 'fx/note', heart: 'fx/heart', zzz: 'fx/zzz', confetti: 'fx/confetti', net: 'tools/net', flame: 'fx/flame'
 };
 /** World units a model unit (assets.json's `s` for each; the island's own at theirs). */
 const SCALE: Record<string, number> = {
   dust: 7.3, splash: 11.25, ripple: 9, sparkle: 6, bang: 13.5, 'maple-leaf': 2.3, petal: 3.1, snowflake: 2.3, shovel: 2.45,
-  ring: 17, note: 5, zzz: 5, heart: 4.5, confetti: 2.2, bubble: 1.6, glow: 5, net: 3
+  ring: 17, note: 2.9, zzz: 5.8, heart: 3, confetti: 4, bubble: 1.6, glow: 5, net: 5.4, flame: 7.7
 };
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 const CONFETTI = ['#ff6f91', '#ffd84a', '#6fd3ff', '#8be07a', '#c89cff', '#ff9d3c'];
 
 type Src = { geo: BufferGeometry; map: Texture | null; color: Color; add?: boolean }[];
 
-/** A glyph (♪, Z, ♥) on a canvas, as NH's speech marks: a white outline round the colour. */
-function glyph(ch: string, colour: string): Texture {
-  const c = document.createElement('canvas');
-  c.width = c.height = 64;
-  const g = c.getContext('2d')!;
-  g.font = `bold 46px "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", sans-serif`;
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  g.lineJoin = 'round';
-  g.lineWidth = 9;
-  g.strokeStyle = '#fffaf0';
-  g.strokeText(ch, 32, 34);
-  g.fillStyle = colour;
-  g.fillText(ch, 32, 34);
-  const t = new CanvasTexture(c);
-  t.colorSpace = SRGBColorSpace;
-  return t;
-}
 /** A soft round glow (a firefly). */
 function glow(): Texture {
   const c = document.createElement('canvas');
@@ -130,22 +112,9 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     let p = got.get(name);
     if (p) return p;
     if (name === 'ring') p = Promise.resolve([{ geo: new RingGeometry(0.72, 1, 36).rotateX(-Math.PI / 2), map: null, color: new Color('#fff7de') }]);
-    else if (name === 'note') p = Promise.resolve([{ geo: quad, map: glyph('♪', '#5b9be8'), color: white }]);
-    else if (name === 'zzz') p = Promise.resolve([{ geo: quad, map: glyph('z', '#6f7fd9'), color: white }]);
-    else if (name === 'heart') p = Promise.resolve([{ geo: quad, map: glyph('♥', '#ff6f91'), color: white }]);
-    else if (name === 'confetti') p = Promise.resolve([{ geo: new PlaneGeometry(1, 0.6), map: null, color: white }]);
     else if (name === 'bubble') p = Promise.resolve([{ geo: new SphereGeometry(1, 10, 8), map: null, color: new Color('#e9f8ff') }]);
     else if (name === 'glow') p = Promise.resolve([{ geo: quad, map: glow(), color: white, add: true }]);
-    else if (name === 'net') {
-      const out: Src = [];
-      procScene('proc/net')?.traverse((n) => {
-        const mesh = n as Mesh;
-        if (!mesh.isMesh) return;
-        mesh.updateMatrix();
-        out.push({ geo: mesh.geometry.clone().applyMatrix4(mesh.matrix), map: null, color: (mesh.material as MeshStandardMaterial).color.clone() });
-      });
-      p = Promise.resolve(out);
-    } else {
+    else {
       const m = MODEL[name];
       p = loader.loadAsync(`${base}${m}.glb?v=${MODELS[m]?.v ?? 0}`).then((g) => {
         const out: Src = [];
@@ -284,9 +253,9 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         return;
       }
       case 'flame':
-        // a tongue of the campfire's flame: a warm glow licking up and out
-        for (let i = 0; i < 2; i++)
-          part('glow', x + rnd(-4, 4) * k, y + rnd(0, 2), z + rnd(-2, 2), { life: rnd(420, 620), vy: rnd(14, 22), vx: rnd(-3, 3), s0: rnd(0.8, 1.1) * k, s1: 0.15 * k, tint: i ? '#ffd27a' : '#ff8a3a', face: true });
+        // a tongue of the campfire's flame (NH's crossed flame cards) licking up, and a warm glow round it
+        part('flame', x + rnd(-3, 3) * k, y, z + rnd(-2, 2), { life: rnd(380, 560), vy: rnd(4, 9), s0: rnd(0.7, 1) * k, s1: 0.2 * k, spin: rnd(-1, 1), face: false });
+        part('glow', x, y + 4, z, { life: 500, vy: 10, s0: 1.2 * k, s1: 0.3 * k, tint: '#ffa04a', face: true });
         return;
       case 'firefly':
         part('glow', x, y, z, { life: o.ms ?? rnd(5000, 8000), vx: rnd(-4, 4), vy: rnd(-1, 1), vz: rnd(-3, 3), sway: rnd(3, 6), s0: k, s1: k, blink: true, tag: o.tag });

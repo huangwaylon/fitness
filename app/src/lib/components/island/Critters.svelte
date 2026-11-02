@@ -1220,7 +1220,7 @@
   {#if cast}
     {@const c = cast}
     <!-- the float on the water, sinking at the bite; the line from my villager's rod (or the bank) to it -->
-    <i class="m3n" {@attach w.at({ x: c.x, z: c.z, lift: c.under ? -2.2 : 0, h: 4, always: true, m3: { key: 'proc/bobber', id: 'bobber', water: true, ms: 160, off: !c.landed && !c.under, art: () => scene?.querySelector('[data-bobber]'),
+    <i class="m3n" {@attach w.at({ x: c.x, z: c.z, lift: c.under ? -2.2 : 0, h: 4, always: true, m3: { key: 'tools/bobber', id: 'bobber', water: true, ms: 160, off: !c.landed && !c.under, art: () => scene?.querySelector('[data-bobber]'),
       line: () => {
         const [mx, mz] = livePos('mine');
         return Math.hypot(mx - c.x, mz - c.z) < 90 ? [mx + (c.x - mx) * 0.12, mz + (c.z - mz) * 0.12, 34] as const : [c.sx, c.sz, 4] as const;
