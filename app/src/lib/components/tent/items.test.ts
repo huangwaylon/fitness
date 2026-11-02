@@ -50,6 +50,23 @@ describe('the tent’s catalogue (scripts/room-models.ts)', () => {
     expect(isWall(DEFAULT_WALL) && isFloor(DEFAULT_FLOOR) && !isWall(DEFAULT_FLOOR) && isItem(STARTER[0]) && !isItem('f0')).toBe(true);
   });
 
+  it('every surface (NH’s, the spreadsheet’s flag) has its top from its model: under its bounds, inside its footprint', () => {
+    const surfaces = Object.entries(ITEMS).filter(([, m]) => m.s);
+    expect(surfaces.length).toBeGreaterThanOrEqual(60);
+    for (const [code, m] of surfaces) {
+      expect(m.sy, code).toBeGreaterThan(0);
+      expect(m.sy!, code).toBeLessThanOrEqual(m.h + 0.1);
+      expect(m.sl!.length, code).toBeGreaterThan(0);
+      for (const [sx, sz] of m.sl!) expect(sx >= 0 && sx < m.w && sz >= 0 && sz < m.d, code).toBe(true);
+      const [x0, z0, x1, z1] = m.st!;
+      expect(x0 < x1 && z0 < z1 && x0 >= -m.w * 5 - 0.1 && x1 <= m.w * 5 + 0.1 && z0 >= -m.d * 5 - 0.1 && z1 <= m.d * 5 + 0.1, code).toBe(true);
+      expect(m.rug || m.wl, code).toBeFalsy();
+    }
+    // nothing else has one; a wall thing is never a surface nor goes on one (NH's Wall-mounted sheet has no surface)
+    for (const [code, m] of Object.entries(ITEMS)) if (!m.s) expect(m.sy ?? m.sl, code).toBeUndefined();
+    for (const [code, m] of Object.entries(ITEMS)) if (m.wl) expect(m.sm, code).toBeUndefined();
+  });
+
   it('a ずかん find with an NH model maps to its piece; the rest of the カタログ has none', () => {
     const furniture = catalog.items.map((r) => r.split(' ')).filter(([, c]) => c === 'housewares' || c === 'misc').map(([id]) => id);
     const mapped = furniture.filter((id) => codeOfFind(id));

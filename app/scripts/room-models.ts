@@ -5,16 +5,18 @@
 //                                   (≤ 256 px), the geometry quantised and meshopt-compressed (gltfpack)
 //   static/room/wall/<code>.webp    a wallpaper (2 tiles wide, the wall's height), floor/<code>.webp a floor (4 × 4 tiles)
 //   static/room/icons/<code>.webp   NH's own catalogue icon (96 px), where the ずかん has none of its own
-//   src/lib/components/tent/items.json   every item: its footprint (tiles, from the model's bounds), height, bytes
+//   src/lib/components/tent/items.json   every item: its footprint (tiles, from the model's bounds), height, bytes;
+//                                        a surface's top (scripts/room-surfaces.ts: its height, rectangle and slots)
 //   src/lib/i18n/tent.{ja,en}.json       the game's names
 // A <code> is NH's internal item id with a kind letter (f: furniture or a rug, w: a wallpaper, g: a floor): short, and
 // stable across reruns. What goes in: the starter set below (a cosy campsite tent), and every housewares or
 // miscellaneous item a balloon can bring (the ずかん's カタログ: island/catalog.json) that NH has a model of here, so a
 // find can always be placed.
 //
-// Usage (from app/): NH_MODELS=~/Downloads/Model npm run room-models [-- --only=f1234,w5678 --data]
-//   --only   just these codes (or names' substrings), and keep everything else in items.json as it is
-//   --data   rewrite items.json and the names only (no conversion)
+// Usage (from app/): NH_MODELS=~/Downloads/Model npm run room-models [-- --only=f1234,w5678 --data | --surfaces]
+//   --only      just these codes (or names' substrings), and keep everything else in items.json as it is
+//   --data      rewrite items.json and the names only (no conversion)
+//   --surfaces  as --data, and find every surface's top again from its converted model (static/room/models)
 // The model folder is untrusted input and never part of the repo: only the folders the list names are copied into a
 // scratch dir (only their .dae and .png files; nothing in them is run, three.js reads them in the page), and only the
 // converted files are written. Needs Google Chrome (Playwright's channel 'chrome') and cwebp (brew install webp);
@@ -28,6 +30,7 @@ import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
+import { topOf, type Sample, type Top } from './room-surfaces.ts';
 
 const APP = join(import.meta.dirname, '..');
 const OUT = join(APP, 'static', 'room');
@@ -40,7 +43,8 @@ const SHEET = 'https://raw.githubusercontent.com/Norviah/animal-crossing/master/
 const CACHE = join(tmpdir(), 'island-catalog-src');
 const arg = (k: string) => process.argv.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3);
 const only = (arg('only') ?? '').split(',').filter(Boolean);
-const dataOnly = process.argv.includes('--data');
+const surfacesOnly = process.argv.includes('--surfaces');
+const dataOnly = process.argv.includes('--data') || surfacesOnly;
 
 /** Bytes a model may take: over TARGET it goes again with smaller textures; over MAX the run says so. */
 const TARGET = 40_000;
@@ -249,8 +253,12 @@ interface Meta {
   lit?: 1;
   /** Its icon is NH's (static/room/icons), not the ずかん's. */
   icon?: 1;
-  /** NH's surface: small things stand on its top (at h). */
+  /** NH's surface: small things stand on its top. */
   s?: 1;
+  /** Its top (scripts/room-surfaces.ts): how high, the rectangle (its own frame, model units), the tiles that hold. */
+  sy?: number;
+  st?: Top['st'];
+  sl?: Top['sl'];
   /** Small: may stand on a surface. */
   sm?: 1;
   /** Sat on (s) or lain on (l), by n at once. */
@@ -268,9 +276,9 @@ for (const p of pieces.values()) if (prev.items[p.code]) metas[p.code] = prev.it
 function writeItems() {
   // NH's surface and small flags come from the spreadsheet each run (a --data run brings them up to date)
   const flags = (p: Piece, m: Meta): Meta => {
-    const { s: _s, sm: _sm, u: _u, n: _n, lt: _lt, ...rest } = m;
+    const { s: _s, sy, st, sl, sm: _sm, u: _u, n: _n, lt: _lt, ...rest } = m;
     return {
-      ...rest, ...(p.surface ? { s: 1 as const } : {}), ...(p.small ? { sm: 1 as const } : {}),
+      ...rest, ...(p.surface ? { s: 1 as const, ...(sl ? { sy, st, sl } : {}) } : {}), ...(p.small ? { sm: 1 as const } : {}),
       ...(p.use ? { u: p.use, n: p.seats ?? 1 } : {}), ...(p.light ? { lt: 1 as const } : {}), ...(p.wall ? { wl: 1 as const } : {})
     };
   };
@@ -288,7 +296,47 @@ function writeItems() {
     ? `  "items": {\n${Object.entries(v as Record<string, Meta>).map(([c, m]) => `    ${JSON.stringify(c)}: ${JSON.stringify(m)}`).join(',\n')}\n  }`
     : `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(',\n')}\n}\n`);
 }
+
+// ---- the surfaces' tops: rays down over each converted model (scripts/room-surfaces-page.js, the Node half's rules
+//      in scripts/room-surfaces.ts) ------------------------------------------------------------------------------
+
+const three = join(dirname(createRequire(import.meta.url).resolve('three')), '..');
+async function surfaceTops(codes: readonly string[]): Promise<void> {
+  if (!codes.length) return;
+  const PAGE = join(import.meta.dirname, 'room-surfaces-page.js'), MODELS_OUT = join(OUT, 'models');
+  const browser = await chromium.launch({ channel: 'chrome' });
+  const page = await browser.newPage();
+  page.on('pageerror', (e) => console.error('[page]', e.message));
+  await page.route('http://room.local/**', (route) => {
+    const u = decodeURIComponent(new URL(route.request().url()).pathname);
+    const within = (root: string, rel: string) => {
+      const f = resolve(root, rel);
+      return f.startsWith(root + sep) ? f : null;
+    };
+    if (u === '/') return route.fulfill({ contentType: 'text/html', body: '<!doctype html><script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script><script type="module" src="/page.js"></script>' });
+    const f = u === '/page.js' ? PAGE : u.startsWith('/three/') ? within(three, u.slice(7)) : u.startsWith('/models/') ? within(MODELS_OUT, u.slice(8)) : null;
+    if (!f || !existsSync(f)) return route.fulfill({ status: 404, body: '' });
+    return route.fulfill({ body: readFileSync(f), contentType: extname(f) === '.js' ? 'text/javascript' : 'application/octet-stream' });
+  });
+  await page.goto('http://room.local/');
+  await page.waitForFunction(() => (window as unknown as { ready?: boolean }).ready);
+  const STEP = 0.5;
+  for (const code of codes) {
+    const m = metas[code];
+    if (!m) continue;
+    const s = await page.evaluate((o) => (window as unknown as { sample: (o: unknown) => Promise<Sample> }).sample(o), { url: `/models/${code}.glb`, W: m.w * TILE, D: m.d * TILE, step: STEP });
+    const top = topOf(s, m.w, m.d, STEP);
+    const { sy: _sy, st: _st, sl: _sl, ...rest } = m;
+    metas[code] = top ? { ...rest, ...top } : rest;
+    const p = pieces.get(code)!;
+    console.log(`${code} ${p.en}: ${top ? `top ${top.sy} (bounds ${m.h}), ${top.sl.length}/${m.w * m.d} tiles` : 'no top'}`);
+  }
+  await browser.close();
+}
+const surfaceCodes = (list: Iterable<Piece>) => [...list].filter((p) => p.surface && !p.rug && !p.wall && metas[p.code]).map((p) => p.code);
+
 if (dataOnly) {
+  if (surfacesOnly) await surfaceTops(surfaceCodes([...pieces.values()].filter((p) => wanted(p.code, p))));
   writeItems();
   process.exit(0);
 }
@@ -324,7 +372,6 @@ function icon(code: string, folder: string | null, cat?: string): boolean {
 
 if (todo.length) {
   for (const p of todo) for (const f of [p.folder, ...p.tex]) copy(f);
-  const three = join(dirname(createRequire(import.meta.url).resolve('three')), '..');
   const PAGE = join(import.meta.dirname, 'room-models-page.js');
   const MIME: Record<string, string> = { '.js': 'text/javascript', '.png': 'image/png', '.dae': 'model/vnd.collada+xml' };
   const browser = await chromium.launch({ channel: 'chrome', args: ['--enable-gpu', '--ignore-gpu-blocklist'] });
@@ -429,6 +476,7 @@ for (const [list, kind, w, h] of [[walls, 'wall', 256, 512], [floors, 'floor', 5
 }
 if (texBytes) console.log(`wallpapers and floors: ${(texBytes / 1024 / 1024).toFixed(2)} MB`);
 
+await surfaceTops(surfaceCodes(todo));
 writeItems();
 rmSync(scratch, { recursive: true, force: true });
 rmSync(work, { recursive: true, force: true });

@@ -29,7 +29,7 @@ export interface Spot {
   on?: string;
 }
 
-export type Why = 'out' | 'door' | 'taken' | 'rug';
+export type Why = 'out' | 'door' | 'taken' | 'rug' | 'top';
 
 /** The tiles a piece covers. */
 export function tilesOf(s: Spot): [number, number][] {
@@ -89,10 +89,50 @@ export function wallWhy(others: readonly Spot[], s: Spot): Why | null {
   return null;
 }
 
-/** A small thing that may stand on a surface: NH's miscellaneous, one tile. */
-export const isSmall = (item: string): boolean => !!ITEMS[item]?.sm && ITEMS[item].w === 1 && ITEMS[item].d === 1;
+/** A small thing that may stand on a surface: NH's miscellaneous (a 2 × 1 one, a 50-inch TV, on two tiles of it). */
+export const isSmall = (item: string): boolean => !!ITEMS[item]?.sm && !ITEMS[item]?.wl && !ITEMS[item]?.rug;
 
-// ---- surfaces: a small thing's slot on a piece is a tile of the piece's own (unturned) footprint ----
+// ---- surfaces: a small thing's slot on a piece is a tile of the piece's own (unturned) footprint (a bigger one's:
+//      its back-left tile there); its facing there is relative to the piece's ----
+
+/** A surface's top: its height (its model's top, not its bounds: scripts/room-surfaces.ts). */
+export const topY = (item: string): number => ITEMS[item]?.sy ?? ITEMS[item]?.h ?? 0;
+/** The tiles of a surface's own footprint that hold a thing (all of them, for a piece with no top found). */
+export function slotsOf(item: string): [number, number][] {
+  const m = ITEMS[item];
+  if (!m) return [];
+  if (m.sl) return m.sl;
+  const out: [number, number][] = [];
+  for (let sx = 0; sx < m.w; sx++) for (let sz = 0; sz < m.d; sz++) out.push([sx, sz]);
+  return out;
+}
+/** The tiles (the parent's own) a small thing on slot (sx, sz), facing rf there, covers. */
+function kidTiles(item: string, sx: number, sz: number, rf: number): [number, number][] {
+  const [w, d] = footprint(item, rf);
+  const out: [number, number][] = [];
+  for (let i = 0; i < w; i++) for (let j = 0; j < d; j++) out.push([sx + i, sz + j]);
+  return out;
+}
+/** Whether a small thing fits on `parent`'s top at slot (sx, sz) facing rf: every tile it covers holds a thing. */
+export function fitsOn(parent: string, item: string, sx: number, sz: number, rf: number): boolean {
+  const ok = new Set(slotsOf(parent).map(([x, z]) => x * 64 + z));
+  return kidTiles(item, sx, sz, rf).every(([x, z]) => ok.has(x * 64 + z));
+}
+/** Where a small thing on `parent` stands in the parent's own frame: its middle (x, z, model units, the parent's middle
+ *  at 0; on its tiles, kept on the top's rectangle) and how high. */
+export function onTop(parent: string, kid: { item: string; x: number; z: number; f: number }): [number, number, number] {
+  const m = ITEMS[parent], w = m?.w ?? 1, d = m?.d ?? 1;
+  const [kw, kd] = footprint(kid.item, kid.f);
+  let lx = (kid.x + kw / 2 - w / 2) * TILE, lz = (kid.z + kd / 2 - d / 2) * TILE;
+  const st = m?.st;
+  if (st) {
+    // on the top: its middle at least half a small thing in from the top's edges (the middle of a narrower top)
+    const keep = (v: number, a: number, b: number, half: number) => (b - a <= 2 * half ? (a + b) / 2 : Math.min(b - half, Math.max(a + half, v)));
+    lx = keep(lx, st[0], st[2], Math.min(2.5, (kw * TILE) / 2));
+    lz = keep(lz, st[1], st[3], Math.min(2.5, (kd * TILE) / 2));
+  }
+  return [lx, topY(parent), lz];
+}
 
 /** The room tile of slot (sx, sz) on `parent` (as it stands, turned). */
 export function slotToTile(parent: Spot, sx: number, sz: number): [number, number] {
@@ -111,10 +151,23 @@ export function tileToSlot(parent: Spot, tx: number, tz: number): [number, numbe
   }
   return null;
 }
-/** A piece as the room shows it: where it stands (a room tile), its facing in the room and how high (a surface's top). */
+/** A piece as the room shows it: where it stands (a room tile), its facing in the room and how high (a surface's top);
+ *  a thing on a top, its middle there too (model units: on the top's rectangle, not always its tiles' middle). */
 export interface Resolved extends Spot {
   id: string;
   y: number;
+  at?: [number, number];
+}
+/** A small thing on `parent` (as it stands in the room) at slot (x, z), facing f there: its back-left room tile, its
+ *  facing in the room, its middle (model units) and how high. */
+export function kidSpot(parent: Spot, kid: { item: string; x: number; z: number; f: number }): { x: number; z: number; f: Facing; y: number; at: [number, number] } {
+  const tiles = kidTiles(kid.item, kid.x, kid.z, kid.f).map(([sx, sz]) => slotToTile(parent, sx, sz));
+  const [lx, y, lz] = onTop(parent.item, kid);
+  const a = (parent.f * Math.PI) / 2, [pcx, pcz] = centreOf(parent);
+  return {
+    x: Math.min(...tiles.map((t) => t[0])), z: Math.min(...tiles.map((t) => t[1])), f: ((parent.f + kid.f) % 4) as Facing, y,
+    at: [pcx + lx * Math.cos(a) + lz * Math.sin(a), pcz - lx * Math.sin(a) + lz * Math.cos(a)]
+  };
 }
 /**
  * The room from its pieces: a small thing on a surface where that piece now stands (turned with it, at its top); one
@@ -127,8 +180,7 @@ export function resolve(list: readonly (Spot & { id: string })[]): Resolved[] {
     const par = p.on ? byId.get(p.on) : undefined;
     if (!p.on) return { ...p, y: 0 };
     if (!par || par.on || !isSurface(par.item)) return { ...p, on: undefined, y: 0 };
-    const [x, z] = slotToTile(par, p.x, p.z);
-    return { ...p, x, z, f: ((par.f + p.f) % 4) as Facing, y: ITEMS[par.item]?.h ?? 0 };
+    return { ...p, ...kidSpot(par, p) };
   });
 }
 /** The floor piece with a surface over room tile (tx, tz) (not `except`), if any. */
@@ -139,9 +191,12 @@ export function surfaceAt(spots: readonly Spot[], tx: number, tz: number, except
   }
   return null;
 }
-/** Whether slot (sx, sz) on `parent` holds another small thing (stored spots: `on` with their slots). */
-export const slotTaken = (spots: readonly Spot[], parent: string, sx: number, sz: number, except?: string): boolean =>
-  spots.some((s) => s.on === parent && s.x === sx && s.z === sz && (!except || s.id !== except));
+/** Whether a small thing `item` at slot (sx, sz) on `parent` (its id), facing rf there, would cover a tile another
+ *  small thing there covers (stored spots: `on` with their slots). */
+export function slotTaken(spots: readonly Spot[], parent: string, sx: number, sz: number, except?: string, item?: string, rf = 0): boolean {
+  const mine = new Set((item ? kidTiles(item, sx, sz, rf) : [[sx, sz] as [number, number]]).map(([x, z]) => x * 64 + z));
+  return spots.some((s) => s.on === parent && (!except || s.id !== except) && kidTiles(s.item, s.x, s.z, s.f).some(([x, z]) => mine.has(x * 64 + z)));
+}
 
 /** Why a piece can't stand there (null: it can). `others`: what stands in the room (the piece itself, by id, left out). */
 export function placeWhy(others: readonly Spot[], s: Spot): Why | null {
