@@ -19,8 +19,9 @@
     at: { x: number; z: number; f: number };
     three: BoardProj | null;
     onclose: () => void;
+    night?: boolean;
   }
-  let { canvas, face, at, three, onclose }: Props = $props();
+  let { canvas, face, at, three, onclose, night = false }: Props = $props();
   const w = useWorld();
   /** The camera's ease, both ways (the user's ≈600 ms). */
   const EASE_MS = 600;
@@ -190,7 +191,7 @@
   const label = (p: Post) => t('board.note', { name: board.author(p.who).name, text: p.t });
 </script>
 
-<div class="bv" class:three={mode === '3d'} bind:this={root} data-board-view={mode} data-ready={ready || undefined} style:--kb="{kb}px" style:--vh="{vh}px"
+<div class="bv" class:three={mode === '3d'} class:night bind:this={root} data-board-view={mode} data-ready={ready || undefined} style:--kb="{kb}px" style:--vh="{vh}px"
   role="dialog" aria-modal="true" aria-label={t('board.name')}>
   {#if mode === 'sheet'}
     <div class="stage">
@@ -284,7 +285,8 @@
     min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: #F3E7C9; color: #6B5232; font: 700 16px / 1 var(--font-ui);
     box-shadow: 0 3px 0 #D9C8A2;
   }
-  .btn.arrow { width: 48px; padding: 0; }
+  .btn.arrow { width: 48px; padding: 0; font-size: 26px; }
+  .bv.night:not(.three) { background: linear-gradient(#1f2f5cee, #2c4a6cee); }
   .btn[aria-disabled='true'] { opacity: .4; }
   .btn.go { background: #F7C948; box-shadow: 0 3px 0 #D6A42A; margin-left: auto; }
   .pager .btn.go { margin-left: 12px; }

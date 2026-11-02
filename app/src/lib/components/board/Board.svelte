@@ -147,7 +147,7 @@
   {@attach w.at({ x: at.x, z: at.z + 2, h: 14, lift: BOARD_H + 1.4 * BOARD_S, m3: { key: `deco/bbs-bird-${night ? 'night' : 'day'}`, id: 'board-bird', yaw: look } })}></div>
 
 {#if open && View && canvas}
-  <View {canvas} {face} at={at} three={w.three as BoardProj | null} onclose={() => (open = false)} />
+  <View {canvas} {face} {night} at={at} three={w.three as BoardProj | null} onclose={() => (open = false)} />
 {/if}
 
 <style>
