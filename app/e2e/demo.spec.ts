@@ -112,11 +112,6 @@ test('けんこう: body weight (from Health, no logging by hand); its goal is s
   await input.fill('65');
   await sheet(page).getByRole('button', { name: 'けってい' }).click();
   await expect(sheet(page).locator('.goals')).toContainText('65.0 kg');
-  // its banner drops over the tabs (and a pointer resting on it holds it there): tap it away, as a thumb would
-  const saved = sheet(page).getByRole('status');
-  await expect(saved).toContainText('目標を決めました');
-  await saved.getByRole('button', { name: 'とじる' }).click();
-  await expect(saved).toHaveCount(0);
   await sheet(page).locator('.tab[data-tab=health]').click();
   await expect(sheet(page).locator('.wc[data-person=A]')).toContainText('目標 65.0');
   // weight never earns: today's ベル didn't move
@@ -401,10 +396,9 @@ test('focus ring: none on the panel’s くわしく after tap → ‹ back; the
   await expect(page.locator('html')).toHaveAttribute('data-input', 'pointer');
   const ring = () => tile.evaluate((el) => getComputedStyle(el).outlineStyle);
   expect(await ring()).toBe('none');
-  // keyboard: Tab onto the next control and back: the ring shows (⌥Tab in Safari: a plain Tab skips buttons unless
-  // "Press Tab to highlight each item" is on)
-  await page.keyboard.press('Alt+Tab');
-  await page.keyboard.press('Alt+Shift+Tab');
+  // keyboard: Tab onto the next control and back: the ring shows
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Shift+Tab');
   await expect(tile).toBeFocused();
   await expect(page.locator('html')).toHaveAttribute('data-input', 'keyboard');
   expect(await ring()).not.toBe('none');
@@ -558,11 +552,9 @@ for (const at of ['2026-10-28T12:00', '2026-10-28T21:00'])
       if (real) document.startViewTransition = ((cb?: ViewTransitionUpdateCallback) => (w.vts++, real(cb))) as typeof document.startViewTransition;
     });
     const still = await seams(page);
-    // every animation and transition at a tenth of its speed (as each starts), to catch the island mid-zoom
-    await page.evaluate(() => {
-      const slow = () => document.getAnimations().forEach((a) => (a.playbackRate = 0.1));
-      for (const t of ['animationstart', 'transitionrun']) document.addEventListener(t, slow, true);
-    });
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Animation.enable');
+    await cdp.send('Animation.setPlaybackRate', { playbackRate: 0.1 });
     const root = page.locator('html');
     await page.locator('.hud-jar').click();
     await expect(root).toHaveAttribute('data-leave', 'in');

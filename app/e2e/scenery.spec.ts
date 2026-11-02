@@ -136,8 +136,8 @@ test('the campfire by the tent: unlit by day, its flames and light at night; a t
     await expect.poll(async () => {
       await page.evaluate((z) => (window as unknown as { __world: W }).__world.go(z), CAMS.oku);
       await page.waitForTimeout(250);
-      return page.evaluate((z) => Math.abs((window as unknown as { __world: { cam(): number } }).__world.cam() - z), CAMS.oku);
-    }, { timeout: 5000 }).toBeLessThan(1.5); // (WebKit scrolls by whole px: within a px of it)
+      return page.evaluate(() => Math.round((window as unknown as { __world: { cam(): number } }).__world.cam()));
+    }, { timeout: 5000 }).toBe(CAMS.oku);
   };
   await go('2026-11-04T12:00');
   await expect(page.locator('[data-campfire="campfire"]')).toBeVisible();

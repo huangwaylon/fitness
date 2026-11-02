@@ -82,7 +82,7 @@ test('the camera is the scroller: two stops, the sprites follow it, nothing runs
   for (const z of [back, 300, front]) {
     await call(page, (w, [z]) => w.go(z), [z]);
     await page.waitForTimeout(300);
-    expect(Math.abs((await call(page, (w) => w.cam())) - z)).toBeLessThan(1.5); // (WebKit scrolls by whole px)
+    expect(Math.round(await call(page, (w) => w.cam()))).toBe(z);
   }
 });
 
