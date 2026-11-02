@@ -2,7 +2,7 @@
 // accepted (the Apps Script and the relay's store check the same), and which events replace an earlier one (the
 // store's slots: a tally and an island day per person and day, a cosmetic pref per person, a goal per person and
 // Tokyo day). Dependency-free (type imports only), since it is bundled into apps-script/Code.js.
-import { isFind, isId, isLocalDate, isWeightKg, PREF_KEYS, type EventType } from '../contract/api.ts';
+import { isBodyFatGoal, isFind, isId, isLocalDate, isWeightKg, PREF_KEYS, type EventType } from '../contract/api.ts';
 import { isTally } from '../contract/tally.ts';
 import { isIslandDay } from '../contract/island.ts';
 import { decorOpOf } from '../contract/decor.ts';
@@ -43,7 +43,7 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
 }
 
 /** The prefs only the latest of counts (per person); the goals keep their history (`moveGoalOn` prices past days). */
-const LATEST_PREFS = ['locale', 'villagerName', 'villager', 'goalWeight'] as const;
+const LATEST_PREFS = ['locale', 'villagerName', 'villager', 'goalWeight', 'goalBodyFat'] as const;
 
 /** Whether the model takes this pref's value (model/state.ts ON_EVENT.pref; anything else is ignored there). */
 export function prefTaken(key: unknown, v: unknown): boolean {
@@ -54,6 +54,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
     case 'villagerName': return typeof v === 'string' && v.trim().length >= 1 && v.trim().length <= LIMITS.villagerNameMaxChars;
     case 'villager': return typeof v === 'string' && /^[a-z][a-z0-9_-]{0,23}$/.test(v);
     case 'goalWeight': return v === null || v === '' || isWeightKg(v);
+    case 'goalBodyFat': return v === null || v === '' || isBodyFatGoal(v);
     default: return false;
   }
 }
@@ -61,7 +62,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
 /**
  * The slot an event fills, or null: a later event of the same slot replaces it (the record keeps one row per slot).
  * - `tally`, `island`: the sender's day (`date`);
- * - a cosmetic `pref` (`locale`, `villagerName`, `villager`, `goalWeight`): its subject and key;
+ * - a cosmetic `pref` (`locale`, `villagerName`, `villager`, `goalWeight`, `goalBodyFat`): its subject and key;
  * - a goal `pref` (`moveGoal`, `stepsGoal`): its subject, key and the Tokyo day it was made (`at`), so the goal in
  *   force on each past day stays (a goal applies from the day it's made; the last of a day is the one that counts);
  * - a `decor` op: its scope and item id (`decorAccept` / `tentAccept` decide whether it replaces).

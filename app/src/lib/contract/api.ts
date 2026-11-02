@@ -60,12 +60,12 @@ export const isMetricKey = (v: unknown): v is MetricKey => v === 'weight' || isA
 
 /**
  * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`,
- * `goalWeight` (kg), `moveGoal` (kcal) and `stepsGoal` (steps).
+ * `goalWeight` (kg), `goalBodyFat` (body fat %), `moveGoal` (kcal) and `stepsGoal` (steps).
  */
-export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal', 'stepsGoal'] as const;
+export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'goalBodyFat', 'moveGoal', 'stepsGoal'] as const;
 
 /** The `pref` keys either person may set for either person (`data.person`): the goals. The rest are the sender's own. */
-const PERSON_PREF_KEYS = ['goalWeight', 'moveGoal', 'stepsGoal'] as const;
+const PERSON_PREF_KEYS = ['goalWeight', 'goalBodyFat', 'moveGoal', 'stepsGoal'] as const;
 
 export const isPersonId = (v: unknown): v is PersonId => v === 'A' || v === 'B';
 /** A member or the guest (`G`): who sent a row. */
@@ -108,12 +108,19 @@ export const BODY_BOUNDS: Record<BodyMetric, { min: number; max: number }> = {
   lean_kg: { min: 10, max: 150 }
 };
 
+/** A body fat goal in % (inclusive): a `goalBodyFat` outside it is refused. */
+export const BODY_FAT_GOAL = { min: 3, max: 60 } as const;
+
 /** kg to one decimal (how weights are stored; the body metrics too). */
 export const roundKg = (v: number): number => Math.round(v * 10) / 10;
 
 /** A weight in kg: finite, within WEIGHT_KG, at most one decimal. */
 export const isWeightKg = (v: unknown): v is number =>
   typeof v === 'number' && Number.isFinite(v) && v >= WEIGHT_KG.min && v <= WEIGHT_KG.max && Math.abs(v * 10 - Math.round(v * 10)) < 1e-6;
+
+/** A body fat goal in %: finite, within BODY_FAT_GOAL, at most one decimal. */
+export const isBodyFatGoal = (v: unknown): v is number =>
+  typeof v === 'number' && Number.isFinite(v) && v >= BODY_FAT_GOAL.min && v <= BODY_FAT_GOAL.max && Math.abs(v * 10 - Math.round(v * 10)) < 1e-6;
 
 /** `snapshot` rows: compact arrays in tab column order. `at` is ISO 8601 UTC with milliseconds (`…T…:…:….sssZ`). */
 export type MetricRow = [at: string, person: PersonId, date: string, metric: MetricKey, value: number];
