@@ -168,6 +168,23 @@
     const m = 20 + p.k * VILLAGER.h;
     return p.depth > 1 && p.depth < b.depth - 4 && p.sx > -m && p.sx < r.width + m && p.sy > -m && p.sy < r.height + m;
   }
+  /** The villagers' floating marks (NH's ♪ ♥ ✦ ！ sweat zzz over the head) drawn in 3D for a 3D villager: its
+   *  DOM mark hidden (data-v3 on its node; a mark with no model, the ？, stays the DOM's). */
+  const MARK3: Record<string, true> = { sparkle: true, heart: true, note: true, zzz: true, bang: true, sweat: true };
+  const markAt: Record<string, { n: number; t: number }> = {};
+  const headV = new Vector3();
+  function marks3(e: Island3, t: number, slot: string, x: number, z: number) {
+    const a = actors[slot as keyof typeof actors], m = a.emote?.startsWith('mark-') ? a.emote.slice(5) : null;
+    if (!m || !MARK3[m]) return;
+    const was = markAt[slot];
+    // once each; a held one (a sleeper's, a surprise held) again as the last fades
+    if (was && was.n === a.emoteN && !(a.emoteHold && t - was.t > 2000)) return;
+    markAt[slot] = { n: a.emoteN, t };
+    // over the head (NH's head joint is at the head's base: its top about as high again)
+    const hb = vil3?.head(slot), feet = feetOf(x, z);
+    const lift = hb ? (hb.getWorldPosition(headV).y - feet) * 2 + 10 : VILLAGER.h + 10;
+    e.fx('mark', x, z, lift, { v: m, ms: 2200 });
+  }
   function villagerCards(t: number, active: boolean): boolean {
     if (!eng) return false;
     let moving = false;
@@ -189,6 +206,11 @@
     for (const c of cast()) {
       const a = actors[c.id], look = resolveLook({ villager: c.villager, person: c.person });
       const card = !v3d || !has3d(look.id) || r.cards.has(c.id);
+      // drawn in 3D: its marks too (the DOM's hidden: IslandScene's [data-v3])
+      const in3 = c.shown && !card, node = scene.querySelector(`.actor[data-actor="${c.id}"]`);
+      // (checked each frame: the node is the DOM island's, made anew when its villager comes back)
+      if (node && node.hasAttribute('data-v3') !== in3) node.toggleAttribute('data-v3', in3);
+      if (in3) marks3(eng, t, c.id, ...livePos(c.id));
       const base = c.shown && card && !inFocusWay(...livePos(c.id)) ? artCard(villagerArt(look.id) ?? '', VILLAGER.h) : null;
       if (!base) {
         eng.cards.set(`v:${c.id}`, null);
@@ -315,6 +337,8 @@
       if (art && marked.get(art) !== drawn) {
         marked.set(art, drawn);
         art.classList.toggle('m3on', drawn);
+        // (no model: the node's own art shows: IslandScene's [data-m3])
+        if (art === n.el) art.classList.toggle('m3off', !drawn);
       }
       // a flourish it gives off (bubbles, a firefly, flames), where it is
       if (n.m3.emit && n.shown && !n.m3.off) {
@@ -474,7 +498,11 @@
     untrack(() => {
       const { insts, standins: st } = island(day);
       void e.place(insts).then(() => {
-        if (!loaded) queueMicrotask(onready);
+        if (!loaded) {
+          queueMicrotask(onready);
+          // the flourishes' models on the GPU ahead of their first use (a high five's sparkles whole at once)
+          setTimeout(() => void e.warmFx().catch(() => {}), 400);
+        }
         loaded = true;
       });
       standins(st);
@@ -607,7 +635,7 @@
         const r = canvas!.getBoundingClientRect();
         return e.groundAt(cx - r.left, cy - r.top);
       },
-      away: (x: number, z: number) => inFocusWay(x, z), camStill: () => e.camStill(), strays: (reach?: number) => e.strays(reach), alphaBlends: () => e.alphaBlends(),
+      away: (x: number, z: number) => inFocusWay(x, z), camStill: () => e.camStill(), fxWarmed: () => e.fxWarmed(), fx: (kind: FxKind, x: number, z: number, lift?: number, o?: Parameters<typeof e.fx>[4]) => e.fx(kind, x, z, lift, o), strays: (reach?: number) => e.strays(reach), alphaBlends: () => e.alphaBlends(),
       things: (id: string) => e.things.has(id), where: (id: string) => e.things.where(id), groups: () => e.things.groups(), over: (id: string, o: Parameters<typeof e.things.over>[1]) => e.things.over(id, o), head: (slot: string) => { const h = vil3?.head(slot); if (!h) return null; const p = h.getWorldPosition(new Vector3()); return [p.x, p.y, p.z]; },
       focus: (x: number, z: number, lift?: number) => e.focusOn({ x, z, lift }), restore: () => e.restore(), focused: () => e.focused()
     };

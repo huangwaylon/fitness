@@ -196,3 +196,49 @@ test('at night the glows add light without touching the canvas\'s alpha (a lamp\
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { stats(): { calls: number } } }).__world3d.stats().calls)).toBeGreaterThan(10);
   expect(await page.evaluate(() => (window as unknown as { __world3d: { alphaBlends(): string[] } }).__world3d.alphaBlends())).toEqual([]);
 });
+
+/** The island's 2D art showing over the 3D canvas now (not the sky's, the UI's, nor NH's 2D reaction glyphs over a
+ *  villager, which NH draws flat too): `[tag class <parent>]`. */
+const domArt = (page: Page) => page.evaluate(() => {
+  const st = document.querySelector('.stage')!;
+  const vis = (e0: Element) => {
+    for (let e: Element | null = e0; e && e !== document.body; e = e.parentElement) {
+      const cs = getComputedStyle(e);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity < 0.02) return false;
+    }
+    return true;
+  };
+  const out: string[] = [];
+  for (const e of st.querySelectorAll('img, svg, [data-m3art], .official')) {
+    if (e.closest('.band, .sky, [data-ui], .float:not([data-mark]), .float[data-mark="question"], .bubble') || (e.tagName.toLowerCase() !== 'svg' && e.parentElement?.closest('svg'))) continue;
+    const r = e.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2 || r.bottom < 0 || r.top > innerHeight || !vis(e)) continue;
+    out.push(`${e.tagName.toLowerCase()} ${e.getAttribute('class') ?? ''} <${e.parentElement?.getAttribute('class') ?? ''}>`);
+  }
+  return out;
+});
+
+test('the 3D island draws what the 2D sprites did: no 2D art shows over it (a scroll, a high five), and the first high five\'s sparkles are ready', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.goto(`?${Q}&island=3d`);
+  await ready(page);
+  // the flourishes' models are loaded and on the GPU before any is asked for
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { fxWarmed(): boolean } }).__world3d.fxWarmed()), { timeout: 20_000 }).toBe(true);
+  for (let i = 0; i < 6; i++) {
+    await page.evaluate((i) => (window as unknown as { __world3d: { pan(dy: number): void } }).__world3d.pan(i < 3 ? -90 : 90), i);
+    await page.waitForTimeout(150); // (sampling as the island scrolls)
+    expect(await domArt(page)).toEqual([]);
+  }
+  // a high five: the zap between us and the sparkles over our heads are NH's models in the canvas, at once
+  const fx0 = await w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx);
+  await page.evaluate(() => {
+    const W = window as unknown as { __world: { partner(): [number, number] }; __world3d: { client(x: number, z: number, l: number): [number, number] } };
+    const [x, z] = W.__world.partner(), [cx, cy] = W.__world3d.client(x, z, 40);
+    (document.elementFromPoint(cx, cy)?.closest('button') as HTMLButtonElement | null)?.click();
+  });
+  await expect.poll(() => w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx), { timeout: 2000 }).toBeGreaterThan(fx0);
+  for (let i = 0; i < 6; i++) {
+    expect(await domArt(page)).toEqual([]);
+    await page.waitForTimeout(120); // (sampling through the high five's 0.5 s zap and its marks)
+  }
+});

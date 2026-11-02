@@ -530,6 +530,10 @@
     0% { transform: scale(0) rotate(0); opacity: 0; } 18% { transform: scale(1.15) rotate(45deg); opacity: 1; }
     30% { transform: scale(.9) rotate(60deg); opacity: 1; } 42% { transform: scale(0) rotate(90deg); opacity: 0; } 100% { transform: scale(0); opacity: 0; }
   }
+  /* on the 3D island the tree's node is squashed upright as the model is foreshortened (camera.svelte.ts: --inv-y over
+     --inv is how much): the glints and the flourishes over it are light, not part of the tree, so they stand unsquashed,
+     whole stars from the camera's steep view */
+  :global(.scene[data-r3]) :is(.glint, .fxa) { scale: 1 calc(var(--inv-y, var(--inv, 1)) / var(--inv, 1)); }
   /* endless loops: they hold still under a sheet, like the sea's glints (hidden pages pause every animation) */
   :global(.if-scene[data-covered]) :is(.glint, .glow) { animation-play-state: paused; }
   .fxa { position: absolute; left: 50%; top: 30%; width: 0; height: 0; }
