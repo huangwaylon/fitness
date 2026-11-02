@@ -35,6 +35,8 @@ export interface Villager3D {
   step(t: number, moved?: number, speed?: number): boolean;
   /** The self-light (the island's time of day: engine.ts TOD lift). */
   lift(l: number): void;
+  /** Its opacity (the board's focus fades one standing between the camera and the board): 1 drawn as ever. */
+  opacity(a: number): void;
   head(): Bone | null;
   /** Hold a pose as it is (a test's, a still): null lets the states and actions move it again. */
   hold(p: Pose | null): void;
@@ -192,6 +194,20 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
     head: () => head,
     hold(p) {
       held = p;
+    },
+    opacity(a) {
+      model.visible = a > 0.01;
+      model.traverse((x) => {
+        const m = (x as Mesh).material as Material | undefined;
+        if (!m) return;
+        const see = a < 0.999;
+        if (m.transparent !== see) {
+          m.transparent = see;
+          m.depthWrite = !see;
+          m.needsUpdate = true;
+        }
+        m.opacity = a;
+      });
     },
     lift(l) {
       model.traverse((x) => {
