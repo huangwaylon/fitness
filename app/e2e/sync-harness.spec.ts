@@ -295,6 +295,47 @@ type TentHooks = {
 };
 const tt = <R,>(page: Page, fn: (t: TentHooks) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
 
+// One place at a time for a phrase too (docs/design.md "Villager taps"): said in a room (`say` with its `sc`), it shows
+// only on a phone whose villager is in that room; said on the island, only on the island.
+test('a phrase in the tent: B in there sees it over A; B on the island doesn’t, nor does A in the tent hear B’s on the island', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const ctxA = await browser.newContext(CTX);
+  const ctxB = RELAY ? await browser.newContext(CTX) : ctxA;
+  const room = async (p: Page, who: 'A' | 'B') => {
+    await p.goto('tent' + q(who));
+    await p.waitForFunction(() => ((window as unknown as { __tent?: TentHooks }).__tent?.stats()?.frames ?? 0) > 0, null, { timeout: 15_000 });
+  };
+  const say = async (p: Page, name: string) => {
+    await p.bringToFront();
+    await p.getByRole('button', { name: 'ひとこと いう' }).click();
+    await p.getByRole('dialog', { name: 'なにを いう？' }).getByRole('button', { name }).click();
+    await expect(p.locator('[data-say="mine"]')).toHaveText(new RegExp(name));
+  };
+  const a = await ctxA.newPage(), b = await ctxB.newPage();
+  await room(a, 'A');
+  await room(b, 'B');
+  // each sees the other in the room
+  for (const p of [a, b]) await expect.poll(() => tt(p, (t) => t.partner()), { timeout: 8000 }).not.toBeNull();
+  await say(a, 'やっほー！');
+  await expect(b.locator('[data-say="partner"]')).toHaveText(/やっほー！/, { timeout: 3000 });
+  await expect(b.locator('[data-say="partner"] .who')).toHaveText('ウェイ');
+  // B goes out to the island: A's next phrase in the tent isn't for it
+  await b.goto(q('B'));
+  await b.waitForFunction(() => (window as unknown as { __world?: { state?: unknown } }).__world?.state);
+  await expect.poll(() => tt(a, (t) => t.partner()), { timeout: 6000 }).toBeNull();
+  await a.waitForTimeout(1600); // (one per 1.5 s)
+  await say(a, 'がんばろう！');
+  await b.waitForTimeout(1500); // (proving nothing comes)
+  await expect(b.locator('[data-say]')).toHaveCount(0);
+  // and B's on the island isn't for A in the tent
+  await b.waitForTimeout(2600); // the island's opening beats are over
+  await say(b, 'おつかれさま！');
+  await a.waitForTimeout(1500); // (proving nothing comes)
+  await expect(a.locator('[data-say="partner"]')).toHaveCount(0);
+  await ctxA.close();
+  if (RELAY) await ctxB.close();
+});
+
 test('two phones in the tent: one room, A’s drag live on B (held there), the drop on both; each villager its own', async ({ browser }) => {
   // (two rooms drawn in software on CI's runners, and the drag waited out spot by spot on B)
   test.setTimeout(60_000);
