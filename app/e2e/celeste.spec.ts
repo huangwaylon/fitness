@@ -45,9 +45,9 @@ test('shooting stars every 3–8 s on a shower night (a clear night: 15–40 s)'
   await page.clock.resume();
   await page.goto('?demo&date=2026-11-12T22:00&critter=none');
   await expect(ribbon(page)).toBeVisible();
-  // the 3D island's whole-island view leaves the night sky a sliver under the HUD: a streak rarely finds a lane
-  // (docs/world3d-gaps.md 4)
-  test.fixme(await is3d(page), 'the 3D island leaves no sky for the shooting stars');
+  // (the 3D island's whole-island view leaves the night sky a sliver under the HUD: there a streak crosses on down over
+  // the island's far end, docs/world3d-gaps.md 4)
+  await is3d(page);
   await page.evaluate(() => {
     const w = window as { __stars?: number };
     w.__stars = 0;
