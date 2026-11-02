@@ -155,7 +155,9 @@ test('water bugs: a pondskater skates on the pond on a summer day; a tap nets it
   await page.waitForTimeout(800);
   // on the pond, or on the river's still reach (the east run)
   const b = await at(page, '[data-critter="pondskater"]'), p = await pond(page);
-  const reach = await page.evaluate(() => [800, 900, 1000].map((z) => (window as unknown as W).__world.at(372, z)));
+  // (the river's north–south reach between its bend and the falls' pool: world.ts RIVER as the page has it)
+  const g = await geo(page), still = g.RIVER.filter(([, z]) => z > g.RIVER_BEND + 20 && z < g.CLIFF.z0 - 40);
+  const reach = await page.evaluate((pts) => pts.map(([x, z]) => (window as unknown as W).__world.at(x, z)), still);
   const onPond = Math.abs(b.x - p.x) < p.w / 2 + 4 && Math.abs(b.y - p.y) < p.h / 2 + 4;
   const onRiver = reach.some(([x, y]) => Math.abs(b.x - x) < 26 && Math.abs(b.y - y) < 120);
   expect(onPond || onRiver).toBe(true);
