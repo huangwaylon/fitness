@@ -17,7 +17,7 @@ async function openEdit(p: Page) {
 }
 /** The tent's camera at rest, framed for the bar as it is now (a pick or a place changes the bar and re-frames the
  *  room: a px is only where the finger lands once it's still). */
-const settled = (p: Page) => p.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still());
+const settled = (p: Page) => p.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still(), null, { timeout: 10_000 });
 
 /** Where a villager stands at the tent's door (nav.ts doorOf). */
 const DOOR = ((b) => [b.x, b.z - 16] as const)(BUILDINGS.find((b) => b.id === 'campsite')!);
@@ -296,12 +296,14 @@ type TentHooks = {
 const tt = <R,>(page: Page, fn: (t: TentHooks) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
 
 test('two phones in the tent: one room, A’s drag live on B (held there), the drop on both; each villager its own', async ({ browser }) => {
+  // (two rooms drawn in software on CI's runners, and the drag waited out spot by spot on B)
+  test.setTimeout(60_000);
   const ctxA = await browser.newContext(CTX);
   const ctxB = RELAY ? await browser.newContext(CTX) : ctxA;
   const open = async (who: 'A' | 'B', ctx: typeof ctxA) => {
     const p = await ctx.newPage();
     await p.goto('tent' + q(who));
-    await p.waitForFunction(() => ((window as unknown as { __tent?: TentHooks }).__tent?.stats()?.frames ?? 0) > 0);
+    await p.waitForFunction(() => ((window as unknown as { __tent?: TentHooks }).__tent?.stats()?.frames ?? 0) > 0, null, { timeout: 15_000 });
     return p;
   };
   const a = await open('A', ctxA);
@@ -365,10 +367,10 @@ test('two phones in the tent: one room, A’s drag live on B (held there), the d
   [x, y] = await tt(a, (t) => t.tile(5, 4));
   await a.mouse.click(x, y);
   // (there: the tile's middle, 15, 5)
-  await a.waitForFunction(() => {
-    const t = (window as unknown as { __tent: TentHooks }).__tent, [mx, mz] = t.mine();
+  await expect.poll(() => tt(a, (t) => {
+    const [mx, mz] = t.mine();
     return !t.walking('A') && Math.hypot(mx - 15, mz - 5) < 1.5;
-  });
+  }), { timeout: 8000 }).toBe(true);
   const mine = await tt(a, (t) => t.mine());
   await expect.poll(async () => {
     const p = await tt(b, (t) => t.partner());
