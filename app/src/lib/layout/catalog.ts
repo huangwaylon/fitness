@@ -81,7 +81,7 @@ export const KIND_LIST: readonly KindDef[] = [
   // the seasonal spots (fixedDecor.ts: the season's piece stands there in its weeks)
   k({ k: 'beach-chair', group: 'season', ja: 'ビーチチェア（なつ）', en: 'Beach chair (summer)', w: 2, d: 1, block: true, foot: [56, 22], on: 'land', h: 30, icon: 'deco/beach-chair', turns: true, fixed: true }),
   k({ k: 'sandcastle', group: 'season', ja: 'すなのおしろ（なつ）', en: 'Sandcastle (summer)', w: 1, d: 1, block: true, foot: [26, 18], on: 'land', h: 30, icon: 'deco/sandcastle', fixed: true }),
-  k({ k: 'snowboy', group: 'season', ja: 'ゆきだるま（ふゆ）', en: 'Snowboy (winter)', w: 1, d: 1, block: true, foot: [30, 20], on: 'land', h: 40, icon: 'deco/snowboy', fixed: true }),
+  k({ k: 'snowboy', group: 'season', ja: 'ゆきだるま（ふゆ）', en: 'Snowboy (winter)', w: 1, d: 1, block: true, foot: [30, 20], on: 'land', h: 40, icon: 'deco/snowboy-0', fixed: true }),
   // structures that join terrain: a bridge over water (its deck walkable), stairs up a cliff (f 0: rising away)
   k({ k: 'bridge', group: 'structure', ja: 'はし', en: 'Bridge', w: 1, d: 3, block: false, on: 'span', h: 12, icon: 'bridges/stone-front', turns: true, variants: ['stone', 'wood', 'log', 'brick', 'red', 'iron', 'japanese', 'suspension'] }),
   k({ k: 'stairs', group: 'structure', ja: 'さか', en: 'Stairs', w: 2, d: 2, block: false, on: 'cliff', h: 40, icon: '', turns: true, variants: ['stone', 'brick', 'iron'] }),

@@ -8,8 +8,9 @@ import { TAP_SFX } from './taps.ts';
 import { CUES } from './cues.ts';
 
 const SRC = join(import.meta.dirname, '../..');
-/** dev/: the reaction gallery, a tool page (its chips fire reactions, which carry their own cues). */
-const SKIP = [/\/dev\//];
+/** dev/: the reaction gallery, a tool page (its chips fire reactions, which carry their own cues); editor/: the layout
+ *  editor, a desktop tool page for the members (a mouse and a keyboard; no game sounds, its disabled buttons plain). */
+const SKIP = [/\/dev\//, /\/editor\//];
 
 /** `self`: the handler (or what it sets off) plays the outcome's own cue. Where that sound comes from. */
 const SELF: Record<string, string> = {

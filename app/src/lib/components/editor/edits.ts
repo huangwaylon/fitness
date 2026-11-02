@@ -1,0 +1,190 @@
+// The layout editor's edits (docs/island-layout.md "The editor"), pure: each tool's change as a new Layout (model.ts
+// withChanges), and undo's revert of one action over whatever the layout is now (a partner's changes since stay). The
+// editor sends the ops between the layout and the new one (model.ts opsBetween) through the store, so every phone
+// sees it live.
+import { codeOf, idx, isWater, kindOf, onGrid, tierOf, TIERS, CHUNKS_X, CHUNKS_Z, chunkString, chunkXZ, CHUNK, GRID, type Kind } from '#lib/layout/grid.ts';
+import { footprintOf, kindDef } from '#lib/layout/catalog.ts';
+import { footOf, newObjId, withChanges, type Layout, type Obj } from '#lib/layout/model.ts';
+import { diffLayouts } from '#lib/layout/diff.ts';
+
+type Facing = Obj['f'];
+
+/** The tiles a square brush of `size` covers round (c, r). */
+export function brushTiles(c: number, r: number, size: number): [number, number][] {
+  const out: [number, number][] = [];
+  const lo = -Math.floor((size - 1) / 2), hi = lo + size - 1;
+  for (let j = lo; j <= hi; j++) for (let i = lo; i <= hi; i++) if (onGrid(c + i, r + j)) out.push([c + i, r + j]);
+  return out;
+}
+
+/** Paint a kind on tiles (the tier kept; the sea is always tier 0, and land painted on it starts at 0). */
+export function paint(l: Layout, tiles: Iterable<[number, number]>, kind: Kind): Layout {
+  const set: [number, number, number][] = [];
+  for (const [c, r] of tiles) {
+    if (!onGrid(c, r)) continue;
+    const was = l.codes[idx(c, r)];
+    const tier = kind === 'sea' || kindOf(was) === 'sea' ? 0 : tierOf(was);
+    const code = codeOf(kind, tier);
+    if (code !== was) set.push([c, r, code]);
+  }
+  return set.length ? withChanges(l, { tiles: set }) : l;
+}
+
+/** Raise (+1) or lower (−1) tiles a tier (0…3; the sea stays the sea). */
+export function cliff(l: Layout, tiles: Iterable<[number, number]>, dir: 1 | -1): Layout {
+  const set: [number, number, number][] = [];
+  for (const [c, r] of tiles) {
+    if (!onGrid(c, r)) continue;
+    const was = l.codes[idx(c, r)], k = kindOf(was);
+    if (k === 'sea') continue;
+    const t = Math.max(0, Math.min(TIERS - 1, tierOf(was) + dir));
+    if (t !== tierOf(was)) set.push([c, r, codeOf(k, t)]);
+  }
+  return set.length ? withChanges(l, { tiles: set }) : l;
+}
+
+/** A new object of a kind at a tile (its footprint's back-left), facing f, its variant s (the kind's first). */
+export function place(l: Layout, k: string, c: number, r: number, f: Facing, s: string | undefined, at: number): { layout: Layout; id: string } | null {
+  const def = kindDef(k);
+  if (!def) return null;
+  const id = newObjId(at);
+  const o: Obj = { id, k, x: c, z: r, f: def.turns ? f : (f % 2) as Facing, ...((s ?? def.variants?.[0]) ? { s: s ?? def.variants![0] } : {}) };
+  if (!inGrid(l, o)) return null;
+  return { layout: withChanges(l, { set: [o] }), id };
+}
+
+/** Whether an object's footprint lies on the grid. */
+function inGrid(l: Layout, o: Obj): boolean {
+  const [w, d] = footOf(l, o);
+  return o.x >= 0 && o.z >= 0 && o.x + w <= GRID.cols && o.z + d <= GRID.rows;
+}
+
+/** Move objects by whole tiles (each kept on the grid: a move that would take one off it is clamped for all). */
+export function move(l: Layout, ids: Iterable<string>, dc: number, dr: number): Layout {
+  const os = [...ids].map((id) => l.objects.get(id)).filter((o): o is Obj => !!o);
+  if (!os.length || (!dc && !dr)) return l;
+  // clamp the step so every footprint stays on the grid
+  for (const o of os) {
+    const [w, d] = footOf(l, o);
+    dc = Math.max(-o.x, Math.min(GRID.cols - w - o.x, dc));
+    dr = Math.max(-o.z, Math.min(GRID.rows - d - o.z, dr));
+  }
+  if (!dc && !dr) return l;
+  return withChanges(l, { set: os.map((o) => ({ id: o.id, k: o.k, x: o.x + dc, z: o.z + dr, f: o.f, ...(o.s ? { s: o.s } : {}) })) });
+}
+
+/** Turn objects a quarter (clockwise seen from above: f + 1), each about its footprint's back-left tile. */
+export function rotate(l: Layout, ids: Iterable<string>, by = 1): Layout {
+  const set: Obj[] = [];
+  for (const id of ids) {
+    const o = l.objects.get(id);
+    if (!o) continue;
+    const next: Obj = { id, k: o.k, x: o.x, z: o.z, f: (((o.f + by) % 4) + 4) % 4 as Facing, ...(o.s ? { s: o.s } : {}) };
+    if (o.n) Object.assign(next, { n: o.n });
+    if (inGrid(l, next)) set.push(next);
+  }
+  return set.length ? withChanges(l, { set }) : l;
+}
+
+/** A variant for an object (a bush's species, a lantern's colour). */
+export function restyle(l: Layout, id: string, s: string): Layout {
+  const o = l.objects.get(id);
+  if (!o || o.s === s) return l;
+  return withChanges(l, { set: [{ ...o, s }] });
+}
+
+/** Whether an object may be removed (the goal trees, the homes, the named spots and the island's one-offs may not). */
+export const removable = (o: Obj): boolean => !kindDef(o.k)?.fixed;
+
+/** Remove objects (the fixed ones stay). */
+export function remove(l: Layout, ids: Iterable<string>): Layout {
+  const gone = [...ids].filter((id) => {
+    const o = l.objects.get(id);
+    return o && removable(o);
+  });
+  return gone.length ? withChanges(l, { remove: gone }) : l;
+}
+
+/** A copy of objects (their kinds, variants, facings and places relative to the first's tile). */
+export interface Clip {
+  items: { k: string; s?: string; f: Facing; dx: number; dz: number }[];
+}
+export function copy(l: Layout, ids: Iterable<string>): Clip | null {
+  const os = [...ids].map((id) => l.objects.get(id)).filter((o): o is Obj => !!o && removable(o));
+  if (!os.length) return null;
+  const x0 = Math.min(...os.map((o) => o.x)), z0 = Math.min(...os.map((o) => o.z));
+  return { items: os.map((o) => ({ k: o.k, ...(o.s ? { s: o.s } : {}), f: o.f, dx: o.x - x0, dz: o.z - z0 })) };
+}
+/** Paste a copy with its back-left at (c, r): new objects (new ids), those that fit on the grid. */
+export function paste(l: Layout, clip: Clip, c: number, r: number, at: number): { layout: Layout; ids: string[] } {
+  const set: Obj[] = [];
+  clip.items.forEach((it, i) => {
+    const o: Obj = { id: newObjId(at + i), k: it.k, x: c + it.dx, z: r + it.dz, f: it.f, ...(it.s ? { s: it.s } : {}) };
+    if (inGrid(l, o)) set.push(o);
+  });
+  return { layout: set.length ? withChanges(l, { set }) : l, ids: set.map((o) => o.id) };
+}
+
+/** The objects whose footprints a tile box (inclusive) touches. */
+export function inBox(l: Layout, c0: number, r0: number, c1: number, r1: number): string[] {
+  const [a, b] = [Math.min(c0, c1), Math.max(c0, c1)], [p, q] = [Math.min(r0, r1), Math.max(r0, r1)];
+  const out: string[] = [];
+  for (const o of l.objects.values()) {
+    const [w, d] = footOf(l, o);
+    if (o.x <= b && o.x + w - 1 >= a && o.z <= q && o.z + d - 1 >= p) out.push(o.id);
+  }
+  return out;
+}
+
+/** The object at a tile (the topmost: a small thing over a big one, a flower last), or null. */
+export function objectAt(l: Layout, c: number, r: number): Obj | null {
+  let best: Obj | null = null, area = Infinity;
+  for (const o of l.objects.values()) {
+    const [w, d] = footOf(l, o);
+    if (c >= o.x && c < o.x + w && r >= o.z && r < o.z + d && w * d < area) {
+      best = o;
+      area = w * d;
+    }
+  }
+  return best;
+}
+
+/** Undo one action (before → after) over the layout as it is now: the chunks and the objects the action touched go
+ *  back to how they were before it; anything else (a partner's change since) stays. */
+export function revert(now: Layout, before: Layout, after: Layout): Layout {
+  const d = diffLayouts(before, after);
+  const tiles: [number, number, number][] = [];
+  for (const i of d.chunks) {
+    const [cx, cz] = chunkXZ(i);
+    for (let j = 0; j < CHUNK; j++)
+      for (let k = 0; k < CHUNK; k++) {
+        const c = cx * CHUNK + k, r = cz * CHUNK + j;
+        if (onGrid(c, r)) tiles.push([c, r, before.codes[idx(c, r)]]);
+      }
+  }
+  const ids = new Set([...d.objects.add.map((o) => o.id), ...d.objects.move.map((o) => o.id), ...d.objects.remove]);
+  const set: Obj[] = [], gone: string[] = [];
+  for (const id of ids) {
+    const o = before.objects.get(id);
+    if (o) set.push(o);
+    else gone.push(id);
+  }
+  const homes = d.homes.length ? Object.fromEntries(d.homes.map((w) => [w, before.homes[w]])) : undefined;
+  return withChanges(now, { tiles, set, remove: gone, ...(homes ? { homes } : {}) });
+}
+
+/** Whether two layouts are the same island (the tiles, the objects, the homes' looks). */
+export function sameLayout(a: Layout, b: Layout): boolean {
+  if (a === b) return true;
+  for (let i = 0; i < CHUNKS_X * CHUNKS_Z; i++) if (chunkString(a.codes, i) !== chunkString(b.codes, i)) return false;
+  const d = diffLayouts(a, b);
+  return !d.objects.add.length && !d.objects.move.length && !d.objects.remove.length && !d.homes.length;
+}
+
+/** A tile is water (for a ghost's quick check). */
+export const wetAt = (l: Layout, c: number, r: number): boolean => isWater(l.kind(c, r));
+/** A kind's footprint in a facing (for a ghost). */
+export const ghostFoot = (k: string, f: number): [number, number] => {
+  const def = kindDef(k);
+  return def ? footprintOf(def, f) : [1, 1];
+};

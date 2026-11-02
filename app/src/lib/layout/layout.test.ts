@@ -192,7 +192,7 @@ describe('walking on it (layout/nav.ts, planTap drop-in)', () => {
   const l = defaultLayout();
   const g = navOf(l);
   test('builds fast and names the spots', () => {
-    expect(g.buildMs).toBeLessThan(50);
+    expect(g.buildMs).toBeLessThan(250); // ~4 ms alone; a loaded machine runs the suite in parallel
     expect(g.named.homeA).toBeDefined();
     expect(g.named['door-home-B']).toBeDefined();
     expect(g.named.seatMaeL).toBeDefined();
@@ -267,8 +267,8 @@ describe('the long island (20 × 92) and its 3D ground (layout/mesh.ts)', () => 
     let walls = 0, falls = 0, water = 0;
     for (let i = 0; i < CHUNK_COUNT; i++) {
       const m = chunkMesh(l, i);
-      for (const a of [m.top.pos, m.walls.pos, m.water.pos]) for (const v of a) expect(Number.isFinite(v)).toBe(true);
-      for (const k of m.top.index) expect(k).toBeLessThan(m.top.pos.length / 3);
+      for (const a of [m.top.pos, m.walls.pos, m.water.pos]) expect(a.every(Number.isFinite)).toBe(true);
+      expect(m.top.index.every((k) => k < m.top.pos.length / 3)).toBe(true);
       walls += m.walls.index.length;
       falls += m.falls.index.length;
       water += m.water.index.length;
