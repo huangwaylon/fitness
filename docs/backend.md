@@ -281,7 +281,8 @@ catches an offline phone up.
   `IslandRoom` (`idFromName('island')`), SQLite-backed (`new_sqlite_classes`, the only kind the Free plan has).
   Production `wss://island-fund-relay.island-fund-relay.workers.dev/room`; a test copy, `island-fund-relay-test`, with
   its own secrets and room for the smoke test. `GET /health` → `{ok, v, versions, t}`; `POST /api` and `/admin`
-  ([The record](#the-record)); `POST /notify` ([Push](#push)); `POST /push/*` ([Notifications](#notifications)).
+  ([The record](#the-record)); `POST /notify` ([Push](#push)); `/push/*`: 410 Gone (the old notifications'
+  routes, for an app build from before their removal: `relay/src/pushGone.ts`).
 - **Admission:** the Worker accepts `/room` upgrades only from `ALLOWED_ORIGINS` (`https://huangwaylon.github.io`) and
   `http://localhost|127.0.0.1`; everything else 403. The origin only keeps other sites out; the key is the auth.
 - **Auth:** the first message is `hello {key, since?}`. The room compares it in constant time with the secrets
@@ -366,8 +367,7 @@ claims, the ずかん, the tent's decor, pairing.
   join and leave is told to everyone else who can hear of it; `peer` stays the partner for a member (the guest never
   counts) and either member for the guest. A high-five names whom it is for (`to`; a member's to the partner may leave
   it out), and the room holds the last one per (sender, recipient) pair for a recipient who is away (`Held`, `<from>><to>`).
-- **Push:** none: `/push/*` answers the guest's key 403, so it neither subscribes nor reports a goal, and the members'
-  `changed` notices reach it like anyone's (its own writes only to v3 phones).
+- **Push:** the members' `changed` notices reach it like anyone's (its own writes only to v3 phones).
 - **The phones** ([design](design.md#the-guest)): a member's draws the guest's villager while it's `here`, as a third
   villager actor (`ui-state/cast.ts`: `mine`, `partner`, `third`; on the guest's phone `third` is B); the guest's
   phone guards what it sends by the same rules (`week.send` by `guestMayWrite`, the socket by `guestMaySend`), so
@@ -573,7 +573,6 @@ writes/day (unused). A generous day for two phones:
 | Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
 | Shortcut ingests (2 phones, ~24 runs each; ~300 rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
 | The export (cron every 15 min; a dump when changed, ≤ 96, waiting ~3–8 s on Apps Script) | 97 | 97 | 97 | ~100 | ~75,000 | ~100 |
-| Goal reports and subscriptions ([Notifications](#notifications)) | ~3 | 3 | 3 | ~1 | | |
 | **Total** (Free plan limit) | | **~670 (0.7 % of 100,000)** | **~930 (0.9 % of 100,000)** | **~700 (5 % of 13,000)** | **~95,000 (1.9 % of 5 M)** | **~4,600 (4.6 % of 100,000)** |
 
 Measured 2026-11-01 (a UTC day, test traffic included, before the record): Worker 1.8k requests, DO 9.9k (the
@@ -584,59 +583,12 @@ Script's side: ≤ 96 exports a day (web app requests, no trigger time, no UrlFe
 
 ## Notifications
 
-One Web Push, opt-in per phone: when a person's day reaches all four goals, the partner's phones whose せってい →
-**つうち** switch is on get 「うめが きょうの もくひょうを 4つ ぜんぶ たっせい！」 (「ふたりで ぜんぶ たっせい！ ウェイも 4つ
-クリアしたよ」 when the partner had already met everything; English if that phone's app is in English). At most one a
-day per person, never 22:00–08:00 Tokyo (decisions: *One notification: the partner met every goal*).
-
-- **Trigger** (`app/src/lib/sync/push.ts pushTick`, from the week store's every recompute, never in the demo): when my
-  own view shows all four of today's goals met and `island.goalSent` doesn't already hold `{me, date: today}`, the
-  phone POSTs `/push/goal {key, date, both, name}` (`both`: the partner's four were met too; `name`: my villager name
-  as the island shows it). Done for the day on any answer but `failed` (or a network error, retried ≥ 10 min later).
-  It is reported whatever my own switch says: the receiver's switch decides. **Limitation:** goals are computed on the
-  phone, so the achiever's app has to open after the Shortcut's sync (which runs when an *everyday* app opens, not
-  ours). Until it does, nothing is sent; when the partner opens their app first, the island already shows the fruit
-  and the flowers, so no push is needed there.
-- **Relay** (`relay/src/pushRoute.ts`, `push.ts`; HTTP, not the socket: a subscription is longer than its 256 bytes
-  and the trigger can come before the socket's welcome): POST `/push/subscribe {key, sub, lang}`,
-  `/push/unsubscribe {key, endpoint}`, `/push/goal {key, date, both, name}`, each a `text/plain` JSON body ≤ 2 KB with
-  the person key (a simple request: no preflight, no key in a URL or header) from an allowed origin (403 otherwise),
-  checked by the shared parsers (`app/src/lib/sync/push-protocol.ts`, 400), the key in constant time (401). CORS:
-  `Access-Control-Allow-Origin` = the page's origin. Endpoints must be https on a known push service (Apple, FCM,
-  Mozilla, WNS), so the relay never POSTs elsewhere.
-- **Goal:** the room answers `{ok, outcome, sent}`: `stale` (the date isn't today in Tokyo), `dup` (already done
-  today), `quiet` (22:00–08:00: skipped, not queued, and the day is spent), `none` (the partner has no subscription),
-  `sent` (`sent` pushes accepted), `failed` (no push service took it: the day isn't spent, a later report retries).
-- **Storage** (the room's SQLite): `push_subs (endpoint PK, who, p256dh, auth, lang, at)`, at most 4 per person (the
-  oldest goes), an endpoint re-subscribed moves to whoever sent it; `push_sent (who PK, date)`. A push service's 404
-  or 410 deletes that subscription.
-- **Sending** (`relay/src/webpush.ts`, WebCrypto only): the message `{v: 1, kind: 'goal'|'both', name, date, lang}` is
-  encrypted per RFC 8291 (aes128gcm, one record, a fresh ECDH key and salt per message; test: the RFC's Appendix A
-  vector byte for byte) and authorised per RFC 8292 (`Authorization: vapid t=<ES256 JWT: aud = the endpoint's origin,
-  exp 12 h, sub = the app's URL>, k=<public key>`), `TTL: 7200`, `Urgency: normal`.
-- **Keys:** the VAPID key pair; the public half is `VAPID_PUBLIC` in `relay/wrangler.toml` and `PUSH_PUBLIC_KEY` in
-  `push.ts` (they must match), the private scalar the secret `VAPID_PRIVATE` (production and test). Rotation:
-  [runbook §12](ops/runbook.md#12-notifications-vapid).
-- **The switch** (`components/panel/NotifySection.svelte`, `island.push` = `{on, endpoint, lang, at}`): off by default.
-  A tap asks `Notification.requestPermission()` first (iOS grants the prompt only to a gesture), then
-  `pushManager.subscribe({userVisibleOnly, applicationServerKey})` (a subscription for an older VAPID key is dropped
-  first) and `/push/subscribe`; it shows on only once the relay took it. Off: forgotten at once, then `/push/unsubscribe`
-  and `unsubscribe()`. At launch a phone that is on hands its subscription over again if the endpoint or the language
-  changed or it is a week old, and turns itself off if the permission was revoked. Where it can't work a line says
-  why: an iPhone's Safari tab (Web Push needs the Home Screen app, iOS 16.4+), an unsupported browser, notifications
-  off in the phone's settings, no pairing (the demo). The CSP's `connect-src` allows the relay's https origin.
-- **Service worker:** `push` → `showNotification` (title しまの貯金箱 / Island Fund, the body, the app icon, tag
-  `island-goal-<date>` so a repeat replaces it; an unreadable push still shows a generic line, since Safari drops
-  subscriptions that push silently); `notificationclick` → focus an open window of the app, else open it.
-- **Cost:** at most two goal reports and two pushes a day, a subscribe per phone per week: a handful of Worker and
-  DO requests against 100,000 a day; push services are free.
-- **Tests:** `relay/test/webpush.test.ts` (the RFC 8291 vector, a round trip, VAPID's JWT verified with the public key),
-  `relay/test/push.test.ts` (once a day per person, quiet hours, stale dates, the partner only, each phone's
-  language, 404/410 cleanup, failed retries, the subscription cap, the endpoints' origin, key, size and shape checks);
-  `push.test.ts`, `push-protocol.test.ts`, `service-worker/notify.test.ts` in the app's vitest; `e2e/notify.spec.ts`
-  (the switch with the permission, the subscription and the relay mocked); `npm run smoke` (the endpoints' refusals).
-  Checked end to end once (2026-11-01) in Chrome against the test relay: the built service worker subscribed through
-  FCM, `/push/goal` answered `sent`, the notification showed with its words and tag, and a second report was `dup`.
+None since 2026-11-02 ([decisions](decisions.md#no-notifications-2026-11-02)). What is left of them: on open the app
+unsubscribes any Web Push subscription its service worker holds and forgets `island.push` and `island.goalSent`
+(`app/src/lib/sync/pushGone.ts`, its test; `e2e/no-notify.spec.ts`), and the relay answers an old build's
+`/push/subscribe`, `/push/unsubscribe` and `/push/goal` 410 Gone with CORS for the page (`relay/src/pushGone.ts`,
+`relay/test/pushGone.test.ts`, `npm run smoke`), keeping nothing. Both can go once neither phone runs a build from
+before (an app build's `/push/*` call would then 404, which it also ignores).
 
 ## Service worker
 
@@ -649,7 +601,7 @@ day per person, never 22:00–08:00 Tokyo (decisions: *One notification: the par
   from it) and the runtime caches; deletes the rest.
 - **Navigations:** network first; the cached shell offline or after 3 s. A response becomes this version's shell only
   if it has none, so an old worker never stores a newer build's HTML.
-- **Notifications:** `push` and `notificationclick` ([Notifications](#notifications)).
+- **Notifications:** none (no `push` or `notificationclick` handler: [decisions](decisions.md#no-notifications-2026-11-02)).
 - **Runtime:** fonts, villager, critter, find and present art cache-first on first use; audio (`island-audio-v1`) cache-first with the 3 most
   recent music files (the hours, event music, K.K.'s songs) kept; Range requests pass through. Other GETs: this version's cache, the previous one, then the
   network. The Apps Script backend is cross-origin and always live.

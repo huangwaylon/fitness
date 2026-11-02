@@ -15,8 +15,6 @@ export const LIVE = {
   queue: 'island.queue',
   /** Events the server acked whose rows the snapshot cache hasn't fetched back yet (queue.ts `ackedEvents()`). */
   acked: 'island.acked',
-  /** `{ me, date }`: the Tokyo day my all-four goals were last reported to the relay (sync/push.ts: once a day). */
-  goalSent: 'island.goalSent',
   /** `{ day, t }`: the relay time of the last shared-world change this phone heard that Tokyo day (sync/live.ts: the
    *  hello's `since`, so a reload hears only what's new). */
   since: 'island.liveSince',
@@ -72,9 +70,6 @@ export const DEVICE = {
   /** localStorage: the language last shown (`ja` / `en`), so an English launch loads its strings before the first paint
    *  (the `locale` pref stays the truth). */
   locale: 'island.locale',
-  /** localStorage: `{ on, endpoint?, lang?, at? }`: せってい's つうち switch and what the relay was last given
-   *  (sync/push.ts; off by default). */
-  push: 'island.push',
   /** localStorage: `[text…]`: my own phrases for my villager's balloon, the last few, newest first (island/say.ts). */
   says: 'island.says',
   /** localStorage: `[code…]`: the tent's pieces I picked last, newest first (tent/TentEdit.svelte's さいきん tab). */

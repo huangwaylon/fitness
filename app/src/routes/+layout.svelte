@@ -26,6 +26,7 @@
   import { startSound } from '#lib/sound/sound.svelte.ts';
   import { startTaps } from '#lib/sound/taps.ts';
   import { startModality } from '#lib/components/ui/modality.ts';
+  import { dropPush } from '#lib/sync/pushGone.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { children }: { children: Snippet } = $props();
@@ -67,6 +68,8 @@
     const stopTheme = startTheme();
     const stopWeather = startWeather();
     week.init();
+    // つうち is gone: a phone that had it on lets its Web Push subscription go (sync/pushGone.ts)
+    void dropPush();
     if (!routeOf(location.pathname).startsWith('/pair')) week.refresh();
     const onVisible = () => {
       if (document.visibilityState === 'visible' && !routeOf(location.pathname).startsWith('/pair')) week.refresh({ background: true });

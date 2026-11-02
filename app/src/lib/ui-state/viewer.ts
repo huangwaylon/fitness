@@ -1,6 +1,6 @@
 // Who holds this phone (docs/design.md "The guest"): a member, or the guest. The guest's phone shows the members'
 // island, activity and ベル, but its own villager and name, and none of what only a member does (buying, voiding,
-// the harvest, a goal, the island's もようがえ, the notifications, the sync) nor any からだ figure.
+// the harvest, a goal, the island's もようがえ, the sync) nor any からだ figure.
 import type { WeekView, Who } from '#lib/types.ts';
 
 /** The guest's phone. */
