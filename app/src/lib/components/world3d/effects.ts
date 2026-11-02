@@ -148,7 +148,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     if (s.add) addLight(mat, true);
     return mat;
   };
-  let warmed = false;
+  let warmed = false, warmMats: MeshBasicMaterial[] = [];
   async function warm(renderer: WebGLRenderer, camera: Camera) {
     const names = [...new Set([...Object.keys(MODEL), 'ring', 'bubble', 'glow'])];
     const srcs = (await Promise.all(names.map(load))).filter((x): x is Src => !!x);
@@ -171,7 +171,8 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
       warmScene.add(mesh);
     }
     renderer.compile(warmScene, camera);
-    for (const m of mats) m.dispose();
+    // (kept: disposing them would free the very programs just compiled, mid their parallel compile's status check)
+    warmMats = mats;
     warmed = true;
   }
   const parts: Part[] = [];
@@ -355,6 +356,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         for (const m of p.mats) m.dispose();
       }
       parts.length = 0;
+      for (const m of warmMats) m.dispose();
       void Promise.all(got.values()).then((ms) => ms?.forEach((m) => m?.forEach((s) => s.geo !== quad && s.geo.dispose())));
       quad.dispose();
     }
