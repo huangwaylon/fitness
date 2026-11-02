@@ -13,6 +13,8 @@ export type W3 = {
   client(x: number, z: number, lift?: number): [number, number];
   things(id: string): boolean;
   where(id: string): { x: number; y: number; z: number; hidden: boolean; model: string } | null;
+  /** The ids of the lamps lit now (a stand-in's `s:` prefixed). */
+  lamps(): string[];
 };
 export const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()})(window.__world3d)`) as Promise<R>;
 

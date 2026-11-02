@@ -60,6 +60,7 @@ test('the seasons swap their pieces in: the blossom days’ picnic set and pond 
   if (await is3d(page)) {
     // the 3D island: the lamp's model is NH's mushroom lamp (a lit one: world3d/things.ts LAMP), the night's lamps on
     await expect.poll(() => w3(page, (w) => w.where('lantern-1')?.model)).toBe('deco/mushroom-lamp');
+    await expect.poll(() => w3(page, (w) => w.lamps())).toContain('lantern-1');
     await expect.poll(() => w3(page, (w) => w.stats().points)).toBeGreaterThan(0);
   } else await expect(page.locator('[data-glow="lantern-1"]')).toHaveCount(1);
   await open(page, '2026-12-20T11:00', CAMS.oku);

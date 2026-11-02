@@ -118,6 +118,8 @@ export interface Lights {
   frame(t: number, cx: number, cz: number, R: number, pivotZ: number): boolean | 'ambient';
   /** How many point lights are lit (any share) and the lights' count (stats). */
   stats(): { points: number; lamps: number };
+  /** The ids of the lights lit now (their halos on: the level over 0; a stand-in's `s:` prefixed). */
+  lit(): string[];
   dispose(): void;
 }
 
@@ -226,6 +228,7 @@ export function createLights(scene: Scene): Lights {
     level: (v) => void (lvlTo = v),
     frame,
     stats: () => ({ points: points.filter((p) => p.l.intensity > 0).length, lamps: spots.length }),
+    lit: () => (lvl > 0 ? spots.map((s) => s.id) : []),
     dispose() {
       for (const m of [halo, pool]) {
         m.geo.dispose();

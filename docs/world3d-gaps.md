@@ -25,11 +25,8 @@ the rest read the 3D island through `window.__world3d` (e2e/island.ts: `is3d`, `
 
 ## Open: engine / scene (the lead)
 
-3. **No petals or maple leaves on the 3D pond** (seasonal.spec "the pond on 2027-04-05: petal floating"). Expected
-   (docs/design.md "Pond"): petals afloat on the pond in cherry-blossom week (Apr 1–10), maple leaves in maple week
-   (Nov 16–25). Is: the 3D island floats them on the stream only (floats3d.ts, `float-*` instances); the pond's floats
-   were WorldWater's SVG, which the 3D island doesn't mount. The spec checks the stream's (`where('float-0').model`)
-   and says so.
+3. **No petals or maple leaves on the 3D pond** (fixed): floats3d.ts floats five on the pond too (`float-pond-0…4`,
+   circling inside its banks over 90 s) beside the stream's; seasonal.spec checks the pond's.
 
 4. **The night sky is a sliver: few shooting stars** (celeste.spec "shooting stars every 3–8 s on a shower night":
    1 in 24 s, ≥ 2 expected; fixme'd on the 3D island). Expected: on a shower night a streak every 3–8 s, across the
@@ -62,11 +59,11 @@ The specs meanwhile wait for the 3D island before they act (e2e/island.ts `is3d`
 opens (`watchFor`/`sawIt`), and fast-forward the page's clock instead of running it frame by frame
 (`page.clock.fastForward`: under `runFor` each faked frame is drawn, a minute of them in software takes minutes).
 
-## Hooks wanted (`window.__world3d`)
+## Hooks (`window.__world3d`)
 
-- `lamps(): string[]`, the ids of the lamps lit now (things.ts `lamps()` with the level > 0). fixed-decor.spec checks a
-  seasonal lamp is lit by its model (`where('lantern-1').model === 'deco/mushroom-lamp'`) and `stats().points > 0`;
-  the id list would say that lamp itself glows.
+- `lamps(): string[]` (provided): the ids of the lamps lit now (lights.ts `lit()`: a model's id, a stand-in's `s:`
+  prefixed; none by day). fixed-decor.spec checks the seasonal lamp itself glows (`lamps()` has `lantern-1`).
+- `stats().why` (the parts that wanted the last frame, `~` ambience only) and `stats().paused`.
 
 ## Not gaps (the specs changed)
 

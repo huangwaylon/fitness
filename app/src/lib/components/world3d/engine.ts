@@ -213,6 +213,8 @@ export interface Island3 {
   fxWarmed(): boolean;
   /** How many flourishes play (with this ambient tag). */
   fxCount(tag?: string): number;
+  /** The ids of the lamps lit now (the e2e's: a model's id, a stand-in's `s:` prefixed). */
+  lamps(): string[];
   /** The GPU's name (a software renderer, CI's: the scene draws at its lightest). */
   gpu(): string;
   /** The camera's ends for this screen (the scene fits them: まえ's shore, おく's campsite). */
@@ -915,6 +917,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
       activity();
     },
     focused: () => !!focus,
+    lamps: () => lights.lit(),
     fxCount: (tag) => effects.count(tag),
     skyPoint(sx, sy, share) {
       const d = horizonDepth() * share;
