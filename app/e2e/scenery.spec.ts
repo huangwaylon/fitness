@@ -5,7 +5,8 @@ import { expect, test, type Page } from '@playwright/test';
 
 /** The island is up: today's ベル ribbon shows (the app asks no questions, so nothing to answer first). */
 async function islandReady(page: Page) {
-  await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
+  // (its first paint: now and then over 5 s under CI's load)
+  await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible({ timeout: 15_000 });
 }
 
 type W = { at: (x: number, z: number) => [number, number]; go: (z: number) => void };
