@@ -50,7 +50,8 @@ test('every tree shakes: three quick taps on an oak drop a branch beside it; one
   await shake(page, 'oak-m1');
   const twig = page.locator('button[data-branch="oak-m1"]');
   await expect(twig).toHaveCount(1, { timeout: 3000 });
-  await twig.click(); // (once it has landed: a locator's click waits for it to stand still)
+  await page.waitForTimeout(700); // (the fall: a tap mid-fall isn't a pick-up, and no hook says it has landed)
+  await twig.click();
   await expect(twig).toHaveCount(0, { timeout: 3000 });
   // a reload finds today's island as it was: the branch is gone, and stays gone
   await page.reload();
@@ -64,6 +65,7 @@ test('a palm drops its two coconuts, once a day: a tap picks one up (NH’s line
   await shake(page, 'palm-3');
   const nuts = page.locator('button[data-coconut]');
   await expect(nuts).toHaveCount(2, { timeout: 3000 });
+  await page.waitForTimeout(700); // (the fall: a tap mid-fall isn't a pick-up, and no hook says it has landed)
   await nuts.last().click(); // (the two lie side by side, the later one on top)
   await expect(page.locator('[data-fx="catch"]')).toContainText('ヤシのみを ひろった！', { timeout: 4000 });
   await expect(nuts).toHaveCount(1);
@@ -118,11 +120,8 @@ test('two players: a tap-walk on one tab plays on the other from the same start 
   await open(a);
   await open(b, '&as=B');
   for (const p of [a, b]) await go(p, 300);
-  await atRest(a, b);
+  await a.waitForTimeout(400);
   for (const [tapper, watcher, tx, tz] of [[a, b, 240, 500], [b, a, 150, 560]] as const) {
-    // (the tapping tab in front: a tab behind has its frames held, its tap areas where the camera was)
-    await tapper.bringToFront();
-    await atRest(tapper);
     const [x, y] = await tapper.evaluate(([tx, tz]) => (window as unknown as { __world: W }).__world.at(tx, tz), [tx, tz]);
     await tapper.mouse.click(x, y);
     // under way: the two tabs have it within a few steps of each other (one frame and the evaluate's skew apart)
@@ -211,7 +210,8 @@ test('two players: a shake on one tab plays on the other (their villager stays w
   // B's tab: the oak shakes and the branch falls beside it; A's villager (B's partner) doesn't run over
   await expect(b.locator('button[data-branch="oak-m1"]')).toHaveCount(1, { timeout: 6000 });
   await expect(b.locator('[data-actor="partner"].walking')).toHaveCount(0);
-  await b.locator('button[data-branch="oak-m1"]').click(); // (once it has landed: the click waits for it to stand still)
+  await b.waitForTimeout(800); // (the fall: a tap mid-fall isn't a pick-up, and no hook says it has landed)
+  await b.locator('button[data-branch="oak-m1"]').click();
   await expect(b.locator('button[data-branch]')).toHaveCount(0, { timeout: 3000 });
   await expect(a.locator('button[data-branch]')).toHaveCount(0, { timeout: 3000 });
   // a third tab opening later (B's phone again) finds the day as it is: no branch, and the nest rule shared
