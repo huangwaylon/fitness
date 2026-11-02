@@ -113,6 +113,25 @@ const same = (a: State, b: State) => {
   }
 };
 
+/** The island's camera at rest on these phones (a tap's px only holds once it is). */
+const atRest = (...ps: Page[]) => Promise.all(ps.map((p) => expect.poll(() => w<boolean>(p, 'idle'), { timeout: 5000 }).toBe(true)));
+/** Both phones have each other's villager where its own phone has it (the join's word in: villagerSync JOIN_SAY_MS). */
+const joined = (a: Page, b: Page) =>
+  expect.poll(async () => {
+    const [am, ap, bm, bp] = await Promise.all([w<[number, number]>(a, 'mine'), w<[number, number]>(a, 'partner'), w<[number, number]>(b, 'mine'), w<[number, number]>(b, 'partner')]);
+    return Math.max(Math.hypot(am[0] - bp[0], am[1] - bp[1]), Math.hypot(bm[0] - ap[0], bm[1] - ap[1]));
+  }, { timeout: 5000 }).toBeLessThanOrEqual(1);
+/** Two phones' islands the same (as `same` checks) with nobody walking: everything sent has arrived. */
+const settledAs = (x: Page, y: Page) =>
+  expect.poll(async () => {
+    const [a, b] = [await w<State>(x, 'state'), await w<State>(y, 'state')];
+    const who = ['A', 'B'] as const;
+    return a.day === b.day && a.decor === b.decor && who.every((k) => !a.villagers[k].walking && !b.villagers[k].walking &&
+      Math.hypot(a.villagers[k].x - b.villagers[k].x, a.villagers[k].z - b.villagers[k].z) <= 1 && a.villagers[k].asleep === b.villagers[k].asleep);
+  }, { timeout: 10_000 }).toBe(true).catch(() => undefined); // (`same` then says what differs)
+/** A tap-walk's ring, if the tap took (a short wait: it comes at once or not at all). */
+const ringed = (p: Page) => p.locator('[data-ring="mine"]').first().waitFor({ state: 'attached', timeout: 300 }).then(() => true, () => false);
+
 test.skip(!!RELAY && !existsSync(KEYS_FILE), 'RELAY_E2E needs relay/.smoke-keys');
 // every phone's context goes when the test does, passed or not (the relay's room holds 8 sockets at most)
 test.afterEach(async ({ browser }) => {
@@ -130,14 +149,14 @@ test('two phones, one island: a scripted session leaves both (and a phone openin
       console.log('status', JSON.stringify(await w(a, 'status')), JSON.stringify(await w(b, 'status')), JSON.stringify(await w(a, 'metrics')), JSON.stringify(await w(b, 'metrics')));
       throw e;
     });
-  await a.waitForTimeout(800); // each one's villager as it is (villagerSync JOIN_SAY_MS)
+  await joined(a, b);
   await expect.poll(async () => (await w<State>(a, 'state')).day === (await w<State>(b, 'state')).day, { timeout: 10_000 }).toBe(true).catch(async (e) => {
     console.log('at the start, A vs B:', diff(JSON.parse(await w<string>(a, 'canon')), JSON.parse(await w<string>(b, 'canon'))), JSON.stringify(await w(a, 'state')), JSON.stringify(await w(b, 'state')), JSON.stringify(await w(a, 'metrics')), JSON.stringify(await w(b, 'metrics')));
     throw e;
   });
-  await a.waitForTimeout(2600); // the opening beats are over
+  await a.waitForTimeout(2600); // the opening beats are over (no hook says the director's queue is empty yet: a time wait)
   for (const p of [a, b]) await w(p, 'go', 300);
-  await a.waitForTimeout(400);
+  await atRest(a, b);
   const lat: Record<string, number[]> = {};
   const note = (k: string, ms: number | null) => (ms === null ? null : (lat[k] ??= []).push(ms));
 
@@ -152,8 +171,7 @@ test('two phones, one island: a scripted session leaves both (and a phone openin
       const off = setsOff(watcher);
       const t0 = Date.now();
       await tapper.mouse.click(cx, cy);
-      if (!(await tapper.locator('[data-ring="mine"]').count())) await tapper.waitForTimeout(150);
-      if (!(await tapper.locator('[data-ring="mine"]').count())) continue;
+      if (!(await ringed(tapper))) continue;
       const t1 = await off;
       note('tap → walk starts', t1 && t1 - t0);
       await tapper.waitForTimeout(400);
@@ -213,11 +231,12 @@ test('two phones, one island: a scripted session leaves both (and a phone openin
     await from.waitForTimeout(80);
   }
   await Promise.all([[a, 96], [b, 312]].map(([p, x]) => w(p as Page, 'decorSet', { id: d1, item: 'tanuki', x, z: 504, f: 0 })));
-  await a.waitForTimeout(500); // (the demo's room is a log both tabs write: one race at a time)
+  // (the later wins on both: one layout before the next race, the demo's room is a log both tabs write)
+  await expect.poll(async () => (await w<string>(a, 'decorCanon')) === (await w<string>(b, 'decorCanon')), { timeout: 4000 }).toBe(true);
   // the fixed decor (docs/design.md "The fixed decor"): A's pump waters the flowers round it (the shared watered op:
   // on both), and A's villager sitting on the front bench is drawn seated on both phones (from where it stands)
   await w(a, 'go', CAMS.oku);
-  await a.waitForTimeout(400);
+  await atRest(a);
   const pump = await a.locator('[data-fixture="pump"]').evaluate((el) => {
     const r = el.getBoundingClientRect();
     return [r.left + r.width / 2, r.top + r.height * 0.6];
@@ -227,10 +246,9 @@ test('two phones, one island: a scripted session leaves both (and a phone openin
   await w(a, 'put', ...SEATS.seatMaeL);
   await expect(a.locator('[data-actor="mine"]')).toHaveAttribute('data-seat', 'seatMaeL');
   await expect(b.locator('[data-actor="partner"]')).toHaveAttribute('data-seat', 'seatMaeL', { timeout: 4000 });
-  await a.waitForTimeout(300);
   // both grab the same thing at once: one wins, both agree on who
   await Promise.all([a, b].map((p) => w(p, 'share', { kind: 'pick', id: `h${run}x`, what: 'weed' })));
-  await a.waitForTimeout(2500); // the walks are over, everything has arrived
+  await settledAs(a, b); // the walks are over, everything has arrived
   const [sa, sb] = [await w<State>(a, 'state'), await w<State>(b, 'state')];
   if (sa.day !== sb.day) console.log('A vs B:', diff(JSON.parse(await w<string>(a, 'canon')), JSON.parse(await w<string>(b, 'canon'))));
   same(sa, sb);
@@ -243,7 +261,7 @@ test('two phones, one island: a scripted session leaves both (and a phone openin
     throw e;
   });
   note('join → the same day', Date.now() - t0);
-  await c.waitForTimeout(600);
+  await settledAs(a, c);
   same(await w<State>(a, 'state'), await w<State>(c, 'state'));
   const m = await w<ReturnType<W['metrics']>>(a, 'metrics');
   const med = (xs: number[]) => [...xs].sort((x, y) => x - y)[Math.floor(xs.length / 2)];
@@ -257,19 +275,22 @@ test('a phrase is presence: the partner sees it over my villager at once, a phon
   const { open, ctxB, close } = await phones(browser);
   const a = await open('A'), b = await open('B');
   for (const p of [a, b]) await expect.poll(() => w<{ connected: boolean; peer: boolean } | null>(p, 'status').then((s) => !!s?.connected && s.peer), { timeout: 10_000 }).toBe(true);
-  await a.waitForTimeout(2600); // the opening beats are over
+  await a.waitForTimeout(2600); // the opening beats are over (no hook says the director's queue is empty yet: a time wait)
   const said = b.locator('[data-say="partner"]');
   // a preset, each way
+  let saidAt = 0;
   for (const [from, to, name] of [[a, b, 'やっほー！'], [b, a, 'おつかれさま！']] as const) {
     await from.getByRole('button', { name: 'ひとこと いう' }).click();
     const t0 = Date.now();
+    if (from === a) saidAt = t0;
     await from.getByRole('dialog', { name: 'なにを いう？' }).getByRole('button', { name }).click();
     await expect(to.locator('[data-say="partner"]')).toHaveText(new RegExp(name), { timeout: 2000 });
     console.log(`[${RELAY ? 'relay' : 'demo'}] say → there: ${Date.now() - t0} ms (the click included)`);
     await expect(from.locator('[data-say="mine"]')).toHaveText(new RegExp(name));
   }
-  // my own words, cleaned on the way
-  await a.waitForTimeout(1600); // (one per 1.5 s)
+  // my own words, cleaned on the way (A's last phrase was the first round's: one per 1.5 s, a time rule, so what's left
+  // of it waited out)
+  await a.waitForTimeout(Math.max(0, 1600 - (Date.now() - saidAt)));
   await a.getByRole('button', { name: 'ひとこと いう' }).click();
   await a.getByRole('button', { name: 'じぶんで かく…' }).click();
   await a.locator('[data-say-field]').fill(' ジム\u202Eいこう ');
@@ -279,7 +300,7 @@ test('a phrase is presence: the partner sees it over my villager at once, a phon
   // gone after a few seconds, and never replayed to a phone opening later
   await expect(said).toHaveCount(0, { timeout: 5500 });
   const c = await open('B', RELAY ? await browser.newContext(CTX) : ctxB);
-  await c.waitForTimeout(1500);
+  await c.waitForTimeout(1500); // (proving nothing comes)
   await expect(c.locator('[data-say]')).toHaveCount(0);
   await close();
 });
@@ -425,7 +446,7 @@ test('a high-five over the relay: the partner plays the same moment at once, its
   const { open, ctxB, close } = await phones(browser);
   const a = await open('A'), b = await open('B');
   for (const p of [a, b]) await expect.poll(() => w<{ connected: boolean; peer: boolean } | null>(p, 'status').then((s) => !!s?.connected && s.peer), { timeout: 10_000 }).toBe(true);
-  await a.waitForTimeout(2600); // the opening beats are over
+  await a.waitForTimeout(2600); // the opening beats are over (no hook says the director's queue is empty yet: a time wait)
   // B watches for the moment: the sparkle flying from A's villager, hearts on B's own
   const plays = b.evaluate(async () => {
     const t0 = Date.now();
@@ -485,7 +506,7 @@ test('one place at a time: A in the tent is gone from B’s island, there with B
   const door = async (p: Page) => {
     await p.bringToFront();
     await w(p, 'go', 642);
-    await p.waitForTimeout(300);
+    await atRest(p);
     await tapTent(p);
     await expect(p).toHaveURL(/\/tent\?/, { timeout: 10_000 });
     await p.waitForFunction(() => ((window as unknown as { __tent?: TentHooks }).__tent?.stats()?.frames ?? 0) > 0);
@@ -555,17 +576,16 @@ test('a phone gone a while: its villager walks home on the other phone; back mid
   let a = await open('A', ctxA);
   const b = await open('B', ctxB);
   for (const p of [a, b]) await connected(p);
-  await a.waitForTimeout(800); // each one's villager as it is (villagerSync JOIN_SAY_MS)
+  await joined(a, b);
   // A walks far from home (the first spot of open ground that takes the tap), and stays there
   await a.bringToFront();
   await w(a, 'go', 400);
-  await a.waitForTimeout(300);
+  await atRest(a);
   let at: [number, number] | null = null;
   for (const [x, z] of [[200, 640], [160, 600], [240, 620], [120, 560], [280, 580], [200, 520]] as [number, number][]) {
     const [cx, cy] = await w<[number, number]>(a, 'at', x, z);
     await a.mouse.click(cx, cy);
-    await a.waitForTimeout(150);
-    if (!(await a.locator('[data-ring="mine"]').count())) continue;
+    if (!(await ringed(a))) continue;
     await expect.poll(async () => (await w<State>(a, 'state')).villagers.A.walking, { timeout: 6000 }).toBe(false);
     at = await w<[number, number]>(a, 'mine');
     if (Math.hypot(at[0] - HOMES.A[0], at[1] - HOMES.A[1]) > 250) break;
