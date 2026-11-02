@@ -149,9 +149,11 @@ The lock is internal. Why: late syncs get a grace period, then the past stays pu
 memoise locked weeks.
 
 ### One wallet, two rewards
-Every ベル goes into one shared wallet. Exactly two treats: おやつ 8 and 外食 15 (`SHOP`); either person buys, either
+Every ベル goes into one shared wallet. Exactly two treats: おやつ 40 and 外食 70 (`SHOP`; 8 and 15 until 2026-11-02, the
+user: "Let's change 外食 to 70 and oyatsu to 40"); either person buys, either
 person can erase any buy (`spend_void`; the script refuses a void of no buy and acks a second one as a duplicate); an
-uncovered buy is ignored on read. Why: one number to watch, two clear choices priced against the week, and mistakes
+uncovered buy is ignored on read. Why: one number to watch, two clear choices priced against the week (a typical week,
+52, is one おやつ; a perfect one, 70, exactly one 外食: treats to save for, not to buy daily), and mistakes
 undone without deleting anything.
 
 ### Weight never earns

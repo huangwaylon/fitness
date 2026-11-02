@@ -7,10 +7,10 @@ describe('rules', () => {
     expect(RING_FRUITS).toEqual(['pear', 'peach', 'cherry', 'apple']);
   });
 
-  it('has exactly two rewards, おやつ 8 and 外食 15; shopPrice knows nothing else', () => {
-    expect(SHOP.map((x) => [x.id, x.bells])).toEqual([['snack', 8], ['dinner', 15]]);
-    expect(shopPrice('snack')).toBe(8);
-    expect(shopPrice('dinner')).toBe(15);
+  it('has exactly two rewards, おやつ 40 and 外食 70; shopPrice knows nothing else', () => {
+    expect(SHOP.map((x) => [x.id, x.bells])).toEqual([['snack', 40], ['dinner', 70]]);
+    expect(shopPrice('snack')).toBe(40);
+    expect(shopPrice('dinner')).toBe(70);
     for (const v of ['cafe', 'trip', '', null, undefined, 6, {}]) expect(shopPrice(v)).toBeUndefined();
   });
 

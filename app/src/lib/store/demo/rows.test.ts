@@ -7,6 +7,7 @@ import { provisionalMs, reduce } from '#lib/model/state.ts';
 import { economyWeeks, weekBells, weekSum } from '#lib/model/bells.ts';
 import { bellsLedger, dayDetail } from '#lib/model/history.ts';
 import { addDays } from '#lib/time/dates.ts';
+import { shopPrice } from '#lib/config/rules.ts';
 import { isActivityMetric } from '#lib/contract/api.ts';
 
 describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-08T11:00:00.000Z', '2026-12-20T13:00:00.000Z'])('demo at %s', (iso) => {
@@ -46,7 +47,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     const m = composeModel(cache, [], now);
     const view = buildWeekView(m.state, m.me, m.now);
     expect(view.wallet.balance).toBe(ledger.earned - ledger.spends.reduce((n, x) => (x.voided ? n : n + x.bells), 0));
-    expect(view.wallet.balance).toBeGreaterThan(20);
+    expect(view.wallet.balance).toBeGreaterThanOrEqual(shopPrice('dinner')!); // the demo can always buy either reward
     if (process.env.DEMO_DEBUG) console.log(iso, view.wallet, view.people.A.today, view.together);
   });
 

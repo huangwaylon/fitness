@@ -29,18 +29,18 @@ beforeEach(() => {
 
 describe('wallet actions', () => {
   it('buy sends {spendId, item, bells} at the reward’s price, only when the wallet covers it', () => {
-    week.view = view(5);
+    week.view = view(39);
     expect(buy('snack')).toEqual({ ok: false });
     expect(buy('nope' as ShopItemId)).toEqual({ ok: false });
     expect(queued()).toEqual([]);
-    week.view = view(14);
-    expect(buy('snack')).toMatchObject({ ok: true, bells: 8 });
+    week.view = view(69);
+    expect(buy('snack')).toMatchObject({ ok: true, bells: 40 });
     expect(buy('dinner')).toEqual({ ok: false });
-    week.view = view(15);
-    expect(buy('dinner')).toMatchObject({ ok: true, bells: 15 });
+    week.view = view(70);
+    expect(buy('dinner')).toMatchObject({ ok: true, bells: 70 });
     expect(queued().map((e) => [e.type, e.data])).toEqual([
-      ['spend', { spendId: expect.any(String), item: 'snack', bells: 8 }],
-      ['spend', { spendId: expect.any(String), item: 'dinner', bells: 15 }]
+      ['spend', { spendId: expect.any(String), item: 'snack', bells: 40 }],
+      ['spend', { spendId: expect.any(String), item: 'dinner', bells: 70 }]
     ]);
   });
 

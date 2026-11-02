@@ -60,20 +60,22 @@ describe('reduce: events', () => {
   });
 
   it('spend and spend_void: a reward at its price, string ids, first id wins, either of us voids, once', () => {
-    const buy = (spendId: unknown, extra: object = {}) => ({ spendId, item: 'snack', bells: 8, ...extra });
+    const buy = (spendId: unknown, extra: object = {}) => ({ spendId, item: 'snack', bells: 40, ...extra });
     const s = reduce(rows([
       ev(at(WK), 'B', 'spend', buy(7)), // not a string id
       ev(at(WK), 'B', 'spend', buy('7')),
-      ev(at(WK), 'B', 'spend', buy('7', { item: 'dinner', bells: 15 })), // the id again
-      ev(at(WK), 'B', 'spend', buy('x', { bells: 15 })), // not its price
+      ev(at(WK), 'B', 'spend', buy('7', { item: 'dinner', bells: 70 })), // the id again
+      ev(at(WK), 'B', 'spend', buy('x', { bells: 70 })), // not its price
+      ev(at(WK), 'B', 'spend', buy('old', { bells: 8 })), // the old prices
+      ev(at(WK), 'B', 'spend', buy('old2', { item: 'dinner', bells: 15 })),
       ev(at(WK), 'B', 'spend', buy('y', { item: 'cake' })), // not a reward
-      ev(at(WK), 'B', 'spend', { spendId: 'nopot', bells: 8 }), // no item
+      ev(at(WK), 'B', 'spend', { spendId: 'nopot', bells: 40 }), // no item
       ev(at(WK, '12:30'), 'A', 'spend_void', { spendId: '7' }), // the partner's: it counts
       ev(at(WK, '13:00'), 'B', 'spend_void', { spendId: 'nopot' }), // not an accepted spend
       ev(at(WK, '13:00'), 'B', 'spend_void', { spendId: '7' }), // twice
       ev(at(WK, '14:00'), 'A', 'spend_void', { spendId: '7' }) // three times
     ]));
-    expect(s.bellSpends).toEqual([{ at: Date.parse(at(WK)), person: 'B', spendId: '7', item: 'snack', bells: 8 }]);
+    expect(s.bellSpends).toEqual([{ at: Date.parse(at(WK)), person: 'B', spendId: '7', item: 'snack', bells: 40 }]);
     expect(s.spendVoids.map((v) => [v.person, v.at])).toEqual([['A', Date.parse(at(WK, '12:30'))]]);
   });
 

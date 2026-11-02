@@ -211,10 +211,17 @@ describe('the numbers check (docs/design.md#economy)', () => {
     expect(pairWeek(week(days), week(days, 'B'))).toBe(28);
   });
 
-  it('the two rewards against it: おやつ 8, 外食 15; the most a week pays is 4 of each, a typical week two of each', () => {
-    expect(SHOP).toEqual([{ id: 'snack', bells: 8 }, { id: 'dinner', bells: 15 }]);
-    expect(98 - 4 * shopPrice('snack')! - 4 * shopPrice('dinner')!).toBe(6);
-    expect(52 - 2 * shopPrice('snack')! - 2 * shopPrice('dinner')!).toBe(6);
+  it('the two rewards against it: おやつ 40, 外食 70; a perfect week is one 外食, the most a week pays is a 外食 or two おやつ, a typical week one おやつ, three typical weeks a 外食 and two おやつ', () => {
+    expect(SHOP).toEqual([{ id: 'snack', bells: 40 }, { id: 'dinner', bells: 70 }]);
+    const snack = shopPrice('snack')!, dinner = shopPrice('dinner')!;
+    expect(70 - dinner).toBe(0);
+    expect(98 - dinner).toBe(28);
+    expect(98 - 2 * snack).toBe(18);
+    expect(98 < snack + dinner).toBe(true);
+    expect(52 - snack).toBe(12);
+    expect(52 < dinner).toBe(true);
+    expect(3 * 52 - dinner - 2 * snack).toBe(6);
+    expect(28 < snack).toBe(true);
   });
 });
 

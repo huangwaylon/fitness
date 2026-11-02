@@ -32,10 +32,10 @@ test('buy: a reward comes back with とりけす', async ({ page }) => {
   const balance = async () => Number((await page.locator('.hero .total').innerText()).replace(/\D/g, ''));
   const before = await balance();
   await shop.locator('button[data-item="dinner"]').click();
-  await expect(sheet(page).locator('.price')).toContainText('15');
+  await expect(sheet(page).locator('.price')).toContainText('70');
   await sheet(page).getByRole('button', { name: '買う！' }).click();
-  await expect(page.getByText(/外食を 買いました！ −15\sベル/)).toBeVisible();
-  await expect.poll(balance).toBe(before - 15);
+  await expect(page.getByText(/外食を 買いました！ −70\sベル/)).toBeVisible();
+  await expect.poll(balance).toBe(before - 70);
   await page.getByRole('button', { name: 'とりけす' }).click();
   await expect.poll(balance).toBe(before);
   // やめる closes the confirm without spending
@@ -45,7 +45,7 @@ test('buy: a reward comes back with とりけす', async ({ page }) => {
   await expect.poll(balance).toBe(before);
 });
 
-test('wallet: one balance (the HUD jar’s) and exactly two rewards with their art: おやつ 8, 外食 15', async ({ page }) => {
+test('wallet: one balance (the HUD jar’s) and exactly two rewards with their art: おやつ 40, 外食 70', async ({ page }) => {
   await page.goto('?demo');
   const plate = await page.locator('.hud-jar > b').innerText();
   await page.locator('.hud-jar').click();
@@ -54,7 +54,7 @@ test('wallet: one balance (the HUD jar’s) and exactly two rewards with their a
   const shop = page.locator('.shop');
   await expect(shop.locator('button.item')).toHaveCount(2);
   await expect(shop.locator('.nm')).toHaveText(['おやつ', '外食']);
-  await expect(shop.locator('.pr')).toHaveText([/^8\sベル$/, /^15\sベル$/]);
+  await expect(shop.locator('.pr')).toHaveText([/^40\sベル$/, /^70\sベル$/]);
   await expect(shop.locator('.ex').first()).toContainText('たこやき');
   await expect(shop.locator('.ex').last()).toContainText('マーラータン');
   for (const id of ['snack', 'dinner']) await expect(shop.locator(`button[data-item=${id}] img`)).toHaveAttribute('src', new RegExp(`items/${id}\\.webp`));
@@ -536,7 +536,7 @@ test('きろく opens light: the newest three weeks of ベル; 「まえの週�
   await openKiroku(page);
   const weeks = sheet(page).locator('section.week');
   await expect(weeks).toHaveCount(3);
-  // earnings only: the demo buys every week, and none of it shows here (the buys live on ごほうび)
+  // earnings only: the demo buys most weeks, and none of it shows here (the buys live on ごほうび)
   await expect(weeks.first()).not.toContainText(/おやつ|外食|とりけす/);
   await sheet(page).getByRole('button', { name: 'まえの週も 見る' }).first().click();
   await expect.poll(() => weeks.count()).toBeGreaterThan(3);

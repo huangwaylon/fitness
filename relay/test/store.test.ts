@@ -103,6 +103,9 @@ describe('events', () => {
     expect(a('event', ev('h1', 'highfive', {}))).toEqual({ ok: true });
     expect(a('event', ev('x1', 'nope', {}))).toEqual({ ok: false, error: 'bad_request' });
     expect(a('event', ev('x2', 'spend', { spendId: 's', item: 'snack', bells: 1 }))).toEqual({ ok: false, error: 'bad_request' });
+    // the old prices (おやつ 8, 外食 15: a phone still on the old app) are refused
+    expect(a('event', ev('x2o', 'spend', { spendId: 's', item: 'snack', bells: 8 }))).toEqual({ ok: false, error: 'bad_request' });
+    expect(a('event', ev('x2p', 'spend', { spendId: 's', item: 'dinner', bells: 15 }))).toEqual({ ok: false, error: 'bad_request' });
     expect(a('event', ev('x3', 'find', { kind: 'shell', id: 'cowrie', person: 'B' }))).toEqual({ ok: false, error: 'bad_request' });
     expect(a('event', { id: 'x4', type: 'pref', data: { value: 'x'.repeat(30_000), key: 'villagerName' } })).toEqual({ ok: false, error: 'too_large' });
     expect(a('event', ev('x5', 'tally', { date: '2026-11-04', counts: { 'bug:moth': 1 } }))).toEqual({ ok: false, error: 'bad_request' }); // after tomorrow
@@ -112,7 +115,7 @@ describe('events', () => {
 
   it('spend_void must name a buy; a second void is a duplicate', () => {
     expect(a('event', ev('v0', 'spend_void', { spendId: 'sp1' }))).toEqual({ ok: false, error: 'bad_request', detail: 'no such spend' });
-    expect(a('event', ev('s1', 'spend', { spendId: 'sp1', item: 'dinner', bells: 15 }))).toEqual({ ok: true });
+    expect(a('event', ev('s1', 'spend', { spendId: 'sp1', item: 'dinner', bells: 70 }))).toEqual({ ok: true });
     expect(a('event', ev('p1', 'pref', { key: 'villagerName', value: 'sp2' }))).toEqual({ ok: true });
     expect(a('event', ev('v1', 'spend_void', { spendId: 'sp2' }))).toMatchObject({ ok: false, detail: 'no such spend' });
     expect(b('event', ev('v2', 'spend_void', { spendId: 'sp1' }))).toEqual({ ok: true });
@@ -178,12 +181,12 @@ describe('events', () => {
 
 describe('events (a batch)', () => {
   it('keeps them in order, each as `event` would, with each stored row’s `at`; one notice for the lot', () => {
-    a('event', { id: 's1', type: 'spend', data: { spendId: 'sp1', item: 'snack', bells: 8 } });
+    a('event', { id: 's1', type: 'spend', data: { spendId: 'sp1', item: 'snack', bells: 40 } });
     notices = [];
     tick();
     const r = a('events', { events: [
       { id: 'v1', type: 'spend_void', data: { spendId: 'sp1' } },
-      { id: 's1', type: 'spend', data: { spendId: 'sp1', item: 'snack', bells: 8 } },
+      { id: 's1', type: 'spend', data: { spendId: 'sp1', item: 'snack', bells: 40 } },
       { id: 'x1', type: 'spend', data: { spendId: 'sp2', item: 'snack', bells: 1 } },
       { id: 'h1', type: 'highfive', data: {} },
       { id: 'v2', type: 'spend_void', data: { spendId: 'sp1' } },
