@@ -173,7 +173,7 @@ function doze(t: number, seed = 0): Pose {
 
 /** Fishing (NH's): standing at the water, the rod's hand forward at the chest, the other at its side, watching the
  *  float, the rod's tip bobbing a touch with the breath. */
-export function fish(t: number, seed = 0): Pose {
+function fish(t: number, seed = 0): Pose {
   const p = arms(rest());
   const b = breathe(p, t, 3000, 1);
   p.j.Arm_1_R = [-1.05 + 0.03 * b, 0.25, ARMS - 0.55];
