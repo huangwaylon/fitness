@@ -31,7 +31,8 @@
     "world3d-sheet": "node scripts/world3d-sheet.ts",
     "layout": "node scripts/layout.ts",
     "layout:default": "node scripts/layout-default.ts",
-    "home-models": "node scripts/home-models.ts"
+    "home-models": "node scripts/home-models.ts",
+    "terrain-textures": "node scripts/terrain-textures.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",

@@ -196,11 +196,11 @@ const TENT_TILES = [0, 7] as const;
 const TENT_U = [-40, 40] as const;
 /** The layout's ids and tokens (contract/layout.ts). */
 const OBJ_ID = /^[A-Za-z0-9][A-Za-z0-9:._-]{0,31}$/;
-const CHUNK_ID = /^c[0-7]x[0-7]$/;
+const CHUNK_ID = /^c(?:[0-9]|1[0-5])x(?:[0-9]|1[0-5])$/;
 const HOME_ID = /^h[ABG]$/;
 const PART = /^[A-Za-z0-9.]{1,24}$/;
 const CHUNK_G = /^[0-9a-z]{64}$/;
-const LAYOUT_TILES = [0, 63] as const;
+const LAYOUT_TILES = [0, 127] as const;
 const ROOMS: readonly unknown[] = ['t', 'u', 'v'];
 const isTentPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], TENT_U) && within(x[1], TENT_U);
 

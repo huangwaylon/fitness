@@ -1,0 +1,160 @@
+// The layout's distance fields (docs/island-layout.md "Derived, never hand-made"), pure: for each region the ground
+// is shaded and shaped by (the land against the sea, the beach's sand, the fresh water, the paths, each cliff tier),
+// the signed distance (u) to its rounded edge on a 2.5u raster, negative inside. The heights read them (a beach that
+// slopes into the sea, banks that slope into the river, a path a little sunk in the grass), and the 3D ground's bake
+// (world3d/terrain.ts) shades with them: soft, NH-round edges that follow the tiles, without a hand-drawn shape.
+import { GRID, TILE, idx, kindOf, onGrid, tierOf, type Kind } from './grid.ts';
+import type { Layout } from './model.ts';
+
+/** The raster's step (u) and its extent (the grid). */
+export const STEP = 2.5;
+const W = (GRID.cols * TILE) / STEP, H = (GRID.rows * TILE) / STEP;
+/** Distances are clamped to this (u): nothing shades or shapes farther from an edge. */
+export const FAR = 48;
+/** The rounding's radius (a tile's share): NH's corners, a third of a tile. */
+const ROUND = 1 / 3;
+
+export const Ch = { land: 0, sandy: 1, fresh: 2, path: 3, tier1: 4, tier2: 5, tier3: 6 } as const;
+export type Ch = (typeof Ch)[keyof typeof Ch];
+const CHANNELS = 7;
+
+/** Whether a point at (u, v) in tile (c, r) (u, v in 0…1) is inside the rounded region `m` (a test on tiles): a
+ *  convex corner cut round, a concave one filled round (NH's island has no square corner). */
+export function roundedIn(m: (c: number, r: number) => boolean, c: number, r: number, u: number, v: number, R = ROUND): boolean {
+  const own = m(c, r);
+  const sx = u < 0.5 ? -1 : 1, sz = v < 0.5 ? -1 : 1;
+  const du = sx < 0 ? u : 1 - u, dv = sz < 0 ? v : 1 - v;
+  if (du >= R || dv >= R) return own;
+  const h = m(c + sx, r), vv = m(c, r + sz);
+  const inCircle = (R - du) ** 2 + (R - dv) ** 2 <= R * R;
+  if (own && !h && !vv) return inCircle;
+  if (!own && h && vv) return !inCircle;
+  return own;
+}
+
+/** The region tests on tiles, by channel. */
+export function masks(layout: Layout): ((c: number, r: number) => boolean)[] {
+  const kindAt = (c: number, r: number): Kind => (onGrid(c, r) ? kindOf(layout.codes[idx(c, r)]) : 'sea');
+  const tierAt = (c: number, r: number): number => (onGrid(c, r) ? tierOf(layout.codes[idx(c, r)]) : 0);
+  const land = (c: number, r: number) => kindAt(c, r) !== 'sea';
+  return [
+    land,
+    (c, r) => kindAt(c, r) === 'sand' || kindAt(c, r) === 'sea',
+    (c, r) => kindAt(c, r) === 'river' || kindAt(c, r) === 'pond',
+    (c, r) => {
+      const k = kindAt(c, r);
+      return k === 'dirt' || k === 'stone' || k === 'brick' || k === 'plank';
+    },
+    ...[1, 2, 3].map((t) => (c: number, r: number) => land(c, r) && tierAt(c, r) >= t)
+  ];
+}
+
+export interface Fields {
+  readonly w: number;
+  readonly h: number;
+  /** Each channel's signed distance (u), row by row (z), clamped to ±FAR. */
+  readonly ch: Float32Array[];
+  /** A channel's distance at world (x, z), bilinear (off the raster: its edge's). */
+  at(ch: Ch, x: number, z: number): number;
+}
+
+const cache = new WeakMap<Layout, Fields>();
+export function fieldsOf(layout: Layout): Fields {
+  let f = cache.get(layout);
+  if (!f) cache.set(layout, (f = build(layout)));
+  return f;
+}
+
+/** A chamfer distance transform (3 × 3, steps 1 and √2) of a boolean raster: each cell's distance to the nearest set
+ *  cell (0 on it), in cells. */
+function chamfer(set: Uint8Array, out: Float32Array): void {
+  const big = 1e6, D = Math.SQRT2;
+  for (let i = 0; i < set.length; i++) out[i] = set[i] ? 0 : big;
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++) {
+      const i = y * W + x;
+      let d = out[i];
+      if (!d) continue;
+      if (x > 0) d = Math.min(d, out[i - 1] + 1);
+      if (y > 0) {
+        d = Math.min(d, out[i - W] + 1);
+        if (x > 0) d = Math.min(d, out[i - W - 1] + D);
+        if (x < W - 1) d = Math.min(d, out[i - W + 1] + D);
+      }
+      out[i] = d;
+    }
+  for (let y = H - 1; y >= 0; y--)
+    for (let x = W - 1; x >= 0; x--) {
+      const i = y * W + x;
+      let d = out[i];
+      if (!d) continue;
+      if (x < W - 1) d = Math.min(d, out[i + 1] + 1);
+      if (y < H - 1) {
+        d = Math.min(d, out[i + W] + 1);
+        if (x < W - 1) d = Math.min(d, out[i + W + 1] + D);
+        if (x > 0) d = Math.min(d, out[i + W - 1] + D);
+      }
+      out[i] = d;
+    }
+}
+
+function build(layout: Layout): Fields {
+  const ms = masks(layout);
+  const ch: Float32Array[] = [];
+  const inside = new Uint8Array(W * H), outside = new Uint8Array(W * H);
+  const dIn = new Float32Array(W * H), dOut = new Float32Array(W * H);
+  // each mask on the tiles once, with a ring of sea round the grid
+  const TW = GRID.cols + 2, TH = GRID.rows + 2;
+  const tiles = new Uint8Array(TW * TH);
+  const PER = TILE / STEP;
+  for (let k = 0; k < CHANNELS; k++) {
+    const m = ms[k];
+    for (let r = -1; r <= GRID.rows; r++) for (let c = -1; c <= GRID.cols; c++) tiles[(r + 1) * TW + c + 1] = m(c, r) ? 1 : 0;
+    const t = (c: number, r: number) => tiles[(r + 1) * TW + c + 1];
+    for (let r = 0; r < GRID.rows; r++)
+      for (let c = 0; c < GRID.cols; c++) {
+        const own = t(c, r);
+        for (let j = 0; j < PER; j++) {
+          const v = (j + 0.5) / PER, sz = v < 0.5 ? -1 : 1, dv = sz < 0 ? v : 1 - v;
+          for (let i = 0; i < PER; i++) {
+            const u = (i + 0.5) / PER, sx = u < 0.5 ? -1 : 1, du = sx < 0 ? u : 1 - u;
+            let inn = own;
+            if (du < ROUND && dv < ROUND) {
+              const h = t(c + sx, r), vv = t(c, r + sz);
+              const circle = (ROUND - du) ** 2 + (ROUND - dv) ** 2 <= ROUND * ROUND;
+              if (own && !h && !vv) inn = circle ? 1 : 0;
+              else if (!own && h && vv) inn = circle ? 0 : 1;
+            }
+            const q = (r * PER + j) * W + c * PER + i;
+            inside[q] = inn;
+            outside[q] = inn ? 0 : 1;
+          }
+        }
+      }
+    // distance to the region (from outside) and to its outside (from inside); the edge lies half a cell between
+    chamfer(inside, dOut);
+    chamfer(outside, dIn);
+    const out = new Float32Array(W * H);
+    for (let i = 0; i < W * H; i++) {
+      const d = inside[i] ? -(dIn[i] - 0.5) * STEP : (dOut[i] - 0.5) * STEP;
+      out[i] = d < -FAR ? -FAR : d > FAR ? FAR : d;
+    }
+    ch.push(out);
+  }
+  return {
+    w: W,
+    h: H,
+    ch,
+    at(k: Ch, x: number, z: number): number {
+      const fx = Math.max(0, Math.min(W - 1.001, (x - GRID.x0) / STEP - 0.5)), fz = Math.max(0, Math.min(H - 1.001, (z - GRID.z0) / STEP - 0.5));
+      const x0 = Math.floor(fx), z0 = Math.floor(fz), tx = fx - x0, tz = fz - z0;
+      const a = ch[k], i = z0 * W + x0;
+      const top = a[i] + (a[i + 1] - a[i]) * tx, bot = a[i + W] + (a[i + W + 1] - a[i + W]) * tx;
+      let d = top + (bot - top) * tz;
+      // off the raster: farther out still (the sea beyond the grid)
+      const ox = Math.max(GRID.x0 - x, x - (GRID.x0 + GRID.cols * TILE), 0), oz = Math.max(GRID.z0 - z, z - (GRID.z0 + GRID.rows * TILE), 0);
+      if (ox || oz) d = k === Ch.land || k === Ch.sandy ? (k === Ch.land ? Math.max(d, 0) + Math.hypot(ox, oz) : -FAR) : d + Math.hypot(ox, oz);
+      return Math.max(-FAR, Math.min(FAR, d));
+    }
+  };
+}

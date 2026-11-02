@@ -473,6 +473,18 @@ inside of the tent… the same grid system", with everything movable (trees, the
 homes; one record path (the decorations' and the tent's guarantees carry over: commutative, no leader), and the
 guest's limits server-side.
 
+### The 3D ground is built from the layout and baked on the phone (2026-11-02)
+The 3D island's ground is the layout's: NH's quadrant scheme (round corners, vertical cliff walls with NH's strata,
+falls where water steps down) as geometry, and its look painted by a shader into one texture per band of chunks on
+the phone itself, once at load and again only where a change lands, from the layout's distance fields. Why: a
+layout the members change at will can't ship pre-baked textures, and painting it live every frame (noise, flecks,
+pebbles) would cost the phone each frame what a bake costs once; bands keep the draw calls flat on an island twice
+as long.
+
+### The island is twice as long (2026-11-02)
+20 × 92 tiles: today's まえ in front, today's おく behind, and a new middle between them for the homes and what comes
+next. Why: the user, for room to build; the width (and so the camera's rules: vertical scroll, x centred) unchanged.
+
 ### The tent's camera is the player's, its walls cut away
 The room opens at NH's fixed, slightly top-down view, and a drag turns the camera round the room's middle (a pinch
 zooms, 🏠 eases it back), within limits that keep the walls from clipping; the walls between the camera and the room

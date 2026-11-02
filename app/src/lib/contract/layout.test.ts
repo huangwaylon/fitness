@@ -15,12 +15,12 @@ describe('layout ops (contract/layout.ts)', () => {
     expect(layoutOpOf({ sc: 'r', id: 'reset', at: T0 })).not.toBeNull();
     expect(layoutOpOf({ sc: 'h', id: 'hB', at: T0, m: 'house', w: 'NAStucco.A', r: 'NATile.A', d: 'Simple.R.A' })).not.toBeNull();
     for (const bad of [
-      { sc: 'o', id: 'x', at: T0, k: 'oak', x: 64, z: 0, f: 0 },
+      { sc: 'o', id: 'x', at: T0, k: 'oak', x: 128, z: 0, f: 0 },
       { sc: 'o', id: 'x', at: T0, k: 'oak', x: 0, z: 0, f: 4 },
       { sc: 'o', id: 'x', at: T0, k: 'Oak', x: 0, z: 0, f: 0 },
       { sc: 'o', id: 'x', at: T0, k: 'oak', x: 0, z: 0, f: 0, extra: 1 },
       { sc: 'o', id: 'x', at: T0, rm: false },
-      { sc: 'c', id: 'c8x0', at: T0, g: '4'.repeat(64) },
+      { sc: 'c', id: 'c16x0', at: T0, g: '4'.repeat(64) },
       { sc: 'c', id: 'c0x0', at: T0, g: '4'.repeat(63) },
       { sc: 'r', id: 'other', at: T0 },
       { sc: 'h', id: 'hC', at: T0, m: 'house' },
@@ -93,7 +93,8 @@ describe('layout intents on the wire (sync/live-protocol.ts)', () => {
     expect(parse({ kind: 'decor', sc: 'h', id: 'hB', at: T0, m: 'house', w: 'NAStucco.A' })).toMatchObject({ sc: 'h', w: 'NAStucco.A' });
     expect(parse({ kind: 'decor', sc: 'u', id: 'dpiece123', at: T0, item: 'f1', x: 0, z: 0, f: 0, p: T0 })).toMatchObject({ sc: 'u' });
     expect(parse({ kind: 'drag', sc: 'o', id: 'goal-A', x: 100, z: 300, f: 0 })).toMatchObject({ sc: 'o', x: 100 });
-    expect(parse({ kind: 'decor', sc: 'o', id: 'goal-A', at: T0, k: 'goal-tree', x: 99, z: 10, f: 1 })).toBeNull();
+    expect(parse({ kind: 'decor', sc: 'o', id: 'goal-A', at: T0, k: 'goal-tree', x: 130, z: 10, f: 1 })).toBeNull();
+    expect(parse({ kind: 'decor', sc: 'c', id: 'c2x11', at: T0, g: '4'.repeat(64) })).toMatchObject({ id: 'c2x11' });
     expect(parse({ kind: 'decor', sc: 'c', id: 'c0x0', at: T0, g: 'nope' })).toBeNull();
   });
 });

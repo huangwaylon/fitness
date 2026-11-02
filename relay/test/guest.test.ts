@@ -357,7 +357,7 @@ describe('the layout’s permissions', () => {
   });
 
   it('the record refuses a malformed layout op', () => {
-    for (const d of [{ ...obj(), k: 'Oak!' }, { ...obj(), x: 99 }, { ...chunk, g: 'z' }, { ...look('A'), m: '' }, { ...obj(), extra: 1 }])
+    for (const d of [{ ...obj(), k: 'Oak!' }, { ...obj(), x: 130 }, { ...chunk, g: 'z' }, { ...look('A'), m: '' }, { ...obj(), extra: 1 }])
       expect(call(KEY_A, ev(d)).ok, JSON.stringify(d)).toBe(false);
   });
 });

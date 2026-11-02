@@ -1,7 +1,8 @@
 # The island's layout (customisable outdoors, homes and interiors)
 
-Status: **phase 1 landed (schema, ops, default migration, nav, validation, the store)**; next: terrain from the grid
-(phase 2), the desktop editor (3), the homes and their interiors (4), phone editing (5). This file is the contract
+Status: **phases 1 (schema, ops, default migration, nav, validation, the store) and 2 (the 3D ground from the grid,
+the objects from the layout, the long island) landed**; next: the desktop editor (3), the homes and their interiors
+(4), phone editing (5). This file is the contract
 between the layout work (`app/src/lib/layout/`, `store/layout.svelte.ts`, `world3d/terrain.ts`, `world3d/objects.ts`,
 the editor, the homes) and the 3D integration (the scene, the camera, porting the island's features: the lead's
 `world3d/engine.ts` and the rest of `world3d/`).
@@ -11,12 +12,13 @@ the editor, the homes) and the 3D integration (the scene, the camera, porting th
 - **One tile = 30 world units** = one NH tile (10 model units of NH's furniture at the island's scale, world.ts
   `DECOR_U` = 3u a model unit: a 2-tile bench is 60u, an 80u villager is NH's chibi). The tent's room uses the same
   tile (10 model units), so an outdoor footprint and a room footprint mean the same thing.
-- **20 × 46 tiles**, x −90…510, z −90…1290 (`layout/grid.ts` `GRID`): the two-section island (land x −40…430,
-  z −30…1260) with a ring of sea; everything off the grid is sea. Tile (c, r) covers x `−90 + 30c … +30`, z
-  `−90 + 30r … +30`; `r` grows into the island (away from the camera), as world z does.
-- **Chunks of 8 × 8 tiles** (3 × 6 of them; the last column and row stick out past the grid and are sea): the unit
-  of a terrain op and of a terrain rebuild. The ops allow up to 8 × 8 chunks, so the grid can grow without a relay
-  deploy.
+- **20 × 92 tiles**, x −90…510, z −90…2670 (`layout/grid.ts` `GRID`): the long island (land x −30…480, z −30…2640:
+  twice today's length, the user's call, 2026-11-02: room for the homes and the buildings to come) with a ring of
+  sea; everything off the grid is sea. Tile (c, r) covers x `−90 + 30c … +30`, z `−90 + 30r … +30`; `r` grows into
+  the island (away from the camera), as world z does. Read the extent from the layout (`model.ts extentOf`), never
+  a constant.
+- **Chunks of 8 × 8 tiles** (3 × 12 of them; the last column sticks out past the grid and is sea): the unit of a
+  terrain op. The ops allow up to 16 × 16 chunks (128 × 128 tiles), so the grid can grow again without a relay deploy.
 
 ## The layout is data
 
@@ -31,8 +33,10 @@ the editor, the homes) and the 3D integration (the scene, the camera, porting th
   stand, its drawn height, palette icon and names): trees (`oak`, `cedar`, `palm`, `bamboo`, `goal-tree` a|b),
   `bush` and `hedge` (variant: the species, `month-a|b` the month's pair), `flower` (`c<n>`: the scatter's clump n,
   its kind the season's), rocks (`rock` the shovel's, `flat-rock`, `garden-rock`), lights, NH's outdoor furniture,
-  the seasonal spots (`beach-chair`, `sandcastle`, `snowboy`), the pieces that join terrain (`bridge` over water,
-  `stairs` up a cliff), the homes (`home`) and named spots (`spot`: `villager-a|b` the villagers' home spots, `stage`).
+  the seasonal spots (`beach-chair`, `sandcastle`, `snowboy`), NH's bulletin board (`board`: 2 × 1, one on the
+  island, used from the tile in front of it, which must stay clear and reachable like a home's door), the pieces that
+  join terrain (`bridge` over water, `stairs` up a cliff), the homes (`home`) and named spots (`spot`: `villager-a|b`
+  the villagers' home spots, `stage`).
   Each: `id`, kind `k`, tile `x, z` (its footprint's lowest column and row), facing `f` 0–3 (0 toward the camera, −z;
   1 +x, 2 away, 3 −x), variant `s`. A footprint is `w × d` tiles, turned by `f` for the kinds that `turn` (a bench);
   for the others an odd `f` only mirrors the look.
@@ -45,9 +49,16 @@ the editor, the homes) and the 3D integration (the scene, the camera, porting th
   of the front edge (`model.ts doorOf`), the tile(s) in front of it must stay clear.
 - **The default layout** (`layout/default.json`, `npm run layout:default` from world.ts and scatter.json): today's
   island on the grid, world.ts's ids kept (`goal-A`, `hedge-3`, `bench-mae`, `fl:52:180`, `tape-deck`, `rock`,
-  `bridge`, `stairs`; the campsite is `home-A`). The upper tier's forest steps aside for うめ's and the guest's
-  houses, up the stairs, with a path to their doors. The layout a phone shows is the default with the record's ops
-  over it (`layoutOf(entries)`).
+  `bridge`, `stairs`; the campsite is `home-A`), made twice as long: today's まえ (the sea, the beach, the health
+  lawn, the goal trees, the stream's crossing and its bridge) at the front as it is; today's おく (the campsite, the
+  pond, the bamboo, the falls, the upper tier's forest; world.ts z ≥ 680) moved 1380u (46 tiles) back; between them
+  a new middle: open grass to build on, the stream running on down its east side, the main path through it to the
+  campsite, うめ's house (tiles 3…6 × 46…48) and the guest's (11…14 × 56…58) with paths to their doors and a lamp
+  at each, a few trees at the edges, two bushes, three clumps of flowers. The layout a phone shows is the default
+  with the record's ops over it (`layoutOf(entries)`).
+- **The 2D island keeps world.ts's area** (46 tiles) until the 3D cutover: it doesn't read the layout (its positions
+  for おく would be 1380u off). The layout store is attached on every phone already, so the ops are there for the 3D
+  island.
 
 ## Ops (the record and the relay)
 
@@ -124,23 +135,90 @@ IslandScene attaches it (the relay, the record's `state.layout` rows, the sink t
 the layout in localStorage already. The DOM sprites (Scenery, FruitTree, Flowers, Decor) can read `layout.pos(id)`
 for their spots with no visual change (the default's offsets); the 3D island reads `layout.current`.
 
-three.js (`app/src/lib/components/world3d/`, phase 2, bent like everything else):
+## The 3D ground (phase 2)
+
+- **The geometry** (`layout/mesh.ts`, pure): NH's own scheme. Each tile is four quadrants of 15u, each 3 × 3 cells
+  of 5u; a quadrant whose corner is rounded (`fields.ts roundedIn`: a convex corner cut, a concave one filled, on a
+  third of a tile, 10u) has its corner's 2 × 2 cells replaced by a quarter disc and the piece round it, at their own
+  levels, on vertices that meet the neighbours' exactly. A tier's edge stands a vertical wall from the upper ground
+  down to the lower (NH's cliff strata, `static/terrain/nh/cliff.webp`); where water meets water a tier down the wall
+  is a waterfall. Stairs are stone steps (8 to a tier) with their sides walled. Heights over a level from
+  `height.ts`: the beach sloping into the sea, the banks to a river's bed, a path a little sunk.
+- **The distance fields** (`layout/fields.ts`): each region's signed distance (u, 2.5u raster, ±48u) to its rounded
+  edge: the land, the beach's sand, the fresh water, the paths, each tier. The heights and the look both read them,
+  so every edge is soft and round and follows the tiles (~20 ms for the whole island on a desktop).
+- **The look is baked on the GPU** (`world3d/terrain.ts`): one shader paints each band's texture from the fields and
+  the tiles, NH's way (the 2D bake's grass with its flecks, NH's own grass pattern, the beach going wet at the sea and
+  the seabed deepening under it, the dirt path worn with its pebbles, NH's stone, brick and plank textures, a river's
+  earthy rim and its bed, a shade at a cliff's foot), once at load and again only for what a change touches. The
+  season's palette (`ground.look`) rebakes it all.
+- **Bands:** the ground draws a row of chunks across the island as one: 4 draws (the ground, the walls, the falls,
+  the fresh water), one 960 × 384 texture (1.6 px a unit, ~21 MB for the whole island with mips), so the draw calls
+  stay flat however long the island grows; the camera shows ~6 of the 12. Measured in the editor's phone view at
+  393 × 852 (×3, desktop Chrome): 78–94 draws (the models' instancing and the shadow pass included), 180–230k
+  triangles, 60 fps; the island's first build ~0.4–1.2 s with the models' loading.
+- **The water:** NH's sea round the island (translucent over the baked shallows, opaque by the grid's edge, the shore
+  foam where the land's field says), the rivers' flow (each tile's way down, breadth-first along the river to the sea
+  or a fall) and the ponds' ripples, the falls' streaks; all on water.ts's shared clock, tint and fog uniforms.
+- NH's textures: `npm run terrain-textures` (NH_MODELS=~/Downloads/Model) converts the few PNGs from
+  `FldUnit.Nin_NX_NVN` into `static/terrain/nh/*.webp` (92 KB).
+
+three.js (`app/src/lib/components/world3d/terrain.ts`, `objects.ts`; bent like everything else):
 
 ```ts
-buildGround(layout, opts): Ground   // terrain.ts
-  ground.group: Object3D            // add to the scene once: the land, the cliff faces, the water (sea, river, pond, falls)
-  ground.update(layout, chunks)     // rebuild only those chunks (a paint stroke)
-  ground.heightAt(x, z)             // = layout heightAt, for feetY
+buildGround(layout, { renderer, look?, base?, px? }): Ground   // engine.ts's BuiltGround, and more
+  ground.group: Group                 // add to the scene once: the land, the walls, the falls, the water, the sea, the stairs
+  ground.heightAt(x, z) / ground.feet(x, z)   // = layout/height.ts: the ground; where feet stand (stairs, bridge decks)
+  ground.land: { x0, x1, z0, z1, r }  // the land's box (updated by a rebuild)
+  ground.update(t): false             // the engine's per-frame hook (its water runs on waterU)
+  ground.rebuild(layout, chunks?)     // after a change: the bands those chunks are in (and either side); all when none given
+  ground.look('summer' | … | 'autumn-leaves')
+  ground.chunks(): { z0, z1, meshes }[]     // each band, for the camera's culling
+  ground.ready: Promise<void>         // NH's textures in (the bands bake again then)
   ground.dispose()
-placeObjects(layout, ctx): Inst[]   // objects.ts: the engine's `Inst` list (layout3d.ts's type), ids = object ids
+placeObjects(layout, day): { insts: Inst[]; standins: Standin[] }   // layout3d.ts island()'s, from the layout
+  day = { season, foliage, month, swaps?: swapsOn(date), pieces?: piecesOn(date, hour, seed), fruit? }
+extentOf(layout): { grid, land, shore, home }   // model.ts: the island's box, the front shoreline's z, ウェイ's door
 ```
 
-What the scene would need (the lead's files, so a proposal): `engine.ground(...)` taking a `Ground` instead of the
-baked chunk URLs, `feetY` from `ground.heightAt`, and an incremental `engine.set(insts)` / `engine.remove(ids)` in
-place of the whole `place(list)` so one moved object rebuilds one instance.
+## What the 3D integration must change (the lead's files)
+
+1. **The ground:** `createIsland(canvas, ground)` takes a BuiltGround already (2c4e4b64): pass
+   `buildGround(layout.current, { renderer, look })` (it needs the renderer for its bake: create it first, or let
+   createIsland hand it over); `groundLook(urls)` → `ground.look(look)` (the season's palette, rebaked); the Ground
+   draws the sea, the fresh water, the falls and a deep plane under the sea, on the same `waterU` the frame loop
+   drives. Cull its bands per frame as the baked chunks were (`z1 > camZ − 700 && z0 < camZ + 1500` over
+   `ground.chunks()`): today a BuiltGround's meshes all stay visible.
+2. **The things:** `island(day)` → `placeObjects(layout.current, day)` (the same Inst and Standin shapes). Ids are
+   the layout's: the fixed decor's pieces are their spots' ids (`bench-mae`, not `fx-bench-mae`), the campsite's
+   tent is `home-A` (not `tent`; `tap: 'tent'` as before), the bridge `bridge`. うめ's and the guest's homes come
+   in phase 4 (`world3d/home.ts`).
+3. **Live changes:** `layout.on(({ diff }) => { ground.rebuild(layout.current, diff.chunks); things.place(placeObjects(layout.current, day).insts) })`
+   (`store/layout.svelte.ts`; things.ts already rebuilds only the models whose instances changed).
+4. **The camera:** `CAM_Z = { min: 30, max: 1000 }` → from `extentOf(layout.current)`: `min = shore + 60` (today's
+   30), `max = home[1] + 16` (today's 1000 by the campsite at 984; the campsite is now at z 2364, so 2380). Recompute
+   on a layout change (the members may move the tent). `MID_X` 195 stays (the width is the same); the horizon rule
+   (bend R 1300) and the shadow box (it follows the camera) need nothing; the lights' nearest-6 budget is the same
+   on a longer island (more lamps in all, the same 6 at a time); the sea plane is the Ground's (4200 × 6000 round
+   the grid's middle, z 1290).
+5. **Walking:** `planTap(navOf(layout.current), …)` (rebuild the nav on a layout change, ~4 ms), feet from
+   `ground.feet`. Named nodes: `homeA`, `homeB` (the villagers' spots), `centreStage`, `door-home-A|B|G`, the
+   default's seats (`seatMaeL` … `stoolW`, `pullup`), `front-<id>` (a bulletin board's spot).
+6. **world.ts constants the island still reads** (the 2D island and the DOM overlays over the 3D canvas): `HOMES`,
+   `CAMS`, `CAM_MIN` / `CAM_MAX`, `CAMPSITE` / `BUILDINGS` (the tent's door), `CENTRE_STAGE`, `ARCH`, `CAKE`, `SEATS`,
+   `PULLUP_AT`, `FLOWERS`, `DECOR_SLOTS`, `GOAL_TREES`, `ROCK`, `TAPE_DECK`, `BRIDGE`, `POND`, `RIVER`, `SPRING`,
+   `CLIFF`, `FALLS_POOL`, `freshWhere` (fishing), `surfaceAt` (footsteps), `DIG_SPOTS`, `LAWN_SPOTS`, `BEACH_BOX`,
+   `SEA_BOX`, `LAND`, `PLAN`. For the 3D island each must come from the layout: the spots and seats from `navOf`'s
+   named nodes, the tent's door from `doorOf(layout, home-A)`, the flowers, the goal trees, the rock, the tape deck
+   and the decor's spots from `layout.objects` (by id or kind), the water a cast lands in from
+   `fieldOf(layout).surfaceAt(x, z)` (`sea`, `river`, `pond`) and a tile's tier (the clifftop), footsteps from the
+   same `surfaceAt`. The dig spots, the weeds' lawn spots and the beach's finds box are world.ts's still; I'll add
+   `openGrass(layout)` (free grass tiles) when the lead wants them derived.
 
 ## Not yet
 
 - Phone terraforming (paths, water, cliffs) is the desktop editor's only, for now.
 - The weeds' lawn spots and the dig spots are still world.ts's (not layout objects); once the 3D island reads the
   layout they should be derived from it (open grass tiles), so a moved pond never holds a weed.
+- NH's bridges and inclines as models (BridgeWood…, SlopeBrickStair, SlopeIronStair are in the game files): the
+  stone bridge is world3d's one model, the stairs are drawn stone steps.

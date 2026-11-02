@@ -22,8 +22,8 @@ export const isRoomScope = (sc: unknown): sc is RoomScope => (ROOM_SCOPES as rea
 
 /** A chunk's side (tiles) and how many chunks fit across and deep at most (the grid may grow up to this). */
 const CHUNK = 8;
-const CHUNKS_MAX = 8;
-/** An object's tile at most (64 × 64 tiles: room for the grid to grow without a relay deploy). */
+const CHUNKS_MAX = 16;
+/** An object's tile at most (128 × 128 tiles: room for the grid to grow without a relay deploy). */
 const TILES_MAX = CHUNK * CHUNKS_MAX - 1;
 /** A tile's character: kind × 4 + tier, base 36 (lib/layout/grid.ts). */
 const TILE_RE = /^[0-9a-z]{64}$/;
@@ -32,7 +32,7 @@ export const LAYOUT_MAX = 1500;
 
 /** An object's id: a default one's (world.ts's: `palm-1`, `fl:52:180`, `home-B`) or a new one (`o` + random). */
 const OBJ_ID = /^[A-Za-z0-9][A-Za-z0-9:._-]{0,31}$/;
-const CHUNK_ID = /^c[0-7]x[0-7]$/;
+const CHUNK_ID = /^c(?:[0-9]|1[0-5])x(?:[0-9]|1[0-5])$/;
 const HOME_ID = /^h[ABG]$/;
 const TOKEN = /^[a-z][a-z0-9-]{0,23}$/;
 /** A home part (homes.json's ids: `NABrickC`, `SimpleAR`). */
