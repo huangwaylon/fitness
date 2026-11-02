@@ -132,7 +132,7 @@ jobs:
           path: app/build-pages
       - id: e2e
         continue-on-error: true
-        run: npx playwright test --project=chromium --shard=${{ matrix.shard }}/8
+        run: npx playwright test --project=chromium e2e/fishing3d.spec.ts --shard=${{ matrix.shard }}/8 --pass-with-no-tests
       - name: A failed test, once more (flaky or broken?)
         if: steps.e2e.outcome == 'failure'
         run: |

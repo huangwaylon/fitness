@@ -39,7 +39,6 @@ for (const [water, q, cam, sel] of [
     test.setTimeout(90_000);
     // TODO(3D engine): on CI's software GL my villager never takes out the rod (state 'idle', no tool, line 61's poll)
     // though it passes under SwiftShader locally: fixme'd on CI so main deploys while the cause is found
-    test.fixme(!!process.env.CI, 'CI only: the rod never comes out under its software GL');
     await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
     await page.goto(`?demo&visitor=none&island=3d${q}`);
     await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
@@ -61,6 +60,13 @@ for (const [water, q, cam, sel] of [
     await expect(page.locator('[data-bobber]')).toBeAttached({ timeout: 3000 });
     await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
     // NH's rod in my villager's hand, fishing
+    for (let i = 0; i < 6; i++) {
+      await page.waitForTimeout(1000);
+      console.log('DIAG', water, i, JSON.stringify(await page.evaluate(() => {
+        const w = window as unknown as { __villagers3: { last(s: string): unknown; state(s: string): string; tool(s: string): string }; __world3d: { stats(): unknown } };
+        return { last: w.__villagers3.last('mine'), state: w.__villagers3.state('mine'), tool: w.__villagers3.tool('mine'), stats: w.__world3d.stats(), bobber: document.querySelector('[data-bobber]')?.getAttribute('data-bobber'), mine: document.querySelector('[data-actor="mine"]')?.outerHTML.slice(0, 300) };
+      })));
+    }
     await expect.poll(() => v3(page, (v) => [v.tool('mine'), v.state('mine')]), { timeout: 15_000 }).toEqual(['tools/rod', 'fish']);
     expect(await v3(page, (v) => v.tip('mine')?.every(Number.isFinite))).toBe(true);
     await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 });
