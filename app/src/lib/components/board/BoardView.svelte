@@ -205,7 +205,7 @@
   role="dialog" aria-modal="true" aria-label={t('board.name')}>
   {#if mode === 'sheet'}
     <div class="stage">
-      <div class="frame" style:aspect-ratio="{FACE_W} / {FACE_H}">
+      <div class="frame" style:--ratio={FACE_W / FACE_H}>
         <div class="slot" bind:this={slot}></div>
       </div>
     </div>
@@ -280,7 +280,9 @@
   .stage { flex: 1; min-height: 0; display: grid; place-items: center; padding: calc(var(--back-top) + 52px) 12px 8px; box-sizing: border-box; container-type: size; }
   .bv.writing .stage { padding-top: calc(env(safe-area-inset-top, 0px) + 8px); }
   .frame {
-    width: min(calc(100cqw - 24px), 560px, calc((100cqh - 24px) * 1.36)); background: #5E6B4C; border-radius: 14px; padding: 12px;
+    /* both sides set (no aspect-ratio: WebKit let the canvas inside stretch it past a short stage) */
+    --fw: min(calc(100cqw - 24px), 560px, calc((100cqh - 24px) * var(--ratio))); width: var(--fw); height: calc(var(--fw) / var(--ratio)); min-height: 0;
+    background: #5E6B4C; border-radius: 14px; padding: 12px;
     box-shadow: inset 0 0 0 3px #47523A, 0 8px 0 #3E4733, 0 14px 30px rgba(30, 50, 30, .35); box-sizing: content-box;
   }
   .slot { width: 100%; height: 100%; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 6px rgba(0, 0, 0, .35); }
