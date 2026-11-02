@@ -3,7 +3,7 @@
 // pings. send() is a no-op unless the socket is up (and, for what the room doesn't keep, the partner is there too); it
 // never throws and never waits. Plain TS: the socket, the visibility source and the key are injectable for tests.
 import { LIVE, getKey, localKV, readJson, writeJson } from './storage.ts';
-import { CLOSE, LIVE_V, MAX_BYTES, dayStart, guestMaySend, isAcked, isStored, parseClient, parseServer, tokyoDay, type Intent, type Notice, type RecordMark, type Relayed, type Who } from './live-protocol.ts';
+import { CLOSE, LIVE_V, MAX_BYTES, dayStart, guestMaySend, isAcked, isStored, parseClient, parseServer, tokyoDay, type Gone, type Intent, type Notice, type RecordMark, type Relayed, type Who } from './live-protocol.ts';
 
 /** The relay's socket URL; VITE_LIVE_URL overrides it (empty = live off). */
 export const LIVE_URL: string = (import.meta.env?.VITE_LIVE_URL as string | undefined) ?? 'wss://island-fund-relay.island-fund-relay.workers.dev/room';
@@ -25,6 +25,9 @@ export interface LiveStatus {
   here: readonly Who[];
   /** The record's last change as of the welcome (docs/backend.md#the-record), when the relay knew one. */
   rec?: RecordMark;
+  /** When each person not here left, on the relay's clock (the welcome's, then each `presence` off; mine: when my
+   *  previous socket did, as of the welcome): a villager whose phone is gone walks home (villagerSync). */
+  gone?: Gone;
 }
 
 /** Where the page's visibility and connectivity come from (the document and window by default). */
@@ -187,7 +190,7 @@ export function createLive(o: LiveOptions): Live {
 
   const setStatus = (s: Partial<LiveStatus>) => {
     const next = { ...st, ...s };
-    if (next.connected === st.connected && next.me === st.me && next.peer === st.peer && next.rec === st.rec && next.here.join() === st.here.join()) return;
+    if (next.connected === st.connected && next.me === st.me && next.peer === st.peer && next.rec === st.rec && next.here.join() === st.here.join() && sameGone(next.gone, st.gone)) return;
     st = next;
     for (const f of statusSubs) safe(() => f(st));
   };
@@ -234,7 +237,7 @@ export function createLive(o: LiveOptions): Live {
         /* already closing */
       }
     }
-    setStatus({ connected: false, peer: false, here: [], rec: undefined });
+    setStatus({ connected: false, peer: false, here: [], rec: undefined, gone: undefined });
   };
 
   const wanted = () => running && !parked && !!url && !!WS && env.visible() && env.online() && !!o.key();
@@ -277,7 +280,7 @@ export function createLive(o: LiveOptions): Live {
           fails = 0;
           offset = m.t - Date.now(); // a first guess until the pings refine it
           samples = [];
-          setStatus({ connected: true, me: m.me, peer: m.peer, here: m.here ?? (m.peer ? [partnerOf(m.me)] : []), rec: m.rec });
+          setStatus({ connected: true, me: m.me, peer: m.peer, here: m.here ?? (m.peer ? [partnerOf(m.me)] : []), rec: m.rec, gone: m.gone ?? {} });
           for (const at of PING_MS) pings.push(setTimeout(ping, at));
           pingEvery = setInterval(ping, PING_EVERY_MS);
           // what never got its ack goes again (the relay acks a repeat without relaying it twice); another day's is
@@ -318,7 +321,9 @@ export function createLive(o: LiveOptions): Live {
         case 'presence': {
           if (m.who === st.me) return;
           const here = [...new Set([...st.here.filter((w) => w !== m.who), ...(m.on ? [m.who] : [])])].sort();
-          return setStatus({ here, peer: peerOf(st.me, here) });
+          // (when they left: the relay's clock, the same on every phone)
+          const { [m.who]: _was, ...gone } = st.gone ?? {};
+          return setStatus({ here, peer: peerOf(st.me, here), gone: m.on ? gone : { ...gone, [m.who]: m.t } });
         }
         case 'changed':
           return changed({ who: m.who, what: m.what, at: m.at, rev: m.rev });
@@ -336,7 +341,7 @@ export function createLive(o: LiveOptions): Live {
       mx.closed = e.code;
       ws = null;
       clearTimers();
-      setStatus({ connected: false, peer: false, here: [], rec: undefined });
+      setStatus({ connected: false, peer: false, here: [], rec: undefined, gone: undefined });
       if (e.code === CLOSE.unauthorized || e.code === CLOSE.replaced || e.code === CLOSE.version) parked = true;
       else schedule();
     };
@@ -411,6 +416,10 @@ export function createLive(o: LiveOptions): Live {
     metrics: () => ({ ...mx, pending: outbox.size })
   };
 }
+
+/** Whether two `gone`s say the same. */
+const sameGone = (a: Gone | undefined, b: Gone | undefined): boolean =>
+  a === b || (!!a && !!b && (['A', 'B', 'G'] as const).every((w) => a[w] === b[w]));
 
 /** A member's partner (the guest's phone: none, it sees both). */
 const partnerOf = (me: Who): Who => (me === 'A' ? 'B' : 'A');

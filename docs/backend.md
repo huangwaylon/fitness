@@ -284,8 +284,9 @@ catches an offline phone up.
 - **Admission:** the Worker accepts `/room` upgrades only from `ALLOWED_ORIGINS` (`https://huangwaylon.github.io`) and
   `http://localhost|127.0.0.1`; everything else 403. The origin only keeps other sites out; the key is the auth.
 - **Auth:** the first message is `hello {key, since?}`. The room compares it in constant time with the secrets
-  `KEY_A`/`KEY_B`/`KEY_C` (unset = nobody gets in) and answers `welcome {me, peer, t, rec?, here?}` (`rec`: the record's
-  last change; `here`, v3: everyone else who is here), or
+  `KEY_A`/`KEY_B`/`KEY_C` (unset = nobody gets in) and answers `welcome {me, peer, t, rec?, here?, gone?}` (`rec`: the record's
+  last change; `here`, v3: everyone else who is here; `gone`, v3: when the room saw each person's last socket close,
+  for those not here and my own last one, kept in its storage: the walk home, below), or
   closes 4001. No hello within 10 s (a DO alarm sweeps): 4003. A second socket of the same person replaces the first
   (4002, no presence flicker). At most 8 sockets.
 - **Protocol** (`app/src/lib/sync/live-protocol.ts`, imported by both sides and checked by the same parsers): JSON,
@@ -468,7 +469,11 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   meeting with the visitor, a put under a sheet) leaves it alone, and a reaction here doesn't stop its walk. On a
   partner's arrival my villager's current walk goes again (they find it where mine is), and a walk under way is
   said again every 5 s while they're here (a phone that missed its start finds it on its way). Idle motions and the
-  ambient beats stay clock-seeded (ambient.ts); an action plays in place on both phones (no walk-then-act).
+  ambient beats stay clock-seeded (ambient.ts); an action plays in place on both phones (no walk-then-act). A member's
+  phone gone 3 min (`HOME_AFTER_MS`, from the presence's `t` or the welcome's `gone`): their villager walks home from
+  its last walk's end by the nav at 90 u/s, set off at leave + 3 min, on every phone the same (`homeWay`/`homeAt`;
+  the relay's to move till it's home); their own phone, back, takes it from where that walk has it and tells nothing
+  of its villager until its welcome is in ([decisions](decisions.md#a-villager-whose-phone-is-gone-walks-home-by-the-relays-clock-2026-11-02)).
 - **Sleep:** the villagers doze 22:00–05:00 on the relay's clock (`islandLife`: put to sleep or woken at the hour it
   turns, the same moment on both phones; no longer re-checked each minute, which put a woken villager back to sleep
   early). A wake here (a tap on mine, a high-five wakes both) is `act {act: wake, id: <whose>, at}` (the relay's

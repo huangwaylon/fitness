@@ -5,7 +5,7 @@
 // run on it. Its clock is the island's (clock.ts now(): a `?date=` preview moves the shared day too). Never used
 // outside the demo.
 import { DEMO, localKV, readJson, writeJson } from './storage.ts';
-import { LIVE_V, NEST_GAP_MS, claimOf, guestMaySend, isStored, tokyoDay, type Intent, type Relayed, type Who } from './live-protocol.ts';
+import { LIVE_V, NEST_GAP_MS, claimOf, guestMaySend, isStored, tokyoDay, type Gone, type Intent, type Relayed, type Who } from './live-protocol.ts';
 import { peerOf, type Live, type LiveStatus } from './live.ts';
 import { now } from '#lib/time/clock.ts';
 
@@ -34,7 +34,7 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
 
   const setStatus = (s: Partial<LiveStatus>) => {
     const next = { ...st, ...s };
-    if (next.connected === st.connected && next.me === st.me && next.peer === st.peer && next.here.join() === st.here.join()) return;
+    if (next.connected === st.connected && next.me === st.me && next.peer === st.peer && next.here.join() === st.here.join() && JSON.stringify(next.gone) === JSON.stringify(st.gone)) return;
     st = next;
     for (const f of statusSubs) f(st);
   };
@@ -75,10 +75,12 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
     if (w.k === 'hi' && w.who !== me) {
       const was = heard.has(w.who);
       heard.set(w.who, Date.now());
+      left.delete(w.who);
       present();
       if (!was) post({ k: 'hi', who: me }); // answer a newcomer at once
     } else if (w.k === 'bye' && w.who !== me) {
       heard.delete(w.who);
+      gone(w.who, Date.now());
       present();
     }
     else if (w.k === 'm' && w.m.who !== me) {
@@ -95,11 +97,22 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
     if (m.kind === 'walk' && log.some((x) => x.kind === 'walk' && x.who === m.who)) return; // a newer walk is there
     writeJson(localKV(), DEMO.relay, { day: l.day, log: [...log, m].sort((x, y) => x.t - y.t).slice(-MAX) });
   };
-  const bye = () => post({ k: 'bye', who: me });
+  /** When each other tab left (its bye, or its last hello when it went quiet; at the start, the tabs' own record of
+   *  their leaving: mine too), as the relay's `gone`. */
+  const left = new Map<Who, number>();
+  /** `who` left at `t`: kept here and in the tabs' record (a tab that never said bye: the room's notice). */
+  const gone = (who: Who, t: number) => {
+    if (who !== me) left.set(who, t);
+    writeJson(localKV(), DEMO.gone, { ...(readJson<Gone>(localKV(), DEMO.gone) ?? {}), [who]: t });
+  };
+  const bye = () => {
+    post({ k: 'bye', who: me });
+    gone(me, Date.now());
+  };
   /** Who is here now (the tabs heard from), as the relay's presence would say. */
   const present = () => {
     const here = [...heard.keys()].sort();
-    setStatus({ here, peer: peerOf(me, here) });
+    setStatus({ here, peer: peerOf(me, here), gone: Object.fromEntries([...left].filter(([w]) => !heard.has(w)).sort()) });
   };
   /** Two tabs claiming the same thing at once both kept it (each played the room on its own): the room's order is the
    *  earlier (then A's), and the later claim is one the room would have refused, so it's never delivered. The tab
@@ -115,11 +128,17 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
       if (bc || typeof BroadcastChannel === 'undefined') return;
       bc = new BroadcastChannel(channel);
       bc.onmessage = onWire;
-      setStatus({ connected: true, me });
+      // when each tab last left (mine: my last time here), then I'm here
+      const was = readJson<Gone>(localKV(), DEMO.gone) ?? {};
+      for (const w of ['A', 'B', 'G'] as const) if (typeof was[w] === 'number') left.set(w, was[w]!);
+      const { [me]: _mine, ...rest } = was;
+      writeJson(localKV(), DEMO.gone, rest);
+      setStatus({ connected: true, me, gone: Object.fromEntries([...left].sort()) });
+      left.delete(me);
       post({ k: 'hi', who: me });
       timer = setInterval(() => {
         post({ k: 'hi', who: me });
-        for (const [w, t] of heard) if (Date.now() - t > GONE_MS) heard.delete(w);
+        for (const [w, t] of heard) if (Date.now() - t > GONE_MS) heard.delete(w), gone(w, t);
         present();
       }, HELLO_MS);
       addEventListener('pagehide', bye);
@@ -147,7 +166,8 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
       bc?.close();
       bc = null;
       heard.clear();
-      setStatus({ connected: false, peer: false, here: [] });
+      left.clear();
+      setStatus({ connected: false, peer: false, here: [], gone: undefined });
     },
     send(i: Intent) {
       if (!st.connected || (!st.here.length && !isStored(i))) return false;

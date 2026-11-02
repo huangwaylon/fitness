@@ -529,6 +529,16 @@ let sleepy: () => boolean = () => true;
 export function setSleepClock(fn: () => boolean): void {
   sleepy = fn;
 }
+/** Whether it's sleeping time now (the night's hours on the relay's clock). */
+export const sleepTime = (): boolean => sleepy();
+/** A dozing villager gets up quietly (no surprise: a walk home at night, villagerSync), to doze again on arrival. */
+export function stir(id: 'mine' | 'partner' | 'third'): void {
+  const a = actors[id];
+  if (!a.asleep) return;
+  a.asleep = false;
+  a.fx = a.fx.filter((f) => f.kind !== 'zzz');
+  if (a.emoteHold) setEmote(id, null);
+}
 /** A villager was woken here (a tap, a high-five): the scene tells the other phone (villagerSync), whose own wake of it
  *  is `remote`. */
 let woken: ((id: 'mine' | 'partner' | 'third') => void) | null = null;

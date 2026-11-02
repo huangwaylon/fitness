@@ -122,6 +122,16 @@ describe('two phones linked through a relay', () => {
     const woke: unknown[] = [];
     let clock = 50_000;
     const link = d.linkVillagers({ share: (w) => void (w.kind === 'walk' ? told.push(w) : woke.push(w)), me: () => 'A', serverNow: () => clock, enabled: () => true });
+    // (nothing is told before the socket is up and the day in: then my villager as it is)
+    d.walkTo('mine', [[132, 300]], { ms: 100 });
+    await Promise.resolve();
+    expect(told).toEqual([]);
+    await vi.advanceTimersByTimeAsync(100);
+    link.joined();
+    expect(told).toEqual([{ kind: 'walk', to: [132, 300], from: [132, 214], s: 50_000, ms: 100 }]);
+    d.place('mine', 132, 214);
+    await Promise.resolve();
+    told.length = 0;
     d.walkTo('mine', [[132, 400], [200, 500]], { ms: 1500, face: 'l' });
     await Promise.resolve();
     expect(told).toEqual([{ kind: 'walk', to: [200, 500], from: [132, 214], via: [[132, 400]], s: 50_000, ms: 1500, f: 'l' }]);
@@ -155,5 +165,168 @@ describe('two phones linked through a relay', () => {
     await vi.advanceTimersByTimeAsync(12_000);
     expect(d.livePos('partner')).toEqual([150, 1260]);
     link.detach();
+  });
+});
+
+describe('a phone gone a while: its villager walks home, the same on every phone', () => {
+  const A_HOME = [132, 214] as const, B_HOME = [262, 214] as const;
+  const MS = Math.round((400 / 90) * 1000);
+  /** B's villager last walked to (262, 614); the way home is straight (in the app: the island's nav, `route`). */
+  const setup = async (clock: { t: number }, me: 'A' | 'B' = 'A', last: [number, number] | null = [262, 614]) => {
+    const d = await load();
+    d.resetAll();
+    d.setSleepClock(() => false);
+    const [mh, ph] = me === 'A' ? [A_HOME, B_HOME] : [B_HOME, A_HOME];
+    d.setHome('mine', mh[0], mh[1]);
+    d.setHome('partner', ph[0], ph[1]);
+    const told: Walk[] = [], home: string[] = [];
+    const link = d.linkVillagers({
+      share: (w) => void (w.kind === 'walk' && told.push(w)), me: () => me, serverNow: () => clock.t, enabled: () => true,
+      lastAt: () => last, route: (_f, to) => [to], atHome: (id) => void home.push(id)
+    });
+    return { d, told, home, link };
+  };
+
+  it('the walk: from where its last walk ended to home at a stroll, setting off HOME_AFTER_MS after the relay saw it leave', async () => {
+    const { homeWay, homeAt, HOME_AFTER_MS } = await load();
+    expect(HOME_AFTER_MS).toBe(180_000);
+    const w = homeWay([262, 614], [262, 214], 1_000_000, (_f, to) => [[262, 400], to]);
+    expect(w).toEqual({ from: [262, 614], pts: [[262, 400], [262, 214]], s: 1_180_000, ms: MS });
+    expect(homeAt(w, 1_179_999)).toEqual({ phase: 'wait' });
+    expect(homeAt(w, 1_180_000 + w.ms / 2)).toMatchObject({ phase: 'way', rest: [[262, 400], [262, 214]] });
+    expect(homeAt(w, 1_180_000 + w.ms)).toEqual({ phase: 'home' });
+    // home already: nothing to walk; no way on the nav: straight
+    expect(homeWay([263, 215], [262, 214], 0)).toMatchObject({ pts: [], ms: 0 });
+    expect(homeWay([262, 614], [262, 214], 0, () => null).pts).toEqual([[262, 214]]);
+  });
+
+  it('B gone 3 min: B’s villager stays put (the relay’s: no life of this phone moves it), walks home, then is this island’s again', async () => {
+    const clock = { t: 2_000_000 };
+    const { d, home, link } = await setup(clock);
+    d.place('partner', 262, 614);
+    link.joined();
+    link.here('partner', true);
+    const left = clock.t;
+    link.here('partner', false, left);
+    expect(d.isRemote('partner')).toBe(true);
+    expect(link.homeBound('partner')).toBe(true);
+    link.here('partner', false, left); // the same news again (every status) changes nothing
+    clock.t += 179_000;
+    await vi.advanceTimersByTimeAsync(179_000);
+    expect(d.walkTo('partner', [[0, 0]])).toBe(0);
+    expect(d.livePos('partner')).toEqual([262, 614]);
+    expect(d.actors.partner.walking).toBe(false);
+    clock.t += 1000;
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(d.actors.partner.walking).toBe(true);
+    clock.t += MS / 2;
+    await vi.advanceTimersByTimeAsync(MS / 2);
+    expect(d.livePos('partner')[1]).toBeCloseTo(414, -1);
+    clock.t += MS / 2 + 100;
+    await vi.advanceTimersByTimeAsync(MS / 2 + 100);
+    expect(d.livePos('partner')).toEqual([262, 214]);
+    expect(d.actors.partner.face).toBe('home');
+    expect(d.isRemote('partner')).toBe(false);
+    expect(home).toEqual(['partner']);
+    link.detach();
+  });
+
+  it('back within the window: no walk', async () => {
+    const clock = { t: 2_000_000 };
+    const { d, link } = await setup(clock);
+    d.place('partner', 262, 614);
+    link.here('partner', false, clock.t);
+    clock.t += 60_000;
+    await vi.advanceTimersByTimeAsync(60_000);
+    link.here('partner', true);
+    expect(link.homeBound('partner')).toBe(false);
+    clock.t += 300_000;
+    await vi.advanceTimersByTimeAsync(300_000);
+    expect(d.livePos('partner')).toEqual([262, 614]);
+    expect(d.isRemote('partner')).toBe(true); // theirs again (they're here)
+    link.detach();
+  });
+
+  it('a phone opening later finds it where the walk has it by now (home, when it is over); this phone going offline changes nothing', async () => {
+    const left = 2_000_000;
+    const clock = { t: left + 180_000 + MS / 4 };
+    const { d, link } = await setup(clock);
+    d.place('partner', 262, 614); // (where this phone had it: its last walk's end)
+    link.here('partner', false, left);
+    expect(d.livePos('partner')[1]).toBeCloseTo(514, -1);
+    expect(d.actors.partner.walking).toBe(true);
+    // this phone's socket drops: the rule goes on (nobody knows more)
+    link.here('partner', false, undefined);
+    link.down();
+    expect(link.homeBound('partner')).toBe(true);
+    clock.t += MS;
+    await vi.advanceTimersByTimeAsync(MS);
+    expect(d.livePos('partner')).toEqual([262, 214]);
+    link.detach();
+    // long after: home, no walk, the island's own again
+    const late = await setup({ t: left + 3_600_000 });
+    late.d.place('partner', 262, 614);
+    late.link.here('partner', false, left);
+    expect(late.d.livePos('partner')).toEqual([262, 214]);
+    expect(late.d.actors.partner.walking).toBe(false);
+    expect(late.d.isRemote('partner')).toBe(false);
+    late.link.detach();
+  });
+
+  it('at night: up for the walk home, dozing again there', async () => {
+    const clock = { t: 2_000_000 };
+    const { d, link } = await setup(clock);
+    d.setSleepClock(() => true);
+    d.place('partner', 262, 614);
+    d.setAsleep('partner', true);
+    link.here('partner', false, clock.t);
+    clock.t += 180_000;
+    await vi.advanceTimersByTimeAsync(180_000);
+    expect([d.actors.partner.walking, d.actors.partner.asleep]).toEqual([true, false]);
+    clock.t += MS + 100;
+    await vi.advanceTimersByTimeAsync(MS + 100);
+    expect(d.livePos('partner')).toEqual([262, 214]);
+    expect(d.actors.partner.asleep).toBe(true);
+    link.detach();
+    d.setSleepClock(() => true);
+  });
+
+  it('the guest’s villager is no part of it (it leaves the island with its app)', async () => {
+    const clock = { t: 2_000_000 };
+    const { d, link } = await setup(clock);
+    link.here('third', false, clock.t);
+    expect(link.homeBound('third')).toBe(false);
+    expect(d.isRemote('third')).toBe(false);
+    link.detach();
+  });
+
+  it('my own phone back mid-walk: my villager where the walk home has it, the rest walked and told from there (no jump there)', async () => {
+    const left = 2_000_000;
+    const clock = { t: left + 180_000 + MS / 2 };
+    const { d, told, home, link } = await setup(clock, 'B');
+    d.place('mine', 262, 614); // where this phone had it (the day's stay)
+    await Promise.resolve();
+    expect(told).toEqual([]);
+    link.joined(left);
+    await Promise.resolve();
+    expect(told).toHaveLength(1);
+    expect(told[0]).toMatchObject({ to: [262, 214], f: 'home', s: clock.t });
+    expect(told[0].from![1]).toBeCloseTo(414, -1);
+    expect(told[0].ms).toBeCloseTo(MS / 2, -2);
+    // A's phone, playing the same walk home, has B's villager at the same point: it walks on
+    d.place('partner', told[0].from![0], told[0].from![1]);
+    expect(d.playPartner({ ...told[0] }, clock.t, true, 'partner')).toBe('walk');
+    clock.t += MS;
+    await vi.advanceTimersByTimeAsync(MS);
+    expect(d.livePos('mine')).toEqual([262, 214]);
+    expect(home).toEqual(['mine']);
+    link.detach();
+    // back within the window: where it was
+    const quick = await setup({ t: left + 60_000 }, 'B');
+    quick.d.place('mine', 262, 614);
+    await Promise.resolve();
+    quick.link.joined(left);
+    expect(quick.told).toMatchObject([{ to: [262, 614], ms: 0 }]);
+    quick.link.detach();
   });
 });
