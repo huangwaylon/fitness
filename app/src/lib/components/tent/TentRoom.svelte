@@ -288,6 +288,11 @@
   }
   function tap(cx: number, cy: number) {
     if (!eng) return;
+    // a wall thing held: a tap on a wall is where it goes
+    if (editing && edit?.holdingWall()) {
+      const wp = eng.wallAt(cx, cy);
+      if (wp) return void edit.tapWall(wp.wall, wp.u, wp.y);
+    }
     const h = eng.hit(cx, cy);
     if (!h) return;
     if (h.kind === 'villager') {
@@ -480,6 +485,12 @@
       /** The partner has the app open (the relay's presence). */
       peer: () => peer,
       hit: (cx: number, cy: number) => eng?.hit(cx, cy),
+      /** A point on a wall (0 back, 1 left, 2 right, 3 front; across from its left end and up) in client px. */
+      wallPx: (wall: number, u: number, y: number) => {
+        const th = [0, Math.PI / 2, -Math.PI / 2, Math.PI][wall], at = [[0, -HALF], [-HALF, 0], [HALF, 0], [0, HALF]][wall];
+        const lx = u - HALF, lz = 0.3;
+        return eng?.client(at[0] + lx * Math.cos(th) + lz * Math.sin(th), y, at[1] - lx * Math.sin(th) + lz * Math.cos(th));
+      },
       /** Where the floor's middle and the usable band's middle are on screen. */
       centre: () => eng?.centre(),
       /** Turn the camera (radians), zoom it; whether it's NH's view. */

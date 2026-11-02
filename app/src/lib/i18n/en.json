@@ -467,5 +467,6 @@
   "tent.resetView": "Reset the view",
   "tent.tab.recent": "Recent",
   "tent.hasThings": "Put away what's on it first",
-  "tent.lights": "Room light"
+  "tent.lights": "Room light",
+  "tent.tab.walled": "On walls"
 }

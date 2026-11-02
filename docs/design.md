@@ -668,6 +668,12 @@ goes with the leaving).
   away: not with things on it (「うえの ものを さきに しまってね」). A thing on a table blocks neither the floor nor a walk.
   A race (one of us puts the table away as the other puts a lamp on it) leaves the lamp on the floor at its slot's tile,
   the same on both phones.
+- **On the walls** (NH's wall-mounted things: the ACNH spreadsheet's Wall-mounted, 54 with a model here; ten in the
+  starter set: the log, cuckoo, pendulum and ironwood clocks, the iron wall lamp and rack, the tool board, the
+  corkboard, two wreaths): the かべかけ tab; a piece hangs on a wall's grid (a tile across, a 5-unit step up, never
+  over the door or another), lands on the first free spot of the back wall, goes where a wall is tapped or dragged
+  along the walls; its facing is its wall's (no ↻). Its op: x the tile across, z the step, f the wall. A wall cut away
+  takes its things with it.
 - **Sit, lie and switch** (`tent/seats.ts`): NH's own interaction from the ACNH spreadsheet (`interact`: a Chair is sat
   on, a Bed lain on: 38 and 20 of the pieces); a sofa seats one a tile across, a double bed two. Outside the edit mode a
   tap on one walks my villager up to it (a step in front: physical, like the door) and it sits facing the piece's front,

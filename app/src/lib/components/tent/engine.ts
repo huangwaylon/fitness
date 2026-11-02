@@ -12,7 +12,7 @@ import {
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
-import { HALF, ROOM, TILE, centreOf, type Facing, type Pt, type Spot } from './grid.ts';
+import { HALF, ROOM, TILE, centreOf, isWallItem, wallSpot, type Facing, type Pt, type Spot } from './grid.ts';
 import { footprint, floorUrl, ITEMS, modelUrl, wallUrl } from './items.ts';
 
 /** The walls' height (RoomMdlWall: 40 model units, four tiles). */
@@ -84,6 +84,8 @@ export interface Tent {
   held(list: readonly { id: string; item: string; x: number; z: number; f: Facing }[]): void;
   /** The piece under client px, a rug too (the edit mode's pick), furniture first. */
   pick(cx: number, cy: number): string | null;
+  /** The wall under client px and where on it (across from its left end, up; model units). */
+  wallAt(cx: number, cy: number): { wall: number; u: number; y: number } | null;
   ghost(g: Ghost | null): void;
   /** The edit mode's grid on the floor. */
   grid(on: boolean): void;
@@ -237,9 +239,11 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   function wall(n: [number, number], door = false): Wall {
     const g = new Group();
     const faces = door ? [wallFace(-HALF, -TILE, 0, WALL_H), wallFace(TILE, HALF, 0, WALL_H), wallFace(-TILE, TILE, 30, WALL_H)] : [wallFace(-HALF, HALF, 0, WALL_H)];
+    const index = walls.length;
     for (const f of faces) {
       const m = new Mesh(f, wallMat);
       m.receiveShadow = true;
+      m.userData.wall = index;
       g.add(m);
     }
     // its cut top and the dark frame just outside it (a hair off: their faces never fight the wallpaper's)
@@ -355,6 +359,13 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   let hidden = new Set<string>();
   let pending = 0;
   const placeRoot = (root: Group, s: Spot & { y?: number }, lift = 0) => {
+    // a wall thing in its wall's own frame (the wall's group: it goes with the wall when the wall is cut away)
+    if (isWallItem(s.item)) {
+      const [u, y] = wallSpot(s);
+      root.position.set(-HALF + u, y, 0.2 + lift * 0.3);
+      root.rotation.set(0, 0, 0);
+      return;
+    }
     const [cx, cz] = centreOf(s);
     root.position.set(cx, (s.y ?? 0) + lift, cz);
     root.rotation.y = (s.f * Math.PI) / 2;
@@ -362,19 +373,19 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   function pieces(list: readonly Placed[]) {
     const ids = new Set(list.map((p) => p.id));
     for (const [id, l] of live) if (!ids.has(id)) {
-      scene.remove(l.root);
+      l.root.removeFromParent();
       for (const m of l.lit) m.dispose();
       live.delete(id);
     }
     for (const s of list) {
       const was = live.get(s.id);
-      if (was && was.spot.item === s.item) {
+      if (was && was.spot.item === s.item && (!isWallItem(s.item) || was.spot.f === s.f)) {
         was.spot = s;
         placeRoot(was.root, s);
         continue;
       }
       if (was) {
-        scene.remove(was.root);
+        was.root.removeFromParent();
         live.delete(s.id);
       }
       const root = new Group();
@@ -383,7 +394,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       root.visible = !hidden.has(s.id);
       const l: Live = { spot: s, root, body: null, pop: 0, bump: 0, on: null, lit: [] };
       live.set(s.id, l);
-      scene.add(root);
+      (isWallItem(s.item) ? walls[s.f]?.g ?? scene : scene).add(root);
       pending++;
       void model(s.item).then((g) => {
         pending--;
@@ -489,7 +500,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   foot.visible = ring.visible = false;
   let ghostKey = '';
   let ghostBody: Object3D | null = null;
-  let ghostT = 0, ghostY = 0, ghostKidsKey = '[]';
+  let ghostT = 0, ghostY = 0, ghostKidsKey = '[]', wallGhost = false;
   const ghostKids = new Group();
   ghostRoot.add(ghostKids);
   let ghostTurn: { from: number; to: number; t0: number } | null = null;
@@ -503,6 +514,45 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       ghostBody = null;
       invalidate();
       return;
+    }
+    if (isWallItem(g.item)) {
+      // on its wall: the ghost and its footprint (an outline on the wallpaper) in the wall's frame
+      const wg = walls[g.f]?.g ?? scene, m = ITEMS[g.item], w = (m?.w ?? 1) * TILE, h = m?.h ?? 5;
+      const [u, y] = wallSpot(g);
+      for (const o of [ghostRoot, foot, ring]) if (o.parent !== wg) wg.add(o);
+      ghostRoot.position.set(-HALF + u, y, 0.2);
+      ghostRoot.rotation.set(0, 0, 0);
+      ghostY = y;
+      foot.rotation.set(0, 0, 0);
+      foot.scale.set(w - 0.8, h + 1, 1);
+      foot.position.set(-HALF + u, y, 0.25);
+      footMat.color.set(g.ok ? 0x78dc78 : 0xf05a50);
+      ring.geometry.dispose();
+      const hw = w / 2 - 0.4, hh = (h + 1) / 2;
+      ring.geometry = new BufferGeometry().setAttribute('position', new Float32BufferAttribute([-hw, -hh, 0, hw, -hh, 0, hw, -hh, 0, hw, hh, 0, hw, hh, 0, -hw, hh, 0, -hw, hh, 0, -hw, -hh, 0], 3));
+      ring.position.set(-HALF + u, y, 0.3);
+      ring.rotation.set(0, 0, 0);
+      if (ghostKey !== g.item) {
+        ghostKey = g.item;
+        if (ghostBody) ghostRoot.remove(ghostBody);
+        ghostBody = null;
+        void model(g.item).then((mm) => {
+          if (!mm || disposed || ghostKey !== g.item) return;
+          ghostBody = mm.scene.clone(true);
+          ghostRoot.add(ghostBody);
+          ghostT = now();
+          invalidate();
+        });
+      }
+      wallGhost = true;
+      invalidate();
+      return;
+    }
+    if (wallGhost) {
+      // back on the floor: the ghost and its footprint in the room again
+      for (const o of [ghostRoot, foot, ring]) scene.add(o);
+      foot.rotation.set(-Math.PI / 2, 0, 0);
+      wallGhost = false;
     }
     const [w, d] = footprint(g.item, g.f);
     const [cx, cz] = centreOf(g);
@@ -953,10 +1003,22 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     if (!p || Math.abs(p.x) > HALF || Math.abs(p.z) > HALF) return null;
     return [p.x, p.z];
   }
+  /** The wall under client px (one that shows), and where on it: across from its left end and up (model units). */
+  function wallAt(cx: number, cy: number): { wall: number; u: number; y: number } | null {
+    toNdc(cx, cy);
+    const faces: Object3D[] = [];
+    for (const w of walls) if (w.g.visible) w.g.children.forEach((c) => c.userData.wall !== undefined && faces.push(c));
+    const h = ray.intersectObjects(faces, false)[0];
+    if (!h) return null;
+    const wi = h.object.userData.wall as number, local = walls[wi].g.worldToLocal(h.point.clone());
+    return { wall: wi, u: local.x + HALF, y: local.y };
+  }
+  /** Drawn: not hidden, and (a wall thing) its wall not cut away. */
+  const shown = (l: { root: Group; spot: Spot }) => l.root.visible && (!isWallItem(l.spot.item) || !!walls[l.spot.f]?.g.visible);
   function pick(cx: number, cy: number): string | null {
     toNdc(cx, cy);
     let rug: string | null = null;
-    for (const h of ray.intersectObjects([...live.values()].filter((l) => l.root.visible).map((l) => l.root), true)) {
+    for (const h of ray.intersectObjects([...live.values()].filter(shown).map((l) => l.root), true)) {
       const id = h.object.userData.id as string | undefined;
       if (!id) continue;
       if (!ITEMS[live.get(id)?.spot.item ?? '']?.rug) return id;
@@ -973,7 +1035,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     let rug: string | null = null;
     // what stands highest first: a lamp on a table before the table
     for (const l of [...live.values()].sort((a, b) => (b.spot.y ?? 0) - (a.spot.y ?? 0))) {
-      if (!l.root.visible) continue;
+      if (!l.root.visible || isWallItem(l.spot.item)) continue;
       const [w, d] = footprint(l.spot.item, l.spot.f);
       if (tx < l.spot.x || tz < l.spot.z || tx >= l.spot.x + w || tz >= l.spot.z + d) continue;
       if (!ITEMS[l.spot.item]?.rug) return l.spot.id;
@@ -983,7 +1045,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   }
   function hit(cx: number, cy: number): Hit | null {
     toNdc(cx, cy);
-    const objs: Object3D[] = [...[...villagers.values()].map((v) => v.card), ...[...live.values()].filter((l) => l.root.visible).map((l) => l.root), mat];
+    const objs: Object3D[] = [...[...villagers.values()].map((v) => v.card), ...[...live.values()].filter(shown).map((l) => l.root), mat];
     for (const h of ray.intersectObjects(objs, true)) {
       if (h.object === mat) return { kind: 'door' };
       if (h.object.userData.who) {
@@ -1080,7 +1142,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     }
     if (ghostBody) {
       const k = Math.min(1, (t - ghostT) / POP_MS);
-      ghostRoot.position.y = ghostY + 3 + Math.sin(k * Math.PI) * 2.5;
+      if (wallGhost) ghostRoot.position.z = 0.2 + 1.5 + Math.sin(k * Math.PI) * 1.2;
+      else ghostRoot.position.y = ghostY + 3 + Math.sin(k * Math.PI) * 2.5;
       if (k < 1) more = true;
     }
     if (framing) {
@@ -1149,7 +1212,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   night(0);
 
   return {
-    resize, surfaces, pieces, hide, held, pick, ghost, grid, bump, room, pose, night, villager,
+    resize, surfaces, pieces, hide, held, pick, wallAt, ghost, grid, bump, room, pose, night, villager,
     at: (who) => (villagers.get(who)?.pos.slice() as [number, number] | undefined) ?? null,
     put(who, p, f) {
       const w = villagers.get(who);

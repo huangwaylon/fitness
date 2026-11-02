@@ -275,3 +275,22 @@ test('sit, lie and switch: a tap on a chair walks my villager up and sits it, on
   await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
   await expect.poll(() => use(page, (t) => t.lights())).toEqual({ room: false, pieces: [{ id: id('f1432'), on: false }] });
 });
+
+test('on the walls: a clock from かべかけ hangs on the back wall; a tap on the left wall takes it there; it stays', async ({ page }) => {
+  await page.addInitScript(() => localStorage.getItem('tent-w') || (localStorage.removeItem('island-demo.tent'), localStorage.setItem('tent-w', '1')));
+  await page.goto('tent' + Q);
+  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await page.locator('[data-tent-edit-open]').click();
+  await page.locator('[data-tab="walled"]').click();
+  await page.locator('[data-tent-item="f4037"]').click();
+  await expect.poll(() => te(page, (t) => t.edit()?.sel)).toMatchObject({ item: 'f4037', f: 0 });
+  await expect(page.locator('[data-act="turn"]')).toHaveCount(0);
+  const [x, y] = await page.evaluate(() => (window as unknown as { __tent: { wallPx(w: number, u: number, y: number): [number, number] } }).__tent.wallPx(1, 40, 22));
+  await page.mouse.click(x, y);
+  await expect.poll(() => te(page, (t) => t.edit()?.sel)).toMatchObject({ f: 1 });
+  await page.locator('[data-act="place"]').click();
+  await expect.poll(() => te(page, (t) => t.pieces())).toEqual([expect.objectContaining({ item: 'f4037', f: 1 })]);
+  await page.reload();
+  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await expect.poll(() => te(page, (t) => t.pieces())).toEqual([expect.objectContaining({ item: 'f4037', f: 1 })]);
+});

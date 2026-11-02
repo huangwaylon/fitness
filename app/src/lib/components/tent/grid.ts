@@ -55,6 +55,40 @@ export function snapTo(item: string, f: Facing, px: number, pz: number): [number
 const isRug = (item: string) => !!ITEMS[item]?.rug;
 /** NH's surface: small things stand on its top. */
 export const isSurface = (item: string): boolean => !!ITEMS[item]?.s && !ITEMS[item]?.rug;
+/** On a wall (NH's wall-mounted things): its spot is the wall's (x across it, z its height step, f which wall). */
+export const isWallItem = (item: string): boolean => !!ITEMS[item]?.wl;
+/** The walls: 0 the back, 1 the left, 2 the right, 3 the front (the door's). */
+const WALLS_N = 4;
+/** A wall's height steps (model units): a wall thing's bottom at WALL_FOOT + z × WALL_STEP. */
+const WALL_H = 40, WALL_FOOT = 2, WALL_STEP = 5;
+/** The highest step a wall thing of height h may take (its top under the wall's). */
+export const wallSteps = (item: string): number => Math.max(0, Math.floor((WALL_H - 1 - WALL_FOOT - (ITEMS[item]?.h ?? 5)) / WALL_STEP));
+/** A wall thing's middle on its wall: across (model units from the wall's left end, as one faces it) and up. */
+export function wallSpot(s: Pick<Spot, 'item' | 'x' | 'z'>): [number, number] {
+  const m = ITEMS[s.item], w = m?.w ?? 1, h = m?.h ?? 5;
+  return [(s.x + w / 2) * TILE, WALL_FOOT + s.z * WALL_STEP + h / 2];
+}
+/** The step and tile that put a wall thing's middle nearest (u across, y up) on its wall. */
+export function wallSnap(item: string, u: number, y: number): [number, number] {
+  const m = ITEMS[item], w = m?.w ?? 1, h = m?.h ?? 5;
+  const x = Math.round(u / TILE - w / 2), z = Math.round((y - h / 2 - WALL_FOOT) / WALL_STEP);
+  return [Math.min(ROOM - w, Math.max(0, x)), Math.min(wallSteps(item), Math.max(0, z))];
+}
+/** Why a wall thing can't hang there (null: it can): off the wall, over the door, over another wall thing. */
+export function wallWhy(others: readonly Spot[], s: Spot): Why | null {
+  const m = ITEMS[s.item], w = m?.w ?? 1, h = m?.h ?? 5;
+  if (s.x < 0 || s.x + w > ROOM || s.z < 0 || s.z > wallSteps(s.item) || s.f < 0 || s.f >= WALLS_N) return 'out';
+  const y0 = WALL_FOOT + s.z * WALL_STEP, y1 = y0 + h;
+  // the front wall's door: tiles 3–4, three tiles high
+  if (s.f === 3 && s.x < 5 && s.x + w > 3 && y0 < 30) return 'door';
+  for (const o of others) {
+    if ((s.id && o.id === s.id) || !isWallItem(o.item) || o.f !== s.f) continue;
+    const ow = ITEMS[o.item]?.w ?? 1, oy0 = WALL_FOOT + o.z * WALL_STEP, oy1 = oy0 + (ITEMS[o.item]?.h ?? 5);
+    if (s.x < o.x + ow && o.x < s.x + w && y0 < oy1 && oy0 < y1) return 'taken';
+  }
+  return null;
+}
+
 /** A small thing that may stand on a surface: NH's miscellaneous, one tile. */
 export const isSmall = (item: string): boolean => !!ITEMS[item]?.sm && ITEMS[item].w === 1 && ITEMS[item].d === 1;
 
@@ -100,7 +134,7 @@ export function resolve(list: readonly (Spot & { id: string })[]): Resolved[] {
 /** The floor piece with a surface over room tile (tx, tz) (not `except`), if any. */
 export function surfaceAt(spots: readonly Spot[], tx: number, tz: number, except?: string): Spot | null {
   for (const s of spots) {
-    if (s.on || (except && s.id === except) || !isSurface(s.item)) continue;
+    if (s.on || (except && s.id === except) || !isSurface(s.item) || isWallItem(s.item)) continue;
     if (tilesOf(s).some(([x, z]) => x === tx && z === tz)) return s;
   }
   return null;
@@ -119,7 +153,7 @@ export function placeWhy(others: readonly Spot[], s: Spot): Why | null {
   const key = (x: number, z: number) => x * ROOM + z;
   const at = new Set(mine.map(([x, z]) => key(x, z)));
   for (const o of others) {
-    if ((s.id && o.id === s.id) || o.on || isRug(o.item) !== rug) continue;
+    if ((s.id && o.id === s.id) || o.on || isWallItem(o.item) || isRug(o.item) !== rug) continue;
     if (tilesOf(o).some(([x, z]) => at.has(key(x, z)))) return rug ? 'rug' : 'taken';
   }
   return null;
@@ -149,7 +183,7 @@ export type Pt = readonly [number, number];
 export function blocked(spots: readonly Spot[]): Uint8Array {
   const b = new Uint8Array(N * N);
   for (const s of spots) {
-    if (isRug(s.item) || s.on) continue;
+    if (isRug(s.item) || s.on || isWallItem(s.item)) continue;
     for (const [x, z] of tilesOf(s)) for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
       const cx = x * 2 + i, cz = z * 2 + j;
       if (cx >= 0 && cz >= 0 && cx < N && cz < N) b[cx * N + cz] = 1;

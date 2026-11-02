@@ -34,6 +34,9 @@ export interface ItemMeta {
   n?: number;
   /** A light: a lamp, the lantern, the fireplace (a switch). */
   lt?: 1;
+  /** On a wall (NH's wall-mounted things): w tiles across it, h high, its middle at its origin, out of the wall from its
+   *  back. */
+  wl?: 1;
 }
 
 export const ITEMS: Readonly<Record<string, ItemMeta>> = data.items as Record<string, ItemMeta>;

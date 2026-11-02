@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DOOR_TILES, HALF, ROOM, TILE, blocked, centreOf, clampIn, isSmall, isSurface, nearestFree, placeWhy, resolve, slotTaken, slotToTile, snapTo, surfaceAt, tileToSlot, tilesOf, walkPath, type Spot } from './grid.ts';
+import { DOOR_TILES, HALF, ROOM, TILE, isWallItem, wallSnap, wallSpot, wallSteps, wallWhy, blocked, centreOf, clampIn, isSmall, isSurface, nearestFree, placeWhy, resolve, slotTaken, slotToTile, snapTo, surfaceAt, tileToSlot, tilesOf, walkPath, type Spot } from './grid.ts';
 import { ITEMS, STARTER, footprint } from './items.ts';
 
 const furniture = STARTER.filter((c) => !ITEMS[c].rug);
@@ -129,5 +129,26 @@ describe('surfaces (NH\'s table tops)', () => {
     expect(slotTaken(room, 't', 1, 0)).toBe(true);
     expect(slotTaken(room, 't', 1, 0, 'l')).toBe(false);
     expect(slotTaken(room, 't', 0, 0)).toBe(false);
+  });
+});
+
+describe('on the walls (NH\'s wall-mounted things)', () => {
+  const clock = 'f4037'; // the log wall-mounted clock
+  it('hang on a wall\'s grid: a tile across, a step up; never over the door, off the wall or over another', () => {
+    expect(isWallItem(clock)).toBe(true);
+    const [u, y] = wallSpot({ item: clock, x: 2, z: 3 });
+    expect(wallSnap(clock, u, y)).toEqual([2, 3]);
+    expect(wallSnap(clock, -50, 999)).toEqual([0, wallSteps(clock)]);
+    expect(wallWhy([], { item: clock, x: 2, z: 3, f: 0 })).toBeNull();
+    expect(wallWhy([], { item: clock, x: 8, z: 0, f: 0 })).toBe('out');
+    expect(wallWhy([], { item: clock, x: 3, z: 0, f: 3 })).toBe('door');
+    expect(wallWhy([], { item: clock, x: 3, z: wallSteps(clock), f: 3 })).toBeNull();
+    const there: Spot[] = [{ id: 'c', item: clock, x: 2, z: 3, f: 0 }];
+    expect(wallWhy(there, { item: clock, x: 2, z: 3, f: 0 })).toBe('taken');
+    expect(wallWhy(there, { item: clock, x: 2, z: 3, f: 1 })).toBeNull();
+    expect(wallWhy(there, { id: 'c', item: clock, x: 2, z: 3, f: 0 })).toBeNull();
+    // never a floor thing: no tiles blocked, no floor placement in the way
+    expect(blocked(there).reduce((a, b) => a + b, 0)).toBe(0);
+    expect(placeWhy(there, { item: 'f4039', x: 2, z: 3, f: 0 })).toBeNull();
   });
 });
