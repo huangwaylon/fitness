@@ -7,15 +7,15 @@ export const LIVE_V = 2;
 /** @public (relay/) The versions the relay still speaks: v1 phones (before the rolling-log world) keep their push and presence; only a
  *  walk, whose target changed meaning (stage units in v1, world units in v2), never crosses versions. */
 export const LIVE_VS = [1, 2] as const;
-/** @public (relay/) */
+/** @public (relay/, sync/live.ts) */
 export type LiveV = (typeof LIVE_VS)[number];
 /** Anything longer is dropped unread by both sides (but a `replay`, the relay's day in one message: REPLAY_BYTES). */
 export const MAX_BYTES = 256;
-/** A `replay` message (relay → client): today's world in as few messages as this allows. @public (relay/) */
+/** A `replay` message (relay → client): today's world in as few messages as this allows. @public (relay/, sync/live.ts) */
 export const REPLAY_BYTES = 16_000;
 /** A walk's waypoints between `from` and `to` (more: the receiver plans the way itself). */
 export const VIA_MAX = 10;
-/** A walk takes at most this long (ms). @public (relay/) */
+/** A walk takes at most this long (ms). @public (relay/, sync/live.ts) */
 export const WALK_MS_MAX = 60_000;
 
 /**
@@ -51,9 +51,9 @@ export const DROPS = ['none', 'branch', 'nest', 'bagworm', 'spider', 'coconut'] 
 export type Drop = (typeof DROPS)[number];
 
 /** Which way a villager faces at a walk's end: as drawn (toward the camera), toward the island's middle, left, right.
- *  @public (relay/) */
+ *  @public (relay/, sync/live.ts) */
 export const FACES = ['home', 'in', 'l', 'r'] as const;
-/** @public (relay/) */
+/** @public (relay/, sync/live.ts) */
 export type Face = (typeof FACES)[number];
 
 /** A world point (v2: integer world units within the plan). */
@@ -133,7 +133,7 @@ export type ServerMsg =
   | Relayed;
 
 /** The record's last change the room heard of (`welcome.rec`): a phone whose cache has it (same `rev`, `at` ≤ its
- *  `since`) needn't fetch on opening. @public (relay/) */
+ *  `since`) needn't fetch on opening. @public (relay/, sync/live.ts) */
 export interface RecordMark { at: string; rev: string }
 
 /** What the Apps Script wrote (`ingest`: health rows, `event`: an event row). */
@@ -310,7 +310,7 @@ export function parseClient(raw: unknown): ClientMsg | null {
 }
 
 /** The `v` of a message in a version the relay doesn't speak (that phone should reload, not keep sending), else null.
- *  @public (relay/) */
+ *  @public (relay/, sync/live.ts) */
 export function otherVersion(raw: unknown): number | null {
   if (typeof raw !== 'string' || raw.length > MAX_BYTES) return null;
   try {
@@ -329,7 +329,7 @@ function noticeOf(o: Obj): Notice | null {
   return { what: o.what, who: o.who, at: o.at, rev: o.rev };
 }
 
-/** The body of a /notify POST as the relay accepts it (`{what, who, at, rev}`, ≤ MAX_BYTES), or null. @public (relay/) */
+/** The body of a /notify POST as the relay accepts it (`{what, who, at, rev}`, ≤ MAX_BYTES), or null. @public (relay/, sync/live.ts) */
 export function parseNotice(raw: unknown): Notice | null {
   if (typeof raw !== 'string' || raw.length > MAX_BYTES) return null;
   try {

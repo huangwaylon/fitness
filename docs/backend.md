@@ -176,7 +176,9 @@ too (the sheet no longer has it).
 
 ### Write queue
 
-`sync/queue.ts`: events in `island.queue`, sent in order until acked.
+`sync/queue.ts`: events in `island.queue`, sent in order until acked. To the record, everything that may go now goes in
+one `events` request (≤ 50, in queue order, the holds and subjects below kept), each answered by id; to Apps Script
+(no record URL), one `event` at a time.
 
 - **Holds:** a held event (`holdMs`, the undo window) is skipped, not waited for; `unqueue` takes it back, `holdEvent`
   moves its time.
@@ -198,8 +200,13 @@ each minute (not while hidden: a missed minute recomputes once on return).
 ### When it syncs
 
 On launch (after painting from the cache), when the app becomes visible (≤ every 30 s), on a sync tap, on `online`,
-1.5 s after an ack (a `fresh` re-read so server timestamps replace optimistic ones), and while the app is on screen
-whenever the relay says the sheet changed ([Push](#push)). Each refresh flushes the queue, then fetches.
+and while the app is on screen whenever the relay says the record changed ([Push](#push)). Each refresh flushes the
+queue, then fetches. **Not when current:** on launch and on becoming visible the phone waits up to 2 s for the relay's
+`welcome`, whose `rec {at, rev}` is the record's last change the room heard of (kept across its restarts); when the
+cache has it (same `rev`, `at` ≤ `since`) and was fetched within 15 minutes, it only flushes the queue. No welcome, no
+socket or an older cache: it fetches. **After an ack:** the record answers each event with its stored row's `at`, and
+that row goes into the cache at once (`since` unmoved, so the next poll still brings everything written after it); only
+an ack without a row (a duplicate, or Apps Script's) is followed by a `fresh` re-read 1.5 s later.
 
 <a id="the-record"></a>
 ## The record
@@ -207,7 +214,7 @@ whenever the relay says the sheet changed ([Push](#push)). Each refresh flushes 
 The data of record is moving from the sheet to the relay (decisions: *The record on the relay*), in five steps, each
 deployed and green before the next: **1. mirror** (done 2026-11-02), **2. the app reads from the relay** (done: `snapshot`
 to `/api`, Apps Script when the relay is down or answers an outage: `sync/transport.ts postRecord`; the first read there
-refetches everything once, the revision being the record's), 3. the app writes there, 4. the Shortcuts post there, 5. the sheet becomes a one-way export.
+refetches everything once, the revision being the record's), **3. the app writes there** (done: the queue sends `events` to `/api`; Apps Script forwards every keyed request it still gets, an older app's and the Shortcuts', to `/api` and hands back its reply: `gas/main.ts forward`), 4. the Shortcuts post there, 5. the sheet becomes a one-way export.
 
 - **Where:** `relay/src/store.ts` (`StoreCore`, free of the Workers runtime), in its own SQLite-backed Durable Object,
   `IslandStore` (`idFromName('record')`, `storeObject.ts`), apart from the island room. Tables: `metrics` (`seq`, `at`,

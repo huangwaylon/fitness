@@ -2,12 +2,12 @@
 // queue, fetch rows `since` the last seen server time), with undo windows.
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
-import type { EventType } from '#lib/contract/api.ts';
+import type { EventRow, EventType } from '#lib/contract/api.ts';
 import { t } from '#lib/i18n/index.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { getKey, getStoredMe, onStorageProblem, type StorageProblem } from '#lib/sync/storage.ts';
 import { ackedEvents, enqueue, flush, holdEvent, keepAcked, nextRetryAt, queued, retryNow, unqueue, type QueuedEvent } from '#lib/sync/queue.ts';
-import { loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
+import { addOwnRows, loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { keyFromHash } from '#lib/sync/pairing.ts';
 import { LIVE_URL, liveRelay, type Live, type SheetChange } from '#lib/sync/live.ts';
 import { pendingAcked } from './view.ts';
@@ -16,10 +16,14 @@ import { HOLD_MAX_MS, type Backend, type Host, type SendOptions, type SendResult
 
 /** Background refreshes (app becoming visible) at most this often. */
 const REFRESH_FLOOR_MS = 30_000;
-/** After acked writes, re-read the server so its timestamps replace the optimistic ones. */
+/** After acked writes the record stored no row for (a duplicate; Apps Script's), re-read so server rows replace the optimistic ones. */
 const RECONCILE_MS = 1500;
 /** Sheet changes arriving together (a burst of pushes) make one refresh. */
 const PUSH_GATHER_MS = 300;
+/** How long opening waits for the relay's welcome (its `rec`) before fetching anyway. */
+const WELCOME_WAIT_MS = 2000;
+/** A cache fetched longer ago than this is fetched again on opening, whatever the welcome says. */
+const CURRENT_MAX_MS = 15 * 60_000;
 
 export class LiveBackend implements Backend {
   #host: Host;
@@ -35,6 +39,8 @@ export class LiveBackend implements Backend {
   /** Apps Script's push (`changed`) reached this phone this session, so it covers events too: no `saved` nudges. */
   #pushWorks = false;
   #started = false;
+  /** The first refresh of this session (the app opening) has run. */
+  #opened = false;
   /** Storage problems already shown this session. */
   #told = new Set<StorageProblem>();
 
@@ -103,6 +109,16 @@ export class LiveBackend implements Backend {
       }
     }
     if (opts.background && Date.now() - this.#lastFetch < REFRESH_FLOOR_MS) return;
+    // opening the app, or coming back to it: no fetch when the relay's welcome says the cache has the record's last
+    // change (docs/backend.md#the-record "Push-driven"); a sync tap, a push or a retry always fetches
+    const opening = !this.#opened;
+    this.#opened = true;
+    if ((opening || opts.background) && !opts.fresh && (await this.#current())) {
+      this.#lastFetch = Date.now();
+      await this.#flush(true);
+      h.status = 'ready';
+      return;
+    }
     this.#lastFetch = Date.now();
     if (!opts.background) retryNow(); // asked for (sync, reconnect, after an ack): don't sit out a backoff
     const seq = ++this.#refreshSeq;
@@ -138,6 +154,7 @@ export class LiveBackend implements Backend {
 
   reset(): void {
     this.#cache = null;
+    this.#opened = false;
     keepAcked([]);
     this.#lastFetch = 0;
     this.#pushWorks = false;
@@ -163,6 +180,30 @@ export class LiveBackend implements Backend {
       this.#pushTimer = null;
       void this.refresh({ fresh: true });
     }, PUSH_GATHER_MS);
+  }
+
+  /**
+   * Whether the cache already has the record's last change, as the relay's welcome tells it (waited for up to
+   * WELCOME_WAIT_MS): the same revision, its `at` not after the cache's `since`, and the cache fetched within
+   * CURRENT_MAX_MS (a notice the room missed can't hide a change for longer). False without a socket.
+   */
+  async #current(): Promise<boolean> {
+    const live = this.#live, c0 = this.#cache;
+    if (!live || !c0 || Date.now() - c0.fetchedAt > CURRENT_MAX_MS) return false;
+    if (!live.status().connected) {
+      await new Promise<void>((done) => {
+        let off: () => void = () => {};
+        const timer = setTimeout(() => (off(), done()), WELCOME_WAIT_MS);
+        off = live.onStatus((s) => {
+          if (!s.connected) return;
+          clearTimeout(timer);
+          queueMicrotask(() => off());
+          done();
+        });
+      });
+    }
+    const rec = live.status().rec, c = this.#cache;
+    return !!rec && !!c && c.rev === rec.rev && c.since !== null && rec.at <= c.since;
   }
 
   /**
@@ -206,9 +247,18 @@ export class LiveBackend implements Backend {
       return;
     }
     if (r.error) this.#host.offline = true;
+    // what the record stored is in the cache at once, as its rows (its `at`): no re-read for those
+    const cache = this.#cache;
+    if (r.stored.length && cache) {
+      const c = addOwnRows(r.stored.map(({ ev, at }): EventRow => [at, cache.me, ev.id, ev.type, JSON.stringify(ev.data)]));
+      if (c) {
+        this.#cache = c;
+        this.#host.changed();
+      }
+    }
     // the partner's phone fetches now (until Apps Script's own push is seen to work)
     if (r.sent > 0 && !this.#pushWorks) this.#live?.send({ kind: 'saved' });
-    if (r.sent > 0 && reconcile) {
+    if (r.sent > r.stored.length && reconcile) {
       if (this.#reconcileTimer) clearTimeout(this.#reconcileTimer);
       // fresh: a fetch that started before the ack may not have the rows yet
       this.#reconcileTimer = setTimeout(() => void this.refresh({ fresh: true }), RECONCILE_MS);

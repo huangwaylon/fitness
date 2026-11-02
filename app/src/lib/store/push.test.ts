@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
 import { configureTransport } from '#lib/sync/transport.ts';
-import { configureCache } from '#lib/sync/cache.ts';
+import { configureCache, saveCache } from '#lib/sync/cache.ts';
 import { setKey } from '#lib/sync/pairing.ts';
 import type { Intent } from '#lib/sync/live-protocol.ts';
 import type { SheetChange } from '#lib/sync/live.ts';
@@ -16,7 +16,8 @@ const relay = vi.hoisted(() => ({
   started: 0,
   stopped: 0,
   sent: [] as unknown[],
-  listeners: [] as ((c: unknown) => void)[]
+  listeners: [] as ((c: unknown) => void)[],
+  status: { connected: false, me: null, peer: false } as { connected: boolean; me: null; peer: boolean; rec?: { at: string; rev: string } }
 }));
 vi.mock('#lib/sync/live.ts', () => ({
   LIVE_URL: 'wss://relay.test/room',
@@ -25,6 +26,8 @@ vi.mock('#lib/sync/live.ts', () => ({
     stop: () => void relay.stopped++,
     send: (i: unknown) => (relay.sent.push(i), true),
     onChange: (fn: (c: unknown) => void) => (relay.listeners.push(fn), () => {}),
+    status: () => relay.status,
+    onStatus: (fn: (s: unknown) => void) => (fn(relay.status), () => {}),
     // the shared island listens too (store/world.svelte.ts)
     on: () => () => {},
     serverNow: () => Date.now()
@@ -56,6 +59,7 @@ beforeEach(() => {
   relay.started = relay.stopped = 0;
   relay.sent = [];
   relay.listeners = [];
+  relay.status = { connected: false, me: null, peer: false };
   snapshots = 0;
   events = [];
   configureTransport({
@@ -145,5 +149,33 @@ describe('LiveBackend: the relay push', () => {
     b.reset();
     expect(relay.stopped).toBe(1);
     expect(relay.started).toBe(2);
+  });
+});
+
+describe('opening with the relay’s welcome (docs/backend.md#the-record)', () => {
+  const cached = (o: { since?: string; fetchedAt?: number } = {}) =>
+    saveCache({ v: 1, me: 'A', rows: { metrics: [[AT, 'B', '2026-11-01', 'steps', 900]], events: [] }, since: o.since ?? AT, rev: 'r1', skewMs: 0, fetchedAt: o.fetchedAt ?? Date.now() });
+
+  it('no fetch on opening, nor on coming back, when the welcome says the cache has the record’s last change', async () => {
+    void cached();
+    relay.status = { connected: true, me: null, peer: false, rec: { at: AT, rev: 'r1' } };
+    const b = new LiveBackend(host());
+    await b.refresh({});
+    expect(snapshots).toBe(0);
+    await b.refresh({ fresh: true }); // a push or a sync tap always fetches
+    expect(snapshots).toBe(1);
+  });
+
+  it('fetches when the record has a later change, another revision, no welcome, or the cache is 15 minutes old', async () => {
+    for (const [rec, o] of [
+      [{ at: LATER, rev: 'r1' }, {}], [{ at: AT, rev: 'e2' }, {}], [undefined, {}], [{ at: AT, rev: 'r1' }, { fetchedAt: Date.now() - 16 * 60_000 }]
+    ] as const) {
+      configureCache({ indexedDB: null });
+      void cached(o);
+      relay.status = { connected: true, me: null, peer: false, ...(rec ? { rec } : {}) };
+      snapshots = 0;
+      await new LiveBackend(host()).refresh({});
+      expect(snapshots, JSON.stringify(rec)).toBe(1);
+    }
   });
 });
