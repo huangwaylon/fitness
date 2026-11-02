@@ -158,7 +158,8 @@ export interface Island3 {
   touching(on: boolean): void;
   /** The camera (the e2e, the way back from the tent). */
   view(): { camZ: number; zoom: number; pitch: number };
-  go(camZ: number, zoom?: number): void;
+  /** `free`: past the ends if need be (the e2e's camera, at the 2D island's stops: the ends widen to take it). */
+  go(camZ: number, zoom?: number, free?: boolean): void;
   limits(): { min: number; max: number };
   /** Frame one thing (the bulletin board: the user's one exception to "nothing but the finger moves the camera"): the
    *  camera eases to it over `ms` (600), centred on it, `zoom` (2.2) and `pitch` (degrees, 30) its own; the finger does
@@ -166,6 +167,8 @@ export interface Island3 {
   focusOn(target: { x: number; z: number; lift?: number }, o?: { zoom?: number; pitch?: number; ms?: number }): Promise<void>;
   restore(ms?: number): Promise<void>;
   focused(): boolean;
+  /** The GPU's name (a software renderer, CI's: the scene draws at its lightest). */
+  gpu(): string;
   /** Something of the scene's own in the world (the board's face with its posts): at (x, z) on the ground, `lift`
    *  above it, turned `yaw`; its materials bent with the island. Returns its removal. */
   attach(obj: Object3D, at: { x: number; z: number; lift?: number; yaw?: number }): () => void;
@@ -613,7 +616,8 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
       raf = requestAnimationFrame(frame);
       return;
     }
-    const dt = lastFrame ? Math.min(50, t - lastFrame) : 16;
+    // (the real time since the last frame, up to a quarter second: a slow GPU settles as soon as a fast one)
+    const dt = lastFrame ? Math.min(250, t - lastFrame) : 16;
     let more = false;
     if (stepMove(t)) more = true;
     // the fling: iOS's deceleration, firmer past an end
@@ -698,7 +702,11 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
       activity();
     },
     view: () => ({ camZ, zoom: zoomK, pitch }),
-    go(z, k) {
+    go(z, k, free) {
+      if (free) {
+        lim.min = Math.min(lim.min, z);
+        lim.max = Math.max(lim.max, z);
+      }
       camZ = rawZ = Math.max(lim.min, Math.min(lim.max, z));
       if (k) zoomK = rawK = Math.max(ZOOM.min, Math.min(ZOOM.max, k));
       vel = 0;
@@ -708,6 +716,10 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     limits: () => ({ min: lim.min, max: lim.max }),
     focusOn, restore,
     focused: () => !!focus,
+    gpu() {
+      const gl = renderer.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info');
+      return String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
+    },
     attach(obj, at) {
       obj.traverse((n) => {
         const m = (n as Mesh).material as Material | Material[] | undefined;

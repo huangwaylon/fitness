@@ -141,7 +141,9 @@
       const down = stage === 'ground' || stage === 'gone';
       // the canopy spot seen from the ground spot (units, its frame): the fall starts there
       const fx = x + tx - gx, fy = -up + FRUIT_SPOTS[i][1] * FORE;
-      return { f, i, met: r.met, stage, filter: fruitFilter(r.met ? 100 : todayPct(r)), tx, up, gx, gz, fx, fy, down };
+      // (the 3D island's model: drained toward grey as the DOM's filter, 0 once met)
+      const grey = r.met ? 0 : Math.max(0, 1 - todayPct(r) / 100) * 0.9;
+      return { f, i, met: r.met, stage, filter: fruitFilter(r.met ? 100 : todayPct(r)), tx, up, gx, gz, fx, fy, down, grey };
     })
   );
   const rowL = $derived(x + lean + FRUIT_SPOTS[0][0] - FRUIT_U);
@@ -341,7 +343,7 @@
     <span class="oak"><OfficialArt key={treeArt(foliage)} size={u(H)} priority /></span>
   </div>
   <!-- the trunk and its base answer a tap as the canopy does (≥ 44px wide; one button for assistive tech: the canopy) -->
-  <button type="button" class="trunk-btn" style:width="max({u(W * 0.42)}, calc(45px * var(--inv, 1)))" style:height={u(H * 0.5)}
+  <button type="button" class="trunk-btn" style:width="max({u(W * 0.42)}, calc(45px * var(--inv, 1)))" style:height="max({u(H * 0.5)}, calc(48px * var(--inv-y, 0)))"
     tabindex="-1" aria-hidden="true" data-sfx="self" onclick={() => tap(null)}></button>
 </div>
 <div class="node" {@attach w.at({ x, z, h: H, dz: -14, model: true })}>
@@ -387,10 +389,20 @@
   {/each}
 </div>
 
+{#if w.rest.three}
+  <!-- the 3D island's fruit in the canopy (camera.svelte.ts m3): NH's model at its spot on the canopy's front, the DOM's
+       art hidden; the same instance falls to its ground spot (FruitTree's own fall) -->
+  {#each spots as s (s.f)}
+    {#if !s.down}
+      <i class="m3n" {@attach w.at({ x: x + s.tx * 1.25, z: z - 34, lift: s.up + 14, h: 4, always: true,
+        m3: { key: `fruit/${s.f}`, id: `fruit-${person.person}-${s.f}`, grey: s.grey, art: () => canopyEl?.parentElement?.querySelector(`.fruit.up[data-fruit="${s.f}"]`) } })}></i>
+    {/if}
+  {/each}
+{/if}
 <!-- met: on the ground in front of the trunk (each its own node, so a villager stands among them), until picked up -->
 {#each spots as s (s.f)}
   {#if s.down && s.stage !== 'gone'}
-    <div class="node" {@attach w.at({ x: s.gx, z: s.gz, h: FRUIT_U })}>
+    <div class="node" {@attach w.at({ x: s.gx, z: s.gz, h: FRUIT_U, m3: { key: `fruit/${s.f}`, id: `fruit-${person.person}-${s.f}`, ms: falling.includes(s.f) ? 520 : 0 } })}>
       <span class="fruit" class:drop={falling.includes(s.f)} data-fruit={s.f} data-tree={person.person} data-stage={s.stage}
         style:width={u(FRUIT_U)} style:--fx={u(s.fx)} style:--fy={u(s.fy)} style:--up={UP} out:pickUp>
         <span class="f" style:filter={s.filter}>

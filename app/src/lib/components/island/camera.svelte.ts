@@ -49,8 +49,18 @@ interface M3 {
   grey?: number;
   /** Hidden in 3D for now (a fallen fruit mid-drop). */
   off?: boolean;
-  /** Its instance's name (a reaction's echo finds it: echo3d.ts), else the node's own. */
+  /** Its instance's name (a reaction's echo finds it: echo3d.ts; a mover keeps it as it goes), else the node's own. */
   id?: string;
+  /** A move to a new spot eases over this long (a critter's walk between its waypoints, as its CSS transition). */
+  ms?: number;
+  /** Its height (world y), not on the ground: a fish's shadow under the sea's surface. */
+  y?: number;
+  /** It comes falling from this many units up (over `ms`: a tree's present out of its canopy). */
+  drop?: number;
+  /** Turned the way it moves (a fish), `yaw` added. */
+  face?: 'move';
+  /** The DOM art it stands for, when it isn't in this node (a critter's sprite in its mover): hidden once drawn. */
+  art?: () => Element | null | undefined;
 }
 /** A node the 3D island draws as a model: its id, its art key, where it is now. */
 export interface Model3 {
@@ -97,6 +107,7 @@ interface Node extends NodeSpec {
   clip: string;
   zIndex: number;
   invS: string;
+  invY: string;
 }
 
 /** The stacking order of what stands over every world thing (a popup, a held-up item's plate): above any depth. */
@@ -111,7 +122,7 @@ export class World {
    *  offset. */
   readonly view = { camZ: CAMS.mae as number, s: 1, vw: 390, vh: 844, pivot: 844 * PIVOT, horizon: 844 * SKY, left: 0, top: 0 };
   /** What components may read reactively: the camera when it settles, the screen's size. */
-  readonly rest = $state({ z: CAMS.mae as number, s: 1, vw: 390, vh: 844, horizon: 844 * SKY, ready: false });
+  readonly rest = $state({ z: CAMS.mae as number, s: 1, vw: 390, vh: 844, horizon: 844 * SKY, ready: false, three: false });
   /** Writes in the last frame and the nodes registered (perf). */
   readonly perf = { writes: 0, nodes: 0, frames: 0 };
 
@@ -132,6 +143,7 @@ export class World {
   /** Draw through the 3D island's camera from now on (null: back to roll.ts). */
   useThree(p: Proj3 | null): void {
     this.three = p;
+    this.rest.three = !!p;
     if (p) this.view.horizon = p.horizon();
     this.invalidate();
   }
@@ -275,6 +287,9 @@ export class World {
     if (n.inv) {
       const iv = (1 / k).toFixed(3);
       if (iv !== n.invS) n.el.style.setProperty('--inv', (n.invS = iv));
+      // (a model's node is squashed upright: its true px up there, for a tap area's least height)
+      const iy = n.model ? (1 / ky).toFixed(3) : '';
+      if (iy !== n.invY) n.el.style.setProperty('--inv-y', (n.invY = iy) || null);
     }
   }
 
@@ -410,7 +425,7 @@ export class World {
     return (el: HTMLElement) => {
       // (a re-attach, its spec changed, finds the element as the last node left it: what's written there, so the first
       // place writes what differs, a fade or a cut included)
-      const n: Node = { ...spec, el, id3: `m${++this.seq3}`, shown: el.style.visibility !== 'hidden', tf: '', op: el.style.opacity, clip: el.style.clipPath, zIndex: NaN, invS: '' };
+      const n: Node = { ...spec, el, id3: `m${++this.seq3}`, shown: el.style.visibility !== 'hidden', tf: '', op: el.style.opacity, clip: el.style.clipPath, zIndex: NaN, invS: '', invY: '' };
       el.style.position = 'absolute';
       el.style.left = '0';
       el.style.top = '0';

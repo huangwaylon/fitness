@@ -50,6 +50,9 @@ export interface Things {
   /** One frame (the wobbles): true while one runs. */
   frame(t: number): boolean;
   has(id: string): boolean;
+  /** Where an instance stands now (three's space) and whether it's hidden (the e2e). */
+  groups(): unknown;
+  where(id: string): { x: number; y: number; z: number; hidden: boolean; model: string } | null;
   pending(): number;
   dispose(): void;
 }
@@ -84,7 +87,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     const s = src as MeshStandardMaterial;
     const own = !!s.emissiveMap;
     const m = new MeshLambertMaterial({
-      map: s.map, color: s.color, transparent: s.transparent, opacity: s.opacity, alphaTest: s.alphaTest, side: s.side, depthWrite: s.depthWrite,
+      map: s.map, color: s.color, transparent: s.transparent, opacity: s.opacity, alphaTest: grey ? 0 : s.alphaTest, side: s.side, depthWrite: s.depthWrite,
       emissive: own ? new Color(0xffe2a8) : s.map ? new Color(0xffffff) : s.color.clone(), emissiveMap: own ? s.emissiveMap : s.map
     });
     // foliage (cut out: NH's leaf cards) is lit through: more lift
@@ -294,6 +297,13 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     },
     frame,
     has: (id) => byId.has(id),
+    groups: () => [...groups.values()].map((g) => ({ name: g.name, n: g.list.length, meshes: g.meshes.map((m) => ({ count: m.im.count, vis: m.im.visible, inScene: !!m.im.parent, mat: (m.im.material as Material).visible })) })),
+    where(id) {
+      const a = byId.get(id);
+      if (!a) return null;
+      tmpV.setFromMatrixPosition(a.g.base[a.i]);
+      return { x: tmpV.x, y: tmpV.y, z: tmpV.z, hidden: !!overs.get(id)?.hidden, model: a.g.name };
+    },
     pending: () => pending,
     dispose() {
       disposed = true;
