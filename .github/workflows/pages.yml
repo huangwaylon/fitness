@@ -102,6 +102,8 @@ jobs:
       - run: npm run check
       - run: npm run knip
       - run: npx vitest run
+      # the e2e quarantine in the summary; red when a quarantined test has no owner (docs/ops/testing.md "Tags")
+      - run: node scripts/e2e-quarantine.ts >> "$GITHUB_STEP_SUMMARY"
 
   # The full tier (docs/ops/test-strategy.md): the whole suite drawn (real software GL, as the gate was until Nov 2026),
   # the quarantine included, after the deploy (or beside a red gate): it never holds the deploy back. Its failures are in
@@ -219,7 +221,7 @@ jobs:
           path: app/shards
       - id: e2e
         continue-on-error: true
-        run: npx playwright test --project=chromium --test-list shards/${{ matrix.shard }}.txt
+        run: npx playwright test --project=chromium --workers=4 --test-list shards/${{ matrix.shard }}.txt
       # (each test's time, for the next run's plan: the first run's report)
       - if: always() && steps.e2e.outcome != 'skipped'
         run: cp playwright-results.json timings-${{ matrix.shard }}.json 2>/dev/null || true

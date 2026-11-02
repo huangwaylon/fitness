@@ -122,7 +122,7 @@ auto-rollback at this size. A red full tier is the next agent's first job, just 
 ## Ownership and process (agents)
 
 - Before pushing a new or changed e2e spec, run it under CI's conditions, several times over:
-  `npm run e2e:ci-like -- e2e/x.spec.ts --repeat 5` (software GL, CI's 3 workers, CI=1; `--tier render` for a drawn
+  `npm run e2e:ci-like -- e2e/x.spec.ts --repeat 5` (software GL, CI's workers, CI=1; `--tier render` for a drawn
   one, `--workers 6` to load the machine).
 - A test you see flake goes to `@quarantine` in that same push, with its owner. Don't rerun until it's green.
 - Each spec's header names its area. Its owner is whoever last changed that area's code (the engine agent owns
