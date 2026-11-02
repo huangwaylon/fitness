@@ -344,3 +344,49 @@ test('two phones in the tent: one room, A’s drag live on B (held there), the d
   await ctxA.close();
   if (RELAY) await ctxB.close();
 });
+
+test('a high-five over the relay: the partner plays the same moment at once, its banner and hearts once; held while they are away', async ({ browser }) => {
+  test.setTimeout(90_000);
+  const { open, ctxB, close } = await phones(browser);
+  const a = await open('A'), b = await open('B');
+  for (const p of [a, b]) await expect.poll(() => w<{ connected: boolean; peer: boolean } | null>(p, 'status').then((s) => !!s?.connected && s.peer), { timeout: 10_000 }).toBe(true);
+  await a.waitForTimeout(2600); // the opening beats are over
+  // B watches for the moment: the sparkle flying from A's villager, hearts on B's own
+  const plays = b.evaluate(async () => {
+    const t0 = Date.now();
+    while (Date.now() - t0 < 3000) {
+      if (document.querySelector('[data-zap]')) return Date.now();
+      await new Promise((r) => setTimeout(r, 4));
+    }
+    return null;
+  });
+  const t0 = await a.evaluate(() => Date.now());
+  await a.locator('[data-actor="partner"] .vil').click();
+  const t1 = await plays;
+  expect(t1, 'B played the sparkle').not.toBeNull();
+  console.log(`[${RELAY ? 'relay' : 'demo'}] high-five tap → played there: ${t1! - t0} ms`);
+  expect(t1! - t0).toBeLessThan(RELAY ? 600 : 400);
+  await expect(b.locator('[data-actor="mine"] .fx.hearts').first()).toBeAttached({ timeout: 2000 });
+  for (const id of ['mine', 'partner']) await expect(b.locator(`[data-actor="${id}"] .fx.sparkles`).first()).toBeAttached({ timeout: 2000 });
+  await expect(b.getByText('ウェイさんからハイタッチ！')).toBeVisible({ timeout: 3000 });
+  await expect(a.getByText('うめさんに ハイタッチ！')).toBeVisible();
+  // once: no second banner, no second hearts (nothing comes from the sheet any more)
+  await b.waitForTimeout(4500);
+  await expect(b.getByText('ウェイさんからハイタッチ！')).toHaveCount(0);
+  await expect(b.locator('[data-actor="mine"] .fx.hearts')).toHaveCount(0);
+  if (RELAY) {
+    // B's phone closed: the room holds A's high-five, and B hears it (the banner, the hearts) when it opens
+    await b.close();
+    await a.waitForTimeout(800);
+    await a.locator('[data-actor="partner"] .vil').click();
+    await a.waitForTimeout(800);
+    const c = await open('B', ctxB);
+    await expect(c.getByText('ウェイさんからハイタッチ！')).toBeVisible({ timeout: 6000 });
+    await c.close();
+    // heard and said got: not again
+    const d = await open('B', ctxB);
+    await d.waitForTimeout(3500);
+    await expect(d.getByText('ウェイさんからハイタッチ！')).toHaveCount(0);
+  }
+  await close();
+});

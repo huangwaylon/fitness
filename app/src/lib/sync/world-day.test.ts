@@ -33,7 +33,8 @@ function island() {
     setMeta: (s, m) => void (s.meta = m),
     keys: { KEY_A, KEY_B },
     now: () => clock,
-    save: () => {}
+    save: () => {},
+    hold: () => {}
   });
   class Phone {
     day: WorldDay = emptyDay(DAY);

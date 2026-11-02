@@ -5,7 +5,7 @@ import { DurableObject } from 'cloudflare:workers';
 import { LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type RecordMark, type Relayed, type Who } from '../../app/src/lib/sync/live-protocol.ts';
 import { originAllowed } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
-import { HELLO_MS, RoomCore, type Kept, type Meta } from './room.ts';
+import { HELLO_MS, RoomCore, type Held, type Kept, type Meta } from './room.ts';
 import type { GoalOutcome, GoalReq, PushLang, PushSub } from '../../app/src/lib/sync/push-protocol.ts';
 import { PushCore, type StoredSub } from './push.ts';
 import { isPushPath, pushRoute, type PushRoom } from './pushRoute.ts';
@@ -34,6 +34,8 @@ export interface Env {
 const RING = 'ring';
 /** The record's last change (welcome `rec`). */
 const REC = 'rec';
+/** The high-fives held for a partner who was away (room.ts Held). */
+const HELD = 'held';
 /** How long a push service may hold a goal notice for an offline phone (s). */
 const PUSH_TTL_S = 2 * 3600;
 
@@ -46,6 +48,7 @@ export class IslandRoom extends DurableObject<Env> implements PushRoom {
     void ctx.blockConcurrencyWhile(async () => {
       const ring = (await ctx.storage.get<Kept[]>(RING)) ?? [];
       const rec = (await ctx.storage.get<RecordMark>(REC)) ?? null;
+      const held = (await ctx.storage.get<Held>(HELD)) ?? {};
       this.core = new RoomCore<WebSocket>({
         sockets: () => ctx.getWebSockets(),
         meta: (s) => (s.deserializeAttachment() as Meta | null) ?? null,
@@ -53,8 +56,9 @@ export class IslandRoom extends DurableObject<Env> implements PushRoom {
         keys: { KEY_A: env.KEY_A, KEY_B: env.KEY_B },
         now: () => Date.now(),
         save: (r) => void ctx.storage.put(RING, r),
-        saveRec: (r) => void ctx.storage.put(REC, r)
-      }, ring, rec);
+        saveRec: (r) => void ctx.storage.put(REC, r),
+        hold: (h) => void ctx.storage.put(HELD, h)
+      }, ring, rec, held);
     });
     const sql = ctx.storage.sql;
     sql.exec('CREATE TABLE IF NOT EXISTS push_subs (endpoint TEXT PRIMARY KEY, who TEXT NOT NULL, p256dh TEXT NOT NULL, auth TEXT NOT NULL, lang TEXT NOT NULL, at INTEGER NOT NULL)');

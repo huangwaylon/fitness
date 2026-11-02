@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CLOSE, type ServerMsg } from '../../app/src/lib/sync/live-protocol.ts';
-import { HELLO_MS, MAX_SOCKETS, RING_MAX, RoomCore, type Meta, type RoomIO } from '../src/room.ts';
+import { HELLO_MS, MAX_SOCKETS, RING_MAX, RoomCore, type Held, type Meta, type RoomIO } from '../src/room.ts';
 
 const KEY_A = 'a1'.repeat(16);
 const KEY_B = 'b2'.repeat(16);
@@ -24,6 +24,7 @@ class FakeSock {
 let now = 1_000_000;
 let socks: FakeSock[];
 let saved: unknown[];
+let held: Held = {};
 let room: RoomCore<FakeSock>;
 
 function io(): RoomIO<FakeSock> {
@@ -33,7 +34,8 @@ function io(): RoomIO<FakeSock> {
     setMeta: (s, m) => void (s.meta = m),
     keys: { KEY_A, KEY_B },
     now: () => now,
-    save: (r) => void saved.push(structuredClone(r))
+    save: (r) => void saved.push(structuredClone(r)),
+    hold: (h) => void (held = structuredClone(h))
   };
 }
 
@@ -51,6 +53,7 @@ beforeEach(() => {
   now = 1_000_000;
   socks = [];
   saved = [];
+  held = {};
   room = new RoomCore(io());
 });
 
@@ -574,5 +577,88 @@ describe('the shared world (v2, docs/backend.md#shared-world)', () => {
       expect(out.length, out).toBeLessThanOrEqual(100);
       expect(JSON.stringify({ v: 2, ...m, who: 'A', t }).length).toBeLessThanOrEqual(140);
     }
+  });
+});
+
+describe('high-fives (v2: the relay only, never the sheet)', () => {
+  const join2 = (key: string) => {
+    const s = new FakeSock();
+    socks.push(s);
+    room.open(s);
+    room.message(s, JSON.stringify({ v: 2, kind: 'hello', key, since: 0, batch: true }));
+    return s;
+  };
+  const say2 = (s: FakeSock, m: object) => room.message(s, JSON.stringify({ v: 2, ...m }));
+  const bye = (s: FakeSock) => {
+    s.close();
+    room.close(s);
+  };
+  const fives = (s: FakeSock) => s.sent.filter((m) => m.kind === 'highfive');
+  beforeEach(() => {
+    now = Date.UTC(2026, 10, 1, 3);
+    room = new RoomCore(io());
+  });
+
+  it('goes live to the partner (acked to the sender), and nothing is held or kept', () => {
+    const a = join2(KEY_A), b = join2(KEY_B);
+    a.sent = [];
+    say2(a, { kind: 'highfive', at: now - 20, c: 7 });
+    expect(fives(b)).toEqual([{ v: 2, kind: 'highfive', at: now - 20, who: 'A', t: now }]);
+    expect(a.sent).toEqual([{ v: 2, kind: 'ack', c: 7, t: now, ok: true }]);
+    expect(held).toEqual({});
+    expect(saved).toEqual([]);
+  });
+
+  it('with the partner away, the last one is held for them, handed over at each hello until their phone says got', () => {
+    const a = join2(KEY_A);
+    say2(a, { kind: 'highfive', at: now - 5000, c: 1 });
+    now += 60_000;
+    say2(a, { kind: 'highfive', at: now - 10, c: 2 }); // a newer one replaces it
+    expect(held).toEqual({ B: { from: 'A', at: now - 10, t: now } });
+    const at = now - 10;
+    now += 3600_000;
+    const b = join2(KEY_B);
+    expect(b.kinds()).toEqual(['welcome', 'highfive']);
+    expect(fives(b)).toEqual([{ v: 2, kind: 'highfive', at, who: 'A', t: at + 10 }]);
+    bye(b);
+    const b2 = join2(KEY_B); // never said got: again
+    expect(fives(b2)).toHaveLength(1);
+    say2(b2, { kind: 'got', at: at - 1 }); // not this one
+    expect(held.B).toBeDefined();
+    say2(b2, { kind: 'got', at });
+    expect(held).toEqual({});
+    bye(b2);
+    expect(fives(join2(KEY_B))).toEqual([]);
+    expect(fives(a)).toEqual([]); // never back to its sender
+  });
+
+  it('survives a restart, is let go after a day, and only an older phone there counts as away (it never hears one)', () => {
+    const a = join2(KEY_A);
+    const b1 = new FakeSock();
+    socks.push(b1);
+    room.open(b1);
+    room.message(b1, JSON.stringify({ v: 1, kind: 'hello', key: KEY_B }));
+    say2(a, { kind: 'highfive', at: now });
+    expect(fives(b1)).toEqual([]);
+    expect(held.B?.at).toBe(now);
+    bye(b1);
+    room = new RoomCore(io(), [], null, held); // the Durable Object woke again
+    expect(fives(join2(KEY_B))).toHaveLength(1);
+    socks = [];
+    room = new RoomCore(io(), [], null, held);
+    now += 24 * 3600_000 + 1;
+    expect(fives(join2(KEY_B))).toEqual([]);
+    expect(held).toEqual({});
+  });
+
+  it('refuses a v1 high-five or got, and a bad time', () => {
+    const a = join2(KEY_A), b = join2(KEY_B);
+    b.sent = [];
+    say(a, { kind: 'highfive', at: now }); // (a v1 message after a v2 hello closes it: tried on its own socket)
+    const a1 = join(KEY_A);
+    say(a1, { kind: 'highfive', at: now });
+    say(a1, { kind: 'got', at: now });
+    say2(join2(KEY_A), { kind: 'highfive', at: -1 });
+    expect(fives(b)).toEqual([]);
   });
 });

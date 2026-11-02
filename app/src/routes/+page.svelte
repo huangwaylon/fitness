@@ -16,8 +16,6 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
-  import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
-  import { highFive } from '#lib/store/actions.ts';
   import { t, hostLine } from '#lib/i18n/index.ts';
   import { birthdaysOn } from '#lib/components/island/birthday.ts';
   import { localDateAt } from '#lib/time/dates.ts';
@@ -54,10 +52,9 @@
     return h.confirmedBy.includes(view.me) ? hostLine('harvest_waiting', { name: view.people[view.partner].villagerName }) : hostLine('harvest_ready');
   });
 
-  // A tap on the partner's villager, once mine stands beside them (IslandScene): send it, then both hop (R4).
+  // A tap on the partner's villager (IslandScene: in place, sent over the relay): the banner, and both hop (R4).
   function sendHighFive() {
     if (!view) return;
-    highFive();
     toasts.show(t('island.highfiveSent', { name: view.people[view.partner].villagerName }), 1800, { person: view.partner, reaction: 'encouraging' });
     emit('highfive-sent');
   }
@@ -67,17 +64,15 @@
     if (toasts.current?.code === 'save-failed') emit('sync-error');
   });
 
-  // Tell me when my partner sent a high-five today (once per new one, per device), with their villager on the
-  // banner, but not over the harvest: wait until it closes, and not over another banner: one at a time.
+  // My partner's high-five reached this phone (IslandScene: the relay's, live or held while I was away; once each):
+  // the banner with their villager, but not over the harvest: it waits until that closes, and not over another
+  // banner: one at a time.
+  let gotFive = $state(false);
   $effect(() => {
     const v = week.view;
-    if (!v || v.highFivesToday <= 0 || ui.overlay || toasts.current) return;
-    const kept = readJson<{ date?: string; n?: number }>(localKV(), SCENE.highFivesSeen);
-    const seen = kept?.date === v.today ? Number(kept.n) || 0 : 0;
-    if (v.highFivesToday > seen) {
-      writeJson(localKV(), SCENE.highFivesSeen, { date: v.today, n: v.highFivesToday });
-      later(() => toasts.show(t('island.highfiveGot', { name: v.people[v.partner].villagerName }), 3200, { person: v.partner, reaction: 'love' }), 700);
-    }
+    if (!gotFive || !v || ui.overlay || toasts.current) return;
+    gotFive = false;
+    later(() => toasts.show(t('island.highfiveGot', { name: v.people[v.partner].villagerName }), 3200, { person: v.partner, reaction: 'love' }), 700);
   });
 </script>
 
@@ -93,7 +88,7 @@
       {/snippet}
     </Hud>
     <div class="top">
-      <IslandScene {view} onhighfive={sendHighFive} paused={panelOpen} />
+      <IslandScene {view} onhighfive={sendHighFive} onhighfivegot={() => (gotFive = true)} paused={panelOpen} />
     </div>
     <!-- しずえ's box, when she has news, floats over the sea at the bottom, so nothing in the scene moves when she speaks. -->
     {#if news}<div class="news"><Bubble text={news} host={false} /></div>{/if}

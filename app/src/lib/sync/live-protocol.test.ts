@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACTS, DROPS, HOWS, MAX_BYTES, SAY_MAX, VIA_MAX, cleanSay, WORLD_OPS, WORLD_X, WORLD_Z, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
+import { ACTS, DROPS, HOWS, MAX_BYTES, SAY_MAX, isAcked, VIA_MAX, cleanSay, WORLD_OPS, WORLD_X, WORLD_Z, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
 import { PLAN } from '#lib/components/island/world.ts';
 
 const KEY = 'ab'.repeat(32);
@@ -277,5 +277,20 @@ describe('live protocol: a phrase (v2 `say`, presence only)', () => {
     expect(claimOf({ kind: 'say', text: 'x' })).toBeNull();
     // twenty of the widest characters still fit a relayed message
     expect(JSON.stringify({ v: 2, kind: 'say', text: '\u{1F600}'.repeat(SAY_MAX), who: 'A', t: 1_793_527_259_353 }).length).toBeLessThanOrEqual(MAX_BYTES);
+  });
+});
+
+describe('live protocol: a high-five (v2, the relay only)', () => {
+  it('a highfive at a time, numbered and sent with the partner away, never kept in the day; got answers one heard', () => {
+    expect(parseClient(j2({ kind: 'highfive', at: 1_793_000_000_000, c: 4, x: 1 }))).toEqual({ v: 2, c: 4, kind: 'highfive', at: 1_793_000_000_000 });
+    expect(parseServer(j2({ kind: 'highfive', at: 5, who: 'B', t: 9 }))).toEqual({ v: 2, kind: 'highfive', at: 5, who: 'B', t: 9 });
+    expect(parseClient(j2({ kind: 'got', at: 5 }))).toEqual({ v: 2, kind: 'got', at: 5 });
+    for (const bad of [j({ kind: 'highfive', at: 5 }), j({ kind: 'got', at: 5 }), j2({ kind: 'highfive' }), j2({ kind: 'highfive', at: -1 }), j2({ kind: 'got', at: 'x' })]) expect(parseClient(bad), bad).toBeNull();
+    const hf = { kind: 'highfive', at: 5 } as const;
+    expect(isAcked(hf)).toBe(true);
+    expect(isStored(hf)).toBe(false);
+    expect(claimOf(hf)).toBeNull();
+    expect(isAcked({ kind: 'say', text: 'x' })).toBe(false);
+    expect(isAcked({ kind: 'walk', to: [1, 2] })).toBe(true);
   });
 });

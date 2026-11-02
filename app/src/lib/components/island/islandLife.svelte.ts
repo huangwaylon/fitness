@@ -135,7 +135,6 @@ export class IslandLife {
   }
 
   #diff(p: WeekView, v: WeekView): void {
-    if (v.highFivesToday > p.highFivesToday) return this.later(() => react('R5'), 700);
     // the villagers go to it (avatar.ts): ふたりでぜんぶ brings both to the middle for a high-five; a fruit met walks that
     // person's villager to their tree, and its reaction plays there
     const moves = goalMoves(p, v);
