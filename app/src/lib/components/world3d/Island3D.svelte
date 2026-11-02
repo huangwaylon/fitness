@@ -48,6 +48,7 @@
   import { extentOf, type Layout } from '#lib/layout/model.ts';
   import { GRASS_Y, SEA_Y as LAYOUT_SEA_Y, WATER_DROP as LAYOUT_DROP, fieldOf } from '#lib/layout/height.ts';
   import { TIER_H } from '#lib/layout/grid.ts';
+  import type { EditStage } from '../layoutEdit/IslandEdit.svelte';
 
   /** A villager on this island now (IslandScene's cast). */
   export interface Cast {
@@ -631,6 +632,35 @@
     if (e) untrack(() => e.pause(on));
   });
 
+  /** The island's もようがえ on the layout (layoutEdit/IslandEdit.svelte): world ⇄ the scene's px through this camera,
+   *  what's held hidden; null before the island is up. */
+  let hiddenEdit: string | null = null;
+  export function editStage(): EditStage | null {
+    const e = eng, c = canvas;
+    if (!e || !c) return null;
+    const off = () => {
+      const r = c.getBoundingClientRect(), h = scene.getBoundingClientRect();
+      return [r.left - h.left, r.top - h.top];
+    };
+    return {
+      host: scene,
+      toScreen(x, z, lift = 0) {
+        const p = e.at(x, z, lift), [ox, oy] = off();
+        return p.visible ? [p.sx + ox, p.sy + oy] : null;
+      },
+      toGround(sx, sy) {
+        const [ox, oy] = off(), g = e.groundAt(sx - ox, sy - oy);
+        return g ? [g.x, g.z] : null;
+      },
+      size: () => [scene.clientWidth, scene.clientHeight],
+      hide(id) {
+        if (hiddenEdit && hiddenEdit !== id) e.things.over(hiddenEdit, { hidden: false });
+        hiddenEdit = id;
+        if (id) e.things.over(id, { hidden: true });
+      }
+    };
+  }
+
   /** Put the camera at a world z at once (the e2e, IslandScene's goTo). */
   export function go(z: number, k?: number) {
     eng?.go(z, k, true);
@@ -790,7 +820,10 @@
       /** The ids of the lamps lit now (a model's id; a stand-in's `s:` prefixed). */
       lamps: () => e.lamps(),
       /** My angler's line up: its facing, its rod and its line's headings in plan (degrees), or null. */
-      angler: (slot = 'mine') => vil3?.angler(slot) ?? null
+      angler: (slot = 'mine') => vil3?.angler(slot) ?? null,
+      /** On the layout (site.on): its ground is the layout's; the homes, bridges and stairs placed. */
+      onLayout: () => onLayout && !!lground,
+      placedGroups: () => e.placedGroups()
     };
     return () => {
       offLayout();

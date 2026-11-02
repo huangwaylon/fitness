@@ -182,7 +182,7 @@
   });
   const island3dC = lazyComponent(() => import('../world3d/Island3D.svelte'));
   const Island3DC = $derived(island3dC.get(r3));
-  let island3d = $state<{ go(z: number, k?: number): void; limits(): { min: number; max: number } }>();
+  let island3d = $state<{ go(z: number, k?: number): void; limits(): { min: number; max: number }; editStage(): import('../layoutEdit/IslandEdit.svelte').EditStage | null }>();
   /** Where the 3D camera opens (back from the tent: where it was). */
   let start3 = $state<number | null>(null);
 
@@ -1048,7 +1048,11 @@
   // The decorate mode (docs/design.md "Decorating"): its tray and ghost are their own chunk, loaded on the first use.
   const decorating = $derived(live && ui.decorating);
   const decorModeC = lazyComponent(() => import('./DecorMode.svelte'));
-  const DecorModeC = $derived(decorModeC.get(decorating));
+  const DecorModeC = $derived(decorModeC.get(decorating && !site.on));
+  const islandEditC = lazyComponent(() => import('../layoutEdit/IslandEdit.svelte'));
+  const IslandEditC = $derived(islandEditC.get(decorating && site.on));
+  /** The 3D island's stage for IslandEdit (while decorating on the layout). */
+  const editStage = $derived(decorating && site.on && island3d ? island3d.editStage() : null);
   let decorMode = $state<{ pick(id: string, e: PointerEvent): void; moving(): string | null }>();
   // what the 3D island draws today (Scenery's own: the scenery's seasonal swaps, the fixed decor's pieces)
   const scenery3 = $derived.by(() => {
@@ -1121,7 +1125,9 @@
           <Decor editing={decorating} hidden={decorating ? (decorMode?.moving() ?? null) : null} onpick={(id, e) => decorMode?.pick(id, e)} />
           <!-- the bulletin board on the front beach (docs/board.md): a tap walks up to it and opens it -->
           <Board enabled={() => !covered && !life.hidden && !decorating} night={tod === 'night'} {season} />
-          {#if decorating && DecorModeC && sceneEl}<DecorModeC bind:this={decorMode} scene={sceneEl} ondone={() => (ui.decorating = false)} />{/if}
+          <!-- the もようがえ: on the layout (the 3D island with site.on) the layout's own (IslandEdit), else the decorations' -->
+          {#if decorating && site.on && IslandEditC && editStage}<IslandEditC stage={editStage} {relay} me={castMe() === 'B' ? 'B' : 'A'} ondone={() => (ui.decorating = false)} />
+          {:else if decorating && !site.on && DecorModeC && sceneEl}<DecorModeC bind:this={decorMode} scene={sceneEl} ondone={() => (ui.decorating = false)} />{/if}
         {/if}
 
         {#each VILLAGERS as id (id)}
