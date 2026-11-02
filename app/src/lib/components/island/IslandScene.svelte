@@ -90,6 +90,7 @@
   import { piecesOn, swapsOn } from './fixedDecor.ts';
   import { islandSeed } from './devHooks.ts';
   import { ARCH, SCENERY } from './world.ts';
+  import { echo3d } from './echo3d.ts';
 
   interface Props {
     view: WeekView;
@@ -587,7 +588,19 @@
       });
     });
     ro.observe(scroller);
-    if (live) (window as unknown as { __world?: unknown }).__world = {
+    // (the 3D island's once its camera is up: Island3D's onready)
+    if (live && !r3) expose();
+    return () => {
+      offMove();
+      ro.disconnect();
+      clearTimeout(settle);
+      world.stop();
+      dropLive(world);
+    };
+  });
+  /** The e2e's hooks on the island (window.__world). */
+  function expose() {
+    (window as unknown as { __world?: unknown }).__world = {
       cam: () => world.view.camZ, idle: () => world.idle(), perf: world.perf,
       /** Put the camera at z at once (e2e). */
       go: (z: number) => goTo(z),
@@ -627,14 +640,7 @@
         status: () => (relay ?? demoRelay)?.status() ?? null
       } : {})
     };
-    return () => {
-      offMove();
-      ro.disconnect();
-      clearTimeout(settle);
-      world.stop();
-      dropLive(world);
-    };
-  });
+  }
 
   onMount(() => {
     if (!live) return;
@@ -699,6 +705,7 @@
     const g = /^goal-([AB])$/.exec(tr.id);
     if (g) return void life.shakeN[g[1] as PersonId]++;
     if (sound) cue('tree-shake');
+    echo3d(tr.id, 1.4);
     for (const el of sceneEl?.querySelectorAll<HTMLElement>(`[data-scenery-id="${tr.id}"] .art`) ?? []) {
       for (const a of el.getAnimations()) if (a.id === 'rustle') a.cancel();
       el.animate([{ rotate: '0deg' }, { rotate: '-2.6deg', offset: 0.18 }, { rotate: '2deg', offset: 0.42 }, { rotate: '-1.1deg', offset: 0.68 }, { rotate: '0deg' }],
@@ -1014,7 +1021,7 @@
           {#if Island3DC && sceneEl}
             <Island3DC bind:this={island3d} {world} scene={sceneEl} {season} {foliage} {month} {tod} scenery={scenery3} pieces={pieces3}
               wet={weather.sky !== 'clear' ? WET[weather.sky][1] : 0} cast={cast3} enabled={() => !covered && !life.hidden}
-              start={start3} onscroll={onScroll} onhorizon={(px) => (horizonPx = px)} onfail={() => (failed3 = true)} />
+              start={start3} onscroll={onScroll} onhorizon={(px) => (horizonPx = px)} onfail={() => ((failed3 = true), expose())} onready={() => (measure(), expose())} />
           {/if}
         {:else}
           <WorldGround {season} {foliage} />

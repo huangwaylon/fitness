@@ -7,6 +7,10 @@ import { defineConfig, devices } from '@playwright/test';
 
 const PORT = Number(process.env.E2E_PORT ?? 4173);
 const BASE = process.env.BASE_PATH ?? '/fitness';
+// E2E_ISLAND=3d: every test's phone draws the island in 3D (せってい's switch, kept in localStorage: docs/ops/testing.md)
+const ISLAND = process.env.E2E_ISLAND === '3d'
+  ? { storageState: { cookies: [], origins: [{ origin: `http://127.0.0.1:${PORT}`, localStorage: [{ name: 'island.render', value: '3d' }] }] } }
+  : {};
 
 export default defineConfig({
   testDir: 'e2e',
@@ -37,7 +41,8 @@ export default defineConfig({
     baseURL: `http://127.0.0.1:${PORT}${BASE}/`,
     serviceWorkers: 'block', // every test starts from the network build, not a cached shell
     locale: 'ja-JP',
-    timezoneId: 'Asia/Tokyo'
+    timezoneId: 'Asia/Tokyo',
+    ...ISLAND
   },
   webServer: {
     command: `node scripts/serve-build.ts ${PORT} ${BASE}`,

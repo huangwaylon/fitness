@@ -44,7 +44,9 @@ export interface Cards {
   set(id: string, spec: CardSpec | null): void;
   /** Place every card for this camera: `lean` (its pitch's share), and how tall a card shows there (screen px of its
    *  height per world unit over the px a unit across): it's stretched by the inverse. */
-  frame(lean: number, stretch: (x: number, y: number, z: number, lean: number) => number, feet: (x: number, z: number) => number): void;
+  frame(lean: number, stretch: (x: number, y: number, z: number, lean: number) => number, feet: (x: number, z: number) => number): boolean;
+  /** A tap's jiggle (a squash and a sway, as a model's wobble): true if there's such a card. */
+  jiggle(id: string, strength?: number): boolean;
   tint(hex: number): void;
   pending(): number;
   dispose(): void;
@@ -162,18 +164,25 @@ export function createCards(scene: Scene, changed: (shadows: boolean) => void): 
     changed(!!spec.cast);
   }
 
-  function frame(lean: number, stretch: (x: number, y: number, z: number, lean: number) => number, feet: (x: number, z: number) => number) {
-    for (const c of cards.values()) {
+  const jigs = new Map<string, { t0: number; k: number }>();
+  const JIG_MS = 520;
+  function frame(lean: number, stretch: (x: number, y: number, z: number, lean: number) => number, feet: (x: number, z: number) => number): boolean {
+    const t = performance.now();
+    let more = false;
+    for (const [id, j] of jigs) if (t - j.t0 >= JIG_MS || !cards.has(id)) jigs.delete(id);
+    for (const [id, c] of cards) {
       const s = c.spec, on = !s.hidden && !!c.mat.map;
       c.mesh.visible = on;
       c.shadow.visible = on && !!s.shadow;
       if (!on) continue;
       const gy = feet(s.x, s.z), y = gy + (s.lift ?? 0);
       const k = stretch(s.x, y, s.z, lean);
-      const sq = s.squash ?? 0;
+      const j = jigs.get(id), jk = j ? (t - j.t0) / JIG_MS : 1, je = j ? (1 - jk) * j.k : 0;
+      if (j) more = true;
+      const sq = (s.squash ?? 0) + Math.sin(jk * Math.PI * 3) * 0.07 * je;
       const w = s.h * s.aspect * (1 + sq), h = s.h * (1 - sq) * k;
       c.mesh.position.set(s.x + (0.5 - (s.ax ?? 0.5)) * w * (s.flip ? -1 : 1), y - (s.foot ?? 0) * h, -s.z);
-      c.mesh.rotation.set(-lean, 0, s.tilt ?? 0, 'XZY');
+      c.mesh.rotation.set(-lean, 0, (s.tilt ?? 0) + Math.sin(jk * Math.PI * 4) * 0.07 * je, 'XZY');
       c.mesh.scale.set(s.flip ? -w : w, h, 1);
       if (s.opacity !== undefined) c.mat.opacity = s.opacity;
       if (s.shadow) {
@@ -182,11 +191,18 @@ export function createCards(scene: Scene, changed: (shadows: boolean) => void): 
         c.shadow.scale.set(r, 1, r * 0.62);
       }
     }
+    return more;
   }
 
   return {
     set,
     frame,
+    jiggle(id, k = 1) {
+      if (!cards.has(id)) return false;
+      jigs.set(id, { t0: performance.now(), k });
+      changed(false);
+      return true;
+    },
     tint(hex) {
       tintHex = hex;
       for (const c of cards.values()) if (!c.spec.lit) c.mat.color.set(hex);

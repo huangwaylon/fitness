@@ -19,6 +19,7 @@
   import { GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
   import { LAMP_GLOW, type Piece } from '../island/fixedDecor.ts';
   import type { Scenery } from '../island/world.ts';
+  import { listen3d } from '../island/echo3d.ts';
   import TERRAIN from '../island/terrain.json' with { type: 'json' };
   import PLACES from '../island/models.json' with { type: 'json' };
   import { createIsland, type Island3, type Options } from './engine.ts';
@@ -64,8 +65,10 @@
     onhorizon: (px: number) => void;
     /** The engine failed to start (no WebGL): the scene draws in 2D. */
     onfail: () => void;
+    /** The camera is up and the island's models are in (once). */
+    onready: () => void;
   }
-  let { world, scene, season, foliage, month, tod, scenery, pieces, wet, cast, enabled, start, onscroll, onhorizon, onfail }: Props = $props();
+  let { world, scene, season, foliage, month, tod, scenery, pieces, wet, cast, enabled, start, onscroll, onhorizon, onfail, onready }: Props = $props();
 
   let canvas = $state<HTMLCanvasElement>();
   let eng = $state.raw<Island3 | null>(null);
@@ -166,7 +169,10 @@
     placed = sig;
     untrack(() => {
       const { insts, standins: st } = island(day);
-      void e.place(insts).then(() => (loaded = true));
+      void e.place(insts).then(() => {
+        if (!loaded) queueMicrotask(onready);
+        loaded = true;
+      });
       standins(st);
       e.glows(standinLamps(st));
       e.groundLook(groundUrls());
@@ -248,9 +254,14 @@
         camWas = z;
       }
       const hz = e.horizon();
-      if (Math.abs(hz - horizonWas) > 0.5) onhorizon((horizonWas = hz));
+      if (!(Math.abs(hz - horizonWas) <= 0.5)) onhorizon((horizonWas = hz));
       const more = world.step(t);
       return villagerCards(t) || more;
+    });
+    // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
+    listen3d((id, k) => {
+      if (e.things.has(id)) e.things.jiggle(id, k);
+      else e.cards.jiggle(`s:${id}`, k);
     });
     const off = attachGestures(scene, e, { enabled, top: () => scene.getBoundingClientRect().top });
     const ro = new ResizeObserver(() => {
@@ -276,6 +287,7 @@
       things: (id: string) => e.things.has(id)
     };
     return () => {
+      listen3d(null);
       off();
       ro.disconnect();
       e.onFrame(null);
