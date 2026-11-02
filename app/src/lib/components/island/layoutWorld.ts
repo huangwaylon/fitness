@@ -39,6 +39,9 @@ const SCENERY_OF: Record<string, (o: Obj) => { kind: Scenery['kind']; key: strin
 /** The fixed decor's kinds (world.ts DECOR_SLOTS: NH's furniture standing for good, and the seasonal spots). */
 const SLOT_KINDS: ReadonlySet<string> = new Set(['park-bench', 'log-bench', 'hammock', 'rod-stand', 'pump', 'shishiodoshi', 'pullup', 'firewood', 'beach-chair', 'sandcastle', 'snowboy']);
 const SEASONAL = new Set(['beach-chair', 'sandcastle', 'snowboy']);
+/** How far in front of ウェイ's door the 3D camera's far end stands (u: the engine's, limits().max 1264 at the door's
+ *  1410). */
+const OKU_BACK = 146;
 /** A hedge's height (world.ts's hedge: Scenery.svelte's BUSH_H). */
 const HEDGE_H = 40;
 
@@ -248,8 +251,9 @@ export function worldOf(l: Layout, nav: LayoutNav = navOf(l)): WorldGeo {
 
   return {
     LAND: { ...land, r: TILE }, SHORE_Z: shore, GRASS: { x0: land.x0 + TILE, x1: land.x1 - TILE, z0: shore + 4 * TILE, z1: land.z1 - TILE, r: TILE },
-    // まえ where it was (from the shoreline); おく the same way in front of ウェイ's door as world.ts's campsite
-    CAMS: { mae: WORLD_2D.CAMS.mae + (shore - WORLD_2D.SHORE_Z), oku: Math.round(ext.home[1] - (WORLD_2D.BUILDINGS[0].z - WORLD_2D.CAMS.oku)) },
+    // まえ where it was (from the shoreline); おく the 3D camera's far end, the campsite's feet mid-screen (world3d's
+    // extentOf ends: ウェイ's door less OKU_BACK)
+    CAMS: { mae: WORLD_2D.CAMS.mae + (shore - WORLD_2D.SHORE_Z), oku: Math.round(ext.home[1] - OKU_BACK) },
     RIVER, RIVER_BEND: bendOf(RIVER), BRIDGE, SPRING, POND, CLIFF,
     BUILDINGS, HOMES, GOAL_TREES, TAPE_DECK: mid(byKind('tape-deck')[0], WORLD_2D.TAPE_DECK), ROCK: mid(byKind('rock')[0], WORLD_2D.ROCK),
     DIG_SPOTS: dig, LAWN_SPOTS: grass, HEDGE_Z: -1e5, HEDGE_XS: [],

@@ -3,6 +3,7 @@
 // centre stage 17:00–24:00 and asks for candy: a treat delights him, nothing earns his trick (a goofy face on my
 // villager). Never under a control; no ベル.
 import { expect, test, type Page } from '@playwright/test';
+import { geo } from './island.ts';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
 async function tapOn(page: Page, sel: string) {
@@ -57,7 +58,7 @@ test('Oct 31 by day: pumpkins on the lawn and round the campsite, clear of every
   await expect(page.locator('[data-halloween="day"] .pumpkin .art:visible').first()).toBeVisible();
   expect(await page.locator('.pumpkin').count()).toBeGreaterThanOrEqual(3);
   expect(await under(page, '.pumpkin .art')).toEqual([]);
-  await camera(page, 642);
+  await camera(page, (await geo(page)).CAMS.oku);
   expect(await page.locator('.pumpkin .art').evaluateAll((els) => els.filter((e) => getComputedStyle(e).visibility !== 'hidden' && e.getBoundingClientRect().top > 140).length)).toBeGreaterThanOrEqual(3);
   expect(await under(page, '.pumpkin .art')).toEqual([]);
   await expect(page.locator('[data-visitor="jack"]')).toHaveCount(0);
@@ -77,7 +78,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await page.goto('?demo&date=2026-10-31T19:00&critter=none');
     await expect(ribbon(page)).toBeVisible();
     const bells = await ribbon(page).getAttribute('aria-label');
-    await camera(page, 642);
+    await camera(page, (await geo(page)).CAMS.oku);
     await expect(page.locator('[data-halloween="night"] .glow:visible').first()).toBeVisible();
     await expect(page.locator('[data-visitor="kk-slider"]')).toHaveCount(0);
     const jack = page.locator('[data-visitor="jack"] .art');
@@ -109,7 +110,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
 test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ page }) => {
   await page.goto('?demo&date=2026-10-31T23:59&critter=none');
   await expect(ribbon(page)).toBeVisible();
-  await camera(page, 642);
+  await camera(page, (await geo(page)).CAMS.oku);
   await tapOn(page, '[data-visitor="jack"] .art');
   await toAnswers(page);
   await press(page, 'なにも あげない');
@@ -131,7 +132,7 @@ test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ p
     await page.waitForTimeout(150);
   }
   await expect(talk).toHaveCount(0);
-  await camera(page, 642);
+  await camera(page, (await geo(page)).CAMS.oku);
   await tapOn(page, '[data-visitor="jack"] .art');
   await expect(page.locator('[data-fx="talk"].placed')).toHaveAttribute('data-pages', '1');
 });
@@ -139,7 +140,7 @@ test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ p
 test('?event=halloween brings the evening on any day', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&event=halloween&critter=none');
   await expect(ribbon(page)).toBeVisible();
-  await camera(page, 642);
+  await camera(page, (await geo(page)).CAMS.oku);
   await expect(page.locator('[data-visitor="jack"] .art')).toBeVisible();
   await expect(page.locator('[data-halloween="night"]')).toHaveCount(1);
 });

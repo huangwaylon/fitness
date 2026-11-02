@@ -91,7 +91,7 @@ export type Geo = {
   GOAL_TREES: { A: [number, number]; B: [number, number] }; ROCK: [number, number]; TAPE_DECK: [number, number]; SEATS: Record<string, [number, number]>;
   PULLUP_AT: [number, number]; BUILDINGS: { id: string; x: number; z: number; h: number; depth: number }[]; FLOWERS: { id: string; x: number; z: number; clump: number }[];
   SCENERY: { id: string; kind: string; key: string; x: number; z: number; h: number }[]; DECOR_SLOTS: { id: string; x: number; z: number }[];
-  BRIDGE: { x: number; z0: number; z1: number; w: number }; CLIFF: { z0: number; z1: number };
+  BRIDGE: { x: number; z0: number; z1: number; w: number }; CLIFF: { z0: number; z1: number }; LAWN_SPOTS: [number, number][];
 };
 export async function geo(page: Page): Promise<Geo> {
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
@@ -110,4 +110,36 @@ export async function reelOnBite(page: Page, x: number, y: number, timeout = 12_
     mo.observe(document, { childList: true, subtree: true, attributes: true });
   }), timeout);
   await page.mouse.click(x, y);
+}
+
+/** Where my villager stands to go into the tent (nav.ts's door node: a step in front of the campsite's door line). */
+export const campDoor = (g: Geo): [number, number] => ((b) => [b.x, b.z - 16] as [number, number])(g.BUILDINGS.find((b) => b.id === 'campsite')!);
+
+/** The open ground nearest (x, z) a tap walks to (__world.free: walkable, clear of today's weeds, dig spots and
+ *  mushrooms by `away` u, of the scenery's tap areas and the flowers), searched in rings 6 u apart; `onScreen`: and on
+ *  this screen with nothing over its point there (a near thing's thumb-sized tap area reaches far up it: set the camera
+ *  first). */
+export async function openNear(page: Page, x: number, z: number, away = 45, onScreen = false): Promise<[number, number]> {
+  const p = await page.evaluate(([x, z, away, onScreen]) => {
+    const w = (window as unknown as { __world: { free(x: number, z: number, away: number): boolean; at(x: number, z: number): [number, number] } }).__world;
+    const TAPS = 'button, a, [data-flower], [data-tree], [data-bush], [data-care], [data-find], [data-fixture], [data-campfire], [data-decor], [data-visitor], [data-actor], [data-critter]';
+    const bare = (px: number, pz: number) => {
+      if (!onScreen) return true;
+      const [sx, sy] = w.at(px, pz);
+      if (sy < 120 || sy > innerHeight - 100 || sx < 30 || sx > innerWidth - 30) return false;
+      // the point and a thumb round it
+      return [[0, 0], [-14, 0], [14, 0], [0, -14], [0, 14]].every(([dx, dy]) => {
+        const el = document.elementFromPoint(sx + dx, sy + dy);
+        return !!el && !el.closest(TAPS);
+      });
+    };
+    for (let r = 0; r <= 240; r += 6)
+      for (let a = 0, n = Math.max(1, Math.round((r * Math.PI * 2) / 6)); a < n; a++) {
+        const px = Math.round(x + Math.cos((a / n) * Math.PI * 2) * r), pz = Math.round(z + Math.sin((a / n) * Math.PI * 2) * r);
+        if (w.free(px, pz, away) && bare(px, pz)) return [px, pz] as [number, number];
+      }
+    return null;
+  }, [x, z, away, onScreen] as const);
+  if (!p) throw new Error(`no open ground near ${x}, ${z}`);
+  return p;
 }

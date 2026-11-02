@@ -22,6 +22,8 @@ test('the long layout: its doors, homes, centre stage and named spots', async ({
 });
 
 test('without ?layout the 3D island keeps world.ts’s island', async ({ page }) => {
+  // (nor the e2e's own switch: E2E_LAYOUT)
+  await page.addInitScript(() => localStorage.removeItem('island.layout'));
   await page.goto('./?demo&island=3d&visitor=none&critter=none');
   expect(await is3d(page)).toBe(true);
   const s = await site(page);
