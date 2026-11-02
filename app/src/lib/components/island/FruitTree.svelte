@@ -9,10 +9,11 @@
   // tall: picks up the fallen fruit nearest the tap, else the same popup with the nearest fruit highlighted). The popup
   // is the one home of a person's per-fruit detail: a nameplate (whose tree), then per goal (🍎 steps first, POPUP_ORDER)
   // today's amount against the goal (met or not), ✓ once met and a 「がんばり」 chip once at 1.5× (every stretched row
-  // alike, whatever the cap; no numbers on the rows); then one ledger of the day: もくひょう (+1 a goal met), がんばり
-  // (+1 a goal at 1.5×, at most +2; 「（上限 2）」 when more were reached), this person's total (「うめの きょう +6
-  // ベル」), then ふたりでぜんぶ (both people, all four goals: +2, shared: shown in both popups, so ウェイ + うめ +
-  // ふたりでぜんぶ is the ribbon) and when the data last arrived. It stays until this tree is tapped again, the other
+  // alike, whatever the cap; no numbers on the rows), each held by a faint ghost until then (the chip's only while the
+  // cap can still pay); then one ledger of the day, its zeros faint: もくひょう (+1 a goal met), がんばり (always; +1 a
+  // goal at 1.5×, at most +2; 「（上限 2）」 when more were reached), this person's total (「うめの きょう +6 ベル」),
+  // then ふたりでぜんぶ (both people, all four goals: +2, shared: shown in both popups, so ウェイ + うめ + ふたりでぜんぶ
+  // is the ribbon) and when the data last arrived. It stays until this tree is tapped again, the other
   // tree is tapped, or a tap lands elsewhere. A quick run of canopy taps (the third within 1.2 s, and each quick tap after) is NH's shake instead: the
   // popup closes, the tree rustles and `onshake` asks the scene what falls (treeShake.ts: a branch, now and then a wasp
   // nest). `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate` sparkles a fruit.
@@ -430,16 +431,16 @@
         <span class="row" class:on={picked === f} data-row={f} data-stretched={r.stretched || null}>
           <span class="ic"><OfficialArt key={fruitArt(f)} size="20px" eager /></span>
           <span class="lbl">{t(`fruit.${f}`)}</span>
-          <span class="amt money" class:met={r.met}>{#if r.met}<svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}{amount(f)}</span>
-          <span class="gbc">{#if r.stretched}<span class="chip">{t('tree.stretched')}</span>{/if}</span>
+          <span class="amt money" class:met={r.met}>{#if r.met}<svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{:else}<span class="ok todo" aria-hidden="true"></span>{/if}{amount(f)}</span>
+          <span class="gbc">{#if r.stretched}<span class="chip">{t('tree.stretched')}</span>{:else if stretchBells < STRETCH.cap}<span class="ghost" aria-hidden="true">{t('tree.stretched')}</span>{/if}</span>
         </span>
       {/each}
       <!-- the day's ledger: goals, がんばり (上限 when more were reached), this person's total; then ふたりでぜんぶ (shared) -->
       <span class="sum" data-sum>
-        <span class="k">{t('tree.sum.goals')}</span><b class="v money" data-v="goals">{signed(goalBells)}</b>
-        {#if stretchKey}<span class="k">{stretchKey}</span><b class="v money" data-v="stretch">{signed(stretchBells)}</b>{/if}
+        <span class="k">{t('tree.sum.goals')}</span><b class="v money" class:zero={!goalBells} data-v="goals">{signed(goalBells)}</b>
+        <span class="k">{stretchKey ?? t('tree.sum.stretch')}</span><b class="v money" class:zero={!stretchBells} data-v="stretch">{signed(stretchBells)}</b>
         <span class="rule"></span>
-        <span class="k tot">{totalKey}</span><b class="v money tot" data-v="total">{formatBells(person.today.bells, { signed: true })}</b>
+        <span class="k tot">{totalKey}</span><b class="v money tot" class:zero={!person.today.bells} data-v="total">{formatBells(person.today.bells, { signed: true })}</b>
       </span>
       <!-- today's ふたりでぜんぶ: both of us, all four goals (+2, the pair's: in both popups, counted once in the ribbon) -->
       {#if together}
@@ -553,11 +554,21 @@
   .amt { display: flex; align-items: center; justify-content: flex-end; gap: 5px; font: 700 var(--fs-s)/1.2 var(--font-num); color: var(--c-ink-soft); }
   .amt.met { color: var(--c-leaf-text); }
   .ok { width: 18px; height: 18px; flex: none; padding: 3px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); display: block; }
-  /* がんばり on a row (1.5×): the same small yuzu chip on every stretched row, in its own column so the values line up */
+  /* not met yet: the ✓'s place as a faint dashed ring, so an early morning's popup shows where the ✓ will come */
+  .ok.todo {
+    box-sizing: border-box; padding: 0; background: none;
+    border: 1.5px dashed color-mix(in srgb, var(--plate-ink) 28%, transparent);
+  }
+  /* がんばり on a row (1.5×): the same small yuzu chip on every stretched row, in its own column so the values line up;
+     until then a ghost of it (dashed, faint) holds the place */
   .gbc { display: flex; justify-content: flex-start; }
   .chip {
     padding: 2px 6px 3px; border-radius: var(--r-pill); background: var(--c-yuzu); color: var(--c-ink);
     font: 700 11px/1.1 var(--font-ui); box-shadow: 0 1px 0 var(--c-yuzu-lip);
+  }
+  .ghost {
+    padding: 1px 5px 2px; border-radius: var(--r-pill); border: 1px dashed color-mix(in srgb, var(--plate-ink) 30%, transparent);
+    color: color-mix(in srgb, var(--plate-ink) 38%, transparent); font: 700 11px/1.1 var(--font-ui);
   }
   /* the day's ledger: word left, ベル right; this person's total under a hairline */
   .sum {
@@ -569,6 +580,8 @@
   .sum .rule { grid-column: 1 / -1; height: 1px; margin: 1px 0; background: color-mix(in srgb, var(--plate-ink) 15%, transparent); }
   .sum .tot { font-weight: 700; }
   .sum b.tot { font-size: var(--fs-body); }
+  /* nothing yet: the ledger's zeros are faint, a place that fills in as the day goes */
+  .sum .v.zero { color: color-mix(in srgb, var(--plate-ink) 40%, transparent); }
   /* today's ふたりでぜんぶ: the pair's line under the ledger (yuzu once both met everything; 「ふたりに」: shared) */
   .duo {
     grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 3px; padding: 5px 8px 1px;

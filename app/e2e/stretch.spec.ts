@@ -1,7 +1,8 @@
 // がんばり, the stretch bonus (docs/design.md#economy): +1 more for each goal at 1.5× (🍎 12,000 steps, 🍐 1.5 × the
 // Move goal, 🍑 90 min, 🍒 180 min), at most +2 a person a day. On the island it shows only in the tree's popup (a
-// 「がんばり」 chip on every row at 1.5×, no numbers on the rows; the ledger: もくひょう, がんばり with 「（上限 2）」 when
-// more were reached than the cap pays, this person's total, then ふたりでぜんぶ, the pair's) and in the ribbon's total;
+// 「がんばり」 chip on every row at 1.5×, a faint ghost of it until then, no numbers on the rows; the ledger: もくひょう,
+// がんばり (always, +0 faint) with 「（上限 2）」 when more were reached than the cap pays, this person's total, then
+// ふたりでぜんぶ, the pair's) and in the ribbon's total;
 // in きろく as its own line per day and per person, and in the day. The demo's days (seeded, ?date=):
 // 11-03 ウェイ steps at 1.5× (3 goals + 1); 12-07 うめ all four, Move, Stand and steps at 1.5× (4 + 2, capped).
 import { expect, test, type Page } from '@playwright/test';
@@ -54,6 +55,7 @@ test('the cap: three goals at 1.5× all show the same chip, the ledger pays +2 w
   // every stretched row shows the same chip, whichever the cap pays
   await expect(pop.locator('.row .chip')).toHaveText(['がんばり', 'がんばり', 'がんばり']);
   await expect(pop.locator('.row[data-row=peach] .chip')).toHaveCount(0);
+  await expect(pop.locator('.row .ghost')).toHaveCount(0); // the cap is paid: no ghost hints at more
   await expect(pop.locator('.sum .k')).toHaveText(['もくひょう', 'がんばり（上限 2）', 'うめの きょう']);
   await expect(pop.locator('.sum .v')).toHaveText(['+4', '+2', /^\+6\sベル$/]);
   await expect(pop.locator('.duo')).toHaveText(/^\s*ふたりで ぜんぶ！\s*\+2\s*ふたりに$/);
@@ -67,17 +69,20 @@ test('the cap: three goals at 1.5× all show the same chip, the ledger pays +2 w
   await tap(page, pop); // a tap on the popup closes it
   await page.waitForTimeout(700); // the camera back from making room for it
   const other = await popup(page, 0);
-  await expect(other.locator('.sum .v')).toHaveText(['+4', /^\+4\sベル$/]);
-  await expect(other.locator('.sum .k')).toHaveText(['もくひょう', 'ウェイの きょう']);
+  await expect(other.locator('.sum .v')).toHaveText(['+4', '+0', /^\+4\sベル$/]);
+  await expect(other.locator('.sum .k')).toHaveText(['もくひょう', 'がんばり', 'ウェイの きょう']);
   await expect(other.locator('.duo')).toHaveText(/^\s*ふたりで ぜんぶ！\s*\+2\s*ふたりに$/);
 });
 
-test('no stretch: no chip and no がんばり in the ledger', async ({ page }) => {
+test('no stretch: no chip, only its faint ghosts, and がんばり +0 in the ledger', async ({ page }) => {
   await open(page, '2026-11-04T23:00');
   const pop = await popup(page, 0);
   await expect(pop.locator('.row[data-stretched]')).toHaveCount(0);
   await expect(pop.locator('.chip')).toHaveCount(0);
-  await expect(pop.locator('.sum .k')).toHaveText(['もくひょう', 'ウェイの きょう']);
+  await expect(pop.locator('.row .ghost')).toHaveCount(4);
+  await expect(pop.locator('.sum .k')).toHaveText(['もくひょう', 'がんばり', 'ウェイの きょう']);
+  await expect(pop.locator('.sum [data-v=stretch]')).toHaveText('+0');
+  await expect(pop.locator('.sum [data-v=stretch]')).toHaveClass(/zero/);
 });
 
 test('きろく: a がんばり line under the day with each person\'s ベル; the day shows the chip, +1 a goal and its がんばり', async ({ page }) => {
