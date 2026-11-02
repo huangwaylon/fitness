@@ -8,6 +8,7 @@ import { isTally } from '#lib/contract/tally.ts';
 import { isIslandDay, type IslandDayData } from '#lib/contract/island.ts';
 import { decorOpOf, type DecorEntry } from '#lib/contract/decor.ts';
 import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
+import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import type { TallyRow } from './tally.ts';
 import { rowAt } from './snapshot.ts';
 import {
@@ -87,6 +88,10 @@ export interface State {
   /** The tent's room (`decor` with `sc: 't'`: each piece's ops, the wallpaper's and the floor's, contract/tent.ts), in
    *  server order (store/tent.svelte.ts merges them). Never read by the economy. */
   tent: TentEntry[];
+  /** The island's layout (`decor` with `sc` o, c, r or h: objects, terrain chunks, a reset, the homes' looks,
+   *  contract/layout.ts), in server order (store/layout.svelte.ts merges them over the default). Never read by the
+   *  economy. The homes' interiors (`sc` u and v) are rooms like the tent's, in `tent` with their scope. */
+  layout: LayoutEntry[];
   /** Each person's prefs; the guest's (`G`) only ever hold its locale, name and villager (contract/guest.ts). */
   prefs: Record<Who, Prefs>;
   /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
@@ -191,6 +196,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     islandDays: [],
     decor: [],
     tent: [],
+    layout: [],
     prefs: { A: {}, B: {}, G: {} },
     moveGoals: { A: [], B: [] },
     stepsGoals: { A: [], B: [] },
@@ -263,6 +269,7 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     islandDays: [...base.islandDays],
     decor: [...base.decor],
     tent: [...base.tent],
+    layout: [...base.layout],
     prefs: { A: { ...base.prefs.A }, B: { ...base.prefs.B }, G: { ...base.prefs.G } },
     moveGoals: { A: [...base.moveGoals.A], B: [...base.moveGoals.B] },
     stepsGoals: { A: [...base.stepsGoals.A], B: [...base.stepsGoals.B] },
@@ -331,9 +338,14 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     if (isIslandDay(d)) s.islandDays.push({ at, person, data: d });
   }),
   decor(s, person, _at, d) {
-    if (d.sc === 't') {
+    if (isRoomScope(d.sc)) {
       const t = tentOpOf(d);
       if (t) s.tent.push({ ...t, who: person } as TentEntry);
+      return;
+    }
+    if (d.sc !== undefined) {
+      const l = layoutOpOf(d);
+      if (l) s.layout.push({ ...l, who: person } as LayoutEntry);
       return;
     }
     const op = decorOpOf(d);

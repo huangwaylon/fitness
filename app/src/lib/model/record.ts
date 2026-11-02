@@ -7,6 +7,7 @@ import { isTally } from '../contract/tally.ts';
 import { isIslandDay } from '../contract/island.ts';
 import { decorOpOf } from '../contract/decor.ts';
 import { tentOpOf } from '../contract/tent.ts';
+import { layoutOpOf } from '../contract/layout.ts';
 import { isStepsGoal, LIMITS, MOVE_GOAL, shopPrice } from '../config/rules.ts';
 import { localDateAt } from '../time/dates.ts';
 import type { Who } from '../types.ts';
@@ -35,8 +36,9 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
     case 'island':
       return isIslandDay(d, localDateAt(now));
     case 'decor':
-      // the island's, or the tent's (`sc: 't'`: contract/tent.ts)
-      return decorOpOf(d) !== null || tentOpOf(d) !== null;
+      // the island's decorations, a home's room (`sc` t, u, v: contract/tent.ts) or the layout (o, c, r, h:
+      // contract/layout.ts)
+      return decorOpOf(d) !== null || tentOpOf(d) !== null || layoutOpOf(d) !== null;
     default:
       return true;
   }
@@ -74,7 +76,7 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
     case 'island':
       return typeof d.date === 'string' ? `${type}|${sender}|${d.date}` : null;
     case 'decor':
-      return typeof d.id === 'string' ? `decor|${d.sc === 't' ? 't' : ''}|${d.id}` : null;
+      return typeof d.id === 'string' ? `decor|${typeof d.sc === 'string' ? d.sc : ''}|${d.id}` : null;
     case 'pref':
       if (!prefTaken(d.key, d.value)) return null;
       return (LATEST_PREFS as readonly unknown[]).includes(d.key) ? `pref|${subject}|${d.key}` : `pref|${subject}|${d.key}|${localDateAt(at)}`;

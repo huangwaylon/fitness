@@ -22,9 +22,13 @@ export const TENT_ROOM = 'dtentroom';
 /** Who set it (the guest's tent pieces too): the merge's tie-break is a fixed order, A < B < G. */
 type Who = 'A' | 'B' | 'G';
 type Facing = 0 | 1 | 2 | 3;
+/** The rooms (contract/layout.ts ROOM_SCOPE): `t` ウェイ's home (the tent's room, as it always was), `u` うめ's, `v` the
+ *  guest's. Each its own room: its own ids, its own cap, the same ops. */
+type Sc = 't' | 'u' | 'v';
+const SCOPES: readonly string[] = ['t', 'u', 'v'];
 export type TentOp =
-  | { sc: 't'; id: string; at: number; item: string; x: number; z: number; f: Facing; p: number; on?: string; l?: 0 | 1; rm?: undefined }
-  | { sc: 't'; id: string; at: number; rm: true };
+  | { sc: Sc; id: string; at: number; item: string; x: number; z: number; f: Facing; p: number; on?: string; l?: 0 | 1; rm?: undefined }
+  | { sc: Sc; id: string; at: number; rm: true };
 export type TentEntry = TentOp & { who: Who };
 /** A piece in the tent as the room shows it. */
 export interface TentPiece {
@@ -48,14 +52,15 @@ const ITEM = /^[fwgr]\d{1,6}$/;
 const isInt = (n: unknown, lo: number, hi: number): n is number => Number.isInteger(n) && (n as number) >= lo && (n as number) <= hi;
 const isMs = (n: unknown): n is number => isInt(n, 1e12, 1e14);
 
-/** A tent op's data (`sc: 't'`), its known keys only, each well-formed, or null. */
+/** A room op's data (`sc` one of t, u, v), its known keys only, each well-formed, or null. */
 export function tentOpOf(d: Record<string, unknown>): TentOp | null {
-  if (d.sc !== 't' || typeof d.id !== 'string' || !ID.test(d.id) || !isMs(d.at)) return null;
+  if (typeof d.sc !== 'string' || !SCOPES.includes(d.sc) || typeof d.id !== 'string' || !ID.test(d.id) || !isMs(d.at)) return null;
+  const sc = d.sc as Sc;
   const keys = Object.keys(d);
   const surface = d.id === TENT_WALL ? 'w' : d.id === TENT_FLOOR ? 'g' : d.id === TENT_ROOM ? 'r' : null;
   if (d.rm !== undefined) {
     if (surface || d.rm !== true || keys.some((k) => k !== 'sc' && k !== 'id' && k !== 'at' && k !== 'rm')) return null;
-    return { sc: 't', id: d.id, at: d.at, rm: true };
+    return { sc, id: d.id, at: d.at, rm: true };
   }
   if (keys.some((k) => !['sc', 'id', 'at', 'item', 'x', 'z', 'f', 'p', 'on', 'l'].includes(k))) return null;
   if (d.l !== undefined && (surface || (d.l !== 0 && d.l !== 1))) return null;
@@ -64,7 +69,7 @@ export function tentOpOf(d: Record<string, unknown>): TentOp | null {
   if (typeof d.item !== 'string' || !ITEM.test(d.item) || d.item[0] !== (surface ?? 'f')) return null;
   if (!isInt(d.x, 0, ROOM - 1) || !isInt(d.z, 0, ROOM - 1) || !isInt(d.f, 0, 3) || !isMs(d.p) || d.p > d.at) return null;
   if (surface && (d.x || d.z || d.f)) return null;
-  return { sc: 't', id: d.id, at: d.at, item: d.item, x: d.x, z: d.z, f: d.f as Facing, p: d.p, ...(d.on !== undefined ? { on: d.on as string } : {}), ...(d.l !== undefined ? { l: d.l as 0 | 1 } : {}) };
+  return { sc, id: d.id, at: d.at, item: d.item, x: d.x, z: d.z, f: d.f as Facing, p: d.p, ...(d.on !== undefined ? { on: d.on as string } : {}), ...(d.l !== undefined ? { l: d.l as 0 | 1 } : {}) };
 }
 
 /** Whether entry `a` beats `b` (the same id): a removal beats a set; else the later `at`, then G over B over A. */
@@ -103,6 +108,7 @@ export function tentLayout(entries: Iterable<TentEntry>): { pieces: TentPiece[];
 /** What the sheet does with a new op, given the tent's rows it holds: `stale` (an op that beats it is there), `full`
  *  (a new piece past the cap: refused) or `append` (the same id's older rows are deleted). */
 export function tentAccept(held: readonly TentEntry[], e: TentEntry): 'append' | 'stale' | 'full' {
+  held = held.filter((h) => h.sc === e.sc);
   const same = held.filter((h) => h.id === e.id);
   if (same.some((h) => !tentBeats(e, h))) return 'stale';
   if (!e.rm && !same.length && !isSurface(e.id)) {

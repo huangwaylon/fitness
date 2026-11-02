@@ -618,6 +618,18 @@ NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)
   - Sleep: everyone, by the relay's clock; a wake is said with whose villager woke (`act wake`, `id` A, B or G).
   - High-fives: one at a time per pair, each with its `to`; the room holds the last one per (sender, recipient) pair.
 
+### The island's layout
+
+`layout/` (grid, catalog, model, height, nav, validate, diff), `store/layout.svelte.ts`, `scripts/layout-default.ts`
+([the layout's contract](island-layout.md), decisions: *The island's layout is data on NH's tile grid*). The outdoors
+is a layout anyone of us can change: NH's 30u tiles (20 × 46), each grass, sand, a path (dirt, stone, brick, plank), a
+river, a pond or the sea, on cliff tiers 0–3; every tree, bush, flower, rock, lamp and piece of furniture, the bridge,
+the stairs and the three homes an object on its tiles. Today's island is the default (`npm run layout:default`), its
+objects exactly where they stood; うめ's and the guest's houses stand on the upper tier, up the stairs. Corners are
+round (NH's), cliffs are steps of 40u, a river stepping down a tier falls. The members change the outdoors (the
+desktop editor, then the phone); each person changes only their own home's look and room (the guest: its own house
+and the tent).
+
 ### Decorating
 
 `contract/decor.ts`, `store/decor.svelte.ts`, `island/decor.ts`, `island/Decor.svelte`, `island/DecorMode.svelte`,

@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, NEST_GAP_MS, REPLAY_BYTES, claimOf, guestMaySend, isStored, otherVersion, parseClient, sameWalk, tokyoDay, type LiveV, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
+import { CLOSE, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, NEST_GAP_MS, REPLAY_BYTES, claimOf, guestMaySend, isStored, scopeMaySend, otherVersion, parseClient, sameWalk, tokyoDay, type LiveV, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
 
@@ -168,6 +168,8 @@ export class RoomCore<S extends Sock> {
     const { v, c, ...intent } = msg;
     // the guest's phone may only walk, act, claim, say, high-five and arrange the tent (docs/backend.md#the-guest)
     if (who === 'G' && !guestMaySend(intent)) return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
+    // a scoped decor op: the outdoors the members', a home's look and room its owner's (contract/layout.ts)
+    if (intent.kind === 'decor' && !scopeMaySend(who, intent.sc, intent.id)) return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
     const stored = (v >= 2 && isStored(intent)) || (v === 1 && intent.kind === 'world');
     if (stored && c !== undefined) {
       // a resend (after a reconnect) of one the room has, the same intent with the same number: acked again, not

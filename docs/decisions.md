@@ -450,6 +450,18 @@ keeps it; a hold unheard for 2 s drops back. Why: one record path for both rooms
 commutative, no leader), and the partner sees the room being arranged as NH's co-op does, for ~60 bytes a tenth of a
 second, without a row per finger move.
 
+### The island's layout is data on NH's tile grid, its changes scoped decor ops (2026-11-02)
+The outdoors (terrain per 30u tile: a kind and a cliff tier; objects on tiles with a facing; three homes, each with its
+owner's style) is `layout/` data: the default (today's island on the grid, world.ts's ids and exact spots kept) with
+the record's ops over it. Its changes are `decor` ops with scopes `o` (an object), `c` (an 8 × 8 chunk of tiles), `r`
+(a reset to the default), `h` (a home's look), and the homes' rooms `t` / `u` / `v` (the tent's ops): last writer wins
+per id, the record keeps each id's latest, a reset drops what it voids. The outdoors are the members' alone, a home's
+look and room its owner's (the tent all three), enforced by the record and the room. Nav, heights and validation are
+derived from the layout, never hand-made. Why: the user asked for an outer world "fully customizable… similar to the
+inside of the tent… the same grid system", with everything movable (trees, the pond, the river, the tent) and three
+homes; one record path (the decorations' and the tent's guarantees carry over: commutative, no leader), and the
+guest's limits server-side.
+
 ### The tent's camera is the player's, its walls cut away
 The room opens at NH's fixed, slightly top-down view, and a drag turns the camera round the room's middle (a pinch
 zooms, 🏠 eases it back), within limits that keep the walls from clipping; the walls between the camera and the room
