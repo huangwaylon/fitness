@@ -288,6 +288,14 @@
     if (m) untrack(() => room.rows(m.state.tent));
   });
   $effect(() => eng?.night(nightOf(theme.tod)));
+  // the edit tray opening or closing: the usable band changes (after it has laid out)
+  $effect(() => {
+    void editing;
+    const e = eng;
+    if (!e) return;
+    const id = requestAnimationFrame(() => requestAnimationFrame(() => e.resize(insets())));
+    return () => cancelAnimationFrame(id);
+  });
   $effect(() => {
     void where.partnerInTent;
     untrack(() => partnerShown());
@@ -363,17 +371,17 @@
     };
   });
 
-  /** The edit mode's tray and bar (px): the room fits above them. */
-  const TRAY_H = 236;
   let top = $state<HTMLElement>();
   let foot = $state<HTMLElement>();
   /** What covers the canvas at its top (the back button) and foot (the controls): the room fits between. */
   function insets() {
     const rc = canvas?.getBoundingClientRect();
     if (!rc) return { top: 0, bottom: 0 };
-    const tb = top?.getBoundingClientRect(), fb = foot?.getBoundingClientRect();
-    // the foot keeps room for the edit mode's tray, so the room stays where it is when it opens
-    return { top: tb ? Math.max(0, tb.bottom - rc.top) : 0, bottom: Math.max(TRAY_H, fb ? rc.bottom - fb.top : 0) };
+    // the foot: the edit button, or the edit mode's tray and bar (the room glides to the middle of what's left)
+    const tray = editing ? document.querySelector<HTMLElement>('[data-tent-edit]') : null;
+    const tb = top?.getBoundingClientRect(), fb = (tray ?? foot)?.getBoundingClientRect();
+    const barTop = tray ? Math.min(...[...tray.children].map((c) => c.getBoundingClientRect().top)) : fb?.top;
+    return { top: tb ? Math.max(0, tb.bottom - rc.top) : 0, bottom: barTop !== undefined ? Math.max(0, rc.bottom - barTop) : 0 };
   }
 
   /** The e2e's and the console's hooks (dev builds and ?demo). */
@@ -398,6 +406,8 @@
       /** The partner has the app open (the relay's presence). */
       peer: () => peer,
       hit: (cx: number, cy: number) => eng?.hit(cx, cy),
+      /** Where the floor's middle and the usable band's middle are on screen. */
+      centre: () => eng?.centre(),
       /** Turn the camera (radians), zoom it; whether it's NH's view. */
       orbit: (dAz: number, dPitch = 0) => (eng?.orbit(dAz, dPitch), (turned = !eng?.isDefault())),
       zoom: (f: number) => (eng?.zoom(f), (turned = !eng?.isDefault())),

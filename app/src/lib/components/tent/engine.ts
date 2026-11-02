@@ -98,6 +98,8 @@ export interface Tent {
   isDefault(): boolean;
   /** A gesture under way (a lighter pixel ratio while the camera moves). */
   moving(on: boolean): void;
+  /** Where the floor's middle and the usable band's middle are on screen (client px). */
+  centre(): { at: [number, number]; band: [number, number] };
   /** What a tap at client px hits, in front first. */
   hit(cx: number, cy: number): Hit | null;
   /** The floor point under client px (model units), or null off the floor. */
@@ -699,15 +701,21 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     invalidate();
   }
 
-  // ---- the camera: NH's room camera to start with (the whole room in view between what covers the canvas), then
-  //      the player's to turn round the room's middle, tilt and zoom, within limits (the walls never clip) ----
+  // ---- the camera: NH's room camera to start with (the whole room in view, its floor's middle at the middle of
+  //      what the controls leave of the screen), then the player's to turn round that middle, tilt and zoom, within
+  //      limits (the walls never clip: the near ones cut away); the limits are soft under a pinch and eased back to ----
   const DEF = { az: 0, pitch: (PITCH * Math.PI) / 180, k: 1 };
-  const PITCH_MIN = (28 * Math.PI) / 180, PITCH_MAX = (78 * Math.PI) / 180, K_MIN = 0.55, K_MAX = 1.35;
+  const PITCH_MIN = (28 * Math.PI) / 180, PITCH_MAX = (78 * Math.PI) / 180;
+  /** Zoom (× the fitted distance): in to about two and a half tiles across, out to a little past the whole room. */
+  const K_MIN = 0.3, K_MAX = 1.6;
   const view = { ...DEF };
-  const target = new Vector3(0, 6, 0);
-  /** The default view's distance (fitted to the screen) and its vertical offset (px). */
+  /** What the camera turns round and looks at: the floor's middle. */
+  const target = new Vector3(0, 0, 0);
+  /** The default view's distance (fitted to the screen) and the vertical offset (px) that puts the target at the
+   *  middle of the usable band; eased to when the band changes (the edit tray opening). */
   let baseD = 300, shiftY = 0;
-  let easing: { from: typeof DEF; t0: number } | null = null;
+  let framing: { from: [number, number]; to: [number, number]; t0: number } | null = null;
+  let easing: { from: typeof DEF; t0: number; to?: typeof DEF } | null = null;
   function aim() {
     // a corner-on view of the square room is wider than a side-on one: the camera steps back to keep it in
     const corner = Math.abs(Math.cos(view.az)) + Math.abs(Math.sin(view.az));
@@ -719,58 +727,84 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     );
     camera.lookAt(target);
     camera.updateMatrixWorld(true);
+    // near enough to see one piece well: the near plane comes in with it
+    const near = Math.max(1, d * 0.05);
+    if (Math.abs(camera.near - near) > 0.5) {
+      camera.near = near;
+      camera.updateProjectionMatrix();
+    }
     cutaway();
     for (const w of villagers.values()) place(w);
   }
-  function fit() {
+  const offset = () => {
     const W = canvas.clientWidth || 1, H = canvas.clientHeight || 1;
-    renderer.setSize(W, H, false);
+    camera.setViewOffset(W, H, 0, shiftY, W, H);
+    camera.updateProjectionMatrix();
+  };
+  /** The distance and offset for this screen and these insets (the default view), without moving the camera. */
+  function framingFor(): [number, number] {
+    const W = canvas.clientWidth || 1, H = canvas.clientHeight || 1;
     camera.aspect = W / H;
     const corners = [
       [-HALF - 2, 0, HALF + 2], [HALF + 2, 0, HALF + 2], [-HALF - 2, WALL_H + 1, -HALF - 2], [HALF + 2, WALL_H + 1, -HALF - 2],
       [-HALF - 2, WALL_H + 1, HALF], [HALF + 2, WALL_H + 1, HALF], [0, -4, HALF + 2]
     ].map(([x, y, z]) => new Vector3(x, y, z));
-    const band = Math.max(0.3, (H - insets.top - insets.bottom) / H);
+    const bandH = Math.max(0.3 * H, H - insets.top - insets.bottom);
+    const was = { ...view, baseD, shiftY };
     camera.clearViewOffset();
-    const was = { ...view };
     Object.assign(view, DEF);
-    const box = (D: number) => {
+    // the target projects to the canvas's middle (no offset); the room must fit within half the band either side of it
+    const fits = (D: number) => {
       baseD = D;
       aim();
       camera.updateProjectionMatrix();
-      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+      let x = 0, y = 0;
       for (const c of corners) {
         const p = c.clone().project(camera);
-        x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y);
+        x = Math.max(x, Math.abs(p.x));
+        y = Math.max(y, Math.abs(p.y));
       }
-      return { x0, x1, y0, y1 };
+      return x <= 0.95 && y <= (bandH / H) * 0.96;
     };
-    // the nearest camera that keeps the room within the width (a margin) and the band's height
-    let lo = 60, hi = 1500;
-    for (let i = 0; i < 30; i++) {
-      const D = (lo + hi) / 2, b = box(D);
-      if (b.x1 - b.x0 <= 1.9 && b.y1 - b.y0 <= 2 * band * 0.96) hi = D;
+    let lo = 40, hi = 2000;
+    for (let i = 0; i < 32; i++) {
+      const D = (lo + hi) / 2;
+      if (fits(D)) hi = D;
       else lo = D;
     }
-    const b = box(hi);
-    // the room's middle in the middle of the band
-    const mid = ((b.y0 + b.y1) / 2 + 1) / 2; // 0 foot … 1 top, of the canvas
-    const want = 1 - (insets.top + (H - insets.top - insets.bottom) / 2) / H;
-    shiftY = (want - mid) * H;
-    camera.setViewOffset(W, H, 0, shiftY, W, H);
-    camera.updateProjectionMatrix();
-    Object.assign(view, was);
+    // the band's middle (px from the top) is where the target goes: the view moves by the difference from the canvas's
+    const mid = insets.top + bandH / 2;
+    const out: [number, number] = [hi, H / 2 - mid];
+    Object.assign(view, { az: was.az, pitch: was.pitch, k: was.k });
+    baseD = was.baseD;
+    shiftY = was.shiftY;
+    return out;
+  }
+  let fitted = false;
+  /** Refit (`ease`: to the new framing over a moment, as when the edit tray opens). */
+  function fit(ease = false) {
+    const W = canvas.clientWidth || 1, H = canvas.clientHeight || 1;
+    renderer.setSize(W, H, false);
+    const to = framingFor();
+    if (ease && fitted) framing = { from: [baseD, shiftY], to, t0: now() };
+    else [baseD, shiftY] = to;
+    fitted = true;
+    offset();
     aim();
     shadowsDirty = true;
     invalidate();
   }
   function resize(i?: Insets) {
+    const changed = !!i && (i.top !== insets.top || i.bottom !== insets.bottom);
     if (i) insets = i;
-    fit();
+    fit(changed);
   }
-  const clampView = () => {
-    view.pitch = Math.min(PITCH_MAX, Math.max(PITCH_MIN, view.pitch));
-    view.k = Math.min(K_MAX, Math.max(K_MIN, view.k));
+  /** Inside the limits, or a little past them under a finger (a soft give, eased back when it lets go). */
+  const soft = (v: number, lo: number, hi: number, give: number) =>
+    v < lo ? lo - give * (1 - Math.exp(-(lo - v) / give)) : v > hi ? hi + give * (1 - Math.exp(-(v - hi) / give)) : v;
+  const clampView = (hard = false) => {
+    view.pitch = hard ? Math.min(PITCH_MAX, Math.max(PITCH_MIN, view.pitch)) : soft(view.pitch, PITCH_MIN, PITCH_MAX, 0.06);
+    view.k = hard ? Math.min(K_MAX, Math.max(K_MIN, view.k)) : soft(view.k, K_MIN, K_MAX, 0.06);
     view.az = Math.atan2(Math.sin(view.az), Math.cos(view.az));
   };
   function orbit(dAz: number, dPitch: number) {
@@ -788,6 +822,15 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     aim();
     invalidate();
   }
+  /** Back inside the limits, eased (a pinch let go past one). */
+  function settle() {
+    const want = { ...view };
+    const k0 = view.k, p0 = view.pitch;
+    Object.assign(want, { k: Math.min(K_MAX, Math.max(K_MIN, k0)), pitch: Math.min(PITCH_MAX, Math.max(PITCH_MIN, p0)) });
+    if (want.k === k0 && want.pitch === p0) return;
+    easing = { from: { ...view }, t0: now(), to: want };
+    invalidate();
+  }
   /** Back to NH's view, eased (the shortest way round). */
   function resetView() {
     easing = { from: { ...view }, t0: now() };
@@ -802,13 +845,21 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       movingNow = true;
       renderer.setPixelRatio(Math.min(DPR_MOVING, dpr));
       fit();
-    } else if (!on && movingNow) {
-      restTimer = setTimeout(() => {
+    } else if (!on) {
+      settle();
+      if (movingNow) restTimer = setTimeout(() => {
         movingNow = false;
         renderer.setPixelRatio(dpr);
         fit();
       }, 160);
     }
+  }
+  /** Where the floor's middle is on screen and where the usable band's middle is (client px: the e2e's check). */
+  function centre(): { at: [number, number]; band: [number, number] } {
+    const r = canvas.getBoundingClientRect();
+    const H = canvas.clientHeight || 1;
+    const bandH = Math.max(0.3 * H, H - insets.top - insets.bottom);
+    return { at: client(target.x, target.y, target.z), band: [r.left + r.width / 2, r.top + insets.top + bandH / 2] };
   }
 
   // ---- taps ----
@@ -951,13 +1002,23 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       ghostRoot.position.y = 3 + Math.sin(k * Math.PI) * 2.5;
       if (k < 1) more = true;
     }
+    if (framing) {
+      // to the new framing (the edit tray opening or closing): the room glides to the middle of what's left
+      const k = Math.min(1, (t - framing.t0) / 320), e = ease(k);
+      baseD = framing.from[0] + (framing.to[0] - framing.from[0]) * e;
+      shiftY = framing.from[1] + (framing.to[1] - framing.from[1]) * e;
+      offset();
+      aim();
+      if (k >= 1) framing = null;
+      else more = true;
+    }
     if (easing) {
-      // back to NH's view
-      const k = Math.min(1, (t - easing.t0) / 420), e = ease(k), f = easing.from;
-      const dAz = Math.atan2(Math.sin(DEF.az - f.az), Math.cos(DEF.az - f.az));
+      // back to NH's view, or back inside the limits
+      const k = Math.min(1, (t - easing.t0) / (easing.to ? 240 : 420)), e = ease(k), f = easing.from, to = easing.to ?? DEF;
+      const dAz = Math.atan2(Math.sin(to.az - f.az), Math.cos(to.az - f.az));
       view.az = f.az + dAz * e;
-      view.pitch = f.pitch + (DEF.pitch - f.pitch) * e;
-      view.k = f.k + (DEF.k - f.k) * e;
+      view.pitch = f.pitch + (to.pitch - f.pitch) * e;
+      view.k = f.k + (to.k - f.k) * e;
       aim();
       if (k >= 1) easing = null;
       else more = true;
@@ -1018,7 +1079,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       place(w);
       invalidate();
     },
-    walk, walking: (who) => !!villagers.get(who)?.path, face, hop, hit, floorAt, client, orbit, zoom, resetView, isDefault, moving,
+    walk, walking: (who) => !!villagers.get(who)?.path, face, hop, hit, floorAt, client, orbit, zoom, resetView, isDefault, moving, centre,
     loading: () => pending,
     stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: cost.slice() }),
     ready,
