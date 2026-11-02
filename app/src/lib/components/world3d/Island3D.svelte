@@ -28,6 +28,8 @@
   import { island, type Inst, type Standin } from './layout3d.ts';
   import { assetFor } from './assets.ts';
   import { modelBounds } from './models3d.ts';
+  import { FLOATS, floatAt } from './floats3d.ts';
+  import { SEA_Y, WATER_DROP, baseHeight } from './ground.ts';
   import { attachGestures } from './gestures.ts';
   import { idlePose, motionPose } from './motion3d.ts';
   import type { CardSpec } from './cards.ts';
@@ -56,6 +58,8 @@
     /** The day's scenery (its swaps) and the fixed decor's pieces (Scenery's own). */
     scenery: readonly Scenery[];
     pieces: readonly Piece[];
+    /** Petals or maple leaves on the stream (their weeks), or none. */
+    floating: 'petal' | 'maple' | null;
     /** Today's hybrid flower in its spot (care.ts). */
     hybrid: { id: string; flower: string } | null;
     /** A wet day's darkening (0 … 1). */
@@ -79,7 +83,7 @@
     ground?: Ground;
     ends?: { shore: number; canopy: readonly [number, number, number]; back: readonly [number, number, number] };
   }
-  let { world, scene, season, foliage, month, tod, scenery, pieces, hybrid, wet, cast, enabled, start, onscroll, onhorizon, onfail, onready, ground = WORLD_GROUND,
+  let { world, scene, season, foliage, month, tod, scenery, pieces, hybrid, floating, wet, cast, enabled, start, onscroll, onhorizon, onfail, onready, ground = WORLD_GROUND,
     ends = { shore: SHORE_Z, canopy: [GOAL_TREES.A[0], GOAL_TREES.A[1], TREE_H], back: [CAMPSITE.x, CAMPSITE.z, CAMPSITE.h] } }: Props = $props();
 
   let canvas = $state<HTMLCanvasElement>();
@@ -276,6 +280,24 @@
     return moving;
   }
 
+  // ---- petals or maple leaves on the stream in their weeks (floats3d.ts) ----
+  let floatsOn: string | null = null;
+  function floats(e: Island3, t: number) {
+    const key = floating ? `season/${floating === 'petal' ? 'petal' : 'maple-leaf'}` : null;
+    const a = key ? assetFor(key) : null;
+    if (key !== floatsOn) {
+      void e.things.remove(FLOATS.map((f) => f.id));
+      floatsOn = key;
+      if (a) void e.things.set(FLOATS.map((f) => ({ id: f.id, model: a.m, x: f.x, z: f.z, scale: a.s * 1.4, pitch: -Math.PI / 2 })));
+    }
+    if (!a) return;
+    for (const f of FLOATS) {
+      const p = floatAt(f, t);
+      const y = Math.max(SEA_Y + 0.4, baseHeight(p.x, p.z) - WATER_DROP) + 0.4;
+      e.things.over(f.id, { x: p.x, z: p.z, yaw: p.yaw, lift: y - heightOf(p.x, p.z), size: Math.max(0.01, p.show) }, false);
+    }
+  }
+
   // ---- the island's day: its models and stand-ins ----
   let placed = '';
   $effect(() => {
@@ -381,6 +403,7 @@
       if (!(Math.abs(hz - horizonWas) <= 0.5)) onhorizon((horizonWas = hz));
       const more = world.step(t);
       const moving = mirror(e, t);
+      floats(e, t);
       const acting = characterCards(e, t);
       return villagerCards(t) || more || moving || acting;
     });

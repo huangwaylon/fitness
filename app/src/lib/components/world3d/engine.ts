@@ -275,7 +275,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
   // ---- the water, the things, the cards, the lights ----
   const water = built(ground) ? { all: [] as Mesh[] } : createWater(src.land);
   for (const m of water.all) scene.add(m);
-  const things = createThings(scene, src.height, () => ((shadowsDirty = true), kick()));
+  const things = createThings(scene, src.height, (sh = true) => (sh && (shadowsDirty = true), kick()));
   const cards = createCards(scene, (sh) => (sh && (shadowsDirty = true), kick()));
   const lights = createLights(scene);
   const effects = createEffects(scene, src.feet);
