@@ -12,7 +12,7 @@ describe('the day’s spots from the layout (spots.ts)', () => {
     expect(b).toEqual(a);
     expect(daySpots(l, '2026-11-05', 'island-fund').lawn).not.toEqual(a.lawn);
     expect(a.lawn).toHaveLength(15);
-    expect(a.dig).toHaveLength(6);
+    expect(a.dig).toHaveLength(8);
     const open = new Set(openGrass(l).map(([c, r]) => `${c},${r}`));
     for (const [x, z] of [...a.lawn, ...a.dig]) expect(open.has(tileAt(x, z).join(','))).toBe(true);
     const digTiles = new Set(a.dig.map(([x, z]) => tileAt(x, z).join(',')));

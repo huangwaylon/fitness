@@ -181,11 +181,11 @@ function beachDay(date: string, seed: string, fragments: readonly Fragment[]): {
 
 export interface DigSpot { uid: string; fossil: FossilId; x: number; y: number }
 
-/** The day's fossils, in the order they turn up: 1–2 dig spots at a time (seeded per day), each on its own lawn
+/** The day's fossils, in the order they turn up: 2–4 dig spots at a time (seeded per day), each on its own lawn
  *  spot; the next comes after one is dug (the caller adds a short wait). `dug`: uids already dug on this phone. */
 export function digSpots(date: string, dug: ReadonlySet<string>, seed = ISLAND_SEED): DigSpot[] {
   const r = dayRand(date, 'fossils', seed);
-  const atOnce = r() < 0.5 ? 1 : 2;
+  const atOnce = 2 + Math.floor(r() * 3);
   const out: DigSpot[] = [];
   const used = new Set<number>();
   for (let i = 0; i < 60 && out.length < atOnce; i++) {

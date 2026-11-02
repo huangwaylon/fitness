@@ -76,12 +76,12 @@ describe('fossils', () => {
     for (let d = 0; d < 2000; d++) for (const s of digSpots(addDays('2026-01-01', d), new Set())) dug.add(s.fossil);
     expect(dug.size).toBeGreaterThan(65);
   });
-  it('1–2 dig spots at a time on distinct lawn spots; a dug one gives way to the next', () => {
+  it('2–4 dig spots at a time on distinct lawn spots; a dug one gives way to the next', () => {
     for (let d = 1; d <= 20; d++) {
       const date = `2026-05-${String(d).padStart(2, '0')}`;
       const s = digSpots(date, new Set());
-      expect(s.length).toBeGreaterThanOrEqual(1);
-      expect(s.length).toBeLessThanOrEqual(2);
+      expect(s.length).toBeGreaterThanOrEqual(2);
+      expect(s.length).toBeLessThanOrEqual(4);
       expect(new Set(s.map((x) => `${x.x},${x.y}`)).size).toBe(s.length);
       for (const x of s) expect(DIG_SPOTS.some(([sx, sy]) => sx === x.x && sy === x.y)).toBe(true);
       const next = digSpots(date, new Set([s[0].uid]));

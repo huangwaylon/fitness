@@ -1,6 +1,6 @@
 <script lang="ts">
   // Beach finds (docs/design.md "Beach finds"), after NH: seashells keep washing up on the front beach (one every 1–2
-  // minutes, the newest three on the sand), fossil dig spots (NH's ✕ crack) on the lawn, 1–2 at a time, a new one a
+  // minutes, the newest three on the sand), fossil dig spots (NH's ✕ crack) on the lawn, 2–4 at a time, a new one a
   // little while after you dig; a message bottle at the water's edge every 8–14 minutes for six; a star fragment on the
   // beach the morning after each wish on a shooting star (stars.ts: one per wish, from 5:00, at most 8); in mushroom
   // season, mushrooms beside the trees (mushrooms.ts). A tap picks a shell, a fragment or the bottle up (it lifts off the
@@ -115,13 +115,10 @@
     void taken;
     void digHold;
     const list = digSpots(date, goneOn(date), seed);
-    return digHold > Date.now() ? list.filter((s) => shown.has(s.uid)) : list;
+    return digHold > Date.now() && heldShown ? list.filter((s) => heldShown!.has(s.uid)) : list;
   });
-  /** Dig spots already on screen (a new one waits out digHold). */
-  let shown = new Set<string>();
-  $effect(() => {
-    shown = new Set(spots.map((s) => s.uid));
-  });
+  /** The dig spots on screen (visible, not covered) when the last one was dug: until digHold, only these show. */
+  let heldShown = $state<ReadonlySet<string> | null>(null);
   const bottle = $derived.by<Bottle | null>(() => {
     void taken;
     const b = want === 'bottle' ? bottleNow(date, [...allFragments, ...shellsAt(date, msOfDay, seed, allFragments)], seed) : bottleAt(date, msOfDay, seed, allFragments);
@@ -325,14 +322,21 @@
   }
   function digUp(s: DigSpot) {
     const special = rare(s) ? 'rare-mushroom' : egg(s) ? 'earth-egg' : null;
-    if (!claim(s.uid, special ? `dug:${special}` : `fossil:${s.fossil}`, s.x, s.y)) return;
+    // the hold before the claim: claiming the spot re-derives the list, and its replacement must already be waiting
+    const held = digHold, heldWas = heldShown;
+    heldShown = new Set(visibleSpots.map((x) => x.uid));
+    digHold = Date.now() + 20_000 + rand() * 20_000;
+    if (!claim(s.uid, special ? `dug:${special}` : `fossil:${s.fossil}`, s.x, s.y)) {
+      digHold = held;
+      heldShown = heldWas;
+      return;
+    }
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(() => (digHold = 0), digHold - Date.now());
     pickHere(s.x, () => {
       if (!stillMine(s.uid)) return;
       const added = special ? false : recordFind('fossil', s.fossil);
       take(date, s.uid);
-      digHold = Date.now() + 20_000 + rand() * 20_000;
-      clearTimeout(holdTimer);
-      holdTimer = setTimeout(() => (digHold = 0), digHold - Date.now());
       taken++;
       sceneSfx('dig');
       const n = ++seq;

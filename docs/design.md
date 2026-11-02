@@ -958,7 +958,7 @@ it lies, with the line. The first of each shell, fossil and fragment is a ずか
 - **Where things lie** (`beachSpot`): shells, fragments and the bottle keep 34u apart (`BEACH_GAP`), each taking a
   spot that far from everything there in a seeded order; worked out once per date and seed, so nothing moves.
 - **Fossils** (all 73 of NH's: the standalone ones and every dinosaur piece, `FOSSIL_SETS`): NH's star-shaped dig
-  spot, 1–2 at a time on six lawn spots (`world.ts` `DIG_SPOTS`: four on the front lawn, two behind the trees), each
+  spot, 2–4 at a time on six lawn spots (`world.ts` `DIG_SPOTS`: four on the front lawn, two behind the trees), each
   shown only where it's clear of every control on this screen. A tap digs it up (the shovel, a burst of earth, an open
   hole that fades): 「化石を ほりだした！ アンモナイトだ！」. The next turns up 20–40 s later.
 - **Mushrooms** (`island/mushrooms.ts`): every November day 1–2 beside the trunks (1 in 8 October and December days
