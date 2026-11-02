@@ -255,3 +255,92 @@ test('a phrase is presence: the partner sees it over my villager at once, a phon
   await expect(c.locator('[data-say]')).toHaveCount(0);
   await close();
 });
+
+// The tent (docs/design.md "The tent"): both phones in it see one room; a piece A drags moves on B as A drags it (held
+// there: lifted, not B's to pick up), lands where A drops it; each villager is its own phone's, the other's walks
+// replayed.
+type TentHooks = {
+  stats(): { frames: number }; tile(x: number, z: number): [number, number]; pieces(): { id: string; item: string; x: number; z: number; f: number }[];
+  held(): { id: string; x: number; z: number }[]; edit(): { sel: { id: string; x: number; z: number } | null } | null;
+  partner(): { at: [number, number]; walking: boolean } | null; mine(): [number, number];
+};
+const tt = <R,>(page: Page, fn: (t: TentHooks) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
+
+test('two phones in the tent: one room, A’s drag live on B (held there), the drop on both; each villager its own', async ({ browser }) => {
+  const ctxA = await browser.newContext(CTX);
+  const ctxB = RELAY ? await browser.newContext(CTX) : ctxA;
+  const open = async (who: 'A' | 'B', ctx: typeof ctxA) => {
+    const p = await ctx.newPage();
+    await p.goto('tent' + q(who));
+    await p.waitForFunction(() => ((window as unknown as { __tent?: TentHooks }).__tent?.stats()?.frames ?? 0) > 0);
+    return p;
+  };
+  const a = await open('A', ctxA);
+  await a.evaluate(() => localStorage.removeItem('island-demo.tent'));
+  const b = await open('B', ctxB);
+  // A puts the camping cot down in the back row (the demo's two phones are two tabs: the one acting in front)
+  await a.bringToFront();
+  await a.locator('[data-tent-edit-open]').click();
+  await a.locator('[data-tent-item="f4081"]').click();
+  // (a 2 × 1 piece's middle on the line between tiles 1 and 2)
+  let [x, y] = await a.evaluate(() => (window as unknown as { __tent: { px(x: number, z: number): [number, number] } }).__tent.px(-20, -25));
+  await a.mouse.click(x, y);
+  await a.locator('[data-act="place"]').click();
+  await expect.poll(() => tt(b, (t) => t.pieces().map((p) => p.item)), { timeout: 4000 }).toEqual(['f4081']);
+  const p0 = (await tt(a, (t) => t.pieces()))[0];
+  // A drags it across the back row slowly; B samples what it holds as it goes
+  [x, y] = await tt(a, (t) => t.tile(t.pieces()[0].x, t.pieces()[0].z));
+  const [x2, y2] = await tt(a, (t) => t.tile(6, 1));
+  const samples: number[] = [];
+  const sample = b.evaluate(async () => {
+    const out: number[] = [];
+    const t0 = Date.now();
+    while (Date.now() - t0 < 2600) {
+      const h = (window as unknown as { __tent: TentHooks }).__tent.held();
+      if (h.length) out.push(h[0].x);
+      await new Promise((r) => setTimeout(r, 30));
+    }
+    return out;
+  });
+  // both phones know the other is there (presence: a drag goes only to a partner who is)
+  await expect.poll(() => Promise.all([a, b].map((p) => p.evaluate(() => (window as unknown as { __tent: { peer(): boolean } }).__tent.peer()))), { timeout: 6000 }).toEqual([true, true]);
+  // (the piece is drawn there: its model in)
+  await expect.poll(() => a.evaluate(([x, y]) => (window as unknown as { __tent: { hit(x: number, y: number): { kind: string } } }).__tent.hit(x, y)?.kind, [x, y]), { timeout: 4000 }).toBe('piece');
+  await a.mouse.move(x, y);
+  await a.mouse.down();
+  for (let k = 1; k <= 10; k++) {
+    await a.mouse.move(x + ((x2 - x) * k) / 10, y + ((y2 - y) * k) / 10);
+    await a.waitForTimeout(110);
+  }
+  // held on B: B can't pick it up while A has it
+  await expect.poll(() => tt(b, (t) => t.held().length), { timeout: 3000 }).toBe(1);
+  await b.bringToFront();
+  await b.locator('[data-tent-edit-open]').click();
+  const [bx, by] = await tt(b, (t) => t.tile(t.pieces()[0].x, t.pieces()[0].z));
+  await b.mouse.click(bx, by);
+  expect((await tt(b, (t) => t.edit()))?.sel ?? null).toBeNull();
+  await a.bringToFront();
+  await a.mouse.up();
+  await a.waitForTimeout(400);
+  await a.locator('[data-act="place"]').click();
+  samples.push(...(await sample));
+  const end = (await tt(a, (t) => t.pieces()))[0];
+  expect(end.x).toBeGreaterThan(p0.x + 2);
+  // B saw it on its way (several spots between), then it landed where A dropped it, no longer held
+  expect(new Set(samples.map((s) => Math.round(s))).size).toBeGreaterThanOrEqual(3);
+  await expect.poll(() => tt(b, (t) => t.held().length), { timeout: 3000 }).toBe(0);
+  await expect.poll(() => tt(b, (t) => t.pieces()[0]), { timeout: 3000 }).toMatchObject({ id: end.id, x: end.x, z: end.z, f: end.f });
+  // A walks: B plays A's villager there (A's to move)
+  await a.locator('[data-tent-done]').click();
+  await b.locator('[data-tent-done]').click();
+  [x, y] = await tt(a, (t) => t.tile(5, 4));
+  await a.mouse.click(x, y);
+  await a.waitForTimeout(2500);
+  const mine = await tt(a, (t) => t.mine());
+  await expect.poll(async () => {
+    const p = await tt(b, (t) => t.partner());
+    return p ? Math.hypot(p.at[0] - mine[0], p.at[1] - mine[1]) : 999;
+  }, { timeout: 4000 }).toBeLessThan(1.5);
+  await ctxA.close();
+  if (RELAY) await ctxB.close();
+});

@@ -1,0 +1,194 @@
+// The tent's room on this phone (docs/design.md "The tent", docs/decisions.md "Decor is a last-writer-wins map"): each
+// piece's winning op, and the wallpaper's and the floor's (contract/tent.ts), merged from my own changes as I make them,
+// the partner's over the relay (live, or the day's replay) and the sheet's tent rows (the model's, queued ones
+// included). The merge is commutative, so both phones reach the same room whatever order the ops arrive in. Kept in
+// localStorage, so the tent opens as it was before the sheet answers.
+//   tent.attach(relay, me, demo)          the relay in use and who I am
+//   tent.pieces / tent.wall / tent.floor  the room (reactive)
+//   tent.set(p) / tent.remove(id) / tent.surface(kind, code)   a change of mine: merged, kept, sent
+//   tent.on(fn)                           the partner's changes as they arrive
+import { TENT_FLOOR, TENT_MAX, TENT_WALL, mergeTent, tentLayout, tentOpOf, type TentEntry, type TentOp, type TentPiece } from '#lib/contract/tent.ts';
+import type { Relayed, Who } from '#lib/sync/live-protocol.ts';
+import type { Live } from '#lib/sync/live.ts';
+import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+import { world } from './world.svelte.ts';
+
+/** A partner's change this recent is played as it happens. */
+const LIVE_MS = 12_000;
+
+interface TentNews {
+  e: TentEntry;
+  /** The piece before (null: new, or a surface). */
+  was: TentPiece | null;
+  live: boolean;
+}
+
+class TentRoom {
+  rev = $state(0);
+  #map = new Map<string, TentEntry>();
+  #layout: ReturnType<typeof tentLayout> = { pieces: [], wall: null, floor: null };
+  #loaded = false;
+  #relay: Live | null = null;
+  #off: (() => void) | null = null;
+  #me: Who | null = null;
+  #demo = false;
+  #last = 0;
+  #subs = new Set<(n: TentNews) => void>();
+  /** Where my changes go to the sheet (store/actions.ts sendDecor: the same event type, scoped). */
+  sink: ((op: TentOp) => void) | null = null;
+
+  #key(): string {
+    return this.#demo ? DEMO.tent : LIVE.tent;
+  }
+  #load(): void {
+    if (this.#loaded) return;
+    this.#loaded = true;
+    const kept = readJson<unknown[]>(localKV(), this.#key());
+    if (Array.isArray(kept)) for (const k of kept) this.#merge(k);
+    this.#layout = tentLayout(this.#map.values());
+  }
+  #merge(raw: unknown): TentEntry | null {
+    if (typeof raw !== 'object' || raw === null) return null;
+    const r = raw as Record<string, unknown>;
+    if (r.who !== 'A' && r.who !== 'B') return null;
+    const { who, ...d } = r;
+    const op = tentOpOf(d);
+    if (!op) return null;
+    const e = { ...op, who } as TentEntry;
+    return mergeTent(this.#map, e) ? e : null;
+  }
+  #changed(): void {
+    this.#layout = tentLayout(this.#map.values());
+    writeJson(localKV(), this.#key(), [...this.#map.values()]);
+    this.rev++;
+  }
+
+  #room() {
+    void this.rev;
+    this.#load();
+    return this.#layout;
+  }
+  /** The pieces in the room (≤ TENT_MAX), the first placed first. */
+  get pieces(): readonly TentPiece[] {
+    return this.#room().pieces;
+  }
+  /** The wallpaper and the floor (null: the tent's own). */
+  get wall(): string | null {
+    return this.#room().wall;
+  }
+  get floor(): string | null {
+    return this.#room().floor;
+  }
+  /** How many more pieces fit. */
+  get room(): number {
+    return TENT_MAX - this.pieces.length;
+  }
+  byId(id: string): TentPiece | undefined {
+    return this.pieces.find((p) => p.id === id);
+  }
+
+  attach(relay: Live | null, me: Who | null, demo = false): void {
+    if (relay === this.#relay && me === this.#me && demo === this.#demo) return;
+    this.#off?.();
+    this.#off = null;
+    if (demo !== this.#demo) {
+      this.#map.clear();
+      this.#loaded = false;
+    }
+    this.#relay = relay;
+    this.#me = me;
+    this.#demo = demo;
+    if (relay) this.#off = relay.on((m) => this.#heard(m));
+    this.rev++;
+  }
+
+  /** The sheet's tent ops (the model's, queued ones included). */
+  rows(rows: readonly TentEntry[]): void {
+    this.#load();
+    let any = false;
+    for (const r of rows) if (this.#merge(r)) any = true;
+    if (any) this.#changed();
+  }
+
+  #heard(m: Relayed): void {
+    if (m.kind !== 'decor' || m.sc !== 't') return;
+    this.#load();
+    const { v: _v, t, kind: _k, ...d } = m;
+    const was = this.byId(m.id) ?? null;
+    const e = this.#merge(d);
+    if (!e) return;
+    this.#changed();
+    if (m.who === this.#me) return;
+    const n: TentNews = { e, was, live: world.now() - t < LIVE_MS };
+    for (const f of this.#subs) {
+      try {
+        f(n);
+      } catch (err) {
+        console.error('tent:', err);
+      }
+    }
+  }
+
+  /** The time of a change of mine: the relay's clock, never twice the same, and after the op it changes. */
+  #now(after = 0): number {
+    this.#last = Math.max(Math.round(world.now()), this.#last + 1, after + 1);
+    return this.#last;
+  }
+
+  #mine(op: TentOp): TentEntry | null {
+    this.#load();
+    const e = { ...op, who: this.#me ?? 'A' } as TentEntry;
+    if (!mergeTent(this.#map, e)) return null;
+    this.#changed();
+    this.#relay?.send({ kind: 'decor', ...op } as never);
+    this.sink?.(op);
+    return e;
+  }
+
+  /** Place or move a piece (its whole state): false when it didn't take (a new piece past the cap, a removed one). */
+  set(p: { id: string; item: string; x: number; z: number; f: TentPiece['f']; p?: number }): boolean {
+    const known = this.#map.get(p.id);
+    if (known?.rm) return false;
+    if (!known && this.room <= 0) return false;
+    const at = this.#now(known?.at);
+    return !!this.#mine({ sc: 't', id: p.id, at, item: p.item, x: p.x, z: p.z, f: p.f, p: p.p ?? (known && !known.rm ? known.p : at) });
+  }
+
+  /** Take a piece away (final: an undo puts a new one down). */
+  remove(id: string): boolean {
+    const known = this.#map.get(id);
+    if (!this.byId(id) || !known) return false;
+    return !!this.#mine({ sc: 't', id, at: this.#now(known.at), rm: true });
+  }
+
+  /** The wallpaper or the floor. */
+  surface(kind: 'wall' | 'floor', code: string): boolean {
+    const id = kind === 'wall' ? TENT_WALL : TENT_FLOOR;
+    const known = this.#map.get(id);
+    if (known && !known.rm && known.item === code) return false;
+    const at = this.#now(known?.at);
+    return !!this.#mine({ sc: 't', id, at, item: code, x: 0, z: 0, f: 0, p: known && !known.rm ? known.p : at });
+  }
+
+  on(fn: (n: TentNews) => void): () => void {
+    this.#subs.add(fn);
+    return () => void this.#subs.delete(fn);
+  }
+
+  /** Forget everything (tests). */
+  reset(): void {
+    this.#off?.();
+    this.#off = null;
+    this.#relay = null;
+    this.#me = null;
+    this.#map.clear();
+    this.#layout = { pieces: [], wall: null, floor: null };
+    this.#loaded = false;
+    this.#last = 0;
+    this.#subs.clear();
+    this.rev++;
+  }
+}
+
+/** The tent's room: one per phone. */
+export const tent = new TentRoom();
