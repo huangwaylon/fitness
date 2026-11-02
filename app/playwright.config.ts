@@ -22,6 +22,9 @@ const ISLAND = local.length ? { storageState: { cookies: [], origins: [{ origin:
 export default defineConfig({
   testDir: 'e2e',
   timeout: 30_000,
+  // an expect waits up to 10 s on CI (5 here): a page load there now and then takes over 5 s, several shards at once (the
+  // runners starting their browsers), and a spec's first wait after goto (the ribbon) ran out: a wait budget, no assertion looser
+  expect: { timeout: process.env.CI ? 10_000 : 5_000 },
   // No silent retries: CI reruns a failed spec in its own step and names it flaky in the job summary (pages.yml).
   retries: 0,
   fullyParallel: true,
