@@ -92,8 +92,9 @@ id's latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (i
 
 - **Heights** (`layout/height.ts` `heightAt(layout, x, z)`, `fieldOf(layout)` for the ground alone, the rounded tier
   and surface): each tier 40u; grass and paths 3u over it, sand 1.2u, the river's and the pond's bed 9u under the
-  bank, the seabed falling away from the shore. Every region's corners are NH's rounded ones (a convex corner cut on
-  a 0.42-tile radius, a concave one filled), so cliffs, banks, the beach and paths never show a square corner. Stairs
+  bank, the seabed falling away from the shore. Every region's corners are NH's rounded ones (a convex corner cut, a
+  concave one filled), so cliffs, banks, the beach and paths never show a square corner: the cliffs on a third of a
+  tile (their walls), the soft edges (below) on half a tile, a staircase of tiles drawn a straight diagonal. Stairs
   ramp from their tier to the next along their facing; a bridge's deck arches over its water.
 - **Nav** (`layout/nav.ts` `navOf(layout)`): a walk grid at half a tile (15u): water and the sea block (a bridge's deck
   is walkable over them), so does every blocking footprint (its kind's block box, padded 5u: a trunk, not its whole
@@ -148,8 +149,24 @@ for their spots with no visual change (the default's offsets); the 3D island rea
   is a waterfall. Stairs are stone steps (8 to a tier) with their sides walled. Heights over a level from
   `height.ts`: the beach sloping into the sea, the banks to a river's bed, a path a little sunk.
 - **The distance fields** (`layout/fields.ts`): each region's signed distance (u, 2.5u raster, ±48u) to its rounded
-  edge: the land, the beach's sand, the fresh water, the paths, each tier. The heights and the look both read them,
-  so every edge is soft and round and follows the tiles (~20 ms for the whole island on a desktop).
+  edge: the land, the beach's sand, the fresh water, the paths, each tier. The heights, the bake, the sea's shore wash
+  and the fresh water's edge all read them, so every edge is soft and round and follows the tiles (~30 ms for the whole
+  island on a desktop).
+- **Soft edges** (the user, 2026-11-02: "smooth the coast and grass edges", NH's coast is round): the terrain data
+  and the objects stay on tiles, only the drawn edge is round. The coast (land/sea), the beach's sand (grass/sand),
+  the fresh water and the paths are rounded on **half a tile**; a convex corner whose two diagonal neighbours carry the
+  region on (a staircase of tiles) is cut **straight** through its edges' middles, and a concave one filled to the same
+  line, so a diagonal of tiles is a diagonal shore, river or path; then each soft field is box-blurred (2 cells, twice:
+  a straight edge stays exactly on its tile's side, a one-tile path keeps its breadth, the kinks and the raster's
+  steps round off). Where a tier's wall stands (a plateau's cliff to the sea), a corner keeps the cliff's exact third
+  of a tile, so the sand meets the wall's foot. A river runs out to the sea square (the sea counts as its own for the
+  corners). The tiers' fields (the walls, the cliff tops) are untouched. Consequences in the 3D ground: the fresh water's
+  surface also goes on a bank's tile (same tier, beside fresh water) where the filled corner dips it under; its edge
+  fades on the field (`FRESH_FRAG`, dW −1.2…−2), not where the 5u mesh crosses it; the seabed is continuous at the
+  shoreline (no 1.5u step: the mesh's cells showed through the shallows as teeth); a path's rounded-out corner takes
+  the nearest path tile's kind in the bake (`pathTile`). The editor's plan stays tile-exact; its 3D preview is the
+  same ground. Cost: no new draws or textures (one more fetch in the fresh water's shader), +~130 water triangles on
+  the default island, ~+10 ms a field rebuild (desktop).
 - **The look is baked on the GPU** (`world3d/terrain.ts`): one shader paints each band's texture from the fields and
   the tiles, NH's way (the 2D bake's grass with its flecks, NH's own grass pattern, the beach going wet at the sea and
   the seabed deepening under it, the dirt path worn with its pebbles, NH's stone, brick and plank textures, a river's

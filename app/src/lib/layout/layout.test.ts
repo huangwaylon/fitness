@@ -5,6 +5,7 @@ import { CHUNK_COUNT, chunkMesh, stairsMesh } from './mesh.ts';
 import { DEFAULT_HOMES, FAMILIES, catalogue, homeFoot, knownStyle, partsOf } from './homes.ts';
 import { diffLayouts } from './diff.ts';
 import { heightAt, fieldOf, GRASS_Y } from './height.ts';
+import { Ch, fieldsOf } from './fields.ts';
 import { navOf, findPath, snapTap, reachable, walkable } from './nav.ts';
 import { validate } from './validate.ts';
 import { KIND_LIST } from './catalog.ts';
@@ -204,6 +205,36 @@ describe('heights', () => {
     const { tierAt } = fieldOf(l);
     // the upper tier's land meets the beach at its corners: the tile's very corner is lower than its middle
     expect(tierAt(-90 + 4 * 30 + 15, -90 + 55 * 30 + 15)).toBe(1);
+  });
+});
+
+describe('the soft edges (fields.ts): the data on tiles, the drawn edge round', () => {
+  const l = defaultLayout();
+  const f = fieldsOf(l);
+  test('a straight edge stays on its tiles; a one-tile path keeps its breadth', () => {
+    // the stream's south bank along row 24 (z 630), the dirt path down column 9 (x 180…210)
+    expect(Math.abs(f.at(Ch.fresh, 150, 630))).toBeLessThan(1);
+    expect(Math.abs(f.at(Ch.path, 180, 400))).toBeLessThan(1);
+    expect(f.at(Ch.path, 195, 400)).toBeLessThan(-9);
+  });
+  test('a staircase of tiles is drawn a straight diagonal (the stream turning up at column 12)', () => {
+    // grass tile (13, 24) between the stream's (12, 24) and (13, 25): its corner at x 300, z 660 is filled to the
+    // diagonal through its edges' middles (a third of a tile's rounding left it grass)
+    expect(f.at(Ch.fresh, 304.5, 655.5)).toBeLessThan(-2);
+    expect(f.at(Ch.fresh, 300 + 15, 660 - 15)).toBeGreaterThan(-1.5);
+    // and the stream's water goes on over that corner of the bank's tile
+    const m = chunkMesh(l, chunkOf(13, 24));
+    let over = 0;
+    for (let k = 0; k < m.water.pos.length / 3; k++) {
+      const x = m.water.pos[k * 3], z = -m.water.pos[k * 3 + 2];
+      if (x > 300 && x < 330 && z > 630 && z < 660) over++;
+    }
+    expect(over).toBeGreaterThan(0);
+  });
+  test('the coast\'s corners are round: the island\'s front corner is cut well inside its tile', () => {
+    // sand tile (4, 2) at the front left (x 30…60, z −30…0): its outer corner is sea, its middle well inland
+    expect(f.at(Ch.land, 31, -29)).toBeGreaterThan(4);
+    expect(f.at(Ch.land, 45, -15)).toBeLessThan(-5);
   });
 });
 

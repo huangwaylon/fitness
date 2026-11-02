@@ -66,7 +66,8 @@ function build(layout: Layout): Field {
     let y: number;
     if (tier === 0) {
       // the seabed off the land; the beach rising from the shoreline
-      if (dL > 0) return -Math.min(1.5 + dL * 0.14, 7.5);
+      // (continuous at the shoreline: a step there would show the mesh's 5u cells as teeth through the shallows)
+      if (dL > 0) return -Math.min(dL * 0.3, 1.5 + dL * 0.14, 7.5);
       const shore = Math.min(SAND_Y, -dL * 0.12);
       y = shore + (GRASS_Y - shore) * smooth(-1, 5, dS);
     } else y = SAND_Y + (GRASS_Y - SAND_Y) * smooth(-1, 5, dS);
