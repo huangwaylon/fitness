@@ -62,7 +62,7 @@ interface Part {
 
 export interface Effects {
   spawn(kind: FxKind, x: number, z: number, lift?: number, o?: FxOpts): void;
-  /** One frame: true while any plays. */
+  /** One frame: true while a flourish plays (not an ambient one). */
   frame(t: number, camera: Camera): boolean;
   /** How many play (with this tag). */
   count(tag?: string): number;
@@ -290,7 +290,9 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
       const blink = p.blink ? 0.35 + 0.65 * Math.max(0, Math.sin(age / 420 + p.x)) : 1;
       for (const m of p.mats) m.opacity = a * blink;
     }
-    return parts.length > 0;
+    // (the ambient ones, the season's fall and the fireflies, are no motion to keep the island at full rate: the
+    // water's 30 a second carries them)
+    return parts.some((p) => !p.tag);
   }
 
   return {
