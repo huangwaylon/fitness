@@ -19,8 +19,8 @@ async function camera(page: Page, z: number) {
   await expect.poll(async () => {
     await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
     await page.waitForTimeout(250);
-    return page.evaluate(() => Math.round((window as unknown as { __world: { cam(): number } }).__world.cam()));
-  }, { timeout: 5000 }).toBe(z);
+    return page.evaluate((z) => Math.abs((window as unknown as { __world: { cam(): number } }).__world.cam() - z), z);
+  }, { timeout: 5000 }).toBeLessThan(1.5); // (WebKit scrolls by whole px: within a px of z)
   await page.waitForTimeout(250);
 }
 /** A world node's origin (its foot) on screen against where a world point projects (px apart). */
