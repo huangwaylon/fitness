@@ -111,6 +111,14 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
     if (d.tiles.some(([c, r]) => isWater(kindAt(layout, c, r)) || tierAt(layout, c, r) !== tierAt(layout, o.x, o.z)) || !at || !reachable(nav, at[0], at[1]))
       add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [id], 'いえの とびらまで いけない', "A home's door can't be reached");
   }
+  // what a villager uses from in front of it (the bulletin board): its front tiles clear and reachable
+  for (const o of objs) {
+    if (!kindDef(o.k)?.front) continue;
+    const d = doorOf(layout, o);
+    const at = nav.named[`front-${o.id}`];
+    if (d.tiles.some(([c, r]) => isWater(kindAt(layout, c, r)) || tierAt(layout, c, r) !== tierAt(layout, o.x, o.z)) || !at || !reachable(nav, at[0], at[1]))
+      add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [o.id], `${kindDef(o.k)!.ja}の まえに たてない`, `Nobody can stand in front of the ${kindDef(o.k)!.en.toLowerCase()}`);
+  }
   // the goal trees: one each
   for (const s of ['a', 'b'] as const) {
     const g = objs.filter((o) => o.k === 'goal-tree' && (o.s ?? 'a') === s);

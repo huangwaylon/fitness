@@ -161,6 +161,11 @@ export function navOf(layout: Layout): LayoutNav {
   for (const o of layout.objects.values()) {
     if (o.k === 'spot' && o.s && SPOT_NAME[o.s]) named[SPOT_NAME[o.s]] = objMid(layout, o);
     for (const [name, p] of seatsOf(layout, o)) named[name] = p;
+    // where a villager stands to use it (the bulletin board): a step in front of its front edge
+    if (kindDef(o.k)?.front) {
+      const d = doorOf(layout, o), [fx, fz] = facingVec(o.f);
+      named[`front-${o.id}`] = [d.at[0] + fx * 16, d.at[1] + fz * 16];
+    }
   }
   for (const [id, d] of Object.entries(doors)) named[`door-${id}`] = d.at;
   shell.named = named;

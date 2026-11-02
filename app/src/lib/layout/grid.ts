@@ -5,8 +5,8 @@
 
 /** A tile's side (world units). */
 export const TILE = 30;
-/** The grid: 20 × 46 tiles, x −90…510, z −90…1290 (the two-section island with a ring of sea). */
-export const GRID = { cols: 20, rows: 46, x0: -90, z0: -90 } as const;
+/** The grid: 20 × 92 tiles, x −90…510, z −90…2670 (the long island: まえ, the homes' middle, おく; a ring of sea). */
+export const GRID = { cols: 20, rows: 92, x0: -90, z0: -90 } as const;
 /** A chunk's side (tiles): the unit of a terrain op and of a terrain rebuild (contract/layout.ts CHUNK). */
 export const CHUNK = 8;
 export const CHUNKS_X = Math.ceil(GRID.cols / CHUNK);
@@ -55,9 +55,9 @@ export const tileMid = (c: number, r: number): [number, number] => [tileX(c) + T
 /** A chunk's id (`c<cx>x<cz>`) and the chunk a tile is in. */
 export const chunkId = (cx: number, cz: number): string => `c${cx}x${cz}`;
 export const chunkOf = (c: number, r: number): number => Math.floor(r / CHUNK) * CHUNKS_X + Math.floor(c / CHUNK);
-const chunkXZ = (i: number): [number, number] => [i % CHUNKS_X, Math.floor(i / CHUNKS_X)];
+export const chunkXZ = (i: number): [number, number] => [i % CHUNKS_X, Math.floor(i / CHUNKS_X)];
 export function chunkIndex(id: string): number | null {
-  const m = /^c(\d)x(\d)$/.exec(id);
+  const m = /^c(\d{1,2})x(\d{1,2})$/.exec(id);
   if (!m) return null;
   const cx = +m[1], cz = +m[2];
   return cx < CHUNKS_X && cz < CHUNKS_Z ? cz * CHUNKS_X + cx : null;

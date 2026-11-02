@@ -22,12 +22,15 @@ export interface Obj {
 }
 
 export class Layout {
-  constructor(
-    /** Each tile's code (grid.ts), row by row. */
-    readonly codes: Uint8Array,
-    readonly objects: ReadonlyMap<string, Obj>,
-    readonly homes: Readonly<Record<Who, HomeStyle>>
-  ) {}
+  /** Each tile's code (grid.ts), row by row. */
+  readonly codes: Uint8Array;
+  readonly objects: ReadonlyMap<string, Obj>;
+  readonly homes: Readonly<Record<Who, HomeStyle>>;
+  constructor(codes: Uint8Array, objects: ReadonlyMap<string, Obj>, homes: Readonly<Record<Who, HomeStyle>>) {
+    this.codes = codes;
+    this.objects = objects;
+    this.homes = homes;
+  }
   /** The tile at (c, r): off the grid, the sea. */
   tile(c: number, r: number): Tile {
     const code = onGrid(c, r) ? this.codes[idx(c, r)] : SEA;
@@ -133,7 +136,8 @@ export function snapObj(layout: Layout, o: Pick<Obj, 'id' | 'k' | 'f'>, x: numbe
  *  seen from above: 1 faces +x, 2 away, 3 −x). */
 export const facingVec = (f: number): [number, number] => [[0, -1], [1, 0], [0, 1], [-1, 0]][f & 3] as [number, number];
 
-/** A home's door: the middle of its front edge (u), and the tiles just outside it that must stay clear. */
+/** A home's door (or a bulletin board's front): the middle of its front edge (u), and the tiles just outside it that
+ *  must stay clear. */
 export function doorOf(layout: Layout, o: Obj): { at: [number, number]; tiles: [number, number][] } {
   const [w, d] = footOf(layout, o);
   const [mx, mz] = objMid(layout, o);
@@ -220,7 +224,7 @@ export function fromJson(j: unknown): Layout | null {
   const ID = /^[A-Za-z0-9][A-Za-z0-9:._-]{0,31}$/;
   for (const x of o.objects) {
     if (!x || typeof x.id !== 'string' || !ID.test(x.id) || typeof x.k !== 'string' || !kindDef(x.k)) return null;
-    if (![x.x, x.z, x.f].every((n) => Number.isInteger(n) && n >= 0 && n < 64) || x.f > 3) return null;
+    if (![x.x, x.z, x.f].every((n) => Number.isInteger(n) && n >= 0 && n < 128) || x.f > 3) return null;
     objects.set(x.id, { id: x.id, k: x.k, x: x.x, z: x.z, f: x.f as Facing, ...(typeof x.s === 'string' && x.s ? { s: x.s } : {}), ...(Array.isArray(x.n) && x.n.length === 2 ? { n: [Number(x.n[0]) || 0, Number(x.n[1]) || 0] as const } : {}) });
   }
   const homes = { ...DEFAULT_HOMES };
@@ -234,3 +238,35 @@ export function fromJson(j: unknown): Layout | null {
 /** @public (the editor) A new object's id: `o` and its time and a little randomness, base 36. */
 export const newObjId = (at: number): string => `o${at.toString(36)}${Math.floor(Math.random() * 36 ** 3).toString(36).padStart(3, '0')}`;
 
+
+/** The island's extent (u), for the 3D camera and the ground (docs/island-layout.md "API for the 3D scene"): the
+ *  grid's, the land's box, the front shoreline's z at the island's middle, and ウェイ's home's door (the camera's far
+ *  stop, the campsite, as today). Read from the layout, never a constant: the island may grow. */
+export function extentOf(layout: Layout): {
+  grid: { x0: number; x1: number; z0: number; z1: number };
+  land: { x0: number; x1: number; z0: number; z1: number };
+  shore: number;
+  home: [number, number];
+} {
+  let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+  for (let r = 0; r < GRID.rows; r++)
+    for (let c = 0; c < GRID.cols; c++)
+      if (kindOf(layout.codes[idx(c, r)]) !== 'sea') {
+        x0 = Math.min(x0, tileX(c)); x1 = Math.max(x1, tileX(c + 1));
+        z0 = Math.min(z0, tileZ(r)); z1 = Math.max(z1, tileZ(r + 1));
+      }
+  const mid = Math.floor(GRID.cols / 2);
+  let shore = z0;
+  for (let r = 0; r < GRID.rows; r++)
+    if (kindOf(layout.codes[idx(mid, r)]) !== 'sea') {
+      shore = tileZ(r);
+      break;
+    }
+  const a = layout.objects.get('home-A');
+  return {
+    grid: { x0: GRID.x0, x1: tileX(GRID.cols), z0: GRID.z0, z1: tileZ(GRID.rows) },
+    land: x0 < x1 ? { x0, x1, z0, z1 } : { x0: 0, x1: 0, z0: 0, z1: 0 },
+    shore,
+    home: a ? doorOf(layout, a).at : [GRID.x0 + (GRID.cols * TILE) / 2, z1]
+  };
+}

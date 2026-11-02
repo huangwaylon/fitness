@@ -4,7 +4,11 @@
 // the beach's sand, the grass, the dirt path, the stream (kept one connected chain of tiles from the spring to the
 // sea, as its centreline runs), the pond; the cliff's upper tier above its middle. Each object keeps world.ts's id and
 // its exact spot (`n`: its offset from its footprint's middle, until someone moves it), so nothing on the island moves.
-// うめ's and the guest's homes are new: on the upper tier, up the stairs.
+// The island is twice today's length (the user, 2026-11-02: room for the homes and buildings to come): today's まえ
+// (the sea, the beach, the health lawn, the goal trees, the stream's crossing) stays at the front, today's おく (the
+// campsite, the pond, the bamboo, the falls, the upper tier) moves GROW back, and between them a new middle: open
+// grass to build on, the stream running on down its east side, the path through it, うめ's and the guest's homes with
+// paths to their doors, a few trees and flowers.
 //
 // Usage (from app/): npm run layout:default [-- --dry] (prints the map either way)
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -22,8 +26,13 @@ const dry = process.argv.includes('--dry');
 
 // ---- the terrain ----------------------------------------------------------------------------------------------------
 
+/** world.ts's z where おく begins (just above the stream's crossing), and how far back the middle pushes it. */
+const SPLIT = 680;
+const GROW = 1380;
+/** A world.ts z on the long island. */
+const zOf = (z: number) => (z < SPLIT ? z : z + GROW);
 /** The tier boundary: the cliff's top edge (its face from z0 to z1 stands on the lower tier's last row). */
-const CLIFF_Z = Math.round(CLIFF.z1 / TILE) * TILE;
+const CLIFF_Z = Math.round(zOf(CLIFF.z1) / TILE) * TILE;
 const PATH_HW = 15;
 function polyDist(line: readonly Pt[], x: number, z: number): number {
   let d = Infinity;
@@ -35,13 +44,37 @@ function polyDist(line: readonly Pt[], x: number, z: number): number {
   }
   return d;
 }
+/** The stream on the long island: おく's reach moved back, a gentle meander down the middle's east side, then
+ *  today's bend west across the island to its mouth. */
+const MID_RIVER: Pt[] = [[372, 2080], [366, 1900], [376, 1720], [368, 1540], [375, 1360], [367, 1180], [374, 1000], [368, 840], [366, 760]];
+const RIVER_LONG: (readonly [number, number, number])[] = [
+  ...RIVER.filter(([, z]) => z >= SPLIT).map(([x, z, w]) => [x, zOf(z), w] as const),
+  ...MID_RIVER.map(([x, z]) => [x, z, 30] as const),
+  ...RIVER.filter(([, z]) => z < SPLIT)
+];
+const inRiverLong = (x: number, z: number) => {
+  for (let i = 0; i < RIVER_LONG.length - 1; i++) {
+    const [ax, az, aw] = RIVER_LONG[i], [bx, bz, bw] = RIVER_LONG[i + 1];
+    const dx = bx - ax, dz = bz - az, L = dx * dx + dz * dz || 1;
+    const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L));
+    if (Math.hypot(x - (ax + dx * t), z - (az + dz * t)) <= (aw + (bw - aw) * t) / 2) return true;
+  }
+  return false;
+};
+/** The paths: the main one on through the middle to the campsite, the clearing's to the stairs. */
+const PATHS_LONG: Pt[][] = [
+  [...PATHS.dirt[0].filter(([, z]) => z < SPLIT), [196, 900], [191, 1200], [198, 1500], [192, 1800], ...PATHS.dirt[0].filter(([, z]) => z >= SPLIT).map(([x, z]) => [x, zOf(z)] as Pt)],
+  PATHS.dirt[1].map(([x, z]) => [x, zOf(z)] as Pt)
+];
 type Ground = 'sea' | 'sand' | 'grass' | 'dirt' | 'river' | 'pond';
+/** The ground at a point of the long island: today's island's (moved back for おく), the middle's straight sides. */
 function groundAt(x: number, z: number): Ground {
-  if (!onLand(x, z)) return 'sea';
-  if (inOval(POND, x, z) || inOval(SPRING, x, z)) return 'pond';
-  if (inRiver(x, z)) return 'river';
-  if (!onGrass(x, z)) return 'sand';
-  if (PATHS.dirt.some((p) => polyDist(p, x, z) <= PATH_HW)) return 'dirt';
+  const zs = z < SPLIT ? z : z < SPLIT + GROW ? SPLIT + 60 : z - GROW;
+  if (!onLand(x, zs)) return 'sea';
+  if (z >= SPLIT + GROW && (inOval(POND, x, zs) || inOval(SPRING, x, zs))) return 'pond';
+  if (inRiverLong(x, z)) return 'river';
+  if (!onGrass(x, zs)) return 'sand';
+  if (PATHS_LONG.some((p) => polyDist(p, x, z) <= PATH_HW)) return 'dirt';
   return 'grass';
 }
 const N = 6;
@@ -70,8 +103,8 @@ for (let r = 0; r < GRID.rows; r++)
 // side tile with more of the stream)
 {
   let last: [number, number] | null = null;
-  for (let i = 0; i < RIVER.length - 1; i++) {
-    const [ax, az] = RIVER[i], [bx, bz] = RIVER[i + 1];
+  for (let i = 0; i < RIVER_LONG.length - 1; i++) {
+    const [ax, az] = RIVER_LONG[i], [bx, bz] = RIVER_LONG[i + 1];
     const L = Math.hypot(bx - ax, bz - az), steps = Math.ceil(L / 3);
     for (let s = 0; s <= steps; s++) {
       const x = ax + ((bx - ax) * s) / steps, z = az + ((bz - az) * s) / steps;
@@ -90,7 +123,7 @@ for (let r = 0; r < GRID.rows; r++)
   }
 }
 // the paths: every tile their centreline passes through (4-connected the same way)
-for (const line of PATHS.dirt) {
+for (const line of PATHS_LONG) {
   let last: [number, number] | null = null;
   for (let i = 0; i < line.length - 1; i++) {
     const [ax, az] = line[i], [bx, bz] = line[i + 1];
@@ -106,9 +139,10 @@ for (const line of PATHS.dirt) {
     }
   }
 }
-// the new homes' path: from the stairs' top along the upper tier to both doors
-const UPPER_ROW = Math.round((CLIFF_Z - GRID.z0) / TILE);
-for (let c = 4; c <= 12; c++) if (kinds[idx(c, UPPER_ROW)] === 'grass') kinds[idx(c, UPPER_ROW)] = 'dirt';
+// the homes' paths: from the main path to うめ's door (west) and the guest's (east)
+const HOME_B: [number, number] = [3, 46], HOME_G: [number, number] = [11, 56];
+for (const [row, c0, c1] of [[HOME_B[1] - 1, 4, 9], [HOME_G[1] - 1, 9, 13]] as const)
+  for (let c = c0; c <= c1; c++) if (kinds[idx(c, row)] === 'grass') kinds[idx(c, row)] = 'dirt';
 const codes = new Uint8Array(GRID.cols * GRID.rows);
 for (let r = 0; r < GRID.rows; r++)
   for (let c = 0; c < GRID.cols; c++) {
@@ -122,10 +156,12 @@ for (let r = 0; r < GRID.rows; r++)
 interface Out { id: string; k: string; x: number; z: number; f: number; s?: string; n?: [number, number] }
 const objects: Out[] = [];
 const r1 = (v: number) => Math.round(v * 10) / 10;
-/** An object whose middle stands at world (x, z): its footprint's tile and its offset from there. */
-function put(id: string, k: string, x: number, z: number, o: { f?: number; s?: string; foot?: readonly [number, number]; exact?: boolean } = {}): void {
+/** An object whose middle stands at world.ts's (x, z) (`raw`: the long island's z already): its footprint's tile and
+ *  its offset from there. */
+function put(id: string, k: string, x: number, zw: number, o: { f?: number; s?: string; foot?: readonly [number, number]; exact?: boolean; raw?: boolean } = {}): void {
   const def = kindDef(k);
   if (!def) throw new Error(`no kind ${k}`);
+  const z = o.raw ? zw : zOf(zw);
   const f = o.f ?? 0;
   const [w, d] = o.foot ?? footprintOf(def, f);
   const tx = Math.round((x - GRID.x0) / TILE - w / 2), tz = Math.round((z - GRID.z0) / TILE - d / 2);
@@ -138,10 +174,8 @@ const PROP: Record<string, [string, string?]> = {
   'deco/garden-rock': ['garden-rock'], 'deco/park-bench': ['park-bench'], 'deco/log-bench': ['log-bench'], 'deco/rod-stand': ['rod-stand'],
   'deco/hammock': ['hammock'], 'deco/firewood': ['firewood'], 'deco/pullup': ['pullup'], 'deco/pump': ['pump'], 'deco/shishiodoshi': ['shishiodoshi']
 };
-// the upper tier's forest gives way to the two new homes: its cedars stand at the edges
-const FOREST_MOVED: Record<string, Pt> = { 'cedar-f1': [6, 1112], 'cedar-f3': [112, 1220], 'cedar-f4': [228, 1218], 'cedar-f6': [10, 1180], 'cedar-f2': [56, 1212], 'cedar-f5': [344, 1218] };
 for (const s of SCENERY) {
-  const [x, z] = FOREST_MOVED[s.id] ?? [s.x, s.z];
+  const [x, z] = [s.x, s.z];
   const flip = s.flip ? 1 : 0;
   if (s.kind === 'oak' || s.kind === 'cedar' || s.kind === 'palm' || s.kind === 'bamboo') put(s.id, s.kind, x, z, { f: flip });
   else if (s.kind === 'bush') put(s.id, 'bush', x, z, { f: flip, s: s.key.startsWith('month-bush-') ? `month-${s.key.slice(-1)}` : s.key.replace(/^bushes\//, '') });
@@ -162,16 +196,35 @@ put('bridge', 'bridge', BRIDGE.x, (BRIDGE.z0 + BRIDGE.z1) / 2, { s: 'stone' });
 // the stairs: up the cliff where its stone steps are (their back edge on the cliff's line)
 {
   const [s0, s1] = CLIFF.stair;
-  put('stairs', 'stairs', (s0 + s1) / 2, CLIFF_Z - TILE, { s: 'stone', exact: true });
+  put('stairs', 'stairs', (s0 + s1) / 2, CLIFF_Z - TILE, { s: 'stone', exact: true, raw: true });
 }
-// the homes: ウェイ's the campsite's tent (its front on the door line); うめ's and the guest's on the upper tier
+// the homes: ウェイ's the campsite's tent (its front on the door line); うめ's and the guest's in the middle
 {
   const [w, d] = homeFoot(DEFAULT_HOMES.A);
-  put('home-A', 'home', CAMPSITE.x, CAMPSITE.z + (d * TILE) / 2, { foot: [w, d] });
+  put('home-A', 'home', CAMPSITE.x, zOf(CAMPSITE.z) + (d * TILE) / 2, { foot: [w, d], raw: true });
   const [bw, bd] = homeFoot(DEFAULT_HOMES.B), [gw, gd] = homeFoot(DEFAULT_HOMES.G);
-  put('home-B', 'home', tileX(5) + (bw * TILE) / 2, tileZ(40) + (bd * TILE) / 2, { foot: [bw, bd], exact: true });
-  put('home-G', 'home', tileX(10) + (gw * TILE) / 2, tileZ(40) + (gd * TILE) / 2, { foot: [gw, gd], exact: true });
+  put('home-B', 'home', tileX(HOME_B[0]) + (bw * TILE) / 2, tileZ(HOME_B[1]) + (bd * TILE) / 2, { foot: [bw, bd], exact: true, raw: true });
+  put('home-G', 'home', tileX(HOME_G[0]) + (gw * TILE) / 2, tileZ(HOME_G[1]) + (gd * TILE) / 2, { foot: [gw, gd], exact: true, raw: true });
 }
+// the middle: a few trees at its edges, bushes by the homes, three clumps of flowers, a lamp at each home's path;
+// the rest open, to build on
+const mid = (id: string, k: string, c: number, r: number, s?: string) => put(id, k, tileX(c) + TILE / 2, tileZ(r) + TILE / 2, { exact: true, raw: true, ...(s ? { s } : {}) });
+mid('mid-cedar-1', 'cedar', 3, 29);
+mid('mid-oak-1', 'oak', 6, 34);
+mid('mid-cedar-2', 'cedar', 13, 37);
+mid('mid-oak-2', 'oak', 3, 40);
+mid('mid-cedar-3', 'cedar', 3, 53);
+mid('mid-oak-3', 'oak', 6, 61);
+mid('mid-cedar-4', 'cedar', 14, 63);
+mid('mid-oak-4', 'oak', 11, 68);
+mid('mid-cedar-5', 'cedar', 3, 70);
+mid('mid-bush-1', 'bush', 7, 47, 'holly');
+mid('mid-bush-2', 'bush', 10, 57, 'white-azalea');
+mid('mid-bush-3', 'bush', 10, 44, 'pink-azalea');
+mid('mid-lamp-1', 'streetlamp', 8, 44);
+mid('mid-lamp-2', 'streetlamp', 10, 54);
+for (const [i, [c, r, n]] of ([[5, 31, 0], [6, 31, 0], [5, 32, 0], [12, 33, 3], [13, 34, 3], [12, 34, 3], [5, 65, 5], [6, 65, 5], [6, 66, 5]] as const).entries())
+  mid(`mid-fl-${i + 1}`, 'flower', c, r, `c${n}`);
 put('spot-villager-A', 'spot', HOMES.A[0], HOMES.A[1], { s: 'villager-a' });
 put('spot-villager-B', 'spot', HOMES.B[0], HOMES.B[1], { s: 'villager-b' });
 put('spot-stage', 'spot', CENTRE_STAGE[0], CENTRE_STAGE[1], { s: 'stage' });

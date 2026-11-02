@@ -33,6 +33,9 @@ export interface KindDef {
   fixed?: boolean;
   /** Not on the palette (only the default places it). */
   hidden?: boolean;
+  /** A villager stands in front of it to use it (NH's bulletin board): the tile(s) before its front must stay clear and
+   *  reachable, as a home's door's (validate.ts), and nav.ts names the spot (`front-<id>`). */
+  front?: boolean;
 }
 
 const k = (def: KindDef): KindDef => def;
@@ -73,6 +76,8 @@ export const KIND_LIST: readonly KindDef[] = [
   k({ k: 'pullup', group: 'furniture', ja: 'てつぼう', en: 'Pull-up bar', w: 1, d: 1, block: true, foot: [28, 12], on: 'land', h: 44, icon: 'deco/pullup', turns: true }),
   k({ k: 'firewood', group: 'furniture', ja: 'まき', en: 'Firewood', w: 1, d: 1, block: true, foot: [18, 12], on: 'land', h: 18, icon: 'deco/firewood' }),
   k({ k: 'tape-deck', group: 'furniture', ja: 'ラジカセ', en: 'Tape deck', w: 1, d: 1, block: true, foot: [14, 8], on: 'land', h: 16, icon: 'deco/tape-deck', fixed: true }),
+  // NH's bulletin board (けいじばん): one on the island, used from the tile in front of it
+  k({ k: 'board', group: 'furniture', ja: 'けいじばん', en: 'Bulletin board', w: 2, d: 1, block: true, foot: [54, 14], on: 'land', h: 44, icon: 'deco/bulletin-board', turns: true, fixed: true, front: true }),
   // the seasonal spots (fixedDecor.ts: the season's piece stands there in its weeks)
   k({ k: 'beach-chair', group: 'season', ja: 'ビーチチェア（なつ）', en: 'Beach chair (summer)', w: 2, d: 1, block: true, foot: [56, 22], on: 'land', h: 30, icon: 'deco/beach-chair', turns: true, fixed: true }),
   k({ k: 'sandcastle', group: 'season', ja: 'すなのおしろ（なつ）', en: 'Sandcastle (summer)', w: 1, d: 1, block: true, foot: [26, 18], on: 'land', h: 30, icon: 'deco/sandcastle', fixed: true }),
