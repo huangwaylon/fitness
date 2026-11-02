@@ -233,6 +233,9 @@ describe('live protocol: the tent (v2)', () => {
     expect(parseServer(j2({ ...set, who: 'A', t: T }))).toEqual({ v: 2, ...set, who: 'A', t: T });
     expect(parseClient(j2({ kind: 'decor', sc: 't', id: 'dmh1abc2a', at: T, rm: true }))).toEqual({ v: 2, kind: 'decor', sc: 't', id: 'dmh1abc2a', at: T, rm: true });
     for (const bad of [j2({ ...set, x: 8 }), j2({ ...set, sc: 'x' }), j2({ ...set, z: -1 })]) expect(parseClient(bad), bad).toBeNull();
+    // on another piece's surface
+    expect(parseClient(j2({ ...set, on: 'dmh1table1' }))).toEqual({ v: 2, ...set, on: 'dmh1table1' });
+    for (const bad of [j2({ ...set, on: 'nope' }), j2({ ...set, sc: undefined, on: 'dmh1table1', x: 100, z: 100 })]) expect(parseClient(bad), bad).toBeNull();
   });
   it('a drag and the villager inside are presence only: never kept, never claimed, small', () => {
     const drag = { kind: 'drag', id: 'dmh1abc2a', x: -12, z: 33, f: 2 };
