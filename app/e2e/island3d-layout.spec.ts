@@ -72,3 +72,17 @@ test('the もようがえ on the layout is IslandEdit over the 3D island: a benc
   await expect.poll(() => page.evaluate(() => (window as unknown as { __islandEdit: IE }).__islandEdit.sel()?.x ?? null)).toBe(t[0] - 2);
   expect(await w3(page, (w) => (w as unknown as { view(): { camZ: number } }).view().camZ)).toBeCloseTo(cam0, 1);
 });
+
+test('on its layout my villager sits on a bench where the layout has it (its seat by layout/nav.ts seatsOf)', async ({ page }) => {
+  await open(page);
+  type V3 = { state(slot: string): string | null };
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3?: V3 }).__villagers3?.state('mine') ?? null), { timeout: 30_000 }).not.toBeNull();
+  const seat = await page.evaluate(() => {
+    const l = (window as unknown as { __layout: { pos(id: string): [number, number]; obj(id: string): { f: number } } }).__layout;
+    const [mx, mz] = l.pos('bench-mae'), [fx, fz] = ([[0, -1], [1, 0], [0, 1], [-1, 0]] as const)[l.obj('bench-mae').f & 3];
+    const sx = mx - fx * 16, sz = mz - fz * 16, ax = -fz, az = fx;
+    return [sx - ax * 13, sz - az * 13] as [number, number];
+  });
+  await page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z), seat);
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3: V3 }).__villagers3.state('mine')), { timeout: 8000 }).toBe('sit');
+});
