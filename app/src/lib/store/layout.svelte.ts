@@ -117,6 +117,11 @@ class IslandLayout {
     this.#demo = demo;
     if (relay) this.#off = relay.on((m) => this.#heard(m));
     this.rev++;
+    // the e2e's view of the layout this phone holds (dev builds and the demo)
+    if (typeof window !== 'undefined' && (import.meta.env.DEV || demo))
+      (window as unknown as { __layout?: unknown }).__layout = {
+        pos: (id: string) => this.pos(id), obj: (id: string) => this.obj(id), home: (w: Who) => this.home(w), count: (k: string) => this.ofKind(k).length
+      };
   }
 
   /** The record's layout rows (the model's, queued ones included). */

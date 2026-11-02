@@ -1,8 +1,9 @@
 # The island's layout (customisable outdoors, homes and interiors)
 
-Status: **phases 1 (schema, ops, default migration, nav, validation, the store), 2 (the 3D ground from the grid, the
-objects from the layout, the long island), 3 (the desktop editor) and 4 (the homes, their looks and their rooms)
-landed**; next: phone editing (5). This file is the contract
+Status: **all five phases landed**: 1 the schema, the ops, the default's migration, the nav, the checks, the store;
+2 the 3D ground from the grid, the objects from the layout, the long island; 3 the desktop editor; 4 the homes, their
+looks and their rooms; 5 the phone's もようがえ of the layout (its mount on the 3D island is the lead's, below).
+Phone terraforming is deferred (the editor's alone). This file is the contract
 between the layout work (`app/src/lib/layout/`, `store/layout.svelte.ts`, `world3d/terrain.ts`, `world3d/objects.ts`,
 the editor, the homes) and the 3D integration (the scene, the camera, porting the island's features: the lead's
 `world3d/engine.ts` and the rest of `world3d/`).
@@ -241,6 +242,27 @@ anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the pho
   Out of the door: just in front of that home's door on the layout.
 - **The e2e** (`e2e/homes.spec.ts`): うめ arranges her room (her piece in her room only, kept), the guest comes in and
   sees it but can't arrange it; うめ swaps her house's look and the other phone holds it live; the guest swaps its own.
+
+## Phone editing (phase 5)
+
+`components/layoutEdit/IslandEdit.svelte`: the island's もようがえ on the phone, the tent's way (TentEdit's tray, bar
+and buttons). The tray's tabs (き, かんぼく, はな, いわ, あかり, かぐ, はし・さか) over every placeable kind (the ten
+decorations of island/decor.ts are layout kinds now too: いしどうろう … いちりんしゃ, cards of their renders in 3D until
+they have models); a tap on one puts it down as a ghost on the free tile nearest the view's middle, its footprint on
+the ground green or red, the bar saying why (the checks' reason); a finger on it, or on any placed thing (picked up,
+its model hidden), drags it a tile at a time; a tap on the ground moves it there; ↻ まわす, ✕ やめる, ✓ ここに おく,
+🗑 しまう (never for a goal tree, a home, the island's one-offs). While held, the other phones see it move (`drag`,
+`sc: 'o'`); a drop is its ops at once. The members' only (the guest gets no もようがえ; the record refuses it anyway).
+**Terraforming on the phone (paths, water, cliffs) is deferred:** the desktop editor's alone for now.
+
+It runs over any stage: `{ host, toScreen(x, z, lift), toGround(sx, sy), size(), hide(id) }`. The editor's phone
+view gives it one (`/editor/?view=phone&edit`: the 3D island's camera and bend; `&preview=0` a flat plan, the e2e's).
+**To mount it on the 3D island** (the lead's IslandScene / Island3D): when せってい → もようがえ opens with the 3D island
+on, `<IslandEdit stage={…} relay={relay} ondone={() => (ui.decorating = false)} />` in place of DecorMode, the stage
+from the World (`host` the scene element, `toScreen` = `world.at(x, z, lift)` in its px, `toGround` =
+`world.worldAt(sx, sy)`, `hide(id)` = `things.over(id, { hidden: true })` / `over(id, null)`). The e2e:
+`e2e/island-edit.spec.ts` (a new piece placed and on the other phone; a placed one picked up, dragged and put down;
+red over the river; no 🗑 for a one-off; none for the guest).
 
 ## What the 3D integration must change (the lead's files)
 

@@ -10,13 +10,17 @@
   import type { Look } from '../world3d/terrain.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
 
-  let { layout, mode = 'orbit', look = 'summer', camZ = $bindable(300), ontime }: {
+  let { layout, mode = 'orbit', look = 'summer', camZ = $bindable(300), ontime, stage = $bindable() }: {
     layout: Layout;
     mode?: 'orbit' | 'phone';
     look?: Look;
     camZ?: number;
     ontime?: (ms: { build: number; update?: number }) => void;
+    /** The phone view's stage for the island's もようがえ (layoutEdit/IslandEdit.svelte). */
+    stage?: EditStage;
   } = $props();
+  import type { EditStage } from '../layoutEdit/IslandEdit.svelte';
+  let wrapEl = $state<HTMLDivElement>();
 
   let canvas = $state<HTMLCanvasElement>();
   let failed = $state(false);
@@ -27,7 +31,7 @@
   onMount(() => {
     let gone = false, stop = () => {};
     void Promise.all([import('three'), import('three/examples/jsm/controls/OrbitControls.js'), import('../world3d/terrain.ts'), import('../world3d/objects.ts'), import('../world3d/things.ts'), import('../world3d/bend.ts'), import('../world3d/water.ts'), import('../world3d/home.ts')]).then(
-      ([T, { OrbitControls }, { buildGround }, { placeObjects, homePlaces }, { createThings }, { bendU, bend }, { waterU, waterFog }, { buildHome }]) => {
+      ([T, { OrbitControls }, { buildGround }, { placeObjects, homePlaces }, { createThings }, { bendU, bend, bendPoint, unbendRay }, { waterU, waterFog }, { buildHome }]) => {
         if (gone || !canvas) return;
         let renderer: InstanceType<typeof T.WebGLRenderer>;
         try {
@@ -203,6 +207,43 @@
             aim();
           }
         };
+        // the stage: world ⇄ px through the camera and the bend (engine.ts's at / groundAt), what's held hidden
+        const pv = new T.Vector3();
+        stage = {
+          host: wrapEl!,
+          toScreen(x: number, z: number, lift = 0) {
+            const [bx, by, bz] = bendPoint(x, ground.feet(x, z) + lift, -z, bendU.uBendZ.value, bendU.uBendR.value);
+            pv.set(bx, by, bz).project(camera);
+            if (pv.z > 1) return null;
+            const r = canvas!.getBoundingClientRect();
+            return [((pv.x + 1) / 2) * r.width, ((1 - pv.y) / 2) * r.height];
+          },
+          toGround(sx: number, sy: number) {
+            const r = canvas!.getBoundingClientRect();
+            pv.set((sx / r.width) * 2 - 1, -(sy / r.height) * 2 + 1, 0.5).unproject(camera);
+            const o = camera.position, d = pv.sub(o).normalize();
+            let h = 3, hit: [number, number] | null = null;
+            for (let i = 0; i < 3; i++) {
+              const p = unbendRay([o.x, o.y, o.z], [d.x, d.y, d.z], h, bendU.uBendZ.value, bendU.uBendR.value);
+              if (!p) return hit;
+              hit = [p[0], -p[1]];
+              h = Math.max(-2, ground.heightAt(hit[0], hit[1]));
+            }
+            return hit;
+          },
+          size: () => {
+            const r = canvas!.getBoundingClientRect();
+            return [r.width, r.height];
+          },
+          hide(id: string | null) {
+            for (const [hid, h] of homes) if (h.g) h.g.visible = hid !== id;
+            if (heldId && heldId !== id) things.over(heldId, null);
+            heldId = id;
+            if (id) things.over(id, { hidden: true });
+            dirty = true;
+          }
+        };
+        let heldId: string | null = null;
         let frames = 0, last = performance.now(), fps = 0;
         const info = () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures, geometries: renderer.info.memory.geometries, fps });
         (window as unknown as { __preview?: unknown }).__preview = { homes: () => [...homes.values()].filter((h) => h.g).length, pending: () => things.pending(), ready: () => ground.ready, dirty: () => dirty, info, frame: () => { frames++; const t = performance.now(); if (t - last > 1000) { fps = Math.round((frames * 1000) / (t - last)); frames = 0; last = t; } } };
@@ -243,7 +284,7 @@
   });
 </script>
 
-<div class="preview" data-preview={mode}>
+<div class="preview" data-preview={mode} bind:this={wrapEl}>
   <canvas bind:this={canvas}></canvas>
   {#if failed}<p class="fail">WebGL could not start.</p>{/if}
 </div>
