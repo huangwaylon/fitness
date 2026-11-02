@@ -20,9 +20,9 @@ export const tileUnder = (v: View, px: number, py: number): [number, number] => 
   const [x, z] = toWorld(v, px, py);
   return [Math.floor((x - GRID.x0) / TILE), Math.floor((z - GRID.z0) / TILE)];
 };
-/** A view that fits the grid's width in `w` px, the front of the island at the bottom of `h`. */
+/** A view that fits the whole grid in `w` × `h` px, the front of the island at the bottom. */
 export function fitView(w: number, h: number): View {
-  const s = Math.min((w - 40) / (GRID.cols * TILE), 1.2);
+  const s = Math.min((w - 40) / (GRID.cols * TILE), (h - 40) / (GRID.rows * TILE), 1.2);
   return { s, ox: (w - GRID.cols * TILE * s) / 2, oy: h - GRID.rows * TILE * s - 20 };
 }
 /** Zoom about a canvas point. */
