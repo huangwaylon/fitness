@@ -1,25 +1,22 @@
-// Golden: the record's ingest (src/store.ts) gives exactly what the Apps Script's did (app/gas/main.ts, on its fakes):
+// Golden: the record's ingest (src/store.ts) gives exactly what the Apps Script's did when the sheet was the record:
 // the same replies, the same metrics rows with the same `at`, the same audit rows, for a run of Shortcut bodies in the
 // shapes the two phones really send (the `uploads` audit of 2026-11-02: A's iPhone-only body with English dates, B's
 // with the Watch's steps, Japanese dates and kcal to three decimals; the values are made up, not anyone's health data).
+// fixtures/ingest-golden.json is what app/gas/main.ts's ingest answered and wrote for these runs on 2026-11-02 (on its
+// fakes, before step 5 removed it); the record matched it then, run for run, and must go on matching it.
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { configureForward, doPost } from '../../app/gas/main.ts';
-import { install, makeGas, type Gas } from '../../app/gas/fakes.ts';
 import { StoreCore } from '../src/store.ts';
 import { memSql } from './sqlite.ts';
 
 const KEY_A = 'a'.repeat(64);
 const KEY_B = 'b'.repeat(64);
 
-let gas: Gas;
 let db: ReturnType<typeof memSql>;
 let store: StoreCore;
 
 beforeEach(() => {
-  gas = makeGas({ keyA: KEY_A, keyB: KEY_B });
-  install(gas);
-  configureForward(false); // the script as the record (steps 1–2), what the record must match
-  gas.state.relay = 'denied';
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date('2026-11-01T22:30:00.000Z'));
   db = memSql();
@@ -59,17 +56,9 @@ function bodyB(end: string, bump = 0, extra: Record<string, string> = {}) {
   , ...extra };
 }
 
-/** The same body to both backends at the same moment: their replies. */
-function both(key: string, body: object) {
-  const text = JSON.stringify({ key, ...body });
-  const g = JSON.parse((doPost({ postData: { contents: text, length: new TextEncoder().encode(text).length } }) as unknown as { text: string }).text);
-  const s = store.handle({ key, ...body }, new TextEncoder().encode(text).length);
-  return { g, s };
-}
+const GOLDEN = JSON.parse(String(readFileSync(fileURLToPath(import.meta.resolve('./fixtures/ingest-golden.json'))))) as { replies: unknown[]; metrics: unknown[][]; uploads: unknown[][] };
 
-const gasRows = (tab: string) => (gas.sheets.get(tab)?.data() ?? []).map((r) => r.map((c) => (c instanceof Date ? c.toISOString() : c)));
-
-describe('ingest: the record and the Apps Script agree', () => {
+describe('ingest: the record answers and writes as the Apps Script did', () => {
   it('a week of both phones’ runs: replies, rows and audit rows identical', () => {
     const z32 = lines(32, () => '0');
     const runs: [string, object][] = [
@@ -86,34 +75,16 @@ describe('ingest: the record and the Apps Script agree', () => {
       [KEY_A, { action: 'ingest', dates: z32, steps: z32 }],
       [KEY_A, { action: 'ingest', dates: 'Sep 28, 2026 at 7:11 AM\nSep 29, 2026 at 7:55 AM', steps: '855\n9106', exercise_minutes: '0\n23', calories: '0\n248.2' }] // app/gas/main.test.ts REAL
     ];
-    const replies: unknown[] = [];
     for (const [i, [key, body]] of runs.entries()) {
-      const { g, s } = both(key, body);
-      expect(s, `run ${i}`).toEqual(g);
-      replies.push(g);
+      const text = JSON.stringify({ key, ...body });
+      expect(store.handle({ key, ...body }, new TextEncoder().encode(text).length), `run ${i}`).toEqual(GOLDEN.replies[i]);
       vi.setSystemTime(Date.now() + 37 * 60_000);
     }
     const sMetrics = db.sql.exec('SELECT at, person, date, metric, value FROM metrics ORDER BY at, seq').toArray().map((r) => Object.values(r));
     const sUploads = db.sql.exec('SELECT at, person, status, bytes, notes FROM uploads ORDER BY seq').toArray().map((r) => Object.values(r));
-    expect(sMetrics.length).toBeGreaterThan(300);
-    expect(replies.map((r) => (r as { metrics?: number; error?: string }).metrics ?? (r as { error?: string }).error)).toMatchInlineSnapshot(`
-      [
-        128,
-        128,
-        0,
-        2,
-        39,
-        130,
-        1,
-        96,
-        35,
-        "bad_request",
-        0,
-        6,
-      ]
-    `);
-    expect(sMetrics).toEqual(gasRows('metrics'));
-    expect(sUploads).toEqual(gasRows('uploads'));
-    expect(store.rowsSince('').metrics).toEqual(gasRows('metrics'));
+    expect(GOLDEN.replies.map((r) => (r as { metrics?: number; error?: string }).metrics ?? (r as { error?: string }).error)).toEqual([128, 128, 0, 2, 39, 130, 1, 96, 35, 'bad_request', 0, 6]);
+    expect(sMetrics).toEqual(GOLDEN.metrics);
+    expect(sUploads).toEqual(GOLDEN.uploads);
+    expect(store.rowsSince('').metrics).toEqual(GOLDEN.metrics);
   });
 });

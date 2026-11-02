@@ -55,6 +55,7 @@ export type BodyMetric = 'body_fat_pct' | 'bmi' | 'lean_kg';
 export type MetricKey = ActivityMetric | 'weight' | BodyMetric;
 export const isActivityMetric = (v: unknown): v is ActivityMetric => v === 'steps' || v === 'exercise_min' || v === 'move_kcal' || v === 'stand_min';
 export const isBodyMetric = (v: unknown): v is BodyMetric => v === 'body_fat_pct' || v === 'bmi' || v === 'lean_kg';
+/** @public (relay/src/store.ts) */
 export const isMetricKey = (v: unknown): v is MetricKey => v === 'weight' || isActivityMetric(v) || isBodyMetric(v);
 
 /**
@@ -122,8 +123,6 @@ export interface SnapshotRows { metrics: MetricRow[]; events: EventRow[] }
 export type ApiError = 'unauthorized' | 'bad_request' | 'too_large' | 'busy' | 'unavailable';
 export type Fail = { ok: false; error: ApiError; detail?: string };
 
-/** `warnings`: daily-form lists that were dropped (length mismatch) while the rest was saved. */
-export type IngestReply = { ok: true; metrics: number; skipped?: number; warnings?: string[] } | Fail;
 export type EventReply = { ok: true; duplicate?: true } | Fail;
 /**
  * `rev` is the data revision (docs/backend.md#revision): when it differs from the one the client cached with, rows
@@ -132,7 +131,3 @@ export type EventReply = { ok: true; duplicate?: true } | Fail;
 export type SnapshotReply = { ok: true; me: PersonId; now: string; rev: string; rows: SnapshotRows } | Fail;
 /** `build`: hash of the deployed Code.js (`dev` unbundled), to tell which code the deployment runs. */
 export type WhoamiReply = { ok: true; me: PersonId; build: string } | Fail;
-/** Keyless `{"action":"health"}`: the deployment is up, authorized and running `build` (docs/ops/runbook.md §3). */
-export type HealthReply = { ok: true; build: string } | Fail;
-/** `uploads`: the caller's last ingest audit rows, newest first (`notes` holds warnings plus the body's shape). */
-export type UploadsReply = { ok: true; rows: { at: string; status: string; bytes: number; notes: string }[] } | Fail;

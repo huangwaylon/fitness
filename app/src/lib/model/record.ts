@@ -16,7 +16,7 @@ type Rec = Record<string, unknown>;
 /**
  * Shape checks per event type: a spend names one of the two rewards (SHOP) at exactly its price. Whether the wallet
  * covers it and the pref values stay read-time rules in the model (`model/state.ts`), so the record stays a dumb log.
- * `now`: the server's clock (a tally's or island day's date may not be after tomorrow).
+ * `now`: the server's clock (a tally's or island day's date may not be after tomorrow). @public (relay/src/store.ts)
  */
 export function validEventData(type: string, d: Rec, now: number): boolean {
   switch (type) {

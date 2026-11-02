@@ -14,6 +14,12 @@ ALLOWED_ORIGINS = "https://huangwaylon.github.io"
 # match; its private half is the secret VAPID_PRIVATE) and the subject the push services may contact.
 VAPID_PUBLIC = "BCfU7NJ22GxdALlsB_vyhPE3hi5LGgLHl2OKcwdOAkEEoLoIJmcaoG0wmFbO5WX9nriyL0PXACdU5S7pCdn6qTE"
 VAPID_SUBJECT = "https://huangwaylon.github.io/fitness/"
+# The record's one-way export to the sheet (docs/backend.md#the-record "Export"): the Apps Script web app's /exec URL.
+EXPORT_URL = "https://script.google.com/macros/s/AKfycbwAMHDa69-GmAEmhrO7WXiRhkQoJLzCImiBkwV7itHbSATMC_wtHFEgy4Tn5eXzKjGU/exec"
+
+# Every 15 minutes the export when the record changed; 18:00 UTC (03:00 Tokyo) whatever changed.
+[triggers]
+crons = ["*/15 * * * *", "0 18 * * *"]
 
 [[durable_objects.bindings]]
 name = "ROOM"
@@ -40,7 +46,12 @@ head_sampling_rate = 0.1
 [env.test]
 name = "island-fund-relay-test"
 
+# the test copy exports nowhere (no EXPORT_URL) and runs no cron
+[env.test.triggers]
+crons = []
+
 [env.test.vars]
+EXPORT_URL = ""
 ALLOWED_ORIGINS = "https://huangwaylon.github.io"
 VAPID_PUBLIC = "BCfU7NJ22GxdALlsB_vyhPE3hi5LGgLHl2OKcwdOAkEEoLoIJmcaoG0wmFbO5WX9nriyL0PXACdU5S7pCdn6qTE"
 VAPID_SUBJECT = "https://huangwaylon.github.io/fitness/"

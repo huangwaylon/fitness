@@ -138,7 +138,7 @@ export interface RecordMark { at: string; rev: string }
 
 /** What the Apps Script wrote (`ingest`: health rows, `event`: an event row). */
 const NOTICE_WHAT = ['ingest', 'event'] as const;
-export type NoticeWhat = (typeof NOTICE_WHAT)[number];
+type NoticeWhat = (typeof NOTICE_WHAT)[number];
 
 /**
  * The sheet changed: Apps Script POSTs this to the relay's /notify after a write (signed, docs/backend.md#push), and the
