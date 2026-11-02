@@ -889,7 +889,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   /** Where a walk has a villager by now, and which way it's heading (null: over). */
   function along(w: Walker, t: number): { p: [number, number]; d: [number, number]; done: boolean } {
     const P = w.path!;
-    const k = Math.min(1, (t - P.t0) / P.ms);
+    // (a walk heard before it sets off, by a clock a little behind: at its start till then)
+    const k = Math.max(0, Math.min(1, (t - P.t0) / P.ms));
     let d = k * P.total, a: Pt = P.from;
     for (let i = 0; i < P.pts.length; i++) {
       const b = P.pts[i];

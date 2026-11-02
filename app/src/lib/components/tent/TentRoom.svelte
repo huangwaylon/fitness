@@ -75,7 +75,9 @@
   };
   const own = demo ? (testRelay() ?? createLocalLive(me)) : null;
   const relay: Live | null = demo ? own : LIVE_URL ? liveRelay() : null;
-  const relayNow = () => shared.now();
+  // (on the relay's own clock, as the island's: a `?date=` preview shifts the day, not when a walk set off; it's set at
+  // each page's load, so two phones previewing one date would disagree by the gap between their loads)
+  const relayNow = () => relay?.serverNow() ?? Date.now();
   // the tent's presence and drags as before; another home's say which (`sc`), so they show only in there
   const send = (i: Intent) => relay?.send(homeSc && (i.kind === 'tent' || i.kind === 'drag') ? ({ ...i, sc: homeSc } as Intent) : i) ?? false;
   /** Whether a relayed tent or drag is about this home. */

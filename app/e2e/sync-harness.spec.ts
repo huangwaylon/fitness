@@ -13,8 +13,11 @@ import { BUILDINGS, CAMS, HOMES, SEATS } from '../src/lib/components/island/worl
 /** The edit tray open, and the room re-centred above it (a tap's px only holds once the camera is at rest). */
 async function openEdit(p: Page) {
   await p.locator('[data-tent-edit-open]').click();
-  await p.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still());
+  await settled(p);
 }
+/** The tent's camera at rest, framed for the bar as it is now (a pick or a place changes the bar and re-frames the
+ *  room: a px is only where the finger lands once it's still). */
+const settled = (p: Page) => p.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still());
 
 /** Where a villager stands at the tent's door (nav.ts doorOf). */
 const DOOR = ((b) => [b.x, b.z - 16] as const)(BUILDINGS.find((b) => b.id === 'campsite')!);
@@ -287,8 +290,8 @@ test('a phrase is presence: the partner sees it over my villager at once, a phon
 // replayed.
 type TentHooks = {
   stats(): { frames: number }; tile(x: number, z: number): [number, number]; pieces(): { id: string; item: string; x: number; z: number; f: number }[];
-  held(): { id: string; x: number; z: number }[]; edit(): { sel: { id: string; x: number; z: number } | null } | null;
-  partner(): { at: [number, number]; walking: boolean } | null; mine(): [number, number];
+  held(): { id: string; x: number; z: number }[]; edit(): { sel: { id: string; x: number; z: number; f: number } | null } | null;
+  partner(): { at: [number, number]; walking: boolean } | null; mine(): [number, number]; walking(w: string): boolean;
 };
 const tt = <R,>(page: Page, fn: (t: TentHooks) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
 
@@ -308,26 +311,18 @@ test('two phones in the tent: one room, A’s drag live on B (held there), the d
   await a.bringToFront();
   await openEdit(a);
   await a.locator('[data-tent-item="f4081"]').click();
+  await settled(a);
   // (a 2 × 1 piece's middle on the line between tiles 1 and 2)
   let [x, y] = await a.evaluate(() => (window as unknown as { __tent: { px(x: number, z: number): [number, number] } }).__tent.px(-20, -25));
   await a.mouse.click(x, y);
+  await expect.poll(() => tt(a, (t) => t.edit()?.sel ?? null)).toMatchObject({ x: 1, z: 1 });
   await a.locator('[data-act="place"]').click();
   await expect.poll(() => tt(b, (t) => t.pieces().map((p) => p.item)), { timeout: 4000 }).toEqual(['f4081']);
   const p0 = (await tt(a, (t) => t.pieces()))[0];
-  // A drags it across the back row slowly; B samples what it holds as it goes
+  // A drags it across the back row; B follows it as it goes
+  await settled(a);
   [x, y] = await tt(a, (t) => t.tile(t.pieces()[0].x, t.pieces()[0].z));
   const [x2, y2] = await tt(a, (t) => t.tile(6, 1));
-  const samples: number[] = [];
-  const sample = b.evaluate(async () => {
-    const out: number[] = [];
-    const t0 = Date.now();
-    while (Date.now() - t0 < 2600) {
-      const h = (window as unknown as { __tent: TentHooks }).__tent.held();
-      if (h.length) out.push(h[0].x);
-      await new Promise((r) => setTimeout(r, 30));
-    }
-    return out;
-  });
   // both phones know the other is there (presence: a drag goes only to a partner who is)
   await expect.poll(() => Promise.all([a, b].map((p) => p.evaluate(() => (window as unknown as { __tent: { peer(): boolean } }).__tent.peer()))), { timeout: 6000 }).toEqual([true, true]);
   // (the piece is drawn there: its model in)
@@ -336,12 +331,19 @@ test('two phones in the tent: one room, A’s drag live on B (held there), the d
   await a.mouse.down();
   // A has it (a press on a placed piece picks it up)
   await expect.poll(() => tt(a, (t) => t.edit()?.sel?.id ?? null), { timeout: 2000 }).toBe(p0.id);
+  // each spot A's finger takes it to is held there on B (its middle: the 2 × 1 cot's, facing as placed), live, before
+  // A's finger goes on (the stream's ≤ 10 a second, its last spot always sent)
+  const seen = new Set<number>();
   for (let k = 1; k <= 10; k++) {
     await a.mouse.move(x + ((x2 - x) * k) / 10, y + ((y2 - y) * k) / 10);
-    await a.waitForTimeout(110);
+    const sel = (await tt(a, (t) => t.edit()?.sel ?? null))!;
+    expect(sel).toMatchObject({ id: p0.id, f: p0.f });
+    const mid = -40 + (sel.x + 1) * 10;
+    await expect.poll(() => tt(b, (t) => t.held()[0]?.x ?? null), { timeout: 3000 }).toBe(mid);
+    seen.add(mid);
   }
   // held on B: B can't pick it up while A has it
-  await expect.poll(() => tt(b, (t) => t.held().length), { timeout: 3000 }).toBe(1);
+  expect(await tt(b, (t) => t.held().length)).toBe(1);
   await b.bringToFront();
   await openEdit(b);
   const [bx, by] = await tt(b, (t) => t.tile(t.pieces()[0].x, t.pieces()[0].z));
@@ -349,21 +351,24 @@ test('two phones in the tent: one room, A’s drag live on B (held there), the d
   expect((await tt(b, (t) => t.edit()))?.sel ?? null).toBeNull();
   await a.bringToFront();
   await a.mouse.up();
-  await a.waitForTimeout(400);
   await a.locator('[data-act="place"]').click();
-  samples.push(...(await sample));
+  await expect.poll(async () => (await tt(a, (t) => t.pieces()))[0].x).toBeGreaterThan(p0.x + 2);
   const end = (await tt(a, (t) => t.pieces()))[0];
-  expect(end.x).toBeGreaterThan(p0.x + 2);
   // B saw it on its way (several spots between), then it landed where A dropped it, no longer held
-  expect(new Set(samples.map((s) => Math.round(s))).size).toBeGreaterThanOrEqual(3);
+  expect(seen.size).toBeGreaterThanOrEqual(3);
   await expect.poll(() => tt(b, (t) => t.held().length), { timeout: 3000 }).toBe(0);
   await expect.poll(() => tt(b, (t) => t.pieces()[0]), { timeout: 3000 }).toMatchObject({ id: end.id, x: end.x, z: end.z, f: end.f });
   // A walks: B plays A's villager there (A's to move)
   await a.locator('[data-tent-done]').click();
   await b.locator('[data-tent-done]').click();
+  await settled(a);
   [x, y] = await tt(a, (t) => t.tile(5, 4));
   await a.mouse.click(x, y);
-  await a.waitForTimeout(2500);
+  // (there: the tile's middle, 15, 5)
+  await a.waitForFunction(() => {
+    const t = (window as unknown as { __tent: TentHooks }).__tent, [mx, mz] = t.mine();
+    return !t.walking('A') && Math.hypot(mx - 15, mz - 5) < 1.5;
+  });
   const mine = await tt(a, (t) => t.mine());
   await expect.poll(async () => {
     const p = await tt(b, (t) => t.partner());
