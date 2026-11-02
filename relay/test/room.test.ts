@@ -375,6 +375,13 @@ describe('two protocol versions (v2: the rolling-log world)', () => {
     now += 1000;
     say2(a, { kind: 'say', text: '\u200B' });
     expect(b2.sent).toHaveLength(2);
+    // where it was said (a home's room), passed on for the phones to show it only in the same place
+    now += 1000;
+    say2(a, { kind: 'say', text: 'おじゃまします', sc: 'u' });
+    expect(b2.sent.at(-1)).toEqual({ v: 2, kind: 'say', text: 'おじゃまします', sc: 'u', who: 'A', t: expect.any(Number) });
+    now += 1000;
+    say2(a, { kind: 'say', text: 'どこ？', sc: 'island' }); // an unknown place: dropped
+    expect(b2.sent).toHaveLength(3);
     expect(saved).toEqual([]);
     expect(a.closed).toBeNull();
     // a phone opening later hears none of it
