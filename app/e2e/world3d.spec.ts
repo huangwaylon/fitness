@@ -18,7 +18,7 @@ const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()
 const ready = (page: Page) => page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
 const Q = 'demo&date=2026-11-04T12:00&critter=none&visitor=none';
 
-test('the 2D island never loads three; ?island=3d draws the island in 3D and a tap on the lawn walks my villager', async ({ page }) => {
+test('the 2D island never loads three; ?island=3d draws the island in 3D and a tap on the lawn walks my villager', { tag: '@render' }, async ({ page }) => {
   test.setTimeout(60_000);
   const scripts: string[] = [];
   page.on('response', async (r) => {
@@ -185,7 +185,7 @@ test('the board\'s focus: the camera frames a thing, the finger does nothing mea
   expect(after.pitch).toBe(before.pitch);
 });
 
-test('nothing drawn strays off the island: no NaN or far-flung vertex (the falling leaves\' lines), no material warnings', async ({ page }) => {
+test('nothing drawn strays off the island: no NaN or far-flung vertex (the falling leaves\' lines), no material warnings', { tag: '@render' }, async ({ page }) => {
   test.setTimeout(60_000);
   const warns: string[] = [];
   page.on('console', (m) => (m.type() === 'warning' || m.type() === 'error') && /THREE/.test(m.text()) && warns.push(m.text()));
@@ -201,7 +201,7 @@ test('nothing drawn strays off the island: no NaN or far-flung vertex (the falli
   expect(warns).toEqual([]);
 });
 
-test('at night the glows add light without touching the canvas\'s alpha (a lamp\'s halo over the sky was a black box)', async ({ page }) => {
+test('at night the glows add light without touching the canvas\'s alpha (a lamp\'s halo over the sky was a black box)', { tag: '@render' }, async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto(`?demo&date=2026-11-04T22:00&critter=none&visitor=none&island=3d`);
   await ready(page);
