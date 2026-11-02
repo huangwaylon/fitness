@@ -98,3 +98,16 @@ export async function geo(page: Page): Promise<Geo> {
   return page.evaluate(() => (window as unknown as { __world: { geo(): Geo } }).__world.geo());
 }
 
+/** A tap at (x, y) the moment the fish bites (the 「！」, `[data-bite]`): waited for in the page (a MutationObserver), not
+ *  by expect's polling, which backs off to a look a second, past NH's 1.6 s bite window (critters.ts BITE_WINDOW_MS)
+ *  under CI's load, so the reel came after the fish had gone. Work out (x, y) before the bite. */
+export async function reelOnBite(page: Page, x: number, y: number, timeout = 12_000) {
+  await page.evaluate((timeout) => new Promise<void>((ok, no) => {
+    const bit = () => !!document.querySelector('[data-bite]');
+    if (bit()) return ok();
+    const mo = new MutationObserver(() => bit() && (mo.disconnect(), clearTimeout(t), ok()));
+    const t = setTimeout(() => (mo.disconnect(), no(new Error('no bite'))), timeout);
+    mo.observe(document, { childList: true, subtree: true, attributes: true });
+  }), timeout);
+  await page.mouse.click(x, y);
+}
