@@ -7,7 +7,8 @@
   // sheet for good); the partner's villager is here while they are (each phone moves its own: the `tent` intent, the
   // very walk) or while they're away; what they drag moves here as they drag it (dragLink.ts). Nothing gives ベル.
   import { goto } from '$app/navigation';
-  import { resolve } from '$app/paths';
+  import { asset, resolve } from '$app/paths';
+  import { url3d } from '../villager3d/manifest.ts';
   import { onMount, untrack } from 'svelte';
   import NavButton from '../ui/NavButton.svelte';
   import TentEdit from './TentEdit.svelte';
@@ -93,12 +94,15 @@
   /** The pieces where they stand in the room (a small thing on a table: on its top there). */
   const spots = (): Resolved[] => resolveRoom(room.pieces.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, ...(p.on ? { on: p.on } : {}), ...(p.l !== undefined ? { l: p.l } : {}) })));
 
+  const v3d = new URLSearchParams(location.search).get('v3d') !== '0';
   function lookOf(who: Who): Look | null {
     const villager = who === 'G' ? view.guest.villager : view.people[who].villager;
     const l = resolveLook({ villager, person: who });
     const key = villagerArt(l.id);
     const a = art(key), url = artUrl(key);
-    return a && url ? { url, aspect: a.w / a.h, looksRight: l.looksRight, noMirror: l.noMirror } : null;
+    // NH's 3D villager where it has one (?v3d=0: the renders, a comparison)
+    const model = v3d ? url3d(l.id, asset('room/villagers3d/' as Parameters<typeof asset>[0])) : null;
+    return a && url ? { url, aspect: a.w / a.h, looksRight: l.looksRight, noMirror: l.noMirror, model, id: l.id } : null;
   }
   const nightOf = (tod: string) => (tod === 'night' ? 1 : tod === 'dusk' ? 0.55 : tod === 'dawn' ? 0.3 : 0);
 

@@ -1,8 +1,8 @@
 // The tent's room in 3D (docs/design.md "The tent"): three.js, loaded only when the tent opens (its own chunk). NH's
 // largest room (8 × 8 tiles, grid.ts) under NH's fixed, slightly top-down room camera and a warm interior light: the
 // floor and three walls in NH's wallpaper and flooring, the furniture as the glTFs scripts/room-models.ts made, the
-// villagers as billboards of their official renders (no 3D villagers: the 417 villagers' models would be far too much
-// to ship), each with a soft round shadow. Drawn on demand: a frame only when something changed or moves (a walk, a
+// villagers NH's own 3D models where they have one (villager3d/: the island's; walking, sitting, lying, a hop, their
+// blinks), else billboards of their official renders, each with a soft round shadow. Drawn on demand: a frame only when something changed or moves (a walk, a
 // piece popping in, a jiggle), nothing while still. Plain TS; the screen (TentRoom.svelte) drives it.
 import {
   AmbientLight, BoxGeometry, CanvasTexture, CircleGeometry, Color, DirectionalLight, DoubleSide, Group, HemisphereLight,
@@ -14,6 +14,8 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { HALF, ROOM, TILE, centreOf, isSurface, isWallItem, onTop, wallSpot, type Facing, type Pt, type Spot } from './grid.ts';
 import { footprint, floorUrl, ITEMS, modelUrl, wallUrl } from './items.ts';
+import { createVillager, VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
+import { seatOf } from '../villager3d/poses.ts';
 
 /** The walls' height (RoomMdlWall: 40 model units, four tiles). */
 const WALL_H = 40;
@@ -40,6 +42,9 @@ export interface Look {
   /** The render looks toward the viewer's right as drawn; never mirror it (a logo on the outfit). */
   looksRight: boolean;
   noMirror: boolean;
+  /** Its 3D model (villager3d manifest url3d) and roster id, when NH has one: drawn instead of the render. */
+  model?: string | null;
+  id?: string;
 }
 export type Hit = { kind: 'piece'; id: string } | { kind: 'villager'; who: Who } | { kind: 'door' } | { kind: 'floor'; x: number; z: number };
 export interface Placed extends Spot {
@@ -752,7 +757,10 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     key.color.set(0xfff0d6).lerp(new Color(0xffd29a), k);
     amb.intensity = (0.35 - 0.1 * k) * (roomOn ? 1 : 0.6);
     fill.intensity = (0.9 - 0.4 * k) * dim;
-    for (const v of villagers.values()) v.mat.color.set(0xffffff).lerp(new Color(0xd8cfe8), k * 0.35);
+    for (const v of villagers.values()) {
+      v.mat.color.set(0xffffff).lerp(new Color(0xd8cfe8), k * 0.35);
+      v.v3?.lift(v3Lift());
+    }
     lights();
     invalidate();
   }
@@ -774,7 +782,16 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     pose: Pose | null;
     /** The render's alpha, small (a tap hits the villager, not the clear around it). */
     alpha: { w: number; h: number; a: Uint8ClampedArray } | null;
+    /** Its 3D model once loaded (the card then only its tap area, undrawn), where it was last frame, its heading. */
+    v3: Villager3D | null;
+    was: [number, number];
+    yaw: number;
+    /** Posed in the last frame (one more pose once it stops: settled). */
+    posing: boolean;
   }
+  /** The villagers' models are in the island's units (80 u tall): the room's are VILLAGER_H. */
+  const V3_SCALE = VILLAGER_H / 80;
+  const v3Lift = () => (0.3 - 0.18 * nightN) * (roomOn ? 1 : 0.5);
   const villagers = new Map<Who, Walker>();
   const disc = softDisc();
   const cardGeo = new PlaneGeometry(1, 1).translate(0, 0.5, 0);
@@ -784,6 +801,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     const was = villagers.get(who);
     if (was && (!look || was.look.url !== look.url)) {
       scene.remove(was.card, was.shadow);
+      was.v3?.dispose();
       was.mat.map?.dispose();
       was.mat.dispose();
       villagers.delete(who);
@@ -799,14 +817,28 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     const shadow = new Mesh(shadowGeo, shadowMat);
     shadow.rotation.x = -Math.PI / 2;
     shadow.renderOrder = 2;
-    const w: Walker = { look, card, mat, shadow, pos: [who === 'A' ? -6 : who === 'B' ? 6 : 0, 20], face: who === 'A' ? 1 : -1, path: null, hop: 0, alpha: null, pose: null };
+    const w: Walker = { look, card, mat, shadow, pos: [who === 'A' ? -6 : who === 'B' ? 6 : 0, 20], face: who === 'A' ? 1 : -1, path: null, hop: 0, alpha: null, pose: null, v3: null, was: [0, 0], yaw: 0, posing: true };
+    w.was = [...w.pos];
     villagers.set(who, w);
     scene.add(card, shadow);
+    if (look.model && look.id) void createVillager(look.id, look.model, who.charCodeAt(0) * 0.7).then((v) => {
+      if (disposed || villagers.get(who) !== w) return v.dispose();
+      w.v3 = v;
+      v.group.scale.setScalar(V3_SCALE);
+      v.lift(v3Lift());
+      scene.add(v.group);
+      // the card stays as its tap area, undrawn; the model has its own shadow
+      mat.visible = false;
+      shadow.visible = false;
+      w.yaw = view.az + w.face * 0.5;
+      place(w);
+      invalidate();
+    }, () => {});
     tex.loadAsync(look.url).then((t) => {
       if (disposed || villagers.get(who) !== w) return t.dispose();
       t.colorSpace = SRGBColorSpace;
       mat.map = t;
-      mat.visible = true;
+      mat.visible = !w.v3;
       mat.needsUpdate = true;
       const img = t.image as CanvasImageSource & { width: number; height: number };
       const ah = 48, aw = Math.max(1, Math.round((ah * img.width) / img.height));
@@ -836,6 +868,19 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     // seated, it faces the piece's front as the camera sees it
     if (P) w.face = screenSide(P.front[0], P.front[1]) || w.face;
     const flip = !w.look.noMirror && (w.face > 0) !== w.look.looksRight;
+    if (w.v3) {
+      placeCard(w, P, flip, bob, squash);
+      const g = w.v3.group;
+      if (P) {
+        // its hips on the seat's top (lying: its middle on the bed), facing the piece's front
+        g.position.set(P.at[0], P.lie ? P.y : P.y - seatOf(w.v3.rig.body) * VILLAGER_S * V3_SCALE, P.at[1]);
+        g.rotation.set(0, Math.atan2(P.front[0], P.front[1]), 0);
+      } else {
+        g.position.set(w.pos[0], 0, w.pos[1]);
+        g.rotation.set(0, w.yaw, 0);
+      }
+      return;
+    }
     if (P) {
       // the renders have no sitting or lying art: sitting, the billboard sinks into the seat to the hips, a little
       // shorter; lying, it lies back along the bed, its head toward the bed's back, facing up at the camera
@@ -852,6 +897,12 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     w.shadow.position.set(w.pos[0], 0.1, w.pos[1]);
     const s = 1 - Math.min(0.3, bob / 8);
     w.shadow.scale.set(s, s, s);
+  }
+  /** The card as the 3D villager's tap area: where its render would be (undrawn). */
+  function placeCard(w: Walker, P: Pose | null, flip: boolean, bob: number, squash: number) {
+    w.card.position.set(P ? P.at[0] : w.pos[0], P ? P.y - VILLAGER_H * 0.22 : bob, P ? P.at[1] : w.pos[1]);
+    w.card.rotation.set(view.pitch * 0.45, view.az, 0);
+    w.card.scale.set(VILLAGER_H * w.look.aspect * (flip ? -1 : 1) * (1 + squash), VILLAGER_H * (1 - squash), 1);
   }
   function pose(who: Who, p: Pose | null) {
     const w = villagers.get(who);
@@ -921,6 +972,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     const w = villagers.get(who);
     if (!w) return;
     w.hop = now();
+    w.v3?.act('hop');
     invalidate();
   }
 
@@ -1198,11 +1250,60 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     if (!raf && !disposed) raf = requestAnimationFrame(frame);
   }
   const POP_MS = 320, BUMP_MS = 360, HOP_MS = 420;
+  /** A 3D villager's frame: its walk (its heading turned to, the stride by the distance), its seat, its hop; posed
+   *  only while it moves (or the camera does), else only its face (a blink). True while it wants frames. */
+  let lastT3 = 0;
+  function stepV3(w: Walker, t: number): boolean {
+    const v = w.v3!, dt = lastT3 ? Math.min(100, t - lastT3) : 16;
+    let busy = false;
+    if (w.path) {
+      const a = along(w, t);
+      w.pos = a.p;
+      if (Math.hypot(a.d[0], a.d[1]) > 0.01) {
+        let d = Math.atan2(a.d[0], a.d[1]) - w.yaw;
+        while (d > Math.PI) d -= Math.PI * 2;
+        while (d < -Math.PI) d += Math.PI * 2;
+        w.yaw += d * Math.min(1, (14 * dt) / 1000);
+      }
+      const side = screenSide(a.d[0], a.d[1]);
+      if (side) setFace(w, side);
+      if (a.done) w.path = null;
+      busy = true;
+    }
+    else if (!w.pose) {
+      // standing: it turns to the camera, a little to the side it last faced (NH's)
+      let d = view.az + w.face * 0.45 - w.yaw;
+      while (d > Math.PI) d -= Math.PI * 2;
+      while (d < -Math.PI) d += Math.PI * 2;
+      if (Math.abs(d) > 0.01) {
+        w.yaw += d * Math.min(1, (6 * dt) / 1000);
+        busy = true;
+      }
+    }
+    const moved = Math.hypot(w.pos[0] - w.was[0], w.pos[1] - w.was[1]);
+    w.was = [w.pos[0], w.pos[1]];
+    v.set(w.pose ? (w.pose.lie ? 'lie' : 'sit') : w.path ? 'walk' : 'idle');
+    if (w.hop && t - w.hop < 1400) busy = true;
+    else w.hop = 0;
+    place(w);
+    if (busy || w.posing || cameraMoving) {
+      // (its stride in its own units: the room's are V3_SCALE of the island's)
+      v.step(t, moved / V3_SCALE, w.path ? (moved / V3_SCALE / Math.max(1, dt)) * 1000 : 0);
+      w.posing = busy;
+      return busy || w.posing;
+    }
+    return v.blink(t) && false;
+  }
+  /** The camera moved since the last frame (the 3D villagers are posed while it does). */
+  let cameraMoving = false, camRev = '';
   function frame() {
     raf = 0;
     if (disposed) return;
     const t = now();
     let more = false;
+    const rv = `${view.az}:${view.pitch}:${view.k}`;
+    cameraMoving = rv !== camRev;
+    camRev = rv;
     for (const l of live.values()) {
       if (!l.body) continue;
       let sx = 1, sy = 1;
@@ -1292,6 +1393,10 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     }
     for (const w of villagers.values()) {
       let bob = 0, squash = 0;
+      if (w.v3) {
+        if (stepV3(w, t)) more = true;
+        continue;
+      }
       if (w.path) {
         const a = along(w, t);
         w.pos = a.p;
@@ -1328,8 +1433,17 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     if (cost.length > 600) cost.shift();
     frames++;
     if (frames === 1) readyFn();
+    lastT3 = t;
     if (more) invalidate();
   }
+  // the 3D villagers' blinks while the room is still: their face checked a few times a second, a frame only when one
+  // changes (a texture's offset)
+  const blinks = setInterval(() => {
+    if (document.hidden || raf) return;
+    let changed = false;
+    for (const w of villagers.values()) if (w.v3 && !w.path && !w.posing && w.v3.blink(now())) changed = true;
+    if (changed) invalidate();
+  }, 120);
 
   fit();
   night(0);
@@ -1354,6 +1468,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     dispose() {
       disposed = true;
       cancelAnimationFrame(raf);
+      clearInterval(blinks);
+      for (const w of villagers.values()) w.v3?.dispose();
       const seen = new Set<object>();
       const free = (o: Object3D) => o.traverse((n) => {
         const m = n as Mesh;
