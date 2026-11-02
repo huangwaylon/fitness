@@ -457,3 +457,17 @@ are cut away. The villagers are their renders as billboards turned to the camera
 little), alpha-tested and depth-sorted with the furniture. Why: the user asked for a perspective camera the player
 can move and rotate, "like NH's room camera but freer", and 2D villagers in 3D that hide behind a table and cover it in
 front.
+
+### The island in 3D: three.js under the DOM island
+The island is drawn in three.js (`components/world3d/`, behind `?island=3d` and せってい's しまの えがきかた switch until it
+does all the 2D island does, then the default): NH's models instanced, the ground a heightfield under the baked
+textures, the water live, every material bent onto the rolling log in its vertex shader. The DOM island keeps running
+over the canvas: its nodes are placed through the 3D camera (`camera.svelte.ts` `Proj3`) and stay the tap areas, the
+popups, the balloons and the marks; their art goes invisible where the canvas draws the thing. The camera is NH's: one
+finger scrolls along the island only (z, a free fling, never x), two pinch the zoom (clamped, eased back), it never
+rotates and nothing but the finger moves it; a gesture is one thing from start to end. Shadows and water are on; the
+shadow map is drawn unbent (three's receivers look it up at their unbent position), so it redraws only when its box
+steps, not on each frame of a scroll. Every lamp is always-on emissive with a halo and a pool; the 6 real point lights
+go to the lights nearest the view's centre with hysteresis, fading over 400 ms, so a light never pops. Why: the user
+approved the POC on the phone ("redo the whole map such that it's all 3d. same as the tent room…"), and reusing the
+DOM island's model, director, nav, sync and every overlay means only the drawing and the hit-testing are new.

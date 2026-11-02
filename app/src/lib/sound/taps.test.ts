@@ -40,6 +40,7 @@ const NONE: Record<string, string> = {
   'lib/components/kiroku/ValueInput.svelte': 'the goal fields (weight, Move): the system keyboard clicks',
   'lib/components/panel/VillagerPicker.svelte': 'name and search fields; the villager already chosen does nothing',
   'lib/components/panel/LangSection.svelte': 'the language already chosen does nothing',
+  'lib/components/panel/RenderSection.svelte': 'the island view already chosen does nothing',
   'lib/components/panel/IslandPanel.svelte': 'the tab already shown does nothing',
   'lib/components/health/Health.svelte': 'the period or person already shown does nothing',
   'lib/components/kiroku/GoalCard.svelte': 'the person already shown does nothing',

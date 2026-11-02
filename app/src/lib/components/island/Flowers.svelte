@@ -46,7 +46,7 @@
 </script>
 
 {#each flowers as f (f.id)}
-  <div class="node" {@attach w.at({ x: f.x, z: f.z, h: f.h, inv: true })}>
+  <div class="node" {@attach w.at({ x: f.x, z: f.z, h: f.h, inv: true, model: true })}>
     <span class="fl" data-flower={f.id} data-hit-min data-kind={f.kind} data-white={f.white || undefined}>
       <span class="b"><OfficialArt key={f.key} size={u(f.h)} /></span>
       {#if season === 'winter'}<span class="cap"></span>{/if}

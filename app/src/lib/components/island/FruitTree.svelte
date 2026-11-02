@@ -333,7 +333,7 @@
 </script>
 
 <!-- the tree: its trunk and its canopy, two world nodes (one art, clipped) -->
-<div class="node" data-tree-node={person.person} {@attach w.at({ x, z, h: H, inv: true })}>
+<div class="node" data-tree-node={person.person} {@attach w.at({ x, z, h: H, inv: true, model: true })}>
   <div class="tree" bind:this={treeEl} style:width={u(W)} style:height={u(H)} style:clip-path={TRUNK}
     onanimationend={(e) => e.animationName === 'if-shake' && treeEl?.classList.remove('shaking')}>
     <span class="oak"><OfficialArt key={treeArt(foliage)} size={u(H)} priority /></span>
@@ -342,7 +342,7 @@
   <button type="button" class="trunk-btn" style:width="max({u(W * 0.42)}, calc(45px * var(--inv, 1)))" style:height={u(H * 0.5)}
     tabindex="-1" aria-hidden="true" data-sfx="self" onclick={() => tap(null)}></button>
 </div>
-<div class="node" {@attach w.at({ x, z, h: H, dz: -14 })}>
+<div class="node" {@attach w.at({ x, z, h: H, dz: -14, model: true })}>
   <div class="tree" bind:this={canopyEl} style:width={u(W)} style:height={u(H)} style:clip-path={CANOPY}
     onanimationend={(e) => e.animationName === 'if-shake' && canopyEl?.classList.remove('shaking')}>
     <span class="oak"><OfficialArt key={treeArt(foliage)} size={u(H)} priority /></span>

@@ -32,8 +32,10 @@
     /** The Tokyo date and hour: the decor's seasonal pieces (fixedDecor.ts). */
     date?: string;
     hour?: number;
+    /** The 3D island draws it (world3d/): its lights and shadows are the canvas's; the nodes are the tap areas. */
+    r3?: boolean;
   }
-  let { season, foliage, month, live = true, onbuilding, tod = 'day', date, hour = 12 }: Props = $props();
+  let { season, foliage, month, live = true, onbuilding, tod = 'day', date, hour = 12, r3 = false }: Props = $props();
   const w = useWorld();
 
   /** An icon oak's trunk and canopy cut from its one image (a rendered oak has its own -trunk / -canopy layers). */
@@ -117,7 +119,7 @@
   {@const base = keyOf(s)}
   {@const key = part !== 'body' && layered(base) ? `${base}-${part}` : base}
   {@const th = trunkHit(s, part)}
-  <div class="spr" data-scenery-id={s.id} data-kind={s.kind} data-part={part} {@attach w.at({ x: s.x, z: s.z, h: s.h, dz: part === 'canopy' ? -14 : 0, inv: !!th })}>
+  <div class="spr" data-scenery-id={s.id} data-kind={s.kind} data-part={part} {@attach w.at({ x: s.x, z: s.z, h: s.h, dz: part === 'canopy' ? -14 : 0, inv: !!th, model: true })}>
     <span class="art" data-look={key} class:flip={s.flip} class:snow={winter && s.kind === 'bush' && !P[key]} class:bush={s.kind === 'bush'} class:fire={live && !!FIRE_AT[s.key]}
       data-bush={s.kind === 'bush' ? s.id : undefined} data-campfire={FIRE_AT[s.key] ? s.id : undefined}
       style={at3d(key, s.h, s.flip)} style:height="calc({s.h} * var(--u))" style:width="calc({wOf(key, s.h)} * var(--u))"
@@ -146,7 +148,7 @@
 
 {#each fixtures as f (f.id + f.key)}
   <!-- the fixed decor (fixedDecor.ts): a tap answers where it stands (SceneTaps: data-fixture) -->
-  <div class="spr" data-scenery-id={f.id} data-kind="decor" data-part="body" {@attach w.at({ x: f.x, z: f.z, h: f.h })}>
+  <div class="spr" data-scenery-id={f.id} data-kind="decor" data-part="body" {@attach w.at({ x: f.x, z: f.z, h: f.h, model: true })}>
     {#if f.fixture === 'shishi'}
       <span class="art fixture shishi" class:tipped bind:this={shishiEl} data-fixture={live ? f.fixture : undefined} data-look={f.key} data-tipped={tipped || undefined}
         style={at3d(f.key, f.h)} style:height="calc({f.h} * var(--u))" style:width="calc({wOf(f.key, f.h)} * var(--u))">
@@ -160,7 +162,7 @@
       </span>
     {/if}
   </div>
-  {#if f.shade}
+  {#if f.shade && !r3}
     <div class="spr shade-node" {@attach w.at({ mode: 'flat', x: f.x + 2, z: f.z - 1, h: 4, zi: POOL_Z })}>
       <span class="shade" style:width="calc({wOf(f.key, f.h) * 0.95} * var(--u))"></span>
     </div>
@@ -168,7 +170,7 @@
 {/each}
 
 {#each BUILDINGS as b (b.id)}
-  <div class="spr building" data-building={b.id} {@attach w.at({ x: b.x, z: b.z, h: b.h })}>
+  <div class="spr building" data-building={b.id} {@attach w.at({ x: b.x, z: b.z, h: b.h, model: true })}>
     <button type="button" class="door" disabled={!live} data-sfx="self" data-scenery aria-label={t(`world.building.${b.id}`)}
       style={at3d(b.key, b.h)} style:height="calc({b.h} * var(--u))" style:width="calc({wOf(b.key, b.h)} * var(--u))"
       onclick={(e) => onbuilding?.(b.id, e.currentTarget)}>
@@ -177,7 +179,7 @@
   </div>
 {/each}
 
-{#if lit}
+{#if lit && !r3}
   {#each BUILDINGS as b (b.id)}
     {#if LIT_ART[b.key]}
       <div class="spr lit" data-lit={b.id} style:opacity={lit} {@attach w.at({ x: b.x, z: b.z, h: b.h, dz: -0.5, light: true })}>

@@ -1,36 +1,42 @@
-// The 3D island (the /world3d POC, /tmp/world3d/design.md): the whole of world.ts's island in three.js, NH's way.
+// The 3D island (docs/design.md "World", docs/decisions.md "The island in 3D"): the island drawn in three.js, NH's way,
+// under the same island the 2D one runs (IslandScene: its World places every DOM node through this camera, and the DOM
+// keeps the taps, the popups, the balloons and the marks; their art goes invisible where a model or a card draws it).
 //   The camera: NH's fixed, high island camera with a long lens, the rolling log bending the world away (bend.ts, every
-//   material); the finger pans (z along the island, x only as far as the zoom leaves land off-screen), pinches zoom
-//   (clamped, the pitch easing lower as it zooms in, as NH's does); nothing else ever moves it. No rotation.
-//   The ground: the island's own baked chunks on a heightfield (ground.ts); the water live (water.ts).
-//   The things: NH's models (static/room/world3d, scripts/world3d-models.ts), one InstancedMesh per model and material.
-//   The villagers: billboards of their official renders, alpha-tested, depth-tested, a soft blob shadow (the tent's way).
-//   The frames: 60 a second while anything moves (a touch, a fling, a walk, a jiggle), 30 when only the water does, none
-//   when hidden (or, with the water off, none while still). Plain TS; World3D.svelte drives it.
+//   material). One finger scrolls along the island (z) with a free fling and soft ends; two pinch the zoom (clamped,
+//   eased back at the limits, the pitch lowering as it zooms in, as NH's does). Its x is always the island's middle;
+//   it never rotates, and nothing but the finger moves it.
+//   The ground: the island's baked chunks on a heightfield (ground.ts, from the layout); the water live (water.ts).
+//   The things: NH's models (things.ts); the villagers and what has no model yet: cards (cards.ts).
+//   The lights: lights.ts (always-on emissive and halos, faded point lights). Water and shadows on by default.
+//   The frames: 60 a second while anything moves, 30 while only the water does, none hidden. The World's step runs in
+//   each frame before it draws, so the DOM moves with the picture.
+// Plain TS; world3d/Island3D.svelte drives it.
 import {
-  CanvasTexture, CircleGeometry, Color, DirectionalLight, DoubleSide, Fog, Group, HemisphereLight, InstancedMesh,
-  Material, Matrix4, Mesh, MeshBasicMaterial, MeshDepthMaterial, MeshLambertMaterial, MeshStandardMaterial, Object3D,
-  PerspectiveCamera, PlaneGeometry, PointLight, Quaternion, RGBADepthPacking, Scene, SRGBColorSpace, Texture,
-  TextureLoader, Vector3, WebGLRenderer, BufferGeometry, Float32BufferAttribute, Uint32BufferAttribute, type Fog as FogT
+  BufferGeometry, Color, DirectionalLight, Float32BufferAttribute, Fog, HemisphereLight, Mesh, MeshLambertMaterial,
+  PerspectiveCamera, Scene, SRGBColorSpace, Texture, TextureLoader, Uint32BufferAttribute, Vector3, WebGLRenderer,
+  PCFSoftShadowMap, type Material
 } from 'three';
-import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { bend, bendPoint, bendU, unbendRay } from './bend.ts';
-import { CHUNKS, CHUNK_D, chunkGrid, feetY, groundHeight } from './ground.ts';
 import { createWater, waterFog, waterU } from './water.ts';
-import type { Inst, ModelName } from './layout3d.ts';
-import W3D from './models.json' with { type: 'json' };
-import { PLAN, LAND, CAMPSITE } from '../island/world.ts';
+import { createThings, type Things } from './things.ts';
+import { createCards, type Cards } from './cards.ts';
+import { createLights, type LampSpot, type Lights } from './lights.ts';
+import type { Inst } from './layout3d.ts';
 
-export type Who = 'A' | 'B';
-export type Tod = 'day' | 'dusk' | 'night';
-export interface Look {
-  url: string;
-  aspect: number;
-  looksRight: boolean;
-  noMirror: boolean;
+type Tod = 'day' | 'dusk' | 'night';
+
+/** The ground the island stands on (ground.ts from world.ts today; the island layout's terrain once it lands). */
+export interface GroundSource {
+  /** How many chunks, and one chunk's heightfield (three's space) with uvs into its baked texture. */
+  chunks: number;
+  grid(i: number): { pos: Float32Array; uv: Float32Array; index: Uint32Array };
+  /** A chunk's world z extent. */
+  span(i: number): [number, number];
+  /** The ground's height, and where a walker's feet are (a bridge's deck). */
+  height(x: number, z: number): number;
+  feet(x: number, z: number): number;
 }
-export type Hit = { kind: 'ground'; x: number; z: number } | { kind: 'villager'; who: Who } | { kind: 'thing'; id: string; tap: NonNullable<Inst['tap']>; x: number; z: number };
+
 export interface Options {
   dpr: number;
   water: boolean;
@@ -38,36 +44,44 @@ export interface Options {
   /** Frames a second at most (30 or 60). */
   cap: 30 | 60;
 }
-export interface Stats {
+interface Stats {
   fps: number;
-  /** CPU per frame (ms: three's work and the GL calls) and the interval between frames drawn. */
+  /** CPU per frame (ms: the World's step, three's work and the GL calls) and the interval between frames drawn. */
   cpu: [number, number];
   gap: [number, number];
   calls: number;
   tris: number;
   textures: number;
   geometries: number;
-  heap: number | null;
   dpr: number;
   frames: number;
   loading: number;
   camZ: number;
   zoom: number;
+  points: number;
+  lamps: number;
 }
 
-/** Villagers stand 80u tall (world.ts's scale). */
-const VILLAGER_H = 80;
-/** The camera: vertical field of view (a long lens) and the pitch at zoom 1 / fully in / fully out. */
+/** The camera: vertical field of view (a long lens), the pitch at zoom 1 / fully in / fully out, the zoom's range. */
 const FOV = 30;
-const PITCH = { def: 58, near: 42, far: 64 };
-const ZOOM = { min: 0.62, max: 1.7 };
+const PITCH = { def: 58, near: 44, far: 63 };
+const ZOOM = { min: 0.66, max: 1.8 };
+/** How far past a limit a pinch may go (eased back on release), as a factor. */
+const ZOOM_OVER = 1.12;
 /** Where the camera may look (the pivot's world z): the sea in front of まえ … the falls and the forest above the cliff. */
-const CAM_Z = { min: 20, max: 1010 };
-const SPEED = 200;
+const CAM_Z = { min: 30, max: 1000 } as const;
+/** The island's middle (the camera's x, always). */
+const MID_X = 195;
+/** The width the camera shows at the pivot at zoom 1 (u): the land is 470 (its beaches just off the sides). */
+const VIEW_W = 420;
 /** The baked ground already has its light painted in: under the models' brighter light it's dimmed back to the bake. */
 const GROUND_K = 0xe2e2e2;
 /** How far below the screen's middle the pivot sits (a share of the height). */
 const PIVOT_DROP = 0.16;
+/** The shadow map's box moves in steps of this (u): it redraws when it steps, not on every frame of a scroll. */
+const SHADOW_STEP = 40;
+/** The cards lean back this share of the camera's pitch. */
+const LEAN = 0.42;
 const now = () => performance.now();
 const pctl = (a: number[], p: number) => {
   if (!a.length) return 0;
@@ -75,39 +89,7 @@ const pctl = (a: number[], p: number) => {
   return s[Math.min(s.length - 1, Math.floor(p * s.length))];
 };
 
-function softDisc(): CanvasTexture {
-  const c = document.createElement('canvas');
-  c.width = c.height = 64;
-  const g = c.getContext('2d')!;
-  const r = g.createRadialGradient(32, 32, 2, 32, 32, 31);
-  r.addColorStop(0, 'rgba(30,40,20,0.45)');
-  r.addColorStop(1, 'rgba(30,40,20,0)');
-  g.fillStyle = r;
-  g.fillRect(0, 0, 64, 64);
-  const t = new CanvasTexture(c);
-  t.colorSpace = SRGBColorSpace;
-  return t;
-}
-
-/** The sky: a vertical gradient (the scene's background, drawn behind everything). */
-function skyTexture(top: string, mid: string, low: string): CanvasTexture {
-  const c = document.createElement('canvas');
-  c.width = 2;
-  c.height = 256;
-  const g = c.getContext('2d')!;
-  const r = g.createLinearGradient(0, 0, 0, 256);
-  r.addColorStop(0, top);
-  r.addColorStop(0.55, mid);
-  r.addColorStop(1, low);
-  g.fillStyle = r;
-  g.fillRect(0, 0, 2, 256);
-  const t = new CanvasTexture(c);
-  t.colorSpace = SRGBColorSpace;
-  return t;
-}
-
 interface TodLook {
-  sky: [string, string, string];
   fog: number;
   hemi: [number, number, number];
   sun: [number, number];
@@ -115,84 +97,86 @@ interface TodLook {
   tint: number;
   lamps: number;
   villager: number;
-  /** NH's flat, soft look: each model lit a little by its own colour, whatever way its faces turn (a canopy's
-   *  undersides, a trunk's shade side). */
+  /** NH's flat, soft look: each model lit a little by its own colour, whatever way its faces turn. */
   lift: number;
 }
 const TOD: Record<Tod, TodLook> = {
-  day: { sky: ['#5fb8f2', '#9fd8fb', '#e2f5ff'], fog: 0xd7f0ff, hemi: [0xffffff, 0xe6efd4, 3.0], sun: [0xfff3df, 1.5], sunAt: [-0.55, 1, 0.75], tint: 0xffffff, lamps: 0, villager: 0xffffff, lift: 0.32 },
-  dusk: { sky: ['#5a5fa8', '#e2889a', '#ffc78e'], fog: 0xf2b996, hemi: [0xffd2b4, 0xb09ab0, 2.5], sun: [0xffa66a, 1.3], sunAt: [0.9, 0.45, 0.4], tint: 0xffd6c0, lamps: 0.6, villager: 0xffd9c4, lift: 0.22 },
-  night: { sky: ['#0b1636', '#1b2c5c', '#33467a'], fog: 0x223463, hemi: [0x7d93d6, 0x3a4570, 1.7], sun: [0xa9bcff, 0.5], sunAt: [-0.3, 1, 0.5], tint: 0x8795c8, lamps: 1, villager: 0x9aa6d6, lift: 0.08 }
+  day: { fog: 0xd7f0ff, hemi: [0xffffff, 0xe6efd4, 3.0], sun: [0xfff3df, 1.5], sunAt: [-0.55, 1, 0.75], tint: 0xffffff, lamps: 0, villager: 0xffffff, lift: 0.32 },
+  dusk: { fog: 0xf2b996, hemi: [0xffd2b4, 0xb09ab0, 2.5], sun: [0xffa66a, 1.3], sunAt: [0.9, 0.45, 0.4], tint: 0xffd6c0, lamps: 0.7, villager: 0xffd9c4, lift: 0.22 },
+  night: { fog: 0x223463, hemi: [0x7d93d6, 0x3a4570, 1.7], sun: [0xa9bcff, 0.5], sunAt: [-0.3, 1, 0.5], tint: 0x8795c8, lamps: 1, villager: 0x9aa6d6, lift: 0.08 }
 };
 
-export interface World3D {
+export interface Island3 {
   resize(): void;
-  /** What stands on the island (loads the models it needs). */
+  /** The ground's baked look (its chunk URLs). */
+  groundLook(urls: readonly string[]): void;
+  /** What stands on the island (a full list: only what changed rebuilds). */
   place(list: readonly Inst[]): Promise<void>;
-  /** The ground's baked look (static/terrain/<look>/), its chunk URLs. */
-  ground(urls: readonly string[]): void;
-  villager(who: Who, look: Look | null, at: readonly [number, number]): void;
-  /** Walk a villager along world points at the run. */
-  walk(who: Who, pts: readonly (readonly [number, number])[]): number;
-  at(who: Who): [number, number] | null;
-  put(who: Who, p: readonly [number, number]): void;
-  hop(who: Who): void;
-  jiggle(id: string): void;
-  tod(t: Tod): void;
-  /** The finger: pan by client px, zoom by a factor about client px, fling at px/ms on release. */
-  pan(dx: number, dy: number): void;
-  zoom(f: number): void;
-  fling(vx: number, vy: number): void;
+  things: Things;
+  cards: Cards;
+  /** Extra lights beside the models' (a decoration's lamp, a Halloween lantern). */
+  glows(list: readonly LampSpot[]): void;
+  /** The time of day, and a wet day's darkening (0 … 1) and its colour. */
+  tod(t: Tod, wet?: number, fog?: string): void;
+  // ---- the finger ----
+  /** Scroll by a drag of `dy` client px (down: toward まえ). */
+  pan(dy: number): void;
+  /** Zoom by a factor, about a screen y (the pinch's middle: the ground there stays put). */
+  zoom(f: number, sy?: number): void;
+  /** A release's fling (px/ms). */
+  fling(vy: number): void;
   touching(on: boolean): void;
-  /** The camera's pivot (world z) and zoom; set them (the e2e, ?cam=). */
-  view(): { camZ: number; camX: number; zoom: number };
+  /** The camera (the e2e, the way back from the tent). */
+  view(): { camZ: number; zoom: number; pitch: number };
   go(camZ: number, zoom?: number): void;
-  hit(cx: number, cy: number): Hit | null;
-  /** A world point's client px. */
-  client(x: number, y: number, z: number): [number, number];
+  limits(): { min: number; max: number };
+  /** The camera's ends for this screen (the scene fits them: まえ's shore, おく's campsite). */
+  setLimits(min: number, max: number): void;
+  // ---- the projection (the World's Proj3; px from the canvas's top-left) ----
+  at(x: number, z: number, lift: number): { sx: number; sy: number; k: number; up: number; ground: number; depth: number; visible: boolean };
+  groundAt(sx: number, sy: number): { x: number; z: number } | null;
+  horizon(): number;
+  rev(): number;
+  kick(): void;
+  /** Nothing moving (the water may still run at 30). */
+  idle(): boolean;
+  /** Called in every frame before it draws: true wants another (something moves). */
+  onFrame(fn: ((t: number) => boolean) | null): void;
   options(o: Partial<Options>): void;
   stats(): Stats;
-  ready: Promise<void>;
   dispose(): void;
 }
 
-export function createWorld(canvas: HTMLCanvasElement, init: Partial<Options> & { aa?: boolean; R?: number; pitch?: number } = {}): World3D {
-  const opts: Options = { dpr: Math.min(2, window.devicePixelRatio || 1), water: true, shadows: false, cap: 60, ...init };
-  const renderer = new WebGLRenderer({ canvas, antialias: init.aa ?? true, alpha: false, powerPreference: 'high-performance', stencil: false });
+export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init: Partial<Options> & { aa?: boolean } = {}): Island3 {
+  const opts: Options = { dpr: Math.min(2, window.devicePixelRatio || 1), water: true, shadows: true, cap: 60, ...init };
+  const renderer = new WebGLRenderer({ canvas, antialias: init.aa ?? true, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance', stencil: false });
   renderer.setPixelRatio(opts.dpr);
+  renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = SRGBColorSpace;
-  renderer.shadowMap.enabled = false;
+  renderer.shadowMap.enabled = opts.shadows;
+  renderer.shadowMap.type = PCFSoftShadowMap;
   renderer.shadowMap.autoUpdate = false;
-  bendU.uBendR.value = init.R ?? 1300;
+  bendU.uBendR.value = 1300;
 
   const scene = new Scene();
   const camera = new PerspectiveCamera(FOV, 1, 20, 6000);
   const fog = new Fog(0xd7f0ff, 1400, 3200);
   scene.fog = fog;
-
   const hemi = new HemisphereLight(0xeaf6ff, 0x9ac276, 1.55);
   const sun = new DirectionalLight(0xfff3df, 1.9);
-  sun.shadow.mapSize.set(1024, 1024);
-  Object.assign(sun.shadow.camera, { left: -320, right: 320, top: 320, bottom: -320, near: 10, far: 1600 });
-  sun.shadow.bias = -0.0008;
-  sun.shadow.normalBias = 1.5;
+  sun.castShadow = opts.shadows;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.bias = -0.0006;
+  sun.shadow.normalBias = 1.2;
+  sun.shadow.radius = 3;
   scene.add(hemi, sun, sun.target);
-  /** The night's lamps: a few point lights moved to the lamps nearest the camera's pivot (always in the scene, so a
-   *  change of time never recompiles a shader). */
-  const LIGHTS = 4;
-  const lamps: PointLight[] = Array.from({ length: LIGHTS }, () => {
-    const l = new PointLight(0xffc77a, 0, 150, 1.4);
-    scene.add(l);
-    return l;
-  });
-  let lampSpots: { x: number; y: number; z: number; fire: boolean }[] = [];
   let todLook = TOD.day;
 
-  // ---- the ground: 8 chunks, each its baked texture ----
+  // ---- the ground: its chunks, each its baked texture ----
   const tex = new TextureLoader();
   const chunks: Mesh[] = [];
-  for (let i = 0; i < CHUNKS; i++) {
-    const g = chunkGrid(i);
+  for (let i = 0; i < src.chunks; i++) {
+    const g = src.grid(i);
     const geo = new BufferGeometry();
     geo.setAttribute('position', new Float32BufferAttribute(g.pos, 3));
     geo.setAttribute('uv', new Float32BufferAttribute(g.uv, 2));
@@ -201,14 +185,16 @@ export function createWorld(canvas: HTMLCanvasElement, init: Partial<Options> & 
     const m = new Mesh(geo, bend(new MeshLambertMaterial({ color: GROUND_K })));
     m.frustumCulled = false;
     m.receiveShadow = true;
-    m.userData.z0 = PLAN.z0 + i * CHUNK_D;
+    m.userData.span = src.span(i);
     chunks.push(m);
     scene.add(m);
   }
   let groundUrls: readonly string[] = [];
-  function ground(urls: readonly string[]) {
+  function groundLook(urls: readonly string[]) {
+    if (urls.join() === groundUrls.join()) return;
     groundUrls = urls;
     urls.forEach((u, i) => {
+      if (!chunks[i]) return;
       pending++;
       tex.loadAsync(u).then((t) => {
         pending--;
@@ -218,270 +204,66 @@ export function createWorld(canvas: HTMLCanvasElement, init: Partial<Options> & 
         const mm = chunks[i].material as MeshLambertMaterial;
         mm.map?.dispose();
         mm.map = t;
-        mm.color.set(GROUND_K);
         mm.needsUpdate = true;
-        invalidate();
+        kick();
       }, () => void pending--);
     });
   }
 
-  // ---- the water ----
+  // ---- the water, the things, the cards, the lights ----
   const water = createWater();
   for (const m of water.all) scene.add(m);
-
-  // ---- the models ----
-  const loader = new GLTFLoader();
-  loader.setMeshoptDecoder(MeshoptDecoder);
-  const base = new URL(`room/world3d/`, new URL(document.baseURI)).href;
-  const gltfs = new Map<ModelName, Promise<GLTF | null>>();
-  const model = (name: ModelName) => {
-    let p = gltfs.get(name);
-    if (!p) {
-      pending++;
-      p = loader.loadAsync(`${base}${name}.glb?v=${W3D.models[name].v}`).then((g) => (pending--, g), (e: unknown) => {
-        pending--;
-        console.warn('world3d: model', name, e);
-        return null;
-      });
-      gltfs.set(name, p);
-    }
-    return p;
-  };
-  /** NH's soft look, cheaper than PBR: every model's material as a Lambert (its map, cut-out and night light kept). */
-  const lit: MeshLambertMaterial[] = [], lifted: MeshLambertMaterial[] = [];
-  const toLambert = (m: Material): MeshLambertMaterial => {
-    const s = m as MeshStandardMaterial;
-    // the lift is the albedo itself as the emissive (no extra texture); a lamp's own emissive map is its night light
-    const own = !!s.emissiveMap;
-    const l = new MeshLambertMaterial({
-      map: s.map, color: s.color, transparent: s.transparent, opacity: s.opacity, alphaTest: s.alphaTest, side: s.side, depthWrite: s.depthWrite,
-      emissive: own ? new Color(0xffe2a8) : s.map ? new Color(0xffffff) : s.color.clone(), emissiveMap: own ? s.emissiveMap : s.map,
-      emissiveIntensity: own ? todLook.lamps : todLook.lift
-    });
-    // foliage (cut out: NH's leaf cards) is lit through: more lift
-    l.userData.lift = s.alphaTest ? 1.5 : 1;
-    l.emissiveIntensity *= own ? 1 : l.userData.lift;
-    (own ? lit : lifted).push(l);
-    return bend(l);
-  };
-  /** A bent depth material for a caster's shadow (its cut-out kept). */
-  const depthOf = (m: MeshLambertMaterial) =>
-    bend(new MeshDepthMaterial({ depthPacking: RGBADepthPacking, map: m.alphaTest ? m.map : null, alphaTest: m.alphaTest }));
-
-  interface Group3 {
-    list: Inst[];
-    meshes: { im: InstancedMesh; local: Matrix4 }[];
-    base: Matrix4[];
-  }
-  const groups = new Map<ModelName, Group3>();
-  const instAt = new Map<string, { g: Group3; i: number; inst: Inst; h: number }>();
-  const jiggles = new Map<string, number>();
-  const tmpM = new Matrix4(), tmpQ = new Quaternion(), tmpV = new Vector3(), tmpS = new Vector3(), up = new Vector3(0, 1, 0);
-  /** An instance's matrix (three's space): its spot on the ground, its yaw, its scale. */
-  const matOf = (o: Inst, out: Matrix4, wobble = 0, squash = 0) => {
-    tmpQ.setFromAxisAngle(up, o.yaw ?? 0);
-    if (wobble) tmpQ.multiply(new Quaternion().setFromAxisAngle(new Vector3(0, 0, 1), wobble));
-    tmpS.set(o.scale * (1 + squash), o.scale * (1 - squash), o.scale * (1 + squash));
-    const y = (o.lift ?? 0) + (o.model === 'bridge-stone' ? groundHeight(o.x, o.z - 30) - 1 : groundHeight(o.x, o.z));
-    return out.compose(tmpV.set(o.x, y, -o.z), tmpQ, tmpS);
-  };
+  const things = createThings(scene, src.height, () => ((shadowsDirty = true), kick()));
+  const cards = createCards(scene, (sh) => (sh && (shadowsDirty = true), kick()));
+  const lights = createLights(scene);
+  let extraGlows: readonly LampSpot[] = [];
+  const relight = () => lights.set([...things.lamps(), ...extraGlows]);
   async function place(list: readonly Inst[]) {
-    const by = new Map<ModelName, Inst[]>();
-    for (const o of list) (by.get(o.model) ?? by.set(o.model, []).get(o.model)!).push(o);
-    lampSpots = list.filter((o) => /lantern|streetlamp|campfire|tent/.test(o.model)).map((o) => ({
-      x: o.x, z: o.z, fire: o.model === 'campfire',
-      y: groundHeight(o.x, o.z) + (o.model === 'streetlamp' ? 42 : o.model === 'tent' ? 30 : o.model === 'campfire' ? 14 : 18)
-    }));
-    await Promise.all([...by].map(async ([name, insts]) => {
-      const g = await model(name);
-      if (!g || disposed) return;
-      g.scene.updateMatrixWorld(true);
-      const grp: Group3 = { list: insts, meshes: [], base: [] };
-      g.scene.traverse((n) => {
-        const mesh = n as Mesh;
-        if (!mesh.isMesh) return;
-        const mat = toLambert(mesh.material as Material);
-        const im = new InstancedMesh(mesh.geometry, mat, insts.length);
-        im.frustumCulled = false;
-        im.castShadow = true;
-        im.receiveShadow = true;
-        im.customDepthMaterial = depthOf(mat);
-        // a flower's petals take its colour
-        const mname = (mesh.material as Material).name;
-        if (insts.some((o) => o.tint !== undefined) && /Flower|Petal|Flow|Bloom/.test(mname) && !/Body|Leaf/.test(mname))
-          insts.forEach((o, i) => im.setColorAt(i, new Color(o.tint ?? 0xffffff)));
-        grp.meshes.push({ im, local: mesh.matrixWorld.clone() });
-        scene.add(im);
-      });
-      const h = W3D.models[name].max[1];
-      insts.forEach((o, i) => {
-        grp.base.push(matOf(o, new Matrix4()));
-        instAt.set(o.id, { g: grp, i, inst: o, h: h * o.scale });
-      });
-      writeGroup(grp);
-      groups.set(name, grp);
-      invalidate();
-    }));
-    readyFn();
-  }
-  function writeGroup(grp: Group3, only?: number) {
-    for (const { im, local } of grp.meshes) {
-      for (let i = 0; i < grp.base.length; i++) {
-        if (only !== undefined && i !== only) continue;
-        im.setMatrixAt(i, tmpM.multiplyMatrices(grp.base[i], local));
-      }
-      im.instanceMatrix.needsUpdate = true;
-    }
-  }
-  function jiggle(id: string) {
-    if (!instAt.has(id)) return;
-    jiggles.set(id, now());
-    invalidate();
-  }
-
-  // ---- the villagers: billboards at their feet, leaning back a little toward the camera ----
-  interface Walker {
-    look: Look;
-    card: Mesh;
-    mat: MeshBasicMaterial;
-    shadow: Mesh;
-    pos: [number, number];
-    face: number;
-    path: { pts: [number, number][]; t0: number; lens: number[]; total: number; from: [number, number] } | null;
-    hop: number;
-  }
-  const villagers = new Map<Who, Walker>();
-  const disc = softDisc();
-  const cardGeo = new PlaneGeometry(1, 1).translate(0, 0.5, 0);
-  const shadowGeo = new CircleGeometry(22, 20).rotateX(-Math.PI / 2);
-  const shadowMat = bend(new MeshBasicMaterial({ map: disc, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
-  function villager(who: Who, look: Look | null, at: readonly [number, number]) {
-    const was = villagers.get(who);
-    if (was) {
-      scene.remove(was.card, was.shadow);
-      was.mat.map?.dispose();
-      was.mat.dispose();
-      villagers.delete(who);
-    }
-    if (!look) return invalidate();
-    const mat = bend(new MeshBasicMaterial({ alphaTest: 0.5, side: DoubleSide, color: todLook.villager }));
-    mat.visible = false;
-    const card = new Mesh(cardGeo, mat);
-    card.frustumCulled = false;
-    card.castShadow = true;
-    card.customDepthMaterial = bend(new MeshDepthMaterial({ depthPacking: RGBADepthPacking, alphaTest: 0.5 }));
-    const shadow = new Mesh(shadowGeo, shadowMat);
-    shadow.frustumCulled = false;
-    shadow.renderOrder = 4;
-    const w: Walker = { look, card, mat, shadow, pos: [at[0], at[1]], face: who === 'A' ? 1 : -1, path: null, hop: 0 };
-    villagers.set(who, w);
-    scene.add(card, shadow);
-    pending++;
-    tex.loadAsync(look.url).then((t) => {
-      pending--;
-      if (disposed || villagers.get(who) !== w) return t.dispose();
-      t.colorSpace = SRGBColorSpace;
-      mat.map = t;
-      (card.customDepthMaterial as MeshDepthMaterial).map = t;
-      mat.visible = true;
-      mat.needsUpdate = true;
-      placeWalker(w);
-      invalidate();
-    }, () => void pending--);
-    placeWalker(w);
-  }
-  function placeWalker(w: Walker, bob = 0, squash = 0) {
-    const flip = !w.look.noMirror && (w.face > 0) !== w.look.looksRight;
-    const y = feetY(w.pos[0], w.pos[1]);
-    w.card.position.set(w.pos[0], y + bob, -w.pos[1]);
-    w.card.rotation.set(-pitch * 0.42, 0, 0);
-    w.card.scale.set(VILLAGER_H * w.look.aspect * (flip ? -1 : 1) * (1 + squash), VILLAGER_H * (1 - squash), 1);
-    w.shadow.position.set(w.pos[0], y + 0.4, -w.pos[1]);
-    const s = 1 - Math.min(0.3, bob / 40);
-    w.shadow.scale.set(s, 1, s * 0.7);
-  }
-  function walk(who: Who, pts: readonly (readonly [number, number])[]) {
-    const w = villagers.get(who);
-    if (!w || !pts.length) return 0;
-    const lens: number[] = [];
-    let at: readonly number[] = w.pos, total = 0;
-    for (const p of pts) {
-      const d = Math.hypot(p[0] - at[0], p[1] - at[1]);
-      lens.push(d);
-      total += d;
-      at = p;
-    }
-    w.path = { pts: pts.map((p) => [p[0], p[1]]), t0: now(), lens, total, from: [w.pos[0], w.pos[1]] };
-    activity();
-    return (total / SPEED) * 1000;
-  }
-  function along(w: Walker, t: number) {
-    const P = w.path!;
-    let d = ((t - P.t0) / 1000) * SPEED;
-    let a = P.from;
-    for (let i = 0; i < P.pts.length; i++) {
-      const b = P.pts[i], L = P.lens[i];
-      if (d <= L) {
-        const k = L ? d / L : 1;
-        return { p: [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k] as [number, number], dx: b[0] - a[0], done: false };
-      }
-      d -= L;
-      a = b;
-    }
-    return { p: P.pts[P.pts.length - 1], dx: 0, done: true };
+    await things.place(list);
+    relight();
+    shadowsDirty = true;
+    kick();
   }
 
   // ---- the camera ----
-  let camZ = 110, camX = 195, zoomK = 1, pitch = (PITCH.def * Math.PI) / 180;
-  let W = 1, H = 1;
-  /** The camera's distance at zoom 1: the island's 390u fill the width at the pivot. */
-  let D0 = 1500;
-  const P0 = init.pitch ?? PITCH.def, PN = P0 + PITCH.near - PITCH.def, PF = P0 + PITCH.far - PITCH.def;
+  const lim = { min: CAM_Z.min as number, max: CAM_Z.max as number };
+  let camZ = lim.min, zoomK = 1, pitch = (PITCH.def * Math.PI) / 180, rev = 0, shadowKey = '';
+  let W = 1, H = 1, D0 = 1500, focal = 1;
   const pitchAt = (k: number) => {
-    const deg = k >= 1 ? P0 + (PN - P0) * Math.min(1, (k - 1) / (ZOOM.max - 1)) : P0 + (PF - P0) * Math.min(1, (1 - k) / (1 - ZOOM.min));
+    const kk = Math.max(ZOOM.min, Math.min(ZOOM.max, k));
+    const deg = kk >= 1 ? PITCH.def + (PITCH.near - PITCH.def) * ((kk - 1) / (ZOOM.max - 1)) : PITCH.def + (PITCH.far - PITCH.def) * ((1 - kk) / (1 - ZOOM.min));
     return (deg * Math.PI) / 180;
   };
-  const visW = () => 2 * (D0 / zoomK) * Math.tan(((FOV / 2) * Math.PI) / 180) * (W / H);
-  function clampCam() {
-    camZ = Math.max(CAM_Z.min, Math.min(CAM_Z.max, camZ));
-    const half = visW() / 2, land = (LAND.x1 - LAND.x0) / 2 + 30, mid = (LAND.x0 + LAND.x1) / 2;
-    const slack = Math.max(0, land - half);
-    camX = Math.max(mid - slack, Math.min(mid + slack, camX));
-    if (slack === 0) camX = 195 + (camX - 195) * 0.0;
-  }
   function aim() {
-    clampCam();
     pitch = pitchAt(zoomK);
     const D = D0 / zoomK;
-    camera.position.set(camX, D * Math.sin(pitch), -camZ + D * Math.cos(pitch));
-    camera.lookAt(camX, 0, -camZ);
+    camera.position.set(MID_X, D * Math.sin(pitch), -camZ + D * Math.cos(pitch));
+    camera.lookAt(MID_X, 0, -camZ);
     camera.updateMatrixWorld();
     bendU.uBendZ.value = -camZ;
     fog.near = D * 1.25;
     fog.far = D * 3.2;
-    waterFog(fog as FogT);
-    // the shadow's box follows the pivot
-    sun.position.set(camX + todLook.sunAt[0] * 600, todLook.sunAt[1] * 600, -camZ + todLook.sunAt[2] * 600);
-    sun.target.position.set(camX, 0, -camZ - 60);
-    sun.target.updateMatrixWorld();
-    shadowsDirty = true;
+    waterFog(fog);
+    // the shadow's box follows the pivot, as wide as the view, in steps (the shadow map redraws only when it steps)
+    const zq = Math.round(camZ / SHADOW_STEP) * SHADOW_STEP, kq = Math.round(zoomK * 8) / 8;
+    const key = `${zq}:${kq}:${todLook.sunAt}`;
+    if (key !== shadowKey) {
+      shadowKey = key;
+      const half = (VIEW_W / Math.max(ZOOM.min, kq - 0.0625)) * 0.75 + SHADOW_STEP;
+      Object.assign(sun.shadow.camera, { left: -half, right: half, top: half * 1.4, bottom: -half * 1.1, near: 10, far: 1800 });
+      sun.shadow.camera.updateProjectionMatrix();
+      sun.position.set(MID_X + todLook.sunAt[0] * 700, todLook.sunAt[1] * 700, -zq - 120 + todLook.sunAt[2] * 700);
+      sun.target.position.set(MID_X, 0, -zq - 120);
+      sun.target.updateMatrixWorld();
+      shadowsDirty = true;
+    }
     // the ground chunks in reach (the bend drops the far ones behind the horizon)
     for (const c of chunks) {
-      const z0 = c.userData.z0 as number;
-      c.visible = z0 + CHUNK_D > camZ - 700 && z0 < camZ + 1400;
+      const [z0, z1] = c.userData.span as [number, number];
+      c.visible = z1 > camZ - 700 && z0 < camZ + 1500;
     }
-    for (const w of villagers.values()) placeWalker(w);
-    // the night's lamps nearest the pivot
-    const near = [...lampSpots].sort((a, b) => Math.abs(a.z - camZ - 150) - Math.abs(b.z - camZ - 150)).slice(0, LIGHTS);
-    lamps.forEach((l, i) => {
-      const s = near[i];
-      if (!s) return void (l.intensity = 0);
-      const [x, y, z] = bendPoint(s.x, s.y, -s.z, -camZ, bendU.uBendR.value);
-      l.position.set(x, y, z);
-      l.userData.fire = s.fire;
-      l.userData.base = todLook.lamps * (s.fire ? 2600 : 1500);
-      l.intensity = l.userData.base;
-    });
+    rev++;
+    horizonY = NaN;
   }
   function resize() {
     const r = canvas.getBoundingClientRect();
@@ -489,20 +271,86 @@ export function createWorld(canvas: HTMLCanvasElement, init: Partial<Options> & 
     H = Math.max(1, r.height);
     renderer.setSize(W, H, false);
     camera.aspect = W / H;
-    // 420u across at the pivot (the land is 470: its beaches just off the sides, as today)
-    D0 = 420 / (2 * Math.tan(((FOV / 2) * Math.PI) / 180) * camera.aspect);
+    D0 = VIEW_W / (2 * Math.tan(((FOV / 2) * Math.PI) / 180) * camera.aspect);
     // the pivot (the ground the camera looks at) a little below the middle: more island ahead, the horizon high
     camera.setViewOffset(W, H, 0, -PIVOT_DROP * H, W, H);
     camera.updateProjectionMatrix();
+    focal = H / 2 / Math.tan(((FOV / 2) * Math.PI) / 180);
     aim();
-    invalidate();
+    kick();
   }
 
-  // gestures
-  let touch = false, vel: [number, number] = [0, 0], lastT = 0;
+  // ---- the projection ----
+  const v3 = new Vector3();
+  /** A three-space point (already bent) → canvas px and its view depth. */
+  function screen(x: number, y: number, z: number): [number, number, number] {
+    v3.set(x, y, z).applyMatrix4(camera.matrixWorldInverse);
+    const depth = -v3.z;
+    v3.applyMatrix4(camera.projectionMatrix);
+    return [((v3.x + 1) / 2) * W, ((1 - v3.y) / 2) * H, depth];
+  }
+  function at(x: number, z: number, lift: number) {
+    const R = bendU.uBendR.value, pz = -camZ;
+    const gy = src.feet(x, z);
+    const [bx, by, bz] = bendPoint(x, gy + lift, -z, pz, R);
+    const [sx, sy, depth] = screen(bx, by, bz);
+    const k = depth > 1 ? focal / depth : 0;
+    // the foreshortening of an upright (a model's height) and of the ground, here
+    const [ux, uy, uz] = bendPoint(x, gy + lift + 10, -z, pz, R), [, uy2] = screen(ux, uy, uz);
+    const [fx, fy, fz] = bendPoint(x, gy, -(z + 6), pz, R), [, fy2] = screen(fx, fy, fz);
+    const up = k ? Math.max(0.05, (sy - uy2) / (10 * k)) : 1, ground = k ? Math.max(0, (sy - fy2) / (6 * k)) : 0;
+    // in front of the horizon: the ground faces the camera here (a tall thing's top may still show over it)
+    const th = (z - camZ) / R, ny = Math.cos(th), nz = -Math.sin(th);
+    const cy = camera.position.y - by, cz = camera.position.z - bz;
+    const visible = depth > 1 && (ny * cy + nz * cz) / Math.hypot(cy, cz) > -0.12;
+    return { sx, sy, k, up, ground, depth, visible };
+  }
+  function groundAt(sx: number, sy: number): { x: number; z: number } | null {
+    v3.set((sx / W) * 2 - 1, -(sy / H) * 2 + 1, 0.5).unproject(camera);
+    const o = camera.position, d = v3.sub(o).normalize();
+    let h = 3, hitP: { x: number; z: number } | null = null;
+    for (let i = 0; i < 3; i++) {
+      const p = unbendRay([o.x, o.y, o.z], [d.x, d.y, d.z], h, -camZ, bendU.uBendR.value);
+      if (!p) return hitP;
+      hitP = { x: p[0], z: -p[1] };
+      h = Math.max(-2, src.height(hitP.x, hitP.z));
+    }
+    return hitP;
+  }
+  let horizonY = NaN;
+  /** Where the ground's silhouette is on screen: the tangent from the camera to the log, seen in the y-z plane. */
+  function horizon(): number {
+    if (!Number.isNaN(horizonY)) return horizonY;
+    const R = bendU.uBendR.value + 3, oy = -bendU.uBendR.value, oz = -camZ;
+    const cy = camera.position.y - oy, cz = camera.position.z - oz, L = Math.hypot(cy, cz);
+    const base = Math.atan2(cy, cz), a = Math.acos(Math.min(1, R / L));
+    // the far tangent point (beyond the pivot: three's −z)
+    const t1 = base + a, t2 = base - a;
+    const p1: [number, number] = [oy + R * Math.sin(t1), oz + R * Math.cos(t1)], p2: [number, number] = [oy + R * Math.sin(t2), oz + R * Math.cos(t2)];
+    const far = p1[1] < p2[1] ? p1 : p2;
+    horizonY = Math.max(0, screen(MID_X, far[0], far[1])[1]);
+    return horizonY;
+  }
+  /** How much a card must stretch to show as tall as it's wide-scaled: the inverse of its height's foreshortening. */
+  function stretch(x: number, y: number, z: number, lean: number): number {
+    const R = bendU.uBendR.value, pz = -camZ;
+    const [bx, by, bz] = bendPoint(x, y, -z, pz, R);
+    const [, sy, depth] = screen(bx, by, bz);
+    const th = (z - camZ) / R, a = lean + th;
+    // its up: leaning back by its lean and the log's slope there
+    const [, ty] = screen(bx, by + 10 * Math.cos(a), bz - 10 * Math.sin(a));
+    const k = depth > 1 ? focal / depth : 1;
+    return Math.min(2.2, Math.max(1, (10 * k) / Math.max(0.1, sy - ty)));
+  }
+
+  // ---- the finger ----
+  let touch = false, vel = 0, lastT = 0, settling = false;
   const unitsPerPx = () => (2 * (D0 / zoomK) * Math.tan(((FOV / 2) * Math.PI) / 180)) / H;
-  /** A lighter pixel ratio while the camera moves (a pan, a pinch, a fling: the tent's way), back once it's still; never
-   *  for a tap (no blink). */
+  /** Past an end the scroll gives less and less (iOS's rubber band). */
+  const rubber = (over: number) => (over <= 0 ? 0 : (1 - 1 / (over / 160 + 1)) * 160);
+  let rawZ = camZ;
+  const clampZ = (z: number) => (z < lim.min ? lim.min - rubber(lim.min - z) : z > lim.max ? lim.max + rubber(z - lim.max) : z);
+  /** A lighter pixel ratio while the camera moves (the tent's way), back once it's still; never for a tap. */
   let lightened = false;
   function light(on: boolean) {
     if (on === lightened || opts.dpr <= 1.5) return;
@@ -510,88 +358,80 @@ export function createWorld(canvas: HTMLCanvasElement, init: Partial<Options> & 
     renderer.setPixelRatio(on ? 1.5 : opts.dpr);
     renderer.setSize(W, H, false);
   }
-  function pan(dx: number, dy: number) {
+  function pan(dy: number) {
     light(true);
-    const k = unitsPerPx();
-    camX -= dx * k;
-    camZ += (dy * k) / Math.sin(pitch);
+    settling = false;
+    rawZ += (dy * unitsPerPx()) / Math.sin(pitch);
+    camZ = clampZ(rawZ);
     aim();
     activity();
   }
-  function zoom(f: number) {
+  let rawK = zoomK;
+  const clampK = (k: number) => {
+    const lo = ZOOM.min, hi = ZOOM.max;
+    if (k < lo) return lo / (1 + (ZOOM_OVER - 1) * (1 - 1 / ((lo / k - 1) * 4 + 1)));
+    if (k > hi) return hi * (1 + (ZOOM_OVER - 1) * (1 - 1 / ((k / hi - 1) * 4 + 1)));
+    return k;
+  };
+  function zoom(f: number, sy = H * (0.5 + PIVOT_DROP)) {
     light(true);
-    zoomK = Math.max(ZOOM.min, Math.min(ZOOM.max, zoomK * f));
+    settling = false;
+    const before = groundAt(W / 2, sy);
+    rawK *= f;
+    zoomK = clampK(rawK);
     aim();
+    // the ground under the pinch stays put (along z: the camera's x never moves)
+    const after = groundAt(W / 2, sy);
+    if (before && after) {
+      camZ += before.z - after.z;
+      rawZ = camZ;
+      camZ = Math.max(lim.min - 160, Math.min(lim.max + 160, camZ));
+      aim();
+    }
     activity();
   }
-  function fling(vx: number, vy: number) {
-    vel = [vx, vy];
+  function fling(vy: number) {
+    vel = vy;
     lastT = now();
     activity();
   }
+  /** Back inside the limits (a released rubber band, the zoom past its end), eased. */
+  function settle(dt: number): boolean {
+    let more = false;
+    const zt = Math.max(lim.min, Math.min(lim.max, camZ)), kt = Math.max(ZOOM.min, Math.min(ZOOM.max, zoomK));
+    const e = 1 - Math.exp(-dt / 90);
+    if (Math.abs(zt - camZ) > 0.05) {
+      camZ += (zt - camZ) * e;
+      more = true;
+    } else camZ = zt;
+    if (Math.abs(kt - zoomK) > 0.0005) {
+      zoomK += (kt - zoomK) * e;
+      more = true;
+    } else zoomK = kt;
+    rawZ = camZ;
+    rawK = zoomK;
+    aim();
+    return more;
+  }
 
   // ---- time of day ----
-  let skyTex: CanvasTexture | null = null;
-  function tod(t: Tod) {
+  let wetK = 0;
+  function tod(t: Tod, wet = 0, fogCss?: string) {
     todLook = TOD[t];
-    skyTex?.dispose();
-    skyTex = skyTexture(...todLook.sky);
-    scene.background = skyTex;
-    fog.color.set(todLook.fog);
+    wetK = wet;
+    const dim = 1 - 0.35 * wet;
+    fog.color.set(fogCss && /^#[0-9a-f]{6}$/i.test(fogCss) ? fogCss : todLook.fog);
     hemi.color.set(todLook.hemi[0]);
     hemi.groundColor.set(todLook.hemi[1]);
-    hemi.intensity = todLook.hemi[2];
+    hemi.intensity = todLook.hemi[2] * dim;
     sun.color.set(todLook.sun[0]);
-    sun.intensity = todLook.sun[1];
-    waterU.uTint.value.set(todLook.tint);
-    for (const m of lit) m.emissiveIntensity = todLook.lamps;
-    for (const m of lifted) m.emissiveIntensity = todLook.lift * m.userData.lift;
-    for (const w of villagers.values()) w.mat.color.set(todLook.villager);
+    sun.intensity = todLook.sun[1] * (1 - 0.6 * wet);
+    waterU.uTint.value.set(todLook.tint).multiplyScalar(dim);
+    things.tod(todLook.lamps, todLook.lift * dim);
+    lights.level(todLook.lamps);
+    cards.tint(new Color(todLook.villager).multiplyScalar(0.94 + 0.06 * dim).getHex());
     aim();
-    invalidate();
-  }
-
-  // ---- taps ----
-  const ndc = new Vector3();
-  function client(x: number, y: number, z: number): [number, number] {
-    const [bx, by, bz] = bendPoint(x, y, -z, -camZ, bendU.uBendR.value);
-    ndc.set(bx, by, bz).project(camera);
-    const r = canvas.getBoundingClientRect();
-    return [r.left + ((ndc.x + 1) / 2) * r.width, r.top + ((1 - ndc.y) / 2) * r.height];
-  }
-  function groundAt(cx: number, cy: number): [number, number] | null {
-    const r = canvas.getBoundingClientRect();
-    ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1, 0.5).unproject(camera);
-    const o = camera.position, d = ndc.sub(o).normalize();
-    let h = 3, hitP: [number, number] | null = null;
-    for (let i = 0; i < 3; i++) {
-      const p = unbendRay([o.x, o.y, o.z], [d.x, d.y, d.z], h, -camZ, bendU.uBendR.value);
-      if (!p) return hitP;
-      hitP = [p[0], -p[1]];
-      h = Math.max(-2, groundHeight(hitP[0], hitP[1]));
-    }
-    return hitP;
-  }
-  function hit(cx: number, cy: number): Hit | null {
-    // the villagers first (in front), then the things (their screen box from foot to top), nearest the camera first
-    let best: { h: Hit; depth: number } | null = null;
-    const consider = (hh: Hit, x: number, z: number, h: number, wFrac: number, y0 = 0) => {
-      const [fx, fy] = client(x, feetY(x, z) + y0, z), [, ty] = client(x, feetY(x, z) + y0 + h, z);
-      const hpx = Math.max(24, fy - ty), wpx = Math.max(36, hpx * wFrac);
-      if (cx < fx - wpx / 2 || cx > fx + wpx / 2 || cy < ty || cy > fy + 10) return;
-      const depth = -z;
-      if (!best || depth > best.depth) best = { h: hh, depth };
-    };
-    for (const [who, w] of villagers) consider({ kind: 'villager', who }, w.pos[0], w.pos[1], VILLAGER_H * 0.9, w.look.aspect * 0.8);
-    for (const [id, a] of instAt) {
-      const o = a.inst;
-      if (!o.tap) continue;
-      const frac = o.tap === 'tree' ? 0.55 : o.tap === 'tent' ? 1.4 : 1;
-      consider({ kind: 'thing', id, tap: o.tap, x: o.x, z: o.z }, o.x, o.z, Math.max(18, a.h), frac, o.lift ?? 0);
-    }
-    if (best) return (best as { h: Hit }).h;
-    const g = groundAt(cx, cy);
-    return g ? { kind: 'ground', x: g[0], z: g[1] } : null;
+    activity();
   }
 
   // ---- options ----
@@ -611,90 +451,59 @@ export function createWorld(canvas: HTMLCanvasElement, init: Partial<Options> & 
       });
       shadowsDirty = true;
     }
+    for (const m of water.all) m.visible = opts.water;
     activity();
   }
 
   // ---- the frames ----
-  let raf = 0, frames = 0, disposed = false, shadowsDirty = true, pending = 0, activeUntil = 0, lastFrame = 0;
+  let raf = 0, frames = 0, disposed = false, shadowsDirty = true, pending = 0, activeUntil = 0, lastFrame = 0, busy = false;
+  let hook: ((t: number) => boolean) | null = null;
   const cpu: number[] = [], gaps: number[] = [], stamps: number[] = [];
-  let readyFn: () => void = () => {};
-  const ready = new Promise<void>((r) => (readyFn = r));
-  const activity = (ms = 400) => {
+  const activity = (ms = 300) => {
     activeUntil = Math.max(activeUntil, now() + ms);
-    invalidate();
+    kick();
   };
-  function invalidate() {
+  function kick() {
     if (!raf && !disposed) raf = requestAnimationFrame(frame);
   }
-  const HOP_MS = 420, JIG_MS = 520;
   function frame() {
     raf = 0;
     if (disposed || document.hidden) return;
     const t = now();
-    const active = touch || t < activeUntil;
+    const active = touch || t < activeUntil || busy;
     // 30 a second when only the water moves (or at the 30 cap): display frames in between are skipped
     const minGap = !active || opts.cap === 30 ? 1000 / 30 - 4 : 1000 / 60 - 4;
     if (lastFrame && t - lastFrame < minGap) {
       raf = requestAnimationFrame(frame);
       return;
     }
+    const dt = lastFrame ? Math.min(50, t - lastFrame) : 16;
     let more = false;
-    // the fling: iOS's deceleration
-    if (!touch && (vel[0] || vel[1])) {
-      const dt = Math.min(50, t - lastT);
+    // the fling: iOS's deceleration, firmer past an end
+    if (!touch && vel) {
+      const step = Math.min(50, t - lastT);
       lastT = t;
-      const k = unitsPerPx();
-      camX -= vel[0] * dt * k;
-      camZ += (vel[1] * dt * k) / Math.sin(pitch);
-      const decay = Math.exp(-dt / 325);
-      vel = [vel[0] * decay, vel[1] * decay];
-      if (Math.hypot(vel[0], vel[1]) < 0.01) {
-        vel = [0, 0];
-        light(false);
-      }
+      rawZ += (vel * step * unitsPerPx()) / Math.sin(pitch);
+      const out = rawZ < lim.min || rawZ > lim.max;
+      vel *= Math.exp(-step / (out ? 60 : 325));
+      camZ = clampZ(rawZ);
+      if (Math.abs(vel) < 0.01) vel = 0;
       aim();
       more = true;
     }
-    for (const w of villagers.values()) {
-      let bob = 0, squash = 0;
-      if (w.path) {
-        const a = along(w, t);
-        w.pos = a.p;
-        if (Math.abs(a.dx) > 0.5) w.face = Math.sign(a.dx);
-        if (a.done) w.path = null;
-        else {
-          const ph = ((t - w.path.t0) / 1000) * Math.PI * 5;
-          bob = Math.abs(Math.sin(ph)) * 4.5;
-          squash = Math.max(0, Math.cos(ph * 2)) * 0.04;
-          more = true;
-        }
-        shadowsDirty = true;
+    if (!touch && !vel) {
+      if (settling || camZ < lim.min || camZ > lim.max || zoomK < ZOOM.min || zoomK > ZOOM.max) {
+        settling = settle(dt);
+        more ||= settling;
       }
-      if (w.hop) {
-        const k = (t - w.hop) / HOP_MS;
-        if (k >= 1) w.hop = 0;
-        else {
-          bob += Math.sin(k * Math.PI) * 16;
-          more = true;
-        }
-      }
-      placeWalker(w, bob, squash);
+      if (!more) light(false);
     }
-    for (const [id, t0] of jiggles) {
-      const a = instAt.get(id)!;
-      const k = (t - t0) / JIG_MS;
-      if (k >= 1) {
-        jiggles.delete(id);
-        matOf(a.inst, a.g.base[a.i]);
-      } else {
-        matOf(a.inst, a.g.base[a.i], Math.sin(k * Math.PI * 4) * 0.06 * (1 - k), Math.sin(k * Math.PI * 3) * 0.04 * (1 - k));
-        more = true;
-      }
-      writeGroup(a.g, a.i);
-    }
+    // (a wobbling model moves its shadow: the map redraws; a walker's is a blob)
+    if (things.frame(t)) more = shadowsDirty = true;
+    if (hook?.(t)) more = true;
+    cards.frame(pitch * LEAN, stretch, src.feet);
+    if (lights.frame(t, MID_X, camZ + 110, bendU.uBendR.value, -camZ)) more = true;
     if (opts.water) waterU.uTime.value = (t / 1000) % 3600;
-    // the campfire flickers
-    if (todLook.lamps) for (const l of lamps) if (l.userData.fire) l.intensity = l.userData.base * (0.85 + 0.15 * Math.sin(t / 90) * Math.sin(t / 37));
     if (opts.shadows && shadowsDirty) {
       renderer.shadowMap.needsUpdate = true;
       shadowsDirty = false;
@@ -708,87 +517,104 @@ export function createWorld(canvas: HTMLCanvasElement, init: Partial<Options> & 
     if (cpu.length > 300) cpu.shift();
     if (gaps.length > 300) gaps.shift();
     frames++;
-    if (more) activity(100);
+    busy = more;
     // the water keeps the loop going (at 30 when still); without it, only what moves does
-    if (more || active || opts.water || (todLook.lamps && lamps.some((l) => l.userData.fire))) invalidate();
+    if (more || active || opts.water) kick();
   }
   const onVis = () => {
     lastFrame = 0;
-    if (!document.hidden) invalidate();
+    if (!document.hidden) kick();
   };
   document.addEventListener('visibilitychange', onVis);
+  // a lost context (the phone reclaiming the GPU): three restores what it can; draw again once it's back
+  const onLost = (e: Event) => e.preventDefault();
+  const onRestored = () => {
+    shadowsDirty = true;
+    resize();
+  };
+  canvas.addEventListener('webglcontextlost', onLost);
+  canvas.addEventListener('webglcontextrestored', onRestored);
 
   resize();
   tod('day');
-  if (opts.shadows) options({ shadows: true });
+  options({ water: opts.water });
 
   return {
-    resize, place, ground, villager, walk, tod, pan, zoom, fling, hit, client, options, jiggle,
-    at: (who) => (villagers.get(who)?.pos.slice() as [number, number] | undefined) ?? null,
-    put(who, p) {
-      const w = villagers.get(who);
-      if (!w) return;
-      w.path = null;
-      w.pos = [p[0], p[1]];
-      placeWalker(w);
-      activity();
-    },
-    hop(who) {
-      const w = villagers.get(who);
-      if (w && !w.hop) {
-        w.hop = now();
-        activity();
-      }
+    resize, groundLook, place, things, cards, tod, pan, zoom, fling, options,
+    glows(list) {
+      extraGlows = list;
+      relight();
+      kick();
     },
     touching(on) {
       touch = on;
-      if (on) vel = [0, 0];
-      else if (!vel[0] && !vel[1]) light(false);
+      if (on) {
+        vel = 0;
+        settling = false;
+        rawZ = camZ;
+        rawK = zoomK;
+      } else {
+        settling = true;
+        if (!vel) light(false);
+      }
       activity();
     },
-    view: () => ({ camZ, camX, zoom: zoomK }),
+    view: () => ({ camZ, zoom: zoomK, pitch }),
     go(z, k) {
-      camZ = z;
-      if (k) zoomK = k;
-      vel = [0, 0];
+      camZ = rawZ = Math.max(lim.min, Math.min(lim.max, z));
+      if (k) zoomK = rawK = Math.max(ZOOM.min, Math.min(ZOOM.max, k));
+      vel = 0;
       aim();
       activity();
     },
+    limits: () => ({ min: lim.min, max: lim.max }),
+    setLimits(min, max) {
+      lim.min = min;
+      lim.max = Math.max(min, max);
+      camZ = rawZ = Math.max(lim.min, Math.min(lim.max, camZ));
+      aim();
+      activity();
+    },
+    at, groundAt, horizon,
+    rev: () => rev,
+    kick: () => kick(),
+    idle: () => !busy && !touch && !vel && !settling && now() > activeUntil,
+    onFrame(fn) {
+      hook = fn;
+      kick();
+    },
     stats: () => {
-      const mem = (performance as unknown as { memory?: { usedJSHeapSize: number } }).memory;
+      const l = lights.stats();
       return {
         fps: stamps.length, cpu: [pctl(cpu, 0.5), pctl(cpu, 0.95)], gap: [pctl(gaps, 0.5), pctl(gaps, 0.95)],
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures,
-        geometries: renderer.info.memory.geometries, heap: mem ? mem.usedJSHeapSize / 1048576 : null, dpr: renderer.getPixelRatio(),
-        frames, loading: pending, camZ, zoom: zoomK
+        geometries: renderer.info.memory.geometries, dpr: renderer.getPixelRatio(), frames,
+        loading: pending + things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps
       };
     },
-    ready,
     dispose() {
       disposed = true;
       cancelAnimationFrame(raf);
       document.removeEventListener('visibilitychange', onVis);
-      const seen = new Set<object>();
-      scene.traverse((n) => {
-        const m = n as Mesh;
-        if (m.geometry && !seen.has(m.geometry)) (seen.add(m.geometry), m.geometry.dispose());
-        const ms = (m.material ? (Array.isArray(m.material) ? m.material : [m.material]) : []) as Material[];
-        for (const x of ms) {
-          if (seen.has(x)) continue;
-          seen.add(x);
-          for (const v of Object.values(x)) if (v instanceof Texture && !seen.has(v)) (seen.add(v), v.dispose());
-          x.dispose();
-        }
-        if ((n as InstancedMesh).isInstancedMesh) (n as InstancedMesh).dispose();
-      });
-      skyTex?.dispose();
-      disc.dispose();
+      canvas.removeEventListener('webglcontextlost', onLost);
+      canvas.removeEventListener('webglcontextrestored', onRestored);
+      things.dispose();
+      cards.dispose();
+      lights.dispose();
+      for (const c of chunks) {
+        c.geometry.dispose();
+        const m = c.material as MeshLambertMaterial;
+        m.map?.dispose();
+        m.dispose();
+      }
+      for (const m of water.all) {
+        m.geometry.dispose();
+        (m.material as Material).dispose();
+      }
+      for (const v of Object.values(sun.shadow)) if (v instanceof Texture) v.dispose();
+      sun.shadow.map?.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
-      villagers.clear();
-      groups.clear();
-      instAt.clear();
     }
   };
 }
-

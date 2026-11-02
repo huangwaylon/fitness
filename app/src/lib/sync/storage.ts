@@ -69,7 +69,9 @@ export const DEVICE = {
   tentRecent: 'island.tentRecent',
   /** localStorage: `{ [who]: day }`: the Tokyo day this phone last showed the tent's HHA letter, by who I am (the demo's
    *  tabs share it; tent/TentRoom.svelte). */
-  tentRated: 'island.tentRated'
+  tentRated: 'island.tentRated',
+  /** localStorage: `3d` | `2d`: how this phone draws the island (せってい's 3D switch; store/islandRender.svelte.ts). */
+  islandRender: 'island.render'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */

@@ -112,7 +112,7 @@ export function feetY(x: number, z: number): number {
 /** The ground mesh's grid (u) and chunks (the bake's 8 chunks of 270u). */
 const CELL = 6;
 export const CHUNKS = 8;
-export const CHUNK_D = (PLAN.z1 - PLAN.z0) / CHUNKS;
+const CHUNK_D = (PLAN.z1 - PLAN.z0) / CHUNKS;
 
 /** One chunk's heightfield: positions in three's space (x, y, −z), uvs into its baked texture (v = 1 at its far edge: the image's
  *  top) and the triangle indices. */
@@ -142,3 +142,12 @@ export function chunkGrid(i: number, cell = CELL): { pos: Float32Array; uv: Floa
     }
   return { pos, uv, index, cols, rows };
 }
+
+/** world.ts's island as the 3D engine's ground (engine.ts GroundSource): its heightfield in the bake's chunks. */
+export const WORLD_GROUND = {
+  chunks: CHUNKS,
+  grid: (i: number) => chunkGrid(i),
+  span: (i: number): [number, number] => [PLAN.z0 + i * CHUNK_D, PLAN.z0 + (i + 1) * CHUNK_D],
+  height: groundHeight,
+  feet: feetY
+};
