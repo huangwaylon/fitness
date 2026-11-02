@@ -211,6 +211,8 @@ export interface Island3 {
   kick(): void;
   /** Nothing moving (the water may still run at 30). */
   idle(): boolean;
+  /** The camera at rest: no finger, fling, spring back, settle or focus move under way (whatever else moves). */
+  camStill(): boolean;
   /** Called in every frame before it draws: true wants another (something moves). */
   onFrame(fn: ((t: number) => boolean) | null): void;
   options(o: Partial<Options>): void;
@@ -895,6 +897,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     at, groundAt, horizon,
     rev: () => rev,
     kick: () => kick(),
+    camStill: () => !touch && !vel && !velX && !zoomBack && !settling && !move,
     idle: () => !busy && !touch && !vel && !velX && !zoomBack && !settling && now() > activeUntil,
     onFrame(fn) {
       hook = fn;
