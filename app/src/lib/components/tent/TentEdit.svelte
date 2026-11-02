@@ -11,6 +11,7 @@
   import { t } from '#lib/i18n/index.ts';
   import { tent as room } from '#lib/store/tent.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
+  import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { TENT_MAX } from '#lib/contract/tent.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, ITEMS, STARTER, WALLS, footprint, iconUrl } from './items.ts';
@@ -32,12 +33,29 @@
   }
   let { eng, link, finds, villagers, relayNow, partnerName, ondone }: Props = $props();
 
-  type Tab = 'furniture' | 'rugs' | 'finds' | 'wall' | 'floor';
-  const TABS: Tab[] = ['furniture', 'rugs', 'finds', 'wall', 'floor'];
+  type Tab = 'recent' | 'furniture' | 'rugs' | 'finds' | 'wall' | 'floor';
+  /** The pieces I picked last (this phone's, newest first): NH's quick access to what's at hand. */
+  const RECENT_MAX = 12;
+  let recent = $state<string[]>(((r) => (Array.isArray(r) ? r.filter((c): c is string => typeof c === 'string' && !!ITEMS[c]) : []))(readJson<unknown>(localKV(), DEVICE.tentRecent)));
+  const TABS = $derived<Tab[]>([...(recent.length ? ['recent' as const] : []), 'furniture', 'rugs', 'finds', 'wall', 'floor']);
   let tab = $state<Tab>('furniture');
   const list = $derived(
-    tab === 'furniture' ? STARTER.filter((c) => !ITEMS[c].rug) : tab === 'rugs' ? STARTER.filter((c) => ITEMS[c].rug) : tab === 'finds' ? finds : tab === 'wall' ? WALLS : FLOORS
+    tab === 'recent' ? recent : tab === 'furniture' ? STARTER.filter((c) => !ITEMS[c].rug) : tab === 'rugs' ? STARTER.filter((c) => ITEMS[c].rug) : tab === 'finds' ? finds : tab === 'wall' ? WALLS : FLOORS
   );
+  /** How many of each piece stand in the room (the icons' counts). */
+  const counts = $derived(room.pieces.reduce((m, p) => m.set(p.item, (m.get(p.item) ?? 0) + 1), new Map<string, number>()));
+  /** An icon pressed: its name in the bar a moment (NH's name on a held icon). */
+  let peek = $state<string | null>(null);
+  let peekTimer: ReturnType<typeof setTimeout> | undefined;
+  function peekAt(code: string) {
+    clearTimeout(peekTimer);
+    peek = code;
+    peekTimer = setTimeout(() => (peek = null), 1600);
+  }
+  function used(code: string) {
+    recent = [code, ...recent.filter((c) => c !== code)].slice(0, RECENT_MAX);
+    writeJson(localKV(), DEVICE.tentRecent, recent);
+  }
 
   /** What I hold: a new piece or a placed one (`orig`: where it stood). */
   let sel = $state<{ id: string; fresh: boolean; item: string; f: Facing; p?: number; orig?: { x: number; z: number; f: Facing } } | null>(null);
@@ -92,6 +110,8 @@
     check();
     show();
     cue('tick');
+    // (the recent list moves on only once this tab's grid is left alone: an icon never jumps under the finger)
+    if (tab !== 'recent') used(code);
   }
   /** A placed piece picked up (a tap or the start of a drag on it): false when the partner holds it. */
   export function pickPlaced(id: string): boolean {
@@ -270,7 +290,7 @@
       </button>
     </div>
   {:else}
-    <div class="bar hint" data-tent-hint>{t(room.pieces.length ? 'tent.hintMove' : 'tent.hint')}</div>
+    <div class="bar hint" data-tent-hint>{peek ? nameOf(peek) : t(room.pieces.length ? 'tent.hintMove' : 'tent.hint')}</div>
   {/if}
   <div class="tray">
     <div class="tabs" role="tablist" aria-label={t('tent.edit')}>
@@ -279,15 +299,19 @@
       {/each}
     </div>
     <div class="row">
-      <div class="items" role="group" aria-label={t(`tent.tab.${tab}`)}>
+      <!-- a grid that scrolls up and down under the thumb (no snapping: a tap is a tap, never the start of a jump) -->
+      <div class="items" role="group" aria-label={t(`tent.tab.${tab}`)} data-tent-items>
         {#each list as code (code)}
-          <button type="button" class="it" data-tent-item={code} data-sfx="self" aria-label={nameOf(code)}
+          {@const n = counts.get(code) ?? 0}
+          <button type="button" class="it" data-tent-item={code} data-sfx="self" aria-label={n ? `${nameOf(code)} ×${n}` : nameOf(code)}
             aria-pressed={current ? current === code : !!sel?.fresh && sel.item === code} class:full={!current && room.room <= 0}
+            onpointerdown={() => peekAt(code)}
             onclick={() => (current ? surface(tab as 'wall' | 'floor', code) : pickNew(code))}>
-            <img src={iconUrl(code)} alt="" width="48" height="48" loading="lazy" decoding="async" />
+            <img src={iconUrl(code)} alt="" width="48" height="48" loading="lazy" decoding="async" draggable="false" />
+            {#if n}<span class="n" aria-hidden="true">{n}</span>{/if}
           </button>
         {:else}
-          <p class="empty">{t('tent.findsEmpty')}</p>
+          <p class="empty" data-tent-empty>{t('tent.findsEmpty')}</p>
         {/each}
       </div>
       <button type="button" class="done" data-tent-done data-sfx="confirm" onclick={done}>
@@ -311,26 +335,33 @@
   .tray { display: flex; flex-direction: column; gap: 6px; padding: 8px; }
   .tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
   .tab {
-    flex: 1 0 auto; min-height: 40px; padding: 0 10px; border-radius: 14px; border: 0; font: inherit; color: inherit; cursor: pointer;
+    flex: 1 0 auto; min-height: 44px; padding: 0 9px; border-radius: 14px; border: 0; font: inherit; color: inherit; cursor: pointer;
     background: transparent; -webkit-tap-highlight-color: transparent; white-space: nowrap; color: var(--c-ink, #4A3A2C);
   }
   .tab[aria-selected='true'] { background: var(--c-yuzu, #F7D94C); box-shadow: 0 2px 0 var(--c-yuzu-lip, #D9B21E); }
   .row { display: flex; gap: 6px; align-items: stretch; }
-  /* two rows that scroll sideways under the thumb */
+  /* NH's grid: rows of icons, two and a bit in view (the next row peeking: there's more), scrolled up and down; no
+     snapping and no sideways pan, so a tap is never taken for the start of a scroll that jumps the list */
   .items {
-    flex: 1; min-width: 0; display: grid; grid-auto-flow: column; grid-template-rows: repeat(2, 60px); grid-auto-columns: 60px; gap: 6px;
-    overflow-x: auto; overscroll-behavior: contain; scroll-snap-type: x proximity; scrollbar-width: none; touch-action: pan-x;
+    flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); grid-auto-rows: 60px; gap: 6px;
+    max-height: calc(60px * 2.4 + 12px); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; touch-action: pan-y;
+    scrollbar-width: none; padding: 2px; -webkit-overflow-scrolling: touch;
   }
   .items::-webkit-scrollbar, .tabs::-webkit-scrollbar { display: none; }
   .it, .act, .done {
     appearance: none; border: 0; margin: 0; font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
     display: grid; place-items: center; flex: none;
   }
-  .it { width: 60px; height: 60px; border-radius: 16px; background: var(--c-card, #FFFCF2); box-shadow: inset 0 0 0 2px var(--c-edge, #E8DCC0); scroll-snap-align: start; }
-  .it img { width: 48px; height: 48px; object-fit: contain; }
+  .it { position: relative; width: 100%; height: 60px; border-radius: 16px; background: var(--c-card, #FFFCF2); box-shadow: inset 0 0 0 2px var(--c-edge, #E8DCC0); touch-action: pan-y; }
+  .it img { width: 48px; height: 48px; object-fit: contain; pointer-events: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  /* how many already stand in the room */
+  .n {
+    position: absolute; right: 4px; top: 4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; display: grid; place-items: center;
+    font: 700 11px/1 var(--font-num, inherit); color: #fff; background: var(--c-leaf-lip, #4F9A3C);
+  }
   .it[aria-pressed='true'] { box-shadow: inset 0 0 0 3px var(--c-leaf-edge, #6DBE5A); background: #F1FBE6; }
   .it.full { opacity: .45; }
-  .empty { grid-row: span 2; margin: 0; align-self: center; padding: 0 8px; width: 240px; color: var(--c-ink-soft, #7A6A50); font-weight: 700; white-space: normal; }
+  .empty { grid-column: 1 / -1; margin: 0; align-self: center; padding: 12px 8px; color: var(--c-ink-soft, #7A6A50); font-weight: 700; white-space: normal; text-align: center; }
   .it:active, .act:active, .done:active { scale: .94; }
   .count { font: 700 12px/1 var(--font-num, inherit); color: var(--c-ink-soft, #7A6A50); }
   .act { width: var(--hit, 44px); height: var(--hit, 44px); border-radius: 50%; background: var(--c-card, #FFFCF2); box-shadow: inset 0 0 0 2px var(--c-edge, #E8DCC0); }

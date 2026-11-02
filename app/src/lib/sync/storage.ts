@@ -64,7 +64,9 @@ export const DEVICE = {
    *  (sync/push.ts; off by default). */
   push: 'island.push',
   /** localStorage: `[text…]`: my own phrases for my villager's balloon, the last few, newest first (island/say.ts). */
-  says: 'island.says'
+  says: 'island.says',
+  /** localStorage: `[code…]`: the tent's pieces I picked last, newest first (tent/TentEdit.svelte's さいきん tab). */
+  tentRecent: 'island.tentRecent'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */
