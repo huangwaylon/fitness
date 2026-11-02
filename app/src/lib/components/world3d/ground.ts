@@ -149,5 +149,6 @@ export const WORLD_GROUND = {
   grid: (i: number) => chunkGrid(i),
   span: (i: number): [number, number] => [PLAN.z0 + i * CHUNK_D, PLAN.z0 + (i + 1) * CHUNK_D],
   height: groundHeight,
-  feet: feetY
+  feet: feetY,
+  land: LAND
 };

@@ -14,7 +14,7 @@
 import {
   BufferGeometry, Color, DirectionalLight, Float32BufferAttribute, Fog, HemisphereLight, Mesh, MeshLambertMaterial,
   PerspectiveCamera, Scene, SRGBColorSpace, Texture, TextureLoader, Uint32BufferAttribute, Vector3, WebGLRenderer,
-  PCFSoftShadowMap, type Material
+  PCFSoftShadowMap, type Material, type Object3D
 } from 'three';
 import { bend, bendPoint, bendU, unbendRay } from './bend.ts';
 import { createWater, seaFog, waterFog, waterU } from './water.ts';
@@ -25,7 +25,7 @@ import type { Inst } from './layout3d.ts';
 
 type Tod = 'day' | 'dusk' | 'night';
 
-/** The ground the island stands on (ground.ts from world.ts today; the island layout's terrain once it lands). */
+/** @public The ground the island stands on (ground.ts from world.ts today; the island layout's terrain once it lands). */
 export interface GroundSource {
   /** How many chunks, and one chunk's heightfield (three's space) with uvs into its baked texture. */
   chunks: number;
@@ -35,7 +35,31 @@ export interface GroundSource {
   /** The ground's height, and where a walker's feet are (a bridge's deck). */
   height(x: number, z: number): number;
   feet(x: number, z: number): number;
+  /** The land's box (world units; its corners rounded by r): the sea's shallows round it, the sea's length past it. */
+  land: Land;
 }
+/** @public */
+export interface Land {
+  x0: number;
+  x1: number;
+  z0: number;
+  z1: number;
+  r: number;
+}
+/** @public A ground built elsewhere (the island layout's terrain.ts buildGround): its own meshes (the land, the cliffs and all
+ *  its water), added once and bent here; the engine's water is not drawn. */
+export interface BuiltGround {
+  group: Object3D;
+  heightAt(x: number, z: number): number;
+  /** Where a walker's feet are (a bridge's deck); the ground's height if absent. */
+  feet?(x: number, z: number): number;
+  land: Land;
+  /** Called in each frame (its water's time, a paint stroke's rebuild): true while it wants frames. */
+  update?(t: number): boolean;
+  dispose?(): void;
+}
+export type Ground = GroundSource | BuiltGround;
+const built = (g: Ground): g is BuiltGround => 'group' in g;
 
 export interface Options {
   dpr: number;
@@ -136,6 +160,15 @@ export interface Island3 {
   view(): { camZ: number; zoom: number; pitch: number };
   go(camZ: number, zoom?: number): void;
   limits(): { min: number; max: number };
+  /** Frame one thing (the bulletin board: the user's one exception to "nothing but the finger moves the camera"): the
+   *  camera eases to it over `ms` (600), centred on it, `zoom` (2.2) and `pitch` (degrees, 30) its own; the finger does
+   *  nothing until restore(), which eases back to exactly where the camera was. */
+  focusOn(target: { x: number; z: number; lift?: number }, o?: { zoom?: number; pitch?: number; ms?: number }): Promise<void>;
+  restore(ms?: number): Promise<void>;
+  focused(): boolean;
+  /** Something of the scene's own in the world (the board's face with its posts): at (x, z) on the ground, `lift`
+   *  above it, turned `yaw`; its materials bent with the island. Returns its removal. */
+  attach(obj: Object3D, at: { x: number; z: number; lift?: number; yaw?: number }): () => void;
   /** The camera's ends for this screen (the scene fits them: まえ's shore, おく's campsite). */
   setLimits(min: number, max: number): void;
   // ---- the projection (the World's Proj3; px from the canvas's top-left) ----
@@ -153,7 +186,7 @@ export interface Island3 {
   dispose(): void;
 }
 
-export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init: Partial<Options> & { aa?: boolean } = {}): Island3 {
+export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Partial<Options> & { aa?: boolean } = {}): Island3 {
   const opts: Options = { dpr: Math.min(2, window.devicePixelRatio || 1), water: true, shadows: true, cap: 60, ...init };
   const renderer = new WebGLRenderer({ canvas, antialias: init.aa ?? true, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance', stencil: false });
   renderer.setPixelRatio(opts.dpr);
@@ -178,10 +211,25 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
   scene.add(hemi, sun, sun.target);
   let todLook = TOD.day;
 
-  // ---- the ground: its chunks, each its baked texture ----
+  // ---- the ground: its chunks, each its baked texture (or a ground built elsewhere, bent here) ----
+  const own = built(ground) ? null : ground;
+  const src = {
+    height: built(ground) ? (x: number, z: number) => ground.heightAt(x, z) : ground.height,
+    feet: built(ground) ? (x: number, z: number) => (ground.feet ?? ground.heightAt)(x, z) : ground.feet,
+    land: ground.land
+  };
+  if (built(ground)) {
+    ground.group.traverse((n) => {
+      const m = (n as Mesh).material as Material | Material[] | undefined;
+      for (const x of m ? (Array.isArray(m) ? m : [m]) : []) bend(x);
+      (n as Mesh).frustumCulled = false;
+    });
+    scene.add(ground.group);
+  }
   const tex = new TextureLoader();
   const chunks: Mesh[] = [];
-  for (let i = 0; i < src.chunks; i++) {
+  for (let i = 0; i < (own?.chunks ?? 0); i++) {
+    const src = own!;
     const g = src.grid(i);
     const geo = new BufferGeometry();
     geo.setAttribute('position', new Float32BufferAttribute(g.pos, 3));
@@ -217,7 +265,7 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
   }
 
   // ---- the water, the things, the cards, the lights ----
-  const water = createWater();
+  const water = built(ground) ? { all: [] as Mesh[] } : createWater(src.land);
   for (const m of water.all) scene.add(m);
   const things = createThings(scene, src.height, () => ((shadowsDirty = true), kick()));
   const cards = createCards(scene, (sh) => (sh && (shadowsDirty = true), kick()));
@@ -240,11 +288,21 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
     const deg = kk >= 1 ? PITCH.def + (PITCH.near - PITCH.def) * ((kk - 1) / (ZOOM.max - 1)) : PITCH.def + (PITCH.far - PITCH.def) * ((1 - kk) / (1 - ZOOM.min));
     return (deg * Math.PI) / 180;
   };
+  /** A focus (the bulletin board's: docs/decisions.md "The island in 3D"): the camera framing one thing, its own x,
+   *  pitch, height and pivot drop, eased in (k 0 … 1) over the finger's camera. */
+  let fx = MID_X, fy = 0, fpitch = 0, fk = 0, drop = PIVOT_DROP;
   function aim() {
     pitch = pitchAt(zoomK);
-    const D = D0 / zoomK;
-    camera.position.set(MID_X, D * Math.sin(pitch), -camZ + D * Math.cos(pitch));
-    camera.lookAt(MID_X, 0, -camZ);
+    if (fk > 0) pitch += (fpitch - pitch) * fk;
+    const D = D0 / zoomK, cx = MID_X + (fx - MID_X) * fk, cy = fy * fk;
+    camera.position.set(cx, cy + D * Math.sin(pitch), -camZ + D * Math.cos(pitch));
+    camera.lookAt(cx, cy, -camZ);
+    const d = PIVOT_DROP * (1 - fk);
+    if (d !== drop) {
+      drop = d;
+      camera.setViewOffset(W, H, 0, -drop * H, W, H);
+      camera.updateProjectionMatrix();
+    }
     camera.updateMatrixWorld();
     bendU.uBendZ.value = -camZ;
     // NH's haze: the far sea (and what stands far off) fades into the sky's horizon colour, all of it by the log's
@@ -287,7 +345,7 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
     camera.aspect = W / H;
     D0 = VIEW_W / (2 * Math.tan(((FOV / 2) * Math.PI) / 180) * camera.aspect);
     // the pivot (the ground the camera looks at) a little below the middle: more island ahead, the horizon high
-    camera.setViewOffset(W, H, 0, -PIVOT_DROP * H, W, H);
+    camera.setViewOffset(W, H, 0, -drop * H, W, H);
     camera.updateProjectionMatrix();
     focal = H / 2 / Math.tan(((FOV / 2) * Math.PI) / 180);
     aim();
@@ -382,6 +440,7 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
     renderer.setSize(W, H, false);
   }
   function pan(dy: number) {
+    if (focus) return;
     light(true);
     settling = false;
     rawZ += (dy * unitsPerPx()) / Math.sin(pitch);
@@ -397,6 +456,7 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
     return k;
   };
   function zoom(f: number, sy = H * (0.5 + PIVOT_DROP)) {
+    if (focus) return;
     light(true);
     settling = false;
     const before = groundAt(W / 2, sy);
@@ -414,6 +474,7 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
     activity();
   }
   function fling(vy: number) {
+    if (focus) return;
     vel = vy;
     lastT = now();
     activity();
@@ -435,6 +496,58 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
     rawK = zoomK;
     aim();
     return more;
+  }
+
+  // ---- a focus: the camera frames one thing, then goes back exactly where it was (the board's; nothing else moves it) ----
+  interface Move {
+    t0: number;
+    ms: number;
+    from: { z: number; k: number; fk: number };
+    to: { z: number; k: number; fk: number };
+    done: () => void;
+  }
+  let focus: { back: { z: number; k: number } } | null = null, move: Move | null = null;
+  const ease = (k: number) => k * k * (3 - 2 * k);
+  function moveTo(to: Move['to'], ms: number): Promise<void> {
+    move?.done();
+    vel = 0;
+    settling = false;
+    return new Promise((done) => {
+      move = { t0: now(), ms: Math.max(1, ms), from: { z: camZ, k: zoomK, fk }, to, done };
+      activity(ms + 100);
+    });
+  }
+  function stepMove(t: number): boolean {
+    if (!move) return false;
+    const m = move, k = ease(Math.min(1, (t - m.t0) / m.ms));
+    camZ = rawZ = m.from.z + (m.to.z - m.from.z) * k;
+    zoomK = rawK = m.from.k + (m.to.k - m.from.k) * k;
+    fk = m.from.fk + (m.to.fk - m.from.fk) * k;
+    aim();
+    if (k >= 1) {
+      move = null;
+      m.done();
+      return false;
+    }
+    return true;
+  }
+  function focusOn(target: { x: number; z: number; lift?: number }, o: { zoom?: number; pitch?: number; ms?: number } = {}): Promise<void> {
+    if (!focus) focus = { back: { z: camZ, k: zoomK } };
+    fx = target.x;
+    fy = src.feet(target.x, target.z) + (target.lift ?? 0);
+    fpitch = ((o.pitch ?? 30) * Math.PI) / 180;
+    return moveTo({ z: target.z, k: o.zoom ?? 2.2, fk: 1 }, o.ms ?? 600);
+  }
+  function restore(ms = 600): Promise<void> {
+    if (!focus) return Promise.resolve();
+    const back = focus.back;
+    return moveTo({ z: back.z, k: back.k, fk: 0 }, ms).then(() => {
+      focus = null;
+      camZ = rawZ = back.z;
+      zoomK = rawK = back.k;
+      fk = 0;
+      aim();
+    });
   }
 
   // ---- time of day ----
@@ -502,8 +615,9 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
     }
     const dt = lastFrame ? Math.min(50, t - lastFrame) : 16;
     let more = false;
+    if (stepMove(t)) more = true;
     // the fling: iOS's deceleration, firmer past an end
-    if (!touch && vel) {
+    if (!touch && vel && !focus) {
       const step = Math.min(50, t - lastT);
       lastT = t;
       rawZ += (vel * step * unitsPerPx()) / Math.sin(pitch);
@@ -514,7 +628,7 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
       aim();
       more = true;
     }
-    if (!touch && !vel) {
+    if (!touch && !vel && !focus && !move) {
       if (settling || camZ < lim.min || camZ > lim.max || zoomK < ZOOM.min || zoomK > ZOOM.max) {
         settling = settle(dt);
         more ||= settling;
@@ -525,6 +639,7 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
     if (things.frame(t)) more = shadowsDirty = true;
     if (hook?.(t)) more = true;
     if (cards.frame(pitch * LEAN, stretch, src.feet)) more = true;
+    if (built(ground) && ground.update?.(t)) more = true;
     if (lights.frame(t, MID_X, camZ + 110, bendU.uBendR.value, -camZ)) more = true;
     if (opts.water) waterU.uTime.value = (t / 1000) % 3600;
     if (opts.shadows && shadowsDirty) {
@@ -591,6 +706,25 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
       activity();
     },
     limits: () => ({ min: lim.min, max: lim.max }),
+    focusOn, restore,
+    focused: () => !!focus,
+    attach(obj, at) {
+      obj.traverse((n) => {
+        const m = (n as Mesh).material as Material | Material[] | undefined;
+        for (const x of m ? (Array.isArray(m) ? m : [m]) : []) bend(x);
+        (n as Mesh).frustumCulled = false;
+      });
+      obj.position.set(at.x, src.feet(at.x, at.z) + (at.lift ?? 0), -at.z);
+      obj.rotation.y = at.yaw ?? 0;
+      scene.add(obj);
+      shadowsDirty = true;
+      kick();
+      return () => {
+        scene.remove(obj);
+        shadowsDirty = true;
+        kick();
+      };
+    },
     setLimits(min, max) {
       lim.min = min;
       lim.max = Math.max(min, max);
@@ -630,6 +764,7 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
         m.map?.dispose();
         m.dispose();
       }
+      if (built(ground)) ground.dispose?.();
       for (const m of water.all) {
         m.geometry.dispose();
         (m.material as Material).dispose();

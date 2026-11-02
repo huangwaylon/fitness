@@ -80,6 +80,12 @@ export interface Proj3 {
   kick(): void;
   /** No frame pending. */
   idle(): boolean;
+  /** The bulletin board's focus (world3d/engine.ts focusOn: the camera frames it, the finger locked, and restore()
+   *  eases back to exactly where it was), and something of the scene's own in the 3D world (a three.js Object3D: the
+   *  board's face with its CanvasTexture; its removal returned). */
+  focusOn(target: { x: number; z: number; lift?: number }, o?: { zoom?: number; pitch?: number; ms?: number }): Promise<void>;
+  restore(ms?: number): Promise<void>;
+  attach(obj: object, at: { x: number; z: number; lift?: number; yaw?: number }): () => void;
 }
 
 interface Node extends NodeSpec {
