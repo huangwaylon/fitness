@@ -3,7 +3,7 @@
 // shapes the two phones really send (the `uploads` audit of 2026-11-02: A's iPhone-only body with English dates, B's
 // with the Watch's steps, Japanese dates and kcal to three decimals; the values are made up, not anyone's health data).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { doPost } from '../../app/gas/main.ts';
+import { configureForward, doPost } from '../../app/gas/main.ts';
 import { install, makeGas, type Gas } from '../../app/gas/fakes.ts';
 import { StoreCore } from '../src/store.ts';
 import { memSql } from './sqlite.ts';
@@ -18,6 +18,7 @@ let store: StoreCore;
 beforeEach(() => {
   gas = makeGas({ keyA: KEY_A, keyB: KEY_B });
   install(gas);
+  configureForward(false); // the script as the record (steps 1–2), what the record must match
   gas.state.relay = 'denied';
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date('2026-11-01T22:30:00.000Z'));

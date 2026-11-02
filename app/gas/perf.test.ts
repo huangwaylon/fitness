@@ -3,7 +3,7 @@
 // ~53k metrics rows). The sheet is the fake, so time is only indicative; what is asserted is how many cells each
 // request reads, which is what costs time in Apps Script (a `getValues` is ~linear in cells).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { doPost } from './main.ts';
+import { configureForward, doPost } from './main.ts';
 import { install, makeGas, type FakeSheet, type Gas } from './fakes.ts';
 import { syntheticRows } from '../scripts/bench-rows.ts';
 
@@ -25,6 +25,7 @@ function measure<T>(fn: () => T): { reply: T; cells: number; ms: number } {
 beforeEach(() => {
   gas = makeGas();
   install(gas);
+  configureForward(false);
   vi.useFakeTimers({ toFake: ['Date'] });
   const rows = syntheticRows(DAYS);
   const lastAt = [rows.metrics, rows.events].flat().map((r) => r[0]).sort().at(-1)!;

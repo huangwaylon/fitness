@@ -77,6 +77,9 @@ function handle(e: GAS.PostEvent | undefined): Reply {
   if (!isRec(body)) return fail('bad_request');
   // Keyless liveness and version probe for the monitor (docs/ops/runbook.md §3): no Properties, no lock, no sheet.
   if (body.action === 'health' && body.key === undefined) return { ok: true, build: BUILD };
+  // The record is the relay's now (docs/backend.md#the-record, step 3): an older app's requests and the Shortcuts
+  // still posting here go on to it, and its reply comes back as it is.
+  if (forwarding) return forward(body);
 
   const me = personFor(body.key);
   if (!me) return fail('unauthorized');
@@ -91,6 +94,33 @@ function handle(e: GAS.PostEvent | undefined): Reply {
     case 'uploads': return uploads(me);
     case 'whoami': return withLock((): WhoamiReply => { for (const t of Object.keys(TABS) as TabName[]) heal(tab(t), t); return { ok: true, me, build: BUILD }; });
     default: return fail('bad_request');
+  }
+}
+
+// ---------------------------------------------------------------- the forward to the record
+
+/** The relay's record (docs/backend.md#the-record). */
+export const RECORD_API_URL = 'https://island-fund-relay.island-fund-relay.workers.dev/api';
+let forwarding = true;
+/** Tests: the sheet as the record again (the code steps 1–2 ran; removed with the export, step 5). */
+export function configureForward(on: boolean): void {
+  forwarding = on;
+}
+
+/**
+ * POST the request to the record as it came (as ASCII JSON: the key stays in the body, HTTPS, never a URL) and hand
+ * back its reply. Anything but a JSON reply from it is `unavailable`, so the app retries.
+ */
+function forward(body: Rec): Reply {
+  try {
+    const res = UrlFetchApp.fetch(RECORD_API_URL, {
+      method: 'post', contentType: 'text/plain', payload: asciiJson(body), muteHttpExceptions: true, followRedirects: false, headers: {}
+    });
+    if (res.getResponseCode() !== 200) return fail('unavailable', `record ${res.getResponseCode()}`);
+    const r: unknown = JSON.parse(res.getContentText());
+    return isRec(r) && typeof r.ok === 'boolean' ? (r as Reply) : fail('unavailable');
+  } catch {
+    return fail('unavailable');
   }
 }
 

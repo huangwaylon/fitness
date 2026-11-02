@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHmac } from 'node:crypto';
-import { authorizeRelay, doPost, KEY_CACHE_SECONDS, MAX_BODY_CHARS, NOTIFY_PAUSE_SECONDS, onEdit, RATE_PER_MINUTE, RELAY_IMPORT_URL, RELAY_NOTIFY_URL, resync } from './main.ts';
+import { authorizeRelay, configureForward, doPost, KEY_CACHE_SECONDS, MAX_BODY_CHARS, NOTIFY_PAUSE_SECONDS, onEdit, RATE_PER_MINUTE, RECORD_API_URL, RELAY_IMPORT_URL, RELAY_NOTIFY_URL, resync } from './main.ts';
 import { install, makeGas, type Gas } from './fakes.ts';
 
 const KEY_A = 'a'.repeat(64);
@@ -10,6 +10,7 @@ let gas: Gas;
 beforeEach(() => {
   gas = makeGas();
   install(gas);
+  configureForward(false); // the sheet as the record (steps 1–2); the forward: its own tests below
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date('2026-10-29T03:00:00.000Z'));
 });
@@ -843,5 +844,33 @@ describe('the copy to the relay’s record, and the push (docs/backend.md#the-re
     expect(posts()).toEqual([{ what: 'event', who: 'A', at: data('events')[0][0], rev: gas.props.get('REV') }]);
     expect(log).toHaveBeenCalledWith('relay notify: 204 (204 = the push works)');
     log.mockRestore();
+  });
+});
+
+describe('the forward to the relay’s record (step 3)', () => {
+  beforeEach(() => configureForward(true));
+  afterEach(() => configureForward(false));
+
+  it('hands every keyed request on as it came, as ASCII, and its reply back as it is; health stays here', () => {
+    const body = { key: KEY_A, action: 'event', id: 'e1', type: 'pref', data: { key: 'villagerName', value: 'うめ' } };
+    expect(post(body)).toEqual({ ok: true, echo: body });
+    const f = gas.state.fetches.at(-1)!;
+    expect(f.url).toBe(RECORD_API_URL);
+    expect(/^[\x20-\x7e]*$/.test(f.payload)).toBe(true);
+    expect(post({ action: 'ingest', key: KEY_B, dates: 'Oct 1, 2026', steps: '5' })).toMatchObject({ ok: true, echo: { action: 'ingest', key: KEY_B } });
+    expect(post({ action: 'health' })).toEqual({ ok: true, build: 'dev' });
+    expect(gas.sheets.size).toBe(0); // nothing written here
+    expect(gas.state.propReads).toBe(0);
+  });
+
+  it('a refusal comes back as the record gave it; an outage (an HTTP error, garbage, a throw) is unavailable', () => {
+    gas.state.record = () => ({ status: 200, text: '{"ok":false,"error":"unauthorized"}' });
+    expect(post({ key: 'f'.repeat(64), action: 'whoami' })).toEqual({ ok: false, error: 'unauthorized' });
+    gas.state.record = () => ({ status: 502, text: '<html>' });
+    expect(post({ key: KEY_A, action: 'snapshot' })).toEqual({ ok: false, error: 'unavailable', detail: 'record 502' });
+    gas.state.record = () => ({ status: 200, text: 'nope' });
+    expect(post({ key: KEY_A, action: 'snapshot' })).toEqual({ ok: false, error: 'unavailable' });
+    gas.state.relay = 'denied';
+    expect(post({ key: KEY_A, action: 'snapshot' })).toEqual({ ok: false, error: 'unavailable' });
   });
 });

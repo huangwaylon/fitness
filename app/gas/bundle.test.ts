@@ -38,6 +38,7 @@ describe('apps-script/Code.js', () => {
     const gas = makeGas();
     const ctx = vm.createContext({ ...gas.globals, console });
     vm.runInContext(code, ctx, { filename: 'Code.js' });
+    ctx.IslandFund.configureForward(false); // the sheet as the record, as steps 1–2 ran (the forward: main.test.ts)
     const call = (body: unknown) =>
       JSON.parse(ctx.doPost({ postData: { contents: typeof body === 'string' ? body : JSON.stringify(body) } }).text);
     const key = 'a'.repeat(64);
