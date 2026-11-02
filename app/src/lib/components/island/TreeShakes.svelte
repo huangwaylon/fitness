@@ -13,13 +13,16 @@
   // their villager turns to the tree and it shakes, the same drop falls, their wasps charge them. What lies (branches,
   // coconuts) is the shared day's, so a reload or the partner's phone finds it there; a pick-up or a catch by either of
   // us takes it on both phones (first wins). `?shake=nest|branch|bagworm|spider|coconut` (dev or ?demo) makes the next
-  // shake drop that (the e2e's hook). Everything is a world node beside its tree; the swarm's node follows the
+  // shake drop that (the e2e's hook). Two oaks or cedars a day hold a present (treeGifts.ts): their first shake drops it,
+  // put on the island for both (`put`, by the tree's id: first wins); it lies and opens as a balloon's present does
+  // (Finds.svelte). Everything is a world node beside its tree; the swarm's node follows the
   // villager's feet as it flies (its live position, frames only while it's out).
   import CatchPlate from './CatchPlate.svelte';
   import { cardFor, type CatchCard } from './catchCard.ts';
   import { pickUp } from '../motion/transitions.ts';
   import { timers } from './timers.ts';
-  import { hookOneOf } from './devHooks.ts';
+  import { hookOneOf, islandSeed } from './devHooks.ts';
+  import { giftAt, giftId, holdsGift } from './treeGifts.ts';
   import { onDestroy, onMount } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import { take, takenOn } from './sceneDay.ts';
@@ -108,14 +111,19 @@
     const d = world.day, now = world.now();
     const bugForced = forced === 'bagworm' || forced === 'spider' ? forced : undefined;
     const force = bugForced ? 'bug' : (forced as ShakeDrop | undefined);
-    let drop: ShakeDrop = shakeDrop(Math.random, now, lastNestOf(d.shakes, tree.id), force, tree.kind, bearsCoconuts(d.shakes, tree.id));
+    const gift = holdsGift(dayKey(), tree.id, d.puts, islandSeed());
+    let drop: ShakeDrop = shakeDrop(Math.random, now, lastNestOf(d.shakes, tree.id), force, tree.kind, bearsCoconuts(d.shakes, tree.id), gift);
     forced = undefined;
-    // one thing of a kind at a tree at a time
+    // one thing of a kind at a tree at a time; while its present lies unopened under it, only a rustle (its spot clear)
+    if (!force && drop !== 'gift' && d.puts[giftId(tree.id)] && !taken(d, giftId(tree.id))) drop = null;
     if (drop === 'nest' && (swarm || dangler?.tree === tree.id || nests.some((s) => s.tree === tree.id))) drop = null;
     if (drop === 'branch' && lyingNow.some((b) => b.tree === tree.id && b.what === 'branch')) drop = null;
     if (drop === 'bug' && (dangler || nests.some((s) => s.tree === tree.id))) drop = null;
     const wire = wireDrop(drop, jst().hour, Math.random, bugForced);
     world.share({ kind: 'shake', tree: tree.id, drop: wire });
+    // the tree's present falls out of the canopy (Finds draws it: a put of the day); the partner's phone may have
+    // dropped it a moment before (the relay keeps the first)
+    if (drop === 'gift' && world.share({ kind: 'put', id: giftId(tree.id), what: 'present', at: giftAt(tree) }).fresh) later(() => sceneSfx('twig'), 520);
     play(tree, 'mine', wire);
   }
 

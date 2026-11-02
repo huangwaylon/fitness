@@ -3,7 +3,8 @@
 // every quick tap after it, is a shake. What falls is NH's for the kind of tree: a hardwood (the oaks and the goal
 // trees) or a cedar now and then drops a tree branch to pick up (cosmetic), a bagworm (at night sometimes a spider)
 // dangling on its thread for a while to net, and rarely a wasp nest; a palm drops its two coconuts (once a day) and
-// otherwise only, rarely, a nest (NH: no branches or bagworms from a palm, no furniture from any tree here). At most one
+// otherwise only, rarely, a nest (NH: no branches or bagworms from a palm). Two oaks or cedars a day hold a present
+// (NH's furniture, wrapped: treeGifts.ts), which their first shake drops before anything else. At most one
 // nest per tree per NEST_GAP_MS, on both phones (the shared day's shakes; the relay refuses a second); out of it the
 // wasps charge the villager who shook it, and a tap on them within SWARM_MS nets one (the ずかん's wasp), else they
 // sting (a fright: a 「！」 and a sweat drop, and NH's swollen eye for a while). No ベル ever (scenery never pays). A shake is shared (docs/backend.md#
@@ -69,15 +70,18 @@ export const NEST_ODDS = 8;
 export const BUG_ODDS = 7;
 const BRANCH_ODDS = 5;
 
-/** What a shake can drop, before the bug is told apart (`bug`: a bagworm or a spider, by the hour). */
-export type ShakeDrop = 'nest' | 'bug' | 'branch' | 'coconut' | null;
+/** What a shake can drop, before the bug is told apart (`bug`: a bagworm or a spider, by the hour); `gift` the tree's
+ *  present (treeGifts.ts: it crosses as a `put`, the shake itself as `none`). */
+export type ShakeDrop = 'nest' | 'bug' | 'branch' | 'coconut' | 'gift' | null;
 
 /** What a shake of a `kind` tree at `now` drops: `r` a uniform [0, 1) source, `lastNest` this tree's last nest (ms)
- *  if any, `coconuts` a palm still bears its coconuts today. `force` (the dev hook) makes it that drop (a palm's
- *  coconuts and nest, a hardwood's or a cedar's anything but coconuts). */
-export function shakeDrop(r: () => number, now: number, lastNest: number | undefined, force?: ShakeDrop, kind: TreeKind = 'goal', coconuts = false): ShakeDrop {
+ *  if any, `coconuts` a palm still bears its coconuts today, `gift` the tree still holds its present today (it falls
+ *  first, as NH's furniture does). `force` (the dev hook) makes it that drop (a palm's coconuts and nest, a hardwood's
+ *  or a cedar's anything but coconuts; never the present, which only the day's trees hold). */
+export function shakeDrop(r: () => number, now: number, lastNest: number | undefined, force?: ShakeDrop, kind: TreeKind = 'goal', coconuts = false, gift = false): ShakeDrop {
   const palm = kind === 'palm';
-  if (force !== undefined && (force === null || (palm ? force === 'nest' || force === 'coconut' : force !== 'coconut'))) return force;
+  if (force !== undefined && force !== 'gift' && (force === null || (palm ? force === 'nest' || force === 'coconut' : force !== 'coconut'))) return force;
+  if (gift && !palm && kind !== 'goal') return 'gift';
   if (palm && coconuts) return 'coconut';
   const due = lastNest === undefined || now - lastNest >= NEST_GAP_MS;
   if (due && r() * NEST_ODDS < 1) return 'nest';
@@ -95,7 +99,7 @@ export function shakenBug(hour: number, r: () => number): 'bagworm' | 'spider' {
 /** A shake's outcome as the wire has it (live-protocol Drop): the bug told apart by the hour. */
 export function wireDrop(d: ShakeDrop, hour: number, r: () => number, bug?: 'bagworm' | 'spider'): Drop {
   if (d === 'bug') return bug ?? shakenBug(hour, r);
-  return d ?? 'none';
+  return d === 'gift' ? 'none' : (d ?? 'none');
 }
 
 /** A dangling bug climbs back up into the tree after this long unless it's netted. */

@@ -97,10 +97,14 @@ export function apply(d: WorldDay, e: DayEvent, me: Who | null, row = false): Ap
     return { fresh: true, beat: was ?? null };
   }
   switch (e.kind) {
-    case 'put':
-      if (d.puts[e.id]) return SAME;
+    case 'put': {
+      // one id put by both of us (a tree's present, shaken out on both phones at once: island/treeGifts.ts): the relay
+      // keeps the first, so the partner's coming after mine means theirs got there first (as a claim's race above)
+      const was = d.puts[e.id];
+      if (was && (was.who === e.who || was.who !== me || e.who === me)) return SAME;
       d.puts[e.id] = { id: e.id, what: e.what, at: e.at, who: e.who, t: e.t };
       return { fresh: true, beat: null };
+    }
     case 'shake': {
       // the same shake again (a replay of one I folded already, or the row's and then the relay's): its tree, who and
       // the shaker's own time match

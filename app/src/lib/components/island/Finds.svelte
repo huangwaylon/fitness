@@ -11,7 +11,8 @@
   // us takes is gone on both (the shared day: docs/backend.md#shared-world, a `pick` claimed at the tap, first wins;
   // this phone's own record too, sceneDay.ts), and the partner's pick-up plays here: their villager turns to it, it
   // is picked up or dug where it lies, and their line shows. A balloon's present that lands is put on the island for both (`put`), opened by
-  // either. Wishes are both people's: a fragment for each. Everything lies in the world (world units: beach.ts, mushrooms.ts),
+  // either; so is a tree's present (treeGifts.ts: two oaks or cedars a day hold one, put by TreeShakes when shaken),
+  // which falls out of the canopy and opens into that tree's furniture of the day. Wishes are both people's: a fragment for each. Everything lies in the world (world units: beach.ts, mushrooms.ts),
   // each item a world node at its foot (a dig spot and a hole flat on the ground). SceneTaps mounts this inside the stage
   // and asks it about each tap after the critters (`tap`, client px). Cheap: static images and one-shot animations; no
   // timers but the dig's short wait, the clock is the scene's minute tick.
@@ -45,6 +46,9 @@
   import { lying, taken as takenBy, takenByOthers } from '#lib/sync/world-day.ts';
   import { tellPartner, type PartnerNews } from './partnerNews.ts';
   import { loadCatalogNames } from '#lib/i18n/catalog.ts';
+  import { giftTree } from './treeGifts.ts';
+  import { treeById } from './treeShake.ts';
+  import { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
     scene?: HTMLElement;
@@ -225,8 +229,29 @@
    *  size). */
   const sizes = new Map<string, number>();
   /** Presents opened here (gone once my villager has opened it; the partner's at once). */
-  const presents = $derived(lying(shared.day, shared.me, (id) => (void taken, takenOn(date).has(id))).filter((p) => p.what === 'present' || p.what === 'sky-egg').slice(-3)
-    .map((p) => ({ uid: p.id, x: p.at[0], y: p.at[1], art: p.what === 'sky-egg' ? findArt('sky-egg') : 'deco/present', size: sizes.get(p.id) ?? PRESENT_U })));
+  const presents = $derived.by(() => {
+    const all = lying(shared.day, shared.me, (id) => (void taken, takenOn(date).has(id))).filter((p) => p.what === 'present' || p.what === 'sky-egg');
+    // the balloons' newest three, and every tree's (two a day at most)
+    const trees = all.filter((p) => giftTree(p.id)), balloons = all.filter((p) => !giftTree(p.id)).slice(-3);
+    return [...balloons, ...trees].map((p) => {
+      const tree = giftTree(p.id);
+      return { uid: p.id, x: p.at[0], y: p.at[1], art: p.what === 'sky-egg' ? findArt('sky-egg') : 'deco/present', size: sizes.get(p.id) ?? PRESENT_U, tree,
+        from: tree ? (treeById(tree)?.h ?? 120) * 0.55 : 0 };
+    });
+  });
+  /** Trees' presents falling out of their canopies now (mine as TreeShakes puts it, the partner's as theirs comes in). */
+  const falling = new SvelteSet<string>();
+  const fellSeen = new Set<string>();
+  $effect(() => {
+    for (const p of presents) if (p.tree && !fellSeen.has(p.uid)) {
+      fellSeen.add(p.uid);
+      // just put (this phone's shake, or the partner's live): it falls; one lying since before (a reload) doesn't
+      if (shared.now() - (shared.day.puts[p.uid]?.t ?? 0) < 1500) {
+        falling.add(p.uid);
+        later(() => falling.delete(p.uid), 900);
+      }
+    }
+  });
   /** A present's size where it lies (u), when it wasn't this phone's balloon. */
   const PRESENT_U = 30;
   /** A balloon's present has landed on the lawn at world (x, z) (SceneTaps): it lies there until a tap picks it up (NH),
@@ -256,7 +281,8 @@
     }
     // what's inside is decided at the tap (and claimed with it: the partner's phone shows what I got)
     void catalog().then((C) => {
-      const inside = C.pickPresent(date, rand, eggTime(eventNow()));
+      // a tree's holds its furniture of the day (the same on every phone); a balloon's is a draw
+      const inside = p.tree ? C.treeItem(date, p.tree, seed) : C.pickPresent(date, rand, eggTime(eventNow()));
       if (!claim(p.uid, `present:${inside.kind}:${inside.id}`, p.x, p.y)) return;
       pickHere(p.x, () => opened(p, inside));
     }, () => {});
@@ -322,6 +348,7 @@
   onMount(() =>
     shared.on(({ e, live }) => {
       if (e.kind === 'put' && e.what === 'present') void catalog().catch(() => {});
+      if (e.kind === 'put' && giftTree(e.id) && live) later(() => sceneSfx('twig'), 520);
       if (e.kind !== 'pick' || !live || !e.at || !enabled()) return;
       const [kind, id, id2] = e.what.split(':');
       const [x, z] = e.at;
@@ -464,8 +491,10 @@
   </div>
 {/each}
 {#each presents as p (p.uid)}
-  <div class="node" aria-hidden="true" {@attach w.at({ x: p.x, z: p.y, h: p.size, m3: { key: p.art } })}>
-    <span class="item gift" data-find="present" data-uid={p.uid}><OfficialArt key={p.art} size={su(p.size)} eager /></span>
+  <!-- a tree's present falls out of its canopy (from its height) and bounces where it lands (the 3D island's model
+       stands there once it has: m3 off while it falls) -->
+  <div class="node" aria-hidden="true" {@attach w.at({ x: p.x, z: p.y, h: p.size + p.from, m3: { key: p.art, off: falling.has(p.uid) } })}>
+    <span class="item gift" class:fall={falling.has(p.uid)} data-find="present" data-uid={p.uid} data-tree-gift={p.tree} style:--from={su(-p.from)}><OfficialArt key={p.art} size={su(p.size)} eager /></span>
   </div>
 {/each}
 {#each shells as s (s.uid)}
@@ -583,6 +612,14 @@
   @keyframes pop-spark { 0% { transform: scale(0) rotate(0); opacity: 0; } 40% { transform: scale(1.1) rotate(45deg); opacity: 1; } 100% { transform: scale(0) rotate(90deg); opacity: 0; } }
   /* a balloon's present where it landed, standing on its foot, a soft shadow there */
   .gift > :global(*) { translate: -50% -100%; filter: var(--leaf-tint,) drop-shadow(0 1.5px 0 rgba(60, 70, 30, .35)); }
+  /* a tree's present, shaken out: it falls from the canopy, squashes and bounces (TreeShakes' drop) */
+  .gift.fall { animation: gift-fall 560ms cubic-bezier(.45, 0, .8, .6) both; transform-origin: 50% 0; }
+  @keyframes gift-fall {
+    0% { transform: translateY(var(--from)); }
+    60% { transform: translateY(0) scale(1.1, .88); animation-timing-function: ease-out; }
+    76% { transform: translateY(calc(-6 * var(--su))) scale(.96, 1.04); animation-timing-function: ease-in; }
+    90% { transform: translateY(0) scale(1.03, .97); } 100% { transform: none; }
+  }
   /* a mushroom stands on the lawn beside its tree, a soft shadow at its foot */
   .mush > :global(*) { translate: -50% -92%; filter: var(--leaf-tint,) drop-shadow(0 1.5px 0 rgba(60, 70, 30, .35)); }
   .mush.flip > :global(*) { scale: -1 1; }

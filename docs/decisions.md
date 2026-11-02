@@ -208,6 +208,15 @@ A quick run of taps (the third within 1.2 s) shakes; a single tap stays the popu
 an hour), its wasps caught or stinging (a fright, a sweat drop and NH's swollen eye, on each render's measured eye). Why: the popup keeps the single tap, and a run is
 how people shake a tree in NH.
 
+### Two trees a day hold a present (2026-11-02)
+NH's furniture from the trees: each day two of the oaks and cedars (by the date's seed; not the palms, not the goal
+trees) hold a piece of the balloon presents' furniture that the tent can place, and their first shake drops it,
+wrapped, to open where it lies; never ベル (NH's bag of bells left out). It crosses as a `put` of a `present` by the
+tree's id and opens as one, so no contract or relay change: the relay's first put wins, the day row keeps it, and
+whatever draws a balloon's present (the DOM island, the 3D island's port) draws it. Why: the user ("when you shake
+them, you can occasionally get presents too"); wrapped because our presents are, and the present path brings the
+plate, the ずかん, the tent and the sharing with it.
+
 ### Mushrooms are cosmetic
 November's mushrooms are captions only, no ずかん `find`. Why: NH's mushrooms are crafting materials with no catalogue
 page, and a new find kind needs a redeploy for a seasonal flourish.

@@ -155,6 +155,27 @@ describe('the shared day: two phones on the relay', () => {
     expect(B.act({ kind: 'pick', id: 's2000', what: 'shell:cowrie' })).toBe(false);
   });
 
+  it('a tree’s present shaken out on both phones at once: the relay keeps the first put, both phones have it as theirs', () => {
+    const { A, B, tick } = island();
+    A.open();
+    B.open();
+    expect(B.act({ kind: 'put', id: 'tf:oak-m1', what: 'present', at: [312, 474] })).toBe(true);
+    expect(A.act({ kind: 'put', id: 'tf:oak-m1', what: 'present', at: [312, 474] })).toBe(true);
+    tick();
+    A.drain();
+    B.drain();
+    expect(canonical(A.day)).toBe(canonical(B.day));
+    expect(A.day.puts['tf:oak-m1'].who).toBe('B');
+    // opened by A: gone on both (first wins, as any present)
+    expect(A.act({ kind: 'pick', id: 'tf:oak-m1', what: 'present:item:rattan-armchair', at: [312, 474] })).toBe(true);
+    expect(B.act({ kind: 'pick', id: 'tf:oak-m1', what: 'present:item:rattan-armchair', at: [312, 474] })).toBe(true);
+    A.drain();
+    B.drain();
+    expect(lying(A.day)).toEqual([]);
+    expect(lying(B.day)).toEqual([]);
+    expect(taken(B.day, 'tf:oak-m1')?.who).toBe('A');
+  });
+
   it('a scripted session of every kind (conflicts, a dropped socket and its resends, a late join in one replay): the same canonical day on every phone', () => {
     const { A, B, tick } = island();
     A.open();

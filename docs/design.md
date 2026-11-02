@@ -506,8 +506,20 @@ NH).
   in 7 a dangling bug, else 1 in 5 a branch (it lies beside the trunk until a tap picks it up; cosmetic). A palm: its
   two coconuts the first time it's shaken in a Tokyo day (they lie round its foot; a tap picks one up, NH's 「ヤシのみを
   ひろった！」), after that only, 1 in 8, a nest (NH: no branches or bagworms from a palm). At most one nest per tree an
-  hour, on both phones. No furniture (NH's hardwoods drop some; scenery here never pays), and no fruit from a goal tree:
-  its fruit falls when its goal is met.
+  hour, on both phones. No fruit from a goal tree: its fruit falls when its goal is met.
+- **A tree's present** (`island/treeGifts.ts`, `e2e/tree-gifts.spec.ts`; NH's furniture from the trees): each Tokyo
+  day two of the oaks and cedars (`GIFT_TREES`: not a palm, which has its coconuts, nor a goal tree, which has its fruit
+  and its popup) hold a piece of furniture, and the first shake of one drops it before anything else, once. It falls
+  out of the canopy wrapped, as a balloon's present (our presents are wrapped, and a present to open reads as the
+  moment the user asked for), in front of the trunk, and a tap opens it where it lies like one: the confetti, the
+  fanfare and 「システムキッチンを てにいれた！」. Inside is that tree's piece of the day (`catalog.ts` treeItem): the balloon
+  presents' furniture (every piece as likely, the shops' season stock only in season) that the tent has a model of, so
+  it's always placeable (みつけた). Which trees and what they hold come from the date and the island's seed (`dayRand`),
+  the same on every phone with no messages. Furniture only, never ベル (NH's bag of bells from one tree left out:
+  scenery never pays). While it lies unopened, a shake of its tree only rustles. Shared: the drop is a `put` of a
+  `present` by the tree's id (`tf:<tree>`; the shake itself crosses as `none`), first wins at the relay, so it lies on
+  every phone and in the day row; opening it is the present's `pick`, and the ずかん's カタログ credits whoever opened it
+  (A, B or the guest).
 - **Shared** ([Shared world](#shared-world)): a shake's outcome goes to the partner; on their phone my villager turns to
   the tree, it shakes and the same thing falls; their wasps charge their villager (only they can net
   them). What lies (branches, coconuts) is the shared day's: a reload or the other phone finds it there, and a pick-up
@@ -869,6 +881,7 @@ it lies, with the line. The first of each shell, fossil and fragment is a ずか
   or the season's zodiac fragment (twice as likely after a meteor shower), twinkling now and then.
 - **A balloon's present:** where it lands it's put on the island for both (`put`; the balloon itself is each phone's
   own); either opens it, what's inside decided at the tap and shown on the other phone too (「うめが ○○を てにいれた！」).
+  A tree's present is the same put, by its tree's id ([Shaking a tree](#shaking-a-tree)).
 
 ### Island care
 
