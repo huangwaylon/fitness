@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DOOR_TILES, HALF, ROOM, TILE, isWallItem, wallSnap, wallSpot, wallSteps, wallWhy, blocked, centreOf, clampIn, isSmall, isSurface, nearestFree, placeWhy, resolve, slotTaken, slotToTile, snapTo, surfaceAt, tileToSlot, tilesOf, walkPath, type Spot } from './grid.ts';
+import { DOOR_TILES, HALF, ROOM, TILE, isWallItem, wallSnap, wallSpot, wallSteps, wallWhy, blocked, centreOf, clampIn, fitsOn, isSmall, isSurface, kidSpot, nearestFree, onTop, slotsOf, topY, placeWhy, resolve, slotTaken, slotToTile, snapTo, surfaceAt, tileToSlot, tilesOf, walkPath, type Spot } from './grid.ts';
 import { ITEMS, STARTER, footprint } from './items.ts';
 
 const furniture = STARTER.filter((c) => !ITEMS[c].rug);
@@ -114,7 +114,7 @@ describe('surfaces (NH\'s table tops)', () => {
   it('the room: a lamp on the table goes where the table goes, on its top; its table gone, it stands on the floor', () => {
     const room = [{ id: 't', item: table, x: 2, z: 3, f: 0 as const }, { id: 'l', item: lamp, x: 1, z: 0, f: 0 as const, on: 't' }];
     const [, l] = resolve(room);
-    expect(l).toMatchObject({ x: 3, z: 3, y: ITEMS[table].h, on: 't' });
+    expect(l).toMatchObject({ x: 3, z: 3, y: topY(table), on: 't' });
     const moved = resolve([{ ...room[0], x: 5, z: 6, f: 2 }, room[1]]);
     expect(moved[1]).toMatchObject({ x: 5, z: 6, f: 2 });
     expect(resolve([room[1]])[0]).toMatchObject({ x: 1, z: 0, y: 0, on: undefined });
@@ -129,6 +129,42 @@ describe('surfaces (NH\'s table tops)', () => {
     expect(slotTaken(room, 't', 1, 0)).toBe(true);
     expect(slotTaken(room, 't', 1, 0, 'l')).toBe(false);
     expect(slotTaken(room, 't', 0, 0)).toBe(false);
+  });
+
+  it('a top is its model’s, not its bounds: the log shelves’ ornaments and a tool shelf’s tools stand over it', () => {
+    expect(topY('f4036')).toBeLessThan(ITEMS.f4036.h - 2);
+    expect(topY('f7525')).toBeLessThan(ITEMS.f7525.h - 2);
+    // under a roof: the system kitchen's counter and the loft bed's desk, not their tops
+    expect(topY('f3616')).toBeLessThan(10);
+    expect(topY('f3621')).toBeLessThan(10);
+    // a tile with no top there holds nothing (the system kitchen's sink side)
+    expect(slotsOf('f3616')).toEqual([[0, 0]]);
+    expect(fitsOn('f3616', lamp, 1, 0, 0)).toBe(false);
+    expect(fitsOn(table, lamp, 1, 0, 0) && !fitsOn(table, lamp, 2, 0, 0)).toBe(true);
+  });
+
+  it('a 2 × 1 small thing (the 50-inch TV) takes two tiles of a top, turned with it; one a tile', () => {
+    const tv = 'f3252';
+    expect(isSmall(tv)).toBe(true);
+    expect(fitsOn(table, tv, 0, 0, 0)).toBe(true);
+    // across the table's depth (turned a quarter) it doesn't fit a 2 × 1 table
+    expect(fitsOn(table, tv, 0, 0, 1)).toBe(false);
+    const room: Spot[] = [{ id: 't', item: table, x: 2, z: 3, f: 1 }, { id: 'v', item: tv, x: 0, z: 0, f: 0, on: 't' }];
+    expect(slotTaken(room, 't', 1, 0, undefined, lamp, 0)).toBe(true);
+    // the table turned: the TV turned with it, on the table's two tiles
+    const [, v] = resolve(room as (Spot & { id: string })[]);
+    expect(v).toMatchObject({ x: 2, z: 3, f: 1, on: 't' });
+    expect(tilesOf(v).sort()).toEqual(tilesOf(room[0]).sort());
+    expect(v.at).toEqual(centreOf(room[0]));
+  });
+
+  it('a thing stands on its top’s rectangle: its middle kept in from the edges, at the top’s height', () => {
+    const t: Spot = { id: 't', item: 'f3616', x: 0, z: 0, f: 0 };
+    const [lx, y, lz] = onTop('f3616', { item: lamp, x: 0, z: 0, f: 0 });
+    const st = ITEMS.f3616.st!;
+    expect(y).toBe(topY('f3616'));
+    expect(lx >= st[0] && lx <= st[2] && lz >= st[1] && lz <= st[3]).toBe(true);
+    expect(kidSpot(t, { item: lamp, x: 0, z: 0, f: 0 })).toMatchObject({ x: 0, z: 0, y });
   });
 });
 

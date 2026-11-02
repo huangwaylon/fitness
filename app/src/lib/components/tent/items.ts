@@ -25,9 +25,14 @@ export interface ItemMeta {
   lit?: 1;
   /** Its icon is NH's own (static/room/icons), not the ずかん's. */
   icon?: 1;
-  /** NH's surface: small things stand on its top (at h). */
+  /** NH's surface (the ACNH spreadsheet's `surface`): small things stand on its top. */
   s?: 1;
-  /** Small (NH's miscellaneous): may stand on a surface. */
+  /** Its top, from its model (scripts/room-surfaces.ts): how high (model units), the rectangle it covers (its own
+   *  frame, its middle at 0: x0, z0, x1, z1) and the tiles of its own footprint that hold a thing ([sx, sz]). */
+  sy?: number;
+  st?: [number, number, number, number];
+  sl?: [number, number][];
+  /** Small (NH's miscellaneous, any size that fits): may stand on a surface. */
   sm?: 1;
   /** NH's interaction: sat on (s: a chair, a sofa, a stool) or lain on (l: a bed), by n at once. */
   u?: 's' | 'l';
@@ -39,7 +44,7 @@ export interface ItemMeta {
   wl?: 1;
 }
 
-export const ITEMS: Readonly<Record<string, ItemMeta>> = data.items as Record<string, ItemMeta>;
+export const ITEMS: Readonly<Record<string, ItemMeta>> = data.items as unknown as Record<string, ItemMeta>;
 export const WALLS: readonly string[] = data.walls;
 export const FLOORS: readonly string[] = data.floors;
 /** The tent's own look: the first wallpaper and floor. */
