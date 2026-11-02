@@ -58,7 +58,7 @@ panel](#panel)) with the jar on its right, the two centred in the sky; a sync ch
   (a speech bubble with three dots, soft ink), 36px drawn in a 44px target, 12px in from the side and above the home
   indicator; over しずえ's box while she speaks. It opens the phrase picker above it (a phrase shows over my villager
   on both phones). Hidden under a sheet, the panel or the harvest, a tree's popup, and in もようがえ. The guest has it
-  too. Nothing else lives at the bottom right (the partner's edge face and the edge notice are centred).
+  too, and the tent and the homes have it ([The tent](#the-tent) "Phrases"). Nothing else lives at the bottom right (the partner's edge face and the edge notice are centred).
 - Controls are real buttons with `aria-label`, ≥ 44px (villagers 64px); focus order = visual order.
 
 ### Wallet
@@ -847,6 +847,15 @@ goes with the leaving).
   on or off with a tap, kept with the piece (its op's `l`) on both phones; it glows (its emissive) while on, and in the
   dark lights the room round it (up to four point lights). NH's room light switch (💡, top right) dims the room's own
   light; at night, or with it off, the room is lit by whatever is on.
+- **Phrases** (as on the island, [Villager taps](#villager-taps)): the island's say button at the room's bottom right,
+  just above the foot's buttons (いえを かえる and もようがえ fill the foot's width), in the tent and every home, the guest's
+  too; hidden in もようがえ, under a sheet and ハニワくん's letter. The same picker above it; a tap on the room while it's
+  open only closes it (nobody walks). The phrase shows in the island's balloon (`island/Says.svelte`) over the speaker's
+  villager in the room, by its head as the room's camera sees it (the tent engine's `headPoint(who)`: the top of its
+  card for now, the 3D model's head bone once switched), by the island's placement rule (never over the room's
+  controls); it follows a walk, steps aside while the camera turns, 4 s, a newer one replacing it. It goes out as
+  `say {text, sc}` with the room's scope (`t` the tent, `u` うめ's, `v` the guest's) and shows only on a phone whose
+  villager is in that room; one said on the island (no `sc`) only on the island (one place at a time). `e2e/say-rooms.spec.ts`.
 - **The Happy Home Academy** (`tent/hha.ts`, `HhaLetter.svelte`): the first time someone comes in through the door
   after the room was changed that day (Tokyo's), ハニワくん's letter rates it, once a day on each phone; the ハニワ button
   (top right) shows the rating as the room is now. Worked out from the shared room alone, so both phones agree: NH's
