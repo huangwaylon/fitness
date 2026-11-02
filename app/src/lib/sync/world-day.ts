@@ -85,7 +85,10 @@ export function apply(d: WorldDay, e: DayEvent, me: Who | null, row = false): Ap
     const was = d.claims[c];
     // the sheet's row had it, and here's the change itself (its what, how and where): the same claim, now news
     const upgrade = was?.what === 'row' && was.who === e.who;
-    if (was && !upgrade && (was.who === e.who || was.who !== me || e.who === me)) return SAME;
+    // the sheet's row said the other one had it, but the relay kept this claim (it keeps the race's winner only): a
+    // row written before its writer heard it lost the race (a phone opening later folds rows before the replay)
+    const outrun = was?.what === 'row' && was.who !== e.who;
+    if (was && !upgrade && !outrun && (was.who === e.who || was.who !== me || e.who === me)) return SAME;
     if (upgrade) {
       d.claims[c] = { ...was, what: e.what, ...(e.kind === 'catch' && e.how ? { how: e.how } : {}), ...(e.at ? { at: e.at } : {}) };
       return { fresh: true, beat: null };
