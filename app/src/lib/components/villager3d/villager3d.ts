@@ -31,7 +31,8 @@ export interface Villager3D {
   state(): State;
   act(a: Action): void;
   face(f: Face | null): void;
-  /** One frame at t (ms): `moved` the u walked since the last frame, `speed` (u/s) the walk's. True while it moves. */
+  /** One frame at t (ms): `moved` the u walked since the last frame, `speed` (u/s) the walk's. True while it's still
+   *  changing on its own (a crossfade to a new state, an action): keep stepping it till false. */
   step(t: number, moved?: number, speed?: number): boolean;
   /** Only its face at t (a blink, an expression: a texture's offset, no bones): true when it changed (a redraw). */
   blink(t: number): boolean;
@@ -282,7 +283,8 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       blob.scale.setScalar(p.pitch ? 30 : 17 * (1 - Math.min(0.4, p.y * 0.12)));
       blobMat.opacity = p.pitch ? 0.12 : 0.22;
       showFace(t);
-      return true;
+      // (still moving: a crossfade between states, an action under way)
+      return k < 1 || !!act;
     },
     blink(t) {
       lastT = t;

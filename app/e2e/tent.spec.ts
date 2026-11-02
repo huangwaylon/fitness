@@ -294,13 +294,30 @@ test('sit, lie and switch: a tap on a chair walks my villager up and sits it, on
     const [x, y] = await tile(page, p.x, p.z);
     await page.mouse.click(x, y);
   };
+  // my villager in 3D (NH's model, VILLAGER_H 16 tall): the box its skinned meshes fill, settled into each pose (never
+  // left half way through a crossfade: the user's "split" villager), never strewn about by its bones
+  type B = { state: string; box: [number[], number[]] } | null;
+  const body = () => page.evaluate(() => (window as unknown as { __tent: { v3(w: string): B } }).__tent.v3('A'));
+  const size = (b: B) => (b ? [b.box[1][0] - b.box[0][0], b.box[1][1] - b.box[0][1], b.box[1][2] - b.box[0][2]] : [0, 0, 0]);
+  const settled = async (state: string, ok: (s: number[]) => boolean) => {
+    await expect.poll(async () => {
+      const b = await body();
+      return b?.state === state && ok(size(b)) && b.box[0].every((v) => v > -20) && b.box[1].every((v) => v < 26);
+    }, { timeout: 8000 }).toBe(true);
+  };
+  await expect.poll(body, { timeout: 15_000 }).not.toBeNull();
+  await settled('idle', ([, h]) => h > 13 && h < 19);
   await tapPiece('f4039');
   await expect.poll(() => use(page, (t) => t.seat()), { timeout: 6000 }).toMatchObject({ id: id('f4039'), lie: false });
+  await settled('sit', ([, h]) => h > 9 && h < 17);
   await tapPiece('f4081');
   await expect.poll(() => use(page, (t) => t.seat()), { timeout: 6000 }).toMatchObject({ id: id('f4081'), lie: true });
+  // lying: long along the cot, low over it
+  await settled('lie', ([w, h, d]) => h < 10 && Math.max(w, d) > 11);
   const [fx, fy] = await tent(page, (t) => t.px(-30, 30));
   await page.mouse.click(fx, fy);
   await expect.poll(() => use(page, (t) => t.seat())).toBeNull();
+  await settled('idle', ([, h]) => h > 13 && h < 19);
   // the lantern: on as it came, off with a tap; the room's light switch
   expect((await use(page, (t) => t.lights())).pieces).toEqual([{ id: id('f1432'), on: true }]);
   await tapPiece('f1432');

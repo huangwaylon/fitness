@@ -117,6 +117,9 @@ export interface Tent {
   /** 0 day … 1 night: the light, and the lamps on. */
   night(n: number): void;
   villager(who: Who, look: Look | null): void;
+  /** The test hook's: a 3D villager's state and the box its skinned meshes fill now (bones applied), relative to its
+   *  feet (room units), or null (no model, or a card). */
+  v3(who: Who): { state: string; box: [number[], number[]] } | null;
   /** Where a villager stands now (model units). */
   at(who: Who): [number, number] | null;
   /** Put a villager at a point, facing left (-1) or right (1). */
@@ -982,6 +985,14 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   function headPoint(who: Who): [number, number, number] | null {
     const w = villagers.get(who);
     if (!w) return null;
+    // a 3D villager: over its head bone as it moves now (NH's head joint is at the head's base: its top is about half
+    // the villager's height above), upright whatever its pose
+    const hb = w.v3?.head();
+    if (hb) {
+      w.v3!.group.updateMatrixWorld(true);
+      const p = hb.getWorldPosition(headV);
+      return [p.x, p.y + (w.pose?.lie ? VILLAGER_H * 0.2 : VILLAGER_H * 0.5), p.z];
+    }
     // the card's top middle as it stands now (a hop, a seat, the camera's turn): its geometry is 0…1 up
     w.card.updateMatrixWorld();
     const p = w.card.localToWorld(headV.set(0, 1, 0));
@@ -1294,15 +1305,18 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     }
     const moved = Math.hypot(w.pos[0] - w.was[0], w.pos[1] - w.was[1]);
     w.was = [w.pos[0], w.pos[1]];
-    v.set(w.pose ? (w.pose.lie ? 'lie' : 'sit') : w.path ? 'walk' : 'idle');
+    const state = w.pose ? (w.pose.lie ? 'lie' : 'sit') : w.path ? 'walk' : 'idle';
+    if (v.state() !== state) w.posing = true;
+    v.set(state);
     if (w.hop && t - w.hop < 1400) busy = true;
     else w.hop = 0;
     place(w);
     if (busy || w.posing || cameraMoving) {
       // (its stride in its own units: the room's are V3_SCALE of the island's)
-      v.step(t, moved / V3_SCALE, w.path ? (moved / V3_SCALE / Math.max(1, dt)) * 1000 : 0);
-      w.posing = busy;
-      return busy || w.posing;
+      // (posed till it settles: a state's crossfade, an action, and once more after it stops)
+      const going = v.step(t, moved / V3_SCALE, w.path ? (moved / V3_SCALE / Math.max(1, dt)) * 1000 : 0);
+      w.posing = busy || going;
+      return w.posing;
     }
     return v.blink(t) && false;
   }
@@ -1472,6 +1486,19 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       if (f) setFace(w, f);
       place(w);
       invalidate();
+    },
+    v3(who) {
+      const w = villagers.get(who), v = w?.v3;
+      if (!v) return null;
+      const b = new Box3(), m = new Box3(), o = v.group.position;
+      v.group.updateMatrixWorld(true);
+      v.group.traverse((n) => {
+        const sm = n as Mesh & { isSkinnedMesh?: boolean; computeBoundingBox(): void; boundingBox: Box3 | null };
+        if (!sm.isSkinnedMesh || !sm.visible) return;
+        sm.computeBoundingBox();
+        b.union(m.copy(sm.boundingBox!).applyMatrix4(sm.matrixWorld));
+      });
+      return { state: v.state(), box: [[b.min.x - o.x, b.min.y - o.y, b.min.z - o.z], [b.max.x - o.x, b.max.y - o.y, b.max.z - o.z]] };
     },
     walk, walking: (who) => !!villagers.get(who)?.path, face, hop, headPoint, hit, floorAt, client, orbit, zoom, resetView, isDefault, moving, centre,
     loading: () => pending,
