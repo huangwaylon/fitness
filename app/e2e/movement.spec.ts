@@ -132,7 +132,8 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await page.setViewportSize({ width: w, height: h });
     await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
     await page.goto('?demo&date=2026-11-04T12:00&wander');
-    await expect(ribbon(page)).toBeVisible();
+    // (the island up first: under CI's load the page takes more than 5 s; ?wander's outing starts 3.2 s after it)
+    await expect(ribbon(page)).toBeVisible({ timeout: 15_000 });
     const home = await feet(page, 'partner');
     expect(await footsteps(page)).toBe(0);
     await expect(page.locator('[data-actor="partner"].walking')).toBeAttached({ timeout: 6000 });
@@ -152,6 +153,8 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
 test('under a sheet the walkers stop and no footstep sounds', async ({ page }) => {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto('?demo&date=2026-11-04T12:00&wander');
+  // (the island up first, as above: the 6 s for ?wander's outing count from there, not from the page's load)
+  await expect(ribbon(page)).toBeVisible({ timeout: 15_000 });
   await expect(page.locator('[data-actor="partner"].walking')).toBeAttached({ timeout: 6000 });
   await ribbon(page).click();
   await expect(page.locator('dialog[open]')).toBeVisible();
