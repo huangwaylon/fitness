@@ -302,7 +302,15 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   and the day's scenery and decor pieces (a card of today's art for what has no model yet); the villagers: cards of
   their renders posed from the director (`motion3d.ts`); the lights: `lights.ts`; the finger: `gestures.ts`. The ends
   are fitted per screen like the 2D ones (the shoreline 83% down at まえ, the campsite's feet half way at おく).
-  `window.__world3d` (stats, view, go, client, ground, where, focus) for the e2e (`e2e/world3d.spec.ts`).
+  `window.__world3d` (stats, view, go, client, ground, where, focus, xRoom, strays, alphaBlends) for the e2e
+  (`e2e/world3d.spec.ts`).
+  - **The camera** (the user, 2026-11-02): the default zoom (1) is the widest it rests at, x centred, and one finger
+    only scrolls along the island (its sideways movement ignored). Zoomed in past it, one finger pans sideways too (a
+    free 2D pan with its fling), x held over the land plus 24 u of sea either side (`xRoom`: growing in over the first
+    0.3 of zoom, so it's exactly centred at the default). A pinch zooms about its middle (the ground under it stays
+    put, its x as far as the room lets it); pinching back toward the default eases x to the middle; past the default
+    it gives with rubber-band resistance and, on release, springs back to the default over 350 ms, eased out (the
+    user's approved automatic move). In: up to 1.8. A gesture is one kind from start to end.
   - **What comes and goes** is drawn from the DOM island's own nodes (`camera.svelte.ts`): a node with an `m3` art key
     stands as NH's model where the node is (its live position too; a move eases over `ms` as its sprite's CSS
     transition; `drop` falls in from above; `y` an absolute height: a fish's shadow under the sea), and one with a

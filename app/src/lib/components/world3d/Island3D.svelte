@@ -574,7 +574,7 @@
       if (e.things.has(id)) e.things.jiggle(id, k);
       else e.cards.jiggle(`s:${id}`, k);
     });
-    const off = attachGestures(scene, e, { enabled, top: () => scene.getBoundingClientRect().top });
+    const off = attachGestures(scene, e, { enabled, top: () => scene.getBoundingClientRect().top, left: () => scene.getBoundingClientRect().left });
     const ro = new ResizeObserver(() => {
       e.resize();
       fitEnds(e);
@@ -584,8 +584,8 @@
     const W = window as unknown as { __world3d?: unknown };
     W.__world3d = {
       stats: () => e.stats(), view: () => e.view(), limits: () => e.limits(), loaded: () => loaded && !e.stats().loading,
-      go: (z: number, k?: number) => e.go(z, k), pan: (dy: number) => (e.touching(true), e.pan(dy), e.touching(false)),
-      zoom: (f: number) => e.zoom(f), fling: (vy: number) => e.fling(vy), options: (o: Partial<Options>) => e.options(o),
+      go: (z: number, k?: number, x?: number) => e.go(z, k, false, x), pan: (dy: number, dx?: number) => (e.touching(true), e.pan(dy, dx), e.touching(false)), xRoom: (k?: number) => e.xRoom(k), touching: (on: boolean) => e.touching(on),
+      zoom: (f: number) => e.zoom(f), fling: (vy: number, vx?: number) => e.fling(vy, vx), options: (o: Partial<Options>) => e.options(o),
       /** A world point on screen (client px), `lift` above the ground. */
       client: (x: number, z: number, lift = 0) => {
         const p = e.at(x, z, lift), r = canvas!.getBoundingClientRect();

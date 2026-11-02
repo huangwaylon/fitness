@@ -92,9 +92,17 @@ interface Stats {
 /** The camera: vertical field of view (a long lens), the pitch at zoom 1 / fully in / fully out, the zoom's range. */
 const FOV = 30;
 const PITCH = { def: 58, near: 44, far: 63 };
-const ZOOM = { min: 0.66, max: 1.8 };
-/** How far past a limit a pinch may go (eased back on release), as a factor. */
-const ZOOM_OVER = 1.12;
+/** The zoom's range: the default (1) is the widest the island rests at (the user: zoomed out past it, a pinch gives
+ *  rubber-band resistance and springs back on release, ZOOM_BACK_MS). */
+const ZOOM = { min: 1, max: 1.8 };
+/** How far past a limit a pinch may go (eased back on release), as a factor (zooming out: further, a felt stretch). */
+const ZOOM_OVER = 1.12, ZOOM_UNDER = 1.2;
+/** A pinch released zoomed out past the default goes back to it over this, eased out (the user's approved move). */
+const ZOOM_BACK_MS = 350;
+/** Zoomed in past the default, the view may pan sideways over the land and this much sea (u) either side… */
+const SEA_X = 24;
+/** …the sideways room growing in over this much zoom past the default (so it's exactly centred at the default). */
+const X_RAMP = 0.3;
 /** Where the camera may look (the pivot's world z): the sea in front of まえ … the falls and the forest above the cliff. */
 const CAM_Z = { min: 30, max: 1000 } as const;
 /** The island's middle (the camera's x, always). */
@@ -153,16 +161,19 @@ export interface Island3 {
   tod(t: Tod, wet?: number, fog?: string): void;
   // ---- the finger ----
   /** Scroll by a drag of `dy` client px (down: toward まえ). */
-  pan(dy: number): void;
+  pan(dy: number, dx?: number): void;
   /** Zoom by a factor, about a screen y (the pinch's middle: the ground there stays put). */
   zoom(f: number, sy?: number): void;
   /** A release's fling (px/ms). */
-  fling(vy: number): void;
+  fling(vy: number, vx?: number): void;
   touching(on: boolean): void;
   /** The camera (the e2e, the way back from the tent). */
-  view(): { camZ: number; zoom: number; pitch: number };
-  /** `free`: past the ends if need be (the e2e's camera, at the 2D island's stops: the ends widen to take it). */
-  go(camZ: number, zoom?: number, free?: boolean): void;
+  view(): { camZ: number; zoom: number; pitch: number; camX: number };
+  /** `free`: past the ends if need be (the e2e's camera, at the 2D island's stops: the ends widen to take it); `x` the
+   *  camera's x (clamped: centred at the default zoom). */
+  go(camZ: number, zoom?: number, free?: boolean, x?: number): void;
+  /** How far the camera's x may be from the middle at this zoom (u): 0 at the default or wider. */
+  xRoom(zoom?: number): number;
   limits(): { min: number; max: number };
   /** The test hook's (docs/ops/testing.md): what's drawn now with a NaN in its bounds, or reaching far off the island
    *  (`reach` u past the ground's plan): a stray vertex (a quantized mesh baked wrong) draws a line across the screen. */
@@ -312,11 +323,11 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
   };
   /** A focus (the bulletin board's: docs/decisions.md "The island in 3D"): the camera framing one thing, its own x,
    *  pitch, height and pivot drop, eased in (k 0 … 1) over the finger's camera. */
-  let fx = MID_X, fy = 0, fpitch = 0, fk = 0, fdrop = 0, drop = PIVOT_DROP;
+  let camX = MID_X, fx = MID_X, fy = 0, fpitch = 0, fk = 0, fdrop = 0, drop = PIVOT_DROP;
   function aim() {
     pitch = pitchAt(zoomK);
     if (fk > 0) pitch += (fpitch - pitch) * fk;
-    const D = D0 / zoomK, cx = MID_X + (fx - MID_X) * fk, cy = fy * fk;
+    const D = D0 / zoomK, cx = camX + (fx - camX) * fk, cy = fy * fk;
     camera.position.set(cx, cy + D * Math.sin(pitch), -camZ + D * Math.cos(pitch));
     camera.lookAt(cx, cy, -camZ);
     const d = PIVOT_DROP + (fdrop - PIVOT_DROP) * fk;
@@ -341,14 +352,15 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     seaFog.uFogFar.value = hd * HAZE[1];
     // the shadow's box follows the pivot, as wide as the view, in steps (the shadow map redraws only when it steps)
     const zq = Math.round(camZ / SHADOW_STEP) * SHADOW_STEP, kq = Math.round(zoomK * 8) / 8;
-    const key = `${zq}:${kq}:${todLook.sunAt}`;
+    const xq = Math.round(camX / SHADOW_STEP) * SHADOW_STEP;
+    const key = `${zq}:${kq}:${xq}:${todLook.sunAt}`;
     if (key !== shadowKey) {
       shadowKey = key;
       const half = (VIEW_W / Math.max(ZOOM.min, kq - 0.0625)) * 0.75 + SHADOW_STEP;
       Object.assign(sun.shadow.camera, { left: -half, right: half, top: half * 1.4, bottom: -half * 1.1, near: 10, far: 1800 });
       sun.shadow.camera.updateProjectionMatrix();
-      sun.position.set(MID_X + todLook.sunAt[0] * 700, todLook.sunAt[1] * 700, -zq - 120 + todLook.sunAt[2] * 700);
-      sun.target.position.set(MID_X, 0, -zq - 120);
+      sun.position.set(xq + todLook.sunAt[0] * 700, todLook.sunAt[1] * 700, -zq - 120 + todLook.sunAt[2] * 700);
+      sun.target.position.set(xq, 0, -zq - 120);
       sun.target.updateMatrixWorld();
       shadowsDirty = true;
     }
@@ -415,7 +427,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
   /** The view depth of the log's horizon (the far tangent from the camera, in the y-z plane). */
   function horizonDepth(): number {
     const [y, z] = tangent();
-    v3.set(MID_X, y, z).applyMatrix4(camera.matrixWorldInverse);
+    v3.set(camera.position.x, y, z).applyMatrix4(camera.matrixWorldInverse);
     return Math.max(100, -v3.z);
   }
   function tangent(): [number, number] {
@@ -432,7 +444,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     if (!Number.isNaN(horizonY)) return horizonY;
     // the far tangent point (beyond the pivot: three's −z)
     const far = tangent();
-    horizonY = Math.max(0, screen(MID_X, far[0], far[1])[1]);
+    horizonY = Math.max(0, screen(camera.position.x, far[0], far[1])[1]);
     return horizonY;
   }
   /** How much a card must stretch to show as tall as it's wide-scaled: the inverse of its height's foreshortening. */
@@ -462,12 +474,25 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     renderer.setPixelRatio(on ? 1.5 : opts.dpr);
     renderer.setSize(W, H, false);
   }
-  function pan(dy: number) {
+  /** The sideways room at a zoom (u either side of the middle): none at the default or wider; zoomed in, as far as
+   *  keeps the view over the land and SEA_X of sea, growing in over X_RAMP of zoom. */
+  function xRoom(k = zoomK): number {
+    if (k <= ZOOM.min) return 0;
+    const L = ground.land, half = (L.x1 - L.x0) / 2 + SEA_X, view = VIEW_W / (2 * k);
+    return Math.max(0, half - view) * Math.min(1, (k - ZOOM.min) / X_RAMP);
+  }
+  const clampX = (x: number, k = zoomK) => {
+    const r = xRoom(k);
+    return Math.max(MID_X - r, Math.min(MID_X + r, x));
+  };
+  function pan(dy: number, dx = 0) {
     if (focus) return;
     light(true);
     settling = false;
     rawZ += (dy * unitsPerPx()) / Math.sin(pitch);
     camZ = clampZ(rawZ);
+    // sideways only zoomed in (the drag's x moves the view with the finger)
+    if (dx) camX = clampX(camX - dx * unitsPerPx());
     aim();
     activity();
   }
@@ -478,30 +503,39 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     if (k > hi) return hi * (1 + (ZOOM_OVER - 1) * (1 - 1 / ((k / hi - 1) * 4 + 1)));
     return k;
   };
-  function zoom(f: number, sy = H * (0.5 + PIVOT_DROP)) {
+  function zoom(f: number, sy = H * (0.5 + PIVOT_DROP), sx = W / 2) {
     if (focus) return;
     light(true);
     settling = false;
-    const before = groundAt(W / 2, sy);
+    zoomBack = null;
+    const before = groundAt(sx, sy);
     rawK *= f;
     zoomK = clampK(rawK);
+    // (toward the default the sideways room shrinks: x eases to the middle, exactly there at the default)
+    camX = clampX(camX);
     aim();
-    // the ground under the pinch stays put (along z: the camera's x never moves)
-    const after = groundAt(W / 2, sy);
+    // the ground under the pinch stays put (its x only as far as the sideways room lets it)
+    const after = groundAt(sx, sy);
     if (before && after) {
       camZ += before.z - after.z;
       rawZ = camZ;
       camZ = Math.max(lim.min - 160, Math.min(lim.max + 160, camZ));
+      camX = clampX(camX + before.x - after.x);
       aim();
     }
     activity();
   }
-  function fling(vy: number) {
+  let velX = 0;
+  function fling(vy: number, vx = 0) {
     if (focus) return;
     vel = vy;
+    velX = xRoom() > 0 ? vx : 0;
     lastT = now();
     activity();
   }
+  /** The spring back to the default zoom after a pinch released zoomed out past it (eased out over ZOOM_BACK_MS). */
+  let zoomBack: { t0: number; k0: number } | null = null;
+  const easeOut = (k: number) => 1 - (1 - k) ** 3;
   /** Back inside the limits (a released rubber band, the zoom past its end), eased. */
   function settle(dt: number): boolean {
     let more = false;
@@ -511,10 +545,18 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
       camZ += (zt - camZ) * e;
       more = true;
     } else camZ = zt;
-    if (Math.abs(kt - zoomK) > 0.0005) {
+    // zoomed out past the default: back to it over ZOOM_BACK_MS, eased out (x is centred all the while)
+    if (!zoomBack && zoomK < ZOOM.min - 0.0005) zoomBack = { t0: now(), k0: zoomK };
+    if (zoomBack) {
+      const k = Math.min(1, (now() - zoomBack.t0) / ZOOM_BACK_MS);
+      zoomK = zoomBack.k0 + (ZOOM.min - zoomBack.k0) * easeOut(k);
+      if (k >= 1) zoomBack = null;
+      else more = true;
+    } else if (Math.abs(kt - zoomK) > 0.0005) {
       zoomK += (kt - zoomK) * e;
       more = true;
     } else zoomK = kt;
+    camX = clampX(camX);
     rawZ = camZ;
     rawK = zoomK;
     aim();
@@ -538,7 +580,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     to: Cam;
     done: () => void;
   }
-  let focus: { back: { z: number; k: number } } | null = null, move: Move | null = null;
+  let focus: { back: { z: number; k: number; x: number } } | null = null, move: Move | null = null;
   /** NH's dolly: a cubic in and out. */
   const ease = (k: number) => (k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
   const camNow = (): Cam => ({ z: camZ, k: zoomK, fk, x: fx, y: fy, pitch: fpitch, drop: fdrop });
@@ -573,7 +615,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
   }
   /** The bulletin board's (docs/board.md): look at a rect face-on, framed in the screen above `bottom`. */
   function frameRect(f: { x: number; z: number; y: number; w: number; h: number; yaw?: number; top?: number; bottom?: number; fill?: number }, ms = 600): Promise<void> {
-    if (!focus) focus = { back: { z: camZ, k: zoomK } };
+    if (!focus) focus = { back: { z: camZ, k: zoomK, x: camX } };
     const fill = f.fill ?? 0.9, bottom = Math.max(0, Math.min(H * 0.7, f.bottom ?? 0)), top = Math.max(0, Math.min(H * 0.5, f.top ?? 0));
     const free = Math.max(H * 0.2, H - bottom - top), t = Math.tan(((FOV / 2) * Math.PI) / 180);
     // the distance that fits its height in the free screen (between the HUD and the keyboard) and its width across
@@ -583,7 +625,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     return moveTo({ z: f.z, k: D0 / D, fk: 1, x: f.x, y: src.feet(f.x, f.z) + f.y, pitch, drop: (top - bottom) / (2 * H) }, ms);
   }
   function focusOn(target: { x: number; z: number; lift?: number }, o: { zoom?: number; pitch?: number; ms?: number } = {}): Promise<void> {
-    if (!focus) focus = { back: { z: camZ, k: zoomK } };
+    if (!focus) focus = { back: { z: camZ, k: zoomK, x: camX } };
     const to = { z: target.z, k: o.zoom ?? 2.2, fk: 1, x: target.x, y: src.feet(target.x, target.z) + (target.lift ?? 0), pitch: ((o.pitch ?? 30) * Math.PI) / 180, drop: 0 };
     return moveTo(to, o.ms ?? 600);
   }
@@ -594,6 +636,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
       focus = null;
       camZ = rawZ = back.z;
       zoomK = rawK = back.k;
+      camX = back.x;
       fk = 0;
       aim();
     });
@@ -667,19 +710,26 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     let more = false;
     if (stepMove(t)) more = true;
     // the fling: iOS's deceleration, firmer past an end
-    if (!touch && vel && !focus) {
+    if (!touch && (vel || velX) && !focus) {
       const step = Math.min(50, t - lastT);
       lastT = t;
       rawZ += (vel * step * unitsPerPx()) / Math.sin(pitch);
       const out = rawZ < lim.min || rawZ > lim.max;
       vel *= Math.exp(-step / (out ? 60 : 325));
       camZ = clampZ(rawZ);
-      if (Math.abs(vel) < 0.01) vel = 0;
+      if (velX) {
+        const x = clampX(camX - velX * step * unitsPerPx());
+        // (a side's edge stops it: no rubber band sideways)
+        velX = x === camX ? 0 : velX * Math.exp(-step / 325);
+        camX = x;
+        if (Math.abs(velX) < 0.01) velX = 0;
+      }
+      if (Math.abs(vel) < 0.01 && !velX) vel = 0;
       aim();
       more = true;
     }
-    if (!touch && !vel && !focus && !move) {
-      if (settling || camZ < lim.min || camZ > lim.max || zoomK < ZOOM.min || zoomK > ZOOM.max) {
+    if (!touch && !vel && !velX && !focus && !move) {
+      if (settling || zoomBack || camZ < lim.min || camZ > lim.max || zoomK < ZOOM.min || zoomK > ZOOM.max) {
         settling = settle(dt);
         more ||= settling;
       }
@@ -691,7 +741,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     if (cards.frame(pitch * LEAN, stretch, src.feet)) more = true;
     if (effects.frame(t, camera)) more = true;
     if (built(ground) && ground.update?.(t)) more = true;
-    if (lights.frame(t, MID_X, camZ + 110, bendU.uBendR.value, -camZ)) more = true;
+    if (lights.frame(t, camX, camZ + 110, bendU.uBendR.value, -camZ)) more = true;
     if (opts.water) waterU.uTime.value = (t / 1000) % 3600;
     if (opts.shadows && shadowsDirty) {
       renderer.shadowMap.needsUpdate = true;
@@ -738,7 +788,8 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     touching(on) {
       touch = on;
       if (on) {
-        vel = 0;
+        vel = velX = 0;
+        zoomBack = null;
         settling = false;
         rawZ = camZ;
         rawK = zoomK;
@@ -748,15 +799,18 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
       }
       activity();
     },
-    view: () => ({ camZ, zoom: zoomK, pitch }),
-    go(z, k, free) {
+    view: () => ({ camZ, zoom: zoomK, pitch, camX }),
+    xRoom,
+    go(z, k, free, x) {
       if (free) {
         lim.min = Math.min(lim.min, z);
         lim.max = Math.max(lim.max, z);
       }
       camZ = rawZ = Math.max(lim.min, Math.min(lim.max, z));
       if (k) zoomK = rawK = Math.max(ZOOM.min, Math.min(ZOOM.max, k));
-      vel = 0;
+      camX = clampX(x ?? camX);
+      vel = velX = 0;
+      zoomBack = null;
       aim();
       activity();
     },
@@ -841,7 +895,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
     at, groundAt, horizon,
     rev: () => rev,
     kick: () => kick(),
-    idle: () => !busy && !touch && !vel && !settling && now() > activeUntil,
+    idle: () => !busy && !touch && !vel && !velX && !zoomBack && !settling && now() > activeUntil,
     onFrame(fn) {
       hook = fn;
       kick();
