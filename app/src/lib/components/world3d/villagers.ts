@@ -5,7 +5,7 @@
 // card meanwhile (Island3D: `cards`). Still, a villager holds its pose: its bones are posed only while something moves
 // (it walks, it acts, the camera moves); its blinks are a texture's offset, so the island idles as it did. What it
 // wears (a birthday hat, the party glasses: assets.json `joint` models, their origin NH's head joint) rides its head bone.
-import { MeshLambertMaterial, Color, type Mesh, type MeshStandardMaterial, type Object3D } from 'three';
+import { MeshLambertMaterial, Color, type Vector3, type Mesh, type MeshStandardMaterial, type Object3D } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { keyModel, MODELS } from './models3d.ts';
@@ -40,6 +40,8 @@ export interface VSpec {
   shown: boolean;
   /** What it wears on its head (an asset key: deco/birthday-hat-pink, accessories/party-glasses), or null. */
   hat?: string | null;
+  /** What it holds in its right hand (an asset key: tools/rod while fishing), or null; with a rod it stands fishing. */
+  tool?: string | null;
   /** In the way of the board's focus (between the camera and the board): faded out. */
   away?: boolean;
 }
@@ -52,6 +54,8 @@ export interface Villagers3 {
   lift(l: number): void;
   /** A villager's head (a balloon's, a hat's anchor), its world position (three's space) or null. */
   head(slot: string): Object3D | null;
+  /** What a villager holds, its far end (a rod's tip: the fishing line's start), world space, or null. */
+  tip(slot: string): Vector3 | null;
   dispose(): void;
 }
 
@@ -94,6 +98,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     alpha: number;
     posing: boolean;
     hat: { key: string; obj: Object3D | null } | null;
+    tool: { key: string; obj: Object3D | null } | null;
   }
   const ws = new Map<string, W>();
   let lastT = 0, liftL = 0.32, disposed = false;
@@ -107,7 +112,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       w = undefined;
     }
     if (!w) {
-      const nw: W = { id: s.id, v: null, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, alpha: 1, posing: true, hat: null };
+      const nw: W = { id: s.id, v: null, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, alpha: 1, posing: true, hat: null, tool: null };
       ws.set(s.slot, nw);
       const url = url3d(s.id, dir);
       if (url) {
@@ -168,6 +173,22 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     });
   }
 
+  function holdTool(w: W, key: string | null) {
+    if ((w.tool?.key ?? null) === key) return;
+    w.v?.grip(null);
+    w.tool = key ? { key, obj: null } : null;
+    if (!key) return kick();
+    const h = w.tool!;
+    void wearOf(key).then((src) => {
+      if (!src || !w.v || w.tool !== h || disposed) return;
+      h.obj = src.clone();
+      w.v.grip(h.obj);
+      w.v.lift(liftL);
+      w.posing = true;
+      kick();
+    });
+  }
+
   function frame(t: number, specs: readonly VSpec[], active: boolean) {
     const dt = lastT ? Math.min(100, t - lastT) : 16;
     lastT = t;
@@ -183,6 +204,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       v.group.visible = s.shown;
       if (!s.shown) continue;
       wear(w, s.hat ?? null);
+      holdTool(w, s.tool ?? null);
       // faded out of the board's way (and back), over FADE_MS
       const aim = s.away ? 0 : 1;
       if (w.alpha !== aim) {
@@ -199,7 +221,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
         : s.face === 'l' ? -1.1 : s.face === 'r' ? 1.1 : s.face === 'in' ? (s.side === 'left' ? 0.6 : -0.6) : 0;
       w.yaw = turn(w.yaw, s.seat !== null ? 0 : want, dt, s.walking ? 14 : 6);
       // its state, and its moment (the director's motion, once each)
-      const state: State = s.asleep ? (s.seat !== null ? 'nap' : 'doze') : s.seat !== null ? 'sit' : s.walking ? 'walk' : 'idle';
+      const state: State = s.asleep ? (s.seat !== null ? 'nap' : 'doze') : s.seat !== null ? 'sit' : s.walking ? 'walk' : s.tool === 'tools/rod' ? 'fish' : 'idle';
       if (v.state() !== state) w.posing = true;
       v.set(state);
       if (s.motionN !== w.motionN) {
@@ -241,6 +263,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       for (const w of ws.values()) w.v?.lift(l);
     },
     head: (slot) => ws.get(slot)?.v?.head() ?? null,
+    tip: (slot) => ws.get(slot)?.v?.tip() ?? null,
     dispose() {
       disposed = true;
       for (const w of ws.values()) {

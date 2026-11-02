@@ -198,7 +198,7 @@
       specs.push({
         slot: c.id, id: look.id, x, z, y: feetOf(x, z), walking: a.walking, face: a.face, side: c.side, asleep: a.asleep,
         seat: c.seat ? seatTop(c.seat) : null, lift: c.rep ? pullLift(t) : 0, motion: a.motion, motionN: a.motionN, emote: a.emote, stung: c.stung, shown: c.shown,
-        away: inFocusWay(x, z), hat: c.hat
+        away: inFocusWay(x, z), hat: c.hat, tool: c.id === 'mine' && fishing ? 'tools/rod' : null
       });
     }
     const r = vil3?.frame(t, specs, active) ?? { cards: new Set<string>(specs.map((s) => s.slot)), moving: false };
@@ -328,9 +328,12 @@
   /** The self-light of the island's models at each time of day (engine.ts TOD lift): the 3D villagers' too. */
   const LIFT = { day: 0.32, dusk: 0.22, night: 0.08 } as const;
   const todNow = () => (tod === 'night' ? 'night' : tod === 'dusk' || tod === 'dawn' ? 'dusk' : 'day');
+  /** My cast is out (the bobber's node): my 3D villager holds NH's rod, its line from the rod's tip. */
+  let fishing = false;
   function mirror(e: Island3, t: number): boolean {
     const winter = season === 'winter', seen = new Set<string>(), add: Inst[] = [];
     let moving = false;
+    fishing = false;
     for (const n of world.models3()) {
       const a = n.m3.key ? keyModel(n.m3.key, winter) : null, drawn = !!a || !!n.m3.emit;
       const art = n.m3.art ? n.m3.art() : n.el;
@@ -391,8 +394,12 @@
           ln = { obj, off: e.add(obj) };
           lines.set(n.id, ln);
         }
-        const [sx, sz, sl] = n.m3.line(), pos = ln.obj.geometry.getAttribute('position') as Float32BufferAttribute;
-        const y0 = heightOf(sx, sz) + sl, y1 = heightOf(x, z) + lf;
+        if (n.id === 'bobber') fishing = n.shown;
+        // (the bobber's: from my 3D villager's rod's tip, where it holds one)
+        const tip = n.id === 'bobber' ? vil3?.tip('mine') : null;
+        let [sx, sz, sl] = n.m3.line(), y0 = heightOf(sx, sz) + sl;
+        if (tip) [sx, sz, y0] = [tip.x, -tip.z, tip.y];
+        const pos = ln.obj.geometry.getAttribute('position') as Float32BufferAttribute, y1 = heightOf(x, z) + lf;
         for (let i = 0; i < LINE_N; i++) {
           const k = i / (LINE_N - 1), sag = Math.sin(k * Math.PI) * 6;
           pos.setXYZ(i, sx + (x - sx) * k, y0 + (y1 - y0) * k - sag, -(sz + (z - sz) * k));

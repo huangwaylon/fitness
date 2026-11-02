@@ -33,7 +33,7 @@ export interface Body {
   hip: number;
 }
 
-export type State = 'idle' | 'walk' | 'sit' | 'lie' | 'nap' | 'doze';
+export type State = 'idle' | 'walk' | 'sit' | 'lie' | 'nap' | 'doze' | 'fish';
 export type Action = 'hop' | 'wave' | 'highfive' | 'surprise' | 'sting';
 export const ACTION_MS: Record<Action, number> = { hop: 720, wave: 1700, highfive: 1000, surprise: 650, sting: 1400 };
 export const FADE_MS = 150;
@@ -171,8 +171,23 @@ function doze(t: number, seed = 0): Pose {
   return p;
 }
 
+/** Fishing (NH's): standing at the water, the rod's hand forward at the chest, the other at its side, watching the
+ *  float, the rod's tip bobbing a touch with the breath. */
+export function fish(t: number, seed = 0): Pose {
+  const p = arms(rest());
+  const b = breathe(p, t, 3000, 1);
+  p.j.Arm_1_R = [-1.05 + 0.03 * b, 0.25, ARMS - 0.55];
+  p.j.Arm_2_R = [0, 0.75, 0];
+  p.j.Hand_R = [-0.2, 0, 0];
+  p.j.Arm_1_L = [-0.15, 0, -ARMS];
+  p.j.Head = [0.18, 0.04 * drift(t * 0.6, seed), 0];
+  p.j.Spine_1 = [0.05, 0, 0];
+  return p;
+}
+
 export function base(state: State, t: number, o: { phase: number; speed: number; body: Body; seed: number }): Pose {
   switch (state) {
+    case 'fish': return fish(t, o.seed);
     case 'walk': return walk(t, o.phase, o.speed);
     case 'sit': return sit(t, o.body, o.seed);
     case 'lie': return lie(t, o.seed);
