@@ -17,7 +17,8 @@ async function open(page: Page, q: string): Promise<string[]> {
     (window as { __cues?: string[] }).__cues = [];
   });
   await page.goto(`?demo&date=${q}`);
-  await expect(ribbon(page)).toBeVisible();
+  // (the island's first paint: now and then over 5 s under CI's load)
+  await expect(ribbon(page)).toBeVisible({ timeout: 15_000 });
   await is3d(page); // (the 3D island up: a while in software GL)
   return audio;
 }
