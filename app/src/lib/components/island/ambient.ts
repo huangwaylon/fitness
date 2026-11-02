@@ -295,9 +295,9 @@ const both = (action: 'chat' | 'dance', who: Who, at: number): Partial<Record<Wh
 /** Per slot, the chance a channel with room brings someone; how long each stays (slots: a fish ~45 s, bubbles 30 s,
  *  a bug ~18 s, critters.ts STAY_MS and sea.ts BUBBLE_STAY_MS); BUBBLE_SHARE of the sea's turns bring bubbles. */
 const CHANNELS = {
-  sea: { odds: 0.6 },
-  fresh: { odds: 0.6 },
-  bug: { odds: 0.5 }
+  sea: { odds: 0.9 },
+  fresh: { odds: 0.9 },
+  bug: { odds: 0.9 }
 } as const;
 type Channel = keyof typeof CHANNELS;
 const STAY: Record<CritterKind, readonly [number, number]> = { fish: [4, 5], fresh: [4, 5], bubbles: [3, 3], bug: [2, 2] };

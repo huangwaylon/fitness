@@ -55,8 +55,8 @@ test('a fossil dig spot: a tap digs it up (「化石を ほりだした！」 an
   const spots = page.locator('[data-find="fossil"]');
   await expect(spots.first()).toBeAttached();
   const n = await spots.count();
-  expect(n).toBeGreaterThanOrEqual(1);
-  expect(n).toBeLessThanOrEqual(2);
+  expect(n).toBeGreaterThanOrEqual(2);
+  expect(n).toBeLessThanOrEqual(4);
   const p = await at(page, '[data-find="fossil"]');
   expect(await control(page, p)).toBe('');
   await page.mouse.click(p.x, p.y);

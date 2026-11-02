@@ -64,7 +64,7 @@ function spread(from: readonly [number, number][], n: number, rand: () => number
 }
 
 const days = new Map<string, { layout: Layout; lawn: Pt[]; dig: Pt[] }>();
-/** Today's weed spots (`lawn`, 15) and dig spots (`dig`, 6) on the layout: world points, seeded by the date. */
+/** Today's weed spots (`lawn`, 15) and dig spots (`dig`, 8) on the layout: world points, seeded by the date. */
 export function daySpots(layout: Layout, date: string, seed: string): { lawn: Pt[]; dig: Pt[] } {
   const key = `${date}|${seed}`;
   const had = days.get(key);
@@ -75,7 +75,7 @@ export function daySpots(layout: Layout, date: string, seed: string): { lawn: Pt
     const [x, z] = tileMid(t[0], t[1]);
     return [Math.round(x + (rand() - 0.5) * TILE * 0.4), Math.round(z + (rand() - 0.5) * TILE * 0.4)];
   };
-  const dig = spread(tiles, 6, rand);
+  const dig = spread(tiles, 8, rand);
   const lawn = spread(tiles, 15, rand, dig);
   const day = { layout, dig: dig.map(jit), lawn: lawn.map(jit) };
   if (days.size > 6) days.clear();
