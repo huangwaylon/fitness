@@ -6,7 +6,7 @@
   // order (nearer in front, ties by x; a tree's canopy hangs over its trunk). The sky, the HUD, the weather and the
   // fireworks stay fixed outside the curved layer. Nothing runs when still: a scroll frame, a walk (the one rAF while
   // someone is on the way) or a change places what moved.
-  //   <IslandScene {view} onhighfive paused />
+  //   <IslandScene {view} onhighfive onhighfivegot paused />
   // Layout contract (for the page): give it the whole page (--scene-h, e.g. 100dvh); --hud-bottom is the top chrome's
   // bottom edge. Read back --horizon-y (set on .if-scene) to place overlays in the sky.
   // Life (islandLife.svelte.ts): the motion bus (emit('highfive-sent') etc.), reactions to the `view` diff (partner
@@ -36,6 +36,7 @@
   import Says from './Says.svelte';
   import SayPicker from './SayPicker.svelte';
   import { rememberSay, sayGate } from './say.ts';
+  import { HIGHFIVE_LIVE_MS, heardHighFive } from './highFives.ts';
   import TreeShakes from './TreeShakes.svelte';
   import PartnerNews from './PartnerNews.svelte';
   import { HATS, birthdaysOn, isBirthday } from './birthday.ts';
@@ -66,7 +67,7 @@
   import { hybridFor, hybridsOf } from './care.ts';
   import { garden } from './sceneDay.ts';
   import { addDays } from '#lib/time/dates.ts';
-  import { actors, applyStep, busy, inMotion, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
+  import { actors, addFx, applyStep, busy, inMotion, react, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { walkGeo } from './walkGraph.ts';
   import { attachAvatar, partnerRestsAt, partnerTo, presence, freeze, sendTo, setPartnerRest, snapHome, stayingAt, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
@@ -80,8 +81,10 @@
 
   interface Props {
     view: WeekView;
-    /** The high-five with the partner's villager (a tap on them): send it (the store, the banner, R4). */
+    /** The high-five with the partner's villager (a tap on them; sent over the relay here): the banner, R4. */
     onhighfive?: () => void;
+    /** The partner's high-five reached this phone (once each, live or held while it was closed): the banner. */
+    onhighfivegot?: () => void;
     /** A sheet / overlay covers the scene: idle life and particles pause. */
     paused?: boolean;
     /** Interactive + idle life + reactions (false for gallery thumbnails). */
@@ -93,7 +96,7 @@
     tod?: Tod;
   }
   let {
-    view, onhighfive, paused = false, live = true,
+    view, onhighfive, onhighfivegot, paused = false, live = true,
     season: seasonProp, foliage: foliageProp, tod: todProp
   }: Props = $props();
 
@@ -215,8 +218,12 @@
   let sceneTaps = $state<ReturnType<typeof SceneTaps>>();
   // A tap on the partner is a high-five (NH's reaction, no card), in place (only a tap on empty ground walks): both
   // woken if asleep, the partner stops where it is, a sparkle flies from mine to them, and it's sent: the two turn to
-  // each other and hop with the sparkles (R4). One at a time: a tap while one is under way does nothing more.
+  // each other and hop with the sparkles (R4), hearts on them as it lands. It goes over the relay (`highfive`, at the
+  // tap's relay time): the partner's phone plays the same moment from the same start (their villager, theirs to move,
+  // stops there and is told again), or, closed, hears it when it opens (the room holds the last one). One at a time: a
+  // tap while one is under way does nothing more, and the partner's own landing meanwhile plays no second one.
   let fiving = false;
+  const FIVE_MS = 2400;
   function highFiveTap() {
     if (!live || covered || fiving) return;
     fiving = true;
@@ -225,24 +232,51 @@
     const [px, pz] = livePos('partner');
     if (actors.partner.walking) place('partner', px, pz);
     turnTo(px);
-    actors.partner.busyUntil = Math.max(actors.partner.busyUntil, Date.now() + 2400);
-    zapStart();
+    actors.partner.busyUntil = Math.max(actors.partner.busyUntil, Date.now() + FIVE_MS);
+    zapStart('mine');
+    life.later(() => addFx('partner', 'hearts'), ZAP_MS);
+    (relay ?? demoRelay)?.send({ kind: 'highfive', at: Math.round(relayNow()) });
     onhighfive?.();
-    life.later(() => (fiving = false), 2400);
+    life.later(() => (fiving = false), FIVE_MS);
   }
-  /** The high-five's sparkle, flying from my villager's hands to the partner's in an arc (ZAP_MS). */
-  let zap = $state<{ n: number; t0: number } | null>(null);
+  /** The partner's high-five (the relay's): heard once (a resend or the room's held copy is no news), the banner; just
+   *  tapped, the same moment as on their phone, from where it is by now: mine stops (and says so) and turns to them,
+   *  their sparkle flies to mine, both hop, hearts on mine. Older (held while this phone was closed), or covered: the
+   *  banner and my villager's hearts (R5) once the island shows. */
+  function partnerHighFive(at: number) {
+    if (!heardHighFive(view.me, at)) return;
+    onhighfivegot?.();
+    const ago = Math.max(0, relayNow() - at);
+    if (fiving) return; // one at a time: both tapped at once, mine is the one playing
+    if (ago > HIGHFIVE_LIVE_MS || covered || life.hidden) return void life.later(() => react('R5'), 700);
+    fiving = true;
+    for (const id of ['mine', 'partner'] as const) if (actors[id].asleep) wake(id, { remote: true });
+    const [mx, mz] = livePos('mine');
+    if (actors.mine.walking) place('mine', mx, mz);
+    turnTo(livePos('partner')[0]);
+    actors.mine.busyUntil = Math.max(actors.mine.busyUntil, Date.now() + FIVE_MS);
+    zapStart('partner', ago);
+    react('R4');
+    life.later(() => addFx('mine', 'hearts'), Math.max(0, ZAP_MS - ago));
+    life.later(() => (fiving = false), Math.max(400, FIVE_MS - ago));
+  }
+  /** The high-five's sparkle, flying from one villager's hands to the other's in an arc (ZAP_MS); `ago`: started that
+   *  long ago (the partner's tap, heard a moment later). */
+  let zap = $state<{ n: number; t0: number; from: 'mine' | 'partner' } | null>(null);
   const ZAP_MS = 520;
-  function zapStart() {
-    const t0 = performance.now(), n = (zap?.n ?? 0) + 1, stop = world.moveStart();
-    zap = { n, t0 };
+  function zapStart(from: 'mine' | 'partner', ago = 0) {
+    const left = ZAP_MS - ago;
+    if (left <= 60) return;
+    const t0 = performance.now() - ago, n = (zap?.n ?? 0) + 1, stop = world.moveStart();
+    zap = { n, t0, from };
     life.later(() => {
       stop();
       if (zap?.n === n) zap = null;
-    }, ZAP_MS + 60);
+    }, left + 60);
   }
   function zapAt(): readonly [number, number, number] {
-    const k = Math.min(1, (performance.now() - (zap?.t0 ?? 0)) / ZAP_MS), [ax, az] = livePos('mine'), [bx, bz] = livePos('partner');
+    const k = Math.min(1, (performance.now() - (zap?.t0 ?? 0)) / ZAP_MS), to = zap?.from === 'partner' ? 'mine' : 'partner';
+    const [ax, az] = livePos(to === 'mine' ? 'partner' : 'mine'), [bx, bz] = livePos(to);
     return [ax + (bx - ax) * k, az + (bz - az) * k, VILLAGER.h * (0.55 + Math.sin(Math.PI * k) * 0.35)];
   }
   // Island care: a flower watered yesterday can show a hybrid colour today (care.ts; `?hybrid` in the demo shows one).
@@ -672,7 +706,9 @@
     const r = relay ?? demoRelay;
     if (!live || !r) return;
     return r.on((m) => {
-      if (m.kind === 'say' && m.who === view.partner) untrack(() => showSay('partner', m.text));
+      if (m.who !== view.partner) return;
+      if (m.kind === 'say') untrack(() => showSay('partner', m.text));
+      else if (m.kind === 'highfive') untrack(() => partnerHighFive(m.at));
     });
   });
   /** When each of the partner's changes arrived here (e2e, the hooks on). */

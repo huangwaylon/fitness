@@ -95,7 +95,12 @@ export type Intent =
   | { kind: 'tent'; in: boolean; to?: Pt; from?: Pt; via?: Pt[]; s?: number; ms?: number }
   /** A phrase my villager says (v2; docs/design.md "Villager taps"): its speech balloon over it on both phones for a
    *  few seconds. Presence only: never kept, never replayed, never in the sheet. `text` as cleanSay leaves it. */
-  | { kind: 'say'; text: string };
+  | { kind: 'say'; text: string }
+  /** A high-five to the partner (v2; docs/design.md "Villager taps"): `at` when it was tapped, the relay's clock (its
+   *  identity on both phones: a second hearing of it is the same one). Numbered (acked, sent again after a reconnect);
+   *  relayed live, and while the partner is away the room holds the last one for them (HIGHFIVE_HOLD_MS), handing it
+   *  over at their next hello until their phone says `got`. Never in the sheet. */
+  | { kind: 'highfive'; at: number };
 
 /** A decor op on the wire (contract/decor.ts DecorOp, or the tent's with `sc: 't'`, contract/tent.ts; checked here
  *  again: the Worker bundles this file alone). */
@@ -109,6 +114,8 @@ type DecorWire =
 export type ClientMsg =
   | { v: LiveV; kind: 'hello'; key: string; since?: number; batch?: true }
   | { v: LiveV; kind: 'ping'; c: number }
+  /** (v2) I heard the partner's high-five `at` (the one the room held for me goes). */
+  | { v: LiveV; kind: 'got'; at: number }
   | ({ v: LiveV; c?: number } & Intent);
 
 /** An intent as relayed: who sent it and the relay's clock when it arrived (ms since the epoch). */
@@ -264,6 +271,8 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
         kind: 'tent', in: o.in, ...(o.to !== undefined ? { to: o.to as Pt } : {}), ...(o.from !== undefined ? { from: o.from as Pt } : {}),
         ...(o.via !== undefined ? { via: o.via as Pt[] } : {}), ...(o.s !== undefined ? { s: o.s as number } : {}), ...(o.ms !== undefined ? { ms: o.ms as number } : {})
       };
+    case 'highfive':
+      return v === 1 || !isTime(o.at) ? null : { kind: 'highfive', at: o.at };
     case 'say': {
       const text = v === 1 ? null : cleanSay(o.text);
       return text ? { kind: 'say', text } : null;
@@ -294,6 +303,7 @@ export function parseClient(raw: unknown): ClientMsg | null {
     return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}), ...(o.batch ? { batch: true as const } : {}) };
   }
   if (o.kind === 'ping') return isTime(o.c) ? { v, kind: 'ping', c: o.c } : null;
+  if (o.kind === 'got') return v !== 1 && isTime(o.at) ? { v, kind: 'got', at: o.at } : null;
   if (!opt(o, 'c', isSeq)) return null;
   const i = intentOf(o, v);
   return i && { v, ...(o.c !== undefined ? { c: o.c as number } : {}), ...i };
@@ -379,6 +389,13 @@ export const dayStart = (d: number): number => d * DAY_MS - TOKYO_MS;
 
 /** At most one wasp nest per tree per hour (NH), on both phones: the relay refuses a second within the hour. */
 export const NEST_GAP_MS = 3600_000;
+
+/** A high-five the room holds for a partner who is away is theirs this long (ms); older, it's let go. @public (relay/) */
+export const HIGHFIVE_HOLD_MS = 24 * 3600_000;
+
+/** Whether a phone numbers an intent (keeps it until the room's ack, sends it again after a reconnect) and sends it
+ *  with the partner away: what the room keeps, and a high-five (held for the partner). */
+export const isAcked = (i: Intent): boolean => isStored(i) || i.kind === 'highfive';
 
 /** Whether the room keeps an intent in the day's world (replayed to a phone that opens later): the shared world's
  *  changes and each person's last walk (where their villager stands). */

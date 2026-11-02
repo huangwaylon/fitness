@@ -281,8 +281,8 @@ the villager, and each phone's own life moved both villagers, so they drifted (a
 the very walk with one owner is ~100 bytes a move, gives the same point at the same time (0.3 u apart under way in
 the two-tab check, the same point at the end, measured 30–45 ms tap → set off on the other phone via the test
 relay), and stays far inside the Free plan. Not done: streaming positions per frame (a walk is described whole), a
-shared high-five or follow while both are here (left out rather than run on two phones at once), the visitor's beats
-beyond Gulliver's waking.
+follow while both are here (left out rather than run on two phones at once), the visitor's beats beyond Gulliver's
+waking.
 
 ### Decor is a last-writer-wins map, the sheet keeps each item's latest op
 The island's decorations ([Decorating](design.md#decorating)) are persistent, shared by both of us, either may move
@@ -315,6 +315,20 @@ passes one per person per second. Only a v2 phone hears it; an older app's parse
 user ("speech bubble options… pick one to show to everyone for a few seconds, plus one with custom text"); a phrase is
 a moment, not a record, so a closed phone missing it is right, and an additive kind needs no version bump (the relay
 went first). Not done: a phrase history, reactions to a phrase, phrases while the island is covered.
+
+### A high-five goes over the relay only (2026-11-02)
+A tap on the partner's villager sends `highfive {at}` (v2; `at` the tap on the relay's clock, its identity), numbered
+like a kept intent (acked, sent again after a reconnect). The room relays it live; with the partner away (or only an
+older phone of theirs there) it holds the last one for them (one per recipient, a newer one replacing it, in its
+storage), hands it over after the welcome of their next hello, and lets it go when their phone says `got {at}` or a day
+has passed. The receiving phone plays the same moment as the tapper's when it's fresh (≤ 8 s: their own villager stops
+there and says so, the sparkle from the tapper, hops, hearts), else the banner and R5; a local store of today's heard
+ones (`hf-got.<me>`) makes a resend or the held copy no news, and the banner fires on receipt, not on a count. The app
+sends no `highfive` event to the sheet any more (the reducer and EVENT_TYPES keep it a release for older phones; the
+script acknowledges and stores nothing). Why: the user ("improve the high five with the relay"; then "the count barely
+matters": online over the relay, offline one stored touch); through the sheet the partner's phone reacted 1–4 s later
+and a row per tap bought nothing, and an intent is ~45 bytes with no leader. Not done: a high-five while the relay is
+down (the moment plays here only), a count of the day's high-fives on screen.
 
 ### Speech balloons stand by their speaker
 One placement rule for every balloon: by the speaker, at most 40px off, loosening what may sit under it (the museum,

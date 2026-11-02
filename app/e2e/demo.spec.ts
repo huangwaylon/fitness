@@ -157,7 +157,7 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
   await expect(page.locator('.if-scene [data-fruit]')).toHaveCount(8);
 });
 
-test('partner: a tap is a high-five in place, no card: a sparkle flies between them, both hop, it is sent once', async ({ page }) => {
+test('partner: a tap is a high-five in place, no card: a sparkle flies between them, both hop, hearts; never a sheet event', async ({ page }) => {
   await page.goto('?demo');
   await islandReady(page);
   const vil = page.locator('.if-scene button.vil').nth(1);
@@ -179,8 +179,11 @@ test('partner: a tap is a high-five in place, no card: a sparkle flies between t
   for (const id of ['mine', 'partner']) await expect(page.locator(`[data-actor="${id}"] .fx.sparkles`).first()).toBeAttached({ timeout: 2000 });
   await expect(page.getByText('うめさんに ハイタッチ！')).toBeVisible();
   await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
+  await expect(page.locator('[data-actor="partner"] .fx.hearts').first()).toBeAttached({ timeout: 2000 });
   expect(await feet()).toEqual(home); // nobody walked
-  await expect.poll(sent).toBe(before + 1);
+  // over the relay only (here the demo's tabs): nothing for the sheet
+  await page.waitForTimeout(600);
+  expect(await sent()).toBe(before);
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 });
 

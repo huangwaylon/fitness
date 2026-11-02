@@ -216,7 +216,7 @@ so each sync replaces it with Health's current total (a locked week's earnings s
 app enters or fixes them.
 
 What the app sends ([backend.md](backend.md#events)): the goals (`pref` `moveGoal`, `stepsGoal`, `goalWeight`, either person's
-via `data.person`), buys and voids, harvest taps, high-fives, the sender's `locale`, `villagerName` and `villager`, and
+via `data.person`), buys and voids, harvest taps, the sender's `locale`, `villagerName` and `villager`, and
 the ずかん's finds (`find`, the first of each). A buy and its とりけす wait 5 s before they are sent (touching the banner
 holds it, ≤ 2 min).
 
@@ -834,10 +834,14 @@ speakers: the doors, the visitors, Blathers, Wilbur. One balloon at a time.
 
 A tap on the partner's villager is a **ハイタッチ** straight away (no card), in place: the tap sound, they stop where
 they are (either woken first if asleep), a sparkle flies in an arc from my villager to them, and both turn to each
-other and hop with the sparkles and one joyful sound (R4, which never waits behind another reaction).
-Then it's sent: the `highfive` event (the store, synced as before), the banner 「うめさんに ハイタッチ！」 on this
-phone, and on theirs 「ウェイさんからハイタッチ！」 with their villager's R5. A tap while one is under way adds
-nothing. Their numbers and when their data last arrived are on their tree's popup (the card's one line about their
+other and hop with the sparkles and one joyful sound (R4, which never waits behind another reaction); hearts on them
+as it lands. The banner 「うめさんに ハイタッチ！」 on this phone. It goes over the relay only (`highfive {at}`, the tap's
+relay time; never the sheet): their phone plays the same moment from the same start (~50–65 ms later via the test
+relay): their villager, which is theirs to move, stops where it is (and says so), turns to mine, my sparkle flies to
+it, both hop, hearts on theirs, and 「ウェイさんからハイタッチ！」. Closed, their phone hears it when it opens (the room
+holds the last one for them, a day at most): the banner and R5's hearts. Each one is heard once (`island/highFives.ts`:
+today's heard ones on that phone, by their tap's time). A tap while one is under way adds nothing, and both tapping at
+once plays one (each phone its own). Relay down: the moment plays here, the partner hears nothing. Their numbers and when their data last arrived are on their tree's popup (the card's one line about their
 day went with it). Off screen, the edge chip by the screen's side (「うめの ほうへ」) still brings the camera to them.
 
 ### Visitors

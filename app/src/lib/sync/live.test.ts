@@ -218,6 +218,20 @@ describe('live: messages', () => {
     expect(live.send({ kind: 'emote', emote: 'glee' })).toBe(false);
   });
 
+  it('a high-five goes numbered with the partner away (the room holds it), and one heard is answered `got`', () => {
+    live.start();
+    last().welcome(false);
+    expect(live.send({ kind: 'highfive', at: 1_790_000_000_000 })).toBe(true);
+    const [hf] = last().sent.slice(1) as { kind: string; c?: number }[];
+    expect(hf).toMatchObject({ v: 2, kind: 'highfive', at: 1_790_000_000_000 });
+    expect(hf.c).toBeGreaterThan(0);
+    const heard: Relayed[] = [];
+    live.on((m) => heard.push(m));
+    last().recv({ kind: 'highfive', at: 1_789_999_000_000, who: 'B', t: 1_789_999_000_010 });
+    expect(heard.map((m) => m.kind)).toEqual(['highfive']);
+    expect(last().sent.at(-1)).toEqual({ v: 2, kind: 'got', at: 1_789_999_000_000 });
+  });
+
   it('keeps a kept intent until its ack: one sent offline or never acked goes again after the next welcome (the last walk only)', () => {
     live.start();
     last().welcome(false);

@@ -3,7 +3,7 @@
 // pings. send() is a no-op unless the socket is up (and, for what the room doesn't keep, the partner is there too); it
 // never throws and never waits. Plain TS: the socket, the visibility source and the key are injectable for tests.
 import { LIVE, getKey, localKV, readJson, writeJson } from './storage.ts';
-import { CLOSE, LIVE_V, MAX_BYTES, dayStart, isStored, parseClient, parseServer, tokyoDay, type Intent, type Notice, type Relayed, type Who } from './live-protocol.ts';
+import { CLOSE, LIVE_V, MAX_BYTES, dayStart, isAcked, isStored, parseClient, parseServer, tokyoDay, type Intent, type Notice, type Relayed, type Who } from './live-protocol.ts';
 
 /** The relay's socket URL; VITE_LIVE_URL overrides it (empty = live off). */
 export const LIVE_URL: string = (import.meta.env?.VITE_LIVE_URL as string | undefined) ?? 'wss://island-fund-relay.island-fund-relay.workers.dev/room';
@@ -321,6 +321,8 @@ export function createLive(o: LiveOptions): Live {
           if (m.kind === 'saved') return changed({ who: m.who, what: 'event' });
           if (isStored(m) && m.t > lastWorld) since.set((lastWorld = m.t));
           for (const f of subs) safe(() => f(m));
+          // a high-five heard: the one the room held for me (if it's this one) goes
+          if (m.kind === 'highfive') raw({ v: LIVE_V, kind: 'got', at: m.at });
       }
     };
     s.onclose = (e: CloseEvent) => {
@@ -367,9 +369,10 @@ export function createLive(o: LiveOptions): Live {
       drop();
     },
     send(i) {
-      // what the room keeps (the shared world, a walk) goes even with the partner away (they hear it when they open),
-      // numbered, and is kept here until its ack: offline or dropped, it goes again after the next welcome
-      const kept = isStored(i);
+      // what the room keeps (the shared world, a walk; a high-five, held for them) goes even with the partner away (they
+      // hear it when they open), numbered, and is kept here until its ack: offline or dropped, it goes again after the
+      // next welcome
+      const kept = isAcked(i);
       if (!kept && (!st.connected || !st.peer)) return false;
       const c = kept ? nextSeq() : undefined;
       const m = { v: LIVE_V, ...(c !== undefined ? { c } : {}), ...i };

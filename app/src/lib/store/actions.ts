@@ -30,11 +30,6 @@ export function undoBanner(text: string, r: SendResult, opts: { reaction?: strin
   });
 }
 
-/** `highFivesToday` counts the partner's high-fives to me, so sending one changes nothing in my view. */
-export function highFive() {
-  return week.send('highfive', {});
-}
-
 export function confirmHarvest(): SendResult {
   const wk = week.view?.harvest?.weekKey;
   if (!wk) return { ok: false };
