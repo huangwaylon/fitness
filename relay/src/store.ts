@@ -11,7 +11,7 @@
 //   its writes here: two requests' copies racing) is marked `late` with its arrival time, and a poll also returns
 //   the late rows that arrived after `since` (less a margin for the two servers' clocks), so no phone misses one.
 import { parseShortcut } from '../../app/gas/parse.ts';
-import { auditNotes, auditRow } from '../../app/gas/audit.ts';
+import { auditNotes, auditRow } from './audit.ts';
 import { eventSlot, validEventData } from '../../app/src/lib/model/record.ts';
 import {
   eventSubject, EVENT_TYPES, isId, isMetricKey, isPersonId, isRec,
@@ -20,7 +20,7 @@ import {
 import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contract/decor.ts';
 import { tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
 import { parseNotice, type Notice } from '../../app/src/lib/sync/live-protocol.ts';
-import { verifyNotify } from './notify.ts';
+import { notifySecret, notifySig, verifyNotify } from './notify.ts';
 import { keyOwner, type Keys } from './auth.ts';
 
 type Who = 'A' | 'B';
@@ -481,5 +481,26 @@ export class StoreCore {
     const uploads = this.io.sql.exec<{ at: string; person: string; status: string; bytes: number; notes: string }>('SELECT at, person, status, bytes, notes FROM uploads ORDER BY seq').toArray()
       .map((r) => [r.at, r.person, r.status, r.bytes, r.notes]);
     return { rows: { metrics: all.metrics, events: all.events, uploads } };
+  }
+
+  /**
+   * The sheet's export (docs/backend.md#the-record "Export"): when the record changed since the last one (or `force`),
+   * the body to POST to the Apps Script web app: `{action: 'export', t, sig, data}`, `data` every row as JSON text
+   * (ASCII: anything past it escaped), `sig` = HMAC-SHA256(notify secret, "<t>.<data>") (Apps Script reads no
+   * headers). Null when there's nothing new. `exported(upto)` once the sheet took it.
+   */
+  async exportBody(force: boolean): Promise<{ body: string; upto: number } | null> {
+    const upto = this.lastAt;
+    if (!force && upto <= Number(this.meta('exported_upto') ?? 0)) return null;
+    const secret = await notifySecret(this.io.keys);
+    if (!secret) return null;
+    const data = JSON.stringify({ ...this.dump(), rev: this.rev(), upto: upto ? new Date(upto).toISOString() : null, at: new Date(this.io.now()).toISOString() })
+      .replace(/[^\x20-\x7e]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
+    const t = String(this.io.now());
+    return { body: JSON.stringify({ action: 'export', t, sig: await notifySig(secret, t, data), data }), upto };
+  }
+
+  exported(upto: number): void {
+    this.setMeta('exported_upto', String(upto));
   }
 }

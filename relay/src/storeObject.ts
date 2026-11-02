@@ -10,6 +10,9 @@ import { verifyNotify } from './notify.ts';
 import type { StoreRoom } from './storeRoute.ts';
 import type { Env } from './index.ts';
 
+/** The sheet's answer to an export (`written`: rows per tab), or why none went. */
+export type ExportResult = { ok: boolean; skipped?: string; error?: string; written?: Record<string, number> };
+
 export class IslandStore extends DurableObject<Env> implements StoreRoom {
   private core: StoreCore;
 
@@ -31,6 +34,28 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
 
   api(text: string): string {
     return this.core.handleText(text);
+  }
+
+  /**
+   * The cron's export to the sheet (docs/backend.md#the-record "Export"): every row, when the record changed since
+   * the last export (`force`: the nightly one, whatever changed), POSTed to the Apps Script web app (EXPORT_URL),
+   * which rewrites the sheet's tabs. Its answer, or why nothing was sent.
+   */
+  async exportTick(force = false): Promise<ExportResult> {
+    const url = this.env.EXPORT_URL;
+    if (!url) return { ok: false, skipped: 'no EXPORT_URL' };
+    const b = await this.core.exportBody(force);
+    if (!b) return { ok: true, skipped: 'nothing new' };
+    try {
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: b.body, redirect: 'follow' });
+      const r = (await res.json().catch(() => ({ ok: false, error: `HTTP ${res.status}` }))) as ExportResult;
+      if (r.ok === true) this.core.exported(b.upto);
+      else console.warn('export', JSON.stringify(r).slice(0, 300));
+      return r;
+    } catch (e) {
+      console.warn('export failed', e);
+      return { ok: false, error: String(e) };
+    }
   }
 
   async importSigned(text: string, t: string | null, sig: string | null): Promise<{ status: number; body: string }> {
@@ -80,6 +105,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         setTimeout(() => this.ctx.abort('restoring a bookmark'), 200); // after the reply
         return { ok: true, restoring: o.bookmark, note: 'after it restarts, run {op:"rev"} so the phones refetch' };
       }
+      case 'export':
+        return this.exportTick(true);
       case 'rev':
         return { ok: true, rev: this.core.bumpRev() };
       case 'dump':

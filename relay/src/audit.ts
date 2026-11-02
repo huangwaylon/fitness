@@ -1,6 +1,6 @@
-// The `uploads` audit row of an ingest (docs/backend.md#ingest): the body's shape, never the body or the key. Shared by
-// the Apps Script (main.ts) and the relay's record (relay/src/store.ts), so both audit a Shortcut run alike.
-import { isRec } from '../src/lib/contract/api.ts';
+// The `uploads` audit row of an ingest (docs/backend.md#ingest): the body's shape, never the body or the key, as the
+// Apps Script wrote it while the sheet was the record (relay/test/ingest-golden.test.ts holds the record to it).
+import { isRec } from '../../app/src/lib/contract/api.ts';
 
 /**
  * The shape of an ingest body for the `uploads` audit: each field's type, list length and first item (40 chars), never

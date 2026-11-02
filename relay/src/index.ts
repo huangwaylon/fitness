@@ -29,6 +29,8 @@ export interface Env {
   VAPID_PUBLIC?: string;
   VAPID_PRIVATE?: string;
   VAPID_SUBJECT?: string;
+  /** The Apps Script web app's /exec URL the cron exports the record to (docs/backend.md#the-record "Export"); unset: no export (the test copy). */
+  EXPORT_URL?: string;
 }
 
 const RING = 'ring';
@@ -139,7 +141,14 @@ export class IslandRoom extends DurableObject<Env> implements PushRoom {
   }
 }
 
+/** The cron's nightly run (UTC 18:00 = Tokyo 03:00): the export goes whatever changed. */
+const NIGHTLY = '0 18 * * *';
+
 export default {
+  /** Every 15 minutes, the record's export to the sheet when it changed (storeObject.ts exportTick). */
+  async scheduled(ev: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    ctx.waitUntil(env.STORE.get(env.STORE.idFromName('record')).exportTick(ev.cron === NIGHTLY).then((r) => console.log('export', JSON.stringify(r).slice(0, 200))));
+  },
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
     if (url.pathname === '/health') {

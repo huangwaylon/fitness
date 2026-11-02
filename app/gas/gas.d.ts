@@ -8,6 +8,7 @@ declare namespace GAS {
     setNumberFormats(formats: string[][]): Range;
     setNumberFormat(format: string): Range;
     setFontWeight(weight: string): Range;
+    setNote(note: string): Range;
     getSheet(): Sheet;
   }
   interface Sheet {
@@ -19,6 +20,8 @@ declare namespace GAS {
     insertRowsAfter(afterPosition: number, howMany: number): Sheet;
     deleteRow(rowPosition: number): Sheet;
     setFrozenRows(rows: number): void;
+    /** Clears every value (formats stay). */
+    clearContents(): Sheet;
   }
   interface Spreadsheet {
     getSheetByName(name: string): Sheet | null;

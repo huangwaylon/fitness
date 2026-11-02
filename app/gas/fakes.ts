@@ -43,6 +43,8 @@ export class FakeSheet {
     return this;
   }
   setFrozenRows(n: number) { this.frozen = n; }
+  notes = new Map<string, string>();
+  clearContents() { this.rows = []; return this; }
   getRange(row: number, col: number, numRows = 1, numCols = 1) {
     if (row < 1 || col < 1 || numRows < 1 || numCols < 1) throw new Error(`bad range ${row},${col},${numRows},${numCols}`);
     if (row + numRows - 1 > this.maxRows || col + numCols - 1 > MAX_COLS) {
@@ -73,6 +75,7 @@ export class FakeSheet {
       setNumberFormat(f: string) { cells((r, c) => sheet.formats.set(`${r}:${c}`, f)); return range; },
       setNumberFormats(fs: string[][]) { cells((r, c, i, j) => sheet.formats.set(`${r}:${c}`, fs[i][j])); return range; },
       setFontWeight() { return range; },
+      setNote(n: string) { sheet.notes.set(`${row}:${col}`, n); return range; },
       getSheet() { return sheet; }
     };
     return range;

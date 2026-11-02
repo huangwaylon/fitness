@@ -1,5 +1,6 @@
 // The record (src/store.ts) on node:sqlite: auth, ingest's latest-wins, events and their slots, `since` deltas, the
 // import of rows that already have their `at`, and the notices after writes.
+import { createHmac } from 'node:crypto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { LATE_MARGIN_MS, RATE_PER_MINUTE, STORE_BUILD, StoreCore } from '../src/store.ts';
 import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
@@ -206,6 +207,23 @@ describe('events (a batch)', () => {
 });
 
 describe('snapshot', () => {
+  it('the export: every row, signed for Apps Script, ASCII; again only after a change, or forced', async () => {
+    expect(await store.exportBody(false)).toBeNull();
+    a('event', { id: 'n1', type: 'pref', data: { key: 'villagerName', value: 'うめ' } });
+    const x = (await store.exportBody(false))!;
+    const body = JSON.parse(x.body);
+    expect(body).toMatchObject({ action: 'export', t: String(now) });
+    expect(/^[\x20-\x7e]*$/.test(body.data)).toBe(true);
+    const secret = createHmac('sha256', `${KEY_A}:${KEY_B}`).update('island-relay-notify/1').digest('hex');
+    expect(body.sig).toBe(createHmac('sha256', secret).update(`${body.t}.${body.data}`).digest('hex'));
+    const data = JSON.parse(body.data);
+    expect(data).toMatchObject({ rev: 'e1', upto: '2026-11-02T03:00:00.000Z', rows: { metrics: [], uploads: [] } });
+    expect(JSON.parse(data.rows.events[0][4]).value).toBe('うめ');
+    store.exported(x.upto);
+    expect(await store.exportBody(false)).toBeNull();
+    expect(await store.exportBody(true)).not.toBeNull();
+  });
+
   it('every row of both people, then only the rows after `since`; `at` strictly increases', () => {
     a('ingest', { dates: 'Oct 1, 2026', steps: '5000' });
     a('event', { id: 'e1', type: 'harvest', data: { week: '2026-10-26' } });
