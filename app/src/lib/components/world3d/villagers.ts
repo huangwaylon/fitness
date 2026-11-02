@@ -226,7 +226,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       // (only within a line's reach of the float: further off, the line runs from the bank, as Critters' 2D line, and
       // its angler stands there empty-handed)
       const reach = s.slot !== 'mine' || Math.hypot(angling.x - s.x, angling.z - s.z) < LINE_REACH;
-      const rod = reach && (s.tool === 'tools/rod' || (s.slot === 'mine' && (t < w.rodUntil || angling.phase === 'cast')));
+      const rod = reach && (s.tool === 'tools/rod' || (s.slot === 'mine' && (t < w.rodUntil || (angling.phase !== null && angling.phase !== 'reel'))));
       holdTool(w, rod ? 'tools/rod' : (s.tool ?? null));
       // faded out of the board's way (and back), over FADE_MS
       const aim = s.away ? 0 : 1;
