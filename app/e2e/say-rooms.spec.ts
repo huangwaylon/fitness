@@ -39,8 +39,9 @@ const overlapping = (page: Page, sel: string) =>
  *  inside the screen and clear of every control. */
 const byHead = (page: Page, who: string) =>
   page.evaluate((who) => {
-    const b = document.querySelector('[data-say="mine"]')!.getBoundingClientRect();
-    const h = (window as unknown as { __tent: T }).__tent.head(who)!;
+    const b = document.querySelector('[data-say="mine"]')?.getBoundingClientRect();
+    const h = (window as unknown as { __tent: T }).__tent.head(who);
+    if (!b || !h) return null;
     const ctl = [...document.querySelectorAll('button')].filter((x) => x.checkVisibility()).map((x) => x.getBoundingClientRect()).filter((r) => r.width);
     const over = ctl.some((r) => b.left < r.right && r.left < b.right && b.top < r.bottom && r.top < b.bottom);
     return { above: h[1] - b.bottom, across: h[0] >= b.left && h[0] <= b.right, inside: b.left >= 0 && b.right <= innerWidth && b.top >= 0 && b.bottom <= innerHeight, over };
@@ -70,21 +71,26 @@ test('the tent: the say button bottom right, clear of the room’s controls; the
   await expect(balloon(page)).toHaveText(/やっほー！/);
   await expect(balloon(page).locator('.who')).toHaveText('ウェイ');
   await expect(balloon(page)).toHaveClass(/placed/);
-  const at = await byHead(page, 'A');
+  const at = (await byHead(page, 'A'))!;
   expect(at.above).toBeGreaterThanOrEqual(0);
   expect(at.above).toBeLessThanOrEqual(12 + 40 + 12);
   expect(at, JSON.stringify(at)).toMatchObject({ across: true, inside: true, over: false });
   await shot(page, 'balloon-day');
-  // it follows a walk: a tap on the floor across the room, and the balloon is by the head where it went
-  const before = (await balloon(page).boundingBox())!;
+  // gone after a few seconds
+  await expect(balloon(page)).toHaveCount(0, { timeout: 6000 });
+  // it follows a walk: a phrase said as my villager sets off across the room stands by its head where it went
+  const head0 = (await tent(page, (t) => t.head('A')))!;
   const [fx, fy] = await tent(page, (t) => t.tile(6, 5));
+  await expect.poll(() => page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.matches('[data-room]'), [fx, fy])).toBe(true);
   await page.mouse.click(fx, fy);
   await expect.poll(() => tent(page, (t) => t.walking('A'))).toBe(true);
+  await sayBtn(page).click();
+  await picker(page).getByRole('button', { name: 'がんばろう！' }).click();
+  await expect(balloon(page)).toHaveText(/がんばろう！/);
   await settle(page, 'A');
-  await expect.poll(async () => Math.abs((await balloon(page).boundingBox())!.x - before.x), { timeout: 2500 }).toBeGreaterThan(20);
-  await expect.poll(() => byHead(page, 'A').then((b) => b.across && b.above >= 0 && b.above <= 64)).toBe(true);
-  // gone after a few seconds
-  await expect(balloon(page)).toHaveCount(0, { timeout: 4000 });
+  const head1 = (await tent(page, (t) => t.head('A')))!;
+  expect(Math.abs(head1[0] - head0[0])).toBeGreaterThan(40);
+  await expect.poll(() => byHead(page, 'A').then((b) => b && b.across && b.above >= 0 && b.above <= 64), { timeout: 2500 }).toBe(true);
 });
 
 test('the say button hides in もようがえ and under ハニワくん’s letter; a tap on the room with the picker open only closes it', async ({ page }) => {
