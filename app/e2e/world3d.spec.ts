@@ -325,11 +325,12 @@ test('one source for screen ↔ world: at the default, zoomed in panned sideways
     // (the first that walks: a flower, a find or a weed there takes the tap instead)
     let target: (typeof targets)[number] | null = null;
     for (const t of targets.slice(0, 8)) {
-      const fx0 = await w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx);
+      const fx0 = await w3(page, (w) => (w as unknown as { stats(): { fxShown: number } }).stats().fxShown);
       await page.mouse.click(t.cx, t.cy);
       if (await expect.poll(async () => (await rings()).length, { timeout: 1500 }).toBeGreaterThan(0).then(() => true, () => false)) {
-        // (its 3D ring: polled, its model's part comes in a moment after the tap; the ambient ones come and go)
-        await expect.poll(() => w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx), { timeout: 3000 }).toBeGreaterThan(fx0);
+        // (its 3D ring: polled, its model's part comes in a moment after the tap; counted as it comes, the ambient ones
+        // coming and going meanwhile)
+        await expect.poll(() => w3(page, (w) => (w as unknown as { stats(): { fxShown: number } }).stats().fxShown), { timeout: 3000 }).toBeGreaterThan(fx0);
         target = t;
         break;
       }

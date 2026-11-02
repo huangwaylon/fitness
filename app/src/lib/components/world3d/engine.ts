@@ -95,6 +95,8 @@ interface Stats {
   lamps: number;
   /** The flourishes playing (effects.ts). */
   fx: number;
+  /** How many flourishes' parts (not the ambience's) have come on so far (a short one may be over when it's read). */
+  fxShown: number;
   /** What wanted the last frame (`~`: its ambience only), and whether the island is paused. */
   why: string[];
   paused: boolean;
@@ -990,7 +992,7 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures,
         geometries: renderer.info.memory.geometries, dpr: renderer.getPixelRatio(), frames,
         loading: pending + things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count(),
-        why: [...why], paused
+        fxShown: effects.shown(), why: [...why], paused
       };
     },
     dispose() {

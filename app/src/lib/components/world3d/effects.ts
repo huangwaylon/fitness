@@ -64,6 +64,9 @@ export interface Effects {
   spawn(kind: FxKind, x: number, z: number, lift?: number, o?: FxOpts): void;
   /** One frame: true while a flourish plays (not an ambient one). */
   frame(t: number, camera: Camera): boolean | 'ambient';
+  /** How many parts of a flourish (not the ambient ones) have come on so far (the e2e's: one came, though a short one
+   *  may be over already). */
+  shown(): number;
   /** How many play (with this tag). */
   count(tag?: string): number;
   /** Load every flourish's model now and put its textures and shaders on the GPU (the island's start, once idle): the
@@ -210,11 +213,12 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         s0: (p.s0 ?? 1) * k, s1: (p.s1 ?? 1) * k, face: p.face ?? true, flat: p.flat ?? false, sway: p.sway ?? 0, arc: p.arc ?? 0,
         blink: p.blink ?? false, tag: p.tag, fade: p.fade ?? true
       });
+      if (!p.tag) shown++;
       onLoad?.();
     });
   }
 
-  let spawnTag: string | undefined;
+  let spawnTag: string | undefined, shown = 0;
   function spawn(kind: FxKind, x: number, z: number, lift = 0, o: FxOpts = {}) {
     spawnTag = o.tag;
     try {
@@ -360,7 +364,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
   }
 
   return {
-    spawn, frame, warm, warmed: () => warmed,
+    spawn, frame, warm, warmed: () => warmed, shown: () => shown,
     count: (tag) => (tag ? parts.filter((p) => p.tag === tag).length + (coming.get(tag) ?? 0) : parts.length),
     dispose() {
       disposed = true;
