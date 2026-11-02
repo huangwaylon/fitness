@@ -25,7 +25,7 @@ const feet = (page: Page) =>
 
 async function open(page: Page, at = '2026-11-04T12:00') {
   await page.goto(`?demo&date=${at}&critter=none`);
-  await expect(ribbon(page)).toBeVisible();
+  await expect(ribbon(page)).toBeVisible({ timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
   await expect(mine(page)).toBeEnabled();
   await page.waitForTimeout(2600); // the opening beats are over
 }
