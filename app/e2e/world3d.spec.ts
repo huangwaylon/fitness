@@ -231,12 +231,9 @@ test('the 3D island draws what the 2D sprites did: no 2D art shows over it (a sc
   }
   // a high five: the zap between us and the sparkles over our heads are NH's models in the canvas, at once
   const fx0 = await w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx);
-  await page.evaluate(() => {
-    const W = window as unknown as { __world: { partner(): [number, number] }; __world3d: { client(x: number, z: number, l: number): [number, number] } };
-    const [x, z] = W.__world.partner(), [cx, cy] = W.__world3d.client(x, z, 40);
-    (document.elementFromPoint(cx, cy)?.closest('button') as HTMLButtonElement | null)?.click();
-  });
-  await expect.poll(() => w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx), { timeout: 2000 }).toBeGreaterThan(fx0);
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __world: { idle(): boolean } }).__world.idle()), { timeout: 20_000 }).toBe(true);
+  await page.locator('.actor[data-actor="partner"] .vil').click();
+  await expect.poll(() => w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx), { timeout: 5000 }).toBeGreaterThan(fx0);
   for (let i = 0; i < 6; i++) {
     expect(await domArt(page)).toEqual([]);
     await page.waitForTimeout(120); // (sampling through the high five's 0.5 s zap and its marks)
@@ -257,5 +254,64 @@ test('a goal tree\'s glints (all four met) stand whole on the 3D island: the can
   for (const a of await aspect()) {
     expect(a.squash).toBeLessThan(0.9); // (the node is squashed: the camera looks down on the tree)
     expect(Math.abs(a.aspect - 1)).toBeLessThan(0.02);
+  }
+});
+
+test('one source for screen ↔ world: at the default, zoomed in panned sideways and scrolled far, the tap areas sit on the 3D models, a ground tap walks where the camera says, and its ring is drawn once', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.goto(`?${Q}&island=3d`);
+  await ready(page);
+  type Wd = { mine(): [number, number] };
+  type W3x = W3 & { where(id: string): { x: number; y: number; z: number } | null; xRoom(): number; ground(cx: number, cy: number): { x: number; z: number } | null };
+  const states: [string, (w: W3x) => void][] = [
+    ['default', (w) => w.go(w.limits().min)],
+    ['zoomed in, panned right', (w) => w.go(260, 1.6, 999)],
+    ['zoomed in, panned left', (w) => w.go(420, 1.5, -999)],
+    ['scrolled far', (w) => w.go(w.limits().max)]
+  ];
+  for (const [name, go] of states) {
+    await page.evaluate(`(${go.toString()})(window.__world3d)`);
+    await idle(page);
+    // the rock and my villager: the 3D model's middle on screen falls in its DOM tap area, wherever it's on screen
+    // (polled: the DOM island's nodes follow the camera in its next frame)
+    const off = () => page.evaluate(() => {
+      const w = (window as unknown as { __world3d: W3x; __world: Wd }).__world3d, W = (window as unknown as { __world: Wd }).__world;
+      const out: string[] = [];
+      const inBox = (name: string, el: Element | null, p: [number, number]) => {
+        if (!el || p[0] < 0 || p[0] > innerWidth || p[1] < 60 || p[1] > innerHeight - 60) return;
+        const r = el.getBoundingClientRect();
+        if (p[0] < r.left - 4 || p[0] > r.right + 4 || p[1] < r.top - 4 || p[1] > r.bottom + 4) out.push(`${name} at ${p.map(Math.round)} not in ${[r.left, r.top, r.right, r.bottom].map(Math.round)}`);
+      };
+      const rock = w.where('rock');
+      if (rock) inBox('rock', document.querySelector('[data-care="rock"] > span'), w.client(rock.x, -rock.z, 8));
+      const [mx, mz] = W.mine();
+      inBox('mine', document.querySelector('.actor[data-actor="mine"] .vil'), w.client(mx, mz, 30));
+      return out;
+    });
+    await expect.poll(off, { message: name }).toEqual([]);
+    // a tap on open lawn ahead: my villager sets off to the very ground the camera has under the finger
+    const target = await page.evaluate(() => {
+      const w = (window as unknown as { __world3d: W3x }).__world3d;
+      // (off the middle's path: a tap on a path is no walk)
+      for (const [cx, cy] of [[110, 520], [290, 500], [120, 430], [280, 600], [90, 600]] as const) {
+        const g = w.ground(cx, cy);
+        const el = document.elementFromPoint(cx, cy);
+        if (g && el?.matches('.stage')) return { cx, cy, g };
+      }
+      return null;
+    });
+    if (!target) continue;
+    // (the island at rest: no moment of the opening's under way, which would take my villager its own way)
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __world: { idle(): boolean } }).__world.idle()), { timeout: 20_000 }).toBe(true);
+    const fx0 = await w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx);
+    await page.mouse.click(target.cx, target.cy);
+    // its ring: the 3D island's, the DOM's hidden (its own animation once showed it through: two rings)
+    await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('.tap-ring')].map((e) => +getComputedStyle(e).opacity)), { message: `${name}: the DOM's ring` }).toEqual([0]);
+    expect(await w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx)).toBeGreaterThan(fx0);
+    // and my villager heads for the ground under the finger (the nav may snap it a little)
+    await expect.poll(async () => {
+      const [x, z] = await page.evaluate(() => (window as unknown as { __world: Wd }).__world.mine());
+      return Math.hypot(x - target.g.x, z - target.g.z);
+    }, { timeout: 8000, message: `${name}: walked to the tap` }).toBeLessThan(30);
   }
 });
