@@ -32,6 +32,7 @@ import { createHash } from 'node:crypto';
 const APP = join(import.meta.dirname, '..');
 const OUT = join(APP, 'static', 'room');
 const ITEMS = join(APP, 'src', 'lib', 'components', 'tent', 'items.json');
+const HHA = join(APP, 'src', 'lib', 'components', 'tent', 'hha.json');
 const NAMES = (l: string) => join(APP, 'src', 'lib', 'i18n', `tent.${l}.json`);
 const CATALOG = join(APP, 'src', 'lib', 'components', 'island', 'catalog.json');
 const FIND_ICONS = join(APP, 'static', 'art', 'finds', 'items');
@@ -137,6 +138,24 @@ interface Piece {
   light?: true;
   /** On a wall (NH's wall-mounted things): its model stands out of the wall from its back, its middle at its origin. */
   wall?: true;
+  hha: Hha;
+}
+
+/** What the HHA counts (the spreadsheet's): its base points, its series, its catalogue colours (the first variation's,
+ *  the one converted), its themes (NH's concepts) and its HHA category (lighting, a clock…). */
+interface Hha { p: number; s?: string; c?: string[]; t?: string[]; k?: string }
+/** The series' names (NH's own, the spreadsheet's HHA Themes). */
+const seriesNames = new Map<string, { ja: string; en: string }>();
+function hhaOf(r: Raw): Hha {
+  const strs = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
+  const series = typeof r.series === 'string' ? r.series : undefined;
+  const st = r.seriesTranslations as Record<string, string> | null | undefined;
+  if (series && !seriesNames.has(series)) seriesNames.set(series, { ja: st?.jPja ?? series, en: st?.uSen ?? series });
+  const c = strs(field(r, 'colors')), t = strs(field(r, 'concepts')), k = field(r, 'hhaCategory');
+  return {
+    p: Math.max(0, Math.round(Number(r.hhaBasePoints) || 0)), ...(series ? { s: series } : {}), ...(c.length ? { c } : {}), ...(t.length ? { t } : {}),
+    ...(typeof k === 'string' && k ? { k } : {})
+  };
 }
 
 const furniture = [...(await sheet('Housewares')), ...(await sheet('Miscellaneous'))];
@@ -163,7 +182,7 @@ function piece(r: Raw, extra: Partial<Piece>): Piece | null {
   const light = !!field(r, 'lightingType') || r.tag === 'Fireplace';
   return {
     code: `f${id}`, folder, tex, icon, ...names(r), size: r.size, ...(surface ? { surface: true as const } : {}), ...(small ? { small: true as const } : {}),
-    ...(use ? { use, seats } : {}), ...(light ? { light: true as const } : {}), ...extra
+    ...(use ? { use, seats } : {}), ...(light ? { light: true as const } : {}), hha: hhaOf(r), ...extra
   };
 }
 
@@ -186,13 +205,13 @@ for (const id of pool) {
   if (!pieces.has(p.code)) pieces.set(p.code, p);
 }
 
-interface Tex { code: string; file: string; icon: string | null; ja: string; en: string }
+interface Tex { code: string; file: string; icon: string | null; ja: string; en: string; hha: Hha }
 const texOf = async (tab: string, files: string[], k: string): Promise<Tex[]> => {
   const rows = await sheet(tab);
   return files.map((file) => {
     const r = rows.find((x) => field(x, 'filename') === file);
     if (!r || !has(file)) throw new Error(`${tab} ${file}: no row or no texture`);
-    return { code: `${k}${field(r, 'internalId')}`, file, icon: has(`Layout_FtrIcon_${file}`) ? `Layout_FtrIcon_${file}` : null, ...names(r) };
+    return { code: `${k}${field(r, 'internalId')}`, file, icon: has(`Layout_FtrIcon_${file}`) ? `Layout_FtrIcon_${file}` : null, ...names(r), hha: hhaOf(r) };
   });
 };
 const walls = await texOf('Wallpaper', WALLS, 'w');
@@ -208,6 +227,7 @@ for (const l of ['ja', 'en'] as const) {
   for (const p of pieces.values()) out[`tent.item.${p.code}`] = p[l];
   for (const w of walls) out[`tent.wall.${w.code}`] = w[l];
   for (const g of floors) out[`tent.floor.${g.code}`] = g[l];
+  for (const [k, n] of [...seriesNames].sort(([a], [b]) => (a < b ? -1 : 1))) out[`tent.series.${k}`] = n[l];
   writeFileSync(NAMES(l), JSON.stringify(out, null, 0).replace(/","/g, '",\n"').replace(/^\{/, '{\n').replace(/\}$/, '\n}') + '\n');
 }
 
@@ -255,6 +275,9 @@ function writeItems() {
     };
   };
   const items = Object.fromEntries([...pieces.values()].filter((p) => metas[p.code]).map((p) => [p.code, flags(p, metas[p.code])]));
+  // the HHA's (tent/hha.ts, loaded only for a rating): each item's, wallpaper's and floor's
+  const hha = [...[...pieces.values()].filter((p) => metas[p.code]), ...walls, ...floors].map((p) => `  ${JSON.stringify(p.code)}: ${JSON.stringify(p.hha)}`);
+  writeFileSync(HHA, `{\n${hha.join(',\n')}\n}\n`);
   const json = {
     _: 'scripts/room-models.ts (npm run room-models): the tent\'s items (footprint w × d tiles, height h, kb), wallpapers and floors',
     wall: walls[0].code, floor: floors[0].code,

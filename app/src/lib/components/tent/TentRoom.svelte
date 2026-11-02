@@ -11,6 +11,9 @@
   import { onMount, untrack } from 'svelte';
   import NavButton from '../ui/NavButton.svelte';
   import TentEdit from './TentEdit.svelte';
+  import HhaLetter from './HhaLetter.svelte';
+  import { loadHha, rate, type HhaRating } from './hha.ts';
+  import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import type { WeekView } from '#lib/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import { loadTentNames } from '#lib/i18n/tent.ts';
@@ -28,7 +31,7 @@
   import { sendDecor } from '#lib/store/actions.ts';
   import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
-  import type { Intent, Pt as WirePt, Relayed } from '#lib/sync/live-protocol.ts';
+  import { tokyoDay, type Intent, type Pt as WirePt, type Relayed } from '#lib/sync/live-protocol.ts';
   import { hook } from '../island/devHooks.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfFind } from './items.ts';
   import { DOOR_IN, HALF, centreOf, nearestFree, resolve as resolveRoom, walkPath, type Pt, type Resolved } from './grid.ts';
@@ -359,12 +362,15 @@
   });
   $effect(() => eng?.night(nightOf(theme.tod)));
   // the edit tray opening or closing: the usable band changes (after it has laid out)
+  /** A refit to come (the tray's, after it has laid out). */
+  let refit = false;
   $effect(() => {
     void editing;
     const e = eng;
     if (!e) return;
-    const id = requestAnimationFrame(() => requestAnimationFrame(() => e.resize(insets())));
-    return () => cancelAnimationFrame(id);
+    refit = true;
+    let id = requestAnimationFrame(() => (id = requestAnimationFrame(() => ((refit = false), e.resize(insets())))));
+    return () => ((refit = false), cancelAnimationFrame(id));
   });
   $effect(() => {
     void where.partnerInTent;
@@ -372,6 +378,31 @@
   });
   $effect(() => void loadTentNames(i18n.locale).catch(() => {}));
 
+  // ---- the Happy Home Academy (tent/hha.ts) ----
+  /** The letter open (its rating, worked out as it opened). */
+  let letter = $state<HhaRating | null>(null);
+  const roomNow = () => ({ pieces: room.pieces, wall: room.wall, floor: room.floor, lights: room.lights });
+  async function openLetter(): Promise<void> {
+    const table = await loadHha().catch(() => null);
+    if (table) letter = rate(roomNow(), table);
+  }
+  /** Come in through the door (the island's goIn), not a reload or a link: only then does the letter come. */
+  const throughDoor = ui.islandZ !== null;
+  /** The first time someone comes in after a day's decorating (mine or the partner's), ハニワくん's letter: once a day
+   *  on each phone. */
+  function rateOnEntry(): void {
+    if (!throughDoor) return;
+    const today = tokyoDay(shared.now()), key = `${demo ? 'demo.' : ''}${me}`;
+    if (!room.changed || tokyoDay(room.changed) !== today) return;
+    const rated = readJson<Record<string, number>>(localKV(), DEVICE.tentRated) ?? {};
+    if (rated[key] === today) return;
+    writeJson(localKV(), DEVICE.tentRated, { ...rated, [key]: today });
+    void openLetter();
+  }
+
+  /** The letter comes this long after coming in. */
+  const HHA_AFTER_MS = 1400;
+  let hhaTimer: ReturnType<typeof setTimeout> | undefined;
   onMount(() => {
     let alive = true;
     room.attach(relay, me, demo);
@@ -419,6 +450,8 @@
         partnerShown();
         walkTo([me === 'A' ? -7 : 7, 22]);
         void e.ready.then(() => alive && doorReady());
+        // after the door's iris and the walk in
+        hhaTimer = setTimeout(() => alive && !editing && rateOnEntry(), HHA_AFTER_MS);
         hooks();
       },
       () => {
@@ -433,6 +466,7 @@
       send({ kind: 'tent', in: false });
       link.stop();
       if (expiry) clearInterval(expiry);
+      clearTimeout(hhaTimer);
       for (const f of offs) f();
       ro.disconnect();
       offDoor();
@@ -486,6 +520,11 @@
       peer: () => peer,
       hit: (cx: number, cy: number) => eng?.hit(cx, cy),
       /** A point on a wall (0 back, 1 left, 2 right, 3 front; across from its left end and up) in client px. */
+      /** The camera at rest and framed for what covers the canvas now (after the tray's re-centring). */
+      still: () => !refit && !!eng?.still(),
+      /** The room's HHA rating now, and the letter on screen. */
+      hha: async () => rate(roomNow(), await loadHha()),
+      letter: () => letter,
       wallPx: (wall: number, u: number, y: number) => {
         const th = [0, Math.PI / 2, -Math.PI / 2, Math.PI][wall], at = [[0, -HALF], [-HALF, 0], [HALF, 0], [0, HALF]][wall];
         const lx = u - HALF, lz = 0.3;
@@ -544,6 +583,12 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3Z" /></svg>
     </button>
   {/if}
+  {#if !editing}
+    <!-- ハニワくん's letter again: the room's rating as it is now -->
+    <button type="button" class="hha" data-tent-hha data-sfx="open" aria-label={t('tent.hha.open')} onclick={() => void openLetter()}>
+      <svg viewBox="0 0 64 80" aria-hidden="true"><path d="M14 70c0-12 2-20 4-28-6-2-10-7-10-11 4 0 8 3 11 6 1-10 6-27 13-27s12 17 13 27c3-3 7-6 11-6 0 4-4 9-10 11 2 8 4 16 4 28Z" /><ellipse cx="25" cy="24" rx="3.2" ry="4.2" /><ellipse cx="39" cy="24" rx="3.2" ry="4.2" /><ellipse cx="32" cy="37" rx="4" ry="5" /></svg>
+    </button>
+  {/if}
   {#if turned}
     <!-- back to NH's view of the room -->
     <button type="button" class="reset" data-tent-reset data-sfx="tick" aria-label={t('tent.resetView')} onclick={resetView}>
@@ -566,6 +611,7 @@
         heldChanged();
       }} />
   {/if}
+  {#if letter}<HhaLetter rating={letter} onclose={() => (letter = null)} />{/if}
   {#if failed}<p class="fail" role="alert">{t('tent.failed')}</p>{/if}
 </main>
 
@@ -598,6 +644,16 @@
   .switch svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   .switch:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
   .switch:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .hha {
+    position: absolute; right: calc(var(--side) + var(--safe-right) + 124px); top: calc(var(--safe-top) + 8px); z-index: 2;
+    width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer;
+    background: var(--c-card); box-shadow: var(--sh-obj); -webkit-tap-highlight-color: transparent;
+  }
+  .hha svg { width: 30px; height: 36px; }
+  .hha svg path { fill: #D08A52; stroke: #8C5326; stroke-width: 3; stroke-linejoin: round; }
+  .hha svg ellipse { fill: #8C5326; }
+  .hha:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
+  .hha:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .reset {
     position: absolute; right: calc(var(--side) + var(--safe-right)); top: calc(var(--safe-top) + 8px); z-index: 2;
     width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer;

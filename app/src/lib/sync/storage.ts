@@ -66,7 +66,10 @@ export const DEVICE = {
   /** localStorage: `[text…]`: my own phrases for my villager's balloon, the last few, newest first (island/say.ts). */
   says: 'island.says',
   /** localStorage: `[code…]`: the tent's pieces I picked last, newest first (tent/TentEdit.svelte's さいきん tab). */
-  tentRecent: 'island.tentRecent'
+  tentRecent: 'island.tentRecent',
+  /** localStorage: `{ [who]: day }`: the Tokyo day this phone last showed the tent's HHA letter, by who I am (the demo's
+   *  tabs share it; tent/TentRoom.svelte). */
+  tentRated: 'island.tentRated'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */

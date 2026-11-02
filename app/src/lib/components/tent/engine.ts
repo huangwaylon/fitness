@@ -75,6 +75,8 @@ export interface Insets {
 export interface Tent {
   /** The canvas's size changed (or what covers it). */
   resize(insets?: Insets): void;
+  /** The camera at rest (no framing or view easing under way): the e2e's taps aim then. */
+  still(): boolean;
   surfaces(wall: string, floor: string): void;
   /** What stands in the room (by id: new ones load and pop in, gone ones go, moved ones move). */
   pieces(list: readonly Placed[]): void;
@@ -918,6 +920,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     shadowsDirty = true;
     invalidate();
   }
+  const still = () => !framing && !easing;
   function resize(i?: Insets) {
     const changed = !!i && (i.top !== insets.top || i.bottom !== insets.bottom);
     if (i) insets = i;
@@ -1212,7 +1215,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   night(0);
 
   return {
-    resize, surfaces, pieces, hide, held, pick, wallAt, ghost, grid, bump, room, pose, night, villager,
+    resize, still, surfaces, pieces, hide, held, pick, wallAt, ghost, grid, bump, room, pose, night, villager,
     at: (who) => (villagers.get(who)?.pos.slice() as [number, number] | undefined) ?? null,
     put(who, p, f) {
       const w = villagers.get(who);

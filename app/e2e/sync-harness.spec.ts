@@ -10,6 +10,12 @@ import { expect, test, type Browser, type Page } from '@playwright/test';
 import { existsSync, readFileSync } from 'node:fs';
 import { BUILDINGS, CAMS, HOMES, SEATS } from '../src/lib/components/island/world.ts';
 
+/** The edit tray open, and the room re-centred above it (a tap's px only holds once the camera is at rest). */
+async function openEdit(p: Page) {
+  await p.locator('[data-tent-edit-open]').click();
+  await p.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still());
+}
+
 /** Where a villager stands at the tent's door (nav.ts doorOf). */
 const DOOR = ((b) => [b.x, b.z - 16] as const)(BUILDINGS.find((b) => b.id === 'campsite')!);
 /** Where a villager stands just out of the tent (buildings.ts outOfTent): ±12 of the door, 30 in front. */
@@ -300,7 +306,7 @@ test('two phones in the tent: one room, A’s drag live on B (held there), the d
   const b = await open('B', ctxB);
   // A puts the camping cot down in the back row (the demo's two phones are two tabs: the one acting in front)
   await a.bringToFront();
-  await a.locator('[data-tent-edit-open]').click();
+  await openEdit(a);
   await a.locator('[data-tent-item="f4081"]').click();
   // (a 2 × 1 piece's middle on the line between tiles 1 and 2)
   let [x, y] = await a.evaluate(() => (window as unknown as { __tent: { px(x: number, z: number): [number, number] } }).__tent.px(-20, -25));
@@ -337,7 +343,7 @@ test('two phones in the tent: one room, A’s drag live on B (held there), the d
   // held on B: B can't pick it up while A has it
   await expect.poll(() => tt(b, (t) => t.held().length), { timeout: 3000 }).toBe(1);
   await b.bringToFront();
-  await b.locator('[data-tent-edit-open]').click();
+  await openEdit(b);
   const [bx, by] = await tt(b, (t) => t.tile(t.pieces()[0].x, t.pieces()[0].z));
   await b.mouse.click(bx, by);
   expect((await tt(b, (t) => t.edit()))?.sel ?? null).toBeNull();
@@ -494,7 +500,7 @@ test('a lamp on a table, on both phones: on its top there, and along with the ta
   type P = { id: string; item: string; x: number; z: number; y: number; on?: string };
   const placedOf = (p: Page) => p.evaluate(() => (window as unknown as { __tent: { placed(): P[]; pieces(): P[] } }).__tent.placed());
   await a.bringToFront();
-  await a.locator('[data-tent-edit-open]').click();
+  await openEdit(a);
   await a.locator('[data-tent-item="f4054"]').click();
   let [x, y] = await a.evaluate(() => (window as unknown as { __tent: { px(x: number, z: number): [number, number] } }).__tent.px(-20, -25));
   await a.mouse.click(x, y);
@@ -513,6 +519,11 @@ test('a lamp on a table, on both phones: on its top there, and along with the ta
   const onA = await lampOn(a);
   expect(onA).not.toBeNull();
   await expect.poll(async () => { const l = await lampOn(b); return l && [l.x, l.z]; }, { timeout: 4000 }).toEqual([onA!.x, onA!.z]);
+  // the HHA's rating is the room's alone: the same on both phones
+  const hha = (p: Page) => p.evaluate(() => (window as unknown as { __tent: { hha(): Promise<{ total: number }> } }).__tent.hha());
+  const ra = await hha(a);
+  expect(ra.total).toBeGreaterThan(0);
+  expect(await hha(b)).toEqual(ra);
   await ctxA.close();
   if (RELAY) await ctxB.close();
 });
