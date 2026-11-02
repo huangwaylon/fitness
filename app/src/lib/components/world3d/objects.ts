@@ -61,6 +61,7 @@ const PROP: Record<string, ModelName> = {
 /** world.ts's height for a default piece of scenery (its size wherever it goes). */
 const SCENERY_H: Record<string, number> = Object.fromEntries(SCENERY.map((s) => [s.id, s.h]));
 const SEASONAL = new Set(['beach-chair', 'sandcastle', 'snowboy']);
+
 /** The fixed decor's kinds (world.ts DECOR_SLOTS): NH's furniture scale, as the decorations'. */
 const SLOT_KINDS = new Set(['park-bench', 'log-bench', 'hammock', 'rod-stand', 'pump', 'shishiodoshi', 'pullup', 'firewood', ...SEASONAL]);
 
@@ -149,6 +150,10 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
       }
       case 'stairs': case 'spot':
         break; // the stairs are the ground's (terrain.ts); a spot is never drawn
+      case 'stone-lantern': case 'birdbath': case 'garden-wagon': case 'iron-table': case 'iron-chair': case 'brick-well': case 'tanuki': case 'monstera': case 'signpost': case 'wheelbarrow':
+        if (has(o.k)) thing(o.k, DECOR_U);
+        else standins.push({ id: o.id, key: `decor/${o.k}-${o.f}`, x, z, h });
+        break;
       default: {
         // the fixed decor's spots: the day's piece there (a seasonal spot empty out of its season), else its own look
         const piece = pieces?.get(o.id);

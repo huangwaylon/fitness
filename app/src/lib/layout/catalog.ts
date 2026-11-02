@@ -76,6 +76,17 @@ export const KIND_LIST: readonly KindDef[] = [
   k({ k: 'pullup', group: 'furniture', ja: 'てつぼう', en: 'Pull-up bar', w: 1, d: 1, block: true, foot: [28, 12], on: 'land', h: 44, icon: 'deco/pullup', turns: true }),
   k({ k: 'firewood', group: 'furniture', ja: 'まき', en: 'Firewood', w: 1, d: 1, block: true, foot: [18, 12], on: 'land', h: 18, icon: 'deco/firewood' }),
   k({ k: 'tape-deck', group: 'furniture', ja: 'ラジカセ', en: 'Tape deck', w: 1, d: 1, block: true, foot: [14, 8], on: 'land', h: 16, icon: 'deco/tape-deck', fixed: true }),
+  // the decorations NH's outdoor furniture the phones put down (island/decor.ts's ten), on the layout's tiles now
+  k({ k: 'stone-lantern', group: 'furniture', ja: 'いしどうろう', en: 'Stone lantern', w: 1, d: 1, block: true, foot: [24, 20], on: 'land', h: 40, icon: 'decor/stone-lantern-0', turns: true }),
+  k({ k: 'birdbath', group: 'furniture', ja: 'バードバス', en: 'Birdbath', w: 1, d: 1, block: true, foot: [24, 20], on: 'land', h: 30, icon: 'decor/birdbath-0', turns: true }),
+  k({ k: 'garden-wagon', group: 'furniture', ja: 'ガーデンワゴン', en: 'Garden wagon', w: 2, d: 1, block: true, foot: [58, 22], on: 'land', h: 36, icon: 'decor/garden-wagon-0', turns: true }),
+  k({ k: 'iron-table', group: 'furniture', ja: 'アイアンガーデンテーブル', en: 'Iron garden table', w: 1, d: 1, block: true, foot: [24, 20], on: 'land', h: 24, icon: 'decor/iron-table-0', turns: true }),
+  k({ k: 'iron-chair', group: 'furniture', ja: 'アイアンガーデンチェア', en: 'Iron garden chair', w: 1, d: 1, block: true, foot: [22, 20], on: 'land', h: 28, icon: 'decor/iron-chair-0', turns: true }),
+  k({ k: 'brick-well', group: 'furniture', ja: 'レンガのいど', en: 'Brick well', w: 2, d: 2, block: true, foot: [48, 44], on: 'land', h: 48, icon: 'decor/brick-well-0', turns: true }),
+  k({ k: 'tanuki', group: 'furniture', ja: 'たぬきのおきもの', en: 'Tanuki statue', w: 1, d: 1, block: true, foot: [22, 20], on: 'land', h: 36, icon: 'decor/tanuki-0', turns: true }),
+  k({ k: 'monstera', group: 'furniture', ja: 'モンステラ', en: 'Monstera', w: 1, d: 1, block: true, foot: [22, 20], on: 'land', h: 40, icon: 'decor/monstera-0', turns: true }),
+  k({ k: 'signpost', group: 'furniture', ja: 'みちしるべ', en: 'Signpost', w: 1, d: 1, block: true, foot: [18, 14], on: 'land', h: 42, icon: 'decor/signpost-0', turns: true }),
+  k({ k: 'wheelbarrow', group: 'furniture', ja: 'いちりんしゃ', en: 'Wheelbarrow', w: 2, d: 1, block: true, foot: [40, 22], on: 'land', h: 26, icon: 'decor/wheelbarrow-0', turns: true }),
   // NH's bulletin board (けいじばん): one on the island, used from the tile in front of it
   k({ k: 'board', group: 'furniture', ja: 'けいじばん', en: 'Bulletin board', w: 2, d: 1, block: true, foot: [54, 14], on: 'land', h: 44, icon: 'deco/bulletin-board', turns: true, fixed: true, front: true }),
   // the seasonal spots (fixedDecor.ts: the season's piece stands there in its weeks)

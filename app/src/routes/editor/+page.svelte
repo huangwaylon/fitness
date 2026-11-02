@@ -1,11 +1,14 @@
 <script lang="ts">
   // しまの エディター (docs/island-layout.md "The editor"): the island's layout on a big screen, the members' only
   // (the A or B key: the guest never edits the outdoors, and the record refuses it anyway). Unlinked, noindex.
-  // `?view=phone&cam=<z>` shows the 3D preview alone, as a phone's camera sees it.
+  // `?view=phone&cam=<z>` shows the 3D preview alone, as a phone's camera sees it; `&edit` with the island's もようがえ
+  // over it (layoutEdit/IslandEdit: the phone's, the members'); `&preview=0` the plan in its place (no WebGL: the e2e).
   import { onMount } from 'svelte';
   import { resolve } from '$app/paths';
   import Editor from '#lib/components/editor/Editor.svelte';
   import Preview3D from '#lib/components/editor/Preview3D.svelte';
+  import IslandEdit, { type EditStage } from '#lib/components/layoutEdit/IslandEdit.svelte';
+  import PlanStage from '#lib/components/layoutEdit/PlanStage.svelte';
   import { layout } from '#lib/store/layout.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { sendDecor } from '#lib/store/actions.ts';
@@ -14,6 +17,9 @@
 
   const q = new URLSearchParams(location.search);
   const phone = q.get('view') === 'phone';
+  const flat = q.get('preview') === '0';
+  let editing = $state(q.has('edit'));
+  let stage = $state<EditStage>();
   let camZ = $state(Number(q.get('cam') ?? 300));
   const view = $derived(week.view);
   const me = $derived(view?.viewer === 'A' || view?.viewer === 'B' ? view.viewer : null);
@@ -51,7 +57,10 @@
 </svelte:head>
 
 {#if phone}
-  <div class="full"><Preview3D layout={layout.current} mode="phone" bind:camZ /></div>
+  <div class="full">
+    {#if flat}<PlanStage layout={layout.current} bind:camZ bind:stage />{:else}<Preview3D layout={layout.current} mode="phone" bind:camZ bind:stage />{/if}
+    {#if editing && stage && me}<IslandEdit {stage} {relay} ondone={() => (editing = false)} />{/if}
+  </div>
 {:else if !view}
   <p class="msg">…</p>
 {:else if !me}

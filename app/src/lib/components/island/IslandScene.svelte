@@ -741,8 +741,6 @@
       shared.attach(relay ?? demoRelay, me, !!week.demo);
       decor.attach(relay ?? demoRelay, me, !!week.demo);
       islandLayout.attach(relay ?? demoRelay, me, !!week.demo);
-      // the e2e's view of the layout this phone holds (the editor's changes arriving live)
-      if (hooksOn()) (window as unknown as { __layout?: unknown }).__layout = { pos: (id: string) => islandLayout.pos(id), home: (w: 'A' | 'B' | 'G') => islandLayout.home(w) };
       demoRelay?.start();
     });
   });

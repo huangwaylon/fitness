@@ -660,7 +660,9 @@ guest's houses with paths to their doors. Corners are round (NH's), cliffs are s
 stepping down a tier falls, stairs are stone steps; the 3D ground is built and baked from the layout on the phone
 (world3d/terrain.ts). The 2D island keeps world.ts's area until the 3D cutover. Each home is its owner's: its look
 (いえを かえる: NH's player house or a villager's, wall, roof and door in their colours, the move-in tents, the campsite's
-tent) and its room (the tent's room system: うめ's house, the guest's), anyone welcome in. The members change the outdoors (the
+tent) and its room (the tent's room system: うめ's house, the guest's), anyone welcome in. On the phone the members
+arrange the island's things the tent's way (layoutEdit/IslandEdit: a tray of every kind, a ghost green or red, drag a
+tile at a time, turn, put away); the terrain is the desktop editor's. The members change the outdoors (the
 desktop editor, then the phone); each person changes only their own home's look and room (the guest: its own house
 and the tent).
 
