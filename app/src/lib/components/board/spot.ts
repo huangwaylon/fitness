@@ -12,8 +12,8 @@ export type BoardProj = Proj3 & {
   attach?(id: string, obj: unknown): void;
 };
 
-/** The board's middle (world u) when the layout doesn't place it: tiles 5–6 × 4 (x 60…120, z 30…60). */
-const BOARD_SPOT = [90, 45] as const;
+/** The board's middle (world u) when the layout doesn't place it: tiles 7–8 × 6 (x 120…180, z 90…120). */
+const BOARD_SPOT = [150, 105] as const;
 /** The model's scale (u a model unit: scripts/world3d-assets.ts BOARD_S). */
 export const BOARD_S = 3.5;
 /** The face (the cork) in the model's units: its middle's height and how far in front of the origin, its size. */

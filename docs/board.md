@@ -29,10 +29,10 @@ that we see it clearly in 3D space and allow editing it." Then: "put the sign up
 - A catalog kind `board` (`layout/catalog.ts`): `{ k: 'board', group: 'structure', ja: 'けいじばん', en: 'Bulletin board',
   w: 2, d: 1, block: true, foot: [56, 12], on: 'land', h: 60, icon: 'deco/bulletin-board', fixed: true }` (one on the
   island, never deleted, moved and turned freely; `f` turns only its look: its face is its front).
-- A default object `{ id: 'board', k: 'board', x: 5, z: 4, f: 0 }` (tiles 5–6 × 4, its middle x 90, z 45: on the beach
-  left of the shells' sand (world.ts BEACH_BOX x 120…300), between palm-3 and the lawn, facing the sea-side camera;
-  clear of the shells, the sandcastle and the beach chair, so the front stays clean). The tiles in front of it and to
-  its right (z 3, x 5–8) must stay walkable: a villager stands there to read it.
+- A default object `{ id: 'board', k: 'board', x: 7, z: 6, f: 0 }` (tiles 7–8 × 6, its middle x 150, z 105: on the sand
+  at the lawn's front edge, between the white plumeria and the path, behind the shells' sand (world.ts BEACH_BOX z
+  −18…90) and clear of Gulliver's spot (Visitor.svelte [96, 30]), the sandcastle and the beach chair, facing the sea-side
+  camera, so the front stays clean). The tiles in front of it and to its right (z 5, x 7–9) must stay walkable: a villager stands there to read it.
 - Until it lands the board reads `layout.pos('board') ?? BOARD_SPOT` (`board/spot.ts`), the same spot, so nothing moves
   when it does.
 

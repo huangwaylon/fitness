@@ -49,7 +49,7 @@ test('a tap walks my villager up to the board, it opens, and a note written ther
   // my villager walked up to it first (it stands in front of the board's face, on the beach)
   const after = await a.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
   expect(Math.hypot(after[0] - before[0], after[1] - before[1])).toBeGreaterThan(30);
-  expect(after[1]).toBeLessThan(60);
+  expect(after[1]).toBeLessThan(110);
   await expect(view(a)).toContainText('1 / 1');
   await write(a, 'きょうは 1まんぽ あるいた！');
   // the counter and the caps: 4 lines and 100 characters at most, as typed
