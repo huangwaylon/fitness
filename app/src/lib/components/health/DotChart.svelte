@@ -1,7 +1,7 @@
 <script lang="ts">
   // One person's sparse series (けんこう): weight, body fat %, BMI or lean body mass. A dot per day with a measurement (or
   // per week / month: the average of its measurements), the dots joined by a thin line across the gaps between them, the
-  // goal (weight's) dashed, on an axis fitted to the values. A tap shows that day's numbers; a horizontal drag turns the
+  // goal (weight's, body fat's) dashed, on an axis fitted to the values. A tap shows that day's numbers; a horizontal drag turns the
   // page. No good / bad colours.
   import type { LocalDate, PersonId } from '#lib/types.ts';
   import type { DotBucket, Range } from '#lib/model/health.ts';

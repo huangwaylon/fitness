@@ -82,6 +82,16 @@ export function hostArt(pose: HostPose, nook = false): string {
   return HOST[pose];
 }
 
+/** けんこう's からだ cards → a catalogue icon each, as the activity cards have their fruit (docs/design.md#kenkou):
+ *  weight the red kitchen scale, body fat the exercise ball, BMI the clipboard with its chart, lean mass the
+ *  weight bench. */
+export const BODY_ART: Record<'weight' | 'body_fat_pct' | 'bmi' | 'lean_kg', string> = {
+  weight: 'finds/items/analog-kitchen-scale',
+  body_fat_pct: 'finds/items/exercise-ball',
+  bmi: 'finds/items/clipboard',
+  lean_kg: 'finds/items/weight-bench'
+};
+
 /** One of the four ring fruits → inventory icon key. */
 export function fruitArt(fruit: RingFruit): string {
   return `fruit/${fruit}`;

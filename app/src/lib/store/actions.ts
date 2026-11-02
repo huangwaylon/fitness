@@ -7,7 +7,7 @@ import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import type { LocalDate, PersonId, ShopItemId } from '#lib/types.ts';
-import { isWeightKg, roundKg, type FindKind } from '#lib/contract/api.ts';
+import { isBodyFatGoal, isWeightKg, roundKg, type FindKind } from '#lib/contract/api.ts';
 import { findKey, findsView } from '#lib/model/finds.ts';
 import { addToTally, latestByDay } from '#lib/model/tally.ts';
 import { localDateAt } from '#lib/time/dates.ts';
@@ -64,6 +64,14 @@ export function setGoalWeight(person: PersonId, kg: number | null): SendResult {
   const value = roundKg(kg);
   if (!isWeightKg(value)) return { ok: false };
   return week.send('pref', { person, key: 'goalWeight', value });
+}
+
+/** A body fat goal in % (one decimal), or null to clear it. Both of us see it; it never earns. */
+export function setGoalBodyFat(person: PersonId, pct: number | null): SendResult {
+  if (pct === null) return week.send('pref', { person, key: 'goalBodyFat', value: null });
+  const value = roundKg(pct);
+  if (!isBodyFatGoal(value)) return { ok: false };
+  return week.send('pref', { person, key: 'goalBodyFat', value });
 }
 
 /**

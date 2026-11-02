@@ -90,8 +90,11 @@ Esc close the panel.
 - **ベル:** everything earned, then by week (earnings only) one line per day under the two avatars: each person's four
   fruits (bright = met), a star on a ふたりでぜんぶ day, the day's ベル (tap → the day); on a がんばり day a smaller second
   line with each person's がんばり ベル.
-- **目標:** the Move, steps and weight goals; two avatar pills pick whose (either person sets either person's). The
-  steps goal (歩数（1日）, ✎) takes 1,000–30,000 in 500s in a 16px numeric field; 8,000 for both until set.
+- **目標:** the Move, steps, weight and body fat goals; two avatar pills pick whose (either person sets either person's). The
+  steps goal (歩数（1日）, ✎) takes 1,000–30,000 in 500s in a 16px numeric field; 8,000 for both until set. The weight
+  goal (体重, 目標体重: 20–300 kg) and the body fat goal (体脂肪率, 目標体脂肪率: 3–60 %, 「3〜60%で 入れてね」) take one
+  decimal in a decimal field, each with 目標をなくす once set (まだ until then); both are shown only, never earn, and
+  each row carries its からだ card's icon.
 - **ずかん** ([Zukan](#zukan)): one row per kind with how many either of us has found.
 - **Day:** ふたりでぜんぶ (+2 or —), then each person: the day's ベル and per goal its value (green when met, the
   「がんばり」 chip at 1.5×) and +1, then any がんばり row, like the tree's popup.
@@ -108,7 +111,10 @@ trainer, one person at a time, computed on read.
   under it) › and きょう.
 - **Cards, per group** (`model/health.ts` GROUPS and CARDS, the user's "activity metrics and body metrics"): かつどう
   🍎 歩数, 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド (then the footnote); からだ 体重, 体脂肪率, BMI, 除脂肪体重 (what a
-  scale writes at one weigh-in).
+  scale writes at one weigh-in). As each activity card has its fruit, each からだ card has a catalogue icon
+  (`art.ts` BODY_ART, 24px, decorative: the heading names it): 体重 the red kitchen scale (a scale, but NH's, and
+  readable on the cream and the night cards), 体脂肪率 the exercise ball (round and soft, never a judgement), BMI the
+  clipboard with its chart (an index you read off), 除脂肪体重 the weight bench (muscle).
 - **A card per activity metric**: the goal; 1日の平均 with 前の期間より ↑/↓ %;
   目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key.
 - **Chart** (`BarChart`, SVG): a bar per day (1週, 1か月), per week (3か月: 13) or per calendar month (1年), each
@@ -119,7 +125,10 @@ trainer, one person at a time, computed on read.
 - **体重** (`WeightCard`, `DotChart`): 平均 (n回の記録), 期間の変化 ([Weight](#weight)), the chart on an axis fitted
   to the weights (dots joined by a thin line; the goal dashed, or a 「目標 66.0 ↓」 label when far off) and the goal
   month at that pace (only when the period ends today).
-- **体脂肪率 · BMI · 除脂肪体重** (`BodyCard`, `DotChart`): as 体重 without a goal: 平均 (n回の記録), 期間の変化 (the same
+- **体脂肪率 · BMI · 除脂肪体重** (`BodyCard`, `DotChart`): as 体重 (体脂肪率 with its own goal, `goalBodyFat`, drawn
+  and keyed exactly as the weight goal: the dashed yuzu line, 「目標 19.5」 or the ↑/↓ label when far off, the axis
+  fitted to it when near, 「- - 目標」 in the key, and the goal month at that pace; BMI and 除脂肪体重 have none;
+  unset = no line): 平均 (n回の記録), 期間の変化 (the same
   plain change, in the metric's unit: `−0.4%`, `+0.2`, `−0.3 kg`) and per week, and the dot chart on an axis fitted to the
   values (at least 2 points of body fat or 2 kg, 1 of BMI). A day with no measurement has no dot; 記録なし when the
   period has none. Never earns, no good / bad colours.
@@ -215,7 +224,7 @@ Shortcut's `metrics` rows; a day's value is its latest row,
 so each sync replaces it with Health's current total (a locked week's earnings stay as of its lock). Nothing in the
 app enters or fixes them.
 
-What the app sends ([backend.md](backend.md#events)): the goals (`pref` `moveGoal`, `stepsGoal`, `goalWeight`, either person's
+What the app sends ([backend.md](backend.md#events)): the goals (`pref` `moveGoal`, `stepsGoal`, `goalWeight`, `goalBodyFat`, either person's
 via `data.person`), buys and voids, harvest taps, the sender's `locale`, `villagerName` and `villager`, and
 the ずかん's finds (`find`, the first of each). A buy and its とりけす wait 5 s before they are sent (touching the banner
 holds it, ≤ 2 min).
@@ -230,7 +239,8 @@ to the goal at ≥ 0.05 kg a week within 156 weeks (else 「あせらず、ゆ�
 
 The body metrics (`body_fat_pct` %, `bmi`, `lean_kg` kg; `State.body`, apart from the activity rows like weight) are
 read the same way: a day's latest row, one decimal, within their bounds (body fat 2–70 %, BMI 10–60, lean 10–150 kg);
-けんこう's 期間の変化 is the same plain change; no goal. They never earn: bells.ts reads only the activity metrics, and
+けんこう's 期間の変化 is the same plain change. Body fat has a goal (`goalBodyFat`, 3–60 %, one decimal, per person,
+the latest only), its goal month worked out as weight's; BMI and lean mass have none. They never earn: bells.ts reads only the activity metrics, and
 the cache keeps only their newest row per day once the week has locked, like weight.
 
 ## Island scene
@@ -569,7 +579,7 @@ NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)
 
 - **What it sees:** our island, the trees and their popups, the ベル ribbon and the jar (to look at: its balance and the
   buys, 「ちょきんばこは ふたりの もの。」 in place of the shop, no ×), きろく (the ledger, the goals read-only) and
-  けんこう's かつどう. Never a からだ figure: no からだ switch, no weight or body card, no weight goal (its snapshot holds
+  けんこう's かつどう. Never a からだ figure: no からだ switch, no weight or body card, no weight or body fat goal (its snapshot holds
   none: the record leaves them out). せってい: its villager and name (the same picker, its own prefs), the sound, the
   language and あそびかた; no もようがえ, つうち or つうしん, and a line saying it's visiting.
 - **What it does:** walks, catches, digs, picks up and shakes like us (the shared world's claims, first wins), its

@@ -1,5 +1,5 @@
 // Small formatters shared by the きろく screens (the day title, numbers, weights, the goal fields); dates: i18n/format.ts.
-import { isWeightKg } from '#lib/contract/api.ts';
+import { isBodyFatGoal, isWeightKg } from '#lib/contract/api.ts';
 import { MOVE_GOAL, isStepsGoal } from '#lib/config/rules.ts';
 import { formatNum, i18n, t } from '#lib/i18n/index.ts';
 import { weekdayOf } from '#lib/i18n/format.ts';
@@ -28,6 +28,17 @@ export function parseKgInput(text: string): number | null {
   if (!/^\d{1,3}(\.\d+)?$/.test(s)) return null;
   const kg = Math.round(Number(s) * 10) / 10;
   return isWeightKg(kg) ? kg : null;
+}
+
+/**
+ * What was typed in a body fat goal field → % (one decimal), or null: `22.5`, `22,5`, full-width `２２．５`, a trailing
+ * `%` / `％`. 3–60 % only; more than one decimal is rounded.
+ */
+export function parsePctInput(text: string): number | null {
+  const s = text.trim().replace(/[０-９．，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/\s*[%％]$/, '').replace(',', '.');
+  if (!/^\d{1,2}(\.\d+)?$/.test(s)) return null;
+  const v = Math.round(Number(s) * 10) / 10;
+  return isBodyFatGoal(v) ? v : null;
 }
 
 /** What was typed as a Move goal → whole kcal, or null: `600`, `1,200`, full-width `６００`, a trailing `kcal`. */

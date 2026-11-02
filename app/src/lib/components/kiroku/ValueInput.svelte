@@ -11,8 +11,8 @@
     sub: string;
     /** The value now, shown grey (null = none yet). */
     old: number | null;
-    /** The field's unit and keypad: kg (decimal), kcal or steps (numeric). */
-    unit: 'kg' | 'kcal' | 'steps';
+    /** The field's unit and keypad: kg or % (decimal), kcal or steps (numeric). */
+    unit: 'kg' | '%' | 'kcal' | 'steps';
     parse: (text: string) => number | null;
     /** The allowed range, in words. */
     hint: string;
@@ -26,7 +26,8 @@
   let tried = $state(false);
   const v = $derived(parse(text));
   const bad = $derived(tried && v === null);
-  const oldText = $derived(old === null ? null : unit === 'kg' ? old.toFixed(1) : String(old));
+  const decimal = $derived(unit === 'kg' || unit === '%');
+  const oldText = $derived(old === null ? null : decimal ? old.toFixed(1) : String(old));
   const unitText = $derived(unit === 'steps' ? t('goal.stepsUnit') : unit);
   let input: HTMLInputElement | undefined = $state();
   $effect(() => input?.focus());
@@ -41,8 +42,8 @@
   <div class="screen card">
     <label class="top" for="wi-v"><b>{label}</b>{#if sub}<span class="sub money">{sub}</span>{/if}{#if oldText !== null}<span class="old money">({oldText} {unitText})</span>{/if}</label>
     <div class="field">
-      <input id="wi-v" data-sfx="none" bind:this={input} bind:value={text} type="text" inputmode={unit === 'kg' ? 'decimal' : 'numeric'}
-        autocomplete="off" enterkeyhint="done" placeholder={oldText ?? (unit === 'kg' ? '00.0' : unit === 'steps' ? '0000' : '000')} aria-invalid={bad}
+      <input id="wi-v" data-sfx="none" bind:this={input} bind:value={text} type="text" inputmode={decimal ? 'decimal' : 'numeric'}
+        autocomplete="off" enterkeyhint="done" placeholder={oldText ?? (decimal ? '00.0' : unit === 'steps' ? '0000' : '000')} aria-invalid={bad}
         aria-describedby="wi-hint" maxlength="6" size="6" />
       <span class="unit" aria-hidden="true">{unitText}</span>
     </div>

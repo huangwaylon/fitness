@@ -11,7 +11,8 @@
 // - Weight: the period's weigh-ins, their average and the plain change (model/weight.ts plainChange: the first week's
 //   average → the last week's, else the first weigh-in → the last), and from it the goal month.
 // - Body fat %, BMI, lean body mass (the body metrics): like weight, a day's latest row, sparse; the period's
-//   measurements, their average and the same plain change; no goal.
+//   measurements, their average and the same plain change; body fat % has its own goal (`goalBodyFat`), shown and
+//   projected as weight's is.
 // - Today is still running (a partial day): it is drawn (an outlined bar) but stays out of the stats.
 // - A goal is met as on the stamp card: kcal ≥ that day's Move goal, exercise ≥ 60, whole Stand minutes ≥ 120, steps ≥
 //   that day's steps goal (8,000 unless set). Days met / days recorded.
@@ -61,6 +62,8 @@ interface PersonSeries {
   body: Record<BodyMetric, (number | null)[]>;
   /** The weight goal (shown only). */
   goalWeight: number | null;
+  /** The body fat goal in % (shown only). */
+  goalBodyFat: number | null;
 }
 
 export interface HealthSeries {
@@ -110,7 +113,7 @@ function buildSeries(s: State, to: LocalDate, now: number): HealthSeries {
       kg.push(kgBy.get(d) ?? null);
       for (const b of BODY) body[b].push(latestAt(s.body[p][b].get(d), now) ?? null);
     }
-    return { values, moveGoal, stepsGoal, kg, body, goalWeight: s.prefs[p].goalWeight ?? null };
+    return { values, moveGoal, stepsGoal, kg, body, goalWeight: s.prefs[p].goalWeight ?? null, goalBodyFat: s.prefs[p].goalBodyFat ?? null };
   };
   return { from, to, activityFrom, any, people: { A: person('A'), B: person('B') } };
 }
@@ -322,10 +325,15 @@ export function weightStats(hs: HealthSeries, p: PersonId, r: Range): WeightStat
   };
 }
 
-/** A body metric over a period: as weight's numbers, without a goal. */
-export type BodyStats = Omit<WeightStats, 'projection'>;
+/** A body metric over a period: as weight's numbers; a projection only for body fat with its goal. */
+export type BodyStats = WeightStats;
+
+/** A body metric's goal: body fat's (`goalBodyFat`); BMI and lean mass have none. */
+export const bodyGoal = (hs: HealthSeries, p: PersonId, m: BodyMetric): number | null => (m === 'body_fat_pct' ? hs.people[p].goalBodyFat : null);
 
 export function bodyStats(hs: HealthSeries, p: PersonId, m: BodyMetric, r: Range): BodyStats {
   const days = dotDays(hs, hs.people[p].body[m], r);
-  return { n: days.length, avg: avg1(days), change: plainChange(days) };
+  const change = plainChange(days);
+  const goal = bodyGoal(hs, p, m);
+  return { n: days.length, avg: avg1(days), change, projection: goal === null || !change ? null : project(change, goal) };
 }

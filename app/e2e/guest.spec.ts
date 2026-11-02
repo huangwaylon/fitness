@@ -34,12 +34,12 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   for (const text of ['からだ', '体重', '体脂肪率', 'BMI', '除脂肪体重', 'kg']) await expect(panel, text).not.toContainText(text);
   await panel.locator('[data-who="B"]').click();
   await expect(panel).not.toContainText('体重');
-  // きろく: the ベル ledger and the goals, read-only (no ✎, no weight goal)
+  // きろく: the ベル ledger and the goals, read-only (no ✎, no weight or body fat goal)
   await panel.locator('.tab[data-tab=kiroku]').click();
   await expect(panel.locator('.goals')).toBeVisible();
   await expect(panel.locator('.goals .pen-btn')).toHaveCount(0);
-  await expect(panel.locator('[data-focus="weight-goal"]')).toHaveCount(0);
-  for (const text of ['体重', 'kg']) await expect(panel, text).not.toContainText(text);
+  await expect(panel.locator('[data-focus="weight-goal"], [data-focus="fat-goal"]')).toHaveCount(0);
+  for (const text of ['体重', '体脂肪率', 'kg', '%']) await expect(panel, text).not.toContainText(text);
   // せってい: the villager, the sound and the language; no もようがえ, つうち or つうしん
   await panel.locator('.tab[data-tab=settings]').click();
   await expect(panel.locator('[data-guest-note]')).toBeVisible();

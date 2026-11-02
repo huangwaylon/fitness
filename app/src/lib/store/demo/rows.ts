@@ -126,6 +126,8 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
   }
   ev(at(wStart, 21, 0), 'A', 'pref', { key: 'goalWeight', value: WEIGHT_DEMO.A.goal });
   ev(at(addDays(wStart, 2), 21, 0), 'B', 'pref', { key: 'goalWeight', value: WEIGHT_DEMO.B.goal });
+  // B's body fat goal too (A's is left unset: the demo shows both a chart with one and one without)
+  ev(at(addDays(wStart, 2), 21, 1), 'B', 'pref', { key: 'goalBodyFat', value: 26 });
 
   const byAt = <T extends readonly unknown[]>(rows: T[]) => rows.sort((x, y) => String(x[0]).localeCompare(String(y[0])));
   return { metrics: byAt(metrics), events: byAt(events) };

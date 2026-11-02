@@ -1,15 +1,16 @@
 <script lang="ts">
   // 目標: one person's goals in one place on きろく's からだ, each with ✎: the Move goal (the 🍐 ring's daily kcal) and
   // the steps goal (🍎, 8,000 unless set), per person, from today on (earlier days keep theirs), and the weight goal
-  // (shown only, never earns). The two
+  // and the body fat goal (both shown only, never earn). The two
   // avatars on top switch whose goals these are; either person may set either person's.
   import Avatar from '../characters/Avatar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Glyph from './Glyph.svelte';
   import type { PersonId } from '#lib/types.ts';
-  import { fruitArt } from '#lib/art.ts';
+  import { BODY_ART, fruitArt } from '#lib/art.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kgText } from './fmt.ts';
+  import { bodyText } from '../health/fmt.ts';
 
   interface Props {
     /** Whose goals are shown (and edited). */
@@ -20,14 +21,16 @@
     moveGoal: number;
     stepsGoal: number;
     goalWeight: number | null;
+    goalBodyFat: number | null;
     onperson: (p: PersonId) => void;
     onmove: () => void;
     onsteps: () => void;
     onweight: () => void;
-    /** The guest's phone: the goals shown, never set, and no weight goal (a からだ figure). */
+    onbodyfat: () => void;
+    /** The guest's phone: the goals shown, never set, and no weight or body fat goal (からだ figures). */
     readonly?: boolean;
   }
-  let { person, order, names, villagers, moveGoal, stepsGoal, goalWeight, onperson, onmove, onsteps, onweight, readonly = false }: Props = $props();
+  let { person, order, names, villagers, moveGoal, stepsGoal, goalWeight, goalBodyFat, onperson, onmove, onsteps, onweight, onbodyfat, readonly = false }: Props = $props();
 </script>
 
 <section class="card goals" aria-labelledby="goals-h">
@@ -55,10 +58,16 @@
   </div>
   {#if !readonly}
   <div class="row">
-    <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-scale" /></svg></span>
+    <span class="ic"><OfficialArt key={BODY_ART.weight} size={22} /></span>
     <span class="k">{t('goal.weight')}</span>
     <b class="v money" class:none={goalWeight === null}>{goalWeight === null ? t('goal.notSet') : kgText(goalWeight)}</b>
     <button type="button" class="pen-btn" data-sfx="page" data-focus="weight-goal" aria-label="{names[person]} {t('goal.weight')} ✎" onclick={onweight}><Glyph kind="pen" size={18} /></button>
+  </div>
+  <div class="row">
+    <span class="ic"><OfficialArt key={BODY_ART.body_fat_pct} size={22} /></span>
+    <span class="k">{t('goal.bodyFat')}</span>
+    <b class="v money" class:none={goalBodyFat === null}>{goalBodyFat === null ? t('goal.notSet') : bodyText('body_fat_pct', goalBodyFat)}</b>
+    <button type="button" class="pen-btn" data-sfx="page" data-focus="fat-goal" aria-label="{names[person]} {t('goal.bodyFat')} ✎" onclick={onbodyfat}><Glyph kind="pen" size={18} /></button>
   </div>
   {/if}
 </section>
@@ -79,7 +88,6 @@
   .row { display: flex; align-items: center; gap: 8px; min-height: var(--row-obj); }
   .row + .row { border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
   .ic { width: 24px; height: 24px; flex: none; display: grid; place-items: center; line-height: 0; color: var(--text-soft); }
-  .ic svg { width: 22px; height: 22px; }
   .k { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); }
   .v { font-size: var(--fs-talk); white-space: nowrap; }
   .v.none { font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); }

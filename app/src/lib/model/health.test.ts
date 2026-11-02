@@ -7,7 +7,7 @@ import type { PersonId } from '#lib/types.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { reduce } from './state.ts';
 import {
-  bodyBuckets, bodyStats, bucketValues, CARDS, canShift, GROUPS, healthSeries, metricStats, previousRange, rangeFor, shiftAnchor, weightBuckets, weightStats
+  bodyBuckets, bodyGoal, bodyStats, bucketValues, CARDS, canShift, GROUPS, healthSeries, metricStats, previousRange, rangeFor, shiftAnchor, weightBuckets, weightStats
 } from './health.ts';
 import { weekBells } from './bells.ts';
 import { weekKeyOf } from '#lib/time/dates.ts';
@@ -292,8 +292,8 @@ describe('the body metrics (body fat %, BMI, lean body mass)', () => {
     expect(hs.people.B.body.lean_kg.slice(4, 6)).toEqual([41.2, null]);
     expect(hs.people.A.body.lean_kg.every((v) => v === null)).toBe(true);
     const r = rangeFor('month', TODAY);
-    expect(bodyStats(hs, 'B', 'lean_kg', r)).toEqual({ n: 1, avg: 41.2, change: null });
-    expect(bodyStats(hs, 'B', 'bmi', r)).toEqual({ n: 0, avg: null, change: null });
+    expect(bodyStats(hs, 'B', 'lean_kg', r)).toEqual({ n: 1, avg: 41.2, change: null, projection: null });
+    expect(bodyStats(hs, 'B', 'bmi', r)).toEqual({ n: 0, avg: null, change: null, projection: null });
   });
 
   it('the period’s average and plain change (first week → last week), weekly buckets average their measurements', () => {
@@ -308,6 +308,26 @@ describe('the body metrics (body fat %, BMI, lean body mass)', () => {
     const q = bodyBuckets(hs, 'A', 'body_fat_pct', rangeFor('quarter', TODAY));
     expect(q.at(-1)).toEqual({ v: 23.7, n: 7 }); // 10-25..10-31
     expect(q[0]).toEqual({ v: null, n: 0 });
+  });
+
+  it('body fat has its own goal (per person, shown only): the month at the pace, as weight’s; BMI and lean mass have none', () => {
+    const metrics = Array.from({ length: 30 }, (_, i) => m('A', addDays('2026-10-02', i), 'body_fat_pct', Math.round((25 - 0.05 * i) * 10) / 10, '08:00'));
+    const goal = (key: string, g: number | null, who: 'A' | 'B' = 'A') => [jst('2026-10-01', '08:00'), who, `${key}${g}${who}`, 'pref', JSON.stringify({ key, value: g })] as EventRow;
+    const hs = series(rows(metrics, [goal('goalBodyFat', 22), goal('goalBodyFat', 30, 'B')]));
+    expect([hs.people.A.goalBodyFat, hs.people.B.goalBodyFat]).toEqual([22, 30]);
+    expect(bodyGoal(hs, 'A', 'body_fat_pct')).toBe(22);
+    expect(bodyGoal(hs, 'A', 'bmi')).toBeNull();
+    expect(bodyGoal(hs, 'A', 'lean_kg')).toBeNull();
+    // the last week's average 23.7 at about −0.35 a week: 5 weeks on (35 days after 10-28)
+    expect(bodyStats(hs, 'A', 'body_fat_pct', rangeFor('month', TODAY)).projection).toEqual({ kind: 'date', date: '2026-12-02' });
+    expect(bodyStats(hs, 'A', 'bmi', rangeFor('month', TODAY)).projection).toBeNull();
+    // past it: reached; no goal (or one cleared): none
+    expect(bodyStats(series(rows(metrics, [goal('goalBodyFat', 24)])), 'A', 'body_fat_pct', rangeFor('month', TODAY)).projection).toEqual({ kind: 'reached' });
+    const cleared = series(rows(metrics, [goal('goalBodyFat', 22), [jst('2026-10-02', '08:00'), 'A', 'gx', 'pref', JSON.stringify({ key: 'goalBodyFat', value: null })] as EventRow]));
+    expect(cleared.people.A.goalBodyFat).toBeNull();
+    expect(bodyStats(cleared, 'A', 'body_fat_pct', rangeFor('month', TODAY)).projection).toBeNull();
+    // the weight goal is another key
+    expect(series(rows(metrics, [goal('goalWeight', 60)])).people.A.goalBodyFat).toBeNull();
   });
 
   it('never moves a ベル', () => {
