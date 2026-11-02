@@ -202,6 +202,9 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     }
     return p;
   };
+  // NH's rod in ahead of the first cast (its model's fetch and parse took seconds on a slow phone and on CI's software
+  // GL: the line could be out and gone before it was in hand); after the time of day's lift is set (Island3D, at once)
+  setTimeout(() => void (disposed || wearOf('tools/rod')), 0);
   function wear(w: W, key: string | null) {
     if ((w.hat?.key ?? null) === key) return;
     w.v?.wear(null);
