@@ -83,7 +83,7 @@ const asciiJson = (v: unknown): string => JSON.stringify(v).replace(/[^\x20-\x7e
 function forward(body: Rec): Reply {
   try {
     const res = UrlFetchApp.fetch(RECORD_API_URL, {
-      method: 'post', contentType: 'text/plain', payload: asciiJson(body), muteHttpExceptions: true, followRedirects: false, headers: {}
+      method: 'post', contentType: 'text/plain', payload: asciiJson(body), muteHttpExceptions: true, followRedirects: false, headers: { 'X-Island-Via': 'gas' }
     });
     if (res.getResponseCode() !== 200) return fail('unavailable', `record ${res.getResponseCode()}`);
     const r: unknown = JSON.parse(res.getContentText());

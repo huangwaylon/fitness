@@ -9,12 +9,15 @@
 //   hold both keys.
 import { originAllowed } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER } from './notify.ts';
-import { MAX_BODY_CHARS } from './store.ts';
+import { MAX_BODY_CHARS, type Via } from './store.ts';
+
+/** Set by Apps Script's forward. */
+export const VIA_HEADER = 'X-Island-Via';
 
 /** What the routes need from the store (the Durable Object's RPC methods). */
 export interface StoreRoom {
   /** An `/api` body → its JSON reply. */
-  api(text: string): Promise<string> | string;
+  api(text: string, via: Via): Promise<string> | string;
   /** A signed `/import` body → the status and the JSON reply. */
   importSigned(text: string, t: string | null, sig: string | null): Promise<{ status: number; body: string }> | { status: number; body: string };
 }
@@ -40,7 +43,8 @@ export async function apiRoute(req: Request, allowed: string, store: () => Store
   const text = await req.text();
   if (text.length > MAX_BODY_CHARS) return json('{"ok":false,"error":"too_large"}');
   try {
-    return json(await store().api(text));
+    // Apps Script's forward says so (gas/main.ts): counted apart, so its retirement waits for a day without any
+    return json(await store().api(text, req.headers.get(VIA_HEADER) === 'gas' ? 'gas' : 'direct'));
   } catch (e) {
     console.error('api', e);
     return json('{"ok":false,"error":"unavailable"}');

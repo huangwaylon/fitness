@@ -242,7 +242,7 @@ describe('snapshot', () => {
     a('ingest', { dates: 'Oct 1, 2026', steps: '5000' });
     const r0 = db.reads();
     expect(a('snapshot', { since: '2026-11-02T03:00:00.000Z' }).rows).toEqual({ metrics: [], events: [] });
-    expect(db.reads() - r0).toBe(1); // the revision
+    expect(db.reads() - r0).toBe(2); // the usage counter and the revision
   });
 });
 
