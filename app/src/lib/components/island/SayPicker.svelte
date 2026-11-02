@@ -11,6 +11,7 @@
   import { flushSync, onMount } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
   import { cleanSay, SAY_MAX } from '#lib/sync/live-protocol.ts';
+  import { onKeyboardInset, readKeyboardInset } from '../ui/keyboardInset.svelte.ts';
   import { EDGE } from './placement.ts';
   import { SAY_PRESETS, recentSays } from './say.ts';
 
@@ -30,9 +31,10 @@
     if (!el || !anchor.isConnected) return onclose();
     const w = el.offsetWidth, h = el.offsetHeight, a = anchor.getBoundingClientRect(), s = scene.getBoundingClientRect();
     const x = Math.max(s.left + EDGE + w / 2, Math.min(a.right - w / 2, s.right - EDGE - w / 2));
-    // the keyboard's top (the visual viewport's foot): the box stays above it
-    const vv = window.visualViewport, foot = vv ? vv.offsetTop + vv.height - 12 : Infinity;
-    const y = Math.max(s.top + h / 2 + 8, Math.min(a.top - 8 - h / 2, foot - h / 2));
+    // the keyboard's top (the visible part's foot, in client px: iOS scrolls the page to the field, so not
+    // offsetTop + height; ui/keyboardInset.svelte.ts): the box stays above it
+    const kb = readKeyboardInset(), foot = kb.height ? kb.clientTop + kb.height - 12 : Infinity;
+    const y = Math.max(Math.max(s.top, kb.height ? kb.clientTop : -Infinity) + h / 2 + 8, Math.min(a.top - 8 - h / 2, foot - h / 2));
     pos = { x: x - s.left, y: y - s.top };
   }
 
@@ -41,8 +43,7 @@
     // the box changes size (the field opens) and the keyboard comes and goes: placed again
     const ro = new ResizeObserver(() => place());
     if (el) ro.observe(el);
-    const vv = window.visualViewport;
-    vv?.addEventListener('resize', place);
+    const offKb = onKeyboardInset(place);
     // a tap anywhere else closes it (capture: before what's under it), as a tree's popup: on a control the tap still
     // does what it does (a flea is netted), on the scenery and the ground it only closes (onclose's event: SceneTaps
     // lets it be); on the button again it only closes (its click eaten)
@@ -66,7 +67,7 @@
     el?.querySelector<HTMLElement>('.phrase')?.focus({ preventScroll: true });
     return () => {
       ro.disconnect();
-      vv?.removeEventListener('resize', place);
+      offKb();
       document.removeEventListener('pointerdown', away, true);
       document.removeEventListener('keydown', esc);
     };

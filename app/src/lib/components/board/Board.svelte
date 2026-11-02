@@ -13,7 +13,8 @@
   import { t } from '#lib/i18n/index.ts';
   import { board } from './posts.svelte.ts';
   import { BOARD_H, BOARD_S, READ_AT, boardAt, inFront, type BoardProj } from './spot.ts';
-  import { PER_PAGE, drawFace, fontReady } from './face.ts';
+  import { DRAFT_ID, PER_PAGE, drawFace, fontReady } from './face.ts';
+  import type { Post } from '#lib/contract/board.ts';
   import { postDate } from './date.ts';
   import type { Face3 } from './face3d.ts';
   import type { Season } from '#lib/ui-state/season.ts';
@@ -34,14 +35,14 @@
   // ---- the face: one canvas, drawn when the posts, the page or the pick change ----
   const canvas = typeof document !== 'undefined' ? document.createElement('canvas') : null;
   canvas?.setAttribute('data-board-face', '');
-  /** What the face shows (BoardView pages and picks). */
-  const face = $state({ page: 0, selected: null as string | null, rev: 0 });
+  /** What the face shows (BoardView pages and picks; `draft`: the note being written, drawn as typed). */
+  const face = $state({ page: 0, selected: null as string | null, rev: 0, draft: null as { id: string | null; text: string } | null });
   let face3: Face3 | null = null;
   /** What the face last drew (the e2e's hook: window.__board). */
   let drawn: string[] = [];
   function draw() {
     if (!canvas) return;
-    const posts = board.posts, pages = Math.max(1, Math.ceil(posts.length / PER_PAGE));
+    const posts = withDraft(board.posts, face.draft), pages = Math.max(1, Math.ceil(posts.length / PER_PAGE));
     const page = Math.min(face.page, pages - 1);
     const shown = posts.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
     drawn = shown.map((p) => p.t);
@@ -51,14 +52,22 @@
     });
     face3?.update();
   }
+  /** The posts as they'll be once the draft is up: mine again with its new text, or a new one first (DRAFT_ID). */
+  function withDraft(posts: readonly Post[], d: typeof face.draft): readonly Post[] {
+    if (!d) return posts;
+    if (d.id) return posts.map((p) => (p.id === d.id ? { ...p, t: d.text } : p));
+    const now = Date.now();
+    return [{ id: DRAFT_ID, who: board.me, t: d.text, p: now, at: now }, ...posts];
+  }
   $effect(() => {
     void board.posts;
     void face.page;
     void face.selected;
     void face.rev;
+    void face.draft?.text;
     void t('board.empty');
     untrack(() => {
-      void fontReady(board.posts.map((p) => p.t).join('')).then(draw);
+      void fontReady(board.posts.map((p) => p.t).join('') + (face.draft?.text ?? '')).then(draw);
       draw();
     });
   });

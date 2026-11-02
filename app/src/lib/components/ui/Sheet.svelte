@@ -16,7 +16,7 @@
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import ToastHost from './ToastHost.svelte';
   import NavBar from './NavBar.svelte';
-  import { keyboardInset } from './keyboardInset.ts';
+  import { withKeyboardInset } from './keyboardInset.svelte.ts';
   import { lockScroll } from './scrollLock.ts';
   import { cue } from '#lib/sound/cues.ts';
 
@@ -82,7 +82,7 @@
 </script>
 
 <dialog bind:this={dlg} class={variant} class:toasting={hosts && !!toasts.current?.action} tabindex="-1" aria-label={label}
-  onclose={closed} oncancel={dismissed} onclick={backdrop} data-sfx="self" {@attach open && keyboardInset}>
+  onclose={closed} oncancel={dismissed} onclick={backdrop} data-sfx="self" {@attach open && withKeyboardInset}>
   {#if open}
     {#if hosts}<ToastHost />{/if}
     <div class="inner">

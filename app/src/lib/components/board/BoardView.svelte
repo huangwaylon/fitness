@@ -9,13 +9,14 @@
   import { t } from '#lib/i18n/index.ts';
   import { BOARD_CHARS, BOARD_LINES, cleanText, textLength, type Post } from '#lib/contract/board.ts';
   import { board } from './posts.svelte.ts';
-  import { FACE_H, FACE_W, PER_PAGE, noteRect } from './face.ts';
+  import { DRAFT_ID, FACE_H, FACE_W, PER_PAGE, noteRect } from './face.ts';
   import { postDate } from './date.ts';
   import { BOARD_S, FACE, inFront, type BoardProj } from './spot.ts';
+  import { keyboardInset, onKeyboardInset } from '../ui/keyboardInset.svelte.ts';
 
   interface Props {
     canvas: HTMLCanvasElement;
-    face: { page: number; selected: string | null; rev: number };
+    face: { page: number; selected: string | null; rev: number; draft: { id: string | null; text: string } | null };
     at: { x: number; z: number; f: number };
     three: BoardProj | null;
     onclose: () => void;
@@ -55,20 +56,23 @@
     box = { left: Math.min(a[0], b[0]), top: Math.min(a[1], b[1]), width: Math.abs(b[0] - a[0]), height: Math.abs(b[1] - a[1]) };
   }
 
-  // ---- the keyboard: the board kept above it ----
-  let kb = $state(0);
-  let vh = $state(typeof innerHeight === 'number' ? innerHeight : 800);
+  // ---- the keyboard: the view is the visible part of the screen (ui/keyboardInset.svelte.ts), the controls at its
+  // foot just above the keyboard, the face (the sheet's, or the 3D board's framed by the camera) between ----
+  // (iOS never shrinks the layout viewport: a fixed box's inset 0 runs on behind the keyboard, and on focus iOS scrolls
+  // the page to the field, the view's top out of sight; so the view is placed and sized from visualViewport)
+  const kbi = $derived(keyboardInset.current);
   let bar = $state<HTMLElement>();
-  function viewport() {
-    const vv = window.visualViewport;
-    vh = vv ? vv.height : innerHeight;
-    kb = vv ? Math.max(0, innerHeight - vv.height - vv.offsetTop) : 0;
-  }
-  /** Frame the face (again): above the controls and the keyboard. */
+  let edge = $state<HTMLElement>();
+  /** Frame the face (again): under the HUD (or, writing, the visible part's top) and above the controls. */
   async function frame(ms: number) {
-    if (mode !== '3d' || !three?.focus) return;
+    if (mode !== '3d' || !three?.focus || !bar || !root) return;
     const [fx, fz] = inFront(at, FACE.z * BOARD_S);
-    await three.focus({ x: fx, z: fz, y: FACE.y * BOARD_S, w: FACE.w * BOARD_S, h: FACE.h * BOARD_S, yaw: (at.f * Math.PI) / 2, top: (document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? 0) + 10, bottom: kb + (bar?.offsetHeight ?? 0), fill: 0.92 }, ms);
+    // in the canvas's px (the 3D island's: the engine frames in them; iOS's scroll moves it with the page)
+    const c = (document.querySelector('[data-w3d]') ?? root).getBoundingClientRect();
+    const ribbon = document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? -Infinity;
+    const top = Math.max(ribbon + 10, (edge ?? root).getBoundingClientRect().bottom) - c.top;
+    const bottom = c.bottom - bar.getBoundingClientRect().top;
+    await three.focus({ x: fx, z: fz, y: FACE.y * BOARD_S, w: FACE.w * BOARD_S, h: FACE.h * BOARD_S, yaw: (at.f * Math.PI) / 2, top, bottom, fill: 0.92 }, ms);
     measure();
   }
 
@@ -76,11 +80,8 @@
     // the view lives over everything (the island's gestures never see its taps)
     if (root) document.body.appendChild(root);
     if (mode === 'sheet' && slot) slot.appendChild(canvas);
-    viewport();
-    const vv = window.visualViewport;
-    const onvv = () => (viewport(), mode === 'sheet' ? requestAnimationFrame(measure) : void frame(0));
-    vv?.addEventListener('resize', onvv);
-    vv?.addEventListener('scroll', onvv);
+    // the keyboard coming and going (its suggestions bar too), iOS's scroll, a rotation: the face kept in view
+    const offKb = onKeyboardInset(() => requestAnimationFrame(() => (mode === 'sheet' ? measure() : void frame(0))));
     const ro = new ResizeObserver(() => measure());
     if (mode === 'sheet') ro.observe(canvas);
     else void frame(EASE_MS).then(() => (ready = true));
@@ -88,14 +89,13 @@
     const key = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       e.preventDefault();
-      if (writing) writing = null;
+      if (writing) cancel();
       else if (face.selected) face.selected = null;
       else void back();
     };
     window.addEventListener('keydown', key);
     return () => {
-      vv?.removeEventListener('resize', onvv);
-      vv?.removeEventListener('scroll', onvv);
+      offKb();
       window.removeEventListener('keydown', key);
       ro.disconnect();
       canvas.remove();
@@ -109,6 +109,7 @@
     leaving = true;
     face.selected = null;
     writing = null;
+    face.draft = null;
     board.seen();
     if (mode === '3d') await three?.unfocus?.(EASE_MS);
     onclose();
@@ -151,9 +152,13 @@
   const can = $derived(!!writing && !!cleanText(writing.text));
   async function startWriting(p: Post | null) {
     writing = { id: p?.id ?? null, text: p?.t ?? '' };
-    face.selected = p?.id ?? null;
+    // the note as it'll be, on the face as it's typed (a new one first, on the first page)
+    face.draft = { ...writing };
+    if (!p) face.page = 0;
+    face.selected = p?.id ?? DRAFT_ID;
     await tick();
-    field?.focus();
+    // (no scroll of ours: iOS still scrolls the page to the field, which the view follows)
+    field?.focus({ preventScroll: true });
     void frame(250);
   }
   /** As typed: at most BOARD_LINES lines and BOARD_CHARS characters (the rest is never sent). */
@@ -166,6 +171,7 @@
     if (cps.length > BOARD_CHARS) v = cps.slice(0, BOARD_CHARS).join('');
     if (v !== el.value) el.value = v;
     if (writing) writing.text = v;
+    if (face.draft) face.draft.text = v;
   }
   function submit(e?: Event) {
     e?.preventDefault();
@@ -175,11 +181,14 @@
     if (!writing.id) face.page = 0;
     face.selected = writing.id;
     writing = null;
+    face.draft = null;
     field?.blur();
     void frame(250);
   }
   function cancel() {
+    face.selected = writing?.id ?? null;
     writing = null;
+    face.draft = null;
     field?.blur();
     void frame(250);
   }
@@ -191,7 +200,8 @@
   const label = (p: Post) => t('board.note', { name: board.author(p.who).name, text: p.t });
 </script>
 
-<div class="bv" class:three={mode === '3d'} class:night bind:this={root} data-board-view={mode} data-ready={ready || undefined} style:--kb="{kb}px" style:--vh="{vh}px"
+<div class="bv" class:three={mode === '3d'} class:night class:writing={!!writing} class:kb={kbi.open} bind:this={root} data-board-view={mode} data-ready={ready || undefined}
+  data-keyboard={kbi.keyboard || undefined} style:top={kbi.height ? `${kbi.top}px` : null} style:height={kbi.height ? `${kbi.height}px` : null}
   role="dialog" aria-modal="true" aria-label={t('board.name')}>
   {#if mode === 'sheet'}
     <div class="stage">
@@ -201,11 +211,13 @@
     </div>
   {/if}
 
-  <button type="button" class="back" data-sfx="back" data-board-back onclick={back}>‹ {t('common.back')}</button>
+  <!-- writing, the face gets the room 「もどる」 had (やめる and Esc go back): from the visible part's top, under the safe area -->
+  <span class="edge" bind:this={edge} aria-hidden="true"></span>
+  {#if !writing}<button type="button" class="back" data-sfx="back" data-board-back onclick={back}>‹ {t('common.back')}</button>{/if}
 
   {#if box && ready}
-    <!-- the notes: a button over each (its text for a screen reader; what's drawn is the canvas) -->
-    <div class="notes" role="group" aria-label={t('board.name')} style:left="{box.left}px" style:top="{box.top}px" style:width="{box.width}px" style:height="{box.height}px"
+    <!-- the notes: a button over each (its text for a screen reader; what's drawn is the canvas); inert while writing -->
+    <div class="notes" role="group" data-board-face-box inert={!!writing} aria-label={t('board.name')} style:left="{box.left}px" style:top="{box.top}px" style:width="{box.width}px" style:height="{box.height}px"
       onpointerdown={down} onpointerup={up} onpointercancel={() => (swipe = null)}>
       {#each shown as p, i (p.id)}
         {@const r = noteRect(i)}
@@ -256,16 +268,19 @@
        on <body>, so it's worked out here from the same tokens); 「もどる」 sits under it, never over the ribbon */
     --hud-end: calc(var(--hud-top, calc(env(safe-area-inset-top, 0px) + 10px)) + var(--hit, 44px) + var(--lip-h, 4px));
     --back-top: calc(var(--hud-end) + 10px);
-    position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; font-family: var(--font-ui); color: #5A4632;
+    /* top and height: the visible part of the screen (inline, from visualViewport) */
+    position: fixed; left: 0; right: 0; top: 0; height: 100%; z-index: 1000; display: flex; flex-direction: column; font-family: var(--font-ui); color: #5A4632;
     background: linear-gradient(#8fd3e6ee, #bfe7c8ee); -webkit-user-select: none; user-select: none; touch-action: none;
     animation: bv-in .25s ease-out both;
   }
   /* the 3D island's: the board itself is the view, only the controls over it */
   .bv.three { background: none; animation: none; }
   @keyframes bv-in { from { opacity: 0; } }
-  .stage { flex: 1; min-height: 0; display: grid; place-items: center; padding: calc(var(--back-top) + 52px) 12px 8px; height: calc(var(--vh) - 8px); box-sizing: border-box; }
+  /* the room between 「もどる」 (writing: the safe area) and the controls; the frame as big as fits in it (its 12px border) */
+  .stage { flex: 1; min-height: 0; display: grid; place-items: center; padding: calc(var(--back-top) + 52px) 12px 8px; box-sizing: border-box; container-type: size; }
+  .bv.writing .stage { padding-top: calc(env(safe-area-inset-top, 0px) + 8px); }
   .frame {
-    width: min(100%, 560px, calc((var(--vh) - var(--bar-h, 150px) - var(--back-top) - 76px) * 1.36)); background: #5E6B4C; border-radius: 14px; padding: 12px;
+    width: min(calc(100cqw - 24px), 560px, calc((100cqh - 24px) * 1.36)); background: #5E6B4C; border-radius: 14px; padding: 12px;
     box-shadow: inset 0 0 0 3px #47523A, 0 8px 0 #3E4733, 0 14px 30px rgba(30, 50, 30, .35); box-sizing: content-box;
   }
   .slot { width: 100%; height: 100%; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 6px rgba(0, 0, 0, .35); }
@@ -274,13 +289,16 @@
     position: absolute; left: 12px; top: var(--back-top); z-index: 2; padding: 8px 16px; border: 0; border-radius: 999px;
     background: #FFF8E4; color: #6B5232; font: 700 16px / 1 var(--font-ui); box-shadow: 0 3px 0 #D9C8A2; min-height: 44px;
   }
+  .edge { position: absolute; left: 0; top: 0; width: 0; height: calc(env(safe-area-inset-top, 0px) + 8px); pointer-events: none; }
   .notes { position: fixed; z-index: 1; }
   .note { position: absolute; padding: 0; border: 0; background: none; border-radius: 10px; -webkit-tap-highlight-color: transparent; }
   .note:focus-visible { outline: 3px solid #F08A3C; }
+  /* at the visible part's foot: just above the keyboard (which covers the home indicator: no safe area then) */
   .bar {
-    position: absolute; left: 0; right: 0; bottom: var(--kb); z-index: 2; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); box-sizing: border-box;
+    position: relative; flex: none; margin-top: auto; z-index: 2; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); box-sizing: border-box;
     display: flex; justify-content: center;
   }
+  .bv.kb .bar { padding-bottom: 8px; }
   .bar > * { width: min(100%, 560px); }
   .row { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
   .pager { justify-content: center; background: #FFF8E4f2; border-radius: 22px; padding: 8px; box-shadow: 0 4px 0 #D9C8A2; }
