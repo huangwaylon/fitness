@@ -207,3 +207,23 @@ let the day reach all four goals (or, from a console there, `fetch('https://isla
 → `{outcome: 'sent'}`; that spends the day for that person). **Logs:** `npx wrangler tail` shows a push service's
 refusals (`push <host> <status>`). **Off switch:** `npx wrangler secret delete VAPID_PRIVATE` (reports answer
 `failed`, nothing is sent); the switches stay as they are.
+
+## 13. The record
+The record is moving from the sheet to the relay's `IslandStore` Durable Object ([backend.md](../backend.md#the-record)).
+Every command runs from `relay/` with the two person keys in the environment (never on the command line of a shared
+shell, never in a file in the repo): `KEY_A=… KEY_B=… node scripts/record.ts <command>` (`--test`: the test relay,
+`KEYS_FILE=.smoke-keys` for its keys).
+
+- **`counts`**: rows per table, the revision (`e1`, `e2`, …: the epoch) and the newest `at`.
+- **`import-sheet`**: a full Apps Script snapshot into the record, in chunks of 400 rows, `at` kept, high-fives and
+  superseded cosmetic prefs dropped. Idempotent: run it again any time to fill in a copy that didn't land (the relay
+  down, a pause after a refusal); it adds only what's missing.
+- **`parity`**: the model's numbers per person (ベル by day of every locked week, this week, the wallet and the ledger,
+  the ずかん's first finds and tallies, the decorations, the tent, the prefs, each day's goals) from the sheet's snapshot
+  and the record's; exits 1 on any difference. 2026-11-02 (step 1): all the same; the sheet 471 metrics + 873 events
+  (131 KB), the record 471 + 243 (73 KB: 545 high-fives and 85 superseded prefs not carried over).
+- **Backups:** point-in-time recovery works on the Free plan (checked 2026-11-02 on the test relay: a bookmark from
+  before an ingest restored the empty record). `bookmark [ms]` prints the bookmark now and `ms` ago (any moment of the
+  last 30 days); `restore <bookmark>` restarts the object on it; then `rev`, so every phone refetches. Beyond 30 days:
+  `dump > island-record-YYYY-MM-DD.json` (every row; keep it off the repo) and `load <file>` into an empty record.
+- **`rev`**: a new epoch: every phone drops its cache and fetches everything on its next refresh.
