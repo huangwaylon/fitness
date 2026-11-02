@@ -48,14 +48,13 @@ const centre = (page: Page, sel: string) =>
     return { x: b.left + b.width / 2, y: b.top + b.height / 2 };
   });
 
-test('scenery taps play a flourish and change nothing; trees, villagers and the jar still work', async ({ page }) => {
+test('scenery taps play a flourish and change nothing; trees, villagers and the health button still work', async ({ page }) => {
   // a fixed midday (Tokyo): without it the orb is the moon from 19:00 and the sun row below fails every evening
   await page.goto('?demo&date=2026-11-04T12:00&critter=none');
   await islandReady(page);
   const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
-  const jar = page.locator('.hud-jar');
+  const health = page.locator('.hud-health');
   const bells = await ribbon.getAttribute('aria-label');
-  const jarLabel = await jar.getAttribute('aria-label');
   const url = page.url();
 
   // (open lawn is a walk: my villager runs there, its tap ring on the ground instead of a dust puff)
@@ -76,7 +75,6 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   await expect(page.locator('[data-fx]')).toHaveCount(0, { timeout: 4000 }); // a flourish waits for my villager's walk (≤ 0.9 s)
   expect(page.url()).toBe(url);
   await expect(ribbon).toHaveAttribute('aria-label', bells!);
-  await expect(jar).toHaveAttribute('aria-label', jarLabel!);
 
   // the trees: a canopy tap opens its popup; a tap on the scenery then only closes it (no flourish)
   await page.locator('button.canopy').first().click();
@@ -94,9 +92,9 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   await page.waitForTimeout(400);
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 
-  // the jar is still the doorway to ごほうび
-  await jar.click();
-  await expect(page).toHaveURL(/\/jar/);
+  // the dumbbell is still the doorway to けんこう
+  await health.click();
+  await expect(page.locator('dialog[open] [data-health-sheet]')).toBeVisible();
 });
 
 test('night sky: the moon twinkles; a tap in the open sky lights a star (shooting stars come in showers: sky.spec)', async ({ page }) => {

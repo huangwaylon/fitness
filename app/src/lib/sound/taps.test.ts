@@ -27,7 +27,7 @@ const SELF: Record<string, string> = {
   'lib/components/sheets/HarvestOverlay.svelte': '受け取る！ → the item-get fanfare (harvest-receive), or the boop if it fails',
   'lib/components/wallet/BuyConfirm.svelte': '買う！ → purchase (the wallet’s buy), or the boop if the wallet fell short',
   'lib/components/island/IslandScene.svelte': 'a villager → villager-tap or emote-surprise (woken)',
-  'lib/components/island/HudJar.svelte': 'the jar → jar-tap',
+  'lib/components/island/HudHealth.svelte': 'the dumbbell → jar-tap (R18: both look up at it), then the popup plays panel-open',
   'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick',
   'lib/components/island/TreeShakes.svelte': 'a branch → scene-twig; the wasps → scene-net, then scene-catch (too late: nothing)',
   'lib/components/island/Balloon.svelte': 'scene-balloon',
@@ -45,7 +45,7 @@ const NONE: Record<string, string> = {
   'lib/components/panel/LangSection.svelte': 'the language already chosen does nothing',
   'lib/components/panel/RenderSection.svelte': 'the island view already chosen does nothing',
   'lib/components/panel/IslandPanel.svelte': 'the tab already shown does nothing',
-  'lib/components/health/Health.svelte': 'the period or person already shown does nothing',
+  'lib/components/health/Health.svelte': 'the period or person already shown does nothing; a dropdown ticks on change (setWho, setPeriod)',
   'lib/components/kiroku/GoalCard.svelte': 'the person already shown does nothing',
   'lib/components/island/SayPicker.svelte': 'the phrase field: the system keyboard clicks',
   'lib/components/board/BoardView.svelte': 'the note field: the system keyboard clicks'

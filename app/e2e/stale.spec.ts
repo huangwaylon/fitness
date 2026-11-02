@@ -17,7 +17,7 @@ test('a failed panel chunk reloads the page once, then the panel opens', { tag: 
   await page.unroute('**/_app/immutable/**/*.js', stale);
   await page.waitForLoadState('load');
   await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
-  await expect(page.locator('dialog[open]').locator('.health .mc').first()).toBeVisible(); // it opens on けんこう
+  await expect(page.locator('dialog[open]').locator('.kiroku')).toBeVisible(); // it opens on きろく
 });
 
 test('a chunk that fails as the page leaves (or offline: every load fails) reloads nothing', async ({ page }) => {

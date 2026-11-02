@@ -4,13 +4,13 @@
 </script>
 
 <script lang="ts">
-  // けんこう (health, design.md "Kenkou"): the island panel's first tab (it opens on it), the Health data over time for
-  // the personal trainer, one person at a time. First whose data (ウェイ / うめ, this phone's person by default;
-  // switching keeps the period and the range), then one period for every chart (1週 / 1か月 / 3か月 / 1年), then
-  // which cards (かつどう / からだ, かつどう on each opening; switching keeps the period, range and person) and a sticky
+  // けんこう (health, design.md "Kenkou"): the health popup (the HUD's dumbbell), the Health data over time for
+  // the personal trainer, one person at a time. Two rows of selectors: whose data (ウェイ / うめ, this phone's person
+  // by default; switching keeps the period and the range) and one period for every chart (1週 / 1か月 / 3か月 / 1年),
+  // a native dropdown each, side by side; then which cards (かつどう / からだ, かつどう on each opening; switching keeps the period, range and person) and a sticky
   // row with ‹ the visible range › and きょう; then a card per metric in the group's CARDS order: かつどう 🍎 Steps,
   // 🍐 Move, 🍑 Exercise, 🍒 Stand; からだ 体重, 体脂肪率, BMI, 除脂肪体重. A horizontal drag on any chart turns the page; a tap shows a bar's numbers.
-  // Read-only, computed on read from the store's model (model/health.ts); loaded with the tab, not with the island.
+  // Read-only, computed on read from the store's model (model/health.ts); loaded with the popup, not with the island.
   import '#lib/i18n/kenkou.ts'; // the tab's strings, loaded with it
   import type { LocalDate, PersonId } from '#lib/types.ts';
   import { isBodyMetric, type BodyMetric } from '#lib/contract/api.ts';
@@ -53,7 +53,8 @@
   const unitKey = $derived(range?.unit ?? 'day');
 
   function setPeriod(p: Period) {
-    if (p === period) return;
+    if (p === period || !PERIODS.includes(p)) return;
+    cue('tick');
     period = last.period = p;
     slide = 0;
     sel = null;
@@ -66,7 +67,8 @@
   }
   /** Another person: the same period and range, their numbers. */
   function setWho(p: PersonId) {
-    if (p === who) return;
+    if (p === who || (p !== 'A' && p !== 'B')) return;
+    cue('tick');
     picked = last.who = p;
     sel = null;
   }
@@ -95,17 +97,24 @@
 
 <div class="health">
   {#if hs && range}
-    <div class="seg who" role="group" aria-label={t('health.who')}>
-      {#each [me, partner] as p (p)}
-        <button type="button" class="sb pp" aria-pressed={who === p} data-who={p} data-sfx={who === p ? 'none' : 'tick'} onclick={() => setWho(p)}>
-          <Avatar person={p} villager={villagers[p]} size={28} /><span class="nm">{names[p]}</span><i class="sw p{p}" aria-hidden="true"></i>
-        </button>
-      {/each}
-    </div>
-    <div class="seg" role="group" aria-label={t('health.period')}>
-      {#each PERIODS as id (id)}
-        <button type="button" class="sb" aria-pressed={period === id} data-period={id} data-sfx={period === id ? 'none' : 'tick'} onclick={() => setPeriod(id)}>{t(`health.period.${id}`)}</button>
-      {/each}
+    <!-- Row 1: whose data and the period, one native dropdown each (iOS's own picker; a cream pill ≥ 44px) -->
+    <div class="dds">
+      <label class="dd who" data-who={who}>
+        <span class="sr-only">{t('health.who')}</span>
+        <span class="av" aria-hidden="true"><Avatar person={who} villager={villagers[who]} size={28} /></span>
+        <select data-pick="who" value={who} data-sfx="none" onchange={(e) => setWho(e.currentTarget.value as PersonId)}>
+          {#each [me, partner] as p (p)}<option value={p}>{names[p]}</option>{/each}
+        </select>
+        <i class="sw p{who}" aria-hidden="true"></i>
+        <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 L8 10.5 L12.5 6" /></svg>
+      </label>
+      <label class="dd period" data-period={period}>
+        <span class="sr-only">{t('health.period')}</span>
+        <select data-pick="period" value={period} data-sfx="none" onchange={(e) => setPeriod(e.currentTarget.value as Period)}>
+          {#each PERIODS as id (id)}<option value={id}>{t(`health.period.${id}`)}</option>{/each}
+        </select>
+        <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 L8 10.5 L12.5 6" /></svg>
+      </label>
     </div>
     {#if !guest}
       <div class="seg" role="group" aria-label={t('health.group')}>
@@ -163,11 +172,27 @@
   }
   .sb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
   .sb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  /* whose data: the avatar pills, a little taller, the person's colour (their bars) under the pressed one's name */
-  .who .sb { position: relative; min-height: 52px; gap: 8px; font-size: var(--fs-talk); }
-  .pp .nm { overflow: hidden; text-overflow: ellipsis; }
-  .pp .sw { position: absolute; left: 50%; bottom: 7px; width: 28px; height: 4px; margin-left: -14px; border-radius: 2px; opacity: 0; }
-  .pp[aria-pressed='true'] .sw { opacity: 1; }
+  /* row 1: two dropdowns side by side, whose data a little wider (the avatar and the name) */
+  .dds { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 8px; }
+  .dd {
+    position: relative; display: flex; align-items: center; min-width: 0; min-height: var(--hit);
+    border-radius: var(--r-pill); background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl);
+  }
+  .dd:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  .dd:has(select:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+  /* the native select fills the pill (its whole face is the tap target); the avatar, the swatch and the chevron are
+     drawn over it and let taps through */
+  .dd select {
+    appearance: none; -webkit-appearance: none; border: 0; margin: 0; background: transparent; color: inherit; cursor: pointer;
+    width: 100%; min-width: 0; height: var(--hit); padding: 0 34px 0 16px; border-radius: inherit;
+    font: 700 var(--fs-input)/1 var(--font-ui); text-overflow: ellipsis; white-space: nowrap; outline: none;
+  }
+  .dd.who select { padding-left: 46px; }
+  .dd .av { position: absolute; left: 10px; top: 50%; translate: 0 -50%; display: flex; pointer-events: none; }
+  .dd .chev { position: absolute; right: 12px; top: 50%; translate: 0 -50%; width: 16px; height: 16px; pointer-events: none;
+    fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+  /* the person's colour (their bars), a short stroke under the name */
+  .dd .sw { position: absolute; left: 46px; bottom: 6px; width: 24px; height: 3px; border-radius: 2px; pointer-events: none; }
   .sw.pA { background: var(--person-a); }
   .sw.pB { background: var(--person-b); }
   /* the range row stays at the top of the panel while the charts scroll under it */

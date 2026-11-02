@@ -162,14 +162,15 @@ Shown only, with an optional goal line. Why: paying for kilograms rewards crash 
 ## Health data
 
 ### Health trends (けんこう)
-The panel's first tab shows the Health data over time for the personal trainer, one person at a time, computed on read
+The health popup (the HUD's dumbbell) shows the Health data over time for the personal trainer, one person at a time, computed on read
 (`model/health.ts`). As reported, nothing cut off: every day with a row counts whatever its value; 記録なし is only a
 day with no row; today is drawn but not counted. Periods by day, week or month so long ranges stay readable; plain
 numbers, no trend lines or smoothing (weight's change is first week → last week). No export. Why: a trainer needs
 exact, comparable numbers anyone can check against the bars.
 
 ### きろく is earnings only
-The ledger shows what was earned; the buys live on ごほうび. Why: one home per datum.
+The ledger shows what was earned, by week; the buys and the balance live on ごほうび (no all-time 「これまでに ためた ベル」
+row, 2026-11-02). Why: one home per datum.
 
 ## App and hosting
 
@@ -221,9 +222,14 @@ plate, the ずかん, the tent and the sharing with it.
 November's mushrooms are captions only, no ずかん `find`. Why: NH's mushrooms are crafting materials with no catalogue
 page, and a new find kind needs a redeploy for a seasonal flourish.
 
-### The jar beside the ribbon
-The wallet's jar sits in the HUD on the right of 「きょう +N ベル」. Why: today's ベル and the wallet read together, and
-the island's middle stays free for visitors.
+### The dumbbell beside the ribbon (2026-11-02)
+(Replaces *The jar beside the ribbon*.) The HUD's button on the right of 「きょう +N ベル」 is NH's dumbbell, opening
+けんこう in a popup of its own; the panel (the ribbon) has three tabs, きろく · ごほうび · せってい, and opens on きろく.
+The button shows no number; today's new coins fly into the ribbon. In けんこう whose data and the period are two native
+dropdowns in one row, かつどう / からだ the row under them. Why (the user's): the health numbers are what we look at
+most, so they get the one button; the wallet is spent rarely and reads fine as a tab; two rows of selectors instead of
+four leave the charts more of the screen. A native `<select>` is iOS's own picker: accessible, thumb-sized and with
+nothing to break on Safari.
 
 ### NH events by date rule
 Each dated NH event (Halloween, Turkey Day, Toy Day, Festivale, Bunny Day) is one rule in `island/events.ts`, and its

@@ -179,28 +179,29 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   expect(log.at(-1)?.[2]).toContain('emote-joy');
   await page.waitForTimeout(2000);
 
-  // the island panel (tap the ribbon)
+  // the island panel (tap the ribbon): it opens on きろく
   await step('島', 'ribbon (→ the panel)', () => btn(/^きょう [\d,]+\sベル$/).tap(), ['panel-open']);
-  await step('パネル', 'きろく tab', () => dlg.locator('.tab[data-tab=kiroku]').tap(), ['tick']);
+  await step('パネル', 'きろく tab (already shown)', () => dlg.locator('.tab[data-tab=kiroku]').tap(), []);
   await step('きろく', 'day', () => dlg.locator('button.dbtn').first().tap(), ['page']);
   await step('きろく', 'back (‹) to the panel', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('きろく', '✎ Move goal', () => btn(/ムーブ（1日） ✎$/, dlg).tap(), ['page']);
   await step('きろく', 'Move goal field', () => dlg.getByRole('textbox').tap(), []);
   await step('きろく', 'やめる (Move goal)', () => btn('やめる', dlg).tap(), ['back']);
-  await step('パネル', 'けんこう tab', () => dlg.locator('.tab[data-tab=health]').tap(), ['tick']);
-  await step('けんこう', '1年', () => dlg.locator('[data-period=year]').tap(), ['tick']);
-  await step('けんこう', '1年 again', () => dlg.locator('[data-period=year]').tap(), []);
-  await step('けんこう', '1か月', () => dlg.locator('[data-period=month]').tap(), ['tick']);
-  await step('けんこう', 'からだ', () => dlg.locator('[data-group=body]').tap(), ['tick']);
-  await step('けんこう', 'からだ again', () => dlg.locator('[data-group=body]').tap(), []);
-  await step('けんこう', 'かつどう', () => dlg.locator('[data-group=activity]').tap(), ['tick']);
-  await step('けんこう', 'うめ', () => dlg.locator('[data-who=B]').tap(), ['tick']);
-  await step('けんこう', 'うめ again', () => dlg.locator('[data-who=B]').tap(), []);
-  await step('けんこう', '‹', () => dlg.locator('[data-nav=back]').tap(), ['tick']);
-  await step('けんこう', 'きょう', () => dlg.locator('[data-nav=today]').tap(), ['tick']);
-  await step('けんこう', 'きょう again (aria-disabled)', () => dlg.locator('[data-nav=today]').tap({ force: true }), ['boop']);
-  await step('けんこう', '› at today (aria-disabled)', () => dlg.locator('[data-nav=on]').tap({ force: true }), ['boop']);
-  await step('けんこう', 'back to ウェイ', () => dlg.locator('[data-who=A]').tap(), ['tick']);
+
+  // ごほうび (the panel's middle tab)
+  await step('パネル', 'ごほうび tab', () => dlg.locator('.tab[data-tab=rewards]').tap(), ['tick']);
+  const shop = dlg.locator('.shop');
+  const cant = shop.locator('button.item[aria-disabled="true"]');
+  if (await cant.count()) await step('ごほうび', 'a reward it can\'t afford', () => cant.first().tap({ force: true }), ['boop']);
+  await step('ごほうび', 'a reward', () => shop.locator('button.item:not([aria-disabled="true"])').first().tap(), ['open']);
+  await step('ごほうび', '買う！', () => btn('買う！', dlg).tap(), ['buy']);
+  const undo = btn('とりけす');
+  await step('ごほうび', 'とりけす', () => undo.tap(), ['undo']);
+  await page.waitForTimeout(400);
+  await step('ごほうび', 'a reward, then やめる', () => shop.locator('button.item:not([aria-disabled="true"])').first().tap(), ['open']);
+  await step('ごほうび', 'やめる (buy confirm)', () => btn('やめる', dlg).tap(), ['back']);
+  await expect(dlg).toHaveCount(1); // the panel stays
+
   await step('パネル', 'せってい tab', () => dlg.locator('.tab[data-tab=settings]').tap(), ['tick']);
   await step('パネル', 'せってい tab again', () => dlg.locator('.tab[data-tab=settings]').tap(), []);
   await step('むらびと', 'かえる', () => dlg.locator('[data-push=villager]').tap(), ['page']);
@@ -213,28 +214,28 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('つうしん', 'いま つうしん while syncing (aria-disabled)', () => dlg.locator('.prows .btn[aria-disabled="true"]').tap({ force: true, timeout: 300 }).catch(() => {}));
   await step('あそびかた', 'くわしく', () => dlg.locator('[data-push=help]').tap(), ['page']);
   await step('あそびかた', 'back (‹)', () => dlg.locator('.titlebar .back').tap(), ['back']);
-  await step('パネル', 'けんこう tab (back)', () => dlg.locator('.tab[data-tab=health]').tap(), ['tick']);
   await step('パネル', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['panel-close']);
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);
 
-  // ごほうび
-  await step('島', 'jar', () => page.locator('.hud-jar').tap(), ['jar-tap']);
-  await expect(page.locator('.jar-screen')).toBeVisible();
-  await page.waitForTimeout(600);
-  const shop = page.locator('.shop');
-  const cant = shop.locator('button.item[aria-disabled="true"]');
-  if (await cant.count()) await step('ごほうび', 'a reward it can\'t afford', () => cant.first().tap({ force: true }), ['boop']);
-  await step('ごほうび', 'a reward', () => shop.locator('button.item:not([aria-disabled="true"])').first().tap(), ['open']);
-  await step('ごほうび', '買う！', () => btn('買う！', dlg).tap(), ['buy']);
-  const undo = btn('とりけす');
-  await step('ごほうび', 'とりけす', () => undo.tap(), ['undo']);
-  await page.waitForTimeout(400);
-  await step('ごほうび', 'a reward, then やめる', () => shop.locator('button.item:not([aria-disabled="true"])').first().tap(), ['open']);
-  await step('ごほうび', 'やめる (buy confirm)', () => btn('やめる', dlg).tap(), ['back']);
+  // けんこう (the HUD's dumbbell): the villagers glance up at it, then the popup
+  await step('島', 'dumbbell (→ けんこう)', () => page.locator('.hud-health').tap(), ['jar-tap', 'panel-open']);
+  const period = dlg.locator('select[data-pick=period]'), who = dlg.locator('select[data-pick=who]');
+  await step('けんこう', '1年', () => period.selectOption('year'), ['tick']);
+  await step('けんこう', '1年 again', () => period.selectOption('year'), []);
+  await step('けんこう', '1か月', () => period.selectOption('month'), ['tick']);
+  await step('けんこう', 'からだ', () => dlg.locator('[data-group=body]').tap(), ['tick']);
+  await step('けんこう', 'からだ again', () => dlg.locator('[data-group=body]').tap(), []);
+  await step('けんこう', 'かつどう', () => dlg.locator('[data-group=activity]').tap(), ['tick']);
+  await step('けんこう', 'うめ', () => who.selectOption('B'), ['tick']);
+  await step('けんこう', 'うめ again', () => who.selectOption('B'), []);
+  await step('けんこう', '‹', () => dlg.locator('[data-nav=back]').tap(), ['tick']);
+  await step('けんこう', 'きょう', () => dlg.locator('[data-nav=today]').tap(), ['tick']);
+  await step('けんこう', 'きょう again (aria-disabled)', () => dlg.locator('[data-nav=today]').tap({ force: true }), ['boop']);
+  await step('けんこう', '› at today (aria-disabled)', () => dlg.locator('[data-nav=on]').tap({ force: true }), ['boop']);
+  await step('けんこう', 'back to ウェイ', () => who.selectOption('A'), ['tick']);
+  await step('けんこう', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['panel-close']);
   await expect(dlg).toHaveCount(0);
-  await page.waitForTimeout(400);
-  await step('ごほうび', '◀ 島へ', () => page.locator('a.back').tap(), ['back']);
   await expect(page.locator('.if-scene')).toBeVisible();
 
   if (process.env.WALK_LOG) {

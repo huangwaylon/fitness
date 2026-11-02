@@ -89,7 +89,7 @@
      them, so it sits above an open sheet (--z-toast is its fallback without popover support).
      Inside the stage (its own stacking context): trees < canopy taps < ground fruit < the fruit-row tap < falling leaves
      < villagers (mine in front) < tree-shake leaves < the time-of-day tint < scenery flourishes
-     < flying coins (HudJar's, in their own layer over the stage) < the "+N" pop < the tree popup. The HUD and dock stay above the whole stage, the popup included. */
+     < flying coins (HudCoins', in their own layer over the stage) < the "+N" pop < the tree popup. The HUD and dock stay above the whole stage, the popup included. */
   --z-stage: 1; --z-hud: 7; --z-dock: 9; --z-harvest: 60; --z-toast: 90;
   --z-tree: 30; --z-canopy: 32; --z-fruit: 33; --z-fruit-row: 34; --z-fall: 50; --z-villager: 51; --z-villager-mine: 52;
   --z-leaf: 70; --z-tint: 80; --z-taps: 82; --z-coin: 90; --z-coin-gain: 91; --z-popup: 95;

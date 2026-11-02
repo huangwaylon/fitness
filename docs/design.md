@@ -23,7 +23,8 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 ## Simplicity rules
 
-- No tab bar: 島 (the island) and ごほうび (the wallet), plus one panel for everything else (tap the ribbon).
+- No tab bar: 島 (the island), one panel for everything else (tap the ribbon: きろく, ごほうび, せってい) and the health
+  popup (tap the dumbbell: けんこう).
 - One focal point per screen (島: today's ベル, also the door to the panel; ごほうび: the balance).
 - A number is shown in full in one place; elsewhere it is only a doorway to it.
 - Per screen at most 40 Japanese characters of non-numeric text, 3 cards, 5 rows a card; one しずえ line (≤ 16
@@ -34,7 +35,7 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 ### Island
 
 Top to bottom: the ribbon 「きょう +6 ベル」 (both people today, ふたりでぜんぶ included; counts up; tap → [the
-panel](#panel)) with the jar on its right, the two centred in the sky; a sync chip only when sync isn't ok; the scene;
+panel](#panel)) with the health button on its right, the two centred in the sky; a sync chip only when sync isn't ok; the scene;
 しずえ's box only with news; the say button at the bottom right. The island is NH's rolling log under them ([World](#world)): a drag scrolls it from まえ
 (home, the health lawn) back to ひろば and おく, a tap on empty ground walks my villager there.
 
@@ -47,10 +48,14 @@ panel](#panel)) with the jar on its right, the two centred in the sky; a sync ch
   ふたりでぜんぶ (「ふたりで ぜんぶ まで：あと 2つ」 or 「ふたりで ぜんぶ！ +2 ふたりに」), outside either total, so both
   totals plus it make the ribbon. The last line says when that person's data last arrived (「15:24 に とどいた」), with
   a dot once it is over 6 hours old.
-- **Jar** (`island/HudJar.svelte`): a cream pill as tall as the ribbon, the jar rising out of its left end, the shared
-  balance and a leaf ▶. Each newly met goal flies in as a +1 coin from its fruit (+2 with its がんばり; `CoinFlow`),
-  ふたりでぜんぶ as a +2 under the jar; all of it waits while something covers the scene. Tap → ごほうび (the island zooms
-  into the jar and ごほうび grows out of it; live CSS, no View Transition: its snapshot of the banded ground striped on iPhone).
+- **Health button** (`island/HudHealth.svelte`): a cream pill as tall as the ribbon, NH's red dumbbell
+  (`items/dumbbell`, NH's catalogue icon) over its left end and a leaf ▶; no number (the numbers live in the popup, and
+  a second total beside the ribbon's would compete with it). Tap → the villagers glance up at it (R18) and
+  [けんこう](#kenkou) grows out of the dumbbell (`health/HealthSheet.svelte`, Sheet's `pop`: a live CSS zoom about the
+  button, no View Transition: its snapshot of the banded ground striped on iPhone).
+- **Coins** (`island/HudCoins.svelte`): each newly met goal flies up as a +1 coin from its fruit into the ribbon (+2
+  with its がんばり; `CoinFlow`), the ribbon's number squashing as each lands; all of it waits while something covers
+  the scene.
 - **Centre stage:** the plaza's middle (`world.ts` `CENTRE_STAGE`, ひろば), where visitors stand.
 - **Villagers:** a tap on mine is a squish; a tap on the partner's is a high-five ([Villager taps](#villager-taps)).
   Neither opens a sheet.
@@ -63,22 +68,24 @@ panel](#panel)) with the jar on its right, the two centred in the sky; a sync ch
 
 ### Wallet
 
-ごほうび (`routes/jar/+page.svelte`, `wallet/Shop.svelte`): the jar over 「ふたりのベル」 and the balance, then two tiles
+ごほうび, the panel's middle tab (`wallet/Wallet.svelte`, `wallet/Shop.svelte`): the jar over 「ふたりのベル」 and the
+balance, then two tiles
 with NH item art: 🍦 おやつ 40 ベル and 🍜 外食 70 ベル. One the wallet can't cover is sunk with あと N ベル. 買う！ asks
 first, applies at once and waits 5 s with とりけす before it is sent.
 
 「かいもの きろく」 (`wallet/Purchases.svelte`) lists the buys, newest first (art, name, day, who, price), ten at a time
 (「もっと見る」). ✕ on any line (either of us, any buy) asks NH-style (「このかいものを けしますか？ 40 ベル もどります」);
-はい sends a `spend_void`, the ベル go back, and the banner carries とりけす for 5 s.
+はい sends a `spend_void`, the ベル go back, and the banner carries とりけす for 5 s. The old `/jar` page redirects to the
+island with the panel open on ごほうび (`?panel=rewards`, dropped from the URL once read).
 
 ### Panel
 
 Tap the ribbon → the island panel slides down from the top (`panel/IslandPanel.svelte`): title 「しまの てちょう」, full
-height, three tabs pinned under the title (NH yellow for the one shown): けんこう · きろく · せってい. Every opening
-from the ribbon starts on けんこう at 1週 (a building's door or the museum opens its own tab). Its own chunk, loaded on the first tap.
+height, three tabs pinned under the title (NH yellow for the one shown): きろく · ごほうび · せってい. Every opening
+from the ribbon starts on きろく (the museum opens its own tab). Its own chunk, loaded on the first tap.
 
-- **けんこう:** the Health data over time ([Kenkou](#kenkou)); its own chunk.
 - **きろく:** the ベル ledger, 目標 and the ずかん ([Kiroku](#kiroku)).
+- **ごほうび:** the wallet: the jar, the shop and the buys ([Wallet](#wallet)).
 - **せってい:** **むらびと** (my villager and よびな; かえる → the picker: 23 special characters and all 417 NH
   villagers, its head pinned over the scrolling grid), **サウンド** ([Sound settings](#sound-settings)), **つうち** (one
   switch, off by default and per phone: 「うめの ぜんぶ たっせいを しらせる」, once a day, never 22:00–08:00;
@@ -92,7 +99,7 @@ Esc close the panel.
 
 きろく (`model/history.ts`, `components/kiroku/*`), read-only:
 
-- **ベル:** everything earned, then by week (earnings only) one line per day under the two avatars: each person's four
+- **ベル:** by week (earnings only; the all-time total isn't repeated here: the wallet is ごほうび's) one line per day under the two avatars: each person's four
   fruits (bright = met), a star on a ふたりでぜんぶ day, the day's ベル (tap → the day); on a がんばり day a smaller second
   line with each person's がんばり ベル.
 - **目標:** the Move, steps, weight and body fat goals; two avatar pills pick whose (either person sets either person's). The
@@ -106,13 +113,17 @@ Esc close the panel.
 
 ### Kenkou
 
-けんこう (`model/health.ts`, `components/health/*`, `e2e/health.spec.ts`): the Health data over time for the personal
-trainer, one person at a time, computed on read.
+けんこう (`model/health.ts`, `components/health/*`, `e2e/health.spec.ts`): the health popup (the HUD's dumbbell; full
+height like the panel, title けんこう and ✕; ✕, the backdrop and Esc close it): the Health data over time for the
+personal trainer, one person at a time, computed on read. Its code and strings load with the first opening.
 
-- **Whose data:** two avatar pills (this phone's person first and chosen on opening; kept for the session).
-- **Controls:** 1週 · 1か月 · 3か月 · 1年 (1週 on every opening; kept while the panel stays open), then かつどう ·
-  からだ, the same pills (かつどう on every opening, like the period; switching keeps the period, the range and whose
-  data), then a sticky row: ‹ the visible range (「10/2–10/31」; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」
+- **Two rows of selectors.** Row 1: whose data and the period, one native `<select>` each side by side (iOS's own
+  picker; a cream pill ≥ 44px with a chevron, 16px type so Safari doesn't zoom; labelled 「だれの データ」 and 「きかん」).
+  Whose data: the two members, this phone's person first and chosen on opening, kept for the session; its pill shows
+  the person's avatar and a stroke of their colour. The period: 1週 · 1か月 · 3か月 · 1年 (1週 on every opening).
+  Row 2: かつどう · からだ, two pills (かつどう on every opening, like the period; switching keeps the period, the
+  range and whose data; the guest has neither: かつどう only).
+- **Then** a sticky row: ‹ the visible range (「10/2–10/31」; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」
   under it) › and きょう.
 - **Cards, per group** (`model/health.ts` GROUPS and CARDS, the user's "activity metrics and body metrics"): かつどう
   🍎 歩数, 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド (then the footnote); からだ 体重, 体脂肪率, BMI, 除脂肪体重 (what a
@@ -635,9 +646,9 @@ picked up is gone on both, what a shake drops lies on both, each villager stands
 [decisions](decisions.md#a-guest-not-a-third-member-2026-11-02)). A third person, 「おきゃくさん」: a visitor to our island,
 NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)). `?demo&as=G` is its phone.
 
-- **What it sees:** our island, the trees and their popups, the ベル ribbon and the jar (to look at: its balance and the
+- **What it sees:** our island, the trees and their popups, the ベル ribbon, ごほうび (to look at: the balance and the
   buys, 「ちょきんばこは ふたりの もの。」 in place of the shop, no ×), きろく (the ledger, the goals read-only) and
-  けんこう's かつどう. Never a からだ figure: no からだ switch, no weight or body card, no weight or body fat goal (its snapshot holds
+  けんこう's かつどう (whose data: either member; no からだ switch). Never a からだ figure: no からだ switch, no weight or body card, no weight or body fat goal (its snapshot holds
   none: the record leaves them out). せってい: its villager and name (the same picker, its own prefs), the sound, the
   language and あそびかた; no もようがえ, つうち or つうしん, and a line saying it's visiting.
 - **What it does:** walks, catches, digs, picks up and shakes like us (the shared world's claims, first wins), its

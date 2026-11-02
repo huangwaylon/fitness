@@ -21,7 +21,7 @@ test('a netted butterfly appears in the ずかん with who found it and when; th
   await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
   await expect(page.locator('[data-fx="catch"]')).toBeAttached();
   await ribbon(page).click();
-  await page.locator('dialog[open] .tab[data-tab=kiroku]').click(); // the panel opens on けんこう
+  await page.locator('dialog[open] .tab[data-tab=kiroku]').click(); // (the panel opens on it)
   const row = page.locator('[data-zukan="bug"]');
   await expect(row).toContainText(`1 / ${Object.keys(BUGS).length}`);
   await expect(page.locator('[data-zukan="fish"]')).toContainText(`0 / ${Object.keys(FISH).length + Object.keys(POND_FISH).length}`);

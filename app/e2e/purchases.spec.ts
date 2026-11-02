@@ -1,8 +1,9 @@
-// ごほうびの きろく: the buys under the shop, newest first, each erasable by either of us (asked first, はい / いいえ); the
+// ごほうびの きろく (the panel's ごほうび tab; the old /jar link opens it): the buys under the shop, newest first, each erasable by either of us (asked first, はい / いいえ); the
 // ベル go back. On `?demo` (no backend, no key). Screenshots at 375x667 and 390x844 (test-results/purchases-*.png).
 import { expect, test, type Page } from '@playwright/test';
 
-const sheet = (page: Page) => page.locator('dialog[open]');
+/** The topmost sheet (a confirm over the panel). */
+const sheet = (page: Page) => page.locator('dialog[open]').last();
 const balance = async (page: Page) => Number((await page.locator('.hero .total').innerText()).replace(/\D/g, ''));
 
 /** Every control of the history (rows' ✕, もっと見る) sits clear of the others and inside the screen. */
@@ -45,7 +46,7 @@ test('buy → it heads the history → erase it (はい) → the ベル come bac
   await expect(sheet(page)).toContainText('このかいものを けしますか？');
   await expect(sheet(page)).toContainText(/40\sベル もどります/);
   await sheet(page).getByRole('button', { name: 'いいえ' }).click();
-  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await expect(page.locator('dialog[open]')).toHaveCount(1); // the panel stays
   await expect.poll(() => balance(page)).toBe(before - 40);
 
   // はい: the line goes and the ベル come back (with とりけす on the banner)

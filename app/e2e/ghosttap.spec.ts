@@ -1,8 +1,7 @@
-// Back to 島 from ごほうび never opens the island panel by itself (user, iPhone: "clicking back to island causes the
-// kyou pop up to pop up"). The museum's ask for the ずかん stood (a counter the HUD read on mount), so every return from
-// ごほうび after a museum visit, the HUD remounting, opened しまの てちょう. Also: no tap falls through to the HUD
-// target under the finger, with real touch taps (the back pill sits over the ribbon on a phone with a notch) and a
-// pointerdown → pointerup → click sequence, nor from the panel's ✕.
+// Closing a sheet over the HUD never opens another by itself (user, iPhone: "clicking back to island causes the kyou
+// pop up to pop up": once the return from the old ごほうび page). No tap falls through to the HUD target under the
+// finger, with real touch taps (on a phone with a notch the ✕ sits near the HUD) and a pointerdown → pointerup →
+// click sequence, from the health popup's ✕ nor from the panel's.
 import { expect, test, type Page } from '@playwright/test';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
@@ -25,31 +24,31 @@ async function pointerTap(page: Page, x: number, y: number) {
     const at = () => document.elementFromPoint(x, y)!;
     at().dispatchEvent(new PointerEvent('pointerdown', o));
     at().dispatchEvent(new PointerEvent('pointerup', o));
-    (at() as HTMLElement).click();
+    at().dispatchEvent(new MouseEvent('click', o)); // (an SVG under the finger has no .click(): the event bubbles to its button)
   }, { x, y });
 }
 
-/** 島 → ごほうび (the HUD jar) → 島 (‹ 島へ), each a tap; then the panel stays shut. */
+/** 島 → けんこう (the HUD's dumbbell) → its ✕, each a tap; then nothing opens again (no panel, no popup). */
 async function roundTrip(page: Page, tap: (x: number, y: number) => Promise<void>) {
-  const j = await center(page, '.hud-jar');
+  const j = await center(page, '.hud-health');
   await tap(j.x, j.y);
-  await expect(page.locator('.jar-screen .nav.back')).toBeVisible();
+  await expect(page.locator('dialog[open] [data-health-sheet]')).toBeVisible();
   await page.waitForTimeout(500); // the zoom in
-  const b = await center(page, '.jar-screen .nav.back');
+  const b = await center(page, 'dialog[open] .nav.close');
   await tap(b.x, b.y);
-  await expect(ribbon(page)).toBeVisible();
-  await page.waitForTimeout(900); // the zoom out, and any late tap
+  await expect(panel(page)).toHaveCount(0);
+  await page.waitForTimeout(900); // any late tap
   await expect(panel(page)).toHaveCount(0);
   await expect(ribbon(page)).toHaveAttribute('aria-expanded', 'false');
 }
 
-test('no tap falls through to the HUD: ‹ 島へ over the ribbon, and the panel ✕', async ({ page }) => {
+test('no tap falls through to the HUD: the health popup’s ✕, and the panel’s', async ({ page }) => {
   await notch(page);
   await page.goto('?demo&date=2026-11-04T12:00');
   await expect(ribbon(page)).toBeVisible();
   await roundTrip(page, (x, y) => page.touchscreen.tap(x, y));
   await roundTrip(page, (x, y) => pointerTap(page, x, y));
-  // the panel's ✕, then nothing under it acts (no reopen, no trip to ごほうび)
+  // the panel's ✕, then nothing under it acts (no reopen, no health popup)
   await ribbon(page).click();
   await expect(panel(page)).toHaveCount(1);
   await page.waitForTimeout(500);
@@ -58,5 +57,4 @@ test('no tap falls through to the HUD: ‹ 島へ over the ribbon, and the panel
   await expect(panel(page)).toHaveCount(0);
   await page.waitForTimeout(600);
   await expect(panel(page)).toHaveCount(0);
-  await expect(page).not.toHaveURL(/\/jar/);
 });
