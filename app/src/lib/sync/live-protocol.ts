@@ -141,14 +141,19 @@ export type Relayed = Intent & { v: LiveV; who: Who; t: number };
 /** Relay → client. `ack`: my intent `c` reached the room at `t` (`ok` false: refused, a claim already made, a nest too
  *  soon, a walk older than one it holds). `replay`: today's world since the hello's `since`, in the room's order. */
 export type ServerMsg =
-  /** `peer`: a member's partner is here (the guest's: either member). `here` (v3): everyone else who is. */
-  | { v: LiveV; kind: 'welcome'; me: Who; peer: boolean; t: number; rec?: RecordMark; here?: Who[] }
+  /** `peer`: a member's partner is here (the guest's: either member). `here` (v3): everyone else who is. `gone`
+   *  (v3, 2026-11): when the room last saw each person's last socket close, on its clock, for those not here (mine:
+   *  my previous one's): a villager whose phone is gone walks home after a while (villagerSync HOME_AFTER_MS). */
+  | { v: LiveV; kind: 'welcome'; me: Who; peer: boolean; t: number; rec?: RecordMark; here?: Who[]; gone?: Gone }
   | { v: LiveV; kind: 'pong'; c: number; t: number }
   | { v: LiveV; kind: 'ack'; c: number; t: number; ok: boolean }
   | { v: LiveV; kind: 'replay'; es: Relayed[]; t: number }
   | { v: LiveV; kind: 'presence'; who: Who; on: boolean; t: number }
   | ({ v: LiveV; kind: 'changed'; t: number } & Notice)
   | Relayed;
+
+/** When each person's phone left the room (the relay's clock), as the welcome tells it. @public (relay/, sync/live.ts) */
+export type Gone = Partial<Record<Who, number>>;
 
 /** The record's last change the room heard of (`welcome.rec`): a phone whose cache has it (same `rev`, `at` ≤ its
  *  `since`) needn't fetch on opening. @public (relay/, sync/live.ts) */
@@ -237,6 +242,12 @@ const isWalkMs = (x: unknown): x is number => Number.isInteger(x) && (x as numbe
 const isVia = (x: unknown): x is Pt[] => Array.isArray(x) && x.length <= VIA_MAX && x.every(isWorldPt);
 const opt = <T>(o: Obj, k: string, ok: (x: unknown) => x is T): boolean => o[k] === undefined || ok(o[k]);
 const isWho = (x: unknown): x is Who => x === 'A' || x === 'B' || x === 'G';
+/** A welcome's `gone`: each person's time, the rest left out. */
+function goneOf(o: Record<string, unknown>): Gone {
+  const out: Gone = {};
+  for (const w of ['A', 'B', 'G'] as const) if (isTime(o[w])) out[w] = o[w] as number;
+  return out;
+}
 const oneOf = <T extends string>(list: readonly T[]) => (x: unknown): x is T => list.includes(x as T);
 
 /** A layout op's fields (`sc` o, c, r, h: contract/layout.ts layoutOpOf's rules) from `o`, null when malformed, or
@@ -453,7 +464,8 @@ export function parseServer(raw: unknown): ServerMsg | null {
       if (!isWho(o.me) || typeof o.peer !== 'boolean') return null;
       const rec = isObj(o.rec) ? noticeOf({ ...o.rec, what: 'event', who: o.me }) : null;
       const here = Array.isArray(o.here) ? o.here.filter(isWho).filter((w, i, l) => w !== o.me && l.indexOf(w) === i) : null;
-      return { v: LIVE_V, kind: 'welcome', me: o.me, peer: o.peer, t, ...(rec ? { rec: { at: rec.at, rev: rec.rev } } : {}), ...(here ? { here } : {}) };
+      const gone = isObj(o.gone) ? goneOf(o.gone) : null;
+      return { v: LIVE_V, kind: 'welcome', me: o.me, peer: o.peer, t, ...(rec ? { rec: { at: rec.at, rev: rec.rev } } : {}), ...(here ? { here } : {}), ...(gone ? { gone } : {}) };
     }
     case 'pong':
       return isTime(o.c) ? { v: LIVE_V, kind: 'pong', c: o.c, t } : null;

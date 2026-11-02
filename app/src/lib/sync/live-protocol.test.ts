@@ -69,6 +69,8 @@ describe('live protocol: relay messages', () => {
     const rec = { at: '2026-11-01T01:02:03.456Z', rev: 'e1' };
     expect(parseServer(j2({ kind: 'welcome', me: 'A', peer: true, t: 1, rec }))).toEqual({ v: 3, kind: 'welcome', me: 'A', peer: true, t: 1, rec });
     expect(parseServer(j2({ kind: 'welcome', me: 'A', peer: true, t: 1, rec: { at: 'soon', rev: 'e1' } }))).toEqual({ v: 3, kind: 'welcome', me: 'A', peer: true, t: 1 }); // a bad mark: as without one
+    // when each person not here left (2026-11): a bad time left out
+    expect(parseServer(j2({ kind: 'welcome', me: 'A', peer: false, t: 1, here: [], gone: { A: 5, B: 'x', Z: 3, G: 7 } }))).toEqual({ v: 3, kind: 'welcome', me: 'A', peer: false, t: 1, here: [], gone: { A: 5, G: 7 } });
     expect(parseServer(j2({ kind: 'pong', c: 1, t: 2 }))).toEqual({ v: 3, kind: 'pong', c: 1, t: 2 });
     expect(parseServer(j2({ kind: 'presence', who: 'B', on: false, t: 3 }))).toEqual({ v: 3, kind: 'presence', who: 'B', on: false, t: 3 });
     expect(parseServer(j2({ kind: 'walk', to: [1, 2], who: 'B', t: 4 }))).toEqual({ v: 3, kind: 'walk', to: [1, 2], who: 'B', t: 4 });

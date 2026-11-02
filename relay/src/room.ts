@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, NEST_GAP_MS, REPLAY_BYTES, claimOf, guestMaySend, isStored, scopeMaySend, otherVersion, parseClient, sameWalk, tokyoDay, type LiveV, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
+import { CLOSE, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, NEST_GAP_MS, REPLAY_BYTES, claimOf, guestMaySend, isStored, scopeMaySend, otherVersion, parseClient, sameWalk, tokyoDay, type Gone, type LiveV, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
 
@@ -30,6 +30,8 @@ export interface RoomIO<S extends Sock> {
   saveRec?(rec: RecordMark): void;
   /** Persist the high-fives held for a partner who was away (fire and forget). */
   hold?(held: Held): void;
+  /** Persist when each person's phone last left (fire and forget). */
+  saveGone?(gone: Gone): void;
 }
 
 /** The high-fives held for people while they were away, one per (sender, recipient) pair (`<from>><to>`, e.g. `G>A`):
@@ -76,8 +78,13 @@ export class RoomCore<S extends Sock> {
   /** When each person's last phrase went out (presence only: not kept). */
   private said = new Map<Who, number>();
 
-  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}) {
+  /** When each person's last socket closed (the room's clock), until they're back: the welcome's `gone`, for a villager
+   *  whose phone is gone to walk home on every phone at the same time (app villagerSync HOME_AFTER_MS). */
+  private gone: Gone;
+
+  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}) {
     this.held = heldOf(held);
+    this.gone = { ...gone };
     for (const e of ring) this.lastT = Math.max(this.lastT, e.t);
     this.fresh();
   }
@@ -235,7 +242,11 @@ export class RoomCore<S extends Sock> {
     // `peer`: a member's partner is here; the guest's, either member. `here` (v3): everyone else who is
     const here = this.hereFor(who, v);
     const peer = who === 'G' ? here.some((w) => w !== 'G') : here.includes(other(who));
-    this.send(s, { v: LIVE_V, kind: 'welcome', me: who, peer, t, ...(this.rec ? { rec: this.rec } : {}), ...(v >= 3 ? { here } : {}) });
+    // `gone` (v3): when those not here left, and my own last socket (the guest's only to a phone that knows of it)
+    const gone: Gone = {};
+    for (const w of ['A', 'B', 'G'] as const) if (this.gone[w] !== undefined && !here.includes(w)) gone[w] = this.gone[w];
+    if (this.gone[who] !== undefined) this.setGone(who, undefined);
+    this.send(s, { v: LIVE_V, kind: 'welcome', me: who, peer, t, ...(this.rec ? { rec: this.rec } : {}), ...(v >= 3 ? { here, ...(Object.keys(gone).length ? { gone } : {}) } : {}) });
     if (since !== undefined) {
       const day = this.fresh().filter((e) => e.t > since && (e.kind !== 'walk' || sameWalk(e.v, v)) && (v >= 3 || e.who !== 'G'));
       // batch: the day in as few `replay` messages as fit (mine too: a phone that lost its own record gets it back);
@@ -250,6 +261,12 @@ export class RoomCore<S extends Sock> {
       else if (v >= 2 && (v >= 3 || h.from !== 'G')) this.send(s, { v: LIVE_V, kind: 'highfive', at: h.at, who: h.from, t: h.t, ...(v >= 3 ? { to: who } : {}) });
     }
     if (!was.length) for (const p of this.others(who)) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
+  }
+
+  private setGone(who: Who, t: number | undefined): void {
+    const { [who]: _was, ...rest } = this.gone;
+    this.gone = t === undefined ? rest : { ...rest, [who]: t };
+    this.io.saveGone?.(this.gone);
   }
 
   private unhold(pair: string): void {
@@ -278,6 +295,7 @@ export class RoomCore<S extends Sock> {
     this.io.setMeta(s, { who: null, opened: 0 });
     if (this.authed(who).some((x) => x !== s)) return;
     const t = this.io.now();
+    this.setGone(who, t);
     for (const p of this.others(who)) if (p !== s) this.send(p, { v: LIVE_V, kind: 'presence', who, on: false, t });
   }
 
