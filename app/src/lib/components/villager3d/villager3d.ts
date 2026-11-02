@@ -11,7 +11,7 @@
 //   v.step(t, moved, speed) one frame: `moved` the u walked since the last (the stride follows it), `speed` u/s
 //   v.head()                the head bone (a balloon's, a hat's anchor)
 import {
-  Box3, Matrix4, CircleGeometry, Color, Mesh, MeshBasicMaterial, MeshLambertMaterial, Object3D, SphereGeometry, Vector3, type Bone, type Material,
+  Box3, Matrix4, Quaternion, CircleGeometry, Color, Mesh, MeshBasicMaterial, MeshLambertMaterial, Object3D, SphereGeometry, Vector3, type Bone, type Material,
   type MeshStandardMaterial, type SkinnedMesh, type Texture
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -242,9 +242,23 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       held3?.obj.removeFromParent();
       held3 = null;
       if (!obj || !hand) return;
-      // the tip: the vertex furthest down its length (NH's rods hang along −y from the grip)
+      // the tip: the far end down its length (NH's rods run along −y from the grip), in its own frame
+      obj.position.set(0, 0, 0);
+      obj.quaternion.identity();
+      obj.updateMatrixWorld(true);
       const b = new Box3().setFromObject(obj, true);
-      held3 = { obj, tip: new Vector3((b.min.x + b.max.x) / 2, b.min.y, (b.min.z + b.max.z) / 2) };
+      const tip = new Vector3((b.min.x + b.max.x) / 2, b.min.y, (b.min.z + b.max.z) / 2).divide(obj.scale);
+      held3 = { obj, tip };
+      // NH's grip is its own animation's: here the tool is turned in the hand so that, in the fishing pose, it points
+      // out in front and up (the rod over the water), and from there it follows the arm
+      rig.apply(base('fish', lastT, o));
+      model.updateMatrixWorld(true);
+      const handQ = model.getWorldQuaternion(new Quaternion()).invert().multiply(hand.getWorldQuaternion(new Quaternion()));
+      const along = tip.clone().normalize(), want = new Vector3(-0.2, 1.1, 1).normalize();
+      obj.quaternion.copy(handQ.invert().multiply(new Quaternion().setFromUnitVectors(along, want)));
+      // (the hand's scale undone: the tool keeps its own size in the model's units)
+      const hs = hand.getWorldScale(new Vector3()).divide(model.getWorldScale(new Vector3()));
+      obj.scale.divide(hs);
       hand.add(obj);
     },
     tip() {
