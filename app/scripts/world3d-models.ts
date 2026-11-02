@@ -16,9 +16,12 @@ import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
+import { ASSETS, POC_USES, writeAssets, writeDoc, type Use } from './world3d-assets.ts';
 
 const APP = join(import.meta.dirname, '..');
-const OUT = join(APP, 'static', 'room', 'world3d');
+/** Try a list of jobs from a JSON file instead (`--probe=jobs.json --out=dir`): GLBs only, the manifests untouched. */
+const probe = process.argv.find((a) => a.startsWith('--probe='))?.slice(8);
+const OUT = probe ? resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? join(tmpdir(), 'world3d-probe')) : join(APP, 'static', 'room', 'world3d');
 const META = join(APP, 'src', 'lib', 'components', 'world3d', 'models.json');
 const arg = (k: string) => process.argv.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3);
 const only = (arg('only') ?? '').split(',').filter(Boolean);
@@ -27,7 +30,8 @@ const TRIS = 5000;
 
 interface Job {
   name: string;
-  parts: [folder: string, dae: string][];
+  /** [folder, .dae, where it sits: [up (model units), scale, across, nearer]] (a snowboy's face on its body). */
+  parts: ([folder: string, dae: string] | [folder: string, dae: string, at: [number, number] | [number, number, number, number]])[];
   /** Colour folders (a furniture's <Ftr>ReBody<n>). */
   tex?: string[];
   grdRow?: number;
@@ -39,6 +43,20 @@ interface Job {
   tris?: number;
   /** A material's textures by another name. */
   alias?: Record<string, string>;
+  /** Where the GLB goes under static/room/world3d/ (default: its name): a subfolder per kind (`critters/koi`). */
+  file?: string;
+  /** Untextured materials drawn as one flat colour [rgb, opacity] (a fish's shadow) instead of a glass pane. */
+  flat?: [number, number];
+  /** The pose's joints turned (degrees about x, y, z), as scripts/models.ts poses them. */
+  pose?: Record<string, [number, number, number]>;
+  /** A material's gradient by name (regex of the material → regex of the gradient's file): a flower's petals and stem. */
+  grdFile?: Record<string, string>;
+  /** Its textures' variant (`<mat>_Alb.<n>.png`: a balloon's colours). */
+  variant?: number;
+  /** The winter look: the snow meshes (mWinterSnow) drawn. */
+  snow?: boolean;
+  /** The art keys it serves (scripts/world3d-assets.ts: the island's things, into assets.json; not the POC's models.json). */
+  uses?: Use[];
 }
 const ftr = (name: string, model: string, body = 0, extra: Partial<Job> = {}): Job => ({ name, parts: [[model, model]], tex: [`${model}ReBody${body}`, `${model}ReFabric0`], ...extra });
 
@@ -97,6 +115,8 @@ const F = (n: string) => `${n}.Nin_NX_NVN`;
 const SAFE = /^[A-Za-z0-9_]+$/;
 const has = (folder: string) => SAFE.test(folder) && existsSync(join(ROOT, F(folder)));
 
+if (probe) JOBS.splice(0, JOBS.length, ...(JSON.parse(readFileSync(probe, 'utf8')) as Job[]));
+else JOBS.push(...ASSETS);
 const todo = JOBS.filter((j) => !only.length || only.some((o) => j.name.includes(o)));
 const scratch = mkdtempSync(join(tmpdir(), 'nh-world3d-'));
 const work = mkdtempSync(join(tmpdir(), 'nh-world3d-out-'));
@@ -105,7 +125,7 @@ const copy = (folder: string) => {
   if (existsSync(dst)) return;
   mkdirSync(dst);
   const src = join(ROOT, F(folder));
-  for (const n of readdirSync(src)) if (/^[A-Za-z0-9_]+\.(dae|png)$/.test(n) && statSync(join(src, n)).isFile()) cpSync(join(src, n), join(dst, n));
+  for (const n of readdirSync(src)) if (/^[A-Za-z0-9_]+(\.[0-9]+)?\.(dae|png)$/.test(n) && statSync(join(src, n)).isFile()) cpSync(join(src, n), join(dst, n));
 };
 for (const j of todo) {
   for (const [f, d] of j.parts) if (!has(f) || !SAFE.test(d)) throw new Error(`${j.name}: no model ${f}/${d}`);
@@ -140,17 +160,20 @@ await page.waitForFunction(() => (window as unknown as { ready?: boolean }).read
 
 interface Meta { min: number[]; max: number[]; tris: number; kb: number; v: string; lit?: 1 }
 const metas: Record<string, Meta> = existsSync(META) ? (JSON.parse(readFileSync(META, 'utf8')) as { models: Record<string, Meta> }).models : {};
+const ASSET_META = join(dirname(META), 'assets.json');
+/** The island's things' models (assets.json `models`; the POC's stay in models.json too). */
+const assetMetas: Record<string, Meta> = existsSync(ASSET_META) ? (JSON.parse(readFileSync(ASSET_META, 'utf8')) as { models: Record<string, Meta> }).models : {};
 let total = 0;
 for (const j of todo) {
   const files = [...j.tex!, ...new Set(j.parts.map((p) => p[0]))].map((f) => [F(f), readdirSync(join(scratch, F(f)))]);
   const r = await page.evaluate((o) => (window as unknown as { convert: (o: unknown) => Promise<{ gltf: string; box: [number[], number[]]; tris: number; lit: boolean }> }).convert(o), {
-    parts: j.parts.map(([f, d]) => ({ folder: F(f), dae: `${d}.dae` })), files, maxTex: j.maxTex ?? 256, maxEmi: 128,
-    grdRow: j.grdRow, grdRows: j.grdRows, grdBlock: j.grdBlock, hide: j.hide, alias: j.alias
+    parts: j.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), files, maxTex: j.maxTex ?? 256, maxEmi: 128,
+    grdRow: j.grdRow, grdRows: j.grdRows, grdBlock: j.grdBlock, hide: j.hide, alias: j.alias, flat: j.flat, pose: j.pose, grdFile: j.grdFile, snow: j.snow, variant: j.variant
   });
   const g = JSON.parse(r.gltf) as { buffers: { uri: string }[]; images?: { uri?: string; mimeType?: string }[]; textures?: { source?: number; extensions?: object }[]; extensionsUsed?: string[]; extensionsRequired?: string[] };
   const dir = join(work, j.name);
   rmSync(dir, { recursive: true, force: true });
-  mkdirSync(dir);
+  mkdirSync(dir, { recursive: true });
   g.buffers.forEach((b, i) => {
     writeFileSync(join(dir, `b${i}.bin`), Buffer.from(b.uri.split(',')[1], 'base64'));
     b.uri = `b${i}.bin`;
@@ -172,17 +195,25 @@ for (const j of todo) {
   }
   writeFileSync(join(dir, 'm.gltf'), JSON.stringify(g));
   const out = join(OUT, `${j.name}.glb`);
+  mkdirSync(dirname(out), { recursive: true });
   const max = j.tris ?? TRIS;
   const si = r.tris > max ? ['-si', (max / r.tris).toFixed(3)] : [];
   execFileSync('node', [GLTFPACK, '-i', join(dir, 'm.gltf'), '-o', out, '-cc', '-ce', 'ext', ...si]);
   const bytes = statSync(out).size;
   total += bytes;
   const v = createHash('sha256').update(readFileSync(out)).digest('hex').slice(0, 8);
-  metas[j.name] = { min: r.box[0].map((n) => +n.toFixed(2)), max: r.box[1].map((n) => +n.toFixed(2)), tris: Math.min(r.tris, max), kb: +(bytes / 1024).toFixed(1), v, ...(r.lit ? { lit: 1 as const } : {}) };
+  (j.uses ? assetMetas : metas)[j.name] = { min: r.box[0].map((n) => +n.toFixed(2)), max: r.box[1].map((n) => +n.toFixed(2)), tris: Math.min(r.tris, max), kb: +(bytes / 1024).toFixed(1), v, ...(r.lit ? { lit: 1 as const } : {}) };
   if (process.env.PARTS) console.log(JSON.stringify((r as unknown as { parts: unknown }).parts));
   console.log(`${j.name}: ${(bytes / 1024).toFixed(1)} KB, ${r.tris} tris${si.length ? ` → ${max}` : ''}${r.lit ? ', lit' : ''}, h ${(r.box[1][1] - r.box[0][1]).toFixed(1)}`);
 }
 await browser.close();
+if (probe) {
+  console.log(`${todo.length} models, ${(total / 1024 / 1024).toFixed(2)} MB → ${OUT}`);
+  process.exit(0);
+}
+for (const k of Object.keys(assetMetas)) if (!JOBS.some((j) => j.name === k && j.uses)) delete assetMetas[k];
+writeAssets(ASSET_META, assetMetas, metas, POC_USES, JOBS.filter((j) => j.uses).map((j) => [j.name, j.uses!] as const));
+writeDoc(join(APP, '..', 'docs', 'world3d-assets.md'), ASSET_META);
 const sorted = Object.fromEntries(Object.entries(metas).sort(([a], [b]) => a.localeCompare(b)));
 writeFileSync(META, `{\n  "_": "scripts/world3d-models.ts: the 3D island POC's models (bounds in model units, triangles, KB, content hash)",\n  "models": {\n${Object.entries(sorted).map(([k, m]) => `    ${JSON.stringify(k)}: ${JSON.stringify(m)}`).join(',\n')}\n  }\n}\n`);
 console.log(`${todo.length} models, ${(total / 1024 / 1024).toFixed(2)} MB`);

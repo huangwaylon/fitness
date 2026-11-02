@@ -23,6 +23,25 @@ async function bitmap(url) {
   if (!r.ok) return null;
   return createImageBitmap(await r.blob(), { colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
 }
+/** An image decoded as it is (no premultiplied alpha), its alpha made opaque: an albedo whose alpha isn't an opacity
+ *  (a 2D canvas would lose the colour of its see-through pixels). */
+async function opaque(url) {
+  const bm = await createImageBitmap(await (await fetch(url)).blob(), { colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
+  const w = bm.width, h = bm.height;
+  const gl = new OffscreenCanvas(w, h).getContext('webgl2');
+  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+  gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
+  const t = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, t);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bm);
+  const fb = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+  const buf = new Uint8ClampedArray(w * h * 4);
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+  for (let i = 3; i < buf.length; i += 4) buf[i] = 255;
+  return createImageBitmap(new ImageData(buf, w, h));
+}
 /** An image's pixels at w × h (scaled by the canvas: a smooth downscale). */
 function pixels(bm, w, h) {
   const c = new OffscreenCanvas(w, h);
@@ -54,14 +73,19 @@ async function bake(name, files, o) {
   // a material whose textures go by another name (`alias`: NH's fruit models)
   const tn = o.alias?.[name] ?? name;
   const find = (suffix) => {
-    for (const [folder, list] of files) if (list.includes(`${tn}_${suffix}.png`)) return `/src/${folder}/${tn}_${suffix}.png`;
+    // a character's eyes and mouth keep one texture per expression (`mEye_Alb.0.png` …): the first, NH's resting face
+    for (const n of [...(o.variant !== undefined ? [`${tn}_${suffix}.${o.variant}.png`] : []), `${tn}_${suffix}.png`, `${tn}_${suffix}.0.png`]) for (const [folder, list] of files) if (list.includes(n)) return `/src/${folder}/${n}`;
     return null;
   };
   const allGrd = files.flatMap(([f, l]) => l.filter((x) => x.endsWith('_Grd.png')).map((x) => `/src/${f}/${x}`));
-  const albU = find('Alb') || find('AlbGry');
+  // a lit display (`_ETxt`: the countdown board's digits) is its own albedo and its emissive
+  const etxt = find('ETxt');
+  const albU = find('Alb') || find('AlbGry') || etxt;
   const gray = !find('Alb') && !!find('AlbGry');
-  const grdU = gray || !albU ? grdFor(name, allGrd) : null;
-  const [alb, mix, op, emi, grd] = await Promise.all([bitmap(albU), bitmap(find('Mix')), bitmap(find('OP')), bitmap(find('Emi')), bitmap(grdU)]);
+  // a gradient named for the material (`grdFile`: regex of the material name → regex of the gradient's file name)
+  const pick = Object.entries(o.grdFile ?? {}).find(([re]) => new RegExp(re).test(name))?.[1];
+  const grdU = gray || !albU ? (pick ? allGrd.find((x) => new RegExp(pick).test(x.split('/').pop())) : grdFor(name, allGrd)) : null;
+  const [alb, mix, op, emi, grd] = await Promise.all([bitmap(albU), bitmap(find('Mix')), bitmap(find('OP')), bitmap(find('Emi') || etxt), bitmap(grdU)]);
   const glass = /Glass|Window/.test(name);
   const row = Object.entries(o.grdRows ?? {}).find(([re]) => new RegExp(re).test(name))?.[1] ?? o.grdRow ?? 0.5;
   const [bu0, bw] = o.grdBlock ?? [0, 1];
@@ -73,6 +97,8 @@ async function bake(name, files, o) {
     return [grdPx.data[i] / 255, grdPx.data[i + 1] / 255, grdPx.data[i + 2] / 255];
   };
   const std = { name, roughness: 1, metalness: 0, side: THREE.DoubleSide };
+  // the snow of a winter look (`snow`): white and rough, NH's shared snow textures being flat placeholders
+  if (name === 'mWinterSnow') return { mat: new THREE.MeshStandardMaterial({ ...std, color: 0xf6f9ff }), tex: 0 };
   if (name === 'mMyDesign') return { mat: new THREE.MeshStandardMaterial({ ...std, color: 0xede3cf }), tex: 0 };
   if (!alb) {
     // a gradient's colour (a painted part), or a glass pane (no texture at all)
@@ -80,14 +106,24 @@ async function bake(name, files, o) {
       const [r, g, b] = grdAt(0.5);
       return { mat: new THREE.MeshStandardMaterial({ ...std, color: new THREE.Color().setRGB(r, g, b, THREE.SRGBColorSpace) }), tex: 0 };
     }
+    // `flat`: one colour [rgb, opacity] (a fish's shadow: NH draws it untextured, dark and see-through)
+    if (o.flat) return { mat: new THREE.MeshStandardMaterial({ ...std, color: o.flat[0], ...(o.flat[1] < 1 ? { transparent: true, opacity: o.flat[1], depthWrite: false } : {}) }), tex: 0 };
     return { mat: new THREE.MeshStandardMaterial({ ...std, color: 0x6f8fa8, transparent: true, opacity: 0.55, depthWrite: false }), tex: 0 };
   }
   const s = Math.min(1, o.maxTex / Math.max(alb.width, alb.height));
   const w = Math.max(4, Math.round(alb.width * s)), h = Math.max(4, Math.round(alb.height * s));
-  const a = pixels(alb, w, h), d = a.data;
+  let a = pixels(alb, w, h), d = a.data;
   const m = mix ? pixels(mix, w, h).data : null;
   const p = op ? pixels(op, w, h).data : null;
   let cutout = false, blend = false;
+  // an albedo whose alpha is nearly all low isn't an opacity (NH's icons keep something else there): opaque
+  let low = 0;
+  for (let i = 3; i < d.length; i += 4) if (d[i] < 128) low++;
+  const alphaOk = low < 0.9 * (d.length / 4);
+  if (!alphaOk) {
+    a = pixels(await opaque(albU), w, h);
+    d = a.data;
+  }
   for (let i = 0; i < d.length; i += 4) {
     let r = d[i] / 255, g = d[i + 1] / 255, b = d[i + 2] / 255;
     if (gray && grdPx) {
@@ -109,7 +145,7 @@ async function bake(name, files, o) {
     d[i + 2] = Math.round(b * 255);
     // the opacity: the _OP map's (three's alphaMap reads green), else the albedo's own alpha (not a gray albedo's: a
     // tree's trunk keeps something else there, and NH cuts its leaves out with an _OP map)
-    const al = p ? p[i + 1] : gray ? 255 : d[i + 3];
+    const al = p ? p[i + 1] : gray || !alphaOk ? 255 : d[i + 3];
     d[i + 3] = al;
     if (al < 250) (glass ? (blend = true) : (cutout = true));
   }
@@ -175,7 +211,20 @@ window.convert = async (o) => {
   for (const p of o.parts) {
     const c = await dae.loadAsync(`/src/${p.folder}/${p.dae}`);
     c.scene.traverse((n) => { if (n.isMesh) n.userData.folder = p.folder; });
+    // a part's place (a snowboy's head on its body; the countdown board's display in its frame): moved up (and across,
+    // and nearer) and scaled about its origin
+    if (p.at) {
+      c.scene.position.y += p.at[0];
+      c.scene.position.x += p.at[2] ?? 0;
+      c.scene.position.z += p.at[3] ?? 0;
+      c.scene.scale.multiplyScalar(p.at[1]);
+    }
     group.add(c.scene);
+  }
+  // a pose: a joint turned (degrees about its own x, y, z), scripts/models-page.js's (the shishi-odoshi's tube tipped)
+  for (const [jn, r] of Object.entries(o.pose || {})) {
+    const j = group.getObjectByName(jn);
+    if (j) j.rotation.set(j.rotation.x + THREE.MathUtils.degToRad(r[0]), j.rotation.y + THREE.MathUtils.degToRad(r[1]), j.rotation.z + THREE.MathUtils.degToRad(r[2]));
   }
   group.updateMatrixWorld(true);
   const meshes = [];
@@ -184,7 +233,7 @@ window.convert = async (o) => {
   let tris = 0;
   for (const m of meshes) {
     const name = (Array.isArray(m.material) ? m.material[0] : m.material).name || (m.name || m.parent?.name || '').split('__').pop();
-    if (HIDE.has(name) || (o.hide || []).some((h) => m.name.includes(h) || name === h)) continue;
+    if ((HIDE.has(name) && !(o.snow && name === 'mWinterSnow')) || (o.hide || []).some((h) => m.name.includes(h) || name === h)) continue;
     const key = `${m.userData.folder}|${name}`;
     if (!baked.has(key)) {
       const others = new Set(o.parts.map((q) => q.folder).filter((f) => f !== m.userData.folder));
