@@ -50,6 +50,7 @@
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { t } from '#lib/i18n/index.ts';
   import { onMount } from 'svelte';
+  import { echo3d } from './echo3d.ts';
 
   interface Props {
     /** The .if-scene element (the listener's home; the stage, orb and clouds are found inside it). */
@@ -138,6 +139,7 @@
   /** A one-shot Web Animation on a scenery element (replacing the last tap's, so a quick re-tap restarts it). */
   function jiggle(el: Element | null | undefined, frames: Keyframe[], ms: number, origin?: string) {
     if (!el) return;
+    echo3d(el);
     for (const a of el.getAnimations()) if (a.id === TAP_ID) a.cancel();
     const f = origin ? frames.map((k) => ({ ...k, transformOrigin: origin })) : frames;
     el.animate(f, { duration: ms, easing: 'cubic-bezier(.3, .7, .4, 1)', id: TAP_ID });

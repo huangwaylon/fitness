@@ -16,6 +16,7 @@
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import PLACES from './models.json';
   import { onMount } from 'svelte';
+  import { echo3d } from './echo3d.ts';
 
   interface Props {
     /** The decorate mode is on: a tap or a drag on an item picks it up. */
@@ -45,6 +46,7 @@
   }
 
   function jiggle(el: Element) {
+    echo3d(el);
     for (const a of el.getAnimations()) if (a.id === 'jiggle') a.cancel();
     el.animate([{ scale: '1 1' }, { scale: '1.08 .9', offset: 0.25 }, { scale: '.96 1.06', offset: 0.55 }, { scale: '1 1' }], { duration: 380, easing: 'ease-out', id: 'jiggle' });
   }

@@ -78,6 +78,10 @@ const VIEW_W = 420;
 const GROUND_K = 0xe2e2e2;
 /** How far below the screen's middle the pivot sits (a share of the height). */
 const PIVOT_DROP = 0.16;
+/** The haze's start and end, as shares of the horizon's view depth. */
+const HAZE = [0.66, 1.0] as const;
+/** …and the haze at most this deep (u): zoomed out, the island itself stays clear. */
+const HAZE_U = 800;
 /** The shadow map's box moves in steps of this (u): it redraws when it steps, not on every frame of a scroll. */
 const SHADOW_STEP = 40;
 /** The cards lean back this share of the camera's pitch. */
@@ -241,8 +245,11 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
     camera.lookAt(MID_X, 0, -camZ);
     camera.updateMatrixWorld();
     bendU.uBendZ.value = -camZ;
-    fog.near = D * 1.25;
-    fog.far = D * 3.2;
+    // NH's haze: the far sea (and what stands far off) fades into the sky's horizon colour, all of it by the log's
+    // horizon, so the sea meets the sky in one soft line at every scroll and zoom (no hard band of open sea)
+    const hd = horizonDepth();
+    fog.near = Math.max(hd * HAZE[0], hd - HAZE_U);
+    fog.far = hd * HAZE[1];
     waterFog(fog);
     // the shadow's box follows the pivot, as wide as the view, in steps (the shadow map redraws only when it steps)
     const zq = Math.round(camZ / SHADOW_STEP) * SHADOW_STEP, kq = Math.round(zoomK * 8) / 8;
@@ -317,17 +324,26 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
     }
     return hitP;
   }
+  /** The view depth of the log's horizon (the far tangent from the camera, in the y-z plane). */
+  function horizonDepth(): number {
+    const [y, z] = tangent();
+    v3.set(MID_X, y, z).applyMatrix4(camera.matrixWorldInverse);
+    return Math.max(100, -v3.z);
+  }
+  function tangent(): [number, number] {
+    const R = bendU.uBendR.value + 3, oy = -bendU.uBendR.value, oz = -camZ;
+    const cy = camera.position.y - oy, cz = camera.position.z - oz, L = Math.hypot(cy, cz);
+    const base = Math.atan2(cy, cz), a = Math.acos(Math.min(1, R / L));
+    const t1 = base + a, t2 = base - a;
+    const p1: [number, number] = [oy + R * Math.sin(t1), oz + R * Math.cos(t1)], p2: [number, number] = [oy + R * Math.sin(t2), oz + R * Math.cos(t2)];
+    return p1[1] < p2[1] ? p1 : p2;
+  }
   let horizonY = NaN;
   /** Where the ground's silhouette is on screen: the tangent from the camera to the log, seen in the y-z plane. */
   function horizon(): number {
     if (!Number.isNaN(horizonY)) return horizonY;
-    const R = bendU.uBendR.value + 3, oy = -bendU.uBendR.value, oz = -camZ;
-    const cy = camera.position.y - oy, cz = camera.position.z - oz, L = Math.hypot(cy, cz);
-    const base = Math.atan2(cy, cz), a = Math.acos(Math.min(1, R / L));
     // the far tangent point (beyond the pivot: three's −z)
-    const t1 = base + a, t2 = base - a;
-    const p1: [number, number] = [oy + R * Math.sin(t1), oz + R * Math.cos(t1)], p2: [number, number] = [oy + R * Math.sin(t2), oz + R * Math.cos(t2)];
-    const far = p1[1] < p2[1] ? p1 : p2;
+    const far = tangent();
     horizonY = Math.max(0, screen(MID_X, far[0], far[1])[1]);
     return horizonY;
   }
@@ -501,7 +517,7 @@ export function createIsland(canvas: HTMLCanvasElement, src: GroundSource, init:
     // (a wobbling model moves its shadow: the map redraws; a walker's is a blob)
     if (things.frame(t)) more = shadowsDirty = true;
     if (hook?.(t)) more = true;
-    cards.frame(pitch * LEAN, stretch, src.feet);
+    if (cards.frame(pitch * LEAN, stretch, src.feet)) more = true;
     if (lights.frame(t, MID_X, camZ + 110, bendU.uBendR.value, -camZ)) more = true;
     if (opts.water) waterU.uTime.value = (t / 1000) % 3600;
     if (opts.shadows && shadowsDirty) {

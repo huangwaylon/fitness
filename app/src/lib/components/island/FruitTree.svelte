@@ -40,6 +40,7 @@
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { taken as takenBy } from '#lib/sync/world-day.ts';
+  import { echo3d } from './echo3d.ts';
 
   interface Props {
     person: PersonWeekView;
@@ -214,6 +215,7 @@
   function shake(sound = false) {
     if (!treeEl || !canopyEl) return;
     if (sound) cue('tree-shake');
+    echo3d(`goal-${person.person}`, 1.8);
     for (const el of [treeEl, canopyEl]) {
       el.classList.remove('shaking');
       void el.offsetWidth;

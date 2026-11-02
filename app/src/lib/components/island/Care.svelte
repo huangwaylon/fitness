@@ -24,6 +24,7 @@
   import { taken as takenBy, takenByOthers } from '#lib/sync/world-day.ts';
   import { onMount } from 'svelte';
   import { hitOf, hitSources, pick, type HitBox } from './hitbox.ts';
+  import { echo3d } from './echo3d.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -122,6 +123,7 @@
   function clonk(what: ReturnType<typeof rockTap>) {
     sceneSfx('clonk');
     // NH's tool strike on a rock: it squashes under the blow and bounces back
+    echo3d('rock', 0.8);
     rockEl?.animate([{ transform: 'none' }, { transform: 'scale(1.06, .94)', offset: 0.3 }, { transform: 'scale(.97, 1.04)', offset: 0.65 }, { transform: 'none' }], { duration: 280, easing: 'ease-out' });
     if (what === 'sparkle') {
       spawn({ kind: 'spark', x: ROCK.x + 6, y: ROCK.y, lift: ROCK.h }, 800);
