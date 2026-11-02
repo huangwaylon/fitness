@@ -40,6 +40,8 @@ function mergeTab<T extends readonly unknown[]>(base: T[], add: T[] | undefined,
     seen.add(k);
     out.push(r);
   }
+  // nothing new (a reply that repeats rows: the record's late rows, the own rows already merged): the same rows
+  if (out.length === base.length) return base;
   // The usual poll only adds newer rows to sorted ones: nothing to sort (same result as the stable sort below).
   if (isSorted(out)) return out;
   // Stable: rows keep append order within the same timestamp.

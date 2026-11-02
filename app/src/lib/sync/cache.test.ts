@@ -230,3 +230,39 @@ describe('a full localStorage', () => {
     expect(queued().map((e) => e.id)).toEqual(['x']);
   });
 });
+
+describe('reads from the relay’s record, Apps Script as the fallback (docs/backend.md#the-record)', () => {
+  const RECORD = 'https://relay.example/api';
+  const GAS = 'https://script.example/exec';
+  let urls: string[];
+  const use = (answer: (url: string) => Response | Promise<Response>) => {
+    urls = [];
+    configureTransport({
+      url: GAS, recordUrl: RECORD,
+      fetch: (async (u: unknown) => {
+        urls.push(String(u));
+        return answer(String(u));
+      }) as typeof fetch
+    });
+  };
+  const ok = (rev: string) => new Response(JSON.stringify({ ok: true, me: 'A', now: '2026-11-02T05:00:00.000Z', rev, rows: rows() }));
+
+  it('asks the record; on an outage there (an HTTP error, garbage, no network) Apps Script', async () => {
+    use(() => ok('e1'));
+    expect((await refreshSnapshot()).ok).toBe(true);
+    expect(urls).toEqual([RECORD]);
+    for (const down of [() => new Response('<html>', { status: 502 }), () => new Response('not json'), () => Promise.reject(new TypeError('Failed to fetch'))]) {
+      configureCache({ indexedDB: new IDBFactory() });
+      use((u) => (u === RECORD ? down() : ok('gasrev')));
+      const r = await refreshSnapshot();
+      expect(r.ok && r.cache.rev).toBe('gasrev');
+      expect(urls).toEqual([RECORD, GAS]);
+    }
+  });
+
+  it('a refusal by the record is the answer (no second opinion)', async () => {
+    use((u) => (u === RECORD ? new Response('{"ok":false,"error":"busy"}') : ok('gasrev')));
+    expect(await refreshSnapshot()).toMatchObject({ ok: false, error: 'busy' });
+    expect(urls).toEqual([RECORD]);
+  });
+});

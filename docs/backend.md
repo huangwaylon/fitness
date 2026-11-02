@@ -205,8 +205,9 @@ whenever the relay says the sheet changed ([Push](#push)). Each refresh flushes 
 ## The record
 
 The data of record is moving from the sheet to the relay (decisions: *The record on the relay*), in five steps, each
-deployed and green before the next: **1. mirror** (done 2026-11-02), 2. the app reads from the relay, 3. the app writes
-there, 4. the Shortcuts post there, 5. the sheet becomes a one-way export.
+deployed and green before the next: **1. mirror** (done 2026-11-02), **2. the app reads from the relay** (done: `snapshot`
+to `/api`, Apps Script when the relay is down or answers an outage: `sync/transport.ts postRecord`; the first read there
+refetches everything once, the revision being the record's), 3. the app writes there, 4. the Shortcuts post there, 5. the sheet becomes a one-way export.
 
 - **Where:** `relay/src/store.ts` (`StoreCore`, free of the Workers runtime), in its own SQLite-backed Durable Object,
   `IslandStore` (`idFromName('record')`, `storeObject.ts`), apart from the island room. Tables: `metrics` (`seq`, `at`,
