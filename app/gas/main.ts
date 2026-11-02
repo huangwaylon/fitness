@@ -1,8 +1,6 @@
-// Island Fund web app (docs/backend.md#the-record): since step 5 of the move to the relay, two jobs only.
-// - Forward: an older app's requests and a Shortcut still posting to the /exec URL go on to the relay's record
-//   (RECORD_API_URL), and its reply comes back as it is.
-// - Export: the relay's cron POSTs every row of the record (signed); the bound spreadsheet's tabs are rewritten with
-//   them, a one-way copy to look at and a backup. Nothing here is read back: an edit in the sheet goes nowhere.
+// Island Fund web app (docs/backend.md#the-record): the sheet's export, and nothing else. The relay's cron POSTs every
+// row of the record (signed); the bound spreadsheet's tabs are rewritten with them, a one-way copy to look at and a
+// backup. Nothing here is read back: an edit in the sheet goes nowhere. It makes no outgoing request.
 // Bundled by `npm run gas:build` into app/apps-script/Code.js.
 //
 // CRITICAL: `doPost` must never throw. An uncaught error returns Google's HTML error page, which the client cannot
@@ -18,8 +16,6 @@ const BUILD: string = typeof __BUILD__ === 'string' ? __BUILD__ : 'dev';
 
 /** An export carries every row (~200 KB now; tens of MB is years away). */
 export const MAX_BODY_CHARS = 20_000_000;
-/** The relay's record (docs/backend.md#the-record). */
-export const RECORD_API_URL = 'https://island-fund-relay.island-fund-relay.workers.dev/api';
 /** What the server-to-server secret signs (relay/src/notify.ts): the same derivation as the relay's. */
 const NOTIFY_LABEL = 'island-relay-notify/1';
 /** An export signed further from now than this is refused. */
@@ -65,32 +61,8 @@ function handle(e: GAS.PostEvent | undefined): Reply {
   // Keyless liveness and version probe for the monitor (docs/ops/runbook.md §3): no Properties, no sheet.
   if (body.action === 'health' && body.key === undefined) return { ok: true, build: BUILD };
   if (body.action === 'export' && body.key === undefined) return exportRows(body);
-  return forward(body);
-}
-
-// ---------------------------------------------------------------- the forward to the record
-
-/**
- * JSON with every character past ASCII escaped as \uXXXX: Apps Script and the relay need not agree on how to encode
- * the rest (a Shortcut's "7:25 AM" has a narrow no-break space, U+202F).
- */
-const asciiJson = (v: unknown): string => JSON.stringify(v).replace(/[^\x20-\x7e]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
-
-/**
- * POST the request to the record as it came (the key stays in the body: HTTPS, never a URL) and hand back its reply.
- * Anything but a JSON reply from it is `unavailable`, so the app retries.
- */
-function forward(body: Rec): Reply {
-  try {
-    const res = UrlFetchApp.fetch(RECORD_API_URL, {
-      method: 'post', contentType: 'text/plain', payload: asciiJson(body), muteHttpExceptions: true, followRedirects: false, headers: { 'X-Island-Via': 'gas' }
-    });
-    if (res.getResponseCode() !== 200) return fail('unavailable', `record ${res.getResponseCode()}`);
-    const r: unknown = JSON.parse(res.getContentText());
-    return isRec(r) && typeof r.ok === 'boolean' ? (r as Reply) : fail('unavailable');
-  } catch {
-    return fail('unavailable');
-  }
+  // the record is the relay's (since 2026-11-02): the app and the Shortcuts post to its /api, not here
+  return fail('bad_request', 'the record is at https://island-fund-relay.island-fund-relay.workers.dev/api');
 }
 
 // ---------------------------------------------------------------- the export from the record

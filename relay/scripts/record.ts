@@ -2,7 +2,7 @@
 // environment (never on the command line of a shared shell, never logged):
 //   KEY_A=… KEY_B=… node scripts/record.ts <command> [--test]
 // --test: the test relay (island-fund-relay-test) instead of production; KEYS_FILE=.smoke-keys for its keys.
-//   counts              rows per table, the revision, the newest `at`, who came which way (straight, or via Apps Script)
+//   counts              rows per table, the revision, the newest `at`
 //   bookmark [ms]       point-in-time recovery: the bookmark now and `ms` ago (default 1 h)
 //   restore <bookmark>  restore the record to a bookmark (then `rev`)
 //   rev                 a new epoch: every phone refetches everything

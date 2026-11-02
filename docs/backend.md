@@ -12,9 +12,9 @@ stamps `at` and appends; there is no server-side economy and no config: the clie
 number on read. User actions are `event` rows sent through a persisted queue and shown at once; health data comes from
 each phone's Shortcut (`ingest`). The Google Sheet is a one-way export of the record, rewritten by the relay's cron
 (a backup to look at; an edit there goes nowhere). Its Apps Script web app (`app/gas/main.ts` → `Code.js`) only
-forwards what still reaches its `/exec` URL to the record and takes the export. `appsscript.json`: V8, `Asia/Tokyo`,
-scopes `spreadsheets.currentonly` and `script.external_request`; the web app accepts anonymous calls (the key, or the
-relay's signature, is the auth).
+takes the export (a keyed request there is refused with the record's URL). `appsscript.json`: V8, `Asia/Tokyo`, scope
+`spreadsheets.currentonly` (no outgoing requests); the web app accepts anonymous calls (the relay's signature is the
+auth).
 
 ## Tabs
 
@@ -44,7 +44,6 @@ wallet cover is a read-time rule in the model, which ignores an invalid row.
 | `spend` | `{spendId, item, bells}` | `spendId` 1–128 chars; `item` `snack` with `bells` 8, or `dinner` with `bells` 15 |
 | `spend_void` | `{spendId}` | from either person; the script refuses one naming no `spend` row and acknowledges a second void of the same buy as `duplicate` (nothing appended); the model takes the first after the spend |
 | `harvest` | `{week}` | a week key; counts only for the harvest open at the time |
-| `highfive` | `{}` | no longer stored: high-fives go over the relay only. An older app still posts them, so the script acknowledges one with `{ok:true}` and does nothing else (no lock, no row, no notify); never `bad_request`, which that app would show as a failed save. Old rows stay readable |
 | `pref` | `{key, value, person?}` | `locale` (`ja`/`en`), `villagerName` (1–20), `villager` (roster id), `goalWeight` (20–300 kg, one decimal, or null), `goalBodyFat` (3–60 %, one decimal, or null), `moveGoal` (integer 100–2,000), `stepsGoal` (1,000–30,000, a multiple of 500) |
 | `find` | `{kind, id}` | the island's scenery for the shared ずかん: `kind` ∈ `fish` · `bug` · `sea` · `fossil` · `shell` · `fragment` · `item` · `recipe` (`FIND_KINDS`; the last two: what a balloon's present held), `id` a catalog id (`[a-z][a-z0-9-]{0,47}`; the lists live in the client, so they can grow without a redeploy). Never ベル |
 | `tally` | `{date, counts}` | one person's counts of one Tokyo day for the ずかん's 「×12」 (`contract/tally.ts`): `date` a real date not after tomorrow (server's Tokyo date), `counts` 1–300 keys `kind:id` (a find's kind and id) → whole 1–999. One row per person and day: see **Tally** below. Never ベル |
@@ -216,10 +215,12 @@ steps, each deployed and green before the next, the old path working through eac
    kept, high-fives and superseded cosmetic prefs left out); the model's numbers from both were the same
    ([runbook §13](ops/runbook.md#13-the-record) "History");
 2. **reads**: the app's snapshot from `/api` (Apps Script was its fallback for a day);
-3. **writes**: the queue's `events` to `/api`; Apps Script forwards every keyed request it still gets;
+3. **writes**: the queue's `events` to `/api`; Apps Script forwarded every keyed request it still got;
 4. **Shortcuts**: their URL is `/api` ([shortcut §2](ops/shortcut-health-sync.md#a-shortcut-from-before-2026-11-02));
-   the old one forwards;
-5. **export**: the sheet is rewritten from the record; the script's own record code is gone.
+   the old one forwarded;
+5. **export**: the sheet is rewritten from the record; the script's own record code went, and with no forwarded
+   request since both phones moved (A 125 and B 95 straight to `/api`, 0 through Apps Script by 05:38Z), the forward
+   and the script's external-request scope went too.
 
 - **Where:** `relay/src/store.ts` (`StoreCore`, free of the Workers runtime), in its own SQLite-backed Durable Object,
   `IslandStore` (`idFromName('record')`, `storeObject.ts`), apart from the island room. Tables: `metrics` (`seq`, `at`,
@@ -237,7 +238,8 @@ steps, each deployed and green before the next, the old path working through eac
   tally and an island day per sender and day, a cosmetic pref (`locale`, `villagerName`, `villager`, `goalWeight`, `goalBodyFat`) per
   subject, a goal (`moveGoal`, `stepsGoal`) per subject and Tokyo day of its `at` (the goal in force on each past day
   stays: `moveGoalOn`), a decoration per scope and id (by `decorAccept` / `tentAccept`). A pref the model ignores takes
-  no slot. `highfive` is acknowledged and kept nowhere.
+  no slot. A `highfive` (no longer an event type: high-fives go over the room) still queued on a phone from before is
+  acknowledged and kept nowhere; an old row of one in a cache is ignored by the model.
 - **Ingest:** `app/gas/parse.ts` (unchanged from the script's) and the audit row (`relay/src/audit.ts`); a day's latest
   row read from the (person, date, metric) key over the body's days. `relay/test/ingest-golden.test.ts` runs a week of
   both phones' Shortcut bodies (their real shapes: A's iPhone-only body with English dates, B's with the Watch's steps
@@ -252,10 +254,6 @@ steps, each deployed and green before the next, the old path working through eac
   and who came which way, bookmarks, a restore, a new epoch, the export, a dump, and `load`: rows that already have
   their `at`, by the same rules, idempotent). During step 1 the same signed path took the script's copy of each write
   (sent as ASCII: a Shortcut's dates carry U+202F, and a copy with it failed the signature until it was escaped).
-- **Forward:** Apps Script hands every keyed request that still reaches `/exec` to `/api` (as ASCII JSON, the key in
-  the body, marked `X-Island-Via: gas`) and its reply back as it is; anything but a JSON reply is `unavailable`. The
-  record counts each way per person (`counts`' `usage`); since both phones' apps and Shortcuts post to `/api`
-  (2026-11-02), the forward goes once a day passes with no forwarded request.
 - **Export:** a cron (`*/15 * * * *` and `0 18 * * *`, `wrangler.toml`) asks the object to export: when `last_at` moved
   since the last export (or nightly, whatever changed) it POSTs every row to the `/exec` URL (`EXPORT_URL`; the test
   copy has none) as `{action: 'export', t, sig, data}`, `data` the rows as ASCII JSON text and `sig` its signature
@@ -576,9 +574,7 @@ Measured 2026-11-01 (a UTC day, test traffic included, before the record): Worke
 smoke and latency runs), 3.7k rows written, 346 rows read, ~25 GB-s. Duration stays the binding limit and under a
 tenth of it even with the island's presence ten times busier; the export is the largest reader (a dump each time) and
 could send only the changed rows if it ever mattered. Storage: ~150 bytes a row, ~1 MB a year against 5 GB. Apps
-Script's side: a forward per request still sent to `/exec` (old apps, a Shortcut not moved yet) and ≤ 96 exports a day,
-against the consumer quota of 20,000 UrlFetch calls and 90 minutes of trigger time (the web app's requests don't count
-there).
+Script's side: ≤ 96 exports a day (web app requests, no trigger time, no UrlFetch).
 
 ## Notifications
 
@@ -655,6 +651,6 @@ day per person, never 22:00–08:00 Tokyo (decisions: *One notification: the par
 ## Tests
 
 `relay/test/store.test.ts`, `store-route.test.ts` and `ingest-golden.test.ts` (the record on node:sqlite);
-`gas/main.test.ts` (the forward and the export, on a fake of the Apps Script services in `gas/fakes.ts`),
+`gas/main.test.ts` (the export, on a fake of the Apps Script services in `gas/fakes.ts`),
 `gas/parse.test.ts`, `gas/bundle.test.ts`; queue (`queue-batch.test.ts`: the record's batches), cache, sync and store tests; the golden fixtures (`GOLDEN_UPDATE=1` to regenerate) and
 `npm run bench` for the model at year-3 volume.

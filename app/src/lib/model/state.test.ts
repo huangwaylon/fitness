@@ -79,10 +79,10 @@ describe('reduce: events', () => {
 
   it('a row of a type the server refuses (a hand edit of the sheet) is ignored, not a crash', () => {
     const odd = [ev(at('2026-12-02'), 'A', 'nonsense', { x: 1 }), ev(at('2026-12-02'), 'B', 'spend', { spendId: 'y', item: 'snack', amount: 8 })];
-    const tick = ev(at('2026-12-03'), 'B', 'highfive', {});
+    const tick = ev(at('2026-12-03'), 'B', 'harvest', { week: '2026-11-30' });
     const a = reduce(rows([...odd, tick]));
     const b = reduce(rows([tick]));
-    expect(a.highfives).toHaveLength(1);
+    expect(a.harvests).toHaveLength(1);
     expect({ ...a, ats: [] }).toEqual({ ...b, ats: [] }); // only the row counts differ
   });
 
@@ -94,7 +94,7 @@ describe('reduce: events', () => {
     expect({ ...s, ats: [] }).toEqual({ ...reduce(rows([])), ats: [] });
   });
 
-  it('harvest, highfive and pref', () => {
+  it('harvest and pref; an old high-five row (relay-only since 2026-11-02) is ignored', () => {
     const s = reduce(rows([
       ev(at('2026-11-15', '20:00'), 'A', 'harvest', { week: WK }),
       ev(at('2026-11-15', '20:00'), 'A', 'harvest', { week: 'soon' }),
@@ -107,7 +107,7 @@ describe('reduce: events', () => {
       ev(at(WK), 'B', 'pref', { key: 'villager', value: 'ume' })
     ]));
     expect(s.harvests.map((h) => h.week)).toEqual([WK]);
-    expect(s.highfives.map((h) => h.person)).toEqual(['B']);
+    expect(s).not.toHaveProperty('highfives');
     expect(s.prefs).toEqual({ A: { locale: 'en', villagerName: 'ウェイ' }, B: { villager: 'ume' }, G: {} });
   });
 
@@ -126,6 +126,6 @@ describe('reduce: events', () => {
       ev(at(WK), 'A', 'highfive', '{oops')
     ]));
     expect(s.prefs.A.locale).toBe('ja');
-    expect(s.highfives).toEqual([]);
+    expect(s).not.toHaveProperty('highfives');
   });
 });

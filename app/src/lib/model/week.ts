@@ -4,7 +4,7 @@ import type { HarvestView, LocalDate, PersonId, PersonWeekView, RingFruit, RingP
 import { GUEST, PEOPLE, RING_FRUITS, RULES } from '#lib/config/rules.ts';
 import { noneMet, ringBells, type WeekEarning } from '#lib/scoring/bells.ts';
 import { walletAt, weekBells, weekSum, type WeekBells } from './bells.ts';
-import { addDays, jstMs, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
+import { addDays, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import { firstWeek, moveGoalOn, partnerOf, provisionalMs, stepsGoalOn, type State } from './state.ts';
 
 /** Which week's harvest is open at t, given the confirmations so far (Sunday 19:30 until both tapped). */
@@ -92,7 +92,6 @@ export function buildWeekView(s: State, viewer: Who, now: number): WeekView {
   const partner = partnerOf(me);
   const locale = s.prefs[viewer].locale ?? 'ja';
 
-  const startOfToday = jstMs(today, 0, 0);
   const w = weekBells(s, weekKey, now);
   const sum = weekSum(w, today);
   const i = w.A.days.findIndex((d) => d.date === today);
@@ -110,8 +109,7 @@ export function buildWeekView(s: State, viewer: Who, now: number): WeekView {
     } as Record<PersonId, PersonWeekView>,
     together: togetherView(w, today),
     wallet: { balance: walletAt(s, now).wallet.balance, today: w.dayTotals[i] ?? 0 },
-    harvest: harvestView(s, now),
-    highFivesToday: s.highfives.filter((h) => h.person === partner && h.at >= startOfToday && h.at <= now).length
+    harvest: harvestView(s, now)
   };
   return { ...base, host: hostLine(base) };
 }

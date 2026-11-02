@@ -51,7 +51,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
   });
 
   it('Move and Stand every day; うめ’s Move goal applies from its day', () => {
-    expect(cache.rows.events.filter((e) => !['spend', 'spend_void', 'harvest', 'highfive', 'pref'].includes(e[3]))).toEqual([]);
+    expect(cache.rows.events.filter((e) => !['spend', 'spend_void', 'harvest', 'pref'].includes(e[3]))).toEqual([]);
     const metrics = new Set(cache.rows.metrics.map((m) => m[3]));
     expect([...metrics].sort()).toEqual(['bmi', 'body_fat_pct', 'exercise_min', 'lean_kg', 'move_kcal', 'stand_min', 'steps', 'weight']);
     const settled = economyWeeks(s, now).filter((wk) => provisionalMs(wk) <= now);

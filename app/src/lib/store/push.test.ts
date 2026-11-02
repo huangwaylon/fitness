@@ -123,7 +123,7 @@ describe('LiveBackend: the relay push', () => {
 
   it('an acked event nudges the partner until Apps Script\'s push is seen; then nudges are neither sent nor heeded', async () => {
     const b = await ready();
-    b.send('highfive', {}, {});
+    b.send('harvest', { week: '2026-10-26' }, {});
     await settle(0);
     expect(events).toHaveLength(1);
     expect(relay.sent).toEqual([{ kind: 'saved' } satisfies Intent]);
@@ -136,7 +136,7 @@ describe('LiveBackend: the relay push', () => {
     change({ who: 'B', what: 'event' });
     await settle();
     expect(snapshots).toBe(n);
-    b.send('highfive', {}, {});
+    b.send('harvest', { week: '2026-10-26' }, {});
     await settle(0);
     expect(events).toHaveLength(2);
     expect(relay.sent).toHaveLength(1);

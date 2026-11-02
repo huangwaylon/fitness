@@ -27,8 +27,6 @@ import type { PersonId, Who } from '../../app/src/lib/types.ts';
 
 type Rec = Record<string, unknown>;
 type Bind = string | number | null;
-/** How an /api request came: from a phone or a Shortcut itself, or forwarded by the Apps Script web app. */
-export type Via = 'direct' | 'gas';
 
 /** The SQL the store needs: Durable Objects' `ctx.storage.sql` (and node:sqlite in the tests). */
 export interface Sql {
@@ -135,26 +133,6 @@ export class StoreCore {
     return ms < this.lastAt;
   }
 
-  /** Where the request being handled came from: straight from a phone, or forwarded by Apps Script (its /exec URL). */
-  private via: Via = 'direct';
-
-  /**
-   * Count who still comes which way (the forward's retirement waits for a day without forwarded requests): per way and
-   * person, how many, the last one's time and action. In `meta` (`use:<via>:<who>`), shown by the admin `counts`.
-   */
-  private used(me: Who, action: string): void {
-    const k = `use:${this.via}:${me}`;
-    let u: { n: number; first: string; last: string; action: string } | null = null;
-    try { u = JSON.parse(this.meta(k) ?? 'null'); } catch { u = null; }
-    const now = new Date(this.io.now()).toISOString();
-    this.setMeta(k, JSON.stringify({ n: (u?.n ?? 0) + 1, first: u?.first ?? now, last: now, action }));
-  }
-
-  /** The counts of `used`. */
-  usage(): Record<string, unknown> {
-    return Object.fromEntries(this.io.sql.exec<{ k: string; v: string }>("SELECT k, v FROM meta WHERE k LIKE 'use:%' ORDER BY k").toArray().map((r) => [r.k.slice(4), JSON.parse(r.v)]));
-  }
-
   private underRateLimit(me: Who): boolean {
     const minute = Math.floor(this.io.now() / 60_000);
     if (this.rate.minute !== minute) this.rate = { minute, A: 0, B: 0, G: 0 };
@@ -172,8 +150,7 @@ export class StoreCore {
   }
 
   /** An `/api` body as sent → its JSON reply. Never throws. */
-  handleText(text: string, via: Via = 'direct'): string {
-    this.via = via;
+  handleText(text: string): string {
     if (!text) return JSON.stringify(fail('bad_request'));
     let body: unknown;
     try {
@@ -209,7 +186,6 @@ export class StoreCore {
     const me = typeof body.key === 'string' && KEY_RE.test(body.key) ? keyOwner(body.key, this.io.keys) : null;
     if (!me) return fail('unauthorized');
     if (!this.underRateLimit(me)) return fail('busy');
-    this.used(me, String(body.action));
     // the guest (docs/backend.md#the-guest): no health data in, no audit to read
     if (me === 'G' && (body.action === 'ingest' || body.action === 'uploads')) return fail('forbidden');
     switch (body.action) {
@@ -341,13 +317,13 @@ export class StoreCore {
   private keep(me: Who, body: Rec): Reply & { at?: string } {
     const id = body.id;
     if (!isId(id)) return fail('bad_request');
+    // High-fives go over the room only (2026-11-02): one still queued on a phone from before is acknowledged, not kept
+    if (body.type === 'highfive') return me === 'G' ? fail('forbidden') : { ok: true };
     if (typeof body.type !== 'string' || !(EVENT_TYPES as readonly string[]).includes(body.type)) return fail('bad_request');
     const data = body.data === undefined ? {} : body.data;
     if (!isRec(data)) return fail('bad_request');
     // the guest writes only its finds, tallies, the tent's decor and its own cosmetic prefs (contract/guest.ts)
     if (me === 'G' && !guestMayWrite(body.type, data)) return fail('forbidden');
-    // High-fives go over the room only: an older app still posts them; acknowledged, nothing kept.
-    if (body.type === 'highfive') return { ok: true };
     const json = JSON.stringify(data);
     if (json.length > MAX_EVENT_DATA_CHARS) return fail('too_large');
     const subject = eventSubject(body.type, data, me);
@@ -423,7 +399,7 @@ export class StoreCore {
   /**
    * Take rows that already have their `at` (the sheet's history, or Apps Script's copy of a write it just made), by
    * the same rules as the record's own writes: an event id once, a slot's latest (by `at`) kept, a decor op by the
-   * merge's rules; `highfive`s and rows the model can't read are skipped. Idempotent: an import again adds nothing.
+   * merge's rules; rows the model can't read (an old high-five's) are skipped. Idempotent: an import again adds nothing.
    */
   import(rows: ImportRows): ImportResult {
     // in `at` order across the tables, so a batch is late only where it is older than what the record had
@@ -457,7 +433,7 @@ export class StoreCore {
   private importEvent(r: unknown[], arrived: number): 'added' | 'had' | 'skipped' {
     const [at, person, id, type, raw] = r;
     if (typeof at !== 'string' || !ISO_AT.test(at) || !isPersonId(person) || !isId(id) || typeof type !== 'string' || typeof raw !== 'string') return 'skipped';
-    if (!(EVENT_TYPES as readonly string[]).includes(type) || type === 'highfive') return 'skipped';
+    if (!(EVENT_TYPES as readonly string[]).includes(type)) return 'skipped';
     if (this.known(id)) return 'had';
     let d: unknown;
     try { d = JSON.parse(raw || '{}'); } catch { d = null; }

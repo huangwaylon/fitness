@@ -20,7 +20,7 @@ beforeEach(() => {
   told = [];
   core = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B }, now: () => NOW, notify: (n) => told.push(n) });
   room = {
-    api: (text, via) => core.handleText(text, via),
+    api: (text) => core.handleText(text),
     // the object's dispatch (storeObject.ts admin) for the one op the store does itself
     async adminSigned(text, t, sig) {
       const v = await core.signedOp(text, t, sig);
@@ -45,16 +45,6 @@ describe('/api', () => {
     expect(JSON.parse(core.handleText(JSON.stringify({ key: KEY_B, action: 'uploads' }))).rows[0].bytes).toBe(new TextEncoder().encode(body).length);
     expect((await apiRoute(req('{}', { Origin: 'https://evil.example' }), ALLOWED, () => room)).status).toBe(403);
     expect((await apiRoute(req('', { Origin: ALLOWED }, 'OPTIONS'), ALLOWED, () => room)).status).toBe(204);
-  });
-
-  it('counts who comes which way: straight, or forwarded by Apps Script (its header)', async () => {
-    await apiRoute(req(JSON.stringify({ key: KEY_A, action: 'whoami' })), ALLOWED, () => room);
-    await apiRoute(req(JSON.stringify({ key: KEY_B, action: 'snapshot' }), { 'X-Island-Via': 'gas' }), ALLOWED, () => room);
-    await apiRoute(req(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '1' }), { 'X-Island-Via': 'gas' }), ALLOWED, () => room);
-    expect(core.usage()).toEqual({
-      'direct:A': { n: 1, first: '2026-11-02T03:00:00.000Z', last: '2026-11-02T03:00:00.000Z', action: 'whoami' },
-      'gas:B': { n: 2, first: '2026-11-02T03:00:00.000Z', last: '2026-11-02T03:00:00.000Z', action: 'ingest' }
-    });
   });
 
   it('garbage, an empty or an oversized body is a JSON refusal (status 200, as Apps Script answered)', async () => {

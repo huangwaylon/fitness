@@ -203,7 +203,7 @@ describe('resync (rev, docs/backend.md#revision)', () => {
   });
 
   it('a flush that throws does not wedge later flushes ', async () => {
-    const ev = enqueue('highfive', {});
+    const ev = enqueue('harvest', { week: '2026-10-26' });
     await expect(flush(() => { throw new Error('boom'); })).rejects.toThrow('boom');
     const r = await flush();
     expect(r.acked.map((e) => e.id)).toEqual([ev.id]);
@@ -213,21 +213,21 @@ describe('resync (rev, docs/backend.md#revision)', () => {
 describe('a full localStorage', () => {
   it('keeps queued taps in memory (still sent), and reports it', async () => {
     kv.full = true;
-    const ev = enqueue('highfive', {});
+    const ev = enqueue('harvest', { week: '2026-10-26' });
     expect(queued().map((e) => e.id)).toEqual([ev.id]);
     expect(problems).toEqual(['full']);
     const r = await flush();
     expect(r.acked.map((e) => e.id)).toEqual([ev.id]);
     expect(queued()).toEqual([]);
     kv.full = false;
-    enqueue('highfive', {});
+    enqueue('harvest', { week: '2026-10-26' });
     expect(JSON.parse(kv.m.get(LIVE.queue)!)).toHaveLength(1); // back on disk once there is room
   });
 
   it('a corrupt stored queue reads as empty, not as a crash', () => {
     kv.m.set(LIVE.queue, '{"oops":1}');
     expect(queued()).toEqual([]);
-    kv.m.set(LIVE.queue, '[{"id":"x","type":"highfive","data":{}},null,3]');
+    kv.m.set(LIVE.queue, '[{"id":"x","type":"harvest","data":{"week":"2026-10-26"}},null,3]');
     expect(queued().map((e) => e.id)).toEqual(['x']);
   });
 });
