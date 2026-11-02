@@ -146,12 +146,12 @@ class TentRoom {
   }
 
   /** Place or move a piece (its whole state): false when it didn't take (a new piece past the cap, a removed one). */
-  set(p: { id: string; item: string; x: number; z: number; f: TentPiece['f']; p?: number }): boolean {
+  set(p: { id: string; item: string; x: number; z: number; f: TentPiece['f']; p?: number; on?: string }): boolean {
     const known = this.#map.get(p.id);
     if (known?.rm) return false;
     if (!known && this.room <= 0) return false;
     const at = this.#now(known?.at);
-    return !!this.#mine({ sc: 't', id: p.id, at, item: p.item, x: p.x, z: p.z, f: p.f, p: p.p ?? (known && !known.rm ? known.p : at) });
+    return !!this.#mine({ sc: 't', id: p.id, at, item: p.item, x: p.x, z: p.z, f: p.f, p: p.p ?? (known && !known.rm ? known.p : at), ...(p.on ? { on: p.on } : {}) });
   }
 
   /** Take a piece away (final: an undo puts a new one down). */

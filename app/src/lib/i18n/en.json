@@ -465,5 +465,6 @@
   "tent.why.rug": "Another rug is there",
   "tent.why.villager": "Someone's standing there",
   "tent.resetView": "Reset the view",
-  "tent.tab.recent": "Recent"
+  "tent.tab.recent": "Recent",
+  "tent.hasThings": "Put away what's on it first"
 }

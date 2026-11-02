@@ -25,6 +25,10 @@ export interface ItemMeta {
   lit?: 1;
   /** Its icon is NH's own (static/room/icons), not the ずかん's. */
   icon?: 1;
+  /** NH's surface: small things stand on its top (at h). */
+  s?: 1;
+  /** Small (NH's miscellaneous): may stand on a surface. */
+  sm?: 1;
 }
 
 export const ITEMS: Readonly<Record<string, ItemMeta>> = data.items as Record<string, ItemMeta>;

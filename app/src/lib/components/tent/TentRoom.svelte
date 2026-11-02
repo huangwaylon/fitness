@@ -31,7 +31,7 @@
   import type { Intent, Pt as WirePt, Relayed } from '#lib/sync/live-protocol.ts';
   import { hook } from '../island/devHooks.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfFind } from './items.ts';
-  import { DOOR_IN, HALF, centreOf, nearestFree, walkPath, type Pt, type Spot } from './grid.ts';
+  import { DOOR_IN, HALF, centreOf, nearestFree, resolve as resolveRoom, walkPath, type Pt, type Resolved } from './grid.ts';
   import { DragLink } from './dragLink.ts';
   import type { Look, Tent, Who } from './engine.ts';
 
@@ -59,7 +59,8 @@
   const send = (i: Intent) => relay?.send(i) ?? false;
   const link = new DragLink((d) => send(d));
 
-  const spots = (): Spot[] => room.pieces.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f }));
+  /** The pieces where they stand in the room (a small thing on a table: on its top there). */
+  const spots = (): Resolved[] => resolveRoom(room.pieces.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, ...(p.on ? { on: p.on } : {}) })));
 
   function lookOf(who: Who): Look | null {
     const p = view.people[who];
@@ -244,7 +245,8 @@
     }
     if (editing) {
       // the doormat is floor to the edit mode (its tiles are the door's: the bar says why a piece can't go there)
-      const f = h.kind === 'floor' ? [h.x, h.z] : h.kind === 'door' ? eng.floorAt(cx, cy) : null;
+      // (a piece under the finger, for a small thing held over a table: where it goes)
+      const f = h.kind === 'floor' ? [h.x, h.z] : h.kind === 'door' || h.kind === 'piece' ? eng.floorAt(cx, cy) : null;
       if (f) edit?.tapFloor(f[0], f[1]);
       return;
     }
@@ -279,7 +281,7 @@
     const ps = room.pieces, w = room.wall, f = room.floor, e = eng;
     if (!e) return;
     untrack(() => {
-      e.pieces(ps.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f })));
+      e.pieces(resolveRoom(ps.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, ...(p.on ? { on: p.on } : {}) }))));
       e.surfaces(w ?? DEFAULT_WALL, f ?? DEFAULT_FLOOR);
     });
   });
@@ -400,7 +402,9 @@
       px: (x: number, z: number, y = 0) => eng?.client(x, y, z),
       /** A tile's middle in client px. */
       tile: (x: number, z: number) => eng?.client(-HALF + (x + 0.5) * 10, 0, -HALF + (z + 0.5) * 10),
-      pieces: () => room.pieces.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, who: p.who })),
+      pieces: () => room.pieces.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, who: p.who, ...(p.on ? { on: p.on } : {}) })),
+      /** Where each piece stands in the room (a thing on a table: its tile there, and how high). */
+      placed: () => spots().map((p) => ({ id: p.id, x: p.x, z: p.z, f: p.f, y: p.y })),
       surfaces: () => ({ wall: room.wall, floor: room.floor }),
       edit: () => edit?.snapshot() ?? null,
       held: () => link.theirs().map((h) => ({ id: h.id, item: h.item, x: h.x, z: h.z, f: h.f })),
