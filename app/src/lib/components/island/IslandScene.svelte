@@ -41,6 +41,7 @@
   import Talk from './Talk.svelte';
   import Says from './Says.svelte';
   import SayPicker from './SayPicker.svelte';
+  import SayButton from './SayButton.svelte';
   import { rememberSay, sayGate } from './say.ts';
   import { HIGHFIVE_LIVE_MS, heardHighFive } from './highFives.ts';
   import TreeShakes from './TreeShakes.svelte';
@@ -212,21 +213,24 @@
   // `live` is fixed per scene (the gallery's thumbnails are never live).
   // svelte-ignore state_referenced_locally
   const life = new IslandLife({ view: () => view, live, covered: () => covered, night: () => tod === 'night', day: () => tod === 'day' });
-  // A tap on mine squishes (R9; now and then a flea hops off it) and opens the phrase picker by it (SayPicker): a pick
-  // hops it and shows the phrase in its balloon (Says) for a few seconds, here and on the partner's phone (the relay's
-  // `say`, presence only: at most one per 1.5 s, the newer waiting). The speech balloon (Talk) is for the island's other
-  // speakers: the campsite's door, the visitors.
+  // A tap on mine squishes (R9; now and then a flea hops off it). The say button at the bottom right (SayButton) opens
+  // the phrase picker above it (SayPicker): a pick hops my villager and shows the phrase in its balloon (Says) for a
+  // few seconds, here and on the partner's phone (the relay's `say`, presence only: at most one per 1.5 s, the newer
+  // waiting). The speech balloon (Talk) is for the island's other speakers: the campsite's door, the visitors.
   let talk = $state<ReturnType<typeof Talk>>();
   let says = $state<ReturnType<typeof Says>>();
-  /** My villager's element while its picker is open. */
+  /** The say button while its picker is open. */
   let picking = $state<HTMLElement | null>(null);
+  let sayBtn = $state<HTMLButtonElement>();
+  /** The say button shows on the live island with nothing over it: no sheet, the harvest, a tree's popup, もようがえ. */
+  const sayShown = $derived(live && !covered && !ui.decorating && !openTree && !ui.sheets.length);
   const vilEls = $state<Record<VillagerActor, HTMLElement | undefined>>({ mine: undefined, partner: undefined, third: undefined });
   /** The name tag's colour: the person's (tokens.css --person-a / --person-b; the guest's lilac). */
   const SAY_TAG: Record<Who, string> = { A: '#2F86BD', B: '#D2701F', G: '#8E6CC8' };
   function openPicker(el: HTMLElement) {
-    if (!live || covered || decorating) return;
+    if (!sayShown) return;
     picking = el;
-    // it stays where it is while I choose (idle life leaves it be)
+    // my villager stays where it is while I choose (idle life leaves it be)
     actors.mine.busyUntil = Math.max(actors.mine.busyUntil, Date.now() + 60_000);
   }
   /** `by`: the pointerdown that closed it (on the scenery that tap only closes: SceneTaps). */
@@ -237,8 +241,8 @@
     actors.mine.busyUntil = Math.min(actors.mine.busyUntil, Date.now() + 1200);
   }
   $effect(() => {
-    // a sheet over the island, decorating, or my villager setting off (a walk home): the picker goes
-    if (picking && (covered || decorating || actors.mine.walking)) untrack(() => closePicker());
+    // a sheet over the island, a tree's popup or decorating: the picker goes with its button
+    if (picking && !sayShown) untrack(() => closePicker());
   });
   /** Show `text` over a villager (mine: picked here; the partner's: from the relay) and hop it. */
   function showSay(id: VillagerActor, text: string) {
@@ -999,7 +1003,14 @@
   data-covered={covered || undefined} data-live={live || undefined} style:--horizon-y="{horizonPx}px" style:--sky-h="{horizonPx + 6}px">
   {#if picking && sceneEl}
     <!-- what my villager says: outside the scroller (its field's focus never scrolls the island), over the stage -->
-    <SayPicker scene={sceneEl} anchor={picking} onpick={pickSay} onclose={closePicker} />
+    <SayPicker scene={sceneEl} anchor={picking} onpick={pickSay} onclose={(e) => {
+      closePicker(e);
+      if (!e) sayBtn?.focus({ preventScroll: true }); // ✕ or Esc: the focus back on its button
+    }} />
+  {/if}
+  {#if sayShown}
+    <!-- the picker's door: bottom right, over the sea, clear of the home indicator and しずえ's box (--news-lift) -->
+    <div class="say-dock"><SayButton bind:el={sayBtn} open={!!picking} onopen={openPicker} /></div>
   {/if}
   {#if live && FireworksC}<FireworksC bind:this={fireworks} enabled={() => !covered && !life.hidden} forced={life.devFireworks || wedding.fireworks} {allMet} {cheer} />{/if}
 
@@ -1051,7 +1062,6 @@
           <div class="actor" class:walking={live && actors[id].walking} class:inside={inTent(id)} data-inside={inTent(id) || undefined} data-actor={id} data-who={sd.person.person} data-seat={seated[id]} data-rep={repping[id] || undefined} style:--seat-drop={u(SEAT_DROP)} style:--rep-lift={u(9)} data-person={sd.person.person} data-stung={stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : id === 'third' ? '-0.6s' : '0s'}
             {@attach world.at(live ? { x: sd.home[0], z: sd.home[1], h: VILLAGER.h, live: () => livePos(id), always: true } : { x: sd.home[0], z: sd.home[1], h: VILLAGER.h })}>
             <button type="button" class="vil" disabled={!live} data-sfx="self" bind:this={vilEls[id]}
-              aria-haspopup={id === 'mine' && live ? 'dialog' : undefined} aria-expanded={id === 'mine' && live ? !!picking : undefined}
               aria-label={id !== 'mine'
                 ? t('island.highfive', { name: sd.person.villagerName })
                 : sd.person.bells === null ? sd.person.villagerName
@@ -1060,7 +1070,6 @@
                 if (id === 'mine') {
                   sceneTaps?.villagerTap(e.currentTarget);
                   life.tapMine();
-                  openPicker(e.currentTarget);
                 } else highFiveTap(id);
               }}>
               <Villager person={sd.person.person} villager={sd.person.villager} size={u(VILLAGER.h)} eager
@@ -1136,6 +1145,12 @@
     -webkit-overflow-scrolling: touch; scrollbar-width: none; touch-action: pan-y;
   }
   .scroller::-webkit-scrollbar { display: none; }
+  /* the say button: bottom right over the sea (both islands: outside the scroller), 12px in from the side and above
+     the home indicator; with しずえ's box up it sits over the box (the page's --news-lift) */
+  .say-dock {
+    position: absolute; z-index: 2; right: calc(var(--safe-right, 0px) + 8px);
+    bottom: calc(var(--pad-bottom, 8px) + 8px + var(--news-lift, 0px));
+  }
   /* the 3D island: the finger is world3d/gestures.ts' (no native scroll, no page zoom); the canvas draws what the DOM's
      art did: the ground, the water, the trees, the scenery, the flowers and the villagers' figures (their nodes stay
      as the tap areas, their marks, balloons and popups over the canvas) */
