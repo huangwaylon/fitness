@@ -239,3 +239,39 @@ test('on a table: a small thing stands on its top, rides along when the table mo
   at = (await placedOf(page)).find((p) => p.id === lamp.id)!;
   expect(at.y).toBeGreaterThan(2);
 });
+
+type Use = { seat(): { id: string; n: number; lie: boolean } | null; lights(): { room: boolean; pieces: { id: string; on: boolean }[] }; fill(codes: string[]): number };
+const use = <R,>(page: Page, fn: (t: Use & E & T) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
+
+test('sit, lie and switch: a tap on a chair walks my villager up and sits it, on a cot it lies, on the floor it gets up; a lamp and the room’s light switch, kept', async ({ page }) => {
+  await page.addInitScript(() => localStorage.getItem('tent-seeded') || (localStorage.removeItem('island-demo.tent'), localStorage.setItem('tent-seeded', '1')));
+  await page.goto('tent' + Q);
+  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  // the log chair, the camping cot and the lantern, on free spots in the room's middle
+  expect(await use(page, (t) => t.fill(['f4039', 'f4081', 'f1432']))).toBe(3);
+  await page.waitForFunction(() => (window as unknown as { __tent: { loading(): number } }).__tent.loading() === 0);
+  const ps = await use(page, (t) => t.pieces());
+  const id = (item: string) => ps.find((p) => p.item === item)!.id;
+  const tapPiece = async (item: string) => {
+    const p = ps.find((q) => q.item === item)!;
+    const [x, y] = await tile(page, p.x, p.z);
+    await page.mouse.click(x, y);
+  };
+  await tapPiece('f4039');
+  await expect.poll(() => use(page, (t) => t.seat()), { timeout: 6000 }).toMatchObject({ id: id('f4039'), lie: false });
+  await tapPiece('f4081');
+  await expect.poll(() => use(page, (t) => t.seat()), { timeout: 6000 }).toMatchObject({ id: id('f4081'), lie: true });
+  const [fx, fy] = await tent(page, (t) => t.px(-30, 30));
+  await page.mouse.click(fx, fy);
+  await expect.poll(() => use(page, (t) => t.seat())).toBeNull();
+  // the lantern: on as it came, off with a tap; the room's light switch
+  expect((await use(page, (t) => t.lights())).pieces).toEqual([{ id: id('f1432'), on: true }]);
+  await tapPiece('f1432');
+  await expect.poll(async () => (await use(page, (t) => t.lights())).pieces[0].on).toBe(false);
+  await page.locator('[data-tent-lights]').click();
+  await expect(page.locator('[data-tent-lights]')).toHaveAttribute('data-tent-lights', 'off');
+  // kept
+  await page.reload();
+  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await expect.poll(() => use(page, (t) => t.lights())).toEqual({ room: false, pieces: [{ id: id('f1432'), on: false }] });
+});

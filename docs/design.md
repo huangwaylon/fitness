@@ -668,6 +668,15 @@ goes with the leaving).
   away: not with things on it (「うえの ものを さきに しまってね」). A thing on a table blocks neither the floor nor a walk.
   A race (one of us puts the table away as the other puts a lamp on it) leaves the lamp on the floor at its slot's tile,
   the same on both phones.
+- **Sit, lie and switch** (`tent/seats.ts`): NH's own interaction from the ACNH spreadsheet (`interact`: a Chair is sat
+  on, a Bed lain on: 38 and 20 of the pieces); a sofa seats one a tile across, a double bed two. Outside the edit mode a
+  tap on one walks my villager up to it (a step in front: physical, like the door) and it sits facing the piece's front,
+  or lies on the bed; a tap on the floor gets it up and walks it. The renders have no sitting or lying art: sitting, the
+  billboard sinks into the seat to the hips; lying, it lies back along the bed facing up. One villager a seat, the first
+  to sit keeps it (presence: the `tent` intent's `seat`). A light (NH's lighting type, the fireplace: 37 pieces) switches
+  on or off with a tap, kept with the piece (its op's `l`) on both phones; it glows (its emissive) while on, and in the
+  dark lights the room round it (up to four point lights). NH's room light switch (💡, top right) dims the room's own
+  light; at night, or with it off, the room is lit by whatever is on.
 - **Shared and kept:** the room is both of ours, live on both phones: each change is one op (the island's `decor` op
   with the room's scope, last writer wins, the sheet keeps each piece's latest: `contract/tent.ts`,
   [backend](backend.md#events)). While I hold a piece, the partner's phone sees it move as I move it (`drag`, ≤ 10 a

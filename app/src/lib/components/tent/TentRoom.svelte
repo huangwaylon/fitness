@@ -33,7 +33,8 @@
   import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfFind } from './items.ts';
   import { DOOR_IN, HALF, centreOf, nearestFree, resolve as resolveRoom, walkPath, type Pt, type Resolved } from './grid.ts';
   import { DragLink } from './dragLink.ts';
-  import type { Look, Tent, Who } from './engine.ts';
+  import { seatsOf, type Seat } from './seats.ts';
+  import type { Look, Pose, Tent, Who } from './engine.ts';
 
   let { view }: { view: WeekView } = $props();
 
@@ -60,7 +61,7 @@
   const link = new DragLink((d) => send(d));
 
   /** The pieces where they stand in the room (a small thing on a table: on its top there). */
-  const spots = (): Resolved[] => resolveRoom(room.pieces.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, ...(p.on ? { on: p.on } : {}) })));
+  const spots = (): Resolved[] => resolveRoom(room.pieces.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, ...(p.on ? { on: p.on } : {}), ...(p.l !== undefined ? { l: p.l } : {}) })));
 
   function lookOf(who: Who): Look | null {
     const p = view.people[who];
@@ -90,18 +91,59 @@
   function sayWhere() {
     const at = eng?.at(me);
     if (!at) return;
+    if (mySeat) return void send({ kind: 'tent', in: true, to: r(mySeat.at), seat: mySeat.id, n: mySeat.n, ...(mySeat.lie ? { lie: true as const } : {}), s: Math.round(mySeat.s) });
     const w = myWalk && relayNow() < myWalk.s + myWalk.ms ? myWalk : null;
     send(w ? { kind: 'tent', in: true, from: r(w.from), ...(w.via.length ? { via: w.via.map(r).slice(0, 10) } : {}), to: r(w.to), s: Math.round(w.s), ms: Math.round(w.ms) } : { kind: 'tent', in: true, to: r(at) });
   }
-  function walkTo(to: Pt) {
+  /** Walk my villager there (standing up first, a seat's step out in front); `then` on arrival. */
+  function walkTo(to: Pt, then?: () => void) {
     if (!eng) return;
-    const from = eng.at(me);
-    if (!from) return;
+    clearTimeout(arriving);
+    const now0 = eng.at(me);
+    if (!now0) return;
+    let from: Pt = now0;
+    if (mySeat) {
+      from = mySeat.from;
+      eng.put(me, from);
+      mySeat = null;
+    }
     const pts = walkPath(spots(), from, to);
-    if (!pts.length) return;
+    if (!pts.length) return void then?.();
     const ms = eng.walk(me, pts);
     myWalk = { from, via: pts.slice(0, -1), to: pts[pts.length - 1], s: relayNow(), ms };
     sayWhere();
+    if (then) arriving = setTimeout(then, ms + 30);
+  }
+  let arriving: ReturnType<typeof setTimeout> | undefined;
+
+  // ---- sitting and lying (NH's chairs, sofas, beds: seats.ts): walk up to it, then on; one villager a seat, first wins ----
+  let mySeat: (Seat & { s: number }) | null = null;
+  let partnerSeat: { id: string; n: number; s: number } | null = null;
+  const seatAt = (id: string, n: number) => {
+    const p = spots().find((q) => q.id === id);
+    return p ? (seatsOf(p)[n] ?? null) : null;
+  };
+  const poseOf = (st: Seat): Pose => ({ at: st.at, y: st.y, lie: st.lie, front: st.front });
+  function sitOn(id: string) {
+    const p = spots().find((q) => q.id === id);
+    if (!p || !eng) return false;
+    const here = eng.at(me) ?? [0, 0];
+    const free = seatsOf(p).filter((st) => !(partnerSeat && partnerSeat.id === st.id && partnerSeat.n === st.n));
+    if (!free.length) {
+      cue('boop');
+      return true;
+    }
+    if (mySeat && mySeat.id === id) return true;
+    const st = free.sort((a, b) => Math.hypot(a.from[0] - here[0], a.from[1] - here[1]) - Math.hypot(b.from[0] - here[0], b.from[1] - here[1]))[0];
+    walkTo(st.from, () => {
+      // still free (the partner may have got there first)
+      if (!eng || (partnerSeat && partnerSeat.id === st.id && partnerSeat.n === st.n)) return;
+      mySeat = { ...st, s: relayNow() };
+      eng.pose(me, poseOf(st));
+      cue('scene-bench');
+      sayWhere();
+    });
+    return true;
   }
 
   // ---- the partner's villager: here only while they're in the tent (store/where.svelte.ts), theirs to move ----
@@ -118,6 +160,16 @@
     if (!eng) return;
     if (m.to) partnerAt = m.to;
     partnerShown();
+    // on a seat: one villager to a seat, the first to sit keeps it (I stand up if they were there first)
+    partnerSeat = m.in && m.seat !== undefined ? { id: m.seat, n: m.n ?? 0, s: m.s ?? m.t } : null;
+    if (partnerSeat) {
+      const st = seatAt(partnerSeat.id, partnerSeat.n);
+      if (mySeat && mySeat.id === partnerSeat.id && mySeat.n === partnerSeat.n && partnerSeat.s <= mySeat.s) {
+        walkTo(mySeat.from);
+        cue('boop');
+      }
+      if (st) return void eng.pose(partner, poseOf(st));
+    }
     if (!m.in || !m.to) return;
     if (m.from && m.s !== undefined && m.ms) {
       const ago = relayNow() - m.s;
@@ -252,11 +304,18 @@
     }
     if (h.kind === 'door') return leave();
     if (h.kind === 'piece') {
-      // in place: my villager turns to it, it answers where it stands
-      const p = room.byId(h.id);
-      if (p) eng.face(me, centreOf(p));
+      const p = room.byId(h.id), meta = p && ITEMS[p.item];
+      // a chair, a sofa, a bed: walk up to it and sit or lie (physical, like the door)
+      if (p && meta?.u && !p.on && sitOn(h.id)) return;
+      // in place: my villager turns to it, it answers where it stands; a light switches on or off (both phones)
+      const at = spots().find((q) => q.id === h.id);
+      if (at) eng.face(me, centreOf(at));
       eng.bump(h.id);
-      cue(eng.toggle(h.id) ? 'toggle-on' : 'scene-decor');
+      if (p && meta?.lt) {
+        const on = (p.l ?? 1) !== 1;
+        room.switchLight(p.id, on);
+        cue(on ? 'toggle-on' : 'toggle-off');
+      } else cue('scene-decor');
       return;
     }
     walkTo([h.x, h.z]);
@@ -279,9 +338,13 @@
   // the room as the store has it: the pieces, the wallpaper and the floor
   $effect(() => {
     const ps = room.pieces, w = room.wall, f = room.floor, e = eng;
+    void room.lights;
     if (!e) return;
     untrack(() => {
-      e.pieces(resolveRoom(ps.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, ...(p.on ? { on: p.on } : {}) }))));
+      e.pieces(resolveRoom(ps.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, ...(p.on ? { on: p.on } : {}), ...(p.l !== undefined ? { l: p.l } : {}) }))));
+      e.room(room.lights);
+      // a seat whose piece moved or went: up and off it
+      if (mySeat && !seatAt(mySeat.id, mySeat.n)) walkTo(mySeat.from);
       e.surfaces(w ?? DEFAULT_WALL, f ?? DEFAULT_FLOOR);
     });
   });
@@ -410,6 +473,10 @@
       held: () => link.theirs().map((h) => ({ id: h.id, item: h.item, x: h.x, z: h.z, f: h.f })),
       partner: () => (eng?.at(partner) ? { at: eng.at(partner), walking: eng.walking(partner) } : null),
       starter: () => STARTER,
+      /** Where my villager sits or lies (null: standing), and the partner's. */
+      seat: () => (mySeat ? { id: mySeat.id, n: mySeat.n, lie: mySeat.lie } : null),
+      partnerSeat: () => partnerSeat,
+      lights: () => ({ room: room.lights, pieces: room.pieces.filter((p) => ITEMS[p.item]?.lt).map((p) => ({ id: p.id, on: (p.l ?? 1) === 1 })) }),
       /** The partner has the app open (the relay's presence). */
       peer: () => peer,
       hit: (cx: number, cy: number) => eng?.hit(cx, cy),
@@ -458,6 +525,14 @@
   <div class="top" bind:this={top}>
     {#if !editing}<NavButton kind="back" text={t('tent.back')} onclick={leave} sfx="self" />{/if}
   </div>
+  {#if !editing}
+    <!-- NH's room light switch: the room's own light on or off (the lamps that are on light it then) -->
+    <button type="button" class="switch" class:off={!room.lights} data-tent-lights={room.lights ? 'on' : 'off'} data-sfx="self"
+      aria-label={t('tent.lights')} aria-pressed={room.lights}
+      onclick={() => (room.switchRoom(!room.lights), cue(room.lights ? 'toggle-on' : 'toggle-off'))}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3Z" /></svg>
+    </button>
+  {/if}
   {#if turned}
     <!-- back to NH's view of the room -->
     <button type="button" class="reset" data-tent-reset data-sfx="tick" aria-label={t('tent.resetView')} onclick={resetView}>
@@ -503,6 +578,15 @@
   .edit svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   .edit:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-yuzu-lip, #D9B21E); }
   .edit:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .switch {
+    position: absolute; right: calc(var(--side) + var(--safe-right) + 62px); top: calc(var(--safe-top) + 8px); z-index: 2;
+    width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer;
+    color: var(--c-ink); background: var(--c-yuzu, #F7D94C); box-shadow: var(--sh-obj); -webkit-tap-highlight-color: transparent;
+  }
+  .switch.off { background: #5A4A3A; color: #F5E4BC; }
+  .switch svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .switch:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
+  .switch:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .reset {
     position: absolute; right: calc(var(--side) + var(--safe-right)); top: calc(var(--safe-top) + 8px); z-index: 2;
     width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer;

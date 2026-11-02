@@ -45,6 +45,15 @@ export interface Placed extends Spot {
   id: string;
   /** How high it stands (a surface's top: a small thing on a table). */
   y?: number;
+  /** A light's switch (1 on, 0 off; none: on, as it came). */
+  l?: 0 | 1;
+}
+/** A villager sitting or lying: where (model units), how high, and the piece's front (it faces that way). */
+export interface Pose {
+  at: Pt;
+  y: number;
+  lie: boolean;
+  front: Pt;
 }
 export interface Ghost {
   item: string;
@@ -80,8 +89,10 @@ export interface Tent {
   grid(on: boolean): void;
   /** A piece jiggles where it stands (a tap). */
   bump(id: string): void;
-  /** A lamp's light, on or off (a tap); the night lights it. */
-  toggle(id: string): boolean;
+  /** NH's room light switch (off: the room's own light goes down). */
+  room(on: boolean): void;
+  /** A villager sits or lies (null: it stands where it is). */
+  pose(who: Who, p: Pose | null): void;
   /** 0 day … 1 night: the light, and the lamps on. */
   night(n: number): void;
   villager(who: Who, look: Look | null): void;
@@ -564,36 +575,37 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     pointLights.push(p);
     scene.add(p);
   }
+  /** NH's room light switch: off, the room's own light goes down (the lamps that are on light it). */
+  let roomOn = true;
   function lights() {
-    const lamps = [...live.values()].filter((l) => l.lit.length && l.root.visible).map((l) => {
-      const on = l.on ?? nightN > 0.5;
+    // a light glows while it's switched on (NH's lamps: at any hour); in the dark (night, or the room's light off) the
+    // ones on light the room round them (a few point lights: the phone's budget)
+    const dark = nightN > 0.5 || !roomOn;
+    const lamps = [...live.values()].filter((l) => ITEMS[l.spot.item]?.lt && l.root.visible).map((l) => {
+      const on = (l.spot.l ?? 1) === 1;
       for (const m of l.lit) m.emissiveIntensity = on ? 1.4 : 0;
       return { l, on };
     }).filter((x) => x.on);
     lamps.sort((a, b) => a.l.root.position.length() - b.l.root.position.length());
     pointLights.forEach((p, i) => {
-      const x = lamps[i];
+      const x = dark ? lamps[i] : undefined;
       p.intensity = x ? 900 : 0;
       if (x) p.position.set(x.l.root.position.x, (ITEMS[x.l.spot.item]?.h ?? 8) * 0.8 + 2, x.l.root.position.z);
     });
   }
-  function toggle(id: string): boolean {
-    const l = live.get(id);
-    if (!l?.lit.length) return false;
-    l.on = !(l.on ?? nightN > 0.5);
-    lights();
-    invalidate();
-    return true;
+  function room(on: boolean) {
+    roomOn = on;
+    night(nightN);
   }
   function night(n: number) {
     nightN = Math.max(0, Math.min(1, n));
-    const k = nightN;
-    hemi.intensity = 1.5 - 0.75 * k;
+    const k = nightN, dim = roomOn ? 1 : 0.32;
+    hemi.intensity = (1.5 - 0.75 * k) * dim;
     hemi.color.set(0xfff3dc).lerp(new Color(0xc9c4e8), k * 0.6);
-    key.intensity = 2.1 - 1.3 * k;
+    key.intensity = (2.1 - 1.3 * k) * dim;
     key.color.set(0xfff0d6).lerp(new Color(0xffd29a), k);
-    amb.intensity = 0.35 - 0.1 * k;
-    fill.intensity = 0.9 - 0.4 * k;
+    amb.intensity = (0.35 - 0.1 * k) * (roomOn ? 1 : 0.6);
+    fill.intensity = (0.9 - 0.4 * k) * dim;
     for (const v of villagers.values()) v.mat.color.set(0xffffff).lerp(new Color(0xd8cfe8), k * 0.35);
     lights();
     invalidate();
@@ -612,6 +624,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     face: number;
     path: { from: [number, number]; pts: Pt[]; t0: number; ms: number; lens: number[]; total: number } | null;
     hop: number;
+    /** Sitting or lying (a walk stands it up). */
+    pose: Pose | null;
     /** The render's alpha, small (a tap hits the villager, not the clear around it). */
     alpha: { w: number; h: number; a: Uint8ClampedArray } | null;
   }
@@ -637,7 +651,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     const shadow = new Mesh(shadowGeo, shadowMat);
     shadow.rotation.x = -Math.PI / 2;
     shadow.renderOrder = 2;
-    const w: Walker = { look, card, mat, shadow, pos: [who === 'A' ? -6 : 6, 20], face: who === 'A' ? 1 : -1, path: null, hop: 0, alpha: null };
+    const w: Walker = { look, card, mat, shadow, pos: [who === 'A' ? -6 : 6, 20], face: who === 'A' ? 1 : -1, path: null, hop: 0, alpha: null, pose: null };
     villagers.set(who, w);
     scene.add(card, shadow);
     tex.loadAsync(look.url).then((t) => {
@@ -670,13 +684,37 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   /** As drawn the render looks left (most) or right; mirrored to face the other way (never a no-mirror one). The
    *  facing is on screen: left and right as the camera sees them. */
   function place(w: Walker, bob = 0, squash = 0) {
+    const P = w.pose;
+    // seated, it faces the piece's front as the camera sees it
+    if (P) w.face = screenSide(P.front[0], P.front[1]) || w.face;
     const flip = !w.look.noMirror && (w.face > 0) !== w.look.looksRight;
+    if (P) {
+      // the renders have no sitting or lying art: sitting, the billboard sinks into the seat to the hips, a little
+      // shorter; lying, it lies back along the bed, its head toward the bed's back, facing up at the camera
+      w.card.position.set(P.at[0], P.lie ? P.y + 0.3 : P.y - VILLAGER_H * 0.22, P.at[1]);
+      w.card.rotation.set(P.lie ? -Math.PI / 2 + 0.35 : view.pitch * 0.45, view.az, 0);
+      w.card.scale.set(VILLAGER_H * w.look.aspect * (flip ? -1 : 1), VILLAGER_H * (P.lie ? 0.95 : 0.92), 1);
+      w.shadow.visible = false;
+      return;
+    }
+    w.shadow.visible = true;
     w.card.position.set(w.pos[0], bob, w.pos[1]);
     w.card.rotation.set(view.pitch * 0.45, view.az, 0);
     w.card.scale.set(VILLAGER_H * w.look.aspect * (flip ? -1 : 1) * (1 + squash), VILLAGER_H * (1 - squash), 1);
     w.shadow.position.set(w.pos[0], 0.1, w.pos[1]);
     const s = 1 - Math.min(0.3, bob / 8);
     w.shadow.scale.set(s, s, s);
+  }
+  function pose(who: Who, p: Pose | null) {
+    const w = villagers.get(who);
+    if (!w) return;
+    w.pose = p;
+    if (p) {
+      w.path = null;
+      w.pos = [p.at[0], p.at[1]];
+    }
+    place(w);
+    invalidate();
   }
   function walkLens(from: Pt, pts: readonly Pt[]) {
     const lens: number[] = [];
@@ -695,6 +733,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     const from: [number, number] = o.from ? [o.from[0], o.from[1]] : [...w.pos];
     const { lens, total } = walkLens(from, pts);
     const ms = o.ms ?? (total / PACE) * 1000;
+    w.pose = null;
     w.path = { from, pts: [...pts], t0: now() - (o.ago ?? 0), ms: Math.max(1, ms), lens, total };
     invalidate();
     return ms;
@@ -1110,12 +1149,13 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   night(0);
 
   return {
-    resize, surfaces, pieces, hide, held, pick, ghost, grid, bump, toggle, night, villager,
+    resize, surfaces, pieces, hide, held, pick, ghost, grid, bump, room, pose, night, villager,
     at: (who) => (villagers.get(who)?.pos.slice() as [number, number] | undefined) ?? null,
     put(who, p, f) {
       const w = villagers.get(who);
       if (!w) return;
       w.path = null;
+      w.pose = null;
       w.pos = [p[0], p[1]];
       if (f) setFace(w, f);
       place(w);

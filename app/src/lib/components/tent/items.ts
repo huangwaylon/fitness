@@ -29,6 +29,11 @@ export interface ItemMeta {
   s?: 1;
   /** Small (NH's miscellaneous): may stand on a surface. */
   sm?: 1;
+  /** NH's interaction: sat on (s: a chair, a sofa, a stool) or lain on (l: a bed), by n at once. */
+  u?: 's' | 'l';
+  n?: number;
+  /** A light: a lamp, the lantern, the fireplace (a switch). */
+  lt?: 1;
 }
 
 export const ITEMS: Readonly<Record<string, ItemMeta>> = data.items as Record<string, ItemMeta>;
