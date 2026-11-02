@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, LIVE_V, LIVE_VS, NEST_GAP_MS, REPLAY_BYTES, claimOf, isStored, otherVersion, parseClient, tokyoDay, type LiveV, type Notice, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
+import { CLOSE, LIVE_V, LIVE_VS, NEST_GAP_MS, REPLAY_BYTES, claimOf, isStored, otherVersion, parseClient, tokyoDay, type LiveV, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
 
@@ -26,6 +26,8 @@ export interface RoomIO<S extends Sock> {
   now(): number;
   /** Persist the day's world (fire and forget). */
   save(ring: Kept[]): void;
+  /** Persist the record's last change (`notify`), for the welcomes (fire and forget). */
+  saveRec?(rec: RecordMark): void;
 }
 
 /** A change as the room keeps it: relayed, with its sender's sequence number (`c`: a resend is known again). */
@@ -55,7 +57,7 @@ export class RoomCore<S extends Sock> {
   /** When each person's last phrase went out (presence only: not kept). */
   private said = new Map<Who, number>();
 
-  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = []) {
+  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null) {
     for (const e of ring) this.lastT = Math.max(this.lastT, e.t);
     this.fresh();
   }
@@ -167,7 +169,7 @@ export class RoomCore<S extends Sock> {
     this.io.setMeta(s, { ...meta, who, v });
     const peers = this.authed(other(who));
     const t = this.io.now();
-    this.send(s, { v: LIVE_V, kind: 'welcome', me: who, peer: peers.length > 0, t });
+    this.send(s, { v: LIVE_V, kind: 'welcome', me: who, peer: peers.length > 0, t, ...(this.rec ? { rec: this.rec } : {}) });
     if (since !== undefined) {
       const day = this.fresh().filter((e) => e.t > since && (e.kind !== 'walk' || e.v === v));
       // batch: the day in as few `replay` messages as fit (mine too: a phone that lost its own record gets it back);
@@ -180,6 +182,10 @@ export class RoomCore<S extends Sock> {
 
   /** The sheet changed (Apps Script's /notify): every connected phone hears it, the writer's own too. Returns how many. */
   notify(n: Notice): number {
+    if (!this.rec || n.at > this.rec.at || n.rev !== this.rec.rev) {
+      this.rec = { at: n.at, rev: n.rev };
+      this.io.saveRec?.(this.rec);
+    }
     const to = this.authed();
     const m: ServerMsg = { v: LIVE_V, kind: 'changed', what: n.what, who: n.who, at: n.at, rev: n.rev, t: this.io.now() };
     for (const s of to) this.send(s, m);

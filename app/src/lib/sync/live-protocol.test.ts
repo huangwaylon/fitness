@@ -66,6 +66,9 @@ describe('live protocol: client messages', () => {
 describe('live protocol: relay messages', () => {
   it('accepts welcome, pong, presence and relayed intents', () => {
     expect(parseServer(j2({ kind: 'welcome', me: 'A', peer: true, t: 1 }))).toEqual({ v: 2, kind: 'welcome', me: 'A', peer: true, t: 1 });
+    const rec = { at: '2026-11-01T01:02:03.456Z', rev: 'e1' };
+    expect(parseServer(j2({ kind: 'welcome', me: 'A', peer: true, t: 1, rec }))).toEqual({ v: 2, kind: 'welcome', me: 'A', peer: true, t: 1, rec });
+    expect(parseServer(j2({ kind: 'welcome', me: 'A', peer: true, t: 1, rec: { at: 'soon', rev: 'e1' } }))).toEqual({ v: 2, kind: 'welcome', me: 'A', peer: true, t: 1 }); // a bad mark: as without one
     expect(parseServer(j2({ kind: 'pong', c: 1, t: 2 }))).toEqual({ v: 2, kind: 'pong', c: 1, t: 2 });
     expect(parseServer(j2({ kind: 'presence', who: 'B', on: false, t: 3 }))).toEqual({ v: 2, kind: 'presence', who: 'B', on: false, t: 3 });
     expect(parseServer(j2({ kind: 'walk', to: [1, 2], who: 'B', t: 4 }))).toEqual({ v: 2, kind: 'walk', to: [1, 2], who: 'B', t: 4 });

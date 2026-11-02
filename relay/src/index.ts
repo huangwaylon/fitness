@@ -2,7 +2,7 @@
 // Durable Object, the island room, which relays each person's intents to the other. The room uses the WebSocket
 // Hibernation API, so an idle connection costs nothing; a phone connects only while the app is on screen.
 import { DurableObject } from 'cloudflare:workers';
-import { LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type Relayed, type Who } from '../../app/src/lib/sync/live-protocol.ts';
+import { LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type RecordMark, type Relayed, type Who } from '../../app/src/lib/sync/live-protocol.ts';
 import { originAllowed } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
 import { HELLO_MS, RoomCore, type Kept, type Meta } from './room.ts';
@@ -32,6 +32,8 @@ export interface Env {
 }
 
 const RING = 'ring';
+/** The record's last change (welcome `rec`). */
+const REC = 'rec';
 /** How long a push service may hold a goal notice for an offline phone (s). */
 const PUSH_TTL_S = 2 * 3600;
 
@@ -43,14 +45,16 @@ export class IslandRoom extends DurableObject<Env> implements PushRoom {
     super(ctx, env);
     void ctx.blockConcurrencyWhile(async () => {
       const ring = (await ctx.storage.get<Kept[]>(RING)) ?? [];
+      const rec = (await ctx.storage.get<RecordMark>(REC)) ?? null;
       this.core = new RoomCore<WebSocket>({
         sockets: () => ctx.getWebSockets(),
         meta: (s) => (s.deserializeAttachment() as Meta | null) ?? null,
         setMeta: (s, m) => s.serializeAttachment(m),
         keys: { KEY_A: env.KEY_A, KEY_B: env.KEY_B },
         now: () => Date.now(),
-        save: (r) => void ctx.storage.put(RING, r)
-      }, ring);
+        save: (r) => void ctx.storage.put(RING, r),
+        saveRec: (r) => void ctx.storage.put(REC, r)
+      }, ring, rec);
     });
     const sql = ctx.storage.sql;
     sql.exec('CREATE TABLE IF NOT EXISTS push_subs (endpoint TEXT PRIMARY KEY, who TEXT NOT NULL, p256dh TEXT NOT NULL, auth TEXT NOT NULL, lang TEXT NOT NULL, at INTEGER NOT NULL)');
