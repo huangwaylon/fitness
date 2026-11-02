@@ -201,6 +201,48 @@ On launch (after painting from the cache), when the app becomes visible (≤ eve
 1.5 s after an ack (a `fresh` re-read so server timestamps replace optimistic ones), and while the app is on screen
 whenever the relay says the sheet changed ([Push](#push)). Each refresh flushes the queue, then fetches.
 
+<a id="the-record"></a>
+## The record
+
+The data of record is moving from the sheet to the relay (decisions: *The record on the relay*), in five steps, each
+deployed and green before the next: **1. mirror** (done 2026-11-02), 2. the app reads from the relay, 3. the app writes
+there, 4. the Shortcuts post there, 5. the sheet becomes a one-way export.
+
+- **Where:** `relay/src/store.ts` (`StoreCore`, free of the Workers runtime), in its own SQLite-backed Durable Object,
+  `IslandStore` (`idFromName('record')`, `storeObject.ts`), apart from the island room. Tables: `metrics` (`seq`, `at`,
+  `person`, `date`, `metric`, `value` REAL, `late`; unique (person, date, metric, at), index on `at`), `events` (`seq`,
+  `id` unique, `at`, `person`, `type`, `data`, `slot` unique, `late`; indexes on `at` and `type`), `ids` (every event id
+  ever accepted), `uploads` (the ingest audit), `meta` (`last_at`, `rev`).
+- **API:** `POST /api`, the web app's contract unchanged (`{key, action, ...}` as text/plain JSON; `ingest`, `event`,
+  `snapshot`, `uploads`, `whoami`, keyless `health` → `{ok, build: 'relay-1'}`), every reply JSON with status 200 as
+  Apps Script's; CORS for the allowed origins, none needed for a Shortcut. The Worker checks the origin, method and size
+  only and hands the body to the object, which parses it, checks the key and answers (the Free plan gives a Worker ~10
+  ms of CPU per request; the object far more). Rate limit 120 per key per minute.
+- **Rules** (`app/src/lib/model/record.ts`, shared with the script): the same shape checks (`validEventData`); `at` =
+  max(now, last + 1 ms), one per ingest, one per event; an event id once, forever (`ids`: a late retry of a replaced
+  event is still a duplicate); **slots**, a later event of a slot replacing it (where the sheet deleted and appended): a
+  tally and an island day per sender and day, a cosmetic pref (`locale`, `villagerName`, `villager`, `goalWeight`) per
+  subject, a goal (`moveGoal`, `stepsGoal`) per subject and Tokyo day of its `at` (the goal in force on each past day
+  stays: `moveGoalOn`), a decoration per scope and id (by `decorAccept` / `tentAccept`). A pref the model ignores takes
+  no slot. `highfive` is acknowledged and kept nowhere.
+- **Ingest:** `gas/parse.ts` and the audit row (`gas/audit.ts`) as the script's; a day's latest row read from the
+  (person, date, metric) key over the body's days. `relay/test/ingest-golden.test.ts` runs a week of both phones'
+  Shortcut bodies (their real shapes: A's iPhone-only body with English dates, B's with the Watch's steps and Japanese
+  dates; made-up values) through the script (on its fakes) and the record: the same replies, rows, `at`s and audit rows.
+- **`since`:** answered from the `at` index; an empty poll reads one row (the revision). A row that arrived out of
+  `at` order (only while the script mirrors: two requests' copies racing) is marked `late` with its arrival time, and a
+  poll also returns late rows that arrived after `since` − 10 s, so no phone misses one (the merge dedupes it).
+- **Revision:** `rev` is an epoch (`e1`, `e2`, …), changed only when the record is rebuilt (`node scripts/record.ts
+  rev`, after a restore). Nothing edits the record by hand.
+- **Mirror (step 1):** after each write, outside the lock, the script POSTs the rows it appended (all three tabs, with
+  their `at`) and its notice to `POST /import`, signed like `/notify`; the object takes them by the same rules
+  (idempotent: a copy that lands twice adds nothing) and, when synced rows were new, passes the notice to the room
+  (the push, unchanged). This replaces the script's `/notify` call. A copy that doesn't land is filled in by
+  `import-sheet` again ([runbook §13](ops/runbook.md#13-the-record)).
+- **Measured** (2026-11-02, from Tokyo): a full snapshot 0.09–0.18 s for 73 KB (the sheet's: 2.8–3 s for 131 KB), an
+  empty poll 0.06 s (the sheet's: 2.1–2.2 s).
+- **Backups:** point-in-time recovery (30 days, on the Free plan) and `dump` / `load`: [runbook §13](ops/runbook.md#13-the-record).
+
 ## Live relay
 
 Presence between the two phones while both have the app open (decisions: *Live relay on Cloudflare*). It carries

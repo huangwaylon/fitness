@@ -57,6 +57,17 @@ already paints from IndexedDB, most polls return nothing, and hand edits fire `o
 notify, so an edge copy could serve stale rows) and serving the app's writes through the Worker (a second path for
 data of record).
 
+### The record on the relay
+The rows move from the sheet to a second Durable Object on the relay, `IslandStore`, with SQLite tables, keys and
+indexes; the sheet becomes a one-way export, a backup to look at. The API stays the web app's (`{key, action}`), so
+the app and the Shortcuts only change the URL; the parser and the shape rules are the script's own code. The move goes
+in reversible steps (mirror, reads, writes, Shortcuts, export), the old path working through each, because the two
+phones update a day apart. Why: every keyed Apps Script request took the script lock and 1–15 s (an empty poll once
+14.5 s, a full snapshot 4–8 s), the platform's floor alone is 1–4.7 s, and nobody edits the sheet by hand; on the
+relay a full snapshot takes ~0.1 s and an empty poll ~0.06 s, still on the Free plan (a day's requests, rows read and
+written are each well under 1 % of its limits), with point-in-time recovery for 30 days. Not done: high-fives
+(relay-only now) and superseded cosmetic prefs are not carried over; duplicate finds stay (the ずかん reads the first).
+
 ### Shortcut health sync
 Each iPhone runs one built-in Shortcut posting daily totals (`steps` and `steps_watch`, `exercise_minutes`, `calories`,
 `stand_minutes`, `weight`), triggered when an everyday app opens (Health can't be read while locked). Latest wins: any
