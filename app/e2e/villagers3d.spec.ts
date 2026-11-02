@@ -14,7 +14,9 @@ type V3 = {
 };
 const v3 = <R,>(page: Page, fn: (v: V3) => R) => page.evaluate(`(${fn.toString()})(window.__villagers3d)`) as Promise<R>;
 
-test('the 3D villagers POC draws three villagers, and a tap on the ground walks the chosen one', { tag: '@render' }, async ({ page }) => {
+// (the POC isn't the app: off the drawn smoke, where it took 1.2 min of CI's software GL; the logic tier runs its walk,
+// the full tier its drawing too)
+test('the 3D villagers POC draws three villagers, and a tap on the ground walks the chosen one', async ({ page }) => {
   test.setTimeout(90_000);
   await page.goto('villagers3d/?demo&date=2026-11-04T12:00&a=goldie&b=anchovy&g=judy');
   await page.waitForFunction(() => (window as unknown as { __villagers3d?: V3 }).__villagers3d?.ready(), null, { timeout: 60_000 });
@@ -23,8 +25,11 @@ test('the 3D villagers POC draws three villagers, and a tap on the ground walks 
   // drawing: the island and the three villagers (their skinned meshes: ~4–5 k triangles each)
   await expect.poll(() => v3(page, (v) => v.stats().frames), { timeout: 20_000 }).toBeGreaterThan(5);
   const st = await v3(page, (v) => v.stats());
-  expect(st.calls).toBeGreaterThan(10);
-  expect(st.tris).toBeGreaterThan(12_000);
+  // (the logic tier, E2E_RENDER=none: the frames run, nothing is drawn)
+  if (process.env.E2E_RENDER !== 'none') {
+    expect(st.calls).toBeGreaterThan(10);
+    expect(st.tris).toBeGreaterThan(12_000);
+  }
   // posed every frame (the motion's own JS, measured)
   expect(st.anim.length).toBeGreaterThan(0);
 
