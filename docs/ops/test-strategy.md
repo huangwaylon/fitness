@@ -106,7 +106,7 @@ apart (`RELAY_E2E=1`, nightly or on demand), not on every push.
   named in the summary as flaky, and the owner **quarantines it at once**: tag `@quarantine` with an annotation
   (owner, date, the failure). Quarantined tests leave the gate and run in the full tier until fixed. The quarantine
   is a short list with names on it, not a place tests go to be forgotten.
-- **Newest green deploys:** the gate's jobs don't cancel a run in progress. A newer push waits, and any push still
+- **Newest green deploys:** one run at a time on `main` (a workflow-level concurrency group), never cancelled. A newer push waits, and any push still
   waiting is replaced by the newest. So in a burst of pushes the running one finishes and deploys, then the newest
   runs. That replaces the cancellation storm, where nothing finished.
 - **Test impact analysis** (later, if the gate grows): `playwright test --only-changed=origin/main` on PRs, plus a map

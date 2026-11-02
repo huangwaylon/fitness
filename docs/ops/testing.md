@@ -15,8 +15,8 @@ The tiers and why: [test-strategy.md](test-strategy.md).
 | `e2e-full` ×6 | **the full tier** (`.github/workflows/e2e-full.yml`, its own workflow after each run of this one, and on demand): the whole suite drawn (the quarantine too); its failures in its summary and on their specs | no |
 | `e2e-3d` ×8 | the same suite on the 3D island (`E2E_ISLAND=3d`), ahead of the cutover; nightly and on demand (`gh workflow run pages.yml`) only; its failures in its job summary (docs/world3d-gaps.md) | no, until it's green |
 
-- **Red main never deploys, and the newest green does.** The gate's jobs never cancel a run in progress: a newer push's
-  jobs wait, and one still waiting is replaced by the newest. So in a burst of pushes the running one finishes and
+- **Red main never deploys, and the newest green does.** One run at a time on `main`, never cancelled: a newer push
+  waits, and one still waiting is replaced by the newest. So in a burst of pushes the running one finishes and
   deploys, then the newest runs (a deploy that has started is never cancelled either). The full tier's runs do cancel
   each other: only the newest's result matters.
 - **No silent retries.** `retries: 0`. A test that fails is run once more in its own step: passing then, it's named in the

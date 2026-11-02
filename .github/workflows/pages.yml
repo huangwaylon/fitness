@@ -23,19 +23,20 @@ on:
 permissions:
   contents: read
 
-# The newest green deploys: each gating job has its own group that never cancels a run in progress (a newer push's job
-# waits for it, and one still waiting is replaced by the newest), so in a burst of pushes the running one finishes and
-# deploys, then the newest runs (cancelling the older ones as they went, nothing finished in a burst). `deploy`'s group
-# is never cancelled halfway either. The full tier is its own workflow after this one (e2e-full.yml): this run's result
-# is the gate's alone.
+# The newest green deploys: one run at a time on a branch, never cancelled (`cancel-in-progress: false`); a newer push
+# waits, and one still waiting is replaced by the newest. So in a burst of pushes the running one finishes and deploys,
+# then the newest runs. (Each job had its own group before, cancelling the older run's: in a burst nothing finished,
+# and with the groups never cancelling, each waiting run lost a few shards to the next push and none deployed.)
+# `deploy`'s own group is never cancelled halfway either. The full tier is its own workflow after this one
+# (e2e-full.yml): this run's result is the gate's alone. The nightly run (the long e2e-3d, no deploy) has a group of its own.
+concurrency:
+  group: pages-${{ github.ref }}${{ github.event_name == 'schedule' && '-nightly' || '' }}
+  cancel-in-progress: false
 
 jobs:
   # The deployable build, once (about 30 s).
   build:
     runs-on: ubuntu-latest
-    concurrency:
-      group: pages-build-${{ github.ref }}
-      cancel-in-progress: false
     defaults:
       run:
         working-directory: app
@@ -69,9 +70,6 @@ jobs:
   # fixtures included), beside the build.
   checks:
     runs-on: ubuntu-latest
-    concurrency:
-      group: pages-checks-${{ github.ref }}
-      cancel-in-progress: false
     defaults:
       run:
         working-directory: app
@@ -101,9 +99,6 @@ jobs:
   e2e-logic:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    concurrency:
-      group: pages-e2e-logic-${{ matrix.shard }}-${{ github.ref }}
-      cancel-in-progress: false
     strategy:
       fail-fast: false
       matrix:
@@ -167,9 +162,6 @@ jobs:
   e2e-render:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    concurrency:
-      group: pages-e2e-render-${{ github.ref }}
-      cancel-in-progress: false
     defaults:
       run:
         working-directory: app
