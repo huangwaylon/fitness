@@ -104,7 +104,12 @@ export default defineConfig({
       }
     })
   ],
-  // Fonts ship as separate files (fetched per unicode-range subset) instead of base64 in the blocking CSS.
-  build: { assetsInlineLimit: (file) => (/\.woff2?$/.test(file) ? false : undefined) },
+  build: {
+    // The two phones it's for: an iPhone 15 and an iPhone 16 (shipped with iOS 17 and 18), on Safari.
+    target: ['safari17', 'ios17'],
+    cssTarget: ['safari17', 'ios17'],
+    // Fonts ship as separate files (fetched per unicode-range subset) instead of base64 in the blocking CSS.
+    assetsInlineLimit: (file) => (/\.woff2?$/.test(file) ? false : undefined)
+  },
   test: { include: ['src/**/*.test.ts', 'gas/**/*.test.ts'] }
 });

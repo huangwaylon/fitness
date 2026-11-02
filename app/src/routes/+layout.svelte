@@ -23,7 +23,7 @@
   import { startViewport } from '#lib/ui-state/viewport.ts';
   import { jarTransition } from '#lib/ui-state/jarTransition.ts';
   import { doorTransition } from '#lib/ui-state/doorTransition.ts';
-  import { lazy, safeReload } from '#lib/ui-state/reload.ts';
+  import { lazy, reloadUnlessLeaving, safeReload } from '#lib/ui-state/reload.ts';
   import { startSound } from '#lib/sound/sound.svelte.ts';
   import { startTaps } from '#lib/sound/taps.ts';
   import { startModality } from '#lib/components/ui/modality.ts';
@@ -75,8 +75,8 @@
       if (document.visibilityState === 'visible' && !routeOf(location.pathname).startsWith('/pair')) week.refresh({ background: true });
     };
     document.addEventListener('visibilitychange', onVisible);
-    // Any other chunk that fails to load (Vite's preload helper reports it): a stale build, reload once.
-    const onStale = () => safeReload();
+    // Any other chunk that fails to load (Vite's preload helper reports it): a stale build, reload once (not as we leave).
+    const onStale = () => void reloadUnlessLeaving();
     window.addEventListener('vite:preloadError', onStale);
     const stopViewport = startViewport();
     // Sound (all off by default): unlocks on the first tap, muffles the music under a sheet, the panel or the harvest.

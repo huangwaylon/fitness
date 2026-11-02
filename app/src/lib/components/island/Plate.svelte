@@ -64,7 +64,10 @@
   }
 
   onMount(() => {
-    void tick().then(() => {
+    // measured once its glyphs' font subsets are in (laid out hidden, a page's first use of a subset fetches it: measured
+    // in the fallback font, the plate came out a few px wider than its room on Safari)
+    void tick().then(() => (el?.querySelector('.catch-plate')?.getBoundingClientRect(), document.fonts?.ready)).then(() => {
+      if (!el?.isConnected) return;
       const g = stageGeo(scene), plate = el?.querySelector('.catch-plate')?.getBoundingClientRect();
       if (!g || !plate || !scene) return;
       const sx = g.r.left + x / g.k, sy = g.r.top + y / g.k, h = plate.height + 4; // + the plate's lip

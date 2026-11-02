@@ -42,7 +42,6 @@ interface Deck {
 }
 
 type AudioSessionNav = Navigator & { audioSession?: { type: string } };
-type WebkitWindow = Window & { webkitAudioContext?: typeof AudioContext };
 type Synth = typeof import('./synth.ts');
 type BedSynth = typeof import('./ambientSynth.ts');
 
@@ -141,7 +140,7 @@ export class Engine {
   /** The context, created on first use (inside a tap on iOS). Null where Web Audio is missing. */
   #ensure(): AudioContext | null {
     if (this.ctx) return this.ctx;
-    const AC = window.AudioContext ?? (window as WebkitWindow).webkitAudioContext;
+    const AC = window.AudioContext;
     if (!AC) return null;
     // Game music (user): 'ambient' mixes with other apps' audio and follows the Ring/Silent switch. WebKit takes the
     // type when audio first starts, so it's set before the context exists.

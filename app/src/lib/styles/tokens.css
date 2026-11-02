@@ -96,10 +96,8 @@
   /* ---------- viewport heights ----------
      --vh-fill: 100dvh, for things that fill the visible screen and never scroll themselves (island, panel,
      sheet max-height). --vh-page: 100svh, the min-height of a page the document scrolls (stable while
-     Safari's toolbars collapse). --vh1: 1dvh for clamps. Each falls back to vh before Safari 15.4 (the
-     @supports block below), so a height never resolves to an invalid dvh. Never add --kb to these: iOS
-     does not resize the layout viewport for the keyboard; --kb is only padding / sticky bottom. */
-  --vh-fill: 100vh; --vh-page: 100vh; --vh1: 1vh;
+     Safari's toolbars collapse). --vh1: 1dvh for clamps (set below, with --doc-height). Never add --kb to
+     these: iOS does not resize the layout viewport for the keyboard; --kb is only padding / sticky bottom. */
 
   /* ---------- fluid scale: clamps instead of breakpoint steps ---------- */
   --cta-h: clamp(48px, calc(6.6 * var(--vh1)), 60px);  /* the one action */
@@ -142,9 +140,6 @@
 /* A cold iOS Home Screen launch under-reports dvh/svh by the status bar, leaving a beige band at the bottom:
    ui-state/viewport.ts publishes the screen height as --doc-height in a full-screen standalone window. */
 :root { --vh-fill: var(--doc-height, 100dvh); --vh-page: var(--doc-height, 100svh); --vh1: calc(var(--doc-height, 100dvh) / 100); }
-@supports not (height: 100dvh) {
-  :root { --vh-fill: var(--doc-height, 100vh); --vh-page: var(--doc-height, 100vh); --vh1: calc(var(--doc-height, 100vh) / 100); }
-}
 
 /* ---------- small screens: compact = SE height or < 360 wide; tiny = 320 phones ----------
    (--cta-h is a fluid clamp: no steps here) */
