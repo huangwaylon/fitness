@@ -7,7 +7,10 @@ import { expect, type Locator, type Page } from '@playwright/test';
 export type W3 = {
   loaded(): boolean;
   camStill(): boolean;
-  stats(): { frames: number; calls: number; loading: number; lamps: number; points: number };
+  /** Nothing moving: no gesture, fling, settle or activity (the engine's idle). */
+  idle(): boolean;
+  /** `drawn`: false in the logic tier (E2E_RENDER=none: the frames run, nothing is drawn, `calls` 0). */
+  stats(): { frames: number; calls: number; loading: number; lamps: number; points: number; drawn: boolean };
   view(): { camZ: number; zoom: number; pitch: number; camX: number };
   limits(): { min: number; max: number };
   client(x: number, z: number, lift?: number): [number, number];
@@ -56,3 +59,26 @@ export async function watchFor(page: Page, sels: readonly string[]) {
   }, sels);
 }
 export const sawIt = (page: Page, sel: string) => page.evaluate((s) => !!(window as unknown as { __saw?: Record<string, boolean> }).__saw?.[s], sel);
+
+/** A tap on the 3D island's model `id` (`__world3d.where`), at its point `lift` above its feet, through the camera's
+ *  own projection: the game's state says where it is, not the pixels. Polled until the model is in and shown and, with
+ *  `sel`, until that point hit-tests to `sel`'s tap area (nothing walking in front of it). */
+export async function tapThing(page: Page, id: string, { lift = 0, sel }: { lift?: number; sel?: string } = {}) {
+  const at = () => page.evaluate(([id, lift, sel]) => {
+    const w = (window as unknown as { __world3d: W3 }).__world3d, p = w.where(id);
+    if (!p || p.hidden) return null;
+    const [x, y] = w.client(p.x, -p.z, p.y + lift);
+    return !sel || document.elementFromPoint(x, y)?.closest(sel) ? [x, y] : null;
+  }, [id, lift, sel ?? ''] as const);
+  await expect.poll(at, { message: `the 3D model ${id}, shown${sel ? ` and its ${sel} clear` : ''}` }).not.toBeNull();
+  const [x, y] = (await at())!;
+  await page.mouse.click(x, y);
+}
+
+/** The 3D island at rest: its camera still and nothing moving (polled; a villager wandering by doesn't count). */
+export const settled = (page: Page, timeout = 20_000) => expect.poll(() => w3(page, (w) => w.camStill() && w.idle()), { timeout, message: 'the 3D island at rest' }).toBe(true);
+
+/** Time on: the page's clock (`page.clock.install()` first) runs `ms`, the 3D engines' frames included (the clock fakes
+ *  requestAnimationFrame): the sim step. Quick in the logic tier (nothing drawn); drawn under software GL a minute of
+ *  frames takes minutes (use `page.clock.fastForward` there). */
+export const step = (page: Page, ms: number) => page.clock.runFor(ms);
