@@ -2863,6 +2863,30 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Pear_NH_Inv_Icon.png"
     },
+    "fruit3d/apple": {
+      "path": "fruit3d/apple.webp",
+      "w": 128,
+      "h": 128,
+      "source": "rendered from NH's model UnitIconPltFruitApple (scripts/models.ts)"
+    },
+    "fruit3d/cherry": {
+      "path": "fruit3d/cherry.webp",
+      "w": 128,
+      "h": 128,
+      "source": "rendered from NH's model UnitIconPltFruitCherry (scripts/models.ts)"
+    },
+    "fruit3d/peach": {
+      "path": "fruit3d/peach.webp",
+      "w": 128,
+      "h": 128,
+      "source": "rendered from NH's model UnitIconPltFruitPeach (scripts/models.ts)"
+    },
+    "fruit3d/pear": {
+      "path": "fruit3d/pear.webp",
+      "w": 128,
+      "h": 128,
+      "source": "rendered from NH's model UnitIconPltFruitPear (scripts/models.ts)"
+    },
     "host/isabelle": {
       "path": "host/isabelle.webp",
       "w": 175,

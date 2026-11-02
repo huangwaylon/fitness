@@ -93,7 +93,7 @@ export const BODY_ART: Record<'weight' | 'body_fat_pct' | 'bmi' | 'lean_kg', str
 
 /** One of the four ring fruits → inventory icon key. */
 export function fruitArt(fruit: RingFruit): string {
-  return `fruit/${fruit}`;
+  return `fruit3d/${fruit}`;
 }
 
 
