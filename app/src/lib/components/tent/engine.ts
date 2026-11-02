@@ -16,6 +16,7 @@ import { HALF, ROOM, TILE, centreOf, isSurface, isWallItem, onTop, wallSpot, typ
 import { footprint, floorUrl, ITEMS, modelUrl, wallUrl } from './items.ts';
 import { createVillager, VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
 import { seatOf } from '../villager3d/poses.ts';
+import type { Anchor } from '../villager3d/seats3d.ts';
 
 /** The walls' height (RoomMdlWall: 40 model units, four tiles). */
 const WALL_H = 40;
@@ -61,6 +62,8 @@ export interface Pose {
   y: number;
   lie: boolean;
   front: Pt;
+  /** Its model's own seat (villager3d/seats3d.ts): a 3D villager sits or lies on it there (villager3d sitAt). */
+  a?: Anchor;
 }
 export interface Ghost {
   item: string;
@@ -877,6 +880,9 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     if (w.v3) {
       placeCard(w, P, flip, bob, squash);
       const g = w.v3.group;
+      // on its model's own seat: the villager sits down there itself (and the group is its own till it gets up)
+      if (P?.a) return w.v3.sitAt(P.a);
+      if (w.v3.seat()) w.v3.sitAt(null);
       if (P) {
         // its hips on the seat's top (lying: its middle on the bed), facing the piece's front
         g.position.set(P.at[0], P.lie ? P.y : P.y - seatOf(w.v3.rig.body) * VILLAGER_S * V3_SCALE, P.at[1]);
@@ -916,7 +922,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     w.pose = p;
     if (p) {
       w.path = null;
-      w.pos = [p.at[0], p.at[1]];
+      // (sat on its model's seat: it gets up a step in front, where it walks off from)
+      w.pos = p.a ? [p.a.from[0], p.a.from[1]] : [p.at[0], p.at[1]];
     }
     place(w);
     invalidate();

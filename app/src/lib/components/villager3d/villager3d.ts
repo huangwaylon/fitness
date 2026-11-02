@@ -20,6 +20,12 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
 import { ACTION_MS, FADE_MS, STRIDE, action, base, mix, over, type Action, type Pose, type State } from './poses.ts';
 import { cellTransform, eyeAt, mouthAt, type Face } from './faces.ts';
 import { rigOf, type Rig } from './rig.ts';
+import type { Anchor } from './seats3d.ts';
+
+/** Sitting down or getting up (ms): the turn, the step onto it, the pose's change. */
+export const SIT_MS = 420;
+/** How far the seat's top is under the hips' joint (model units): the body's round bottom sits into it a little. */
+const SINK = 0.55;
 
 /** World units per model unit: an NH villager is 14.9 model units, the island's 80u (world3d-assets.ts VILLAGER_S). */
 export const VILLAGER_S = 5.4;
@@ -48,6 +54,14 @@ export interface Villager3D {
   grip(obj: Object3D | null): void;
   /** The gripped tool's far end (a rod's tip: its lowest point as authored), world space (three's), or null. */
   tip(): Vector3 | null;
+  /** Sit or lie on a seat (seats3d.ts: its anchor, in the group's parent's space): from where it stands it turns,
+   *  steps back onto it and sits down, or climbs onto the bed and lies down (SIT_MS), the hips on the seat, the back to
+   *  its back, the head on the pillow end, its feet down or dangling as the seat's height has them. While it's on one
+   *  the group is the villager's own (the caller stops placing it). null: it gets up, back to wherever the caller puts
+   *  the group from then on (the spot it walks off from). */
+  sitAt(a: Anchor | null): void;
+  /** On a seat (sitting down or seated), else null: its anchor. */
+  seat(): Anchor | null;
   /** Hold a pose as it is (a test's, a still): null lets the states and actions move it again. */
   hold(p: Pose | null): void;
   rig: Rig;
@@ -116,6 +130,10 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
     }
   });
   const rig = rigOf(model);
+  // its measures at rest (model units): how tall, how far its back is behind its middle (lying on it, it's lifted by
+  // that; sitting, its hips sit that far out from the seat's back)
+  const restBox = new Box3().setFromObject(model);
+  const tall = restBox.max.y, backDepth = Math.max(1, -restBox.min.z);
   // the faces NH swaps whole meshes for (a bird's beak, a deer's or a gorilla's muzzle: scripts/villagers3d-page.js
   // keeps FaceNothing, FaceGood and FaceBad, named for their face): the one for the expression shows
   const swaps: { kind: 'Nothing' | 'Good' | 'Bad'; mesh: Object3D }[] = [];
@@ -181,7 +199,43 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
 
   let cur: State = 'idle', prev: State = 'idle', since = -1e9, faceSet: Face | null = null;
   let act: { a: Action; t0: number } | null = null, phase = 0, lastT = 0, speed = 0, held: Pose | null = null;
-  const o = { phase: 0, speed: 0, body: rig.body, seed };
+  const o: { phase: number; speed: number; body: typeof rig.body; seed: number; seatH?: number; back?: boolean; sway?: number } = { phase: 0, speed: 0, body: rig.body, seed };
+  /** A transform in the group's parent's space. */
+  type Tf = { x: number; y: number; z: number; yaw: number };
+  /** On a seat (since t0, from where it stood), or getting up off one (since t0). */
+  let seat: { a: Anchor; t0: number; from: Tf } | null = null, leaving: { a: Anchor; t0: number; on: Tf } | null = null, fadeMs = FADE_MS;
+  const tfOf = (): Tf => ({ x: group.position.x, y: group.position.y, z: group.position.z, yaw: group.rotation.y });
+  const ease3 = (v: number) => {
+    const k = Math.max(0, Math.min(1, v));
+    return k * k * (3 - 2 * k);
+  };
+  /** Where the group goes on its anchor: sitting, its hips (the group's origin under them) a back's depth out from
+   *  the seat's back (the middle of a seat with none), on the seat's top; lying, its feet's end (the pivot) along the
+   *  bed from the head's end, lifted by its back's depth. */
+  const onSeat = (a: Anchor): Tf => {
+    const U = VILLAGER_S * group.scale.x, fx = Math.sin(a.yaw), fz = Math.cos(a.yaw);
+    if (!a.lie) {
+      const out = a.back > 0 ? Math.min(backDepth * U * 0.8, a.depth * 0.55) : a.depth * 0.5;
+      return { x: a.x + fx * out, y: a.y + (SINK - rig.body.hip) * U, z: a.z + fz * out, yaw: a.yaw };
+    }
+    const L = tall * U, along = L <= a.len ? L + (a.len - L) * 0.12 : (a.len + L) / 2;
+    return { x: a.x + fx * along, y: a.y + backDepth * U * 0.85 + a.pillow * 0.3, z: a.z + fz * along, yaw: a.yaw };
+  };
+  /** a → b by k, the turn first, an arc over what's in the way (a seat's back from behind it, onto a bed). */
+  const between = (a: Tf, b: Tf, k: number, hop: number): Tf => {
+    const e = ease3(k), ey = ease3(k * 1.7);
+    let d = b.yaw - a.yaw;
+    while (d > Math.PI) d -= Math.PI * 2;
+    while (d < -Math.PI) d += Math.PI * 2;
+    return { x: a.x + (b.x - a.x) * e, y: a.y + (b.y - a.y) * e + Math.sin(Math.PI * Math.min(1, k)) * hop, z: a.z + (b.z - a.z) * e, yaw: a.yaw + d * ey };
+  };
+  /** How high to arc from `p` onto (or off) its anchor: over its back when `p` is behind it, up onto a bed. */
+  const hopOf = (a: Anchor, p: Tf): number => {
+    const U = VILLAGER_S * group.scale.x;
+    if (a.lie) return 2.5 * U;
+    const behind = (p.x - a.x) * Math.sin(a.yaw) + (p.z - a.z) * Math.cos(a.yaw) < 0;
+    return behind && a.back > 0 ? a.y - a.floor + a.back + 1.5 * U : 0.6 * U;
+  };
   const setCell = (f: (typeof faces)[number], i: number): boolean => {
     if (f.cell === i) return false;
     f.cell = i;
@@ -219,7 +273,37 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       prev = cur;
       cur = s;
       since = lastT;
+      fadeMs = seat || (leaving && lastT - leaving.t0 < SIT_MS) ? SIT_MS : FADE_MS;
     },
+    sitAt(a) {
+      if (a && seat && seat.a === a) return;
+      if (a) {
+        seat = { a, t0: lastT, from: leaving ? tfOf() : tfOf() };
+        leaving = null;
+        const s: State = a.lie ? (cur === 'nap' ? 'nap' : 'lie') : 'sit';
+        if (s !== cur) {
+          prev = cur;
+          cur = s;
+          since = lastT;
+        }
+        fadeMs = SIT_MS;
+        o.seatH = a.lie ? undefined : (a.y - a.floor) / (VILLAGER_S * group.scale.x) + SINK;
+        o.back = a.back > 0;
+        o.sway = a.sway ? 1 : 0;
+        return;
+      }
+      if (!seat) return;
+      leaving = { a: seat.a, t0: lastT, on: onSeat(seat.a) };
+      seat = null;
+      o.sway = 0;
+      if (cur === 'sit' || cur === 'lie' || cur === 'nap') {
+        prev = cur;
+        cur = 'idle';
+        since = lastT;
+      }
+      fadeMs = SIT_MS;
+    },
+    seat: () => seat?.a ?? null,
     state: () => cur,
     act(a) {
       act = { a, t0: lastT };
@@ -295,7 +379,9 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       speed = sp;
       o.phase = phase;
       o.speed = speed;
-      const k = Math.min(1, (t - since) / FADE_MS);
+      const k = Math.min(1, (t - since) / fadeMs);
+      // (the pose's legs follow the seat's height while on it and getting up off it)
+      if (!seat && !(leaving && t - leaving.t0 < SIT_MS)) o.seatH = undefined;
       let p: Pose = base(cur, t, o);
       if (k < 1) p = mix(base(prev, t, o), p, k);
       if (held) p = held;
@@ -311,15 +397,45 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       // the body: lifted, squashed (its volume kept), pitched (lying down: lifted onto its back)
       const sq = p.sq;
       inner.scale.set(VILLAGER_S / Math.sqrt(sq), VILLAGER_S * sq, VILLAGER_S / Math.sqrt(sq));
-      inner.position.y = p.y * VILLAGER_S + (p.pitch ? -Math.sin(p.pitch) * 2.2 * VILLAGER_S : 0);
       inner.rotation.x = p.pitch;
-      // lying, its middle over the group's origin (the bed's), not its feet
-      inner.position.z = p.pitch ? Math.sin(p.pitch) * -6.5 * VILLAGER_S : 0;
-      blob.scale.setScalar(p.pitch ? 30 : 17 * (1 - Math.min(0.4, p.y * 0.12)));
+      // on a seat (or getting on or off one): the group where its anchor has it, eased from (or back to) where the
+      // caller has it standing
+      const anchored = seat ?? leaving;
+      let moving = false;
+      if (anchored) {
+        const live = tfOf();
+        let tf: Tf;
+        if (seat) {
+          const u = (t - seat.t0) / SIT_MS, to = onSeat(seat.a);
+          tf = u < 1 ? between(seat.from, to, u, hopOf(seat.a, seat.from)) : to;
+          moving = u < 1;
+        } else {
+          const u = (t - leaving!.t0) / SIT_MS;
+          tf = between(leaving!.on, live, u, hopOf(leaving!.a, live));
+          moving = u < 1;
+          if (!moving) leaving = null;
+        }
+        group.position.set(tf.x, tf.y, tf.z);
+        group.rotation.set(0, tf.yaw, 0, 'YXZ');
+        // a hammock's gentle sway, rolled about its length
+        if (seat?.a.sway) {
+          group.rotation.z = 0.05 * Math.sin(t / 1300);
+          moving = true;
+        }
+        // its body straight on the seat (the pose's own lift and the legacy lying offsets aside)
+        inner.position.set(0, 0, 0);
+        blob.position.y = (anchored.a.floor - tf.y) / group.scale.x + 0.6;
+      } else {
+        inner.position.y = p.y * VILLAGER_S + (p.pitch ? -Math.sin(p.pitch) * 2.2 * VILLAGER_S : 0);
+        // lying, its middle over the group's origin (the bed's), not its feet
+        inner.position.z = p.pitch ? Math.sin(p.pitch) * -6.5 * VILLAGER_S : 0;
+        blob.position.y = 0.6;
+      }
+      blob.scale.setScalar(p.pitch ? 30 : 17 * (1 - Math.min(0.4, Math.max(0, p.y) * 0.12)));
       blobMat.opacity = p.pitch ? 0.12 : 0.22;
       showFace(t);
-      // (still moving: a crossfade between states, an action under way)
-      return k < 1 || !!act;
+      // (still moving: a crossfade between states, an action under way, getting on or off a seat)
+      return k < 1 || !!act || moving;
     },
     blink(t) {
       lastT = t;

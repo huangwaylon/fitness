@@ -13,6 +13,9 @@ import { createVillager, VILLAGER_S, type Villager3D } from '../villager3d/villa
 import { url3d } from '../villager3d/manifest.ts';
 import { ACTION_MS, seatOf, type Action, type State } from '../villager3d/poses.ts';
 import { angling, type Phase } from './fishing3d.ts';
+import { anchorsOf, shapeOf, type Anchor } from '../villager3d/seats3d.ts';
+import ISLAND_MODELS from '../island/models.json' with { type: 'json' };
+import { DECOR_SLOTS, DECOR_U, SCENERY, seatAt } from '../island/world.ts';
 import type { Face } from '../villager3d/faces.ts';
 import type { Motion } from '../motion/reactions.ts';
 
@@ -67,6 +70,25 @@ const ACT: Partial<Record<Motion, Action>> = {
 };
 /** How far my villager may stand from its float and still hold the line (u: the beach from the lawn, not across the island). */
 const LINE_REACH = 220;
+/** The island's seats (world.ts SEATS) on their pieces: which piece, its model (villager3d/seats3d.json) and which of
+ *  its seats (left to right). */
+const SEAT_ON: Record<string, [piece: string, model: string, n: number]> = {
+  seatMaeL: ['bench-mae', 'park-bench', 0], seatMaeR: ['bench-mae', 'park-bench', 1],
+  seatPondL: ['bench-pond', 'log-bench', 0], seatPondR: ['bench-pond', 'log-bench', 1],
+  stoolW: ['stool-1', 'log-stool', 0], stoolE: ['stool-2', 'log-stool', 0]
+};
+const MU = ISLAND_MODELS as unknown as Record<string, { mu: [number, number] }>;
+/** A seat's anchor (three's space, on the ground at `floor`), as layout3d.ts puts its piece: the fixed decor at NH's
+ *  furniture scale, a stool fitted to its height (the flipped one turned a little), facing the camera. */
+function islandSeat(name: string, floor: number): Anchor | null {
+  const on = SEAT_ON[name];
+  if (!on) return null;
+  const [id, model, n] = on, slot = DECOR_SLOTS.find((d) => d.id === id), sc = SCENERY.find((d) => d.id === id);
+  const p = slot ?? sc;
+  if (!p) return null;
+  const s = slot ? DECOR_U : sc!.h / (MU[sc!.key]?.mu[1] ?? 4.2), yaw = sc?.flip ? 0.7 : 0;
+  return anchorsOf(shapeOf('island', model), { x: p.x, z: -p.z, y: floor, yaw, s })[n] ?? null;
+}
 /** My line's steps as my villager's moments (fishing3d.ts). */
 const ANGLE_ACT: Partial<Record<Phase, Action>> = { cast: 'cast', bite: 'tug', reel: 'reel' };
 /** Its emote as its face. */
@@ -109,6 +131,14 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     rodUntil: number;
   }
   const ws = new Map<string, W>();
+  /** The seats' anchors (one object a seat: villager3d sitAt keeps to the one it's on). */
+  const seats = new Map<string, Anchor | null>();
+  const anchorAt = (s: VSpec): Anchor | null => {
+    const name = seatAt(Math.round(s.x), Math.round(s.z));
+    if (!name) return null;
+    if (!seats.has(name)) seats.set(name, islandSeat(name, s.y));
+    return seats.get(name)!;
+  };
   let lastT = 0, liftL = 0.32, disposed = false;
 
   function ensure(s: VSpec): W {
@@ -246,7 +276,9 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
         : s.face === 'l' ? -1.1 : s.face === 'r' ? 1.1 : s.face === 'in' ? (s.side === 'left' ? 0.6 : -0.6) : 0;
       w.yaw = turn(w.yaw, s.seat !== null ? 0 : want, dt, s.walking ? 14 : 6);
       // its state, and its moment (the director's motion, once each)
-      const state: State = s.asleep ? (s.seat !== null ? 'nap' : 'doze') : s.seat !== null ? 'sit' : s.walking ? 'walk' : rod ? 'fish' : 'idle';
+      // on a seat: on its model's own (villager3d sitAt: the villager sits down there itself), dozing off on it asleep
+      const anchor = s.seat !== null ? anchorAt(s) : null;
+      const state: State = anchor ? 'sit' : s.asleep ? (s.seat !== null ? 'nap' : 'doze') : s.seat !== null ? 'sit' : s.walking ? 'walk' : rod ? 'fish' : 'idle';
       if (v.state() !== state) w.posing = true;
       v.set(state);
       if (s.motionN !== w.motionN) {
@@ -257,11 +289,17 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
           w.busyUntil = t + 1800;
         }
       }
-      v.face(faceOf(s.emote, s.stung));
+      v.face(faceOf(s.emote, s.stung) ?? (anchor && s.asleep ? 'sleepy' : null));
       // on its seat: its hips on the seat's top, its feet hanging in front
-      const lift = s.seat !== null ? s.seat - seatOf(v.rig.body) * VILLAGER_S : s.lift;
-      v.group.position.set(s.x, s.y + lift, -s.z + (s.seat !== null ? 2 : 0));
-      v.group.rotation.y = w.yaw;
+      if (anchor) {
+        v.sitAt(anchor);
+        w.yaw = anchor.yaw;
+      } else {
+        if (v.seat()) v.sitAt(null);
+        const lift = s.seat !== null ? s.seat - seatOf(v.rig.body) * VILLAGER_S : s.lift;
+        v.group.position.set(s.x, s.y + lift, -s.z + (s.seat !== null ? 2 : 0));
+        v.group.rotation.y = w.yaw;
+      }
       const busy = s.walking || t < w.busyUntil || Math.abs(dx) + Math.abs(dz) > 0.01;
       if (busy) moving = true;
       // posed (its breathing, its moment, its walk) while anything moves; still, it holds its pose and only its face

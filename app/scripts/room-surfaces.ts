@@ -134,3 +134,97 @@ function cluster(ys: readonly number[], n: number): { y: number; cover: number }
   const big = Math.max(0, ...out.map((l) => l.cover));
   return out.filter((l) => l.cover >= AREA_MIN && l.cover >= LEVEL_MIN * big).sort((a, b) => b.y - a.y);
 }
+
+// ---- seats and beds (scripts/seat-anchors.ts → villager3d/seats3d.json): where a villager sits or lies on a piece ----
+//   From the same rays down. A seat is the piece's widest flat level under SEAT_MAX (the seat's top: a chair's, a
+//   sofa's cushions, a stool's, a bench's boards; its back and arms are higher and smaller), its rectangle the samples
+//   at that level; its back what stands over it behind the seat's middle. A sofa's or a bench's seats split it across.
+//   A bed's mattress is its widest flat level (a little looser: a futon's, a hammock's cloth sags), lain along its
+//   longer side, the head at the end that is higher (the pillow, the headboard), the −1 end when it can't tell; a double
+//   bed's two lie side by side.
+
+export interface SeatShape {
+  k: 's';
+  /** The seat's top (model units off the floor), its middles across (x), its back edge and front edge (z), how high
+   *  its back stands over it (0: none, a stool, a bench without one). */
+  y: number;
+  x: number[];
+  z0: number;
+  z1: number;
+  back: number;
+}
+export interface BedShape {
+  k: 'l';
+  /** The mattress's top; lain along x or z, the head at −1 or +1 of that axis; from s0 to s1 along it; the middles
+   *  across (one a sleeper); how much higher the pillow end is. */
+  y: number;
+  a: 'x' | 'z';
+  head: -1 | 1;
+  s: [number, number];
+  c: number[];
+  py: number;
+}
+
+const SEAT_FLAT = 0.6, BED_FLAT = 0.45, SEAT_MAX = 13, BAND = 0.4;
+const quant = (v: readonly number[], q: number) => {
+  const s = [...v].sort((a, b) => a - b);
+  return s[Math.min(s.length - 1, Math.max(0, Math.round(q * (s.length - 1))))];
+};
+const med = (v: readonly number[]) => quant(v, 0.5);
+
+/** The most common height of `ys` (bands BAND tall, merged with their neighbours). */
+function widest(ys: readonly number[]): number | null {
+  if (!ys.length) return null;
+  const s = [...ys].sort((a, b) => a - b), groups: number[][] = [];
+  for (const y of s) {
+    const g = groups[groups.length - 1];
+    if (g && y - g[g.length - 1] <= BAND) g.push(y);
+    else groups.push([y]);
+  }
+  return med(groups.sort((a, b) => b.length - a.length)[0]);
+}
+
+type Cell = { x: number; z: number; top: number; flat: boolean };
+function cellsOf(s: Sample, w: number, d: number, step: number, flat: number): Cell[] {
+  const W = w * TILE, D = d * TILE, out: Cell[] = [];
+  s.grid.forEach((col, i) => col.forEach((h, j) => {
+    if (h[0]) out.push({ x: -W / 2 + (i + 0.5) * step, z: -D / 2 + (j + 0.5) * step, top: h[0][0], flat: h[0][1] >= flat });
+  }));
+  return out;
+}
+
+export function seatOf(s: Sample, w: number, d: number, step: number, n: number): SeatShape | null {
+  const cells = cellsOf(s, w, d, step, SEAT_FLAT);
+  const y = widest(cells.filter((c) => c.flat && c.top >= 0.5 && c.top <= SEAT_MAX).map((c) => c.top));
+  if (y === null) return null;
+  const seat = cells.filter((c) => c.flat && Math.abs(c.top - y) <= 0.8);
+  const x0 = quant(seat.map((c) => c.x), 0.03), x1 = quant(seat.map((c) => c.x), 0.97);
+  const z0 = quant(seat.map((c) => c.z), 0.05), z1 = quant(seat.map((c) => c.z), 0.97), zm = (z0 + z1) / 2;
+  // its back: over the seat's width, behind its middle, a good deal higher
+  const backs = cells.filter((c) => c.x >= x0 && c.x <= x1 && c.z < zm && c.top > y + 2.5);
+  const cols = new Set(backs.map((c) => Math.round(c.x / step))).size, across = Math.max(1, Math.round((x1 - x0) / step));
+  const back = cols >= across * 0.4 ? r1(med(backs.map((c) => c.top)) - y) : 0;
+  const x = Array.from({ length: n }, (_, k) => r1(x0 + ((k + 0.5) / n) * (x1 - x0)));
+  return { k: 's', y: r1(y), x, z0: r1(z0), z1: r1(z1), back };
+}
+
+export function bedOf(s: Sample, w: number, d: number, step: number, n: number, h: number): BedShape | null {
+  const cells = cellsOf(s, w, d, step, BED_FLAT);
+  const y = widest(cells.filter((c) => c.flat && c.top >= 0.3 && c.top <= Math.max(1, h * 0.85)).map((c) => c.top));
+  if (y === null) return null;
+  const bed = cells.filter((c) => c.flat && Math.abs(c.top - y) <= 1.2);
+  const xs = bed.map((c) => c.x), zs = bed.map((c) => c.z);
+  const ex = [quant(xs, 0.03), quant(xs, 0.97)], ez = [quant(zs, 0.03), quant(zs, 0.97)];
+  const a: 'x' | 'z' = ex[1] - ex[0] >= ez[1] - ez[0] ? 'x' : 'z';
+  const [s0, s1] = a === 'x' ? ex : ez, [c0, c1] = a === 'x' ? ez : ex;
+  const along = (c: Cell) => (a === 'x' ? c.x : c.z), acrossOf = (c: Cell) => (a === 'x' ? c.z : c.x);
+  // each end's rise over the mattress (its fifth along the bed, over the bed's width)
+  const rise = (lo: number, hi: number) => {
+    const v = cells.filter((c) => along(c) >= lo && along(c) <= hi && acrossOf(c) >= c0 && acrossOf(c) <= c1 && c.top <= y + 6).map((c) => c.top - y);
+    return v.length ? v.reduce((p, q) => p + q, 0) / v.length : 0;
+  };
+  const L = s1 - s0, lo = rise(s0, s0 + L * 0.22), hi = rise(s1 - L * 0.22, s1);
+  const head: -1 | 1 = Math.abs(lo - hi) < 0.25 || lo > hi ? -1 : 1;
+  const c = Array.from({ length: n }, (_, k) => r1(c0 + ((k + 0.5) / n) * (c1 - c0)));
+  return { k: 'l', y: r1(y), a, head, s: [r1(s0), r1(s1)], c, py: r1(Math.max(0, Math.min(3, Math.max(lo, hi)))) };
+}
