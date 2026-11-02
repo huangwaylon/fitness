@@ -63,7 +63,7 @@
 {:else if phone}
   <div class="full">
     {#if flat}<PlanStage layout={layout.current} bind:camZ bind:stage />{:else}<Preview3D layout={layout.current} mode="phone" bind:camZ bind:stage />{/if}
-    {#if editing && stage && me}<IslandEdit {stage} {relay} ondone={() => (editing = false)} />{/if}
+    {#if editing && stage && me}<IslandEdit {stage} {relay} {me} ondone={() => (editing = false)} />{/if}
   </div>
 {:else if !view}
   <p class="msg">…</p>

@@ -667,7 +667,7 @@ NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)
 is a layout anyone of us can change: NH's 30u tiles (20 × 46), each grass, sand, a path (dirt, stone, brick, plank), a
 river, a pond or the sea, on cliff tiers 0–3; every tree, bush, flower, rock, lamp and piece of furniture, the bridge,
 the stairs and the three homes an object on its tiles. Today's island is the default (`npm run layout:default`), its
-objects exactly where they stood, made twice as long (20 × 92): まえ at the front, おく at the back, and between them a
+objects on the grid near where they stood, made long (20 × 60): まえ at the front, おく at the back, and between them a
 new middle, open grass for building, the stream running down its east side, the path through it, うめ's and the
 guest's houses with paths to their doors. Corners are round (NH's), cliffs are steps of 40u with NH's strata, a river
 stepping down a tier falls, stairs are stone steps; the 3D ground is built and baked from the layout on the phone

@@ -13,12 +13,12 @@ the editor, the homes) and the 3D integration (the scene, the camera, porting th
 - **One tile = 30 world units** = one NH tile (10 model units of NH's furniture at the island's scale, world.ts
   `DECOR_U` = 3u a model unit: a 2-tile bench is 60u, an 80u villager is NH's chibi). The tent's room uses the same
   tile (10 model units), so an outdoor footprint and a room footprint mean the same thing.
-- **20 × 92 tiles**, x −90…510, z −90…2670 (`layout/grid.ts` `GRID`): the long island (land x −30…480, z −30…2640:
-  twice today's length, the user's call, 2026-11-02: room for the homes and the buildings to come) with a ring of
+- **20 × 60 tiles**, x −90…510, z −90…1710 (`layout/grid.ts` `GRID`): the long island (land x −30…480, z −30…1680:
+  the user's call, 2026-11-02, first twice today's length, then 60 tiles: room for the homes and what comes) with a ring of
   sea; everything off the grid is sea. Tile (c, r) covers x `−90 + 30c … +30`, z `−90 + 30r … +30`; `r` grows into
   the island (away from the camera), as world z does. Read the extent from the layout (`model.ts extentOf`), never
   a constant.
-- **Chunks of 8 × 8 tiles** (3 × 12 of them; the last column sticks out past the grid and is sea): the unit of a
+- **Chunks of 8 × 8 tiles** (3 × 8 of them; the last column sticks out past the grid and is sea): the unit of a
   terrain op. The ops allow up to 16 × 16 chunks (128 × 128 tiles), so the grid can grow again without a relay deploy.
 
 ## The layout is data
@@ -41,24 +41,26 @@ the editor, the homes) and the 3D integration (the scene, the camera, porting th
   Each: `id`, kind `k`, tile `x, z` (its footprint's lowest column and row), facing `f` 0–3 (0 toward the camera, −z;
   1 +x, 2 away, 3 −x), variant `s`. A footprint is `w × d` tiles, turned by `f` for the kinds that `turn` (a bench);
   for the others an odd `f` only mirrors the look.
-- **The default offset `n`:** a default object stands exactly where it stands today (`n`: its offset in u from its
-  footprint's middle); an op (a move) always puts it on its tile, and `n` is gone. So reading positions from the
-  layout instead of world.ts changes nothing on the island until someone moves something.
+- **On the grid:** every object's spot is a tile (a footprint's middle a tile's middle, or a tile line for an even
+  side). The model still reads an `n` offset (the first default had them) but nothing sets one now.
 - **Homes:** three, fixed ids `home-A` (ウェイ's, the campsite's tent), `home-B` (うめ's), `home-G` (the guest's).
   Where a home stands is an object; how it looks is its **style** (`layout/homes.ts`: `{m, w?, r?, d?}`), its owner's
   alone. A home's `(x, z)` is its door's tile (the front row's middle, the left of two: `model.ts originOf`), so a new
   look's footprint grows round its door and the door stays put; see "Homes" below.
 - **The default layout** (`layout/default.json`, `npm run layout:default` from world.ts and scatter.json): today's
   island on the grid, world.ts's ids kept (`goal-A`, `hedge-3`, `bench-mae`, `fl:52:180`, `tape-deck`, `rock`,
-  `bridge`, `stairs`; the campsite is `home-A`), made twice as long: today's まえ (the sea, the beach, the health
+  `bridge`, `stairs`; the campsite is `home-A`), made long: today's まえ (the sea, the beach, the health
   lawn, the goal trees, the stream's crossing and its bridge) at the front as it is; today's おく (the campsite, the
-  pond, the bamboo, the falls, the upper tier's forest; world.ts z ≥ 680) moved 1380u (46 tiles) back; between them
-  a new middle: open grass to build on, the stream running on down its east side, the main path through it to the
-  campsite, うめ's house (tiles 3…6 × 46…48) and the guest's (11…14 × 56…58) with paths to their doors and a lamp
-  at each, a few trees at the edges, two bushes, three clumps of flowers. The layout a phone shows is the default
+  pond, the bamboo, the falls, the upper tier's forest; world.ts z ≥ 680) moved 420u (14 tiles) back
+  (`layout/migrate.ts` LONG_SPLIT / LONG_GROW); between them a new middle: open grass to build on, the stream running
+  on down its east side, the main path through it to the campsite, うめ's house (rows 29…31) and the guest's (34…36)
+  with paths to their doors and a lamp at each, a few trees at the edges, three bushes, two clumps of flowers.
+  **Every piece on the grid** (the user): no offsets; each snapped to its tile, a piece whose tile is taken (or on a
+  path, the water, off the grass for a tree or a flower) moved to the nearest free tile round it (the homes and the
+  structures first, the flowers last), so no two share a tile (`layout.test.ts`). The layout a phone shows is the default
   with the record's ops over it (`layoutOf(entries)`).
 - **The 2D island keeps world.ts's area** (46 tiles) until the 3D cutover: it doesn't read the layout (its positions
-  for おく would be 1380u off). The layout store is attached on every phone already, so the ops are there for the 3D
+  for おく would be 420u off). The layout store is attached on every phone already, so the ops are there for the 3D
   island.
 
 ## Ops (the record and the relay)
@@ -72,7 +74,7 @@ id's latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (i
 | `o` | an object set `{id, at, k, x, z, f, s?}` or gone `{id, at, rm: true}` (not final: a later set brings it back) | A, B |
 | `c` | a terrain chunk `{id: 'c<cx>x<cz>', at, g}`: `g` its 64 tiles, row by row, one character each | A, B |
 | `r` | a reset `{id: 'reset', at}`: every `o` and `c` op older than it is void (the default again); the record drops them | A, B |
-| `h` | a home's style `{id: 'hA'\|'hB'\|'hG', at, m, w?, r?, d?}` | its owner alone |
+| `h` | a home's style `{id: 'hA'\|'hB'\|'hG', at, m, w?, r?, d?, f?}` (`f` its facing 0–3) | its owner alone |
 | `t` | ウェイ's home's interior (the tent's room, as before) | A, B, G |
 | `u` | うめ's home's interior | B |
 | `v` | the guest's home's interior | G |
@@ -243,6 +245,35 @@ anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the pho
 - **The e2e** (`e2e/homes.spec.ts`): うめ arranges her room (her piece in her room only, kept), the guest comes in and
   sees it but can't arrange it; うめ swaps her house's look and the other phone holds it live; the guest swaps its own.
 
+## Turning a home
+
+A home's facing (`f`, 0–3) is part of its look (the `h` op's `f`), so only its owner turns it, and the record and the
+room refuse anyone else's; an outdoor op (a member moving it) never changes it (model.ts layoutOf keeps the owner's).
+It turns about its door's tile (model.ts originOf), the door, the footprint, the walk-up spot (`door-home-*`), the
+model's yaw (homePlaces) and the way out of its room (TentRoom's outOfHome) with it. A turn that would wall the door
+in or put the footprint over something is refused: in the editor R / the wheel (the owner's own home only; a toast
+says why not), on the phone's もようがえ the ↻ button (shown only to the owner), and いえを かえる's ↻ まわす (the guest's
+way to turn its own house).
+
+## The day's spots, the structures, the old decorations
+
+- **Weeds and fossils** (`layout/spots.ts` daySpots): 15 weed spots and 6 dig spots a day from the layout's open
+  grass (a grass tile nothing stands on, off the paths, the water and the banks, away from a door, a board's front,
+  a named spot and the stairs, one a walker reaches), spread out, seeded by the date and the island's seed: the same
+  on every phone. `beach.ts useSpots(layoutSpots(() => layout.current))` switches the island's weeds (care.ts) and
+  fossils (beach.ts digSpots) onto them; until then (the 2D island) world.ts's spots. **For the lead:** call it when
+  the 3D island reads the layout, `useSpots(null)` to go back.
+- **NH's bridges and inclines** (`npm run structure-models`: 8 bridges, NH's shortest span; 6 inclines: stone, brick,
+  iron, wood, log, natural; `world3d/structure.ts`): `structurePlaces(layout)` + `buildStructure(place)` → a group
+  to attach at `(x, ground.heightAt(x, z), −z)` (a bridge at its banks' feet − 6), its yaw set. The stairs are NH's
+  2 × 4 (rising one tier over four tiles). **For the lead:** with these attached, pass `structures: true` to
+  placeObjects (no world3d bridge instance) and `stairs: false` to buildGround (no drawn steps).
+- **The old もようがえ's decorations** (`layout/migrate.ts`): each member's phone moves its own (by the decoration's
+  last placer) into the layout once, as `o` ops `m-<its id>` on its tile (おく's z moved back as the default's), kind
+  and facing kept (`layout.migrateDecor`, from IslandScene with the record's decorations); already moved (any op of
+  that id, a removal too) never again; the guest has none. The old decoration stays in its own store for the 2D
+  island; **for the lead:** the 3D island on the layout draws the layout's copy and not contract/decor's.
+
 ## Phone editing (phase 5)
 
 `components/layoutEdit/IslandEdit.svelte`: the island's もようがえ on the phone, the tent's way (TentEdit's tray, bar
@@ -279,9 +310,9 @@ red over the river; no 🗑 for a one-off; none for the guest).
 3. **Live changes:** `layout.on(({ diff }) => { ground.rebuild(layout.current, diff.chunks); things.place(placeObjects(layout.current, day).insts) })`
    (`store/layout.svelte.ts`; things.ts already rebuilds only the models whose instances changed).
 4. **The camera:** `CAM_Z = { min: 30, max: 1000 }` → from `extentOf(layout.current)`: `min = shore + 60` (today's
-   30), `max = home[1] + 16` (today's 1000 by the campsite at 984; the campsite is now at z 2364, so 2380). Recompute
+   30), `max = home[1] + 16` (today's 1000 by the campsite at 984; the campsite's door is now at z 1404, so ~1420). Recompute
    on a layout change (the members may move the tent). `MID_X` 195 stays (the width is the same); the horizon rule
-   (bend R 1300) and the shadow box (it follows the camera) need nothing; the lights' nearest-6 budget is the same
+   (bend R 1300) and the shadow box (it follows the camera) need nothing; at 60 tiles the campsite's door is at z ≈ 1404; the lights' nearest-6 budget is the same
    on a longer island (more lamps in all, the same 6 at a time); the sea plane is the Ground's (4200 × 6000 round
    the grid's middle, z 1290).
 5. **The homes:** for each of `homePlaces(layout.current)`, `buildHome(style)` → `engine.attach(group, { x, z, yaw })`

@@ -48,7 +48,7 @@ function polyDist(line: readonly Pt[], x: number, z: number): number {
 }
 /** The stream on the long island: おく's reach moved back, a gentle meander down the middle's east side, then
  *  today's bend west across the island to its mouth. */
-const MID_RIVER: Pt[] = [[372, 2080], [366, 1900], [376, 1720], [368, 1540], [375, 1360], [367, 1180], [374, 1000], [368, 840], [366, 760]];
+const MID_RIVER: Pt[] = [[372, 1120], [367, 1000], [375, 880], [366, 760]];
 const RIVER_LONG: (readonly [number, number, number])[] = [
   ...RIVER.filter(([, z]) => z >= SPLIT).map(([x, z, w]) => [x, zOf(z), w] as const),
   ...MID_RIVER.map(([x, z]) => [x, z, 30] as const),
@@ -65,7 +65,7 @@ const inRiverLong = (x: number, z: number) => {
 };
 /** The paths: the main one on through the middle to the campsite, the clearing's to the stairs. */
 const PATHS_LONG: Pt[][] = [
-  [...PATHS.dirt[0].filter(([, z]) => z < SPLIT), [196, 900], [191, 1200], [198, 1500], [192, 1800], ...PATHS.dirt[0].filter(([, z]) => z >= SPLIT).map(([x, z]) => [x, zOf(z)] as Pt)],
+  [...PATHS.dirt[0].filter(([, z]) => z < SPLIT), [196, 800], [192, 960], ...PATHS.dirt[0].filter(([, z]) => z >= SPLIT).map(([x, z]) => [x, zOf(z)] as Pt)],
   PATHS.dirt[1].map(([x, z]) => [x, zOf(z)] as Pt)
 ];
 type Ground = 'sea' | 'sand' | 'grass' | 'dirt' | 'river' | 'pond';
@@ -142,7 +142,7 @@ for (const line of PATHS_LONG) {
   }
 }
 // the homes' paths: from the main path to うめ's door (west) and the guest's (east)
-const HOME_B: [number, number] = [3, 46], HOME_G: [number, number] = [11, 56];
+const HOME_B: [number, number] = [3, 29], HOME_G: [number, number] = [11, 34];
 for (const [row, c0, c1] of [[HOME_B[1] - 1, 4, 9], [HOME_G[1] - 1, 9, 13]] as const)
   for (let c = c0; c <= c1; c++) if (kinds[idx(c, row)] === 'grass') kinds[idx(c, row)] = 'dirt';
 const codes = new Uint8Array(GRID.cols * GRID.rows);
@@ -161,6 +161,8 @@ const r1 = (v: number) => Math.round(v * 10) / 10;
 /** An object whose middle stands at world.ts's (x, z) (`raw`: the long island's z already): its footprint's tile and
  *  its offset from there. */
 function put(id: string, k: string, x: number, zw: number, o: { f?: number; s?: string; foot?: readonly [number, number]; exact?: boolean; raw?: boolean } = {}): void {
+  // every default piece on the grid (the user: "everything snapped neatly"): its footprint on whole tiles
+  o = { ...o, exact: true };
   const def = kindDef(k);
   if (!def) throw new Error(`no kind ${k}`);
   const z = o.raw ? zw : zOf(zw);
@@ -213,21 +215,17 @@ put('bridge', 'bridge', BRIDGE.x, (BRIDGE.z0 + BRIDGE.z1) / 2, { s: 'stone' });
 // the middle: a few trees at its edges, bushes by the homes, three clumps of flowers, a lamp at each home's path;
 // the rest open, to build on
 const mid = (id: string, k: string, c: number, r: number, s?: string) => put(id, k, tileX(c) + TILE / 2, tileZ(r) + TILE / 2, { exact: true, raw: true, ...(s ? { s } : {}) });
-mid('mid-cedar-1', 'cedar', 3, 29);
-mid('mid-oak-1', 'oak', 6, 34);
-mid('mid-cedar-2', 'cedar', 13, 37);
-mid('mid-oak-2', 'oak', 3, 40);
-mid('mid-cedar-3', 'cedar', 3, 53);
-mid('mid-oak-3', 'oak', 6, 61);
-mid('mid-cedar-4', 'cedar', 14, 63);
-mid('mid-oak-4', 'oak', 11, 68);
-mid('mid-cedar-5', 'cedar', 3, 70);
-mid('mid-bush-1', 'bush', 8, 48, 'holly');
-mid('mid-bush-2', 'bush', 10, 57, 'white-azalea');
-mid('mid-bush-3', 'bush', 10, 44, 'pink-azalea');
-mid('mid-lamp-1', 'streetlamp', 8, 44);
-mid('mid-lamp-2', 'streetlamp', 10, 54);
-for (const [i, [c, r, n]] of ([[5, 31, 0], [6, 31, 0], [5, 32, 0], [12, 33, 3], [13, 34, 3], [12, 34, 3], [5, 65, 5], [6, 65, 5], [6, 66, 5]] as const).entries())
+mid('mid-cedar-1', 'cedar', 3, 26);
+mid('mid-oak-1', 'oak', 13, 27);
+mid('mid-cedar-2', 'cedar', 3, 36);
+mid('mid-oak-2', 'oak', 6, 38);
+mid('mid-cedar-3', 'cedar', 14, 38);
+mid('mid-bush-1', 'bush', 8, 31, 'holly');
+mid('mid-bush-2', 'bush', 10, 35, 'white-azalea');
+mid('mid-bush-3', 'bush', 10, 27, 'pink-azalea');
+mid('mid-lamp-1', 'streetlamp', 8, 27);
+mid('mid-lamp-2', 'streetlamp', 10, 32);
+for (const [i, [c, r, n]] of ([[5, 33, 0], [6, 33, 0], [5, 34, 0], [12, 30, 3], [13, 31, 3], [12, 31, 3]] as const).entries())
   mid(`mid-fl-${i + 1}`, 'flower', c, r, `c${n}`);
 // a home's (x, z) is its door's tile (model.ts originOf): the front row's middle, the left of two
 for (const o of objects) if (o.k === 'home') o.x += Math.floor((homeFoot(DEFAULT_HOMES[o.id.slice(-1) as 'A']).at(0)! - 1) / 2);
@@ -235,6 +233,58 @@ put('spot-villager-A', 'spot', HOMES.A[0], HOMES.A[1], { s: 'villager-a' });
 put('spot-villager-B', 'spot', HOMES.B[0], HOMES.B[1], { s: 'villager-b' });
 put('spot-stage', 'spot', CENTRE_STAGE[0], CENTRE_STAGE[1], { s: 'stage' });
 for (const f of FLOWERS) put(f.id, 'flower', f.x, f.z, { s: `c${f.clump}` });
+
+// ---- on the grid, nothing over anything: each piece where it snapped, else the nearest free tile round it ----
+{
+  /** The order pieces claim their tiles: what can't move first (the homes and what joins terrain), the flowers last. */
+  const RANK: Record<string, number> = { home: 0, stairs: 0, bridge: 0, 'goal-tree': 1, board: 1, spot: 1, rock: 2, flower: 9 };
+  const rank = (o: Out) => RANK[o.k] ?? (kindDef(o.k)!.group === 'tree' ? 3 : kindDef(o.k)!.group === 'bush' ? 5 : 4);
+  const footOfOut = (o: Out): [number, number, number, number] => {
+    const [w, d] = o.k === 'home' ? homeFoot(DEFAULT_HOMES[o.id.slice(-1) as 'A']) : footprintOf(kindDef(o.k)!, o.f);
+    const x0 = o.k === 'home' ? o.x - Math.floor((w - 1) / 2) : o.x;
+    return [x0, o.z, w, d];
+  };
+  const taken = new Map<string, string>();
+  const tileKind = (c: number, r: number) => (c < 0 || r < 0 || c >= GRID.cols || r >= GRID.rows ? 'sea' : kindOf(codes[idx(c, r)]));
+  const tileTier = (c: number, r: number) => tierOf(codes[idx(Math.max(0, Math.min(GRID.cols - 1, c)), Math.max(0, Math.min(GRID.rows - 1, r)))]);
+  const fits = (o: Out, x: number, z: number): boolean => {
+    const [x0, z0, w, d] = footOfOut({ ...o, x, z });
+    const t = tileTier(x0, z0);
+    for (let j = 0; j < d; j++)
+      for (let i = 0; i < w; i++) {
+        const c = x0 + i, r = z0 + j, k = tileKind(c, r);
+        if (taken.has(`${c},${r}`) || tileTier(c, r) !== t) return false;
+        if (o.k === 'bridge' || o.k === 'stairs') continue;
+        if (k === 'sea' || k === 'river' || k === 'pond' || k === 'dirt') return false;
+        if (kindDef(o.k)!.on === 'grass' && k !== 'grass' && o.k !== 'flower') return false;
+        if (o.k === 'flower' && k !== 'grass') return false;
+      }
+    return true;
+  };
+  const claim = (o: Out) => {
+    const [x0, z0, w, d] = footOfOut(o);
+    for (let j = 0; j < d; j++) for (let i = 0; i < w; i++) taken.set(`${x0 + i},${z0 + j}`, o.id);
+    // a home's door and a board's front stay clear
+    if (o.k === 'home' || o.k === 'board') for (let i = 0; i < w; i++) taken.set(`${x0 + i},${z0 - 1}`, `${o.id}:door`);
+  };
+  for (const o of [...objects].sort((a, b) => rank(a) - rank(b))) {
+    if (rank(o) === 0 || fits(o, o.x, o.z)) {
+      claim(o);
+      continue;
+    }
+    let done = false;
+    for (let ring = 1; ring <= 5 && !done; ring++)
+      for (let dz = -ring; dz <= ring && !done; dz++)
+        for (let dx = -ring; dx <= ring && !done; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dz)) !== ring || !fits(o, o.x + dx, o.z + dz)) continue;
+          o.x += dx;
+          o.z += dz;
+          done = true;
+        }
+    if (!done) console.warn(`no free tile near ${o.id}: it stays where it snapped`);
+    claim(o);
+  }
+}
 
 // ---- out ------------------------------------------------------------------------------------------------------------
 

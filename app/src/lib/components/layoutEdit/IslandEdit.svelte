@@ -18,6 +18,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import type { Live } from '#lib/sync/live.ts';
   import { objectAt } from '../editor/edits.ts';
+  import { WHO_OF_HOME } from '#lib/layout/homes.ts';
 
   export interface EditStage {
     /** The element over the island the mode's taps come through (its own taps pass on to the island). */
@@ -34,9 +35,11 @@
   interface Props {
     stage: EditStage;
     relay: Live | null;
+    /** Who's arranging (a home turns only for its owner: its facing is its look's). */
+    me: 'A' | 'B';
     ondone: () => void;
   }
-  let { stage, relay, ondone }: Props = $props();
+  let { stage, relay, me, ondone }: Props = $props();
 
   type Facing = Obj['f'];
   const TABS: [string, string][] = [['tree', 'き'], ['bush', 'かんぼく'], ['flower', 'はな'], ['rock', 'いわ'], ['light', 'あかり'], ['furniture', 'かぐ'], ['structure', 'はし・さか']];
@@ -47,6 +50,8 @@
   /** What's held: a new kind (`id` null) or a placed thing, its tile (its footprint's anchor) and facing. */
   let sel = $state<{ id: string | null; k: string; s?: string; x: number; z: number; f: Facing; orig?: Obj } | null>(null);
   let why = $state<string | null>(null);
+  /** Whether the held thing may turn here (a home: its owner only). */
+  const turns = $derived(!sel || sel.k !== 'home' || sel.id === `home-${me}`);
   let rev = $state(0);
 
   /** The layout with the held thing where it is now. */
@@ -109,7 +114,7 @@
     cue('tick');
   }
   function turn() {
-    if (!sel) return;
+    if (!sel || !turns) return cue('boop');
     sel = { ...sel, f: ((sel.f + 1) % 4) as Facing };
     check();
     cue('tick');
@@ -128,7 +133,10 @@
     const id = sel.id ?? newObjId(store.stamp());
     const o: Obj = { id, k: sel.k, x: sel.x, z: sel.z, f: sel.f, ...(sel.s ? { s: sel.s } : {}) };
     const same = sel.orig && sel.orig.x === o.x && sel.orig.z === o.z && sel.orig.f === o.f && !sel.orig.n;
-    if (!same) store.apply(opsBetween(before, withChanges(before, { set: [o] }), store.stamp()));
+    // a home's turn is its owner's look (an `h` op the record lets only them send)
+    const who = WHO_OF_HOME[id];
+    const next = who && who === me && o.f !== sel.orig?.f ? withChanges(before, { set: [o], homes: { [who]: { ...before.homes[who], f: o.f } } }) : withChanges(before, { set: [o] });
+    if (!same) store.apply(opsBetween(before, next, store.stamp()));
     stage.hide?.(null);
     sayDrag(true);
     sel = null;
@@ -306,9 +314,9 @@
     {#if sel && def}
       <div class="bar" role="toolbar" aria-label={def.ja}>
         <span class="say" class:bad={!!why} data-why={why ?? ''} aria-live="polite">{why ?? def.ja}</span>
-        <button type="button" class="act" data-act="turn" data-sfx="self" aria-label="まわす" onclick={turn}>
+        {#if turns}<button type="button" class="act" data-act="turn" data-sfx="self" aria-label="まわす" onclick={turn}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.05-4.95" /><path d="M19 4v4h-4" /></svg>
-        </button>
+        </button>{/if}
         {#if sel.id && !def.fixed}
           <button type="button" class="act" data-act="remove" data-sfx="self" aria-label="しまう" onclick={putAway}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>

@@ -277,7 +277,7 @@
       }
     } else if (d.mode === 'move' && d.ids?.length) {
       let next = move(store.current, d.ids, d.dc ?? 0, d.dr ?? 0);
-      if (d.turn) next = rotate(next, d.ids, d.turn);
+      if (d.turn) next = rotate(next, d.ids, d.turn, me);
       commit(next, d.ids.length > 1 ? `${d.ids.length}こ うごかした` : `${kindDef(store.current.objects.get(d.ids[0])?.k ?? '')?.ja ?? ''}を うごかした`);
       for (const id of d.ids.slice(0, 8)) {
         const o = store.current.objects.get(id);
@@ -363,7 +363,7 @@
       case 'r': case 'R':
         if (tool === 'place') placeF = (((placeF + 1) % 4) as 0 | 1 | 2 | 3);
         else if (drag?.mode === 'move') drag = { ...drag, turn: ((drag.turn ?? 0) + 1) % 4 };
-        else if (selected.size) commit(rotate(store.current, selected), 'まわした');
+        else if (selected.size) turnSel();
         break;
       case 'Delete': case 'Backspace': {
         if (!selected.size) break;
@@ -396,6 +396,17 @@
   }
   function onKeyUp(e: KeyboardEvent) {
     if (e.key === ' ') space = false;
+  }
+  /** R: the selection a quarter round; a home only its owner's, and only where its door stays clear. */
+  function turnSel() {
+    const next = rotate(store.current, selected, 1, me);
+    const homes = [...selected].filter((id) => /^home-/.test(id));
+    for (const id of homes) {
+      const who = id.slice(-1);
+      if (who !== me) say(`${who === 'B' ? 'うめ' : who === 'A' ? 'ウェイ' : 'おきゃくさん'}の いえは その ひとだけが まわせます`);
+      else if (next.objects.get(id)?.f === store.current.objects.get(id)?.f) say('ここでは まわせません（とびらが ふさがる）');
+    }
+    commit(next, 'まわした');
   }
   function setTool(t: Tool) {
     tool = t;
@@ -594,14 +605,14 @@
           </label>
         {/if}
         <div class="row">
-          <button type="button" onclick={() => commit(rotate(store.current, selected), 'まわした')}>↻ まわす</button>
+          <button type="button" data-turn onclick={turnSel}>↻ まわす</button>
           <button type="button" disabled={!removable(one)} onclick={() => commit(remove(store.current, selected), 'けした')}>🗑 けす</button>
         </div>
       </section>
     {:else if selected.size > 1}
       <section class="inspect"><h2>{selected.size}こ えらんでいる</h2>
         <div class="row">
-          <button type="button" onclick={() => commit(rotate(store.current, selected), 'まわした')}>↻ まわす</button>
+          <button type="button" onclick={turnSel}>↻ まわす</button>
           <button type="button" onclick={() => commit(remove(store.current, selected), 'けした')}>🗑 けす</button>
         </div>
       </section>

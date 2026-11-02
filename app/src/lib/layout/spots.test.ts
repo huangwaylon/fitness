@@ -37,7 +37,7 @@ describe('the old decorations into the layout, once (migrate.ts)', () => {
     expect(ops).toHaveLength(1);
     expect(ops[0]).toMatchObject({ sc: 'o', id: migratedId('dabc1234'), k: 'tanuki', f: 1 });
     const b = migrationOps(new Map(), placed, 'B')[0] as { z: number };
-    expect(-90 + b.z * 30 + 30).toBeGreaterThan(900 + 1000);
+    expect(-90 + b.z * 30 + 30).toBeGreaterThan(900 + 400);
     const m = new Map<string, LayoutEntry>([[`o|${migratedId('dabc1234')}`, { ...ops[0], who: 'A' } as LayoutEntry]]);
     expect(migrationOps(m, placed, 'A')).toEqual([]);
     expect(migrationOps(new Map(), placed, 'G')).toEqual([]);
