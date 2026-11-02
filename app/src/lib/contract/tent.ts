@@ -3,7 +3,9 @@
 // (`sc: 't'`), in the same event type and the same relay intent: a piece set at a spot (`{sc, id, at, item, x, z, f, p}`:
 // placed or moved, its whole state, x and z its footprint's back-left tile) or taken away (`{sc, id, at, rm: true}`,
 // final), and the wallpaper and the floor (`{sc, id: TENT_WALL | TENT_FLOOR, at, item, x: 0, z: 0, f: 0, p}`, never
-// removed). The same merge as the island's: a removal beats everything, else the latest `at`, then B over A; the sheet
+// removed); a small thing on another piece's surface (NH's table-top things) carries `on: <its id>`, and then x and z
+// are its slot on that piece (its tile in the piece's own, unturned footprint) and f its facing on it, so the piece
+// moving or turning carries it, in one op. The same merge as the island's: a removal beats everything, else the latest `at`, then B over A; the sheet
 // keeps each id's latest op. Shared by the Apps Script, the model, the relay protocol and the tent; pure and
 // dependency-free (the items themselves are the app's: components/tent/items.json).
 
@@ -18,7 +20,7 @@ export const TENT_FLOOR = 'dtentfloor';
 type Who = 'A' | 'B';
 type Facing = 0 | 1 | 2 | 3;
 export type TentOp =
-  | { sc: 't'; id: string; at: number; item: string; x: number; z: number; f: Facing; p: number; rm?: undefined }
+  | { sc: 't'; id: string; at: number; item: string; x: number; z: number; f: Facing; p: number; on?: string; rm?: undefined }
   | { sc: 't'; id: string; at: number; rm: true };
 export type TentEntry = TentOp & { who: Who };
 /** A piece in the tent as the room shows it. */
@@ -31,6 +33,8 @@ export interface TentPiece {
   p: number;
   at: number;
   who: Who;
+  /** On this piece's surface (x, z its slot there, f its facing on it). */
+  on?: string;
 }
 
 const ID = /^d[0-9a-z]{6,24}$/;
@@ -48,11 +52,12 @@ export function tentOpOf(d: Record<string, unknown>): TentOp | null {
     if (surface || d.rm !== true || keys.some((k) => k !== 'sc' && k !== 'id' && k !== 'at' && k !== 'rm')) return null;
     return { sc: 't', id: d.id, at: d.at, rm: true };
   }
-  if (keys.some((k) => !['sc', 'id', 'at', 'item', 'x', 'z', 'f', 'p'].includes(k))) return null;
+  if (keys.some((k) => !['sc', 'id', 'at', 'item', 'x', 'z', 'f', 'p', 'on'].includes(k))) return null;
+  if (d.on !== undefined && (surface || typeof d.on !== 'string' || !ID.test(d.on) || d.on === d.id)) return null;
   if (typeof d.item !== 'string' || !ITEM.test(d.item) || d.item[0] !== (surface ?? 'f')) return null;
   if (!isInt(d.x, 0, ROOM - 1) || !isInt(d.z, 0, ROOM - 1) || !isInt(d.f, 0, 3) || !isMs(d.p) || d.p > d.at) return null;
   if (surface && (d.x || d.z || d.f)) return null;
-  return { sc: 't', id: d.id, at: d.at, item: d.item, x: d.x, z: d.z, f: d.f as Facing, p: d.p };
+  return { sc: 't', id: d.id, at: d.at, item: d.item, x: d.x, z: d.z, f: d.f as Facing, p: d.p, ...(d.on !== undefined ? { on: d.on as string } : {}) };
 }
 
 /** Whether entry `a` beats `b` (the same id): a removal beats a set; else the later `at`, then B over A. */
@@ -81,7 +86,7 @@ export function tentLayout(entries: Iterable<TentEntry>): { pieces: TentPiece[];
     if (e.rm) continue;
     if (e.id === TENT_WALL) wall = e.item;
     else if (e.id === TENT_FLOOR) floor = e.item;
-    else pieces.push({ id: e.id, item: e.item, x: e.x, z: e.z, f: e.f, p: e.p, at: e.at, who: e.who });
+    else pieces.push({ id: e.id, item: e.item, x: e.x, z: e.z, f: e.f, p: e.p, at: e.at, who: e.who, ...(e.on ? { on: e.on } : {}) });
   }
   pieces.sort((a, b) => a.p - b.p || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   return { pieces: pieces.slice(0, TENT_MAX), wall, floor };

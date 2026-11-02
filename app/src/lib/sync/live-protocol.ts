@@ -105,7 +105,7 @@ export type Intent =
 /** A decor op on the wire (contract/decor.ts DecorOp, or the tent's with `sc: 't'`, contract/tent.ts; checked here
  *  again: the Worker bundles this file alone). */
 type DecorWire =
-  | { sc?: 't'; id: string; at: number; item: string; x: number; z: number; f: number; p: number; rm?: undefined }
+  | { sc?: 't'; id: string; at: number; item: string; x: number; z: number; f: number; p: number; on?: string; rm?: undefined }
   | { sc?: 't'; id: string; at: number; rm: true };
 
 /** Client → relay. `hello` must come first (the person key; `since` = the last world event's `t` it has seen; `batch`:
@@ -258,7 +258,12 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
       if (o.rm !== undefined) return o.rm === true ? { kind: 'decor', ...sc, id: o.id, at: o.at, rm: true } : null;
       const [xs, zs] = o.sc === 't' ? [TENT_TILES, TENT_TILES] : [WORLD_X, WORLD_Z];
       if (typeof o.item !== 'string' || !TOKEN.test(o.item) || !within(o.x, xs) || !within(o.z, zs) || !within(o.f, [0, 3]) || !isTime(o.p)) return null;
-      return { kind: 'decor', ...sc, id: o.id, at: o.at, item: o.item, x: o.x as number, z: o.z as number, f: o.f as number, p: o.p };
+      // a tent piece on another's surface (`on`: that piece's id)
+      if (o.on !== undefined && (o.sc !== 't' || typeof o.on !== 'string' || !DECOR_ID.test(o.on))) return null;
+      return {
+        kind: 'decor', ...sc, id: o.id, at: o.at, item: o.item, x: o.x as number, z: o.z as number, f: o.f as number, p: o.p,
+        ...(o.on !== undefined ? { on: o.on as string } : {})
+      };
     }
     case 'drag':
       if (v === 1 || typeof o.id !== 'string' || !DECOR_ID.test(o.id) || !within(o.x, TENT_U) || !within(o.z, TENT_U) || !within(o.f, [0, 3])) return null;

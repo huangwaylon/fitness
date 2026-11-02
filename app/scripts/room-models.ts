@@ -123,6 +123,10 @@ interface Piece {
   rug?: true;
   /** NH's size (tiles, "2x1"): the footprint's cross-check. */
   size?: string;
+  /** NH's "surface": small things may stand on it (a table, a desk, a counter, a shelf…). */
+  surface?: true;
+  /** A small thing (the spreadsheet's Miscellaneous: what NH lets stand on a surface). */
+  small?: true;
 }
 
 const furniture = [...(await sheet('Housewares')), ...(await sheet('Miscellaneous'))];
@@ -139,7 +143,8 @@ function piece(r: Raw, extra: Partial<Piece>): Piece | null {
   const icon = [`Layout_FtrIcon_${folder}_Remake_0_0`, `Layout_FtrIcon_${fn}`, `Layout_FtrIcon_${folder}`].find(has) ?? null;
   const id = Number(field(r, 'internalId'));
   if (!Number.isInteger(id)) return null;
-  return { code: `f${id}`, folder, tex, icon, ...names(r), size: r.size, ...extra };
+  const surface = field(r, 'surface') === true, small = r.sourceSheet === 'Miscellaneous';
+  return { code: `f${id}`, folder, tex, icon, ...names(r), size: r.size, ...(surface ? { surface: true as const } : {}), ...(small ? { small: true as const } : {}), ...extra };
 }
 
 const pieces = new Map<string, Piece>();
@@ -204,13 +209,22 @@ interface Meta {
   lit?: 1;
   /** Its icon is NH's (static/room/icons), not the ずかん's. */
   icon?: 1;
+  /** NH's surface: small things stand on its top (at h). */
+  s?: 1;
+  /** Small: may stand on a surface. */
+  sm?: 1;
 }
 const prev = (existsSync(ITEMS) ? JSON.parse(readFileSync(ITEMS, 'utf8')) : { items: {} }) as { items: Record<string, Meta> };
 const metas: Record<string, Meta> = {};
 for (const p of pieces.values()) if (prev.items[p.code]) metas[p.code] = prev.items[p.code];
 
 function writeItems() {
-  const items = Object.fromEntries([...pieces.values()].filter((p) => metas[p.code]).map((p) => [p.code, metas[p.code]]));
+  // NH's surface and small flags come from the spreadsheet each run (a --data run brings them up to date)
+  const flags = (p: Piece, m: Meta): Meta => {
+    const { s: _s, sm: _sm, ...rest } = m;
+    return { ...rest, ...(p.surface ? { s: 1 as const } : {}), ...(p.small ? { sm: 1 as const } : {}) };
+  };
+  const items = Object.fromEntries([...pieces.values()].filter((p) => metas[p.code]).map((p) => [p.code, flags(p, metas[p.code])]));
   const json = {
     _: 'scripts/room-models.ts (npm run room-models): the tent\'s items (footprint w × d tiles, height h, kb), wallpapers and floors',
     wall: walls[0].code, floor: floors[0].code,

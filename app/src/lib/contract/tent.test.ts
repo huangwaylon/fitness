@@ -20,6 +20,14 @@ describe('a tent op', () => {
     ]) expect(tentOpOf(bad), JSON.stringify(bad)).toBeNull();
   });
 
+  it('a small thing on a surface names its piece (its slot there in x and z); never the wallpaper, never itself', () => {
+    expect(tentOpOf(set('dlamp001', T0, { item: 'f1432', x: 1, z: 0 }) as never)).not.toBeNull();
+    expect(tentOpOf({ ...set('dlamp001', T0, { item: 'f1432', x: 1, z: 0 }), on: 'dtable01' })).toMatchObject({ on: 'dtable01', x: 1, z: 0 });
+    expect(tentOpOf({ ...set('dlamp001', T0), on: 'dlamp001' })).toBeNull();
+    expect(tentOpOf({ ...set('dlamp001', T0), on: 'x' })).toBeNull();
+    expect(tentOpOf({ ...set(TENT_WALL, T0, { item: 'w4840', x: 0, z: 0 }), on: 'dtable01' })).toBeNull();
+  });
+
   it('is never an island op, nor an island op a tent one (the scope keeps them apart on old phones too)', () => {
     expect(decorOpOf(set('dabc123', T0))).toBeNull();
     expect(tentOpOf({ id: 'dabc123', at: T0, item: 'stone-lantern', x: 100, z: 200, f: 0, p: T0 })).toBeNull();
