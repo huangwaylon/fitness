@@ -9,6 +9,8 @@
 // Within furniture every item is as likely; clothing in its style's season (spring, summer...) twice as likely. The
 // shops' season stock (the Able Sisters' summer and winter lines, Nook's Cranny's summer slot) only in its season.
 import data from './catalog.json';
+import room from '../tent/items.json';
+import { dayRand } from './daySeed.ts';
 
 /** A dated window (MM-DD, inclusive; `from` > `to` wraps past New Year). */
 type Window = readonly [string, string];
@@ -91,6 +93,19 @@ export function pickPresent(date: string, r: () => number, bunnyDay = false): Pr
   const pool = ITEMS.filter((i) => FURNITURE.has(i.category) === furniture && stocked(i, md));
   const item = weighted(pool, (i) => (i.style && STYLE[i.style].includes(month) ? STYLE_BOOST : 1), r);
   return { kind: 'item', id: item.id };
+}
+
+/** The furniture the tent has a model of (tent/items.json's ずかん ids): a find of it can be placed. */
+const PLACEABLE = new Set(Object.values(room.items as Record<string, { cat?: string }>).flatMap((m) => (m.cat ? [m.cat] : [])));
+/** What a tree can hold on a day (docs/design.md "Shaking a tree"): a present's furniture on `date` (every piece as
+ *  likely, the shops' season stock only in season), of the pieces the tent can place. */
+export const treeFurniture = (date: string): CatalogItem[] =>
+  ITEMS.filter((i) => FURNITURE.has(i.category) && stocked(i, date.slice(5)) && PLACEABLE.has(i.id));
+/** The piece of furniture `tree` holds on `date` (treeGifts.ts: two trees a day), the same on every phone: seeded by
+ *  the date, the tree and the island's seed. Never Bells. */
+export function treeItem(date: string, tree: string, seed?: string): Present {
+  const pool = treeFurniture(date);
+  return { kind: 'item', id: pool[Math.floor(dayRand(date, `tree-gift:${tree}`, seed)() * pool.length)].id };
 }
 
 /** An entry's icon (an art key, lib/art.ts: static/art/finds/items|recipes/<id>.webp): the item's official icon, or

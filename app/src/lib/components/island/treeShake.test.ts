@@ -39,7 +39,7 @@ describe('what a shake drops', () => {
   it('about 1 in 8 shakes a nest when one is due, 1 in 7 of the rest a dangling bug, about 1 in 5 of the rest a branch (seeded)', () => {
     const r = mulberry32(42);
     const n = 20_000;
-    const got = { nest: 0, bug: 0, branch: 0, coconut: 0, none: 0 };
+    const got = { nest: 0, bug: 0, branch: 0, coconut: 0, gift: 0, none: 0 };
     for (let i = 0; i < n; i++) got[shakeDrop(r, 0, undefined) ?? 'none']++;
     expect(got.nest / n).toBeCloseTo(1 / NEST_ODDS, 1);
     expect(got.bug / (n - got.nest)).toBeCloseTo(1 / BUG_ODDS, 1);
