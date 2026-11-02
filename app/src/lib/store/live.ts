@@ -16,7 +16,7 @@ import { HOLD_MAX_MS, type Backend, type Host, type SendOptions, type SendResult
 
 /** Background refreshes (app becoming visible) at most this often. */
 const REFRESH_FLOOR_MS = 30_000;
-/** After acked writes the record stored no row for (a duplicate; Apps Script's), re-read so server rows replace the optimistic ones. */
+/** After acked writes the record stored no row for (a duplicate), re-read so server rows replace the optimistic ones. */
 const RECONCILE_MS = 1500;
 /** Sheet changes arriving together (a burst of pushes) make one refresh. */
 const PUSH_GATHER_MS = 300;
@@ -34,9 +34,9 @@ export class LiveBackend implements Backend {
   #retryTimer: ReturnType<typeof setTimeout> | null = null;
   #reconcileTimer: ReturnType<typeof setTimeout> | null = null;
   #pushTimer: ReturnType<typeof setTimeout> | null = null;
-  /** The relay socket (docs/backend.md#push): sheet changes in, `saved` nudges out. */
+  /** The relay socket (docs/backend.md#push): the record's changes in, `saved` nudges out. */
   #live: Live | null = null;
-  /** Apps Script's push (`changed`) reached this phone this session, so it covers events too: no `saved` nudges. */
+  /** The record's push (`changed`) reached this phone this session, so it covers events too: no `saved` nudges. */
   #pushWorks = false;
   #started = false;
   /** The first refresh of this session (the app opening) has run. */
@@ -72,7 +72,7 @@ export class LiveBackend implements Backend {
     this.#started = true;
     // back online: also what backed off while offline goes now (refresh → retryNow)
     addEventListener('online', () => void this.refresh({}));
-    // The relay: while the app is on screen, a change to the sheet (the partner's tap, a Shortcut's upload) is fetched
+    // The relay: while the app is on screen, a change to the record (the partner's tap, a Shortcut's upload) is fetched
     // at once instead of on the next open. Polling stays as it was, so a relay outage only loses the immediacy.
     if (LIVE_URL) {
       this.#live = liveRelay();
@@ -166,7 +166,7 @@ export class LiveBackend implements Backend {
   }
 
   /**
-   * The relay says the sheet changed: refresh now (gathered, `fresh` so a fetch already in flight is followed by one
+   * The relay says the record changed: refresh now (gathered, `fresh` so a fetch already in flight is followed by one
    * more). Skipped when the cache already holds it, and for my own events (the re-read after the ack fetches those).
    */
   #sheetChanged(c: SheetChange): void {
@@ -256,7 +256,7 @@ export class LiveBackend implements Backend {
         this.#host.changed();
       }
     }
-    // the partner's phone fetches now (until Apps Script's own push is seen to work)
+    // the partner's phone fetches now (until the record's push is seen to work)
     if (r.sent > 0 && !this.#pushWorks) this.#live?.send({ kind: 'saved' });
     if (r.sent > r.stored.length && reconcile) {
       if (this.#reconcileTimer) clearTimeout(this.#reconcileTimer);

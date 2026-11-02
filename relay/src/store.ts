@@ -10,7 +10,7 @@
 // - `since` is answered from the `at` index. A row that arrived out of `at` order (only while Apps Script mirrored
 //   its writes here: two requests' copies racing) is marked `late` with its arrival time, and a poll also returns
 //   the late rows that arrived after `since` (less a margin for the two servers' clocks), so no phone misses one.
-import { parseShortcut } from '../../app/gas/parse.ts';
+import { parseShortcut } from './parse.ts';
 import { auditNotes, auditRow } from './audit.ts';
 import { eventSlot, validEventData } from '../../app/src/lib/model/record.ts';
 import {
@@ -19,7 +19,7 @@ import {
 } from '../../app/src/lib/contract/api.ts';
 import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contract/decor.ts';
 import { tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
-import { parseNotice, type Notice } from '../../app/src/lib/sync/live-protocol.ts';
+import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
 import { notifySecret, notifySig, verifyNotify } from './notify.ts';
 import { keyOwner, type Keys } from './auth.ts';
 
@@ -76,7 +76,7 @@ const SCHEMA = [
   'CREATE INDEX IF NOT EXISTS uploads_person ON uploads (person, seq)'
 ];
 
-/** The rows an import brings (`/import`: the sheet's history, or Apps Script's copy of a write), each with its `at`. */
+/** The rows a load brings (the admin `load`: a dump's; once the sheet's history and Apps Script's copies), each with its `at`. */
 export interface ImportRows {
   metrics?: unknown[][];
   events?: unknown[][];
@@ -183,31 +183,23 @@ export class StoreCore {
     return JSON.stringify(this.handle(body, utf8.encode(text).length));
   }
 
-  /**
-   * A signed `/import` body (`{rows, notice?}`; storeRoute.ts) → its status and reply, and the notice to pass to the
-   * room when synced rows were added.
-   */
-  async importSigned(text: string, t: string | null, sig: string | null): Promise<{ status: number; body: string; notice: Notice | null }> {
-    const no = (status: number, body: string) => ({ status, body, notice: null });
-    if (!(await verifyNotify(this.io.keys, t, sig, text, this.io.now()))) return no(401, 'unauthorized');
+  /** A signed `/admin` body: its `{op, ...}`, or the status and reply refusing it. */
+  async signedOp(text: string, t: string | null, sig: string | null): Promise<{ op: Rec } | { status: number; body: string }> {
+    if (!(await verifyNotify(this.io.keys, t, sig, text, this.io.now()))) return { status: 401, body: 'unauthorized' };
     let o: unknown;
     try {
       o = JSON.parse(text);
     } catch {
-      return no(400, 'bad request');
+      return { status: 400, body: 'bad request' };
     }
-    if (isRec(o) && typeof o.op === 'string') return no(400, 'bad request'); // an admin op (storeObject.ts)
-    if (!isRec(o) || !isRec(o.rows)) return no(400, 'bad request');
-    const rows: ImportRows = {};
-    for (const tab of ['metrics', 'events', 'uploads'] as const) {
-      const list = o.rows[tab];
-      if (list === undefined) continue;
-      if (!Array.isArray(list)) return no(400, 'bad request');
-      rows[tab] = list as unknown[][];
-    }
-    const r = this.import(rows);
-    const n = o.notice ? parseNotice(JSON.stringify(o.notice)) : null;
-    return { status: 200, body: JSON.stringify({ ok: true, ...r, counts: this.counts() }), notice: n && (r.metrics || r.events) ? { ...n, rev: this.rev() } : null };
+    return isRec(o) && typeof o.op === 'string' ? { op: o } : { status: 400, body: 'bad request' };
+  }
+
+  /** The admin `load {rows}`: rows that already have their `at` (a dump's), by the record's rules. */
+  load(o: Rec): Record<string, unknown> {
+    const rows = o.rows;
+    if (!isRec(rows) || !(['metrics', 'events', 'uploads'] as const).every((k) => rows[k] === undefined || Array.isArray(rows[k]))) return { ok: false, error: 'bad_request' };
+    return { ok: true, ...this.import(rows as ImportRows), counts: this.counts() };
   }
 
   private route(body: unknown, bytes: number): Reply {
@@ -268,7 +260,7 @@ export class StoreCore {
 
   // ---------------------------------------------------------------- ingest
 
-  /** The Shortcut's health body (gas/parse.ts): each value that differs from its day's latest row is appended. */
+  /** The Shortcut's health body (parse.ts): each value that differs from its day's latest row is appended. */
   private ingest(me: Who, body: Rec, bytes: number): Reply {
     let parsed: ReturnType<typeof parseShortcut>;
     try {
@@ -499,7 +491,7 @@ export class StoreCore {
     return { metrics: n('metrics'), events: n('events'), ids: n('ids'), uploads: n('uploads') };
   }
 
-  /** Every row, as `/import` takes them (a backup, and what the sheet's export writes): the import of a dump is the record. */
+  /** Every row, as `load` takes them (a backup, and what the sheet's export writes): the load of a dump is the record. */
   dump(): { rows: Required<ImportRows> } {
     const all = this.rowsSince('');
     const uploads = this.io.sql.exec<{ at: string; person: string; status: string; bytes: number; notes: string }>('SELECT at, person, status, bytes, notes FROM uploads ORDER BY seq').toArray()

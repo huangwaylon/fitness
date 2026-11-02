@@ -9,6 +9,7 @@ import { applySnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { setKey } from '#lib/sync/pairing.ts';
 import { buildWeekView } from '#lib/model/week.ts';
 import { composeModel, notInCache } from './view.ts';
+import { asRecord } from '#lib/sync/fake-record.ts';
 import { mergeRows } from '#lib/model/snapshot.ts';
 import { reduce } from '#lib/model/state.ts';
 
@@ -33,7 +34,7 @@ function composeView(cache: SnapshotCache, queue: QueuedEvent[], now: number) {
 
 beforeEach(() => {
   configureStorage({ local: new Mem() });
-  configureTransport({ fetch: (async () => new Response(JSON.stringify({ ok: true }))) as typeof fetch, url: 'https://script.example/exec' });
+  configureTransport({ fetch: (async (_u: unknown, init?: RequestInit) => new Response(JSON.stringify(asRecord(() => ({ ok: true }))(JSON.parse(String(init?.body)))))) as typeof fetch, url: 'https://script.example/exec' });
   setKey('ab'.repeat(32), 'A');
 });
 

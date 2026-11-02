@@ -17,13 +17,13 @@
 // counted twice (Health de-duplicates them; Shortcuts doesn't). The Shortcut sends each device's list, and a day's steps
 // are the larger of the two (Health's merge counts one device at a time, so the max is close to Health's total).
 //
-// Only these fields are read (`key` and `action` are main.ts's); every daily one is optional. A list whose length
+// Only these fields are read (`key` and `action` are store.ts's); every daily one is optional. A list whose length
 // differs from `dates` is dropped with a warning and the rest is kept; a value above METRIC_BOUNDS (e.g. kcal > 10,000,
 // stand > 1,440) is skipped, and so is a weight or body value outside WEIGHT_KG / BODY_BOUNDS.
 //
 // Body fat: Shortcuts may write Health's percentage as a fraction (0.223) or as a percent (22.3, or "22.3%"). A
-// plausible body fat is 2–70 %, so a value of at most 1 can only be a fraction: it is ×100. Stored as % with one decimal. It runs in Apps Script (bundled into apps-script/Code.js) and in Node tests: plain ES2019.
-import { BODY_BOUNDS, isBodyMetric, isRec, METRIC_BOUNDS, roundKg, WEIGHT_KG, type MetricKey } from '../src/lib/contract/api.ts';
+// plausible body fat is 2–70 %, so a value of at most 1 can only be a fraction: it is ×100. Stored as % with one decimal. It runs in the record (relay/src/store.ts); it ran in Apps Script until 2026-11-02, unchanged.
+import { BODY_BOUNDS, isBodyMetric, isRec, METRIC_BOUNDS, roundKg, WEIGHT_KG, type MetricKey } from '../../app/src/lib/contract/api.ts';
 
 interface ParsedMetric { date: string; metric: MetricKey; value: number }
 interface ParsedBody {

@@ -1,6 +1,6 @@
 // The week store. Paints at once from the backend's rows + events, computing the WeekView in the browser
 // (lib/model), and recomputes when they change or the minute ticks. The backend is the live Apps Script sync
-// (live.ts) or, with `?demo` (or dev without VITE_GAS_URL), generated rows (demo/backend.ts, loaded only then).
+// (live.ts) or, with `?demo` (or dev without VITE_RECORD_URL), generated rows (demo/backend.ts, loaded only then).
 import { untrack } from 'svelte';
 import { dev } from '$app/env';
 import type { WeekView } from '#lib/types.ts';
@@ -9,7 +9,7 @@ import { buildWeekView } from '#lib/model/week.ts';
 import { setLocale } from '#lib/i18n/index.ts';
 import { minuteNow } from '#lib/time/clock.ts';
 import { DEMO, DEVICE, localKV, readJson, sessionKV, writeJson, writeRaw } from '#lib/sync/storage.ts';
-import { GAS_CONFIGURED } from '#lib/sync/transport.ts';
+import { RECORD_CONFIGURED } from '#lib/sync/transport.ts';
 import { composeModel, type ComposedModel } from './view.ts';
 import { LiveBackend } from './live.ts';
 import { pushTick } from '#lib/sync/push.ts';
@@ -46,12 +46,12 @@ class WeekStore implements Host {
       const s = ss?.getItem(DEMO.mode);
       if (s === 'plain' || s === 'harvest') this.demo = s;
     }
-    if (!this.demo && dev && !import.meta.env.VITE_GAS_URL) {
-      console.info('[island] VITE_GAS_URL not set in dev — using fixtures');
+    if (!this.demo && dev && !import.meta.env.VITE_RECORD_URL) {
+      console.info('[island] VITE_RECORD_URL not set in dev — using fixtures');
       this.demo = 'plain';
     }
-    // A build without the Apps Script URL (the Pages site before GAS_URL is set): a friendly screen, not errors.
-    if (!this.demo && !GAS_CONFIGURED) this.status = 'unconfigured';
+    // A build without the record's URL (VITE_LIVE_URL and VITE_RECORD_URL both emptied): a friendly screen, not errors.
+    if (!this.demo && !RECORD_CONFIGURED) this.status = 'unconfigured';
     if (this.demo) this.#demoMe = ss?.getItem(DEMO.as) === 'B' ? 'B' : 'A';
   }
 

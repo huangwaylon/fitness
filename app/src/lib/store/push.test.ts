@@ -8,6 +8,7 @@ import { setKey } from '#lib/sync/pairing.ts';
 import type { Intent } from '#lib/sync/live-protocol.ts';
 import type { SheetChange } from '#lib/sync/live.ts';
 import { LiveBackend } from './live.ts';
+import { asRecord } from '#lib/sync/fake-record.ts';
 import type { Host } from './backend.ts';
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
@@ -66,10 +67,7 @@ beforeEach(() => {
     url: 'https://script.example/exec',
     fetch: (async (_u: unknown, init?: RequestInit) => {
       const body = JSON.parse(String(init?.body)) as { action: string; id?: string };
-      if (body.action === 'event') {
-        events.push(body.id!);
-        return new Response('{"ok":true}');
-      }
+      if (body.action === 'events') return new Response(JSON.stringify(asRecord(() => ({ ok: true }), (b) => events.push(String(b.id)))(body)));
       snapshots++;
       const rows = { metrics: [[AT, 'B', '2026-11-01', 'steps', 900]], events: [] };
       return new Response(JSON.stringify({ ok: true, me: 'A', now: LATER, rev: 'r1', rows }));

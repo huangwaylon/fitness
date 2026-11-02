@@ -22,7 +22,7 @@ beforeEach(() => {
   bodies = [];
   answer = (b) => ({ ok: true, results: b.events.map((e: { id: string }, i: number) => ({ id: e.id, ok: true, at: `2026-11-02T00:00:0${i}.000Z` })) });
   configureTransport({
-    url: 'https://script.example/exec', recordUrl: RECORD,
+    url: RECORD,
     fetch: (async (u: unknown, init?: RequestInit) => {
       const body = JSON.parse(String(init?.body));
       bodies.push({ url: String(u), body });

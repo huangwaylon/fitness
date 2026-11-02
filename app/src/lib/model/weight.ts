@@ -4,7 +4,7 @@
 //
 // Rules:
 // - A day's weight is its latest ingested row stamped at or before T. The Shortcut sends the day's Body Mass from
-//   Apple Health (gas/parse.ts), and the server appends a row whenever it differs from the day's last row, so the
+//   Apple Health (relay/src/parse.ts), and the server appends a row whenever it differs from the day's last row, so the
 //   latest row is the current one (unlike steps, which take the max).
 // - The change over a period (plainChange) is plain arithmetic on the weigh-ins, no smoothing: the average of the
 //   first week's weigh-ins (the 7 days from the first) → the average of the last week's (the 7 days to the last), when

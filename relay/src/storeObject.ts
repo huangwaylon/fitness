@@ -1,12 +1,11 @@
 // The record's Durable Object (docs/backend.md#the-record): one instance (`idFromName('record')`), SQLite-backed, apart
 // from the island room (which holds the sockets and the day's shared world), so the record's code and the room's change
-// independently. The Worker hands it the bodies of `/api` and `/import` (storeRoute.ts) as they came: the parsing and
+// independently. The Worker hands it the bodies of `/api` and `/admin` (storeRoute.ts) as they came: the parsing and
 // the JSON happen here, on the object's CPU budget. After a write it tells the room, which passes `changed` to the
 // open phones.
 import { DurableObject } from 'cloudflare:workers';
 import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
 import { StoreCore, type Sql, type Via } from './store.ts';
-import { verifyNotify } from './notify.ts';
 import type { StoreRoom } from './storeRoute.ts';
 import type { Env } from './index.ts';
 
@@ -58,28 +57,14 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     }
   }
 
-  async importSigned(text: string, t: string | null, sig: string | null): Promise<{ status: number; body: string }> {
-    const op = await this.adminOp(text, t, sig);
-    if (op) {
-      try {
-        return { status: 200, body: JSON.stringify(await this.admin(op)) };
-      } catch (e) {
-        return { status: 200, body: JSON.stringify({ ok: false, error: 'unavailable', detail: String(e) }) };
-      }
-    }
-    const r = await this.core.importSigned(text, t, sig);
-    if (r.notice) this.tellRoom(r.notice);
-    return { status: r.status, body: r.body };
-  }
-
-  /** A signed `{op, ...}` body (the runbook's admin calls, docs/ops/runbook.md#13-the-record), or null. */
-  private async adminOp(text: string, t: string | null, sig: string | null): Promise<Record<string, unknown> | null> {
-    if (!text.includes('"op"') || !(await verifyNotify({ KEY_A: this.env.KEY_A, KEY_B: this.env.KEY_B }, t, sig, text, Date.now()))) return null;
+  /** A signed `/admin` body (storeRoute.ts): `{op, ...}` → its status and JSON reply. */
+  async adminSigned(text: string, t: string | null, sig: string | null): Promise<{ status: number; body: string }> {
+    const v = await this.core.signedOp(text, t, sig);
+    if ('status' in v) return v;
     try {
-      const o = JSON.parse(text) as unknown;
-      return o && typeof o === 'object' && typeof (o as { op?: unknown }).op === 'string' ? (o as Record<string, unknown>) : null;
-    } catch {
-      return null;
+      return { status: 200, body: JSON.stringify(await this.admin(v.op)) };
+    } catch (e) {
+      return { status: 200, body: JSON.stringify({ ok: false, error: 'unavailable', detail: String(e) }) };
     }
   }
 
@@ -88,7 +73,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    * - `bookmark {ms?}`: point-in-time recovery's bookmark now and `ms` ago (default 1 h);
    * - `restore {bookmark}`: restore the record to that bookmark (the object restarts; every phone refetches: a new epoch);
    * - `rev`: start a new epoch (every phone drops its cache and fetches everything);
-   * - `dump`: every row (the backup, docs/ops/runbook.md#13-the-record).
+   * - `dump`: every row (the backup, docs/ops/runbook.md#13-the-record);
+   * - `load {rows: {metrics?, events?, uploads?}}`: rows that already have their `at` (a dump's) into the record, by
+   *   its rules (idempotent: what it has is skipped).
    */
   private async admin(o: Record<string, unknown>): Promise<Record<string, unknown>> {
     const storage = this.ctx.storage;
@@ -109,6 +96,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return this.exportTick(true);
       case 'rev':
         return { ok: true, rev: this.core.bumpRev() };
+      case 'load':
+        return this.core.load(o);
       case 'dump':
         return { ok: true, rev: this.core.rev(), ...this.core.dump() };
       default:
