@@ -58,7 +58,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       const f = await centre(page, '[data-critter="fish"]');
       await page.mouse.click(f.x + (f.x < w / 2 ? 40 : -40), f.y);
       // the reel, the moment it bites (the bobber's where the cast put it)
-      await expect(page.locator('[data-bobber]')).toBeAttached();
+      await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 }); // landed
       const b = await centre(page, '[data-bobber]');
       await reelOnBite(page, b.x < w / 2 ? w - 20 : 20, b.y);
       await expect(page.locator(plate)).toBeVisible();

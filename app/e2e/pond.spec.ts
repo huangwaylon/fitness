@@ -7,7 +7,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { FISH } from '../src/lib/components/island/critters.ts';
 import { POND_FISH, freshPool } from '../src/lib/components/island/pondFish.ts';
-import { geo, type Geo } from './island';
+import { geo, reelOnBite, type Geo } from './island';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
@@ -48,9 +48,8 @@ async function fish(page: Page, sel: string, reel: { x: number; y: number }) {
   const f = await at(page, sel);
   await page.mouse.click(f.x + 6, f.y);
   await expect(page.locator('[data-bobber]')).toBeAttached();
-  await expect(page.locator('[data-bite]')).toHaveText('！', { timeout: 10_000 });
-  await page.waitForTimeout(400);
-  await page.mouse.click(reel.x, reel.y); // any tap is the reel
+  // any tap is the reel, the moment it bites (the 1.6 s window: e2e/island.ts reelOnBite)
+  await reelOnBite(page, reel.x, reel.y, 10_000);
 }
 
 for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
