@@ -140,6 +140,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     return seats.get(name)!;
   };
   let lastT = 0, liftL = 0.32, disposed = false;
+  const debug = import.meta.env.DEV || new URLSearchParams(location.search).has('demo') ? new Map<string, unknown>() : null;
 
   function ensure(s: VSpec): W {
     let w = ws.get(s.slot);
@@ -258,6 +259,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       const reach = s.slot !== 'mine' || Math.hypot(angling.x - s.x, angling.z - s.z) < LINE_REACH;
       const rod = reach && (s.tool === 'tools/rod' || (s.slot === 'mine' && (t < w.rodUntil || (angling.phase !== null && angling.phase !== 'reel'))));
       holdTool(w, rod ? 'tools/rod' : (s.tool ?? null));
+      if (debug) debug.set(s.slot, { t: Math.round(t), x: s.x, z: s.z, shown: s.shown, walking: s.walking, asleep: s.asleep, seat: s.seat, tool: s.tool ?? null, reach, rod, angling: { ...angling } });
       // faded out of the board's way (and back), over FADE_MS
       const aim = s.away ? 0 : 1;
       if (w.alpha !== aim) {
@@ -319,9 +321,11 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     return { cards, moving };
   }
 
-  // the e2e's (dev builds and ?demo): a 3D villager's state, what it holds and its tip (three's space)
-  if (import.meta.env.DEV || new URLSearchParams(location.search).has('demo'))
+  // the e2e's (dev builds and ?demo): a 3D villager's state, what it holds and its tip (three's space), and what its
+  // last frame saw (its spec, the line's reach, the rod)
+  if (debug)
     (window as unknown as { __villagers3?: unknown }).__villagers3 = {
+      last: (slot: string) => debug.get(slot) ?? null,
       state: (slot: string) => ws.get(slot)?.v?.state() ?? null,
       tool: (slot: string) => (ws.get(slot)?.tool?.obj ? ws.get(slot)!.tool!.key : null),
       tip: (slot: string) => ws.get(slot)?.v?.tip()?.toArray() ?? null
