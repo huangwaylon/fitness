@@ -177,7 +177,7 @@ test('けんこう: each からだ card wears its own NH item, as かつどう w
   await openPanel(page);
   await sheet(page).locator('.tab[data-tab=health]').click();
   await sheet(page).locator('[data-group=body]').click(); // からだ
-  const art = { weight: 'analog-kitchen-scale', body_fat_pct: 'exercise-ball', bmi: 'clipboard', lean_kg: 'weight-bench' };
+  const art = { weight: 'analog-kitchen-scale', body_fat_pct: 'protein-shaker-bottle', bmi: 'exercise-bike', lean_kg: 'weight-bench' };
   for (const [metric, item] of Object.entries(art)) {
     const img = sheet(page).locator(`[data-metric=${metric}][data-person=A] header .ic img`);
     await expect(img, metric).toHaveCount(1);
@@ -190,7 +190,7 @@ test('けんこう: each からだ card wears its own NH item, as かつどう w
   // the 目標 card's からだ rows too
   await sheet(page).locator('.tab[data-tab=kiroku]').click();
   await expect(sheet(page).locator('.goals .row img[src*="analog-kitchen-scale"]')).toHaveCount(1);
-  await expect(sheet(page).locator('.goals .row img[src*="exercise-ball"]')).toHaveCount(1);
+  await expect(sheet(page).locator('.goals .row img[src*="protein-shaker-bottle"]')).toHaveCount(1);
   await expect(sheet(page).locator('use[href="#i-scale"]')).toHaveCount(0);
 });
 
