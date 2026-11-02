@@ -39,6 +39,15 @@
   import { has3d } from '../villager3d/manifest.ts';
   import { BufferGeometry, Float32BufferAttribute, Line, LineBasicMaterial, Vector3, type Object3D } from 'three';
   import type { FxKind } from './effects.ts';
+  import { site } from '../island/site.svelte.ts';
+  import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
+  import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
+  import { homePlaces, placeObjects } from './objects.ts';
+  import { buildHome, homeTod } from './home.ts';
+  import { buildStructure, structurePlaces } from './structure.ts';
+  import { extentOf, type Layout } from '#lib/layout/model.ts';
+  import { GRASS_Y, SEA_Y as LAYOUT_SEA_Y, WATER_DROP as LAYOUT_DROP, fieldOf } from '#lib/layout/height.ts';
+  import { TIER_H } from '#lib/layout/grid.ts';
 
   /** A villager on this island now (IslandScene's cast). */
   export interface Cast {
@@ -102,10 +111,19 @@
   const q = new URLSearchParams(location.search);
   const num = (k: string) => (q.get(k) !== null && q.get(k) !== '' && Number.isFinite(Number(q.get(k))) ? Number(q.get(k)) : null);
 
+  // ---- the island on its layout (island/site.svelte.ts site.on, as the island opens: the page's switch): the layout's
+  // ground (terrain.ts buildGround), its objects (objects.ts placeObjects), its homes and bridges and stairs (home.ts,
+  // structure.ts), the camera's ends from its extent; world.ts's old ground and its floats aren't used ----
+  if (site.on) site.sync();
+  const onLayout = site.on && !!site.layout;
+  let lground: LayoutGround | null = null;
+  /** The ground's look today (WorldGround's rule): the season's, the petals' or the fallen leaves' weeks. */
+  const lookNow = (): Look => (season === 'spring' && foliage === 'blossom' ? 'spring-petals' : season === 'autumn' && foliage === 'fall' ? 'autumn-leaves' : season);
+
   /** The ground's look (WorldGround's rule): the season's, the petals' or the fallen leaves' weeks. */
   function groundUrls(): string[] {
     const T = TERRAIN as { chunks: number; seasons: string[]; bytes?: Record<string, number[]> };
-    const look = season === 'spring' && foliage === 'blossom' ? 'spring-petals' : season === 'autumn' && foliage === 'fall' ? 'autumn-leaves' : season;
+    const look = lookNow();
     const ss = T.seasons.includes(look) ? look : season;
     return Array.from({ length: T.chunks }, (_, c) => `${asset(`terrain/${ss}/${c}.webp` as Parameters<typeof asset>[0])}?v=${T.bytes?.[ss]?.[c] ?? 0}`);
   }
@@ -330,12 +348,18 @@
   const lines = new Map<string, { obj: Line; off: () => void }>(), seenLine = new Set<string>();
   const LINE_N = 12;
   /** The water's surface at (x, z): the sea's level, or a stream's or a pond's (its banks less the drop). */
-  const waterY = (x: number, z: number) => Math.max(SEA_Y + 0.2, baseHeight(x, z) - WATER_DROP + 0.2);
+  const waterY = (x: number, z: number) => {
+    const l = onLayout ? site.layout : null;
+    if (!l) return Math.max(SEA_Y + 0.2, baseHeight(x, z) - WATER_DROP + 0.2);
+    // the layout's: the sea's level, or a fresh water's (its tier's banks less the drop: layout/mesh.ts)
+    const f = fieldOf(l);
+    return f.surfaceAt(x, z) === 'sea' ? LAYOUT_SEA_Y + 0.2 : f.tierAt(x, z) * TIER_H + GRASS_Y - LAYOUT_DROP + 0.2;
+  };
   const marked = new WeakMap<Element, boolean>();
   let lamps3: LampSpot[] = [];
   const smooth = (k: number) => k * k * (3 - 2 * k);
-  const heightOf = (x: number, z: number) => ('group' in ground ? ground.heightAt(x, z) : ground.height(x, z));
-  const feetOf = (x: number, z: number) => ('group' in ground ? (ground.feet ?? ground.heightAt)(x, z) : ground.feet(x, z));
+  const heightOf = (x: number, z: number) => (lground ? lground.heightAt(x, z) : 'group' in ground ? ground.heightAt(x, z) : ground.height(x, z));
+  const feetOf = (x: number, z: number) => (lground ? lground.feet(x, z) : 'group' in ground ? (ground.feet ?? ground.heightAt)(x, z) : ground.feet(x, z));
   /** The self-light of the island's models at each time of day (engine.ts TOD lift): the 3D villagers' too. */
   const LIFT = { day: 0.32, dusk: 0.22, night: 0.08 } as const;
   const todNow = () => (tod === 'night' ? 'night' : tod === 'dusk' || tod === 'dawn' ? 'dusk' : 'day');
@@ -381,7 +405,8 @@
       if (!L || fresh) {
         const drop = n.m3.drop ?? 0;
         L = { m: a.m, on: false, x: to[0], z: to[1], lift: to[2] + drop, to, from: [to[0], to[1], to[2] + drop], t0: t, ms: drop ? (n.m3.ms ?? 500) : 0, yaw: 0, grey: -1, art };
-        add.push({ id: n.id, model: a.m, x: to[0], z: to[1], lift: to[2], scale: a.s });
+        // (one the layout's objects already draw, its id theirs: the rock, the tape deck, the board: not twice)
+        if (!placedIds.has(n.id)) add.push({ id: n.id, model: a.m, x: to[0], z: to[1], lift: to[2], scale: a.s });
         live3.set(n.id, L);
       } else if (to[0] !== L.to[0] || to[1] !== L.to[1] || to[2] !== L.to[2]) {
         L.from = [L.x, L.z, L.lift];
@@ -434,7 +459,7 @@
     seenLine.clear();
     for (const id of emitted.keys()) if (!seenEmit.has(id)) emitted.delete(id);
     seenEmit.clear();
-    const gone = [...live3.keys()].filter((id) => !seen.has(id));
+    const gone = [...live3.keys()].filter((id) => !seen.has(id) && !placedIds.has(id));
     for (const id of gone) {
       const art = live3.get(id)?.art;
       if (art) (art.classList.remove('m3on'), marked.delete(art));
@@ -459,6 +484,8 @@
   // ---- petals or maple leaves on the stream in their weeks (floats3d.ts) ----
   let floatsOn: string | null = null;
   function floats(e: Island3, t: number) {
+    // (world.ts's stream and pond: the layout's waters have none of these yet)
+    if (onLayout) return;
     const key = floating ? `season/${floating === 'petal' ? 'petal' : 'maple-leaf'}` : null;
     const a = key ? assetFor(key) : null;
     if (key !== floatsOn) {
@@ -511,15 +538,24 @@
 
   // ---- the island's day: its models and stand-ins ----
   let placed = '';
+  /** The ids the layout's objects draw (placeObjects'): a DOM node's model of the same id isn't added again. */
+  let placedIds = new Set<string>();
+  const layoutN = new WeakMap<Layout, number>();
+  let layouts = 0;
   $effect(() => {
     const e = eng;
     if (!e) return;
+    const lay = onLayout ? site.layout : null;
     const day = { season, foliage, month, scenery, pieces, hybrid, fruit: false };
-    const sig = `${season}|${foliage}|${month}|${hybrid?.id}:${hybrid?.flower}|${scenery.map((s) => s.id + s.key).join()}|${pieces.map((p) => p.id + p.key).join()}`;
+    if (lay && !layoutN.has(lay)) layoutN.set(lay, ++layouts);
+    const sig = `${season}|${foliage}|${month}|${hybrid?.id}:${hybrid?.flower}|${scenery.map((s) => s.id + s.key).join()}|${pieces.map((p) => p.id + p.key).join()}|${lay ? layoutN.get(lay) : ''}`;
     if (sig === placed) return;
     placed = sig;
     untrack(() => {
-      const { insts, standins: st } = island(day);
+      const { insts, standins: st } = lay
+        ? placeObjects(lay, { season, foliage, month, pieces, swaps: Object.fromEntries(scenery.map((s) => [s.id, { key: s.key, h: s.h }])), fruit: false, structures: true })
+        : island(day);
+      placedIds = lay ? new Set(insts.map((i) => i.id)) : new Set();
       void e.place(insts).then(() => {
         if (!loaded) {
           queueMicrotask(onready);
@@ -530,7 +566,52 @@
       });
       standins(st);
       e.glows((lamps3 = standinLamps(st)));
-      e.groundLook(groundUrls());
+      if (lground) lground.look(lookNow());
+      else e.groundLook(groundUrls());
+      if (lay) {
+        builtOn(e, lay);
+        fitEnds(e);
+      }
+    });
+  });
+
+  // ---- the layout's homes (NH's parts: home.ts) and its bridges and stairs (NH's models: structure.ts), built and
+  // stood on the ground; again when one's look or spot changes ----
+  const built = new Map<string, { key: string; g: Object3D | null }>();
+  const TOD_LAMPS = { day: 0, dusk: 0.7, night: 1 } as const;
+  function builtOn(e: Island3, lay: Layout) {
+    const want = new Map<string, { key: string; make: () => Promise<Object3D | null>; at: { x: number; z: number; yaw: number; y?: number }; home: boolean }>();
+    for (const p of homePlaces(lay))
+      want.set(`home:${p.id}`, { key: JSON.stringify(p), make: () => buildHome(p.style), at: { x: p.x, z: p.z, yaw: p.yaw }, home: true });
+    for (const p of structurePlaces(lay)) {
+      // its origin on the lower ground: the lower of its two ends' (a bridge's banks, the stairs' foot)
+      const dx = (Math.cos(p.yaw) * p.length) / 2, dz = (Math.sin(p.yaw) * p.length) / 2;
+      const y = Math.min(heightOf(p.x - dx, p.z - dz), heightOf(p.x + dx, p.z + dz));
+      want.set(`structure:${p.id}`, { key: JSON.stringify(p) + y.toFixed(1), make: () => buildStructure(p), at: { x: p.x, z: p.z, yaw: p.yaw, y }, home: false });
+    }
+    for (const [id, b] of built) if (!want.has(id)) {
+      e.placeGroup(id, null);
+      built.delete(id);
+    }
+    for (const [id, w] of want) {
+      if (built.get(id)?.key === w.key) continue;
+      const entry = { key: w.key, g: null as Object3D | null };
+      built.set(id, entry);
+      void w.make().then((g) => {
+        if (built.get(id) !== entry || !eng) return;
+        entry.g = g;
+        if (g && w.home) homeTod(g as Parameters<typeof homeTod>[0], TOD_LAMPS[todNow()], LIFT[todNow()]);
+        eng.placeGroup(id, g, w.at);
+      });
+    }
+  }
+  // the homes' lamps and self-light with the time of day
+  $effect(() => {
+    const t3 = todNow();
+    if (!eng) return;
+    untrack(() => {
+      for (const [id, b] of built) if (b.g && id.startsWith('home:')) homeTod(b.g as Parameters<typeof homeTod>[0], TOD_LAMPS[t3], LIFT[t3]);
+      eng?.kick();
     });
   });
   $effect(() => {
@@ -563,11 +644,19 @@
    *  the screen (unless the goal trees' canopies would go under the HUD), おく the campsite's feet CAMP_AT down it with
    *  its top clear of the HUD. */
   const SHORE_AT = 0.83, CAMP_AT = 0.5, CLEAR = 16;
+  /** The ends' landmarks: the layout's (its front shore, ウェイ's home's door) on its layout, else the props'. */
+  function endsNow(): { shore: number; canopy: readonly [number, number, number]; back: readonly [number, number, number] } {
+    const l = onLayout ? site.layout : null;
+    if (!l) return ends;
+    const x = extentOf(l);
+    return { shore: x.shore, canopy: [GOAL_TREES.A[0], GOAL_TREES.A[1], TREE_H], back: [x.home[0], x.home[1], CAMPSITE.h] };
+  }
   function fitEnds(e: Island3) {
     const v = e.view(), H = canvas?.clientHeight ?? 0;
     if (!H) return;
     const hud = Math.max(0, (document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? 0) - scene.getBoundingClientRect().top);
-    e.setLimits(ends.shore - 400, ends.back[1] + 700);
+    const en = endsNow();
+    e.setLimits(en.shore - 400, en.back[1] + 700);
     const syAt = (x: number, z: number, lift: number) => (cz: number) => (e.go(cz, 1), e.at(x, z, lift).sy);
     const solve = (f: (cz: number) => number, target: number, lo: number, hi: number) => {
       for (let i = 0; i < 28; i++) {
@@ -577,7 +666,7 @@
       }
       return Math.round((lo + hi) / 2);
     };
-    const { shore, canopy: [cx, cz, ch], back: [bx, bz, bh] } = ends;
+    const { shore, canopy: [cx, cz, ch], back: [bx, bz, bh] } = endsNow();
     const lo = shore - 400, hi = bz + 700;
     const min = Math.max(solve(syAt(195, shore, 0), H * SHORE_AT, lo, shore + 530), solve(syAt(cx, cz, ch), hud + CLEAR, lo, cz + 400));
     const max = Math.max(solve(syAt(bx, bz, 0), H * CAMP_AT, min, hi), solve(syAt(bx, bz, bh), hud + CLEAR, min, hi));
@@ -608,7 +697,7 @@
     // tabs share their runner's cores: at the phone's pixel ratio a frame took ~0.5 s)
     const soft = softwareGL();
     try {
-      e = createIsland(canvas, ground, {
+      e = createIsland(canvas, onLayout ? (renderer) => (lground = buildGround(site.layout!, { renderer, look: lookNow(), stairs: false })) : ground, {
         dpr: num('dpr') ?? (soft ? 0.5 : Math.min(2, window.devicePixelRatio || 1)),
         water: q.get('water') !== '0',
         shadows: soft ? q.get('shadows') === '1' : q.get('shadows') !== '0',
@@ -660,6 +749,16 @@
     // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
     listenFx3((kind, x, z, lift, o) => e.fx(kind, x, z, lift, o));
     listenPose3d((id, key) => e.things.swap(id, key ? (keyModel(key)?.m ?? null) : null));
+    // the layout changed (the editor, a phone's もようがえ): the ground's changed chunks rebuilt (site's own listener,
+    // first, has re-derived world.ts and bumped site.rev: the objects, the homes and the ends follow in the day's effect)
+    const offLayout = onLayout
+      ? layoutStore.on(({ diff }) => {
+          const l = site.layout ?? layoutStore.current;
+          if (!lground || !diff.chunks.length) return;
+          lground.rebuild(l, diff.chunks);
+          e.kick();
+        })
+      : () => {};
     listen3d((id, k) => {
       if (e.things.has(id)) e.things.jiggle(id, k);
       else e.cards.jiggle(`s:${id}`, k);
@@ -694,6 +793,7 @@
       angler: (slot = 'mine') => vil3?.angler(slot) ?? null
     };
     return () => {
+      offLayout();
       listen3d(null);
       vil3?.dispose();
       vil3 = null;

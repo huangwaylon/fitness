@@ -58,6 +58,8 @@ export interface BuiltGround {
   /** Where a walker's feet are (a bridge's deck); the ground's height if absent. */
   feet?(x: number, z: number): number;
   land: Land;
+  /** Its bands (a row of chunks across the island), culled with the camera as the baked chunks are. */
+  chunks?(): { z0: number; z1: number; meshes: Mesh[] }[];
   /** Called in each frame (its water's time, a paint stroke's rebuild): true while it moves (frames at the full rate),
    *  'ambient' while only its ambience does (its water: the ambient rate), false when still. */
   update?(t: number): Want;
@@ -213,6 +215,10 @@ export interface Island3 {
   focused(): boolean;
   /** A flourish in the world (effects.ts): a tap's dust, a splash, sparkles, a 「！」. */
   fx(kind: FxKind, x: number, z: number, lift?: number, o?: FxOpts): void;
+  /** A built model of the scene's own stood on the island (a home, a bridge, stairs: world3d/home.ts, structure.ts),
+   *  its origin on the ground at (x, z) (or at `y`), turned by `yaw`, bent with the island, casting shadows; again
+   *  with the same id replaces it, null takes it away. */
+  placeGroup(id: string, obj: Object3D | null, at?: { x: number; z: number; yaw?: number; y?: number }): void;
   /** Something of the scene's own in the world (a fishing line), bent with the island; its removal returned. */
   add(obj: Object3D): () => void;
   /** A screen point (canvas px) at `share` of the horizon's view depth, as a world point (unbent: x, z on the plan and
@@ -249,7 +255,7 @@ export interface Island3 {
   dispose(): void;
 }
 
-export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Partial<Options> & { aa?: boolean } = {}): Island3 {
+export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((renderer: WebGLRenderer) => Ground), init: Partial<Options> & { aa?: boolean } = {}): Island3 {
   const opts: Options = { dpr: Math.min(2, window.devicePixelRatio || 1), water: true, shadows: true, cap: 60, ambient: 30, ...init };
   // the e2e's logic mode (testMode.ts): every frame runs (the scene, the cameras, the hooks), nothing is drawn
   const noDraw = drawOff();
@@ -262,6 +268,8 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
   renderer.shadowMap.type = PCFSoftShadowMap;
   renderer.shadowMap.autoUpdate = false;
   bendU.uBendR.value = 1300;
+  // (a ground built on this renderer: the layout's terrain bakes its look on the GPU)
+  const ground = typeof groundIn === 'function' ? groundIn(renderer) : groundIn;
 
   const scene = new Scene();
   const camera = new PerspectiveCamera(FOV, 1, 20, 6000);
@@ -404,6 +412,11 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
       const [z0, z1] = c.userData.span as [number, number];
       c.visible = z1 > camZ - 700 && z0 < camZ + 1500;
     }
+    if (built(ground) && ground.chunks)
+      for (const b of ground.chunks()) {
+        const on = b.z1 > camZ - 700 && b.z0 < camZ + 1500;
+        for (const m of b.meshes) m.visible = on;
+      }
     rev++;
     horizonY = NaN;
   }
@@ -723,6 +736,20 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
   /** The last frame's: something moved (the full rate), only the ambience did. */
   let busy = false, ambience = false, paused = false, inFrame = false;
   let hook: ((t: number) => Want) | null = null;
+  const groupsPlaced = new Map<string, () => void>();
+  function addObj(obj: Object3D): () => void {
+    obj.traverse((n) => {
+      const m = (n as Mesh).material as Material | Material[] | undefined;
+      for (const x of m ? (Array.isArray(m) ? m : [m]) : []) bend(x);
+      n.frustumCulled = false;
+    });
+    scene.add(obj);
+    kick();
+    return () => {
+      scene.remove(obj);
+      kick();
+    };
+  }
   const cpu: number[] = [], gaps: number[] = [], stamps: number[] = [];
   /** What wanted the last frames (the e2e's and perf's: which part keeps the island drawing). */
   const why = new Set<string>();
@@ -947,19 +974,19 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
       const R = bendU.uBendR.value, pz = -camZ, r = Math.hypot(by + R, pz - bz), th = Math.atan2(pz - bz, by + R);
       return { x: bx, y: r - R, z: -(pz - th * R), px: focal / d };
     },
-    add(obj) {
-      obj.traverse((n) => {
-        const m = (n as Mesh).material as Material | Material[] | undefined;
-        for (const x of m ? (Array.isArray(m) ? m : [m]) : []) bend(x);
-        n.frustumCulled = false;
-      });
-      scene.add(obj);
+    placeGroup(id, obj, at) {
+      groupsPlaced.get(id)?.();
+      groupsPlaced.delete(id);
+      if (obj && at) {
+        obj.position.set(at.x, at.y ?? src.height(at.x, at.z), -at.z);
+        obj.rotation.y = at.yaw ?? 0;
+        obj.updateMatrixWorld(true);
+        groupsPlaced.set(id, addObj(obj));
+      }
+      shadowsDirty = true;
       kick();
-      return () => {
-        scene.remove(obj);
-        kick();
-      };
     },
+    add: addObj,
     warmFx: () => effects.warm(renderer, camera),
     fxWarmed: () => effects.warmed(),
     fx(kind, x, z, lift, o) {
