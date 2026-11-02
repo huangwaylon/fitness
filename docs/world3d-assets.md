@@ -47,7 +47,7 @@ azaleas stand in), the particles, the emotes and the UI's art.
 ## The inventory
 
 <!-- assets:start -->
-524 keys, 404 models, 5.99 MB in all.
+528 keys, 408 models, 6.08 MB in all.
 
 | kind | keys | models | KB | loads |
 | --- | --- | --- | --- | --- |
@@ -57,7 +57,7 @@ azaleas stand in), the particles, the emotes and the UI's art.
 | sea | 40 | 40 | 495 | lazily (sea) |
 | bug | 75 | 75 | 1020 | lazily (bug) |
 | fish | 83 | 83 | 891.5 | lazily (fish) |
-| deco | 44 | 35 | 799.3 | with the island |
+| deco | 48 | 39 | 895.1 | with the island |
 | event | 6 | 6 | 115.2 | lazily (event) |
 | decor | 40 | 10 | 198.7 | with the island |
 | flower | 42 | 42 | 551.5 | with the island |
@@ -454,7 +454,11 @@ azaleas stand in), the particles, the emotes and the UI's art.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | deco/bamboo-shoot-lamp | deco/bamboo-shoot-lamp | 3 | feet | 1×1 | 12 | 15.1 | lit |
 | deco/bamboo-shoot-lamp-lit | deco/bamboo-shoot-lamp | 3 | feet | 1×1 | 12 | 15.1 | lit |
+| deco/bbs-bird-day | deco/bbs-bird-day | 3.5 | feet | 1×1 | 12 | 28.1 |  |
+| deco/bbs-bird-night | deco/bbs-bird-night | 3.5 | feet | 1×1 | 12 | 25 |  |
 | deco/beach-chair | deco/beach-chair | 3 | feet | 2×1 | 29 | 24.1 |  |
+| deco/bulletin-board | deco/bulletin-board | 3.5 | feet | 2×1 | 30 | 20.5 | winter: deco/bulletin-board-winter |
+| deco/bulletin-board-winter | deco/bulletin-board-winter | 3.5 | feet | 2×1 | 30 | 22.2 |  |
 | deco/campfire | campfire | 3 | feet | 2×2 | 25 | 30.5 | lit |
 | deco/campfire-lit | campfire | 3 | feet | 2×2 | 25 | 30.5 | lit |
 | deco/campsite | tent | 3 | feet | 4×4 | 60 | 71.1 | lit, winter: deco/campsite-winter |

@@ -173,6 +173,8 @@ JOBS.push(
   fixed('deco/sandcastle', 'FtrSandcastle', ['FtrSandcastleReBody0']),
   fixed('deco/illumi-tree', 'FtrIllumiTree', ['FtrIllumiTreeReBody0'], ['day', 'lit'], { halo: 1 }),
   fixed('deco/kadomatsu', 'FtrKadomatsu', []),
+  // the bulletin board (docs/board.md: NH's EvtobjBbs, at the 3D board's scale, 3.5 u a model unit), in winter its snow
+  fixed('deco/bulletin-board', 'EvtobjBbs', [], ['day', 'winter'], { ppu: 3.5 * 3 }),
   fixed('deco/egg-arch', 'FtrEggArch', []),
   // the snowboy (NH's snowball body and its face on top) and its three days of melting: one camera for the four
   {
