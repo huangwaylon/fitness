@@ -2,11 +2,11 @@
 // accepted (the Apps Script and the relay's store check the same), and which events replace an earlier one (the
 // store's slots: a tally and an island day per person and day, a cosmetic pref per person, a goal per person and
 // Tokyo day). Dependency-free (type imports only), since it is bundled into apps-script/Code.js.
-import { isFind, isId, isLocalDate, isWeightKg, PREF_KEYS, type EventType } from './api.ts';
-import { isTally } from './tally.ts';
-import { isIslandDay } from './island.ts';
-import { decorOpOf } from './decor.ts';
-import { tentOpOf } from './tent.ts';
+import { isFind, isId, isLocalDate, isWeightKg, PREF_KEYS, type EventType } from '../contract/api.ts';
+import { isTally } from '../contract/tally.ts';
+import { isIslandDay } from '../contract/island.ts';
+import { decorOpOf } from '../contract/decor.ts';
+import { tentOpOf } from '../contract/tent.ts';
 import { isStepsGoal, LIMITS, MOVE_GOAL, shopPrice } from '../config/rules.ts';
 import { localDateAt } from '../time/dates.ts';
 import type { PersonId } from '../types.ts';
