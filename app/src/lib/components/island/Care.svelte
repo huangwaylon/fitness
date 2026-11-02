@@ -9,7 +9,7 @@
   // foot. SceneTaps mounts this inside the stage and asks it about each tap after the finds (`tap`, client px).
   // Cheap: static art; one-shot Web Animations / CSS on a tap; the clock is the scene's minute tick.
   import { timers } from './timers.ts';
-  import { islandSeed } from './devHooks.ts';
+  import { hookOneOf, islandSeed } from './devHooks.ts';
   import { su } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -105,8 +105,10 @@
     sceneSfx('weed');
     spawn({ kind: 'pull', x: weed.x, y: weed.y, flip: weed.flip }, 700);
   }
+  /** `?rock=clonk|sparkle|bug` (dev or ?demo): every rock tap has that outcome (the e2e's: no bug out from under it). */
+  const forcedRock = hookOneOf('rock', ['clonk', 'sparkle', 'bug'] as const);
   function hitRock() {
-    const what = rockTap(Math.random);
+    const what = forcedRock ?? rockTap(Math.random);
     // the partner's phone: my villager strikes the rock too (a bug out from under it comes on its own: Critters)
     shared.share({ kind: 'act', act: 'rock', pt: [ROCK.x, ROCK.y] });
     turnTo(ROCK.x);
