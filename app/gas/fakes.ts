@@ -98,6 +98,8 @@ export function makeGas(opts: FakeOptions = {}) {
     /** What the relay answers: a status, or `denied` (no external-request scope: fetch throws). */
     relay: 204 as number | 'denied',
     fetches: [] as FakeFetch[],
+    /** The relay's record (`/api`): its status and reply to a forwarded body. */
+    record: ((body: Record<string, unknown>) => ({ status: 200, text: JSON.stringify({ ok: true, echo: body }) })) as (body: Record<string, unknown>) => { status: number; text: string },
     /** Whether the script lock was held during each fetch. */
     fetchedUnderLock: [] as boolean[]
   };
@@ -156,8 +158,12 @@ export function makeGas(opts: FakeOptions = {}) {
         }
         state.fetches.push({ url, headers: o.headers, payload: o.payload });
         state.fetchedUnderLock.push(state.lockHeld);
+        if (url.endsWith('/api')) {
+          const r = state.record(JSON.parse(o.payload));
+          return { getResponseCode: () => r.status, getContentText: () => r.text };
+        }
         const code = state.relay === 204 && url.endsWith('/import') ? 200 : state.relay; // /notify answers 204, /import 200 (its counts)
-        return { getResponseCode: () => code };
+        return { getResponseCode: () => code, getContentText: () => '' };
       }
     },
     ContentService: {

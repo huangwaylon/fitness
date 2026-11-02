@@ -48,6 +48,7 @@ declare namespace GAS {
   }
   interface HTTPResponse {
     getResponseCode(): number;
+    getContentText(): string;
   }
   interface FetchOptions {
     method: 'post';
