@@ -5,6 +5,7 @@
 // same place whichever the camera, never dimmed at night.
 import { expect, test, type Page } from '@playwright/test';
 import { SHORE_Z } from '../src/lib/components/island/world.ts';
+import { is3d } from './island.ts';
 
 type W = { cam(): number; stops(): number[]; at(x: number, z: number): [number, number]; idle(): boolean; go(z: number): void };
 const call = <T,>(page: Page, fn: (w: W, a: number[]) => T, args: number[] = []) =>
@@ -32,8 +33,9 @@ for (const vp of [{ width: 393, height: 852 }, { width: 402, height: 874 }, { wi
   test.describe(`at ${vp.width} × ${vp.height}`, () => {
     test.use({ viewport: vp });
 
+    // (2D only: the native scroller is the 2D camera; the 3D one's: world3d.spec)
     test('it opens at the front and rests wherever a scroll leaves it, between the two ends', async ({ page }) => {
-      await open(page);
+      await open(page, '&date=2026-07-01T10:00&island=2d');
       const [front, back] = await call(page, (w) => w.stops());
       expect(back).toBeGreaterThan(front);
       expect(Math.abs((await call(page, (w) => w.cam())) - front)).toBeLessThan(1);
@@ -62,6 +64,8 @@ for (const vp of [{ width: 393, height: 852 }, { width: 402, height: 874 }, { wi
 
     test('a tree’s popup opens wholly in view, at the same place whichever the camera, never dimmed', async ({ page }) => {
       await open(page, '&date=2026-07-01T21:00&critter=none');
+      // (the 2D island's popup is in the same place whichever the camera; the 3D one's over the canopies when it fits)
+      const three = await is3d(page);
       const boxes: { x: number; y: number; w: number; h: number }[] = [];
       for (const z of [0, 200]) {
         await call(page, (w, [z]) => w.go(z), [z]);
@@ -78,10 +82,17 @@ for (const vp of [{ width: 393, height: 852 }, { width: 402, height: 874 }, { wi
         expect(b.x + b.width).toBeLessThanOrEqual(vp.width);
         // over every tint: no filter on it or its layer, above the ground's tint plane
         expect(await d.evaluate((el) => getComputedStyle(el.closest('.pop')!).filter)).toBe('none');
+        // the 3D island's popup goes over the canopies when it fits, else on its tree's side (FruitTree's fitPopup):
+        // the other tree's middle stays tappable
+        if (three) expect(await page.locator('button.canopy').evaluateAll((els) => els.slice(1).filter((e) => e.getBoundingClientRect().width).map((e) => {
+          const r = e.getBoundingClientRect();
+          return e.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2));
+        }))).not.toContain(false);
         boxes.push({ x: b.x, y: b.y, w: b.width, h: b.height });
         await page.keyboard.press('Escape');
         await expect(d).toHaveCount(0);
       }
+      if (three) return;
       expect(Math.abs(boxes[0].x - boxes[1].x)).toBeLessThan(2);
       expect(Math.abs(boxes[0].y + boxes[0].h / 2 - (boxes[1].y + boxes[1].h / 2))).toBeLessThan(2);
     });

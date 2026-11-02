@@ -22,7 +22,7 @@ test('the 2D island never loads three; ?island=3d draws the island in 3D and a t
   page.on('response', async (r) => {
     if (r.url().endsWith('.js')) scripts.push((await r.text().catch(() => '')).includes('WebGLRenderer') ? 'three' : 'other');
   });
-  await page.goto(`?${Q}`);
+  await page.goto(`?${Q}&island=2d`);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await page.waitForTimeout(800); // (proving nothing loads three for a while)
   expect(scripts).not.toContain('three');
@@ -137,12 +137,12 @@ test('the 3D camera zoomed in: one finger pans sideways too, held over the islan
   expect((await w3(page, (w) => w.view())).camX).toBeCloseTo(195, 4);
 });
 
-test('/world3d, the POC\'s address, opens the island in 3D; without the flag the island is 2D', async ({ page }) => {
+test('/world3d, the POC\'s address, opens the island in 3D; ?island=2d the 2D island', async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto(`world3d/?${Q}`);
   await expect(page).toHaveURL(/island=3d/);
   await ready(page);
-  await page.goto(`?${Q}`);
+  await page.goto(`?${Q}&island=2d`);
   await expect(page.locator('.if-scene')).toBeVisible();
   await expect(page.locator('canvas[data-w3d]')).toHaveCount(0);
 });

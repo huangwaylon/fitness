@@ -56,8 +56,9 @@ test('behind a building it is hidden, in front of it it covers it', async ({ pag
   expect(await topAt(page, 196, 960, 0.4)).toBe('mine');
 });
 
+// (2D only: the 3D island's camera is its own, no scroller: world3d.spec's camera tests)
 test('the camera is the scroller: two stops, the sprites follow it, nothing runs once it stops', async ({ page }) => {
-  await page.goto('?demo&season=summer');
+  await page.goto('?demo&season=summer&island=2d');
   await world(page);
   const [front, back] = await call(page, (w) => w.stops());
   expect(await call(page, (w) => w.cam())).toBe(front); // まえ: the bottom of the scroller
@@ -96,16 +97,18 @@ test('a tap on a sprite far up near the horizon lands on it (hit-testing follows
   expect(hit).toBe(true);
 });
 
+// (2D only: the 3D island's ground is its terrain mesh)
 test('the ground is baked: the bands in view show the season’s terrain chunks; the back loads lazily', async ({ page }) => {
-  await page.goto('?demo&season=summer');
+  await page.goto('?demo&season=summer&island=2d');
   await world(page);
   const shown = await page.locator('[data-world-ground] .gband:not([style*="hidden"]) img').evaluateAll((els) => [...new Set(els.map((e) => (e as HTMLImageElement).src.split('/').slice(-2).join('/')))]);
   expect(shown.length).toBeGreaterThan(0);
   for (const s of shown) expect(s).toMatch(/^summer\/[0-7]\.webp\?v=\d+$/);
 });
 
+// (2D only: the 3D island's glows are depth-tested sprites, world3d.spec's night glows)
 test('at night a lamp’s light sorts with its lamp: a tree in front covers it, the lamp’s own sprite is under it', async ({ page }) => {
-  await page.goto('?demo&season=summer&date=2026-07-01T21:00&critter=none');
+  await page.goto('?demo&season=summer&date=2026-07-01T21:00&critter=none&island=2d');
   await world(page);
   await call(page, (w) => w.go(642));
   await page.waitForTimeout(400);
@@ -121,8 +124,9 @@ test('at night a lamp’s light sorts with its lamp: a tree in front covers it, 
   expect(z.tree).toMatch(/url/);
 });
 
+// (2D only: the 3D island has no DOM tint, its light is the scene's)
 test('at night the tint is on what each thing draws, never on what a tap reaction moves (it stays tinted while it moves)', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-04T22:00&critter=none');
+  await page.goto('?demo&date=2026-11-04T22:00&critter=none&island=2d');
   await world(page);
   await call(page, (w) => w.go(380));
   await page.waitForTimeout(600);
