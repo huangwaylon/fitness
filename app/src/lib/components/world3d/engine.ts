@@ -501,7 +501,17 @@ export function createWorld(canvas: HTMLCanvasElement, init: Partial<Options> & 
   // gestures
   let touch = false, vel: [number, number] = [0, 0], lastT = 0;
   const unitsPerPx = () => (2 * (D0 / zoomK) * Math.tan(((FOV / 2) * Math.PI) / 180)) / H;
+  /** A lighter pixel ratio while the camera moves (a pan, a pinch, a fling: the tent's way), back once it's still; never
+   *  for a tap (no blink). */
+  let lightened = false;
+  function light(on: boolean) {
+    if (on === lightened || opts.dpr <= 1.5) return;
+    lightened = on;
+    renderer.setPixelRatio(on ? 1.5 : opts.dpr);
+    renderer.setSize(W, H, false);
+  }
   function pan(dx: number, dy: number) {
+    light(true);
     const k = unitsPerPx();
     camX -= dx * k;
     camZ += (dy * k) / Math.sin(pitch);
@@ -509,6 +519,7 @@ export function createWorld(canvas: HTMLCanvasElement, init: Partial<Options> & 
     activity();
   }
   function zoom(f: number) {
+    light(true);
     zoomK = Math.max(ZOOM.min, Math.min(ZOOM.max, zoomK * f));
     aim();
     activity();
@@ -587,6 +598,7 @@ export function createWorld(canvas: HTMLCanvasElement, init: Partial<Options> & 
   function options(o: Partial<Options>) {
     Object.assign(opts, o);
     if (o.dpr !== undefined) {
+      lightened = false;
       renderer.setPixelRatio(opts.dpr);
       resize();
     }
@@ -636,7 +648,10 @@ export function createWorld(canvas: HTMLCanvasElement, init: Partial<Options> & 
       camZ += (vel[1] * dt * k) / Math.sin(pitch);
       const decay = Math.exp(-dt / 325);
       vel = [vel[0] * decay, vel[1] * decay];
-      if (Math.hypot(vel[0], vel[1]) < 0.01) vel = [0, 0];
+      if (Math.hypot(vel[0], vel[1]) < 0.01) {
+        vel = [0, 0];
+        light(false);
+      }
       aim();
       more = true;
     }
@@ -728,7 +743,7 @@ export function createWorld(canvas: HTMLCanvasElement, init: Partial<Options> & 
     touching(on) {
       touch = on;
       if (on) vel = [0, 0];
-      renderer.setPixelRatio(on ? Math.min(1.5, opts.dpr) : opts.dpr);
+      else if (!vel[0] && !vel[1]) light(false);
       activity();
     },
     view: () => ({ camZ, camX, zoom: zoomK }),
