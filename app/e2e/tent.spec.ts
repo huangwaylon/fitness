@@ -45,7 +45,7 @@ async function enter(page: Page, aside = false) {
   await expect(page.locator('html')).not.toHaveAttribute('data-door', /./, { timeout: 4000 });
 }
 
-test('the 2D island never loads the room; the tent does, opens through the door, and goes back out to the island as it was', async ({ page }) => {
+test('the 2D island never loads the room; the tent does, opens through the door, and goes back out to the island as it was', { tag: '@smoke' }, async ({ page }) => {
   const scripts: string[] = [];
   page.on('response', async (r) => {
     if (r.url().endsWith('.js')) scripts.push((await r.text().catch(() => '')).includes('WebGLRenderer') ? 'three' : 'other');
@@ -82,7 +82,7 @@ test('the 2D island never loads the room; the tent does, opens through the door,
   await expect(page.locator('[data-tent]')).toHaveCount(0);
 });
 
-test('a tap on the floor walks my villager there; ‹ 島へ goes back out; nothing is drawn while nothing moves', async ({ page }) => {
+test('a tap on the floor walks my villager there; ‹ 島へ goes back out; nothing is drawn while nothing moves', { tag: '@smoke' }, async ({ page }) => {
   await enter(page);
   await page.waitForFunction(() => !(window as unknown as { __tent: { walking(w: string): boolean } }).__tent.walking('A'));
   const [x, y] = await tent(page, (t) => t.px(25, -20));
