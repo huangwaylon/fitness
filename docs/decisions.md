@@ -545,8 +545,11 @@ does all the 2D island does, then the default): NH's models instanced, the groun
 textures, the water live, every material bent onto the rolling log in its vertex shader. The DOM island keeps running
 over the canvas: its nodes are placed through the 3D camera (`camera.svelte.ts` `Proj3`) and stay the tap areas, the
 popups, the balloons and the marks; their art goes invisible where the canvas draws the thing. The camera is NH's: one
-finger scrolls along the island only (z, a free fling, never x), two pinch the zoom (clamped, eased back), it never
-rotates and nothing but the finger moves it; a gesture is one thing from start to end. Shadows and water are on; the
+finger scrolls along the island (z, a free fling; sideways too only when zoomed in past the default, x clamped over
+the island and a little sea, centred again by the default), two pinch the zoom about their middle (the default is the
+widest: past it a rubber band, springing back on release), it never rotates and nothing but the finger moves it (the
+spring back and the board's focus the user's two exceptions); a gesture is one thing from start to end. (The user,
+2026-11-02: "zoomed in, let me pan left and right".) Shadows and water are on; the
 shadow map is drawn unbent (three's receivers look it up at their unbent position), so it redraws only when its box
 steps, not on each frame of a scroll. Every lamp is always-on emissive with a halo and a pool; the 6 real point lights
 go to the lights nearest the view's centre with hysteresis, fading over 400 ms, so a light never pops. Why: the user

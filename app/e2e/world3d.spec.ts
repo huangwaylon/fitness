@@ -4,9 +4,10 @@
 import { expect, test, type Page } from '@playwright/test';
 
 type W3 = {
+  xRoom(k?: number): number;
   stats(): { frames: number; calls: number; tris: number; dpr: number; loading: number; fps: number };
   loaded(): boolean;
-  view(): { camZ: number; zoom: number; pitch: number };
+  view(): { camZ: number; zoom: number; pitch: number; camX: number };
   limits(): { min: number; max: number };
   client(x: number, z: number, lift?: number): [number, number];
   go(z: number, k?: number): void;
@@ -45,8 +46,8 @@ test('the 2D island never loads three; ?island=3d draws the island in 3D and a t
   }, { timeout: 10_000 }).toBeLessThan(14);
 });
 
-test('the 3D camera: one finger scrolls along the island only, two pinch the zoom, nothing else moves it', async ({ page }) => {
-  test.setTimeout(60_000);
+test('the 3D camera: at the default zoom one finger scrolls along the island only; zoomed in it pans sideways too; a pinch zooms about its middle, springs back from past the default, centred', async ({ page }) => {
+  test.setTimeout(90_000);
   await page.goto(`?${Q}&island=3d`);
   await ready(page);
   const { min, max } = await w3(page, (w) => w.limits());
@@ -78,6 +79,43 @@ test('the 3D camera: one finger scrolls along the island only, two pinch the zoo
   // still: nothing moves it
   await page.waitForTimeout(600); // (proving the camera stays put)
   expect((await w3(page, (w) => w.view())).camZ).toBeCloseTo(pinched.camZ, 1);
+  const idle = () => expect.poll(() => page.evaluate(() => (window as unknown as { __world: { idle(): boolean } }).__world.idle()), { timeout: 10_000 }).toBe(true);
+
+  // zoomed in, a sideways drag pans x (with the finger: the view moves right as it goes left), as far as the room lets it
+  expect(await w3(page, (w) => w.xRoom())).toBeGreaterThan(5);
+  await send('touchStart', [{ x: 300, y: 500 }]);
+  for (let i = 1; i <= 10; i++) await send('touchMove', [{ x: 300 - i * 12, y: 500 }]);
+  await send('touchEnd', []);
+  await idle();
+  const panned = await w3(page, (w) => ({ ...w.view(), room: w.xRoom() }));
+  expect(panned.camX).toBeGreaterThan(195 + 5);
+  expect(panned.camX).toBeLessThanOrEqual(195 + panned.room + 0.01);
+  // far past the edge: held at the island plus its sea margin
+  await send('touchStart', [{ x: 380, y: 500 }]);
+  for (let i = 1; i <= 20; i++) await send('touchMove', [{ x: 380 - i * 18, y: 500 }]);
+  await send('touchEnd', []);
+  await idle();
+  const edge = await w3(page, (w) => ({ ...w.view(), room: w.xRoom() }));
+  expect(edge.camX).toBeCloseTo(195 + edge.room, 1);
+
+  // a pinch together past the default: it gives (zoomed out under 1 while held), x centred; let go, it springs back
+  // to exactly the default, centred
+  await send('touchStart', [{ x: 80, y: 420 }, { x: 310, y: 440 }]);
+  for (let i = 1; i <= 14; i++) await send('touchMove', [{ x: 80 + i * 8, y: 420 }, { x: 310 - i * 8, y: 440 }]);
+  const held = await w3(page, (w) => w.view());
+  expect(held.zoom).toBeLessThan(1);
+  expect(held.camX).toBeCloseTo(195, 3);
+  await send('touchEnd', []);
+  await idle();
+  const back = await w3(page, (w) => w.view());
+  expect(back.zoom).toBeCloseTo(1, 4);
+  expect(back.camX).toBeCloseTo(195, 4);
+  // and at the default a sideways drag moves nothing sideways
+  await send('touchStart', [{ x: 300, y: 500 }]);
+  for (let i = 1; i <= 10; i++) await send('touchMove', [{ x: 300 - i * 12, y: 500 }]);
+  await send('touchEnd', []);
+  await idle();
+  expect((await w3(page, (w) => w.view())).camX).toBeCloseTo(195, 4);
 });
 
 test('/world3d, the POC\'s address, opens the island in 3D; without the flag the island is 2D', async ({ page }) => {
