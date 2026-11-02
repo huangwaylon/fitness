@@ -7,7 +7,7 @@ A push to `main` that touches `app/**` (docs-only and relay-only pushes don't ru
 |---|---|---|
 | `build` | `npm run build` once; its `build-pages/` is both the Pages artifact and the `site` artifact the e2e jobs test | yes |
 | `checks` | `npm run check`, `npm run knip`, `npx vitest run`, beside the build | yes |
-| `e2e` ×6 | Playwright in Chromium (iPhone 13 profile), the whole suite, on `site` served as Pages serves it (`scripts/serve-build.ts`), split by test (`fullyParallel`, 3 workers each) | yes, until WebKit is green across the board |
+| `e2e` ×8 | Playwright in Chromium (iPhone 13 profile), the whole suite, on `site` served as Pages serves it (`scripts/serve-build.ts`), split by test (`fullyParallel`, 3 workers each) | yes, until WebKit is green across the board |
 | `e2e-webkit` ×5 | the same in **WebKit** as an iPhone 15 (the users' phones: an iPhone 15 and an iPhone 16 on Safari; Playwright's two profiles have the same viewport), on **macOS** runners: Safari's own WebKit (Linux's draws the island at about one frame a second, so its timing-bound specs fail there) | not yet: its failures show in the summary |
 | `deploy` | to Pages, once all of the above are green | — |
 

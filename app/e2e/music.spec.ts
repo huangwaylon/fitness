@@ -44,6 +44,8 @@ for (const [q, file] of [
   });
 
 test('the wasps: Chased by Bees cuts in as they come out, Stung by Bees after the sting, then the hour again', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-04T12:00:00+09:00') });
+  await page.clock.resume();
   const audio = await open(page, '2026-11-04T12:00&shake=nest');
   await page.waitForTimeout(2600); // the opening beats are over
   await tapSky(page);
@@ -57,8 +59,8 @@ test('the wasps: Chased by Bees cuts in as they come out, Stung by Bees after th
   await expect.poll(() => audio).toContain('music/bee-chase.m4a');
   await expect(page.locator('[data-stung]')).toHaveCount(1, { timeout: 3000 }); // no tap: stung
   await expect.poll(() => audio).toContain('music/bee-stung.m4a');
-  // the hour's file was kept for the hand back: not fetched again
-  await page.waitForTimeout(13_000);
+  // the hour's file was kept for the hand back: not fetched again (13 s of the page's clock, run on at once)
+  await page.clock.runFor(13_000);
   expect(audio.filter((p) => p === 'music/hour-12.m4a')).toHaveLength(1);
 });
 

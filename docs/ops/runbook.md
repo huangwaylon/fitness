@@ -12,7 +12,7 @@ Push to `main`. Any change under `app/**` (or to the workflow) runs `.github/wor
 
 1. `npm ci --ignore-scripts`, then beside each other: `npm run build` with `VITE_GAS_URL` = the repo variable `GAS_URL`
    and `BASE_PATH=/fitness` (once), and `npm run check`, `npm run knip`, `npx vitest run`
-2. the e2e against that build: Playwright in Chromium (six shards, gating) and in WebKit as an iPhone 15 on macOS (five
+2. the e2e against that build: Playwright in Chromium (eight shards, gating) and in WebKit as an iPhone 15 on macOS (five
    shards, not gating until it's green across the board)
 3. deploy `app/build-pages/` to https://huangwaylon.github.io/fitness/
 

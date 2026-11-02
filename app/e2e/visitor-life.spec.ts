@@ -96,21 +96,27 @@ test('a stroll, and back on her spot before a line: the balloon anchors next to 
 });
 
 test('arriving: from the campsite on foot along the paths (?arrive); leaving to it when the visit ends (?leave)', async ({ page }) => {
-  test.setTimeout(100_000);
+  // the page's clock, run on a second at a time: the walks, the 30 s visit and the walk back in a few real seconds
+  await page.clock.install({ time: new Date('2026-11-01T08:00:00+09:00') });
   await page.goto('?demo&date=2026-11-01T08:00&critter=none&arrive&leave=30000');
   const v = page.locator('[data-visitor="daisy-mae"]');
+  /** Runs the clock on until `ok` holds (at most `s` seconds of it). */
+  const until = async (ok: () => Promise<boolean>, s: number) => {
+    for (let i = 0; i < s && !(await ok()); i++) await page.clock.runFor(1000);
+    expect(await ok()).toBe(true);
+  };
   await expect(v).toHaveAttribute('data-phase', 'arrive');
   await expect(v).toHaveClass(/walking/);
   // from the campsite, out of sight from まえ: she comes into view on the lawn as she nears her spot
   await expect(v.locator('.art')).toBeHidden();
-  await expect(v.locator('.art')).toBeVisible({ timeout: 26_000 });
-  await expect(v).toHaveAttribute('data-phase', 'here', { timeout: 26_000 });
+  await until(() => v.locator('.art').isVisible(), 26);
+  await until(async () => (await v.getAttribute('data-phase')) === 'here', 26);
   // the visit ends 30 s after it began, however long the walk from the campsite took (the route's length moves with
   // the scenery the walk goes round)
-  await expect(v).toHaveAttribute('data-phase', 'leave', { timeout: 32_000 });
+  await until(async () => (await v.getAttribute('data-phase')) === 'leave', 32);
   await expect(v).toHaveClass(/walking/);
-  await expect(v.locator('.art')).toBeHidden({ timeout: 20_000 });
-  await expect(page.locator('[data-visitor]')).toHaveCount(0, { timeout: 30_000 });
+  await until(async () => !(await v.locator('.art').isVisible()), 20);
+  await until(async () => (await page.locator('[data-visitor]').count()) === 0, 30);
 });
 
 for (const [id, way] of [['wisp', 'float'], ['celeste', 'fly'], ['jack', 'spook'], ['kk-slider', 'appear']] as const)

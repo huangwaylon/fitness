@@ -168,12 +168,14 @@ test('a shake drops a bagworm on its thread beside the trunk; a tap nets it (NHâ
 test('at night a spider can dangle instead; left alone it climbs back up into the tree', async ({ page }) => {
   test.setTimeout(40_000);
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
+  await page.clock.install({ time: new Date('2026-11-04T22:00:00+09:00') });
+  await page.clock.resume();
   await page.goto('?demo&date=2026-11-04T22:00&shake=spider');
   await expect(ribbon(page)).toBeVisible();
   await page.waitForTimeout(2600);
   await shake(page);
   await expect(page.locator('[data-dangle="spider"]')).toBeAttached();
-  await page.waitForTimeout(11_500);
+  await page.clock.runFor(11_500); // left alone (the page's clock, run on at once)
   await expect(page.locator('[data-dangle]')).toHaveCount(0);
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
 });
