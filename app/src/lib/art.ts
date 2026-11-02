@@ -91,6 +91,13 @@ export const BODY_ART: Record<'weight' | 'body_fat_pct' | 'bmi' | 'lean_kg', str
   lean_kg: 'finds/items/weight-bench'
 };
 
+/** けんこう's two groups → a catalogue icon each on their switch (the user: cute, no ball nor scale): かつどう NH's cute
+ *  sneakers (moving), からだ the flower tabletop mirror (a look at yourself). */
+export const GROUP_ART: Record<'activity' | 'body', string> = {
+  activity: 'finds/items/cute-sneakers',
+  body: 'finds/items/flower-tabletop-mirror'
+};
+
 /** One of the four ring fruits → inventory icon key. */
 export function fruitArt(fruit: RingFruit): string {
   return `fruit3d/${fruit}`;

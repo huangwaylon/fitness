@@ -19,6 +19,8 @@
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
   import Avatar from '../characters/Avatar.svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
+  import { GROUP_ART } from '#lib/art.ts';
   import MetricCard from './MetricCard.svelte';
   import WeightCard from './WeightCard.svelte';
   import BodyCard from './BodyCard.svelte';
@@ -119,7 +121,7 @@
     {#if !guest}
       <div class="seg" role="group" aria-label={t('health.group')}>
         {#each GROUPS as id (id)}
-          <button type="button" class="sb" aria-pressed={group === id} data-group={id} data-sfx={group === id ? 'none' : 'tick'} onclick={() => setGroup(id)}>{t(`health.group.${id}`)}</button>
+          <button type="button" class="sb" aria-pressed={group === id} data-group={id} data-sfx={group === id ? 'none' : 'tick'} onclick={() => setGroup(id)}><span class="gi" aria-hidden="true"><OfficialArt key={GROUP_ART[id]} size={22} /></span>{t(`health.group.${id}`)}</button>
         {/each}
       </div>
     {/if}
@@ -172,6 +174,7 @@
   }
   .sb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
   .sb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  .gi { display: inline-flex; width: 22px; height: 22px; flex: none; line-height: 0; }
   /* row 1: two dropdowns side by side, whose data a little wider (the avatar and the name) */
   .dds { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 8px; }
   .dd {
