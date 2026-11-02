@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { CHUNKS_X, CHUNKS_Z, GRID, chunkIndex, chunkOf, chunkString, codeOf, codeOfChar, charOf, kindOf, tierOf, writeChunk, KINDS, TIERS, tileAt, tileMid } from './grid.ts';
-import { defaultLayout, doorOf, extentOf, layoutOf, objMid, opsBetween, toJson, fromJson, withChanges, footOf, type Obj } from './model.ts';
+import { defaultLayout, doorOf, extentOf, layoutOf, objMid, objTiles, opsBetween, toJson, fromJson, withChanges, footOf, type Obj } from './model.ts';
 import { CHUNK_COUNT, chunkMesh, stairsMesh } from './mesh.ts';
 import { DEFAULT_HOMES, FAMILIES, catalogue, homeFoot, knownStyle, partsOf } from './homes.ts';
 import { diffLayouts } from './diff.ts';
@@ -15,8 +15,8 @@ import {
 } from '../components/island/world.ts';
 
 const T0 = 1_800_000_000_000;
-/** world.ts's z on the long island (scripts/layout-default.ts: おく moved 1380u back, past the new middle). */
-const long = (z: number) => (z < 680 ? z : z + 1380);
+/** world.ts's z on the long island (scripts/layout-default.ts: おく moved 420u back, past the new middle). */
+const long = (z: number) => (z < 680 ? z : z + 420);
 const as = (who: 'A' | 'B' | 'G', op: LayoutOp): LayoutEntry => ({ ...op, who }) as LayoutEntry;
 
 describe('the grid', () => {
@@ -53,21 +53,39 @@ describe('the grid', () => {
 
 describe('the default layout (today island on the grid)', () => {
   const l = defaultLayout();
-  test('keeps world.ts ids, every object exactly where it stands today', () => {
-    const at = (id: string) => objMid(l, l.objects.get(id)!).map((v) => Math.round(v * 10) / 10);
-    const was = (x: number, z: number) => [x, long(z)];
-    for (const s of SCENERY) expect(at(s.id), s.id).toEqual(was(s.x, s.z));
-    HEDGE_XS.forEach((x, i) => expect(at(`hedge-${i}`)).toEqual(was(x, HEDGE_Z)));
-    expect(at('goal-A')).toEqual(was(...GOAL_TREES.A));
-    expect(at('goal-B')).toEqual(was(...GOAL_TREES.B));
-    for (const d of DECOR_SLOTS) expect(at(d.id), d.id).toEqual(was(d.x, d.z));
-    expect(at('tape-deck')).toEqual(was(...TAPE_DECK));
-    expect(at('rock')).toEqual(was(...ROCK));
-    expect(at('bridge')).toEqual(was(BRIDGE.x, (BRIDGE.z0 + BRIDGE.z1) / 2));
-    expect(at('spot-villager-A')).toEqual(was(...HOMES.A));
-    for (const f of FLOWERS) expect(at(f.id)).toEqual(was(f.x, f.z));
-    // the campsite's tent: its front on the door line
-    expect(doorOf(l, l.objects.get('home-A')!).at.map(Math.round)).toEqual(was(CAMPSITE.x, CAMPSITE.z));
+  test('keeps world.ts ids, each piece on the grid near where it stands today', () => {
+    const at = (id: string) => objMid(l, l.objects.get(id)!);
+    const near = (id: string, x: number, z: number) => expect(Math.hypot(at(id)[0] - x, at(id)[1] - long(z)), id).toBeLessThanOrEqual(80);
+    for (const s of SCENERY) near(s.id, s.x, s.z);
+    HEDGE_XS.forEach((x, i) => near(`hedge-${i}`, x, HEDGE_Z));
+    near('goal-A', ...GOAL_TREES.A);
+    near('goal-B', ...GOAL_TREES.B);
+    for (const d of DECOR_SLOTS) near(d.id, d.x, d.z);
+    near('tape-deck', ...TAPE_DECK);
+    near('rock', ...ROCK);
+    near('bridge', BRIDGE.x, (BRIDGE.z0 + BRIDGE.z1) / 2);
+    near('spot-villager-A', ...HOMES.A);
+    for (const f of FLOWERS) near(f.id, f.x, f.z);
+    const door = doorOf(l, l.objects.get('home-A')!).at;
+    expect(Math.hypot(door[0] - CAMPSITE.x, door[1] - long(CAMPSITE.z))).toBeLessThanOrEqual(30);
+  });
+  test('every piece of the default sits on the grid: no offsets, no two on one tile', () => {
+    const seen = new Map<string, string>();
+    for (const o of l.objects.values()) {
+      expect(o.n, o.id).toBeUndefined();
+      expect(Number.isInteger(o.x) && Number.isInteger(o.z), o.id).toBe(true);
+      if (o.k === 'spot') continue;
+      for (const [c, r] of objTiles(l, o)) {
+        expect(seen.get(`${c},${r}`), `${o.id} on ${c},${r}`).toBeUndefined();
+        seen.set(`${c},${r}`, o.id);
+      }
+    }
+    // a footprint's middle is a tile's middle (odd sides) or a tile line (even): on the 30u grid either way
+    for (const o of l.objects.values()) {
+      const [x, z] = objMid(l, o);
+      expect(((x + 90) * 2) % 30, o.id).toBe(0);
+      expect(((z + 90) * 2) % 30, o.id).toBe(0);
+    }
   });
   test('has the three homes, both goal trees and no errors', () => {
     for (const id of ['home-A', 'home-B', 'home-G']) expect(l.objects.get(id)?.k).toBe('home');
@@ -80,10 +98,10 @@ describe('the default layout (today island on the grid)', () => {
     const [pc, pr] = tileAt(74, long(772));
     expect(l.tile(pc, pr).kind).toBe('pond');
     expect(l.tile(9, 15).kind).toBe('dirt'); // the path up the lawn
-    expect(l.tile(9, 50).kind).toBe('dirt'); // on through the middle
-    expect(l.tile(15, 50).kind).toBe('river'); // the stream down its east side
-    expect(l.tile(8, 87).tier).toBe(1);
-    expect(l.tile(8, 60).tier).toBe(0);
+    expect(l.tile(9, 32).kind).toBe('dirt'); // on through the middle
+    expect(l.tile(15, 32).kind).toBe('river'); // the stream down its east side
+    expect(l.tile(8, 55).tier).toBe(1);
+    expect(l.tile(8, 38).tier).toBe(0);
   });
   test('every kind on the catalogue has a footprint and a height', () => {
     for (const d of KIND_LIST) {
@@ -172,7 +190,7 @@ describe('heights', () => {
   const l = defaultLayout();
   test('the lawn, the upper tier, the stream, the sea; the stairs ramp between tiers', () => {
     expect(heightAt(l, 240, 270)).toBeCloseTo(GRASS_Y);
-    expect(heightAt(l, 230, long(1180))).toBeCloseTo(40 + GRASS_Y);
+    expect(heightAt(l, 200, 1630)).toBeCloseTo(40 + GRASS_Y);
     expect(fieldOf(l).ground(195, 646)).toBeLessThan(0);
     expect(heightAt(l, 195, -80)).toBeLessThan(0);
     const st = l.objects.get('stairs')!, [sx, sz] = objMid(l, st);
@@ -185,7 +203,7 @@ describe('heights', () => {
   test('the corners are round: a convex cliff corner is cut', () => {
     const { tierAt } = fieldOf(l);
     // the upper tier's land meets the beach at its corners: the tile's very corner is lower than its middle
-    expect(tierAt(-90 + 4 * 30 + 15, -90 + 87 * 30 + 15)).toBe(1);
+    expect(tierAt(-90 + 4 * 30 + 15, -90 + 55 * 30 + 15)).toBe(1);
   });
 });
 
@@ -200,7 +218,7 @@ describe('walking on it (layout/nav.ts, planTap drop-in)', () => {
   });
   test('from home to うめ house; up the stairs, the only way up the cliff', () => {
     expect(findPath(g, g.named.homeA, g.named['door-home-B'])).not.toBeNull();
-    const p = findPath(g, g.named.homeA, [230, long(1180)]);
+    const p = findPath(g, g.named.homeA, [200, 1630]);
     expect(p).not.toBeNull();
     const st = l.objects.get('stairs')!, [w, d] = footOf(l, st);
     const x0 = -90 + st.x * 30, z0 = -90 + st.z * 30;
@@ -215,10 +233,10 @@ describe('walking on it (layout/nav.ts, planTap drop-in)', () => {
   test('without the stairs, the upper tier is out of reach (a pocket)', () => {
     const l2 = withChanges(l, { remove: ['stairs'] });
     const g2 = navOf(l2);
-    expect(reachable(g2, 230, long(1180))).toBe(false);
+    expect(reachable(g2, 200, 1630)).toBe(false);
     expect(validate(l2, g2).some((i) => i.code === 'pocket' && i.tiles.length > 30)).toBe(true);
     // a home up there would be walled in
-    const up = withChanges(l2, { set: [{ ...l.objects.get('home-B')!, z: 86, x: 7 }] });
+    const up = withChanges(l2, { set: [{ ...l.objects.get('home-B')!, z: 54, x: 7 }] });
     expect(validate(up).filter((i) => i.code === 'door').flatMap((i) => i.ids)).toEqual(['home-B']);
   });
   test('a tap: on a home goes to its door; on the pond to its bank; on the lawn there', () => {
@@ -255,19 +273,19 @@ describe('validation', () => {
   });
 });
 
-describe('the long island (20 × 92) and its 3D ground (layout/mesh.ts)', () => {
+describe('the long island (20 × 60) and its 3D ground (layout/mesh.ts)', () => {
   const l = defaultLayout();
   test('its extent: the land twice today’s length, the front shore, ウェイ’s door at the back', () => {
     const e = extentOf(l);
-    expect(e.grid).toEqual({ x0: -90, x1: 510, z0: -90, z1: 2670 });
-    expect(e.land.z1 - e.land.z0).toBeGreaterThan(2500);
+    expect(e.grid).toEqual({ x0: -90, x1: 510, z0: -90, z1: 1710 });
+    expect(e.land.z1 - e.land.z0).toBeGreaterThan(1600);
     expect(e.shore).toBe(-30);
-    expect(e.home[1]).toBeCloseTo(long(CAMPSITE.z), 0);
+    expect(Math.abs(e.home[1] - long(CAMPSITE.z))).toBeLessThanOrEqual(30);
   });
   test('the chunks: finite, the cliff a wall, the stream falling where it steps down, fresh water, the stairs', { timeout: 30_000 }, () => {
     let walls = 0, falls = 0, water = 0;
     // the cliff's band (its walls, the falls, the stairs' foot), the middle's (the stream), the front's (the sea's edge)
-    const bands = [chunkOf(9, 84), chunkOf(15, 84), chunkOf(15, 50), chunkOf(9, 2)];
+    const bands = [chunkOf(9, 52), chunkOf(15, 52), chunkOf(15, 32), chunkOf(9, 2)];
     void CHUNK_COUNT;
     for (const i of bands) {
       const m = chunkMesh(l, i);
@@ -284,7 +302,7 @@ describe('the long island (20 × 92) and its 3D ground (layout/mesh.ts)', () => 
   });
   test('a cliff wall stands from the upper ground down to the lower', { timeout: 30_000 }, () => {
     // the chunk holding the cliff's line at the island's middle
-    const m = chunkMesh(l, chunkOf(9, 84));
+    const m = chunkMesh(l, chunkOf(9, 52));
     const ys = Array.from({ length: m.walls.pos.length / 3 }, (_, k) => m.walls.pos[k * 3 + 1]);
     expect(Math.max(...ys)).toBeCloseTo(40 + GRASS_Y, 0);
     expect(Math.min(...ys)).toBeLessThan(GRASS_Y + 0.5);
@@ -323,5 +341,20 @@ describe('the homes (layout/homes.ts)', () => {
       expect(footOf(l2, b)).toEqual([...homeFoot(style)]);
       expect(validate(l2).filter((i) => i.level === 'error' && i.ids.includes('home-B'))).toEqual([]);
     }
+  });
+});
+
+describe('a home turns with its owner’s look', () => {
+  const l = defaultLayout();
+  test('the owner’s `h` op turns it (its door and footprint with it); an outdoor op never does', () => {
+    const turned = layoutOf([as('B', { sc: 'h', id: 'hB', at: T0, ...DEFAULT_HOMES.B, f: 1 } as LayoutOp)]);
+    const b = turned.objects.get('home-B')!;
+    expect(b.f).toBe(1);
+    const d0 = doorOf(l, l.objects.get('home-B')!), d1 = doorOf(turned, b);
+    expect(d1.at).not.toEqual(d0.at);
+    expect(footOf(turned, b)).toEqual([...homeFoot(DEFAULT_HOMES.B)].reverse());
+    // a member's move of it keeps its facing (the owner's)
+    const moved = layoutOf([as('A', { sc: 'o', id: 'home-B', at: T0, k: 'home', x: 5, z: 29, f: 2 })]);
+    expect(moved.objects.get('home-B')!.f).toBe(l.objects.get('home-B')!.f);
   });
 });

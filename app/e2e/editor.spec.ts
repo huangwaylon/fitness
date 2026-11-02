@@ -94,7 +94,7 @@ test('place from the palette; the check shows a tree in the river; reset to the 
   await expect(page.getByRole('status')).toContainText('おけません');
   // on the lawn it goes
   const before = await page.evaluate(() => (window as unknown as { __editor: E }).__editor.layout().objects.size);
-  const [gx, gy] = await page.evaluate(() => (window as unknown as { __editor: E }).__editor.tileScreen(12, 30));
+  const [gx, gy] = await page.evaluate(() => (window as unknown as { __editor: E }).__editor.tileScreen(12, 20));
   await page.mouse.move(gx, gy);
   await page.mouse.click(gx, gy);
   await expect.poll(() => page.evaluate(() => (window as unknown as { __editor: E }).__editor.layout().objects.size)).toBe(before + 1);

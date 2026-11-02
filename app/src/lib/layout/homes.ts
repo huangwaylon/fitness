@@ -21,6 +21,8 @@ export interface HomeStyle {
   w?: string;
   r?: string;
   d?: string;
+  /** Its facing (0–3: 0 the camera's way), its owner's like the rest of its look; none: the object's. */
+  f?: 0 | 1 | 2 | 3;
 }
 
 interface Family {

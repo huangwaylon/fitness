@@ -10,7 +10,7 @@ import { GRID, TILE } from './grid.ts';
 
 /** world.ts's island on the long one (scripts/layout-default.ts: おく moved 1380u back past the new middle). */
 export const LONG_SPLIT = 680;
-export const LONG_GROW = 1380;
+export const LONG_GROW = 420;
 const zOf = (z: number) => (z < LONG_SPLIT ? z : z + LONG_GROW);
 
 interface Placed {

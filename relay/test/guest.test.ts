@@ -330,7 +330,9 @@ describe('the layout’s permissions', () => {
   it('the record: the guest never writes the outdoors, only its own home', () => {
     const forbidden = { ok: false, error: 'forbidden' };
     for (const d of [obj(), chunk, reset, look('A'), look('B'), room('u')]) expect(call(KEY_C, ev(d)), JSON.stringify(d)).toEqual(forbidden);
-    for (const d of [look('G'), room('v'), room('t')]) expect(call(KEY_C, ev(d)), JSON.stringify(d)).toMatchObject({ ok: true });
+    for (const d of [look('G'), room('v'), room('t'), { ...look('G'), at: T0 + 1, f: 2 }]) expect(call(KEY_C, ev(d)), JSON.stringify(d)).toMatchObject({ ok: true });
+    // turning a home is its look: the owner's alone
+    expect(call(KEY_A, ev({ ...look('G'), at: T0 + 2, f: 3 }))).toEqual(forbidden);
     expect(rows().map((r) => r[1])).toEqual(['G', 'G', 'G']);
   });
 

@@ -5,7 +5,7 @@
 //   o  an outdoor object set `{id, at, k, x, z, f, s?}` or gone `{id, at, rm: true}` (not final: a later set is back)
 //   c  a terrain chunk `{id: 'c<cx>x<cz>', at, g}`: its 8 × 8 tiles row by row, one character each
 //   r  a reset `{id: 'reset', at}`: every o and c op older than it is void (the default layout again)
-//   h  a home's look `{id: 'hA' | 'hB' | 'hG', at, m, w?, r?, d?}`: its owner's alone
+//   h  a home's look `{id: 'hA' | 'hB' | 'hG', at, m, w?, r?, d?, f?}` (f its facing 0–3): its owner's alone
 //   t, u, v  the interiors of ウェイ's, うめ's and the guest's homes (contract/tent.ts's ops)
 
 /** Who sent it: the merge's tie-break is a fixed order, A < B < G. */
@@ -48,7 +48,7 @@ type ObjOp =
   | { sc: 'o'; id: string; at: number; rm: true };
 interface ChunkOp { sc: 'c'; id: string; at: number; g: string }
 interface ResetOp { sc: 'r'; id: 'reset'; at: number }
-interface HomeOp { sc: 'h'; id: 'hA' | 'hB' | 'hG'; at: number; m: string; w?: string; r?: string; d?: string }
+interface HomeOp { sc: 'h'; id: 'hA' | 'hB' | 'hG'; at: number; m: string; w?: string; r?: string; d?: string; f?: Facing }
 export type LayoutOp = ObjOp | ChunkOp | ResetOp | HomeOp;
 export type LayoutEntry = LayoutOp & { who: Who };
 
@@ -70,12 +70,13 @@ export function layoutOpOf(d: Record<string, unknown>): LayoutOp | null {
     case 'r':
       return d.id === 'reset' && onlyKeys(d, ['sc', 'id', 'at']) ? { sc: 'r', id: 'reset', at: d.at } : null;
     case 'h': {
-      if (!HOME_ID.test(d.id) || !onlyKeys(d, ['sc', 'id', 'at', 'm', 'w', 'r', 'd'])) return null;
-      if (typeof d.m !== 'string' || !TOKEN.test(d.m)) return null;
+      if (!HOME_ID.test(d.id) || !onlyKeys(d, ['sc', 'id', 'at', 'm', 'w', 'r', 'd', 'f'])) return null;
+      if (typeof d.m !== 'string' || !TOKEN.test(d.m) || (d.f !== undefined && !isInt(d.f, 0, 3))) return null;
       for (const k of ['w', 'r', 'd'] as const) if (d[k] !== undefined && (typeof d[k] !== 'string' || !PART.test(d[k] as string))) return null;
       return {
         sc: 'h', id: d.id as HomeOp['id'], at: d.at, m: d.m,
-        ...(d.w !== undefined ? { w: d.w as string } : {}), ...(d.r !== undefined ? { r: d.r as string } : {}), ...(d.d !== undefined ? { d: d.d as string } : {})
+        ...(d.w !== undefined ? { w: d.w as string } : {}), ...(d.r !== undefined ? { r: d.r as string } : {}), ...(d.d !== undefined ? { d: d.d as string } : {}),
+        ...(d.f !== undefined ? { f: d.f as Facing } : {})
       };
     }
     default:

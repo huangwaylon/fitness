@@ -500,8 +500,8 @@ layout the members change at will can't ship pre-baked textures, and painting it
 pebbles) would cost the phone each frame what a bake costs once; bands keep the draw calls flat on an island twice
 as long.
 
-### The island is twice as long (2026-11-02)
-20 × 92 tiles: today's まえ in front, today's おく behind, and a new middle between them for the homes and what comes
+### The island is long: 60 tiles (2026-11-02)
+20 × 60 tiles (the user: first 92, then 60): today's まえ in front, today's おく behind, and a new middle between them for the homes and what comes
 next. Why: the user, for room to build; the width (and so the camera's rules: vertical scroll, x centred) unchanged.
 
 ### The tent's surfaces are NH's flag, their tops the model's geometry (2026-11-02)

@@ -61,7 +61,7 @@
   // does it fit where the home stands?
   const same = $derived.by(() => {
     const h = islandLayout.home(who);
-    return h.m === style.m && h.w === style.w && h.r === style.r && h.d === style.d;
+    return h.m === style.m && h.w === style.w && h.r === style.r && h.d === style.d && (h.f ?? null) === (style.f ?? null);
   });
   const fit = $derived.by(() => {
     const l = withChanges(islandLayout.current, { homes: { [who]: style } });
@@ -71,7 +71,7 @@
   });
   function choose() {
     if (same || fit) return;
-    const op = { sc: 'h' as const, id: `h${who}` as 'hA' | 'hB' | 'hG', at: islandLayout.stamp(), m: style.m, ...(style.w ? { w: style.w } : {}), ...(style.r ? { r: style.r } : {}), ...(style.d ? { d: style.d } : {}) };
+    const op = { sc: 'h' as const, id: `h${who}` as 'hA' | 'hB' | 'hG', at: islandLayout.stamp(), m: style.m, ...(style.w ? { w: style.w } : {}), ...(style.r ? { r: style.r } : {}), ...(style.d ? { d: style.d } : {}), ...(style.f !== undefined ? { f: style.f } : {}) };
     islandLayout.apply([op]);
     cue('confirm');
     open = false;
@@ -149,6 +149,10 @@
 <Sheet bind:open label="いえを かえる" title="いえを かえる">
   <div class="pick" data-home-picker={who}>
     <canvas bind:this={canvas} class="preview" aria-hidden="true"></canvas>
+    <div class="seg" role="group" aria-label="むき">
+      <span class="lbl">むき</span>
+      <button type="button" data-sfx="tick" data-home-turn onclick={() => (style = { ...style, f: ((((style.f ?? islandLayout.current.objects.get(HOME_IDS[who])?.f ?? 0) + 1) % 4) as 0 | 1 | 2 | 3) })}>↻ まわす</button>
+    </div>
     <div class="seg" role="group" aria-label="かたち">
       {#each [['house', 'いえ'], ['tent-n', 'テント'], ['tent-p', 'ちいさなテント'], ['campsite', 'キャンプのテント']] as [m, name] (m)}
         <button type="button" data-sfx="tick" data-model={m} aria-pressed={style.m === m} onclick={() => setModel(m)}>{name}</button>
@@ -237,6 +241,7 @@
   }
   .seg button[aria-pressed='true'], .chips button[aria-pressed='true'], .door[aria-pressed='true'] { background: var(--c-yuzu); }
   .seg.small button { padding: 4px 10px; font-size: 12px; }
+  .lbl { align-self: center; font-size: 13px; color: var(--text-soft); }
   .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .mat { display: inline-flex; align-items: center; gap: 4px; min-width: 88px; font-size: 13px; font-weight: 700; }
   .mat img { width: 28px; height: 28px; }

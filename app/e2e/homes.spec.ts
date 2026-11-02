@@ -67,4 +67,18 @@ test('いえを かえる: うめ picks a Japanese house for hers; the other pho
   await phone.bringToFront();
   await expect.poll(() => look('G').then((s) => s.m)).toBe('tent-n');
   expect((await look('B')).w).toMatch(/^NC/);
+  // and turns it a quarter (its own: the door turns with it)
+  const facing = () => phone.evaluate(() => (window as unknown as { __layout: { obj(id: string): { f: number } } }).__layout.obj('home-G').f);
+  const f0 = await facing();
+  await g.bringToFront();
+  await g.locator('[data-home-look]').click();
+  // (a facing whose door would be walled in is refused: turn on to one that fits)
+  let turns = 0;
+  do {
+    await g.locator('[data-home-turn]').click();
+    turns++;
+  } while ((await g.locator('[data-home-choose]').getAttribute('aria-disabled')) === 'true' && turns < 3);
+  await g.locator('[data-home-choose]').click();
+  await phone.bringToFront();
+  await expect.poll(facing).toBe((f0 + turns) % 4);
 });

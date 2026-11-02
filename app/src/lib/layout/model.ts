@@ -91,11 +91,17 @@ export function layoutOf(entries: Iterable<LayoutEntry> | Map<string, LayoutEntr
       if (i !== null) writeChunk(codes, i, e.g);
     } else if (e.sc === 'o') {
       if (e.rm) objects.delete(e.id);
-      else objects.set(e.id, { id: e.id, k: e.k, x: e.x, z: e.z, f: e.f, ...(e.s ? { s: e.s } : {}) });
+      // (a home's facing is its owner's look's, never an outdoor op's: the default's until its owner turns it)
+      else objects.set(e.id, { id: e.id, k: e.k, x: e.x, z: e.z, f: WHO_OF_HOME[e.id] ? (from.objects.get(e.id)?.f ?? 0) : e.f, ...(e.s ? { s: e.s } : {}) });
     } else if (e.sc === 'h') {
       const who = e.id.slice(1) as Who;
-      homes[who] = { m: e.m, ...(e.w ? { w: e.w } : {}), ...(e.r ? { r: e.r } : {}), ...(e.d ? { d: e.d } : {}) };
+      homes[who] = { m: e.m, ...(e.w ? { w: e.w } : {}), ...(e.r ? { r: e.r } : {}), ...(e.d ? { d: e.d } : {}), ...(e.f !== undefined ? { f: e.f } : {}) };
     }
+  }
+  // a home turns with its owner's look (its facing is the owner's, its spot the members')
+  for (const who of ['A', 'B', 'G'] as const) {
+    const id = `home-${who}`, o = objects.get(id), f = homes[who].f;
+    if (o && f !== undefined && o.f !== f) objects.set(id, { ...o, f });
   }
   return new Layout(codes, objects, homes);
 }
@@ -189,8 +195,8 @@ export function opsBetween(a: Layout, b: Layout, at: number): LayoutOp[] {
   for (const id of a.objects.keys()) if (!b.objects.has(id)) out.push({ sc: 'o', id, at: t++, rm: true });
   for (const who of ['A', 'B', 'G'] as const) {
     const x = a.homes[who], y = b.homes[who];
-    if (x.m === y.m && x.w === y.w && x.r === y.r && x.d === y.d) continue;
-    out.push({ sc: 'h', id: `h${who}`, at: t++, m: y.m, ...(y.w ? { w: y.w } : {}), ...(y.r ? { r: y.r } : {}), ...(y.d ? { d: y.d } : {}) });
+    if (x.m === y.m && x.w === y.w && x.r === y.r && x.d === y.d && x.f === y.f) continue;
+    out.push({ sc: 'h', id: `h${who}`, at: t++, m: y.m, ...(y.w ? { w: y.w } : {}), ...(y.r ? { r: y.r } : {}), ...(y.d ? { d: y.d } : {}), ...(y.f !== undefined ? { f: y.f } : {}) });
   }
   return out;
 }
@@ -202,7 +208,16 @@ export function withChanges(l: Layout, ch: { tiles?: Iterable<[number, number, n
   const objects = ch.set || ch.remove ? new Map(l.objects) : l.objects as Map<string, Obj>;
   for (const id of ch.remove ?? []) objects.delete(id);
   for (const o of ch.set ?? []) objects.set(o.id, o);
-  return new Layout(codes, objects, ch.homes ? { ...l.homes, ...ch.homes } : l.homes);
+  const homes = ch.homes ? { ...l.homes, ...ch.homes } : l.homes;
+  if (ch.homes)
+    for (const who of Object.keys(ch.homes) as Who[]) {
+      const id = `home-${who}`, o = objects.get(id), f = homes[who].f;
+      if (o && f !== undefined && o.f !== f) {
+        if (objects === l.objects) return withChanges(l, { ...ch, set: [...(ch.set ?? []), { ...o, f }] });
+        objects.set(id, { ...o, f });
+      }
+    }
+  return new Layout(codes, objects, homes);
 }
 
 // ---- JSON (the editor's export and import) ------------------------------------------------------------------------

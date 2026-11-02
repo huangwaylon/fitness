@@ -6,6 +6,8 @@ import { codeOf, idx, isWater, kindOf, onGrid, tierOf, TIERS, CHUNKS_X, CHUNKS_Z
 import { footprintOf, kindDef } from '#lib/layout/catalog.ts';
 import { footOf, newObjId, originOf, withChanges, type Layout, type Obj } from '#lib/layout/model.ts';
 import { diffLayouts } from '#lib/layout/diff.ts';
+import { HOME_IDS, WHO_OF_HOME, type HomeStyle, type Who } from '#lib/layout/homes.ts';
+import { validate } from '#lib/layout/validate.ts';
 
 type Facing = Obj['f'];
 
@@ -74,16 +76,36 @@ export function move(l: Layout, ids: Iterable<string>, dc: number, dr: number): 
 }
 
 /** Turn objects a quarter (clockwise seen from above: f + 1), each about its footprint's back-left tile. */
-export function rotate(l: Layout, ids: Iterable<string>, by = 1): Layout {
+/** Turn objects a quarter (f + 1), each about its footprint's back-left tile; a home about its door, and only `me`'s
+ *  own (its facing is its owner's look: model.ts layoutOf), and never so its door or footprint goes wrong. */
+export function rotate(l: Layout, ids: Iterable<string>, by = 1, me?: Who): Layout {
   const set: Obj[] = [];
+  const homes: Partial<Record<Who, HomeStyle>> = {};
   for (const id of ids) {
     const o = l.objects.get(id);
     if (!o) continue;
+    const owner = WHO_OF_HOME[id];
+    if (owner) {
+      if (owner !== me) continue;
+      homes[owner] = { ...l.homes[owner], f: ((((o.f + by) % 4) + 4) % 4) as Facing };
+      continue;
+    }
     const next: Obj = { id, k: o.k, x: o.x, z: o.z, f: (((o.f + by) % 4) + 4) % 4 as Facing, ...(o.s ? { s: o.s } : {}) };
     if (o.n) Object.assign(next, { n: o.n });
     if (inGrid(l, next)) set.push(next);
   }
-  return set.length ? withChanges(l, { set }) : l;
+  if (!set.length && !Object.keys(homes).length) return l;
+  const out = withChanges(l, { set, homes });
+  // a home turned only where its door stays reachable and its footprint clear
+  for (const who of Object.keys(homes) as Who[]) if (homeBroken(out, who)) return rotate(l, [...ids].filter((i) => i !== HOME_IDS[who]), by, me);
+  return out;
+}
+
+/** Whether a home's footprint or its door is wrong on this layout (validate.ts's errors about it). */
+function homeBroken(l: Layout, who: Who): string | null {
+  const id = HOME_IDS[who];
+  const bad = validate(l).find((i) => i.level === 'error' && i.ids.includes(id) && ['overlap', 'off-land', 'on-water', 'split', 'door'].includes(i.code));
+  return bad?.ja ?? null;
 }
 
 /** A variant for an object (a bush's species, a lantern's colour). */

@@ -123,7 +123,7 @@ type DecorWire =
   | { sc: 'o'; id: string; at: number; k: string; x: number; z: number; f: number; s?: string; rm?: undefined }
   | { sc: 'c'; id: string; at: number; g: string }
   | { sc: 'r'; id: 'reset'; at: number }
-  | { sc: 'h'; id: string; at: number; m: string; w?: string; r?: string; d?: string };
+  | { sc: 'h'; id: string; at: number; m: string; w?: string; r?: string; d?: string; f?: number };
 
 /** Client → relay. `hello` must come first (the person key; `since` = the last world event's `t` it has seen; `batch`:
  *  the day's world as `replay` messages, mine included). An intent's `c` (this phone's sequence number, increasing
@@ -270,7 +270,8 @@ function layoutWire(o: Obj): DecorWire | null | undefined {
       if (!HOME_ID.test(id) || typeof o.m !== 'string' || !TOKEN.test(o.m)) return null;
       const part = (k: 'w' | 'r' | 'd') => (o[k] === undefined ? {} : typeof o[k] === 'string' && PART.test(o[k] as string) ? { [k]: o[k] as string } : null);
       const w = part('w'), r = part('r'), d = part('d');
-      return w && r && d ? { sc: 'h', id, at, m: o.m, ...w, ...r, ...d } : null;
+      if (o.f !== undefined && !within(o.f, [0, 3])) return null;
+      return w && r && d ? { sc: 'h', id, at, m: o.m, ...w, ...r, ...d, ...(o.f !== undefined ? { f: o.f as number } : {}) } : null;
     }
     default:
       return undefined;
