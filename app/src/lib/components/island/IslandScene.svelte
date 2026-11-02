@@ -559,6 +559,8 @@
   /** Put the camera at a world z at once (the e2e hook). */
   function goTo(z: number) {
     if (world.three) return island3d?.go(z);
+    // (the 3D island not up yet: it opens there)
+    if (r3) return void (start3 = z);
     scroller?.scrollTo({ top: scrollFor(Math.min(camMax, Math.max(camMin, z)), camMax, s), behavior: 'instant' });
   }
   onMount(() => {
@@ -593,8 +595,7 @@
       });
     });
     ro.observe(scroller);
-    // (the 3D island's once its camera is up: Island3D's onready)
-    if (live && !r3) expose();
+    if (live) expose();
     return () => {
       offMove();
       ro.disconnect();
@@ -1055,7 +1056,7 @@
           {#if Island3DC && sceneEl}
             <Island3DC bind:this={island3d} {world} scene={sceneEl} {season} {foliage} {month} {tod} scenery={scenery3} pieces={pieces3} {hybrid} floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null}
               wet={weather.sky !== 'clear' ? WET[weather.sky][1] : 0} cast={cast3} enabled={() => !covered && !life.hidden}
-              start={start3} onscroll={onScroll} onhorizon={(px) => (horizonPx = px)} onfail={() => ((failed3 = true), expose())} onready={() => (measure(), expose())} />
+              start={start3} onscroll={onScroll} onhorizon={(px) => (horizonPx = px)} onfail={() => (failed3 = true)} onready={() => measure()} />
           {/if}
         {:else}
           <WorldGround {season} {foliage} />

@@ -42,6 +42,7 @@
   import { taken as takenBy } from '#lib/sync/world-day.ts';
   import { fx3d } from './fx3d.ts';
   import { echo3d } from './echo3d.ts';
+  import { GOAL_TREES } from './world.ts';
 
   interface Props {
     person: PersonWeekView;
@@ -323,8 +324,19 @@
     const [ax, ay] = w.clientAt(x, z, H * 0.8);
     const tx = ax - st.left, ty = ay - st.top;
     const side = tx < st.width / 2 ? -1 : 1;
-    const left = Math.min(st.width - 8 - wd, Math.max(8, st.width / 2 - side * 60 - wd / 2));
-    const top = Math.min(ceil - h, Math.max(floor, (floor + ceil) / 2 - h / 2));
+    let left = Math.min(st.width - 8 - wd, Math.max(8, st.width / 2 - side * 60 - wd / 2));
+    let top = Math.min(ceil - h, Math.max(floor, (floor + ceil) / 2 - h / 2));
+    // the 3D island's camera shows both goal trees well inside the screen: the popup goes over their canopies when it
+    // fits there (both stay tappable), else in the band as on the 2D island
+    if (w.three) {
+      const crown = w.clientAt(x, z, H)[1] - st.top;
+      if (crown - 10 - h >= floor) top = crown - 10 - h;
+      else {
+        // no room: on this tree's side, clear of the other tree's canopy (its middle stays tappable)
+        const [ox] = w.clientAt(x < 195 ? GOAL_TREES.B[0] : GOAL_TREES.A[0], z, H * 0.7), oc = ox - st.left;
+        left = side < 0 ? Math.max(8, Math.min(left, oc - 44 - wd)) : Math.min(st.width - 8 - wd, Math.max(left, oc + 44));
+      }
+    }
     el.style.left = `${left}px`;
     el.style.top = `${top}px`;
     // the tail: toward the tree, on the edge facing it (none while the tree is behind the popup or off screen)
