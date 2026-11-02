@@ -837,6 +837,22 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       if (!ITEMS[live.get(id)?.spot.item ?? '']?.rug) return id;
       rug ??= id;
     }
+    return rug ?? onTiles(cx, cy);
+  }
+  /** The piece whose tiles are under client px (a tap between a model's legs, a piece still popping in): furniture
+   *  before a rug. */
+  function onTiles(cx: number, cy: number): string | null {
+    const p = floorAt(cx, cy);
+    if (!p) return null;
+    const tx = Math.floor((p[0] + HALF) / TILE), tz = Math.floor((p[1] + HALF) / TILE);
+    let rug: string | null = null;
+    for (const l of live.values()) {
+      if (!l.root.visible) continue;
+      const [w, d] = footprint(l.spot.item, l.spot.f);
+      if (tx < l.spot.x || tz < l.spot.z || tx >= l.spot.x + w || tz >= l.spot.z + d) continue;
+      if (!ITEMS[l.spot.item]?.rug) return l.spot.id;
+      rug ??= l.spot.id;
+    }
     return rug;
   }
   function hit(cx: number, cy: number): Hit | null {
@@ -868,6 +884,9 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
         return p ? { kind: 'floor', x: p[0], z: p[1] } : null;
       }
     }
+    // a tap on a piece's own tiles (between its legs, or before its model is in) is the piece
+    const on = onTiles(cx, cy);
+    if (on && !ITEMS[live.get(on)?.spot.item ?? '']?.rug) return { kind: 'piece', id: on };
     const p = floorAt(cx, cy);
     return p ? { kind: 'floor', x: p[0], z: p[1] } : null;
   }

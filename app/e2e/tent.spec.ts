@@ -2,6 +2,18 @@
 // its own: the room's code and three.js come only then (the island never loads them); my villager walks where the
 // floor is tapped; the doormat and ‹ 島へ go back out, to the island as it was.
 import { expect, test, type Page } from '@playwright/test';
+import { BUILDINGS } from '../src/lib/components/island/world.ts';
+
+const DOOR = ((b) => [b.x, b.z - 16] as const)(BUILDINGS.find((b) => b.id === 'campsite')!);
+/** Where a villager stands just out of the tent (buildings.ts outOfTent): ±12 of the door, 30 in front. */
+const OUT = (who: 'A' | 'B') => [DOOR[0] + (who === 'A' ? -12 : 12), DOOR[1] - 30] as const;
+
+/** A tap on the tent (its upper part: a villager may stand in front of its door). */
+async function tapTent(p: Page) {
+  const door = p.locator('[data-building="campsite"] .door');
+  const box = (await door.boundingBox())!;
+  await door.click({ position: { x: box.width * 0.5, y: box.height * 0.25 } });
+}
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -15,8 +27,9 @@ async function enter(page: Page) {
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(642));
   await page.waitForTimeout(300);
-  await page.locator('[data-building="campsite"] .door').click();
-  await expect(page).toHaveURL(/\/tent\?/);
+  await tapTent(page);
+  // (my villager walks up to the door first)
+  await expect(page).toHaveURL(/\/tent\?/, { timeout: 10_000 });
   await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
   // the door's iris has opened
   await expect(page.locator('html')).not.toHaveAttribute('data-door', /./, { timeout: 4000 });
@@ -34,8 +47,9 @@ test('the island never loads the room; the tent does, opens through the door, an
   await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(642));
   await page.waitForTimeout(300);
   const cam = await page.evaluate(() => (window as unknown as { __world: { cam(): number } }).__world.cam());
-  await page.locator('[data-building="campsite"] .door').click();
-  await expect(page).toHaveURL(/\/tent\?/);
+  await tapTent(page);
+  // (my villager walks up to the door first)
+  await expect(page).toHaveURL(/\/tent\?/, { timeout: 10_000 });
   await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
   expect(scripts).toContain('three');
   await expect(page.locator('html')).not.toHaveAttribute('data-door', /./, { timeout: 4000 });
@@ -47,6 +61,11 @@ test('the island never loads the room; the tent does, opens through the door, an
   await expect(page).toHaveURL(/\/fitness\/\?/);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   expect(Math.abs((await page.evaluate(() => (window as unknown as { __world: { cam(): number } }).__world.cam())) - cam)).toBeLessThan(2);
+  // my villager just outside the tent's door
+  await expect.poll(async () => {
+    const [mx, mz] = await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
+    return Math.hypot(mx - OUT('A')[0], mz - OUT('A')[1]);
+  }).toBeLessThan(2);
   await expect(page.locator('[data-tent]')).toHaveCount(0);
 });
 

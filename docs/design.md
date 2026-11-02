@@ -603,10 +603,22 @@ NH's outdoor furniture on the island, moves it and takes it away; both phones sh
 
 `routes/tent/+page.svelte`, `tent/TentRoom.svelte`, `tent/TentEdit.svelte`, `tent/engine.ts` (three.js), `tent/grid.ts`,
 `tent/items.ts`, `tent/dragLink.ts`, `store/tent.svelte.ts`, `contract/tent.ts`, `ui-state/doorTransition.ts`,
-`scripts/room-models.ts`, `e2e/tent.spec.ts`, `e2e/sync-harness.spec.ts`. A tap on the campsite's tent (in place, my
-villager turns to it) goes inside: its own screen, truly 3D, behind NH's door (a black iris closes on the tent's door,
-stays black while the room's chunk and first frame come, opens out of the room's door; the way out the same, opening
-on the tent on the island, the camera where it was).
+`scripts/room-models.ts`, `store/where.svelte.ts`, `e2e/tent.spec.ts`, `e2e/sync-harness.spec.ts`. A tap on the
+campsite's tent walks my villager up to its door (the one exception to "a tap on something acts in place", the user's:
+"we have to walk up to it before we enter it"; the walk goes over the relay like any, so the partner sees me walk up
+and vanish inside; within 36u of the door it goes straight in; a tap on anything else on the way is the end of going
+in), then goes inside: its own screen, truly 3D, behind NH's door (a black iris closes on the tent's door, stays black
+while the room's chunk and first frame come, opens out of the room's door; the way out the same, opening on the tent
+on the island, the camera where it was). Out of the door my villager stands just in front of the tent (A a step to the
+left of the door, B to the right, both 30u in front, so the tent stays tappable), facing out, on both phones (the put
+goes with the leaving).
+
+- **One place at a time:** each villager is on the island or in the tent, on both phones (`store/where.svelte.ts`:
+  presence over the relay, the tent screen's `tent {in}` as it opens and closes, said again whenever the partner joins
+  or the socket comes back; the island says `{in: false}` to a partner who arrives). A villager in the tent is nowhere
+  on the partner's island (hidden, its life there, outings, follows and meet-ups leave it alone, no high-five or
+  phrase can reach it); inside, the partner's villager is there only while the partner is. A phone that goes quiet
+  inside (closed, offline) has its villager home on the island again after 30 s (avatar.ts SNAP_HOME_MS).
 
 - **The room:** NH's largest, the main room fully expanded: 8 × 8 tiles (Nookipedia's upgrade table: the main room
   6 × 6 → 8 × 8, the second floor and basement 10 × 6 = 60 tiles, so 8 × 8 = 64 is the most floor), NH's own grid (a tile
