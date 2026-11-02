@@ -11,7 +11,7 @@ import { jstMs, parseInstant, ZONE_OFFSET_MS } from '../src/lib/time/dates.ts';
 import { decorAccept, decorOpOf, type DecorEntry } from '../src/lib/contract/decor.ts';
 import { tentAccept, tentOpOf, type TentEntry } from '../src/lib/contract/tent.ts';
 import type { PersonId } from '../src/lib/types.ts';
-import { validEventData } from '../src/lib/contract/record.ts';
+import { validEventData } from '../src/lib/model/record.ts';
 import {
   eventSubject, EVENT_TYPES, isId, isMetricKey, isPersonId, isRec, NUMERIC_COLUMNS, TABS,
   type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type SnapshotReply, type SnapshotRows,
@@ -39,6 +39,8 @@ const TAIL_CHUNK = 256;
 const DAY_MS = 86400_000;
 /** The live relay's push endpoint (docs/backend.md#push). */
 export const RELAY_NOTIFY_URL = 'https://island-fund-relay.island-fund-relay.workers.dev/notify';
+/** The relay's record (docs/backend.md#the-record): each write's rows are copied there. */
+export const RELAY_IMPORT_URL = 'https://island-fund-relay.island-fund-relay.workers.dev/import';
 /** What the notify secret signs; the relay derives the same (relay/src/notify.ts). */
 const NOTIFY_LABEL = 'island-relay-notify/1';
 /** After a notify that didn't land (no external-request scope yet, the relay down), none are tried for this long. */
@@ -81,6 +83,7 @@ function handle(e: GAS.PostEvent | undefined): Reply {
   if (!underRateLimit(me)) return fail('busy');
 
   wrote = null;
+  copied = { metrics: [], events: [], uploads: [] };
   switch (body.action) {
     case 'ingest': return pushed(me, 'ingest', ingest(me, body, typeof post?.length === 'number' ? post.length : text.length));
     case 'event': return pushed(me, 'event', event(me, body));
@@ -266,25 +269,32 @@ export function resync(): void {
 
 /** The newest synced row this request appended, and the revision then (null: it wrote none). */
 let wrote: { at: string; rev: string } | null = null;
+/** Every row this request appended, as written, for the relay's record (docs/backend.md#the-record "Mirror"). */
+let copied: { metrics: unknown[][]; events: unknown[][]; uploads: unknown[][] } = { metrics: [], events: [], uploads: [] };
 
-/** After a write that appended synced rows, tell the relay (outside the lock), so open phones fetch at once. */
+/**
+ * After a write, outside the lock: copy its rows to the relay's record, which tells the open phones (the room's
+ * `changed`) when synced rows were among them.
+ */
 function pushed<R extends { ok: boolean }>(me: PersonId, what: NoticeWhat, reply: R): R {
   const w = wrote;
+  const rows = copied;
   wrote = null;
-  if (reply.ok && w) notifyRelay({ what, who: me, at: w.at, rev: w.rev });
+  copied = { metrics: [], events: [], uploads: [] };
+  if (rows.metrics.length || rows.events.length || rows.uploads.length) mirrorToRecord(rows, w ? { what, who: me, at: w.at, rev: w.rev } : null);
   return reply;
 }
 
 const hex = (bytes: number[]): string => bytes.map((b) => ((b + 256) % 256).toString(16).padStart(2, '0')).join('');
 
 /**
- * POST the notice to the relay, signed (relay/src/notify.ts): secret = HMAC-SHA256(key "<KEY_A>:<KEY_B>", NOTIFY_LABEL),
+ * POST `body` to the relay at `url`, signed (relay/src/notify.ts): secret = HMAC-SHA256(key "<KEY_A>:<KEY_B>", NOTIFY_LABEL),
  * signature = HMAC-SHA256(key secret, "<ms>.<body>"). A phone holds only its own key, so only the two servers can sign.
- * Best effort and never throws: the phones still poll. Until the script has the external-request scope, UrlFetchApp
- * throws; that (or any reply but 204) pauses notifying for NOTIFY_PAUSE_SECONDS, so a write pays for one cache read.
+ * Best effort and never throws: the phones still poll. Any reply but `ok` (or a throw: no external-request scope, the
+ * relay down) pauses the relay calls for NOTIFY_PAUSE_SECONDS, so a write pays for one cache read.
  * Returns the relay's status, or 0 when nothing was sent.
  */
-function notifyRelay(n: Notice): number {
+function signedPost(url: string, body: string, ok: number): number {
   let cache: GAS.Cache | null = null;
   try {
     cache = CacheService.getScriptCache();
@@ -292,19 +302,28 @@ function notifyRelay(n: Notice): number {
     const { a, b } = keys();
     if (!a || !b) return 0;
     const secret = hex(Utilities.computeHmacSha256Signature(NOTIFY_LABEL, `${a.trim().toLowerCase()}:${b.trim().toLowerCase()}`));
-    const body = JSON.stringify(n);
     const t = String(Date.now());
-    const code = UrlFetchApp.fetch(RELAY_NOTIFY_URL, {
+    const code = UrlFetchApp.fetch(url, {
       method: 'post', contentType: 'application/json', payload: body, muteHttpExceptions: true, followRedirects: false,
       headers: { 'X-Island-Time': t, 'X-Island-Sig': hex(Utilities.computeHmacSha256Signature(`${t}.${body}`, secret)) }
     }).getResponseCode();
-    if (code !== 204) cache.put('relay:pause', String(code), NOTIFY_PAUSE_SECONDS);
+    if (code !== ok) cache.put('relay:pause', String(code), NOTIFY_PAUSE_SECONDS);
     return code;
   } catch {
     try { cache?.put('relay:pause', 'error', NOTIFY_PAUSE_SECONDS); } catch { /* best effort */ }
     return 0;
   }
 }
+
+/** Tell the relay the sheet changed (`/notify`): the room passes it to the open phones. */
+const notifyRelay = (n: Notice): number => signedPost(RELAY_NOTIFY_URL, JSON.stringify(n), 204);
+
+/**
+ * Copy a write's rows, with their `at`, to the relay's record (`/import`); with `notice` (synced rows among them) the
+ * record tells the room. A copy that doesn't land (the relay down, a pause) is filled in later by the import again
+ * (docs/ops/runbook.md#13-the-record), which skips what the record already has.
+ */
+const mirrorToRecord = (rows: typeof copied, notice: Notice | null): number => signedPost(RELAY_IMPORT_URL, JSON.stringify({ rows, notice }), 200);
 
 /**
  * Run once from the script editor after adding the `script.external_request` scope (docs/ops/runbook.md#11-turn-on-the-push):
@@ -394,6 +413,7 @@ function appendRows(sh: GAS.Sheet, name: TabName, rows: unknown[][]): void {
   if (need > 0) sh.insertRowsAfter(sh.getMaxRows(), need);
   const formats = cols.map((c) => formatOf(name, c));
   sh.getRange(start, 1, rows.length, cols.length).setNumberFormats(rows.map(() => formats)).setValues(rows);
+  copied[name].push(...rows);
   if ((SYNCED_TABS as readonly string[]).includes(name)) {
     const st = current();
     st.rows[name] = start + rows.length - 1;

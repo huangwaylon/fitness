@@ -4,7 +4,7 @@
 //
 // - `at` is the record's clock: strictly increasing (max(now, last + 1 ms)), shared by the rows of one ingest.
 // - An event id is accepted once, forever (`ids`: a replaced event's id still dedupes a late retry).
-// - A slot (contract/record.ts eventSlot) holds one event: a later one of the same slot replaces it, so a tally or an
+// - A slot (app model/record.ts eventSlot) holds one event: a later one of the same slot replaces it, so a tally or an
 //   island day is one row per person and day, a cosmetic pref one per person, a goal one per person and Tokyo day,
 //   a decoration one per item.
 // - `since` is answered from the `at` index. A row that arrived out of `at` order (only while Apps Script mirrored
@@ -12,14 +12,15 @@
 //   the late rows that arrived after `since` (less a margin for the two servers' clocks), so no phone misses one.
 import { parseShortcut } from '../../app/gas/parse.ts';
 import { auditNotes, auditRow } from '../../app/gas/audit.ts';
-import { eventSlot, validEventData } from '../../app/src/lib/contract/record.ts';
+import { eventSlot, validEventData } from '../../app/src/lib/model/record.ts';
 import {
   eventSubject, EVENT_TYPES, isId, isMetricKey, isPersonId, isRec,
   type ApiError, type EventRow, type Fail, type MetricRow, type SnapshotRows
 } from '../../app/src/lib/contract/api.ts';
 import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contract/decor.ts';
 import { tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
-import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
+import { parseNotice, type Notice } from '../../app/src/lib/sync/live-protocol.ts';
+import { verifyNotify } from './notify.ts';
 import { keyOwner, type Keys } from './auth.ts';
 
 type Who = 'A' | 'B';
@@ -50,6 +51,7 @@ const UPLOADS_SHOWN = 20;
 /** A late row is returned to a poll whose `since` is at most this much after its arrival (the servers' clocks). */
 export const LATE_MARGIN_MS = 10_000;
 const KEY_RE = /^[0-9a-fA-F]{32,128}$/;
+const utf8 = new TextEncoder();
 const ISO_AT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
 const fail = (error: ApiError, detail?: string): Fail => (detail ? { ok: false, error, detail } : { ok: false, error });
@@ -144,6 +146,45 @@ export class StoreCore {
     }
   }
 
+  /** An `/api` body as sent → its JSON reply. Never throws. */
+  handleText(text: string): string {
+    if (!text) return JSON.stringify(fail('bad_request'));
+    let body: unknown;
+    try {
+      body = JSON.parse(text);
+    } catch {
+      return JSON.stringify(fail('bad_request'));
+    }
+    return JSON.stringify(this.handle(body, utf8.encode(text).length));
+  }
+
+  /**
+   * A signed `/import` body (`{rows, notice?}`; storeRoute.ts) → its status and reply, and the notice to pass to the
+   * room when synced rows were added.
+   */
+  async importSigned(text: string, t: string | null, sig: string | null): Promise<{ status: number; body: string; notice: Notice | null }> {
+    const no = (status: number, body: string) => ({ status, body, notice: null });
+    if (!(await verifyNotify(this.io.keys, t, sig, text, this.io.now()))) return no(401, 'unauthorized');
+    let o: unknown;
+    try {
+      o = JSON.parse(text);
+    } catch {
+      return no(400, 'bad request');
+    }
+    if (isRec(o) && typeof o.op === 'string') return no(400, 'bad request'); // an admin op (storeObject.ts)
+    if (!isRec(o) || !isRec(o.rows)) return no(400, 'bad request');
+    const rows: ImportRows = {};
+    for (const tab of ['metrics', 'events', 'uploads'] as const) {
+      const list = o.rows[tab];
+      if (list === undefined) continue;
+      if (!Array.isArray(list)) return no(400, 'bad request');
+      rows[tab] = list as unknown[][];
+    }
+    const r = this.import(rows);
+    const n = o.notice ? parseNotice(JSON.stringify(o.notice)) : null;
+    return { status: 200, body: JSON.stringify({ ok: true, ...r, counts: this.counts() }), notice: n && (r.metrics || r.events) ? n : null };
+  }
+
   private route(body: unknown, bytes: number): Reply {
     if (!isRec(body)) return fail('bad_request');
     if (body.action === 'health' && body.key === undefined) return { ok: true, build: STORE_BUILD };
@@ -181,7 +222,7 @@ export class StoreCore {
       if (!since) return rows;
       const extra = sql.exec<T & { seq: number }>(`SELECT seq, ${cols} FROM ${tab} WHERE late > ? AND at <= ?`, late, since).toArray();
       if (!extra.length) return rows;
-      return [...rows, ...extra].sort((x, y) => (x.at < y.at ? -1 : x.at > y.at ? 1 : x.seq - y.seq));
+      return [...rows, ...extra].sort((x, y) => (String(x.at) < String(y.at) ? -1 : String(x.at) > String(y.at) ? 1 : x.seq - y.seq));
     };
     return {
       metrics: pick<{ at: string; person: Who; date: string; metric: MetricRow[3]; value: number }>('metrics', 'at, person, date, metric, value')
@@ -406,5 +447,13 @@ export class StoreCore {
   counts(): Record<string, number> {
     const n = (t: string) => Number(this.io.sql.exec<{ n: number }>(`SELECT count(*) AS n FROM ${t}`).toArray()[0]?.n ?? 0);
     return { metrics: n('metrics'), events: n('events'), ids: n('ids'), uploads: n('uploads') };
+  }
+
+  /** Every row, as `/import` takes them (a backup, and what the sheet's export writes): the import of a dump is the record. */
+  dump(): { rows: Required<ImportRows> } {
+    const all = this.rowsSince('');
+    const uploads = this.io.sql.exec<{ at: string; person: string; status: string; bytes: number; notes: string }>('SELECT at, person, status, bytes, notes FROM uploads ORDER BY seq').toArray()
+      .map((r) => [r.at, r.person, r.status, r.bytes, r.notes]);
+    return { rows: { metrics: all.metrics, events: all.events, uploads } };
   }
 }

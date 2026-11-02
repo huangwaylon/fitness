@@ -19,10 +19,19 @@ VAPID_SUBJECT = "https://huangwaylon.github.io/fitness/"
 name = "ROOM"
 class_name = "IslandRoom"
 
+# The record (docs/backend.md#the-record): metrics, events and the ingest audit.
+[[durable_objects.bindings]]
+name = "STORE"
+class_name = "IslandStore"
+
 # The Free plan has only SQLite-backed Durable Objects: new_sqlite_classes, never new_classes.
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["IslandRoom"]
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["IslandStore"]
 
 [observability]
 enabled = true
@@ -40,6 +49,14 @@ VAPID_SUBJECT = "https://huangwaylon.github.io/fitness/"
 name = "ROOM"
 class_name = "IslandRoom"
 
+[[env.test.durable_objects.bindings]]
+name = "STORE"
+class_name = "IslandStore"
+
 [[env.test.migrations]]
 tag = "v1"
 new_sqlite_classes = ["IslandRoom"]
+
+[[env.test.migrations]]
+tag = "v2"
+new_sqlite_classes = ["IslandStore"]

@@ -10,9 +10,15 @@ import type { GoalOutcome, GoalReq, PushLang, PushSub } from '../../app/src/lib/
 import { PushCore, type StoredSub } from './push.ts';
 import { isPushPath, pushRoute, type PushRoom } from './pushRoute.ts';
 import { pushRequest, type Vapid } from './webpush.ts';
+import { IslandStore } from './storeObject.ts';
+import { apiRoute, importRoute } from './storeRoute.ts';
+
+export { IslandStore };
 
 export interface Env {
   ROOM: DurableObjectNamespace<IslandRoom>;
+  /** The record (docs/backend.md#the-record): one SQLite-backed object, `idFromName('record')`. */
+  STORE: DurableObjectNamespace<IslandStore>;
   /** Comma-separated page origins allowed to connect (localhost is always allowed). */
   ALLOWED_ORIGINS: string;
   /** The person keys (secrets). Unset = nobody gets in. */
@@ -132,6 +138,8 @@ export default {
       return Response.json({ ok: true, v: LIVE_V, versions: LIVE_VS, t: Date.now() }, { headers: { 'Cache-Control': 'no-store' } });
     }
     if (url.pathname === '/notify') return notify(req, env);
+    if (url.pathname === '/api') return apiRoute(req, env.ALLOWED_ORIGINS ?? '', () => env.STORE.get(env.STORE.idFromName('record')));
+    if (url.pathname === '/import') return importRoute(req, () => env.STORE.get(env.STORE.idFromName('record')));
     if (isPushPath(url.pathname)) {
       return pushRoute(req, url.pathname, { KEY_A: env.KEY_A, KEY_B: env.KEY_B }, env.ALLOWED_ORIGINS ?? '', () => env.ROOM.get(env.ROOM.idFromName('island')));
     }

@@ -156,7 +156,7 @@ export function makeGas(opts: FakeOptions = {}) {
         }
         state.fetches.push({ url, headers: o.headers, payload: o.payload });
         state.fetchedUnderLock.push(state.lockHeld);
-        const code = state.relay;
+        const code = state.relay === 204 && url.endsWith('/import') ? 200 : state.relay; // /notify answers 204, /import 200 (its counts)
         return { getResponseCode: () => code };
       }
     },
