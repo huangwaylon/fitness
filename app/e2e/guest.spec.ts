@@ -71,8 +71,13 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
   const g = await ctx.newPage();
   await g.goto(`?demo&date=${DATE}&critter=common-butterfly&visitor=none&as=G`);
   await expect(ribbon(g)).toBeVisible();
-  await g.waitForTimeout(2200); // the butterfly flies in
-  const bf = (await g.locator('[data-critter="common-butterfly"]').boundingBox())!;
+  // the butterfly flown in: on screen, and over the island's ground rather than mid-way in from the edge
+  const bfl = g.locator('[data-critter="common-butterfly"]');
+  await expect.poll(async () => {
+    const b = await bfl.boundingBox();
+    return !!b && b.x > 20 && b.y > 80 && b.x + b.width < VIEW.width - 20 && b.y + b.height < VIEW.height - 80;
+  }, { timeout: 8000, intervals: [100] }).toBe(true);
+  const bf = (await bfl.boundingBox())!;
   await g.mouse.click(bf.x + bf.width / 2, bf.y + bf.height / 2);
   await expect(g.locator('[data-fx="catch"]')).toBeAttached();
   // A's ずかん: the butterfly, first found by the guest (おきゃくさん), its count under the guest's own name
