@@ -117,13 +117,17 @@ export type Relayed = Intent & { v: LiveV; who: Who; t: number };
 /** Relay → client. `ack`: my intent `c` reached the room at `t` (`ok` false: refused, a claim already made, a nest too
  *  soon, a walk older than one it holds). `replay`: today's world since the hello's `since`, in the room's order. */
 export type ServerMsg =
-  | { v: LiveV; kind: 'welcome'; me: Who; peer: boolean; t: number }
+  | { v: LiveV; kind: 'welcome'; me: Who; peer: boolean; t: number; rec?: RecordMark }
   | { v: LiveV; kind: 'pong'; c: number; t: number }
   | { v: LiveV; kind: 'ack'; c: number; t: number; ok: boolean }
   | { v: LiveV; kind: 'replay'; es: Relayed[]; t: number }
   | { v: LiveV; kind: 'presence'; who: Who; on: boolean; t: number }
   | ({ v: LiveV; kind: 'changed'; t: number } & Notice)
   | Relayed;
+
+/** The record's last change the room heard of (`welcome.rec`): a phone whose cache has it (same `rev`, `at` ≤ its
+ *  `since`) needn't fetch on opening. @public (relay/) */
+export interface RecordMark { at: string; rev: string }
 
 /** What the Apps Script wrote (`ingest`: health rows, `event`: an event row). */
 const NOTICE_WHAT = ['ingest', 'event'] as const;
@@ -346,8 +350,11 @@ export function parseServer(raw: unknown): ServerMsg | null {
       return isSeq(o.c) && typeof o.ok === 'boolean' ? { v: LIVE_V, kind: 'ack', c: o.c, t, ok: o.ok } : null;
     case 'replay':
       return Array.isArray(o.es) ? { v: LIVE_V, kind: 'replay', es: o.es.map(relayedOf).filter((e): e is Relayed => !!e), t } : null;
-    case 'welcome':
-      return isWho(o.me) && typeof o.peer === 'boolean' ? { v: LIVE_V, kind: 'welcome', me: o.me, peer: o.peer, t } : null;
+    case 'welcome': {
+      if (!isWho(o.me) || typeof o.peer !== 'boolean') return null;
+      const rec = isObj(o.rec) ? noticeOf({ ...o.rec, what: 'event', who: o.me }) : null;
+      return { v: LIVE_V, kind: 'welcome', me: o.me, peer: o.peer, t, ...(rec ? { rec: { at: rec.at, rev: rec.rev } } : {}) };
+    }
     case 'pong':
       return isTime(o.c) ? { v: LIVE_V, kind: 'pong', c: o.c, t } : null;
     case 'presence':

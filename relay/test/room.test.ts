@@ -234,6 +234,19 @@ describe('the island room', () => {
     expect(room.notify(n)).toBe(0); // nobody there: a no-op
   });
 
+  it('a welcome carries the record’s last change it heard of (kept across restarts), so a phone that has it needn’t fetch', () => {
+    const marks: unknown[] = [];
+    room = new RoomCore({ ...io(), saveRec: (r) => void marks.push(r) });
+    expect(join(KEY_A).sent[0]).not.toHaveProperty('rec');
+    room.notify({ what: 'ingest', who: 'A', at: '2026-11-01T01:02:03.456Z', rev: 'e1' });
+    room.notify({ what: 'event', who: 'B', at: '2026-11-01T01:00:00.000Z', rev: 'e1' }); // an older copy, late
+    expect(marks).toEqual([{ at: '2026-11-01T01:02:03.456Z', rev: 'e1' }]);
+    expect(join(KEY_B).sent[0]).toEqual({ v: 1, kind: 'welcome', me: 'B', peer: true, t: now, rec: { at: '2026-11-01T01:02:03.456Z', rev: 'e1' } });
+    room = new RoomCore(io(), [], { at: '2026-11-01T01:02:03.456Z', rev: 'e1' });
+    socks = [];
+    expect(join(KEY_A).sent[0]).toMatchObject({ kind: 'welcome', rec: { at: '2026-11-01T01:02:03.456Z', rev: 'e1' } });
+  });
+
   it('holds at most 8 sockets', () => {
     for (let i = 0; i < MAX_SOCKETS; i++) join();
     expect(room.roomFor()).toBe(false);

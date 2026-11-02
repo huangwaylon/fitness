@@ -65,7 +65,7 @@ describe('/import', () => {
     const body = JSON.stringify({ rows: { metrics: [['2026-11-01T00:00:00.000Z', 'A', '2026-11-01', 'steps', 1]] }, notice });
     const ok = await importRoute(await signed(body), () => room);
     expect(await ok.json()).toEqual({ ok: true, metrics: 1, events: 0, uploads: 0, skipped: 0, counts: { metrics: 1, events: 0, ids: 0, uploads: 0 } });
-    expect(told).toEqual([notice]);
+    expect(told).toEqual([{ ...notice, rev: 'e1' }]); // the record's revision
     expect(await (await importRoute(await signed(body), () => room)).json()).toMatchObject({ metrics: 0 }); // again: nothing new, no notice
     expect(told).toHaveLength(1);
     expect((await importRoute(new Request('https://relay.example/import', { method: 'POST', body }), () => room)).status).toBe(401);

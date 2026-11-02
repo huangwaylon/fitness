@@ -171,6 +171,40 @@ describe('events', () => {
   });
 });
 
+describe('events (a batch)', () => {
+  it('keeps them in order, each as `event` would, with each stored row’s `at`; one notice for the lot', () => {
+    a('event', { id: 's1', type: 'spend', data: { spendId: 'sp1', item: 'snack', bells: 8 } });
+    notices = [];
+    tick();
+    const r = a('events', { events: [
+      { id: 'v1', type: 'spend_void', data: { spendId: 'sp1' } },
+      { id: 's1', type: 'spend', data: { spendId: 'sp1', item: 'snack', bells: 8 } },
+      { id: 'x1', type: 'spend', data: { spendId: 'sp2', item: 'snack', bells: 1 } },
+      { id: 'h1', type: 'highfive', data: {} },
+      { id: 'v2', type: 'spend_void', data: { spendId: 'sp1' } },
+      'garbage',
+      { id: 'p1', type: 'pref', data: { key: 'locale', value: 'en' } }
+    ] });
+    expect(r).toEqual({ ok: true, results: [
+      { id: 'v1', ok: true, at: '2026-11-02T03:00:01.000Z' },
+      { id: 's1', ok: true, duplicate: true },
+      { id: 'x1', ok: false, error: 'bad_request' },
+      { id: 'h1', ok: true },
+      { id: 'v2', ok: true, duplicate: true },
+      { id: null, ok: false, error: 'bad_request' },
+      { id: 'p1', ok: true, at: '2026-11-02T03:00:01.001Z' }
+    ] });
+    expect(notices).toEqual([{ what: 'event', who: 'A', at: '2026-11-02T03:00:01.001Z', rev: 'e1' }]);
+    expect(events().map((e) => e[1])).toEqual(['s1', 'v1', 'p1']);
+  });
+
+  it('an empty, oversized or missing list is bad_request', () => {
+    for (const events of [undefined, [], 'x', Array.from({ length: 51 }, (_, i) => ({ id: `p${i}`, type: 'pref', data: { key: 'locale', value: 'en' } }))]) {
+      expect(a('events', { events })).toEqual({ ok: false, error: 'bad_request' });
+    }
+  });
+});
+
 describe('snapshot', () => {
   it('every row of both people, then only the rows after `since`; `at` strictly increases', () => {
     a('ingest', { dates: 'Oct 1, 2026', steps: '5000' });

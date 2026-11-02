@@ -48,6 +48,8 @@ export const MAX_BODY_CHARS = 1_000_000;
 export const RATE_PER_MINUTE = 120;
 const MAX_EVENT_DATA_CHARS = 20_000;
 const UPLOADS_SHOWN = 20;
+/** At most this many events in one `events` request (a queue that grew offline goes in a few). */
+export const EVENTS_MAX = 50;
 /** A late row is returned to a poll whose `since` is at most this much after its arrival (the servers' clocks). */
 export const LATE_MARGIN_MS = 10_000;
 const KEY_RE = /^[0-9a-fA-F]{32,128}$/;
@@ -182,7 +184,7 @@ export class StoreCore {
     }
     const r = this.import(rows);
     const n = o.notice ? parseNotice(JSON.stringify(o.notice)) : null;
-    return { status: 200, body: JSON.stringify({ ok: true, ...r, counts: this.counts() }), notice: n && (r.metrics || r.events) ? n : null };
+    return { status: 200, body: JSON.stringify({ ok: true, ...r, counts: this.counts() }), notice: n && (r.metrics || r.events) ? { ...n, rev: this.rev() } : null };
   }
 
   private route(body: unknown, bytes: number): Reply {
@@ -194,6 +196,7 @@ export class StoreCore {
     switch (body.action) {
       case 'ingest': return this.ingest(me, body, bytes);
       case 'event': return this.event(me, body);
+      case 'events': return this.events(me, body);
       case 'snapshot': return this.snapshot(me, body);
       case 'uploads': return this.uploads(me);
       case 'whoami': return { ok: true, me, build: STORE_BUILD };
@@ -289,6 +292,32 @@ export class StoreCore {
   // ---------------------------------------------------------------- events
 
   private event(me: Who, body: Rec): Reply {
+    const r = this.keep(me, body);
+    if (r.ok && r.at) this.io.notify({ what: 'event', who: me, at: r.at, rev: this.rev() });
+    const { at: _at, ...reply } = r;
+    return reply;
+  }
+
+  /**
+   * `events: [{id, type, data}, …]` (≤ EVENTS_MAX), kept in order, each as `event` would: `{ok, results}`, one per
+   * event (`{id, ok, duplicate?, at?}` or `{id, ok: false, error, detail?}`), `at` the stored row's. One notice for
+   * the lot.
+   */
+  private events(me: Who, body: Rec): Reply {
+    const list = body.events;
+    if (!Array.isArray(list) || !list.length || list.length > EVENTS_MAX) return fail('bad_request');
+    let last: string | null = null;
+    const results = list.map((e) => {
+      const r = isRec(e) ? this.keep(me, e) : fail('bad_request');
+      if (r.ok && r.at) last = r.at;
+      return { id: isRec(e) && typeof e.id === 'string' ? e.id : null, ...r };
+    });
+    if (last) this.io.notify({ what: 'event', who: me, at: last, rev: this.rev() });
+    return { ok: true, results };
+  }
+
+  /** One event checked and kept (or acknowledged): the reply, with the stored row's `at` when one was written. */
+  private keep(me: Who, body: Rec): Reply & { at?: string } {
     const id = body.id;
     if (!isId(id)) return fail('bad_request');
     if (typeof body.type !== 'string' || !(EVENT_TYPES as readonly string[]).includes(body.type)) return fail('bad_request');
@@ -301,7 +330,7 @@ export class StoreCore {
     const subject = eventSubject(body.type, data, me);
     if (!subject || !validEventData(body.type, data, this.io.now())) return fail('bad_request');
     const type = body.type;
-    const r = this.io.tx((): Reply & { at?: string } => {
+    return this.io.tx((): Reply & { at?: string } => {
       if (this.known(id)) return { ok: true, duplicate: true };
       if (type === 'spend_void') {
         const v = this.voidTarget(data.spendId as string);
@@ -321,9 +350,6 @@ export class StoreCore {
       this.put(id, at, me, type, json, eventSlot(type, me, subject, data, Date.parse(at)), null);
       return { ok: true, at };
     });
-    if (r.ok && r.at) this.io.notify({ what: 'event', who: me, at: r.at, rev: this.rev() });
-    const { at: _at, ...reply } = r;
-    return reply;
   }
 
   private known(id: string): boolean {

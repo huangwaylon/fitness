@@ -292,7 +292,7 @@ const hex = (bytes: number[]): string => bytes.map((b) => ((b + 256) % 256).toSt
  * HMAC and UrlFetch need not agree with the relay on how to encode the rest (a Shortcut's "7:25 AM" has a narrow
  * no-break space, U+202F: the first ingest's copy, 2026-11-02, didn't land, and paused the copies after it).
  */
-export const asciiJson = (v: unknown): string => JSON.stringify(v).replace(/[^\x20-\x7e]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
+const asciiJson = (v: unknown): string => JSON.stringify(v).replace(/[^\x20-\x7e]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
 
 /**
  * POST `body` to the relay at `url`, signed (relay/src/notify.ts): secret = HMAC-SHA256(key "<KEY_A>:<KEY_B>", NOTIFY_LABEL),
