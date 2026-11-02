@@ -183,6 +183,22 @@ ivec2 tileAt(vec2 p){
   int code = int(texture(uCodes, (t + 0.5) / n).r * 255.0 + 0.5);
   return ivec2(code / 4, code - (code / 4) * 4);
 }
+/** The path tile a path's edge at p belongs to: its own, or (where a soft corner rounds out over a neighbour,
+ *  fields.ts) the nearest path tile round it. */
+ivec2 pathTile(vec2 p){
+  ivec2 t = tileAt(p);
+  if (t.x >= 3 && t.x <= 6) return t;
+  float best = 1e9; ivec2 r = ivec2(3, 0);
+  for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++){
+    vec2 q = p + vec2(float(i), float(j)) * 30.0;
+    ivec2 n = tileAt(q);
+    if (n.x < 3 || n.x > 6) continue;
+    vec2 cen = (floor((q - uGrid.xy) / 30.0) + 0.5) * 30.0 + uGrid.xy;
+    float d = length(max(abs(p - cen) - 15.0, 0.0));
+    if (d < best){ best = d; r = n; }
+  }
+  return r;
+}
 
 void main(){
   vec2 p = vW;
@@ -204,8 +220,8 @@ void main(){
   sc = mix(sc, bed, smoothstep(-1.0, 3.0, dn) * float(tier == 0));
   c = mix(c, sc, aa(ds, 1.4));
   // paths: dirt worn soft, stone, brick and planks NH's
-  ivec2 tile = tileAt(p);
   if (dP < 4.0){
+    ivec2 tile = pathTile(p);
     float dp = dP + 1.0*gn(p/6.0, 17) + 0.5*gn(p/2.0, 18);
     vec3 pc;
     float edge;
@@ -275,8 +291,15 @@ void main() {
 const FRESH_FRAG = /* glsl */ `
 ${W_COMMON}
 varying vec3 vFlow;
+uniform sampler2D uSdfA;
+uniform vec4 uGrid;
+uniform float uFar;
 void main() {
   vec2 p = vW;
+  // the edge is the field's (fields.ts, soft and round), not where the mesh's bank crosses the surface (its 5u cells)
+  float dW = (texture2D(uSdfA, (p - uGrid.xy) / uGrid.zw).b * 2.0 - 1.0) * uFar;
+  float edge = smoothstep(-1.2, -2.0, dW);
+  if (edge <= 0.0) discard;
   vec2 f = vFlow.xy;
   float still = vFlow.z;
   float sp = length(f);
@@ -290,7 +313,7 @@ void main() {
   vec3 col = mix(vec3(0.24, 0.58, 0.88), vec3(0.55, 0.82, 0.97), smoothstep(0.55, 0.85, n));
   float g = noise(p * 0.4 + uTime * 0.5);
   col += vec3(0.4) * smoothstep(0.9, 0.97, g);
-  gl_FragColor = finish(col, 0.74);
+  gl_FragColor = finish(col, 0.74 * edge);
 }`;
 const FALLS_VERT = /* glsl */ `
 ${BEND_GLSL}
@@ -464,7 +487,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   const topMats: MeshLambertMaterial[] = [];
   const wallMat = bend(new MeshLambertMaterial({ map: tex.cliff, color: 0xffffff }));
   const fallsMat = waterMat(FALLS_VERT, FALLS_FRAG, { uStreak: { value: tex.falls } });
-  const freshMat = waterMat(FRESH_VERT, FRESH_FRAG);
+  const freshMat = waterMat(FRESH_VERT, FRESH_FRAG, { uSdfA: { value: sdfA }, uGrid: { value: [GRID.x0, GRID.z0, GW, GD] }, uFar: { value: FAR } });
   const BAND_D = 8 * TILE;
 
   /** Parts joined into one (their indices offset). */

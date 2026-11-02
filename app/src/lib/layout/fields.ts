@@ -11,10 +11,17 @@ export const STEP = 2.5;
 const W = (GRID.cols * TILE) / STEP, H = (GRID.rows * TILE) / STEP;
 /** Distances are clamped to this (u): nothing shades or shapes farther from an edge. */
 export const FAR = 48;
-/** The rounding's radius (a tile's share): NH's corners, a third of a tile. */
+/** The rounding's radius (a tile's share): NH's cliff corners, a third of a tile (mesh.ts builds their walls on it). */
 const ROUND = 1 / 3;
+/** The soft edges' (the coast, the beach's sand, the fresh water, the paths): half a tile, a staircase of tiles cut
+ *  to a straight diagonal; then the field is smoothed over SOFT cells (a box blur, twice), so the shape is curved
+ *  without a kink or the raster's 2.5u steps. The data stays on tiles: only the drawn edge is round. */
+const SOFT_ROUND = 1 / 2;
+const SOFT = 2;
 
 export const Ch = { land: 0, sandy: 1, fresh: 2, path: 3, tier1: 4, tier2: 5, tier3: 6 } as const;
+/** The channels drawn soft (the tiers' walls keep their exact ROUND corners). */
+const SOFT_CH = 4;
 export type Ch = (typeof Ch)[keyof typeof Ch];
 const CHANNELS = 7;
 
@@ -98,6 +105,31 @@ function chamfer(set: Uint8Array, out: Float32Array): void {
     }
 }
 
+/** A box blur of radius `n` cells in place (along x, then z; the edges held), `tmp` the scratch. A field's straight
+ *  edges stay where they are (the blur keeps a linear ramp), its corners and kinks round off. */
+function blur(a: Float32Array, tmp: Float32Array, n: number): void {
+  const k = 1 / (2 * n + 1);
+  for (let y = 0; y < H; y++) {
+    const o = y * W;
+    let s = a[o] * (n + 1);
+    for (let i = 1; i <= n; i++) s += a[o + Math.min(W - 1, i)];
+    for (let x = 0; x < W; x++) {
+      tmp[o + x] = s * k;
+      s += a[o + Math.min(W - 1, x + n + 1)] - a[o + Math.max(0, x - n)];
+    }
+  }
+  for (let x = 0; x < W; x++) {
+    let s = tmp[x] * (n + 1);
+    for (let i = 1; i <= n; i++) s += tmp[Math.min(H - 1, i) * W + x];
+    for (let y = 0; y < H; y++) {
+      a[y * W + x] = s * k;
+      s += tmp[Math.min(H - 1, y + n + 1) * W + x] - tmp[Math.max(0, y - n) * W + x];
+    }
+  }
+}
+
+const circle = (du: number, dv: number, R: number) => (R - du) ** 2 + (R - dv) ** 2 <= R * R;
+
 function build(layout: Layout): Fields {
   const ms = masks(layout);
   const ch: Float32Array[] = [];
@@ -107,23 +139,29 @@ function build(layout: Layout): Fields {
   const TW = GRID.cols + 2, TH = GRID.rows + 2;
   const tiles = new Uint8Array(TW * TH);
   const PER = TILE / STEP;
+  const tier = (c: number, r: number) => (onGrid(c, r) ? tierOf(layout.codes[idx(c, r)]) : 0);
   for (let k = 0; k < CHANNELS; k++) {
     const m = ms[k];
-    for (let r = -1; r <= GRID.rows; r++) for (let c = -1; c <= GRID.cols; c++) tiles[(r + 1) * TW + c + 1] = m(c, r) ? 1 : 0;
-    const t = (c: number, r: number) => tiles[(r + 1) * TW + c + 1];
+    // (the fresh water's: 2 where the sea is, so a river runs out to it square, its mouth not rounded off)
+    for (let r = -1; r <= GRID.rows; r++) for (let c = -1; c <= GRID.cols; c++) tiles[(r + 1) * TW + c + 1] = m(c, r) ? 1 : k === Ch.fresh && !ms[Ch.land](c, r) ? 2 : 0;
+    const t = (c: number, r: number) => (c < -1 || r < -1 || c > GRID.cols || r > GRID.rows ? tiles[(Math.max(-1, Math.min(GRID.rows, r)) + 1) * TW + Math.max(-1, Math.min(GRID.cols, c)) + 1] : tiles[(r + 1) * TW + c + 1]);
+    const soft = k < SOFT_CH, R = soft ? SOFT_ROUND : ROUND;
     for (let r = 0; r < GRID.rows; r++)
       for (let c = 0; c < GRID.cols; c++) {
-        const own = t(c, r);
+        const own = t(c, r) === 1 ? 1 : 0;
         for (let j = 0; j < PER; j++) {
           const v = (j + 0.5) / PER, sz = v < 0.5 ? -1 : 1, dv = sz < 0 ? v : 1 - v;
           for (let i = 0; i < PER; i++) {
             const u = (i + 0.5) / PER, sx = u < 0.5 ? -1 : 1, du = sx < 0 ? u : 1 - u;
             let inn = own;
-            if (du < ROUND && dv < ROUND) {
+            if (du < R && dv < R) {
               const h = t(c + sx, r), vv = t(c, r + sz);
-              const circle = (ROUND - du) ** 2 + (ROUND - dv) ** 2 <= ROUND * ROUND;
-              if (own && !h && !vv) inn = circle ? 1 : 0;
-              else if (!own && h && vv) inn = circle ? 0 : 1;
+              // soft on one level; where a tier's wall stands (a cliff to the sea) its exact corner, as the wall's
+              const lv = tier(c, r), sf = soft && tier(c + sx, r) === lv && tier(c, r + sz) === lv, Rc = sf ? SOFT_ROUND : ROUND;
+              if (du >= Rc || dv >= Rc) {
+                // outside this corner's rounding
+              } else if (own && !h && !vv) inn = sf && t(c + sx, r - sz) && t(c - sx, r + sz) ? (du + dv >= Rc ? 1 : 0) : circle(du, dv, Rc) ? 1 : 0;
+              else if (!own && t(c, r) !== 2 && h && vv) inn = sf && !t(c + sx, r - sz) && !t(c - sx, r + sz) ? (du + dv >= Rc ? 0 : 1) : circle(du, dv, Rc) ? 0 : 1;
             }
             const q = (r * PER + j) * W + c * PER + i;
             inside[q] = inn;
@@ -139,6 +177,7 @@ function build(layout: Layout): Fields {
       const d = inside[i] ? -(dIn[i] - 0.5) * STEP : (dOut[i] - 0.5) * STEP;
       out[i] = d < -FAR ? -FAR : d > FAR ? FAR : d;
     }
+    if (soft) for (let pass = 0; pass < 2; pass++) blur(out, dIn, SOFT);
     ch.push(out);
   }
   return {

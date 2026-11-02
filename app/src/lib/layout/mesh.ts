@@ -7,6 +7,7 @@
 // wall is a waterfall. Heights over a level come from height.ts (offset): the beach, the banks, the paths.
 import { CHUNK, CHUNKS_X, GRID, TIER_H, TILE, idx, kindOf, onGrid, tierOf, tileX, tileZ, chunkXZ } from './grid.ts';
 import { GRASS_Y, WATER_DROP, fieldOf } from './height.ts';
+import { Ch } from './fields.ts';
 import type { Layout } from './model.ts';
 import { kindDef } from './catalog.ts';
 
@@ -178,7 +179,17 @@ export function chunkMesh(layout: Layout, chunk: number): ChunkMesh {
     for (let c = cx * CHUNK; c < Math.min(GRID.cols, (cx + 1) * CHUNK); c++) {
       const own = tierOf(code(c, r)), kind = kindOf(code(c, r));
       const isFresh = kind === 'river' || kind === 'pond';
+      // the soft edges (fields.ts) round a river's or a pond's inside corners out over the bank's tile: the water's
+      // surface goes on there too, where the bank dips under it (a tile beside fresh water on the same tier)
+      let wetKind = isFresh ? kind : '';
+      if (!isFresh && kind !== 'sea')
+        for (let dr = -1; dr <= 1 && !wetKind; dr++)
+          for (let dc = -1; dc <= 1 && !wetKind; dc++) {
+            const nk = kindOf(code(c + dc, r + dr));
+            if ((nk === 'river' || nk === 'pond') && onGrid(c + dc, r + dr) && tierOf(code(c + dc, r + dr)) === own) wetKind = nk;
+          }
       const waterY = own * TIER_H + GRASS_Y - WATER_DROP;
+      const under = (...p: number[]) => isFresh || p.some((i) => top.pos[i * 3 + 1] < waterY + 0.3 && field.fields.at(Ch.fresh, top.pos[i * 3], -top.pos[i * 3 + 2]) < 0);
       for (let qz = 0; qz < 2; qz++)
         for (let qx = 0; qx < 2; qx++) {
           // the quadrant's corner (the tile's) and the way into the tile from it
@@ -191,7 +202,7 @@ export function chunkMesh(layout: Layout, chunk: number): ChunkMesh {
           const Wv = (u: number, v: number, y: number) => {
             const [x, z] = W(u, v);
             const [fx, fz] = flowAt(x, z);
-            return water.vert(x, y, z, true, fx, fz, kind === 'pond' ? 1 : 0);
+            return water.vert(x, y, z, true, fx, fz, wetKind === 'pond' ? 1 : 0);
           };
           const lin = tierAt(...W(6, 6)), lout = tierAt(...W(1.2, 1.2));
           const split = lin !== lout;
@@ -204,7 +215,7 @@ export function chunkMesh(layout: Layout, chunk: number): ChunkMesh {
               const p = [V(top, u0, v0, L), V(top, u1, v0, L), V(top, u1, v1, L), V(top, u0, v1, L)];
               top.tri(p[0], p[1], p[2]);
               top.tri(p[0], p[2], p[3]);
-              if (isFresh && L === own) {
+              if (wetKind && L === own && under(...p)) {
                 const w = [Wv(u0, v0, waterY), Wv(u1, v0, waterY), Wv(u1, v1, waterY), Wv(u0, v1, waterY)];
                 water.tri(w[0], w[1], w[2]);
                 water.tri(w[0], w[2], w[3]);
@@ -216,7 +227,7 @@ export function chunkMesh(layout: Layout, chunk: number): ChunkMesh {
             const P = V(top, 6, 6, lin);
             const ring = loop.map(([u, v]) => V(top, u, v, lin));
             for (let k = 0; k < ring.length; k++) top.tri(P, ring[k], ring[(k + 1) % ring.length]);
-            if (isFresh && lin === own) {
+            if (wetKind && lin === own && under(P, ...ring)) {
               const wp = Wv(6, 6, waterY), wr = loop.map(([u, v]) => Wv(u, v, waterY));
               for (let k = 0; k < wr.length; k++) water.tri(wp, wr[k], wr[(k + 1) % wr.length]);
             }
