@@ -175,3 +175,46 @@ test('the editor moves うめ’s home: the phone’s door, walk and tap area fo
   await expect.poll(off).toBeLessThan(30);
 });
 
+test('a visitor on the long layout: K.K. at the layout’s centre stage by the campsite, and a tap talks to him', async ({ page }) => {
+  await page.goto('./?demo&island=3d&layout&critter=none&date=2026-10-24T19:00'); // a Saturday evening: K.K.
+  expect(await is3d(page)).toBe(true);
+  const { stage, doors } = await site(page);
+  expect(Math.hypot(stage[0] - doors.campsite[0], stage[1] - doors.campsite[1])).toBeLessThan(200);
+  await world(page, `go(${stage[1] - 120})`);
+  await expect.poll(() => page.evaluate('window.__world3d.camStill()')).toBe(true);
+  const art = page.locator('[data-visitor="kk-slider"] .art');
+  await expect(art).toBeAttached();
+  // his feet (the node's origin) on centre stage
+  await expect.poll(() => page.evaluate(([x, z]) => {
+    const r = document.querySelector('[data-visitor="kk-slider"]')!.getBoundingClientRect();
+    const [px, py] = (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x, z);
+    return Math.hypot(r.left - px, r.top - py);
+  }, stage)).toBeLessThan(4);
+  // (a visitor is the scene's tap, not a DOM target: a tap on his middle)
+  const r = (await art.boundingBox())!;
+  await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
+  await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('とたけけ');
+});
+
+for (const seat of ['seatMaeL', 'seatPondR', 'stoolW', 'stoolE'] as const)
+  test(`the layout’s seats: my villager put on ${seat} sits there`, async ({ page }) => {
+    await page.goto(ISLAND);
+    expect(await is3d(page)).toBe(true);
+    const at = (await site(page)).named[seat];
+    await world(page, `put(${at[0]}, ${at[1]})`);
+    await expect(page.locator('[data-actor="mine"]')).toHaveAttribute('data-seat', seat);
+    // the 3D villager on the piece's own seat (its model in: under software GL that takes a while)
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3?: { state(s: string): string | null } }).__villagers3?.state('mine') ?? null), { timeout: 30_000 }).toBe('sit');
+  });
+
+test('the guest comes ashore and walks up to its own house (home-G)', async ({ page }) => {
+  test.slow();
+  await page.goto(`${ISLAND}&as=G`);
+  expect(await is3d(page)).toBe(true);
+  const door = (await site(page)).doors['home-G'];
+  // its spot: by its door (buildings.ts guestSpot), a walk up the island from the beach
+  await expect.poll(async () => {
+    const [x, z] = await world<[number, number]>(page, 'mine()');
+    return Math.hypot(x - door[0], z - door[1]);
+  }, { timeout: 40_000 }).toBeLessThan(60);
+});

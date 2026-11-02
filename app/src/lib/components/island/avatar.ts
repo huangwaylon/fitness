@@ -94,13 +94,27 @@ export function stepOut(at: Pt): void {
 export function arrive(from: Pt, to: Pt): void {
   const c = ctx;
   keepStay(to);
-  steered.mine = Date.now();
+  const at = (steered.mine = Date.now());
   actors.mine.face = 'home';
   place('mine', from[0], from[1]);
   // by the island's own planner (nav.ts: up the stairs, over the bridge), as a tap there would go
-  const p = c ? planTap(walkNav(), from, to[0], to[1], c.geo().extra) : null;
-  if (p) walkTo('mine', p.pts, { speed: SPEED.wander, from, face: 'home' });
-  else place('mine', to[0], to[1]);
+  const go = (p0: Pt) => {
+    const p = c ? planTap(walkNav(), p0, to[0], to[1], c.geo().extra) : null;
+    if (p) walkTo('mine', p.pts, { speed: SPEED.wander, from: p0, face: 'home' });
+    else place('mine', to[0], to[1]);
+  };
+  go(from);
+  // a reaction as the island opens (a greeting) stops my villager where it is: on up to its spot once it's free,
+  // unless I've steered it since
+  let tries = 0;
+  const on = () => {
+    if (steered.mine !== at || tries++ > 30) return;
+    const p = c?.where('mine') ?? [actors.mine.x, actors.mine.y];
+    if (Math.hypot(p[0] - to[0], p[1] - to[1]) <= 8) return;
+    if (!actors.mine.walking && !busy('mine')) go([p[0], p[1]]);
+    setTimeout(on, 700);
+  };
+  setTimeout(on, 700);
 }
 /** Where my villager stands at the start (the scene mounting): where a tap sent it today, if anywhere. */
 export const stayingAt = (): Pt | null => (stayAt && readStay() ? stayAt : null);
