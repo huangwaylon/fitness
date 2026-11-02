@@ -71,7 +71,7 @@ const slimAudioManifest: Plugin = {
   }
 };
 
-// A static SPA (GitHub Pages). The backend is the Apps Script web app: its /exec URL is VITE_GAS_URL.
+// A static SPA (GitHub Pages). The backend is the relay: the record at its /api (lib/sync/transport.ts), the room at /room.
 // Output goes to build-pages/.
 export default defineConfig({
   plugins: [
@@ -82,14 +82,13 @@ export default defineConfig({
       version: { name: appVersion() },
       paths: { base: (process.env.BASE_PATH ?? '/fitness') as `/${string}` },
       // Static hosting has no headers: SvelteKit writes this as a <meta http-equiv> tag and adds the hash of its
-      // inline bootstrap script to script-src. Only the Apps Script origins (the /exec URL and its 302 target) and the
-      // live relay (its socket, lib/sync/live.ts LIVE_URL, and its /push/* endpoints, lib/sync/push.ts PUSH_URL) are
-      // reachable besides our own.
+      // inline bootstrap script to script-src. Only the relay (its socket, lib/sync/live.ts LIVE_URL, the record's /api,
+      // lib/sync/transport.ts, and its /push/* endpoints, lib/sync/push.ts PUSH_URL) is reachable besides our own.
       csp: {
         mode: 'hash',
         directives: {
           'default-src': ['self'],
-          'connect-src': ['self', 'https://script.google.com', 'https://script.googleusercontent.com', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'blob:'],
+          'connect-src': ['self', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'blob:'],
           // the tent's models carry their textures inside (three.js decodes them from blob: URLs)
           'img-src': ['self', 'data:', 'blob:'],
           // the hourly music plays from blob: URLs (lib/sound/engine.ts), and the first tap's silent unlock clip

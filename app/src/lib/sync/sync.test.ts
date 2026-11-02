@@ -6,6 +6,7 @@ import { configureTransport, post } from './transport.ts';
 import { ackedEvents, backoffMs, enqueue, flush, holdEvent, nextRetryAt, queued, retryNow, unqueue } from './queue.ts';
 import { applySnapshot, configureCache, loadCache, refreshSnapshot } from './cache.ts';
 import { keyFromHash, setKey } from './pairing.ts';
+import { asRecord } from './fake-record.ts';
 import { composeModel } from '#lib/store/view.ts';
 import { buildWeekView } from '#lib/model/week.ts';
 import { emptyRows, mergeRows, maxAt } from '#lib/model/snapshot.ts';
@@ -25,8 +26,8 @@ function fakeFetch(): typeof fetch {
   return (async (_url: RequestInfo | URL, init?: RequestInit) => {
     expect((init?.headers as Record<string, string>)['Content-Type']).toMatch(/^text\/plain/);
     const body = JSON.parse(String(init?.body));
-    calls.push(body);
-    const out = handler(body);
+    // the record answers a batch of events one result each: the handler and the call log see each event
+    const out = asRecord((b) => (calls.push(b), handler(b)))(body);
     if (out instanceof Error) throw out;
     if (typeof out === 'string') return new Response(out, { status: 200 });
     return new Response(JSON.stringify(out), { status: 200 });
@@ -107,17 +108,23 @@ describe('write queue', () => {
     expect(typeof calls[0].id).toBe('string');
     expect(queued()).toEqual([]);
   });
-  it('reports only acked events: one undone while an earlier event is in flight is not acked', async () => {
+  it('what is on the wire can no longer be undone; what is queued meanwhile can (and only the acked count)', async () => {
     const first = enqueue('pref', { key: 'moveGoal', value: 500 });
     const second = enqueue('highfive', {});
+    let third: ReturnType<typeof enqueue> | null = null;
     handler = (body) => {
-      // While the first event is on the wire, the user taps 取り消す on the second.
-      if (body.id === first.id) expect(unqueue(second.id)).toBe(true);
+      // While the batch is on the wire, the user taps 取り消す on the second, and taps again and undoes that.
+      if (body.id === first.id) {
+        expect(unqueue(second.id)).toBe(false);
+        third = enqueue('pref', { key: 'moveGoal', value: 550 });
+        expect(unqueue(third.id)).toBe(true);
+      }
       return { ok: true };
     };
     const r = await flush();
-    expect(r.acked.map((e) => e.id)).toEqual([first.id]);
-    expect(calls.map((c) => c.id)).toEqual([first.id]);
+    expect(r.acked.map((e) => e.id)).toEqual([first.id, second.id]);
+    expect(calls.map((c) => c.id)).toEqual([first.id, second.id]);
+    expect(third).not.toBeNull();
     expect(queued()).toEqual([]);
   });
   it('keeps the event (and order) with a backoff on transient errors, then retries', async () => {

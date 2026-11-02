@@ -1,7 +1,6 @@
-# Backend monitor (docs/ops/runbook.md §3): a keyless {"action":"health"} POST to the Apps Script /exec URL
-# (repo variable GAS_URL). It fails, so GitHub e-mails the owner, unless the reply is JSON with ok:true and a `build`
-# equal to the committed Code.js's (line 3, `// build: <12 hex>`). HTML = the authorization lapsed (google-setup.md
-# §9); another build = Code.js changed but was not redeployed (runbook.md §2).
+# Backend monitor (docs/ops/runbook.md §3): the relay's /health (the Worker and the room) and a keyless
+# {"action":"health"} to the record's /api (its Durable Object). It fails, so GitHub e-mails the owner, unless both
+# answer JSON with ok:true.
 name: Backend health
 
 on:
@@ -15,24 +14,14 @@ permissions:
 jobs:
   health:
     runs-on: ubuntu-latest
-    if: vars.GAS_URL != ''
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-        with:
-          persist-credentials: false
-          sparse-checkout: app/apps-script/Code.js
-          sparse-checkout-cone-mode: false
-      - name: POST health to /exec
-        env:
-          GAS_URL: ${{ vars.GAS_URL }}
+      - name: The relay's health and the record's
         run: |
-          body=$(curl -sSL --max-time 60 -H 'Content-Type: text/plain' --data '{"action":"health"}' "$GAS_URL")
+          relay=https://island-fund-relay.island-fund-relay.workers.dev
+          body=$(curl -sS --max-time 30 "$relay/health")
           echo "$body" | head -c 300; echo
-          echo "$body" | jq -e '.ok == true' > /dev/null || { echo "::error::/exec did not answer JSON ok (authorization lapsed? google-setup.md §9)"; exit 1; }
-          live=$(echo "$body" | jq -r '.build // ""')
-          repo=$(sed -n 's#^// build: ##p' app/apps-script/Code.js)
-          if [ "$live" != "$repo" ]; then
-            echo "::error::/exec runs build '$live' but main's apps-script/Code.js is '$repo': redeploy (docs/ops/runbook.md §2)"
-            exit 1
-          fi
-          echo "healthy, build $live"
+          echo "$body" | jq -e '.ok == true' > /dev/null || { echo "::error::the relay's /health did not answer ok (docs/ops/runbook.md §10)"; exit 1; }
+          body=$(curl -sS --max-time 30 -H 'Content-Type: text/plain' --data '{"action":"health"}' "$relay/api")
+          echo "$body" | head -c 300; echo
+          echo "$body" | jq -e '.ok == true' > /dev/null || { echo "::error::the record's /api did not answer ok (docs/ops/runbook.md §13)"; exit 1; }
+          echo "healthy, record build $(echo "$body" | jq -r '.build')"

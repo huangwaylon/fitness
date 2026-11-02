@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseShortcut, shortcutDate, ShapeError } from './parse.ts';
+import { parseShortcut, shortcutDate, ShapeError } from '../src/parse.ts';
 
 // The Shortcut's real body (the `uploads` log, 2026-10-30): daily totals, one line per day, every list as Text.
 const BODY = {

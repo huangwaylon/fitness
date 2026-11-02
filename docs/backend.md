@@ -75,8 +75,7 @@ Apple Health is the source of truth ([design.md](design.md#health-data)).
 `POST https://island-fund-relay.island-fund-relay.workers.dev/api`, body = JSON text (`text/plain` from a page: no CORS
 preflight; a Shortcut's `application/json` is fine), `{key, action, ...}`. Every reply is JSON with status 200:
 `{ok:true, ...}` or `{ok:false, error, detail?}`, `error` ∈ `unauthorized` · `bad_request` · `too_large` · `busy` ·
-`unavailable`. Body cap 1,000,000 characters. The old `/exec` URL takes the same bodies and forwards them
-([The record](#the-record) "Forward").
+`unavailable`. Body cap 1,000,000 characters.
 
 | `action` | Request | Reply |
 |---|---|---|
@@ -138,7 +137,7 @@ validated like the other lists (Text, length = `dates`, ≤ 100,000).
 for (person, date, metric), lower or higher (weight with one decimal); the same value is never appended twice. The
 model reads a day's latest row ([design.md](design.md#health-data)); a locked week reads it as of its lock (Wednesday
 04:00), so a later sync never moves locked earnings. The Shortcut posts to the record's `/api` with `"key"` and
-`"action": "ingest"` (`docs/ops/shortcut-health-sync.md`; the old `/exec` URL forwards).
+`"action": "ingest"` (`docs/ops/shortcut-health-sync.md`).
 
 ## Client sync
 
@@ -210,13 +209,12 @@ an ack without a row (a duplicate, or Apps Script's) is followed by a `fresh` re
 
 The data of record moved from the sheet to the relay on 2026-11-02 (decisions: *The record on the relay*), in five
 steps, each deployed and green before the next, the old path working through each (the phones update a day apart):
-1. **mirror**: the script copied each write's rows here (`/import`), and the sheet's history was imported (`at` kept,
-   high-fives and superseded cosmetic prefs left out); the model's numbers from both were the same
-   ([runbook §13](ops/runbook.md#13-the-record) `parity`);
-2. **reads**: the app's snapshot from `/api`, Apps Script when the relay is down or answers an outage
-   (`sync/transport.ts postRecord`);
+1. **mirror**: the script copied each write's rows here (a signed import), and the sheet's history was imported (`at`
+   kept, high-fives and superseded cosmetic prefs left out); the model's numbers from both were the same
+   ([runbook §13](ops/runbook.md#13-the-record) "History");
+2. **reads**: the app's snapshot from `/api` (Apps Script was its fallback for a day);
 3. **writes**: the queue's `events` to `/api`; Apps Script forwards every keyed request it still gets;
-4. **Shortcuts**: their URL is `/api` ([shortcut §2](ops/shortcut-health-sync.md#moving-an-existing-shortcut-to-the-relay-2026-11));
+4. **Shortcuts**: their URL is `/api` ([shortcut §2](ops/shortcut-health-sync.md#a-shortcut-from-before-2026-11-02));
    the old one forwards;
 5. **export**: the sheet is rewritten from the record; the script's own record code is gone.
 
@@ -247,12 +245,14 @@ steps, each deployed and green before the next, the old path working through eac
   poll also returns late rows that arrived after `since` − 10 s, so no phone misses one (the merge dedupes it).
 - **Revision:** `rev` is an epoch (`e1`, `e2`, …), changed only when the record is rebuilt (`node scripts/record.ts
   rev`, after a restore). Nothing edits the record by hand.
-- **Import:** `POST /import`, signed like `/notify` ([Push](#push) "Auth"), takes rows that already have their `at`
-  by the same rules (idempotent: a row that lands twice adds nothing): the sheet's history and, during step 1, the
-  script's copy of each write (sent as ASCII: a Shortcut's dates carry U+202F, and a copy with it failed the signature
-  until it was escaped). Also its admin ops (`{op}`: counts, bookmarks, restore, a new epoch, the export, a dump).
-- **Forward:** Apps Script hands every keyed request to `/api` (as ASCII JSON, the key in the body) and its reply
-  back as it is; anything but a JSON reply is `unavailable`, so a phone retries. Health stays its own.
+- **Admin:** `POST /admin`, signed like `/notify` ([Push](#push) "Auth"), takes the record tool's ops (`{op}`: counts
+  and who came which way, bookmarks, a restore, a new epoch, the export, a dump, and `load`: rows that already have
+  their `at`, by the same rules, idempotent). During step 1 the same signed path took the script's copy of each write
+  (sent as ASCII: a Shortcut's dates carry U+202F, and a copy with it failed the signature until it was escaped).
+- **Forward:** Apps Script hands every keyed request that still reaches `/exec` to `/api` (as ASCII JSON, the key in
+  the body, marked `X-Island-Via: gas`) and its reply back as it is; anything but a JSON reply is `unavailable`. The
+  record counts each way per person (`counts`' `usage`); since both phones' apps and Shortcuts post to `/api`
+  (2026-11-02), the forward goes once a day passes with no forwarded request.
 - **Export:** a cron (`*/15 * * * *` and `0 18 * * *`, `wrangler.toml`) asks the object to export: when `last_at` moved
   since the last export (or nightly, whatever changed) it POSTs every row to the `/exec` URL (`EXPORT_URL`; the test
   copy has none) as `{action: 'export', t, sig, data}`, `data` the rows as ASCII JSON text and `sig` its signature
@@ -277,7 +277,7 @@ catches an offline phone up.
 - **Where:** `relay/` (its own package, outside the app's build): a Worker (`src/index.ts`) and one Durable Object,
   `IslandRoom` (`idFromName('island')`), SQLite-backed (`new_sqlite_classes`, the only kind the Free plan has).
   Production `wss://island-fund-relay.island-fund-relay.workers.dev/room`; a test copy, `island-fund-relay-test`, with
-  its own secrets and room for the smoke test. `GET /health` → `{ok, v, versions, t}`; `POST /api` and `/import`
+  its own secrets and room for the smoke test. `GET /health` → `{ok, v, versions, t}`; `POST /api` and `/admin`
   ([The record](#the-record)); `POST /notify` ([Push](#push)); `POST /push/*` ([Notifications](#notifications)).
 - **Admission:** the Worker accepts `/room` upgrades only from `ALLOWED_ORIGINS` (`https://huangwaylon.github.io`) and
   `http://localhost|127.0.0.1`; everything else 403. The origin only keeps other sites out; the key is the auth.
@@ -495,7 +495,7 @@ up a phone that missed it.
 - **Auth:** the notify secret is HMAC-SHA256(key `"<KEY_A>:<KEY_B>"` trimmed and lower-cased,
   `island-relay-notify/1`), derived by both servers from the person keys they already hold; a phone holds only its own
   key, so it can't sign. Nothing to provision; rotating a key rotates it (the relay's and Script Properties' keys must
-  match, runbook §4). The same secret signs `/import` and the export. Each POST carries `X-Island-Time` (ms) and `X-Island-Sig` = HMAC-SHA256(key secret,
+  match, runbook §4). The same secret signs `/admin` and the export. Each POST carries `X-Island-Time` (ms) and `X-Island-Sig` = HMAC-SHA256(key secret,
   `"<time>.<body>"`), hex; the relay refuses a signature more than 5 minutes off (401), a body over 256 bytes (413) or
   a bad notice (400), and answers 204 with `X-Island-Heard: <sockets>` (`relay/src/notify.ts`). The secret never
   travels and no key is in a URL or a log.

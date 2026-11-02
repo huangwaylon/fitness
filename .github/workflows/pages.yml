@@ -1,5 +1,5 @@
 # Builds the UI as a static site and deploys it to GitHub Pages: https://huangwaylon.github.io/fitness/
-# The backend is the Apps Script web app; its /exec URL comes from the repo variable GAS_URL.
+# The backend is the relay (relay/: the record at /api, the room at /room); its URLs are in the app (lib/sync/live.ts).
 # The layout (docs/ops/testing.md): `build` once (its build-pages/ is both the Pages artifact and what every e2e shard
 # tests), `checks` beside it, the e2e shards on the build, then `deploy` once all of them are green.
 name: Deploy UI to GitHub Pages
@@ -44,7 +44,6 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run build
         env:
-          VITE_GAS_URL: ${{ vars.GAS_URL }}
           BASE_PATH: /${{ github.event.repository.name }}
       # what the e2e shards test (already-compressed webp/glb/m4a: stored, not zipped again)
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

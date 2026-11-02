@@ -11,7 +11,7 @@ import { PushCore, type StoredSub } from './push.ts';
 import { isPushPath, pushRoute, type PushRoom } from './pushRoute.ts';
 import { pushRequest, type Vapid } from './webpush.ts';
 import { IslandStore } from './storeObject.ts';
-import { apiRoute, importRoute } from './storeRoute.ts';
+import { adminRoute, apiRoute } from './storeRoute.ts';
 
 export { IslandStore };
 
@@ -156,7 +156,7 @@ export default {
     }
     if (url.pathname === '/notify') return notify(req, env);
     if (url.pathname === '/api') return apiRoute(req, env.ALLOWED_ORIGINS ?? '', () => env.STORE.get(env.STORE.idFromName('record')));
-    if (url.pathname === '/import') return importRoute(req, () => env.STORE.get(env.STORE.idFromName('record')));
+    if (url.pathname === '/admin') return adminRoute(req, () => env.STORE.get(env.STORE.idFromName('record')));
     if (isPushPath(url.pathname)) {
       return pushRoute(req, url.pathname, { KEY_A: env.KEY_A, KEY_B: env.KEY_B }, env.ALLOWED_ORIGINS ?? '', () => env.ROOM.get(env.ROOM.idFromName('island')));
     }

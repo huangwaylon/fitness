@@ -4,9 +4,8 @@
 // - `POST /api`: the app's and the Shortcut's requests, the same body as Apps Script's web app took (`{key, action, ...}`
 //   as text/plain JSON, a simple request: no preflight from a page, no key in a URL or a header); every reply is
 //   JSON with status 200, as Apps Script's were (`{ok:false, error}` included), so a client tells a refusal from an outage.
-// - `POST /import`: rows that already have their `at` (Apps Script's copy of each write while it is still the record,
-//   and the one-time import of the sheet's history), signed like `/notify` (notify.ts) since only the two servers
-//   hold both keys.
+// - `POST /admin`: the record tool's operations (relay/scripts/record.ts: counts, bookmarks, restore, a new epoch, the
+//   export, a dump, a load), signed like `/notify` (notify.ts): only who holds both keys can sign.
 import { originAllowed } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER } from './notify.ts';
 import { MAX_BODY_CHARS, type Via } from './store.ts';
@@ -18,11 +17,11 @@ export const VIA_HEADER = 'X-Island-Via';
 export interface StoreRoom {
   /** An `/api` body → its JSON reply. */
   api(text: string, via: Via): Promise<string> | string;
-  /** A signed `/import` body → the status and the JSON reply. */
-  importSigned(text: string, t: string | null, sig: string | null): Promise<{ status: number; body: string }> | { status: number; body: string };
+  /** A signed `/admin` body → the status and the JSON reply. */
+  adminSigned(text: string, t: string | null, sig: string | null): Promise<{ status: number; body: string }> | { status: number; body: string };
 }
 
-export const IMPORT_MAX_CHARS = 4_000_000;
+export const ADMIN_MAX_CHARS = 4_000_000;
 
 /** CORS for a page on an allowed origin (a request without an Origin, a Shortcut's or a server's, needs none). */
 function corsOf(origin: string | null, allowed: string): Record<string, string> | null {
@@ -51,11 +50,11 @@ export async function apiRoute(req: Request, allowed: string, store: () => Store
   }
 }
 
-export async function importRoute(req: Request, store: () => StoreRoom): Promise<Response> {
+export async function adminRoute(req: Request, store: () => StoreRoom): Promise<Response> {
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: { Allow: 'POST' } });
-  if (Number(req.headers.get('Content-Length') ?? 0) > IMPORT_MAX_CHARS * 4) return new Response('too large', { status: 413 });
+  if (Number(req.headers.get('Content-Length') ?? 0) > ADMIN_MAX_CHARS * 4) return new Response('too large', { status: 413 });
   const text = await req.text();
-  if (text.length > IMPORT_MAX_CHARS) return new Response('too large', { status: 413 });
-  const r = await store().importSigned(text, req.headers.get(TIME_HEADER), req.headers.get(SIG_HEADER));
+  if (text.length > ADMIN_MAX_CHARS) return new Response('too large', { status: 413 });
+  const r = await store().adminSigned(text, req.headers.get(TIME_HEADER), req.headers.get(SIG_HEADER));
   return new Response(r.body, { status: r.status, headers: { 'Content-Type': r.status === 200 ? 'application/json' : 'text/plain', 'Cache-Control': 'no-store' } });
 }

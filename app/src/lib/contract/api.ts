@@ -50,7 +50,7 @@ export type ActivityMetric = 'steps' | 'exercise_min' | 'move_kcal' | 'stand_min
 export type BodyMetric = 'body_fat_pct' | 'bmi' | 'lean_kg';
 /**
  * `weight`: body weight in kg with one decimal. A trend only: it never earns ベル; a day's value is its latest row,
- * like the activity metrics.
+ * like the activity metrics. @public (relay/src/parse.ts)
  */
 export type MetricKey = ActivityMetric | 'weight' | BodyMetric;
 export const isActivityMetric = (v: unknown): v is ActivityMetric => v === 'steps' || v === 'exercise_min' || v === 'move_kcal' || v === 'stand_min';
@@ -94,7 +94,7 @@ export const isId = (v: unknown): v is string => typeof v === 'string' && v.leng
 
 export const isRec = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-/** Ingest's upper bounds for the activity metrics (inclusive): a higher value is skipped. */
+/** Ingest's upper bounds for the activity metrics (inclusive): a higher value is skipped. @public (relay/src/parse.ts) */
 export const METRIC_BOUNDS = { steps: 100_000, exercise_min: 1_440, move_kcal: 10_000, stand_min: 1_440 } as const;
 /** A plausible body weight in kg (inclusive): ingest skips anything else, a `goalWeight` outside it is refused. */
 export const WEIGHT_KG = { min: 20, max: 300 } as const;
@@ -123,7 +123,6 @@ export interface SnapshotRows { metrics: MetricRow[]; events: EventRow[] }
 export type ApiError = 'unauthorized' | 'bad_request' | 'too_large' | 'busy' | 'unavailable';
 export type Fail = { ok: false; error: ApiError; detail?: string };
 
-export type EventReply = { ok: true; duplicate?: true } | Fail;
 /**
  * `rev` is the data revision (docs/backend.md#revision): when it differs from the one the client cached with, it
  * is another epoch (the record was rebuilt, or another backend answered), so drop the cache and fetch everything (no `since`).

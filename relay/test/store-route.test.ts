@@ -1,7 +1,7 @@
 // The record's HTTP side (src/storeRoute.ts) in front of a real store (src/store.ts on node:sqlite): /api from a page,
 // a Shortcut or a server, and the signed /import.
 import { beforeEach, describe, expect, it } from 'vitest';
-import { apiRoute, importRoute, type StoreRoom } from '../src/storeRoute.ts';
+import { adminRoute, apiRoute, type StoreRoom } from '../src/storeRoute.ts';
 import { notifySecret, notifySig } from '../src/notify.ts';
 import { StoreCore } from '../src/store.ts';
 import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
@@ -21,10 +21,11 @@ beforeEach(() => {
   core = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B }, now: () => NOW, notify: (n) => told.push(n) });
   room = {
     api: (text, via) => core.handleText(text, via),
-    async importSigned(text, t, sig) {
-      const r = await core.importSigned(text, t, sig);
-      if (r.notice) told.push(r.notice);
-      return { status: r.status, body: r.body };
+    // the object's dispatch (storeObject.ts admin) for the one op the store does itself
+    async adminSigned(text, t, sig) {
+      const v = await core.signedOp(text, t, sig);
+      if ('status' in v) return v;
+      return { status: 200, body: JSON.stringify(v.op.op === 'load' ? core.load(v.op) : { ok: false, error: 'bad_request' }) };
     }
   };
 });
@@ -64,26 +65,25 @@ describe('/api', () => {
   });
 });
 
-describe('/import', () => {
+describe('/admin', () => {
   const signed = async (body: string, t = NOW) => {
     const secret = (await notifySecret({ KEY_A, KEY_B }))!;
-    return new Request('https://relay.example/import', { method: 'POST', body, headers: { 'X-Island-Time': String(t), 'X-Island-Sig': await notifySig(secret, String(t), body) } });
+    return new Request('https://relay.example/admin', { method: 'POST', body, headers: { 'X-Island-Time': String(t), 'X-Island-Sig': await notifySig(secret, String(t), body) } });
   };
 
-  it('takes rows signed by a server holding both keys, and tells the room; refuses an unsigned, stale or tampered one', async () => {
-    const notice = { what: 'ingest', who: 'A', at: '2026-11-01T00:00:00.000Z', rev: 'x' };
-    const body = JSON.stringify({ rows: { metrics: [['2026-11-01T00:00:00.000Z', 'A', '2026-11-01', 'steps', 1]] }, notice });
-    const ok = await importRoute(await signed(body), () => room);
+  it('takes an op signed by who holds both keys (a load: a dump’s rows, idempotent); refuses an unsigned, stale or tampered one', async () => {
+    const body = JSON.stringify({ op: 'load', rows: { metrics: [['2026-11-01T00:00:00.000Z', 'A', '2026-11-01', 'steps', 1]] } });
+    const ok = await adminRoute(await signed(body), () => room);
     expect(await ok.json()).toEqual({ ok: true, metrics: 1, events: 0, uploads: 0, skipped: 0, counts: { metrics: 1, events: 0, ids: 0, uploads: 0 } });
-    expect(told).toEqual([{ ...notice, rev: 'e1' }]); // the record's revision
-    expect(await (await importRoute(await signed(body), () => room)).json()).toMatchObject({ metrics: 0 }); // again: nothing new, no notice
-    expect(told).toHaveLength(1);
-    expect((await importRoute(new Request('https://relay.example/import', { method: 'POST', body }), () => room)).status).toBe(401);
-    expect((await importRoute(await signed(body, NOW - 10 * 60_000), () => room)).status).toBe(401);
+    expect(await (await adminRoute(await signed(body), () => room)).json()).toMatchObject({ metrics: 0 }); // again: nothing new
+    expect(told).toEqual([]); // a load tells no phone (a restore starts a new epoch instead)
+    expect((await adminRoute(new Request('https://relay.example/admin', { method: 'POST', body }), () => room)).status).toBe(401);
+    expect((await adminRoute(await signed(body, NOW - 10 * 60_000), () => room)).status).toBe(401);
     const s = await signed(body);
     const tampered = new Request(s.url, { method: 'POST', body: body.replace('"steps",1', '"steps",9'), headers: s.headers });
-    expect((await importRoute(tampered, () => room)).status).toBe(401);
-    expect((await importRoute(await signed('{"rows":{"metrics":5}}'), () => room)).status).toBe(400);
+    expect((await adminRoute(tampered, () => room)).status).toBe(401);
+    expect((await adminRoute(await signed('{"rows":{}}'), () => room)).status).toBe(400); // no op
+    expect(await (await adminRoute(await signed('{"op":"load","rows":{"metrics":5}}'), () => room)).json()).toEqual({ ok: false, error: 'bad_request' });
     expect(core.counts().metrics).toBe(1);
   });
 });

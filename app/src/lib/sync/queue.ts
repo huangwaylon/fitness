@@ -1,9 +1,9 @@
 // The write queue (docs/backend.md#write-queue): events persisted in localStorage and replayed in order, with backoff,
 // until the server acks them. Undo windows (`holdMs`) are decided here.
-import type { EventReply, EventType } from '#lib/contract/api.ts';
+import type { EventType } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 import { LIVE, getKey, localKV, readJson, remove, writeJson } from './storage.ts';
-import { post, recordConfigured, type GasError } from './transport.ts';
+import { post, type GasError } from './transport.ts';
 
 export interface QueuedEvent {
   id: string;
@@ -197,10 +197,9 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
       saveQueue(queued().map((x) => (x.id === ev.id ? { ...x, tries, nextAt: now() + backoffMs(tries) } : x)));
     };
     for (;;) {
-      // what may go now, in send order: the record takes up to BATCH_MAX at once (in order), Apps Script one
-      const toRecord = recordConfigured();
+      // what may go now, in send order: the record takes up to BATCH_MAX at once, in order
       const batch: QueuedEvent[] = [];
-      while (batch.length < (toRecord ? BATCH_MAX : 1)) {
+      while (batch.length < BATCH_MAX) {
         const { ev } = due(queued(), now(), (x) => tried.has(x.id));
         if (!ev) break;
         tried.add(ev.id);
@@ -210,23 +209,16 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
       for (const ev of batch) flushingIds.add(ev.id);
       const key = getKey();
       const body = (ev: QueuedEvent) => ({ id: ev.id, type: ev.type, data: ev.data });
-      const r = toRecord
-        ? await post<{ results: EventResult[] }>('events', { events: batch.map(body) }, { to: 'record' })
-        : await post<Extract<EventReply, { ok: true }>>('event', body(batch[0]));
+      const r = await post<{ results: EventResult[] }>('events', { events: batch.map(body) });
       flushingIds.clear();
       // Paired as someone else meanwhile (setKey cleared the queue): the reply is the old person's, not ours to show.
       if (getKey() !== key) break;
       if (!r.ok) {
-        // one event that can never succeed is dropped; a whole batch refused is odd (a record from before `events`):
-        // tried again later
-        if ((r.error === 'bad_request' || r.error === 'too_large') && !toRecord) {
-          drop(batch[0]);
-          continue;
-        }
+        // a whole batch refused (its body, never one event's: those are answered by id) is tried again later
         backOff(batch[0], r.error === 'bad_request' || r.error === 'too_large' ? 'unavailable' : r.error);
         break;
       }
-      const results: EventResult[] = toRecord ? ((r as { results?: EventResult[] }).results ?? []) : [{ id: batch[0].id, ...(r as { ok: true; duplicate?: true }) }];
+      const results: EventResult[] = Array.isArray(r.results) ? r.results : [];
       let stop = false;
       for (const [i, ev] of batch.entries()) {
         const x = results[i];

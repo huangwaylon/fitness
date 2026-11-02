@@ -1,17 +1,18 @@
 # Runbook
 
-Three pieces, no server of our own (plus an optional live relay, §10, which also pushes sheet changes, §11, and sends the goal notification, §12):
-- **The data:** the Google Sheet *Island Fund* (append-only rows in `metrics`, `events`, `uploads`).
-- **The backend:** the Apps Script bound to it, deployed as a web app (one `/exec` URL, keys `KEY_A`/`KEY_B`).
-- **The app:** a static PWA on GitHub Pages that computes everything in the browser from the rows.
+Three pieces, no server of our own:
+- **The relay** (`relay/`, a Cloudflare Worker on the Free plan, §10): the record (metrics, events, the ingest audit in
+  a Durable Object's SQLite, §13), the live room (presence and the day's shared world) and the goal notification (§12).
+- **The app:** a static PWA on GitHub Pages that computes everything in the browser from the record's rows.
+- **The sheet:** the Google Sheet *Island Fund*, a read-only export of the record (§9), and its Apps Script web app (one
+  `/exec` URL) that takes the export and forwards what still reaches it.
 
-First-time setup: [google-setup.md](google-setup.md). How it works: [backend.md](../backend.md).
+The sheet's setup: [google-setup.md](google-setup.md). How it works: [backend.md](../backend.md).
 
 ## 1. Deploy the UI
 Push to `main`. Any change under `app/**` (or to the workflow) runs `.github/workflows/pages.yml`:
 
-1. `npm ci --ignore-scripts`, then beside each other: `npm run build` with `VITE_GAS_URL` = the repo variable `GAS_URL`
-   and `BASE_PATH=/fitness` (once), and `npm run check`, `npm run knip`, `npx vitest run`
+1. `npm ci --ignore-scripts`, then beside each other: `npm run build` with `BASE_PATH=/fitness` (once), and `npm run check`, `npm run knip`, `npx vitest run`
 2. the e2e against that build: Playwright in Chromium (eight shards); WebKit as an iPhone 15 runs nightly on macOS
    (testing.md), gating nothing until it's green across the board
 3. deploy `app/build-pages/` to https://huangwaylon.github.io/fitness/
@@ -39,21 +40,18 @@ change that needs a new OAuth scope also needs the editor once (Google asks you 
 
 ## 3. Check the backend
 ```sh
-curl -sSL "$GAS_URL" -H 'Content-Type: text/plain;charset=utf-8' --data '{"action":"health"}'
+curl -sS https://island-fund-relay.island-fund-relay.workers.dev/health                     # the Worker and the room
+curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data '{"action":"health"}'   # the record
 ```
-No key needed. The record answers its own (`curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api
---data '{"action":"health"}'` → `{"ok":true,"build":"relay-1"}`); the script's only forwards and exports now, so a
-lapse there breaks old phones, a Shortcut still on `/exec` and the sheet's export, not the app.
+Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these every 6 hours (and on demand) and fails (GitHub e-mails
+the owner) unless both are ok. The sheet's export: its `README` tab's time (≤ 15 minutes after the last change, and
+every night), or `node scripts/record.ts export` (§13); the script's own health:
 
-| Reply | Meaning |
-|---|---|
-| `{"ok":true,"build":B}`, B = `sed -n 's#^// build: ##p' app/apps-script/Code.js` | Healthy |
-| `{"ok":true,"build":B}`, another B | `Code.js` changed but wasn't redeployed: §2 |
-| HTML (sign-in / *Authorization is required*) | Authorization lapsed: [google-setup §9](google-setup.md#9-day-8-authorization-check) |
-| Anything else, or a timeout | Apps Script down, or a wrong URL |
-
-`.github/workflows/health.yml` runs this every 6 hours (and on demand) while `GAS_URL` is set, and fails (GitHub
-e-mails the owner) unless the reply is JSON `ok:true` with the committed build.
+```sh
+curl -sSL 'https://script.google.com/macros/s/…/exec' -H 'Content-Type: text/plain;charset=utf-8' --data '{"action":"health"}'
+```
+`{"ok":true,"build":B}` with B = line 3 of `app/apps-script/Code.js`; HTML = its authorization lapsed
+([google-setup §6](google-setup.md#6-day-8-authorization-check)): only the export stops.
 
 ## 4. Rotate a key
 Lost phone, leak, any doubt:
@@ -73,8 +71,8 @@ reaches a phone.
 ## 6. When sync fails
 | Symptom | Check |
 |---|---|
-| Site says 「まだ設定されていません」 | `GAS_URL` repo variable unset: google-setup §6 |
-| App can't reach the island | The relay (§10: `/health`, `npx wrangler tail`); Apps Script is the fallback for reads only |
+| Site says 「まだ設定されていません」 | The build had no relay URL (`VITE_LIVE_URL` and `VITE_RECORD_URL` emptied) |
+| App can't reach the island | The relay (§3, §10: `npx wrangler tail`) |
 | `unauthorized` | Wrong or rotated key: re-paste it (app) or fix the Shortcut's **Key** |
 | `busy` | Over 120 requests/minute for that key. The app retries; the Shortcut sends again next run |
 | `too_large` | Body over 1 MB: send a long baseline in chunks of a few weeks |
@@ -180,21 +178,29 @@ refusals (`push <host> <status>`). **Off switch:** `npx wrangler secret delete V
 `failed`, nothing is sent); the switches stay as they are.
 
 ## 13. The record
-The record is moving from the sheet to the relay's `IslandStore` Durable Object ([backend.md](../backend.md#the-record)).
-Every command runs from `relay/` with the two person keys in the environment (never on the command line of a shared
-shell, never in a file in the repo): `KEY_A=… KEY_B=… node scripts/record.ts <command>` (`--test`: the test relay,
-`KEYS_FILE=.smoke-keys` for its keys).
+The record is the relay's `IslandStore` Durable Object ([backend.md](../backend.md#the-record)). Every command runs from
+`relay/` with the two person keys in the environment (never on the command line of a shared shell, never in a file in
+the repo): `KEY_A=… KEY_B=… node scripts/record.ts <command>` (`--test`: the test relay, `KEYS_FILE=.smoke-keys` for its
+keys). It signs `POST /admin` with the server-to-server secret.
 
-- **`counts`**: rows per table, the revision (`e1`, `e2`, …: the epoch) and the newest `at`.
-- **`import-sheet`**: a full Apps Script snapshot into the record, in chunks of 400 rows, `at` kept, high-fives and
-  superseded cosmetic prefs dropped. Idempotent: run it again any time to fill in a copy that didn't land (the relay
-  down, a pause after a refusal); it adds only what's missing.
-- **`parity`**: the model's numbers per person (ベル by day of every locked week, this week, the wallet and the ledger,
-  the ずかん's first finds and tallies, the decorations, the tent, the prefs, each day's goals) from the sheet's snapshot
-  and the record's; exits 1 on any difference. 2026-11-02 (step 1): all the same; the sheet 471 metrics + 873 events
-  (131 KB), the record 471 + 243 (73 KB: 545 high-fives and 85 superseded prefs not carried over).
+- **`counts`**: rows per table, the revision (`e1`, `e2`, …: the epoch), the newest `at`, and who came which way
+  (`usage`: `direct:A` straight from A's phone or Shortcut, `gas:B` forwarded by Apps Script; how many, the first, the
+  last and its action). The forward is retired once no `gas:` count has moved for a day.
+- **`export`**: the export to the sheet now (`{"ok":true,"written":{"metrics":…,"events":…,"uploads":…}}`); the cron
+  does it every 15 minutes when the record changed, and nightly at 03:00 Tokyo. `unauthorized`: Script Properties'
+  keys differ from the relay's (§4). HTML in the log, or `HTTP …`: the script's authorization (§3).
 - **Backups:** point-in-time recovery works on the Free plan (checked 2026-11-02 on the test relay: a bookmark from
   before an ingest restored the empty record). `bookmark [ms]` prints the bookmark now and `ms` ago (any moment of the
   last 30 days); `restore <bookmark>` restarts the object on it; then `rev`, so every phone refetches. Beyond 30 days:
   `dump > island-record-YYYY-MM-DD.json` (every row; keep it off the repo) and `load <file>` into an empty record.
+- **History:** on 2026-11-02 the sheet's rows were imported (`at` kept; 545 high-fives and 85 superseded prefs left
+  out) and the model's numbers per person from both (ベル by day of every locked week, this week, the wallet and the
+  ledger, the ずかん, the decorations, the tent, the prefs, each day's goals) were the same; then each write was copied
+  here until the app wrote here itself.
 - **`rev`**: a new epoch: every phone drops its cache and fetches everything on its next refresh.
+
+## 14. Pair a phone
+On each iPhone: open https://huangwaylon.github.io/fitness/ in Safari → Share → **Add to Home Screen** *first*, open
+the app from the icon, paste that person's key (the password manager). iOS gives the Home Screen app its own storage,
+so a key entered in Safari isn't seen there; a `…/fitness/#key=<key>` link works only when opened inside the installed
+app. Then the Shortcut: [shortcut-health-sync.md](shortcut-health-sync.md) §2–4.

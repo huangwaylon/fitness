@@ -8,8 +8,7 @@ you open an app you use daily (e.g. LINE): Health is readable only while the pho
 
 ## 1. What the Shortcut sends
 `POST` to `https://island-fund-relay.island-fund-relay.workers.dev/api` (the relay's record), Request Body **JSON**, no
-headers. The old `/exec` URL ([google-setup §4](google-setup.md#4-deploy-the-web-app)) still works: Apps Script hands
-the body on to the same place and the reply back. Daily totals, one line per day, every field **Text**. The parser (`app/gas/parse.ts`) accepts only this:
+headers. Daily totals, one line per day, every field **Text**. The parser (`app/gas/parse.ts`) accepts only this:
 
 ```json
 {
@@ -99,16 +98,10 @@ On each iPhone, open **しまの同期** and:
 If the scale doesn't write BMI or lean body mass to Health, those lists are all `0`: harmless. To fill the past, run the
 §5 baseline with the three new queries set to 84 days too.
 
-### Moving an existing Shortcut to the relay (2026-11)
-The one change, on each phone (a minute; the key and every field stay as they are):
-1. Open **Shortcuts** → long-press **しまの同期** → **Edit** (編集).
-2. Scroll to the last action, **Get Contents of URL** (URLの内容を取得) (step 9).
-3. Tap the blue URL at its top (it starts with `https://script.google.com/macros/s/…/exec`), select all of it and
-   delete it, then type or paste exactly `https://island-fund-relay.island-fund-relay.workers.dev/api`.
-4. Leave **Method** POST, **Request Body** JSON and every field as they are. Tap **Done** (完了).
-5. Tap ▶ once. The result should read like `{"ok":true,"metrics":0}` (any number of metrics; nothing new is 0);
-   `unauthorized` means the key text in step 1 changed: put it back.
-Until a phone has done it, its Shortcut keeps working through the old URL (a second or two slower).
+### A Shortcut from before 2026-11-02
+Its step 9 URL is a `https://script.google.com/macros/s/…/exec` one: replace it with
+`https://island-fund-relay.island-fund-relay.workers.dev/api` (tap the URL, select all, paste), leave everything else,
+tap ▶ once: `{"ok":true,"metrics":…}`. Both phones did this on 2026-11-02.
 
 ## 3. The automation
 Shortcuts → **Automation** → **+** → **App** → **LINE** (or the app you open most) → **Is Opened** → **Run
@@ -131,7 +124,7 @@ trend.
 | Symptom | Fix |
 |---|---|
 | `unauthorized` | Wrong or rotated key in step 1 |
-| HTML instead of JSON | Still on the old `/exec` URL and the script's authorization lapsed ([google-setup §9](google-setup.md#9-day-8-authorization-check)): move to `https://island-fund-relay.island-fund-relay.workers.dev/api` (§2) |
+| HTML instead of JSON | Still on an old `/exec` URL: move to `https://island-fund-relay.island-fund-relay.workers.dev/api` (§2) |
 | `not found` | The URL has a typo or extra characters: it must be exactly `https://island-fund-relay.island-fund-relay.workers.dev/api` |
 | `bad_request`, `…: expected Text` | That field is Number/Array in step 9: make it **Text** |
 | `warnings: ["weight: 1 lines but 31 dates…"]` | That list didn't use the same range, **Group by Day** and **Fill Missing** as `dates` (the same for `body_fat_percentage`, `body_mass_index`, `lean_body_mass`) |

@@ -11,6 +11,8 @@ import { setKey } from '#lib/sync/pairing.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { t } from '#lib/i18n/index.ts';
 import { LiveBackend } from './live.ts';
+import { asRecord } from '#lib/sync/fake-record.ts';
+import type { EventRow } from '#lib/contract/api.ts';
 import type { Host } from './backend.ts';
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
@@ -69,8 +71,8 @@ describe('LiveBackend refused events', () => {
     url: 'https://script.example/exec',
     fetch: (async (_u: unknown, init?: RequestInit) => {
       const body = JSON.parse(String(init?.body)) as { action: string };
-      return new Response(JSON.stringify(body.action === 'event' ? { ok: false, error: 'bad_request' }
-        : { ok: true, me: 'A', now: new Date().toISOString(), rev: 'r1', rows: { metrics: [], events: [] } }));
+      return new Response(JSON.stringify(asRecord((b) => (b.action === 'event' ? { ok: false, error: 'bad_request' }
+        : { ok: true, me: 'A', now: new Date().toISOString(), rev: 'r1', rows: { metrics: [], events: [] } }))(body)));
     }) as typeof fetch
   });
   it('a refused event leaves the queue and says so', async () => {
@@ -118,8 +120,8 @@ describe('LiveBackend after a long time offline', () => {
       fetch: (async (_u: unknown, init?: RequestInit) => {
         if (!online) throw new TypeError('Load failed');
         const body = JSON.parse(String(init?.body)) as { action: string; id?: string };
-        if (body.action === 'event') sent.push(body.id!);
-        return new Response(JSON.stringify({ ok: true, me: 'A', now: new Date().toISOString(), rev: 'r1', rows: { metrics: [], events: [] } }));
+        const reply = asRecord((b) => (b.action === 'event' ? { ok: true } : { ok: true, me: 'A', now: new Date().toISOString(), rev: 'r1', rows: { metrics: [], events: [] } }), (b) => sent.push(String(b.id)));
+        return new Response(JSON.stringify(reply(body)));
       }) as typeof fetch
     });
     const ev = enqueue('highfive', {});
@@ -180,9 +182,9 @@ describe('LiveBackend cold open after an ack (no flash of the old state)', () =>
       url: 'https://script.example/exec',
       fetch: (async (_u: unknown, init?: RequestInit) => {
         const body = JSON.parse(String(init?.body)) as { action: string; id?: string; type?: string; data?: unknown };
-        if (body.action === 'event') {
-          serverEvents.push(['2026-11-18T12:00:05.000Z', 'A', body.id!, body.type!, JSON.stringify(body.data)]);
-          return new Response('{"ok":true}');
+        if (body.action === 'events') {
+          // acked with no row (as a duplicate is): the re-read brings the server's
+          return new Response(JSON.stringify(asRecord((b) => (serverEvents.push(['2026-11-18T12:00:05.000Z', 'A', String(b.id), b.type as EventRow[3], JSON.stringify(b.data)]), { ok: true }))(body)));
         }
         snapshots++;
         if (hang) return new Promise<Response>((ok) => hung.push(() => ok(new Response(JSON.stringify(reply())))));
@@ -247,7 +249,7 @@ describe('LiveBackend against the relay’s record', () => {
     setKey('ab'.repeat(32), 'A');
     const calls: string[] = [];
     configureTransport({
-      url: 'https://script.example/exec', recordUrl: 'https://relay.example/api',
+      url: 'https://relay.example/api',
       fetch: (async (_u: unknown, init?: RequestInit) => {
         const body = JSON.parse(String(init?.body)) as { action: string; events?: { id: string }[] };
         calls.push(body.action);
