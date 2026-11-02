@@ -35,6 +35,27 @@ describe('the villagers’ 3D models (villagers.json)', () => {
     for (const id of ['goldie', 'anchovy', 'judy']) expect(has3d(id), id).toBe(true);
   });
 
+  it('keeps every face part: eyes, a mouth, and a bird’s beak (NH’s FaceNothing mesh: once dropped, Anchovy had none)', () => {
+    /** NH draws these mouths on the body (anteaters, hedgehogs, Nook, Redd, Daisy Mae, Kicks): no mesh of its own. */
+    const ON_BODY = new Set(['anabelle', 'annalisa', 'antonio', 'cyrano', 'olaf', 'pango', 'snooty', 'tom-nook', 'redd', 'daisy-mae', 'kicks', 'label', 'mabel', 'sable']);
+    const names = (id: string): string[] => {
+      const b = readFileSync(join(DIR, `${id}.glb`)), j = JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString());
+      return [...(j.meshes ?? []), ...(j.nodes ?? [])].map((n: { name?: string }) => n.name ?? '');
+    };
+    let beaks = 0;
+    for (const id of Object.keys(M.villagers)) {
+      const n = names(id);
+      expect(n.includes('mEye') || n.includes('FaceNothing:mEye'), `${id}: eyes`).toBe(true);
+      if (!ON_BODY.has(id)) expect(n.includes('mMouth') || n.some((x) => x.startsWith('FaceNothing:')), `${id}: a mouth`).toBe(true);
+      // a swapped face (a beak's Good and Bad) always has its face at rest
+      if (n.some((x) => /^Face(Good|Bad):/.test(x))) expect(n.some((x) => x.startsWith('FaceNothing:')), `${id}: its face at rest`).toBe(true);
+      if (n.includes('FaceNothing:mBeak')) beaks++;
+    }
+    expect(names('anchovy')).toContain('FaceNothing:mBeak');
+    // every bird (ducks, penguins, ostriches, chickens, eagles, birds)
+    expect(beaks).toBeGreaterThan(150);
+  });
+
   it('keeps the files out of the way: no stray GLB, its hash in its address', () => {
     for (const f of readdirSync(DIR)) expect(f.replace(/\.glb$/, '') in M.villagers, f).toBe(true);
     expect(url3d('goldie', '/fitness/room/villagers3d')).toBe(`/fitness/room/villagers3d/goldie.glb?v=${M.villagers.goldie.v}`);

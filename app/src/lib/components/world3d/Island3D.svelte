@@ -595,6 +595,7 @@
         const r = canvas!.getBoundingClientRect();
         return e.groundAt(cx - r.left, cy - r.top);
       },
+      strays: (reach?: number) => e.strays(reach), alphaBlends: () => e.alphaBlends(),
       things: (id: string) => e.things.has(id), where: (id: string) => e.things.where(id), groups: () => e.things.groups(), over: (id: string, o: Parameters<typeof e.things.over>[1]) => e.things.over(id, o), head: (slot: string) => { const h = vil3?.head(slot); if (!h) return null; const p = h.getWorldPosition(new Vector3()); return [p.x, p.y, p.z]; },
       focus: (x: number, z: number, lift?: number) => e.focusOn({ x, z, lift }), restore: () => e.restore(), focused: () => e.focused()
     };
