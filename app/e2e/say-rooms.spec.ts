@@ -94,7 +94,9 @@ test('the say button hides in もようがえ and under ハニワくん’s lett
   const was = await mine();
   await sayBtn(page).click();
   await expect(picker(page)).toBeVisible();
-  const [fx, fy] = await tent(page, (t) => t.tile(1, 6));
+  // a back tile, clear of the picker (it stands over the room's front), once it's the room's under the finger
+  const [fx, fy] = await tent(page, (t) => t.tile(1, 1));
+  await expect.poll(() => page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.matches('[data-room]'), [fx, fy])).toBe(true);
   await page.mouse.click(fx, fy);
   await expect(picker(page)).toHaveCount(0);
   await page.waitForTimeout(400); // (proving nobody walks)
