@@ -7,7 +7,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { FISH } from '../src/lib/components/island/critters.ts';
 import { POND_FISH, freshPool } from '../src/lib/components/island/pondFish.ts';
-import { CAMS, POND } from '../src/lib/components/island/world.ts';
+import { geo, type Geo } from './island';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
@@ -27,17 +27,19 @@ async function cam(page: Page, z: number) {
   await page.waitForTimeout(250);
 }
 /** The pond's water on screen (client px): its oval's box from the world. */
-const pond = (page: Page) => page.evaluate(({ x, z, rx, rz }) => {
-  const w = (window as unknown as W).__world;
+const pond = (page: Page) => page.evaluate(() => {
+  const w = (window as unknown as W & { __world: { geo(): Geo } }).__world, { x, z, rx, rz } = w.geo().POND;
   const [l] = w.at(x - rx, z), [r] = w.at(x + rx, z), [, near] = w.at(x, z - rz), [, far] = w.at(x, z + rz), [cx, cy] = w.at(x, z);
   return { x: cx, y: cy, w: r - l, h: near - far };
-}, POND);
+});
 
-async function open(page: Page, q: string, z: number = CAMS.oku) {
+/** The island's camera stop (world.ts CAMS as the page's island has them: the layout's on it). */
+const stop = async (page: Page, s: 'mae' | 'oku') => (await geo(page)).CAMS[s];
+async function open(page: Page, q: string, at: 'mae' | 'oku' = 'oku') {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=2026-11-04T21:00${q}`);
   await expect(ribbon(page)).toBeVisible();
-  await cam(page, z);
+  await cam(page, await stop(page, at));
   return { bells: await ribbon(page).getAttribute('aria-label'), url: page.url() };
 }
 
@@ -103,9 +105,10 @@ test('the stream at おく: a river fish (NH: River) in its reach, cast from the
 
 test("NH's own waters: the salmon at the river mouth, the char on the clifftop, the koi in the pond", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const [id, water, z] of [['salmon', 'mouth', CAMS.mae], ['char', 'clifftop', CAMS.oku], ['koi', 'pond', CAMS.oku]] as const) {
+  for (const [id, water, end] of [['salmon', 'mouth', 'mae'], ['char', 'clifftop', 'oku'], ['koi', 'pond', 'oku']] as const) {
     expect(POND_FISH[id].water).toBe(water);
-    await open(page, `&critter=${id}`, z);
+    await open(page, `&critter=${id}`, end);
+    const z = await stop(page, end);
     const s = page.locator(`[data-critter="pond"][data-water="${water}"]`);
     await expect(s, id).toBeAttached();
     await cam(page, z);
@@ -147,7 +150,7 @@ test('water bugs: a pondskater skates on the pond on a summer day; a tap nets it
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto('?demo&date=2026-07-04T12:00&critter=pondskater');
   await expect(ribbon(page)).toBeVisible();
-  await cam(page, CAMS.oku);
+  await cam(page, await stop(page, 'oku'));
   const bug = page.locator('[data-critter="pondskater"]');
   await expect(bug).toBeAttached();
   await page.waitForTimeout(800);

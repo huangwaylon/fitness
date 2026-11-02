@@ -82,3 +82,19 @@ export const settled = (page: Page, timeout = 20_000) => expect.poll(() => w3(pa
  *  requestAnimationFrame): the sim step. Quick in the logic tier (nothing drawn); drawn under software GL a minute of
  *  frames takes minutes (use `page.clock.fastForward` there). */
 export const step = (page: Page, ms: number) => page.clock.runFor(ms);
+
+/** world.ts's places as the page's island has them (the layout's on the 3D island with the layout on): a spec reads
+ *  these, not world.ts's constants imported here (those are the 2D island's). */
+export type Geo = {
+  CAMS: { mae: number; oku: number }; SHORE_Z: number; POND: { x: number; z: number; rx: number; rz: number }; SPRING: { x: number; z: number; rx: number; rz: number };
+  CENTRE_STAGE: [number, number]; ARCH: [number, number]; CAKE: [number, number]; HOMES: { A: [number, number]; B: [number, number] };
+  GOAL_TREES: { A: [number, number]; B: [number, number] }; ROCK: [number, number]; TAPE_DECK: [number, number]; SEATS: Record<string, [number, number]>;
+  PULLUP_AT: [number, number]; BUILDINGS: { id: string; x: number; z: number; h: number; depth: number }[]; FLOWERS: { id: string; x: number; z: number; clump: number }[];
+  SCENERY: { id: string; kind: string; key: string; x: number; z: number; h: number }[]; DECOR_SLOTS: { id: string; x: number; z: number }[];
+  BRIDGE: { x: number; z0: number; z1: number; w: number }; CLIFF: { z0: number; z1: number };
+};
+export async function geo(page: Page): Promise<Geo> {
+  await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
+  return page.evaluate(() => (window as unknown as { __world: { geo(): Geo } }).__world.geo());
+}
+
