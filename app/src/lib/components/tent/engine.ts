@@ -473,6 +473,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   let ghostKey = '';
   let ghostBody: Object3D | null = null;
   let ghostT = 0;
+  let ghostTurn: { from: number; to: number; t0: number } | null = null;
   function ghost(g: Ghost | null) {
     foot.visible = ring.visible = ghostRoot.visible = !!g;
     if (!g) {
@@ -493,7 +494,14 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       -hw, y, -hd, hw, y, -hd, hw, y, -hd, hw, y, hd, hw, y, hd, -hw, y, hd, -hw, y, hd, -hw, y, -hd
     ], 3));
     ring.position.set(cx, 0, cz);
+    const was = ghostRoot.rotation.y, same = ghostKey === g.item;
     placeRoot(ghostRoot, g, 3);
+    // a quarter turn eases round (the shortest way), the footprint already where it lands
+    const to = ghostRoot.rotation.y;
+    if (same && Math.abs(Math.atan2(Math.sin(to - was), Math.cos(to - was))) > 0.01) {
+      ghostTurn = { from: was, to: was + Math.atan2(Math.sin(to - was), Math.cos(to - was)), t0: now() };
+      ghostRoot.rotation.y = was;
+    }
     if (ghostKey !== g.item) {
       ghostKey = g.item;
       if (ghostBody) ghostRoot.remove(ghostBody);
@@ -996,6 +1004,12 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       h.root.rotation.y = (h.f * Math.PI) / 2;
       h.ring.position.set(h.to[0], 0, h.to[1]);
       more = true;
+    }
+    if (ghostTurn) {
+      const k = Math.min(1, (t - ghostTurn.t0) / 160);
+      ghostRoot.rotation.y = ghostTurn.from + (ghostTurn.to - ghostTurn.from) * ease(k);
+      if (k >= 1) ghostTurn = null;
+      else more = true;
     }
     if (ghostBody) {
       const k = Math.min(1, (t - ghostT) / POP_MS);
