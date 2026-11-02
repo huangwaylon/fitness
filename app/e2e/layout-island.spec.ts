@@ -110,3 +110,35 @@ test('the day’s weeds and fossils lie on the layout’s open grass, all over t
   // the middle and おく hold some (world.ts's own spots end at z 1000)
   expect([...s.lawn, ...s.dig].some(([, z]) => z > 1050)).toBe(true);
 });
+
+test('the editor moves うめ’s home: the phone’s door, walk and tap area follow it live', async ({ context }) => {
+  const DATE = '2026-11-04T12:00';
+  const phone = await context.newPage(), editor = await context.newPage();
+  await editor.setViewportSize({ width: 1440, height: 900 });
+  await phone.goto(`${ISLAND}&as=B`);
+  expect(await is3d(phone)).toBe(true);
+  const before = (await site(phone)).doors['home-B'];
+  await world(phone, `go(${before[1] - 120})`);
+  await expect.poll(() => phone.evaluate('window.__world3d.camStill()')).toBe(true);
+  const doorY = () => phone.locator('[data-building="home-B"] .door').evaluate((el) => { const r = el.getBoundingClientRect(); return r.top + r.height / 2; });
+  const y0 = await doorY();
+  await editor.goto(`editor/?demo&preview=0&date=${DATE}`);
+  await editor.waitForFunction(() => (window as unknown as { __editor?: unknown }).__editor);
+  await editor.bringToFront();
+  type E = { tileScreen(c: number, r: number): [number, number]; layout(): { objects: Map<string, { x: number; z: number }> } };
+  const from = await editor.evaluate(() => { const o = (window as unknown as { __editor: E }).__editor.layout().objects.get('home-B')!; return [o.x, o.z]; });
+  const a = await editor.evaluate(([c, r]) => (window as unknown as { __editor: E }).__editor.tileScreen(c, r), from);
+  const b = await editor.evaluate(([c, r]) => (window as unknown as { __editor: E }).__editor.tileScreen(c, r), [from[0], from[1] + 1]);
+  await editor.mouse.move(a[0], a[1]);
+  await editor.mouse.down();
+  for (let i = 1; i <= 6; i++) await editor.mouse.move(a[0] + ((b[0] - a[0]) * i) / 6, a[1] + ((b[1] - a[1]) * i) / 6);
+  await editor.mouse.up();
+  // the phone: its door a tile further back, the walk's named door with it, the tap area there
+  await expect.poll(async () => (await site(phone)).doors['home-B'][1]).toBe(before[1] + 30);
+  const s = await site(phone);
+  expect(s.named['door-home-B']).toEqual(s.doors['home-B']);
+  // its tap area a tile further up the screen (the camera where it was)
+  await phone.bringToFront();
+  await expect.poll(doorY).toBeLessThan(y0 - 8);
+});
+
