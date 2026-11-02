@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DOOR_TILES, HALF, ROOM, TILE, blocked, centreOf, clampIn, nearestFree, placeWhy, snapTo, tilesOf, walkPath, type Spot } from './grid.ts';
+import { DOOR_TILES, HALF, ROOM, TILE, blocked, centreOf, clampIn, isSmall, isSurface, nearestFree, placeWhy, resolve, slotTaken, slotToTile, snapTo, surfaceAt, tileToSlot, tilesOf, walkPath, type Spot } from './grid.ts';
 import { ITEMS, STARTER, footprint } from './items.ts';
 
 const furniture = STARTER.filter((c) => !ITEMS[c].rug);
@@ -89,5 +89,45 @@ describe('walking', () => {
 
   it('is already there: no way at all', () => {
     expect(walkPath([], [0, 0], [0.2, 0.1])).toEqual([]);
+  });
+});
+
+describe('surfaces (NH\'s table tops)', () => {
+  const table = 'f4054'; // the rattan low table, 2 × 1
+  const lamp = 'f4050'; // the rattan table lamp: small
+  it('the starter set has tables to put things on and small things to put there', () => {
+    expect(isSurface(table) && isSmall(lamp)).toBe(true);
+    expect(isSmall(table) || isSurface(lamp)).toBe(false);
+  });
+
+  it('a slot is a tile of the piece’s own footprint, turned with it', () => {
+    const t: Spot = { id: 't', item: table, x: 2, z: 3, f: 0 };
+    expect([slotToTile(t, 0, 0), slotToTile(t, 1, 0)]).toEqual([[2, 3], [3, 3]]);
+    const turned: Spot = { ...t, f: 1 };
+    // turned a quarter it covers (2, 3) and (2, 4): its two slots land there, in some order, and map back
+    const tiles = [slotToTile(turned, 0, 0), slotToTile(turned, 1, 0)].sort();
+    expect(tiles).toEqual([[2, 3], [2, 4]]);
+    for (const [sx, sz] of [[0, 0], [1, 0]] as const) expect(tileToSlot(turned, ...slotToTile(turned, sx, sz))).toEqual([sx, sz]);
+    expect(tileToSlot(turned, 5, 5)).toBeNull();
+  });
+
+  it('the room: a lamp on the table goes where the table goes, on its top; its table gone, it stands on the floor', () => {
+    const room = [{ id: 't', item: table, x: 2, z: 3, f: 0 as const }, { id: 'l', item: lamp, x: 1, z: 0, f: 0 as const, on: 't' }];
+    const [, l] = resolve(room);
+    expect(l).toMatchObject({ x: 3, z: 3, y: ITEMS[table].h, on: 't' });
+    const moved = resolve([{ ...room[0], x: 5, z: 6, f: 2 }, room[1]]);
+    expect(moved[1]).toMatchObject({ x: 5, z: 6, f: 2 });
+    expect(resolve([room[1]])[0]).toMatchObject({ x: 1, z: 0, y: 0, on: undefined });
+  });
+
+  it('a thing on a surface blocks neither the floor nor a walk; a slot holds one', () => {
+    const room: Spot[] = [{ id: 't', item: table, x: 2, z: 3, f: 0 }, { id: 'l', item: lamp, x: 1, z: 0, f: 0, on: 't' }];
+    expect(placeWhy(room, { item: lamp, x: 1, z: 0, f: 0 })).toBeNull();
+    expect(blocked(room).reduce((a, b) => a + b, 0)).toBe(8);
+    expect(surfaceAt(room, 3, 3)?.id).toBe('t');
+    expect(surfaceAt(room, 3, 3, 't')).toBeNull();
+    expect(slotTaken(room, 't', 1, 0)).toBe(true);
+    expect(slotTaken(room, 't', 1, 0, 'l')).toBe(false);
+    expect(slotTaken(room, 't', 0, 0)).toBe(false);
   });
 });

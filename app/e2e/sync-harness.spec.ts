@@ -476,3 +476,43 @@ test('one place at a time: A in the tent is gone from B’s island, there with B
   await ctxA.close();
   if (RELAY) await ctxB.close();
 });
+
+// A table and the lamp on it (docs/design.md "The tent": NH's table tops): the partner's room has the lamp on the table,
+// and it rides along when the table moves there too.
+test('a lamp on a table, on both phones: on its top there, and along with the table when it moves', async ({ browser }) => {
+  const ctxA = await browser.newContext(CTX);
+  const ctxB = RELAY ? await browser.newContext(CTX) : ctxA;
+  const open = async (who: 'A' | 'B', ctx: typeof ctxA) => {
+    const p = await ctx.newPage();
+    await p.goto('tent' + q(who));
+    await p.waitForFunction(() => ((window as unknown as { __tent?: TentHooks }).__tent?.stats()?.frames ?? 0) > 0);
+    return p;
+  };
+  const a = await open('A', ctxA);
+  await a.evaluate(() => localStorage.removeItem('island-demo.tent'));
+  const b = await open('B', ctxB);
+  type P = { id: string; item: string; x: number; z: number; y: number; on?: string };
+  const placedOf = (p: Page) => p.evaluate(() => (window as unknown as { __tent: { placed(): P[]; pieces(): P[] } }).__tent.placed());
+  await a.bringToFront();
+  await a.locator('[data-tent-edit-open]').click();
+  await a.locator('[data-tent-item="f4054"]').click();
+  let [x, y] = await a.evaluate(() => (window as unknown as { __tent: { px(x: number, z: number): [number, number] } }).__tent.px(-20, -25));
+  await a.mouse.click(x, y);
+  await a.locator('[data-act="place"]').click();
+  await a.locator('[data-tent-item="f4050"]').click();
+  [x, y] = await tt(a, (t) => t.tile(2, 1));
+  await a.mouse.click(x, y);
+  await a.locator('[data-act="place"]').click();
+  const lampOn = async (p: Page) => (await placedOf(p)).find((q) => q.y > 0) ?? null;
+  await expect.poll(() => lampOn(b), { timeout: 4000 }).toMatchObject({ x: 2, z: 1 });
+  // A turns the table (↻ on it, ✓): the lamp turns with it on B too
+  [x, y] = await tt(a, (t) => t.tile(1, 1));
+  await a.mouse.click(x, y);
+  await a.locator('[data-act="turn"]').click();
+  await a.locator('[data-act="place"]').click();
+  const onA = await lampOn(a);
+  expect(onA).not.toBeNull();
+  await expect.poll(async () => { const l = await lampOn(b); return l && [l.x, l.z]; }, { timeout: 4000 }).toEqual([onA!.x, onA!.z]);
+  await ctxA.close();
+  if (RELAY) await ctxB.close();
+});

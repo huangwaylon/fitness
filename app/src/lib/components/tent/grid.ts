@@ -25,6 +25,8 @@ export interface Spot {
   x: number;
   z: number;
   f: Facing;
+  /** On this piece's surface (then x and z are its slot there, f its facing on it). */
+  on?: string;
 }
 
 export type Why = 'out' | 'door' | 'taken' | 'rug';
@@ -51,6 +53,61 @@ export function snapTo(item: string, f: Facing, px: number, pz: number): [number
 }
 
 const isRug = (item: string) => !!ITEMS[item]?.rug;
+/** NH's surface: small things stand on its top. */
+export const isSurface = (item: string): boolean => !!ITEMS[item]?.s && !ITEMS[item]?.rug;
+/** A small thing that may stand on a surface: NH's miscellaneous, one tile. */
+export const isSmall = (item: string): boolean => !!ITEMS[item]?.sm && ITEMS[item].w === 1 && ITEMS[item].d === 1;
+
+// ---- surfaces: a small thing's slot on a piece is a tile of the piece's own (unturned) footprint ----
+
+/** The room tile of slot (sx, sz) on `parent` (as it stands, turned). */
+export function slotToTile(parent: Spot, sx: number, sz: number): [number, number] {
+  const m = ITEMS[parent.item], w = m?.w ?? 1, d = m?.d ?? 1;
+  const [W, D] = footprint(parent.item, parent.f);
+  const lx = sx + 0.5 - w / 2, lz = sz + 0.5 - d / 2, a = (parent.f * Math.PI) / 2;
+  const rx = lx * Math.cos(a) + lz * Math.sin(a), rz = -lx * Math.sin(a) + lz * Math.cos(a);
+  return [Math.floor(parent.x + W / 2 + rx + 1e-6), Math.floor(parent.z + D / 2 + rz + 1e-6)];
+}
+/** The slot on `parent` over room tile (tx, tz), or null off its footprint. */
+export function tileToSlot(parent: Spot, tx: number, tz: number): [number, number] | null {
+  const m = ITEMS[parent.item], w = m?.w ?? 1, d = m?.d ?? 1;
+  for (let sx = 0; sx < w; sx++) for (let sz = 0; sz < d; sz++) {
+    const [x, z] = slotToTile(parent, sx, sz);
+    if (x === tx && z === tz) return [sx, sz];
+  }
+  return null;
+}
+/** A piece as the room shows it: where it stands (a room tile), its facing in the room and how high (a surface's top). */
+export interface Resolved extends Spot {
+  id: string;
+  y: number;
+}
+/**
+ * The room from its pieces: a small thing on a surface where that piece now stands (turned with it, at its top); one
+ * whose piece is gone (a race: one of us put the table away as the other put a lamp on it) stands on the floor at its
+ * slot's tile, the same on both phones.
+ */
+export function resolve(list: readonly (Spot & { id: string })[]): Resolved[] {
+  const byId = new Map(list.map((p) => [p.id, p]));
+  return list.map((p) => {
+    const par = p.on ? byId.get(p.on) : undefined;
+    if (!p.on) return { ...p, y: 0 };
+    if (!par || par.on || !isSurface(par.item)) return { ...p, on: undefined, y: 0 };
+    const [x, z] = slotToTile(par, p.x, p.z);
+    return { ...p, x, z, f: ((par.f + p.f) % 4) as Facing, y: ITEMS[par.item]?.h ?? 0 };
+  });
+}
+/** The floor piece with a surface over room tile (tx, tz) (not `except`), if any. */
+export function surfaceAt(spots: readonly Spot[], tx: number, tz: number, except?: string): Spot | null {
+  for (const s of spots) {
+    if (s.on || (except && s.id === except) || !isSurface(s.item)) continue;
+    if (tilesOf(s).some(([x, z]) => x === tx && z === tz)) return s;
+  }
+  return null;
+}
+/** Whether slot (sx, sz) on `parent` holds another small thing (stored spots: `on` with their slots). */
+export const slotTaken = (spots: readonly Spot[], parent: string, sx: number, sz: number, except?: string): boolean =>
+  spots.some((s) => s.on === parent && s.x === sx && s.z === sz && (!except || s.id !== except));
 
 /** Why a piece can't stand there (null: it can). `others`: what stands in the room (the piece itself, by id, left out). */
 export function placeWhy(others: readonly Spot[], s: Spot): Why | null {
@@ -62,7 +119,7 @@ export function placeWhy(others: readonly Spot[], s: Spot): Why | null {
   const key = (x: number, z: number) => x * ROOM + z;
   const at = new Set(mine.map(([x, z]) => key(x, z)));
   for (const o of others) {
-    if ((s.id && o.id === s.id) || isRug(o.item) !== rug) continue;
+    if ((s.id && o.id === s.id) || o.on || isRug(o.item) !== rug) continue;
     if (tilesOf(o).some(([x, z]) => at.has(key(x, z)))) return rug ? 'rug' : 'taken';
   }
   return null;
@@ -92,7 +149,7 @@ export type Pt = readonly [number, number];
 export function blocked(spots: readonly Spot[]): Uint8Array {
   const b = new Uint8Array(N * N);
   for (const s of spots) {
-    if (isRug(s.item)) continue;
+    if (isRug(s.item) || s.on) continue;
     for (const [x, z] of tilesOf(s)) for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
       const cx = x * 2 + i, cz = z * 2 + j;
       if (cx >= 0 && cz >= 0 && cx < N && cz < N) b[cx * N + cz] = 1;

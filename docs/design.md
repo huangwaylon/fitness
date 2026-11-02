@@ -657,6 +657,17 @@ goes with the leaving).
   off the door's two tiles, not over another piece or a villager; a rug lies under the furniture (and may cover the
   door's tiles), never over another rug. At most 40 pieces, shared (the wallpaper and the floor don't count): 64 tiles
   and the phone's draw budget.
+- **Turning:** ↻ or a tap on the piece I hold turns it a quarter clockwise (a tap: under 8 px and 450 ms; a drag
+  moves it; a tap on another piece picks that one), easing round.
+- **Table tops** (NH's surfaces): NH's surface flag and its small things come from the ACNH spreadsheet (the game
+  files have no params for it): a piece flagged `surface` (tables, desks, counters, shelves, dressers, the fireplace: 60
+  of the pieces, 12 of the starter set) holds small things (the spreadsheet's Miscellaneous, one tile: 126; the lantern,
+  the lamps, the kettle, the tea set…) on its top, one to a tile of its footprint, at its height (its model's top). A
+  small thing held over a surface goes on it (the footprint at the top); its op names the piece (`on`) and its slot
+  there, so moving or turning the table carries what's on it (the ghost carries them) in one op. NH's rule for putting
+  away: not with things on it (「うえの ものを さきに しまってね」). A thing on a table blocks neither the floor nor a walk.
+  A race (one of us puts the table away as the other puts a lamp on it) leaves the lamp on the floor at its slot's tile,
+  the same on both phones.
 - **Shared and kept:** the room is both of ours, live on both phones: each change is one op (the island's `decor` op
   with the room's scope, last writer wins, the sheet keeps each piece's latest: `contract/tent.ts`,
   [backend](backend.md#events)). While I hold a piece, the partner's phone sees it move as I move it (`drag`, ≤ 10 a

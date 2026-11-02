@@ -15,7 +15,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import { TENT_MAX } from '#lib/contract/tent.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, ITEMS, STARTER, WALLS, footprint, iconUrl } from './items.ts';
-  import { HALF, TILE, centreOf, nearestFree, placeWhy, snapTo, type Facing, type Spot, type Why } from './grid.ts';
+  import { HALF, TILE, centreOf, isSmall, isSurface, nearestFree, placeWhy, resolve, slotTaken, snapTo, surfaceAt, tileToSlot, type Facing, type Spot, type Why } from './grid.ts';
   import type { Tent } from './engine.ts';
   import type { DragLink } from './dragLink.ts';
 
@@ -57,16 +57,33 @@
     writeJson(localKV(), DEVICE.tentRecent, recent);
   }
 
-  /** What I hold: a new piece or a placed one (`orig`: where it stood). */
-  let sel = $state<{ id: string; fresh: boolean; item: string; f: Facing; p?: number; orig?: { x: number; z: number; f: Facing } } | null>(null);
+  /** What I hold: a new piece or a placed one (`orig`: where it stood, as stored). `at` and `f` are in the room; a small
+   *  thing over a surface is on it (`on`: that piece and the slot there). */
+  let sel = $state<{ id: string; fresh: boolean; item: string; f: Facing; p?: number; orig?: { x: number; z: number; f: Facing; on?: string } } | null>(null);
   let at = $state<[number, number]>([0, 0]);
   let why = $state<Why | 'villager' | null>(null);
+  let onto = $state<{ id: string; item: string; f: Facing; slot: [number, number] } | null>(null);
 
-  const others = (): Spot[] => room.pieces.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f }));
+  /** The pieces as stored (a small thing on a surface: its slot there). */
+  const others = (): Spot[] => room.pieces.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, ...(p.on ? { on: p.on } : {}) }));
+  /** …and where they stand in the room. */
+  const placed = () => resolve(others() as (Spot & { id: string })[]);
+  /** What stands on a piece (its slot and facing there). */
+  const kidsOf = (id: string) => others().filter((s) => s.on === id).map((s) => ({ id: s.id!, item: s.item, x: s.x, z: s.z, f: s.f }));
   function check(): void {
+    onto = null;
     if (!sel) return void (why = null);
+    // a small thing over a surface goes on it (NH's table tops): one to a slot
+    if (isSmall(sel.item)) {
+      const sur = surfaceAt(placed(), at[0], at[1], sel.id), slot = sur && tileToSlot(sur, at[0], at[1]);
+      if (sur && slot) {
+        onto = { id: sur.id!, item: sur.item, f: sur.f, slot };
+        why = slotTaken(others(), sur.id!, slot[0], slot[1], sel.id) ? 'taken' : null;
+        return;
+      }
+    }
     const s: Spot = { id: sel.fresh ? undefined : sel.id, item: sel.item, x: at[0], z: at[1], f: sel.f };
-    why = placeWhy(others(), s);
+    why = placeWhy(placed(), s);
     if (!why && !ITEMS[sel.item]?.rug) {
       const [w, d] = footprint(sel.item, sel.f), x0 = -HALF + at[0] * TILE, z0 = -HALF + at[1] * TILE;
       if (villagers().some(([x, z]) => x > x0 - 2 && x < x0 + w * TILE + 2 && z > z0 - 2 && z < z0 + d * TILE + 2)) why = 'villager';
@@ -76,8 +93,10 @@
   function show(): void {
     const e = eng();
     if (!e) return;
-    e.ghost(sel ? { item: sel.item, x: at[0], z: at[1], f: sel.f, ok: !why } : null);
-    e.hide([...(sel && !sel.fresh ? [sel.id] : []), ...link.theirs().map((h) => h.id)]);
+    // a piece carried with what stands on it: its things ride on the ghost, hidden where they were
+    const kids = sel && !sel.fresh ? kidsOf(sel.id) : [];
+    e.ghost(sel ? { item: sel.item, x: at[0], z: at[1], f: sel.f, ok: !why, y: onto ? (ITEMS[onto.item]?.h ?? 0) : 0, kids } : null);
+    e.hide([...(sel && !sel.fresh ? [sel.id] : []), ...kids.map((k) => k.id), ...link.theirs().flatMap((h) => [h.id, ...kidsOf(h.id).map((k) => k.id)])]);
     if (sel) {
       const [cx, cz] = centreOf({ item: sel.item, x: at[0], z: at[1], f: sel.f });
       link.hold({ id: sel.id, item: sel.item, fresh: sel.fresh, x: cx, z: cz, f: sel.f }, relayNow());
@@ -104,7 +123,7 @@
     }
     const me = villagers()[0] ?? [0, 0];
     const f: Facing = 0;
-    const spot = nearestFree(others(), code, f, me[0], me[1] - 12) ?? snapTo(code, f, 0, 0);
+    const spot = nearestFree(placed(), code, f, me[0], me[1] - 12) ?? snapTo(code, f, 0, 0);
     sel = { id: newId(Date.now()), fresh: true, item: code, f };
     at = spot;
     check();
@@ -124,8 +143,10 @@
     }
     if (sel?.id === id) return true;
     if (sel) cancel(false);
-    sel = { id, fresh: false, item: p.item, f: p.f, p: p.p, orig: { x: p.x, z: p.z, f: p.f } };
-    at = [p.x, p.z];
+    // where it stands in the room (a thing on a table: its tile and facing there)
+    const r = placed().find((q) => q.id === id) ?? p;
+    sel = { id, fresh: false, item: p.item, f: r.f, p: p.p, orig: { x: p.x, z: p.z, f: p.f, ...(p.on ? { on: p.on } : {}) } };
+    at = [r.x, r.z];
     check();
     show();
     cue('tick');
@@ -149,6 +170,9 @@
     if (!held) {
       const id = g.pick(e.clientX, e.clientY);
       if (!id) return false;
+      // holding a small thing, a press on a table is where it goes (a tap moves it there), not a pick of the table
+      const q = room.byId(id);
+      if (sel && isSmall(sel.item) && q && !q.on && isSurface(q.item)) return false;
       held = sel?.id === id;
       if (!pickPlaced(id)) return false;
     }
@@ -214,9 +238,13 @@
       return false;
     }
     const s = sel;
+    // on a surface: its slot there and its facing relative to the piece; else its tile in the room
+    const op = onto
+      ? { x: onto.slot[0], z: onto.slot[1], f: (((s.f - onto.f) % 4) + 4) % 4 as Facing, on: onto.id }
+      : { x: at[0], z: at[1], f: s.f, on: undefined };
     let ok = true;
-    if (s.fresh) ok = room.set({ id: s.id, item: s.item, x: at[0], z: at[1], f: s.f });
-    else if (!s.orig || s.orig.x !== at[0] || s.orig.z !== at[1] || s.orig.f !== s.f) ok = room.set({ id: s.id, item: s.item, x: at[0], z: at[1], f: s.f, p: s.p });
+    if (s.fresh) ok = room.set({ id: s.id, item: s.item, ...op });
+    else if (!s.orig || s.orig.x !== op.x || s.orig.z !== op.z || s.orig.f !== op.f || s.orig.on !== op.on) ok = room.set({ id: s.id, item: s.item, ...op, p: s.p });
     if (!ok) {
       toasts.show(t('tent.full', { max: TENT_MAX }), 2600);
       cancel(false);
@@ -232,6 +260,12 @@
   }
   function putAway() {
     if (!sel || sel.fresh) return;
+    // NH won't store a table with things on it: those first
+    if (kidsOf(sel.id).length) {
+      cue('boop');
+      toasts.show(t('tent.hasThings'), 2600);
+      return;
+    }
     const p = room.byId(sel.id);
     cancel(false);
     if (!p || !room.remove(p.id)) return;
@@ -241,7 +275,8 @@
         label: t('common.undo'),
         // a removal is final: the undo puts a new one down where it stood (if the spot is still free)
         run: () => {
-          if (!placeWhy(others(), { item: p.item, x: p.x, z: p.z, f: p.f })) room.set({ id: newId(Date.now()), item: p.item, x: p.x, z: p.z, f: p.f, p: p.p });
+          const back = p.on ? !slotTaken(others(), p.on, p.x, p.z) && !!room.byId(p.on) : !placeWhy(placed(), { item: p.item, x: p.x, z: p.z, f: p.f });
+          if (back) room.set({ id: newId(Date.now()), item: p.item, x: p.x, z: p.z, f: p.f, p: p.p, ...(p.on ? { on: p.on } : {}) });
         }
       }
     });
@@ -272,7 +307,7 @@
   });
 
   /** The e2e's view of the mode. */
-  export const snapshot = () => ({ sel: sel ? { ...sel, x: at[0], z: at[1] } : null, why, tab });
+  export const snapshot = () => ({ sel: sel ? { ...sel, x: at[0], z: at[1], on: onto?.id ?? null } : null, why, tab });
 </script>
 
 <div class="te" data-tent-edit>

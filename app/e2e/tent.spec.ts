@@ -191,3 +191,51 @@ test('みつけた: what either of us found in a balloon that NH has a model of,
   await page.locator('[data-act="place"]').click();
   await expect.poll(() => te(page, (t) => t.pieces().map((p) => p.item))).toEqual(['f287']);
 });
+
+type Placed = { id: string; x: number; z: number; f: number; y: number };
+const placedOf = (page: Page) => page.evaluate(() => (window as unknown as { __tent: { placed(): Placed[] } }).__tent.placed());
+
+test('on a table: a small thing stands on its top, rides along when the table moves, and the table won’t go away under it', async ({ page }) => {
+  await page.addInitScript(() => localStorage.removeItem('island-demo.tent'));
+  await page.goto('tent' + Q);
+  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await page.locator('[data-tent-edit-open]').click();
+  // the rattan low table (2 × 1) on tiles 1–2 of row 1
+  await page.locator('[data-tent-item="f4054"]').click();
+  let [x, y] = await tent(page, (t) => t.px(-20, -25));
+  await page.mouse.click(x, y);
+  await expect.poll(() => te(page, (t) => t.edit()?.sel)).toMatchObject({ x: 1, z: 1 });
+  await page.locator('[data-act="place"]').click();
+  const table = (await te(page, (t) => t.pieces()))[0];
+  // the rattan table lamp (small) over the table's right tile: on it
+  await page.locator('[data-tent-item="f4050"]').click();
+  [x, y] = await tile(page, 2, 1);
+  await page.mouse.click(x, y);
+  await expect.poll(() => te(page, (t) => (t.edit()?.sel as { on?: string } | null)?.on)).toBe(table.id);
+  await page.locator('[data-act="place"]').click();
+  await expect.poll(async () => (await te(page, (t) => t.pieces())).find((p) => p.item === 'f4050')).toMatchObject({ on: table.id, x: 1, z: 0 });
+  const lamp = (await te(page, (t) => t.pieces())).find((p) => p.item === 'f4050')!;
+  let at = (await placedOf(page)).find((p) => p.id === lamp.id)!;
+  expect([at.x, at.z]).toEqual([2, 1]);
+  expect(at.y).toBeGreaterThan(2);
+  // the table dragged to tiles 5–6: the lamp goes with it (slot 1: tile 6)
+  [x, y] = await tile(page, 1, 1);
+  const [x2, y2] = await tile(page, 5, 1);
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x2, y2, { steps: 8 });
+  await page.mouse.up();
+  await expect.poll(() => te(page, (t) => t.edit()?.sel?.id)).toBe(table.id);
+  await page.locator('[data-act="place"]').click();
+  await expect.poll(async () => (await placedOf(page)).find((p) => p.id === lamp.id)).toMatchObject({ x: 6, z: 1 });
+  // put away with the lamp on it: no (NH's way), the bar says so
+  [x, y] = await tile(page, 5, 1);
+  await page.mouse.click(x, y);
+  await expect.poll(() => te(page, (t) => t.edit()?.sel?.id)).toBe(table.id);
+  await page.locator('[data-act="remove"]').click();
+  await expect(page.getByText('うえの ものを さきに しまってね')).toBeVisible();
+  expect((await te(page, (t) => t.pieces())).length).toBe(2);
+  // nor does the lamp block the floor: a walk goes round the table, not round a lamp
+  at = (await placedOf(page)).find((p) => p.id === lamp.id)!;
+  expect(at.y).toBeGreaterThan(2);
+});

@@ -43,6 +43,8 @@ export interface Look {
 export type Hit = { kind: 'piece'; id: string } | { kind: 'villager'; who: Who } | { kind: 'door' } | { kind: 'floor'; x: number; z: number };
 export interface Placed extends Spot {
   id: string;
+  /** How high it stands (a surface's top: a small thing on a table). */
+  y?: number;
 }
 export interface Ghost {
   item: string;
@@ -50,6 +52,10 @@ export interface Ghost {
   z: number;
   f: Facing;
   ok: boolean;
+  /** On a surface: how high. */
+  y?: number;
+  /** What stands on it (a table carried with its things): each one's slot and facing on it. */
+  kids?: readonly { item: string; x: number; z: number; f: Facing }[];
 }
 export interface Insets {
   /** What covers the canvas at its top and foot (px): the room fits between. */
@@ -337,9 +343,9 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   /** Pieces not drawn where they stand: the one I'm moving, the ones the partner holds. */
   let hidden = new Set<string>();
   let pending = 0;
-  const placeRoot = (root: Group, s: Spot, lift = 0) => {
+  const placeRoot = (root: Group, s: Spot & { y?: number }, lift = 0) => {
     const [cx, cz] = centreOf(s);
-    root.position.set(cx, lift, cz);
+    root.position.set(cx, (s.y ?? 0) + lift, cz);
     root.rotation.y = (s.f * Math.PI) / 2;
   };
   function pieces(list: readonly Placed[]) {
@@ -472,12 +478,16 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   foot.visible = ring.visible = false;
   let ghostKey = '';
   let ghostBody: Object3D | null = null;
-  let ghostT = 0;
+  let ghostT = 0, ghostY = 0, ghostKidsKey = '[]';
+  const ghostKids = new Group();
+  ghostRoot.add(ghostKids);
   let ghostTurn: { from: number; to: number; t0: number } | null = null;
   function ghost(g: Ghost | null) {
     foot.visible = ring.visible = ghostRoot.visible = !!g;
     if (!g) {
       ghostKey = '';
+      ghostKidsKey = '[]';
+      ghostKids.clear();
       if (ghostBody) ghostRoot.remove(ghostBody);
       ghostBody = null;
       invalidate();
@@ -486,16 +496,33 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     const [w, d] = footprint(g.item, g.f);
     const [cx, cz] = centreOf(g);
     foot.scale.set(w * TILE - 0.8, d * TILE - 0.8, 1);
-    foot.position.set(cx, 0.5, cz);
+    foot.position.set(cx, (g.y ?? 0) + 0.5, cz);
     footMat.color.set(g.ok ? 0x78dc78 : 0xf05a50);
     const hw = (w * TILE) / 2 - 0.4, hd = (d * TILE) / 2 - 0.4, y = 0.6;
     ring.geometry.dispose();
     ring.geometry = new BufferGeometry().setAttribute('position', new Float32BufferAttribute([
       -hw, y, -hd, hw, y, -hd, hw, y, -hd, hw, y, hd, hw, y, hd, -hw, y, hd, -hw, y, hd, -hw, y, -hd
     ], 3));
-    ring.position.set(cx, 0, cz);
+    ring.position.set(cx, g.y ?? 0, cz);
     const was = ghostRoot.rotation.y, same = ghostKey === g.item;
     placeRoot(ghostRoot, g, 3);
+    ghostY = g.y ?? 0;
+    // its things ride with it, each on its slot (the table's own frame: they turn with it)
+    const kidsKey = JSON.stringify(g.kids ?? []);
+    if (kidsKey !== ghostKidsKey) {
+      ghostKidsKey = kidsKey;
+      ghostKids.clear();
+      const m = ITEMS[g.item], w = m?.w ?? 1, d = m?.d ?? 1, h = m?.h ?? 0;
+      for (const k of g.kids ?? []) {
+        const holder = new Group();
+        holder.position.set((k.x + 0.5 - w / 2) * TILE, h, (k.z + 0.5 - d / 2) * TILE);
+        holder.rotation.y = (k.f * Math.PI) / 2;
+        ghostKids.add(holder);
+        void model(k.item).then((mm) => {
+          if (mm && !disposed && ghostKids.children.includes(holder)) (holder.add(mm.scene.clone(true)), invalidate());
+        });
+      }
+    }
     // a quarter turn eases round (the shortest way), the footprint already where it lands
     const to = ghostRoot.rotation.y;
     if (same && Math.abs(Math.atan2(Math.sin(to - was), Math.cos(to - was))) > 0.01) {
@@ -905,7 +932,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     if (!p) return null;
     const tx = Math.floor((p[0] + HALF) / TILE), tz = Math.floor((p[1] + HALF) / TILE);
     let rug: string | null = null;
-    for (const l of live.values()) {
+    // what stands highest first: a lamp on a table before the table
+    for (const l of [...live.values()].sort((a, b) => (b.spot.y ?? 0) - (a.spot.y ?? 0))) {
       if (!l.root.visible) continue;
       const [w, d] = footprint(l.spot.item, l.spot.f);
       if (tx < l.spot.x || tz < l.spot.z || tx >= l.spot.x + w || tz >= l.spot.z + d) continue;
@@ -1013,7 +1041,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     }
     if (ghostBody) {
       const k = Math.min(1, (t - ghostT) / POP_MS);
-      ghostRoot.position.y = 3 + Math.sin(k * Math.PI) * 2.5;
+      ghostRoot.position.y = ghostY + 3 + Math.sin(k * Math.PI) * 2.5;
       if (k < 1) more = true;
     }
     if (framing) {
