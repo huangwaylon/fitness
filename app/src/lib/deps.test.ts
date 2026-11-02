@@ -17,7 +17,7 @@ const ALLOW: Record<string, string[]> = {
   scoring: ['types', 'contract', 'time', 'config'],
   model: DOMAIN,
   // the island's layout (docs/island-layout.md): pure, over the contract's ops
-  layout: ['types', 'contract'],
+  layout: ['types', 'contract', 'random'],
   i18n: ['types', 'time', 'config'],
   sync: [...DOMAIN],
   store: [...DOMAIN, 'layout', 'sync', 'i18n', 'ui-state', 'random'],

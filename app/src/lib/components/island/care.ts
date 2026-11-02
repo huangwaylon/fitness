@@ -4,12 +4,11 @@
 // counts for anything: no ベル, no find.
 import { pickOne } from '#lib/random.ts';
 import type { FlowerId, FlowerKind } from '#lib/art.ts';
-import { LAWN } from './beach.ts';
+import { spotsOn } from './beach.ts';
 import { ROCK as W_ROCK } from './world.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
 
-/** A weed sprouts on any free spot of the lawn (beach.ts LAWN: a dig spot takes its spot first). */
-const WEED_SPOTS = LAWN;
+/** A weed sprouts on any free spot of the lawn (beach.ts spotsOn: the day's lawn; a dig spot takes its spot first). */
 /** A weed sprouts every 30–60 minutes of the day (the first after 15–30); the lawn holds the newest three. */
 const WEED_GAP: readonly [number, number] = [30 * 60_000, 60 * 60_000];
 export const MAX_WEEDS = 3;
@@ -23,6 +22,7 @@ export function weedsAt(date: string, ms: number, seed = ISLAND_SEED, taken: Rea
   const times: number[] = [];
   for (let t = (WEED_GAP[0] + r() * (WEED_GAP[1] - WEED_GAP[0])) / 2; t <= ms; t += WEED_GAP[0] + r() * (WEED_GAP[1] - WEED_GAP[0])) times.push(Math.round(t));
   const recent = times.slice(-MAX_WEEDS);
+  const WEED_SPOTS = spotsOn(date, seed).lawn;
   const used = new Set(WEED_SPOTS.flatMap(([x, y], i) => (taken.has(`${x},${y}`) ? [i] : [])));
   return recent.flatMap((at) => {
     const s = dayRand(date, `weed@${at}`, seed);

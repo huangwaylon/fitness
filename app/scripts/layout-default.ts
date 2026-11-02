@@ -20,15 +20,17 @@ import {
 import { CHUNK, GRID, KINDS, TILE, codeOf, idx, kindOf, tierOf, tileAt, tileX, tileZ, type Kind } from '../src/lib/layout/grid.ts';
 import { footprintOf, kindDef } from '../src/lib/layout/catalog.ts';
 import { DEFAULT_HOMES, homeFoot } from '../src/lib/layout/homes.ts';
+import { LONG_GROW, LONG_SPLIT } from '../src/lib/layout/migrate.ts';
 
 const OUT = join(import.meta.dirname, '..', 'src', 'lib', 'layout', 'default.json');
 const dry = process.argv.includes('--dry');
 
 // ---- the terrain ----------------------------------------------------------------------------------------------------
 
-/** world.ts's z where おく begins (just above the stream's crossing), and how far back the middle pushes it. */
-const SPLIT = 680;
-const GROW = 1380;
+/** world.ts's z where おく begins (just above the stream's crossing), and how far back the middle pushes it (one source:
+ *  layout/migrate.ts, which moves the old decorations the same way). */
+const SPLIT = LONG_SPLIT;
+const GROW = LONG_GROW;
 /** A world.ts z on the long island. */
 const zOf = (z: number) => (z < SPLIT ? z : z + GROW);
 /** The tier boundary: the cliff's top edge (its face from z0 to z1 stands on the lower tier's last row). */
@@ -198,7 +200,7 @@ put('bridge', 'bridge', BRIDGE.x, (BRIDGE.z0 + BRIDGE.z1) / 2, { s: 'stone' });
 // the stairs: up the cliff where its stone steps are (their back edge on the cliff's line)
 {
   const [s0, s1] = CLIFF.stair;
-  put('stairs', 'stairs', (s0 + s1) / 2, CLIFF_Z - TILE, { s: 'stone', exact: true, raw: true });
+  put('stairs', 'stairs', (s0 + s1) / 2, CLIFF_Z - (kindDef('stairs')!.d * TILE) / 2, { s: 'stone', exact: true, raw: true });
 }
 // the homes: ウェイ's the campsite's tent (its front on the door line); うめ's and the guest's in the middle
 {

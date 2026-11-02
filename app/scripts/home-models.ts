@@ -9,7 +9,11 @@
 // plus src/lib/layout/homes.json: each family's bounds, triangles, KB, hash and colours (with the materials each
 // swaps). layout/homes.ts names them; components/world3d/home.ts puts them together.
 //
+// With --structures it converts the island's structures instead (NH's bridges, their shortest span, and its
+// inclines), into static/room/structures/ and src/lib/layout/structures.json (world3d/structure.ts draws them).
+//
 // Usage (from app/): NH_MODELS=~/Downloads/Model npm run home-models [-- --only=wall-na,door-simple]
+//                    NH_MODELS=~/Downloads/Model npm run structure-models
 // The model folder is untrusted input and never part of the repo: only the named folders' .dae and .png files are
 // copied into a scratch dir (three.js reads them in the page; nothing in them is run). Needs Google Chrome
 // (Playwright's channel 'chrome') and cwebp.
@@ -22,8 +26,9 @@ import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 
 const APP = join(import.meta.dirname, '..');
-const OUT = join(APP, 'static', 'room', 'homes');
-const META = join(APP, 'src', 'lib', 'layout', 'homes.json');
+const STRUCT = process.argv.includes('--structures');
+const OUT = join(APP, 'static', 'room', STRUCT ? 'structures' : 'homes');
+const META = join(APP, 'src', 'lib', 'layout', STRUCT ? 'structures.json' : 'homes.json');
 const arg = (k: string) => process.argv.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3);
 const only = (arg('only') ?? '').split(',').filter(Boolean);
 const TRIS = 6000;
@@ -40,12 +45,12 @@ const SAFE = /^[A-Za-z0-9_]+$/;
 /** A family: one shape in every colour (`colours`: the colour's letter → its folders, the first the GLB's). */
 interface Family {
   name: string;
-  kind: 'wall' | 'roof' | 'door' | 'tent';
+  kind: 'wall' | 'roof' | 'door' | 'tent' | 'bridge' | 'stairs';
   colours: [string, string[]][];
   maxTex: number;
 }
 const kebab = (s: string) => s.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-const folders = readdirSync(ROOT).filter((d) => d.endsWith('.Nin_NX_NVN')).map((d) => d.slice(0, -11)).filter((d) => SAFE.test(d) && d.startsWith('House'));
+const folders = STRUCT ? [] : readdirSync(ROOT).filter((d) => d.endsWith('.Nin_NX_NVN')).map((d) => d.slice(0, -11)).filter((d) => SAFE.test(d) && d.startsWith('House'));
 const fams = new Map<string, Family>();
 const add = (name: string, kind: Family['kind'], colour: string, parts: string[], maxTex: number) => {
   const f = fams.get(name) ?? fams.set(name, { name, kind, colours: [], maxTex }).get(name)!;
@@ -58,8 +63,16 @@ for (const d of folders.sort()) {
   else if ((m = /^HouseDoor([A-Z][A-Za-z]*?)([A-J])([RS])$/.exec(d))) add(`door-${kebab(m[1])}-${m[3].toLowerCase()}`, 'door', m[2], [d], 128);
 }
 // the move-in tents: NA and NB are one tent in two colours; PA the player's own
-for (const [c, t] of [['A', 'HouseTentNA'], ['B', 'HouseTentNB']] as const) add('tent-n', 'tent', c, [t, `${t}Door`], 512);
-add('tent-p', 'tent', 'A', ['HouseTentPA', 'HouseTentPADoor'], 512);
+if (!STRUCT) {
+  for (const [c, t] of [['A', 'HouseTentNA'], ['B', 'HouseTentNB']] as const) add('tent-n', 'tent', c, [t, `${t}Door`], 512);
+  add('tent-p', 'tent', 'A', ['HouseTentPA', 'HouseTentPADoor'], 512);
+} else {
+  // a part `<folder>:<dae>` when the model isn't named after its folder (a bridge's spans)
+  for (const b of ['Stone', 'Wood', 'Log', 'Bricks', 'Red', 'Iron', 'Japanese', 'Suspension'])
+    if (existsSync(join(ROOT, F(`Bridge${b}`)))) add(`bridge-${kebab(b === 'Bricks' ? 'Brick' : b)}`, 'bridge', 'A', [`Bridge${b}:Bridge${b}03`], 512);
+  for (const sl of ['StoneStair', 'BrickStair', 'IronStair', 'WoodStair', 'Wood', 'Natural'])
+    if (existsSync(join(ROOT, F(`Slope${sl}`)))) add(`stairs-${kebab(sl)}`, 'stairs', 'A', [`Slope${sl}`], 512);
+}
 
 const todo = [...fams.values()].filter((f) => !only.length || only.some((o) => f.name.startsWith(o)));
 const scratch = mkdtempSync(join(tmpdir(), 'nh-homes-'));
@@ -69,9 +82,12 @@ const copy = (folder: string) => {
   if (existsSync(dst)) return;
   mkdirSync(dst);
   const src = join(ROOT, F(folder));
+  if (!SAFE.test(folder)) return;
   for (const n of readdirSync(src)) if (/^[A-Za-z0-9_]+\.(dae|png)$/.test(n) && statSync(join(src, n)).isFile()) cpSync(join(src, n), join(dst, n));
 };
-for (const f of todo) for (const [, parts] of f.colours) for (const p of parts) copy(p);
+const folderOf = (p: string) => p.split(':')[0];
+const daeOf = (p: string) => `${p.split(':')[1] ?? p}.dae`;
+for (const f of todo) for (const [, parts] of f.colours) for (const p of parts) copy(folderOf(p));
 mkdirSync(OUT, { recursive: true });
 mkdirSync(dirname(META), { recursive: true });
 
@@ -108,9 +124,9 @@ interface GltfJson {
 }
 type Converted = { gltf: string; box: [number[], number[]]; tris: number; lit: boolean };
 const convert = (f: Family, parts: string[]) => {
-  const files = parts.map((p) => [F(p), readdirSync(join(scratch, F(p)))]);
+  const files = parts.map((p) => [F(folderOf(p)), readdirSync(join(scratch, F(folderOf(p))))]);
   return page.evaluate((o) => (window as unknown as { convert: (o: unknown) => Promise<Converted> }).convert(o), {
-    parts: parts.map((p) => ({ folder: F(p), dae: `${p}.dae` })), files, maxTex: f.maxTex, maxEmi: 128
+    parts: parts.map((p) => ({ folder: F(folderOf(p)), dae: daeOf(p) })), files, maxTex: f.maxTex, maxEmi: 128
   });
 };
 /** Each material's base colour image (its data URI), by name. */
@@ -198,7 +214,7 @@ for (const f of todo) {
 }
 await browser.close();
 // NH's own picker icons (its house-customising menu): each door's style and shape, the player house's walls and roofs
-for (const n of readdirSync(ROOT)) {
+for (const n of STRUCT ? [] : readdirSync(ROOT)) {
   const m = /^Layout_House(Door|Wall|Roof)Icon_House(?:Door([A-Z][A-Za-z]*?)A([RS])|(Wall|Roof)PA04([A-Z][a-z]+)A)\.Nin_NX_NVN$/.exec(n);
   if (!m) continue;
   const name = m[1] === 'Door' ? `icon.door-${kebab(m[2])}-${m[3].toLowerCase()}` : `icon.${m[4].toLowerCase()}-pa04-${kebab(m[5])}`;
@@ -210,7 +226,7 @@ for (const n of readdirSync(ROOT)) {
   total += statSync(join(OUT, `${name}.webp`)).size;
 }
 const sorted = Object.fromEntries(Object.entries(metas).sort(([a], [b]) => a.localeCompare(b)));
-writeFileSync(META, `{\n  "_": "scripts/home-models.ts: NH's homes' parts (bounds in model units, triangles, KB with the colours' textures, content hash, each colour's swapped materials)",\n  "families": {\n${Object.entries(sorted).map(([k, m]) => `    ${JSON.stringify(k)}: ${JSON.stringify(m)}`).join(',\n')}\n  }\n}\n`);
+writeFileSync(META, `{\n  "_": "scripts/home-models.ts${STRUCT ? ' --structures' : ''}: NH's ${STRUCT ? "bridges and inclines" : "homes' parts"} (bounds in model units, triangles, KB with the colours' textures, content hash, each colour's swapped materials)",\n  "families": {\n${Object.entries(sorted).map(([k, m]) => `    ${JSON.stringify(k)}: ${JSON.stringify(m)}`).join(',\n')}\n  }\n}\n`);
 console.log(`${todo.length} families, ${(total / 1024 / 1024).toFixed(2)} MB`);
 rmSync(scratch, { recursive: true, force: true });
 rmSync(work, { recursive: true, force: true });

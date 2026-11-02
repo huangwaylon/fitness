@@ -58,7 +58,7 @@ export async function buildHome(style: HomeStyle, base?: string): Promise<Group 
     const root = g.scene.clone(true);
     root.traverse((n) => {
       const mesh = n as Mesh;
-      if (mesh.isMesh) mesh.material = lambert(mesh.material as MeshStandardMaterial, null);
+      if (mesh.isMesh) mesh.material = homeLambert(mesh.material as MeshStandardMaterial, null);
     });
     const group = new Group();
     group.add(root);
@@ -83,7 +83,7 @@ export async function buildHome(style: HomeStyle, base?: string): Promise<Group 
       const mesh = n as Mesh;
       if (!mesh.isMesh) return;
       const src = mesh.material as MeshStandardMaterial;
-      mesh.material = lambert(src, swap.get(src.name) ?? null);
+      mesh.material = homeLambert(src, swap.get(src.name) ?? null);
       mesh.castShadow = mesh.receiveShadow = true;
     });
     group.add(root);
@@ -94,7 +94,7 @@ export async function buildHome(style: HomeStyle, base?: string): Promise<Group 
 }
 
 /** NH's soft look on a part's material (things.ts's): Lambert, a little self-light, a lamp's own map its glow. */
-function lambert(src: MeshStandardMaterial, map: Texture | null): Material {
+export function homeLambert(src: MeshStandardMaterial, map: Texture | null = null): Material {
   const own = !!src.emissiveMap;
   const m = new MeshLambertMaterial({
     map: map ?? src.map, color: src.color, transparent: src.transparent, opacity: src.opacity, alphaTest: src.alphaTest, side: src.side,

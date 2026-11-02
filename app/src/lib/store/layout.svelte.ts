@@ -11,6 +11,8 @@
 import { layoutOpOf, mergeLayout, type LayoutEntry, type LayoutOp } from '#lib/contract/layout.ts';
 import { defaultLayout, layoutOf, objMid, type Layout, type Obj } from '#lib/layout/model.ts';
 import { diffLayouts, type LayoutDiff } from '#lib/layout/diff.ts';
+import { migrationOps } from '#lib/layout/migrate.ts';
+import type { Placed } from '#lib/contract/decor.ts';
 import type { HomeStyle } from '#lib/layout/homes.ts';
 import type { Relayed, Who } from '#lib/sync/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
@@ -170,6 +172,15 @@ class IslandLayout {
       this.sink?.(op);
     }
     return took;
+  }
+
+  /** Move my old decorations (contract/decor.ts's, the old もようがえ's) into the layout, once (layout/migrate.ts):
+   *  the island calls it with the decorations as the record has them. How many went over. */
+  migrateDecor(placed: readonly Placed[]): number {
+    this.#load();
+    if (!this.#me) return 0;
+    const ops = migrationOps(this.#map, placed, this.#me);
+    return ops.length ? this.apply(ops).length : 0;
   }
 
   on(fn: (n: LayoutNews) => void): () => void {

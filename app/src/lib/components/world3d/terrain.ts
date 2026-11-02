@@ -28,6 +28,8 @@ export interface GroundOptions {
   /** The site's base URL (static files: terrain/nh/*.webp). */
   base?: string;
   look?: Look;
+  /** Drawn stone steps for the stairs (false: the scene draws NH's inclines itself, structure.ts). */
+  stairs?: boolean;
   /** Bake pixels per world unit (1.6: the whole long island in ~21 MB). */
   px?: number;
 }
@@ -554,7 +556,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   group.add(stairs);
   const buildStairs = () => {
     stairs.geometry.dispose();
-    stairs.geometry = wallGeometry(stairsMesh(lay));
+    stairs.geometry = opts.stairs === false ? new BufferGeometry() : wallGeometry(stairsMesh(lay));
   };
   buildStairs();
   // the first bake once NH's textures are in (a bake before shows the palette alone)

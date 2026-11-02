@@ -6,6 +6,8 @@
 import { pickOne, shuffle, weighted } from '#lib/random.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
 import { BEACH_BOX, DIG_SPOTS as DIGS, LAWN_SPOTS, SHORE_Z } from './world.ts';
+import { daySpots } from '#lib/layout/spots.ts';
+import type { Layout } from '#lib/layout/model.ts';
 
 // ---------- catalogs (official NH items; art in static/art/finds/, names under beach.name.<id>) ----------
 
@@ -108,6 +110,21 @@ function beachSpot(r: () => number, near: readonly Pt[], { first, edge = false }
 export const LAWN: readonly (readonly [number, number])[] = LAWN_SPOTS;
 export const DIG_SPOTS: readonly (readonly [number, number])[] = DIGS;
 
+/** Where a day's weeds and fossils may go: world.ts's fixed spots (the 2D island's), or the layout's open grass,
+ *  seeded by the date (layout/spots.ts daySpots: the 3D island on the layout calls useSpots(layoutSpots(…))). The
+ *  same on every phone either way. */
+type SpotSource = (date: string, seed: string) => { lawn: readonly (readonly [number, number])[]; dig: readonly (readonly [number, number])[] };
+const worldSpots: SpotSource = () => ({ lawn: LAWN, dig: DIG_SPOTS });
+let source: SpotSource = worldSpots;
+/** @public (the 3D island on the layout) Today's spots from this source (null: world.ts's). */
+export function useSpots(s: SpotSource | null): void {
+  source = s ?? worldSpots;
+}
+/** @public (the 3D island on the layout) The layout's daily spots as a source. */
+export const layoutSpots = (get: () => Layout): SpotSource => (date, seed) => daySpots(get(), date, seed);
+/** The day's spots. */
+export const spotsOn = (date: string, seed = ISLAND_SEED) => source(date, seed);
+
 // ---------- the schedules ----------
 
 /** Arrival times (ms after Tokyo midnight) of a stream that brings one thing every [min, max] ms, the first at
@@ -173,12 +190,13 @@ export function digSpots(date: string, dug: ReadonlySet<string>, seed = ISLAND_S
   const used = new Set<number>();
   for (let i = 0; i < 60 && out.length < atOnce; i++) {
     const fossil = pickOne(FOSSILS, r);
-    let spot = Math.floor(r() * DIG_SPOTS.length);
+    const spots = spotsOn(date, seed).dig;
+    let spot = Math.floor(r() * spots.length);
     const uid = `f${i}`;
     if (dug.has(uid)) continue;
-    while (used.has(spot)) spot = (spot + 1) % DIG_SPOTS.length;
+    while (used.has(spot)) spot = (spot + 1) % spots.length;
     used.add(spot);
-    const [x, y] = DIG_SPOTS[spot];
+    const [x, y] = spots[spot];
     out.push({ uid, fossil, x, y });
   }
   return out;

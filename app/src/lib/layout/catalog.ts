@@ -95,7 +95,8 @@ export const KIND_LIST: readonly KindDef[] = [
   k({ k: 'snowboy', group: 'season', ja: 'ゆきだるま（ふゆ）', en: 'Snowboy (winter)', w: 1, d: 1, block: true, foot: [30, 20], on: 'land', h: 40, icon: 'deco/snowboy-0', fixed: true }),
   // structures that join terrain: a bridge over water (its deck walkable), stairs up a cliff (f 0: rising away)
   k({ k: 'bridge', group: 'structure', ja: 'はし', en: 'Bridge', w: 1, d: 3, block: false, on: 'span', h: 12, icon: 'bridges/stone-front', turns: true, variants: ['stone', 'wood', 'log', 'brick', 'red', 'iron', 'japanese', 'suspension'] }),
-  k({ k: 'stairs', group: 'structure', ja: 'さか', en: 'Stairs', w: 2, d: 2, block: false, on: 'cliff', h: 40, icon: '', turns: true, variants: ['stone', 'brick', 'iron'] }),
+  // NH's incline: 2 tiles across, 4 up the flight (NH's own: scripts/home-models.ts --structures)
+  k({ k: 'stairs', group: 'structure', ja: 'さか', en: 'Stairs', w: 2, d: 4, block: false, on: 'cliff', h: 40, icon: '', turns: true, variants: ['stone', 'brick', 'iron', 'wood', 'log', 'natural'] }),
   // the homes (their footprint is their style's: layout/homes.ts)
   k({ k: 'home', group: 'home', ja: 'いえ', en: 'Home', w: 3, d: 2, block: true, on: 'land', h: 80, icon: 'deco/campsite', fixed: true, turns: true, hidden: true }),
   // named spots: where a villager stands at home, centre stage (visitors), nothing drawn
