@@ -5,7 +5,7 @@
 // card meanwhile (Island3D: `cards`). Still, a villager holds its pose: its bones are posed only while something moves
 // (it walks, it acts, the camera moves); its blinks are a texture's offset, so the island idles as it did. What it
 // wears (a birthday hat, the party glasses: assets.json `joint` models, their origin NH's head joint) rides its head bone.
-import { MeshLambertMaterial, Color, type Vector3, type Mesh, type MeshStandardMaterial, type Object3D } from 'three';
+import { MeshLambertMaterial, Color, Vector3 as V3, type Vector3, type Mesh, type MeshStandardMaterial, type Object3D } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { keyModel, MODELS } from './models3d.ts';
@@ -60,6 +60,10 @@ export interface Villagers3 {
   head(slot: string): Object3D | null;
   /** What a villager holds, its far end (a rod's tip: the fishing line's start), world space, or null. */
   tip(slot: string): Vector3 | null;
+  /** A villager's tap area (u: its width across, its height over its feet): its body's core, from its head's height
+   *  standing (NH's villagers: the head's base ~0.57 up the figure, the head and body ~0.6 as wide as tall), once it's
+   *  stood once, or null. Island3D sizes its DOM card to it, not to the 2D render (docs/world3d-gaps.md 2). */
+  size(slot: string): [number, number] | null;
   dispose(): void;
 }
 
@@ -129,6 +133,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     /** The fishing step last seen (fishing3d.ts angling.n) and how long the rod stays in hand after the reel. */
     angleN: number;
     rodUntil: number;
+    size?: [number, number];
   }
   const ws = new Map<string, W>();
   /** The seats' anchors (one object a seat: villager3d sitAt keeps to the one it's on). */
@@ -140,6 +145,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     return seats.get(name)!;
   };
   let lastT = 0, liftL = 0.32, disposed = false;
+  const headP = new V3();
   const debug = import.meta.env.DEV || new URLSearchParams(location.search).has('demo') ? new Map<string, unknown>() : null;
 
   function ensure(s: VSpec): W {
@@ -339,6 +345,16 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     },
     head: (slot) => ws.get(slot)?.v?.head() ?? null,
     tip: (slot) => ws.get(slot)?.v?.tip() ?? null,
+    size(slot) {
+      const w = ws.get(slot), v = w?.v;
+      if (!w || !v) return null;
+      // (measured standing: seated or lying its head is elsewhere)
+      if (!w.size && v.state() === 'idle' && !v.seat()) {
+        const hb = v.head(), h = hb ? (hb.getWorldPosition(headP).y - v.group.position.y) * 1.75 : 0;
+        if (h > 10) w.size = [Math.round(h * 0.6), Math.round(h)];
+      }
+      return w.size ?? null;
+    },
     dispose() {
       disposed = true;
       for (const w of ws.values()) {
