@@ -14,7 +14,7 @@ import { parseShortcut } from './parse.ts';
 import { auditNotes, auditRow } from './audit.ts';
 import { eventSlot, validEventData } from '../../app/src/lib/model/record.ts';
 import {
-  eventSubject, EVENT_TYPES, isId, isMetricKey, isPersonId, isRec,
+  eventSubject, EVENT_TYPES, isId, isMetricKey, isPersonId, isRec, isWho,
   type ApiError, type EventRow, type Fail, type MetricRow, type SnapshotRows
 } from '../../app/src/lib/contract/api.ts';
 import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contract/decor.ts';
@@ -22,8 +22,9 @@ import { tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract
 import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
 import { notifySecret, notifySig, verifyNotify } from './notify.ts';
 import { keyOwner, type Keys } from './auth.ts';
+import { guestMayWrite, guestRows } from '../../app/src/lib/contract/guest.ts';
+import type { PersonId, Who } from '../../app/src/lib/types.ts';
 
-type Who = 'A' | 'B';
 type Rec = Record<string, unknown>;
 type Bind = string | number | null;
 /** How an /api request came: from a phone or a Shortcut itself, or forwarded by the Apps Script web app. */
@@ -89,7 +90,7 @@ type Reply = Rec & { ok: boolean };
 
 export class StoreCore {
   private lastAt: number;
-  private rate = { minute: 0, A: 0, B: 0 };
+  private rate = { minute: 0, A: 0, B: 0, G: 0 };
 
   constructor(private io: StoreIO) {
     for (const s of SCHEMA) io.sql.exec(s);
@@ -156,7 +157,7 @@ export class StoreCore {
 
   private underRateLimit(me: Who): boolean {
     const minute = Math.floor(this.io.now() / 60_000);
-    if (this.rate.minute !== minute) this.rate = { minute, A: 0, B: 0 };
+    if (this.rate.minute !== minute) this.rate = { minute, A: 0, B: 0, G: 0 };
     return ++this.rate[me] <= RATE_PER_MINUTE;
   }
 
@@ -209,8 +210,10 @@ export class StoreCore {
     if (!me) return fail('unauthorized');
     if (!this.underRateLimit(me)) return fail('busy');
     this.used(me, String(body.action));
+    // the guest (docs/backend.md#the-guest): no health data in, no audit to read
+    if (me === 'G' && (body.action === 'ingest' || body.action === 'uploads')) return fail('forbidden');
     switch (body.action) {
-      case 'ingest': return this.ingest(me, body, bytes);
+      case 'ingest': return this.ingest(me as PersonId, body, bytes);
       case 'event': return this.event(me, body);
       case 'events': return this.events(me, body);
       case 'snapshot': return this.snapshot(me, body);
@@ -229,7 +232,9 @@ export class StoreCore {
       if (Number.isNaN(ms)) return fail('bad_request');
       since = new Date(ms).toISOString();
     } else if (body.since !== undefined && body.since !== null && body.since !== '') return fail('bad_request');
-    return { ok: true, me, now: new Date(this.io.now()).toISOString(), rev: this.rev(), rows: this.rowsSince(since) };
+    // the guest's: the activity and the events, never a からだ row or the weight goal (contract/guest.ts)
+    const rows = this.rowsSince(since);
+    return { ok: true, me, now: new Date(this.io.now()).toISOString(), rev: this.rev(), rows: me === 'G' ? guestRows(rows) : rows };
   }
 
   /** Every row after `since` ('' = all), in `at` order: the `at` index, and the late rows that came in after it. */
@@ -244,7 +249,7 @@ export class StoreCore {
       return [...rows, ...extra].sort((x, y) => (String(x.at) < String(y.at) ? -1 : String(x.at) > String(y.at) ? 1 : x.seq - y.seq));
     };
     return {
-      metrics: pick<{ at: string; person: Who; date: string; metric: MetricRow[3]; value: number }>('metrics', 'at, person, date, metric, value')
+      metrics: pick<{ at: string; person: PersonId; date: string; metric: MetricRow[3]; value: number }>('metrics', 'at, person, date, metric, value')
         .map((r) => [r.at, r.person, r.date, r.metric, r.value]),
       events: pick<{ at: string; person: Who; id: string; type: EventRow[3]; data: string }>('events', 'at, person, id, type, data')
         .map((r) => [r.at, r.person, r.id, r.type, r.data])
@@ -261,7 +266,7 @@ export class StoreCore {
   // ---------------------------------------------------------------- ingest
 
   /** The Shortcut's health body (parse.ts): each value that differs from its day's latest row is appended. */
-  private ingest(me: Who, body: Rec, bytes: number): Reply {
+  private ingest(me: PersonId, body: Rec, bytes: number): Reply {
     let parsed: ReturnType<typeof parseShortcut>;
     try {
       parsed = parseShortcut(body);
@@ -337,10 +342,12 @@ export class StoreCore {
     const id = body.id;
     if (!isId(id)) return fail('bad_request');
     if (typeof body.type !== 'string' || !(EVENT_TYPES as readonly string[]).includes(body.type)) return fail('bad_request');
-    // High-fives go over the room only: an older app still posts them; acknowledged, nothing kept.
-    if (body.type === 'highfive') return { ok: true };
     const data = body.data === undefined ? {} : body.data;
     if (!isRec(data)) return fail('bad_request');
+    // the guest writes only its finds, tallies, the tent's decor and its own cosmetic prefs (contract/guest.ts)
+    if (me === 'G' && !guestMayWrite(body.type, data)) return fail('forbidden');
+    // High-fives go over the room only: an older app still posts them; acknowledged, nothing kept.
+    if (body.type === 'highfive') return { ok: true };
     const json = JSON.stringify(data);
     if (json.length > MAX_EVENT_DATA_CHARS) return fail('too_large');
     const subject = eventSubject(body.type, data, me);
@@ -405,7 +412,7 @@ export class StoreCore {
     for (const r of this.io.sql.exec<{ person: string; data: string }>("SELECT person, data FROM events WHERE type = 'decor'").toArray()) {
       let x: unknown;
       try { x = JSON.parse(r.data); } catch { continue; }
-      const op = isRec(x) && isPersonId(r.person) ? parse(x) : null;
+      const op = isRec(x) && isWho(r.person) ? parse(x) : null;
       if (op) held.push({ ...op, who: r.person } as DecorEntry | TentEntry);
     }
     return tent ? tentAccept(held as TentEntry[], e as TentEntry) : decorAccept(held as DecorEntry[], e as DecorEntry);

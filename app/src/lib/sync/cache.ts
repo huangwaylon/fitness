@@ -2,7 +2,7 @@
 // megabytes per refresh) and merged incrementally with `since` replies. A changed data revision (`rev`:
 // another epoch: the record rebuilt, docs/backend.md#revision) drops it and fetches everything. When IndexedDB is unavailable the cache lives in memory for the
 // session (reported).
-import type { PersonId } from '#lib/types.ts';
+import type { Who } from '#lib/types.ts';
 import { DATE_RE, type EventRow, type SnapshotReply, type SnapshotRows } from '#lib/contract/api.ts';
 import { emptyRows, maxAt, mergeRows } from '#lib/model/snapshot.ts';
 import { compactRows } from '#lib/model/compact.ts';
@@ -13,7 +13,8 @@ import { post, type GasResult } from './transport.ts';
 
 export interface SnapshotCache {
   v: 1;
-  me: PersonId;
+  /** Who the rows were fetched for (`G`: the guest's, without the からだ rows). */
+  me: Who;
   rows: SnapshotRows;
   /** Max server `at` seen: the next `since`. */
   since: string | null;
@@ -205,7 +206,7 @@ export function clearCache(): Promise<void> {
   return p;
 }
 
-type Reply = { me: PersonId; now: string; rev: string; rows: Partial<SnapshotRows> };
+type Reply = { me: Who; now: string; rev: string; rows: Partial<SnapshotRows> };
 
 /**
  * My events the record just stored, as the rows it holds (its `at`), into the cache at once: no re-read after an ack.

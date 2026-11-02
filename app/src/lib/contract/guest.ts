@@ -1,0 +1,52 @@
+// The guest (docs/design.md "The guest", docs/backend.md#the-guest): a third key, KEY_C, for a visitor who plays on the
+// island and in the tent, sees the members' activity and ベル, but never earns or spends and never sees their bodies
+// (weight, body fat, BMI, lean mass, the weight goal). These are the record's rules for that key, shared by the record
+// (relay/src/store.ts: what it accepts from the guest and what its snapshot leaves out) and the demo (`?demo&as=G`
+// shows what the guest's phone would get). Pure.
+import { isActivityMetric, type EventRow, type SnapshotRows } from './api.ts';
+
+/** The guest's own prefs: cosmetic only (never a goal, never another person's). */
+const GUEST_PREF_KEYS = ['locale', 'villagerName', 'villager'] as const;
+
+type Rec = Record<string, unknown>;
+const isRec = (v: unknown): v is Rec => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/**
+ * Whether the guest may write this event: a `find` or a `tally` (its catches, credited to it), a tent `decor` op
+ * (`sc: 't'`) and its own cosmetic `pref` (no `person`). Everything else (a buy, a void, a harvest, a goal, the
+ * island's decor, an island day, a high-five row) is the members' alone: the record answers `forbidden`.
+ * @public (relay/src/store.ts)
+ */
+export function guestMayWrite(type: string, d: Rec): boolean {
+  switch (type) {
+    case 'find':
+    case 'tally':
+      return true;
+    case 'decor':
+      return d.sc === 't';
+    case 'pref':
+      return d.person === undefined && (GUEST_PREF_KEYS as readonly unknown[]).includes(d.key);
+    default:
+      return false;
+  }
+}
+
+/** Whether an event row reaches the guest: all but the weight goal (`pref goalWeight`, a からだ figure). */
+function guestSeesEvent(r: EventRow): boolean {
+  if (r[3] !== 'pref') return true;
+  let d: unknown;
+  try {
+    d = JSON.parse(r[4] || '{}');
+  } catch {
+    return false;
+  }
+  return isRec(d) && d.key !== 'goalWeight';
+}
+
+/**
+ * The rows the guest's phone gets: the activity metrics (steps, Move, Exercise, Stand: the trees, the ribbon, きろく)
+ * and every event but the weight goal. Never a からだ row: weight, body fat, BMI, lean mass.
+ */
+export function guestRows(rows: SnapshotRows): SnapshotRows {
+  return { metrics: rows.metrics.filter((r) => isActivityMetric(r[3])), events: rows.events.filter(guestSeesEvent) };
+}

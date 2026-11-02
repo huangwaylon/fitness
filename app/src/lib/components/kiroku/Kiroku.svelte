@@ -6,7 +6,7 @@
   // truth): the only inputs are the two goals (either person's: the goal screen names whose). The buys are on ごほうび.
   // Everything is computed from the store's reduced model, lazily for the opened day.
   import { tick } from 'svelte';
-  import type { PersonId } from '#lib/types.ts';
+  import type { PersonId, Who } from '#lib/types.ts';
   import { MOVE_GOAL, STEPS_GOAL } from '#lib/config/rules.ts';
   import { bellsLedger, dayDetail } from '#lib/model/history.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -48,6 +48,12 @@
   const order = $derived<PersonId[]>([me, partner]);
   const names = $derived({ A: view?.people.A.villagerName ?? 'A', B: view?.people.B.villagerName ?? 'B' } as Record<PersonId, string>);
   const villagers = $derived({ A: view?.people.A.villager ?? null, B: view?.people.B.villager ?? null } as Record<PersonId, string | null>);
+  // the ずかん's three (a shared museum, each entry credited to who found it: the guest's under its own name): the
+  // guest's phone itself first, a member's lists the guest once it has found or caught anything
+  const guestFound = $derived(!!m && (m.state.finds.some((f) => f.person === 'G') || m.state.tallies.some((r) => r.person === 'G')));
+  const zOrder = $derived<Who[]>(view?.viewer === 'G' ? ['G', 'A', 'B'] : guestFound ? [me, partner, 'G'] : [me, partner]);
+  const zNames = $derived<Record<Who, string>>({ ...names, G: view?.guest.villagerName ?? 'G' });
+  const zVillagers = $derived<Record<Who, string | null>>({ ...villagers, G: view?.guest.villager ?? null });
   const top = $derived(stack.at(-1) ?? null);
   /** Whose goals the 目標 card shows (null: mine). */
   let goalPick = $state<PersonId | null>(null);
@@ -127,7 +133,7 @@
       <h2 class="sec" data-sec="zukan">{t('zukan.title')}</h2>
       <ZukanCard finds={findsView(m.state)} onopen={(kind) => go({ k: 'zukan', kind })} />
     {:else if top.k === 'zukan'}
-      <Zukan kind={top.kind} finds={findsView(m.state)} counts={tallyTotals(m.state.tallies)} {order} {names} {villagers} />
+      <Zukan kind={top.kind} finds={findsView(m.state)} counts={tallyTotals(m.state.tallies)} order={zOrder} names={zNames} villagers={zVillagers} />
     {:else if top.k === 'day' && day}
       <DayDetail d={day} {me} {partner} {names} {villagers} />
     {:else if top.k === 'goal'}

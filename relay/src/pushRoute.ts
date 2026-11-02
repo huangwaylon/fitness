@@ -2,7 +2,7 @@
 // page origin, the size, the body's shape and the person key are checked here; the room (the Durable Object, which
 // keeps the subscriptions) does the rest. A text/plain JSON POST with the key in the body: a simple request, so no
 // preflight, and no key in a URL or a header a log might keep.
-import type { Who } from '../../app/src/lib/sync/live-protocol.ts';
+import type { Member as Who } from '../../app/src/lib/sync/live-protocol.ts';
 import { PUSH_MAX_BYTES, PUSH_PATHS, parseGoal, parseSubscribe, parseUnsubscribe, type GoalOutcome, type GoalReq, type PushLang, type PushSub } from '../../app/src/lib/sync/push-protocol.ts';
 import { keyOwner, originAllowed, type Keys } from './auth.ts';
 
@@ -33,6 +33,8 @@ export async function pushRoute(req: Request, path: string, keys: Keys, allowed:
   if (!parsed) return reply(400, { ok: false, error: 'bad_request' });
   const who = keyOwner(parsed.key, keys);
   if (!who) return reply(401, { ok: false, error: 'unauthorized' });
+  // the guest gets no notifications and reports no goals (docs/backend.md#the-guest)
+  if (who === 'G') return reply(403, { ok: false, error: 'forbidden' });
   const r = room();
   if ('sub' in parsed) {
     await r.pushSubscribe(who, parsed.sub, parsed.lang);

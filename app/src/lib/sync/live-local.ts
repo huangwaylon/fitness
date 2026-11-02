@@ -5,8 +5,8 @@
 // run on it. Its clock is the island's (clock.ts now(): a `?date=` preview moves the shared day too). Never used
 // outside the demo.
 import { DEMO, localKV, readJson, writeJson } from './storage.ts';
-import { NEST_GAP_MS, claimOf, isStored, tokyoDay, type Intent, type Relayed, type Who } from './live-protocol.ts';
-import type { Live, LiveStatus } from './live.ts';
+import { LIVE_V, NEST_GAP_MS, claimOf, guestMaySend, isStored, tokyoDay, type Intent, type Relayed, type Who } from './live-protocol.ts';
+import { peerOf, type Live, type LiveStatus } from './live.ts';
 import { now } from '#lib/time/clock.ts';
 
 /** The other tab is there while its hello came within this (it says hello every HELLO_MS). */
@@ -25,15 +25,16 @@ interface Log {
 export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
   let bc: BroadcastChannel | null = null;
   let timer: ReturnType<typeof setInterval> | null = null;
-  let heard = 0;
-  let st: LiveStatus = { connected: false, me: null, peer: false };
+  /** When each other player's tab last said hello (the guest's `?demo&as=G` too). */
+  const heard = new Map<Who, number>();
+  let st: LiveStatus = { connected: false, me: null, peer: false, here: [] };
   const subs = new Set<(m: Relayed) => void>();
   const statusSubs = new Set<(s: LiveStatus) => void>();
   let lastT = 0;
 
   const setStatus = (s: Partial<LiveStatus>) => {
     const next = { ...st, ...s };
-    if (next.connected === st.connected && next.me === st.me && next.peer === st.peer) return;
+    if (next.connected === st.connected && next.me === st.me && next.peer === st.peer && next.here.join() === st.here.join()) return;
     st = next;
     for (const f of statusSubs) f(st);
   };
@@ -72,11 +73,14 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
     const w = e.data;
     if (!w || typeof w !== 'object') return;
     if (w.k === 'hi' && w.who !== me) {
-      const was = st.peer;
-      heard = Date.now();
-      setStatus({ peer: true });
+      const was = heard.has(w.who);
+      heard.set(w.who, Date.now());
+      present();
       if (!was) post({ k: 'hi', who: me }); // answer a newcomer at once
-    } else if (w.k === 'bye' && w.who !== me) setStatus({ peer: false });
+    } else if (w.k === 'bye' && w.who !== me) {
+      heard.delete(w.who);
+      present();
+    }
     else if (w.k === 'm' && w.m.who !== me) {
       if (isStored(w.m)) relog(w.m);
       if (!lostRace(w.m)) deliver(w.m);
@@ -92,6 +96,11 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
     writeJson(localKV(), DEMO.relay, { day: l.day, log: [...log, m].sort((x, y) => x.t - y.t).slice(-MAX) });
   };
   const bye = () => post({ k: 'bye', who: me });
+  /** Who is here now (the tabs heard from), as the relay's presence would say. */
+  const present = () => {
+    const here = [...heard.keys()].sort();
+    setStatus({ here, peer: peerOf(me, here) });
+  };
   /** Two tabs claiming the same thing at once both kept it (each played the room on its own): the room's order is the
    *  earlier (then A's), and the later claim is one the room would have refused, so it's never delivered. The tab
    *  that sent the later one hears the earlier and gives it up (world-day apply's `beat`). */
@@ -110,7 +119,8 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
       post({ k: 'hi', who: me });
       timer = setInterval(() => {
         post({ k: 'hi', who: me });
-        if (st.peer && Date.now() - heard > GONE_MS) setStatus({ peer: false });
+        for (const [w, t] of heard) if (Date.now() - t > GONE_MS) heard.delete(w);
+        present();
       }, HELLO_MS);
       addEventListener('pagehide', bye);
       // a tab opening later hears the day's world so far (the partner's), as a phone's hello would: of two claims of
@@ -136,12 +146,14 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
       timer = null;
       bc?.close();
       bc = null;
-      setStatus({ connected: false, peer: false });
+      heard.clear();
+      setStatus({ connected: false, peer: false, here: [] });
     },
     send(i: Intent) {
-      if (!st.connected || (!st.peer && !isStored(i))) return false;
+      if (!st.connected || (!st.here.length && !isStored(i))) return false;
+      if (me === 'G' && !guestMaySend(i)) return false;
       lastT = Math.max(now().getTime(), lastT + 1);
-      const m = { ...i, v: 2, who: me, t: lastT } as Relayed;
+      const m = { ...i, v: LIVE_V, who: me, t: lastT } as Relayed;
       if (isStored(m) && !keep(m)) return true; // refused by the room: it went, and nobody hears it
       const c = claimOf(m);
       if (c) mine.set(c, { t: m.t });

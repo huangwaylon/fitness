@@ -8,7 +8,7 @@
   // Rig: .face (scaleX = facing; `if-turn`) › .body (origin at the feet; idle bob OR one motion) › art.
   // The emote bubble and fx are siblings of .face, so they never squash or mirror.
   import { TYPICAL_HEAD, loadHeads, swollenEye, type HeadBox } from '#lib/villagers/heads.ts';
-  import type { PersonId } from '#lib/types.ts';
+  import type { Who } from '#lib/types.ts';
   import OfficialArt from './OfficialArt.svelte';
   import Emote from './Emote.svelte';
   import Fx from './Fx.svelte';
@@ -22,7 +22,8 @@
   import type { ActorId, Motion } from '../motion/reactions.ts';
 
   interface Props {
-    person?: PersonId;
+    /** Whose (`G`: the guest's, its look from the view's `guest`). */
+    person?: Who;
     /** Roster id (villagers/roster.ts), e.g. goldie, raymond, anchovy. */
     villager?: string | null;
     /** cheer / surprised hop once; proud puffs up; sleepy breathes slowly. */
@@ -56,7 +57,7 @@
     animate = true, eager = false, actor, side = 'left', emoteSize = '44px', shadow = false, tricked = false, swollen = false, hat = null
   }: Props = $props();
 
-  const pref = $derived(week.view?.people?.[person]?.villager);
+  const pref = $derived(person === 'G' ? week.view?.guest?.villager : week.view?.people?.[person]?.villager);
   const look = $derived(resolveLook({ villager: villager !== undefined ? villager : pref, person }));
   const headOnly = $derived(head ?? (typeof size === 'number' && size < 56));
   const h = $derived(typeof size === 'number' ? `${size}px` : size);

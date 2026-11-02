@@ -1,11 +1,11 @@
 // Pairing: the per-person key (from the `#key=…` link or typed in) and who it belongs to.
-import type { PersonId } from '#lib/types.ts';
+import type { Who } from '#lib/types.ts';
 import { LIVE, getStoredMe, localKV, storeMe, writeRaw } from './storage.ts';
 import { clearCache } from './cache.ts';
 import { clearQueue } from './queue.ts';
 
 /** Store the key for `me`. A different person than before drops that person's cache and unsent queue. */
-export function setKey(key: string, me: PersonId): void {
+export function setKey(key: string, me: Who): void {
   if (getStoredMe() !== me) {
     void clearCache();
     clearQueue();

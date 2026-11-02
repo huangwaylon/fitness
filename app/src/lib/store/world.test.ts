@@ -18,7 +18,7 @@ class Mem implements KV {
 function fakeRelay() {
   const sent: Intent[] = [];
   let sub: ((m: Relayed) => void) | null = null;
-  const st: LiveStatus = { connected: true, me: 'A', peer: true };
+  const st: LiveStatus = { connected: true, me: 'A', peer: true, here: ['B'] };
   const live: Live = {
     start() {}, stop() {}, send: (i) => (sent.push(i), true), on: (fn) => ((sub = fn), () => (sub = null)),
     onChange: () => () => {}, onStatus: (fn) => (fn(st), () => {}), status: () => st, serverNow: () => Date.now()

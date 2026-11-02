@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, NEST_GAP_MS, REPLAY_BYTES, claimOf, isStored, otherVersion, parseClient, tokyoDay, type LiveV, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
+import { CLOSE, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, NEST_GAP_MS, REPLAY_BYTES, claimOf, guestMaySend, isStored, otherVersion, parseClient, sameWalk, tokyoDay, type LiveV, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
 
@@ -32,9 +32,22 @@ export interface RoomIO<S extends Sock> {
   hold?(held: Held): void;
 }
 
-/** The high-five held for each person while they were away (by recipient): the last one only, a newer one replacing
- *  it; who sent it, when it was tapped (`at`, its identity) and when the room heard it (`t`). */
-export type Held = Partial<Record<Who, { from: Who; at: number; t: number }>>;
+/** The high-fives held for people while they were away, one per (sender, recipient) pair (`<from>><to>`, e.g. `G>A`):
+ *  the last one only, a newer one of the pair replacing it; when it was tapped (`at`, its identity) and when the room
+ *  heard it (`t`). */
+export type Held = Partial<Record<string, { from: Who; to: Who; at: number; t: number }>>;
+
+/** The held high-fives as kept (before the guest, one per recipient: `{B: {from, at, t}}`), as pairs. */
+export function heldOf(raw: unknown): Held {
+  const out: Held = {};
+  if (!raw || typeof raw !== 'object') return out;
+  for (const [k, h] of Object.entries(raw as Record<string, { from?: Who; to?: Who; at: number; t: number }>)) {
+    if (!h || typeof h !== 'object' || !h.from) continue;
+    const to = h.to ?? (k as Who);
+    out[`${h.from}>${to}`] = { from: h.from, to, at: h.at, t: h.t };
+  }
+  return out;
+}
 
 /** A change as the room keeps it: relayed, with its sender's sequence number (`c`: a resend is known again). */
 export type Kept = Relayed & { c?: number };
@@ -64,6 +77,7 @@ export class RoomCore<S extends Sock> {
   private said = new Map<Who, number>();
 
   constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}) {
+    this.held = heldOf(held);
     for (const e of ring) this.lastT = Math.max(this.lastT, e.t);
     this.fresh();
   }
@@ -84,6 +98,24 @@ export class RoomCore<S extends Sock> {
   /** The version a socket speaks (its hello's). */
   private vOf(s: S): LiveV {
     return this.io.meta(s)?.v ?? 1;
+  }
+
+  /** The sockets of everyone but `who` that may hear of them: a phone before v3 never hears of the guest. */
+  private others(who: Who): S[] {
+    return this.authed().filter((s) => {
+      const w = this.io.meta(s)?.who;
+      return w !== who && (who !== 'G' || this.vOf(s) >= 3);
+    });
+  }
+
+  /** Who else is here, as a phone of `me` in version `v` knows them (the guest only from v3). */
+  private hereFor(me: Who, v: LiveV): Who[] {
+    const out = new Set<Who>();
+    for (const s of this.authed()) {
+      const w = this.io.meta(s)!.who!;
+      if (w !== me && (w !== 'G' || v >= 3)) out.add(w);
+    }
+    return [...out].sort();
   }
 
   /** Send in the socket's own version (a v1 phone keeps its push and presence). */
@@ -129,12 +161,14 @@ export class RoomCore<S extends Sock> {
     if (msg.kind === 'ping') return this.send(s, { v: LIVE_V, kind: 'pong', c: msg.c, t: now });
     const who = meta.who;
     if (msg.kind === 'got') {
-      // the high-five held for me reached my phone
-      if (this.held[who]?.at === msg.at) this.unhold(who);
+      // a high-five held for me reached my phone
+      for (const [k, h] of Object.entries(this.held)) if (h?.to === who && h.at === msg.at) this.unhold(k);
       return;
     }
     const { v, c, ...intent } = msg;
-    const stored = (v === 2 && isStored(intent)) || (v === 1 && intent.kind === 'world');
+    // the guest's phone may only walk, act, claim, say, high-five and arrange the tent (docs/backend.md#the-guest)
+    if (who === 'G' && !guestMaySend(intent)) return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
+    const stored = (v >= 2 && isStored(intent)) || (v === 1 && intent.kind === 'world');
     if (stored && c !== undefined) {
       // a resend (after a reconnect) of one the room has, the same intent with the same number: acked again, not
       // relayed twice
@@ -150,19 +184,24 @@ export class RoomCore<S extends Sock> {
     const out: Relayed = { ...intent, v, who, t: this.stamp() };
     // the shared world (v2): a claim already made today, a second nest within the hour, or a walk older than the one
     // kept goes nowhere
-    if (v === 2 && stored && !this.admit(out, c)) return c !== undefined ? this.ack(s, c, out.t, false) : undefined;
-    // to the partner first, then kept: a message sent after a storage write waits for it (the output gate)
-    // a walk's target means another thing in each version (stage units in v1, world units in v2): only to its own; a
-    // phrase (v2) only to a phone that speaks it
+    if (v >= 2 && stored && !this.admit(out, c)) return c !== undefined ? this.ack(s, c, out.t, false) : undefined;
+    // a high-five goes to whose villager was tapped (`to`, v3), else the partner (member to member)
+    const to = out.kind === 'highfive' ? (out.to ?? (who === 'G' ? null : other(who))) : null;
+    if (out.kind === 'highfive' && (!to || to === who)) return c !== undefined ? this.ack(s, c, out.t, false) : undefined;
+    // to the others first, then kept: a message sent after a storage write waits for it (the output gate)
+    // a walk's target means another thing in v1 (stage units) than since v2 (world units): only between those that
+    // agree; a phrase and a high-five (v2) only to a phone that speaks them
     let heard = false;
-    for (const p of this.authed(other(who)))
-      if ((out.kind !== 'walk' && out.kind !== 'say' && out.kind !== 'highfive') || this.vOf(p) === v) {
+    for (const p of this.others(who)) {
+      if (to && this.io.meta(p)?.who !== to) continue;
+      if ((out.kind !== 'walk' && out.kind !== 'say' && out.kind !== 'highfive') || sameWalk(this.vOf(p), v)) {
         this.send(p, out);
         heard = true;
       }
+    }
     // a high-five with nobody there to hear it (or only an older phone): held for them, the last one only
-    if (out.kind === 'highfive' && !heard) {
-      this.held = { ...this.held, [other(who)]: { from: who, at: out.at, t: out.t } };
+    if (to && !heard) {
+      this.held = { ...this.held, [`${who}>${to}`]: { from: who, to, at: (out as { at: number }).at, t: out.t } };
       this.io.hold?.(this.held);
     }
     if (stored) this.keep(c !== undefined ? { ...out, c } : out);
@@ -176,6 +215,8 @@ export class RoomCore<S extends Sock> {
   private hello(s: S, meta: Meta, key: string, since: number | undefined, v: LiveV, batch = false): void {
     const who = keyOwner(key, this.io.keys);
     if (!who) return this.shut(s, CLOSE.unauthorized, 'unknown key');
+    // the guest came with v3 (docs/backend.md#the-guest): an older version can't tell it from a member
+    if (who === 'G' && v < 3) return this.shut(s, CLOSE.version, `the guest speaks ${LIVE_V}`);
     if (meta.who) {
       // a repeated hello: nothing changes, unless it speaks another version
       if (v !== this.vOf(s)) this.shut(s, CLOSE.version, `version ${v} after a hello in ${this.vOf(s)}`);
@@ -188,25 +229,29 @@ export class RoomCore<S extends Sock> {
       this.shut(old, CLOSE.replaced, 'replaced');
     }
     this.io.setMeta(s, { ...meta, who, v });
-    const peers = this.authed(other(who));
     const t = this.io.now();
-    this.send(s, { v: LIVE_V, kind: 'welcome', me: who, peer: peers.length > 0, t, ...(this.rec ? { rec: this.rec } : {}) });
+    // `peer`: a member's partner is here; the guest's, either member. `here` (v3): everyone else who is
+    const here = this.hereFor(who, v);
+    const peer = who === 'G' ? here.some((w) => w !== 'G') : here.includes(other(who));
+    this.send(s, { v: LIVE_V, kind: 'welcome', me: who, peer, t, ...(this.rec ? { rec: this.rec } : {}), ...(v >= 3 ? { here } : {}) });
     if (since !== undefined) {
-      const day = this.fresh().filter((e) => e.t > since && (e.kind !== 'walk' || e.v === v));
+      const day = this.fresh().filter((e) => e.t > since && (e.kind !== 'walk' || sameWalk(e.v, v)) && (v >= 3 || e.who !== 'G'));
       // batch: the day in as few `replay` messages as fit (mine too: a phone that lost its own record gets it back);
       // else one message each, the partner's only (a phone from before the batch)
       if (batch) for (const es of chunks(day.map(strip))) this.send(s, { v: LIVE_V, kind: 'replay', es, t });
       else for (const e of day) if (e.who !== who) this.send(s, strip(e));
     }
-    // a high-five held for me while I was away (a day old: let go); it goes once my phone says `got`
-    const h = this.held[who];
-    if (h && t - h.t > HIGHFIVE_HOLD_MS) this.unhold(who);
-    else if (h && v === 2) this.send(s, { v: LIVE_V, kind: 'highfive', at: h.at, who: h.from, t: h.t });
-    if (!was.length) for (const p of peers) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
+    // the high-fives held for me while I was away, one from each (a day old: let go); each goes once my phone says `got`
+    for (const [k, h] of Object.entries(this.held)) {
+      if (!h || h.to !== who) continue;
+      if (t - h.t > HIGHFIVE_HOLD_MS) this.unhold(k);
+      else if (v >= 2 && (v >= 3 || h.from !== 'G')) this.send(s, { v: LIVE_V, kind: 'highfive', at: h.at, who: h.from, t: h.t, ...(v >= 3 ? { to: who } : {}) });
+    }
+    if (!was.length) for (const p of this.others(who)) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
   }
 
-  private unhold(who: Who): void {
-    const { [who]: _gone, ...rest } = this.held;
+  private unhold(pair: string): void {
+    const { [pair]: _gone, ...rest } = this.held;
     this.held = rest;
     this.io.hold?.(this.held);
   }
@@ -217,7 +262,8 @@ export class RoomCore<S extends Sock> {
       this.rec = { at: n.at, rev: n.rev };
       this.io.saveRec?.(this.rec);
     }
-    const to = this.authed();
+    // (the guest's own write reaches only the phones that know of the guest: v3)
+    const to = this.authed().filter((s) => n.who !== 'G' || this.vOf(s) >= 3);
     const m: ServerMsg = { v: LIVE_V, kind: 'changed', what: n.what, who: n.who, at: n.at, rev: n.rev, t: this.io.now() };
     for (const s of to) this.send(s, m);
     return to.length;
@@ -230,7 +276,7 @@ export class RoomCore<S extends Sock> {
     this.io.setMeta(s, { who: null, opened: 0 });
     if (this.authed(who).some((x) => x !== s)) return;
     const t = this.io.now();
-    for (const p of this.authed(other(who))) if (p !== s) this.send(p, { v: LIVE_V, kind: 'presence', who, on: false, t });
+    for (const p of this.others(who)) if (p !== s) this.send(p, { v: LIVE_V, kind: 'presence', who, on: false, t });
   }
 
   /** Close sockets that never said hello. Returns when to sweep next, or null when none is waiting. */
@@ -323,6 +369,7 @@ function chunks(es: Relayed[]): Relayed[][] {
   return out;
 }
 
+/** A member's partner (the guest has none: it sees both). */
 const other = (w: Who): Who => (w === 'A' ? 'B' : 'A');
 
 /** The close reason for a phone speaking a version the relay doesn't (≤ 123 bytes: the browser console and the logs). */

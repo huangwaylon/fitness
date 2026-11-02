@@ -1,12 +1,12 @@
 // The backend transport (docs/backend.md#api): one POST helper to the relay's record (docs/backend.md#the-record), and
 // `whoami`. Never throws; every failure maps to the error taxonomy. Plain TS (no Svelte) so it is unit-testable; fetch
 // and the URL are injectable.
-import type { PersonId } from '#lib/types.ts';
+import type { Who } from '#lib/types.ts';
 import type { WhoamiReply } from '#lib/contract/api.ts';
 import { getKey } from './storage.ts';
 import { LIVE_URL } from './live.ts';
 
-export type GasError = 'offline' | 'unauthorized' | 'busy' | 'unavailable' | 'bad_request' | 'too_large';
+export type GasError = 'offline' | 'unauthorized' | 'forbidden' | 'busy' | 'unavailable' | 'bad_request' | 'too_large';
 export type GasResult<T> = ({ ok: true } & T) | { ok: false; error: GasError; detail?: string };
 
 const TIMEOUT_MS = 20_000;
@@ -26,7 +26,7 @@ export function configureTransport(o: { fetch?: typeof fetch; url?: string }): v
   if (o.url !== undefined) url = o.url;
 }
 
-const KNOWN: GasError[] = ['unauthorized', 'busy', 'unavailable', 'bad_request', 'too_large'];
+const KNOWN: GasError[] = ['unauthorized', 'forbidden', 'busy', 'unavailable', 'bad_request', 'too_large'];
 
 /** POST `{key, action, ...body}` as text/plain (a simple request: no CORS preflight). Never throws. */
 export async function post<T extends object = object>(action: string, body: Record<string, unknown> = {}, opts: { key?: string; timeoutMs?: number } = {}): Promise<GasResult<T>> {
@@ -67,6 +67,6 @@ export async function post<T extends object = object>(action: string, body: Reco
   }
 }
 
-export function whoami(key: string): Promise<GasResult<{ me: PersonId }>> {
+export function whoami(key: string): Promise<GasResult<{ me: Who }>> {
   return post<Extract<WhoamiReply, { ok: true }>>('whoami', {}, { key });
 }

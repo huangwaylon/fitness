@@ -2,7 +2,7 @@
 // and the one push a day when a person's day reaches all four goals, to the partner's phones. Free of the Workers
 // runtime so it is unit-testable: storage, the push sender and the clock come in through PushIO; the Durable Object
 // (index.ts) stores the subscriptions in its SQLite and sends with fetch.
-import type { Who } from '../../app/src/lib/sync/live-protocol.ts';
+import type { Member as Who } from '../../app/src/lib/sync/live-protocol.ts';
 import type { GoalOutcome, PushLang, PushMsg, PushSub } from '../../app/src/lib/sync/push-protocol.ts';
 
 export interface StoredSub extends PushSub {

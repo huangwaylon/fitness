@@ -5,7 +5,7 @@ import { PLAN } from '#lib/components/island/world.ts';
 const KEY = 'ab'.repeat(32);
 const j = (o: object) => JSON.stringify({ v: 1, ...o });
 /** As the current version speaks (the relay answers each phone in its own). */
-const j2 = (o: object) => JSON.stringify({ v: 2, ...o });
+const j2 = (o: object) => JSON.stringify({ v: 3, ...o });
 
 describe('live protocol: client messages', () => {
   it('accepts hello, ping and each intent kind, keeping only known fields', () => {
@@ -19,7 +19,7 @@ describe('live protocol: client messages', () => {
     expect(parseClient(j({ kind: 'world', op: 'fruit-collected', id: 'tree-2.1' }))).toEqual({ v: 1, kind: 'world', op: 'fruit-collected', id: 'tree-2.1' });
     expect(parseClient(j({ kind: 'saved', at: 'x' }))).toEqual({ v: 1, kind: 'saved' });
     // v2 (the rolling-log world) too, its version kept: the relay answers each phone in its own
-    expect(parseClient(j2({ kind: 'walk', to: [195, 900] }))).toEqual({ v: 2, kind: 'walk', to: [195, 900] });
+    expect(parseClient(j2({ kind: 'walk', to: [195, 900] }))).toEqual({ v: 3, kind: 'walk', to: [195, 900] });
   });
 
   it('accepts every act, world op and both kinds of walk target', () => {
@@ -34,7 +34,7 @@ describe('live protocol: client messages', () => {
 
   it('refuses the wrong version, junk, unknown kinds, bad fields and anything too big', () => {
     for (const bad of [
-      JSON.stringify({ v: 3, kind: 'ping', c: 1 }),
+      JSON.stringify({ v: 4, kind: 'ping', c: 1 }),
       JSON.stringify({ kind: 'ping', c: 1 }),
       'nope',
       '[1]',
@@ -65,19 +65,19 @@ describe('live protocol: client messages', () => {
 
 describe('live protocol: relay messages', () => {
   it('accepts welcome, pong, presence and relayed intents', () => {
-    expect(parseServer(j2({ kind: 'welcome', me: 'A', peer: true, t: 1 }))).toEqual({ v: 2, kind: 'welcome', me: 'A', peer: true, t: 1 });
+    expect(parseServer(j2({ kind: 'welcome', me: 'A', peer: true, t: 1 }))).toEqual({ v: 3, kind: 'welcome', me: 'A', peer: true, t: 1 });
     const rec = { at: '2026-11-01T01:02:03.456Z', rev: 'e1' };
-    expect(parseServer(j2({ kind: 'welcome', me: 'A', peer: true, t: 1, rec }))).toEqual({ v: 2, kind: 'welcome', me: 'A', peer: true, t: 1, rec });
-    expect(parseServer(j2({ kind: 'welcome', me: 'A', peer: true, t: 1, rec: { at: 'soon', rev: 'e1' } }))).toEqual({ v: 2, kind: 'welcome', me: 'A', peer: true, t: 1 }); // a bad mark: as without one
-    expect(parseServer(j2({ kind: 'pong', c: 1, t: 2 }))).toEqual({ v: 2, kind: 'pong', c: 1, t: 2 });
-    expect(parseServer(j2({ kind: 'presence', who: 'B', on: false, t: 3 }))).toEqual({ v: 2, kind: 'presence', who: 'B', on: false, t: 3 });
-    expect(parseServer(j2({ kind: 'walk', to: [1, 2], who: 'B', t: 4 }))).toEqual({ v: 2, kind: 'walk', to: [1, 2], who: 'B', t: 4 });
-    expect(parseServer(j2({ kind: 'saved', who: 'A', t: 5 }))).toEqual({ v: 2, kind: 'saved', who: 'A', t: 5 });
+    expect(parseServer(j2({ kind: 'welcome', me: 'A', peer: true, t: 1, rec }))).toEqual({ v: 3, kind: 'welcome', me: 'A', peer: true, t: 1, rec });
+    expect(parseServer(j2({ kind: 'welcome', me: 'A', peer: true, t: 1, rec: { at: 'soon', rev: 'e1' } }))).toEqual({ v: 3, kind: 'welcome', me: 'A', peer: true, t: 1 }); // a bad mark: as without one
+    expect(parseServer(j2({ kind: 'pong', c: 1, t: 2 }))).toEqual({ v: 3, kind: 'pong', c: 1, t: 2 });
+    expect(parseServer(j2({ kind: 'presence', who: 'B', on: false, t: 3 }))).toEqual({ v: 3, kind: 'presence', who: 'B', on: false, t: 3 });
+    expect(parseServer(j2({ kind: 'walk', to: [1, 2], who: 'B', t: 4 }))).toEqual({ v: 3, kind: 'walk', to: [1, 2], who: 'B', t: 4 });
+    expect(parseServer(j2({ kind: 'saved', who: 'A', t: 5 }))).toEqual({ v: 3, kind: 'saved', who: 'A', t: 5 });
   });
 
   it('accepts a sheet change with its known fields only, and refuses a bad one', () => {
     const n = { what: 'event', who: 'B', at: '2026-11-01T01:02:03.456Z', rev: 'mhf0a1b2' };
-    expect(parseServer(j2({ kind: 'changed', ...n, t: 6, extra: 1 }))).toEqual({ v: 2, kind: 'changed', ...n, t: 6 });
+    expect(parseServer(j2({ kind: 'changed', ...n, t: 6, extra: 1 }))).toEqual({ v: 3, kind: 'changed', ...n, t: 6 });
     expect(parseServer(j2({ kind: 'changed', ...n }))).toBeNull();
     expect(parseServer(j2({ kind: 'changed', ...n, at: 'yesterday', t: 6 }))).toBeNull();
     expect(parseServer(j2({ kind: 'changed', ...n, what: 'resync', t: 6 }))).toBeNull();
@@ -99,8 +99,8 @@ describe('live protocol: v2 world points', () => {
     expect(WORLD_X[1]).toBeGreaterThanOrEqual(PLAN.x1);
     expect(WORLD_Z[0]).toBeLessThanOrEqual(PLAN.z0);
     expect(WORLD_Z[1]).toBeGreaterThanOrEqual(PLAN.z1);
-    expect(parseClient(j2({ kind: 'walk', to: [-230, 2650], at: 9 }))).toEqual({ v: 2, kind: 'walk', to: [-230, 2650], at: 9 });
-    expect(parseClient(j2({ kind: 'walk', to: 'bridgeStoneN' }))).toEqual({ v: 2, kind: 'walk', to: 'bridgeStoneN' });
+    expect(parseClient(j2({ kind: 'walk', to: [-230, 2650], at: 9 }))).toEqual({ v: 3, kind: 'walk', to: [-230, 2650], at: 9 });
+    expect(parseClient(j2({ kind: 'walk', to: 'bridgeStoneN' }))).toEqual({ v: 3, kind: 'walk', to: 'bridgeStoneN' });
     for (const to of [[621, 0], [0, -461], [-231, 0], [0, 2651], [0.5, 0], [0, 0, 0]]) expect(parseClient(j2({ kind: 'walk', to })), String(to)).toBeNull();
     expect(parseServer(j2({ kind: 'walk', to: [700, 0], who: 'B', t: 4 }))).toBeNull();
     // v1 keeps its stage units
@@ -109,7 +109,7 @@ describe('live protocol: v2 world points', () => {
   });
 
   it('tells a version nobody speaks apart from junk', () => {
-    expect(otherVersion(JSON.stringify({ v: 3, kind: 'hello' }))).toBe(3);
+    expect(otherVersion(JSON.stringify({ v: 4, kind: 'hello' }))).toBe(4);
     expect(otherVersion(JSON.stringify({ v: 0 }))).toBe(0);
     for (const x of [j({ kind: 'x' }), j2({ kind: 'x' }), JSON.stringify({ kind: 'ping' }), JSON.stringify({ v: '3' }), 'nope', 'null', '[3]', 3])
       expect(otherVersion(x), String(x)).toBeNull();
@@ -119,14 +119,14 @@ describe('live protocol: v2 world points', () => {
 describe('live protocol: the shared world (v2)', () => {
   it('takes a catch with where and how, a pick, a put, a shake and an act at a point', () => {
     expect(parseClient(j2({ kind: 'catch', what: 'sea-bass', id: 'fish:12', at: [120, -40], how: 'rod', x: 1 })))
-      .toEqual({ v: 2, kind: 'catch', what: 'sea-bass', id: 'fish:12', at: [120, -40], how: 'rod' });
+      .toEqual({ v: 3, kind: 'catch', what: 'sea-bass', id: 'fish:12', at: [120, -40], how: 'rod' });
     for (const how of HOWS) expect(parseClient(j2({ kind: 'catch', what: 'koi', id: 'a', how })), how).not.toBeNull();
     expect(parseClient(j2({ kind: 'pick', id: 's4560', what: 'present:item:froggy-chair', at: [1, 2] })))
-      .toEqual({ v: 2, kind: 'pick', id: 's4560', what: 'present:item:froggy-chair', at: [1, 2] });
-    expect(parseClient(j2({ kind: 'put', id: 'p1', what: 'present', at: [1, 2] }))).toEqual({ v: 2, kind: 'put', id: 'p1', what: 'present', at: [1, 2] });
-    for (const drop of DROPS) expect(parseClient(j2({ kind: 'shake', tree: 'oak-p1', drop })), drop).toEqual({ v: 2, kind: 'shake', tree: 'oak-p1', drop });
-    expect(parseClient(j2({ kind: 'act', act: 'bush', id: 'hedge-2', pt: [36, 596] }))).toEqual({ v: 2, kind: 'act', act: 'bush', id: 'hedge-2', pt: [36, 596] });
-    expect(parseServer(j2({ kind: 'pick', id: 'w1', what: 'weed', who: 'B', t: 9 }))).toEqual({ v: 2, kind: 'pick', id: 'w1', what: 'weed', who: 'B', t: 9 });
+      .toEqual({ v: 3, kind: 'pick', id: 's4560', what: 'present:item:froggy-chair', at: [1, 2] });
+    expect(parseClient(j2({ kind: 'put', id: 'p1', what: 'present', at: [1, 2] }))).toEqual({ v: 3, kind: 'put', id: 'p1', what: 'present', at: [1, 2] });
+    for (const drop of DROPS) expect(parseClient(j2({ kind: 'shake', tree: 'oak-p1', drop })), drop).toEqual({ v: 3, kind: 'shake', tree: 'oak-p1', drop });
+    expect(parseClient(j2({ kind: 'act', act: 'bush', id: 'hedge-2', pt: [36, 596] }))).toEqual({ v: 3, kind: 'act', act: 'bush', id: 'hedge-2', pt: [36, 596] });
+    expect(parseServer(j2({ kind: 'pick', id: 'w1', what: 'weed', who: 'B', t: 9 }))).toEqual({ v: 3, kind: 'pick', id: 'w1', what: 'weed', who: 'B', t: 9 });
   });
 
   it('refuses them in v1, and bad fields', () => {
@@ -168,7 +168,7 @@ describe('live protocol: the shared world (v2)', () => {
 describe('live protocol: the very walk, acks and the day in one replay', () => {
   it('a v2 walk may carry where from, the way (≤ VIA_MAX points), when it set off and how long', () => {
     const w = { kind: 'walk', to: [195, 900], from: [132, 214], via: [[160, 400]], s: 1_793_500_000_000, ms: 2400, f: 'home' };
-    expect(parseClient(j2(w))).toEqual({ v: 2, ...w });
+    expect(parseClient(j2(w))).toEqual({ v: 3, ...w });
     expect(parseClient(j2({ ...w, f: 'up' }))).toBeNull();
     expect(parseClient(j2({ ...w, via: Array.from({ length: VIA_MAX + 1 }, () => [1, 1]) }))).toBeNull();
     expect(parseClient(j2({ ...w, ms: 60_001 }))).toBeNull();
@@ -180,18 +180,18 @@ describe('live protocol: the very walk, acks and the day in one replay', () => {
     expect(parseServer(j2({ ...most, who: 'A', t: 1_793_500_000_123 }))).not.toBeNull();
   });
   it('an intent may carry its sequence number c (a positive integer); a hello may ask for a batch', () => {
-    expect(parseClient(j2({ kind: 'pick', id: 'a', what: 'weed', c: 7 }))).toEqual({ v: 2, c: 7, kind: 'pick', id: 'a', what: 'weed' });
+    expect(parseClient(j2({ kind: 'pick', id: 'a', what: 'weed', c: 7 }))).toEqual({ v: 3, c: 7, kind: 'pick', id: 'a', what: 'weed' });
     expect(parseClient(j2({ kind: 'pick', id: 'a', what: 'weed', c: 0 }))).toBeNull();
     expect(parseClient(j2({ kind: 'pick', id: 'a', what: 'weed', c: 1.5 }))).toBeNull();
-    expect(parseClient(j2({ kind: 'hello', key: KEY, batch: true }))).toEqual({ v: 2, kind: 'hello', key: KEY, batch: true });
+    expect(parseClient(j2({ kind: 'hello', key: KEY, batch: true }))).toEqual({ v: 3, kind: 'hello', key: KEY, batch: true });
     expect(parseClient(j2({ kind: 'hello', key: KEY, batch: 1 }))).toBeNull();
     expect(parseClient(j2({ kind: 'act', act: 'wake', id: 'B', at: 1_793_500_000_000 }))).toMatchObject({ act: 'wake', id: 'B' });
     expect(parseClient(j2({ kind: 'world', op: 'woke', id: 'gulliver' }))).toMatchObject({ op: 'woke' });
   });
   it('an ack, and a replay up to REPLAY_BYTES (its bad events left out); nothing else that long', () => {
-    expect(parseServer(j2({ kind: 'ack', c: 3, t: 9, ok: false }))).toEqual({ v: 2, kind: 'ack', c: 3, t: 9, ok: false });
+    expect(parseServer(j2({ kind: 'ack', c: 3, t: 9, ok: false }))).toEqual({ v: 3, kind: 'ack', c: 3, t: 9, ok: false });
     expect(parseServer(j2({ kind: 'ack', c: 3, t: 9 }))).toBeNull();
-    const e = { v: 2, kind: 'pick', id: 'p1', what: 'find:shell:cowrie', at: [150, 40], who: 'A', t: 5 };
+    const e = { v: 3, kind: 'pick', id: 'p1', what: 'find:shell:cowrie', at: [150, 40], who: 'A', t: 5 };
     const es = Array.from({ length: 120 }, (_, i) => ({ ...e, id: `p${i}` }));
     const raw = j2({ kind: 'replay', es: [...es, { kind: 'pick', who: 'C', t: 1 }], t: 10 });
     expect(raw.length).toBeGreaterThan(MAX_BYTES);
@@ -206,9 +206,9 @@ describe('live protocol: decorations (v2)', () => {
   const T = 1_793_000_000_000;
   const set = { kind: 'decor', id: 'dmh1abc2a', at: T, item: 'stone-lantern', x: 120, z: 480, f: 3, p: T };
   it('takes a set (its whole state) and a removal, known fields only; the room keeps both; nothing claimed', () => {
-    expect(parseClient(j2({ ...set, c: T, extra: 1 }))).toEqual({ v: 2, c: T, ...set });
-    expect(parseClient(j2({ kind: 'decor', id: 'dmh1abc2a', at: T, rm: true }))).toEqual({ v: 2, kind: 'decor', id: 'dmh1abc2a', at: T, rm: true });
-    expect(parseServer(j2({ ...set, who: 'B', t: T + 3 }))).toEqual({ v: 2, ...set, who: 'B', t: T + 3 });
+    expect(parseClient(j2({ ...set, c: T, extra: 1 }))).toEqual({ v: 3, c: T, ...set });
+    expect(parseClient(j2({ kind: 'decor', id: 'dmh1abc2a', at: T, rm: true }))).toEqual({ v: 3, kind: 'decor', id: 'dmh1abc2a', at: T, rm: true });
+    expect(parseServer(j2({ ...set, who: 'B', t: T + 3 }))).toEqual({ v: 3, ...set, who: 'B', t: T + 3 });
     expect(isStored({ ...set, kind: 'decor' } as never)).toBe(true);
     expect(claimOf({ ...set, kind: 'decor' } as never)).toBeNull();
   });
@@ -229,31 +229,31 @@ describe('live protocol: the tent (v2)', () => {
   const T = 1_793_000_000_000;
   const set = { kind: 'decor', sc: 't', id: 'dmh1abc2a', at: T, item: 'f4041', x: 7, z: 0, f: 1, p: T };
   it('a decor op in the tent keeps its scope; its tiles are the room’s', () => {
-    expect(parseClient(j2(set))).toEqual({ v: 2, ...set });
-    expect(parseServer(j2({ ...set, who: 'A', t: T }))).toEqual({ v: 2, ...set, who: 'A', t: T });
-    expect(parseClient(j2({ kind: 'decor', sc: 't', id: 'dmh1abc2a', at: T, rm: true }))).toEqual({ v: 2, kind: 'decor', sc: 't', id: 'dmh1abc2a', at: T, rm: true });
+    expect(parseClient(j2(set))).toEqual({ v: 3, ...set });
+    expect(parseServer(j2({ ...set, who: 'A', t: T }))).toEqual({ v: 3, ...set, who: 'A', t: T });
+    expect(parseClient(j2({ kind: 'decor', sc: 't', id: 'dmh1abc2a', at: T, rm: true }))).toEqual({ v: 3, kind: 'decor', sc: 't', id: 'dmh1abc2a', at: T, rm: true });
     for (const bad of [j2({ ...set, x: 8 }), j2({ ...set, sc: 'x' }), j2({ ...set, z: -1 })]) expect(parseClient(bad), bad).toBeNull();
     // a light's switch
-    expect(parseClient(j2({ ...set, l: 0 }))).toEqual({ v: 2, ...set, l: 0 });
+    expect(parseClient(j2({ ...set, l: 0 }))).toEqual({ v: 3, ...set, l: 0 });
     expect(parseClient(j2({ ...set, l: 3 }))).toBeNull();
     // on another piece's surface
-    expect(parseClient(j2({ ...set, on: 'dmh1table1' }))).toEqual({ v: 2, ...set, on: 'dmh1table1' });
+    expect(parseClient(j2({ ...set, on: 'dmh1table1' }))).toEqual({ v: 3, ...set, on: 'dmh1table1' });
     for (const bad of [j2({ ...set, on: 'nope' }), j2({ ...set, sc: undefined, on: 'dmh1table1', x: 100, z: 100 })]) expect(parseClient(bad), bad).toBeNull();
   });
   it('a drag and the villager inside are presence only: never kept, never claimed, small', () => {
     const drag = { kind: 'drag', id: 'dmh1abc2a', x: -12, z: 33, f: 2 };
-    expect(parseClient(j2(drag))).toEqual({ v: 2, ...drag });
-    expect(parseClient(j2({ ...drag, it: 'f4041', end: true }))).toEqual({ v: 2, ...drag, it: 'f4041', end: true });
+    expect(parseClient(j2(drag))).toEqual({ v: 3, ...drag });
+    expect(parseClient(j2({ ...drag, it: 'f4041', end: true }))).toEqual({ v: 3, ...drag, it: 'f4041', end: true });
     expect(j2(drag).length).toBeLessThanOrEqual(60);
     for (const bad of [j2({ ...drag, x: 41 }), j2({ ...drag, x: 1.5 }), j2({ ...drag, end: 1 }), j2({ ...drag, it: 'Bad Item' }), j({ ...drag })]) expect(parseClient(bad), bad).toBeNull();
     const walk = { kind: 'tent', in: true, from: [-7, 22], via: [[0, 10]], to: [20, -30], s: T, ms: 1800 };
-    expect(parseClient(j2(walk))).toEqual({ v: 2, ...walk });
-    expect(parseServer(j2({ kind: 'tent', in: false, who: 'B', t: T }))).toEqual({ v: 2, kind: 'tent', in: false, who: 'B', t: T });
+    expect(parseClient(j2(walk))).toEqual({ v: 3, ...walk });
+    expect(parseServer(j2({ kind: 'tent', in: false, who: 'B', t: T }))).toEqual({ v: 3, kind: 'tent', in: false, who: 'B', t: T });
     for (const bad of [j2({ ...walk, in: 1 }), j2({ ...walk, to: [50, 0] }), j2({ ...walk, via: [[0, 99]] })]) expect(parseClient(bad), bad).toBeNull();
     // sitting or lying on a piece
     const sit = { kind: 'tent', in: true, to: [0, 10], seat: 'dmh1sofa01', n: 1, s: T };
-    expect(parseClient(j2(sit))).toEqual({ v: 2, ...sit });
-    expect(parseClient(j2({ ...sit, lie: true }))).toEqual({ v: 2, ...sit, lie: true });
+    expect(parseClient(j2(sit))).toEqual({ v: 3, ...sit });
+    expect(parseClient(j2({ ...sit, lie: true }))).toEqual({ v: 3, ...sit, lie: true });
     for (const bad of [j2({ ...sit, seat: 'x' }), j2({ ...sit, n: 9 }), j2({ ...sit, lie: 1 })]) expect(parseClient(bad), bad).toBeNull();
     for (const i of [drag, walk]) {
       expect(isStored(i as never)).toBe(false);
@@ -280,22 +280,22 @@ describe('live protocol: a phrase (v2 `say`, presence only)', () => {
   });
 
   it('a v2 intent, cleaned on the way in and out; never v1; never kept or claimed', () => {
-    expect(parseClient(j2({ kind: 'say', text: ' がんばろう！\n', at: 4 }))).toEqual({ v: 2, kind: 'say', text: 'がんばろう！' });
+    expect(parseClient(j2({ kind: 'say', text: ' がんばろう！\n', at: 4 }))).toEqual({ v: 3, kind: 'say', text: 'がんばろう！' });
     expect(parseClient(j({ kind: 'say', text: 'hi' }))).toBeNull();
     for (const text of [undefined, '', ' \n ', 3]) expect(parseClient(j2({ kind: 'say', text }))).toBeNull();
-    expect(parseServer(j2({ kind: 'say', text: 'a\u202Eb', who: 'B', t: 9 }))).toEqual({ v: 2, kind: 'say', text: 'ab', who: 'B', t: 9 });
+    expect(parseServer(j2({ kind: 'say', text: 'a\u202Eb', who: 'B', t: 9 }))).toEqual({ v: 3, kind: 'say', text: 'ab', who: 'B', t: 9 });
     expect(isStored({ kind: 'say', text: 'x' })).toBe(false);
     expect(claimOf({ kind: 'say', text: 'x' })).toBeNull();
     // twenty of the widest characters still fit a relayed message
-    expect(JSON.stringify({ v: 2, kind: 'say', text: '\u{1F600}'.repeat(SAY_MAX), who: 'A', t: 1_793_527_259_353 }).length).toBeLessThanOrEqual(MAX_BYTES);
+    expect(JSON.stringify({ v: 3, kind: 'say', text: '\u{1F600}'.repeat(SAY_MAX), who: 'A', t: 1_793_527_259_353 }).length).toBeLessThanOrEqual(MAX_BYTES);
   });
 });
 
 describe('live protocol: a high-five (v2, the relay only)', () => {
   it('a highfive at a time, numbered and sent with the partner away, never kept in the day; got answers one heard', () => {
-    expect(parseClient(j2({ kind: 'highfive', at: 1_793_000_000_000, c: 4, x: 1 }))).toEqual({ v: 2, c: 4, kind: 'highfive', at: 1_793_000_000_000 });
-    expect(parseServer(j2({ kind: 'highfive', at: 5, who: 'B', t: 9 }))).toEqual({ v: 2, kind: 'highfive', at: 5, who: 'B', t: 9 });
-    expect(parseClient(j2({ kind: 'got', at: 5 }))).toEqual({ v: 2, kind: 'got', at: 5 });
+    expect(parseClient(j2({ kind: 'highfive', at: 1_793_000_000_000, c: 4, x: 1 }))).toEqual({ v: 3, c: 4, kind: 'highfive', at: 1_793_000_000_000 });
+    expect(parseServer(j2({ kind: 'highfive', at: 5, who: 'B', t: 9 }))).toEqual({ v: 3, kind: 'highfive', at: 5, who: 'B', t: 9 });
+    expect(parseClient(j2({ kind: 'got', at: 5 }))).toEqual({ v: 3, kind: 'got', at: 5 });
     for (const bad of [j({ kind: 'highfive', at: 5 }), j({ kind: 'got', at: 5 }), j2({ kind: 'highfive' }), j2({ kind: 'highfive', at: -1 }), j2({ kind: 'got', at: 'x' })]) expect(parseClient(bad), bad).toBeNull();
     const hf = { kind: 'highfive', at: 5 } as const;
     expect(isAcked(hf)).toBe(true);

@@ -1,10 +1,10 @@
 <script lang="ts">
-  // A person's round villager head (official icon, silhouette fallback) on a round chip (yuzu A, mint B).
-  import type { PersonId } from '#lib/types.ts';
+  // A person's round villager head (official icon, silhouette fallback) on a round chip (yuzu A, mint B, lilac the guest).
+  import type { Who } from '#lib/types.ts';
   import Villager from './Villager.svelte';
 
   interface Props {
-    person: PersonId;
+    person: Who;
     /** Roster id; null/undefined = the person's current villager. */
     villager?: string | null;
     size?: number;
@@ -13,7 +13,7 @@
   const icon = $derived(Math.round(size * 0.86));
 </script>
 
-<span class="av" style:--s="{size}px" style:--tag={person === 'A' ? 'var(--c-yuzu)' : 'var(--c-mint)'}>
+<span class="av" style:--s="{size}px" style:--tag={person === 'A' ? 'var(--c-yuzu)' : person === 'B' ? 'var(--c-mint)' : 'var(--c-lilac)'}>
   <Villager {person} villager={villager ?? undefined} size={icon} head />
 </span>
 

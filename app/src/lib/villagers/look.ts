@@ -16,15 +16,15 @@ export interface Look {
 
 const IDS: ReadonlySet<string> = new Set(artKeys().flatMap((k) => /^villagers\/([a-z0-9-]+)-icon$/.exec(k)?.[1] ?? []));
 
-/** Defaults until the users pick: A = Goldie (dog), B = Anchovy (bird). */
-const DEFAULT_VILLAGER: Record<'A' | 'B', RosterId> = { A: 'goldie', B: 'anchovy' };
+/** Defaults until the users pick: A = Goldie (dog), B = Anchovy (bird), the guest Judy (cub). */
+const DEFAULT_VILLAGER: Record<'A' | 'B' | 'G', RosterId> = { A: 'goldie', B: 'anchovy', G: 'judy' };
 
 export function isRosterId(s: unknown): s is RosterId {
   return typeof s === 'string' && IDS.has(s);
 }
 
 /** Resolve who to draw: a roster `villager` id wins; anything else → the per-person default. */
-export function resolveLook(opts: { villager?: string | null; person?: 'A' | 'B' }): Look {
+export function resolveLook(opts: { villager?: string | null; person?: 'A' | 'B' | 'G' }): Look {
   const id = isRosterId(opts.villager) ? opts.villager : DEFAULT_VILLAGER[opts.person ?? 'A'];
   return { id, looksRight: LOOKS_RIGHT.has(id), noMirror: NO_MIRROR.has(id) };
 }

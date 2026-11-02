@@ -9,10 +9,11 @@ const URL_ = process.env.RELAY_URL ?? 'wss://island-fund-relay-test.island-fund-
 const ORIGIN = 'https://huangwaylon.github.io';
 const N = Number(process.env.N ?? 30);
 
-function keys(): { KEY_A: string; KEY_B: string } {
-  if (process.env.KEY_A && process.env.KEY_B) return { KEY_A: process.env.KEY_A, KEY_B: process.env.KEY_B };
+/** The test copy's keys (KEY_C, the guest's, optional: its checks run when it's there). */
+function keys(): { KEY_A: string; KEY_B: string; KEY_C?: string } {
+  if (process.env.KEY_A && process.env.KEY_B) return { KEY_A: process.env.KEY_A, KEY_B: process.env.KEY_B, KEY_C: process.env.KEY_C };
   const kv = Object.fromEntries(readFileSync(`${import.meta.dirname}/../.smoke-keys`, 'utf8').trim().split('\n').map((l: string) => l.split('=')));
-  return kv as { KEY_A: string; KEY_B: string };
+  return kv as { KEY_A: string; KEY_B: string; KEY_C?: string };
 }
 
 type Msg = Record<string, unknown> & { kind: string };
@@ -69,7 +70,7 @@ function check(ok: boolean, what: string) {
   if (!ok) process.exitCode = 1;
 }
 
-const { KEY_A, KEY_B } = keys();
+const { KEY_A, KEY_B, KEY_C } = keys();
 const http = URL_.replace(/^ws/, 'http');
 
 const health = await fetch(new URL('/health', http)).then((r) => r.json() as Promise<{ ok: boolean; t: number; versions?: number[] }>);
@@ -214,11 +215,11 @@ b2.ws.close(1000);
 
 // Protocol versions (docs/backend.md#live-relay, "Versions"): a v2 phone beside a v1 one hears the shared kinds in its
 // own version, never the other's walks; a v2 walk reaches a v2 partner; a version nobody speaks is closed 4004.
-const v3 = new Client();
-await v3.open();
-v3.v = 3;
-v3.send({ kind: 'hello', key: KEY_A });
-check((await v3.closed) === 4004, 'a v3 hello is closed with 4004');
+const v4 = new Client();
+await v4.open();
+v4.v = 4;
+v4.send({ kind: 'hello', key: KEY_A });
+check((await v4.closed) === 4004, 'a v4 hello is closed with 4004');
 
 const a3 = new Client();
 await a3.open();
@@ -299,3 +300,39 @@ const lastWalk = await sb2.next((m) => m.kind === 'walk' && m.who === 'A');
 check(late.who === 'A' && (lastWalk.to as number[])[1] === 900, `a phone opening later hears the day's world (${(performance.now() - tl).toFixed(0)} ms)`);
 sa.ws.close(1000);
 sb2.ws.close(1000);
+
+// The guest (docs/backend.md#the-guest), when the test copy has a KEY_C: v3 only, both members hear it come, its walk
+// reaches them, what it may not send goes nowhere, a v2 member never hears of it, and the record leaves the からだ out.
+if (KEY_C) {
+  const old = new Client();
+  await old.open();
+  old.v = 2;
+  old.send({ kind: 'hello', key: KEY_C });
+  check((await old.closed) === 4004, 'a guest speaking v2 is closed with 4004');
+  const ga = new Client(), gb = new Client(), g = new Client();
+  ga.v = 3;
+  gb.v = 2;
+  g.v = 3;
+  await Promise.all([ga.open(), gb.open(), g.open()]);
+  ga.send({ kind: 'hello', key: KEY_A });
+  await ga.next((m) => m.kind === 'welcome');
+  gb.send({ kind: 'hello', key: KEY_B });
+  await gb.next((m) => m.kind === 'welcome');
+  g.send({ kind: 'hello', key: KEY_C });
+  const wg = await g.next((m) => m.kind === 'welcome');
+  check(wg.me === 'G' && wg.peer === true && JSON.stringify(wg.here) === '["A","B"]', 'the guest is welcomed as G with A and B here');
+  check((await ga.next((m) => m.kind === 'presence' && m.who === 'G')).on === true, 'a v3 member hears the guest arrive');
+  g.send({ kind: 'walk', to: [100, 900] });
+  check((await ga.next((m) => m.kind === 'walk')).who === 'G', "the guest's walk reaches a v3 member");
+  g.send({ kind: 'world', op: 'watered', id: 'fl:1:2', c: Date.now() });
+  check((await g.next((m) => m.kind === 'ack')).ok === false, "a world op from the guest is refused");
+  await pause(300);
+  check(!gb.inbox.some((m) => m.who === 'G' || (m.kind === 'presence' && m.who === 'G')), 'a v2 member never hears of the guest');
+  const api = (key: string, action: string, extra: object = {}) =>
+    fetch(new URL('/api', http), { method: 'POST', headers: { Origin: ORIGIN }, body: JSON.stringify({ key, action, ...extra }) }).then((r) => r.json() as Promise<Record<string, unknown>>);
+  const snap = await api(KEY_C, 'snapshot');
+  const text = JSON.stringify(snap);
+  check(snap.ok === true && snap.me === 'G' && !/"(weight|body_fat_pct|bmi|lean_kg)"|goalWeight/.test(text), "the guest's snapshot has no からだ row and no weight goal");
+  check((await api(KEY_C, 'ingest', { dates: 'Nov 1, 2026', steps: '1' })).error === 'forbidden', "the guest's ingest is forbidden");
+  for (const c of [ga, gb, g]) c.ws.close(1000);
+}

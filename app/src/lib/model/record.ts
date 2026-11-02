@@ -9,7 +9,7 @@ import { decorOpOf } from '../contract/decor.ts';
 import { tentOpOf } from '../contract/tent.ts';
 import { isStepsGoal, LIMITS, MOVE_GOAL, shopPrice } from '../config/rules.ts';
 import { localDateAt } from '../time/dates.ts';
-import type { PersonId } from '../types.ts';
+import type { Who } from '../types.ts';
 
 type Rec = Record<string, unknown>;
 
@@ -67,7 +67,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
  * - a `decor` op: its scope and item id (`decorAccept` / `tentAccept` decide whether it replaces).
  * A pref the model would ignore takes no slot, so it never replaces one it takes. `subject`: `eventSubject`.
  */
-export function eventSlot(type: EventType | string, sender: PersonId, subject: PersonId, d: Rec, at: number): string | null {
+export function eventSlot(type: EventType | string, sender: Who, subject: Who, d: Rec, at: number): string | null {
   switch (type) {
     case 'tally':
     case 'island':

@@ -5,22 +5,23 @@
 //
 // Cost: one pass over the rows (two years ≈ 1,460 rows of a few dozen keys each, well under a millisecond), memoised
 // per row list like model/finds.ts.
-import type { LocalDate, PersonId } from '#lib/types.ts';
+import type { LocalDate, Who } from '#lib/types.ts';
 import { TALLY_MAX_KEYS, TALLY_MAX_N, type Tally } from '#lib/contract/tally.ts';
 
 export interface TallyRow {
   /** Server time (ms): the later row of a person's day wins. */
   at: number;
-  person: PersonId;
+  /** Whose tally (the guest's too: `G`). */
+  person: Who;
   date: LocalDate;
   counts: Tally;
 }
 
 export interface Totals {
-  /** `kind:id` → how many, both of us. */
+  /** `kind:id` → how many, everyone (both of us and the guest). */
   all: ReadonlyMap<string, number>;
-  /** `kind:id` → how many, per person. */
-  by: Readonly<Record<PersonId, ReadonlyMap<string, number>>>;
+  /** `kind:id` → how many, per person (the guest's under `G`). */
+  by: Readonly<Record<Who, ReadonlyMap<string, number>>>;
 }
 
 /** The latest row of each person's day (ties: the later in the list, the sheet's order). */
@@ -41,7 +42,7 @@ export function tallyTotals(rows: readonly TallyRow[]): Totals {
   const cached = memo.get(rows);
   if (cached) return cached;
   const all = new Map<string, number>();
-  const by: Record<PersonId, Map<string, number>> = { A: new Map(), B: new Map() };
+  const by: Record<Who, Map<string, number>> = { A: new Map(), B: new Map(), G: new Map() };
   for (const r of latestByDay(rows)) {
     const mine = by[r.person];
     for (const k in r.counts) {
@@ -59,7 +60,7 @@ export function tallyTotals(rows: readonly TallyRow[]): Totals {
  * An entry's count as the ずかん shows it (「×12」): the tallies' total (or one person's), and at least 1 once it has
  * been found (a find from before tallies, or one whose tally hasn't synced yet).
  */
-export function countOf(t: Totals, key: string, found: boolean, person?: PersonId): number {
+export function countOf(t: Totals, key: string, found: boolean, person?: Who): number {
   const n = (person ? t.by[person] : t.all).get(key) ?? 0;
   return found ? Math.max(1, n) : n;
 }

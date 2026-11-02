@@ -91,9 +91,10 @@ An unreadable `since` is `bad_request`; an unknown action too.
 
 ## Auth and limits
 
-- **Keys:** the caller is whichever Worker secret `KEY_A` / `KEY_B` matches, in constant time; a key that isn't 32–128
-  hex characters is refused before any comparison. The same two keys are Script Properties (the export's signature is
-  derived from them): rotate both together ([runbook §4](ops/runbook.md#4-rotate-a-key)).
+- **Keys:** the caller is whichever Worker secret `KEY_A` / `KEY_B` matches (or `KEY_C`, the guest's: `G`,
+  [The guest](#the-guest)), in constant time; a key that isn't 32–128 hex characters is refused before any comparison.
+  The two members' keys are Script Properties (the export's signature is derived from them, never from `KEY_C`):
+  rotate both together ([runbook §4](ops/runbook.md#4-rotate-a-key)).
 - **Rate limit:** 120 requests per key per minute (in the record's memory). Over it: `busy`.
 
 ## Record state
@@ -282,12 +283,14 @@ catches an offline phone up.
 - **Admission:** the Worker accepts `/room` upgrades only from `ALLOWED_ORIGINS` (`https://huangwaylon.github.io`) and
   `http://localhost|127.0.0.1`; everything else 403. The origin only keeps other sites out; the key is the auth.
 - **Auth:** the first message is `hello {key, since?}`. The room compares it in constant time with the secrets
-  `KEY_A`/`KEY_B` (unset = nobody gets in) and answers `welcome {me, peer, t, rec?}` (`rec`: the record's last change), or
+  `KEY_A`/`KEY_B`/`KEY_C` (unset = nobody gets in) and answers `welcome {me, peer, t, rec?, here?}` (`rec`: the record's
+  last change; `here`, v3: everyone else who is here), or
   closes 4001. No hello within 10 s (a DO alarm sweeps): 4003. A second socket of the same person replaces the first
   (4002, no presence flicker). At most 8 sockets.
 - **Protocol** (`app/src/lib/sync/live-protocol.ts`, imported by both sides and checked by the same parsers): JSON,
-  `v: 2` (the rolling-log world; the relay still speaks `v: 1` to an older phone, answering each socket in the version
-  of its hello), ≤ 256 bytes (an intent ~60–100; a `replay` ≤ 16,000). Intents: `walk {to: node id | [x, z], at?,
+  `v: 3` (v2, the rolling-log world, with the guest: `who` may be `G`, the welcome's `here`, a high-five's `to`; the
+  relay still speaks `v: 2` and `v: 1` to an older phone, answering each socket in the version of its hello, and a phone
+  before v3 never hears of the guest; a walk crosses between v2 and v3, never from v1), ≤ 256 bytes (an intent ~60–100; a `replay` ≤ 16,000). Intents: `walk {to: node id | [x, z], at?,
   from?, via?, s?, ms?, f?}` (v2: world units, where the villager is going, and with `from`, `via` (≤ 10 waypoints), `s`
   (when it set off, the relay's clock), `ms` (how long, ≤ 60 s; 0 = put there) and `f` (the facing at its end: `home`,
   `in`, `l`, `r`) the very walk, [Shared
@@ -338,6 +341,33 @@ catches an offline phone up.
   notify secret, signatures and window) with `cd relay && npm test`
   (also `.github/workflows/relay.yml`); `live-protocol.test.ts`, `live.test.ts` and `store/push.test.ts` in the app's vitest; the push's
   script side in `gas/main.test.ts`.
+
+## The guest
+
+A third person, a visitor rather than a member (docs/design.md "The guest", decisions: *A guest, not a third member*):
+one key, `KEY_C` (a Worker secret like the others; unset = no guest), role `guest`, who `G`. The economy, the trees,
+the ベル, きろく, けんこう and ふたりでぜんぶ stay strictly A + B; what the guest touches is generalised: presence, the
+claims, the ずかん, the tent's decor, pairing.
+
+- **What it sees** (the record, `contract/guest.ts guestRows`, applied to every `snapshot` and delta of the guest's key):
+  the members' activity (`steps`, `exercise_min`, `move_kcal`, `stand_min`), every event but the weight goal (`pref
+  goalWeight`): the goals and their history, the buys and voids (the jar, view-only), the harvests, the finds, tallies,
+  decorations, island days and cosmetic prefs. Never a からだ row: `weight`, `body_fat_pct`, `bmi`, `lean_kg`.
+- **What it writes** (`guestMayWrite`): `find` and `tally` (credited to `G`), the tent's `decor` (`sc: 't'`), its own
+  `pref` `locale` / `villagerName` / `villager`. Anything else, and `ingest` / `uploads`, is `forbidden` (the queue drops
+  it). Its rows are the record's like anyone's: one tally per day (`tally|G|<date>`), its prefs' own slots, the tent's
+  merge order A < B < G; the sheet's export carries them with `person = G`.
+- **The room** (v3 only: a guest's hello in v1/v2 is closed 4004): the guest may `walk`, `act`, `catch`, `pick`, `put`,
+  `shake`, `say`, `highfive`, `tent`, `drag` and the tent's `decor` (`guestMaySend`); anything else is refused (acked
+  `ok: false`, never relayed). Its intents reach both members' v3 phones; theirs reach it. Presence is per person: each
+  join and leave is told to everyone else who can hear of it; `peer` stays the partner for a member (the guest never
+  counts) and either member for the guest. A high-five names whom it is for (`to`; a member's to the partner may leave
+  it out), and the room holds the last one per (sender, recipient) pair for a recipient who is away (`Held`, `<from>><to>`).
+- **Push:** none: `/push/*` answers the guest's key 403, so it neither subscribes nor reports a goal, and the members'
+  `changed` notices reach it like anyone's (its own writes only to v3 phones).
+- **Tests:** `relay/test/guest.test.ts` (the snapshot and deltas never carry a からだ row or the weight goal and do carry
+  the activity; every forbidden write is refused and leaves nothing; the export has `G`'s rows; the room's three
+  villagers, the refusals, the high-fives' pairs); `model/guest.test.ts` (credit, first finds, counts, the view).
 
 ## Ambient life
 

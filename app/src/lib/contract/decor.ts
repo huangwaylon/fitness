@@ -2,7 +2,7 @@
 // last-writer-wins map"): what either of us put on the island, kept for good (not day-scoped). Each change is one op:
 // an item set at a spot (`{id, at, item, x, z, f, p}`: placed or moved, the whole state of the item) or taken away
 // (`{id, at, rm: true}`, final: an id never comes back). The layout is a merge of the ops by id: a removal beats
-// everything, else the latest `at` (then B over A). The merge is commutative, so the relay, the sheet and either phone
+// everything, else the latest `at` (then G over B over A). The merge is commutative, so the relay, the sheet and either phone
 // reach the same layout whatever order the ops arrive in; the sheet keeps only each id's latest op. Shared by the Apps
 // Script, the model, the relay protocol and the island; pure and dependency-free.
 
@@ -19,7 +19,8 @@ const DECOR_Z = [-30, 1040] as const;
 /** Facings: 0 toward the camera, 1 to the right, 2 away, 3 to the left (a quarter turn each). */
 type Facing = 0 | 1 | 2 | 3;
 
-type Who = 'A' | 'B';
+/** Who set it (the guest's tent pieces too): the merge's tie-break is a fixed order, A < B < G. */
+type Who = 'A' | 'B' | 'G';
 /** An item set at a spot (placed or moved) or removed. `p`: when it was first placed (the cap keeps the oldest). */
 export type DecorOp =
   | { id: string; at: number; item: DecorItemId; x: number; z: number; f: Facing; p: number; rm?: undefined }
@@ -56,7 +57,7 @@ export function decorOpOf(d: Record<string, unknown>): DecorOp | null {
   return { id: d.id, at: d.at, item: d.item, x: d.x, z: d.z, f: d.f as Facing, p: d.p };
 }
 
-/** Whether entry `a` beats `b` (the same id): a removal beats a set; else the later `at`, then B over A. */
+/** Whether entry `a` beats `b` (the same id): a removal beats a set; else the later `at`, then G over B over A. */
 export function beats(a: DecorEntry, b: DecorEntry): boolean {
   if (!!a.rm !== !!b.rm) return !!a.rm;
   if (a.at !== b.at) return a.at > b.at;

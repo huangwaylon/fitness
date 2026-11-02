@@ -1,7 +1,7 @@
 // Every key the app keeps in Web Storage, in one registry, and guarded access to it.
 // Live data lives under `island.*`. The demo lives under `island-demo.*` (localStorage and sessionStorage), so it
 // can never read or overwrite a live key, queue or cache. The snapshot cache itself is in IndexedDB (cache.ts).
-import type { PersonId } from '#lib/types.ts';
+import type { Who } from '#lib/types.ts';
 
 export interface KV {
   getItem(k: string): string | null;
@@ -176,5 +176,6 @@ export function remove(kv: KV | null, k: string): void {
 // ---------- who I am ----------
 
 export const getKey = (): string | null => safe(() => local?.getItem(LIVE.key) ?? null);
-export const getStoredMe = (): PersonId | null => readJson<PersonId>(local, LIVE.me);
-export const storeMe = (me: PersonId): boolean => writeJson(local, LIVE.me, me);
+/** Who this phone is paired as (`G`: the guest). */
+export const getStoredMe = (): Who | null => readJson<Who>(local, LIVE.me);
+export const storeMe = (me: Who): boolean => writeJson(local, LIVE.me, me);

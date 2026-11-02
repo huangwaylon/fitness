@@ -42,7 +42,7 @@ describe('reduce: events', () => {
     ]));
     expect(s.moveGoals.A.map((x) => x.v)).toEqual([700, 100]);
     expect(s.moveGoals.B.map((x) => x.v)).toEqual([2000]);
-    expect(s.prefs).toEqual({ A: {}, B: {} });
+    expect(s.prefs).toEqual({ A: {}, B: {}, G: {} });
   });
 
   it('pref stepsGoal: a whole 500 steps in 1,000–30,000 per person, in at order; anything else is ignored', () => {
@@ -56,7 +56,7 @@ describe('reduce: events', () => {
     expect(s.stepsGoals.A.map((x) => x.v)).toEqual([10000, 1000]);
     expect(s.stepsGoals.B.map((x) => x.v)).toEqual([30000]);
     expect(s.moveGoals).toEqual({ A: [], B: [] });
-    expect(s.prefs).toEqual({ A: {}, B: {} });
+    expect(s.prefs).toEqual({ A: {}, B: {}, G: {} });
   });
 
   it('spend and spend_void: a reward at its price, string ids, first id wins, either of us voids, once', () => {
@@ -108,7 +108,7 @@ describe('reduce: events', () => {
     ]));
     expect(s.harvests.map((h) => h.week)).toEqual([WK]);
     expect(s.highfives.map((h) => h.person)).toEqual(['B']);
-    expect(s.prefs).toEqual({ A: { locale: 'en', villagerName: 'ウェイ' }, B: { villager: 'ume' } });
+    expect(s.prefs).toEqual({ A: { locale: 'en', villagerName: 'ウェイ' }, B: { villager: 'ume' }, G: {} });
   });
 
   it('every roster id can be picked, hyphenated ones too (kk-slider, tom-nook, agent-s)', () => {

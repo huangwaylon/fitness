@@ -170,7 +170,7 @@ function due(q: QueuedEvent[], now: number, skip: (ev: QueuedEvent) => boolean =
  * Send queued events in order until one fails. Events still in their undo window are skipped, not waited for
  * (a held buy must not delay a goal behind it by 5 s), except by later events on the same subject;
  * everything else keeps queue order. Acked (`{ok}` or `{ok, duplicate}`) → removed. `bad_request` /
- * `too_large` can never succeed → dropped (reported). Transient errors keep the event (and everything after it,
+ * `too_large` / `forbidden` can never succeed → dropped (reported). Transient errors keep the event (and everything after it,
  * so order is preserved) with a backoff. `unauthorized` stops the flush.
  */
 export function flush(now: () => number = Date.now): Promise<FlushResult> {
@@ -215,7 +215,7 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
       if (getKey() !== key) break;
       if (!r.ok) {
         // a whole batch refused (its body, never one event's: those are answered by id) is tried again later
-        backOff(batch[0], r.error === 'bad_request' || r.error === 'too_large' ? 'unavailable' : r.error);
+        backOff(batch[0], r.error === 'bad_request' || r.error === 'too_large' || r.error === 'forbidden' ? 'unavailable' : r.error);
         break;
       }
       const results: EventResult[] = Array.isArray(r.results) ? r.results : [];
@@ -223,7 +223,8 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
       for (const [i, ev] of batch.entries()) {
         const x = results[i];
         if (x?.ok) ack(ev, x.at);
-        else if (x && (x.error === 'bad_request' || x.error === 'too_large')) drop(ev);
+        // (`forbidden`: the guest's phone asked for what only a member may: never again)
+        else if (x && (x.error === 'bad_request' || x.error === 'too_large' || x.error === 'forbidden')) drop(ev);
         else {
           // it and the rest wait (in order): the record already has any of them it took, and acks a repeat as a duplicate
           backOff(ev, x?.error ?? 'unavailable');

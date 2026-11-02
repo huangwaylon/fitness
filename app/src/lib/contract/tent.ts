@@ -5,7 +5,7 @@
 // final), and the wallpaper and the floor (`{sc, id: TENT_WALL | TENT_FLOOR, at, item, x: 0, z: 0, f: 0, p}`, never
 // removed); a small thing on another piece's surface (NH's table-top things) carries `on: <its id>`, and then x and z
 // are its slot on that piece (its tile in the piece's own, unturned footprint) and f its facing on it, so the piece
-// moving or turning carries it, in one op. The same merge as the island's: a removal beats everything, else the latest `at`, then B over A; the sheet
+// moving or turning carries it, in one op. The same merge as the island's: a removal beats everything, else the latest `at`, then G over B over A; the sheet
 // keeps each id's latest op. Shared by the Apps Script, the model, the relay protocol and the tent; pure and
 // dependency-free (the items themselves are the app's: components/tent/items.json).
 
@@ -19,7 +19,8 @@ export const TENT_FLOOR = 'dtentfloor';
 /** NH's room light switch: item `r1` (on) or `r0` (off), x = z = f = 0. */
 export const TENT_ROOM = 'dtentroom';
 
-type Who = 'A' | 'B';
+/** Who set it (the guest's tent pieces too): the merge's tie-break is a fixed order, A < B < G. */
+type Who = 'A' | 'B' | 'G';
 type Facing = 0 | 1 | 2 | 3;
 export type TentOp =
   | { sc: 't'; id: string; at: number; item: string; x: number; z: number; f: Facing; p: number; on?: string; l?: 0 | 1; rm?: undefined }
@@ -66,7 +67,7 @@ export function tentOpOf(d: Record<string, unknown>): TentOp | null {
   return { sc: 't', id: d.id, at: d.at, item: d.item, x: d.x, z: d.z, f: d.f as Facing, p: d.p, ...(d.on !== undefined ? { on: d.on as string } : {}), ...(d.l !== undefined ? { l: d.l as 0 | 1 } : {}) };
 }
 
-/** Whether entry `a` beats `b` (the same id): a removal beats a set; else the later `at`, then B over A. */
+/** Whether entry `a` beats `b` (the same id): a removal beats a set; else the later `at`, then G over B over A. */
 function tentBeats(a: TentEntry, b: TentEntry): boolean {
   if (!!a.rm !== !!b.rm) return !!a.rm;
   if (a.at !== b.at) return a.at > b.at;

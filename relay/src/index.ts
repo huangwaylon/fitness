@@ -2,7 +2,7 @@
 // Durable Object, the island room, which relays each person's intents to the other. The room uses the WebSocket
 // Hibernation API, so an idle connection costs nothing; a phone connects only while the app is on screen.
 import { DurableObject } from 'cloudflare:workers';
-import { LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type RecordMark, type Relayed, type Who } from '../../app/src/lib/sync/live-protocol.ts';
+import { LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type RecordMark, type Relayed, type Member as Who } from '../../app/src/lib/sync/live-protocol.ts';
 import { originAllowed } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
 import { HELLO_MS, RoomCore, type Held, type Kept, type Meta } from './room.ts';
@@ -24,6 +24,8 @@ export interface Env {
   /** The person keys (secrets). Unset = nobody gets in. */
   KEY_A?: string;
   KEY_B?: string;
+  /** The guest's key (docs/backend.md#the-guest): a secret like the others; unset = no guest. */
+  KEY_C?: string;
   /** Web Push (docs/backend.md#notifications): the VAPID public key (a var, also in the app) and its private scalar
    *  (a secret), both base64url, and the subject the push services may contact. Unset = no push goes out. */
   VAPID_PUBLIC?: string;
@@ -55,7 +57,7 @@ export class IslandRoom extends DurableObject<Env> implements PushRoom {
         sockets: () => ctx.getWebSockets(),
         meta: (s) => (s.deserializeAttachment() as Meta | null) ?? null,
         setMeta: (s, m) => s.serializeAttachment(m),
-        keys: { KEY_A: env.KEY_A, KEY_B: env.KEY_B },
+        keys: { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C },
         now: () => Date.now(),
         save: (r) => void ctx.storage.put(RING, r),
         saveRec: (r) => void ctx.storage.put(REC, r),
@@ -158,7 +160,7 @@ export default {
     if (url.pathname === '/api') return apiRoute(req, env.ALLOWED_ORIGINS ?? '', () => env.STORE.get(env.STORE.idFromName('record')));
     if (url.pathname === '/admin') return adminRoute(req, () => env.STORE.get(env.STORE.idFromName('record')));
     if (isPushPath(url.pathname)) {
-      return pushRoute(req, url.pathname, { KEY_A: env.KEY_A, KEY_B: env.KEY_B }, env.ALLOWED_ORIGINS ?? '', () => env.ROOM.get(env.ROOM.idFromName('island')));
+      return pushRoute(req, url.pathname, { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C }, env.ALLOWED_ORIGINS ?? '', () => env.ROOM.get(env.ROOM.idFromName('island')));
     }
     if (url.pathname !== '/room') return new Response('not found', { status: 404 });
     if (!originAllowed(req.headers.get('Origin'), env.ALLOWED_ORIGINS ?? '')) return new Response('forbidden', { status: 403 });
