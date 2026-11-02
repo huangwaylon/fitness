@@ -63,7 +63,7 @@
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { caught } from '#lib/sync/world-day.ts';
-  import type { How } from '#lib/sync/live-protocol.ts';
+  import type { How, Who } from '#lib/sync/live-protocol.ts';
   import { LANDS, PACE, STILL, bubblesAt, bugPath, critterId, fishPath, freshWater, groundOk, inWater, legAt, type Leg } from './critterPath.ts';
   import { tellPartner } from './partnerNews.ts';
   import { livePos } from '../motion/director.svelte.ts';
@@ -916,7 +916,7 @@
   /** The partner's catch (or a critter that got away from them), heard over the relay: gone here too. Just now (`live`):
    *  their villager runs over and nets it, reels it in, digs it up or dives for it, then holds it up (or, out of view,
    *  the notice at the edge); `beat`: I tapped it too, and the relay heard them first. */
-  function theirCatch(e: { what: string; id?: string; at?: readonly [number, number]; how?: How }, live: boolean, beat: boolean) {
+  function theirCatch(e: { what: string; id?: string; at?: readonly [number, number]; how?: How; who?: Who }, live: boolean, beat: boolean) {
     const id = e.id, how = e.how;
     const f = WATERS.map((wt) => fishes[wt]).find((x) => !!x && x.cid === id) ?? null;
     const b = bug && bug.cid === id ? bug : null;
@@ -949,7 +949,7 @@
     const [x, z] = at;
     if (b) Object.assign(b, { held: true, ms: 0 });
     // in place: their villager turns to it, and the net or the shovel shows at the catch (a reel or a dive: a splash)
-    partnerTurnTo(x);
+    partnerTurnTo(x, e.who);
     const p = stageAt(x, z);
     if (how === 'dig') dig = { n: ++seq, ...p };
     else if (how !== 'rod' && how !== 'dive') net = { n: ++seq, ...p };
@@ -958,7 +958,7 @@
     later(() => {
       gone();
       if (how === 'rod' || how === 'dive') sceneSfx('splash');
-      tellPartner({ art: artOf(e.what), verb: beat ? 'beat' : verbOf(how), name: nameOf(e.what, how), x, z });
+      tellPartner({ who: e.who, art: artOf(e.what), verb: beat ? 'beat' : verbOf(how), name: nameOf(e.what, how), x, z });
     }, ms);
   }
 
@@ -979,7 +979,7 @@
       else if (e.kind === 'put' && e.what.startsWith('bug:')) theirBug(e);
       else if (e.kind === 'act' && e.act === 'cast' && live && e.pt) {
         // the partner casts: their villager turns to the water where it stands (their bite is theirs)
-        partnerTurnTo(e.pt[0]);
+        partnerTurnTo(e.pt[0], e.who);
       }
     })
   );

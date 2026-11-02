@@ -561,6 +561,45 @@ picked up is gone on both, what a shake drops lies on both, each villager stands
 - **Late and alone:** a phone opening later hears the day from the relay (and keeps it: a reload needs only what's
   new); with the relay unreachable each phone keeps its own and they catch up when it's back.
 
+### The guest
+
+`contract/guest.ts`, `ui-state/cast.ts`, `ui-state/viewer.ts`, `e2e/guest.spec.ts` ([backend](backend.md#the-guest),
+[decisions](decisions.md#a-guest-not-a-third-member-2026-11-02)). A third person, 「おきゃくさん」: a visitor to our island,
+NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)). `?demo&as=G` is its phone.
+
+- **What it sees:** our island, the trees and their popups, the ベル ribbon and the jar (to look at: its balance and the
+  buys, 「ちょきんばこは ふたりの もの。」 in place of the shop, no ×), きろく (the ledger, the goals read-only) and
+  けんこう's かつどう. Never a からだ figure: no からだ switch, no weight or body card, no weight goal (its snapshot holds
+  none: the record leaves them out). せってい: its villager and name (the same picker, its own prefs), the sound, the
+  language and あそびかた; no もようがえ, つうち or つうしん, and a line saying it's visiting.
+- **What it does:** walks, catches, digs, picks up and shakes like us (the shared world's claims, first wins), its
+  finds and counts its own in the shared ずかん (the museum: each entry credited to its first finder, the guest's
+  name with 「（おきゃくさん）」 once it has one of its own; per-person counts, and a row of who found how many of the page
+  once three share it); phrases over its villager, high-fives with either of us, and the tent: walking, sitting and
+  arranging it. It earns and spends nothing, sets no goal, waters no flower and wishes on no star (the room would
+  refuse those, so its phone doesn't try).
+- **Its villager on the island:** there only while its app is open (the relay's presence), like an NH visitor. Each
+  time the app opens it comes ashore at the front beach's right end and strolls up to its spot by the campsite, on
+  every phone (its walk goes over the relay). It has no home and no tree. It moves only when the guest moves it
+  (taps, the tent, a seat): no phone's idle life walks it, on its own phone or ours, no outing, no follow, no walk
+  home after a while away; in place it bobs and blinks like anyone. It dozes 22:00–05:00 on the relay's clock with
+  everyone. Closing the app takes it off our islands.
+- **On our phones:** drawn like the partner's villager (the same billboard, its walks played the same way, lilac name
+  tag); a tap on it is a high-five (to the guest), its phrases show over it, its catches play there (its villager turns
+  to it, the plate says its name). A banner says it came: 「おきゃくさんが あそびに きたよ！」.
+- **Who counts as "the partner"** (each "both of us" rule, said once): the guest never does.
+  - Wilbur on the dock, the edge face (「うめの ほうへ」), `peer`: the other member only; on the guest's phone either
+    member for `peer`, A for the edge face.
+  - ふたりでぜんぶ, the goal walks, the evening meet-up and the bench gathering, the follow, the partner meeting a
+    visitor: the members' own, on their own phones; the guest's phone plays none of them (A's and B's fruit still
+    ripens on their trees there).
+  - Ambient life (`ambient.ts`): the two members' villagers only, on every phone; the guest's villager is never in it
+    (on the guest's phone A's and B's take their beats as on ours).
+  - Group stretching: the members' two villagers; the guest's stands where it is.
+  - The goal notification: the members' only; the guest's phone reports nothing and gets nothing.
+  - Sleep: everyone, by the relay's clock; a wake is said with whose villager woke (`act wake`, `id` A, B or G).
+  - High-fives: one at a time per pair, each with its `to`; the room holds the last one per (sender, recipient) pair.
+
 ### Decorating
 
 `contract/decor.ts`, `store/decor.svelte.ts`, `island/decor.ts`, `island/Decor.svelte`, `island/DecorMode.svelte`,

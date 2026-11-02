@@ -325,9 +325,9 @@
       if (e.kind !== 'pick' || !live || !e.at || !enabled()) return;
       const [kind, id, id2] = e.what.split(':');
       const [x, z] = e.at;
-      const news = (n: Omit<PartnerNews, 'x' | 'z'>) => tellPartner({ ...n, x, z });
+      const news = (n: Omit<PartnerNews, 'x' | 'z'>) => tellPartner({ who: e.who, ...n, x, z });
       if (kind === 'fossil' || kind === 'dug') {
-        partnerTurnTo(x);
+        partnerTurnTo(x, e.who);
         const n = ++seq;
         dig = { n, x, y: z };
         later(() => dig?.n === n && (dig = null), 6400);
@@ -336,7 +336,7 @@
         return;
       }
       if (kind === 'present') {
-        partnerTurnTo(x);
+        partnerTurnTo(x, e.who);
         const n = ++seq;
         opening = { n, x, y: z, art: 'deco/present', size: PRESENT_U };
         later(() => opening?.n === n && (opening = null), 1100);
@@ -350,7 +350,7 @@
       const art = kind === 'bottle' ? findArt('message-bottle') : kind === 'sky-egg' ? findArt('sky-egg') : findArt(id);
       const name = kind === 'bottle' ? 'beach.name.message-bottle' : kind === 'sky-egg' ? 'beach.name.sky-egg' : `beach.name.${id}`;
       if (!['shell', 'fragment', 'bottle', 'mushroom', 'sky-egg'].includes(kind)) return;
-      partnerTurnTo(x);
+      partnerTurnTo(x, e.who);
       const n = ++seq;
       lift = { n, x, y: z, lift: 0, art, tilt: 0 };
       later(() => lift?.n === n && (lift = null), 500);

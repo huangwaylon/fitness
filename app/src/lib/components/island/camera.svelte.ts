@@ -283,7 +283,9 @@ export class World {
   /** Register an element as a world node: `{@attach world.at({ x, z, ... })}` (re-attached when its spec changes). */
   at(spec: NodeSpec): (el: HTMLElement) => () => void {
     return (el: HTMLElement) => {
-      const n: Node = { ...spec, el, shown: el.style.visibility !== 'hidden', tf: '', op: '', clip: '', zIndex: NaN, invS: '' };
+      // (a re-attach, its spec changed, finds the element as the last node left it: what's written there, so the first
+      // place writes what differs, a fade or a cut included)
+      const n: Node = { ...spec, el, shown: el.style.visibility !== 'hidden', tf: '', op: el.style.opacity, clip: el.style.clipPath, zIndex: NaN, invS: '' };
       el.style.position = 'absolute';
       el.style.left = '0';
       el.style.top = '0';

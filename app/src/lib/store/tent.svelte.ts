@@ -50,7 +50,7 @@ class TentRoom {
   #merge(raw: unknown): TentEntry | null {
     if (typeof raw !== 'object' || raw === null) return null;
     const r = raw as Record<string, unknown>;
-    if (r.who !== 'A' && r.who !== 'B') return null;
+    if (r.who !== 'A' && r.who !== 'B' && r.who !== 'G') return null;
     const { who, ...d } = r;
     const op = tentOpOf(d);
     if (!op) return null;

@@ -6,8 +6,8 @@ import { liveRelay } from '#lib/sync/live.ts';
 /** The relay's clock minus this device's (ms). */
 export const relayOffset = (): number => liveRelay().serverNow() - Date.now();
 
-/** The partner has the island open too (the relay's presence). */
-export function partnerHere(): boolean {
+/** `who` has the island open (the relay's presence: on the guest's phone, each member). */
+export function personHere(who: 'A' | 'B' | 'G'): boolean {
   const s = liveRelay().status();
-  return s.connected && s.peer;
+  return s.connected && s.here.includes(who);
 }

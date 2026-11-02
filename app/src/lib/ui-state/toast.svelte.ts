@@ -1,6 +1,6 @@
 // The one banner (an NH-style notification): its text, icon, optional undo, and its life. ToastHost renders `toasts.current`
 // (in the layout, or inside the topmost open sheet).
-import type { PersonId } from '#lib/types.ts';
+import type { Who } from '#lib/types.ts';
 
 export interface Toast {
   text: string;
@@ -10,7 +10,7 @@ export interface Toast {
   /** Official reaction icon on the banner (`reactions/<id>`). */
   reaction?: string;
   /** A partner event: that person's villager on the left instead of しずえ. */
-  person?: PersonId;
+  person?: Who;
   /** What happened, for code that reacts to a banner (never match on the translated text; review P9). */
   code?: 'save-failed';
   /** The banner was paused (`null`) or resumed with `ms` left: keep the action's undo window in step (returns the ms granted). */

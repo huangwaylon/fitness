@@ -28,6 +28,7 @@
   import { i18n, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { resetHealth } from '../health/healthLast.ts';
+  import { isGuest, mine } from '#lib/ui-state/viewer.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
 
@@ -52,8 +53,11 @@
   const view = $derived(week.view);
   const deep = $derived(push !== null || kirokuLevel > 0);
   const title = $derived(push ? t(`panel.${push}`) : t('panel.title'));
-  const me = $derived(view ? view.people[view.me] : null);
-  const myLook = $derived(view && me ? resolveLook({ villager: me.villager, person: view.me }).id : null);
+  /** This phone's villager (the guest's own on the guest's phone). */
+  const me = $derived(view ? mine(view) : null);
+  const myLook = $derived(me ? resolveLook({ villager: me.villager, person: me.who }).id : null);
+  /** The guest's phone (docs/design.md "The guest"): no もようがえ, no つうち, no つうしん. */
+  const guest = $derived(isGuest(view));
 
   async function go(to: 'villager' | 'help') {
     savedTop = body?.scrollTop ?? 0;
@@ -119,22 +123,25 @@
       <section class="sec" aria-labelledby="sec-villager">
         <h2 id="sec-villager">{t('panel.villager')}</h2>
         <div class="prow static me">
-          <Avatar person={view.me} villager={me.villager} size={48} />
+          <Avatar person={me.who} villager={me.villager} size={48} />
           <span class="prl">{me.villagerName}{#if myLook}<small>{i18n.locale === 'ja' ? ROSTER[myLook].nameJa : ROSTER[myLook].nameEn}</small>{/if}</span>
           <button type="button" class="btn small paper" data-push="villager" data-sfx="page" onclick={() => go('villager')}>{t('panel.change')}</button>
         </div>
+        {#if guest}<p class="guest" data-guest-note>{t('guest.note')}</p>{/if}
       </section>
-      <section class="sec" aria-labelledby="sec-decor">
-        <h2 id="sec-decor">{t('panel.decor')}</h2>
-        <div class="card help">
-          <p>{t('panel.decorSummary')}</p>
-          <button type="button" class="btn small paper" data-decor-start data-sfx="open" onclick={() => ((ui.decorating = true), (open = false))}>{t('panel.decorStart')}</button>
-        </div>
-      </section>
+      {#if !guest}
+        <section class="sec" aria-labelledby="sec-decor">
+          <h2 id="sec-decor">{t('panel.decor')}</h2>
+          <div class="card help">
+            <p>{t('panel.decorSummary')}</p>
+            <button type="button" class="btn small paper" data-decor-start data-sfx="open" onclick={() => ((ui.decorating = true), (open = false))}>{t('panel.decorStart')}</button>
+          </div>
+        </section>
+      {/if}
       <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound">{t('panel.sound')}</h2><SoundSection /></section>
-      <section class="sec" aria-labelledby="sec-notify"><h2 id="sec-notify">{t('panel.notify')}</h2><NotifySection {view} /></section>
+      {#if !guest}<section class="sec" aria-labelledby="sec-notify"><h2 id="sec-notify">{t('panel.notify')}</h2><NotifySection {view} /></section>{/if}
       <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang">{t('panel.lang')}</h2><LangSection /></section>
-      <section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync">{t('panel.sync')}</h2><SyncSection {view} /></section>
+      {#if !guest}<section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync">{t('panel.sync')}</h2><SyncSection {view} /></section>{/if}
       <section class="sec" aria-labelledby="sec-help">
         <h2 id="sec-help">{t('panel.help')}</h2>
         <div class="card help">
@@ -185,6 +192,7 @@
   .help { display: grid; gap: 10px; padding: 14px 16px; }
   .help p { margin: 0; font-weight: 700; line-height: 1.5; }
   .help .btn { justify-self: end; }
+  .guest { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .demo { align-self: center; background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 10px; font: 700 var(--fs-s)/1 var(--font-ui); }
 
   /* Rows shared by the sections (ことば, つうしん, サウンド, むらびと). */

@@ -17,13 +17,15 @@ import type { EmoteIcon } from '#lib/art.ts';
 import { nav } from './nav.ts';
 import { planTap, type TapPlan } from './tapWalk.ts';
 import { dayKey } from '#lib/time/clock.ts';
+import { actorOf, guestPhone, otherMember, whoOf } from '#lib/ui-state/cast.ts';
+import type { Who } from '#lib/types.ts';
 
 export interface AvatarCtx {
   geo: () => WalkGeo;
   /** A villager standing with its feet at (x, y) u covers no control (and not the other villager). */
   clear: (id: ActorId, x: number, y: number) => boolean;
   /** Where an actor's feet are now (mid-walk included), u. */
-  where: (id: 'mine' | 'partner') => Pt;
+  where: (id: Villager) => Pt;
   /** Live, not covered, page visible. */
   enabled: () => boolean;
   /** Close a speech balloon (a walk closes it: it only opens over a villager standing still). */
@@ -32,18 +34,23 @@ export interface AvatarCtx {
 
 let ctx: AvatarCtx | null = null;
 /** Each villager's next step on its own (home, the next point of interest): one timer each, replaced by a new plan. */
-const homeTimers: Partial<Record<'mine' | 'partner', ReturnType<typeof setTimeout>>> = {};
+const homeTimers: Partial<Record<Villager, ReturnType<typeof setTimeout>>> = {};
 let followTimer: ReturnType<typeof setTimeout> | undefined;
 /** When my villager left home for something (the partner follows after FOLLOW_MS), and whether the partner did. */
 const away = { since: 0, followed: false };
 /** A visitor is on the island (Visitor.svelte): centre stage is theirs. `beat`: the visitor's turn on idle life's slot,
  *  with the slot's PRNG (Visitor.svelte sets it while one is out; island/visitorLife.ts). */
 export const presence: { visitor: boolean; beat: ((r: () => number) => void) | null } = { visitor: false, beat: null };
-type Villager = 'mine' | 'partner';
+/** The villagers (ui-state/cast.ts): mine, the partner's and the third (the guest's on a member's phone, B's on the
+ *  guest's). */
+type Villager = 'mine' | 'partner' | 'third';
 /** When each villager's person last steered it (device ms): my taps here, the partner's walks over the relay. Ambient
  *  life leaves it alone a while after (ambient.ts held). */
 export const steered: Partial<Record<Villager, number>> = {};
-const otherOf = (id: Villager): Villager => (id === 'mine' ? 'partner' : 'mine');
+/** The other member's villager (the members' own life is between those two: never the guest's: ui-state/cast.ts). */
+const otherOf = (id: Villager): Villager | null => otherMember(id);
+/** The guest's villager here (moved only by the guest's own taps and walks: never by any phone's life). */
+const guests = (id: Villager): boolean => whoOf(id) === 'G';
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
 /** Where a tap sent my villager (spec §4): it stays there for the rest of the Tokyo day (localStorage, with the date),
@@ -70,9 +77,9 @@ function keepStay(p: Pt | null) {
   }
 }
 /** Where the partner sent their villager today (their last walk, live or replayed by the relay), if anywhere. */
-let partnerStay: Pt | null = null;
+const stays: Partial<Record<Villager, Pt | null>> = {};
 /** Where a villager rests: where its person sent it today, else its home. */
-const restOf = (id: Villager): Pt => (id === 'mine' ? stayAt : partnerStay) ?? actors[id].home;
+const restOf = (id: Villager): Pt => (id === 'mine' ? stayAt : stays[id]) ?? actors[id].home;
 /** Out of the tent's door: my villager stands just outside it, facing out (as if it just stepped out), and stays there
  *  (a put: the partner's phone has it there too). */
 export function stepOut(at: Pt): void {
@@ -80,6 +87,19 @@ export function stepOut(at: Pt): void {
   steered.mine = Date.now();
   actors.mine.face = 'home';
   place('mine', at[0], at[1]);
+}
+/** The guest's villager comes ashore (docs/design.md "The guest", once per app open: the scene): put at `from`, it
+ *  walks to `to` at a stroll and stays there (the walk goes over the relay like any, so the members see it arrive). */
+export function arrive(from: Pt, to: Pt): void {
+  const c = ctx;
+  keepStay(to);
+  steered.mine = Date.now();
+  actors.mine.face = 'home';
+  place('mine', from[0], from[1]);
+  // by the island's own planner (nav.ts: up the stairs, over the bridge), as a tap there would go
+  const p = c ? planTap(nav(), from, to[0], to[1], c.geo().extra) : null;
+  if (p) walkTo('mine', p.pts, { speed: SPEED.wander, from, face: 'home' });
+  else place('mine', to[0], to[1]);
 }
 /** Where my villager stands at the start (the scene mounting): where a tap sent it today, if anywhere. */
 export const stayingAt = (): Pt | null => (stayAt && readStay() ? stayAt : null);
@@ -95,7 +115,7 @@ export function attachAvatar(c: AvatarCtx): () => void {
       ctx = null;
       setRouter(null);
     }
-    for (const id of ['mine', 'partner'] as const) clearTimeout(homeTimers[id]);
+    for (const id of ['mine', 'partner', 'third'] as const) clearTimeout(homeTimers[id]);
     clearTimeout(followTimer);
   };
 }
@@ -152,52 +172,54 @@ export function sendTo(x: number, z: number): TapPlan | null {
 
 /** The partner tapped somewhere on their phone (the relay's `walk`, world units): their villager here runs there too,
  *  by the same planner from where it stands (no positions are sent), and rests there for the day, as on their phone. */
-export function partnerTo(x: number, z: number): boolean {
+export function partnerTo(x: number, z: number, id: Villager = 'partner'): boolean {
   const c = ctx;
-  if (!c || !c.enabled() || actors.partner.asleep) return false;
-  const from = c.where('partner'), p = planTap(nav(), from, x, z, c.geo().extra);
+  if (!c || !c.enabled() || actors[id].asleep) return false;
+  const from = c.where(id), p = planTap(nav(), from, x, z, c.geo().extra);
   if (!p) return false;
-  steered.partner = Date.now();
-  partnerStay = restAt(p.to, actors.partner.home);
-  clearTimeout(homeTimers.partner);
-  walkTo('partner', p.pts, { speed: SPEED.run, from, face: p.snap.face, remote: true });
+  steered[id] = Date.now();
+  stays[id] = restAt(p.to, actors[id].home);
+  clearTimeout(homeTimers[id]);
+  walkTo(id, p.pts, { speed: SPEED.run, from, face: p.snap.face, remote: true });
   return true;
 }
 
 /** The partner's villager rests where they sent it earlier today (the relay's replay of their last walk, or the sheet's
  *  day row): put there at once, no walk (a phone opening later finds it where their phone has it). */
-export function partnerRestsAt(x: number, z: number): void {
+export function partnerRestsAt(x: number, z: number, id: Villager = 'partner'): void {
   const p = planTap(nav(), [x, z], x, z, []);
   const to = p?.to ?? [x, z];
-  partnerStay = restAt(to, actors.partner.home);
-  if (!actors.partner.walking && !busy('partner')) {
-    clearTimeout(homeTimers.partner);
-    place('partner', to[0], to[1], true);
+  stays[id] = restAt(to, actors[id].home);
+  if (!actors[id].walking && !busy(id)) {
+    clearTimeout(homeTimers[id]);
+    place(id, to[0], to[1], true);
   }
 }
-/** Where the partner's villager rests when it isn't the relay's to move (their last walk's end; villagerSync). */
-export function setPartnerRest(x: number, z: number): void {
-  partnerStay = restAt([x, z], actors.partner.home);
+/** Where another's villager rests when it isn't the relay's to move (their last walk's end; villagerSync). */
+export function setPartnerRest(x: number, z: number, id: Villager = 'partner'): void {
+  stays[id] = restAt([x, z], actors[id].home);
 }
 /** A rest spot (null: home, within 8u of it). */
 const restAt = (p: Pt, home: Pt): Pt | null => (Math.hypot(p[0] - home[0], p[1] - home[1]) <= 8 ? null : [p[0], p[1]]);
 
 /** The partner did something on their phone (the shared world: a catch, a pick-up, a shake): their villager here turns
  *  to it where it stands (no walking over, as on their own phone) and the result plays at the target. */
-export function partnerTurnTo(tx: number): void {
-  if (!ctx?.enabled() || actors.partner.asleep) return;
-  steered.partner = Date.now();
-  faceToward('partner', tx);
+export function partnerTurnTo(tx: number, who?: Who): void {
+  const id = who ? actorOf(who) : 'partner';
+  if (!ctx?.enabled() || actors[id].asleep || id === 'mine') return;
+  steered[id] = Date.now();
+  faceToward(id, tx);
 }
 
 /** After `ms`, wander home (90 u/s), unless something else took the villager by then (then a little later). */
-function goHomeLater(id: 'mine' | 'partner', ms: number): void {
+function goHomeLater(id: Villager, ms: number): void {
+  if (guests(id)) return; // the guest's villager stays where its taps put it
   clearTimeout(homeTimers[id]);
   homeTimers[id] = setTimeout(() => goHome(id), ms);
 }
 
 function goHome(id: Villager): void {
-  if (inside[id]) return;
+  if (inside[id] || guests(id)) return;
   const c = ctx;
   const home = restOf(id), at = c?.where(id);
   if (!c || !at || Math.hypot(at[0] - home[0], at[1] - home[1]) <= 2) return id === 'mine' ? backHome() : undefined;
@@ -211,7 +233,7 @@ function goHome(id: Villager): void {
 function backHome() {
   away.since = 0;
   clearTimeout(followTimer);
-  if (away.followed && awayFromHome('partner')) goHomeLater('partner', rand(800, 1600));
+  if (away.followed && !guestPhone() && awayFromHome('partner')) goHomeLater('partner', rand(800, 1600));
   away.followed = false;
 }
 
@@ -228,8 +250,8 @@ const free = (id: Villager) => !inside[id] && !actors[id].asleep && !busy(id) &&
 /** Mine has been away FOLLOW_MS: the partner comes over and stands beside it (then they chat). */
 function checkFollow() {
   const c = ctx;
-  // the partner's villager is theirs to move while they're here (villagerSync)
-  if (!c || !c.enabled() || !awayFromHome('mine') || isRemote('partner')) return;
+  // the partner's villager is theirs to move while they're here (villagerSync); the guest's phone has no partner to follow
+  if (!c || !c.enabled() || guestPhone() || !awayFromHome('mine') || isRemote('partner')) return;
   if (!shouldFollow(away.since, Date.now(), free('partner') && !away.followed)) return;
   if (actors.mine.walking) return void (followTimer = setTimeout(checkFollow, 1000));
   const g = c.geo(), at = c.where('mine'), from = c.where('partner');
@@ -248,7 +270,7 @@ function checkFollow() {
 /** Idle life: send a villager off to a point of interest or a few (one walker leaves home at a time). */
 export function wander(id: Villager, stops = 1 + Math.floor(Math.random() * MAX_HOPS)): boolean {
   const c = ctx, other = otherOf(id);
-  if (!c || !c.enabled() || !free(id) || awayFromHome(id) || isRemote(id)) return false;
+  if (!c || !c.enabled() || !other || !free(id) || awayFromHome(id) || isRemote(id)) return false;
   if (actors[other].walking || awayFromHome(other)) return false;
   return hop(id, stops);
 }
@@ -257,7 +279,7 @@ export function wander(id: Villager, stops = 1 + Math.floor(Math.random() * MAX_
  *  given, then home; the same walk on both phones. */
 export function outing(id: Villager, stops: readonly Stop[], together = false): boolean {
   const c = ctx, other = otherOf(id);
-  if (!c || !c.enabled() || !free(id) || awayFromHome(id) || !stops.length) return false;
+  if (!c || !c.enabled() || !other || !free(id) || awayFromHome(id) || !stops.length) return false;
   if (!together && (actors[other].walking || awayFromHome(other))) return false;
   return hop(id, stops.length, stops);
 }
@@ -290,7 +312,7 @@ function hop(id: Villager, left: number, stops?: readonly Stop[]): boolean {
  *  stare out to sea); then the next point or home. */
 function arrived(id: Villager, kind: PoiKind, left: number, stops?: readonly Stop[], linger?: number) {
   const c = ctx, other = otherOf(id);
-  if (!c) return;
+  if (!c || !other) return;
   // a seat or the bar: it sits (or does its pull-up) facing us (IslandScene draws it seated: world.ts seatAt)
   if (kind === 'seat' || kind === 'bar') actors[id].face = 'home';
   else if (!actors[other].walking && adjacent(c.where(id), c.where(other))) chat(id);
@@ -308,6 +330,7 @@ function arrived(id: Villager, kind: PoiKind, left: number, stops?: readonly Sto
 /** Two villagers side by side chat (idle life's chat: face each other, a nod, a laugh). */
 function chat(id: Villager) {
   const other = otherOf(id), t = Date.now();
+  if (!other) return;
   actors[id].busyUntil = Math.max(actors[id].busyUntil, t + 3200);
   actors[other].busyUntil = Math.max(actors[other].busyUntil, t + 3200);
   applyStep(id, { actor: id, face: 'other', motion: 'nod' });
@@ -335,7 +358,8 @@ export function goalWalk(id: Villager): number {
 /** ふたりでぜんぶ: both walk to the middle of the lawn and high-five there. Returns the ms until the high-five. */
 export function meetUp(): number {
   const c = ctx;
-  if (!c || !c.enabled() || actors.mine.asleep || actors.partner.asleep || inside.mine || inside.partner) return 0;
+  // (the members' own moment, on their phones: never on the guest's)
+  if (!c || !c.enabled() || guestPhone() || actors.mine.asleep || actors.partner.asleep || inside.mine || inside.partner) return 0;
   const g = c.geo();
   // each to the meeting spot on its own side (whose home is further left takes the left one: A's)
   const left = leftOf();
@@ -374,7 +398,7 @@ function highFive() {
 export function freeze(): void {
   const c = ctx;
   if (!c) return;
-  for (const id of ['mine', 'partner'] as const) {
+  for (const id of ['mine', 'partner', 'third'] as const) {
     if (!actors[id].walking) continue;
     const [x, y] = c.where(id);
     place(id, x, y);
@@ -384,13 +408,14 @@ export function freeze(): void {
 
 /** Uncovered again: whoever is away wanders home after a moment. */
 export function thaw(): void {
-  for (const id of ['mine', 'partner'] as const) if (awayFromHome(id)) goHomeLater(id, 2000 + Math.random() * 2000);
+  for (const id of ['mine', 'partner', 'third'] as const) if (awayFromHome(id)) goHomeLater(id, 2000 + Math.random() * 2000);
 }
 
 /** Back after over 30 s hidden: everyone is home, no walk. */
 export function snapHome(): void {
-  for (const id of ['mine', 'partner'] as const) {
+  for (const id of ['mine', 'partner', 'third'] as const) {
     clearTimeout(homeTimers[id]);
+    if (guests(id)) continue; // where the guest put it (its phone comes back to it, or it left)
     const [x, y] = restOf(id);
     place(id, x, y);
     actors[id].face = 'home';
@@ -423,7 +448,8 @@ export const visitorWalkable = (x: number, y: number): boolean => walkable(open(
 
 /** A villager is free to go over to the visitor: the partner, both villagers home, nobody walking. */
 export function villagerFree(): boolean {
-  if (!ctx?.enabled() || isRemote('partner') || actors.mine.walking || actors.partner.walking || awayFromHome('mine') || awayFromHome('partner')) return false;
+  // (the guest's phone: A and B are the members' phones' to send over)
+  if (!ctx?.enabled() || guestPhone() || isRemote('partner') || actors.mine.walking || actors.partner.walking || awayFromHome('mine') || awayFromHome('partner')) return false;
   return free('partner');
 }
 

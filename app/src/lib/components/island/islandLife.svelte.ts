@@ -11,7 +11,8 @@ import { actors, react, resetAll, setAsleep, setSleepClock, wake } from '../moti
 import { startIdleLife } from '../motion/idleLife.svelte.ts';
 import { ambientPois, ambientVillager, goalWalk, meetUp, outing, presence, steered, wander } from './avatar.ts';
 import { goalMoves } from './wander.ts';
-import { partnerHere, relayOffset } from './ambientClock.ts';
+import { personHere, relayOffset } from './ambientClock.ts';
+import { actorOf, guestPhone, whoOf } from '#lib/ui-state/cast.ts';
 import type { VillagerState } from './ambient.ts';
 import { on } from '../motion/bus.svelte.ts';
 import { dayKey, jst, now } from '#lib/time/clock.ts';
@@ -87,6 +88,7 @@ export class IslandLife {
           untrack(() => {
             setAsleep('mine', s);
             setAsleep('partner', s);
+            setAsleep('third', s);
           });
         }
         const t = now().getTime() + relayOffset();
@@ -135,6 +137,16 @@ export class IslandLife {
   }
 
   #diff(p: WeekView, v: WeekView): void {
+    // the guest's phone: the members' fruit ripens on their trees, and that's all (their villagers' walks to a tree,
+    // ふたりでぜんぶ and the reactions are their own phones' moments)
+    if (guestPhone()) {
+      for (const pid of ['A', 'B'] as const) {
+        const a = p.people[pid].rings, b = v.people[pid].rings;
+        const newlyRipe = RING_FRUITS.filter((f) => todayPct(b[f]) >= 100 && todayPct(a[f]) < 100);
+        if (newlyRipe.length) this.celebrate[pid] = { fruit: newlyRipe[0], n: ++this.#celebrateN };
+      }
+      return;
+    }
     // the villagers go to it (avatar.ts): ふたりでぜんぶ brings both to the middle for a high-five; a fruit met walks that
     // person's villager to their tree, and its reaction plays there
     const moves = goalMoves(p, v);
@@ -172,6 +184,7 @@ export class IslandLife {
               if (id === 'R13') {
                 setAsleep('mine', !actors.mine.asleep);
                 setAsleep('partner', !actors.partner.asleep);
+                setAsleep('third', !actors.third.asleep);
               } else if (id === 'R14') wake('mine');
               else if (id) react(id as ReactionId);
             }),
@@ -189,6 +202,9 @@ export class IslandLife {
     const beats: ReactionId[] = [];
     if (!asleepHour(d)) {
       if (once('open')) beats.push('R1');
+    }
+    // (the rest are about this phone's own day: the guest has none)
+    if (!asleepHour(d) && !guestPhone()) {
       if (h >= 5 && h < 9 && once('morning')) beats.push('R11');
       // evening: my partner turns to me while my day is still under half (a nudge to move, not to report in)
       if (h >= 18 && h < 22 && dayScore(me) < 50 && once('evening')) beats.push('R12');
@@ -203,13 +219,17 @@ export class IslandLife {
       night: ctx.night,
       offset: relayOffset,
       me: () => ctx.view().me,
-      // ambient life's world (island/ambient.ts): each person's villager, where it may wander, the day scores
+      // the members' villagers (ui-state/cast.ts): the guest's takes no part in ambient life, on any phone
+      actorOf: (p) => actorOf(p),
+      // ambient life's world (island/ambient.ts): each member's villager, where it may wander, the day scores
       world: () => {
-        const v = ctx.view(), mine = ambientVillager('mine'), partner = ambientVillager('partner');
-        if (!mine || !partner) return null;
+        const v = ctx.view(), a = actorOf('A'), b = actorOf('B'), va = ambientVillager(a), vb = ambientVillager(b);
+        if (!va || !vb) return null;
         const at = (t: number | undefined) => (t === undefined ? undefined : t + relayOffset());
+        // present: mine always, another member by the relay's presence (the guest never counts)
+        const here = (id: typeof a, p: PersonId) => id === 'mine' || personHere(p);
         return {
-          villagers: { [v.me]: { ...mine, present: true, lastIntent: at(steered.mine) }, [v.partner]: { ...partner, present: partnerHere(), lastIntent: at(steered.partner) } } as Record<PersonId, VillagerState>,
+          villagers: { A: { ...va, present: here(a, 'A'), lastIntent: at(steered[a]) }, B: { ...vb, present: here(b, 'B'), lastIntent: at(steered[b]) } } as Record<PersonId, VillagerState>,
           pois: ambientPois(),
           scores: { A: dayScore(v.people.A), B: dayScore(v.people.B) },
           // the exercise goal (🍑) met today: a pull-up at the bar now and then
@@ -219,8 +239,8 @@ export class IslandLife {
       outing,
       visitor: (r) => presence.beat?.(r),
       treeShake: (id) => {
-        const v = ctx.view();
-        this.shakeN[id === 'mine' ? v.me : v.partner]++;
+        const w = whoOf(id);
+        if (w !== 'G') this.shakeN[w]++;
       }
     });
 

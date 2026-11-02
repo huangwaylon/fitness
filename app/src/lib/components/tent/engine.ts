@@ -31,7 +31,8 @@ const DPR_MOVING = 1.5;
 /** How many lamps light the room at night (a point light each, nearest the middle first). */
 const LIGHTS_MAX = 4;
 
-export type Who = 'A' | 'B';
+/** Whose villager (the guest's too: docs/design.md "The guest"). */
+export type Who = 'A' | 'B' | 'G';
 export interface Look {
   /** The render's URL and its aspect (width / height). */
   url: string;
@@ -703,7 +704,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     const shadow = new Mesh(shadowGeo, shadowMat);
     shadow.rotation.x = -Math.PI / 2;
     shadow.renderOrder = 2;
-    const w: Walker = { look, card, mat, shadow, pos: [who === 'A' ? -6 : 6, 20], face: who === 'A' ? 1 : -1, path: null, hop: 0, alpha: null, pose: null };
+    const w: Walker = { look, card, mat, shadow, pos: [who === 'A' ? -6 : who === 'B' ? 6 : 0, 20], face: who === 'A' ? 1 : -1, path: null, hop: 0, alpha: null, pose: null };
     villagers.set(who, w);
     scene.add(card, shadow);
     tex.loadAsync(look.url).then((t) => {

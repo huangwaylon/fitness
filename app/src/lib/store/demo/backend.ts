@@ -3,7 +3,7 @@
 // shared by both players' tabs; it never touches the live key, queue or cache. Loaded only in the demo.
 // Its clock is the scene clock: `?demo&date=2026-11-03T12:10` builds the rows and runs the model on that day.
 import type { EventType } from '#lib/contract/api.ts';
-import type { PersonId, WeekView } from '#lib/types.ts';
+import type { WeekView, Who } from '#lib/types.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { dayKey, now as sceneNow } from '#lib/time/clock.ts';
 import { harvestOf } from '#lib/model/week.ts';
@@ -20,14 +20,14 @@ export type DemoMode = 'plain' | 'harvest';
 export class DemoBackend implements Backend {
   #host: Host;
   #mode: DemoMode;
-  #me: PersonId;
+  #me: Who;
   #cache: SnapshotCache | null = null;
   /** The session's events (never sent), applied by the model like the live queue. */
   #events: QueuedEvent[] = [];
   /** `?demo=harvest`: the harvest overlay over last week, until I drop it in. */
   #harvested = false;
 
-  constructor(host: Host, mode: DemoMode, me: PersonId) {
+  constructor(host: Host, mode: DemoMode, me: Who) {
     this.#host = host;
     this.#mode = mode;
     this.#me = me;
@@ -85,6 +85,7 @@ export class DemoBackend implements Backend {
   decorate(m: ComposedModel, v: WeekView): void {
     if (this.#mode !== 'harvest' || v.harvest) return;
     const wk = addDays(v.weekKey, -7);
+    if (v.viewer === 'G') return; // the harvest is the members'
     v.harvest = harvestOf(weekBells(m.state, wk, m.now), this.#harvested ? [v.me] : []);
   }
 

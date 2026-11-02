@@ -51,13 +51,13 @@ const blank = (): ActorState => ({
   busyUntil: 0
 });
 
-export const actors = $state<Record<ActorId, ActorState>>({ mine: blank(), partner: blank(), host: blank(), visitor: blank() });
+export const actors = $state<Record<ActorId, ActorState>>({ mine: blank(), partner: blank(), third: blank(), host: blank(), visitor: blank() });
 
 const EMOTE_MS = 2200;
 let fxN = 0;
 /** Pending timers per actor → an optional "dropped" hook, called when cancel() / resetAll() drops it. */
 type Dropped = (() => void) | undefined;
-const timers: Record<ActorId, Map<ReturnType<typeof setTimeout>, Dropped>> = { mine: new Map(), partner: new Map(), host: new Map(), visitor: new Map() };
+const timers: Record<ActorId, Map<ReturnType<typeof setTimeout>, Dropped>> = { mine: new Map(), partner: new Map(), third: new Map(), host: new Map(), visitor: new Map() };
 /** Last time any event reaction ran (idle life waits 3 s after one). */
 export const lastEvent = { at: 0 };
 
@@ -211,6 +211,7 @@ export function applyStep(id: ActorId, s: Step) {
   if (id === 'host' && !a.present) return;
   // 'jar': the jar sits in the sky HUD beside the ribbon, up to the right: both look that way
   if (s.face) a.face = s.face === 'home' ? 'home' : s.face === 'other' ? toward(id, actors[id === 'mine' ? 'partner' : 'mine'].x) : s.face === 'jar' ? 'r' : 'in';
+  // (the third villager's `other` is mine: the one it high-fives on this phone)
   if (s.pose) {
     a.pose = s.pose;
     later(id, EMOTE_MS, () => (actors[id].pose = null));
@@ -387,7 +388,7 @@ export function onStep(fn: (id: ActorId, x: number, y: number) => void): () => v
 }
 export const STEP_GAP_MS = 320;
 /** Walk timers per actor (a new walk drops the last one's; so do cancel() and place()). */
-const walks: Record<ActorId, Set<() => void>> = { mine: new Set(), partner: new Set(), host: new Set(), visitor: new Set() };
+const walks: Record<ActorId, Set<() => void>> = { mine: new Set(), partner: new Set(), third: new Set(), host: new Set(), visitor: new Set() };
 
 interface WalkOpts {
   /** Total duration (ms), shared between the segments by length; else from `speed`. */
@@ -530,7 +531,7 @@ export function setSleepClock(fn: () => boolean): void {
 }
 /** A villager was woken here (a tap, a high-five): the scene tells the other phone (villagerSync), whose own wake of it
  *  is `remote`. */
-let woken: ((id: 'mine' | 'partner') => void) | null = null;
+let woken: ((id: 'mine' | 'partner' | 'third') => void) | null = null;
 export function onWake(fn: typeof woken): () => void {
   woken = fn;
   return () => {
@@ -539,7 +540,7 @@ export function onWake(fn: typeof woken): () => void {
 }
 
 /** Wake a dozing villager for WAKE_MS (R14; `ms`: what's left of a wake on the other phone), then back to sleep. */
-export function wake(id: 'mine' | 'partner', o: { remote?: boolean; ms?: number } = {}) {
+export function wake(id: 'mine' | 'partner' | 'third', o: { remote?: boolean; ms?: number } = {}) {
   const a = actors[id];
   if (!o.remote) woken?.(id);
   cancel(id);
@@ -560,7 +561,7 @@ export function resetAll() {
   if (drainTimer) clearTimeout(drainTimer);
   drainTimer = null;
   eventUntil = 0;
-  for (const id of ['mine', 'partner', 'host', 'visitor'] as const) {
+  for (const id of ['mine', 'partner', 'third', 'host', 'visitor'] as const) {
     const { present, home } = actors[id];
     cancel(id);
     Object.assign(actors[id], blank(), { present, home, x: home[0], y: home[1], from: home });

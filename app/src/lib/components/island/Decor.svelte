@@ -65,7 +65,7 @@
       if (!at) return;
       const k = ++n;
       puffs = [...puffs.slice(-2), { n: k, x: at.x, z: at.z }];
-      partnerTurnTo(at.x);
+      partnerTurnTo(at.x, e.who);
       setTimeout(() => (puffs = puffs.filter((p) => p.n !== k)), 700);
     })
   );

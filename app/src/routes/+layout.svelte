@@ -40,7 +40,7 @@
   let kept = $state<HarvestView | null>(null);
   const harvest = $derived(kept ?? week.view?.harvest ?? null);
   const showHarvest = $derived(
-    !onPair && !page.error && !!week.view && !!harvest && (!!kept || (!harvest.confirmedBy.includes(week.view.me) && laterFor !== harvest.weekKey))
+    !onPair && !page.error && !!week.view && week.view.viewer !== 'G' && !!harvest && (!!kept || (!harvest.confirmedBy.includes(week.view.me) && laterFor !== harvest.weekKey))
   );
   // Pages hold their toasts while the harvest is up.
   ui.provideOverlay(() => showHarvest);

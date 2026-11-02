@@ -4,7 +4,7 @@
   // inert. Slides down below the status row, holds (the store decides how long), slides up: the store
   // sets `leaving` for the slide-out and then drops it, so it never depends on a Svelte outro.
   // Left: a 36px icon on a pebble (partner's villager for partner events, しずえ for system ones). Right: one official reaction icon. Tap or swipe up to dismiss.
-  import type { PersonId } from '#lib/types.ts';
+  import type { Who } from '#lib/types.ts';
   import Host from '../characters/Host.svelte';
   import Villager from '../characters/Villager.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -13,7 +13,7 @@
   interface Props {
     text: string;
     /** A partner event: show that person's villager icon. */
-    person?: PersonId;
+    person?: Who;
     /** Official reaction icon on the right (`reactions/<id>`). */
     reaction?: string;
     /** A button on the banner (e.g. 取り消す); replaces the reaction icon. */

@@ -20,8 +20,11 @@
   import { buy as buyItem, undoBanner, undoSpend } from '#lib/store/actions.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
+  import { isGuest } from '#lib/ui-state/viewer.ts';
 
   const view = $derived(week.view);
+  /** The guest's phone: the jar to look at, the buys listed; nothing bought or erased (docs/design.md "The guest"). */
+  const guest = $derived(isGuest(view));
   const balance = $derived(view?.wallet.balance ?? 0);
   const m = $derived(week.model);
   /** The buys, newest first (walletAt is memoised per model and minute, as the view computed it). */
@@ -63,12 +66,16 @@
       <Bells bells={balance} class="total" />
     </div>
 
-    <Shop {balance} onbuy={(item) => (ask = item)} />
-
-    <Purchases {spends} {names} {villagers} onerase={erase} />
+    {#if guest}
+      <p class="card guest" data-guest-jar>{t('guest.jarNote')}</p>
+      <Purchases {spends} {names} {villagers} />
+    {:else}
+      <Shop {balance} onbuy={(item) => (ask = item)} />
+      <Purchases {spends} {names} {villagers} onerase={erase} />
+    {/if}
   </main>
 
-  <BuyConfirm item={ask} {balance} onconfirm={buy} onclose={() => (ask = null)} />
+  {#if !guest}<BuyConfirm item={ask} {balance} onconfirm={buy} onclose={() => (ask = null)} />{/if}
 {/if}
 
 <style>
@@ -88,6 +95,7 @@
   .bigjar { display: block; line-height: 0; margin-bottom: 4px; }
   .cap { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .hero :global(.total) { font-size: var(--fs-title); }
+  .guest { margin: 0 0 12px; padding: 12px 14px; font-weight: 700; color: var(--text-soft); text-align: center; line-height: var(--lh); }
 
   @media (max-height: 700px), (max-width: 359px) {
     .hero { padding-bottom: 10px; }

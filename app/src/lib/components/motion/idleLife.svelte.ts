@@ -12,6 +12,7 @@ import { actors, addFx, applyStep, busy, later as directorLater, lastEvent, setE
 import { now } from '#lib/time/clock.ts';
 import type { PersonId } from '#lib/types.ts';
 import { DECIDE_MS, msToNextSlot, slotAt, slotRand, villagerBeats, type AmbientWorld, type VillagerBeat } from '../island/ambient.ts';
+import { otherMember, type VillagerActor } from '#lib/ui-state/cast.ts';
 
 interface IdleContext {
   /** Sheet / overlay open (or the scene isn't live). */
@@ -21,14 +22,17 @@ interface IdleContext {
   /** Evening (tod night but still awake): no day-only actions. */
   night?: () => boolean;
   /** Shake that actor's own tree (+ a falling leaf). */
-  treeShake: (id: 'mine' | 'partner') => void;
+  treeShake: (id: VillagerActor) => void;
   /** The shared world ambient life decides from (the villagers by person, the points of interest, the day scores); null
    *  before the scene is measured. */
   world: () => Omit<AmbientWorld, 'phase'> | null;
   /** Which person's villager is mine. */
   me: () => PersonId;
+  /** Which actor draws a member's villager (ui-state/cast.ts: on the guest's phone, A's and B's are `partner` and
+   *  `third`, and the guest's own takes no beat: ambient life is the members'). Default: by `me`. */
+  actorOf?: (p: PersonId) => VillagerActor;
   /** Send a villager through an outing's points of interest (island/avatar.ts outing); false when it can't go now. */
-  outing?: (id: 'mine' | 'partner', stops: readonly { node: string; linger: number }[], together?: boolean) => boolean;
+  outing?: (id: VillagerActor, stops: readonly { node: string; linger: number }[], together?: boolean) => boolean;
   /** The visitor's turn (island/Visitor.svelte, visitorLife.ts) with the slot's PRNG: every slot, awake or asleep (they
    *  keep their own hours), beside whatever the villagers do. */
   visitor?: (r: () => number) => void;
@@ -104,7 +108,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     if (w) {
       const beats = (ctx.beats ?? villagerBeats)({ ...w, phase: ctx.night?.() ? 'evening' : 'day' }, date, slot);
       const me = ctx.me();
-      for (const [who, b] of Object.entries(beats) as [PersonId, VillagerBeat][]) play(who === me ? 'mine' : 'partner', b);
+      for (const [who, b] of Object.entries(beats) as [PersonId, VillagerBeat][]) play(ctx.actorOf?.(who) ?? (who === me ? 'mine' : 'partner'), b);
     }
     const hr = slotRand(date, slot, 'host');
     if (actors.host.present && slot - lastHost >= HOST_EVERY && hr() < HOST_ODDS) hostIdle(slot, hr);
@@ -112,7 +116,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
   }
 
   function doze(slot: number) {
-    for (const id of ['mine', 'partner'] as const) {
+    for (const id of ['mine', 'partner', 'third'] as const) {
       const a = actors[id];
       if (!a.asleep || busy(id)) continue;
       if (!a.fx.some((f) => f.kind === 'zzz')) addFx(id, 'zzz');
@@ -138,14 +142,14 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
   }
 
   /** A villager's beat from the slot (a pair's from its lead: the other's entry is the same chat or dance). */
-  function play(id: 'mine' | 'partner', b: VillagerBeat) {
+  function play(id: VillagerActor, b: VillagerBeat) {
     if (busy(id)) return;
     if (b.kind === 'outing') return void ctx.outing?.(id, b.stops, b.together);
     if (b.kind === 'doze' || (b.kind === 'pair' && !b.lead)) return;
     later(id, b.at, () => (b.kind === 'pair' ? pair(id, b.action) : move(id, b.action)));
   }
 
-  function move(id: 'mine' | 'partner', action: IdleAction) {
+  function move(id: VillagerActor, action: IdleAction) {
     if (busy(id)) return;
     actors[id].busyUntil = Date.now() + 2_400;
     switch (action) {
@@ -169,9 +173,10 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     }
   }
 
-  function pair(id: 'mine' | 'partner', action: 'chat' | 'dance') {
-    const other = id === 'mine' ? 'partner' : 'mine';
-    if (busy(id) || busy(other)) return;
+  function pair(id: VillagerActor, action: 'chat' | 'dance') {
+    // the two members' (the guest's villager is in no pair)
+    const other = otherMember(id);
+    if (!other || busy(id) || busy(other)) return;
     const t = Date.now();
     if (action === 'dance') {
       actors[other].busyUntil = t + 2_000;

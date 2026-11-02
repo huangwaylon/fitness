@@ -44,8 +44,9 @@
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { livePos } from '../motion/director.svelte.ts';
   import { tellPartner } from './partnerNews.ts';
+  import { actorOf } from '#lib/ui-state/cast.ts';
 
-  type Side = 'mine' | 'partner';
+  type Side = 'mine' | 'partner' | 'third';
   interface Props {
     scene?: HTMLElement;
     /** The wasps reached the villager on `side`. */
@@ -269,18 +270,18 @@
       if (e.kind === 'shake') {
         const tree = treeOf(e.tree);
         if (!tree || !live) return;
-        partnerTurnTo(tree.x);
+        partnerTurnTo(tree.x, e.who);
         rustle?.(tree);
-        play(tree, 'partner', e.drop);
+        play(tree, actorOf(e.who), e.drop);
       } else if (e.kind === 'catch' && e.id && /^(dg|ws):/.test(e.id)) {
         const d = dangler;
         if (d?.id === e.id) {
           dangler = null;
           if (live) {
-            partnerTurnTo(d.x);
+            partnerTurnTo(d.x, e.who);
             net = { n: ++seq, x: d.x, z: d.y, lift: DANGLE_UP };
             later(() => (net = null), 420);
-            tellPartner({ art: critterArt(d.bug), verb: 'caught', name: `critter.name.${d.bug}`, x: d.x, z: d.y, lift: DANGLE_UP });
+            tellPartner({ who: e.who, art: critterArt(d.bug), verb: 'caught', name: `critter.name.${d.bug}`, x: d.x, z: d.y, lift: DANGLE_UP });
           }
         }
         const s = swarm;
@@ -289,13 +290,13 @@
           stopSwarm();
           const nest = nests.find((ns) => !ns.fading);
           if (nest) fadeNest(nest.n);
-          if (live) tellPartner({ art: critterArt('wasp'), verb: 'caught', name: 'critter.name.wasp', x: s.x0, z: s.z0 });
+          if (live) tellPartner({ who: e.who, art: critterArt('wasp'), verb: 'caught', name: 'critter.name.wasp', x: s.x0, z: s.z0 });
         }
       } else if (e.kind === 'pick' && /^(br|co):/.test(e.id) && live) {
         const b = fallen(world.day.shakes, treeOf, () => false).find((x) => x.id === e.id);
         if (!b) return;
-        partnerTurnTo(b.x);
-        if (b.what === 'coconut') tellPartner({ art: 'finds/coconut', verb: 'picked', name: 'beach.name.coconut', x: b.x, z: b.z });
+        partnerTurnTo(b.x, e.who);
+        if (b.what === 'coconut') tellPartner({ who: e.who, art: 'finds/coconut', verb: 'picked', name: 'beach.name.coconut', x: b.x, z: b.z });
       }
     })
   );

@@ -4,6 +4,7 @@
 // `stretch.pose` (Visitor.svelte plays the same keyframes).
 import { actors, addFx, awayFromHome, cancel, holdEvents, later, routeHome, setAsleep, setEmote, setMotion, walkTo } from './director.svelte.ts';
 import type { Motion } from './reactions.ts';
+import { memberActors } from '#lib/ui-state/cast.ts';
 
 /** The pose everyone is doing now (null between routines), bumped `n` on each. */
 export const stretch = $state<{ pose: Motion | null; n: number }>({ pose: null, n: 0 });
@@ -13,7 +14,8 @@ const HOME_MS = 1600;
 
 /** Run the routine: `poses` of `ms` each. Returns the ms until it starts (0, or the walk home). */
 export function groupStretch(poses: readonly Motion[], ms: number, done?: () => void): number {
-  const ids = ['mine', 'partner'] as const;
+  // the two members' villagers (the guest's moves only by its own taps: on the guest's phone, A and B stretch)
+  const ids = memberActors();
   const out = ids.filter((id) => actors[id].walking || awayFromHome(id));
   const away = out.length > 0;
   const slept = ids.filter((id) => actors[id].asleep);

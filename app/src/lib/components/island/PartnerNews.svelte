@@ -9,6 +9,7 @@
   import { setPartnerSink, type PartnerNews } from './partnerNews.ts';
   import { useWorld } from './camera.svelte.ts';
   import { livePos } from '../motion/director.svelte.ts';
+  import { actorOf } from '#lib/ui-state/cast.ts';
   import { VILLAGER } from './scene.ts';
   import { onDestroy } from 'svelte';
 
@@ -25,9 +26,10 @@
     const n = ++seq;
     if (w.inView(p.x, p.z, -8)) {
       // over their villager when it's there, else over the spot
-      const [vx, vz] = livePos('partner'), near = Math.hypot(vx - p.x, vz - p.z) < 60;
+      const id = p.who ? actorOf(p.who) : 'partner';
+      const [vx, vz] = livePos(id), near = Math.hypot(vx - p.x, vz - p.z) < 60;
       const [sx, sy] = near ? w.screenU(vx, vz, VILLAGER.h) : w.screenU(p.x, p.z, p.lift ?? 4);
-      card = cardFor(n, sx, sy, p.art, text, false, p.hold !== false && near, 'partner');
+      card = cardFor(n, sx, sy, p.art, text, false, p.hold !== false && near, id === 'mine' ? 'partner' : id);
       return;
     }
     clearTimeout(timer);

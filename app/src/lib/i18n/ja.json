@@ -555,5 +555,10 @@
   "tent.colour.Pink": "ピンク",
   "tent.colour.Blue": "あお",
   "tent.colour.Aqua": "みずいろ",
-  "tent.colour.Purple": "むらさき"
+  "tent.colour.Purple": "むらさき",
+  "guest.note": "おきゃくさんとして あそびに きているよ。ふたりの しまで つりや むしとりを たのしんでね！",
+  "guest.jarNote": "ちょきんばこは ふたりの もの。ごほうびは ふたりが えらぶよ。",
+  "zukan.guestName": "{name}（おきゃくさん）",
+  "guest.arrived": "{name}が あそびに きたよ！",
+  "guest.welcome": "ようこそ、おきゃくさん！ ふたりの しまで ゆっくり していってね"
 }

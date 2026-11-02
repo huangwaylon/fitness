@@ -3,11 +3,11 @@
 import { t } from '#lib/i18n/index.ts';
 import { HOLD_MS, holdUp } from '../motion/director.svelte.ts';
 
-export interface CatchCard { n: number; x: number; y: number; art: string; parts: string[]; who?: 'mine' | 'partner' }
+export interface CatchCard { n: number; x: number; y: number; art: string; parts: string[]; who?: 'mine' | 'partner' | 'third' }
 
 /** The plate for catch `n` at (x, y) stage units: its line, a second page when it's a first find (`added`), and my
  *  villager (or `who`: the partner's, their catch shown here) holding the item up (`hold`). */
-export function cardFor(n: number, x: number, y: number, art: string, text: string, added = false, hold = true, who: 'mine' | 'partner' = 'mine'): CatchCard {
+export function cardFor(n: number, x: number, y: number, art: string, text: string, added = false, hold = true, who: 'mine' | 'partner' | 'third' = 'mine'): CatchCard {
   if (hold) holdUp(who, art, HOLD_MS);
-  return { n, x, y, art, parts: added ? [text, t('zukan.added')] : [text], ...(who === 'partner' ? { who } : {}) };
+  return { n, x, y, art, parts: added ? [text, t('zukan.added')] : [text], ...(who !== 'mine' ? { who } : {}) };
 }

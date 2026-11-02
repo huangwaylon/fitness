@@ -235,7 +235,8 @@ async function reportGoal(g: { date: string; both: boolean; name: string }, me: 
  * language change) refreshes this phone's subscription. Cheap when there is nothing to do: no request.
  */
 export function pushTick(v: WeekView): void {
-  if (!d().url || !d().key()) return;
+  // the guest's phone reports nothing and gets nothing (docs/backend.md#the-guest)
+  if (v.viewer === 'G' || !d().url || !d().key()) return;
   if (resumed !== v.locale) {
     resumed = v.locale;
     void resume(v.locale);
