@@ -16,11 +16,13 @@ const ROOM = 8;
 /** The wallpaper's and the floor's ids: one op each, the latest wins. */
 export const TENT_WALL = 'dtentwall';
 export const TENT_FLOOR = 'dtentfloor';
+/** NH's room light switch: item `r1` (on) or `r0` (off), x = z = f = 0. */
+export const TENT_ROOM = 'dtentroom';
 
 type Who = 'A' | 'B';
 type Facing = 0 | 1 | 2 | 3;
 export type TentOp =
-  | { sc: 't'; id: string; at: number; item: string; x: number; z: number; f: Facing; p: number; on?: string; rm?: undefined }
+  | { sc: 't'; id: string; at: number; item: string; x: number; z: number; f: Facing; p: number; on?: string; l?: 0 | 1; rm?: undefined }
   | { sc: 't'; id: string; at: number; rm: true };
 export type TentEntry = TentOp & { who: Who };
 /** A piece in the tent as the room shows it. */
@@ -35,11 +37,13 @@ export interface TentPiece {
   who: Who;
   /** On this piece's surface (x, z its slot there, f its facing on it). */
   on?: string;
+  /** A light's switch (a lamp, the lantern, the fireplace): 1 on, 0 off; none: as it came (on). */
+  l?: 0 | 1;
 }
 
 const ID = /^d[0-9a-z]{6,24}$/;
-/** An item's code (NH's internal id with its kind: f furniture or a rug, w a wallpaper, g a floor). */
-const ITEM = /^[fwg]\d{1,6}$/;
+/** An item's code (NH's internal id with its kind: f furniture or a rug, w a wallpaper, g a floor; r the room's light). */
+const ITEM = /^[fwgr]\d{1,6}$/;
 const isInt = (n: unknown, lo: number, hi: number): n is number => Number.isInteger(n) && (n as number) >= lo && (n as number) <= hi;
 const isMs = (n: unknown): n is number => isInt(n, 1e12, 1e14);
 
@@ -47,17 +51,19 @@ const isMs = (n: unknown): n is number => isInt(n, 1e12, 1e14);
 export function tentOpOf(d: Record<string, unknown>): TentOp | null {
   if (d.sc !== 't' || typeof d.id !== 'string' || !ID.test(d.id) || !isMs(d.at)) return null;
   const keys = Object.keys(d);
-  const surface = d.id === TENT_WALL ? 'w' : d.id === TENT_FLOOR ? 'g' : null;
+  const surface = d.id === TENT_WALL ? 'w' : d.id === TENT_FLOOR ? 'g' : d.id === TENT_ROOM ? 'r' : null;
   if (d.rm !== undefined) {
     if (surface || d.rm !== true || keys.some((k) => k !== 'sc' && k !== 'id' && k !== 'at' && k !== 'rm')) return null;
     return { sc: 't', id: d.id, at: d.at, rm: true };
   }
-  if (keys.some((k) => !['sc', 'id', 'at', 'item', 'x', 'z', 'f', 'p', 'on'].includes(k))) return null;
+  if (keys.some((k) => !['sc', 'id', 'at', 'item', 'x', 'z', 'f', 'p', 'on', 'l'].includes(k))) return null;
+  if (d.l !== undefined && (surface || (d.l !== 0 && d.l !== 1))) return null;
+  if (surface === 'r' && d.item !== 'r0' && d.item !== 'r1') return null;
   if (d.on !== undefined && (surface || typeof d.on !== 'string' || !ID.test(d.on) || d.on === d.id)) return null;
   if (typeof d.item !== 'string' || !ITEM.test(d.item) || d.item[0] !== (surface ?? 'f')) return null;
   if (!isInt(d.x, 0, ROOM - 1) || !isInt(d.z, 0, ROOM - 1) || !isInt(d.f, 0, 3) || !isMs(d.p) || d.p > d.at) return null;
   if (surface && (d.x || d.z || d.f)) return null;
-  return { sc: 't', id: d.id, at: d.at, item: d.item, x: d.x, z: d.z, f: d.f as Facing, p: d.p, ...(d.on !== undefined ? { on: d.on as string } : {}) };
+  return { sc: 't', id: d.id, at: d.at, item: d.item, x: d.x, z: d.z, f: d.f as Facing, p: d.p, ...(d.on !== undefined ? { on: d.on as string } : {}), ...(d.l !== undefined ? { l: d.l as 0 | 1 } : {}) };
 }
 
 /** Whether entry `a` beats `b` (the same id): a removal beats a set; else the later `at`, then B over A. */
@@ -75,21 +81,22 @@ export function mergeTent(m: Map<string, TentEntry>, e: TentEntry): boolean {
   return true;
 }
 
-const isSurface = (id: string) => id === TENT_WALL || id === TENT_FLOOR;
+const isSurface = (id: string) => id === TENT_WALL || id === TENT_FLOOR || id === TENT_ROOM;
 
 /** The room: every piece set and not removed (the oldest TENT_MAX by when they were first placed, then by id), and
  *  the wallpaper and the floor (null: the tent's own). */
-export function tentLayout(entries: Iterable<TentEntry>): { pieces: TentPiece[]; wall: string | null; floor: string | null } {
+export function tentLayout(entries: Iterable<TentEntry>): { pieces: TentPiece[]; wall: string | null; floor: string | null; lights: boolean } {
   const pieces: TentPiece[] = [];
-  let wall: string | null = null, floor: string | null = null;
+  let wall: string | null = null, floor: string | null = null, lights = true;
   for (const e of entries) {
     if (e.rm) continue;
     if (e.id === TENT_WALL) wall = e.item;
     else if (e.id === TENT_FLOOR) floor = e.item;
-    else pieces.push({ id: e.id, item: e.item, x: e.x, z: e.z, f: e.f, p: e.p, at: e.at, who: e.who, ...(e.on ? { on: e.on } : {}) });
+    else if (e.id === TENT_ROOM) lights = e.item === 'r1';
+    else pieces.push({ id: e.id, item: e.item, x: e.x, z: e.z, f: e.f, p: e.p, at: e.at, who: e.who, ...(e.on ? { on: e.on } : {}), ...(e.l !== undefined ? { l: e.l } : {}) });
   }
   pieces.sort((a, b) => a.p - b.p || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  return { pieces: pieces.slice(0, TENT_MAX), wall, floor };
+  return { pieces: pieces.slice(0, TENT_MAX), wall, floor, lights };
 }
 
 /** What the sheet does with a new op, given the tent's rows it holds: `stale` (an op that beats it is there), `full`

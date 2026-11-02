@@ -233,6 +233,9 @@ describe('live protocol: the tent (v2)', () => {
     expect(parseServer(j2({ ...set, who: 'A', t: T }))).toEqual({ v: 2, ...set, who: 'A', t: T });
     expect(parseClient(j2({ kind: 'decor', sc: 't', id: 'dmh1abc2a', at: T, rm: true }))).toEqual({ v: 2, kind: 'decor', sc: 't', id: 'dmh1abc2a', at: T, rm: true });
     for (const bad of [j2({ ...set, x: 8 }), j2({ ...set, sc: 'x' }), j2({ ...set, z: -1 })]) expect(parseClient(bad), bad).toBeNull();
+    // a light's switch
+    expect(parseClient(j2({ ...set, l: 0 }))).toEqual({ v: 2, ...set, l: 0 });
+    expect(parseClient(j2({ ...set, l: 3 }))).toBeNull();
     // on another piece's surface
     expect(parseClient(j2({ ...set, on: 'dmh1table1' }))).toEqual({ v: 2, ...set, on: 'dmh1table1' });
     for (const bad of [j2({ ...set, on: 'nope' }), j2({ ...set, sc: undefined, on: 'dmh1table1', x: 100, z: 100 })]) expect(parseClient(bad), bad).toBeNull();
@@ -247,6 +250,11 @@ describe('live protocol: the tent (v2)', () => {
     expect(parseClient(j2(walk))).toEqual({ v: 2, ...walk });
     expect(parseServer(j2({ kind: 'tent', in: false, who: 'B', t: T }))).toEqual({ v: 2, kind: 'tent', in: false, who: 'B', t: T });
     for (const bad of [j2({ ...walk, in: 1 }), j2({ ...walk, to: [50, 0] }), j2({ ...walk, via: [[0, 99]] })]) expect(parseClient(bad), bad).toBeNull();
+    // sitting or lying on a piece
+    const sit = { kind: 'tent', in: true, to: [0, 10], seat: 'dmh1sofa01', n: 1, s: T };
+    expect(parseClient(j2(sit))).toEqual({ v: 2, ...sit });
+    expect(parseClient(j2({ ...sit, lie: true }))).toEqual({ v: 2, ...sit, lie: true });
+    for (const bad of [j2({ ...sit, seat: 'x' }), j2({ ...sit, n: 9 }), j2({ ...sit, lie: 1 })]) expect(parseClient(bad), bad).toBeNull();
     for (const i of [drag, walk]) {
       expect(isStored(i as never)).toBe(false);
       expect(claimOf(i as never)).toBeNull();
