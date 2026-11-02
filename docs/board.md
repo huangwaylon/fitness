@@ -47,6 +47,8 @@ interface Focus {
   x: number; z: number; y: number; w: number; h: number;
   /** Which way its face looks (radians about the up axis; 0 = toward the camera, −z, as a layout `f` of 0). */
   yaw?: number;
+  /** Screen px at the top to keep it under (the HUD's ribbon's bottom + 10: BoardView), default 0. */
+  top?: number;
   /** Screen px at the bottom to keep it above (the write field and the keyboard: visualViewport), default 0. */
   bottom?: number;
   /** Share of the free screen it fills (default 0.9). */
@@ -59,8 +61,9 @@ interface Proj3 {
    *  fling gestures are off while focused. Resolves once there. Called again while focused it re-frames from where it is
    *  (the keyboard opening: a new `bottom`). The first call remembers the view it left. */
   focus?(f: Focus, ms?: number): Promise<void>;
-  /** Back to exactly the view the first focus left (camZ, zoom, pitch, x = MID_X) over `ms` (600), then the gestures
-   *  are on again. Resolves once there. */
+  /** Back to exactly the view the first focus left (camZ, zoom, pitch, its x) over `ms` (600), then the gestures
+   *  are on again. Resolves once there. While focused, a villager between the camera and the board (mine, who walked
+   *  up to it) fades out of the way (220 ms), and back as it unfocuses. */
   unfocus?(ms?: number): Promise<void>;
   /** A three.js object on a thing (a model instance by its id, things.ts), in that model's own units with its origin at
    *  the model's: placed, turned, scaled and bent (bend.ts) with the instance, lit as the things are; null takes it off.

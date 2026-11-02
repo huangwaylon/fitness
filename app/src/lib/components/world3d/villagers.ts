@@ -34,6 +34,8 @@ export interface VSpec {
   emote: string | null;
   stung: boolean;
   shown: boolean;
+  /** In the way of the board's focus (between the camera and the board): faded out. */
+  away?: boolean;
 }
 
 export interface Villagers3 {
@@ -71,6 +73,8 @@ const turn = (a: number, b: number, dt: number, k: number) => {
 };
 /** How often a still villager is posed (its blinks: ms). */
 const STILL_MS = 120;
+/** A fade out of the board's way, or back (ms). */
+const FADE_MS = 220;
 
 export function createVillagers(add: (o: Object3D) => () => void, dir: string, kick: () => void): Villagers3 {
   interface W {
@@ -84,6 +88,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     motionN: number;
     lastStep: number;
     busyUntil: number;
+    alpha: number;
   }
   const ws = new Map<string, W>();
   let lastT = 0, liftL = 0.32, disposed = false;
@@ -97,7 +102,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       w = undefined;
     }
     if (!w) {
-      const nw: W = { id: s.id, v: null, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, lastStep: 0, busyUntil: 0 };
+      const nw: W = { id: s.id, v: null, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, lastStep: 0, busyUntil: 0, alpha: 1 };
       ws.set(s.slot, nw);
       const url = url3d(s.id, dir);
       if (url) {
@@ -130,6 +135,13 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       }
       v.group.visible = s.shown;
       if (!s.shown) continue;
+      // faded out of the board's way (and back), over FADE_MS
+      const aim = s.away ? 0 : 1;
+      if (w.alpha !== aim) {
+        w.alpha = aim > w.alpha ? Math.min(aim, w.alpha + dt / FADE_MS) : Math.max(aim, w.alpha - dt / FADE_MS);
+        v.opacity(w.alpha);
+        moving = true;
+      }
       // where it is, and how far it walked since the last frame (its stride follows it)
       const dx = s.x - w.x, dz = s.z - w.z, moved = Math.hypot(dx, dz);
       w.x = s.x;

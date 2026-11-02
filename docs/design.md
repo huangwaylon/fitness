@@ -302,7 +302,7 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   and the day's scenery and decor pieces (a card of today's art for what has no model yet); the villagers: cards of
   their renders posed from the director (`motion3d.ts`); the lights: `lights.ts`; the finger: `gestures.ts`. The ends
   are fitted per screen like the 2D ones (the shoreline 83% down at まえ, the campsite's feet half way at おく).
-  `window.__world3d` (stats, view, go, client, ground, where, focus, xRoom, strays, alphaBlends) for the e2e
+  `window.__world3d` (stats, view, go, client, ground, where, focus, xRoom, strays, alphaBlends, away) for the e2e
   (`e2e/world3d.spec.ts`).
   - **The camera** (the user, 2026-11-02): the default zoom (1) is the widest it rests at, x centred, and one finger
     only scrolls along the island (its sideways movement ignored). Zoomed in past it, one finger pans sideways too (a

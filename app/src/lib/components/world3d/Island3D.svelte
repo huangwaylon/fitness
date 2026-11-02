@@ -157,6 +157,15 @@
   let vil3: Villagers3 | null = null;
   /** ?v3d=0: the villagers as their cards (a comparison). */
   const v3d = q.get('v3d') !== '0';
+  /** The board's focus (its face's middle on the ground): a villager between the camera and it fades out of the way. */
+  let focusAt: { x: number; z: number } | null = null;
+  function inFocusWay(x: number, z: number): boolean {
+    if (!focusAt || !eng) return false;
+    const p = eng.at(x, z, VILLAGER.h / 2), b = eng.at(focusAt.x, focusAt.z, VILLAGER.h / 2), r = canvas!.getBoundingClientRect();
+    // (on screen any part of it: a near one is big)
+    const m = 20 + p.k * VILLAGER.h;
+    return p.depth > 1 && p.depth < b.depth - 4 && p.sx > -m && p.sx < r.width + m && p.sy > -m && p.sy < r.height + m;
+  }
   function villagerCards(t: number, active: boolean): boolean {
     if (!eng) return false;
     let moving = false;
@@ -169,7 +178,8 @@
       const [x, z] = livePos(c.id);
       specs.push({
         slot: c.id, id: look.id, x, z, y: feetOf(x, z), walking: a.walking, face: a.face, side: c.side, asleep: a.asleep,
-        seat: c.seat ? seatTop(c.seat) : null, lift: c.rep ? pullLift(t) : 0, motion: a.motion, motionN: a.motionN, emote: a.emote, stung: c.stung, shown: c.shown
+        seat: c.seat ? seatTop(c.seat) : null, lift: c.rep ? pullLift(t) : 0, motion: a.motion, motionN: a.motionN, emote: a.emote, stung: c.stung, shown: c.shown,
+        away: inFocusWay(x, z)
       });
     }
     const r = vil3?.frame(t, specs, active) ?? { cards: new Set<string>(specs.map((s) => s.slot)), moving: false };
@@ -177,7 +187,7 @@
     for (const c of cast()) {
       const a = actors[c.id], look = resolveLook({ villager: c.villager, person: c.person });
       const card = !v3d || !has3d(look.id) || r.cards.has(c.id);
-      const base = c.shown && card ? artCard(villagerArt(look.id) ?? '', VILLAGER.h) : null;
+      const base = c.shown && card && !inFocusWay(...livePos(c.id)) ? artCard(villagerArt(look.id) ?? '', VILLAGER.h) : null;
       if (!base) {
         eng.cards.set(`v:${c.id}`, null);
         continue;
@@ -541,7 +551,7 @@
     const proj: Proj3 = {
       at: (x, z, lift) => e.at(x, z, lift), ground: (sx, sy) => e.groundAt(sx, sy), horizon: () => e.horizon(),
       rev: () => e.rev(), kick: () => e.kick(), idle: () => e.idle(),
-      focus: (f, ms) => e.frame(f, ms), unfocus: (ms) => e.restore(ms), attach: (id, obj) => e.things.attach(id, obj as Object3D | null)
+      focus: (f, ms) => ((focusAt = { x: f.x, z: f.z }), e.frame(f, ms)), unfocus: (ms) => ((focusAt = null), e.restore(ms)), attach: (id, obj) => e.things.attach(id, obj as Object3D | null)
     };
     world.useThree(proj);
     let camWas = NaN, horizonWas = NaN, revWas = -1;
@@ -595,7 +605,7 @@
         const r = canvas!.getBoundingClientRect();
         return e.groundAt(cx - r.left, cy - r.top);
       },
-      strays: (reach?: number) => e.strays(reach), alphaBlends: () => e.alphaBlends(),
+      away: (x: number, z: number) => inFocusWay(x, z), strays: (reach?: number) => e.strays(reach), alphaBlends: () => e.alphaBlends(),
       things: (id: string) => e.things.has(id), where: (id: string) => e.things.where(id), groups: () => e.things.groups(), over: (id: string, o: Parameters<typeof e.things.over>[1]) => e.things.over(id, o), head: (slot: string) => { const h = vil3?.head(slot); if (!h) return null; const p = h.getWorldPosition(new Vector3()); return [p.x, p.y, p.z]; },
       focus: (x: number, z: number, lift?: number) => e.focusOn({ x, z, lift }), restore: () => e.restore(), focused: () => e.focused()
     };

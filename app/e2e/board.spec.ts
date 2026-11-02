@@ -242,4 +242,12 @@ test('on the 3D island the face rides on the board’s cork, in front of NH’s 
   await expect(view(page)).toHaveAttribute('data-board-view', '3d');
   await expect(note(page, 'Hi!!')).toBeVisible();
   expect(await drawn(page)).toEqual(['Hi!!']);
+  // my villager (who walked up to it) is faded out of the way between the camera and the board, back once it closes
+  const away = () => page.evaluate(() => {
+    const w = window as unknown as { __world: { mine(): [number, number] }; __world3d: { away(x: number, z: number): boolean } };
+    return w.__world3d.away(...w.__world.mine());
+  });
+  await expect.poll(away).toBe(true);
+  await view(page).getByRole('button', { name: 'もどる' }).click();
+  await expect.poll(away).toBe(false);
 });
