@@ -5,6 +5,7 @@ import { walkNav, buildingAt, doorOf } from './nav.ts';
 import { route, walkGeo, walkable } from './walkGraph.ts';
 import { planTap } from './tapWalk.ts';
 import { guestSpot } from './buildings.ts';
+import { mushroomSpots } from './mushrooms.ts';
 import { defaultLayout, withChanges } from '#lib/layout/model.ts';
 import { isLayoutNav } from '#lib/layout/nav.ts';
 
@@ -101,5 +102,7 @@ describe('setWorld: the island on its layout', () => {
     expect(Math.hypot(gs[0] - gd[0], gs[1] - gd[1])).toBeLessThan(60);
     expect(walkable(geo, gs[0], gs[1])).toBe(true);
     expect(route(geo, home, gs)?.at(-1)).toEqual(gs);
+    // November's mushrooms by the trees, never on the rock or the tape deck (a tap there is theirs)
+    for (const [x, z] of mushroomSpots()) for (const p of [W.ROCK, W.TAPE_DECK]) expect(Math.hypot(p[0] - x, p[1] - z)).toBeGreaterThanOrEqual(44);
   });
 });

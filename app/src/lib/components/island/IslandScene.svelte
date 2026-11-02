@@ -60,6 +60,7 @@
   import { GUEST_ARRIVAL, guestSpot, doorAt, outOfTent, partnerOnline } from './buildings.ts';
   import { site } from './site.svelte.ts';
   import { spotsOn } from './beach.ts';
+  import * as W from './world.ts';
   import { provideDoor } from '#lib/ui-state/doorTransition.ts';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -647,6 +648,12 @@
       site: () => ({ on: site.on, doors: Object.fromEntries(BUILDINGS.map((b) => [b.id, doorAt(b.id)])), homes: HOMES, stage: CENTRE_STAGE, named: walkNav().named, grass: LAWN_SPOTS }),
       /** What the ground is at a world point and the water a cast there lands in (world.ts: the layout's when on). */
       ground: (x: number, z: number) => ({ surface: surfaceAt(x, z), fresh: freshWhere(x, z) }),
+      /** world.ts's places as the island has them now (the layout's when on): the e2e's, never world.ts's imported. */
+      geo: () => ({
+        CAMS: W.CAMS, SHORE_Z: W.SHORE_Z, POND: W.POND, SPRING: W.SPRING, CENTRE_STAGE: W.CENTRE_STAGE, ARCH: W.ARCH, CAKE: W.CAKE, HOMES: W.HOMES,
+        GOAL_TREES: W.GOAL_TREES, ROCK: W.ROCK, TAPE_DECK: W.TAPE_DECK, SEATS: W.SEATS, PULLUP_AT: W.PULLUP_AT, BUILDINGS: W.BUILDINGS,
+        FLOWERS: W.FLOWERS, SCENERY: W.SCENERY, DECOR_SLOTS: W.DECOR_SLOTS, BRIDGE: W.BRIDGE, CLIFF: W.CLIFF
+      }),
       /** Today's weed and dig spots (beach.ts spotsOn: the layout's open grass when on). */
       spots: () => spotsOn(today, islandSeed()),
       /** The island as both phones must have it (e2e: the two-phone checks): the shared day's canonical hash, and each
