@@ -475,10 +475,13 @@ test('one place at a time: A in the tent is gone from B’s island, there with B
   // A goes in again (right at the door: straight in) and its phone goes quiet: home on B's island after the timeout
   await door(a);
   await expect.poll(() => inside(b), { timeout: 6000 }).toBe('true');
-  await a.close();
+  await a.close({ runBeforeUnload: true }); // (its bye: else the demo's relay notices it 10 s on, the walk maybe over)
   await expect.poll(() => inside(b), { timeout: 15_000 }).toBeNull();
-  // out of the door and home at a stroll (villagerSync's walk home), not put there
-  await expect.poll(async () => (await w<State>(b, 'state')).villagers.A.walking, { timeout: 4000 }).toBe(true);
+  // out of the door and home at a stroll (villagerSync's walk home), not put there: anywhere but home, it's walking
+  await expect.poll(async () => {
+    const v = (await w<State>(b, 'state')).villagers.A;
+    return v.walking || Math.hypot(v.x - HOMES.A[0], v.z - HOMES.A[1]) <= 3;
+  }, { timeout: 2000, message: 'on its way home' }).toBe(true);
   await expect.poll(async () => {
     const home = await w<[number, number]>(b, 'partner');
     return Math.hypot(home[0] - HOMES.A[0], home[1] - HOMES.A[1]);
