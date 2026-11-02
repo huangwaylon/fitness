@@ -26,6 +26,8 @@ export interface Inst {
   lift?: number;
   scale: number;
   yaw?: number;
+  /** Tipped about its x axis (radians: a leaf lying flat on the water). */
+  pitch?: number;
   /** A tint for the petals (a flower's colour, on a model without its own colour). */
   tint?: number;
   /** Tappable: what it is (a tree jiggles). */

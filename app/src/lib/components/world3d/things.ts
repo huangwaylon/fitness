@@ -32,7 +32,7 @@ const LAMP: Partial<Record<string, { at: number; kind: LampSpot['kind']; colour:
   'events/countdown-board': { at: 0.6, kind: 'window', colour: 0xfff0c8, glow: 18, pool: 30 }
 };
 
-type Over = { hidden?: boolean; x?: number; z?: number; lift?: number; grey?: number; yaw?: number };
+type Over = { hidden?: boolean; x?: number; z?: number; lift?: number; grey?: number; yaw?: number; pitch?: number; size?: number };
 
 export interface Things {
   /** The layout's things (a full list: only the models whose instances changed rebuild). */
@@ -40,8 +40,9 @@ export interface Things {
   /** Add or change things beside the layout's (by id), and take them away. */
   set(list: readonly Inst[]): Promise<void>;
   remove(ids: readonly string[]): Promise<void>;
-  /** Change one instance in place (hidden, moved, greyed). */
-  over(id: string, o: Over | null): void;
+  /** Change one instance in place (hidden, moved, greyed); `cast` false: it casts no shadow worth redrawing the
+   *  shadow map for (a leaf on the stream). */
+  over(id: string, o: Over | null, cast?: boolean): void;
   jiggle(id: string, strength?: number): void;
   /** The lights of what stands now. */
   lamps(): LampSpot[];
@@ -60,7 +61,7 @@ export interface Things {
   dispose(): void;
 }
 
-export function createThings(scene: Scene, height: (x: number, z: number) => number, changed: () => void): Things {
+export function createThings(scene: Scene, height: (x: number, z: number) => number, changed: (shadows?: boolean) => void): Things {
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
   const base = new URL(`room/world3d/`, new URL(document.baseURI)).href;
@@ -128,7 +129,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   const overs = new Map<string, Over>();
   const wobbles = new Map<string, { t0: number; k: number }>();
   const tmpM = new Matrix4(), tmpQ = new Quaternion(), tmpQ2 = new Quaternion(), tmpV = new Vector3(), tmpS = new Vector3();
-  const UP = new Vector3(0, 1, 0), FWD = new Vector3(0, 0, 1), ZERO = new Matrix4().makeScale(0, 0, 0);
+  const UP = new Vector3(0, 1, 0), FWD = new Vector3(0, 0, 1), RIGHT = new Vector3(1, 0, 0), ZERO = new Matrix4().makeScale(0, 0, 0);
   const sigOf = (o: Inst) => `${o.id}:${o.x}:${o.z}:${o.lift ?? 0}:${o.scale}:${o.yaw ?? 0}:${o.tint ?? ''}`;
   /** An instance's matrix (three's space): its spot on the ground, its yaw, its scale. */
   function matOf(o: Inst, out: Matrix4, wobble = 0, squash = 0): Matrix4 {
@@ -136,8 +137,11 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     if (ov?.hidden) return out.copy(ZERO);
     const x = ov?.x ?? o.x, z = ov?.z ?? o.z, lift = ov?.lift ?? o.lift ?? 0;
     tmpQ.setFromAxisAngle(UP, ov?.yaw ?? o.yaw ?? 0);
+    const pitch = ov?.pitch ?? o.pitch ?? 0;
+    if (pitch) tmpQ.multiply(tmpQ2.setFromAxisAngle(RIGHT, pitch));
     if (wobble) tmpQ.multiply(tmpQ2.setFromAxisAngle(FWD, wobble));
-    tmpS.set(o.scale * (1 + squash), o.scale * (1 - squash), o.scale * (1 + squash));
+    const sc = o.scale * (ov?.size ?? 1);
+    tmpS.set(sc * (1 + squash), sc * (1 - squash), sc * (1 + squash));
     const y = lift + (o.id === 'bridge' ? height(x, z - 30) - 1 : height(x, z));
     return out.compose(tmpV.set(x, y, -z), tmpQ, tmpS);
   }
@@ -289,14 +293,14 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       }
       return later();
     },
-    over(id, o) {
+    over(id, o, cast = true) {
       if (o) overs.set(id, { ...overs.get(id), ...o });
       else overs.delete(id);
       const a = byId.get(id);
       if (!a) return;
       matOf(a.inst, a.g.base[a.i]);
       write(a.g, a.i);
-      changed();
+      changed(cast);
     },
     jiggle(id, k = 1) {
       if (!byId.has(id)) return;
