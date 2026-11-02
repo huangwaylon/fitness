@@ -61,7 +61,10 @@ const STARTER = [
   'monstera', 'cooler box', 'camp stove', 'campfire cookware', 'kettle', 'tea set', 'ukulele', 'cushion',
   'folding floor lamp', 'tea table', 'futon',
   // rugs (a layer of their own: furniture stands on them)
-  'brown shaggy rug', 'brown argyle rug', 'botanical rug', 'ivory medium round mat', 'light bamboo rug', 'brown kitchen mat'
+  'brown shaggy rug', 'brown argyle rug', 'botanical rug', 'ivory medium round mat', 'light bamboo rug', 'brown kitchen mat',
+  // on the walls (NH's wall-mounted things: on a wall's grid)
+  'log wall-mounted clock', 'cuckoo clock', 'pendulum clock', 'ironwood clock', 'iron wall lamp', 'iron wall rack',
+  'wall-mounted tool board', 'corkboard', 'tree branch wreath', 'mushroom wreath'
 ];
 /** Wallpapers and floors (NH's file names), the tent's own first: the default look. */
 const WALLS = [
@@ -132,13 +135,16 @@ interface Piece {
   seats?: number;
   /** It gives light (NH's lighting type, the fireplace): a switch. */
   light?: true;
+  /** On a wall (NH's wall-mounted things): its model stands out of the wall from its back, its middle at its origin. */
+  wall?: true;
 }
 
 const furniture = [...(await sheet('Housewares')), ...(await sheet('Miscellaneous'))];
 const rugs = await sheet('Rugs');
-const pool = new Set((JSON.parse(readFileSync(CATALOG, 'utf8')) as { items: string[] }).items.map((r) => r.split(' ')).filter(([, c]) => c === 'housewares' || c === 'misc').map(([id]) => id));
-const bySlug = new Map(furniture.map((r) => [slug(names(r).en), r]));
-const byName = new Map([...furniture, ...rugs].map((r) => [r.name.toLowerCase(), r]));
+const walled = await sheet('Wall-mounted');
+const pool = new Set((JSON.parse(readFileSync(CATALOG, 'utf8')) as { items: string[] }).items.map((r) => r.split(' ')).filter(([, c]) => c === 'housewares' || c === 'misc' || c === 'wall').map(([id]) => id));
+const bySlug = new Map([...furniture, ...walled].map((r) => [slug(names(r).en), r]));
+const byName = new Map([...furniture, ...rugs, ...walled].map((r) => [r.name.toLowerCase(), r]));
 
 function piece(r: Raw, extra: Partial<Piece>): Piece | null {
   const fn = String(field(r, 'filename') ?? '');
@@ -164,7 +170,7 @@ function piece(r: Raw, extra: Partial<Piece>): Piece | null {
 const pieces = new Map<string, Piece>();
 for (const n of STARTER) {
   const r = byName.get(n);
-  const p = r && piece(r, { starter: true, ...(r.sourceSheet === 'Rugs' ? { rug: true as const } : {}) });
+  const p = r && piece(r, { starter: true, ...(r.sourceSheet === 'Rugs' ? { rug: true as const } : {}), ...(r.sourceSheet === 'Wall-mounted' ? { wall: true as const } : {}) });
   if (!p) throw new Error(`starter ${n}: no row or no model`);
   const cat = slug(names(r).en);
   pieces.set(p.code, { ...p, ...(pool.has(cat) ? { cat } : {}) });
@@ -172,7 +178,7 @@ for (const n of STARTER) {
 let poolMissing = 0;
 for (const id of pool) {
   const r = bySlug.get(id);
-  const p = r && piece(r, { cat: id });
+  const p = r && piece(r, { cat: id, ...(r.sourceSheet === 'Wall-mounted' ? { wall: true as const } : {}) });
   if (!p) {
     poolMissing++;
     continue;
@@ -232,6 +238,8 @@ interface Meta {
   n?: number;
   /** A light (a switch). */
   lt?: 1;
+  /** On a wall: w tiles across it, h high (its middle at its origin). */
+  wl?: 1;
 }
 const prev = (existsSync(ITEMS) ? JSON.parse(readFileSync(ITEMS, 'utf8')) : { items: {} }) as { items: Record<string, Meta> };
 const metas: Record<string, Meta> = {};
@@ -243,7 +251,7 @@ function writeItems() {
     const { s: _s, sm: _sm, u: _u, n: _n, lt: _lt, ...rest } = m;
     return {
       ...rest, ...(p.surface ? { s: 1 as const } : {}), ...(p.small ? { sm: 1 as const } : {}),
-      ...(p.use ? { u: p.use, n: p.seats ?? 1 } : {}), ...(p.light ? { lt: 1 as const } : {})
+      ...(p.use ? { u: p.use, n: p.seats ?? 1 } : {}), ...(p.light ? { lt: 1 as const } : {}), ...(p.wall ? { wl: 1 as const } : {})
     };
   };
   const items = Object.fromEntries([...pieces.values()].filter((p) => metas[p.code]).map((p) => [p.code, flags(p, metas[p.code])]));
@@ -361,8 +369,10 @@ if (todo.length) {
     // against NH's own size, which wins where they differ (a model with empty room round it, a slide's ladder)
     const [[x0, y0, z0], [x1, y1, z1]] = box;
     let w = Math.max(1, Math.ceil((x1 - x0) / TILE - 0.35)), d = Math.max(1, Math.ceil((z1 - z0) / TILE - 0.35));
+    // (a wall-mounted thing's size is across and up the wall: its depth off the wall is one)
     const nh = p.size?.split('x').map((s) => Math.max(1, Math.ceil(Number(s))));
-    if (nh && nh.length === 2 && nh.every(Number.isFinite) && (nh[0] !== w || nh[1] !== d)) {
+    if (p.wall && nh) [w, d] = [nh[0], 1];
+    else if (nh && nh.length === 2 && nh.every(Number.isFinite) && (nh[0] !== w || nh[1] !== d)) {
       mismatch.push(`${p.code} ${p.en}: bounds ${w}x${d} (${(x1 - x0).toFixed(1)} × ${(z1 - z0).toFixed(1)}), NH ${p.size}`);
       [w, d] = nh;
     }

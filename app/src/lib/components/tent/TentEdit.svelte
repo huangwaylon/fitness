@@ -15,7 +15,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import { TENT_MAX } from '#lib/contract/tent.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, ITEMS, STARTER, WALLS, footprint, iconUrl } from './items.ts';
-  import { HALF, TILE, centreOf, isSmall, isSurface, nearestFree, placeWhy, resolve, slotTaken, snapTo, surfaceAt, tileToSlot, type Facing, type Spot, type Why } from './grid.ts';
+  import { HALF, ROOM, TILE, centreOf, isSmall, isSurface, isWallItem, wallSnap, wallSteps, wallWhy, nearestFree, placeWhy, resolve, slotTaken, snapTo, surfaceAt, tileToSlot, type Facing, type Spot, type Why } from './grid.ts';
   import type { Tent } from './engine.ts';
   import type { DragLink } from './dragLink.ts';
 
@@ -33,14 +33,15 @@
   }
   let { eng, link, finds, villagers, relayNow, partnerName, ondone }: Props = $props();
 
-  type Tab = 'recent' | 'furniture' | 'rugs' | 'finds' | 'wall' | 'floor';
+  type Tab = 'recent' | 'furniture' | 'rugs' | 'walled' | 'finds' | 'wall' | 'floor';
   /** The pieces I picked last (this phone's, newest first): NH's quick access to what's at hand. */
   const RECENT_MAX = 12;
   let recent = $state<string[]>(((r) => (Array.isArray(r) ? r.filter((c): c is string => typeof c === 'string' && !!ITEMS[c]) : []))(readJson<unknown>(localKV(), DEVICE.tentRecent)));
-  const TABS = $derived<Tab[]>([...(recent.length ? ['recent' as const] : []), 'furniture', 'rugs', 'finds', 'wall', 'floor']);
+  const TABS = $derived<Tab[]>([...(recent.length ? ['recent' as const] : []), 'furniture', 'rugs', 'walled', 'finds', 'wall', 'floor']);
   let tab = $state<Tab>('furniture');
   const list = $derived(
-    tab === 'recent' ? recent : tab === 'furniture' ? STARTER.filter((c) => !ITEMS[c].rug) : tab === 'rugs' ? STARTER.filter((c) => ITEMS[c].rug) : tab === 'finds' ? finds : tab === 'wall' ? WALLS : FLOORS
+    tab === 'recent' ? recent : tab === 'furniture' ? STARTER.filter((c) => !ITEMS[c].rug && !ITEMS[c].wl) : tab === 'rugs' ? STARTER.filter((c) => ITEMS[c].rug)
+      : tab === 'walled' ? [...STARTER.filter((c) => ITEMS[c].wl), ...finds.filter((c) => ITEMS[c].wl)] : tab === 'finds' ? finds : tab === 'wall' ? WALLS : FLOORS
   );
   /** How many of each piece stand in the room (the icons' counts). */
   const counts = $derived(room.pieces.reduce((m, p) => m.set(p.item, (m.get(p.item) ?? 0) + 1), new Map<string, number>()));
@@ -73,6 +74,8 @@
   function check(): void {
     onto = null;
     if (!sel) return void (why = null);
+    // on a wall: its wall's grid (its facing is the wall: f)
+    if (isWallItem(sel.item)) return void (why = wallWhy(others(), { id: sel.fresh ? undefined : sel.id, item: sel.item, x: at[0], z: at[1], f: sel.f }));
     // a small thing over a surface goes on it (NH's table tops): one to a slot
     if (isSmall(sel.item)) {
       const sur = surfaceAt(placed(), at[0], at[1], sel.id), slot = sur && tileToSlot(sur, at[0], at[1]);
@@ -97,13 +100,25 @@
     const kids = sel && !sel.fresh ? kidsOf(sel.id) : [];
     e.ghost(sel ? { item: sel.item, x: at[0], z: at[1], f: sel.f, ok: !why, y: onto ? (ITEMS[onto.item]?.h ?? 0) : 0, kids } : null);
     e.hide([...(sel && !sel.fresh ? [sel.id] : []), ...kids.map((k) => k.id), ...link.theirs().flatMap((h) => [h.id, ...kidsOf(h.id).map((k) => k.id)])]);
-    if (sel) {
+    // (a wall thing isn't streamed: the partner's phone sees it land)
+    if (sel && !isWallItem(sel.item)) {
       const [cx, cz] = centreOf({ item: sel.item, x: at[0], z: at[1], f: sel.f });
       link.hold({ id: sel.id, item: sel.item, fresh: sel.fresh, x: cx, z: cz, f: sel.f }, relayNow());
     }
   }
+  /** A wall thing to a point on a wall (across from its left end, up): its wall's grid. */
+  function moveToWall(wall: number, u: number, y: number): boolean {
+    if (!sel || !isWallItem(sel.item)) return false;
+    const n = wallSnap(sel.item, u, y);
+    if (n[0] === at[0] && n[1] === at[1] && sel.f === wall) return false;
+    sel.f = wall as Facing;
+    at = n;
+    check();
+    show();
+    return true;
+  }
   function moveTo(x: number, z: number): boolean {
-    if (!sel) return false;
+    if (!sel || isWallItem(sel.item)) return false;
     const n = snapTo(sel.item, sel.f, x, z);
     if (n[0] === at[0] && n[1] === at[1]) return false;
     at = n;
@@ -122,8 +137,17 @@
       return;
     }
     const me = villagers()[0] ?? [0, 0];
-    const f: Facing = 0;
-    const spot = nearestFree(placed(), code, f, me[0], me[1] - 12) ?? snapTo(code, f, 0, 0);
+    let f: Facing = 0;
+    let spot = nearestFree(placed(), code, f, me[0], me[1] - 12) ?? snapTo(code, f, 0, 0);
+    if (isWallItem(code)) {
+      // a wall thing: the first free spot on the back wall, from its middle out, at eye height first
+      const w = ITEMS[code].w, steps = wallSteps(code), mid = Math.floor((ROOM - w) / 2);
+      const tries: [number, number, number][] = [];
+      for (const wall of [0, 1, 2, 3]) for (let dz = 0; dz <= steps; dz++) for (let dx = 0; dx <= ROOM; dx++)
+        for (const x of [mid + dx, mid - dx]) tries.push([wall, x, Math.min(steps, Math.max(0, 3 + (dz % 2 ? -1 : 1) * Math.ceil(dz / 2)))]);
+      const ok = tries.find(([wall, x, z]) => !wallWhy(others(), { item: code, x, z, f: wall as Facing }));
+      [f, spot] = ok ? [ok[0] as Facing, [ok[1], ok[2]]] : [0, [Math.max(0, mid), 0]];
+    }
     sel = { id: newId(Date.now()), fresh: true, item: code, f };
     at = spot;
     check();
@@ -154,7 +178,7 @@
   }
 
   // ---- the finger: on the ghost (or a placed piece) it drags; the screen hands its pointer events here ----
-  let drag: { id: number; dx: number; dz: number; moved: boolean; held: boolean; x0: number; y0: number; t0: number } | null = null;
+  let drag: { id: number; dx: number; dz: number; moved: boolean; held: boolean; x0: number; y0: number; t0: number; wall?: boolean } | null = null;
   /** A pointer went down on the room: true when the mode takes it (a drag). */
   export function down(e: PointerEvent): boolean {
     const g = eng();
@@ -166,6 +190,18 @@
       return Math.abs(p[0] - cx) <= (w * TILE) / 2 + 4 && Math.abs(p[1] - cz) <= (d * TILE) / 2 + 4;
     };
     // a press on what I already hold (a tap there turns it); on another piece, that one is picked instead
+    // a wall thing held: a press on its wall near it drags it along the walls
+    if (sel && isWallItem(sel.item)) {
+      const wp = g.wallAt(e.clientX, e.clientY);
+      if (wp && wp.wall === sel.f) {
+        const m = ITEMS[sel.item], [u, y] = [(at[0] + m.w / 2) * TILE, 0];
+        if (Math.abs(wp.u - u) <= (m.w * TILE) / 2 + 4) {
+          drag = { id: e.pointerId, dx: 0, dz: 0, moved: false, held: true, x0: e.clientX, y0: e.clientY, t0: Date.now(), wall: true };
+          void y;
+          return true;
+        }
+      }
+    }
     let held = onGhost();
     if (!held) {
       const id = g.pick(e.clientX, e.clientY);
@@ -175,6 +211,11 @@
       if (sel && isSmall(sel.item) && q && !q.on && isSurface(q.item)) return false;
       held = sel?.id === id;
       if (!pickPlaced(id)) return false;
+      // a wall thing picked up: dragged along the walls
+      if (sel && isWallItem(sel.item)) {
+        drag = { id: e.pointerId, dx: 0, dz: 0, moved: false, held, x0: e.clientX, y0: e.clientY, t0: Date.now(), wall: true };
+        return true;
+      }
     }
     if (!sel || !p) return true;
     const [cx, cz] = centreOf({ item: sel.item, x: at[0], z: at[1], f: sel.f });
@@ -185,6 +226,11 @@
   const TAP_PX = 8, TAP_MS = 450;
   export function move(e: PointerEvent): void {
     if (!drag || e.pointerId !== drag.id) return;
+    if (drag.wall) {
+      const wp = eng()?.wallAt(e.clientX, e.clientY);
+      if (wp && moveToWall(wp.wall, wp.u, wp.y)) drag.moved = true;
+      return;
+    }
     const p = eng()?.floorAt(e.clientX, e.clientY);
     if (p && moveTo(p[0] + drag.dx, p[1] + drag.dz)) drag.moved = true;
   }
@@ -195,9 +241,18 @@
     const tap = !d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) <= TAP_PX && Date.now() - d.t0 <= TAP_MS;
     if (d.moved) cue('tick');
     // a tap on what I hold turns it a quarter, clockwise (NH's rotate); a tap that picked a piece up just picks it
-    else if (tap && d.held) turn();
+    // (a wall thing's facing is its wall's: nothing to turn)
+    else if (tap && d.held && !(sel && isWallItem(sel.item))) turn();
     return true;
   }
+  /** A tap on a wall (no drag): a held wall thing goes there. */
+  export function tapWall(wall: number, u: number, y: number): boolean {
+    if (!sel || !isWallItem(sel.item)) return false;
+    if (moveToWall(wall, u, y)) cue('tick');
+    return true;
+  }
+  /** Holding a wall thing (a tap on a wall is where it goes). */
+  export const holdingWall = (): boolean => !!sel && isWallItem(sel.item);
   /** A tap on the floor (no drag): the held piece goes there. */
   export function tapFloor(x: number, z: number): void {
     if (sel && moveTo(x, z)) cue('tick');
@@ -314,9 +369,11 @@
   {#if sel}
     <div class="bar" role="toolbar" aria-label={nameOf(sel.item)}>
       <span class="say" class:bad={!!why} data-why={why ?? ''} aria-live="polite">{why ? t(`tent.why.${why}`) : nameOf(sel.item)}</span>
-      <button type="button" class="act" data-act="turn" data-sfx="self" aria-label={t('decor.turn')} onclick={turn}>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.05-4.95" /><path d="M19 4v4h-4" /></svg>
-      </button>
+      {#if !isWallItem(sel.item)}
+        <button type="button" class="act" data-act="turn" data-sfx="self" aria-label={t('decor.turn')} onclick={turn}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.05-4.95" /><path d="M19 4v4h-4" /></svg>
+        </button>
+      {/if}
       {#if !sel.fresh}
         <button type="button" class="act" data-act="remove" data-sfx="self" aria-label={t('decor.remove')} onclick={putAway}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
