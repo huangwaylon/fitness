@@ -1,5 +1,6 @@
 // Demo smoke test: buy, undo, the harvest recap, きろく (read-only, the goals), on `?demo` (no backend, no key).
 import { expect, test, type Page } from '@playwright/test';
+import { tapOn } from './island.ts';
 
 /** The topmost sheet (a confirm over the panel). */
 const sheet = (page: Page) => page.locator('dialog[open]').last();
@@ -387,8 +388,9 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
   await expect(popups).toHaveCount(1);
   await expect(canopies.nth(0)).toHaveAttribute('aria-expanded', 'false');
   await expect(canopies.nth(1)).toHaveAttribute('aria-expanded', 'true');
-  // the same tree: it closes (its lower canopy: on a short screen the popup is pushed down over the top of it)
-  await canopies.nth(1).click({ position: { x: (await canopies.nth(1).boundingBox())!.width / 2, y: (await canopies.nth(1).boundingBox())!.height - 8 } });
+  // the same tree: it closes (where the popup leaves it uncovered: on a short screen, or the 3D island's, it may stand
+  // over the top of it)
+  await tapOn(page, canopies.nth(1));
   await expect(popups).toHaveCount(0);
   await canopies.nth(0).click();
   await page.mouse.click(205, 300); // the path, elsewhere: it closes
