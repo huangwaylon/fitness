@@ -13,7 +13,6 @@ import { DEMO, DEVICE, getStoredMe, localKV, readJson, sessionKV, writeJson, wri
 import { RECORD_CONFIGURED } from '#lib/sync/transport.ts';
 import { composeModel, type ComposedModel } from './view.ts';
 import { LiveBackend } from './live.ts';
-import { pushTick } from '#lib/sync/push.ts';
 import type { Backend, Host, SendOptions, SendResult } from './backend.ts';
 import type { DemoMode } from './demo/backend.ts';
 
@@ -84,8 +83,6 @@ class WeekStore implements Host {
     b.decorate?.(m, v);
     this.model = m;
     this.view = v;
-    // goal notifications (docs/backend.md#notifications): my all-four reported once a day; never from the demo
-    if (!this.demo && v.viewer !== 'G') pushTick(v);
     setLocale(v.locale);
     if (readJson(localKV(), DEVICE.locale) !== v.locale) writeJson(localKV(), DEVICE.locale, v.locale);
   }

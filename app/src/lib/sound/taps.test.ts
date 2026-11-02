@@ -23,7 +23,6 @@ const SELF: Record<string, string> = {
   'lib/components/ui/NavButton.svelte': 'the panel passes self: its ‹ plays back and its ✕ the panel-close tune (IslandPanel)',
   'lib/components/ui/Sheet.svelte': 'backdrop / Esc: back',
   'lib/components/panel/SoundSection.svelte': 'toggle-on / toggle-off (効果音 previews a confirm); the slider ticks on change, not while dragged',
-  'lib/components/panel/NotifySection.svelte': 'toggle-off at once; toggle-on once the permission and the relay said yes (silent while unusable or busy)',
   'lib/components/sheets/HarvestOverlay.svelte': '受け取る！ → the item-get fanfare (harvest-receive), or the boop if it fails',
   'lib/components/wallet/BuyConfirm.svelte': '買う！ → purchase (the wallet’s buy), or the boop if the wallet fell short',
   'lib/components/island/IslandScene.svelte': 'a villager → villager-tap or emote-surprise (woken)',

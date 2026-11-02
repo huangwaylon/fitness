@@ -1,7 +1,7 @@
 # The live relay (docs/backend.md#live-relay): one Worker + one SQLite-backed Durable Object (the island room) on the
 # Workers Free plan. Deploy: `npm run deploy` (production) or `npm run deploy:test` (the smoke-test copy, its own
-# secrets and room). Secrets: `npx wrangler secret put KEY_A` / `KEY_B` and `VAPID_PRIVATE` (add `--env test` for the
-# test copy; VAPID: docs/ops/runbook.md §12).
+# secrets and room). Secrets: `npx wrangler secret put KEY_A` / `KEY_B` / `KEY_C` (add `--env test` for the
+# test copy).
 name = "island-fund-relay"
 main = "src/index.ts"
 compatibility_date = "2026-10-01"
@@ -10,10 +10,6 @@ preview_urls = false
 
 [vars]
 ALLOWED_ORIGINS = "https://huangwaylon.github.io"
-# Web Push (docs/backend.md#notifications): the VAPID public key (the app's PUSH_PUBLIC_KEY, lib/sync/push.ts, must
-# match; its private half is the secret VAPID_PRIVATE) and the subject the push services may contact.
-VAPID_PUBLIC = "BCfU7NJ22GxdALlsB_vyhPE3hi5LGgLHl2OKcwdOAkEEoLoIJmcaoG0wmFbO5WX9nriyL0PXACdU5S7pCdn6qTE"
-VAPID_SUBJECT = "https://huangwaylon.github.io/fitness/"
 # The record's one-way export to the sheet (docs/backend.md#the-record "Export"): the Apps Script web app's /exec URL.
 EXPORT_URL = "https://script.google.com/macros/s/AKfycbwAMHDa69-GmAEmhrO7WXiRhkQoJLzCImiBkwV7itHbSATMC_wtHFEgy4Tn5eXzKjGU/exec"
 
@@ -53,8 +49,6 @@ crons = []
 [env.test.vars]
 EXPORT_URL = ""
 ALLOWED_ORIGINS = "https://huangwaylon.github.io"
-VAPID_PUBLIC = "BCfU7NJ22GxdALlsB_vyhPE3hi5LGgLHl2OKcwdOAkEEoLoIJmcaoG0wmFbO5WX9nriyL0PXACdU5S7pCdn6qTE"
-VAPID_SUBJECT = "https://huangwaylon.github.io/fitness/"
 
 [[env.test.durable_objects.bindings]]
 name = "ROOM"

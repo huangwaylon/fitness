@@ -8,7 +8,6 @@ import { StoreCore } from '../src/store.ts';
 import { RoomCore, type Held, type Meta, type RoomIO } from '../src/room.ts';
 import { keyOwner } from '../src/auth.ts';
 import { notifySecret } from '../src/notify.ts';
-import { pushRoute, type PushRoom } from '../src/pushRoute.ts';
 import { CLOSE, type Notice, type ServerMsg } from '../../app/src/lib/sync/live-protocol.ts';
 import { memSql } from './sqlite.ts';
 
@@ -148,22 +147,6 @@ describe('the record and the guest', () => {
     const body = (await (store as unknown as { exportBody(f: boolean): Promise<{ body: string } | null> }).exportBody(true))!.body;
     const data = JSON.parse(JSON.parse(body).data);
     expect(data.rows.events.map((r: unknown[]) => [r[1], r[3]])).toEqual([['G', 'find']]);
-  });
-});
-
-describe('push and the guest', () => {
-  it('the guest’s key gets no notification and reports no goal (403)', async () => {
-    const calls: string[] = [];
-    const room: PushRoom = {
-      pushSubscribe: () => void calls.push('sub'), pushUnsubscribe: () => void calls.push('unsub'),
-      pushGoal: async () => (calls.push('goal'), { outcome: 'sent', sent: 1 })
-    };
-    const post = (path: string, body: object) => pushRoute(new Request(`https://x${path}`, { method: 'POST', headers: { Origin: 'https://huangwaylon.github.io' }, body: JSON.stringify(body) }), path, { KEY_A, KEY_B, KEY_C }, 'https://huangwaylon.github.io', () => room);
-    const goal = await post('/push/goal', { key: KEY_C, date: '2026-11-02', both: false, name: 'ゆき' });
-    expect(goal.status).toBe(403);
-    const sub = await post('/push/subscribe', { key: KEY_C, sub: { endpoint: 'https://web.push.apple.com/x', keys: { p256dh: 'BA'.padEnd(87, 'A'), auth: 'A'.repeat(22) } }, lang: 'ja' });
-    expect([400, 403]).toContain(sub.status);
-    expect(calls).toEqual([]);
   });
 });
 

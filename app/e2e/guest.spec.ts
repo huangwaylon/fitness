@@ -2,7 +2,7 @@
 // members' `?demo` (A) and `?demo&as=B`; the demo's relay is the tabs' BroadcastChannel (sync/live-local.ts) and its
 // record their shared localStorage, as two phones and a guest's have the relay and the record. The guest's phone shows
 // the members' activity and ベル but never a からだ figure, and nothing it may not do (a buy, an erase, a goal, the
-// island's もようがえ, つうち, つうしん); its catches go into the shared ずかん under its own name; its tent pieces reach
+// island's もようがえ, つうしん); its catches go into the shared ずかん under its own name; its tent pieces reach
 // both members; and its villager is on the members' islands only while its app is open, moving only when it's moved.
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 
@@ -47,7 +47,7 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   await expect(panel.locator('.goals .pen-btn')).toHaveCount(0);
   await expect(panel.locator('[data-focus="weight-goal"], [data-focus="fat-goal"]')).toHaveCount(0);
   for (const text of ['体重', '体脂肪率', 'kg', '%']) await expect(panel, text).not.toContainText(text);
-  // せってい: the villager, the sound and the language; no もようがえ, つうち or つうしん
+  // せってい: the villager, the sound and the language; no もようがえ or つうしん (and no つうち: gone for everyone)
   await panel.locator('.tab[data-tab=settings]').click();
   await expect(panel.locator('[data-guest-note]')).toBeVisible();
   await expect(panel.locator('[data-push="villager"]')).toBeVisible();

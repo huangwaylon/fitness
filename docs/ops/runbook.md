@@ -2,7 +2,7 @@
 
 Three pieces, no server of our own:
 - **The relay** (`relay/`, a Cloudflare Worker on the Free plan, §10): the record (metrics, events, the ingest audit in
-  a Durable Object's SQLite, §13), the live room (presence and the day's shared world) and the goal notification (§12).
+  a Durable Object's SQLite, §13), the live room (presence and the day's shared world). No notifications (§12).
 - **The app:** a static PWA on GitHub Pages that computes everything in the browser from the record's rows.
 - **The sheet:** the Google Sheet *Island Fund*, a read-only export of the record (§9), and its Apps Script web app (one
   `/exec` URL) that takes the export.
@@ -153,34 +153,13 @@ Done (2026-11-01), and since the record moved to the relay (2026-11-02) the push
 record tells the room after each write. The script's `script.external_request` scope went with its forward
 (2026-11-02): it makes no outgoing request.
 
-## 12. Notifications (VAPID)
-The goal notification ([backend.md](../backend.md#notifications)) goes out from the relay, signed with a VAPID key
-pair: the public half is `VAPID_PUBLIC` in `relay/wrangler.toml` (production and `env.test`) and `PUSH_PUBLIC_KEY` in
-`app/src/lib/sync/push.ts`; the private scalar is the Worker secret `VAPID_PRIVATE` (both copies).
-
-**Turn it on (each phone, iOS 16.4+):** open しまの貯金箱 from the Home Screen icon (not a Safari tab) → tap today's
-ベル ribbon → **せってい** → **つうち** → tap 「うめの ぜんぶ たっせいを しらせる」 (or ウェイの) → **許可 / Allow**. The
-switch turns green once the relay has the subscription. Turned off by mistake in iOS: Settings → Notifications →
-しまの貯金箱 → Allow Notifications, then tap the switch again. Each phone opts in for itself; a person's own report
-always goes, the partner's switch decides whether it buzzes.
-
-**Rotate the key** (a leak, or the private key lost; every phone has to tap the switch again only if the old key is
-gone, see below):
-1. From `relay/`: `node --input-type=module -e "const k=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign']);console.log(Buffer.from(await crypto.subtle.exportKey('raw',k.publicKey)).toString('base64url'));console.error((await crypto.subtle.exportKey('jwk',k.privateKey)).d)" 2>vapid-private.txt`
-   prints the public key and writes the private scalar to `vapid-private.txt` (keep it out of git; delete it after).
-2. `npx wrangler secret put VAPID_PRIVATE < vapid-private.txt` and the same with `--env test`; put the public key in
-   `wrangler.toml` (both places) and `PUSH_PUBLIC_KEY`; `rm vapid-private.txt`.
-3. `npm run deploy:test`, `npm run deploy`, then deploy the app (§1). Between the relay deploy and each phone's next
-   launch, pushes to that phone fail (the push service refuses the new key for a subscription made with the old one:
-   the relay answers `failed` and keeps the subscription); at launch the app sees its subscription's key differs, makes
-   a new one and hands it over by itself, so nobody has to tap anything.
-
-**Check by hand:** the smoke test (§10) covers the endpoints' refusals. The whole path once: with the app on two
-devices (or one phone and Chrome on a Mac, each paired as one of us) turn つうち on the receiving one, then on the other
-let the day reach all four goals (or, from a console there, `fetch('https://island-fund-relay.island-fund-relay.workers.dev/push/goal', {method: 'POST', body: JSON.stringify({key: localStorage['island.key'], date: '<today, Tokyo>', both: false, name: 'test'})}).then(r => r.json())`
-→ `{outcome: 'sent'}`; that spends the day for that person). **Logs:** `npx wrangler tail` shows a push service's
-refusals (`push <host> <status>`). **Off switch:** `npx wrangler secret delete VAPID_PRIVATE` (reports answer
-`failed`, nothing is sent); the switches stay as they are.
+## 12. Notifications removed
+There are none since 2026-11-02 ([decisions](../decisions.md#no-notifications-2026-11-02)). Done in this order: the
+app that unsubscribes a phone's old Web Push subscription on open (deployed to Pages first), then the relay without
+the `/push/*` routes (they answer 410; test relay, then production), then the secrets: `npx wrangler secret delete
+VAPID_PRIVATE` and `npx wrangler secret delete VAPID_PRIVATE --env test` (the vars `VAPID_PUBLIC` and `VAPID_SUBJECT`
+went with `wrangler.toml`). On a phone that had つうち on, iOS may still list しまの貯金箱 under Settings →
+Notifications; it gets nothing (no subscription is left), and the entry can be switched off there or left.
 
 ## 13. The record
 The record is the relay's `IslandStore` Durable Object ([backend.md](../backend.md#the-record)). Every command runs from
