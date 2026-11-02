@@ -12,7 +12,7 @@
 //   each frame before it draws, so the DOM moves with the picture.
 // Plain TS; world3d/Island3D.svelte drives it.
 import {
-  BufferGeometry, Color, DirectionalLight, Float32BufferAttribute, Fog, HemisphereLight, Mesh, MeshLambertMaterial,
+  Box3, BufferGeometry, Color, DirectionalLight, Float32BufferAttribute, Fog, HemisphereLight, Mesh, MeshLambertMaterial,
   PerspectiveCamera, Scene, SRGBColorSpace, Texture, TextureLoader, Uint32BufferAttribute, Vector3, WebGLRenderer,
   PCFSoftShadowMap, type Material, type Object3D
 } from 'three';
@@ -164,6 +164,12 @@ export interface Island3 {
   /** `free`: past the ends if need be (the e2e's camera, at the 2D island's stops: the ends widen to take it). */
   go(camZ: number, zoom?: number, free?: boolean): void;
   limits(): { min: number; max: number };
+  /** The test hook's (docs/ops/testing.md): what's drawn now with a NaN in its bounds, or reaching far off the island
+   *  (`reach` u past the ground's plan): a stray vertex (a quantized mesh baked wrong) draws a line across the screen. */
+  strays(reach?: number): { name: string; box: number[] }[];
+  /** The test hook's: drawn materials whose blending writes the canvas's alpha with light (three's additive, subtractive,
+   *  multiply): over the transparent sky they draw a box (bend.ts glow()). */
+  alphaBlends(): string[];
   /** Frame one thing (the bulletin board: the user's one exception to "nothing but the finger moves the camera"): the
    *  camera eases to it over `ms` (600), centred on it, `zoom` (2.2) and `pitch` (degrees, 30) its own; the finger does
    *  nothing until restore(), which eases back to exactly where the camera was. */
@@ -755,6 +761,39 @@ export function createIsland(canvas: HTMLCanvasElement, ground: Ground, init: Pa
       activity();
     },
     limits: () => ({ min: lim.min, max: lim.max }),
+    alphaBlends() {
+      const out = new Set<string>();
+      scene.traverseVisible((n) => {
+        const m = (n as Mesh).material as Material | Material[] | undefined;
+        for (const x of m ? (Array.isArray(m) ? m : [m]) : []) if (x.blending >= 2 && x.blending <= 4) out.add(`${x.type}:${n.name || n.parent?.name || '?'}`);
+      });
+      return [...out];
+    },
+    strays(reach = 900) {
+      const out: { name: string; box: number[] }[] = [], b = new Box3();
+      scene.updateMatrixWorld();
+      scene.traverseVisible((n) => {
+        const m = n as Mesh & { isInstancedMesh?: boolean; isLine?: boolean; isPoints?: boolean; count?: number; computeBoundingBox?: () => void; boundingBox?: Box3 | null };
+        if (!(m.isMesh || m.isLine || m.isPoints) || !m.geometry || m.userData.backdrop) return;
+        if (m.isInstancedMesh) {
+          if (!m.count) return;
+          m.computeBoundingBox!();
+          b.copy(m.boundingBox!);
+        } else {
+          m.geometry.computeBoundingBox();
+          b.copy(m.geometry.boundingBox!);
+        }
+        if (b.isEmpty()) return;
+        b.applyMatrix4(m.matrixWorld);
+        // the sea and the water's flat planes reach to the horizon
+        if (b.max.y - b.min.y < 2 && Number.isFinite(b.max.y)) return;
+        const v = [b.min.x, b.min.y, b.min.z, b.max.x, b.max.y, b.max.z];
+        const L = ground.land;
+        const far = b.min.x < L.x0 - reach || b.max.x > L.x1 + reach || b.min.y < -reach || b.max.y > reach || b.max.z > -L.z0 + reach || b.min.z < -L.z1 - reach;
+        if (v.some((x) => !Number.isFinite(x)) || far) out.push({ name: `${m.type}:${m.name || m.parent?.name || '?'}`, box: v.map((x) => Math.round(x)) });
+      });
+      return out;
+    },
     focusOn, restore, frame: frameRect,
     setLimits(min, max) {
       lim.min = min;

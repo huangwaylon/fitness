@@ -110,3 +110,32 @@ test('the board\'s focus: the camera frames a thing, the finger does nothing mea
   expect(after.zoom).toBe(before.zoom);
   expect(after.pitch).toBe(before.pitch);
 });
+
+test('nothing drawn strays off the island: no NaN or far-flung vertex (the falling leaves\' lines), no material warnings', async ({ page }) => {
+  test.setTimeout(60_000);
+  const warns: string[] = [];
+  page.on('console', (m) => (m.type() === 'warning' || m.type() === 'error') && /THREE/.test(m.text()) && warns.push(m.text()));
+  // the autumn's falling leaves round the camera (NH's leaf models: quantized, so a baked matrix overflowed them)
+  await page.goto(`?${Q}&island=3d`);
+  await ready(page);
+  const strays = () => page.evaluate(() => (window as unknown as { __world3d: { strays(): unknown[] } }).__world3d.strays());
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { stats(): { calls: number } } }).__world3d.stats().calls)).toBeGreaterThan(10);
+  for (let i = 0; i < 12; i++) {
+    expect(await strays()).toEqual([]);
+    await page.waitForTimeout(300); // (sampling the flourishes as they come and go)
+  }
+  expect(warns).toEqual([]);
+});
+
+test('at night the glows add light without touching the canvas\'s alpha (a lamp\'s halo over the sky was a black box)', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.goto(`?demo&date=2026-11-04T22:00&critter=none&visitor=none&island=3d`);
+  await ready(page);
+  // at the front at the closest zoom, the far lamps' halos behind the campsite's trees
+  await page.evaluate(() => {
+    const w = (window as unknown as { __world3d: { go(z: number, k?: number): void; limits(): { min: number } } }).__world3d;
+    w.go(w.limits().min, 99);
+  });
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { stats(): { calls: number } } }).__world3d.stats().calls)).toBeGreaterThan(10);
+  expect(await page.evaluate(() => (window as unknown as { __world3d: { alphaBlends(): string[] } }).__world3d.alphaBlends())).toEqual([]);
+});
