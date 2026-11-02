@@ -17,6 +17,8 @@
 
   const q = new URLSearchParams(location.search);
   const phone = q.get('view') === 'phone';
+  // `?view=orbit` (with `&at=x,y,z&eye=x,y,z`): the 3D preview alone, turned freely
+  const orbit = q.get('view') === 'orbit';
   const flat = q.get('preview') === '0';
   let editing = $state(q.has('edit'));
   let stage = $state<EditStage>();
@@ -56,7 +58,9 @@
   <title>しまの エディター</title>
 </svelte:head>
 
-{#if phone}
+{#if orbit}
+  <div class="full"><Preview3D layout={layout.current} mode="orbit" /></div>
+{:else if phone}
   <div class="full">
     {#if flat}<PlanStage layout={layout.current} bind:camZ bind:stage />{:else}<Preview3D layout={layout.current} mode="phone" bind:camZ bind:stage />{/if}
     {#if editing && stage && me}<IslandEdit {stage} {relay} ondone={() => (editing = false)} />{/if}

@@ -25,6 +25,8 @@ export interface Day {
   pieces?: readonly Piece[];
   /** The goal trees' fruit as models (else the island's own). */
   fruit?: boolean;
+  /** The scene draws the bridges itself (structure.ts, NH's own models): none here. */
+  structures?: boolean;
 }
 
 const MU = ISLAND_MODELS as unknown as Record<string, { mu: [number, number] }>;
@@ -135,6 +137,7 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         break;
       }
       case 'bridge': {
+        if (day.structures) break;
         // NH's stone bridge (its deck along the model's x), long enough to span the footprint's water
         const span = Math.max(...footOf(layout, o)), along = MODELS['bridge-stone'].max[0] - MODELS['bridge-stone'].min[0];
         out.push({ id: o.id, model: 'bridge-stone', x, z, scale: (span * 30 * 0.72) / along, yaw: o.f % 2 ? 0 : Math.PI / 2 });

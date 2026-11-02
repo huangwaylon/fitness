@@ -152,7 +152,7 @@
     {"id":"board","k":"board","x":7,"z":6,"f":0},
     {"id":"rock","k":"rock","x":6,"z":18,"f":0,"n":[7,13]},
     {"id":"bridge","k":"bridge","x":9,"z":23,"f":0,"s":"stone","n":[0,1]},
-    {"id":"stairs","k":"stairs","x":4,"z":83,"f":0,"s":"stone"},
+    {"id":"stairs","k":"stairs","x":4,"z":81,"f":0,"s":"stone"},
     {"id":"home-A","k":"home","x":9,"z":82,"f":0,"n":[-14,-6]},
     {"id":"home-B","k":"home","x":5,"z":46,"f":0},
     {"id":"home-G","k":"home","x":12,"z":56,"f":0},

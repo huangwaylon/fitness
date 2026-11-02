@@ -69,6 +69,7 @@
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { decor } from '#lib/store/decor.svelte.ts';
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
+  import { decorLayout } from '#lib/contract/decor.ts';
   import Decor from './Decor.svelte';
   import Board from '../board/Board.svelte';
   import { World, dropLive, provideWorld } from './camera.svelte.ts';
@@ -774,6 +775,8 @@
       shared.rows(m.state.islandDays.map((r) => ({ at: r.at, person: r.person, data: r.data })));
       decor.rows(m.state.decor);
       islandLayout.rows(m.state.layout);
+      // the old もようがえ's decorations, mine, into the layout once (layout/migrate.ts)
+      islandLayout.migrateDecor(decorLayout(m.state.decor));
     });
   });
   $effect(() => {

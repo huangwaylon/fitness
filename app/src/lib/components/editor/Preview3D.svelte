@@ -30,8 +30,8 @@
 
   onMount(() => {
     let gone = false, stop = () => {};
-    void Promise.all([import('three'), import('three/examples/jsm/controls/OrbitControls.js'), import('../world3d/terrain.ts'), import('../world3d/objects.ts'), import('../world3d/things.ts'), import('../world3d/bend.ts'), import('../world3d/water.ts'), import('../world3d/home.ts')]).then(
-      ([T, { OrbitControls }, { buildGround }, { placeObjects, homePlaces }, { createThings }, { bendU, bend, bendPoint, unbendRay }, { waterU, waterFog }, { buildHome }]) => {
+    void Promise.all([import('three'), import('three/examples/jsm/controls/OrbitControls.js'), import('../world3d/terrain.ts'), import('../world3d/objects.ts'), import('../world3d/things.ts'), import('../world3d/bend.ts'), import('../world3d/water.ts'), import('../world3d/home.ts'), import('../world3d/structure.ts')]).then(
+      ([T, { OrbitControls }, { buildGround }, { placeObjects, homePlaces }, { createThings }, { bendU, bend, bendPoint, unbendRay }, { waterU, waterFog }, { buildHome }, { structurePlaces, buildStructure }]) => {
         if (gone || !canvas) return;
         let renderer: InstanceType<typeof T.WebGLRenderer>;
         try {
@@ -70,12 +70,12 @@
 
         const t0 = performance.now();
         let cur = layout;
-        const ground = buildGround(cur, { renderer, look });
+        const ground = buildGround(cur, { renderer, look, stairs: false });
         scene.add(ground.group);
         let dirty = true;
         const things = createThings(scene, ground.heightAt, () => (dirty = true));
         things.tod(0, 0.32);
-        const day = () => ({ season: seasonOf(look), foliage: look === 'autumn-leaves' ? 'fall' : look === 'spring-petals' ? 'blossom' : 'summer', month: new Date().getMonth() + 1, fruit: true });
+        const day = () => ({ season: seasonOf(look), foliage: look === 'autumn-leaves' ? 'fall' : look === 'spring-petals' ? 'blossom' : 'summer', month: new Date().getMonth() + 1, fruit: true, structures: true });
         void things.place(placeObjects(cur, day()).insts);
         void ground.ready.then(() => (dirty = true));
         // the homes from NH's parts: rebuilt when a style or a spot changes
@@ -108,6 +108,36 @@
           }
         }
         placeHomes(cur);
+        // NH's bridges and inclines (structure.ts), rebuilt when one moves
+        const structs = new Map<string, { sig: string; g: InstanceType<typeof T.Group> | null }>();
+        function placeStructures(l: typeof cur) {
+          const want = structurePlaces(l);
+          for (const [id, h] of structs) if (!want.some((p) => p.id === id)) {
+            if (h.g) scene.remove(h.g);
+            structs.delete(id);
+          }
+          for (const p of want) {
+            const sig = JSON.stringify(p), had = structs.get(p.id);
+            if (had?.sig === sig) continue;
+            const entry = { sig, g: null as InstanceType<typeof T.Group> | null };
+            structs.set(p.id, entry);
+            void buildStructure(p).then((g) => {
+              if (!g || structs.get(p.id) !== entry) return;
+              if (had?.g) scene.remove(had.g);
+              g.traverse((n) => {
+                const mm = (n as InstanceType<typeof T.Mesh>).material;
+                if (mm && !Array.isArray(mm)) bend(mm);
+              });
+              // an incline from the lower ground; a bridge at its banks' height
+              const y = p.rise ? ground.heightAt(p.x, p.z) : ground.feet(p.x, p.z) - 6;
+              g.position.set(p.x, p.rise ? Math.min(y, ground.feet(p.x, p.z) - p.rise / 2) : y, -p.z);
+              entry.g = g;
+              scene.add(g);
+              dirty = true;
+            });
+          }
+        }
+        placeStructures(cur);
         ontime?.({ build: performance.now() - t0 });
 
         let m: 'orbit' | 'phone' = mode;
@@ -190,6 +220,7 @@
             else if (d.objects.add.length || d.objects.move.length || d.objects.remove.length) ground.rebuild(l, []);
             void things.place(placeObjects(l, day()).insts);
             placeHomes(l);
+            placeStructures(l);
             ontime?.({ build: 0, update: performance.now() - t1 });
             dirty = true;
           },

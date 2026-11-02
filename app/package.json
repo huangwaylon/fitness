@@ -33,6 +33,7 @@
     "layout": "node scripts/layout.ts",
     "layout:default": "node scripts/layout-default.ts",
     "home-models": "node scripts/home-models.ts",
+    "structure-models": "node scripts/home-models.ts --structures",
     "terrain-textures": "node scripts/terrain-textures.ts"
   },
   "devDependencies": {

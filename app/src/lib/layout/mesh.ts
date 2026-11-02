@@ -8,6 +8,7 @@
 import { CHUNK, CHUNKS_X, GRID, TIER_H, TILE, idx, kindOf, onGrid, tierOf, tileX, tileZ, chunkXZ } from './grid.ts';
 import { GRASS_Y, WATER_DROP, fieldOf } from './height.ts';
 import type { Layout } from './model.ts';
+import { kindDef } from './catalog.ts';
 
 export interface Part {
   pos: Float32Array;
@@ -280,11 +281,12 @@ export const CHUNK_COUNT = CHUNKS_X * Math.ceil(GRID.rows / CHUNK);
 export function stairsMesh(layout: Layout): WallPart {
   const field = fieldOf(layout);
   const pos: number[] = [], nrm: number[] = [], uv: number[] = [], index: number[] = [];
-  const N = 8;
+  const N = 12;
   for (const o of layout.objects.values()) {
     if (o.k !== 'stairs') continue;
-    // across and up the flight (catalog.ts: 2 × 2, so a turn keeps its box)
-    const W = 2 * TILE, D = 2 * TILE;
+    // across and up the flight (catalog.ts: 2 across, 4 up)
+    const def = kindDef('stairs')!;
+    const W = def.w * TILE, D = def.d * TILE;
     const x0 = tileX(o.x), z0 = tileZ(o.z);
     const base = (onGrid(o.x, o.z) ? tierOf(layout.codes[idx(o.x, o.z)]) : 0) * TIER_H + GRASS_Y;
     /** local (u across, v up the flight) → world (x, z) by the facing (f 0 climbs toward +z). */
