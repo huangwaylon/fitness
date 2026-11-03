@@ -28,7 +28,6 @@ export const TANKS: readonly Tank[] = [
   small(1, 96, 50), small(2, 128, 50), small(3, 160, 50), small(4, 192, 50),
   small(5, 96, 84), small(6, 128, 84), small(7, 160, 84), small(8, 192, 84)
 ];
-export const tankById = (id: string): Tank | undefined => TANKS.find((t) => t.id === id);
 
 /** The water inside a tank's glass (its sand below, its surface a little under the rim). */
 export function waterOf(t: Tank): Box {
