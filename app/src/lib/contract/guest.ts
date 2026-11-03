@@ -3,14 +3,13 @@
 // (weight, body fat, BMI, lean mass, the weight and body fat goals). These are the record's rules for that key, shared by the record
 // (relay/src/store.ts: what it accepts from the guest and what its snapshot leaves out) and the demo (`?demo&as=G`
 // shows what the guest's phone would get). Pure.
-import { isActivityMetric, type EventRow, type SnapshotRows } from './api.ts';
+import { isActivityMetric, isRec, type EventRow, type SnapshotRows } from './api.ts';
 import { scopeMayWrite } from './layout.ts';
 
 /** The guest's own prefs: cosmetic only (never a goal, never another person's). */
 const GUEST_PREF_KEYS = ['locale', 'villagerName', 'villager'] as const;
 
 type Rec = Record<string, unknown>;
-const isRec = (v: unknown): v is Rec => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /**
  * Whether the guest may write this event: a `find` or a `tally` (its catches, credited to it), a `decor` op of the

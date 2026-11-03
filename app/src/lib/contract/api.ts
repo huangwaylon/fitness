@@ -90,6 +90,8 @@ export function isLocalDate(v: unknown): v is string {
   const ms = Date.parse(`${v}T00:00:00Z`);
   return !Number.isNaN(ms) && new Date(ms).toISOString().slice(0, 10) === v;
 }
+/** The calendar day after `date` (`YYYY-MM-DD`). */
+export const nextDay = (date: string): string => new Date(Date.parse(`${date}T00:00:00Z`) + 86400_000).toISOString().slice(0, 10);
 
 /** An event or spend id: a non-empty string of at most 128 characters. */
 export const isId = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length <= 128;
