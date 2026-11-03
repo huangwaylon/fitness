@@ -5,19 +5,23 @@
   // music ducks) and both villagers, and the visitor if one is out and awake, do three of NH's stretches together (~6 s,
   // motion/stretch.svelte.ts), ♪ rising from the deck; once a day per phone, then the deck goes for the day. No ベル.
   // A scene item like the visitors (aria-hidden, a 44px reach): SceneTaps asks it about each tap (`tap`).
+  // On the 3D island's layout the deck is the layout's (a fixed piece, world3d/objects.ts: NH's boom box at the
+  // villagers' scale, there every day): a tap on it plays the tape when it's out, else says why not (done today, or
+  // when it plays: an Exercise day or a morning), and its ♪ floats only when it's ready.
   //   ?stretch (dev or ?demo) brings the deck out now.
   import { hookFlag } from './devHooks.ts';
   import { su } from './scene.ts';
   import { TAPE_DECK } from './world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { shownNow } from './sceneTaps.ts';
+  import { sceneSfx, shownNow } from './sceneTaps.ts';
   import { MIN_HIT, grow, inside } from './hitbox.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { cue } from '#lib/sound/cues.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
-  import { POSES, POSE_MS, STRETCH_MS, deckOut, sawIsland, stretched } from './stretching.ts';
+  import { POSES, POSE_MS, STRETCH_MS, deckOut, sawIsland, stretched, stretchedToday } from './stretching.ts';
+  import { t } from '#lib/i18n/index.ts';
   import { groupStretch } from '../motion/stretch.svelte.ts';
 
   interface Props {
@@ -26,14 +30,20 @@
     enabled: () => boolean;
     /** Either of us met 🍑 Exercise today. */
     exercise: boolean;
+    /** A line in a balloon from the deck (Talk's). */
+    say?: (name: string, parts: string | string[], from: Element, o?: { colour?: string }) => void;
   }
-  let { scene, enabled, exercise }: Props = $props();
+  let { scene, enabled, exercise, say }: Props = $props();
   const w = useWorld();
 
   const want = hookFlag('stretch');
 
   /** Half its width and its height (u: the radio is about 1.4 times as wide as tall), for the clearance check. */
   const HW = 12.5, UP = 18;
+  /** Its height on the 3D island (u): NH's boom box (7.3 model units) at the villagers' scale (assets.json
+   *  deco/tape-deck: 5.4u a unit, as NH has it beside them), its tap area that high. */
+  const UP3 = 39.5;
+  const up = $derived(w.rest.three ? UP3 : UP);
 
   const clock = $derived(minuteNow());
   const date = $derived(dayKey(clock));
@@ -41,11 +51,15 @@
   let bump = $state(0);
   let playing = $state(false);
   $effect(() => sawIsland(date, jst(clock).hour));
-  const out = $derived.by(() => {
+  /** Ready to play: not played today, and an Exercise day or a morning (or the dev hook's). */
+  const ready = $derived.by(() => {
     void bump;
     void clock;
     return playing || (want && bump === 0) || deckOut(date, jst(clock).hour, exercise);
   });
+  /** On the layout the deck always stands (the layout's piece): only its tape waits for its day. */
+  const fixed = $derived(site.on);
+  const out = $derived(fixed || ready);
 
   let el = $state<HTMLElement>();
   /** Its spot (world x, z), or null when a control covers it on this screen (measured when the camera settles, once the
@@ -57,6 +71,8 @@
     void w.rest.z;
     void w.rest.vw;
     if (!show) return void (spot = null);
+    // (the layout's own piece stands there whatever's on screen: its tap area with it)
+    if (fixed) return void (spot = TAPE_DECK);
     if (!w.rest.ready || (playing && spot)) return;
     let id = requestAnimationFrame(() => (id = requestAnimationFrame(() => {
       const g = stageGeo(scene);
@@ -85,24 +101,30 @@
     });
   }
 
-  /** A tap on the scene (client px): true when the deck took it. Reach: a 44px target around the radio. */
+  /** A tap on the scene (client px): true when the deck took it. Reach: a 44px target around the radio. Not ready (the
+   *  layout's deck, every day): a line saying why. */
   export function tap(px: number, py: number): boolean {
     const r = el?.querySelector('.radio')?.getBoundingClientRect();
     // (out of view its node is hidden but keeps its last box: no tap there)
     if (!spot || !r || !enabled() || !w.inView(spot[0], spot[1])) return false;
     if (!inside(grow(r, MIN_HIT, 6), px, py)) return false;
-    if (!playing) play();
+    if (playing) return true;
+    if (ready) play();
+    else if (el) {
+      sceneSfx('decor');
+      say?.(t('world.deck'), t(stretchedToday(date) ? 'world.deck.done' : 'world.deck.when'), el, { colour: '#FFF1C9' });
+    }
     return true;
   }
 </script>
 
 {#if out && spot}
-  <div class="node" aria-hidden="true" {@attach w.at({ x: spot[0], z: spot[1], h: 40, m3: { key: 'deco/tape-deck', id: 'tape-deck', emit: playing ? { kind: 'notes', every: 1300, lift: 14 } : undefined } })}>
-  <span class="deck" class:playing data-stretch={playing ? 'on' : 'ready'} bind:this={el}>
-    <span class="radio"><OfficialArt key="deco/tape-deck" size={su(UP)} /></span>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: spot[0], z: spot[1], h: up + 22, m3: { key: 'deco/tape-deck', id: 'tape-deck', emit: playing ? { kind: 'notes', every: 1300, lift: up * 0.8 } : undefined } })}>
+  <span class="deck" class:playing data-stretch={playing ? 'on' : ready ? 'ready' : 'idle'} bind:this={el} style:--up={up}>
+    <span class="radio"><OfficialArt key="deco/tape-deck" size={su(up)} /></span>
     {#if playing}
       <span class="notes" data-m3art style:--total="{STRETCH_MS}ms">{#each [0, 1, 2, 3] as i (i)}<i style:--i={i}>♪</i>{/each}</span>
-    {:else}
+    {:else if ready}
       <span class="hint">♪</span>
     {/if}
   </span>
@@ -121,7 +143,7 @@
   /* the tape playing: the deck thumps on the beat */
   .playing .radio { animation: thump .5s ease-in-out infinite; }
   @keyframes thump { 0%, 100% { transform: none; } 20% { transform: scale(1.06, .94); } }
-  .notes, .hint { top: calc(-22 * var(--su)); width: 0; height: 0; }
+  .notes, .hint { top: calc((-4 - var(--up, 18)) * var(--su)); width: 0; height: 0; }
   .notes i, .hint {
     font: 700 calc(12 * var(--su)) / 1 var(--font-ui); font-style: normal; color: #FFF6C8; text-shadow: 0 1px 2px rgba(60, 40, 20, .5);
   }

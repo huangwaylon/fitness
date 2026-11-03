@@ -34,8 +34,12 @@ export interface Body {
 }
 
 export type State = 'idle' | 'walk' | 'sit' | 'lie' | 'nap' | 'doze' | 'fish';
-export type Action = 'hop' | 'wave' | 'highfive' | 'surprise' | 'sting' | 'cast' | 'tug' | 'reel';
-export const ACTION_MS: Record<Action, number> = { hop: 720, wave: 1700, highfive: 1000, surprise: 650, sting: 1400, cast: 620, tug: 420, reel: 700 };
+export type Action = 'hop' | 'wave' | 'highfive' | 'surprise' | 'sting' | 'cast' | 'tug' | 'reel' | 'warmup' | 'sidebend' | 'jump';
+export const ACTION_MS: Record<Action, number> = {
+  hop: 720, wave: 1700, highfive: 1000, surprise: 650, sting: 1400, cast: 620, tug: 420, reel: 700,
+  // group stretching's three (island/stretching.ts POSE_MS each, a beat less: each hands over to the next)
+  warmup: 1950, sidebend: 1950, jump: 1950
+};
 export const FADE_MS = 150;
 
 /** The arms lowered from NH's T (radians about z): by the sides, a little out. */
@@ -317,6 +321,39 @@ export function action(a: Action, u: number): { p: Pose; w: number } {
       p.j.Spine_1 = [-0.18 * up, 0, 0];
       p.j.Head = [-0.12 * up, 0, 0];
       p.y = 0.3 * up;
+      return { p, w };
+    }
+    case 'warmup': {
+      // NH's Posture Warm-Up (group stretching): the arms swung up out to the sides and down again, twice, a little
+      // bend of the knees at the bottom of each
+      const s = 0.5 - 0.5 * Math.cos((u / T) * 2 * TAU);
+      arms(p, ARMS - (ARMS + 0.55) * s, 0.15 * s, 0.1);
+      p.j.Spine_1 = [-0.06 * s, 0, 0];
+      p.j.Head = [-0.12 * s, 0, 0];
+      p.sq = 1 - 0.06 * (1 - s);
+      return { p, w };
+    }
+    case 'sidebend': {
+      // NH's Side Bends: the arms up, the body bent to one side and the other, twice
+      const up = Math.min(ease(u / 300), ease((T - u) / 300)), bend = Math.sin((u / T) * 2 * TAU) * up;
+      arms(p, ARMS - (ARMS + 0.5) * up, 0.1 * up, 0.15);
+      p.j.Spine_1 = [0, 0, 0.3 * bend];
+      p.j.Spine_2 = [0, 0, 0.12 * bend];
+      p.j.Head = [0, 0, 0.1 * bend];
+      return { p, w };
+    }
+    case 'jump': {
+      // NH's Jump: two hops on the spot, the arms flung out and up at the top of each
+      const k = ((u / T) * 2) % 1;
+      if (k < 0.2) p.sq = 1 - 0.16 * ease(k / 0.2);
+      else if (k < 0.72) {
+        const f = (k - 0.2) / 0.52;
+        p.y = 3 * 4 * f * (1 - f);
+        p.sq = 1.08 - 0.08 * Math.abs(2 * f - 1);
+        arms(p, ARMS - 1.5 * Math.sin(f * Math.PI), 0, 0.2);
+        p.j.Leg_1_L = [-0.35 * Math.sin(f * Math.PI), 0, -0.12 * Math.sin(f * Math.PI)];
+        p.j.Leg_1_R = [-0.35 * Math.sin(f * Math.PI), 0, 0.12 * Math.sin(f * Math.PI)];
+      } else p.sq = 1 - 0.14 * Math.sin(((k - 0.72) / 0.28) * Math.PI);
       return { p, w };
     }
     case 'sting': {

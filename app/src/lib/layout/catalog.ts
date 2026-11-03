@@ -75,7 +75,7 @@ export const KIND_LIST: readonly KindDef[] = [
   k({ k: 'shishiodoshi', group: 'furniture', ja: 'ししおどし', en: 'Shishi-odoshi', w: 1, d: 1, block: true, foot: [26, 18], on: 'land', h: 28, icon: 'deco/shishiodoshi', turns: true }),
   k({ k: 'pullup', group: 'furniture', ja: 'てつぼう', en: 'Pull-up bar', w: 1, d: 1, block: true, foot: [28, 12], on: 'land', h: 44, icon: 'deco/pullup', turns: true }),
   k({ k: 'firewood', group: 'furniture', ja: 'まき', en: 'Firewood', w: 1, d: 1, block: true, foot: [18, 12], on: 'land', h: 18, icon: 'deco/firewood' }),
-  k({ k: 'tape-deck', group: 'furniture', ja: 'ラジカセ', en: 'Tape deck', w: 1, d: 1, block: true, foot: [14, 8], on: 'land', h: 16, icon: 'deco/tape-deck', fixed: true }),
+  k({ k: 'tape-deck', group: 'furniture', ja: 'ラジカセ', en: 'Tape deck', w: 1, d: 1, block: true, foot: [34, 20], on: 'land', h: 40, icon: 'deco/tape-deck', fixed: true }),
   // the decorations NH's outdoor furniture the phones put down (island/decor.ts's ten), on the layout's tiles now
   k({ k: 'stone-lantern', group: 'furniture', ja: 'いしどうろう', en: 'Stone lantern', w: 1, d: 1, block: true, foot: [24, 20], on: 'land', h: 40, icon: 'decor/stone-lantern-0', turns: true }),
   k({ k: 'birdbath', group: 'furniture', ja: 'バードバス', en: 'Birdbath', w: 1, d: 1, block: true, foot: [24, 20], on: 'land', h: 30, icon: 'decor/birdbath-0', turns: true }),

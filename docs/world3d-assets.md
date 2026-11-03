@@ -561,7 +561,7 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 | deco/snowboy-3 | deco/snowboy-3 | 3 | feet | 2×2 | 23 | 18.4 |  |
 | deco/streetlamp | streetlamp | 3 | feet | 1×1 | 12 | 16.5 | lit |
 | deco/streetlamp-lit | streetlamp | 3 | feet | 1×1 | 12 | 16.5 | lit |
-| deco/tape-deck | tape-deck | 3 | feet | 1×1 | 12 | 16.7 |  |
+| deco/tape-deck | tape-deck | 5.4 | feet | 2×1 | 20 | 16.7 |  |
 
 ### event
 
