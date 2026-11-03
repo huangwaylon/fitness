@@ -90,12 +90,13 @@
   const fires = $derived((void site.rev, SCENERY).filter((s) => FIRE_AT[s.key]));
   const buildings = $derived((void site.rev, BUILDINGS));
   const winter = $derived(season === 'winter');
-  const wOf = (key: string, h: number) => {
-    const a = art(key);
-    return a ? (h * a.w) / a.h : h;
-  };
   /** A render stands on its feet (or door) point (scripts/models.ts: models.json), not its box's bottom centre. */
-  const P = PLACES as unknown as Record<string, { ax: number; ay: number; inset?: [number, number, number, number] }>;
+  const P = PLACES as unknown as Record<string, { ax: number; ay: number; mu?: [number, number]; inset?: [number, number, number, number] }>;
+  /** A node's width: its art's, else its model's box (models.json mu: a piece only the 3D island draws has no 2D art). */
+  const wOf = (key: string, h: number) => {
+    const a = art(key), m = P[key]?.mu;
+    return a ? (h * a.w) / a.h : m ? (h * m[0]) / m[1] : h;
+  };
   const at3d = (key: string, h: number, flip = false): string | null => {
     const p = P[key];
     if (!p) return null;
@@ -166,7 +167,7 @@
 
 {#each buildings as b (b.id)}
   <div class="spr building" data-building={b.id} {@attach w.at({ x: b.x, z: b.z, h: b.h, model: true })}>
-    <button type="button" class="door" disabled={!live} data-sfx="self" data-scenery aria-label={t(`world.building.${b.id}`)}
+    <button type="button" class="door" disabled={!live} data-sfx="self" data-scenery data-look={sceneryKey(b.key, season, month)} aria-label={t(`world.building.${b.id}`)}
       style={at3d(b.key, b.h)} style:height="calc({b.h} * var(--u))" style:width="calc({b.w ?? wOf(b.key, b.h)} * var(--u))"
       onclick={(e) => onbuilding?.(b.id, e.currentTarget)}>
       <OfficialArt key={sceneryKey(b.key, season, month)} size="calc({b.h} * var(--u))" eager />

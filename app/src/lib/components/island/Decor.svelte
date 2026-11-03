@@ -37,11 +37,12 @@
       return { id: o.id, item: o.k as DecorItem, x: Math.round(x), z: Math.round(z), f: o.f as Facing };
     });
   });
-  const P = PLACES as unknown as Record<string, { ax: number; ay: number }>;
-  /** A render stands on its feet point (models.json), its height decorH. */
+  const P = PLACES as unknown as Record<string, { ax: number; ay: number; mu?: [number, number] }>;
+  /** A render stands on its feet point (models.json), its height decorH; its width the art's, else the model's box
+   *  (models.json mu: the turned looks have no 2D art, only the 3D island draws them). */
   function look(item: DecorItem, f: Facing) {
     const key = decorArt(item, f), h = decorH(item, f), a = art(key), p = P[key];
-    const wd = a ? (h * a.w) / a.h : h;
+    const wd = a ? (h * a.w) / a.h : p?.mu ? (h * p.mu[0]) / p.mu[1] : h;
     return { key, h, wd, style: p ? `left:calc(${-p.ax * wd} * var(--u));bottom:calc(${-(1 - p.ay) * h} * var(--u))` : '' };
   }
 

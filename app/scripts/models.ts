@@ -37,6 +37,9 @@ interface Look {
   /** Folders whose textures it also reads (a furniture body's colour: <Ftr>ReBody<n>; a sign's language). */
   tex?: string[];
   outputs: Out[];
+  /** Measured only (its feet point and box into models.json: a DOM tap area's place and width), no art written: what
+   *  only the 3D island draws (a decoration's turned facings). */
+  placeOnly?: boolean;
   /** The _Grd gradient's row (0 top … 1 bottom): the time of year NH tints leaves and trunks by. */
   grdRow?: number;
   /** Rows for some materials instead (regex of the material name → row): a bush's flower colour. */
@@ -95,7 +98,7 @@ export const JOBS: Job[] = [
   // the campsite (the tent and its deck; the door is the tent's): the canvas glows faintly at night, the door and lantern fully
   {
     px: 220, anchor: 'door', emiW: { mTent: 0.18, mDoortent: 1, mWoodDeck: 1 }, halo: 0.6,
-    looks: [{ key: 'deco/campsite', parts: [['StrcCampsiteTentA00', 'StrcCampsiteTentA00'], ['StrcCampsiteTentA00', 'StrcCampsiteTentA00Door0']], outputs: ['day', 'winter', 'lit'] }]
+    looks: [{ key: 'deco/campsite', parts: [['StrcCampsiteTentA00', 'StrcCampsiteTentA00'], ['StrcCampsiteTentA00', 'StrcCampsiteTentA00Door0']], outputs: ['day'] }]
   },
   // trees: the oak's four seasons (spring: NH's cherry blossom model) as trunk and canopy layers, the cedar, palm, bamboo
   { ...tree('PltTreeOak', 'PltTreeOak', { spring: 'trees/oak-spring', summer: 'trees/oak-summer', fall: 'trees/oak-fall', winter: 'trees/oak-winter' }, ['day', 'trunk', 'canopy'], 420) },
@@ -104,21 +107,18 @@ export const JOBS: Job[] = [
   tree('PltTreePalm', 'PltTreePalm', { summer: 'trees/palm', winter: 'trees/palm-winter' }, ['day'], 360),
   tree('PltTreeBamboo', 'PltTreeBamboo', { summer: 'trees/bamboo', winter: 'trees/bamboo-winter' }, ['day'], 220),
   // lamps: the head's glass is all that lights
-  prop('deco/streetlamp', 'FtrStreetlamp', 'FtrStreetlampReBody0', ['day', 'lit'], 150, { halo: 1.4 }),
-  prop('deco/garden-lantern', 'FtrLampGarden', 'FtrLampGardenReBody0', ['day', 'lit'], 90, { halo: 1.4 }),
-  prop('deco/garden-lantern-white', 'FtrLampGarden', 'FtrLampGardenReBody1', ['day', 'lit'], 90, { halo: 1.4 }),
+  prop('deco/streetlamp', 'FtrStreetlamp', 'FtrStreetlampReBody0', ['day'], 150, { halo: 1.4 }),
+  prop('deco/garden-lantern', 'FtrLampGarden', 'FtrLampGardenReBody0', ['day'], 90, { halo: 1.4 }),
+  prop('deco/garden-lantern-white', 'FtrLampGarden', 'FtrLampGardenReBody1', ['day'], 90, { halo: 1.4 }),
   // the campfire by the tent (its flames are the model's emissive: the lit look) and its log stools
   // (at the decor's scale: island/world.ts DECOR_U)
-  prop('deco/campfire', 'FtrCampfire', null, ['day', 'lit'], 0, { halo: 1.2, ppu: 9 }),
+  prop('deco/campfire', 'FtrCampfire', null, ['day'], 0, { halo: 1.2, ppu: 9 }),
   prop('deco/log-stool', 'FtrLogStoolS', 'FtrLogStoolSReBody0', ['day'], 0, { ppu: 9 }),
   // rocks
   prop('deco/garden-rock', 'FtrGardenrock', null, ['day'], 80),
   prop('deco/flat-rock', 'FtrGardenrockLow', null, ['day'], 60),
-  // the stone bridge (NH's BridgeStone03, three tiles long), turned to span the stream along z: its deck from straight
-  // above, the image's height along z and its centre the bridge's (baked into the ground: scripts/terrain.ts), and its
-  // near end seen level (an upright piece at the deck's near edge: WorldWater)
-  { px: 300, anchor: 'origin', pitch: 90, rotY: 90, looks: [{ key: 'bridges/stone-deck', parts: [['BridgeStone', 'BridgeStone03']], outputs: ['day', 'winter'] }] },
-  { px: 120, anchor: 'origin', pitch: 0, rotY: 90, looks: [{ key: 'bridges/stone-front', parts: [['BridgeStone', 'BridgeStone03']], outputs: ['day', 'winter'] }] },
+  // the stone bridge (NH's BridgeStone03, three tiles long) seen level: the layout tray's and the editor's icon
+  { px: 120, anchor: 'origin', pitch: 0, rotY: 90, looks: [{ key: 'bridges/stone-front', parts: [['BridgeStone', 'BridgeStone03']], outputs: ['day'] }] },
   // bushes in bloom (stage 3), the colour a row of the flowers' gradient; winter: NH's snowy bush
   ...([
     ['white-azalea', 'Azalea', 'Petal', 0.03, 2], ['pink-azalea', 'Azalea', 'Petal', 0.09, 2],
@@ -138,7 +138,8 @@ export const JOBS: Job[] = [
 
 // the decorations (island/decor.ts DECOR_ART; docs/design.md "Decorating"): NH's outdoor furniture, each in its four
 // facings (f × 90° about the up axis: toward the camera, its right, away, its left), at one scale (px per model unit:
-// DECOR_U u per unit × 3 px per u) so the facings stand the same size, its body's first colour
+// DECOR_U u per unit × 3 px per u) so the facings stand the same size, its body's first colour. Facing 0 is art (the
+// tray's icon); the others are only measured (models.json: the tap area's width over the 3D island's model)
 const DECOR_PPU = 3 * 3;
 const DECOR: [string, string][] = [
   ['stone-lantern', 'FtrStonelantern'], ['birdbath', 'FtrBirdbus'], ['garden-wagon', 'FtrGardenwagon'], ['iron-table', 'FtrIrongardenTable'],
@@ -147,7 +148,7 @@ const DECOR: [string, string][] = [
 ];
 JOBS.push(...DECOR.flatMap(([id, model]) => [0, 1, 2, 3].map((f): Job => ({
   px: 0, ppu: DECOR_PPU, anchor: 'origin', rotY: f * 90,
-  looks: [{ key: `decor/${id}-${f}`, parts: [[model, model]], tex: [`${model}ReBody0`, `${model}ReFabric0`], outputs: ['day'] }]
+  looks: [{ key: `decor/${id}-${f}`, parts: [[model, model]], tex: [`${model}ReBody0`, `${model}ReFabric0`], outputs: ['day'], placeOnly: f !== 0 }]
 }))));
 
 // the fixed decor (island/world.ts DECOR, docs/design.md "Decor"): NH's outdoor furniture at the decorations' scale
@@ -176,12 +177,12 @@ JOBS.push(
   fixed('deco/pond-stone-sakura', 'FtrStonewaterbowlSakura', []),
   fixed('deco/pond-stone-maple', 'FtrStonewaterbowlAutumun', []),
   fixed('deco/picnic-set', 'FtrSakuraPicnicset', []),
-  fixed('deco/bamboo-shoot-lamp', 'FtrBambooshootLamp', [], ['day', 'lit'], { halo: 1.2 }),
-  fixed('deco/mushroom-lamp', 'FtrMushroomLamp', ['FtrMushroomLampReBody0'], ['day', 'lit'], { halo: 1.2 }),
-  fixed('deco/nut-lamp', 'FtrNutLamp', ['FtrNutLampReBody0'], ['day', 'lit'], { halo: 1.2 }),
+  fixed('deco/bamboo-shoot-lamp', 'FtrBambooshootLamp', [], ['day'], { halo: 1.2 }),
+  fixed('deco/mushroom-lamp', 'FtrMushroomLamp', ['FtrMushroomLampReBody0'], ['day'], { halo: 1.2 }),
+  fixed('deco/nut-lamp', 'FtrNutLamp', ['FtrNutLampReBody0'], ['day'], { halo: 1.2 }),
   fixed('deco/beach-chair', 'FtrBeachbed', ['FtrBeachbedReBody2']),
   fixed('deco/sandcastle', 'FtrSandcastle', ['FtrSandcastleReBody0']),
-  fixed('deco/illumi-tree', 'FtrIllumiTree', ['FtrIllumiTreeReBody0'], ['day', 'lit'], { halo: 1 }),
+  fixed('deco/illumi-tree', 'FtrIllumiTree', ['FtrIllumiTreeReBody0'], ['day'], { halo: 1 }),
   fixed('deco/kadomatsu', 'FtrKadomatsu', []),
   // the bulletin board (docs/board.md: NH's EvtobjBbs, at the 3D board's scale, 3.5 u a model unit), in winter its snow
   fixed('deco/bulletin-board', 'EvtobjBbs', [], ['day', 'winter'], { ppu: 3.5 * 3 }),
@@ -276,13 +277,14 @@ for (const j of jobs) {
     writeFileSync(png, Buffer.from(url.split(',')[1], 'base64'));
     if (pngDir) { mkdirSync(pngDir, { recursive: true }); cpSync(png, join(pngDir, `${key.replace(/\//g, '__')}.png`)); }
     if (probe) continue;
+    const inset = r.opaque[id]?.map((f) => +(f * 100).toFixed(1)) as [number, number, number, number] | undefined;
+    places[key] = { ax: +(r.anchor[0] / r.w).toFixed(4), ay: +(r.anchor[1] / r.h).toFixed(4), mu: [+r.units[0].toFixed(1), +r.units[1].toFixed(1)], ...(inset && { inset }) };
+    if (look.placeOnly) continue;
     const dest = join(ART, `${key}.webp`);
     mkdirSync(dirname(dest), { recursive: true });
     execFileSync('cwebp', ['-quiet', '-q', '86', '-alpha_q', '90', '-m', '6', '-sharp_yuv', png, '-o', dest]);
     bytes += statSync(dest).size;
     manifest.files[key] = { path: `${key}.webp`, w: r.w, h: r.h, source: `rendered from NH's model ${look.parts.map((p) => p[1]).join(' + ')} (scripts/models.ts)` };
-    const inset = r.opaque[id]?.map((f) => +(f * 100).toFixed(1)) as [number, number, number, number] | undefined;
-    places[key] = { ax: +(r.anchor[0] / r.w).toFixed(4), ay: +(r.anchor[1] / r.h).toFixed(4), mu: [+r.units[0].toFixed(1), +r.units[1].toFixed(1)], ...(inset && { inset }) };
   }
   report.push(`${j.looks.map((l) => l.key).join(', ')}: ${r.w}×${r.h} px (${r.units.map((u) => u.toFixed(1)).join(' × ')} model units), ${Object.keys(r.images).length} images, ${(bytes / 1024).toFixed(1)} KB, ${r.tris.join('/')} tris, ${r.ms.total} ms`);
   console.log(report[report.length - 1]);
