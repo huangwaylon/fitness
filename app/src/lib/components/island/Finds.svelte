@@ -16,8 +16,9 @@
   // each item a world node at its foot (a dig spot and a hole flat on the ground). SceneTaps mounts this inside the stage
   // and asks it about each tap after the critters (`tap`, client px). Cheap: static images and one-shot animations; no
   // timers but the dig's short wait, the clock is the scene's minute tick.
-  //   ?find=bottle | fragment | mushroom | rare-mushroom (dev or ?demo): a bottle, this morning's fragments, a mushroom
-  //   now, or the next dig spot's rare mushroom (the e2e's hooks); ?seed= varies the island's seed.
+  //   ?find=bottle | washed | fragment | mushroom | rare-mushroom (dev or ?demo): a bottle, a bottle washing in 1.5 s
+  //   after the island opens, this morning's fragments, a mushroom now, or the next dig spot's rare mushroom (the e2e's
+  //   hooks); ?seed= varies the island's seed.
   import { fx3d } from './fx3d.ts';
   import { showCatch } from './catchCard.ts';
   import { timers } from './timers.ts';
@@ -50,6 +51,8 @@
   import { treeById } from './treeShake.ts';
   import { SvelteSet } from 'svelte/reactivity';
   import { site } from './site.svelte.ts';
+  import { fieldsOf } from '#lib/layout/fields.ts';
+  import { nextRunUp, washAt, washFrom, washMs, type WashIn } from '#lib/layout/swash.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -122,7 +125,7 @@
   let heldShown = $state<ReadonlySet<string> | null>(null);
   const bottle = $derived.by<Bottle | null>(() => {
     void taken;
-    const b = want === 'bottle' ? bottleNow(date, [...allFragments, ...shellsAt(date, msOfDay, seed, allFragments)], seed) : bottleAt(date, msOfDay, seed, allFragments);
+    const b = want === 'bottle' || (want === 'washed' && washedIn) ? bottleNow(date, [...allFragments, ...shellsAt(date, msOfDay, seed, allFragments)], seed) : bottleAt(date, msOfDay, seed, allFragments);
     return b && !goneOn(date).has(b.uid) ? b : null;
   });
   const mushrooms = $derived.by<Mushroom[]>(() => {
@@ -143,16 +146,37 @@
     return allFragments.filter((f) => !gone.has(f.uid));
   });
 
-  // Shells that wash up while you watch slide in from the foam; the ones already there when the island opens just lie.
+  // What the waves bring in while you watch (a shell, the bottle, a star fragment) washes up the beach (layout/swash.ts):
+  // it waits for the next wave at its stretch of the coast, then rides it in from just past the waterline, straight up
+  // the beach to where it lies (~1–1.5 s, easing out), fading in; its model and its tap area move together (the node's
+  // `live`, the model's `wash`: Island3D fades it). Reduced motion: it fades in where it lies. The ones already there
+  // when the island opens just lie.
   let first = true;
-  const seen = new Set<string>();
-  const fresh = (uid: string): boolean => {
-    if (seen.has(uid)) return false;
-    seen.add(uid);
-    return !first;
+  const washes = new Map<string, WashIn | null>();
+  function washOf(uid: string, x: number, z: number): WashIn | null {
+    if (washes.has(uid)) return washes.get(uid)!;
+    let wi: WashIn | null = null;
+    if (!first) {
+      const t = performance.now(), l = site.layout;
+      const way = l && !globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? washFrom(fieldsOf(l), x, z) : null;
+      // (the wave's clock is the water's: world3d/water.ts waterU.uTime, the frames' time in s)
+      wi = way ? { from: way.from, to: [x, z], t0: t + nextRunUp((t / 1000) % 3600, ...way.coast) * 1000, ms: washMs(way.dist) } : { from: [x, z], to: [x, z], t0: t, ms: 1200 };
+      const ms = wi.ms;
+      later(() => later(w.moveStart(), ms + 100), wi.t0 - t);
+    }
+    washes.set(uid, wi);
+    return wi;
+  }
+  /** A washing-in thing's live position (world x, z) now. */
+  const washPos = (wi: WashIn) => (): readonly [number, number] => {
+    const p = washAt(wi, performance.now());
+    return [p.x, p.z];
   };
+  /** `?find=washed`: the bottle comes 1.5 s after the island opens. */
+  let washedIn = $state(false);
   onMount(() => {
     first = false;
+    if (want === 'washed') later(() => (washedIn = true), 1500);
     return () => clearTimeout(holdTimer);
   });
 
@@ -506,15 +530,17 @@
   </div>
 {/each}
 {#each shells as s (s.uid)}
-  <div class="node" aria-hidden="true" {@attach w.at({ x: s.x, z: s.y, h: 12, m3: { key: findArt(s.id), yaw: (s.tilt * Math.PI) / 180 } })}>
-    <span class="item shell" class:fresh={fresh(s.uid)} data-find="shell" data-id={s.id} data-uid={s.uid} style:--tilt="{s.tilt}deg">
+  {@const wi = washOf(s.uid, s.x, s.y)}
+  <div class="node" aria-hidden="true" {@attach w.at({ x: s.x, z: s.y, h: 12, ...(wi && { live: washPos(wi) }), m3: { key: findArt(s.id), id: `find-${s.uid}`, yaw: (s.tilt * Math.PI) / 180, wash: wi ?? undefined } })}>
+    <span class="item shell" data-find="shell" data-id={s.id} data-uid={s.uid} style:--tilt="{s.tilt}deg">
       <OfficialArt key={findArt(s.id)} size="calc(32 * var(--su))" />
     </span>
   </div>
 {/each}
 {#each fragments as f, k (f.uid)}
   <!-- NH's beach glimmer: a star fragment twinkles now and then (every 3–5 s, out of step) -->
-  <div class="node" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, h: 14, m3: { key: findArt(f.id) } })}>
+  {@const wi = washOf(f.uid, f.x, f.y)}
+  <div class="node" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, h: 14, ...(wi && { live: washPos(wi) }), m3: { key: findArt(f.id), id: `find-${f.uid}`, wash: wi ?? undefined } })}>
     <span class="item frag" data-find="fragment" data-id={f.id} data-uid={f.uid} style:--tw="{3 + ((k * 7) % 5) * 0.5}s" style:--twd="{-k * 1.3}s">
       <OfficialArt key={findArt(f.id)} size="calc(24 * var(--su))" />
       <svg class="twinkle" viewBox="0 0 24 24"><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>
@@ -522,8 +548,9 @@
   </div>
 {/each}
 {#if bottle}
+  {@const wi = washOf(bottle.uid, bottle.x, bottle.y)}
   <!-- at the water's edge, half in the foam: it rocks with the waves, a small ring of foam now and then -->
-  <div class="node" aria-hidden="true" {@attach w.at({ x: bottle.x, z: bottle.y, h: 12, m3: { key: findArt('message-bottle'), yaw: 0.6 } })}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: bottle.x, z: bottle.y, h: 12, ...(wi && { live: washPos(wi) }), m3: { key: findArt('message-bottle'), id: `find-${bottle.uid}`, yaw: 0.6, wash: wi ?? undefined } })}>
     <span class="item bottle" data-find="bottle" data-uid={bottle.uid}>
       <i class="foam"></i>
       <span class="rock"><OfficialArt key={findArt('message-bottle')} size="calc(28 * var(--su))" /></span>
@@ -582,8 +609,6 @@
   /* a shell lies on the sand at its own angle, a soft contact shadow under it */
   .shell > :global(*), .frag > :global(*) { translate: -50% -60%; filter: var(--leaf-tint,) drop-shadow(0 1px 0 rgba(120, 90, 50, .35)); }
   .shell > :global(*) { rotate: var(--tilt); }
-  .shell.fresh { animation: wash 1.1s cubic-bezier(.3, .7, .4, 1) both; }
-  @keyframes wash { from { transform: translateY(calc(12 * var(--su))); opacity: 0; } 40% { opacity: 1; } }
   .bottle .rock { translate: -50% -60%; line-height: 0; transform-origin: 50% 70%; animation: bottle-rock 2.4s ease-in-out infinite alternate; }
   .bottle .rock > :global(*) { rotate: -64deg; filter: var(--leaf-tint,) drop-shadow(0 1px 0 rgba(120, 90, 50, .35)); }
   @keyframes bottle-rock { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }

@@ -76,7 +76,9 @@ const FADE_IN_MS = 600, FADE_OUT_MS = 600;
 /** A frame's step of a fade at most (ms): a slow frame never jumps it (a fade is never 0 → 1 in one frame). */
 const FADE_STEP_MS = 50;
 
-type Over = { hidden?: boolean; x?: number; z?: number; lift?: number; grey?: number; yaw?: number; pitch?: number; size?: number; face?: boolean };
+/** An instance's change in place; `fade`: its opacity, the caller's own (a find washing in: Finds.svelte), drawn
+ *  through the critters' per-instance fade (its model's group rebuilds to take one the first time). */
+type Over = { hidden?: boolean; x?: number; z?: number; lift?: number; grey?: number; yaw?: number; pitch?: number; size?: number; face?: boolean; fade?: number };
 
 export interface Things {
   /** The layout's things (a full list: only the models whose instances changed rebuild). */
@@ -195,6 +197,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     list: Inst[];
     meshes: { im: InstancedMesh; local: Matrix4; grey?: InstancedBufferAttribute; fade?: InstancedBufferAttribute }[];
     base: Matrix4[];
+    /** Its instances fade (a critter's, or one the caller fades: Over `fade`). */
+    soft: boolean;
   }
   const groups = new Map<ModelName, Group>();
   const byId = new Map<string, { g: Group; i: number; inst: Inst }>();
@@ -215,6 +219,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     f.to = to;
     f.t = performance.now();
   }
+  /** An instance's opacity: a critter's fade, or the caller's own (Over `fade`), else whole. */
+  const opacity = (id: string) => fades.get(id)?.a ?? overs.get(id)?.fade ?? 1;
   const tmpM = new Matrix4(), tmpQ = new Quaternion(), tmpQ2 = new Quaternion(), tmpV = new Vector3(), tmpS = new Vector3();
   const UP = new Vector3(0, 1, 0), FWD = new Vector3(0, 0, 1), RIGHT = new Vector3(1, 0, 0), ZERO = new Matrix4().makeScale(0, 0, 0);
   const sigOf = (o: Inst) => `${o.id}:${o.x}:${o.z}:${o.lift ?? 0}:${o.scale}:${o.yaw ?? 0}:${o.tint ?? ''}`;
@@ -242,7 +248,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
         if (only !== undefined && i !== only) continue;
         im.setMatrixAt(i, tmpM.multiplyMatrices(g.base[i], local));
         if (grey) grey.setX(i, overs.get(g.list[i].id)?.grey ?? 0);
-        if (fade) fade.setX(i, fades.get(g.list[i].id)?.a ?? 1);
+        if (fade) fade.setX(i, opacity(g.list[i].id));
       }
       im.instanceMatrix.needsUpdate = true;
       if (grey) grey.needsUpdate = true;
@@ -289,10 +295,10 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     const old = groups.get(name);
     if (old) drop(old);
     gl.scene.updateMatrixWorld(true);
-    const g: Group = { name, sig, list: insts, meshes: [], base: [] };
-    const grey = name.startsWith('fruit-'), soft = SOFT.has(name);
+    const grey = name.startsWith('fruit-'), soft = SOFT.has(name) || insts.some((o) => overs.get(o.id)?.fade !== undefined);
+    const g: Group = { name, sig, list: insts, meshes: [], base: [], soft };
     // (a critter new here fades in: now, or once it's shown)
-    if (soft) for (const o of insts) if (!fades.has(o.id)) fades.set(o.id, { a: 0, to: overs.get(o.id)?.hidden ? 0 : 1, t: performance.now() });
+    if (SOFT.has(name)) for (const o of insts) if (!fades.has(o.id)) fades.set(o.id, { a: 0, to: overs.get(o.id)?.hidden ? 0 : 1, t: performance.now() });
     gl.scene.traverse((n) => {
       const mesh = n as Mesh;
       if (!mesh.isMesh) return;
@@ -446,6 +452,11 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       if (o && o.hidden !== undefined && !fades.get(id)?.dying && softId(id)) fadeTo(id, !o.hidden);
       const a = byId.get(id);
       if (!a) return;
+      // (a fade on a model that has none yet: its group rebuilds with one)
+      if (o?.fade !== undefined && !a.g.soft) {
+        want.delete(a.g.name);
+        void later();
+      }
       matOf(a.inst, a.g.base[a.i]);
       write(a.g, a.i);
       if (!cast || FLAT.has(a.g.name)) return changed(false);
@@ -520,7 +531,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       if (!a) return null;
       tmpV.setFromMatrixPosition(a.g.base[a.i]);
       const scale = tmpS.setFromMatrixScale(a.g.base[a.i]).y / (a.inst.scale || 1);
-      return { x: tmpV.x, y: tmpV.y, z: tmpV.z, hidden: !!overs.get(id)?.hidden, model: a.g.name, fade: fades.get(id)?.a ?? 1, scale, order: a.g.meshes[0]?.im.renderOrder ?? 0 };
+      return { x: tmpV.x, y: tmpV.y, z: tmpV.z, hidden: !!overs.get(id)?.hidden, model: a.g.name, fade: opacity(id), scale, order: a.g.meshes[0]?.im.renderOrder ?? 0 };
     },
     pending: () => pending,
     dispose() {

@@ -7,6 +7,7 @@
 // own clock while something moves (a node with a `live` position) and once after a change; never when still. Until
 // the 3D camera is up nothing is placed (every node hidden). Nothing in the hot path is reactive: `rest` only carries
 // what components need to know when the camera is still.
+import type { WashIn } from '#lib/layout/swash.ts';
 import { getContext, setContext } from 'svelte';
 import { quadMatrix, zIndexAt } from './geom.ts';
 import { AHEAD, BEHIND, CAMS, PLAN, type Pt } from './world.ts';
@@ -89,6 +90,9 @@ interface M3 {
   line?: () => readonly [number, number, number];
   /** It comes falling from this many units up (over `ms`: a tree's present out of its canopy). */
   drop?: number;
+  /** It washes in from the sea (layout/swash.ts: a shell, the bottle): its model fades in with it (the node's `live`
+   *  slides it up the beach). */
+  wash?: WashIn;
   /** Turned the way it moves (a fish), `yaw` added; or to the camera (a flat flourish: a sparkle). */
   face?: 'move' | 'camera';
   /** The DOM art it stands for, when it isn't in this node (a critter's sprite in its mover): hidden once drawn. */
