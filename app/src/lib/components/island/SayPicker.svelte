@@ -1,28 +1,30 @@
 <script lang="ts">
   // What my villager says (docs/design.md "Villager taps"): the say button at the island's bottom right (SayButton)
-  // opens this small NH-style picker above it (the reactions wheel's spirit in the app's cream): six preset phrases
-  // (greetings and cheer), my own last few (kept on this phone, island/say.ts) and 「じぶんで かく…」, a field of SAY_MAX
-  // characters with いう (Enter sends). A pick closes it and is said (IslandScene: the balloon over my villager on both
-  // phones). ✕, Esc or a tap anywhere else closes it (on the ground that tap only closes: it walks nobody; on the
-  // button again it only closes). It stands above the button, its right edge at the button's (inside the screen, EDGE
+  // opens this small NH-style picker above it (the reactions wheel's spirit in the app's cream): only my own words (no
+  // presets; the user: "get rid of all the default messages. only custom messages"), my last RECENT_MAX (kept on this
+  // phone, island/say.ts, newest first) and 「じぶんで かく…」, a field of SAY_MAX characters with いう (Enter sends); with
+  // none kept yet it opens straight on the field (no lone button), without もどる. A pick closes it and is said
+  // (IslandScene: the balloon over my villager on both phones). ✕, Esc or a tap anywhere else closes it (on the ground
+  // that tap only closes: it walks nobody; on the button again it only closes). It stands above the button, its right edge at the button's (inside the screen, EDGE
   // from its sides), above the keyboard while one is up; it sits outside the scroller, so focusing its field never
   // scrolls the island. Big targets (≥ 44 px), one column of thumbs.
-  //   <SayPicker scene={el} anchor={buttonEl} onpick={(text, own) => …} onclose={(e) => …} />
+  //   <SayPicker scene={el} anchor={buttonEl} onpick={(text) => …} onclose={(e) => …} />
   import { flushSync, onMount } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
   import { cleanSay, SAY_MAX } from '#lib/sync/live-protocol.ts';
   import { onKeyboardInset, readKeyboardInset } from '../ui/keyboardInset.svelte.ts';
   import { EDGE } from './placement.ts';
-  import { SAY_PRESETS, recentSays } from './say.ts';
+  import { recentSays } from './say.ts';
 
-  let { scene, anchor, onpick, onclose }: { scene: HTMLElement; anchor: Element; onpick: (text: string, own: boolean) => void; onclose: (e?: Event) => void } = $props();
+  let { scene, anchor, onpick, onclose }: { scene: HTMLElement; anchor: Element; onpick: (text: string) => void; onclose: (e?: Event) => void } = $props();
 
   let el = $state<HTMLElement>();
   let field = $state<HTMLInputElement>();
-  let writing = $state(false);
+  const recent = recentSays();
+  // nothing of mine kept yet: straight to the field
+  let writing = $state(recent.length === 0);
   let draft = $state('');
   let pos = $state<{ x: number; y: number } | null>(null);
-  const recent = recentSays();
   const count = $derived(Array.from(draft).length);
   const ready = $derived(!!cleanSay(draft));
 
@@ -64,7 +66,8 @@
     };
     document.addEventListener('pointerdown', away, true);
     document.addEventListener('keydown', esc);
-    el?.querySelector<HTMLElement>('.phrase')?.focus({ preventScroll: true });
+    // on the field when it opens on it (still the button's tap: iOS shows the keyboard), else on the newest phrase
+    (writing ? field : el?.querySelector<HTMLElement>('.phrase'))?.focus({ preventScroll: true });
     return () => {
       ro.disconnect();
       offKb();
@@ -94,7 +97,7 @@
 
   function send() {
     const text = cleanSay(draft);
-    if (text) onpick(text, true);
+    if (text) onpick(text);
   }
 </script>
 
@@ -107,18 +110,11 @@
     </button>
   </div>
   {#if !writing}
-    <div class="grid">
-      {#each SAY_PRESETS as id (id)}
-        <button type="button" class="phrase" data-sfx="choice-pick" data-say-preset={id} onclick={() => onpick(t(`say.${id}`), false)}>{t(`say.${id}`)}</button>
+    <div class="recent" role="group" aria-label={t('say.recent')}>
+      {#each recent as r (r)}
+        <button type="button" class="phrase own" data-sfx="choice-pick" data-say-recent onclick={() => onpick(r)}>{r}</button>
       {/each}
     </div>
-    {#if recent.length}
-      <div class="recent" role="group" aria-label={t('say.recent')}>
-        {#each recent as r (r)}
-          <button type="button" class="phrase own" data-sfx="choice-pick" data-say-recent onclick={() => onpick(r, true)}>{r}</button>
-        {/each}
-      </div>
-    {/if}
     <button type="button" class="phrase write" data-sfx="tick" data-say-write onclick={write}>{t('say.own')}</button>
   {:else}
     <!-- Enter sends from the field itself (not the form's: an IME's Enter confirms the word, it doesn't send) -->
@@ -127,8 +123,11 @@
       <input id="say-field" class="field" data-sfx="none" bind:this={field} bind:value={draft} oninput={cap} oncompositionend={cap} onkeydown={enter} type="text" enterkeyhint="send"
         autocomplete="off" maxlength={SAY_MAX * 2} placeholder={t('say.placeholder')} data-say-field />
       <span class="count" class:full={count >= SAY_MAX} aria-hidden="true">{count}/{SAY_MAX}</span>
-      <div class="row">
-        <button type="button" class="phrase back" data-sfx="back" onclick={() => (writing = false)}>{t('say.back')}</button>
+      <!-- もどる only with phrases to go back to (none kept: ✕ closes) -->
+      <div class="row" class:alone={!recent.length}>
+        {#if recent.length}
+          <button type="button" class="phrase back" data-sfx="back" onclick={() => (writing = false)}>{t('say.back')}</button>
+        {/if}
         <button type="button" class="phrase send" data-sfx="choice-pick" data-say-send aria-disabled={!ready || undefined} onclick={send}>{t('say.send')}</button>
       </div>
     </form>
@@ -136,14 +135,15 @@
 </div>
 
 <style>
-  /* NH's menu in the app's cream: a round card, the soft lip, pills inside */
+  /* NH's menu in the app's cream: a round card, the soft lip, pills inside. Unplaced it's see-through, not
+     visibility: hidden (its field must take the focus as it opens, inside the button's tap: iOS's keyboard) */
   .picker {
     position: absolute; left: 50%; top: 50%; z-index: var(--z-popup); translate: -50% -50%; width: min(300px, calc(100vw - 24px));
     padding: 10px 12px 12px; border-radius: 24px; background: var(--c-cream, #FFF9E3); color: var(--c-ink, #4A3A2C);
-    box-shadow: 0 4px 0 rgba(150, 110, 70, .3), 0 8px 24px rgba(60, 40, 20, .18); visibility: hidden;
+    box-shadow: 0 4px 0 rgba(150, 110, 70, .3), 0 8px 24px rgba(60, 40, 20, .18); opacity: 0; pointer-events: none;
     -webkit-user-select: none; user-select: none; touch-action: manipulation;
   }
-  .picker.placed { visibility: visible; animation: pop .2s cubic-bezier(.3, 1.4, .5, 1) both; }
+  .picker.placed { opacity: 1; pointer-events: auto; animation: pop .2s cubic-bezier(.3, 1.4, .5, 1) both; }
   .head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
   .title { padding-left: 6px; font: 700 14px/1.3 var(--font-ui); color: #8A6A48; }
   .x {
@@ -151,8 +151,7 @@
     background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent;
   }
   .x svg { width: 18px; height: 18px; stroke: #8A6A48; stroke-width: 2.4; stroke-linecap: round; fill: none; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .recent { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .recent { display: flex; flex-direction: column; gap: 8px; }
   .phrase {
     appearance: none; border: 0; margin: 0; cursor: pointer; min-height: 48px; padding: 6px 10px; border-radius: 16px;
     background: #FFE9A8; color: var(--c-ink, #4A3A2C); font: 700 15px/1.3 var(--font-ui); word-break: keep-all; overflow-wrap: anywhere;
@@ -171,6 +170,7 @@
   .count { justify-self: end; margin-top: -4px; font: 600 12px/1 var(--font-num, var(--font-ui)); color: #9A7F60; }
   .count.full { color: #C2683E; }
   .row { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; }
+  .row.alone { grid-template-columns: 1fr; }
   .phrase.send { background: #6ED07A; color: #fff; box-shadow: 0 3px 0 rgba(60, 130, 70, .45); }
   .phrase.back { background: #F1E6CC; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

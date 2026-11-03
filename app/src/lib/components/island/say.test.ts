@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RECENT_MAX, SAY_GAP_MS, SAY_PRESETS, recentSays, rememberSay, sayGate } from './say.ts';
+import { RECENT_MAX, SAY_GAP_MS, recentSays, rememberSay, sayGate } from './say.ts';
 import { DEVICE, type KV } from '#lib/sync/storage.ts';
 import ja from '#lib/i18n/ja.json';
 import en from '#lib/i18n/en.json';
@@ -12,26 +12,33 @@ const kv = (): KV & { m: Map<string, string> } => {
 };
 
 describe('my villager’s phrases', () => {
-  it('six presets, each a phrase that fits the balloon, in both languages', () => {
-    expect(SAY_PRESETS).toHaveLength(6);
+  it('no presets: only my own words (the user: "get rid of all the default messages. only custom messages")', () => {
     for (const cat of [ja, en] as Record<string, string>[])
-      for (const id of SAY_PRESETS) expect(Array.from(cat[`say.${id}`]).length, id).toBeLessThanOrEqual(SAY_MAX);
+      for (const id of ['hi', 'otsukare', 'ganbaro', 'yatta', 'aruko', 'oyasumi']) expect(cat[`say.${id}`], id).toBeUndefined();
   });
 
   it('a tap on my villager squishes it with no ♪ (the picker is its answer; the user: "get rid of the music notes")', () => {
     expect(REACTIONS.R9.steps).toEqual([{ actor: 'mine', motion: 'squish', cue: 'villager-tap' }]);
   });
 
-  it('keeps my own last few, newest first, once each, cleaned', () => {
+  it('keeps my own last four, newest first, once each, cleaned', () => {
     const s = kv();
     expect(recentSays(s)).toEqual([]);
     rememberSay('ねむい', s);
     rememberSay(' あるこう\n', s);
     rememberSay('ねむい', s);
     expect(recentSays(s)).toEqual(['ねむい', 'あるこう']);
-    for (const x of ['a', 'b', 'c']) rememberSay(x, s);
-    expect(recentSays(s)).toEqual(['c', 'b', 'a']);
+    for (const x of ['a', 'b', 'c', 'd']) rememberSay(x, s);
+    expect(recentSays(s)).toEqual(['d', 'c', 'b', 'a']);
     expect(recentSays(s)).toHaveLength(RECENT_MAX);
+    expect(RECENT_MAX).toBe(4);
+    // a quick pick said again goes first
+    rememberSay('b', s);
+    expect(recentSays(s)).toEqual(['b', 'd', 'c', 'a']);
+    // a list kept when the cap was 3 reads as it is, and grows to four
+    s.m.set(DEVICE.says, JSON.stringify(['x', 'y', 'z']));
+    expect(recentSays(s)).toEqual(['x', 'y', 'z']);
+    expect(rememberSay('w', s)).toEqual(['w', 'x', 'y', 'z']);
     s.m.set(DEVICE.says, JSON.stringify(['ok', 5, '\u202E', 'x'.repeat(40)]));
     expect(recentSays(s)).toEqual(['ok', 'x'.repeat(SAY_MAX)]);
     s.m.set(DEVICE.says, 'not json');

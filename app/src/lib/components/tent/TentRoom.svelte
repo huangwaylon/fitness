@@ -293,9 +293,9 @@
     sayAt = null;
     if (by) sayClosedBy = by;
   }
-  function pickSay(text: string, own: boolean) {
+  function pickSay(text: string) {
     closeSay();
-    if (own) rememberSay(text);
+    rememberSay(text); // (a quick pick again: first)
     showSay(me, text);
     sayOut.say(text);
   }

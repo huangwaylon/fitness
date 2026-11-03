@@ -381,8 +381,9 @@ The visitor moves through the same director, idle life and walk graph as the vil
 life. Why: one animation system, and pausing under a sheet or a hidden page already applies.
 
 ### A villager's phrase is presence (2026-11-02)
-A tap on my villager opens a phrase picker (six presets, my own last few, a 20-character field); the pick shows over my
-villager on both phones for 4 s through one small relay intent, `say {text}` (v2), that the room relays live and keeps
+A tap on my villager opens a phrase picker (six presets, my own last few, a 20-character field; since 2026-11-03 no
+presets: my own last four and the field); the pick shows over my villager on both phones for 4 s through one small
+relay intent, `say {text}` (v2), that the room relays live and keeps
 nowhere: not in the day's ring, not in a replay, not in the record or the outbox. Its text is cleaned by the same
 `cleanSay` on the phone, at the relay and on the receiving phone (controls, newlines, bidi tricks out, ≤ 20 code
 points) and rendered as text; the phone sends one per 1.5 s (a newer pick waits, replacing the waiting one), the room

@@ -4,6 +4,7 @@
 // the guest alike; hidden in もようがえ. Who else sees it (only the phones in the same room): e2e/sync-harness.spec.ts.
 //   SHOTS=<dir> npm run e2e -- say-rooms      also writes iPhone-sized screenshots to <dir>/say-room-*.png
 import { expect, test, type Page } from '@playwright/test';
+import { sayOwn } from './say.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -66,7 +67,9 @@ test('the tent: the say button bottom right, clear of the room’s controls; the
   expect(p.y + p.height).toBeLessThanOrEqual(r.y);
   expect(await overlapping(page, '[data-say-picker]')).toEqual([]);
   await shot(page, 'picker-day');
-  await picker(page).getByRole('button', { name: 'やっほー！' }).click();
+  // (nothing of mine kept yet: the field at once)
+  await picker(page).locator('[data-say-field]').fill('やっほー！');
+  await picker(page).locator('[data-say-field]').press('Enter');
   await expect(picker(page)).toHaveCount(0);
   await expect(balloon(page)).toHaveText(/やっほー！/);
   await expect(balloon(page).locator('.who')).toHaveText('ウェイ');
@@ -84,8 +87,7 @@ test('the tent: the say button bottom right, clear of the room’s controls; the
   await expect.poll(() => page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.matches('[data-room]'), [fx, fy])).toBe(true);
   await page.mouse.click(fx, fy);
   await expect.poll(() => tent(page, (t) => t.walking('A'))).toBe(true);
-  await sayBtn(page).click();
-  await picker(page).getByRole('button', { name: 'がんばろう！' }).click();
+  await sayOwn(page, 'がんばろう！');
   await expect(balloon(page)).toHaveText(/がんばろう！/);
   await settle(page, 'A');
   const head1 = (await tent(page, (t) => t.head('A')))!;
@@ -121,10 +123,7 @@ test('うめ’s house: the say button there too; her own words over her village
   await settle(page, 'B');
   await expect(sayBtn(page)).toBeVisible();
   expect(await overlapping(page, '[data-say-open]')).toEqual([]);
-  await sayBtn(page).click();
-  await page.getByRole('button', { name: 'じぶんで かく…' }).click();
-  await page.locator('[data-say-field]').fill('おうちへ ようこそ');
-  await page.locator('[data-say-field]').press('Enter');
+  await sayOwn(page, 'おうちへ ようこそ');
   await expect(balloon(page).locator('.text')).toHaveText('おうちへ ようこそ');
   await expect(balloon(page).locator('.who')).toHaveText('うめ');
   expect(await byHead(page, 'B')).toMatchObject({ across: true, inside: true, over: false });
@@ -133,8 +132,7 @@ test('うめ’s house: the say button there too; her own words over her village
 test('the guest says things in a room too', async ({ page }) => {
   await openRoom(page, 'G', 'B');
   await settle(page, 'G');
-  await sayBtn(page).click();
-  await picker(page).getByRole('button', { name: 'おつかれさま！' }).click();
+  await sayOwn(page, 'おつかれさま！');
   await expect(balloon(page)).toHaveText(/おつかれさま！/);
   expect(await byHead(page, 'G')).toMatchObject({ across: true, inside: true, over: false });
 });
@@ -143,8 +141,9 @@ test('at night: the button, the picker and a balloon in the tent', async ({ page
   await openRoom(page, 'A', 'A', '2026-11-04T22:00');
   await settle(page, 'A');
   await shot(page, 'button-night');
+  await sayOwn(page, 'おやすみ〜');
   await sayBtn(page).click();
-  await expect(picker(page)).toBeVisible();
+  await expect(picker(page).locator('[data-say-recent]')).toHaveText(['おやすみ〜']);
   await shot(page, 'picker-night');
   await picker(page).getByRole('button', { name: 'おやすみ〜' }).click();
   await expect(balloon(page)).toHaveClass(/placed/);
