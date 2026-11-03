@@ -95,9 +95,7 @@ describe('villager roster', () => {
       .filter((f) => /^\s*import (?!type )[^;]*from '(#lib\/villagers|\.)\/roster\.ts'/m.test(readFileSync(join(SRC, f), 'utf8')))
       .sort();
     expect(importers).toEqual([
-      'lib/components/dev/Gallery.svelte', 'lib/components/panel/IslandPanel.svelte', 'lib/components/panel/VillagerPicker.svelte', 'lib/villagers/search.ts',
-      // (the unlinked 3D villagers POC: its own route's chunk)
-      'routes/villagers3d/+page.svelte'
+      'lib/components/dev/Gallery.svelte', 'lib/components/panel/IslandPanel.svelte', 'lib/components/panel/VillagerPicker.svelte', 'lib/villagers/search.ts'
     ]);
   });
 

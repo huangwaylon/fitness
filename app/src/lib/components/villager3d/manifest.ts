@@ -11,7 +11,6 @@ interface Entry {
 const M = MANIFEST as { villagers: Record<string, Entry>; none: Record<string, string> };
 
 export const has3d = (id: string): boolean => id in M.villagers;
-export const ids3d = (): string[] => Object.keys(M.villagers);
 
 /** The GLB's address in `dir` (the site's room/villagers3d/: $app/paths asset), or null when it has none. */
 export function url3d(id: string, dir: string): string | null {

@@ -1,4 +1,4 @@
-// NH's villagers in 3D (the /villagers3d POC; docs/decisions.md "The island in 3D"): a villager's GLB
+// NH's villagers in 3D (on the island: world3d/villagers.ts; docs/decisions.md "The island in 3D"): a villager's GLB
 // (scripts/villagers3d-models.ts: static/room/villagers3d/<roster id>.glb, its skeleton and skin kept, its eyes and
 // mouths two atlases) loaded on demand (a phone only ever loads its two or three villagers and the day's visitor),
 // posed every frame by poses.ts through rig.ts, its face from faces.ts (blinking on its own rhythm), lit as the
@@ -23,7 +23,7 @@ import { rigOf, type Rig } from './rig.ts';
 import type { Anchor } from './seats3d.ts';
 
 /** Sitting down or getting up (ms): the turn, the step onto it, the pose's change. */
-export const SIT_MS = 420;
+const SIT_MS = 420;
 /** How far the seat's top is under the hips' joint (model units): the body's round bottom sits into it a little. */
 const SINK = 0.55;
 
