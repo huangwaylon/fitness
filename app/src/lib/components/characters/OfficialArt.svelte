@@ -9,6 +9,7 @@
   // The box is reserved from the manifest aspect ratio: no layout shift while loading.
   import type { Snippet } from 'svelte';
   import { art, artUrl } from '#lib/art.ts';
+  import { getArtGate } from './artGate.ts';
 
   interface Props {
     key: string | null | undefined;
@@ -26,6 +27,16 @@
   const entry = $derived(art(key));
   const src = $derived(artUrl(key));
   let failed = $state<string | null>(null);
+  // over the 3D island: no download while the canvas draws the thing instead (artGate.ts); on the island `data-src` names the art either way (what the specs read)
+  const gate = getArtGate();
+  let openFor = $state<string | null>(null), img = $state<HTMLImageElement>();
+  const held = $derived(!!gate?.on && openFor !== src);
+  const BLANK = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  $effect(() => {
+    if (!held || !img || !gate || !src) return;
+    const want = src;
+    return gate.hold(img, () => (openFor = want));
+  });
   const css = (v: number | string | undefined) => (typeof v === 'number' ? `${v}px` : v);
 </script>
 
@@ -43,7 +54,9 @@
       style:aspect-ratio="{bw} / {bh}"
     >
       <img
-        {src}
+        bind:this={img}
+        src={held ? BLANK : src}
+        data-src={gate ? src : undefined}
         alt=""
         width={entry.w}
         height={entry.h}
@@ -54,13 +67,15 @@
         fetchpriority={priority ? 'high' : undefined}
         decoding="async"
         draggable="false"
-        onerror={() => (failed = src)}
+        onerror={() => held || (failed = src)}
       />
     </span>
   {:else}
     <img
+      bind:this={img}
       class="official"
-      {src}
+      src={held ? BLANK : src}
+      data-src={gate ? src : undefined}
       {alt}
       width={entry.w}
       height={entry.h}
@@ -71,7 +86,7 @@
       fetchpriority={priority ? 'high' : undefined}
       decoding="async"
       draggable="false"
-      onerror={() => (failed = src)}
+      onerror={() => held || (failed = src)}
     />
   {/if}
 {:else if fallback}
