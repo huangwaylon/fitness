@@ -6,7 +6,7 @@ const sheet = (page: Page) => page.locator('dialog[open]');
 
 async function openPicker(page: Page) {
   await page.goto('?demo');
-  await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
+  await page.getByRole('button', { name: /^ごほうび · ふたりのベル / }).click();
   await sheet(page).locator('.tab[data-tab=settings]').click();
   await sheet(page).locator('[data-push=villager]').click();
   await expect(sheet(page).getByRole('radio')).toHaveCount(440);

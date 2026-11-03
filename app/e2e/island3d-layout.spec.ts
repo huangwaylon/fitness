@@ -37,7 +37,7 @@ test('on its layout: the layout\'s ground, the homes and the structures placed, 
 
 test('the もようがえ on the layout is IslandEdit over the 3D island: a bench from the tray is put down and drawn there', async ({ page }) => {
   await open(page);
-  await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
+  await page.getByRole('button', { name: /^ごほうび · ふたりのベル / }).click();
   await page.locator('[data-tab="settings"]').click();
   await page.locator('[data-decor-start]').click();
   await expect(page.locator('[data-island-edit]')).toBeVisible();

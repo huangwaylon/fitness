@@ -10,7 +10,7 @@ const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] 
 async function open(page: Page, when: string, end: 'mae' | 'oku') {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=${when}&critter=none&visitor=none`);
-  await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^ごほうび · ふたりのベル / })).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __world?: W }).__world);
   const camZ = (await geo(page)).CAMS[end];
   await expect.poll(async () => {

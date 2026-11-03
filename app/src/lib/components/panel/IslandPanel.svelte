@@ -4,9 +4,9 @@
 
 <script lang="ts">
   import { ui } from '#lib/ui-state/ui.svelte.ts';
-  // The island panel: tap today's ベル ribbon → it slides down from the top with everything that isn't on the island
-  // itself, in three tabs pinned under the title bar (design.md "Panel"): きろく (the ベル ledger, the goals, the ずかん;
-  // the panel opens on it), ごほうび (the wallet: the jar, the shop, the buys) and せってい (むらびと, サウンド, ことば,
+  // The island panel: tap the HUD's jar → it slides down from the top with everything that isn't on the island
+  // itself, in three tabs pinned under the title bar (design.md "Panel"): きろく (the ベル ledger, the goals, the ずかん),
+  // ごほうび (the wallet: the jar, today's ベル, the shop, the buys; the panel opens on it) and せってい (むらびと, サウンド, ことば,
   // つうしん, あそびかた). A few things push a level with ‹ in the title bar (a week, a day, the villager picker,
   // the full guide); ✕, the backdrop and Esc close it. けんこう is the HUD's dumbbell's popup, and per-fruit detail
   // lives in the tree popups (one home per datum).
@@ -30,8 +30,9 @@
   import { cue } from '#lib/sound/cues.ts';
   import { isGuest, mine } from '#lib/ui-state/viewer.ts';
 
-  /** `start`: the tab an opening shows (ごほうび from the HUD's jar or the old /jar link, else きろく). */
-  let { open = $bindable(), start = 'kiroku' }: { open: boolean; start?: Tab } = $props();
+  let { open = $bindable() }: { open: boolean } = $props();
+  /** The tab every opening shows: ごほうび, the jar's (from the HUD's jar or the old /jar link). */
+  const START: Tab = 'rewards';
 
   /** A level of the panel's own (きろく keeps its own levels: week → day, the weight trend, a goal). */
   let push = $state<'villager' | 'help' | null>(null);
@@ -40,9 +41,8 @@
   let kirokuLevel = $state(0);
   let body: HTMLElement | undefined = $state();
   let savedTop = 0;
-  /** Every opening from the ribbon starts on きろく, from the jar on ごほうび: closing resets it, opening reads `start`. */
-  // svelte-ignore state_referenced_locally
-  let tab = $state<Tab>(start);
+  /** Every opening starts on ごほうび: closing resets it, opening sets it again. */
+  let tab = $state<Tab>(START);
   function pick(to: Tab) {
     if (to === tab) return;
     tab = to;
@@ -79,21 +79,21 @@
     kiroku?.back();
   }
 
-  /** Closing ends its banner too, and the next open starts at the top, on きろく (the sheet unmounts its body). */
+  /** Closing ends its banner too, and the next open starts at the top, on ごほうび (the sheet unmounts its body). */
   function closed() {
     if (toasts.current) toasts.dismiss();
     push = null;
     kirokuLevel = 0;
-    tab = 'kiroku';
+    tab = START;
   }
 
-  // The panel's open and close tunes. It mounts on the first tap of the ribbon (Hud), already open: that is an open too.
+  // The panel's open and close tunes. It mounts on the first tap of the jar (Hud), already open: that is an open too.
   let wasOpen = false;
   $effect(() => {
     const o = open;
     if (o === wasOpen) return;
     wasOpen = o;
-    if (o) tab = start;
+    if (o) tab = START;
     cue(o ? 'panel-open' : 'panel-close');
   });
 </script>

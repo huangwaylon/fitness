@@ -90,9 +90,9 @@
     animation: in 320ms var(--ease-bounce) both;
   }
   .banner:popover-open { inset: auto 0; top: calc(var(--safe-top) + 56px); }
-  /* 島: below today's ベル ribbon, so a banner never covers the focal point. */
+  /* 島: below the HUD row, so a banner never covers the jar or the dumbbell. */
   :global(:root:has(.island)) .banner:not(.undo) { top: calc(var(--hud-top) + var(--hit) + var(--lip-h) + 12px); }
-  /* the sync chip sits under the ribbon (Hud.svelte), so the banner goes under it */
+  /* the sync chip sits under the HUD row (Hud.svelte), so the banner goes under it */
   :global(:root:has(.island .chip)) .banner:not(.undo) { top: calc(var(--hud-top) + var(--hit) + var(--lip-h) + 56px); }
   .hit { position: absolute; inset: 0; z-index: 1; appearance: none; border: 0; padding: 0; background: none; cursor: pointer; touch-action: none; border-radius: inherit; }
   /* The undo banner sits over the scrolling ごほうび page and the phone: a vertical swipe that starts on it scrolls

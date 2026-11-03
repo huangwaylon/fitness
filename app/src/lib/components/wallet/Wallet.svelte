@@ -1,6 +1,8 @@
 <script lang="ts">
   // ごほうび, the shared wallet (Nook's Cranny, about spending only): the island panel's middle tab (design.md
-  // "Wallet"). A hero (the island's jar over the wallet's balance), then the two rewards as big tiles. Buying asks
+  // "Wallet"). A hero (the island's jar over the wallet's balance and, under it, today's ベル so far in a yuzu pill:
+  // 「きょう +6 ベル」, both of us with ふたりでぜんぶ, the pair's on the guest's phone too; faint 「きょう まだ 0 ベル」
+  // before the first), then the two rewards as big tiles. Buying asks
   // first, then shows at once and waits 5 s with とりけす on the banner before it is sent. Under them the buys so far
   // (Purchases), each erasable by either of us (asked first; the ベル go back, with とりけす on the banner). The
   // day-by-day ledger lives in きろく.
@@ -23,6 +25,8 @@
   /** The guest's phone: the jar to look at, the buys listed; nothing bought or erased (docs/design.md "The guest"). */
   const guest = $derived(isGuest(view));
   const balance = $derived(view?.wallet.balance ?? 0);
+  /** Today's ベル so far (both of us, ふたりでぜんぶ included: the members' even on the guest's phone). */
+  const today = $derived(view?.wallet.today ?? 0);
   const m = $derived(week.model);
   /** The buys, newest first (walletAt is memoised per model and minute, as the view computed it). */
   const spends = $derived(m ? [...walletAt(m.state, m.now).spends].reverse() : []);
@@ -55,6 +59,9 @@
       <span class="bigjar"><Jar fill={walletFill(balance)} width="calc(var(--jar-h) * 54 / 68)" /></span>
       <small class="cap">{t('wallet.balance')}</small>
       <Bells bells={balance} class="total" />
+      <p class="today" class:none={today <= 0} data-today={today}>
+        {#if today > 0}<span class="tk">{t('wallet.today')}</span><Bells bells={today} signed />{:else}{t('wallet.todayNone')}{/if}
+      </p>
     </div>
 
     {#if guest}
@@ -75,6 +82,15 @@
   .bigjar { display: block; line-height: 0; margin-bottom: 4px; }
   .cap { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .hero :global(.total) { font-size: var(--fs-title); }
+  /* today's ベル: a soft yuzu pill under the balance (NH's "+N Bells" bubble), smaller than it; before the first ベル a
+     faint cream one, so nothing jumps when they come */
+  .today {
+    display: inline-flex; align-items: center; gap: 6px; margin: 6px 0 0; padding: 4px 12px 3px; min-height: 28px;
+    border-radius: var(--r-pill); background: var(--c-yuzu); color: var(--c-ink); box-shadow: 0 2px 0 var(--c-yuzu-lip);
+    font: 700 var(--fs-body)/1.2 var(--font-ui);
+  }
+  .today .tk { font-size: var(--fs-s); }
+  .today.none { background: var(--c-cream); color: var(--c-ink-soft); box-shadow: 0 2px 0 var(--c-lip); font-size: var(--fs-s); }
   .guest { margin: 0 0 12px; padding: 12px 14px; font-weight: 700; color: var(--text-soft); text-align: center; line-height: var(--lh); }
 
   @media (max-height: 700px), (max-width: 359px) {

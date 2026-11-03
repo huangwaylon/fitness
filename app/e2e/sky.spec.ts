@@ -5,13 +5,13 @@
 import { expect, test, type Page } from '@playwright/test';
 
 test.use({ viewport: { width: 390, height: 844 } });
-const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 
 async function open(page: Page, q: string) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo${q}`);
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
 }
 
 /** The most open spot of the sky (client px): the furthest from every control, the moon, the clouds and the sky's
@@ -34,12 +34,12 @@ const openSky = (page: Page, need = 24) => page.evaluate((need) => {
 const overlap = (a: DOMRect | { x: number; y: number; width: number; height: number }, b: typeof a) =>
   a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 
-test('a shooting star crosses the sky, never the ribbon; a tap meanwhile is a wish, and the next morning a fragment', async ({ page }) => {
+test('a shooting star crosses the sky, never the HUD; a tap meanwhile is a wish, and the next morning a fragment', async ({ page }) => {
   await open(page, '&date=2026-11-04T21:00&shower');
   const streak = page.locator('[data-fx="shoot"]');
   await expect(streak.first()).toBeAttached({ timeout: 10_000 }); // a meteor shower's night: one every 3–8 s
-  // its path (sampled as it flies): in the sky, off the ribbon, the HUD's jar and the health button
-  const rib = (await ribbon(page).boundingBox())!, jar = (await page.locator('.hud-health').first().boundingBox())!;
+  // its path (sampled as it flies): in the sky, off the HUD: the jar's button, the jar and the health button
+  const rib = (await hudJar(page).boundingBox())!, jar = (await page.locator('.hud-health').first().boundingBox())!;
   const pot = (await page.locator('.hud-jar .squash').boundingBox())!;
   // the fixed sky ends at the camera's horizon (--horizon-y)
   const horizon = await page.locator('.if-scene').evaluate((sc) => sc.getBoundingClientRect().top + parseFloat(getComputedStyle(sc).getPropertyValue('--horizon-y')));
@@ -49,7 +49,7 @@ test('a shooting star crosses the sky, never the ribbon; a tap meanwhile is a wi
       return { x: r.left - 3, y: r.top - 3, width: 6, height: 6 };
     }).catch(() => null);
     if (head) {
-      expect(overlap(head, rib), 'over the ribbon').toBe(false);
+      expect(overlap(head, rib), 'over the jar’s button').toBe(false);
       expect(overlap(head, jar), 'over the health button').toBe(false);
       expect(overlap(head, pot), 'over the jar').toBe(false);
       expect(head.y).toBeLessThan(horizon);
@@ -71,10 +71,10 @@ test('a shooting star crosses the sky, never the ribbon; a tap meanwhile is a wi
   expect(JSON.parse((await page.evaluate(() => localStorage.getItem('scene-wish')))!)).toEqual({ '2026-11-05': 1 });
   // before dawn: nothing yet; from 5:00: one fragment on the beach
   await page.goto('?demo&date=2026-11-05T04:30');
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
   await expect(page.locator('[data-find="fragment"]')).toHaveCount(0);
   await page.goto('?demo&date=2026-11-05T08:00');
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
   await expect(page.locator('[data-find="fragment"]')).toHaveCount(1);
   const f = (await page.locator('[data-find="fragment"]').first().boundingBox())!;
   await page.mouse.click(f.x + f.width / 2, f.y + f.height / 2);
@@ -87,7 +87,7 @@ test('no showers by day, nor out of the star hours (after 4:00)', async ({ page 
   await page.waitForTimeout(3000);
   await expect(page.locator('[data-fx="shoot"]')).toHaveCount(0);
   await page.goto('?demo&date=2026-11-05T04:20&shower');
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
   await page.waitForTimeout(3000);
   await expect(page.locator('[data-fx="shoot"]')).toHaveCount(0);
 });
@@ -98,10 +98,10 @@ for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }, { wi
     await open(page, '&date=2026-08-02T20:00');
     const bursts = page.locator('[data-firework]');
     await expect(bursts.first()).toBeAttached({ timeout: 6000 });
-    const rib = (await ribbon(page).boundingBox())!, jar = (await page.locator('.hud-health').first().boundingBox())!;
+    const rib = (await hudJar(page).boundingBox())!, jar = (await page.locator('.hud-health').first().boundingBox())!;
     const pot = (await page.locator('.hud-jar .squash').boundingBox())!;
     const sky = (await page.locator('.if-scene .fireworks').boundingBox())!;
-    // each burst's whole circle (its sparks' reach) stays in the sky, off the ribbon, the jar and the health button
+    // each burst's whole circle (its sparks' reach) stays in the sky, off the HUD: the jar's button, the jar, the health button
     for (let i = 0; i < 4; i++) {
       for (const b of await bursts.evaluateAll((els) => els.map((el) => {
         const r = el.getBoundingClientRect(), rad = Number(getComputedStyle(el).getPropertyValue('--rad'));
@@ -133,7 +133,7 @@ test('?fireworks starts a show on any night; none on an ordinary one', async ({ 
   await page.waitForTimeout(3000);
   await expect(page.locator('[data-firework]')).toHaveCount(0);
   await page.goto('?demo&date=2026-11-04T21:00&fireworks');
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
   await expect(page.locator('[data-firework]').first()).toBeAttached({ timeout: 6000 });
 });
 

@@ -113,7 +113,7 @@ test('sound off: no AudioContext, no media element, however much is tapped', asy
   await expect(page.locator('.if-scene .stage')).toBeVisible();
   const { x, y } = await sea(page);
   await page.touchscreen.tap(x, y);
-  await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
+  await page.getByRole('button', { name: /^ごほうび · ふたりのベル / }).click();
   await page.locator('.tab[data-tab=settings]').click();
   await page.locator('[data-push=help]').click();
   await page.locator('.titlebar .back').click();
@@ -165,7 +165,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   const btn = (name: string | RegExp, scope = page.locator('body')) => scope.getByRole('button', { name, exact: typeof name === 'string' });
 
   // 島
-  await expect(btn(/^きょう [\d,]+\sベル$/)).toBeVisible();
+  await expect(btn(/^ごほうび · ふたりのベル /)).toBeVisible();
   await quiet(page); // the opening beats are over
   await step('島', 'tree canopy', () => page.locator('button.canopy').first().tap(), ['tree-shake']);
   await expect(page.locator('.detail')).toHaveCount(1);
@@ -180,9 +180,10 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   expect(log.at(-1)?.[2]).toContain('emote-joy');
   await page.waitForTimeout(2000);
 
-  // the island panel (tap the ribbon): it opens on きろく
-  await step('島', 'ribbon (→ the panel)', () => btn(/^きょう [\d,]+\sベル$/).tap(), ['panel-open']);
-  await step('パネル', 'きろく tab (already shown)', () => dlg.locator('.tab[data-tab=kiroku]').tap(), []);
+  // the island panel (tap the HUD's jar: the villagers glance up at it): it opens on ごほうび
+  await step('島', 'jar (→ the panel)', () => btn(/^ごほうび · ふたりのベル /).tap(), ['jar-tap', 'panel-open']);
+  await step('パネル', 'ごほうび tab (already shown)', () => dlg.locator('.tab[data-tab=rewards]').tap(), []);
+  await step('パネル', 'きろく tab', () => dlg.locator('.tab[data-tab=kiroku]').tap(), ['tick']);
   await step('きろく', 'day', () => dlg.locator('button.dbtn').first().tap(), ['page']);
   await step('きろく', 'back (‹) to the panel', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('きろく', '✎ Move goal', () => btn(/ムーブ（1日） ✎$/, dlg).tap(), ['page']);
@@ -219,8 +220,8 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);
 
-  // the HUD's jar: the villagers glance up at it, then the panel on ごほうび
-  await step('島', 'jar (→ ごほうび)', () => page.locator('.hud-jar').tap(), ['jar-tap', 'panel-open']);
+  // the HUD's jar again: the panel on ごほうび again (not where it closed)
+  await step('島', 'jar again (→ ごほうび)', () => page.locator('.hud-jar').tap(), ['jar-tap', 'panel-open']);
   await expect(dlg.locator('.tab[data-tab=rewards]')).toHaveAttribute('aria-pressed', 'true');
   await step('パネル', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['panel-close']);
   await expect(dlg).toHaveCount(0);

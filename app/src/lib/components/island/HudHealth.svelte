@@ -1,12 +1,11 @@
 <script lang="ts">
-  // The health button in the HUD, right of today's ribbon (docs/design.md "Island"): a small cream pill as tall as the
-  // ribbon with NH's red dumbbell across it, no number (the numbers live in the popup), as wide as the jar on the
-  // ribbon's other side. Tap:
+  // The health button in the HUD's top-right corner (docs/design.md "Island"): a small cream pill, 44px tall, with NH's
+  // red dumbbell across it, no number (the numbers live in the popup), as wide as the jar in the other corner. Tap:
   // a press squash, the villagers glance up at it (R18), and the health popup grows out of the dumbbell
   // (HealthSheet, Sheet's `pop`: the zoom's origin is the dumbbell, --pop-x / --pop-y on the root).
   //   <HudHealth onopen={() => …} {later} />
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { react } from '../motion/director.svelte.ts';
+  import { hudGlance, react } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {
@@ -28,18 +27,21 @@
       root.style.setProperty('--pop-x', `${Math.round(r.left + r.width / 2)}px`);
       root.style.setProperty('--pop-y', `${Math.round(r.top + r.height / 2)}px`);
     }
+    // the villagers glance up to the right, at it (then the jar's side again, for the idle peek)
+    hudGlance.side = 'r';
     react('R18');
+    later(() => (hudGlance.side = 'l'), 1_400);
     later(() => onopen?.(), 90);
   }
 </script>
 
 <button type="button" class="hud-health" class:pressed aria-label={t('island.health')} aria-haspopup="dialog" data-sfx="self" onclick={tap}
   onpointerdown={() => (pressed = true)} onpointerup={() => (pressed = false)} onpointerleave={() => (pressed = false)} onpointercancel={() => (pressed = false)}>
-  <span class="art" bind:this={artEl}><OfficialArt key="items/dumbbell" size="100%" eager /></span>
+  <span class="art" data-guard bind:this={artEl}><OfficialArt key="items/dumbbell" size="100%" eager /></span>
 </button>
 
 <style>
-  /* One small cream pill, the ribbon's height and lip (its sibling in the HUD row), the jar's width (--hud-side): the
+  /* One small cream pill, the tap target's height with the cream lip, the jar's width (--hud-side): the
      dumbbell across it, its plates a little over the pill's ends. */
   .hud-health {
     --art: clamp(62px, calc(8 * var(--vh1)), 70px);

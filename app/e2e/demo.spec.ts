@@ -5,19 +5,21 @@ import { tapOn } from './island.ts';
 /** The topmost sheet (a confirm over the panel). */
 const sheet = (page: Page) => page.locator('dialog[open]').last();
 
-/** The island is up: today's ベル ribbon shows (the app asks no questions, so nothing to answer first). */
+/** The island is up: the HUD's jar shows (the app asks no questions, so nothing to answer first). */
 async function islandReady(page: Page) {
-  await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^ごほうび · ふたりのベル / })).toBeVisible();
 }
 
-/** Tap today's ベル ribbon: the island panel slides down (on きろく, every time). */
+/** Tap the HUD's jar: the island panel slides down (on ごほうび, every time). */
 async function openPanel(page: Page) {
-  await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
+  await page.getByRole('button', { name: /^ごほうび · ふたりのベル / }).click();
   await expect(sheet(page).locator('.panel-body')).toBeVisible();
+  await expect(sheet(page).locator('.tab[data-tab=rewards]')).toHaveAttribute('aria-pressed', 'true');
 }
-/** The panel on its きろく tab (it opens on it). */
+/** The panel on its きろく tab (the jar opens it on ごほうび: one tap more). */
 async function openKiroku(page: Page) {
   await openPanel(page);
+  await sheet(page).locator('.tab[data-tab=kiroku]').click();
   await expect(sheet(page).locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('.kiroku')).toBeVisible();
 }
@@ -121,9 +123,9 @@ test('きろく: per day each of us four goals and ふたりで ぜんぶ; a day
 
 test('けんこう: body weight (from Health, no logging by hand); its goal is set in きろく', async ({ page }) => {
   await page.goto('?demo');
-  const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
-  await expect(ribbon).toBeVisible();
-  const bells = await ribbon.getAttribute('aria-label');
+  const hudJar = page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
+  await expect(hudJar).toBeVisible();
+  const bells = await hudJar.getAttribute('aria-label');
   await openKiroku(page);
   await toHealth(page);
   await sheet(page).locator('[data-group=body]').click(); // からだ
@@ -152,7 +154,7 @@ test('けんこう: body weight (from Health, no logging by hand); its goal is s
   await expect(sheet(page).locator('.wc[data-person=A]')).toContainText('目標 65.0');
   // weight never earns: today's ベル didn't move
   await page.keyboard.press('Escape');
-  await expect(ribbon).toHaveAttribute('aria-label', bells!);
+  await expect(hudJar).toHaveAttribute('aria-label', bells!);
 });
 
 test('けんこう: the body fat goal, set in きろく (3–60 %), dashed on the body fat chart; cleared, no line', async ({ page }) => {
@@ -235,10 +237,10 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
   await page.locator('button.canopy').nth(0).click();
   const pop = page.locator('.detail');
   await expect(pop.locator('.plate')).toHaveText('ウェイ');
-  // it opens in screen space: wholly in view under the ribbon (measured once its pop-in has finished)
+  // it opens in screen space: wholly in view under the HUD row (measured once its pop-in has finished)
   await pop.evaluate((e) => Promise.all(e.getAnimations().map((a) => a.finished)));
   await page.waitForTimeout(300);
-  const [p, r] = await Promise.all([pop, page.locator('.ribbon')].map((l) => l.boundingBox()));
+  const [p, r] = await Promise.all([pop, page.locator('.hud-row')].map((l) => l.boundingBox()));
   expect(p!.y).toBeGreaterThan(r!.y + r!.height);
   expect(p!.y + p!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
   const rows = pop.locator('.row');
@@ -318,7 +320,7 @@ test('きろく: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from
   await expect(page.locator('.detail .row[data-row=pear] .amt svg')).toHaveCount(0);
   // the partner's goals: the second avatar pill switches the card, and ✎ sets the partner's goal
   await page.keyboard.press('Escape');
-  await openKiroku(page); // the ribbon opens on けんこう
+  await openKiroku(page);
   const other = goals.locator('button.pp').nth(1);
   const partner = (await other.textContent())!.trim();
   await other.click();
@@ -425,7 +427,7 @@ test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (to
   const bar = sheet(page).locator('.titlebar');
   const tabs = sheet(page).locator('.tabs');
   await expect(sheet(page).locator('.tabs .tab')).toHaveText(['きろく', 'ごほうび', 'せってい']); // きろく first
-  await expect(sheet(page).locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true'); // and the panel opens on it
+  await expect(sheet(page).locator('.tab[data-tab=rewards]')).toHaveAttribute('aria-pressed', 'true'); // the jar's: the panel opens on it
   await expect(bar.locator('.close')).toBeVisible();
   await expect(bar.locator('.back')).toHaveCount(0);
   await sheet(page).locator('.tab[data-tab=settings]').click();
@@ -506,7 +508,7 @@ test('サウンド: all off by default; toggles persist on this phone; ミュー
 
 test('focus ring: none on the panel’s くわしく after tap → ‹ back; the keyboard still shows it', async ({ page, browserName }) => {
   await page.goto('?demo');
-  await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).tap();
+  await page.getByRole('button', { name: /^ごほうび · ふたりのベル / }).tap();
   await sheet(page).locator('.tab[data-tab=settings]').tap();
   const tile = sheet(page).locator('[data-push=help]');
   await tile.tap();
@@ -564,20 +566,18 @@ test('with the undo banner up, a sheet’s footer (買う！) rises above it: a 
   expect(hit).toBe(true);
 });
 
-test('the panel opens on きろく from the ribbon every time, whichever tab it closed on', async ({ page }) => {
+test('the panel opens on ごほうび from the jar every time, whichever tab it closed on', async ({ page }) => {
   await page.goto('?demo');
   await openSettings(page);
   await expect(sheet(page).locator('#sec-sound')).toBeVisible();
   await sheet(page).locator('.titlebar .close').click();
-  await openPanel(page);
-  await expect(sheet(page).locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
-  await toTab(page, 'rewards');
+  await openPanel(page); // (it checks ごほうび is the tab shown)
+  await expect(sheet(page).locator('[data-wallet]')).toBeVisible();
+  await toTab(page, 'kiroku');
   await sheet(page).locator('.titlebar .close').click();
   await openPanel(page);
-  await expect(sheet(page).locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
   await page.reload();
   await openPanel(page);
-  await expect(sheet(page).locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('the old /jar link lands on the island with the panel open on ごほうび (the query kept, the link’s own param dropped)', async ({ page }) => {
@@ -586,8 +586,7 @@ test('the old /jar link lands on the island with the panel open on ごほうび 
   await expect(sheet(page).locator('.shop')).toBeVisible();
   await expect(page).toHaveURL(/\/fitness\/\?demo$/); // no ?panel left for a reload to reopen
   await sheet(page).locator('.titlebar .close').click();
-  await openPanel(page); // then the ribbon opens on きろく as ever
-  await expect(sheet(page).locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
+  await openPanel(page); // then the jar opens it on ごほうび as ever
 });
 
 test('きろく: no 「これまでに ためた ベル」 row: the weeks come first', async ({ page }) => {
@@ -631,7 +630,7 @@ test('the panel: its tabs show whole (lip included, nothing paints over it) and 
 /** The jar's number as it writes it in the glass (HudJar: the digits to 999, then 1.2k, 12k). */
 const jarText = (n: number) => (n < 1000 ? n.toLocaleString('en-US') : n < 10_000 ? `${Math.floor(n / 100) / 10}k` : `${Math.floor(n / 1000)}k`);
 
-test('the HUD row: [the jar] [today’s ribbon] [the dumbbell], the ribbon centred, every target ≥ 44px and apart, on screen at 320–402 with a notch, day and night', async ({ page }) => {
+test('the HUD row: [the jar] in the top-left corner, [the dumbbell] in the top-right, no ribbon, the sky between clear, every target ≥ 44px, on screen at 320–402 with a notch, day and night', async ({ page }) => {
   // an iPhone 15/16's top inset (59px): the row stays where it was, under it
   await page.addInitScript(() => document.addEventListener('DOMContentLoaded', () => {
     const s = document.createElement('style');
@@ -643,24 +642,24 @@ test('the HUD row: [the jar] [today’s ribbon] [the dumbbell], the ribbon centr
       await page.setViewportSize({ width: w, height: h });
       await page.goto(`?demo&date=${at}`);
       await islandReady(page);
-      const ribbon = (await page.locator('.ribbon').boundingBox())!;
-      const jarBtn = page.getByRole('button', { name: /^ごほうび · ふたりのベル [\d,]+\sベル$/ });
+      await expect(page.locator('.ribbon')).toHaveCount(0);
+      await expect(page.getByRole('button', { name: /^きょう / })).toHaveCount(0);
+      const jarBtn = page.getByRole('button', { name: /^ごほうび · ふたりのベル [\d,]+\sベル · きょう [\d,]+\sベル$/ });
       const btn = page.getByRole('button', { name: 'けんこう', exact: true });
       const [jb, bb] = [(await jarBtn.boundingBox())!, (await btn.boundingBox())!];
-      for (const b of [ribbon, jb, bb]) {
+      for (const b of [jb, bb]) {
         expect(b.height).toBeGreaterThanOrEqual(44);
         expect(b.width).toBeGreaterThanOrEqual(44);
-        expect(Math.abs(b.y - ribbon.y)).toBeLessThan(1); // one row
         expect(b.y).toBeGreaterThanOrEqual(59);
       }
-      // the ribbon's tails (16px each) sit in the gaps, clear of the jar and the dumbbell
-      expect(ribbon.x - 16 - (jb.x + jb.width)).toBeGreaterThanOrEqual(2);
-      expect(bb.x - (ribbon.x + ribbon.width + 16)).toBeGreaterThanOrEqual(2);
-      // the ribbon centred on the screen, the two sides the same width, inside the screen with room to spare
-      expect(Math.abs(ribbon.x + ribbon.width / 2 - w / 2)).toBeLessThan(1.5);
+      expect(Math.abs(jb.y - bb.y)).toBeLessThan(1); // one row
+      // the two corners, mirrored: the same width, the same inset from either side
       expect(Math.abs(jb.width - bb.width)).toBeLessThan(1);
-      expect(jb.x).toBeGreaterThanOrEqual(8);
-      expect(bb.x + bb.width).toBeLessThanOrEqual(w - 8);
+      expect(jb.x).toBeGreaterThanOrEqual(12);
+      expect(Math.abs(jb.x - (w - bb.x - bb.width))).toBeLessThan(1.5);
+      // the sky's middle clear: nothing of the HUD over the screen's middle third
+      expect(jb.x + jb.width).toBeLessThan(w / 3);
+      expect(bb.x).toBeGreaterThan((w * 2) / 3);
       // the jar drawn whole under the inset, its number inside the glass
       const art = (await jarBtn.locator('.squash').boundingBox())!, num = (await jarBtn.locator('.num').boundingBox())!;
       expect(art.y).toBeGreaterThanOrEqual(59);
@@ -677,18 +676,18 @@ test('the HUD row: [the jar] [today’s ribbon] [the dumbbell], the ribbon centr
       await expect(btn.locator('svg')).toHaveCount(0);
     }
   }
-  // the three taps stay apart: the ribbon opens the panel on きろく, the jar on ごほうび, the dumbbell the health popup
-  await openPanel(page);
-  await expect(sheet(page).locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
-  await page.keyboard.press('Escape');
-  await expect(page.locator('dialog[open]')).toHaveCount(0);
-  await page.locator('.hud-jar').click();
+  // the two taps stay apart: the jar opens the panel on ごほうび (its tabs to きろく and せってい), the dumbbell the
+  // health popup
+  const jar = page.locator('.hud-jar');
+  await expect(jar).toHaveAttribute('aria-expanded', 'false');
+  await jar.click();
   await expect(sheet(page).locator('.tab[data-tab=rewards]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('.shop')).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(page.locator('dialog[open]')).toHaveCount(0);
-  await openPanel(page); // the ribbon again: きろく, not where the jar left it
-  await expect(sheet(page).locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(jar).toHaveAttribute('aria-expanded', 'true');
+  await sheet(page).locator('.tab[data-tab=kiroku]').click();
+  await expect(sheet(page).locator('.kiroku')).toBeVisible();
+  await sheet(page).locator('.tab[data-tab=settings]').click();
+  await expect(sheet(page).locator('#sec-sound')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await page.getByRole('button', { name: 'けんこう', exact: true }).click();
@@ -696,16 +695,21 @@ test('the HUD row: [the jar] [today’s ribbon] [the dumbbell], the ribbon centr
   await expect(sheet(page).locator('.tabs')).toHaveCount(0);
 });
 
-test('the HUD jar writes ごほうび’s balance in its glass, follows a buy and its とりけす, and the day’s coins land in it (its number never drops while they fly)', async ({ page }) => {
-  // every change of the jar's number and each catch squash, from the first paint
+test('the HUD jar writes ごほうび’s balance in its glass, follows a buy and its とりけす, and the day’s coins land in it (its number never drops while they fly, today’s +N flashing beside it)', async ({ page }) => {
+  // every change of the jar's number, each catch squash and each +N flash, from the first paint
   await page.addInitScript(() => {
-    const w = window as unknown as { jarNums: string[]; jarCatches: number };
+    const w = window as unknown as { jarNums: string[]; jarCatches: number; flashes: string[] };
     w.jarNums = [];
     w.jarCatches = 0;
+    w.flashes = [];
+    let last: Element | null = null;
     new MutationObserver(() => {
       const n = document.querySelector('.hud-jar .num')?.textContent;
       if (n && n !== w.jarNums.at(-1)) w.jarNums.push(n);
       if (document.querySelector('.hud-jar .squash.catch')) w.jarCatches++;
+      const f = document.querySelector('.hud-jar [data-jar-flash]');
+      if (f && f !== last) w.flashes.push(f.textContent ?? '');
+      last = f;
     }).observe(document, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class'] });
   });
   await page.goto('?demo&date=2026-10-28T22:00&critter=none&visitor=none'); // three goals met by then
@@ -718,16 +722,54 @@ test('the HUD jar writes ごほうび’s balance in its glass, follows a buy an
   await expect(jar.locator('.num')).toHaveText(jarText(bells));
   const nums = await page.evaluate(() => (window as unknown as { jarNums: string[] }).jarNums.map((n) => Number(n.replace(/,/g, ''))));
   for (let i = 1; i < nums.length; i++) expect(nums[i]).toBeGreaterThanOrEqual(nums[i - 1]);
-  // the same number as ごほうび's
+  // today's +N popped beside the jar as they landed, the last the day's total (the label says it too), then went
+  const today = Number(await jar.getAttribute('data-today'));
+  expect(today).toBeGreaterThan(0);
+  const flashes = () => page.evaluate(() => (window as unknown as { flashes: string[] }).flashes);
+  await expect.poll(async () => (await flashes()).at(-1)).toBe(`+${today}`);
+  await expect(jar.locator('[data-jar-flash]')).toHaveCount(0, { timeout: 4000 });
+  await expect(jar).toHaveAccessibleName(new RegExp(`^ごほうび · ふたりのベル ${bells.toLocaleString('en-US')}\\sベル · きょう ${today}\\sベル$`));
+  // the same number as ごほうび's, today's +N under it
   await jar.click();
   const total = sheet(page).locator('.hero .total');
   await expect.poll(async () => Number((await total.innerText()).replace(/\D/g, ''))).toBe(bells);
-  // a buy takes its price out of the jar at once; とりけす puts it back
+  await expect(sheet(page).locator('.hero .today')).toHaveText(new RegExp(`^\\s*きょう\\s*\\+${today}\\s*ベル\\s*$`));
+  // a buy takes its price out of the jar at once; とりけす puts it back (a refund, not earnings: no flash)
+  const n = (await flashes()).length;
   await page.locator('.shop button[data-item="snack"]').click();
   await sheet(page).getByRole('button', { name: '買う！' }).click();
   await expect(jar.locator('.num')).toHaveText(jarText(bells - 40));
+  await expect(sheet(page).locator('.hero .today')).toHaveAttribute('data-today', String(today)); // a buy isn't today's
   await page.getByRole('button', { name: 'とりけす' }).click();
   await expect(jar.locator('.num')).toHaveText(jarText(bells));
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(800); // (proving nothing flashes: the jar's count-up is 600 ms)
+  expect(await flashes()).toHaveLength(n);
+});
+
+test('ごほうび: today’s ベル in a yuzu pill under the balance (the old ribbon’s number: both of us, ふたりでぜんぶ in), a faint 「きょう まだ 0 ベル」 before the first', async ({ page }) => {
+  await page.goto('?demo&date=2026-10-28T22:00&critter=none&visitor=none');
+  await islandReady(page);
+  const jar = page.locator('.hud-jar');
+  const today = Number(await jar.getAttribute('data-today'));
+  expect(today).toBeGreaterThan(0);
+  await openPanel(page);
+  const pill = sheet(page).locator('[data-wallet] .hero .today');
+  await expect(pill).toHaveText(new RegExp(`^\\s*きょう\\s*\\+${today}\\s*ベル\\s*$`));
+  await expect(pill).not.toHaveClass(/none/);
+  await expect(pill.locator('.bag')).toHaveCount(1); // the tiny ベル bag
+  // under the balance, smaller than it
+  const [tb, pb] = [(await sheet(page).locator('.hero .total').boundingBox())!, (await pill.boundingBox())!];
+  expect(pb.y).toBeGreaterThanOrEqual(tb.y + tb.height - 1);
+  expect(pb.height).toBeLessThan(tb.height + 8);
+  // just after midnight nothing's earned yet: the faint pill, no coin
+  await page.goto('?demo&date=2026-10-28T00:05&critter=none&visitor=none');
+  await islandReady(page);
+  await expect(jar).toHaveAttribute('data-today', '0');
+  await expect(jar).toHaveAccessibleName(/ · きょう 0\sベル$/);
+  await openPanel(page);
+  await expect(pill).toHaveText('きょう まだ 0 ベル');
+  await expect(pill).toHaveClass(/none/);
 });
 
 test('the dumbbell grows the health popup out of itself: a live zoom about the button, no View Transition', async ({ page }) => {

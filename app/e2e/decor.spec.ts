@@ -16,7 +16,7 @@ const DATE = '2026-11-04T12:00';
 
 async function open(page: Page, q = '') {
   await page.goto(`?demo&date=${DATE}&critter=none${q}`);
-  await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^ごほうび · ふたりのベル / })).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await page.waitForTimeout(2000);
 }
@@ -25,7 +25,7 @@ const onLayout = (page: Page) => page.evaluate(() => (window as unknown as { __w
 const OLD = 'the old decorations’ mode: the layout’s もようがえ is IslandEdit (its tests below)';
 async function decorate(page: Page) {
   await page.bringToFront(); // a tab in the back gets no frames
-  await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
+  await page.getByRole('button', { name: /^ごほうび · ふたりのベル / }).click();
   await page.locator('[data-tab="settings"]').click();
   await page.locator('[data-decor-start]').click();
   await expect(page.locator('[data-tray]')).toHaveCount(10);
@@ -65,19 +65,19 @@ test('place: a tray item goes down on fine ground, a drag and a tap move it on t
   expect(await spot(page)).toEqual([300, 432]);
   await expect(page.locator('[data-foot]')).toHaveAttribute('data-foot', 'ok');
   // turned a quarter
-  await page.locator('[data-act="turn"]').click();
+  await page.locator('button[data-act="turn"]').click();
   await expect(ghost(page)).toHaveAttribute('data-f', '1');
   // over the pond it's red, and ✓ won't place it
   await go(page, 600);
   await page.waitForTimeout(300);
   await tapGround(page, 74, 772);
   await expect(page.locator('[data-foot]')).toHaveAttribute('data-foot', 'bad');
-  await expect(page.locator('[data-act="place"]')).toHaveAttribute('aria-disabled', 'true');
+  await expect(page.locator('button[data-act="place"]')).toHaveAttribute('aria-disabled', 'true');
   await expect(page.locator('[data-why]')).toHaveText('みずの うえには おけません');
   await go(page, 0);
   await page.waitForTimeout(300);
   await tapGround(page, 300, 432);
-  await page.locator('[data-act="place"]').click();
+  await page.locator('button[data-act="place"]').click();
   await expect(ghost(page)).toHaveCount(0);
   const placed = page.locator('[data-decor]');
   await expect(placed).toHaveCount(1);
@@ -103,7 +103,7 @@ test('move and remove: a tap picks a placed item up, ✓ moves it, 🗑 puts it 
   await decorate(page);
   await page.locator('[data-tray="tanuki"]').click();
   await tapGround(page, 300, 432);
-  await page.locator('[data-act="place"]').click();
+  await page.locator('button[data-act="place"]').click();
   const item = page.locator('[data-decor]');
   await expect(item).toHaveCount(1);
   const id = await item.getAttribute('data-decor');
@@ -112,16 +112,16 @@ test('move and remove: a tap picks a placed item up, ✓ moves it, 🗑 puts it 
   await expect(ghost(page)).toHaveAttribute('data-ghost', id!);
   await expect(page.locator('[data-decor]')).toHaveCount(0);
   await tapGround(page, 264, 480);
-  await page.locator('[data-act="place"]').click();
+  await page.locator('button[data-act="place"]').click();
   await expect(page.locator(`[data-decor="${id}"]`)).toHaveAttribute('data-x', '264');
   // ✕ puts it back where it was
   await page.locator(`[data-decor="${id}"]`).click();
   await tapGround(page, 120, 380);
-  await page.locator('[data-act="cancel"]').click();
+  await page.locator('button[data-act="cancel"]').click();
   await expect(page.locator(`[data-decor="${id}"]`)).toHaveAttribute('data-x', '264');
   // put away, and back with とりけす (a new one where it stood)
   await page.locator(`[data-decor="${id}"]`).click();
-  await page.locator('[data-act="remove"]').click();
+  await page.locator('button[data-act="remove"]').click();
   await expect(page.locator('[data-decor]')).toHaveCount(0);
   await expect(page.locator('[data-decor-count]')).toHaveText('0/30');
   await page.getByRole('button', { name: 'とりけす' }).click();
@@ -140,7 +140,7 @@ test('both players see the same layout, live and after a reload; a tab opening l
   await decorate(a);
   await a.locator('[data-tray="garden-wagon"]').click();
   await tapGround(a, 234, 384);
-  await a.locator('[data-act="place"]').click();
+  await a.locator('button[data-act="place"]').click();
   const id = await a.locator('[data-decor]').getAttribute('data-decor');
   // B sees it at once, where A put it (a 5-cell wagon's centre is half a cell off the line)
   await expect(a.locator(`[data-decor="${id}"]`)).toHaveAttribute('data-x', '234');
@@ -151,14 +151,14 @@ test('both players see the same layout, live and after a reload; a tab opening l
   await b.locator(`[data-decor="${id}"]`).click();
   await tapGround(b, 222, 504);
   await expect(b.locator('[data-foot]')).toHaveAttribute('data-foot', 'ok');
-  await b.locator('[data-act="place"]').click();
+  await b.locator('button[data-act="place"]').click();
   await expect(b.locator(`[data-decor="${id}"]`)).toHaveAttribute('data-x', '222');
   await expect(a.locator(`[data-decor="${id}"]`)).toHaveAttribute('data-x', '222', { timeout: 3000 });
   await expect(a.locator(`[data-decor="${id}"]`)).toHaveAttribute('data-z', '504');
   // a reload keeps it; a third tab opening later finds it too
   await a.bringToFront();
   await a.reload();
-  await expect(a.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
+  await expect(a.getByRole('button', { name: /^ごほうび · ふたりのベル / })).toBeVisible();
   await expect(a.locator(`[data-decor="${id}"]`)).toHaveAttribute('data-x', '222');
   const c = await ctx.newPage();
   await open(c, '&as=B');
@@ -166,7 +166,7 @@ test('both players see the same layout, live and after a reload; a tab opening l
   // A puts it away: gone on B
   await decorate(a);
   await a.locator(`[data-decor="${id}"]`).click();
-  await a.locator('[data-act="remove"]').click();
+  await a.locator('button[data-act="remove"]').click();
   await expect(b.locator('[data-decor]')).toHaveCount(0, { timeout: 3000 });
   await ctx.close();
 });
@@ -182,7 +182,7 @@ const NEW = 'the layout’s もようがえ (IslandEdit): on the layout only';
 async function editLayout(page: Page) {
   await page.bringToFront();
   await go(page, 300);
-  await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
+  await page.getByRole('button', { name: /^ごほうび · ふたりのベル / }).click();
   await page.locator('[data-tab="settings"]').click();
   await page.locator('[data-decor-start]').click();
   await expect(page.locator('[data-island-edit]')).toBeVisible();
@@ -236,15 +236,15 @@ test('on the layout: a piece from the tray goes down on fine ground, a drag move
   const [fx, fz] = await fineFrom(page, s0.x + 3, s0.z + 1);
   expect(await ie(page, (e) => [e.sel()!.x, e.sel()!.z])).toEqual([fx, fz]);
   // turned a quarter
-  await page.locator('[data-act="turn"]').dispatchEvent('click');
+  await page.locator('button[data-act="turn"]').dispatchEvent('click');
   await expect.poll(() => ie(page, (e) => e.sel()!.f)).toBe(1);
   // over the stream it's red, and ✓ won't place it
   await tapTile(page, 5, 24);
   await expect.poll(() => ie(page, (e) => e.sel()?.why ?? null)).toContain('みず');
-  await expect(page.locator('[data-act="place"]')).toHaveAttribute('aria-disabled', 'true');
+  await expect(page.locator('button[data-act="place"]')).toHaveAttribute('aria-disabled', 'true');
   await tapTile(page, fx, fz);
   await expect.poll(() => ie(page, (e) => e.sel()?.why ?? 'held')).toBe('held');
-  await page.locator('[data-act="place"]').dispatchEvent('click');
+  await page.locator('button[data-act="place"]').dispatchEvent('click');
   await expect.poll(() => ie(page, (e) => e.sel())).toBeNull();
   await expect.poll(() => lay(page, (l) => l.count('stone-lantern'))).toBe(before + 1);
   const id = (await lay(page, (l) => l.ids('stone-lantern'))).at(-1)!;
@@ -261,7 +261,7 @@ test('on the layout: a tap picks a placed piece up, a drag and ✓ move it, ✕ 
   await page.locator('[data-tab="furniture"]').click();
   await page.locator('[data-island-item="tanuki"]').click();
   const [x0, z0] = await fineFrom(page, 11, 18);
-  await page.locator('[data-act="place"]').dispatchEvent('click');
+  await page.locator('button[data-act="place"]').dispatchEvent('click');
   await expect.poll(() => ie(page, (e) => e.sel())).toBeNull();
   const id = (await lay(page, (l) => l.ids('tanuki'))).at(-1)!;
   // picked up (a finger on it), dragged a tile on, ✓: it's there
@@ -269,18 +269,18 @@ test('on the layout: a tap picks a placed piece up, a drag and ✓ move it, ✕ 
   await expect.poll(() => ie(page, (e) => e.sel()?.id ?? null)).toBe(id);
   const [x1, z1] = await ie(page, (e) => [e.sel()!.x, e.sel()!.z] as const);
   expect(await ie(page, (e) => e.sel()!.why)).toBeNull();
-  await page.locator('[data-act="place"]').dispatchEvent('click');
+  await page.locator('button[data-act="place"]').dispatchEvent('click');
   await expect.poll(() => page.evaluate((id) => (window as unknown as { __layout: L }).__layout.obj(id)?.x, id)).toBe(x1);
   // ✕: back where it was
   await dragTile(page, [x1, z1], [x1 - 1, z1]);
   await expect.poll(() => ie(page, (e) => e.sel()?.id ?? null)).toBe(id);
-  await page.locator('[data-act="cancel"]').dispatchEvent('click');
+  await page.locator('button[data-act="cancel"]').dispatchEvent('click');
   await expect.poll(() => ie(page, (e) => e.sel())).toBeNull();
   expect(await page.evaluate((id) => (window as unknown as { __layout: L }).__layout.obj(id)?.x, id)).toBe(x1);
   // 🗑: put away
   await tapTile(page, x1, z1);
   await expect.poll(() => ie(page, (e) => e.sel()?.id ?? null)).toBe(id);
-  await page.locator('[data-act="remove"]').dispatchEvent('click');
+  await page.locator('button[data-act="remove"]').dispatchEvent('click');
   await expect.poll(() => page.evaluate((id) => (window as unknown as { __layout: L }).__layout.obj(id) ?? null, id)).toBeNull();
 });
 
@@ -295,7 +295,7 @@ test('on the layout: both players see the same island, live and after a reload; 
   await a.locator('[data-tab="furniture"]').click();
   await a.locator('[data-island-item="garden-wagon"]').click();
   const [x0, z0] = await fineFrom(a, 11, 18);
-  await a.locator('[data-act="place"]').dispatchEvent('click');
+  await a.locator('button[data-act="place"]').dispatchEvent('click');
   const id = (await lay(a, (l) => l.ids('garden-wagon'))).at(-1)!;
   // B has it at once, where A put it
   const where = (p: Page) => p.evaluate((id) => { const o = (window as unknown as { __layout: L }).__layout.obj(id); return o ? [o.x, o.z] : null; }, id);
@@ -308,12 +308,12 @@ test('on the layout: both players see the same island, live and after a reload; 
   if (await ie(b, (e) => e.sel()!.why)) await fineFrom(b, x0 - 1, z0 + 1);
   const moved = await ie(b, (e) => [e.sel()!.x, e.sel()!.z]);
   void to;
-  await b.locator('[data-act="place"]').dispatchEvent('click');
+  await b.locator('button[data-act="place"]').dispatchEvent('click');
   await expect.poll(() => where(a), { timeout: 3000 }).toEqual(moved);
   // a reload keeps it; a third tab opening later finds it too
   await a.bringToFront();
   await a.reload();
-  await expect(a.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
+  await expect(a.getByRole('button', { name: /^ごほうび · ふたりのベル / })).toBeVisible();
   await expect.poll(() => where(a)).toEqual(moved);
   const c = await ctx.newPage();
   await open(c, '&as=B');
@@ -322,7 +322,7 @@ test('on the layout: both players see the same island, live and after a reload; 
   await editLayout(a);
   await tapTile(a, moved[0], moved[1]);
   await expect.poll(() => ie(a, (e) => e.sel()?.id ?? null)).toBe(id);
-  await a.locator('[data-act="remove"]').dispatchEvent('click');
+  await a.locator('button[data-act="remove"]').dispatchEvent('click');
   await expect.poll(() => where(b), { timeout: 3000 }).toBeNull();
   await ctx.close();
 });

@@ -69,8 +69,8 @@
     const [fx, fz] = inFront(at, FACE.z * BOARD_S);
     // in the canvas's px (the 3D island's: the engine frames in them; iOS's scroll moves it with the page)
     const c = (document.querySelector('[data-w3d]') ?? root).getBoundingClientRect();
-    const ribbon = document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? -Infinity;
-    const top = Math.max(ribbon + 10, (edge ?? root).getBoundingClientRect().bottom) - c.top;
+    const hud = document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? -Infinity;
+    const top = Math.max(hud + 10, (edge ?? root).getBoundingClientRect().bottom) - c.top;
     const bottom = c.bottom - bar.getBoundingClientRect().top;
     await three.focus({ x: fx, z: fz, y: FACE.y * BOARD_S, w: FACE.w * BOARD_S, h: FACE.h * BOARD_S, yaw: (at.f * Math.PI) / 2, top, bottom, fill: 0.92 }, ms);
     measure();
@@ -264,8 +264,8 @@
 
 <style>
   .bv {
-    /* the island's HUD (its ribbon, きょう…ベル, and the jar) ends at its lip (+page.svelte --hud-bottom: the view lives
-       on <body>, so it's worked out here from the same tokens); 「もどる」 sits under it, never over the ribbon */
+    /* the island's HUD (the jar and the health button) ends at its lip (+page.svelte --hud-bottom: the view lives
+       on <body>, so it's worked out here from the same tokens); 「もどる」 sits under it, never over it */
     --hud-end: calc(var(--hud-top, calc(env(safe-area-inset-top, 0px) + 10px)) + var(--hit, 44px) + var(--lip-h, 4px));
     --back-top: calc(var(--hud-end) + 10px);
     /* top and height: the visible part of the screen (inline, from visualViewport) */

@@ -3,17 +3,17 @@
 import { expect, test, type Page } from '@playwright/test';
 import { geo } from './island.ts';
 
-const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 async function open(page: Page, q: string) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo${q}`);
-  await expect(ribbon(page)).toBeVisible();
-  return { bells: await ribbon(page).getAttribute('aria-label'), url: page.url() };
+  await expect(hudJar(page)).toBeVisible();
+  return { bells: await hudJar(page).getAttribute('aria-label'), url: page.url() };
 }
 async function unchanged(page: Page, before: { bells: string | null; url: string }) {
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   expect(page.url()).toBe(before.url);
-  await expect(ribbon(page)).toHaveAttribute('aria-label', before.bells!);
+  await expect(hudJar(page)).toHaveAttribute('aria-label', before.bells!);
 }
 const at = (page: Page, sel: string, n = 0) =>
   page.locator(sel).nth(n).evaluate((el) => {
@@ -62,7 +62,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await expect.poll(() => cues(page)).toContain('scene-weed');
     await unchanged(page, before);
     await page.reload();
-    await expect(ribbon(page)).toBeVisible();
+    await expect(hudJar(page)).toBeVisible();
     await page.waitForTimeout(600);
     await expect(day).toHaveAttribute('data-weeds', String(n - 1));
   });
@@ -86,7 +86,7 @@ test('a tap on a flower waters it (the can, a sprinkle); a watered flower can sh
   await expect(page.locator(`${sel} [data-watered]`)).toHaveCount(1);
   // 2026-11-04 is a hybrid day for a flower watered the day before (care.ts, seeded): the autumn pink cosmos grows black
   await page.goto('?demo&date=2026-11-04T12:00');
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
   await expect(page.locator('[data-watered]')).toHaveCount(0); // a new day: no glitter until watered again
   await expect(page.locator(`${sel} img`)).toHaveAttribute('data-src', /black-cosmos/);
   await expect(page.locator(`${other} img`)).toHaveAttribute('data-src', /pink-cosmos/);

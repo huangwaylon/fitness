@@ -12,17 +12,17 @@ import { fossilOnScreen } from './island.ts';
 const { items: ITEMS, recipes: RECIPES } = JSON.parse(readFileSync(new URL('../src/lib/components/island/catalog.json', import.meta.url), 'utf8')) as { items: string[]; recipes: string[] };
 
 test.use({ viewport: { width: 390, height: 844 } });
-const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 
 test('a netted butterfly appears in the ずかん with who found it and when; the rest are silhouettes', async ({ page }) => {
   await page.goto('?demo&date=2026-07-04T12:00&critter=common-butterfly');
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
   await page.waitForTimeout(2200);
   const b = (await page.locator('[data-critter="common-butterfly"]').boundingBox())!;
   await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
   await expect(page.locator('[data-fx="catch"]')).toBeAttached();
-  await ribbon(page).click();
-  await page.locator('dialog[open] .tab[data-tab=kiroku]').click(); // (the panel opens on it)
+  await hudJar(page).click();
+  await page.locator('dialog[open] .tab[data-tab=kiroku]').click(); // (the jar opens the panel on ごほうび)
   const row = page.locator('[data-zukan="bug"]');
   await expect(row).toContainText(`1 / ${Object.keys(BUGS).length}`);
   await expect(page.locator('[data-zukan="fish"]')).toContainText(`0 / ${Object.keys(FISH).length + Object.keys(POND_FISH).length}`);
@@ -46,14 +46,14 @@ test('the fossils: a dug-up piece shows under its dinosaur with the set’s coun
   let date = '2026-07-01';
   while (!digSpots(date, new Set()).every((s) => piece(s.fossil))) date = addDays(date, 1);
   await page.goto(`?demo&date=${date}T12:00`);
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
   // the one on screen (on the layout they lie all over the island: the camera to it)
   const p = await fossilOnScreen(page);
   await page.mouse.click(p.x, p.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText('化石を ほりだした！');
   const id = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).find((e: { type: string }) => e.type === 'find')?.data.id as string);
   const [set, ids] = piece(id)!;
-  await ribbon(page).click();
+  await hudJar(page).click();
   await page.locator('dialog[open] .tab[data-tab=kiroku]').click();
   await expect(page.locator('[data-zukan="fossil"]')).toContainText('1 / 73');
   await page.locator('[data-zukan="fossil"]').click();
@@ -81,8 +81,8 @@ for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
       localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-07-04', events }));
     });
     await page.goto('?demo&date=2026-07-04T12:00');
-    await expect(ribbon(page)).toBeVisible();
-    await ribbon(page).click();
+    await expect(hudJar(page)).toBeVisible();
+    await hudJar(page).click();
     await page.locator('dialog[open] .tab[data-tab=kiroku]').click();
     await page.locator('[data-zukan="fish"]').click();
     const head = page.locator('[data-zukan-head]');
@@ -145,8 +145,8 @@ test('the catalogue and the recipes: found entries with their counts, in all and
     localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-07-04', events }));
   });
   await page.goto('?demo&date=2026-07-04T12:00');
-  await expect(ribbon(page)).toBeVisible();
-  await ribbon(page).click();
+  await expect(hudJar(page)).toBeVisible();
+  await hudJar(page).click();
   await page.locator('dialog[open] .tab[data-tab=kiroku]').click();
   await expect(page.locator('[data-zukan="item"]')).toContainText(`1 / ${ITEMS.length}`);
   await expect(page.locator('[data-zukan="recipe"]')).toContainText(`1 / ${RECIPES.length}`);

@@ -28,11 +28,11 @@ test('an old subscription is let go on open, its prefs forgotten; nothing asks, 
   page.on('request', (r) => r.url().includes('/push/') && pushCalls.push(r.url()));
   await fakePush(page);
   await page.goto('?demo');
-  await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^ごほうび · ふたりのベル / })).toBeVisible();
   await expect.poll(() => probe(page)).toEqual({ asked: 0, subscribed: 0, unsubscribed: 1 });
   expect(await page.evaluate(() => [localStorage.getItem('island.push'), localStorage.getItem('island.goalSent')])).toEqual([null, null]);
   // せってい: no つうち section, no switch for it
-  await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
+  await page.getByRole('button', { name: /^ごほうび · ふたりのベル / }).click();
   const panel = page.locator('dialog[open]');
   await panel.locator('.tab[data-tab=settings]').click();
   await expect(panel.locator('#sec-sound')).toBeVisible();
@@ -41,7 +41,7 @@ test('an old subscription is let go on open, its prefs forgotten; nothing asks, 
   await expect(panel).not.toContainText('しらせる');
   // a reload: nothing left to drop
   await page.reload();
-  await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^ごほうび · ふたりのベル / })).toBeVisible();
   await page.waitForTimeout(500); // (proving nothing more happens)
   expect((await probe(page)).subscribed).toBe(0);
   expect(pushCalls).toEqual([]);

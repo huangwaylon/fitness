@@ -7,12 +7,12 @@ import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.t
 
 test.use({ viewport: { width: 393, height: 852 } });
 const DATE = '2026-11-04T12:00';
-const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 
 async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G') {
   const page = await ctx.newPage();
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none${as === 'A' ? '' : `&as=${as}`}`);
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   return page;
 }
@@ -157,7 +157,7 @@ const paperAt = (p: Page) => p.evaluate(() => {
 
 test('a note written is drawn on the face at once, and still after a reload', async ({ page }) => {
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&island=2d`);
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __board?: unknown }).__board);
   await openBoard(page);
   expect(await drawn(page)).toEqual([]);
@@ -167,7 +167,7 @@ test('a note written is drawn on the face at once, and still after a reload', as
   expect(await paperAt(page)).toBeGreaterThan(170);
   await close(page);
   await page.reload();
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
   await openBoard(page);
   await expect(note(page, 'よみかえし テスト')).toBeVisible();
   expect(await drawn(page)).toEqual(['よみかえし テスト']);
@@ -175,12 +175,12 @@ test('a note written is drawn on the face at once, and still after a reload', as
 });
 
 for (const island of ['2d', '3d'] as const) {
-  test(`「もどる」 sits under the HUD’s ribbon, never over it, and the face under both (${island})`, async ({ page }) => {
+  test(`「もどる」 sits under the HUD, never over it, and the face under both (${island})`, async ({ page }) => {
     // (the 3D island loads its models and draws in software on CI: 20-odd s before the board opens)
     if (island === '3d') test.setTimeout(60_000);
     await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&island=${island}`);
-    await expect(ribbon(page)).toBeVisible();
-    const hud = (await ribbon(page).boundingBox())!;
+    await expect(hudJar(page)).toBeVisible();
+    const hud = (await hudJar(page).boundingBox())!;
     await openBoard(page);
     await expect(view(page)).toHaveAttribute('data-board-view', island === '2d' ? 'sheet' : '3d');
     const back = (await view(page).getByRole('button', { name: /もどる/ }).boundingBox())!;
@@ -266,7 +266,7 @@ for (const island of ['2d', '3d'] as const) {
     if (island === '3d') test.setTimeout(60_000);
     await fakeKeyboard(page);
     await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&island=${island}`);
-    await expect(ribbon(page)).toBeVisible();
+    await expect(hudJar(page)).toBeVisible();
     await openBoard(page);
     await expect(view(page)).toHaveAttribute('data-board-view', island === '2d' ? 'sheet' : '3d');
     await expect(view(page)).toHaveAttribute('data-ready', 'true', { timeout: 10_000 });

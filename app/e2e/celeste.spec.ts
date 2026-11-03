@@ -4,7 +4,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { is3d } from './island.ts';
 
-const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 /** The camera to a world z (まえ, 642 おく: the campsite's clearing), settled. */
 async function camera(page: Page, z: number) {
   await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world);
@@ -27,8 +27,8 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
   test(`a meteor shower's night: Celeste at centre stage (おく), clear of every control, explains wishes (${w}px)`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await page.goto('?demo&date=2026-11-12T21:00&critter=none');
-    await expect(ribbon(page)).toBeVisible();
-    const bells = await ribbon(page).getAttribute('aria-label');
+    await expect(hudJar(page)).toBeVisible();
+    const bells = await hudJar(page).getAttribute('aria-label');
     await camera(page, 642);
     const art = page.locator('[data-visitor="celeste"] .art');
     await expect(art).toBeVisible();
@@ -37,14 +37,14 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
     await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('フーコ');
     await expect(page.locator('[data-fx="talk"] .sr')).toContainText('ながれぼし');
-    await expect(ribbon(page)).toHaveAttribute('aria-label', bells!);
+    await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
   });
 
 test('shooting stars every 3–8 s on a shower night (a clear night: 15–40 s)', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-11-12T22:00:00+09:00') });
   await page.clock.resume();
   await page.goto('?demo&date=2026-11-12T22:00&critter=none');
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
   // (the 3D island's whole-island view leaves the night sky a sliver under the HUD: there a streak crosses on down over
   // the island's far end, docs/world3d-gaps.md 4)
   await is3d(page);
@@ -64,7 +64,7 @@ test('shooting stars every 3–8 s on a shower night (a clear night: 15–40 s)'
 
 test('not a shower night: no Celeste; each wish is a fragment the next morning, a shower night’s like any other', async ({ page }) => {
   await page.goto('?demo&date=2026-11-11T21:00&critter=none');
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
   await page.waitForTimeout(500);
   await expect(page.locator('[data-visitor="celeste"]')).toHaveCount(0);
   // five wishes on the shower night of 11-12: five fragments on the 13th's beach

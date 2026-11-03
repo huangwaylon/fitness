@@ -1,7 +1,7 @@
 <script lang="ts">
-  // 島 Island: the scene full bleed under a light HUD: today's ベル ribbon at the top with the health button (NH's
-  // dumbbell) beside it, the pair centred; the ribbon is the focal point and the door to everything else (tap → the
-  // island panel slides down: きろく, ごほうび, せってい).
+  // 島 Island: the scene full bleed under a light HUD: the jar in the sky's top-left corner (the shared ベル written in
+  // it), the health button (NH's dumbbell) in the top-right; the jar is the door to everything else (tap → the island
+  // panel slides down on ごほうび, today's ベル there: きろく, ごほうび, せってい).
   // The day needs zero taps (the Watch and the Shortcut fill the trees);
   // ハイタッチ lives with the partner's villager: a tap on them and mine walks over for it (no card).
   // The app asks no daily questions: the band under the scene is しずえ's, and her dialogue box shows only when she has
@@ -94,7 +94,7 @@
     <!-- DOM order = focus / VoiceOver order = the visual order: the heading, today's ベル, the health button beside it, the scene (trees,
          villagers), then しずえ's box at the bottom. All are absolutely placed, so the order costs no layout; the stacking
          comes from the --z-* scale (tokens.css). -->
-    <Hud bells={view.wallet.today} balance={view.wallet.balance} bind:panelOpen bind:healthOpen {later} />
+    <Hud today={view.wallet.today} balance={view.wallet.balance} bind:panelOpen bind:healthOpen {later} />
     <HudCoins {view} covered={panelOpen || healthOpen || ui.overlay} {later} />
     <div class="top">
       <IslandScene {view} onhighfive={sendHighFive} onhighfivegot={(who) => (gotFive = who)} onguest={guestArrived} paused={panelOpen || healthOpen} />
@@ -106,8 +106,8 @@
 
 <style>
   /* The island is centred in the visible ocean, from the horizon down to the bottom of the screen (above the home
-     indicator), never under the ribbon: IslandScene centres it between the horizon and --island-bottom, and keeps
-     the horizon under --hud-bottom (the ribbon's lip, tokens.css). */
+     indicator), never under the HUD: IslandScene centres it between the horizon and --island-bottom, and keeps
+     the horizon under --hud-bottom (the HUD row's lip, tokens.css). */
   .island {
     --hud-bottom: calc(var(--hud-top) + var(--hit) + var(--lip-h));
     --island-bottom: var(--safe-bottom);

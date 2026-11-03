@@ -3,7 +3,7 @@
   // shell rises from behind the island over the sea every few seconds and bursts in the sky: a peony, a ring, a heart,
   // a star, a gold willow, now and then a little pixel pattern like NH's custom-design fireworks. Plus our own volley the
   // evening both of us meet all four goals (once a day per phone). Every burst opens where its whole circle is inside the
-  // sky and clear of every control (the ribbon, the sync chip); a tap in the sky during a show sends one more there
+  // sky and clear of every control (the HUD's jar and health button, the sync chip); a tap in the sky during a show sends one more there
   // (SceneTaps asks `tap`). Now and then a villager cheers. A soft whistle and boom (world cues, low).
   // Its layer: fixed on screen, the scene's width from under the status bar down a little past the horizon (IslandScene's
   // --horizon-y; the far island and the open sea behind it, where NH's shells rise from, so a short sky under the HUD

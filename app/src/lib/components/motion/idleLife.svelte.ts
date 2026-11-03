@@ -163,7 +163,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
       case 'hop':
         return setMotion(id, 'hop');
       case 'peek':
-        // a glance up at the jar (in the sky HUD beside the ribbon since it left the island): turn to it, then home
+        // a glance up at the jar (in the sky HUD's top-left corner since it left the island): turn to it, then home
         applyStep(id, { actor: id, face: 'jar', motion: 'turn' });
         return later(id, 1_800, () => (actors[id].face = 'home'));
       case 'treeshake':
