@@ -5,7 +5,7 @@
 import { DEVICE, localKV } from '#lib/sync/storage.ts';
 
 type IslandRender = '2d' | '3d';
-const DEFAULT: IslandRender = '2d';
+const DEFAULT: IslandRender = '3d';
 
 const parse = (v: string | null | undefined): IslandRender | null => (v === '3d' || v === '2d' ? v : null);
 const fromUrl = (): IslandRender | null => (typeof location === 'undefined' ? null : parse(new URLSearchParams(location.search).get('island')));

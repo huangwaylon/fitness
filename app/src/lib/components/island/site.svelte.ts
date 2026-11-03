@@ -21,7 +21,7 @@ import { worldOf } from './layoutWorld.ts';
 import { layoutSpots, useSpots } from './beach.ts';
 
 /** The 3D island reads the layout without `?layout` (the cutover). */
-const LAYOUT_3D = false;
+const LAYOUT_3D = true;
 const kept = (): boolean => {
   try {
     return localKV()?.getItem(DEVICE.islandLayout) === 'on';
