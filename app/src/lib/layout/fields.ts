@@ -66,6 +66,9 @@ export interface Fields {
   at(ch: Ch, x: number, z: number): number;
   /** The water's downstream direction at (x, z) along a river's curved stem (river.ts), null off one. */
   flow(x: number, z: number): [number, number] | null;
+  /** Where (x, z) is on a river's stem: the length along it from the mouth (u) and how far across (its half-breadths,
+   *  signed), bilinear on the raster; null off one. The water's streaks run on these (no seam or shear at a bend). */
+  along(x: number, z: number): [number, number] | null;
 }
 
 const cache = new WeakMap<Layout, Fields>();
@@ -220,6 +223,20 @@ function build(layout: Layout): Fields {
       if (i < 0 || j < 0 || i >= W || j >= H) return null;
       const q = j * W + i;
       return sf.fx[q] || sf.fz[q] ? [sf.fx[q], sf.fz[q]] : null;
+    },
+    along(x: number, z: number): [number, number] | null {
+      if (!sf) return null;
+      const fx = Math.max(0, Math.min(W - 1.001, (x - GRID.x0) / STEP - 0.5)), fz = Math.max(0, Math.min(H - 1.001, (z - GRID.z0) / STEP - 0.5));
+      const x0 = Math.floor(fx), z0 = Math.floor(fz), tx = fx - x0, tz = fz - z0, i = z0 * W + x0;
+      const on = (q: number) => sf.fx[q] !== 0 || sf.fz[q] !== 0;
+      const near = Math.round(fz) * W + Math.round(fx);
+      const qs = [i, i + 1, i + W, i + W + 1];
+      // (the four cells on one stretch of one stem: bilinear; else the nearest cell's)
+      if (qs.every(on) && Math.max(...qs.map((q) => sf.s[q])) - Math.min(...qs.map((q) => sf.s[q])) < 4 * STEP) {
+        const bl = (a: Float32Array) => (a[i] * (1 - tx) + a[i + 1] * tx) * (1 - tz) + (a[i + W] * (1 - tx) + a[i + W + 1] * tx) * tz;
+        return [bl(sf.s), bl(sf.across)];
+      }
+      return on(near) ? [sf.s[near], sf.across[near]] : null;
     }
   };
 }
