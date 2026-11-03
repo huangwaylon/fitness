@@ -6,7 +6,7 @@ import type { SnapshotRows } from '#lib/contract/api.ts';
 import { LIVE, configureStorage, onStorageProblem, type KV, type StorageProblem } from './storage.ts';
 import { configureTransport } from './transport.ts';
 import { enqueue, flush, queued } from './queue.ts';
-import { applySnapshot, cacheWritten, configureCache, loadCache, refreshSnapshot, saveCache } from './cache.ts';
+import { applySnapshot, cacheWritten, configureCache, loadCache, refreshSnapshot, saveCache, SEG_ROWS } from './cache.ts';
 import { setKey } from './pairing.ts';
 import { asRecord } from './fake-record.ts';
 
@@ -94,7 +94,7 @@ describe('IndexedDB cache', () => {
     expect((await loadCache())?.rows.metrics).toHaveLength(2);
   });
 
-  /** The raw records in the `island` database's `cache` store. */
+  /** The raw records in the `island` database's `cache` store (after writing `write`, `undefined` deletes). */
   const raw = async (write?: Record<string, unknown>): Promise<Record<string, unknown>> => {
     const d = await new Promise<IDBDatabase>((ok) => {
       const r = idb.open('island', 1);
@@ -103,50 +103,126 @@ describe('IndexedDB cache', () => {
     });
     const t = d.transaction('cache', 'readwrite');
     const s = t.objectStore('cache');
-    for (const [k, v] of Object.entries(write ?? {})) s.put(v, k);
+    for (const [k, v] of Object.entries(write ?? {})) {
+      if (v === undefined) s.delete(k);
+      else s.put(v, k);
+    }
     const out: Record<string, unknown> = {};
-    for (const k of ['meta', 'rows', 'snapshot']) s.get(k).onsuccess = (e) => { out[k] = (e.target as IDBRequest).result; };
+    s.openCursor().onsuccess = (e) => {
+      const c = (e.target as IDBRequest<IDBCursorWithValue | null>).result;
+      if (!c) return;
+      out[String(c.key)] = c.value;
+      c.continue();
+    };
     await new Promise((ok) => { t.oncomplete = ok; });
     d.close();
     return out;
   };
+  type Listed = { metrics: string[]; events: string[] };
+  /** The segments the meta lists; every record on disk is the meta or one of them. */
+  const listed = (disk: Record<string, unknown>): Listed => {
+    const l = (disk.meta as { segs: Listed }).segs;
+    expect(Object.keys(disk).sort()).toEqual(['meta', ...l.metrics, ...l.events].sort());
+    return l;
+  };
+  const ev = (i: number): SnapshotRows['events'][number] => [new Date(Date.parse('2026-11-02T01:00:00.000Z') + i * 1000).toISOString(), 'A', `e${i}`, 'pref', '{"key":"locale","value":"en"}'];
 
-  it('an empty poll writes only the meta; new rows write the rows too', async () => {
+  it('an empty poll writes only the meta; new rows write only the segment they land in', async () => {
+    reply = () => ({ ok: true, me: 'A', now: '2026-11-02T05:00:00.000Z', rev: 'r1', rows: { metrics: rows().metrics, events: Array.from({ length: 2 * SEG_ROWS + 10 }, (_, i) => ev(i)) } });
     await refreshSnapshot();
     await reload();
-    const marker = { ...rows(), marker: true };
-    await raw({ rows: marker }); // what is on disk now, so a rewrite would show
+    await loadCache();
+    let disk = await raw();
+    const before = listed(disk);
+    expect([before.metrics.length, before.events.length]).toEqual([1, 3]);
+    expect(disk.meta).toMatchObject({ v: 3, me: 'A', rev: 'r1' });
+    expect(disk.meta).not.toHaveProperty('rows');
+    expect(disk[before.events[1]]).toEqual(Array.from({ length: SEG_ROWS }, (_, i) => ev(SEG_ROWS + i)));
+    // what is on disk now (not in memory), so a rewrite would show
+    const marked = (k: string) => [...(disk[k] as unknown[])].map((r) => [...(r as unknown[]), 'marker']);
+    await raw(Object.fromEntries([before.events[1], before.events[2], before.metrics[0]].map((k) => [k, marked(k)])));
     reply = () => ({ ok: true, me: 'A', now: '2026-11-02T06:00:00.000Z', rev: 'r1', rows: { metrics: [], events: [] } });
     await refreshSnapshot(() => 7);
     await cacheWritten();
-    let disk = await raw();
-    expect(disk.rows).toEqual(marker);
-    expect(disk.meta).toMatchObject({ v: 2, me: 'A', since: '2026-11-02T01:00:00.000Z', rev: 'r1', fetchedAt: 7 });
-    expect(disk.meta).not.toHaveProperty('rows');
-    reply = () => ({ ok: true, me: 'A', now: '2026-11-02T06:00:00.000Z', rev: 'r1', rows: { metrics: [['2026-11-02T05:30:00.000Z', 'A', '2026-11-02', 'steps', 9000]] } });
+    disk = await raw();
+    expect(listed(disk)).toEqual(before);
+    expect((disk[before.events[2]] as unknown[][])[0]).toContain('marker');
+    expect(disk.meta).toMatchObject({ v: 3, fetchedAt: 7 });
+    // one more event: only the last, partly filled segment is written again (a new key, in the same transaction)
+    reply = () => ({ ok: true, me: 'A', now: '2026-11-02T06:00:00.000Z', rev: 'r1', rows: { events: [ev(2 * SEG_ROWS + 10)] } });
     await refreshSnapshot();
     await cacheWritten();
     disk = await raw();
-    expect((disk.rows as SnapshotRows).metrics).toHaveLength(2);
-    expect(disk.rows).not.toHaveProperty('marker');
+    const after = listed(disk);
+    expect(after.metrics).toEqual(before.metrics);
+    expect(after.events.slice(0, 2)).toEqual(before.events.slice(0, 2));
+    expect(after.events[2]).not.toBe(before.events[2]);
+    expect((disk[before.events[1]] as unknown[][])[0]).toContain('marker');
+    expect((disk[before.metrics[0]] as unknown[][])[0]).toContain('marker');
+    expect(disk[after.events[2]]).toHaveLength(11);
+    expect((disk[after.events[2]] as unknown[][]).flat()).not.toContain('marker');
+    await reload();
+    expect((await loadCache())?.rows.events).toHaveLength(2 * SEG_ROWS + 11);
   });
 
-  it('moves the old single record (v 1) to the two in place: no full refetch', async () => {
-    const old = { ...applySnapshot(null, { me: 'A', rev: 'r1', now: '2026-11-02T05:00:00.000Z', rows: rows(2) }, 3) };
-    await raw({ snapshot: old });
-    configureCache({ indexedDB: idb });
-    expect(await loadCache()).toEqual(old);
-    reply = () => ({ ok: true, me: 'A', now: '2026-11-02T06:00:00.000Z', rev: 'r1', rows: { metrics: [], events: [] } });
-    const r = await refreshSnapshot();
-    expect(calls.map((c) => c.since)).toEqual(['2026-11-02T01:00:00.000Z']);
-    expect(r.ok && r.cache.rows).toEqual(rows(2));
-    await cacheWritten();
-    const disk = await raw();
-    expect(disk.snapshot).toBeUndefined();
-    expect(disk.rows).toEqual(rows(2));
-    expect(disk.meta).toMatchObject({ v: 2, rev: 'r1' });
+  it('rows changed in the middle (a compaction) rewrite from that segment on; a reload reads the same rows', async () => {
+    const all = Array.from({ length: 3 * SEG_ROWS + 5 }, (_, i) => ev(i));
+    const a = applySnapshot(null, { me: 'A', rev: 'r1', now: '2026-11-02T05:00:00.000Z', rows: { metrics: [], events: all } }, 0);
+    await saveCache(a);
+    const before = listed(await raw());
+    const b = { ...a, rows: { ...a.rows, events: all.filter((_, i) => i !== SEG_ROWS + 3) } };
+    await saveCache(b);
+    const after = listed(await raw());
+    expect(after.events).toHaveLength(4);
+    expect(after.events[0]).toBe(before.events[0]);
+    expect(after.events.slice(1).filter((k) => before.events.includes(k))).toEqual([]);
     await reload();
-    expect((await loadCache())?.rows).toEqual(rows(2));
+    expect((await loadCache())?.rows).toEqual(b.rows);
+  });
+
+  it('segments the meta doesn’t list (another tab’s) are deleted by the next save', async () => {
+    await refreshSnapshot();
+    await reload();
+    await raw({ 'seg:events:stray': [ev(1)] });
+    configureCache({ indexedDB: idb });
+    expect((await loadCache())?.rows).toEqual(rows());
+    await saveCache({ ...(await loadCache())!, fetchedAt: 9 });
+    expect(await raw()).not.toHaveProperty('seg:events:stray');
+  });
+
+  it('a missing segment reads as no cache (everything fetched again), never as part of the rows', async () => {
+    reply = () => ({ ok: true, me: 'A', now: '2026-11-02T05:00:00.000Z', rev: 'r1', rows: { metrics: [], events: Array.from({ length: SEG_ROWS + 1 }, (_, i) => ev(i)) } });
+    await refreshSnapshot();
+    await reload();
+    await raw({ [listed(await raw()).events[1]]: undefined });
+    configureCache({ indexedDB: idb });
+    expect(await loadCache()).toBeNull();
+    await refreshSnapshot();
+    expect(calls.at(-1)).not.toHaveProperty('since');
+    await cacheWritten();
+    expect(listed(await raw()).events).toHaveLength(2);
+  });
+
+  it('moves the older layouts (v 1: one record; v 2: meta + every row in `rows`) to segments in place: no full refetch', async () => {
+    const old = { ...applySnapshot(null, { me: 'A', rev: 'r1', now: '2026-11-02T05:00:00.000Z', rows: rows(2) }, 3) };
+    const { v: _v, rows: oldRows, ...rest } = old;
+    for (const before of [{ snapshot: old }, { meta: { ...rest, v: 2 }, rows: oldRows }]) {
+      await raw(Object.fromEntries(Object.keys(await raw()).map((k) => [k, undefined])));
+      await raw(before);
+      configureCache({ indexedDB: idb });
+      expect(await loadCache()).toEqual(old);
+      calls = [];
+      reply = () => ({ ok: true, me: 'A', now: '2026-11-02T06:00:00.000Z', rev: 'r1', rows: { metrics: [], events: [] } });
+      const r = await refreshSnapshot();
+      expect(calls.map((c) => c.since)).toEqual(['2026-11-02T01:00:00.000Z']);
+      expect(r.ok && r.cache.rows).toEqual(rows(2));
+      await cacheWritten();
+      const disk = await raw();
+      expect(listed(disk)).toMatchObject({ metrics: [expect.any(String)], events: [expect.any(String)] });
+      expect(disk.meta).toMatchObject({ v: 3, rev: 'r1' });
+      await reload();
+      expect((await loadCache())?.rows).toEqual(rows(2));
+    }
   });
 
   it('a clear removes every record, the old one too', async () => {
@@ -154,7 +230,7 @@ describe('IndexedDB cache', () => {
     await raw({ snapshot: { v: 1 } });
     setKey('cd'.repeat(32), 'B');
     await cacheWritten();
-    expect(await raw()).toEqual({ meta: undefined, rows: undefined, snapshot: undefined });
+    expect(await raw()).toEqual({});
   });
 });
 

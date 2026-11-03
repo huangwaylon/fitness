@@ -190,8 +190,12 @@ export function foodFold(ops: Iterable<FoodOpBy>): FoodEntry[] {
   for (const e of ops) if (foodAccept(m.get(e.id) ?? null, e) === 'append') m.set(e.id, e);
   const out: FoodEntry[] = [];
   for (const e of m.values()) if (!e.rm) out.push({ id: e.id, who: e.who, at: e.at, d: e.d, m: e.m, g: e.g, f: e.f });
-  return out.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : MEAL_ORDER[a.m] - MEAL_ORDER[b.m] || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)));
+  return out.sort(entryOrder);
 }
+
+/** foodFold's order of entries: by day, then meal, then id. */
+export const entryOrder = (a: FoodEntry, b: FoodEntry): number =>
+  a.d < b.d ? -1 : a.d > b.d ? 1 : MEAL_ORDER[a.m] - MEAL_ORDER[b.m] || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 
 /** The repeat a `food_repeat` op's end is followed by (`nx`, a repeat's id: the record refuses the op unless it holds
  *  that repeat, so a change is the new repeat and the old one's end, both or neither), or undefined. */

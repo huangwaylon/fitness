@@ -5,9 +5,11 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { foodOp } from '#lib/contract/food.ts';
 import { loadFoodDb } from './load.ts';
-import { credits, searchFoods, verifyOf, type FoodDb } from './db.ts';
+import { addDataset, credits, emptyDb, searchFoods, SLICE, verifyOf, type FoodDb } from './db.ts';
 import { portionsOf, toSnap } from './nutrition.ts';
-import type { Dataset, FoodIndex } from './types.ts';
+import type { Dataset, FoodIndex, Item } from './types.ts';
+import type { Entry } from './search.ts';
+import { searchKey } from './text.ts';
 
 const DIR = join(import.meta.dirname, '../../../static/food');
 const index = JSON.parse(readFileSync(join(DIR, 'index.json'), 'utf8')) as FoodIndex;
@@ -61,6 +63,73 @@ describe('loadFoodDb', () => {
     const mabo = searchFoods(db, 'マーボー豆腐', 3)[0];
     expect(mabo.id.startsWith('dishes:') || mabo.id.startsWith('eatout:') || mabo.id.startsWith('mext:')).toBe(true);
     expect(verifyOf(db, mabo.id)?.n).toBeGreaterThanOrEqual(2);
+  });
+
+  it('searches exactly as with keys built on load (the shipped `keys`, a product’s barcode from its id)', async () => {
+    const ref = emptyDb(index);
+    for (const d of index.datasets) {
+      const data = JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Dataset;
+      expect(data.items.every((it) => typeof it.keys === 'string')).toBe(true);
+      // the data as it was: no keys, every barcode
+      const items = data.items.map(({ keys: _k, ...it }) => (it.id.startsWith('off:') ? { ...it, jan: it.id.slice(4) } : it));
+      await addDataset(ref, d, { ...data, items });
+    }
+    ref.verify = db.verify;
+    // the same order as loadFoodDb's (datasets in the order they came): the same ties
+    const order = new Map(db.entries.map((e, i) => [e.it.id, i]));
+    ref.entries.sort((a, b) => order.get(a.it.id)! - order.get(b.it.id)!);
+    expect(ref.entries.map((e) => [e.n, e.al, e.h.replaceAll(' ', '|')])).toEqual(db.entries.map((e) => [e.n, e.al, e.h.replaceAll(' ', '|')]));
+    for (const q of ['ご', 'ごはん', 'と', 'とりむね', 'らーめん', 'パン', 'k', 'kara', 'カレー', 'コーヒー', '牛乳', 'ん', 'chicken', 'ごはん 大盛', '4901777', 'natto', 'ﾗｰﾒﾝ']) {
+      expect(searchFoods(db, q, 40).map((x) => x.id), q).toEqual(searchFoods(ref, q, 40).map((x) => x.id));
+    }
+    expect(searchFoods(db, '4902102', 5).length).toBeGreaterThan(0); // a barcode prefix still finds products
+  });
+
+  it('ranks a score at a time exactly as one sort of every hit did (search.ts before the top-n ranking)', () => {
+    const tierOf = (e: Entry, q: string): number =>
+      e.n === q ? 0 : e.n.startsWith(q) ? 1 : e.n.includes(q) ? 2 : e.al.includes(q) ? 3 : e.al.some((a) => a.startsWith(q)) ? 4 : e.al.some((a) => a.includes(q)) ? 5 : 6;
+    const groupOf = (id: string) => db.verify?.byId[id];
+    const sortAll = (query: string, limit: number): Item[] => {
+      const tokens = query.trim().split(/[\s　]+/).map(searchKey).filter(Boolean);
+      const q = tokens.join('');
+      const hits: { e: Entry; s: number }[] = [];
+      for (const e of db.entries) if (tokens.every((t) => e.h.includes(t))) hits.push({ e, s: tierOf(e, q) + e.pen - e.pop * 0.6 });
+      hits.sort((a, b) => a.s - b.s || b.e.pop - a.e.pop || a.e.n.length - b.e.n.length);
+      const rep = new Map<number, Entry>();
+      for (const { e } of hits) {
+        const g = groupOf(e.it.id);
+        if (g === undefined) continue;
+        const r = rep.get(g);
+        if (!r || (r.pen > 0 && e.pen <= 0)) rep.set(g, e);
+      }
+      const seen = new Set<string | number>();
+      const out: Item[] = [];
+      for (const h of hits) {
+        const g = groupOf(h.e.it.id);
+        const e = g === undefined ? h.e : rep.get(g)!;
+        const k = `${e.n}|${e.it.kcal}`;
+        if (seen.has(k) || (g !== undefined && seen.has(g))) continue;
+        seen.add(k);
+        if (g !== undefined) seen.add(g);
+        if (out.push(e.it) >= limit) break;
+      }
+      return out;
+    };
+    const kana = Array.from({ length: 0x3093 - 0x3041 + 1 }, (_, i) => String.fromCharCode(0x3041 + i));
+    for (const q of [...kana, ...'abcdefghijklmnopqrstuvwxyz', 'ごはん', 'とりむね', 'らーめん', 'カレー', '牛乳', '豆腐', 'ごはん 大盛', 'chicken', '49']) {
+      for (const limit of [5, 40, 60]) expect(searchFoods(db, q, limit).map((x) => x.id), q).toEqual(sortAll(q, limit).map((x) => x.id));
+    }
+  });
+
+  it('indexes a dataset a slice at a time, pausing in between', async () => {
+    const d = emptyDb(index);
+    const items = Array.from({ length: 2 * SLICE + 1 }, (_, i) => ({ id: `x:${i}`, name: `しょくひん${i}`, kcal: 1 }));
+    let pauses = 0;
+    await addDataset(d, index.datasets[0], { source: 'x', items }, async () => {
+      pauses++;
+      expect(d.entries.length).toBe(pauses * SLICE);
+    });
+    expect([pauses, d.entries.length]).toEqual([2, 2 * SLICE + 1]);
   });
 
   it('credits every dataset and the verify-only sources (USDA), each with its attribution', () => {

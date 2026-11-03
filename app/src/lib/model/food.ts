@@ -7,10 +7,12 @@
 // logs its own. Pure; the economy never imports this (deps.test.ts): a meal is worth no ベル.
 import type { LocalDate, Who } from '#lib/types.ts';
 import {
-  foodFold, foodRecipeFold, foodRepeatFold, MEALS, recipePortion, recipeTotals, repeatCovers, type FoodEntry, type FoodRecipe, type FoodRepeat, type Meal
+  entryOrder, foodAccept, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, MEALS, recipePortion, recipeTotals, repeatCovers,
+  type FoodEntry, type FoodOp, type FoodRecipe, type FoodRepeat, type Meal, type RecipeOp, type RepeatOp
 } from '#lib/contract/food.ts';
-import { isPersonId } from '#lib/contract/api.ts';
+import { isPersonId, isRec, type EventRow } from '#lib/contract/api.ts';
 import type { State } from './state.ts';
+import { rowAt } from './snapshot.ts';
 import { weighIns } from './weight.ts';
 import { addDays, daysBetween } from '#lib/time/dates.ts';
 import type { DaySeries } from './health.ts';
@@ -22,11 +24,96 @@ export interface FoodDay { entries: FoodEntry[]; kcal: number; p: number; fa: nu
 /** Protein to aim for per kg of body weight a day (g). */
 const PROTEIN_PER_KG = 1.6;
 
+const ops = new WeakMap<EventRow, object | null>();
+/**
+ * A raw row's op (state.ts keeps food rows unparsed), validated by `parse` as the record's (contract/food.ts) and
+ * with who sent it, or null (unreadable, invalid, or naming a `person`: reduce's rule). Memoised per row: rows are
+ * never mutated, and the same row objects come back in every State after a poll, so each row is parsed once.
+ */
+function opOf<T extends object>(row: EventRow, parse: (d: unknown) => T | null): (T & { who: Who }) | null {
+  let op = ops.get(row);
+  if (op === undefined) {
+    let d: unknown = null;
+    try {
+      d = row[4] === '' ? {} : JSON.parse(row[4]);
+    } catch { /* unreadable: ignored */ }
+    const v = isRec(d) && d.person === undefined ? parse(d) : null;
+    ops.set(row, (op = v && { ...v, who: row[1] }));
+  }
+  return op as (T & { who: Who }) | null;
+}
+/** Whether rows[from…] are in server `at` order after `prev` (the previous row's), every `at` readable. */
+function ordered(rows: readonly EventRow[], from: number, prev: number): boolean {
+  for (let i = from; i < rows.length; i++) {
+    const at = rowAt(rows[i]);
+    if (at === null || at < prev) return false;
+    prev = at;
+  }
+  return true;
+}
+/** A raw list in server `at` order (reduce's order for the other rows: stable, an unreadable `at` dropped). */
+const byAt = (rows: readonly EventRow[]): readonly EventRow[] => ordered(rows, 0, -Infinity) ? rows
+  : rows.map((r, i) => [r, rowAt(r), i] as const).filter((x) => x[1] !== null).sort((x, y) => x[1]! - y[1]! || x[2] - y[2]).map((x) => x[0]);
+/** A raw list's ops, in server `at` order. */
+function* opsOf<T extends object>(rows: readonly EventRow[], parse: (d: unknown) => T | null): Generator<T & { who: Who }> {
+  for (const r of byAt(rows)) {
+    const op = opOf(r, parse);
+    if (op) yield op;
+  }
+}
+
+type EntryOp = FoodOp & { who: Who };
+const live = (e: EntryOp): FoodEntry | null => (e.rm ? null : { id: e.id, who: e.who, at: e.at, d: e.d, m: e.m, g: e.g, f: e.f });
+/**
+ * The fold of a list the last lists began with (rows in `at` order): each entry's op the record keeps, and the
+ * entries. A poll appends rows to the same row objects, so the next list is folded from here, over its new rows only
+ * (`held` and `entries` are shared by every list read from it, never changed: a step past STEP rows starts a new one).
+ */
+let base: { rows: readonly EventRow[]; held: Map<string, EntryOp>; entries: FoodEntry[]; lastAt: number } | null = null;
+const STEP = 256;
+
 const memo = new WeakMap<State['food'], FoodEntry[]>();
-/** Every live entry, everyone's (foodFold's order: by day, meal, id). Memoised per list. */
+/** Every live entry, everyone's (foodFold's order: by day, meal, id). Memoised per list, folded from `base` when the
+ *  list extends its rows (only the new rows parsed and folded: a poll costs O(new rows) + one merge). */
 function entriesOf(s: Pick<State, 'food'>): FoodEntry[] {
-  let out = memo.get(s.food);
-  if (!out) memo.set(s.food, (out = foodFold(s.food)));
+  const rows = s.food;
+  let out = memo.get(rows);
+  if (out) return out;
+  const b = base;
+  let n = b ? b.rows.length : 0;
+  if (!b || rows.length < n || (n && rows[n - 1] !== b.rows[n - 1]) || !ordered(rows, n, b.lastAt) || b.rows.some((r, i) => rows[i] !== r)) {
+    // Not an extension of the base (another row set, or rows out of order): the whole fold (foodFold's), the new base.
+    const held = new Map<string, EntryOp>();
+    for (const e of opsOf<FoodOp>(rows, foodOp)) if (foodAccept(held.get(e.id) ?? null, e) === 'append') held.set(e.id, e);
+    out = [];
+    for (const e of held.values()) {
+      const x = live(e);
+      if (x) out.push(x);
+    }
+    out.sort(entryOrder);
+    if (ordered(rows, 0, -Infinity)) base = { rows, held, entries: out, lastAt: rows.length ? rowAt(rows[rows.length - 1])! : -Infinity };
+  } else {
+    // The new rows over the base's fold: the entries they change replaced, in order (a sorted run and a few: ~O(n)).
+    const changed = new Map<string, EntryOp>();
+    for (; n < rows.length; n++) {
+      const e = opOf<FoodOp>(rows[n], foodOp);
+      if (e && foodAccept(changed.get(e.id) ?? b.held.get(e.id) ?? null, e) === 'append') changed.set(e.id, e);
+    }
+    out = changed.size ? b.entries.filter((e) => !changed.has(e.id)) : b.entries;
+    if (changed.size) {
+      for (const e of changed.values()) {
+        const x = live(e);
+        if (x) out.push(x);
+      }
+      out.sort(entryOrder);
+    }
+    if (rows.length - b.rows.length >= STEP) {
+      const held = new Map(b.held);
+      for (const [id, e] of changed) held.set(id, e);
+      base = { rows, held, entries: out, lastAt: rowAt(rows[rows.length - 1])! };
+    }
+  }
+  memo.set(rows, out);
   return out;
 }
 
@@ -34,8 +121,41 @@ const repMemo = new WeakMap<State['foodRepeat'], FoodRepeat[]>();
 /** Every repeat, everyone's (foodRepeatFold's order: by first day, id). Memoised per list. */
 function repeatsOf(s: Pick<State, 'foodRepeat'>): FoodRepeat[] {
   let out = repMemo.get(s.foodRepeat);
-  if (!out) repMemo.set(s.foodRepeat, (out = foodRepeatFold(s.foodRepeat)));
+  if (!out) repMemo.set(s.foodRepeat, (out = foodRepeatFold(opsOf<RepeatOp>(s.foodRepeat, foodRepeatOp))));
   return out;
+}
+
+/** The meal log's raw event types whose ops compaction may drop, and how each op is read (as the record reads it:
+ *  contract/food.ts): those folded by foodAccept alone, the latest op per id. Not `food_repeat`: its fold
+ *  (repeatAccept) takes every op's skipped days, so an op it replaced still counts. */
+const PARSE: Partial<Record<EventRow[3], (d: unknown) => (object & { id: string; at: number; rm?: true }) | null>> = { food: foodOp, food_recipe: foodRecipeOp };
+
+/**
+ * For the client cache's compaction (model/compact.ts): the meal log's rows of `events` its fold no longer reads, an
+ * op of an entry or a recipe another op of the same id replaced (a polling phone gets every op; the record keeps the
+ * latest only) and an op the fold refuses (someone else's, a stale one, anything after a removal). What is left per id
+ * is the op the record keeps, a removal with the op it removed (final). Unreadable rows stay (the model skips them, as the other tabs').
+ */
+export function foldedAway(events: readonly EventRow[]): Set<EventRow> {
+  const lists = new Map<string, EventRow[]>();
+  for (const r of events) if (PARSE[r[3]]) (lists.get(r[3]) ?? lists.set(r[3], []).get(r[3])!).push(r);
+  const drop = new Set<EventRow>();
+  for (const [type, rows] of lists) {
+    const held = new Map<string, { op: { at: number; rm?: true; who: Who }; row: EventRow }>();
+    for (const row of byAt(rows)) {
+      const op = opOf(row, PARSE[type as EventRow[3]]!);
+      if (!op) continue;
+      const prev = held.get(op.id);
+      if (foodAccept(prev?.op ?? null, op) !== 'append') drop.add(row);
+      else {
+        // A removal keeps the op it removes: alone, the fold would read it as stale (a removal of nothing), and a
+        // later op of the id (queued here) could then set it again.
+        if (prev && !op.rm) drop.add(prev.row);
+        held.set(op.id, { op, row });
+      }
+    }
+  }
+  return drop;
 }
 
 /** `who`'s repeats the record keeps (not removed; ended ones too: they still fill their days), by first day. */
@@ -141,7 +261,7 @@ const recMemo = new WeakMap<State['foodRecipe'], Recipe[]>();
 export function recipes(s: Pick<State, 'foodRecipe'>): Recipe[] {
   let out = recMemo.get(s.foodRecipe);
   if (!out) {
-    out = foodRecipeFold(s.foodRecipe).map((r) => {
+    out = foodRecipeFold(opsOf<RecipeOp>(s.foodRecipe, foodRecipeOp)).map((r) => {
       const t = recipeTotals(r.it);
       const sums = (by: number, g: number): RecipeSums => {
         const n = (v: number | null) => (v === null ? null : round1(v / by));

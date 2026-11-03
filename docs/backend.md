@@ -161,12 +161,18 @@ non-2xx or non-JSON = `unavailable`).
 ### Snapshot cache
 
 `sync/cache.ts`: `{me, rows, since, rev, rowsAt, skewMs, fetchedAt}` in IndexedDB (database `island`; in memory if
-unavailable), as two records: `meta` (all but the rows, a few hundred bytes, written on every refresh) and `rows`
-(written only when the row set changed, in the same transaction). An app before 2026-11-02 kept one `snapshot` record
-(`v: 1`, rows inside, rewritten whole on every refresh: ~130 KB at two days of use); it is read once and moved to the
-two on the next save, which deletes it, so the update never refetches. A refresh posts `snapshot` with `since`, merges (`model/snapshot.ts`: deduped by natural key, ordered by
-`at`; an empty poll keeps the same rows object, so nothing re-reduces and no rows are written), records the server clock skew and saves in
-order. Overlapping refreshes share one request; a `fresh` caller waits for one more after any in flight. A reply that
+unavailable): a `meta` record (all but the rows, a few hundred bytes, written on every refresh) and the rows in
+**segments**, each tab's rows in order, 1,000 a record (`seg:<tab>:<key>`, listed in the meta). A save keeps the
+segments that still hold the same rows in the same place and writes the rest anew from the first change: on a poll
+only the last, partly filled segment (≤ ~300 KB of meal log rows, usually far less; it was every row, 4 MB at year 1
+and 13 MB at year 3 with the meal log, rewritten per change), after a compaction the segments from its first dropped
+row on. The meta and the segments it lists go in one transaction, so a reader sees one whole set; a listed segment
+missing reads as no cache (a full fetch), segments it doesn't list (another tab's) go on the next save. Older layouts
+are read once and moved on the next save, which clears them, so the update never refetches: `meta` v 2 + one `rows`
+record (2026-11-02 to 11-03) and the one `snapshot` record (`v: 1`, before). A refresh posts `snapshot` with `since`,
+merges (`model/snapshot.ts`: deduped by natural key, its key set kept with each row list and layered by each merge, so
+a poll costs the rows it brings; ordered by `at`; an empty poll keeps the same rows object, so nothing re-reduces and
+no rows are written), records the server clock skew and saves in order. Overlapping refreshes share one request; a `fresh` caller waits for one more after any in flight. A reply that
 lands after pairing again is dropped.
 
 ### Compaction
@@ -174,7 +180,10 @@ lands after pairing again is dropped.
 On each merge `model/compact.ts` drops `metrics` rows of locked weeks the model can no longer read: per (person, date,
 metric) it keeps the latest row at the lock and the latest overall; per person the newest row. Weight keeps the newest
 row per day. Views are unchanged; ~90% of rows go. A `tally` replaced by a later one of the same person and day goes
-too (the record no longer has it).
+too (the record no longer has it), and so does a `food` or `food_recipe` op the meal log's fold no longer reads
+(`model/food.ts foldedAway`: one replaced by a later op of the same id, or refused): per id the op the record keeps,
+a removal with the op it removed (alone the fold would read it as stale). ~20 % of the meal log's rows (edits) go.
+Every `food_repeat` op stays: its fold (`repeatAccept`) takes every op's skipped days.
 
 ### Write queue
 
@@ -198,6 +207,14 @@ one `events` request (≤ 50, in queue order, the holds and subjects below kept)
 `store/view.ts composeModel`: the cached rows plus acked and queued events, each stamped just after the newest server
 row on the server's clock, so read-time rules judge it as the server will. The store recomputes on every change and
 each minute (not while hidden: a missed minute recomputes once on return).
+
+**The meal log costs the island nothing.** `reduce` keeps `food`, `food_repeat` and `food_recipe` rows raw (`model/state.ts`
+RAW_EVENTS: unparsed, out of `ats`, one lookup a row), so a change's reduce is the same with or without them; only
+the food sheet reads them (`model/food.ts`): each row parsed and validated once (memoised per row object), the
+entries folded from the last fold when the rows extend it (a poll: its new rows and one merge). `npm run bench`
+(3 people × ~10 meals a day, every op a polling phone gets) at year 3, Node on an M5: poll + 1 row → view 3–4 ms with
+the meal log, 2–3 ms without (it was 85–100 ms); reduce + week view 3 ms (was 85–100); the sheet open first after a
+cold start ~55–65 ms (every row parsed once), then ~5 ms per poll; a cache write after a poll ~0.4 ms (was 19–28 ms).
 
 ### When it syncs
 
@@ -584,7 +601,9 @@ writes/day (unused). A generous day for two phones:
 Measured 2026-11-01 (a UTC day, test traffic included, before the record): Worker 1.8k requests, DO 9.9k (the
 smoke and latency runs), 3.7k rows written, 346 rows read, ~25 GB-s. Duration stays the binding limit and under a
 tenth of it even with the island's presence ten times busier; the export is the largest reader (a dump each time) and
-could send only the changed rows if it ever mattered. Storage: ~150 bytes a row, ~1 MB a year against 5 GB. Apps
+could send only the changed rows if it ever mattered. Storage: ~150 bytes a row, ~1 MB a year against 5 GB, plus the
+meal log: ~300 bytes a row, ~11k rows a year for three people at ~10 meals a day (~3 MB a year in a full snapshot,
+0.8 MB gzipped; on a phone ~4 MB a year of cache, written a segment at a time). Apps
 Script's side: ≤ 96 exports a day (web app requests, no trigger time, no UrlFetch).
 
 ## Notifications
@@ -609,7 +628,7 @@ before (an app build's `/push/*` call would then 404, which it also ignores).
   if it has none, so an old worker never stores a newer build's HTML.
 - **Notifications:** none (no `push` or `notificationclick` handler: [decisions](decisions.md#no-notifications-2026-11-02)).
 - **Runtime:** fonts, villager, critter, find and present art cache-first on first use; audio (`island-audio-v1`) cache-first with the 3 most
-  recent music files (the hours, event music, K.K.'s songs) kept; Range requests pass through. The food data (`/food/*.json`, `island-food-v1`) cache-first by its `?v=<index.version>`, older versions dropped; `index.json` network-first. Other GETs: this version's cache, the previous one, then the
+  recent music files (the hours, event music, K.K.'s songs) kept; Range requests pass through. The food data (`/food/*.json`, `island-food-v1`) cache-first by its `?v=<index.version>`, stored after it answers; `index.json` from the network within 2.5 s, else (or offline) its cached copy. A newer `index.json` waits beside the cached one until every file it names is cached; only then does it replace it and the older version's files go, so going offline mid-update leaves the last whole version, never a mix. Other GETs: this version's cache, the previous one, then the
   network. The Apps Script backend is cross-origin and always live.
 
 ## Tests

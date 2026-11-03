@@ -4,8 +4,12 @@
 // Usage (from app/): npm run food:data   [-- <data dir>, default ../../calories/app/data]
 // Checks: index.json lists only files that are there, and every dataset file there is listed (a stray or missing
 // file fails, nothing is copied). static/food/ is replaced whole, so a dropped dataset goes too.
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
+// Each item gets its search keys (`keys`: lib/food/search.ts keysOf), so the app builds none while the user types; a
+// product's barcode is then dropped when the id has it (`off:<jan>`: the app reads it from `keys` only).
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { keysOf } from '../src/lib/food/search.ts';
+import type { Dataset } from '../src/lib/food/types.ts';
 
 const APP = join(import.meta.dirname, '..');
 const SRC = resolve(APP, process.argv[2] ?? '../../calories/app/data');
@@ -30,16 +34,25 @@ const missing = [...files, ...SIDECARS].filter((f) => !existsSync(join(SRC, f)))
 if (missing.length) fail(`missing in ${SRC}: ${missing.join(', ')}`);
 const stray = readdirSync(SRC).filter((f) => f.endsWith('.json') && !files.includes(f) && !SIDECARS.includes(f));
 if (stray.length) fail(`not in index.json: ${stray.join(', ')}`);
+const data = new Map<string, Dataset>();
 for (const f of files) {
   const d = JSON.parse(readFileSync(join(SRC, f), 'utf8')) as { items?: unknown; label?: unknown };
   if (!Array.isArray(d.items) || typeof d.label !== 'string') fail(`${f} is not a dataset ({label, items, …})`);
+  data.set(f, d as Dataset);
 }
 
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 let bytes = 0;
-for (const f of [...SIDECARS, ...files]) {
-  copyFileSync(join(SRC, f), join(OUT, f));
-  bytes += statSync(join(OUT, f)).size;
+for (const f of SIDECARS) copyFileSync(join(SRC, f), join(OUT, f));
+for (const [f, d] of data) {
+  d.items = d.items.map((it) => {
+    const keys = keysOf(it);
+    if (keys.some((k) => k.includes(' '))) fail(`${f}: ${it.id}'s search keys hold a space`);
+    const { jan, ...rest } = it;
+    return { ...(jan !== undefined && it.id.endsWith(`:${jan}`) ? rest : it), keys: keys.join(' ') };
+  });
+  writeFileSync(join(OUT, f), JSON.stringify(d));
 }
+for (const f of [...SIDECARS, ...files]) bytes += statSync(join(OUT, f)).size;
 console.log(`food:data: ${files.length} datasets + ${SIDECARS.join(', ')} (${(bytes / 1e6).toFixed(1)} MB), version ${index.version}, from ${SRC}`);

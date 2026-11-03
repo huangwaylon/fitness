@@ -5,6 +5,8 @@ import { rangeFor, seriesBuckets, seriesStats } from './health.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { guestRows } from '#lib/contract/guest.ts';
 import type { EventRow, MetricRow } from '#lib/contract/api.ts';
+import { foodFold, foodOp } from '#lib/contract/food.ts';
+import { foodRows } from '../../../scripts/bench-rows.ts';
 
 const T = Date.parse('2026-11-03T03:00:00.000Z');
 const RICE = { id: 'mext:01088', n: 'ごはん', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0 };
@@ -42,6 +44,51 @@ describe('foodDay: a day’s meals and their totals', () => {
     const s = foldEvents(base, [ev('G', T + 1000, { id: 'fmeal010', at: T + 1000, rm: true }), set('G', 'fmeal011', T + 2000, { m: 's' })], null)!;
     expect(foodDay(s, 'G', '2026-11-03').entries.map((e) => e.id)).toEqual(['fmeal011']);
     expect(foodDay(base, 'G', '2026-11-03').entries.map((e) => e.id)).toEqual(['fmeal010']); // the base untouched
+  });
+});
+
+describe('the fold of raw rows: parsed when read, incremental as rows arrive', () => {
+  const rows = foodRows(40).filter((r) => r[3] === 'food');
+  /** The record's fold of exactly these rows, straight from contract/food.ts. */
+  const reference = (list: EventRow[]) => {
+    const ops = [...list].sort((x, y) => Date.parse(x[0]) - Date.parse(y[0])).flatMap((r) => {
+      const op = foodOp(JSON.parse(r[4]));
+      return op ? [{ ...op, who: r[1] }] : [];
+    });
+    return foodFold(ops);
+  };
+  const days = [0, 5, 20, 39].map((d) => addDays('2026-11-02', d));
+  const check = (s: ReturnType<typeof reduce>, list: EventRow[]) => {
+    const all = reference(list);
+    for (const who of ['A', 'B', 'G'] as const) {
+      expect(foodEntries(s, who)).toEqual(all.filter((e) => e.who === who).sort((a, b) => b.at - a.at));
+      for (const d of days) expect(foodDay(s, who, d).entries).toEqual(all.filter((e) => e.who === who && e.d === d));
+    }
+  };
+
+  it('gives the record’s fold through extensions (past a step), other row sets, rows out of order and queued ops', () => {
+    const lists = [
+      rows.slice(0, 300), rows.slice(0, 301), rows.slice(0, 310), rows.slice(0, 900), rows.slice(0, 901),
+      [...rows.slice(0, 450), ...rows.slice(451, 901)], // a row gone (compacted away): another row set
+      rows.slice(0, 902), [...rows.slice(0, 902)].reverse(), rows.slice(0, 1000), rows
+    ];
+    for (const list of lists) check(reduce({ metrics: [], events: list }), list);
+    // a queued edit and a removal on top, then the rows they became
+    const base = reduce({ metrics: [], events: rows.slice(0, 1000) });
+    const last = Date.parse(rows[999][0]);
+    const mine = foodEntries(base, 'A').slice(0, 2);
+    const queued = [
+      ev('A', last + 1, { id: mine[0].id, at: last + 1, d: mine[0].d, m: 'l', g: 1, f: RICE }),
+      ev('A', last + 2, { id: mine[1].id, at: last + 2, rm: true })
+    ];
+    check(foldEvents(base, queued, null)!, [...rows.slice(0, 1000), ...queued]);
+    check(reduce({ metrics: [], events: [...rows.slice(0, 1000), ...queued.map((r) => [...r] as EventRow)] }), [...rows.slice(0, 1000), ...queued]);
+  });
+
+  it('ignores what reduce would: an unreadable or invalid row, one naming a person', () => {
+    const s = reduce({ metrics: [], events: [set('A', 'fmeal030', T), ['x', 'A', 'e-x', 'food', '{}'], ev('A', T + 1, { id: 'fmeal031', at: T + 1, d: '2026-11-03', m: 'b', g: 1, f: RICE, person: 'A' }),
+      [new Date(T + 2).toISOString(), 'A', 'e-y', 'food', '{'], set('A', 'fmeal032', T + 3, { g: -1 })] });
+    expect(foodEntries(s, 'A').map((e) => e.id)).toEqual(['fmeal030']);
   });
 });
 

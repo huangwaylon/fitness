@@ -1,4 +1,5 @@
-// Cache compaction for `metrics` rows (and the day tallies a later one replaced, see latestTallies): with frequent (≈ hourly) Shortcut runs a day collects ~20 rows per person and metric,
+// Cache compaction for `metrics` rows (and the day tallies a later one replaced, see latestTallies; and the meal log's
+// replaced ops, see latestFood): with frequent (≈ hourly) Shortcut runs a day collects ~20 rows per person and metric,
 // but once its week has locked (Wednesday 04:00) the model only ever reads that day's value at a few fixed times.
 // Keeping the row that answers each of those times leaves the views unchanged and drops ~90% of the rows.
 //
@@ -11,6 +12,7 @@ import { DATE_RE, isActivityMetric, type EventRow, type MetricRow, type Snapshot
 import { weekKeyOf } from '#lib/time/dates.ts';
 import { finalMs } from './state.ts';
 import { rowAt } from './snapshot.ts';
+import { foldedAway } from './food.ts';
 
 /**
  * `rows` with the metrics of locked weeks (as of `now`) reduced to the rows the model can still read: per
@@ -46,9 +48,15 @@ export function compactRows(rows: SnapshotRows, now: number): SnapshotRows {
     latestBy(list, Infinity);
     if (isActivityMetric(list[0].row[3])) latestBy(list, finalMs(weekKeyOf(String(list[0].row[2]))));
   }
-  const events = latestTallies(rows.events);
+  const events = latestFood(latestTallies(rows.events));
   if (keep.size === rows.metrics.length && events === rows.events) return rows;
   return { ...rows, metrics: keep.size === rows.metrics.length ? rows.metrics : rows.metrics.filter((_, i) => keep.has(i)), events };
+}
+
+/** `events` without the meal log's ops its fold no longer reads (model/food.ts foldedAway): `events` itself when none. */
+function latestFood(events: EventRow[]): EventRow[] {
+  const drop = foldedAway(events);
+  return drop.size ? events.filter((r) => !drop.has(r)) : events;
 }
 
 /**

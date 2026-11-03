@@ -2,6 +2,7 @@
 import type { EventRow } from '#lib/contract/api.ts';
 import type { Who } from '#lib/types.ts';
 import { foldEvents, lastLockAt, reduce, type State } from '#lib/model/state.ts';
+import { eventIds } from '#lib/model/snapshot.ts';
 import type { QueuedEvent } from '#lib/sync/queue.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
 
@@ -57,14 +58,6 @@ let reduced: { rows: SnapshotCache['rows']; rev: string | null; state: State } |
 function reduceRows(rows: SnapshotCache['rows'], rev: string | null): State {
   if (reduced?.rows !== rows || reduced.rev !== rev) reduced = { rows, rev, state: reduce(rows, rev) };
   return reduced.state;
-}
-
-/** The event ids of a row set, kept with it (a WeakMap: a row set no longer cached takes its Set with it). */
-const idsOf = new WeakMap<SnapshotCache['rows']['events'], Set<string>>();
-function eventIds(rows: SnapshotCache['rows']): ReadonlySet<string> {
-  let ids = idsOf.get(rows.events);
-  if (!ids) idsOf.set(rows.events, (ids = new Set(rows.events.map((r) => String(r[2])))));
-  return ids;
 }
 
 /**

@@ -28,24 +28,70 @@ export function rowAt(r: readonly unknown[], keep = true): number | null {
 }
 const atMs = (r: readonly unknown[]): number => rowAt(r) ?? 0;
 
-const isSorted = (rows: readonly (readonly unknown[])[]): boolean => rows.every((r, i) => i === 0 || atMs(rows[i - 1]) <= atMs(r));
+/** Row lists known to be in `at` order (a merge's output): the next merge checks only what it appends. */
+const sortedLists = new WeakSet<readonly unknown[]>();
+const isSorted = (rows: readonly (readonly unknown[])[], from = 1): boolean => {
+  for (let i = Math.max(1, from); i < rows.length; i++) if (atMs(rows[i - 1]) > atMs(rows[i])) return false;
+  return true;
+};
+
+/**
+ * The natural keys of a row list, kept with it: a merge reuses its base's and adds its own new ones in a layer (a
+ * poll costs O(rows it brings), not a Set of every row), flattened every few layers. Lists are never mutated.
+ */
+class Keys {
+  private readonly below: Keys | null;
+  private readonly own: Set<string>;
+  readonly depth: number;
+  constructor(below: Keys | null, own: Set<string>) {
+    this.below = below;
+    this.own = own;
+    this.depth = below ? below.depth + 1 : 0;
+  }
+  has(k: string): boolean {
+    return this.own.has(k) || (this.below?.has(k) ?? false);
+  }
+  addAll(into: Set<string>): void {
+    this.below?.addAll(into);
+    for (const k of this.own) into.add(k);
+  }
+}
+const keysMemo = new WeakMap<readonly unknown[], Keys>();
+function keysOf<T extends readonly unknown[]>(rows: T[], key: (r: T) => string): Keys {
+  let k = keysMemo.get(rows);
+  if (!k) keysMemo.set(rows, (k = new Keys(null, new Set(rows.map(key)))));
+  return k;
+}
+
+/** The event ids of a row set (`has` only), kept with its events list. */
+export const eventIds = (rows: SnapshotRows): { has(id: string): boolean } => keysOf(rows.events, KEYS.events);
 
 function mergeTab<T extends readonly unknown[]>(base: T[], add: T[] | undefined, key: (r: T) => string): T[] {
   if (!add?.length) return base;
-  const seen = new Set(base.map(key));
+  const seen = keysOf(base, key);
+  const added = new Set<string>();
   const out = [...base];
   for (const r of add) {
     const k = key(r);
-    if (seen.has(k)) continue;
-    seen.add(k);
+    if (added.has(k) || seen.has(k)) continue;
+    added.add(k);
     out.push(r);
   }
   // nothing new (a reply that repeats rows: the record's late rows, the own rows already merged): the same rows
   if (out.length === base.length) return base;
+  let keys = new Keys(seen, added);
+  if (keys.depth > 8) {
+    const all = new Set<string>();
+    keys.addAll(all);
+    keys = new Keys(null, all);
+  }
   // The usual poll only adds newer rows to sorted ones: nothing to sort (same result as the stable sort below).
-  if (isSorted(out)) return out;
-  // Stable: rows keep append order within the same timestamp.
-  return out.map((r, i) => [r, i] as const).sort((x, y) => atMs(x[0]) - atMs(y[0]) || x[1] - y[1]).map(([r]) => r);
+  const merged = isSorted(out, sortedLists.has(base) ? base.length : 1) ? out
+    // Stable: rows keep append order within the same timestamp.
+    : out.map((r, i) => [r, i] as const).sort((x, y) => atMs(x[0]) - atMs(y[0]) || x[1] - y[1]).map(([r]) => r);
+  sortedLists.add(merged);
+  keysMemo.set(merged, keys);
+  return merged;
 }
 
 /**

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { AUDIO_CACHE, isAudio, isFoodData, isMusic, keepShell, lruEvict, olderShells, precachable, staleCaches, staleFood } from './caches.ts';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { AUDIO_CACHE, foodFetch, isAudio, isFoodData, isMusic, keepShell, lruEvict, olderShells, precachable, staleCaches, staleFood } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -110,5 +110,102 @@ describe('food data cache', () => {
     const f = (file: string, v?: string) => `https://x.example/fitness/food/${file}${v ? `?v=${v}` : ''}`;
     expect(staleFood([f('index.json'), f('foods.json', 'aaa'), f('products.json', 'aaa'), f('foods.json', 'bbb')], 'bbb')).toEqual([f('foods.json', 'aaa'), f('products.json', 'aaa')]);
     expect(staleFood([f('index.json'), f('foods.json', 'bbb')], 'bbb')).toEqual([]);
+  });
+});
+
+describe('food data fetches (foodFetch)', () => {
+  const BASE = 'https://x.example/fitness/food/';
+  const index = (v: string) => JSON.stringify({ version: v, datasets: [{ file: 'foods.json' }, { file: 'products.json' }] });
+  const files = (v: string) => ['foods.json', 'products.json', 'verify.json'].map((f) => `${BASE}${f}?v=${v}`);
+  /** A Cache in memory (keys in insertion order, as CacheStorage's). */
+  class MemCache {
+    m = new Map<string, string>();
+    key = (r: Request | string) => (typeof r === 'string' ? r : r.url);
+    async match(r: Request | string) { const b = this.m.get(this.key(r)); return b === undefined ? undefined : new Response(b); }
+    async put(r: Request | string, res: Response) { this.m.set(this.key(r), await res.text()); }
+    async delete(r: Request | string) { return this.m.delete(this.key(r)); }
+    async keys() { return [...this.m.keys()].map((k) => new Request(k)); }
+  }
+  let cache: MemCache;
+  let bg: Promise<unknown>[];
+  /** The network: each URL's body, `slow` ms late; `offline` fails every request. */
+  let served: Record<string, string>;
+  let slow: number;
+  let offline: boolean;
+  const net = async (r: Request) => {
+    if (offline) throw new TypeError('offline');
+    await new Promise((ok) => setTimeout(ok, slow));
+    const b = served[r.url];
+    return b === undefined ? new Response('', { status: 404 }) : new Response(b);
+  };
+  const get = async (url: string) => {
+    const res = await foodFetch(new Request(url), cache as unknown as Cache, net, (p) => bg.push(p), 40);
+    return res.type === 'error' ? null : await res.text();
+  };
+  const settled = async () => { while (bg.length) await bg.shift(); };
+  const serve = (v: string) => {
+    served = { [`${BASE}index.json`]: index(v) };
+    for (const f of files(v)) served[f] = `${f}-body`;
+  };
+  beforeEach(() => {
+    cache = new MemCache();
+    bg = [];
+    slow = 0;
+    offline = false;
+    serve('aaa');
+  });
+  const loadAll = async (v: string) => {
+    expect(await get(`${BASE}index.json`)).toBe(index(v));
+    for (const f of files(v)) expect(await get(f)).toBe(`${f}-body`);
+    await settled();
+  };
+
+  it('index.json from the network; offline or slower than the timeout, its cached copy at once', async () => {
+    await loadAll('aaa');
+    offline = true;
+    expect(await get(`${BASE}index.json`)).toBe(index('aaa'));
+    offline = false;
+    slow = 500;
+    serve('bbb');
+    const t0 = Date.now();
+    expect(await get(`${BASE}index.json`)).toBe(index('aaa')); // the cached copy, not the 500 ms one
+    expect(Date.now() - t0).toBeLessThan(300);
+    for (const f of files('aaa')) expect(await get(f)).toBe(`${f}-body`); // its files, all cached
+    await settled(); // the late answer stored, for when its files come
+  });
+
+  it('index.json with nothing cached waits for the network however slow', async () => {
+    slow = 100;
+    expect(await get(`${BASE}index.json`)).toBe(index('aaa'));
+    offline = true;
+    expect(await get(`${BASE}foods.json?v=aaa`)).toBeNull();
+  });
+
+  it('a new version replaces the old only once every file it names is cached: cut off midway, the old stays whole', async () => {
+    await loadAll('aaa');
+    serve('bbb');
+    expect(await get(`${BASE}index.json`)).toBe(index('bbb'));
+    expect(await get(files('bbb')[0])).toBe(`${files('bbb')[0]}-body`);
+    await settled();
+    // offline midway: the cached index still names aaa, and every aaa file is there
+    offline = true;
+    expect(await get(`${BASE}index.json`)).toBe(index('aaa'));
+    for (const f of files('aaa')) expect(await get(f)).toBe(`${f}-body`);
+    // back online, the rest of bbb: now bbb is the cached one and aaa goes
+    offline = false;
+    expect(await get(`${BASE}index.json`)).toBe(index('bbb'));
+    for (const f of files('bbb')) await get(f);
+    await settled();
+    expect([...cache.m.keys()].sort()).toEqual([`${BASE}index.json`, ...files('bbb')].sort());
+    offline = true;
+    expect(await get(`${BASE}index.json`)).toBe(index('bbb'));
+  });
+
+  it('never stores a failed answer', async () => {
+    served = {};
+    expect(await get(`${BASE}foods.json?v=aaa`)).toBe('');
+    expect(await get(`${BASE}index.json`)).toBe('');
+    await settled();
+    expect(cache.m.size).toBe(0);
   });
 });
