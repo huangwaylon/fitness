@@ -194,7 +194,8 @@ put('goal-A', 'goal-tree', GOAL_TREES.A[0], GOAL_TREES.A[1], { s: 'a' });
 put('goal-B', 'goal-tree', GOAL_TREES.B[0], GOAL_TREES.B[1], { s: 'b' });
 const SLOT: Record<string, string> = { 'bench-mae': 'park-bench', 'bench-pond': 'log-bench', hammock: 'hammock', 'rod-stand': 'rod-stand', pump: 'pump', shishi: 'shishiodoshi', pullup: 'pullup', firewood: 'firewood', 'beach-chair': 'beach-chair', sandcastle: 'sandcastle', snowboy: 'snowboy' };
 for (const d of DECOR_SLOTS) put(d.id, SLOT[d.id], d.x, d.z);
-put('tape-deck', 'tape-deck', TAPE_DECK[0], TAPE_DECK[1]);
+// (the path's tile is the walk's: beside it and a row back, where the villagers at home stand clear of it on screen)
+put('tape-deck', 'tape-deck', TAPE_DECK[0] - 30, TAPE_DECK[1] + 30);
 // NH's bulletin board (docs/board.md): by the lawn's front edge near the path, facing the sea-side camera
 put('board', 'board', 150, 105, { exact: true });
 put('rock', 'rock', ROCK[0], ROCK[1]);

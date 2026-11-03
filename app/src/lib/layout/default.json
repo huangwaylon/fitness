@@ -116,7 +116,7 @@
     {"id":"shishi","k":"shishiodoshi","x":12,"z":41,"f":0},
     {"id":"pullup","k":"pullup","x":14,"z":47,"f":0},
     {"id":"firewood","k":"firewood","x":9,"z":48,"f":0},
-    {"id":"tape-deck","k":"tape-deck","x":8,"z":12,"f":0},
+    {"id":"tape-deck","k":"tape-deck","x":8,"z":14,"f":0},
     {"id":"board","k":"board","x":7,"z":6,"f":0},
     {"id":"rock","k":"rock","x":6,"z":18,"f":0},
     {"id":"bridge","k":"bridge","x":9,"z":23,"f":0,"s":"stone"},

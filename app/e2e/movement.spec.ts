@@ -3,6 +3,7 @@
 // wanders between points of interest with footsteps under it. Neither ends up over a control, mine stays a
 // thumb-sized button while it walks, and a sheet stops them where they are.
 import { expect, test, type Page } from '@playwright/test';
+import { openNear } from './island.ts';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
 async function open(page: Page, q = '') {
@@ -68,7 +69,9 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
 test('a tap on the ground walks there, never over a control, a thumb-sized button on the way; a second tap re-targets the walk from where the villager is', async ({ page }) => {
   await open(page);
   const home = await feet(page);
-  const a = await at(page, 210, 290), b = await at(page, 175, 185);
+  // (open ground there a tap walks to, nothing over it on this screen)
+  const pa = await openNear(page, 210, 290, 45, true), pb = await openNear(page, 175, 185, 45, true);
+  const a = await at(page, ...pa), b = await at(page, ...pb);
   await page.mouse.click(a[0], a[1]);
   await expect(page.locator('[data-actor="mine"].walking')).toBeAttached();
   const btn = await page.locator('[data-actor="mine"] .vil').boundingBox();

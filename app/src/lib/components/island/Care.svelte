@@ -185,6 +185,8 @@
     <span bind:this={rockEl}><OfficialArt key={findArt('rock')} size={su(ROCK.h)} /></span>
   </span>
 </div>
+<!-- (the day's weeds and where, wherever they are: the e2e's) -->
+<i hidden data-weeds={weeds.length} data-at={weeds.map((d) => `${d.x},${d.y}`).join(' ')}></i>
 {#each shown as d (d.uid)}
   <div class="node" aria-hidden="true" {@attach w.at({ x: d.x, z: d.y, h: 14, m3: { key: `finds/weed-${theme.season === 'autumn' ? 'fall' : theme.season}`, yaw: d.flip ? Math.PI : 0 } })}>
     <span class="item weed" data-m3art class:flip={d.flip} class:sprout={sprouts(d.uid)} data-care="weed" data-uid={d.uid}><i class="shade"></i>{@render tuft()}</span>
