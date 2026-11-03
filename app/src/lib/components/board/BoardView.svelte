@@ -266,7 +266,7 @@
   .bv {
     /* the island's HUD (the jar and the health button) ends at its lip (+page.svelte --hud-bottom: the view lives
        on <body>, so it's worked out here from the same tokens); 「もどる」 sits under it, never over it */
-    --hud-end: calc(var(--hud-top, calc(env(safe-area-inset-top, 0px) + 10px)) + var(--hit, 44px) + var(--lip-h, 4px));
+    --hud-end: calc(var(--hud-top, calc(var(--ui-top, env(safe-area-inset-top, 0px)) + 10px)) + var(--hit, 44px) + var(--lip-h, 4px));
     --back-top: calc(var(--hud-end) + 10px);
     /* top and height: the visible part of the screen (inline, from visualViewport) */
     position: fixed; left: 0; right: 0; top: 0; height: 100%; z-index: 1000; display: flex; flex-direction: column; font-family: var(--font-ui); color: #5A4632;
@@ -278,7 +278,7 @@
   @keyframes bv-in { from { opacity: 0; } }
   /* the room between 「もどる」 (writing: the safe area) and the controls; the frame as big as fits in it (its 12px border) */
   .stage { flex: 1; min-height: 0; display: grid; place-items: center; padding: calc(var(--back-top) + 52px) 12px 8px; box-sizing: border-box; container-type: size; }
-  .bv.writing .stage { padding-top: calc(env(safe-area-inset-top, 0px) + 8px); }
+  .bv.writing .stage { padding-top: calc(var(--ui-top, env(safe-area-inset-top, 0px)) + 8px); }
   .frame {
     /* both sides set (no aspect-ratio: WebKit let the canvas inside stretch it past a short stage) */
     --fw: min(calc(100cqw - 24px), 560px, calc((100cqh - 24px) * var(--ratio))); width: var(--fw); height: calc(var(--fw) / var(--ratio)); min-height: 0;

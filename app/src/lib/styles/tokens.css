@@ -64,6 +64,10 @@
 
   /* ---------- platform + layout ---------- */
   --safe-top: env(safe-area-inset-top, 0px);
+  /* The top controls' own edge (the HUD, a sheet's head, a room's buttons): under the safe area, and in the Home Screen
+     app a little further, clear of iOS 27's frosted band under the status bar (WebKit 329103: it runs past the safe
+     area and no page setting turns it off; the user: "it's covering the top level icons a bit") */
+  --ui-top: var(--safe-top);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
@@ -79,7 +83,7 @@
   /* The island's HUD row (Hud.svelte: the jar, the dumbbell): as high as the safe area lets it (under the status bar or the Dynamic Island in
      the Home Screen app, under Safari's top bar in the browser), all in the sky, well over the horizon (world.ts SKY,
      21% down). The island page sets --hud-bottom (its lip) from it; the banners on 島 go under it. */
-  --hud-top: calc(var(--safe-top) + 10px);
+  --hud-top: calc(var(--ui-top) + 10px);
   /* A list row that holds an edged 44px object (✎, とりけす): 3px clear above it and under its 4px lip */
   --row-obj: calc(var(--hit) + var(--lip-h) + 6px);
 
@@ -341,3 +345,7 @@
   90.9% { transform: none; opacity: 1; } 100% { transform: scale(.8); opacity: 0; }
 }
 @keyframes if-twinkle { 0%,100% { transform: scale(.2); opacity: 0; } 50% { transform: none; opacity: 1; } }
+
+@media (display-mode: standalone) {
+  :root { --ui-top: calc(var(--safe-top) + 16px); }
+}
