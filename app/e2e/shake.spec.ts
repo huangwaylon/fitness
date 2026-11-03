@@ -9,6 +9,7 @@ import { is3d, quiet } from './island.ts';
 import { swollenEye, type HeadBox } from '../src/lib/villagers/heads.ts';
 import { LOOKS_RIGHT } from '../src/lib/villagers/facing.ts';
 import { ROSTER, type RosterId } from '../src/lib/villagers/roster.ts';
+import { fromMenu } from './hud.ts';
 
 const HEADS = JSON.parse(readFileSync(new URL('../src/lib/villagers/heads.json', import.meta.url), 'utf8')) as Record<string, HeadBox>;
 
@@ -138,8 +139,7 @@ test('the swollen eye sits on the eye whatever the face: tall ears, wide heads, 
   await expect(page.locator('[data-actor="mine"] [data-swollen]')).toHaveCount(1, { timeout: 4000 });
   // my villager changes while the eye is still swollen (60 s): it moves to each render's eye
   const sheet = page.locator('dialog[open]');
-  await hudJar(page).click();
-  await sheet.locator('.tab[data-tab=settings]').click();
+  await fromMenu(page, 'settings');
   await sheet.locator('[data-push=villager]').click();
   const search = sheet.getByRole('searchbox');
   for (const id of ['raymond', 'ankha', 'dotty', 'tucker', 'blathers', 'tank', 'kk-slider', 'tom-nook', 'wisp', 'agent-s', 'daisy-mae', 'bunnie', 'hamlet', 'gulliver'] as const) {

@@ -3,6 +3,7 @@
 // NH's bridges and stairs stood on it (engine.ts placeGroup), the camera's far end at ウェイ's door; the もようがえ is
 // the layout's own (layoutEdit/IslandEdit.svelte over this camera), a bench put down is drawn where it went.
 import { expect, test, type Page } from '@playwright/test';
+import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -37,8 +38,7 @@ test('on its layout: the layout\'s ground, the homes and the structures placed, 
 
 test('the もようがえ on the layout is IslandEdit over the 3D island: a bench from the tray is put down and drawn there', async ({ page }) => {
   await open(page);
-  await page.getByRole('button', { name: /^ごほうび · ふたりのベル / }).click();
-  await page.locator('[data-tab="settings"]').click();
+  await fromMenu(page, 'settings');
   await page.locator('[data-decor-start]').click();
   await expect(page.locator('[data-island-edit]')).toBeVisible();
   // (not the decorations' mode)

@@ -8,6 +8,7 @@ import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { FISH } from '../src/lib/components/island/critters.ts';
 import { POND_FISH, freshPool } from '../src/lib/components/island/pondFish.ts';
 import { geo, reelOnBite, type Geo } from './island';
+import { fromMenu } from './hud.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
 const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
@@ -135,8 +136,7 @@ test('the ずかん lists every fish, the fresh waters’ and the sea’s, in NH
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('?demo&date=2026-11-04T21:00');
   await expect(hudJar(page)).toBeVisible();
-  await hudJar(page).click();
-  await page.locator('dialog[open] .tab[data-tab=kiroku]').click();
+  await fromMenu(page, 'zukan');
   const total = Object.keys(FISH).length + Object.keys(POND_FISH).length;
   await expect(page.locator('[data-zukan="fish"]')).toContainText(`0 / ${total}`);
   await page.locator('[data-zukan="fish"]').click();

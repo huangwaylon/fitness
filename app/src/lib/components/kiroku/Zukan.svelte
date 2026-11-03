@@ -95,7 +95,7 @@
 </script>
 
 <!-- The page fills the level: the head holds still while the grid scrolls in its own scroller under it (as the むらびと
-     picker; the panel body holds still on this level, IslandPanel's .fill). -->
+     picker; the sheet's body holds still on this level, ZukanSheet's .fill). -->
 <div class="zpage">
   <div class="zpin">
     <section class="card zhead" data-zukan-head>

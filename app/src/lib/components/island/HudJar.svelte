@@ -1,9 +1,9 @@
 <script lang="ts">
-  // The jar in the HUD's top-left corner (docs/design.md "Island"): our jar drawing (Jar.svelte) standing in the sky
+  // The jar in the middle of the HUD's top-right cluster (docs/design.md "Island"): our jar drawing (Jar.svelte) standing in the sky
   // with the shared wallet's ベル written inside the glass (ごほうび's balance; 1.2k from 1,000 on), the island's one
   // doorway to the panel (on ごほうび, where today's +N is shown in full). The goals' coins fly into it (HudCoins): its
   // number holds while they are in the air and counts up as each lands, the jar squashing, and today's +N flashes
-  // beside it (a yuzu bubble that fades: earnings only, never a とりけす's refund). Its label says the balance and
+  // under it (a yuzu bubble that fades: earnings only, never a とりけす's refund). Its label says the balance and
   // today's ベル. View-only for the guest too (its ごほうび is). Tap: a press squash, the villagers glance up at it
   // (R18), then the panel on ごほうび.
   //   <HudJar bells={view.wallet.balance} today={view.wallet.today} onopen={() => …} {later} />
@@ -13,7 +13,7 @@
   import Jar from './Jar.svelte';
   import { coinsInFlight } from './HudCoins.svelte';
   import { walletFill } from '../wallet/fill.ts';
-  import { hudGlance, react } from '../motion/director.svelte.ts';
+  import { react } from '../motion/director.svelte.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
 
   interface Props {
@@ -40,7 +40,7 @@
     // after this flush: HudCoins' effect for the same sync has set what flies by then
     void tick().then(() => {
       const f = coinsInFlight.bells;
-      // coins landing (less in the air than at the last look): today's ベル so far beside the jar (a refund raises the
+      // coins landing (less in the air than at the last look): today's ベル so far under the jar (a refund raises the
       // wallet with nothing in flight: no flash)
       if (f < flying) showFlash(Math.max(0, today - f));
       flying = f;
@@ -53,7 +53,7 @@
 
   /** What was in the air at the last look (a rise after that is coins landing). */
   let flying = 0;
-  /** Today's +N beside the jar as coins land: today's ベル so far (counting up with them), held a moment, then gone
+  /** Today's +N under the jar as coins land: today's ベル so far (counting up with them), held a moment, then gone
    *  (aria-hidden: the label says it). */
   let flash = $state<{ n: number; k: number } | null>(null);
   let flashK = 0;
@@ -75,7 +75,7 @@
   let pressed = $state(false);
   function tap() {
     pressed = false;
-    hudGlance.side = 'l'; // the villagers glance up to the left, at it
+    // the villagers glance up to the right, at it
     react('R18');
     later(() => onopen?.(), 90);
   }
@@ -92,7 +92,7 @@
 </button>
 
 <style>
-  /* A 44px target as wide as the health button in the other corner (--hud-side); the jar drawn a little taller than
+  /* A 44px target as wide as the health button beside it (--hud-side); the jar drawn a little taller than
      the row, lid over its top, the glass's foot under it. */
   .hud-jar {
     --jar-w: clamp(50px, calc(6.2 * var(--vh1)), 56px);
@@ -121,10 +121,10 @@
     color: var(--c-ink); -webkit-text-stroke: 3.5px var(--c-cream); paint-order: stroke fill;
   }
   .num.long { font-size: calc(var(--jar-w) * .29); letter-spacing: 0; }
-  /* today's +N as coins land: a small yuzu bubble just right of the glass (towards the sky's middle), popping in,
-     rising a little, fading */
+  /* today's +N as coins land: a small yuzu bubble just under the glass's foot (the jar has the menu and the
+     dumbbell either side), popping in, rising a little towards the jar, fading */
   .flash {
-    position: absolute; left: calc(50% + var(--jar-w) / 2 - 2px); top: 4px; z-index: 1; pointer-events: none;
+    position: absolute; left: 50%; top: calc(100% + 14px); translate: -50% 0; z-index: 1; pointer-events: none;
     padding: 3px 8px 2px; border-radius: var(--r-pill); white-space: nowrap;
     background: var(--c-yuzu); color: var(--c-ink); box-shadow: 0 2px 0 var(--c-yuzu-lip);
     font: 700 var(--fs-s)/1.1 var(--font-num); font-variant-numeric: tabular-nums;

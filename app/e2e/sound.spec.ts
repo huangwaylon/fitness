@@ -2,6 +2,7 @@
 // media element and AudioContext.
 import { expect, test, type Page } from '@playwright/test';
 import { quiet } from './island.ts';
+import { fromMenu } from './hud.ts';
 
 type Play = { music: boolean; gesture: boolean; ok: boolean };
 type Probe = { plays: Play[]; decks: HTMLMediaElement[]; contexts: number; music: Set<string> };
@@ -113,8 +114,7 @@ test('sound off: no AudioContext, no media element, however much is tapped', asy
   await expect(page.locator('.if-scene .stage')).toBeVisible();
   const { x, y } = await sea(page);
   await page.touchscreen.tap(x, y);
-  await page.getByRole('button', { name: /^ごほうび · ふたりのベル / }).click();
-  await page.locator('.tab[data-tab=settings]').click();
+  await fromMenu(page, 'settings', 'tap');
   await page.locator('[data-push=help]').click();
   await page.locator('.titlebar .back').click();
   await page.locator('.titlebar .close').click();
@@ -201,8 +201,23 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('ごほうび', 'やめる (buy confirm)', () => btn('やめる', dlg).tap(), ['back']);
   await expect(dlg).toHaveCount(1); // the panel stays
 
-  await step('パネル', 'せってい tab', () => dlg.locator('.tab[data-tab=settings]').tap(), ['tick']);
-  await step('パネル', 'せってい tab again', () => dlg.locator('.tab[data-tab=settings]').tap(), []);
+  await step('パネル', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['panel-close']);
+  await expect(dlg).toHaveCount(0);
+  await page.waitForTimeout(400);
+
+  // the HUD menu (NH's leaf): ずかん and せってい drop out of it; each pill: the villagers glance up, then its sheet
+  const leaf = page.locator('[data-hud-menu]');
+  await step('島', 'menu (unfold)', () => leaf.tap(), ['toggle-on']);
+  await step('島', 'menu (fold)', () => leaf.tap(), ['toggle-off']);
+  await step('島', 'menu (unfold) again', () => leaf.tap(), ['toggle-on']);
+  await step('島', 'ずかん (→ the sheet)', () => page.locator('[data-hud-zukan]').tap(), ['jar-tap', 'panel-open']);
+  await step('ずかん', 'a kind', () => dlg.locator('[data-zukan="shell"]').tap(), ['page']);
+  await step('ずかん', 'back (‹)', () => dlg.locator('.titlebar .back').tap(), ['back']);
+  await step('ずかん', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['panel-close']);
+  await expect(dlg).toHaveCount(0);
+  await page.waitForTimeout(400);
+  await step('島', 'menu (unfold)', () => leaf.tap(), ['toggle-on']);
+  await step('島', 'せってい (→ the sheet)', () => page.locator('[data-hud-settings]').tap(), ['jar-tap', 'panel-open']);
   await step('むらびと', 'かえる', () => dlg.locator('[data-push=villager]').tap(), ['page']);
   await step('むらびと', 'search field', () => dlg.getByRole('searchbox').tap(), []);
   await step('むらびと', 'pick a villager', () => dlg.locator('.rv[aria-checked="false"]').first().tap(), ['tick']);
@@ -213,7 +228,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('つうしん', 'いま つうしん while syncing (aria-disabled)', () => dlg.locator('.prows .btn[aria-disabled="true"]').tap({ force: true, timeout: 300 }).catch(() => {}));
   await step('あそびかた', 'くわしく', () => dlg.locator('[data-push=help]').tap(), ['page']);
   await step('あそびかた', 'back (‹)', () => dlg.locator('.titlebar .back').tap(), ['back']);
-  await step('パネル', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['panel-close']);
+  await step('せってい', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['panel-close']);
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);
 

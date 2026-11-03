@@ -1,45 +1,31 @@
 <script module lang="ts">
-  export type Tab = 'kiroku' | 'rewards' | 'settings';
+  export type Tab = 'kiroku' | 'rewards';
 </script>
 
 <script lang="ts">
-  import { ui } from '#lib/ui-state/ui.svelte.ts';
-  // The island panel: tap the HUD's jar → it slides down from the top with everything that isn't on the island
-  // itself, in three tabs pinned under the title bar (design.md "Panel"): きろく (the ベル ledger, the ずかん),
-  // ごほうび (the wallet: the jar, today's ベル, the shop, the buys; the panel opens on it) and せってい (むらびと, サウンド, ことば,
-  // つうしん, あそびかた). A few things push a level with ‹ in the title bar (a week, a day, the villager picker,
-  // the full guide); ✕, the backdrop and Esc close it. けんこう is the HUD's dumbbell's popup, and per-fruit detail
-  // lives in the tree popups (one home per datum). The goals live in けんこう, under its charts.
-  import { tick } from 'svelte';
+  // The island panel: tap the HUD's jar → it slides down from the top with the ベル, in two tabs pinned under the
+  // title bar (design.md "Panel"): きろく (the ベル ledger) and ごほうび (the wallet: the jar, today's ベル, the shop, the
+  // buys; the panel opens on it). A week or a day push a level with ‹ in the title bar; ✕, the backdrop and Esc close
+  // it. けんこう is the HUD's dumbbell's popup (the goals under its charts), the ずかん and せってい the HUD menu's
+  // (HudMenu), and per-fruit detail lives in the tree popups (one home per datum).
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
-  import Avatar from '../characters/Avatar.svelte';
   import Kiroku from '../kiroku/Kiroku.svelte';
   import Wallet from '../wallet/Wallet.svelte';
-  import VillagerPicker from './VillagerPicker.svelte';
-  import HelpGuide from './HelpGuide.svelte';
-  import SoundSection from './SoundSection.svelte';
-  import LangSection from './LangSection.svelte';
-  import SyncSection from './SyncSection.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
-  import { resolveLook } from '#lib/villagers/look.ts';
-  import { ROSTER } from '#lib/villagers/roster.ts';
-  import { i18n, t } from '#lib/i18n/index.ts';
+  import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { isGuest, mine } from '#lib/ui-state/viewer.ts';
+  import { mine } from '#lib/ui-state/viewer.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
   /** The tab every opening shows: ごほうび, the jar's (from the HUD's jar or the old /jar link). */
   const START: Tab = 'rewards';
 
-  /** A level of the panel's own (きろく keeps its own levels: a day, a ずかん kind). */
-  let push = $state<'villager' | 'help' | null>(null);
   let kiroku: { back: () => boolean } | undefined = $state();
-  /** How deep きろく is (0 = its first screen): the other sections show only at the very top. */
+  /** How deep きろく is (0 = its first screen): the tabs show only at the very top. */
   let kirokuLevel = $state(0);
   let body: HTMLElement | undefined = $state();
-  let savedTop = 0;
   /** Every opening starts on ごほうび: closing resets it, opening sets it again. */
   let tab = $state<Tab>(START);
   function pick(to: Tab) {
@@ -49,39 +35,19 @@
   }
 
   const view = $derived(week.view);
-  const deep = $derived(push !== null || kirokuLevel > 0);
-  const title = $derived(push ? t(`panel.${push}`) : t('panel.title'));
-  /** This phone's villager (the guest's own on the guest's phone). */
+  const deep = $derived(kirokuLevel > 0);
+  /** This phone's person (the guest's own on the guest's phone). */
   const me = $derived(view ? mine(view) : null);
-  const myLook = $derived(me ? resolveLook({ villager: me.villager, person: me.who }).id : null);
-  /** The guest's phone (docs/design.md "The guest"): no もようがえ, no つうしん. */
-  const guest = $derived(isGuest(view));
 
-  async function go(to: 'villager' | 'help') {
-    savedTop = body?.scrollTop ?? 0;
-    push = to;
-    await tick();
-    body?.scrollTo({ top: 0 });
-  }
-
-  /** ‹: one level up (a pushed screen of the panel, else きろく's own), then focus back where it came from. */
-  async function back() {
+  /** ‹: one level up in きろく. */
+  function back() {
     cue('back');
-    if (push) {
-      const from = push;
-      push = null;
-      await tick();
-      body?.scrollTo({ top: savedTop });
-      document.querySelector<HTMLElement>(`[data-push="${from}"]`)?.focus({ preventScroll: true });
-      return;
-    }
     kiroku?.back();
   }
 
   /** Closing ends its banner too, and the next open starts at the top, on ごほうび (the sheet unmounts its body). */
   function closed() {
     if (toasts.current) toasts.dismiss();
-    push = null;
     kirokuLevel = 0;
     tab = START;
   }
@@ -98,55 +64,21 @@
 </script>
 
 <Sheet bind:open label={t('panel.title')} variant="top" onclose={closed}>
-  <div class="titlebar"><NavBar {title} onback={deep ? back : null} onclose={() => (open = false)} sfx="self" /></div>
+  <div class="titlebar"><NavBar title={t('panel.title')} onback={deep ? back : null} onclose={() => (open = false)} sfx="self" /></div>
   {#if !deep}
     <!-- A segmented switch (toggle buttons), pinned under the title bar while the tab scrolls -->
     <div class="tabs" role="group" aria-label={t('panel.title')}>
-      {#each ['kiroku', 'rewards', 'settings'] as const as id (id)}
+      {#each ['kiroku', 'rewards'] as const as id (id)}
         <button type="button" class="tab" aria-pressed={tab === id} data-tab={id} data-sfx={tab === id ? 'none' : 'tick'} onclick={() => pick(id)}>{t(`panel.tab.${id}`)}</button>
       {/each}
     </div>
   {/if}
 
-  <div class="panel-body" class:fill={push === 'villager'} bind:this={body}>
-    {#if push === 'villager' && view}
-      <div class="page"><VillagerPicker {view} /></div>
-    {:else if push === 'help' && view}
-      <div class="page"><HelpGuide {view} /></div>
-    {:else if view && me && tab === 'kiroku'}
+  <div class="panel-body" bind:this={body}>
+    {#if view && me && tab === 'kiroku'}
       <Kiroku bind:this={kiroku} bind:level={kirokuLevel} />
-    {:else if view && me && tab === 'rewards'}
-      <Wallet />
     {:else if view && me}
-      <section class="sec" aria-labelledby="sec-villager">
-        <h2 id="sec-villager">{t('panel.villager')}</h2>
-        <div class="prow static me">
-          <Avatar person={me.who} villager={me.villager} size={48} />
-          <span class="prl">{me.villagerName}{#if myLook}<small>{i18n.locale === 'ja' ? ROSTER[myLook].nameJa : ROSTER[myLook].nameEn}</small>{/if}</span>
-          <button type="button" class="btn small paper" data-push="villager" data-sfx="page" onclick={() => go('villager')}>{t('panel.change')}</button>
-        </div>
-        {#if guest}<p class="guest" data-guest-note>{t('guest.note')}</p>{/if}
-      </section>
-      {#if !guest}
-        <section class="sec" aria-labelledby="sec-decor">
-          <h2 id="sec-decor">{t('panel.decor')}</h2>
-          <div class="card help">
-            <p>{t('panel.decorSummary')}</p>
-            <button type="button" class="btn small paper" data-decor-start data-sfx="open" onclick={() => ((ui.decorating = true), (open = false))}>{t('panel.decorStart')}</button>
-          </div>
-        </section>
-      {/if}
-      <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound">{t('panel.sound')}</h2><SoundSection /></section>
-      <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang">{t('panel.lang')}</h2><LangSection /></section>
-      {#if !guest}<section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync">{t('panel.sync')}</h2><SyncSection {view} /></section>{/if}
-      <section class="sec" aria-labelledby="sec-help">
-        <h2 id="sec-help">{t('panel.help')}</h2>
-        <div class="card help">
-          <p>{t('panel.helpSummary')}</p>
-          <button type="button" class="btn small paper" data-push="help" data-sfx="page" onclick={() => go('help')}>{t('panel.more')}</button>
-        </div>
-      </section>
-      {#if week.demo}<span class="demo">{t('demo.badge')}</span>{/if}
+      <Wallet />
     {/if}
   </div>
 </Sheet>
@@ -162,7 +94,7 @@
   /* the row holds the tabs' 4px lip (and a focus ring's 3px) inside its own box: the fade under it starts below the lip */
   .tabs { flex: none; position: relative; z-index: 1; display: flex; gap: 8px; justify-content: center; padding: 0 0 calc(var(--lip-h) + 4px); }
   .tab {
-    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); flex: 1 1 0; min-width: 0; max-width: 132px; padding: 0 10px; border-radius: var(--r-pill);
+    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); flex: 1 1 0; min-width: 0; max-width: 150px; padding: 0 10px; border-radius: var(--r-pill);
     white-space: nowrap;
     font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
   }
@@ -174,35 +106,4 @@
     margin: 0 -8px; padding: 6px 8px var(--body-pad); display: flex; flex-direction: column; gap: 14px;
   }
   .panel-body > :global(*) { flex: none; }
-  /* the villager picker and a ずかん page pin their head and scroll their own grid (to the bottom edge): the body holds still */
-  .panel-body.fill, .panel-body:has(> :global(.kiroku.fill)) { overflow: hidden; padding-bottom: 0; }
-  .panel-body.fill > .page { flex: 1; min-height: 0; }
-  /* a pushed level slides in from the right (design.md "Navigation") */
-  .page { display: flex; flex-direction: column; gap: 14px; animation: slide 240ms cubic-bezier(.2, .8, .2, 1); }
-  @keyframes slide { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
-
-  /* one section per topic: a small heading over its rows */
-  .sec { display: grid; gap: 8px; }
-  .sec h2 { margin: 6px 2px 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); letter-spacing: .04em; }
-  .me .prl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
-  .me .btn { flex: none; }
-  .help { display: grid; gap: 10px; padding: 14px 16px; }
-  .help p { margin: 0; font-weight: 700; line-height: 1.5; }
-  .help .btn { justify-self: end; }
-  .guest { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
-  .demo { align-self: center; background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 10px; font: 700 var(--fs-s)/1 var(--font-ui); }
-
-  /* Rows shared by the sections (ことば, つうしん, サウンド, むらびと). */
-  .panel-body :global(.prows) { display: grid; gap: 10px; }
-  .panel-body :global(.prow) {
-    appearance: none; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px;
-    border-radius: var(--r-card); border: 0; background: var(--ctl); color: var(--text);
-    box-shadow: var(--sh-ctl); text-align: left; width: 100%; font: inherit;
-  }
-  .panel-body :global(.prow:not(.static):active) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  /* a static row is information, not a control: the soft card lip, no edge */
-  .panel-body :global(.prow.static) { box-shadow: var(--sh-lip); background: var(--card); cursor: default; }
-  /* the chosen row: NH's yellow highlight */
-  .panel-body :global(.prow[aria-checked='true']) { background: var(--ctl-sel); color: var(--c-ink); }
-  .panel-body :global(.prl) { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); text-wrap: balance; line-height: 1.3; }
 </style>

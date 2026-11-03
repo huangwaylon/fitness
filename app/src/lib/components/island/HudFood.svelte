@@ -1,10 +1,11 @@
 <script lang="ts">
-  // The meal button in the middle of the HUD row (docs/design.md "Island", "Gohan"): the health button's cream pill
-  // (HudHealth), NH's ramen bowl (`items/dinner`) across it, no number. Tap: a press squash, the villagers glance up
-  // and in at it (R18), and the meal log (ごはん) grows out of the bowl (FoodSheet, Sheet's `pop`, --pop-x / --pop-y).
+  // The meal button in the HUD's top-right cluster, left of the jar (docs/design.md "Island", "Gohan"): the health
+  // button's cream pill (HudHealth), NH's ramen bowl (`items/dinner`) across it, no number. Tap: a press squash, the
+  // villagers glance up at it (R18), and the meal log (ごはん) grows out of the bowl (FoodSheet, Sheet's `pop`, --pop-x / --pop-y).
   //   <HudFood onopen={() => …} {later} />
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { hudGlance, react } from '../motion/director.svelte.ts';
+  import { react } from '../motion/director.svelte.ts';
+  import { popFrom } from './popFrom.ts';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {
@@ -20,16 +21,9 @@
 
   function tap() {
     pressed = false;
-    const r = artEl?.getBoundingClientRect();
-    if (r?.width) {
-      const root = document.documentElement;
-      root.style.setProperty('--pop-x', `${Math.round(r.left + r.width / 2)}px`);
-      root.style.setProperty('--pop-y', `${Math.round(r.top + r.height / 2)}px`);
-    }
-    // the villagers glance up and in, at it (then the jar's side again, for the idle peek)
-    hudGlance.side = 'in';
+    popFrom(artEl);
+    // the villagers glance up to the right, at it
     react('R18');
-    later(() => (hudGlance.side = 'l'), 1_400);
     later(() => onopen?.(), 90);
   }
 </script>

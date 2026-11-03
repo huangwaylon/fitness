@@ -4,6 +4,7 @@
 // picks a placed piece up to move, turn, put back or put away. Both players' tabs show the same island (the demo's
 // relay, as two phones over the real one), and it stays across a reload and for a tab opening later.
 import { expect, test, type Page } from '@playwright/test';
+import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -26,8 +27,7 @@ const lay = <R,>(page: Page, fn: (l: L) => R) => page.evaluate(`(${fn.toString()
 async function editLayout(page: Page) {
   await page.bringToFront();
   await go(page, 300);
-  await page.getByRole('button', { name: /^ごほうび · ふたりのベル / }).click();
-  await page.locator('[data-tab="settings"]').click();
+  await fromMenu(page, 'settings');
   await page.locator('[data-decor-start]').click();
   await expect(page.locator('[data-island-edit]')).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __islandEdit?: unknown }).__islandEdit);

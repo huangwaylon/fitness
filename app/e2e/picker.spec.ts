@@ -1,13 +1,13 @@
 // The むらびと picker: its head (my villager, the name and search fields) stays put while the 440 heads scroll under
 // it, on a small phone too, and with the on-screen keyboard up (iOS: --kb; Android: a shorter screen).
 import { expect, test, type Page } from '@playwright/test';
+import { fromMenu } from './hud.ts';
 
 const sheet = (page: Page) => page.locator('dialog[open]');
 
 async function openPicker(page: Page) {
   await page.goto('?demo');
-  await page.getByRole('button', { name: /^ごほうび · ふたりのベル / }).click();
-  await sheet(page).locator('.tab[data-tab=settings]').click();
+  await fromMenu(page, 'settings');
   await sheet(page).locator('[data-push=villager]').click();
   await expect(sheet(page).getByRole('radio')).toHaveCount(440);
   // the level's slide-in done (it moves the head sideways)

@@ -5,6 +5,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { CHASE_MS, SEA } from '../src/lib/components/island/sea.ts';
+import { fromMenu } from './hud.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
 test.use({ viewport: { width: 390, height: 844 } });
@@ -83,8 +84,7 @@ test('now and then the bubbles hold a pearl: picked up, a shell in the ずかん
   await page.mouse.click(s.x, s.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText('しんじゅを ひろった！');
   expect(await finds(page)).toEqual([{ kind: 'shell', id: 'pearl' }]);
-  await hudJar(page).click();
-  await page.locator('dialog[open] .tab[data-tab=kiroku]').click();
+  await fromMenu(page, 'zukan');
   await expect(page.locator('[data-zukan="shell"]')).toContainText('1 / 9');
   await expect(page.locator('[data-zukan="sea"]')).toContainText('0 / 40');
   await expect(page.locator('[data-zukan="sea"]')).toContainText('うみのさち');

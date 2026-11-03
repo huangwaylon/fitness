@@ -7,6 +7,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { quiet } from './island.ts';
 import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
+import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -211,8 +212,9 @@ test('the say button hides under the island panel and in もようがえ (its pi
   await hudJar(page).click();
   await expect(picker(page)).toHaveCount(0);
   await expect(sayBtn(page)).toHaveCount(0);
-  // もようがえ
-  await page.locator('[data-tab="settings"]').click();
+  // もようがえ (せってい, the HUD menu's)
+  await page.keyboard.press('Escape');
+  await fromMenu(page, 'settings');
   await page.locator('[data-decor-start]').click();
   // (the old decorations' tray, or on the island's layout its own もようがえ: IslandEdit)
   await expect(page.locator('[data-tray]').first().or(page.locator('[data-island-edit]'))).toBeVisible();
