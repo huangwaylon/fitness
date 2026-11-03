@@ -157,10 +157,13 @@ export async function openNear(page: Page, x: number, z: number, away = 45, onSc
       const [sx, sy] = w.at(px, pz);
       if (sy < 120 || sy > innerHeight - 100 || sx < 30 || sx > innerWidth - 30) return false;
       // the point and a thumb round it
-      return [[0, 0], [-14, 0], [14, 0], [0, -14], [0, 14]].every(([dx, dy]) => {
+      if (![[0, 0], [-14, 0], [14, 0], [0, -14], [0, 14]].every(([dx, dy]) => {
         const el = document.elementFromPoint(sx + dx, sy + dy);
         return !!el && !el.closest(TAPS);
-      });
+      })) return false;
+      // (the 3D island: a tap there finds that very ground, not a model standing in front of it)
+      const g3 = (window as unknown as { __world3d?: { ground(cx: number, cy: number): { x: number; z: number } | null } }).__world3d?.ground(sx, sy);
+      return !g3 || Math.min(Math.hypot(g3.x - px, g3.z - pz), Math.hypot(g3.x - px, -g3.z - pz)) < 8;
     };
     for (let r = 0; r <= 240; r += 6)
       for (let a = 0, n = Math.max(1, Math.round((r * Math.PI * 2) / 6)); a < n; a++) {
