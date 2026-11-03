@@ -300,8 +300,7 @@ anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the pho
 ## The island's buildings
 
 - **The kinds** (`catalog.ts` group `building`, `door: true`): the museum (`museum`, はくぶつかん, NH's 7 × 4, one to
-  an island, `fixed`: never deleted, moved and turned freely) and the shop (`shop`, タヌキ商店, NH's Nook's Cranny, the
-  same 7 × 4 and rules: [design](design.md#the-shop)). A
+  an island, `fixed`: never deleted, moved and turned freely); the shop comes later as a kind of the same group. A
   building's door is the middle of its front edge (`model.ts doorOf`, as a home's, but its `(x, z)` is its footprint's
   own back-left tile); its door's tile must stay clear and reachable (`validate.ts` `door`); `nav.ts` keeps it in
   `doors` (no padding round its footprint, `door-<id>` named, a tap on it snaps to its door: `catalog.ts goesIn`).
@@ -317,14 +316,6 @@ anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the pho
   move; the guest never sends one; an island where it has an op of its own is left as it is). IslandScene runs it after
   the record's rows (`layout.placeBuildings()`). On the record of 2026-11-03 (the user's own cedars on the clifftop) it
   lands at tiles 8…14 × 46…49, at the back by the campsite (`buildings.test.ts`).
-- **The shop** the same way: NH's StrcMarketA02 and its doors with the Japanese sign (タヌキ商店:
-  `npm run world3d-models -- --only=shop`, 152 KB), `/shop`; the default puts it in the middle east of the main path, a
-  short walk up from the beach (`layout-default.ts` SHOP: tiles 10…16 × 16…19; an oak and two flowers stepped aside). An
-  island with no spot clear for it (the record's: planted edge to edge, flower borders down both sides) gets, once, the
-  nearest spot where only flowers stand (never trees, bushes, furniture, or a path under it; at most 12), those flowers
-  removed first (each an `o` removal, as the editor's) and then the shop's own op (`buildingOps`'s second pass); a spot
-  must also leave every named spot reachable. On the record of 2026-11-04 it clears one flower and stands turned on the
-  west lawn by the campsite, tiles 4…7 × 11…17.
 
 ## Turning a home
 
