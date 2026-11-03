@@ -32,14 +32,17 @@ type T = { stats(): { frames: number; calls: number; tris: number; dpr: number; 
 const tent = <R,>(page: Page, fn: (t: T) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
 const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
 
-/** Into the tent from the island: the camera up to the campsite, its door tapped (`aside`: my villager, back out at
- *  the door, stepped off it first, so the tap lands on the tent). */
-async function enter(page: Page, aside = false) {
+/** My villager a few steps from the campsite's door, off it (back out, it stands at the door, and a tap there would be
+ *  its; from home the walk up is ~6 s, over 10 under CI's software GL with three workers drawing). */
+const nearDoor = (page: Page, door: readonly [number, number]) =>
+  page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z), [door[0] + 70, door[1] - 40] as const);
+
+/** Into the tent from the island: the camera up to the campsite, my villager near its door, the door tapped. */
+async function enter(page: Page) {
   await page.goto(Q);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await oku(page);
-  const door = campDoor(await geo(page));
-  if (aside) await page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z), [door[0] + 70, door[1] - 40] as const);
+  await nearDoor(page, campDoor(await geo(page)));
   await page.waitForTimeout(300);
   await tapTent(page);
   // (my villager walks up to the door first)
@@ -57,8 +60,9 @@ test('the tent opens through the door and goes back out to the island as it was'
   await page.goto(Q);
   await is3d(page);
   await oku(page);
-  await page.waitForTimeout(300);
   const door = campDoor(await geo(page));
+  await nearDoor(page, door);
+  await page.waitForTimeout(300);
   const cam = await page.evaluate(() => (window as unknown as { __world: { cam(): number } }).__world.cam());
   await tapTent(page);
   // (my villager walks up to the door first)
@@ -374,7 +378,7 @@ test('the HHA: the first time in after a day’s decorating, ハニワくん’s
   expect(want.note).toEqual({ k: 'series', v: 'log' });
   await out();
   // back in through the door: the letter
-  await enter(page, true);
+  await enter(page);
   await expect(letter).toBeVisible({ timeout: 5000 });
   await expect(letter).toHaveAttribute('data-tent-letter', String(want.total));
   await expect(letter).toHaveAttribute('data-badge', want.badge!);
@@ -385,7 +389,7 @@ test('the HHA: the first time in after a day’s decorating, ハニワくん’s
   await expect(letter).toHaveCount(0);
   // once a day: in again, no letter; the ハニワ button shows it
   await out();
-  await enter(page, true);
+  await enter(page);
   await page.waitForTimeout(2000);
   await expect(letter).toHaveCount(0);
   await page.locator('[data-tent-hha]').click();
