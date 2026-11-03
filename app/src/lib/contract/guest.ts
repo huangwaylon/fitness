@@ -6,16 +6,18 @@
 import { isActivityMetric, isRec, type EventRow, type SnapshotRows } from './api.ts';
 import { scopeMayWrite } from './layout.ts';
 
-/** The guest's own prefs: cosmetic only (never a goal, never another person's). */
-const GUEST_PREF_KEYS = ['locale', 'villagerName', 'villager'] as const;
+/** The guest's own prefs: cosmetic, and its daily kcal goal for its meals (never another goal, never another
+ *  person's). */
+const GUEST_PREF_KEYS = ['locale', 'villagerName', 'villager', 'kcalGoal'] as const;
 
 type Rec = Record<string, unknown>;
 
 /**
  * Whether the guest may write this event: a `find` or a `tally` (its catches, credited to it), a `decor` op of the
  * tent's room (`sc: 't'`), its own home's room (`v`) or its own home's look (`h`, `hG`: contract/layout.ts
- * scopeMayWrite), a `board` note (posting; editing and removing only its own: contract/board.ts boardMayWrite) and
- * its own cosmetic `pref` (no `person`). Everything else (a buy, a void, a harvest, a goal, the
+ * scopeMayWrite), a `board` note (posting; editing and removing only its own: contract/board.ts boardMayWrite), a
+ * `food` entry (its own meals: contract/food.ts foodAccept) and its own cosmetic `pref` or kcal goal (no `person`).
+ * Everything else (a buy, a void, a harvest, a member's goal, the
  * island's decor and its layout, an island day, a high-five row) is the members' alone: the record answers `forbidden`.
  * @public (relay/src/store.ts)
  */
@@ -24,7 +26,9 @@ export function guestMayWrite(type: string, d: Rec): boolean {
     case 'find':
     case 'tally':
     case 'board':
-      // its catches; a note on the board (its own to edit and remove: the record checks, contract/board.ts)
+    case 'food':
+      // its catches; a note on the board (its own to edit and remove: the record checks, contract/board.ts); its
+      // meals (only its own: contract/food.ts)
       return true;
     case 'decor':
       return scopeMayWrite('G', d);
@@ -38,7 +42,8 @@ export function guestMayWrite(type: string, d: Rec): boolean {
 /** The からだ goals (`pref`): never sent to the guest. */
 const BODY_GOAL_KEYS: readonly unknown[] = ['goalWeight', 'goalBodyFat'];
 
-/** Whether an event row reaches the guest: all but the からだ goals (`pref goalWeight` / `goalBodyFat`). */
+/** Whether an event row reaches the guest: all but the からだ goals (`pref goalWeight` / `goalBodyFat`); every meal,
+ *  everyone's, does. */
 function guestSeesEvent(r: EventRow): boolean {
   if (r[3] !== 'pref') return true;
   let d: unknown;

@@ -19,7 +19,7 @@ export const NUMERIC_COLUMNS: Record<TabName, readonly string[]> = {
 };
 
 /** The event types the server accepts and the model reads (anything else is refused with `bad_request`). */
-export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'pref', 'find', 'tally', 'island', 'decor', 'board'] as const;
+export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'pref', 'find', 'tally', 'island', 'decor', 'board', 'food'] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
 /**
@@ -60,12 +60,13 @@ export const isMetricKey = (v: unknown): v is MetricKey => v === 'weight' || isA
 
 /**
  * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`,
- * `goalWeight` (kg), `goalBodyFat` (body fat %), `moveGoal` (kcal) and `stepsGoal` (steps).
+ * `goalWeight` (kg), `goalBodyFat` (body fat %), `moveGoal` (kcal), `stepsGoal` (steps) and `kcalGoal` (the meal
+ * log's daily kcal, contract/food.ts).
  */
-export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'goalBodyFat', 'moveGoal', 'stepsGoal'] as const;
+export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'goalBodyFat', 'moveGoal', 'stepsGoal', 'kcalGoal'] as const;
 
 /** The `pref` keys either person may set for either person (`data.person`): the goals. The rest are the sender's own. */
-const PERSON_PREF_KEYS = ['goalWeight', 'goalBodyFat', 'moveGoal', 'stepsGoal'] as const;
+const PERSON_PREF_KEYS = ['goalWeight', 'goalBodyFat', 'moveGoal', 'stepsGoal', 'kcalGoal'] as const;
 
 export const isPersonId = (v: unknown): v is PersonId => v === 'A' || v === 'B';
 /** A member or the guest (`G`): who sent a row. */
@@ -127,7 +128,7 @@ export const isBodyFatGoal = (v: unknown): v is number =>
 /** `snapshot` rows: compact arrays in tab column order. `at` is ISO 8601 UTC with milliseconds (`…T…:…:….sssZ`). */
 export type MetricRow = [at: string, person: PersonId, date: string, metric: MetricKey, value: number];
 /** `data` is the JSON text exactly as stored in the cell. `person` the sender: a member, or the guest (`G`: only its
- *  finds, tallies, cosmetic prefs and tent decor, contract/guest.ts). */
+ *  finds, tallies, cosmetic prefs, its kcal goal, its meals, board notes and tent decor, contract/guest.ts). */
 export type EventRow = [at: string, person: Who, id: string, type: EventType, data: string];
 
 export interface SnapshotRows { metrics: MetricRow[]; events: EventRow[] }

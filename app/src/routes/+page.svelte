@@ -23,6 +23,7 @@
 
   let panelOpen = $state(false);
   let healthOpen = $state(false);
+  let foodOpen = $state(false);
   /** しずえ's box's height while it shows: the island's say button (bottom right) stands over it. */
   let newsH = $state(0);
 
@@ -94,10 +95,10 @@
     <!-- DOM order = focus / VoiceOver order = the visual order: the heading, today's ベル, the health button beside it, the scene (trees,
          villagers), then しずえ's box at the bottom. All are absolutely placed, so the order costs no layout; the stacking
          comes from the --z-* scale (tokens.css). -->
-    <Hud today={view.wallet.today} balance={view.wallet.balance} bind:panelOpen bind:healthOpen {later} />
-    <HudCoins {view} covered={panelOpen || healthOpen || ui.overlay} {later} />
+    <Hud today={view.wallet.today} balance={view.wallet.balance} bind:panelOpen bind:healthOpen bind:foodOpen {later} />
+    <HudCoins {view} covered={panelOpen || healthOpen || foodOpen || ui.overlay} {later} />
     <div class="top">
-      <IslandScene {view} onhighfive={sendHighFive} onhighfivegot={(who) => (gotFive = who)} onguest={guestArrived} paused={panelOpen || healthOpen} />
+      <IslandScene {view} onhighfive={sendHighFive} onhighfivegot={(who) => (gotFive = who)} onguest={guestArrived} paused={panelOpen || healthOpen || foodOpen} />
     </div>
     <!-- しずえ's box, when she has news, floats over the sea at the bottom, so nothing in the scene moves when she speaks. -->
     {#if news}<div class="news" bind:clientHeight={newsH}><Bubble text={news} host={false} /></div>{/if}

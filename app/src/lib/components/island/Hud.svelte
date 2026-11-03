@@ -1,13 +1,15 @@
 <script lang="ts">
-  // 島's HUD, NH island-view light: the sky clean, the two controls in its top corners (docs/design.md "Island"). On
+  // 島's HUD, NH island-view light: the sky clean, three controls along its top (docs/design.md "Island"). On
   // the left the jar (the shared wallet's ベル written in it, today's +N flashing beside it as coins land) → the
   // island panel slides down on ごほうび (where today's ベル are shown), its tabs きろく · ごほうび · せってい; on the
-  // right the health button (NH's dumbbell) → the health popup (けんこう). Only when sync is not ok, the sync chip
-  // centred under the row. The panel and the popup are their own chunks, loaded on first open.
+  // right the health button (NH's dumbbell) → the health popup (けんこう); between them, centred, the meal button (NH's
+  // ramen bowl) → the meal log (ごはん). Only when sync is not ok, the sync chip centred under the row. The panel and
+  // the popups are their own chunks, loaded on first open.
   import { onMount } from 'svelte';
   import { replaceState } from '$app/navigation';
   import { page } from '$app/state';
   import SyncPill from '../ui/SyncPill.svelte';
+  import HudFood from './HudFood.svelte';
   import HudHealth from './HudHealth.svelte';
   import HudJar from './HudJar.svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
@@ -21,15 +23,19 @@
     panelOpen?: boolean;
     /** Bindable: the health popup is open (the island pauses under it too). */
     healthOpen?: boolean;
+    /** Bindable: the meal log is open (the island pauses under it too). */
+    foodOpen?: boolean;
     /** The page's timer (cleared with the page). */
     later: (fn: () => void, ms: number) => void;
   }
-  let { today, balance, panelOpen = $bindable(false), healthOpen = $bindable(false), later }: Props = $props();
+  let { today, balance, panelOpen = $bindable(false), healthOpen = $bindable(false), foodOpen = $bindable(false), later }: Props = $props();
   const loadPanel = lazy(() => import('../panel/IslandPanel.svelte'));
   const loadHealth = lazy(() => import('../health/HealthSheet.svelte'));
+  const loadFood = lazy(() => import('../food/FoodSheet.svelte'));
   /** Mounted from the first open on (each keeps its state between opens). */
   let opened = $state(false);
   let healthMounted = $state(false);
+  let foodMounted = $state(false);
   // the old /jar page (`?panel=rewards`): the panel open at once
   onMount(() => {
     if (new URLSearchParams(location.search).get('panel') !== 'rewards') return;
@@ -44,6 +50,7 @@
 <div class="ribbon-wrap">
   <div class="hud-row">
     <HudJar bells={balance} {today} {later} expanded={panelOpen} onopen={() => (opened = panelOpen = true)} />
+    <HudFood {later} onopen={() => { foodMounted = true; foodOpen = true; }} />
     <HudHealth {later} onopen={() => { healthMounted = true; healthOpen = true; }} />
   </div>
   <SyncPill />
@@ -51,6 +58,9 @@
 
 {#if opened}
   {#await loadPanel() then { default: IslandPanel }}<IslandPanel bind:open={panelOpen} />{/await}
+{/if}
+{#if foodMounted}
+  {#await loadFood() then { default: FoodSheet }}<FoodSheet bind:open={foodOpen} />{/await}
 {/if}
 {#if healthMounted}
   {#await loadHealth() then { default: HealthSheet }}<HealthSheet bind:open={healthOpen} />{/await}
@@ -65,8 +75,10 @@
   }
   /* only the controls take taps: the sky between them lets a tap through (the sun, the moon, a wish) */
   .ribbon-wrap > :global(*:not(.hud-row)), .hud-row > :global(*) { pointer-events: auto; }
-  /* [the jar] ……… [the health button]: the two top corners, the same width (--hud-side) so they mirror each
-     other, inset 14px or the safe area's side (a landscape notch); the sky's middle (and the Dynamic Island) clear */
+  /* [the jar] … [the meal button] … [the health button]: the two top corners the same width (--hud-side) so they
+     mirror each other and the meal button sits on the middle, inset 14px or the safe area's side (a landscape notch);
+     the row is under the safe area (--hud-top), so the Dynamic Island stays clear above it; the sky beside the bowl
+     stays clear for the sun, the moon and the balloon */
   .hud-row {
     --hud-side: 60px;
     align-self: stretch; display: flex; align-items: center; justify-content: space-between;

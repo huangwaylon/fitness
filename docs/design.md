@@ -24,7 +24,7 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 ## Simplicity rules
 
 - No tab bar: 島 (the island), one panel for everything else (tap the jar: it opens on ごほうび, its tabs きろく ·
-  ごほうび · せってい) and the health popup (tap the dumbbell: けんこう).
+  ごほうび · せってい), the meal log (tap the bowl: ごはん) and the health popup (tap the dumbbell: けんこう).
 - One focal point per screen (島: the island itself, the sky clean, the jar the door to the panel; ごほうび: the
   balance, today's ベル under it).
 - A number is shown in full in one place; elsewhere it is only a doorway to it.
@@ -36,7 +36,7 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 ### Island
 
 Top to bottom: the HUD row, the jar in the sky's top-left corner (tap → [the panel](#panel) on ごほうび, where today's
-ベル are) and the health button in its top-right, the sky between them clear; a sync chip only when sync isn't ok; the scene;
+ベル are), the meal button in its middle and the health button in its top-right; a sync chip only when sync isn't ok; the scene;
 しずえ's box only with news; the say button at the bottom right. The island is NH's rolling log under them ([World](#world)): a drag scrolls it from まえ
 (home, the health lawn) back to ひろば and おく, a tap on empty ground walks my villager there.
 
@@ -49,11 +49,12 @@ Top to bottom: the HUD row, the jar in the sky's top-left corner (tap → [the p
   ふたりでぜんぶ (「ふたりで ぜんぶ まで：あと 2つ」 or 「ふたりで ぜんぶ！ +2 ふたりに」), outside either total, so both
   totals plus it make today's total (ごほうび's 「きょう +N ベル」). The last line says when that person's data last arrived (「15:24 に とどいた」), with
   a dot once it is over 6 hours old.
-- **HUD row:** [the jar] ……… [the health button], the two top corners, at `--hud-top` (10px under the safe area, as
+- **HUD row:** [the jar] … [the meal button] … [the health button]: the two top corners and the middle, at `--hud-top` (10px under the safe area, as
   before: clear of iOS 27's top-edge blur), inset 14px or the safe area's side. No ribbon (removed 2026-11-03,
   [decisions](decisions.md#the-jar-is-the-door-no-ribbon-2026-11-03)): NH's island view keeps its sky clear and its UI
-  in the corners, and the Dynamic Island's middle stays free for the sun, the moon, the balloon and the stars. The two
-  sides are the same width (60px, `--hud-side`), mirrored; at 320 the middle ~170px stays clear. Every
+  in the corners (the row sits under the safe area, so the Dynamic Island is clear above it), and the sky beside the
+  bowl stays free for the sun, the moon, the balloon and the stars. The two sides are the same width (60px,
+  `--hud-side`), mirrored, so the bowl is on the middle. Every
   target is 44px or more. No View Transition anywhere in it (the stripes bug); day and night are the same art (the jar's
   number is ink with a cream outline, the button cream with its lip), both reading on either sky.
 - **Jar** (`island/HudJar.svelte`, the one jar drawing `Jar.svelte`): standing in the sky, a little taller than the row
@@ -70,6 +71,9 @@ Top to bottom: the HUD row, the jar in the sky's top-left corner (tap → [the p
   live in the popup). Tap → the villagers glance up at it
   (R18, to the right) and [けんこう](#kenkou) grows out of the dumbbell (`health/HealthSheet.svelte`, Sheet's `pop`: a live CSS zoom
   about the button, no View Transition: its snapshot of the banded ground striped on iPhone).
+- **Meal button** (`island/HudFood.svelte`): the health button's pill with NH's ramen bowl (`items/dinner`), centred
+  between the jar and the dumbbell. Tap → the villagers glance up and in at it (R18) and [ごはん](#gohan) grows out of
+  the bowl (`food/FoodSheet.svelte`, Sheet's `pop`).
 - **Coins** (`island/HudCoins.svelte`): each newly met goal flies up as a +1 coin from its fruit into the jar (+2 with
   its がんばり; `CoinFlow`), the jar squashing as each lands; the jar's number holds while coins are in the air
   (`coinsInFlight`) and counts up by each one as it lands. As each lands, today's ベル so far pop up beside the jar in a
@@ -179,6 +183,32 @@ Health data over time for the personal trainer, one person at a time, computed o
   the same length just before. The footnote says so.
 - **Cost:** the tab's code and strings (`i18n/kenkou.*.json`) load with the tab; the daily series is memoised per
   model and day. `?demo&weeks=60` makes a longer history with some missing Watch days.
+
+### Gohan
+
+ごはん, the meal log (`model/food.ts`, `components/food/*`, `lib/food/`, `e2e/food.spec.ts`; the data in
+`static/food/`): the HUD's middle button (NH's ramen bowl, `items/dinner`) grows it out of the bowl like けんこう (full
+height, title ごはん and ✕; ‹ while a level is open). What each of us ate, typed in by hand; it never earns ベル.
+Everyone sees everyone's meals, the guest's phone too; only the owner changes an entry. Its code, its strings
+(`i18n/food.*.json`) and the food data load with the first opening (the data only with the first search).
+
+- **Whose day:** one native dropdown (けんこう's pill): this phone's person first and chosen on each opening, then the
+  others (the guest once it has logged a meal, or on its own phone). Then a sticky row: ‹ the day (「11/4(水)」) ›
+  and きょう; no day after today.
+- **Summary card:** この日の カロリー, the day's kcal large; with the person's goal (`pref kcalGoal`, 1,000–5,000 by
+  50; none until set) 「目標 2,200 kcal」, a bar in the person's colour and あと N kcal / N kcal オーバー. Then
+  たんぱく質 · 脂質 · 炭水化物 · 塩分 in grams, protein with 「目標 N g」 (1.6 g × the latest weigh-in; members with
+  a weight only). On my day ✎ sets my goal (きろく's goal field, with 目標をなくす).
+- **Meals:** 朝ごはん · 昼ごはん · 夜ごはん · おやつ, a card each with its kcal and a row per entry (the food, its
+  amount 「茶碗1杯（150g）」, kcal). On my day ＋ → the search, an entry → its amount; anyone else's day is read-only.
+- **Search:** a 16px field (no search mid-IME composition); empty, 最近 (my latest entry of each food, as I had it);
+  typed, the best matches: the name, ✓n when n independent sources agree on its kcal, kcal per 100 g, and its
+  default portion's kcal.
+- **Amount:** the food's values per 100 g; its portions as chips (100 g last), −/＋ by half a portion, a grams field
+  (typing grams leaves the portions); kcal and P/F/C/salt live; which meal; 追加, or 保存 / 削除 for my entry.
+- **データの出典** at the foot: each dataset's label, attribution and license (the data's licenses ask for it).
+- Food names come from the data, so their kanji are not all in the trimmed Zen Maru subset: those fall back to the
+  system font (the copy's own strings are covered: `npm run fonts:subset`).
 
 ### Sheets and harvest
 

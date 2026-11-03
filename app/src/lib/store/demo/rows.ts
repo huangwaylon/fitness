@@ -1,7 +1,8 @@
 // `?demo`: believable sheet rows for both people (ウェイ = A = me, うめ = B), generated around the real clock and fed
 // through the same model as the live app, so the island, the wallet and きろく agree and every tap really recomputes.
 // Activity rows start 8 weeks before this one (`?demo&weeks=N`: N; the economy's first week follows the data), with a
-// day now and then whose Watch rows never arrived (steps only), so けんこう has a 記録なし day. Deterministic per date
+// day now and then whose Watch rows never arrived (steps only), so けんこう has a 記録なし day, and the last days' meals
+// (ごはん) with a kcal goal each. Deterministic per date
 // (a seeded RNG), so a reload shows the same history.
 import type { PersonId, ShopItemId, Who } from '#lib/types.ts';
 import { guestRows } from '#lib/contract/guest.ts';
@@ -12,6 +13,7 @@ import type { SnapshotCache } from '#lib/sync/cache.ts';
 import { maxAt } from '#lib/model/snapshot.ts';
 import { mulberry32 } from '#lib/random.ts';
 import { shopPrice } from '#lib/config/rules.ts';
+import type { FoodSnap, Meal } from '#lib/contract/food.ts';
 
 const DEMO_WEEKS_BACK = 8;
 /** About one day in 25 only steps reach the sheet (no Move, Exercise or Stand row: 記録なし in けんこう, no fruit). */
@@ -25,6 +27,37 @@ function rng(seed: string): () => number {
   for (let i = 0; i < seed.length; i++) h = Math.imul(h ^ seed.charCodeAt(i), 3432918353), (h = (h << 13) | (h >>> 19));
   return mulberry32(h);
 }
+
+/** The demo's foods, per 100 g as the food data has them (app/static/food: MEXT, dishes). */
+const FOODS: Record<string, FoodSnap> = {
+  rice: { id: 'mext:01088', n: 'ごはん（精白米）', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0, u: '茶碗1杯' },
+  natto: { id: 'dishes:natto', n: '納豆（たれ・からし付き）', k: 163, p: 14.5, fa: 8.6, c: 11.3, s: 0.9, u: '1人前' },
+  toast: { id: 'mext:01026', n: '食パン', k: 248, p: 8.9, fa: 4.1, c: 46.4, s: 1.2, u: '6枚切1枚' },
+  yogurt: { id: 'mext:13025', n: 'ヨーグルト（無糖）', k: 56, p: 3.6, fa: 3, c: 4.9, s: 0.1, u: '1食' },
+  banana: { id: 'mext:07107', n: 'バナナ', k: 93, p: 1.1, fa: 0.2, c: 22.5, s: 0, u: '1本' },
+  egg: { id: 'mext:12005', n: 'ゆで卵', k: 134, p: 12.5, fa: 10.4, c: 0.3, s: 0.3, u: '1個（M）' },
+  onigiri: { id: 'dishes:onigiri-shake', n: 'おにぎり（鮭）', k: 161, p: 5.3, fa: 1.5, c: 33.2, s: 0.5, u: '1人前' },
+  curry: { id: 'dishes:curry-chicken', n: 'カレーライス（チキン）', k: 143, p: 4, fa: 4.5, c: 23, s: 0.8, u: '1人前' },
+  salmon: { id: 'dishes:teishoku-yakizake', n: '焼き鮭定食', k: 84, p: 4.6, fa: 1.8, c: 13.4, s: 0.7, u: '1人前' },
+  shogayaki: { id: 'dishes:teishoku-shogayaki', n: '生姜焼き定食', k: 110, p: 4.5, fa: 4.2, c: 13.9, s: 0.7, u: '1人前' },
+  udon: { id: 'mext:01039', n: 'うどん（ゆで）', k: 95, p: 2.6, fa: 0.4, c: 21.6, s: 0.3, u: '1玉' },
+  karaage: { id: 'dishes:karaage', n: '鶏の唐揚げ', k: 256, p: 20, fa: 14.9, c: 11.9, s: 2, u: '1個' }
+};
+/** A day's meals each (Tokyo hour, meal, food, grams), cycling over the days: ウェイ eats more than うめ. */
+const MEALS_DEMO: Record<PersonId, [h: number, m: Meal, food: string, g: number][][]> = {
+  A: [
+    [[7, 'b', 'rice', 150], [7, 'b', 'natto', 54], [12, 'l', 'curry', 510], [19, 'd', 'shogayaki', 741], [21, 's', 'banana', 100]],
+    [[8, 'b', 'toast', 60], [8, 'b', 'egg', 50], [12, 'l', 'onigiri', 114], [12, 'l', 'onigiri', 114], [19, 'd', 'salmon', 584]],
+    [[7, 'b', 'rice', 150], [7, 'b', 'egg', 50], [12, 'l', 'udon', 240], [12, 'l', 'karaage', 110], [20, 'd', 'curry', 510]]
+  ],
+  B: [
+    [[8, 'b', 'yogurt', 100], [8, 'b', 'banana', 100], [12, 'l', 'onigiri', 114], [19, 'd', 'salmon', 584]],
+    [[8, 'b', 'toast', 60], [8, 'b', 'yogurt', 100], [13, 'l', 'udon', 240], [15, 's', 'banana', 70], [19, 'd', 'shogayaki', 741]],
+    [[7, 'b', 'rice', 100], [7, 'b', 'natto', 54], [12, 'l', 'curry', 510], [19, 'd', 'rice', 150], [19, 'd', 'karaage', 110]]
+  ]
+};
+/** How many days back (today too) the demo has meals. */
+const MEAL_DAYS = 4;
 
 const iso = (ms: number) => new Date(ms).toISOString();
 const at = (date: string, h: number, m = 0) => jstMs(date, h, m);
@@ -129,6 +162,20 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
   ev(at(addDays(wStart, 2), 21, 0), 'B', 'pref', { key: 'goalWeight', value: WEIGHT_DEMO.B.goal });
   // B's body fat goal too (A's is left unset: the demo shows both a chart with one and one without)
   ev(at(addDays(wStart, 2), 21, 1), 'B', 'pref', { key: 'goalBodyFat', value: 26 });
+
+  // The meal log: the last days' meals, each logged a few minutes after it was eaten (only what is past by now), and a
+  // kcal goal each. A meal never earns, so none of this moves a ベル.
+  for (let k = MEAL_DAYS - 1; k >= 0; k--) {
+    const d = addDays(today, -k);
+    for (const p of ['A', 'B'] as PersonId[]) {
+      MEALS_DEMO[p][k % MEALS_DEMO[p].length].forEach(([h, m, food, g], i) => {
+        const t = at(d, h, 10 + i * 3 + (p === 'B' ? 1 : 0));
+        ev(t, p, 'food', { id: `fdemo${d.replace(/-/g, '')}${p.toLowerCase()}${i}`, at: t, d, m, g, f: FOODS[food] });
+      });
+    }
+  }
+  ev(at(addDays(today, -MEAL_DAYS), 21, 5), 'A', 'pref', { key: 'kcalGoal', value: 2200 });
+  ev(at(addDays(today, -MEAL_DAYS), 21, 6), 'B', 'pref', { key: 'kcalGoal', value: 1700 });
 
   const byAt = <T extends readonly unknown[]>(rows: T[]) => rows.sort((x, y) => String(x[0]).localeCompare(String(y[0])));
   return { metrics: byAt(metrics), events: byAt(events) };

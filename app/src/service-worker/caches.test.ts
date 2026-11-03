@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AUDIO_CACHE, isAudio, isMusic, keepShell, lruEvict, olderShells, precachable, staleCaches } from './caches.ts';
+import { AUDIO_CACHE, isAudio, isFoodData, isMusic, keepShell, lruEvict, olderShells, precachable, staleCaches, staleFood } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -100,5 +100,18 @@ describe('the offline shell from a navigation (keepShell)', () => {
     const c = fakeCache(false);
     await keepShell(c.cache as unknown as Cache, '/fitness/', new Response('nope', { status: 404 }));
     expect(c.puts).toEqual([]);
+  });
+});
+
+describe('food data cache', () => {
+  it('is never precached, and kept apart from the art', () => {
+    for (const p of ['food/index.json', 'food/products.json', '/fitness/food/verify.json']) expect(precachable(p)).toBe(false);
+    expect(isFoodData('/fitness/food/foods.json')).toBe(true);
+    expect(isFoodData('/fitness/art/fruit/peach.webp')).toBe(false);
+  });
+  it('a new data version drops the other versions’ files, never index.json', () => {
+    const f = (file: string, v?: string) => `https://x.example/fitness/food/${file}${v ? `?v=${v}` : ''}`;
+    expect(staleFood([f('index.json'), f('foods.json', 'aaa'), f('products.json', 'aaa'), f('foods.json', 'bbb')], 'bbb')).toEqual([f('foods.json', 'aaa'), f('products.json', 'aaa')]);
+    expect(staleFood([f('index.json'), f('foods.json', 'bbb')], 'bbb')).toEqual([]);
   });
 });

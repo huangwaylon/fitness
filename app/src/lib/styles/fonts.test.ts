@@ -8,13 +8,15 @@ import jaMain from '#lib/i18n/ja.json';
 import enMain from '#lib/i18n/en.json';
 import jaTab from '#lib/i18n/kenkou.ja.json';
 import enTab from '#lib/i18n/kenkou.en.json';
+import jaFood from '#lib/i18n/food.ja.json';
+import enFood from '#lib/i18n/food.en.json';
 import jaNames from '#lib/i18n/catch.ja.json';
 import enNames from '#lib/i18n/catch.en.json';
 import jaCatalog from '#lib/i18n/catalog.ja.json';
 import enCatalog from '#lib/i18n/catalog.en.json';
 
-const ja = { ...jaMain, ...jaTab, ...jaNames, ...jaCatalog };
-const en = { ...enMain, ...enTab, ...enNames, ...enCatalog };
+const ja = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaCatalog };
+const en = { ...enMain, ...enTab, ...enFood, ...enNames, ...enCatalog };
 import { PKG, covers, parseRanges, wanted } from '../../../scripts/font-subsets.ts';
 
 const css = readFileSync(join(import.meta.dirname, 'fonts.css'), 'utf8');

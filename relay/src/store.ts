@@ -6,7 +6,7 @@
 // - An event id is accepted once, forever (`ids`: a replaced event's id still dedupes a late retry).
 // - A slot (app model/record.ts eventSlot) holds one event: a later one of the same slot replaces it, so a tally or an
 //   island day is one row per person and day, a cosmetic pref one per person, a goal one per person and Tokyo day,
-//   a decoration one per item.
+//   a decoration one per item, a board post and a meal entry one per id (each one's latest op).
 // - `since` is answered from the `at` index. A row that arrived out of `at` order (only while Apps Script mirrored
 //   its writes here: two requests' copies racing) is marked `late` with its arrival time, and a poll also returns
 //   the late rows that arrived after `since` (less a margin for the two servers' clocks), so no phone misses one.
@@ -21,6 +21,7 @@ import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contr
 import { tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
 import { isRoomScope, isVoid, layoutAccept, layoutOpOf, scopeMayWrite, type LayoutEntry } from '../../app/src/lib/contract/layout.ts';
 import { BOARD_MAX, boardAccept, boardOpOf, cleanText, type BoardEntry } from '../../app/src/lib/contract/board.ts';
+import { foodAccept, foodOp } from '../../app/src/lib/contract/food.ts';
 import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
 import { notifySecret, notifySig, verifyNotify } from './notify.ts';
 import { keyOwner, type Keys } from './auth.ts';
@@ -365,8 +366,9 @@ export class StoreCore {
     const sent = body.data === undefined ? {} : body.data;
     if (!isRec(sent)) return fail('bad_request');
     // a board note's text: plain text, sanitised here as on the phone (contract/board.ts cleanText)
-    const data: Rec = body.type === 'board' && typeof sent.t === 'string' ? { ...sent, t: cleanText(sent.t) } : sent;
-    // the guest writes only its finds, tallies, the tent's decor and its own cosmetic prefs (contract/guest.ts)
+    // a meal entry as the phone keeps it: its food's name cleaned, its grams to one decimal (contract/food.ts foodOp)
+    const data: Rec = body.type === 'board' && typeof sent.t === 'string' ? { ...sent, t: cleanText(sent.t) } : body.type === 'food' ? (foodOp(sent) ?? sent) : sent;
+    // the guest writes only its finds, tallies, notes, meals, the tent's decor and its own prefs (contract/guest.ts)
     if (me === 'G' && !guestMayWrite(body.type, data)) return fail('forbidden');
     // a scoped decor op: the outdoors the members', a home's look and room its owner's (contract/layout.ts)
     if (body.type === 'decor' && !scopeMayWrite(me, data)) return fail('forbidden');
@@ -400,6 +402,15 @@ export class StoreCore {
           return { ok: true, duplicate: true };
         }
         if (v.v === 'append') drop = v.drop;
+      }
+      if (type === 'food') {
+        // only its owner changes an entry; an op beaten by the one held is acknowledged (contract/food.ts foodAccept)
+        const v = this.foodTarget(me, data);
+        if (v === 'forbidden') return fail('forbidden');
+        if (v === 'stale') {
+          this.io.sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
+          return { ok: true, duplicate: true };
+        }
       }
       const at = this.nextAt();
       if (drop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', `board|${drop}`);
@@ -478,6 +489,19 @@ export class StoreCore {
     for (const r of gone.slice(BOARD_MAX)) this.io.sql.exec('DELETE FROM events WHERE seq = ?', r.seq);
   }
 
+  /** A meal op against the entry's latest op the record holds (its slot's row, with who sent it). */
+  private foodTarget(me: Who, d: Rec): ReturnType<typeof foodAccept> {
+    const r = this.io.sql.exec<{ person: string; data: string }>('SELECT person, data FROM events WHERE slot = ?', `food|${String(d.id)}`).toArray()[0];
+    let held: Parameters<typeof foodAccept>[0] = null;
+    if (r && isWho(r.person)) {
+      let x: unknown;
+      try { x = JSON.parse(r.data); } catch { x = null; }
+      const op = foodOp(x);
+      if (op) held = { ...op, who: r.person };
+    }
+    return foodAccept(held, { ...foodOp(d)!, who: me });
+  }
+
   /** Every decor row (its seq, sender and data). */
   private decorRows(): { seq: number; person: Who; d: Rec }[] {
     const out: { seq: number; person: Who; d: Rec }[] = [];
@@ -552,12 +576,19 @@ export class StoreCore {
       }
       if (v.drop) sql.exec('DELETE FROM events WHERE slot = ?', `board|${v.drop}`);
     }
+    if (type === 'food') {
+      if (!foodOp(d)) return 'skipped';
+      if (this.foodTarget(person, d) !== 'append') {
+        sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
+        return 'had';
+      }
+    }
     if (type === 'decor' && (decorOpOf(d) || tentOpOf(d) || layoutOpOf(d)) && this.decorTarget(person, d) !== 'append') {
       sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id); // beaten (or past the cap): only its id is kept
       return 'had';
     }
     const slot = eventSlot(type, person, subject, d, Date.parse(at));
-    if (slot && type !== 'decor' && type !== 'board') {
+    if (slot && type !== 'decor' && type !== 'board' && type !== 'food') {
       const held = sql.exec<{ at: string }>('SELECT at FROM events WHERE slot = ?', slot).toArray()[0];
       if (held && held.at >= at) {
         sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id); // a later one of the slot is there already

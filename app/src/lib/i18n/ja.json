@@ -20,6 +20,7 @@
   "fruit.apple": "歩数",
   "fruit.pear": "ムーブ",
   "island.health": "けんこう",
+  "island.food": "ごはん",
   "island.jar": "ごほうび · ふたりのベル {bells} · きょう {today}",
   "island.highfive": "{name}と ハイタッチ",
   "island.highfiveSent": "{name}さんに ハイタッチ！",

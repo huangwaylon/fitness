@@ -1,4 +1,4 @@
-// The wallet actions: buy one of the two rewards (only what the wallet covers), undo; the goals.
+// The wallet actions: buy one of the two rewards (only what the wallet covers), undo; the goals; the meal log.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
 import { configureTransport } from '#lib/sync/transport.ts';
@@ -120,5 +120,80 @@ describe('the island’s finds (the ずかん)', () => {
     expect(tallyOf().map((e) => e.data)).toEqual([{ date: '2026-11-18', counts: { 'fish:dab': 3, 'bug:moth': 1 } }]);
     // held until the first catch's minute is up, not a new minute from the second
     expect(tallyOf()[0].nextAt).toBe(NOW + 60_000);
+  });
+});
+
+describe('the meal log', () => {
+  const NOW = Date.parse('2026-11-18T12:00:00.000Z');
+  const RICE = { id: 'mext:01088', n: 'ごはん', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0, u: '1杯' };
+  /** The model as the store composes it: the rows, with this phone's queued events on top. */
+  const model = async (me: 'A' | 'G' = 'A') => {
+    const { reduce } = await import('#lib/model/state.ts');
+    const events = queued().map((e, i) => [new Date(NOW + i).toISOString(), me, e.id, e.type, JSON.stringify(e.data)]);
+    week.model = { state: reduce({ metrics: [], events: events as never }), me, now: NOW } as unknown as typeof week.model;
+  };
+  const food = () => queued().filter((e) => e.type === 'food').map((e) => e.data as Record<string, unknown>);
+
+  it('logFood sends a new entry’s whole state, its id `f` + [0-9a-z], the grams to one decimal', async () => {
+    const { logFood } = await import('./actions.ts');
+    await model();
+    expect(logFood({ d: '2026-11-18', m: 'l', g: 150.04, f: RICE }).ok).toBe(true);
+    expect(food()).toEqual([{ id: expect.stringMatching(/^f[0-9a-z]{6,24}$/), at: expect.any(Number), d: '2026-11-18', m: 'l', g: 150, f: RICE }]);
+    // not a meal: nothing sent
+    expect(logFood({ d: '2026-11-18', m: 'l', g: 0, f: RICE }).ok).toBe(false);
+    expect(logFood({ d: '2026-11-18', m: 'l', g: 100, f: { ...RICE, n: ' ' } }).ok).toBe(false);
+    expect(food()).toHaveLength(1);
+  });
+
+  it('editFood sends the entry’s whole state with the change (u: null drops the label), after the one it follows', async () => {
+    const { editFood, logFood } = await import('./actions.ts');
+    await model();
+    logFood({ d: '2026-11-18', m: 'l', g: 150, f: RICE });
+    const [{ id, at }] = food();
+    await model();
+    expect(editFood(id as string, { g: 200, m: 'd' }).ok).toBe(true);
+    await model();
+    expect(editFood(id as string, { u: null }).ok).toBe(true);
+    const { u: _u, ...noLabel } = RICE;
+    expect(food().slice(1)).toEqual([
+      { id, at: expect.any(Number), d: '2026-11-18', m: 'd', g: 200, f: RICE },
+      { id, at: expect.any(Number), d: '2026-11-18', m: 'd', g: 200, f: noLabel }
+    ]);
+    expect(food()[1].at as number).toBeGreaterThan(at as number);
+    expect(food()[2].at as number).toBeGreaterThan(food()[1].at as number);
+    expect(editFood('fnope0000', { g: 1 }).ok).toBe(false);
+  });
+
+  it('removeFood removes one of mine; someone else’s isn’t mine to change', async () => {
+    const { editFood, logFood, removeFood } = await import('./actions.ts');
+    await model();
+    logFood({ d: '2026-11-18', m: 'b', g: 80, f: RICE });
+    const [{ id }] = food();
+    // the same rows on the guest's phone: not its entry
+    const { reduce } = await import('#lib/model/state.ts');
+    const rows = queued().map((e, i) => [new Date(NOW + i).toISOString(), 'A', e.id, e.type, JSON.stringify(e.data)]);
+    week.model = { state: reduce({ metrics: [], events: rows as never }), me: 'G', now: NOW } as unknown as typeof week.model;
+    expect(removeFood(id as string).ok).toBe(false);
+    expect(editFood(id as string, { g: 1 }).ok).toBe(false);
+    await model();
+    expect(removeFood(id as string).ok).toBe(true);
+    expect(food()[1]).toEqual({ id, at: expect.any(Number), rm: true });
+  });
+
+  it('setKcalGoal: a whole 50 in 1,000–5,000 or null; a member for either member, the guest its own', async () => {
+    const { setKcalGoal } = await import('./actions.ts');
+    await model();
+    for (const bad of [950, 1825, 5050, NaN]) expect(setKcalGoal('A', bad).ok).toBe(false);
+    expect(setKcalGoal('G', 2000).ok).toBe(false);
+    expect(setKcalGoal('B', 1800).ok).toBe(true);
+    expect(setKcalGoal('A', null).ok).toBe(true);
+    week.model = { ...week.model!, me: 'G' };
+    expect(setKcalGoal('A', 2000).ok).toBe(false);
+    expect(setKcalGoal('G', 2200).ok).toBe(true);
+    expect(queued().filter((e) => e.type === 'pref').map((e) => e.data)).toEqual([
+      { person: 'B', key: 'kcalGoal', value: 1800 },
+      { person: 'A', key: 'kcalGoal', value: null },
+      { key: 'kcalGoal', value: 2200 }
+    ]);
   });
 });

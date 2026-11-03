@@ -67,6 +67,17 @@ export function cleanText(raw: unknown): string {
   return s;
 }
 
+/**
+ * One line of plain text (a meal's food name, contract/food.ts): the control characters stripped as `cleanText` does,
+ * every run of blank space (line breaks too) one space, trimmed, at most `max` characters. '' when nothing is left.
+ * Idempotent.
+ */
+export function cleanLine(raw: unknown, max: number): string {
+  if (typeof raw !== 'string') return '';
+  const s = raw.normalize('NFC').replace(BREAKS, ' ').replace(STRIP, '').replace(/\s+/gu, ' ').trim();
+  return Array.from(s).slice(0, max).join('').trimEnd();
+}
+
 /** How many characters a note's text is (code points). */
 export const textLength = (s: string): number => Array.from(s).length;
 

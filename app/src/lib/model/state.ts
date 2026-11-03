@@ -8,6 +8,7 @@ import { isTally } from '#lib/contract/tally.ts';
 import { isIslandDay, type IslandDayData } from '#lib/contract/island.ts';
 import { decorOpOf, type DecorEntry } from '#lib/contract/decor.ts';
 import { boardOpOf, type BoardEntry } from '#lib/contract/board.ts';
+import { foodOp, isKcalGoal, type FoodOp } from '#lib/contract/food.ts';
 import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import type { TallyRow } from './tally.ts';
@@ -54,8 +55,8 @@ interface Timed<T> { at: number; v: T }
 interface BellSpendRec { at: number; person: PersonId; spendId: string; item: ShopItemId; bells: number }
 
 /** `goalWeight` / `goalBodyFat`: the person's optional goals in kg / body fat %, shown on the weight / body fat
- *  charts; never earn. */
-interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string; goalWeight?: number; goalBodyFat?: number }
+ *  charts; `kcalGoal`: the meal log's daily kcal (model/food.ts). None ever earns. */
+interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string; goalWeight?: number; goalBodyFat?: number; kcalGoal?: number }
 
 export interface State {
   /** Ingested activity rows per person: date → metric → rows, ascending `at` (no key string built per row). */
@@ -96,7 +97,10 @@ export interface State {
   /** The bulletin board (`board`: each post's ops, contract/board.ts), in server order; the posts are their merge
    *  (components/board/posts.svelte.ts). Never read by the economy. */
   board: BoardEntry[];
-  /** Each person's prefs; the guest's (`G`) only ever hold its locale, name and villager (contract/guest.ts). */
+  /** The meal log (`food`: each entry's ops, contract/food.ts), in server order; the entries are their fold
+   *  (model/food.ts). Never read by the economy. */
+  food: (FoodOp & { who: Who })[];
+  /** Each person's prefs; the guest's (`G`) only ever hold its locale, name, villager and kcal goal (contract/guest.ts). */
   prefs: Record<Who, Prefs>;
   /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
   moveGoals: Record<PersonId, Timed<number>[]>;
@@ -202,6 +206,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     tent: [],
     layout: [],
     board: [],
+    food: [],
     prefs: { A: {}, B: {}, G: {} },
     moveGoals: { A: [], B: [] },
     stepsGoals: { A: [], B: [] },
@@ -276,6 +281,7 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     tent: [...base.tent],
     layout: [...base.layout],
     board: [...base.board],
+    food: [...base.food],
     prefs: { A: { ...base.prefs.A }, B: { ...base.prefs.B }, G: { ...base.prefs.G } },
     moveGoals: { A: [...base.moveGoals.A], B: [...base.moveGoals.B] },
     stepsGoals: { A: [...base.stepsGoals.A], B: [...base.stepsGoals.B] },
@@ -309,8 +315,8 @@ type MemberEvent = (s: State, person: PersonId, at: number, d: Data) => void;
 const members = (fn: MemberEvent): OnEvent => (s, person, at, d) => {
   if (isPersonId(person)) fn(s, person, at, d);
 };
-/** The prefs the guest has (its villager, name and language): anything else of `G` is ignored. */
-const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager'];
+/** The prefs the guest has (its villager, name, language and kcal goal): anything else of `G` is ignored. */
+const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'kcalGoal'];
 
 /** One handler per event type: each accepts (indexes) the event or ignores it. */
 const ON_EVENT: Record<EventType, OnEvent> = {
@@ -361,6 +367,10 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     const op = boardOpOf(d);
     if (op) s.board.push({ ...op, who: person } as BoardEntry);
   },
+  food(s, person, _at, d) {
+    const op = foodOp(d);
+    if (op) s.food.push({ ...op, who: person });
+  },
   pref(s, person, at, d) {
     if (!isPersonId(person)) {
       if (!GUEST_PREFS.includes(d.key)) return;
@@ -388,6 +398,10 @@ const ON_EVENT: Record<EventType, OnEvent> = {
       // A goal in body fat %, or null / '' to clear it; anything else is ignored (the previous goal stays).
       if (d.value === null || d.value === '') delete p.goalBodyFat;
       else if (isBodyFatGoal(d.value)) p.goalBodyFat = d.value;
+    } else if (d.key === 'kcalGoal') {
+      // A daily kcal goal, or null to clear it; anything else is ignored (the previous goal stays).
+      if (d.value === null) delete p.kcalGoal;
+      else if (isKcalGoal(d.value)) p.kcalGoal = d.value;
     }
   }
 };

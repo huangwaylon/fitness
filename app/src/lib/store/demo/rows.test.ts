@@ -9,6 +9,8 @@ import { bellsLedger, dayDetail } from '#lib/model/history.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { shopPrice } from '#lib/config/rules.ts';
 import { isActivityMetric } from '#lib/contract/api.ts';
+import { foodDay, kcalGoal } from '#lib/model/food.ts';
+import { localDateAt } from '#lib/time/dates.ts';
 
 describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-08T11:00:00.000Z', '2026-12-20T13:00:00.000Z'])('demo at %s', (iso) => {
   const now = Date.parse(iso);
@@ -52,12 +54,27 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
   });
 
   it('Move and Stand every day; うめ’s Move goal applies from its day', () => {
-    expect(cache.rows.events.filter((e) => !['spend', 'spend_void', 'harvest', 'pref'].includes(e[3]))).toEqual([]);
+    expect(cache.rows.events.filter((e) => !['spend', 'spend_void', 'harvest', 'pref', 'food'].includes(e[3]))).toEqual([]);
     const metrics = new Set(cache.rows.metrics.map((m) => m[3]));
     expect([...metrics].sort()).toEqual(['bmi', 'body_fat_pct', 'exercise_min', 'lean_kg', 'move_kcal', 'stand_min', 'steps', 'weight']);
     const settled = economyWeeks(s, now).filter((wk) => provisionalMs(wk) <= now);
     const goals = new Set(settled.flatMap((wk) => [0, 1, 2, 3, 4, 5, 6].map((i) => dayDetail(s, addDays(wk, i), now).people.B.move.goal)));
     expect([...goals].sort()).toEqual([400, 450]);
+  });
+
+  it('the last days’ meals for both, every one taken, and a kcal goal each; the guest sees them too', () => {
+    const sent = cache.rows.events.filter((e) => e[3] === 'food').length;
+    const yesterday = addDays(localDateAt(now), -1);
+    const days = (['A', 'B'] as const).map((p) => foodDay(s, p, yesterday));
+    for (const d of days) {
+      expect(d.entries.length).toBeGreaterThanOrEqual(4);
+      expect(d.kcal).toBeGreaterThan(900);
+      expect(d.kcal).toBeLessThan(3000);
+    }
+    const all = [0, 1, 2, 3].flatMap((k) => (['A', 'B'] as const).flatMap((p) => foodDay(s, p, addDays(localDateAt(now), -k)).entries));
+    expect(all).toHaveLength(sent);
+    expect([kcalGoal(s, 'A'), kcalGoal(s, 'B')]).toEqual([2200, 1700]);
+    expect(foodDay(reduce(demoCache(now, 'G').rows), 'A', yesterday)).toEqual(days[0]);
   });
 });
 

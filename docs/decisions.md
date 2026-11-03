@@ -83,7 +83,7 @@ changed value is appended. Why: no third-party app and nothing manual; Health is
 
 ### No manual input
 The app asks nothing day to day and never enters health data. Why: the daily loop needs no taps, and a second source
-would conflict with Health.
+would conflict with Health. (The meal log is the one exception: below.)
 
 ### No privacy rules
 Everything is visible to both people. Why: two people, one game. (The guest is the one exception: below.)
@@ -109,6 +109,19 @@ hard-to-test machinery. The removal went in the side-by-side order: the app firs
 subscription go on its next open, `sync/pushGone.ts`, and forgets `island.push` / `island.goalSent`), then the relay
 (`/push/*` answers 410 to an old build, so it fails quietly; the room drops its `push_subs` and `push_sent` tables),
 then the `VAPID_PRIVATE` secrets.
+
+### Meal log (2026-11-03)
+An exception to *No manual input*: ごはん (the HUD's button between the jar and the dumbbell) is a meal log, typed in by
+the person (a food from the shipped data, its grams, the meal and the day), and nothing Health measures is: the
+activity and the body stay Apple Health's alone. Each entry is a `food` op in the record ([backend](backend.md#events)),
+its own latest op per id like a board note: anyone logs their own, the guest too; only the one who logged it edits or
+removes it; a removal is final. The food goes in as a snapshot per 100 g, so a data refresh never rewrites a meal, and
+a day's totals are read off the entries. One goal, a daily kcal (`pref kcalGoal`, a goal like the Move goal: either
+member sets either's, the guest its own); the protein shown is 1.6 g per kg of the latest weigh-in, the members' only.
+It never earns ベル: the economy never imports it (`deps.test.ts`), so typing in a meal can't buy anything. Everyone sees
+every meal, the guest included (unlike the body: what was eaten is shared like the activity). Why: the user (a port of
+their calorie tracker into the island, everyone able to see the meals). Not done: barcode scanning (the CSP blocks Open
+Food Facts and the shards aren't shipped), other goals.
 
 ## Economy
 
