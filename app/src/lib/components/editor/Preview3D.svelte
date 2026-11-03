@@ -195,13 +195,22 @@
         };
         canvas.addEventListener('wheel', onWheel, { passive: false });
 
-        let raf = 0;
+        // drawn when something changed (a layout edit, the camera, a model in, a wobble) and otherwise at the water's
+        // 30 a second; the shadow map redrawn only on a change (it drew every display frame, the water's too)
+        renderer.shadowMap.autoUpdate = false;
+        let raf = 0, waterAt = -Infinity;
         const frame = (t: number) => {
           raf = requestAnimationFrame(frame);
-          waterU.uTime.value = (t / 1000) % 3600;
-          if (m === 'orbit') controls.update();
+          if (m === 'orbit' && controls.update()) dirty = true;
+          if (things.frame(t)) dirty = true;
+          const water = t - waterAt >= 1000 / 30 - 4;
+          if (!dirty && !water) return;
+          if (water) {
+            waterAt = t;
+            waterU.uTime.value = (t / 1000) % 3600;
+          }
           waterFog(fog);
-          things.frame(t);
+          if (dirty) renderer.shadowMap.needsUpdate = true;
           renderer.render(scene, camera);
           dirty = false;
         };
@@ -221,15 +230,18 @@
           look(l: Look) {
             ground.look(l);
             void things.place(placeObjects(cur, day()).insts);
+            dirty = true;
           },
           mode(mm) {
             m = mm;
             resize();
             aim();
+            dirty = true;
           },
           cam(z: number) {
             camZ = z;
             aim();
+            dirty = true;
           }
         };
         // the stage: world ⇄ px through the camera and the bend (engine.ts's at / groundAt), what's held hidden

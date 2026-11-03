@@ -234,14 +234,21 @@
   }
 
   // ---- the held thing's footprint and icon, drawn over the island ----
-  const ghost = $derived.by(() => {
-    void rev;
+  // (its footprint in the world only when what's held or the layout changes: the layout's objects copied once, not in
+  // each frame of the camera's follow below)
+  const held = $derived.by(() => {
     if (!sel) return null;
     const h = withHeld(store.current);
     if (!h) return null;
     const o = h.l.objects.get(h.id)!;
     const [w, d] = footOf(h.l, o), [x0, z0] = originOf(h.l, o);
-    const X0 = GRID.x0 + x0 * TILE, Z0 = GRID.z0 + z0 * TILE, X1 = X0 + w * TILE, Z1 = Z0 + d * TILE;
+    const X0 = GRID.x0 + x0 * TILE, Z0 = GRID.z0 + z0 * TILE;
+    return { X0, Z0, X1: X0 + w * TILE, Z1: Z0 + d * TILE };
+  });
+  const ghost = $derived.by(() => {
+    void rev;
+    if (!sel || !held) return null;
+    const { X0, Z0, X1, Z1 } = held;
     const pts = [[X0, Z0], [X1, Z0], [X1, Z1], [X0, Z1]].map(([x, z]) => stage.toScreen(x, z, 1));
     if (pts.some((p) => !p)) return null;
     const [mx, mz] = [(X0 + X1) / 2, (Z0 + Z1) / 2];
