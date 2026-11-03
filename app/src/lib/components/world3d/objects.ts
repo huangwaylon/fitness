@@ -176,6 +176,13 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         out.push({ id: o.id, model: 'tent', x: door[0], z: door[1] - 10 * scale, scale, yaw: (o.f * Math.PI) / 2, tap: 'tent' });
         break;
       }
+      case 'museum': {
+        // NH's museum (models.json `museum`, its origin its front steps' middle): at NH's building scale (its furniture's,
+        // DECOR_U), its steps on the footprint's front edge, its door the layout's (model.ts doorOf)
+        const door = doorOf(layout, o).at;
+        out.push({ id: o.id, model: 'museum', x: door[0], z: door[1], scale: DECOR_U, yaw: (o.f * Math.PI) / 2, tap: 'thing' });
+        break;
+      }
       case 'pond': {
         // its lily pads and the lily on the biggest, on its water (pond.ts draws the water, its bed and its stones)
         const p = pondPlaces(layout).find((q) => q.id === o.id);

@@ -98,13 +98,13 @@ export type Intent =
    *  room, the piece's middle), its facing, `it` the item when it isn't placed yet, `end` when the finger let go. */
   | { kind: 'drag'; id: string; x: number; z: number; f: number; it?: string; end?: true; sc?: 'u' | 'v' | 'o' }
   /** My villager in a home (presence only, like a drag; `sc` which: none the tent, ウェイ's, `u` うめ's, `v` the
-   *  guest's): `in` whether it's inside; a walk there (`from` → `via` → `to`,
+   *  guest's; `m` the museum, routes/museum, its points within MUSEUM_U): `in` whether it's inside; a walk there (`from` → `via` → `to`,
    *  model units of the room, set off at `s` on the relay's clock, `ms` long), or where it stands (`to` alone); sitting
    *  or lying on a piece (`seat`: its id, `n`: which of its seats, `lie`), since `s`. */
-  | { kind: 'tent'; in: boolean; to?: Pt; from?: Pt; via?: Pt[]; s?: number; ms?: number; seat?: string; n?: number; lie?: true; sc?: 'u' | 'v' }
+  | { kind: 'tent'; in: boolean; to?: Pt; from?: Pt; via?: Pt[]; s?: number; ms?: number; seat?: string; n?: number; lie?: true; sc?: 'u' | 'v' | 'm' }
   /** A phrase my villager says (v2; docs/design.md "Villager taps"): its speech balloon over it on both phones for a
    *  few seconds. Presence only: never kept, never replayed, never in the sheet. `text` as cleanSay leaves it. `sc`
-   *  (additive): where the speaker is, a home's room (`t` the tent, `u` うめ's, `v` the guest's; none: the island), so
+   *  (additive): where the speaker is, a home's room (`t` the tent, `u` うめ's, `v` the guest's), the museum (`m`; none: the island), so
    *  it shows only to phones in the same place (one place at a time; an older phone, which sends none, is on the island). */
   | { kind: 'say'; text: string; sc?: SayScope }
   /** A high-five to the partner (v2; docs/design.md "Villager taps"): `at` when it was tapped, the relay's clock (its
@@ -199,6 +199,8 @@ const DECOR_ID = /^d[0-9a-z]{6,24}$/;
 /** The tent's room: its tiles (a `decor` op's x and z with `sc: 't'`) and its extent in model units (a drag, a walk). */
 const TENT_TILES = [0, 7] as const;
 const TENT_U = [-40, 40] as const;
+/** The museum's extent (model units: its hall and two wings, routes/museum), a walk's points there. */
+const MUSEUM_U = [-320, 320] as const;
 /** The layout's ids and tokens (contract/layout.ts). */
 const OBJ_ID = /^[A-Za-z0-9][A-Za-z0-9:._-]{0,31}$/;
 const CHUNK_ID = /^c(?:[0-9]|1[0-5])x(?:[0-9]|1[0-5])$/;
@@ -208,11 +210,13 @@ const CHUNK_G = /^[0-9a-z]{64}$/;
 const LAYOUT_TILES = [0, 127] as const;
 const ROOMS: readonly unknown[] = ['t', 'u', 'v'];
 const isTentPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], TENT_U) && within(x[1], TENT_U);
+const isMuseumPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], MUSEUM_U) && within(x[1], MUSEUM_U);
 
 /** A phrase's length at most (code points; NH's balloon scale). */
 export const SAY_MAX = 20;
-/** Where a phrase is said (`say`'s `sc`): a home's room, the tent (`t`), うめ's (`u`) or the guest's (`v`); none, the island. */
-const SAY_SCOPES = ['t', 'u', 'v'] as const;
+/** Where a phrase is said (`say`'s `sc`): a home's room, the tent (`t`), うめ's (`u`) or the guest's (`v`), the museum (`m`);
+ *  none, the island. */
+const SAY_SCOPES = ['t', 'u', 'v', 'm'] as const;
 export type SayScope = (typeof SAY_SCOPES)[number];
 /** What a phrase never carries: control characters (a newline, a tab: a space), line and paragraph separators, bidi
  *  controls, invisible spaces, lone surrogates. (The emoji joiner and the variation selectors stay: emoji need them.) */
@@ -364,17 +368,20 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
         ...(o.sc !== undefined ? { sc: o.sc as 'u' | 'v' | 'o' } : {})
       };
     }
-    case 'tent':
-      if (v === 1 || typeof o.in !== 'boolean' || !opt(o, 'to', isTentPt) || (o.from !== undefined && !isTentPt(o.from)) || !opt(o, 's', isTime) || !opt(o, 'ms', isWalkMs)) return null;
-      if (o.via !== undefined && !(Array.isArray(o.via) && o.via.length <= VIA_MAX && o.via.every(isTentPt))) return null;
+    case 'tent': {
+      // (the museum's points over its own extent)
+      const isPt = o.sc === 'm' ? isMuseumPt : isTentPt;
+      if (v === 1 || typeof o.in !== 'boolean' || !opt(o, 'to', isPt) || (o.from !== undefined && !isPt(o.from)) || !opt(o, 's', isTime) || !opt(o, 'ms', isWalkMs)) return null;
+      if (o.via !== undefined && !(Array.isArray(o.via) && o.via.length <= VIA_MAX && o.via.every(isPt))) return null;
       if ((o.seat !== undefined && (typeof o.seat !== 'string' || !DECOR_ID.test(o.seat))) || !opt(o, 'n', (x): x is number => within(x, [0, 7])) || (o.lie !== undefined && o.lie !== true)) return null;
-      if (o.sc !== undefined && o.sc !== 'u' && o.sc !== 'v') return null;
+      if (o.sc !== undefined && o.sc !== 'u' && o.sc !== 'v' && o.sc !== 'm') return null;
       return {
-        ...(o.sc !== undefined ? { sc: o.sc as 'u' | 'v' } : {}),
+        ...(o.sc !== undefined ? { sc: o.sc as 'u' | 'v' | 'm' } : {}),
         ...(o.seat !== undefined ? { seat: o.seat as string } : {}), ...(o.n !== undefined ? { n: o.n as number } : {}), ...(o.lie ? { lie: true as const } : {}),
         kind: 'tent', in: o.in, ...(o.to !== undefined ? { to: o.to as Pt } : {}), ...(o.from !== undefined ? { from: o.from as Pt } : {}),
         ...(o.via !== undefined ? { via: o.via as Pt[] } : {}), ...(o.s !== undefined ? { s: o.s as number } : {}), ...(o.ms !== undefined ? { ms: o.ms as number } : {})
       };
+    }
     case 'highfive':
       if (v === 1 || !isTime(o.at) || (o.to !== undefined && (v < 3 || !isWho(o.to)))) return null;
       return { kind: 'highfive', at: o.at, ...(o.to !== undefined ? { to: o.to as Who } : {}) };

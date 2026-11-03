@@ -2,7 +2,7 @@
 // at the top (as the phones see it, the camera at the front), its view (scale and offset), and what is under the
 // pointer. Pure but for the canvas it draws on.
 import { GRID, TILE, idx, kindOf, tierOf, type Kind } from '#lib/layout/grid.ts';
-import { kindDef } from '#lib/layout/catalog.ts';
+import { goesIn, kindDef } from '#lib/layout/catalog.ts';
 import { doorOf, facingVec, footOf, objMid, originOf, type Layout, type Obj } from '#lib/layout/model.ts';
 import type { Issue } from '#lib/layout/validate.ts';
 import type { Stem } from '#lib/layout/river.ts';
@@ -264,8 +264,10 @@ function drawObj(ctx: CanvasRenderingContext2D, d: Draw, o: Obj, selected: boole
   const [x, y] = toScreen(v, GRID.x0 + ox * TILE, GRID.z0 + (oz + dd) * TILE);
   const W = w * T, H = dd * T;
   ctx.globalAlpha = ghost ? 0.75 : 1;
-  if (o.k === 'home') {
-    const [fill, name] = OWNER[o.id] ?? ['#dddddd', ''];
+  if (goesIn(o.k)) {
+    // a home (its owner's colour, its look's word) or one of the island's buildings (its name)
+    const home = o.k === 'home';
+    const [fill, name] = home ? (OWNER[o.id] ?? ['#dddddd', '']) : ['#e9dcc0', def.ja];
     ctx.fillStyle = fill;
     roundRect(ctx, x + 2, y + 2, W - 4, H - 4, T * 0.3);
     ctx.fill();
@@ -277,9 +279,11 @@ function drawObj(ctx: CanvasRenderingContext2D, d: Draw, o: Obj, selected: boole
     ctx.font = `700 ${Math.max(9, Math.min(15, T * 0.45))}px "Zen Maru Gothic", system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`${name}のいえ`, x + W / 2, y + H / 2 - T * 0.15);
-    ctx.font = `500 ${Math.max(8, Math.min(12, T * 0.32))}px system-ui, sans-serif`;
-    ctx.fillText(style.m === 'campsite' ? 'テント' : style.m.startsWith('tent') ? 'テント' : 'いえ', x + W / 2, y + H / 2 + T * 0.32);
+    if (home) {
+      ctx.fillText(`${name}のいえ`, x + W / 2, y + H / 2 - T * 0.15);
+      ctx.font = `500 ${Math.max(8, Math.min(12, T * 0.32))}px system-ui, sans-serif`;
+      ctx.fillText(style.m === 'campsite' ? 'テント' : style.m.startsWith('tent') ? 'テント' : 'いえ', x + W / 2, y + H / 2 + T * 0.32);
+    } else ctx.fillText(name, x + W / 2, y + H / 2);
     // the door: a notch on the front edge
     const door = doorOf(l, o).at, [dx, dy] = toScreen(v, door[0], door[1]);
     ctx.fillStyle = '#7a4f2c';

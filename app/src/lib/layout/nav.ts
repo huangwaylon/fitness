@@ -9,7 +9,7 @@
 //   on water, to the nearest bank facing it; on anything else, the nearest walkable point within 40u.
 import { GRID, TILE, isWater, kindOf, tierOf, idx, onGrid, tileX, tileZ } from './grid.ts';
 import { doorOf, facingVec, footOf, objMid, originOf, type Layout, type Obj } from './model.ts';
-import { kindDef } from './catalog.ts';
+import { goesIn, kindDef } from './catalog.ts';
 
 type Pt = readonly [number, number];
 /** A box (u; y is z, as island/geom.ts's). */
@@ -36,7 +36,7 @@ export interface Snap {
   to: Pt;
   kind: 'here' | 'door' | 'bank' | 'near';
   face?: 'l' | 'r';
-  /** The home whose door it is (its object id). */
+  /** The building whose door it is (its object id: a home, the museum). */
   building?: string;
   water?: WaterKind;
 }
@@ -52,7 +52,7 @@ export interface LayoutNav {
   readonly main: number;
   /** The named spots (the villagers' home spots, centre stage, the doors, the seats). */
   readonly named: Record<string, Pt>;
-  /** Each home's door (a step in front of it) and footprint, by its object id. */
+  /** Each building's door (a step in front of it) and footprint, by its object id: the homes, the museum. */
   readonly doors: Record<string, { at: Pt; box: Box }>;
   readonly buildMs: number;
 }
@@ -121,14 +121,14 @@ export function navOf(layout: Layout): LayoutNav {
   for (const o of layout.objects.values()) {
     const b = blockBox(layout, o);
     if (!b) continue;
-    const pad = o.k === 'home' ? 0 : PAD;
+    const pad = goesIn(o.k) ? 0 : PAD;
     const [i0, j0] = cellOf(b.x0 - pad, b.y0 - pad), [i1, j1] = cellOf(b.x1 + pad, b.y1 + pad);
     for (let j = Math.max(0, j0); j <= Math.min(ROWS - 1, j1); j++)
       for (let i = Math.max(0, i0); i <= Math.min(COLS - 1, i1); i++) {
         const [mx, mz] = cellMid(i, j);
         if (mx > b.x0 - pad && mx < b.x1 + pad && mz > b.y0 - pad && mz < b.y1 + pad && !deck[j * COLS + i]) open[j * COLS + i] = 0;
       }
-    if (o.k === 'home') {
+    if (goesIn(o.k)) {
       const dr = doorOf(layout, o), [fx, fz] = facingVec(o.f);
       doors[o.id] = { at: [dr.at[0] + fx * 16, dr.at[1] + fz * 16], box: b };
     }

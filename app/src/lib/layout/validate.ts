@@ -112,6 +112,15 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
     if (d.tiles.some(([c, r]) => isWater(kindAt(layout, c, r)) || tierAt(layout, c, r) !== tierAt(layout, hx, hz)) || !at || !reachable(nav, at[0], at[1]))
       add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [id], 'いえの とびらまで いけない', "A home's door can't be reached");
   }
+  // the island's buildings (the museum): a clear door, as a home's
+  for (const o of objs) {
+    const def = kindDef(o.k);
+    if (!def?.door) continue;
+    const d = doorOf(layout, o);
+    const at = nav.doors[o.id]?.at;
+    if (d.tiles.some(([c, r]) => isWater(kindAt(layout, c, r)) || tierAt(layout, c, r) !== tierAt(layout, o.x, o.z)) || !at || !reachable(nav, at[0], at[1]))
+      add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [o.id], `${def.ja}の とびらまで いけない`, `The ${def.en.toLowerCase()}'s door can't be reached`);
+  }
   // what a villager uses from in front of it (the bulletin board): its front tiles clear and reachable
   for (const o of objs) {
     if (!kindDef(o.k)?.front) continue;

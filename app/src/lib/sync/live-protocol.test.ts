@@ -252,6 +252,11 @@ describe('live protocol: the tent (v2)', () => {
     expect(parseClient(j2(walk))).toEqual({ v: 3, ...walk });
     expect(parseServer(j2({ kind: 'tent', in: false, who: 'B', t: T }))).toEqual({ v: 3, kind: 'tent', in: false, who: 'B', t: T });
     for (const bad of [j2({ ...walk, in: 1 }), j2({ ...walk, to: [50, 0] }), j2({ ...walk, via: [[0, 99]] })]) expect(parseClient(bad), bad).toBeNull();
+    // in the museum (`sc: 'm'`): its points over its own wider extent (a home's room's only within its own)
+    const museum = { ...walk, from: [0, 56], via: [[60, 10]], to: [180, -40], sc: 'm' };
+    expect(parseClient(j2(museum))).toEqual({ v: 3, ...museum });
+    expect(parseServer(j2({ kind: 'tent', in: true, to: [-250, 80], sc: 'm', who: 'G', t: T }))).toEqual({ v: 3, kind: 'tent', in: true, to: [-250, 80], sc: 'm', who: 'G', t: T });
+    for (const bad of [j2({ ...museum, to: [400, 0] }), j2({ ...museum, sc: 'u' }), j2({ ...museum, sc: 'x' })]) expect(parseClient(bad), bad).toBeNull();
     // sitting or lying on a piece
     const sit = { kind: 'tent', in: true, to: [0, 10], seat: 'dmh1sofa01', n: 1, s: T };
     expect(parseClient(j2(sit))).toEqual({ v: 3, ...sit });
@@ -289,6 +294,7 @@ describe('live protocol: a phrase (v2 `say`, presence only)', () => {
     // where it was said (a home's room; none: the island), additive: kept through the relay, an unknown place refused
     expect(parseClient(j2({ kind: 'say', text: 'やっほー！', sc: 'u' }))).toEqual({ v: 3, kind: 'say', text: 'やっほー！', sc: 'u' });
     expect(parseServer(j2({ kind: 'say', text: 'hi', sc: 't', who: 'G', t: 9 }))).toEqual({ v: 3, kind: 'say', text: 'hi', sc: 't', who: 'G', t: 9 });
+    expect(parseClient(j2({ kind: 'say', text: 'みて！', sc: 'm' }))).toEqual({ v: 3, kind: 'say', text: 'みて！', sc: 'm' });
     for (const sc of ['o', 'x', 1, null]) expect(parseClient(j2({ kind: 'say', text: 'hi', sc }))).toBeNull();
     expect(isStored({ kind: 'say', text: 'x' })).toBe(false);
     expect(claimOf({ kind: 'say', text: 'x' })).toBeNull();

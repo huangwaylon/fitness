@@ -5,7 +5,8 @@
 // decorations' kinds were cards (the brick well floated over the campfire in front of it).
 import { describe, expect, test } from 'vitest';
 import RECORD from '#lib/layout/record-2026-11-03.json' with { type: 'json' };
-import { layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
+import { layoutOpOf, mergeLayout, type LayoutEntry } from '#lib/contract/layout.ts';
+import { buildingOps } from '#lib/layout/buildings.ts';
 import { defaultLayout, layoutOf } from '#lib/layout/model.ts';
 import { validate } from '#lib/layout/validate.ts';
 import { placeObjects } from './objects.ts';
@@ -17,7 +18,13 @@ const entries = (RECORD as Record<string, unknown>[]).map((r) => {
   const op = layoutOpOf(d);
   return op ? ({ ...op, who } as LayoutEntry) : null;
 });
-const record = () => layoutOf(entries.filter((e): e is LayoutEntry => !!e));
+/** The record's island, the museum put on its free spot once as a member's phone does (layout/buildings.ts). */
+const record = () => {
+  const m = new Map<string, LayoutEntry>();
+  for (const e of entries) if (e) mergeLayout(m, e);
+  for (const op of buildingOps(m, 'A', 1.8e12)) mergeLayout(m, { ...op, who: 'A' } as LayoutEntry);
+  return layoutOf(m);
+};
 
 describe("the record's layout", () => {
   test('every op is well-formed (the kind-less ones are removals) and the fold is what the editor made', () => {
@@ -26,13 +33,13 @@ describe("the record's layout", () => {
     expect(ops.filter((e) => e.sc === 'o' && !('k' in e)).every((e) => 'rm' in e && e.rm)).toBe(true);
     const l = record();
     const count = (k: string) => [...l.objects.values()].filter((o) => o.k === k).length;
-    expect(l.objects.size).toBe(120);
+    expect(l.objects.size).toBe(121); // (the museum among them)
     expect([count('oak'), count('cedar'), count('bush'), count('hedge'), count('flower')]).toEqual([4, 8, 7, 0, 56]);
     expect(validate(l).filter((i) => i.level === 'error')).toEqual([]);
   });
 
   test('any order folds to the same island (the merge is commutative)', () => {
-    const a = record(), ops = [...(entries as LayoutEntry[])].reverse();
+    const a = layoutOf(entries as LayoutEntry[]), ops = [...(entries as LayoutEntry[])].reverse();
     const b = layoutOf(ops);
     expect([...b.objects.values()].sort((x, y) => (x.id < y.id ? -1 : 1))).toEqual([...a.objects.values()].sort((x, y) => (x.id < y.id ? -1 : 1)));
     expect(b.codes).toEqual(a.codes);

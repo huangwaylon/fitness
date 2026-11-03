@@ -42,9 +42,11 @@
   let { stage, relay, me, ondone }: Props = $props();
 
   type Facing = Obj['f'];
-  const TABS: [string, string][] = [['tree', 'き'], ['bush', 'かんぼく'], ['flower', 'はな'], ['rock', 'いわ'], ['light', 'あかり'], ['furniture', 'かぐ'], ['structure', 'はし・さか']];
+  const TABS: [string, string][] = [['tree', 'き'], ['bush', 'かんぼく'], ['flower', 'はな'], ['rock', 'いわ'], ['light', 'あかり'], ['furniture', 'かぐ'], ['structure', 'はし・さか'], ['building', 'たてもの']];
   let tab = $state('tree');
-  const list = $derived(KIND_LIST.filter((d) => d.group === tab && !d.hidden && !d.fixed));
+  // (the island's one-off buildings only while it has none of them: the museum stands there already, moved by a tap on it)
+  const present = (d: KindDef) => [...store.current.objects.values()].some((o) => o.k === d.k);
+  const list = $derived(KIND_LIST.filter((d) => d.group === tab && !d.hidden && (!d.fixed || (d.group === 'building' && !present(d)))));
   const ICON_FALLBACK: Record<string, string> = { stairs: '⛰', board: '📋' };
 
   /** What's held: a new kind (`id` null) or a placed thing, its tile (its footprint's anchor) and facing. */
@@ -352,6 +354,7 @@
               {#if d.icon && artUrl(d.icon)}<img src={artUrl(d.icon)} alt="" width="48" height="48" loading="lazy" draggable="false" />{:else}<span class="glyph">{ICON_FALLBACK[d.k] ?? '・'}</span>{/if}
             </button>
           {/each}
+          {#if !list.length}<span class="none" data-island-none>しまに あります（タップで うごかせます）</span>{/if}
         </div>
         <button type="button" class="done" data-island-done data-sfx="confirm" onclick={() => (cancel(), ondone())}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7" /></svg><span>おわる</span>
@@ -397,4 +400,5 @@
   .act.ok[aria-disabled='true'] { background: #cfc6b0; box-shadow: none; }
   .done { width: 68px; padding: 6px 4px; gap: 2px; display: flex; flex-direction: column; justify-content: center; border-radius: 16px; background: var(--c-yuzu, #f7d94c); box-shadow: 0 2px 0 var(--c-yuzu-lip, #d9b21e); }
   @keyframes bob { 50% { translate: 0 -4px; } }
+  .none { align-self: center; padding: 0 8px; font-size: var(--fs-s, 13px); color: var(--plate-ink, var(--c-ink)); opacity: .75; }
 </style>
