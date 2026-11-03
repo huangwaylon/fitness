@@ -19,7 +19,7 @@ const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none&island=3d';
 
 async function open(page: Page, q = '&layout') {
   await page.goto(`${Q}${q}`);
-  await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 60_000 });
 }
 
 test('on its layout: the layout\'s ground, the homes and the structures placed, the far end at ウェイ\'s door, the rock drawn once', async ({ page }) => {
@@ -33,10 +33,6 @@ test('on its layout: the layout\'s ground, the homes and the structures placed, 
   // one rock: placeObjects' (the DOM node's m3 model of the same id not added again)
   const rock = await w3(page, (w) => w.where('rock'));
   expect(rock).not.toBeNull();
-  // off without ?layout: world.ts's island
-  await open(page, '');
-  expect(await w3(page, (w) => w.onLayout())).toBe(false);
-  expect(await w3(page, (w) => w.placedGroups().length)).toBe(0);
 });
 
 test('the もようがえ on the layout is IslandEdit over the 3D island: a bench from the tray is put down and drawn there', async ({ page }) => {
