@@ -17,8 +17,8 @@ export const MAX_BYTES = 256;
 export const REPLAY_BYTES = 16_000;
 /** A walk's waypoints between `from` and `to` (more: the receiver plans the way itself). */
 export const VIA_MAX = 10;
-/** A walk takes at most this long (ms). @public (relay/, sync/live.ts) */
-export const WALK_MS_MAX = 60_000;
+/** A walk takes at most this long (ms). */
+const WALK_MS_MAX = 60_000;
 
 /**
  * The world's extent (world units): a v2 walk's point lies within it. island/world.ts PLAN lies inside it (its test):
@@ -30,8 +30,6 @@ export const WORLD_Z = [-460, 2650] as const;
 
 /** Who is on the island: the two members, and the guest (`G`, v3 only). */
 export type Who = 'A' | 'B' | 'G';
-/** The two members. @public (relay/) */
-export type Member = 'A' | 'B';
 
 /** Whether a walk of version `a` means the same on a phone of version `b`: v2 and v3 are both world units. @public (relay/) */
 export const sameWalk = (a: LiveV, b: LiveV): boolean => a === b || (a >= 2 && b >= 2);
