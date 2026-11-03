@@ -22,7 +22,7 @@ import { footprintOf, kindDef } from './catalog.ts';
 
 /** A turn's arc (world u): its centre, its radius, where it leaves the line before and meets the line after, and how
  *  far it turns (degrees). */
-export interface StemArc {
+interface StemArc {
   cx: number;
   cz: number;
   r: number;
