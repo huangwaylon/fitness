@@ -48,6 +48,7 @@
   import { DOOR_IN, HALF, centreOf, nearestFree, resolve as resolveRoom, walkPath, type Pt, type Resolved } from './grid.ts';
   import { DragLink } from './dragLink.ts';
   import { seatsOf, type Seat } from './seats.ts';
+  import { drawOff } from '#lib/ui-state/testMode.ts';
   import type { Look, Pose, Tent, Who } from './engine.ts';
 
   // `home`: whose home this is (docs/island-layout.md "Homes"): ウェイ's the tent's room (as it always was), うめ's house's
@@ -652,9 +653,9 @@
     return { top: tb ? Math.max(0, tb.bottom - rc.top) : 0, bottom: barTop !== undefined ? Math.max(0, rc.bottom - barTop) : 0 };
   }
 
-  /** The e2e's and the console's hooks (dev builds and ?demo). */
+  /** The e2e's and the console's hooks (dev builds, ?demo, and the e2e's logic mode: a paired phone on a test record). */
   function hooks() {
-    if (!import.meta.env.DEV && !new URLSearchParams(location.search).has('demo')) return;
+    if (!import.meta.env.DEV && !new URLSearchParams(location.search).has('demo') && !drawOff()) return;
     (window as unknown as { __tent?: unknown }).__tent = {
       stats: () => eng?.stats(),
       loading: () => eng?.loading() ?? 0,
@@ -780,7 +781,7 @@
     {/if}
   </div>
   {#if editing && eng}
-    <TentEdit bind:this={edit} eng={() => eng} {link} {finds} {relayNow} holderName={(id) => nameOf(link.theirs().find((h) => h.id === id)?.who ?? partner)}
+    <TentEdit bind:this={edit} {room} eng={() => eng} {link} {finds} {relayNow} holderName={(id) => nameOf(link.theirs().find((h) => h.id === id)?.who ?? partner)}
       villagers={() => [eng?.at(me), ...others.map((w) => eng?.at(w))].filter((p): p is [number, number] => !!p)}
       ondone={() => {
         editing = false;
