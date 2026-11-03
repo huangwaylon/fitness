@@ -86,6 +86,7 @@
   import { weedsAt } from './care.ts';
   import { mushroomSpots } from './mushrooms.ts';
   import { giftTreesOn } from './treeGifts.ts';
+  import { perches } from './critters.ts';
   import { arrive, attachAvatar, homeAgain, homeRoute, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, snapHome, stayingAt, stepOut, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
   import { where } from '#lib/store/where.svelte.ts';
   import { JOIN_SAY_MS, RUN_RING_U_S, homeAfter, linkVillagers, playPartner, playWake, setHomeAfter } from './villagerSync.ts';
@@ -666,6 +667,14 @@
         return walkable(walkGeo(), x, z) && !near([...weedsAt(today, ms, seed).map((w) => [w.x, w.y] as const), ...digSpots(today, new Set(), seed).map((d) => [d.x, d.y] as const), ...mushroomSpots()], away)
           && !near([...W.SCENERY, ...W.DECOR_SLOTS].map((t) => [t.x, t.z] as const), 30) && !near([W.ROCK, W.TAPE_DECK, ...W.BUILDINGS.map((b) => [b.x, b.z + b.depth / 2] as const)], 40)
           && !near(W.FLOWERS.map((f) => [f.x, f.z] as const), 32);
+      },
+      /** The trunks a bug perches on (critters.ts perches: the island's trees as they stand) and the ground's height
+       *  at a point (the layout's on it, else world3d/ground.ts's): the e2e's bug on its bark. */
+      perches: (palm: boolean) => perches(palm),
+      height: async (x: number, z: number) => {
+        const l = site.layout;
+        if (l) return (await import('#lib/layout/height.ts')).heightAt(l, x, z);
+        return (await import('../world3d/ground.ts')).groundHeight(x, z);
       },
       /** Today's weed and dig spots (beach.ts spotsOn: the layout's open grass when on). */
       spots: () => spotsOn(today, islandSeed()),
