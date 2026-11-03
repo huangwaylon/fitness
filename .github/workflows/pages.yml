@@ -157,10 +157,12 @@ jobs:
           ANNOTATE=1 node scripts/e2e-report.ts first-run.json "Flaky e2e (logic tier)"
           node scripts/e2e-report.ts first-run.json "Flaky e2e (failed, then passed on a rerun): quarantine it and fix the cause, docs/ops/testing.md" >> "$GITHUB_STEP_SUMMARY"
 
-  # The drawn smoke, the gate's other e2e (docs/ops/test-strategy.md): the tests that need the pixels (@render) and a
-  # few whole 3D flows (@smoke) with real (software) GL, on one runner.
+  # The drawn smoke (docs/ops/test-strategy.md): the tests that need the pixels (@render) and a few whole 3D flows
+  # (@smoke) with real (software) GL, on one runner. Advisory (the user, Nov 2026: CI's software GL isn't the phones'
+  # Metal): it never holds the deploy back (not in deploy's needs, continue-on-error); its failures are in its summary.
   e2e-render:
     runs-on: ubuntu-latest
+    continue-on-error: true
     timeout-minutes: 15
     defaults:
       run:
@@ -291,7 +293,7 @@ jobs:
         run: node scripts/e2e-report.ts playwright-results.json "Failed on the 3D island (E2E_ISLAND=3d), shard ${{ matrix.shard }}" >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
-    needs: [build, checks, e2e-logic, e2e-render]
+    needs: [build, checks, e2e-logic]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     # never cancelled halfway: a newer push's deploy waits for this one
