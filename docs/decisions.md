@@ -217,6 +217,15 @@ plate, the ずかん, the tent and the sharing with it.
 November's mushrooms are captions only, no ずかん `find`. Why: NH's mushrooms are crafting materials with no catalogue
 page, and a new find kind needs a redeploy for a seasonal flourish.
 
+### The jar is the door, no ribbon (2026-11-03)
+(Amends *The dumbbell beside the ribbon*.) The きょう ribbon is gone from the HUD: the jar sits in the sky's top-left
+corner, the dumbbell in its top-right. The jar opens the panel on ごほうび (tabs to きろく and せってい); today's ベル live
+under ごほうび's balance as a yuzu pill 「きょう +N ベル」 (「きょう まだ 0 ベル」 before the first) and flash beside the jar
+as coins land; the jar's label says them. Why (the user's ask, then the team's picks): NH's island view has a clean sky
+with its UI in the corners; one doorway is the NookPhone's way (a long-press is undiscoverable and has no VoiceOver
+equivalent, a third button brings the clutter back); today's earnings belong next to the money, and a permanent badge
+would read as a notification. The guest sees the members' today, as the ribbon showed it.
+
 ### The dumbbell beside the ribbon (2026-11-02)
 (Replaces *The jar beside the ribbon*.) The HUD's button on the right of 「きょう +N ベル」 is NH's dumbbell, opening
 けんこう in a popup of its own; the panel (the ribbon) has three tabs, きろく · ごほうび · せってい, and opens on きろく.

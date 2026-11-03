@@ -23,9 +23,10 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 ## Simplicity rules
 
-- No tab bar: 島 (the island), one panel for everything else (tap the ribbon: きろく, ごほうび, せってい; tap the jar:
-  the same panel on ごほうび) and the health popup (tap the dumbbell: けんこう).
-- One focal point per screen (島: today's ベル, also the door to the panel; ごほうび: the balance).
+- No tab bar: 島 (the island), one panel for everything else (tap the jar: it opens on ごほうび, its tabs きろく ·
+  ごほうび · せってい) and the health popup (tap the dumbbell: けんこう).
+- One focal point per screen (島: the island itself, the sky clean, the jar the door to the panel; ごほうび: the
+  balance, today's ベル under it).
 - A number is shown in full in one place; elsewhere it is only a doorway to it.
 - Per screen at most 40 Japanese characters of non-numeric text, 3 cards, 5 rows a card; one しずえ line (≤ 16
   characters), only with news.
@@ -34,8 +35,8 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 ### Island
 
-Top to bottom: the ribbon 「きょう +6 ベル」 (both people today, ふたりでぜんぶ included; counts up; tap → [the
-panel](#panel)) with the jar on its left and the health button on its right, one row centred in the sky; a sync chip only when sync isn't ok; the scene;
+Top to bottom: the HUD row, the jar in the sky's top-left corner (tap → [the panel](#panel) on ごほうび, where today's
+ベル are) and the health button in its top-right, the sky between them clear; a sync chip only when sync isn't ok; the scene;
 しずえ's box only with news; the say button at the bottom right. The island is NH's rolling log under them ([World](#world)): a drag scrolls it from まえ
 (home, the health lawn) back to ひろば and おく, a tap on empty ground walks my villager there.
 
@@ -46,26 +47,34 @@ panel](#panel)) with the jar on its left and the health button on its right, one
   popup shows what will fill in. Then the ledger, always all three lines, a zero faint: 「もくひょう +3」, 「がんばり +1」
   (「がんばり（上限 2） +2」 when three or four were reached) and this person's total 「うめの きょう +6 ベル」; then
   ふたりでぜんぶ (「ふたりで ぜんぶ まで：あと 2つ」 or 「ふたりで ぜんぶ！ +2 ふたりに」), outside either total, so both
-  totals plus it make the ribbon. The last line says when that person's data last arrived (「15:24 に とどいた」), with
+  totals plus it make today's total (ごほうび's 「きょう +N ベル」). The last line says when that person's data last arrived (「15:24 に とどいた」), with
   a dot once it is over 6 hours old.
-- **HUD row:** [the jar] [the ribbon] [the health button], at `--hud-top` (10px under the safe area, as before: clear of
-  iOS 27's top-edge blur). The two sides are the same width (56px, `--hud-side`), so the ribbon is centred on the
-  screen; each of its 16px tails sits in a 20–24px gap; on a narrow phone the ribbon's padding tightens (320 fits). Every
+- **HUD row:** [the jar] ……… [the health button], the two top corners, at `--hud-top` (10px under the safe area, as
+  before: clear of iOS 27's top-edge blur), inset 14px or the safe area's side. No ribbon (removed 2026-11-03,
+  [decisions](decisions.md#the-jar-is-the-door-no-ribbon-2026-11-03)): NH's island view keeps its sky clear and its UI
+  in the corners, and the Dynamic Island's middle stays free for the sun, the moon, the balloon and the stars. The two
+  sides are the same width (60px, `--hud-side`), mirrored; at 320 the middle ~170px stays clear. Every
   target is 44px or more. No View Transition anywhere in it (the stripes bug); day and night are the same art (the jar's
   number is ink with a cream outline, the button cream with its lip), both reading on either sky.
 - **Jar** (`island/HudJar.svelte`, the one jar drawing `Jar.svelte`): standing in the sky, a little taller than the row
-  (its lid over the row's top, its foot under it), the shared wallet's ベル written in the glass (ごほうび's balance, the
+  (its lid over the row's top, its foot under it; 50–56px wide, a little bigger since it's the island's only money
+  object: one past 50px hangs lower, its lid never higher than a 50px one's), the shared wallet's ベル written in the glass (ごほうび's balance, the
   app's number font; 1,000 on as 1.2k, 10,000 on as 12k; the full amount in its label). It fills as the wallet grows
-  (`walletFill`). Tap → a press squash, the villagers glance up at it (R18), and [the panel](#panel) opens on ごほうび.
-  The guest has it too: ごほうび is view-only there, the jar shows the same balance.
-- **Health button** (`island/HudHealth.svelte`): a small cream pill as tall as the ribbon, the jar's width, NH's red
+  (`walletFill`). Its label carries today's ベル too (「ごほうび · ふたりのベル 129 ベル · きょう 12 ベル」: on the island
+  only a screen reader hears today's total; it's shown in full in ごほうび). Tap → a press squash, the villagers glance
+  up at it (R18, to the left), and [the panel](#panel) opens on ごほうび (`aria-expanded` while it's open). No
+  permanent "+N" badge on it (a badge reads as a notification to clear). The guest has it too: ごほうび is view-only
+  there, the jar shows the same balance.
+- **Health button** (`island/HudHealth.svelte`): a small cream pill 44px tall with the cream lip, the jar's width, NH's red
   dumbbell (`items/dumbbell`, NH's catalogue icon) across it, its plates a little over the ends; no number (the numbers
-  live in the popup, and a second total beside the ribbon's would compete with it). Tap → the villagers glance up at it
-  (R18) and [けんこう](#kenkou) grows out of the dumbbell (`health/HealthSheet.svelte`, Sheet's `pop`: a live CSS zoom
+  live in the popup). Tap → the villagers glance up at it
+  (R18, to the right) and [けんこう](#kenkou) grows out of the dumbbell (`health/HealthSheet.svelte`, Sheet's `pop`: a live CSS zoom
   about the button, no View Transition: its snapshot of the banded ground striped on iPhone).
 - **Coins** (`island/HudCoins.svelte`): each newly met goal flies up as a +1 coin from its fruit into the jar (+2 with
   its がんばり; `CoinFlow`), the jar squashing as each lands; the jar's number holds while coins are in the air
-  (`coinsInFlight`) and counts up by each one as it lands (the ribbon counts up on its own); all of it waits while
+  (`coinsInFlight`) and counts up by each one as it lands. As each lands, today's ベル so far pop up beside the jar in a
+  small yuzu bubble (「+3」, counting up with the coins), hold ~1 s and fade (reduced motion: a plain fade; aria-hidden:
+  the label says it); only coins landing flash it, never a とりけす's refund. All of it waits while
   something covers the scene.
 - **Centre stage:** the plaza's middle (`world.ts` `CENTRE_STAGE`, ひろば), where visitors stand.
 - **Villagers:** a tap on mine is a squish; a tap on the partner's is a high-five ([Villager taps](#villager-taps)).
@@ -79,8 +88,10 @@ panel](#panel)) with the jar on its left and the health button on its right, one
 
 ### Wallet
 
-ごほうび, the panel's middle tab (`wallet/Wallet.svelte`, `wallet/Shop.svelte`): the jar over 「ふたりのベル」 and the
-balance, then two tiles
+ごほうび, the panel's middle tab and the one the HUD's jar opens (`wallet/Wallet.svelte`, `wallet/Shop.svelte`): the jar
+over 「ふたりのベル」 and the balance; under the balance, smaller, today's ベル in a soft yuzu pill with the Bells bag
+(「きょう +6 ベル」: both of us, がんばり and ふたりでぜんぶ included, the number the trees' popups add up to), or before the
+first ベル a faint cream one 「きょう まだ 0 ベル」 (shown, not hidden: nothing jumps when the first coin lands); then two tiles
 with NH item art: 🍦 おやつ 40 ベル and 🍜 外食 70 ベル. One the wallet can't cover is sunk with あと N ベル. 買う！ asks
 first, applies at once and waits 5 s with とりけす before it is sent.
 
@@ -91,9 +102,10 @@ island with the panel open on ごほうび (`?panel=rewards`, dropped from the U
 
 ### Panel
 
-Tap the ribbon → the island panel slides down from the top (`panel/IslandPanel.svelte`): title 「しまの てちょう」, full
-height, three tabs pinned under the title (NH yellow for the one shown): きろく · ごほうび · せってい. Every opening
-from the ribbon starts on きろく, every one from the HUD's jar on ごほうび. Its own chunk, loaded on the first tap.
+Tap the HUD's jar → the island panel slides down from the top (`panel/IslandPanel.svelte`): title 「しまの てちょう」,
+full height, three tabs pinned under the title (NH yellow for the one shown): きろく · ごほうび · せってい. Every opening
+starts on ごほうび (the jar's own tab, today's ベル there; no memory of the last tab), so きろく and せってい are a tab
+away. Its own chunk, loaded on the first tap.
 
 - **きろく:** the ベル ledger, 目標 and the ずかん ([Kiroku](#kiroku)).
 - **ごほうび:** the wallet: the jar, the shop and the buys ([Wallet](#wallet)).
@@ -597,8 +609,8 @@ smaller world z) when two overlap (`pick`). `?hit` draws them all ([Dev params](
 
 ### Balloon
 
-NH's balloon present: by day every 45–90 s of on-screen time (the first after 20–40 s), in the sky's lane above the
-ribbon (none on a sky too short). A tap pops it; the present falls onto the lawn nearest the current view, on the
+NH's balloon present: by day every 45–90 s of on-screen time (the first after 20–40 s), in the sky's lane under the
+HUD (none on a sky too short). A tap pops it; the present falls onto the lawn nearest the current view, on the
 nearest open grass clear of what lies there and of every control, bounces and stays until tapped (not kept across a
 reload). A tap
 opens it where it lies: the wrapping pops (confetti, sparkles, the catch fanfare) and the item is held up while the
@@ -650,7 +662,7 @@ picked up is gone on both, what a shake drops lies on both, each villager stands
 [decisions](decisions.md#a-guest-not-a-third-member-2026-11-02)). A third person, 「おきゃくさん」: a visitor to our island,
 NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)). `?demo&as=G` is its phone.
 
-- **What it sees:** our island, the trees and their popups, the ベル ribbon, ごほうび (to look at: the balance and the
+- **What it sees:** our island, the trees and their popups, the HUD's jar, ごほうび (to look at: the balance, today's ベル (the members' jar's) and the
   buys, 「ちょきんばこは ふたりの もの。」 in place of the shop, no ×), きろく (the ledger, the goals read-only) and
   けんこう's かつどう (whose data: either member; no からだ switch). Never a からだ figure: no からだ switch, no weight or body card, no weight or body fat goal (its snapshot holds
   none: the record leaves them out). せってい: its villager and name (the same picker, its own prefs), the sound, the
@@ -1324,7 +1336,7 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
   leaf `#6ED07A`, yuzu `#FFD84D`, mint `#7BD7C1`, coral `#FF8F7A` (errors only), the chart pair `--person-a`
   `#2F86BD` / `--person-b` `#D2701F` (night `#7EC8F0` / `#FFB066`; CVD-checked); one `--z-*` stacking scale.
 - **Theme:** `data-tod` comes only from the Tokyo clock (`prefers-color-scheme` ignored); night chrome `#3A4886`. The
-  ribbon, plate, dialogue and choices stay cream/yellow.
+  HUD, plate, dialogue and choices stay cream/yellow.
 
 ## Small screens
 
