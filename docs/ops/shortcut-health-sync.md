@@ -8,7 +8,7 @@ you open an app you use daily (e.g. LINE): Health is readable only while the pho
 
 ## 1. What the Shortcut sends
 `POST` to `https://island-fund-relay.island-fund-relay.workers.dev/api` (the relay's record), Request Body **JSON**, no
-headers. Daily totals, one line per day, every field **Text**. The parser (`app/gas/parse.ts`) accepts only this:
+headers. Daily totals, one line per day, every field **Text**. The parser (`relay/src/parse.ts`) accepts only this:
 
 ```json
 {

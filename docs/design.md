@@ -82,7 +82,7 @@ island with the panel open on ごほうび (`?panel=rewards`, dropped from the U
 
 Tap the ribbon → the island panel slides down from the top (`panel/IslandPanel.svelte`): title 「しまの てちょう」, full
 height, three tabs pinned under the title (NH yellow for the one shown): きろく · ごほうび · せってい. Every opening
-from the ribbon starts on きろく (the museum opens its own tab). Its own chunk, loaded on the first tap.
+from the ribbon starts on きろく. Its own chunk, loaded on the first tap.
 
 - **きろく:** the ベル ledger, 目標 and the ずかん ([Kiroku](#kiroku)).
 - **ごほうび:** the wallet: the jar, the shop and the buys ([Wallet](#wallet)).
@@ -466,17 +466,11 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
 
 ### Buildings
 
-`island/buildings.ts`, `island/Scenery.svelte`, `island/Museum.svelte`, `e2e/tapwalk.spec.ts`. A building is one tap (on it or its footprint's
-ground; my villager turns to it where it stands, no walk): NH's character inside answers in the balloon (its tail at the door, their colour
-on the name tag) and when it closes the feature opens. Resident Services: しずえ (たぬきち 22:00–05:00) → せってい;
-Nook's Cranny: まめきち・つぶきち → ごほうび; Able Sisters: あさみ → the むらびと picker; Dodo Airlines: モーリー →
-つうしん (せってい at its sync section); the museum: フータ → the ずかん ([Museum](#museum)); the campsite: no line, straight
-in through its door to the tent's inside ([The tent](#the-tent)). The panel keeps its せってい tab too (`ui.door` asks the panel for the section). **Wilbur** stands on the
-dock while my partner has the app open (the relay's presence, the phone's one socket; `?wilbur` shows him); a tap and
-he says so, in his radio talk (「…オーバー！」). The lines are short and in each character's NH voice: しずえ polite and
-bright (「あっ、…さん！」), たぬきち's だなも, the Nooklings' echo (「いらっしゃいませ〜！」「…ませ〜！」), あさみ's shop talk
-(her sister busy in the back), モーリー's "Hey hey hey!" (はいはーい！) at the gateway to the skies; a line may name my
-villager.
+`island/buildings.ts`, `island/Scenery.svelte`, `e2e/tapwalk.spec.ts`. The campsite is the island's one building (the
+others went with the two-section island): a tap on it or its footprint's ground (my villager turns to it where it
+stands, no walk) goes straight in through its door to the tent's inside ([The tent](#the-tent)). The partner's presence
+is their villager and the edge face, not a character of its own (`partnerOnline`: the relay's presence, never in the
+demo).
 
 ### Environment
 
@@ -530,7 +524,7 @@ nights are always fine.
 ### Shaking a tree
 
 `island/treeShake.ts`, `island/TreeShakes.svelte`, `e2e/shake.spec.ts`, `e2e/shared-world.spec.ts`. Every tree on the
-island shakes: the two goal trees and every oak, cedar and palm of the scenery (`SCENERY_TREES`; bamboo doesn't, as in
+island shakes: the two goal trees and every oak, cedar and palm of the scenery (`sceneryTrees()`; bamboo doesn't, as in
 NH).
 
 - **Tap or shake:** on a goal tree one tap on it (its canopy or its trunk) opens or closes the popup; on any other
@@ -651,7 +645,7 @@ NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)
   none: the record leaves them out). せってい: its villager and name (the same picker, its own prefs), the sound, the
   language and あそびかた; no もようがえ or つうしん, and a line saying it's visiting.
 - **What it does:** walks, catches, digs, picks up and shakes like us (the shared world's claims, first wins), its
-  finds and counts its own in the shared ずかん (the museum: each entry credited to its first finder, the guest's
+  finds and counts its own in the shared ずかん (each entry credited to its first finder, the guest's
   name with 「（おきゃくさん）」 once it has one of its own; per-person counts, and a row of who found how many of the page
   once three share it); phrases over its villager, high-fives with either of us, and the tent: walking, sitting and
   arranging it. It earns and spends nothing, sets no goal, waters no flower and wishes on no star (the room would
@@ -666,7 +660,7 @@ NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)
   tag); a tap on it is a high-five (to the guest), its phrases show over it, its catches play there (its villager turns
   to it, the plate says its name). A banner says it came: 「おきゃくさんが あそびに きたよ！」.
 - **Who counts as "the partner"** (each "both of us" rule, said once): the guest never does.
-  - Wilbur on the dock, the edge face (「うめの ほうへ」), `peer`: the other member only; on the guest's phone either
+  - The edge face (「うめの ほうへ」), `peer`: the other member only; on the guest's phone either
     member for `peer`, A for the edge face.
   - ふたりでぜんぶ, the goal walks, the evening meet-up and the bench gathering, the follow, the partner meeting a
     visitor: the members' own, on their own phones; the guest's phone plays none of them (A's and B's fruit still
@@ -1002,14 +996,6 @@ and its mouth, and the spring and the river above the cliff.
 - **Its bugs:** the pondskater and diving beetle by day in summer, the giant water bug at night.
 - **The catch:** a ずかん `find` of kind `fish`, like the sea's.
 
-### Museum
-
-`island/Museum.svelte`, `island/blathers.ts`, `e2e/museum.spec.ts`. NH's museum (the upgraded building's map icon, one
-family with the other buildings, 104u tall) in おく between two oaks (`world.ts` `BUILDINGS`), the door to the ずかん: a button (「はくぶつかん：ずかんを ひらく」, a
-soft knock). A tap and Blathers says one line: drowsy by day (05:00–19:00), lively at night, and 3 times in 5 about the
-latest find of the last week. When his box closes the panel opens on きろく scrolled to the ずかん; a second tap while
-he talks opens it at once.
-
 ### Zukan
 
 `kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `model/tally.ts`,
@@ -1033,7 +1019,7 @@ and the last closes after a read's length. The balloon's name tag is tilted on i
 colour. No voices. Multi-page: some villager lines go on (`<key>.more`), a visitor's first tap is their introduction,
 a first find adds 「ずかんに のったよ！」. A line may end on NH's answers (Jack, K.K.).
 
-Where it stands, one rule for every speaker (my villager, the visitors, Blathers; `placement.ts` `placeBy`,
+Where it stands, one rule for every speaker (my villager, the visitors; `placement.ts` `placeBy`,
 `e2e/bubbles.spec.ts`): by the speaker, its tail pointing at them, at most 40px off: above the head when there's room,
 else beside it, else below the feet, sliding along so the tail still reaches. Room gives way step by step, nearness
 doesn't: clear of every control, else over the museum (both within 16px); else over the island's things (trees, fruit
@@ -1064,7 +1050,7 @@ follows a walk, steps aside while the camera moves; text, never markup; taps go 
 it. On the partner's phone the same balloon shows over my villager there, which hops too (the relay's `say`, presence
 only: a phone that is closed simply never sees it, one opening later doesn't either; at most one per 1.5 s, the newer
 waiting). No sound beyond the UI cues, no ベル. The speech balloon (`island/Talk.svelte`) is for the island's other
-speakers: the doors, the visitors, Blathers, Wilbur. One balloon at a time.
+speakers: the visitors. One balloon at a time.
 
 A tap on the partner's villager is a **ハイタッチ** straight away (no card), in place: the tap sound, they stop where
 they are (either woken first if asleep), a sparkle flies in an arc from my villager to them, and both turn to each
@@ -1087,8 +1073,7 @@ seeded by the date: **K.K. Slider** on Saturday nights 18:00–24:00, **Daisy Ma
 (`visitorAt`): the event's host (Jack included), the wedding couple, Celeste, then K.K. and the rest. They stand on
 centre stage in the plaza (ひろば) at the villagers' scale times their NH height, with a contact shadow; as in NH,
 **Gulliver washes up on the front beach** and **Daisy Mae wanders the front lawn** (both seen from まえ). A tap (while
-they're on screen): my villager turns to them where it stands, then their introduction the first time, then one of their lines
-(`visitorInView` says whether they're on screen now). No trading, no ベル.
+they're on screen): my villager turns to them where it stands, then their introduction the first time, then one of their lines No trading, no ベル.
 
 **K.K.'s show:** with ミュージック on, a tap is his greeting with NH's choice box, **リクエスト** (up to four songs) or
 **おまかせ**. The island's music stops for the song ([K.K. Slider](#kk-slider)), he strums harder, ♪ float up, the
@@ -1129,7 +1114,7 @@ emotes, fx and facing use the villagers' calls, and idle life gives it a beat on
 `island/events.ts`, `island/Halloween.svelte`, `island/Visitor.svelte`, `e2e/halloween.spec.ts`. NH's Halloween on Oct
 31 (Tokyo):
 
-- **All day:** NH's pumpkins on the lawn (`HALLOWEEN_SPOTS`, each only where clear of every control).
+- **All day:** NH's pumpkins on the lawn (`Halloween.svelte`'s `SPOTS`, each only where clear of every control).
 - **17:00–24:00:** they become lit jack-o'-lanterns under a purple-to-orange wash, and **Jack** comes instead of anyone
   else. His ask, 「トリック オア トリート！」, ends on NH's answers: 「キャンディを あげる」 delights him (the candy pops up
   over his head); 「なにも あげない」 is his trick: my villager wears party nose glasses for a minute (not kept across a
@@ -1228,7 +1213,6 @@ Read once by `island/devHooks.ts`. The island's hooks work in dev builds or with
 | `?rock=clonk\|sparkle\|bug` | Every rock tap has that outcome |
 | `?find=bottle\|fragment\|mushroom\|rare-mushroom\|earth-egg` | A beach find now / every dig spot that |
 | `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid`, `?wander` | A balloon; a show; a meteor shower's night; the tape deck; a hybrid flower; the partner wanders |
-| `?wilbur` | Wilbur on the dock (as when the partner's app is open) |
 | `?hit` | Every tap target drawn over the island (magenta: the scene's elements; cyan: the boxes a module tests) |
 
 The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there at once, the stops' snapping off;

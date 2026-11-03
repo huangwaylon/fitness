@@ -116,7 +116,7 @@ there is no `onEdit` and no `resync` any more.
 
 ## Ingest
 
-`gas/parse.ts`: newline-joined Text lists, one line per day, each optional: `dates` (Shortcuts' date text, English or
+`relay/src/parse.ts`: newline-joined Text lists, one line per day, each optional: `dates` (Shortcuts' date text, English or
 Japanese; only the day is used), `steps` (the iPhone's), `steps_watch` (the Apple Watch's), `exercise_minutes` (→ `exercise_min`), `calories` (→ `move_kcal`),
 `stand_minutes` (→ `stand_min`), `weight` (kg; 0 = none), `body_fat_percentage` (→ `body_fat_pct`, %; 0 = none), `body_mass_index` (→ `bmi`;
 0 = none), `lean_body_mass` (→ `lean_kg`, kg; 0 = none). Other fields are ignored. A list whose length differs from
@@ -241,7 +241,7 @@ steps, each deployed and green before the next, the old path working through eac
   stays: `moveGoalOn`), a decoration per scope and id (by `decorAccept` / `tentAccept`). A pref the model ignores takes
   no slot. A `highfive` (no longer an event type: high-fives go over the room) still queued on a phone from before is
   acknowledged and kept nowhere; an old row of one in a cache is ignored by the model.
-- **Ingest:** `app/gas/parse.ts` (unchanged from the script's) and the audit row (`relay/src/audit.ts`); a day's latest
+- **Ingest:** `relay/src/parse.ts` (the script's parser, moved unchanged) and the audit row (`relay/src/audit.ts`); a day's latest
   row read from the (person, date, metric) key over the body's days. `relay/test/ingest-golden.test.ts` runs a week of
   both phones' Shortcut bodies (their real shapes: A's iPhone-only body with English dates, B's with the Watch's steps
   and Japanese dates; made-up values) and checks the record's replies, rows, `at`s and audit rows against what the
@@ -610,5 +610,5 @@ before (an app build's `/push/*` call would then 404, which it also ignores).
 
 `relay/test/store.test.ts`, `store-route.test.ts` and `ingest-golden.test.ts` (the record on node:sqlite);
 `gas/main.test.ts` (the export, on a fake of the Apps Script services in `gas/fakes.ts`),
-`gas/parse.test.ts`, `gas/bundle.test.ts`; queue (`queue-batch.test.ts`: the record's batches), cache, sync and store tests; the golden fixtures (`GOLDEN_UPDATE=1` to regenerate) and
+`relay/test/parse.test.ts`, `gas/bundle.test.ts`; queue (`queue-batch.test.ts`: the record's batches), cache, sync and store tests; the golden fixtures (`GOLDEN_UPDATE=1` to regenerate) and
 `npm run bench` for the model at year-3 volume.
