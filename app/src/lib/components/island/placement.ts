@@ -40,8 +40,9 @@ function guards(skip?: (el: Element) => boolean): Box[] {
   return out;
 }
 
-/** The UI nothing of ours may cover (client px): every control (the fireworks keep their bursts off it). */
-export const uiBoxes = (): Box[] => guards();
+/** The UI nothing of ours may cover (client px): every control (the fireworks keep their bursts off it; a balloon's
+ *  present lands clear of it). `skip`: leave some out. */
+export const uiBoxes = (skip?: (el: Element) => boolean): Box[] => guards(skip);
 
 
 /** The guards in stage units, grown by `pad` u (`skip`: leave some out). */

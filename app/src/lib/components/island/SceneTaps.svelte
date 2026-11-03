@@ -7,7 +7,7 @@
   // splashes (rarely a fish shadow darts off); sand takes two footprints and a puff, grass a dust puff (snow in winter).
   // On a clear night (NH: 7 pm – 4 am) a shower of shooting stars crosses the sky every few minutes (stars.ts), never
   // over the UI; a tap in the sky while one streaks across is a wish (a sparkle, a chime, a caption: Finds.wish). A popped balloon's
-  // present (Balloon.svelte sends `island:present`) falls onto the lawn in view, sparkles and lies there (or sinks in the sea).
+  // present (Balloon.svelte sends `island:present`) falls to the open spot in front Balloon chose, sparkles and lies there.
   // The critters (Critters.svelte: fish shadows to fish, bugs to net) get each tap first; a shaken bush can let a bug out.
   //   <SceneTaps scene={el} {season} {tod} enabled={() => live && !covered} />   (inside .stage, before the tint)
   // One `click` listener on the scene (a native scroll swallows the click: a drag scrolls, a tap acts; docs/design.md
@@ -48,6 +48,7 @@
   import { weather } from './weatherNow.svelte.ts';
   import { eggTime, eventNow } from './events.ts';
   import { eggInBalloon } from './eggs.ts';
+  import { RIG, fallAt } from './balloonFlight.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { t } from '#lib/i18n/index.ts';
   import { onMount } from 'svelte';
@@ -440,81 +441,40 @@
     scene?.dispatchEvent(new CustomEvent('island:star', { detail: { x: path.x } }));
   }
 
-  /** NH's balloon present, shot down: it falls from where the balloon burst onto the lawn in view (the open spot nearest
-   *  under the burst), lands with a bounce and a sparkle and stays there until a tap picks it up (Finds); with no lawn
-   *  in view it drops into the sea. Balloon may name the landing itself (`detail.land`: a world [x, z], or null for the
-   *  sea); else it's found here. The fall is drawn in the landing spot's own node, so it goes behind whatever stands
-   *  nearer (it never covers a control), and it lands at least PRESENT_GAP clear of everything lying on the lawn. */
-  interface Drop { id: number; x: number; z: number; dx: number; dy: number; size: number; sea: boolean; art: string }
+  /** NH's balloon present, shot down (Balloon.svelte sends `island:present`): it falls from where it hung on the string
+   *  (`from`, world x, y, z) along a short floaty arc (balloonFlight.ts fallAt) to the spot Balloon chose for it first
+   *  (`to`: open ground in the front of the view, clear of every control and of what lies there: presentLanding.ts),
+   *  in `ms`, drawn in 3D (its node's model on the arc); it lands with a sparkle and lies there until a tap picks it up
+   *  (Finds puts it for both phones: the landing spot is sent). No spot (no open ground in view at all): nothing falls. */
+  type P3 = readonly [number, number, number];
+  interface Drop { id: number; from: P3; to: P3; t0: number; ms: number; art: string; m3: { key: string; id: string; pitch: number; size: number } }
   let drops = $state<Drop[]>([]);
+  /** A balloon's present lies this big (u). */
+  const PRESENT_U = 30;
   function present(e: Event) {
-    const d = (e as CustomEvent<{ x: number; y: number; size: number; land?: readonly [number, number] | null }>).detail;
-    const g = stageGeo(scene);
-    if (!d || !g || !enabled()) return;
-    const sx = d.x - g.r.left, sy = d.y - g.r.top;
-    // the present's size in world units, a little bigger than on the balloon's string
-    const size = Math.max(30, (d.size / w.view.s) * 1.2);
-    const spot = d.land !== undefined ? (d.land && { x: d.land[0], z: d.land[1] }) : landing(sx, size);
-    const to = spot ?? seaUnder(sx);
-    if (!to) return;
-    const p = w.screenAt(to.x, to.z), k = p.scale * w.view.s;
-    const id = ++seq;
+    const d = (e as CustomEvent<{ from: P3; to: P3 | null; ms: number }>).detail;
+    if (!d?.to || !enabled()) return;
+    const id = ++seq, to = d.to;
     // Bunny Day's celebrations: now and then the balloon carried NH's sky egg instead of its present
     const egg = eggTime(eventNow(minuteNow())) && eggInBalloon();
     const art = egg ? findArt('sky-egg') : 'deco/present';
-    // the burst, from the landing spot, in the node's own (perspective-scaled) px
-    drops = [...drops.slice(-1), { id, x: to.x, z: to.z, dx: (sx - p.sx) / k, dy: (sy - p.sy) / k, size, sea: !spot, art }];
-    if (!spot) {
-      later(() => (drops = drops.filter((q) => q.id !== id)), 2000);
-      later(() => sceneSfx('splash'), 1500);
-      return;
-    }
+    drops = [...drops.slice(-1), { id, from: d.from, to, t0: performance.now(), ms: d.ms, art, m3: { key: art, id: `drop-${id}`, pitch: 0, size: GIFT_K } }];
     sceneSfx('present');
-    // landed (and squashed): it lies there among the day's finds until it's picked up
-    later(() => finds?.present(to.x, to.z, art, size), 2000);
-    later(() => (drops = drops.filter((q) => q.id !== id)), 2500);
+    // (frames while it falls)
+    later(w.moveStart(), d.ms + 100);
+    // landed: it lies there among the day's finds until it's picked up
+    later(() => finds?.present(to[0], to[2], art, PRESENT_U), d.ms);
+    later(() => (drops = drops.filter((q) => q.id !== id)), d.ms + 400);
   }
-  /** How far a landed present keeps from anything lying on the lawn (a weed, the rock, a dig spot, a mushroom, a branch,
-   *  a pumpkin, another present), u, beyond both their halves. */
-  const PRESENT_GAP = 16;
-  /** Where a present falling from stage px x lands: on the lawn in view, the open spot nearest under the burst that
-   *  keeps PRESENT_GAP from everything lying there and covers no control (a villager walking by doesn't count); null
-   *  when there's none (it falls into the sea instead). `size`: the present's size (u). */
-  function landing(x: number, size: number): { x: number; z: number } | null {
-    const stage = scene?.querySelector<HTMLElement>('.stage'), g = stageGeo(scene);
-    if (!stage || !g) return null;
-    const things = [...stage.querySelectorAll('[data-care], [data-find], [data-branch], [data-nest], [data-pumpkin]')].flatMap((el) => {
-      if (!shownNow(el)) return [];
-      const b = el.getBoundingClientRect();
-      // the ground items are 0 × 0 anchors at their foot; buttons are boxes
-      const cx = (b.left + b.width / 2 - g.r.left) * g.k, foot = (b.bottom - g.r.top) * g.k;
-      const r = el.matches('[data-care="rock"]') ? 11 : Math.max(8, (b.width * g.k) / 2);
-      return [{ x: cx, y: foot - r * 0.6, r }];
-    });
-    // the villagers only pass by (it lies behind them): the controls that stay put
-    const keep = guardsU(g, 2, (el) => !!el.closest('[data-actor]') || !shownNow(el));
-    const v = w.view;
-    const xs = Array.from({ length: 25 }, (_, i) => v.vw * (0.14 + i * 0.03)).sort((a, b) => Math.abs(a - x) - Math.abs(b - x));
-    for (const sx of xs)
-      for (const fy of [0.66, 0.6, 0.72, 0.54, 0.78, 0.48]) {
-        const at = w.worldAt(sx, v.horizon + (v.vh - v.horizon) * fy);
-        if (!at || hitWorld(at.x, at.z).kind !== 'grass') continue;
-        // its centre on screen (u), as it lies, and its half size there
-        const [cx, foot] = w.screenU(at.x, at.z), half = (size * w.scaleAt(at.x, at.z)) / 2, cy = foot - half;
-        const clear = things.every((t) => Math.hypot(t.x - cx, t.y - cy) >= PRESENT_GAP + t.r + half);
-        if (clear && !keep.some((b) => cx + half > b.x0 && cx - half < b.x1 && cy + half > b.y0 && cy - half < b.y1))
-          return { x: Math.round(at.x), z: Math.round(at.z) };
-      }
-    return null;
-  }
-  /** The sea in view under stage px x (a present that found no lawn): the first sea from the screen's foot up. */
-  function seaUnder(x: number): { x: number; z: number } | null {
-    const v = w.view;
-    for (let sy = v.vh - 20; sy > v.horizon + 8; sy -= 16) {
-      const at = w.worldAt(x, sy);
-      if (at && hitWorld(at.x, at.z).kind === 'sea') return at;
-    }
-    return null;
+  /** The present on the balloon's string is this much of its size on the ground (NH's model, 24u: assets.json). */
+  const GIFT_K = RIG.gift / 24;
+  /** A falling present's feet now (its node's live position: world x, z, lift), its tumble and its size on its model
+   *  (from the string's to the ground's as it falls). */
+  function fallNow(p: Drop): readonly [number, number, number] {
+    const k = Math.min(1, (performance.now() - p.t0) / p.ms), { at, tilt } = fallAt(p.from, p.to, k);
+    p.m3.pitch = tilt;
+    p.m3.size = GIFT_K + (1 - GIFT_K) * Math.min(1, k * 1.5);
+    return [at[0], at[2], at[1] - w.feetAt(at[0], at[2])];
   }
 
   // The partner's bush shakes and waterings (the shared day's news, just now): their villager walks over and does it,
@@ -606,17 +566,14 @@
 {#if TapeDeckC}<TapeDeckC bind:this={deck} {scene} {enabled} {exercise} {say} />{/if}
 {#if CakeC}<CakeC bind:this={cakeEl} {scene} {enabled} on={cake} />{/if}
 
-<!-- a falling present: in its landing spot's node (behind whatever stands nearer), the fall drawn from the burst -->
+<!-- a falling present: a world node on its arc (its model the 3D island's; its art only with no model), its landing
+     sparkles once it's down -->
 {#each drops as p (p.id)}
-  <div class="fxn" aria-hidden="true" {@attach w.at({ x: p.x, z: p.z, h: 40, always: true, m3: p.sea ? null : { key: p.art, id: `drop-${p.id}`, drop: 160, ms: 650 } })}>
-    <span class="fx" data-fx="present" style:--dx="{p.dx.toFixed(1)}px" style:--dy="{p.dy.toFixed(1)}px" style:--gs="calc({p.size.toFixed(1)} * var(--su))">
-      <span class="gift" class:sea={p.sea}><span class="drop-in"><OfficialArt key={p.art} size="100%" eager /></span></span>
-      {#if p.sea}
-        <span class="land"><i class="ring"></i><i class="ring late"></i></span>
-      {:else}
-        <svg class="spark land-spark" viewBox="0 0 24 24"><path d={STAR} /></svg>
-        <svg class="spark land-spark two" viewBox="0 0 24 24"><path d={STAR} /></svg>
-      {/if}
+  <div class="fxn" aria-hidden="true" {@attach w.at({ x: p.to[0], z: p.to[2], h: 40, always: true, live: () => fallNow(p), m3: p.m3 })}>
+    <span class="fx" data-fx="present" style:--gs="calc({PRESENT_U} * var(--su))" style:--fall="{p.ms}ms">
+      <span class="gift"><OfficialArt key={p.art} size="100%" eager /></span>
+      <svg class="spark land-spark" viewBox="0 0 24 24"><path d={STAR} /></svg>
+      <svg class="spark land-spark two" viewBox="0 0 24 24"><path d={STAR} /></svg>
     </span>
   </div>
 {/each}
@@ -889,23 +846,10 @@
     100% { transform: rotate(var(--a)) translateX(var(--len)); opacity: 0; }
   }
 
-  /* the balloon's present: falls from the burst (gravity, a gentle sway) onto its spot (standing on it), lands with a
-     squash, sparkles, fades (Finds then shows it lying there); or sinks in the sea */
-  .gift {
-    left: 0; top: 0; width: var(--gs); height: var(--gs); margin: calc(var(--gs) * -1) 0 0 calc(var(--gs) / -2); line-height: 0;
-    animation: gift-fall 1.5s cubic-bezier(.45, 0, .85, .55) both, gift-fade .01s linear 2s both;
-  }
-  .gift .drop-in { display: block; height: 100%; transform-origin: 50% 100%; animation: gift-sway 1.5s ease-in-out both, gift-land .5s ease-out 1.5s both; }
-  @keyframes gift-fall { from { transform: translate(var(--dx), calc(var(--dy) + var(--gs) / 2)); } to { transform: translate(0, 0); } }
-  @keyframes gift-sway { 0% { rotate: -10deg; } 30% { rotate: 8deg; } 60% { rotate: -6deg; } 85% { rotate: 3deg; } 100% { rotate: 0deg; } }
-  @keyframes gift-land { 0% { scale: 1.12 .82; } 45% { scale: .95 1.06; } 100% { scale: 1; } }
-  @keyframes gift-fade { to { opacity: 0; } }
-  .gift.sea { animation: gift-fall 1.5s cubic-bezier(.45, 0, .85, .55) both, gift-fade .35s ease-in 1.5s both; }
-  .gift.sea .drop-in { animation: gift-sway 1.5s ease-in-out both; }
-  .land { left: 0; top: 0; width: 0; height: 0; opacity: 0; animation: land-on .01s 1.5s forwards; }
-  @keyframes land-on { to { opacity: 1; } }
-  .land .ring { animation-delay: 1.5s; } .land .ring.late { animation-delay: 1.66s; }
-  .land-spark { left: calc(-16 * var(--su)); top: calc(-26 * var(--su)); animation-delay: 1.55s; }
-  .land-spark.two { left: calc(6 * var(--su)); top: calc(-18 * var(--su)); width: calc(7 * var(--su)); height: calc(7 * var(--su)); animation-delay: 1.75s; }
+  /* the balloon's present: falling on its node's arc (the 3D island draws its model: this art is only for one with
+     none), then the landing's two sparkles (Finds then shows it lying there) */
+  .gift { left: 0; top: 0; width: var(--gs); height: var(--gs); margin: calc(var(--gs) * -1) 0 0 calc(var(--gs) / -2); line-height: 0; }
+  .land-spark { left: calc(-16 * var(--su)); top: calc(-26 * var(--su)); animation-delay: calc(var(--fall) + 50ms); }
+  .land-spark.two { left: calc(6 * var(--su)); top: calc(-18 * var(--su)); width: calc(7 * var(--su)); height: calc(7 * var(--su)); animation-delay: calc(var(--fall) + 250ms); }
 
 </style>

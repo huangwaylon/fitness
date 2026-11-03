@@ -52,7 +52,8 @@ export interface Cards {
   dispose(): void;
 }
 
-function softDisc(): CanvasTexture {
+/** NH's soft round shadow under a thing (a card's; the balloon's, world3d/balloon3d.ts). */
+export function softDisc(): CanvasTexture {
   const c = document.createElement('canvas');
   c.width = c.height = 64;
   const g = c.getContext('2d')!;

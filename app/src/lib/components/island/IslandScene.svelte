@@ -1117,10 +1117,10 @@
         <!-- the sky is the stage's backdrop, behind every world thing (a tree top rising over the horizon stands in front
              of the sun or moon); the ground's tint plane reaches into its low band (no edge at the horizon); the sun or
              moon and the stars sit high in the sky, above the plane's reach -->
-        <Sky {tod}>
-          {#if life.balloon}<Balloon ondone={() => (life.balloon = false)} />{/if}
-        </Sky>
+        <Sky {tod} />
         <Sky {tod} layer="lights" />
+        <!-- the balloon present: NH's, flying over the island in 3D (its tap area a world node on it) -->
+        {#if life.balloon}<Balloon ondone={() => (life.balloon = false)} />{/if}
         {#if live && WeatherC}<WeatherC where="sky" />{/if}
         {#if r3 && Island3DC && sceneEl}
           <Island3DC bind:this={island3d} {world} scene={sceneEl} {season} {foliage} {month} {tod} scenery={scenery3} pieces={pieces3} {hybrid} floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null}
@@ -1252,8 +1252,6 @@
   .scene[data-r3] :global(.mover.m3on > *) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.in3d) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.notes.m3on) { opacity: 0 !important; --art3d: off; }
-  /* what flies in the sky (the balloon and its present) is the canvas's where the DOM's is (Island3D sky) */
-  .scene[data-r3] :global(:is([data-m3sky], [data-m3sky-hide])) { opacity: 0; --art3d: off; }
   /* the characters' flourishes are the canvas's (world3d/Island3D actorFx); a sweat drop stays on the face */
   .scene[data-r3] :global(:is(.actor, .visitor) .fxa:not(.sweat)) { opacity: 0 !important; --art3d: off; }
   /* a 3D villager's marks are the canvas's (world3d/Island3D marks3: NH's models over its head); a ？ stays the DOM's */

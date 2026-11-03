@@ -223,9 +223,6 @@ export interface Island3 {
   placedGroups(): string[];
   /** Something of the scene's own in the world (a fishing line), bent with the island; its removal returned. */
   add(obj: Object3D): () => void;
-  /** A screen point (canvas px) at `share` of the horizon's view depth, as a world point (unbent: x, z on the plan and
-   *  y its height) and the px a unit across there: a sky thing drawn where the DOM's is. */
-  skyPoint(sx: number, sy: number, share: number): { x: number; y: number; z: number; px: number };
   /** Every flourish's model loaded and on the GPU ahead of its first use (effects.ts warm): once, after the island loads. */
   warmFx(): Promise<void>;
   fxWarmed(): boolean;
@@ -967,19 +964,6 @@ export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((ren
     focused: () => !!focus,
     lamps: () => lights.lit(),
     fxCount: (tag) => effects.count(tag),
-    skyPoint(sx, sy, share) {
-      const d = horizonDepth() * share;
-      v3.set((sx / W) * 2 - 1, -(sy / H) * 2 + 1, 0.5).unproject(camera);
-      const dir = v3.sub(camera.position).normalize();
-      // along the ray to that view depth
-      const fwd = new Vector3();
-      camera.getWorldDirection(fwd);
-      const t = d / Math.max(0.05, dir.dot(fwd));
-      const bx = camera.position.x + dir.x * t, by = camera.position.y + dir.y * t, bz = camera.position.z + dir.z * t;
-      // the bend undone (bend.ts bendPoint's inverse)
-      const R = bendU.uBendR.value, pz = -camZ, r = Math.hypot(by + R, pz - bz), th = Math.atan2(pz - bz, by + R);
-      return { x: bx, y: r - R, z: -(pz - th * R), px: focal / d };
-    },
     placeGroup(id, obj, at) {
       groupsPlaced.get(id)?.();
       groupsPlaced.delete(id);

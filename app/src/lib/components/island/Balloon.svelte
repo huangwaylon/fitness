@@ -1,24 +1,24 @@
 <script lang="ts">
-  // Balloon present (design.md "Particles and events"), after NH: one round glossy balloon (ours, drawn in NH's soft item style: a
-  // top-left highlight, a rim light on the shaded side, a knot) on a thin string, carrying the official present
-  // (deco/present). It drifts across the fixed sky on the breeze in 22 s (either way, in the lane under the HUD: the
-  // horizon sits well under the HUD in the rolling-log world; in front of the clouds; as big as that lane allows,
-  // ≤ 34px), bobbing ±5px on a 3.6 s sine and leaning ±4°; the present swings under it like a
-  // pendulum from the knot, a beat behind, and trails the drift a little. A colour per appearance from NH's balloon
-  // palette (1 in 20: gold). A tap pops it (NH's slingshot shot, here a tap): a "pan!", a puff of confetti in its
-  // colours, and the present drops onto the island (SceneTaps.svelte draws the fall: this sends it `island:present`
-  // with where the present was, client px, and where it lands: `land`, a world point on the lawn nearest the current
-  // view, clear of every control and of what lies on the grass, or null when it drops into the sea: the balloon was
-  // over open water, or no lawn is in view). No points, no caption. Paused while the page is hidden or covered; reduced
-  // motion: none (it ends at once). Night / dawn / dusk: dimmed / warmed like the clouds. The parent mounts it.
-  import { pickOne } from '#lib/random.ts';
+  // Balloon present (design.md "Balloon"), after NH: a balloon with a present on its string flies across the island in
+  // world space (balloonFlight.ts: one height well above the trees, from the sea off one side to the sea off the other,
+  // its lane across the view as it starts, biased to the front; world3d/balloon3d.ts draws it, its blob shadow on the
+  // ground under it). This is its tap area (a world node on its knot, the balloon and the present, ≥ 44px) and its
+  // flight's owner. A tap pops it (NH's slingshot shot, here a tap): a "pan!", a puff of confetti where it burst, and
+  // the present falls to a spot chosen first (presentLanding.ts: open sand or grass in the FRONT of the view, inside it,
+  // clear of every control and of what lies there), so it never lands where it can't be seen or tapped; SceneTaps
+  // draws the fall (this sends it `island:present`: where the present hung, where it lands, how long it takes). No
+  // points, no caption. Its clock runs in the island's frames: it holds while the page is hidden or covered. Reduced
+  // motion, no 3D island (no WebGL) or no lane on screen: none this time. The parent mounts it.
   import { onMount } from 'svelte';
-  import OfficialArt from '../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
-  import { sceneSfx } from './sceneTaps.ts';
+  import { sceneSfx, shownNow } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { guardsU, stageGeo } from './placement.ts';
-  import { LAWN_SPOTS, onLand, surfaceAt, type Pt } from './world.ts';
+  import { uiBoxes } from './placement.ts';
+  import { surfaceAt } from './world.ts';
+  import { site } from './site.svelte.ts';
+  import { fx3d } from './fx3d.ts';
+  import { RIG, fallMs, flying, laneY, moveFlight, planFlight, popFlight, rigAt, setFlight, type Flight, type SkyView } from './balloonFlight.ts';
+  import { chooseLanding, footprints, openGround, type LandView } from './presentLanding.ts';
 
   interface Props {
     ondone?: () => void;
@@ -26,229 +26,155 @@
   let { ondone }: Props = $props();
   const w = useWorld();
 
-  // [body, light, shade, rim] per colour: NH's balloon presents (red, yellow, blue, green, purple, pink) + rare gold.
-  const COLOURS = [
-    ['#F2555A', '#FF9C8F', '#C2323F', '#FFC2B8'],
-    ['#FFD43E', '#FFF0A0', '#E3A51E', '#FFF6C8'],
-    ['#4FB2F2', '#A5DDFF', '#2B7ED0', '#C8ECFF'],
-    ['#6CCB5C', '#B3EC95', '#3F9B3D', '#D2F5BE'],
-    ['#A57EE0', '#D3BAFA', '#7552B8', '#E2D3FF'],
-    ['#FF8DBE', '#FFC6DE', '#DF5A97', '#FFDCEA']
-  ];
-  const GOLD = ['#F2C33F', '#FFEA9A', '#C28A1C', '#FFF4C4'];
-  const gold = Math.random() < 0.05;
-  const look = gold ? GOLD : pickOne(COLOURS, Math.random);
-  const [body, light, shade, rim] = look;
-  /** The 3D island's model of it (world3d/Island3D: data-m3sky), NH's balloon of about its colour; the present's is
-   *  deco/present. Popped, the flight is marked (data-popped) and both models go at once: the present that falls is
-   *  SceneTaps' own, and the one on the string would hang on where it burst until this unmounts. */
-  const model = `balloon/${gold ? 4 : COLOURS.indexOf(look) % 5}`;
-  // The breeze blows either way; the altitude varies within whatever room the lane has to spare.
-  const ltr = Math.random() < 0.5;
-  const alt = Math.random();
-  const gid = $props.id();
+  /** NH's balloon of a colour (1 in 20: gold). */
+  const model = `balloon/${Math.random() < 0.05 ? 4 : Math.floor(Math.random() * 6) % 5}`;
 
-  let fly = $state<HTMLElement | null>(null);
-  let gift = $state<HTMLElement | null>(null);
-  let popped = $state(false);
-  let gone: ReturnType<typeof setTimeout> | undefined;
-  function tap() {
-    if (popped || !gift) return;
-    const g = gift.getBoundingClientRect();
-    popped = true;
-    sceneSfx('balloon');
-    const x = g.left + g.width / 2;
-    gift.dispatchEvent(new CustomEvent('island:present', { bubbles: true, detail: { x, y: g.top + g.height / 2, size: g.height, land: landing(x) } }));
-    gone = setTimeout(() => ondone?.(), 650);
-  }
-  /** Where the present lands (world x, z): with the sea under the balloon (the ground three quarters down the screen
-   *  below it, halfway between the horizon and the screen's foot, is off the island) it drops into the sea (null); else the open grass in view nearest under it (a 12u grid over the view, low on the
-   *  screen first), ≥ 44px clear of every control (14px on a short screen with no such room) and 28px of what stands or lies on the lawn (bushes, flowers, finds,
-   *  weeds, a pumpkin, the cake, the visitor); failing that, the lawn spot nearest
-   *  the view's middle; null (the sea) when none is in view either. `cx`: the balloon's client x. */
-  function landing(cx: number): Pt | null {
-    if (!w) return null;
-    const v = w.view, sx = cx - v.left;
-    const below = w.worldAt(sx, v.horizon + (v.vh - v.horizon) * 0.5);
-    if (below && !onLand(below.x, below.z)) return null;
-    // every control on screen (client px; a world node out of view is hidden but keeps a stale box)
-    const g = stageGeo(document.querySelector<HTMLElement>('.if-scene[data-live]') ?? undefined);
-    const ui = (g ? guardsU(g, 0, (el) => getComputedStyle(el).visibility === 'hidden') : []).map((b) => ({ x0: b.x0 / g!.k + g!.r.left, x1: b.x1 / g!.k + g!.r.left, y0: b.y0 / g!.k + g!.r.top, y1: b.y1 / g!.k + g!.r.top }));
-    const things = [...document.querySelectorAll('.if-scene [data-care], .if-scene [data-find], .if-scene [data-branch], .if-scene [data-nest], .if-scene [data-pumpkin], .if-scene [data-cake], .if-scene [data-visitor] .art, .if-scene [data-bush], .if-scene [data-flower], .if-scene [data-toy] .art')]
-      .filter((el) => getComputedStyle(el).visibility !== 'hidden').map((el) => el.getBoundingClientRect()).filter((r) => r.width || r.height);
-    const ok = ([x, z]: Pt, PAD = 44): boolean => {
-      // open grass all round (off paths, the water's bank, the beach's edge)
-      if (!w.inView(x, z, -24) || ([[0, 0], [14, 0], [-14, 0], [0, 14], [0, -14]] as const).some(([dx, dz]) => surfaceAt(x + dx, z + dz) !== 'grass')) return false;
-      const [px, py] = w.clientAt(x, z);
-      if (py < v.top + v.horizon + (v.vh - v.horizon) * 0.3) return false; // not tiny by the horizon
-      if (ui.some((b) => px > b.x0 - PAD && px < b.x1 + PAD && py > b.y0 - PAD && py < b.y1 + PAD)) return false;
-      return things.every((r) => px < r.left - 28 || px > r.right + 28 || py < r.top - 28 || py > r.bottom + 28);
+  let flight = $state.raw<Flight | null>(null);
+  let popped = false, ended = false;
+  const end = () => {
+    if (ended) return;
+    ended = true;
+    ondone?.();
+  };
+
+  /** The HUD's foot (scene px). */
+  const hudFoot = () => Math.max(0, (document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? 0) - w.view.top);
+  /** The camera as the flight sees it. */
+  function skyView(): SkyView {
+    const v = w.view, [z0, z1] = w.zRange(), mid = w.worldAt(v.vw / 2, (v.horizon + v.vh) / 2);
+    return {
+      at: (x, z, y) => {
+        const p = w.screenAt(x, z, y - w.feetAt(x, z));
+        return p.visible ? [p.sx, p.sy] : null;
+      },
+      feet: (x, z) => w.feetAt(x, z),
+      vw: v.vw, top: hudFoot(), bottom: v.vh, horizon: v.horizon, cx: mid?.x ?? 195, z0, z1
     };
-    const [z0, z1] = w.zRange();
-    // a short screen's front lawn is mostly trees and villagers: then a spot just clear of their controls will do
-    for (const pad of [44, 14]) {
-      let best: Pt | null = null, bestD = Infinity;
-      for (let z = Math.ceil(z0 / 12) * 12; z < Math.min(z1, z0 + 700); z += 12)
-        for (let x = -12; x <= 402; x += 12) {
-          if (!ok([x, z], pad)) continue;
-          const [px, py] = w.clientAt(x, z);
-          // under the balloon, and low on the screen (near the camera) rather than far off
-          const d = Math.abs(px - cx) + (v.top + v.vh - py) * 0.6;
-          if (d < bestD) [best, bestD] = [[x, z], d];
-        }
-      if (best) return best;
-    }
-    const mid = (z0 + z1) / 2;
-    return [...LAWN_SPOTS].sort((a, b) => Math.abs(a[1] - mid) - Math.abs(b[1] - mid)).find((p) => ok(p)) ?? null;
   }
-  // the confetti: eight bits in the balloon's colours and NH's party colours, flung out from the burst
-  const BITS = [body, '#FFD84D', light, '#6FCFF6', body, '#FF8DBE', shade, '#8FD16A'];
+
+  /** The knot now (world x, z, and its lift over the ground there): its node's live position. Its flight over, it goes. */
+  function knot(): readonly [number, number, number] {
+    const fl = flying();
+    if (!fl) return [0, 0, 0];
+    if (fl.age >= fl.f.ms) queueMicrotask(end);
+    const [x, y, z] = rigAt(fl.f, fl.age).knot;
+    return [x, z, y - w.feetAt(x, z)];
+  }
+
+  function tap() {
+    const fl = flying();
+    if (popped || !fl || fl.popped) return;
+    popped = true;
+    const r = rigAt(fl.f, fl.age), [bx, by, bz] = r.balloon;
+    popFlight();
+    sceneSfx('balloon');
+    fx3d('confetti', bx, bz, by - w.feetAt(bx, bz) - 26);
+    fx3d('sparkle', bx, bz, by - w.feetAt(bx, bz), { size: 1.4 });
+    const from = r.gift, land = landing(w.clientAt(bx, bz, by - w.feetAt(bx, bz))[0] - w.view.left);
+    const to = land ? ([land[0], w.feetAt(land[0], land[1]), land[1]] as const) : null;
+    scene()?.dispatchEvent(new CustomEvent('island:present', { detail: { from, to, ms: to ? fallMs(from, to) : 0 } }));
+    end();
+  }
+  const scene = () => document.querySelector<HTMLElement>('.if-scene[data-live]');
+
+  /** Where the present lands (world x, z): open ground in the front of the view (presentLanding.ts), under the burst
+   *  (`sx`: its screen x) if it can be; null with no open ground in view at all. */
+  function landing(sx: number): readonly [number, number] | null {
+    const v = w.view, nav = site.nav, lay = site.layout, [z0, z1] = w.zRange();
+    // the controls on screen (scene px): the HUD, the bottom controls, the catch stack, the trees' and the rest's tap
+    // areas (the villagers only pass by: it lies behind them)
+    const extra = [...document.querySelectorAll('.ribbon-wrap, [data-catch-stack]')].filter(shownNow).map((el) => el.getBoundingClientRect()).filter((b) => b.width && b.height)
+      .map((b) => ({ x0: b.left, x1: b.right, y0: b.top, y1: b.bottom }));
+    const guards = [...uiBoxes((el) => !!el.closest('[data-actor]')), ...extra].map((b) => ({ x0: b.x0 - v.left, x1: b.x1 - v.left, y0: b.y0 - v.top, y1: b.y1 - v.top }));
+    const view: LandView = {
+      screen: (x, z) => {
+        const p = w.screenAt(x, z);
+        return p.visible ? [p.sx, p.sy] : null;
+      },
+      box: { x0: 0, x1: v.vw, y0: Math.max(hudFoot(), v.horizon + 8), y1: v.vh },
+      guards, xs: [-90, 510], zs: [z0, Math.min(z1, z0 + 900)]
+    };
+    // what lies on the ground (its anchor's foot, on the ground there)
+    const lying = [...document.querySelectorAll('.if-scene :is([data-care], [data-find], [data-branch], [data-nest], [data-pumpkin], [data-cake])')].filter(shownNow).flatMap((el) => {
+      const b = el.getBoundingClientRect(), g = w.worldAtClient(b.left + b.width / 2, b.bottom);
+      return g ? [[g.x, g.z] as const] : [];
+    });
+    const open = nav && lay ? openGround(nav, surfaceAt, footprints(lay)) : (x: number, z: number) => surfaceAt(x, z) === 'grass' || surfaceAt(x, z) === 'sand';
+    return chooseLanding(view, open, lying, sx);
+  }
 
   onMount(() => {
-    // no room under the HUD (its row, 4px clear) or the present would sink past the horizon (a sky too short for
-    // even the smallest balloon): no balloon this time
-    const hud = document.querySelector('.ribbon-wrap')?.getBoundingClientRect();
-    const r = fly?.getBoundingClientRect();
-    const band = fly?.parentElement?.getBoundingClientRect();
-    const short = !!r && !!band && r.bottom > band.bottom + 8;
-    if (!r || short || (hud && hud.height && r.top < hud.bottom + 4)) ondone?.();
-    // the island's scroller (the camera) lies over the fixed sky, so a tap on the balloon reaches the scene, not this
-    // button: the scene's clicks are checked against it first (capture), a 44px reach (the button stays for the keyboard)
-    const scene = fly?.closest<HTMLElement>('.if-scene');
+    if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return end();
+    // the 3D camera up (it may still be coming as the island opens): the flight across the view now
+    const start = () => {
+      if (flight || ended) return;
+      if (!w.three) return;
+      const f = planFlight(skyView());
+      if (!f) return end();
+      setFlight(f, model);
+      flight = f;
+      // (its frames are the island's ambience: a slow drift, world3d/Island3D)
+      w.kick();
+    };
+    const wait = setInterval(start, 200);
+    start();
+    // (no 3D island: never)
+    const give = setTimeout(() => !flight && end(), 10_000);
+    // the island's camera takes the finger over the world nodes: a tap on the balloon reaches the scene first
+    // (capture), checked against its tap area, ≥ 44px (the button stays for the keyboard)
+    const el = scene();
     const onClick = (e: MouseEvent) => {
-      const btn = fly?.querySelector('.balloon')?.getBoundingClientRect();
-      if (popped || !btn || e.target instanceof Element && e.target.closest('.balloon')) return;
-      const cx = btn.left + btn.width / 2, cy = btn.top + btn.height / 2;
-      if (Math.abs(e.clientX - cx) > Math.max(22, btn.width / 2) || Math.abs(e.clientY - cy) > Math.max(22, btn.height / 2)) return;
+      const b = btn && shownNow(btn) ? btn.getBoundingClientRect() : null, at = e.target instanceof Element ? e.target : null;
+      if (popped || !b || !b.width || at?.closest('.balloon')) return;
+      // (never through a control over the island: the HUD, the say button, a plate)
+      if (at?.closest('button, a, input, [role="button"], dialog') && !at.closest('.stage')) return;
+      const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+      if (Math.abs(e.clientX - cx) > Math.max(22, b.width / 2) || Math.abs(e.clientY - cy) > Math.max(22, b.height / 2)) return;
       e.stopPropagation();
       tap();
     };
-    scene?.addEventListener('click', onClick, true);
+    el?.addEventListener('click', onClick, true);
+    // the e2e's: where it is, a pop, and the flight moved over a spot (a pop over the back of the island)
+    const W = window as unknown as { __balloon?: unknown };
+    W.__balloon = {
+      flight: () => flying(),
+      pop: () => tap(),
+      move: (x: number, z: number) => moveFlight(x, z, laneY(skyView(), z)),
+      /** A new flight across the view as it is now (the camera moved: zoomed right in). */
+      replan: () => {
+        const f = planFlight(skyView());
+        if (f && !popped) setFlight((flight = f), model);
+      }
+    };
     return () => {
-      clearTimeout(gone);
-      scene?.removeEventListener('click', onClick, true);
+      clearInterval(wait);
+      clearTimeout(give);
+      el?.removeEventListener('click', onClick, true);
+      setFlight(null);
+      delete W.__balloon;
     };
   });
+  let btn = $state<HTMLButtonElement | null>(null);
 </script>
 
-<div class="fly" class:rtl={!ltr} class:popped data-popped={popped || undefined} bind:this={fly} style:--alt={alt}
-  onanimationend={(e) => e.target === fly && ondone?.()}>
-  <button type="button" class="balloon" data-sfx="self" aria-label={t('island.balloon')} onclick={tap}>
-    <span class="bob">
-      <span class="rig">
-        <span class="hang">
-          <svg class="string" data-m3sky-hide viewBox="0 0 10 30" aria-hidden="true">
-            <path d="M5 0 C3.6 7 6.6 12 5.2 19 C4.4 23 5.4 26.5 5 30" fill="none" stroke="#9A8A72" stroke-width=".9"
-              stroke-linecap="round" />
-          </svg>
-          <span class="gift" data-m3sky="deco/present" bind:this={gift}><OfficialArt key="deco/present" size="100%" /></span>
-        </span>
-        <svg class="ball" data-m3sky={model} viewBox="0 0 40 44" aria-hidden="true">
-          <defs>
-            <radialGradient id="{gid}-b" cx=".36" cy=".3" r=".78">
-              <stop offset="0" stop-color={light} /><stop offset=".45" stop-color={body} />
-              <stop offset="1" stop-color={shade} />
-            </radialGradient>
-            <clipPath id="{gid}-c"><path d={'M20 1 C30.5 1 36.5 9.5 36.5 18.5 C36.5 28.5 28.5 36.5 20 37.5 C11.5 36.5 3.5 28.5 3.5 18.5 C3.5 9.5 9.5 1 20 1 Z'} /></clipPath>
-          </defs>
-          <!-- knot: a little pinched tie under the body -->
-          <path d="M17.2 41.2 Q20 38.4 22.8 41.2 Q20 42.6 17.2 41.2 Z" fill={shade} />
-          <path d="M18.6 36.6 L21.4 36.6 L20.8 39.6 L19.2 39.6 Z" fill={shade} />
-          <g clip-path="url(#{gid}-c)">
-            <rect width="40" height="40" fill="url(#{gid}-b)" />
-            <!-- rim light on the shaded lower right (the sky bouncing back) -->
-            <path d="M33.5 15 C36 25 30 34.5 21 36.6 C28.5 33.5 33.2 26 33.5 15 Z" fill={rim} opacity=".7" />
-          </g>
-          <path d={'M20 1 C30.5 1 36.5 9.5 36.5 18.5 C36.5 28.5 28.5 36.5 20 37.5 C11.5 36.5 3.5 28.5 3.5 18.5 C3.5 9.5 9.5 1 20 1 Z'}
-            fill="none" stroke={shade} stroke-width=".9" opacity=".55" />
-          <!-- gloss: one soft window highlight + a pin-point -->
-          <ellipse cx="12.6" cy="11.2" rx="3.4" ry="5.6" fill="#fff" opacity=".78" transform="rotate(28 12.6 11.2)" />
-          <circle cx="16.4" cy="6.4" r="1.25" fill="#fff" opacity=".85" />
-          {#if gold}
-            <path d="M29 7 l.9 2.3 2.3 .9 -2.3 .9 -.9 2.3 -.9 -2.3 -2.3 -.9 2.3 -.9 Z" fill="#fff" class="spark" />
-          {/if}
-        </svg>
-      </span>
-      {#if popped}
-        <span class="burst" aria-hidden="true">
-          <i class="flash"></i>
-          {#each BITS as c, i (i)}<i class="bit" style:--a="{i * 45 + 20}deg" style:--c={c}></i>{/each}
-        </span>
-      {/if}
-    </span>
-  </button>
-</div>
+{#if flight}
+  <div class="flier" {@attach w.at({ x: flight.x0, z: flight.z, h: RIG.balloon + RIG.string + RIG.gift, live: knot, always: true, inv: true })}>
+    <button type="button" class="balloon" data-sfx="self" aria-label={t('island.balloon')} bind:this={btn} onclick={tap}
+      style:--bh={RIG.balloon} style:--hang={RIG.string + RIG.gift}></button>
+  </div>
+{/if}
 
 <style>
-  /* the balloon's size: everything below is in em (the balloon's width) */
-  .fly {
-    /* the lane: from 6px under the HUD row (--hud-bottom, the screen's) to 8px over the horizon (the band starts at the
-       safe area); the balloon with its present (2.6em) as big as that lane holds, between 14px and 34px across, at a
-       random height within any room to spare */
-    --lane: calc(var(--hud-bottom, var(--safe-top)) - var(--safe-top));
-    --room: calc(var(--horizon-y) - var(--hud-bottom, var(--safe-top)) - 14px);
-    --bw: max(14px, min(clamp(22px, 7.6cqw, 34px), calc(var(--room) / 2.65)));
-    position: absolute; z-index: 3; left: 0; font-size: var(--bw);
-    top: calc(var(--lane) + 6px + var(--alt) * max(0px, var(--room) - 2.65em));
-    animation: across 22s linear both; will-change: transform;
-  }
-  .fly.rtl { animation-name: across-rtl; }
-  @keyframes across { from { transform: translateX(-1.6em); } to { transform: translateX(calc(100cqw + .4em)); } }
-  @keyframes across-rtl { from { transform: translateX(calc(100cqw + .4em)); } to { transform: translateX(-1.6em); } }
+  /* its tap area, in u on the node (at its knot, scaled with the camera): the balloon over it, the string and the
+     present under it, a little round; at least 48px each way on screen (a thumb's 44 and a margin) (--inv: 1 / the node's scale) */
+  .flier { pointer-events: none; }
   .balloon {
-    appearance: none; border: 0; background: none; padding: 0; cursor: pointer; display: block;
-    width: max(44px, 1.3em); height: 2.6em; margin-left: calc((1em - max(44px, 1.3em)) / 2);
-    -webkit-tap-highlight-color: transparent;
+    appearance: none; border: 0; background: none; padding: 0; cursor: pointer; display: block; position: absolute;
+    pointer-events: auto; -webkit-tap-highlight-color: transparent;
+    --w: max(calc(48px * var(--inv, 1)), calc((var(--bh) * .6 + 10) * var(--u)));
+    --h: max(calc(48px * var(--inv, 1)), calc((var(--bh) + var(--hang) + 8) * var(--u)));
+    width: var(--w); height: var(--h); left: calc(var(--w) / -2);
+    /* centred on the rig's middle (the balloon's top to the present's foot) */
+    top: calc((var(--hang) - var(--bh)) / 2 * var(--u) - var(--h) / 2);
   }
-  .bob, .rig { display: block; position: relative; width: 1em; height: 2.4em; margin: 0 auto; }
-  /* the bob: a slow sine up and down at a steady altitude */
-  .bob { animation: bob 1.8s cubic-bezier(.37, 0, .63, 1) infinite alternate; }
-  @keyframes bob { from { transform: translateY(-.14em); } to { transform: translateY(.14em); } }
-  /* the lean: the whole balloon rocks about its knot (5.2 s, out of step with the bob, so it never looks looped) */
-  .rig { transform-origin: 50% .94em; animation: lean 5.2s cubic-bezier(.37, 0, .63, 1) infinite; }
-  @keyframes lean { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
-  .ball { position: absolute; left: 0; top: 0; width: 1em; height: 1.1em; overflow: visible; }
-  /* the present: a pendulum from the knot. Nested in the lean, so this swing (5.4°, 1.1 s ahead) nets a 6° swing
-     in the world 0.9 s behind the balloon's lean; it also trails the drift by 5° */
-  .hang {
-    --trail: 5deg;
-    position: absolute; left: 50%; top: .98em; width: .72em; margin-left: -.36em;
-    transform-origin: 50% 0; animation: swing 5.2s cubic-bezier(.37, 0, .63, 1) -1.1s infinite;
-  }
-  .rtl .hang { --trail: -5deg; }
-  @keyframes swing {
-    0%, 100% { transform: rotate(calc(var(--trail) + 5.4deg)); }
-    50% { transform: rotate(calc(var(--trail) - 5.4deg)); }
-  }
-  .string { display: block; width: .25em; height: .62em; margin: 0 auto; overflow: visible; }
-  .gift { display: block; height: .72em; margin-top: -.08em; line-height: 0; }
-  .gift :global(.official) { filter: drop-shadow(0 .02em .02em rgba(90, 60, 30, .25)); }
-  .spark { transform-origin: 30px 9.5px; animation: spark 1.6s ease-in-out infinite alternate; }
-  @keyframes spark { from { opacity: .2; transform: scale(.6); } to { opacity: 1; transform: none; } }
-  /* popped: the drift holds where it burst, the balloon and its present vanish (the present falls in the stage), a
-     flash and the confetti fly out and fade */
-  .popped, .popped * { animation-play-state: paused; }
-  .popped .rig { visibility: hidden; }
-  .balloon:has(.burst) { cursor: default; }
-  .burst { position: absolute; left: 50%; top: .55em; width: 0; height: 0; }
-  .burst i { position: absolute; animation-play-state: running !important; }
-  .flash {
-    left: -.6em; top: -.6em; width: 1.2em; height: 1.2em; border-radius: 50%;
-    background: radial-gradient(closest-side, rgba(255, 255, 245, .95), rgba(255, 255, 245, 0)); animation: flash .3s ease-out both;
-  }
-  @keyframes flash { from { transform: scale(.4); opacity: 1; } to { transform: scale(1.3); opacity: 0; } }
-  .bit {
-    left: -.07em; top: -.05em; width: .14em; height: .1em; border-radius: 1px; background: var(--c);
-    animation: bit .6s cubic-bezier(.2, .7, .4, 1) both;
-  }
-  @keyframes bit {
-    from { transform: rotate(var(--a)) translateY(-.15em) rotate(0); opacity: 1; }
-    70% { opacity: 1; }
-    to { transform: rotate(var(--a)) translateY(-.95em) rotate(220deg) translateY(.2em); opacity: 0; }
-  }
-  /* time of day: dim and cool at night (like the clouds), warm at dawn / dusk */
-  :global(.if-scene[data-tod='night']) .fly { filter: brightness(.76) saturate(.78) contrast(.95); }
-  :global(.if-scene[data-tod='dusk']) .fly, :global(.if-scene[data-tod='dawn']) .fly { filter: sepia(.12) saturate(1.05); }
-  /* a sheet or overlay over the scene: hold still (the page-hidden pause is global, tokens.css) */
-  :global(.if-scene[data-covered]) .fly, :global(.if-scene[data-covered]) .fly * { animation-play-state: paused !important; }
 </style>
