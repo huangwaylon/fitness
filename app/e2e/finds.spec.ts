@@ -126,6 +126,36 @@ test('a bottle the waves bring washes up from the waterline to its spot, fading 
   await unchanged(page, before);
 });
 
+test('a bottle waiting out in the shallows for its wave (not yet seen) takes no tap till its wave brings it in', async ({ page }) => {
+  test.setTimeout(45_000);
+  await open(page, '&date=2026-11-04T12:00&find=washed');
+  // (the moment it's there and still unseen: where its tap area is; and when the tap came and its wave did, page time)
+  type T = { __downAt?: number; __roseAt?: number; __world3d?: { where(id: string): { fade: number } | null } };
+  const p = await page.evaluate(() => new Promise<{ x: number; y: number }>((ok) => {
+    const w = window as unknown as T;
+    addEventListener('pointerdown', () => (w.__downAt ??= performance.now()), { capture: true });
+    let found = false;
+    const frame = () => {
+      const el = document.querySelector('[data-find="bottle"]'), f = w.__world3d?.where('find-b-demo');
+      if (found && f && f.fade > 0) return void (w.__roseAt = performance.now());
+      if (!found && el && f && f.fade === 0) {
+        found = true;
+        const r = el.getBoundingClientRect();
+        ok({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+      }
+      requestAnimationFrame(frame);
+    };
+    frame();
+  }));
+  await page.mouse.click(p.x, p.y);
+  await page.waitForTimeout(400);
+  const { down, rose } = await page.evaluate(() => ({ down: (window as unknown as T).__downAt!, rose: (window as unknown as T).__roseAt ?? Infinity }));
+  test.skip(down >= rose, 'its wave came as the tap did');
+  await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
+  await expect(page.locator('[data-find="bottle"]')).toHaveCount(1);
+  expect(await cues(page)).not.toContain('scene-bottle');
+});
+
 test('what lies on the beach as the island opens just lies there: no wash-in', async ({ page }) => {
   await open(page, '&date=2026-11-04T12:00&find=bottle');
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d?: { where(id: string): { fade: number } | null } }).__world3d?.where('find-b-demo')?.fade ?? null), { timeout: 20_000 }).toBe(1);

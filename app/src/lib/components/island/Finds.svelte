@@ -415,9 +415,12 @@
     })
   );
 
-  /** Every find lying in view and its tap box (hitbox.ts: what it draws, at least 44px), in front first on a tie. */
+  /** Every find lying in view and its tap box (hitbox.ts: what it draws, at least 44px), in front first on a tie; one
+   *  washing in has none while it waits for its wave, unseen in the shallows (riding in, its box goes with it). */
   function targets(): { box: HitBox | null; z: number; kind: string; go: () => void }[] {
-    const box = (uid: string, x: number, z: number) => (w.inView(x, z, 20) ? hitOf(scene?.querySelector(`[data-find][data-uid="${uid}"]`)) : null);
+    const t = performance.now();
+    const waiting = (uid: string) => t < (washes.get(uid)?.t0 ?? -Infinity);
+    const box = (uid: string, x: number, z: number) => (w.inView(x, z, 20) && !waiting(uid) ? hitOf(scene?.querySelector(`[data-find][data-uid="${uid}"]`)) : null);
     const one = (kind: string, it: { uid: string; x: number; y: number }, go: () => void) => ({ box: box(it.uid, it.x, it.y), z: it.y, kind, go });
     return [
       ...shells.map((s) => one('shell', s, () => pickShell(s))),
