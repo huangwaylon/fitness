@@ -27,7 +27,7 @@
   // my villager with a little hop, back on their spot first if they'd strolled off, then speak (and stand still while
   // they do). Gulliver sleeps face down until the fifth nudge. They arrive when their visit starts (walking from the
   // campsite along the paths, down from the sky, or appearing) and leave when it ends (back to the campsite); on a
-  // page's first paint they're simply there. visitors.ts visitorInView tells whether they're on screen.
+  // page's first paint they're simply there.
   // `?arrive` (dev or ?demo): the arrival plays on load; `?leave=<ms>`: the visit ends after that long; `?stroll`: a
   // stroll now; `?meet`: the partner comes over now.
   import { dayRecord } from './dayRecord.ts';
@@ -56,7 +56,7 @@
   import { BUILDINGS, CENTRE_STAGE } from './world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { visitorLine, visitorNow, visitorPlace, type VisitorId } from './visitors.ts';
+  import { visitorLine, visitorNow, type VisitorId } from './visitors.ts';
   import type { Choice } from './pager.ts';
   import { stretch } from '../motion/stretch.svelte.ts';
   import { SCENE } from '#lib/sync/storage.ts';
@@ -167,16 +167,6 @@
   const home = (): Pt => [spot?.x ?? CENTRE_STAGE[0], spot?.z ?? CENTRE_STAGE[1]];
   /** Where the feet are right now (world u), mid-walk included. */
   const where = (): Pt => livePos('visitor');
-  // where the feet are, for visitors.ts visitorInView (しずえ's line when the guest is out of view)
-  $effect(() => {
-    if (!shown) return;
-    const fn = (): readonly [number, number] => where();
-    visitorPlace.where = fn;
-    return () => {
-      if (visitorPlace.where === fn) visitorPlace.where = null;
-    };
-  });
-
   /** Here they come: from the campsite (walking or hopping) along the walk graph, down from the sky, or appearing; a
    *  pop in place on the page's first paint. */
   function arrive(id: VisitorId, s: NonNullable<typeof spot>) {

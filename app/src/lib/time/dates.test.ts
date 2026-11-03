@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, daysBetween, inMonthDayRange, jstMs, localDateAt, parseInstant, toLocalDate, weekDays, weekKeyOf } from '#lib/time/dates.ts';
+import { addDays, daysBetween, jstMs, localDateAt, parseInstant, toLocalDate, weekDays, weekKeyOf } from '#lib/time/dates.ts';
 
 describe('toLocalDate', () => {
   it('flips to the next Tokyo day at 15:00 UTC', () => {
@@ -50,14 +50,6 @@ describe('week helpers', () => {
     expect(localDateAt(Date.parse('2026-11-10T19:00:00Z'))).toBe('2026-11-11');
     expect(new Date(jstMs('2026-11-08', 19, 30)).toISOString()).toBe('2026-11-08T10:30:00.000Z');
     expect(daysBetween('2026-12-30', '2027-01-02')).toBe(3);
-  });
-  it('inMonthDayRange wraps the year', () => {
-    expect(inMonthDayRange('2026-12-29', '12-29', '01-03')).toBe(true);
-    expect(inMonthDayRange('2027-01-03', '12-29', '01-03')).toBe(true);
-    expect(inMonthDayRange('2027-01-04', '12-29', '01-03')).toBe(false);
-    expect(inMonthDayRange('2026-12-28', '12-29', '01-03')).toBe(false);
-    expect(inMonthDayRange('2027-06-01', '06-01', '07-20')).toBe(true);
-    expect(inMonthDayRange('2027-07-21', '06-01', '07-20')).toBe(false);
   });
   it('parses the compact-offset form', () => {
     expect((parseInstant('2026-11-02 07:00:00 +0900') - parseInstant('2026-11-01T22:00:00Z')) / 60000).toBe(0);

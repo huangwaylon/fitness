@@ -58,10 +58,6 @@ const BY_CAT = new Map(Object.entries(ITEMS).flatMap(([c, m]) => (m.cat ? [[m.ca
 /** A ずかん catalogue id → the tent's code, when NH has a model of it. */
 export const codeOfFind = (cat: string): string | null => BY_CAT.get(cat) ?? null;
 
-export const isItem = (code: unknown): code is string => typeof code === 'string' && Object.hasOwn(ITEMS, code);
-export const isWall = (code: unknown): code is string => typeof code === 'string' && WALLS.includes(code);
-export const isFloor = (code: unknown): code is string => typeof code === 'string' && FLOORS.includes(code);
-
 /** An item's footprint (tiles: across, deep) turned to facing `f` (a quarter turn each). */
 export function footprint(code: string, f: number): [number, number] {
   const m = ITEMS[code];

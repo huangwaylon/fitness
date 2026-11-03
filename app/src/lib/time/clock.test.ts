@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 import { dayKey, jst, minuteTimer } from './clock.ts';
-import { clockTime } from '#lib/i18n/format.ts';
 import { eventsAt } from '#lib/components/island/scene.ts';
 
 // Whatever the device's zone (CI runs in UTC), the scene reads Tokyo wall-clock time, like the model.
@@ -12,9 +11,8 @@ describe('scene clock in Tokyo time', () => {
     expect(jst(new Date('2026-12-31T15:00:00Z'))).toMatchObject({ year: 2027, month: 1, day: 1, hour: 0, weekday: 5 });
   });
 
-  it('dayKey, clockTime and the seasonal events follow it', () => {
+  it('dayKey and the seasonal events follow it', () => {
     expect(dayKey(new Date('2026-10-29T15:05:00Z'))).toBe('2026-10-30');
-    expect(clockTime(new Date('2026-10-29T15:05:00Z'))).toBe('0:05');
     expect(eventsAt(new Date('2026-11-16T03:00:00Z')).maple).toBe(true); // Nov 16, 12:00 JST
     expect(eventsAt(new Date('2026-11-15T14:30:00Z')).maple).toBe(false); // Nov 15, 23:30 JST
     expect(eventsAt(new Date('2026-12-23T15:30:00Z')).toyDay).toBe(true); // Dec 24, 00:30 JST

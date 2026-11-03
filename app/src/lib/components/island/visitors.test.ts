@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { VISITORS, VISITOR_LINES, VISIT_ODDS, visitorAt, visitorInView, visitorLine, visitorPlace } from './visitors.ts';
+import { VISITORS, VISITOR_LINES, VISIT_ODDS, visitorAt, visitorLine } from './visitors.ts';
 import { eventAt } from './events.ts';
 import { milestoneOn } from './wedding.ts';
 import { addDays } from '#lib/time/dates.ts';
@@ -68,16 +68,5 @@ describe('visitors (NH)', () => {
     // K.K.'s show: his greeting asks for a request; his sign-off; tuning when he has no songs yet
     for (const k of ['hello', 'which', 'tuning', 'playing', 'bye']) for (const c of [ja, en] as Record<string, string>[]) expect(c[`chat.sp.kk-slider.${k}`], k).toBeTruthy();
     expect((ja as Record<string, string>)['chat.sp.kk-slider.hello']).toContain('リクエスト');
-  });
-  it('in view: where the visitor stands, through the island camera (null: no visitor, no island)', () => {
-    const w = { inView: (x: number, z: number) => z < 600 && x > 0 && x < 390 };
-    visitorPlace.where = null;
-    expect(visitorInView(w)).toBeNull();
-    visitorPlace.where = () => [195, 900];
-    expect(visitorInView(w)).toBe(false);
-    expect(visitorInView(null)).toBeNull();
-    visitorPlace.where = () => [96, 30];
-    expect(visitorInView(w)).toBe(true);
-    visitorPlace.where = null;
   });
 });

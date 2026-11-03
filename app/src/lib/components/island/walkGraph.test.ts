@@ -1,6 +1,6 @@
 import type { Box } from './geom.ts';
 import { describe, expect, it } from 'vitest';
-import { actionSpots, facingFor, nearestWalkable, route, routeLength, segmentClear, walkGeo, walkable, wanderMs, type Pt, type WalkGeo } from './walkGraph.ts';
+import { actionSpots, nearestWalkable, route, routeLength, segmentClear, walkGeo, walkable, type Pt, type WalkGeo } from './walkGraph.ts';
 import { plan } from './avatar.ts';
 import { BRIDGE_RAIL, CAMPSITE, FLOWERS, CLIFF, GOAL_TREES, HOMES, POND, RIVER, ROCK, inRiver, onBridge } from './world.ts';
 
@@ -102,10 +102,6 @@ describe('a parameterised geometry', () => {
   });
 });
 
-describe('timing', () => {
-  it('a wander runs at 90 u/s', () => expect(wanderMs(90)).toBe(1000));
-});
-
 describe('action spots and the plan', () => {
   const g = walkGeo();
   it('spots around a target are walkable, beside it on the side the walker comes from first', () => {
@@ -125,10 +121,3 @@ describe('action spots and the plan', () => {
   });
 });
 
-describe('facing', () => {
-  it('faces the way it walks', () => {
-    expect(facingFor([0, 0], [10, 0])).toBe('r');
-    expect(facingFor([0, 0], [-10, 5])).toBe('l');
-    expect(facingFor([0, 0], [1, 30])).toBeNull();
-  });
-});

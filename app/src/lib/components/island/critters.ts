@@ -357,10 +357,6 @@ export function waterAt(x: number, z: number, sea: boolean, reach = WATER_REACH)
   return sea ? 'sea' : null;
 }
 
-/** Where a pond shadow dawdles (world): the open middle of the water, clear of the rim. */
-export const pondBox = (): { x0: number; x1: number; z0: number; z1: number } =>
-  ({ x0: POND.x - POND.rx * 0.55, x1: POND.x + POND.rx * 0.55, z0: POND.z - POND.rz * 0.4, z1: POND.z + POND.rz * 0.4 });
-
 /** Where the bobber lands for a cast at (x, z) in `water` (world): kept inside the water, clear of its edge: in the
  *  pond's oval at 0.75 of its size, on the river within 0.55 of its half-width from the centreline, in the sea past the
  *  foam (z ≤ −10). */
@@ -419,7 +415,7 @@ function reaches(i0: number, i1: number, step: number, keep: (x: number, z: numb
 export function freshAreas(where: FreshWhere): Swim[] {
   if (where === 'pond') return [{ cx: POND.x, cz: POND.z, ux: 1, uz: 0, L: POND.rx * 0.55, W: POND.rz * 0.4 }];
   if (where === 'clifftop')
-    return reaches(0, RIVER.length - 1, 24, (x, z) => z > CLIFF.z0 - FALLS_POOL && z < CLIFF.z0 - 6);
+    return reaches(0, RIVER.length - 1, 24, (_x, z) => z > CLIFF.z0 - FALLS_POOL && z < CLIFF.z0 - 6);
   if (where === 'mouth') return reaches(0, RIVER.length - 1, 44, (x, z) => freshWhere(x, z) === 'mouth');
   return reaches(0, RIVER.length - 1, 80, (x, z) => z < CLIFF.z0 - FALLS_POOL - 8 && freshWhere(x, z) === 'river' && Math.abs(x - BRIDGE.x) > BRIDGE.w / 2 + 24);
 }
