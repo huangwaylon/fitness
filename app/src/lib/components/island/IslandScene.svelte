@@ -1281,7 +1281,7 @@
   .scene[data-r3] :global(.visitor:has(> .art.m3on) > .shade) { opacity: 0; }
   /* the campfire's light is the canvas's (its emissive, halo, pool and point light); its flames stay the DOM's */
   .scene[data-r3] :global(:is(.fire-halo, .embers, .fire-pool)) { display: none; }
-  .scene[data-r3] .vil :global(:is(.body > .official, .body > .silhouette, .shadow)) { opacity: 0; }
+  .scene[data-r3] .vil :global(:is(.body > .official, .body > .sil, .shadow)) { opacity: 0; }
   .scene:not([data-live]) .scroller { overflow: hidden; }
   .track { position: relative; }
   /* the stage stays on screen while the track scrolls under it; its width is 390 units (cqw) and --u one unit */
