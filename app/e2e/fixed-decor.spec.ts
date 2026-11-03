@@ -2,7 +2,7 @@
 // their spots; a tap answers where the piece stands (nobody walks), but for a seat (sit-outdoors.spec: walked up to and
 // sat on); the shishi-odoshi tips and knocks; the sandcastle is gone at 18:00; the seasonal lamps light at night.
 import { expect, test, type Page } from '@playwright/test';
-import { geo, is3d, tapOn, w3 } from './island.ts';
+import { geo, is3d, openNear, tapOn, w3 } from './island.ts';
 import { hudMenu } from './hud.ts';
 
 type W = { at: (x: number, z: number) => [number, number]; go: (z: number) => void; cam(): number };
@@ -101,7 +101,8 @@ test('sitting: my villager on the front bench is drawn seated, and stands again 
   const [x, z] = (await geo(page)).SEATS.seatMaeL;
   await page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z), [x, z]);
   await expect(page.locator('[data-actor="mine"]')).toHaveAttribute('data-seat', 'seatMaeL');
-  // stood up elsewhere: not seated
-  await page.evaluate(() => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(150, 260));
+  // stood up elsewhere (open lawn, read from the page's island): not seated
+  const [ox, oz] = await openNear(page, 150, 260);
+  await page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z), [ox, oz]);
   await expect(page.locator('[data-actor="mine"][data-seat]')).toHaveCount(0);
 });
