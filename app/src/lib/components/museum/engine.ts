@@ -31,7 +31,7 @@ export const PACE = 30;
 const PITCH = 47;
 const FOV = 32;
 /** How much of the floor the default view shows across (model units): about fifteen tiles. */
-const VIEW_W = 110;
+const VIEW_W = 92;
 const DPR_MAX = 2, DPR_MOVING = 1.5;
 /** The exhibits' rate (a second) while only they move. */
 const AMBIENT = 30;
@@ -462,24 +462,29 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     p.position.set(x, (HALL_H - 4) / 2, z);
     scene.add(p);
   }
+  const wood0 = lambert({ color: 0x7a5234 });
   const redTex = tex('hall-red', [1, 2]);
   for (const x of [-34, 34]) {
     const b = new Mesh(new PlaneGeometry(14, 36), lambert({ map: redTex }));
     b.position.set(x, 30, HALL.z0 + 2);
     scene.add(b);
   }
-  const signs: [string, number, number][] = [['こんちゅう', HALL.x0 + 2, Math.PI / 2], ['さかな', HALL.x1 - 2, -Math.PI / 2]];
-  for (const [text, x, yaw] of signs) {
+  // each wing's sign by its opening (NH's lobby signs: on a post, facing whoever comes in)
+  const postGeo = new CylinderGeometry(0.7, 0.7, 14, 8);
+  disposables.push(postGeo);
+  for (const [text, x] of [['こんちゅう', HALL.x0 + 14], ['さかな', HALL.x1 - 14]] as const) {
     const t = plaque(text);
     disposables.push(t);
-    const s = new Mesh(new PlaneGeometry(26, 6.5), new MeshBasicMaterial({ map: t, transparent: true }));
-    s.position.set(x, 38, (OPENING.z0 + OPENING.z1) / 2);
-    s.rotation.y = yaw;
-    scene.add(s);
+    const board = new Mesh(new PlaneGeometry(18, 4.5), new MeshBasicMaterial({ map: t, transparent: true }));
+    board.position.set(x, 15, OPENING.z1 + 6);
+    board.rotation.x = -0.35;
+    const post = new Mesh(postGeo, wood0);
+    post.position.set(x, 7, OPENING.z1 + 5.6);
+    scene.add(board, post);
   }
   // Blathers' desk at the back of the hall, NH's: wood, a green top; Blathers behind it
   const desk = new Group();
-  const wood = lambert({ color: 0x7a5234 });
+  const wood = wood0;
   const top = new Mesh(new BoxGeometry(44, 1.6, 12), lambert({ color: 0x3f6b4a }));
   top.position.y = 7.8;
   const body = new Mesh(new BoxGeometry(42, 7, 10), wood);
@@ -679,12 +684,21 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     camera.updateMatrixWorld(true);
     cutaway();
   }
+  /** Where the camera looks for a villager at (x, z): a little ahead of it, kept over the floors (the view's lower edge
+   *  never far past the front walls: the hall's is nearer than the wings'; nor past the side walls). */
+  function camSpot(x: number, z: number): [number, number] {
+    const inHall = Math.abs(x) < HALL.x1 + 10;
+    return [Math.max(BUG_WING.x0 + 70, Math.min(FISH_WING.x1 - 70, x)), Math.max(inHall ? -30 : -60, Math.min((inHall ? HALL.z1 : FISH_WING.z1) - 84, z - 4))];
+  }
   /** The walls between the camera and my villager go (and those beside the line, a little either side). */
   function cutaway() {
     const cx = camera.position.x, cz = camera.position.z;
-    const sx = Math.cos(view.az), sz = -Math.sin(view.az);
+    const sx = Math.cos(view.az), sz = -Math.sin(view.az), tx0 = Math.sin(view.az), tz0 = Math.cos(view.az);
     for (const wm of walls) {
-      let cut = false;
+      // a wall across the view on the camera's side of my villager (the front walls, as NH cuts them)
+      const mx = (wm.w.a[0] + wm.w.b[0]) / 2 - target.x, mz = (wm.w.a[1] + wm.w.b[1]) / 2 - target.z;
+      const dx = wm.w.b[0] - wm.w.a[0], dz = wm.w.b[1] - wm.w.a[1], dl = Math.hypot(dx, dz) || 1;
+      let cut = mx * tx0 + mz * tz0 > 12 && Math.abs((dx * tx0 + dz * tz0) / dl) < 0.6;
       for (const off of [-24, 0, 24]) {
         const tx = target.x + sx * off, tz = target.z + sz * off;
         if (segCross(cx, cz, tx, tz, wm.w.a[0], wm.w.a[1], wm.w.b[0], wm.w.b[1])) cut = true;
@@ -793,7 +807,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const me = villagers.get(followed);
     if (me) {
       // (kept over the floors: near the front door the camera stays back, not over the dark outside)
-      const fx = Math.max(BUG_WING.x0 + 70, Math.min(FISH_WING.x1 - 70, me.pos[0])), fz = Math.max(-60, Math.min(HALL.z1 - 46, me.pos[1] - 4));
+      const [fx, fz] = camSpot(me.pos[0], me.pos[1]);
       const f = Math.min(1, (6 * dt) / 1000);
       const dx = fx - target.x, dz = fz - target.z;
       if (Math.hypot(dx, dz) > 0.05) {
@@ -851,7 +865,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       w.pos = [p[0], p[1]];
       w.was = [p[0], p[1]];
       if (yaw !== undefined) w.yaw = yaw;
-      if (who === followed) target.set(Math.max(BUG_WING.x0 + 70, Math.min(FISH_WING.x1 - 70, p[0])), 8, Math.max(-60, Math.min(HALL.z1 - 46, p[1] - 4)));
+      if (who === followed) target.set(...camSpot(p[0], p[1]).flatMap((v, i) => (i ? [8, v] : [v])) as [number, number, number]);
       place(w);
       invalidate();
     },
