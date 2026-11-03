@@ -20,6 +20,7 @@
   "fruit.apple": "Steps",
   "fruit.pear": "Move",
   "island.health": "Health",
+  "island.jar": "Treats · our Bells {bells}",
   "island.highfive": "High-five {name}",
   "island.highfiveSent": "High-five to {name}!",
   "weekday.1": "Mon",

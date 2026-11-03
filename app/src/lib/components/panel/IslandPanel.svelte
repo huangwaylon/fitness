@@ -30,7 +30,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import { isGuest, mine } from '#lib/ui-state/viewer.ts';
 
-  /** `start`: the tab of the first opening (the old /jar link opens on ごほうび); every later one starts on きろく. */
+  /** `start`: the tab an opening shows (ごほうび from the HUD's jar or the old /jar link, else きろく). */
   let { open = $bindable(), start = 'kiroku' }: { open: boolean; start?: Tab } = $props();
 
   /** A level of the panel's own (きろく keeps its own levels: week → day, the weight trend, a goal). */
@@ -40,7 +40,7 @@
   let kirokuLevel = $state(0);
   let body: HTMLElement | undefined = $state();
   let savedTop = 0;
-  /** Every opening from the ribbon starts on きろく: closing resets it. */
+  /** Every opening from the ribbon starts on きろく, from the jar on ごほうび: closing resets it, opening reads `start`. */
   // svelte-ignore state_referenced_locally
   let tab = $state<Tab>(start);
   function pick(to: Tab) {
@@ -93,6 +93,7 @@
     const o = open;
     if (o === wasOpen) return;
     wasOpen = o;
+    if (o) tab = start;
     cue(o ? 'panel-open' : 'panel-close');
   });
 </script>

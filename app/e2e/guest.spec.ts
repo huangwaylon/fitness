@@ -55,11 +55,16 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   await expect(panel.locator('#sec-notify, #sec-sync')).toHaveCount(0);
   await expect(panel.locator('#sec-lang')).toBeVisible();
   await page.keyboard.press('Escape');
-  // ごほうび: the jar's balance and the buys, view-only (no shop, no erase)
-  await ribbon(page).click();
-  await panel.locator('.tab[data-tab=rewards]').click();
+  // ごほうび, from the HUD's jar (the shared balance written in it): the jar's balance and the buys, view-only (no shop,
+  // no erase)
+  const jar = page.locator('.hud-jar');
+  const bells = Number(await jar.getAttribute('data-bells'));
+  expect(bells).toBeGreaterThan(0);
+  await expect(jar.locator('.num')).toHaveText(bells < 1000 ? bells.toLocaleString('en-US') : /k$/);
+  await jar.click();
+  await expect(panel.locator('.tab[data-tab=rewards]')).toHaveAttribute('aria-pressed', 'true');
   await expect(panel.locator('[data-guest-jar]')).toBeVisible();
-  await expect(panel.locator('.hero .total')).toBeVisible();
+  await expect.poll(async () => Number((await panel.locator('.hero .total').innerText()).replace(/\D/g, ''))).toBe(bells);
   await expect(panel.locator('[data-item]')).toHaveCount(0);
   await expect(panel.locator('[data-spend] .x')).toHaveCount(0);
 });

@@ -1,8 +1,14 @@
+<script lang="ts" module>
+  /** The ベル still in the air (HudJar holds its number by this much until they land). */
+  export const coinsInFlight = $state({ bells: 0 });
+</script>
+
 <script lang="ts">
-  // Today's new ベル flying into the HUD's ribbon (「きょう +6 ベル」, the day's total for both of us): when a sync
-  // brings goals met since this phone last showed them (SCENE.bellsSeen, per day), a "+1" pops over that fruit under
-  // its tree on the island and three coins hop up into the ribbon (CoinFlow); its number squashes as each flight
-  // lands (the count-up is Hud's). It all waits while a sheet, the panel or the harvest covers the scene.
+  // Today's new ベル flying into the HUD's jar (HudJar, left of the ribbon): when a sync brings goals met since this
+  // phone last showed them (SCENE.bellsSeen, per day), a "+1" pops over that fruit under its tree on the island and
+  // three coins hop up into the jar (CoinFlow); the jar squashes as each flight lands and its number counts up by it
+  // (coinsInFlight; the ribbon's own count-up is Hud's). It all waits while a sheet, the panel or the harvest covers
+  // the scene.
   //   <HudCoins {view} {covered} {later} />
   import { untrack } from 'svelte';
   import type { PersonId, RingBells, WeekView } from '#lib/types.ts';
@@ -27,7 +33,7 @@
   const MAX_FLIGHTS = 8;
 
   let flights = $state<Flight[]>([]);
-  /** The island's stage on screen (px) and the ribbon's middle in stage units, measured when coins take off. */
+  /** The island's stage on screen (px) and the jar's mouth in stage units, measured when coins take off. */
   let stage = $state<{ left: number; top: number; width: number } | null>(null);
   let mouth = $state<[number, number]>([0, 0]);
   let flightN = 0;
@@ -46,16 +52,21 @@
     return [sx, Math.min(sy, w.view.vh * k)];
   };
 
-  const ribbon = () => document.querySelector<HTMLElement>('.ribbon-wrap .ribbon');
+  /** The HUD jar's squash box (the jar drawing and its number). */
+  const jar = () => document.querySelector<HTMLElement>('.ribbon-wrap .hud-jar .squash');
+  $effect(() => {
+    coinsInFlight.bells = flights.reduce((a, f) => a + f.bells, 0);
+  });
+  $effect(() => () => (coinsInFlight.bells = 0));
 
-  /** The stage's box and the ribbon's number in its units; false if either is gone. */
+  /** The stage's box and the jar's mouth (the top of the glass, under the lid) in its units; false if either is gone. */
   function measure(): boolean {
     const st = document.querySelector<HTMLElement>('.if-scene .stage')?.getBoundingClientRect();
-    const rb = ribbon()?.querySelector('b')?.getBoundingClientRect();
-    if (!st?.width || !rb?.width) return false;
+    const jb = jar()?.getBoundingClientRect();
+    if (!st?.width || !jb?.width) return false;
     const k = 390 / st.width;
     stage = { left: st.left, top: st.top, width: st.width };
-    mouth = [(rb.left + rb.width / 2 - st.left) * k, (rb.top + rb.height / 2 - st.top) * k];
+    mouth = [(jb.left + jb.width / 2 - st.left) * k, (jb.top + jb.height * 0.3 - st.top) * k];
     return true;
   }
 
@@ -97,7 +108,7 @@
 
   function land(id: number) {
     flights = flights.filter((x) => x.id !== id);
-    const el = ribbon()?.querySelector('b');
+    const el = jar();
     if (!el) return;
     el.classList.remove('catch');
     void el.offsetWidth; // restart the catch squash
@@ -107,8 +118,8 @@
 </script>
 
 {#if flights.length && stage}
-  <!-- the coins fly over the island's stage (its own units), up out of it into the ribbon -->
-  <div class="flow" style:left="{stage.left}px" style:top="{stage.top}px" style:width="{stage.width}px">
+  <!-- the coins fly over the island's stage (its own units), up out of it into the jar -->
+  <div class="flow" data-coin-flow style:left="{stage.left}px" style:top="{stage.top}px" style:width="{stage.width}px">
     <CoinFlow {flights} to={mouth} onland={land} />
   </div>
 {/if}
