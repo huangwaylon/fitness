@@ -13,7 +13,7 @@ The sheet's setup: [google-setup.md](google-setup.md). How it works: [backend.md
 Push to `main`. Any change under `app/**` (or to the workflow) runs `.github/workflows/pages.yml`:
 
 1. `npm ci --ignore-scripts`, then beside each other: `npm run build` with `BASE_PATH=/fitness` (once), and `npm run check`, `npm run knip`, `npx vitest run`
-2. the e2e against that build: Playwright in Chromium (eight shards); WebKit as an iPhone 15 runs nightly on macOS
+2. the e2e against that build: Playwright in Chromium (twelve shards); WebKit as an iPhone 15 runs nightly on macOS
    (testing.md), gating nothing until it's green across the board
 3. deploy `app/build-pages/` to https://huangwaylon.github.io/fitness/
 

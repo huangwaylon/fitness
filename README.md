@@ -2,7 +2,8 @@
 
 A cozy Animal Crossing–style fitness game for a couple in Tokyo. Each iPhone's daily steps, exercise, Move and
 stand minutes grow fruit and earn ベル into one shared wallet, spent on small luxuries the couple prices themselves.
-Japanese-first PWA; no server of its own (a Google Sheet behind an Apps Script web app).
+Japanese-first PWA; its server is a Cloudflare relay (`relay/`: the record in a Durable Object, and the live room),
+with a Google Sheet as a one-way export (an Apps Script web app).
 
 **App:** https://huangwaylon.github.io/fitness/ (demo data: add `?demo`)
 
@@ -10,7 +11,7 @@ Japanese-first PWA; no server of its own (a Google Sheet behind an Apps Script w
 ```sh
 cd app
 npm ci
-npm run dev        # demo data unless VITE_GAS_URL is set in .env (see .env.example)
+npm run dev        # demo data unless VITE_RECORD_URL is set in .env (see .env.example)
 npm test           # unit tests (vitest)
 npm run check      # svelte-check
 npm run build      # → build-pages/
@@ -26,10 +27,11 @@ Needs Node ≥ 24.
 |---|---|
 | `app/src/lib/model/` | Sheet rows → the week view, the wallet, きろく |
 | `app/src/lib/config/`, `scoring/` | The rules as data, versioned by week; ベル and badges |
-| `app/src/lib/contract/` | The API and sheet contract shared with the Apps Script |
-| `app/src/lib/sync/`, `store/` | Apps Script client, write queue, cache, pairing; the stores |
+| `app/src/lib/contract/` | The record's API and rules, shared with the relay |
+| `app/src/lib/sync/`, `store/` | The relay's client (record and live socket), write queue, cache, pairing; the stores |
 | `app/src/lib/components/`, `app/src/routes/` | The UI |
-| `app/gas/` → `app/apps-script/` | Apps Script source (with the Shortcut parser) and its bundle |
+| `app/gas/` → `app/apps-script/` | The sheet's exporter (Apps Script) and its bundle |
+| `relay/` | The Cloudflare Worker: the record, the live room, the Shortcut parser |
 | `app/scripts/` | Asset scripts and the benchmark |
 | `app/e2e/` | Playwright tests |
 
