@@ -39,7 +39,9 @@
   const gold = Math.random() < 0.05;
   const look = gold ? GOLD : pickOne(COLOURS, Math.random);
   const [body, light, shade, rim] = look;
-  /** The 3D island's model of it (world3d/Island3D: data-m3sky), NH's balloon of about its colour. */
+  /** The 3D island's model of it (world3d/Island3D: data-m3sky), NH's balloon of about its colour; the present's is
+   *  deco/present. Popped, the flight is marked (data-popped) and both models go at once: the present that falls is
+   *  SceneTaps' own, and the one on the string would hang on where it burst until this unmounts. */
   const model = `balloon/${gold ? 4 : COLOURS.indexOf(look) % 5}`;
   // The breeze blows either way; the altitude varies within whatever room the lane has to spare.
   const ltr = Math.random() < 0.5;
@@ -129,7 +131,7 @@
   });
 </script>
 
-<div class="fly" class:rtl={!ltr} class:popped bind:this={fly} style:--alt={alt}
+<div class="fly" class:rtl={!ltr} class:popped data-popped={popped || undefined} bind:this={fly} style:--alt={alt}
   onanimationend={(e) => e.target === fly && ondone?.()}>
   <button type="button" class="balloon" data-sfx="self" aria-label={t('island.balloon')} onclick={tap}>
     <span class="bob">
@@ -141,7 +143,7 @@
           </svg>
           <span class="gift" data-m3sky="deco/present" bind:this={gift}><OfficialArt key="deco/present" size="100%" /></span>
         </span>
-        <svg class="ball" data-m3sky={model} data-popped={popped || undefined} viewBox="0 0 40 44" aria-hidden="true">
+        <svg class="ball" data-m3sky={model} viewBox="0 0 40 44" aria-hidden="true">
           <defs>
             <radialGradient id="{gid}-b" cx=".36" cy=".3" r=".78">
               <stop offset="0" stop-color={light} /><stop offset=".45" stop-color={body} />

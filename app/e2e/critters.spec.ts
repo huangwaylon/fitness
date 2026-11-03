@@ -87,6 +87,35 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
   await unchanged(page, before);
 });
 
+type Sky3 = { __world3d?: { loaded(): boolean; where(id: string): { hidden: boolean; model: string } | null } };
+test('a popped balloon leaves nothing in the sky: only its present falls (no copy hanging where it burst)', async ({ page }) => {
+  await open(page, '&balloon');
+  await page.waitForFunction(() => (window as unknown as Sky3).__world3d?.loaded(), null, { timeout: 30_000 });
+  const balloon = page.locator('.if-scene .balloon');
+  await expect.poll(async () => { const r = await balloon.boundingBox(); return !!r && r.x > 40 && r.x + r.width < 350; }, { timeout: 15_000 }).toBe(true);
+  /** The 3D sky's models shown now (Island3D's sky:<n>: the balloon and the present on its string). */
+  const shown = () => page.evaluate(() => {
+    const w = (window as unknown as Sky3).__world3d!;
+    return [0, 1, 2, 3].map((i) => w.where(`sky:${i}`)).flatMap((q) => (q && !q.hidden ? [q.model] : [])).sort();
+  });
+  const flying = await shown();
+  expect(flying).toHaveLength(2);
+  expect(flying).toContain('finds/present');
+  const b = (await balloon.boundingBox())!;
+  await page.mouse.click(b.x + b.width / 2, b.y + b.height * 0.25);
+  await expect(page.locator('[data-fx="present"]')).toHaveCount(1);
+  // the flight still mounted (the burst's confetti flying out), the balloon and its present are already gone from the
+  // sky, the 3D models and the DOM's alike: only the falling present remains
+  await expect(page.locator('.if-scene .fly.popped')).toHaveCount(1);
+  await expect.poll(shown, { timeout: 300 }).toEqual([]);
+  for (const el of await page.locator('.if-scene .fly [data-m3sky]').all()) await expect(el).toBeHidden();
+  await expect(page.locator('.if-scene .fly.popped')).toHaveCount(1);
+  // then the flight goes, the sky empty
+  await expect(balloon).toHaveCount(0);
+  expect(await shown()).toEqual([]);
+  await expect(page.locator('[data-fx="present"]')).toHaveCount(1);
+});
+
 /** A tap on the sea well away from the bobber and the shadow (any sea tap is the reel while the bobber is out). */
 async function seaTap(page: Page) {
   const b = await at(page, '[data-bobber]');
