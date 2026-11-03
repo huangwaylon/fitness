@@ -27,12 +27,18 @@ const FLOWER_COST = 60;
 /** At most this many flowers cleared for one building. */
 const FLOWERS_MAX = 12;
 
+/** How a spot may be had: on clear ground; clearing flowers (and only flowers: the island's own trees, bushes, furniture
+ *  and paths stay); over a path, the last resort (the island's ways stay open, the main path most of all). */
+type Way = 'clear' | 'flowers' | 'path';
+
 /**
- * The free spot nearest `o`'s own for it (its tile and facing), or null when nowhere fits. With `flowers`, a spot may
- * stand where flowers grow (and only flowers: the island's own trees, bushes, furniture and paths stay), clearing them:
- * an island planted edge to edge (the record's of 2026-11-04, flower borders down both sides) has no 7 × 4 spot clear.
+ * The free spot nearest `o`'s own for it had `way` (its tile and facing), or null when nowhere fits. An island
+ * planted edge to edge (the record's of 2026-11-04, flower borders down both sides, the main path between) has no 7 × 4
+ * spot clear: there the museum clears a few flowers on one side of the main path and the shop on the other, rather than
+ * the museum straddling the path and leaving the shop no spot at all.
  */
-function freeSpot(l: Layout, o: Obj, flowers = false): Spot | null {
+function freeSpot(l: Layout, o: Obj, way: Way): Spot | null {
+  const flowers = way === 'flowers';
   const without = withChanges(l, { remove: [o.id] });
   // the tiles something stands on (a flower too, unless it may be cleared: none may stand in a building), and the
   // ground's kind and tier
@@ -60,9 +66,11 @@ function freeSpot(l: Layout, o: Obj, flowers = false): Spot | null {
           if (id) clear.add(id);
           return g >= 0 && !isWater(kindOf(g)) && kindOf(g) !== 'sea' && tierOf(g) === tier && !taken.has(`${cc},${rr}`);
         };
-        // (clearing flowers, never over a path either: its door may open onto one)
-        const off = (cc: number, rr: number) => ok(cc, rr) && !(flowers && PATHS.includes(kindOf(ground(cc, rr))));
-        if (!tiles.every(([cc, rr]) => off(cc, rr)) || !doorOf(without, c).tiles.every(([cc, rr]) => ok(cc, rr)) || clear.size > FLOWERS_MAX) continue;
+        // (over a path only the last way, and then over one at least: a spot off the paths was the first two ways'; its
+        // door may open onto one)
+        const path = (cc: number, rr: number) => PATHS.includes(kindOf(ground(cc, rr)));
+        if (!tiles.every(([cc, rr]) => ok(cc, rr) && (way === 'path' || !path(cc, rr))) || !doorOf(without, c).tiles.every(([cc, rr]) => ok(cc, rr))) continue;
+        if (clear.size > FLOWERS_MAX || (flowers && !clear.size) || (way === 'path' && !tiles.some(([cc, rr]) => path(cc, rr)))) continue;
         const [mx, mz] = objMid(without, c);
         cands.push({ x, z, f: f as Facing, clear: [...clear], cost: Math.hypot(mx - ox, mz - oz) + (f ? TURN_COST : 0) + clear.size * FLOWER_COST });
       }
@@ -94,7 +102,7 @@ export function buildingOps(merged: ReadonlyMap<string, LayoutEntry>, me: 'A' | 
       l ??= layoutOf(new Map(merged));
       const o = l.objects.get(d.id);
       if (!o || !wrong(l, o.id)) continue;
-      const s = freeSpot(l, o) ?? freeSpot(l, o, true);
+      const s = freeSpot(l, o, 'clear') ?? freeSpot(l, o, 'flowers') ?? freeSpot(l, o, 'path');
       if (!s) continue;
       // the flowers it clears go first (each a removal, as the editor's), then the building
       for (const id of s.clear) out.push({ sc: 'o', id, at: t++, rm: true });

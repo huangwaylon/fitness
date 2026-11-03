@@ -648,11 +648,13 @@
         GIFT_TREES: giftTreesOn(today, islandSeed())
       }),
       /** Whether (x, z) is open ground a tap there walks to (e2e: a spot for a tap-walk): walkable, `away` u from
-       *  today's weeds, dig spots and mushrooms, 30 from the scenery's and the decor's tap areas, 32 from a flower (a thumb-sized tap area far up the screen). */
+       *  today's weeds, dig spots and mushrooms, 30 from the scenery's and the decor's tap areas, 32 from a flower (a thumb-sized tap area far up the screen),
+       *  a thumb (20 u) off a building's footprint (a tap at its foot knocks at its door, and its model's eaves reach past it: a wide one's edge
+       *  is far from its middle). */
       free: (x: number, z: number, away = 45) => {
         const ms = (jst(clock).hour * 60 + jst(clock).minute) * 60_000, seed = islandSeed();
         const near = (ps: readonly (readonly [number, number])[], d: number) => ps.some(([px, pz]) => Math.hypot(px - x, pz - z) < d);
-        return walkable(walkGeo(), x, z) && !near([...weedsAt(today, ms, seed).map((w) => [w.x, w.y] as const), ...digSpots(today, new Set(), seed).map((d) => [d.x, d.y] as const), ...mushroomSpots()], away)
+        return walkable(walkGeo(), x, z) && !([[0, 0], [20, 0], [-20, 0], [0, 20], [0, -20]] as const).some(([dx, dz]) => buildingAt(x + dx, z + dz)) && !near([...weedsAt(today, ms, seed).map((w) => [w.x, w.y] as const), ...digSpots(today, new Set(), seed).map((d) => [d.x, d.y] as const), ...mushroomSpots()], away)
           && !near([...W.SCENERY, ...W.DECOR_SLOTS].map((t) => [t.x, t.z] as const), 30) && !near([W.ROCK, W.TAPE_DECK, ...W.BUILDINGS.map((b) => [b.x, b.z + b.depth / 2] as const)], 40)
           && !near(W.FLOWERS.map((f) => [f.x, f.z] as const), 32);
       },

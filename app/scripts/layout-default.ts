@@ -141,12 +141,14 @@ for (const line of PATHS_LONG) {
     }
   }
 }
-// the homes' paths: from the main path to うめ's door (west) and the guest's (east)
-const HOME_B: [number, number] = [3, 29], HOME_G: [number, number] = [11, 34];
+// the homes' paths: from the main path to うめ's door (west) and the guest's (east); うめ's home two rows nearer the
+// bridge than it was, so the shop behind it shows its door
+const HOME_B: [number, number] = [3, 27], HOME_G: [number, number] = [11, 34];
 /** The museum's footprint's back-left tile (its 7 × 4 on the clifftop, its door's row in front clear). */
 const MUSEUM: [number, number] = [6, 54];
-/** The shop's (タヌキ商店, NH's 7 × 4): in the island's middle by the main path, a short walk up from the campsite. */
-const SHOP: [number, number] = [10, 16];
+/** The shop's (タヌキ商店, NH's 7 × 4): in the middle, west of the main path behind うめ's home (its door a step off the
+ *  path, four rows clear of the home's back: its roof hid the shop's door at two), clear of まえ's lawn and the river's banks. */
+const SHOP: [number, number] = [2, 34];
 for (const [row, c0, c1] of [[HOME_B[1] - 1, 4, 9], [HOME_G[1] - 1, 9, 13]] as const)
   for (let c = c0; c <= c1; c++) if (kinds[idx(c, row)] === 'grass') kinds[idx(c, row)] = 'dirt';
 const codes = new Uint8Array(GRID.cols * GRID.rows);
@@ -182,10 +184,8 @@ const PROP: Record<string, [string, string?]> = {
   'deco/garden-rock': ['garden-rock'], 'deco/park-bench': ['park-bench'], 'deco/log-bench': ['log-bench'], 'deco/rod-stand': ['rod-stand'],
   'deco/hammock': ['hammock'], 'deco/firewood': ['firewood'], 'deco/pullup': ['pullup'], 'deco/pump': ['pump'], 'deco/shishiodoshi': ['shishiodoshi']
 };
-/** Scenery that gives way to the shop: its oak would stand right behind it (hidden, and a mushroom beside it). */
-const GIVES_WAY: Record<string, readonly [number, number]> = { 'oak-m1': [tileX(4) + TILE / 2, tileZ(20) + TILE / 2] };
 for (const s of SCENERY) {
-  const [x, z] = GIVES_WAY[s.id] ?? [s.x, s.z];
+  const [x, z] = [s.x, s.z];
   const flip = s.flip ? 1 : 0;
   if (s.kind === 'oak' || s.kind === 'cedar' || s.kind === 'palm' || s.kind === 'bamboo') put(s.id, s.kind, x, z, { f: flip });
   else if (s.kind === 'bush') put(s.id, 'bush', x, z, { f: flip, s: s.key.startsWith('month-bush-') ? `month-${s.key.slice(-1)}` : s.key.replace(/^bushes\//, '') });
@@ -222,22 +222,21 @@ put('bridge', 'bridge', BRIDGE.x, (BRIDGE.z0 + BRIDGE.z1) / 2, { s: 'stone' });
 // the museum (はくぶつかん, NH's 7 × 4): at the island's back, on the clifftop behind the campsite (the stairs come up beside
 // it), its door toward the camera; the clifftop's cedars make room round it (below: they claim their tiles after it)
 put('museum', 'museum', tileX(MUSEUM[0]) + (7 * TILE) / 2, tileZ(MUSEUM[1]) + (4 * TILE) / 2, { exact: true, raw: true });
-// the shop (タヌキ商店, NH's 7 × 4): east of the main path, its door toward the camera; what stood there moves aside
+// the shop (タヌキ商店, NH's 7 × 4): west of the main path behind うめ's home, its door toward the camera
 put('shop', 'shop', tileX(SHOP[0]) + (7 * TILE) / 2, tileZ(SHOP[1]) + (4 * TILE) / 2, { exact: true, raw: true });
-// the middle: a few trees at its edges, bushes by the homes, three clumps of flowers, a lamp at each home's path;
-// the rest open, to build on
+// the middle: a few trees east of the path (its west is the homes' and the shop's: the two cedars that stood there
+// are gone, nowhere else clear of the stream's bank, the doors and the decor behind), bushes by the homes, three clumps
+// of flowers (one either side of the shop's door), a lamp at each home's path; the rest open, to build on
 const mid = (id: string, k: string, c: number, r: number, s?: string) => put(id, k, tileX(c) + TILE / 2, tileZ(r) + TILE / 2, { exact: true, raw: true, ...(s ? { s } : {}) });
-mid('mid-cedar-1', 'cedar', 3, 26);
 mid('mid-oak-1', 'oak', 13, 27);
-mid('mid-cedar-2', 'cedar', 3, 36);
-mid('mid-oak-2', 'oak', 6, 38);
+mid('mid-oak-2', 'oak', 11, 29);
 mid('mid-cedar-3', 'cedar', 14, 38);
 mid('mid-bush-1', 'bush', 8, 31, 'holly');
 mid('mid-bush-2', 'bush', 10, 35, 'white-azalea');
 mid('mid-bush-3', 'bush', 10, 27, 'pink-azalea');
 mid('mid-lamp-1', 'streetlamp', 8, 27);
 mid('mid-lamp-2', 'streetlamp', 10, 32);
-for (const [i, [c, r, n]] of ([[5, 33, 0], [6, 33, 0], [5, 34, 0], [12, 30, 3], [13, 31, 3], [12, 31, 3]] as const).entries())
+for (const [i, [c, r, n]] of ([[3, 33, 0], [6, 33, 0], [4, 33, 0], [12, 30, 3], [13, 31, 3], [12, 31, 3]] as const).entries())
   mid(`mid-fl-${i + 1}`, 'flower', c, r, `c${n}`);
 // a home's (x, z) is its door's tile (model.ts originOf): the front row's middle, the left of two
 for (const o of objects) if (o.k === 'home') o.x += Math.floor((homeFoot(DEFAULT_HOMES[o.id.slice(-1) as 'A']).at(0)! - 1) / 2);
@@ -265,7 +264,7 @@ for (const f of FLOWERS) put(f.id, 'flower', f.x, f.z, { s: `c${f.clump}` });
     for (let j = 0; j < d; j++)
       for (let i = 0; i < w; i++) {
         const c = x0 + i, r = z0 + j, k = tileKind(c, r);
-        if (taken.has(`${c},${r}`) || tileTier(c, r) !== t) return false;
+        if ((taken.has(`${c},${r}`) && !(o.k === 'flower' && taken.get(`${c},${r}`)!.endsWith(':front'))) || tileTier(c, r) !== t) return false;
         if (o.k === 'bridge' || o.k === 'stairs') continue;
         if (k === 'sea' || k === 'river' || k === 'pond' || k === 'dirt') return false;
         if (kindDef(o.k)!.on === 'grass' && k !== 'grass' && o.k !== 'flower') return false;
@@ -279,7 +278,9 @@ for (const f of FLOWERS) put(f.id, 'flower', f.x, f.z, { s: `c${f.clump}` });
     // a home's door, a building's front and a board's front stay clear
     // the stairs' top (the row it climbs to: f 0 rising away) stays clear, a walker steps off there
     if (o.k === 'stairs' && o.f === 0) for (let i = 0; i < w; i++) taken.set(`${x0 + i},${z0 + d}`, `${o.id}:top`);
-    if (o.k === 'home' || o.k === 'board' || kindDef(o.k)!.door) for (let i = 0; i < w; i++) taken.set(`${x0 + i},${z0 - 1}`, `${o.id}:door`);
+    // (a building's front: flowers may grow either side of its door, which stays clear, as validate.ts asks)
+    if (o.k === 'home' || o.k === 'board' || kindDef(o.k)!.door)
+      for (let i = 0; i < w; i++) taken.set(`${x0 + i},${z0 - 1}`, kindDef(o.k)!.door && Math.abs(i - (w - 1) / 2) >= 1 ? `${o.id}:front` : `${o.id}:door`);
   };
   for (const o of [...objects].sort((a, b) => rank(a) - rank(b))) {
     if (rank(o) === 0 || fits(o, o.x, o.z)) {
