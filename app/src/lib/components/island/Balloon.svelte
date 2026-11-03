@@ -17,7 +17,7 @@
   import { surfaceAt } from './world.ts';
   import { site } from './site.svelte.ts';
   import { fx3d } from './fx3d.ts';
-  import { RIG, fallMs, flying, laneY, moveFlight, planFlight, popFlight, rigAt, setFlight, type Flight, type SkyView } from './balloonFlight.ts';
+  import { RIG, balloonModel, fallMs, flying, laneY, moveFlight, planFlight, popFlight, rigAt, setFlight, type Flight, type SkyView } from './balloonFlight.ts';
   import { chooseLanding, footprints, openGround, type LandView } from './presentLanding.ts';
 
   interface Props {
@@ -27,7 +27,7 @@
   const w = useWorld();
 
   /** NH's balloon of a colour (1 in 20: gold). */
-  const model = `balloon/${Math.random() < 0.05 ? 4 : Math.floor(Math.random() * 6) % 5}`;
+  const model = balloonModel();
 
   let flight = $state.raw<Flight | null>(null);
   let popped = false, ended = false;
