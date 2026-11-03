@@ -277,21 +277,25 @@ vec4 finish(vec3 col, float a) {
 `;
 const FRESH_VERT = /* glsl */ `
 ${BEND_GLSL}
-attribute vec3 aFlow;
+attribute vec4 aFlow;
+attribute vec4 aPath;
 varying vec2 vW;
-varying vec3 vFlow;
+varying vec4 vFlow;
+varying vec4 vPath;
 varying float vDepth;
 void main() {
   vec4 wp = modelMatrix * vec4(position, 1.0);
   vW = vec2(wp.x, -wp.z);
   vFlow = aFlow;
+  vPath = aPath;
   vec4 mv = viewMatrix * bendW(wp);
   vDepth = -mv.z;
   gl_Position = projectionMatrix * mv;
 }`;
 const FRESH_FRAG = /* glsl */ `
 ${W_COMMON}
-varying vec3 vFlow;
+varying vec4 vFlow;
+varying vec4 vPath;
 uniform sampler2D uSdfA;
 uniform vec4 uGrid;
 uniform float uFar;
@@ -301,20 +305,37 @@ void main() {
   float dW = (texture2D(uSdfA, (p - uGrid.xy) / uGrid.zw).b * 2.0 - 1.0) * uFar;
   float edge = smoothstep(-1.2, -2.0, dW);
   if (edge <= 0.0) discard;
-  vec2 f = vFlow.xy;
-  float still = vFlow.z;
-  float sp = length(f);
-  vec2 dir = sp > 0.01 ? f / sp : vec2(0.0, 1.0);
-  vec2 side = vec2(-dir.y, dir.x);
-  vec2 q = vec2(dot(p, side), dot(p, dir));
-  float flow = uTime * 22.0 * min(1.0, sp);
-  float n = noise(vec2(q.x * 0.18, (q.y - flow) * 0.05)) * 0.6 + noise(vec2(q.x * 0.4, (q.y - flow * 1.3) * 0.11)) * 0.4;
+  float still = vFlow.z, foot = vFlow.w, lip = vPath.w;
+  // the hand-made river's look (water.ts RIVER_FRAG): streaks on the length along the stem and across it, so a bend
+  // carries them round without a seam or a shear; 26 u/s, hurrying to 90 and whitening over a fall's lip
+  float flow = uTime * mix(26.0, 90.0, lip);
+  float s = vPath.x + flow, x = vPath.y;
+  float n = noise(vec2(x * 3.0, s * 0.07)) * 0.6 + noise(vec2(x * 7.0, (vPath.x + flow * 1.3) * 0.16)) * 0.4;
+  float g = noise(vec2(x * 9.0, s * 0.45));
+  if (vPath.z < 0.5) {
+    // off a stem (a broad reach, a delta): the tiles' flow, in the world's frame (its way is one a tile)
+    vec2 f = vFlow.xy;
+    float sp = length(f);
+    vec2 dir = sp > 0.01 ? f / sp : vec2(0.0, 1.0);
+    vec2 q = vec2(dot(p, vec2(-dir.y, dir.x)), dot(p, dir));
+    float fl = uTime * 26.0 * smoothstep(0.0, 0.3, sp);
+    n = noise(vec2(q.x * 0.2, (q.y - fl) * 0.07)) * 0.6 + noise(vec2(q.x * 0.45, (q.y - fl * 1.3) * 0.16)) * 0.4;
+    g = noise(vec2(q.x * 0.6, (q.y - fl) * 0.45));
+  }
   float np = noise(p * 0.08 + vec2(uTime * 0.04, uTime * 0.03)) * 0.6 + noise(p * 0.2 - uTime * 0.05) * 0.4;
   n = mix(n, np, still);
   vec3 col = mix(vec3(0.24, 0.58, 0.88), vec3(0.55, 0.82, 0.97), smoothstep(0.55, 0.85, n));
-  float g = noise(p * 0.4 + uTime * 0.5);
-  col += vec3(0.4) * smoothstep(0.9, 0.97, g);
-  gl_FragColor = finish(col, 0.74 * edge);
+  // glints riding the current (a pond's drift with its ripples)
+  g = mix(g, noise(p * 0.4 + uTime * 0.5), still);
+  col += vec3(0.35) * smoothstep(0.9, 0.97, g);
+  // over a fall's lip: a fast white sheet
+  float sheet = noise(vec2(x * 10.0, (vPath.x + uTime * 110.0) * 0.12));
+  col = mix(col, vec3(0.93, 0.97, 1.0), lip * lip * (0.55 + 0.45 * sheet));
+  // at its foot: the foam pool, churning out from the wall
+  float fn = noise(p * 0.35 + vec2(0.0, -uTime * 1.6)) * 0.6 + noise(p * 0.9 - uTime * 2.2) * 0.4;
+  float fa = smoothstep(0.0, 0.6, foot) * (0.5 + 0.5 * fn);
+  col = mix(col, vec3(0.96, 0.99, 1.0), clamp(fa * 1.25, 0.0, 1.0));
+  gl_FragColor = finish(col, mix(0.74, 0.96, max(lip * lip, fa)) * edge);
 }`;
 const FALLS_VERT = /* glsl */ `
 ${BEND_GLSL}
@@ -334,11 +355,16 @@ ${W_COMMON}
 varying vec2 vUv;
 uniform sampler2D uStreak;
 void main() {
-  // NH's falls: white streaks pouring down over a pale blue sheet, finer near the top
+  // NH's falls: white streaks pouring down a pale blue sheet, in world units (u along the wall, height): long streaks
+  // a few u across falling at the hand-made river's 110 u/s (water.ts), over NH's streak texture (no octave finer than
+  // a pixel or two at the phone's zoom: it shimmered as static)
+  float xw = vUv.x * 60.0, yw = vUv.y * 80.0;
+  float sheet = noise(vec2(xw * 0.45, (yw + uTime * 110.0) * 0.035));
+  float fine = noise(vec2(xw * 1.1, (yw + uTime * 140.0) * 0.06));
   float s = texture2D(uStreak, vec2(vUv.x * 5.0, vUv.y * 0.9 + uTime * 1.3)).r;
-  float n = noise(vec2(vUv.x * 90.0, vUv.y * 5.0 + uTime * 4.0)) * 0.65 + noise(vec2(vUv.x * 30.0, vUv.y * 2.0 + uTime * 2.2)) * 0.35;
-  vec3 col = mix(vec3(0.48, 0.78, 0.96), vec3(0.97, 0.99, 1.0), smoothstep(0.42, 0.78, n * 0.8 + (1.0 - s) * 0.5));
-  gl_FragColor = finish(col, 0.93);
+  float w = 0.2 + 0.4 * sheet + 0.2 * fine + (1.0 - s) * 0.35;
+  vec3 col = mix(vec3(0.45, 0.76, 0.96), vec3(0.97, 0.99, 1.0), smoothstep(0.42, 0.78, w));
+  gl_FragColor = finish(col, 0.94);
 }`;
 const SEA_VERT = /* glsl */ `
 ${BEND_GLSL}
@@ -532,7 +558,8 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   }
   function waterGeometry(p: WaterPart): BufferGeometry {
     const g = geometry(p);
-    g.setAttribute('aFlow', new Float32BufferAttribute(p.flow, 3));
+    g.setAttribute('aFlow', new Float32BufferAttribute(p.flow, 4));
+    g.setAttribute('aPath', new Float32BufferAttribute(p.path, 4));
     return g;
   }
   function bake(b: Band) {
@@ -549,7 +576,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     b.top.geometry.computeVertexNormals();
     b.walls.geometry = wallGeometry(join(ms.map((m) => m.walls), ['nrm', 'uv']));
     b.falls.geometry = wallGeometry(join(ms.map((m) => m.falls), ['nrm', 'uv']));
-    b.water.geometry = waterGeometry(join(ms.map((m) => m.water), ['flow']));
+    b.water.geometry = waterGeometry(join(ms.map((m) => m.water), ['flow', 'path']));
   }
   for (let row = 0; row < CHUNKS_Z; row++) {
     const rt = new WebGLRenderTarget(Math.round(GW * px), Math.round(BAND_D * px), { generateMipmaps: true, minFilter: LinearMipmapLinearFilter, magFilter: LinearFilter, colorSpace: SRGBColorSpace });

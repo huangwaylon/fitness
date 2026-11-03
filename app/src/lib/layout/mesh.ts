@@ -20,8 +20,13 @@ export interface WallPart extends Part {
   uv: Float32Array;
 }
 export interface WaterPart extends Part {
-  /** Each vertex's flow (x, z per u a second's direction, 0 for still water) and whether it's a pond (1). */
+  /** Each vertex's flow (x, z per u a second's direction, 0 for still water), whether it's a pond (1), and how near
+   *  the foot of a fall it is (1 at the wall, 0 from FOOT u on: its foam). */
   flow: Float32Array;
+  /** Each vertex's place on a river's stem (river.ts): the length along it from the mouth (u), how far across (its
+   *  half-breadths), whether it's on one (1; else 0 and the tiles' flow) and how near a fall's lip (1 at the edge, 0
+   *  from LIP u back: it speeds up and whitens as it goes over). */
+  path: Float32Array;
 }
 export interface ChunkMesh {
   top: Part;
@@ -150,11 +155,49 @@ function flows(layout: Layout): Float32Array {
 
 const flowCache = new WeakMap<Layout, Float32Array>();
 
+/** The falls' lip and foot reach (u): the water hurries and whitens over the last LIP before it falls, and foams over
+ *  the first FOOT below it (the hand-made river's ramp and its foam pool, water.ts, on the layout's walls). */
+const LIP = 22, FOOT = 34;
+/** Every waterfall's edge (world u, a tile's side where fresh water steps down to fresh water), its upper and its
+ *  lower tier. */
+interface FallEdge {
+  ax: number;
+  az: number;
+  bx: number;
+  bz: number;
+  hi: number;
+  lo: number;
+}
+function fallEdges(layout: Layout): FallEdge[] {
+  const out: FallEdge[] = [];
+  const fresh = (c: number, r: number) => onGrid(c, r) && (kindOf(layout.codes[idx(c, r)]) === 'river' || kindOf(layout.codes[idx(c, r)]) === 'pond');
+  for (let r = 0; r < GRID.rows; r++)
+    for (let c = 0; c < GRID.cols; c++) {
+      if (!fresh(c, r)) continue;
+      const t = tierOf(layout.codes[idx(c, r)]);
+      for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+        if (!fresh(c + dc, r + dr) || tierOf(layout.codes[idx(c + dc, r + dr)]) >= t) continue;
+        const ex = tileX(dc > 0 ? c + 1 : c), ez = tileZ(dr > 0 ? r + 1 : r);
+        const lo = tierOf(layout.codes[idx(c + dc, r + dr)]);
+        if (dc) out.push({ ax: ex, az: tileZ(r), bx: ex, bz: tileZ(r + 1), hi: t, lo });
+        else out.push({ ax: tileX(c), az: ez, bx: tileX(c + 1), bz: ez, hi: t, lo });
+      }
+    }
+  return out;
+}
+const fallCache = new WeakMap<Layout, FallEdge[]>();
+const segDist = (e: FallEdge, x: number, z: number) => {
+  const ex = e.bx - e.ax, ez = e.bz - e.az, t = Math.max(0, Math.min(1, ((x - e.ax) * ex + (z - e.az) * ez) / (ex * ex + ez * ez)));
+  return Math.hypot(x - e.ax - ex * t, z - e.az - ez * t);
+};
+
 /** One chunk's ground. */
 export function chunkMesh(layout: Layout, chunk: number): ChunkMesh {
   const field = fieldOf(layout);
   let fl = flowCache.get(layout);
   if (!fl) flowCache.set(layout, (fl = flows(layout)));
+  let edges = fallCache.get(layout);
+  if (!edges) fallCache.set(layout, (edges = fallEdges(layout)));
   const tierAt = field.tierAt;
   const code = (c: number, r: number) => (onGrid(c, r) ? layout.codes[idx(c, r)] : 0);
   const [cx, cz] = chunkXZ(chunk);
@@ -205,7 +248,14 @@ export function chunkMesh(layout: Layout, chunk: number): ChunkMesh {
           const Wv = (u: number, v: number, y: number) => {
             const [x, z] = W(u, v);
             const [fx, fz] = flowAt(x, z);
-            return water.vert(x, y, z, true, fx, fz, wetKind === 'pond' ? 1 : 0);
+            const al = field.fields.along(x, z);
+            // the falls near: its lip on this tier (ahead), its foot (below)
+            let lip = 0, foot = 0;
+            for (const e of edges!) {
+              if (e.hi === own) lip = Math.max(lip, 1 - Math.min(1, segDist(e, x, z) / LIP));
+              else if (e.lo === own) foot = Math.max(foot, 1 - Math.min(1, segDist(e, x, z) / FOOT));
+            }
+            return water.vert(x, y, z, true, fx, fz, wetKind === 'pond' ? 1 : 0, foot, al ? al[0] : 0, al ? al[1] : 0, al ? 1 : 0, lip);
           };
           const lin = tierAt(...W(6, 6)), lout = tierAt(...W(1.2, 1.2));
           const split = lin !== lout;
@@ -278,7 +328,15 @@ export function chunkMesh(layout: Layout, chunk: number): ChunkMesh {
           }
         }
     }
-  const flowPart = (): WaterPart => ({ ...water.part(), flow: new Float32Array(water.extra) });
+  const flowPart = (): WaterPart => {
+    const n = water.extra.length / 8, flow = new Float32Array(n * 4), path = new Float32Array(n * 4);
+    for (let k = 0; k < n; k++)
+      for (let j = 0; j < 4; j++) {
+        flow[k * 4 + j] = water.extra[k * 8 + j];
+        path[k * 4 + j] = water.extra[k * 8 + 4 + j];
+      }
+    return { ...water.part(), flow, path };
+  };
   return {
     top: top.part(),
     walls: walls.part(),

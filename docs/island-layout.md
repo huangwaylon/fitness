@@ -194,6 +194,14 @@ for their spots with no visual change (the default's offsets); the 3D island rea
 - **The water:** NH's sea round the island (translucent over the baked shallows, opaque by the grid's edge, the shore
   foam where the land's field says), the rivers' flow (each tile's way down, breadth-first along the river to the sea
   or a fall) and the ponds' ripples, the falls' streaks; all on water.ts's shared clock, tint and fog uniforms.
+  The river's look is the hand-made river's (the user, 2026-11-03: "the river water animation still isn't as good as
+  the original"; `water.ts` RIVER_FRAG / FOAM_FRAG, the /world3d era): on a stem its streaks run on the length along
+  the stem and across it (each water vertex's `path`, from `fields.along`), not on the world's position turned to the
+  flow, which sheared into seams and swirls at a bend and worse the farther up the island; 26 u/s (no slowing at the
+  banks), hurrying to 90 u/s and whitening over the last 22u before a fall's lip, a fast white sheet on it; a foam
+  pool churning over the first 34u below a fall (`flow.w`, no extra draw); glints riding the current. The falls'
+  wall: long streaks a few u across at 110 u/s over NH's streak texture, in world units (its ×90 octave was finer than
+  a pixel and shimmered as static). Off a stem (a broad reach) the tiles' flow as before.
 - NH's textures: `npm run terrain-textures` (NH_MODELS=~/Downloads/Model) converts the few PNGs from
   `FldUnit.Nin_NX_NVN` into `static/terrain/nh/*.webp` (92 KB).
 

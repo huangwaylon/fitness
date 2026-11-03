@@ -252,6 +252,27 @@ describe('the soft edges (fields.ts): the data on tiles, the drawn edge round', 
     }
     expect(over).toBeGreaterThan(0);
   });
+  test('the stream\'s water carries its place on the stem (the streaks\' way along and across), the falls\' lip and foot', () => {
+    // up column 15: the length along grows upstream, the middle of the band across 0, its sides ±1
+    const a = f.along(375, 1000)!, b = f.along(375, 1100)!;
+    expect(b[0] - a[0]).toBeCloseTo(100, 0);
+    expect(Math.abs(a[1])).toBeLessThan(0.05);
+    expect(Math.abs(f.along(375 + 13.5, 1000)![1])).toBeCloseTo(1, 1);
+    // round the quarter circle: no jump in the length along between neighbouring points
+    const s1 = f.along(320, 690)![0], s2 = f.along(325, 695)![0];
+    expect(Math.abs(s2 - s1)).toBeLessThan(10);
+    expect(f.along(375 + 60, 1000)).toBeNull();
+    // the fall at the cliff (column 15, between rows 52 and 53: z 1500): its lip above, its foam pool below
+    const m = chunkMesh(l, chunkOf(15, 52)), n = m.water.pos.length / 3;
+    let lip = 0, foot = 0;
+    for (let k = 0; k < n; k++) {
+      const z = -m.water.pos[k * 3 + 2];
+      if (z > 1500 && z < 1510) lip = Math.max(lip, m.water.path[k * 4 + 3]);
+      if (z < 1500 && z > 1490) foot = Math.max(foot, m.water.flow[k * 4 + 3]);
+    }
+    expect(lip).toBeGreaterThan(0.5);
+    expect(foot).toBeGreaterThan(0.5);
+  });
   test('a broad river (mostly not one stem) keeps its tiles', () => {
     const codes = new Uint8Array(l.codes);
     for (let r = 28; r <= 40; r++) for (const c of [13, 14]) codes[r * GRID.cols + c] = codeOf('river', 0);

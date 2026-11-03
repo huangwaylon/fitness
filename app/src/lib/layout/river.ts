@@ -384,14 +384,17 @@ export function riverStems(l: Layout): Stem[] {
 }
 
 /** The stems' signed distance (u, negative in the water, clamped to ±far) on a raster of `step` u from the grid's
- *  corner, `w` × `h` cells, and each cell's downstream direction (the nearest stem point's; 0 where no stem is near). */
-export function stemField(stems: readonly Stem[], w: number, h: number, step: number, far: number): { d: Float32Array; fx: Float32Array; fz: Float32Array } {
+ *  corner, `w` × `h` cells, each cell's downstream direction (the nearest stem point's; 0 where no stem is near), and
+ *  its place on the nearest stem: the length along it from the mouth (u) and how far across (its half-breadths, signed;
+ *  the water's streaks run on these, mesh.ts). */
+export function stemField(stems: readonly Stem[], w: number, h: number, step: number, far: number): { d: Float32Array; fx: Float32Array; fz: Float32Array; s: Float32Array; across: Float32Array } {
   const d = new Float32Array(w * h).fill(far), fx = new Float32Array(w * h), fz = new Float32Array(w * h);
+  const sAt = new Float32Array(w * h), across = new Float32Array(w * h);
   const best = new Float32Array(w * h).fill(Infinity);
   for (const s of stems)
     for (let i = 0; i < s.x.length - 1; i++) {
       const ax = s.x[i], az = s.z[i], bx = s.x[i + 1], bz = s.z[i + 1];
-      const ex = bx - ax, ez = bz - az, ee = ex * ex + ez * ez || 1;
+      const ex = bx - ax, ez = bz - az, ee = ex * ex + ez * ez || 1, el = Math.sqrt(ee);
       const reach = Math.max(s.hw[i], s.hw[i + 1]) + far;
       const i0 = Math.max(0, Math.floor((Math.min(ax, bx) - reach - GRID.x0) / step)), i1 = Math.min(w - 1, Math.ceil((Math.max(ax, bx) + reach - GRID.x0) / step));
       const j0 = Math.max(0, Math.floor((Math.min(az, bz) - reach - GRID.z0) / step)), j1 = Math.min(h - 1, Math.ceil((Math.max(az, bz) + reach - GRID.z0) / step));
@@ -400,12 +403,15 @@ export function stemField(stems: readonly Stem[], w: number, h: number, step: nu
         for (let k = i0; k <= i1; k++) {
           const x = GRID.x0 + (k + 0.5) * step;
           const t = Math.max(0, Math.min(1, ((x - ax) * ex + (z - az) * ez) / ee));
-          const dd = Math.hypot(x - ax - ex * t, z - az - ez * t) - (s.hw[i] + (s.hw[i + 1] - s.hw[i]) * t);
+          const hw = s.hw[i] + (s.hw[i + 1] - s.hw[i]) * t;
+          const dd = Math.hypot(x - ax - ex * t, z - az - ez * t) - hw;
           const q = j * w + k;
           if (dd < best[q]) {
             best[q] = dd;
             fx[q] = s.fx[i];
             fz[q] = s.fz[i];
+            sAt[q] = s.s[i] + (s.s[i + 1] - s.s[i]) * t;
+            across[q] = ((x - ax) * -ez + (z - az) * ex) / el / hw;
           }
         }
       }
@@ -415,5 +421,5 @@ export function stemField(stems: readonly Stem[], w: number, h: number, step: nu
     d[q] = Math.max(-far, Math.min(far, best[q]));
     if (best[q] > 12) fx[q] = fz[q] = 0;
   }
-  return { d, fx, fz };
+  return { d, fx, fz, s: sAt, across };
 }
