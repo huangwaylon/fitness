@@ -19,7 +19,7 @@ export interface Tank {
 }
 
 const tank = (id: TankId, look: Tank['look'], box: Box, maxLen: number, scale = 1): Tank => ({ id, look, box, maxLen, scale });
-const small = (n: number, x: number, z: number): Tank => tank(`small-${n}` as TankId, 'small', { x0: x - 10, x1: x + 10, y0: 9, y1: 25, z0: z - 9, z1: z + 9 }, 9, 1.7);
+const small = (n: number, x: number, z: number): Tank => tank(`small-${n}` as TankId, 'small', { x0: x - 10, x1: x + 10, y0: 9, y1: 25, z0: z - 9, z1: z + 9 }, 10, 2.2);
 
 export const TANKS: readonly Tank[] = [
   tank('sea', 'sea', { x0: 80, x1: 292, y0: 0, y1: 52, z0: -98, z1: -46 }, 34),
