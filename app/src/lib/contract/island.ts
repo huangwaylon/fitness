@@ -1,9 +1,9 @@
 // An `island` event (docs/backend.md#events, #shared-world): one person's part of one Tokyo day's shared island, the
-// sheet's record of it for when the relay has nothing (both apps were closed past its day, an outage): what they picked
+// record's copy of it for when the relay has nothing (both apps were closed past its day, an outage): what they picked
 // up, dug, pulled or opened, what they put down and what their shakes left, the flowers they watered, their wishes on
 // shooting stars and where their villager stands. The phone sends all of it again when it grows (held two minutes,
 // store/world.svelte.ts); the server keeps one row per person and day (a newer one replaces it, as a tally's), and the
-// model reads each person's latest. Shared by the Apps Script and the model; pure.
+// model reads each person's latest. Shared by the record (relay/src/store.ts) and the model; pure.
 import { isLocalDate, isRec, nextDay } from './api.ts';
 import type { LocalDate } from '../types.ts';
 

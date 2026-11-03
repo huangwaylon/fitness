@@ -9,7 +9,7 @@ import { CLOSE, LIVE_V, MAX_BYTES, dayStart, guestMaySend, isAcked, isStored, pa
 export const LIVE_URL: string = (import.meta.env?.VITE_LIVE_URL as string | undefined) ?? 'wss://island-fund-relay.island-fund-relay.workers.dev/room';
 
 /**
- * The sheet changed: Apps Script's push (`changed`, with the new rows' `at` and `rev`; anyone's write, mine too) or the
+ * The record changed: its push (`changed`, with the new rows' `at` and `rev`; anyone's write, mine too) or the
  * partner's nudge after an acked event (`saved`: no `at`). Either way the snapshot is worth fetching now.
  */
 export type SheetChange = Partial<Pick<Notice, 'what' | 'at' | 'rev'>> & { who: Who };

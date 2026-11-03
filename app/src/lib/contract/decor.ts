@@ -2,9 +2,9 @@
 // last-writer-wins map"): what either of us put on the island, kept for good (not day-scoped). Each change is one op:
 // an item set at a spot (`{id, at, item, x, z, f, p}`: placed or moved, the whole state of the item) or taken away
 // (`{id, at, rm: true}`, final: an id never comes back). The layout is a merge of the ops by id: a removal beats
-// everything, else the latest `at` (then G over B over A). The merge is commutative, so the relay, the sheet and either phone
-// reach the same layout whatever order the ops arrive in; the sheet keeps only each id's latest op. Shared by the Apps
-// Script, the model, the relay protocol and the island; pure and dependency-free.
+// everything, else the latest `at` (then G over B over A). The merge is commutative, so the relay, the record and either phone
+// reach the same layout whatever order the ops arrive in; the record keeps only each id's latest op. Shared by the
+// record (relay/src/store.ts), the model, the relay protocol and the island; pure and dependency-free.
 
 /** The ten items (island/decor.ts has their art and footprints). @public (the island) */
 export const DECOR_ITEMS = [
@@ -80,7 +80,7 @@ export function decorLayout(entries: Iterable<DecorEntry>): Placed[] {
   return out.slice(0, DECOR_MAX);
 }
 
-/** What the sheet does with a new op, given the rows it holds (each id's latest, with who sent it): `stale` (an op that
+/** What the record does with a new op, given the rows it holds (each id's latest, with who sent it): `stale` (an op that
  *  beats it is there: acknowledged, nothing appended), `full` (a new item past the cap: refused), or `append` (and the
  *  rows of the same id it replaces are deleted). */
 export function decorAccept(held: readonly DecorEntry[], e: DecorEntry): 'append' | 'stale' | 'full' {

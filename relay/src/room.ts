@@ -275,7 +275,7 @@ export class RoomCore<S extends Sock> {
     this.io.hold?.(this.held);
   }
 
-  /** The sheet changed (Apps Script's /notify): every connected phone hears it, the writer's own too. Returns how many. */
+  /** The record changed (its RPC after a write, or a signed /notify): every connected phone hears it, the writer's own too. Returns how many. */
   notify(n: Notice): number {
     if (!this.rec || n.at > this.rec.at || n.rev !== this.rec.rev) {
       this.rec = { at: n.at, rev: n.rev };

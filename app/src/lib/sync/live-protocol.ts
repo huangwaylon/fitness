@@ -161,13 +161,13 @@ export type Gone = Partial<Record<Who, number>>;
  *  `since`) needn't fetch on opening. @public (relay/, sync/live.ts) */
 export interface RecordMark { at: string; rev: string }
 
-/** What the Apps Script wrote (`ingest`: health rows, `event`: an event row). */
+/** What the record wrote (`ingest`: health rows, `event`: an event row). */
 const NOTICE_WHAT = ['ingest', 'event'] as const;
 type NoticeWhat = (typeof NOTICE_WHAT)[number];
 
 /**
- * The sheet changed: Apps Script POSTs this to the relay's /notify after a write (signed, docs/backend.md#push), and the
- * room passes it to every connected phone as `changed`. `at` is the newest row's server time (the snapshot's `since`
+ * The record changed: the record tells the room after a write (an RPC; a server's signed POST /notify too,
+ * docs/backend.md#push), and the room passes it to every connected phone as `changed`. `at` is the newest row's server time (the snapshot's `since`
  * domain), `rev` the data revision.
  */
 export interface Notice {
