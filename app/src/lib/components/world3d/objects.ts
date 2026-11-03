@@ -97,14 +97,23 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
     const h = SCENERY_H[o.id] ?? def.h;
     const thing = (model: ModelName, scale: number, extra: Partial<Inst> = {}) => out.push({ id: o.id, model, x, z, scale, yaw, tap: 'thing', ...extra });
     // a look of the day in its place: a model, else a card
+    // (the island passes every piece of scenery's look, today's swaps among them: a look is the 2D island's key, and
+    // two of those name no art of their own, an oak's `oak` and a month's bush's `month-bush-a|b`: the season's oak and
+    // the month's pair here. A look with no model falls through to the kind's own: it used to become a card of 2D art
+    // the 3D island never loads, so every plain oak and every month's bush and hedge stood invisible on the phones)
     const swap = day.swaps?.[o.id];
     if (swap) {
-      const m = PROP[swap.key], k = m ? null : keyModel(swap.key, season === 'winter');
-      if (m) thing(m, scaleOf(swap.key, m, swap.h));
+      const key = swap.key === 'oak' ? `trees/${oak}` : swap.key === 'month-bush-a' ? `bushes/${hedgeA}` : swap.key === 'month-bush-b' ? `bushes/${hedgeB}` : swap.key;
+      const m = PROP[key], k = m ? null : keyModel(key, season === 'winter');
+      if (m) {
+        thing(m, scaleOf(key, m, swap.h));
+        continue;
+      }
       // (a seasonal look of its own: NH's mushroom lamp, a pond stone… layout3d.ts's way, fitted to its height)
-      else if (k) thing(k.m as ModelName, swap.h / (MU[swap.key]?.mu[1] ?? modelH(k.m as ModelName)));
-      else standins.push({ id: o.id, key: swap.key, x, z, h: swap.h, flip: o.f % 2 === 1 });
-      continue;
+      if (k) {
+        thing(k.m as ModelName, swap.h / (MU[key]?.mu[1] ?? modelH(k.m as ModelName)));
+        continue;
+      }
     }
     switch (o.k) {
       case 'oak':
@@ -188,9 +197,16 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
       case 'stairs': case 'spot':
         break; // the stairs are the ground's (terrain.ts); a spot is never drawn
       case 'stone-lantern': case 'birdbath': case 'garden-wagon': case 'iron-table': case 'iron-chair': case 'brick-well': case 'tanuki': case 'monstera': case 'signpost': case 'wheelbarrow':
-        if (has(o.k)) thing(o.k, DECOR_U);
+      {
+        // NH's model (assets.json `decor/<kind>-0`, at its own scale), turned by its facing: it used to look for a model
+        // of the kind's bare name, found none and stood a card of the 2D art, which drew over what stood in front of it
+        // (a well behind a campfire floated over it) and was missing from the editor's preview
+        const a = keyModel(`decor/${o.k}-0`);
+        if (a) thing(a.m as ModelName, a.s);
+        else if (has(o.k)) thing(o.k, DECOR_U);
         else standins.push({ id: o.id, key: `decor/${o.k}-${o.f}`, x, z, h });
         break;
+      }
       default: {
         // the fixed decor's spots: the day's piece there (a seasonal spot empty out of its season), else its own look
         const piece = pieces?.get(o.id);
