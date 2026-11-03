@@ -29,7 +29,9 @@ export function openGrass(layout: Layout): [number, number][] {
     // a tree's canopy stands over the ground behind it and beside it on screen (its leaves take a tap there), a bush's
     // or a flower's thumb-sized tap area over the tiles round it
     const over = def?.group === 'tree' ? 2 : def?.group === 'bush' || def?.group === 'flower' ? 1 : -1;
-    for (const [c, r] of over >= 0 ? objTiles(layout, o) : []) for (let j = 0; j <= over; j++) for (let i = -1; i <= 1; i++) mark(c + i, r + j);
+    // (a tree's the tile in front too: a spot's own thumb-sized tap area there would reach up over its trunk)
+    const front = def?.group === 'tree' ? -1 : 0;
+    for (const [c, r] of over >= 0 ? objTiles(layout, o) : []) for (let j = front; j <= over; j++) for (let i = -1; i <= 1; i++) mark(c + i, r + j);
   }
   const nav = navOf(layout);
   const out: [number, number][] = [];
