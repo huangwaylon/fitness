@@ -66,14 +66,46 @@
     };
   });
 
+  // The pill goes inert as it folds, so the sheet it opened gives the focus back to nothing on close (the page's body:
+  // a keyboard or VoiceOver user would start again from the top): once that sheet is gone, the leaf takes it. Not by
+  // focusing the leaf before the sheet opens: the dialog would give it back by its own focusing steps, which scroll,
+  // while the page is still scroll-locked (Chromium then shifted the HUD under the next tap).
+  let refocus = false;
+  let armed = false;
+  $effect(() => {
+    const n = ui.sheets.length;
+    untrack(() => {
+      if (n) {
+        armed ||= refocus;
+        refocus = false;
+      } else if (armed) {
+        armed = false;
+        // (a beat after the dialog has closed: the sheet leaves the list before its dialog closes, behind a modal the
+        // leaf is inert, and WebKit settles the dialog's own focus return after its close event; `close` doesn't
+        // bubble, so a capture listener)
+        const focus = () => {
+          const a = document.activeElement;
+          // (nowhere, or still on the closed dialog: WebKit leaves it there a moment before dropping it to the body)
+          const lost = !a || a === document.body || !!a.closest('dialog:not([open])') || !!root?.contains(a);
+          if (lost && !document.querySelector('dialog[open]')) toggleEl?.focus({ preventScroll: true });
+        };
+        const back = () => {
+          if (document.querySelector('dialog[open]')) return;
+          document.removeEventListener('close', back, true);
+          later(focus, 0);
+        };
+        document.addEventListener('close', back, true);
+        later(back, 0);
+      }
+    });
+  });
+
   function pick(e: MouseEvent, go: (() => void) | undefined) {
     const el = e.currentTarget as HTMLElement;
     popFrom(el.querySelector('.ic') ?? el);
     react('R18');
     open = false;
-    // the pill goes inert as it folds: the leaf holds the focus, so the sheet's dialog gives it back there on close
-    // (not to the page's body: a keyboard or VoiceOver user would start again from the top)
-    toggleEl?.focus({ preventScroll: true });
+    refocus = true;
     later(() => go?.(), 90);
   }
 
