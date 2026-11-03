@@ -1,4 +1,4 @@
-// Demo smoke test: buy, undo, the harvest recap, きろく (read-only, the goals), on `?demo` (no backend, no key).
+// Demo smoke test: buy, undo, the harvest recap, きろく (read-only), けんこう's goals, on `?demo` (no backend, no key).
 import { expect, test, type Page } from '@playwright/test';
 import { tapOn } from './island.ts';
 
@@ -38,6 +38,8 @@ async function toHealth(page: Page) {
   await expect(sheet(page).locator('[data-health-sheet] .health')).toBeVisible();
   await settled(page);
 }
+/** けんこう's 目標 card (under the charts). */
+const goalCard = (page: Page) => sheet(page).locator('[data-health-sheet] .goals');
 /** The topmost sheet's opening animation has played (the health popup zooms in). */
 const settled = (page: Page) => sheet(page).evaluate((d) => Promise.all(d.getAnimations().map((a) => a.finished)));
 /** The panel on this tab, from wherever we are (the health popup is closed first). */
@@ -119,23 +121,31 @@ test('きろく: per day each of us four goals and ふたりで ぜんぶ; a day
   for (const p of ['A', 'B']) await expect(sheet(page).locator(`.pc[data-person=${p}] .row`)).toHaveCount(4);
   await expect(sheet(page).locator('.duo')).toContainText('ふたりで ぜんぶ');
   await expect(sheet(page).locator('.pen-btn, .atm, input, .log')).toHaveCount(0);
+  // the goals are けんこう's now: none here
+  await page.locator('.titlebar .back').click();
+  await expect(sheet(page).locator('.kiroku [data-sec=zukan]')).toBeVisible();
+  await expect(sheet(page).locator('.goals, .pen-btn')).toHaveCount(0);
 });
 
-test('けんこう: body weight (from Health, no logging by hand); its goal is set in きろく', async ({ page }) => {
+test('けんこう: body weight (from Health, no logging by hand); its goal is set in 目標, under the charts', async ({ page }) => {
   await page.goto('?demo');
   const hudJar = page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
   await expect(hudJar).toBeVisible();
   const bells = await hudJar.getAttribute('aria-label');
-  await openKiroku(page);
   await toHealth(page);
   await sheet(page).locator('[data-group=body]').click(); // からだ
   const card = sheet(page).locator('.wc');
   await expect(card.getByRole('heading', { name: '体重' })).toBeVisible();
   await expect(card.getByRole('img', { name: /^ウェイの体重 / })).toHaveCount(1); // this phone's person's (the tab shows one person)
   await expect(card.locator('.pen-btn, input, .acts')).toHaveCount(0); // nothing to log or fix by hand
-  // the goal is set in きろく's 目標 card (one place for both goals) and drawn on the weight chart
-  await toTab(page, 'kiroku');
-  await sheet(page).getByRole('button', { name: '体重 ✎' }).click();
+  // the goal is set in the 目標 card at the foot of けんこう (beneath the last chart) and drawn on the weight chart
+  const goals = goalCard(page);
+  await expect(sheet(page).locator('.health > :last-child')).toHaveClass(/\bgoals\b/);
+  await expect(goals).toHaveAttribute('data-person', 'A');
+  await expect(sheet(page).locator('.titlebar .back')).toHaveCount(0);
+  await goals.getByRole('button', { name: '体重 ✎' }).click();
+  await expect(sheet(page).locator('.titlebar .back')).toBeVisible(); // a level: ‹ back to the charts
+  await expect(sheet(page).locator('.wc, .goals')).toHaveCount(0);
   const input = sheet(page).getByRole('textbox');
   await expect(input).toHaveAttribute('inputmode', 'decimal');
   await input.fill('300.5');
@@ -143,23 +153,24 @@ test('けんこう: body weight (from Health, no logging by hand); its goal is s
   await expect(input).toHaveAttribute('aria-invalid', 'true');
   await input.fill('65');
   await sheet(page).getByRole('button', { name: 'けってい' }).click();
-  await expect(sheet(page).locator('.goals')).toContainText('65.0 kg');
-  // its banner drops over the tabs (and a pointer resting on it holds it there): tap it away, as a thumb would
+  await expect(goals).toContainText('65.0 kg');
+  await expect(goals.getByRole('button', { name: '体重 ✎' })).toBeFocused(); // back on its ✎
+  await expect(sheet(page).locator('.titlebar .back')).toHaveCount(0);
+  // its banner drops over the title bar (and a pointer resting on it holds it there): tap it away, as a thumb would
   const saved = sheet(page).getByRole('status');
   await expect(saved).toContainText('目標を決めました');
   await saved.getByRole('button', { name: 'とじる' }).click();
   await expect(saved).toHaveCount(0);
-  await toHealth(page);
-  await sheet(page).locator('[data-group=body]').click(); // (each opening starts on かつどう)
+  // still on からだ (the level kept the group): the chart draws it
+  await expect(sheet(page).locator('[data-group=body]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('.wc[data-person=A]')).toContainText('目標 65.0');
   // weight never earns: today's ベル didn't move
   await page.keyboard.press('Escape');
   await expect(hudJar).toHaveAttribute('aria-label', bells!);
 });
 
-test('けんこう: the body fat goal, set in きろく (3–60 %), dashed on the body fat chart; cleared, no line', async ({ page }) => {
+test('けんこう: the body fat goal, set in 目標 (3–60 %), dashed on the body fat chart; cleared, no line', async ({ page }) => {
   await page.goto('?demo');
-  await openPanel(page);
   await toHealth(page);
   await sheet(page).locator('[data-group=body]').click(); // からだ
   const fat = sheet(page).locator('.bc[data-metric=body_fat_pct][data-person=A]');
@@ -168,8 +179,7 @@ test('けんこう: the body fat goal, set in きろく (3–60 %), dashed on th
   await expect(fat).not.toContainText(/目標 \d/);
   // BMI and lean mass never have one
   await expect(sheet(page).locator('.bc[data-metric=bmi] .k-goal, .bc[data-metric=lean_kg] .k-goal')).toHaveCount(0);
-  await toTab(page, 'kiroku');
-  const goals = sheet(page).locator('.goals');
+  const goals = goalCard(page);
   await expect(goals).toContainText('体脂肪率');
   await goals.getByRole('button', { name: '体脂肪率 ✎' }).click();
   const input = sheet(page).getByRole('textbox');
@@ -186,13 +196,10 @@ test('けんこう: the body fat goal, set in きろく (3–60 %), dashed on th
   await saved.getByRole('button', { name: 'とじる' }).click();
   await expect(saved).toHaveCount(0);
   // drawn on the body fat chart as the weight goal is: the dashed line, its label and the key
-  await toHealth(page);
-  await sheet(page).locator('[data-group=body]').click(); // (each opening starts on かつどう)
   await expect(fat.locator('line.goal')).toHaveCount(1);
   await expect(fat).toContainText('目標 19.5');
   await expect(fat.locator('.key .k-goal')).toHaveCount(1);
   // cleared: no line
-  await toTab(page, 'kiroku');
   await goals.getByRole('button', { name: '体脂肪率 ✎' }).click();
   await sheet(page).getByRole('button', { name: '目標をなくす' }).click();
   await expect(goals.locator('.row', { hasText: '体脂肪率' })).toContainText('まだ');
@@ -200,8 +207,6 @@ test('けんこう: the body fat goal, set in きろく (3–60 %), dashed on th
   await expect(cleared).toContainText('目標をなくしました');
   await cleared.getByRole('button', { name: 'とじる' }).click();
   await expect(cleared).toHaveCount(0);
-  await toHealth(page);
-  await sheet(page).locator('[data-group=body]').click();
   await expect(fat).toBeVisible();
   await expect(fat.locator('line.goal')).toHaveCount(0);
   await expect(fat).not.toContainText('目標 19.5');
@@ -223,9 +228,8 @@ test('けんこう: each からだ card wears its own NH item, as かつどう w
   }
   await expect(sheet(page).locator('use[href="#i-scale"]')).toHaveCount(0);
   // the 目標 card's からだ rows too
-  await toTab(page, 'kiroku');
-  await expect(sheet(page).locator('.goals .row img[src*="analog-kitchen-scale"]')).toHaveCount(1);
-  await expect(sheet(page).locator('.goals .row img[src*="protein-shaker-bottle"]')).toHaveCount(1);
+  await expect(goalCard(page).locator('.row img[src*="analog-kitchen-scale"]')).toHaveCount(1);
+  await expect(goalCard(page).locator('.row img[src*="protein-shaker-bottle"]')).toHaveCount(1);
   await expect(sheet(page).locator('use[href="#i-scale"]')).toHaveCount(0);
 });
 
@@ -297,10 +301,10 @@ test('partner: a tap is a high-five in place, no card: a sparkle flies between t
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 });
 
-test('きろく: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from today on; either person’s', async ({ page }) => {
+test('けんこう: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from today on; either person’s', async ({ page }) => {
   await page.goto('?demo');
-  await openKiroku(page);
-  const goals = sheet(page).locator('.goals');
+  await toHealth(page);
+  const goals = goalCard(page);
   await expect(goals).toContainText('600 kcal');
   await goals.getByRole('button', { name: /ムーブ（1日） ✎$/ }).click();
   const input = sheet(page).getByRole('textbox');
@@ -318,26 +322,27 @@ test('きろく: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from
   await page.locator('button.canopy').nth(0).click();
   await expect(page.locator('.detail .row[data-row=pear] .amt')).toHaveText(/^[\d,]+ \/ 2,000 kcal$/);
   await expect(page.locator('.detail .row[data-row=pear] .amt svg')).toHaveCount(0);
-  // the partner's goals: the second avatar pill switches the card, and ✎ sets the partner's goal
+  // the partner's goals: the popup's person dropdown switches the card, and ✎ sets the partner's goal
   await page.keyboard.press('Escape');
-  await openKiroku(page);
-  const other = goals.locator('button.pp').nth(1);
-  const partner = (await other.textContent())!.trim();
-  await other.click();
-  await expect(other).toHaveAttribute('aria-pressed', 'true');
+  await toHealth(page);
+  const whoSel = sheet(page).locator('select[data-pick=who]');
+  const partner = (await whoSel.locator('option').nth(1).textContent())!.trim();
+  await whoSel.selectOption({ index: 1 });
+  await expect(goals).toHaveAttribute('data-person', 'B');
+  await expect(goals.locator('.who')).toContainText(partner);
   await goals.getByRole('button', { name: /ムーブ（1日） ✎$/ }).click();
-  await expect(sheet(page)).toContainText(partner);
+  await expect(sheet(page).locator('.whose')).toContainText(partner);
   await sheet(page).getByRole('textbox').fill('520');
   await sheet(page).getByRole('button', { name: 'けってい' }).click();
   await expect(goals).toContainText('520 kcal');
-  await goals.locator('button.pp').nth(0).click();
+  await whoSel.selectOption({ index: 0 });
   await expect(goals).toContainText('2,000 kcal');
 });
 
-test('きろく: the steps goal, 8,000 for both by default, 1,000–30,000 by 500, from today on; either person’s; the tree and けんこう follow it', async ({ page }) => {
+test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by 500, from today on; either person’s; the tree and the chart follow it', async ({ page }) => {
   await page.goto('?demo');
-  await openKiroku(page);
-  const goals = sheet(page).locator('.goals');
+  await toHealth(page);
+  const goals = goalCard(page);
   await expect(goals).toContainText('8,000歩');
   await goals.getByRole('button', { name: /歩数（1日） ✎$/ }).click();
   const input = sheet(page).getByRole('textbox');
@@ -361,18 +366,18 @@ test('きろく: the steps goal, 8,000 for both by default, 1,000–30,000 by 50
   await page.keyboard.press('Escape');
   await toHealth(page);
   await expect(sheet(page).locator('.mc[data-metric=steps] header .goal')).toHaveText('目標 30,000歩');
-  // the partner's: the second avatar pill, ✎ sets theirs; mine stays
-  await toTab(page, 'kiroku');
-  const other = goals.locator('button.pp').nth(1);
-  const partner = (await other.textContent())!.trim();
-  await other.click();
+  // the partner's: the person dropdown, ✎ sets theirs; mine stays
+  const whoSel = sheet(page).locator('select[data-pick=who]');
+  const partner = (await whoSel.locator('option').nth(1).textContent())!.trim();
+  await whoSel.selectOption({ index: 1 });
   await expect(goals).toContainText('8,000歩');
   await goals.getByRole('button', { name: /歩数（1日） ✎$/ }).click();
-  await expect(sheet(page)).toContainText(partner);
+  await expect(sheet(page).locator('.whose')).toContainText(partner);
   await sheet(page).getByRole('textbox').fill('6500');
   await sheet(page).getByRole('button', { name: 'けってい' }).click();
   await expect(goals).toContainText('6,500歩');
-  await goals.locator('button.pp').nth(0).click();
+  await expect(sheet(page).locator('.mc[data-metric=steps] header .goal')).toHaveText('目標 6,500歩');
+  await whoSel.selectOption({ index: 0 });
   await expect(goals).toContainText('30,000歩');
 });
 

@@ -5,11 +5,11 @@
 <script lang="ts">
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   // The island panel: tap the HUD's jar → it slides down from the top with everything that isn't on the island
-  // itself, in three tabs pinned under the title bar (design.md "Panel"): きろく (the ベル ledger, the goals, the ずかん),
+  // itself, in three tabs pinned under the title bar (design.md "Panel"): きろく (the ベル ledger, the ずかん),
   // ごほうび (the wallet: the jar, today's ベル, the shop, the buys; the panel opens on it) and せってい (むらびと, サウンド, ことば,
   // つうしん, あそびかた). A few things push a level with ‹ in the title bar (a week, a day, the villager picker,
   // the full guide); ✕, the backdrop and Esc close it. けんこう is the HUD's dumbbell's popup, and per-fruit detail
-  // lives in the tree popups (one home per datum).
+  // lives in the tree popups (one home per datum). The goals live in けんこう, under its charts.
   import { tick } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
@@ -33,7 +33,7 @@
   /** The tab every opening shows: ごほうび, the jar's (from the HUD's jar or the old /jar link). */
   const START: Tab = 'rewards';
 
-  /** A level of the panel's own (きろく keeps its own levels: week → day, the weight trend, a goal). */
+  /** A level of the panel's own (きろく keeps its own levels: a day, a ずかん kind). */
   let push = $state<'villager' | 'help' | null>(null);
   let kiroku: { back: () => boolean } | undefined = $state();
   /** How deep きろく is (0 = its first screen): the other sections show only at the very top. */

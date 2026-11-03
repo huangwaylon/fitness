@@ -55,7 +55,7 @@ export function undoSpend(spendId: string): SendResult {
   return week.send('spend_void', { spendId }, { holdMs: UNDO_MS });
 }
 
-// ---- The goals, in きろく's 目標 card: either person sets either person's (`person`). Health data itself is never
+// ---- The goals, in けんこう's 目標 card: either person sets either person's (`person`). Health data itself is never
 // entered here: Apple Health is the source of truth.
 
 /** A goal weight in kg (one decimal), or null to clear it. Both of us see it; it never earns. */
