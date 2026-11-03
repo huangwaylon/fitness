@@ -111,22 +111,28 @@ const BLOB = new CircleGeometry(1, 20).rotateX(-Math.PI / 2);
 export async function createVillager(id: string, url: string, seed = 0): Promise<Villager3D> {
   const g = await load(url);
   const model = cloneSkinned(g.scene);
-  // the face's materials are its own (its cells change): the rest are shared with every clone
+  // every material is this clone's own: the island patches its materials' shaders for the rolling log (bend.ts), and a
+  // shared one patched there bent the same kind's body off into the floor in a room (the user's "floating face, the
+  // body far below": a face's material was its own, unbent, its body's the island's); the face's also change cells.
+  // (The textures stay shared; the program cache shares the shaders.)
   const faces: { m: MeshLambertMaterial; tex: Texture; atlas: [number, number]; base: { ox: number; oy: number; sx: number; sy: number }; cell: number }[] = [];
+  const owned: Material[] = [];
   let eyeBox: [Vector3, Vector3] | null = null;
   model.traverse((n) => {
     const m = n as SkinnedMesh;
     if (!m.isMesh) return;
     m.frustumCulled = false;
     const mat = m.material as MeshLambertMaterial;
+    const mine = mat.clone();
+    delete mine.userData.bent;
+    m.material = mine;
+    owned.push(mine);
     const atlas = mat.userData?.atlas as [number, number, number] | undefined;
     if (atlas && mat.map) {
       const tex = mat.map.clone();
-      const own = mat.clone();
-      own.map = tex;
-      own.emissiveMap = tex;
-      m.material = own;
-      faces.push({ m: own, tex, atlas: [atlas[0], atlas[1]], base: { ox: tex.offset.x, oy: tex.offset.y, sx: tex.repeat.x, sy: tex.repeat.y }, cell: -1 });
+      mine.map = tex;
+      mine.emissiveMap = tex;
+      faces.push({ m: mine, tex, atlas: [atlas[0], atlas[1]], base: { ox: tex.offset.x, oy: tex.offset.y, sx: tex.repeat.x, sy: tex.repeat.y }, cell: -1 });
       if (mat.name === 'mEye') {
         m.geometry.computeBoundingBox();
         eyeBox = [m.geometry.boundingBox!.min.clone(), m.geometry.boundingBox!.max.clone()];
@@ -478,10 +484,8 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
     },
     dispose() {
       group.removeFromParent();
-      for (const f of faces) {
-        f.m.dispose();
-        f.tex.dispose();
-      }
+      for (const m of owned) m.dispose();
+      for (const f of faces) f.tex.dispose();
       blobMat.dispose();
       if (lump) {
         lump.geometry.dispose();
