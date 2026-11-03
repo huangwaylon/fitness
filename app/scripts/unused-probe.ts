@@ -3,12 +3,18 @@
 // static path it drew (a visible DOM image or background) or that the engine loaded (a card's texture, the ground:
 // fetched, never an attached image), one a line, for `npm run unused -- --seen=<file>`. Downloaded but hidden (the
 // DOM's own art under the canvas, opacity 0) is neither.
+// Each 404 under art/, room/ or terrain/ is listed (and the run exits 1): what a deletion must never cause.
 // Usage (from app/, with the build served: node scripts/serve-build.ts 4396):
-//   node scripts/unused-probe.ts 4396 [/tmp/seen.txt]
+//   node scripts/unused-probe.ts 4396 [/tmp/seen.txt] [--island=3d|2d] [--layout]
+//   (--island: which island, ?island=; the 2D one is せってい's fallback. --layout: ?layout, the 3D island on its layout
+//   before LAYOUT_3D is on)
 import { chromium } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
 
-const port = Number(process.argv[2] ?? 4396), out = process.argv[3] ?? '/tmp/seen.txt';
+const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
+const flag = (n: string) => process.argv.find((a) => a.startsWith(`--${n}`))?.split('=')[1] ?? (process.argv.includes(`--${n}`) ? '' : undefined);
+const port = Number(args[0] ?? 4396), out = args[1] ?? '/tmp/seen.txt';
+const mode = flag('island') === '2d' ? '2d' : '3d', layoutQ = flag('layout') !== undefined ? '&layout' : '';
 const base = `http://127.0.0.1:${port}/fitness/`;
 const scenes = [
   'date=2026-11-04T12:00', 'date=2026-11-04T21:00', 'date=2026-11-04T18:00&weather=rain',
@@ -18,16 +24,21 @@ const scenes = [
   'date=2026-11-04T12:00&find=bottle', 'date=2026-11-07T20:00&visitor=kk', 'date=2026-11-04T12:00&visitor=wisp',
   'date=2026-12-24T19:00', 'date=2026-10-06T12:00'
 ];
-const fetched = new Set<string>(), drawn = new Set<string>(), inDom = new Set<string>();
+const fetched = new Set<string>(), drawn = new Set<string>(), inDom = new Set<string>(), missing = new Set<string>();
+let requests = 0;
 const browser = await chromium.launch({ channel: 'chrome' });
 for (const q of scenes) {
   const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, serviceWorkers: 'block' });
   const p = await ctx.newPage();
   p.on('request', (r) => {
     const u = new URL(r.url());
-    if (/\/(art|terrain)\//.test(u.pathname)) fetched.add(u.pathname.replace(/^\/fitness\//, ''));
+    if (/\/(art|terrain)\//.test(u.pathname)) (fetched.add(u.pathname.replace(/^\/fitness\//, '')), requests++);
   });
-  await p.goto(`${base}?demo&island=3d&${q}`);
+  p.on('response', (r) => {
+    const u = new URL(r.url());
+    if (r.status() === 404 && /\/(art|room|terrain)\//.test(u.pathname)) missing.add(`${u.pathname.replace(/^\/fitness\//, '')} (${q})`);
+  });
+  await p.goto(`${base}?demo&island=${mode}${layoutQ}&${q}`);
   await p.waitForTimeout(6000);
   for (let i = 0; i < 6; i++) {
     await p.mouse.move(196, 600);
@@ -63,10 +74,16 @@ for (const q of scenes) {
   got.vis.forEach((x) => drawn.add(x));
   got.dom.forEach((x) => inDom.add(x));
   const r3 = await p.evaluate(() => !!document.querySelector('.scene[data-r3]'));
-  console.error(`${q}: ${r3 ? '3D' : 'NOT 3D'}, ${fetched.size} fetched so far`);
+  console.error(`${q}: ${r3 ? '3D' : '2D'}, ${fetched.size} fetched so far`);
   await ctx.close();
 }
 await browser.close();
 const engine = [...fetched].filter((x) => !inDom.has(x));
 writeFileSync(out, [...new Set([...drawn, ...engine])].sort().join('\n') + '\n');
-console.error(`${fetched.size} fetched; ${drawn.size} drawn by the DOM, ${engine.length} loaded by the engine → ${out}`);
+// (beside it: what was downloaded into the DOM and never seen drawn, the hidden art's wasted downloads)
+const wasted = [...fetched].filter((x) => inDom.has(x) && !drawn.has(x)).sort();
+writeFileSync(`${out}.wasted`, wasted.join('\n') + '\n');
+console.error(`${mode}${layoutQ ? ' on the layout' : ''}: ${fetched.size} fetched (${requests} requests in ${scenes.length} scenes); ${drawn.size} drawn by the DOM, ${engine.length} loaded by the engine, ${wasted.length} downloaded into the DOM but never seen drawn → ${out}`);
+console.error(`404s under art/, room/, terrain/: ${missing.size}`);
+for (const m of [...missing].sort()) console.error(`  ${m}`);
+if (missing.size) process.exitCode = 1;
