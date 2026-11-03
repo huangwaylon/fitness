@@ -235,8 +235,8 @@
       // door it covered most of it (docs/world3d-gaps.md 2)
       const sz = in3 ? vil3?.size(c.id) : null;
       if (node instanceof HTMLElement && sz) {
-        // (a thumb's least, 44 px on screen either way: hitbox.ts MIN_HIT, with a margin for the node's rounding)
-        const k = eng.at(...livePos(c.id), 0).k, least = k > 0 ? 46 / k : 0;
+        // (a thumb's least, 44 px on screen either way: hitbox.ts MIN_HIT, with a margin: the node is placed a frame behind a walker)
+        const k = eng.at(...livePos(c.id), 0).k, least = k > 0 ? 50 / k : 0;
         const [w, h] = sz.map((v) => String(Math.ceil(Math.max(v, least) * 2) / 2));
         if (node.style.getPropertyValue('--v3w') !== w) node.style.setProperty('--v3w', w);
         if (node.style.getPropertyValue('--v3h') !== h) node.style.setProperty('--v3h', h);
