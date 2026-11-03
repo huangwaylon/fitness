@@ -10,7 +10,8 @@
   import { onMount } from 'svelte';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
-  import { band, quadMatrix } from './roll.ts';
+  import { band } from './roll.ts';
+  import { quadMatrix } from './geom.ts';
   import { BANDS, BAND_D, PLAN } from './world.ts';
   import { useWorld } from './camera.svelte.ts';
 
