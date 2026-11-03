@@ -411,7 +411,8 @@ went in November 2026 (docs/cleanup-2d.md).
     `c3` is a character's card (a visitor) posed by its actor; their DOM art goes invisible (`.m3on`, IslandScene's
     `[data-r3]` rules) and stays as the tap box, its image never downloaded (`characters/artGate.ts`) unless the 3D
     island has no model for its key (`m3off`). Finds, weeds, the rock, decorations, the tape deck, the events' pieces,
-    the critters (the bugs at their flight height, the fish shadows turned the way they swim), the goal trees' fruit
+    the critters (the bugs at their flight height, the fish shadows turned the way they swim: under the water, above its
+    bed (a pond put down: its own), drawn after the water so it never washes them out: `things.ts` UNDER_WATER), the goal trees' fruit
     (greyed until grown, falling as the same model), a shaken tree's drops; the stream's petals and leaves
     (`floats3d.ts`); the seasonal fall (petals, leaves, snow: `ambient3d.svelte.ts`).
   - **Flourishes** (`effects.ts`, `island/fx3d.ts`): a tap's dust and splash, a bush's leaves, sparks, drops, sparkles,

@@ -60,6 +60,18 @@ const SOFT = (() => {
   for (const k of Object.values(ASSET_KEYS)) soft.set(k.m, (soft.get(k.m) ?? true) && (k.cat === 'bug' || k.cat === 'shadow'));
   return new Set([...soft].filter(([, s]) => s).map(([m]) => m));
 })();
+/** The fish's and the dive's shadows (assets.json `cat` shadow): under the water, yet drawn after it (UNDER_WATER), so
+ *  the water never washes them out: the fresh water is 74% opaque (terrain.ts FRESH_FRAG) and the deep sea opaque, and
+ *  a shadow drawn first (renderOrder 0) showed through as a tenth of itself, nothing over the dark bed of a pond or a
+ *  river. The ground still hides one (it's opaque, drawn first, depth-tested); the falls' sheet and the foam (3) go
+ *  over it. */
+const SHADOWS = (() => {
+  const sh = new Map<string, boolean>();
+  for (const k of Object.values(ASSET_KEYS)) sh.set(k.m, (sh.get(k.m) ?? true) && k.cat === 'shadow');
+  return new Set([...sh].filter(([, s]) => s).map(([m]) => m));
+})();
+/** After the sea (1) and the fresh water and the ponds (2), under the falls and the foam (3). */
+const UNDER_WATER = 2.5;
 const FADE_IN_MS = 600, FADE_OUT_MS = 600;
 /** A frame's step of a fade at most (ms): a slow frame never jumps it (a fade is never 0 → 1 in one frame). */
 const FADE_STEP_MS = 50;
@@ -93,7 +105,7 @@ export interface Things {
   /** Where an instance stands now (three's space), whether it's hidden, its opacity (a critter fading in or out: 1
    *  otherwise) and its scale over its own (the e2e). */
   groups(): unknown;
-  where(id: string): { x: number; y: number; z: number; hidden: boolean; model: string; fade: number; scale: number } | null;
+  where(id: string): { x: number; y: number; z: number; hidden: boolean; model: string; fade: number; scale: number; order: number } | null;
   pending(): number;
   dispose(): void;
 }
@@ -298,6 +310,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       im.castShadow = !FLAT.has(name);
       im.receiveShadow = true;
       im.customDepthMaterial = depth;
+      if (SHADOWS.has(name)) im.renderOrder = UNDER_WATER;
       // a flower's petals take its colour
       const mname = (mesh.material as Material).name;
       if (insts.some((o) => o.tint !== undefined) && /Flower|Petal|Flow|Bloom/.test(mname) && !/Body|Leaf/.test(mname))
@@ -507,7 +520,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       if (!a) return null;
       tmpV.setFromMatrixPosition(a.g.base[a.i]);
       const scale = tmpS.setFromMatrixScale(a.g.base[a.i]).y / (a.inst.scale || 1);
-      return { x: tmpV.x, y: tmpV.y, z: tmpV.z, hidden: !!overs.get(id)?.hidden, model: a.g.name, fade: fades.get(id)?.a ?? 1, scale };
+      return { x: tmpV.x, y: tmpV.y, z: tmpV.z, hidden: !!overs.get(id)?.hidden, model: a.g.name, fade: fades.get(id)?.a ?? 1, scale, order: a.g.meshes[0]?.im.renderOrder ?? 0 };
     },
     pending: () => pending,
     dispose() {

@@ -133,3 +133,37 @@ for (const [water, q, cam, sel, miss] of [
     await expect.poll(() => v3(page, (v) => v.tool('mine')), { timeout: 6000 }).toBeNull();
   });
 }
+
+// The shadows seen in every water (the user: "i don't see any fish shadows inside the ponds … i also don't see any fish
+// in the rivers"): a fresh water's surface is 74% opaque and the sea's deep water whole, so a shadow drawn before it
+// (renderOrder 0) showed as a tenth of itself, nothing over a pond's or a stream's dark bed; and in a pond put down
+// (pond.ts, on the grass) the shadow 2.5 under the stream's level was under the grass. Each is drawn after the water
+// (world3d/things.ts UNDER_WATER) between the bed and the surface (Island3D waterY, bedY).
+const POND_OP = { sc: 'o', id: 'pond-e2e', at: 1793708607120, k: 'pond', x: 5, z: 16, f: 0, who: 'A' };
+for (const water of ['pond', 'river', 'mouth', 'sea'] as const)
+  test(`the ${water}'s shadow is drawn over its water, between the bed and the surface`, async ({ page }) => {
+    test.slow();
+    // a pond put down on the grass in view (the user's island has two, and no painted pond): the shadow comes there
+    if (water === 'pond') await page.addInitScript((op) => localStorage.setItem('island-demo.layout', JSON.stringify([op])), POND_OP);
+    await page.goto(`?demo&visitor=none&critter=${water === 'sea' ? 'fish' : water}&date=2026-11-04T12:00`);
+    await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
+    type S = { x: number; y: number; z: number; hidden: boolean; order: number };
+    const shadow = () => page.evaluate((wt) => {
+      const w = (window as unknown as { __world3d: { where(id: string): S | null; water(x: number, z: number): [number, number] } }).__world3d;
+      for (let n = 0; n < 200; n++) {
+        const p = w.where(`fish-${wt}-${n}`);
+        if (p && !p.hidden) return { ...p, water: w.water(p.x, -p.z) };
+      }
+      return null;
+    }, water);
+    await expect.poll(shadow, { timeout: 15_000 }).not.toBeNull();
+    const s = (await shadow())!;
+    // after the sea (1) and the fresh water (2)
+    expect(s.order).toBeGreaterThan(2);
+    // over what's under the water, never above its surface
+    const [top, bed] = s.water;
+    // (the pond put down's: its water over the grass, GRASS_Y 3)
+    if (water === 'pond') expect(top).toBeGreaterThan(3);
+    expect(s.y).toBeGreaterThan(Math.min(bed, top) - 0.01);
+    expect(s.y).toBeLessThanOrEqual(top + 0.01);
+  });
