@@ -226,6 +226,26 @@ describe('the room with three villagers (v3)', () => {
     expect(a2b.sent.filter((m) => m.kind === 'replay').flatMap((m) => (m as { es: { who: string }[] }).es).some((e) => e.who === 'G')).toBe(false);
   });
 
+  it('a line’s steps (`fish`) go live to everyone here, never kept, never replayed; a v2 phone never sends one', () => {
+    const a = join(KEY_A), g = join(KEY_C);
+    for (const s of [a, g]) s.sent = [];
+    say(a, { kind: 'fish', ph: 'cast', id: 'hook:fish', pt: [150, -60], from: [150, 20], s: now });
+    say(a, { kind: 'fish', ph: 'nibble', pt: [150, -60] });
+    say(a, { kind: 'fish', ph: 'bite', pt: [150, -60], extra: 1 });
+    say(a, { kind: 'fish', ph: 'gone' }); // not a step: dropped
+    say(a, { kind: 'fish', ph: 'off', pt: [1e9, 0] }); // off the world: dropped
+    say(a, { kind: 'fish', ph: 'reel' });
+    expect(g.sent.map((m) => (m as { ph?: string }).ph)).toEqual(['cast', 'nibble', 'bite', 'reel']);
+    expect(g.sent[2]).toEqual({ v: 3, kind: 'fish', ph: 'bite', pt: [150, -60], who: 'A', t: expect.any(Number) });
+    expect(a.sent).toEqual([]); // (nothing to ack: presence only)
+    const b = join(KEY_B);
+    expect(b.sent.filter((m) => m.kind === 'replay').flatMap((m) => (m as { es: { kind: string }[] }).es).some((e) => e.kind === 'fish')).toBe(false);
+    const a2 = join(KEY_A, 2);
+    g.sent = [];
+    say(a2, { kind: 'fish', ph: 'cast', pt: [150, -60] }, 2);
+    expect(g.sent).toEqual([]);
+  });
+
   it('the guest’s walks, catches, phrases and tent go to both members; theirs reach the guest', () => {
     const a = join(KEY_A), b = join(KEY_B), g = join(KEY_C);
     for (const s of [a, b, g]) s.sent = [];
@@ -235,7 +255,9 @@ describe('the room with three villagers (v3)', () => {
     say(g, { kind: 'tent', in: true, to: [0, 10] });
     say(g, { kind: 'drag', id: 'dg1abc23', x: 1, z: 2, f: 0 });
     say(g, { kind: 'decor', sc: 't', id: 'dg1abc23', at: now, item: 'f1234', x: 2, z: 3, f: 0, p: now, c: 3 });
-    for (const s of [a, b]) expect(s.sent.map((m) => m.kind)).toEqual(['walk', 'catch', 'say', 'tent', 'drag', 'decor']);
+    say(g, { kind: 'fish', ph: 'cast', id: 'fresh:pond:4320', pt: [80, 1200], from: [80, 1240], s: now });
+    for (const s of [a, b]) expect(s.sent.map((m) => m.kind)).toEqual(['walk', 'catch', 'say', 'tent', 'drag', 'decor', 'fish']);
+    expect(a.sent.at(-1)).toMatchObject({ kind: 'fish', ph: 'cast', id: 'fresh:pond:4320', pt: [80, 1200], from: [80, 1240], who: 'G' });
     expect(g.sent.map((m) => m.kind)).toEqual(['ack', 'ack', 'ack']);
     expect(a.sent.every((m) => (m as { who?: string }).who === 'G')).toBe(true);
     say(a, { kind: 'walk', to: [120, 300], c: 9 });

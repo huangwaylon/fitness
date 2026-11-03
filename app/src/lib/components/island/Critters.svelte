@@ -41,6 +41,8 @@
   //   ?sea=<id>|pearl: a bubble spot; ?flea: a tap on my villager always sends a flea off it.
   import { fx3d } from './fx3d.ts';
   import { NIBBLE_MS, PLUNGE_MS, angle, angling, floatLift, nibbled } from '../world3d/fishing3d.ts';
+  import { actorOf } from '#lib/ui-state/cast.ts';
+  import { cue } from '#lib/sound/cues.ts';
   import { EASE, Glide, turn, yawOf } from './glide.ts';
   import { pace } from '../world3d/pace.ts';
   import { showCatch } from './catchCard.ts';
@@ -48,7 +50,7 @@
   import { fnv1a as seedOf, pickOne } from '#lib/random.ts';
   import { hook, hookFlag, hooksOn } from './devHooks.ts';
   import { weather } from './weatherNow.svelte.ts';
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { bodyRect, grow, hitSources, inside } from './hitbox.ts';
   import { artUrl } from '#lib/art.ts';
@@ -67,7 +69,7 @@
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { caught } from '#lib/sync/world-day.ts';
-  import type { How, Who } from '#lib/sync/live-protocol.ts';
+  import type { FishPhase, How, Relayed, Who } from '#lib/sync/live-protocol.ts';
   import { LANDS, PACE, STILL, bubblesAt, bugPath, critterId, fishPath, freshWater, groundOk, inWater, legAt, type Leg } from './critterPath.ts';
   import { tellPartner } from './partnerNews.ts';
   import { livePos } from '../motion/director.svelte.ts';
@@ -109,6 +111,8 @@
     spurt?: boolean;
     /** The shared world's (critterPath.ts): its id (its catch is shared), its itinerary and when it came (relay ms). */
     cid?: string; legs?: Leg[]; t0?: number;
+    /** Another's line is out at it (their phone's `fish` steps): theirs while it is, swimming up to their float. */
+    taken?: Who;
   }
   interface Cast {
     /** The shadow it was cast to (its water). */
@@ -126,7 +130,12 @@
     gen: number;
     /** A first tap before the bite made the fish hesitate: the next early one scares it off. */
     hesitated: boolean;
+    /** When it went out (the relay's clock: the others' phones hear it). */
+    s0: number;
   }
+  /** Another's line as their phone tells it (`fish` steps): its float at (x, z), the line from their villager's rod (the
+   *  bank's sx, sz when it isn't in reach), at a shadow `id`. */
+  interface Line { who: Who; slot: string; id?: string; x: number; z: number; sx: number; sz: number; landed: boolean; under: boolean; rings: number; n: number }
   interface Bug {
     n: number; id: BugId; flight: Flight; place: BugPlace;
     /** Where it is (world, lift above the ground), its node's anchor and the ground's foreshortening there. */
@@ -180,6 +189,8 @@
     const c = cast;
     if (c) angle(c.under ? 'bite' : c.landed ? 'wait' : 'cast', { x: c.x, z: c.z });
     else if (angling.phase !== 'reel') angle(null);
+    // (the line in without a reel: it got away, nobody came, the critters left)
+    if (!c) untrack(() => tellLine('off'));
   });
   onMount(() => () => angle(null));
   /** Where the 3D float is this frame (one array, rewritten: read every frame). */
@@ -357,6 +368,8 @@
     face(f, x, z);
     Object.assign(f, { x, z, ms });
   }
+  /** Playing with a bobber: mine, or another's line out at it. */
+  const busy = (f: Fish) => cast?.fish === f || !!f.taken;
   /** A slow wander to another spot in its patch of water (NH shadows dawdle), unless it's busy with a bobber: a shared
    *  one along its itinerary, leg by leg at its time (the same on both phones). */
   function swim(f: Fish) {
@@ -367,13 +380,13 @@
       if (k < 0) return;
       const l = f.legs[k];
       if (l.t > e) return later(() => swim(f), l.t - e);
-      if (cast?.fish !== f) {
+      if (!busy(f)) {
         f.spurt = false;
         swimTo(f, l.x, l.z, Math.max(0, l.t + l.ms - e));
       }
       return later(() => swim(f), Math.max(0, l.t + l.ms - e) + 20);
     }
-    if (cast?.fish !== f) {
+    if (!busy(f)) {
       f.spurt = false;
       const p = freeSwim(f.area, swimOk(f, guards(4))) ?? f;
       swimTo(f, p.x, p.z, clamp(Math.hypot(p.x - f.x, p.z - f.z) * (f.water === 'sea' ? 110 : 160), 2500, 6000));
@@ -382,7 +395,7 @@
   }
   function leaveFish(f: Fish) {
     if (fishes[f.water] !== f) return;
-    if (cast?.fish === f) return later(() => leaveFish(f), 4000); // never while it's playing with the bobber
+    if (busy(f)) return later(() => leaveFish(f), 4000); // never while it's playing with a bobber
     f.gone = true;
     later(() => fishes[f.water] === f && (fishes[f.water] = null), 1200);
   }
@@ -439,9 +452,10 @@
   }
   function throwLine(f: Fish, to: { x: number; z: number; sx: number; sz: number }) {
     if (fishes[f.water] !== f || f.gone) return;
-    const c0: Cast = { fish: f, ...to, fx: 0, fy: 0, landed: false, t0: 0, plan: null, under: false, rings: 0, bdx: 0, gen: 0, hesitated: false };
+    const c0: Cast = { fish: f, ...to, fx: 0, fy: 0, landed: false, t0: 0, plan: null, under: false, rings: 0, bdx: 0, gen: 0, hesitated: false, s0: Math.round(shared.now()) };
     [c0.fx, c0.fy] = lineFrom(c0);
     cast = c0;
+    tellLine('cast');
     sceneSfx('cast');
     sceneSfx('plop');
     later(() => {
@@ -497,6 +511,7 @@
       c.bdx = clamp(cx, half, w.view.vw - half) - cx;
       c.under = true;
       c.rings++;
+      tellLine('bite');
       // (the 3D island's pops over my villager's head while it holds the line, else over the bank the line runs from;
       // till the reel or the miss. Its splash and big ring are the float's node's: on the water's surface)
       const [mx, mz] = livePos('mine'), near = Math.hypot(mx - c.x, mz - c.z) < ROD_U;
@@ -649,6 +664,7 @@
   /** A nibble: the bobber twitches, a small gentle wiggle (nothing like the bite's plunge). */
   function nibble(f?: Fish) {
     nibbled();
+    tellLine('nibble');
     // the shadow's nose bumps the bobber (2u toward its head and back), in step with the bobber's twitch
     const fin = f ? fishEls[f.water]?.querySelector('.fin') : null;
     if (fin && f) {
@@ -684,6 +700,7 @@
       return later(() => cast === c && fishes[f.water] === f && follow(c, f, plan), HESITATE_MS);
     }
     angle('reel', c);
+    tellLine('reel');
     cast = null;
     sceneSfx('reel');
     if (r === 'reel') return;
@@ -1308,7 +1325,7 @@
     for (const wt of WATERS) {
       const f = fishes[wt];
       if (!f || f.gone) continue;
-      if (theirs(f.cid)) {
+      if (theirs(f.cid) || f.taken) {
         why = 'the partner’s';
         continue;
       }
@@ -1324,6 +1341,8 @@
       }
       if (!best || dPx < best.d) best = { f, d: dPx };
     }
+    // (a shadow another's line is out at, tapped on: theirs; a soft boop says so, not silence)
+    if (!best && why === 'the partner’s') cue('boop');
     if (!best) return { f: null, x: at.x, z: at.z, why };
     const f = best.f, to = bobberAt(f, at.x, at.z);
     return { f, ...to, why: `cast to the ${f.water}’s` };
@@ -1339,6 +1358,88 @@
     }
     return { x: p.x, z: p.z };
   }
+
+  // ---------- the others' lines (docs/design.md "Shared world") ----------
+  // Each step of my line goes to the others' phones (`fish`: presence only), and theirs come here: their villager's rod,
+  // the line to their float, its dips and plunge and the reel, and the shadow they cast at swims up to their float,
+  // theirs while the line is out (a tap on it here only boops). Someone coming while my line is out hears its step
+  // again; someone whose phone goes is no longer fishing.
+  /** The last step of mine told (`off` and `reel` end it). */
+  let told: FishPhase | null = null;
+  function tellLine(ph: FishPhase) {
+    const c = cast;
+    if (ph === 'off' ? told === null || told === 'reel' || told === 'off' : !c) return;
+    told = ph;
+    shared.tell({
+      kind: 'fish', ph,
+      ...(c ? { pt: [Math.round(c.x), Math.round(c.z)] as const, from: [Math.round(c.sx), Math.round(c.sz)] as const, s: c.s0, ...(c.fish.cid ? { id: c.fish.cid } : {}) } : {})
+    });
+  }
+  let lines = $state<Partial<Record<Who, Line>>>({});
+  const lineFish = (l: Line) => (l.id ? (WATERS.map((wt) => fishes[wt]).find((f) => f && !f.gone && f.cid === l.id) ?? null) : null);
+  /** A step of another's line. */
+  function theirLine(m: Extract<Relayed, { kind: 'fish' }>) {
+    const slot = actorOf(m.who);
+    if (slot === 'mine') return;
+    const was = lines[m.who];
+    if (m.ph === 'reel' || m.ph === 'off') {
+      if (!was) return;
+      angle(m.ph === 'reel' ? 'reel' : null, undefined, slot);
+      const f = lineFish(was);
+      if (f?.taken === m.who) f.taken = undefined; // (a catch or its getting away comes as their `catch`)
+      const { [m.who]: _gone, ...rest } = lines;
+      lines = rest;
+      return;
+    }
+    if (!m.pt) return;
+    if (!was || was.x !== m.pt[0] || was.z !== m.pt[1]) {
+      // the line goes out (or a phone coming late hears where it is): their villager's rod swings it out, the float
+      // lands a moment later
+      lines = { ...lines, [m.who]: { who: m.who, slot, id: m.id, x: m.pt[0], z: m.pt[1], sx: m.from?.[0] ?? m.pt[0], sz: m.from?.[1] ?? m.pt[1], landed: false, under: false, rings: 0, n: ++seq } };
+      angle('cast', { x: m.pt[0], z: m.pt[1] }, slot);
+      const l = lines[m.who]!;
+      later(() => {
+        if (lines[m.who]?.n !== l.n || l.landed) return;
+        l.landed = true;
+        l.rings++;
+        angle(l.under ? 'bite' : 'wait', undefined, slot);
+      }, m.ph === 'cast' ? 300 : 0);
+      // the shadow it's cast at: theirs, swimming up to the float
+      const f = lineFish(l);
+      if (f && f.cid && !theirs(f.cid) && cast?.fish !== f) {
+        f.taken = m.who;
+        const p = fishNow(f) ?? f, d = Math.hypot(p.x - l.x, p.z - l.z) || 1, gap = Math.min(d, sizeU(f) / 2 + 2);
+        Object.assign(f, { x: p.x, z: p.z, ms: 0 });
+        swimTo(f, l.x + ((p.x - l.x) / d) * gap, l.z + ((p.z - l.z) / d) * gap, clamp(d * 12, 600, 2400));
+      }
+    }
+    const l = lines[m.who]!;
+    if (m.ph === 'nibble') {
+      if (!l.landed) (l.landed = true), angle('wait', undefined, slot);
+      l.rings++;
+      nibbled(slot);
+    } else if (m.ph === 'bite' && !l.under) {
+      l.under = true;
+      l.rings++;
+      angle('bite', undefined, slot);
+    }
+  }
+  onMount(() => {
+    const offs = [
+      shared.hear((m) => m.kind === 'fish' && theirLine(m)),
+      // someone came: my line's step again (they see it as it is); someone gone: their line with them
+      shared.onHere((here) => {
+        for (const w of Object.keys(lines) as Who[]) if (!here.includes(w)) theirLine({ kind: 'fish', ph: 'off', who: w, v: 3, t: 0 });
+        const c = cast, now = here.join();
+        if (c && told && told !== 'off' && told !== 'reel' && now !== hereWas && here.some((w) => !hereWas.split(',').includes(w))) tellLine(c.under ? 'bite' : 'cast');
+        hereWas = now;
+      })
+    ];
+    return () => offs.forEach((f) => f());
+  });
+  let hereWas = '';
+  /** Another's float this frame (world x, z, lift: their line's bob, dips and plunge). */
+  const floatOf = (l: Line): [number, number, number] => [l.x, l.z, floatLift(performance.now(), l.slot)];
 
   // ---------- the visits ----------
   // Ambient life's critters (island/ambient.ts, docs/backend.md#ambient-life): each 10-second slot of the day brings the
@@ -1406,7 +1507,10 @@
         const p = fishNow(f) ?? f;
         return [{ water: wt, id: fishId(f), x: p.x, z: p.z, to: [f.x, f.z], len: sizeU(f), cid: f.cid ?? null, theirs: theirs(f.cid) }];
       }),
-      casting: () => !!cast
+      casting: () => !!cast,
+      /** My line now (world: where its float is) and the others' as their phones tell them. */
+      line: () => (cast ? { x: cast.x, z: cast.z, landed: cast.landed, under: cast.under } : null),
+      lines: () => Object.values(lines).map((l) => l && { who: l.who, x: l.x, z: l.z, landed: l.landed, under: l.under, id: l.id ?? null })
     };
     return () => void delete (window as unknown as { __fish?: unknown }).__fish;
   });
@@ -1466,6 +1570,18 @@
   {#if bubbles}
     <i class="m3n" {@attach w.at({ x: bubbles.x, z: bubbles.z, h: 4, always: true, m3: { key: '', water: true, emit: { kind: 'bubbles', every: 420 }, art: () => scene?.querySelector('[data-bubbles]') } })}></i>
   {/if}
+  {#each Object.values(lines) as l (l.n)}
+    {#if l}
+      <!-- another's float and the line from their villager's rod (or the bank) to it (their phone's steps) -->
+      <i class="m3n" {@attach w.at({ x: l.x, z: l.z, h: 4, always: true, live: () => floatOf(l), m3: { key: 'tools/bobber', id: `bobber-${l.slot}`, water: true, off: !l.landed && !l.under,
+        emit: l.landed && !l.under ? { kind: 'ripple', every: 2600, size: 0.45 } : undefined, line: () => [l.sx, l.sz, 4] as const } })}></i>
+      {#key l.rings}
+        {#if l.rings > 1}
+          <i class="m3n" {@attach w.at({ x: l.x, z: l.z, h: 4, always: true, m3: { key: '', id: `ring-${l.slot}-${l.rings}`, water: true, emit: l.under ? { kind: 'splash', every: 60_000 } : { kind: 'ripple', every: 60_000, size: 0.7 } } })}></i>
+        {/if}
+      {/key}
+    {/if}
+  {/each}
   {#if cast}
     {@const c = cast}
     <!-- the float on the water, sinking at the bite; the line from my villager's rod (or the bank) to it -->
@@ -1533,6 +1649,9 @@
       {/if}
     {/key}
   {/if}
+  {#each Object.values(lines) as l (l.n)}
+    {#if l}<i hidden data-angler={l.who} data-line={l.under ? 'bite' : l.landed ? 'wait' : 'cast'} data-x={l.x} data-z={l.z} data-fish={l.id}></i>{/if}
+  {/each}
   {#if cast}
     {@const c = cast}
     <!-- the bobber, upright where it landed; the line from the rod's tip (or the bank) is drawn in its node -->

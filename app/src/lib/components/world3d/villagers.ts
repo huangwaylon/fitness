@@ -12,7 +12,7 @@ import { keyModel, MODELS } from './models3d.ts';
 import { createVillager, VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
 import { url3d } from '../villager3d/manifest.ts';
 import { ACTION_MS, seatOf, type Action, type State } from '../villager3d/poses.ts';
-import { angling, type Phase } from './fishing3d.ts';
+import { anglerOf, type Phase } from './fishing3d.ts';
 import { anchorsOf, shapeOf, type Anchor } from '../villager3d/seats3d.ts';
 import ISLAND_MODELS from '../island/models.json' with { type: 'json' };
 import { DECOR_SLOTS, DECOR_U, SCENERY, seatAt } from '../island/world.ts';
@@ -143,7 +143,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     posing: boolean;
     hat: { key: string; obj: Object3D | null } | null;
     tool: { key: string; obj: Object3D | null } | null;
-    /** The fishing step last seen (fishing3d.ts angling.n) and how long the rod stays in hand after the reel. */
+    /** The fishing step last seen (fishing3d.ts anglerOf(slot).n) and how long the rod stays in hand after the reel. */
     angleN: number;
     rodUntil: number;
     size?: [number, number];
@@ -172,7 +172,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       w = undefined;
     }
     if (!w) {
-      const nw: W = { id: s.id, v: null, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, alpha: 1, posing: true, hat: null, tool: null, angleN: angling.n, rodUntil: 0 };
+      const nw: W = { id: s.id, v: null, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, alpha: 1, posing: true, hat: null, tool: null, angleN: anglerOf(s.slot).n, rodUntil: 0 };
       ws.set(s.slot, nw);
       const url = url3d(s.id, dir);
       if (url) {
@@ -267,12 +267,13 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       v.group.visible = s.shown;
       if (!s.shown) continue;
       wear(w, s.hat ?? null);
-      // my cast (fishing3d.ts: Critters' steps): the rod's swing out, the tug at the bite, the reel (the rod kept in
-      // hand till it's over, though the line's gone)
-      if (s.slot === 'mine' && angling.n !== w.angleN) {
-        w.angleN = angling.n;
-        const a = ANGLE_ACT[angling.phase ?? 'wait'];
-        if (a && Math.hypot(angling.x - s.x, angling.z - s.z) < LINE_REACH) {
+      // its cast (fishing3d.ts: Critters' steps, mine or as its phone tells them): the rod's swing out, the tug at the
+      // bite, the reel (the rod kept in hand till it's over, though the line's gone)
+      const ang = anglerOf(s.slot);
+      if (ang.n !== w.angleN) {
+        w.angleN = ang.n;
+        const a = ANGLE_ACT[ang.phase ?? 'wait'];
+        if (a && Math.hypot(ang.x - s.x, ang.z - s.z) < LINE_REACH) {
           v.act(a);
           w.busyUntil = t + ACTION_MS[a];
           if (a === 'reel') w.rodUntil = t + ACTION_MS.reel;
@@ -280,10 +281,10 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       }
       // (only within a line's reach of the float: further off, the line runs from the bank, as Critters' 2D line, and
       // its angler stands there empty-handed)
-      const reach = s.slot !== 'mine' || Math.hypot(angling.x - s.x, angling.z - s.z) < LINE_REACH;
-      const rod = reach && (s.tool === 'tools/rod' || (s.slot === 'mine' && (t < w.rodUntil || (angling.phase !== null && angling.phase !== 'reel'))));
+      const angled = ang.phase !== null || t < w.rodUntil, reach = !angled || Math.hypot(ang.x - s.x, ang.z - s.z) < LINE_REACH;
+      const rod = reach && (s.tool === 'tools/rod' || t < w.rodUntil || (ang.phase !== null && ang.phase !== 'reel'));
       holdTool(w, rod ? 'tools/rod' : (s.tool ?? null));
-      if (debug) debug.set(s.slot, { t: Math.round(t), x: s.x, z: s.z, shown: s.shown, walking: s.walking, asleep: s.asleep, seat: s.seat, tool: s.tool ?? null, reach, rod, angling: { ...angling } });
+      if (debug) debug.set(s.slot, { t: Math.round(t), x: s.x, z: s.z, shown: s.shown, walking: s.walking, asleep: s.asleep, seat: s.seat, tool: s.tool ?? null, reach, rod, angling: { ...ang } });
       // faded out of the board's way (and back), over FADE_MS
       const aim = s.away ? 0 : 1;
       if (w.alpha !== aim) {
@@ -298,11 +299,11 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       // which way: the way it walks; else the director's (left, right, inward), else toward the camera
       // (fishing: toward the float)
       let want = s.walking && moved > 0.05 ? Math.atan2(dx, -dz)
-        : rod && angling.phase ? Math.atan2(angling.x - s.x, -(angling.z - s.z))
+        : rod && ang.phase ? Math.atan2(ang.x - s.x, -(ang.z - s.z))
         : s.face === 'l' ? -1.1 : s.face === 'r' ? 1.1 : s.face === 'in' ? (s.side === 'left' ? 0.6 : -0.6) : 0;
       // (fishing: straight at the float, turned to it quickly as the cast goes out; square on from the rod's hand, so
       // the facing, the rod and the line are one line in plan: the hand's offset from the feet turned with the yaw)
-      const aiming = rod && !!angling.phase && s.seat === null;
+      const aiming = rod && !!ang.phase && s.seat === null;
       if (aiming && !s.walking) {
         const hp = v.hand();
         if (hp) {
@@ -312,14 +313,14 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
           for (let i = 0; i < 4; i++) {
             const cw = Math.cos(want), sw = Math.sin(want);
             const hx = s.x + lx * cw + lz * sw, hz = s.z - (-lx * sw + lz * cw);
-            want = Math.atan2(angling.x - hx, -(angling.z - hz));
+            want = Math.atan2(ang.x - hx, -(ang.z - hz));
           }
         }
       }
       const to = s.seat !== null ? 0 : want;
       w.yaw = turn(w.yaw, to, dt, s.walking ? 14 : aiming ? 22 : 6);
       const turning = Math.abs(Math.atan2(Math.sin(to - w.yaw), Math.cos(to - w.yaw))) > 0.005;
-      v.aim(aiming ? aimP.set(angling.x, 0, -angling.z) : null);
+      v.aim(aiming ? aimP.set(ang.x, 0, -ang.z) : null);
       // its state, and its moment (the director's motion, once each)
       // on a seat: on its model's own (villager3d sitAt: the villager sits down there itself), dozing off on it asleep
       const anchor = s.seat !== null ? anchorAt(s) : null;
@@ -387,11 +388,11 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     head: (slot) => ws.get(slot)?.v?.head() ?? null,
     tip: (slot) => ws.get(slot)?.v?.tip() ?? null,
     angler(slot) {
-      const w = ws.get(slot), v = w?.v, tip = v?.tip(), hand = v?.hand();
-      if (!w || !v || !tip || !hand || !angling.phase) return null;
+      const w = ws.get(slot), v = w?.v, tip = v?.tip(), hand = v?.hand(), a = anglerOf(slot);
+      if (!w || !v || !tip || !hand || !a.phase) return null;
       const deg = (r: number) => (r * 180) / Math.PI;
       // (three's z is the world's −z)
-      return { facing: deg(w.yaw), rod: deg(Math.atan2(tip.x - hand.x, tip.z - hand.z)), line: deg(Math.atan2(angling.x - tip.x, -(angling.z + tip.z))) };
+      return { facing: deg(w.yaw), rod: deg(Math.atan2(tip.x - hand.x, tip.z - hand.z)), line: deg(Math.atan2(a.x - tip.x, -(a.z + tip.z))) };
     },
     size(slot) {
       const w = ws.get(slot), v = w?.v;
