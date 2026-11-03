@@ -601,9 +601,9 @@ went in November 2026 (docs/cleanup-2d.md).
 
 ### Buildings
 
-`island/buildings.ts`, `island/Scenery.svelte`, `e2e/tapwalk.spec.ts`. The campsite, the homes and the museum
-([The museum](#the-museum)): a tap on one walks my villager up to its door and goes in (the tent's inside: [The
-tent](#the-tent); a home's room; the museum's own screen). The partner's presence
+`island/buildings.ts`, `island/Scenery.svelte`, `e2e/tapwalk.spec.ts`. The campsite, the homes, the museum
+([The museum](#the-museum)) and the shop ([The shop](#the-shop)): a tap on one walks my villager up to its door and goes
+in (the tent's inside: [The tent](#the-tent); a home's room; the museum's and the shop's own screens). The partner's presence
 is their villager and the edge face, not a character of its own (`partnerOnline`: the relay's presence, never in the
 demo).
 
@@ -1259,6 +1259,9 @@ too.
 - **Prices:** a catch NH's Bells ÷ 100 (a sea bass 4, a koi 40, a whale shark 130), a piece NH's ÷ 20 (a median piece
   110: about a day's catches).
 - **The menu:** 「かいがら N」 in the leaf's menu under 「ベル N」 (`data-hud-shells`); a tap goes into the shop.
+- **The building:** NH's Nook's Cranny with its タヌキ商店 sign, 7 × 4, one to an island, moved and turned in the editor
+  and もようがえ, never deleted ([island-layout.md](island-layout.md#the-islands-buildings)); a tap walks up to its door
+  and goes in, ‹ 島へ comes out of it.
 
 ### Dialogue
 
