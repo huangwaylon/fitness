@@ -43,7 +43,7 @@ async function partnerCaption(n: Pick<PartnerNews, 'verb' | 'name' | 'who'>): Pr
   return t(`world.partner.${n.verb}`, { who, name });
 }
 
-/** Show the partner's news (their villager holds it up if it's in view; else the edge notice). */
+/** Show the partner's news (a plate in the bottom stack; their villager holds it up if it's in view). */
 export function tellPartner(n: PartnerNews): void {
   if (!sink) return;
   void partnerCaption(n).then((text) => sink?.(n, text));

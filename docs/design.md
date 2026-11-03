@@ -87,7 +87,7 @@ Top to bottom: the HUD row, the jar in the sky's top-left corner (tap → [the p
   (a speech bubble with three dots, soft ink), 36px drawn in a 44px target, 12px in from the side and above the home
   indicator; over しずえ's box while she speaks. It opens the phrase picker above it (a phrase shows over my villager
   on both phones). Hidden under a sheet, the panel or the harvest, a tree's popup, and in もようがえ. The guest has it
-  too, and the tent and the homes have it ([The tent](#the-tent) "Phrases"). Nothing else lives at the bottom right (the partner's edge face and the edge notice are centred).
+  too, and the tent and the homes have it ([The tent](#the-tent) "Phrases"). Nothing else lives at the bottom right (the partner's edge face and the catch plates' stack are centred; the stack keeps the button's room on both sides).
 - Controls are real buttons with `aria-label`, ≥ 44px (villagers 64px); focus order = visual order.
 
 ### Wallet
@@ -682,8 +682,9 @@ picked up is gone on both, what a shake drops lies on both, each villager stands
 
 - **The partner's doings, played here:** when their change arrives (within 12 s of it), their villager turns to it
   where it stands (no run over, as on their phone) and it plays at the target (the net or the shovel there, a splash,
-  a shake, a pick-up); a catch or a find is held up over their head with a small plate (「うめが スズキを
-  つかまえた！」, `world.partner.*`) when it's in view, else a notice slides in at the edge on their side (the item's icon and the line, 3.6 s). Heard on opening (older),
+  a shake, a pick-up); a catch or a find is held up over their head when it's in view, and its plate (「うめが スズキを
+  つかまえた！」, `world.partner.*`) joins the bottom stack as mine do (out of view nobody holds it up, the icon comes in
+  from the edge on their side). Heard on opening (older),
   it only changes the island.
 - **First wins:** of two people tapping the same thing, the relay's first claim is it; the other phone sees it taken
   by them (their villager holds it up) and its own tap does nothing more.
@@ -996,10 +997,15 @@ northern-hemisphere months; hours still hold.
   caught at once; a medium one half the time, else, like a fast one, its shadow darts off and a second tap on it in
   time (1.6 / 1.3 / 1.0 s) catches it; a very fast one gets clean away 1 time in 3. 1 spot in 25 is a pearl (a shell
   in the ずかん).
-- **The catch:** the official icon pops onto a plate with NH's catch line (`island/catchLines.ts`: English from
-  Nookipedia, Japanese from the game), loaded with the first critter. The plate sits above (else below) the catch,
-  clear of every control and overlay, else low in the middle like NH's box; a tap dismisses it. The catch is held up
-  over my villager's head while it reads.
+- **The catch:** the official icon pops out of the catch onto a plate with NH's catch line (`island/catchLines.ts`:
+  English from Nookipedia, Japanese from the game), loaded with the first critter. Every catch's and find's plate
+  (fish, bugs, sea creatures, shells, fossils, a dig, a bottle, fragments, mushrooms, a tree's bugs and coconut, a
+  balloon present, the partner's and the guest's) goes in one stack at the bottom centre (`island/catchStack.svelte.ts`,
+  `island/CatchStack.svelte`): above the home indicator and しずえ's box, clear of the say button (its room kept on
+  both sides) and over the partner's edge face. The newest enters at the bottom and the older slide up; each fades out
+  on its own timer (the pager's) or a tap, and the ones above slide down into its room. At most 3 show: a fourth
+  fades the oldest out early. Reduced motion: no slide, a quick fade. The catch is held up over my villager's head
+  while it reads (put away when its last plate goes).
 - **Cost:** each critter is a world node; it moves by CSS transitions inside it between waypoints a timer picks (no
   rAF), one wing or fin loop each; one timer between visits; art on first need. World cues `scene-<kind>`, quiet and jittered ([Cues](#cues)).
 
@@ -1087,8 +1093,9 @@ Where it stands, one rule for every speaker (my villager, the visitors; `placeme
 else beside it, else below the feet, sliding along so the tail still reaches. Room gives way step by step, nearness
 doesn't: clear of every control, else over the museum (both within 16px); else over the island's things (trees, fruit
 rows) but not the villagers; else over them too. Never over the HUD, しずえ's box, a popup or another overlay, the
-speaker, or off the scene. It follows a speaker who moves (a move lasting 0.6 s) and closes if they go. Plates and
-captions (`place`: the catch plate, the wish, K.K.'s caption) keep clear of every control, nearest first. Every balloon,
+speaker, or off the scene. It follows a speaker who moves (a move lasting 0.6 s) and closes if they go. Captions
+(`place`: the wish, K.K.'s caption) keep clear of every control, nearest first; the catch plates stand in their stack
+at the bottom centre ([Critters](#critters) "The catch"). Every balloon,
 plate and caption keeps 12px (`EDGE`) from the screen's sides and foot, above the home indicator. The catch plate is one
 plate for every discovery (catches, finds, a present, its first-find page): the icon at its start, two lines a page, the
 ▼ in its own room at the right; the captions (the wish, K.K.'s song, Gulliver's sleep talk) share one pill

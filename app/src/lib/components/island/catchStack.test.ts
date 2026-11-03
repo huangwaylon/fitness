@@ -1,0 +1,52 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { FADE_MS, STACK_MAX, clearCards, dropCard, pushCard, pushed, putsAway, stack, type CatchCard } from './catchStack.svelte.ts';
+
+const card = (n: number, o: Partial<CatchCard> = {}): CatchCard => ({ n, x: 0, y: 0, art: 'critters/sea-bass', parts: ['x'], ...o });
+const shown = () => stack.cards.filter((c) => !c.leaving).map((c) => c.parts[0]);
+
+describe('the catch stack', () => {
+  afterEach(() => {
+    clearCards();
+    vi.useRealTimers();
+  });
+
+  it('adds the newest at the bottom (the end) and pushes the oldest showing one out past the cap', () => {
+    let cards: CatchCard[] = [];
+    for (let n = 1; n <= STACK_MAX; n++) {
+      const r = pushed(cards, card(n));
+      expect(r.out).toEqual([]);
+      cards = r.cards;
+    }
+    const r = pushed(cards, card(4));
+    expect(r.cards.map((c) => c.n)).toEqual([1, 2, 3, 4]);
+    expect(r.out.map((c) => c.n)).toEqual([1]);
+    // one already leaving isn't counted
+    expect(pushed([card(1, { leaving: true }), card(2), card(3)], card(4)).out).toEqual([]);
+  });
+
+  it("puts an item away only when no other plate of that villager's is still showing", () => {
+    expect(putsAway([card(1), card(2)], [card(1)])).toEqual([]);
+    expect(putsAway([card(1), card(2, { who: 'partner' })], [card(1)])).toEqual(['mine']);
+    expect(putsAway([card(1), card(2, { leaving: true })], [card(1)])).toEqual(['mine']);
+    expect(putsAway([], [card(1, { who: 'partner' }), card(2, { who: 'partner' })])).toEqual(['partner']);
+  });
+
+  it('a fourth fades the oldest out early; a done plate fades, then leaves on its own', () => {
+    vi.useFakeTimers();
+    for (let i = 0; i < STACK_MAX + 1; i++) pushCard({ x: 0, y: 0, art: 'a', parts: [String(i)] });
+    expect(shown()).toEqual(['1', '2', '3']);
+    expect(stack.cards[0]).toMatchObject({ parts: ['0'], leaving: true });
+    expect(new Set(stack.cards.map((c) => c.n)).size).toBe(STACK_MAX + 1);
+    vi.advanceTimersByTime(FADE_MS);
+    expect(stack.cards.map((c) => c.parts[0])).toEqual(['1', '2', '3']);
+    dropCard(stack.cards[1].n);
+    dropCard(stack.cards[1].n); // a second tap while it fades: nothing more
+    expect(shown()).toEqual(['1', '3']);
+    vi.advanceTimersByTime(FADE_MS);
+    expect(stack.cards.map((c) => c.parts[0])).toEqual(['1', '3']);
+    dropCard(-1);
+    expect(stack.cards).toHaveLength(2);
+    clearCards();
+    expect(stack.cards).toEqual([]);
+  });
+});
