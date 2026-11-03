@@ -18,8 +18,19 @@ test('a netted butterfly appears in the ずかん with who found it and when; th
   await page.goto('?demo&date=2026-07-04T12:00&critter=common-butterfly');
   await expect(hudMenu(page)).toBeVisible();
   await page.waitForTimeout(2200);
-  const b = (await page.locator('[data-critter="common-butterfly"]').boundingBox())!;
-  await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  // a tap where its 3D model is drawn (taps go by the model's spot since b6c72707, not the sprite's box)
+  const at = () => page.evaluate(() => {
+    type W3 = { where(id: string): { x: number; y: number; z: number; hidden?: boolean } | null; client(x: number, y: number, z: number): [number, number] };
+    const w = (window as unknown as { __world3d: W3 }).__world3d;
+    for (let n = 0; n < 60; n++) {
+      const p = w.where(`bug-${n}`);
+      if (p && !p.hidden) return w.client(p.x, -p.z, p.y);
+    }
+    return null;
+  });
+  await expect.poll(at).not.toBeNull();
+  const [bx, by] = (await at())!;
+  await page.mouse.click(bx, by);
   await expect(page.locator('[data-fx="catch"]')).toBeAttached();
   await fromMenu(page, 'zukan');
   const row = page.locator('[data-zukan="bug"]');
