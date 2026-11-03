@@ -13,6 +13,9 @@ import { Ch, type Fields } from './fields.ts';
 
 /** One wave's cycle (s): NH's gentle rhythm; 3600 (the water's clock wraps there, water.ts) is a whole number of them. */
 export const PERIOD = 5;
+/** The waves in the water's clock's hour: wave i's reach is wave i mod WAVES's, so the hour's wrap carries on the very
+ *  wave (and the one before it) where it was. */
+const WAVES = 3600 / PERIOD;
 /** Where the sea's surface meets the beach, on the land's field (u): the beach rises 0.12 a unit from 0 at dL = 0 and
  *  the seabed falls 0.3 a unit (layout/height.ts), the sea at SEA_Y −0.5. */
 export const WATERLINE = 1.7;
@@ -31,7 +34,7 @@ export const phaseAt = (x: number, z: number): number => {
 };
 /** Wave `i`'s reach (u) at the coast point (x, z). */
 const reachOf = (i: number, x: number, z: number): number =>
-  REACH_MIN + REACH_VAR * (0.5 + 0.5 * Math.sin(i * 2.4 + x * 0.013 + z * 0.011));
+  REACH_MIN + REACH_VAR * (0.5 + 0.5 * Math.sin((i - Math.floor(i / WAVES) * WAVES) * 2.4 + x * 0.013 + z * 0.011));
 
 /** The wave front's place `s` (u up the beach from the waterline) at `u` (0 … 1) through a wave reaching `reach`. */
 export function frontAt(u: number, reach: number): number {
@@ -126,11 +129,11 @@ export function washAt(w: WashIn, t: number): { x: number; z: number; a: number;
 export const SWASH_GLSL = /* glsl */ `
 const float SW_PERIOD = ${PERIOD.toFixed(1)}, SW_WATERLINE = ${WATERLINE};
 const float SW_UP = ${UP}, SW_DOWN = ${DOWN};
-const float SW_DRAIN = ${DRAIN.toFixed(1)}, SW_APPROACH = ${APPROACH.toFixed(1)}, SW_DRY = ${DRY};
+const float SW_DRAIN = ${DRAIN.toFixed(1)}, SW_APPROACH = ${APPROACH.toFixed(1)}, SW_DRY = ${DRY}, SW_WAVES = ${WAVES.toFixed(1)};
 float swPhase(vec2 c) {
   return fract(0.0016 * (c.x * 0.6 + c.y) + 0.14 * sin(c.x * 0.019 + 1.3) + 0.12 * sin(c.y * 0.015 + c.x * 0.007));
 }
-float swReach(float i, vec2 c) { return ${REACH_MIN.toFixed(1)} + ${REACH_VAR.toFixed(1)} * (0.5 + 0.5 * sin(i * 2.4 + c.x * 0.013 + c.y * 0.011)); }
+float swReach(float i, vec2 c) { return ${REACH_MIN.toFixed(1)} + ${REACH_VAR.toFixed(1)} * (0.5 + 0.5 * sin(mod(i, SW_WAVES) * 2.4 + c.x * 0.013 + c.y * 0.011)); }
 float swFrontAt(float u, float reach) {
   if (u < SW_UP) { float k = 1.0 - u / SW_UP; return reach * (1.0 - k * k); }
   if (u < SW_DOWN) { float v = (u - SW_UP) / (SW_DOWN - SW_UP); return reach - (reach + SW_DRAIN) * v * v; }
