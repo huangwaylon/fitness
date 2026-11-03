@@ -145,12 +145,6 @@ export function objTiles(layout: Layout, o: Obj): [number, number][] {
   return out;
 }
 
-/** @public (the editor) The footprint's back-left tile that puts an object's middle nearest world point (x, z). */
-export function snapObj(layout: Layout, o: Pick<Obj, 'id' | 'k' | 'f'>, x: number, z: number): [number, number] {
-  const [w, d] = footOf(layout, o);
-  return [Math.round((x - GRID.x0) / TILE - w / 2), Math.round((z - GRID.z0) / TILE - d / 2)];
-}
-
 /** Its facing's unit vector in world x, z (0 toward the camera: −z; then a quarter turn at a time, counter-clockwise
  *  seen from above: 1 faces +x, 2 away, 3 −x). */
 export const facingVec = (f: number): [number, number] => [[0, -1], [1, 0], [0, 1], [-1, 0]][f & 3] as [number, number];
