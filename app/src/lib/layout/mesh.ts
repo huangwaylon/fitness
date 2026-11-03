@@ -163,6 +163,9 @@ export function chunkMesh(layout: Layout, chunk: number): ChunkMesh {
   const waterish = (k: string) => k === 'river' || k === 'pond' || k === 'sea';
   /** The flow at a world point (tile centres' flows, bilinear). */
   const flowAt = (x: number, z: number): [number, number] => {
+    // along a river's curve (river.ts), else the tiles'
+    const along = field.fields.flow(x, z);
+    if (along) return along;
     const fx = (x - GRID.x0) / TILE - 0.5, fz = (z - GRID.z0) / TILE - 0.5;
     const c0 = Math.floor(fx), r0 = Math.floor(fz), tx = fx - c0, tz = fz - r0;
     let vx = 0, vz = 0;

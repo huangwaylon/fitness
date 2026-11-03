@@ -6,6 +6,7 @@ import { DEFAULT_HOMES, FAMILIES, catalogue, homeFoot, partsOf } from './homes.t
 import { diffLayouts } from './diff.ts';
 import { heightAt, fieldOf, GRASS_Y } from './height.ts';
 import { Ch, fieldsOf } from './fields.ts';
+import { riverStems } from './river.ts';
 import { navOf, findPath, snapTap, reachable, walkable } from './nav.ts';
 import { validate } from './validate.ts';
 import { KIND_LIST } from './catalog.ts';
@@ -211,18 +212,35 @@ describe('heights', () => {
 describe('the soft edges (fields.ts): the data on tiles, the drawn edge round', () => {
   const l = defaultLayout();
   const f = fieldsOf(l);
-  test('a straight edge stays on its tiles; a one-tile path keeps its breadth', () => {
-    // the stream's south bank along row 24 (z 630), the dirt path down column 9 (x 180…210)
-    expect(Math.abs(f.at(Ch.fresh, 150, 630))).toBeLessThan(1);
+  test('a one-tile path keeps its breadth; the stream runs straight across under its bridge', () => {
+    // the dirt path down column 9 (x 180…210); the stream under the bridge (column 9, row 24: z 630…660) pinned to its
+    // tile's middle, its banks a breadth either side
     expect(Math.abs(f.at(Ch.path, 180, 400))).toBeLessThan(1);
     expect(f.at(Ch.path, 195, 400)).toBeLessThan(-9);
+    expect(Math.abs(f.at(Ch.fresh, 195, 645 - 13.5))).toBeLessThan(1);
+    expect(Math.abs(f.at(Ch.fresh, 195, 645 + 13.5))).toBeLessThan(1);
+    expect(f.at(Ch.fresh, 195, 645)).toBeLessThan(-10);
   });
-  test('a staircase of tiles is drawn a straight diagonal (the stream turning up at column 12)', () => {
-    // grass tile (13, 24) between the stream's (12, 24) and (13, 25): its corner at x 300, z 660 is filled to the
-    // diagonal through its edges' middles (a third of a tile's rounding left it grass)
-    expect(f.at(Ch.fresh, 304.5, 655.5)).toBeLessThan(-2);
-    expect(f.at(Ch.fresh, 300 + 15, 660 - 15)).toBeGreaterThan(-1.5);
-    // and the stream's water goes on over that corner of the bank's tile
+  test('the stream is drawn curved (river.ts): a staircase of tiles a smooth diagonal, the long reach meandering', () => {
+    const [s] = riverStems(l);
+    // one stem, from the mouth to the fall below the cliff
+    expect(s.tiles).toHaveLength(42);
+    // the staircase from (12, 24) down to (15, 27): deep water on the diagonal through the steps (x 330,
+    // z 705), the grass tiles beside it bank (the middle of (13, 24) and of (12, 26))
+    expect(f.at(Ch.fresh, 330, 705)).toBeLessThan(-8);
+    expect(f.at(Ch.fresh, 315, 645)).toBeGreaterThan(8);
+    expect(f.at(Ch.fresh, 285, 705)).toBeGreaterThan(8);
+    // the long reach down column 15 (x 360…390): it sways and swells, and stays on its tiles near enough for the rules
+    const run = [...s.x.keys()].filter((i) => s.z[i] > 800 && s.z[i] < 1300);
+    const xs = run.map((i) => s.x[i]), hw = run.map((i) => s.hw[i]);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(8);
+    expect(Math.max(...hw) - Math.min(...hw)).toBeGreaterThan(3);
+    for (const i of run) expect(Math.abs(s.x[i] - 375) + s.hw[i]).toBeLessThan(15 + 8);
+    // the flow along it: downstream (toward the mouth: −z on this reach), on the water only
+    const fl = f.flow(375, 1000)!;
+    expect(fl[1]).toBeLessThan(-0.9);
+    expect(f.flow(375 + 45, 1000)).toBeNull();
+    // and the stream's water goes on over the bank tile's corner
     const m = chunkMesh(l, chunkOf(13, 24));
     let over = 0;
     for (let k = 0; k < m.water.pos.length / 3; k++) {
@@ -230,6 +248,12 @@ describe('the soft edges (fields.ts): the data on tiles, the drawn edge round', 
       if (x > 300 && x < 330 && z > 630 && z < 660) over++;
     }
     expect(over).toBeGreaterThan(0);
+  });
+  test('a broad river (mostly not one stem) keeps its tiles', () => {
+    const codes = new Uint8Array(l.codes);
+    for (let r = 28; r <= 40; r++) for (const c of [13, 14]) codes[r * GRID.cols + c] = codeOf('river', 0);
+    const broad = { ...l, codes, kind: l.kind, tier: l.tier } as typeof l;
+    expect(riverStems(broad).some((st) => st.tiles.includes(30 * GRID.cols + 15))).toBe(false);
   });
   test('the coast\'s corners are round: the island\'s front corner is cut well inside its tile', () => {
     // sand tile (4, 2) at the front left (x 30…60, z −30…0): its outer corner is sea, its middle well inland
