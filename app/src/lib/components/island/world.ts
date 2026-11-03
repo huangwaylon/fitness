@@ -15,8 +15,6 @@ type Oval = { readonly x: number; readonly z: number; readonly rx: number; reado
 
 /** The plan's extent (the baked terrain covers it; wider than the land so the perspective never shows an edge). */
 export const PLAN = { x0: -230, x1: 620, z0: -460, z1: 1700 } as const;
-/** The baked ground's bands (scripts/terrain.ts's chunks are 5 of them deep). */
-export const BAND_D = (PLAN.z1 - PLAN.z0) / 40;
 
 /** The island (land incl. beaches): a rounded rectangle with a 130u corner radius and a ±4u wobble. */
 const LAND_2D = { x0: -40, x1: 430, z0: -30, z1: 1260, r: 130 } as const;
@@ -80,8 +78,6 @@ export type FreshWhere = 'pond' | 'river' | 'mouth' | 'clifftop';
 /** The cliff to tier 2, behind the campsite: its face from z0 (foot) to z1 (top edge) across x0…x1; stone stairs and
  *  the falls cut it. */
 export let CLIFF: { readonly z0: number; readonly z1: number; readonly x0: number; readonly x1: number; readonly stair: Pt; readonly fall: Pt } = { z0: 1040, z1: 1080, x0: -12, x1: 402, stair: [36, 84], fall: [351, 393] };
-/** The cliff's upright face's height (u: the bake's cliff-face sprite, scripts/terrain.ts). */
-export const FACE_H = 40;
 /** The upper tier is beyond the horizon from both stops: the falls' pool (this far in front of the cliff's foot) is
  *  where NH's clifftop river shows (its fish come there). */
 export const FALLS_POOL = 46;
