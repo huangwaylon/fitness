@@ -38,6 +38,18 @@ describe('NH’s waves washing ashore (swash.ts)', () => {
     // far up the beach: never wet
     for (let k = 0; k < 20; k++) expect(swash(40, t0 + k * 0.37, x, z).wet).toBe(0);
   });
+  test('the water’s clock wrapping (an hour: uTime % 3600) carries on the very waves: no jump along the beaches', () => {
+    for (const [x, z] of [[0, 40], [-180, 300], [220, 900], [37, -12]] as const)
+      for (const s of [0.5, 4, 9, 15, 20]) {
+        // (just before the wrap, and as far past it: the shader's clock starts again at 0)
+        const a = swash(s, 3600 - 1e-3, x, z), b = swash(s, 1e-3, x, z);
+        expect(Math.abs(a.front - b.front)).toBeLessThan(0.05);
+        expect(Math.abs(a.wet - b.wet)).toBeLessThan(0.01);
+        // and every wave the same an hour on
+        const c = swash(s, 1234.5, x, z), d = swash(s, 1234.5 + 3600, x, z);
+        expect([d.front, d.wet, d.covered]).toEqual([expect.closeTo(c.front, 6), expect.closeTo(c.wet, 6), c.covered]);
+      }
+  });
   test('the next run-up: within a wave’s cycle, and the wave starts there then', () => {
     for (const [x, z, t] of [[150, -30, 0], [-40, 400, 1234.5], [500, 1700, 3599]]) {
       const w = nextRunUp(t, x, z);
