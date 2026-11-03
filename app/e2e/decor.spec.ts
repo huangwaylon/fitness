@@ -102,7 +102,7 @@ test('on the layout: a tap picks a placed piece up, a drag and ✓ move it, ✕ 
   await editLayout(page);
   await page.locator('[data-tab="furniture"]').click();
   await page.locator('[data-island-item="tanuki"]').click();
-  const [x0, z0] = await fineFrom(page, 11, 18);
+  const [x0, z0] = await fineFrom(page, 6, 12);
   await page.locator('button[data-act="place"]').dispatchEvent('click');
   await expect.poll(() => ie(page, (e) => e.sel())).toBeNull();
   const id = (await lay(page, (l) => l.ids('tanuki'))).at(-1)!;
@@ -135,7 +135,7 @@ test('on the layout: both players see the same island, live and after a reload; 
   await editLayout(a);
   await a.locator('[data-tab="furniture"]').click();
   await a.locator('[data-island-item="garden-wagon"]').click();
-  const [x0, z0] = await fineFrom(a, 11, 18);
+  const [x0, z0] = await fineFrom(a, 6, 12);
   await a.locator('button[data-act="place"]').dispatchEvent('click');
   const id = (await lay(a, (l) => l.ids('garden-wagon'))).at(-1)!;
   // B has it at once, where A put it
