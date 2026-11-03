@@ -9,6 +9,7 @@
 //   export              the export to the sheet now (the cron does it every 15 minutes when the record changed)
 //   dump                every row as JSON on stdout (a backup: `> island-record-YYYY-MM-DD.json`)
 //   load <file>         a dump into the record (its rows by the record's rules, in chunks; what it has is skipped)
+//   telemetry [n]       the phones' newest anonymous records (errors, sessions' frames and load times; default 50)
 import { createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
@@ -60,6 +61,15 @@ async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads
 
 const [cmd, arg] = args;
 switch (cmd) {
+  case 'telemetry': {
+    const r = (await signed({ op: 'telemetry', n: Number(arg ?? 50) })) as { rows?: { at: string; kind: string; data: Record<string, unknown> }[] };
+    for (const row of r.rows ?? []) {
+      const d = row.data;
+      const what = row.kind === 'error' ? `${d.msg ?? ''} ${d.stack ? `@ ${String(d.stack).split('\n')[0]}` : ''}` : `load ${d.loadMs ?? '?'} ms, frames p50 ${d.p50 ?? '?'} p95 ${d.p95 ?? '?'} ms, idle ${d.idleFps ?? '?'} fps (drawn ${d.drawFps ?? '?'})`;
+      console.log(`${row.at.slice(0, 19)}  ${row.kind.padEnd(7)}  ${String(d.os ?? '').padEnd(10)} ${d.standalone ? 'pwa' : '   '}  ${what}`);
+    }
+    break;
+  }
   case 'counts':
   case 'rev':
   case 'export':

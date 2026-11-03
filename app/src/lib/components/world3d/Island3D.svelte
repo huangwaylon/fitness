@@ -53,6 +53,7 @@
   import type { EditStage } from '../layoutEdit/IslandEdit.svelte';
   import { drawOff } from '../../ui-state/testMode.ts';
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
+  import { setDrawnFps } from '#lib/sync/telemetry.ts';
 
   /** A villager on this island now (IslandScene's cast). */
   export interface Cast {
@@ -874,7 +875,9 @@
       onLayout: () => onLayout && !!lground,
       placedGroups: () => e.placedGroups()
     };
+    setDrawnFps(() => e.stats().fps);
     return () => {
+      setDrawnFps(null);
       offLayout();
       listen3d(null);
       vil3?.dispose();

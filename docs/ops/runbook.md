@@ -198,3 +198,17 @@ app. Then the Shortcut: [shortcut-health-sync.md](shortcut-health-sync.md) §2�
 > paste the key, then **Connect**; pick a villager and a name in Settings → Villager.)
 
 The app then opens on the island as 「おきゃくさん」; its villager comes ashore while its app is open.
+
+## Telemetry (the phones' health of the app)
+
+The paired phones (the guest's too) send the relay a small anonymous record (app/src/lib/sync/telemetry.ts → the
+record's `telemetry` action): a JS error's message, the top of its stack and its file:line (at most three a session,
+each once), and once a session, 10 s after the 3D island is up, its cold load's time and the display's frames over
+5 s (p50 / p95 frame time, fps, long frames, the island's own drawn rate), with the device in a word (iOS's version,
+the Home Screen app or Safari, the screen's size). Who sent it isn't kept, nor anything of theirs; never the demo,
+never under automation. The record keeps the newest 500 and takes at most 200 a day (store.ts TELEMETRY_KEEP /
+TELEMETRY_PER_DAY: well inside the Free plan). Read them from `relay/`:
+
+    KEY_A=… KEY_B=… node scripts/record.ts telemetry [n]
+
+(`--test` and `KEYS_FILE=…` for the test relay, as the other commands.)

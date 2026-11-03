@@ -74,8 +74,16 @@ const SCHEMA = [
   // every event id ever accepted, also of events a later one replaced
   'CREATE TABLE IF NOT EXISTS ids (id TEXT PRIMARY KEY) WITHOUT ROWID',
   'CREATE TABLE IF NOT EXISTS uploads (seq INTEGER PRIMARY KEY, at TEXT NOT NULL, person TEXT NOT NULL, status TEXT NOT NULL, bytes INTEGER NOT NULL, notes TEXT NOT NULL, UNIQUE (at, person))',
-  'CREATE INDEX IF NOT EXISTS uploads_person ON uploads (person, seq)'
+  'CREATE INDEX IF NOT EXISTS uploads_person ON uploads (person, seq)',
+  // the phones' anonymous health of the app (no person, no data of theirs): an error's message and stack top, a
+  // session's frames and load time (docs/ops/runbook.md "Telemetry"); the newest TELEMETRY_KEEP kept
+  'CREATE TABLE IF NOT EXISTS telemetry (seq INTEGER PRIMARY KEY, at TEXT NOT NULL, kind TEXT NOT NULL, data TEXT NOT NULL)'
 ];
+/** The telemetry rows kept (the newest), and how many a day it takes at most (the Free plan's writes). */
+export const TELEMETRY_KEEP = 500, TELEMETRY_PER_DAY = 200;
+/** A telemetry record's fields: numbers (rounded, bounded) and short strings; nothing else is kept. */
+const TELE_NUM = ['loadMs', 'p50', 'p95', 'fps', 'idleFps', 'drawFps', 'longFrames', 'dpr', 'w', 'h'] as const;
+const TELE_STR: Record<string, number> = { build: 40, os: 40, view: 20, msg: 200, stack: 300, src: 120, mode: 20 };
 
 /** The rows a load brings (the admin `load`: a dump's; once the sheet's history and Apps Script's copies), each with its `at`. */
 export interface ImportRows {
@@ -197,8 +205,40 @@ export class StoreCore {
       case 'snapshot': return this.snapshot(me, body);
       case 'uploads': return this.uploads(me);
       case 'whoami': return { ok: true, me, build: STORE_BUILD };
+      case 'telemetry': return this.telemetry(body);
       default: return fail('bad_request');
     }
+  }
+
+  // ---------------------------------------------------------------- telemetry
+
+  /** A phone's anonymous record (`kind` session | error): only its known fields, bounded; who sent it isn't kept. */
+  private telemetry(body: Rec): Reply {
+    const kind = body.kind;
+    if (kind !== 'session' && kind !== 'error') return fail('bad_request');
+    const data = isRec(body.data) ? body.data : {};
+    const out: Record<string, number | string | boolean> = {};
+    for (const k of TELE_NUM) {
+      const v = data[k];
+      if (typeof v === 'number' && Number.isFinite(v)) out[k] = Math.round(Math.max(-1e6, Math.min(1e6, v)) * 10) / 10;
+    }
+    for (const [k, n] of Object.entries(TELE_STR)) {
+      const v = data[k];
+      if (typeof v === 'string' && v) out[k] = v.slice(0, n);
+    }
+    if (typeof data.standalone === 'boolean') out.standalone = data.standalone;
+    const now = new Date(this.io.now()), day = now.toISOString().slice(0, 10);
+    const today = Number(this.io.sql.exec<{ n: number }>('SELECT count(*) AS n FROM telemetry WHERE at >= ?', day).toArray()[0]?.n ?? 0);
+    if (today >= TELEMETRY_PER_DAY) return { ok: true, kept: false };
+    this.io.sql.exec('INSERT INTO telemetry (at, kind, data) VALUES (?, ?, ?)', now.toISOString(), kind, JSON.stringify(out));
+    this.io.sql.exec('DELETE FROM telemetry WHERE seq <= (SELECT max(seq) FROM telemetry) - ?', TELEMETRY_KEEP);
+    return { ok: true, kept: true };
+  }
+
+  /** The admin `telemetry {n}`: the newest `n` records (100), newest first. */
+  telemetryRows(n = 100): { at: string; kind: string; data: Record<string, unknown> }[] {
+    return this.io.sql.exec<{ at: string; kind: string; data: string }>('SELECT at, kind, data FROM telemetry ORDER BY seq DESC LIMIT ?', Math.max(1, Math.min(TELEMETRY_KEEP, n)))
+      .toArray().map((r) => ({ at: r.at, kind: r.kind, data: JSON.parse(r.data) as Record<string, unknown> }));
   }
 
   // ---------------------------------------------------------------- reads

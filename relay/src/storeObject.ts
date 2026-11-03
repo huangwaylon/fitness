@@ -100,6 +100,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return this.core.load(o);
       case 'dump':
         return { ok: true, rev: this.core.rev(), ...this.core.dump() };
+      case 'telemetry':
+        return { ok: true, rows: this.core.telemetryRows(typeof o.n === 'number' ? o.n : 100) };
       default:
         return { ok: false, error: 'bad_request' };
     }
