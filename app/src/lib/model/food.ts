@@ -9,7 +9,7 @@
 import type { LocalDate, Who } from '#lib/types.ts';
 import {
   entryOrder, foodAccept, foodCustomFold, foodCustomOp, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, MEALS, recipePortion,
-  recipeTotals, repeatCovers, type CustomOp, type FoodCustom, type FoodEntry, type FoodOp, type FoodRecipe, type FoodRepeat, type Meal, type RecipeOp,
+  recipeTotals, repeatCovers, round1, type CustomOp, type FoodCustom, type FoodEntry, type FoodOp, type FoodRecipe, type FoodRepeat, type Meal, type RecipeOp,
   type RepeatOp
 } from '#lib/contract/food.ts';
 import { isPersonId, isRec, type EventRow } from '#lib/contract/api.ts';
@@ -180,8 +180,6 @@ const repeatEntries = (r: FoodRepeat, date: LocalDate): FoodEntry[] =>
 export function foodEntries(s: Pick<State, 'food'>, who: Who): FoodEntry[] {
   return entriesOf(s).filter((e) => e.who === who).sort((a, b) => b.at - a.at);
 }
-
-const round1 = (v: number): number => Math.round(v * 10) / 10;
 
 /** `who`'s entries of `date` and their totals: by meal, each meal's repeat's items first (in its order; the UI keeps
  *  one repeat per meal, the record need not), then the real ones as logged. */

@@ -11,7 +11,8 @@ const DOMAIN = ['types', 'contract', 'time', 'config', 'scoring', 'model'];
 const ALLOW: Record<string, string[]> = {
   types: [],
   random: [],
-  contract: ['types'],
+  // (random.ts imports nothing: the shop's stock is seeded by it, the relay bundling it along)
+  contract: ['types', 'random'],
   time: ['types', 'contract'],
   config: ['types'],
   scoring: ['types', 'contract', 'time', 'config'],

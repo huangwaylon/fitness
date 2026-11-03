@@ -19,6 +19,7 @@ import {
 } from './world.ts';
 import { art } from '#lib/art.ts';
 import * as onGrid from '#lib/layout/nav.ts';
+import { dist } from '#lib/layout/nav.ts';
 import { BUILDING_OF, HOME_OF } from './layoutWorld.ts';
 
 /** How far feet keep from an obstacle (u). */
@@ -74,7 +75,6 @@ export interface Nav {
 
 const cross = (ax: number, az: number, bx: number, bz: number) => ax * bz - az * bx;
 const orient = (a: Pt, b: Pt, c: Pt) => cross(b[0] - a[0], b[1] - a[1], c[0] - a[0], c[1] - a[1]);
-const dist = (a: Pt, b: Pt) => Math.hypot(b[0] - a[0], b[1] - a[1]);
 
 /** A polygon from its points (made counter-clockwise in x/z) and its kind. */
 function poly(pts: Pt[], kind: Poly['kind'], building?: BuildingId): Poly {

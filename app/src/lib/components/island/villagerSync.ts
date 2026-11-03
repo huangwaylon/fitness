@@ -17,6 +17,7 @@
 import { WAKE_MS, actors, along, isRemote, livePos, onOwnMove, onWake, place, setAsleep, setRemote, sleepTime, stir, wake, walkTo, type Facing, type Move } from '../motion/director.svelte.ts';
 import { VIA_MAX, type Face, type Intent, type Pt, type Who } from '#lib/sync/live-protocol.ts';
 import { actorOfFor, whoOfFor, type VillagerActor } from '#lib/ui-state/cast.ts';
+import { dist } from '#lib/layout/nav.ts';
 
 type Walk = Extract<Intent, { kind: 'walk' }>;
 /** A villager woke (`id` whose, `at` when on the relay's clock). */
@@ -100,7 +101,6 @@ const RUN_U_S = 240;
 export const RUN_RING_U_S = 170;
 
 const round = (p: Pt): [number, number] => [Math.round(p[0]), Math.round(p[1])];
-const dist = (a: Pt, b: Pt): number => Math.hypot(a[0] - b[0], a[1] - b[1]);
 
 /** At most VIA_MAX waypoints between `from` and the end: a longer way keeps every k-th corner (the end always). */
 export function thin(pts: readonly Pt[]): Pt[] {

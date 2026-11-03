@@ -9,6 +9,7 @@
   import type { FoodCustom } from '#lib/contract/food.ts';
   import type { Recipe, RecipeSums } from '#lib/model/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
+  import { kcalText } from '../kiroku/fmt.ts';
   import Avatar from '../characters/Avatar.svelte';
   import { servingText } from './foodUi.ts';
 
@@ -24,7 +25,6 @@
     oncustom: (c: FoodCustom) => void;
   }
   let { list, names, villagerOf, onnew, onopen, onlog, customs, oncustomnew, oncustom }: Props = $props();
-  const kcal = (n: number) => t('kiroku.kcal', { n: formatNum(n) });
   const g1 = (v: number | null) => (v === null ? '–' : v.toFixed(1));
   /** A serving's four nutrients, as FoodSummary's cells. */
   const cells = (x: RecipeSums) => [['p', x.p], ['fa', x.fa], ['c', x.c], ['s', x.s]] as const;
@@ -45,7 +45,7 @@
           <button type="button" class="open" data-sfx="page" data-recipe-open={r.id} onclick={() => onopen(r)}>
             <span class="nm">{r.n}</span>
             <span class="who"><span class="av" aria-hidden="true"><Avatar person={r.who} villager={villagerOf(r.who)} size={22} /></span><span class="sv">{names[r.who]} · {t('food.rcp.servings', { n: r.sv })}</span></span>
-            <span class="kc"><b class="money" data-recipe-per>{kcal(r.per.kcal)}</b><small>{t('food.rcp.one')}</small></span>
+            <span class="kc"><b class="money" data-recipe-per>{kcalText(r.per.kcal)}</b><small>{t('food.rcp.one')}</small></span>
             <small class="all money" data-recipe-total>{t('food.rcp.all', { k: formatNum(r.total.kcal) })}</small>
             <span class="cells">
               {#each cells(r.per) as [k, v] (k)}
@@ -72,7 +72,7 @@
           <button type="button" class="open my" data-sfx="page" data-custom-open={c.id} onclick={() => oncustom(c)}>
             <span class="nm">{c.n}</span>
             <span class="who"><span class="av" aria-hidden="true"><Avatar person={c.who} villager={villagerOf(c.who)} size={22} /></span><span class="sv">{names[c.who]} · <span data-custom-serving>{servingText(c)}</span></span></span>
-            <span class="kc"><b class="money" data-custom-kcal>{kcal(c.k)}</b></span>
+            <span class="kc"><b class="money" data-custom-kcal>{kcalText(c.k)}</b></span>
           </button>
         </li>
       {/each}

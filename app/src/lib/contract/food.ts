@@ -311,6 +311,9 @@ export function recipeTotals(it: readonly RepeatItem[]): RecipeTotals {
   return t;
 }
 
+/** To one decimal (kcal, grams, nutrients as shown and kept). */
+export const round1 = (v: number): number => Math.round(v * 10) / 10;
+
 const clampGrams = (g: number): number => Math.min(FOOD_GRAMS.max, Math.max(FOOD_GRAMS.min, Math.round(g * 10) / 10));
 
 /** Whether some ingredients include a serving with no known weight (`sv`: a custom food's). */

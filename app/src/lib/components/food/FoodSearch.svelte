@@ -15,6 +15,7 @@
   import { searchFoods, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
   import { searchKey } from '#lib/food/text.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
+  import { kcalText } from '../kiroku/fmt.ts';
   import { amountText, defaultPortion, foodDb, itemOf, servingText, uniqueItems } from './foodUi.ts';
 
   interface Props {
@@ -63,7 +64,6 @@
     void more;
     return db && q.trim() ? uniqueItems(searchFoods(db, q, 40)) : [];
   });
-  const kcal = (n: number) => t('kiroku.kcal', { n: formatNum(n) });
   /** The recipes and custom foods whose names hold every word typed (all of them with nothing typed). */
   const words = $derived(q.trim().split(/[\s　]+/).map(searchKey).filter(Boolean));
   const hits = (n: string) => words.every((w) => searchKey(n).includes(w));
@@ -89,7 +89,7 @@
         <li><button type="button" class="card it" data-sfx="page" data-custom={c.id} onclick={() => oncustom?.(c)}>
           <span class="nm">{c.n}</span>
           <small class="meta">{names?.[c.who] ?? c.who}</small>
-          <span class="kc"><b class="money">{kcal(c.k)}</b><small>{servingText(c)}</small></span>
+          <span class="kc"><b class="money">{kcalText(c.k)}</b><small>{servingText(c)}</small></span>
         </button></li>
       {/each}
     </ul>
@@ -112,7 +112,7 @@
         <li><button type="button" class="card it" data-sfx="page" data-recipe={r.id} onclick={() => onrecipe(r)}>
           <span class="nm">{r.n}</span>
           <small class="meta">{names?.[r.who] ?? r.who} · {t('food.rcp.servings', { n: r.sv })}</small>
-          <span class="kc"><b class="money">{kcal(r.per.kcal)}</b><small>{t('food.rcp.one')}</small></span>
+          <span class="kc"><b class="money">{kcalText(r.per.kcal)}</b><small>{t('food.rcp.one')}</small></span>
         </button></li>
       {/each}
     </ul>
@@ -148,7 +148,7 @@
         <li><button type="button" class="card it" data-sfx="page" data-item={e.f.id} onclick={() => onpick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f)}>
           <span class="nm">{e.f.n}</span>
           <small class="meta">{amountText(e)}</small>
-          <b class="kc money">{kcal(Math.round((e.f.k * e.g) / 100))}</b>
+          <b class="kc money">{kcalText(Math.round((e.f.k * e.g) / 100))}</b>
         </button></li>
       {/each}
     </ul>
@@ -185,7 +185,7 @@
         <li><button type="button" class="card it" data-sfx="page" data-item={it.id} onclick={() => onpick(it)}>
           <span class="nm">{it.name}{#if v && v.n >= 2}<i class="ok" role="img" title={t('food.verified', { n: v.n })} aria-label={t('food.verified', { n: v.n })}>✓{v.n}</i>{/if}</span>
           <small class="meta">{#if it.brand}<span class="br" data-brand>{it.brand}</span>{' · '}{/if}{t('food.per100', { k: formatNum(it.kcal) })}</small>
-          <span class="kc"><b class="money">{kcal(p.kcal)}</b><small>{p.label}</small></span>
+          <span class="kc"><b class="money">{kcalText(p.kcal)}</b><small>{p.label}</small></span>
         </button></li>
       {/each}
     </ul>
