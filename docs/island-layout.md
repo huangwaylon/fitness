@@ -315,16 +315,25 @@ anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the pho
   before it came (the record) may hold something there: then, once, a member's phone moves it to the free spot nearest
   its default, facing the camera if it can (`layout/buildings.ts` buildingOps: one `o` op of its id, as the editor's
   move; the guest never sends one; an island where it has an op of its own is left as it is). IslandScene runs it after
-  the record's rows (`layout.placeBuildings()`). On the record of 2026-11-03 (the user's own cedars on the clifftop) it
-  lands at tiles 8…14 × 46…49, at the back by the campsite (`buildings.test.ts`).
+  the record's rows (`layout.placeBuildings()`). A spot is had three ways, in turn: on clear ground; else clearing
+  flowers (only flowers: never a tree, a bush, furniture, or a path under it; at most 12, each an `o` removal before the
+  building's op, as the editor's); else, the last resort, over a path. Each must leave every named spot reachable. On
+  the record of 2026-11-03 (the user's own cedars on the clifftop) it clears one flower and stands turned on the west
+  lawn, tiles 4…7 × 11…17 (`buildings.test.ts`).
 - **The shop** the same way: NH's StrcMarketA02 and its doors with the Japanese sign (タヌキ商店:
-  `npm run world3d-models -- --only=shop`, 152 KB), `/shop`; the default puts it in the middle east of the main path, a
-  short walk up from the beach (`layout-default.ts` SHOP: tiles 10…16 × 16…19; an oak and two flowers stepped aside). An
-  island with no spot clear for it (the record's: planted edge to edge, flower borders down both sides) gets, once, the
-  nearest spot where only flowers stand (never trees, bushes, furniture, or a path under it; at most 12), those flowers
-  removed first (each an `o` removal, as the editor's) and then the shop's own op (`buildingOps`'s second pass); a spot
-  must also leave every named spot reachable. On the record of 2026-11-04 it clears one flower and stands turned on the
-  west lawn by the campsite, tiles 4…7 × 11…17.
+  `npm run world3d-models -- --only=shop`, 129 KB), `/shop`; the default puts it in the middle, west of the main path
+  behind うめ's home, its door a step off the path (`layout-default.ts` SHOP: tiles 2…8 × 34…37). うめ's home stands two
+  rows nearer the bridge (HOME_B: its roof hid the shop's door), the middle's own oak goes east of the path and its two
+  cedars are gone (nowhere else clear of the stream's bank, the doors and the decor the specs tap), its clump of flowers
+  either side of the door; nothing of today's island moves. On the user's island all of
+  these have ops of their own but one flower (`mid-fl-3`, a tile from where it stood). まえ's lawn and the river's
+  banks stay as they were: the specs that walk on open
+  lawn ask the page for it (`e2e/island.ts` `lawnTap`, `openNear`) rather than tapping a fixed point a building may come
+  to stand on. On the record of 2026-11-03 the museum takes the one spot that only clears flowers and the shop stands
+  over the campsite's path at the back, tiles 8…14 × 46…49. On the user's island of 2026-11-04 (flower borders down
+  both sides, the main path between, no 7 × 4 spot clear; the museum would have straddled the main path across the
+  front lawn and left the shop none) the museum clears four of the west border's flowers (tiles 2…8 × 12…15) and the
+  shop four of the east's (tiles 10…16 × 11…14), either side of the main path on the front lawn.
 
 ## Turning a home
 

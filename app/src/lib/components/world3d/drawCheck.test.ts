@@ -33,7 +33,7 @@ describe("the record's layout", () => {
     expect(ops.filter((e) => e.sc === 'o' && !('k' in e)).every((e) => 'rm' in e && e.rm)).toBe(true);
     const l = record();
     const count = (k: string) => [...l.objects.values()].filter((o) => o.k === k).length;
-    expect(l.objects.size).toBe(121); // (the museum and the shop among them, a flower cleared for the shop)
+    expect(l.objects.size).toBe(121); // (the museum and the shop among them, a flower cleared for the museum)
     expect([count('oak'), count('cedar'), count('bush'), count('hedge'), count('flower')]).toEqual([4, 8, 7, 0, 55]);
     expect(validate(l).filter((i) => i.level === 'error')).toEqual([]);
   });

@@ -226,9 +226,14 @@ furniture; the week's goals still buy the two treats. Pockets and wallets are pe
 - **A screen, not a 3D room:** the shop is a counter: picking catches, counts and prices are lists, which NH itself
   draws as 2D menus; a walkable room would add another three.js scene (the phone already runs hot) for nothing a sale
   needs. NH's building on the island is 3D; inside, NH's render of the twins behind a drawn counter.
-- **Its placement on the user's island** clears one of their flowers: their island has no 7 × 4 spot clear (flower
-  borders down both sides), so the one-time op takes the nearest spot where only flowers stand, never a tree, a bush,
-  furniture or a path; the alternative was a shop standing over things.
+- **Its placement on the user's island** clears four of their flowers (and the museum's, placed the same way, four
+  more): their island has no 7 × 4 spot clear (flower borders down both sides, the main path between), so the one-time
+  op takes the nearest spot where only flowers stand, never a tree, a bush, furniture or a path; over a path is the
+  last resort. The alternatives were a shop standing over things, or the museum straddling the main path across the
+  front lawn and the shop with no spot at all.
+- **Its default spot** is in the island's middle behind うめ's home, not on まえ's lawn: the lawn the specs walk on stays
+  open, and the specs read open lawn from the page (`e2e/island.ts` `lawnTap`) instead of fixed points (the first
+  default, east of the main path at まえ, broke a dozen of them and was reverted).
 Why: the user ("currency is かいがら … per person … its own building"); deriving from the tallies costs no request per
 catch on the Free plan, and the record checks cover itself (in the Durable Object) because a wallet is per person and
 spends can't be voided, unlike the shared ベル wallet's read-time rule.
