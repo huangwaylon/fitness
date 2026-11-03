@@ -376,8 +376,10 @@ export const POC_USES: [string, Use[]][] = [
   ['flat-rock', [{ key: 'deco/flat-rock', cat: 'deco', s: DECOR_U }]],
   ['bridge-stone', ['deck', 'front'].map((p): Use => ({ key: `bridges/stone-${p}`, cat: 'scenery', s: 1.18, winter: `bridges/stone-${p}-winter` }))],
   ['tent', [{ key: 'deco/campsite', cat: 'deco', s: DECOR_U, winter: 'deco/campsite-winter' }, { key: 'deco/campsite-lit', cat: 'deco', s: DECOR_U }]],
-  ...(['streetlamp', 'garden-lantern', 'garden-lantern-white', 'campfire', 'log-stool', 'campsite-sign', 'park-bench', 'log-bench', 'rod-stand', 'hammock', 'firewood', 'pullup', 'pump', 'shishiodoshi', 'tape-deck'] as const)
-    .map((id): [string, Use[]] => [id, [{ key: `deco/${id}`, cat: 'deco', s: DECOR_U }, ...(LIT.has(id) ? [{ key: `deco/${id}-lit`, cat: 'deco', s: DECOR_U } as Use] : [])]])
+  ...(['streetlamp', 'garden-lantern', 'garden-lantern-white', 'campfire', 'log-stool', 'campsite-sign', 'park-bench', 'log-bench', 'rod-stand', 'hammock', 'firewood', 'pullup', 'pump', 'shishiodoshi'] as const)
+    .map((id): [string, Use[]] => [id, [{ key: `deco/${id}`, cat: 'deco', s: DECOR_U }, ...(LIT.has(id) ? [{ key: `deco/${id}-lit`, cat: 'deco', s: DECOR_U } as Use] : [])]]),
+  // group stretching's boom box at the villagers' scale, as NH has it beside them (the user: "super tiny" at DECOR_U)
+  ['tape-deck', [{ key: 'deco/tape-deck', cat: 'deco', s: VILLAGER_S }]]
 ];
 
 // ---- the manifest --------------------------------------------------------------------------------------------------

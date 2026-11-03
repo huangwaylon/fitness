@@ -154,7 +154,8 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         thing('rock', 26 / bounds('rock'), { tap: 'rock' });
         break;
       case 'tape-deck':
-        thing('tape-deck', DECOR_U);
+        // NH's boom box at the villagers' scale (assets.json deco/tape-deck), as NH has it beside them
+        thing('tape-deck', assetFor('deco/tape-deck')?.s ?? DECOR_U);
         break;
       case 'garden-lantern': {
         const key = o.s === 'white' ? 'deco/garden-lantern-white' : 'deco/garden-lantern', m = PROP[key];

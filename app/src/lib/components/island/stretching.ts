@@ -26,6 +26,8 @@ export function sawIsland(date: string, hour: number): void {
 
 /** Today's stretch has played on this phone. */
 export const stretched = (date: string): void => day.patch(date, { done: true });
+/** Whether today's stretch has played on this phone. */
+export const stretchedToday = (date: string): boolean => day.read(date).done;
 
 /** Whether the tape deck is out at `hour`: not yet played today, and either of us met Exercise today or the island was
  *  opened in the morning (now, or earlier today). */

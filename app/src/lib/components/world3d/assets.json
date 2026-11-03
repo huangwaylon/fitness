@@ -723,7 +723,7 @@
     "deco/spooky-lantern": {"m":"events/spooky-lantern","cat":"event","s":3,"anchor":"feet","foot":[1,1],"hit":12,"shadow":true,"lit":1,"lazy":"event"},
     "deco/streetlamp": {"m":"streetlamp","cat":"deco","s":3,"anchor":"feet","foot":[1,1],"hit":12,"shadow":true,"lit":1},
     "deco/streetlamp-lit": {"m":"streetlamp","cat":"deco","s":3,"anchor":"feet","foot":[1,1],"hit":12,"shadow":true,"lit":1},
-    "deco/tape-deck": {"m":"tape-deck","cat":"deco","s":3,"anchor":"feet","foot":[1,1],"hit":12,"shadow":true},
+    "deco/tape-deck": {"m":"tape-deck","cat":"deco","s":5.4,"anchor":"feet","foot":[2,1],"hit":20,"shadow":true},
     "deco/wedding-arch": {"m":"events/wedding-arch","cat":"event","s":3,"anchor":"feet","foot":[3,1],"hit":39,"shadow":true,"lazy":"event"},
     "decor/birdbath-0": {"m":"decor/birdbath","cat":"decor","s":3,"anchor":"feet","foot":[1,1],"hit":12,"shadow":true},
     "decor/birdbath-1": {"m":"decor/birdbath","cat":"decor","s":3,"anchor":"feet","foot":[1,1],"hit":12,"shadow":true,"yaw":90},

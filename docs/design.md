@@ -941,6 +941,11 @@ northern-hemisphere months; hours still hold.
   1–3 times (each a small dip and a ring: it's coming), then bites: the bobber is yanked under with a splash, a small
   「！」 pops over it (on the 3D island over my villager's head: docs/world3d-assets.md "Fishing"), and a tap anywhere in the next 1.6 s
   catches it. The first early tap makes it hesitate; a second scares it off. 1 in 14 a boot, tire or can.
+  On the 3D island (`island/glide.ts`, `world3d/things.ts`) nothing pops: a shadow or a bug fades in (0.6 s, a slight
+  scale-up) where it comes and out where it goes; they move by the 2D's own curves, smooth from wherever they are,
+  turning as they go; my cast's fish turns to the float, each nibble its nose bumping the float with the float's dip,
+  the bite a lunge onto it; scared, it turns tail and darts off with a quick tail wiggle, fading as it goes
+  (`e2e/critters3d.spec.ts`).
 - **Fish** (all 34 of NH's sea and pier fish, `FISH`): NH's shadows by size (20–64u, the eels long and thin; a fin for
   the sharks, the ocean sunfish and the suckerfish); the coelacanth only in rain or snow.
 - **Bugs** (74 of NH's 80, `BUGS`), each where NH keeps it: butterflies and moths in flight and landing on the flowers
@@ -1220,7 +1225,9 @@ morning, the zodiac fragment twice as likely.
 out on a day either of us met 🍑 Exercise, or when the island is opened 06:00–08:00 (`scene-stretch`), on the lawn clear
 of every control. A tap plays its tape (an original ~6 s march) and both villagers, and an awake visitor, do three of
 NH's stretches together (`if-warmup`, `if-sidebend`, `if-leap`); event reactions wait (`holdEvents`). Then the deck
-goes for the day.
+goes for the day. On the island's layout the deck is a fixed piece there every day, NH's boom box at the villagers'
+scale (about half a villager tall): on its day a tap plays the tape (the 3D villagers do NH's three: villager3d poses
+`warmup`, `sidebend`, `jump`); any other time a tap says when it plays, or that today's is done, and no ♪ floats.
 
 ### Dev params
 
