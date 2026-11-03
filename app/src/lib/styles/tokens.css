@@ -80,7 +80,7 @@
   /* The one tap-target floor. min-height (and min-width for icon-only controls) on anything
      tappable; a smaller visual can keep its size and grow an ::after hit area to --hit. */
   --hit: 44px;
-  /* The island's HUD row (Hud.svelte: the jar, the dumbbell): as high as the safe area lets it (under the status bar or the Dynamic Island in
+  /* The island's HUD row (Hud.svelte: the dumbbell, the meal bowl, the leaf menu): as high as the safe area lets it (under the status bar or the Dynamic Island in
      the Home Screen app, under Safari's top bar in the browser), all in the sky, well over the horizon (world.ts SKY,
      21% down). The island page sets --hud-bottom (its lip) from it; the banners on 島 go under it. */
   --hud-top: calc(var(--ui-top) + 10px);
@@ -88,15 +88,14 @@
   --row-obj: calc(var(--hit) + var(--lip-h) + 6px);
 
   /* ---------- stacking: one z scale ----------
-     The page: the scene's stage < the HUD (the jar, the dumbbell, the sync chip) < the dock (しずえ's box). Modal <dialog>s
+     The page: the scene's stage < the HUD (the dumbbell, the meal bowl, the leaf menu, the sync chip) < the dock (しずえ's box). Modal <dialog>s
      (sheets, the panel, the harvest) live in the top layer above every z-index; the banner is a popover shown after
      them, so it sits above an open sheet (--z-toast is its fallback without popover support).
-     Inside the stage (its own stacking context): trees < canopy taps < ground fruit < the fruit-row tap < falling leaves
-     < villagers (mine in front) < tree-shake leaves < the time-of-day tint < scenery flourishes
-     < flying coins (HudCoins', in their own layer over the stage) < the "+N" pop < the tree popup. The HUD and dock stay above the whole stage, the popup included. */
+     Inside the stage (its own stacking context; IslandScene .stage restates these over the world's depths): the world
+     < the time-of-day tint < scenery flourishes < the taps < flying coins (HudCoins', in their own layer over the stage)
+     < the "+N" pop < the tree popup. The HUD and dock stay above the whole stage, the popup included. */
   --z-stage: 1; --z-hud: 7; --z-dock: 9; --z-harvest: 60; --z-toast: 90;
-  --z-tree: 30; --z-canopy: 32; --z-fruit: 33; --z-fruit-row: 34; --z-fall: 50; --z-villager: 51; --z-villager-mine: 52;
-  --z-leaf: 70; --z-tint: 80; --z-taps: 82; --z-coin: 90; --z-coin-gain: 91; --z-popup: 95;
+  --z-tint: 80; --z-taps: 82; --z-coin: 90; --z-coin-gain: 91; --z-popup: 95;
 
   /* ---------- viewport heights ----------
      --vh-fill: 100dvh, for things that fill the visible screen and never scroll themselves (island, panel,
@@ -106,7 +105,6 @@
 
   /* ---------- fluid scale: clamps instead of breakpoint steps ---------- */
   --cta-h: clamp(48px, calc(6.6 * var(--vh1)), 60px);  /* the one action */
-  --jar-h: clamp(84px, calc(16 * var(--vh1)), 160px);  /* ごほうび hero jar */
 
   /* ---------- surfaces + button tiers ----------
      The panel (--bg / --surface: NH's tan) is a step darker than what sits on it (--card: white-cream).
@@ -191,33 +189,28 @@
 @property --if-st { syntax: '<length>'; inherits: true; initial-value: 0px; }
 
 .if-scene {
-  /* sea */
-  --sea-haze:#8EDDF5; --sea-mid:#4C9DE8; --sea-open:#3D8FE2; --shallow:#5ED8E8; --foam:#FFFFFF; --glint:#FFFFFF;
   /* sky (day; spring) · sun · moon · clouds */
   --sky-top:#4AA3F6; --sky-mid:#79C9FC; --sky-hz:#C6EEFF;
   --sun-core:#FFFEF2; --sun-ring:#FFE989; --moon:#FFF4C8; --moon-glow:rgba(255,244,200,.35);
   --cloud-top:#FFFFFF; --cloud-mid:#E8F2FC; --cloud-under:#D2E3F5; --cloud-op:1;
   /* ground (spring) */
-  --grass:#7CC95A; --grass-hi:#9BD970; --fleck-hi:#A8E07A; --fleck-lo:#5EAE47; --grass-shade:#3F8F33; --overhang:#5FA847;
-  --cliff-top:#DDA472; --cliff-bottom:#B97A50; --strata:#C88B5D;
-  --sand-hi:#FCE7AE; --sand:#F4D184; --sand-wet:#E2B66E; --sand-shade:#D6AE68;
-  /* contact shadows: on grass / on sand (snow in winter); dusk stretches them to the right */
-  --sh-c:rgba(34,74,28,.32); --sh-sand:rgba(140,98,40,.28); --sh-scale:1;
+  --grass:#7CC95A;
+  /* contact shadows on the grass (snow in winter); dusk stretches them to the right */
+  --sh-c:rgba(34,74,28,.32); --sh-scale:1;
   --tod-tint:transparent;
   --plate: var(--c-cream); --plate-lip: var(--c-lip); --plate-ink: var(--c-ink);
 }
 .if-scene[data-season="summer"] {
-  --grass:#5DBE4A; --grass-hi:#7CCF5E; --fleck-hi:#8ED96C; --fleck-lo:#46A23A; --grass-shade:#2F7F2A; --overhang:#4CA03E;
+  --grass:#5DBE4A;
   --sky-top:#2F92F0;
 }
 .if-scene[data-season="autumn"] {
-  --grass:#A8C457; --grass-hi:#C2D46E; --fleck-hi:#D9C26A; --fleck-lo:#8AA845; --grass-shade:#6F8A35; --overhang:#90AA48;
+  --grass:#A8C457;
   --sky-hz:#E8F2EE;
 }
 .if-scene[data-season="winter"] {
-  --grass:#F5F8FF; --grass-hi:#FFFFFF; --grass-shade:#B9C8E6; --overhang:#D5E0F2;
-  --sand-hi:#F6F0E2; --sand:#EEE6D4; --sand-wet:#D2C7B0; --sand-shade:#C9BEA6;
-  --sh-c:rgba(80,110,160,.25); --sh-sand:rgba(80,110,160,.25);
+  --grass:#F5F8FF;
+  --sh-c:rgba(80,110,160,.25);
   --sky-top:#8EC2EE; --sky-mid:#BFE0F8; --sky-hz:#EEF7FF;
 }
 /* time of day (after the seasons, so it wins the sky): the sky table, warm sun, cloud undersides, the tint */

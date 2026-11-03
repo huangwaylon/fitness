@@ -236,12 +236,12 @@
      counter; under it the counter's menu as NH draws it, a cream panel (fixed cream at every time of day, ink text: a
      game object, as the HUD's). At dusk and night the wood warms under the lamp and the window goes dark. */
   .shop {
-    --wood: #E7B877; --wood-2: #DDA862; --wood-dark: #9C6A3C; --floor: #B98654; --floor-2: #A97648;
+    --wood: #E7B877; --wood-2: #DDA862; --wood-dark: #9C6A3C;
     position: relative; max-width: var(--col); margin: 0 auto; min-height: var(--vh-fill); height: var(--vh-fill);
     display: flex; flex-direction: column; overflow: hidden; color: var(--c-ink);
     background: repeating-linear-gradient(90deg, var(--wood) 0 38px, var(--wood-2) 38px 40px);
   }
-  .shop.night { --wood: #B9895A; --wood-2: #A97B4E; --floor: #8A6240; --floor-2: #7B5638; }
+  .shop.night { --wood: #B9895A; --wood-2: #A97B4E; }
   .shop.night::before {
     content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
     background: radial-gradient(60% 34% at 50% 18%, rgb(255 214 140 / .38), transparent 70%);
