@@ -4,8 +4,7 @@
 // flowers. Each keeps clear of every control and is a ずかん find, never ベル. `?critter=<id>` brings one on at once.
 import { expect, test, type Page } from '@playwright/test';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
-import { PERCH_3D, REAR_MS, perches } from '../src/lib/components/island/critters.ts';
-import { groundHeight } from '../src/lib/components/world3d/ground.ts';
+import { PERCH_3D, REAR_MS, type Perch } from '../src/lib/components/island/critters.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
 test.use({ viewport: { width: 390, height: 844 } });
@@ -184,8 +183,10 @@ test('on the 3D island a bug perched on a trunk sits on its bark, in view under 
       return null;
     });
     expect(m, id).not.toBeNull();
-    const [x, z] = [m!.x, -m!.z], lift = m!.y - groundHeight(x, z);
-    const p = perches(palm).sort((a, b) => Math.hypot(a.x - x, a.z - z) - Math.hypot(b.x - x, b.z - z))[0];
+    // (the trunks and the ground as the page's island has them: the layout's on it)
+    const [x, z] = [m!.x, -m!.z], lift = m!.y - (await page.evaluate(([x, z]) => (window as unknown as { __world: { height(x: number, z: number): Promise<number> } }).__world.height(x, z), [x, z]));
+    const trunks = await page.evaluate((palm) => (window as unknown as { __world: { perches(palm: boolean): Perch[] } }).__world.perches(palm), palm);
+    const p = trunks.sort((a, b) => Math.hypot(a.x - x, a.z - z) - Math.hypot(b.x - x, b.z - z))[0];
     expect(Math.abs(x - p.x), id).toBeLessThan(2);
     expect(p.z - z, `${id} out of the trunk`).toBeGreaterThan(PERCH_3D[p.kind].out * p.h * 0.9);
     expect(lift, `${id} under the canopy`).toBeLessThan(PERCH_3D[p.kind].lift * p.h * 1.2);

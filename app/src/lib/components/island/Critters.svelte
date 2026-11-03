@@ -624,6 +624,8 @@
     }
     if (!spot) return false;
     const shown = seen(spot.x, spot.z, spot.lift, null);
+    // (a perch's or a flower's spot is its one, vetted already with its own margins: the walk in never looks again)
+    const oneSpot = flight === 'perch' || flight === 'flower';
     // a firefly blinks on, a grasshopper or a crawler is just there, a shell or a walking stick is on its trunk already
     const inPlace = flight === 'drift' || flight === 'flower' || flight === 'hop' || flight === 'crawl' || flight === 'stalk' || flight === 'burrow' || STILL.has(id);
     // flyers come in from the nearer side of the screen (a percher from above its trunk)
@@ -631,7 +633,7 @@
     const start = from ?? (inPlace ? spot : { x: spot.x + side * 300, z: spot.z, lift: spot.lift + (flight === 'perch' ? 40 : 0) });
     bug = {
       n: ++seq, id, flight, place, ...start, ax: spot.x, az: spot.z, g: Math.max(0.2, w.screenAt(spot.x, spot.z).ground), ms: 0, flip: side < 0,
-      gone: false, patch: flight === 'perch' || flight === 'flower' ? null : patch, ok: shown ? ok : (p) => groundOk(place, p.x, p.z), sat: false,
+      gone: false, patch: flight === 'perch' || flight === 'flower' ? null : patch, ok: shown && !oneSpot ? ok : (p) => groundOk(place, p.x, p.z), sat: false,
       hops: 0, rest: 2 + Math.floor(rand() * 2), ...(flight === 'stalk' && { stalk: 'calm' as const }), cid: o.cid
     };
     // a perch or a flower is its one spot
