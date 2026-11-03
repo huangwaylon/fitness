@@ -1,4 +1,4 @@
-// `npm run gas:build`: bundle app/gas/main.ts (+ the parser) into app/apps-script/Code.js, one plain global script
+// `npm run gas:build`: bundle app/gas/main.ts (the sheet's exporter) into app/apps-script/Code.js, one plain global script
 // for the Apps Script editor (or `clasp push`). Apps Script only calls top-level functions, so the IIFE bundle is
 // followed by top-level functions that forward to it. The bundle carries its own `BUILD` hash (whoami, health).
 import { buildSync } from 'esbuild';

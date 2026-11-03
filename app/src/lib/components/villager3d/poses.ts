@@ -114,7 +114,7 @@ export function walk(t: number, phase: number, speed: number): Pose {
 }
 
 /** Sitting (a bench, a stool, a chair): thighs level, shins down, hands in the lap, the feet swinging a little. Its
- *  hips sink by its thigh's length, so its feet stay where they stood: the seat is at seatHeight(body) above them. */
+ *  hips sink by its thigh's length, so its feet stay where they stood. */
 export function sit(t: number, body: Body, seed = 0): Pose {
   const p = arms(rest(), ARMS + 0.12, -0.55, 0.7);
   breathe(p, t, 3400, 1);

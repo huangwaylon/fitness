@@ -33,7 +33,7 @@ describe('my drag, as the partner sees it', () => {
     expect(sent.at(-1)).toMatchObject({ id: 'd1', end: true });
     vi.advanceTimersByTime(5000);
     expect(sent).toHaveLength(4);
-    // a placed piece's update (a real id: newTentId's 12 characters) is about 60 bytes
+    // a placed piece's update (a real id: TentEdit's newId, 12 characters) is about 60 bytes
     expect(JSON.stringify({ v: 2, kind: 'drag', id: 'dmhabc12xyz9', x: -35, z: -35, f: 3 }).length).toBeLessThanOrEqual(64);
   });
 });
