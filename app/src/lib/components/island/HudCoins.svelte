@@ -46,7 +46,7 @@
     return [sx, Math.min(sy, w.view.vh * k)];
   };
 
-  const ribbon = () => document.querySelector<HTMLElement>('.hud .ribbon, .ribbon-wrap .ribbon');
+  const ribbon = () => document.querySelector<HTMLElement>('.ribbon-wrap .ribbon');
 
   /** The stage's box and the ribbon's number in its units; false if either is gone. */
   function measure(): boolean {
