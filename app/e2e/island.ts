@@ -96,7 +96,7 @@ export type Geo = {
   PULLUP_AT: [number, number]; BUILDINGS: { id: string; x: number; z: number; h: number; depth: number }[]; FLOWERS: { id: string; x: number; z: number; clump: number }[];
   SCENERY: { id: string; kind: string; key: string; x: number; z: number; h: number }[]; DECOR_SLOTS: { id: string; x: number; z: number }[];
   BRIDGE: { x: number; z0: number; z1: number; w: number }; CLIFF: { z0: number; z1: number }; LAWN_SPOTS: [number, number][];
-  RIVER: [number, number, number][]; RIVER_BEND: number;
+  RIVER: [number, number, number][]; RIVER_BEND: number; PONDS: { x: number; z: number; rx: number; rz: number }[];
   /** Today's trees holding a present (treeGifts.ts giftTreesOn over the island's trees). */
   GIFT_TREES: string[];
 };

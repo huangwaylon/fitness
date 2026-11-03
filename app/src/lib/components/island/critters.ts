@@ -9,7 +9,7 @@ import type { SeaId } from './sea.ts';
 import type { Sky } from './weather.ts';
 import {
   BEACH_BOX, BRIDGE, CLIFF, FLOWERS, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SHORE_Z, SPRING, TREE_H, freshWhere, inOval,
-  LAWN_SPOTS, RIVER_BEND, onLayout, riverNS, riverNear, worldGen, type FreshWhere
+  LAWN_SPOTS, PONDS, RIVER_BEND, onLayout, pondAt, riverNS, riverNear, worldGen, type FreshWhere
 } from './world.ts';
 
 /** NH months (1–12) a critter is about, and its hours [from, to) in Tokyo time (to < from wraps past midnight). */
@@ -350,7 +350,7 @@ const WATER_REACH = 12;
 
 /** The water a tap at world (x, z) lands in, or null (land). `sea`: the ground there is the sea (sceneTaps hitWorld). */
 export function waterAt(x: number, z: number, sea: boolean, reach = WATER_REACH): Water | null {
-  if (inOval(POND, x, z, reach)) return 'pond';
+  if (pondAt(x, z, reach)) return 'pond';
   if (inOval(SPRING, x, z, reach)) return 'clifftop';
   const r = riverNear(x, z);
   if (r.d <= r.hw + reach) return freshWhere(x, z);
@@ -363,7 +363,7 @@ export function waterAt(x: number, z: number, sea: boolean, reach = WATER_REACH)
 export function castInto(water: Water, x: number, z: number): { x: number; z: number } {
   if (water === 'sea') return { x, z: Math.min(z, -10) };
   if (water === 'pond' || (water === 'clifftop' && inOval(SPRING, x, z, WATER_REACH))) {
-    const o = water === 'pond' ? POND : SPRING;
+    const o = water === 'pond' ? (pondAt(x, z, WATER_REACH) ?? POND) : SPRING;
     const d = Math.hypot((x - o.x) / o.rx, (z - o.z) / o.rz), k = d > 0.75 ? 0.75 / d : 1;
     return { x: o.x + (x - o.x) * k, z: o.z + (z - o.z) * k };
   }
@@ -413,7 +413,7 @@ function reaches(i0: number, i1: number, step: number, keep: (x: number, z: numb
  *  under the bridge); the
  *  mouth's wide reach on the west beach; the falls' pool (NH's clifftop: the upper tier is beyond the horizon). */
 export function freshAreas(where: FreshWhere): Swim[] {
-  if (where === 'pond') return [{ cx: POND.x, cz: POND.z, ux: 1, uz: 0, L: POND.rx * 0.55, W: POND.rz * 0.4 }];
+  if (where === 'pond') return [POND, ...PONDS].map((o) => ({ cx: o.x, cz: o.z, ux: 1, uz: 0, L: o.rx * 0.55, W: o.rz * 0.4 }));
   if (where === 'clifftop')
     return reaches(0, RIVER.length - 1, 24, (_x, z) => z > CLIFF.z0 - FALLS_POOL && z < CLIFF.z0 - 6);
   if (where === 'mouth') return reaches(0, RIVER.length - 1, 44, (x, z) => freshWhere(x, z) === 'mouth');

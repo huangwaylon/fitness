@@ -72,7 +72,7 @@
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from './sea.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
-  import { GOAL_TREES, ROCK, SEA_BOX, SHORE_Z, flowerById } from './world.ts';
+  import { GOAL_TREES, POND, ROCK, SEA_BOX, SHORE_Z, flowerById, pondAt } from './world.ts';
   import { nearestWalkable, walkGeo } from './walkGraph.ts';
   import {
     BUGS, bushes, CAST_U, FISH, FRESH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS, bitePlan,
@@ -400,7 +400,12 @@
   function anglerSpot(water: Water, x: number, z: number): readonly [number, number] {
     if (water === 'sea') return [Math.round(clamp(x, SEA_BOX.x0 + 20, SEA_BOX.x1)), SHORE_Z + 18];
     const g = walkGeo();
-    if (water === 'pond') return g.nodes.pondside;
+    if (water === 'pond') {
+      // the painted pond's back bank (pondside); a pond put down: its own back bank
+      const o = pondAt(x, z, 14);
+      if (!o || o === POND) return g.nodes.pondside;
+      return nearestWalkable(g, o.x, o.z + o.rz + 14, 40) ?? nearestWalkable(g, o.x, o.z - o.rz - 14, 40) ?? [x, z];
+    }
     const r = riverNear(x, z), [ax, az] = RIVER[r.i], [bx, bz] = RIVER[r.i + 1];
     const len = Math.hypot(bx - ax, bz - az) || 1, ux = (bx - ax) / len, uz = (bz - az) / len;
     let [nx, nz] = [-uz, ux];

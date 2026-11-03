@@ -5,7 +5,7 @@
 import type { FlowerColour, FlowerId } from '#lib/art.ts';
 import { cue } from '#lib/sound/cues.ts';
 import type { SceneSfx } from '#lib/sound/ids.ts';
-import { POND, SPRING, inOval, surfaceAt } from './world.ts';
+import { SPRING, inOval, pondAt, surfaceAt } from './world.ts';
 
 export type SceneHit =
   /** A hedge bush or another bush (its node's data-bush id), found from the tapped element. */
@@ -26,7 +26,7 @@ export type SceneHit =
 export function hitWorld(x: number, z: number): SceneHit {
   const k = surfaceAt(x, z);
   if (k === 'sea') return { kind: 'sea' };
-  if (k === 'water') return inOval(POND, x, z) || inOval(SPRING, x, z) ? { kind: 'pond' } : { kind: 'river' };
+  if (k === 'water') return pondAt(x, z) || inOval(SPRING, x, z) ? { kind: 'pond' } : { kind: 'river' };
   if (k === 'sand') return { kind: 'sand' };
   return { kind: 'grass' };
 }
