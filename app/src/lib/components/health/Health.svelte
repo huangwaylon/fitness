@@ -5,17 +5,18 @@
 
 <script lang="ts">
   // けんこう (health, design.md "Kenkou"): the health popup (the HUD's dumbbell), the Health data over time for
-  // the personal trainer, one person at a time. Two rows of selectors: whose data (ウェイ / うめ, this phone's person
-  // by default; switching keeps the period and the range) and one period for every chart (1週 / 1か月 / 3か月 / 1年),
-  // a native dropdown each, side by side; then which cards (かつどう / からだ, かつどう on each opening; switching keeps the period, range and person) and a sticky
-  // row with ‹ the visible range › and きょう; then a card per metric in the group's CARDS order: かつどう 🍎 Steps,
+  // the personal trainer, one person at a time. Whose data (ウェイ / うめ, this phone's person by default; switching
+  // keeps the period and the range) is a native dropdown in the title bar, left of けんこう (`lead`, bindable: the
+  // popup's NavBar renders it; none on a goal's level, where ‹ is). Then one row: which cards (かつどう / からだ, かつどう
+  // on each opening; switching keeps the period, range and person) and one period for every chart (1週 / 1か月 / 3か月 /
+  // 1年, a dropdown) beside it; then a sticky row with ‹ the visible range › and きょう; then a card per metric in the group's CARDS order: かつどう 🍎 Steps,
   // 🍐 Move, 🍑 Exercise, 🍒 Stand; からだ 体重, 体脂肪率, BMI, 除脂肪体重. A horizontal drag on any chart turns the page; a tap shows a bar's numbers.
   // Under the charts, in either group, 目標 (GoalCard): the shown person's Move, steps, weight and body fat goals, each
   // ✎ pushing a level with that goal's field (`deep`, bindable: the popup's ‹ calls `back()`); either person sets
   // either person's, the guest's phone none (shown read-only, without the からだ two).
   // The charts are read-only, computed on read from the store's model (model/health.ts); loaded with the popup, not with the island.
   import '#lib/i18n/kenkou.ts'; // the tab's strings, loaded with it
-  import { tick } from 'svelte';
+  import { tick, type Snippet } from 'svelte';
   import type { LocalDate, PersonId } from '#lib/types.ts';
   import { BODY_FAT_GOAL, isBodyMetric, type BodyMetric } from '#lib/contract/api.ts';
   import { MOVE_GOAL, STEPS_GOAL } from '#lib/config/rules.ts';
@@ -39,7 +40,7 @@
   import { parseKcalInput, parseKgInput, parsePctInput, parseStepsInput } from '../kiroku/fmt.ts';
   import { isGuest } from '#lib/ui-state/viewer.ts';
 
-  let { deep = $bindable(false) }: { deep?: boolean } = $props();
+  let { deep = $bindable(false), lead = $bindable(null) }: { deep?: boolean; lead?: Snippet | null } = $props();
 
   const m = $derived(week.model);
   const view = $derived(week.view);
@@ -115,6 +116,7 @@
   let edit = $state<{ k: Goal; p: PersonId } | null>(null);
   $effect(() => {
     deep = edit !== null;
+    lead = edit === null && hs ? whoPill : null;
   });
   let root: HTMLElement | undefined = $state();
   /** Where the charts were scrolled to, restored on ‹. */
@@ -145,6 +147,12 @@
   }
 </script>
 
+{#snippet whoPill()}
+  <!-- whose data, in the title bar (NavBar's lead) -->
+  <Pick kind="who" value={who} options={[me, partner].map((id) => ({ id, label: names[id] }))} label={t('health.who')} onpick={setWho}
+    person={{ p: who, villager: villagers[who] }} compact />
+{/snippet}
+
 <div class="health" bind:this={root}>
   {#if m && view && hs && range && edit && !guest}
     <!-- a goal's level: whose goal it sets (either person sets either person's), then its field -->
@@ -170,15 +178,13 @@
       {/if}
     </div>
   {:else if hs && range}
-    <!-- Row 1: whose data and the period, one native dropdown each (iOS's own picker; a cream pill ≥ 44px) -->
-    <div class="dds">
-      <Pick kind="who" value={who} options={[me, partner].map((id) => ({ id, label: names[id] }))} label={t('health.who')} onpick={setWho}
-        person={{ p: who, villager: villagers[who] }} />
+    <!-- one row: which cards, and the period beside them (a native dropdown: iOS's own picker; the guest's: the period alone) -->
+    <div class="sel">
+      {#if !guest}
+        <Segmented items={GROUPS.map((id) => ({ id, label: t(`health.group.${id}`), art: GROUP_ART[id] }))} value={group} label={t('health.group')} attr="group" onpick={setGroup} />
+      {/if}
       <Pick kind="period" value={period} options={PERIODS.map((id) => ({ id, label: t(`health.period.${id}`) }))} label={t('health.period')} onpick={setPeriod} />
     </div>
-    {#if !guest}
-      <Segmented items={GROUPS.map((id) => ({ id, label: t(`health.group.${id}`), art: GROUP_ART[id] }))} value={group} label={t('health.group')} attr="group" onpick={setGroup} />
-    {/if}
 
     <RangeNav earlier={t('health.earlier')} later={t('health.later')} today={t('health.today')} canBack={can.back} canOn={can.on} atToday={anchor === null}
       onback={() => go(-1)} onon={() => go(1)} ontoday={jumpToday}>
@@ -219,8 +225,9 @@
 
 <style>
   .health { display: grid; gap: 12px; padding-bottom: 8px; }
-  /* row 1: two dropdowns side by side (Pick), whose data a little wider (the avatar and the name) */
-  .dds { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 8px; }
+  /* かつどう · からだ, the period pill beside them at its own width (the guest's: the pill alone, at the right) */
+  .sel { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+  .sel > :global(:only-child) { grid-column: 2; }
   .rl { flex: 1; min-width: 0; display: grid; justify-items: center; gap: 3px; text-align: center; }
   .rl b { font-size: var(--fs-talk); line-height: 1.1; text-wrap: balance; }
   .rl b span { white-space: nowrap; }

@@ -1,18 +1,22 @@
 <script lang="ts">
   // ごはん (the meal log, docs/design.md "Gohan"): the HUD bowl's popup. Whose day (this phone's person first; the
   // partner, and the guest once it has logged or on its own phone: everyone sees everyone's meals), ‹ the day ›
-  // and きょう, the summary card, then the four meals. On my own day ＋ per meal → the search → the amount → 追加;
-  // an entry → its amount → 保存 / 削除 (a repeat's: that day leaves the repeat first, detachDay); ✎ → the kcal goal;
-  // a meal's 🔁 → いつもの (its repeat, or a new one from the day's entries). Those push a level (FoodSheet's title
-  // bar: its ‹). Anyone else's day is read-only. データの出典 at the foot. On top, under the title bar, the tabs (TABS,
-  // けんこう's group switch): きろく (whose day, then the day, on each opening), グラフ (FoodChart: the kcal over a
-  // period, whose and けんこう's period dropdown, its range row and its Move card; switching whose keeps the tab, the
-  // period and the range) and レシピ (マイレシピ, FoodRecipes: everyone's recipes, no whose; a recipe → its level,
+  // and きょう (› to tomorrow too when a いつもの fills it: shown only), the summary card, then the four meals. On my own
+  // day ＋ per meal → the search (its field focused in the tap: the iPhone's keyboard up) → the amount → ついか; an
+  // entry → its amount at once (from its snapshot; the catalog's portions swapped in when they come) → ほぞん / けす
+  // (けす with とりけす in its banner; a いつもの's entry: the day leaves the repeat only then, detachDay, so ‹ changes
+  // nothing); ✎ → the kcal goal; a meal's 🔁 → いつもの (its repeat, or a new one from the day's entries). Those push a
+  // level (FoodSheet's title bar: its ‹; back where it was scrolled, the focus on what opened it, as けんこう's).
+  // Anyone else's day is read-only. データの出典 at the foot. Whose day sits in the title bar (`lead`, FoodSheet's
+  // NavBar; kept for the session as けんこう's); under it the tabs (TABS, けんこう's group switch): きろく (the day,
+  // on each opening), グラフ (FoodChart: the kcal over a period, けんこう's period dropdown, its range row and its Move
+  // card; switching whose keeps the tab, the period and the range) and レシピ (マイレシピ, FoodRecipes: everyone's recipes, no whose; a recipe → its level,
   // FoodRecipe: mine to edit, anyone else's to copy; ごはんに ついか → its amount → an entry on the day shown).
   import '#lib/i18n/food.ts'; // the meal log's strings, loaded with it
   import '#lib/i18n/kenkou.ts'; // けんこう's: the period dropdown
+  import { flushSync, tick, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
-  import { KCAL_GOAL, MEALS, type FoodEntry, type Meal } from '#lib/contract/food.ts';
+  import { KCAL_GOAL, MEALS, type FoodEntry, type FoodSnap, type Meal } from '#lib/contract/food.ts';
   import { foodDay, foodEntries, kcalGoal, proteinGoal, recipes, repeatOn, repeats, type Recipe } from '#lib/model/food.ts';
   import {
     detachDay, editFood, logFood, logRecipe, removeFood, removeRecipe, saveRecipe, setKcalGoal, startRepeat, stopRepeat, updateRepeat
@@ -20,7 +24,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { addDays } from '#lib/time/dates.ts';
-  import { t } from '#lib/i18n/index.ts';
+  import { formatNum, t } from '#lib/i18n/index.ts';
   import { PERIODS, type Period } from '#lib/model/health.ts';
   import { FOOD_TAB_ART } from '#lib/art.ts';
   import Segmented from '../ui/Segmented.svelte';
@@ -28,7 +32,7 @@
   import Pick from '../health/Pick.svelte';
   import FoodChart from './FoodChart.svelte';
   import { cue } from '#lib/sound/cues.ts';
-  import { toSnap, type FoodDb, type Item } from '#lib/food/index.ts';
+  import { toSnap, type Item } from '#lib/food/index.ts';
   import ValueInput from '../health/ValueInput.svelte';
   import { dayTitle } from '../kiroku/fmt.ts';
   import FoodSummary from './FoodSummary.svelte';
@@ -39,9 +43,13 @@
   import FoodRepeat from './FoodRepeat.svelte';
   import FoodRecipes from './FoodRecipes.svelte';
   import FoodRecipe from './FoodRecipe.svelte';
-  import { DAYS, foodDb, itemOf, mealAt, parseKcalGoal, recentOf, recipeItem, type RecipeDraft } from './foodUi.ts';
+  import {
+    DAYS, foodDb, foodDbNow, foodLast, itemOf, KCAL_GOAL_MIN, mealAt, parseKcalGoal, recentOf, recipeItem, sameItems, type RecipeDraft
+  } from './foodUi.ts';
 
-  let { title = $bindable(''), back = $bindable(null) }: { title?: string; back?: (() => void) | null } = $props();
+  let { title = $bindable(''), back = $bindable(null), lead = $bindable(null) }: {
+    title?: string; back?: (() => void) | null; lead?: Snippet | null
+  } = $props();
 
   const m = $derived(week.model);
   const view = $derived(week.view);
@@ -70,13 +78,16 @@
     period = p;
   }
 
-  let picked = $state<Who | null>(null);
-  const who = $derived<Who>(picked ?? me);
-  const mine = $derived(who === me);
+  let picked = $state<Who | null>(foodLast.who);
+  const who = $derived<Who>(picked && order.includes(picked) ? picked : me);
   /** The day shown (null: today, following the clock). */
   let picked_d = $state<LocalDate | null>(null);
   const today = $derived(view?.today ?? '');
   const date = $derived(picked_d ?? today);
+  /** My own day, up to today: ＋ and the entries take taps (tomorrow's いつもの is only shown). */
+  const mine = $derived(who === me && date <= today);
+  /** › goes on past today only to tomorrow, and only when a いつもの fills it (a look at what comes). */
+  const canOn = $derived(date < today || (!!m && date === today && foodDay(m.state, who, addDays(today, 1)).entries.some((e) => e.rep)));
 
   const day = $derived(m && date ? foodDay(m.state, who, date) : null);
   const goal = $derived(m ? kcalGoal(m.state, who) : null);
@@ -97,6 +108,8 @@
     | { k: 'rlog'; r: Recipe; meal?: Meal };
   let stack = $state<Level[]>([]);
   const top = $derived(stack.at(-1) ?? null);
+  /** Under each level: where the one below was scrolled and what opened it (`[data-add="b"]`), restored on ‹. */
+  let under: { top: number; focus: string | null }[] = [];
   let scroller: Element | null = null;
   let root: HTMLElement | undefined = $state();
   $effect(() => {
@@ -104,75 +117,114 @@
       : top.k === 'recipe' ? t(top.id ? 'food.rcp.title' : 'food.rcp.new') : top.k === 'rsearch' ? t('food.rcp.addItem')
       : top.k === 'ritem' ? t('food.rcp.item') : top.k === 'rlog' ? t('food.rcp.log') : t(`food.meal.${top.meal}`);
     back = top ? up : null;
+    lead = !top && tab !== 'recipe' ? whoPill : null;
   });
-  function go(l: Level) {
+  const sheet = () => (scroller ??= root?.closest('[data-food-sheet]') ?? null);
+  /** Push a level; `focus`: what opened it (a selector, found again once the level below is back: Safari never
+   *  focuses a tapped button, so it is named, not read off document.activeElement). */
+  function go(l: Level, focus: string | null = null) {
+    under = [...under.slice(0, stack.length), { top: sheet()?.scrollTop ?? 0, focus }];
     stack = [...stack, l];
-    scroller ??= root?.closest('[data-food-sheet]') ?? null;
-    scroller?.scrollTo({ top: 0 });
+    void tick().then(() => sheet()?.scrollTo({ top: 0 }));
+  }
+  /** Back to the level `n` deep (0: the day), where it was scrolled, the focus on what opened the one left. */
+  function backTo(n: number) {
+    const was = under[n];
+    stack = stack.slice(0, n);
+    under = under.slice(0, n);
+    if (!was) return;
+    void tick().then(() => {
+      sheet()?.scrollTo({ top: was.top });
+      if (was.focus) root?.querySelector<HTMLElement>(was.focus)?.focus({ preventScroll: true });
+    });
   }
   function up() {
     cue('back');
-    stack = stack.slice(0, -1);
+    backTo(stack.length - 1);
   }
-  const home = () => (stack = []);
+  const home = () => backTo(0);
 
   function setWho(w: Who) {
     if (w === who || !order.includes(w)) return;
     cue('tick');
-    picked = w;
+    picked = foodLast.who = w;
   }
   function shift(dir: -1 | 1) {
-    if (dir > 0 && date >= today) return;
+    if (dir > 0 && !canOn) return;
     const next = addDays(date, dir);
-    picked_d = next >= today ? null : next;
+    picked_d = next === today ? null : next;
+  }
+  /** ＋: the search, its field focused in this same tap (iOS raises the keyboard only for a focus inside the gesture). */
+  function openSearch(meal: Meal) {
+    go({ k: 'search', meal }, `[data-add="${meal}"]`);
+    flushSync();
+    root?.querySelector<HTMLInputElement>('[data-food-q]')?.focus({ preventScroll: true });
   }
 
   function add(item: Item, meal: Meal, g0?: number, u0?: string) {
     go({ k: 'amount', meal, item, g0, u0 });
   }
-  /** An entry of mine → its amount, with the catalog's portions for it (once the catalog is in). A repeat's: the day
-   *  leaves the repeat first (its items become the day's own, in one go), then the amount opens on the real one. */
-  function edit(v: FoodEntry) {
-    const e = v.rep ? real(v) : v;
-    if (!e) return;
-    const open = (db: FoodDb | null) => go({ k: 'amount', meal: e.m, item: itemOf(e.f, db), g0: e.g, u0: e.f.u, entry: e });
-    foodDb().then(open, () => open(null));
+  /** A confirmation inside the sheet: short, docked low (never over the level it lands on). */
+  const said = (key: string, vars: Record<string, string> = {}, sad = false) => toasts.show(t(key, vars), 2200, { low: true, ...(sad ? {} : { reaction: 'pleased' }) });
+  /** An entry of mine → its amount at once, from its snapshot (its own portion); the catalog's portions swapped in
+   *  when it comes. A いつもの's entry stays the repeat's until ほぞん / けす (real()). */
+  function edit(e: FoodEntry) {
+    openSnap({ k: 'amount', meal: e.m, item: itemOf(e.f, foodDbNow(), e.g), g0: e.g, u0: e.f.u, entry: e }, e, `[data-entry="${e.id}"]`);
   }
-  function real(v: FoodEntry & { rep?: string }): FoodEntry | null {
-    const id = v.rep && detachDay(v.rep, date)?.[v.id];
+  /** An amount level for a logged snapshot, open at once; the catalog's item put in when it is in (if still open). */
+  function openSnap(l: Extract<Level, { item: Item }>, x: { g: number; f: FoodSnap }, focus: string) {
+    go(l, focus);
+    if (foodDbNow()) return;
+    const lv = stack.at(-1);
+    foodDb().then((db) => {
+      if (lv && 'item' in lv && stack.includes(lv)) lv.item = itemOf(x.f, db, x.g);
+    }, () => {});
+  }
+  /** The entry to change: a いつもの's leaves the repeat now (the day's items its own, in one go), the real one. */
+  function real(v: FoodEntry): FoodEntry | null {
+    if (!v.rep) return v;
+    const id = detachDay(v.rep, date)?.[v.id];
     return (id && m && foodEntries(m.state, me).find((e) => e.id === id)) || null;
   }
   function done(l: Extract<Level, { k: 'amount' }>, v: { m: Meal; g: number; u: string | null }) {
+    const e = l.entry && real(l.entry);
     if (l.entry) {
-      if (editFood(l.entry.id, { m: v.m, g: v.g, u: v.u }).ok) toasts.show(t('food.saved'), 2000, { reaction: 'pleased' });
+      if (e && editFood(e.id, { m: v.m, g: v.g, u: v.u }).ok) said('food.saved');
     } else if (logFood({ d: date, m: v.m, g: v.g, f: toSnap(l.item, v.u ?? undefined) }).ok) {
-      toasts.show(t('food.added', { meal: t(`food.meal.${v.m}`), name: l.item.name }), 2500, { reaction: 'pleased' });
+      said('food.added', { meal: t(`food.meal.${v.m}`) });
     }
     home();
   }
-  function remove(e: FoodEntry) {
-    if (removeFood(e.id).ok) toasts.show(t('food.removed', { name: e.f.n }), 2500);
+  /** けす, one tap: its banner's とりけす logs it again (a removal is final: the same food, day, meal and grams). */
+  function remove(v: FoodEntry) {
+    const e = real(v);
+    if (e && removeFood(e.id).ok) {
+      cue('undo');
+      toasts.show(t('food.removed', { name: e.f.n }), 5000, {
+        action: { label: t('common.undo'), run: () => void logFood({ d: e.d, m: e.m, g: e.g, f: e.f }) }
+      });
+    }
     home();
   }
   const mealName = (k: Meal) => t(`food.meal.${k}`);
   function repStart(meal: Meal, w: number) {
-    if (startRepeat({ meal, date, w }).ok) toasts.show(t('food.rep.started', { meal: mealName(meal) }), 2500, { reaction: 'pleased' });
+    if (startRepeat({ meal, date, w }).ok) said('food.rep.started', { meal: mealName(meal) });
     home();
   }
   function repDays(id: string, w: number) {
-    if (updateRepeat(id, { w }).ok) toasts.show(t('food.rep.daysSaved'), 2500, { reaction: 'pleased' });
+    if (updateRepeat(id, { w }).ok) said('food.rep.daysSaved');
     home();
   }
   function repFromDay(id: string) {
-    if (updateRepeat(id, { itemsFromDate: date }).ok) toasts.show(t('food.rep.fromDaySaved'), 2500, { reaction: 'pleased' });
+    if (updateRepeat(id, { itemsFromDate: date }).ok) said('food.rep.fromDaySaved');
     home();
   }
   function repStop(id: string, meal: Meal) {
-    if (stopRepeat(id).ok) toasts.show(t('food.rep.stopped', { meal: mealName(meal) }), 2500);
+    if (stopRepeat(id).ok) said('food.rep.stopped', { meal: mealName(meal) }, true);
     home();
   }
   function saveGoal(v: number | null) {
-    if (setKcalGoal(me, v).ok) toasts.show(t(v === null ? 'food.goalCleared' : 'food.goalSaved'), 2500, { reaction: 'pleased' });
+    if (setKcalGoal(me, v).ok) said(v === null ? 'food.goalCleared' : 'food.goalSaved');
     home();
   }
 
@@ -183,12 +235,12 @@
   let savedAs = $state<string | null>(null);
   const clean = $derived(savedAs !== null && savedAs === JSON.stringify(draft));
   const ownerOf = (r: Recipe) => ({ who: r.who, name: names[r.who], villager: villagerOf(r.who) });
-  const toRecipeLevel = () => (stack = stack.slice(0, stack.findIndex((l) => l.k === 'recipe') + 1));
+  const toRecipeLevel = () => backTo(stack.findIndex((l) => l.k === 'recipe') + 1);
 
   function openRecipe(r: Recipe | null) {
     draft = r ? { n: r.n, sv: r.sv, it: r.it.map((x) => ({ ...x })) } : { n: '', sv: 2, it: [] };
     savedAs = r ? JSON.stringify(draft) : null;
-    go({ k: 'recipe', id: r?.id ?? null });
+    go({ k: 'recipe', id: r?.id ?? null }, r ? `[data-recipe-open="${r.id}"]` : '[data-recipe-new]');
   }
   function itemDone(l: Extract<Level, { k: 'ritem' }>, v: { g: number; u: string | null }) {
     const x = { g: v.g, f: toSnap(l.item, v.u ?? undefined) };
@@ -202,15 +254,14 @@
   }
   function editItem(i: number) {
     const x = draft.it[i];
-    const open = (db: FoodDb | null) => go({ k: 'ritem', item: itemOf(x.f, db), g0: x.g, u0: x.f.u, i });
-    foodDb().then(open, () => open(null));
+    openSnap({ k: 'ritem', item: itemOf(x.f, foodDbNow(), x.g), g0: x.g, u0: x.f.u, i }, x, `[data-recipe-item="${i}"]`);
   }
   function recipeSave(id: string | null) {
-    if (saveRecipe({ id: id ?? undefined, n: draft.n, sv: draft.sv, it: draft.it }).ok) toasts.show(t('food.rcp.saved', { name: draft.n.trim() }), 2000, { reaction: 'pleased' });
+    if (saveRecipe({ id: id ?? undefined, n: draft.n, sv: draft.sv, it: draft.it }).ok) said('food.rcp.saved', { name: draft.n.trim() });
     home();
   }
   function recipeRemove(id: string) {
-    if (removeRecipe(id).ok) toasts.show(t('food.rcp.removed', { name: draft.n }), 2000);
+    if (removeRecipe(id).ok) said('food.rcp.removed', { name: draft.n }, true);
     home();
   }
   /** Someone else's → a recipe of mine with its name, servings and ingredients, opened in the editor. */
@@ -219,21 +270,29 @@
     if (!res.ok || !res.id) return;
     savedAs = JSON.stringify(draft);
     stack = [...stack.slice(0, -1), { k: 'recipe', id: res.id }];
-    toasts.show(t('food.rcp.copied'), 2000, { reaction: 'pleased' });
+    said('food.rcp.copied');
   }
   /** A recipe logged as a meal of mine on the day shown; from the レシピ tab, きろく then shows it on my day. */
   function recipeLog(l: Extract<Level, { k: 'rlog' }>, v: { m: Meal; g: number; u: string | null }) {
-    if (logRecipe({ recipeId: l.r.id, d: date, m: v.m, g: v.g, u: v.u ?? undefined }).ok) {
-      toasts.show(t('food.added', { meal: mealName(v.m), name: l.r.n }), 2000, { reaction: 'pleased' });
+    if (logRecipe({ recipeId: l.r.id, d: date > today ? today : date, m: v.m, g: v.g, u: v.u ?? undefined }).ok) {
+      said('food.added', { meal: mealName(v.m) });
     }
-    picked = null;
+    picked = foodLast.who = null;
     tab = 'log';
     home();
   }
 </script>
 
+{#snippet whoPill()}
+  <!-- whose day, in the title bar (NavBar's lead; on きろく and グラフ: レシピ is everyone's) -->
+  <Pick kind="who" value={who} options={order.map((id) => ({ id, label: names[id] }))} label={t('food.who')} onpick={setWho}
+    person={{ p: who, villager: villagerOf(who) }} compact />
+{/snippet}
+
 <div class="food" bind:this={root}>
   {#if m && view && day}
+    <!-- a level slides in (けんこう's .lvl); the day comes back as it was -->
+    {#key stack.length}<div class="lv" class:lvl={!!top}>
     {#if top?.k === 'search'}
       {@const meal = top.meal}
       <FoodSearch {recent} onpick={(item, g, u) => add(item, meal, g, u)} recipes={allRecipes} {names} onrecipe={(r) => go({ k: 'rlog', r, meal })} />
@@ -247,9 +306,9 @@
       {@const r = id ? allRecipes.find((x) => x.id === id) : undefined}
       {@const theirs = r && r.who !== me ? r : null}
       {#key id}
-        <FoodRecipe bind:draft owner={theirs ? ownerOf(theirs) : null} saved={!!r && !theirs} clean={clean} onadd={() => go({ k: 'rsearch' })}
+        <FoodRecipe bind:draft owner={theirs ? ownerOf(theirs) : null} saved={!!r && !theirs} clean={clean} onadd={() => go({ k: 'rsearch' }, '[data-recipe-add]')}
           onitem={editItem} onsave={() => recipeSave(id)} onremove={() => id && recipeRemove(id)} oncopy={recipeCopy}
-          onlog={() => theirs && go({ k: 'rlog', r: theirs })} />
+          onlog={() => theirs && go({ k: 'rlog', r: theirs }, '[data-recipe-log]')} />
       {/key}
     {:else if top?.k === 'rsearch'}
       <FoodSearch {recent} onpick={(item, g, u) => go({ k: 'ritem', item, g0: g, u0: u })} />
@@ -270,7 +329,7 @@
       {@const shown = byMeal(meal)}
       {#key r?.id}
         {#if r}
-          <FoodRepeat {meal} items={r.it} w0={r.w} live fromDay={shown.length > 0 && (shown.length !== r.it.length || shown.some((e) => e.rep !== r.id))}
+          <FoodRepeat {meal} items={r.it} w0={r.w} live fromDay={shown.length > 0 && !sameItems(shown, r.it)}
             onsavedays={(w) => repDays(r.id, w)} onfromday={() => repFromDay(r.id)} onstop={() => repStop(r.id, meal)} />
         {:else}
           <FoodRepeat {meal} items={shown} w0={DAYS.every} live={false} onstart={(w) => repStart(meal, w)} />
@@ -278,50 +337,51 @@
       {/key}
     {:else if top?.k === 'goal'}
       <ValueInput label={t('food.goal')} sub="" old={goal} unit="kcal" parse={parseKcalGoal}
-        hint={t('food.goalRange', { min: KCAL_GOAL.min, max: KCAL_GOAL.max, step: KCAL_GOAL.step })}
+        hint={t('food.goalRange', { min: formatNum(KCAL_GOAL_MIN), max: formatNum(KCAL_GOAL.max), step: KCAL_GOAL.step })}
         onok={saveGoal} oncancel={up} extra={goal === null ? null : { label: t('food.goalClear'), run: () => saveGoal(null) }} />
     {:else}
       <Segmented items={TABS.map((id) => ({ id, label: t(`food.tab.${id}`), art: FOOD_TAB_ART[id] }))} value={tab} label={t('food.tabs')} attr="tab" onpick={(id) => (tab = id)} />
-      {#if tab !== 'recipe'}
-        <div class="dds" class:two={tab === 'chart'}>
-          <Pick kind="who" value={who} options={order.map((id) => ({ id, label: names[id] }))} label={t('food.who')} onpick={setWho}
-            person={{ p: who, villager: villagerOf(who) }} />
-          <!-- グラフ: けんこう's period dropdown beside whose day, as there -->
-          {#if tab === 'chart'}
-            <Pick kind="period" value={period} options={PERIODS.map((id) => ({ id, label: t(`health.period.${id}`) }))} label={t('health.period')} onpick={setPeriod} />
-          {/if}
+      {#if tab === 'chart'}
+        <!-- グラフ: けんこう's period dropdown at the right end, where けんこう has it (there beside its two-way switch;
+             ごはん's three tabs take the whole row) -->
+        <div class="per">
+          <Pick kind="period" value={period} options={PERIODS.map((id) => ({ id, label: t(`health.period.${id}`) }))} label={t('health.period')} onpick={setPeriod} />
         </div>
       {/if}
 
       {#if tab === 'recipe'}
-        <FoodRecipes list={allRecipes} {names} {villagerOf} onnew={() => openRecipe(null)} onopen={openRecipe} onlog={(r) => go({ k: 'rlog', r })} />
+        <FoodRecipes list={allRecipes} {names} {villagerOf} onnew={() => openRecipe(null)} onopen={openRecipe} onlog={(r) => go({ k: 'rlog', r }, `[data-recipe-log="${r.id}"]`)} />
       {:else if tab === 'chart'}
         <FoodChart {who} name={names[who]} {period} />
       {:else}
-        <RangeNav earlier={t('food.earlier')} later={t('food.later')} today={t('food.today')} canOn={date < today} atToday={picked_d === null}
+        <RangeNav earlier={t('food.earlier')} later={t('food.later')} today={t('food.today')} {canOn} atToday={picked_d === null}
           onback={() => shift(-1)} onon={() => shift(1)} ontoday={() => (picked_d = null)}>
           <b class="rl money" aria-live="polite" data-food-date={date}>{dayTitle(date)}</b>
         </RangeNav>
 
-        <FoodSummary {day} {who} {goal} {protein} onedit={mine ? () => go({ k: 'goal' }) : null} />
+        <FoodSummary {day} {who} {goal} {protein} when={date < today ? 'past' : date > today ? 'next' : 'today'} onedit={mine ? () => go({ k: 'goal' }, '[data-focus="kcal-goal"]') : null} />
         {#each MEALS as k (k)}
           <!-- the 🔁 chip: on my day my repeat still going (a tap manages it), else the one filling the day (shown only);
-               none: 🔁 くりかえす on my today only (from a past day it would fill every day since, today's doubled) -->
+               none: いつものに する on my today only (from a past day it would fill every day since, today's doubled) -->
           {@const live = mine ? liveRepeat(k) : null}
           {@const r = live ?? repeatOn(m.state, who, k, date)}
-          <FoodMeal meal={k} entries={byMeal(k)} {mine} days={r?.w ?? null} onadd={() => go({ k: 'search', meal: k })}
-            onrepeat={mine && (live || (!r && date >= today)) ? () => go({ k: 'repeat', meal: k }) : null} onpick={edit} />
+          <FoodMeal meal={k} entries={byMeal(k)} {mine} days={r?.w ?? null} onadd={() => openSearch(k)}
+            onrepeat={mine && (live || (!r && date === today)) ? () => go({ k: 'repeat', meal: k }, `[data-repeat="${k}"], [data-repeat-new="${k}"]`) : null} onpick={edit} />
         {/each}
         <FoodCredits />
       {/if}
     {/if}
+    </div>{/key}
   {/if}
 </div>
 
 <style>
-  .food { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-bottom: 8px; }
-  /* under the tabs (けんこう's Pick pills; none on レシピ): whose day alone, or (グラフ) beside the period as けんこう's two, whose a little wider */
-  .dds { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
-  .dds.two { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
+  .food { padding-bottom: 8px; }
+  .lv { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  /* a level slides in from the right (design.md "Navigation": one push motion, 240ms; as けんこう's goal level) */
+  .lvl { animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
+  @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
+  /* グラフ's period under the tabs, at the right end, as wide as けんこう's */
+  .per { display: grid; grid-template-columns: auto; justify-content: end; }
   .rl { flex: 1; min-width: 0; text-align: center; font-size: var(--fs-talk); white-space: nowrap; }
 </style>

@@ -1,6 +1,7 @@
 // けんこう (design.md "Kenkou"): the health popup for the trainer (the HUD's dumbbell). Open it, switch the period,
 // page through the history (‹ ›, a drag on a chart, きょう), tap a bar for its numbers, switch whose data (one person
-// at a time: the two dropdowns of row 1, the かつどう / からだ switch under them), 目標 last under the charts (its ✎:
+// at a time: whose data in the title bar left of けんこう, the かつどう / からだ switch with the period beside it), 目標
+// last under the charts (its ✎:
 // demo.spec); on `?demo` and a longer `?demo&weeks=60`, at 390 and 320.
 import { expect, test, type Page } from '@playwright/test';
 
@@ -15,8 +16,8 @@ async function openHealth(page: Page, query = '?demo') {
   await sheet(page).evaluate((d) => Promise.all(d.getAnimations().map((a) => a.finished))); // the zoom in has played
 }
 const range = (page: Page) => sheet(page).locator('.health .nav .rl b');
-/** Row 1's two dropdowns (native selects). */
-const whoSel = (page: Page) => sheet(page).locator('.health select[data-pick=who]');
+/** The two dropdowns (native selects): whose data in the title bar, the period beside かつどう / からだ. */
+const whoSel = (page: Page) => sheet(page).locator('.navbar select[data-pick=who]');
 const periodSel = (page: Page) => sheet(page).locator('.health select[data-pick=period]');
 const pickPeriod = (page: Page, p: string) => periodSel(page).selectOption(p);
 const pickWho = (page: Page, p: string) => whoSel(page).selectOption(p);
@@ -27,17 +28,25 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await expect(sheet(page).locator('[data-group=activity]')).toHaveAttribute('aria-pressed', 'true'); // and on かつどう
   await expect(sheet(page).locator('[data-group]')).toHaveText(['かつどう', 'からだ']);
   await pickPeriod(page, 'month');
-  // two rows of selectors: whose data and the period side by side, then かつどう / からだ, then the range row
-  await expect(sheet(page).locator('.health > *').first()).toHaveClass(/dds/);
-  await expect(sheet(page).locator('.health > .dds select')).toHaveCount(2);
-  await expect(sheet(page).locator('.health > .dds select').first()).toHaveAttribute('data-pick', 'who');
-  await expect(sheet(page).locator('.health > .seg')).toHaveCount(1);
-  await expect(sheet(page).locator('.health > .seg')).toHaveAttribute('aria-label', 'どの データ'); // the group right under them
-  await expect(sheet(page).locator('.health > .dds + .seg + .nav')).toHaveCount(1);
-  const [w, p] = [(await whoSel(page).boundingBox())!, (await periodSel(page).boundingBox())!];
-  expect(Math.abs(w.y - p.y)).toBeLessThan(1); // one row
-  expect(p.x).toBeGreaterThan(w.x + w.width - 1);
-  expect(Math.min(w.height, p.height)).toBeGreaterThanOrEqual(44);
+  // whose data in the title bar, left of けんこう (centred), ✕ at the right; then one row: かつどう / からだ and the
+  // period beside them; then the range row
+  const bar = sheet(page).locator('.navbar');
+  const [w, ttl, x] = [(await whoSel(page).boundingBox())!, (await bar.locator('h2').boundingBox())!, (await bar.locator('button.close').boundingBox())!];
+  await expect(bar.locator('h2')).toHaveText('けんこう');
+  expect(w.x + w.width).toBeLessThanOrEqual(ttl.x + 1); // left of the title
+  expect(Math.abs(w.y + w.height / 2 - (ttl.y + ttl.height / 2))).toBeLessThan(4); // one row
+  const sheetBox = (await sheet(page).boundingBox())!;
+  expect(Math.abs(ttl.x + ttl.width / 2 - (sheetBox.x + sheetBox.width / 2))).toBeLessThan(3); // the title still centred
+  expect(x.x).toBeGreaterThan(ttl.x + ttl.width); // ✕ right of it
+  await expect(sheet(page).locator('.health > *').first()).toHaveClass(/sel/);
+  await expect(sheet(page).locator('.health > .sel > .seg')).toHaveAttribute('aria-label', 'どの データ');
+  await expect(sheet(page).locator('.health > .sel > .seg + .dd select')).toHaveAttribute('data-pick', 'period');
+  await expect(sheet(page).locator('.health > .sel + .nav')).toHaveCount(1);
+  const [g, p] = [(await sheet(page).locator('[data-group=body]').boundingBox())!, (await periodSel(page).boundingBox())!];
+  expect(Math.abs(g.y - p.y)).toBeLessThan(3); // one row
+  expect(p.x).toBeGreaterThan(g.x + g.width - 1);
+  expect(Math.min(w.height, p.height, g.height)).toBeGreaterThanOrEqual(44);
+  expect(p.x + p.width).toBeLessThanOrEqual(sheetBox.x + sheetBox.width); // nothing past the edge at 393
   await expect(whoSel(page).locator('option')).toHaveText(['ウェイ', 'うめ']);
   await expect(periodSel(page).locator('option')).toHaveText(['1週', '1か月', '3か月', '1年']);
   await expect(periodSel(page)).toHaveAccessibleName('きかん');
@@ -75,7 +84,7 @@ test('whose data: this phone’s person by default; switching changes the number
   await openHealth(page, '?demo&as=B');
   await expect(whoSel(page)).toHaveValue('B'); // うめ's phone: うめ
   await expect(whoSel(page).locator('option')).toHaveText(['うめ', 'ウェイ']); // me first
-  await expect(sheet(page).locator('.health .dd.who')).toHaveAttribute('data-who', 'B');
+  await expect(sheet(page).locator('.navbar .dd.who')).toHaveAttribute('data-who', 'B');
   const steps = sheet(page).locator('.mc[data-metric=steps]');
   await expect(steps).toHaveAttribute('data-person', 'B');
   await expect(steps.locator('path.bar.pA')).toHaveCount(0);
@@ -87,7 +96,7 @@ test('whose data: this phone’s person by default; switching changes the number
   const barB = await fill();
   await pickWho(page, 'A');
   await expect(whoSel(page)).toHaveValue('A');
-  await expect(sheet(page).locator('.health .dd.who')).toHaveAttribute('data-who', 'A'); // the avatar and swatch follow
+  await expect(sheet(page).locator('.navbar .dd.who')).toHaveAttribute('data-who', 'A'); // the avatar and swatch follow
   await expect(steps).toHaveAttribute('data-person', 'A');
   await expect(steps.locator('path.bar.pB')).toHaveCount(0);
   await expect(steps.locator('path.bar.pA')).not.toHaveCount(0);

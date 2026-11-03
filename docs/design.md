@@ -175,13 +175,16 @@ The ベル ledger (`model/history.ts`, `components/kiroku/*`), read-only, in [�
 height like the panel, title けんこう and ✕, ‹ while a goal's field is open; ✕, the backdrop and Esc close it): the
 Health data over time for the personal trainer, one person at a time, computed on read, and the goals under it. Its code and strings load with the first opening.
 
-- **Two rows of selectors.** Row 1: whose data and the period, one native `<select>` each side by side (iOS's own
-  picker; a cream pill ≥ 44px with a chevron, 16px type so Safari doesn't zoom; labelled 「だれの データ」 and 「きかん」).
-  Whose data: the two members, this phone's person first and chosen on opening, kept for the session; its pill shows
-  the person's avatar and a stroke of their colour. The period: 1週 · 1か月 · 3か月 · 1年 (1週 on every opening).
-  Row 2: かつどう · からだ, two pills, each with an NH icon (`art.ts` GROUP_ART: the cute sneakers, the dreamy bear
-  toy) (かつどう on every opening, like the period; switching keeps the period, the
-  range and whose data; the guest has neither: かつどう only).
+- **The selectors** (the user: "move the user selector to the left of the title in the same row … move the time
+  period selector to the same row as katsudou and karada"). Whose data sits in the title bar, left of けんこう
+  (NavBar's `lead`: the title stays centred, ✕ at the right; a goal's level puts ‹ in its place): one native
+  `<select>` (iOS's own picker; a cream pill ≥ 44px with a chevron, 16px type so Safari doesn't zoom; 「だれの データ」),
+  compact (`Pick` `compact`: the avatar, the name, a stroke of their colour; at 320 the name without the avatar).
+  The two members, this phone's person first and chosen on opening, kept for the session. Then one row: かつどう ·
+  からだ, two pills, each with an NH icon (`art.ts` GROUP_ART: the cute sneakers, the dreamy bear toy), and the
+  period beside them, a dropdown as wide as its longest option (「きかん」: 1週 · 1か月 · 3か月 · 1年). 1週 and
+  かつどう on every opening; switching either keeps the other, the range and whose data; the guest has no switch
+  (かつどう only), the period alone at the row's right end.
 - **Then** a sticky row: ‹ the visible range (「10/2–10/31」; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」
   under it) › and きょう.
 - **Cards, per group** (`model/health.ts` GROUPS and CARDS, the user's "activity metrics and body metrics"): かつどう
@@ -225,40 +228,54 @@ Health data over time for the personal trainer, one person at a time, computed o
 ### Gohan
 
 ごはん, the meal log (`model/food.ts`, `components/food/*`, `lib/food/`, `e2e/food.spec.ts`; the data in
-`static/food/`): the HUD's middle button (NH's ramen bowl, `items/dinner`) grows it out of the bowl like けんこう (full
-height, title ごはん and ✕; ‹ while a level is open). What each of us ate, typed in by hand; it never earns ベル.
+`static/food/`): the HUD's bowl button (NH's ramen bowl, `items/dinner`, set 3px below the pill's centre so the bowl,
+not its nori, sits mid-pill) grows it out of the bowl like けんこう (full height; whose day, title ごはん and ✕; ‹ in
+whose place while a level is open). What each of us ate, typed in by hand; it never earns ベル.
 Everyone sees everyone's meals, the guest's phone too; only the owner changes an entry. Its code, its strings
 (`i18n/food.*.json`) and the food data load with the first opening (the data only with the first search).
 
 - **Tabs:** first, right under the title bar (stable across tabs), けんこう's group switch (`ui/Segmented`, a list
-  of tabs: `Food.svelte` TABS): きろく (on each opening) · グラフ (`FoodChart`) · レシピ (`FoodRecipes`). Under it, per
-  tab: きろく whose day then the day row, グラフ whose day and the period then the range row, レシピ no whose (the
-  recipes are everyone's). Switching whose keeps the tab.
-- **Whose day (きろく, グラフ):** one native dropdown (けんこう's pill): this phone's person first and chosen on each
-  opening, then the others (the guest once it has logged a meal, or on its own phone). Then (きろく) a sticky row:
-  ‹ the day (「11/4(水)」) › and きょう; no day after today.
-- **Summary card:** この日の カロリー, the day's kcal large; with the person's goal (`pref kcalGoal`, 1,000–5,000 by
-  50; none until set) 「目標 2,200 kcal」, a bar in the person's colour and あと N kcal / N kcal オーバー. Then
-  たんぱく質 · 脂質 · 炭水化物 · 塩分 in grams, protein with 「目標 N g」 (1.6 g × the latest weigh-in; members with
-  a weight only). On my day ✎ sets my goal (きろく's goal field, with 目標をなくす).
+  of tabs: `Food.svelte` TABS): きろく (on each opening; its icon NH's rice cooker, `art.ts` FOOD_TAB_ART: the plate
+  meal before it was a blur at 22px) · グラフ (`FoodChart`) · レシピ (`FoodRecipes`). Under it, per tab: きろく the day
+  row, グラフ the period (at the row's right end, where けんこう has it; the three tabs take the whole row) then the
+  range row, レシピ nothing (the recipes are everyone's: no whose either). Switching whose keeps the tab.
+- **Whose day (きろく, グラフ):** in the title bar left of ごはん, as けんこう's (the same compact pill): this phone's
+  person first, then the others (the guest once it has logged a meal, or on its own phone); kept for the session.
+  Then (きろく) a sticky row: ‹ the day (「11/4(水)」) › and きょう; › goes past today only to tomorrow, and only when a
+  いつもの fills it (read-only: a look at what comes).
+- **Summary card:** この日の カロリー, the day's kcal large; with the person's goal (`pref kcalGoal`, 1,200–5,000 by
+  50 in the field, the record takes 1,000+; none until set) 「目標 2,200 kcal」, a bar in the person's colour and,
+  today, あと N kcal / N kcal オーバー, a past day 目標より N kcal 少なめ / 多め; coral only past 20 % over (the lifter's
+  surplus is no fault). Then たんぱく質 · 脂質 · 炭水化物 · 塩分 in grams, protein with 「目標 N g 以上」 (1.6 g × the
+  latest weigh-in; members with a weight only). A day with nothing logged: no tiles; a past one 「きろく なし」 (not
+  0 kcal). On my day ✎ sets my goal (`health/ValueInput`, with 目標をなくす).
 - **Meals:** 朝ごはん · 昼ごはん · 夜ごはん · おやつ, a card each with its kcal and a row per entry (the food, its
-  amount 「茶碗1杯（150g）」, kcal). On my day ＋ → the search, an entry → its amount; anyone else's day is read-only.
-- **Search:** a 16px field (no search mid-IME composition); empty, 最近 (my latest entry of each food, as I had it);
-  typed, the best matches: the name, ✓n when n independent sources agree on its kcal, kcal per 100 g, and its
-  default portion's kcal.
-- **Amount:** the food's values per 100 g; its portions as chips (100 g last), −/＋ by half a portion, a grams field
-  (typing grams leaves the portions); kcal and P/F/C/salt live; which meal; 追加, or 保存 / 削除 for my entry.
+  amount in one format, a weight once: 「茶碗1杯（150g）」, 「1パック（110g）」, 「中ジョッキ×2（700ml）」; kcal). On my
+  day ＋ → the search (its field focused in the same tap, so the iPhone's keyboard comes up), an entry → its amount
+  at once (from its snapshot: its own portion; the catalog's portions swapped in when they come); anyone else's day is
+  read-only. Levels slide in (240 ms, as けんこう's); ‹ comes back where the day was scrolled, the focus on what
+  opened it. Confirmations are short (「夜ごはんに ついかしました」) and docked low, never over the level they land on.
+- **Search:** a 16px field (no search mid-IME composition), its ✕ the app's 44px lipped round button; empty,
+  さいきん (my latest entry of each food, as I had it); typed, the best matches: the name, ✓n when n independent
+  sources agree on its kcal, a product's brand and kcal per 100 g, and its default portion (with its weight) and kcal;
+  the same name, brand and kcal shown once. ー counts (カレー is not かれい). Offline: 「データを よみこめませんでした
+  （オフライン？）」, もういちど, and さい��ん still under it (a recent pick keeps its portion).
+- **Amount:** the food's values per 100 g; its portions as chips (100 g last), −/＋ by a whole portion for the things
+  counted (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック · ジョッキ …) and by half for 茶碗, 人前 and weights (±10 g once
+  grams are typed), a grams field (ml for a drink; typing grams leaves the portions); kcal and P/F/C/salt live; which
+  meal; ついか, or ほぞん / けす for my entry (けす at once, its banner's とりけす logs it again).
 - **いつもの (a repeat):** a meal eaten the same way on set weekdays. Its items fill each day it covers, marked with
   the drawn 🔁 (`RepeatMark`, not an emoji) on each row, and count like any entry; everyone sees them. Its days sit in
   the meal's header as a chip (毎日 · 平日 · 週末 · 月水金…), on my day a tap → the repeat level (`FoodRepeat`):
   the weekdays (毎日 · 平日 · 週末, then 月〜日 one by one; one stays on), what it holds with the kcal sum, and
-  くりかえしを やめる (asked twice: ほんとうに やめる？; past days keep theirs), この日の内容で くりかえす (when that day
-  differs) and 曜日を保存 (both from tomorrow). On my today a meal with entries and no repeat ends with 🔁 くりかえす →
-  the same level, 毎日 first, 「くりかえす」 (the day looks the same, its items now the repeat's). Tapping one of
-  its items edits that day only: the day leaves the repeat (its items become its own, in one go) and the amount opens.
+  いつものを やめる (asked twice: ほんとうに やめる？; past days keep theirs), この日の内容を いつものに する (when that
+  day's foods or amounts differ, not its entries' ids) and 曜日を ほぞん (both from tomorrow). On my today a meal with
+  entries and no repeat ends with a small 「いつものに する」 link → the same level, 毎日 first, 「いつものに する」 (the
+  day looks the same, its items now the repeat's). One name, いつもの, for the title, the chip, the marks and the
+  verbs. Tapping one of its items opens it; ほぞん or けす changes that day only: the day leaves the repeat then (its
+  items become its own, in one go; unmarked under the same chip); ‹ changes nothing.
 - **グラフ (the グラフ tab;** the user: "show total calories over different periods of time … also show average line …
-  also add in the calories burned graph"**):** けんこう's period dropdown beside whose day (both `health/Pick`, as
-  けんこう's row 1), its range row (`health/RangeNav`, swipe paging), then たべた カロリー (`FoodIntake`, けんこう's
+  also add in the calories burned graph"**):** けんこう's period dropdown (`health/Pick`) under the tabs, its range row (`health/RangeNav`, swipe paging), then たべた カロリー (`FoodIntake`, けんこう's
   `BarChart` and MetricCard's layout; `model/food.ts` foodSeries, one pass over the record up to today, read by
   health.ts's bucket and stat rules): a bar per day (foodDay's total, repeats included) or per week / month (the daily
   average of its days with a meal), every bar solid in the person's colour (no goal-met shading: the kcal goal isn't
@@ -274,7 +291,7 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   けす？) and ほぞん (waiting until something changed). Anyone else's: the same read-only, 「〇〇の レシピ」, with
   「コピーして へんしゅう」 (a recipe of mine, opened in the editor) and 「ごはんに ついか」. ごはんに ついか opens the amount
   for the recipe as a food (1人前 first, ぜんぶ, 100 g; the meal the clock suggests) and logs an ordinary entry of mine
-  on the day shown in きろく, which it then shows. A meal's search lists マイレシピ too: all after 最近, the matching ones
+  on the day shown in きろく, which it then shows. A meal's search lists マイレシピ too: all after さいきん, the matching ones
   above the catalog's; one → the same amount.
 - **データの出典** at the foot: each dataset's label, attribution and license (the data's licenses ask for it).
 - Food names come from the data, so their kanji are not all in the trimmed Zen Maru subset: those fall back to the

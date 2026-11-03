@@ -1,20 +1,31 @@
 // ごはん's small helpers (docs/design.md "Gohan"): the catalog loaded once a session, an entry's amount in words, the
-// food an entry was logged from (its catalog item when the catalog has it, for its portions), the 最近 list, and a
-// repeat's weekdays in words, and a recipe as a food (マイレシピ: its portions) and the meal the clock suggests.
+// food an entry was logged from (its catalog item when the catalog has it, for its portions; else its own portion), the
+// さいきん list, a portion's start and step, whose day kept for the session, a repeat's weekdays in words, and a recipe
+// as a food (マイレシピ: its portions) and the meal the clock suggests.
+import type { Who } from '#lib/types.ts';
 import { FOOD_GRAMS, isKcalGoal, recipePortion, recipeSnap, type FoodEntry, type FoodSnap, type Meal, type RepeatItem } from '#lib/contract/food.ts';
 import type { Recipe } from '#lib/model/food.ts';
 import { ZONE_OFFSET_MS } from '#lib/time/dates.ts';
 import { loadFoodDb, portionsOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
-import { t } from '#lib/i18n/index.ts';
+import { formatNum, t } from '#lib/i18n/index.ts';
 
 let dbP: Promise<FoodDb> | null = null;
+let ready: FoodDb | null = null;
 /** The food catalog, fetched on the first search of the session (a failure lets the next one try again). */
 export function foodDb(): Promise<FoodDb> {
-  return (dbP ??= loadFoodDb().catch((e: unknown) => {
-    dbP = null;
-    throw e;
-  }));
+  return (dbP ??= loadFoodDb().then(
+    (db) => (ready = db),
+    (e: unknown) => {
+      dbP = null;
+      throw e;
+    }
+  ));
 }
+/** The catalog if it is in already (else null: open from the snapshot, swap the catalog's portions in later). */
+export const foodDbNow = (): FoodDb | null => ready;
+
+/** Whose day ごはん shows (null: this phone's person), kept for the session as けんこう's (healthLast). */
+export const foodLast: { who: Who | null } = { who: null };
 
 /** Grams as typed: one decimal at most, no trailing `.0`. */
 export const gramsText = (g: number): string => String(Math.round(g * 10) / 10);
@@ -22,15 +33,40 @@ export const gramsText = (g: number): string => String(Math.round(g * 10) / 10);
 /** Whether a portion label already says its weight (「1枚(60g)」, 「200ml」): no second （Ng） after it. */
 export const hasWeight = (label: string): boolean => /\d\s*(g|ml|グラム)/i.test(label.normalize('NFKC'));
 
-/** An entry's amount: the portion it was picked by and its grams (「茶碗1杯（150g）」; the label alone when it says its
- *  weight), or the grams alone. */
-export const amountText = (e: Pick<FoodEntry, 'g' | 'f'>): string =>
-  e.f.u ? (hasWeight(e.f.u) && !e.f.u.includes('×') ? e.f.u : `${e.f.u}（${gramsText(e.g)}g）`) : `${gramsText(e.g)}g`;
+/** A portion label's measure: ml for a drink's (「中ジョッキ（350ml）」, 「200ml」), else g. */
+export const unitOf = (label: string | null | undefined): 'g' | 'ml' => (label && /\d\s*ml|ミリリットル/i.test(label.normalize('NFKC')) ? 'ml' : 'g');
 
-/** A logged snapshot as a catalog item: the catalog's own when it has it (its portions), else the snapshot's values. */
-export function itemOf(f: FoodSnap, db: FoodDb | null): Item {
+/** A label's own weight in brackets (「（110g）」, 「(350ml)」), dropped when a ×n makes it wrong. */
+const OWN_WEIGHT = /[（(][^（）()]*\d\s*(g|ml|グラム)[^（）()]*[）)]/gi;
+
+/** A portion in words, the one format everywhere: its label and its weight once (「茶碗1杯（150g）」, 「中ジョッキ（350ml）」,
+ *  「1パック（110g）」), ×n with the total (「1パック×2（220g）」), never a weight twice; no label: the weight alone. */
+export function portionText(label: string | null | undefined, g: number, unit: 'g' | 'ml' = unitOf(label)): string {
+  const w = `${gramsText(g)}${unit}`;
+  if (!label) return w;
+  const [base, x] = label.split('×');
+  if (!x) return hasWeight(label) ? label : `${label}（${w}）`;
+  const bare = base.replace(OWN_WEIGHT, '').trim();
+  return !bare || /^\d+(\.\d+)?\s*(g|ml)$/i.test(bare.normalize('NFKC')) ? w : `${bare}×${x}（${w}）`;
+}
+
+/** An entry's amount: the portion it was picked by and its weight (portionText), or the weight alone. */
+export const amountText = (e: Pick<FoodEntry, 'g' | 'f'>): string => portionText(e.f.u, e.g);
+
+/** A logged snapshot as a catalog item: the catalog's own when it has it (its portions), else the snapshot's values
+ *  and, with its grams `g`, the portion it was logged by (「茶碗1杯」 of 150 g; offline, a recipe's 1人前). */
+export function itemOf(f: FoodSnap, db: FoodDb | null, g?: number): Item {
   const it = db?.entries.find((e) => e.it.id === f.id)?.it;
-  return { ...(it ?? {}), id: f.id, name: f.n, kcal: f.k, p: f.p, f: f.fa, c: f.c, salt: f.s };
+  const own = it ? null : snapPortion(f.u, g);
+  return { ...(it ?? {}), ...(own ? { portions: [own] } : {}), id: f.id, name: f.n, kcal: f.k, p: f.p, f: f.fa, c: f.c, salt: f.s };
+}
+/** The portion an entry's label and grams name (「茶碗1杯×2」 of 300 g → 茶碗1杯 of 150 g); none for 100 g or typed grams. */
+function snapPortion(u: string | undefined, g: number | undefined): Portion | null {
+  if (!u || g === undefined) return null;
+  const [label, x] = u.split('×');
+  const n = x ? Number(x) : 1;
+  if (!label || !(n > 0) || /^100\s*(g|ml)$/i.test(label.normalize('NFKC'))) return null;
+  return { label, g: Math.round((g / n) * 10) / 10 };
 }
 
 /** My latest entry of each food, newest first: what the search shows before anything is typed. */
@@ -58,25 +94,75 @@ export function matchPortion(ps: readonly Portion[], g: number): { pi: number; m
   return best;
 }
 
+/** Where the amount starts: the portion named by the label (「茶碗1杯×2」) when it makes the grams, else one that makes
+ *  them, else typed grams; no grams: the default portion. */
+export function startOf(ps: readonly Portion[], g0?: number, u0?: string): { pi: number; mult: number; custom: boolean } {
+  if (g0 === undefined) return { pi: 0, mult: 1, custom: false };
+  const [label, x] = (u0 ?? '').split('×');
+  const pi = ps.findIndex((p) => p.label === label);
+  const n = Number(x) || 1;
+  if (pi >= 0 && Math.abs(ps[pi].g * n - g0) < 0.05) return { pi, mult: n, custom: false };
+  const m = matchPortion(ps, g0);
+  return m ? { ...m, custom: false } : { pi: 0, mult: 1, custom: true };
+}
+
+/** −/＋'s step for a portion: a whole one for the things you count (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック …), a half
+ *  for 茶碗 (rice), 人前 and the rest (a weight). */
+export function stepOf(label: string): 0.5 | 1 {
+  if (/茶碗|人前|^\s*[\d.]+\s*(g|ml)\s*$/i.test(label.normalize('NFKC'))) return 0.5;
+  return /本|個|杯|缶|枚|切れ|貫|パック|ジョッキ|袋|粒|尾|丁|玉|カップ|皿/.test(label) ? 1 : 0.5;
+}
+
 /** The label an entry keeps for a picked portion (「茶碗1杯」, 「茶碗1杯×2」); none for 100 g or typed grams. */
 export function portionLabel(p: Portion | null, mult: number): string | null {
   if (!p || /^100\s*(g|ml)$/i.test(p.label.normalize('NFKC'))) return null;
   return mult === 1 ? p.label : `${p.label}×${mult}`;
 }
 
-/** An item's default portion and its kcal (search rows: 「茶碗1杯 234 kcal」). */
+/** An item's default portion in words and its kcal (search rows: 「茶碗1杯（150g）」 234 kcal). */
 export function defaultPortion(it: Item): { label: string; kcal: number } {
-  const p = portionsOf(it)[0];
-  return { label: p.label, kcal: Math.round((it.kcal * p.g) / 100) };
+  const ps = portionsOf(it);
+  const p = ps[0];
+  return { label: portionText(p.label, p.g, ps.some((q) => unitOf(q.label) === 'ml') ? 'ml' : 'g'), kcal: Math.round((it.kcal * p.g) / 100) };
 }
 
+/** The search's rows with the true duplicates gone (the same name, brand and kcal: the products' copies of one). */
+export function uniqueItems(items: readonly Item[]): Item[] {
+  const seen = new Set<string>();
+  return items.filter((it) => {
+    const k = `${it.name}\u0001${it.brand ?? ''}\u0001${it.kcal}`;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
+/** The lowest kcal goal ごはん offers (the coach: 1,200 is the usual unsupervised floor; the record still takes
+ *  KCAL_GOAL's 1,000). */
+export const KCAL_GOAL_MIN = 1200;
+
 /** What was typed as a daily kcal goal → kcal, or null: `1800`, `2,000`, full-width `１８００`, a trailing `kcal`;
- *  KCAL_GOAL's range in whole steps only. */
+ *  KCAL_GOAL_MIN up to KCAL_GOAL's max, in whole steps only. */
 export function parseKcalGoal(text: string): number | null {
   const s = text.trim().replace(/[０-９，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/\s*kcal$/i, '').replace(/,/g, '');
   if (!/^\d{1,4}$/.test(s)) return null;
   const n = Number(s);
-  return isKcalGoal(n) ? n : null;
+  return isKcalGoal(n) && n >= KCAL_GOAL_MIN ? n : null;
+}
+
+/** The day's kcal against the goal, in words and tone: today 「あと N kcal」 / 「N kcal オーバー」, a past day
+ *  「目標より N kcal 少なめ / 多め」; coral only past 20 % over (the lifter eating to a surplus is not told off). */
+export function goalChip(kcal: number, goal: number, today: boolean): { text: string; over: boolean } {
+  const left = goal - kcal;
+  const over = kcal > goal * 1.2;
+  if (today) return { text: left >= 0 ? t('food.left', { n: formatNum(left) }) : t('food.over', { n: formatNum(-left) }), over };
+  return { text: t(left >= 0 ? 'food.under' : 'food.overBy', { n: formatNum(Math.abs(left)) }), over };
+}
+
+/** Whether a day's meal is its repeat's: the same foods in the same amounts, in order (not the entries' ids: a day
+ *  whose repeat was replaced from tomorrow still carries the old one's). */
+export function sameItems(a: readonly { g: number; f: { id: string } }[], b: readonly { g: number; f: { id: string } }[]): boolean {
+  return a.length === b.length && a.every((e, i) => e.f.id === b[i].f.id && Math.abs(e.g - b[i].g) < 0.05);
 }
 
 /** いつもの's weekday masks (bit 0 Monday … bit 6 Sunday): 毎日 · 平日 · 週末, the presets of the repeat level. */

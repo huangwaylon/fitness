@@ -34,7 +34,7 @@
 </button>
 
 <style>
-  /* The health button's pill (HudHealth), the bowl standing in it a little over its top and bottom. */
+  /* The health button's pill (HudHealth), the bowl standing in it a little over its top. */
   .hud-food {
     --art: clamp(54px, calc(7 * var(--vh1)), 60px);
     position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center;
@@ -47,7 +47,10 @@
   .hud-food.pressed { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-lip); }
   .hud-food:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .art {
-    position: absolute; left: 50%; top: 50%; width: var(--art); height: var(--art); translate: -50% -50%; display: flex;
+    position: absolute; left: 50%; top: 50%; width: var(--art); height: var(--art); display: flex;
+    /* lowered from the pill's centre: the bowl's nori stands over its rim, so centred by its box the bowl read high
+       (the user); 3px down puts the bowl itself mid-pill, its foot on the lip as the dumbbell's plates are */
+    translate: -50% calc(-50% + 3px);
     align-items: center; justify-content: center; pointer-events: none; transform-origin: 50% 60%;
     transition: transform 220ms cubic-bezier(.34, 1.56, .64, 1);
     filter: drop-shadow(0 2px 0 rgb(0 0 0 / .12));

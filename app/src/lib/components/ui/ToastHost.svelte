@@ -7,6 +7,6 @@
 
 {#if toasts.current}
   {@const c = toasts.current}
-  {#key c.id}<Toast text={c.text} person={c.person} reaction={c.reaction ?? 'happiness'} action={c.action} leaving={c.leaving}
+  {#key c.id}<Toast text={c.text} person={c.person} reaction={c.reaction ?? 'happiness'} action={c.action} low={c.low} leaving={c.leaving}
     onhold={(on) => (on ? toasts.pause() : toasts.resume())} ondismiss={() => toasts.dismiss()} />{/key}
 {/if}

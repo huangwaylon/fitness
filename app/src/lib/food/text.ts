@@ -3,21 +3,23 @@
 /** Spaces and common punctuation, ASCII and full width (｛｝＃ escaped: no copy shows them, so the trimmed font
  *  needn't, styles/fonts.test.ts). */
 const PUNCT = /[\s　・･·、。，．,.\-‐－_/／()（）［］[\]\uff5b\uff5d{}「」『』【】〈〉《》<>"'’‘“”`!！?？:：;；~〜～&＆+＋*＊#\uff03]/g;
+/** A dash or wave after kana is a long vowel typed another way (ｰ is ー after NFKC; －, ‐, −, ―, 〜, ～): ー. */
+const LONG = /(?<=[ぁ-ゖァ-ヺー])[-‐‑–—―−~〜]/g;
 /** Romaji spelling variants folded to one form (Hepburn → Kunrei-ish), then the long vowels collapsed. */
 const ROMAJI: readonly [RegExp, string][] = [
   [/shi/g, 'si'], [/chi/g, 'ti'], [/tsu/g, 'tu'], [/fu/g, 'hu'], [/ji/g, 'zi'], [/ou|oo/g, 'o'], [/uu/g, 'u'], [/aa/g, 'a'], [/ii/g, 'i'], [/ee/g, 'e']
 ];
 
 /** The key both the indexed text and a query are compared by: NFKC, lower case, katakana → hiragana, no punctuation,
- *  long vowels folded (らーめん = らめん, nattou = natto). */
+ *  ー kept (カレー ≠ かれい, サワー ≠ さわら; its variants made ー), romaji long vowels folded (nattou = natto). */
 export function searchKey(s: string | null | undefined): string {
   if (!s) return '';
   let k = s
     .normalize('NFKC')
     .toLowerCase()
+    .replace(LONG, 'ー')
     .replace(/[ァ-ヶヽヾ]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0x60))
-    .replace(PUNCT, '')
-    .replace(/ー/g, '');
+    .replace(PUNCT, '');
   if (/[a-z]/.test(k)) for (const [re, to] of ROMAJI) k = k.replace(re, to);
   return k;
 }
