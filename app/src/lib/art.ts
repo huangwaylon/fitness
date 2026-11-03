@@ -92,10 +92,10 @@ export const BODY_ART: Record<'weight' | 'body_fat_pct' | 'bmi' | 'lean_kg', str
 };
 
 /** けんこう's two groups → a catalogue icon each on their switch (the user: cute, no ball nor scale): かつどう NH's cute
- *  sneakers (moving), からだ the flower tabletop mirror (a look at yourself). */
+ *  sneakers (moving), からだ the dreamy bear toy (soft, cute: the user's pick over the mirror). */
 export const GROUP_ART: Record<'activity' | 'body', string> = {
   activity: 'finds/items/cute-sneakers',
-  body: 'finds/items/flower-tabletop-mirror'
+  body: 'finds/items/dreamy-bear-toy'
 };
 
 /** One of the four ring fruits → inventory icon key. */

@@ -119,8 +119,8 @@ personal trainer, one person at a time, computed on read. Its code and strings l
   picker; a cream pill ≥ 44px with a chevron, 16px type so Safari doesn't zoom; labelled 「だれの データ」 and 「きかん」).
   Whose data: the two members, this phone's person first and chosen on opening, kept for the session; its pill shows
   the person's avatar and a stroke of their colour. The period: 1週 · 1か月 · 3か月 · 1年 (1週 on every opening).
-  Row 2: かつどう · からだ, two pills, each with an NH icon (`art.ts` GROUP_ART: the cute sneakers, the flower tabletop
-  mirror) (かつどう on every opening, like the period; switching keeps the period, the
+  Row 2: かつどう · からだ, two pills, each with an NH icon (`art.ts` GROUP_ART: the cute sneakers, the dreamy bear
+  toy) (かつどう on every opening, like the period; switching keeps the period, the
   range and whose data; the guest has neither: かつどう only).
 - **Then** a sticky row: ‹ the visible range (「10/2–10/31」; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」
   under it) › and きょう.
