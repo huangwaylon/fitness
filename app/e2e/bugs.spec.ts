@@ -153,7 +153,6 @@ test('a dragonfly darts near the water (NH: flying near water), clear of every c
   expect(await clear(page, p)).toBe('');
 });
 
-type W = { __world: { go(z: number): void; at(x: number, z: number): [number, number] } };
 test("NH's palm beetles on the palms at night (a horned atlas), the stags on a hardwood trunk; each netted", async ({ page }) => {
   for (const [id, place] of [['horned-atlas', 'palm'], ['golden-stag', 'palm'], ['saw-stag', 'trunk']] as const) {
     await open(page, `&date=2026-07-10T22:00&critter=${id}`);

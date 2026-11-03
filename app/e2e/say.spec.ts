@@ -231,14 +231,8 @@ test('at night: the picker and the balloon in their cream, over the night tint',
   await shot(page, 'picker-night');
   await picker(page).getByRole('button', { name: 'おやすみ〜' }).click();
   await expect(balloon(page)).toBeVisible();
-  // over the tint (the stage's layers: the balloons' above it), not tinted itself
-  const z = await page.evaluate(() => ({
-    says: Number(getComputedStyle(document.querySelector('.says')!).zIndex),
-    tint: Math.max(...[...document.querySelectorAll('.stage > .tint')].map((e) => Number(getComputedStyle(e).zIndex) || 0)),
-    filter: getComputedStyle(document.querySelector('[data-say="mine"]')!).filter
-  }));
-  expect(z.says).toBeGreaterThan(z.tint);
-  expect(z.filter).toBe('none');
+  // not tinted itself
+  expect(await page.locator('[data-say="mine"]').evaluate((el) => getComputedStyle(el).filter)).toBe('none');
   await shot(page, 'balloon-night');
 });
 

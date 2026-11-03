@@ -1,6 +1,6 @@
 // The ずかん (docs/design.md "Zukan"): the HUD menu's ずかん sheet, every fish, bug, fossil and shell; the found ones with their icon, name
 // and first find (shared between us), silhouettes and ？？？ for the rest.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { BUGS, FISH } from '../src/lib/components/island/critters.ts';
 import { POND_FISH } from '../src/lib/components/island/pondFish.ts';

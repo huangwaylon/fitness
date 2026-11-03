@@ -720,7 +720,6 @@ test('マイ食品 with a weight, made while adding a recipe ingredient: P/F/C, 
 test('マイ食品: someone else’s is read-only, logged and copied; the partner’s are in the search', async ({ page }) => {
   await openFood(page, '&as=B');
   const before = await kcalOf(page);
-  const h2 = sheet(page).locator('.navbar h2');
   await sheet(page).locator('[data-tab=recipe]').click();
   const teishoku = sheet(page).locator('[data-customs] [data-custom][data-owner=A]', { hasText: '社食の日替わり定食' });
   await expect(teishoku.locator('[data-custom-serving]')).toHaveText('1個');

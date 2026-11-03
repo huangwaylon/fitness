@@ -12,7 +12,6 @@ async function open(page: Page, date: string) {
   await expect(hudMenu(page)).toBeVisible();
 }
 const fruit = (page: Page) => page.locator('.if-scene [data-fruit]');
-const filterOf = (page: Page, sel: string) => page.locator(sel).locator('.f').evaluate((el) => getComputedStyle(el).filter);
 
 test('each person’s tree stands beside their villager, on the outer side, level with them', async ({ page }) => {
   await open(page, '2026-11-04T12:00');

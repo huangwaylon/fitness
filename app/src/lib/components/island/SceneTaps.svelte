@@ -33,7 +33,7 @@
   import { STREAK_MS, WISH_MS, inStarHours, nextShowerMs, showerPlan, streakPath } from './stars.ts';
   import { BUSH_U, FLOWER_U, wildFlower, type Tod } from './scene.ts';
   import { ARCH, DECOR_SLOTS, FLOWERS, HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type Flower } from './world.ts';
-  import { hitWorld, petalOf, sceneSfx, shownNow, type SceneHit } from './sceneTaps.ts';
+  import { hitWorld, petalOf, sceneSfx, type SceneHit } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
   import Critters from './Critters.svelte';
   import Finds from './Finds.svelte';
@@ -564,7 +564,7 @@
 <Care bind:this={care} {scene} {enabled} rockBug={(x, z) => critters?.fromRock(x, z)} />
 {#if VisitorC}<VisitorC bind:this={visitor} {scene} {enabled} {say} {ontrick} />{/if}
 {#if TapeDeckC}<TapeDeckC bind:this={deck} {scene} {enabled} {exercise} {say} />{/if}
-{#if CakeC}<CakeC bind:this={cakeEl} {scene} {enabled} on={cake} />{/if}
+{#if CakeC}<CakeC bind:this={cakeEl} {enabled} on={cake} />{/if}
 
 <!-- a falling present: a world node on its arc (its model the 3D island's; its art only with no model), its landing
      sparkles once it's down -->

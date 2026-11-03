@@ -14,8 +14,7 @@
   import { blowOut, candlesOut } from './birthday.ts';
   import { MIN_HIT, grow, inside } from './hitbox.ts';
 
-  // `scene` is SceneTaps' (unused: the cake is a world node)
-  let { enabled, on }: { scene?: HTMLElement; enabled: () => boolean; on: boolean } = $props();
+  let { enabled, on }: { enabled: () => boolean; on: boolean } = $props();
   /** Its height (u; the flames below are placed for it). */
   const CAKE_U = 22;
   const w = useWorld();

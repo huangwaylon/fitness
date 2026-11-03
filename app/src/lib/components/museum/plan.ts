@@ -61,8 +61,8 @@ export function roomAt(x: number, z: number): Wing | null {
   if (inRect(FISH_WING, x, z)) return 'fish';
   return null;
 }
-/** Which wing a point belongs to (the openings count as the hall's). */
-export function wingAt(x: number, z: number): Wing {
+/** Which wing an x belongs to (the openings count as the hall's). */
+export function wingAt(x: number): Wing {
   if (x < HALL.x0 - 4) return 'bug';
   if (x > HALL.x1 + 4) return 'fish';
   return 'hall';

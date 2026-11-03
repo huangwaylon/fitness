@@ -62,40 +62,37 @@ export async function watchFor(page: Page, sels: readonly string[]) {
 export const sawIt = (page: Page, sel: string) => page.evaluate((s) => !!(window as unknown as { __saw?: Record<string, boolean> }).__saw?.[s], sel);
 
 /** A tap on the 3D island's model `id` (`__world3d.where`), at its point `lift` above its feet, through the camera's
- *  own projection: the game's state says where it is, not the pixels. Polled until the model is in and shown and, with
- *  `sel`, until that point hit-tests to `sel`'s tap area (nothing walking in front of it). */
-export async function tapThing(page: Page, id: string, { lift = 0, sel }: { lift?: number; sel?: string } = {}) {
-  const at = () => page.evaluate(([id, lift, sel]) => {
+ *  own projection: the game's state says where it is, not the pixels. Polled until the model is in and shown. */
+export async function tapThing(page: Page, id: string, { lift = 0 }: { lift?: number } = {}) {
+  const at = () => page.evaluate(([id, lift]) => {
     const w = (window as unknown as { __world3d: W3 }).__world3d, p = w.where(id);
     if (!p || p.hidden) return null;
-    const [x, y] = w.client(p.x, -p.z, p.y + lift);
-    return !sel || document.elementFromPoint(x, y)?.closest(sel) ? [x, y] : null;
-  }, [id, lift, sel ?? ''] as const);
-  await expect.poll(at, { message: `the 3D model ${id}, shown${sel ? ` and its ${sel} clear` : ''}` }).not.toBeNull();
+    return w.client(p.x, -p.z, p.y + lift);
+  }, [id, lift] as const);
+  await expect.poll(at, { message: `the 3D model ${id}, shown` }).not.toBeNull();
   const [x, y] = (await at())!;
   await page.mouse.click(x, y);
 }
 
 /** The 3D island at rest: its camera still and nothing moving (polled; a villager wandering by doesn't count). */
-export const settled = (page: Page, timeout = 20_000) => expect.poll(() => w3(page, (w) => w.camStill() && w.idle()), { timeout, message: 'the 3D island at rest' }).toBe(true);
+export const settled = (page: Page) => expect.poll(() => w3(page, (w) => w.camStill() && w.idle()), { timeout: 20_000, message: 'the 3D island at rest' }).toBe(true);
 
 /** Time on: the page's clock (`page.clock.install()` first) runs `ms`, the 3D engines' frames included (the clock fakes
  *  requestAnimationFrame): the sim step. Quick in the logic tier (nothing drawn); drawn under software GL a minute of
  *  frames takes minutes (use `page.clock.fastForward` there). */
 export const step = (page: Page, ms: number) => page.clock.runFor(ms);
 /** The island's opening beats are over (the greeting and the day's beats played, no event queued): __world.quiet(). */
-export const quiet = (page: Page, timeout = 15_000) =>
-  expect.poll(() => page.evaluate(() => (window as unknown as { __world?: { quiet?(): boolean } }).__world?.quiet?.() ?? false), { timeout, message: 'the opening beats over' }).toBe(true);
+export const quiet = (page: Page) =>
+  expect.poll(() => page.evaluate(() => (window as unknown as { __world?: { quiet?(): boolean } }).__world?.quiet?.() ?? false), { timeout: 15_000, message: 'the opening beats over' }).toBe(true);
 
 /** world.ts's places as the page's island has them (the layout's): a spec reads these, not world.ts's constants
  *  imported here (those are the old fixed island's, before the layout is applied). */
 export type Geo = {
-  CAMS: { mae: number; oku: number }; SHORE_Z: number; POND: { x: number; z: number; rx: number; rz: number }; SPRING: { x: number; z: number; rx: number; rz: number };
+  CAMS: { mae: number; oku: number }; SHORE_Z: number; POND: { x: number; z: number; rx: number; rz: number };
   CENTRE_STAGE: [number, number]; ARCH: [number, number]; CAKE: [number, number]; HOMES: { A: [number, number]; B: [number, number] };
-  GOAL_TREES: { A: [number, number]; B: [number, number] }; ROCK: [number, number]; TAPE_DECK: [number, number]; SEATS: Record<string, [number, number]>;
-  PULLUP_AT: [number, number]; BUILDINGS: { id: string; x: number; z: number; h: number; depth: number }[]; FLOWERS: { id: string; x: number; z: number; clump: number }[];
+  SEATS: Record<string, [number, number]>; BUILDINGS: { id: string; x: number; z: number; h: number; depth: number }[]; FLOWERS: { id: string; x: number; z: number; clump: number }[];
   SCENERY: { id: string; kind: string; key: string; x: number; z: number; h: number }[]; DECOR_SLOTS: { id: string; x: number; z: number }[];
-  BRIDGE: { x: number; z0: number; z1: number; w: number }; CLIFF: { z0: number; z1: number }; LAWN_SPOTS: [number, number][];
+  CLIFF: { z0: number; z1: number };
   RIVER: [number, number, number][]; RIVER_BEND: number; PONDS: { x: number; z: number; rx: number; rz: number }[];
   /** Today's trees holding a present (treeGifts.ts giftTreesOn over the island's trees). */
   GIFT_TREES: string[];

@@ -25,5 +25,5 @@ export async function fromMenu(page: Page, which: keyof typeof PILL, how: 'click
 }
 
 /** The panel (ごほうび), from the menu's ベル row. */
-export const openRewards = (page: Page, how: 'click' | 'tap' = 'click') => fromMenu(page, 'bells', how);
+export const openRewards = (page: Page) => fromMenu(page, 'bells');
 
