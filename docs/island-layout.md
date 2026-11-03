@@ -59,9 +59,8 @@ the editor, the homes) and the 3D integration (the scene, the camera, porting th
   path, the water, off the grass for a tree or a flower) moved to the nearest free tile round it (the homes and the
   structures first, the flowers last), so no two share a tile (`layout.test.ts`). The layout a phone shows is the default
   with the record's ops over it (`layoutOf(entries)`).
-- **The 2D island keeps world.ts's area** (46 tiles) until the 3D cutover: it doesn't read the layout (its positions
-  for おく would be 420u off). The layout store is attached on every phone already, so the ops are there for the 3D
-  island.
+- **The island reads the layout** on every phone (the 2D island, which kept world.ts's 46-tile area, went in November
+  2026: docs/cleanup-2d.md).
 
 ## Ops (the record and the relay)
 
@@ -297,7 +296,7 @@ way to turn its own house).
   grass (a grass tile nothing stands on, off the paths, the water and the banks, away from a door, a board's front,
   a named spot and the stairs, one a walker reaches), spread out, seeded by the date and the island's seed: the same
   on every phone. `beach.ts useSpots(layoutSpots(() => layout.current))` switches the island's weeds (care.ts) and
-  fossils (beach.ts digSpots) onto them; until then (the 2D island) world.ts's spots. **For the lead:** call it when
+  fossils (beach.ts digSpots) onto them; before the layout's applied, world.ts's spots. **For the lead:** call it when
   the 3D island reads the layout, `useSpots(null)` to go back.
 - **NH's bridges and inclines** (`npm run structure-models`: 8 bridges, NH's shortest span; 6 inclines: stone, brick,
   iron, wood, log, natural; `world3d/structure.ts`): `structurePlaces(layout)` + `buildStructure(place)` → a group
@@ -359,16 +358,15 @@ red over the river; no 🗑 for a one-off; none for the guest).
 6. **Walking:** `planTap(navOf(layout.current), …)` (rebuild the nav on a layout change, ~4 ms), feet from
    `ground.feet`. Named nodes: `homeA`, `homeB` (the villagers' spots), `centreStage`, `door-home-A|B|G`, the
    default's seats (`seatMaeL` … `stoolW`, `pullup`), `front-<id>` (a bulletin board's spot).
-7. **The gameplay on the layout (landed): one switch, `island/site.svelte.ts` `site.on`.** On (the 3D island and, until
-   the cutover, `?layout` on the URL; `LAYOUT_3D` there flips it on for every 3D island), world.ts's geometry is the
-   layout's: `island/layoutWorld.ts worldOf(layout)` derives every value the island reads (`HOMES`, `CAMPSITE` /
+7. **The gameplay on the layout (landed): `island/site.svelte.ts` `site.on`, always on** (the switch, `?layout` and
+   `LAYOUT_3D` went with the 2D island). world.ts's geometry is the layout's: `island/layoutWorld.ts worldOf(layout)` derives every value the island reads (`HOMES`, `CAMPSITE` /
    `BUILDINGS` with `home-B` and `home-G`, `CENTRE_STAGE` / `ARCH` / `CAKE`, `SEATS` / `PULLUP_AT`, `SCENERY` (the
    hedges among it), `DECOR_SLOTS`, `FLOWERS`, `GOAL_TREES`, `ROCK`, `TAPE_DECK`, `RIVER` (the centreline through its
    tiles, spring to sea), `POND` / `SPRING` (their tiles' ovals), `CLIFF`, `BRIDGE`, `SHORE_Z`, `LAND`, `SEA_BOX`,
    `BEACH_BOX`, `CAMS`, `LAWN_SPOTS` / `DIG_SPOTS`; and from the tiles: `surfaceAt`, `freshWhere`, `inRiver`,
    `onLand`, `onGrass`), and world.ts `setWorld` swaps them in (ES live bindings: every import reads the new value; a
-   cache keys on `worldGen()`; a DOM overlay reads `site.rev` to follow a change). Off, world.ts's own (the 2D island,
-   which can't draw the layout). Each change of the layout re-derives it (`layout.on`), so the editor's moves show live.
+   cache keys on `worldGen()`; a DOM overlay reads `site.rev` to follow a change). Before it's applied (and in the unit
+   tests), world.ts's own. Each change of the layout re-derives it (`layout.on`), so the editor's moves show live.
    - **The walk** is layout/nav.ts's: `nav.ts walkNav()` (the layout's grid with the island's named spots: `treeA`,
      `pondside`, `door-campsite`… as before, each nudged to where a walker reaches) for a tap, and walkGraph.ts's geo
      (`lnav`) for the idle walks and the visitors.
@@ -379,9 +377,8 @@ red over the river; no 🗑 for a one-off; none for the guest).
      areas only (no `m3`: placeObjects draws them).
    - **The engine's side** (Island3D / engine.ts, under the same `site.on`): `buildGround(site.layout)`,
      `placeObjects(site.layout, day)`, the homes and structures attached, the camera's ends from `extentOf`, IslandEdit.
-     Until then `?layout` shows the gameplay on the long layout over world.ts's old ground.
-   - The e2e: `e2e/layout-island.spec.ts` (the doors, homes, named spots; off without `?layout`; うめ's home entered; a
-     tap walk in the long middle); unit: `island/layoutWorld.test.ts`.
+   - The e2e: `e2e/layout-island.spec.ts` (the doors, homes, named spots; うめ's home entered; a tap walk in the long
+     middle); unit: `island/layoutWorld.test.ts`.
 
 ## Not yet
 

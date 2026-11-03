@@ -1,4 +1,7 @@
-# The 3D island's gaps (e2e on `E2E_ISLAND=3d`)
+# The 3D island's gaps (e2e on `E2E_ISLAND=3d`: historical)
+
+The cutover's gate, kept as its record: the 2D island, `E2E_ISLAND` and `?island=2d` went in November 2026
+(docs/cleanup-2d.md); every spec runs on the 3D island now.
 
 What the whole e2e suite found running on the 3D island (track C, the cutover's gate). Each: the spec, what's
 expected, what happens, the diagnosis, and who fixes it. The specs' 2D-only checks are pinned to `?island=2d` and

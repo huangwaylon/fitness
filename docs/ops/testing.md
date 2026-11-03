@@ -9,11 +9,10 @@ The tiers and why: [test-strategy.md](test-strategy.md).
 |---|---|---|
 | `build` | `npm run build` once; its `build-pages/` is both the Pages artifact and the `site` artifact the full tier tests | yes |
 | `checks` | `npm run check`, `npm run knip`, `npx vitest run`, beside the build | yes |
-| `e2e-logic` ×12 | **the logic tier**: Playwright in Chromium (iPhone 13 profile), every test but `@render` and `@quarantine`, with the 3D engines drawing nothing (`E2E_RENDER=none`), on `site` served as Pages serves it (`scripts/serve-build.ts`), 3 workers each (4 made the short waits of the 2D specs flaky on the 4-core runners), shards balanced by each test's time (`scripts/e2e-shards.ts plan`, from the committed `e2e/timings.json`; the `timings` job's summary says when they drift apart: `npm run e2e:timings` and commit it); each shard builds the commit itself (~12 s: no waiting for `build`) | yes |
+| `e2e-logic` ×12 | **the logic tier**: Playwright in Chromium (iPhone 13 profile), every test but `@render` and `@quarantine`, with the 3D engines drawing nothing (`E2E_RENDER=none`), on `site` served as Pages serves it (`scripts/serve-build.ts`), 3 workers each (4 made the short waits flaky on the 4-core runners), shards balanced by each test's time (`scripts/e2e-shards.ts plan`, from the committed `e2e/timings.json`; the `timings` job's summary says when they drift apart: `npm run e2e:timings` and commit it); each shard builds the commit itself (~12 s: no waiting for `build`) | yes |
 | `e2e-render` | **the drawn smoke**: the `@render` and `@smoke` tests with real (software) GL, one runner; advisory since Nov 2026 (CI's SwiftShader isn't the phones' Metal: rendering is judged on the iOS Simulator and the phones) | no |
 | `deploy` | to Pages, once all of the above are green | — |
 | `e2e-full` ×5 | **the full tier** (`.github/workflows/e2e-full.yml`, its own workflow after each run of this one, and on demand): the whole suite drawn (the quarantine too); its failures in its summary and on their specs | no |
-| `e2e-3d` ×8 | the same suite on the 3D island (`E2E_ISLAND=3d`), ahead of the cutover; nightly and on demand (`gh workflow run pages.yml`) only; its failures in its job summary (docs/world3d-gaps.md) | no, until it's green |
 
 - **Red main never deploys, and the newest green does.** One run at a time on `main`, never cancelled: a newer push
   waits, and one still waiting is replaced by the newest. So in a burst of pushes the running one finishes and
@@ -48,7 +47,6 @@ npm run build                       # the e2e test the build, not the dev server
 npx playwright install webkit       # once per Playwright version
 E2E_PORT=4391 npm run e2e -- --project=webkit   # a free port (--project=chromium: the installed Chrome)
 E2E_PORT=4391 npm run e2e -- e2e/demo.spec.ts --project=webkit --repeat-each=10   # hunt a flake
-E2E_ISLAND=3d E2E_PORT=4391 npm run e2e -- --project=chromium   # every test on the 3D island (せってい's switch in localStorage)
 E2E_SWIFTSHADER=1 E2E_PORT=4391 npm run e2e -- e2e/world3d.spec.ts --project=chromium   # software GL, as CI's Linux draws
 E2E_RENDER=none E2E_PORT=4391 npm run e2e -- --project=chromium   # the logic tier: the 3D engines draw nothing
 npm run e2e:ci-like -- e2e/world3d.spec.ts --repeat 5   # as CI runs it (below)

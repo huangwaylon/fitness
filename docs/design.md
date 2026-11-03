@@ -38,8 +38,8 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 Top to bottom: the HUD row, one cluster in the sky's top-right corner (the menu's leaf, the meal button, the jar (tap →
 [the panel](#panel) on ごほうび, where today's ベル are) and the health button); a sync chip only when sync isn't ok; the scene;
-しずえ's box only with news; the say button at the bottom right. The island is NH's rolling log under them ([World](#world)): a drag scrolls it from まえ
-(home, the health lawn) back to ひろば and おく, a tap on empty ground walks my villager there.
+しずえ's box only with news; the say button at the bottom right. The island is in 3D under them ([World](#world)): one finger
+scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoom, a tap on empty ground walks my villager there.
 
 - **Trees:** one per person, today's four fruits in the canopy ([Trees](#trees)). A tap opens a popup: per goal (🍎
   steps first, then Move, Exercise, Stand) today's amount against the goal (「14,164 / 8,000歩」), ✓ once met and a yuzu
@@ -356,7 +356,8 @@ the cache keeps only their newest row per day once the week has locked, like wei
 
 ## Island scene
 
-`lib/components/island/*`: NH's island as a rolling log in 2D DOM around official renders ([World](#world)). What comes only on its days
+`lib/components/island/*` and `lib/components/world3d/*`: NH's island in 3D on the editable layout, NH's own models in
+three.js, with the DOM island over the canvas as its tap areas, marks, balloons and popups ([World](#world)). What comes only on its days
 (a visitor, the tape deck, the cake, the weather, the fireworks, Halloween's, a birthday's and the wedding's decorations)
 is loaded the first time it's due (`ui-state/lazyComponent.svelte.ts`), so the first load carries none of it. Light from the upper left;
 each surface one fill, one gradient, one soft shade; no strokes on scenery. Only `transform` and `opacity` animate;
@@ -365,92 +366,65 @@ everything pauses while hidden (`data-paused`), and a sheet pauses particles, cr
 
 ### World
 
-`island/world.ts` (every coordinate), `island/roll.ts` (the projection), `island/camera.svelte.ts` (the camera and
-projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/WorldWater.svelte`, `island/Scenery.svelte`,
-`e2e/world.spec.ts`, `e2e/world-perf.spec.ts` (on demand: `WORLD_PERF=1`).
+`island/world.ts` (every coordinate: the layout's once applied, `island/site.svelte.ts`), `island/camera.svelte.ts`
+(the projector), `island/IslandScene.svelte`, `world3d/Island3D.svelte` (the canvas), `world3d/engine.ts` (the scene,
+the camera, the frames), `island/Scenery.svelte`, `e2e/world.spec.ts`, `e2e/world3d.spec.ts`, `e2e/world-perf.spec.ts`
+(on demand: `WORLD_PERF=1`). The 2D island (the rolling log, its baked ground and CSS water, せってい's 2D/3D switch)
+went in November 2026 (docs/cleanup-2d.md).
 
-- **Units:** world units (1u = 1 CSS px at 390 wide at the pivot); x across (0…390 is the screen at the pivot), z into
-  the island (the front shoreline is SHORE_Z −30). The plan spans x −230…620, z −460…2650; the land x −40…430, z
-  −30…2250 (a 130u corner radius), the front beach z −30…110 (140u: fishing and diving from it), the side and back
-  beaches 30u. The back zone is compact: the museum 1518, the cliff 1676…1720, the campsite 1830, a cedar forest
-  behind it and palms on the back beach.
-- **The rolling log** (`roll.ts`): θ = (z − camZ) / R on a cylinder seen at a 64° tilt with a mild perspective; R is
-  set per screen so the horizon sits at 16% of the height and the pivot at 72%. `unproject` inverts it (Newton with a
-  bisection fallback): a tap's world point, null in the sky.
-- **The camera** is a native vertical scroller (overscroll contained; a drag scrolls, a tap is a click) in three
-  **sections** (`sections.ts`, `e2e/sections.spec.ts`): **まえ** (the scroller's foot, where it opens: the sea with its
-  fish shadows, the wide beach, the airport, the health lawn), **ひろば** (the plaza, Resident Services, the pond, the river) and **おく**
-  (Nook's Cranny, Able Sisters, the museum, the cliff, the waterfall, the campsite). The stops are world.ts's CAMS
-  (114, 860, 1440) fitted to the screen: まえ lower on a short screen so the sea in front of the beach stays in view,
-  おく further back until the campsite's top is 16px under the HUD (as far as the plan reaches). The camera rests only on a stop: mandatory snapping (`scroll-snap-type: y mandatory`, `scroll-snap-stop:
-  always`), and one section a swipe, however hard the fling: a fling that carries past the next stop is caught there
-  (one frame of `overflow: hidden` cuts the momentum, as iOS allows; Chrome's touch fling skipped the middle stop in
-  spite of `scroll-snap-stop`). A stop is a whole-px scroll position and reads back as exactly its camZ. A
-  programmatic move (the end of a follow, a popup letting the camera go, the partner's edge face) eases onto a stop
-  with snapping off and turns it back on there; a touch hands the camera to the finger at once. A resize keeps the
-  section. Nothing runs per frame for it (the scroll events do the checking).
-- **In 3D** (`components/world3d/`, `?island=3d` or せってい → しまの えがきかた; docs/decisions.md "The island in 3D"):
-  `Island3D.svelte` puts a canvas under the stage's nodes (over the DOM sky: the sun and the moon stay behind the
-  world) and hands the projector its camera (`World.useThree`); the engine (`engine.ts`) runs the World's step in its
-  own frame (60 a second while anything moves, 30 while only the water does). The models: `layout3d.ts` from world.ts
-  and the day's scenery and decor pieces (a card of today's art for what has no model yet); the villagers: cards of
-  their renders posed from the director (`motion3d.ts`); the lights: `lights.ts`; the finger: `gestures.ts`. The ends
-  are fitted per screen like the 2D ones (the shoreline 83% down at まえ, the campsite's feet half way at おく).
-  `window.__world3d` (stats, view, go, client, ground, where, focus, xRoom, strays, alphaBlends, away) for the e2e
-  (`e2e/world3d.spec.ts`).
+- **Units:** world units (an 80u villager); x across (centre 195), z into the island (bigger = further back; the front
+  shoreline is SHORE_Z). The live island reads the editable layout (`site.svelte.ts`: world.ts's values are the
+  layout's, docs/island-layout.md); world.ts's own values are the old fixed island's, read before the layout is
+  applied and by the unit tests and the layout scripts.
+- **No WebGL** (never on the users' iPhone 15 / 16 Safari): instead of the island a line in the middle of the scene,
+  「この端末では しまを 表示できません」 / 「きろくや ごほうびは いつもどおり つかえます」 (`[data-no3d]`); the HUD, the
+  panel, the health popup and ごほうび work as ever (`e2e/world3d.spec.ts`).
+- **The 3D island** (docs/decisions.md "The island in 3D"): `Island3D.svelte` puts a canvas under the stage's nodes
+  (over the DOM sky: the sun and the moon stay behind the world) and hands the projector its camera (`World.useThree`);
+  the engine (`engine.ts`) runs the World's step in its own frame (60 a second while anything moves, 30 while only the
+  water does), and the World steps itself on the game's own clock when no frame has (camera.svelte.ts `simTick`). The
+  ground and the water are the layout's (`terrain.ts` buildGround with NH's textures, `water.ts`); the objects
+  `objects.ts` placeObjects from the layout and the day's scenery and decor pieces (a card of today's art for what has
+  no model yet); the villagers NH's models (`villagers.ts`, villager3d/), the visitors cards of their renders posed
+  from the director (`motion3d.ts`); the lights `lights.ts`; the finger `gestures.ts`. The camera's ends come from the
+  layout's extent (the shoreline at まえ, the far end at ウェイ's door). `window.__world3d` (stats, view, go, client,
+  ground, where, focus, xRoom, strays, alphaBlends, away) for the e2e (`e2e/world3d.spec.ts`).
   - **The camera** (the user, 2026-11-02): the default zoom (1) is the widest it rests at, x centred, and one finger
     only scrolls along the island (its sideways movement ignored). Zoomed in past it, one finger pans sideways too (a
     free 2D pan with its fling), x held over the land plus 24 u of sea either side (`xRoom`: growing in over the first
     0.3 of zoom, so it's exactly centred at the default). A pinch zooms about its middle (the ground under it stays
     put, its x as far as the room lets it); pinching back toward the default eases x to the middle; past the default
     it gives with rubber-band resistance and, on release, springs back to the default over 350 ms, eased out (the
-    user's approved automatic move). In: up to 1.8. A gesture is one kind from start to end.
+    user's approved automatic move). In: up to 1.8. A gesture is one kind from start to end. No native scroll: the
+    island's viewport never scrolls.
   - **What comes and goes** is drawn from the DOM island's own nodes (`camera.svelte.ts`): a node with an `m3` art key
     stands as NH's model where the node is (its live position too; a move eases over `ms` as its sprite's CSS
     transition; `drop` falls in from above; `y` an absolute height: a fish's shadow under the sea), and one with a
-    `c3` is a character's card (a visitor) posed by its actor; their DOM art goes invisible (`.m3on`) and stays as the
-    tap box. Finds, weeds, the rock, decorations, the tape deck, the events' pieces, the critters (the bugs at their
-    flight height, the fish shadows turned the way they swim), the goal trees' fruit (greyed until grown, falling as the
-    same model), a shaken tree's drops; the stream's petals and leaves (`floats3d.ts`).
+    `c3` is a character's card (a visitor) posed by its actor; their DOM art goes invisible (`.m3on`, IslandScene's
+    `[data-r3]` rules) and stays as the tap box, its image never downloaded (`characters/artGate.ts`) unless the 3D
+    island has no model for its key (`m3off`). Finds, weeds, the rock, decorations, the tape deck, the events' pieces,
+    the critters (the bugs at their flight height, the fish shadows turned the way they swim), the goal trees' fruit
+    (greyed until grown, falling as the same model), a shaken tree's drops; the stream's petals and leaves
+    (`floats3d.ts`); the seasonal fall (petals, leaves, snow: `ambient3d.svelte.ts`).
   - **Flourishes** (`effects.ts`, `island/fx3d.ts`): a tap's dust and splash, a bush's leaves, sparks, drops, sparkles,
     the 「！」 of a bite: a few particles of NH's fx/* models in world space, depth-tested, fading; the DOM's own
     `.in3d`, invisible. A DOM reaction on art the canvas draws (a jiggle, a rustle, a shake) moves the model too
     (`island/echo3d.ts`).
   - **The board's focus** (docs/board.md): `world.three.focus(rect)` / `unfocus()` / `attach(id, obj)`.
-  - On a software renderer (CI's headless Chromium) it draws at pixel ratio 1 without the shadow map.
-- **The projector** (`camera.svelte.ts` `World`): every upright thing is a node at its feet (`{@attach world.at(…)}`)
-  placed by one tick: an upright billboard (translate + scale, faded near the horizon, sunk behind it), a flat mark
-  (also squashed by the ground's foreshortening) or a ground quad (a matrix3d, like the bands). **One depth order**: the
-  z-index from the feet (nearer in front, ties by x); a tree is two nodes, its canopy 14u nearer than its trunk, so a
-  villager just in front covers the trunk while the leaves cover its head. Overlays anchored in the world (a tree's
-  popup, a bite's 「！」) stand over everything at their true size. Only nodes in [camZ − 260, camZ + 900] are shown.
-- **The ground** is baked (`scripts/terrain.ts`, `npm run terrain`: one WebGL shader in Chrome, seeded noise, distance
-  fields with soft noisy edges, 4× supersampling, no outlines; `cwebp`): the sea's turquoise rings, wet sand and lacy
-  foam, the speckled sand, NH's grass with leaf flecks, ragged dirt paths with tufts and pebbles, the
-  campsite's worn clearing, the meandering stream and pond (dark channel, light shallows, muddy banks, overhanging
-  grass), the stream's mouth fanning into the shallows on the west beach, the stone bridge's deck (NH's own model seen
-  from straight above, `bridges/stone-deck` and its snowy look from `scripts/models.ts`, drawn as a texture with its
-  soft shadow on the water), the cliff's strata, the stairs and every still thing's contact shadow. 8 chunks of 270u per look (2 px a unit), drawn by 40 bands bent onto the log (`WorldGround`); chunks 0–3
-  at once, 4–7 when the camera nears them or the browser is idle; only the day's look loads. **Six looks**, each
-  dressed by `scripts/terrain-seasons.ts` (painted over the ground, under the contact shadows): spring (clover, 286 KB),
-  **spring-petals** in the blossom days Apr 1–10 (cherry petals heaped under the blossoming oaks, along the paths' edges,
-  a thin scatter elsewhere; 333 KB), summer (lush: tall tufts, clover, deeper green; 302 KB),
-  autumn (dry patches in the warm grass; 260 KB), **autumn-leaves** in the fall foliage Oct 16 – Dec 10 (maple leaves
-  heaped under the oaks and blown along おく's paths; the front lawn tidier, small piles close under its trees and a
-  few strays; none on the sand; 291 KB), winter (snow in soft drifts lit from the upper left and
-  blue in their lee, banks along the paths with their shade on the path, snow thinning out over the sand, the banks
-  snowy to the water's edge: NH's rivers never freeze; 233 KB). Time of day is never baked (the tint does it). Upright sprites stand at
-  the near edges: the cliff's face (40u tall, world.ts FACE_H: three broken layers scored top to bottom by NH's rounded
-  ribs and grooves, a thick scalloped grass lip with long drooping tufts, eight carved stone steps with lit rounded
-  noses and moss in the joints, mossy boulders at its foot); the stone bridge's near end (`WorldWater`: NH's model
-  seen level, its top 36%: the end posts and the deck's lip, `bridges/stone-front`, snowy in winter). The pond's edge wanders
-  and reed clumps (a few cattails) grow on its far and west banks.
-- **The live water** (`WorldWater`): the shore's foam wash (`ShoreWash`), the waterfall's sheets, foam and mist
-  (`Waterfall`: 50u wide and 45u tall, layered sheets with two slow translucent curtains, a wide foam pool, spray and
-  mist), glints twinkling on the open sea, flow streaks down the river, the pond's lily pads and ripple (petals
-  or maple leaves afloat in their weeks, and riding the river: NH's petal and leaf icons, one every ~50u from the falls'
-  pool to the mouth, none under the bridge, each 36u downstream over 15 s, turning): CSS only, held still under a sheet and while hidden.
-- **Layout** (`world.ts`): まえ: the wide front beach with the island's only palms (three, out of the way: one at each of its outer corners and a
+  - On a software renderer (CI's headless Chromium) it draws at its lightest (half the pixels, no shadow map); the
+    e2e's logic mode (`E2E_RENDER=none`) runs the frames and draws nothing.
+- **The projector** (`camera.svelte.ts` `World`): every world thing is a DOM node at its feet (`{@attach world.at(…)}`)
+  placed through the 3D camera by one step: an upright node (translate + scale; a modelled thing's squashed upright as
+  the model's height is foreshortened), a flat mark (also squashed by the ground's foreshortening) or a ground quad (a
+  matrix3d). Nothing is placed until the 3D camera is up. **One depth order** for the DOM: the z-index from the feet
+  (nearer in front, ties by x); a tree is two nodes, its canopy 14u nearer than its trunk. Overlays anchored in the
+  world (a tree's popup, a bite's 「！」) stand over everything at their true size. Only nodes in
+  [camZ − 600, camZ + 900] are shown.
+- **The ground and the water** are the layout's, built on the phone (`world3d/terrain.ts` buildGround: NH's ground
+  textures in `static/terrain/nh/`, its looks by the season and the blossom and foliage weeks; `world3d/water.ts`: the
+  sea, the rivers' flow, the falls, the ponds), docs/island-layout.md.
+- **Layout** (`world.ts`: the old fixed island's, which the editable layout's default was drawn from: `npm run
+  layout:default`; the live island reads the layout, docs/island-layout.md): まえ: the wide front beach with the island's only palms (three, out of the way: one at each of its outer corners and a
   young one by the water on the left; the palm beetles keep to them), plumeria at the
   grass edge, the villagers' homes A (132, 214, ウェイ) and B (262, 214, うめ) on both phones (never mirrored per phone) with the goal trees on their outer sides (60 / 332,
   216), the tape deck between them, the rock, the dig spots, a cedar (34, 442) and an oak (328, 494) behind the lawn on
@@ -474,17 +448,17 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   trunk, 72u from the bamboo, 34u from a prop; a weed spot 64u from the next), none under a canopy, behind a villager's
   spot, where a goal tree's fruit falls, in the villagers' stage in front of the homes or off the screen's edge.
   `scenery.test` checks the gaps and that no open lawn is more than 90u from anything (no dead zones). Rerun it after
-  moving a composed piece, then `npm run terrain` (the shadows).
+  moving a composed piece.
   **Wild flowers** (`world.ts` FLOWERS, `Flowers.svelte`): NH's flowers in seven clumps of 2–5 of one kind over the
   open lawn (four small ones on the front lawn, three round おく's ground), never on sand or a path; the season's
   kinds in turn (`scene.ts` WILD: tulips and hyacinths, lilies and roses, cosmos and mums, pansies and windflowers
-  blooming on under the snow), 30u (pansies, windflowers, mums lower, lilies taller), each with a baked soft shadow.
+  blooming on under the snow), 30u (pansies, windflowers, mums lower, lilies taller).
   Each flower's id is where it stands (`fl:<x>:<z>`): watering, hybrids and the flower bugs key on it.
   **Decor** (NH's models and catalog icons): streetlamps, garden lanterns, garden and flat rocks, the month's bushes, a
   bamboo grove, and the campfire on the clearing's east side (262, 944; NH's `FtrCampfire`) with two log stools at it,
-  clear of centre stage and the tent's door. Unlit by day; from dusk (.7) and at night its render's emissive look
-  breathes, three tongues of flame flicker over the logs, a warm halo and a pool of light on the clearing, all lights
-  (untinted, in the fire's depth: a villager in front covers them), still while covered or hidden.
+  clear of centre stage and the tent's door. Unlit by day; from dusk (.7) and at night three tongues of flame flicker
+  over the logs (the DOM's, untinted, in the fire's depth) and the 3D island's flame cards, glow, halo, pool and point
+  light burn, still while covered or hidden.
   **The fixed decor** (`world.ts` DECOR_SLOTS, `island/fixedDecor.ts`, `e2e/fixed-decor.spec.ts`): NH's outdoor
   furniture at one scale (world.ts DECOR_U, 3u a model unit, the decorations' too: a bench 40u beside an 80u villager;
   the campfire 47u, the stools 19u), each in its own spot with a footprint. For good: まえ's one bench at the left grass
@@ -501,8 +475,7 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   (NH's snowball and its face), melting through NH's three stages over the next three days; Bunny Day's egg arch on the
   arch's spot. The seasonal lamps and the illuminated tree light at dusk like the lanterns. All from the date, the hour
   and the seed: the same on both phones. Every spot is a walk obstacle all year and a spot a decoration can't take
-  ([Decorating](#decorating)), so a seasonal piece never lands on one. The permanent pieces' shadows are baked; a
-  seasonal one draws its own. A tap answers where it stands (nobody walks, my villager turns to it): a bench creaks and
+  ([Decorating](#decorating)), so a seasonal piece never lands on one. Their shadows are the 3D island's. A tap answers where it stands (nobody walks, my villager turns to it): a bench creaks and
   sheds a leaf (`creak`), the bar rings (`clang`), the pump gushes (`pump`), the sandcastle and the snowboy puff, the
   rest knock softly. The shishi-odoshi tips (NH's model posed: `deco/shishiodoshi-tip`) every 15–25 s while it's in
   view and on a tap, and knocks back on its stone: `kon` (local, cosmetic). The new sounds are synthesized
@@ -525,28 +498,21 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   arch, 12u off the water.
   `scenery.test` keeps every piece off the water, the paths, the footprints and the features' spots, and the walk
   reaching every door; bamboo and rocks are obstacles like the trees.
-- **Winter and night looks** (`scripts/models.ts`, [Official art](#official-art)): NH's own snowy models (the campsite,
-  the trees, the bushes: `<art>-winter`) and the models' emissive light (the campsite's lantern and door, the lamps'
-  glass: `<art>-lit`), laid over at dusk (.7) and night, over the tint (as the fireflies), with the lamps' glow
-  (`deco/lamp-glow`, drawn: `scripts/derive-art.ts`).
+- **Winter and night looks:** NH's snowy models and the models' emissive light (the campsite's lantern and door, the
+  lamps' glass), lit at dusk (.7) and night by the 3D island's lights (`world3d/lights.ts`).
 - **Sizes** (`scene.ts`), NH's proportions against an 80u villager (≈ 45 × 76px at the front on a 393px screen): hardwood
   120u · cedar 140–150u · palm ~110u · bush 34–40u · flower 30u · hanging fruit 20u · ground fruit 24u · a shell 32u
   (its art, ≈ 22px drawn) · a star fragment 24u · the bottle 28u · a mushroom 26u · a dig spot 26u · a weed 24u · a
   branch 36u, a coconut 28u · a present ≥ 30u · the bugs 1.6× their drawn sizes (a butterfly ≈ 29u, a beetle ≈ 18–24u,
   a ladybug ≈ 14u, the tarantula ≈ 27u) · fish shadows 20–64u by NH's size 1–6 (an eel 44u; fresh water 0.65×).
   Every tap target is at least 44px ([Scene interactions](#scene-interactions)).
-- **Fixed outside the log:** the sky (to the horizon), the HUD, the weather, the fireworks and the shooting stars;
-  a haze where the ground meets the sky; one tint for the time of day over the land.
-- **The cliff's face** sorts behind everything that stands (its depth at the plan's far end): a walker on the stairs
-  or on the tier above draws in front of it, as does everything below it (`e2e/world.spec.ts`: the foot, the middle
-  and the top of the stairs, and further back).
-- **The tint at the source** (IslandScene): the ground takes it as one multiply plane; every world node but a light
-  takes the same multiply as an SVG colour-matrix filter on what it draws (each image, svg and drawn bit; a wrapper's
-  ::before / ::after), never on a wrapper, so a tap's shake, a hop or a bob, which WebKit draws in a layer of its own,
-  stays tinted (on the wrapper, a tapped bush or tree flashed bright at night). A leaf's own filter takes the tint
-  first (`var(--leaf-tint,)`). `e2e/world.spec.ts` checks no moving thing sits under a tinted wrapper.
-- **Cost:** nothing runs when still: a scroll frame, a walk (one rAF while someone is on the way) or a change places
-  what moved; style writes only when a value changes. Measured at 4× CPU throttling: see `docs/decisions.md`.
+- **Fixed over the island:** the sky (to the horizon), the HUD, the weather, the fireworks and the shooting stars.
+- **The tint at the source** (IslandScene): what the DOM still draws over the canvas (a mark, a card with no model, a
+  flourish) takes the time of day's multiply as an SVG colour-matrix filter on what it draws (each image, svg and
+  drawn bit; a wrapper's ::before / ::after), never on a wrapper; a light (a lamp's, a firefly) takes none. A leaf's
+  own filter takes the tint first (`var(--leaf-tint,)`). The 3D island's light is its own scene's.
+- **Cost:** nothing runs when still: a camera move, a walk or a change places what moved (the engine's frames, the
+  game clock's steps while something moves); style writes only when a value changes. Measured at 4× CPU throttling: see `docs/decisions.md`.
 
 ### Buildings
 
@@ -767,7 +733,7 @@ objects on the grid near where they stood, made long (20 × 60): まえ at the f
 new middle, open grass for building, the stream running down its east side, the path through it, うめ's and the
 guest's houses with paths to their doors. Corners are round (NH's), cliffs are steps of 40u with NH's strata, a river
 stepping down a tier falls, stairs are stone steps; the 3D ground is built and baked from the layout on the phone
-(world3d/terrain.ts). The 2D island keeps world.ts's area until the 3D cutover. Each home is its owner's: its look
+(world3d/terrain.ts). Each home is its owner's: its look
 (いえを かえる: NH's player house or a villager's, wall, roof and door in their colours, the move-in tents, the campsite's
 tent) and its room (the tent's room system: うめ's house, the guest's), anyone welcome in. On the phone the members
 arrange the island's things the tent's way (layoutEdit/IslandEdit: a tray of every kind, a ghost green or red, drag a
@@ -777,41 +743,21 @@ and the tent).
 
 ### Decorating
 
-`contract/decor.ts`, `store/decor.svelte.ts`, `island/decor.ts`, `island/Decor.svelte`, `island/DecorMode.svelte`,
-`e2e/decor.spec.ts` ([backend](backend.md#events), decisions: *Decor is a last-writer-wins map*). Either of us puts
-NH's outdoor furniture on the island, moves it and takes it away; both phones show the same layout, kept for good
-(not day-scoped).
+`layoutEdit/IslandEdit.svelte`, `island/Decor.svelte`, `island/decor.ts`, `e2e/decor.spec.ts`, docs/island-layout.md
+"Phone editing". Either of us puts NH's outdoor furniture on the island, moves it, turns it and takes it away; both
+phones show the same island, kept for good: the decorations are the layout's objects of their kinds (the old
+decorations' map, `contract/decor.ts`, moved into the layout once as `m-<id>`: layout/migrate.ts).
 
-- **The items** (ten, NH's models in four facings, `scripts/models.ts` at one scale: 3u a model unit, a villager 80u):
-  いしどうろう (stone lantern), バードバス, ガーデンワゴン, アイアンガーデンテーブル and チェア, レンガのいど, たぬきのおきもの,
-  モンステラ, みちしるべ (signpost), いちりんしゃ (wheelbarrow). None of them is in the fixed decor (benches, the campfire,
-  the shishi-odoshi, the hammock, the pull-up bar) and none is seasonal. At most 30 on the island, shared: either of us
-  moves or takes away anyone's.
-- **In:** せってい → もようがえ → はじめる (the sheet closes; no new HUD control on the island). The tray stands at the
-  screen's foot in the thumb's reach: the ten items in two rows of five and ✓ おわる with the count (「3/30」); a bar
-  above it says what to do, or what is held and why it can't go.
-- **Place:** a tap on an item puts it down as a ghost on the nearest fine spot in the middle of the view (lifted with
-  a hop, its footprint on the ground; both stand over everything while it's held, so a tree or a villager in front
-  never hides them). One finger on it drags it (the island doesn't scroll under it; a drag on empty
-  ground still scrolls it, and a tap on the ground moves the ghost there); it moves a half tile (12u) at a time, its
-  footprint green where it may stand and red where not, the bar saying why (「みずの うえには おけません」). ↻ まわす turns
-  it a quarter, ✕ やめる lets it go, ✓ ここに おく places it (greyed while red).
-- **Where:** on grass, sand or a path (NH lets furniture stand anywhere on the ground); not over the water, off the
-  island or in front of the cliff's foot (the upper tier is out of view), not on the bridge or its ends, a fixed thing
-  (trunks, bushes, lamps, rocks, the tent's footprint, the tape deck), another decoration, a villager, or what a tap
-  must reach (the homes, the dig spots, the weeds' and mushrooms' spots, the flowers, the beach finds, a goal tree's
-  fallen fruit, centre stage, the doors, the stairs' and the bridge's ends, the banks one fishes from, the villagers'
-  outing spots); and never so it walls a place or a villager in (the walk graph with it must still reach every named
-  spot home reached without decorations: tested on a drop, ~3 ms, not every move).
-- **Move, put away:** a tap or a drag on a placed item picks it up (the same bar, with 🗑 しまう); ✓ puts it where it
-  is now, ✕ back where it was. しまう takes it away at once with とりけす on the banner for 5 s (a new one where it
-  stood). ✓ おわる places what's held (if it may stand there) and leaves the mode.
-- **Out of the mode** a placed item is a world thing: in the one depth order, an obstacle the villagers walk round
-  (the walk mask's cells under it and the tap navigation rebuilt when the layout changes), and a tap jiggles it where
-  it stands (my villager turns to it: no walk). The partner's change, just made, puffs where it lands and their
-  villager turns to it.
-- **Cost:** the renders are 1–3 KB each, fetched as an item first shows (the tray's ten with the mode); the mode is
-  its own chunk. A drag moves one world node a frame while the finger is down; nothing runs when still.
+- **The items** (ten, NH's models): いしどうろう (stone lantern), バードバス, ガーデンワゴン, アイアンガーデンテーブル and チェア,
+  レンガのいど, たぬきのおきもの, モンステラ, みちしるべ (signpost), いちりんしゃ (wheelbarrow), with the layout's other kinds in
+  IslandEdit's tray tabs.
+- **In:** せってい → もようがえ → はじめる (the sheet closes; no new HUD control on the island): IslandEdit over the 3D
+  camera, the tent's way: a tray of every kind, a ghost green or red, a drag a tile at a time, a tap on the ground
+  puts it there, ↻ まわす, ✕, 🗑, ✓ (island-layout.md "Phone editing").
+- **Out of the mode** a placed item is a world thing: NH's model on the 3D island, its DOM node the tap area (its 2D
+  art hidden under the model), an obstacle the walk goes round (layout/nav.ts), and a tap jiggles it where it stands
+  (my villager turns to it: no walk). The partner's change, just made, puffs where it lands and their villager turns
+  to it.
 
 ### The bulletin board
 

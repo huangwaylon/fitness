@@ -66,8 +66,7 @@ This is our version of the "null renderer" game engines ship for servers and tes
 `?render=none&demo`, and `__world3d.stats().drawn` says which mode is on. A test that needs pixels or draw calls
 (`stats().calls`, a canvas's alpha, vertex sanity) is tagged `@render` and runs only in layer 3.
 Stays e2e, logic mode: anything that's a flow across the UI and the game (tap-walk, catch → plate → ずかん, the board,
-decorating, tent editing, sheets and popups, sync between two phones, the HUD over the island, the 2D island while
-it's still the default).
+decorating, tent editing, sheets and popups, sync between two phones, the HUD over the island, the no-WebGL line).
 
 **3. Drawn smoke (`@render`, `@smoke`), advisory.** The deploy gates on the logic tier only (the user, Nov 2026): CI's software GL isn't representative of the target (iPhone 15/16 Safari, Metal), so rendering is judged on the iOS Simulator and the phones' telemetry; this tier still runs on each push and reports, never blocking. Seven tests with real (software) GL: the island draws and a lawn tap
 walks; the camera's scroll and pinch; screen ↔ world (the tap areas sit on the models); nothing strays or goes NaN; the
@@ -158,6 +157,6 @@ auto-rollback at this size. A red full tier is the next agent's first job, just 
 3. **Rules into vitest:** the rule parts of holidays, celeste, finds, critters, bugs, weather and seasonal (above).
 4. **Visual snapshots:** a handful in the full tier, with baselines made on CI's image (a `--update-snapshots` run on
    demand, its PNGs committed).
-5. **The full tier drawn on the layout's 3D island** (the layout specs time out drawn; they pass in logic mode), and an
-   `e2e-layout` tier (`E2E_ISLAND=3d E2E_LAYOUT=1`, non-gating) once the switch is close.
+5. **The full tier drawn on the layout's 3D island** (the layout specs time out drawn; they pass in logic mode). (Every
+   test is on the 3D island on its layout since the 2D island went: no `E2E_ISLAND` / `E2E_LAYOUT`, no `?island`.)
 6. **Test impact analysis** on PRs (`--only-changed`) if the gate grows past ~3 min again.
