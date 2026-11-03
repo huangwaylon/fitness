@@ -96,7 +96,7 @@ const JOBS: Job[] = [
   // NH's museum, built up in full (its art gallery's banners): the layout's `museum` (7 × 4 tiles), its doors in their frame
   { name: 'museum', parts: [['StrcMuseumA02', 'StrcMuseumA02'], ['StrcMuseumA02', 'StrcMuseumA02Door0']], maxTex: 512, tris: 8000 },
   // NH's Nook's Cranny, built up (its spotlights and its awning), the Japanese sign (タヌキ商店): the layout's `shop`
-  { name: 'shop', parts: [['StrcMarketA02', 'StrcMarketA02'], ['StrcMarketA02', 'StrcMarketA02Door0']], tex: ['StrcMarketA02_JPja'], maxTex: 512, tris: 4500 },
+  { name: 'shop', parts: [['StrcMarketA02', 'StrcMarketA02'], ['StrcMarketA02', 'StrcMarketA02Door0']], tex: ['StrcMarketA02_JPja'], maxTex: 512, tris: 8000 },
   // the lamps (their _Emi lights at night), the campfire, the furniture
   ftr('streetlamp', 'FtrStreetlamp'),
   ftr('garden-lantern', 'FtrLampGarden'),
