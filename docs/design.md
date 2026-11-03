@@ -1035,6 +1035,13 @@ it lies, its plate in the bottom stack (nothing held over the head). The first o
 
 - **Seashells** (NH's eight; the summer shell rare, likelier June–September): one washes up every 60–120 s, the newest
   three lie on the sand. A tap picks it up: 「タカラガイを ひろった！」.
+- **Washing in** (the user, 2026-11-03: "instead of suddenly appearing, can we animate them fading in and moving up
+  the beach like they're being swept up onto the beach"; `layout/swash.ts`): a shell, the bottle or a fragment that
+  turns up while the island is open waits for the next wave at its stretch of the coast ([The sea's wash](#world)),
+  then rides it in: from just past the waterline straight up the beach (the shore's normal, from the land field) to
+  where it lies, ~1–1.5 s easing out, fading in (its model's own opacity, things.ts; its tap area moves with it).
+  What lies there as the island opens just lies; reduced motion: it fades in where it lies. Taking it is as ever.
+  `?find=washed`: a bottle washes in 1.5 s after the island opens (`e2e/finds.spec.ts`).
 - **Where things lie** (`beachSpot`): shells, fragments and the bottle keep 34u apart (`BEACH_GAP`), each taking a
   spot that far from everything there in a seeded order; worked out once per date and seed, so nothing moves.
 - **Fossils** (all 73 of NH's: the standalone ones and every dinosaur piece, `FOSSIL_SETS`): NH's star-shaped dig

@@ -46,6 +46,7 @@
   import { buildStructure, structurePlaces } from './structure.ts';
   import { POND_Y, buildPond } from './pond.ts';
   import { pondOval, pondPlaces } from '#lib/layout/ponds.ts';
+  import { washAt } from '#lib/layout/swash.ts';
   import { inOval } from '../island/world.ts';
   import { extentOf, type Layout } from '#lib/layout/model.ts';
   import { GRASS_Y, SEA_Y as LAYOUT_SEA_Y, WATER_DROP as LAYOUT_DROP, fieldOf } from '#lib/layout/height.ts';
@@ -339,6 +340,8 @@
     pitch?: number;
     grey: number;
     art?: Element | null;
+    /** Its opacity, when it washes in (Over `fade`). */
+    fade?: number;
   }
   const live3 = new Map<string, Live3>();
   /** The emitters' last flourish, the lines drawn (by node). */
@@ -447,9 +450,17 @@
         yaw += Math.hypot(dx, dz) > 0.5 ? Math.atan2(dx, -dz) : L.yaw - (n.m3.yaw ?? 0);
       }
       const on = n.shown && !n.m3.off, grey = n.m3.grey ?? 0, pitch = n.m3.pitch ?? 0;
-      if (fresh || on !== L.on || x !== L.x || z !== L.z || lf !== L.lift || yaw !== L.yaw || grey !== L.grey || pitch !== (L.pitch ?? 0))
-        e.things.over(n.id, { hidden: !on, x, z, lift: lf, yaw, pitch, grey, face: n.m3.face === 'camera' });
-      Object.assign(L, { on, x, z, lift: lf, yaw, pitch, grey, art });
+      // a find washing in from the sea (Finds: its node slides it up the beach): it fades in as it comes
+      let fade = L.fade;
+      if (n.m3.wash) {
+        const t = performance.now(), w = washAt(n.m3.wash, t);
+        fade = w.a;
+        // (waiting for its wave: the ambient rate; sliding in: the full)
+        if (!w.done) moving = t >= n.m3.wash.t0 ? true : moving || 'ambient';
+      }
+      if (fresh || on !== L.on || x !== L.x || z !== L.z || lf !== L.lift || yaw !== L.yaw || grey !== L.grey || pitch !== (L.pitch ?? 0) || fade !== L.fade)
+        e.things.over(n.id, { hidden: !on, x, z, lift: lf, yaw, pitch, grey, face: n.m3.face === 'camera', ...(fade !== undefined && { fade }) });
+      Object.assign(L, { on, x, z, lift: lf, yaw, pitch, grey, art, fade });
       // its line (a fishing line, a thread): from where it starts to it, sagging a little
       if (n.m3.line) {
         let ln = lines.get(n.id);
