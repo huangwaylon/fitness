@@ -1,6 +1,6 @@
-// The island in 3D (?island=3d, せってい's switch: docs/decisions.md "The island in 3D"): the 2D island never loads
-// three; the 3D one draws its canvas under the DOM island, a tap on open lawn walks my villager, one finger scrolls
-// along the island only (z, never x), two pinch the zoom, and /world3d (the POC's address) opens it.
+// The island in 3D (docs/decisions.md "The island in 3D"): it draws its canvas under the DOM island, a tap on open
+// lawn walks my villager, one finger scrolls along the island only (z, never x), two pinch the zoom, and /world3d (the
+// POC's address) opens it.
 import { expect, test, type Page } from '@playwright/test';
 
 type W3 = {
@@ -18,18 +18,13 @@ const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()
 const ready = (page: Page) => page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
 const Q = 'demo&date=2026-11-04T12:00&critter=none&visitor=none';
 
-test('the 2D island never loads three; ?island=3d draws the island in 3D and a tap on the lawn walks my villager', { tag: '@render' }, async ({ page }) => {
+test('the island draws in 3D and a tap on the lawn walks my villager', { tag: '@render' }, async ({ page }) => {
   test.setTimeout(60_000);
   const scripts: string[] = [];
   page.on('response', async (r) => {
     if (r.url().endsWith('.js')) scripts.push((await r.text().catch(() => '')).includes('WebGLRenderer') ? 'three' : 'other');
   });
-  await page.goto(`?${Q}&island=2d`);
-  await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
-  await page.waitForTimeout(800); // (proving nothing loads three for a while)
-  expect(scripts).not.toContain('three');
-
-  await page.goto(`?${Q}&island=3d`);
+  await page.goto(`?${Q}`);
   // (the 3D island's chunk and its first models: under CI's software GL beside other drawn tests, more than 5 s)
   await expect(page.locator('canvas[data-w3d]')).toBeVisible({ timeout: 30_000 });
   await ready(page);
@@ -78,7 +73,7 @@ const idle = (page: Page) => expect.poll(() => page.evaluate(() => (window as un
 
 test('the 3D camera: at the default zoom one finger scrolls along the island only, two pinch the zoom, nothing else moves it', { tag: '@smoke' }, async ({ page }) => {
   test.setTimeout(60_000);
-  await page.goto(`?${Q}&island=3d`);
+  await page.goto(`?${Q}`);
   await ready(page);
   const { min, max } = await w3(page, (w) => w.limits());
   expect(max).toBeGreaterThan(min + 200);
@@ -106,7 +101,7 @@ test('the 3D camera: at the default zoom one finger scrolls along the island onl
 
 test('the 3D camera zoomed in: one finger pans sideways too, held over the island; a pinch past the default springs back, centred', async ({ page }) => {
   test.setTimeout(60_000);
-  await page.goto(`?${Q}&island=3d`);
+  await page.goto(`?${Q}`);
   await ready(page);
   const drag = async (x0: number, dx: number, n: number) => {
     await touches(page, line(n, (i) => [[x0 + i * dx, 500]]), true, true);
@@ -155,19 +150,16 @@ test('the 3D camera zoomed in: one finger pans sideways too, held over the islan
   expect(side.camX).toBeCloseTo(195 + side.room, 1);
 });
 
-test('/world3d, the POC\'s address, opens the island in 3D; ?island=2d the 2D island', async ({ page }) => {
+test('/world3d, the POC\'s address, opens the island', async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto(`world3d/?${Q}`);
-  await expect(page).toHaveURL(/island=3d/);
+  await expect(page).toHaveURL(/\/fitness\/\?demo/);
   await ready(page);
-  await page.goto(`?${Q}&island=2d`);
-  await expect(page.locator('.if-scene')).toBeVisible();
-  await expect(page.locator('canvas[data-w3d]')).toHaveCount(0);
 });
 
 test('the board\'s focus: the camera frames a thing, the finger does nothing meanwhile, and restore() goes back exactly', async ({ page }) => {
   test.setTimeout(60_000);
-  await page.goto(`?${Q}&island=3d`);
+  await page.goto(`?${Q}`);
   await ready(page);
   const before = await w3(page, (w) => w.view());
   await page.evaluate(() => (window as unknown as { __world3d: { focus(x: number, z: number, l: number): Promise<void> } }).__world3d.focus(150, 60, 20));
@@ -191,7 +183,7 @@ test('nothing drawn strays off the island: no NaN or far-flung vertex (the falli
   const warns: string[] = [];
   page.on('console', (m) => (m.type() === 'warning' || m.type() === 'error') && /THREE/.test(m.text()) && warns.push(m.text()));
   // the autumn's falling leaves round the camera (NH's leaf models: quantized, so a baked matrix overflowed them)
-  await page.goto(`?${Q}&island=3d`);
+  await page.goto(`?${Q}`);
   await ready(page);
   const strays = () => page.evaluate(() => (window as unknown as { __world3d: { strays(): unknown[] } }).__world3d.strays());
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { stats(): { calls: number } } }).__world3d.stats().calls)).toBeGreaterThan(10);
@@ -204,7 +196,7 @@ test('nothing drawn strays off the island: no NaN or far-flung vertex (the falli
 
 test('at night the glows add light without touching the canvas\'s alpha (a lamp\'s halo over the sky was a black box)', { tag: '@render' }, async ({ page }) => {
   test.setTimeout(60_000);
-  await page.goto(`?demo&date=2026-11-04T22:00&critter=none&visitor=none&island=3d`);
+  await page.goto(`?demo&date=2026-11-04T22:00&critter=none&visitor=none`);
   await ready(page);
   // at the front at the closest zoom, the far lamps' halos behind the campsite's trees
   await page.evaluate(() => {
@@ -238,7 +230,7 @@ const domArt = (page: Page) => page.evaluate(() => {
 
 test('the 3D island draws what the 2D sprites did: no 2D art shows over it (a scroll, a high five), and the first high five\'s sparkles are ready', async ({ page }) => {
   test.setTimeout(60_000);
-  await page.goto(`?${Q}&island=3d`);
+  await page.goto(`?${Q}`);
   await ready(page);
   // the flourishes' models are loaded and on the GPU before any is asked for
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { fxWarmed(): boolean } }).__world3d.fxWarmed()), { timeout: 20_000 }).toBe(true);
@@ -259,7 +251,7 @@ test('the 3D island draws what the 2D sprites did: no 2D art shows over it (a sc
 });
 
 test('a goal tree\'s glints (all four met) stand whole on the 3D island: the canopy\'s node is squashed upright as the model, the stars not', async ({ page }) => {
-  await page.goto(`?demo&date=2026-11-04T23:00&critter=none&visitor=none&island=3d`);
+  await page.goto(`?demo&date=2026-11-04T23:00&critter=none&visitor=none`);
   await ready(page);
   await expect(page.locator('.glints[data-tree]').first()).toBeAttached();
   // each glint's aspect on screen (its canopy node's scale × its own), whatever the node's squash
@@ -277,7 +269,7 @@ test('a goal tree\'s glints (all four met) stand whole on the 3D island: the can
 
 test('one source for screen ↔ world: at the default, zoomed in panned sideways and scrolled far, the tap areas sit on the 3D models, a ground tap walks where the camera says, and its ring is drawn once', { tag: '@smoke' }, async ({ page }) => {
   test.setTimeout(60_000);
-  await page.goto(`?${Q}&island=3d`);
+  await page.goto(`?${Q}`);
   await ready(page);
   type Wd = { mine(): [number, number] };
   type W3x = W3 & { where(id: string): { x: number; y: number; z: number } | null; xRoom(): number; ground(cx: number, cy: number): { x: number; z: number } | null };

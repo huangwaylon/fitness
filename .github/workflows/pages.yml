@@ -14,9 +14,6 @@ on:
   pull_request:
     paths: ['app/**', '.github/workflows/pages.yml']
   workflow_dispatch:
-  # nightly: the 3D island's suite (e2e-3d), until it's green and gates the cutover
-  schedule:
-    - cron: '17 18 * * *'
 
 # Least privilege: the build job (which runs dependency code: vite plugins, svelte-check, Playwright) can only read;
 # only the deploy job can publish.
@@ -28,9 +25,9 @@ permissions:
 # then the newest runs. (Each job had its own group before, cancelling the older run's: in a burst nothing finished,
 # and with the groups never cancelling, each waiting run lost a few shards to the next push and none deployed.)
 # `deploy`'s own group is never cancelled halfway either. The full tier is its own workflow after this one
-# (e2e-full.yml): this run's result is the gate's alone. The nightly run (the long e2e-3d, no deploy) has a group of its own.
+# (e2e-full.yml): this run's result is the gate's alone.
 concurrency:
-  group: pages-${{ github.ref }}${{ github.event_name == 'schedule' && '-nightly' || '' }}
+  group: pages-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -236,61 +233,6 @@ jobs:
           name: e2e-timings
           path: e2e-timings.json
           retention-days: 30
-
-  # The same suite on the 3D island (E2E_ISLAND=3d: せってい's switch in each test's localStorage), ahead of the cutover
-  # that makes it the default (docs/world3d-gaps.md). Not gating yet: it never holds the deploy back (not in deploy's
-  # needs, continue-on-error), and its failures are in its job summary; it gates once it's green. Only nightly and on
-  # demand (`gh workflow run pages.yml`) until then: its 8 runners red on every push bought nothing.
-  e2e-3d:
-    needs: build
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    continue-on-error: true
-    concurrency:
-      group: pages-e2e-3d-${{ matrix.shard }}-${{ github.ref }}
-      cancel-in-progress: true
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7, 8]
-    defaults:
-      run:
-        working-directory: app
-    env:
-      BASE_PATH: /${{ github.event.repository.name }}
-      E2E_ISLAND: 3d
-      # the logic tier's way (docs/ops/test-strategy.md): the 3D island runs its frames and draws nothing; what needs the
-      # pixels (@render) is the drawn smoke's
-      E2E_RENDER: none
-    steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: app/package-lock.json
-      - run: npm ci --ignore-scripts --no-audit --no-fund
-      - id: pw
-        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
-      - id: browsers
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}-chromium-headless-shell
-      - if: steps.browsers.outputs.cache-hit != 'true'
-        run: npx playwright install --only-shell chromium
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: site
-          path: app/build-pages
-      - id: e2e
-        run: npx playwright test --project=chromium --grep-invert @render --shard=${{ matrix.shard }}/8
-      - name: The failures, in the job summary
-        if: failure() && steps.e2e.outcome == 'failure'
-        run: node scripts/e2e-report.ts playwright-results.json "Failed on the 3D island (E2E_ISLAND=3d), shard ${{ matrix.shard }}" >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
     needs: [build, checks, e2e-logic]

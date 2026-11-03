@@ -57,12 +57,11 @@ test('the seasons swap their pieces in: the blossom days’ picnic set and pond 
   await expect(page.locator('[data-scenery-id="rock-m1"] [data-look]')).toHaveAttribute('data-look', 'deco/pond-stone-sakura');
   await open(page, '2026-11-10T21:00', 'oku');
   await expect(page.locator('[data-scenery-id="lantern-1"] [data-look]')).toHaveAttribute('data-look', 'deco/mushroom-lamp');
-  if (await is3d(page)) {
-    // the 3D island: the lamp's model is NH's mushroom lamp (a lit one: world3d/things.ts LAMP), the night's lamps on
-    await expect.poll(() => w3(page, (w) => w.where('lantern-1')?.model)).toBe('deco/mushroom-lamp');
-    await expect.poll(() => w3(page, (w) => w.lamps())).toContain('lantern-1');
-    await expect.poll(() => w3(page, (w) => w.stats().points)).toBeGreaterThan(0);
-  } else await expect(page.locator('[data-glow="lantern-1"]')).toHaveCount(1);
+  // the lamp's model is NH's mushroom lamp (a lit one: world3d/things.ts LAMP), the night's lamps on
+  await is3d(page);
+  await expect.poll(() => w3(page, (w) => w.where('lantern-1')?.model)).toBe('deco/mushroom-lamp');
+  await expect.poll(() => w3(page, (w) => w.lamps())).toContain('lantern-1');
+  await expect.poll(() => w3(page, (w) => w.stats().points)).toBeGreaterThan(0);
   await open(page, '2026-12-20T11:00', 'oku');
   await expect(page.locator('[data-fixture="hammock"]')).toHaveAttribute('data-look', 'deco/illumi-tree');
 });

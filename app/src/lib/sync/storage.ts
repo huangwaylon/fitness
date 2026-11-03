@@ -80,11 +80,6 @@ export const DEVICE = {
   /** localStorage: how many times this phone said 「いまの かぐを おいてね」 (a tap on another piece while one is held:
    *  the hint shows the first few times only; tent/TentEdit.svelte). */
   tentHoldHint: 'island.tentHoldHint',
-  /** localStorage: `3d` | `2d`: how this phone draws the island (せってい's 3D switch; store/islandRender.svelte.ts). */
-  islandRender: 'island.render',
-  /** localStorage: `on`: the 3D island reads the layout, as `?layout` does, ahead of the cutover (the e2e's E2E_LAYOUT;
-   *  island/site.svelte.ts). */
-  islandLayout: 'island.layoutOn',
   /** localStorage: `1` | `0`: this device's WebGL is a software renderer (asked once: a throwaway context costs
    *  seconds under SwiftShader; world3d/Island3D.svelte draws at its lightest on one). */
   softGL: 'island.softGL'

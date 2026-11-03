@@ -1,4 +1,4 @@
-// Fishing on the 3D island (?island=3d; docs/design.md "Fishing"): the whole flow in every kind of water, the sea by
+// Fishing on the 3D island (docs/design.md "Fishing"): the whole flow in every kind of water, the sea by
 // day, the river and the pond at night. A tap by the shadow casts in place; my 3D villager takes out NH's rod and faces
 // the float, the line from the rod's tip; the fish nibbles and bites (the float under, the 「！」); a tap reels it in
 // and the catch plate names it; the rod goes away. Where the 3D island draws the shadow and the float is where their
@@ -45,7 +45,7 @@ for (const [water, q, cam, sel, miss] of [
     // catch plate is missed (the bite's window under CI's load); the logic tier (E2E_RENDER=none) runs it
     test.fixme(!!process.env.CI && process.env.E2E_RENDER !== 'none', 'CI drawn tier: the bite window is missed under its software GL');
     await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
-    await page.goto(`?demo&visitor=none&island=3d${q}`);
+    await page.goto(`?demo&visitor=none${q}`);
     await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
     if (cam !== null) await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), cam);
     await expect(page.locator(sel)).toBeAttached({ timeout: 10_000 });

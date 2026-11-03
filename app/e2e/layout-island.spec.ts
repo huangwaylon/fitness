@@ -1,12 +1,12 @@
 // The island on its editable layout (docs/island-layout.md "What the 3D integration must change"; island/site.svelte.ts):
-// with the 3D island and `?layout`, the gameplay reads the long layout: the doors, the homes, the walk, the waters.
+// the gameplay reads the long layout: the doors, the homes, the walk, the waters.
 import { expect, test, type Page } from '@playwright/test';
 import { is3d, openNear, quiet, tapOn } from './island';
 
 type Site = { on: boolean; doors: Record<string, [number, number]>; homes: { A: [number, number]; B: [number, number] }; stage: [number, number]; named: Record<string, [number, number]>; grass: [number, number][] };
 const site = (page: Page) => page.evaluate(() => (window as unknown as { __world: { site(): Site } }).__world.site());
 const world = <R,>(page: Page, fn: string) => page.evaluate(`window.__world.${fn}`) as Promise<R>;
-const ISLAND = './?demo&island=3d&layout&visitor=none&critter=none&date=2026-11-04T12:00';
+const ISLAND = './?demo&visitor=none&critter=none&date=2026-11-04T12:00';
 
 test('the long layout: its doors, homes, centre stage and named spots', async ({ page }) => {
   await page.goto(ISLAND);
@@ -19,19 +19,6 @@ test('the long layout: its doors, homes, centre stage and named spots', async ({
   expect(s.doors['home-G'][1]).toBeGreaterThan(700);
   expect(s.stage[1]).toBeGreaterThan(1200);
   for (const n of ['homeA', 'homeB', 'centreStage', 'pondside', 'door-campsite', 'seatPondL', 'stoolW', 'pullup', 'riverEast', 'mouth']) expect(s.named[n], n).toBeTruthy();
-});
-
-test('without ?layout the 3D island keeps world.ts’s island', async ({ page }) => {
-  // (nor the e2e's own switch: E2E_LAYOUT)
-  await page.addInitScript(() => localStorage.removeItem('island.layoutOn'));
-  await page.goto('./?demo&island=3d&visitor=none&critter=none');
-  expect(await is3d(page)).toBe(true);
-  const s = await site(page);
-  // (at the cutover the 3D island reads its layout without ?layout: island/site.svelte.ts LAYOUT_3D)
-  test.skip(s.on, 'the layout is the 3D island’s own now (LAYOUT_3D)');
-  expect(s.on).toBe(false);
-  expect(s.doors.campsite[1]).toBeLessThan(1000);
-  expect(s.doors['home-B']).toBeUndefined();
 });
 
 test('うめ’s home: a tap walks up to its door and goes in to its room', async ({ page }) => {
@@ -172,7 +159,7 @@ test('the editor moves うめ’s home: the phone’s door, walk and tap area fo
 });
 
 test('a visitor on the long layout: K.K. at the layout’s centre stage by the campsite, and a tap talks to him', async ({ page }) => {
-  await page.goto('./?demo&island=3d&layout&critter=none&date=2026-10-24T19:00'); // a Saturday evening: K.K.
+  await page.goto('./?demo&critter=none&date=2026-10-24T19:00'); // a Saturday evening: K.K.
   expect(await is3d(page)).toBe(true);
   const { stage, doors } = await site(page);
   expect(Math.hypot(stage[0] - doors.campsite[0], stage[1] - doors.campsite[1])).toBeLessThan(200);

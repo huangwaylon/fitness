@@ -1,5 +1,4 @@
-// The island's two renderers in the specs (docs/ops/testing.md "E2E_ISLAND"): which one a page draws (`is3d`), the 3D
-// island's hooks (`w3`, window.__world3d: Island3D.svelte), and a tap on a DOM target only where it is that target's
+// The 3D island in the specs: its being up (`is3d`: the island's hooks and its models loaded), its hooks (`w3`, window.__world3d: Island3D.svelte), and a tap on a DOM target only where it is that target's
 // (`tapOn`: in 3D the whole island is in view, so a villager or a visitor in front covers much of a small door).
 import { expect, type Locator, type Page } from '@playwright/test';
 
@@ -21,7 +20,7 @@ export type W3 = {
 };
 export const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()})(window.__world3d)`) as Promise<R>;
 
-/** The island drawn in 3D on this page (once the island is up): the 3D one's loaded too. */
+/** The island up on this page and drawn in 3D, its first models loaded (false: no WebGL, the island's message). */
 export async function is3d(page: Page): Promise<boolean> {
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   if (!(await page.locator('.if-scene[data-r3]').count())) return false;
@@ -88,8 +87,8 @@ export const step = (page: Page, ms: number) => page.clock.runFor(ms);
 export const quiet = (page: Page, timeout = 15_000) =>
   expect.poll(() => page.evaluate(() => (window as unknown as { __world?: { quiet?(): boolean } }).__world?.quiet?.() ?? false), { timeout, message: 'the opening beats over' }).toBe(true);
 
-/** world.ts's places as the page's island has them (the layout's on the 3D island with the layout on): a spec reads
- *  these, not world.ts's constants imported here (those are the 2D island's). */
+/** world.ts's places as the page's island has them (the layout's): a spec reads these, not world.ts's constants
+ *  imported here (those are the old fixed island's, before the layout is applied). */
 export type Geo = {
   CAMS: { mae: number; oku: number }; SHORE_Z: number; POND: { x: number; z: number; rx: number; rz: number }; SPRING: { x: number; z: number; rx: number; rz: number };
   CENTRE_STAGE: [number, number]; ARCH: [number, number]; CAKE: [number, number]; HOMES: { A: [number, number]; B: [number, number] };

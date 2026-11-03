@@ -20,7 +20,6 @@
   import HelpGuide from './HelpGuide.svelte';
   import SoundSection from './SoundSection.svelte';
   import LangSection from './LangSection.svelte';
-  import RenderSection from './RenderSection.svelte';
   import SyncSection from './SyncSection.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -139,7 +138,6 @@
       {/if}
       <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound">{t('panel.sound')}</h2><SoundSection /></section>
       <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang">{t('panel.lang')}</h2><LangSection /></section>
-      <section class="sec" aria-labelledby="sec-render"><h2 id="sec-render">{t('panel.render')}</h2><RenderSection /></section>
       {#if !guest}<section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync">{t('panel.sync')}</h2><SyncSection {view} /></section>{/if}
       <section class="sec" aria-labelledby="sec-help">
         <h2 id="sec-help">{t('panel.help')}</h2>

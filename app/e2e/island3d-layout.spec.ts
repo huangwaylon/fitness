@@ -1,4 +1,4 @@
-// The 3D island on its layout (island/site.svelte.ts site.on: ?island=3d&layout until the cutover): the ground is the
+// The 3D island on its layout (island/site.svelte.ts site.on): the ground is the
 // layout's (terrain.ts buildGround), its objects placeObjects' (one model an id: the rock is drawn once), the homes and
 // NH's bridges and stairs stood on it (engine.ts placeGroup), the camera's far end at ウェイ's door; the もようがえ is
 // the layout's own (layoutEdit/IslandEdit.svelte over this camera), a bench put down is drawn where it went.
@@ -15,10 +15,10 @@ type W3 = {
   groups(): { name: string; n: number }[];
 };
 const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()})(window.__world3d)`) as Promise<R>;
-const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none&island=3d';
+const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
 
-async function open(page: Page, q = '&layout') {
-  await page.goto(`${Q}${q}`);
+async function open(page: Page) {
+  await page.goto(Q);
   await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 60_000 });
 }
 

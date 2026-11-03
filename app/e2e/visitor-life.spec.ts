@@ -111,34 +111,26 @@ test('arriving: from the campsite on foot along the paths (?arrive); leaving to 
   };
   await expect(v).toHaveAttribute('data-phase', 'arrive');
   await expect(v).toHaveClass(/walking/);
-  // from the campsite, out of sight from まえ: she comes into view on the lawn as she nears her spot (the 3D island
-  // shows the whole island: she sets off from the campsite's door in view)
-  const three = await is3d(page);
-  const door = three ? await page.evaluate(([x, z]) => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x, z), campDoor(await geo(page))) : null;
+  // she sets off from the campsite's door, in view (the 3D island shows the whole island)
+  await is3d(page);
+  const door = await page.evaluate(([x, z]) => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x, z), campDoor(await geo(page)));
   // (on the page's clock until the 3D island has placed her node where she stands: its first box is a stale one)
   const box0 = (await v.boundingBox())!;
-  for (let i = 0; three && i < 30; i++) {
+  for (let i = 0; i < 30; i++) {
     const b = (await v.boundingBox())!;
     if (Math.hypot(b.x - box0.x, b.y - box0.y) > 1) break;
     await page.clock.fastForward(100);
   }
   const start = (await v.boundingBox())!;
-  if (!three) {
-    await expect(v.locator('.art')).toBeHidden();
-    await until(() => v.locator('.art').isVisible(), 26);
-  }
   await until(async () => (await v.getAttribute('data-phase')) === 'here', 26);
-  if (door) {
-    // she set off from the campsite (its way out, in front of the door): nearer it than her spot on the lawn (on screen:
-    // far up the island the camera foreshortens the way)
-    const spot = (await v.boundingBox())!, off = (b: { x: number; y: number }) => Math.hypot(b.x - door[0], b.y - door[1]);
-    expect(off(start)).toBeLessThan(Math.hypot(start.x - spot.x, start.y - spot.y));
-  }
+  // she set off from the campsite (its way out, in front of the door): nearer it than her spot on the lawn (on screen:
+  // far up the island the camera foreshortens the way)
+  const spot = (await v.boundingBox())!, off = (b: { x: number; y: number }) => Math.hypot(b.x - door[0], b.y - door[1]);
+  expect(off(start)).toBeLessThan(Math.hypot(start.x - spot.x, start.y - spot.y));
   // the visit ends 30 s after it began, however long the walk from the campsite took (the route's length moves with
   // the scenery the walk goes round)
   await until(async () => (await v.getAttribute('data-phase')) === 'leave', 32);
   await expect(v).toHaveClass(/walking/);
-  if (!three) await until(async () => !(await v.locator('.art').isVisible()), 20);
   await until(async () => (await page.locator('[data-visitor]').count()) === 0, 30);
 });
 
