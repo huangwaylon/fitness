@@ -11,7 +11,7 @@
 // Everything is bent (bend.ts) like the rest of the scene.
 import {
   BufferGeometry, ClampToEdgeWrapping, Color, DataTexture, DoubleSide, Float32BufferAttribute, GLSL3, Group, LinearFilter, LinearMipmapLinearFilter, Mesh,
-  MeshBasicMaterial, MeshLambertMaterial, NearestFilter, OrthographicCamera, PlaneGeometry, RawShaderMaterial, RepeatWrapping, RGBAFormat, SRGBColorSpace,
+  MeshLambertMaterial, NearestFilter, OrthographicCamera, PlaneGeometry, RawShaderMaterial, RepeatWrapping, RGBAFormat, SRGBColorSpace,
   Scene, ShaderMaterial, Texture, TextureLoader, Uint32BufferAttribute, UnsignedByteType, WebGLRenderTarget, type WebGLRenderer
 } from 'three';
 import { bend, BEND_GLSL, bendU } from './bend.ts';
@@ -216,8 +216,10 @@ void main(){
   vec3 wet = mix(SAND_WET*1.04, SAND_WET*0.9, smoothstep(-6.0, 4.0, dn));
   wet = mix(wet, mix(wet, vec3(1.0), 0.3), smoothstep(0.5, 0.85, gn(vec2(p.x/9.0, p.y/1.8), 254))*0.3*smoothstep(-4.0, 2.0, dn));
   sc = mix(sc, wet, smoothstep(-9.0, -3.5, dn) * float(tier == 0));
-  vec3 bed = mix(SAND_WET*0.95, vec3(0.36,0.66,0.72), smoothstep(1.0, 14.0, dL));
-  bed = mix(bed, vec3(0.18,0.45,0.72), smoothstep(14.0, 44.0, dL));
+  // (the bed is the deep plane's colour by the field's reach: past it the sea's own colour carries the shallows, so the
+  // grid's edge never shows)
+  vec3 bed = mix(SAND_WET*0.95, vec3(0.40,0.74,0.79), smoothstep(1.0, 20.0, dL));
+  bed = mix(bed, vec3(0.18,0.45,0.72), smoothstep(20.0, 46.0, dL));
   sc = mix(sc, bed, smoothstep(-1.0, 3.0, dn) * float(tier == 0));
   c = mix(c, sc, aa(ds, 1.4));
   // paths: dirt worn soft, stone, brick and planks NH's
@@ -395,9 +397,15 @@ void main() {
   float inside = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);
   float d = mix(max(boxD(p), uFar), near < uFar - 1.0 ? near : max(near, boxD(p)), inside);
   if (d < -6.0) discard;
-  // translucent over the shallows (the ground's bake paints them), opaque by the grid's edge (2 tiles out)
-  float a = mix(0.16, 1.0, smoothstep(3.0, 54.0, d));
-  vec3 col = mix(vec3(0.42, 0.86, 0.90), vec3(0.17, 0.50, 0.86), smoothstep(8.0, 120.0, d));
+  // NH's shallows (the user: "double it … make the transition smooth into the deep water … seeing fish easier"): the
+  // turquoise reaches ~70u out (twice the old band), then fades into the deep blue over a long ~200u gradient, never a
+  // step. Translucent over the baked shallows near the shore; past the field's reach (the bed is the deep plane's blue
+  // there) the sea's own turquoise carries them, still see-through over the fishing water (a fish's shadow reads under
+  // it), opaque only far out
+  float a = mix(0.16, 0.56, smoothstep(3.0, 70.0, d));
+  a = mix(a, 0.72, smoothstep(60.0, 130.0, d));
+  a = mix(a, 1.0, smoothstep(130.0, 340.0, d));
+  vec3 col = mix(vec3(0.44, 0.89, 0.91), vec3(0.17, 0.50, 0.86), smoothstep(50.0, 280.0, d));
   float n = noise(p * 0.045 + vec2(uTime * 0.05, uTime * 0.03)) + 0.5 * noise(p * 0.12 - vec2(uTime * 0.08, -uTime * 0.02));
   col += vec3(0.07, 0.09, 0.1) * smoothstep(0.95, 1.4, n);
   float g = noise(p * 0.32 + vec2(uTime * 0.7, uTime * 0.4));
@@ -637,7 +645,9 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   const deepGeo = new PlaneGeometry(4200, 6000, 24, 150);
   deepGeo.rotateX(-Math.PI / 2);
   deepGeo.translate(GRID.x0 + GW / 2, -7.6, -(GRID.z0 + GD / 2));
-  const deep = new Mesh(deepGeo, bend(new MeshBasicMaterial({ color: 0x2f74b8 })));
+  // (lit as the ground's top is, the bed's deep blue under its tint: seen through the shallows' see-through water, the
+  // grid's edge never shows, day or night)
+  const deep = new Mesh(deepGeo, bend(new MeshLambertMaterial({ color: new Color(0x2f74b8).multiply(new Color(0xf4f4f4)) })));
   deep.frustumCulled = false;
   group.add(sea, deep);
 
