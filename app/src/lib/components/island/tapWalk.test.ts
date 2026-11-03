@@ -1,7 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { nav, walkable } from './nav.ts';
-import { ROLL_DEFAULTS, project, radiusFor } from './roll.ts';
-import { CAMPSITE, CAMS, CLIFF, HOMES, PIVOT, POND, SKY, TILT, surfaceAt, type Pt } from './world.ts';
+import { CAMPSITE, CLIFF, HOMES, POND, surfaceAt } from './world.ts';
 import { planTap, stepCue } from './tapWalk.ts';
 import { CUES } from '#lib/sound/cues.ts';
 import { SPEED } from './walkGraph.ts';

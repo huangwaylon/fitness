@@ -204,14 +204,14 @@ describe('edge cases', () => {
 });
 
 describe('nothing cut off', () => {
-  const week = (hs: ReturnType<typeof series>) => rangeFor('week', TODAY);
+  const week = () => rangeFor('week', TODAY);
 
   it('today, still running, is drawn as reported (even 0) and never counted', () => {
     const hs = series(rows([...day('A', TODAY, { steps: 120, kcal: 40, ex: 0, stand: 3 }, '09:00')]));
-    expect(bucketValues(hs, 'A', 'move', week(hs)).at(-1)!).toMatchObject({ v: 40, today: true });
-    expect(bucketValues(hs, 'A', 'steps', week(hs)).at(-1)!.v).toBe(120);
-    expect(bucketValues(hs, 'A', 'exercise', week(hs)).at(-1)!.v).toBe(0);
-    expect(metricStats(hs, 'A', 'move', week(hs))).toMatchObject({ avg: null, days: 0 });
+    expect(bucketValues(hs, 'A', 'move', week()).at(-1)!).toMatchObject({ v: 40, today: true });
+    expect(bucketValues(hs, 'A', 'steps', week()).at(-1)!.v).toBe(120);
+    expect(bucketValues(hs, 'A', 'exercise', week()).at(-1)!.v).toBe(0);
+    expect(metricStats(hs, 'A', 'move', week())).toMatchObject({ avg: null, days: 0 });
   });
 
   it('real week (Mon 10/26–Fri 10/30): 66 steps and 0 kcal days are plotted and counted', () => {
@@ -221,7 +221,7 @@ describe('nothing cut off', () => {
       ...day('A', addDays('2026-10-26', i), { steps: st, kcal: kcalA[i], ex: 0, stand: standA[i] }),
       ...day('B', addDays('2026-10-26', i), { steps: 6000, kcal: kcalB[i], ex: 0, stand: standB[i] })
     ])));
-    const r = week(hs);
+    const r = week();
     expect(metricStats(hs, 'A', 'steps', r)).toMatchObject({ avg: (66 + 7000 + 4963 + 12268 + 3404) / 5, days: 5, missing: 0, best: { date: '2026-10-29', v: 12268 } });
     expect(metricStats(hs, 'A', 'move', r)).toMatchObject({ avg: (527 + 615) / 5, days: 5, missing: 0, met: 1 });
     expect(metricStats(hs, 'B', 'move', r)).toMatchObject({ avg: (89 + 3 + 26 + 141) / 5, days: 5, missing: 0, met: 0 });

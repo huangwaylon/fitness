@@ -256,8 +256,6 @@
   /** The swim patches of a water whose middle is on screen. */
   const areasOf = (water: Water): Swim[] => (water === 'sea' ? [SEA_SWIM] : freshAreas(water));
   const inViewArea = (a: Swim) => [0, -0.7, 0.7].some((s) => [0, -0.8, 0.8].some((t) => { const p = swimAt(a, s, t); return w.inView(p.x, p.z, -16); }));
-  /** The sea's water in front of the beach is on screen (まえ). */
-  const seaInView = () => [60, 165, 270].some((x) => w.inView(x, -20, -16));
 
   /** The bugs' sprites (BugSprite.svelte): loaded with the first bug of a session, out of the island's first load. */
   let Sprite = $state<typeof import('./BugSprite.svelte').default | null>(null);
@@ -1130,8 +1128,6 @@
   const pinned = hookFlag('critter') || hookFlag('sea');
   /** `?flea` (dev or ?demo): every tap on my villager sends a flea hopping off it (the e2e's hook). */
   const forceFlea = hookFlag('flea');
-  /** The fresh waters on screen without a shadow (only waters near the view get a turn). */
-  const freshOpen = (): FreshWhere[] => FRESH.filter((wh) => !fishes[wh] && areasOf(wh).some(inViewArea));
   /** The first look at the slots after the island shows (ms): the scene measured and the camera placed by then. */
   const FIRST_LOOK_MS = 3000;
   /** A slot's critter comes now, staying until the end of its last slot (`end`, the relay's ms), where its seed puts it

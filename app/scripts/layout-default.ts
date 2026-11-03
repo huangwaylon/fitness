@@ -15,7 +15,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   BRIDGE, CAMPSITE, CENTRE_STAGE, CLIFF, DECOR_SLOTS, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, PATHS, POND, RIVER, ROCK, SCENERY, SPRING, TAPE_DECK,
-  inOval, inRiver, onGrass, onLand, type Pt
+  inOval, onGrass, onLand, type Pt
 } from '../src/lib/components/island/world.ts';
 import { CHUNK, GRID, KINDS, TILE, codeOf, idx, kindOf, tierOf, tileAt, tileX, tileZ, type Kind } from '../src/lib/layout/grid.ts';
 import { footprintOf, kindDef } from '../src/lib/layout/catalog.ts';

@@ -71,7 +71,7 @@
     return () => cancelAnimationFrame(raf);
   });
   /** Each run's first entry's place in the page (for the slice built so far). */
-  const starts = $derived(runs.reduce<number[]>((a, r, i) => [...a, i ? a[i - 1] + runs[i - 1].entries.length : 0], []));
+  const starts = $derived(runs.reduce<number[]>((a, _r, i) => [...a, i ? a[i - 1] + runs[i - 1].entries.length : 0], []));
   let pick = $state<Entry | null>(null);
   let line = $state('');
   /** The catch line runs past its two lines (measured as it shows), and whether it's opened to the full text. */
