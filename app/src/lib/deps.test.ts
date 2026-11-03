@@ -128,6 +128,18 @@ describe('scenery is never rewarded', () => {
   });
 });
 
+describe('かいがら never mix with ベル', () => {
+  it('the economy (model/bells.ts, scoring/*) never imports the shop’s fold, and the shop never the economy or its prices', () => {
+    const shop = [join(LIB, 'model/shop.ts'), join(LIB, 'contract/shop.ts')];
+    for (const f of shop) expect(existsSync(f)).toBe(true);
+    const economy = [join(LIB, 'model/bells.ts'), ...readdirSync(join(LIB, 'scoring')).filter((f) => /\.ts$/.test(f) && !/\.test\.ts$/.test(f)).map((f) => join(LIB, 'scoring', f))];
+    // (the model's State reads the shop's rows as it reads a tally's: model/state.ts → contract/shop.ts, its shapes only)
+    expect(economy.filter((r) => reachable(r).has(shop[0])).map((r) => relative(LIB, r))).toEqual([]);
+    const bells = [...economy, join(LIB, 'config/rules.ts')];
+    expect(shop.filter((r) => bells.some((f) => reachable(r).has(f))).map((r) => relative(LIB, r))).toEqual([]);
+  });
+});
+
 describe('meals are never rewarded', () => {
   it('model/bells.ts and scoring/* never import the food catalog (lib/food/) or the model’s meal log, even indirectly', () => {
     const roots = [join(LIB, 'model/bells.ts'), ...readdirSync(join(LIB, 'scoring')).filter((f) => /\.ts$/.test(f) && !/\.test\.ts$/.test(f)).map((f) => join(LIB, 'scoring', f))];

@@ -7,6 +7,8 @@
 // - A slot (app model/record.ts eventSlot) holds one event: a later one of the same slot replaces it, so a tally or an
 //   island day is one row per person and day, a cosmetic pref one per person, a goal one per person and Tokyo day,
 //   a decoration one per item, a board post, a meal entry, a repeat and a recipe one per id (each one's latest op).
+// - A `sell` or a `buy` (the shop, contract/shop.ts) is kept only when the sender's own rows cover it: their tallies'
+//   catches less their sells (the pocket), their sells' かいがら less their buys (shopLedger), a piece bought once.
 // - `since` is answered from the `at` index. A row that arrived out of `at` order (only while Apps Script mirrored
 //   its writes here: two requests' copies racing) is marked `late` with its arrival time, and a poll also returns
 //   the late rows that arrived after `since` (less a margin for the two servers' clocks), so no phone misses one.
@@ -26,6 +28,8 @@ import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
 import { notifySecret, notifySig, verifyNotify } from './notify.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { guestMayWrite, guestRows } from '../../app/src/lib/contract/guest.ts';
+import { buyOf, sellOf, shopLedger, shopRefusal, type ShopRow } from '../../app/src/lib/contract/shop.ts';
+import { isTally } from '../../app/src/lib/contract/tally.ts';
 import type { PersonId, Who } from '../../app/src/lib/types.ts';
 
 type Rec = Record<string, unknown>;
@@ -398,6 +402,11 @@ export class StoreCore {
           return { ok: true, duplicate: true };
         }
       }
+      if (type === 'sell' || type === 'buy') {
+        // the shop: only what the sender's pocket holds, only what their かいがら cover, a piece once (contract/shop.ts)
+        const why = this.shopTarget(me, type, data);
+        if (why) return fail('bad_request', why === 'owned' ? 'owned' : `${why} short`);
+      }
       let drop: string | null = null;
       if (type === 'board') {
         const v = this.boardTarget(me, data);
@@ -528,6 +537,34 @@ export class StoreCore {
     try { x = JSON.parse(r.data); } catch { x = null; }
     const op = FOOD_PARSE[type](x);
     return op ? { ...op, who: r.person } : null;
+  }
+
+  /** Why a sell or a buy of `me`'s isn't covered by their rows (contract/shop.ts shopRefusal), or null. The fold reads
+   *  their day tallies (one row a day: ≤ 366 a year) and their shop rows, in the object, never the Worker. */
+  private shopTarget(me: Who, type: 'sell' | 'buy', d: Rec): 'pocket' | 'wallet' | 'owned' | null {
+    const parse = (raw: string): Rec | null => {
+      try {
+        const x: unknown = JSON.parse(raw);
+        return isRec(x) ? x : null;
+      } catch {
+        return null;
+      }
+    };
+    const caught = new Map<string, number>();
+    for (const r of this.io.sql.exec<{ data: string }>("SELECT data FROM events WHERE type = 'tally' AND person = ?", me).toArray()) {
+      const t = parse(r.data);
+      if (t && isTally(t)) for (const k in t.counts) caught.set(k, (caught.get(k) ?? 0) + t.counts[k]);
+    }
+    const rows: ShopRow[] = [];
+    for (const r of this.io.sql.exec<{ type: string; data: string }>("SELECT type, data FROM events WHERE type IN ('sell', 'buy') AND person = ? ORDER BY at, seq", me).toArray()) {
+      const x = parse(r.data);
+      const s = x && r.type === 'sell' ? sellOf(x) : null;
+      const b = x && r.type === 'buy' ? buyOf(x) : null;
+      if (s) rows.push({ type: 'sell', data: s });
+      else if (b) rows.push({ type: 'buy', data: b });
+    }
+    const row: ShopRow = type === 'sell' ? { type, data: sellOf(d)! } : { type, data: buyOf(d)! };
+    return shopRefusal(shopLedger(caught, rows), caught, row);
   }
 
   /** Every decor row (its seq, sender and data). */

@@ -16,8 +16,8 @@ type Rec = Record<string, unknown>;
  * Whether the guest may write this event: a `find` or a `tally` (its catches, credited to it), a `decor` op of the
  * tent's room (`sc: 't'`), its own home's room (`v`) or its own home's look (`h`, `hG`: contract/layout.ts
  * scopeMayWrite), a `board` note (posting; editing and removing only its own: contract/board.ts boardMayWrite), a
- * `food` entry, a `food_repeat` or a `food_recipe` (its own meals and recipes: contract/food.ts foodAccept) and its own cosmetic `pref` or kcal
- * goal (no `person`).
+ * `food` entry, a `food_repeat` or a `food_recipe` (its own meals and recipes: contract/food.ts foodAccept), a `sell` or a
+ * `buy` at the shop (its own pocket and かいがら: contract/shop.ts) and its own cosmetic `pref` or kcal goal (no `person`).
  * Everything else (a buy, a void, a harvest, a member's goal, the
  * island's decor and its layout, an island day, a high-five row) is the members' alone: the record answers `forbidden`.
  * @public (relay/src/store.ts)
@@ -30,8 +30,11 @@ export function guestMayWrite(type: string, d: Rec): boolean {
     case 'food':
     case 'food_repeat':
     case 'food_recipe':
+    case 'sell':
+    case 'buy':
       // its catches; a note on the board (its own to edit and remove: the record checks, contract/board.ts); its
-      // meals, repeats and recipes (only its own: contract/food.ts)
+      // meals, repeats and recipes (only its own: contract/food.ts); its own pocket's sells and its own かいがら's buys
+      // (contract/shop.ts: never ベル)
       return true;
     case 'decor':
       return scopeMayWrite('G', d);

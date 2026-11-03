@@ -196,6 +196,37 @@ undone without deleting anything.
 ### Weight never earns
 Shown only, with an optional goal line. Why: paying for kilograms rewards crash diets and punishes muscle.
 
+### The shop's かいがら (2026-11-04)
+The shop ([design](design.md#the-shop)) has its own currency, かいがら (shells), never ベル: the island's catches buy
+furniture; the week's goals still buy the two treats. Pockets and wallets are per person, the guest's too (the user).
+- **The pocket is derived, no write per catch:** a person's pocket of a species is what their day tallies caught of it
+  (`tally`: one row per person and day, latest wins, its counts only ever growing: [backend](backend.md#tally)) less what
+  they sold (`sell`). Sound because the record already keeps exactly those rows and a day's count never drops (each send
+  starts from the day's latest row). Its limits: a catch counts once its tally reaches the record, so the phone's queue
+  sends a sell or a buy only after a held tally (one subject, `sync/queue.ts`); a tally past its caps (999 a day, 300
+  keys) isn't in the pocket; two phones of one person racing on one day's tally could lower it, and then the pocket reads
+  no lower than empty and the record refuses that species until it's caught again. Selling never takes anything out of
+  the ずかん or the museum (they read `find` and the tallies, which a sell never touches).
+- **かいがら = Σ sells − Σ buys**, derived per person; a sell keeps what it fetched (`v`), so a later price list never
+  rewrites a past sale. The record refuses a sell past the pocket, a buy past the wallet or of a piece already owned, and
+  a price that isn't the list's; the phones fold the same rows by the same function (`contract/shop.ts shopLedger`).
+- **The scale: sells NH's Bells ÷ 100, buys NH's ÷ 20** (rounded, at least 1). A catch averages ~1,400 Bells at the
+  island's odds (the sea bass and the pond's commons most of the time), so ~14 かいがら; a person catching 10 a day earns
+  ~140. The pieces with a room model sell for a median 2,200 Bells in NH: 110 かいがら, about a day's catches; nine in ten
+  under 1,550 (a week or two); the dearest kept (≤ 100,000 Bells: 5,000) a month of saving. One scale for both (÷ 100)
+  would keep NH's ratio but make the median piece one or two catches, the stock a formality; NH's players also earn from
+  everything else. The 12 pieces over 100,000 Bells (the grand piano, the kimono stand…) stay out of the stock.
+- **The stock**: 8 pieces a Tokyo day, drawn by the date alone (FNV-1a of `shop:<date>` seeding mulberry32) from the
+  priced pieces, plus three basics always (a cardboard box, a zen cushion, a mini cactus set); every phone and the record
+  get the same list with nothing stored. Only pieces the rooms can place (379 with NH models, the starter set aside):
+  clothing has nothing to wear it, so a buy is always something for もようがえ. A bought piece joins that person's
+  もようがえ for good (their own home's and the tent's), so a piece is bought once.
+- **Where it shows:** the counter (NH's Nook's Cranny, Timmy and Tommy) and one row in the leaf's menu, 「かいがら N」
+  under 「ベル N」 (the guest's phone too): ごほうび stays the ベル's.
+Why: the user ("currency is かいがら … per person … its own building"); deriving from the tallies costs no request per
+catch on the Free plan, and the record checks cover itself (in the Durable Object) because a wallet is per person and
+spends can't be voided, unlike the shared ベル wallet's read-time rule.
+
 ## Health data
 
 ### Health trends (けんこう)
