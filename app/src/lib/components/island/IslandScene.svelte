@@ -495,7 +495,6 @@
     if (!scroller) return;
     const r = scroller.getBoundingClientRect();
     world.fit(scroller.clientWidth, scroller.clientHeight, r.left, r.top);
-    hudBottom = Math.max(0, (document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? 0) - world.view.top);
     vh = world.view.vh;
     s = world.view.s;
     horizonPx = world.view.horizon;
@@ -564,8 +563,6 @@
     if (e !== edge) edge = e;
   }
 
-  /** The top chrome's bottom edge (px). */
-  let hudBottom = 0;
   function onScroll() {
     world.kick();
     clearTimeout(settle);
@@ -642,9 +639,8 @@
       ground: (x: number, z: number) => ({ surface: surfaceAt(x, z), fresh: freshWhere(x, z) }),
       /** world.ts's places as the island has them now (the layout's when on): the e2e's, never world.ts's imported. */
       geo: () => ({
-        CAMS: W.CAMS, SHORE_Z: W.SHORE_Z, POND: W.POND, SPRING: W.SPRING, CENTRE_STAGE: W.CENTRE_STAGE, ARCH: W.ARCH, CAKE: W.CAKE, HOMES: W.HOMES,
-        GOAL_TREES: W.GOAL_TREES, ROCK: W.ROCK, TAPE_DECK: W.TAPE_DECK, SEATS: W.SEATS, PULLUP_AT: W.PULLUP_AT, BUILDINGS: W.BUILDINGS,
-        FLOWERS: W.FLOWERS, SCENERY: W.SCENERY, DECOR_SLOTS: W.DECOR_SLOTS, BRIDGE: W.BRIDGE, CLIFF: W.CLIFF, LAWN_SPOTS: W.LAWN_SPOTS, RIVER: W.RIVER, RIVER_BEND: W.RIVER_BEND, PONDS: W.PONDS,
+        CAMS: W.CAMS, SHORE_Z: W.SHORE_Z, POND: W.POND, CENTRE_STAGE: W.CENTRE_STAGE, ARCH: W.ARCH, CAKE: W.CAKE, HOMES: W.HOMES, SEATS: W.SEATS,
+        BUILDINGS: W.BUILDINGS, FLOWERS: W.FLOWERS, SCENERY: W.SCENERY, DECOR_SLOTS: W.DECOR_SLOTS, CLIFF: W.CLIFF, RIVER: W.RIVER, RIVER_BEND: W.RIVER_BEND, PONDS: W.PONDS,
         GIFT_TREES: giftTreesOn(today, islandSeed())
       }),
       /** Whether (x, z) is open ground a tap there walks to (e2e: a spot for a tap-walk): walkable, `away` u from
@@ -1222,7 +1218,7 @@
         {#if live && WeatherC}<WeatherC where="stage" />{/if}
         {#if live && nhEvent?.id === 'halloween' && HalloweenC}<HalloweenC scene={sceneEl} night={nhEvent.night} />{/if}
         {#if live && bday.length && BirthdayC}<BirthdayC {view} people={bday} date={today} />{/if}
-        {#if live && (wedding.arch || wedding.day) && WeddingC}<WeddingC scene={sceneEl} arch={wedding.arch} day={wedding.day} date={wedding.date} />{/if}
+        {#if live && (wedding.arch || wedding.day) && WeddingC}<WeddingC arch={wedding.arch} day={wedding.day} date={wedding.date} />{/if}
         <Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} snowing={live ? weather.sky === 'snow' : undefined} />
       </div>
     </div>
@@ -1237,7 +1233,6 @@
     /* clip, not hidden: nothing may scroll the scene (a focused balloon or plate would otherwise pull it along) */
     position: relative; width: 100%; height: var(--scene-h, var(--scene-h-auto)); overflow: clip;
     container-type: inline-size; isolation: isolate; background: var(--sea-flat);
-    --stage-top: 0px;
     -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
   }
   /* the island's viewport (the World fits to it); no native scroll: the finger is world3d/gestures.ts' */
@@ -1277,7 +1272,7 @@
     /* the island's layers stand over every world thing (depths run to ~12M; camera.svelte.ts OVER is 50M). Six
        significant digits at most: the CSS minifier rounds a longer number (60000080 shipped as 60000100, so the
        tint stood over the lights at 60000081); the lights (Scenery's, the fireflies', Halloween's) are 60310000 */
-    --z-leaf: 60200000; --z-tint: 60300000; --z-taps: 60320000; --z-coin: 60400000; --z-popup: 60500000;
+    --z-tint: 60300000; --z-taps: 60320000; --z-coin: 60400000; --z-popup: 60500000;
   }
   /* no WebGL: the island's line, in the middle of the scene over the sky (the panel and the HUD work as ever) */
   .no3d {

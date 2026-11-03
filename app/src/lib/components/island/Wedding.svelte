@@ -15,8 +15,7 @@
   import { actors, addFx, later, setEmote, setMotion } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
 
-  // `scene` is IslandScene's (unused: the arch is a world node)
-  let { arch, day, date }: { scene?: HTMLElement; arch: boolean; day: boolean; date: string } = $props();
+  let { arch, day, date }: { arch: boolean; day: boolean; date: string } = $props();
   /** The arch's height (u): NH's arch stands well over a villager (80u), so the couple stands under it. */
   const ARCH_U = 124;
   const w = useWorld();

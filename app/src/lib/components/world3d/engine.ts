@@ -23,7 +23,7 @@ import { createWater, seaFog, waterFog, waterU } from './water.ts';
 import { createThings, type Things } from './things.ts';
 import { createCards, type Cards } from './cards.ts';
 import { createEffects, type FxKind, type FxOpts } from './effects.ts';
-import { createLights, lampFog, type LampSpot, type Lights } from './lights.ts';
+import { createLights, lampFog, type LampSpot } from './lights.ts';
 import type { Inst } from './layout3d.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
 
@@ -212,7 +212,6 @@ export interface Island3 {
    *  in the screen above `bottom` px, filling `fill` of it; called again while focused it re-frames from where it is. */
   frame(f: { x: number; z: number; y: number; w: number; h: number; yaw?: number; top?: number; bottom?: number; fill?: number }, ms?: number): Promise<void>;
   restore(ms?: number): Promise<void>;
-  focused(): boolean;
   /** A flourish in the world (effects.ts): a tap's dust, a splash, sparkles, a 「！」. */
   fx(kind: FxKind, x: number, z: number, lift?: number, o?: FxOpts): void;
   /** A built model of the scene's own stood on the island (a home, a bridge, stairs: world3d/home.ts, structure.ts),
@@ -692,10 +691,8 @@ export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((ren
   }
 
   // ---- time of day ----
-  let wetK = 0;
   function tod(t: Tod, wet = 0, fogCss?: string) {
     todLook = TOD[t];
-    wetK = wet;
     const dim = 1 - 0.35 * wet;
     fog.color.set(fogCss && /^#[0-9a-f]{6}$/i.test(fogCss) ? fogCss : todLook.fog);
     hemi.color.set(todLook.hemi[0]);
@@ -961,7 +958,6 @@ export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((ren
       aim();
       activity();
     },
-    focused: () => !!focus,
     lamps: () => lights.lit(),
     fxCount: (tag) => effects.count(tag),
     placeGroup(id, obj, at) {

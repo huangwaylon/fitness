@@ -11,7 +11,7 @@ describe('the museum’s rooms', () => {
     expect(roomAt(-150, 0)).toBe('bug');
     expect(roomAt(150, 0)).toBe('fish');
     expect(roomAt(0, 90)).toBeNull();
-    expect(wingAt(HALL.x0, (OPENING.z0 + OPENING.z1) / 2)).toBe('hall');
+    expect(wingAt(HALL.x0)).toBe('hall');
     expect(BUG_WING.x1).toBe(HALL.x0);
     expect(FISH_WING.x0).toBe(HALL.x1);
   });

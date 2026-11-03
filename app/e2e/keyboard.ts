@@ -52,7 +52,7 @@ export async function fakeKeyboard(page: Page) {
 }
 
 /** Shows (px > 0) or hides (0) the simulated keyboard. */
-export async function keyboard(page: Page, px = KEYBOARD_PX) {
+export async function keyboard(page: Page, px: number) {
   await page.evaluate((px) => (window as unknown as { __kb(px: number): void }).__kb(px), px);
 }
 

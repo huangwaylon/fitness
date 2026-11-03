@@ -8,7 +8,6 @@ import { hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
-type W = { go(z: number): void; mine(): [number, number] };
 const world = <T,>(page: Page, fn: string, ...a: number[]) =>
   page.evaluate(([f, a]) => ((window as unknown as { __world: Record<string, (...x: number[]) => unknown> }).__world[f as string](...(a as number[]))) as T, [fn, a] as const);
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues!.splice(0));
