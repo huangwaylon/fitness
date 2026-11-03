@@ -632,6 +632,16 @@ catch or a find, mine, the partner's or the guest's, is only its plate in the bo
 where it happened. Why: the user ("we don't need that now that we have the messaging system at the bottom center of
 the screen"); the stack already says what was caught and by whom, and the item over the head doubled it.
 
+### The jar goes into the leaf, ごほうび is the panel (2026-11-03)
+(Amends *The jar is the door, no ribbon*.) The HUD is [the dumbbell] [the bowl] [the leaf], the leaf at the very right;
+the jar leaves the sky and the leaf's dropdown gains 「ベル 121」 first (the balance, no icon), opening the panel. The
+panel is ごほうび alone (title ごほうび, no きろく / ごほうび switch): the jar at the left of the balance with 「きょうの
+ベル +N」 under it, the rewards (ⓘ for their examples; no examples or 「あと N ベル」 on the tiles), the ベル ledger that
+was きろく, and the buys folded at the bottom. The coins fly into the leaf (into the ベル row when it's open) and today's
++N flashes under the leaf. Why: the user ("move the bell jar button into the dropdown menu … rearrange items … remove
+the two way kiroku / gohoubi selector"); one door less in the sky, one screen for everything about ベル. The coin flash
+by the leaf, not the bowl: the leaf is where the ベル row drops from, so the landing points at where they are kept.
+
 ### A tap on a seat sits on it, outside as in the tent (2026-11-03)
 A tap on the island's benches, stools, iron chair, hammock or beach chair walks my villager up to it and sits or lies it
 there, as a chair or a bed in the tent does: the third exception to "a tap on something acts in place", after the tent's

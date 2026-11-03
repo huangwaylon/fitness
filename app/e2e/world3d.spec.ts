@@ -2,6 +2,7 @@
 // lawn walks my villager, one finger scrolls along the island only (z, never x), two pinch the zoom, and /world3d (the
 // POC's address) opens it.
 import { expect, test, type Page } from '@playwright/test';
+import { openRewards } from './hud.ts';
 
 type W3 = {
   xRoom(k?: number): number;
@@ -168,7 +169,7 @@ test('no WebGL: a line instead of the island, and the rest of the app works (the
   await page.goto(`?${Q}`);
   await expect(page.locator('[data-no3d]')).toHaveText(/この端末では しまを 表示できません/, { timeout: 15_000 });
   await expect(page.locator('canvas[data-w3d]')).toHaveCount(0);
-  await page.getByRole('button', { name: /^ごほうび · ふたりのベル / }).click();
+  await openRewards(page);
   await expect(page.locator('dialog[open] .panel-body')).toBeVisible();
   await expect(page.locator('dialog[open]').getByText('おやつ').first()).toBeVisible();
 });

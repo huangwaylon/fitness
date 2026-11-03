@@ -4,15 +4,15 @@
 // author edits and takes down their own, a member takes down anyone's, the guest posts and changes only its own.
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
+import { hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const DATE = '2026-11-04T12:00';
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 
 async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G') {
   const page = await ctx.newPage();
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none${as === 'A' ? '' : `&as=${as}`}`);
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   return page;
 }
@@ -149,7 +149,7 @@ const face3 = (p: Page) => p.evaluate(() => (window as unknown as { __board: Boa
 
 test('a note written is drawn on the face at once, and still after a reload', async ({ page }) => {
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __board?: unknown }).__board);
   await openBoard(page);
   expect(await drawn(page)).toEqual([]);
@@ -157,7 +157,7 @@ test('a note written is drawn on the face at once, and still after a reload', as
   expect(await drawn(page)).toEqual(['よみかえし テスト']);
   await close(page);
   await page.reload();
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await openBoard(page);
   await expect(note(page, 'よみかえし テスト')).toBeVisible();
   expect(await drawn(page)).toEqual(['よみかえし テスト']);
@@ -167,8 +167,8 @@ test('「もどる」 sits under the HUD, never over it, and the face under both
   // (the 3D island loads its models: 20-odd s on CI before the board opens)
   test.setTimeout(60_000);
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
-  await expect(hudJar(page)).toBeVisible();
-  const hud = (await hudJar(page).boundingBox())!;
+  await expect(hudMenu(page)).toBeVisible();
+  const hud = (await hudMenu(page).boundingBox())!;
   await openBoard(page);
   await expect(view(page)).toHaveAttribute('data-board-view', '3d');
   const back = (await view(page).getByRole('button', { name: /もどる/ }).boundingBox())!;
@@ -251,7 +251,7 @@ test('writing with the keyboard up: the field, its controls and the face with th
   test.setTimeout(60_000);
   await fakeKeyboard(page);
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await openBoard(page);
   await expect(view(page)).toHaveAttribute('data-board-view', '3d');
   await expect(view(page)).toHaveAttribute('data-ready', 'true', { timeout: 10_000 });

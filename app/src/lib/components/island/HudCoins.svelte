@@ -1,14 +1,14 @@
 <script lang="ts" module>
-  /** The ベル still in the air (HudJar holds its number by this much until they land). */
+  /** The ベル still in the air (HudMenu's ベル row holds its number by this much until they land). */
   export const coinsInFlight = $state({ bells: 0 });
 </script>
 
 <script lang="ts">
-  // Today's new ベル flying into the HUD's jar (HudJar, in the sky's top-right cluster): when a sync brings goals met since this
-  // phone last showed them (SCENE.bellsSeen, per day), a "+1" pops over that fruit under its tree on the island and
-  // three coins hop up into the jar (CoinFlow); the jar squashes as each flight lands and its number counts up by it
-  // (coinsInFlight), today's +N flashing under it. It all waits while a sheet, the panel or the harvest covers
-  // the scene.
+  // Today's new ベル flying into the HUD's menu (HudMenu, the leaf at the sky's top-right corner, where the ベル row
+  // drops from): when a sync brings goals met since this phone last showed them (SCENE.bellsSeen, per day), a "+1"
+  // pops over that fruit under its tree on the island and three coins hop up into the leaf (or, the menu open, into the
+  // ベル row's number) (CoinFlow); it squashes as each flight lands and the ベル row's number counts up by it
+  // (coinsInFlight), today's +N flashing by it. It all waits while a sheet, the panel or the harvest covers the scene.
   //   <HudCoins {view} {covered} {later} />
   import { untrack } from 'svelte';
   import type { PersonId, RingBells, WeekView } from '#lib/types.ts';
@@ -33,7 +33,7 @@
   const MAX_FLIGHTS = 8;
 
   let flights = $state<Flight[]>([]);
-  /** The island's stage on screen (px) and the jar's mouth in stage units, measured when coins take off. */
+  /** The island's stage on screen (px) and where the coins land in stage units, measured when coins take off. */
   let stage = $state<{ left: number; top: number; width: number } | null>(null);
   let mouth = $state<[number, number]>([0, 0]);
   let flightN = 0;
@@ -52,21 +52,23 @@
     return [sx, Math.min(sy, w.view.vh * k)];
   };
 
-  /** The HUD jar's squash box (the jar drawing and its number). */
-  const jar = () => document.querySelector<HTMLElement>('.ribbon-wrap .hud-jar .squash');
+  /** Where the coins land: the open menu's ベル number, else the leaf. */
+  const target = () =>
+    document.querySelector<HTMLElement>('.ribbon-wrap .hud-menu.open [data-hud-bells] .num') ??
+    document.querySelector<HTMLElement>('.ribbon-wrap .hud-menu .leaf');
   $effect(() => {
     coinsInFlight.bells = flights.reduce((a, f) => a + f.bells, 0);
   });
   $effect(() => () => (coinsInFlight.bells = 0));
 
-  /** The stage's box and the jar's mouth (the top of the glass, under the lid) in its units; false if either is gone. */
+  /** The stage's box and the landing's middle in its units; false if either is gone. */
   function measure(): boolean {
     const st = document.querySelector<HTMLElement>('.if-scene .stage')?.getBoundingClientRect();
-    const jb = jar()?.getBoundingClientRect();
+    const jb = target()?.getBoundingClientRect();
     if (!st?.width || !jb?.width) return false;
     const k = 390 / st.width;
     stage = { left: st.left, top: st.top, width: st.width };
-    mouth = [(jb.left + jb.width / 2 - st.left) * k, (jb.top + jb.height * 0.3 - st.top) * k];
+    mouth = [(jb.left + jb.width / 2 - st.left) * k, (jb.top + jb.height * 0.5 - st.top) * k];
     return true;
   }
 
@@ -108,7 +110,7 @@
 
   function land(id: number) {
     flights = flights.filter((x) => x.id !== id);
-    const el = jar();
+    const el = target();
     if (!el) return;
     el.classList.remove('catch');
     void el.offsetWidth; // restart the catch squash
@@ -118,7 +120,7 @@
 </script>
 
 {#if flights.length && stage}
-  <!-- the coins fly over the island's stage (its own units), up out of it into the jar -->
+  <!-- the coins fly over the island's stage (its own units), up out of it into the leaf -->
   <div class="flow" data-coin-flow style:left="{stage.left}px" style:top="{stage.top}px" style:width="{stage.width}px">
     <CoinFlow {flights} to={mouth} onland={land} />
   </div>

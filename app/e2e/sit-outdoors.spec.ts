@@ -5,6 +5,7 @@
 // another of the island's things (the pump) still answers where it stands: nobody walks.
 import { expect, test, type Page } from '@playwright/test';
 import { geo, openNear, quiet, tapOn } from './island.ts';
+import { hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 const DATE = '2026-11-04T12:00';
@@ -17,7 +18,7 @@ const v3 = (page: Page, slot: string) => page.evaluate((s) => (window as unknown
 
 async function open(page: Page, q = '') {
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none${q}`);
-  await expect(page.getByRole('button', { name: /^ごほうび · ふたりのベル / })).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await quiet(page);
   await expect.poll(() => v3(page, 'mine'), { timeout: 30_000 }).not.toBeNull();

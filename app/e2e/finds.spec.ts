@@ -4,21 +4,21 @@
 // items derive from ?date= (deterministic); ?find= forces a bottle, this morning's fragments or the rare mushroom.
 import { expect, test, type Page } from '@playwright/test';
 import { fossilOnScreen } from './island.ts';
+import { hudBells, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 
 async function open(page: Page, q: string) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo${q}`);
-  await expect(hudJar(page)).toBeVisible();
-  return { bells: await hudJar(page).getAttribute('aria-label'), url: page.url() };
+  await expect(hudMenu(page)).toBeVisible();
+  return { bells: await hudBells(page).getAttribute('aria-label'), url: page.url() };
 }
 async function unchanged(page: Page, before: { bells: string | null; url: string }) {
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   expect(page.url()).toBe(before.url);
-  await expect(hudJar(page)).toHaveAttribute('aria-label', before.bells!);
+  await expect(hudBells(page)).toHaveAttribute('aria-label', before.bells!);
 }
 const at = (page: Page, sel: string) =>
   page.locator(sel).first().evaluate((el) => {
@@ -47,7 +47,7 @@ test('shells lie on the front beach (the newest three); a tap picks one up, and 
   expect(await finds(page)).toEqual([{ kind: 'shell', id }]);
   await unchanged(page, before);
   await page.reload();
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await expect(shells).toHaveCount(2);
 });
 
@@ -137,7 +137,7 @@ test('wishes on shooting stars bring star fragments the next morning; a tap pick
   await expect(page.locator('[data-find="fragment"]')).toHaveCount(3);
   const frags = page.locator('[data-find="fragment"]');
   await expect(frags.first()).toBeAttached();
-  const before = { bells: await hudJar(page).getAttribute('aria-label'), url: page.url() };
+  const before = { bells: await hudBells(page).getAttribute('aria-label'), url: page.url() };
   const id = await frags.first().getAttribute('data-id');
   const p = await at(page, '[data-find="fragment"]');
   await page.mouse.click(p.x, p.y);
@@ -167,7 +167,7 @@ test('mushroom season: November mushrooms beside the trees, clear of every contr
   expect(await finds(page)).toEqual([]); // no ずかん kind for mushrooms: cosmetic
   await unchanged(page, before);
   await page.reload();
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await expect(mush).toHaveCount(n - 1);
 });
 

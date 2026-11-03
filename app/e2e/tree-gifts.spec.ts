@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { geo, type Geo, plateOnly, quiet } from './island.ts';
-import { fromMenu } from './hud.ts';
+import { fromMenu, hudBells, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -18,10 +18,9 @@ let TREE = '', TREE_Z = 0, G: Geo;
 const ROOM = JSON.parse(readFileSync(new URL('../src/lib/components/tent/items.json', import.meta.url), 'utf8')) as { items: Record<string, { cat?: string }> };
 const codeOf = (id: string) => Object.entries(ROOM.items).find(([, m]) => m.cat === id)?.[0];
 
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 async function open(page: Page, q = '') {
   await page.goto(Q + q);
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await quiet(page); // the opening beats are over
   G = await geo(page);
@@ -62,7 +61,7 @@ test('a holding tree’s shake drops its present; opened, it’s the day’s fur
   test.setTimeout(60_000);
   await page.addInitScript(() => localStorage.removeItem('island-demo.tent'));
   await open(page);
-  const bells = await hudJar(page).getAttribute('aria-label');
+  const bells = await hudBells(page).getAttribute('aria-label');
   // another tree (not one of the day's) drops no present
   const other = G.SCENERY.find((s) => (s.kind === 'oak' || s.kind === 'cedar') && !G.GIFT_TREES.includes(s.id) && Math.abs(s.z - TREE_Z) < 120)!;
   await shake(page, other.id);
@@ -85,14 +84,14 @@ test('a holding tree’s shake drops its present; opened, it’s the day’s fur
   await plateOnly(page, /\/finds\/items\//);
   await page.screenshot({ path: '/tmp/tree-gifts/opened-393.png' });
   await expect(gift).toHaveCount(0);
-  await expect(hudJar(page)).toHaveAttribute('aria-label', bells!); // never ベル
+  await expect(hudBells(page)).toHaveAttribute('aria-label', bells!); // never ベル
   const id = (await opened(page))!;
   expect(id).toBeTruthy();
   const code = codeOf(id);
   expect(code, id).toBeTruthy();
   // a reload finds it gone (the shared day), and the tree a tree again
   await page.reload();
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await page.waitForTimeout(800);
   await expect(page.locator('[data-tree-gift]')).toHaveCount(0);
   // the ずかん's カタログ has it, found by A

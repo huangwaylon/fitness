@@ -1,10 +1,10 @@
 // The island's ambience in the built app (docs/design.md "Ambience"): with ミュージック on, the procedural beds for the
 // Tokyo hour and season sound under the music after the first tap. Read from the engine's test hook (window.__ambient).
 import { expect, test, type Page } from '@playwright/test';
+import { hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 
 async function open(page: Page, q: string) {
   await page.addInitScript(() => {
@@ -12,7 +12,7 @@ async function open(page: Page, q: string) {
     (window as { __ambient?: string[] }).__ambient = [];
   });
   await page.goto(`?demo&date=${q}`);
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   const s = (await page.locator('.if-scene').boundingBox())!;
   await page.mouse.click(s.x + s.width / 2, s.y + 60); // a tap on open sky unlocks audio
 }

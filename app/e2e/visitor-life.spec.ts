@@ -4,11 +4,11 @@
 // own way), and the partner comes over to say hello to a visitor near home (never across the island to centre stage).
 import { expect, test, type Page } from '@playwright/test';
 import { campDoor, geo, is3d, oku, sawIt, watchFor } from './island.ts';
+import { hudMenu } from './hud.ts';
 
 /** The campsite's door, where the visitors come from and go back to (world x, z). */
 
 test.use({ viewport: { width: 390, height: 844 } });
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 async function tapOn(page: Page, sel: string, fy = 0.5) {
   const r = (await page.locator(sel).boundingBox())!;
   await page.mouse.click(r.x + r.width / 2, r.y + r.height * fy);
@@ -39,7 +39,7 @@ const feet = (page: Page, id: string) => page.locator(`[data-visitor="${id}"]`).
 for (const id of ['kk-slider', 'daisy-mae', 'wisp', 'gulliver', 'jack', 'celeste', 'franklin', 'jingle', 'pave', 'zipper', 'reese'])
   test(`${id}: alive on centre stage (breathing, its own loop, a shadow that breathes with it)`, async ({ page }) => {
     await page.goto(`?demo&date=2026-11-04T${NIGHT.has(id) ? '21' : '12'}:00&visitor=${id}&critter=none`);
-    await expect(hudJar(page)).toBeVisible();
+    await expect(hudMenu(page)).toBeVisible();
     await camera(page, await camOf(page, id));
     const v = page.locator(`[data-visitor="${id}"]`);
     await expect(v).toHaveAttribute('data-phase', 'here', { timeout: 3000 });
@@ -57,7 +57,7 @@ for (const id of ['kk-slider', 'daisy-mae', 'wisp', 'gulliver', 'jack', 'celeste
 
 test('Gulliver sleeps face down until the fifth nudge (NH), then stands and introduces himself', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   const g = page.locator('[data-visitor="gulliver"]');
   await expect(g).toHaveAttribute('data-asleep', 'lie');
   await expect(g.locator('.fxa.zzz')).toHaveCount(1);
@@ -80,7 +80,7 @@ test('Gulliver sleeps face down until the fifth nudge (NH), then stands and intr
 
 test('a stroll, and back on her spot before a line: the balloon anchors next to her', async ({ page }) => {
   await page.goto('?demo&date=2026-11-01T08:00&critter=none&stroll'); // Sunday morning: Daisy Mae
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   const v = page.locator('[data-visitor="daisy-mae"]');
   await expect(v.locator('.art')).toBeVisible();
   const home = await feet(page, 'daisy-mae');
@@ -150,7 +150,7 @@ for (const [id, way] of [['wisp', 'float'], ['celeste', 'fly'], ['jack', 'spook'
 
 test('the partner comes over to say hello to Daisy Mae on the lawn: they face each other, she answers with an emote', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T09:00&visitor=daisy-mae&critter=none&meet');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await expect(page.locator('[data-actor="partner"].walking')).toBeAttached({ timeout: 6000 });
   await expect(page.locator('[data-visitor="daisy-mae"] .emote')).toBeAttached({ timeout: 6000 });
   // close by, not on them: the partner's feet a step from the visitor's, the visitor's middle still theirs
@@ -166,7 +166,7 @@ test('the partner comes over to say hello to Daisy Mae on the lawn: they face ea
 
 test('nobody crosses the island to say hello at centre stage (the partner keeps within 600u)', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&visitor=jingle&critter=none&meet');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await is3d(page); // (the 3D island up first: on a slow GPU it takes a while)
   await expect(page.locator('[data-visitor="jingle"]')).toHaveAttribute('data-phase', 'here', { timeout: 3000 });
   await page.waitForTimeout(6000);

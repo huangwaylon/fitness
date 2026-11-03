@@ -10,9 +10,9 @@
 </script>
 
 <script lang="ts">
-  // ベル flowing up into the HUD's jar: when new earnings arrive, a small "+150" pops over the fruit
-  // that earned them and three coins hop from there into the jar, one after another (NH's bell pickup: a short arc,
-  // a little spin, no trail). Each flight calls `onland` once its last coin is in, so the jar can squash. In stage units (the stage is the container).
+  // ベル flowing up into the HUD's leaf (HudMenu): when new earnings arrive, a small "+150" pops over the fruit
+  // that earned them and three coins hop from there into the leaf, one after another (NH's bell pickup: a short arc,
+  // a little spin, no trail). Each flight calls `onland` once its last coin is in, so the leaf can squash. In stage units (the stage is the container).
   //   <CoinFlow flights={[{ id: 1, from: [120, 180], bells: 150, delay: 0 }]} to={[195, 140]} onland={(id) => …} />
   import { u } from '../island/scene.ts';
   import { formatBells } from '#lib/i18n/index.ts';
@@ -20,7 +20,7 @@
 
   interface Props {
     flights: Flight[];
-    /** Where the coins land: the jar (stage units). */
+    /** Where the coins land: the leaf or the open ベル row (stage units). */
     to: [number, number];
     onland: (id: number) => void;
   }
@@ -43,7 +43,7 @@
       style:animation-delay="{f.delay + 380 + k * STEP}ms" style:animation-duration="{FLY}ms"
       onanimationend={(e) => {
         if (!e.animationName.endsWith('cf-x')) return; // (the coin's own fall and spin bubble up here too)
-        // each coin clinks into the jar, one step up a pentatonic run across the whole batch; only a flight's last coin
+        // each coin clinks into the leaf, one step up a pentatonic run across the whole batch; only a flight's last coin
         // at full level
         cue('coin-land', { step: coinStep(i * COINS + k), gain: k === COINS - 1 ? 1 : 0.6 });
         if (k === COINS - 1) onland(f.id);
@@ -56,7 +56,7 @@
 {/each}
 
 <style>
-  /* in HudCoins' layer over the stage (above the whole scene); the coins rise out of the island into the HUD's jar */
+  /* in HudCoins' layer over the stage (above the whole scene); the coins rise out of the island into the HUD's leaf */
   .cx {
     position: absolute; z-index: var(--z-coin); width: 0; height: 0; pointer-events: none;
     animation-name: cf-x; animation-timing-function: linear; animation-fill-mode: both;
@@ -70,7 +70,7 @@
   .face { fill: var(--jar-coin); }
   .shine { fill: none; stroke: #fff; stroke-width: 1.6; stroke-linecap: round; opacity: .85; }
   @keyframes cf-x { from { transform: none; } to { transform: translateX(var(--dx)); } }
-  /* up (ease-out) to the top of the arc, then down into the jar (ease-in), shrinking as it drops in */
+  /* up (ease-out) to the top of the arc, then down into the leaf (ease-in), shrinking as it drops in */
   @keyframes cf-y {
     0% { transform: translateY(0) scale(.5); opacity: 0; animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
     8% { opacity: 1; }

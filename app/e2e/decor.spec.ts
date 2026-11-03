@@ -4,7 +4,7 @@
 // picks a placed piece up to move, turn, put back or put away. Both players' tabs show the same island (the demo's
 // relay, as two phones over the real one), and it stays across a reload and for a tab opening later.
 import { expect, test, type Page } from '@playwright/test';
-import { fromMenu } from './hud.ts';
+import { fromMenu, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -14,7 +14,7 @@ const DATE = '2026-11-04T12:00';
 
 async function open(page: Page, q = '') {
   await page.goto(`?demo&date=${DATE}&critter=none${q}`);
-  await expect(page.getByRole('button', { name: /^ごほうび · ふたりのベル / })).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await page.waitForTimeout(2000);
 }
@@ -154,7 +154,7 @@ test('on the layout: both players see the same island, live and after a reload; 
   // a reload keeps it; a third tab opening later finds it too
   await a.bringToFront();
   await a.reload();
-  await expect(a.getByRole('button', { name: /^ごほうび · ふたりのベル / })).toBeVisible();
+  await expect(hudMenu(a)).toBeVisible();
   await expect.poll(() => where(a)).toEqual(moved);
   const c = await ctx.newPage();
   await open(c, '&as=B');

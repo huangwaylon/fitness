@@ -4,6 +4,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { plateOnly } from './island.ts';
+import { hudBells, hudMenu } from './hud.ts';
 
 /** NH's own catch line (ja), as the plate shows it (whitespace collapsed). */
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
@@ -12,20 +13,19 @@ const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g
 // the 664px Safari viewport leaves too little sea under the beach for a fish.
 test.use({ viewport: { width: 390, height: 844 } });
 
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 
 async function open(page: Page, q: string) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=2026-11-04T12:00${q}`);
-  await expect(hudJar(page)).toBeVisible();
-  return { bells: await hudJar(page).getAttribute('aria-label'), url: page.url() };
+  await expect(hudMenu(page)).toBeVisible();
+  return { bells: await hudBells(page).getAttribute('aria-label'), url: page.url() };
 }
 
 /** Nothing counted, nothing opened, nowhere gone. */
 async function unchanged(page: Page, before: { bells: string | null; url: string }) {
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   expect(page.url()).toBe(before.url);
-  await expect(hudJar(page)).toHaveAttribute('aria-label', before.bells!);
+  await expect(hudBells(page)).toHaveAttribute('aria-label', before.bells!);
 }
 
 /** The centre of an element (critters are 0 × 0 anchors: their box is the point). */

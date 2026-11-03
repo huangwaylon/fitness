@@ -4,6 +4,7 @@
 // so the spec finds things through window.__editor (where a tile or a world point is on screen). The 3D preview is off
 // (`preview=0`): CI's headless Chromium draws WebGL in software, a frame every few seconds, and it starves the page.
 import { expect, test, type Page } from '@playwright/test';
+import { hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -37,7 +38,7 @@ const objAt = (page: Page, id: string) =>
 test('a move in the editor reaches a phone live (the layout op over the relay), and stays', async ({ context }) => {
   const editor = await context.newPage(), phone = await context.newPage();
   await phone.goto(`?demo&as=B&date=${DATE}&critter=none`);
-  await expect(phone.getByRole('button', { name: /^ごほうび · ふたりのベル / })).toBeVisible();
+  await expect(hudMenu(phone)).toBeVisible();
   await phone.waitForFunction(() => (window as unknown as { __layout?: unknown }).__layout);
   await openEditor(editor);
   await editor.bringToFront();

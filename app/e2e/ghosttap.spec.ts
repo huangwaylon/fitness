@@ -3,8 +3,8 @@
 // finger, with real touch taps (on a phone with a notch the ✕ sits near the HUD) and a pointerdown → pointerup →
 // click sequence, from the health popup's ✕ nor from the panel's.
 import { expect, test, type Page } from '@playwright/test';
+import { hudBells, hudMenu, openRewards } from './hud.ts';
 
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 const panel = (page: Page) => page.locator('dialog[open]');
 const center = async (page: Page, sel: string) => {
   const b = (await page.locator(sel).boundingBox())!;
@@ -39,17 +39,17 @@ async function roundTrip(page: Page, tap: (x: number, y: number) => Promise<void
   await expect(panel(page)).toHaveCount(0);
   await page.waitForTimeout(900); // any late tap
   await expect(panel(page)).toHaveCount(0);
-  await expect(hudJar(page)).toHaveAttribute('aria-expanded', 'false');
+  await expect(hudBells(page)).toHaveAttribute('aria-expanded', 'false');
 }
 
 test('no tap falls through to the HUD: the health popup’s ✕, and the panel’s', async ({ page }) => {
   await notch(page);
   await page.goto('?demo&date=2026-11-04T12:00');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await roundTrip(page, (x, y) => page.touchscreen.tap(x, y));
   await roundTrip(page, (x, y) => pointerTap(page, x, y));
   // the panel's ✕, then nothing under it acts (no reopen, no health popup)
-  await hudJar(page).click();
+  await openRewards(page);
   await expect(panel(page)).toHaveCount(1);
   await page.waitForTimeout(500);
   const x = await center(page, 'dialog[open] .nav.close');

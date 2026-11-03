@@ -5,12 +5,11 @@
 // island's もようがえ, つうしん); its catches go into the shared ずかん under its own name; its tent pieces reach
 // both members; and its villager is on the members' islands only while its app is open, moving only when it's moved.
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
-import { fromMenu } from './hud.ts';
+import { fromMenu, hudBells, hudMenu, openRewards } from './hud.ts';
 
 const VIEW = { width: 393, height: 659 };
 test.use({ viewport: VIEW });
 const DATE = '2026-07-04T12:00';
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 type W = { who(w: string): [number, number] | null; state(): { villagers: Record<string, { walking: boolean }> } };
 const who = (p: Page, w: string) => p.evaluate((w) => (window as unknown as { __world: W }).__world.who(w), w);
 const walking = (p: Page, w: string) => p.evaluate((w) => (window as unknown as { __world: W }).__world.state().villagers[w]?.walking ?? null, w);
@@ -18,14 +17,14 @@ const walking = (p: Page, w: string) => p.evaluate((w) => (window as unknown as 
 async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G', more = '') {
   const page = await ctx.newPage();
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none${as === 'A' ? '' : `&as=${as}`}${more}`);
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   return page;
 }
 
 test('the guest’s phone: the members’ activity and ベル, never a からだ figure, and nothing only a member does', async ({ page }) => {
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&as=G`);
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   const panel = page.locator('dialog[open]');
   // けんこう (the dumbbell's popup): かつどう only (no からだ switch, no weight or body card), both members' activity
   await page.getByRole('button', { name: 'けんこう', exact: true }).click();
@@ -49,13 +48,10 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   await expect(panel).not.toContainText('体重');
   await page.keyboard.press('Escape');
   await expect(panel).toHaveCount(0);
-  // きろく (the jar opens the panel on ごほうび, a tab away): the ベル ledger (the goals are けんこう's, the ずかん the menu's)
-  await hudJar(page).click();
-  await expect(panel.locator('.tab[data-tab=rewards]')).toHaveAttribute('aria-pressed', 'true');
-  await panel.locator('.tab[data-tab=kiroku]').click();
-  await expect(panel.locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(panel.locator('.kiroku')).toBeVisible();
-  await expect(panel.locator('.tab[data-tab=settings], [data-zukan]')).toHaveCount(0);
+  // the ベル ledger, in ごほうび (the menu's ベル row): the goals are けんこう's, the ずかん the menu's
+  await openRewards(page);
+  await expect(panel.locator('[data-ledger] section.week').first()).toBeAttached();
+  await expect(panel.locator('[data-tab], [data-zukan]')).toHaveCount(0);
   await expect(panel.locator('.goals, .pen-btn')).toHaveCount(0);
   for (const text of ['体重', '体脂肪率', 'kg', '%']) await expect(panel, text).not.toContainText(text);
   await page.keyboard.press('Escape');
@@ -68,17 +64,17 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   await expect(panel.locator('#sec-notify, #sec-sync')).toHaveCount(0);
   await expect(panel.locator('#sec-lang')).toBeVisible();
   await page.keyboard.press('Escape');
-  // ごほうび, from the HUD's jar (the shared balance written in it): the jar's balance and the buys, view-only (no shop,
-  // no erase)
-  const jar = page.locator('.hud-jar');
-  const bells = Number(await jar.getAttribute('data-bells'));
+  // ごほうび, from the menu's ベル row (the shared balance): its balance and the buys, view-only (no shop, no erase)
+  const row = hudBells(page);
+  const bells = Number(await row.getAttribute('data-bells'));
   expect(bells).toBeGreaterThan(0);
-  await expect(jar.locator('.num')).toHaveText(bells < 1000 ? bells.toLocaleString('en-US') : /k$/);
-  await jar.click();
-  await expect(panel.locator('.tab[data-tab=rewards]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(row.locator('.num')).toHaveText(bells.toLocaleString('en-US'));
+  await openRewards(page);
   await expect(panel.locator('[data-guest-jar]')).toBeVisible();
   await expect.poll(async () => Number((await panel.locator('.hero .total').innerText()).replace(/\D/g, ''))).toBe(bells);
   await expect(panel.locator('[data-item]')).toHaveCount(0);
+  await panel.locator('[data-hist-toggle]').click();
+  await expect(panel.locator('[data-spend]').first()).toBeVisible();
   await expect(panel.locator('[data-spend] .x')).toHaveCount(0);
   await expect(panel.locator('.hero .today')).toBeVisible();
 });
@@ -88,18 +84,18 @@ test('the guest’s ごほうび shows today’s ベル under the balance: the m
   const at = '&date=2026-10-28T22:00&critter=none&visitor=none';
   const member = await ctx.newPage();
   await member.goto(`?demo${at}`);
-  await expect(hudJar(member)).toBeVisible();
-  const today = Number(await member.locator('.hud-jar').getAttribute('data-today'));
+  await expect(hudMenu(member)).toBeVisible();
+  const today = Number(await hudBells(member).getAttribute('data-today'));
   expect(today).toBeGreaterThan(0);
   const g = await ctx.newPage();
   await g.goto(`?demo${at}&as=G`);
-  await expect(hudJar(g)).toBeVisible();
-  await expect(g.locator('.hud-jar')).toHaveAttribute('data-today', String(today));
-  await expect(hudJar(g)).toHaveAccessibleName(new RegExp(` · きょう ${today}\\sベル$`));
-  await hudJar(g).click();
+  await expect(hudMenu(g)).toBeVisible();
+  await expect(hudBells(g)).toHaveAttribute('data-today', String(today));
+  await expect(hudBells(g)).toHaveAttribute('aria-label', new RegExp(` · きょう ${today}\\sベル$`));
+  await openRewards(g);
   const panel = g.locator('dialog[open]');
   await expect(panel.locator('[data-guest-jar]')).toBeVisible();
-  await expect(panel.locator('.hero .today')).toHaveText(new RegExp(`^\\s*きょう\\s*\\+${today}\\s*ベル\\s*$`));
+  await expect(panel.locator('.hero .today')).toHaveText(new RegExp(`^\\s*きょうの ベル\\s*\\+${today}\\s*ベル\\s*$`));
   await ctx.close();
 });
 
@@ -109,7 +105,7 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
   const a = await open(ctx, 'A');
   const g = await ctx.newPage();
   await g.goto(`?demo&date=${DATE}&critter=common-butterfly&visitor=none&as=G`);
-  await expect(hudJar(g)).toBeVisible();
+  await expect(hudMenu(g)).toBeVisible();
   // the butterfly flown in: on screen, and over the island's ground rather than mid-way in from the edge
   const bfl = g.locator('[data-critter="common-butterfly"]');
   await expect.poll(async () => {
@@ -131,7 +127,7 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
   await expect(detail.locator('[data-zukan-person="G"]')).toContainText('おきゃくさん ×1', { timeout: 5000 });
   // and after a reload, as it was: the record's rows say who found it
   await a.reload();
-  await expect(hudJar(a)).toBeVisible();
+  await expect(hudMenu(a)).toBeVisible();
   await fromMenu(a, 'zukan');
   await a.locator('[data-zukan="bug"]').click();
   await a.locator('button.tile[data-entry="common-butterfly"]').click();

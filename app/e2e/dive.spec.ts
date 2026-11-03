@@ -5,17 +5,16 @@
 import { expect, test, type Page } from '@playwright/test';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { CHASE_MS, SEA } from '../src/lib/components/island/sea.ts';
-import { fromMenu } from './hud.ts';
+import { fromMenu, hudBells, hudMenu } from './hud.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
 test.use({ viewport: { width: 390, height: 844 } });
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 
 async function open(page: Page, q: string) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=2026-07-04T12:00${q}`);
-  await expect(hudJar(page)).toBeVisible();
-  const bells = await hudJar(page).getAttribute('aria-label');
+  await expect(hudMenu(page)).toBeVisible();
+  const bells = await hudBells(page).getAttribute('aria-label');
   await expect(page.locator('[data-bubbles]')).toBeAttached();
   await page.waitForTimeout(300);
   return bells;
@@ -43,7 +42,7 @@ test('a tap on the bubbles dives: a slow one (seaweed) is caught, NH’s line, a
   await expect(page.locator('[data-bubbles]')).toHaveCount(0);
   expect(await finds(page)).toEqual([{ kind: 'sea', id: 'seaweed' }]);
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-splash', 'scene-catch']));
-  await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
+  await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
   await page.screenshot({ path: '/tmp/world-build/critters-dive-caught.png' });
 });
 

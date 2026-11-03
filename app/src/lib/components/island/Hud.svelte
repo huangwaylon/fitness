@@ -1,25 +1,24 @@
 <script lang="ts">
   // 島's HUD, NH island-view light: the sky clean, one small cluster in its top-right corner (docs/design.md "Island"):
-  // [the menu] [the meal button] [the jar] [the health button]. The menu (NH's leaf) drops ずかん and せってい under it,
-  // each opening its own sheet grown out of it; the meal button (NH's ramen bowl) → the meal log (ごはん); the jar (the
-  // shared wallet's ベル written in it, today's +N flashing under it as coins land) → the island panel slides down on
-  // ごほうび (its tabs きろく · ごほうび); the health button (NH's dumbbell) → the health popup (けんこう). Only when sync is
-  // not ok, the sync chip centred under the row. The panel, the popups and the two sheets are their own chunks, loaded
-  // on first open.
+  // [the health button] [the meal button] [the menu]. The health button (NH's dumbbell) → the health popup (けんこう);
+  // the meal button (NH's ramen bowl) → the meal log (ごはん); the menu (NH's leaf, at the screen's side) drops
+  // 「ベル 121」, ずかん and せってい under it: the ベル row (the shared wallet's balance; today's +N flashing by the leaf as
+  // coins land) → the island panel slides down (ごほうび), the others each open their own sheet grown out of them. Only
+  // when sync is not ok, the sync chip centred under the row. The panel, the popups and the two sheets are their own
+  // chunks, loaded on first open.
   import { onMount } from 'svelte';
   import { replaceState } from '$app/navigation';
   import { page } from '$app/state';
   import SyncPill from '../ui/SyncPill.svelte';
   import HudFood from './HudFood.svelte';
   import HudHealth from './HudHealth.svelte';
-  import HudJar from './HudJar.svelte';
   import HudMenu from './HudMenu.svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
 
   interface Props {
-    /** Today's ベル so far, both people (the jar's label and its flash; shown in full in ごほうび). */
+    /** Today's ベル so far, both people (the ベル row's label and the flash; shown in full in ごほうび). */
     today: number;
-    /** The shared wallet's balance (the jar's number). */
+    /** The shared wallet's balance (the ベル row's number). */
     balance: number;
     /** Bindable: the panel is open (the island pauses under it). */
     panelOpen?: boolean;
@@ -57,10 +56,10 @@
 <!-- (.ribbon-wrap: the HUD's box, by its old name: the 3D island measures it for the sky under it) -->
 <div class="ribbon-wrap">
   <div class="hud-row">
-    <HudMenu {later} onzukan={() => { zukanMounted = true; zukanOpen = true; }} onsettings={() => { settingsMounted = true; settingsOpen = true; }} />
-    <HudFood {later} onopen={() => { foodMounted = true; foodOpen = true; }} />
-    <HudJar bells={balance} {today} {later} expanded={panelOpen} onopen={() => (opened = panelOpen = true)} />
     <HudHealth {later} onopen={() => { healthMounted = true; healthOpen = true; }} />
+    <HudFood {later} onopen={() => { foodMounted = true; foodOpen = true; }} />
+    <HudMenu bells={balance} {today} {later} expanded={panelOpen} onbells={() => (opened = panelOpen = true)}
+      onzukan={() => { zukanMounted = true; zukanOpen = true; }} onsettings={() => { settingsMounted = true; settingsOpen = true; }} />
   </div>
   <SyncPill />
 </div>
@@ -90,10 +89,11 @@
   }
   /* only the controls take taps: the sky between them lets a tap through (the sun, the moon, a wish) */
   .ribbon-wrap > :global(*:not(.hud-row)), .hud-row > :global(*) { pointer-events: auto; }
-  /* [the menu] [the meal button] [the jar] [the health button]: one cluster in the top-right corner, inset 14px or the
-     safe area's side (a landscape notch), 6px apart; the meal button, the jar and the dumbbell the same width
-     (--hud-side), the menu's 44px disc at the left end; the row is under the safe area (--hud-top), so the Dynamic
-     Island stays clear above it, and the sky's left clear for the sun, the moon and the balloon */
+  /* [the health button] [the meal button] [the menu]: one cluster in the top-right corner, inset 14px or the safe
+     area's side (a landscape notch), 6px apart; the dumbbell and the bowl the same width (--hud-side), the menu's
+     44px disc at the right end (its pills drop under it along the screen's side); the row is under the safe area
+     (--hud-top), so the Dynamic Island stays clear above it, and the sky's left clear for the sun, the moon and the
+     balloon */
   .hud-row {
     --hud-side: 60px;
     align-self: stretch; display: flex; align-items: center; justify-content: flex-end; gap: 6px;

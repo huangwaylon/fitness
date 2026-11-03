@@ -4,8 +4,8 @@
 // villager). Never under a control; no ベル.
 import { expect, test, type Page } from '@playwright/test';
 import { geo } from './island.ts';
+import { hudBells, hudMenu } from './hud.ts';
 
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 async function tapOn(page: Page, sel: string) {
   const r = (await page.locator(sel).boundingBox())!;
   await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
@@ -53,7 +53,7 @@ async function toAnswers(page: Page) {
 
 test('Oct 31 by day: pumpkins on the lawn and round the campsite, clear of every control; no Jack, no lanterns', async ({ page }) => {
   await page.goto('?demo&date=2026-10-31T16:59&critter=none');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await camera(page, 114);
   await expect(page.locator('[data-halloween="day"] .pumpkin .art:visible').first()).toBeVisible();
   expect(await page.locator('.pumpkin').count()).toBeGreaterThanOrEqual(3);
@@ -67,7 +67,7 @@ test('Oct 31 by day: pumpkins on the lawn and round the campsite, clear of every
 
 test('Nov 1: no Halloween', async ({ page }) => {
   await page.goto('?demo&date=2026-11-01T00:00&critter=none');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await expect(page.locator('[data-halloween]')).toHaveCount(0);
   await expect(page.locator('[data-visitor="jack"]')).toHaveCount(0);
 });
@@ -76,8 +76,8 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
   test(`Halloween night: lanterns lit, Jack at centre stage (not K.K. on this Saturday), a treat delights him (${w}px)`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await page.goto('?demo&date=2026-10-31T19:00&critter=none');
-    await expect(hudJar(page)).toBeVisible();
-    const bells = await hudJar(page).getAttribute('aria-label');
+    await expect(hudMenu(page)).toBeVisible();
+    const bells = await hudBells(page).getAttribute('aria-label');
     await camera(page, (await geo(page)).CAMS.oku);
     await expect(page.locator('[data-halloween="night"] .glow:visible').first()).toBeVisible();
     await expect(page.locator('[data-visitor="kk-slider"]')).toHaveCount(0);
@@ -104,12 +104,12 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await tapOn(page, '[data-visitor="jack"] .art');
     await expect(page.locator('[data-fx="talk"].placed')).toHaveAttribute('data-pages', '1');
     await expect(page.locator('.choices')).toHaveCount(0);
-    await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
+    await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
   });
 
 test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ page }) => {
   await page.goto('?demo&date=2026-10-31T23:59&critter=none');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await camera(page, (await geo(page)).CAMS.oku);
   await tapOn(page, '[data-visitor="jack"] .art');
   await toAnswers(page);
@@ -139,7 +139,7 @@ test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ p
 
 test('?event=halloween brings the evening on any day', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&event=halloween&critter=none');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await camera(page, (await geo(page)).CAMS.oku);
   await expect(page.locator('[data-visitor="jack"] .art')).toBeVisible();
   await expect(page.locator('[data-halloween="night"]')).toHaveCount(1);

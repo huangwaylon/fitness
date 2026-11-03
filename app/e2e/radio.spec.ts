@@ -4,8 +4,8 @@
 // day on this phone. No ベル.
 import { expect, test, type Page } from '@playwright/test';
 import { is3d, w3 } from './island.ts';
+import { hudBells, hudMenu } from './hud.ts';
 
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 /** The deck out to play (ready) or playing (the layout's deck stands every day: `idle` when it isn't its day). */
 const LIVE = '[data-stretch]:not([data-stretch="idle"])';
 const deck = (page: Page) => page.locator('[data-stretch] .radio');
@@ -40,8 +40,8 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await page.setViewportSize({ width: w, height: h });
     await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
     await page.goto('?demo&date=2026-11-01T07:00&critter=none'); // a Sunday morning: Daisy Mae is on the beach
-    await expect(hudJar(page)).toBeVisible();
-    const bells = await hudJar(page).getAttribute('aria-label');
+    await expect(hudMenu(page)).toBeVisible();
+    const bells = await hudBells(page).getAttribute('aria-label');
     await expect(deck(page)).toBeVisible();
     await expect(page.locator('[data-visitor="daisy-mae"] .art')).toBeVisible();
     expect(await under(page)).toEqual([]);
@@ -66,17 +66,17 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     const at = ['warmup', 'sidebend', 'leap'].map((p) => seen.indexOf([p, p, p].join(',')));
     expect(at.every((i) => i >= 0), seen.join(' | ')).toBe(true);
     expect([...at].sort((a, b) => a - b)).toEqual(at);
-    await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
+    await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
     // once a day per phone
     await page.reload();
-    await expect(hudJar(page)).toBeVisible();
+    await expect(hudMenu(page)).toBeVisible();
     await page.waitForTimeout(800);
     await expect(page.locator(LIVE)).toHaveCount(0);
   });
 
 test('no deck on a later hour without Exercise met; a morning opening keeps it out for the day', async ({ page }) => {
   await page.goto('?demo&date=2026-11-02T09:00');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await page.waitForTimeout(800);
   await expect(page.locator(LIVE)).toHaveCount(0);
   await page.goto('?demo&date=2026-11-02T06:10');

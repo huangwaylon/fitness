@@ -1,12 +1,13 @@
 // Scenery taps (docs/design.md "Scene interactions"): the bushes, flowers, grass, sea, sun and clouds answer a tap with a
-// short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the jar still work.
+// short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the HUD still work.
 import { expect, test, type Page } from '@playwright/test';
 import { geo, oku } from './island.ts';
+import { hudBells, hudMenu } from './hud.ts';
 
 /** The island is up: the HUD's jar shows (the app asks no questions, so nothing to answer first). */
 async function islandReady(page: Page) {
   // (its first paint: now and then over 5 s under CI's load)
-  await expect(page.getByRole('button', { name: /^ごほうび · ふたりのベル / })).toBeVisible({ timeout: 15_000 });
+  await expect(hudMenu(page)).toBeVisible({ timeout: 15_000 });
 }
 
 type W = { at: (x: number, z: number) => [number, number]; go: (z: number) => void };
@@ -53,9 +54,9 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   // a fixed midday (Tokyo): without it the orb is the moon from 19:00 and the sun row below fails every evening
   await page.goto('?demo&date=2026-11-04T12:00&critter=none');
   await islandReady(page);
-  const hudJar = page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
+  const bellsRow = hudBells(page);
   const health = page.locator('.hud-health');
-  const bells = await hudJar.getAttribute('aria-label');
+  const bells = await bellsRow.getAttribute('aria-label');
   const url = page.url();
 
   // (open lawn is a walk: my villager runs there, its tap ring on the ground instead of a dust puff)
@@ -76,7 +77,7 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   // a flourish is gone within ~1 s, and nothing else moved
   await expect(page.locator('[data-fx]')).toHaveCount(0, { timeout: 4000 }); // a flourish waits for my villager's walk (≤ 0.9 s)
   expect(page.url()).toBe(url);
-  await expect(hudJar).toHaveAttribute('aria-label', bells!);
+  await expect(bellsRow).toHaveAttribute('aria-label', bells!);
 
   // the trees: a canopy tap opens its popup; a tap on the scenery then only closes it (no flourish)
   await page.locator('button.canopy').first().click();

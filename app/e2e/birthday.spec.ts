@@ -4,8 +4,8 @@
 // chats. Nothing over a control; no ベル.
 import { expect, test, type Page } from '@playwright/test';
 import { geo, sawIt, watchFor } from './island.ts';
+import { hudBells, hudMenu } from './hud.ts';
 
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 /** The controls under a thing's corners and middle (a building's door behind a world prop is the world's, not a control over it). */
 const under = (page: Page, sel: string) =>
   page.evaluate((s) => {
@@ -42,8 +42,8 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
     await watchFor(page, ['.fxa.confetti']);
     await page.goto('?demo&date=2027-03-04T12:00&critter=none');
-    await expect(hudJar(page)).toBeVisible();
-    const bells = await hudJar(page).getAttribute('aria-label');
+    await expect(hudMenu(page)).toBeVisible();
+    const bells = await hudBells(page).getAttribute('aria-label');
     await expect(page.locator('.vil [data-hat]')).toHaveCount(2);
     await camera(page, (await geo(page)).CAMS.oku);
     await expect(page.locator('[data-cake="lit"] .official')).toBeVisible();
@@ -56,9 +56,9 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await tapOn(page, '[data-cake] .official');
     await expect(page.locator('[data-cake="out"]')).toBeAttached();
     expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('birthday-cake');
-    await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
+    await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
     await page.reload();
-    await expect(hudJar(page)).toBeVisible();
+    await expect(hudMenu(page)).toBeVisible();
     await expect(page.locator('[data-cake="out"]')).toBeAttached({ timeout: 4000 });
     await page.waitForTimeout(2000);
     await expect(page.locator('.fxa.confetti')).toHaveCount(0); // once a day
@@ -66,18 +66,18 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
 
 test('ウェイ’s birthday too; none the day after; an NH villager’s own birthday: its hat', async ({ page }) => {
   await page.goto('?demo&date=2026-10-06T12:00&critter=none');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await expect(page.locator('.vil [data-hat]')).toHaveCount(2);
   await expect(page.locator('.news')).toContainText('さん、おたんじょうび おめでとう！');
   await page.goto('?demo&date=2026-10-07T12:00&critter=none');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await page.waitForTimeout(800);
   await expect(page.locator('.vil [data-hat]')).toHaveCount(0);
   await expect(page.locator('[data-cake]')).toHaveCount(0);
   await expect(page.locator('.news')).toHaveCount(0);
   // Goldie (my villager in the demo) was born on Dec 27
   await page.goto('?demo&date=2026-12-27T12:00&critter=none');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await expect(page.locator('.vil [data-hat]')).toHaveCount(1);
   await expect(page.locator('[data-cake]')).toHaveCount(0);
 });
