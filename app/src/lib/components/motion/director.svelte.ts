@@ -242,6 +242,11 @@ export function holdEvents(ms: number) {
   }
 }
 
+/** No event playing nor queued (the e2e's: the island's opening beats are over; idle life may still wander). */
+export function eventsQuiet(): boolean {
+  return !queue.length && !drainTimer && Date.now() >= eventUntil;
+}
+
 /** Queued events (tests / the gallery). */
 export function queuedEvents(): ReactionId[] {
   return queue.map((q) => q.rid);

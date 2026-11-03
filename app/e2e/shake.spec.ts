@@ -5,7 +5,7 @@
 // forces the next shake's drop. Nothing changes ベル.
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
-import { is3d } from './island.ts';
+import { is3d, quiet } from './island.ts';
 import { swollenEye, type HeadBox } from '../src/lib/villagers/heads.ts';
 import { LOOKS_RIGHT } from '../src/lib/villagers/facing.ts';
 import { ROSTER, type RosterId } from '../src/lib/villagers/roster.ts';
@@ -20,7 +20,7 @@ async function open(page: Page, q = '') {
   await page.goto(`?demo&date=2026-11-04T12:00${q}`);
   await expect(ribbon(page)).toBeVisible({ timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
   await is3d(page); // (the 3D island up and its canopies where they'll stay: a while in software GL)
-  await page.waitForTimeout(2600); // the opening beats are over
+  await quiet(page); // the opening beats are over
 }
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 /** A point of the left tree's canopy the finger reaches (its middle, else the nearest part the popup leaves open). */

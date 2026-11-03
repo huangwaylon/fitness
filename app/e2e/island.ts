@@ -84,6 +84,9 @@ export const settled = (page: Page, timeout = 20_000) => expect.poll(() => w3(pa
  *  requestAnimationFrame): the sim step. Quick in the logic tier (nothing drawn); drawn under software GL a minute of
  *  frames takes minutes (use `page.clock.fastForward` there). */
 export const step = (page: Page, ms: number) => page.clock.runFor(ms);
+/** The island's opening beats are over (the greeting and the day's beats played, no event queued): __world.quiet(). */
+export const quiet = (page: Page, timeout = 15_000) =>
+  expect.poll(() => page.evaluate(() => (window as unknown as { __world?: { quiet?(): boolean } }).__world?.quiet?.() ?? false), { timeout, message: 'the opening beats over' }).toBe(true);
 
 /** world.ts's places as the page's island has them (the layout's on the 3D island with the layout on): a spec reads
  *  these, not world.ts's constants imported here (those are the 2D island's). */

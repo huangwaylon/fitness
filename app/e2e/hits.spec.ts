@@ -3,6 +3,7 @@
 // "the tap boxes of items seem very small and typically skewed towards the top"). Each kind is tapped at both points
 // and answers there; nothing walks.
 import { expect, test, type Page } from '@playwright/test';
+import { quiet } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -16,7 +17,7 @@ async function open(page: Page, q = '') {
   await page.goto(`?demo&date=2026-11-04T12:00&critter=none${q}`);
   await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
-  await page.waitForTimeout(2600); // the opening beats are over
+  await quiet(page); // the opening beats are over
 }
 /** The box of what an element draws (its img / svg; a node's anchor is a 0 × 0 point). */
 const drawn = (page: Page, sel: string) =>
