@@ -244,7 +244,10 @@ test('at night: the picker and the balloon in their cream, over the night tint',
   await shot(page, 'balloon-night');
 });
 
-test('the say button hides under the island panel and in もようがえ (its picker with it)', async ({ page }) => {
+test('the say button hides under the island panel and in もようがえ (its picker with it)', {
+  tag: '@quarantine',
+  annotation: { type: 'quarantine', description: 'owner: say agent, 2026-11-03: failed twice on CI (logic shard 10, c7cab4e3; passed on the runs before and after, 5/5 locally): after Escape closes the panel, the HUD menu\'s click never lands (30 s of retries: something over it). TODO: wait for the panel to have closed before the menu, find what covers it' }
+}, async ({ page }) => {
   await open(page);
   await sayBtn(page).click();
   await expect(picker(page)).toBeVisible();
