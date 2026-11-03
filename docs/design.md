@@ -23,8 +23,8 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 ## Simplicity rules
 
-- No tab bar: 島 (the island), one panel for everything else (tap the ribbon: きろく, ごほうび, せってい) and the health
-  popup (tap the dumbbell: けんこう).
+- No tab bar: 島 (the island), one panel for everything else (tap the ribbon: きろく, ごほうび, せってい; tap the jar:
+  the same panel on ごほうび) and the health popup (tap the dumbbell: けんこう).
 - One focal point per screen (島: today's ベル, also the door to the panel; ごほうび: the balance).
 - A number is shown in full in one place; elsewhere it is only a doorway to it.
 - Per screen at most 40 Japanese characters of non-numeric text, 3 cards, 5 rows a card; one しずえ line (≤ 16
@@ -35,7 +35,7 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 ### Island
 
 Top to bottom: the ribbon 「きょう +6 ベル」 (both people today, ふたりでぜんぶ included; counts up; tap → [the
-panel](#panel)) with the health button on its right, the two centred in the sky; a sync chip only when sync isn't ok; the scene;
+panel](#panel)) with the jar on its left and the health button on its right, one row centred in the sky; a sync chip only when sync isn't ok; the scene;
 しずえ's box only with news; the say button at the bottom right. The island is NH's rolling log under them ([World](#world)): a drag scrolls it from まえ
 (home, the health lawn) back to ひろば and おく, a tap on empty ground walks my villager there.
 
@@ -48,14 +48,25 @@ panel](#panel)) with the health button on its right, the two centred in the sky;
   ふたりでぜんぶ (「ふたりで ぜんぶ まで：あと 2つ」 or 「ふたりで ぜんぶ！ +2 ふたりに」), outside either total, so both
   totals plus it make the ribbon. The last line says when that person's data last arrived (「15:24 に とどいた」), with
   a dot once it is over 6 hours old.
-- **Health button** (`island/HudHealth.svelte`): a cream pill as tall as the ribbon, NH's red dumbbell
-  (`items/dumbbell`, NH's catalogue icon) over its left end and a leaf ▶; no number (the numbers live in the popup, and
-  a second total beside the ribbon's would compete with it). Tap → the villagers glance up at it (R18) and
-  [けんこう](#kenkou) grows out of the dumbbell (`health/HealthSheet.svelte`, Sheet's `pop`: a live CSS zoom about the
-  button, no View Transition: its snapshot of the banded ground striped on iPhone).
-- **Coins** (`island/HudCoins.svelte`): each newly met goal flies up as a +1 coin from its fruit into the ribbon (+2
-  with its がんばり; `CoinFlow`), the ribbon's number squashing as each lands; all of it waits while something covers
-  the scene.
+- **HUD row:** [the jar] [the ribbon] [the health button], at `--hud-top` (10px under the safe area, as before: clear of
+  iOS 27's top-edge blur). The two sides are the same width (56px, `--hud-side`), so the ribbon is centred on the
+  screen; each of its 16px tails sits in a 20–24px gap; on a narrow phone the ribbon's padding tightens (320 fits). Every
+  target is 44px or more. No View Transition anywhere in it (the stripes bug); day and night are the same art (the jar's
+  number is ink with a cream outline, the button cream with its lip), both reading on either sky.
+- **Jar** (`island/HudJar.svelte`, the one jar drawing `Jar.svelte`): standing in the sky, a little taller than the row
+  (its lid over the row's top, its foot under it), the shared wallet's ベル written in the glass (ごほうび's balance, the
+  app's number font; 1,000 on as 1.2k, 10,000 on as 12k; the full amount in its label). It fills as the wallet grows
+  (`walletFill`). Tap → a press squash, the villagers glance up at it (R18), and [the panel](#panel) opens on ごほうび.
+  The guest has it too: ごほうび is view-only there, the jar shows the same balance.
+- **Health button** (`island/HudHealth.svelte`): a small cream pill as tall as the ribbon, the jar's width, NH's red
+  dumbbell (`items/dumbbell`, NH's catalogue icon) across it, its plates a little over the ends; no number (the numbers
+  live in the popup, and a second total beside the ribbon's would compete with it). Tap → the villagers glance up at it
+  (R18) and [けんこう](#kenkou) grows out of the dumbbell (`health/HealthSheet.svelte`, Sheet's `pop`: a live CSS zoom
+  about the button, no View Transition: its snapshot of the banded ground striped on iPhone).
+- **Coins** (`island/HudCoins.svelte`): each newly met goal flies up as a +1 coin from its fruit into the jar (+2 with
+  its がんばり; `CoinFlow`), the jar squashing as each lands; the jar's number holds while coins are in the air
+  (`coinsInFlight`) and counts up by each one as it lands (the ribbon counts up on its own); all of it waits while
+  something covers the scene.
 - **Centre stage:** the plaza's middle (`world.ts` `CENTRE_STAGE`, ひろば), where visitors stand.
 - **Villagers:** a tap on mine is a squish; a tap on the partner's is a high-five ([Villager taps](#villager-taps)).
   Neither opens a sheet.
@@ -82,7 +93,7 @@ island with the panel open on ごほうび (`?panel=rewards`, dropped from the U
 
 Tap the ribbon → the island panel slides down from the top (`panel/IslandPanel.svelte`): title 「しまの てちょう」, full
 height, three tabs pinned under the title (NH yellow for the one shown): きろく · ごほうび · せってい. Every opening
-from the ribbon starts on きろく. Its own chunk, loaded on the first tap.
+from the ribbon starts on きろく, every one from the HUD's jar on ごほうび. Its own chunk, loaded on the first tap.
 
 - **きろく:** the ベル ledger, 目標 and the ずかん ([Kiroku](#kiroku)).
 - **ごほうび:** the wallet: the jar, the shop and the buys ([Wallet](#wallet)).

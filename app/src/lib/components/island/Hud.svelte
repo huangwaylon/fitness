@@ -2,8 +2,9 @@
   // 島's HUD, NH island-view light and symmetric: today's ベル ribbon centred under the notch / Dynamic Island (a copy
   // of the NH map's yellow title banner: the screen's one focal point, 「きょう +620 ベル」 for both of us) and, only
   // when sync is not ok, the sync chip centred under it. When ベル arrive the ribbon counts up (the focus beat).
-  // Tap → the island panel slides down from under it (きろく first). Beside it the health button (NH's dumbbell) →
-  // the health popup (けんこう). The panel and the popup are their own chunks, loaded on first open.
+  // Tap → the island panel slides down from under it (きろく first). On its left the jar (the shared wallet's ベル
+  // written in it) → the panel on ごほうび; on its right the health button (NH's dumbbell) → the health popup (けんこう).
+  // The panel and the popup are their own chunks, loaded on first open.
   import { onMount, tick, untrack } from 'svelte';
   import { replaceState } from '$app/navigation';
   import { page } from '$app/state';
@@ -11,12 +12,15 @@
   import { cubicOut } from 'svelte/easing';
   import SyncPill from '../ui/SyncPill.svelte';
   import HudHealth from './HudHealth.svelte';
+  import HudJar from './HudJar.svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
 
   interface Props {
     /** Today's ベル so far, both people. */
     bells: number;
+    /** The shared wallet's balance (the jar's number). */
+    balance: number;
     /** Bindable: the panel is open (the island pauses under it). */
     panelOpen?: boolean;
     /** Bindable: the health popup is open (the island pauses under it too). */
@@ -24,13 +28,13 @@
     /** The page's timer (cleared with the page). */
     later: (fn: () => void, ms: number) => void;
   }
-  let { bells, panelOpen = $bindable(false), healthOpen = $bindable(false), later }: Props = $props();
+  let { bells, balance, panelOpen = $bindable(false), healthOpen = $bindable(false), later }: Props = $props();
   const loadPanel = lazy(() => import('../panel/IslandPanel.svelte'));
   const loadHealth = lazy(() => import('../health/HealthSheet.svelte'));
   /** Mounted from the first open on (each keeps its state between opens). */
   let opened = $state(false);
   let healthMounted = $state(false);
-  /** The panel's first tab: ごほうび when the old /jar page sent us here (`?panel=rewards`), else きろく. */
+  /** The panel's tab when it opens: ごほうび from the jar or the old /jar page (`?panel=rewards`), else きろく. */
   let start = $state<'kiroku' | 'rewards'>('kiroku');
   onMount(() => {
     if (new URLSearchParams(location.search).get('panel') !== 'rewards') return;
@@ -52,6 +56,10 @@
     shown.set(to, { duration: rise ? 900 : 0 });
     if (rise) void replayBeat();
   });
+  function openPanel(tab: 'kiroku' | 'rewards') {
+    start = tab;
+    opened = panelOpen = true;
+  }
   async function replayBeat() {
     beat = false;
     await tick();
@@ -62,9 +70,10 @@
 
 <div class="ribbon-wrap">
   <div class="hud-row">
+  <HudJar bells={balance} {later} onopen={() => openPanel('rewards')} />
   <!-- Tap → the island panel (design.md "Panel"). -->
   <button type="button" class="ribbon" class:beat bind:this={ribbon} data-sfx="self" aria-label={t('hud.today', { bells: formatBells(bells) })}
-    aria-haspopup="dialog" aria-expanded={panelOpen} onanimationend={() => (beat = false)} onclick={() => { opened = true; panelOpen = true; }}>
+    aria-haspopup="dialog" aria-expanded={panelOpen} onanimationend={() => (beat = false)} onclick={() => openPanel('kiroku')}>
     <span class="wk" aria-hidden="true">{t('hud.todayShort')}</span><b class="money" aria-hidden="true">{shown.current >= 0.5 ? '+' : ''}{formatNum(shown.current)}<small>{t('bells.unit')}</small></b>
   </button>
   <HudHealth {later} onopen={() => { healthMounted = true; healthOpen = true; }} />
@@ -88,11 +97,13 @@
   }
   /* only the controls take taps: the gaps between them let a tap through to the sky (the sun, the moon) */
   .ribbon-wrap > :global(*:not(.hud-row)), .hud-row > :global(*) { pointer-events: auto; }
-  /* the ribbon and the health button: one row, centred as a group (the ribbon's left tail counted in: the row's 16px left pad
-     balances it), 24px apart (the right tail sits in the gap); on a narrow phone both tighten */
-  .hud-row { display: flex; align-items: center; gap: clamp(20px, 6vw, 26px); padding-left: 16px; max-width: 100%; }
-  .hud-row:has(> :only-child) { padding-left: 0; }
-  .hud-row:not(:has(> :only-child)) .ribbon { padding: 0 clamp(12px, 4vw, 28px); gap: clamp(6px, 2.4vw, 10px); }
+  /* [the jar] [the ribbon] [the health button]: one row, the two sides the same width (--hud-side), so the ribbon is
+     centred on the screen; each of its tails (16px) sits in a gap; on a narrow phone the ribbon tightens */
+  .hud-row {
+    --hud-side: 56px;
+    display: flex; align-items: center; gap: clamp(20px, 5.6vw, 24px); max-width: 100%;
+  }
+  .hud-row .ribbon { padding: 0 clamp(12px, 3.6vw, 22px); gap: clamp(6px, 2vw, 9px); }
   /* The NH map title banner: a yuzu band, darker swallow-tails tucked behind each end. */
   .ribbon {
     appearance: none; border: 0; cursor: pointer; font: inherit; pointer-events: auto;
@@ -110,9 +121,6 @@
   .ribbon b { font-size: clamp(1.5rem, calc(3.4 * var(--vh1)), 1.875rem); }
   .ribbon small { font: 700 .6em/1 var(--font-ui); margin-left: .3em; }
   .beat { animation: beat 900ms var(--ease-bounce); }
-  /* a coin lands in it (HudCoins): its number's small catch squash (the ribbon's box holds still) */
-  .ribbon b:global(.catch) { animation: catch 260ms var(--ease-bounce); }
-  @keyframes catch { 0%, 100% { transform: none; } 40% { transform: scale(1.06, .94); } }
   @keyframes beat { 0%, 100% { transform: none; } 30% { transform: scale(1.12); } }
   
 </style>

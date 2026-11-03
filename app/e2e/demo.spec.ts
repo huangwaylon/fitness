@@ -628,42 +628,106 @@ test('the panel: its tabs show whole (lip included, nothing paints over it) and 
   }
 });
 
-test('the health button (NH’s dumbbell) sits beside today’s ribbon: one row centred as a group, both ≥ 44px and apart, on screen at 320–390, day and night', async ({ page }) => {
-  for (const [w, h] of [[320, 568], [375, 667], [390, 844]]) {
+/** The jar's number as it writes it in the glass (HudJar: the digits to 999, then 1.2k, 12k). */
+const jarText = (n: number) => (n < 1000 ? n.toLocaleString('en-US') : n < 10_000 ? `${Math.floor(n / 100) / 10}k` : `${Math.floor(n / 1000)}k`);
+
+test('the HUD row: [the jar] [today’s ribbon] [the dumbbell], the ribbon centred, every target ≥ 44px and apart, on screen at 320–402 with a notch, day and night', async ({ page }) => {
+  // an iPhone 15/16's top inset (59px): the row stays where it was, under it
+  await page.addInitScript(() => document.addEventListener('DOMContentLoaded', () => {
+    const s = document.createElement('style');
+    s.textContent = 'html:root { --safe-top: 59px !important; }';
+    document.head.append(s);
+  }));
+  for (const [w, h] of [[393, 852], [402, 874], [320, 568]]) {
     for (const at of ['2026-10-28T12:00', '2026-10-28T22:00']) {
       await page.setViewportSize({ width: w, height: h });
       await page.goto(`?demo&date=${at}`);
       await islandReady(page);
       const ribbon = (await page.locator('.ribbon').boundingBox())!;
+      const jarBtn = page.getByRole('button', { name: /^ごほうび · ふたりのベル [\d,]+\sベル$/ });
       const btn = page.getByRole('button', { name: 'けんこう', exact: true });
-      const bb = (await btn.boundingBox())!;
-      expect(ribbon.height).toBeGreaterThanOrEqual(44);
-      expect(bb.height).toBeGreaterThanOrEqual(44);
-      expect(bb.width).toBeGreaterThanOrEqual(44);
-      // one row: the same top and height
-      expect(Math.abs(bb.y - ribbon.y)).toBeLessThan(1);
-      // the ribbon's right tail (16px) sits in the gap, clear of the button
-      expect(bb.x - (ribbon.x + ribbon.width)).toBeGreaterThanOrEqual(18);
-      // centred as a group (the left tail counted in), inside the screen with room to spare
-      const left = ribbon.x - 16, right = bb.x + bb.width;
-      expect(left).toBeGreaterThanOrEqual(8);
-      expect(right).toBeLessThanOrEqual(w - 8);
-      expect(Math.abs((left + right) / 2 - w / 2)).toBeLessThan(2);
-      // NH's dumbbell, a little taller than the pill; no number on it
+      const [jb, bb] = [(await jarBtn.boundingBox())!, (await btn.boundingBox())!];
+      for (const b of [ribbon, jb, bb]) {
+        expect(b.height).toBeGreaterThanOrEqual(44);
+        expect(b.width).toBeGreaterThanOrEqual(44);
+        expect(Math.abs(b.y - ribbon.y)).toBeLessThan(1); // one row
+        expect(b.y).toBeGreaterThanOrEqual(59);
+      }
+      // the ribbon's tails (16px each) sit in the gaps, clear of the jar and the dumbbell
+      expect(ribbon.x - 16 - (jb.x + jb.width)).toBeGreaterThanOrEqual(2);
+      expect(bb.x - (ribbon.x + ribbon.width + 16)).toBeGreaterThanOrEqual(2);
+      // the ribbon centred on the screen, the two sides the same width, inside the screen with room to spare
+      expect(Math.abs(ribbon.x + ribbon.width / 2 - w / 2)).toBeLessThan(1.5);
+      expect(Math.abs(jb.width - bb.width)).toBeLessThan(1);
+      expect(jb.x).toBeGreaterThanOrEqual(8);
+      expect(bb.x + bb.width).toBeLessThanOrEqual(w - 8);
+      // the jar drawn whole under the inset, its number inside the glass
+      const art = (await jarBtn.locator('.squash').boundingBox())!, num = (await jarBtn.locator('.num').boundingBox())!;
+      expect(art.y).toBeGreaterThanOrEqual(59);
+      expect(num.x).toBeGreaterThan(art.x);
+      expect(num.x + num.width).toBeLessThan(art.x + art.width);
+      expect(num.y).toBeGreaterThan(art.y + art.height * 0.3);
+      expect(num.y + num.height).toBeLessThan(art.y + art.height);
+      // NH's dumbbell, a little taller than the pill; no number, no ▶ dot
       const img = btn.locator('img');
       await expect(img).toHaveAttribute('src', /items\/dumbbell\.webp/);
       await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
       expect((await btn.locator('.art').boundingBox())!.y).toBeLessThan(bb.y);
       await expect(btn).toHaveText('');
+      await expect(btn.locator('svg')).toHaveCount(0);
     }
   }
-  // the two taps stay apart: the ribbon opens the panel, the dumbbell the health popup
+  // the three taps stay apart: the ribbon opens the panel on きろく, the jar on ごほうび, the dumbbell the health popup
   await openPanel(page);
+  await expect(sheet(page).locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await page.locator('.hud-jar').click();
+  await expect(sheet(page).locator('.tab[data-tab=rewards]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('.shop')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await openPanel(page); // the ribbon again: きろく, not where the jar left it
+  await expect(sheet(page).locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.press('Escape');
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await page.getByRole('button', { name: 'けんこう', exact: true }).click();
   await expect(sheet(page).locator('[data-health-sheet] .health')).toBeVisible();
   await expect(sheet(page).locator('.tabs')).toHaveCount(0);
+});
+
+test('the HUD jar writes ごほうび’s balance in its glass, follows a buy and its とりけす, and the day’s coins land in it (its number never drops while they fly)', async ({ page }) => {
+  // every change of the jar's number and each catch squash, from the first paint
+  await page.addInitScript(() => {
+    const w = window as unknown as { jarNums: string[]; jarCatches: number };
+    w.jarNums = [];
+    w.jarCatches = 0;
+    new MutationObserver(() => {
+      const n = document.querySelector('.hud-jar .num')?.textContent;
+      if (n && n !== w.jarNums.at(-1)) w.jarNums.push(n);
+      if (document.querySelector('.hud-jar .squash.catch')) w.jarCatches++;
+    }).observe(document, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class'] });
+  });
+  await page.goto('?demo&date=2026-10-28T22:00&critter=none&visitor=none'); // three goals met by then
+  await islandReady(page);
+  const jar = page.locator('.hud-jar');
+  // a fresh phone has seen none of today's goals: their coins fly from the fruit into the jar
+  await expect.poll(() => page.evaluate(() => (window as unknown as { jarCatches: number }).jarCatches), { timeout: 8000 }).toBeGreaterThan(0);
+  await expect(page.locator('[data-coin-flow]')).toHaveCount(0, { timeout: 8000 });
+  const bells = Number(await jar.getAttribute('data-bells'));
+  await expect(jar.locator('.num')).toHaveText(jarText(bells));
+  const nums = await page.evaluate(() => (window as unknown as { jarNums: string[] }).jarNums.map((n) => Number(n.replace(/,/g, ''))));
+  for (let i = 1; i < nums.length; i++) expect(nums[i]).toBeGreaterThanOrEqual(nums[i - 1]);
+  // the same number as ごほうび's
+  await jar.click();
+  const total = sheet(page).locator('.hero .total');
+  await expect.poll(async () => Number((await total.innerText()).replace(/\D/g, ''))).toBe(bells);
+  // a buy takes its price out of the jar at once; とりけす puts it back
+  await page.locator('.shop button[data-item="snack"]').click();
+  await sheet(page).getByRole('button', { name: '買う！' }).click();
+  await expect(jar.locator('.num')).toHaveText(jarText(bells - 40));
+  await page.getByRole('button', { name: 'とりけす' }).click();
+  await expect(jar.locator('.num')).toHaveText(jarText(bells));
 });
 
 test('the dumbbell grows the health popup out of itself: a live zoom about the button, no View Transition', async ({ page }) => {

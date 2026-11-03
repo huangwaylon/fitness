@@ -31,11 +31,11 @@ async function open(page: Page, at = '2026-11-04T12:00') {
   await quiet(page); // the opening beats are over
 }
 
-/** The picker's box clear of the HUD (the ribbon, the health button) and inside the screen. */
+/** The picker's box clear of the HUD (the jar, the ribbon, the health button) and inside the screen. */
 const clearOfHud = (page: Page) =>
   page.evaluate(() => {
     const p = document.querySelector('[data-say-picker]')!.getBoundingClientRect();
-    const hud = [...document.querySelectorAll('.hud button, .ribbon, .hud-health')].map((e) => e.getBoundingClientRect()).filter((r) => r.width);
+    const hud = [...document.querySelectorAll('.hud button, .ribbon, .hud-health, .hud-jar')].map((e) => e.getBoundingClientRect()).filter((r) => r.width);
     const over = hud.some((r) => p.left < r.right && r.left < p.right && p.top < r.bottom && r.top < p.bottom);
     return !over && p.left >= 0 && p.right <= innerWidth && p.top >= 0 && p.bottom <= innerHeight;
   });

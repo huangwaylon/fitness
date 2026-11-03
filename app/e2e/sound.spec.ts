@@ -219,6 +219,13 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);
 
+  // the HUD's jar: the villagers glance up at it, then the panel on ごほうび
+  await step('島', 'jar (→ ごほうび)', () => page.locator('.hud-jar').tap(), ['jar-tap', 'panel-open']);
+  await expect(dlg.locator('.tab[data-tab=rewards]')).toHaveAttribute('aria-pressed', 'true');
+  await step('パネル', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['panel-close']);
+  await expect(dlg).toHaveCount(0);
+  await page.waitForTimeout(400);
+
   // けんこう (the HUD's dumbbell): the villagers glance up at it, then the popup
   await step('島', 'dumbbell (→ けんこう)', () => page.locator('.hud-health').tap(), ['jar-tap', 'panel-open']);
   const period = dlg.locator('select[data-pick=period]'), who = dlg.locator('select[data-pick=who]');

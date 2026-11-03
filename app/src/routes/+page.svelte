@@ -94,7 +94,7 @@
     <!-- DOM order = focus / VoiceOver order = the visual order: the heading, today's ベル, the health button beside it, the scene (trees,
          villagers), then しずえ's box at the bottom. All are absolutely placed, so the order costs no layout; the stacking
          comes from the --z-* scale (tokens.css). -->
-    <Hud bells={view.wallet.today} bind:panelOpen bind:healthOpen {later} />
+    <Hud bells={view.wallet.today} balance={view.wallet.balance} bind:panelOpen bind:healthOpen {later} />
     <HudCoins {view} covered={panelOpen || healthOpen || ui.overlay} {later} />
     <div class="top">
       <IslandScene {view} onhighfive={sendHighFive} onhighfivegot={(who) => (gotFive = who)} onguest={guestArrived} paused={panelOpen || healthOpen} />
