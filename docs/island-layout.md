@@ -224,6 +224,10 @@ anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the pho
   and the relay), so a phone holds it as it's made; a drag streams the piece's spot as presence (`drag`, `sc: 'o'`,
   ~10 a second). The checks (validate.ts) run a moment after every change; a click on one selects its pieces and
   centres its tiles. The 3D preview beside the plan is the island's own ground and models.
+- **`?check`** (`world3d/drawCheck.ts undrawn`): a 3Dの チェック panel listing each object the phones' 3D island
+  doesn't draw as a model (placeObjects run as the island runs it, a day of each season), and why: an unknown kind, a
+  card of 2D art, nothing at all (a look with no model and no art), a model file missing; a click selects it. What's
+  drawn elsewhere (NH-part homes, bridges and stairs, the board, spots, seasonal spots out of season) isn't listed.
 - **Files:** JSON に かきだす / JSON を よみこむ (model.ts `toJson` / `fromJson`; an import is one action: undo takes it
   back), はじめの しまに もどす behind a confirm (the reset op: every object and chunk op before it void, the homes' looks
   kept).
