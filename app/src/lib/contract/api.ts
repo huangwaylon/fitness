@@ -19,7 +19,7 @@ export const NUMERIC_COLUMNS: Record<TabName, readonly string[]> = {
 };
 
 /** The event types the server accepts and the model reads (anything else is refused with `bad_request`). */
-export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'pref', 'find', 'tally', 'island', 'decor', 'board', 'food', 'food_repeat'] as const;
+export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'pref', 'find', 'tally', 'island', 'decor', 'board', 'food', 'food_repeat', 'food_recipe'] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
 /**
@@ -128,7 +128,7 @@ export const isBodyFatGoal = (v: unknown): v is number =>
 /** `snapshot` rows: compact arrays in tab column order. `at` is ISO 8601 UTC with milliseconds (`…T…:…:….sssZ`). */
 export type MetricRow = [at: string, person: PersonId, date: string, metric: MetricKey, value: number];
 /** `data` is the JSON text exactly as stored in the cell. `person` the sender: a member, or the guest (`G`: only its
- *  finds, tallies, cosmetic prefs, its kcal goal, its meals and repeats, board notes and tent decor, contract/guest.ts). */
+ *  finds, tallies, cosmetic prefs, its kcal goal, its meals, repeats and recipes, board notes and tent decor, contract/guest.ts). */
 export type EventRow = [at: string, person: Who, id: string, type: EventType, data: string];
 
 export interface SnapshotRows { metrics: MetricRow[]; events: EventRow[] }

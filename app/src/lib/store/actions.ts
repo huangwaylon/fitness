@@ -13,10 +13,10 @@ import { addToTally, latestByDay } from '#lib/model/tally.ts';
 import { localDateAt } from '#lib/time/dates.ts';
 import { MOVE_GOAL, isStepsGoal, shopPrice } from '#lib/config/rules.ts';
 import {
-  foodOp, foodRepeatOp, isKcalGoal, newFoodId, newRepeatId, repeatCovers, type FoodEntry, type FoodRepeat, type FoodSnap, type Meal, type RepeatItem,
-  type RepeatOp
+  foodOp, foodRecipeOp, foodRepeatOp, isKcalGoal, newFoodId, newRecipeId, newRepeatId, recipeSnap, repeatCovers, type FoodEntry, type FoodRepeat,
+  type FoodSnap, type Meal, type RepeatItem, type RepeatOp
 } from '#lib/contract/food.ts';
-import { foodDay, foodEntries, repeats } from '#lib/model/food.ts';
+import { foodDay, foodEntries, recipes, repeats } from '#lib/model/food.ts';
 import { world } from './world.svelte.ts';
 
 /** 買う！ and its とりけす wait this long before they are sent, with もとに戻す on the banner. */
@@ -332,6 +332,53 @@ export function stopRepeat(repeatId: string): SendResult {
   const now = today();
   if (!r || (r.to !== undefined && r.to <= now)) return { ok: false };
   return endRepeat(r, now);
+}
+
+// ---- My recipes (マイレシピ, docs/backend.md#events `food_recipe`): a recipe of mine is one op carrying its whole state.
+// Anyone's recipe is mine to log: an ordinary entry of mine whose food is the recipe per 100 g (contract/food.ts
+// recipeSnap), a snapshot, so a later edit of the recipe never changes a meal already logged.
+
+/** Send a recipe op as the record will keep it (contract/food.ts foodRecipeOp); `{ok:false}` when it isn't one. */
+function sendRecipe(d: Record<string, unknown>): SendResult {
+  const op = foodRecipeOp(d);
+  return op ? week.send('food_recipe', { ...op }) : { ok: false };
+}
+
+/** A recipe, anyone's, as the model has it (queued changes included). */
+const aRecipe = (id: string) => {
+  const m = week.model;
+  return m ? recipes(m.state).find((r) => r.id === id) : undefined;
+};
+
+/**
+ * Save a recipe of mine: `n` its name, `sv` the servings it makes, `it` its ingredients (`g` grams of each food). With
+ * `id`, an edit of mine (someone else's isn't mine to change); without, a new one, which is also how another's is
+ * copied to mine (its `n`, `sv` and `it`). The recipe's id.
+ */
+export function saveRecipe(e: { id?: string; n: string; sv: number; it: RepeatItem[] }): SendResult & { id?: string } {
+  const me = week.model?.me;
+  if (!me) return { ok: false };
+  const held = e.id === undefined ? undefined : aRecipe(e.id);
+  if (e.id !== undefined && held?.who !== me) return { ok: false };
+  const at = foodNow(held?.at);
+  const id = held?.id ?? newRecipeId(at);
+  const it = e.it.map(({ g, f }) => ({ g: Math.round(g * 10) / 10, f }));
+  const r = sendRecipe({ id, at, n: e.n, sv: e.sv, it });
+  return r.ok ? { ...r, id } : r;
+}
+
+/** Remove a recipe of mine (final; the meals logged from it stay as they were). */
+export function removeRecipe(id: string): SendResult {
+  const r = aRecipe(id);
+  if (!r || r.who !== week.model?.me) return { ok: false };
+  return sendRecipe({ id, at: foodNow(r.at), rm: true });
+}
+
+/** Log a recipe, anyone's, as a meal of mine: `g` grams of it (recipePortion: 1人前's) on day `d` at meal `m`, `u` the
+ *  portion it was picked by (「1人前」). */
+export function logRecipe(e: { recipeId: string; d: LocalDate; m: Meal; g: number; u?: string }): SendResult {
+  const r = aRecipe(e.recipeId);
+  return r ? logFood({ d: e.d, m: e.m, g: e.g, f: recipeSnap(r, e.u) }) : { ok: false };
 }
 
 /**

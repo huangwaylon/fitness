@@ -2,10 +2,13 @@
 // folded by the record's rules: contract/food.ts foodFold), a day's of them with its totals, and the day's targets
 // (the kcal goal, a pref; protein from the latest weigh-in), and the repeats (いつもの: `food_repeat` folded alike),
 // whose items are read into each day they cover as virtual entries (never copied into the record: a past day stays as
-// it was, since a change of a repeat is an end and a new one). Everyone's are read alike: the guest sees every meal and
+// it was, since a change of a repeat is an end and a new one), and the recipes (マイレシピ: `food_recipe` folded alike,
+// everyone's, each with its totals and a serving's). Everyone's are read alike: the guest sees every meal and
 // logs its own. Pure; the economy never imports this (deps.test.ts): a meal is worth no ベル.
 import type { LocalDate, Who } from '#lib/types.ts';
-import { foodFold, foodRepeatFold, MEALS, repeatCovers, type FoodEntry, type FoodRepeat, type Meal } from '#lib/contract/food.ts';
+import {
+  foodFold, foodRecipeFold, foodRepeatFold, MEALS, recipePortion, recipeTotals, repeatCovers, type FoodEntry, type FoodRecipe, type FoodRepeat, type Meal
+} from '#lib/contract/food.ts';
 import { isPersonId } from '#lib/contract/api.ts';
 import type { State } from './state.ts';
 import { weighIns } from './weight.ts';
@@ -124,6 +127,31 @@ export function foodSeries(s: Pick<State, 'food' | 'foodRepeat' | 'prefs'>, who:
   const goal = kcalGoal(s, who);
   byKey.set(key, (hit = { from, to: today, first: from, vals, goal: () => goal }));
   return hit;
+}
+
+/** What a recipe, or one serving of it, adds up to: `g` grams, kcal (whole), protein, fat, carbs and salt (g, one
+ *  decimal; null: no ingredient knows it). */
+export interface RecipeSums { g: number; kcal: number; p: number | null; fa: number | null; c: number | null; s: number | null }
+/** A recipe as the gohan shows it: who set it (its owner, the only one who edits it), its totals and a serving's. */
+export type Recipe = FoodRecipe & { total: RecipeSums; per: RecipeSums };
+
+const recMemo = new WeakMap<State['foodRecipe'], Recipe[]>();
+/** Every live recipe, everyone's (anyone logs any of them as an entry of their own), the latest changed first. Memoised
+ *  per list. */
+export function recipes(s: Pick<State, 'foodRecipe'>): Recipe[] {
+  let out = recMemo.get(s.foodRecipe);
+  if (!out) {
+    out = foodRecipeFold(s.foodRecipe).map((r) => {
+      const t = recipeTotals(r.it);
+      const sums = (by: number, g: number): RecipeSums => {
+        const n = (v: number | null) => (v === null ? null : round1(v / by));
+        return { g, kcal: Math.round(t.k / by), p: n(t.p), fa: n(t.fa), c: n(t.c), s: n(t.s) };
+      };
+      return { ...r, total: sums(1, round1(t.g)), per: sums(r.sv, recipePortion(r).g) };
+    });
+    recMemo.set(s.foodRecipe, out);
+  }
+  return out;
 }
 
 /** `who`'s daily kcal goal (`pref kcalGoal`), or null when none is set. */
