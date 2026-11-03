@@ -183,12 +183,6 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         out.push({ id: o.id, model: 'museum', x: door[0], z: door[1], scale: DECOR_U, yaw: (o.f * Math.PI) / 2, tap: 'thing' });
         break;
       }
-      case 'shop': {
-        // NH's Nook's Cranny (models.json `shop`, its origin its front step's middle), the museum's way
-        const door = doorOf(layout, o).at;
-        out.push({ id: o.id, model: 'shop', x: door[0], z: door[1], scale: DECOR_U, yaw: (o.f * Math.PI) / 2, tap: 'thing' });
-        break;
-      }
       case 'pond': {
         // its lily pads and the lily on the biggest, on its water (pond.ts draws the water, its bed and its stones)
         const p = pondPlaces(layout).find((q) => q.id === o.id);

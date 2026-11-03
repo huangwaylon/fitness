@@ -122,22 +122,6 @@ test('the museum: on the palette (greyed while it stands, one to an island), pic
   expect(await objAt(page, 'museum')).not.toBeNull();
 });
 
-test('the shop: on the palette (greyed while it stands, one to an island), picked up and moved, R turns it, never deleted', async ({ page }) => {
-  await openEditor(page);
-  await expect(page.locator('[data-kind="shop"]')).toBeDisabled();
-  await page.keyboard.press('0');
-  const from = (await objAt(page, 'shop'))! as [number, number];
-  // a drag from a tile inside it moves it by as many tiles (one row back)
-  await dragTile(page, [from[0] + 3, from[1] + 1], [from[0] + 3, from[1] + 2]);
-  await expect.poll(() => objAt(page, 'shop')).toEqual([from[0], from[1] + 1]);
-  const f = () => page.evaluate(() => (window as unknown as { __editor: E }).__editor.layout().objects.get('shop')?.f);
-  await page.keyboard.press('r');
-  await expect.poll(f).toBe(1);
-  await page.keyboard.press('Delete');
-  await expect(page.getByRole('status')).toContainText('けせません');
-  expect(await objAt(page, 'shop')).not.toBeNull();
-});
-
 test('the guest is shown the door: the editor is the members’ only', async ({ page }) => {
   await page.goto(`editor/?demo&as=G&date=${DATE}`);
   await expect(page.locator('[data-members-only]')).toBeVisible();
