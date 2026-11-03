@@ -61,7 +61,8 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   // (open lawn is a walk: my villager runs there, its tap ring on the ground instead of a dust puff)
   const taps: [string, () => Promise<{ x: number; y: number }>, string][] = [
     ['bush', () => centre(page, '[data-bush="plumeria-w"]'), '[data-fx="bush"]'], // the white plumeria at the beach's edge
-    ['flower', async () => centre(page, `[data-flower="${(await geo(page)).FLOWERS[0].id}"]`), '[data-fx="flower"]'],
+    // (one of the front lawn's: in view at まえ)
+    ['flower', async () => centre(page, `[data-flower="${(await geo(page)).FLOWERS.filter((f) => f.z < 600).sort((a, b) => a.z - b.z)[0].id}"]`), '[data-fx="flower"]'],
     ['grass', () => lawn(page), '.if-scene .tap-ring'],
     ['sea', () => sea(page), '[data-fx="splash"]'],
     ['sun', () => orb(page), '[data-fx="sun"]']

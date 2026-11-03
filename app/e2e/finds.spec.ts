@@ -3,6 +3,7 @@
 // and fragment is a ずかん `find` (mushrooms are cosmetic). None of it changes ベル, opens a sheet or navigates. The day
 // items derive from ?date= (deterministic); ?find= forces a bottle, this morning's fragments or the rare mushroom.
 import { expect, test, type Page } from '@playwright/test';
+import { fossilOnScreen } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -52,16 +53,19 @@ test('shells lie on the front beach (the newest three); a tap picks one up, and 
 
 test('a fossil dig spot: a tap digs it up (「化石を ほりだした！」 and its name); the next one waits a little', async ({ page }) => {
   const before = await open(page, '&date=2026-11-04T12:00');
-  const spots = page.locator('[data-find="fossil"]');
-  await expect(spots.first()).toBeAttached();
-  const n = await spots.count();
+  const spots = page.locator('[data-digs]');
+  await expect(page.locator('[data-find="fossil"]').first()).toBeAttached();
+  // (the island's, wherever they are: on the layout they lie all over the long island, a few out of view)
+  const n = Number(await spots.getAttribute('data-digs'));
   expect(n).toBeGreaterThanOrEqual(2);
   expect(n).toBeLessThanOrEqual(4);
-  const p = await at(page, '[data-find="fossil"]');
+  const p = await fossilOnScreen(page);
+  const shown = page.locator('[data-find="fossil"]'), m = await shown.count();
   expect(await control(page, p)).toBe('');
   await page.mouse.click(p.x, p.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText(/化石を ほりだした！ .+だ！/);
-  await expect(spots).toHaveCount(n - 1);
+  // the one dug gone, the next one waiting a little (the others where they were)
+  await expect(shown).toHaveCount(m - 1);
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-dig', 'scene-catch']));
   expect((await finds(page))[0]).toMatchObject({ kind: 'fossil' });
   await unchanged(page, before);
@@ -123,7 +127,7 @@ test('no mushrooms out of season (September); the rare mushroom comes out of a N
   await expect(page.locator('[data-find="fossil"]').first()).toBeAttached();
   await expect(page.locator('[data-find="mushroom"]')).toHaveCount(0);
   const before = await open(page, '&date=2026-11-04T12:00&find=rare-mushroom');
-  const p = await at(page, '[data-find="fossil"]');
+  const p = await fossilOnScreen(page);
   await page.mouse.click(p.x, p.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText('めずらしいキノコを ほりだした！');
   expect(await finds(page)).toEqual([]);

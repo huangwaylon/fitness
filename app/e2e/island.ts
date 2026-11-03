@@ -113,19 +113,22 @@ export async function reelOnBite(page: Page, x: number, y: number, timeout = 12_
   await page.mouse.click(x, y);
 }
 
-/** A dig spot on screen and where to tap it (client px): the camera to the first of the day's (its world point,
- *  `data-x` / `data-z`: on the layout they lie all over the long island), then the one in view, nothing over it. */
+/** A dig spot on screen and where to tap it (client px): the camera to each of the day's in turn (Finds' `data-digs`
+ *  list: on the layout they lie all over the long island) until one is in view with nothing over it. */
 export async function fossilOnScreen(page: Page): Promise<{ x: number; y: number }> {
-  const first = page.locator('[data-find="fossil"]').first();
-  await expect(first).toBeAttached();
-  const z = Number(await first.getAttribute('data-z'));
-  await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z - 160);
+  const at = await page.locator('[data-digs]').getAttribute('data-at');
+  const zs = (at ?? '').split(' ').filter(Boolean).map((p) => Number(p.split(',')[1]));
   const find = () => page.locator('[data-find="fossil"]').evaluateAll((els) => els.map((el) => [el, el.getBoundingClientRect()] as const)
     .filter(([el, r]) => (el as HTMLElement).checkVisibility({ visibilityProperty: true }) && r.top > 100 && r.bottom < innerHeight - 60
       && !document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest('button, [data-flower], [data-tree], [data-bush], [data-care], [data-fixture], [data-visitor], [data-actor], [data-critter]'))
     .map(([, r]) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 }))[0] ?? null);
-  await expect.poll(find, { message: 'a dig spot on screen, nothing over it' }).not.toBeNull();
-  return (await find())!;
+  // each in turn (a villager may stand over one)
+  for (const z of zs) {
+    await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z - 160);
+    const p = await expect.poll(find, { timeout: 1500 }).not.toBeNull().then(() => find(), () => null);
+    if (p) return p;
+  }
+  throw new Error('no dig spot on screen with nothing over it');
 }
 
 /** The camera's おく stop (the campsite's end: world.ts CAMS as the page's island has them). */

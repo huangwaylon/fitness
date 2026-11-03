@@ -480,8 +480,8 @@
   let noteEl = $state<HTMLElement>();
 </script>
 
-<!-- (how many dig spots the island has out now, wherever they are: the e2e's) -->
-<i hidden data-digs={spots.length}></i>
+<!-- (the dig spots the island has out now and where, wherever they are: the e2e's) -->
+<i hidden data-digs={spots.length} data-at={spots.map((s) => `${s.x},${s.y}`).join(' ')}></i>
 <!-- each item a world node at its foot (the anchor: a 0 × 0 point there); a dig spot and a hole flat on the ground -->
 {#each visibleSpots as s (s.uid)}
   <!-- NH's dig spot: a dark, uneven star-shaped crack in the soil (jagged arms of unequal length, little side cracks),

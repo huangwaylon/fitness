@@ -1,7 +1,7 @@
 // The island on its editable layout (docs/island-layout.md "What the 3D integration must change"; island/site.svelte.ts):
 // with the 3D island and `?layout`, the gameplay reads the long layout: the doors, the homes, the walk, the waters.
 import { expect, test, type Page } from '@playwright/test';
-import { is3d, tapOn } from './island';
+import { is3d, openNear, tapOn } from './island';
 
 type Site = { on: boolean; doors: Record<string, [number, number]>; homes: { A: [number, number]; B: [number, number] }; stage: [number, number]; named: Record<string, [number, number]>; grass: [number, number][] };
 const site = (page: Page) => page.evaluate(() => (window as unknown as { __world: { site(): Site } }).__world.site());
@@ -47,20 +47,11 @@ test('うめ’s home: a tap walks up to its door and goes in to its room', asyn
 test('a tap on the ground walks there on the layout’s walk (the long middle)', async ({ page }) => {
   await page.goto(ISLAND);
   expect(await is3d(page)).toBe(true);
-  // two of the layout's open grass tiles in the middle, clear of the day's weeds and fossils (a tap there is theirs):
-  // from one, a tap on the other
-  const { lawn, dig } = await world<{ lawn: [number, number][]; dig: [number, number][] }>(page, 'spots()');
-  const day = [...lawn, ...dig], { grass } = await site(page);
-  const mid = grass.filter(([x, z]) => z > 820 && z < 1100 && day.every((p) => Math.hypot(p[0] - x, p[1] - z) > 45));
+  // open ground in the middle a tap there walks to (clear of the day's spots and of every tap area on this screen),
+  // my villager put down on more of it a way off
   await world(page, 'go(860)');
   await expect.poll(() => page.evaluate('window.__world3d.camStill()')).toBe(true);
-  // the target: on screen, nothing over it there (a home's tap area, a tree's)
-  const bare = await page.evaluate((pts) => pts.filter(([x, z]) => {
-    const [sx, sy] = (window as unknown as { __world3d: { client(x: number, z: number): [number, number] } }).__world3d.client(x, z);
-    const el = document.elementFromPoint(sx, sy);
-    return sy > 140 && sy < innerHeight - 90 && !!el && !el.closest('button, [data-tree], [data-bush], [data-scenery-id], [data-find], [data-care]');
-  }), mid);
-  const to = bare[0], from = mid.find((p) => Math.hypot(p[0] - to[0], p[1] - to[1]) > 80)!;
+  const to = await openNear(page, 150, 960, 45, true), from = await openNear(page, to[0] + 110, to[1] - 40);
   await world(page, `put(${from[0]}, ${from[1]})`);
   const [x, y] = await page.evaluate(`window.__world3d.client(${to[0]}, ${to[1]})`) as [number, number];
   await page.mouse.click(x, y);

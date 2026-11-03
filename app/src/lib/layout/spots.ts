@@ -1,9 +1,9 @@
 // The island's daily spots from the layout (docs/island-layout.md "Derived, never hand-made"): where today's weeds may
 // sprout and where today's fossils are buried, drawn from the layout's open grass, seeded by the date and the
 // island's seed, so every phone (holding the same layout) picks the same. Open grass: a grass tile (any tier) that
-// nothing stands on, off the paths, the water and the sand, a walker can reach, and not right before a door, a
-// board's front, a named spot or the stairs' foot. The picks spread out (farthest first, Mitchell's), each a little
-// off its tile's middle.
+// nothing stands on and nothing's tap area stands over (behind and beside a tree, a bush, a flower: it takes the tap),
+// off the paths, the water and the sand, a walker can reach, and not right before a door, a board's front, a named
+// spot or the stairs' foot. The picks spread out (farthest first, Mitchell's), each a little off its tile's middle.
 import { seeded } from '#lib/random.ts';
 import { GRID, TILE, idx, kindOf, onGrid, tileMid } from './grid.ts';
 import { doorOf, objTiles, type Layout } from './model.ts';
@@ -26,6 +26,10 @@ export function openGrass(layout: Layout): [number, number][] {
     if (o.k === 'home' || def?.front) for (const [c, r] of doorOf(layout, o).tiles) mark(c, r);
     if (o.k === 'spot') for (const [c, r] of objTiles(layout, o)) for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) mark(c + i, r + j);
     if (o.k === 'stairs') for (const [c, r] of objTiles(layout, o)) for (let j = -1; j <= 1; j++) mark(c, r + j);
+    // a tree's canopy stands over the ground behind it and beside it on screen (its leaves take a tap there), a bush's
+    // or a flower's thumb-sized tap area over the tiles round it
+    const over = def?.group === 'tree' ? 2 : def?.group === 'bush' || def?.group === 'flower' ? 1 : -1;
+    for (const [c, r] of over >= 0 ? objTiles(layout, o) : []) for (let j = 0; j <= over; j++) for (let i = -1; i <= 1; i++) mark(c + i, r + j);
   }
   const nav = navOf(layout);
   const out: [number, number][] = [];
