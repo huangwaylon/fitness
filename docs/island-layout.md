@@ -167,6 +167,21 @@ for their spots with no visual change (the default's offsets); the 3D island rea
   the nearest path tile's kind in the bake (`pathTile`). The editor's plan stays tile-exact; its 3D preview is the
   same ground. Cost: no new draws or textures (one more fetch in the fresh water's shader), +~130 water triangles on
   the default island, ~+10 ms a field rebuild (desktop).
+- **The river's turns** (`layout/river.ts`; the user, 2026-11-03: "for the straight parts, keep it straight … if I
+  have a straight line down, then go 45 degree down and left, then straight left, I want the 45 degree down to be a
+  quarter circle curve"): each river's main stem (its tiles from the far end to the sea, a fall or a pond) is drawn as
+  straights and circular arcs, one breadth (13.5u a side; broader at the mouth), and the fresh water's field, the flow
+  and the streaks' way along follow it. A **straight** is a run of 3+ tile steps one way (or the run at either end),
+  drawn exactly on its tiles' middles. Between two straights the tiles that turn (a staircase, a jog's step) give a
+  line through their middle; two straights at an angle with a staircase between are **one arc** tangent to both, its
+  radius the one that passes through the staircase's middle (the default's and the user's stream: R 5.7 tiles, 90°),
+  a little smaller if the tiles or a bridge say; where one circle can't (a long staircase) it's an arc at each end of
+  the diagonal. A **plain L** (two straights meeting on a tile) gets a small fillet (0.75 tile). Every arc shrinks
+  until its middle is on water and its banks within `EDGE_TOL` (0.3 tile) of water tiles, and stays within 3u of its
+  straight where it passes a bridge (the deck square across the water). Pinned at the ends (the mouth, a fall's lip,
+  a pond). A river mostly not one stem (painted broad, a delta) keeps its tiles. The data stays on tiles: walking,
+  fishing and casts go by tiles. The editor marks it on the plan (`かわの せん`, on by default): the centreline, the
+  banks dashed, each arc orange with its radius in tiles and its angle; `/editor?check` lists the arcs (かわの カーブ).
 - **The look is baked on the GPU** (`world3d/terrain.ts`): one shader paints each band's texture from the fields and
   the tiles, NH's way (the 2D bake's grass with its flecks, NH's own grass pattern, the beach going wet at the sea and
   the seabed deepening under it, the dirt path worn with its pebbles, NH's stone, brick and plank textures, a river's
