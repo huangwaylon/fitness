@@ -92,3 +92,31 @@ test('a tap on a fish shows its card: its names, who found it first and when, ho
   await card.getByRole('button', { name: 'とじる' }).click();
   await expect(card).toHaveCount(0);
 });
+
+test('the bug wing: every bug found lives there as it lives (flying, perched, crawling, in a case), drawn; a tap shows its card', async ({ page }) => {
+  await seed(page, [['bug', 'common-butterfly', 'A'], ['bug', 'robust-cicada', 'B'], ['bug', 'tarantula', 'G'], ['bug', 'pondskater', 'A'], ['fish', 'sea-bass', 'B']]);
+  await open(page);
+  const sp = await mu<{ id: string; kind: string; tank: string; by: string }[]>(page, 'specimens()');
+  expect(sp.filter((s) => s.kind === 'bug').map((s) => [s.id, s.tank]).sort()).toEqual([['common-butterfly', 'fly'], ['pondskater', 'water'], ['robust-cicada', 'trunk'], ['tarantula', 'terrarium']]);
+  await expect.poll(async () => (await mu<string[]>(page, 'shown()')).sort(), { timeout: 15_000 }).toEqual(['common-butterfly', 'pondskater', 'robust-cicada', 'sea-bass', 'tarantula']);
+  // the guest's tarantula in its case at the back: its card names the guest
+  await page.evaluate('window.__museum.put(-250, -50)');
+  await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
+  await expect.poll(async () => {
+    const p = await mu<[number, number] | null>(page, 'creature("tarantula")');
+    if (p) await page.mouse.click(p[0], p[1]);
+    return mu<string | null>(page, 'card()');
+  }, { timeout: 10_000 }).toBe('tarantula');
+  await expect(page.locator('[data-museum-card="tarantula"] [data-museum-finder="G"]')).toBeVisible();
+});
+
+test('the guest visits too: in, walking, the finds on show', async ({ page }) => {
+  await seed(page, [['fish', 'koi', 'G']]);
+  await open(page, 'museum?demo&as=G&date=2026-11-04T12:00');
+  await expect.poll(async () => (await mu<string[]>(page, 'shown()')), { timeout: 15_000 }).toEqual(['koi']);
+  await page.evaluate('window.__museum.walkTo(-150, 10)');
+  await expect.poll(async () => {
+    const [x, z] = await mu<[number, number]>(page, 'mine()');
+    return Math.hypot(x + 150, z - 10);
+  }, { timeout: 15_000 }).toBeLessThan(6);
+});
