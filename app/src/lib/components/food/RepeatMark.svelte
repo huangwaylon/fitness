@@ -1,6 +1,6 @@
 <script lang="ts">
   // いつもの's mark (🔁, drawn: no emoji, so it is the same on every phone and needs no font): two arrows chasing round,
-  // in the text's colour. On a meal's repeat chip, a repeat's entries and the くりかえす control.
+  // in the text's colour. On a meal's repeat chip, a repeat's entries and the いつものに する link.
   let { size = 14 }: { size?: number } = $props();
 </script>
 

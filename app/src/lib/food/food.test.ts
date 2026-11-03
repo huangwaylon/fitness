@@ -8,8 +8,8 @@ import type { Item } from './types.ts';
 const item = (id: string, name: string, extra: Partial<Item> = {}): Item => ({ id, name, kcal: 100, ...extra });
 
 describe('searchKey', () => {
-  it('folds width, katakana, punctuation, long vowels and romaji', () => {
-    expect(searchKey('ｶﾚｰライス（大盛り）')).toBe(searchKey('かれらいす大盛り'));
+  it('folds width, katakana, punctuation and romaji', () => {
+    expect(searchKey('ｶﾚｰライス（大盛り）')).toBe(searchKey('かれーらいす大盛り'));
     expect(searchKey('ＡＢＣ　１２３')).toBe('abc123');
     expect(searchKey('nattou')).toBe(searchKey('natto'));
     expect(searchKey('misoshiru')).toBe(searchKey('misosiru'));

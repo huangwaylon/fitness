@@ -2,8 +2,9 @@
   // One meal of a person's day (朝ごはん · 昼ごはん · 夜ごはん · おやつ): its kcal, then a row per entry (the food,
   // its amount, its kcal). On my own day ＋ opens the search for this meal, and an entry opens its amount to change or
   // remove it; anyone else's day is read-only (only the owner changes an entry). いつもの (a repeat): its weekdays as a
-  // chip in the header (my day: a tap manages it; else only shown), its entries marked; on my day a meal with entries
-  // and no repeat ends with 🔁 くりかえす.
+  // chip in the header (my day: a tap manages it; else only shown), its entries marked 🔁 (a day taken out of it shows
+  // its own entries, unmarked, under the same chip); on my today a meal with entries and no repeat ends with a small
+  // 「いつものに する」 link (not a ＋-sized button: it is for one meal of the four, if any).
   import type { FoodEntry, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { amountText, daysText } from './foodUi.ts';
@@ -17,7 +18,7 @@
     mine: boolean;
     /** The meal's repeat's weekday mask (null: none). */
     days: number | null;
-    /** The repeat level: the chip's (manage) or, with no repeat, 🔁 くりかえす's (create). Null: neither. */
+    /** The repeat level: the chip's (manage) or, with no repeat, いつものに する's (create). Null: neither. */
     onrepeat: (() => void) | null;
     onadd: () => void;
     onpick: (e: FoodEntry) => void;
@@ -31,7 +32,7 @@
 {#snippet cells(e: FoodEntry & { rep?: string })}
   <span class="nm">{e.f.n}</span>
   <small class="amt">{#if e.rep}<i class="rm" role="img" aria-label={t('food.rep.mark')}><RepeatMark size={12} /></i>{/if}{amountText(e)}</small>
-  <b class="kc money">{formatNum(kcalOf(e))}</b>
+  <b class="kc money">{formatNum(kcalOf(e))}<span class="sr-only"> kcal</span></b>
 {/snippet}
 
 <section class="card meal" data-meal={meal} aria-labelledby="fm-{meal}">
@@ -72,7 +73,7 @@
   {/if}
   {#if days === null && onrepeat && entries.length}
     <button type="button" class="rep new" data-sfx="page" data-repeat-new={meal} aria-label={t('food.rep.newOf', { meal: label })} onclick={onrepeat}>
-      <RepeatMark /><span>{t('food.rep.new')}</span>
+      <RepeatMark size={12} /><span>{t('food.rep.new')}</span>
     </button>
   {/if}
 </section>
@@ -116,5 +117,10 @@
   }
   button.rep:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   button.rep:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .new { justify-self: start; margin-top: 6px; padding: 0 14px; }
+  /* いつものに する: a text link's weight (no pill, no lip), a 44px target all the same */
+  button.rep.new {
+    justify-self: start; min-height: var(--hit); margin: 0 0 0 -4px; padding: 0 6px; background: none; box-shadow: none;
+    color: var(--text-soft); font-size: var(--fs-s); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+  }
+  button.rep.new:active { transform: none; box-shadow: none; color: var(--text); }
 </style>

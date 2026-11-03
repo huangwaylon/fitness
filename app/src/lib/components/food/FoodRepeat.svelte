@@ -1,8 +1,9 @@
 <script lang="ts">
   // いつもの (a level over the day, for one meal of mine; docs/design.md "Gohan"): the weekdays it comes on (毎日 · 平日 ·
-  // 週末, or each day on its own), then what it holds (each food, its amount and kcal; the sum). New: 「くりかえす」
-  // (from the shown day, its items). A repeat: 「この日の内容で くりかえす」 (the shown day's items from tomorrow; only
-  // when that day differs), 「くりかえしを やめる」 (tapped twice: the board's ほんとうに？), 「曜日を保存」.
+  // 週末, or each day on its own), then what it holds (each food, its amount and kcal; the sum). New: 「いつものに する」
+  // (from the shown day, its items). A repeat: 「この日の内容を いつものに する」 (the shown day's items from tomorrow;
+  // only when that day's foods or amounts differ: sameItems), 「いつものを やめる」 (tapped twice: the board's
+  // ほんとうに？), 「曜日を ほぞん」. One name for it everywhere: いつもの (the title, the chip, the marks, the verbs).
   import { untrack } from 'svelte';
   import type { FoodSnap, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
@@ -16,7 +17,7 @@
     w0: number;
     /** A repeat (manage), not a new one. */
     live: boolean;
-    /** 「この日の内容で くりかえす」 is offered: the shown day's meal isn't the repeat's. */
+    /** 「この日の内容を いつものに する」 is offered: the shown day's meal isn't the repeat's. */
     fromDay?: boolean;
     onstart?: (w: number) => void;
     onsavedays?: (w: number) => void;

@@ -9,6 +9,8 @@ export interface Toast {
   action?: { label: string; run: () => void };
   /** Official reaction icon on the banner (`reactions/<id>`). */
   reaction?: string;
+  /** Docked low, as an undo banner is, with no undo (a popup's confirmation: never over the level it lands on). */
+  low?: boolean;
   /** A partner event: that person's villager on the left instead of しずえ. */
   person?: Who;
   /** What happened, for code that reacts to a banner (never match on the translated text; review P9). */
@@ -19,7 +21,7 @@ export interface Toast {
   leaving?: boolean;
 }
 
-type ToastOptions = Pick<Toast, 'action' | 'reaction' | 'person' | 'code' | 'hold'>;
+type ToastOptions = Pick<Toast, 'action' | 'reaction' | 'person' | 'code' | 'hold' | 'low'>;
 
 /** The banner's slide-out before it is dropped. */
 export const TOAST_OUT_MS = 240;

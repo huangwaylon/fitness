@@ -1,14 +1,17 @@
 <script lang="ts">
   // ごはん's amount (a level over the search or the day): the food and its values per 100 g; its portions as chips
-  // (the first the default; 100 g last), −/＋ by half a portion, the grams field (typed grams leave the portions);
-  // what that amount holds, live; which meal; then 追加 (a new entry) or 保存 / 削除 (my entry). For a recipe's
-  // ingredient (`pick`, マイレシピ): no meal, and ついか (into the recipe) or ほぞん / けす (an ingredient of it).
+  // (the first the default; 100 g last), −/＋ by a whole portion for the things you count (本, 個, 杯 …) and by half
+  // one for the rest (茶碗, 人前; ±10 g once grams are typed: stepOf), the grams field (ml for a drink; typed grams leave
+  // the portions); what that amount holds, live; which meal; then ついか (a new entry) or ほぞん / けす (my entry). For a
+  // recipe's ingredient (`pick`, マイレシピ): no meal, and ついか (into the recipe) or ほぞん / けす (an ingredient of it).
+  // The item may be swapped while it is open (an entry opened from its snapshot, the catalog's portions arriving):
+  // untouched, the amount starts again from the same grams; touched, the portion picked stays picked (by its label).
   import { untrack } from 'svelte';
   import type { Meal } from '#lib/contract/food.ts';
   import { FOOD_GRAMS, MEALS } from '#lib/contract/food.ts';
   import { nutrientsFor, portionsOf, type Item } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { gramsText, hasWeight, matchPortion, portionLabel } from './foodUi.ts';
+  import { gramsText, hasWeight, portionLabel, startOf, stepOf, unitOf } from './foodUi.ts';
 
   interface Props {
     item: Item;
@@ -16,7 +19,7 @@
     /** The grams and portion label to start from (an entry's, a recent one's); else the default portion. */
     g0?: number;
     u0?: string;
-    /** An entry of mine: 保存 and 削除 instead of 追加. */
+    /** An entry of mine: ほぞん and けす instead of ついか. */
     editing?: boolean;
     /** A recipe's ingredient, not a meal: no meal to pick, the recipe's words. */
     pick?: boolean;
@@ -26,22 +29,31 @@
   let { item, meal, g0, u0, editing = false, pick = false, ondone, onremove }: Props = $props();
 
   const ps = $derived(portionsOf(item));
-  /** The start: the portion named by the label (「茶碗1杯×2」), else one that makes the grams, else typed grams. */
-  function start(): { pi: number; mult: number; custom: boolean } {
-    if (g0 === undefined) return { pi: 0, mult: 1, custom: false };
-    const [label, x] = (u0 ?? '').split('×');
-    const pi = ps.findIndex((p) => p.label === label);
-    if (pi >= 0 && Math.abs(ps[pi].g * (Number(x) || 1) - g0) < 0.05) return { pi, mult: Number(x) || 1, custom: false };
-    const m = matchPortion(ps, g0);
-    return m ? { ...m, custom: false } : { pi: 0, mult: 1, custom: true };
-  }
+  /** g or ml: a drink's portions are in ml (100 ml counts as 100 g). */
+  const unit = $derived(ps.some((p) => unitOf(p.label) === 'ml') ? 'ml' : 'g');
   // (the level is keyed: a new food or entry mounts a new picker, so the start is read once)
-  const s0 = untrack(() => ({ ...start(), typed: g0 === undefined ? '' : gramsText(g0), meal }));
-  let pi = $state(s0.pi);
+  const s0 = untrack(() => ({ ...startOf(ps, g0, u0), typed: g0 === undefined ? '' : gramsText(g0), meal, ps }));
+  /** The portion picked, by its label (an index would point elsewhere once the catalog's portions are in). */
+  let pl = $state(s0.ps[s0.pi].label);
   let mult = $state(s0.mult);
   let custom = $state(s0.custom);
   let typed = $state(s0.custom ? s0.typed : '');
   let m = $state<Meal>(s0.meal);
+  /** Anything changed by hand (then a swapped item keeps the pick). */
+  let touched = false;
+  let seen = s0.ps;
+  $effect.pre(() => {
+    const now = ps;
+    if (now === seen) return;
+    seen = now;
+    if (touched) return;
+    const s = startOf(now, g0, u0);
+    pl = now[s.pi].label;
+    mult = s.mult;
+    custom = s.custom;
+    typed = s.custom ? s0.typed : '';
+  });
+  const pi = $derived(Math.max(0, ps.findIndex((p) => p.label === pl)));
 
   const typedG = $derived(Number(typed.replace(/[０-９．]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(',', '.')));
   const g = $derived(custom ? (Number.isFinite(typedG) ? Math.round(typedG * 10) / 10 : 0) : Math.round(ps[pi].g * mult * 10) / 10);
@@ -50,18 +62,22 @@
   const per = (v: number | null | undefined) => (v === null || v === undefined ? '–' : v.toFixed(1));
 
   function portion(i: number) {
-    pi = i;
+    touched = true;
+    pl = ps[i].label;
     mult = 1;
     custom = false;
   }
   function step(d: -1 | 1) {
+    touched = true;
     if (custom) {
       typed = gramsText(Math.max(0, Math.min(FOOD_GRAMS.max, Math.round(g + d * 10))));
       return;
     }
-    mult = Math.max(0.5, Math.min(20, mult + d * 0.5));
+    const s = stepOf(ps[pi].label);
+    mult = Math.max(s, Math.min(20, Math.round((mult + d * s) / s) * s));
   }
   function onGrams() {
+    touched = true;
     custom = true;
   }
   function done() {
@@ -80,27 +96,27 @@
     <div class="chips" role="group" aria-label={t('food.amount')}>
       {#each ps as p, i (p.label)}
         <button type="button" class="chip" aria-pressed={!custom && pi === i} data-sfx={!custom && pi === i ? 'none' : 'tick'} data-portion={p.label} onclick={() => portion(i)}>
-          {p.label}{#if !hasWeight(p.label)}<small>{gramsText(p.g)}g</small>{/if}
+          {p.label}{#if !hasWeight(p.label)}<small>{gramsText(p.g)}{unit}</small>{/if}
         </button>
       {/each}
     </div>
     <div class="qty">
       <button type="button" class="nb" data-sfx="tick" aria-label={t('food.less')} data-step="-1" onclick={() => step(-1)}>−</button>
-      <b class="mult money" aria-live="polite">{custom ? `${gramsText(g)}g` : `×${mult}`}</b>
+      <b class="mult money" aria-live="polite">{custom ? `${gramsText(g)}${unit}` : `×${mult}`}</b>
       <button type="button" class="nb" data-sfx="tick" aria-label={t('food.more')} data-step="1" onclick={() => step(1)}>＋</button>
       <label class="grams">
-        <span class="sr-only">{t('food.grams')}</span>
+        <span class="sr-only">{t(unit === 'ml' ? 'food.ml' : 'food.grams')}</span>
         <input type="text" inputmode="decimal" data-sfx="none" data-grams autocomplete="off" enterkeyhint="done" maxlength="6" size="5"
           value={custom ? typed : gramsText(g)} aria-invalid={!ok} oninput={(e) => { typed = e.currentTarget.value; onGrams(); }} />
-        <span class="u" aria-hidden="true">g</span>
+        <span class="u" aria-hidden="true">{unit}</span>
       </label>
     </div>
     <dl class="live" data-food-live>
       <div class="k"><dt class="sr-only">kcal</dt><dd class="money">{formatNum(n.kcal)}<small>kcal</small></dd></div>
-      <div><dt>{t('food.p')}</dt><dd class="money">{n.p.toFixed(1)}</dd></div>
-      <div><dt>{t('food.fa')}</dt><dd class="money">{n.fa.toFixed(1)}</dd></div>
-      <div><dt>{t('food.c')}</dt><dd class="money">{n.c.toFixed(1)}</dd></div>
-      <div><dt>{t('food.s')}</dt><dd class="money">{n.s.toFixed(1)}</dd></div>
+      <div><dt>{t('food.p')}</dt><dd class="money">{n.p.toFixed(1)}<span class="sr-only"> g</span></dd></div>
+      <div><dt>{t('food.fa')}</dt><dd class="money">{n.fa.toFixed(1)}<span class="sr-only"> g</span></dd></div>
+      <div><dt>{t('food.c')}</dt><dd class="money">{n.c.toFixed(1)}<span class="sr-only"> g</span></dd></div>
+      <div><dt>{t('food.s')}</dt><dd class="money">{n.s.toFixed(1)}<span class="sr-only"> g</span></dd></div>
     </dl>
   </section>
 

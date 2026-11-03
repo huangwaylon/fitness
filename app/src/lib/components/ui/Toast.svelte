@@ -18,6 +18,8 @@
     reaction?: string;
     /** A button on the banner (e.g. 取り消す); replaces the reaction icon. */
     action?: { label: string; run: () => void };
+    /** Docked low like an undo banner (a popup's confirmation, kept off the level under the title bar). */
+    low?: boolean;
     /** Hover / touch / focus on the banner holds it; leaving lets it time out again (WCAG 2.2.1). */
     onhold?: (on: boolean) => void;
     /** The person dismissed it (tap or swipe). */
@@ -25,7 +27,7 @@
     /** Sliding out (the store drops it right after). */
     leaving?: boolean;
   }
-  let { text, person, reaction, action, onhold, ondismiss, leaving = false }: Props = $props();
+  let { text, person, reaction, action, low = false, onhold, ondismiss, leaving = false }: Props = $props();
 
   let gone = $state(false);
   let startY = 0;
@@ -62,7 +64,7 @@
 </script>
 
 {#if !gone}
-  <div bind:this={el} class="banner" class:undo={!!action} class:leaving role="status" popover="manual" use:topLayer
+  <div bind:this={el} class="banner" class:undo={!!action || low} class:leaving role="status" popover="manual" use:topLayer
     onpointerenter={hold(true)} onpointerleave={hold(false)} onfocusin={hold(true)} onfocusout={blur}>
     <!-- With an undo, a tap only holds the banner (so it can be read and undone); a vertical swipe scrolls the page. Then
          this layer is pointer-only (no "close" that does nothing for a screen reader or the keyboard): 取り消す is the

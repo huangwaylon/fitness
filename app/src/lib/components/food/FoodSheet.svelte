@@ -1,8 +1,9 @@
 <script lang="ts">
   // The meal log's popup (docs/design.md "Gohan"): the HUD's bowl opens it, full height like the health popup and
-  // grown out of the button the same way (Sheet's `pop`). Its title bar (ごはん, or the level's: ‹ back to the day)
+  // grown out of the button the same way (Sheet's `pop`). Its title bar (whose day, ごはん, ✕; or the level's: ‹ back to the day)
   // over one scroller holding ごはん (Food.svelte, its own chunk with its strings). ✕, the backdrop and Esc close it;
   // each opening starts on today, on this phone's person.
+  import type { Snippet } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import { week } from '#lib/store/week.svelte.ts';
@@ -17,6 +18,8 @@
   /** The open level's title and ‹ (set by Food: search, an amount, the goal). */
   let title = $state('');
   let back = $state<(() => void) | null>(null);
+  /** Whose day's pill (Food's), left of the title on the top level. */
+  let lead = $state<Snippet | null>(null);
 
   function closed() {
     if (toasts.current) toasts.dismiss();
@@ -35,10 +38,10 @@
 </script>
 
 <Sheet bind:open label={t('island.food')} variant="pop" onclose={closed}>
-  <div class="titlebar"><NavBar title={title || t('island.food')} onback={back} onclose={() => (open = false)} sfx="self" /></div>
+  <div class="titlebar"><NavBar title={title || t('island.food')} onback={back} {lead} onclose={() => (open = false)} sfx="self" /></div>
   <div class="fs-body" data-food-sheet>
     {#if week.view}
-      {#await loadFood() then { default: Food }}<Food bind:title bind:back />{/await}
+      {#await loadFood() then { default: Food }}<Food bind:title bind:back bind:lead />{/await}
     {/if}
   </div>
 </Sheet>

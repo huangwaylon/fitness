@@ -1,16 +1,18 @@
 <script lang="ts">
-  // ごはん's search (a level over the day, for one meal): a 16px search field, then 最近 (my latest entry of each food,
-  // as I last had it) until something is typed, or the catalog's best matches (each: the name, its default portion's
-  // kcal and per 100 g, ✓n when n independent sources agree on it). Japanese IME-safe: half-composed text (「なt」) is
+  // ごはん's search (a level over the day, for one meal): a 16px search field (focused by the ＋ that opened it, in the
+  // tap: Food's openSearch), then さいきん (my latest entry of each food, as I last had it, its portion with it) until
+  // something is typed, or the catalog's best matches (each: the name, a product's brand with its per 100 g, its
+  // default portion's kcal, ✓n when n independent sources agree on it; the same name, brand and kcal shown once). The
+  // catalog not loading (offline): もういちど, and さいきん still under it (they need no catalog). Japanese IME-safe: half-composed text (「なt」) is
   // never searched; the search runs on each committed change. A row opens the amount. From a meal's ＋, マイレシピ
-  // too (everyone's recipes: all of them after 最近, the matching ones before the catalog's); a recipe opens its own.
+  // too (everyone's recipes: all of them after さいきん, the matching ones before the catalog's); a recipe opens its own.
   import type { Who } from '#lib/types.ts';
   import type { FoodEntry } from '#lib/contract/food.ts';
   import type { Recipe } from '#lib/model/food.ts';
   import { searchFoods, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
   import { searchKey } from '#lib/food/text.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { amountText, defaultPortion, foodDb, itemOf } from './foodUi.ts';
+  import { amountText, defaultPortion, foodDb, itemOf, uniqueItems } from './foodUi.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
@@ -33,8 +35,12 @@
   let q = $state('');
   let input: HTMLInputElement | undefined = $state();
 
+  /** Bumped by もういちど: load again. */
+  let tries = $state(0);
   $effect(() => {
+    void tries;
     let live = true;
+    failed = false;
     foodDb().then((d) => {
       if (!live) return;
       db = d;
@@ -48,7 +54,7 @@
 
   const results = $derived.by(() => {
     void more;
-    return db && q.trim() ? searchFoods(db, q, 40) : [];
+    return db && q.trim() ? uniqueItems(searchFoods(db, q, 40)) : [];
   });
   const kcal = (n: number) => t('kiroku.kcal', { n: formatNum(n) });
   /** The recipes whose names hold every word typed (all of them with nothing typed). */
@@ -91,20 +97,7 @@
   </form>
 
   {#if !q.trim()}
-    <h3 class="lh">{t('food.recent')}</h3>
-    {#if recent.length}
-      <ul class="list" data-food-recent>
-        {#each recent as e (e.id)}
-          <li><button type="button" class="card it" data-sfx="page" data-item={e.f.id} onclick={() => onpick(itemOf(e.f, db), e.g, e.f.u)}>
-            <span class="nm">{e.f.n}</span>
-            <small class="meta">{amountText(e)}</small>
-            <b class="kc money">{kcal(Math.round((e.f.k * e.g) / 100))}</b>
-          </button></li>
-        {/each}
-      </ul>
-    {:else}
-      <p class="note">{t('food.recentEmpty')}</p>
-    {/if}
+    {@render recentRows()}
     {@render recipeRows()}
   {:else}
     {@render recipeRows()}
@@ -112,9 +105,30 @@
   {/if}
 </div>
 
+{#snippet recentRows()}
+  <h3 class="lh">{t('food.recent')}</h3>
+  {#if recent.length}
+    <ul class="list" data-food-recent>
+      {#each recent as e (e.id)}
+        <li><button type="button" class="card it" data-sfx="page" data-item={e.f.id} onclick={() => onpick(itemOf(e.f, db, e.g), e.g, e.f.u)}>
+          <span class="nm">{e.f.n}</span>
+          <small class="meta">{amountText(e)}</small>
+          <b class="kc money">{kcal(Math.round((e.f.k * e.g) / 100))}</b>
+        </button></li>
+      {/each}
+    </ul>
+  {:else}
+    <p class="note">{t('food.recentEmpty')}</p>
+  {/if}
+{/snippet}
+
 {#snippet catalog()}
   {#if failed}
-    <p class="note" role="status">{t('food.loadFail')}</p>
+    <div class="fail">
+      <p class="note" role="status">{t('food.loadFail')}</p>
+      <button type="button" class="btn paper small" data-sfx="tick" data-food-retry onclick={() => tries++}>{t('food.retry')}</button>
+    </div>
+    {@render recentRows()}
   {:else if !db}
     <p class="note" role="status">{t('food.loading')}</p>
   {:else if !results.length}
@@ -125,8 +139,8 @@
         {@const p = defaultPortion(it)}
         {@const v = verifyOf(db, it.id)}
         <li><button type="button" class="card it" data-sfx="page" data-item={it.id} onclick={() => onpick(it)}>
-          <span class="nm">{it.name}{#if v && v.n >= 2}<i class="ok" title={t('food.verified', { n: v.n })} aria-label={t('food.verified', { n: v.n })}>✓{v.n}</i>{/if}</span>
-          <small class="meta">{t('food.per100', { k: formatNum(it.kcal) })}</small>
+          <span class="nm">{it.name}{#if v && v.n >= 2}<i class="ok" role="img" title={t('food.verified', { n: v.n })} aria-label={t('food.verified', { n: v.n })}>✓{v.n}</i>{/if}</span>
+          <small class="meta">{#if it.brand}<span class="br" data-brand>{it.brand}</span>{' · '}{/if}{t('food.per100', { k: formatNum(it.kcal) })}</small>
           <span class="kc"><b class="money">{kcal(p.kcal)}</b><small>{p.label}</small></span>
         </button></li>
       {/each}
@@ -150,10 +164,17 @@
   }
   input::-webkit-search-cancel-button { display: none; }
   input::placeholder { color: color-mix(in srgb, var(--text-soft) 70%, transparent); font-weight: 500; }
+  /* ✕: the app's round control with its lip (NavButton's look, smaller type) inside the pill's right end: 44px with
+     the lip, its tap target 44 × 44 (the ::before) */
   .x {
-    appearance: none; border: 0; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; flex: none;
-    background: color-mix(in srgb, var(--lip) 50%, transparent); color: var(--text); font: 700 var(--fs-s)/1 var(--font-ui);
+    position: relative; appearance: none; border: 0; cursor: pointer; width: calc(var(--hit) - var(--lip-h)); height: calc(var(--hit) - var(--lip-h));
+    margin: 0 -2px var(--lip-h) 0; border-radius: 50%; flex: none;
+    display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj);
+    font: 700 var(--fs-body)/1 var(--font-ui);
   }
+  .x::before { content: ''; position: absolute; inset: -2px -2px calc(-2px - var(--lip-h)); }
+  .x:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
+  .x:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .lh { margin: 4px 2px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .it {
@@ -168,8 +189,11 @@
     display: inline-block; margin-left: 6px; padding: 2px 6px; border-radius: var(--r-pill); vertical-align: 1px;
     font: 700 var(--fs-xs)/1.1 var(--font-num); font-style: normal; color: var(--c-ink); background: color-mix(in srgb, var(--c-mint) 70%, var(--c-cream));
   }
-  .meta { grid-area: meta; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .meta { grid-area: meta; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); overflow-wrap: anywhere; }
+  .br { color: var(--text); }
+  .fail { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .fail .btn { margin: 0; }
   .kc { grid-area: kc; display: grid; justify-items: end; gap: 3px; font-size: var(--fs-body); white-space: nowrap; }
-  .kc small { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); max-width: 9em; overflow: hidden; text-overflow: ellipsis; }
+  .kc small { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); max-width: 12em; overflow: hidden; text-overflow: ellipsis; }
   .note { margin: 4px 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>
