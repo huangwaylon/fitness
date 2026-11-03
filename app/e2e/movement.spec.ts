@@ -53,7 +53,8 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     // (the camera there and the island at rest: the weeds where they're drawn)
     await expect.poll(() => page.evaluate(() => {
       const w = window as unknown as { __world: { idle(): boolean }; __world3d?: { camStill(): boolean } };
-      return w.__world3d ? w.__world3d.camStill() : w.__world.idle();
+      const w2 = window as unknown as { __world: { cam(): number } };
+      return Math.abs(w2.__world.cam() - 300) < 1 && (w.__world3d ? w.__world3d.camStill() : w.__world.idle());
     })).toBe(true);
     const p = await page.locator('[data-care="weed"]').evaluateAll((els) => els.filter((el) => el.checkVisibility({ visibilityProperty: true })).map((el) => [el, el.getBoundingClientRect()] as const)
       .map(([el, r]) => ({ uid: (el as HTMLElement).dataset.uid, x: r.left + r.width / 2, y: r.top + r.height / 2 })).filter((q) => q.y > 150 && q.y < innerHeight - 30)
