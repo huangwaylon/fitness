@@ -182,7 +182,9 @@ test('「もどる」 sits under the HUD, never over it, and the face under both
 // ---- the record's posts on a paired phone (the relay mocked: its snapshot holds one of うめ's notes) ----
 const RELAY = 'https://island-fund-relay.island-fund-relay.workers.dev';
 async function pairedWithPost(page: Page) {
-  const now = Date.now(), at = now - 3_600_000;
+  // noon today in Tokyo, the scene's clock pinned there (a run at night had my villager asleep, so it never walked up)
+  const day = new Date(Date.now() + 9 * 3_600_000).toISOString().slice(0, 10);
+  const now = Date.parse(`${day}T12:00:00+09:00`), at = now - 3_600_000;
   const iso = (ms: number) => new Date(ms).toISOString();
   const snap = {
     ok: true, me: 'A', now: iso(now), rev: 'e1',
@@ -200,7 +202,7 @@ async function pairedWithPost(page: Page) {
       body: action === 'snapshot' ? JSON.stringify(snap) : '{"ok":true}'
     });
   });
-  await page.goto('?critter=none&visitor=none');
+  await page.goto(`?critter=none&visitor=none&date=${day}T12:00`);
   await page.waitForFunction(() => (window as unknown as { __board?: unknown }).__board);
 }
 
