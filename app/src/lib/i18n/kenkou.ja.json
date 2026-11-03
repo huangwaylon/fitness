@@ -23,6 +23,7 @@
   "health.noData": "記録なし",
   "health.todaySoFar": "きょう（とちゅう）",
   "health.tipDays": "目標 {n}/{d}日",
+  "health.recDays": "記録 {n}日",
   "health.chartLabel": "{metric} {range}。1日の平均 {avg}",
   "health.key.met": "目標達成",
   "health.key.missed": "とどかず",

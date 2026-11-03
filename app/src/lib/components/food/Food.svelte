@@ -4,8 +4,11 @@
   // and きょう, the summary card, then the four meals. On my own day ＋ per meal → the search → the amount → 追加;
   // an entry → its amount → 保存 / 削除 (a repeat's: that day leaves the repeat first, detachDay); ✎ → the kcal goal;
   // a meal's 🔁 → いつもの (its repeat, or a new one from the day's entries). Those push a level (FoodSheet's title
-  // bar: its ‹). Anyone else's day is read-only. データの出典 at the foot.
+  // bar: its ‹). Anyone else's day is read-only. データの出典 at the foot. Under whose day, the tabs (TABS, けんこう's
+  // group switch): きろく (the day, on each opening) and グラフ (FoodChart: the kcal over a period, けんこう's period
+  // dropdown beside whose day, its range row and its Move card); switching whose keeps the tab, the period and the range.
   import '#lib/i18n/food.ts'; // the meal log's strings, loaded with it
+  import '#lib/i18n/kenkou.ts'; // けんこう's: the period dropdown
   import type { LocalDate, Who } from '#lib/types.ts';
   import { KCAL_GOAL, MEALS, type FoodEntry, type Meal } from '#lib/contract/food.ts';
   import { foodDay, foodEntries, kcalGoal, proteinGoal, repeatOn, repeats } from '#lib/model/food.ts';
@@ -14,9 +17,14 @@
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { addDays } from '#lib/time/dates.ts';
   import { t } from '#lib/i18n/index.ts';
+  import { PERIODS, type Period } from '#lib/model/health.ts';
+  import { FOOD_TAB_ART } from '#lib/art.ts';
+  import Segmented from '../ui/Segmented.svelte';
+  import RangeNav from '../health/RangeNav.svelte';
+  import Pick from '../health/Pick.svelte';
+  import FoodChart from './FoodChart.svelte';
   import { cue } from '#lib/sound/cues.ts';
   import { toSnap, type FoodDb, type Item } from '#lib/food/index.ts';
-  import Avatar from '../characters/Avatar.svelte';
   import ValueInput from '../health/ValueInput.svelte';
   import { dayTitle } from '../kiroku/fmt.ts';
   import FoodSummary from './FoodSummary.svelte';
@@ -43,6 +51,18 @@
     A: view?.people.A.villagerName ?? 'A', B: view?.people.B.villagerName ?? 'B', G: view?.guest.villagerName ?? 'G'
   });
   const villagerOf = (w: Who) => (w === 'G' ? (view?.guest.villager ?? null) : (view?.people[w].villager ?? null));
+
+  /** ごはん's tabs, in order (a new one: its id here, its string, its art and its branch below). */
+  const TABS = ['log', 'chart'] as const;
+  type Tab = (typeof TABS)[number];
+  let tab = $state<Tab>('log');
+  /** グラフ's period (1週 on each opening, as けんこう's). */
+  let period = $state<Period>('week');
+  function setPeriod(p: Period) {
+    if (p === period || !PERIODS.includes(p)) return;
+    cue('tick');
+    period = p;
+  }
 
   let picked = $state<Who | null>(null);
   const who = $derived<Who>(picked ?? me);
@@ -172,70 +192,43 @@
         hint={t('food.goalRange', { min: KCAL_GOAL.min, max: KCAL_GOAL.max, step: KCAL_GOAL.step })}
         onok={saveGoal} oncancel={up} extra={goal === null ? null : { label: t('food.goalClear'), run: () => saveGoal(null) }} />
     {:else}
-      <label class="dd who" data-who={who}>
-        <span class="sr-only">{t('food.who')}</span>
-        <span class="av" aria-hidden="true"><Avatar person={who} villager={villagerOf(who)} size={28} /></span>
-        <select data-pick="who" value={who} data-sfx="none" onchange={(e) => setWho(e.currentTarget.value as Who)}>
-          {#each order as p (p)}<option value={p}>{names[p]}</option>{/each}
-        </select>
-        <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 L8 10.5 L12.5 6" /></svg>
-      </label>
-
-      <div class="nav">
-        <button type="button" class="nb" data-nav="back" aria-label={t('food.earlier')} data-sfx="tick" onclick={() => shift(-1)}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19" /></svg>
-        </button>
-        <b class="rl money" aria-live="polite" data-food-date={date}>{dayTitle(date)}</b>
-        <button type="button" class="nb" data-nav="on" aria-label={t('food.later')} aria-disabled={date >= today} data-sfx="tick" onclick={() => shift(1)}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19" /></svg>
-        </button>
-        <button type="button" class="nb today" data-nav="today" aria-disabled={picked_d === null} data-sfx="tick" onclick={() => (picked_d = null)}>{t('food.today')}</button>
+      <div class="dds" class:two={tab === 'chart'}>
+        <Pick kind="who" value={who} options={order.map((id) => ({ id, label: names[id] }))} label={t('food.who')} onpick={setWho}
+          person={{ p: who, villager: villagerOf(who) }} />
+        <!-- グラフ: けんこう's period dropdown beside whose day, as there -->
+        {#if tab === 'chart'}
+          <Pick kind="period" value={period} options={PERIODS.map((id) => ({ id, label: t(`health.period.${id}`) }))} label={t('health.period')} onpick={setPeriod} />
+        {/if}
       </div>
+      <Segmented items={TABS.map((id) => ({ id, label: t(`food.tab.${id}`), art: FOOD_TAB_ART[id] }))} value={tab} label={t('food.tabs')} attr="tab" onpick={(id) => (tab = id)} />
 
-      <FoodSummary {day} {who} {goal} {protein} onedit={mine ? () => go({ k: 'goal' }) : null} />
-      {#each MEALS as k (k)}
-        <!-- the 🔁 chip: on my day my repeat still going (a tap manages it), else the one filling the day (shown only);
-             none: 🔁 くりかえす on my today only (from a past day it would fill every day since, today's doubled) -->
-        {@const live = mine ? liveRepeat(k) : null}
-        {@const r = live ?? repeatOn(m.state, who, k, date)}
-        <FoodMeal meal={k} entries={byMeal(k)} {mine} days={r?.w ?? null} onadd={() => go({ k: 'search', meal: k })}
-          onrepeat={mine && (live || (!r && date >= today)) ? () => go({ k: 'repeat', meal: k }) : null} onpick={edit} />
-      {/each}
-      <FoodCredits />
+      {#if tab === 'chart'}
+        <FoodChart {who} name={names[who]} {period} />
+      {:else}
+        <RangeNav earlier={t('food.earlier')} later={t('food.later')} today={t('food.today')} canOn={date < today} atToday={picked_d === null}
+          onback={() => shift(-1)} onon={() => shift(1)} ontoday={() => (picked_d = null)}>
+          <b class="rl money" aria-live="polite" data-food-date={date}>{dayTitle(date)}</b>
+        </RangeNav>
+
+        <FoodSummary {day} {who} {goal} {protein} onedit={mine ? () => go({ k: 'goal' }) : null} />
+        {#each MEALS as k (k)}
+          <!-- the 🔁 chip: on my day my repeat still going (a tap manages it), else the one filling the day (shown only);
+               none: 🔁 くりかえす on my today only (from a past day it would fill every day since, today's doubled) -->
+          {@const live = mine ? liveRepeat(k) : null}
+          {@const r = live ?? repeatOn(m.state, who, k, date)}
+          <FoodMeal meal={k} entries={byMeal(k)} {mine} days={r?.w ?? null} onadd={() => go({ k: 'search', meal: k })}
+            onrepeat={mine && (live || (!r && date >= today)) ? () => go({ k: 'repeat', meal: k }) : null} onpick={edit} />
+        {/each}
+        <FoodCredits />
+      {/if}
     {/if}
   {/if}
 </div>
 
 <style>
   .food { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-bottom: 8px; }
-  /* whose day: けんこう's dropdown pill (Health.svelte) */
-  .dd {
-    position: relative; display: flex; align-items: center; min-width: 0; min-height: var(--hit);
-    border-radius: var(--r-pill); background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl);
-  }
-  .dd:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  .dd:has(select:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .dd select {
-    appearance: none; -webkit-appearance: none; border: 0; margin: 0; background: transparent; color: inherit; cursor: pointer;
-    width: 100%; min-width: 0; height: var(--hit); padding: 0 34px 0 46px; border-radius: inherit;
-    font: 700 var(--fs-input)/1 var(--font-ui); text-overflow: ellipsis; white-space: nowrap; outline: none;
-  }
-  .dd .av { position: absolute; left: 10px; top: 50%; translate: 0 -50%; display: flex; pointer-events: none; }
-  .dd .chev { position: absolute; right: 12px; top: 50%; translate: 0 -50%; width: 16px; height: 16px; pointer-events: none;
-    fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
-  /* ‹ the day › きょう: けんこう's range row, sticky over the cards */
-  .nav {
-    position: sticky; top: -6px; z-index: 2; display: flex; align-items: center; gap: 8px; min-width: 0;
-    margin: 0 -8px; padding: 6px 8px calc(var(--lip-h) + 6px); background: var(--surface);
-  }
-  .nav::after { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 12px; pointer-events: none; background: linear-gradient(var(--surface), transparent); }
-  .nb {
-    appearance: none; border: 0; cursor: pointer; flex: none; min-width: var(--hit); height: var(--hit); padding: 0 10px; border-radius: var(--r-pill);
-    display: inline-flex; align-items: center; justify-content: center;
-    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
-  }
-  .nb svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
-  .nb:active:not([aria-disabled='true']) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  .nb[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; transform: translateY(4px); cursor: default; }
+  /* row 1 (けんこう's Pick pills): whose day alone, or (グラフ) beside the period as けんこう's two, whose a little wider */
+  .dds { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .dds.two { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
   .rl { flex: 1; min-width: 0; text-align: center; font-size: var(--fs-talk); white-space: nowrap; }
 </style>

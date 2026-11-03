@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { foldEvents, reduce } from './state.ts';
-import { foodDay, foodEntries, kcalGoal, proteinGoal, repeatOn, repeats } from './food.ts';
+import { foodDay, foodEntries, foodSeries, kcalGoal, proteinGoal, repeatOn, repeats } from './food.ts';
+import { rangeFor, seriesBuckets, seriesStats } from './health.ts';
+import { addDays } from '#lib/time/dates.ts';
 import type { EventRow, MetricRow } from '#lib/contract/api.ts';
 
 const T = Date.parse('2026-11-03T03:00:00.000Z');
@@ -129,5 +131,66 @@ describe('repeats: a meal’s items read into the days it fills', () => {
     expect(repeatOn(s, 'A', 'l', '2026-11-07')?.id).toBe('rmeal007');
     expect(repeatOn(s, 'B', 'b', '2026-11-07')).toBeNull();
     expect(repeats(s, 'A').map((r) => r.id)).toEqual(['rmeal005', 'rmeal007', 'rmeal006']);
+  });
+});
+
+describe('foodSeries: kcal per day for グラフ, by けんこう’s bucket and stat rules', () => {
+  const TODAY = '2026-11-03';
+  const WATER = { id: 'mext:16103', n: '水', k: 0, p: 0, fa: 0, c: 0, s: 0 };
+  // A: 10-28 rice (234), 10-30 natto 50 g (95), 10-29 and 10-31 nothing; a 毎日 breakfast from 11-01 (rice 150 g +
+  // natto 45 g = 320), today with a rice more (554); 11-02 a glass of water besides (0 kcal: still the repeat's 320)
+  const s = reduce({
+    metrics: [],
+    events: [
+      set('A', 'fmeal100', T, { d: '2026-10-28' }),
+      set('A', 'fmeal101', T, { d: '2026-10-30', f: NATTO, g: 50 }),
+      ev('A', T, { id: 'rmeal100', at: T, m: 'b', it: [{ g: 150, f: RICE }, { g: 45, f: NATTO }], w: 127, from: '2026-11-01' }, 'food_repeat'),
+      set('A', 'fmeal102', T, { d: TODAY, m: 'l' }),
+      set('A', 'fmeal103', T, { d: '2026-11-02', m: 's', f: WATER, g: 200 }),
+      set('B', 'fmeal104', T, { d: '2026-11-01', f: WATER, g: 200 }),
+      ev('B', T, { key: 'kcalGoal', value: 2000 }, 'pref')
+    ]
+  });
+
+  it('a day’s total from foodDay (repeats included) from the first meal to today; nothing logged is null, 0 kcal is a record', () => {
+    const ds = foodSeries(s, 'A', TODAY);
+    expect(ds).toMatchObject({ from: '2026-10-28', to: TODAY, first: '2026-10-28', vals: [234, null, 95, null, 320, 320, 554] });
+    expect(ds.goal(0)).toBeNull();
+    expect(foodSeries(s, 'A', TODAY)).toBe(ds); // memoised
+    // one pass over the record, the same totals as foodDay's day by day; the repeat's days after today aren't read
+    ds.vals.forEach((v, i) => {
+      const day = foodDay(s, 'A', addDays(ds.from, i));
+      expect(v).toBe(day.entries.length ? day.kcal : null);
+    });
+    expect(foodSeries(s, 'A', '2026-11-05').vals.slice(-2)).toEqual([320, 320]);
+    const b = foodSeries(s, 'B', TODAY);
+    expect(b).toMatchObject({ from: '2026-11-01', vals: [0, null, null] });
+    expect(b.goal(2)).toBe(2000);
+    expect(foodSeries(s, 'G', TODAY)).toMatchObject({ from: TODAY, vals: [null] }); // nothing yet
+  });
+
+  it('1週: a bar per day, today running; the stats over the finished days with a record (today out), 記録なし counted', () => {
+    const ds = foodSeries(s, 'A', TODAY);
+    const r = rangeFor('week', TODAY);
+    expect(seriesBuckets(ds, r).map((x) => [x.v, x.today])).toEqual([
+      [234, false], [null, false], [95, false], [null, false], [320, false], [320, false], [554, true]
+    ]);
+    expect(seriesStats(ds, r.from, r.to)).toMatchObject({ avg: 969 / 4, sum: 969, days: 4, missing: 2 });
+    // B's 0 kcal day is a record, its days without one aren't 0s
+    const b = foodSeries(s, 'B', TODAY);
+    expect(seriesStats(b, r.from, r.to)).toMatchObject({ avg: 0, sum: 0, days: 1, missing: 1 });
+    expect(seriesBuckets(b, r).map((x) => x.goal)).toEqual(Array(7).fill(2000));
+  });
+
+  it('3か月 and 1年: each bucket the daily average of its days with a record, today out; before the first meal nothing', () => {
+    const ds = foodSeries(s, 'A', TODAY);
+    const q = seriesBuckets(ds, rangeFor('quarter', TODAY));
+    expect(q).toHaveLength(13);
+    expect(q.at(-1)).toMatchObject({ v: 969 / 4, days: 4, today: false });
+    expect(q.slice(0, -1).every((x) => x.v === null && x.days === 0)).toBe(true);
+    const y = seriesBuckets(ds, rangeFor('year', TODAY));
+    expect(y.slice(-2).map((x) => [x.v, x.days])).toEqual([[(234 + 95) / 2, 2], [320, 2]]);
+    const yr = rangeFor('year', TODAY);
+    expect(seriesStats(ds, yr.from, yr.to)).toMatchObject({ avg: 969 / 4, sum: 969, days: 4, missing: 2 });
   });
 });

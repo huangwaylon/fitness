@@ -192,34 +192,63 @@ export interface BucketValue {
   /** Recorded days (today excluded unless it's the only day, for the day bar). */
   days: number;
   met: number;
-  /** The goal (a bucket's: its last day's). */
-  goal: number;
+  /** The goal (a bucket's: its last day's); null: none (no line). */
+  goal: number | null;
   /** A day bucket that is today (still running). */
   today: boolean;
 }
 
-const idx = (hs: HealthSeries, d: LocalDate) => daysBetween(hs.from, d);
+/**
+ * One daily series on its own (a metric's, or another log's such as ごはん's kcal: model/food.ts foodSeries): index i =
+ * `from` + i days, `to` today; null = no record that day. The bucket and stat rules below read only this.
+ */
+export interface DaySeries {
+  from: LocalDate;
+  to: LocalDate;
+  /** Days before it aren't 記録なし (before anything was recorded). */
+  first: LocalDate;
+  vals: readonly (number | null)[];
+  /** The goal on day i (null: none). */
+  goal: (i: number) => number | null;
+  /** Whether day i's value met its goal (none: never). */
+  met?: (v: number, i: number) => boolean;
+}
+
+/** A metric's days as a DaySeries (its goal per day, the stamp card's rule for met). */
+function metricSeries(hs: HealthSeries, p: PersonId, m: Metric): DaySeries {
+  const ps = hs.people[p];
+  return {
+    from: hs.from, to: hs.to, first: hs.activityFrom, vals: ps.values[m],
+    goal: (i) => goalOf(ps, m, i), met: (v, i) => metGoal(m, v, goalOf(ps, m, i))
+  };
+}
+
+/** Day d's index in a series starting on `s.from`. */
+const idx = (s: { from: LocalDate }, d: LocalDate) => daysBetween(s.from, d);
 
 /** Each bucket's value. A day bucket shows today's running value; longer buckets average the finished days only. */
-export function bucketValues(hs: HealthSeries, p: PersonId, m: Metric, r: Range): BucketValue[] {
-  const ps = hs.people[p];
-  const vals = ps.values[m];
+export function seriesBuckets(ds: DaySeries, r: Range): BucketValue[] {
+  const vals = ds.vals;
+  const now = idx(ds, ds.to);
   return r.buckets.map((b) => {
     let sum = 0, days = 0, met = 0;
-    const last = Math.min(idx(hs, b.to), idx(hs, hs.to));
-    const isToday = r.unit === 'day' && b.from === hs.to;
-    for (let i = Math.max(0, idx(hs, b.from)); i <= last; i++) {
+    const last = Math.min(idx(ds, b.to), now);
+    const isToday = r.unit === 'day' && b.from === ds.to;
+    for (let i = Math.max(0, idx(ds, b.from)); i <= last; i++) {
       const v = vals[i];
       if (v === null || v === undefined) continue;
-      if (i === idx(hs, hs.to) && !isToday) continue;
+      if (i === now && !isToday) continue;
       sum += v;
       days++;
-      if (metGoal(m, v, goalOf(ps, m, i))) met++;
+      if (ds.met?.(v, i)) met++;
     }
-    const gi = Math.max(0, Math.min(last, idx(hs, b.to)));
-    return { v: days ? sum / days : null, days, met, goal: goalOf(ps, m, gi), today: isToday };
+    const gi = Math.max(0, Math.min(last, idx(ds, b.to)));
+    return { v: days ? sum / days : null, days, met, goal: ds.goal(gi), today: isToday };
   });
 }
+
+/** Each bucket's value of a metric (seriesBuckets over its days). */
+export const bucketValues = (hs: HealthSeries, p: PersonId, m: Metric, r: Range): BucketValue[] => seriesBuckets(metricSeries(hs, p, m), r);
 
 export interface MetricStats {
   /** Average of the recorded, finished days (null: none). */
@@ -235,12 +264,17 @@ export interface MetricStats {
   change: number | null;
 }
 
-function rawStats(hs: HealthSeries, p: PersonId, m: Metric, from: LocalDate, to: LocalDate) {
-  const ps = hs.people[p];
-  const vals = ps.values[m];
-  const lo = Math.max(0, idx(hs, from));
-  const hi = Math.min(idx(hs, to), idx(hs, hs.to) - 1); // finished days only
-  const counted = idx(hs, hs.activityFrom);
+/** A series' numbers over from..to: the finished days only (today is still running), 記録なし from `first` on. */
+export interface SeriesStats extends Omit<MetricStats, 'change'> {
+  /** The recorded finished days' total. */
+  sum: number;
+}
+
+export function seriesStats(ds: DaySeries, from: LocalDate, to: LocalDate): SeriesStats {
+  const vals = ds.vals;
+  const lo = Math.max(0, idx(ds, from));
+  const hi = Math.min(idx(ds, to), idx(ds, ds.to) - 1); // finished days only
+  const counted = idx(ds, ds.first);
   let sum = 0, days = 0, met = 0, missing = 0;
   let best: MetricStats['best'] = null;
   for (let i = lo; i <= hi; i++) {
@@ -251,10 +285,15 @@ function rawStats(hs: HealthSeries, p: PersonId, m: Metric, from: LocalDate, to:
     }
     sum += v;
     days++;
-    if (metGoal(m, v, goalOf(ps, m, i))) met++;
-    if (!best || v > best.v) best = { date: addDays(hs.from, i), v };
+    if (ds.met?.(v, i)) met++;
+    if (!best || v > best.v) best = { date: addDays(ds.from, i), v };
   }
-  return { avg: days ? sum / days : null, days, met, missing, best };
+  return { avg: days ? sum / days : null, sum, days, met, missing, best };
+}
+
+function rawStats(hs: HealthSeries, p: PersonId, m: Metric, from: LocalDate, to: LocalDate) {
+  const { avg, days, met, missing, best } = seriesStats(metricSeries(hs, p, m), from, to);
+  return { avg, days, missing, met, best };
 }
 
 /** A period's numbers for one person and metric, with the change against the previous period. */

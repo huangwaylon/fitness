@@ -217,3 +217,70 @@ test('いつもの: someone else’s repeat is shown, 🔁, never managed; the l
   await lv.locator('[data-rep-save]').click();
   await expect(sheet(page).locator('section[data-meal=b] button[data-repeat]')).toHaveText('月火水木金日'); // the one going on (from tomorrow); today keeps the old one's items
 });
+
+// グラフ (design.md "Gohan"): the kcal eaten over けんこう's periods, its range row and its 🍐 Move card under it. On the
+// demo's 11/4: ウェイ's meals from 11/1 (11/4 still going), so 1週 has three finished bars and today's outlined.
+test('グラフ: the kcal eaten per day with the average line, the Move card under it; the period, ‹ and whose day; it fits the sheet', async ({ page }) => {
+  await openFood(page);
+  const tabs = sheet(page).locator('[data-tab]');
+  await expect(tabs).toHaveText(['きろく', 'グラフ']);
+  await expect(sheet(page).locator('[data-tab=log]')).toHaveAttribute('aria-pressed', 'true'); // きろく on opening
+  await expect(sheet(page).locator('select[data-pick=period]')).toHaveCount(0);
+  await sheet(page).locator('[data-tab=chart]').click();
+  await expect(sheet(page).locator('[data-tab=chart]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('select[data-pick=period]')).toHaveValue('week');
+  await expect(sheet(page).locator('[data-food-summary]')).toHaveCount(0);
+
+  const card = sheet(page).locator('[data-food-chart]');
+  await expect(card).toHaveAttribute('data-person', 'A');
+  await expect(card.locator('path.bar')).toHaveCount(4);
+  await expect(card.locator('path.bar.now')).toHaveCount(1); // today: drawn, outlined
+  const avg = Number((await card.locator('[data-intake-avg]').textContent())!.replace(/[^\d]/g, ''));
+  expect(avg).toBeGreaterThan(0);
+  await expect(card.locator('line.avg')).toHaveAttribute('data-avg', String(avg)); // the flat line at the average
+  await expect(card.locator('path.goal')).toHaveCount(1); // ウェイ's kcal goal, dashed
+  await expect(card.locator('.key')).toContainText('平均');
+  await expect(card.locator('[data-intake-basis]')).toHaveText('1日の平均（3日分）'); // the finished days with a meal (today out)
+  await expect(card.locator('.sub')).toContainText('記録 3日');
+  await expect(sheet(page).locator('[data-metric=move][data-person=A]')).toBeVisible(); // the calories burned
+  expect(await overflowOf(page)).toEqual([]);
+
+  // ‹: the week before (no meal yet: no bar, no average line), › back
+  const range = sheet(page).locator('[data-food-range]');
+  const now = await range.textContent();
+  await sheet(page).locator('[data-nav=back]').click();
+  await expect(range).not.toHaveText(now!);
+  await expect(card.locator('path.bar')).toHaveCount(0); // before the first meal: no bar, no stub, no average
+  await expect(card.locator('rect.none, line.avg')).toHaveCount(0);
+  await expect(card.locator('[data-intake-avg]')).toHaveText('–');
+  await expect(sheet(page).locator('[data-metric=move]')).toBeVisible();
+  await sheet(page).locator('[data-nav=on]').click();
+  await expect(range).toHaveText(now!);
+
+  // 3か月: a bar per week (each the daily average of its days with a meal), the same average
+  await sheet(page).locator('select[data-pick=period]').selectOption('quarter');
+  await expect(sheet(page).locator('.rl small')).toHaveText('1週ごとの 1日平均');
+  await expect(card.locator('path.bar')).toHaveCount(1);
+  await expect(card.locator('line.avg')).toHaveAttribute('data-avg', String(avg));
+  expect(await overflowOf(page)).toEqual([]);
+
+  // whose day: うめ's, still グラフ and 3か月
+  await sheet(page).locator('select[data-pick=who]').selectOption('B');
+  await expect(sheet(page).locator('[data-tab=chart]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('select[data-pick=period]')).toHaveValue('quarter');
+  await expect(card).toHaveAttribute('data-person', 'B');
+  await expect(sheet(page).locator('[data-metric=move][data-person=B]')).toBeVisible();
+  await sheet(page).locator('[data-tab=log]').click();
+  await expect(sheet(page).locator('[data-food-summary]')).toHaveClass(/pB/);
+});
+
+test('グラフ on the guest’s phone: its own kcal only (no Health of its own), a member’s with their Move card', async ({ page }) => {
+  await openFood(page, '&as=G');
+  await sheet(page).locator('[data-tab=chart]').click();
+  await expect(sheet(page).locator('.card.empty')).toBeVisible(); // nothing logged yet
+  await expect(sheet(page).locator('[data-metric]')).toHaveCount(0);
+  await sheet(page).locator('select[data-pick=who]').selectOption('A');
+  await expect(sheet(page).locator('[data-food-chart] path.bar')).toHaveCount(4);
+  await expect(sheet(page).locator('[data-metric=move][data-person=A]')).toBeVisible();
+  expect(await overflowOf(page)).toEqual([]);
+});
