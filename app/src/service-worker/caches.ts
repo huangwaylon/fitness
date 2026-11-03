@@ -33,8 +33,8 @@ export function lruEvict(keys: readonly string[]): string[] {
 export const isFont = (path: string): boolean => /\.(woff2?|ttf)$/.test(path);
 export const isVillagerArt = (path: string): boolean => path.includes('/art/villagers/');
 /** The island's scenery art: the catches (fish, bugs, junk), the beach finds (shells, fossils, fragments, the bottle),
- *  the balloon presents and the visitors' extras (shown only when one is about or in the ずかん), and the baked terrain
- *  (one season of four shows; its URLs carry a content version, terrain.json): cached on first use, not at install. */
+ *  the balloon presents and the visitors' extras (shown only when one is about or in the ずかん), and NH's ground
+ *  textures (terrain/nh/: the layout's terrain): cached on first use, not at install. */
 export const isCritterArt = (path: string): boolean =>
   path.includes('/art/critters/') || path.includes('/art/finds/') || path.includes('/art/presents/') || path.includes('/terrain/');
 /** The world's dressing for a season or the night and its decor (island/scene.ts, world.ts): the buildings' and the
