@@ -60,7 +60,8 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       // the reel, the moment it bites (the bobber's where the cast put it)
       await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 }); // landed
       const b = await centre(page, '[data-bobber]');
-      await reelOnBite(page, b.x < w / 2 ? w - 20 : 20, b.y);
+      // (on the bobber itself, open water: at 320 a point 20 px from the side can be a control's, no reel)
+      await reelOnBite(page, b.x, b.y);
       await expect(page.locator(plate)).toBeVisible();
       await expectClear(page, plate);
       // (a tap where it is: Playwright's own click would scroll the island's sticky stage to it, moving the camera)
