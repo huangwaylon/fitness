@@ -1,7 +1,7 @@
 // Scenery taps (docs/design.md "Scene interactions"): the bushes, flowers, grass, sea, sun and clouds answer a tap with a
 // short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the jar still work.
-import { CAMS, FLOWERS } from '../src/lib/components/island/world.ts';
 import { expect, test, type Page } from '@playwright/test';
+import { geo, oku } from './island.ts';
 
 /** The island is up: today's ベル ribbon shows (the app asks no questions, so nothing to answer first). */
 async function islandReady(page: Page) {
@@ -61,7 +61,7 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   // (open lawn is a walk: my villager runs there, its tap ring on the ground instead of a dust puff)
   const taps: [string, () => Promise<{ x: number; y: number }>, string][] = [
     ['bush', () => centre(page, '[data-bush="plumeria-w"]'), '[data-fx="bush"]'], // the white plumeria at the beach's edge
-    ['flower', () => centre(page, `[data-flower="${FLOWERS[0].id}"]`), '[data-fx="flower"]'],
+    ['flower', async () => centre(page, `[data-flower="${(await geo(page)).FLOWERS[0].id}"]`), '[data-fx="flower"]'],
     ['grass', () => lawn(page), '.if-scene .tap-ring'],
     ['sea', () => sea(page), '[data-fx="splash"]'],
     ['sun', () => orb(page), '[data-fx="sun"]']
@@ -132,10 +132,11 @@ test('the campfire by the tent: unlit by day, its flames and light at night; a t
     await page.goto(`?demo&date=${when}&critter=none&visitor=none`);
     await islandReady(page);
     await page.waitForFunction(() => (window as unknown as { __world?: W }).__world);
+    const z0 = await oku(page);
     await expect.poll(async () => {
-      await page.evaluate((z) => (window as unknown as { __world: W }).__world.go(z), CAMS.oku);
+      await page.evaluate((z) => (window as unknown as { __world: W }).__world.go(z), z0);
       await page.waitForTimeout(250);
-      return page.evaluate((z) => Math.abs((window as unknown as { __world: { cam(): number } }).__world.cam() - z), CAMS.oku);
+      return page.evaluate((z) => Math.abs((window as unknown as { __world: { cam(): number } }).__world.cam() - z), z0);
     }, { timeout: 5000 }).toBeLessThan(1.5); // (WebKit scrolls by whole px: within a px of it)
   };
   await go('2026-11-04T12:00');

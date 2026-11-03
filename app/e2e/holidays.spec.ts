@@ -2,7 +2,7 @@
 // (events.ts): Franklin on Turkey Day (he asks for a fish; the next catch makes him happy), Jingle on Toy Day, Pavé at
 // Festivale, Zipper on Bunny Day's first and last days; Bunny Day's eggs in a dig spot. No ベル.
 import { expect, test, type Page } from '@playwright/test';
-import { reelOnBite } from './island.ts';
+import { fossilOnScreen, oku, reelOnBite } from './island.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -52,7 +52,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       await page.goto(`?demo&date=${date}&critter=none`);
       await expect(ribbon(page)).toBeVisible();
       const sel = `[data-visitor="${id}"] .art`;
-      await camera(page, 642);
+      await camera(page, await oku(page));
       await expect(page.locator(sel)).toBeVisible();
       expect(await under(page, sel), id).toEqual([]);
       await tapOn(page, sel);
@@ -66,7 +66,7 @@ test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and 
   await expect(ribbon(page)).toBeVisible();
   const bells = await ribbon(page).getAttribute('aria-label');
   // he stands at centre stage (おく); the sea is at まえ
-  await camera(page, 642);
+  await camera(page, await oku(page));
   await tapOn(page, '[data-visitor="franklin"] .art');
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('サンクスギビング', { timeout: 4000 });
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('さかなが 1ぴき');
@@ -91,7 +91,7 @@ test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and 
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('scene-franklin') ?? '{}'))).toMatchObject({ date: '2026-11-26', asked: true, fed: true });
   await expect(ribbon(page)).toHaveAttribute('aria-label', bells!);
   await page.goto('?demo&date=2026-11-26T11:00&critter=none');
-  await camera(page, 642);
+  await camera(page, await oku(page));
   await expect(page.locator('[data-visitor="franklin"] .art')).toBeVisible();
   await tapOn(page, '[data-visitor="franklin"] .art');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('フランクリン', { timeout: 4000 });
@@ -111,8 +111,8 @@ test('Bunny Day week: no Zipper mid-week, and a dig spot can hold an earth egg (
   await page.goto('?demo&date=2027-03-24T12:00&find=earth-egg&critter=none');
   await expect(ribbon(page)).toBeVisible();
   await expect(page.locator('[data-visitor="zipper"]')).toHaveCount(0);
-  await expect(page.locator('[data-find="fossil"]').first()).toBeAttached();
-  await tapOn(page, '[data-find="fossil"]');
+  const p = await fossilOnScreen(page);
+  await page.mouse.click(p.x, p.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText('じめんのたまごを ほりだした！', { timeout: 5000 });
   const finds = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).filter((e: { type: string }) => e.type === 'find'));
   expect(finds).toEqual([]);

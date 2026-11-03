@@ -979,11 +979,14 @@
       if (Math.hypot(x - door[0], z - door[1]) <= TENT_NEAR_U) return goIn();
       // stopped short (something on the island held my villager a moment, a reaction): on up to the door
       const again = tries++ < 3 && sendTo(door[0], door[1]);
-      if (again) walkingIn = setTimeout(check, Math.max(80, again.ms - 40));
+      if (again) walkingIn = setTimeout(check, Math.min(CHECK_MS, Math.max(80, again.ms - 40)));
     };
     let tries = 0;
-    walkingIn = setTimeout(check, Math.max(0, p.ms - 40));
+    // (looked at often: on the long island a walk up is seconds long, and stopped short it goes on at once)
+    walkingIn = setTimeout(check, Math.min(CHECK_MS, Math.max(0, p.ms - 40)));
   }
+  /** How often the walk up to a door is looked at (ms). */
+  const CHECK_MS = 400;
   /** My villager this near the tent's door (u) goes straight in. */
   const TENT_NEAR_U = 36;
   let walkingIn: ReturnType<typeof setTimeout> | undefined;

@@ -2,8 +2,7 @@
 // its own: the room's code and three.js come only then (the island never loads them); my villager walks where the
 // floor is tapped; the doormat and ‹ 島へ go back out, to the island as it was.
 import { expect, test, type Page } from '@playwright/test';
-import { is3d, tapOn } from './island.ts';
-import { BUILDINGS } from '../src/lib/components/island/world.ts';
+import { campDoor, geo, is3d, tapOn } from './island.ts';
 
 /** The edit tray open, and the room re-centred above it (a tap's px only holds once the camera is at rest). */
 async function openEdit(p: Page) {
@@ -14,9 +13,13 @@ async function openEdit(p: Page) {
  *  the room re-centres under it). */
 const settled = (p: Page) => p.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still());
 
-const DOOR = ((b) => [b.x, b.z - 16] as const)(BUILDINGS.find((b) => b.id === 'campsite')!);
 /** Where a villager stands just out of the tent (buildings.ts outOfTent): ±12 of the door, 30 in front. */
-const OUT = (who: 'A' | 'B') => [DOOR[0] + (who === 'A' ? -12 : 12), DOOR[1] - 30] as const;
+const OUT = (door: readonly [number, number], who: 'A' | 'B') => [door[0] + (who === 'A' ? -12 : 12), door[1] - 30] as const;
+/** The camera at おく, the campsite's end (world.ts CAMS as the page has them). */
+const oku = async (page: Page) => {
+  const z = (await geo(page)).CAMS.oku;
+  await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
+};
 
 /** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
 async function tapTent(p: Page) {
@@ -34,8 +37,9 @@ const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
 async function enter(page: Page, aside = false) {
   await page.goto(Q);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
-  await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(642));
-  if (aside) await page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z), [DOOR[0] + 70, DOOR[1] - 40] as const);
+  await oku(page);
+  const door = campDoor(await geo(page));
+  if (aside) await page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z), [door[0] + 70, door[1] - 40] as const);
   await page.waitForTimeout(300);
   await tapTent(page);
   // (my villager walks up to the door first)
@@ -56,8 +60,9 @@ test('the 2D island never loads the room; the tent does, opens through the door,
     await page.waitForTimeout(800); // (proving nothing loads three for a while)
     expect(scripts).not.toContain('three');
   }
-  await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(642));
+  await oku(page);
   await page.waitForTimeout(300);
+  const door = campDoor(await geo(page));
   const cam = await page.evaluate(() => (window as unknown as { __world: { cam(): number } }).__world.cam());
   await tapTent(page);
   // (my villager walks up to the door first)
@@ -77,7 +82,7 @@ test('the 2D island never loads the room; the tent does, opens through the door,
   // my villager just outside the tent's door
   await expect.poll(async () => {
     const [mx, mz] = await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
-    return Math.hypot(mx - OUT('A')[0], mz - OUT('A')[1]);
+    return Math.hypot(mx - OUT(door, 'A')[0], mz - OUT(door, 'A')[1]);
   }).toBeLessThan(2);
   await expect(page.locator('[data-tent]')).toHaveCount(0);
 });
