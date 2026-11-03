@@ -58,7 +58,8 @@ async function waterNear(page: Page, at: [number, number], px: number): Promise<
       const cx = x + Math.cos((a / 16) * Math.PI * 2) * px, cy = y + Math.sin((a / 16) * Math.PI * 2) * px;
       if (cx < 12 || cx > innerWidth - 12 || cy < 12 || cy > innerHeight - 12) continue;
       const g = h.__world3d.ground(cx, cy), s = g && h.__world.ground(g.x, g.z).surface;
-      if (s === 'water' || s === 'sea') return [cx, cy] as [number, number];
+      // (water a finger reaches: no button of the island's over it, a canopy or a door)
+      if ((s === 'water' || s === 'sea') && !document.elementFromPoint(cx, cy)?.closest('button')) return [cx, cy] as [number, number];
     }
     return [x, y] as [number, number];
   }, [at[0], at[1], px] as const);

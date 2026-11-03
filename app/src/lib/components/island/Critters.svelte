@@ -158,9 +158,8 @@
   const rand = Math.random;
   /** My 3D villager holds the rod within this of its float (u: world3d/villagers.ts LINE_REACH), else the line's the bank's. */
   const ROD_U = 220;
-  /** A tap this far round a shadow as drawn is on it (px: a finger's slack, Apple's 44pt target), and on its body
-   *  itself (`SNUG_PX`) even over the island's own buttons in front of it. */
-  const FINGER_PX = 44, SNUG_PX = 16;
+  /** A tap this far round a shadow as drawn is on it (px: a finger's slack, Apple's 44pt target). */
+  const FINGER_PX = 44;
   /** A tap in another water this close to a shadow casts to it all the same (u: the river by its mouth, the sea at the
    *  mouth, the falls' pool and the river below it are one water to the eye). */
   const NEAR_U = 90;
@@ -206,7 +205,7 @@
   let bugEl = $state<HTMLElement>();
   $effect(() => {
     const list = () => {
-      const r = bug && !bug.gone && bodyRect(bugEl);
+      const r = bug && !bug.gone && bugEl && bugBox(bug, bugEl);
       return r ? [{ box: grow(r), kind: 'bug' }] : [];
     };
     hitSources.add(list);
@@ -593,7 +592,7 @@
     const g = m.g.to(t, b.x, b.z, b.lift, b.ms, b.fled || b.flight === 'dart' ? EASE.out : EASE.smooth, b.gone ? EASE.out : null).at(t);
     m.out = m.yaw = turn(m.yaw, b.flip ? Math.PI : 0, dt, 90);
     const k = g.done(t);
-    const hop = b.flight === 'hop' && !b.gone && k < 1 && g.ms <= 500 ? Math.sin(Math.PI * k) * 9 : 0;
+    const hop = (b.flight === 'hop' && !b.gone && k < 1 && g.ms <= 500 ? Math.sin(Math.PI * k) * 9 : 0) + (b.stalk === 'rear' ? 3 : 0);
     m.xyz[0] = g.x;
     m.xyz[1] = g.z;
     m.xyz[2] = g.l + hop;
@@ -1169,7 +1168,7 @@
     if (b && theirs(b.cid)) return true;
     if (b && !b.gone && bugEl) {
       // what it draws (its mover is a 0 × 0 point): on its tap box (hitbox.ts, at least 44px) it's caught
-      const r = bodyRect(bugEl) ?? bugEl.getBoundingClientRect();
+      const r = bugBox(b, bugEl);
       const d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
       // (a percher on a trunk: a wider box, 56px, over the tree's own: the critters answer a tap first)
       const swing = inside(grow(r, b.flight === 'perch' ? 56 : undefined), px, py) ? 'catch' : netSwing(d, Math.max(r.width, r.height));
@@ -1180,6 +1179,9 @@
         if (act === 'rear' || act === 'charge') turnTo(b.x); // no walk: its mood is the game
         if (act === 'rear') {
           b.stalk = 'rear';
+          // reared up, on the 3D island too: it lifts its front (bug3) under NH's 「！」 till it settles (the 3D model
+          // had no rear: the first tap showed nothing, the second came while it was reared and it always charged off)
+          fx3d('bang', b.x, b.z, b.lift + 12, { ms: REAR_MS, held: () => bug === b && b.stalk === 'rear' });
           later(() => bug === b && b.stalk === 'rear' && (b.stalk = 'settled'), REAR_MS);
           return true;
         }
@@ -1274,16 +1276,23 @@
     const p = fishNow(f) ?? f, [cx, cy] = w.clientAt(p.x, p.z);
     return { p, cx, cy, half: ((w.rest.three ? Math.max(len3(f), sizeU(f)) : sizeU(f)) / 2) * w.scaleAt(p.x, p.z) * w.view.s, shown: w.inView(p.x, p.z) };
   }
-  /** Whether a tap at client (px, py) is on a shadow of mine in view (its body, a little slack): SceneTaps gives it the
-   *  tap over the island's buttons in front of it. */
-  export function onShadow(px: number, py: number): boolean {
-    if (cast) return false;
-    return WATERS.some((wt) => {
-      const f = fishes[wt];
-      if (!f || f.gone || theirs(f.cid)) return false;
-      const s = seenOf(f);
-      return s.shown && Math.hypot(px - s.cx, py - s.cy) <= s.half + SNUG_PX;
-    });
+  /** Where a bug is drawn (client px): on the 3D island its model's spot (bug3's: the true x, z and lift, by the 3D
+   *  island's curves; its invisible sprite moves by its own transition from a flat offset at its spot's scale, 30–110 px
+   *  off the model as a percher flies in, so a tap on what's drawn startled it), its sprite's size round it; else the
+   *  sprite's own box. */
+  function bugBox(b: Bug, el: HTMLElement): DOMRect {
+    const r = bodyRect(el) ?? el.getBoundingClientRect(), m = w.rest.three ? mos.get(bugId(b)) : undefined;
+    if (!m) return r;
+    const [cx, cy] = w.clientAt(m.xyz[0], m.xyz[1], m.xyz[2]), bw = Math.max(r.width, 20), bh = Math.max(r.height, 20);
+    return new DOMRect(cx - bw / 2, cy - bh / 2, bw, bh);
+  }
+  /** Whether a tap at client (px, py) is on my bug as drawn: SceneTaps gives it the tap over the island's buttons (a bug
+   *  flies or crawls in front of my villager, a canopy, a door). A fish's shadow lies on the water, behind them all: a
+   *  button over it hides it, and the button keeps its tap (a canopy over the pond shakes its tree). */
+  export function onCritter(px: number, py: number): boolean {
+    const b = bug;
+    if (cast || !b || b.gone || !bugEl || theirs(b.cid)) return false;
+    return inside(grow(bugBox(b, bugEl), 0, 0), px, py);
   }
   /** Why the last tap cast or didn't (the e2e's `__fish.why()`). */
   let why = '';
