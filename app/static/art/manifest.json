@@ -1,5 +1,5 @@
 {
-  "version": 53,
+  "version": 54,
   "files": {
     "bridges/stone-front": {
       "path": "bridges/stone-front.webp",
@@ -2622,6 +2622,12 @@
       "w": 512,
       "h": 512,
       "source": "https://nookipedia.com/wiki/File:Isabelle_NH_Model_2.png"
+    },
+    "host/timmy-tommy": {
+      "path": "host/timmy-tommy.webp",
+      "w": 512,
+      "h": 330,
+      "source": "https://nookipedia.com/wiki/File:Timmy_&_Tommy_NH_Transparent.png"
     },
     "host/tom-nook": {
       "path": "host/tom-nook.webp",

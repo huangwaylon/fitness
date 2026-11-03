@@ -27,6 +27,8 @@
     link: DragLink;
     /** What the balloons brought that the tent can hold (codes, newest first). */
     finds: readonly string[];
+    /** What I bought at the shop (codes, newest first: model/shop.ts), mine to place. */
+    bought: readonly string[];
     /** Where the villagers stand (a piece never lands on one). */
     villagers: () => readonly (readonly [number, number])[];
     /** The relay's clock (the hold's start: two people grabbing one piece). */
@@ -35,17 +37,18 @@
     holderName: (id: string) => string;
     ondone: () => void;
   }
-  let { room, eng, link, finds, villagers, relayNow, holderName, ondone }: Props = $props();
+  let { room, eng, link, finds, bought, villagers, relayNow, holderName, ondone }: Props = $props();
 
-  type Tab = 'recent' | 'furniture' | 'rugs' | 'walled' | 'finds' | 'wall' | 'floor';
+  type Tab = 'recent' | 'furniture' | 'rugs' | 'walled' | 'finds' | 'bought' | 'wall' | 'floor';
   /** The pieces I picked last (this phone's, newest first): NH's quick access to what's at hand. */
   const RECENT_MAX = 12;
   let recent = $state<string[]>(((r) => (Array.isArray(r) ? r.filter((c): c is string => typeof c === 'string' && !!ITEMS[c]) : []))(readJson<unknown>(localKV(), DEVICE.tentRecent)));
-  const TABS = $derived<Tab[]>([...(recent.length ? ['recent' as const] : []), 'furniture', 'rugs', 'walled', 'finds', 'wall', 'floor']);
+  const TABS = $derived<Tab[]>([...(recent.length ? ['recent' as const] : []), 'furniture', 'rugs', 'walled', 'finds', ...(bought.length ? ['bought' as const] : []), 'wall', 'floor']);
   let tab = $state<Tab>('furniture');
   const list = $derived(
     tab === 'recent' ? recent : tab === 'furniture' ? STARTER.filter((c) => !ITEMS[c].rug && !ITEMS[c].wl) : tab === 'rugs' ? STARTER.filter((c) => ITEMS[c].rug)
-      : tab === 'walled' ? [...STARTER.filter((c) => ITEMS[c].wl), ...finds.filter((c) => ITEMS[c].wl)] : tab === 'finds' ? finds : tab === 'wall' ? WALLS : FLOORS
+      : tab === 'walled' ? [...new Set([...STARTER, ...finds, ...bought].filter((c) => ITEMS[c].wl))] : tab === 'finds' ? finds : tab === 'bought' ? bought
+      : tab === 'wall' ? WALLS : FLOORS
   );
   /** How many of each piece stand in the room (the icons' counts). */
   const counts = $derived(room.pieces.reduce((m, p) => m.set(p.item, (m.get(p.item) ?? 0) + 1), new Map<string, number>()));

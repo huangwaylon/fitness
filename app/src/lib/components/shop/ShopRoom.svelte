@@ -1,0 +1,333 @@
+<script lang="ts">
+  // タヌキ商店: the shop's inside (docs/design.md "The shop"), behind its door on the island. NH's Nook's Cranny as a
+  // screen, not a room: the twins behind their counter (NH's render, host/timmy-tommy) under the shop's sign, and NH's
+  // counter menu under them, うる (sell: my pocket's catches, from my day tallies less what I sold: model/shop.ts) and
+  // かう (buy: the day's stock, the same on every phone: contract/shop.ts stockOf). Prices and my かいがら in NH's shell
+  // (the cowrie). A sell or a buy shows at once with もとに戻す (store/actions.ts sell, buyPiece); a bought piece joins
+  // my もようがえ. The guest's pocket and かいがら are its own. Never ベル. ‹ 島へ goes back out, just out of its door.
+  import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
+  import { onMount } from 'svelte';
+  import NavButton from '../ui/NavButton.svelte';
+  import Segmented from '../ui/Segmented.svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
+  import { iconUrl } from '../tent/items.ts';
+  import { bare } from '../kiroku/zukan.ts';
+  import { findArt } from '../island/beach.ts';
+  import type { WeekView } from '#lib/types.ts';
+  import { BASICS, buyPrice, sellPrice, stockOf } from '#lib/contract/shop.ts';
+  import { shopView } from '#lib/model/shop.ts';
+  import { localDateAt } from '#lib/time/dates.ts';
+  import { week } from '#lib/store/week.svelte.ts';
+  import { buyPiece, buyRefusal, sell, undoBanner } from '#lib/store/actions.ts';
+  import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
+  import { doorOf as layoutDoor, facingVec } from '#lib/layout/model.ts';
+  import { ui } from '#lib/ui-state/ui.svelte.ts';
+  import { theme } from '#lib/ui-state/theme.svelte.ts';
+  import { doorReady } from '#lib/ui-state/doorTransition.ts';
+  import { cue } from '#lib/sound/cues.ts';
+  import { formatNum, i18n, t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/catch.ts';
+  import { loadTentNames } from '#lib/i18n/tent.ts';
+
+  let { view }: { view: WeekView } = $props();
+
+  type Tab = 'sell' | 'buy';
+  let tab = $state<Tab>('sell');
+  /** うる: how many of each species picked (`kind:id` → n). */
+  let picks = $state<Record<string, number>>({});
+  /** かう: the piece picked. */
+  let pick = $state<string | null>(null);
+  /** The twins' line (a key of `shop.say.*` and its params). */
+  let say = $state<{ k: string; p?: Record<string, string> }>({ k: 'hello' });
+
+  const me = $derived(week.model?.me ?? view.viewer);
+  const shop = $derived(week.model ? shopView(week.model.state, me) : { pocket: new Map<string, number>(), shells: 0, owned: [] as readonly string[] });
+  const today = $derived(localDateAt(week.model?.now ?? Date.now()));
+  const stock = $derived(stockOf(today));
+  const daily = $derived(stock.filter((c) => !BASICS.includes(c)));
+  const night = $derived(theme.tod === 'night' || theme.tod === 'dusk');
+
+  /** A tally key's name and icon (the ずかん's: `critter.name.*`, `sea.name.*`; the official icon). */
+  const speciesName = (k: string) => {
+    const [kind, id] = k.split(':');
+    return bare(t(`${kind === 'sea' ? 'sea' : 'critter'}.name.${id}`));
+  };
+  const speciesArt = (k: string) => `critters/${k.split(':')[1]}`;
+  /** The pieces' names (NH's, i18n/tent.ts: loaded with the screen, the language on screen). */
+  let names = $state(0);
+  $effect(() => void loadTentNames(i18n.locale).then(() => names++, () => {}));
+  const itemName = (code: string) => (void names, t(`tent.item.${code}`));
+
+  // ---- うる
+  const pocket = $derived([...shop.pocket].map(([k, n]) => ({ k, n, p: sellPrice(k) ?? 0 })).sort((a, b) => b.p - a.p || a.k.localeCompare(b.k)));
+  const picked = $derived(Object.entries(picks).filter(([k, n]) => n > 0 && (shop.pocket.get(k) ?? 0) >= n));
+  const pickedN = $derived(picked.reduce((a, [, n]) => a + n, 0));
+  const pickedV = $derived(picked.reduce((a, [k, n]) => a + n * (sellPrice(k) ?? 0), 0));
+  function more(k: string) {
+    const max = shop.pocket.get(k) ?? 0;
+    const n = picks[k] ?? 0;
+    picks = { ...picks, [k]: n >= max ? 0 : n + 1 };
+    cue('tick');
+    say = pickedN ? { k: 'offer', p: { v: formatNum(pickedV) } } : { k: 'hello' };
+  }
+  function less(k: string) {
+    picks = { ...picks, [k]: Math.max(0, (picks[k] ?? 0) - 1) };
+    say = pickedN ? { k: 'offer', p: { v: formatNum(pickedV) } } : { k: 'hello' };
+  }
+  function all() {
+    picks = Object.fromEntries(pocket.map(({ k, n }) => [k, n]));
+    say = { k: 'offer', p: { v: formatNum(pickedV) } };
+  }
+  function sellPicked() {
+    if (!pickedN) return void cue('boop');
+    const r = sell(new Map(picked));
+    if (!r.ok) {
+      say = { k: 'cant' };
+      return void cue('boop');
+    }
+    cue('buy');
+    const one = picked.length === 1 ? picked[0] : null;
+    undoBanner(one ? t('shop.sold', { name: speciesName(one[0]), n: String(one[1]), v: formatNum(r.shells ?? 0) }) : t('shop.soldMany', { n: String(pickedN), v: formatNum(r.shells ?? 0) }), r);
+    picks = {};
+    say = { k: 'thanks' };
+  }
+
+  // ---- かう
+  function choose(code: string) {
+    pick = pick === code ? null : code;
+    cue('tick');
+    if (!pick) return void (say = { k: 'hello' });
+    const why = buyRefusal(code);
+    say = why === 'owned' ? { k: 'owned' } : why === 'wallet' ? { k: 'short', p: { name: itemName(code) } } : { k: 'price', p: { name: itemName(code), v: formatNum(buyPrice(code) ?? 0) } };
+  }
+  const why = $derived(pick ? (void shop, buyRefusal(pick)) : null);
+  function buyPicked() {
+    if (!pick || why) {
+      if (pick) say = why === 'owned' ? { k: 'owned' } : { k: 'short', p: { name: itemName(pick) } };
+      return void cue('boop');
+    }
+    const r = buyPiece(pick);
+    if (!r.ok) return void cue('boop');
+    cue('buy');
+    undoBanner(t('shop.bought', { name: itemName(pick), v: formatNum(r.price ?? 0) }), r);
+    pick = null;
+    say = { k: 'thanks' };
+  }
+
+  function switchTab(id: Tab) {
+    tab = id;
+    picks = {};
+    pick = null;
+    say = { k: id === 'sell' ? (shop.pocket.size ? 'hello' : 'empty') : 'stock' };
+  }
+
+  // ---- out of the door: on the island just out of the shop's door
+  let leaving = false;
+  function leave() {
+    if (leaving) return;
+    leaving = true;
+    cue('scene-bench');
+    const [dx, dz] = outOfShop();
+    ui.outAt = [dx, dz];
+    ui.islandZ ??= dz - 120;
+    const q = new URLSearchParams(location.search);
+    void goto(resolve('/') + (q.size ? `?${q}` : '')).finally(() => (leaving = false));
+  }
+  /** Just out of the shop's door on the layout (each of us to one side). */
+  function outOfShop(): readonly [number, number] {
+    const l = islandLayout.current, o = [...l.objects.values()].find((x) => x.k === 'shop');
+    if (!o) return [195, 300];
+    const [x, z] = layoutDoor(l, o).at, [fx, fz] = facingVec(o.f);
+    const side = me === 'A' ? -12 : me === 'B' ? 12 : 0;
+    return [x + fx * 30 - fz * side, z + fz * 30 + fx * side];
+  }
+
+  $effect(() => {
+    const m = week.model;
+    if (m) islandLayout.rows(m.state.layout);
+  });
+  onMount(() => {
+    if (!shop.pocket.size) say = { k: 'empty' };
+    requestAnimationFrame(() => doorReady());
+  });
+  // (the line's language follows the app's)
+  const line = $derived((void i18n.locale, t(`shop.say.${say.k}`, say.p)));
+</script>
+
+<main class="shop" class:night data-shop data-shells={shop.shells}>
+  <h1 class="sr-only">{t('shop.title')}</h1>
+  <div class="top">
+    <NavButton kind="back" text={t('shop.out')} onclick={leave} sfx="self" />
+    <p class="wallet" data-shop-wallet aria-label={t('shop.wallet', { v: formatNum(shop.shells) })}>
+      <span class="shell" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={26} eager /></span>
+      <b class="num" aria-hidden="true">{formatNum(shop.shells)}</b>
+    </p>
+  </div>
+
+  <section class="counter" aria-label={t('shop.counter')}>
+    <div class="window" aria-hidden="true"></div>
+    <div class="sign" aria-hidden="true"><span>{t('shop.sign')}</span></div>
+    <div class="twins"><OfficialArt key="host/timmy-tommy" alt={t('shop.twins')} width="100%" eager /></div>
+    <p class="say" role="status" aria-live="polite" data-shop-say={say.k}>{line}</p>
+    <div class="desk" aria-hidden="true"><span class="register"></span></div>
+  </section>
+
+  <section class="menu">
+    <Segmented items={[{ id: 'sell', label: t('shop.tab.sell') }, { id: 'buy', label: t('shop.tab.buy') }]} value={tab} label={t('shop.title')} attr="shop-tab" onpick={switchTab} />
+
+    {#if tab === 'sell'}
+      {#if pocket.length}
+        <ul class="grid" data-shop-pocket>
+          {#each pocket as { k, n, p } (k)}
+            {@const c = picks[k] ?? 0}
+            <li class="tile" class:on={c > 0}>
+              <button type="button" class="pickable" data-shop-catch={k} data-n={n} data-picked={c} data-sfx="self"
+                aria-label={t('shop.catchLabel', { name: speciesName(k), n: String(n), v: String(p), c: String(c) })} onclick={() => more(k)}>
+                <span class="ic"><OfficialArt key={speciesArt(k)} size={46} /></span>
+                <span class="nm">{speciesName(k)}</span>
+                <span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{formatNum(p)}</span>
+                <span class="count" aria-hidden="true">{c ? `${c}/${n}` : `×${n}`}</span>
+              </button>
+              {#if c}<button type="button" class="less" data-shop-less={k} data-sfx="tick" aria-label={t('shop.less', { name: speciesName(k) })} onclick={() => less(k)}>−</button>{/if}
+            </li>
+          {/each}
+        </ul>
+      {:else}
+        <p class="empty" data-shop-empty>{t('shop.emptyPocket')}</p>
+      {/if}
+      <div class="bar">
+        <p class="sum" data-shop-offer={pickedV}>{pickedN ? t('shop.offer', { n: String(pickedN), v: formatNum(pickedV) }) : t('shop.pickHint')}</p>
+        {#if pocket.length}<button type="button" class="btn small paper" data-shop-all data-sfx="tick" onclick={all}>{t('shop.all')}</button>{/if}
+        <button type="button" class="btn small" data-shop-sell data-sfx="self" aria-disabled={!pickedN} onclick={sellPicked}>{t('shop.sell')}</button>
+      </div>
+    {:else}
+      <h2 class="head">{t('shop.today')}</h2>
+      <ul class="grid" data-shop-stock>
+        {#each daily as code (code)}{@render piece(code)}{/each}
+      </ul>
+      <h2 class="head">{t('shop.basics')}</h2>
+      <ul class="grid">
+        {#each BASICS as code (code)}{@render piece(code)}{/each}
+      </ul>
+      <div class="bar">
+        <p class="sum" data-shop-pick={pick ?? ''}>{pick ? `${itemName(pick)} · ${formatNum(buyPrice(pick) ?? 0)}` : t('shop.buyHint')}</p>
+        <button type="button" class="btn small" data-shop-buy data-sfx="self" aria-disabled={!pick || !!why} onclick={buyPicked}>{t('shop.buy')}</button>
+      </div>
+    {/if}
+  </section>
+</main>
+
+{#snippet piece(code: string)}
+  {@const owned = shop.owned.includes(code)}
+  <li class="tile" class:on={pick === code} class:owned>
+    <button type="button" class="pickable" data-shop-item={code} data-owned={owned} data-sfx="self" aria-pressed={pick === code}
+      aria-label={t(owned ? 'shop.itemOwned' : 'shop.itemLabel', { name: itemName(code), v: formatNum(buyPrice(code) ?? 0) })} onclick={() => choose(code)}>
+      <span class="ic"><img src={iconUrl(code)} alt="" width="46" height="46" loading="lazy" decoding="async" /></span>
+      <span class="nm">{itemName(code)}</span>
+      {#if owned}<span class="price owned-tag">{t('shop.owned')}</span>
+      {:else}<span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{formatNum(buyPrice(code) ?? 0)}</span>{/if}
+    </button>
+  </li>
+{/snippet}
+
+<style>
+  /* NH's Nook's Cranny: honey wood planks on the walls, a darker floor, the shop's sign, the twins behind a wooden
+     counter; under it the counter's menu as NH draws it, a cream panel (fixed cream at every time of day, ink text: a
+     game object, as the HUD's). At dusk and night the wood warms under the lamp and the window goes dark. */
+  .shop {
+    --wood: #E7B877; --wood-2: #DDA862; --wood-dark: #9C6A3C; --floor: #B98654; --floor-2: #A97648;
+    position: relative; max-width: var(--col); margin: 0 auto; min-height: var(--vh-fill); height: var(--vh-fill);
+    display: flex; flex-direction: column; overflow: hidden; color: var(--c-ink);
+    background: repeating-linear-gradient(90deg, var(--wood) 0 38px, var(--wood-2) 38px 40px);
+  }
+  .shop.night { --wood: #B9895A; --wood-2: #A97B4E; --floor: #8A6240; --floor-2: #7B5638; }
+  .shop.night::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(60% 34% at 50% 18%, rgb(255 214 140 / .38), transparent 70%);
+  }
+  .top {
+    position: absolute; z-index: 3; left: calc(var(--side) + var(--safe-left)); right: calc(var(--side) + var(--safe-right));
+    top: calc(var(--ui-top) + 8px); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; pointer-events: none;
+  }
+  .top > :global(*) { pointer-events: auto; }
+  .wallet {
+    margin: 0; display: inline-flex; align-items: center; gap: 6px; height: var(--hit); padding: 0 14px 0 8px; border-radius: var(--r-pill);
+    background: var(--c-cream); box-shadow: 0 var(--lip-h) 0 var(--c-lip); color: var(--c-ink);
+  }
+  .shell { display: inline-flex; width: 30px; justify-content: center; line-height: 0; }
+  .num { font: 700 var(--fs-talk)/1 var(--font-num); font-variant-numeric: tabular-nums; }
+
+  .counter { position: relative; z-index: 1; flex: none; height: clamp(250px, 38vh, 330px); padding-top: calc(var(--ui-top) + 56px); }
+  .window {
+    position: absolute; right: 9%; top: calc(var(--ui-top) + 70px); width: 64px; height: 56px; border-radius: 10px 10px 4px 4px;
+    background: linear-gradient(#9FE0F2, #D7F3F7); box-shadow: inset 0 0 0 5px var(--wood-dark), inset 0 0 0 7px #F3D9A8;
+  }
+  .window::after { content: ''; position: absolute; left: 50%; top: 5px; bottom: 5px; width: 4px; margin-left: -2px; background: var(--wood-dark); }
+  .night .window { background: radial-gradient(circle at 70% 30%, #FFF6C9 0 2px, transparent 3px), linear-gradient(#20345E, #3B4F7E); }
+  .sign {
+    position: absolute; left: 50%; top: calc(var(--ui-top) + 58px); translate: -50% 0; z-index: 1;
+    padding: 6px 18px 5px; border-radius: 10px; background: #5DAA5F; color: #FFF9E3;
+    box-shadow: inset 0 0 0 3px #3F8743, 0 3px 0 #2F6B33; font: 700 var(--fs-body)/1.1 var(--font-ui); letter-spacing: .12em; white-space: nowrap;
+  }
+  .twins { position: absolute; left: 50%; bottom: 52px; width: min(62%, 270px); translate: -50% 0; z-index: 1; line-height: 0; }
+  .say {
+    position: absolute; z-index: 2; left: 50%; bottom: 12px; translate: -50% 0; width: max-content; max-width: min(86%, 340px); margin: 0;
+    padding: 8px 14px; border-radius: 18px; background: var(--c-cream); color: var(--c-ink);
+    box-shadow: 0 3px 0 var(--c-lip), var(--sh-float); font: 700 var(--fs-body)/1.35 var(--font-ui); text-align: center;
+  }
+  .desk {
+    position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; height: 64px;
+    background-image: linear-gradient(#D9A066, #C98E55 12px, #8E5D33 12px, #8E5D33 16px, transparent 16px),
+      repeating-linear-gradient(90deg, #B47A45 0 46px, #A56E3D 46px 48px);
+    box-shadow: inset 0 2px 0 #EBC08A;
+  }
+  .register { position: absolute; right: 8%; bottom: 62px; width: 44px; height: 26px; border-radius: 6px 6px 3px 3px; background: #6E7C86; box-shadow: inset 0 -6px 0 #56626B, inset 0 4px 0 #8E9CA6; }
+
+  .menu {
+    position: relative; z-index: 2; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 10px;
+    padding: 14px var(--side) 0; background: var(--c-cream); border-radius: var(--r-card) var(--r-card) 0 0;
+    box-shadow: 0 -4px 0 var(--c-lip); overflow-y: auto; overscroll-behavior: contain;
+    /* the panel's own controls keep the day's look (fixed cream, ink) at every time of day */
+    --text: var(--c-ink); --text-soft: var(--c-ink-soft); --ctl: var(--c-card); --ctl-sel: var(--c-yuzu); --ctl-off: #EADBB8;
+    --sh-ctl: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); --sh-ctl-press: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge);
+  }
+  .head { margin: 4px 0 0; font: 700 var(--fs-s)/1 var(--font-ui); color: var(--c-ink-soft); letter-spacing: .04em; }
+  .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+  .tile { position: relative; }
+  .pickable {
+    appearance: none; border: 0; cursor: pointer; width: 100%; min-height: 118px; padding: 10px 6px 8px; border-radius: var(--r-btn);
+    display: grid; justify-items: center; align-content: start; gap: 4px; background: var(--c-card); color: var(--c-ink);
+    box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .pickable:active { transform: translateY(2px); box-shadow: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge); }
+  .pickable:focus-visible { outline: 3px solid var(--c-ink); outline-offset: 2px; }
+  .on .pickable { background: var(--c-yuzu); }
+  .owned .pickable { background: #F1E6CC; }
+  .owned .ic { opacity: .55; }
+  .ic { width: 46px; height: 46px; display: grid; place-items: center; line-height: 0; }
+  .ic img { width: 46px; height: 46px; object-fit: contain; }
+  .nm { font: 700 var(--fs-s)/1.2 var(--font-ui); text-align: center; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .price { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-s)/1 var(--font-num); font-variant-numeric: tabular-nums; }
+  .mini { display: inline-flex; line-height: 0; }
+  .owned-tag { font-family: var(--font-ui); color: var(--c-leaf-text); }
+  .count {
+    position: absolute; top: 6px; right: 8px; padding: 2px 6px; border-radius: var(--r-pill); background: var(--c-paper);
+    font: 700 var(--fs-s)/1.1 var(--font-num); font-variant-numeric: tabular-nums;
+  }
+  .on .count { background: var(--c-cream); }
+  .less {
+    position: absolute; top: -8px; left: -6px; width: 32px; height: 32px; border-radius: 50%; border: 0; cursor: pointer;
+    background: var(--c-card); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge);
+    font: 700 var(--fs-talk)/1 var(--font-ui);
+  }
+  .less::after { content: ''; position: absolute; inset: -6px; }
+  .empty { margin: 18px 4px; text-align: center; color: var(--c-ink-soft); font-weight: 700; }
+  .bar {
+    position: sticky; bottom: 0; margin: auto calc(-1 * var(--side)) 0; padding: 10px var(--side) calc(var(--pad-bottom) + 8px);
+    display: flex; align-items: center; gap: 8px; background: var(--c-cream); box-shadow: 0 -2px 0 var(--c-lip);
+  }
+  .bar .btn { margin: 0; flex: none; }
+  .sum { flex: 1 1 auto; min-width: 0; margin: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
+  @media (prefers-reduced-motion: reduce) { .pickable:active { transform: none; } }
+</style>

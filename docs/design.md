@@ -1230,6 +1230,36 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   exhibits' 30 while only they do, nothing while nothing on screen does.
 - No music of its own: the app has no NH museum track (NH's museum is quiet ambience); the island's hour plays on.
 
+### The shop
+
+`shop/ShopRoom.svelte`, `routes/shop`, `contract/shop.ts`, `contract/shopPrices.ts` (`npm run shop:prices`),
+`model/shop.ts`, `store/actions.ts` (sell, buyPiece), `e2e/shop.spec.ts`. NH's Nook's Cranny (タヌキ商店) with its own
+money, かいがら (shells, NH's cowrie for its mark), never ベル ([decisions](decisions.md#the-shops-かいがら-2026-11-04)):
+the island's catches sell for them and buy furniture for the rooms. Each person's own pocket and かいがら, the guest's
+too.
+
+- **Inside:** a screen, not a 3D room (decisions: the shop is a counter, its work lists and prices; a walking room adds
+  nothing to them and would cost another three.js scene on the phone): honey wood walls, the green sign, a window (the
+  sky's: day blue, night navy with a star), NH's render of まめきち and つぶきち (Timmy and Tommy) behind a wooden counter
+  with its register, their line in a cream balloon on the counter (「いらっしゃいませだも〜！」, the offer, 「まいど
+  ありがとうだも〜！」, 「かいがらが たりないだも…」…), and under it NH's counter menu, a fixed-cream panel (ink, at every
+  time of day). At dusk and night the wood warms under a lamp's glow. My かいがら top right; ‹ 島へ top left goes back out
+  (just out of the shop's door).
+- **うる** (sell): my pocket, each fish, bug and sea creature I caught (my day tallies, model/tally.ts) less what I sold,
+  dearest first: its icon, name, price and ×n. A tap picks one more (past the pocket: none again), − one less, ぜんぶ all;
+  the bar says 「3こで 120 かいがら」 and うる sells them (one `sell` a species). Selling never takes a species out of the
+  ずかん or the museum. Shells, fossils and presents don't sell.
+- **かう** (buy): today's stock (きょうの しなもの: 8 pieces of NH furniture a Tokyo day, the same on every phone, from the
+  date alone) and the basics always (いつもの: a cardboard box, a zen cushion, a mini cactus set), each with its NH icon,
+  name and price; one picked, かう buys it. A piece I own says もってる; too dear or owned, かう boops and the twins say
+  why. A bought piece is mine for good in もようがえ (TentEdit's かった tab, and the かべかけ tab for a wall piece) in
+  every room I arrange.
+- A sell or a buy shows at once with もとに戻す for 5 s (the banner up over the counter here, clear of the bar), then
+  goes to the record, which checks it (the pocket, the wallet, the stock, the price: [backend](backend.md#events)).
+- **Prices:** a catch NH's Bells ÷ 100 (a sea bass 4, a koi 40, a whale shark 130), a piece NH's ÷ 20 (a median piece
+  110: about a day's catches).
+- **The menu:** 「かいがら N」 in the leaf's menu under 「ベル N」 (`data-hud-shells`); a tap goes into the shop.
+
 ### Dialogue
 
 `island/pager.ts`, `island/Talk.svelte`, `island/Plate.svelte`, `e2e/dialogue.spec.ts`. The speech balloon and the catch
