@@ -95,6 +95,8 @@ export type Geo = {
   SCENERY: { id: string; kind: string; key: string; x: number; z: number; h: number }[]; DECOR_SLOTS: { id: string; x: number; z: number }[];
   BRIDGE: { x: number; z0: number; z1: number; w: number }; CLIFF: { z0: number; z1: number }; LAWN_SPOTS: [number, number][];
   RIVER: [number, number, number][]; RIVER_BEND: number;
+  /** Today's trees holding a present (treeGifts.ts giftTreesOn over the island's trees). */
+  GIFT_TREES: string[];
 };
 export async function geo(page: Page): Promise<Geo> {
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);

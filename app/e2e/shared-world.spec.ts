@@ -3,8 +3,8 @@
 // the relay (sync/live-local.ts plays the room: first claim wins, the day's world kept for a tab opening later).
 // Every tree shakes (NH's three quick taps): an oak's branch, a palm's coconuts; the partner's tab sees the shake,
 // their villager turns to it where it stands, and what's picked up on one tab is gone on the other.
-import { FLOWERS } from '../src/lib/components/island/world.ts';
 import { expect, test, type Page } from '@playwright/test';
+import { geo, openNear } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -31,6 +31,8 @@ const leaves = (page: Page, id: string) =>
         if (document.elementFromPoint(cx + dx, cy + dy)?.closest('[data-tree]') === el) return { x: cx + dx, y: cy + dy };
     return { x: cx, y: cy };
   });
+/** The camera in front of a tree (world.ts SCENERY as the page has it). */
+const toTree = async (page: Page, id: string) => go(page, (await geo(page)).SCENERY.find((s) => s.id === id)!.z - 114);
 async function shake(page: Page, id: string) {
   for (let i = 0; i < 3; i++) {
     const p = await leaves(page, id);
@@ -41,7 +43,7 @@ async function shake(page: Page, id: string) {
 
 test('every tree shakes: three quick taps on an oak drop a branch beside it; one tap only rustles', async ({ page }) => {
   await open(page, '&shake=branch');
-  await go(page, 380);
+  await toTree(page, 'oak-m1');
   await atRest(page);
   const p = await leaves(page, 'oak-m1');
   await page.mouse.click(p.x, p.y);
@@ -78,6 +80,7 @@ test('two players see the same island, not mirrored: A (ウェイ) on the left, 
   await open(a);
   await open(b, '&as=B');
   /** Where each person's villager and goal tree and two wild flowers stand on a tab (screen x of their middles, the same camera). */
+  const { FLOWERS } = await geo(a);
   const layout = (p: Page) => p.evaluate((flowers) => {
     const mid = (sel: string) => {
       const r = document.querySelector(sel)!.getBoundingClientRect();
@@ -121,7 +124,9 @@ test('two players: a tap-walk on one tab plays on the other from the same start 
   await open(b, '&as=B');
   for (const p of [a, b]) await go(p, 300);
   await a.waitForTimeout(400);
-  for (const [tapper, watcher, tx, tz] of [[a, b, 240, 500], [b, a, 150, 560]] as const) {
+  for (const [tapper, watcher, nx, nz] of [[a, b, 240, 500], [b, a, 150, 560]] as const) {
+    // (open ground there a tap walks to, nothing over it on this screen)
+    const [tx, tz] = await openNear(tapper, nx, nz, 45, true);
     const [x, y] = await tapper.evaluate(([tx, tz]) => (window as unknown as { __world: W }).__world.at(tx, tz), [tx, tz]);
     await tapper.mouse.click(x, y);
     // under way: the two tabs have it within a few steps of each other (one frame and the evaluate's skew apart)
@@ -203,7 +208,7 @@ test('two players: a shake on one tab plays on the other (their villager stays w
   const a = await ctx.newPage(), b = await ctx.newPage();
   await open(a, '&shake=branch');
   await open(b, '&as=B');
-  for (const p of [a, b]) await go(p, 380);
+  for (const p of [a, b]) await toTree(p, 'oak-m1');
   await atRest(a, b);
   await shake(a, 'oak-m1');
   await expect(a.locator('button[data-branch="oak-m1"]')).toHaveCount(1, { timeout: 3000 });
@@ -269,7 +274,8 @@ test('two players: a shell picked up on one tab is gone on the other, and from a
   // the partner's villager went for it: their line on B (in view at まえ)
   await expect(b.locator('[data-fx="catch"], [data-partner-news]').first()).toContainText('を ひろった！', { timeout: 5000 });
   // A waters a flower (world.ts FLOWERS): it glitters on B's tab too, the same flower
-  const fl = `[data-flower="${FLOWERS[0].id}"]`;
+  // (one of the front lawn's: in view at まえ)
+  const fl = `[data-flower="${(await geo(a)).FLOWERS.filter((f) => f.z < 600).sort((p, q) => p.z - q.z)[0].id}"]`;
   await a.locator(fl).click();
   await expect(a.locator(`${fl} [data-watered]`)).toBeAttached({ timeout: 4000 });
   await expect(b.locator('[data-watered]')).toHaveCount(1, { timeout: 5000 });

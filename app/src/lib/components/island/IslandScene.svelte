@@ -85,6 +85,7 @@
   import { walkGeo, walkable } from './walkGraph.ts';
   import { weedsAt } from './care.ts';
   import { mushroomSpots } from './mushrooms.ts';
+  import { giftTreesOn } from './treeGifts.ts';
   import { arrive, attachAvatar, homeAgain, homeRoute, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, snapHome, stayingAt, stepOut, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
   import { where } from '#lib/store/where.svelte.ts';
   import { JOIN_SAY_MS, RUN_RING_U_S, homeAfter, linkVillagers, playPartner, playWake, setHomeAfter } from './villagerSync.ts';
@@ -654,7 +655,8 @@
       geo: () => ({
         CAMS: W.CAMS, SHORE_Z: W.SHORE_Z, POND: W.POND, SPRING: W.SPRING, CENTRE_STAGE: W.CENTRE_STAGE, ARCH: W.ARCH, CAKE: W.CAKE, HOMES: W.HOMES,
         GOAL_TREES: W.GOAL_TREES, ROCK: W.ROCK, TAPE_DECK: W.TAPE_DECK, SEATS: W.SEATS, PULLUP_AT: W.PULLUP_AT, BUILDINGS: W.BUILDINGS,
-        FLOWERS: W.FLOWERS, SCENERY: W.SCENERY, DECOR_SLOTS: W.DECOR_SLOTS, BRIDGE: W.BRIDGE, CLIFF: W.CLIFF, LAWN_SPOTS: W.LAWN_SPOTS, RIVER: W.RIVER, RIVER_BEND: W.RIVER_BEND
+        FLOWERS: W.FLOWERS, SCENERY: W.SCENERY, DECOR_SLOTS: W.DECOR_SLOTS, BRIDGE: W.BRIDGE, CLIFF: W.CLIFF, LAWN_SPOTS: W.LAWN_SPOTS, RIVER: W.RIVER, RIVER_BEND: W.RIVER_BEND,
+        GIFT_TREES: giftTreesOn(today, islandSeed())
       }),
       /** Whether (x, z) is open ground a tap there walks to (e2e: a spot for a tap-walk): walkable, `away` u from
        *  today's weeds, dig spots and mushrooms, 30 from the scenery's and the decor's tap areas, 32 from a flower (a thumb-sized tap area far up the screen). */

@@ -4,16 +4,15 @@
 // in the tent (みつけた). Shared: the other phone sees it fall and, once opened, gone.
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
-import { giftTreesOn } from '../src/lib/components/island/treeGifts.ts';
-import { SCENERY } from '../src/lib/components/island/world.ts';
+import { geo, type Geo } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
 const DATE = '2026-11-04';
 const Q = `?demo&date=${DATE}T12:00&critter=none&visitor=none`;
-/** The day's first holding tree (the same on every phone). */
-const TREE = giftTreesOn(DATE)[0];
-const TREE_Z = SCENERY.find((s) => s.id === TREE)!.z;
+/** The day's first holding tree (the same on every phone: the page's island's, its trees the layout's on it), set by
+ *  open(). */
+let TREE = '', TREE_Z = 0, G: Geo;
 /** The tent's code of a ずかん furniture id (tent/items.json). */
 const ROOM = JSON.parse(readFileSync(new URL('../src/lib/components/tent/items.json', import.meta.url), 'utf8')) as { items: Record<string, { cat?: string }> };
 const codeOf = (id: string) => Object.entries(ROOM.items).find(([, m]) => m.cat === id)?.[0];
@@ -24,6 +23,9 @@ async function open(page: Page, q = '') {
   await expect(ribbon(page)).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await page.waitForTimeout(2600); // the opening beats are over
+  G = await geo(page);
+  TREE = G.GIFT_TREES[0];
+  TREE_Z = G.SCENERY.find((s) => s.id === TREE)!.z;
   await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), TREE_Z - 114);
   await page.waitForTimeout(400);
 }
@@ -61,7 +63,7 @@ test('a holding tree’s shake drops its present; opened, it’s the day’s fur
   await open(page);
   const bells = await ribbon(page).getAttribute('aria-label');
   // another tree (not one of the day's) drops no present
-  const other = SCENERY.find((s) => (s.kind === 'oak' || s.kind === 'cedar') && !giftTreesOn(DATE).includes(s.id) && Math.abs(s.z - TREE_Z) < 120)!;
+  const other = G.SCENERY.find((s) => (s.kind === 'oak' || s.kind === 'cedar') && !G.GIFT_TREES.includes(s.id) && Math.abs(s.z - TREE_Z) < 120)!;
   await shake(page, other.id);
   await page.waitForTimeout(900);
   await expect(page.locator('[data-tree-gift]')).toHaveCount(0);

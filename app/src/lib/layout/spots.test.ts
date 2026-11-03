@@ -7,10 +7,10 @@ import type { LayoutEntry } from '#lib/contract/layout.ts';
 
 const l = defaultLayout();
 describe('the day’s spots from the layout (spots.ts)', () => {
-  test('never under a tree’s canopy, nor by a bush or a flower (behind and beside it: it takes the tap)', () => {
+  test('never under or before a tree’s canopy, nor by a bush or a flower (it, or the spot, takes the other’s tap)', () => {
     const tall = [...l.objects.values()].filter((o) => ['oak', 'cedar', 'palm', 'bamboo', 'goal-tree', 'bush', 'hedge', 'flower'].includes(o.k));
     for (const [c, r] of openGrass(l))
-      for (const t of tall) expect(Math.abs(c - t.x) <= 1 && r - t.z >= 0 && r - t.z <= (['bush', 'hedge', 'flower'].includes(t.k) ? 1 : 2), `${c},${r} by ${t.id}`).toBe(false);
+      for (const t of tall) expect(Math.abs(c - t.x) <= 1 && r - t.z >= (['bush', 'hedge', 'flower'].includes(t.k) ? 0 : -1) && r - t.z <= (['bush', 'hedge', 'flower'].includes(t.k) ? 1 : 2), `${c},${r} by ${t.id}`).toBe(false);
   });
   test('the same on every phone for a date, another the next day; on open grass, the dig spots apart from the weeds', () => {
     const a = daySpots(l, '2026-11-04', 'island-fund'), b = daySpots(layoutOf([]), '2026-11-04', 'island-fund');
