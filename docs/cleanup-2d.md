@@ -296,7 +296,7 @@ each the probe on the 3D island shows no 404 (`node scripts/unused-probe.ts <por
    scroller camera (`solveCam`, `scrollFor`, `camAt`, `camMin`/`camMax` from `CAMS`); the time-of-day `shade` filter,
    `.tint` and `.haze`'s CSS; the `[data-r3]` rules unconditional.
 4. **Delete the 2D renderer's files:** `WorldGround.svelte`, `WorldWater.svelte`, `ShoreWash.svelte`,
-   `Waterfall.svelte`, `roll.ts` + `roll.test.ts`, `DecorMode.svelte`; empty the script's `GONE`.
+   `Waterfall.svelte`, `roll.ts` + `roll.test.ts`, `DecorMode.svelte`; empty the script's `GONE` (since gone itself).
 5. **`camera.svelte.ts`:** `three` non-null, each `if (this.three) … else` keeps its 3D side, the roll params go.
 6. **The nodes keep their hit boxes, not their art:** the `{#if … !r3}` blocks (Scenery's shade, lit looks and lamp
    glow, the tent's pool; Particles' DOM fall; FruitTree's 2D oak and DOM fruit; Critters' fish teardrop and sprites,

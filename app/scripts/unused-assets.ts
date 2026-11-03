@@ -4,12 +4,12 @@
 // island draws for what has no model, the DOM tap areas' sizes) and what needs a look. Read-only: it deletes nothing.
 //   An asset's users are the source files that name it: a literal key or path ('bushes/holly', `art/x.webp`), a
 // template that builds it (`critters/${id}`: a pattern, and whether the id is spelled anywhere in the source), or a
-// JSON's string. Each user is a kind (below): the 2D renderer (goes with the cutover), the island's world (its DOM node
-// stays, but its art shows only where the 3D island has no model: world3d/assets.json keys), the app beyond the island
-// (stays), a dev page or a build script (keeps nothing). The built chunks (build-pages/, when there is a build) are
-// read too: a key in the shipped JS that the source scan missed is "unsure".
-//   The modules: the import graph from the routes and the service worker, with the 2D renderer's files taken out:
-// what's reachable now and not then would go too; the surviving files' imports of them are the lines to edit.
+// JSON's string. Each user is a kind (below): the island's world (its DOM node stays, but its art shows only where the
+// 3D island has no model: world3d/assets.json keys), the app beyond the island (stays), a dev page or a build script
+// (keeps nothing). The built chunks (build-pages/, when there is a build) are read too: a key in the shipped JS that the
+// source scan missed is "unsure".
+//   The modules: the import graph from the routes and the service worker; what it doesn't reach is listed (already
+// dead or dev-only).
 //
 // Usage (from app/): npm run unused [-- --json] [-- --list=safe|used|unsure] [-- --seen=/tmp/seen.txt]
 //   (the probe that writes --seen's file: node scripts/unused-probe.ts <port>, with the build served: docs/cleanup-2d.md)
@@ -27,9 +27,6 @@ const SEEN = new Set(seenArg ? readFileSync(seenArg, 'utf8').split('\n').filter(
 
 // ---- the kinds of source file ---------------------------------------------------------------------------------------
 
-/** Whole files about to go (their users of art keep nothing): list them here to see what their going leaves unused.
- *  The 2D renderer's (WorldGround, WorldWater, ShoreWash, Waterfall, roll.ts, DecorMode) went in phase B. */
-const GONE: string[] = [];
 /** The island's world: its DOM nodes stay over the 3D canvas (taps, the m3 keys), but an art key named here is drawn
  *  only where the 3D island has no model for it (a card, or the node's own art: Island3D's m3off). */
 const WORLD = /^lib\/components\/(island|world3d|board)\//;
@@ -42,10 +39,10 @@ const OVERLAY = new Set([
 ].map((f) => `lib/components/island/${f}`));
 /** Dev pages and tools: what they name keeps nothing (the gallery shows every key). */
 const DEV = /^(routes\/(dev|world3d)\/|lib\/components\/dev\/)/;
-type Kind = 'gone' | 'world' | 'app' | 'dev';
+type Kind = 'world' | 'app' | 'dev';
 const kindOf0 = (f: string): Kind =>
   // art.ts's key helpers (treeArt, flowerArt, seasonArt) are called by the island alone; its others are KNOWN below
-  f === 'lib/art.ts' ? 'world' : GONE.includes(f) ? 'gone' : DEV.test(f) ? 'dev' : OVERLAY.has(f) ? 'app' : WORLD.test(f) ? 'world' : 'app';
+  f === 'lib/art.ts' ? 'world' : DEV.test(f) ? 'dev' : OVERLAY.has(f) ? 'app' : WORLD.test(f) ? 'world' : 'app';
 /** The island's data modules the app beyond it imports (the ずかん reads critters.ts' and beach.ts' art keys, the
  *  catch plate its icons): what they name is the app's. Filled once the import graph is read (below). */
 const SHARED = new Set<string>();
@@ -150,24 +147,24 @@ function resolveImport(from: string, spec: string): string | null {
   for (const c of [p, `${p}.ts`, `${p}.svelte`, `${p}/index.ts`]) if (modSet.has(c)) return c;
   return null;
 }
-const edges = new Map<string, { to: string; line: number }[]>();
+const edges = new Map<string, { to: string }[]>();
 for (const f of modFiles) {
   if (f.endsWith('.json')) continue;
-  const text = readFileSync(join(SRC, f), 'utf8'), out: { to: string; line: number }[] = [];
+  const text = readFileSync(join(SRC, f), 'utf8'), out: { to: string }[] = [];
   for (const m of text.matchAll(/(?:import|export)\s[^'"`;]*?from\s*['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)|import\s+['"]([^'"]+)['"]/g)) {
     const to = resolveImport(f, m[1] ?? m[2] ?? m[3]);
-    if (to) out.push({ to, line: text.slice(0, m.index).split('\n').length });
+    if (to) out.push({ to });
   }
   edges.set(f, out);
 }
 const roots = modFiles.filter((f) => /^routes\/.*\+(page|layout|error)(\.server)?\.(svelte|ts)$/.test(f) || f === 'service-worker/index.ts' || /^hooks/.test(f));
-function reach(skip: ReadonlySet<string>): Set<string> {
-  const seen = new Set<string>(), stack = roots.filter((r) => !skip.has(r));
+function reach(): Set<string> {
+  const seen = new Set<string>(), stack = [...roots];
   while (stack.length) {
     const f = stack.pop()!;
     if (seen.has(f)) continue;
     seen.add(f);
-    for (const e of edges.get(f) ?? []) if (!skip.has(e.to)) stack.push(e.to);
+    for (const e of edges.get(f) ?? []) stack.push(e.to);
   }
   return seen;
 }
@@ -178,14 +175,12 @@ for (const f of modFiles) {
   if (kindOf0(f) !== 'app' || /^lib\/components\/(island|board)\//.test(f)) continue;
   for (const e of edges.get(f) ?? []) if (/^lib\/components\/(island|board)\/.*\.(ts|json)$/.test(e.to) && e.to !== 'lib/components/island/world.ts' && kindOf0(e.to) === 'world') SHARED.add(e.to);
 }
-const now = reach(new Set()), after = reach(new Set(GONE));
-const orphaned = [...now].filter((f) => !after.has(f)).sort();
+const now = reach();
 const unreachedNow = modFiles.filter((f) => !now.has(f) && !f.endsWith('.json') && !f.startsWith('service-worker/') && f !== 'app.d.ts').sort();
-const cuts = [...after].flatMap((f) => (edges.get(f) ?? []).filter((e) => GONE.includes(e.to) || orphaned.includes(e.to)).map((e) => `${f}:${e.line} → ${e.to}`)).sort();
-/** world.ts's exports and who still reads each once the 2D renderer is gone. */
+/** world.ts's exports and who still reads each. */
 const worldTs = readFileSync(join(SRC, 'lib/components/island/world.ts'), 'utf8');
 const worldExports = [...worldTs.matchAll(/^export (?:const|function|type|interface) ([A-Za-z_]\w*)/gm)].map((m) => m[1]);
-const readers = Object.fromEntries(worldExports.map((x) => [x, [...after].filter((f) => {
+const readers = Object.fromEntries(worldExports.map((x) => [x, [...now].filter((f) => {
   if (f === 'lib/components/island/world.ts' || !(edges.get(f) ?? []).some((e) => e.to === 'lib/components/island/world.ts')) return false;
   return new RegExp(`\\b${x}\\b`).test(readFileSync(join(SRC, f), 'utf8'));
 }).map((f) => f.replace(/^lib\/components\//, ''))]));
@@ -268,8 +263,6 @@ const rows: Row[] = staticFiles.map((path) => {
     return { ...row, cat: 'safe', why: `the 3D island draws NH’s model ${model}; the art only the 2D island’s (${name(world)})` };
   }
   if (app.length || world.length) return { ...row, cat: 'unsure', why: `matched only by a pattern whose id isn’t spelled in the source: ${name([...app, ...world])}` };
-  const gone = uses.filter((u) => u.kind === 'gone');
-  if (gone.length) return { ...row, cat: 'safe', why: `the 2D renderer’s alone: ${name(gone)}` };
   const dev = uses.filter((u) => u.kind === 'dev');
   if (built && built.includes(key.split('/').pop()!) && key.length > 6) return { ...row, cat: 'unsure', why: 'no source names it, but its name is in the built JS' };
   if (dev.length) return { ...row, cat: 'safe', why: `only a dev page names it (${name(dev)}): unused today` };
@@ -287,7 +280,7 @@ const sum = Object.fromEntries(cats.map((c) => {
   return [c, { files: rs.length, bytes: rs.reduce((n, r) => n + r.bytes, 0) }];
 }));
 if (asJson) {
-  console.log(JSON.stringify({ summary: sum, rows: rows.map(({ uses, ...r }) => ({ ...r, users: [...new Set(uses.map((u) => u.file))] })), orphaned, unreachedNow, cuts, worldReaders: readers }, null, 1));
+  console.log(JSON.stringify({ summary: sum, rows: rows.map(({ uses, ...r }) => ({ ...r, users: [...new Set(uses.map((u) => u.file))] })), unreachedNow, worldReaders: readers }, null, 1));
 } else if (listArg) {
   for (const r of rows.filter((r) => r.cat === listArg)) console.log(`${r.path}\t${r.bytes}\t${r.why}`);
 } else {
@@ -309,12 +302,8 @@ if (asJson) {
     }
     for (const [dir, e] of [...g].sort((a, b) => b[1].b - a[1].b)) console.log(`  ${dir.padEnd(30)} ${String(e.n).padStart(5)}  ${MB(e.b).padStart(9)}  ${[...e.why].slice(0, 3).join(' | ')}`);
   }
-  console.log(`\n## modules that go with the 2D renderer (${GONE.length} deleted, ${orphaned.length - GONE.length} more left unreachable)`);
-  for (const f of orphaned) console.log(`  ${f}${GONE.includes(f) ? '' : '   (unreachable once the above go)'}`);
-  console.log('\n## surviving imports of them (edit these)');
-  for (const c of cuts) console.log(`  ${c}`);
-  console.log('\n## modules no route reaches today (outside the cutover: already dead or dev-only)');
+  console.log('\n## modules no route reaches (already dead or dev-only)');
   for (const f of unreachedNow) console.log(`  ${f}`);
-  console.log('\n## world.ts exports still read after the cutover');
-  for (const [x, rs] of Object.entries(readers)) console.log(`  ${x.padEnd(16)} ${rs.length ? rs.join(', ') : '— (nobody: world.ts-internal or the 2D renderer’s)'}`);
+  console.log('\n## world.ts exports still read');
+  for (const [x, rs] of Object.entries(readers)) console.log(`  ${x.padEnd(16)} ${rs.length ? rs.join(', ') : '— (nobody: world.ts-internal)'}`);
 }
