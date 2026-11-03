@@ -422,7 +422,9 @@ three.js, with the DOM island over the canvas as its tap areas, marks, balloons 
 is loaded the first time it's due (`ui-state/lazyComponent.svelte.ts`), so the first load carries none of it. Light from the upper left;
 each surface one fill, one gradient, one soft shade; no strokes on scenery. Only `transform` and `opacity` animate;
 everything pauses while hidden (`data-paused`), and a sheet pauses particles, critters and idle life
-(`data-covered`). Nothing on the island pays ベル.
+(`data-covered`); under a full-height sheet (the panel, けんこう, ごはん) every animation in the scene holds too
+(`data-sheet`) and the 3D island draws nothing, so nothing behind the sheet asks for a frame (`e2e/sheet-idle.spec.ts`).
+Nothing on the island pays ベル.
 
 ### World
 
@@ -442,7 +444,7 @@ went in November 2026 (docs/cleanup-2d.md).
 - **The 3D island** (docs/decisions.md "The island in 3D"): `Island3D.svelte` puts a canvas under the stage's nodes
   (over the DOM sky: the sun and the moon stay behind the world) and hands the projector its camera (`World.useThree`);
   the engine (`engine.ts`) runs the World's step in its own frame (60 a second while anything moves, 30 while only the
-  water does), and the World steps itself on the game's own clock when no frame has (camera.svelte.ts `simTick`). The
+  water does; a model's or a critter's move slower than 60 px/s on screen, or off it, is ambience: `world3d/pace.ts`), and the World steps itself on the game's own clock when no frame has (camera.svelte.ts `simTick`). The
   ground and the water are the layout's (`terrain.ts` buildGround with NH's textures, `water.ts`); the objects
   `objects.ts` placeObjects from the layout and the day's scenery and decor pieces (a card of today's art for what has
   no model yet); the villagers NH's models (`villagers.ts`, villager3d/), the visitors cards of their renders posed

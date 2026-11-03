@@ -44,7 +44,7 @@
   import { actorOf } from '#lib/ui-state/cast.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { EASE, Glide, turn, yawOf } from './glide.ts';
-  import { pace } from '../world3d/pace.ts';
+  import { pace, SLOW_PX } from '../world3d/pace.ts';
   import { showCatch } from './catchCard.ts';
   import { timers } from './timers.ts';
   import { fnv1a as seedOf, pickOne } from '#lib/random.ts';
@@ -617,8 +617,9 @@
   /** Hidden in 3D: once it's leaving, over its leave's last FADE3_MS (it fades out as it goes). */
   const bugOff = (b: Bug) => b.gone && performance.now() >= (b.goneAt ?? 0) + b.ms - FADE3_MS;
   // the 3D island's frames for them (world3d/pace.ts): a shadow dawdling at the ambient rate (the engine's 30 a
-  // second: a slow move is ambience), a dart off or a bug's flight at the full rate to its move's end; their fades are
-  // the 3D island's own (world3d/things.ts). The moves' state of the critters gone dropped.
+  // second: a slow move is ambience), a dart off or a bug's flight fast on screen at the full rate to its move's end (a
+  // butterfly drifting slowly or off screen is ambience, as a slow model's move is: Island3D); their fades are the 3D
+  // island's own (world3d/things.ts). The moves' state of the critters gone dropped.
   let fullTill = 0, fullTimer: ReturnType<typeof setTimeout> | undefined;
   const wake = () => w.moveStart()();
   function full3(ms: number) {
@@ -632,6 +633,15 @@
       fullTill = 0;
     }, ms);
     wake();
+  }
+  /** A bug's move drawn at the full rate: a dart, a hop, a startled flight, a snap, one with no 3D spot yet, or one
+   *  at least SLOW_PX a second on screen (from where its model is now to where it goes). */
+  function bugFast(b: Bug): boolean {
+    const m = mos.get(bugId(b));
+    if (!pace.slow || !m || b.ms <= 0 || b.fled || b.flight === 'dart' || b.flight === 'hop') return true;
+    const p = w.screenAt(b.x, b.z, b.lift), q = w.screenAt(m.xyz[0], m.xyz[1], m.xyz[2]), v = w.view;
+    const on = (s: typeof p) => s.visible && s.sx > -80 && s.sx < v.vw + 80 && s.sy > -80 && s.sy < v.vh + 80;
+    return (on(p) || on(q)) && (Math.hypot(p.sx - q.sx, p.sy - q.sy) / b.ms) * 1000 >= SLOW_PX;
   }
   onMount(() => () => {
     clearTimeout(fullTimer);
@@ -652,7 +662,7 @@
     if (b) {
       ids.add(bugId(b));
       void b.x, void b.z, void b.lift, void b.flip, void b.gone;
-      full3(b.ms + 200);
+      if (untrack(() => bugFast(b))) full3(b.ms + 200);
     }
     for (const id of mos.keys()) if (!ids.has(id)) mos.delete(id);
     if (!ids.size) return;
