@@ -1,6 +1,6 @@
 // The week store. Paints at once from the backend's rows + events, computing the WeekView in the browser
-// (lib/model), and recomputes when they change or the minute ticks. The backend is the live Apps Script sync
-// (live.ts) or, with `?demo` (or dev without VITE_RECORD_URL), generated rows (demo/backend.ts, loaded only then).
+// (lib/model), and recomputes when they change or the minute ticks. The backend is the live sync with the relay's
+// record (live.ts) or, with `?demo` (or dev without VITE_RECORD_URL), generated rows (demo/backend.ts, loaded only then).
 import { untrack } from 'svelte';
 import { dev } from '$app/env';
 import type { WeekView, Who } from '#lib/types.ts';

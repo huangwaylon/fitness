@@ -5,8 +5,8 @@
 // final), and the wallpaper and the floor (`{sc, id: TENT_WALL | TENT_FLOOR, at, item, x: 0, z: 0, f: 0, p}`, never
 // removed); a small thing on another piece's surface (NH's table-top things) carries `on: <its id>`, and then x and z
 // are its slot on that piece (its tile in the piece's own, unturned footprint) and f its facing on it, so the piece
-// moving or turning carries it, in one op. The same merge as the island's: a removal beats everything, else the latest `at`, then G over B over A; the sheet
-// keeps each id's latest op. Shared by the Apps Script, the model, the relay protocol and the tent; pure and
+// moving or turning carries it, in one op. The same merge as the island's: a removal beats everything, else the latest `at`, then G over B over A; the record
+// keeps each id's latest op. Shared by the record (relay/src/store.ts), the model, the relay protocol and the tent; pure and
 // dependency-free (the items themselves are the app's: components/tent/items.json).
 
 /** At most this many pieces in the tent, shared (the rugs count; the wallpaper and the floor don't). */
@@ -105,7 +105,7 @@ export function tentLayout(entries: Iterable<TentEntry>): { pieces: TentPiece[];
   return { pieces: pieces.slice(0, TENT_MAX), wall, floor, lights };
 }
 
-/** What the sheet does with a new op, given the tent's rows it holds: `stale` (an op that beats it is there), `full`
+/** What the record does with a new op, given the tent's rows it holds: `stale` (an op that beats it is there), `full`
  *  (a new piece past the cap: refused) or `append` (the same id's older rows are deleted). */
 export function tentAccept(held: readonly TentEntry[], e: TentEntry): 'append' | 'stale' | 'full' {
   held = held.filter((h) => h.sc === e.sc);

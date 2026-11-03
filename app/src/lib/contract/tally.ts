@@ -1,8 +1,8 @@
 // A `tally` (docs/backend.md#events): one person's counts of what they caught and found on one Tokyo day, for the
 // ずかん's 「×12」. The phone keeps the day's tally and sends all of it again when it grows (held a minute, store/actions.ts); the server keeps
 // one row per person and day (a new one replaces the day's older row) and the model sums the latest row of each day
-// (model/tally.ts). The first find of an entry (who and when) stays the `find` event's. Shared by the Apps Script and
-// the model; pure.
+// (model/tally.ts). The first find of an entry (who and when) stays the `find` event's. Shared by the record
+// (relay/src/store.ts) and the model; pure.
 import { isFind, isLocalDate, isRec, nextDay } from './api.ts';
 import type { LocalDate } from '../types.ts';
 

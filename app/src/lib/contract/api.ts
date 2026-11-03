@@ -1,5 +1,5 @@
-// The sheet layout and the web-app API shapes (docs/backend.md#tabs, #api). Shared by the Apps
-// Script (app/gas/main.ts), the model and the client: row tuples, reply shapes and the validation regexes both sides
+// The record's tabs and API shapes (docs/backend.md#tabs, #api). Shared by the record (relay/src/store.ts), the sheet's
+// exporter (app/gas/main.ts), the model and the client: row tuples, reply shapes and the validation regexes both sides
 // apply. Dependency-free (type imports only), since it is bundled into apps-script/Code.js.
 import type { PersonId, Who } from '../types.ts';
 
@@ -32,7 +32,7 @@ export type FindKind = (typeof FIND_KINDS)[number];
 /** A catalog id: lowercase letters, digits and dashes, starting with a letter, at most 48 characters. */
 const FIND_ID_RE = /^[a-z][a-z0-9-]{0,47}$/;
 const isFindKind = (v: unknown): v is FindKind => (FIND_KINDS as readonly unknown[]).includes(v);
-/** A `find`'s data: a known kind and a well-formed id. Shared by the Apps Script and the model. */
+/** A `find`'s data: a known kind and a well-formed id. Shared by the record and the model. */
 export const isFind = (d: Record<string, unknown>): boolean => isFindKind(d.kind) && typeof d.id === 'string' && FIND_ID_RE.test(d.id);
 
 /**
@@ -73,8 +73,8 @@ export const isWho = (v: unknown): v is Who => v === 'A' || v === 'B' || v === '
 
 /**
  * Whose data an event changes: `data.person` when present (only on a goal `pref`, and it must be `A` or `B`), else the
- * sender. Null for a `person` that is invalid or on an event that doesn't take one (the script refuses it; the model
- * ignores the event). Shared by the Apps Script and the model.
+ * sender. Null for a `person` that is invalid or on an event that doesn't take one (the record refuses it; the model
+ * ignores the event). Shared by the record and the model.
  */
 export function eventSubject(type: string, d: Record<string, unknown>, sender: Who): Who | null {
   if (d.person === undefined) return sender;

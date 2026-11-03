@@ -88,7 +88,7 @@ export class IslandRoom extends DurableObject<Env> {
     this.core.close(ws);
   }
 
-  /** RPC from the Worker's /notify: pass the sheet change to the connected phones. */
+  /** RPC from the record (and the Worker's /notify): pass the change to the connected phones. */
   notify(n: Notice): number {
     return this.core.notify(n);
   }
@@ -125,7 +125,7 @@ export default {
 } satisfies ExportedHandler<Env>;
 
 /**
- * POST /notify (docs/backend.md#push): Apps Script says the sheet changed. Signed (notify.ts), never from a browser
+ * POST /notify (docs/backend.md#push): a server says the record changed (the record itself tells the room by RPC). Signed (notify.ts), never from a browser
  * (no CORS), the body a Notice. 204 when accepted (whether or not a phone was there to hear it).
  */
 async function notify(req: Request, env: Env): Promise<Response> {
