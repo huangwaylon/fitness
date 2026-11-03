@@ -14,6 +14,7 @@ import { bend } from './bend.ts';
 import type { Inst, ModelName } from './layout3d.ts';
 import type { LampSpot } from './lights.ts';
 import { MODELS } from './models3d.ts';
+import { ASSET_KEYS } from './assets.ts';
 import { nightLift, nightTag } from './nightLift.ts';
 import { procScene } from './proc3d.ts';
 
@@ -33,6 +34,23 @@ const LAMP: Partial<Record<string, { at: number; kind: LampSpot['kind']; colour:
   'events/spooky-lantern': { at: 0.45, kind: 'fire', colour: 0xffa040, glow: 12, pool: 30 },
   'events/countdown-board': { at: 0.6, kind: 'window', colour: 0xfff0c8, glow: 18, pool: 30 }
 };
+
+/** The models that cast no shadow (assets.json `shadow`: the flat things, a fish's shadow, a dig spot, the
+ *  flourishes): no caster in the shadow map, and a move of one doesn't redraw it (a fish swimming redrew the whole
+ *  island's map every frame). */
+const FLAT = (() => {
+  const casts = new Map<string, boolean>();
+  for (const k of Object.values(ASSET_KEYS)) casts.set(k.m, (casts.get(k.m) ?? false) || k.shadow);
+  return new Set([...casts].filter(([, c]) => !c).map(([m]) => m));
+})();
+/** The bugs' models: a bug's move redraws the shadow map at most every BUG_SHADOW_MS (and once more where it stops),
+ *  not every frame (a crawling stinkbug redrew the whole island's map 25 times a second for its speck of a shadow). */
+const BUGS = (() => {
+  const bug = new Map<string, boolean>();
+  for (const k of Object.values(ASSET_KEYS)) bug.set(k.m, (bug.get(k.m) ?? true) && k.cat === 'bug');
+  return new Set([...bug].filter(([, b]) => b).map(([m]) => m));
+})();
+const BUG_SHADOW_MS = 66;
 
 type Over = { hidden?: boolean; x?: number; z?: number; lift?: number; grey?: number; yaw?: number; pitch?: number; size?: number; face?: boolean };
 
@@ -71,7 +89,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
   const base = new URL(`room/world3d/`, new URL(document.baseURI)).href;
-  let pending = 0, disposed = false;
+  let pending = 0, disposed = false, bugShadowAt = -Infinity, bugTimer: ReturnType<typeof setTimeout> | 0 = 0;
   const gltfs = new Map<ModelName, Promise<GLTF | null>>();
   const model = (name: ModelName) => {
     let p = gltfs.get(name);
@@ -222,7 +240,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       const geo = ga ? mesh.geometry.clone().setAttribute('aGrey', ga) : mesh.geometry;
       const im = new InstancedMesh(geo, m, insts.length);
       im.frustumCulled = false;
-      im.castShadow = true;
+      im.castShadow = !FLAT.has(name);
       im.receiveShadow = true;
       im.customDepthMaterial = depth;
       // a flower's petals take its colour
@@ -327,7 +345,20 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       if (!a) return;
       matOf(a.inst, a.g.base[a.i]);
       write(a.g, a.i);
-      changed(cast);
+      if (!cast || FLAT.has(a.g.name)) return changed(false);
+      if (!BUGS.has(a.g.name)) return changed(true);
+      // (a bug: the map redrawn at most every BUG_SHADOW_MS, and once after its last move)
+      const t = performance.now();
+      if (t - bugShadowAt >= BUG_SHADOW_MS) {
+        bugShadowAt = t;
+        return changed(true);
+      }
+      changed(false);
+      if (!bugTimer) bugTimer = setTimeout(() => {
+        bugTimer = 0;
+        bugShadowAt = performance.now();
+        if (!disposed) changed(true);
+      }, BUG_SHADOW_MS);
     },
     jiggle(id, k = 1) {
       if (!byId.has(id)) return;
@@ -390,6 +421,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     pending: () => pending,
     dispose() {
       disposed = true;
+      if (bugTimer) clearTimeout(bugTimer);
       for (const g of groups.values()) drop(g);
       groups.clear();
       for (const { m, depth } of mats.values()) {
