@@ -540,8 +540,8 @@ nights are always fine.
   nearest, else it opens the popup.
 - **All four met:** four warm glints twinkle on the canopy over a soft gold pulse (NH's money tree).
 - **The popup** stands in screen space over every tint, in the middle of the band between the HUD and the screen's
-  foot, roughly centred and leaning away from its tree (the goal trees stand at the lawn's outer edges, so the canopy
-  stays tappable beside it); a tail toward the tree when the tree is above or below it.
+  foot, over its own tree as far as the screen's edges allow (above the canopies when they leave room; else beside
+  the other tree's canopy, which stays tappable); a tail toward the tree when the tree is above or below it.
 - `fruit-day` in localStorage (`{ date, dropped, picked }`, ids `A:pear`): losing it only drops a fruit again.
 
 ### Shaking a tree

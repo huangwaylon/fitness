@@ -292,8 +292,8 @@
   }
 
   /** {@attach}: the popup in screen space (docs/design.md "Trees"): over every tint and weather (never dimmed), in the
-   *  same place whichever the camera: roughly centred, leaning away from its tree's side (the goal trees stand at the
-   *  lawn's outer edges, so their canopies stay tappable beside it), in the middle of the band between the
+   *  same place whichever the camera: over its own tree, as far as the screen's edges allow (the other tree's canopy
+   *  stays tappable), above the canopies when they leave room, else in the middle of the band between the
    *  HUD and the screen's foot, always wholly in view; a tail toward the tree when the tree is above or below it on
    *  screen. Measured again as its rows come in and as the camera comes to rest (the tail follows the tree). */
   let popEl = $state<HTMLElement>();
@@ -324,7 +324,8 @@
     const [ax, ay] = w.clientAt(x, z, H * 0.8);
     const tx = ax - st.left, ty = ay - st.top;
     const side = tx < st.width / 2 ? -1 : 1;
-    let left = Math.min(st.width - 8 - wd, Math.max(8, st.width / 2 - side * 60 - wd / 2));
+    // over its own tree (the user: not above the other one), as far as the screen's edges allow
+    let left = Math.min(st.width - 8 - wd, Math.max(8, tx - wd / 2));
     let top = Math.min(ceil - h, Math.max(floor, (floor + ceil) / 2 - h / 2));
     // the 3D island's camera shows both goal trees well inside the screen: the popup goes over their canopies when it
     // fits there (both stay tappable), else in the band as on the 2D island
