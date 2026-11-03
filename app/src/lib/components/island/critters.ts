@@ -9,7 +9,7 @@ import type { SeaId } from './sea.ts';
 import type { Sky } from './weather.ts';
 import {
   BEACH_BOX, BRIDGE, CLIFF, FLOWERS, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SHORE_Z, SPRING, TREE_H, freshWhere, inOval,
-  LAWN_SPOTS, PONDS, RIVER_BEND, onLayout, pondAt, riverNS, riverNear, worldGen, type FreshWhere
+  LAWN_SPOTS, PONDS, RIVER_BEND, onLand, onLayout, pondAt, riverNS, riverNear, worldGen, type FreshWhere
 } from './world.ts';
 
 /** NH months (1–12) a critter is about, and its hours [from, to) in Tokyo time (to < from wraps past midnight). */
@@ -413,7 +413,8 @@ function reaches(i0: number, i1: number, step: number, keep: (x: number, z: numb
  *  under the bridge); the
  *  mouth's wide reach on the west beach; the falls' pool (NH's clifftop: the upper tier is beyond the horizon). */
 export function freshAreas(where: FreshWhere): Swim[] {
-  if (where === 'pond') return [POND, ...PONDS].map((o) => ({ cx: o.x, cz: o.z, ux: 1, uz: 0, L: o.rx * 0.55, W: o.rz * 0.4 }));
+  // (a layout without a painted pond has POND far off the island: layoutWorld.ts FAR_OVAL; never a patch)
+  if (where === 'pond') return [POND, ...PONDS].filter((o) => onLand(o.x, o.z)).map((o) => ({ cx: o.x, cz: o.z, ux: 1, uz: 0, L: o.rx * 0.55, W: o.rz * 0.4 }));
   if (where === 'clifftop')
     return reaches(0, RIVER.length - 1, 24, (_x, z) => z > CLIFF.z0 - FALLS_POOL && z < CLIFF.z0 - 6);
   if (where === 'mouth') return reaches(0, RIVER.length - 1, 44, (x, z) => freshWhere(x, z) === 'mouth');

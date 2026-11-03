@@ -6,7 +6,8 @@
   // spring: pondFish.ts, its own chunk, fetched with the first such shadow), or a bug of the season and hour comes by
   // where NH keeps it; a shaken bush sometimes lets a butterfly or a moth out. A catch is an official icon and NH's
   // line, and the first of each a ずかん find (never ベル).
-  //   Fishing, the same in every water (critters.ts `Water`): a tap in the water near a shadow (CAST_U) walks my villager
+  //   Fishing, the same in every water (critters.ts `Water`): a tap on a shadow or in the water near it (`fishFor`: CAST_U
+  //   in its water, NEAR_U in another, whatever water the tapped ground is) walks my villager
   //   to its fishing spot (the beach in front, z ≈ 18, facing the sea; the pond's back bank, walkGraph's pondside; the
   //   river's bank) and casts a bobber; the fish swims up, nibbles 1–3 times (small wiggles of the bobber) and bites: the
   //   bobber is yanked under with a splash, its own sound and NH's 「！」 over it. While the bobber is out any tap is the
@@ -45,7 +46,7 @@
   import { showCatch } from './catchCard.ts';
   import { timers } from './timers.ts';
   import { fnv1a as seedOf, pickOne } from '#lib/random.ts';
-  import { hook, hookFlag } from './devHooks.ts';
+  import { hook, hookFlag, hooksOn } from './devHooks.ts';
   import { weather } from './weatherNow.svelte.ts';
   import { onMount } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -73,7 +74,7 @@
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from './sea.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
-  import { GOAL_TREES, POND, ROCK, SEA_BOX, SHORE_Z, flowerById, pondAt } from './world.ts';
+  import { GOAL_TREES, POND, ROCK, SEA_BOX, SHORE_Z, flowerById, pondAt, surfaceAt } from './world.ts';
   import { nearestWalkable, walkGeo } from './walkGraph.ts';
   import {
     BUGS, bushes, CAST_U, FISH, FRESH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS, bitePlan,
@@ -157,6 +158,12 @@
   const rand = Math.random;
   /** My 3D villager holds the rod within this of its float (u: world3d/villagers.ts LINE_REACH), else the line's the bank's. */
   const ROD_U = 220;
+  /** A tap this far round a shadow as drawn is on it (px: a finger's slack, Apple's 44pt target), and on its body
+   *  itself (`SNUG_PX`) even over the island's own buttons in front of it. */
+  const FINGER_PX = 44, SNUG_PX = 16;
+  /** A tap in another water this close to a shadow casts to it all the same (u: the river by its mouth, the sea at the
+   *  mouth, the falls' pool and the river below it are one water to the eye). */
+  const NEAR_U = 90;
   const between = (a: number, b: number) => a + rand() * (b - a);
   const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
   /** A node's inner offset (local units: before the node's perspective scale). */
@@ -305,6 +312,7 @@
     if (o.path) {
       // the shared world's: from its seed, where it is now in its stay
       const path = fishPath(o.path.seed, water, o.path.total);
+      if (!path) return false;
       area = path.area;
       anchor = path.start;
       legs = path.legs;
@@ -317,8 +325,8 @@
       for (const a of areas) if ((p = freeSwim(a, ok))) { area = a; break; }
       if (!p && pinned) {
         // nowhere on screen: at its water all the same (the e2e brings the camera to it)
-        area = areas[0] ?? areasOf(water)[0];
-        p = { x: area.cx, z: area.cz };
+        area = areas[0] ?? areasOf(water)[0] ?? null;
+        p = area && { x: area.cx, z: area.cz };
       }
     }
     if (!area || !p) return false;
@@ -1150,6 +1158,7 @@
   /** A tap on the scene (client px), before SceneTaps' own flourishes: true when a critter took it. */
   export function tap(px: number, py: number): boolean {
     if (cast) {
+      why = 'reel';
       reelIn();
       return true;
     }
@@ -1253,17 +1262,73 @@
         return true;
       }
     }
+    const pick = fishFor(px, py, at, sea);
+    why = pick.why;
+    if (!pick.f) return false;
+    castAt(pick.f, pick.x, pick.z);
+    return true;
+  }
+  /** Where a shadow is seen now (client px), its half-length there (px: the 3D model's, longer than the 2D sprite's in a
+   *  fresh water) and whether it's in view. */
+  function seenOf(f: Fish): { p: { x: number; z: number }; cx: number; cy: number; half: number; shown: boolean } {
+    const p = fishNow(f) ?? f, [cx, cy] = w.clientAt(p.x, p.z);
+    return { p, cx, cy, half: ((w.rest.three ? Math.max(len3(f), sizeU(f)) : sizeU(f)) / 2) * w.scaleAt(p.x, p.z) * w.view.s, shown: w.inView(p.x, p.z) };
+  }
+  /** Whether a tap at client (px, py) is on a shadow of mine in view (its body, a little slack): SceneTaps gives it the
+   *  tap over the island's buttons in front of it. */
+  export function onShadow(px: number, py: number): boolean {
+    if (cast) return false;
+    return WATERS.some((wt) => {
+      const f = fishes[wt];
+      if (!f || f.gone || theirs(f.cid)) return false;
+      const s = seenOf(f);
+      return s.shown && Math.hypot(px - s.cx, py - s.cy) <= s.half + SNUG_PX;
+    });
+  }
+  /** Why the last tap cast or didn't (the e2e's `__fish.why()`). */
+  let why = '';
+  /** The shadow a tap at client (px, py), world `at`, casts to, and where its bobber goes; else why not. Every shadow
+   *  in view counts, whatever water the tap's ground is: a tap on a shadow as drawn (its body and a finger round it,
+   *  even over the drawn coast past the water's tiles), or on any water near it (CAST_U, the same water; NEAR_U
+   *  another: the river by its mouth, the sea at the mouth, the falls' pool and the river below), casts toward it,
+   *  the bobber in its own water nearest the tap. Where it is is where it's seen now (mid-glide: fishNow), or where
+   *  it's heading. The nearest on screen wins. */
+  function fishFor(px: number, py: number, at: { x: number; z: number }, sea: boolean): { f: Fish | null; x: number; z: number; why: string } {
     const water = waterAt(at.x, at.z, sea);
-    const f0 = water && fishes[water];
-    const f = f0 && !theirs(f0.cid) ? f0 : null;
-    // near where it's heading, or where it's seen now (it glides between waypoints: the eye goes by the latter)
-    const seenAt = water ? scene?.querySelector(`[data-shadow-of="${water}"] [data-critter]`)?.getBoundingClientRect() : null;
-    const nearSeen = !!seenAt && Math.hypot(px - (seenAt.left + seenAt.width / 2), py - (seenAt.top + seenAt.height / 2)) < CAST_U * w.scaleAt(at.x, at.z) * w.view.s;
-    if (f && !f.gone && (Math.hypot(at.x - f.x, at.z - f.z) < CAST_U || nearSeen)) {
-      castAt(f, at.x, at.z);
-      return true;
+    let best: { f: Fish; d: number } | null = null, why = water ? `no fish in the ${water}` : 'not water';
+    for (const wt of WATERS) {
+      const f = fishes[wt];
+      if (!f || f.gone) continue;
+      if (theirs(f.cid)) {
+        why = 'the partner’s';
+        continue;
+      }
+      const { p, cx, cy, half, shown } = seenOf(f);
+      const dPx = Math.hypot(px - cx, py - cy), dU = Math.min(Math.hypot(at.x - p.x, at.z - p.z), Math.hypot(at.x - f.x, at.z - f.z));
+      // on it, by the screen (the ground under a finger by a narrow river's bank or near the horizon is the bank's):
+      // its body's half-length round its middle, and a finger more
+      const onIt = shown && dPx <= half + FINGER_PX;
+      const near = water === wt ? dU < CAST_U : !!water && dU < NEAR_U;
+      if (!onIt && !near) {
+        why = `too far from the ${wt}’s (${Math.round(dU)}u)`;
+        continue;
+      }
+      if (!best || dPx < best.d) best = { f, d: dPx };
     }
-    return false;
+    if (!best) return { f: null, x: at.x, z: at.z, why };
+    const f = best.f, to = bobberAt(f, at.x, at.z);
+    return { f, ...to, why: `cast to the ${f.water}’s` };
+  }
+  /** Where a tap at (x, z) puts the bobber for `f`: there when that's its water, else its water's nearest point on
+   *  the way from the tap to it. */
+  function bobberAt(f: Fish, x: number, z: number): { x: number; z: number } {
+    const p = fishNow(f) ?? f;
+    const ours = (qx: number, qz: number) => (f.water === 'sea' ? surfaceAt(qx, qz) === 'sea' : waterAt(qx, qz, false) === f.water);
+    for (let i = 0; i <= 10; i++) {
+      const t = 1 - i / 10, qx = p.x + (x - p.x) * t, qz = p.z + (z - p.z) * t;
+      if (ours(qx, qz)) return { x: qx, z: qz };
+    }
+    return { x: p.x, z: p.z };
   }
 
   // ---------- the visits ----------
@@ -1320,6 +1385,22 @@
     };
   });
 
+  // the e2e's view of the fishing (dev builds and the demo): why the last tap cast or didn't, and the shadows now
+  // (world: where each is seen now, and its water)
+  onMount(() => {
+    if (!hooksOn()) return;
+    (window as unknown as { __fish?: unknown }).__fish = {
+      why: () => why,
+      fish: () => WATERS.flatMap((wt) => {
+        const f = fishes[wt];
+        if (!f || f.gone) return [];
+        const p = fishNow(f) ?? f;
+        return [{ water: wt, id: fishId(f), x: p.x, z: p.z, to: [f.x, f.z], len: sizeU(f), cid: f.cid ?? null, theirs: theirs(f.cid) }];
+      }),
+      casting: () => !!cast
+    };
+    return () => void delete (window as unknown as { __fish?: unknown }).__fish;
+  });
   onMount(() => {
     const want = hook('critter'), dive = hook('sea');
     if (!(want || dive)) return;

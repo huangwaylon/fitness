@@ -16,7 +16,7 @@ import { FLOWERS, surfaceAt, type FreshWhere } from './world.ts';
 import { FLOWER_U } from './scene.ts';
 
 /** A critter's shared id: its kind and the slot it came in (one a channel at a time, so unique for the day). */
-export const critterId = (s: Spawn): string => `${s.kind}:${s.slot}`;
+export const critterId = (s: Spawn): string => (s.water ? `${s.kind}:${s.water}:${s.slot}` : `${s.kind}:${s.slot}`);
 
 /** A seeded stream of one spawn for one purpose (`salt`): the species pickers keep `spawnRand`'s own. */
 const subRand = (seed: number, salt: number): (() => number) => mulberry32((seed ^ Math.imul(salt + 1, 0x9e3779b1)) >>> 0);
@@ -39,8 +39,8 @@ export interface Leg extends P3 {
 
 // ---------- fish ----------
 
-/** The fresh water a fresh-water spawn swims in (the pond, the river, the mouth, the clifftop): the seed's. */
-export const freshWater = (s: Spawn): FreshWhere => FRESH[Math.floor(subRand(s.seed, 1)() * FRESH.length) % FRESH.length];
+/** The fresh water a fresh-water spawn swims in (the pond, the river, the mouth, the clifftop): its channel's. */
+export const freshWater = (s: Spawn): FreshWhere => s.water ?? FRESH[Math.floor(subRand(s.seed, 1)() * FRESH.length) % FRESH.length];
 
 /** In that water, clear of its edge. */
 export const inWater = (water: Water, x: number, z: number): boolean =>
@@ -63,9 +63,10 @@ export interface FishPath {
 
 /** A shadow's stay in `water` from its seed: its patch, where it shows, and its slow wander to new spots in the patch
  *  (NH shadows dawdle: 2.5–6 s a glide, 0.6–2.2 s between), through `stayMs`. */
-export function fishPath(seed: number, water: Water, stayMs: number): FishPath {
+export function fishPath(seed: number, water: Water, stayMs: number): FishPath | null {
   const r = subRand(seed, 2);
   const areas = water === 'sea' ? [SEA_SWIM] : freshAreas(water);
+  if (!areas.length) return null; // (no such water on this island)
   const area = areas[Math.floor(r() * areas.length) % areas.length];
   const start = swimPoint(area, water, r);
   const legs: Leg[] = [];

@@ -979,10 +979,10 @@ goes with the leaving).
 
 `island/Critters.svelte`, `island/critters.ts`, `island/critterPath.ts`, `e2e/critters.spec.ts`. NH species on the Tokyo
 clock, for fun and frequent, and the same on both phones (ambient life's 10-second slots, `island/ambient.ts`,
-docs/backend.md "Ambient life"): the sea holds a shadow or, 1 turn in 4, bubbles most of the time, a fresh water its
-own shadow ([Pond](#pond)), and a bug comes by every so often, each of the same kind and species on both phones and
-leaving at the same boundary. **Where it is, is the world's** ([Shared world](#shared-world)): its seed picks the fresh
-water, the swim patch, the trunk, the flower head or the patch of grass, and every glide, hop, dart, rest and landing
+docs/backend.md "Ambient life"): the sea holds a shadow or, 1 turn in 4, bubbles most of the time, each fresh water
+(the pond, the river, its mouth, the clifftop) its own shadow most of the time too ([Pond](#pond)), and a bug comes by every so often, each of the same kind and species on both phones and
+leaving at the same boundary. **Where it is, is the world's** ([Shared world](#shared-world)): its seed picks the swim
+patch (a pond's on the island's ponds, painted or put down), the trunk, the flower head or the patch of grass, and every glide, hop, dart, rest and landing
 at its time after it came (`critterPath.ts`), so both phones have it at the same spot doing the same thing, and a phone
 opening mid-stay finds it where the other shows it; each phone shows it when its camera sees that spot (covered or
 hidden, the critters leave; back, those still staying are there); ≤ 1 in each water and 1 bug. A catch or an escape
@@ -993,7 +993,10 @@ northern-hemisphere months; hours still hold.
 
 - **Fishing** (the sea in front of the beach, seen from まえ, or a fresh water: `critters.ts` `Water`): a shadow (NH
   sizes 1–6) dawdles there. A tap near it casts a bobber, the line from the bank in front of it (my villager turns to
-  it where it stands); the fish closes in over 2–3 darts, nibbles
+  it where it stands): a tap on a shadow as drawn (its body and a finger round it, the drawn coast past the water's
+  tiles included), on its water within CAST_U, or on another water within NEAR_U (the river by its mouth, the sea at
+  the mouth, the falls' pool and the river below: one water to the eye), the bobber in the shadow's own water nearest
+  the tap; the nearest shadow on screen wins (`e2e/fishing-taps.spec.ts`); the fish closes in over 2–3 darts, nibbles
   1–3 times (each a small dip and a ring: it's coming), then bites: the bobber is yanked under with a splash, a small
   「！」 pops over it (on the 3D island over my villager's head: docs/world3d-assets.md "Fishing"), and a tap anywhere in the next 1.6 s
   catches it. The first early tap makes it hesitate; a second scares it off. 1 in 14 a boot, tire or can.

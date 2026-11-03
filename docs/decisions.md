@@ -654,3 +654,16 @@ home after 3 minutes included, and an older phone draws the same; the room's `se
 seat (a bench two): taken, the other seat or a boop, as in the room. Why: the user ("similar to when they're inside a
 home, have them sit/sleep on that object - be consistent"). Not done: the picnic set and the illuminated tree, a seat's
 spot's other looks, aren't sat on.
+
+### A tap by a fish casts to it, whatever water the ground says; a shadow in every fresh water (2026-11-03)
+A tap casts to the nearest shadow on screen when it's on the shadow as drawn (its body and a finger round it), on its
+water within CAST_U, or on another water within NEAR_U, the bobber in the shadow's own water nearest the tap. Before,
+the tap's water was the ground's under the tap (`critters.ts` waterAt) and only that water's shadow could be cast to:
+a tap on the river a step up from a fish at the mouth, on the sea by a fish at the mouth, on the river below the falls'
+pool, or on the drawn coast past the water's tiles found no fish, and the tap only splashed. Each fresh water is its
+own ambient channel (the pond, the river, its mouth, the clifftop: one channel for all four left a pond on screen
+empty three turns in four), and a layout without the painted pond no longer has a pond patch far off the island
+(`layoutWorld.ts` POND then stands far off it: a third of the pond's fish swam there on the user's island). Why: the
+user ("often i see fish in the water, tapping the water, no reel is cast"; "i don't see any fish shadows inside the
+ponds … i also don't see any fish in the rivers"). Critters' `__fish` hook (dev and the demo) names why a tap didn't
+cast.
