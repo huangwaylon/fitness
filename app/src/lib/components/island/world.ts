@@ -65,7 +65,7 @@ export let RIVER: readonly (readonly [number, number, number])[] = [
 export let RIVER_BEND = 768;
 /** The stone bridge where the path crosses the stream (NH's stone bridge, scripts/models.ts bridges/stone-deck baked
  *  into the ground, its near end upright: bridges/stone-front): centred on x, the deck from z0 (its near end) to z1,
- *  w wide (NH's proportions: 30.2 × 40.8 model units, 1.18u each). The deck is walkable `RAIL` in from its sides. */
+ *  w wide (NH's proportions: 30.2 × 40.8 model units, 1.18u each). The deck is walkable `BRIDGE_RAIL` in from its sides. */
 export let BRIDGE: { readonly x: number; readonly z0: number; readonly z1: number; readonly w: number } = { x: 195, z0: 622, z1: 670, w: 35.5 };
 export const BRIDGE_RAIL = 5;
 /** Whether (x, z) is on the bridge's deck (`inset` in from its sides, e.g. the rails). */

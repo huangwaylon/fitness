@@ -1,7 +1,7 @@
 // The rules of the record shared by its writers (docs/backend.md#events): what an `event` must look like to be
-// accepted (the Apps Script and the relay's store check the same), and which events replace an earlier one (the
+// accepted (relay/src/store.ts checks it), and which events replace an earlier one (the
 // store's slots: a tally and an island day per person and day, a cosmetic pref per person, a goal per person and
-// Tokyo day). Dependency-free (type imports only), since it is bundled into apps-script/Code.js.
+// Tokyo day). Pure, over the contract only (relative imports), since the relay imports it from here.
 import { isBodyFatGoal, isFind, isId, isLocalDate, isWeightKg, PREF_KEYS, type EventType } from '../contract/api.ts';
 import { isTally } from '../contract/tally.ts';
 import { isIslandDay } from '../contract/island.ts';
