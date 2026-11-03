@@ -50,13 +50,14 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(300));
     await page.waitForTimeout(500);
     const home = await feet(page);
-    const p = await page.locator('[data-care="weed"]').evaluateAll((els) => els.filter((el) => el.checkVisibility({ visibilityProperty: true })).map((el) => el.getBoundingClientRect())
-      .map((r) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 })).filter((q) => q.y > 150 && q.y < innerHeight - 30)
+    const p = await page.locator('[data-care="weed"]').evaluateAll((els) => els.filter((el) => el.checkVisibility({ visibilityProperty: true })).map((el) => [el, el.getBoundingClientRect()] as const)
+      .map(([el, r]) => ({ uid: (el as HTMLElement).dataset.uid, x: r.left + r.width / 2, y: r.top + r.height / 2 })).filter((q) => q.y > 150 && q.y < innerHeight - 30)
+      // (nothing else's tap area over it: a flower, a tree, a dig spot beside it)
+      .filter((q) => !document.elementFromPoint(q.x, q.y - 4)?.closest('button, [data-flower], [data-tree], [data-bush], [data-fixture], [data-find], [data-visitor], [data-actor]'))
       .sort((a, b) => Math.abs(a.y - innerHeight * 0.5) - Math.abs(b.y - innerHeight * 0.5))[0]);
-    const n = await weeds.count();
     await page.mouse.click(p.x, p.y - 4);
-    // pulled at once, nobody walked
-    await expect(weeds).toHaveCount(n - 1, { timeout: 1000 });
+    // pulled at once (that one: another may come into view as the island settles), nobody walked
+    await expect(weeds.and(page.locator(`[data-uid="${p.uid}"]`))).toHaveCount(0, { timeout: 1000 });
     await page.waitForTimeout(400);
     await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
     const there = await feet(page);
