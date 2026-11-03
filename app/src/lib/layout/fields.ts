@@ -5,6 +5,7 @@
 // (world3d/terrain.ts) shades with them: soft, NH-round edges that follow the tiles, without a hand-drawn shape.
 import { GRID, TILE, idx, kindOf, onGrid, tierOf, type Kind } from './grid.ts';
 import type { Layout } from './model.ts';
+import { riverStems, stemField } from './river.ts';
 
 /** The raster's step (u) and its extent (the grid). */
 export const STEP = 2.5;
@@ -63,6 +64,8 @@ export interface Fields {
   readonly ch: Float32Array[];
   /** A channel's distance at world (x, z), bilinear (off the raster: its edge's). */
   at(ch: Ch, x: number, z: number): number;
+  /** The water's downstream direction at (x, z) along a river's curved stem (river.ts), null off one. */
+  flow(x: number, z: number): [number, number] | null;
 }
 
 const cache = new WeakMap<Layout, Fields>();
@@ -130,8 +133,19 @@ function blur(a: Float32Array, tmp: Float32Array, n: number): void {
 
 const circle = (du: number, dv: number, R: number) => (R - du) ** 2 + (R - dv) ** 2 <= R * R;
 
+/** A smooth minimum of two distances (k u of blend): a river's curve meets a pond or a broad reach without a crease. */
+const smin = (a: number, b: number, k: number) => {
+  const h = Math.max(k - Math.abs(a - b), 0) / k;
+  return Math.min(a, b) - (h * h * k) / 4;
+};
+
 function build(layout: Layout): Fields {
   const ms = masks(layout);
+  // the rivers' main stems are drawn from their curves (river.ts), not their tiles
+  const stems = riverStems(layout);
+  const onStem = new Set(stems.flatMap((s) => s.tiles));
+  const freshTiles = ms[Ch.fresh];
+  if (onStem.size) ms[Ch.fresh] = (c, r) => freshTiles(c, r) && !(onGrid(c, r) && onStem.has(idx(c, r)));
   const ch: Float32Array[] = [];
   const inside = new Uint8Array(W * H), outside = new Uint8Array(W * H);
   const dIn = new Float32Array(W * H), dOut = new Float32Array(W * H);
@@ -180,6 +194,11 @@ function build(layout: Layout): Fields {
     if (soft) for (let pass = 0; pass < 2; pass++) blur(out, dIn, SOFT);
     ch.push(out);
   }
+  const sf = stems.length ? stemField(stems, W, H, STEP, FAR) : null;
+  if (sf) {
+    const fr = ch[Ch.fresh];
+    for (let i = 0; i < W * H; i++) fr[i] = Math.max(-FAR, Math.min(FAR, smin(fr[i], sf.d[i], 10)));
+  }
   return {
     w: W,
     h: H,
@@ -194,6 +213,13 @@ function build(layout: Layout): Fields {
       const ox = Math.max(GRID.x0 - x, x - (GRID.x0 + GRID.cols * TILE), 0), oz = Math.max(GRID.z0 - z, z - (GRID.z0 + GRID.rows * TILE), 0);
       if (ox || oz) d = k === Ch.land || k === Ch.sandy ? (k === Ch.land ? Math.max(d, 0) + Math.hypot(ox, oz) : -FAR) : d + Math.hypot(ox, oz);
       return Math.max(-FAR, Math.min(FAR, d));
+    },
+    flow(x: number, z: number): [number, number] | null {
+      if (!sf) return null;
+      const i = Math.floor((x - GRID.x0) / STEP), j = Math.floor((z - GRID.z0) / STEP);
+      if (i < 0 || j < 0 || i >= W || j >= H) return null;
+      const q = j * W + i;
+      return sf.fx[q] || sf.fz[q] ? [sf.fx[q], sf.fz[q]] : null;
     }
   };
 }
