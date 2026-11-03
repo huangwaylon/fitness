@@ -103,14 +103,16 @@
       const spin = new T.Group();
       scene.add(spin);
       let raf = 0, t0 = performance.now(), seq = 0;
+      // (its size from a ResizeObserver: read in the frame, it forced a layout each one)
+      const ro = new ResizeObserver(() => {
+        const r = canvas!.getBoundingClientRect();
+        renderer.setSize(r.width, r.height, false);
+        cam.aspect = r.width / Math.max(1, r.height);
+        cam.updateProjectionMatrix();
+      });
+      ro.observe(canvas);
       const frame = (t: number) => {
         raf = requestAnimationFrame(frame);
-        const r = canvas!.getBoundingClientRect();
-        if (canvas!.width !== Math.round(r.width * renderer.getPixelRatio())) {
-          renderer.setSize(r.width, r.height, false);
-          cam.aspect = r.width / Math.max(1, r.height);
-          cam.updateProjectionMatrix();
-        }
         spin.rotation.y = Math.sin((t - t0) / 2600) * 0.6;
         renderer.render(scene, cam);
       };
@@ -132,6 +134,7 @@
       show(style);
       stop = () => {
         cancelAnimationFrame(raf);
+        ro.disconnect();
         renderer.dispose();
       };
     });

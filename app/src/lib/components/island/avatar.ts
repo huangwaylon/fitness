@@ -18,6 +18,7 @@ import { walkNav } from './nav.ts';
 import { worldGen } from './world.ts';
 import { planTap, type TapPlan } from './tapWalk.ts';
 import { dayKey } from '#lib/time/clock.ts';
+import { localKV, readJson, remove, writeJson } from '#lib/sync/storage.ts';
 import { actorOf, guestPhone, otherMember, whoOf } from '#lib/ui-state/cast.ts';
 import type { Who } from '#lib/types.ts';
 
@@ -60,22 +61,15 @@ const rand = (a: number, b: number) => a + Math.random() * (b - a);
 const STAY_KEY = 'island-stay';
 let stayAt: Pt | null = readStay();
 function readStay(): Pt | null {
-  try {
-    const v = JSON.parse(globalThis.localStorage?.getItem(STAY_KEY) ?? 'null') as { date?: string; at?: unknown } | null;
-    const at = v?.at;
-    return v?.date === dayKey() && Array.isArray(at) && at.length === 2 && at.every(Number.isFinite) ? [at[0], at[1]] : null;
-  } catch {
-    return null;
-  }
+  const v = readJson<{ date?: string; at?: unknown }>(localKV(), STAY_KEY);
+  const at = v?.at;
+  return v?.date === dayKey() && Array.isArray(at) && at.length === 2 && at.every(Number.isFinite) ? [at[0], at[1]] : null;
 }
 function keepStay(p: Pt | null) {
   stayAt = p;
-  try {
-    if (p) globalThis.localStorage?.setItem(STAY_KEY, JSON.stringify({ date: dayKey(), at: p }));
-    else globalThis.localStorage?.removeItem(STAY_KEY);
-  } catch {
-    /* private mode: kept in memory only */
-  }
+  // (not kept: in memory only, the failure reported: storage.ts)
+  if (p) writeJson(localKV(), STAY_KEY, { date: dayKey(), at: p });
+  else remove(localKV(), STAY_KEY);
 }
 /** Where the partner sent their villager today (their last walk, live or replayed by the relay), if anywhere. */
 const stays: Partial<Record<Villager, Pt | null>> = {};
