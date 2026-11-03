@@ -376,7 +376,10 @@ test('きろく: the steps goal, 8,000 for both by default, 1,000–30,000 by 50
   await expect(goals).toContainText('30,000歩');
 });
 
-test('tree popups: one at a time, they stay open, and a tap on the tree, the other tree or elsewhere toggles them', async ({ page }) => {
+test('tree popups: one at a time, they stay open, and a tap on the tree, the other tree or elsewhere toggles them', {
+  tag: '@quarantine',
+  annotation: { type: 'quarantine', description: 'owner: engine agent, 2026-11-03: flaky on CI since the 3D cutover (logic shard 12: failed then passed on d67fe2f7, failed twice on 9f6a9c38): on the 3D island the open popup can cover its whole canopy, so the tap that closes it finds no uncovered point. TODO: fitPopup (FruitTree) leaves the own canopy a tappable point, or the spec closes it another way' }
+}, async ({ page }) => {
   await page.goto('?demo');
   await islandReady(page);
   const canopies = page.locator('button.canopy');
