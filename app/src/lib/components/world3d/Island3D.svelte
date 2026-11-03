@@ -24,7 +24,7 @@
   import { ambient3 } from '../island/ambient3d.svelte.ts';
   import TERRAIN from '../island/terrain.json' with { type: 'json' };
   import PLACES from '../island/models.json' with { type: 'json' };
-  import { createIsland, type Ground, type Island3, type Options } from './engine.ts';
+  import { createIsland, type Ground, type Island3 } from './engine.ts';
   import { WORLD_GROUND } from './ground.ts';
   import { island, type Inst, type Standin } from './layout3d.ts';
   import { assetFor } from './assets.ts';
@@ -176,8 +176,6 @@
   /** The seats' tops (u): a bench's, a stool's (NH's park bench and log stool at 3u a model unit). */
   const seatTop = (name: string) => (name.startsWith('stool') ? 9 : 13);
   let vil3: Villagers3 | null = null;
-  /** ?v3d=0: the villagers as their cards (a comparison). */
-  const v3d = q.get('v3d') !== '0';
   /** The board's focus (its face's middle on the ground): a villager between the camera and it fades out of the way. */
   let focusAt: { x: number; z: number } | null = null;
   function inFocusWay(x: number, z: number): boolean {
@@ -214,7 +212,7 @@
     const specs: VSpec[] = [];
     for (const c of cast()) {
       const a = actors[c.id], look = resolveLook({ villager: c.villager, person: c.person });
-      if (!v3d || !has3d(look.id)) continue;
+      if (!has3d(look.id)) continue;
       const [x, z] = livePos(c.id);
       specs.push({
         slot: c.id, id: look.id, x, z, y: feetOf(x, z), walking: a.walking, face: a.face, side: c.side, asleep: a.asleep,
@@ -226,7 +224,7 @@
     moving = r.moving;
     for (const c of cast()) {
       const a = actors[c.id], look = resolveLook({ villager: c.villager, person: c.person });
-      const card = !v3d || !has3d(look.id) || r.cards.has(c.id);
+      const card = !has3d(look.id) || r.cards.has(c.id);
       // drawn in 3D: its marks too (the DOM's hidden: IslandScene's [data-v3])
       const in3 = c.shown && !card, node = scene.querySelector(`.actor[data-actor="${c.id}"]`);
       // (checked each frame: the node is the DOM island's, made anew when its villager comes back)
@@ -808,7 +806,7 @@
     W.__world3d = {
       stats: () => e.stats(), view: () => e.view(), limits: () => e.limits(), loaded: () => loaded && !e.stats().loading,
       go: (z: number, k?: number, x?: number) => e.go(z, k, false, x), pan: (dy: number, dx?: number) => (e.touching(true), e.pan(dy, dx), e.touching(false)), xRoom: (k?: number) => e.xRoom(k), zoomRange: () => e.zoomRange(), touching: (on: boolean) => e.touching(on),
-      zoom: (f: number) => e.zoom(f), fling: (vy: number, vx?: number) => e.fling(vy, vx), options: (o: Partial<Options>) => e.options(o),
+      zoom: (f: number) => e.zoom(f), fling: (vy: number, vx?: number) => e.fling(vy, vx),
       /** A world point on screen (client px), `lift` above the ground. */
       client: (x: number, z: number, lift = 0) => {
         const p = e.at(x, z, lift), r = canvas!.getBoundingClientRect();

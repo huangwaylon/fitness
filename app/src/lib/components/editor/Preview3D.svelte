@@ -206,7 +206,6 @@
           waterFog(fog);
           things.frame(t);
           renderer.render(scene, camera);
-          (window as unknown as { __preview?: { frame(): void } }).__preview?.frame();
           dirty = false;
         };
         raf = requestAnimationFrame(frame);
@@ -275,9 +274,6 @@
           }
         };
         let heldId: string | null = null;
-        let frames = 0, last = performance.now(), fps = 0;
-        const info = () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures, geometries: renderer.info.memory.geometries, fps });
-        (window as unknown as { __preview?: unknown }).__preview = { homes: () => [...homes.values()].filter((h) => h.g).length, pending: () => things.pending(), ready: () => ground.ready, dirty: () => dirty, info, frame: () => { frames++; const t = performance.now(); if (t - last > 1000) { fps = Math.round((frames * 1000) / (t - last)); frames = 0; last = t; } } };
         stop = () => {
           cancelAnimationFrame(raf);
           ro.disconnect();
