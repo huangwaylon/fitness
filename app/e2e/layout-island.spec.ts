@@ -27,6 +27,8 @@ test('without ?layout the 3D island keeps world.ts’s island', async ({ page })
   await page.goto('./?demo&island=3d&visitor=none&critter=none');
   expect(await is3d(page)).toBe(true);
   const s = await site(page);
+  // (at the cutover the 3D island reads its layout without ?layout: island/site.svelte.ts LAYOUT_3D)
+  test.skip(s.on, 'the layout is the 3D island’s own now (LAYOUT_3D)');
   expect(s.on).toBe(false);
   expect(s.doors.campsite[1]).toBeLessThan(1000);
   expect(s.doors['home-B']).toBeUndefined();

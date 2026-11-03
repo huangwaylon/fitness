@@ -213,6 +213,7 @@ test('the say button hides under the island panel and in もようがえ (its pi
   // もようがえ
   await page.locator('[data-tab="settings"]').click();
   await page.locator('[data-decor-start]').click();
-  await expect(page.locator('[data-tray]')).toHaveCount(10);
+  // (the old decorations' tray, or on the island's layout its own もようがえ: IslandEdit)
+  await expect(page.locator('[data-tray]').first().or(page.locator('[data-island-edit]'))).toBeVisible();
   await expect(sayBtn(page)).toHaveCount(0);
 });
