@@ -1,11 +1,14 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { FADE_MS, STACK_MAX, clearCards, dropCard, pushCard, pushed, stack, type CatchCard } from './catchStack.svelte.ts';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { FADE_MS, STACK_MAX, clearCards, dropCard, pushCard, pushed, stack, stackShown, type CatchCard } from './catchStack.svelte.ts';
 
 const card = (n: number, o: Partial<CatchCard> = {}): CatchCard => ({ n, x: 0, y: 0, art: 'critters/sea-bass', parts: ['x'], ...o });
 const shown = () => stack.cards.filter((c) => !c.leaving).map((c) => c.parts[0]);
 
 describe('the catch stack', () => {
+  let off = () => {};
+  beforeEach(() => void (off = stackShown()));
   afterEach(() => {
+    off();
     clearCards();
     vi.useRealTimers();
   });
@@ -55,5 +58,14 @@ describe('the catch stack', () => {
     expect(stack.cards).toHaveLength(2);
     clearCards();
     expect(stack.cards).toEqual([]);
+  });
+
+  it('a plate with nobody to show it (its names loaded after the island went) is dropped, never shown stale later', () => {
+    off();
+    pushCard({ x: 0, y: 0, art: 'a', parts: ['late'] });
+    expect(stack.cards).toEqual([]);
+    off = stackShown();
+    pushCard({ x: 0, y: 0, art: 'a', parts: ['now'] });
+    expect(shown()).toEqual(['now']);
   });
 });
