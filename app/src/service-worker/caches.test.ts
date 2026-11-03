@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AUDIO_CACHE, isAudio, isMusic, keepShell, lruEvict, precachable, staleCaches } from './caches.ts';
+import { AUDIO_CACHE, isAudio, isMusic, keepShell, lruEvict, olderShells, precachable, staleCaches } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -11,6 +11,11 @@ describe('service worker cache generations', () => {
 
   it('first install: nothing to delete', () => {
     expect(staleCaches(['island-shell-1'], 'island-shell-1', keep)).toEqual([]);
+  });
+
+  it('a new install copies its unchanged chunks from the older shells, the newest first', () => {
+    expect(olderShells(['island-fonts-v1', 'island-shell-1', 'island-shell-2', 'island-shell-3'], 'island-shell-3')).toEqual(['island-shell-2', 'island-shell-1']);
+    expect(olderShells(['island-shell-1'], 'island-shell-1')).toEqual([]);
   });
 
   it('drops caches from older schemes', () => {

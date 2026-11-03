@@ -10,6 +10,12 @@ export function staleCaches(keys: readonly string[], current: string, keep: read
   return keys.filter((k) => k !== current && k !== previous && !keep.includes(k));
 }
 
+/** The older shells a new install may copy its unchanged hashed chunks from, the newest first (`keys` in creation
+ *  order). */
+export function olderShells(keys: readonly string[], current: string): string[] {
+  return keys.filter((k) => k.startsWith(SHELL) && k !== current).reverse();
+}
+
 /** The audio runtime cache (docs/design.md#engine-lifecycle): music files (the hours, the event music, K.K.'s songs)
  *  are 0.1–1.1 MB each, so only the most recently played few stay on the phone. */
 export const AUDIO_CACHE = 'island-audio-v1';
