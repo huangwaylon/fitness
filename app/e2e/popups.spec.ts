@@ -48,10 +48,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
   test.describe(`at ${w}`, () => {
     test.use({ viewport: { width: w, height: h } });
 
-    test('the catch plate and its first-find page', {
-      tag: '@quarantine',
-      annotation: { type: 'quarantine', description: 'owner: engine agent (fishing, the catch plate), 2026-11-03: red main at 67f69641, the reel missed the 1.6 s bite under CI load; reelOnBite (e2e/island.ts) is the fix, back in the gate after 5 green full-tier runs' }
-    }, async ({ page }) => {
+    test('the catch plate and its first-find page', async ({ page }) => {
       await open(page, 'date=2026-11-04T21:00&critter=sea-bass');
       await expect(page.locator('[data-critter="fish"]')).toBeAttached();
       await page.waitForTimeout(500);
