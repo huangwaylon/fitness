@@ -253,7 +253,12 @@ export class IslandLife {
     // `?balloon` (dev or ?demo only): float one now, at any time of day, to look at it.
     if (hookFlag('balloon')) this.later(() => (this.balloon = true), 400);
     // `?wander` (dev or ?demo only): the partner sets off on a one-stop outing now (the e2e's hook)
-    if (hookFlag('wander')) this.later(() => wander('partner', 1), 3200); // after the opening beats
+    // (after the opening beats; again a moment later while it can't set off yet: the 3D island still opening, its
+    // points of interest not yet placed on screen to be checked clear)
+    if (hookFlag('wander')) {
+      const go = (n: number) => void (!wander('partner', 1) && n > 0 && this.later(() => go(n - 1), 500));
+      this.later(() => go(20), 3200);
+    }
 
     const onVis = () => (this.hidden = document.hidden);
     document.addEventListener('visibilitychange', onVis);
