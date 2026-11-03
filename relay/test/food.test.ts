@@ -1,9 +1,10 @@
 // The meal log in the record (docs/backend.md#events `food`): an entry set or removed, each entry's latest op kept
 // (one row per entry), removal final; the food's name cleaned here as on the phone; anyone logs their own (the guest
-// too), only the owner edits or removes; every phone sees every meal, the guest's too; the daily kcal goal a pref.
+// too), only the owner edits or removes; every phone sees every meal, the guest's too; the daily kcal goal a pref. A
+// repeat (`food_repeat`) by the same rules: one row per repeat, its owner's alone.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { StoreCore } from '../src/store.ts';
-import { foodFold, foodOp, type FoodEntry, type FoodOp } from '../../app/src/lib/contract/food.ts';
+import { foodFold, foodOp, foodRepeatFold, foodRepeatOp, type FoodEntry, type FoodOp, type FoodRepeat, type RepeatOp } from '../../app/src/lib/contract/food.ts';
 import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
 import { memSql } from './sqlite.ts';
 
@@ -143,5 +144,85 @@ describe('the meal log in the record', () => {
     const other = [new Date(now + 5000).toISOString(), 'B', 'e-other', 'food', JSON.stringify({ id: 'fmeal060', at: now + 5000, rm: true })];
     expect(store.load({ rows: { events: [other] } })).toMatchObject({ ok: true, events: 0 });
     expect(entries().map((e) => e.id)).toEqual(['fmeal060', 'fmeal061']);
+  });
+
+  // ---- repeats (いつもの)
+  const sendRep = (who: 'A' | 'B' | 'G', data: object) => call(keyOf[who], 'event', { id: `e${++n}`, type: 'food_repeat', data });
+  const rep = (who: 'A' | 'B' | 'G', id: string, extra: object = {}, at = (now += 1000)) =>
+    sendRep(who, { id, at, m: 'b', it: [{ g: 150, f: RICE }], w: 127, from: '2026-11-01', ...extra });
+  const repRows = (key = KEY_A) => (call(key, 'snapshot').rows.events as [string, 'A' | 'B' | 'G', string, string, string][]).filter((r) => r[3] === 'food_repeat');
+  const repeats = (key = KEY_A): FoodRepeat[] =>
+    foodRepeatFold(repRows(key).map((r) => ({ ...foodRepeatOp(JSON.parse(r[4]))!, who: r[1] }) as RepeatOp & { who: 'A' | 'B' | 'G' }));
+
+  it('keeps a repeat, normalized (names cleaned, grams rounded, skipped days sorted once, a null end open), seen by every phone', () => {
+    const it2 = [{ g: 150, f: { ...RICE, n: ' ご\u0007はん ' } }, { g: 45.0, f: RICE }];
+    expect(rep('A', 'rmeal001', { it: it2, to: null, sk: ['2026-11-03', '2026-11-02', '2026-11-03'] })).toMatchObject({ ok: true });
+    expect(notices.at(-1)).toMatchObject({ what: 'event', who: 'A' });
+    expect(JSON.parse(repRows()[0][4])).toEqual({
+      id: 'rmeal001', at: now, m: 'b', it: [{ g: 150, f: { ...RICE, n: 'ごはん' } }, { g: 45, f: RICE }], w: 127, from: '2026-11-01', sk: ['2026-11-02', '2026-11-03']
+    });
+    for (const key of [KEY_B, KEY_C]) expect(repeats(key)).toMatchObject([{ id: 'rmeal001', who: 'A', w: 127 }]);
+  });
+
+  it('refuses a malformed repeat', () => {
+    const at = now;
+    const ok = { id: 'rmeal010', at, m: 'b', it: [{ g: 150, f: RICE }], w: 127, from: '2026-11-01' };
+    const bad = [
+      { ...ok, id: 'fmeal010' }, { ...ok, id: 'r12' }, { ...ok, at: 'x' }, { ...ok, m: 'x' }, { ...ok, w: 0 }, { ...ok, w: 128 }, { ...ok, w: 1.5 },
+      { ...ok, from: '2026-02-30' }, { ...ok, from: '2026-11-05' }, // after tomorrow
+      { ...ok, to: '2026-10-31' }, { ...ok, to: 'x' }, { ...ok, it: [] }, { ...ok, it: Array(21).fill({ g: 1, f: RICE }) },
+      { ...ok, it: [{ g: 0, f: RICE }] }, { ...ok, it: [{ g: 1.25, f: RICE }] }, { ...ok, it: [{ g: 1, f: { ...RICE, k: 951 } }] },
+      { ...ok, it: [{ g: 1, f: RICE, d: '2026-11-01' }] }, { ...ok, it: [null] }, { ...ok, it: 'x' },
+      { ...ok, sk: ['2026-10-31'] }, { ...ok, to: '2026-11-03', sk: ['2026-11-04'] }, { ...ok, sk: ['x'] }, { ...ok, sk: '2026-11-02' },
+      { ...ok, sk: Array.from({ length: 401 }, () => '2026-11-02') }, { ...ok, x: 1 }, { ...ok, person: 'B' },
+      { id: 'rmeal010', at, rm: true, w: 1 }, { id: 'rmeal010', at, rm: false }
+    ];
+    for (const d of bad) expect(sendRep('A', d)).toMatchObject({ ok: false, error: 'bad_request' });
+    expect(rep('A', 'rmeal011', { from: '2026-11-04', to: '2026-11-04' })).toMatchObject({ ok: true }); // tomorrow, one day
+  });
+
+  it('keeps each repeat’s latest op as its one row; an older op, a set after a removal, a removal it never held acknowledged', () => {
+    const at = now + 1000;
+    rep('B', 'rmeal020', {}, at);
+    expect(rep('B', 'rmeal020', { sk: ['2026-11-02'] }, at + 5000)).toMatchObject({ ok: true });
+    expect(rep('B', 'rmeal020', { w: 31 }, at + 2000)).toMatchObject({ ok: true, duplicate: true });
+    expect(repeats()).toMatchObject([{ id: 'rmeal020', w: 127, sk: ['2026-11-02'], at: at + 5000 }]);
+    expect(repRows()).toHaveLength(1);
+    now = at + 5000;
+    expect(sendRep('B', { id: 'rmeal020', at: (now += 1000), rm: true })).toMatchObject({ ok: true });
+    expect(rep('B', 'rmeal020', { to: '2026-11-03' })).toMatchObject({ ok: true, duplicate: true });
+    expect(sendRep('B', { id: 'rmeal021', at: (now += 1000), rm: true })).toMatchObject({ ok: true, duplicate: true });
+    expect(repeats()).toEqual([]);
+    expect(repRows()).toHaveLength(1); // the removal's row
+    // a repeat's id and an entry's are slots apart: the same suffix never collides
+    expect(log('B', 'fmeal020')).toMatchObject({ ok: true });
+  });
+
+  it('lets only the owner change a repeat; the guest keeps its own', () => {
+    rep('G', 'rmeal030');
+    rep('A', 'rmeal031');
+    expect(rep('A', 'rmeal030', { w: 1 })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(sendRep('B', { id: 'rmeal030', at: (now += 1000), rm: true })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(rep('G', 'rmeal031', { to: '2026-11-03' })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(rep('G', 'rmeal030', { to: '2026-11-03' })).toMatchObject({ ok: true });
+    expect(repeats().map((r) => [r.id, r.who, r.to])).toEqual([['rmeal030', 'G', '2026-11-03'], ['rmeal031', 'A', undefined]]);
+  });
+
+  it('a repeat persists and loads back from a dump; someone else’s op in a load keeps only its id', () => {
+    rep('A', 'rmeal040');
+    store = open();
+    const dumped = store.dump().rows.events.filter((r) => r[3] === 'food_repeat');
+    db = memSql();
+    store = open();
+    expect(store.load({ rows: { events: dumped } })).toMatchObject({ ok: true, events: 1 });
+    expect(store.load({ rows: { events: dumped } })).toMatchObject({ ok: true, events: 0 }); // idempotent
+    const other = [new Date(now + 5000).toISOString(), 'B', 'e-other-r', 'food_repeat', JSON.stringify({ id: 'rmeal040', at: now + 5000, rm: true })];
+    const bad = [new Date(now + 7000).toISOString(), 'A', 'e-bad-r', 'food_repeat', JSON.stringify({ id: 'rmeal041', at: now, w: 0 })];
+    expect(store.load({ rows: { events: [other, bad] } })).toMatchObject({ ok: true, events: 0 });
+    expect(repeats().map((r) => [r.id, r.who])).toEqual([['rmeal040', 'A']]);
+    // its owner's removal, in a load, ends it
+    const gone = [new Date(now + 8000).toISOString(), 'A', 'e-gone-r', 'food_repeat', JSON.stringify({ id: 'rmeal040', at: now + 8000, rm: true })];
+    expect(store.load({ rows: { events: [gone] } })).toMatchObject({ ok: true, events: 1 });
+    expect(repeats()).toEqual([]);
   });
 });

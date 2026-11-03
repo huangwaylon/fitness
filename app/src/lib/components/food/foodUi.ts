@@ -1,7 +1,9 @@
 // ごはん's small helpers (docs/design.md "Gohan"): the catalog loaded once a session, an entry's amount in words, the
-// food an entry was logged from (its catalog item when the catalog has it, for its portions), and the 最近 list.
+// food an entry was logged from (its catalog item when the catalog has it, for its portions), the 最近 list, and a
+// repeat's weekdays in words.
 import { isKcalGoal, type FoodEntry, type FoodSnap } from '#lib/contract/food.ts';
 import { loadFoodDb, portionsOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
+import { t } from '#lib/i18n/index.ts';
 
 let dbP: Promise<FoodDb> | null = null;
 /** The food catalog, fetched on the first search of the session (a failure lets the next one try again). */
@@ -68,4 +70,15 @@ export function parseKcalGoal(text: string): number | null {
   if (!/^\d{1,4}$/.test(s)) return null;
   const n = Number(s);
   return isKcalGoal(n) ? n : null;
+}
+
+/** いつもの's weekday masks (bit 0 Monday … bit 6 Sunday): 毎日 · 平日 · 週末, the presets of the repeat level. */
+export const DAYS = { every: 0b1111111, weekdays: 0b0011111, weekends: 0b1100000 } as const;
+
+/** A repeat's weekdays in words: 毎日, 平日, 週末, else the days themselves (「月水金」, 「Mon Wed Fri」). */
+export function daysText(w: number): string {
+  for (const [k, v] of Object.entries(DAYS)) if (w === v) return t(`food.rep.${k}`);
+  const days: string[] = [];
+  for (let i = 0; i < 7; i++) if (w & (1 << i)) days.push(t(`food.rep.d${i}`));
+  return days.join(t('food.rep.join'));
 }

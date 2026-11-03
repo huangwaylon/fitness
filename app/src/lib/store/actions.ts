@@ -7,13 +7,16 @@ import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import type { LocalDate, PersonId, ShopItemId, Who } from '#lib/types.ts';
-import { isBodyFatGoal, isWeightKg, roundKg, type FindKind } from '#lib/contract/api.ts';
+import { isBodyFatGoal, isWeightKg, nextDay, roundKg, type FindKind } from '#lib/contract/api.ts';
 import { findKey, findsView } from '#lib/model/finds.ts';
 import { addToTally, latestByDay } from '#lib/model/tally.ts';
 import { localDateAt } from '#lib/time/dates.ts';
 import { MOVE_GOAL, isStepsGoal, shopPrice } from '#lib/config/rules.ts';
-import { foodOp, isKcalGoal, newFoodId, type FoodSnap, type Meal } from '#lib/contract/food.ts';
-import { foodEntries } from '#lib/model/food.ts';
+import {
+  foodOp, foodRepeatOp, isKcalGoal, newFoodId, newRepeatId, repeatCovers, type FoodEntry, type FoodRepeat, type FoodSnap, type Meal, type RepeatItem,
+  type RepeatOp
+} from '#lib/contract/food.ts';
+import { foodDay, foodEntries, repeats } from '#lib/model/food.ts';
 import { world } from './world.svelte.ts';
 
 /** 買う！ and its とりけす wait this long before they are sent, with もとに戻す on the banner. */
@@ -221,6 +224,114 @@ export function removeFood(id: string): SendResult {
   const e = myFood(id);
   if (!e) return { ok: false };
   return sendFood({ id, at: foodNow(e.at), rm: true });
+}
+
+// ---- Recurring meals (いつもの, docs/backend.md#events `food_repeat`): a repeat of mine is one op carrying its whole
+// state, its days' items read into each day by the model. History is never rewritten: a change of its items or
+// weekdays ends it today and starts a new one tomorrow. Each action's ops go out together, so a day never shows its
+// meal doubled or empty in between.
+
+const today = (): LocalDate => localDateAt(world.now());
+
+/** Send a repeat op as the record will keep it (contract/food.ts foodRepeatOp); `{ok:false}` when it isn't one. */
+function sendRepeat(d: Record<string, unknown>): SendResult {
+  const op = foodRepeatOp(d);
+  return op ? week.send('food_repeat', { ...op }) : { ok: false };
+}
+
+/** One of my repeats, as the model has it (queued changes included). */
+const myRepeat = (id: string): FoodRepeat | undefined => {
+  const m = week.model;
+  return m ? repeats(m.state, m.me).find((r) => r.id === id) : undefined;
+};
+
+/** My real entries of `meal` on `date` (a repeat's virtual ones left out). */
+const myMeal = (meal: Meal, date: LocalDate): FoodEntry[] => {
+  const m = week.model;
+  return m ? foodDay(m.state, m.me, date).entries.filter((e) => e.m === meal && !e.rep) : [];
+};
+
+/** A new repeat's op (a fresh id), or null when it isn't one. */
+function repeatOf(r: { m: Meal; it: RepeatItem[]; w: number; from: LocalDate; to?: string; sk?: string[] }): RepeatOp | null {
+  const at = foodNow();
+  return foodRepeatOp({ id: newRepeatId(at), at, ...r });
+}
+
+/** Send a new repeat, and the real entries it now stands for removed (`real`, if their day `date` is one it fills),
+ *  so the day shows what it did. */
+function sendNewRepeat(op: RepeatOp, date: LocalDate, real: FoodEntry[]): SendResult & { id?: string } {
+  if (op.rm || !week.send('food_repeat', { ...op }).ok) return { ok: false };
+  if (repeatCovers(op, date)) for (const e of real) sendFood({ id: e.id, at: foodNow(e.at), rm: true });
+  return { ok: true, id: op.id };
+}
+
+/** My repeat ended on `last` (its skipped days after it dropped), or removed when it starts after `last`. */
+function endRepeat(r: FoodRepeat, last: LocalDate): SendResult {
+  const { who: _who, ...op } = r;
+  if (r.from > last) return sendRepeat({ id: r.id, at: foodNow(r.at), rm: true });
+  return sendRepeat({ ...op, at: foodNow(r.at), to: last, sk: r.sk?.filter((d) => d <= last) });
+}
+
+/**
+ * Make `meal` on `date` (my own day) a repeat on the weekdays `w` (contract/food.ts WEEKDAYS), from that day on: its
+ * items the meal's entries that day, which the repeat then stands for (they're removed: the day shows no change). One
+ * repeat per meal: `{ok:false}` while one of mine still fills it on or after `date`, or the meal is empty.
+ */
+export function startRepeat(e: { meal: Meal; date: LocalDate; w: number }): SendResult & { id?: string } {
+  const m = week.model;
+  if (!m || repeats(m.state, m.me).some((r) => r.m === e.meal && (r.to === undefined || r.to >= e.date))) return { ok: false };
+  const real = myMeal(e.meal, e.date);
+  const op = real.length ? repeatOf({ m: e.meal, it: real.map(({ g, f }) => ({ g, f })), w: e.w, from: e.date }) : null;
+  return op ? sendNewRepeat(op, e.date, real) : { ok: false };
+}
+
+/**
+ * Make one day of my repeat ordinary (to edit or remove one of its items): the repeat skips `date` and the day's items
+ * become my real entries, alike. Returns each virtual entry's id (`<repeat id>:<index>`) → its real entry's id, or
+ * null (not a day it fills; a day after tomorrow, which no entry may be on yet).
+ */
+export function detachDay(repeatId: string, date: LocalDate): Record<string, string> | null {
+  const r = myRepeat(repeatId);
+  if (!r || !repeatCovers(r, date) || date > nextDay(today())) return null;
+  const { who: _who, ...op } = r;
+  const skip = { ...op, at: foodNow(r.at), sk: [...(r.sk ?? []), date] };
+  if (!foodRepeatOp(skip)) return null;
+  // the entries first: were the skip to go without them the day would be empty
+  const out: Record<string, string> = {};
+  r.it.forEach(({ g, f }, i) => {
+    const at = foodNow();
+    const id = newFoodId(at);
+    if (sendFood({ id, at, d: date, m: r.m, g, f }).ok) out[`${r.id}:${i}`] = id;
+  });
+  return sendRepeat(skip).ok ? out : null;
+}
+
+/**
+ * Change my repeat from tomorrow on (the days up to today stay as they were): its weekdays `w`, its items those of
+ * its meal on `itemsFromDate` (the meal card's, repeated items and real ones alike). It ends today and a new one
+ * starts tomorrow (the days the old one skipped carried over); one that hadn't started yet is replaced. The new
+ * repeat's id.
+ */
+export function updateRepeat(repeatId: string, ch: { w?: number; itemsFromDate?: LocalDate }): SendResult & { id?: string } {
+  const r = myRepeat(repeatId);
+  const m = week.model;
+  const now = today();
+  if (!r || !m || (r.to !== undefined && r.to <= now)) return { ok: false };
+  const from = nextDay(now);
+  const shown = ch.itemsFromDate ? foodDay(m.state, m.me, ch.itemsFromDate).entries.filter((e) => e.m === r.m) : null;
+  if (shown && !shown.length) return { ok: false };
+  const op = repeatOf({ m: r.m, it: shown ? shown.map(({ g, f }) => ({ g, f })) : r.it, w: ch.w ?? r.w, from, to: r.to, sk: r.sk?.filter((d) => d >= from) });
+  if (!op || !endRepeat(r, now).ok) return { ok: false };
+  // the shown meal's real entries, on a day the new one fills (tomorrow's), are what it stands for
+  return sendNewRepeat(op, ch.itemsFromDate ?? from, shown && ch.itemsFromDate! >= from ? shown.filter((e) => !e.rep) : []);
+}
+
+/** Stop my repeat: it ends today (tomorrow on, nothing; past days unchanged), or is removed if it hadn't started. */
+export function stopRepeat(repeatId: string): SendResult {
+  const r = myRepeat(repeatId);
+  const now = today();
+  if (!r || (r.to !== undefined && r.to <= now)) return { ok: false };
+  return endRepeat(r, now);
 }
 
 /**

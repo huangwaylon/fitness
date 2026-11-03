@@ -1,4 +1,5 @@
-// The wallet actions: buy one of the two rewards (only what the wallet covers), undo; the goals; the meal log.
+// The wallet actions: buy one of the two rewards (only what the wallet covers), undo; the goals; the meal log and its
+// repeats.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
 import { configureTransport } from '#lib/sync/transport.ts';
@@ -195,5 +196,121 @@ describe('the meal log', () => {
       { person: 'A', key: 'kcalGoal', value: null },
       { key: 'kcalGoal', value: 2200 }
     ]);
+  });
+});
+
+describe('recurring meals (いつもの)', () => {
+  // 2026-11-18 21:00 in Tokyo, a Wednesday
+  const NOW = Date.parse('2026-11-18T12:00:00.000Z');
+  const RICE = { id: 'mext:01088', n: 'ごはん', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0 };
+  const NATTO = { id: 'mext:04046', n: '納豆', k: 190, p: 16.5, fa: 10, c: 12.1, s: null };
+  const model = async () => {
+    const { reduce } = await import('#lib/model/state.ts');
+    const events = queued().map((e, i) => [new Date(NOW + i).toISOString(), 'A', e.id, e.type, JSON.stringify(e.data)]);
+    week.model = { state: reduce({ metrics: [], events: events as never }), me: 'A', now: NOW } as unknown as typeof week.model;
+  };
+  const day = async (d: string) => {
+    const { foodDay } = await import('#lib/model/food.ts');
+    return foodDay(week.model!.state, 'A', d).entries.map((e) => [e.m, e.f.n, e.g, e.rep ?? null]);
+  };
+  const reps = () => queued().filter((e) => e.type === 'food_repeat').map((e) => e.data as Record<string, unknown>);
+  /** A breakfast of rice and natto logged on `d`, and the model with it. */
+  const breakfast = async (d: string) => {
+    const { logFood } = await import('./actions.ts');
+    logFood({ d, m: 'b', g: 150, f: RICE });
+    logFood({ d, m: 'b', g: 45, f: NATTO });
+    logFood({ d, m: 'l', g: 200, f: RICE });
+    await model();
+  };
+
+  it('startRepeat: the meal’s entries become the repeat from that day, the day unchanged, the next days filled', async () => {
+    const { startRepeat } = await import('./actions.ts');
+    await breakfast('2026-11-18');
+    const before = await day('2026-11-18');
+    const r = startRepeat({ meal: 'b', date: '2026-11-18', w: 127 });
+    expect(r).toMatchObject({ ok: true, id: expect.stringMatching(/^r[0-9a-z]{6,24}$/) });
+    expect(reps()).toEqual([{ id: r.id, at: expect.any(Number), m: 'b', it: [{ g: 150, f: RICE }, { g: 45, f: NATTO }], w: 127, from: '2026-11-18' }]);
+    await model();
+    expect((await day('2026-11-18')).map((e) => e.slice(0, 3))).toEqual(before.map((e) => e.slice(0, 3)));
+    expect(await day('2026-11-18')).toEqual([['b', 'ごはん', 150, r.id], ['b', '納豆', 45, r.id], ['l', 'ごはん', 200, null]]);
+    expect(await day('2026-11-25')).toEqual([['b', 'ごはん', 150, r.id], ['b', '納豆', 45, r.id]]);
+    expect(await day('2026-11-17')).toEqual([]);
+    // one per meal; an empty meal is no repeat
+    expect(startRepeat({ meal: 'b', date: '2026-11-19', w: 127 }).ok).toBe(false);
+    expect(startRepeat({ meal: 'd', date: '2026-11-18', w: 127 }).ok).toBe(false);
+  });
+
+  it('startRepeat on weekdays the day isn’t one of keeps that day’s entries as they are', async () => {
+    const { startRepeat } = await import('./actions.ts');
+    await breakfast('2026-11-18');
+    expect(startRepeat({ meal: 'b', date: '2026-11-18', w: 96 }).ok).toBe(true); // 週末: not a Wednesday
+    await model();
+    expect((await day('2026-11-18')).map((e) => e[3])).toEqual([null, null, null]);
+    expect((await day('2026-11-21')).map((e) => e[1])).toEqual(['ごはん', '納豆']);
+  });
+
+  it('detachDay: that day skipped, its items real entries (virtual id → real id), the other days unchanged', async () => {
+    const { detachDay, editFood, startRepeat } = await import('./actions.ts');
+    await breakfast('2026-11-18');
+    const { id } = startRepeat({ meal: 'b', date: '2026-11-18', w: 127 });
+    await model();
+    const map = detachDay(id!, '2026-11-19')!;
+    expect(Object.keys(map)).toEqual([`${id}:0`, `${id}:1`]);
+    expect(reps().at(-1)).toMatchObject({ id, sk: ['2026-11-19'] });
+    await model();
+    expect(await day('2026-11-19')).toEqual([['b', 'ごはん', 150, null], ['b', '納豆', 45, null]]);
+    expect(editFood(map[`${id}:1`], { g: 90 }).ok).toBe(true);
+    await model();
+    expect(await day('2026-11-19')).toEqual([['b', 'ごはん', 150, null], ['b', '納豆', 90, null]]);
+    expect((await day('2026-11-20')).map((e) => e[3])).toEqual([id, id]);
+    // a day it doesn't fill (skipped now, before it), a day after tomorrow, not mine
+    for (const d of ['2026-11-19', '2026-11-17', '2026-11-21']) expect(detachDay(id!, d)).toBeNull();
+    expect(detachDay('rnope0000', '2026-11-18')).toBeNull();
+  });
+
+  it('updateRepeat: ends today, a new one from tomorrow with the shown meal’s items or new weekdays, the skips carried', async () => {
+    const { detachDay, logFood, startRepeat, updateRepeat } = await import('./actions.ts');
+    await breakfast('2026-11-17');
+    const { id } = startRepeat({ meal: 'b', date: '2026-11-17', w: 127 });
+    await model();
+    detachDay(id!, '2026-11-19');
+    logFood({ d: '2026-11-18', m: 'b', g: 200, f: { ...RICE, id: 'x', n: 'トースト' } }); // today's breakfast had more
+    await model();
+    const r = updateRepeat(id!, { itemsFromDate: '2026-11-18', w: 31 });
+    expect(r).toMatchObject({ ok: true });
+    const [old, next] = reps().slice(-2);
+    expect(old).toMatchObject({ id, to: '2026-11-18' });
+    expect(old.sk).toBeUndefined(); // the 19th is the new one's to skip
+    expect(next).toMatchObject({ id: r.id, from: '2026-11-19', w: 31, sk: ['2026-11-19'] });
+    await model();
+    expect((await day('2026-11-17')).map((e) => e[1])).toEqual(['ごはん', '納豆', 'ごはん']); // history as it was
+    expect((await day('2026-11-18')).map((e) => [e[1], e[3]])).toEqual([['ごはん', id], ['納豆', id], ['トースト', null]]);
+    expect((await day('2026-11-19')).map((e) => [e[1], e[3]])).toEqual([['ごはん', null], ['納豆', null]]); // detached, not doubled
+    expect((await day('2026-11-20')).map((e) => [e[1], e[3]])).toEqual([['ごはん', r.id], ['納豆', r.id], ['トースト', r.id]]);
+    expect(await day('2026-11-21')).toEqual([]); // a Saturday, now 平日 only
+    expect(updateRepeat(id!, { w: 127 }).ok).toBe(false); // ended
+  });
+
+  it('stopRepeat: ends today (past days kept, tomorrow on nothing); one that starts tomorrow is removed', async () => {
+    const { startRepeat, stopRepeat, updateRepeat } = await import('./actions.ts');
+    await breakfast('2026-11-16');
+    const { id } = startRepeat({ meal: 'b', date: '2026-11-16', w: 127 });
+    await model();
+    expect(stopRepeat(id!).ok).toBe(true);
+    expect(reps().at(-1)).toMatchObject({ id, to: '2026-11-18' });
+    await model();
+    expect((await day('2026-11-18')).map((e) => e[3])).toEqual([id, id]);
+    expect(await day('2026-11-19')).toEqual([]);
+    expect(stopRepeat(id!).ok).toBe(false);
+    // a repeat from tomorrow (the lunch's, changed today) stopped is gone
+    const { id: lunch } = startRepeat({ meal: 'l', date: '2026-11-16', w: 127 });
+    await model();
+    const { id: next } = updateRepeat(lunch!, { w: 1 });
+    await model();
+    expect(stopRepeat(next!).ok).toBe(true);
+    expect(reps().at(-1)).toEqual({ id: next, at: expect.any(Number), rm: true });
+    await model();
+    const { repeats } = await import('#lib/model/food.ts');
+    expect(repeats(week.model!.state, 'A').map((r) => [r.id, r.to])).toEqual([[id, '2026-11-18'], [lunch, '2026-11-18']]);
   });
 });

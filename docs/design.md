@@ -233,6 +233,14 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   default portion's kcal.
 - **Amount:** the food's values per 100 g; its portions as chips (100 g last), −/＋ by half a portion, a grams field
   (typing grams leaves the portions); kcal and P/F/C/salt live; which meal; 追加, or 保存 / 削除 for my entry.
+- **いつもの (a repeat):** a meal eaten the same way on set weekdays. Its items fill each day it covers, marked with
+  the drawn 🔁 (`RepeatMark`, not an emoji) on each row, and count like any entry; everyone sees them. Its days sit in
+  the meal's header as a chip (毎日 · 平日 · 週末 · 月水金…), on my day a tap → the repeat level (`FoodRepeat`):
+  the weekdays (毎日 · 平日 · 週末, then 月〜日 one by one; one stays on), what it holds with the kcal sum, and
+  くりかえしを やめる (asked twice: ほんとうに やめる？; past days keep theirs), この日の内容で くりかえす (when that day
+  differs) and 曜日を保存 (both from tomorrow). On my today a meal with entries and no repeat ends with 🔁 くりかえす →
+  the same level, 毎日 first, 「くりかえす」 (the day looks the same, its items now the repeat's). Tapping one of
+  its items edits that day only: the day leaves the repeat (its items become its own, in one go) and the amount opens.
 - **データの出典** at the foot: each dataset's label, attribution and license (the data's licenses ask for it).
 - Food names come from the data, so their kanji are not all in the trimmed Zen Maru subset: those fall back to the
   system font (the copy's own strings are covered: `npm run fonts:subset`).

@@ -4,7 +4,10 @@
 // final: an id never comes back). The record keeps each entry's latest op only (`foodAccept`); its owner is whoever
 // sent it, and only the owner changes it. `f` is the food as it was per 100 g (a snapshot: a data refresh never
 // rewrites what was eaten), so a day's totals are read off the entries alone. Never earns ベル: the economy never
-// imports this. Shared by the record (relay/src/store.ts), the model and the food sheet; pure and dependency-free.
+// imports this. A recurring meal (いつもの, `food_repeat`) is one person's one meal on chosen weekdays from a day on:
+// its days' items are computed on read (model/food.ts), never copied into the record, and a change of its items or
+// days is an end and a new repeat, so a past day never changes. Shared by the record (relay/src/store.ts), the model
+// and the food sheet; pure and dependency-free.
 import { isLocalDate, isRec } from './api.ts';
 import { cleanLine } from './board.ts';
 
@@ -23,8 +26,28 @@ export type FoodOp =
   | { id: string; at: number; d: string; m: Meal; g: number; f: FoodSnap; rm?: undefined }
   | { id: string; at: number; rm: true };
 type FoodOpBy = FoodOp & { who: Who };
-/** An entry as a day shows it: `who` logged it, `at` its last change (ms), `d` the Tokyo day, `g` grams eaten. */
-export interface FoodEntry { id: string; who: Who; at: number; d: string; m: Meal; g: number; f: FoodSnap }
+/** An entry as a day shows it: `who` logged it, `at` its last change (ms), `d` the Tokyo day, `g` grams eaten; `rep`
+ *  the repeat it comes from (a virtual entry, id `<repeat id>:<item index>`: model/food.ts), absent on a real one. */
+export interface FoodEntry { id: string; who: Who; at: number; d: string; m: Meal; g: number; f: FoodSnap; rep?: string }
+
+/** One item of a repeat: `g` grams of `f`, as a `food` op's. */
+export interface RepeatItem { g: number; f: FoodSnap }
+/** A `food_repeat` op: a repeat set (`it` its items, `w` the weekday mask, `from`…`to` its days, `to` absent:
+ *  open-ended, `sk` the days skipped, sorted) or removed (final). */
+export type RepeatOp =
+  | { id: string; at: number; m: Meal; it: RepeatItem[]; w: number; from: string; to?: string; sk?: string[]; rm?: undefined }
+  | { id: string; at: number; rm: true };
+type RepeatOpBy = RepeatOp & { who: Who };
+/** A repeat as the record keeps it (its latest op), with who set it. */
+export type FoodRepeat = Exclude<RepeatOp, { rm: true }> & { who: Who };
+
+/** Items in one repeat, days it skips at most. */
+const REPEAT_ITEMS = 20;
+const REPEAT_SKIPS = 400;
+/** A repeat set's keys (one string: deps.test would read the first day's key, quoted, as an import). */
+const REPEAT_KEYS = 'id at m it w from to sk'.split(' ');
+/** The weekday mask: bit 0 Monday … bit 6 Sunday (of the Tokyo date); 毎日, 平日, 週末. */
+export const WEEKDAYS = { all: 127, weekdays: 31, weekend: 96 } as const;
 
 /** A food's name at most (characters), its portion label's, its catalog id's. */
 export const FOOD_NAME_CHARS = 60;
@@ -38,6 +61,7 @@ const NUTRIENT_MAX = 100;
 export const KCAL_GOAL = { min: 1000, max: 5000, step: 50 } as const;
 
 const ID = /^f[0-9a-z]{6,24}$/;
+const REPEAT_ID = /^r[0-9a-z]{6,24}$/;
 const isMs = (n: unknown): n is number => Number.isInteger(n) && (n as number) >= 1e12 && (n as number) <= 1e14;
 const inRange = (n: unknown, lo: number, hi: number): n is number => typeof n === 'number' && Number.isFinite(n) && n >= lo && n <= hi;
 const isMeal = (v: unknown): v is Meal => (MEALS as readonly unknown[]).includes(v);
@@ -48,7 +72,9 @@ export const isKcalGoal = (v: unknown): v is number =>
   Number.isInteger(v) && (v as number) >= KCAL_GOAL.min && (v as number) <= KCAL_GOAL.max && (v as number) % KCAL_GOAL.step === 0;
 
 /** A new entry's id. */
-export const newFoodId = (at: number): string => `f${at.toString(36)}${Math.floor(Math.random() * 36 ** 4).toString(36).padStart(4, '0')}`;
+export const newFoodId = (at: number, p = 'f'): string => `${p}${at.toString(36)}${Math.floor(Math.random() * 36 ** 4).toString(36).padStart(4, '0')}`;
+/** A new repeat's id. */
+export const newRepeatId = (at: number): string => newFoodId(at, 'r');
 
 /** A food snapshot, its known keys only, each well-formed (the name and the label cleaned, a missing nutrient null),
  *  or null. */
@@ -76,24 +102,66 @@ function snapOf(f: unknown): FoodSnap | null {
 export function foodOp(d: unknown): FoodOp | null {
   if (!isRec(d) || typeof d.id !== 'string' || !ID.test(d.id) || !isMs(d.at)) return null;
   const keys = Object.keys(d).filter((k) => d[k] !== undefined);
-  if (d.rm !== undefined) {
-    if (d.rm !== true || keys.some((k) => k !== 'id' && k !== 'at' && k !== 'rm')) return null;
-    return { id: d.id, at: d.at, rm: true };
-  }
+  const rm = rmOf(d, keys);
+  if (rm !== undefined) return rm;
   if (keys.some((k) => !['id', 'at', 'd', 'm', 'g', 'f'].includes(k))) return null;
   if (!isLocalDate(d.d) || !isMeal(d.m) || !inRange(d.g, FOOD_GRAMS.min, FOOD_GRAMS.max) || !oneDecimal(d.g)) return null;
   const f = snapOf(d.f);
   return f && { id: d.id, at: d.at, d: d.d, m: d.m, g: Math.round(d.g * 10) / 10, f };
 }
 
+/** A removal op (`{id, at, rm: true}`, nothing else), null when it isn't one, undefined when it isn't a removal. */
+function rmOf(d: Record<string, unknown>, keys: string[]): { id: string; at: number; rm: true } | null | undefined {
+  if (d.rm === undefined) return undefined;
+  if (d.rm !== true || keys.some((k) => k !== 'id' && k !== 'at' && k !== 'rm')) return null;
+  return { id: d.id as string, at: d.at as number, rm: true };
+}
+
+/** The weekday bit of a local date: bit 0 Monday … bit 6 Sunday. */
+export const weekdayBit = (date: string): number => 1 << ((new Date(Date.parse(`${date}T00:00:00Z`)).getUTCDay() + 6) % 7);
+
+/** A `food_repeat` op's data, its known keys only, each well-formed (each item as a `food` op's; `to` null read as
+ *  absent; `sk` sorted, once each, within its days; an empty `sk` dropped), or null. The record keeps it as returned
+ *  here. Whether its first day is too far ahead is the record's (model/record.ts). */
+export function foodRepeatOp(d: unknown): RepeatOp | null {
+  if (!isRec(d) || typeof d.id !== 'string' || !REPEAT_ID.test(d.id) || !isMs(d.at)) return null;
+  const keys = Object.keys(d).filter((k) => d[k] !== undefined && !(k === 'to' && d.to === null));
+  const rm = rmOf(d, keys);
+  if (rm !== undefined) return rm;
+  if (keys.some((k) => !REPEAT_KEYS.includes(k))) return null;
+  if (!isMeal(d.m) || !Number.isInteger(d.w) || (d.w as number) < 1 || (d.w as number) > 127 || !isLocalDate(d.from)) return null;
+  const to = d.to ?? undefined;
+  if (to !== undefined && (!isLocalDate(to) || to < d.from)) return null;
+  if (!Array.isArray(d.it) || !d.it.length || d.it.length > REPEAT_ITEMS) return null;
+  const it: RepeatItem[] = [];
+  for (const x of d.it as unknown[]) {
+    if (!isRec(x) || Object.keys(x).some((k) => x[k] !== undefined && k !== 'g' && k !== 'f')) return null;
+    if (!inRange(x.g, FOOD_GRAMS.min, FOOD_GRAMS.max) || !oneDecimal(x.g)) return null;
+    const f = snapOf(x.f);
+    if (!f) return null;
+    it.push({ g: Math.round(x.g * 10) / 10, f });
+  }
+  const out: RepeatOp = { id: d.id, at: d.at, m: d.m, it, w: d.w as number, from: d.from };
+  if (to !== undefined) out.to = to;
+  if (d.sk !== undefined) {
+    if (!Array.isArray(d.sk) || d.sk.length > REPEAT_SKIPS) return null;
+    const from = d.from;
+    if (d.sk.some((x) => !isLocalDate(x) || x < from || (to !== undefined && x > to))) return null;
+    const sk = [...new Set(d.sk as string[])].sort();
+    if (sk.length) out.sk = sk;
+  }
+  return out;
+}
+
 /**
- * What the record does with a new op, given the entry's op it holds (null: none):
+ * What the record does with a new op (a `food` or a `food_repeat` one), given the entry's (or the repeat's) op it
+ * holds (null: none):
  * - `forbidden`: someone else's entry (only its owner, who logged it, edits or removes it);
  * - `stale`: acknowledged, nothing kept (anything after a removal; an op no later than the one held; a removal of an
  *   entry it doesn't hold);
  * - `append`: kept (the entry's row replaced).
  */
-export function foodAccept(held: FoodOpBy | null, e: FoodOpBy): 'append' | 'stale' | 'forbidden' {
+export function foodAccept<T extends { at: number; rm?: true; who: Who }>(held: T | null, e: T): 'append' | 'stale' | 'forbidden' {
   if (held?.rm) return 'stale';
   if (held && held.who !== e.who) return 'forbidden';
   if (held ? !e.rm && e.at <= held.at : e.rm) return 'stale';
@@ -112,3 +180,17 @@ export function foodFold(ops: Iterable<FoodOpBy>): FoodEntry[] {
   for (const e of m.values()) if (!e.rm) out.push({ id: e.id, who: e.who, at: e.at, d: e.d, m: e.m, g: e.g, f: e.f });
   return out.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : MEAL_ORDER[a.m] - MEAL_ORDER[b.m] || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)));
 }
+
+/** The repeats as the record keeps them (each one's latest op taken by `foodAccept`, as `foodFold`), the removed ones
+ *  gone: by first day, then id. */
+export function foodRepeatFold(ops: Iterable<RepeatOpBy>): FoodRepeat[] {
+  const m = new Map<string, RepeatOpBy>();
+  for (const e of ops) if (foodAccept(m.get(e.id) ?? null, e) === 'append') m.set(e.id, e);
+  const out: FoodRepeat[] = [];
+  for (const e of m.values()) if (!e.rm) out.push(e);
+  return out.sort((a, b) => (a.from < b.from ? -1 : a.from > b.from ? 1 : a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+}
+
+/** Whether a repeat covers `date`: within its days, on one of its weekdays, not skipped. */
+export const repeatCovers = (r: { from: string; to?: string; w: number; sk?: string[] }, date: string): boolean =>
+  date >= r.from && (r.to === undefined || date <= r.to) && (r.w & weekdayBit(date)) !== 0 && !r.sk?.includes(date);

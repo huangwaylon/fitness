@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { foldEvents, reduce } from './state.ts';
-import { foodDay, foodEntries, kcalGoal, proteinGoal } from './food.ts';
+import { foodDay, foodEntries, kcalGoal, proteinGoal, repeatOn, repeats } from './food.ts';
 import type { EventRow, MetricRow } from '#lib/contract/api.ts';
 
 const T = Date.parse('2026-11-03T03:00:00.000Z');
@@ -80,5 +80,54 @@ describe('kcalGoal and proteinGoal', () => {
     expect(proteinGoal(s, 'A', Date.parse('2026-11-02T03:00:00.000Z'))).toBe(112);
     expect(proteinGoal(s, 'B', T)).toBeNull();
     expect(proteinGoal(s, 'G', T)).toBeNull();
+  });
+});
+
+describe('repeats: a meal’s items read into the days it fills', () => {
+  const rep = (who: 'A' | 'B' | 'G', id: string, at: number, extra: object = {}) =>
+    ev(who, at, { id, at, m: 'b', it: [{ g: 150, f: RICE }, { g: 45, f: NATTO }], w: 127, from: '2026-11-02', ...extra }, 'food_repeat');
+  const ids = (s: ReturnType<typeof reduce>, who: 'A' | 'B' | 'G', d: string) => foodDay(s, who, d).entries.map((e) => e.id);
+
+  it('fills each day from `from` to `to` on its weekdays (the Tokyo date’s), not the skipped ones', () => {
+    // 2026-11-02 is a Monday; 平日 (Mon–Fri), to the 13th, the 4th skipped
+    const s = reduce({ metrics: [], events: [rep('A', 'rmeal001', T, { w: 31, to: '2026-11-13', sk: ['2026-11-04'] })] });
+    const days = ['2026-11-01', '2026-11-02', '2026-11-03', '2026-11-04', '2026-11-07', '2026-11-08', '2026-11-13', '2026-11-16'];
+    expect(days.filter((d) => ids(s, 'A', d).length)).toEqual(['2026-11-02', '2026-11-03', '2026-11-13']);
+    expect(foodDay(s, 'A', '2026-11-02')).toMatchObject({
+      entries: [
+        { id: 'rmeal001:0', rep: 'rmeal001', who: 'A', at: T, d: '2026-11-02', m: 'b', g: 150, f: RICE },
+        { id: 'rmeal001:1', rep: 'rmeal001', d: '2026-11-02', g: 45, f: NATTO }
+      ],
+      kcal: 320 // counted like real ones: 156 × 1.5 + 190 × 0.45
+    });
+    expect(ids(s, 'B', '2026-11-02')).toEqual([]); // only its owner’s day
+    expect(foodEntries(s, 'A')).toEqual([]); // never a real entry
+  });
+
+  it('open-ended fills the future too; a meal’s repeated items come before its real ones', () => {
+    const s = reduce({ metrics: [], events: [set('A', 'fmeal010', T, { d: '2027-01-04', m: 'b' }), set('A', 'fmeal011', T, { d: '2027-01-04', m: 'd' }), rep('A', 'rmeal002', T)] });
+    expect(ids(s, 'A', '2027-01-04')).toEqual(['rmeal002:0', 'rmeal002:1', 'fmeal010', 'fmeal011']);
+  });
+
+  it('by the food rule: only its owner changes it, a removal is final, a queued op shows at once', () => {
+    const base = reduce({
+      metrics: [],
+      events: [rep('G', 'rmeal003', T), rep('B', 'rmeal003', T + 1000, { w: 1 }), rep('A', 'rmeal004', T), ev('A', T + 2000, { id: 'rmeal004', at: T + 2000, rm: true }, 'food_repeat')]
+    });
+    expect(repeats(base, 'G').map((r) => [r.id, r.w])).toEqual([['rmeal003', 127]]);
+    expect(repeats(base, 'A')).toEqual([]);
+    const s = foldEvents(base, [rep('G', 'rmeal003', T + 3000, { sk: ['2026-11-03'] })], null)!;
+    expect(ids(s, 'G', '2026-11-03')).toEqual([]);
+    expect(ids(base, 'G', '2026-11-03')).toEqual(['rmeal003:0', 'rmeal003:1']); // the base untouched
+  });
+
+  it('repeatOn: the repeat that fills that meal that day, or null; repeats keeps the ended ones', () => {
+    const s = reduce({ metrics: [], events: [rep('A', 'rmeal005', T, { to: '2026-11-05' }), rep('A', 'rmeal006', T, { from: '2026-11-06', w: 96 }), rep('A', 'rmeal007', T, { m: 'l' })] });
+    expect(repeatOn(s, 'A', 'b', '2026-11-05')?.id).toBe('rmeal005');
+    expect(repeatOn(s, 'A', 'b', '2026-11-06')).toBeNull(); // a Friday: the new one is 週末 only
+    expect(repeatOn(s, 'A', 'b', '2026-11-07')?.id).toBe('rmeal006');
+    expect(repeatOn(s, 'A', 'l', '2026-11-07')?.id).toBe('rmeal007');
+    expect(repeatOn(s, 'B', 'b', '2026-11-07')).toBeNull();
+    expect(repeats(s, 'A').map((r) => r.id)).toEqual(['rmeal005', 'rmeal007', 'rmeal006']);
   });
 });

@@ -2,13 +2,14 @@
   // ごはん (the meal log, docs/design.md "Gohan"): the HUD bowl's popup. Whose day (this phone's person first; the
   // partner, and the guest once it has logged or on its own phone: everyone sees everyone's meals), ‹ the day ›
   // and きょう, the summary card, then the four meals. On my own day ＋ per meal → the search → the amount → 追加;
-  // an entry → its amount → 保存 / 削除; ✎ → the kcal goal. Those push a level (FoodSheet's title bar: its ‹).
-  // Anyone else's day is read-only. データの出典 at the foot.
+  // an entry → its amount → 保存 / 削除 (a repeat's: that day leaves the repeat first, detachDay); ✎ → the kcal goal;
+  // a meal's 🔁 → いつもの (its repeat, or a new one from the day's entries). Those push a level (FoodSheet's title
+  // bar: its ‹). Anyone else's day is read-only. データの出典 at the foot.
   import '#lib/i18n/food.ts'; // the meal log's strings, loaded with it
   import type { LocalDate, Who } from '#lib/types.ts';
   import { KCAL_GOAL, MEALS, type FoodEntry, type Meal } from '#lib/contract/food.ts';
-  import { foodDay, foodEntries, kcalGoal, proteinGoal } from '#lib/model/food.ts';
-  import { editFood, logFood, removeFood, setKcalGoal } from '#lib/store/actions.ts';
+  import { foodDay, foodEntries, kcalGoal, proteinGoal, repeatOn, repeats } from '#lib/model/food.ts';
+  import { detachDay, editFood, logFood, removeFood, setKcalGoal, startRepeat, stopRepeat, updateRepeat } from '#lib/store/actions.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { addDays } from '#lib/time/dates.ts';
@@ -23,7 +24,8 @@
   import FoodSearch from './FoodSearch.svelte';
   import FoodAmount from './FoodAmount.svelte';
   import FoodCredits from './FoodCredits.svelte';
-  import { foodDb, itemOf, parseKcalGoal, recentOf } from './foodUi.ts';
+  import FoodRepeat from './FoodRepeat.svelte';
+  import { DAYS, foodDb, itemOf, parseKcalGoal, recentOf } from './foodUi.ts';
 
   let { title = $bindable(''), back = $bindable(null) }: { title?: string; back?: (() => void) | null } = $props();
 
@@ -34,7 +36,7 @@
   const order = $derived.by<Who[]>(() => {
     if (!view || !m) return [me];
     const all: Who[] = [view.me, view.partner];
-    if (me === 'G' || foodEntries(m.state, 'G').length) all.push('G');
+    if (me === 'G' || foodEntries(m.state, 'G').length || repeats(m.state, 'G').length) all.push('G');
     return [me, ...all.filter((w) => w !== me)];
   });
   const names = $derived<Record<Who, string>>({
@@ -55,17 +57,20 @@
   const protein = $derived(m ? proteinGoal(m.state, who, m.now) : null);
   const byMeal = (k: Meal) => day?.entries.filter((e) => e.m === k) ?? [];
   const recent = $derived(m ? recentOf(foodEntries(m.state, me)) : []);
+  /** My repeat of a meal still going (the one to manage; an ended one only fills its days). */
+  const liveRepeat = (k: Meal) => (m ? (repeats(m.state, me).find((r) => r.m === k && (!r.to || r.to > today)) ?? null) : null);
 
   type Level =
     | { k: 'search'; meal: Meal }
     | { k: 'amount'; meal: Meal; item: Item; g0?: number; u0?: string; entry?: FoodEntry }
-    | { k: 'goal' };
+    | { k: 'goal' }
+    | { k: 'repeat'; meal: Meal };
   let stack = $state<Level[]>([]);
   const top = $derived(stack.at(-1) ?? null);
   let scroller: Element | null = null;
   let root: HTMLElement | undefined = $state();
   $effect(() => {
-    title = !top ? '' : top.k === 'goal' ? t('goal.title') : t(`food.meal.${top.meal}`);
+    title = !top ? '' : top.k === 'goal' ? t('goal.title') : top.k === 'repeat' ? t('food.rep.title', { meal: t(`food.meal.${top.meal}`) }) : t(`food.meal.${top.meal}`);
     back = top ? up : null;
   });
   function go(l: Level) {
@@ -93,10 +98,17 @@
   function add(item: Item, meal: Meal, g0?: number, u0?: string) {
     go({ k: 'amount', meal, item, g0, u0 });
   }
-  /** An entry of mine → its amount, with the catalog's portions for it (once the catalog is in). */
-  function edit(e: FoodEntry) {
+  /** An entry of mine → its amount, with the catalog's portions for it (once the catalog is in). A repeat's: the day
+   *  leaves the repeat first (its items become the day's own, in one go), then the amount opens on the real one. */
+  function edit(v: FoodEntry) {
+    const e = v.rep ? real(v) : v;
+    if (!e) return;
     const open = (db: FoodDb | null) => go({ k: 'amount', meal: e.m, item: itemOf(e.f, db), g0: e.g, u0: e.f.u, entry: e });
     foodDb().then(open, () => open(null));
+  }
+  function real(v: FoodEntry & { rep?: string }): FoodEntry | null {
+    const id = v.rep && detachDay(v.rep, date)?.[v.id];
+    return (id && m && foodEntries(m.state, me).find((e) => e.id === id)) || null;
   }
   function done(l: Extract<Level, { k: 'amount' }>, v: { m: Meal; g: number; u: string | null }) {
     if (l.entry) {
@@ -108,6 +120,23 @@
   }
   function remove(e: FoodEntry) {
     if (removeFood(e.id).ok) toasts.show(t('food.removed', { name: e.f.n }), 2500);
+    home();
+  }
+  const mealName = (k: Meal) => t(`food.meal.${k}`);
+  function repStart(meal: Meal, w: number) {
+    if (startRepeat({ meal, date, w }).ok) toasts.show(t('food.rep.started', { meal: mealName(meal) }), 2500, { reaction: 'pleased' });
+    home();
+  }
+  function repDays(id: string, w: number) {
+    if (updateRepeat(id, { w }).ok) toasts.show(t('food.rep.daysSaved'), 2500, { reaction: 'pleased' });
+    home();
+  }
+  function repFromDay(id: string) {
+    if (updateRepeat(id, { itemsFromDate: date }).ok) toasts.show(t('food.rep.fromDaySaved'), 2500, { reaction: 'pleased' });
+    home();
+  }
+  function repStop(id: string, meal: Meal) {
+    if (stopRepeat(id).ok) toasts.show(t('food.rep.stopped', { meal: mealName(meal) }), 2500);
     home();
   }
   function saveGoal(v: number | null) {
@@ -125,6 +154,18 @@
       {@const l = top}
       {#key l}
         <FoodAmount item={l.item} meal={l.meal} g0={l.g0} u0={l.u0} editing={!!l.entry} ondone={(v) => done(l, v)} onremove={() => l.entry && remove(l.entry)} />
+      {/key}
+    {:else if top?.k === 'repeat'}
+      {@const meal = top.meal}
+      {@const r = liveRepeat(meal)}
+      {@const shown = byMeal(meal)}
+      {#key r?.id}
+        {#if r}
+          <FoodRepeat {meal} items={r.it} w0={r.w} live fromDay={shown.length > 0 && (shown.length !== r.it.length || shown.some((e) => e.rep !== r.id))}
+            onsavedays={(w) => repDays(r.id, w)} onfromday={() => repFromDay(r.id)} onstop={() => repStop(r.id, meal)} />
+        {:else}
+          <FoodRepeat {meal} items={shown} w0={DAYS.every} live={false} onstart={(w) => repStart(meal, w)} />
+        {/if}
       {/key}
     {:else if top?.k === 'goal'}
       <ValueInput label={t('food.goal')} sub="" old={goal} unit="kcal" parse={parseKcalGoal}
@@ -153,8 +194,12 @@
 
       <FoodSummary {day} {who} {goal} {protein} onedit={mine ? () => go({ k: 'goal' }) : null} />
       {#each MEALS as k (k)}
-        <FoodMeal meal={k} entries={byMeal(k)} {mine} onadd={() => go({ k: 'search', meal: k })}
-          onpick={edit} />
+        <!-- the 🔁 chip: on my day my repeat still going (a tap manages it), else the one filling the day (shown only);
+             none: 🔁 くりかえす on my today only (from a past day it would fill every day since, today's doubled) -->
+        {@const live = mine ? liveRepeat(k) : null}
+        {@const r = live ?? repeatOn(m.state, who, k, date)}
+        <FoodMeal meal={k} entries={byMeal(k)} {mine} days={r?.w ?? null} onadd={() => go({ k: 'search', meal: k })}
+          onrepeat={mine && (live || (!r && date >= today)) ? () => go({ k: 'repeat', meal: k }) : null} onpick={edit} />
       {/each}
       <FoodCredits />
     {/if}
