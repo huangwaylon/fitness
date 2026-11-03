@@ -9,11 +9,12 @@
   import { flip } from 'svelte/animate';
   import { prefersReducedMotion } from 'svelte/motion';
   import { onDestroy } from 'svelte';
-  import { FADE_MS, clearCards, dropCard, stack } from './catchStack.svelte.ts';
+  import { FADE_MS, clearCards, dropCard, stack, stackShown } from './catchStack.svelte.ts';
 
   let { scene }: { scene?: HTMLElement } = $props();
   const still = $derived(prefersReducedMotion.current);
-  onDestroy(clearCards);
+  const unshown = stackShown();
+  onDestroy(() => (unshown(), clearCards()));
 </script>
 
 <div class="catch-stack" data-catch-stack>

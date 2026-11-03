@@ -35,8 +35,19 @@ function leave(out: readonly CatchCard[]) {
   gone.add(id);
 }
 
-/** A new plate at the bottom (its own number). */
+/** How many CatchStacks are up: none (the island left), a plate has nobody to show it or run its timer. */
+let shownBy = 0;
+/** A CatchStack is up (till the returned call). */
+export function stackShown(): () => void {
+  shownBy++;
+  let on = true;
+  return () => void (on && ((on = false), shownBy--));
+}
+
+/** A new plate at the bottom (its own number); dropped while no stack is up (a catch's names loaded after the island
+ *  went: never shown stale on the next visit). */
 export function pushCard(card: Omit<CatchCard, 'n'>) {
+  if (!shownBy) return;
   const r = pushed(stack.cards, { ...card, n: ++seq });
   stack.cards = r.cards;
   leave(r.out);
