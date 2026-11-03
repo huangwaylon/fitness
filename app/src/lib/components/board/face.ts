@@ -4,6 +4,7 @@
 // drawn with fillText (never HTML). Pure but for the canvas it's handed.
 import type { Post } from '#lib/contract/board.ts';
 import type { Who } from '#lib/types.ts';
+import { fnv1a as hash } from '#lib/random.ts';
 
 /** The canvas (px): the face's 13.6 × 10 model units. */
 export const FACE_W = 1360;
@@ -24,12 +25,6 @@ export function noteRect(i: number): { x: number; y: number; w: number; h: numbe
   return { x: PAD + (i % 2) * (NOTE_W + GAP), y: PAD + Math.floor(i / 2) * (NOTE_H + GAP), w: NOTE_W, h: NOTE_H };
 }
 
-/** A small stable hash (a note's tilt and paper). */
-function hash(s: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
-  return h >>> 0;
-}
 
 /** Characters a line never starts with (Japanese kinsoku, the common ones). */
 const NO_START = new Set([...'、。，．・：；？！ー」』）】〉》〕]})!?.,:;…‥ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮ']);

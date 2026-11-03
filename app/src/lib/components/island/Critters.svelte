@@ -43,7 +43,7 @@
   import CatchPlate from './CatchPlate.svelte';
   import { cardFor, type CatchCard } from './catchCard.ts';
   import { timers } from './timers.ts';
-  import { pickOne } from '#lib/random.ts';
+  import { fnv1a as seedOf, pickOne } from '#lib/random.ts';
   import { hook, hookFlag } from './devHooks.ts';
   import { weather } from './weatherNow.svelte.ts';
   import { onMount } from 'svelte';
@@ -782,12 +782,6 @@
     const b = bushes().find((s) => Math.abs(s.x - x) < 2 && Math.abs(s.z - z) < 2), h = b?.h ?? 40;
     return { from: { x, z, lift: h * 0.7 }, area: { x0: x - 30, x1: x + 30, z0: z - 14, z1: z + 14, l0: 20, l1: 50 } };
   }
-  /** A string's seed (FNV-1a): a put bug's itinerary from its id, the same on both phones. */
-  const seedOf = (id: string) => {
-    let h = 0x811c9dc5;
-    for (let i = 0; i < id.length; i++) h = Math.imul(h ^ id.charCodeAt(i), 0x01000193);
-    return h >>> 0;
-  };
   /** A bug out of a bush, from under the rock or off my villager: shared (a `put`, so it comes out on the partner's
    *  phone too, and either of us may net it), its itinerary from its id. */
   function putBug(id: BugId, src: 'bush' | 'rock' | 'flea', x: number, z: number, stay: boolean | number = true): boolean {

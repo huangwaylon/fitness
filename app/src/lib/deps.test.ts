@@ -19,7 +19,7 @@ const ALLOW: Record<string, string[]> = {
   // the island's layout (docs/island-layout.md): pure, over the contract's ops
   layout: ['types', 'contract', 'random'],
   i18n: ['types', 'time', 'config'],
-  sync: [...DOMAIN],
+  sync: [...DOMAIN, 'random'],
   store: [...DOMAIN, 'layout', 'sync', 'i18n', 'ui-state', 'random'],
   // store → ui-state (toasts), never back: ui-state importing store would close a cycle
   'ui-state': [...DOMAIN, 'i18n'],
