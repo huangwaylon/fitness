@@ -24,7 +24,7 @@ describe('the catch stack', () => {
     expect(pushed([card(1, { leaving: true }), card(2), card(3)], card(4)).out).toEqual([]);
   });
 
-  it('a catch is only its plate: its icon from where it happened, whose it is; nothing over anyone’s head', async () => {
+  it('a catch is only its plate: its icon from where it happened, whose it is; nothing over anyone’s head, the catcher bounces', async () => {
     const { showCatch } = await import('./catchCard.ts');
     const { actors } = await import('../motion/director.svelte.ts');
     showCatch(120, 340, 'critters/wasp', 'x');
@@ -33,8 +33,9 @@ describe('the catch stack', () => {
       { x: 120, y: 340, art: 'critters/wasp', who: undefined },
       { x: 40, y: 0, art: 'critters/sea-bass', who: 'partner' }
     ]);
-    expect(actors.mine.motion).toBeNull();
-    expect(actors.partner.motion).toBeNull();
+    // (whoever got it squishes, as on a tap: catchCard.ts)
+    expect(actors.mine.motion).toBe('squish');
+    expect(actors.partner.motion).toBe('squish');
   });
 
   it('a fourth fades the oldest out early; a done plate fades, then leaves on its own', () => {
