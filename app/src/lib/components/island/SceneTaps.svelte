@@ -407,7 +407,7 @@
 
   /** NH's shooting star: a quick white streak falling to the lower left through the night sky, its whole path inside
    *  the fixed sky (under the status bar, above the horizon: the camera's --horizon-y) and clear of every control (the
-   *  ribbon, the jar, the sync chip). */
+   *  jar, the health button, the sync chip). */
   function shootingStar() {
     const g = stageGeo(scene);
     const band = scene?.querySelector('.band')?.getBoundingClientRect();

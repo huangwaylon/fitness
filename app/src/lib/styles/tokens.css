@@ -2,10 +2,10 @@
    The single source of CSS custom properties. Loaded globally from routes/+layout.svelte BEFORE
    styles/theme.css (element styles and the few shared building blocks).
 
-   One system: 15 colours, 5 radii (+ pill for the ribbon / plate / choices), 5 type sizes, weights 500/700,
+   One system: 15 colours, 5 radii (+ pill for the plate / choices / HUD pills), 5 type sizes, weights 500/700,
    outlines only on tappable things (--sh-ctl), one depth rule (a 4px lip; --sh-float only on floating layers).
    Time of day re-tints the chrome from <html data-tod> (ui-state/theme.svelte.ts); the phone's dark mode is
-   ignored. Game objects (ribbon, plate, dialogue box, choices) stay cream / yellow at every time of day.
+   ignored. Game objects (the HUD, plate, dialogue box, choices) stay cream / yellow at every time of day.
    Scene tokens (season x time of day) live in the Builder A block at the end, on .if-scene. */
 
 :root {
@@ -19,7 +19,7 @@
   --c-leaf:#6ED07A;  --c-leaf-lip:#4FB35C; --c-leaf-edge:#2F8A3F; /* the action; -edge = its outline + lip (>= 3:1) */
   --c-leaf-text:#256E33;                                 /* green TEXT on a light fill (4.98:1 on paper,
                                                            ~5.8:1 on a card); -lip is never a text colour */
-  --c-yuzu:#FFD84D;  --c-yuzu-lip:#E6B22E;               /* the focus (ribbon, nameplates) */
+  --c-yuzu:#FFD84D;  --c-yuzu-lip:#E6B22E;               /* the focus (today's ベル pill, nameplates) */
   --c-mint:#7BD7C1;                                    /* NH map mint (bars track) */
   --c-lilac:#CDB4F2;                                     /* the guest's chip (おきゃくさん) */
   --c-coral:#FF8F7A;                                     /* errors only */
@@ -76,7 +76,7 @@
   /* The one tap-target floor. min-height (and min-width for icon-only controls) on anything
      tappable; a smaller visual can keep its size and grow an ::after hit area to --hit. */
   --hit: 44px;
-  /* The island's ribbon (Hud.svelte): as high as the safe area lets it (under the status bar or the Dynamic Island in
+  /* The island's HUD row (Hud.svelte: the jar, the dumbbell): as high as the safe area lets it (under the status bar or the Dynamic Island in
      the Home Screen app, under Safari's top bar in the browser), all in the sky, well over the horizon (world.ts SKY,
      21% down). The island page sets --hud-bottom (its lip) from it; the banners on 島 go under it. */
   --hud-top: calc(var(--safe-top) + 10px);
@@ -84,7 +84,7 @@
   --row-obj: calc(var(--hit) + var(--lip-h) + 6px);
 
   /* ---------- stacking: one z scale ----------
-     The page: the scene's stage < the HUD (ribbon, sync chip) < the dock (しずえ's box). Modal <dialog>s
+     The page: the scene's stage < the HUD (the jar, the dumbbell, the sync chip) < the dock (しずえ's box). Modal <dialog>s
      (sheets, the panel, the harvest) live in the top layer above every z-index; the banner is a popover shown after
      them, so it sits above an open sheet (--z-toast is its fallback without popover support).
      Inside the stage (its own stacking context): trees < canopy taps < ground fruit < the fruit-row tap < falling leaves

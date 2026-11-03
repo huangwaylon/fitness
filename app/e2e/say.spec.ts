@@ -10,7 +10,7 @@ import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.t
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 const picker = (page: Page) => page.getByRole('dialog', { name: 'なにを いう？' });
 const sayBtn = (page: Page) => page.getByRole('button', { name: 'ひとこと いう' });
 const mine = (page: Page) => page.locator('[data-actor="mine"] .vil');
@@ -26,16 +26,16 @@ const feet = (page: Page) =>
 
 async function open(page: Page, at = '2026-11-04T12:00') {
   await page.goto(`?demo&date=${at}&critter=none`);
-  await expect(ribbon(page)).toBeVisible({ timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
+  await expect(hudJar(page)).toBeVisible({ timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
   await expect(mine(page)).toBeEnabled();
   await quiet(page); // the opening beats are over
 }
 
-/** The picker's box clear of the HUD (the jar, the ribbon, the health button) and inside the screen. */
+/** The picker's box clear of the HUD (the jar, the health button) and inside the screen. */
 const clearOfHud = (page: Page) =>
   page.evaluate(() => {
     const p = document.querySelector('[data-say-picker]')!.getBoundingClientRect();
-    const hud = [...document.querySelectorAll('.hud button, .ribbon, .hud-health, .hud-jar')].map((e) => e.getBoundingClientRect()).filter((r) => r.width);
+    const hud = [...document.querySelectorAll('.hud button, .hud-health, .hud-jar')].map((e) => e.getBoundingClientRect()).filter((r) => r.width);
     const over = hud.some((r) => p.left < r.right && r.left < p.right && p.top < r.bottom && r.top < p.bottom);
     return !over && p.left >= 0 && p.right <= innerWidth && p.top >= 0 && p.bottom <= innerHeight;
   });
@@ -75,7 +75,7 @@ test('the say button: small, bottom right, clear of the home indicator; a tap on
 
 test('the say button: the picker above it; a preset shows in my villager’s balloon for a few seconds', async ({ page }) => {
   await open(page);
-  const bells = await ribbon(page).getAttribute('aria-label');
+  const bells = await hudJar(page).getAttribute('aria-label');
   const home = await feet(page);
   await sayBtn(page).click();
   await expect(picker(page)).toBeVisible();
@@ -113,7 +113,7 @@ test('the say button: the picker above it; a preset shows in my villager’s bal
   await expect(balloon(page)).toHaveCount(0, { timeout: 5500 });
   expect(await feet(page)).toEqual(home); // nobody walked
   await expect(page.locator('dialog[open]')).toHaveCount(0);
-  await expect(ribbon(page)).toHaveAttribute('aria-label', bells!);
+  await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
 });
 
 test('the picker closes on ✕, Esc and a tap elsewhere (which walks nobody); the button again only closes it', async ({ page }) => {
@@ -207,8 +207,8 @@ test('the say button hides under the island panel and in もようがえ (its pi
   await open(page);
   await sayBtn(page).click();
   await expect(picker(page)).toBeVisible();
-  // the panel: the ribbon's tap closes the picker (a control: it still acts) and covers the island
-  await ribbon(page).click();
+  // the panel: the jar's tap closes the picker (a control: it still acts) and covers the island
+  await hudJar(page).click();
   await expect(picker(page)).toHaveCount(0);
   await expect(sayBtn(page)).toHaveCount(0);
   // もようがえ

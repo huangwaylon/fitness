@@ -11,20 +11,20 @@ const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g
 // the 664px Safari viewport leaves too little sea under the beach for a fish.
 test.use({ viewport: { width: 390, height: 844 } });
 
-const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 
 async function open(page: Page, q: string) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=2026-11-04T12:00${q}`);
-  await expect(ribbon(page)).toBeVisible();
-  return { bells: await ribbon(page).getAttribute('aria-label'), url: page.url() };
+  await expect(hudJar(page)).toBeVisible();
+  return { bells: await hudJar(page).getAttribute('aria-label'), url: page.url() };
 }
 
 /** Nothing counted, nothing opened, nowhere gone. */
 async function unchanged(page: Page, before: { bells: string | null; url: string }) {
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   expect(page.url()).toBe(before.url);
-  await expect(ribbon(page)).toHaveAttribute('aria-label', before.bells!);
+  await expect(hudJar(page)).toHaveAttribute('aria-label', before.bells!);
 }
 
 /** The centre of an element (critters are 0 × 0 anchors: their box is the point). */
@@ -230,7 +230,7 @@ test('a stag beetle perches on a trunk at night and is netted', {
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
 });
 
-test('a balloon floats by on its own in the daytime (the first in 30–60 s), in the sky lane under the ribbon', async ({ page }) => {
+test('a balloon floats by on its own in the daytime (the first in 30–60 s), in the sky lane under the HUD', async ({ page }) => {
   await page.clock.install();
   await open(page, '');
   await expect(page.locator('.fly')).toHaveCount(0);
@@ -243,7 +243,7 @@ test('a balloon floats by on its own in the daytime (the first in 30–60 s), in
     const hy = parseFloat(getComputedStyle(document.querySelector('.if-scene')!).getPropertyValue('--horizon-y'));
     return { top: b.top, bottom: b.bottom, ribbon: rib.bottom, hy };
   });
-  // the ribbon sits high in the sky, the horizon well under it: the balloon crosses the sky between them
+  // the HUD sits high in the sky, the horizon well under it: the balloon crosses the sky between them
   expect(box.top).toBeGreaterThanOrEqual(box.ribbon);
   expect(box.bottom).toBeLessThanOrEqual(box.hy + 8);
 });

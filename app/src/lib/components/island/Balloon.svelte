@@ -1,8 +1,8 @@
 <script lang="ts">
   // Balloon present (design.md "Particles and events"), after NH: one round glossy balloon (ours, drawn in NH's soft item style: a
   // top-left highlight, a rim light on the shaded side, a knot) on a thin string, carrying the official present
-  // (deco/present). It drifts across the fixed sky on the breeze in 22 s (either way, in the lane above the ribbon: the
-  // horizon sits at the ribbon's foot in the rolling-log world; in front of the clouds; as big as that lane allows,
+  // (deco/present). It drifts across the fixed sky on the breeze in 22 s (either way, in the lane under the HUD: the
+  // horizon sits well under the HUD in the rolling-log world; in front of the clouds; as big as that lane allows,
   // ≤ 34px), bobbing ±5px on a 3.6 s sine and leaning ±4°; the present swings under it like a
   // pendulum from the knot, a beat behind, and trails the drift a little. A colour per appearance from NH's balloon
   // palette (1 in 20: gold). A tap pops it (NH's slingshot shot, here a tap): a "pan!", a puff of confetti in its
@@ -103,7 +103,7 @@
   const BITS = [body, '#FFD84D', light, '#6FCFF6', body, '#FF8DBE', shade, '#8FD16A'];
 
   onMount(() => {
-    // no room under the HUD (the ribbon, 4px clear) or the present would sink past the horizon (a sky too short for
+    // no room under the HUD (its row, 4px clear) or the present would sink past the horizon (a sky too short for
     // even the smallest balloon): no balloon this time
     const hud = document.querySelector('.ribbon-wrap')?.getBoundingClientRect();
     const r = fly?.getBoundingClientRect();
@@ -180,7 +180,7 @@
 <style>
   /* the balloon's size: everything below is in em (the balloon's width) */
   .fly {
-    /* the lane: from 6px under the ribbon (--hud-bottom, the screen's) to 8px over the horizon (the band starts at the
+    /* the lane: from 6px under the HUD row (--hud-bottom, the screen's) to 8px over the horizon (the band starts at the
        safe area); the balloon with its present (2.6em) as big as that lane holds, between 14px and 34px across, at a
        random height within any room to spare */
     --lane: calc(var(--hud-bottom, var(--safe-top)) - var(--safe-top));

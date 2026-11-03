@@ -9,12 +9,12 @@ async function tapOn(page: Page, sel: string) {
   const r = (await page.locator(sel).boundingBox())!;
   await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
 }
-const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 
 test('a visitor’s introduction: typed, two pages, the ▼ only before the last; tap finishes, turns, then closes', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none'); // no ambient critters to net instead
-  await expect(ribbon(page)).toBeVisible();
-  const bells = await ribbon(page).getAttribute('aria-label');
+  await expect(hudJar(page)).toBeVisible();
+  const bells = await hudJar(page).getAttribute('aria-label');
   // he sleeps face down until the fifth nudge (NH); then his introduction
   await tapOn(page, '[data-visitor="gulliver"] .art');
   await page.waitForTimeout(400); // the first nudge
@@ -48,12 +48,12 @@ test('a visitor’s introduction: typed, two pages, the ▼ only before the last
     return page.locator('[data-fx="talk"].placed').getAttribute('data-pages').catch(() => null);
   }, { timeout: 8000 }).toBe('1');
   await expect(page.locator('dialog[open]')).toHaveCount(0);
-  await expect(ribbon(page)).toHaveAttribute('aria-label', bells!);
+  await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
 });
 
 test('the catch plate pages NH’s catch line (two lines a page) and, on a first find, says it’s in the ずかん', async ({ page }) => {
   await page.goto('?demo&date=2026-07-04T12:00&critter=olive-flounder');
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
   const fish = page.locator('[data-critter="fish"]');
   await expect(fish).toBeAttached();
   await page.waitForTimeout(600);

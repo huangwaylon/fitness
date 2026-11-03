@@ -1,7 +1,7 @@
 <script lang="ts">
   // Sky (design.md "Environment"): a 3-stop gradient (top · mid at 55% · horizon, per time of day;
   // season shifts by day) bleeding under the status bar; the sun at the left (left 12%, 46% down the band, under
-  // the ribbon, which sits at the band's top) as ONE soft radial glow, or the moon (a crescent with a soft
+  // the HUD, which sits at the band's top) as ONE soft radial glow, or the moon (a crescent with a soft
   // glow) + 10 stars (2 twinkle); two drifting soft clouds (Clouds.svelte), the balloon present and the fireworks
   // (Fireworks.svelte, passed in as children). The sun / moon sit above the clouds, so a cloud never hides them; a tree top rising over the horizon does. The visible band (below the
   // safe area) is a size container named `sky`. Two layers in the stage (IslandScene): `sky`, the gradient, the bank,
@@ -84,7 +84,7 @@
   }
   @media (max-height: 700px), (max-width: 359px) { .orb { --glow: 72px; } }
   @media (max-width: 339px) { .orb { --glow: 60px; } }
-  /* a short sky: the glow hugs the horizon, under the ribbon */
+  /* a short sky: the glow hugs the horizon, under the HUD */
   @container sky (max-height: 150px) { .orb { top: 52%; } }
   .sun { background: radial-gradient(closest-side, var(--sun-core) 0 35%, var(--sun-ring) 50%, transparent 100%); }
   .sun.low { top: 62%; }

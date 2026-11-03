@@ -3,7 +3,7 @@
 // the rainbow, the fog and the aurora show at their moments. Screenshots at 390 and 320.
 import { expect, test, type Page } from '@playwright/test';
 
-const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 
 async function open(page: Page, q: string, sound = false) {
   await page.addInitScript((on) => {
@@ -12,7 +12,7 @@ async function open(page: Page, q: string, sound = false) {
     (window as { __cues?: string[] }).__cues = [];
   }, sound);
   await page.goto(`?demo&${q}`);
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
 }
 
 /** Nothing of the weather takes a tap: every control's centre is still the control. */
@@ -80,8 +80,8 @@ test.describe('the day itself', () => {
     const other = await browser.newPage({ viewport: { width: 390, height: 844 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo' });
     await other.goto(page.url().replace('&weather=clear', ''));
     await page.goto(page.url().replace('&weather=clear', ''));
-    await expect(ribbon(page)).toBeVisible();
-    await expect(ribbon(other)).toBeVisible();
+    await expect(hudJar(page)).toBeVisible();
+    await expect(hudJar(other)).toBeVisible();
     expect(await page.locator('.if-scene').getAttribute('data-sky')).toBe(await other.locator('.if-scene').getAttribute('data-sky'));
     await other.close();
   });

@@ -15,7 +15,7 @@ const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] 
 async function open(page: Page, q = '') {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=2026-11-04T12:00&critter=none${q}`);
-  await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^ごほうび · ふたりのベル / })).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await quiet(page); // the opening beats are over
 }

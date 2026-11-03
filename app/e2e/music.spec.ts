@@ -6,7 +6,7 @@ import { is3d, quiet } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 
 /** Music on; records every audio file fetched. */
 async function open(page: Page, q: string): Promise<string[]> {
@@ -18,7 +18,7 @@ async function open(page: Page, q: string): Promise<string[]> {
   });
   await page.goto(`?demo&date=${q}`);
   // (the island's first paint: now and then over 5 s under CI's load)
-  await expect(ribbon(page)).toBeVisible({ timeout: 15_000 });
+  await expect(hudJar(page)).toBeVisible({ timeout: 15_000 });
   await is3d(page); // (the 3D island up: a while in software GL)
   return audio;
 }

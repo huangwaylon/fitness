@@ -4,12 +4,12 @@
 import { expect, test, type Page } from '@playwright/test';
 import { quiet } from './island.ts';
 
-const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 
 test('a tap on my villager: its squish, no balloon of its own, no picker, no sheet, no ベル', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&critter=none');
-  await expect(ribbon(page)).toBeVisible();
-  const bells = await ribbon(page).getAttribute('aria-label');
+  await expect(hudJar(page)).toBeVisible();
+  const bells = await hudJar(page).getAttribute('aria-label');
   await quiet(page); // the opening beats are over
   for (let i = 0; i < 3; i++) {
     await page.locator('.vil').first().click();
@@ -19,5 +19,5 @@ test('a tap on my villager: its squish, no balloon of its own, no picker, no she
     await expect(page.locator('dialog[open]')).toHaveCount(0);
     await expect(page.locator('[data-say-picker]')).toHaveCount(0);
   }
-  await expect(ribbon(page)).toHaveAttribute('aria-label', bells!);
+  await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
 });

@@ -2,7 +2,7 @@
   // Two soft clouds (design.md "Environment"): the round lobes on an elliptical base, filled with ONE
   // vertical gradient (white to 55%, a pale-blue underside below; tinted per time of day in tokens.css), no
   // lip. C1 / C2 drift at 140 / 100 s (transform only). Sizes: 120 / 86px at 393, 100 / 72 compact, 64 / 48 at
-  // 320. Lanes keep clear of the ribbon in the band's middle: C1 high (6% down), C2 low, over the horizon cloud bank
+  // 320. Lanes keep clear of the HUD at the band's top: C1 high (6% down), C2 low, over the horizon cloud bank
   // (12% up); the sun (Sky.svelte, low at the left) is drawn above them. Short skies (band ≤ 190px): C1 just above
   // the horizon, C2 high. Night: --cloud-op.
   const uid = $props.id();
@@ -38,7 +38,7 @@
   .c2 { width: 86px; top: auto; bottom: 12%; }
   @media (max-height: 700px), (max-width: 359px) { .c1 { width: 100px; } .c2 { width: 72px; } }
   @keyframes drift { from { transform: translateX(-110%); } to { transform: translateX(calc(100cqw + 10%)); } }
-  /* short skies: one small far-off cloud just above the horizon, one high above the ribbon */
+  /* short skies: one small far-off cloud just above the horizon, one high in the sky */
   @container sky (max-height: 190px) {
     .c1 { top: auto; bottom: 6px; }
     .c2 { top: 4%; bottom: auto; }

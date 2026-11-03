@@ -10,9 +10,9 @@
 </script>
 
 <script lang="ts">
-  // ベル flowing up into the HUD's ribbon: when new earnings arrive, a small "+150" pops over the fruit
-  // that earned them and three coins hop from there into the ribbon, one after another (NH's bell pickup: a short arc,
-  // a little spin, no trail). Each flight calls `onland` once its last coin is in, so the ribbon's number can squash. In stage units (the stage is the container).
+  // ベル flowing up into the HUD's jar: when new earnings arrive, a small "+150" pops over the fruit
+  // that earned them and three coins hop from there into the jar, one after another (NH's bell pickup: a short arc,
+  // a little spin, no trail). Each flight calls `onland` once its last coin is in, so the jar can squash. In stage units (the stage is the container).
   //   <CoinFlow flights={[{ id: 1, from: [120, 180], bells: 150, delay: 0 }]} to={[195, 140]} onland={(id) => …} />
   import { u } from '../island/scene.ts';
   import { formatBells } from '#lib/i18n/index.ts';
@@ -20,7 +20,7 @@
 
   interface Props {
     flights: Flight[];
-    /** Where the coins land: the ribbon's number (stage units). */
+    /** Where the coins land: the jar (stage units). */
     to: [number, number];
     onland: (id: number) => void;
   }
@@ -56,7 +56,7 @@
 {/each}
 
 <style>
-  /* in HudCoins' layer over the stage (above the whole scene); the coins rise out of the island into the HUD's ribbon */
+  /* in HudCoins' layer over the stage (above the whole scene); the coins rise out of the island into the HUD's jar */
   .cx {
     position: absolute; z-index: var(--z-coin); width: 0; height: 0; pointer-events: none;
     animation-name: cf-x; animation-timing-function: linear; animation-fill-mode: both;

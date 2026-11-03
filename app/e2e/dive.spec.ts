@@ -8,13 +8,13 @@ import { CHASE_MS, SEA } from '../src/lib/components/island/sea.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
 test.use({ viewport: { width: 390, height: 844 } });
-const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 
 async function open(page: Page, q: string) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=2026-07-04T12:00${q}`);
-  await expect(ribbon(page)).toBeVisible();
-  const bells = await ribbon(page).getAttribute('aria-label');
+  await expect(hudJar(page)).toBeVisible();
+  const bells = await hudJar(page).getAttribute('aria-label');
   await expect(page.locator('[data-bubbles]')).toBeAttached();
   await page.waitForTimeout(300);
   return bells;
@@ -42,7 +42,7 @@ test('a tap on the bubbles dives: a slow one (seaweed) is caught, NH’s line, a
   await expect(page.locator('[data-bubbles]')).toHaveCount(0);
   expect(await finds(page)).toEqual([{ kind: 'sea', id: 'seaweed' }]);
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-splash', 'scene-catch']));
-  await expect(ribbon(page)).toHaveAttribute('aria-label', bells!);
+  await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
   await page.screenshot({ path: '/tmp/world-build/critters-dive-caught.png' });
 });
 
@@ -83,7 +83,7 @@ test('now and then the bubbles hold a pearl: picked up, a shell in the ずかん
   await page.mouse.click(s.x, s.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText('しんじゅを ひろった！');
   expect(await finds(page)).toEqual([{ kind: 'shell', id: 'pearl' }]);
-  await ribbon(page).click();
+  await hudJar(page).click();
   await page.locator('dialog[open] .tab[data-tab=kiroku]').click();
   await expect(page.locator('[data-zukan="shell"]')).toContainText('1 / 9');
   await expect(page.locator('[data-zukan="sea"]')).toContainText('0 / 40');

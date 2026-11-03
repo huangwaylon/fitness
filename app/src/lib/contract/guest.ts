@@ -51,7 +51,7 @@ function guestSeesEvent(r: EventRow): boolean {
 }
 
 /**
- * The rows the guest's phone gets: the activity metrics (steps, Move, Exercise, Stand: the trees, the ribbon, きろく)
+ * The rows the guest's phone gets: the activity metrics (steps, Move, Exercise, Stand: the trees, today's ベル, きろく)
  * and every event but the からだ goals. Never a からだ row: weight, body fat, BMI, lean mass.
  */
 export function guestRows(rows: SnapshotRows): SnapshotRows {

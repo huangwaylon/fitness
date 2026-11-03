@@ -4,10 +4,10 @@
 </script>
 
 <script lang="ts">
-  // Today's new ベル flying into the HUD's jar (HudJar, left of the ribbon): when a sync brings goals met since this
+  // Today's new ベル flying into the HUD's jar (HudJar, the sky's top-left corner): when a sync brings goals met since this
   // phone last showed them (SCENE.bellsSeen, per day), a "+1" pops over that fruit under its tree on the island and
   // three coins hop up into the jar (CoinFlow); the jar squashes as each flight lands and its number counts up by it
-  // (coinsInFlight; the ribbon's own count-up is Hud's). It all waits while a sheet, the panel or the harvest covers
+  // (coinsInFlight), today's +N flashing beside it. It all waits while a sheet, the panel or the harvest covers
   // the scene.
   //   <HudCoins {view} {covered} {later} />
   import { untrack } from 'svelte';

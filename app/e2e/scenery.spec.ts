@@ -3,10 +3,10 @@
 import { expect, test, type Page } from '@playwright/test';
 import { geo, oku } from './island.ts';
 
-/** The island is up: today's ベル ribbon shows (the app asks no questions, so nothing to answer first). */
+/** The island is up: the HUD's jar shows (the app asks no questions, so nothing to answer first). */
 async function islandReady(page: Page) {
   // (its first paint: now and then over 5 s under CI's load)
-  await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('button', { name: /^ごほうび · ふたりのベル / })).toBeVisible({ timeout: 15_000 });
 }
 
 type W = { at: (x: number, z: number) => [number, number]; go: (z: number) => void };
@@ -31,7 +31,7 @@ const sea = (page: Page) =>
   });
 
 /** A point on the sun / moon the finger can reach: its core (the middle 70%: SceneTaps' reach), where nothing of the
- *  HUD lies over the sky (the ribbon's row can overlap a low orb on a short sky). */
+ *  HUD lies over the sky (the HUD's row can overlap a low orb on a short sky). */
 const orb = (page: Page) =>
   page.locator('.if-scene .orb').evaluate((el) => {
     const b = el.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2, r = b.width * 0.3;
@@ -53,9 +53,9 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   // a fixed midday (Tokyo): without it the orb is the moon from 19:00 and the sun row below fails every evening
   await page.goto('?demo&date=2026-11-04T12:00&critter=none');
   await islandReady(page);
-  const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+  const hudJar = page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
   const health = page.locator('.hud-health');
-  const bells = await ribbon.getAttribute('aria-label');
+  const bells = await hudJar.getAttribute('aria-label');
   const url = page.url();
 
   // (open lawn is a walk: my villager runs there, its tap ring on the ground instead of a dust puff)
@@ -76,7 +76,7 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   // a flourish is gone within ~1 s, and nothing else moved
   await expect(page.locator('[data-fx]')).toHaveCount(0, { timeout: 4000 }); // a flourish waits for my villager's walk (≤ 0.9 s)
   expect(page.url()).toBe(url);
-  await expect(ribbon).toHaveAttribute('aria-label', bells!);
+  await expect(hudJar).toHaveAttribute('aria-label', bells!);
 
   // the trees: a canopy tap opens its popup; a tap on the scenery then only closes it (no flourish)
   await page.locator('button.canopy').first().click();

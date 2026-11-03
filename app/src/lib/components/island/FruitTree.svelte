@@ -13,7 +13,7 @@
   // cap can still pay); then one ledger of the day, its zeros faint: もくひょう (+1 a goal met), がんばり (always; +1 a
   // goal at 1.5×, at most +2; 「（上限 2）」 when more were reached), this person's total (「うめの きょう +6 ベル」),
   // then ふたりでぜんぶ (both people, all four goals: +2, shared: shown in both popups, so ウェイ + うめ + ふたりでぜんぶ
-  // is the ribbon) and when the data last arrived. It stays until this tree is tapped again, the other
+  // is today's total, ごほうび's 「きょう +N ベル」) and when the data last arrived. It stays until this tree is tapped again, the other
   // tree is tapped, or a tap lands elsewhere. A quick run of canopy taps (the third within 1.2 s, and each quick tap after) is NH's shake instead: the
   // popup closes, the tree rustles and `onshake` asks the scene what falls (treeShake.ts: a branch, now and then a wasp
   // nest). `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate` sparkles a fruit.
@@ -471,7 +471,7 @@
         <span class="rule"></span>
         <span class="k tot">{totalKey}</span><b class="v money tot" class:zero={!person.today.bells} data-v="total">{formatBells(person.today.bells, { signed: true })}</b>
       </span>
-      <!-- today's ふたりでぜんぶ: both of us, all four goals (+2, the pair's: in both popups, counted once in the ribbon) -->
+      <!-- today's ふたりでぜんぶ: both of us, all four goals (+2, the pair's: in both popups, counted once in today's total) -->
       {#if together}
         <span class="duo" class:met={together.met}>{@render star('')}{#if together.met}<span class="k">{t('tree.together.met')}</span><b class="money">{signed(RULES.together)}</b><small>{t('tree.together.shared')}</small>
           {:else}{t('tree.together.left', { n: together.left })}{/if}

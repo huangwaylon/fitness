@@ -1,10 +1,10 @@
 // Every discovery popup (docs/design.md "Critters", "Beach finds", "Balloon", "Shooting stars", "Visitors: life"): the
 // catch plate (a fish, its first-find page, a shell, a present), the wish's caption and Gulliver's sleep talk keep at
-// least 12px from the screen's sides and foot and never sit over the HUD (the ribbon, the jar, the sync chip).
+// least 12px from the screen's sides and foot and never sit over the HUD (the jar, the health button, the sync chip).
 import { expect, test, type Page } from '@playwright/test';
 import { reelOnBite } from './island.ts';
 
-const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 const centre = (page: Page, sel: string) =>
   page.locator(sel).first().evaluate((el) => {
     const r = el.getBoundingClientRect();
@@ -13,7 +13,7 @@ const centre = (page: Page, sel: string) =>
 
 async function open(page: Page, q: string) {
   await page.goto(`?demo&${q}`);
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
   await page.waitForTimeout(1500);
 }
 

@@ -4,7 +4,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 
 async function open(page: Page, q: string) {
   await page.addInitScript(() => {
@@ -12,7 +12,7 @@ async function open(page: Page, q: string) {
     (window as { __ambient?: string[] }).__ambient = [];
   });
   await page.goto(`?demo&date=${q}`);
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
   const s = (await page.locator('.if-scene').boundingBox())!;
   await page.mouse.click(s.x + s.width / 2, s.y + 60); // a tap on open sky unlocks audio
 }

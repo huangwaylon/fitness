@@ -14,11 +14,11 @@ const HEADS = JSON.parse(readFileSync(new URL('../src/lib/villagers/heads.json',
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 async function open(page: Page, q = '') {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=2026-11-04T12:00${q}`);
-  await expect(ribbon(page)).toBeVisible({ timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
+  await expect(hudJar(page)).toBeVisible({ timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
   await is3d(page); // (the 3D island up and its canopies where they'll stay: a while in software GL)
   await quiet(page); // the opening beats are over
 }
@@ -58,7 +58,7 @@ test('one tap opens the popup and drops nothing; two close it; the third quick t
 
 test('a nest falls; its wasps charge my villager; a tap in time nets one: NH’s line, no sting, no ベル', async ({ page }) => {
   await open(page, '&shake=nest');
-  const bells = await ribbon(page).getAttribute('aria-label');
+  const bells = await hudJar(page).getAttribute('aria-label');
   await shake(page);
   await expect(page.locator('[data-nest]')).toHaveCount(1);
   const swarm = page.locator('button[data-swarm]');
@@ -73,7 +73,7 @@ test('a nest falls; its wasps charge my villager; a tap in time nets one: NH’s
   await page.waitForTimeout(1800);
   await expect(page.locator('[data-stung]')).toHaveCount(0);
   await expect(page.locator('[data-nest]')).toHaveCount(0); // the nest goes once the wasps are out
-  await expect(ribbon(page)).toHaveAttribute('aria-label', bells!);
+  await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
   // the shared day keeps the nest (one per tree an hour, on both phones): my tree's
   const day = JSON.parse((await page.evaluate(() => localStorage.getItem('island-demo.world.A')))!) as { events: { kind: string; tree?: string; drop?: string }[] };
   expect(day.events).toContainEqual(expect.objectContaining({ kind: 'shake', tree: 'goal-A', drop: 'nest' }));
@@ -118,7 +118,7 @@ test('the swollen eye sits on the eye whatever the face: tall ears, wide heads, 
   await expect(page.locator('[data-actor="mine"] [data-swollen]')).toHaveCount(1, { timeout: 4000 });
   // my villager changes while the eye is still swollen (60 s): it moves to each render's eye
   const sheet = page.locator('dialog[open]');
-  await ribbon(page).click();
+  await hudJar(page).click();
   await sheet.locator('.tab[data-tab=settings]').click();
   await sheet.locator('[data-push=villager]').click();
   const search = sheet.getByRole('searchbox');
@@ -150,7 +150,7 @@ test('a shaken branch lies beside the trunk until a tap picks it up', async ({ p
 
 test('a shake drops a bagworm on its thread beside the trunk; a tap nets it (NH’s line, a ずかん find, no ベル)', async ({ page }) => {
   await open(page, '&shake=bagworm');
-  const bells = await ribbon(page).getAttribute('aria-label');
+  const bells = await hudJar(page).getAttribute('aria-label');
   await shake(page);
   await expect(page.locator('[data-dangle="bagworm"]')).toBeAttached();
   const btn = page.locator('button[data-dangler="bagworm"]');
@@ -165,7 +165,7 @@ test('a shake drops a bagworm on its thread beside the trunk; a tap nets it (NH�
   await expect(page.locator('[data-fx="catch"]')).toContainText('ミノムシを つかまえた！', { timeout: 3000 });
   await expect(page.locator('[data-dangle]')).toHaveCount(0);
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-net', 'scene-catch']));
-  await expect(ribbon(page)).toHaveAttribute('aria-label', bells!);
+  await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
 });
 
 test('at night a spider can dangle instead; left alone it climbs back up into the tree', async ({ page }) => {
@@ -174,7 +174,7 @@ test('at night a spider can dangle instead; left alone it climbs back up into th
   await page.clock.install({ time: new Date('2026-11-04T22:00:00+09:00') });
   await page.clock.resume();
   await page.goto('?demo&date=2026-11-04T22:00&shake=spider');
-  await expect(ribbon(page)).toBeVisible();
+  await expect(hudJar(page)).toBeVisible();
   await is3d(page);
   await page.waitForTimeout(2600);
   await shake(page);
