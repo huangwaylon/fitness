@@ -6,12 +6,14 @@
   // recipe's ingredient (`pick`, マイレシピ): no meal, and ついか (into the recipe) or ほぞん / けす (an ingredient of it).
   // The item may be swapped while it is open (an entry opened from its snapshot, the catalog's portions arriving):
   // untouched, the amount starts again from the same grams; touched, the portion picked stays picked (by its label).
+  // A serving with no known weight (`serving`: a custom food's, マイ食品): its values per serving, its one portion stepped
+  // by whole servings, no grams field (its nominal 100 g never shown).
   import { untrack } from 'svelte';
   import type { Meal } from '#lib/contract/food.ts';
   import { FOOD_GRAMS, MEALS } from '#lib/contract/food.ts';
   import { nutrientsFor, portionsOf, type Item } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { gramsText, hasWeight, portionLabel, startOf, stepOf, unitOf } from './foodUi.ts';
+  import { gramsText, halfWidth, hasWeight, portionLabel, startOf, stepOf, unitOf } from './foodUi.ts';
 
   interface Props {
     item: Item;
@@ -23,12 +25,14 @@
     editing?: boolean;
     /** A recipe's ingredient, not a meal: no meal to pick, the recipe's words. */
     pick?: boolean;
+    /** A serving with no known weight (FoodSnap `sv`): whole servings, no grams. */
+    serving?: boolean;
     ondone: (v: { m: Meal; g: number; u: string | null }) => void;
     onremove?: () => void;
   }
-  let { item, meal, g0, u0, editing = false, pick = false, ondone, onremove }: Props = $props();
+  let { item, meal, g0, u0, editing = false, pick = false, serving = false, ondone, onremove }: Props = $props();
 
-  const ps = $derived(portionsOf(item));
+  const ps = $derived(serving ? (item.portions?.length ? item.portions : [{ label: t('food.my.one'), g: 100 }]) : portionsOf(item));
   /** g or ml: a drink's portions are in ml (100 ml counts as 100 g). */
   const unit = $derived(ps.some((p) => unitOf(p.label) === 'ml') ? 'ml' : 'g');
   // (the level is keyed: a new food or entry mounts a new picker, so the start is read once)
@@ -55,7 +59,7 @@
   });
   const pi = $derived(Math.max(0, ps.findIndex((p) => p.label === pl)));
 
-  const typedG = $derived(Number(typed.replace(/[０-９．]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(',', '.')));
+  const typedG = $derived(Number(halfWidth(typed).replace(',', '.')));
   const g = $derived(custom ? (Number.isFinite(typedG) ? Math.round(typedG * 10) / 10 : 0) : Math.round(ps[pi].g * mult * 10) / 10);
   const ok = $derived(g >= FOOD_GRAMS.min && g <= FOOD_GRAMS.max);
   const n = $derived(nutrientsFor(item, ok ? g : 0));
@@ -73,7 +77,7 @@
       typed = gramsText(Math.max(0, Math.min(FOOD_GRAMS.max, Math.round(g + d * 10))));
       return;
     }
-    const s = stepOf(ps[pi].label);
+    const s = serving ? 1 : stepOf(ps[pi].label);
     mult = Math.max(s, Math.min(20, Math.round((mult + d * s) / s) * s));
   }
   function onGrams() {
@@ -88,7 +92,7 @@
 <form class="amt" onsubmit={(e) => { e.preventDefault(); done(); }}>
   <section class="card head">
     <h3>{item.name}</h3>
-    <p class="per money">{t('food.per100', { k: formatNum(item.kcal) })} · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}</p>
+    <p class="per money">{serving ? t('food.my.per', { u: ps[0].label, k: formatNum(item.kcal) }) : t('food.per100', { k: formatNum(item.kcal) })} · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}</p>
   </section>
 
   <section class="card">
@@ -96,7 +100,7 @@
     <div class="chips" role="group" aria-label={t('food.amount')}>
       {#each ps as p, i (p.label)}
         <button type="button" class="chip" aria-pressed={!custom && pi === i} data-sfx={!custom && pi === i ? 'none' : 'tick'} data-portion={p.label} onclick={() => portion(i)}>
-          {p.label}{#if !hasWeight(p.label)}<small>{gramsText(p.g)}{unit}</small>{/if}
+          {p.label}{#if !serving && !hasWeight(p.label)}<small>{gramsText(p.g)}{unit}</small>{/if}
         </button>
       {/each}
     </div>
@@ -104,12 +108,12 @@
       <button type="button" class="nb" data-sfx="tick" aria-label={t('food.less')} data-step="-1" onclick={() => step(-1)}>−</button>
       <b class="mult money" aria-live="polite">{custom ? `${gramsText(g)}${unit}` : `×${mult}`}</b>
       <button type="button" class="nb" data-sfx="tick" aria-label={t('food.more')} data-step="1" onclick={() => step(1)}>＋</button>
-      <label class="grams">
+      {#if !serving}<label class="grams">
         <span class="sr-only">{t(unit === 'ml' ? 'food.ml' : 'food.grams')}</span>
         <input type="text" inputmode="decimal" data-sfx="none" data-grams autocomplete="off" enterkeyhint="done" maxlength="6" size="5"
           value={custom ? typed : gramsText(g)} aria-invalid={!ok} oninput={(e) => { typed = e.currentTarget.value; onGrams(); }} />
         <span class="u" aria-hidden="true">{unit}</span>
-      </label>
+      </label>{/if}
     </div>
     <dl class="live" data-food-live>
       <div class="k"><dt class="sr-only">kcal</dt><dd class="money">{formatNum(n.kcal)}<small>kcal</small></dd></div>

@@ -6,25 +6,32 @@
   // catalog not loading (offline): もういちど, and さいきん still under it (they need no catalog). Japanese IME-safe: half-composed text (「なt」) is
   // never searched; the search runs on each committed change. A row opens the amount. From a meal's ＋, マイレシピ
   // too (everyone's recipes: all of them after さいきん, the matching ones before the catalog's); a recipe opens its own.
+  // マイ食品 (everyone's custom foods) likewise from both a meal and a recipe's ingredient: all of them after さいきん, the
+  // matching ones above the catalog's; one opens its amount. 「＋ じぶんで つくる」 ends the list (a card of its own when
+  // nothing matches): the custom food editor, the typed text its name.
   import type { Who } from '#lib/types.ts';
-  import type { FoodEntry } from '#lib/contract/food.ts';
+  import type { FoodCustom, FoodEntry } from '#lib/contract/food.ts';
   import type { Recipe } from '#lib/model/food.ts';
   import { searchFoods, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
   import { searchKey } from '#lib/food/text.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { amountText, defaultPortion, foodDb, itemOf, uniqueItems } from './foodUi.ts';
+  import { amountText, defaultPortion, foodDb, itemOf, servingText, uniqueItems } from './foodUi.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
     recent: FoodEntry[];
     /** A food picked: a catalog item, or a recent one with the grams I had last. */
-    onpick: (item: Item, g?: number, u?: string) => void;
+    onpick: (item: Item, g?: number, u?: string, f?: FoodEntry['f']) => void;
     /** マイレシピ to offer (none: a recipe's ingredient is being picked), and who set each. */
     recipes?: readonly Recipe[];
     names?: Record<Who, string>;
     onrecipe?: (r: Recipe) => void;
+    /** マイ食品 to offer (everyone's), one picked, and じぶんで つくる (the name typed so far). */
+    customs?: readonly FoodCustom[];
+    oncustom?: (c: FoodCustom) => void;
+    oncreate?: (name: string) => void;
   }
-  let { recent, onpick, recipes = [], names, onrecipe }: Props = $props();
+  let { recent, onpick, recipes = [], names, onrecipe, customs = [], oncustom, oncreate }: Props = $props();
 
   let db = $state.raw<FoodDb | null>(null);
   let failed = $state(false);
@@ -57,11 +64,13 @@
     return db && q.trim() ? uniqueItems(searchFoods(db, q, 40)) : [];
   });
   const kcal = (n: number) => t('kiroku.kcal', { n: formatNum(n) });
-  /** The recipes whose names hold every word typed (all of them with nothing typed). */
-  const myRecipes = $derived.by(() => {
-    const words = q.trim().split(/[\s　]+/).map(searchKey).filter(Boolean);
-    return recipes.filter((r) => words.every((w) => searchKey(r.n).includes(w)));
-  });
+  /** The recipes and custom foods whose names hold every word typed (all of them with nothing typed). */
+  const words = $derived(q.trim().split(/[\s　]+/).map(searchKey).filter(Boolean));
+  const hits = (n: string) => words.every((w) => searchKey(n).includes(w));
+  const myRecipes = $derived(onrecipe ? recipes.filter((r) => hits(r.n)) : []);
+  const myFoods = $derived(oncustom ? customs.filter((c) => hits(c.n)) : []);
+  /** Nothing of ours matches what was typed (the catalog's own say so after). */
+  const noneOfOurs = $derived(!myRecipes.length && !myFoods.length);
 
   function onInput(e: Event) {
     if (!(e as InputEvent).isComposing) q = text;
@@ -71,6 +80,29 @@
     input?.focus();
   }
 </script>
+
+{#snippet customRows()}
+  {#if myFoods.length}
+    <h3 class="lh">{t('food.my.head')}</h3>
+    <ul class="list" data-food-customs>
+      {#each myFoods as c (c.id)}
+        <li><button type="button" class="card it" data-sfx="page" data-custom={c.id} onclick={() => oncustom?.(c)}>
+          <span class="nm">{c.n}</span>
+          <small class="meta">{names?.[c.who] ?? c.who}</small>
+          <span class="kc"><b class="money">{kcal(c.k)}</b><small>{servingText(c)}</small></span>
+        </button></li>
+      {/each}
+    </ul>
+  {/if}
+{/snippet}
+
+{#snippet create(big: boolean)}
+  {#if oncreate}
+    <button type="button" class="btn small make" class:paper={!big} data-sfx="page" data-custom-new onclick={() => oncreate(q.trim())}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5 V19 M5 12 H19" /></svg>{t('food.my.make')}
+    </button>
+  {/if}
+{/snippet}
 
 {#snippet recipeRows()}
   {#if onrecipe && myRecipes.length}
@@ -99,8 +131,11 @@
   {#if !q.trim()}
     {@render recentRows()}
     {@render recipeRows()}
+    {@render customRows()}
+    {@render create(false)}
   {:else}
     {@render recipeRows()}
+    {@render customRows()}
     {@render catalog()}
   {/if}
 </div>
@@ -110,7 +145,7 @@
   {#if recent.length}
     <ul class="list" data-food-recent>
       {#each recent as e (e.id)}
-        <li><button type="button" class="card it" data-sfx="page" data-item={e.f.id} onclick={() => onpick(itemOf(e.f, db, e.g), e.g, e.f.u)}>
+        <li><button type="button" class="card it" data-sfx="page" data-item={e.f.id} onclick={() => onpick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f)}>
           <span class="nm">{e.f.n}</span>
           <small class="meta">{amountText(e)}</small>
           <b class="kc money">{kcal(Math.round((e.f.k * e.g) / 100))}</b>
@@ -128,11 +163,20 @@
       <p class="note" role="status">{t('food.loadFail')}</p>
       <button type="button" class="btn paper small" data-sfx="tick" data-food-retry onclick={() => tries++}>{t('food.retry')}</button>
     </div>
+    {@render create(false)}
     {@render recentRows()}
   {:else if !db}
     <p class="note" role="status">{t('food.loading')}</p>
   {:else if !results.length}
-    {#if !(onrecipe && myRecipes.length)}<p class="note" role="status">{t('food.none', { q: q.trim() })}</p>{/if}
+    {#if noneOfOurs}
+      <section class="card none" data-food-none>
+        <p class="note" role="status">{t('food.none', { q: q.trim() })}</p>
+        {#if oncreate}<p class="note">{t('food.my.noneHint')}</p>{/if}
+        {@render create(true)}
+      </section>
+    {:else}
+      {@render create(false)}
+    {/if}
   {:else}
     <ul class="list" data-food-results>
       {#each results as it (it.id)}
@@ -145,6 +189,7 @@
         </button></li>
       {/each}
     </ul>
+    {@render create(false)}
   {/if}
 {/snippet}
 
@@ -195,5 +240,9 @@
   .fail .btn { margin: 0; }
   .kc { grid-area: kc; display: grid; justify-items: end; gap: 3px; font-size: var(--fs-body); white-space: nowrap; }
   .kc small { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); max-width: 12em; overflow: hidden; text-overflow: ellipsis; }
+  .make { margin: 0; width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .make svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
+  .none { display: grid; gap: 8px; padding: 12px 14px; }
+  .none .note { margin: 0 2px; }
   .note { margin: 4px 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

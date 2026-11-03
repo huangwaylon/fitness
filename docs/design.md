@@ -293,6 +293,20 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   for the recipe as a food (1人前 first, ぜんぶ, 100 g; the meal the clock suggests) and logs an ordinary entry of mine
   on the day shown in きろく, which it then shows. A meal's search lists マイレシピ too: all after さいきん, the matching ones
   above the catalog's; one → the same amount.
+- **マイ食品 (the user: "create my own food and record its calories for future use in case there's a food not in the
+  existing database"):** everyone's custom foods (`food_custom`, contract/food.ts `customSnap`), a food typed in as one
+  serving. Both searches (a meal's and a recipe's ingredient) list them under マイ食品 (all after さいきん / マイレシピ,
+  the matching ones above the catalog's) and end with 「＋ じぶんで つくる」 (a card of its own, with a line on what it is
+  for, when nothing matches), the typed text its name. The editor (`FoodCustom`): なまえ, 1食の めやす (「1食」 unless
+  typed) and その重さ g (may stay blank: then it logs by the serving), カロリー kcal (needed) and P/F/C/塩分 g (only
+  what is known), all per serving, full-width digits welcome; a weight too light for its values (denser than any food:
+  `customDensityOk`) is refused before ほぞん. ほぞん goes on where it came from: its amount (a meal's ついか, or the
+  ingredient's). With no weight the amount steps whole servings, no grams field and no weight shown anywhere (the
+  entry's snapshot says `sv`: 「1食」, 「1食×2」, a nominal 100 g a serving underneath; a recipe with such an ingredient
+  logs by 1人前 alike). The レシピ tab lists them under its recipes (a card: the name, who made it, the serving and its
+  kcal; ＋ じぶんの 食品を つくる): mine opens the editor (けす asked twice), anyone else's the same read-only with
+  「コピーして へんしゅう」 and 「ごはんに ついか」. The tab keeps the name レシピ (「レシピ・マイ食品」 doesn't fit a third of
+  393 px beside its art); the searches are the way in.
 - **データの出典** at the foot: each dataset's label, attribution and license (the data's licenses ask for it).
 - Food names come from the data, so their kanji are not all in the trimmed Zen Maru subset: those fall back to the
   system font (the copy's own strings are covered: `npm run fonts:subset`).

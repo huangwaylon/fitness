@@ -1,5 +1,5 @@
 // The wallet actions: buy one of the two rewards (only what the wallet covers), undo; the goals; the meal log, its
-// repeats and recipes.
+// repeats, recipes and custom foods.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
 import { configureTransport } from '#lib/sync/transport.ts';
@@ -408,3 +408,64 @@ describe('my recipes (マイレシピ)', () => {
     expect(foodDay(week.model!.state, 'A', '2026-11-18')).toMatchObject({ kcal: 352 }); // 201.4 × 1.75
   });
 });
+
+describe('my foods (マイ食品)', () => {
+  const NOW = Date.parse('2026-11-18T12:00:00.000Z');
+  const model = async (me: 'A' | 'B' | 'G' = 'A', who: 'A' | 'B' | 'G' = me) => {
+    const { reduce } = await import('#lib/model/state.ts');
+    const events = queued().map((e, i) => [new Date(NOW + i).toISOString(), who, e.id, e.type, JSON.stringify(e.data)]);
+    week.model = { state: reduce({ metrics: [], events: events as never }), me, now: NOW } as unknown as typeof week.model;
+  };
+  const sent = (type: string) => queued().filter((e) => e.type === type).map((e) => e.data as Record<string, unknown>);
+  const BENTO = { n: '会社の弁当', u: '1個', k: 650 };
+
+  it('saveCustom sends a new one’s whole state (id `m` + [0-9a-z], grams to one decimal, unknowns null); refuses a malformed one', async () => {
+    const { saveCustom } = await import('./actions.ts');
+    await model();
+    const r = saveCustom({ ...BENTO, g: null, p: 20 });
+    expect(r).toMatchObject({ ok: true, id: expect.stringMatching(/^m[0-9a-z]{6,24}$/) });
+    expect(sent('food_custom')).toEqual([{ id: r.id, at: expect.any(Number), n: '会社の弁当', u: '1個', k: 650, p: 20, fa: null, c: null, s: null }]);
+    expect(saveCustom({ n: 'おにぎり', u: '1個', g: 110.04, k: 180 }).ok).toBe(true);
+    expect(sent('food_custom')[1]).toMatchObject({ g: 110 });
+    for (const bad of [{ ...BENTO, n: ' ' }, { ...BENTO, u: '' }, { ...BENTO, k: 5001 }, { ...BENTO, g: 50, k: 500 }, { ...BENTO, p: -1 }]) expect(saveCustom(bad).ok).toBe(false);
+    expect(sent('food_custom')).toHaveLength(2);
+  });
+
+  it('edits and removes my own only; another’s is copied to mine as a new one', async () => {
+    const { removeCustom, saveCustom } = await import('./actions.ts');
+    await model();
+    const { id } = saveCustom(BENTO);
+    await model();
+    expect(saveCustom({ id, ...BENTO, k: 700 }).ok).toBe(true);
+    expect(sent('food_custom')[1]).toMatchObject({ id, k: 700 });
+    expect(sent('food_custom')[1].at as number).toBeGreaterThan(sent('food_custom')[0].at as number);
+    await model('B', 'A');
+    expect(saveCustom({ id, ...BENTO, k: 1 }).ok).toBe(false);
+    expect(removeCustom(id!).ok).toBe(false);
+    expect(saveCustom({ id: 'mnope0000', ...BENTO }).ok).toBe(false);
+    const copy = saveCustom(BENTO);
+    expect(copy.ok && copy.id !== id).toBe(true);
+    await model();
+    expect(removeCustom(id!).ok).toBe(true);
+    expect(sent('food_custom').at(-1)).toEqual({ id, at: expect.any(Number), rm: true });
+  });
+
+  it('logCustom logs anyone’s as an entry of mine (a serving with no weight a nominal 100 g); an edit later changes no meal', async () => {
+    const { logCustom, saveCustom } = await import('./actions.ts');
+    const { foodDay } = await import('#lib/model/food.ts');
+    await model();
+    const { id } = saveCustom({ ...BENTO, k: 1200 });
+    await model('G', 'A'); // the guest's phone
+    expect(logCustom({ customId: id!, d: '2026-11-18', m: 'l', g: 150 }).ok).toBe(true);
+    expect(logCustom({ customId: 'mnope0000', d: '2026-11-18', m: 'l', g: 100 }).ok).toBe(false);
+    expect(sent('food').at(-1)).toEqual({
+      id: expect.stringMatching(/^f/), at: expect.any(Number), d: '2026-11-18', m: 'l', g: 150,
+      f: { id: `custom:${id}`, n: '会社の弁当', k: 1200, p: null, fa: null, c: null, s: null, u: '1個', sv: true }
+    });
+    await model();
+    expect(saveCustom({ id, ...BENTO, k: 100 }).ok).toBe(true);
+    await model();
+    expect(foodDay(week.model!.state, 'A', '2026-11-18')).toMatchObject({ kcal: 1800 });
+  });
+});
+
