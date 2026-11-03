@@ -66,6 +66,11 @@ export const onBridge = (x: number, z: number, inset = 0): boolean => Math.abs(x
 export let SPRING: Oval = { x: 364, z: 1152, rx: 28, rz: 16 };
 /** The pond (an oval of water), with lily pads: west of the path to the campsite. */
 export let POND: Oval = { x: 74, z: 772, rx: 46, rz: 26 };
+/** The ponds put down on the layout (kind `pond`: layout/ponds.ts), each its water's oval: fresh water as the pond's
+ *  (none on world.ts's own island). */
+export let PONDS: readonly Oval[] = [];
+/** The pond's oval a point is in (`grow` u round its edge): the painted pond's or one put down, else null. */
+export const pondAt = (x: number, z: number, grow = 0): Oval | null => [POND, ...PONDS].find((o) => inOval(o, x, z, grow)) ?? null;
 
 /** Where a freshwater cast lands, NH's locations (spec Q3): the pond, the river, its mouth, or the clifftop. */
 export type FreshWhere = 'pond' | 'river' | 'mouth' | 'clifftop';
@@ -386,7 +391,7 @@ export interface WorldGeo {
   BUILDINGS: readonly Building[]; HOMES: typeof HOMES; GOAL_TREES: typeof GOAL_TREES; TAPE_DECK: Pt; ROCK: Pt;
   DIG_SPOTS: readonly Pt[]; LAWN_SPOTS: readonly Pt[]; HEDGE_Z: number; HEDGE_XS: readonly number[]; BEACH_BOX: Box4; SEA_BOX: Box4;
   CENTRE_STAGE: Pt; ARCH: Pt; CAKE: Pt; SCENERY: readonly Scenery[]; DECOR_SLOTS: readonly DecorSlot[]; SEATS: Readonly<Record<string, Pt>>;
-  PULLUP_AT: Pt; FLOWERS: readonly Flower[];
+  PULLUP_AT: Pt; FLOWERS: readonly Flower[]; PONDS: readonly Oval[];
   inRiver(x: number, z: number): boolean; freshWhere(x: number, z: number): FreshWhere; onLand(x: number, z: number): boolean;
   onGrass(x: number, z: number): boolean; surfaceAt(x: number, z: number): Surface;
   /** The layout's walk grid (layout/nav.ts navOf): the walk's, in place of nav.ts's and walkGraph.ts's. */
@@ -395,7 +400,7 @@ export interface WorldGeo {
 type Values = Omit<WorldGeo, 'inRiver' | 'freshWhere' | 'onLand' | 'onGrass' | 'surfaceAt' | 'nav'>;
 const snapshot = (): Values => ({
   LAND, SHORE_Z, GRASS, CAMS, RIVER, RIVER_BEND, BRIDGE, SPRING, POND, CLIFF, BUILDINGS, HOMES, GOAL_TREES, TAPE_DECK, ROCK, DIG_SPOTS,
-  LAWN_SPOTS, HEDGE_Z, HEDGE_XS, BEACH_BOX, SEA_BOX, CENTRE_STAGE, ARCH, CAKE, SCENERY, DECOR_SLOTS, SEATS, PULLUP_AT, FLOWERS
+  LAWN_SPOTS, HEDGE_Z, HEDGE_XS, BEACH_BOX, SEA_BOX, CENTRE_STAGE, ARCH, CAKE, SCENERY, DECOR_SLOTS, SEATS, PULLUP_AT, FLOWERS, PONDS
 });
 /** @public (the layout's derivation reads the old island's looks and sizes by id) world.ts's own island, as above. */
 export const WORLD_2D: Readonly<Values> = snapshot();
@@ -409,7 +414,7 @@ export function setWorld(g: WorldGeo | null): void {
   geo = g;
   const v: Values = g ?? WORLD_2D;
   ({ LAND, SHORE_Z, GRASS, CAMS, RIVER, RIVER_BEND, BRIDGE, SPRING, POND, CLIFF, BUILDINGS, HOMES, GOAL_TREES, TAPE_DECK, ROCK, DIG_SPOTS,
-    LAWN_SPOTS, HEDGE_Z, HEDGE_XS, BEACH_BOX, SEA_BOX, CENTRE_STAGE, ARCH, CAKE, SCENERY, DECOR_SLOTS, SEATS, PULLUP_AT, FLOWERS } = v);
+    LAWN_SPOTS, HEDGE_Z, HEDGE_XS, BEACH_BOX, SEA_BOX, CENTRE_STAGE, ARCH, CAKE, SCENERY, DECOR_SLOTS, SEATS, PULLUP_AT, FLOWERS, PONDS } = v);
   CAMPSITE = BUILDINGS.find((b) => b.id === 'campsite') ?? BUILDINGS[0];
   CAM_MAX = CAMS.oku;
   gen++;

@@ -1,7 +1,7 @@
 // The island on its editable layout (docs/island-layout.md "What the 3D integration must change"; island/site.svelte.ts):
 // the gameplay reads the long layout: the doors, the homes, the walk, the waters.
 import { expect, test, type Page } from '@playwright/test';
-import { is3d, openNear, quiet, tapOn } from './island';
+import { geo, is3d, openNear, quiet, tapOn } from './island';
 
 type Site = { on: boolean; doors: Record<string, [number, number]>; homes: { A: [number, number]; B: [number, number] }; stage: [number, number]; named: Record<string, [number, number]>; grass: [number, number][] };
 const site = (page: Page) => page.evaluate(() => (window as unknown as { __world: { site(): Site } }).__world.site());
@@ -220,5 +220,34 @@ test('the layout’s water flows: the river, the waterfall and the pond move fro
     await page.waitForTimeout(500);
     expect(a.equals(await page.screenshot({ clip })), `${name} flows`).toBe(false);
   }
+});
+
+test('a pond put down in the editor: on the phone at once, drawn there, its water a fresh water', async ({ context }) => {
+  test.slow();
+  const phone = await context.newPage(), editor = await context.newPage();
+  await editor.setViewportSize({ width: 1440, height: 900 });
+  await phone.goto(`${ISLAND}&as=B`);
+  expect(await is3d(phone)).toBe(true);
+  await editor.goto('editor/?demo&preview=0&date=2026-11-04T12:00');
+  await editor.waitForFunction(() => (window as unknown as { __editor?: unknown }).__editor);
+  await editor.bringToFront();
+  type E = { tileScreen(c: number, r: number): [number, number]; layout(): { objects: Map<string, { k: string }> } };
+  const ponds = () => editor.evaluate(() => [...(window as unknown as { __editor: E }).__editor.layout().objects.values()].filter((o) => o.k === 'pond').length);
+  await editor.locator('[data-kind="pond"]').click();
+  // the first spot of open lawn it goes on (the front lawn's)
+  for (const [c, r] of [[12, 21], [4, 13], [12, 15], [4, 20], [11, 36]] as const) {
+    const [x, y] = await editor.evaluate(([c, r]) => (window as unknown as { __editor: E }).__editor.tileScreen(c, r), [c, r] as const);
+    await editor.mouse.move(x, y);
+    await editor.mouse.click(x, y);
+    if (await ponds()) break;
+  }
+  expect(await ponds()).toBe(1);
+  // the phone: the pond in its layout, drawn (its water, bed and stones), its water a fresh water
+  await expect.poll(() => phone.evaluate(() => (window as unknown as { __layout: { count(k: string): number } }).__layout.count('pond')), { timeout: 5000 }).toBe(1);
+  const g = await geo(phone);
+  expect(g.PONDS).toHaveLength(1);
+  const o = g.PONDS[0];
+  expect(await world<{ surface: string; fresh: string }>(phone, `ground(${o.x}, ${o.z})`)).toEqual({ surface: 'water', fresh: 'pond' });
+  await expect.poll(() => phone.evaluate(() => (window as unknown as { __world3d: { placedGroups(): string[] } }).__world3d.placedGroups().some((id) => id.startsWith('pond:')))).toBe(true);
 });
 

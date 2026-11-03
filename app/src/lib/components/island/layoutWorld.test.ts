@@ -8,6 +8,8 @@ import { guestSpot } from './buildings.ts';
 import { mushroomSpots } from './mushrooms.ts';
 import { defaultLayout, withChanges } from '#lib/layout/model.ts';
 import { isLayoutNav } from '#lib/layout/nav.ts';
+import { validate } from '#lib/layout/validate.ts';
+import { freshAreas, waterAt } from './critters.ts';
 
 const l = defaultLayout();
 const g = worldOf(l);
@@ -63,6 +65,35 @@ describe('worldOf: world.ts from the layout', () => {
     const h = worldOf(pondless);
     expect(h.BUILDINGS.find((x) => x.id === 'home-B')!.x).toBe(g.BUILDINGS.find((x) => x.id === 'home-B')!.x + 60);
     expect(h.POND.x).toBeLessThan(-1000);
+  });
+});
+
+describe('a pond put down (kind pond): a fresh water as the painted pond’s', () => {
+  afterEach(() => W.setWorld(null));
+  // on the first open grass it fits on, turned a quarter too
+  const at = (x: number, z: number, f: 0 | 1) => withChanges(l, { set: [{ id: 'p1', k: 'pond', x, z, f }] });
+  const fits = (x: number, z: number) => ([0, 1] as const).every((f) => !validate(at(x, z, f)).some((i) => i.level === 'error' && i.ids?.includes('p1')));
+  const spot = (() => {
+    for (let z = 8; z < 50; z++) for (let x = 2; x < 16; x++) if (fits(x, z)) return [x, z] as const;
+    throw new Error('no room for a pond');
+  })();
+  const put = (f: 0 | 1) => at(spot[0], spot[1], f);
+  test('its water: underfoot, a cast’s, the fish’s, the walk’s', () => {
+    for (const f of [0, 1] as const) {
+      const pl = put(f), g2 = worldOf(pl);
+      expect(g2.PONDS).toHaveLength(1);
+      const o = g2.PONDS[0];
+      expect(f ? o.rz > o.rx : o.rx > o.rz).toBe(true);
+      expect(g2.surfaceAt(o.x, o.z)).toBe('water');
+      expect(g2.freshWhere(o.x, o.z)).toBe('pond');
+      W.setWorld(g2);
+      expect(W.pondAt(o.x, o.z)).toBe(o);
+      expect(waterAt(o.x, o.z, false)).toBe('pond');
+      expect(freshAreas('pond').some((a) => a.cx === o.x && a.cz === o.z)).toBe(true);
+      // nobody walks into it
+      expect(walkable(walkGeo(), o.x, o.z)).toBe(false);
+      W.setWorld(null);
+    }
   });
 });
 

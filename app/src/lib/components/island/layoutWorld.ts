@@ -12,6 +12,7 @@ import { doorOf, extentOf, footOf, objMid, originOf, type Layout, type Obj } fro
 import { kindDef, footprintOf } from '#lib/layout/catalog.ts';
 import { navOf, seatsOf, type LayoutNav } from '#lib/layout/nav.ts';
 import { daySpots, openGrass } from '#lib/layout/spots.ts';
+import { pondOval, pondPlaces } from '#lib/layout/ponds.ts';
 import { WORLD_2D, FALLS_POOL, inOval, type Building, type BuildingId, type DecorSlot, type Flower, type FreshWhere, type Pt, type Scenery, type Surface, type WorldGeo } from './world.ts';
 
 type R3 = readonly [number, number, number];
@@ -152,6 +153,9 @@ export function worldOf(l: Layout, nav: LayoutNav = navOf(l)): WorldGeo {
   const ponds = pieces(l, (k, t) => k === 'pond' && t === 0), springs = pieces(l, (k, t) => k === 'pond' && t > 0);
   const FAR_OVAL = { x: -1e5, z: -1e5, rx: 1, rz: 1 };
   const POND = ponds[0] ? ovalOf(ponds[0]) : FAR_OVAL;
+  // the ponds put down: their water ovals (fresh water as the pond's)
+  const PONDS = pondPlaces(l).map(pondOval);
+  const inPonds = (x: number, z: number) => PONDS.some((o) => inOval(o, x, z));
   // the spring: the upper tier's pond, else the river's source
   const SPRING = springs[0] ? ovalOf(springs[0]) : RIVER[0] ? { x: RIVER[0][0], z: RIVER[0][1], rx: 14, rz: 10 } : FAR_OVAL;
   const bridge = byKind('bridge')[0];
@@ -259,7 +263,7 @@ export function worldOf(l: Layout, nav: LayoutNav = navOf(l)): WorldGeo {
     DIG_SPOTS: dig, LAWN_SPOTS: grass, HEDGE_Z: -1e5, HEDGE_XS: [],
     BEACH_BOX: { ...WORLD_2D.BEACH_BOX, z0: shore + (WORLD_2D.BEACH_BOX.z0 - WORLD_2D.SHORE_Z), z1: shore + (WORLD_2D.BEACH_BOX.z1 - WORLD_2D.SHORE_Z) },
     SEA_BOX: { ...WORLD_2D.SEA_BOX, z0: shore + (WORLD_2D.SEA_BOX.z0 - WORLD_2D.SHORE_Z), z1: shore + (WORLD_2D.SEA_BOX.z1 - WORLD_2D.SHORE_Z) },
-    CENTRE_STAGE, ARCH, CAKE, SCENERY, DECOR_SLOTS, SEATS, PULLUP_AT, FLOWERS,
+    CENTRE_STAGE, ARCH, CAKE, SCENERY, DECOR_SLOTS, SEATS, PULLUP_AT, FLOWERS, PONDS,
     inRiver: (x, z) => kindAt(l, x, z) === 'river' && !onBridgeAt(x, z),
     onLand: (x, z) => kindAt(l, x, z) !== 'sea',
     onGrass: (x, z) => {
@@ -267,7 +271,7 @@ export function worldOf(l: Layout, nav: LayoutNav = navOf(l)): WorldGeo {
       return k !== 'sea' && k !== 'sand';
     },
     freshWhere: (x, z): FreshWhere => {
-      if (kindAt(l, x, z) === 'pond' ? tierAt(x, z) === 0 : inOval(POND, x, z, 12)) return 'pond';
+      if ((kindAt(l, x, z) === 'pond' ? tierAt(x, z) === 0 : inOval(POND, x, z, 12)) || PONDS.some((o) => inOval(o, x, z, 12))) return 'pond';
       if (tierAt(x, z) > 0 || z > CLIFF.z0 - FALLS_POOL) return 'clifftop';
       const s = nearRiverStep(x, z);
       return s !== null && s <= 1 ? 'mouth' : 'river';
@@ -275,6 +279,7 @@ export function worldOf(l: Layout, nav: LayoutNav = navOf(l)): WorldGeo {
     nav,
     surfaceAt: (x, z): Surface => {
       if (onBridgeAt(x, z) || onStairs(x, z)) return 'stone';
+      if (inPonds(x, z)) return 'water';
       const k = kindAt(l, x, z);
       if (k === 'sea') return 'sea';
       if (k === 'river' || k === 'pond') return 'water';

@@ -11,6 +11,8 @@ import type { Piece } from '../island/fixedDecor.ts';
 import type { Inst, ModelName, Standin } from './layout3d.ts';
 import { assetFor } from './assets.ts';
 import { keyModel, modelBounds } from './models3d.ts';
+import { POND_LILIES, POND_Y } from './pond.ts';
+import { pondPlaces } from '#lib/layout/ponds.ts';
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
 import { kindDef } from '#lib/layout/catalog.ts';
 import { doorOf, facingVec, footOf, objMid, type Layout, type Obj } from '#lib/layout/model.ts';
@@ -163,6 +165,24 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         const scale = scaleOf(WORLD_2D.BUILDINGS[0].key, 'tent', WORLD_2D.BUILDINGS[0].h);
         const door = doorOf(layout, o).at;
         out.push({ id: o.id, model: 'tent', x: door[0], z: door[1] - 10 * scale, scale, yaw: (o.f * Math.PI) / 2, tap: 'tent' });
+        break;
+      }
+      case 'pond': {
+        // its lily pads and the lily on the biggest, on its water (pond.ts draws the water, its bed and its stones)
+        const p = pondPlaces(layout).find((q) => q.id === o.id);
+        if (!p) break;
+        const at = (u: number, v: number): [number, number] => {
+          const lx = u * p.rx, lz = v * p.rz, c = Math.cos(p.yaw), sn = Math.sin(p.yaw);
+          return [p.x + lx * c + lz * sn, p.z - (-lx * sn + lz * c)];
+        };
+        // (the island's own pad: NH's fx one draws black among the things)
+        const pad = 'proc/lily-pad';
+        POND_LILIES.forEach(([u, v, r], i) => {
+          const [lx, lz] = at(u, v);
+          out.push({ id: `${o.id}:lily-${i}`, model: pad as ModelName, x: lx, z: lz, lift: POND_Y + 0.05, scale: r / 3, yaw: i * 2.1 });
+        });
+        const [fx, fz] = at(POND_LILIES[0][0] + 0.06, POND_LILIES[0][1] - 0.04);
+        out.push({ id: `${o.id}:lily-flower`, model: 'proc/lily-flower' as ModelName, x: fx, z: fz, lift: POND_Y + 0.1, scale: 1.7 });
         break;
       }
       case 'stairs': case 'spot':

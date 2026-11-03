@@ -45,6 +45,8 @@
   import { homePlaces, placeObjects } from './objects.ts';
   import { buildHome, homeTod } from './home.ts';
   import { buildStructure, structurePlaces } from './structure.ts';
+  import { buildPond } from './pond.ts';
+  import { pondPlaces } from '#lib/layout/ponds.ts';
   import { extentOf, type Layout } from '#lib/layout/model.ts';
   import { GRASS_Y, SEA_Y as LAYOUT_SEA_Y, WATER_DROP as LAYOUT_DROP, fieldOf } from '#lib/layout/height.ts';
   import { TIER_H } from '#lib/layout/grid.ts';
@@ -601,6 +603,11 @@
       const dx = (Math.cos(p.yaw) * p.length) / 2, dz = (Math.sin(p.yaw) * p.length) / 2;
       const y = Math.min(heightOf(p.x - dx, p.z - dz), heightOf(p.x + dx, p.z + dz));
       want.set(`structure:${p.id}`, { key: JSON.stringify(p) + y.toFixed(1), make: () => buildStructure(p), at: { x: p.x, z: p.z, yaw: p.yaw, y }, home: false });
+    }
+    // the ponds put down (pond.ts: their water, bed and stones), on the grass
+    for (const p of pondPlaces(lay)) {
+      const y = heightOf(p.x, p.z);
+      want.set(`pond:${p.id}`, { key: JSON.stringify(p) + y.toFixed(1), make: async () => buildPond(p), at: { x: p.x, z: p.z, yaw: p.yaw, y }, home: false });
     }
     for (const id of built.keys()) if (!want.has(id)) {
       e.placeGroup(id, null);
