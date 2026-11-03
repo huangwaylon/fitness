@@ -1,6 +1,7 @@
-// What the 2D island's cutover leaves unreferenced (docs/cleanup-2d.md): every file under static/ and every module
-// under src/, sorted into what may go once the 3D island is the only island, what stays (the tent, the ずかん, the HUD,
-// the cards of art the 3D island draws for what has no model) and what needs a look. Read-only: it deletes nothing.
+// What nothing uses any more (docs/cleanup-2d.md: written for the 2D island's cutover, kept as the unused-asset scan):
+// every file under static/ and every module under src/, sorted into what may go (the 3D island draws NH's model and
+// nothing else shows the art, or nothing names it), what stays (the tent, the ずかん, the HUD, the cards of art the 3D
+// island draws for what has no model, the DOM tap areas' sizes) and what needs a look. Read-only: it deletes nothing.
 //   An asset's users are the source files that name it: a literal key or path ('bushes/holly', `art/x.webp`), a
 // template that builds it (`critters/${id}`: a pattern, and whether the id is spelled anywhere in the source), or a
 // JSON's string. Each user is a kind (below): the 2D renderer (goes with the cutover), the island's world (its DOM node
@@ -26,15 +27,9 @@ const SEEN = new Set(seenArg ? readFileSync(seenArg, 'utf8').split('\n').filter(
 
 // ---- the kinds of source file ---------------------------------------------------------------------------------------
 
-/** The 2D renderer: whole files that go with the cutover (their users of art keep nothing). */
-const GONE = [
-  'lib/components/island/WorldGround.svelte', // the baked ground's 40 bent bands
-  'lib/components/island/WorldWater.svelte', // the live water's CSS sprites over the baked ground
-  'lib/components/island/ShoreWash.svelte', // the foam strip (WorldWater's)
-  'lib/components/island/Waterfall.svelte', // the CSS falls (WorldWater's)
-  'lib/components/island/roll.ts', // the rolling log's projection (the DOM camera): camera.svelte.ts's 3D path keeps its quadMatrix and zIndexAt (move them first)
-  'lib/components/island/DecorMode.svelte' // the old もようがえ's tray and ghost (IslandEdit takes its place on the 3D island)
-];
+/** Whole files about to go (their users of art keep nothing): list them here to see what their going leaves unused.
+ *  The 2D renderer's (WorldGround, WorldWater, ShoreWash, Waterfall, roll.ts, DecorMode) went in phase B. */
+const GONE: string[] = [];
 /** The island's world: its DOM nodes stay over the 3D canvas (taps, the m3 keys), but an art key named here is drawn
  *  only where the 3D island has no model for it (a card, or the node's own art: Island3D's m3off). */
 const WORLD = /^lib\/components\/(island|world3d|board)\//;
@@ -240,11 +235,13 @@ const KNOWN: [RegExp, Row['cat'], string][] = [
   [/^manifest\.webmanifest$/, 'used', 'the web manifest'],
   [/^room\//, 'used', 'the 3D models and the tent’s room (room/world3d is the 3D island’s)'],
   [/^terrain\/nh\//, 'used', 'NH’s ground textures for the layout’s live terrain (world3d/terrain.ts)'],
-  [/^terrain\/(spring|summer|autumn|winter|spring-petals|autumn-leaves)\//, 'unsure', 'the baked ground: the 2D island’s, and the 3D island’s ground look today (Island3D groundUrls) until it draws buildGround(layout) (docs/island-layout.md “What the 3D integration must change” 1); safe once that lands'],
-  [/^terrain\/sprites\//, 'safe', 'the cliff face sprites: WorldWater only (the 3D cliffs are the terrain’s walls)'],
   [/^art\/season\//, 'used', 'the falling petals, leaves and snowflakes the DOM still draws over the 3D island (a tapped bush’s rustle, a shaken tree: seen drawn in the probe), and the 3D floats’ cards'],
-  [/^art\/deco\/lamp-glow\.webp$/, 'safe', 'a lamp’s night glow: Scenery’s {#if lit && !r3} only (the 3D lamps glow by their emissive and lights.ts)'],
-  [/^art\/bridges\/.*-deck/, 'safe', 'the bridge deck seen from above: the terrain bake’s input (scripts/terrain.ts), never shown (service-worker isBakeArt)']
+  [/^food\//, 'used', 'the meal log’s food data (lib/food/load.ts: fetched by name from its index)'],
+  // kept in phase B though the scan calls them safe (docs/cleanup-2d.md "What was kept"):
+  [/^art\/(flowers|trees)\//, 'used', 'a DOM tap area’s size or clip over the 3D model comes from its art (Flowers’ .fl, Scenery’s oak layers)'],
+  [/^art\/items\/candy\.webp$|^art\/deco\/party-popper\.webp$/, 'used', 'drawn by the DOM over the 3D island (Jack’s treat, the birthday popper)'],
+  [/^art\/deco\/birthday-cake\.webp$/, 'used', 'the cake’s tap box is its art’s (Cake.svelte)'],
+  [/^art\/deco\/(bamboo-shoot-lamp|bulletin-board-winter|egg-arch|illumi-tree|kadomatsu|mushroom-lamp|nut-lamp|picnic-set|pond-stone-(maple|sakura)|present|pumpkin|shishiodoshi-tip|snowboy-\d|spooky-lantern|wedding-arch)\.webp$/, 'used', 'the event and seasonal pieces: hidden under their 3D models, but the specs read their nodes’ art (a later cleanup: check their models instead)']
 ];
 
 const rows: Row[] = staticFiles.map((path) => {

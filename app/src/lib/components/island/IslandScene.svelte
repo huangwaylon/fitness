@@ -406,7 +406,8 @@
     clearTimeout(untrick);
     untrick = setTimeout(() => (tricked = false), TRICK_MS);
   }
-  // The world: its camera (the scroller) and projector, shared with every part of the island (camera.svelte.ts).
+  // The world: its camera (the 3D island's, fitted to the viewport) and projector, shared with every part of the island
+  // (camera.svelte.ts).
   const world = new World();
   // svelte-ignore state_referenced_locally
   provideWorld(world, live);
@@ -1048,7 +1049,7 @@
 <div class="if-scene scene" bind:this={sceneEl} data-r3={r3 || undefined} data-decorating={decorating || undefined} data-season={season} data-tod={tod} data-sky={live ? weather.sky : undefined} data-paused={life.hidden || undefined}
   data-covered={covered || undefined} data-live={live || undefined} style:--horizon-y="{horizonPx}px" style:--sky-h="{horizonPx + 6}px">
   {#if picking && sceneEl}
-    <!-- what my villager says: outside the scroller (its field's focus never scrolls the island), over the stage -->
+    <!-- what my villager says: outside the viewport (its field's focus never moves the island), over the stage -->
     <SayPicker scene={sceneEl} anchor={picking} onpick={pickSay} onclose={(e) => {
       closePicker(e);
       if (!e) sayBtn?.focus({ preventScroll: true }); // ✕ or Esc: the focus back on its button
@@ -1059,12 +1060,12 @@
     <div class="say-dock"><SayButton bind:el={sayBtn} open={!!picking} onopen={openPicker} /></div>
   {/if}
   {#if live}
-    <!-- every catch's plate: a stack at the bottom centre, outside the scroller (the newest at the bottom) -->
+    <!-- every catch's plate: a stack at the bottom centre, outside the viewport (the newest at the bottom) -->
     <CatchStack scene={sceneEl} />
   {/if}
   {#if live && FireworksC}<FireworksC bind:this={fireworks} enabled={() => !covered && !life.hidden} forced={life.devFireworks || wedding.fireworks} {allMet} {cheer} />{/if}
 
-  <div class="scroller" bind:this={scroller} onscroll={onScroll} data-world-scroller>
+  <div class="scroller" bind:this={scroller} data-world-scroller>
     <div class="track" style:height="{vh}px">
       <div class="stage" style:height="{vh}px" style:--u="{s}px" style:--su="{s}px" style:--tod-filter={shade ? `url(#${fid})` : undefined}>
         <svg class="defs" aria-hidden="true" width="0" height="0">
@@ -1188,13 +1189,9 @@
     --stage-top: 0px;
     -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
   }
-  /* the camera: a native scroller (drag scrolls; a tap is a click), its document never scrolls */
-  .scroller {
-    position: absolute; inset: 0; z-index: var(--z-stage); overflow-y: auto; overflow-x: hidden; overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch; scrollbar-width: none; touch-action: pan-y;
-  }
-  .scroller::-webkit-scrollbar { display: none; }
-  /* the say button: bottom right over the sea (both islands: outside the scroller), 12px in from the side and above
+  /* the island's viewport (the World fits to it); no native scroll: the finger is world3d/gestures.ts' */
+  .scroller { position: absolute; inset: 0; z-index: var(--z-stage); overflow: hidden; touch-action: none; }
+  /* the say button: bottom right over the sea (outside the viewport), 12px in from the side and above
      the home indicator; with しずえ's box up it sits over the box (the page's --news-lift) */
   .say-dock {
     position: absolute; z-index: 2; right: calc(var(--safe-right, 0px) + 8px);
@@ -1204,7 +1201,6 @@
      art did: the ground, the water, the trees, the scenery, the flowers and the villagers' figures (their nodes stay
      as the tap areas, their marks, balloons and popups over the canvas) */
   .scene[data-r3] { touch-action: none; }
-  .scene[data-r3] .scroller { overflow: hidden; touch-action: none; }
   /* (!important: over an art's own animated opacity, a high five's zap, which else showed through as a blurry 2D star) */
   /* (each also --art3d: off, inherited: the art under it waits with no download, characters/artGate.ts) */
   .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .spr .deco > *, .fl > .b, .tree > .oak)) { opacity: 0 !important; --art3d: off; }
@@ -1224,7 +1220,6 @@
   /* a sting's swollen eye: the 3D villager's own (villager3d's sting face and lump on its head bone), never the 2D
      render's lump floating where that render's eye was */
   .scene[data-r3] :global(.actor[data-v3] [data-swollen]) { opacity: 0 !important; --art3d: off; }
-  .scene:not([data-live]) .scroller { overflow: hidden; }
   .track { position: relative; }
   /* the stage stays on screen while the track scrolls under it; its width is 390 units (cqw) and --u one unit */
   .stage {

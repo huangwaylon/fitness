@@ -1,8 +1,7 @@
 // The 3D island's hold on the DOM's art (docs/cleanup-2d.md "A win before any deletion"): over the canvas the island's
 // DOM nodes stay as tap areas, but their art is hidden where the canvas draws the thing (IslandScene's [data-r3]
 // rules, which also set `--art3d: off`). An <OfficialArt> under such a node waits with no image until its node shows
-// it (no model for its key: m3off; the 2D island again: せってい's switch), so the 3D island never downloads the ~120
-// 2D images it never shows.
+// it (no model for its key: m3off), so the 3D island never downloads the ~120 2D images it never shows.
 //   IslandScene  setArtGate(gate(() => r3, () => sceneEl))   the island's nodes' art waits while it draws in 3D
 //   OfficialArt  getArtGate()?.hold(img, open)                 open() once its img isn't `--art3d: off`
 import { getContext, setContext } from 'svelte';
