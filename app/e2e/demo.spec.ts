@@ -1,7 +1,7 @@
 // Demo smoke test: buy, undo, the harvest recap, the ベル ledger (read-only), けんこう's goals, on `?demo` (no backend, no key).
 import { expect, test, type Page } from '@playwright/test';
-import { tapOn } from './island.ts';
 import { fromMenu, hudBells, hudMenu, openRewards } from './hud.ts';
+import { lawnTap, quiet } from './island.ts';
 
 /** The topmost sheet (a confirm over the panel). */
 const sheet = (page: Page) => page.locator('dialog[open]').last();
@@ -484,31 +484,53 @@ test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by
   await expect(goals).toContainText('30,000歩');
 });
 
-test('tree popups: one at a time, they stay open, and a tap on the tree, the other tree or elsewhere toggles them', {
-  tag: '@quarantine',
-  annotation: { type: 'quarantine', description: 'owner: engine agent, 2026-11-03: flaky on CI since the 3D cutover (logic shard 12: failed then passed on d67fe2f7, failed twice on 9f6a9c38): on the 3D island the open popup can cover its whole canopy, so the tap that closes it finds no uncovered point. TODO: fitPopup (FruitTree) leaves the own canopy a tappable point, or the spec closes it another way' }
-}, async ({ page }) => {
-  await page.goto('?demo');
+/** A tap on goal tree `i` where nothing covers it: its canopy, else its trunk (both toggle its popup); where an open
+ *  popup stands over the whole tree (the other tree's, at some cameras), its button by the keyboard, as a tap can't. */
+async function tapTree(page: Page, i: number) {
+  // (the camera at rest first: it eases up the island to make room for a popup, moving the trees under the finger)
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d?: { camStill(): boolean } }).__world3d?.camStill() ?? true)).toBe(true);
+  const pt = await page.evaluate((i) => {
+    const canopy = document.querySelectorAll('button.canopy')[i];
+    for (const el of [canopy, canopy?.parentElement?.querySelector('.trunk-btn')]) {
+      const r = el?.getBoundingClientRect();
+      if (!el || !r) continue;
+      for (let fy = 0.1; fy < 1; fy += 0.1)
+        for (const fx of [0.5, 0.35, 0.65, 0.2, 0.8]) {
+          const x = r.left + r.width * fx, y = r.top + r.height * fy;
+          if (el.contains(document.elementFromPoint(x, y))) return [x, y] as const;
+        }
+    }
+    return null;
+  }, i);
+  if (pt) await page.mouse.click(pt[0], pt[1]);
+  else await page.locator('button.canopy').nth(i).press('Enter');
+}
+
+test('tree popups: one at a time, they stay open, and a tap on the tree, the other tree or elsewhere toggles them', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-04T12:00&critter=none&visitor=none');
   await islandReady(page);
+  await quiet(page); // (the greeting's balloon and the day's beats over)
   const canopies = page.locator('button.canopy');
   const popups = page.locator('.detail');
-  await canopies.nth(0).click();
+  await tapTree(page, 0);
   await expect(popups).toHaveCount(1);
   await expect(canopies.nth(0)).toHaveAttribute('aria-expanded', 'true');
   await page.waitForTimeout(3200); // no auto-close: it stays past 3 s
   await expect(popups).toHaveCount(1);
-  await canopies.nth(1).click(); // the other tree: it moves there
+  await tapTree(page, 1); // the other tree: it moves there
   await expect(popups).toHaveCount(1);
   await expect(canopies.nth(0)).toHaveAttribute('aria-expanded', 'false');
   await expect(canopies.nth(1)).toHaveAttribute('aria-expanded', 'true');
-  // the same tree: it closes (where the popup leaves it uncovered: on a short screen, or the 3D island's, it may stand
-  // over the top of it)
-  await tapOn(page, canopies.nth(1));
+  // the same tree: it closes (where the popup leaves it uncovered)
+  await tapTree(page, 1);
   await expect(popups).toHaveCount(0);
-  await canopies.nth(0).click();
-  await page.mouse.click(205, 300); // the path, elsewhere: it closes
+  await tapTree(page, 0);
+  // elsewhere, open ground on screen (the page's, near the middle): it closes
+  const g = await page.evaluate(() => (window as unknown as { __world3d: { ground(x: number, y: number): { x: number; z: number } } }).__world3d.ground(205, 300));
+  const lawn = await lawnTap(page, g.x, g.z);
+  await page.mouse.click(lawn.x, lawn.y);
   await expect(popups).toHaveCount(0);
-  await canopies.nth(0).click();
+  await tapTree(page, 0);
   await page.keyboard.press('Escape');
   await expect(popups).toHaveCount(0);
 });
