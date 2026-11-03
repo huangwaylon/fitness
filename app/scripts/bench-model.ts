@@ -1,8 +1,10 @@
 // Usage: npm run bench   (plain Node ≥ 24, no build step)
 // Times the compute-on-read model on (1) the golden 10-week rows and (2) realistic synthetic rows (scripts/bench-rows.ts:
 // both people, hourly syncs) at year 1 and year 3, raw and after `compactRows` (what the client caches), then (3) the
-// app's own paths at year 3: a poll, the minute tick, the IndexedDB write and the cold start from the cache.
-// Acceptance: year 3, compacted, reduce + buildWeekView ≤ 15 ms on a laptop.
+// app's own paths at year 3: a poll, the minute tick, the IndexedDB write and the cold start from the cache; each also
+// with the meal log on top (bench-rows.ts foodRows: 3 people × ~10 entries a day, every op as a polling phone gets it).
+// Acceptance: year 3, compacted, reduce + buildWeekView ≤ 15 ms on a laptop, with food within a few ms of without
+// (the island never reads food: its rows are kept raw, model/food.ts folds them when the sheet reads them).
 import { performance } from 'node:perf_hooks';
 import { buildWeekView } from '#lib/model/week.ts';
 import { bellsLedger, dayDetail } from '#lib/model/history.ts';
@@ -14,20 +16,32 @@ import { applySnapshot, configureCache, loadCache, saveCache, cacheWritten, type
 import { composeModel } from '#lib/store/view.ts';
 import { IDBFactory } from 'fake-indexeddb';
 import golden from '../src/lib/model/fixtures/timeline-rows.json' with { type: 'json' };
-import { FIRST_DAY, jst, syntheticRows } from './bench-rows.ts';
+import { FIRST_DAY, foodRows, jst, syntheticRows, withEvents } from './bench-rows.ts';
+import { foodDay, foodEntries } from '#lib/model/food.ts';
 
-const RUNS = 5;
+// The median of RUNS (after a warm-up): steadier than the mean on a busy machine.
+const RUNS = 7;
+const report = (label: string, ms: number[]) =>
+  console.log(`  ${label.padEnd(24)} ${ms.sort((a, b) => a - b)[RUNS >> 1].toFixed(1).padStart(7)} ms`);
 function time(label: string, fn: (i: number) => unknown): void {
   fn(RUNS); // warm up
-  const t0 = performance.now();
-  for (let i = 0; i < RUNS; i++) fn(i);
-  console.log(`  ${label.padEnd(24)} ${((performance.now() - t0) / RUNS).toFixed(1).padStart(7)} ms`);
+  const ms: number[] = [];
+  for (let i = 0; i < RUNS; i++) {
+    const t0 = performance.now();
+    fn(i);
+    ms.push(performance.now() - t0);
+  }
+  report(label, ms);
 }
 async function timeAsync(label: string, fn: (i: number) => Promise<unknown>): Promise<void> {
   await fn(RUNS);
-  const t0 = performance.now();
-  for (let i = 0; i < RUNS; i++) await fn(i);
-  console.log(`  ${label.padEnd(24)} ${((performance.now() - t0) / RUNS).toFixed(1).padStart(7)} ms`);
+  const ms: number[] = [];
+  for (let i = 0; i < RUNS; i++) {
+    const t0 = performance.now();
+    await fn(i);
+    ms.push(performance.now() - t0);
+  }
+  report(label, ms);
 }
 
 const count = (r: SnapshotRows) => r.metrics.length + r.events.length;
@@ -35,6 +49,7 @@ const mb = (r: SnapshotRows) => (Buffer.byteLength(JSON.stringify(r)) / 1e6).toF
 const midweek = (days: number) => Date.parse(jst(addDays(FIRST_DAY, days - 4), '12:00'));
 
 const year3 = syntheticRows(3 * 364);
+const food3 = foodRows(3 * 364);
 const cases: [string, SnapshotRows, number][] = [
   ['golden rows, end of the timeline', golden as unknown as SnapshotRows, Date.parse('2027-01-12T15:00:00Z')]
 ];
@@ -42,7 +57,9 @@ for (const [label, days] of [['year 1', 364], ['year 3', 3 * 364]] as const) {
   const now = midweek(days);
   const raw = days === 3 * 364 ? year3 : syntheticRows(days);
   const small = compactRows(raw, now);
+  const food = days === 3 * 364 ? food3 : foodRows(days);
   cases.push([`${label}, hourly syncs, raw`, raw, now], [`${label}, hourly syncs, compacted`, small, now]);
+  cases.push([`${label}, compacted, with food`, compactRows(withEvents(raw, food), now), now]);
 }
 
 for (const [name, rows, now] of cases) {
@@ -66,33 +83,66 @@ for (const [name, rows, now] of cases) {
 console.log('compactRows on year 3:');
 time('compactRows', () => compactRows(year3, midweek(3 * 364)));
 
-// The app's paths at year 3, with a rev (as live): what a poll, the minute tick and a cold start cost.
-console.log('app paths, year 3 (the cache as the client keeps it):');
+// The app's paths at year 3, with a rev (as live): what a poll, the minute tick and a cold start cost; without and with food.
 const now3 = midweek(3 * 364);
 const iso = (t: number) => new Date(t).toISOString();
-const first = () => applySnapshot(null, { me: 'A', now: iso(now3), rev: 'bench', rows: year3 }, now3);
-time('first fetch → cache', first);
-const cache = first();
-const empty = { metrics: [], events: [] };
-time('empty poll → cache', (i) => applySnapshot(cache, { me: 'A', now: iso(now3 + (i + 1) * 60_000), rev: 'bench', rows: empty }, now3));
-const lastMetric = cache.rows.metrics.at(-1)!;
-const oneRow = (i: number) => ({ metrics: [[iso(now3 + i * 1000 + 1), lastMetric[1], lastMetric[2], lastMetric[3], Number(lastMetric[4]) + i + 1]], events: [] }) as SnapshotRows;
-time('poll + 1 row → view', (i) => {
-  const c = applySnapshot(cache, { me: 'A', now: iso(now3 + i * 1000 + 2), rev: 'bench', rows: oneRow(i) }, now3);
-  const m = composeModel(c, [], now3);
-  return buildWeekView(m.state, m.me, m.now);
-});
-const model = composeModel(cache, [], now3);
-time('minute tick → view', (i) => buildWeekView(model.state, 'A', now3 + (i + 1) * 60_000));
-const idb = new IDBFactory();
-configureCache({ indexedDB: idb });
-await timeAsync('saveCache (IndexedDB)', async (i) => {
-  await saveCache({ ...cache, fetchedAt: now3 + i } as SnapshotCache);
-  await cacheWritten();
-});
-await timeAsync('cold start → view', async () => {
-  configureCache({ indexedDB: idb }); // a new page load: nothing in memory
-  const c = (await loadCache())!;
-  const m = composeModel(c, [], now3);
-  return buildWeekView(m.state, m.me, m.now);
-});
+const today3 = new Date(now3 + 9 * 3600_000).toISOString().slice(0, 10);
+async function appPaths(label: string, rows: SnapshotRows): Promise<void> {
+  console.log(`app paths, year 3, ${label} (the cache as the client keeps it):`);
+  const first = () => applySnapshot(null, { me: 'A', now: iso(now3), rev: 'bench', rows }, now3);
+  time('first fetch → cache', first);
+  const cache = first();
+  console.log(`  cache: ${count(cache.rows)} rows, ${mb(cache.rows)} MB of JSON`);
+  const empty = { metrics: [], events: [] };
+  time('empty poll → cache', (i) => applySnapshot(cache, { me: 'A', now: iso(now3 + (i + 1) * 60_000), rev: 'bench', rows: empty }, now3));
+  const lastMetric = cache.rows.metrics.at(-1)!;
+  const oneRow = (i: number) => ({ metrics: [[iso(now3 + i * 1000 + 1), lastMetric[1], lastMetric[2], lastMetric[3], Number(lastMetric[4]) + i + 1]], events: [] }) as SnapshotRows;
+  time('poll + 1 row → view', (i) => {
+    const c = applySnapshot(cache, { me: 'A', now: iso(now3 + i * 1000 + 2), rev: 'bench', rows: oneRow(i) }, now3);
+    const m = composeModel(c, [], now3);
+    return buildWeekView(m.state, m.me, m.now);
+  });
+  const model = composeModel(cache, [], now3);
+  time('minute tick → view', (i) => buildWeekView(model.state, 'A', now3 + (i + 1) * 60_000));
+  if (rows.events.some((r) => r[3] === 'food')) {
+    // The sheet: open on today (first read of a State's food), then after a poll that brings one more meal.
+    // A cold start's rows (fresh objects: nothing parsed yet), each reduced up front.
+    const cold = Array.from({ length: RUNS + 1 }, () => reduce(structuredClone(cache.rows), 'bench'));
+    time('sheet: foodDay, first', (i) => foodDay(cold[i], 'A', today3));
+    const meal = (i: number, after: string): SnapshotRows => {
+      const at = Date.parse(after) + 1000; // the record's clock: after every row
+      const data = { id: `fbench${String(i).padStart(4, '0')}`, at, d: today3, m: 'l', g: 150, f: { id: 'mext:01088', n: 'ごはん', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0 } };
+      return { metrics: [], events: [[iso(at), 'B', `bench-${i}`, 'food', JSON.stringify(data)]] };
+    };
+    let c = cache;
+    foodDay(composeModel(c, [], now3).state, 'A', today3);
+    time('sheet: poll + 1 meal', (i) => {
+      c = applySnapshot(c, { me: 'A', now: iso(now3 + i * 1000 + 4), rev: 'bench', rows: meal(c.rows.events.length, c.since!) }, now3);
+      const st = composeModel(c, [], now3).state;
+      foodEntries(st, 'A');
+      return foodDay(st, 'A', today3);
+    });
+  }
+  const idb = new IDBFactory();
+  configureCache({ indexedDB: idb });
+  await timeAsync('saveCache, meta only', async (i) => {
+    await saveCache({ ...cache, fetchedAt: now3 + i } as SnapshotCache);
+    await cacheWritten();
+  });
+  // A poll that brought a row: the rows changed (a new rows object), so they are written too.
+  let saved = cache;
+  await timeAsync('saveCache, + 1 row', async (i) => {
+    const r = oneRow(1000 + i + saved.rows.metrics.length);
+    saved = { ...saved, rows: { ...saved.rows, metrics: [...saved.rows.metrics, ...r.metrics] }, fetchedAt: now3 + i };
+    await saveCache(saved);
+    await cacheWritten();
+  });
+  await timeAsync('cold start → view', async () => {
+    configureCache({ indexedDB: idb }); // a new page load: nothing in memory
+    const c = (await loadCache())!;
+    const m = composeModel(c, [], now3);
+    return buildWeekView(m.state, m.me, m.now);
+  });
+}
+await appPaths('no food', year3);
+await appPaths('with food', withEvents(year3, food3));

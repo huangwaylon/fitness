@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { compactRows } from './compact.ts';
-import { latestIslandDay, reduce } from './state.ts';
+import { foldEvents, latestIslandDay, reduce } from './state.ts';
 import { buildWeekView } from './week.ts';
 import { bellsLedger, dayDetail } from './history.ts';
 import { mergeRows } from './snapshot.ts';
 import { addDays, weekKeyOf } from '#lib/time/dates.ts';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import { tallyTotals } from './tally.ts';
-import { FIRST_DAY, jst, syntheticRows } from '../../../scripts/bench-rows.ts';
+import { FIRST_DAY, foodRows, jst, syntheticRows, withEvents } from '../../../scripts/bench-rows.ts';
+import { foodDay, foodEntries, recipes, repeats } from './food.ts';
 
 /** Everything the app shows, as one comparable value. */
 function views(rows: SnapshotRows, now: number, rev: string | null = null) {
@@ -170,5 +171,58 @@ describe('compactRows: the island days', () => {
     expect(latestIslandDay(s.islandDays, 'B', '2026-11-02')).toBeNull();
     // a bad row is ignored
     expect(reduce({ metrics: [], events: [['2026-11-01T05:00:00.000Z', 'A', 'x', 'island', '{"date":"2026-11-01"}']] }).islandDays).toEqual([]);
+  });
+});
+
+describe('compactRows: the meal log', () => {
+  /** Everything ごはん shows: the recipes, each person's entries (the 最近 list), repeats, and a few days' totals. */
+  const meals = (rows: SnapshotRows, days: string[]) => {
+    const s = reduce(rows);
+    return JSON.stringify([recipes(s), ...(['A', 'B', 'G'] as const).map((w) => [foodEntries(s, w), repeats(s, w), days.map((d) => foodDay(s, w, d))])]);
+  };
+  const food = foodRows(60);
+  const rows = withEvents(syntheticRows(60), food);
+  const now = Date.parse(jst(addDays(FIRST_DAY, 59), '23:00'));
+  const days = [0, 1, 17, 30, 58, 59].map((d) => addDays(FIRST_DAY, d));
+
+  it('keeps only the op the record keeps per entry (a removal too) and every repeat op (skipped days add up); every view unchanged', () => {
+    const small = compactRows(rows, now);
+    expect(small.events.filter((r) => r[3] === 'food_repeat')).toEqual(food.filter((r) => r[3] === 'food_repeat'));
+    const kept = small.events.filter((r) => r[3] === 'food');
+    const ids = (list: EventRow[]) => list.map((r) => `${r[3]}|${JSON.parse(r[4]).id}`);
+    const rm = kept.filter((r) => JSON.parse(r[4]).rm).length;
+    expect(rm).toBeGreaterThan(0); // removals stay (final), each with the op it removed
+    expect(new Set(ids(kept)).size).toBe(kept.length - rm); // else one row per id
+    expect(new Set(ids(kept))).toEqual(new Set(ids(food.filter((r) => r[3] === 'food')))); // every id still there
+    expect(kept.length).toBeLessThan(food.length * 0.85);
+    expect(meals(small, days)).toBe(meals(rows, days));
+    expect(compactRows(small, now)).toBe(small); // a fixed point
+  });
+
+  it('drops someone else’s op and anything after a removal, and stays exact with queued ops on top', () => {
+    const f = (at: number, who: 'A' | 'B', data: object): EventRow => [new Date(at).toISOString(), who, `x${at}`, 'food', JSON.stringify({ at, ...data })];
+    const T = Date.parse('2026-11-03T03:00:00.000Z');
+    const set = { d: '2026-11-03', m: 'b', g: 100, f: { id: 'mext:01088', n: 'ごはん', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0 } };
+    const r: SnapshotRows = {
+      metrics: [],
+      events: [
+        f(T, 'A', { id: 'fmeal001', ...set }), f(T + 1, 'B', { id: 'fmeal001', ...set, g: 5 }), f(T + 2, 'A', { id: 'fmeal001', ...set, g: 200 }),
+        f(T + 3, 'A', { id: 'fmeal002', ...set }), f(T + 4, 'A', { id: 'fmeal002', rm: true }), f(T + 5, 'A', { id: 'fmeal002', ...set }),
+        ['garbage', 'A', 'x0', 'food', '{'], [new Date(T + 6).toISOString(), 'A', 'x1', 'food', '{']
+      ]
+    };
+    // a recipe set, then edited: only the edit stays
+    const rec = (at: number, sv: number): EventRow => [new Date(at).toISOString(), 'A', `c${at}`, 'food_recipe', JSON.stringify({ id: 'crecipe01', at, n: 'カレー', sv, it: [{ g: 200, f: set.f }] })];
+    r.events.splice(6, 0, rec(T + 5, 2), rec(T + 6, 4));
+    const small = compactRows(r, now);
+    // the unreadable rows stay (the model skips them, as the other tabs')
+    expect(small.events.map((x) => x[2])).toEqual([`x${T + 2}`, `x${T + 3}`, `x${T + 4}`, `c${T + 6}`, 'x0', 'x1']);
+    expect(compactRows(small, now)).toBe(small);
+    expect(meals(small, ['2026-11-03'])).toBe(meals(r, ['2026-11-03']));
+    // this phone's queued ops over either: an edit, and one of the removed entry (refused)
+    const queued = [f(T + 7, 'A', { id: 'fmeal001', ...set, g: 300 }), f(T + 8, 'A', { id: 'fmeal002', ...set, g: 1 })];
+    const shown = (x: SnapshotRows) => JSON.stringify(foodDay(foldEvents(reduce(x), queued, null)!, 'A', '2026-11-03'));
+    expect(shown(small)).toBe(shown(r));
+    expect(JSON.parse(shown(small)).entries.map((e: { g: number }) => e.g)).toEqual([300]);
   });
 });

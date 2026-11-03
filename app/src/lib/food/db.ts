@@ -17,12 +17,20 @@ export interface FoodDb {
 
 export const emptyDb = (index: FoodIndex): FoodDb => ({ version: index.version, sets: [], entries: [], verify: null, more: Promise.resolve() });
 
-/** A dataset into the catalog: its items searchable (a `secondary` one's ranked lower), its header credited. */
-export function addDataset(db: FoodDb, meta: FoodIndex['datasets'][number], data: Dataset): void {
+/** Items indexed per slice: a dataset is added a slice per task (load.ts), so no frame waits on a whole file. */
+export const SLICE = 2000;
+
+/** A dataset into the catalog: its items searchable (a `secondary` one's ranked lower), its header credited. With
+ *  `pause`, a slice at a time, awaiting it in between (the slices stay in order and together). */
+export async function addDataset(db: FoodDb, meta: FoodIndex['datasets'][number], data: Dataset, pause?: () => Promise<void>): Promise<void> {
   const { label, attribution, license, url } = data;
   db.sets.push({ source: meta.source, badge: meta.badge, label, attribution, license, url });
   const pen = meta.secondary ? SECONDARY_PENALTY : 0;
-  for (const it of data.items) db.entries.push(entryOf(it, pen));
+  const items = data.items;
+  for (let i = 0; i < items.length; i += SLICE) {
+    if (i && pause) await pause();
+    for (let j = i; j < Math.min(items.length, i + SLICE); j++) db.entries.push(entryOf(items[j], pen));
+  }
 }
 
 /** The best `limit` items for a query (search.ts: exact > prefix > substring > alias, one row per verify group). */

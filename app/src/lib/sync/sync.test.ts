@@ -284,6 +284,21 @@ describe('snapshot cache', () => {
     expect(maxAt(merged)).toBe('2026-11-02T03:00:00.000Z');
     expect(maxAt(emptyRows())).toBeNull();
   });
+  it('dedupes against every row merged so far, over many polls and from an older row set again (no key leaks across)', () => {
+    const ev = (i: number): SnapshotRows['events'][number] => [new Date(Date.parse('2026-11-02T01:00:00.000Z') + i * 1000).toISOString(), 'A', `e${i}`, 'pref', '{}'];
+    let rows = emptyRows();
+    const sets: SnapshotRows[] = [];
+    for (let i = 0; i < 30; i++) {
+      rows = mergeRows(rows, { events: [ev(i), ev(Math.max(0, i - 5))] }); // each poll repeats an older row
+      sets.push(rows);
+    }
+    expect(rows.events.map((r) => r[2])).toEqual(Array.from({ length: 30 }, (_, i) => `e${i}`));
+    // from an older row set: the rows merged after it are new to it
+    const old = sets[9];
+    expect(mergeRows(old, { events: [ev(20), ev(3)] }).events.map((r) => r[2])).toEqual([...old.events.map((r) => r[2]), 'e20']);
+    // a late row (older `at`) still sorts in
+    expect(mergeRows(rows, { events: [[ev(0)[0], 'B', 'late', 'pref', '{}']] }).events.map((r) => r[2]).slice(0, 2)).toEqual(['e0', 'late']);
+  });
   it('fetches everything first, then only rows since the newest `at`', async () => {
     handler = (b) => (b.since
       ? { ok: true, me: 'A', now: '2026-11-02T05:00:00.000Z', rows: { metrics: [['2026-11-02T04:00:00.000Z', 'A', '2026-11-02', 'steps', 9000]], events: [] } }

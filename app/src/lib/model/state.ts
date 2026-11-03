@@ -8,7 +8,7 @@ import { isTally } from '#lib/contract/tally.ts';
 import { isIslandDay, type IslandDayData } from '#lib/contract/island.ts';
 import { decorOpOf, type DecorEntry } from '#lib/contract/decor.ts';
 import { boardOpOf, type BoardEntry } from '#lib/contract/board.ts';
-import { foodOp, foodRecipeOp, foodRepeatOp, isKcalGoal, type FoodOp, type RecipeOp, type RepeatOp } from '#lib/contract/food.ts';
+import { isKcalGoal } from '#lib/contract/food.ts';
 import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import type { TallyRow } from './tally.ts';
@@ -97,15 +97,15 @@ export interface State {
   /** The bulletin board (`board`: each post's ops, contract/board.ts), in server order; the posts are their merge
    *  (components/board/posts.svelte.ts). Never read by the economy. */
   board: BoardEntry[];
-  /** The meal log (`food`: each entry's ops, contract/food.ts), in server order; the entries are their fold
-   *  (model/food.ts). Never read by the economy. */
-  food: (FoodOp & { who: Who })[];
-  /** The recurring meals (`food_repeat`: each repeat's ops, contract/food.ts), in server order; their days' items are
-   *  read into each day (model/food.ts). Never read by the economy. */
-  foodRepeat: (RepeatOp & { who: Who })[];
-  /** My recipes (`food_recipe`: each recipe's ops, contract/food.ts), in server order; everyone's, read by everyone
-   *  (model/food.ts recipes). Never read by the economy. */
-  foodRecipe: (RecipeOp & { who: Who })[];
+  /** The meal log (`food`: each entry's ops, contract/food.ts) as raw rows (RAW_EVENTS: unparsed, in the order given);
+   *  the entries are their fold (model/food.ts). Never read by the economy. */
+  food: EventRow[];
+  /** The recurring meals (`food_repeat`: each repeat's ops, contract/food.ts) as raw rows (RAW_EVENTS); their days'
+   *  items are read into each day (model/food.ts). Never read by the economy. */
+  foodRepeat: EventRow[];
+  /** My recipes (`food_recipe`: each recipe's ops, contract/food.ts) as raw rows (RAW_EVENTS); everyone's, read by
+   *  everyone (model/food.ts recipes). Never read by the economy. */
+  foodRecipe: EventRow[];
   /** Each person's prefs; the guest's (`G`) only ever hold its locale, name, villager and kcal goal (contract/guest.ts). */
   prefs: Record<Who, Prefs>;
   /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
@@ -122,7 +122,7 @@ export interface State {
    * change while `rev` stays the same.
    */
   rev: string | null;
-  /** Server `at`s of the accepted-for-indexing rows, ascending, per tab (`rowsUpTo`). */
+  /** Server `at`s of the accepted-for-indexing rows (the raw ones aside), ascending, per tab (`rowsUpTo`). */
   ats: number[][];
 }
 
@@ -194,6 +194,16 @@ const weekOf = (d: LocalDate): WeekKey => {
   return wk;
 };
 
+/**
+ * The event types kept raw: the row as is (unparsed, unsorted, out of `ats`: nothing of the economy depends on them)
+ * into this State list. High-volume logs the island never reads, so a reduce (each poll that brings a row, each cold
+ * start) costs one lookup per row of them. Their own model parses, validates, orders and folds them when read,
+ * memoised per row and per list (model/food.ts opOf, entriesOf). A new such type is one entry here, a list in State
+ * and its reader.
+ */
+const RAW_EVENTS = new Map<string, 'food' | 'foodRepeat' | 'foodRecipe'>([['food', 'food'], ['food_repeat', 'foodRepeat'], ['food_recipe', 'foodRecipe']]);
+type RawEvent = 'food' | 'food_repeat' | 'food_recipe';
+
 const bodyMaps = (): Record<BodyMetric, Map<LocalDate, Timed<number>[]>> => ({ body_fat_pct: new Map(), bmi: new Map(), lean_kg: new Map() });
 
 /** Index and validate all rows. Rows are only ever appended, so nothing here depends on "now". */
@@ -259,13 +269,19 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     synced(person, at, String(iso));
   }
 
-  for (const { r: row, at } of byAt(r.events ?? [])) {
+  const events: EventRow[] = [];
+  for (const row of r.events ?? []) {
+    const list = RAW_EVENTS.get(row[3]);
+    if (!list) events.push(row);
+    else if (isWho(row[1])) s[list].push(row);
+  }
+  for (const { r: row, at } of byAt(events)) {
     const [, person, , type, raw] = row;
     const d = parseData(raw);
     // A type the server doesn't accept (a hand edit of the sheet) is ignored, and so is a bad `person`.
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
     const subject = eventSubject(type, d, person);
-    if (subject) ON_EVENT[type](s, subject, at, d);
+    if (subject) ON_EVENT[type as Exclude<EventType, RawEvent>](s, subject, at, d);
   }
   return s;
 }
@@ -304,12 +320,17 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     if (at === null || !isWho(row[1])) continue;
     if (at < last) return null; // not after the base: only a whole reduce orders it right
     last = at;
+    const type = row[3];
+    const list = RAW_EVENTS.get(type);
+    if (list) {
+      s[list].push(row);
+      continue;
+    }
     s.ats[1].push(at);
     const d = parseData(row[4]);
-    const type = row[3];
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
     const subject = eventSubject(type, d, row[1]);
-    if (subject) ON_EVENT[type](s, subject, at, d);
+    if (subject) ON_EVENT[type as Exclude<EventType, RawEvent>](s, subject, at, d);
   }
   return s;
 }
@@ -329,7 +350,7 @@ const members = (fn: MemberEvent): OnEvent => (s, person, at, d) => {
 const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'kcalGoal'];
 
 /** One handler per event type: each accepts (indexes) the event or ignores it. */
-const ON_EVENT: Record<EventType, OnEvent> = {
+const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   spend: members((s, person, at, d) => {
     // A buy from the wallet: a SHOP item at exactly its price. Whether the wallet covered it is decided on read (bells.ts).
     const { spendId, item } = d;
@@ -376,18 +397,6 @@ const ON_EVENT: Record<EventType, OnEvent> = {
   board(s, person, _at, d) {
     const op = boardOpOf(d);
     if (op) s.board.push({ ...op, who: person } as BoardEntry);
-  },
-  food(s, person, _at, d) {
-    const op = foodOp(d);
-    if (op) s.food.push({ ...op, who: person });
-  },
-  food_repeat(s, person, _at, d) {
-    const op = foodRepeatOp(d);
-    if (op) s.foodRepeat.push({ ...op, who: person });
-  },
-  food_recipe(s, person, _at, d) {
-    const op = foodRecipeOp(d);
-    if (op) s.foodRecipe.push({ ...op, who: person });
   },
   pref(s, person, at, d) {
     if (!isPersonId(person)) {

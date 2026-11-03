@@ -21,6 +21,16 @@ export const BREAKS = new RegExp(`\\r\\n?|${charClass([[0x85, 0x85], [0x2028, 0x
  */
 export function cleanLine(raw: unknown, max: number): string {
   if (typeof raw !== 'string') return '';
-  const s = raw.normalize('NFC').replace(BREAKS, ' ').replace(STRIP, '').replace(/\s+/gu, ' ').trim();
-  return Array.from(s).slice(0, max).join('').trimEnd();
+  // The same few names come back in every meal (each row is validated once when read): remember the last ones.
+  let seen = lines.get(max);
+  if (!seen) lines.set(max, (seen = new Map()));
+  let out = seen.get(raw);
+  if (out === undefined) {
+    const s = raw.normalize('NFC').replace(BREAKS, ' ').replace(STRIP, '').replace(/\s+/gu, ' ').trim();
+    out = s.length <= max ? s : Array.from(s).slice(0, max).join('').trimEnd(); // never more characters than code units
+    if (seen.size >= 4096) seen.clear();
+    seen.set(raw, out);
+  }
+  return out;
 }
+const lines = new Map<number, Map<string, string>>();

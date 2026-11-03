@@ -19,6 +19,7 @@ export interface Item {
   cat?: string;
   /** Packaged products only. */
   brand?: string;
+  /** The barcode; not shipped when it is the id's (`off:<jan>`): `keys` has it. */
   jan?: string;
   /** How the values were derived. */
   note?: string;
@@ -31,6 +32,8 @@ export interface Item {
   /** A curated search boost, 1–3. */
   pop?: number;
   portions?: Portion[];
+  /** The search keys, precomputed by scripts/food-data.ts (search.ts keysOf, joined by a space). */
+  keys?: string;
 }
 
 /** A dataset's credit line, as its file's header says it (shown in the food sheet's about row). */

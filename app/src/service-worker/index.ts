@@ -3,7 +3,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { AUDIO_CACHE, FOOD_CACHE, ROOM_CACHE, SHELL, isAudio, isFoodData, isCritterArt, isDecorArt, isFont, isMusic, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleFood } from './caches.ts';
+import { AUDIO_CACHE, FOOD_CACHE, ROOM_CACHE, SHELL, foodFetch, isAudio, isFoodData, isCritterArt, isDecorArt, isFont, isMusic, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches } from './caches.ts';
 
 // The app may live under a base path (GitHub Pages: /fitness/); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -131,24 +131,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // The food data (lib/food/load.ts): a versioned file cache first (a new version's first one drops the old version's);
-  // index.json, which names the version, from the network, its last copy offline.
+  // The food data (lib/food/load.ts): a versioned file cache first; index.json, which names the version, from the
+  // network within FOOD_INDEX_TIMEOUT_MS, else its last copy; an old version dropped once a new one is whole (caches.ts).
   if (isFoodData(url.pathname)) {
-    const v = url.searchParams.get('v');
-    event.respondWith(
-      (async () => {
-        const cache = await caches.open(FOOD_CACHE);
-        const hit = v === null ? undefined : await cache.match(req);
-        if (hit) return hit;
-        const res = await fetch(req).catch(() => null);
-        if (!res) return (v === null && (await cache.match(req))) || Response.error();
-        if (res.ok) {
-          if (v !== null) for (const old of staleFood((await cache.keys()).map((k) => k.url), v)) await cache.delete(old);
-          await cache.put(req, res.clone());
-        }
-        return res;
-      })()
-    );
+    event.respondWith(caches.open(FOOD_CACHE).then((cache) => foodFetch(req, cache, (r) => fetch(r), (p) => event.waitUntil(p))));
     return;
   }
 

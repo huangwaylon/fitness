@@ -88,8 +88,10 @@ export const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 /** A real calendar date `YYYY-MM-DD` (not 2026-02-30). */
 export function isLocalDate(v: unknown): v is string {
   if (typeof v !== 'string' || !DATE_RE.test(v)) return false;
-  const ms = Date.parse(`${v}T00:00:00Z`);
-  return !Number.isNaN(ms) && new Date(ms).toISOString().slice(0, 10) === v;
+  // Arithmetic, not Date (the meal log checks one per row it reads): the proleptic Gregorian calendar, as Date's.
+  const y = +v.slice(0, 4), m = +v.slice(5, 7), d = +v.slice(8, 10);
+  const leap = y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0);
+  return m >= 1 && m <= 12 && d >= 1 && d <= (m === 2 ? (leap ? 29 : 28) : m === 4 || m === 6 || m === 9 || m === 11 ? 30 : 31);
 }
 /** The calendar day after `date` (`YYYY-MM-DD`). */
 export const nextDay = (date: string): string => new Date(Date.parse(`${date}T00:00:00Z`) + 86400_000).toISOString().slice(0, 10);
