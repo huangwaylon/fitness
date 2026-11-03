@@ -1040,7 +1040,7 @@
   const goalTrees = $derived((void site.rev, GOAL_TREES));
   const cast3 = () => VILLAGERS.map((id) => ({
     id, person: sides[id].person.person, villager: sides[id].person.villager, side: sides[id].side,
-    shown: onIsland(id) && !inTent(id), seated: !!seated[id], seat: seated[id], stung: stung[id], rep: repping[id], hat: live ? hatOf(id, sides[id].person) : null
+    shown: onIsland(id) && !inTent(id), seated: !!seated[id], seat: seated[id], stung: swollen[id], rep: repping[id], hat: live ? hatOf(id, sides[id].person) : null
   }));
 </script>
 
@@ -1216,6 +1216,9 @@
   .scene[data-r3] :global(.actor[data-v3] .float[data-mark]:not([data-mark='question'])) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.visitor:has(> .art.m3on) > .shade) { opacity: 0; --art3d: off; }
   .scene[data-r3] .vil :global(:is(.body > .official, .body > .sil, .shadow)) { opacity: 0; --art3d: off; }
+  /* a sting's swollen eye: the 3D villager's own (villager3d's sting face and lump on its head bone), never the 2D
+     render's lump floating where that render's eye was */
+  .scene[data-r3] :global(.actor[data-v3] [data-swollen]) { opacity: 0 !important; --art3d: off; }
   .scene:not([data-live]) .scroller { overflow: hidden; }
   .track { position: relative; }
   /* the stage stays on screen while the track scrolls under it; its width is 390 units (cqw) and --u one unit */

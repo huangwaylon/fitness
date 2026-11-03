@@ -111,6 +111,26 @@ test('too late: the wasps sting the villager on that side (a fright, a sweat dro
   await expect(page.locator('[data-actor="partner"] [data-swollen]')).toHaveCount(0);
 });
 
+test('stung on the 3D island: the swollen eye is the 3D villager’s own (its lump on its head), no 2D lump over its head', async ({ page }) => {
+  await open(page, '&shake=nest');
+  await is3d(page);
+  const v3 = (fn: string) => page.evaluate(`(${fn})(window.__villagers3)`);
+  // my villager in 3D (its model in)
+  await expect.poll(() => v3('(v) => v.state("mine")'), { timeout: 30_000 }).not.toBeNull();
+  await shake(page);
+  await expect(page.locator('[data-actor="mine"][data-stung]')).toHaveCount(1, { timeout: 4000 });
+  await expect.poll(() => v3('(v) => v.stung("mine")'), { timeout: 3000 }).toBe(true);
+  // the 2D render's lump never shows over the 3D villager
+  const lump2d = () => page.locator('[data-actor="mine"] [data-swollen]').evaluateAll((els) => els.map((e) => getComputedStyle(e).opacity));
+  await expect.poll(lump2d).toEqual(['0']);
+  // still swollen once the fright and the sweat drop are over (the minute's), the 2D lump still hidden
+  await page.waitForTimeout(3000);
+  await expect(page.locator('[data-actor="mine"] [data-stung]')).toHaveCount(0);
+  expect(await v3('(v) => v.stung("mine")')).toBe(true);
+  expect(await lump2d()).toEqual(['0']);
+  await expect.poll(() => v3('(v) => v.stung("partner")')).toBe(false);
+});
+
 test('the swollen eye sits on the eye whatever the face: tall ears, wide heads, specials, glasses, masks, profiles', async ({ page }) => {
   test.setTimeout(90_000);
   await open(page, '&shake=nest');

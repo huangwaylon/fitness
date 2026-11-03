@@ -76,8 +76,10 @@ export interface Villagers3 {
 
 /** The director's motions as the 3D villagers' moments. */
 const ACT: Partial<Record<Motion, Action>> = {
-  hop: 'hop', hop2: 'hop', leap: 'hop', twirl: 'hop', dance: 'hop', samba: 'hop', laugh: 'hop', flap: 'hop', squish: 'hop',
-  surprise: 'surprise', twitch: 'surprise', nod: 'wave', bow: 'wave', proud: 'wave', wiggle: 'wave'
+  hop: 'hop', hop2: 'hop', twirl: 'hop', dance: 'hop', samba: 'hop', laugh: 'hop', flap: 'hop', squish: 'hop',
+  surprise: 'surprise', twitch: 'surprise', nod: 'wave', bow: 'wave', proud: 'wave', wiggle: 'wave',
+  // group stretching (island/stretching.ts): NH's three, posed
+  warmup: 'warmup', sidebend: 'sidebend', leap: 'jump'
 };
 /** How far my villager may stand from its float and still hold the line (u: the beach from the lawn, not across the island). */
 const LINE_REACH = 220;
@@ -342,7 +344,8 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
         w.motionN = s.motionN;
         const a = s.motion ? ACT[s.motion] : undefined;
         if (a) {
-          v.act(s.stung ? 'sting' : a);
+          // (the sting's fright: a dizzy wobble; its swollen eye stays on the face for the minute)
+          v.act(s.stung && s.motion === 'surprise' ? 'sting' : a);
           w.busyUntil = t + 1800;
         }
       }
@@ -383,7 +386,9 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       last: (slot: string) => debug.get(slot) ?? null,
       state: (slot: string) => ws.get(slot)?.v?.state() ?? null,
       tool: (slot: string) => (ws.get(slot)?.tool?.obj ? ws.get(slot)!.tool!.key : null),
-      tip: (slot: string) => ws.get(slot)?.v?.tip()?.toArray() ?? null
+      tip: (slot: string) => ws.get(slot)?.v?.tip()?.toArray() ?? null,
+      /** Its sting's swollen eye showing (the lump on its head bone). */
+      stung: (slot: string) => !!ws.get(slot)?.v?.group.getObjectByName('sting-lump')?.visible
     };
 
   return {
