@@ -3,7 +3,7 @@
 // wanders between points of interest with footsteps under it. Neither ends up over a control, mine stays a
 // thumb-sized button while it walks, and a sheet stops them where they are.
 import { expect, test, type Page } from '@playwright/test';
-import { openNear, plateOnly, quiet, sawIt, watchFor } from './island.ts';
+import { lawnTap, openNear, plateOnly, quiet, sawIt, watchFor } from './island.ts';
 import { hudMenu, openRewards } from './hud.ts';
 
 async function open(page: Page, q = '') {
@@ -126,8 +126,9 @@ test('a netted bug holds still under the net, swung where it is (no walk); the c
 
 test('a sheet stops the walk where it is', async ({ page }) => {
   await open(page);
-  const p = await at(page, 210, 290);
-  await page.mouse.click(p[0], p[1]);
+  // (open lawn read from the page's island: a fixed point may be where a building or the day's things stand)
+  const p = await lawnTap(page, 210, 290);
+  await page.mouse.click(p.x, p.y);
   await page.waitForTimeout(120);
   await openRewards(page);
   await expect(page.locator('dialog[open]')).toBeVisible();
