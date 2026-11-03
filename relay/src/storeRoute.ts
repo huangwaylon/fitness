@@ -18,7 +18,7 @@ export interface StoreRoom {
   adminSigned(text: string, t: string | null, sig: string | null): Promise<{ status: number; body: string }> | { status: number; body: string };
 }
 
-export const ADMIN_MAX_CHARS = 4_000_000;
+const ADMIN_MAX_CHARS = 4_000_000;
 
 /** CORS for a page on an allowed origin (a request without an Origin, a Shortcut's or a server's, needs none). */
 function corsOf(origin: string | null, allowed: string): Record<string, string> | null {

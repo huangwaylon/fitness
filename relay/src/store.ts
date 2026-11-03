@@ -52,7 +52,7 @@ export const RATE_PER_MINUTE = 120;
 const MAX_EVENT_DATA_CHARS = 20_000;
 const UPLOADS_SHOWN = 20;
 /** At most this many events in one `events` request (a queue that grew offline goes in a few). */
-export const EVENTS_MAX = 50;
+const EVENTS_MAX = 50;
 /** A late row is returned to a poll whose `since` is at most this much after its arrival (the servers' clocks). */
 export const LATE_MARGIN_MS = 10_000;
 const KEY_RE = /^[0-9a-fA-F]{32,128}$/;

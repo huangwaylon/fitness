@@ -40,7 +40,7 @@ export interface RoomIO<S extends Sock> {
 export type Held = Partial<Record<string, { from: Who; to: Who; at: number; t: number }>>;
 
 /** The held high-fives as kept (before the guest, one per recipient: `{B: {from, at, t}}`), as pairs. */
-export function heldOf(raw: unknown): Held {
+function heldOf(raw: unknown): Held {
   const out: Held = {};
   if (!raw || typeof raw !== 'object') return out;
   for (const [k, h] of Object.entries(raw as Record<string, { from?: Who; to?: Who; at: number; t: number }>)) {
@@ -60,12 +60,12 @@ export const HELLO_MS = 10_000;
  *  last RING_MAX, and each person's last walk. */
 export const RING_MAX = 400;
 /** Per connection: a burst of 20, 20 a second after that. */
-export const BURST = 20;
-export const PER_SEC = 20;
+const BURST = 20;
+const PER_SEC = 20;
 /** At most this many sockets at once (two people, a few tabs, room to reconnect). */
 export const MAX_SOCKETS = 8;
 /** A person's phrases (`say`) at most one this often (ms): a newer one within it goes nowhere (the phone waits 1.5 s). */
-export const SAY_GAP_MS = 1000;
+const SAY_GAP_MS = 1000;
 
 export class RoomCore<S extends Sock> {
   private readonly buckets = new WeakMap<S, Bucket>();
