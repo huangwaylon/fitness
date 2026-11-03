@@ -44,8 +44,9 @@
   import { homePlaces, placeObjects } from './objects.ts';
   import { buildHome, homeTod } from './home.ts';
   import { buildStructure, structurePlaces } from './structure.ts';
-  import { buildPond } from './pond.ts';
-  import { pondPlaces } from '#lib/layout/ponds.ts';
+  import { POND_Y, buildPond } from './pond.ts';
+  import { pondOval, pondPlaces } from '#lib/layout/ponds.ts';
+  import { inOval } from '../island/world.ts';
   import { extentOf, type Layout } from '#lib/layout/model.ts';
   import { GRASS_Y, SEA_Y as LAYOUT_SEA_Y, WATER_DROP as LAYOUT_DROP, fieldOf } from '#lib/layout/height.ts';
   import { TIER_H } from '#lib/layout/grid.ts';
@@ -348,9 +349,27 @@
   const waterY = (x: number, z: number) => {
     const l = onLayout ? site.layout : null;
     if (!l) return Math.max(SEA_Y + 0.2, baseHeight(x, z) - WATER_DROP + 0.2);
+    // a pond put down (pond.ts): its water POND_Y over the grass it stands on
+    const pd = pondIn(l, x, z);
+    if (pd) return heightOf(pd.x, pd.z) + POND_Y + 0.2;
     // the layout's: the sea's level, or a fresh water's (its tier's banks less the drop: layout/mesh.ts)
     const f = fieldOf(l);
     return f.surfaceAt(x, z) === 'sea' ? LAYOUT_SEA_Y + 0.2 : f.tierAt(x, z) * TIER_H + GRASS_Y - LAYOUT_DROP + 0.2;
+  };
+  /** The ponds put down on a layout (their water's ovals), once a layout; a pond's own a little past its rim (a
+   *  shadow's model is placed by its head, which noses up to the stones). */
+  const pondsOf = new WeakMap<Layout, ReturnType<typeof pondOval>[]>();
+  const pondIn = (l: Layout, x: number, z: number) => {
+    let ps = pondsOf.get(l);
+    if (!ps) pondsOf.set(l, (ps = pondPlaces(l).map(pondOval)));
+    return ps.find((o) => inOval(o, x, z, 6)) ?? null;
+  };
+  /** What's under the water at (x, z): a put-down pond's bed (pond.ts: 0.4 under its water, over the grass), else the
+   *  ground (a river's or a pond's bed, the seabed). A fish's shadow keeps above it: under a pond put down, the shadow's
+   *  2.5 under the water was under the grass, hidden. */
+  const bedY = (x: number, z: number) => {
+    const l = onLayout ? site.layout : null, pd = l && pondIn(l, x, z);
+    return pd ? heightOf(pd.x, pd.z) + POND_Y - 0.4 : heightOf(x, z);
   };
   const marked = new WeakMap<Element, boolean>();
   let lamps3: LampSpot[] = [];
@@ -398,7 +417,7 @@
       seen.add(n.id);
       const b = modelBounds(a.m);
       // a flier's model hangs by its middle at the node's height; the rest stand on their feet
-      const base = n.m3.y !== undefined ? n.m3.y - heightOf(n.x, n.z) : n.m3.water ? waterY(n.x, n.z) - heightOf(n.x, n.z) + n.lift : n.lift;
+      const base = n.m3.y !== undefined ? n.m3.y - heightOf(n.x, n.z) : n.m3.water ? Math.max(waterY(n.x, n.z) + n.lift, Math.min(bedY(n.x, n.z) + 0.1, waterY(n.x, n.z))) - heightOf(n.x, n.z) : n.lift;
       const lift = base - (a.anchor === 'centre' && b ? ((b.min[1] + b.max[1]) / 2) * a.s : 0);
       const to: [number, number, number] = [n.x, n.z, lift];
       let L = live3.get(n.id);
@@ -860,6 +879,8 @@
       away: (x: number, z: number) => inFocusWay(x, z), camStill: () => e.camStill(), idle: () => e.idle(), fxWarmed: () => e.fxWarmed(), fx: (kind: FxKind, x: number, z: number, lift?: number, o?: Parameters<typeof e.fx>[4]) => e.fx(kind, x, z, lift, o), strays: (reach?: number) => e.strays(reach), alphaBlends: () => e.alphaBlends(),
       things: (id: string) => e.things.has(id), where: (id: string) => e.things.where(id), groups: () => e.things.groups(), over: (id: string, o: Parameters<typeof e.things.over>[1]) => e.things.over(id, o), head: (slot: string) => { const h = vil3?.head(slot); if (!h) return null; const p = h.getWorldPosition(new Vector3()); return [p.x, p.y, p.z]; },
       focus: (x: number, z: number, lift?: number) => e.focusOn({ x, z, lift }), restore: () => e.restore(), focused: () => e.focused(),
+      /** The water's surface and what's under it at world (x, z) (a fish's shadow is drawn between them). */
+      water: (x: number, z: number) => [waterY(x, z), bedY(x, z)],
       /** The ids of the lamps lit now (a model's id; a stand-in's `s:` prefixed). */
       lamps: () => e.lamps(),
       /** My angler's line up: its facing, its rod and its line's headings in plan (degrees), or null. */
