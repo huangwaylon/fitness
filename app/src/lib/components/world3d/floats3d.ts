@@ -2,7 +2,7 @@
 // water): one every ~50u below the falls down to the mouth, each drifting 36u downstream over 15 s, turning slowly,
 // then the next lap from its spot (out of step); and a few afloat on the pond (docs/design.md "Pond"), circling it
 // slowly. Pure positions; Island3D draws them as instances (quiet: no shadow map).
-import { CLIFF, POND, RIVER, onBridge } from '../island/world.ts';
+import { CLIFF, POND, RIVER, onBridge, worldGen } from '../island/world.ts';
 
 export interface Float {
   id: string;
@@ -21,7 +21,7 @@ const LAP_S = 15, DRIFT_U = 36, POND_N = 5;
 /** A pond float's lap round its ring (s). */
 const POND_LAP_S = 90;
 
-export const FLOATS: readonly Float[] = (() => {
+function build(): Float[] {
   const out: Float[] = [];
   let k = 0;
   for (let i = 0; i < RIVER.length - 1; i++) {
@@ -41,7 +41,14 @@ export const FLOATS: readonly Float[] = (() => {
     out.push({ id: `float-pond-${i}`, x: POND.x, z: POND.z, dx: 0, dz: 0, d: i * 2.3, spin: i % 2 ? 1 : -1, pond: { r, a } });
   }
   return out;
-})();
+}
+let cached: { gen: number; list: Float[] } | null = null;
+/** The floats on the island's waters now: world.ts's, or on the layout (site.on) its river and pond (world.ts's live
+ *  geometry: rebuilt when it changes, worldGen()). */
+export function floats(): readonly Float[] {
+  if (!cached || cached.gen !== worldGen()) cached = { gen: worldGen(), list: build() };
+  return cached.list;
+}
 
 
 /** Where a float is at time `t` (ms): along its lap, its yaw, and how much it shows (fading in and out at the lap's
