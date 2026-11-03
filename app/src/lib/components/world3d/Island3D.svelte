@@ -682,18 +682,22 @@
    *  half the phone's (its bake held every tab of CI's browser up for seconds). */
   const groundPx = (soft: boolean) => (drawOff() ? 0.05 : soft ? 0.8 : undefined);
   /** The ends' landmarks: the layout's (its front shore, ウェイ's home's door) on its layout, else the props'. */
-  function endsNow(): { shore: number; canopy: readonly [number, number, number]; back: readonly [number, number, number] } {
+  function endsNow(): { shore: number; canopy: readonly [number, number, number]; back: readonly [number, number, number]; edge?: number } {
     const l = onLayout ? site.layout : null;
     if (!l) return ends;
     const x = extentOf(l);
-    return { shore: x.shore, canopy: [GOAL_TREES.A[0], GOAL_TREES.A[1], TREE_H], back: [x.home[0], x.home[1], CAMPSITE.h] };
+    // (and the land's far edge: the user, "scroll further back, to see the back of the island too")
+    return { shore: x.shore, canopy: [GOAL_TREES.A[0], GOAL_TREES.A[1], TREE_H], back: [x.home[0], x.home[1], CAMPSITE.h], edge: x.land.z1 };
   }
+  /** The far end shows the island's back: its far edge this share down the screen (the cliff top, its trees, the far
+   *  shore and the sea past it all in view). */
+  const EDGE_AT = 0.42;
   function fitEnds(e: Island3) {
     const v = e.view(), H = canvas?.clientHeight ?? 0;
     if (!H) return;
     const hud = Math.max(0, (document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? 0) - scene.getBoundingClientRect().top);
     const en = endsNow();
-    e.setLimits(en.shore - 400, en.back[1] + 700);
+    e.setLimits(en.shore - 400, Math.max(en.back[1], en.edge ?? 0) + 700);
     const syAt = (x: number, z: number, lift: number) => (cz: number) => (e.go(cz, 1), e.at(x, z, lift).sy);
     const solve = (f: (cz: number) => number, target: number, lo: number, hi: number) => {
       for (let i = 0; i < 28; i++) {
@@ -703,10 +707,11 @@
       }
       return Math.round((lo + hi) / 2);
     };
-    const { shore, canopy: [cx, cz, ch], back: [bx, bz, bh] } = endsNow();
-    const lo = shore - 400, hi = bz + 700;
+    const { shore, canopy: [cx, cz, ch], back: [bx, bz, bh], edge } = endsNow();
+    const lo = shore - 400, hi = Math.max(bz, edge ?? 0) + 700;
     const min = Math.max(solve(syAt(195, shore, 0), H * SHORE_AT, lo, shore + 530), solve(syAt(cx, cz, ch), hud + CLEAR, lo, cz + 400));
-    const max = Math.max(solve(syAt(bx, bz, 0), H * CAMP_AT, min, hi), solve(syAt(bx, bz, bh), hud + CLEAR, min, hi));
+    let max = Math.max(solve(syAt(bx, bz, 0), H * CAMP_AT, min, hi), solve(syAt(bx, bz, bh), hud + CLEAR, min, hi));
+    if (edge !== undefined) max = Math.max(max, solve(syAt(195, edge, 0), Math.max(hud + CLEAR, H * EDGE_AT), min, hi));
     e.setLimits(min, max);
     e.go(v.camZ, v.zoom);
   }
