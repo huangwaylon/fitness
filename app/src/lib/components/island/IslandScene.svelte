@@ -1096,7 +1096,7 @@
 </script>
 
 <div class="if-scene scene" bind:this={sceneEl} data-r3={r3 || undefined} data-decorating={decorating || undefined} data-season={season} data-tod={tod} data-sky={live ? weather.sky : undefined} data-paused={life.hidden || undefined}
-  data-covered={covered || undefined} data-live={live || undefined} style:--horizon-y="{horizonPx}px" style:--sky-h="{horizonPx + 6}px">
+  data-covered={covered || undefined} data-sheet={paused || undefined} data-live={live || undefined} style:--horizon-y="{horizonPx}px" style:--sky-h="{horizonPx + 6}px">
   {#if picking && sceneEl}
     <!-- what my villager says: outside the viewport (its field's focus never moves the island), over the stage -->
     <SayPicker scene={sceneEl} anchor={picking} onpick={pickSay} onclose={(e) => {

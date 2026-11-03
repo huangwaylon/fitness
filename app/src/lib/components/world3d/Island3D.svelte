@@ -39,6 +39,7 @@
   import { has3d } from '../villager3d/manifest.ts';
   import { BufferGeometry, Float32BufferAttribute, Line, LineBasicMaterial, Vector3, type Object3D } from 'three';
   import type { FxKind } from './effects.ts';
+  import { pace, SLOW_PX } from './pace.ts';
   import { site } from '../island/site.svelte.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
@@ -388,9 +389,8 @@
   let fishing = false;
   /** An emitter on the island now (bubbles, a firefly, flames): ambience. */
   let emitting = false;
-  /** A model's move this slow on screen (px/s) or off it is ambience (the ambient rate: a fish's shadow drifting);
-   *  the canvas's size from the ResizeObserver (a read in the frame forced a layout each frame). */
-  const SLOW_PX = 60;
+  /** A model's move slower on screen than SLOW_PX (pace.ts) or off it is ambience (the ambient rate: a fish's shadow
+   *  drifting); the canvas's size from the ResizeObserver (a read in the frame forced a layout each frame). */
   let cw = 0, ch = 0, slowAmbient = true;
   function mirror(e: Island3, t: number): boolean | 'ambient' {
     const winter = season === 'winter', seen = new Set<string>(), add: Inst[] = [];
@@ -781,7 +781,7 @@
     const amb = num('ambient') ?? (soft && !drawOff() ? 2 : null);
     if (amb !== null) e.options({ ambient: Math.max(0, amb) });
     // (a slow move as ambience only where the ambience runs near the full rate: not on a software renderer's 2)
-    slowAmbient = (amb ?? 30) >= 24;
+    slowAmbient = pace.slow = (amb ?? 30) >= 24;
     fitEnds(e);
     e.go(start ?? e.limits().min);
     const proj: Proj3 = {

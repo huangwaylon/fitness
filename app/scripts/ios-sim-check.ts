@@ -102,6 +102,41 @@ try {
       const g = t.slice(1).map((x, i) => x - t[i]).sort((a, b) => a - b); done({ fps: Math.round((t.length - 1) / ((t[t.length - 1] - t[0]) / 1000)), p95: +(g[Math.floor(0.95 * g.length)] || 0).toFixed(1), long: g.filter((x) => x > 50).length, camZ: Math.round(w.view().camZ), max: Math.round(l.max) }); } })(performance.now());`);
   await sleep(800);
   await shot('scrolled');
+  // けんこう and ごはん over the island (the HUD's buttons): what the island draws meanwhile (none: it pauses), the
+  // CSS animations still running anywhere, and the sheet's own scroll (down and back by rAF steps, its frames)
+  const quiet = async () => runAsync<{ drawn: number; anims: number }>(`const done = arguments[0]; const w = window.__world3d, f0 = w.stats().frames;
+    setTimeout(() => done({ drawn: +((w.stats().frames - f0) / 4).toFixed(1), anims: document.getAnimations().filter((a) => a.playState === 'running').length }), 4000);`);
+  const scrollSheet = async (sel: string) => runAsync<{ fps: number; p95: number; long: number }>(`const [sel, done] = arguments; const el = document.querySelector(sel);
+    const max = el.scrollHeight - el.clientHeight, t = []; let dir = 1;
+    (function f(now) { t.push(now); el.scrollTop += dir * 12; if (el.scrollTop >= max - 1) dir = -1; else if (el.scrollTop <= 0) dir = 1;
+      if (now - t[0] < 4000) requestAnimationFrame(f); else { const g = t.slice(1).map((x, i) => x - t[i]).sort((a, b) => a - b);
+        done({ fps: Math.round((t.length - 1) / ((t[t.length - 1] - t[0]) / 1000)), p95: +(g[Math.floor(0.95 * g.length)] || 0).toFixed(1), long: g.filter((x) => x > 50).length }); } })(performance.now());`, sel);
+  const waitFor = async (sel: string) => {
+    for (let i = 0; i < 40 && !(await run<boolean>(`return !!document.querySelector(${JSON.stringify(sel)});`)); i++) await sleep(250);
+    await sleep(1500);
+  };
+  report.islandIdle = await quiet();
+  const sheets: Record<string, unknown> = {};
+  await run(`document.querySelector('.hud-health').click();`);
+  await waitFor('dialog[open] [data-health-sheet] .health .mc');
+  sheets.health1w = { idle: await quiet(), scroll: await scrollSheet('dialog[open] [data-health-sheet]') };
+  await shot('health');
+  await run(`const s = document.querySelector('dialog[open] select[data-pick=period]'); s.value = 'year'; s.dispatchEvent(new Event('change', { bubbles: true }));`);
+  await sleep(1500);
+  sheets.health1y = { idle: await quiet(), scroll: await scrollSheet('dialog[open] [data-health-sheet]') };
+  await run(`document.querySelector('dialog[open]').close();`);
+  await sleep(1500);
+  await run(`document.querySelector('.hud-food').click();`);
+  await waitFor('dialog[open] [data-food-summary]');
+  sheets.foodLog = { idle: await quiet(), scroll: await scrollSheet('dialog[open] [data-food-sheet]') };
+  await shot('food');
+  for (const [tab, key] of [['chart', 'foodChart'], ['recipe', 'foodRecipe']]) {
+    await run(`document.querySelector('dialog[open] [data-tab=${tab}]').click();`);
+    await sleep(1500);
+    sheets[key] = { idle: await quiet(), scroll: await scrollSheet('dialog[open] [data-food-sheet]') };
+  }
+  await run(`document.querySelector('dialog[open]').close();`);
+  report.sheets = sheets;
   report.errors = await run('return window.__iosErrs;');
 } catch (e) {
   report.failure = String(e);
@@ -122,6 +157,9 @@ const md = [
   `- the 3D island: ${report.island3d ? `up in ${report.loadMs} ms` : 'did not come up'}`,
   idle ? `- idle: ${idle.fps} fps (frame p50 ${idle.p50} ms, p95 ${idle.p95} ms), ${idle.long} long frames in 5 s` : '',
   scroll ? `- scrolling: ${scroll.fps} fps (p95 ${scroll.p95} ms), ${scroll.long} long frames` : '',
+  report.islandIdle ? `- the island idle: ${(report.islandIdle as { drawn: number }).drawn} frames/s drawn, ${(report.islandIdle as { anims: number }).anims} CSS animations running` : '',
+  ...Object.entries((report.sheets ?? {}) as Record<string, { idle: { drawn: number; anims: number }; scroll: { fps: number; p95: number; long: number } }>).map(([k, s]) =>
+    `- ${k}: the island draws ${s.idle.drawn} frames/s under it, ${s.idle.anims} CSS animations running; its scroll ${s.scroll.fps} fps (p95 ${s.scroll.p95} ms), ${s.scroll.long} long frames`),
   `- errors: ${(report.errors as string[] | undefined)?.length ? (report.errors as string[]).join('; ') : 'none'}`,
   report.failure ? `- FAILED: ${report.failure}` : '',
   '',

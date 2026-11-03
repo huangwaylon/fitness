@@ -112,7 +112,7 @@ export interface Things {
   dispose(): void;
 }
 
-export function createThings(scene: Scene, height: (x: number, z: number) => number, changed: (shadows?: boolean) => void): Things {
+export function createThings(scene: Scene, height: (x: number, z: number) => number, changed: (shadows?: boolean, soon?: boolean) => void): Things {
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
   const base = new URL(`room/world3d/`, new URL(document.baseURI)).href;
@@ -471,7 +471,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       if (!bugTimer) bugTimer = setTimeout(() => {
         bugTimer = 0;
         bugShadowAt = performance.now();
-        if (!disposed) changed(true);
+        // (soon: drawn by the frame already coming, a still bug's by one of its own)
+        if (!disposed) changed(true, true);
       }, BUG_SHADOW_MS);
     },
     jiggle(id, k = 1) {
