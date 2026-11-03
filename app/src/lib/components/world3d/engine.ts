@@ -68,7 +68,7 @@ export interface BuiltGround {
 export type Ground = GroundSource | BuiltGround;
 /** What a frame's part wants next: true something moves (the full rate), 'ambient' only its ambience (the ambient rate),
  *  false nothing. */
-export type Want = boolean | 'ambient';
+type Want = boolean | 'ambient';
 const built = (g: Ground): g is BuiltGround => 'group' in g;
 
 export interface Options {

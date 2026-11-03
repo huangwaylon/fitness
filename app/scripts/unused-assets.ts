@@ -46,7 +46,7 @@ const OVERLAY = new Set([
   'PartnerNews.svelte', 'partnerNews.ts', 'catalog.ts', 'catalog.json', 'pager.ts', 'HitOverlay.svelte'
 ].map((f) => `lib/components/island/${f}`));
 /** Dev pages and tools: what they name keeps nothing (the gallery shows every key). */
-const DEV = /^(routes\/(dev|villagers3d|world3d)\/|lib\/components\/dev\/)/;
+const DEV = /^(routes\/(dev|world3d)\/|lib\/components\/dev\/)/;
 type Kind = 'gone' | 'world' | 'app' | 'dev';
 const kindOf0 = (f: string): Kind =>
   // art.ts's key helpers (treeArt, flowerArt, seasonArt) are called by the island alone; its others are KNOWN below
