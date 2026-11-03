@@ -13,6 +13,7 @@
   import { artUrl } from '#lib/art.ts';
   import type { Live } from '#lib/sync/live.ts';
   import Preview3D from './Preview3D.svelte';
+  import type { Undrawn } from '../world3d/drawCheck.ts';
   import HomePicker from '../homes/HomePicker.svelte';
   import { draw, fitView, tileUnder, toScreen, toWorld, zoomAt, type View } from './plan.ts';
   import {
@@ -168,6 +169,23 @@
     vTimer = setTimeout(() => (issues = validate(l)), 120);
   });
   const errors = $derived(issues.filter((i) => i.level === 'error').length);
+
+  // `?check`: what the phones' 3D island leaves undrawn of the layout, and why (world3d/drawCheck.ts), a moment after a change
+  const drawCheckOn = new URLSearchParams(location.search).has('check');
+  let undrawnList = $state<Undrawn[] | null>(null);
+  let dTimer: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => {
+    const l = store.current;
+    if (!drawCheckOn) return;
+    clearTimeout(dTimer);
+    dTimer = setTimeout(() => void import('../world3d/drawCheck.ts').then(({ undrawn }) => (undrawnList = undrawn(l))), 200);
+  });
+  const WHY: Record<string, string> = {
+    'unknown-kind': 'しらない しゅるい（unknown kind: nothing drawn）',
+    card: 'えの カード（a card of 2D art, not a model）',
+    'no-model': 'なにも かかれない（no model at all）',
+    'model-missing': 'モデルの ファイルが ない（model file missing）'
+  };
 
   // ---- the pointer ----
   const local = (e: { clientX: number; clientY: number }): [number, number] => {
@@ -484,7 +502,7 @@
     window.addEventListener('keydown', onKey);
     window.addEventListener('keyup', onKeyUp);
     (window as unknown as { __editor?: unknown }).__editor = {
-      view: () => view, layout: () => store.current, select: (ids: string[]) => (selected = new Set(ids)), issues: () => issues,
+      view: () => view, layout: () => store.current, select: (ids: string[]) => (selected = new Set(ids)), issues: () => issues, undrawn: () => undrawnList,
       screenOf: (x: number, z: number) => {
         const [sx, sy] = toScreen(view, x, z), b = canvas!.getBoundingClientRect();
         return [b.left + sx, b.top + sy];
@@ -625,6 +643,16 @@
         {/each}
       </ul>
     </section>
+    {#if drawCheckOn}
+      <section class="issues" data-draw-check>
+        <h2>3Dの チェック {#if undrawnList === null}…{:else if undrawnList.length}<span class="bad">{undrawnList.length}</span>{:else}<span class="good">OK</span>{/if}</h2>
+        <ul>
+          {#each undrawnList ?? [] as u (u.id + u.why)}
+            <li><button type="button" class="error" onclick={() => (selected = new Set([u.id]))}>{u.id}（{kindDef(u.k)?.ja ?? u.k}）{u.x}, {u.z}<small>{WHY[u.why]}{u.detail ? `: ${u.detail}` : ''} · {u.seasons.join(' ')}</small></button></li>
+          {/each}
+        </ul>
+      </section>
+    {/if}
     <section class="mine" data-my-home>
       <h2>わたしの いえ <small>{store.home(me).m === 'house' ? `${store.home(me).w} · ${store.home(me).r} · ${store.home(me).d}` : store.home(me).m}</small></h2>
       <button type="button" data-home-look onclick={() => (picking = true)}>いえを かえる</button>
