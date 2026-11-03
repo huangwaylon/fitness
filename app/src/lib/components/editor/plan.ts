@@ -5,6 +5,7 @@ import { GRID, TILE, idx, kindOf, tierOf, type Kind } from '#lib/layout/grid.ts'
 import { kindDef } from '#lib/layout/catalog.ts';
 import { doorOf, facingVec, footOf, objMid, originOf, type Layout, type Obj } from '#lib/layout/model.ts';
 import type { Issue } from '#lib/layout/validate.ts';
+import type { Stem } from '#lib/layout/river.ts';
 
 export interface View {
   /** Pixels per world unit, and where the grid's back-left corner (x0, z1) lands on the canvas (CSS px). */
@@ -67,6 +68,8 @@ export interface Draw {
   issues: readonly Issue[];
   /** The issue in focus (its tiles drawn strongest). */
   focus?: Issue | null;
+  /** The rivers' drawn lines and their turns' arcs (layout/river.ts), marked over the tiles; none: not shown. */
+  river?: readonly Stem[] | null;
   icon(key: string): HTMLImageElement | null;
 }
 
@@ -138,6 +141,7 @@ export function draw(ctx: CanvasRenderingContext2D, d: Draw): void {
       ctx.fillRect(x + 1, y + 1, T - 2, T - 2);
     }
   }
+  if (d.river) drawRiver(ctx, v, d.river);
   // the objects: big ones first, the selected last
   const objs = [...l.objects.values()].sort((a, b) => {
     const [aw, ad] = footOf(l, a), [bw, bd] = footOf(l, b);
@@ -176,8 +180,73 @@ export function draw(ctx: CanvasRenderingContext2D, d: Draw): void {
     ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
     ctx.fillStyle = 'rgba(255,249,227,0.12)';
     ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
-    ctx.setLineDash([]);
   }
+}
+
+/** The rivers as the 3D island draws them (layout/river.ts), over their tiles: the band's banks faint, the centreline,
+ *  each turn's arc orange with its radius (in tiles) at its middle and a spoke from its centre, so a painter sees where
+ *  the curves go. */
+function drawRiver(ctx: CanvasRenderingContext2D, v: View, stems: readonly Stem[]): void {
+  ctx.save();
+  ctx.lineJoin = ctx.lineCap = 'round';
+  for (const s of stems) {
+    const line = (side: number) => {
+      ctx.beginPath();
+      for (let i = 0; i < s.x.length; i++) {
+        const [x, y] = toScreen(v, s.x[i] - s.fz[i] * s.hw[i] * side, s.z[i] + s.fx[i] * s.hw[i] * side);
+        if (i) ctx.lineTo(x, y);
+        else ctx.moveTo(x, y);
+      }
+      ctx.stroke();
+    };
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+    ctx.lineWidth = 1;
+    line(1);
+    line(-1);
+    ctx.setLineDash([]);
+    ctx.strokeStyle = '#123a6b';
+    ctx.lineWidth = 2;
+    line(0);
+    for (const a of s.arcs) {
+      // its sweep: the way round from its start that comes to its end
+      const a0 = Math.atan2(a.z0 - a.cz, a.x0 - a.cx), sw = (a.deg * Math.PI) / 180;
+      const at = (th: number) => [a.cx + a.r * Math.cos(th), a.cz + a.r * Math.sin(th)];
+      const [ex, ez] = at(a0 + sw), dir = Math.hypot(ex - a.x1, ez - a.z1) < 1 ? 1 : -1;
+      ctx.strokeStyle = '#ff8a1f';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      for (let k = 0; k <= 24; k++) {
+        const [x, y] = toScreen(v, ...(at(a0 + (dir * sw * k) / 24) as [number, number]));
+        if (k) ctx.lineTo(x, y);
+        else ctx.moveTo(x, y);
+      }
+      ctx.stroke();
+      const [mx, my] = toScreen(v, ...(at(a0 + (dir * sw) / 2) as [number, number])), [cx, cy] = toScreen(v, a.cx, a.cz);
+      ctx.strokeStyle = 'rgba(255,138,31,0.6)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(mx, my);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#ff8a1f';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+      ctx.fill();
+      const label = `R ${(a.r / TILE).toFixed(1)}マス · ${Math.round(a.deg)}°`;
+      ctx.font = 'bold 12px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#fff';
+      ctx.strokeText(label, (mx + cx) / 2, (my + cy) / 2);
+      ctx.fillStyle = '#a34a00';
+      ctx.fillText(label, (mx + cx) / 2, (my + cy) / 2);
+    }
+  }
+  ctx.restore();
 }
 
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {

@@ -10,6 +10,7 @@
   import { GRID, PATHS, TILE, type Kind } from '#lib/layout/grid.ts';
   import { fromJson, footOf, objMid, opsBetween, toJson, type Layout, type Obj } from '#lib/layout/model.ts';
   import { validate, type Issue } from '#lib/layout/validate.ts';
+  import { riverStems } from '#lib/layout/river.ts';
   import { artUrl } from '#lib/art.ts';
   import type { Live } from '#lib/sync/live.ts';
   import Preview3D from './Preview3D.svelte';
@@ -45,6 +46,10 @@
   /** The layout drawn: the store's, or a stroke's in progress. */
   let work = $state<Layout | null>(null);
   const cur = $derived(work ?? store.current);
+  // the rivers as the 3D island draws them (layout/river.ts: straights, each turn an arc), marked on the plan as a stroke
+  // paints (かわの せん) and listed in `?check`
+  let riverLine = $state(true);
+  const stems = $derived(riverLine || new URLSearchParams(location.search).has('check') ? riverStems(cur) : []);
 
   // ---- history: each action's before and after; undo reverts it over the island as it is now ----
   interface Action { before: Layout; after: Layout; label: string }
@@ -158,7 +163,7 @@
       c.height = Math.round(H * dpr);
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    draw(ctx, { layout: cur, view, w: W, h: H, grid, selected, hover, moved, ghost, brush: brushAt, box, issues, focus, icon });
+    draw(ctx, { layout: cur, view, w: W, h: H, grid, selected, hover, moved, ghost, brush: brushAt, box, issues, focus, icon, river: riverLine ? stems : null });
   });
 
   // the issues, a moment after a change
@@ -608,6 +613,7 @@
       <button type="button" onclick={redo} disabled={!redoStack.length} title="Cmd+Shift+Z">↷ やりなおす</button>
     </div>
     <label class="row small"><input type="checkbox" bind:checked={show3d} /> 3D</label>
+    <label class="row small"><input type="checkbox" data-river-line bind:checked={riverLine} /> かわの せん <small>(the river as the 3D island draws it: each turn's arc and its radius)</small></label>
     {#if show3d}
       <div class="p3d"><Preview3D layout={store.current} mode="orbit" /></div>
     {/if}
@@ -649,6 +655,16 @@
         <ul>
           {#each undrawnList ?? [] as u (u.id + u.why)}
             <li><button type="button" class="error" onclick={() => (selected = new Set([u.id]))}>{u.id}（{kindDef(u.k)?.ja ?? u.k}）{u.x}, {u.z}<small>{WHY[u.why]}{u.detail ? `: ${u.detail}` : ''} · {u.seasons.join(' ')}</small></button></li>
+          {/each}
+        </ul>
+        <h3>かわの カーブ <small>(the river's turns, drawn on the plan in orange)</small></h3>
+        <ul data-river-arcs>
+          {#each stems as s, i (i)}
+            {#each s.arcs as a, j (j)}
+              <li class="arc">R {(a.r / TILE).toFixed(1)}マス · {Math.round(a.deg)}°<small>マス {Math.floor((a.x0 - GRID.x0) / TILE)}, {Math.floor((a.z0 - GRID.z0) / TILE)} → {Math.floor((a.x1 - GRID.x0) / TILE)}, {Math.floor((a.z1 - GRID.z0) / TILE)}</small></li>
+            {:else}
+              <li class="arc"><small>まっすぐ (no turns)</small></li>
+            {/each}
           {/each}
         </ul>
       </section>
@@ -727,6 +743,9 @@
   .issues ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; max-height: 240px; overflow-y: auto; }
   .issues li button { width: 100%; text-align: left; font-weight: 500; display: flex; flex-direction: column; gap: 1px; border-width: 1.5px; }
   .issues li button small { font-size: 11px; color: var(--c-ink-soft); }
+  .issues h3 { font-size: 13px; margin: 8px 0 4px; }
+  .issues li.arc { display: flex; flex-direction: column; font-size: 13px; color: #a34a00; font-weight: 600; }
+  .issues li.arc small { font-size: 11px; color: var(--c-ink-soft); font-weight: 400; }
   .issues .error { border-color: #d0533c; background: #fff0ec; }
   .issues .warn { border-color: #d7a323; background: #fff8e2; }
   .bad { background: #e2553d; color: #fff; border-radius: 999px; padding: 0 8px; font-size: 12px; }
