@@ -29,7 +29,7 @@
   import { island, type Inst, type Standin } from './layout3d.ts';
   import { assetFor } from './assets.ts';
   import { keyModel, modelBounds } from './models3d.ts';
-  import { FLOATS, floatAt } from './floats3d.ts';
+  import { floats as floatsNow, floatAt, type Float } from './floats3d.ts';
   import { SEA_Y, WATER_DROP, baseHeight } from './ground.ts';
   import { attachGestures } from './gestures.ts';
   import { idlePose, motionPose } from './motion3d.ts';
@@ -485,21 +485,23 @@
   const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
   // ---- petals or maple leaves on the stream in their weeks (floats3d.ts) ----
-  let floatsOn: string | null = null;
+  let floatsOn: string | null = null, floatList: readonly Float[] = [];
   function floats(e: Island3, t: number) {
-    // (world.ts's stream and pond: the layout's waters have none of these yet)
-    if (onLayout) return;
     const key = floating ? `season/${floating === 'petal' ? 'petal' : 'maple-leaf'}` : null;
     const a = key ? assetFor(key) : null;
-    if (key !== floatsOn) {
-      void e.things.remove(FLOATS.map((f) => f.id));
+    // (on the layout its river and pond: a new list when the layout changes)
+    const list = key ? floatsNow() : floatList;
+    if (key !== floatsOn || list !== floatList) {
+      void e.things.remove(floatList.map((f) => f.id));
       floatsOn = key;
-      if (a) void e.things.set(FLOATS.map((f) => ({ id: f.id, model: a.m, x: f.x, z: f.z, scale: a.s * 1.4, pitch: -Math.PI / 2 })));
+      floatList = list;
+      if (a) void e.things.set(list.map((f) => ({ id: f.id, model: a.m, x: f.x, z: f.z, scale: a.s * 1.4, pitch: -Math.PI / 2 })));
     }
     if (!a) return;
-    for (const f of FLOATS) {
+    for (const f of floatList) {
       const p = floatAt(f, t);
-      const y = Math.max(SEA_Y + 0.4, baseHeight(p.x, p.z) - WATER_DROP) + 0.4;
+      // (the water's surface there: the layout's levels on the layout)
+      const y = waterY(p.x, p.z) + 0.2;
       e.things.over(f.id, { x: p.x, z: p.z, yaw: p.yaw, lift: y - heightOf(p.x, p.z), size: Math.max(0.01, p.show) }, false);
     }
   }
