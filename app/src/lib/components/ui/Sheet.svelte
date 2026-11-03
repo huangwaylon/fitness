@@ -8,7 +8,7 @@
   // top-right; nothing advertises swipe-down), one CTA in `footer`. Backdrop tap and Esc also close.
   // `footer`: a sticky action row at the bottom, lifted above the on-screen keyboard (--kb from visualViewport).
   // Focused inputs scroll to the centre. While open, the page behind is locked (scrollLock).
-  // variant="top": the island panel, sliding down from the top (the HUD's jar opens it) (rounded at the bottom, the safe area on top).
+  // variant="top": the island panel, sliding down from the top (the leaf menu's ベル row opens it) (rounded at the bottom, the safe area on top).
   // It does not scroll itself: it is a flex column, and the panel puts its own title bar (with ‹) and its one
   // scrolling body (`.panel-body`) inside. variant="pop": the same full-height column (the health popup), grown out of
   // the HUD's dumbbell (--pop-x / --pop-y on the root, set by the button) instead of sliding down.

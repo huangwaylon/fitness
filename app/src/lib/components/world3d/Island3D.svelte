@@ -100,7 +100,7 @@
     onscroll: () => void;
     /** The horizon's height on screen changed (the sky's band follows it). */
     onhorizon: (px: number) => void;
-    /** The engine failed to start (no WebGL): the scene draws in 2D. */
+    /** The engine failed to start (no WebGL): the scene shows its no-WebGL line. */
     onfail: () => void;
     /** The camera is up and the island's models are in (once). */
     onready: () => void;
@@ -637,7 +637,7 @@
     });
   });
 
-  // (a sheet over the island: no frames, as the 2D island pauses)
+  // (a sheet over the island: no frames)
   $effect(() => {
     const e = eng, on = !enabled();
     if (e) untrack(() => e.pause(on));
@@ -681,7 +681,7 @@
     return eng?.limits() ?? { min: 30, max: 1000 };
   }
 
-  /** The camera's ends for this screen (IslandScene's 2D rule, through this camera): まえ puts the shoreline SHORE_AT down
+  /** The camera's ends for this screen: まえ puts the shoreline SHORE_AT down
    *  the screen (unless the goal trees' canopies would go under the HUD), おく the campsite's feet CAMP_AT down it with
    *  its top clear of the HUD. */
   const SHORE_AT = 0.83, CAMP_AT = 0.5, CLEAR = 16;

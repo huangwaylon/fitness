@@ -53,7 +53,7 @@ for (const vp of [{ width: 393, height: 852 }, { width: 402, height: 874 }, { wi
         expect(b.y + b.height).toBeLessThanOrEqual(vp.height);
         expect(b.x).toBeGreaterThanOrEqual(0);
         expect(b.x + b.width).toBeLessThanOrEqual(vp.width);
-        // over every tint: no filter on it or its layer, above the ground's tint plane
+        // over every tint: no filter on it or its layer
         expect(await d.evaluate((el) => getComputedStyle(el.closest('.pop')!).filter)).toBe('none');
         // the 3D island's popup goes over the canopies when it fits, else on its tree's side (FruitTree's fitPopup):
         // the other tree's middle stays tappable

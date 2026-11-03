@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The meal button in the HUD's top-right cluster, left of the jar (docs/design.md "Island", "Gohan"): the health
+  // The meal button in the HUD's top-right cluster, between the dumbbell and the leaf menu (docs/design.md "Island", "Gohan"): the health
   // button's cream pill (HudHealth), NH's ramen bowl (`items/dinner`) across it, no number. Tap: a press squash, the
   // villagers glance up at it (R18), and the meal log (ごはん) grows out of the bowl (FoodSheet, Sheet's `pop`, --pop-x / --pop-y).
   //   <HudFood onopen={() => …} {later} />

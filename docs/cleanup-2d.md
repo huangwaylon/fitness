@@ -61,21 +61,19 @@ The cutover goes in two phases (the user: "flip to 3D as soon as the tests pass 
 - **Phase B, after one release with the fallback:** the 2D renderer, its art, the baked ground and the switch go,
   in the order of "The plan for phase B" (below).
 
-The lists come from `npm run unused` (`app/scripts/unused-assets.ts`), checked against what the built islands draw
-(`npm run unused:probe`, in both islands). Snapshot: 2026-11-03, main at 56fe9be (just before the flip).
+The lists come from `npm run unused` (`app/scripts/unused-assets.ts`), checked against what the built island draws
+(`npm run unused:probe`; at the snapshot it ran on both islands, with `--island=3d --layout` and `--island=2d`, flags
+the probe ignores now: there's one island). Snapshot: 2026-11-03, main at 56fe9be (just before the flip).
 
 ```sh
 cd app
 npm run build && node scripts/serve-build.ts 4396 &                      # (a free port: lsof -i :4396)
-node scripts/unused-probe.ts 4396 /tmp/seen-3d.txt --island=3d --layout   # 17 scenes: what's drawn or loaded
-node scripts/unused-probe.ts 4396 /tmp/seen-2d.txt --island=2d            # the same on the 2D fallback
-sort -u /tmp/seen-3d.txt /tmp/seen-2d.txt > /tmp/seen.txt
+node scripts/unused-probe.ts 4396 /tmp/seen.txt   # 17 scenes: what's drawn or loaded
 npm run unused -- --seen=/tmp/seen.txt     # the summary; --list=safe|used|unsure for paths; --json
 ```
 
-The probe also lists every 404 under `art/`, `room/` and `terrain/` (and exits 1): after any deletion, both islands
+The probe also lists every 404 under `art/`, `room/` and `terrain/` (and exits 1): after any deletion, the island
 must show none. Beside its list it writes `<file>.wasted`: what was downloaded into the DOM and never seen drawn.
-(`--layout` is `?layout`, the 3D island on its layout before `LAYOUT_3D` is on; after the flip it's the default.)
 
 ## How it decides
 

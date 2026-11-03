@@ -264,7 +264,7 @@
 
 <style>
   .bv {
-    /* the island's HUD (the jar and the health button) ends at its lip (+page.svelte --hud-bottom: the view lives
+    /* the island's HUD (the dumbbell, the bowl, the leaf menu) ends at its lip (+page.svelte --hud-bottom: the view lives
        on <body>, so it's worked out here from the same tokens); 「もどる」 sits under it, never over it */
     --hud-end: calc(var(--hud-top, calc(var(--ui-top, env(safe-area-inset-top, 0px)) + 10px)) + var(--hit, 44px) + var(--lip-h, 4px));
     --back-top: calc(var(--hud-end) + 10px);

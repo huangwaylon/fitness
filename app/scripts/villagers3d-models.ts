@@ -1,4 +1,4 @@
-// The villagers in 3D (the /villagers3d POC, src/lib/components/villager3d): every villager the picker offers whose NH
+// The villagers in 3D (src/lib/components/villager3d): every villager the picker offers whose NH
 // model is in the game files the user supplied, as a skinned GLB (its 46-joint skeleton and skin, posed at runtime:
 // NH's files have no animation clips), wearing its default top, its 16 eyes and 9 mouths as two atlases
 // (scripts/villagers3d-page.js), packed as the island's models are (WebP textures, gltfpack's quantisation and meshopt)

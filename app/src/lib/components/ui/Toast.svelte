@@ -92,7 +92,7 @@
     animation: in 320ms var(--ease-bounce) both;
   }
   .banner:popover-open { inset: auto 0; top: calc(var(--ui-top) + 56px); }
-  /* 島: below the HUD row, so a banner never covers the jar or the dumbbell. */
+  /* 島: below the HUD row, so a banner never covers the dumbbell, the bowl or the leaf menu. */
   :global(:root:has(.island)) .banner:not(.undo) { top: calc(var(--hud-top) + var(--hit) + var(--lip-h) + 12px); }
   /* the sync chip sits under the HUD row (Hud.svelte), so the banner goes under it */
   :global(:root:has(.island .chip)) .banner:not(.undo) { top: calc(var(--hud-top) + var(--hit) + var(--lip-h) + 56px); }
@@ -105,7 +105,7 @@
     background: color-mix(in srgb, var(--c-yuzu) 40%, var(--c-cream));
   }
   .txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  /* An undo banner: low, in the thumb zone, so it never covers the Jar's total; its text (what was done:
+  /* An undo banner: low, in the thumb zone, so it never covers the ベル row's total; its text (what was done:
      「アイス 1,000 ベル つかいました！」) may take two lines next to the button. */
   .banner.undo, .banner.undo:popover-open { top: auto; bottom: calc(var(--pad-bottom) + 16px); height: 56px; animation-name: up-in; }
   /* …but in the shop, whose うる / かう bar is in the thumb zone: high, over the counter's sign (components/shop) */

@@ -4,7 +4,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { geo, lawnTap, oku } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
-/** The island is up: the HUD's jar shows (the app asks no questions, so nothing to answer first). */
+/** The island is up: the HUD's leaf menu shows (the app asks no questions, so nothing to answer first). */
 async function islandReady(page: Page) {
   // (its first paint: now and then over 5 s under CI's load)
   await expect(hudMenu(page)).toBeVisible({ timeout: 15_000 });

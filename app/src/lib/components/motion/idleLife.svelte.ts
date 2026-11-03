@@ -1,6 +1,6 @@
 // Idle life (design.md "Motion", docs/backend.md#ambient-life): one scheduler per live scene, on the 10-second slots of
 // ambient life (island/ambient.ts), so both phones play the same: each slot (DECIDE_MS after it starts, on the relay's
-// clock) one villager does one small background thing (look around, wiggle, hop, a glance up at the jar, tree shake,
+// clock) one villager does one small background thing (look around, wiggle, hop, a glance up at the HUD, tree shake,
 // stretch), sets off on an outing to points of interest, or both chat or dance; the visitor takes its beat from the
 // slot's own PRNG; しずえ now and then swaps pose / wiggles / hops. No emote bubbles or fx: those mark events. In the
 // evening (19–22) the energetic ones rest; asleep (22–05) the villagers only doze. Pauses while the tab is hidden or
@@ -163,7 +163,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
       case 'hop':
         return setMotion(id, 'hop');
       case 'peek':
-        // a glance up at the jar (in the sky HUD's top-left corner since it left the island): turn to it, then home
+        // a glance up at the HUD (its cluster in the sky's top-right corner): turn to it, then home
         applyStep(id, { actor: id, face: 'jar', motion: 'turn' });
         return later(id, 1_800, () => (actors[id].face = 'home'));
       case 'treeshake':

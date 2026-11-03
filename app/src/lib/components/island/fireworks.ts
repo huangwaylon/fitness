@@ -114,7 +114,7 @@ export const MIN_R = 18;
 const FALL = 12;
 
 /** Where a burst may open in `sky` (px: the night sky and the open sea above the island), clear of every box in
- *  `avoid` (the jar, the health button, the sync chip: every control): its whole circle inside and off the UI. A size between
+ *  `avoid` (the dumbbell, the bowl, the leaf menu, the sync chip: every control): its whole circle inside and off the UI. A size between
  *  MIN_R and MAX_R at random, anywhere it fits at random, smaller when it must; `at` (a tap) tries only there. Null when
  *  there's no room. */
 export function burstSpot(sky: Box, avoid: readonly Box[], r: () => number, at?: { x: number; y: number }): { x: number; y: number; rad: number } | null {

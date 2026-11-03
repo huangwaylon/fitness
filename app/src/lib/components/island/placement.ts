@@ -1,6 +1,6 @@
 // Where the island's overlays may go (docs/design.md "Scene interactions", "Dialogue"): the stage's geometry and the
 // UI nothing of ours may cover. Shared by the critters, the beach finds, the chats and the visitors: they keep clear of
-// every control (the HUD's jar and health button, the sync chip, the trees, the fruit rows, the villagers),
+// every control (the HUD's dumbbell, bowl and leaf menu, the sync chip, the trees, the fruit rows, the villagers),
 // a tree's popup and しずえ's box, measured live with getBoundingClientRect. A speech balloon stands by its speaker
 // (placeBy: NH's rule, nearness first); a plate or a caption by the point it's about (place).
 import { hits, type Box } from './geom.ts';
@@ -17,8 +17,8 @@ export function stageGeo(scene: HTMLElement | undefined) {
 }
 export type StageGeo = NonNullable<ReturnType<typeof stageGeo>>;
 
-/** What a balloon never covers, whatever else gives way: the HUD (every control outside the stage: the jar, the
- *  health button, the sync chip, the panel's), しずえ's box, a tree's popup, what a villager holds up, and another overlay that
+/** What a balloon never covers, whatever else gives way: the HUD (every control outside the stage: the dumbbell,
+ *  the bowl, the leaf menu, the sync chip, the panel's), しずえ's box, a tree's popup, what a villager holds up, and another overlay that
  *  is showing (a catch plate). */
 const hard = (el: Element): boolean => !el.closest('.stage') || el.matches('.news, .detail, [data-guard]') || !!el.closest('[data-fx].placed');
 
@@ -26,8 +26,8 @@ const hard = (el: Element): boolean => !el.closest('.stage') || el.matches('.new
  *  padded 6px. `skip`: leave some out. */
 function guards(skip?: (el: Element) => boolean): Box[] {
   const out: Box[] = [];
-  // [data-guard]: a said line, and the HUD's art drawn past its button (the jar taller than the row, the dumbbell's
-  // plates over the pill's ends)
+  // [data-guard]: a said line, and the HUD's art drawn past its button (the dumbbell's plates over the pill's ends, the
+  // bowl's, the leaf's)
   for (const el of document.querySelectorAll('button, .detail, .news, [data-guard]')) {
     if (el.classList.contains('balloon') || el.closest('[data-fx]:not(.placed)')) continue; // an overlay still being measured
     if (skip?.(el)) continue;

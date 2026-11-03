@@ -1118,9 +1118,8 @@
         <svg class="defs" aria-hidden="true" width="0" height="0">
           <filter id={fid} color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values={shadeMatrix || '1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0'} /></filter>
         </svg>
-        <!-- the sky is the stage's backdrop, behind every world thing (a tree top rising over the horizon stands in front
-             of the sun or moon); the ground's tint plane reaches into its low band (no edge at the horizon); the sun or
-             moon and the stars sit high in the sky, above the plane's reach -->
+        <!-- the sky is the stage's backdrop, behind the 3D island and every world thing (a tree top rising over the horizon
+             stands in front of the sun or moon); the sun or moon and the stars sit high in the sky -->
         <Sky {tod} />
         <Sky {tod} layer="lights" />
         <!-- the balloon present: NH's, flying over the island in 3D (its tap area a world node on it) -->

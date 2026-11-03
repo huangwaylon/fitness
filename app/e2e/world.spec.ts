@@ -1,7 +1,6 @@
-// The rolling-log world (docs/design.md "World"): one depth order for everything (behind a tree a villager is hidden
-// by it; just in front it covers the trunk while the canopy covers its head; a building likewise), the native scroller
-// is the camera with two stops (まえ, おく), taps land on transformed sprites near the horizon, and nothing
-// runs once it is still.
+// The island's tap areas over the 3D canvas (docs/design.md "World"): one depth order for everything (behind a tree a
+// villager's is hidden by it; just in front it covers the trunk while the canopy covers its head; a building likewise),
+// and taps land on the tap areas far up near the horizon.
 import { expect, test, type Page } from '@playwright/test';
 import { geo, type Geo } from './island.ts';
 
@@ -30,9 +29,8 @@ async function topAt(page: Page, x: number, z: number, fy: number) {
   // the scenery's art lets taps through (pointer-events: none): make it hit-testable for the probe
   await page.addStyleTag({ content: '[data-scenery-id] .art, [data-building] .door { pointer-events: auto !important; }' });
   await page.waitForTimeout(150);
-  // (its figure: the 2D render, or on the 3D island its tap area, its model's own box: Island3D's [data-v3])
-  const v3 = (await page.locator('[data-actor="mine"][data-v3]').count()) > 0;
-  const r = (await page.locator(v3 ? '[data-actor="mine"] .vil' : '[data-actor="mine"] .vil img').first().boundingBox())!;
+  // (its figure: its tap area, its model's own box: Island3D's [data-v3])
+  const r = (await page.locator('[data-actor="mine"] .vil').first().boundingBox())!;
   return page.evaluate(([px, py]) => {
     const e = document.elementFromPoint(px, py);
     if (!e) return null;

@@ -1,7 +1,6 @@
-// Petals or maple leaves riding the stream in their weeks (WorldWater's floats, in 3D: NH's season/* models on the
-// water): one every ~50u below the falls down to the mouth, each drifting 36u downstream over 15 s, turning slowly,
-// then the next lap from its spot (out of step); and a few afloat on the pond (docs/design.md "Pond"), circling it
-// slowly. Pure positions; Island3D draws them as instances (quiet: no shadow map).
+// Petals or maple leaves riding the stream in their weeks (NH's season/* models on the water): one every ~50u below the
+// falls down to the mouth, each drifting 36u downstream over 15 s, turning slowly, then the next lap from its spot (out
+// of step); and a few afloat on the pond (docs/design.md "Pond"), circling it slowly. Pure positions; Island3D draws them as instances (quiet: no shadow map).
 import { CLIFF, POND, RIVER, onBridge, worldGen } from '../island/world.ts';
 
 export interface Float {

@@ -134,7 +134,7 @@ function parts(fx: Fx): Part[] {
       ];
     }
     case 'lily-pad': {
-      // the pond's pad (WorldWater.svelte): a green disc lying on the water, a wedge cut out
+      // the pond's pad: a green disc lying on the water, a wedge cut out
       const rim: [number, number][] = [];
       for (let i = 0; i <= 28; i++) { const a = 0.35 + (i / 28) * (2 * Math.PI - 0.7); rim.push([Math.cos(a), Math.sin(a)]); }
       const flat = (pos: number[]) => pos.map((v, i) => (i % 3 === 1 ? pos[i + 1] : i % 3 === 2 ? -pos[i - 1] : v));

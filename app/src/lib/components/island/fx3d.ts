@@ -1,6 +1,5 @@
 // The 3D island's flourishes (world3d/effects.ts): where the DOM island plays a tap's dust, a splash, sparkles, a 「！」,
-// it asks the 3D island first; true: drawn there (the DOM's own goes invisible: its `in3d`). Nothing listens on the 2D
-// island.
+// it asks the 3D island first; true: drawn there (the DOM's own goes invisible: its `in3d`).
 export type Fx3 =
   | 'dust' | 'sand' | 'snow' | 'splash' | 'ripple' | 'sparkle' | 'sparks' | 'bang' | 'leaves' | 'drops' | 'hearts'
   | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'flame';
