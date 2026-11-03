@@ -75,8 +75,8 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   quicker (160ms, the last pill first) on a second tap of the leaf, a tap anywhere else (that tap still does what it
   would: no swallowed tap), Esc (focus back on the leaf), any sheet opening or もようがえ, and a pick: a pill's tap
   is a press squash, the villagers glance up (R18) and its sheet grows out of the pill's icon (Sheet's `pop`, as
-  けんこう); the pick leaves the focus on the leaf, so closing that sheet gives it back there (the pill is inert by
-  then: the focus would fall to the page's top). Folded, the pills are `visibility: hidden` and `inert`: no focus, no taps, out of placement.ts' guards (a
+  けんこう); once that sheet has closed, the focus goes back to the leaf (`preventScroll`; the pill is inert by then,
+  so the dialog's own return would drop it to the page's top). Folded, the pills are `visibility: hidden` and `inert`: no focus, no taps, out of placement.ts' guards (a
   balloon may stand there). The column is out of the row's flow, so the HUD's box (`.ribbon-wrap`, which the 3D
   island measures for the sky) stays the row. Reduced motion: the pills fade in and out where they stand, the leaf
   doesn't tip.

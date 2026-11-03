@@ -94,7 +94,7 @@ test('by keyboard: the leaf, a pill, Enter opens its sheet, Esc closes it and th
     await page.keyboard.press('Escape');
     await expect(page.locator('dialog[open]')).toHaveCount(0);
     // (the pill went inert with the fold: the dialog gives the focus back to the leaf, not to the page's body)
-    await expect(hudMenu(page)).toBeFocused();
+    await expect(hudMenu(page), sheet).toBeFocused();
   }
 });
 
