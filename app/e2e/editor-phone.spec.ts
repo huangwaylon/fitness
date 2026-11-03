@@ -76,7 +76,7 @@ test("the editor's move, placement, paste and undo show the same on a phone, eve
     .poll(() => phone.evaluate(() => {
       const L = (window as unknown as { __layout: { ids(k: string): string[]; obj(id: string): { id: string; k: string; x: number; z: number; f: number; s?: string } } }).__layout;
       const ks = ['oak', 'cedar', 'palm', 'bamboo', 'bush', 'hedge', 'flower', 'goal-tree', 'home', 'spot', 'rock', 'flat-rock', 'garden-rock', 'streetlamp', 'garden-lantern', 'campfire', 'log-stool', 'campsite-sign',
-        'park-bench', 'log-bench', 'hammock', 'rod-stand', 'pump', 'shishiodoshi', 'pullup', 'firewood', 'beach-chair', 'sandcastle', 'snowboy', 'tape-deck', 'board', 'bridge', 'stairs'];
+        'park-bench', 'log-bench', 'hammock', 'rod-stand', 'pump', 'shishiodoshi', 'pullup', 'firewood', 'beach-chair', 'sandcastle', 'snowboy', 'tape-deck', 'board', 'bridge', 'stairs', 'museum'];
       return ks.flatMap((k) => L.ids(k)).map((id) => { const o = L.obj(id); return [o.id, o.k, o.x, o.z, o.f, o.s ?? null]; }).sort();
     }), { timeout: 10_000 })
     .toEqual(want);

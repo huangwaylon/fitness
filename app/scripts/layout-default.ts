@@ -271,6 +271,8 @@ for (const f of FLOWERS) put(f.id, 'flower', f.x, f.z, { s: `c${f.clump}` });
     const [x0, z0, w, d] = footOfOut(o);
     for (let j = 0; j < d; j++) for (let i = 0; i < w; i++) taken.set(`${x0 + i},${z0 + j}`, o.id);
     // a home's door, a building's front and a board's front stay clear
+    // the stairs' top (the row it climbs to: f 0 rising away) stays clear, a walker steps off there
+    if (o.k === 'stairs' && o.f === 0) for (let i = 0; i < w; i++) taken.set(`${x0 + i},${z0 + d}`, `${o.id}:top`);
     if (o.k === 'home' || o.k === 'board' || kindDef(o.k)!.door) for (let i = 0; i < w; i++) taken.set(`${x0 + i},${z0 - 1}`, `${o.id}:door`);
   };
   for (const o of [...objects].sort((a, b) => rank(a) - rank(b))) {
@@ -282,7 +284,8 @@ for (const f of FLOWERS) put(f.id, 'flower', f.x, f.z, { s: `c${f.clump}` });
     for (let ring = 1; ring <= 5 && !done; ring++)
       for (let dz = -ring; dz <= ring && !done; dz++)
         for (let dx = -ring; dx <= ring && !done; dx++) {
-          if (Math.max(Math.abs(dx), Math.abs(dz)) !== ring || !fits(o, o.x + dx, o.z + dz)) continue;
+          // (on its own tier: a clifftop's tree never moves down beside the campsite)
+          if (Math.max(Math.abs(dx), Math.abs(dz)) !== ring || !fits(o, o.x + dx, o.z + dz) || tileTier(o.x + dx, o.z + dz) !== tileTier(o.x, o.z)) continue;
           o.x += dx;
           o.z += dz;
           done = true;
