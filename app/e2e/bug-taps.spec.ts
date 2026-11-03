@@ -78,10 +78,11 @@ test('a bug in front of my villager: a tap on it nets it, not my villager', asyn
     await page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z), [w![0], w![1] - [2, 6, 10][tries++ % 3]] as const);
     await page.waitForTimeout(150);
     at = await drawn(page);
-    return !!at && (await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('button.vil'), at));
+    if (!at || !(await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('button.vil'), at))) return false;
+    await page.mouse.click(at[0], at[1]); // (at once: it hops)
+    return true;
   };
-  await expect.poll(covered, { timeout: 15_000 }).toBe(true);
-  await page.mouse.click(at![0], at![1]);
+  await expect.poll(covered, { timeout: 20_000, intervals: [100] }).toBe(true);
   await expect.poll(() => cues(page)).toContain('scene-catch');
   expect(await cues(page)).not.toContain('villager-tap');
 });

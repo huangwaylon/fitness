@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACTS, DROPS, HOWS, MAX_BYTES, SAY_MAX, isAcked, VIA_MAX, cleanSay, WORLD_OPS, WORLD_X, WORLD_Z, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
+import { ACTS, DROPS, FISH_PHASES, HOWS, guestMaySend, MAX_BYTES, SAY_MAX, isAcked, VIA_MAX, cleanSay, WORLD_OPS, WORLD_X, WORLD_Z, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
 import { PLAN } from '#lib/components/island/world.ts';
 
 const KEY = 'ab'.repeat(32);
@@ -242,6 +242,21 @@ describe('live protocol: the tent (v2)', () => {
     expect(parseClient(j2({ ...set, on: 'dmh1table1' }))).toEqual({ v: 3, ...set, on: 'dmh1table1' });
     for (const bad of [j2({ ...set, on: 'nope' }), j2({ ...set, sc: undefined, on: 'dmh1table1', x: 100, z: 100 })]) expect(parseClient(bad), bad).toBeNull();
   });
+  it('a line’s step (`fish`, v3) is presence only: every phase, a world point, never kept, acked or claimed, small; the guest sends it', () => {
+    const cast = { kind: 'fish', ph: 'cast', id: 'fresh:clifftop:8639', pt: [375, 1470], from: [380, 1430], s: T };
+    expect(parseClient(j2(cast))).toEqual({ v: 3, ...cast });
+    for (const ph of FISH_PHASES) expect(parseClient(j2({ kind: 'fish', ph })), ph).toEqual({ v: 3, kind: 'fish', ph });
+    expect(parseClient(j2({ ...cast, extra: 1 }))).toEqual({ v: 3, ...cast });
+    expect(parseServer(j2({ ...cast, who: 'G', t: T }))).toEqual({ v: 3, ...cast, who: 'G', t: T });
+    expect(j2(cast).length).toBeLessThanOrEqual(120);
+    for (const bad of [j2({ ...cast, ph: 'gone' }), j2({ ...cast, pt: [1.5, 2] }), j2({ ...cast, from: [WORLD_X[1] + 1, 0] }), j2({ ...cast, id: 'a b' }), j2({ ...cast, s: 'x' }), JSON.stringify({ v: 2, ...cast })])
+      expect(parseClient(bad), bad).toBeNull();
+    expect(isStored(cast as never)).toBe(false);
+    expect(isAcked(cast as never)).toBe(false);
+    expect(claimOf(cast as never)).toBeNull();
+    expect(guestMaySend(cast as never)).toBe(true);
+  });
+
   it('a drag and the villager inside are presence only: never kept, never claimed, small', () => {
     const drag = { kind: 'drag', id: 'dmh1abc2a', x: -12, z: 33, f: 2 };
     expect(parseClient(j2(drag))).toEqual({ v: 3, ...drag });

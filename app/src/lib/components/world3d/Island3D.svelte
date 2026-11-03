@@ -473,8 +473,8 @@
           lines.set(n.id, ln);
         }
         if (n.id === 'bobber') fishing = n.shown;
-        // (the bobber's: from my 3D villager's rod's tip, where it holds one)
-        const tip = n.id === 'bobber' ? vil3?.tip('mine') : null;
+        // (a bobber's: from its 3D villager's rod's tip, where it holds one: mine `bobber`, another's `bobber-<slot>`)
+        const tip = n.id === 'bobber' ? vil3?.tip('mine') : n.id.startsWith('bobber-') ? vil3?.tip(n.id.slice(7)) : null;
         let [sx, sz, sl] = n.m3.line(), y0 = heightOf(sx, sz) + sl;
         if (tip) [sx, sz, y0] = [tip.x, -tip.z, tip.y];
         const pos = ln.obj.geometry.getAttribute('position') as Float32BufferAttribute, y1 = heightOf(x, z) + lf;

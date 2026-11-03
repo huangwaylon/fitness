@@ -51,6 +51,12 @@ export type WorldOp = (typeof WORLD_OPS)[number];
 export const HOWS = ['net', 'rod', 'dive', 'dig', 'swarm', 'flee'] as const;
 export type How = (typeof HOWS)[number];
 
+/** A line's step (a `fish`, v3): `cast` it went out (the float landing at `pt`, the line from `from`, at a shadow `id`),
+ *  `nibble` the float dipped, `bite` it went under, `reel` reeled in (a catch is its `catch`), `off` the line came in
+ *  without one (it got away, nobody came, the angler left). @public (relay/) */
+export const FISH_PHASES = ['cast', 'nibble', 'bite', 'reel', 'off'] as const;
+export type FishPhase = (typeof FISH_PHASES)[number];
+
 /** What a shaken tree dropped (a `shake`): nothing, a branch, a wasp nest, a bagworm or a spider on its thread,
  *  coconuts (a palm's). */
 export const DROPS = ['none', 'branch', 'nest', 'bagworm', 'spider', 'coconut'] as const;
@@ -112,7 +118,14 @@ export type Intent =
    *  relayed live, and while the partner is away the room holds the last one for them (HIGHFIVE_HOLD_MS), handing it
    *  over at their next hello until their phone says `got`. Never in the sheet. `to` (v3): whose villager was tapped
    *  (absent: the partner, member to member); the guest's always names it, and a member's to the guest does. */
-  | { kind: 'highfive'; at: number; to?: Who };
+  | { kind: 'highfive'; at: number; to?: Who }
+  /** My line (v3; docs/design.md "Shared world"): each step as it happens (FISH_PHASES), so every phone shows who is
+   *  fishing: my villager's rod, the line from it to the float at `pt` (the bank's `from` when it isn't in reach), the
+   *  dips and the plunge, the reel; the shadow it's cast at (`id`, the critter's shared id) is mine while it's out (a
+   *  tap on another phone doesn't take it). `s` when the line went out (the relay's clock). Presence only, like a
+   *  phrase: never kept or replayed; a phone that comes while it's out hears the step again (its angler's phone sends
+   *  it when it sees them come), and an angler whose phone goes is no longer fishing. */
+  | { kind: 'fish'; ph: FishPhase; id?: string; pt?: Pt; from?: Pt; s?: number };
 
 /** A decor op on the wire: the island's decorations (no scope, contract/decor.ts), a home's room (`sc` t, u, v,
  *  contract/tent.ts) or the island's layout (`sc` o, c, r, h, contract/layout.ts); checked here again (the Worker
@@ -385,6 +398,12 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
     case 'highfive':
       if (v === 1 || !isTime(o.at) || (o.to !== undefined && (v < 3 || !isWho(o.to)))) return null;
       return { kind: 'highfive', at: o.at, ...(o.to !== undefined ? { to: o.to as Who } : {}) };
+    case 'fish':
+      if (v < 3 || !oneOf(FISH_PHASES)(o.ph) || !opt(o, 'id', isId) || !opt(o, 'pt', isWorldPt) || (o.from !== undefined && !isWorldPt(o.from)) || !opt(o, 's', isTime)) return null;
+      return {
+        kind: 'fish', ph: o.ph, ...(o.id !== undefined ? { id: o.id as string } : {}), ...(o.pt !== undefined ? { pt: o.pt as Pt } : {}),
+        ...(o.from !== undefined ? { from: o.from as Pt } : {}), ...(o.s !== undefined ? { s: o.s as number } : {})
+      };
     case 'say': {
       const text = v === 1 ? null : cleanSay(o.text);
       if (o.sc !== undefined && !SAY_SCOPES.includes(o.sc as SayScope)) return null;
@@ -509,14 +528,14 @@ export const HIGHFIVE_HOLD_MS = 24 * 3600_000;
 
 /**
  * What the guest's phone may send (docs/backend.md#the-guest): a walk, an act, the shared world's claims (a catch, a
- * pick-up, a put: a bug out of a bush, a present landing; a shake), a phrase, a high-five, the tent and its own home
+ * pick-up, a put: a bug out of a bush, a present landing; a shake), a phrase, a high-five, its line's steps, the tent and its own home
  * (inside, a drag, their rooms' decor, its home's look). Not the island's decor or its layout, a world op (watering, a
  * wish), an emote or a `saved` nudge: the room drops
  * those from the guest. @public (relay/, sync/live.ts)
  */
 export function guestMaySend(i: Intent): boolean {
   switch (i.kind) {
-    case 'walk': case 'act': case 'catch': case 'pick': case 'put': case 'shake': case 'say': case 'highfive': case 'tent': case 'drag':
+    case 'walk': case 'act': case 'catch': case 'pick': case 'put': case 'shake': case 'say': case 'highfive': case 'tent': case 'drag': case 'fish':
       return true;
     case 'decor':
       return scopeMaySend('G', i.sc, i.id);

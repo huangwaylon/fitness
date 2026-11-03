@@ -1,4 +1,5 @@
-// My cast on the 3D island (docs/design.md "Fishing"): what the line is doing now, for my 3D villager's rod
+// The casts on the 3D island (docs/design.md "Fishing"): what each villager's line is doing now (mine, and the others'
+// as their phones tell it: "Shared world"), for its 3D villager's rod
 // (world3d/villagers.ts: it faces the float, casts, tugs at the bite, reels in) and for the float's own motion
 // (floatLift: Critters' bobber node reads it each frame). Critters.svelte, which runs the fishing (its timers are the one
 // source of truth: the 2D float's CSS and the 3D float play the same moments), says each step; plain module state, read
@@ -7,34 +8,47 @@
 //   bite   the float went under (the rod's tip yanked)   reel   reeled in (a catch or nothing): the rod comes up
 export type Phase = 'cast' | 'wait' | 'bite' | 'reel';
 
-export const angling: {
+/** A villager's line: its step, where its float is (world x, z) and a count of steps; when the float landed, its last
+ *  nibble and the bite (performance.now() ms; −Infinity: not yet), and the nibbles so far. */
+export interface Angling {
   phase: Phase | null; x: number; z: number; n: number;
-  /** When the float landed, its last nibble and the bite (performance.now() ms; −Infinity: not yet), and the nibbles so far. */
   landed: number; nibble: number; bite: number; nibbles: number;
-} = { phase: null, x: 0, z: 0, n: 0, landed: -Infinity, nibble: -Infinity, bite: -Infinity, nibbles: 0 };
+}
+/** Each villager's line by its slot (`mine`, and the others' as their phones tell it: Critters' `fish` steps). */
+const anglers = new Map<string, Angling>();
+/** The line of the villager in `slot` (made idle the first time). */
+export function anglerOf(slot = 'mine'): Angling {
+  let a = anglers.get(slot);
+  if (!a) anglers.set(slot, (a = { phase: null, x: 0, z: 0, n: 0, landed: -Infinity, nibble: -Infinity, bite: -Infinity, nibbles: 0 }));
+  return a;
+}
+/** My line. */
+export const angling: Angling = anglerOf('mine');
 
 /** The line's step now, and where its float is (world x, z); null: no line out (it got away, or nobody's fishing). */
-export function angle(phase: Phase | null, at?: { x: number; z: number }): void {
+export function angle(phase: Phase | null, at?: { x: number; z: number }, slot = 'mine'): void {
+  const a = anglerOf(slot);
   if (at) {
-    angling.x = at.x;
-    angling.z = at.z;
+    a.x = at.x;
+    a.z = at.z;
   }
-  if (phase === angling.phase) return;
+  if (phase === a.phase) return;
   const now = performance.now();
-  if (phase === 'wait' && angling.phase !== 'wait') angling.landed = now;
-  if (phase === 'bite') angling.bite = now;
+  if (phase === 'wait' && a.phase !== 'wait') a.landed = now;
+  if (phase === 'bite') a.bite = now;
   if (phase === 'cast' || phase === null) {
-    angling.landed = angling.nibble = angling.bite = -Infinity;
-    angling.nibbles = 0;
+    a.landed = a.nibble = a.bite = -Infinity;
+    a.nibbles = 0;
   }
-  angling.phase = phase;
-  angling.n++;
+  a.phase = phase;
+  a.n++;
 }
 
 /** A nibble (or the line's twitch at an early tap): the float dips. */
-export function nibbled(): void {
-  angling.nibble = performance.now();
-  angling.nibbles++;
+export function nibbled(slot = 'mine'): void {
+  const a = anglerOf(slot);
+  a.nibble = performance.now();
+  a.nibbles++;
 }
 
 /** The 2D float's moves (Critters.svelte's CSS: bob, the nibble's twitch, plunge), in world units up. */
@@ -52,8 +66,8 @@ const ease = (k: number) => k * k * (3 - 2 * k);
 
 /** The float's height over the water at `t` (ms): bobbing gently while it waits, a quick dip at each nibble; at the bite
  *  a little hop and a plunge under (and under it stays). */
-export function floatLift(t: number): number {
-  const a = angling;
+export function floatLift(t: number, slot = 'mine'): number {
+  const a = anglerOf(slot);
   if (a.phase === 'bite') {
     const k = (t - a.bite) / PLUNGE_MS;
     if (!(k < 1)) return UNDER_U;

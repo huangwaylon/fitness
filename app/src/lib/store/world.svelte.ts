@@ -6,6 +6,8 @@
 //   world.attach(relay, me)      the relay in use (the phone's one socket, or the demo's tabs), and who I am
 //   world.share(intent)          a change of mine: folded, kept, sent; returns what folding it did
 //   world.on(fn)                 the partner's changes (`live`: it just happened: play it)
+//   world.tell(i) / world.hear(fn)   presence only (a line's step, `fish`): sent now, kept nowhere; the others', live
+//   world.onHere(fn)             who else is here now, and each change
 //   world.day                    today's WorldDay (reactive through `world.rev`)
 import { emptyDay, apply, applyRow, rowOf, type Applied, type Claim, type DayEvent, type DayRow, type WorldDay } from '#lib/sync/world-day.ts';
 import { guestMaySend, tokyoDay, type Intent, type Relayed, type Who } from '#lib/sync/live-protocol.ts';
@@ -102,8 +104,36 @@ class SharedWorld {
     this.#relay = relay;
     this.#me = me;
     this.#demo = demo;
-    if (relay) this.#off = relay.on((m) => this.#heard(m));
+    if (relay) {
+      const off = [relay.on((m) => this.#heard(m)), relay.onStatus((st) => this.#here(st.connected ? (st.here ?? []) : []))];
+      this.#off = () => off.forEach((f) => f());
+    } else this.#here([]);
     this.rev++;
+  }
+
+  #hearSubs = new Set<(m: Relayed) => void>();
+  #hereSubs = new Set<(here: readonly Who[]) => void>();
+  #hereNow: readonly Who[] = [];
+  #here(here: readonly Who[]): void {
+    if (here.join() === this.#hereNow.join()) return;
+    this.#hereNow = here;
+    for (const f of this.#hereSubs) f(here);
+  }
+  /** A presence-only intent of mine (a line's step): to whoever is here now, kept nowhere. */
+  tell(i: Extract<Intent, { kind: 'fish' }>): boolean {
+    if (this.#me === 'G' && !guestMaySend(i)) return false;
+    return this.#relay?.send(i) ?? false;
+  }
+  /** The others' presence-only intents (a line's step), live. */
+  hear(fn: (m: Relayed) => void): () => void {
+    this.#hearSubs.add(fn);
+    return () => void this.#hearSubs.delete(fn);
+  }
+  /** Who else is here (called at once, then at each change; nobody while there's no relay). */
+  onHere(fn: (here: readonly Who[]) => void): () => void {
+    this.#hereSubs.add(fn);
+    fn(this.#hereNow);
+    return () => void this.#hereSubs.delete(fn);
   }
 
   #prevKey(): string {
@@ -216,6 +246,10 @@ class SharedWorld {
   /** My own wishes heard back from the relay this session, by morning (see #heard). */
   #ownWishes: Record<string, number> = {};
   #heard(m: Relayed): void {
+    if (m.kind === 'fish') {
+      if (m.who !== this.#me) for (const f of this.#hearSubs) f(m);
+      return;
+    }
     if (!isDayEvent(m)) return;
     const { v: _v, ...e } = m;
     const d = this.#today();
@@ -297,6 +331,9 @@ class SharedWorld {
     this.#prev = null;
     this.#events = [];
     this.#subs.clear();
+    this.#hearSubs.clear();
+    this.#hereSubs.clear();
+    this.#hereNow = [];
     this.rev++;
   }
 }
