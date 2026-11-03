@@ -89,8 +89,9 @@ export interface Museum {
   isDefault(): boolean;
   moving(on: boolean): void;
   night(n: number): void;
-  /** The wings' exhibits (each built once its data is in: MuseumRoom). */
+  /** The wings' exhibits (each built once its data is in: MuseumRoom), and one taken down (rebuilt with new finds). */
   exhibit(e: Exhibit): void;
+  drop(e: Exhibit): void;
   exhibits(): readonly Exhibit[];
   hit(cx: number, cy: number): Hit | null;
   client(x: number, y: number, z: number): [number, number];
@@ -493,6 +494,14 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; critt
     e.night(nightN);
     invalidate();
   }
+  function drop(e: Exhibit) {
+    const i = exhibits.indexOf(e);
+    if (i < 0) return;
+    exhibits.splice(i, 1);
+    e.dispose();
+    nav = navOf([...BLOCKS, ...exhibits.flatMap((x) => x.blocks)]);
+    invalidate();
+  }
 
   // ---- the villagers ----
   interface Walker {
@@ -875,6 +884,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; critt
     },
     night,
     exhibit,
+    drop,
     exhibits: () => exhibits,
     hit,
     client,
