@@ -4,6 +4,7 @@
 import { ITEMS, footprint } from './items.ts';
 import { TILE, centreOf, type Facing, type Pt } from './grid.ts';
 import { anchorsOf, shapeOf, type Anchor } from '../villager3d/seats3d.ts';
+import type { Who } from '#lib/types.ts';
 
 export interface Seat {
   /** The piece's id and which of its seats. */
@@ -18,6 +19,13 @@ export interface Seat {
   from: Pt;
   /** Where a 3D villager sits or lies on it (its model's own seat, from its geometry: villager3d/seats3d.ts). */
   anchor?: Anchor;
+}
+
+/** One villager a seat, the first to sit keeps it: whether their sit (when, relay ms as sent: whole) stands mine up. An
+ *  exact tie goes by who (A, then B, then G), the same on both phones: never both up. */
+export function outsat(mine: { s: number; who: Who }, theirs: { s: number; who: Who }): boolean {
+  const a = Math.round(theirs.s), b = Math.round(mine.s);
+  return a < b || (a === b && theirs.who < mine.who);
 }
 
 /** A piece's seats as it stands (its spot in the room and its height off the floor, a thing on a table being none). */

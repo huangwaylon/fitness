@@ -48,7 +48,7 @@
   import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfFind } from './items.ts';
   import { DOOR_IN, HALF, centreOf, nearestFree, resolve as resolveRoom, walkPath, type Pt, type Resolved } from './grid.ts';
   import { DragLink } from './dragLink.ts';
-  import { seatsOf, type Seat } from './seats.ts';
+  import { outsat, seatsOf, type Seat } from './seats.ts';
   import { drawOff } from '#lib/ui-state/testMode.ts';
   import type { Look, Pose, Tent, Who } from './engine.ts';
 
@@ -222,7 +222,7 @@
     else theirSeats.delete(w);
     if (seat) {
       const st = seatAt(seat.id, seat.n);
-      if (mySeat && mySeat.id === seat.id && mySeat.n === seat.n && seat.s <= mySeat.s) {
+      if (mySeat && mySeat.id === seat.id && mySeat.n === seat.n && outsat({ s: mySeat.s, who: me }, { s: seat.s, who: w })) {
         walkTo(mySeat.from);
         cue('boop');
       }
