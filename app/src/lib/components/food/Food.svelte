@@ -162,7 +162,7 @@
 </div>
 
 <style>
-  .food { display: grid; gap: 12px; padding-bottom: 8px; }
+  .food { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-bottom: 8px; }
   /* whose day: けんこう's dropdown pill (Health.svelte) */
   .dd {
     position: relative; display: flex; align-items: center; min-width: 0; min-height: var(--hit);
