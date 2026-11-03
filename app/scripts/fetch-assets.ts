@@ -43,6 +43,8 @@ const SPECS: Record<string, Spec> = {
   'host/isabelle-winter': [512, 'Isabelle_NH_Model_2.png'],
   'host/isabelle-icon': [128, 'Isabelle_NH_Character_Icon.png'],
   'host/tom-nook': [512, 'Tom_Nook_NH.png'],
+  // The shop's twins behind its counter (components/shop): NH has them only together (no head icons)
+  'host/timmy-tommy': [512, 'Timmy_&_Tommy_NH_Transparent.png'],
   // The fruit icons (🍒 cherry = Stand).
   'fruit/peach': [128, 'Peach_NH_Inv_Icon.png'],
   'fruit/apple': [128, 'Apple_NH_Inv_Icon.png'],

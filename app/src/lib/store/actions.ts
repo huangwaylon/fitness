@@ -17,6 +17,8 @@ import {
   type FoodSnap, type Meal, type RepeatItem, type RepeatOp
 } from '#lib/contract/food.ts';
 import { foodDay, foodEntries, recipes, repeats } from '#lib/model/food.ts';
+import { buyPrice, sellPrice, stockOf } from '#lib/contract/shop.ts';
+import { shopView } from '#lib/model/shop.ts';
 import { world } from './world.svelte.ts';
 
 /** 買う！ and its とりけす wait this long before they are sent, with もとに戻す on the banner. */
@@ -125,7 +127,7 @@ export function setVillager(villager: string) {
  *  (the server keeps one row per person and day, docs/backend.md#tally). */
 const TALLY_HOLD_MS = 60_000;
 /** The tally waiting to be sent: a newer one replaces it within the same window. */
-let held: { date: LocalDate; until: number; undo: () => boolean } | null = null;
+let held: { date: LocalDate; until: number; undo: () => boolean; hold?: (ms: number | null) => number } | null = null;
 
 /** One more of `kind:id` in my tally of today (the model's day, so the demo's `?date=` too). */
 function countOne(kind: FindKind, id: string): void {
@@ -139,7 +141,13 @@ function countOne(kind: FindKind, id: string): void {
   const holdMs = same ? same.until - now : TALLY_HOLD_MS;
   same?.undo();
   const r = week.send('tally', { date, counts }, { holdMs });
-  held = r.undo ? { date, until: now + holdMs, undo: r.undo } : null;
+  held = r.undo ? { date, until: now + holdMs, undo: r.undo, hold: r.hold } : null;
+}
+
+/** Send the held tally now (the shop: the record sells only what it holds of my catches). */
+function releaseTally(): void {
+  if (held && held.until > Date.now()) held.hold?.(0);
+  held = null;
 }
 
 /** Record a catch or a pick-up: counted in today's tally, and a find for the shared ずかん unless one of us already
@@ -151,6 +159,58 @@ export function recordFind(kind: FindKind, id: string): boolean {
   countOne(kind, id);
   if (findsView(m.state).has(findKey(kind, id))) return false;
   return week.send('find', { kind, id }).ok;
+}
+
+// ---- The shop (docs/design.md "The shop", contract/shop.ts): my pocket's catches sold and the day's stock bought, with
+// my かいがら (the guest's its own). Shown at once, sent after the UNDO_MS banner, like a buy of a treat. Never ベル.
+
+/** One SendResult for several sends: undone, held and resumed together. */
+function together(rs: SendResult[]): SendResult {
+  if (!rs.length || rs.some((r) => !r.ok)) {
+    for (const r of rs) r.undo?.();
+    return { ok: false };
+  }
+  return {
+    ok: true,
+    undo: () => rs.map((r) => r.undo?.() ?? false).every(Boolean),
+    hold: (ms) => Math.min(...rs.map((r) => r.hold?.(ms) ?? 0))
+  };
+}
+
+/**
+ * Sell catches from my pocket (`kind:id` → how many): one `sell` per species at its price. `{ok:false}` when one isn't
+ * in the pocket that many times. `shells`: what they fetched.
+ */
+export function sell(picks: ReadonlyMap<string, number>): SendResult & { shells?: number } {
+  const m = week.model;
+  if (!m || !picks.size) return { ok: false };
+  const pocket = shopView(m.state, m.me).pocket;
+  const rows: { species: string; n: number; v: number }[] = [];
+  for (const [species, n] of picks) {
+    const p = sellPrice(species);
+    if (p === undefined || !Number.isInteger(n) || n < 1 || n > (pocket.get(species) ?? 0)) return { ok: false };
+    rows.push({ species, n, v: n * p });
+  }
+  releaseTally();
+  const r = together(rows.map((d) => week.send('sell', d, { holdMs: UNDO_MS })));
+  return { ...r, shells: rows.reduce((a, d) => a + d.v, 0) };
+}
+
+/** Why I can't buy this piece from today's stock now, or null: not in the stock, bought already, too dear. */
+export function buyRefusal(item: string): 'stock' | 'owned' | 'wallet' | null {
+  const m = week.model;
+  if (!m || !stockOf(localDateAt(m.now)).includes(item)) return 'stock';
+  const v = shopView(m.state, m.me);
+  if (v.owned.includes(item)) return 'owned';
+  return (buyPrice(item) ?? Infinity) > v.shells ? 'wallet' : null;
+}
+
+/** Buy a piece of today's stock with my かいがら: it joins my もようがえ. `{ok:false}` when `buyRefusal` says no. */
+export function buyPiece(item: string): SendResult & { price?: number } {
+  const m = week.model;
+  const price = buyPrice(item);
+  if (!m || price === undefined || buyRefusal(item)) return { ok: false };
+  return { ...week.send('buy', { item, price, d: localDateAt(m.now) }, { holdMs: UNDO_MS }), price };
 }
 
 // ---- The shared island's day on the sheet (docs/backend.md#shared-world): one `island` row per person and day, sent

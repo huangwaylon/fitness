@@ -28,6 +28,7 @@
   import { art, artUrl, villagerArt } from '#lib/art.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
+  import { shopView } from '#lib/model/shop.ts';
   import { doorReady, provideDoor } from '#lib/ui-state/doorTransition.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -124,6 +125,10 @@
     }
     return out;
   });
+
+  /** What I bought at the shop (model/shop.ts: mine, the guest's its own), newest first: mine to place in any room I
+   *  arrange. */
+  const bought = $derived(week.model ? [...shopView(week.model.state, me).owned].reverse().filter((c) => ITEMS[c]) : []);
 
   // ---- my villager in the tent, told to the partner (the very walk) ----
   /** My last walk (for a partner who joins while it's under way). */
@@ -781,7 +786,7 @@
     {/if}
   </div>
   {#if editing && eng}
-    <TentEdit bind:this={edit} {room} eng={() => eng} {link} {finds} {relayNow} holderName={(id) => nameOf(link.theirs().find((h) => h.id === id)?.who ?? partner)}
+    <TentEdit bind:this={edit} {room} eng={() => eng} {link} {finds} {bought} {relayNow} holderName={(id) => nameOf(link.theirs().find((h) => h.id === id)?.who ?? partner)}
       villagers={() => [eng?.at(me), ...others.map((w) => eng?.at(w))].filter((p): p is [number, number] => !!p)}
       ondone={() => {
         editing = false;
