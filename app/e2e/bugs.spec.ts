@@ -3,7 +3,7 @@
 // mound and a tap digs it up; a tap on my villager now and then sends a flea hopping off it; the stink bugs on the
 // flowers. Each keeps clear of every control and is a ずかん find, never ベル. `?critter=<id>` brings one on at once.
 import { expect, test, type Page } from '@playwright/test';
-import { quiet } from './island.ts';
+import { geo, quiet } from './island.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { PERCH_3D, REAR_MS, type Perch } from '../src/lib/components/island/critters.ts';
 import { hudBells, hudMenu } from './hud.ts';
@@ -134,13 +134,22 @@ test('fireflies: a little cloud of lights blinking out of step', async ({ page }
   expect(new Set(delays).size).toBe(4);
 });
 
-test('a butterfly lands on a flower now and then (its wings slowly opening and closing)', {
-  tag: '@quarantine',
-  annotation: { type: 'quarantine', description: 'owner: critters agent, 2026-11-03: red on main (3588b68, c572162) and 1 in 4 as CI runs it: the sprite box\'s middle vs the flower\'s DOM box on the layout\'s 3D island, a few px either way at the whole island\'s zoom. TODO: check the landing on the flower head\'s world point, not DOM boxes' }
-}, async ({ page }) => {
-  await open(page, '&date=2026-05-10T12:00&critter=common-butterfly');
+test('a butterfly lands on a flower now and then (its wings slowly opening and closing)', async ({ page }) => {
+  await open(page, '&date=2026-05-10T12:00&critter=common-butterfly&visitor=none');
+  await page.waitForFunction(() => (window as unknown as W3).__world3d?.loaded(), null, { timeout: 30_000 });
   await expect(page.locator('[data-critter="common-butterfly"].sat')).toBeAttached({ timeout: 15_000 });
-  expect(await onFlowerHead(page, await at(page, '[data-critter="common-butterfly"]'))).toBe(true);
+  // landed: its model over a flower's foot, by the world's points (the island's flowers as the page has them; DOM
+  // boxes are a few px either way at the whole island's zoom)
+  const m = await page.evaluate(() => {
+    for (let n = 1; n < 40; n++) {
+      const at = (window as unknown as W3).__world3d!.where(`bug-${n}`);
+      if (at && !at.hidden) return { x: at.x, z: -at.z };
+    }
+    return null;
+  });
+  expect(m).not.toBeNull();
+  const flowers = (await geo(page)).FLOWERS;
+  expect(Math.min(...flowers.map((f) => Math.hypot(f.x - m!.x, f.z - m!.z)))).toBeLessThan(2);
 });
 
 test('a dragonfly darts near the water (NH: flying near water), clear of every control', async ({ page }) => {
