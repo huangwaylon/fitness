@@ -125,6 +125,11 @@ describe('マイ食品: the editor\'s fields, a custom food as a food', () => {
     expect(parseAmount('６５０', 0, 5000)).toBe(650);
     expect(parseAmount('１２．５ g', 0, 500)).toBe(12.5);
     expect(parseAmount('12,25', 0, 500)).toBe(12.3);
+    // (thousands commas, as the kcal goal reads them: never 1,200 → 1.2)
+    expect(parseAmount('1,200', 0, 5000)).toBe(1200);
+    expect(parseAmount('１，２００ kcal', 0, 5000)).toBe(1200);
+    expect(parseAmount('1,200.5', 0, 5000)).toBe(1200.5);
+    expect(parseAmount('1,2,3', 0, 5000)).toBeUndefined();
     expect(parseAmount(' ', 0, 500)).toBeNull();
     expect(parseAmount('abc', 0, 500)).toBeUndefined();
     expect(parseAmount('6000', 0, 5000)).toBeUndefined();
@@ -135,6 +140,7 @@ describe('マイ食品: the editor\'s fields, a custom food as a food', () => {
     expect([...customErrors(d)]).toEqual(['k']);
     expect(customErrors({ ...d, k: '６５０' }).size).toBe(0);
     expect(customOf({ ...d, k: '６５０' })).toEqual({ n: '会社の弁当', u: '1食', k: 650, p: null, fa: null, c: null, s: null });
+    expect(customOf({ ...d, k: '１，２００' })).toMatchObject({ k: 1200 });
     expect([...customErrors({ ...d, k: '650', g: '10' })]).toEqual(['g']); // 6,500 kcal per 100 g
     expect([...customErrors({ ...d, n: ' ', k: '650', p: 'x' })]).toEqual(['n', 'p']);
     expect(customOf({ ...d, u: ' ', k: '240', g: '120', p: '20' })).toMatchObject({ u: '1食', g: 120, p: 20 });
