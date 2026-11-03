@@ -157,6 +157,22 @@ test('/world3d, the POC\'s address, opens the island', async ({ page }) => {
   await ready(page);
 });
 
+test('no WebGL: a line instead of the island, and the rest of the app works (the panel, ごほうび)', async ({ page }) => {
+  // (WebGL off: every canvas's webgl / webgl2 context null, as on a device without it)
+  await page.addInitScript(() => {
+    const get = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, id: string, ...rest: unknown[]) {
+      return /webgl/.test(id) ? null : (get as (...a: unknown[]) => RenderingContext | null).call(this, id, ...rest);
+    } as typeof HTMLCanvasElement.prototype.getContext;
+  });
+  await page.goto(`?${Q}`);
+  await expect(page.locator('[data-no3d]')).toHaveText(/この端末では しまを 表示できません/, { timeout: 15_000 });
+  await expect(page.locator('canvas[data-w3d]')).toHaveCount(0);
+  await page.getByRole('button', { name: /^ごほうび · ふたりのベル / }).click();
+  await expect(page.locator('dialog[open] .panel-body')).toBeVisible();
+  await expect(page.locator('dialog[open]').getByText('おやつ').first()).toBeVisible();
+});
+
 test('the board\'s focus: the camera frames a thing, the finger does nothing meanwhile, and restore() goes back exactly', async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto(`?${Q}`);

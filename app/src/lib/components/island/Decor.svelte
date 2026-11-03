@@ -1,18 +1,14 @@
 <script lang="ts">
-  // The island's decorations (docs/design.md "Decorating"): every placed item an upright world node at its feet (NH's
-  // model rendered in its facing, scripts/models.ts), in the one depth order, a walk obstacle (the walk mask and the
-  // tap navigation take their boxes when the layout changes: walkGraph setWalkDecor, nav setNavDecor). Outside the
-  // decorate mode a tap jiggles it where it stands (my villager turns to it, no walk); in it, a tap or a drag picks it
-  // up (DecorMode). The partner's change, just made, puffs where it lands.
+  // The island's decorations (docs/design.md "Decorating"): the layout's objects of the decorations' kinds, each an
+  // upright world node at its feet (its tap area over the 3D island's model, world3d/objects.ts), in the one depth
+  // order; the walk has them already (layout/nav.ts). Outside the もようがえ (IslandEdit) a tap jiggles it where it
+  // stands (my villager turns to it, no walk). The partner's change, just made, puffs where it lands.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { art } from '#lib/art.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { decor } from '#lib/store/decor.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { blockOf, decorArt, decorH, type DecorItem, type Facing } from './decor.ts';
-  import { setWalkDecor } from './walkGraph.ts';
-  import { setNavDecor } from './nav.ts';
+  import { decorArt, decorH, type DecorItem, type Facing } from './decor.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import PLACES from './models.json';
   import { onMount } from 'svelte';
@@ -24,36 +20,23 @@
   import { DECOR_ITEMS } from './decor.ts';
 
   interface Props {
-    /** The decorate mode is on: a tap or a drag on an item picks it up. */
+    /** The もようがえ is on (IslandEdit's): a tap does nothing here. */
     editing?: boolean;
-    /** The item being moved (DecorMode draws it): hidden here. */
-    hidden?: string | null;
-    /** A pointerdown on an item in the decorate mode. */
-    onpick?: (id: string, e: PointerEvent) => void;
   }
-  let { editing = false, hidden = null, onpick }: Props = $props();
+  let { editing = false }: Props = $props();
   const w = useWorld();
 
-  // On the island's layout (site.svelte.ts) the decorations are its objects of the decorations' kinds (the old
-  // もようがえ's moved in as `m-<id>`, the phone's もようがえ's new ones): the 3D island draws them (world3d/objects.ts),
-  // the walk has them already (layout/nav.ts); here each is its tap area (a jiggle where it stands).
+  // The layout's objects of the decorations' kinds (the old もようがえ's moved in as `m-<id>`, the phone's
+  // もようがえ's new ones).
   const KINDS: ReadonlySet<string> = new Set(DECOR_ITEMS);
   const items = $derived.by((): readonly { id: string; item: DecorItem; x: number; z: number; f: Facing }[] => {
     const l = site.layout;
-    if (!l) return decor.items;
+    if (!l) return [];
     return [...l.objects.values()].filter((o) => KINDS.has(o.k)).map((o) => {
       const [x, z] = objMid(l, o);
       return { id: o.id, item: o.k as DecorItem, x: Math.round(x), z: Math.round(z), f: o.f as Facing };
     });
   });
-  // the walk goes round them (only the cells and graph they touch change)
-  $effect(() => {
-    if (site.on) return;
-    const boxes = items.map(blockOf);
-    setWalkDecor(boxes);
-    setNavDecor(boxes);
-  });
-
   const P = PLACES as unknown as Record<string, { ax: number; ay: number }>;
   /** A render stands on its feet point (models.json), its height decorH. */
   function look(item: DecorItem, f: Facing) {
@@ -80,7 +63,7 @@
   onMount(() =>
     layout.on(({ diff, who, live }) => {
       // the partner's change on the layout, just made (any piece they put down or moved)
-      if (!live || !site.on || who === castMe()) return;
+      if (!live || who === castMe()) return;
       const l = layout.current, o = [...diff.objects.add, ...diff.objects.move].at(-1);
       if (!o) return;
       const [x, z] = objMid(l, o), k = ++n;
@@ -89,31 +72,17 @@
       setTimeout(() => (puffs = puffs.filter((p) => p.n !== k)), 700);
     })
   );
-  onMount(() =>
-    decor.on(({ e, was, live }) => {
-      if (site.on) return;
-      if (!live) return;
-      const at = e.rm ? was : e;
-      if (!at) return;
-      const k = ++n;
-      puffs = [...puffs.slice(-2), { n: k, x: at.x, z: at.z }];
-      partnerTurnTo(at.x, e.who);
-      setTimeout(() => (puffs = puffs.filter((p) => p.n !== k)), 700);
-    })
-  );
 </script>
 
 {#each items as p (p.id)}
-  {#if p.id !== hidden}
-    {@const l = look(p.item, p.f)}
-    <div class="spr" data-decor-node={p.id} data-scenery-id={site.on ? p.id : undefined} {@attach w.at({ x: p.x, z: p.z, h: l.h, inv: true, m3: site.on ? null : { key: l.key, id: `d:${p.id}` } })}>
-      <button type="button" class="deco" class:editing data-nopan={editing || undefined} data-decor={p.id} data-item={p.item} data-x={p.x} data-z={p.z} data-f={p.f} data-sfx="self" aria-label={t(`decor.item.${p.item}`)}
-        style={l.style} style:height="calc({l.h} * var(--u))" style:width="calc({l.wd} * var(--u))"
-        onclick={(e) => tap(e, p.x)} onpointerdown={(e) => editing && onpick?.(p.id, e)}>
-        <OfficialArt key={l.key} size="calc({l.h} * var(--u))" />
-      </button>
-    </div>
-  {/if}
+  {@const l = look(p.item, p.f)}
+  <div class="spr" data-decor-node={p.id} data-scenery-id={p.id} {@attach w.at({ x: p.x, z: p.z, h: l.h, inv: true })}>
+    <button type="button" class="deco" class:editing data-nopan={editing || undefined} data-decor={p.id} data-item={p.item} data-x={p.x} data-z={p.z} data-f={p.f} data-sfx="self" aria-label={t(`decor.item.${p.item}`)}
+      style={l.style} style:height="calc({l.h} * var(--u))" style:width="calc({l.wd} * var(--u))"
+      onclick={(e) => tap(e, p.x)}>
+      <OfficialArt key={l.key} size="calc({l.h} * var(--u))" />
+    </button>
+  </div>
 {/each}
 {#each puffs as q (q.n)}
   <div class="spr" aria-hidden="true" {@attach w.at({ mode: 'flat', x: q.x, z: q.z, h: 4, zi: 9 })}><i class="puff"></i></div>
@@ -133,8 +102,8 @@
     width: max(100%, calc(45px * var(--inv, 1))); height: max(calc(100% + 4 * var(--u)), calc(45px * var(--inv, 1)));
   }
   .deco:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  /* in the decorate mode a finger on an item drags it (the world doesn't scroll under it) */
-  .deco.editing { touch-action: none; cursor: grab; }
+  /* in the もようがえ the finger is IslandEdit's */
+  .deco.editing { touch-action: none; }
   .puff {
     position: absolute; left: 0; top: 0; width: calc(50 * var(--u)); height: calc(50 * var(--u)); translate: -50% -50%; border-radius: 50%;
     background: radial-gradient(closest-side, rgba(255, 255, 255, .9), rgba(255, 255, 255, .5) 55%, transparent); animation: puff .6s ease-out both;

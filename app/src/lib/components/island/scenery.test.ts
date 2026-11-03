@@ -8,7 +8,7 @@ import {
   BUILDINGS, CENTRE_STAGE, CLIFF, DECOR_SLOTS, DIG_SPOTS, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAWN_SPOTS, PATHS, POND, ROCK, SCENERY, SPRING, TAPE_DECK,
   flowerById, riverNear, inOval, onGrass, onLand, type Pt
 } from './world.ts';
-import { LIT_ART, WILD, sceneryKey, wildFlower } from './scene.ts';
+import { WILD, sceneryKey, wildFlower } from './scene.ts';
 import { hybridsOf } from './care.ts';
 import { route, walkGeo } from './walkGraph.ts';
 
@@ -57,7 +57,6 @@ describe('scenery keys by season', () => {
     expect(sceneryKey('trees/cedar', 'winter', 1)).toBe('trees/cedar-winter');
     expect(sceneryKey('deco/campsite', 'winter', 1)).toBe('deco/campsite-winter');
     expect(sceneryKey('deco/campsite', 'summer', 7)).toBe('deco/campsite');
-    for (const v of Object.values(LIT_ART)) expect(keys.has(v)).toBe(true);
   });
   it('give the wild flowers shipped art in every season, a mix of kinds, and their hybrids too', () => {
     for (const [season, list] of Object.entries(WILD)) {

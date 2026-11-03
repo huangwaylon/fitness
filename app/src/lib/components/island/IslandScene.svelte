@@ -4,13 +4,13 @@
 </script>
 
 <script lang="ts">
-  // The island (docs/design.md "World"): NH's rolling-log island in 2D DOM. A native vertical scroller is the camera
-  // (its scrollTop → camZ, camera.svelte.ts; overscroll contained) over two sections (sections.ts): まえ (home: the
-  // sea, the beach, the health lawn) and おく (the campsite's clearing, the pond, the bamboo, the falls). The ground is baked raster chunks bent onto the log by 40 bands (WorldGround), the live
-  // water on top (WorldWater); every upright thing is a world node at its feet, placed by one projector in one depth
-  // order (nearer in front, ties by x; a tree's canopy hangs over its trunk). The sky, the HUD, the weather and the
-  // fireworks stay fixed outside the curved layer. Nothing runs when still: a scroll frame, a walk (the one rAF while
-  // someone is on the way) or a change places what moved.
+  // The island (docs/design.md "World", docs/decisions.md "The island in 3D"): NH's models in three.js on the editable
+  // layout (world3d/Island3D.svelte: its own chunk), the camera its engine's (one finger along the island, two pinch:
+  // world3d/gestures.ts). Every world thing is also a DOM node at its feet over the canvas (its tap area, its marks, its
+  // balloons and popups), placed through the 3D camera by one projector in one depth order (camera.svelte.ts). The sky,
+  // the HUD, the weather and the fireworks stay fixed over it. Nothing runs when still: a camera move, a walk or a change
+  // places what moved. No WebGL (never on the users' iPhones): a friendly line instead of the island; the panel, the
+  // health and ごほうび work as ever.
   //   <IslandScene {view} onhighfive onhighfivegot paused />
   // Layout contract (for the page): give it the whole page (--scene-h, e.g. 100dvh); --hud-bottom is the top chrome's
   // bottom edge. Read back --horizon-y (set on .if-scene) to place overlays in the sky.
@@ -29,8 +29,6 @@
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import Sky from './Sky.svelte';
-  import WorldGround from './WorldGround.svelte';
-  import WorldWater from './WorldWater.svelte';
   import Scenery from './Scenery.svelte';
   import FruitTree from './FruitTree.svelte';
   import Flowers from './Flowers.svelte';
@@ -57,7 +55,7 @@
   import { IslandLife } from './islandLife.svelte.ts';
   import { VILLAGER, eventsAt, u, wildFlower, type Tod } from './scene.ts';
   import { todayPct } from './progress.ts';
-  import { CAMPSITE, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, PLAN, PULLUP_AT, SEAT_DROP, SHORE_Z, TREE_H, flowerById, freshWhere, seatAt, surfaceAt, worldGen, BUILDINGS, LAWN_SPOTS, type BuildingId } from './world.ts';
+  import { CAMS, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, PULLUP_AT, SEAT_DROP, flowerById, freshWhere, seatAt, surfaceAt, worldGen, BUILDINGS, LAWN_SPOTS, type BuildingId } from './world.ts';
   import { GUEST_ARRIVAL, guestSpot, doorAt, outOfTent, partnerOnline } from './buildings.ts';
   import { site } from './site.svelte.ts';
   import { digSpots, spotsOn } from './beach.ts';
@@ -77,7 +75,6 @@
   import Decor from './Decor.svelte';
   import Board from '../board/Board.svelte';
   import { World, dropLive, provideWorld } from './camera.svelte.ts';
-  import { camAt, horizonAhead, scrollFor, solveCam } from './roll.ts';
   import { hybridFor, hybridsOf } from './care.ts';
   import { garden } from './sceneDay.ts';
   import { addDays } from '#lib/time/dates.ts';
@@ -94,7 +91,7 @@
   import { canonical, hash, type DayEvent } from '#lib/sync/world-day.ts';
   import type { SceneHit } from './sceneTaps.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
-  import { flushSync, onMount, untrack } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import type { ActorId } from '../motion/reactions.ts';
   import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
   import { piecesOn, swapsOn } from './fixedDecor.ts';
@@ -171,20 +168,14 @@
   const onIsland = (id: VillagerActor): boolean => id === 'mine' || whoOf(id) !== 'G' || hereNow.includes('G');
 
   const covered = $derived(paused || ui.overlay);
-  // The island in 3D (world3d/Island3D.svelte: its own chunk with three.js), when this phone draws it so (?island=3d,
-  // せってい's switch: store/islandRender.svelte.ts); the DOM island runs over its canvas as the taps and the overlays.
+  // The island in 3D (world3d/Island3D.svelte: its own chunk with three.js); the DOM island runs over its canvas as the
+  // taps and the overlays. No WebGL (failed3): the island's message instead (never on the users' iPhones).
   let failed3 = $state(false);
   const r3 = $derived(live && !failed3);
-  // the island on its layout (site.svelte.ts: the 3D island with the layout on): world.ts's geometry is the layout's
-  // from here on (before anything below reads it), and follows the switch (and the 2D fallback without WebGL)
+  // the island on its layout (site.svelte.ts): world.ts's geometry is the layout's from here on (before anything below
+  // reads it)
   // svelte-ignore state_referenced_locally
   if (live) site.sync();
-  $effect(() => {
-    if (!live) return;
-    if (failed3) site.force = false;
-    void site.on;
-    untrack(() => site.sync());
-  });
   const island3dC = lazyComponent(() => import('../world3d/Island3D.svelte'));
   const Island3DC = $derived(island3dC.get(r3));
   let island3d = $state<{ go(z: number, k?: number): void; limits(): { min: number; max: number }; editStage(): import('../layoutEdit/IslandEdit.svelte').EditStage | null }>();
@@ -420,11 +411,6 @@
   provideWorld(world, live);
   let scroller = $state<HTMLElement>();
   let vh = $state(844), s = $state(1), horizonPx = $state(135);
-  /** まえ, the scroller's bottom: fitted so a wide band of sea shows under the beach (measure). */
-  let camMin = $state<number>(CAM_MIN);
-  /** おく, the scroller's top: camZ 470 (world.ts CAMS), further back on a screen whose HUD would cover the campsite. */
-  let camMax = $state<number>(CAM_MAX);
-  const trackH = $derived(r3 ? vh : vh + (camMax - camMin) * s);
 
   // Where each villager lives (the director walks them from there and back; design.md "Walking").
   // svelte-ignore state_referenced_locally
@@ -491,40 +477,13 @@
     return clearAt(keep, sx, sy - h * 0.46, h * 0.225, h * 0.46);
   }
 
-  // ---- the camera (docs/decisions.md "Free scrolling"): the scroller's scrollTop → camZ, read on each frame; still →
-  // world.rest.z. Only the finger moves it: plain native scrolling between the two ends (まえ at the foot, where it
-  // opens; おく at the top), no snapping, no settling, no follow, no programmatic moves (but the e2e hook's). ----
+  // ---- the camera: the 3D island's engine's (world3d/engine.ts, gestures.ts); still → world.rest.z ----
   let settle: ReturnType<typeof setTimeout> | undefined;
   function measure() {
     if (!scroller) return;
     const r = scroller.getBoundingClientRect();
     world.fit(scroller.clientWidth, scroller.clientHeight, r.left, r.top);
-    const keepCam = world.view.camZ;
     hudBottom = Math.max(0, (document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? 0) - world.view.top);
-    if (world.three) {
-      // the 3D camera has its own ends (world3d/engine.ts)
-      const l = island3d?.limits();
-      if (l) [camMin, camMax] = [l.min, l.max];
-      vh = world.view.vh;
-      s = world.view.s;
-      horizonPx = world.view.horizon;
-      return;
-    }
-    const syAt = (x: number, z: number, lift = 0) => (cam: number) => ((world.view.camZ = cam), world.screenAt(x, z, lift).sy);
-    // まえ: the shoreline SHORE_AT down the screen (a wide band of sea under the beach), unless that would put the goal
-    // trees' canopies under the HUD (then as low as they stay CLEAR px under it)
-    // (each searched where its point is on the near side of the horizon and on screen: the projection is monotonic there)
-    const ahead = horizonAhead(world.P);
-    const shore = solveCam(syAt(195, SHORE_Z), world.view.vh * SHORE_AT, SHORE_Z - ahead + 40, SHORE_Z + 60);
-    const canopy = solveCam(syAt(GOAL_TREES.A[0], GOAL_TREES.A[1], TREE_H), hudBottom + CLEAR, GOAL_TREES.A[1] - ahead + 40, GOAL_TREES.A[1] + 60);
-    camMin = Math.round(Math.max(shore, canopy));
-    // おく: up the island until the campsite stands well in front of the horizon (its feet CAMP_AT of the height under
-    // it, clear of the haze and the fade) and its top clears the HUD (CLEAR px under it), as far as the plan reaches
-    const camp = CAMPSITE;
-    const far = Math.max(CAMS.oku, PLAN.z1 - ahead - 40), near = Math.max(camMin + 120, camp.z - ahead + 40);
-    const feet = solveCam(syAt(camp.x, camp.z), world.view.horizon + world.view.vh * CAMP_AT, near, far);
-    camMax = Math.round(Math.max(feet, solveCam(syAt(camp.x, camp.z, camp.h), hudBottom + CLEAR, near, far)));
-    world.view.camZ = keepCam;
     vh = world.view.vh;
     s = world.view.s;
     horizonPx = world.view.horizon;
@@ -567,12 +526,6 @@
 
   /** The top chrome's bottom edge (px). */
   let hudBottom = 0;
-  /** How far under the HUD the ends keep the campsite's top and the goal trees' canopies (px). */
-  const CLEAR = 16;
-  /** Where the front end puts the shoreline: this share down the screen (the sea under it). */
-  const SHORE_AT = 0.83;
-  /** Where the back end puts the campsite's feet: this share of the height under the horizon. */
-  const CAMP_AT = 0.17;
   function onScroll() {
     world.kick();
     clearTimeout(settle);
@@ -588,25 +541,18 @@
   function goTo(z: number) {
     if (world.three) return island3d?.go(z);
     // (the 3D island not up yet: it opens there)
-    if (r3) return void (start3 = z);
-    scroller?.scrollTo({ top: scrollFor(Math.min(camMax, Math.max(camMin, z)), camMax, s), behavior: 'instant' });
+    start3 = z;
   }
   onMount(() => {
     if (!scroller) return;
     measure();
     world.onTick(() => {
-      // (the 3D island's camera is its engine's: Island3D writes camZ in each of its frames)
-      if (scroller && !world.three) world.view.camZ = live ? camAt(scroller.scrollTop, camMin, camMax, world.view.s) : camMin;
+      // (the camera is the 3D island's engine's: Island3D writes camZ in each of its frames)
       if (live) edgeCheck();
       return anyMoving();
     });
-    flushSync(); // the track's height for this screen, before scrolling to its foot
-    // back out of the tent: the camera where it was when we went in (else the scroller's foot, まえ)
-    const back = live ? ui.takeIslandZ() : null;
-    start3 = back;
-    const z0 = back === null ? camMin : Math.min(camMax, Math.max(camMin, back));
-    scroller.scrollTop = scrollFor(z0, camMax, world.view.s);
-    world.view.camZ = z0;
+    // back out of the tent: the camera where it was when we went in (else まえ, the 3D island's own start)
+    start3 = live ? ui.takeIslandZ() : null;
     world.rest.ready = true;
     world.invalidate();
     const offMove = live ? onMove(() => world.kick()) : () => {};
@@ -614,13 +560,9 @@
     const ro = new ResizeObserver(() => {
       // the first call is the observe itself (already measured)
       if (first) return void (first = false);
-      // a new screen: the same camera, refitted (within the new ends)
-      const keep = world.view.camZ;
+      // a new screen: the same camera, refitted
       measure();
-      requestAnimationFrame(() => {
-        if (scroller && live && !world.three) scroller.scrollTop = scrollFor(Math.min(camMax, Math.max(camMin, keep)), camMax, world.view.s);
-        world.invalidate();
-      });
+      requestAnimationFrame(() => world.invalidate());
     });
     ro.observe(scroller);
     if (live) expose();
@@ -640,7 +582,7 @@
       quiet: () => !life.opening && eventsQuiet(),
       /** Put the camera at z at once (e2e). */
       go: (z: number) => goTo(z),
-      at: (x: number, z: number) => world.clientAt(x, z), P: world.P,
+      at: (x: number, z: number) => world.clientAt(x, z),
       /** Put my villager at a world point (e2e: the depth order). */
       put: (x: number, z: number) => (place('mine', x, z), world.kick()),
       /** My villager's feet now (e2e: tap-to-walk). */
@@ -649,8 +591,8 @@
       partner: () => livePos('partner'),
       /** Anyone's villager's feet now (A, B or G), null when it isn't on this island (e2e: the guest). */
       who: (w: Who) => (onIsland(actorOf(w)) && !inTent(actorOf(w)) ? livePos(actorOf(w)) : null),
-      /** The scroller's two ends for this screen (まえ, おく). */
-      stops: () => (world.three && island3d ? [island3d.limits().min, island3d.limits().max] : [camMin, camMax]),
+      /** The camera's two ends for this screen (まえ, おく: the 3D island's; world.ts CAMS before it's up). */
+      stops: () => (world.three && island3d ? [island3d.limits().min, island3d.limits().max] : [CAMS.mae, CAMS.oku]),
       /** The island on its layout (site.svelte.ts): whether it reads it, and where its doors, homes and centre stage are
        *  (e2e: the long island). */
       site: () => ({ on: site.on, doors: Object.fromEntries(BUILDINGS.map((b) => [b.id, doorAt(b.id)])), homes: HOMES, stage: CENTRE_STAGE, named: walkNav().named, grass: LAWN_SPOTS }),
@@ -1083,13 +1025,10 @@
   const WeddingC = $derived(weddingC.get(live && (wedding.arch || wedding.day)));
   // The decorate mode (docs/design.md "Decorating"): its tray and ghost are their own chunk, loaded on the first use.
   const decorating = $derived(live && ui.decorating);
-  const decorModeC = lazyComponent(() => import('./DecorMode.svelte'));
-  const DecorModeC = $derived(decorModeC.get(decorating && !site.on));
   const islandEditC = lazyComponent(() => import('../layoutEdit/IslandEdit.svelte'));
-  const IslandEditC = $derived(islandEditC.get(decorating && site.on));
-  /** The 3D island's stage for IslandEdit (while decorating on the layout). */
-  const editStage = $derived(decorating && site.on && island3d ? island3d.editStage() : null);
-  let decorMode = $state<{ pick(id: string, e: PointerEvent): void; moving(): string | null }>();
+  const IslandEditC = $derived(islandEditC.get(decorating));
+  /** The 3D island's stage for IslandEdit (while decorating). */
+  const editStage = $derived(decorating && island3d ? island3d.editStage() : null);
   // what the 3D island draws today (Scenery's own: the scenery's seasonal swaps, the fixed decor's pieces)
   const scenery3 = $derived.by(() => {
     void site.rev;
@@ -1121,7 +1060,7 @@
   {#if live && FireworksC}<FireworksC bind:this={fireworks} enabled={() => !covered && !life.hidden} forced={life.devFireworks || wedding.fireworks} {allMet} {cheer} />{/if}
 
   <div class="scroller" bind:this={scroller} onscroll={onScroll} data-world-scroller>
-    <div class="track" style:height="{trackH}px">
+    <div class="track" style:height="{vh}px">
       <div class="stage" style:height="{vh}px" style:--u="{s}px" style:--su="{s}px" style:--tod-filter={shade ? `url(#${fid})` : undefined}>
         <svg class="defs" aria-hidden="true" width="0" height="0">
           <filter id={fid} color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values={shadeMatrix || '1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0'} /></filter>
@@ -1134,19 +1073,16 @@
         </Sky>
         <Sky {tod} layer="lights" />
         {#if live && WeatherC}<WeatherC where="sky" />{/if}
-        {#if r3}
-          {#if Island3DC && sceneEl}
-            <Island3DC bind:this={island3d} {world} scene={sceneEl} {season} {foliage} {month} {tod} scenery={scenery3} pieces={pieces3} {hybrid} floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null}
-              wet={weather.sky !== 'clear' ? WET[weather.sky][1] : 0} cast={cast3} enabled={() => !covered && !life.hidden}
-              start={start3} onscroll={onScroll} onhorizon={(px) => (horizonPx = px)} onfail={() => (failed3 = true)} onready={() => measure()} />
-          {/if}
-        {:else}
-          <WorldGround {season} {foliage} />
-          <WorldWater floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null} night={tod === 'night'} winter={season === 'winter'} />
-          <div class="haze" aria-hidden="true"></div>
+        {#if r3 && Island3DC && sceneEl}
+          <Island3DC bind:this={island3d} {world} scene={sceneEl} {season} {foliage} {month} {tod} scenery={scenery3} pieces={pieces3} {hybrid} floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null}
+            wet={weather.sky !== 'clear' ? WET[weather.sky][1] : 0} cast={cast3} enabled={() => !covered && !life.hidden}
+            start={start3} onscroll={onScroll} onhorizon={(px) => (horizonPx = px)} onfail={() => (failed3 = true)} onready={() => measure()} />
+        {:else if live && failed3}
+          <!-- no WebGL (never on the users' iPhones): a line instead of the island; the rest of the app works as ever -->
+          <div class="no3d" role="status" data-no3d><p>{t('island.no3d')}</p><p class="sub">{t('island.no3dSub')}</p></div>
         {/if}
 
-        <Scenery {season} {foliage} {month} {live} {tod} date={today} hour={jst(clock).hour} onbuilding={building} {r3} />
+        <Scenery {season} {foliage} {month} {live} {tod} date={today} hour={jst(clock).hour} onbuilding={building} />
 
         {#each ['A', 'B'] as const as pid (pid)}
           {@const t = goalTrees[pid]}
@@ -1158,12 +1094,11 @@
         <Flowers {season} {hybrid} />
 
         {#if live}
-          <Decor editing={decorating} hidden={decorating ? (decorMode?.moving() ?? null) : null} onpick={(id, e) => decorMode?.pick(id, e)} />
+          <Decor editing={decorating} />
           <!-- the bulletin board on the front beach (docs/board.md): a tap walks up to it and opens it -->
           <Board enabled={() => !covered && !life.hidden && !decorating} night={tod === 'night'} {season} />
-          <!-- the もようがえ: on the layout (the 3D island with site.on) the layout's own (IslandEdit), else the decorations' -->
-          {#if decorating && site.on && IslandEditC && editStage}<IslandEditC stage={editStage} {relay} me={castMe() === 'B' ? 'B' : 'A'} ondone={() => (ui.decorating = false)} />
-          {:else if decorating && !site.on && DecorModeC && sceneEl}<DecorModeC bind:this={decorMode} scene={sceneEl} ondone={() => (ui.decorating = false)} />{/if}
+          <!-- the もようがえ: the layout's own (IslandEdit over the 3D camera) -->
+          {#if decorating && IslandEditC && editStage}<IslandEditC stage={editStage} {relay} me={castMe() === 'B' ? 'B' : 'A'} ondone={() => (ui.decorating = false)} />{/if}
         {/if}
 
         {#each VILLAGERS as id (id)}
@@ -1227,12 +1162,11 @@
           <!-- the partner's catches and finds: their villager holds it up here, or a notice at the edge -->
           <PartnerNews scene={sceneEl} />
         {/if}
-        <div class="tint"></div>
         {#if live && WeatherC}<WeatherC where="stage" />{/if}
         {#if live && nhEvent?.id === 'halloween' && HalloweenC}<HalloweenC scene={sceneEl} night={nhEvent.night} />{/if}
         {#if live && bday.length && BirthdayC}<BirthdayC {view} people={bday} date={today} />{/if}
         {#if live && (wedding.arch || wedding.day) && WeddingC}<WeddingC scene={sceneEl} arch={wedding.arch} day={wedding.day} date={wedding.date} />{/if}
-        <div class="fall"><Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} snowing={live ? weather.sky === 'snow' : undefined} /></div>
+        <Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} snowing={live ? weather.sky === 'snow' : undefined} />
       </div>
     </div>
   </div>
@@ -1266,7 +1200,6 @@
      as the tap areas, their marks, balloons and popups over the canvas) */
   .scene[data-r3] { touch-action: none; }
   .scene[data-r3] .scroller { overflow: hidden; touch-action: none; }
-  .scene[data-r3] .tint { display: none; }
   /* (!important: over an art's own animated opacity, a high five's zap, which else showed through as a blurry 2D star) */
   /* (each also --art3d: off, inherited: the art under it waits with no download, characters/artGate.ts) */
   .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .fl > .b, .tree > .oak)) { opacity: 0 !important; --art3d: off; }
@@ -1282,8 +1215,6 @@
   /* a 3D villager's marks are the canvas's (world3d/Island3D marks3: NH's models over its head); a ？ stays the DOM's */
   .scene[data-r3] :global(.actor[data-v3] .float[data-mark]:not([data-mark='question'])) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.visitor:has(> .art.m3on) > .shade) { opacity: 0; --art3d: off; }
-  /* the campfire's light is the canvas's (its emissive, halo, pool and point light); its flames stay the DOM's */
-  .scene[data-r3] :global(:is(.fire-halo, .embers, .fire-pool)) { display: none; }
   .scene[data-r3] .vil :global(:is(.body > .official, .body > .sil, .shadow)) { opacity: 0; --art3d: off; }
   .scene:not([data-live]) .scroller { overflow: hidden; }
   .track { position: relative; }
@@ -1294,15 +1225,15 @@
     /* the island's layers stand over every world thing (depths run to ~12M; camera.svelte.ts OVER is 50M). Six
        significant digits at most: the CSS minifier rounds a longer number (60000080 shipped as 60000100, so the
        tint stood over the lights at 60000081); the lights (Scenery's, the fireflies', Halloween's) are 60310000 */
-    --z-fall: 60100000; --z-leaf: 60200000; --z-tint: 60300000; --z-taps: 60320000; --z-coin: 60400000; --z-popup: 60500000;
-    /* the ground's tint plane: over the bands and the sky, under every world node (they tint themselves) */
-    --z-ground-tint: 2;
+    --z-leaf: 60200000; --z-tint: 60300000; --z-taps: 60320000; --z-coin: 60400000; --z-popup: 60500000;
   }
-  /* a little haze where the ground meets the sky */
-  .haze {
-    position: absolute; left: 0; right: 0; top: calc(var(--horizon-y) - 2px); height: 40px; z-index: 1; pointer-events: none;
-    background: linear-gradient(to bottom, color-mix(in srgb, var(--sky-hz) 90%, transparent), color-mix(in srgb, var(--sky-hz) 35%, transparent) 45%, transparent);
+  /* no WebGL: the island's line, in the middle of the scene over the sky (the panel and the HUD work as ever) */
+  .no3d {
+    position: absolute; left: 50%; top: 45%; translate: -50% -50%; z-index: var(--z-popup); width: min(300px, 84%);
+    padding: 16px 18px; border-radius: 22px; background: var(--plate); box-shadow: 0 4px 0 var(--plate-lip); text-align: center;
   }
+  .no3d p { margin: 0; font-weight: 700; font-size: var(--fs-talk); line-height: 1.5; }
+  .no3d .sub { margin-top: 6px; font-weight: 400; font-size: var(--fs-s); color: var(--text-soft); }
 
   /* the feet at the node's origin (camera.svelte.ts places it) */
   .actor { width: 0; height: 0; transform-origin: 0 0; }
@@ -1328,15 +1259,9 @@
   .scene[data-r3] :global(.actor[data-v3] .vil > *) { pointer-events: none; }
   .vil:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
-  /* the time of day's tint on the ground: one multiply plane over the bands and the sky's low band, fading out up the
-     sky (its own table up there, the sun or moon and the stars in it), so no edge shows; every world node takes the
-     same multiply in its own filter (--tod-filter), the lights (lamps, lit windows, fireflies) none. Day: none. */
-  .tint {
-    position: absolute; inset: 0; z-index: var(--z-ground-tint); background: var(--tod-tint); mix-blend-mode: multiply; pointer-events: none;
-    -webkit-mask-image: var(--tint-mask); mask-image: var(--tint-mask);
-  }
-  .stage { --tint-mask: linear-gradient(to bottom, transparent calc(var(--horizon-y) - 70px), #000 calc(var(--horizon-y) - 16px)); }
-  /* every world node is tinted (the same multiply as the plane), but the lights: on what it draws, never on a wrapper:
+  /* the time of day's tint on what the DOM draws over the canvas (the 3D island's light is its own scene's): every
+     world node takes the multiply in its own filter (--tod-filter), the lights (lamps, lit windows, fireflies) none.
+     Day: none. Every world node is tinted (the same multiply as the plane), but the lights: on what it draws, never on a wrapper:
      each leaf (an image, an svg, a drawn bit with no child; a wrapper's ::before / ::after). A wrapper an animation
      moves gets its own compositing layer in WebKit, which an ancestor's url() filter doesn't reach: on the node, a
      tapped bush or tree flashed untinted at night for its shake. Specificity 0: a leaf's own filter wins and takes the
@@ -1344,7 +1269,6 @@
   :where(.stage) :global(:where(.wn) :where(svg, :not(svg *, button, .hit, .hit-trunk):not(:has(*)))) { --leaf-tint: var(--tod-filter); filter: var(--leaf-tint); }
   :where(.stage) :global(:where(.wn) :where(:not(svg *, [data-hit-min]):has(*))::before),
   :where(.stage) :global(:where(.wn) :where(:not(svg *, [data-hit-min]):has(*))::after) { filter: var(--tod-filter); }
-  .fall { filter: var(--tod-filter); }
   .defs { position: absolute; width: 0; height: 0; overflow: hidden; }
   /* villager contact shadow: radial, surface-coloured, 0.30h × 0.06h, +6% right and down; dusk: stretched to the right */
   .vil :global(.shadow) {
@@ -1356,7 +1280,6 @@
   .scene:global([data-show]) .vil { transform-origin: 50% 100%; animation: sway .84s ease-in-out infinite alternate; }
   .scene:global([data-show]) .actor:nth-of-type(odd) .vil { animation-delay: -.42s; }
   @keyframes sway { from { rotate: -3deg; } to { rotate: 3deg; } }
-  .fall { position: absolute; inset: 0; z-index: var(--z-fall); pointer-events: none; }
   .ring-node { width: 0; height: 0; transform-origin: 0 0; pointer-events: none; }
   .zap-node { width: 0; height: 0; transform-origin: 0 0; pointer-events: none; }
   .zap { position: absolute; left: calc(-13 * var(--u)); top: calc(-13 * var(--u)); width: calc(26 * var(--u)); height: calc(26 * var(--u)); animation: zap .52s linear both; }
@@ -1378,5 +1301,4 @@
   @keyframes tap-ring { from { transform: scale(1); opacity: .95; } to { transform: scale(.35); opacity: 0; } }
   /* the partner's: their phone's tap, a softer ring */
   .tap-ring.partner { border-color: #DDEFFF; opacity: .8; }
-  .scene[data-covered] .fall :global(*) { animation-play-state: paused !important; }
 </style>

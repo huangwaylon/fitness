@@ -1513,12 +1513,6 @@
       "h": 157,
       "source": "rendered from NH's model FtrKadomatsu (scripts/models.ts)"
     },
-    "deco/lamp-glow": {
-      "path": "deco/lamp-glow.webp",
-      "w": 64,
-      "h": 64,
-      "source": "derived (drawn: scripts/derive-art.ts)"
-    },
     "deco/log-bench": {
       "path": "deco/log-bench.webp",
       "w": 179,

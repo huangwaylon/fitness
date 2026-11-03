@@ -1,7 +1,6 @@
 <script lang="ts">
   // Dev art gallery (design.md "Official art"): every official art key, the villager roster, しずえ poses,
-  // the fallback silhouette, money marks, emotes, and the island in every
-  // season × day/night. Loaded by routes/dev/characters only in `vite dev`, so the production build drops it.
+  // the fallback silhouette, money marks, emotes, and the live island. Loaded by routes/dev/characters only in `vite dev`, so the production build drops it.
   import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
   import Villager from '#lib/components/characters/Villager.svelte';
   import Host from '#lib/components/characters/Host.svelte';
@@ -21,16 +20,6 @@
   const KEYS = artKeys();
   const GROUPS = [...new Set(KEYS.map((k) => k.split('/')[0]))];
   const POSES = ['wave', 'stand', 'bow'] as const;
-  const SCENES = [
-    ...(['spring', 'summer', 'autumn', 'winter'] as const).flatMap((s) => [
-      { s, tod: 'day' as const },
-      { s, tod: 'night' as const }
-    ]),
-    { s: 'spring' as const, tod: 'day' as const, f: 'green' as const },
-    { s: 'autumn' as const, tod: 'day' as const, f: 'green' as const },
-    { s: 'spring' as const, tod: 'dawn' as const },
-    { s: 'autumn' as const, tod: 'dusk' as const }
-  ];
   const FX: FxKind[] = ['sparkles', 'hearts', 'notes', 'sweat', 'zzz', 'confetti', 'puff', 'glint'];
   let fxPlay = $state<{ k: FxKind; n: number } | null>(null);
   let fxN = 0;
@@ -145,19 +134,6 @@
     </section>
   {/each}
 
-  <section>
-    <h2>Island · season × time of day</h2>
-    <div class="scenes">
-      {#if week.view}
-        {#each SCENES as sc (sc.s + sc.tod + ('f' in sc ? sc.f : ''))}
-          <figure>
-            <div class="sc"><IslandScene view={week.view} season={sc.s} foliage={'f' in sc ? sc.f : undefined} tod={sc.tod} live={false} /></div>
-            <figcaption>{sc.s} · {sc.tod}{'f' in sc ? ` · ${sc.f} oaks` : ''}</figcaption>
-          </figure>
-        {/each}
-      {/if}
-    </div>
-  </section>
 </main>
 
 <style>
@@ -176,15 +152,11 @@
   .cell { width: 70px; height: 70px; display: grid; place-items: center; border-radius: 14px; background: var(--grass); }
   .amt { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-num); font-weight: 700; font-size: 1.25rem; }
   .plain { appearance: none; border: 0; background: none; padding: 0; cursor: pointer; }
-  .scenes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .live { display: flex; gap: 8px; align-items: flex-end; }
   .livescene { width: 393px; max-width: 100%; --scene-h: 520px; border-radius: 14px; overflow: hidden; }
   .btns { gap: 6px; }
   .chip { min-height: 44px; padding: 0 12px; border-radius: 999px; border: 2px solid var(--lip); background: var(--surface); color: var(--text); font: 700 12px var(--font-ui); }
   .fxstage { position: relative; display: inline-block; width: 120px; height: 120px; }
   .fxstage :global(.fx) { left: 60px; top: 70px; }
-  .sc { width: 176px; aspect-ratio: 390 / 540; border: 2px solid var(--lip); border-radius: 14px; overflow: hidden; background: var(--bg); }
   /* Render at phone width, then zoom down, so the min tap sizes don't distort the thumbnail. */
-  .sc > :global(*) { width: 390px; --scene-h: 540px; zoom: .441; }
-  .scenes figure { align-content: start; }
 </style>

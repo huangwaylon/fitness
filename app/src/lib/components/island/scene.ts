@@ -55,13 +55,11 @@ export function sceneryKey(key: string, season: Season, month: number): string {
   if (key === 'month-bush-a' || key === 'month-bush-b') return `bushes/${hedgePair(month)[key.endsWith('a') ? 0 : 1]}`;
   return (season === 'winter' && WINTER_ART[key]) || key;
 }
-/** A building's lit windows at dusk and night (its render's emissive look: scripts/models.ts; laid over it above the
- *  time-of-day tint). */
-export const LIT_ART: Record<string, string> = { 'deco/campsite': 'deco/campsite-lit' };
-/** The lamps that glow at night (deco/lamp-glow), and where the light hangs: a share of the lamp's height. */
-/** The fires (the campfire by the tent): lit at dusk and night (their render's -lit look, flickering, a warm halo and
- *  a pool of light), and where the flames' light sits: a share of the fire's height. */
+/** The fires (the campfire by the tent): lit at dusk and night (the DOM's flames, the 3D island's flame cards, glow
+ *  and light), and where the flames sit: a share of the fire's height. */
 export const FIRE_AT: Record<string, number> = { 'deco/campfire': 0.42 };
+/** The lamps that glow at night (the 3D island's lights: Island3D), and where the light hangs: a share of the lamp's
+ *  height. */
 export const GLOW_AT: Record<string, number> = { 'deco/streetlamp': 0.9, 'deco/garden-lantern': 0.62, 'deco/garden-lantern-white': 0.62 };
 
 /** The wild flowers' kinds by season (world.ts FLOWERS: a clump is one kind, clumps take the list in turn), NH's

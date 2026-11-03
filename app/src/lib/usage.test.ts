@@ -18,6 +18,7 @@ import enCatalog from '#lib/i18n/catalog.en.json';
 import { artKeys, REACTIONS } from '#lib/art.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
+import { KIND_LIST } from '#lib/layout/catalog.ts';
 import { BUGS, FISH, JUNK, critterArt } from '#lib/components/island/critters.ts';
 import { POND_FISH } from '#lib/components/island/pondFish.ts';
 import { FOSSILS, FRAGMENTS, SHELLS, findArt } from '#lib/components/island/beach.ts';
@@ -138,7 +139,9 @@ describe('official art (static/art/manifest.json)', () => {
     // the fixed decor's built keys (island/fixedDecor.ts: the snowboy's melting stages, the shishi-odoshi tipped)
     ...FIXED_ART,
     // the bridge's deck from above: baked into the ground (scripts/terrain.ts), never shown by the app itself
-    'bridges/stone-deck'
+    'bridges/stone-deck',
+    // the layout's tray and palette icons (layout/catalog.ts: IslandEdit, the editor)
+    ...KIND_LIST.flatMap((d) => (d.icon ? [d.icon] : []))
   ]);
   /** `bushes/<id>`, `flowers/<id>`, `season/<id>`, the oaks: named by id in the scene code. */
   const byId = (k: string) => {

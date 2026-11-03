@@ -337,7 +337,7 @@ async function main() {
   console.log(`${Object.keys(SPECS).length} assets, ${todo.length} to fetch`);
   // Drop manifest entries (and files) the UI no longer uses.
   for (const [key, e] of Object.entries(manifest.files)) {
-    if (SPECS[key] || e.source.startsWith('derived') || e.source.startsWith('rendered')) continue; // derive-art.ts's and models.ts's
+    if (SPECS[key] || e.source.startsWith('derived') || e.source.startsWith('rendered')) continue; // models.ts's (and the old derived ones')
     rmSync(join(OUT, e.path), { force: true });
     delete manifest.files[key];
   }
