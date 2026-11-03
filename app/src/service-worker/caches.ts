@@ -48,6 +48,17 @@ export const isDecorArt = (path: string): boolean =>
  *  them and cached on first use in a cache of their own that outlives builds (a re-converted model has a new `?v=`). */
 export const ROOM_CACHE = 'island-room-v1';
 export const isRoomAsset = (path: string): boolean => path.includes('/room/');
+/** The meal log's food data (static/food/, lib/food/load.ts): ~5 MB, fetched when the food sheet first opens and kept in
+ *  a cache of its own that outlives builds. Its files carry the data's version (`?v=`); index.json, which names it,
+ *  doesn't. */
+export const FOOD_CACHE = 'island-food-v1';
+export const isFoodData = (path: string): boolean => /\/food\/[\w-]+\.json$/.test(path);
+/** The cached food files of another data version than `v` (`keys`: their URLs): a new version's first file drops them. */
+export const staleFood = (keys: readonly string[], v: string): string[] =>
+  keys.filter((k) => {
+    const kv = new URL(k, 'https://x/').searchParams.get('v');
+    return kv !== null && kv !== v;
+  });
 /** The bridge's deck seen from above: the terrain bake's input (scripts/terrain.ts), never shown by the app. */
 const isBakeArt = (path: string): boolean => /\/art\/bridges\/[a-z-]+-deck(-winter)?\.webp$/.test(path);
 /** The home-screen and install icons: the OS fetches them when the app is added, never the page offline (the favicon
@@ -59,10 +70,10 @@ const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
 /** Whether a build file goes into the install-time precache. Paths come from `$app/manifest` relative to the base
  *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: font subsets (cached on first use),
  *  the bundled art and audio manifests, every villager but the defaults, every critter, find and present (all cached
- *  on first use), all audio (AUDIO_CACHE, on first play), the tent's room (ROOM_CACHE, on first use), the bake's input art, the app icons and macOS litter. */
+ *  on first use), all audio (AUDIO_CACHE, on first play), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the bake's input art, the app icons and macOS litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;
-  if (isFont(p) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isBakeArt(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
+  if (isFont(p) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isBakeArt(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
   return !isVillagerArt(p) || PRECACHED_VILLAGERS.test(p);
 }
 

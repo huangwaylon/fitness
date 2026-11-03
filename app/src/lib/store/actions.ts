@@ -6,12 +6,15 @@ import type { SendResult } from './backend.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
-import type { LocalDate, PersonId, ShopItemId } from '#lib/types.ts';
+import type { LocalDate, PersonId, ShopItemId, Who } from '#lib/types.ts';
 import { isBodyFatGoal, isWeightKg, roundKg, type FindKind } from '#lib/contract/api.ts';
 import { findKey, findsView } from '#lib/model/finds.ts';
 import { addToTally, latestByDay } from '#lib/model/tally.ts';
 import { localDateAt } from '#lib/time/dates.ts';
 import { MOVE_GOAL, isStepsGoal, shopPrice } from '#lib/config/rules.ts';
+import { foodOp, isKcalGoal, newFoodId, type FoodSnap, type Meal } from '#lib/contract/food.ts';
+import { foodEntries } from '#lib/model/food.ts';
+import { world } from './world.svelte.ts';
 
 /** 買う！ and its とりけす wait this long before they are sent, with もとに戻す on the banner. */
 const UNDO_MS = 5000;
@@ -171,4 +174,61 @@ export function sendIslandDay(date: LocalDate, row: object): void {
 /** A decoration's op (placed, moved or removed) for the sheet. */
 export function sendDecor(op: object): void {
   if (week.model) week.send('decor', { ...op });
+}
+
+// ---- The meal log (ごはん, docs/backend.md#events `food`): each change of mine is one op carrying the entry's whole
+// state, sent at once and shown at once (the model folds the queued ops: contract/food.ts foodFold). Only my own
+// entries change; a typed-in meal never earns ベル.
+
+let foodLast = 0;
+/** An op's time: the relay's clock, never twice the same, after the op it follows. */
+function foodNow(after = 0): number {
+  foodLast = Math.max(Math.round(world.now()), foodLast + 1, after + 1);
+  return foodLast;
+}
+
+/** Send a food op as the record will keep it (contract/food.ts foodOp); `{ok:false}` when it isn't one. */
+function sendFood(d: Record<string, unknown>): SendResult {
+  const op = foodOp(d);
+  return op ? week.send('food', { ...op }) : { ok: false };
+}
+
+/** Log a meal: `g` grams of `f` (per 100 g, contract/food.ts) on day `d` at meal `m`. */
+export function logFood(e: { d: LocalDate; m: Meal; g: number; f: FoodSnap }): SendResult {
+  if (!week.model) return { ok: false };
+  const at = foodNow();
+  return sendFood({ id: newFoodId(at), at, d: e.d, m: e.m, g: Math.round(e.g * 10) / 10, f: e.f });
+}
+
+/** One of my entries, as the model has it (queued changes included). */
+const myFood = (id: string) => {
+  const m = week.model;
+  return m ? foodEntries(m.state, m.me).find((e) => e.id === id) : undefined;
+};
+
+/** Change one of my entries: its day, meal, grams or portion label (`u`: null drops it). The op is its whole state. */
+export function editFood(id: string, ch: { d?: LocalDate; m?: Meal; g?: number; u?: string | null }): SendResult {
+  const e = myFood(id);
+  if (!e) return { ok: false };
+  const { u: _u, ...rest } = e.f;
+  const f: FoodSnap = ch.u === undefined ? e.f : ch.u === null ? rest : { ...rest, u: ch.u };
+  const g = ch.g === undefined ? e.g : Math.round(ch.g * 10) / 10;
+  return sendFood({ id, at: foodNow(e.at), d: ch.d ?? e.d, m: ch.m ?? e.m, g, f });
+}
+
+/** Remove one of my entries (final). */
+export function removeFood(id: string): SendResult {
+  const e = myFood(id);
+  if (!e) return { ok: false };
+  return sendFood({ id, at: foodNow(e.at), rm: true });
+}
+
+/**
+ * A daily kcal goal (a whole 50 in 1,000–5,000), or null to clear it. A member sets either member's (`person`); the
+ * guest only its own. `{ok:false}` for anything else.
+ */
+export function setKcalGoal(who: Who, kcal: number | null): SendResult {
+  const me = week.model?.me;
+  if (!me || (me === 'G') !== (who === 'G') || (kcal !== null && !isKcalGoal(kcal))) return { ok: false };
+  return week.send('pref', who === 'G' ? { key: 'kcalGoal', value: kcal } : { person: who, key: 'kcalGoal', value: kcal });
 }

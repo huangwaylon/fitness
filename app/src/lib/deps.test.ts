@@ -18,6 +18,8 @@ const ALLOW: Record<string, string[]> = {
   model: DOMAIN,
   // the island's layout (docs/island-layout.md): pure, over the contract's ops
   layout: ['types', 'contract', 'random'],
+  // the meal log's food catalog (lib/food/index.ts): pure but for its loader, over the contract's snapshot
+  food: ['contract'],
   i18n: ['types', 'time', 'config'],
   sync: [...DOMAIN, 'random'],
   store: [...DOMAIN, 'layout', 'sync', 'i18n', 'ui-state', 'random'],
@@ -26,7 +28,7 @@ const ALLOW: Record<string, string[]> = {
   art: ['types', 'ui-state'],
   villagers: ['types', 'art', 'i18n'],
   sound: ['types', 'time', 'sync', 'i18n', 'random'],
-  components: [...DOMAIN, 'layout', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'random']
+  components: [...DOMAIN, 'layout', 'food', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'random']
 };
 
 function files(dir: string): string[] {
@@ -123,5 +125,13 @@ describe('scenery is never rewarded', () => {
     const roots = [join(LIB, 'model/bells.ts'), ...readdirSync(join(LIB, 'scoring')).filter((f) => /\.ts$/.test(f) && !/\.test\.ts$/.test(f)).map((f) => join(LIB, 'scoring', f))];
     const bad = (r: string) => [...reachable(r)].some((f) => f === finds || f.includes('/components/island/'));
     expect(roots.filter(bad).map((r) => relative(LIB, r))).toEqual([]);
+  });
+});
+
+describe('meals are never rewarded', () => {
+  it('model/bells.ts and scoring/* never import the food catalog (lib/food/) or the model’s meal log, even indirectly', () => {
+    const roots = [join(LIB, 'model/bells.ts'), ...readdirSync(join(LIB, 'scoring')).filter((f) => /\.ts$/.test(f) && !/\.test\.ts$/.test(f)).map((f) => join(LIB, 'scoring', f))];
+    const food = (f: string) => relative(LIB, f).startsWith('food/') || f === join(LIB, 'model/food.ts');
+    expect(roots.filter((r) => [...reachable(r)].some(food)).map((r) => relative(LIB, r))).toEqual([]);
   });
 });

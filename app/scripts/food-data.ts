@@ -1,0 +1,45 @@
+// Copy the meal log's food data (the calorie PoC's app/data, built there by scripts/build.py; its docs/data.md) into
+// static/food/: index.json, verify.json and every dataset index.json lists. Not the barcode shards (jan/): no barcode
+// scanning in v1. The app fetches them at runtime (lib/food/load.ts), never precached, under `?v=<index.version>`.
+// Usage (from app/): npm run food:data   [-- <data dir>, default ../../calories/app/data]
+// Checks: index.json lists only files that are there, and every dataset file there is listed (a stray or missing
+// file fails, nothing is copied). static/food/ is replaced whole, so a dropped dataset goes too.
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+
+const APP = join(import.meta.dirname, '..');
+const SRC = resolve(APP, process.argv[2] ?? '../../calories/app/data');
+const OUT = join(APP, 'static', 'food');
+/** Beside the datasets: the index and the cross-source verify groups. */
+const SIDECARS = ['index.json', 'verify.json'];
+
+function fail(msg: string): never {
+  console.error(`food:data: ${msg}`);
+  process.exit(1);
+}
+
+if (!existsSync(join(SRC, 'index.json'))) fail(`no index.json in ${SRC}`);
+const index = JSON.parse(readFileSync(join(SRC, 'index.json'), 'utf8')) as { version?: unknown; datasets?: { file?: unknown }[] };
+if (typeof index.version !== 'string' || !/^[0-9a-f]{12}$/.test(index.version)) fail('index.json has no 12-hex version');
+const listed = (index.datasets ?? []).map((d) => d.file);
+if (!listed.length || listed.some((f) => typeof f !== 'string' || !/^[\w-]+\.json$/.test(f))) fail('index.json lists no datasets, or a bad file name');
+const files = listed as string[];
+if (new Set(files).size !== files.length) fail('index.json lists a file twice');
+
+const missing = [...files, ...SIDECARS].filter((f) => !existsSync(join(SRC, f)));
+if (missing.length) fail(`missing in ${SRC}: ${missing.join(', ')}`);
+const stray = readdirSync(SRC).filter((f) => f.endsWith('.json') && !files.includes(f) && !SIDECARS.includes(f));
+if (stray.length) fail(`not in index.json: ${stray.join(', ')}`);
+for (const f of files) {
+  const d = JSON.parse(readFileSync(join(SRC, f), 'utf8')) as { items?: unknown; label?: unknown };
+  if (!Array.isArray(d.items) || typeof d.label !== 'string') fail(`${f} is not a dataset ({label, items, …})`);
+}
+
+rmSync(OUT, { recursive: true, force: true });
+mkdirSync(OUT, { recursive: true });
+let bytes = 0;
+for (const f of [...SIDECARS, ...files]) {
+  copyFileSync(join(SRC, f), join(OUT, f));
+  bytes += statSync(join(OUT, f)).size;
+}
+console.log(`food:data: ${files.length} datasets + ${SIDECARS.join(', ')} (${(bytes / 1e6).toFixed(1)} MB), version ${index.version}, from ${SRC}`);

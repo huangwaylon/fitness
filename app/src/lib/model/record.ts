@@ -1,14 +1,15 @@
 // The rules of the record shared by its writers (docs/backend.md#events): what an `event` must look like to be
 // accepted (relay/src/store.ts checks it), and which events replace an earlier one (the
 // store's slots: a tally and an island day per person and day, a cosmetic pref per person, a goal per person and
-// Tokyo day). Pure, over the contract only (relative imports), since the relay imports it from here.
-import { isBodyFatGoal, isFind, isId, isLocalDate, isWeightKg, PREF_KEYS, type EventType } from '../contract/api.ts';
+// Tokyo day, a board post and a meal entry per id). Pure, over the contract only (relative imports), since the relay imports it from here.
+import { isBodyFatGoal, isFind, isId, isLocalDate, isWeightKg, nextDay, PREF_KEYS, type EventType } from '../contract/api.ts';
 import { isTally } from '../contract/tally.ts';
 import { isIslandDay } from '../contract/island.ts';
 import { decorOpOf } from '../contract/decor.ts';
 import { tentOpOf } from '../contract/tent.ts';
 import { layoutOpOf } from '../contract/layout.ts';
 import { boardOpOf } from '../contract/board.ts';
+import { foodOp, isKcalGoal } from '../contract/food.ts';
 import { isStepsGoal, LIMITS, MOVE_GOAL, shopPrice } from '../config/rules.ts';
 import { localDateAt } from '../time/dates.ts';
 import type { Who } from '../types.ts';
@@ -43,13 +44,18 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
     case 'board':
       // a bulletin board post set or removed (contract/board.ts: its text already clean)
       return boardOpOf(d) !== null;
+    case 'food': {
+      // a meal entry set or removed (contract/food.ts: already normalized), its day not after tomorrow
+      const op = foodOp(d);
+      return op !== null && (op.rm === true || op.d <= nextDay(localDateAt(now)));
+    }
     default:
       return true;
   }
 }
 
 /** The prefs only the latest of counts (per person); the goals keep their history (`moveGoalOn` prices past days). */
-const LATEST_PREFS = ['locale', 'villagerName', 'villager', 'goalWeight', 'goalBodyFat'] as const;
+const LATEST_PREFS = ['locale', 'villagerName', 'villager', 'goalWeight', 'goalBodyFat', 'kcalGoal'] as const;
 
 /** Whether the model takes this pref's value (model/state.ts ON_EVENT.pref; anything else is ignored there). */
 export function prefTaken(key: unknown, v: unknown): boolean {
@@ -61,6 +67,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
     case 'villager': return typeof v === 'string' && /^[a-z][a-z0-9_-]{0,23}$/.test(v);
     case 'goalWeight': return v === null || v === '' || isWeightKg(v);
     case 'goalBodyFat': return v === null || v === '' || isBodyFatGoal(v);
+    case 'kcalGoal': return v === null || isKcalGoal(v);
     default: return false;
   }
 }
@@ -68,11 +75,13 @@ export function prefTaken(key: unknown, v: unknown): boolean {
 /**
  * The slot an event fills, or null: a later event of the same slot replaces it (the record keeps one row per slot).
  * - `tally`, `island`: the sender's day (`date`);
- * - a cosmetic `pref` (`locale`, `villagerName`, `villager`, `goalWeight`, `goalBodyFat`): its subject and key;
+ * - a cosmetic `pref` (`locale`, `villagerName`, `villager`, `goalWeight`, `goalBodyFat`, `kcalGoal`): its subject and
+ *   key;
  * - a goal `pref` (`moveGoal`, `stepsGoal`): its subject, key and the Tokyo day it was made (`at`), so the goal in
  *   force on each past day stays (a goal applies from the day it's made; the last of a day is the one that counts);
  * - a `decor` op: its scope and item id (`decorAccept` / `tentAccept` decide whether it replaces);
- * - a `board` op: its post's id (`boardAccept` decides whether it replaces).
+ * - a `board` op: its post's id (`boardAccept` decides whether it replaces);
+ * - a `food` op: its entry's id (`foodAccept` decides whether it replaces).
  * A pref the model would ignore takes no slot, so it never replaces one it takes. `subject`: `eventSubject`.
  */
 export function eventSlot(type: EventType | string, sender: Who, subject: Who, d: Rec, at: number): string | null {
@@ -84,6 +93,8 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
       return typeof d.id === 'string' ? `decor|${typeof d.sc === 'string' ? d.sc : ''}|${d.id}` : null;
     case 'board':
       return typeof d.id === 'string' ? `board|${d.id}` : null;
+    case 'food':
+      return typeof d.id === 'string' ? `food|${d.id}` : null;
     case 'pref':
       if (!prefTaken(d.key, d.value)) return null;
       return (LATEST_PREFS as readonly unknown[]).includes(d.key) ? `pref|${subject}|${d.key}` : `pref|${subject}|${d.key}|${localDateAt(at)}`;

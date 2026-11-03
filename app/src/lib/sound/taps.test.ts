@@ -26,6 +26,7 @@ const SELF: Record<string, string> = {
   'lib/components/island/IslandScene.svelte': 'a villager → villager-tap or emote-surprise (woken)',
   'lib/components/island/HudJar.svelte': 'the jar → jar-tap (R18: both look up at it), then the panel plays panel-open',
   'lib/components/island/HudHealth.svelte': 'the dumbbell → jar-tap (R18: both look up at it), then the popup plays panel-open',
+  'lib/components/island/HudFood.svelte': 'the bowl → jar-tap (R18: both look up at it), then the popup plays panel-open',
   'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick',
   'lib/components/island/TreeShakes.svelte': 'a branch → scene-twig; the wasps → scene-net, then scene-catch (too late: nothing)',
   'lib/components/island/Balloon.svelte': 'scene-balloon',
@@ -43,6 +44,9 @@ const NONE: Record<string, string> = {
   'lib/components/panel/LangSection.svelte': 'the language already chosen does nothing',
   'lib/components/panel/IslandPanel.svelte': 'the tab already shown does nothing',
   'lib/components/health/Health.svelte': 'the period or person already shown does nothing; a dropdown ticks on change (setWho, setPeriod)',
+  'lib/components/food/Food.svelte': 'the person or day already shown does nothing; the dropdown ticks on change',
+  'lib/components/food/FoodSearch.svelte': 'the search field: the system keyboard clicks',
+  'lib/components/food/FoodAmount.svelte': 'the grams field: the system keyboard clicks; the meal already chosen does nothing',
   'lib/components/island/SayPicker.svelte': 'the phrase field: the system keyboard clicks',
   'lib/components/board/BoardView.svelte': 'the note field: the system keyboard clicks'
 };
