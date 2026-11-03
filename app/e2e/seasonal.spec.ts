@@ -24,9 +24,9 @@ async function open(page: Page, date: string) {
 test('snow on the campsite’s tent in winter only', async ({ page }) => {
   const tent = page.locator('[data-building="campsite"] img');
   await open(page, '2027-01-12T10:00');
-  await expect(tent).toHaveAttribute('src', /campsite-winter/);
+  await expect(tent).toHaveAttribute('data-src', /campsite-winter/);
   await open(page, '2026-12-05T10:00');
-  await expect(tent).not.toHaveAttribute('src', /campsite-winter/);
+  await expect(tent).not.toHaveAttribute('data-src', /campsite-winter/);
 });
 
 for (const [date, floating] of [['2027-04-05T10:00', 'petal'], ['2026-11-20T10:00', 'maple'], ['2026-11-01T10:00', null]] as const)

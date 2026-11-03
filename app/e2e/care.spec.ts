@@ -88,10 +88,10 @@ test('a tap on a flower waters it (the can, a sprinkle); a watered flower can sh
   await page.goto('?demo&date=2026-11-04T12:00');
   await expect(ribbon(page)).toBeVisible();
   await expect(page.locator('[data-watered]')).toHaveCount(0); // a new day: no glitter until watered again
-  await expect(page.locator(`${sel} img`)).toHaveAttribute('src', /black-cosmos/);
-  await expect(page.locator(`${other} img`)).toHaveAttribute('src', /pink-cosmos/);
+  await expect(page.locator(`${sel} img`)).toHaveAttribute('data-src', /black-cosmos/);
+  await expect(page.locator(`${other} img`)).toHaveAttribute('data-src', /pink-cosmos/);
   await page.reload(); // it stays for the day
-  await expect(page.locator(`${sel} img`)).toHaveAttribute('src', /black-cosmos/);
+  await expect(page.locator(`${sel} img`)).toHaveAttribute('data-src', /black-cosmos/);
 });
 
 test('the rock by the hedge: a tap clonks it (now and then a sparkle or a bug)', async ({ page }) => {

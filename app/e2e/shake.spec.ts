@@ -125,7 +125,8 @@ test('the swollen eye sits on the eye whatever the face: tall ears, wide heads, 
   for (const id of ['raymond', 'ankha', 'dotty', 'tucker', 'blathers', 'tank', 'kk-slider', 'tom-nook', 'wisp', 'agent-s', 'daisy-mae', 'bunnie', 'hamlet', 'gulliver'] as const) {
     await search.fill(ROSTER[id].nameEn);
     await sheet.getByRole('radio', { name: ROSTER[id].nameJa, exact: true }).click();
-    await expect(page.locator(`[data-actor="mine"] img[src*="/villagers/${id}.webp"]`)).toHaveCount(1);
+    // (data-src: on the 3D island the 2D render waits undownloaded, characters/artGate.ts)
+    await expect(page.locator(`[data-actor="mine"] img[data-src*="/villagers/${id}.webp"]`)).toHaveCount(1);
     await expect.poll(async () => Math.abs((await swellOn(page, id))?.dx ?? 1), { message: id }).toBeLessThan(0.02);
     const at = (await swellOn(page, id))!;
     expect(Math.abs(at.dy), id).toBeLessThan(0.02);
