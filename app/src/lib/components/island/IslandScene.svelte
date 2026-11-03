@@ -817,7 +817,7 @@
       // the old もようがえ's decorations, mine, into the layout once (layout/migrate.ts)
       islandLayout.migrateDecor(decorLayout(m.state.decor));
       // (no automatic move of a new building off a taken spot: the user places the museum and the shop themselves, in
-      // the editor; layout/buildings.ts's buildingOps stays for the editor's own "find a spot")
+      // the editor; layout/buildings.ts's buildingOps and the store's placeBuildings stay, called by nothing now)
     });
   });
   $effect(() => {
