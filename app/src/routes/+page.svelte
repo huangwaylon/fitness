@@ -116,7 +116,7 @@
   }
   .top { position: absolute; inset: 0; overflow: hidden; }
   /* Under the harvest only the island shows through the tint: no HUD, no dialogue. */
-  .covered :global(.hud), .covered :global(.ribbon-wrap), .covered .news { visibility: hidden; }
+  .covered :global(.ribbon-wrap), .covered .news { visibility: hidden; }
   /* しずえ's box: over the sea at the bottom, the column's width, above the home indicator */
   .news {
     position: absolute; z-index: var(--z-dock); left: calc(var(--side) + var(--safe-left)); right: calc(var(--side) + var(--safe-right));
