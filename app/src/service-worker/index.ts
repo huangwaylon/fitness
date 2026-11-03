@@ -22,9 +22,11 @@ const VILLAGERS = 'island-villagers-v1';
 // their files are never fetched. Villager art: see VILLAGERS. Audio (~14 MB of hourly music, off by default) is
 // never precached: AUDIO_CACHE.
 const PRECACHE = [...immutable.map((f) => f.path), ...assets.map((f) => f.path)].filter(precachable);
-/** Past the browser's HTTP cache (GitHub Pages: max-age 600): a static file or the shell fetched within 10 minutes
- *  before a deploy would otherwise be stored stale for the whole version. The hashed chunks can't be stale. */
-const fresh = (path: string) => new Request(path, { cache: 'reload' });
+/** Checked with the server past the browser's HTTP cache (GitHub Pages: max-age 600): a static file or the shell
+ *  fetched within 10 minutes before a deploy would otherwise be stored stale for the whole version. Revalidated, not
+ *  reloaded: an unchanged file (most of the art, each deploy) is a 304 from the HTTP cache's copy, not a download. The
+ *  hashed chunks can't be stale. */
+const fresh = (path: string) => new Request(path, { cache: 'no-cache' });
 const HASHED = new Set(immutable.map((f) => f.path));
 
 self.addEventListener('install', (event) => {
