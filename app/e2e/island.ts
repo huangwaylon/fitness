@@ -175,15 +175,6 @@ export async function openNear(page: Page, x: number, z: number, away = 45, onSc
   return p;
 }
 
-/** Open lawn a tap-walk goes to near (x, z), on this screen with nothing over it, and where to tap it (client px): read
- *  from the page's island (`openNear`), never a fixed point, which a building of the layout's may come to stand on (the
- *  shop's did, on the lawn the specs walked on). Set the camera first. */
-export async function lawnTap(page: Page, x: number, z: number): Promise<{ at: [number, number]; x: number; y: number }> {
-  const at = await openNear(page, x, z, 45, true);
-  const [cx, cy] = await page.evaluate(([x, z]) => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x, z), at);
-  return { at, x: cx, y: cy };
-}
-
 /** A catch or a find shown (docs/design.md "Critters"): only its plate in the bottom stack, the item's icon on it
  *  (`art`: its key, or a pattern on the art's path), nothing over a villager's head. Where the icon flew in from
  *  (client px). */

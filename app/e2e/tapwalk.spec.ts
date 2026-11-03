@@ -3,7 +3,7 @@
 // day, the camera stays where the finger left it; a tap on the water acts in place (no walk): a ripple. The tent's door
 // is the one exception: my villager walks up to it, then goes in.
 import { expect, test, type Page } from '@playwright/test';
-import { campDoor, geo, lawnTap, openNear, tapOn } from './island.ts';
+import { campDoor, geo, openNear, tapOn } from './island.ts';
 import { mkdirSync } from 'node:fs';
 
 /** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
@@ -109,7 +109,7 @@ test('the camera never moves for a walk: a run up the island leaves it where the
   await open(page);
   const [front] = await call(page, (w) => w.stops());
   expect(await call(page, (w) => w.cam())).toBe(front);
-  const { x, y } = await lawnTap(page, 230, 500);
+  const [x, y] = await call(page, (w) => w.at(230, 500));
   await page.mouse.click(x, y);
   await expect(page.locator('.tap-ring')).toHaveCount(1);
   await page.waitForTimeout(2500);

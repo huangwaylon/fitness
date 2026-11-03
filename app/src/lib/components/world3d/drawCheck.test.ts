@@ -18,7 +18,7 @@ const entries = (RECORD as Record<string, unknown>[]).map((r) => {
   const op = layoutOpOf(d);
   return op ? ({ ...op, who } as LayoutEntry) : null;
 });
-/** The record's island, the museum and the shop put on their free spots once as a member's phone does (layout/buildings.ts). */
+/** The record's island, the museum put on its free spot once as a member's phone does (layout/buildings.ts). */
 const record = () => {
   const m = new Map<string, LayoutEntry>();
   for (const e of entries) if (e) mergeLayout(m, e);
@@ -33,8 +33,8 @@ describe("the record's layout", () => {
     expect(ops.filter((e) => e.sc === 'o' && !('k' in e)).every((e) => 'rm' in e && e.rm)).toBe(true);
     const l = record();
     const count = (k: string) => [...l.objects.values()].filter((o) => o.k === k).length;
-    expect(l.objects.size).toBe(121); // (the museum and the shop among them, a flower cleared for the museum)
-    expect([count('oak'), count('cedar'), count('bush'), count('hedge'), count('flower')]).toEqual([4, 8, 7, 0, 55]);
+    expect(l.objects.size).toBe(121); // (the museum among them)
+    expect([count('oak'), count('cedar'), count('bush'), count('hedge'), count('flower')]).toEqual([4, 8, 7, 0, 56]);
     expect(validate(l).filter((i) => i.level === 'error')).toEqual([]);
   });
 

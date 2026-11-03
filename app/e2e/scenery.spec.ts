@@ -1,7 +1,7 @@
 // Scenery taps (docs/design.md "Scene interactions"): the bushes, flowers, grass, sea, sun and clouds answer a tap with a
 // short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the HUD still work.
 import { expect, test, type Page } from '@playwright/test';
-import { geo, lawnTap, oku } from './island.ts';
+import { geo, oku } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
 /** The island is up: the HUD's jar shows (the app asks no questions, so nothing to answer first). */
@@ -11,8 +11,14 @@ async function islandReady(page: Page) {
 }
 
 type W = { at: (x: number, z: number) => [number, number]; go: (z: number) => void };
+/** A world point (world.ts units: x across, z into the island) → client px, the camera where it is. */
+const worldPoint = async (page: Page, x: number, z: number) => {
+  await page.waitForFunction(() => (window as unknown as { __world?: W }).__world);
+  const [cx, cy] = await page.evaluate(([x, z]) => (window as unknown as { __world: W }).__world.at(x, z), [x, z]);
+  return { x: cx, y: cy };
+};
 /** Open lawn at まえ: behind the partner's head, in front of the dig spots, between the trees. */
-const lawn = (page: Page) => lawnTap(page, 240, 380);
+const lawn = (page: Page) => worldPoint(page, 240, 380);
 /** The sea in front of the beach (まえ's foot), left of the beach's finds: as far out as this screen shows. */
 const sea = (page: Page) =>
   page.evaluate(() => {

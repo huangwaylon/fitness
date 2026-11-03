@@ -104,10 +104,9 @@ export const KIND_LIST: readonly KindDef[] = [
   // NH's incline: 2 tiles across, 4 up the flight (NH's own: scripts/home-models.ts --structures)
   k({ k: 'stairs', group: 'structure', ja: 'さか', en: 'Stairs', w: 2, d: 4, block: false, on: 'cliff', h: 40, icon: '', turns: true, variants: ['stone', 'brick', 'iron', 'wood', 'log', 'natural'] }),
   // the island's public buildings, one of each (NH's: 7 × 4 tiles, the door the middle of the front edge, model.ts doorOf;
-  // a tap walks up to it and goes in): the museum (はくぶつかん: the ずかん's finds swim and fly in it, routes/museum) and
-  // the shop (タヌキ商店, NH's Nook's Cranny: the catches sold for かいがら, furniture bought, routes/shop).
+  // a tap walks up to it and goes in): the museum (はくぶつかん: the ずかん's finds swim and fly in it, routes/museum).
+  // The shop comes later, a kind of this group beside it.
   k({ k: 'museum', group: 'building', ja: 'はくぶつかん', en: 'Museum', w: 7, d: 4, block: true, on: 'land', h: 117, icon: 'villagers/blathers-icon', turns: true, fixed: true, door: true }),
-  k({ k: 'shop', group: 'building', ja: 'タヌキ商店', en: "Nook's Cranny", w: 7, d: 4, block: true, on: 'land', h: 118, icon: 'host/timmy-tommy', turns: true, fixed: true, door: true }),
   // the homes (their footprint is their style's: layout/homes.ts)
   k({ k: 'home', group: 'home', ja: 'いえ', en: 'Home', w: 3, d: 2, block: true, on: 'land', h: 80, icon: 'deco/campsite', fixed: true, turns: true, hidden: true }),
   // named spots: where a villager stands at home, centre stage (visitors), nothing drawn
@@ -116,7 +115,7 @@ export const KIND_LIST: readonly KindDef[] = [
 
 const KINDS: Readonly<Record<string, KindDef>> = Object.fromEntries(KIND_LIST.map((d) => [d.k, d]));
 export const kindDef = (k: string): KindDef | undefined => KINDS[k];
-/** Whether one goes into it at its door: a home, or a building of the island's (the museum, the shop). */
+/** Whether one goes into it at its door: a home, or a building of the island's (the museum). */
 export const goesIn = (k: string): boolean => k === 'home' || !!KINDS[k]?.door;
 
 /** A kind's footprint (tiles) in a facing: [across, deep]. */
