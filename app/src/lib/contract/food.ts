@@ -6,7 +6,8 @@
 // rewrites what was eaten), so a day's totals are read off the entries alone. Never earns ベル: the economy never
 // imports this. A recurring meal (いつもの, `food_repeat`) is one person's one meal on chosen weekdays from a day on:
 // its days' items are computed on read (model/food.ts), never copied into the record, and a change of its items or
-// days is an end and a new repeat, so a past day never changes. Shared by the record (relay/src/store.ts), the model
+// days is an end and a new repeat, so a past day never changes. A recipe (マイレシピ, `food_recipe`) is one person's dish
+// of foods and servings, everyone's to log as a food of its own (`recipeSnap`). Shared by the record (relay/src/store.ts), the model
 // and the food sheet; pure and dependency-free.
 import { isLocalDate, isRec } from './api.ts';
 import { cleanLine } from './board.ts';
@@ -117,6 +118,21 @@ function rmOf(d: Record<string, unknown>, keys: string[]): { id: string; at: num
   return { id: d.id as string, at: d.at as number, rm: true };
 }
 
+/** 1…`max` items of `{g, f}`, each as a `food` op's grams and food (known keys only, the grams to one decimal), or
+ *  null. */
+function itemsOf(v: unknown, max: number): RepeatItem[] | null {
+  if (!Array.isArray(v) || !v.length || v.length > max) return null;
+  const it: RepeatItem[] = [];
+  for (const x of v as unknown[]) {
+    if (!isRec(x) || Object.keys(x).some((k) => x[k] !== undefined && k !== 'g' && k !== 'f')) return null;
+    if (!inRange(x.g, FOOD_GRAMS.min, FOOD_GRAMS.max) || !oneDecimal(x.g)) return null;
+    const f = snapOf(x.f);
+    if (!f) return null;
+    it.push({ g: Math.round(x.g * 10) / 10, f });
+  }
+  return it;
+}
+
 /** The weekday bit of a local date: bit 0 Monday … bit 6 Sunday. */
 export const weekdayBit = (date: string): number => 1 << ((new Date(Date.parse(`${date}T00:00:00Z`)).getUTCDay() + 6) % 7);
 
@@ -132,15 +148,8 @@ export function foodRepeatOp(d: unknown): RepeatOp | null {
   if (!isMeal(d.m) || !Number.isInteger(d.w) || (d.w as number) < 1 || (d.w as number) > 127 || !isLocalDate(d.from)) return null;
   const to = d.to ?? undefined;
   if (to !== undefined && (!isLocalDate(to) || to < d.from)) return null;
-  if (!Array.isArray(d.it) || !d.it.length || d.it.length > REPEAT_ITEMS) return null;
-  const it: RepeatItem[] = [];
-  for (const x of d.it as unknown[]) {
-    if (!isRec(x) || Object.keys(x).some((k) => x[k] !== undefined && k !== 'g' && k !== 'f')) return null;
-    if (!inRange(x.g, FOOD_GRAMS.min, FOOD_GRAMS.max) || !oneDecimal(x.g)) return null;
-    const f = snapOf(x.f);
-    if (!f) return null;
-    it.push({ g: Math.round(x.g * 10) / 10, f });
-  }
+  const it = itemsOf(d.it, REPEAT_ITEMS);
+  if (!it) return null;
   const out: RepeatOp = { id: d.id, at: d.at, m: d.m, it, w: d.w as number, from: d.from };
   if (to !== undefined) out.to = to;
   if (d.sk !== undefined) {
@@ -154,8 +163,8 @@ export function foodRepeatOp(d: unknown): RepeatOp | null {
 }
 
 /**
- * What the record does with a new op (a `food` or a `food_repeat` one), given the entry's (or the repeat's) op it
- * holds (null: none):
+ * What the record does with a new op (a `food`, a `food_repeat` or a `food_recipe` one), given the entry's (the repeat's,
+ * the recipe's) op it holds (null: none):
  * - `forbidden`: someone else's entry (only its owner, who logged it, edits or removes it);
  * - `stale`: acknowledged, nothing kept (anything after a removal; an op no later than the one held; a removal of an
  *   entry it doesn't hold);
@@ -194,3 +203,83 @@ export function foodRepeatFold(ops: Iterable<RepeatOpBy>): FoodRepeat[] {
 /** Whether a repeat covers `date`: within its days, on one of its weekdays, not skipped. */
 export const repeatCovers = (r: { from: string; to?: string; w: number; sk?: string[] }, date: string): boolean =>
   date >= r.from && (r.to === undefined || date <= r.to) && (r.w & weekdayBit(date)) !== 0 && !r.sk?.includes(date);
+
+// ---- My recipes (マイレシピ, `food_recipe`): a dish put together from foods, `g` grams of each, making `sv` servings.
+// Its owner's alone to edit or remove (the food rule: foodAccept), everyone's to log: logging one is an ordinary
+// `food` entry of the logger's own whose food is the recipe per 100 g (`recipeSnap`), a snapshot like any food's, so
+// an edit of the recipe never changes a meal already logged.
+
+/** A `food_recipe` op: a recipe set (`n` its name, `sv` the servings it makes, `it` its ingredients) or removed
+ *  (final). */
+export type RecipeOp =
+  | { id: string; at: number; n: string; sv: number; it: RepeatItem[]; rm?: undefined }
+  | { id: string; at: number; rm: true };
+type RecipeOpBy = RecipeOp & { who: Who };
+/** A recipe as the record keeps it (its latest op), with who set it. */
+export type FoodRecipe = Exclude<RecipeOp, { rm: true }> & { who: Who };
+
+/** A recipe's name at most (characters), its servings (an integer, inclusive), its ingredients at most. */
+export const RECIPE = { nameChars: 30, servings: { min: 1, max: 20 }, items: 30 } as const;
+const RECIPE_ID = /^c[0-9a-z]{6,24}$/;
+
+/** A new recipe's id. */
+export const newRecipeId = (at: number): string => newFoodId(at, 'c');
+
+/** A `food_recipe` op's data, its known keys only, each well-formed (the name cleaned as a food's, each ingredient as a
+ *  `food` op's grams and food), or null. The record keeps it as returned here. */
+export function foodRecipeOp(d: unknown): RecipeOp | null {
+  if (!isRec(d) || typeof d.id !== 'string' || !RECIPE_ID.test(d.id) || !isMs(d.at)) return null;
+  const keys = Object.keys(d).filter((k) => d[k] !== undefined);
+  const rm = rmOf(d, keys);
+  if (rm !== undefined) return rm;
+  if (keys.some((k) => !['id', 'at', 'n', 'sv', 'it'].includes(k))) return null;
+  const n = cleanLine(d.n, RECIPE.nameChars);
+  if (!n || !Number.isInteger(d.sv) || (d.sv as number) < RECIPE.servings.min || (d.sv as number) > RECIPE.servings.max) return null;
+  const it = itemsOf(d.it, RECIPE.items);
+  return it && { id: d.id, at: d.at, n, sv: d.sv as number, it };
+}
+
+/** The recipes as the record keeps them (each one's latest op taken by `foodAccept`, as `foodFold`), the removed ones
+ *  gone: the latest changed first, then id. */
+export function foodRecipeFold(ops: Iterable<RecipeOpBy>): FoodRecipe[] {
+  const m = new Map<string, RecipeOpBy>();
+  for (const e of ops) if (foodAccept(m.get(e.id) ?? null, e) === 'append') m.set(e.id, e);
+  const out: FoodRecipe[] = [];
+  for (const e of m.values()) if (!e.rm) out.push(e);
+  return out.sort((a, b) => b.at - a.at || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+}
+
+/** What some ingredients add up to: `g` grams, kcal, protein, fat, carbs and salt (g), unrounded; a nutrient null when
+ *  no ingredient knows it, else an unknown one counts as none (as a day's totals count it: model/food.ts). */
+export interface RecipeTotals { g: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null }
+export function recipeTotals(it: readonly RepeatItem[]): RecipeTotals {
+  const t: RecipeTotals = { g: 0, k: 0, p: null, fa: null, c: null, s: null };
+  for (const { g, f } of it) {
+    t.g += g;
+    t.k += (f.k * g) / 100;
+    for (const k of ['p', 'fa', 'c', 's'] as const) {
+      const v = f[k];
+      if (v !== null) t[k] = (t[k] ?? 0) + (v * g) / 100;
+    }
+  }
+  return t;
+}
+
+const clampGrams = (g: number): number => Math.min(FOOD_GRAMS.max, Math.max(FOOD_GRAMS.min, Math.round(g * 10) / 10));
+
+/** A recipe as a food per 100 g (its id `recipe:<recipe id>`, its name, `u` the portion label given): its totals over
+ *  its grams, kcal to one decimal and each nutrient to two (a mean of foods in range stays in range: snapOf takes it). */
+export function recipeSnap(r: { id: string; n: string; it: readonly RepeatItem[] }, u?: string): FoodSnap {
+  const t = recipeTotals(r.it);
+  const per = (v: number, by: number): number => Math.round(((v * 100) / t.g) * by) / by;
+  const nut = (v: number | null): number | null => (v === null ? null : per(v, 100));
+  const f: FoodSnap = { id: `recipe:${r.id}`, n: r.n, k: per(t.k, 10), p: nut(t.p), fa: nut(t.fa), c: nut(t.c), s: nut(t.s) };
+  if (u) f.u = u;
+  return f;
+}
+
+/** One serving of a recipe: 「1人前」, its grams (its total over its servings, to one decimal, within a `food` entry's
+ *  grams). */
+export function recipePortion(r: { sv: number; it: readonly RepeatItem[] }): { label: string; g: number } {
+  return { label: '1人前', g: clampGrams(recipeTotals(r.it).g / r.sv) };
+}

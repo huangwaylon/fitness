@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  foodAccept, foodFold, foodOp, foodRepeatFold, foodRepeatOp, isKcalGoal, newFoodId, newRepeatId, repeatCovers, weekdayBit, WEEKDAYS, type FoodOp, type RepeatOp
+  foodAccept, foodFold, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, isKcalGoal, newFoodId, newRecipeId, newRepeatId,
+  recipePortion, recipeSnap, recipeTotals, repeatCovers, weekdayBit, WEEKDAYS, type FoodOp, type RecipeOp, type RepeatOp
 } from './food.ts';
 import { cleanLine } from './board.ts';
 
@@ -103,5 +104,56 @@ describe('food_repeat', () => {
   });
   it('a new id is well-formed', () => {
     expect(foodRepeatOp({ ...ok, id: newRepeatId(T) })).not.toBeNull();
+  });
+});
+
+describe('food_recipe', () => {
+  const CURRY = { id: 'mext:17051', n: 'カレールウ', k: 474, p: 6.5, fa: 34.1, c: 44.7, s: 10.6 };
+  const ok = { id: 'cabcdef1', at: T, n: 'おうちカレー', sv: 4, it: [{ g: 600, f: RICE }, { g: 100, f: CURRY }] };
+  const rec = (id: string, who: 'A' | 'B' | 'G', at: number, extra: object = {}) => ({ ...(foodRecipeOp({ ...ok, id, at, ...extra }) as RecipeOp), who });
+
+  it('reads a set and a removal, known keys only, normalized', () => {
+    expect(foodRecipeOp({ ...ok, n: ' おうち\nカレー ', it: [{ g: 600.0, f: { ...RICE, n: ' ごはん\n' } }, { g: 100, f: CURRY }] })).toEqual({
+      ...ok, n: 'おうち カレー'
+    });
+    expect(foodRecipeOp({ ...ok, n: 'あ'.repeat(40) })).toMatchObject({ n: 'あ'.repeat(30) });
+    expect(foodRecipeOp({ id: 'cabcdef1', at: T, rm: true })).toEqual({ id: 'cabcdef1', at: T, rm: true });
+  });
+  it('refuses anything malformed', () => {
+    for (const bad of [
+      { ...ok, id: 'rabcdef1' }, { ...ok, at: 5 }, { ...ok, n: ' ' }, { ...ok, n: 1 }, { ...ok, sv: 0 }, { ...ok, sv: 21 }, { ...ok, sv: 2.5 },
+      { ...ok, it: [] }, { ...ok, it: Array(31).fill({ g: 1, f: RICE }) }, { ...ok, it: [{ g: 1.25, f: RICE }] }, { ...ok, it: [{ g: 1, f: null }] },
+      { ...ok, x: 1 }, { id: 'cabcdef1', at: T, rm: true, n: 'x' }, null
+    ]) expect(foodRecipeOp(bad)).toBeNull();
+    expect(foodOp({ id: 'cabcdef1', at: T, rm: true })).toBeNull(); // a recipe's id is no entry's
+  });
+  it('folds by the food rule (owner only, a removal final), the latest changed first', () => {
+    const ops = [rec('c0000001', 'A', T), rec('c0000002', 'B', T + 1), rec('c0000001', 'B', T + 2, { sv: 1 }), rec('c0000001', 'A', T + 3, { sv: 2 }), rec('c0000003', 'G', T)];
+    expect(foodRecipeFold(ops).map((r) => [r.id, r.who, r.sv])).toEqual([['c0000001', 'A', 2], ['c0000002', 'B', 4], ['c0000003', 'G', 4]]);
+    expect(foodRecipeFold([...ops, { id: 'c0000002', at: T + 4, rm: true as const, who: 'B' as const }, rec('c0000002', 'B', T + 5)]).map((r) => r.id)).toEqual(['c0000001', 'c0000003']);
+  });
+  it('adds up its ingredients; a nutrient no ingredient knows is null, an unknown one counts as none', () => {
+    expect(recipeTotals(ok.it)).toMatchObject({ g: 700, k: 1410 });
+    expect(recipeTotals(ok.it).p).toBeCloseTo(21.5);
+    const noP = { ...RICE, p: null };
+    expect(recipeTotals([{ g: 100, f: noP }]).p).toBeNull();
+    expect(recipeTotals([{ g: 100, f: noP }, { g: 100, f: CURRY }]).p).toBeCloseTo(6.5);
+  });
+  it('as a food per 100 g: its totals over its grams, a snapshot a food entry takes; a serving is its grams over its servings', () => {
+    const f = recipeSnap(ok, '1人前');
+    expect(f).toEqual({ id: 'recipe:cabcdef1', n: 'おうちカレー', k: 201.4, p: 3.07, fa: 5.13, c: 38.19, s: 1.51, u: '1人前' });
+    expect(recipeSnap({ ...ok, it: [{ g: 100, f: { ...RICE, p: null } }] }).p).toBeNull();
+    expect(recipeSnap(ok).u).toBeUndefined();
+    const { label, g } = recipePortion(ok);
+    expect([label, g]).toEqual(['1人前', 175]);
+    const op = foodOp({ id: 'fabcdef1', at: T, d: '2026-11-03', m: 'd', g, f });
+    expect(op).toMatchObject({ g: 175, f });
+    expect((f.k * g) / 100).toBeCloseTo(1410 / 4, 0); // one serving: a quarter of the pot
+    // a serving's grams stay within a food entry's
+    expect(recipePortion({ sv: 20, it: [{ g: 0.1, f: RICE }] }).g).toBe(0.1);
+    expect(recipePortion({ sv: 1, it: Array(2).fill({ g: 5000, f: RICE }) }).g).toBe(5000);
+  });
+  it('a new id is well-formed', () => {
+    expect(foodRecipeOp({ ...ok, id: newRecipeId(T) })).not.toBeNull();
   });
 });

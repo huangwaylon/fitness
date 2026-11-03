@@ -9,7 +9,7 @@ import { bellsLedger, dayDetail } from '#lib/model/history.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { shopPrice } from '#lib/config/rules.ts';
 import { isActivityMetric } from '#lib/contract/api.ts';
-import { foodDay, kcalGoal } from '#lib/model/food.ts';
+import { foodDay, kcalGoal, recipes } from '#lib/model/food.ts';
 import { localDateAt } from '#lib/time/dates.ts';
 
 describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-08T11:00:00.000Z', '2026-12-20T13:00:00.000Z'])('demo at %s', (iso) => {
@@ -54,7 +54,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
   });
 
   it('Move and Stand every day; うめ’s Move goal applies from its day', () => {
-    expect(cache.rows.events.filter((e) => !['spend', 'spend_void', 'harvest', 'pref', 'food', 'food_repeat'].includes(e[3]))).toEqual([]);
+    expect(cache.rows.events.filter((e) => !['spend', 'spend_void', 'harvest', 'pref', 'food', 'food_repeat', 'food_recipe'].includes(e[3]))).toEqual([]);
     const metrics = new Set(cache.rows.metrics.map((m) => m[3]));
     expect([...metrics].sort()).toEqual(['bmi', 'body_fat_pct', 'exercise_min', 'lean_kg', 'move_kcal', 'stand_min', 'steps', 'weight']);
     const settled = economyWeeks(s, now).filter((wk) => provisionalMs(wk) <= now);
@@ -79,6 +79,14 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     expect(breakfast(3).every((e) => !e.rep)).toBe(true);
     expect([kcalGoal(s, 'A'), kcalGoal(s, 'B')]).toEqual([2200, 1700]);
     expect(foodDay(reduce(demoCache(now, 'G').rows), 'A', yesterday)).toEqual(days[0]);
+  });
+
+  it('A’s recipe 「おうちカレー」 4人前, a plausible serving, seen by the guest too', () => {
+    const [r] = recipes(s);
+    expect([r.who, r.n, r.sv, r.it.length]).toEqual(['A', 'おうちカレー', 4, 6]);
+    expect(r.per.kcal).toBeGreaterThan(500);
+    expect(r.per.kcal).toBeLessThan(900);
+    expect(recipes(reduce(demoCache(now, 'G').rows))).toEqual(recipes(s));
   });
 });
 

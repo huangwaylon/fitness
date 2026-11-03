@@ -1,5 +1,5 @@
-// The wallet actions: buy one of the two rewards (only what the wallet covers), undo; the goals; the meal log and its
-// repeats.
+// The wallet actions: buy one of the two rewards (only what the wallet covers), undo; the goals; the meal log, its
+// repeats and recipes.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
 import { configureTransport } from '#lib/sync/transport.ts';
@@ -312,5 +312,71 @@ describe('recurring meals (いつもの)', () => {
     await model();
     const { repeats } = await import('#lib/model/food.ts');
     expect(repeats(week.model!.state, 'A').map((r) => [r.id, r.to])).toEqual([[id, '2026-11-18'], [lunch, '2026-11-18']]);
+  });
+});
+
+describe('my recipes (マイレシピ)', () => {
+  const NOW = Date.parse('2026-11-18T12:00:00.000Z');
+  const RICE = { id: 'mext:01088', n: 'ごはん', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0 };
+  const CURRY = { id: 'mext:17051', n: 'カレールウ', k: 474, p: 6.5, fa: 34.1, c: 44.7, s: 10.6 };
+  const IT = [{ g: 600, f: RICE }, { g: 100.04, f: CURRY }];
+  /** The queued events as `who` sent them, on `me`'s phone. */
+  const model = async (me: 'A' | 'B' | 'G' = 'A', who: 'A' | 'B' | 'G' = me) => {
+    const { reduce } = await import('#lib/model/state.ts');
+    const events = queued().map((e, i) => [new Date(NOW + i).toISOString(), who, e.id, e.type, JSON.stringify(e.data)]);
+    week.model = { state: reduce({ metrics: [], events: events as never }), me, now: NOW } as unknown as typeof week.model;
+  };
+  const sent = (type: string) => queued().filter((e) => e.type === type).map((e) => e.data as Record<string, unknown>);
+
+  it('saveRecipe sends a new recipe’s whole state (id `c` + [0-9a-z], grams to one decimal); refuses a malformed one', async () => {
+    const { saveRecipe } = await import('./actions.ts');
+    await model();
+    const r = saveRecipe({ n: 'おうちカレー', sv: 4, it: IT });
+    expect(r).toMatchObject({ ok: true, id: expect.stringMatching(/^c[0-9a-z]{6,24}$/) });
+    expect(sent('food_recipe')).toEqual([{ id: r.id, at: expect.any(Number), n: 'おうちカレー', sv: 4, it: [{ g: 600, f: RICE }, { g: 100, f: CURRY }] }]);
+    for (const bad of [{ n: ' ', sv: 4, it: IT }, { n: 'x', sv: 0, it: IT }, { n: 'x', sv: 21, it: IT }, { n: 'x', sv: 1, it: [] }]) expect(saveRecipe(bad).ok).toBe(false);
+    expect(sent('food_recipe')).toHaveLength(1);
+  });
+
+  it('edits and removes my own only; another’s is copied to mine as a new recipe', async () => {
+    const { removeRecipe, saveRecipe } = await import('./actions.ts');
+    await model();
+    const { id } = saveRecipe({ n: 'おうちカレー', sv: 4, it: IT });
+    await model();
+    expect(saveRecipe({ id, n: 'おうちカレー', sv: 2, it: IT }).ok).toBe(true);
+    expect(sent('food_recipe')[1]).toMatchObject({ id, sv: 2 });
+    expect(sent('food_recipe')[1].at as number).toBeGreaterThan(sent('food_recipe')[0].at as number);
+    // on B's phone, A's recipe: not B's to change, B's to copy
+    await model('B', 'A');
+    expect(saveRecipe({ id, n: 'x', sv: 1, it: IT }).ok).toBe(false);
+    expect(removeRecipe(id!).ok).toBe(false);
+    expect(saveRecipe({ id: 'cnope0000', n: 'x', sv: 1, it: IT }).ok).toBe(false);
+    const copy = saveRecipe({ n: 'おうちカレー', sv: 4, it: IT });
+    expect(copy.ok && copy.id !== id).toBe(true);
+    await model();
+    expect(removeRecipe(id!).ok).toBe(true);
+    expect(sent('food_recipe').at(-1)).toEqual({ id, at: expect.any(Number), rm: true });
+  });
+
+  it('logRecipe logs anyone’s recipe as an entry of mine: the recipe per 100 g, the grams eaten; an edit later changes no meal', async () => {
+    const { logRecipe, saveRecipe } = await import('./actions.ts');
+    const { recipePortion } = await import('#lib/contract/food.ts');
+    const { foodDay, recipes } = await import('#lib/model/food.ts');
+    await model();
+    const { id } = saveRecipe({ n: 'おうちカレー', sv: 4, it: IT });
+    await model('G', 'A'); // the guest's phone
+    const r = recipes(week.model!.state)[0];
+    const { label, g } = recipePortion(r);
+    expect(logRecipe({ recipeId: id!, d: '2026-11-18', m: 'd', g, u: label }).ok).toBe(true);
+    expect(logRecipe({ recipeId: 'cnope0000', d: '2026-11-18', m: 'd', g }).ok).toBe(false);
+    expect(sent('food').at(-1)).toEqual({
+      id: expect.stringMatching(/^f/), at: expect.any(Number), d: '2026-11-18', m: 'd', g: 175,
+      f: { id: `recipe:${id}`, n: 'おうちカレー', k: 201.4, p: 3.07, fa: 5.13, c: 38.19, s: 1.51, u: '1人前' }
+    });
+    // A then halves the pot: the meal logged stays as it was (every queued op read as A's from here)
+    await model();
+    expect(saveRecipe({ id, n: 'おうちカレー', sv: 4, it: [{ g: 300, f: RICE }] }).ok).toBe(true);
+    await model();
+    expect(foodDay(week.model!.state, 'A', '2026-11-18')).toMatchObject({ kcal: 352 }); // 201.4 × 1.75
   });
 });

@@ -2,7 +2,7 @@
 // through the same model as the live app, so the island, the wallet and きろく agree and every tap really recomputes.
 // Activity rows start 8 weeks before this one (`?demo&weeks=N`: N; the economy's first week follows the data), with a
 // day now and then whose Watch rows never arrived (steps only), so けんこう has a 記録なし day, and the last days' meals
-// (ごはん) with a kcal goal each. Deterministic per date
+// (ごはん) with a kcal goal each, and a recipe of A's (マイレシピ). Deterministic per date
 // (a seeded RNG), so a reload shows the same history.
 import type { PersonId, ShopItemId, Who } from '#lib/types.ts';
 import { guestRows } from '#lib/contract/guest.ts';
@@ -42,6 +42,18 @@ const FOODS: Record<string, FoodSnap> = {
   shogayaki: { id: 'dishes:teishoku-shogayaki', n: '生姜焼き定食', k: 110, p: 4.5, fa: 4.2, c: 13.9, s: 0.7, u: '1人前' },
   udon: { id: 'mext:01039', n: 'うどん（ゆで）', k: 95, p: 2.6, fa: 0.4, c: 21.6, s: 0.3, u: '1玉' },
   karaage: { id: 'dishes:karaage', n: '鶏の唐揚げ', k: 256, p: 20, fa: 14.9, c: 11.9, s: 2, u: '1個' }
+};
+/** A's recipe: 「おうちカレー」 4人前, its ingredients per 100 g as the food data has them (MEXT). */
+const CURRY_RECIPE = {
+  id: 'cdemoa1', n: 'おうちカレー', sv: 4,
+  it: [
+    { g: 300, f: { id: 'mext:11221', n: '若どり もも 皮つき 生', k: 190, p: 16.6, fa: 14.2, c: 0, s: 0.2 } },
+    { g: 400, f: { id: 'mext:06153', n: 'たまねぎ 生', k: 33, p: 1, fa: 0.1, c: 8.4, s: 0 } },
+    { g: 150, f: { id: 'mext:06212', n: 'にんじん 皮つき 生', k: 35, p: 0.7, fa: 0.2, c: 9.3, s: 0.1 } },
+    { g: 300, f: { id: 'mext:02017', n: 'じゃがいも 生', k: 59, p: 1.8, fa: 0.1, c: 17.3, s: 0 } },
+    { g: 80, f: { id: 'mext:17051', n: 'カレールウ', k: 474, p: 6.5, fa: 34.1, c: 44.7, s: 10.6 } },
+    { g: 600, f: FOODS.rice }
+  ]
 };
 /** A day's meals each (Tokyo hour, meal, food, grams), cycling over the days: ウェイ eats more than うめ. */
 const MEALS_DEMO: Record<PersonId, [h: number, m: Meal, food: string, g: number][][]> = {
@@ -182,6 +194,9 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
     }
   }
   ev(at(addDays(today, -MEAL_DAYS), 21, 5), 'A', 'pref', { key: 'kcalGoal', value: 2200 });
+  // A's recipe, everyone's to log (マイレシピ)
+  const tr = at(addDays(today, -MEAL_DAYS), 20, 30);
+  ev(tr, 'A', 'food_recipe', { ...CURRY_RECIPE, at: tr });
   ev(at(addDays(today, -MEAL_DAYS), 21, 6), 'B', 'pref', { key: 'kcalGoal', value: 1700 });
 
   const byAt = <T extends readonly unknown[]>(rows: T[]) => rows.sort((x, y) => String(x[0]).localeCompare(String(y[0])));

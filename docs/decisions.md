@@ -133,6 +133,16 @@ row per day would fill the record with copies and turn a change of habit into re
 repeat is one row and a past day reads the same forever. Owner-only and latest op per id like an entry; the UI keeps
 one live repeat per meal, the record need not.
 
+Recipes (マイレシピ, added the same day): a dish put together from foods, the grams of each and the servings it makes,
+is one `food_recipe` (`{id, at, n, sv, it}`), and logging it is **one ordinary `food` entry** of the logger's whose
+food is the recipe per 100 g (its totals over its grams; 1人前 its grams over its servings), so nothing about `food`
+changed. Recipes are **shared**: everyone, the guest included, sees every recipe and may log anyone's as their own meal;
+only its owner edits or removes it (owner-only and latest op per id like an entry), and another's is changed by copying
+it to a new recipe of one's own. A logged recipe is a snapshot like any food, so editing or removing the recipe never
+changes a meal already eaten. Why: the user ("assemble my own recipes with selected amounts for each ingredient … easy
+to register that as a meal item"; shared with all users); a recipe referenced by the entry instead would rewrite past
+days on every edit and make each entry depend on another row.
+
 ## Economy
 
 ### Bells are play money

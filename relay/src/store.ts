@@ -6,7 +6,7 @@
 // - An event id is accepted once, forever (`ids`: a replaced event's id still dedupes a late retry).
 // - A slot (app model/record.ts eventSlot) holds one event: a later one of the same slot replaces it, so a tally or an
 //   island day is one row per person and day, a cosmetic pref one per person, a goal one per person and Tokyo day,
-//   a decoration one per item, a board post, a meal entry and a repeat one per id (each one's latest op).
+//   a decoration one per item, a board post, a meal entry, a repeat and a recipe one per id (each one's latest op).
 // - `since` is answered from the `at` index. A row that arrived out of `at` order (only while Apps Script mirrored
 //   its writes here: two requests' copies racing) is marked `late` with its arrival time, and a poll also returns
 //   the late rows that arrived after `since` (less a margin for the two servers' clocks), so no phone misses one.
@@ -21,7 +21,7 @@ import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contr
 import { tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
 import { isRoomScope, isVoid, layoutAccept, layoutOpOf, scopeMayWrite, type LayoutEntry } from '../../app/src/lib/contract/layout.ts';
 import { BOARD_MAX, boardAccept, boardOpOf, cleanText, type BoardEntry } from '../../app/src/lib/contract/board.ts';
-import { foodAccept, foodOp, foodRepeatOp } from '../../app/src/lib/contract/food.ts';
+import { foodAccept, foodOp, foodRecipeOp, foodRepeatOp } from '../../app/src/lib/contract/food.ts';
 import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
 import { notifySecret, notifySig, verifyNotify } from './notify.ts';
 import { keyOwner, type Keys } from './auth.ts';
@@ -60,6 +60,10 @@ const KEY_RE = /^[0-9a-fA-F]{32,128}$/;
 const utf8 = new TextEncoder();
 const ISO_AT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
+/** The meal log's events, each one's latest op per id kept by its owner's rule (contract/food.ts foodAccept). */
+const FOOD_PARSE = { food: foodOp, food_repeat: foodRepeatOp, food_recipe: foodRecipeOp } as const;
+type FoodType = keyof typeof FOOD_PARSE;
+const isFoodType = (t: string): t is FoodType => Object.hasOwn(FOOD_PARSE, t);
 const fail = (error: ApiError, detail?: string): Fail => (detail ? { ok: false, error, detail } : { ok: false, error });
 
 const SCHEMA = [
@@ -366,9 +370,9 @@ export class StoreCore {
     const sent = body.data === undefined ? {} : body.data;
     if (!isRec(sent)) return fail('bad_request');
     // a board note's text: plain text, sanitised here as on the phone (contract/board.ts cleanText)
-    // a meal entry or a repeat as the phone keeps it: its food's name cleaned, its grams to one decimal (contract/food.ts)
+    // a meal entry, a repeat or a recipe as the phone keeps it: names cleaned, grams to one decimal (contract/food.ts)
     const data: Rec = body.type === 'board' && typeof sent.t === 'string' ? { ...sent, t: cleanText(sent.t) }
-      : body.type === 'food' ? (foodOp(sent) ?? sent) : body.type === 'food_repeat' ? (foodRepeatOp(sent) ?? sent) : sent;
+      : isFoodType(body.type) ? (FOOD_PARSE[body.type](sent) ?? sent) : sent;
     // the guest writes only its finds, tallies, notes, meals, the tent's decor and its own prefs (contract/guest.ts)
     if (me === 'G' && !guestMayWrite(body.type, data)) return fail('forbidden');
     // a scoped decor op: the outdoors the members', a home's look and room its owner's (contract/layout.ts)
@@ -404,8 +408,8 @@ export class StoreCore {
         }
         if (v.v === 'append') drop = v.drop;
       }
-      if (type === 'food' || type === 'food_repeat') {
-        // only its owner changes an entry or a repeat; an op beaten by the one held is acknowledged (contract/food.ts
+      if (isFoodType(type)) {
+        // only its owner changes an entry, a repeat or a recipe; an op beaten by the one held is acknowledged (contract/food.ts
         // foodAccept)
         const v = this.foodTarget(type, me, data);
         if (v === 'forbidden') return fail('forbidden');
@@ -491,10 +495,10 @@ export class StoreCore {
     for (const r of gone.slice(BOARD_MAX)) this.io.sql.exec('DELETE FROM events WHERE seq = ?', r.seq);
   }
 
-  /** A meal or a repeat op against the entry's (the repeat's) latest op the record holds (its slot's row, with who
-   *  sent it). */
-  private foodTarget(type: 'food' | 'food_repeat', me: Who, d: Rec): ReturnType<typeof foodAccept> {
-    const parse = type === 'food' ? foodOp : foodRepeatOp;
+  /** A meal, a repeat or a recipe op against the entry's (the repeat's, the recipe's) latest op the record holds (its
+   *  slot's row, with who sent it). */
+  private foodTarget(type: FoodType, me: Who, d: Rec): ReturnType<typeof foodAccept> {
+    const parse = FOOD_PARSE[type];
     const r = this.io.sql.exec<{ person: string; data: string }>('SELECT person, data FROM events WHERE slot = ?', `${type}|${String(d.id)}`).toArray()[0];
     let held: { at: number; rm?: true; who: Who } | null = null;
     if (r && isWho(r.person)) {
@@ -580,8 +584,8 @@ export class StoreCore {
       }
       if (v.drop) sql.exec('DELETE FROM events WHERE slot = ?', `board|${v.drop}`);
     }
-    if (type === 'food' || type === 'food_repeat') {
-      if (!(type === 'food' ? foodOp : foodRepeatOp)(d)) return 'skipped';
+    if (isFoodType(type)) {
+      if (!FOOD_PARSE[type](d)) return 'skipped';
       if (this.foodTarget(type, person, d) !== 'append') {
         sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
         return 'had';
@@ -592,7 +596,7 @@ export class StoreCore {
       return 'had';
     }
     const slot = eventSlot(type, person, subject, d, Date.parse(at));
-    if (slot && type !== 'decor' && type !== 'board' && type !== 'food' && type !== 'food_repeat') {
+    if (slot && type !== 'decor' && type !== 'board' && !isFoodType(type)) {
       const held = sql.exec<{ at: string }>('SELECT at FROM events WHERE slot = ?', slot).toArray()[0];
       if (held && held.at >= at) {
         sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id); // a later one of the slot is there already

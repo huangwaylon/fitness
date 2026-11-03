@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { foldEvents, reduce } from './state.ts';
-import { foodDay, foodEntries, foodSeries, kcalGoal, proteinGoal, repeatOn, repeats } from './food.ts';
+import { foodDay, foodEntries, foodSeries, kcalGoal, proteinGoal, recipes, repeatOn, repeats } from './food.ts';
 import { rangeFor, seriesBuckets, seriesStats } from './health.ts';
 import { addDays } from '#lib/time/dates.ts';
+import { guestRows } from '#lib/contract/guest.ts';
 import type { EventRow, MetricRow } from '#lib/contract/api.ts';
 
 const T = Date.parse('2026-11-03T03:00:00.000Z');
@@ -192,5 +193,46 @@ describe('foodSeries: kcal per day for グラフ, by けんこう’s bucket and
     expect(y.slice(-2).map((x) => [x.v, x.days])).toEqual([[(234 + 95) / 2, 2], [320, 2]]);
     const yr = rangeFor('year', TODAY);
     expect(seriesStats(ds, yr.from, yr.to)).toMatchObject({ avg: 969 / 4, sum: 969, days: 4, missing: 2 });
+  });
+});
+
+describe('recipes: everyone’s, with totals and a serving’s', () => {
+  const rec = (who: 'A' | 'B' | 'G', id: string, at: number, extra: object = {}) =>
+    ev(who, at, { id, at, n: '納豆ごはん', sv: 2, it: [{ g: 300, f: RICE }, { g: 90, f: NATTO }], ...extra }, 'food_recipe');
+
+  it('folds the ops (edits, removals, someone else’s refused), the latest changed first, each with its owner', () => {
+    const rows = {
+      metrics: [] as MetricRow[],
+      events: [
+        rec('A', 'crec0001', T),
+        rec('B', 'crec0002', T + 1000),
+        rec('A', 'crec0001', T + 2000, { sv: 3 }), // edited
+        rec('B', 'crec0001', T + 3000, { sv: 9 }), // not B's: ignored
+        rec('G', 'crec0003', T + 4000),
+        ev('B', T + 5000, { id: 'crec0002', at: T + 5000, rm: true }, 'food_recipe'), // removed
+        rec('A', 'crec0004', T + 6000, { sv: 0 }) // malformed: ignored
+      ]
+    };
+    const s = reduce(rows);
+    expect(recipes(s).map((r) => [r.id, r.who, r.sv])).toEqual([['crec0003', 'G', 2], ['crec0001', 'A', 3]]);
+    expect(recipes(s)).toBe(recipes(s)); // memoised
+    // the guest's phone gets every recipe too
+    expect(recipes(reduce(guestRows(rows))).map((r) => r.id)).toEqual(['crec0003', 'crec0001']);
+  });
+
+  it('adds up a recipe and one serving of it; a nutrient no ingredient knows is null', () => {
+    const s = reduce({ metrics: [], events: [rec('A', 'crec0010', T), rec('A', 'crec0011', T + 1000, { sv: 1, it: [{ g: 50, f: NATTO }] })] });
+    const [one, pot] = recipes(s);
+    // 156 × 3 + 190 × 0.9 = 639; salt: rice's 0, natto's unknown
+    expect(pot.total).toEqual({ g: 390, kcal: 639, p: 22.4, fa: 9.9, c: 122.2, s: 0 });
+    expect(pot.per).toEqual({ g: 195, kcal: 320, p: 11.2, fa: 5, c: 61.1, s: 0 });
+    expect(one.total).toMatchObject({ g: 50, kcal: 95, s: null });
+  });
+
+  it('shows a queued op at once (foldEvents)', () => {
+    const base = reduce({ metrics: [], events: [rec('A', 'crec0020', T)] });
+    const s = foldEvents(base, [rec('A', 'crec0020', T + 1000, { n: '朝の納豆ごはん' }), rec('B', 'crec0021', T + 2000)], null)!;
+    expect(recipes(s).map((r) => [r.id, r.n])).toEqual([['crec0021', '納豆ごはん'], ['crec0020', '朝の納豆ごはん']]);
+    expect(recipes(base).map((r) => r.n)).toEqual(['納豆ごはん']);
   });
 });

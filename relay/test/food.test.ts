@@ -1,10 +1,14 @@
 // The meal log in the record (docs/backend.md#events `food`): an entry set or removed, each entry's latest op kept
 // (one row per entry), removal final; the food's name cleaned here as on the phone; anyone logs their own (the guest
 // too), only the owner edits or removes; every phone sees every meal, the guest's too; the daily kcal goal a pref. A
-// repeat (`food_repeat`) by the same rules: one row per repeat, its owner's alone.
+// repeat (`food_repeat`) and a recipe (`food_recipe`) by the same rules: one row per id, its owner's alone; a recipe
+// everyone's to see and to log as a food entry of their own.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { StoreCore } from '../src/store.ts';
-import { foodFold, foodOp, foodRepeatFold, foodRepeatOp, type FoodEntry, type FoodOp, type FoodRepeat, type RepeatOp } from '../../app/src/lib/contract/food.ts';
+import {
+  foodFold, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, recipePortion, recipeSnap,
+  type FoodEntry, type FoodOp, type FoodRecipe, type FoodRepeat, type RecipeOp, type RepeatOp
+} from '../../app/src/lib/contract/food.ts';
 import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
 import { memSql } from './sqlite.ts';
 
@@ -224,5 +228,90 @@ describe('the meal log in the record', () => {
     const gone = [new Date(now + 8000).toISOString(), 'A', 'e-gone-r', 'food_repeat', JSON.stringify({ id: 'rmeal040', at: now + 8000, rm: true })];
     expect(store.load({ rows: { events: [gone] } })).toMatchObject({ ok: true, events: 1 });
     expect(repeats()).toEqual([]);
+  });
+
+  // ---- recipes (マイレシピ)
+  const CURRY = { id: 'mext:x', n: 'カレールウ', k: 474, p: 6.5, fa: 34.1, c: 44.7, s: 10.6 };
+  const sendRec = (who: 'A' | 'B' | 'G', data: object) => call(keyOf[who], 'event', { id: `e${++n}`, type: 'food_recipe', data });
+  const recipe = (who: 'A' | 'B' | 'G', id: string, extra: object = {}, at = (now += 1000)) =>
+    sendRec(who, { id, at, n: 'おうちカレー', sv: 4, it: [{ g: 600, f: RICE }, { g: 100, f: CURRY }], ...extra });
+  const recRows = (key = KEY_A) => (call(key, 'snapshot').rows.events as [string, 'A' | 'B' | 'G', string, string, string][]).filter((r) => r[3] === 'food_recipe');
+  const recipes = (key = KEY_A): FoodRecipe[] =>
+    foodRecipeFold(recRows(key).map((r) => ({ ...foodRecipeOp(JSON.parse(r[4]))!, who: r[1] }) as RecipeOp & { who: 'A' | 'B' | 'G' }));
+
+  it('keeps a recipe, normalized, seen by every phone; the partner and the guest log it as their own entry', () => {
+    expect(recipe('A', 'cmeal001', { n: '  おうち\u0007カレー\n ', it: [{ g: 600.0, f: { ...RICE, n: ' ごはん ' } }, { g: 100, f: CURRY }] })).toMatchObject({ ok: true });
+    expect(notices.at(-1)).toMatchObject({ what: 'event', who: 'A' });
+    expect(JSON.parse(recRows()[0][4])).toEqual({ id: 'cmeal001', at: now, n: 'おうちカレー', sv: 4, it: [{ g: 600, f: { ...RICE, n: 'ごはん' } }, { g: 100, f: CURRY }] });
+    for (const key of [KEY_B, KEY_C]) expect(recipes(key)).toMatchObject([{ id: 'cmeal001', who: 'A', n: 'おうちカレー', sv: 4 }]);
+    // logging it: an ordinary food entry of the logger's, the recipe per 100 g, one serving's grams
+    const r = recipes(KEY_B)[0];
+    const { g } = recipePortion(r);
+    for (const who of ['B', 'G'] as const) expect(log(who, `fmealr0${who.toLowerCase()}`, { g, f: recipeSnap(r, '1人前') })).toMatchObject({ ok: true });
+    expect(entries().map((e) => [e.who, e.g, e.f.id, e.f.n, e.f.u])).toEqual([['B', 175, 'recipe:cmeal001', 'おうちカレー', '1人前'], ['G', 175, 'recipe:cmeal001', 'おうちカレー', '1人前']]);
+    // what a serving adds up to: a quarter of the recipe's kcal
+    const kcal = (e: FoodEntry) => (e.f.k * e.g) / 100;
+    expect(kcal(entries()[0])).toBeCloseTo((600 * 156 + 100 * 474) / 100 / 4, 0);
+  });
+
+  it('refuses a malformed recipe', () => {
+    const at = now;
+    const ok = { id: 'cmeal010', at, n: 'カレー', sv: 2, it: [{ g: 150, f: RICE }] };
+    const bad = [
+      { ...ok, id: 'fmeal010' }, { ...ok, id: 'c12' }, { ...ok, at: 'x' }, { ...ok, n: ' \u0000 ' }, { ...ok, n: 5 }, { ...ok, sv: 0 }, { ...ok, sv: 21 },
+      { ...ok, sv: 1.5 }, { ...ok, sv: '2' }, { ...ok, it: [] }, { ...ok, it: Array(31).fill({ g: 1, f: RICE }) }, { ...ok, it: [{ g: 0, f: RICE }] },
+      { ...ok, it: [{ g: 1.25, f: RICE }] }, { ...ok, it: [{ g: 1, f: { ...RICE, k: 951 } }] }, { ...ok, it: [{ g: 1, f: RICE, m: 'b' }] }, { ...ok, it: 'x' },
+      { ...ok, x: 1 }, { ...ok, person: 'B' }, { id: 'cmeal010', at, rm: true, sv: 1 }, { id: 'cmeal010', at, rm: false }
+    ];
+    for (const d of bad) expect(sendRec('A', d)).toMatchObject({ ok: false, error: 'bad_request' });
+    // a long name is cut at 30; 30 ingredients and 20 servings are fine
+    expect(recipe('A', 'cmeal011', { n: 'あ'.repeat(40), sv: 20, it: Array(30).fill({ g: 1, f: RICE }) })).toMatchObject({ ok: true });
+    expect(recipes()[0].n).toBe('あ'.repeat(30));
+  });
+
+  it('keeps each recipe’s latest op as its one row; an older op, a set after a removal, a removal it never held acknowledged', () => {
+    const at = now + 1000;
+    recipe('B', 'cmeal020', {}, at);
+    expect(recipe('B', 'cmeal020', { sv: 2 }, at + 5000)).toMatchObject({ ok: true });
+    expect(recipe('B', 'cmeal020', { sv: 6 }, at + 2000)).toMatchObject({ ok: true, duplicate: true });
+    expect(recipes()).toMatchObject([{ id: 'cmeal020', sv: 2, at: at + 5000 }]);
+    expect(recRows()).toHaveLength(1);
+    now = at + 5000;
+    expect(sendRec('B', { id: 'cmeal020', at: (now += 1000), rm: true })).toMatchObject({ ok: true });
+    expect(recipe('B', 'cmeal020', { sv: 3 })).toMatchObject({ ok: true, duplicate: true });
+    expect(sendRec('B', { id: 'cmeal021', at: (now += 1000), rm: true })).toMatchObject({ ok: true, duplicate: true });
+    expect(recipes()).toEqual([]);
+    expect(recRows()).toHaveLength(1); // the removal's row
+  });
+
+  it('lets only the owner change a recipe; the guest keeps its own; a copy is a new recipe of the copier', () => {
+    recipe('G', 'cmeal030');
+    recipe('A', 'cmeal031');
+    expect(recipe('A', 'cmeal030', { sv: 1 })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(sendRec('B', { id: 'cmeal030', at: (now += 1000), rm: true })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(recipe('G', 'cmeal031', { sv: 1 })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(sendRec('G', { id: 'cmeal031', at: (now += 1000), rm: true })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(recipe('G', 'cmeal030', { n: 'ゲストカレー' })).toMatchObject({ ok: true });
+    expect(recipe('B', 'cmeal032', { n: 'おうちカレー（コピー）' })).toMatchObject({ ok: true });
+    expect(recipes(KEY_C).map((r) => [r.id, r.who, r.n])).toEqual([['cmeal032', 'B', 'おうちカレー（コピー）'], ['cmeal030', 'G', 'ゲストカレー'], ['cmeal031', 'A', 'おうちカレー']]);
+  });
+
+  it('a recipe persists and loads back from a dump; someone else’s op in a load keeps only its id', () => {
+    recipe('A', 'cmeal040');
+    store = open();
+    expect(recipes().map((r) => r.id)).toEqual(['cmeal040']);
+    const dumped = store.dump().rows.events.filter((r) => r[3] === 'food_recipe');
+    db = memSql();
+    store = open();
+    expect(store.load({ rows: { events: dumped } })).toMatchObject({ ok: true, events: 1 });
+    expect(store.load({ rows: { events: dumped } })).toMatchObject({ ok: true, events: 0 }); // idempotent
+    const other = [new Date(now + 5000).toISOString(), 'B', 'e-other-c', 'food_recipe', JSON.stringify({ id: 'cmeal040', at: now + 5000, rm: true })];
+    const bad = [new Date(now + 7000).toISOString(), 'A', 'e-bad-c', 'food_recipe', JSON.stringify({ id: 'cmeal041', at: now, n: 'x', sv: 0, it: [] })];
+    expect(store.load({ rows: { events: [other, bad] } })).toMatchObject({ ok: true, events: 0 });
+    expect(recipes().map((r) => [r.id, r.who])).toEqual([['cmeal040', 'A']]);
+    const edit = [new Date(now + 8000).toISOString(), 'A', 'e-edit-c', 'food_recipe', JSON.stringify({ id: 'cmeal040', at: now + 8000, n: 'カレー', sv: 2, it: [{ g: 100, f: RICE }] })];
+    expect(store.load({ rows: { events: [edit] } })).toMatchObject({ ok: true, events: 1 });
+    expect(recipes()).toMatchObject([{ id: 'cmeal040', n: 'カレー', sv: 2 }]);
+    expect(recRows()).toHaveLength(1);
   });
 });

@@ -8,7 +8,7 @@ import { isTally } from '#lib/contract/tally.ts';
 import { isIslandDay, type IslandDayData } from '#lib/contract/island.ts';
 import { decorOpOf, type DecorEntry } from '#lib/contract/decor.ts';
 import { boardOpOf, type BoardEntry } from '#lib/contract/board.ts';
-import { foodOp, foodRepeatOp, isKcalGoal, type FoodOp, type RepeatOp } from '#lib/contract/food.ts';
+import { foodOp, foodRecipeOp, foodRepeatOp, isKcalGoal, type FoodOp, type RecipeOp, type RepeatOp } from '#lib/contract/food.ts';
 import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import type { TallyRow } from './tally.ts';
@@ -103,6 +103,9 @@ export interface State {
   /** The recurring meals (`food_repeat`: each repeat's ops, contract/food.ts), in server order; their days' items are
    *  read into each day (model/food.ts). Never read by the economy. */
   foodRepeat: (RepeatOp & { who: Who })[];
+  /** My recipes (`food_recipe`: each recipe's ops, contract/food.ts), in server order; everyone's, read by everyone
+   *  (model/food.ts recipes). Never read by the economy. */
+  foodRecipe: (RecipeOp & { who: Who })[];
   /** Each person's prefs; the guest's (`G`) only ever hold its locale, name, villager and kcal goal (contract/guest.ts). */
   prefs: Record<Who, Prefs>;
   /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
@@ -211,6 +214,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     board: [],
     food: [],
     foodRepeat: [],
+    foodRecipe: [],
     prefs: { A: {}, B: {}, G: {} },
     moveGoals: { A: [], B: [] },
     stepsGoals: { A: [], B: [] },
@@ -287,6 +291,7 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     board: [...base.board],
     food: [...base.food],
     foodRepeat: [...base.foodRepeat],
+    foodRecipe: [...base.foodRecipe],
     prefs: { A: { ...base.prefs.A }, B: { ...base.prefs.B }, G: { ...base.prefs.G } },
     moveGoals: { A: [...base.moveGoals.A], B: [...base.moveGoals.B] },
     stepsGoals: { A: [...base.stepsGoals.A], B: [...base.stepsGoals.B] },
@@ -379,6 +384,10 @@ const ON_EVENT: Record<EventType, OnEvent> = {
   food_repeat(s, person, _at, d) {
     const op = foodRepeatOp(d);
     if (op) s.foodRepeat.push({ ...op, who: person });
+  },
+  food_recipe(s, person, _at, d) {
+    const op = foodRecipeOp(d);
+    if (op) s.foodRecipe.push({ ...op, who: person });
   },
   pref(s, person, at, d) {
     if (!isPersonId(person)) {
