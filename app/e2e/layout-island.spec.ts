@@ -1,7 +1,7 @@
 // The island on its editable layout (docs/island-layout.md "What the 3D integration must change"; island/site.svelte.ts):
 // with the 3D island and `?layout`, the gameplay reads the long layout: the doors, the homes, the walk, the waters.
 import { expect, test, type Page } from '@playwright/test';
-import { is3d, openNear, tapOn } from './island';
+import { is3d, openNear, quiet, tapOn } from './island';
 
 type Site = { on: boolean; doors: Record<string, [number, number]>; homes: { A: [number, number]; B: [number, number] }; stage: [number, number]; named: Record<string, [number, number]>; grass: [number, number][] };
 const site = (page: Page) => page.evaluate(() => (window as unknown as { __world: { site(): Site } }).__world.site());
@@ -49,6 +49,7 @@ test('うめ’s home: a tap walks up to its door and goes in to its room', asyn
 test('a tap on the ground walks there on the layout’s walk (the long middle)', async ({ page }) => {
   await page.goto(ISLAND);
   expect(await is3d(page)).toBe(true);
+  await quiet(page); // (the opening beats over: a reaction would stop the walk short)
   // open ground in the middle a tap there walks to (clear of the day's spots and of every tap area on this screen),
   // my villager put down on more of it a way off
   await world(page, 'go(860)');
