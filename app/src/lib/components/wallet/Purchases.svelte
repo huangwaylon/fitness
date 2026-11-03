@@ -4,10 +4,11 @@
 </script>
 
 <script lang="ts">
-  // ごほうびの きろく: the buys from the shared wallet, newest first (the day, the reward, who bought it, the price), each
-  // with ✕ to erase it. Either of us may erase any buy (one wallet). ✕ asks first, NH style (はい / いいえ), then
-  // `onerase` (the page sends the `spend_void`: the ベル go back, with とりけす on the banner). An erased buy leaves the
-  // list. Ten at first, ten more per 「もっと見る」.
+  // ごほうびの きろく, at the very bottom of ごほうび: the buys from the shared wallet, newest first (the day, the reward,
+  // who bought it, the price), each with ✕ to erase it. Folded by default: its heading is a disclosure (「かいもの きろく
+  // 3件」 and a chevron, aria-expanded) that opens the list on a smooth grow and folds it again. Either of us may erase
+  // any buy (one wallet). ✕ asks first, NH style (はい / いいえ), then `onerase` (the page sends the `spend_void`: the
+  // ベル go back, with とりけす on the banner). An erased buy leaves the list. Ten at first, ten more per 「もっと見る」.
   //   <Purchases spends={…} names={…} villagers={…} onerase={(s) => …} />
   import type { PersonId } from '#lib/types.ts';
   import type { LedgerSpend } from '#lib/model/bells.ts';
@@ -31,6 +32,8 @@
 
   const live = $derived(spends.filter((s) => !s.voided));
   let shown = $state(AT_ONCE);
+  /** Unfolded (folded on every opening of the panel: it mounts afresh). */
+  let expanded = $state(false);
 
   /** The buy being asked about; kept while the sheet slides away. */
   let ask = $state<LedgerSpend | null>(null);
@@ -50,8 +53,16 @@
   <span class="who"><Avatar person={s.by} villager={villagers[s.by]} size={20} />{names[s.by]}</span>
 {/snippet}
 
-<section class="hist" aria-labelledby="hist-h">
-  <h2 id="hist-h" class="sec">{t('wallet.history')}</h2>
+<section class="hist" class:expanded aria-labelledby="hist-h">
+  <h2 id="hist-h" class="sec">
+    <button type="button" class="toggle" aria-expanded={expanded} aria-controls="hist-body" data-hist-toggle data-sfx={expanded ? 'toggle-off' : 'toggle-on'}
+      onclick={() => (expanded = !expanded)}>
+      <span>{t('wallet.history')}</span>
+      <small class="count money" data-count={live.length}>{t('wallet.historyCount', { n: live.length })}</small>
+      <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" /></svg>
+    </button>
+  </h2>
+  <div class="fold" id="hist-body" inert={!expanded}><div class="fold-in"><div class="pad">
   {#if !live.length}
     <p class="card empty">{t('wallet.historyEmpty')}</p>
   {:else}
@@ -74,6 +85,7 @@
       <button type="button" class="btn small paper more" data-sfx="page" onclick={() => (shown += AT_ONCE)}>{t('wallet.more')}</button>
     {/if}
   {/if}
+  </div></div></div>
 </section>
 
 <Sheet bind:open label={t('wallet.eraseTitle')} title={t('wallet.eraseTitle')} onclose={() => (open = false)}>
@@ -94,8 +106,28 @@
 </Sheet>
 
 <style>
-  .hist { display: grid; gap: 8px; margin-top: 20px; }
-  .sec { margin: 0 4px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); letter-spacing: .04em; }
+  .hist { display: grid; margin-top: 4px; }
+  .sec { margin: 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); letter-spacing: .04em; }
+  /* the disclosure: the soft heading as a whole-width 44px row, the count beside it, the chevron at the right
+     (turning up when open) */
+  .toggle {
+    appearance: none; border: 0; background: none; font: inherit; color: inherit; letter-spacing: inherit; cursor: pointer;
+    width: 100%; min-height: var(--hit); margin: 0; padding: 0 4px; display: flex; align-items: center; gap: 8px; text-align: left;
+    border-radius: var(--r-chip); -webkit-tap-highlight-color: transparent;
+  }
+  .toggle:active { background: var(--hl); }
+  .toggle:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .count { padding: 2px 8px 1px; border-radius: var(--r-pill); background: var(--ctl); font-size: var(--fs-s); color: var(--text); }
+  .chev { margin-left: auto; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; transition: rotate 240ms var(--ease-soft); }
+  .expanded .chev { rotate: 180deg; }
+  /* folded: no height (a grid row grown from 0fr to 1fr, WebKit animates it), the rows hidden after the fold */
+  .fold { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 280ms var(--ease-soft); }
+  .expanded .fold { grid-template-rows: 1fr; }
+  .fold-in { min-height: 0; overflow: hidden; visibility: hidden; transition: visibility 0s linear 280ms; margin: 0 -8px; }
+  .expanded .fold-in { visibility: visible; transition: visibility 0s; }
+  /* (inside the clip: the lips and focus rings room to show) */
+  .pad { display: grid; gap: 8px; padding: 6px 8px 8px; }
+  @media (prefers-reduced-motion: reduce) { .fold, .chev { transition: none; } .fold-in { transition: none; } }
   .empty { margin: 0; padding: 14px 16px; text-align: center; font-weight: 700; color: var(--text-soft); }
   .rows { list-style: none; margin: 0; padding: 2px 6px 2px 12px; display: grid; }
   .rows li { display: flex; align-items: center; gap: 10px; min-height: 56px; font-weight: 700; }

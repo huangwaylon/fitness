@@ -4,8 +4,8 @@
 // (seen from まえ), never under a control; a tap gives a line (an introduction first), no trading, no ベル.
 import { expect, test, type Page } from '@playwright/test';
 import { geo } from './island.ts';
+import { hudBells, hudMenu } from './hud.ts';
 
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 async function tapOn(page: Page, sel: string) {
   const r = (await page.locator(sel).boundingBox())!;
   await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
@@ -66,11 +66,11 @@ async function readOut(page: Page) {
 test('K.K. comes on Saturday from 18:00 (not on Friday); with the music on he asks for a request and plays (NH)', async ({ page }) => {
   await music(page);
   await page.goto('?demo&date=2026-10-23T19:00&critter=none'); // a Friday
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await expect(page.locator('[data-visitor="kk-slider"]')).toHaveCount(0);
   await page.goto('?demo&date=2026-10-24T19:00&critter=none'); // a Saturday (not Halloween: Jack's night)
-  await expect(hudJar(page)).toBeVisible();
-  const bells = await hudJar(page).getAttribute('aria-label');
+  await expect(hudMenu(page)).toBeVisible();
+  const bells = await hudBells(page).getAttribute('aria-label');
   // at centre stage: out of sight from まえ (only a speck on the horizon), seen from おく
   const g = await geo(page);
   await camera(page, g.CAMS.oku);
@@ -97,12 +97,12 @@ test('K.K. comes on Saturday from 18:00 (not on Friday); with the music on he as
   await expect(page.locator('[data-fx="kk-caption"]')).toHaveCount(0);
   await expect(page.locator('.if-scene[data-show]')).toHaveCount(0);
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('サンキュー');
-  await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
+  await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
 });
 
 test('K.K. with the music off just introduces himself', async ({ page }) => {
   await page.goto('?demo&date=2026-10-24T20:00&critter=none');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await camera(page, (await geo(page)).CAMS.oku);
   await tapOn(page, '[data-visitor="kk-slider"] .art');
   await expect(page.locator('[data-fx="talk"].placed')).toHaveAttribute('data-pages', '2');
@@ -114,7 +114,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await page.setViewportSize({ width: w, height: h });
     for (const [q, id, name] of [['2026-11-01T08:00&critter=none', 'daisy-mae', 'ウリ'], ['2026-11-04T22:00&visitor=wisp&critter=none', 'wisp', 'ゆうたろう'], ['2026-11-04T12:00&visitor=gulliver&critter=none', 'gulliver', 'ジョニー']] as const) {
       await page.goto(`?demo&date=${q}`);
-      await expect(hudJar(page)).toBeVisible();
+      await expect(hudMenu(page)).toBeVisible();
       const { CAMS, CENTRE_STAGE } = await geo(page);
       const at = { 'daisy-mae': [CAMS.mae, 206, 396], wisp: [CAMS.oku, CENTRE_STAGE[0], CENTRE_STAGE[1]], gulliver: [CAMS.mae, 96, 30] } as const;
       const [cam, x, z] = at[id];
@@ -146,7 +146,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
 
 test('out of view, a visitor takes no tap: K.K. at centre stage seen from まえ', async ({ page }) => {
   await page.goto('?demo&date=2026-10-24T20:00&critter=none');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await camera(page, 114);
   // his feet: a speck sunk at the horizon (the HUD stands over his head); a tap there just below the horizon
   const [sx, sz] = (await geo(page)).CENTRE_STAGE;
@@ -159,6 +159,6 @@ test('out of view, a visitor takes no tap: K.K. at centre stage seen from まえ
 
 test('nobody visits on an ordinary weekday evening', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T19:00');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await expect(page.locator('[data-visitor]')).toHaveCount(0);
 });

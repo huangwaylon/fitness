@@ -141,13 +141,14 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00');
   const dlg = page.locator('dialog[open]');
   const log: [string, string, string][] = [];
-  const take = () => page.evaluate(() => (window as unknown as { __cues: string[] }).__cues.splice(0));
+  // (a walker's footsteps are the island's own, whenever they fall: never a tap's)
+  const take = () => page.evaluate(() => (window as unknown as { __cues: string[] }).__cues.splice(0).filter((c) => !c.startsWith('footstep-')));
   async function step(screen: string, name: string, act: () => Promise<unknown>, want?: string[]) {
     await take();
     await act();
     // wait for the tap's own cue (no fixed sleep); a tap that should be silent gets a short settle
     if (want?.length) {
-      await expect.poll(() => page.evaluate((n) => (window as unknown as { __cues: string[] }).__cues.slice(0, n), want.length), { timeout: 3000 }).toEqual(want);
+      await expect.poll(() => page.evaluate((n) => (window as unknown as { __cues: string[] }).__cues.filter((c) => !c.startsWith('footstep-')).slice(0, n), want.length), { timeout: 3000 }).toEqual(want);
     } else await page.waitForTimeout(260);
     // and for a sheet that is sliding in or out to settle, so the next tap lands where its button ends up
     await page.waitForFunction(() => document.getAnimations().every((a) => {
@@ -165,7 +166,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   const btn = (name: string | RegExp, scope = page.locator('body')) => scope.getByRole('button', { name, exact: typeof name === 'string' });
 
   // 島
-  await expect(btn(/^ごほうび · ふたりのベル /)).toBeVisible();
+  await expect(page.locator('[data-hud-menu]')).toBeVisible();
   await quiet(page); // the opening beats are over
   await step('島', 'tree canopy', () => page.locator('button.canopy').first().tap(), ['tree-shake']);
   await expect(page.locator('.detail')).toHaveCount(1);
@@ -180,15 +181,17 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   expect(log.at(-1)?.[2]).toContain('emote-joy');
   await page.waitForTimeout(2000);
 
-  // the island panel (tap the HUD's jar: the villagers glance up at it): it opens on ごほうび
-  await step('島', 'jar (→ the panel)', () => btn(/^ごほうび · ふたりのベル /).tap(), ['jar-tap', 'panel-open']);
-  await step('パネル', 'ごほうび tab (already shown)', () => dlg.locator('.tab[data-tab=rewards]').tap(), []);
-  await step('パネル', 'きろく tab', () => dlg.locator('.tab[data-tab=kiroku]').tap(), ['tick']);
-  await step('きろく', 'day', () => dlg.locator('button.dbtn').first().tap(), ['page']);
-  await step('きろく', 'back (‹) to the panel', () => dlg.locator('.titlebar .back').tap(), ['back']);
-
-  // ごほうび (the panel's middle tab)
-  await step('パネル', 'ごほうび tab', () => dlg.locator('.tab[data-tab=rewards]').tap(), ['tick']);
+  // the island panel, ごほうび (the HUD menu's ベル row: the villagers glance up at it)
+  const leaf = page.locator('[data-hud-menu]');
+  await step('島', 'menu (unfold)', () => leaf.tap(), ['toggle-on']);
+  await step('島', 'ベル (→ the panel)', () => page.locator('[data-hud-bells]').tap(), ['jar-tap', 'panel-open']);
+  await step('ごほうび', 'ⓘ (a reward\'s examples)', () => dlg.locator('[data-info=snack]').tap(), ['tick']);
+  await step('ごほうび', 'ⓘ again (folds them)', () => dlg.locator('[data-info=snack]').tap(), ['tick']);
+  await step('ごほうび', 'a ledger day', () => dlg.locator('button.dbtn').first().tap(), ['page']);
+  await step('ごほうび', 'back (‹) to the wallet', () => dlg.locator('.titlebar .back').tap(), ['back']);
+  await step('ごほうび', 'かいもの きろく (unfold)', () => dlg.locator('[data-hist-toggle]').tap(), ['toggle-on']);
+  await step('ごほうび', 'かいもの きろく (fold)', () => dlg.locator('[data-hist-toggle]').tap(), ['toggle-off']);
+  await dlg.locator('.panel-body').evaluate((el) => el.scrollTo({ top: 0 }));
   const shop = dlg.locator('.shop');
   const cant = shop.locator('button.item[aria-disabled="true"]');
   if (await cant.count()) await step('ごほうび', 'a reward it can\'t afford', () => cant.first().tap({ force: true }), ['boop']);
@@ -206,7 +209,6 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await page.waitForTimeout(400);
 
   // the HUD menu (NH's leaf): ずかん and せってい drop out of it; each pill: the villagers glance up, then its sheet
-  const leaf = page.locator('[data-hud-menu]');
   await step('島', 'menu (unfold)', () => leaf.tap(), ['toggle-on']);
   await step('島', 'menu (fold)', () => leaf.tap(), ['toggle-off']);
   await step('島', 'menu (unfold) again', () => leaf.tap(), ['toggle-on']);
@@ -232,9 +234,10 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);
 
-  // the HUD's jar again: the panel on ごほうび again (not where it closed)
-  await step('島', 'jar again (→ ごほうび)', () => page.locator('.hud-jar').tap(), ['jar-tap', 'panel-open']);
-  await expect(dlg.locator('.tab[data-tab=rewards]')).toHaveAttribute('aria-pressed', 'true');
+  // the ベル row again: the panel at the wallet's top again (not where it closed)
+  await step('島', 'menu (unfold) for ベル', () => leaf.tap(), ['toggle-on']);
+  await step('島', 'ベル again (→ ごほうび)', () => page.locator('[data-hud-bells]').tap(), ['jar-tap', 'panel-open']);
+  await expect(dlg.locator('[data-wallet]')).toBeVisible();
   await step('パネル', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['panel-close']);
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);

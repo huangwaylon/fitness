@@ -3,13 +3,13 @@
 // card, no balloon: e2e/demo.spec.ts). No ベル.
 import { expect, test, type Page } from '@playwright/test';
 import { quiet } from './island.ts';
+import { hudBells, hudMenu } from './hud.ts';
 
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 
 test('a tap on my villager: its squish, no balloon of its own, no picker, no sheet, no ベル', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&critter=none');
-  await expect(hudJar(page)).toBeVisible();
-  const bells = await hudJar(page).getAttribute('aria-label');
+  await expect(hudMenu(page)).toBeVisible();
+  const bells = await hudBells(page).getAttribute('aria-label');
   await quiet(page); // the opening beats are over
   for (let i = 0; i < 3; i++) {
     await page.locator('.vil').first().click();
@@ -19,5 +19,5 @@ test('a tap on my villager: its squish, no balloon of its own, no picker, no she
     await expect(page.locator('dialog[open]')).toHaveCount(0);
     await expect(page.locator('[data-say-picker]')).toHaveCount(0);
   }
-  await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
+  await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
 });

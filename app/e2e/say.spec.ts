@@ -8,12 +8,11 @@
 import { expect, test, type Page } from '@playwright/test';
 import { quiet } from './island.ts';
 import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
-import { fromMenu } from './hud.ts';
+import { fromMenu, hudBells, hudMenu } from './hud.ts';
 import { sayOwn } from './say.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 const picker = (page: Page) => page.getByRole('dialog', { name: 'なにを いう？' });
 const sayBtn = (page: Page) => page.getByRole('button', { name: 'ひとこと いう' });
 const mine = (page: Page) => page.locator('[data-actor="mine"] .vil');
@@ -31,16 +30,16 @@ async function open(page: Page, at = '2026-11-04T12:00', said?: string[]) {
   // my own words kept from before (island.says, newest first)
   if (said) await page.addInitScript((s) => localStorage.setItem('island.says', s), JSON.stringify(said));
   await page.goto(`?demo&date=${at}&critter=none`);
-  await expect(hudJar(page)).toBeVisible({ timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
+  await expect(hudMenu(page)).toBeVisible({ timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
   await expect(mine(page)).toBeEnabled();
   await quiet(page); // the opening beats are over
 }
 
-/** The picker's box clear of the HUD (the jar, the health button) and inside the screen. */
+/** The picker's box clear of the HUD (the dumbbell, the bowl, the leaf) and inside the screen. */
 const clearOfHud = (page: Page) =>
   page.evaluate(() => {
     const p = document.querySelector('[data-say-picker]')!.getBoundingClientRect();
-    const hud = [...document.querySelectorAll('.hud button, .hud-health, .hud-jar')].map((e) => e.getBoundingClientRect()).filter((r) => r.width);
+    const hud = [...document.querySelectorAll('.hud-row button')].map((e) => e.getBoundingClientRect()).filter((r) => r.width);
     const over = hud.some((r) => p.left < r.right && r.left < p.right && p.top < r.bottom && r.top < p.bottom);
     return !over && p.left >= 0 && p.right <= innerWidth && p.top >= 0 && p.bottom <= innerHeight;
   });
@@ -80,7 +79,7 @@ test('the say button: small, bottom right, clear of the home indicator; a tap on
 
 test('the say button: the picker above it; a phrase of mine shows in my villager’s balloon for a few seconds', async ({ page }) => {
   await open(page, undefined, ['がんばろう！', 'やっほー！']);
-  const bells = await hudJar(page).getAttribute('aria-label');
+  const bells = await hudBells(page).getAttribute('aria-label');
   const home = await feet(page);
   await sayBtn(page).click();
   await expect(picker(page)).toBeVisible();
@@ -118,7 +117,7 @@ test('the say button: the picker above it; a phrase of mine shows in my villager
   await expect(balloon(page)).toHaveCount(0, { timeout: 5500 });
   expect(await feet(page)).toEqual(home); // nobody walked
   await expect(page.locator('dialog[open]')).toHaveCount(0);
-  await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
+  await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
 });
 
 test('the picker closes on ✕, Esc and a tap elsewhere (which walks nobody); the button again only closes it', async ({ page }) => {
@@ -244,19 +243,20 @@ test('at night: the picker and the balloon in their cream, over the night tint',
   await shot(page, 'balloon-night');
 });
 
-test('the say button hides under the island panel and in もようがえ (its picker with it)', {
-  tag: '@quarantine',
-  annotation: { type: 'quarantine', description: 'owner: say agent, 2026-11-03: failed twice on CI (logic shard 10, c7cab4e3; passed on the runs before and after, 5/5 locally): after Escape closes the panel, the HUD menu\'s click never lands (30 s of retries: something over it). TODO: wait for the panel to have closed before the menu, find what covers it' }
-}, async ({ page }) => {
+test('the say button hides under the island panel and in もようがえ (its picker with it)', async ({ page }) => {
   await open(page);
   await sayBtn(page).click();
   await expect(picker(page)).toBeVisible();
-  // the panel: the jar's tap closes the picker (a control: it still acts) and covers the island
-  await hudJar(page).click();
+  // the panel: the leaf's tap closes the picker (a control: it still acts), its ベル row opens the panel over the island
+  // (fromMenu waits for the panel itself: its chunk loads on the first open, and an Esc before it is there would leave
+  // it opening afterwards, over the HUD, which is how this used to time out on CI)
+  await fromMenu(page, 'bells');
   await expect(picker(page)).toHaveCount(0);
   await expect(sayBtn(page)).toHaveCount(0);
-  // もようがえ (せってい, the HUD menu's)
+  // もようがえ (せってい, the HUD menu's), once the panel is gone and the menu folded
   await page.keyboard.press('Escape');
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'false');
   await fromMenu(page, 'settings');
   await page.locator('[data-decor-start]').click();
   // (the old decorations' tray, or on the island's layout its own もようがえ: IslandEdit)

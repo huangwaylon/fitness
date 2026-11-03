@@ -3,13 +3,13 @@
 // Tokyo day (this phone's fruit-day); all four met, the canopy glints. Picking up never changes ベル. The demo's progress follows ?date= (no sync before 06:40; most
 // goals settled by 23:00).
 import { expect, test, type Page } from '@playwright/test';
+import { hudBells, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 async function open(page: Page, date: string) {
   await page.goto(`?demo&date=${date}`);
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
 }
 const fruit = (page: Page) => page.locator('.if-scene [data-fruit]');
 const filterOf = (page: Page, sel: string) => page.locator(sel).locator('.f').evaluate((el) => getComputedStyle(el).filter);
@@ -55,7 +55,7 @@ test('met fruit falls to the ground in colour; unmet ones colour with progress; 
   }
 
   // pick one up: it hops away; ベル don't move
-  const bells = await hudJar(page).getAttribute('aria-label');
+  const bells = await hudBells(page).getAttribute('aria-label');
   const one = ground.first();
   const [id, tree] = [await one.getAttribute('data-fruit'), await one.getAttribute('data-tree')];
   const b = (await one.boundingBox())!;
@@ -63,11 +63,11 @@ test('met fruit falls to the ground in colour; unmet ones colour with progress; 
   await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
   await expect(page.locator(`[data-fruit="${id}"][data-tree="${tree}"]`)).toHaveCount(0);
   await expect(page.locator('.detail')).toHaveCount(0); // a pick-up, not the popup
-  await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
+  await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
 
   // a reload: still gone, and the others lie there without falling again
   await page.reload();
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await expect(page.locator(`[data-fruit="${id}"][data-tree="${tree}"]`)).toHaveCount(0);
   await expect(ground).toHaveCount(met - 1);
   await expect(page.locator('[data-stage="fall"], .fruit.drop')).toHaveCount(0);

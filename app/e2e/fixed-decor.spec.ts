@@ -3,6 +3,7 @@
 // sat on); the shishi-odoshi tips and knocks; the sandcastle is gone at 18:00; the seasonal lamps light at night.
 import { expect, test, type Page } from '@playwright/test';
 import { geo, is3d, tapOn, w3 } from './island.ts';
+import { hudMenu } from './hud.ts';
 
 type W = { at: (x: number, z: number) => [number, number]; go: (z: number) => void; cam(): number };
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
@@ -10,7 +11,7 @@ const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] 
 async function open(page: Page, when: string, end: 'mae' | 'oku') {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=${when}&critter=none&visitor=none`);
-  await expect(page.getByRole('button', { name: /^ごほうび · ふたりのベル / })).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __world?: W }).__world);
   const camZ = (await geo(page)).CAMS[end];
   await expect.poll(async () => {

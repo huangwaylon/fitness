@@ -8,10 +8,9 @@ import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { FISH } from '../src/lib/components/island/critters.ts';
 import { POND_FISH, freshPool } from '../src/lib/components/island/pondFish.ts';
 import { geo, reelOnBite, type Geo } from './island';
-import { fromMenu } from './hud.ts';
+import { fromMenu, hudBells, hudMenu } from './hud.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 const at = (page: Page, sel: string) =>
   page.locator(sel).first().evaluate((el) => {
     const r = el.getBoundingClientRect();
@@ -39,9 +38,9 @@ const stop = async (page: Page, s: 'mae' | 'oku') => (await geo(page)).CAMS[s];
 async function open(page: Page, q: string, at: 'mae' | 'oku' = 'oku') {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=2026-11-04T21:00${q}`);
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await cam(page, await stop(page, at));
-  return { bells: await hudJar(page).getAttribute('aria-label'), url: page.url() };
+  return { bells: await hudBells(page).getAttribute('aria-label'), url: page.url() };
 }
 
 /** Cast beside the shadow, wait for the 「！」 and reel in with a tap anywhere. */
@@ -82,7 +81,7 @@ for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
     await expect(box.locator('.pg.now')).toContainText('ずかんに のったよ！');
     await expect(page.locator('dialog[open]')).toHaveCount(0);
     expect(page.url()).toBe(before.url);
-    await expect(hudJar(page)).toHaveAttribute('aria-label', before.bells!);
+    await expect(hudBells(page)).toHaveAttribute('aria-label', before.bells!);
   });
 }
 
@@ -135,7 +134,7 @@ test('fresh-water fish come by on their own, in the fresh water their seed picks
 test('the ずかん lists every fish, the fresh waters’ and the sea’s, in NH’s order', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('?demo&date=2026-11-04T21:00');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await fromMenu(page, 'zukan');
   const total = Object.keys(FISH).length + Object.keys(POND_FISH).length;
   await expect(page.locator('[data-zukan="fish"]')).toContainText(`0 / ${total}`);
@@ -151,7 +150,7 @@ test('water bugs: a pondskater skates on the pond on a summer day; a tap nets it
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto('?demo&date=2026-07-04T12:00&critter=pondskater');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await cam(page, await stop(page, 'oku'));
   const bug = page.locator('[data-critter="pondskater"]');
   await expect(bug).toBeAttached();

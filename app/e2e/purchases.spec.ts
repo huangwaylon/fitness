@@ -1,10 +1,20 @@
-// ごほうびの きろく (the panel's ごほうび tab; the old /jar link opens it): the buys under the shop, newest first, each erasable by either of us (asked first, はい / いいえ); the
-// ベル go back. On `?demo` (no backend, no key). Screenshots at 375x667 and 390x844 (test-results/purchases-*.png).
+// ごほうびの きろく (at the very bottom of ごほうび, the panel; the old /jar link opens it): the buys, folded under a
+// disclosure, newest first, each erasable by either of us (asked first, はい / いいえ); the ベル go back. On `?demo` (no backend, no key). Screenshots at 375x667 and 390x844 (test-results/purchases-*.png).
 import { expect, test, type Page } from '@playwright/test';
 
 /** The topmost sheet (a confirm over the panel). */
 const sheet = (page: Page) => page.locator('dialog[open]').last();
 const balance = async (page: Page) => Number((await page.locator('.hero .total').innerText()).replace(/\D/g, ''));
+/** The buys, unfolded (folded on every opening of the panel). */
+async function history(page: Page) {
+  const hist = page.locator('.hist');
+  const toggle = hist.locator('[data-hist-toggle]');
+  if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  // the grow (280 ms) done
+  await expect.poll(() => hist.locator('.fold').evaluate((el) => el.getAnimations().length)).toBe(0);
+  return hist;
+}
 
 /** Every control of the history (rows' ✕, もっと見る) sits clear of the others and inside the screen. */
 async function noOverlap(page: Page) {
@@ -27,8 +37,8 @@ async function noOverlap(page: Page) {
 
 test('buy → it heads the history → erase it (はい) → the ベル come back; いいえ keeps it', async ({ page }) => {
   await page.goto('jar?demo');
-  const hist = page.locator('.hist');
-  await expect(hist.getByRole('heading', { name: 'かいもの きろく' })).toBeVisible();
+  await expect(page.locator('.hist').getByRole('heading', { name: /^かいもの きろく\s*\d+件$/ })).toBeVisible();
+  const hist = await history(page);
   const before = await balance(page);
   const rowsBefore = await hist.locator('li').count();
 
@@ -64,9 +74,9 @@ test('buy → it heads the history → erase it (はい) → the ベル come bac
 
 test('either of us can erase any buy, the partner\'s too', async ({ page }) => {
   await page.goto('jar?demo');
-  const hist = page.locator('.hist');
+  const hist = await history(page);
   await expect(hist.locator('li').first()).toBeVisible();
-  const names = await hist.locator('li .who').allInnerTexts();
+  const names = await hist.locator('li .who').allTextContents();
   expect(new Set(names.map((n) => n.trim())).size, names.join(',')).toBe(2); // the demo has buys by both of us
   const before = await balance(page);
   const row = hist.locator('li').filter({ hasText: names.find((n) => n !== names[0])! }).first();
@@ -80,7 +90,7 @@ for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
   test(`history at ${vp.width}x${vp.height}: ten rows, もっと見る, nothing overlaps`, async ({ page }) => {
     await page.setViewportSize(vp);
     await page.goto('jar?demo&weeks=20'); // more than ten buys (the default 8 weeks have fewer at 40 / 70)
-    const hist = page.locator('.hist');
+    const hist = await history(page);
     await expect(hist.locator('li')).toHaveCount(10);
     await noOverlap(page);
     await hist.scrollIntoViewIfNeeded();

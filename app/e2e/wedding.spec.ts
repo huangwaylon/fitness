@@ -3,8 +3,8 @@
 // night; every June Sunday NH's wedding arch stands behind the centre stage. Nothing over a control; no ベル.
 import { expect, test, type Page } from '@playwright/test';
 import { geo, is3d, sawIt, watchFor } from './island.ts';
+import { hudBells, hudMenu } from './hud.ts';
 
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 /** The controls under a thing's corners and middle (a building's door behind a world prop is the world's, not a control over it). */
 const under = (page: Page, sel: string) =>
   page.evaluate((s) => {
@@ -39,8 +39,8 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
   test(`100 days to go: Reese and Cyrus on the centre stage under their heart float, counting down (${w}px)`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await page.goto('?demo&date=2027-06-30T12:00&critter=none');
-    await expect(hudJar(page)).toBeVisible();
-    const bells = await hudJar(page).getAttribute('aria-label');
+    await expect(hudMenu(page)).toBeVisible();
+    const bells = await hudBells(page).getAttribute('aria-label');
     const pair = page.locator('[data-visitor="reese"]');
     await camera(page, (await geo(page)).CAMS.oku);
     await expect(pair.locator('.art')).toBeVisible();
@@ -52,13 +52,13 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     const box = page.locator('[data-fx="talk"].placed');
     await expect(box.locator('.who')).toHaveText('リサ', { timeout: 4000 });
     await expect(page.locator('[data-fx="talk"] .sr')).toContainText('けっこんしき まで あと 100日！');
-    await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
+    await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
   });
 
 test('no countdown the day before; the arch on a June Sunday, clear of every control', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 568 });
   await page.goto('?demo&date=2027-06-29T12:00&critter=none');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await page.waitForTimeout(600);
   await expect(page.locator('[data-visitor="reese"]')).toHaveCount(0);
   await expect(page.locator('[data-arch]')).toHaveCount(0);
@@ -73,7 +73,7 @@ test('the wedding day: confetti and hearts on the villagers, Reese’s congratul
   // (watched from the start: on a slow GPU the confetti may be over by the time the island's up)
   await watchFor(page, ['.fxa.confetti', '.fxa.hearts']);
   await page.goto('?demo&date=2027-10-08T20:00&critter=none');
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await is3d(page);
   await expect.poll(() => sawIt(page, '.fxa.confetti'), { timeout: 4000 }).toBe(true);
   await expect.poll(() => sawIt(page, '.fxa.hearts')).toBe(true);
@@ -83,7 +83,7 @@ test('the wedding day: confetti and hearts on the villagers, Reese’s congratul
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('ごけっこん おめでとう', { timeout: 4000 });
   // the confetti once a day on this phone; the hearts every time
   await page.reload();
-  await expect(hudJar(page)).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await is3d(page); // (the 3D island up: the hearts come on its villagers)
   await expect.poll(() => sawIt(page, '.fxa.hearts'), { timeout: 4000 }).toBe(true);
   expect(await sawIt(page, '.fxa.confetti')).toBe(false);

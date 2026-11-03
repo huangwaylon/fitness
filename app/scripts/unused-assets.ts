@@ -36,7 +36,7 @@ const WORLD = /^lib\/components\/(island|world3d|board)\//;
 /** In island/ but UI over the canvas on either island (the HUD, the plates, the speech, the balloon catalogue's
  *  presents): their art stays. */
 const OVERLAY = new Set([
-  'Hud.svelte', 'HudJar.svelte', 'Jar.svelte', 'CoinFlow.svelte', 'Plate.svelte', 'CatchStack.svelte', 'catchStack.svelte.ts', 'catchCard.ts',
+  'Hud.svelte', 'Jar.svelte', 'CoinFlow.svelte', 'Plate.svelte', 'CatchStack.svelte', 'catchStack.svelte.ts', 'catchCard.ts',
   'catchLine.ts', 'catchLines.ts', 'Talk.svelte', 'Says.svelte', 'SayPicker.svelte', 'SayButton.svelte',
   'PartnerNews.svelte', 'partnerNews.ts', 'catalog.ts', 'catalog.json', 'pager.ts', 'HitOverlay.svelte'
 ].map((f) => `lib/components/island/${f}`));

@@ -3,13 +3,14 @@
 // and maple leaves in maple week (Nov 16–25); none of it on an ordinary day.
 import { expect, test, type Page } from '@playwright/test';
 import { geo, is3d, oku, w3 } from './island.ts';
+import { hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
 /** The camera stop where each lives: the campsite and the pond at おく. */
 async function open(page: Page, date: string) {
   await page.goto(`?demo&date=${date}&weather=clear`);
-  await expect(page.getByRole('button', { name: /^ごほうび · ふたりのベル / })).toBeVisible();
+  await expect(hudMenu(page)).toBeVisible();
   await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world);
   const cam = await oku(page);
   // (again until it holds: the scene may still re-fit its camera as it settles in)

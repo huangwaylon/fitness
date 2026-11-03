@@ -6,16 +6,16 @@ import { expect, test, type Page } from '@playwright/test';
 import { quiet } from './island.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { PERCH_3D, REAR_MS, type Perch } from '../src/lib/components/island/critters.ts';
+import { hudBells, hudMenu } from './hud.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
 test.use({ viewport: { width: 390, height: 844 } });
-const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 
 async function open(page: Page, q: string) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo${q}`);
-  await expect(hudJar(page)).toBeVisible();
-  return hudJar(page).getAttribute('aria-label');
+  await expect(hudMenu(page)).toBeVisible();
+  return hudBells(page).getAttribute('aria-label');
 }
 const at = (page: Page, sel: string) =>
   page.locator(sel).first().evaluate((el) => {
@@ -43,7 +43,7 @@ test('a tarantula at night: the first tap makes it rear up, it settles, then a t
   await page.mouse.click(q.x, q.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('tarantula'));
   expect(await finds(page)).toEqual([{ kind: 'bug', id: 'tarantula' }]);
-  await expect(hudJar(page)).toHaveAttribute('aria-label', bells!);
+  await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
 });
 
 test('a scorpion: a second tap while it is reared up and it charges off (gone, nothing caught)', async ({ page }) => {
