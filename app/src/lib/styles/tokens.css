@@ -308,11 +308,6 @@
   0%,100% { transform: scale(1.03,.97); } 25% { transform: translateY(-4%) rotate(2deg); }
   50% { transform: scale(1.03,.97); } 75% { transform: translateY(-4%) rotate(-2deg); }
 }
-/* NH's hold-up (a catch, a find): a squash, a rise onto the toes as the item goes up, held, settle */
-@keyframes if-holdup {
-  0%,100% { transform: none; } 14% { transform: scale(1.1,.88); } 34% { transform: translateY(-5%) scale(.95,1.07); }
-  48%,88% { transform: translateY(-1.5%) scale(.98,1.03); }
-}
 /* trees: origin at the trunk base */
 /* NH's tree shake: ±4°, three swings, 500ms */
 @keyframes if-shake {

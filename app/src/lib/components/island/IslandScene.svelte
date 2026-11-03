@@ -1165,7 +1165,7 @@
           {/if}
           <!-- what a shaken tree drops: a branch, now and then a wasp nest -->
           <TreeShakes bind:this={shakes} scene={sceneEl} onsting={sting} {treeOf} rustle={(tr) => rustle(tr, true)} />
-          <!-- the partner's catches and finds: their villager holds it up here, its plate in the bottom stack -->
+          <!-- the partner's catches and finds: their plates in the bottom stack -->
           <PartnerNews scene={sceneEl} />
         {/if}
         {#if live && WeatherC}<WeatherC where="stage" />{/if}

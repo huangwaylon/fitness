@@ -1,9 +1,7 @@
 // The catch plates showing now (docs/design.md "Scene interactions"): one stack at the bottom centre of the screen
 // for every catch and find (mine, the partner's, the guest's), the newest at the bottom; the older ones slide up, and
 // each goes on its own timer (Plate.svelte) or on a tap: it fades out (FADE_MS, `leaving`), then leaves the stack. At
-// most STACK_MAX show: a newer one fades the oldest out early. CatchStack.svelte draws it; catchCard.ts fills it. When
-// a plate goes, its villager puts the item away (unless another of theirs is still showing).
-import { putAway } from '../motion/director.svelte.ts';
+// most STACK_MAX show: a newer one fades the oldest out early. CatchStack.svelte draws it; catchCard.ts fills it.
 
 export type CatchWho = 'mine' | 'partner' | 'third';
 export interface CatchCard { n: number; x: number; y: number; art: string; parts: string[]; who?: CatchWho; leaving?: boolean }
@@ -25,15 +23,10 @@ export function pushed(cards: readonly CatchCard[], card: CatchCard, max = STACK
   return { cards: all, out: showing.slice(0, Math.max(0, showing.length - max)) };
 }
 
-/** Whose items go away when `out` goes (those with no other plate still showing in `cards`). Pure. */
-export const putsAway = (cards: readonly CatchCard[], out: readonly CatchCard[]): CatchWho[] =>
-  [...new Set(out.map((c) => c.who ?? 'mine'))].filter((who) => !cards.some((c) => !c.leaving && !out.some((o) => o.n === c.n) && (c.who ?? 'mine') === who));
-
 /** Fade `out` away, then take them off the stack. */
 function leave(out: readonly CatchCard[]) {
   if (!out.length) return;
   const ns = new Set(out.map((c) => c.n));
-  for (const who of putsAway(stack.cards, out)) putAway(who);
   stack.cards = stack.cards.map((c) => (ns.has(c.n) ? { ...c, leaving: true } : c));
   const id = setTimeout(() => {
     gone.delete(id);

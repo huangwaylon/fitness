@@ -4,7 +4,7 @@
 // Every tree shakes (NH's three quick taps): an oak's branch, a palm's coconuts; the partner's tab sees the shake,
 // their villager turns to it where it stands, and what's picked up on one tab is gone on the other.
 import { expect, test, type Page } from '@playwright/test';
-import { geo, openNear, quiet } from './island.ts';
+import { geo, openNear, plateOnly, quiet } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -227,7 +227,7 @@ test('two players: a shake on one tab plays on the other (their villager stays w
   await ctx.close();
 });
 
-test('two players: a bug netted on one tab is gone on the other, where their villager holds it up with the line', async ({ browser }) => {
+test('two players: a bug netted on one tab is gone on the other, where their plate joins the stack, nothing over their villager’s head', async ({ browser }) => {
   test.setTimeout(60_000);
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const a = await ctx.newPage(), b = await ctx.newPage();
@@ -243,9 +243,10 @@ test('two players: a bug netted on one tab is gone on the other, where their vil
   });
   await a.mouse.click(r.x, r.y);
   await expect(a.locator('[data-fx="catch"]')).toContainText('テントウムシ', { timeout: 4000 });
-  // B: gone, and A's villager (B's partner) holds it up: 「〇〇が テントウムシを つかまえた！」
+  // B: gone, and A's (B's partner's) plate in the stack: 「〇〇が テントウムシを つかまえた！」
   await expect(b.locator('[data-critter="ladybug"]')).toHaveCount(0, { timeout: 5000 });
   await expect(b.locator('[data-fx="catch"]').first()).toContainText('テントウムシを つかまえた！', { timeout: 5000 });
+  await plateOnly(b, 'critters/ladybug');
   // the shared day has it as A's
   const day = JSON.parse((await b.evaluate(() => localStorage.getItem('island-demo.world.B')))!) as { events: { kind: string; id?: string; who: string }[] };
   expect(day.events).toContainEqual(expect.objectContaining({ kind: 'catch', id: 'hook:ladybug', who: 'A' }));

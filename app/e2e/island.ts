@@ -174,3 +174,20 @@ export async function openNear(page: Page, x: number, z: number, away = 45, onSc
   if (!p) throw new Error(`no open ground near ${x}, ${z}`);
   return p;
 }
+
+/** A catch or a find shown (docs/design.md "Critters"): only its plate in the bottom stack, the item's icon on it
+ *  (`art`: its key, or a pattern on the art's path), nothing over a villager's head. Where the icon flew in from
+ *  (client px). */
+export async function plateOnly(page: Page, art: string | RegExp): Promise<{ x: number; y: number }> {
+  const plate = page.locator('[data-catch-stack] [data-fx="catch"].placed').last();
+  await expect(plate).toBeVisible({ timeout: 4000 });
+  const r = await plate.locator('.catch-icon').evaluate(async (icon) => {
+    await Promise.all(icon.getAnimations().map((a) => a.finished.catch(() => {})));
+    const img = icon.querySelector('img'), at = icon.getBoundingClientRect(), s = getComputedStyle(icon);
+    const off = (v: string) => parseFloat(s.getPropertyValue(v)) || 0;
+    return { src: img?.dataset.src || img?.getAttribute('src') || '', x: at.left + at.width / 2 + off('--dx'), y: at.top + at.height / 2 + off('--dy') };
+  });
+  expect(r.src).toMatch(typeof art === 'string' ? `/${art}.webp` : art);
+  await expect(page.locator('[data-actor] [data-holding], [data-actor] .held-up')).toHaveCount(0);
+  return { x: r.x, y: r.y };
+}

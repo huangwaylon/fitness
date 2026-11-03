@@ -3,6 +3,7 @@
 // changes ベル, opens a sheet or navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
 import { expect, test, type Page } from '@playwright/test';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
+import { plateOnly } from './island.ts';
 
 /** NH's own catch line (ja), as the plate shows it (whitespace collapsed). */
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
@@ -71,12 +72,12 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
     expect(d, await other.getAttribute('data-care') ?? await other.getAttribute('data-find') ?? '').toBeGreaterThan(16);
   }
   // a tap: the present pops open where it lies (confetti), and what was inside (NH's furniture, clothing or a
-  // DIY recipe) is held up over its head with 「◯◯を てにいれた！」; no ベル
+  // DIY recipe) is on its plate with 「◯◯を てにいれた！」, nothing over my villager's head; no ベル
   await page.mouse.click(g.x + g.width / 2, g.y + g.height / 2);
   await expect(page.locator('[data-fx="present-open"]')).toHaveCount(1, { timeout: 2000 });
   await expect(page.locator('[data-fx="present-open"] .bit')).toHaveCount(14);
   await expect(page.locator('[data-fx="catch"]')).toContainText('を てにいれた！', { timeout: 4000 });
-  await expect(page.locator('[data-holding^="finds/items/"], [data-holding="presents/diy-recipe"]')).toHaveCount(1);
+  await plateOnly(page, /\/(finds\/items\/[^/]+|presents\/diy-recipe)\.webp/);
   // the ずかん's カタログ / レシピ: a first find of it, and one more in today's tally (held a minute before it's sent)
   const sent = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []) as { type: string; data: Record<string, unknown> }[]);
   const find = sent.find((e) => e.type === 'find')!.data as { kind: string; id: string };

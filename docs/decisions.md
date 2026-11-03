@@ -614,3 +614,9 @@ an older phone sends none and is on the island, and ignores the field it doesn't
 on its island anyway). The balloon's anchor in a room is one engine function, `headPoint(who)` (tent/engine.ts), for
 the 3D villagers' head bone. Why: the user ("add the say button inside the tent and houses"); one place at a time
 already holds for the villagers themselves, so a phrase follows its speaker. Not done: a phrase heard through a wall.
+
+### A catch is its plate, nothing held up (2026-11-03)
+NH's hold-up (the item lifted over the villager's head, a squash-and-rise pose, busy while the plate read) goes: a
+catch or a find, mine, the partner's or the guest's, is only its plate in the bottom stack, its icon popping up from
+where it happened. Why: the user ("we don't need that now that we have the messaging system at the bottom center of
+the screen"); the stack already says what was caught and by whom, and the item over the head doubled it.

@@ -167,11 +167,11 @@
 
   /** The plate for world point (x, z), `up` units above it, `delay` ms after the tap (in the bottom stack, its icon
    *  popping up from where that point is on screen then); a first find of its kind gets a second page saying it's in the ずかん. */
-  function plate(x: number, z: number, up: number, art: string, text: () => string, delay = 0, added = false, hold = true) {
+  function plate(x: number, z: number, up: number, art: string, text: () => string, delay = 0, added = false) {
     const names = loadNames().catch(() => {});
     later(() => void names.then(() => {
       const [sx, sy] = w.screenU(x, z, up);
-      showCatch(sx, sy, art, text(), added, hold);
+      showCatch(sx, sy, art, text(), added);
     }), delay);
   }
   function pickUp(uid: string, x: number, y: number, art: string, tilt: number, up = 0) {
@@ -269,7 +269,7 @@
    *  out with sparkles. */
   let opening = $state<{ n: number; x: number; y: number; art: string; size: number } | null>(null);
   /** NH's balloon present, picked up: where it lies, the wrapping pops open (confetti, a little fanfare) and
-   *  what was inside is held up over its head while the plate reads 「◯◯を てにいれた！」 (catalog.ts: furniture,
+   *  what was inside is on the plate: 「◯◯を てにいれた！」 (catalog.ts: furniture,
    *  clothing or a seasonal DIY recipe at NH's odds; never ベル, not kept, but counted in the ずかん's カタログ / レシピ, a
    *  first one with the plate's second page). On Bunny Day the sky egg is just picked up. */
   function openPresent(p: (typeof presents)[number]) {

@@ -4,7 +4,7 @@
 // in the tent (みつけた). Shared: the other phone sees it fall and, once opened, gone.
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
-import { geo, type Geo, quiet } from './island.ts';
+import { geo, type Geo, plateOnly, quiet } from './island.ts';
 import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -81,6 +81,8 @@ test('a holding tree’s shake drops its present; opened, it’s the day’s fur
   await expect(page.locator('[data-tree-gift]')).toHaveCount(1);
   await tapGift(page);
   await expect(page.locator('[data-fx="catch"]')).toContainText('てにいれた！', { timeout: 5000 });
+  // only its plate, the furniture's icon on it: nothing over my villager's head
+  await plateOnly(page, /\/finds\/items\//);
   await page.screenshot({ path: '/tmp/tree-gifts/opened-393.png' });
   await expect(gift).toHaveCount(0);
   await expect(hudJar(page)).toHaveAttribute('aria-label', bells!); // never ベル
@@ -130,6 +132,7 @@ test('two phones: the present falls on both; opened on one, it’s gone on the o
   await expect(a.locator(`[data-tree-gift="${TREE}"]`)).toHaveCount(0, { timeout: 5000 });
   const got = await opened(b, 'B');
   expect(got).toBeTruthy();
+  await plateOnly(b, `finds/items/${got}`);
   // A's shake of it now drops no present
   await a.bringToFront();
   await a.waitForTimeout(1300);

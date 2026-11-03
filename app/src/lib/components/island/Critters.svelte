@@ -24,7 +24,7 @@
   //   Where each is, is the shared world's (critterPath.ts, docs/backend.md#shared-world): a slot's critter is placed in
   //   the world and walked through its stay from its seed, the same on both phones, and each phone shows what its
   //   camera sees of it; a catch or an escape is shared by the critter's id (first wins), and the partner's plays here:
-  //   their villager runs over and nets it, reels it in or dives for it, and holds it up.
+  //   their villager runs over and nets it, reels it in or dives for it, and its plate joins the bottom stack.
   //   Bugs: a tap on one swings the net (caught); a tap close by startles it away. A tarantula or a scorpion rears up at
   //   the first tap; a tap while it's reared and it charges off; once it settles, a tap nets it. A mole cricket chirps
   //   under a mound of earth: a tap digs it up. A tap on my villager now and then sends a flea hopping off it.
@@ -1027,10 +1027,10 @@
   }
 
   // ---------- the catch ----------
-  /** The catch held up: NH's caption on a plate with the official icon, popping up out of the catch at (x, y) (stage
+  /** The catch: NH's caption on a plate with the official icon, popping up out of the catch at (x, y) (stage
    *  units) (in the bottom stack: CatchStack.svelte). */
   async function show(item: Catch | DiveItem, x: number, y: number, cid?: string) {
-    // the partner's claim reached the relay first: it's theirs (their villager holds it up here: the news)
+    // the partner's claim reached the relay first: it's theirs (its plate is the news's)
     if (!stillMine(cid)) return;
     const pearl = item === 'pearl';
     const kind = pearl ? 'shell' : S && item in S.SEA ? 'sea' : findKind(item as FishId | PondFishId | JunkId | BugId);
@@ -1074,8 +1074,8 @@
   const verbOf = (how?: How) => (how === 'rod' ? 'fished' : how === 'dive' ? 'dived' : how === 'dig' ? 'dug' : 'caught') as 'fished' | 'dived' | 'dug' | 'caught';
 
   /** The partner's catch (or a critter that got away from them), heard over the relay: gone here too. Just now (`live`):
-   *  their villager runs over and nets it, reels it in, digs it up or dives for it, then holds it up (or, out of view,
-   *  the notice at the edge); `beat`: I tapped it too, and the relay heard them first. */
+   *  their villager runs over and nets it, reels it in, digs it up or dives for it, and its plate joins the stack (out
+   *  of view, its icon from the edge); `beat`: I tapped it too, and the relay heard them first. */
   function theirCatch(e: { what: string; id?: string; at?: readonly [number, number]; how?: How; who?: Who }, live: boolean, beat: boolean) {
     const id = e.id, how = e.how;
     const f = WATERS.map((wt) => fishes[wt]).find((x) => !!x && x.cid === id) ?? null;

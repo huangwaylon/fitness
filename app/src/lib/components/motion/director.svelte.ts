@@ -35,8 +35,6 @@ interface ActorState {
   /** Where the villager lives on the island (stage units). */
   home: Pt;
   walking: boolean;
-  /** NH's hold-up: the item's art over the head. */
-  holding: { art: string; n: number } | null;
   asleep: boolean;
   /** しずえ pose override while a beat plays. */
   pose: 'wave' | 'stand' | 'bow' | null;
@@ -47,7 +45,7 @@ interface ActorState {
 
 const blank = (): ActorState => ({
   motion: null, motionN: 0, emote: null, emoteN: 0, emoteHold: false, fx: [], face: 'home', x: 0, y: 0, from: [0, 0], t0: 0, walkMs: 0,
-  stepMs: 640, home: [0, 0], walking: false, holding: null, asleep: false, pose: null, present: false,
+  stepMs: 640, home: [0, 0], walking: false, asleep: false, pose: null, present: false,
   busyUntil: 0
 });
 
@@ -490,26 +488,6 @@ export function walkTo(id: ActorId, pts: readonly Pt[], o: WalkOpts = {}): numbe
     o.then?.();
   });
   return total;
-}
-
-/** How long a hold-up lasts by default (ms): about a catch plate's first page. */
-export const HOLD_MS = 3200;
-
-/** NH's hold-up: the villager lifts the item over its head (a squash, a rise, held) for `ms`. */
-export function holdUp(id: ActorId, art: string, ms = HOLD_MS) {
-  const a = actors[id];
-  if (a.asleep) return;
-  const n = (a.holding?.n ?? 0) + 1;
-  a.holding = { art, n };
-  a.busyUntil = Math.max(a.busyUntil, Date.now() + ms);
-  setMotion(id, 'holdup');
-  // not through later(): a reaction may preempt the pose, the item still goes away
-  setTimeout(() => actors[id].holding?.n === n && (actors[id].holding = null), ms);
-}
-
-/** Put the held item away (its plate closed). */
-export function putAway(id: ActorId) {
-  actors[id].holding = null;
 }
 
 /** Turn to face stage x. */
