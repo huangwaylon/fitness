@@ -10,12 +10,11 @@
   import type { Look } from '../world3d/terrain.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
 
-  let { layout, mode = 'orbit', look = 'summer', camZ = $bindable(300), ontime, stage = $bindable() }: {
+  let { layout, mode = 'orbit', look = 'summer', camZ = $bindable(300), stage = $bindable() }: {
     layout: Layout;
     mode?: 'orbit' | 'phone';
     look?: Look;
     camZ?: number;
-    ontime?: (ms: { build: number; update?: number }) => void;
     /** The phone view's stage for the island's もようがえ (layoutEdit/IslandEdit.svelte). */
     stage?: EditStage;
   } = $props();
@@ -68,7 +67,6 @@
         camera.position.set(ex, ey, -ez);
         controls.update();
 
-        const t0 = performance.now();
         let cur = layout;
         const ground = buildGround(cur, { renderer, look, stairs: false });
         scene.add(ground.group);
@@ -138,7 +136,6 @@
           }
         }
         placeStructures(cur);
-        ontime?.({ build: performance.now() - t0 });
 
         let m: 'orbit' | 'phone' = mode;
         const PITCH = (58 * Math.PI) / 180;
@@ -212,7 +209,6 @@
         api = {
           set(l: Layout) {
             if (l === cur) return;
-            const t1 = performance.now();
             const d = diffLayouts(cur, l);
             cur = l;
             if (d.chunks.length) ground.rebuild(l, d.chunks);
@@ -220,7 +216,6 @@
             void things.place(placeObjects(l, day()).insts);
             placeHomes(l);
             placeStructures(l);
-            ontime?.({ build: 0, update: performance.now() - t1 });
             dirty = true;
           },
           look(l: Look) {
