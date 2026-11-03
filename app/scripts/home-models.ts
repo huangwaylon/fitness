@@ -7,7 +7,8 @@
 //                                   first colour
 //   <family>.<colour>.<mat>.webp    a colour's own baked albedo for each material that differs from the first's
 // plus src/lib/layout/homes.json: each family's bounds, triangles, KB, hash and colours (with the materials each
-// swaps). layout/homes.ts names them; components/world3d/home.ts puts them together.
+// swaps), and a wall's doorway (its DoorModel0 joint: where the door family stands; a tent's own door is put there in its
+// GLB). layout/homes.ts names them; components/world3d/home.ts puts them together.
 //
 // With --structures it converts the island's structures instead (NH's bridges, their shortest span, and its
 // inclines), into static/room/structures/ and src/lib/layout/structures.json (world3d/structure.ts draws them).
@@ -122,7 +123,7 @@ interface GltfJson {
   extensionsUsed?: string[];
   extensionsRequired?: string[];
 }
-type Converted = { gltf: string; box: [number[], number[]]; tris: number; lit: boolean };
+type Converted = { gltf: string; box: [number[], number[]]; tris: number; lit: boolean; door: number[] | null };
 const convert = (f: Family, parts: string[]) => {
   const files = parts.map((p) => [F(folderOf(p)), readdirSync(join(scratch, F(folderOf(p))))]);
   return page.evaluate((o) => (window as unknown as { convert: (o: unknown) => Promise<Converted> }).convert(o), {
@@ -141,7 +142,7 @@ const albedos = (g: GltfJson): Map<string, string> => {
   return out;
 };
 
-interface Meta { kind: Family['kind']; min: number[]; max: number[]; tris: number; kb: number; v: string; lit?: 1; colours: Record<string, string[]> }
+interface Meta { kind: Family['kind']; min: number[]; max: number[]; tris: number; kb: number; v: string; lit?: 1; door?: number[]; colours: Record<string, string[]> }
 const metas: Record<string, Meta> = existsSync(META) ? (JSON.parse(readFileSync(META, 'utf8')) as { families: Record<string, Meta> }).families : {};
 let total = 0;
 for (const f of todo) {
@@ -208,7 +209,7 @@ for (const f of todo) {
   const v = createHash('sha256').update(readFileSync(out)).digest('hex').slice(0, 8);
   metas[f.name] = {
     kind: f.kind, min: r.box[0].map((n) => +n.toFixed(2)), max: r.box[1].map((n) => +n.toFixed(2)), tris: Math.min(r.tris, TRIS),
-    kb: +(bytes / 1024).toFixed(1), v, ...(r.lit ? { lit: 1 as const } : {}), colours
+    kb: +(bytes / 1024).toFixed(1), v, ...(r.lit ? { lit: 1 as const } : {}), ...(f.kind === 'wall' && r.door ? { door: r.door } : {}), colours
   };
   console.log(`${f.name}: ${(bytes / 1024).toFixed(1)} KB (${f.colours.length} colours), ${r.tris} tris, box ${r.box[0].map((n) => n.toFixed(1))} … ${r.box[1].map((n) => n.toFixed(1))}`);
 }

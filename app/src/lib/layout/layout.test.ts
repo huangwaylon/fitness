@@ -341,14 +341,32 @@ describe('the long island (20 × 60) and its 3D ground (layout/mesh.ts)', () => 
 });
 
 describe('the homes (layout/homes.ts)', () => {
+  test('every door stands in its wall’s doorway (NH’s DoorModel0: up the step, across to a villager house’s door), inside the front wall', () => {
+    const walls = Object.entries(FAMILIES).filter(([f]) => f.startsWith('wall-')), doors = Object.entries(FAMILIES).filter(([f]) => f.startsWith('door-'));
+    expect(walls.length).toBeGreaterThan(10);
+    for (const [wf, w] of walls) {
+      const at = w.door!;
+      expect(at, wf).toHaveLength(3);
+      expect(at[1], `${wf}: up its step`).toBeGreaterThan(1);
+      expect(Math.abs(at[0]), `${wf}: the player house's door in the middle, a villager's to the right`).toBe(wf.includes('pa04') ? 0 : 5);
+      for (const [df, d] of doors) {
+        const lo = d.min.map((n, i) => n + at[i]), hi = d.max.map((n, i) => n + at[i]);
+        // inside the wall's bounds across, up and deep (no further out than its front, its porch's step)
+        for (const [i, axis] of ['across', 'up', 'deep'].entries()) expect(lo[i] >= w.min[i] && hi[i] <= w.max[i], `${df} in ${wf} ${axis}`).toBe(true);
+      }
+    }
+    // the style's door part carries its wall's doorway
+    const parts = partsOf(DEFAULT_HOMES.G);
+    expect(parts[2].at).toEqual(FAMILIES[parts[0].family].door);
+  });
   const l = defaultLayout();
   test('each style’s parts: NH’s families in their colours; a roof of another shape mended to the wall’s', () => {
     expect(partsOf({ m: 'house', w: 'PA04Stucco.B', r: 'PA04Westerntile.C', d: 'Simple.R.A' })).toEqual([
-      { family: 'wall-pa04-stucco', colour: 'B' }, { family: 'roof-pa04-westerntile', colour: 'C' }, { family: 'door-simple-r', colour: 'A' }
+      { family: 'wall-pa04-stucco', colour: 'B' }, { family: 'roof-pa04-westerntile', colour: 'C' }, { family: 'door-simple-r', colour: 'A', at: [0, 2, -1.63] }
     ]);
     const mended = partsOf({ m: 'house', w: 'NCJapanese.A', r: 'PA04Stone.A', d: 'Lattice.S.B' });
     expect(mended[1].family).toMatch(/^roof-nc-/);
-    expect(mended[2]).toEqual({ family: 'door-lattice-s', colour: 'B' });
+    expect(mended[2]).toMatchObject({ family: 'door-lattice-s', colour: 'B' });
     expect(partsOf({ m: 'tent-n', w: 'B' })).toEqual([{ family: 'tent-n', colour: 'B' }]);
     expect(partsOf({ m: 'campsite' })).toEqual([]);
     const cat = catalogue();

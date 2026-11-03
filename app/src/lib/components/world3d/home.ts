@@ -1,8 +1,8 @@
 // The homes in 3D (docs/island-layout.md "Homes"): a home's style built from NH's parts (layout/homes.ts partsOf:
 // a wall, a roof and a door in their colours, or a tent), as converted by scripts/home-models.ts into
-// static/room/homes/ (each part's GLB in its first colour, the other colours' albedos beside it). The parts share NH's
-// origin (the house's front wall, its middle), so they stand together as they come; a colour swaps the albedo of the
-// materials it names. NH's soft look: Lambert, lit a little by its own colour (things.ts's), a lamp's own glow its night
+// static/room/homes/ (each part's GLB in its first colour, the other colours' albedos beside it). The wall and the roof
+// share NH's origin (the house's front wall, its middle); the door stands in the wall's doorway (homes.json `door`: NH's
+// DoorModel0 joint); a colour swaps the albedo of the materials it names. NH's soft look: Lambert, lit a little by its own colour (things.ts's), a lamp's own glow its night
 // light. The scene places the group (engine.ts attach: bent there; homePlaces for where).
 import { Color, Group, MeshLambertMaterial, SRGBColorSpace, TextureLoader, type Material, type Mesh, type MeshStandardMaterial, type Texture } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -69,16 +69,17 @@ export async function buildHome(style: HomeStyle, base?: string): Promise<Group 
   if (!parts.length) return null;
   const group = new Group();
   group.name = `home:${style.m}`;
-  const loaded = await Promise.all(parts.map(async ({ family, colour }) => {
+  const loaded = await Promise.all(parts.map(async ({ family, colour, at }) => {
     const g = await glb(b, family);
     const fam = FAMILIES[family];
     const swap = new Map<string, Texture | null>();
     for (const mat of fam?.colours[colour] ?? []) swap.set(mat, await albedo(b, family, colour, mat));
-    return { g, swap };
+    return { g, swap, at };
   }));
-  for (const { g, swap } of loaded) {
+  for (const { g, swap, at } of loaded) {
     if (!g) continue;
     const root = g.scene.clone(true);
+    if (at) root.position.set(at[0], at[1], at[2]);
     root.traverse((n) => {
       const mesh = n as Mesh;
       if (!mesh.isMesh) return;
