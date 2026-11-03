@@ -1,11 +1,11 @@
 <script lang="ts">
-  // The island in 3D (docs/design.md "World", docs/decisions.md "The island in 3D"): IslandScene's drawing when
-  // `?island=3d` / せってい's switch says so (store/islandRender.svelte.ts). A canvas behind the island's DOM: NH's
+  // The island in 3D (docs/design.md "World", docs/decisions.md "The island in 3D"): IslandScene's drawing. A canvas
+  // behind the island's DOM: NH's
   // models, the ground and the water, the lights (engine.ts), the villagers as cards. The DOM island still runs over it,
   // every node placed through this camera (camera.svelte.ts Proj3): its taps, popups, balloons and marks; its art goes
   // invisible where the canvas draws the thing (IslandScene's [data-r3] rules). The finger is gestures.ts': one finger
   // scrolls along the island (z only, a free fling), two pinch the zoom; nothing else moves the camera.
-  // Its own chunk with three.js: the 2D island never loads it.
+  // Its own chunk with three.js.
   import { onMount, untrack } from 'svelte';
   import { asset } from '$app/paths';
   import { art, artUrl, villagerArt } from '#lib/art.ts';
@@ -22,7 +22,6 @@
   import { listen3d, listenPose3d } from '../island/echo3d.ts';
   import { listenFx3 } from '../island/fx3d.ts';
   import { ambient3 } from '../island/ambient3d.svelte.ts';
-  import TERRAIN from '../island/terrain.json' with { type: 'json' };
   import PLACES from '../island/models.json' with { type: 'json' };
   import { createIsland, type Ground, type Island3 } from './engine.ts';
   import { WORLD_GROUND } from './ground.ts';
@@ -123,16 +122,8 @@
   if (site.on) site.sync();
   const onLayout = site.on && !!site.layout;
   let lground: LayoutGround | null = null;
-  /** The ground's look today (WorldGround's rule): the season's, the petals' or the fallen leaves' weeks. */
+  /** The ground's look today: the season's, the petals' or the fallen leaves' weeks. */
   const lookNow = (): Look => (season === 'spring' && foliage === 'blossom' ? 'spring-petals' : season === 'autumn' && foliage === 'fall' ? 'autumn-leaves' : season);
-
-  /** The ground's look (WorldGround's rule): the season's, the petals' or the fallen leaves' weeks. */
-  function groundUrls(): string[] {
-    const T = TERRAIN as { chunks: number; seasons: string[]; bytes?: Record<string, number[]> };
-    const look = lookNow();
-    const ss = T.seasons.includes(look) ? look : season;
-    return Array.from({ length: T.chunks }, (_, c) => `${asset(`terrain/${ss}/${c}.webp` as Parameters<typeof asset>[0])}?v=${T.bytes?.[ss]?.[c] ?? 0}`);
-  }
 
   // ---- what has no model yet: a card of today's art, standing on its feet point (island/models.json) ----
   const P = PLACES as unknown as Record<string, { ax: number; ay: number }>;
@@ -582,8 +573,7 @@
       });
       standins(st);
       e.glows((lamps3 = standinLamps(st)));
-      if (lground) lground.look(lookNow());
-      else e.groundLook(groundUrls());
+      lground?.look(lookNow());
       if (lay) {
         builtOn(e, lay);
         fitEnds(e);

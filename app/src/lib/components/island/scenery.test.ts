@@ -1,7 +1,7 @@
 // The still scenery stands where NH would let it: on the land, off the water, the paths, the buildings' footprints and
 // the spots the island's features use (homes, trees, weeds, fossils); the wild flowers grow in small clumps on open
 // grass; the walk still reaches every door; the scene's
-// season tables resolve every key to shipped art.
+// season tables resolve every key to shipped art or a 3D model.
 import { describe, expect, it } from 'vitest';
 import { artKeys } from '#lib/art.ts';
 import {
@@ -10,6 +10,7 @@ import {
 } from './world.ts';
 import { WILD, sceneryKey, wildFlower } from './scene.ts';
 import { hybridsOf } from './care.ts';
+import MODELS from '../world3d/assets.json';
 import { route, walkGeo } from './walkGraph.ts';
 
 const segDist = (line: readonly Pt[], x: number, z: number) => {
@@ -46,8 +47,8 @@ describe('scenery placement', () => {
 });
 
 describe('scenery keys by season', () => {
-  const keys = new Set(artKeys());
-  it.each(['spring', 'summer', 'autumn', 'winter'] as const)('resolve to shipped art in %s', (season) => {
+  const keys = new Set([...artKeys(), ...Object.keys(MODELS.keys)]);
+  it.each(['spring', 'summer', 'autumn', 'winter'] as const)('resolve to shipped art or a 3D model in %s', (season) => {
     for (const m of [1, 4, 6, 8, 10, 12]) for (const s of [...SCENERY, ...BUILDINGS]) {
       if ('kind' in s && s.kind === 'oak') continue;
       expect(keys.has(sceneryKey(s.key, season, m)), `${s.key} in ${season}/${m}`).toBe(true);

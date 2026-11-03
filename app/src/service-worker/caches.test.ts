@@ -61,11 +61,8 @@ describe('precache', () => {
       'art/deco/fence-bamboo.webp', 'art/deco/garden-lantern-white.webp', 'art/trees/bamboo.webp', 'art/flowers/purple-windflowers.webp', 'art/flowers/red-tulips.webp', 'art/flowers/pink-cosmos.webp']) expect(precachable(p)).toBe(false);
     for (const p of ['art/deco/resident-services.webp', 'art/trees/cedar.webp', 'art/bridges/stone-front.webp']) expect(precachable(p)).toBe(true);
   });
-  it('leaves the bridge deck out: the terrain bake draws it, the app never shows it', () => {
-    for (const p of ['art/bridges/stone-deck.webp', 'art/bridges/stone-deck-winter.webp']) expect(precachable(p)).toBe(false);
-  });
   it('keeps the shell, the default villagers and the scene art', () => {
-    for (const p of ['_app/immutable/entry/app.js', 'art/fruit/peach.webp', 'art/villagers/goldie.webp', 'art/villagers/anchovy-icon.webp', 'manifest.webmanifest']) {
+    for (const p of ['_app/immutable/entry/app.js', 'art/fruit3d/peach.webp', 'art/villagers/goldie.webp', 'art/villagers/anchovy-icon.webp', 'manifest.webmanifest']) {
       expect(precachable(p)).toBe(true);
     }
   });

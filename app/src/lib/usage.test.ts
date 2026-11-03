@@ -21,6 +21,7 @@ import { artKeys, REACTIONS } from '#lib/art.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
 import { KIND_LIST } from '#lib/layout/catalog.ts';
+import MODELS from '#lib/components/world3d/assets.json';
 import { BUGS, FISH, JUNK, critterArt } from '#lib/components/island/critters.ts';
 import { POND_FISH } from '#lib/components/island/pondFish.ts';
 import { FOSSILS, FRAGMENTS, SHELLS, findArt } from '#lib/components/island/beach.ts';
@@ -144,8 +145,6 @@ describe('official art (static/art/manifest.json)', () => {
     ...DECOR_ART,
     // the fixed decor's built keys (island/fixedDecor.ts: the snowboy's melting stages, the shishi-odoshi tipped)
     ...FIXED_ART,
-    // the bridge's deck from above: baked into the ground (scripts/terrain.ts), never shown by the app itself
-    'bridges/stone-deck',
     // the layout's tray and palette icons (layout/catalog.ts: IslandEdit, the editor)
     ...KIND_LIST.flatMap((d) => (d.icon ? [d.icon] : []))
   ]);
@@ -162,8 +161,8 @@ describe('official art (static/art/manifest.json)', () => {
   it('every file is used', () => {
     expect(keys.filter((k) => !used(k) && !(LOOK.test(k) && used(k.replace(LOOK, ''))))).toEqual([]);
   });
-  it('every key named in the code exists', () => {
+  it('every key named in the code exists: as art, or as a 3D model (world3d/assets.json: what only the 3D island draws)', () => {
     const named = [...literals].filter((l) => /^(bridges|bushes|deco|flowers|fruit|host|money|reactions|season|trees|villagers)\/[\w-]+$/.test(l));
-    expect(named.filter((k) => !keys.includes(k))).toEqual([]);
+    expect(named.filter((k) => !keys.includes(k) && !(k in MODELS.keys))).toEqual([]);
   });
 });
