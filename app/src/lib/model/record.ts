@@ -47,20 +47,27 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
     case 'food': {
       // a meal entry set or removed (contract/food.ts: already normalized), its day not after tomorrow
       const op = foodOp(d);
-      return op !== null && (op.rm === true || op.d <= nextDay(localDateAt(now)));
+      return op !== null && atNear(op.at, now) && (op.rm === true || op.d <= nextDay(localDateAt(now)));
     }
     case 'food_repeat': {
       // a repeat set or removed (contract/food.ts: already normalized), its first day not after tomorrow
       const op = foodRepeatOp(d);
-      return op !== null && (op.rm === true || op.from <= nextDay(localDateAt(now)));
+      return op !== null && atNear(op.at, now) && (op.rm === true || op.from <= nextDay(localDateAt(now)));
     }
-    case 'food_recipe':
+    case 'food_recipe': {
       // a recipe set or removed (contract/food.ts: already normalized)
-      return foodRecipeOp(d) !== null;
+      const op = foodRecipeOp(d);
+      return op !== null && atNear(op.at, now);
+    }
     default:
       return true;
   }
 }
+
+/** A meal op's `at` (the sender's clock) at most this far past the record's (ms). A phone's clock far ahead would
+ *  otherwise stamp ops no later edit could beat (foodAccept: an op no later than the one held is stale). */
+const FOOD_AHEAD_MS = 24 * 60 * 60 * 1000;
+const atNear = (at: number, now: number): boolean => at <= now + FOOD_AHEAD_MS;
 
 /** The prefs only the latest of counts (per person); the goals keep their history (`moveGoalOn` prices past days). */
 const LATEST_PREFS = ['locale', 'villagerName', 'villager', 'goalWeight', 'goalBodyFat', 'kcalGoal'] as const;

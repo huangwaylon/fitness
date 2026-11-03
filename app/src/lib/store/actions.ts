@@ -233,10 +233,11 @@ export function removeFood(id: string): SendResult {
 
 const today = (): LocalDate => localDateAt(world.now());
 
-/** Send a repeat op as the record will keep it (contract/food.ts foodRepeatOp); `{ok:false}` when it isn't one. */
+/** Send a repeat op as the record will keep it (contract/food.ts foodRepeatOp), with its `nx` (the record's to check);
+ *  `{ok:false}` when it isn't one. */
 function sendRepeat(d: Record<string, unknown>): SendResult {
   const op = foodRepeatOp(d);
-  return op ? week.send('food_repeat', { ...op }) : { ok: false };
+  return op ? week.send('food_repeat', d.nx === undefined ? { ...op } : { ...op, nx: d.nx }) : { ok: false };
 }
 
 /** One of my repeats, as the model has it (queued changes included). */
@@ -265,11 +266,12 @@ function sendNewRepeat(op: RepeatOp, date: LocalDate, real: FoodEntry[]): SendRe
   return { ok: true, id: op.id };
 }
 
-/** My repeat ended on `last` (its skipped days after it dropped), or removed when it starts after `last`. */
-function endRepeat(r: FoodRepeat, last: LocalDate): SendResult {
+/** My repeat ended on `last` (its skipped days after it dropped), or removed when it starts after `last`; `nx` the
+ *  repeat that follows it (the record keeps the end only once it holds that one: contract/food.ts repeatNext). */
+function endRepeat(r: FoodRepeat, last: LocalDate, nx?: string): SendResult {
   const { who: _who, ...op } = r;
-  if (r.from > last) return sendRepeat({ id: r.id, at: foodNow(r.at), rm: true });
-  return sendRepeat({ ...op, at: foodNow(r.at), to: last, sk: r.sk?.filter((d) => d <= last) });
+  if (r.from > last) return sendRepeat({ id: r.id, at: foodNow(r.at), rm: true, nx });
+  return sendRepeat({ ...op, at: foodNow(r.at), to: last, sk: r.sk?.filter((d) => d <= last), nx });
 }
 
 /**
@@ -321,9 +323,12 @@ export function updateRepeat(repeatId: string, ch: { w?: number; itemsFromDate?:
   const shown = ch.itemsFromDate ? foodDay(m.state, m.me, ch.itemsFromDate).entries.filter((e) => e.m === r.m) : null;
   if (shown && !shown.length) return { ok: false };
   const op = repeatOf({ m: r.m, it: shown ? shown.map(({ g, f }) => ({ g, f })) : r.it, w: ch.w ?? r.w, from, to: r.to, sk: r.sk?.filter((d) => d >= from) });
-  if (!op || !endRepeat(r, now).ok) return { ok: false };
+  if (!op) return { ok: false };
+  // the new one first, then the old one's end naming it (`nx`): the record keeps the end only once it holds the new
+  // one, so were that refused (its first day after the record's tomorrow) the old one goes on as it was
   // the shown meal's real entries, on a day the new one fills (tomorrow's), are what it stands for
-  return sendNewRepeat(op, ch.itemsFromDate ?? from, shown && ch.itemsFromDate! >= from ? shown.filter((e) => !e.rep) : []);
+  const sent = sendNewRepeat(op, ch.itemsFromDate ?? from, shown && ch.itemsFromDate! >= from ? shown.filter((e) => !e.rep) : []);
+  return sent.ok && endRepeat(r, now, op.id).ok ? sent : { ok: false };
 }
 
 /** Stop my repeat: it ends today (tomorrow on, nothing; past days unchanged), or is removed if it hadn't started. */

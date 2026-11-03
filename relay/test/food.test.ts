@@ -57,27 +57,24 @@ describe('the meal log in the record', () => {
     expect(entries().find((e) => e.id === 'fmeal003')?.f).toMatchObject({ n: 'あ'.repeat(60), p: null });
   });
 
-  it('refuses a malformed op', () => {
-    const at = now;
+  // (the ops' shapes are the contract's: contract/food.test.ts; here, what the record adds)
+  it('refuses a malformed op, a day after tomorrow (the record’s Tokyo date), an `at` over a day ahead of its clock', () => {
+    const ok = { id: 'fmeal010', at: now, d: '2026-11-03', m: 'l', g: 150, f: RICE };
     const bad = [
-      { id: 'nope', at, d: '2026-11-03', m: 'l', g: 150, f: RICE },
-      { id: 'fmeal010', at: 'x', d: '2026-11-03', m: 'l', g: 150, f: RICE },
-      { id: 'fmeal010', at, d: '2026-02-30', m: 'l', g: 150, f: RICE },
-      { id: 'fmeal010', at, d: '2026-11-05', m: 'l', g: 150, f: RICE }, // after tomorrow
-      { id: 'fmeal010', at, d: '2026-11-03', m: 'x', g: 150, f: RICE },
-      { id: 'fmeal010', at, d: '2026-11-03', m: 'l', g: 0, f: RICE },
-      { id: 'fmeal010', at, d: '2026-11-03', m: 'l', g: 5000.1, f: RICE },
-      { id: 'fmeal010', at, d: '2026-11-03', m: 'l', g: 1.25, f: RICE },
-      { id: 'fmeal010', at, d: '2026-11-03', m: 'l', g: 150, f: { ...RICE, k: 951 } },
-      { id: 'fmeal010', at, d: '2026-11-03', m: 'l', g: 150, f: { ...RICE, s: 101 } },
-      { id: 'fmeal010', at, d: '2026-11-03', m: 'l', g: 150, f: { ...RICE, n: ' \u0000 ' } },
-      { id: 'fmeal010', at, d: '2026-11-03', m: 'l', g: 150, f: { ...RICE, id: 'x'.repeat(65) } },
-      { id: 'fmeal010', at, d: '2026-11-03', m: 'l', g: 150, f: { ...RICE, html: '<b>' } },
-      { id: 'fmeal010', at, d: '2026-11-03', m: 'l', g: 150, f: RICE, person: 'B' },
-      { id: 'fmeal010', at, rm: true, g: 1 }
+      { ...ok, g: 0 }, { ...ok, f: { ...RICE, html: '<b>' } }, { ...ok, person: 'B' },
+      { ...ok, d: '2026-11-05' }, // after tomorrow
+      { ...ok, at: now + 86_400_001 }, { id: 'fmeal010', at: now + 86_400_001, rm: true } // a clock far ahead
     ];
     for (const d of bad) expect(send('A', d)).toMatchObject({ ok: false, error: 'bad_request' });
-    expect(log('A', 'fmeal011', { d: '2026-11-04' })).toMatchObject({ ok: true }); // tomorrow is fine
+    expect(log('A', 'fmeal011', { d: '2026-11-04' }, now + 86_400_000)).toMatchObject({ ok: true }); // tomorrow, a day ahead: fine
+  });
+
+  it('“tomorrow” turns at Tokyo midnight (15:00Z)', () => {
+    now = Date.parse('2026-11-03T14:59:59.999Z'); // 11/03 23:59:59.999 JST
+    expect(log('A', 'fmeal012', { d: '2026-11-05' }, now)).toMatchObject({ ok: false, error: 'bad_request' });
+    now = Date.parse('2026-11-03T15:00:00.000Z'); // 11/04 00:00 JST
+    expect(log('A', 'fmeal012', { d: '2026-11-05' }, now)).toMatchObject({ ok: true });
+    expect(log('A', 'fmeal013', { d: '2026-11-06' }, now)).toMatchObject({ ok: false, error: 'bad_request' });
   });
 
   it('lets the owner edit, the latest op kept as the entry’s one row, an older edit acknowledged and dropped', () => {
@@ -168,21 +165,48 @@ describe('the meal log in the record', () => {
     for (const key of [KEY_B, KEY_C]) expect(repeats(key)).toMatchObject([{ id: 'rmeal001', who: 'A', w: 127 }]);
   });
 
-  it('refuses a malformed repeat', () => {
-    const at = now;
-    const ok = { id: 'rmeal010', at, m: 'b', it: [{ g: 150, f: RICE }], w: 127, from: '2026-11-01' };
+  it('refuses a malformed repeat, a first day after tomorrow, an `at` over a day ahead', () => {
+    const ok = { id: 'rmeal010', at: now, m: 'b', it: [{ g: 150, f: RICE }], w: 127, from: '2026-11-01' };
     const bad = [
-      { ...ok, id: 'fmeal010' }, { ...ok, id: 'r12' }, { ...ok, at: 'x' }, { ...ok, m: 'x' }, { ...ok, w: 0 }, { ...ok, w: 128 }, { ...ok, w: 1.5 },
-      { ...ok, from: '2026-02-30' }, { ...ok, from: '2026-11-05' }, // after tomorrow
-      { ...ok, to: '2026-10-31' }, { ...ok, to: 'x' }, { ...ok, it: [] }, { ...ok, it: Array(21).fill({ g: 1, f: RICE }) },
-      { ...ok, it: [{ g: 0, f: RICE }] }, { ...ok, it: [{ g: 1.25, f: RICE }] }, { ...ok, it: [{ g: 1, f: { ...RICE, k: 951 } }] },
-      { ...ok, it: [{ g: 1, f: RICE, d: '2026-11-01' }] }, { ...ok, it: [null] }, { ...ok, it: 'x' },
-      { ...ok, sk: ['2026-10-31'] }, { ...ok, to: '2026-11-03', sk: ['2026-11-04'] }, { ...ok, sk: ['x'] }, { ...ok, sk: '2026-11-02' },
-      { ...ok, sk: Array.from({ length: 401 }, () => '2026-11-02') }, { ...ok, x: 1 }, { ...ok, person: 'B' },
-      { id: 'rmeal010', at, rm: true, w: 1 }, { id: 'rmeal010', at, rm: false }
+      { ...ok, w: 0 }, { ...ok, x: 1 }, { ...ok, person: 'B' }, { ...ok, nx: 'fmeal010' },
+      { ...ok, from: '2026-11-05' }, // after tomorrow
+      { ...ok, at: now + 86_400_001 }
     ];
     for (const d of bad) expect(sendRep('A', d)).toMatchObject({ ok: false, error: 'bad_request' });
     expect(rep('A', 'rmeal011', { from: '2026-11-04', to: '2026-11-04' })).toMatchObject({ ok: true }); // tomorrow, one day
+  });
+
+  it('a day skipped stays skipped, whichever of two phones’ ops comes first (the newer kept, with both’s skips)', () => {
+    // phone 1 makes 11/04 ordinary (a skip; its items became entries) while phone 2, not fetched yet, stops it on 11/04
+    const t = now + 1000;
+    rep('A', 'rmeal050', {}, t);
+    const skip = { sk: ['2026-11-04', '2026-11-05'] }, stop = { to: '2026-11-04' };
+    // the skip first, then the stop (newer, no skips): the stop kept with the skip within its days
+    expect(rep('A', 'rmeal050', skip, t + 1000)).toMatchObject({ ok: true });
+    expect(rep('A', 'rmeal050', stop, t + 2000)).toMatchObject({ ok: true });
+    expect(repRows().map((r) => JSON.parse(r[4]))).toMatchObject([{ at: t + 2000, to: '2026-11-04', sk: ['2026-11-04'] }]);
+    // the other order: the stop held, the older skip adds its day to it (a new row, not a duplicate)
+    rep('A', 'rmeal051', {}, t);
+    expect(rep('A', 'rmeal051', stop, t + 2000)).toMatchObject({ ok: true });
+    expect(rep('A', 'rmeal051', skip, t + 1000)).toEqual({ ok: true });
+    expect(repeats().map((r) => [r.id, r.at, r.to, r.sk])).toEqual([['rmeal050', t + 2000, '2026-11-04', ['2026-11-04']], ['rmeal051', t + 2000, '2026-11-04', ['2026-11-04']]]);
+    expect(repRows()).toHaveLength(2);
+    // an older op that skips nothing new: acknowledged, nothing kept
+    expect(rep('A', 'rmeal051', skip, t + 1500)).toEqual({ ok: true, duplicate: true });
+  });
+
+  it('an end that names the repeat after it (`nx`) is kept only once the record holds that one: a change is both or neither', () => {
+    rep('A', 'rmeal060');
+    // the new one refused (its first day after the record's tomorrow: the phone's day ahead), so the end too
+    expect(rep('A', 'rmeal061', { from: '2026-11-05' })).toMatchObject({ ok: false, error: 'bad_request' });
+    expect(rep('A', 'rmeal060', { to: '2026-11-04', nx: 'rmeal061' })).toMatchObject({ ok: false, error: 'bad_request' });
+    rep('B', 'rmeal062', { from: '2026-11-04' });
+    expect(rep('A', 'rmeal060', { to: '2026-11-03', nx: 'rmeal062' })).toMatchObject({ ok: false, error: 'bad_request' }); // not mine
+    expect(repeats().find((r) => r.id === 'rmeal060')?.to).toBeUndefined();
+    // the new one held: the end kept, without its `nx`
+    expect(rep('A', 'rmeal061', { from: '2026-11-04' })).toMatchObject({ ok: true });
+    expect(rep('A', 'rmeal060', { to: '2026-11-03', nx: 'rmeal061' })).toMatchObject({ ok: true });
+    expect(repRows().map((r) => JSON.parse(r[4])).find((d) => d.id === 'rmeal060')).toEqual({ id: 'rmeal060', at: now, m: 'b', it: [{ g: 150, f: RICE }], w: 127, from: '2026-11-01', to: '2026-11-03' });
   });
 
   it('keeps each repeat’s latest op as its one row; an older op, a set after a removal, a removal it never held acknowledged', () => {
@@ -254,16 +278,11 @@ describe('the meal log in the record', () => {
     expect(kcal(entries()[0])).toBeCloseTo((600 * 156 + 100 * 474) / 100 / 4, 0);
   });
 
-  it('refuses a malformed recipe', () => {
-    const at = now;
-    const ok = { id: 'cmeal010', at, n: 'カレー', sv: 2, it: [{ g: 150, f: RICE }] };
-    const bad = [
-      { ...ok, id: 'fmeal010' }, { ...ok, id: 'c12' }, { ...ok, at: 'x' }, { ...ok, n: ' \u0000 ' }, { ...ok, n: 5 }, { ...ok, sv: 0 }, { ...ok, sv: 21 },
-      { ...ok, sv: 1.5 }, { ...ok, sv: '2' }, { ...ok, it: [] }, { ...ok, it: Array(31).fill({ g: 1, f: RICE }) }, { ...ok, it: [{ g: 0, f: RICE }] },
-      { ...ok, it: [{ g: 1.25, f: RICE }] }, { ...ok, it: [{ g: 1, f: { ...RICE, k: 951 } }] }, { ...ok, it: [{ g: 1, f: RICE, m: 'b' }] }, { ...ok, it: 'x' },
-      { ...ok, x: 1 }, { ...ok, person: 'B' }, { id: 'cmeal010', at, rm: true, sv: 1 }, { id: 'cmeal010', at, rm: false }
-    ];
-    for (const d of bad) expect(sendRec('A', d)).toMatchObject({ ok: false, error: 'bad_request' });
+  it('refuses a malformed recipe, an `at` over a day ahead', () => {
+    const ok = { id: 'cmeal010', at: now, n: 'カレー', sv: 2, it: [{ g: 150, f: RICE }] };
+    for (const d of [{ ...ok, sv: 0 }, { ...ok, x: 1 }, { ...ok, person: 'B' }, { ...ok, at: now + 86_400_001 }]) {
+      expect(sendRec('A', d)).toMatchObject({ ok: false, error: 'bad_request' });
+    }
     // a long name is cut at 30; 30 ingredients and 20 servings are fine
     expect(recipe('A', 'cmeal011', { n: 'あ'.repeat(40), sv: 20, it: Array(30).fill({ g: 1, f: RICE }) })).toMatchObject({ ok: true });
     expect(recipes()[0].n).toBe('あ'.repeat(30));

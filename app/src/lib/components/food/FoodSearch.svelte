@@ -2,9 +2,13 @@
   // ごはん's search (a level over the day, for one meal): a 16px search field, then 最近 (my latest entry of each food,
   // as I last had it) until something is typed, or the catalog's best matches (each: the name, its default portion's
   // kcal and per 100 g, ✓n when n independent sources agree on it). Japanese IME-safe: half-composed text (「なt」) is
-  // never searched; the search runs on each committed change. A row opens the amount.
+  // never searched; the search runs on each committed change. A row opens the amount. From a meal's ＋, マイレシピ
+  // too (everyone's recipes: all of them after 最近, the matching ones before the catalog's); a recipe opens its own.
+  import type { Who } from '#lib/types.ts';
   import type { FoodEntry } from '#lib/contract/food.ts';
+  import type { Recipe } from '#lib/model/food.ts';
   import { searchFoods, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
+  import { searchKey } from '#lib/food/text.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { amountText, defaultPortion, foodDb, itemOf } from './foodUi.ts';
 
@@ -13,8 +17,12 @@
     recent: FoodEntry[];
     /** A food picked: a catalog item, or a recent one with the grams I had last. */
     onpick: (item: Item, g?: number, u?: string) => void;
+    /** マイレシピ to offer (none: a recipe's ingredient is being picked), and who set each. */
+    recipes?: readonly Recipe[];
+    names?: Record<Who, string>;
+    onrecipe?: (r: Recipe) => void;
   }
-  let { recent, onpick }: Props = $props();
+  let { recent, onpick, recipes = [], names, onrecipe }: Props = $props();
 
   let db = $state.raw<FoodDb | null>(null);
   let failed = $state(false);
@@ -43,6 +51,11 @@
     return db && q.trim() ? searchFoods(db, q, 40) : [];
   });
   const kcal = (n: number) => t('kiroku.kcal', { n: formatNum(n) });
+  /** The recipes whose names hold every word typed (all of them with nothing typed). */
+  const myRecipes = $derived.by(() => {
+    const words = q.trim().split(/[\s　]+/).map(searchKey).filter(Boolean);
+    return recipes.filter((r) => words.every((w) => searchKey(r.n).includes(w)));
+  });
 
   function onInput(e: Event) {
     if (!(e as InputEvent).isComposing) q = text;
@@ -52,6 +65,21 @@
     input?.focus();
   }
 </script>
+
+{#snippet recipeRows()}
+  {#if onrecipe && myRecipes.length}
+    <h3 class="lh">{t('food.rcp.mine')}</h3>
+    <ul class="list" data-food-recipes>
+      {#each myRecipes as r (r.id)}
+        <li><button type="button" class="card it" data-sfx="page" data-recipe={r.id} onclick={() => onrecipe(r)}>
+          <span class="nm">{r.n}</span>
+          <small class="meta">{names?.[r.who] ?? r.who} · {t('food.rcp.servings', { n: r.sv })}</small>
+          <span class="kc"><b class="money">{kcal(r.per.kcal)}</b><small>{t('food.rcp.one')}</small></span>
+        </button></li>
+      {/each}
+    </ul>
+  {/if}
+{/snippet}
 
 <div class="search">
   <form class="box" role="search" onsubmit={(e) => { e.preventDefault(); input?.blur(); }}>
@@ -77,12 +105,20 @@
     {:else}
       <p class="note">{t('food.recentEmpty')}</p>
     {/if}
-  {:else if failed}
+    {@render recipeRows()}
+  {:else}
+    {@render recipeRows()}
+    {@render catalog()}
+  {/if}
+</div>
+
+{#snippet catalog()}
+  {#if failed}
     <p class="note" role="status">{t('food.loadFail')}</p>
   {:else if !db}
     <p class="note" role="status">{t('food.loading')}</p>
   {:else if !results.length}
-    <p class="note" role="status">{t('food.none', { q: q.trim() })}</p>
+    {#if !(onrecipe && myRecipes.length)}<p class="note" role="status">{t('food.none', { q: q.trim() })}</p>{/if}
   {:else}
     <ul class="list" data-food-results>
       {#each results as it (it.id)}
@@ -96,7 +132,7 @@
       {/each}
     </ul>
   {/if}
-</div>
+{/snippet}
 
 <style>
   /* one column no wider than the sheet: WebKit's text field is ~20 characters wide by itself (its min-content), which

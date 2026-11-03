@@ -10,7 +10,7 @@
 // of foods and servings, everyone's to log as a food of its own (`recipeSnap`). Shared by the record (relay/src/store.ts), the model
 // and the food sheet; pure and dependency-free.
 import { isLocalDate, isRec } from './api.ts';
-import { cleanLine } from './board.ts';
+import { cleanLine } from './text.ts';
 
 /** Who logged it: the owner, the only one who edits or removes it. */
 type Who = 'A' | 'B' | 'G';
@@ -38,7 +38,7 @@ export interface RepeatItem { g: number; f: FoodSnap }
 export type RepeatOp =
   | { id: string; at: number; m: Meal; it: RepeatItem[]; w: number; from: string; to?: string; sk?: string[]; rm?: undefined }
   | { id: string; at: number; rm: true };
-type RepeatOpBy = RepeatOp & { who: Who };
+export type RepeatOpBy = RepeatOp & { who: Who };
 /** A repeat as the record keeps it (its latest op), with who set it. */
 export type FoodRepeat = Exclude<RepeatOp, { rm: true }> & { who: Who };
 
@@ -138,9 +138,12 @@ export const weekdayBit = (date: string): number => 1 << ((new Date(Date.parse(`
 
 /** A `food_repeat` op's data, its known keys only, each well-formed (each item as a `food` op's; `to` null read as
  *  absent; `sk` sorted, once each, within its days; an empty `sk` dropped), or null. The record keeps it as returned
- *  here. Whether its first day is too far ahead is the record's (model/record.ts). */
-export function foodRepeatOp(d: unknown): RepeatOp | null {
-  if (!isRec(d) || typeof d.id !== 'string' || !REPEAT_ID.test(d.id) || !isMs(d.at)) return null;
+ *  here. Whether its first day is too far ahead is the record's (model/record.ts). `nx` (the repeat that follows this
+ *  op's end: `repeatNext`) is the record's to check and never kept: dropped here. */
+export function foodRepeatOp(raw: unknown): RepeatOp | null {
+  if (!isRec(raw) || (raw.nx !== undefined && repeatNext(raw) === undefined)) return null;
+  const { nx: _nx, ...d } = raw;
+  if (typeof d.id !== 'string' || !REPEAT_ID.test(d.id) || !isMs(d.at)) return null;
   const keys = Object.keys(d).filter((k) => d[k] !== undefined && !(k === 'to' && d.to === null));
   const rm = rmOf(d, keys);
   if (rm !== undefined) return rm;
@@ -190,11 +193,40 @@ export function foodFold(ops: Iterable<FoodOpBy>): FoodEntry[] {
   return out.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : MEAL_ORDER[a.m] - MEAL_ORDER[b.m] || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)));
 }
 
-/** The repeats as the record keeps them (each one's latest op taken by `foodAccept`, as `foodFold`), the removed ones
- *  gone: by first day, then id. */
+/** The repeat a `food_repeat` op's end is followed by (`nx`, a repeat's id: the record refuses the op unless it holds
+ *  that repeat, so a change is the new repeat and the old one's end, both or neither), or undefined. */
+export const repeatNext = (d: Record<string, unknown>): string | undefined =>
+  typeof d.nx === 'string' && REPEAT_ID.test(d.nx) ? d.nx : undefined;
+
+/** Repeat `a` with the days `b` skips too, within `a`'s days (the latest REPEAT_SKIPS); `a` itself when `b` adds none. */
+function withSkips(a: FoodRepeat, b: FoodRepeat): FoodRepeat {
+  const add = (b.sk ?? []).filter((d) => d >= a.from && (a.to === undefined || d <= a.to) && !a.sk?.includes(d));
+  return add.length ? { ...a, sk: [...(a.sk ?? []), ...add].sort().slice(-REPEAT_SKIPS) } : a;
+}
+
+/**
+ * What the record does with a new `food_repeat` op: `foodAccept`'s verdict, and the op the repeat's slot then holds
+ * (null: none, or the one held unchanged). A day skipped stays skipped, whichever op comes first: a set op kept over a
+ * set one held takes the held one's skipped days too (within its own days), and a stale one's skipped days the held
+ * one lacks are added to the held one (`stale`, yet a new op held). So two phones of one owner, one skipping a day
+ * (its items made entries) while the other ends or changes the repeat, never show that day's items twice.
+ */
+export function repeatAccept(held: RepeatOpBy | null, e: RepeatOpBy): { v: ReturnType<typeof foodAccept>; keep: RepeatOpBy | null } {
+  const v = foodAccept(held, e);
+  if (v === 'forbidden' || !held || held.rm || e.rm) return { v, keep: v === 'append' ? e : null };
+  if (v === 'append') return { v, keep: withSkips(e, held) };
+  const keep = withSkips(held, e);
+  return { v, keep: keep === held ? null : keep };
+}
+
+/** The repeats as the record keeps them (each one's ops taken by `repeatAccept`: the latest, with every op's skipped
+ *  days), the removed ones gone: by first day, then id. */
 export function foodRepeatFold(ops: Iterable<RepeatOpBy>): FoodRepeat[] {
   const m = new Map<string, RepeatOpBy>();
-  for (const e of ops) if (foodAccept(m.get(e.id) ?? null, e) === 'append') m.set(e.id, e);
+  for (const e of ops) {
+    const { keep } = repeatAccept(m.get(e.id) ?? null, e);
+    if (keep) m.set(e.id, keep);
+  }
   const out: FoodRepeat[] = [];
   for (const e of m.values()) if (!e.rm) out.push(e);
   return out.sort((a, b) => (a.from < b.from ? -1 : a.from > b.from ? 1 : a.id < b.id ? -1 : a.id > b.id ? 1 : 0));

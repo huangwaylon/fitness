@@ -47,6 +47,7 @@ const NONE: Record<string, string> = {
   'lib/components/food/FoodSearch.svelte': 'the search field: the system keyboard clicks',
   'lib/components/food/FoodAmount.svelte': 'the grams field: the system keyboard clicks; the meal already chosen does nothing',
   'lib/components/food/FoodRepeat.svelte': 'the weekday preset already chosen does nothing',
+  'lib/components/food/FoodRecipe.svelte': 'the recipe\'s name field: the system keyboard clicks',
   'lib/components/island/SayPicker.svelte': 'the phrase field: the system keyboard clicks',
   'lib/components/board/BoardView.svelte': 'the note field: the system keyboard clicks'
 };
