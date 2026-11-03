@@ -840,7 +840,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     frames++;
     lastT = t;
     if (frames === 1) readyRes();
-    renderer.setPixelRatio(gesturing ? Math.min(dprFull, DPR_MOVING) : dprFull);
+    // (only when it changes: three's setPixelRatio sets the canvas's size, which reallocates its buffers, every frame)
+    const dpr = gesturing ? Math.min(dprFull, DPR_MOVING) : dprFull;
+    if (dpr !== renderer.getPixelRatio()) renderer.setPixelRatio(dpr);
     if (full) invalidate();
     else if (ambient) setTimeout(() => invalidate(), Math.max(0, 1000 / AMBIENT - (now() - t) - 4));
   }
@@ -931,6 +933,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
         if (m.isMesh) m.geometry.dispose();
       });
       renderer.dispose();
+      // (the GPU's memory back now, not at the context's collection: the island's comes up next; the tent's and the
+      // island's way)
+      renderer.forceContextLoss();
     }
   };
 }

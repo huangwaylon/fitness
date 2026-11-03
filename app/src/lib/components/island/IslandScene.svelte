@@ -1253,6 +1253,10 @@
   .scene[data-r3] :global(.m3on :is([data-m3art], .official)) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global([data-m3]:not(.m3off) :is([data-m3art], .official)) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.mover.m3on > *) { opacity: 0 !important; --art3d: off; }
+  /* (and what animates for ever under art drawn there, none of it on screen, held: a fish's wag, a cicada's buzz, the
+     bottle's rock, a 3D villager's 2D bob, but a hat's or the trick's glasses riding it; else their style and layers
+     ran every frame for nothing. No animationend waits on them) */
+  .scene[data-r3] :global(:is(.mover.m3on *, [data-m3]:not(.m3off) .bottle .rock, .vil .body.bob:not(:has(> [data-hat], > [data-tricked])))) { animation-play-state: paused; }
   .scene[data-r3] :global(.in3d) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.notes.m3on) { opacity: 0 !important; --art3d: off; }
   /* the characters' flourishes are the canvas's (world3d/Island3D actorFx); a sweat drop stays on the face */
