@@ -1,39 +1,23 @@
 <script lang="ts">
   // きろく (records, design.md "Kiroku"), the island panel's first tab: at its top the ベル ledger (this week by day,
-  // then the past weeks) and then 目標 (the Move, steps, weight and body fat goals; the trends live in けんこう);
-  // a day or a goal push a level (`level` = how deep, bindable:
-  // the panel shows its tabs only at 0 and its ‹ calls `back()`). Read-only (Apple Health is the source of
-  // truth): the only inputs are the two goals (either person's: the goal screen names whose). The buys are on ごほうび.
+  // then the past weeks) and then the ずかん (the goals and the trends live in けんこう); a day or a ずかん kind push a
+  // level (`level` = how deep, bindable: the panel shows its tabs only at 0 and its ‹ calls `back()`). Read-only
+  // (Apple Health is the source of truth). The buys are on ごほうび.
   // Everything is computed from the store's reduced model, lazily for the opened day.
   import { tick } from 'svelte';
   import type { PersonId, Who } from '#lib/types.ts';
-  import { MOVE_GOAL, STEPS_GOAL } from '#lib/config/rules.ts';
-  import { BODY_FAT_GOAL } from '#lib/contract/api.ts';
   import { bellsLedger, dayDetail } from '#lib/model/history.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { setGoalBodyFat, setGoalWeight, setMoveGoal, setStepsGoal } from '#lib/store/actions.ts';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import DayDetail from './DayDetail.svelte';
   import BellsLog from './BellsLog.svelte';
-  import ValueInput from './ValueInput.svelte';
-  import GoalCard from './GoalCard.svelte';
   import ZukanCard from './ZukanCard.svelte';
   import Zukan from './Zukan.svelte';
   import type { ZukanKind } from './zukan.ts';
   import { findsView } from '#lib/model/finds.ts';
   import { tallyTotals } from '#lib/model/tally.ts';
-  import Avatar from '../characters/Avatar.svelte';
-  import { parseKcalInput, parseKgInput, parsePctInput, parseStepsInput } from './fmt.ts';
-  import { isGuest } from '#lib/ui-state/viewer.ts';
-  import { t, formatNum } from '#lib/i18n/index.ts';
+  import { t } from '#lib/i18n/index.ts';
 
-  type Screen =
-    | { k: 'day'; date: string }
-    | { k: 'goal'; p: PersonId }
-    | { k: 'fatGoal'; p: PersonId }
-    | { k: 'moveGoal'; p: PersonId }
-    | { k: 'stepsGoal'; p: PersonId }
-    | { k: 'zukan'; kind: ZukanKind };
+  type Screen = { k: 'day'; date: string } | { k: 'zukan'; kind: ZukanKind };
 
   let { level = $bindable(0) }: { level?: number } = $props();
   let stack = $state<Screen[]>([]);
@@ -58,11 +42,6 @@
   const zNames = $derived<Record<Who, string>>({ ...names, G: view?.guest.villagerName ?? 'G' });
   const zVillagers = $derived<Record<Who, string | null>>({ ...villagers, G: view?.guest.villager ?? null });
   const top = $derived(stack.at(-1) ?? null);
-  /** The guest's phone: the goals read-only, no weight goal (docs/design.md "The guest"). */
-  const guest = $derived(isGuest(view));
-  /** Whose goals the 目標 card shows (null: mine). */
-  let goalPick = $state<PersonId | null>(null);
-  const goalP = $derived<PersonId>(goalPick ?? me);
   // One computation per screen and model (not per use).
   const money = $derived(m && !top ? bellsLedger(m.state, m.now) : null);
   const day = $derived(m && top?.k === 'day' ? dayDetail(m.state, top.date, m.now) : null);
@@ -92,41 +71,7 @@
     void tick().then(() => scroller()?.scrollTo({ top: y }));
     return true;
   }
-
-  /** After けってい: focus back on the goal's ✎, else on the panel. */
-  async function refocus(key: string) {
-    await tick();
-    const el = root?.querySelector<HTMLElement>(`[data-focus="${CSS.escape(key)}"]`);
-    if (el) el.focus();
-    else root?.closest('dialog')?.focus();
-  }
-
-  function saveGoal(p: PersonId, kg: number | null) {
-    back();
-    void refocus('weight-goal');
-    if (setGoalWeight(p, kg).ok) toasts.show(t(kg === null ? 'weight.goalCleared' : 'weight.goalSaved'), 2500, { reaction: 'pleased' });
-  }
-  function saveFatGoal(p: PersonId, pct: number | null) {
-    back();
-    void refocus('fat-goal');
-    if (setGoalBodyFat(p, pct).ok) toasts.show(t(pct === null ? 'weight.goalCleared' : 'weight.goalSaved'), 2500, { reaction: 'pleased' });
-  }
-  function saveMoveGoal(p: PersonId, kcal: number) {
-    back();
-    void refocus('move-goal');
-    if (setMoveGoal(p, kcal).ok) toasts.show(t('goal.moveSaved'), 2500, { reaction: 'pleased' });
-  }
-  function saveStepsGoal(p: PersonId, steps: number) {
-    back();
-    void refocus('steps-goal');
-    if (setStepsGoal(p, steps).ok) toasts.show(t('goal.stepsSaved'), 2500, { reaction: 'pleased' });
-  }
 </script>
-
-<!-- A goal screen opens with whose goal it sets (either person sets either person's). -->
-{#snippet who(p: PersonId)}
-  <p class="who"><Avatar person={p} villager={villagers[p]} size={32} /><b>{names[p]}</b>{#if p === me}<small>· {t('kiroku.me')}</small>{/if}</p>
-{/snippet}
 
 <div class="kiroku" class:fill={top?.k === 'zukan'} bind:this={root}>
   {#key stack.length}
@@ -137,9 +82,6 @@
         <h2 class="sec">{t('panel.bells')}</h2>
         <BellsLog ledger={money} {order} {names} {villagers} onday={(date) => go({ k: 'day', date })} />
       {/if}
-      <GoalCard person={goalP} {order} {names} {villagers} moveGoal={view.people[goalP].moveGoal} stepsGoal={view.people[goalP].stepsGoal} goalWeight={guest ? null : (m.state.prefs[goalP].goalWeight ?? null)}
-        goalBodyFat={guest ? null : (m.state.prefs[goalP].goalBodyFat ?? null)} readonly={guest}
-        onperson={(p) => (goalPick = p)} onmove={() => go({ k: 'moveGoal', p: goalP })} onsteps={() => go({ k: 'stepsGoal', p: goalP })} onweight={() => go({ k: 'goal', p: goalP })} onbodyfat={() => go({ k: 'fatGoal', p: goalP })} />
       <!-- the shared ずかん: what either of us has caught, dug up or picked up on the island -->
       <h2 class="sec" data-sec="zukan">{t('zukan.title')}</h2>
       <ZukanCard finds={findsView(m.state)} onopen={(kind) => go({ k: 'zukan', kind })} />
@@ -147,30 +89,6 @@
       <Zukan kind={top.kind} finds={findsView(m.state)} counts={tallyTotals(m.state.tallies)} order={zOrder} names={zNames} villagers={zVillagers} />
     {:else if top.k === 'day' && day}
       <DayDetail d={day} {me} {partner} {names} {villagers} />
-    {:else if guest && (top.k === 'goal' || top.k === 'fatGoal' || top.k === 'moveGoal' || top.k === 'stepsGoal')}
-      <!-- (never on the guest's phone: it sets no goal) -->
-    {:else if top.k === 'goal'}
-      {@const s = top}
-      {@render who(s.p)}
-      {@const goal = m.state.prefs[s.p].goalWeight ?? null}
-      <ValueInput label={t('weight.goalWeight')} sub="" old={goal} unit="kg" parse={parseKgInput} hint={t('weight.range')}
-        onok={(kg) => saveGoal(s.p, kg)} oncancel={back} extra={goal === null ? null : { label: t('weight.clearGoal'), run: () => saveGoal(s.p, null) }} />
-    {:else if top.k === 'fatGoal'}
-      {@const s = top}
-      {@render who(s.p)}
-      {@const goal = m.state.prefs[s.p].goalBodyFat ?? null}
-      <ValueInput label={t('weight.goalBodyFat')} sub="" old={goal} unit="%" parse={parsePctInput} hint={t('weight.fatRange', { min: BODY_FAT_GOAL.min, max: BODY_FAT_GOAL.max })}
-        onok={(pct) => saveFatGoal(s.p, pct)} oncancel={back} extra={goal === null ? null : { label: t('weight.clearGoal'), run: () => saveFatGoal(s.p, null) }} />
-    {:else if top.k === 'moveGoal'}
-      {@const s = top}
-      {@render who(s.p)}
-      <ValueInput label={t('goal.move')} sub={t('goal.moveNote')} old={view.people[s.p].moveGoal} unit="kcal" parse={parseKcalInput}
-        hint={t('goal.moveRange', { min: MOVE_GOAL.min, max: formatNum(MOVE_GOAL.max) })} onok={(kcal) => saveMoveGoal(s.p, kcal)} oncancel={back} />
-    {:else if top.k === 'stepsGoal'}
-      {@const s = top}
-      {@render who(s.p)}
-      <ValueInput label={t('goal.steps')} sub={t('goal.moveNote')} old={view.people[s.p].stepsGoal} unit="steps" parse={parseStepsInput}
-        hint={t('goal.stepsRange', { min: formatNum(STEPS_GOAL.min), max: formatNum(STEPS_GOAL.max), step: STEPS_GOAL.step })} onok={(n) => saveStepsGoal(s.p, n)} oncancel={back} />
     {/if}
   {/if}
   </div>
@@ -181,8 +99,6 @@
   .kiroku { padding-bottom: 8px; }
   /* the section headings: the same small soft label as the panel's other sections */
   .sec { margin: 6px 2px -4px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); letter-spacing: .04em; }
-  .who { display: flex; align-items: center; gap: 8px; margin: 0 2px; font-size: var(--fs-body); }
-  .who small { color: var(--text-soft); font-size: var(--fs-s); font-weight: 700; }
   /* each level slides in from the right (design.md "Navigation": one push motion, 240ms) */
   .lvl { display: grid; gap: 12px; animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }

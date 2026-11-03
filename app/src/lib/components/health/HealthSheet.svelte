@@ -1,8 +1,9 @@
 <script lang="ts">
   // The health popup (docs/design.md "Kenkou"): the HUD's dumbbell opens it, full height like the island panel, but
   // grown out of the button (Sheet's `pop`: a live CSS zoom about the dumbbell, no View Transition). Its title bar
-  // (けんこう, ✕) over one scroller holding けんこう (Health.svelte, its own chunk with its strings). ✕, the backdrop
-  // and Esc close it; the next opening starts at 1週 on かつどう (whose data is kept for the session).
+  // (けんこう, ✕; ‹ while a goal's field is open) over one scroller holding けんこう (Health.svelte, its own chunk with
+  // its strings). ✕, the backdrop and Esc close it; the next opening starts at 1週 on かつどう (whose data is kept for
+  // the session).
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import { week } from '#lib/store/week.svelte.ts';
@@ -15,9 +16,17 @@
   /** けんこう's code: its own chunk, fetched on the first opening. */
   let healthChunk: Promise<typeof import('./Health.svelte')> | null = null;
   const loadHealth = () => (healthChunk ??= import('./Health.svelte'));
+  let health: { back: () => boolean } | undefined = $state();
+  /** A goal's field is open over the charts: the title bar shows ‹. */
+  let deep = $state(false);
+  function back() {
+    cue('back');
+    health?.back();
+  }
 
   function closed() {
     if (toasts.current) toasts.dismiss();
+    deep = false;
     resetHealth();
   }
 
@@ -32,10 +41,10 @@
 </script>
 
 <Sheet bind:open label={t('island.health')} variant="pop" onclose={closed}>
-  <div class="titlebar"><NavBar title={t('island.health')} onclose={() => (open = false)} sfx="self" /></div>
+  <div class="titlebar"><NavBar title={t('island.health')} onback={deep ? back : null} onclose={() => (open = false)} sfx="self" /></div>
   <div class="hs-body" data-health-sheet>
     {#if week.view}
-      {#await loadHealth() then { default: Health }}<Health />{/await}
+      {#await loadHealth() then { default: Health }}<Health bind:this={health} bind:deep />{/await}
     {/if}
   </div>
 </Sheet>

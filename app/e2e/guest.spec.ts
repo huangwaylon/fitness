@@ -35,20 +35,26 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   await expect(panel.locator('[data-group]')).toHaveCount(0);
   await expect(panel.locator('.card').first()).toBeVisible();
   for (const text of ['からだ', '体重', '体脂肪率', 'BMI', '除脂肪体重', 'kg']) await expect(panel, text).not.toContainText(text);
+  // 目標 under the charts, the shown person's: read-only (no ✎), no weight or body fat goal
+  const goals = panel.locator('.health > .goals');
+  await expect(goals).toHaveAttribute('data-person', 'A');
+  await expect(goals).toContainText('ムーブ（1日）');
+  await expect(goals.locator('.pen-btn')).toHaveCount(0);
+  await expect(panel.locator('[data-focus="weight-goal"], [data-focus="fat-goal"]')).toHaveCount(0);
   await whoSel.selectOption('B');
   await expect(panel.locator('.mc[data-metric=steps]')).toHaveAttribute('data-person', 'B');
+  await expect(goals).toHaveAttribute('data-person', 'B');
+  await expect(goals.locator('.pen-btn')).toHaveCount(0);
   await expect(panel).not.toContainText('体重');
   await page.keyboard.press('Escape');
   await expect(panel).toHaveCount(0);
-  // きろく (the jar opens the panel on ごほうび, a tab away): the ベル ledger and the goals, read-only (no ✎, no
-  // weight or body fat goal)
+  // きろく (the jar opens the panel on ごほうび, a tab away): the ベル ledger and the ずかん (the goals are けんこう's)
   await hudJar(page).click();
   await expect(panel.locator('.tab[data-tab=rewards]')).toHaveAttribute('aria-pressed', 'true');
   await panel.locator('.tab[data-tab=kiroku]').click();
   await expect(panel.locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(panel.locator('.goals')).toBeVisible();
-  await expect(panel.locator('.goals .pen-btn')).toHaveCount(0);
-  await expect(panel.locator('[data-focus="weight-goal"], [data-focus="fat-goal"]')).toHaveCount(0);
+  await expect(panel.locator('.kiroku [data-sec=zukan]')).toBeVisible();
+  await expect(panel.locator('.goals, .pen-btn')).toHaveCount(0);
   for (const text of ['体重', '体脂肪率', 'kg', '%']) await expect(panel, text).not.toContainText(text);
   // せってい: the villager, the sound and the language; no もようがえ or つうしん (and no つうち: gone for everyone)
   await panel.locator('.tab[data-tab=settings]').click();

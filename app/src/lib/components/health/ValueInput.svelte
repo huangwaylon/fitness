@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Type a goal for きろく: a goal weight (decimal, 20–300 kg), the Move goal (whole kcal, 100–2,000) or the steps
+  // Type a goal for けんこう's 目標: a goal weight (decimal, 20–300 kg), the Move goal (whole kcal, 100–2,000) or the steps
   // goal (1,000–30,000 by 500).
   // A 16px+ field (iOS doesn't zoom) with the right keypad (`inputmode`), the old value grey, then NH's choice list
   // ▶ けってい / (目標をなくす) / やめる. `parse` turns the text into a value or null (shown as the hint in coral).

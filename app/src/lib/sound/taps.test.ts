@@ -38,12 +38,11 @@ const SELF: Record<string, string> = {
 const NONE: Record<string, string> = {
   'lib/components/ui/Toast.svelte': 'a banner with 取り消す: a tap only holds it (the button is the sound)',
   'routes/pair/+page.svelte': 'the key field: the system keyboard clicks',
-  'lib/components/kiroku/ValueInput.svelte': 'the goal fields (weight, Move): the system keyboard clicks',
+  'lib/components/health/ValueInput.svelte': 'the goal fields (weight, Move): the system keyboard clicks',
   'lib/components/panel/VillagerPicker.svelte': 'name and search fields; the villager already chosen does nothing',
   'lib/components/panel/LangSection.svelte': 'the language already chosen does nothing',
   'lib/components/panel/IslandPanel.svelte': 'the tab already shown does nothing',
   'lib/components/health/Health.svelte': 'the period or person already shown does nothing; a dropdown ticks on change (setWho, setPeriod)',
-  'lib/components/kiroku/GoalCard.svelte': 'the person already shown does nothing',
   'lib/components/island/SayPicker.svelte': 'the phrase field: the system keyboard clicks',
   'lib/components/board/BoardView.svelte': 'the note field: the system keyboard clicks'
 };
