@@ -28,9 +28,11 @@ export function openGrass(layout: Layout): [number, number][] {
     if (o.k === 'stairs') for (const [c, r] of objTiles(layout, o)) for (let j = -1; j <= 1; j++) mark(c, r + j);
     // a tree's canopy stands over the ground behind it and beside it on screen (its leaves take a tap there), a bush's
     // or a flower's thumb-sized tap area over the tiles round it
-    const over = def?.group === 'tree' ? 2 : def?.group === 'bush' || def?.group === 'flower' ? 1 : -1;
-    // (a tree's the tile in front too: a spot's own thumb-sized tap area there would reach up over its trunk)
-    const front = def?.group === 'tree' ? -1 : 0;
+    // (a tree's the tile in front too: a spot's own thumb-sized tap area there would reach up over its trunk; the rock's
+    // and the tape deck's all round: a weed beside the rock clonked it)
+    const ROUND = o.k === 'rock' || o.k === 'tape-deck';
+    const over = def?.group === 'tree' ? 2 : def?.group === 'bush' || def?.group === 'flower' || ROUND ? 1 : -1;
+    const front = def?.group === 'tree' || ROUND ? -1 : 0;
     for (const [c, r] of over >= 0 ? objTiles(layout, o) : []) for (let j = front; j <= over; j++) for (let i = -1; i <= 1; i++) mark(c + i, r + j);
   }
   const nav = navOf(layout);

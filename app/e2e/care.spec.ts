@@ -1,7 +1,7 @@
 // Island care (docs/design.md "Island care"): weeds to pull, flowers to water (a hybrid now and then the next day), the
 // rock by the hedge. None of it changes ベル, opens a sheet or navigates; nothing sits over a control.
 import { expect, test, type Page } from '@playwright/test';
-import { FLOWERS } from '../src/lib/components/island/world.ts';
+import { geo } from './island.ts';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
 async function open(page: Page, q: string) {
@@ -34,13 +34,16 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
   test(`weeds sprout on open lawn, never over a control; a tap pulls one, and it stays pulled (${w}px)`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     const before = await open(page, '&date=2026-11-04T12:00');
-    const weeds = page.locator('[data-care="weed"]');
-    // the day's three, less one a control covers on this screen (a weed behind a canopy, on a small phone)
+    const weeds = page.locator('[data-care="weed"]'), day = page.locator('[data-weeds]');
+    // the day's two or three (wherever they are: on the layout they sprout all over the long island)
     await expect(weeds.first()).toBeAttached();
-    await page.waitForTimeout(600); // measured once the camera has settled
-    const n = await weeds.count();
+    const n = Number(await day.getAttribute('data-weeds'));
     expect(n).toBeGreaterThanOrEqual(2);
     expect(n).toBeLessThanOrEqual(3);
+    // the camera over the first (on the 2D island they're on the lawn in view at まえ)
+    const z = Number((await day.getAttribute('data-at'))!.split(' ')[0].split(',')[1]);
+    if (z > 300) await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z - 160);
+    await page.waitForTimeout(600); // measured once the camera has settled
     // every weed and dig spot on this screen on bare lawn: a few px above the anchor (the tuft), nothing but scenery
     // under it (the villagers walk about: not counted)
     const onControls = await page.evaluate(() =>
@@ -55,19 +58,21 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     expect(i, 'a weed on screen').toBeGreaterThanOrEqual(0);
     const p = await at(page, '[data-care="weed"]', i);
     await page.mouse.click(p.x, p.y - 4);
-    await expect(weeds).toHaveCount(n - 1);
+    await expect(day).toHaveAttribute('data-weeds', String(n - 1));
     await expect.poll(() => cues(page)).toContain('scene-weed');
     await unchanged(page, before);
     await page.reload();
     await expect(ribbon(page)).toBeVisible();
     await page.waitForTimeout(600);
-    await expect(weeds).toHaveCount(n - 1);
+    await expect(day).toHaveAttribute('data-weeds', String(n - 1));
   });
 
 test('a tap on a flower waters it (the can, a sprinkle); a watered flower can show a hybrid the next day', async ({ page }) => {
   const before = await open(page, '&date=2026-11-03T12:00');
-  // the front lawn's first clump (world.ts FLOWERS), in view at まえ
-  const fl = FLOWERS[0], sel = `[data-flower="${fl.id}"]`, other = `[data-flower="${FLOWERS[1].id}"]`;
+  // the front lawn's first clump (world.ts FLOWERS as the page has them: the scatter's own, its `fl:` ids, before the
+  // layout's new ones), in view at まえ
+  const wild = (await geo(page)).FLOWERS.filter((f) => f.id.startsWith('fl:'));
+  const fl = wild[0], sel = `[data-flower="${fl.id}"]`, other = `[data-flower="${wild[1].id}"]`;
   const f = await at(page, sel);
   await page.mouse.click(f.x, f.y - 6);
   await expect(page.locator('[data-fx="water"]')).toBeAttached();
