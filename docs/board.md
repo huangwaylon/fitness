@@ -47,7 +47,7 @@ interface Focus {
   x: number; z: number; y: number; w: number; h: number;
   /** Which way its face looks (radians about the up axis; 0 = toward the camera, −z, as a layout `f` of 0). */
   yaw?: number;
-  /** Screen px at the top to keep it under (the HUD's ribbon's bottom + 10: BoardView), default 0. */
+  /** Screen px at the top to keep it under (the HUD row's bottom + 10: BoardView), default 0. */
   top?: number;
   /** Screen px at the bottom to keep it above (the write field and the keyboard: visualViewport), default 0. */
   bottom?: number;
@@ -95,7 +95,7 @@ interface Proj3 {
 - **Walk up:** a tap on the board walks my villager to the spot in front of it (the tent door's way: the deliberate
   exception to "interactables act in place"), then the board opens.
 - **The board view:** in 3D the camera dollies and zooms to the face (≈600 ms); the back control (「もどる」, top left
-  under the HUD's ribbon: `--hud-top` + 44 + the lip + 10 px, never over the ribbon) returns it to exactly where it was. On the 2D island (and in 3D before `focus` exists): a sheet over the island showing the same
+  under the HUD: `--hud-top` + 44 + the lip + 10 px, never over it) returns it to exactly where it was. On the 2D island (and in 3D before `focus` exists): a sheet over the island showing the same
   face (the very canvas the 3D texture is drawn from) with the same controls.
 - **Posts:** the newest first, four to a page as NH's notes (the author's villager name and icon, the date), 「‹」「›」
   and a swipe on the board page through older ones.
@@ -137,7 +137,7 @@ interface Proj3 {
 - The face's notes are a canvas: the specs read what it drew through `window.__board.drawn()` (the page's texts) and a
   pixel of the 2D sheet's canvas (a note's paper, not bare cork), and `__board.face3()` (the 3D face's box in the scene:
   on the cork, in front of NH's notes). A note shows at once when written, after a reload, and from the record's
-  snapshot (the relay mocked); 「もどる」 is under the ribbon and the face under both, on the 2D and the 3D island.
+  snapshot (the relay mocked); 「もどる」 is under the HUD and the face under both, on the 2D and the 3D island.
 - The keyboard: `e2e/keyboard.ts` stubs `visualViewport` as iOS changes it (336 px: an iPhone 15's keyboard and its
   suggestions bar; `innerHeight` shrinks with it, the layout viewport stays) and draws a grey box where it would be.
   Writing with it up, on both islands: the field and its controls lie in the visible part, the face (the typed note
