@@ -431,7 +431,7 @@
     const stay = stayingAt();
     const outAt = ui.takeOutAt();
     if ((fromTentNow = ui.takeFromTent())) stepOut(outOfTent(view.viewer));
-    // (out of the museum's or the shop's door: there)
+    // (out of the museum's door: there)
     else if ((fromTentNow = !!outAt)) stepOut(outAt!);
     else if (stay && !actors.mine.walking) place('mine', stay[0], stay[1]);
   }
@@ -1013,10 +1013,10 @@
     cue('scene-bench');
     const q = new URLSearchParams(location.search);
     q.delete('home');
-    if (id !== 'campsite' && id !== 'museum' && id !== 'shop') q.set('home', id.slice(-1));
+    if (id !== 'campsite' && id !== 'museum') q.set('home', id.slice(-1));
     const qs = q.toString();
-    // the museum and the shop are their own screens (routes/museum, routes/shop); a home's the room's
-    void goto((id === 'museum' ? resolve('/museum') : id === 'shop' ? resolve('/shop') : resolve('/tent')) + (qs ? `?${qs}` : '')).finally(() => (entering = false));
+    // the museum is its own screen (routes/museum); a home's the room's
+    void goto((id === 'museum' ? resolve('/museum') : resolve('/tent')) + (qs ? `?${qs}` : '')).finally(() => (entering = false));
   }
   let entering = false;
   /** The door going in through (the iris closes on it). */

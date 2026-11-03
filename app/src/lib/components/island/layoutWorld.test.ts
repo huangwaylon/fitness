@@ -19,9 +19,8 @@ describe('worldOf: world.ts from the layout', () => {
   test('the homes: the campsite is ウェイ’s home at the back, うめ’s and the guest’s in the middle', () => {
     const camp = g.BUILDINGS.find((b) => b.id === 'campsite')!;
     expect(camp.z).toBeGreaterThan(1350);
-    expect(g.BUILDINGS.map((b) => b.id).sort()).toEqual(['campsite', 'home-B', 'home-G', 'museum', 'shop']);
-    // (the homes and the museum; the shop stands in the middle by the main path, a walk up from the beach)
-    for (const b of g.BUILDINGS) if (b.id !== 'shop') expect(b.z).toBeGreaterThan(700);
+    expect(g.BUILDINGS.map((b) => b.id).sort()).toEqual(['campsite', 'home-B', 'home-G', 'museum']);
+    for (const b of g.BUILDINGS) expect(b.z).toBeGreaterThan(700);
     // おく's camera stop: the 3D camera's far end, the tent's feet mid-screen
     expect(camp.z - g.CAMS.oku).toBeGreaterThan(100);
     expect(camp.z - g.CAMS.oku).toBeLessThan(200);

@@ -58,8 +58,8 @@ describe('the default layout (today island on the grid)', () => {
   test('keeps world.ts ids, each piece on the grid near where it stands today', () => {
     const at = (id: string) => objMid(l, l.objects.get(id)!);
     const near = (id: string, x: number, z: number) => expect(Math.hypot(at(id)[0] - x, at(id)[1] - long(z)), id).toBeLessThanOrEqual(80);
-    // (the clifftop's cedars that made room round the museum, and the two flowers round the shop: scripts/layout-default.ts)
-    const ROOM = new Set(['cedar-f3', 'cedar-f4', 'cedar-f5', 'cedar-f6', 'fl:298:403', 'fl:317:407']);
+    // (the clifftop's cedars that made room round the museum: scripts/layout-default.ts)
+    const ROOM = new Set(['cedar-f3', 'cedar-f4', 'cedar-f5', 'cedar-f6']);
     for (const s of SCENERY) if (!ROOM.has(s.id)) near(s.id, s.x, s.z);
     HEDGE_XS.forEach((x, i) => near(`hedge-${i}`, x, HEDGE_Z));
     near('goal-A', ...GOAL_TREES.A);
@@ -69,7 +69,7 @@ describe('the default layout (today island on the grid)', () => {
     near('rock', ...ROCK);
     near('bridge', BRIDGE.x, (BRIDGE.z0 + BRIDGE.z1) / 2);
     near('spot-villager-A', ...HOMES.A);
-    for (const f of FLOWERS) if (!ROOM.has(f.id)) near(f.id, f.x, f.z);
+    for (const f of FLOWERS) near(f.id, f.x, f.z);
     const door = doorOf(l, l.objects.get('home-A')!).at;
     expect(Math.hypot(door[0] - CAMPSITE.x, door[1] - long(CAMPSITE.z))).toBeLessThanOrEqual(30);
   });

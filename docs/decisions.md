@@ -223,12 +223,6 @@ furniture; the week's goals still buy the two treats. Pockets and wallets are pe
   もようがえ for good (their own home's and the tent's), so a piece is bought once.
 - **Where it shows:** the counter (NH's Nook's Cranny, Timmy and Tommy) and one row in the leaf's menu, 「かいがら N」
   under 「ベル N」 (the guest's phone too): ごほうび stays the ベル's.
-- **A screen, not a 3D room:** the shop is a counter: picking catches, counts and prices are lists, which NH itself
-  draws as 2D menus; a walkable room would add another three.js scene (the phone already runs hot) for nothing a sale
-  needs. NH's building on the island is 3D; inside, NH's render of the twins behind a drawn counter.
-- **Its placement on the user's island** clears one of their flowers: their island has no 7 × 4 spot clear (flower
-  borders down both sides), so the one-time op takes the nearest spot where only flowers stand, never a tree, a bush,
-  furniture or a path; the alternative was a shop standing over things.
 Why: the user ("currency is かいがら … per person … its own building"); deriving from the tallies costs no request per
 catch on the Free plan, and the record checks cover itself (in the Durable Object) because a wallet is per person and
 spends can't be voided, unlike the shared ベル wallet's read-time rule.
