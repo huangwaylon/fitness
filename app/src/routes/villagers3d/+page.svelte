@@ -20,7 +20,7 @@
   import { SPEED } from '#lib/components/island/walkGraph.ts';
   import TERRAIN from '#lib/components/island/terrain.json' with { type: 'json' };
   import { has3d, ids3d, url3d } from '#lib/components/villager3d/manifest.ts';
-  import { seatOf, type Action, type Pose, type State } from '#lib/components/villager3d/poses.ts';
+  import { seatOf, type Action, type State } from '#lib/components/villager3d/poses.ts';
   import type { Face } from '#lib/components/villager3d/faces.ts';
   import type { Villager3D } from '#lib/components/villager3d/villager3d.ts';
 
@@ -308,7 +308,6 @@
         pos: (s: Slot) => [W[s].x, W[s].z],
         state: (s: Slot) => W[s].v?.state() ?? null,
         walking: (s: Slot) => W[s].path.length > 0,
-        walkTo: (s: Slot, x: number, z: number) => walkTo(s, x, z),
         client: (x: number, z: number, lift = 0) => {
           const p = eng.at(x, z, lift), r = canvas!.getBoundingClientRect();
           return [r.left + p.sx, r.top + p.sy];
@@ -319,7 +318,6 @@
         /** A close look at one (the screenshots'): the engine's focus, nearer and lower than the board's. */
         focus: (s: Slot, zoom = 6, pitch = 18) => eng.focusOn({ x: W[s].x, z: W[s].z, lift: 40 }, { zoom, pitch, ms: 1 }),
         restore: () => eng.restore(1),
-        hold: (s: Slot, p: Pose | null) => W[s].v?.hold(p),
         /** Where some bones are (model units, the villager's own frame: x its left, y up, z its front), as posed now. */
         bones: (s: Slot, names: string[]) => {
           const v = W[s].v;
