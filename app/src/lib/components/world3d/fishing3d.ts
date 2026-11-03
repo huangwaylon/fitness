@@ -38,7 +38,10 @@ export function nibbled(): void {
 }
 
 /** The 2D float's moves (Critters.svelte's CSS: bob, the nibble's twitch, plunge), in world units up. */
-const BOB_U = 0.6, BOB_MS = 1500, NIBBLE_MS = 380, PLUNGE_MS = 220, UNDER_U = -7;
+const BOB_U = 0.6, BOB_MS = 1500, UNDER_U = -7;
+/** A nibble's dip and the bite's plunge (ms): the fish's nose bumps the float and lunges onto it on the same beats
+ *  (Critters.svelte's 3D shadow). */
+export const NIBBLE_MS = 380, PLUNGE_MS = 220;
 /** A nibble's dip over its 380 ms: down 0.9u by a quarter, back to −0.2u by 55 %, up (the 2D keyframes). */
 function dip(k: number): number {
   if (k < 0.25) return -0.9 * (k / 0.25);

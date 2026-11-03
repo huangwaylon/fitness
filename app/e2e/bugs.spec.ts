@@ -103,7 +103,8 @@ test('a stink bug on the flowers and a long-horned beetle on a trunk are netted,
 const onFlowerHead = (page: Page, p: { x: number; y: number }) =>
   page.evaluate(({ x, y }) => [...document.querySelectorAll('[data-flower]')].some((el) => {
     const r = el.getBoundingClientRect();
-    return x > r.left && x < r.right && y > r.top - 4 && y < r.top + r.height * 0.35;
+    // (it sits 2u over the head: at the whole island's zoom a few px, its box's middle up to ~5 px above the top)
+    return x > r.left && x < r.right && y > r.top - 6 && y < r.top + r.height * 0.35;
   }), p);
 
 test('NH’s flower bugs: a ladybug and a mantis sit still on a flower’s head (and are netted there)', async ({ page }) => {

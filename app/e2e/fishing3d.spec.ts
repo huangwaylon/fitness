@@ -51,8 +51,10 @@ for (const [water, q, cam, sel, miss] of [
     await expect(page.locator(sel)).toBeAttached({ timeout: 10_000 });
     // my villager in 3D (its model in: under CI's software GL that takes a while), else it's a card and holds no rod
     await expect.poll(() => v3(page, (v) => v.state('mine')), { timeout: 30_000 }).not.toBeNull();
-    // the shadow drawn where its tap area is (it swims: a few px of lag between the two at most)
-    await expect.poll(async () => apart(await drawnAt(page, sel, `fish-${water}-`)), { timeout: 8000 }).toBeLessThan(16);
+    // the shadow drawn where its tap area is (it swims: a few px of lag between the two at most): the model's spot is its
+    // head (Critters' fish3: the body trails behind it), half its length from the tap area's middle
+    const half = () => page.locator(`${sel} .fin`).evaluate((el) => { const r = el.getBoundingClientRect(); return Math.max(r.width, r.height) / 2; });
+    await expect.poll(async () => apart(await drawnAt(page, sel, `fish-${water}-`)) - (await half()), { timeout: 8000 }).toBeLessThan(16);
     // my villager by the water (behind it: never over the shadow on screen), within a line's reach (across the island, the line runs from the bank: no rod in hand)
     {
       const p = await page.evaluate((pre) => { const w = (window as unknown as { __world3d: W3 }).__world3d; for (let n = 0; n < 200; n++) { const q = w.where(`${pre}${n}`); if (q) return [q.x, -q.z]; } return null; }, `fish-${water}-`);

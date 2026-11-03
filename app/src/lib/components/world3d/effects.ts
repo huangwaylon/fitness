@@ -14,6 +14,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { bend, glow as addLight } from './bend.ts';
 import { MODELS } from './models3d.ts';
+import { pace } from './pace.ts';
 
 export type FxKind =
   | 'dust' | 'sand' | 'snow' | 'splash' | 'ripple' | 'sparkle' | 'sparks' | 'bang' | 'leaves' | 'drops' | 'hearts'
@@ -398,7 +399,8 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     }
     // (the ambient ones, the season's fall and the fireflies, are no motion to keep the island at full rate: the
     // water's 30 a second carries them)
-    return parts.some((p) => !p.tag) ? true : parts.length ? 'ambient' : false;
+    // (and the critters' moves drawn from their live spots: pace.ts, Critters.svelte)
+    return parts.some((p) => !p.tag) || pace.full > 0 ? true : parts.length || pace.ambient > 0 ? 'ambient' : false;
   }
 
   return {
