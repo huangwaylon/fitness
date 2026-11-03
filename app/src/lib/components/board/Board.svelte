@@ -38,6 +38,12 @@
   /** What the face shows (BoardView pages and picks; `draft`: the note being written, drawn as typed). */
   const face = $state({ page: 0, selected: null as string | null, rev: 0, draft: null as { id: string | null; text: string } | null });
   let face3: Face3 | null = null;
+  // (read untracked where the face is made: the night only sets its glow, it never makes the face again)
+  let nightNow = false;
+  $effect(() => {
+    nightNow = night;
+    face3?.night(night);
+  });
   /** What the face last drew (the e2e's hook: window.__board). */
   let drawn: string[] = [];
   function draw() {
@@ -83,6 +89,7 @@
     void import('./face3d.ts').then(({ faceMesh }) => {
       if (gone) return;
       face3 = faceMesh(canvas);
+      face3.night(nightNow);
       three.attach!('board', face3.mesh);
       draw();
     });

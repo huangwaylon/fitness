@@ -4,10 +4,15 @@
 import { Box3, CanvasTexture, Mesh, MeshLambertMaterial, PlaneGeometry, SRGBColorSpace } from 'three';
 import { FACE } from './spot.ts';
 
+/** How much of the face's own colour it gives off by night (0 by day). */
+const NIGHT_GLOW = 0.4;
+
 export interface Face3 {
   mesh: Mesh;
   /** The canvas was drawn again. */
   update(): void;
+  /** Night: the notes glow a little by their own colour (readable in the dark, not washed out). */
+  night(on: boolean): void;
   /** Where the face is in the scene (world units, three's axes: z is the island's −z), for the e2e; null off it. */
   box(): { min: [number, number, number]; max: [number, number, number] } | null;
   dispose(): void;
@@ -17,7 +22,9 @@ export function faceMesh(canvas: HTMLCanvasElement): Face3 {
   const tex = new CanvasTexture(canvas);
   tex.colorSpace = SRGBColorSpace;
   tex.anisotropy = 4;
-  const mat = new MeshLambertMaterial({ map: tex });
+  // by night a soft glow of the face's own colours over the moonlight (the user: "a bit dim to read … but not too bright
+  // and washed out"): NIGHT_GLOW of the canvas itself, on top of what the night's lights give it
+  const mat = new MeshLambertMaterial({ map: tex, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0 });
   // the plane's place on the model is in its geometry: `attach` sets the object's matrix to the instance's (model
   // units, the model's origin), so a position on the mesh itself would be dropped (the face sat at the model's origin,
   // half under the sand, behind the cork)
@@ -28,6 +35,7 @@ export function faceMesh(canvas: HTMLCanvasElement): Face3 {
   return {
     mesh,
     update: () => void (tex.needsUpdate = true),
+    night: (on) => void (mat.emissiveIntensity = on ? NIGHT_GLOW : 0),
     box: () => {
       if (!mesh.parent) return null;
       mesh.updateMatrixWorld(true);
