@@ -116,10 +116,14 @@ test('ごほうび: a small ⓘ at each reward\'s top-right (a 44px target) show
     await expect(info).toHaveAttribute('aria-expanded', 'true');
     await expect(tip).toHaveCount(1);
     await expect(tip).toContainText(ex);
-    // inside the screen
+    // inside the screen, as wide as the two tiles, its tail under this tile's ⓘ (once it has popped in)
+    await tip.evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
     const b = (await tip.boundingBox())!;
     expect(b.x).toBeGreaterThanOrEqual(0);
     expect(b.x + b.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+    expect(b.width).toBeGreaterThan((await shop.boundingBox())!.width - 8);
+    const tail = await tip.evaluate((el) => el.getBoundingClientRect().left + parseFloat(getComputedStyle(el, '::before').left) + 7);
+    expect(Math.abs(tail - (ib.x + ib.width / 2))).toBeLessThan(3);
     // no buy asked
     await expect(page.locator('dialog[open]')).toHaveCount(1);
     await info.click();
@@ -136,6 +140,25 @@ test('ごほうび: a small ⓘ at each reward\'s top-right (a 44px target) show
   await page.keyboard.press('Escape');
   await expect(tip).toHaveCount(0);
   await expect(page.locator('dialog[open]')).toHaveCount(1);
+});
+
+test('ごほうび at 320px: the reward tiles keep no empty band over their art, and ⓘ\'s examples read in a few lines, not one per line', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 568 });
+  await page.goto('?demo');
+  await islandReady(page);
+  await toPanel(page);
+  await settled(page);
+  const shop = sheet(page).locator('.shop');
+  for (const id of ['snack', 'dinner']) {
+    const tile = (await shop.locator(`button[data-item=${id}]`).boundingBox())!, art = (await shop.locator(`button[data-item=${id}] .ic`).boundingBox())!;
+    expect(art.y - tile.y).toBeLessThanOrEqual(8);
+    await shop.locator(`[data-info=${id}]`).click();
+    const tip = shop.locator('[data-info-tip]');
+    const lines = await tip.evaluate((el) => { const cs = getComputedStyle(el); return Math.round((el.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)) / parseFloat(cs.lineHeight)); });
+    expect(lines).toBeLessThanOrEqual(3);
+    await page.keyboard.press('Escape');
+    await expect(tip).toHaveCount(0);
+  }
 });
 
 test('ごほうび, top to bottom: the header, the rewards, the ベル ledger, then the buys folded at the very bottom (their count shown); the disclosure opens and folds them', async ({ page }) => {

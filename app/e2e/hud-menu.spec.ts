@@ -79,6 +79,25 @@ test('folded by default; the leaf unfolds it and folds it again; a tap elsewhere
   await folded(page);
 });
 
+test('by keyboard: the leaf, a pill, Enter opens its sheet, Esc closes it and the focus is back on the leaf', async ({ page }) => {
+  await open(page);
+  for (const [pill, sheet] of [[hudBells(page), '[data-wallet]'], [zukan(page), '[data-zukan-sheet]'], [settings(page), '[data-settings]']] as const) {
+    await hudMenu(page).focus();
+    await page.keyboard.press('Enter');
+    await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'true');
+    // (focused directly: WebKit's Tab skips buttons unless the Mac's "Tab highlights each item" is on)
+    await expect(pill).toBeVisible();
+    await pill.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator(`dialog[open] ${sheet}`)).toBeVisible();
+    await folded(page);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
+    // (the pill went inert with the fold: the dialog gives the focus back to the leaf, not to the page's body)
+    await expect(hudMenu(page)).toBeFocused();
+  }
+});
+
 test('the guest has the ベル row too (the pair\'s wallet, to look at): it opens ごほうび, view-only', async ({ page }) => {
   await page.goto('?demo&as=G&date=2026-11-04T12:00');
   await expect(hudMenu(page)).toBeVisible();
