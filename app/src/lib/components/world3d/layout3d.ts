@@ -7,7 +7,7 @@
 // face the camera), a little for a tree drawn flipped.
 import ISLAND_MODELS from '../island/models.json' with { type: 'json' };
 import {
-  BRIDGE, CAMPSITE, DECOR_SLOTS, DECOR_U, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, SCENERY, TREE_H, type Scenery
+  BRIDGE, CAMPSITE, DECOR_SLOTS, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, SCENERY, TREE_H, type Scenery
 } from '../island/world.ts';
 import type { Piece } from '../island/fixedDecor.ts';
 import { FLOWER_U, TREE_FRUIT, TREE_FRUIT_U, flowerScale, hedgePair, wildFlower } from '../island/scene.ts';

@@ -594,7 +594,7 @@
       const y = Math.min(heightOf(p.x - dx, p.z - dz), heightOf(p.x + dx, p.z + dz));
       want.set(`structure:${p.id}`, { key: JSON.stringify(p) + y.toFixed(1), make: () => buildStructure(p), at: { x: p.x, z: p.z, yaw: p.yaw, y }, home: false });
     }
-    for (const [id, b] of built) if (!want.has(id)) {
+    for (const id of built.keys()) if (!want.has(id)) {
       e.placeGroup(id, null);
       built.delete(id);
     }

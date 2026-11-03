@@ -12,8 +12,6 @@
 type Who = 'A' | 'B' | 'G';
 type Facing = 0 | 1 | 2 | 3;
 
-/** The outdoor scopes (the members' alone) and the home looks. */
-const OUTDOOR_SCOPES = ['o', 'c', 'r'] as const;
 /** Each home's interior scope by its owner (ウェイ's is the tent's room, `t`, as it always was). */
 const ROOM_SCOPE = { A: 't', B: 'u', G: 'v' } as const;
 type RoomScope = (typeof ROOM_SCOPE)[keyof typeof ROOM_SCOPE];
