@@ -61,3 +61,34 @@ test('a tap on the floor walks there, through the hall into a wing', async ({ pa
     return Math.hypot(x - 150, z - 20);
   }, { timeout: 15_000 }).toBeLessThan(6);
 });
+
+test('what’s on show: exactly the fish anyone has found (the guest’s too), each in its tank; nothing else', async ({ page }) => {
+  await seed(page, [['fish', 'sea-bass', 'A'], ['fish', 'koi', 'B'], ['fish', 'neon-tetra', 'G'], ['fish', 'oarfish', 'A']]);
+  await open(page);
+  const sp = await mu<{ id: string; kind: string; tank: string; by: string }[]>(page, 'specimens()');
+  expect(sp.map((s) => [s.id, s.tank, s.by]).sort()).toEqual([['koi', 'river', 'B'], ['neon-tetra', 'small-6', 'G'], ['oarfish', 'deep', 'A'], ['sea-bass', 'sea', 'A']]);
+  // each drawn swimming in the aquarium (its model loaded), and no other
+  await expect.poll(async () => (await mu<string[]>(page, 'shown()')).sort(), { timeout: 15_000 }).toEqual(['koi', 'neon-tetra', 'oarfish', 'sea-bass']);
+});
+
+test('a tap on a fish shows its card: its names, who found it first and when, how many', async ({ page }) => {
+  await seed(page, [['fish', 'koi', 'B']]);
+  await open(page);
+  await expect.poll(async () => (await mu<string[]>(page, 'shown()')).length, { timeout: 15_000 }).toBe(1);
+  // by the river tank, the camera on it
+  await page.evaluate('window.__museum.put(176, 32)');
+  await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
+  await expect.poll(async () => {
+    const p = await mu<[number, number] | null>(page, 'creature("koi")');
+    if (p) await page.mouse.click(p[0], p[1]);
+    return mu<string | null>(page, 'card()');
+  }, { timeout: 10_000 }).toBe('koi');
+  const card = page.locator('[data-museum-card="koi"]');
+  await expect(card).toContainText('ニシキゴイ');
+  await expect(card).toContainText(/koi/i);
+  await expect(card.locator('[data-museum-finder="B"]')).toContainText('11/4');
+  await expect(card.locator('[data-museum-times]')).toContainText('×1');
+  // ✕ closes it
+  await card.getByRole('button', { name: 'とじる' }).click();
+  await expect(card).toHaveCount(0);
+});

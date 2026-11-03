@@ -16,13 +16,14 @@ import type { Specimen } from './species.ts';
 import { TANKS, fishScale, shoalOf, waterOf, type Box, type Tank } from './tanks.ts';
 import { spawn, stepSchool, type Swimmer } from './boids.ts';
 import { FISH_WING, type Rect } from './plan.ts';
+import { plainGeometry } from './geometry.ts';
 
 /** Each look's water: its deep colour, its light colour, how bright its caustics. */
 const WATER: Record<Tank['look'], { deep: number; top: number; caustic: number; glow: number }> = {
-  sea: { deep: 0x0d4a7a, top: 0x3fb3d8, caustic: 0.55, glow: 1 },
-  deep: { deep: 0x030a1c, top: 0x123a66, caustic: 0.08, glow: 0.7 },
-  river: { deep: 0x1d5246, top: 0x6ab9a0, caustic: 0.45, glow: 1 },
-  small: { deep: 0x195a7c, top: 0x6fcbe0, caustic: 0.5, glow: 1 }
+  sea: { deep: 0x0b3f6e, top: 0x3aa6cf, caustic: 0.22, glow: 0x7fd0f0 },
+  deep: { deep: 0x02060f, top: 0x0f2d52, caustic: 0.04, glow: 0x2a5a90 },
+  river: { deep: 0x1a4a40, top: 0x5fae95, caustic: 0.25, glow: 0x9fe0c4 },
+  small: { deep: 0x175274, top: 0x66c2da, caustic: 0.28, glow: 0x9fe4f4 }
 };
 
 const WATER_VERT = /* glsl */ `
@@ -35,7 +36,7 @@ uniform float uTime; uniform vec3 uDeep; uniform vec3 uTop; uniform float uCaust
 varying vec2 vUv; varying vec3 vPos;
 float caustic(vec2 p, float t) {
   float c = sin(p.x * 0.35 + t * 0.9) + sin(p.y * 0.41 - t * 1.1) + sin((p.x + p.y) * 0.23 + t * 0.6) + sin(length(p * 0.3 + vec2(sin(t * 0.3), cos(t * 0.27)) * 3.0));
-  return pow(1.0 - abs(sin(c * 1.3)), 6.0);
+  return pow(1.0 - abs(sin(c * 1.3)), 10.0);
 }
 void main() {
   float h = uFloor > 0.5 ? 0.15 : vUv.y;
@@ -44,7 +45,7 @@ void main() {
   float c = caustic(p, uTime) * uCaustic;
   float rays = uFloor > 0.5 ? 0.0 : pow(max(0.0, sin(vPos.x * 0.08 + vPos.z * 0.08 + sin(uTime * 0.2) * 0.6)), 8.0) * smoothstep(0.2, 1.0, vUv.y) * 0.35 * uCaustic;
   col += vec3(0.75, 0.95, 1.0) * (c * (0.55 + 0.45 * h) + rays);
-  gl_FragColor = vec4(col * (1.0 - uNight * 0.25), uFloor > 0.5 ? c * 0.8 : 1.0);
+  gl_FragColor = vec4(col * (1.0 - uNight * 0.25), uFloor > 0.5 ? c * 0.45 : 1.0);
   #include <colorspace_fragment>
 }`;
 const BUBBLE_VERT = /* glsl */ `
@@ -65,11 +66,11 @@ void main() { vec2 d = gl_PointCoord - 0.5; float r = length(d); if (r > 0.5) di
 
 /** The props in each look's tanks: [model, where across (0…1), where back (0…1), scale]. */
 const PROPS: Record<string, [string, number, number, number][]> = {
-  sea: [['kelp-rocks', 0.12, 0.25, 0.75], ['coral', 0.42, 0.3, 0.9], ['kelp-rock', 0.68, 0.22, 0.7], ['coral-2', 0.88, 0.35, 1], ['diver', 0.55, 0.55, 0.9]],
+  sea: [['kelp-rocks', 0.12, 0.25, 0.75], ['coral', 0.42, 0.3, 0.9], ['kelp-rock', 0.68, 0.22, 0.7], ['coral-2', 0.88, 0.35, 1], ['diver', 0.55, 0.6, 0.6]],
   deep: [['deep-rocks', 0.5, 0.15, 1.2], ['deep-rocks', 0.5, 0.75, 0.9]],
   river: [['mossy-log', 0.2, 0.5, 0.7], ['river-rock', 0.5, 0.4, 1], ['water-plants', 0.78, 0.45, 0.55], ['driftwood-rock', 0.95, 0.5, 0.45]],
-  'small-1': [['lily-plants', 0.5, 0.5, 0.35]], 'small-2': [['river-stones', 0.5, 0.5, 0.6]], 'small-3': [['river-rock-2', 0.5, 0.5, 0.7]], 'small-4': [['river-stones', 0.5, 0.5, 0.6]],
-  'small-5': [['water-plants', 0.5, 0.5, 0.25]], 'small-6': [['water-plants', 0.5, 0.5, 0.25]], 'small-7': [['coral-2', 0.5, 0.5, 0.45]], 'small-8': [['kelp-small', 0.5, 0.4, 0.22]]
+  'small-1': [['lily-plants', 0.5, 0.5, 0.2]], 'small-2': [['river-rock-2', 0.5, 0.5, 0.45]], 'small-3': [['river-rock', 0.5, 0.5, 0.4]], 'small-4': [['river-rock-2', 0.5, 0.5, 0.45]],
+  'small-5': [['water-plants', 0.5, 0.5, 0.2]], 'small-6': [['water-plants', 0.5, 0.5, 0.2]], 'small-7': [['coral-2', 0.5, 0.5, 0.22]], 'small-8': [['kelp-small', 0.5, 0.4, 0.18]]
 };
 
 interface School {
@@ -89,12 +90,21 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
   const geos: BufferGeometry[] = [];
   const uTime = { value: 0 };
   const uNight = { value: 0 };
-  const glass = new MeshBasicMaterial({ color: 0xc8f0ff, transparent: true, opacity: 0.1, depthWrite: false, side: DoubleSide });
+  const glassOf = new Map<Tank['look'], MeshBasicMaterial>();
+  const glass = (look: Tank['look']) => {
+    let g = glassOf.get(look);
+    if (!g) {
+      // the water's own colour over what swims in it (a deep tank darker), the glass's sheen with it
+      g = new MeshBasicMaterial({ color: WATER[look].glow, transparent: true, opacity: look === 'deep' ? 0.32 : 0.16, depthWrite: false, side: DoubleSide });
+      glassOf.set(look, g);
+      mats.push(g);
+    }
+    return g;
+  };
   const frame = kit.lambert({ color: 0x3a4a5a });
   const stand = kit.lambert({ color: 0x5b4535 });
   const sand = kit.lambert({ map: kit.tex('fish-sand', [3, 1]) });
   const dark = kit.lambert({ color: 0x0a1424 });
-  mats.push(glass);
   const box = (b: Box, m: Material, parent = group) => {
     const g = new BoxGeometry(b.x1 - b.x0, b.y1 - b.y0, b.z1 - b.z0);
     geos.push(g);
@@ -160,7 +170,7 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
     pts.renderOrder = 3;
     group.add(pts);
     // its glass (one pane each side, faint) and its frame's edges
-    const g = box({ ...b, y0: w.y0 }, glass);
+    const g = box({ ...b, y0: w.y0 }, glass(look));
     g.renderOrder = 4;
     const e = 0.9;
     for (const [x, z] of [[b.x0, b.z0], [b.x1, b.z0], [b.x0, b.z1], [b.x1, b.z1]] as const) box({ x0: x - e, x1: x + e, y0: b.y0, y1: b.y1, z0: z - e, z1: z + e }, frame);
@@ -207,7 +217,7 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
       });
       const m = src as Mesh | null;
       if (!m) return;
-      const geo = m.geometry.clone();
+      const geo = plainGeometry(g.scene, m);
       geo.computeBoundingBox();
       const bb = geo.boundingBox!;
       const len = bb.max.z - bb.min.z;
