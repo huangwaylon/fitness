@@ -172,7 +172,7 @@ type W3 = { __world3d?: { loaded(): boolean; where(id: string): { x: number; y: 
 test('on the 3D island a bug perched on a trunk sits on its bark, in view under the canopy, and a tap where it\'s drawn nets it (by day and at night)', async ({ page }) => {
   test.setTimeout(60_000);
   for (const [date, id, palm] of [['2026-07-10T12:00', 'robust-cicada', false], ['2026-07-10T22:00', 'saw-stag', false], ['2026-07-10T22:00', 'horned-atlas', true]] as const) {
-    await open(page, `&date=${date}&critter=${id}&visitor=none&island=3d`);
+    await open(page, `&date=${date}&critter=${id}&visitor=none`);
     await page.waitForFunction(() => (window as unknown as W3).__world3d?.loaded(), null, { timeout: 30_000 });
     await expect(page.locator(`[data-critter="${id}"].sat`)).toBeAttached({ timeout: 5000 });
     // its model, and the trunk it's on: on the bark's front (out of the trunk toward the camera), under the canopy

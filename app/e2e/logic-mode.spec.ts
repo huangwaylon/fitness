@@ -5,7 +5,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { settled, step, tapThing, w3 } from './island.ts';
 
-const Q = 'demo&date=2026-11-04T12:00&critter=none&visitor=none&rock=clonk&island=3d&render=none';
+const Q = 'demo&date=2026-11-04T12:00&critter=none&visitor=none&rock=clonk&render=none';
 const ready = (page: Page) => page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
 const mine = (page: Page) => page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
 

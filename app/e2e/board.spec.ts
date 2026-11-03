@@ -1,5 +1,5 @@
-// The island's bulletin board (docs/board.md): a tap walks my villager up to it and opens it (on the 2D island, a
-// sheet with the board's face); a note written there is on the board, on every phone at once (the demo's tabs share
+// The island's bulletin board (docs/board.md): a tap walks my villager up to it and opens it (the camera dollies to
+// its face); a note written there is on the board, on every phone at once (the demo's tabs share
 // the record's rows through localStorage, as phones share the record), with a 「！」 over the board for the others; an
 // author edits and takes down their own, a member takes down anyone's, the guest posts and changes only its own.
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
@@ -108,8 +108,7 @@ test('a second phone sees the note at once; an author edits and takes down their
   await view(b).getByRole('button', { name: 'はがす' }).click();
   await view(b).getByRole('button', { name: 'ほんとうに はがす？' }).click();
   await expect(view(b).locator('[data-note]')).toHaveCount(0);
-  // (the board's own view on the 3D island, the sheet on the 2D one)
-  await expect(view(b)).toHaveAttribute('data-board-view', (await b.locator('.if-scene[data-r3]').count()) ? '3d' : 'sheet');
+  await expect(view(b)).toHaveAttribute('data-board-view', '3d');
   await close(b);
   // ウェイ's phone: both gone
   await openBoard(a);
@@ -147,54 +146,42 @@ test('the guest posts and edits its own, but can’t take down another’s', asy
 type BoardHook = { drawn(): string[]; face3(): { min: number[]; max: number[] } | null };
 const drawn = (p: Page) => p.evaluate(() => (window as unknown as { __board: BoardHook }).__board.drawn());
 const face3 = (p: Page) => p.evaluate(() => (window as unknown as { __board: BoardHook }).__board.face3());
-/** The 2D sheet's face at its first note's header (right of the head, between the name and the date): the darkest of
- *  its r, g, b (the cork's under 170, every note's paper over). */
-const paperAt = (p: Page) => p.evaluate(() => {
-  const c = document.querySelector('canvas[data-board-face]') as HTMLCanvasElement;
-  const [r, g, b] = c.getContext('2d')!.getImageData(420, 150, 1, 1).data;
-  return Math.min(r, g, b);
-});
 
 test('a note written is drawn on the face at once, and still after a reload', async ({ page }) => {
-  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&island=2d`);
+  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
   await expect(hudJar(page)).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __board?: unknown }).__board);
   await openBoard(page);
   expect(await drawn(page)).toEqual([]);
-  expect(await paperAt(page)).toBeLessThan(170);
   await write(page, 'よみかえし テスト');
   expect(await drawn(page)).toEqual(['よみかえし テスト']);
-  expect(await paperAt(page)).toBeGreaterThan(170);
   await close(page);
   await page.reload();
   await expect(hudJar(page)).toBeVisible();
   await openBoard(page);
   await expect(note(page, 'よみかえし テスト')).toBeVisible();
   expect(await drawn(page)).toEqual(['よみかえし テスト']);
-  expect(await paperAt(page)).toBeGreaterThan(170);
 });
 
-for (const island of ['2d', '3d'] as const) {
-  test(`「もどる」 sits under the HUD, never over it, and the face under both (${island})`, async ({ page }) => {
-    // (the 3D island loads its models and draws in software on CI: 20-odd s before the board opens)
-    if (island === '3d') test.setTimeout(60_000);
-    await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&island=${island}`);
-    await expect(hudJar(page)).toBeVisible();
-    const hud = (await hudJar(page).boundingBox())!;
-    await openBoard(page);
-    await expect(view(page)).toHaveAttribute('data-board-view', island === '2d' ? 'sheet' : '3d');
-    const back = (await view(page).getByRole('button', { name: /もどる/ }).boundingBox())!;
-    expect(back.y).toBeGreaterThanOrEqual(hud.y + hud.height);
-    // the face (its notes' tap areas lie over it, the sheet's canvas or the 3D board's, once the camera is there)
-    const face = view(page).getByRole('group', { name: 'けいじばん' });
-    await expect(face).toBeVisible({ timeout: 10_000 });
-    expect((await face.boundingBox())!.y).toBeGreaterThanOrEqual(back.y + back.height);
-  });
-}
+test('「もどる」 sits under the HUD, never over it, and the face under both', async ({ page }) => {
+  // (the 3D island loads its models: 20-odd s on CI before the board opens)
+  test.setTimeout(60_000);
+  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
+  await expect(hudJar(page)).toBeVisible();
+  const hud = (await hudJar(page).boundingBox())!;
+  await openBoard(page);
+  await expect(view(page)).toHaveAttribute('data-board-view', '3d');
+  const back = (await view(page).getByRole('button', { name: /もどる/ }).boundingBox())!;
+  expect(back.y).toBeGreaterThanOrEqual(hud.y + hud.height);
+  // the face (its notes' tap areas lie over the 3D board's, once the camera is there)
+  const face = view(page).getByRole('group', { name: 'けいじばん' });
+  await expect(face).toBeVisible({ timeout: 10_000 });
+  expect((await face.boundingBox())!.y).toBeGreaterThanOrEqual(back.y + back.height);
+});
 
 // ---- the record's posts on a paired phone (the relay mocked: its snapshot holds one of うめ's notes) ----
 const RELAY = 'https://island-fund-relay.island-fund-relay.workers.dev';
-async function pairedWithPost(page: Page, island: '2d' | '3d') {
+async function pairedWithPost(page: Page) {
   const now = Date.now(), at = now - 3_600_000;
   const iso = (ms: number) => new Date(ms).toISOString();
   const snap = {
@@ -213,24 +200,24 @@ async function pairedWithPost(page: Page, island: '2d' | '3d') {
       body: action === 'snapshot' ? JSON.stringify(snap) : '{"ok":true}'
     });
   });
-  await page.goto(`?critter=none&visitor=none&island=${island}`);
+  await page.goto('?critter=none&visitor=none');
   await page.waitForFunction(() => (window as unknown as { __board?: unknown }).__board);
 }
 
 test('a note in the record’s snapshot is on the board when it opens', async ({ page }) => {
-  await pairedWithPost(page, '2d');
+  test.setTimeout(60_000);
+  await pairedWithPost(page);
   await expect(page.locator('[data-board][data-unseen]')).toHaveCount(1, { timeout: 10_000 });
   await openBoard(page);
   await expect(note(page, 'Hi!!')).toBeVisible();
   expect(await drawn(page)).toEqual(['Hi!!']);
-  expect(await paperAt(page)).toBeGreaterThan(170);
   await write(page, 'みえる？');
   expect(await drawn(page)).toEqual(['みえる？', 'Hi!!']);
 });
 
 test('on the 3D island the face rides on the board’s cork, in front of NH’s notes', async ({ page }) => {
   test.setTimeout(60_000);
-  await pairedWithPost(page, '3d');
+  await pairedWithPost(page);
   const where = () => page.evaluate(() => (window as unknown as { __world3d?: { where(id: string): { x: number; y: number; z: number } | null } }).__world3d?.where('board') ?? null);
   await expect.poll(where, { timeout: 20_000 }).not.toBeNull();
   await expect.poll(() => face3(page), { timeout: 10_000 }).not.toBeNull();
@@ -258,51 +245,46 @@ test('on the 3D island the face rides on the board’s cork, in front of NH’s 
 });
 
 // ---- writing with the keyboard up (iOS's, simulated: e2e/keyboard.ts) ----
-for (const island of ['2d', '3d'] as const) {
-  test(`writing with the keyboard up: the field, its controls and the face with the note as typed stay above it (${island})`, async ({ page }) => {
-    // TODO(3D lead): the 3D run takes over a minute on CI's software GL (14 s locally under SwiftShader; it times out
-    // on its last steps): back on once the 3D island's frames are lighter there, or the spec is split
-    test.fixme(island === '3d' && !!process.env.CI, 'over a minute under CI\'s software GL');
-    if (island === '3d') test.setTimeout(60_000);
-    await fakeKeyboard(page);
-    await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&island=${island}`);
-    await expect(hudJar(page)).toBeVisible();
-    await openBoard(page);
-    await expect(view(page)).toHaveAttribute('data-board-view', island === '2d' ? 'sheet' : '3d');
-    await expect(view(page)).toHaveAttribute('data-ready', 'true', { timeout: 10_000 });
-    await view(page).getByRole('button', { name: 'かきこむ' }).click();
-    const field = view(page).getByRole('textbox', { name: 'メモ' });
-    await expect(field).toBeFocused();
-    await keyboard(page, KEYBOARD_PX);
-    const text = 'みえてる？\nキーボードの うえ';
-    await field.fill(text);
-    // the composer just above the keyboard, the face (the note as typed on it) above the composer
-    await expect.poll(async () => (await aboveKeyboard(page, '[data-board-write]')).ok).toBe(true);
-    const bar = await aboveKeyboard(page, '[data-board-write]');
-    expect(bar.bottom).toBeGreaterThan(852 - KEYBOARD_PX - 40);
-    expect(await drawn(page)).toEqual([text]);
-    const faceOk = async () => {
-      const f = await aboveKeyboard(page, '[data-board-face-box]');
-      return f.ok && f.bottom <= bar.top + 1 && f.bottom - f.top > 120;
-    };
-    await expect.poll(faceOk, { timeout: 10_000 }).toBe(true);
-    if (island === '2d') expect((await aboveKeyboard(page, 'canvas[data-board-face]')).ok).toBe(true);
-    if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/board-keyboard-${island}.png` });
-    // the keyboard goes (its ✓): the controls back at the screen's foot, the face still clear of them
-    await keyboard(page, 0);
-    await expect.poll(async () => (await aboveKeyboard(page, '[data-board-write]')).bottom).toBeGreaterThan(852 - 100);
-    await expect.poll(async () => (await aboveKeyboard(page, '[data-board-face-box]')).ok, { timeout: 10_000 }).toBe(true);
-    // up again and posted: the note on the face, the face above the keyboard
-    await keyboard(page, KEYBOARD_PX);
-    await view(page).getByRole('button', { name: 'はる' }).click();
-    await expect(view(page).locator('[data-note]')).toHaveCount(1);
-    expect(await drawn(page)).toEqual([text]);
-    await expect.poll(async () => (await aboveKeyboard(page, '[data-board-face-box]')).ok, { timeout: 10_000 }).toBe(true);
-    // a draft given up (やめる) leaves the face as it was
-    await view(page).getByRole('button', { name: 'かきこむ' }).click();
-    await view(page).getByRole('textbox', { name: 'メモ' }).fill('やっぱり やめ');
-    expect(await drawn(page)).toEqual(['やっぱり やめ', text]);
-    await view(page).getByRole('button', { name: 'やめる' }).click();
-    expect(await drawn(page)).toEqual([text]);
-  });
-}
+test('writing with the keyboard up: the field, its controls and the face with the note as typed stay above it', async ({ page }) => {
+  test.setTimeout(60_000);
+  await fakeKeyboard(page);
+  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
+  await expect(hudJar(page)).toBeVisible();
+  await openBoard(page);
+  await expect(view(page)).toHaveAttribute('data-board-view', '3d');
+  await expect(view(page)).toHaveAttribute('data-ready', 'true', { timeout: 10_000 });
+  await view(page).getByRole('button', { name: 'かきこむ' }).click();
+  const field = view(page).getByRole('textbox', { name: 'メモ' });
+  await expect(field).toBeFocused();
+  await keyboard(page, KEYBOARD_PX);
+  const text = 'みえてる？\nキーボードの うえ';
+  await field.fill(text);
+  // the composer just above the keyboard, the face (the note as typed on it) above the composer
+  await expect.poll(async () => (await aboveKeyboard(page, '[data-board-write]')).ok).toBe(true);
+  const bar = await aboveKeyboard(page, '[data-board-write]');
+  expect(bar.bottom).toBeGreaterThan(852 - KEYBOARD_PX - 40);
+  expect(await drawn(page)).toEqual([text]);
+  const faceOk = async () => {
+    const f = await aboveKeyboard(page, '[data-board-face-box]');
+    return f.ok && f.bottom <= bar.top + 1 && f.bottom - f.top > 120;
+  };
+  await expect.poll(faceOk, { timeout: 10_000 }).toBe(true);
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/board-keyboard.png` });
+  // the keyboard goes (its ✓): the controls back at the screen's foot, the face still clear of them
+  await keyboard(page, 0);
+  await expect.poll(async () => (await aboveKeyboard(page, '[data-board-write]')).bottom).toBeGreaterThan(852 - 100);
+  await expect.poll(async () => (await aboveKeyboard(page, '[data-board-face-box]')).ok, { timeout: 10_000 }).toBe(true);
+  // up again and posted: the note on the face, the face above the keyboard
+  await keyboard(page, KEYBOARD_PX);
+  await view(page).getByRole('button', { name: 'はる' }).click();
+  await expect(view(page).locator('[data-note]')).toHaveCount(1);
+  expect(await drawn(page)).toEqual([text]);
+  await expect.poll(async () => (await aboveKeyboard(page, '[data-board-face-box]')).ok, { timeout: 10_000 }).toBe(true);
+  // a draft given up (やめる) leaves the face as it was
+  await view(page).getByRole('button', { name: 'かきこむ' }).click();
+  await view(page).getByRole('textbox', { name: 'メモ' }).fill('やっぱり やめ');
+  expect(await drawn(page)).toEqual(['やっぱり やめ', text]);
+  await view(page).getByRole('button', { name: 'やめる' }).click();
+  expect(await drawn(page)).toEqual([text]);
+});
+

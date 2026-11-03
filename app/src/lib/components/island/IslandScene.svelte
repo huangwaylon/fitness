@@ -97,7 +97,6 @@
   import { flushSync, onMount, untrack } from 'svelte';
   import type { ActorId } from '../motion/reactions.ts';
   import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
-  import { islandRender } from '#lib/store/islandRender.svelte.ts';
   import { piecesOn, swapsOn } from './fixedDecor.ts';
   import { islandSeed } from './devHooks.ts';
   import { ARCH, SCENERY } from './world.ts';
@@ -175,7 +174,7 @@
   // The island in 3D (world3d/Island3D.svelte: its own chunk with three.js), when this phone draws it so (?island=3d,
   // せってい's switch: store/islandRender.svelte.ts); the DOM island runs over its canvas as the taps and the overlays.
   let failed3 = $state(false);
-  const r3 = $derived(live && islandRender.mode === '3d' && !failed3);
+  const r3 = $derived(live && !failed3);
   // the island on its layout (site.svelte.ts: the 3D island with the layout on): world.ts's geometry is the layout's
   // from here on (before anything below reads it), and follows the switch (and the 2D fallback without WebGL)
   // svelte-ignore state_referenced_locally

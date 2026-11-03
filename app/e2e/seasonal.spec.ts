@@ -32,16 +32,14 @@ test('snow on the campsite’s tent in winter only', async ({ page }) => {
 for (const [date, floating] of [['2027-04-05T10:00', 'petal'], ['2026-11-20T10:00', 'maple'], ['2026-11-01T10:00', null]] as const)
   test(`the pond on ${date.slice(0, 10)}: ${floating ?? 'nothing'} floating`, async ({ page }) => {
     await open(page, date);
-    if (await is3d(page)) {
-      // the 3D island: NH's petal or maple leaf riding the stream and afloat on the pond (world3d/floats3d.ts)
-      const model = floating ? `fx/${floating === 'petal' ? 'petal' : 'maple-leaf'}` : undefined;
-      await expect.poll(() => w3(page, (w) => w.where('float-0')?.model)).toBe(model);
-      await expect.poll(() => w3(page, (w) => w.where('float-pond-0')?.model)).toBe(model);
-      if (floating) {
-        // on the pond's water, inside its banks (world.ts POND as the page has it)
-        const p = await w3(page, (w) => w.where('float-pond-0')), { POND } = await geo(page);
-        expect(((p!.x - POND.x) / POND.rx) ** 2 + ((-p!.z - POND.z) / POND.rz) ** 2).toBeLessThan(1);
-      }
-    } else if (floating) await expect(page.locator(`[data-floating="${floating}"]`)).toBeAttached();
-    else await expect(page.locator('[data-floating]')).toHaveCount(0);
+    await is3d(page);
+    // NH's petal or maple leaf riding the stream and afloat on the pond (world3d/floats3d.ts)
+    const model = floating ? `fx/${floating === 'petal' ? 'petal' : 'maple-leaf'}` : undefined;
+    await expect.poll(() => w3(page, (w) => w.where('float-0')?.model)).toBe(model);
+    await expect.poll(() => w3(page, (w) => w.where('float-pond-0')?.model)).toBe(model);
+    if (floating) {
+      // on the pond's water, inside its banks (world.ts POND as the page has it)
+      const p = await w3(page, (w) => w.where('float-pond-0')), { POND } = await geo(page);
+      expect(((p!.x - POND.x) / POND.rx) ** 2 + ((-p!.z - POND.z) / POND.rz) ** 2).toBeLessThan(1);
+    }
   });

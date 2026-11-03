@@ -49,17 +49,13 @@ async function enter(page: Page, aside = false) {
   await expect(page.locator('html')).not.toHaveAttribute('data-door', /./, { timeout: 4000 });
 }
 
-test('the 2D island never loads the room; the tent does, opens through the door, and goes back out to the island as it was', { tag: '@smoke' }, async ({ page }) => {
+test('the tent opens through the door and goes back out to the island as it was', { tag: '@smoke' }, async ({ page }) => {
   const scripts: string[] = [];
   page.on('response', async (r) => {
     if (r.url().endsWith('.js')) scripts.push((await r.text().catch(() => '')).includes('WebGLRenderer') ? 'three' : 'other');
   });
   await page.goto(Q);
-  // (the 3D island draws with three itself: only the 2D one never loads it)
-  if (!(await is3d(page))) {
-    await page.waitForTimeout(800); // (proving nothing loads three for a while)
-    expect(scripts).not.toContain('three');
-  }
+  await is3d(page);
   await oku(page);
   await page.waitForTimeout(300);
   const door = campDoor(await geo(page));

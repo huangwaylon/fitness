@@ -63,37 +63,6 @@ test('behind a building it is hidden, in front of it it covers it', async ({ pag
   expect(await topAt(page, b.x, b.z - 24, 0.4)).toBe('mine');
 });
 
-// (2D only: the 3D island's camera is its own, no scroller: world3d.spec's camera tests)
-test('the camera is the scroller: two stops, the sprites follow it, nothing runs once it stops', async ({ page }) => {
-  await page.goto('?demo&season=summer&island=2d');
-  await world(page);
-  const [front, back] = await call(page, (w) => w.stops());
-  expect(await call(page, (w) => w.cam())).toBe(front); // まえ: the bottom of the scroller
-  expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight)).toBe(true);
-  /** The transforms of the scenery shown now, by id. */
-  const shown = () => page.locator('[data-scenery-id]').evaluateAll((els) =>
-    Object.fromEntries(els.filter((e) => (e as HTMLElement).style.visibility !== 'hidden').map((e) => [`${(e as HTMLElement).dataset.sceneryId}:${(e as HTMLElement).dataset.part}`, (e as HTMLElement).style.transform])));
-  const before = await shown();
-  await page.locator('[data-world-scroller]').evaluate((e) => e.scrollBy(0, -400));
-  await page.waitForTimeout(500);
-  // it rests where the scroll left it (no settling)
-  const at = await call(page, (w) => w.cam());
-  expect(at).toBeGreaterThan(front);
-  await page.waitForTimeout(600);
-  expect(await call(page, (w) => w.cam())).toBe(at);
-  const after = await shown(), both = Object.keys(after).filter((k) => k in before);
-  expect(both.length).toBeGreaterThan(0);
-  expect(both.every((k) => after[k] !== before[k])).toBe(true);
-  // once still, no frame is pending (polled: on a slow runner the snap's smooth scroll, or an ambient beat that sets a
-  // villager walking, can still be under way)
-  await expect.poll(() => call(page, (w) => w.idle()), { timeout: 10_000 }).toBe(true);
-  for (const z of [back, 300, front]) {
-    await call(page, (w, [z]) => w.go(z), [z]);
-    await page.waitForTimeout(300);
-    expect(Math.abs((await call(page, (w) => w.cam())) - z)).toBeLessThan(1.5); // (WebKit scrolls by whole px)
-  }
-});
-
 test('a tap on a sprite far up near the horizon lands on it (hit-testing follows the transforms)', async ({ page }) => {
   await open(page, (g) => g.BUILDINGS.find((b) => b.id === 'campsite')!.z - 684);
   // the campsite, far up the island: its door is a button, small near the horizon
@@ -102,70 +71,6 @@ test('a tap on a sprite far up near the horizon lands on it (hit-testing follows
   expect(r.height).toBeGreaterThan(10);
   const hit = await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('[data-building="campsite"]'), [r.x + r.width / 2, r.y + r.height * 0.8]);
   expect(hit).toBe(true);
-});
-
-// (2D only: the 3D island's ground is its terrain mesh)
-test('the ground is baked: the bands in view show the season’s terrain chunks; the back loads lazily', async ({ page }) => {
-  await page.goto('?demo&season=summer&island=2d');
-  await world(page);
-  const shown = await page.locator('[data-world-ground] .gband:not([style*="hidden"]) img').evaluateAll((els) => [...new Set(els.map((e) => (e as HTMLImageElement).src.split('/').slice(-2).join('/')))]);
-  expect(shown.length).toBeGreaterThan(0);
-  for (const s of shown) expect(s).toMatch(/^summer\/[0-7]\.webp\?v=\d+$/);
-});
-
-// (2D only: the 3D island's glows are depth-tested sprites, world3d.spec's night glows)
-test('at night a lamp’s light sorts with its lamp: a tree in front covers it, the lamp’s own sprite is under it', async ({ page }) => {
-  await page.goto('?demo&season=summer&date=2026-07-01T21:00&critter=none&island=2d');
-  await world(page);
-  await call(page, (w) => w.go(642));
-  await page.waitForTimeout(400);
-  const z = await page.evaluate(() => {
-    const zi = (sel: string) => Number(getComputedStyle(document.querySelector(sel)!).zIndex);
-    const f = (sel: string) => getComputedStyle(document.querySelector(sel)!).filter;
-    return { glow: zi('[data-glow="lantern-3"]'), lamp: zi('[data-scenery-id="lantern-3"]'), canopy: zi('[data-scenery-id="oak-k1"][data-part="canopy"]'), lit: f('[data-glow="lantern-3"]'), tree: f('[data-scenery-id="oak-k1"] img') };
-  });
-  expect(z.glow).toBeGreaterThan(z.lamp);
-  expect(z.glow).toBeLessThan(z.canopy);
-  // the light is never tinted; the tree is (the time of day's tint, at the source)
-  expect(z.lit).toBe('none');
-  expect(z.tree).toMatch(/url/);
-});
-
-// (2D only: the 3D island has no DOM tint, its light is the scene's)
-test('at night the tint is on what each thing draws, never on what a tap reaction moves (it stays tinted while it moves)', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-04T22:00&critter=none&island=2d');
-  await world(page);
-  await call(page, (w) => w.go(380));
-  await page.waitForTimeout(600);
-  // tap reactions: a bush's shake, an oak's rustle, my villager's squish (and the villagers' own loops)
-  const tap = async (sel: string) => {
-    const b = (await page.locator(sel).first().boundingBox())!;
-    await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
-  };
-  await tap('.stage [data-bush]');
-  await tap('[data-tree="oak-m1"]:not([data-tree-part])');
-  await tap('[data-actor="mine"] .vil'); // a squish
-  await page.waitForTimeout(100);
-  const bad = await page.evaluate(() => {
-    const out: string[] = [];
-    // (an svg's parts are drawn with it: no layer of their own)
-    const moving = document.getAnimations().map((a) => (a.effect as KeyframeEffect | null)?.target).filter((t): t is Element => !!t?.closest?.('.stage .wn') && !t.parentElement?.closest('svg'));
-    for (const t of moving) {
-      // no ancestor up to (and including) its world node carries the tint: WebKit's layer for the move would escape it
-      for (let e: Element | null = t.parentElement; e && !e.matches('.stage'); e = e.parentElement) {
-        if (getComputedStyle(e).filter.includes('url(')) out.push(`${t.tagName}.${t.getAttribute('class')} under ${e.tagName}.${e.getAttribute('class')}`);
-        if (e.classList.contains('wn')) break;
-      }
-    }
-    return { moving: moving.length, out };
-  });
-  expect(bad.moving).toBeGreaterThan(0);
-  expect(bad.out).toEqual([]);
-  // what they draw is tinted: the bush's and the oak's images; a lamp's light is not
-  for (const sel of ['.stage [data-bush] img', '[data-scenery-id="oak-m1"] img']) {
-    expect(await page.locator(sel).first().evaluate((e) => getComputedStyle(e).filter)).toContain('url(');
-  }
-  expect(await page.locator('[data-glow] img').first().evaluate((e) => getComputedStyle(e).filter)).toBe('none');
 });
 
 test('on the stairs and on the tier above, a villager draws in front of the cliff’s face; below it, in front as ever', async ({ page }) => {
