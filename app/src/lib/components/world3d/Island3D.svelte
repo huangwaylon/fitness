@@ -529,9 +529,12 @@
         skyOn.set(id, a.m);
         add.push({ id, model: a.m, x: p.x, z: p.z, lift, scale });
       }
-      e.things.over(id, { x: p.x, z: p.z, lift, size: 1, hidden: el.hasAttribute('data-popped') }, false);
+      // popped (Balloon marks its whole flight: data-popped): the balloon and the present on its string both gone at
+      // once; the present that falls is SceneTaps' own (left shown, the string's would hang where it burst, a copy)
+      const popped = !!el.closest('[data-popped]');
+      e.things.over(id, { x: p.x, z: p.z, lift, size: 1, hidden: popped }, false);
       // popped: a burst of confetti where it was (once)
-      if (el.hasAttribute('data-popped') && !burst && key.startsWith('balloon/')) {
+      if (popped && !burst && key.startsWith('balloon/')) {
         burst = true;
         e.fx('confetti', p.x, p.z, p.y - heightOf(p.x, p.z));
       }
