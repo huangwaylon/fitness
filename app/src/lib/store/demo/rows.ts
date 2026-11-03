@@ -197,6 +197,11 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
   // A's recipe, everyone's to log (マイレシピ)
   const tr = at(addDays(today, -MEAL_DAYS), 20, 30);
   ev(tr, 'A', 'food_recipe', { ...CURRY_RECIPE, at: tr });
+  // a custom food each, everyone's to log (マイ食品): A's canteen set meal, its weight unknown (a serving logs as a nominal 100 g),
+  // and B's onigiri by weight
+  const tc = at(addDays(today, -MEAL_DAYS), 20, 40);
+  ev(tc, 'A', 'food_custom', { id: 'mdemoa1', at: tc, n: '社食の日替わり定食', u: '1個', k: 650, p: 22, fa: 18, c: 95, s: 3 });
+  ev(tc + 60_000, 'B', 'food_custom', { id: 'mdemob1', at: tc + 60_000, n: '手作りおにぎり（鮭）', u: '1個', g: 110, k: 180, p: 5, fa: 1, c: 38, s: 1 });
   ev(at(addDays(today, -MEAL_DAYS), 21, 6), 'B', 'pref', { key: 'kcalGoal', value: 1700 });
 
   const byAt = <T extends readonly unknown[]>(rows: T[]) => rows.sort((x, y) => String(x[0]).localeCompare(String(y[0])));

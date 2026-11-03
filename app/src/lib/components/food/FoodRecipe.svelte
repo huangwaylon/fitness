@@ -8,7 +8,7 @@
   import { RECIPE, recipeTotals, type RepeatItem } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import Avatar from '../characters/Avatar.svelte';
-  import { amountText, type RecipeDraft } from './foodUi.ts';
+  import { amountText, servingOnly, type RecipeDraft } from './foodUi.ts';
 
   interface Props {
     draft: RecipeDraft;
@@ -100,7 +100,7 @@
         <div><dt>{t(`food.${k}`)}</dt><dd class="money">{per(v)}</dd></div>
       {/each}
     </dl>
-    <p class="all money" data-recipe-live-total>{t('food.rcp.allOf', { k: formatNum(Math.round(tot.k)), g: formatNum(Math.round(tot.g)) })}</p>
+    <p class="all money" data-recipe-live-total>{draft.it.some((x) => servingOnly(x.f)) ? t('food.rcp.all', { k: formatNum(Math.round(tot.k)) }) : t('food.rcp.allOf', { k: formatNum(Math.round(tot.k)), g: formatNum(Math.round(tot.g)) })}</p>
   </section>
 
   <div class="acts">

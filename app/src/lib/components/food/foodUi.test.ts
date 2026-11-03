@@ -2,11 +2,11 @@
 // list, the kcal goal field and its chip, the repeat's days and the same-items check, the search's duplicates.
 import { describe, expect, it } from 'vitest';
 import '#lib/i18n/food.ts';
-import type { FoodEntry, FoodSnap } from '#lib/contract/food.ts';
+import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
 import {
-  amountText, DAYS, daysText, defaultPortion, goalChip, itemOf, KCAL_GOAL_MIN, matchPortion, parseKcalGoal, portionLabel, portionText,
-  recentOf, sameItems, startOf, stepOf, uniqueItems, unitOf
+  amountText, customDraft, customErrors, customItem, customOf, DAYS, daysText, defaultPortion, goalChip, itemOf, KCAL_GOAL_MIN, matchPortion,
+  parseAmount, parseKcalGoal, portionLabel, portionText, recentOf, sameItems, servingText, startOf, stepOf, uniqueItems, unitOf
 } from './foodUi.ts';
 
 const snap = (id: string, u?: string): FoodSnap => ({ id, n: id, k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0, ...(u ? { u } : {}) });
@@ -115,5 +115,41 @@ describe('daysText', () => {
   it('names the presets, else the days', () => {
     expect([daysText(DAYS.every), daysText(DAYS.weekdays), daysText(DAYS.weekends)]).toEqual(['毎日', '平日', '週末']);
     expect(daysText(0b0010101)).toBe('月水金');
+  });
+});
+
+describe('マイ食品: the editor\'s fields, a custom food as a food', () => {
+  const bento: FoodCustom = { id: 'mabc1234', at: 1, who: 'A', n: '会社の弁当', u: '1食', k: 650, p: null, fa: null, c: null, s: null };
+  const bar: FoodCustom = { id: 'mabc5678', at: 1, who: 'B', n: 'プロテインバー', u: '1本', g: 120, k: 240, p: 20, fa: 8, c: 22, s: 0.4 };
+  it('reads amounts as typed: full-width, a decimal comma, a unit; blank is null, nonsense undefined', () => {
+    expect(parseAmount('６５０', 0, 5000)).toBe(650);
+    expect(parseAmount('１２．５ g', 0, 500)).toBe(12.5);
+    expect(parseAmount('12,25', 0, 500)).toBe(12.3);
+    expect(parseAmount(' ', 0, 500)).toBeNull();
+    expect(parseAmount('abc', 0, 500)).toBeUndefined();
+    expect(parseAmount('6000', 0, 5000)).toBeUndefined();
+  });
+  it('needs a name and kcal; the weight and nutrients may be blank; a weight too light for the kcal is wrong', () => {
+    const d = customDraft(null, '  会社の弁当 ');
+    expect(d).toMatchObject({ n: '会社の弁当', u: '1食', g: '', k: '' });
+    expect([...customErrors(d)]).toEqual(['k']);
+    expect(customErrors({ ...d, k: '６５０' }).size).toBe(0);
+    expect(customOf({ ...d, k: '６５０' })).toEqual({ n: '会社の弁当', u: '1食', k: 650, p: null, fa: null, c: null, s: null });
+    expect([...customErrors({ ...d, k: '650', g: '10' })]).toEqual(['g']); // 6,500 kcal per 100 g
+    expect([...customErrors({ ...d, n: ' ', k: '650', p: 'x' })]).toEqual(['n', 'p']);
+    expect(customOf({ ...d, u: ' ', k: '240', g: '120', p: '20' })).toMatchObject({ u: '1食', g: 120, p: 20 });
+  });
+  it('a saved one round-trips through the editor', () => {
+    expect(customOf(customDraft(bar))).toEqual({ n: bar.n, u: bar.u, g: 120, k: 240, p: 20, fa: 8, c: 22, s: 0.4 });
+    expect(customDraft(bento).g).toBe('');
+  });
+  it('as a food: per 100 g with its serving first; no weight: one nominal serving, shown without grams', () => {
+    expect(customItem(bar)).toMatchObject({ id: 'custom:mabc5678', kcal: 200, portions: [{ label: '1本', g: 120 }, { label: '100g', g: 100 }] });
+    expect(customItem(bento).portions).toEqual([{ label: '1食', g: 100 }]);
+    expect(servingText(bento)).toBe('1食');
+    expect(servingText(bar)).toBe('1本（120g）');
+    const sv: FoodSnap = { ...snap('custom:mabc1234'), sv: true, u: '1食×2' };
+    expect(amountText(entry('e', sv, 200))).toBe('1食×2');
+    expect(amountText(entry('e', { ...sv, u: undefined }, 100))).toBe('×1');
   });
 });

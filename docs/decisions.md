@@ -143,6 +143,21 @@ changes a meal already eaten. Why: the user ("assemble my own recipes with selec
 to register that as a meal item"; shared with all users); a recipe referenced by the entry instead would rewrite past
 days on every edit and make each entry depend on another row.
 
+Custom foods (マイ食品, 2026-11-04): a food not in the food data is one `food_custom` (`{id, at, n, u, g?, k, p, fa, c,
+s}`: a name, one serving's label and, when known, its grams, and what that serving holds), and logging it is **one
+ordinary `food` entry** whose food is the custom food per 100 g (`customSnap`), so, as for recipes, nothing about `food`
+changed. Shared like recipes: everyone, the guest included, sees and logs everyone's; only its owner edits or removes
+it; another's is copied to a new one of one's own; a logged one is a snapshot, so an edit never changes a meal already
+eaten. It is a recipe's ingredient like any food. **A serving with no weight logs as a nominal 100 g**: what one knows of
+a bento or a shop's dish is often 「1個 = 650 kcal」, not its grams, so the snapshot carries the serving's own values
+with `sv: true` (per-serving limits, 5,000 kcal and 500 g, not a food's 950 and 100 per 100 g: a 1,200 kcal bento must
+fit) and the entry's grams are 100 per serving, shown as servings, never grams. A recipe with such an ingredient has no
+meaningful grams either, so it logs the same way (`sv`, 1人前 = 100). A serving with grams can't be denser than a food
+(≤ 950 kcal, ≤ 100 g of a nutrient per 100 g): refused, so its snapshot is one any `food` entry takes. Why: the user
+("create my own food and record its calories for future use in case there's a food not in the existing database");
+a nullable weight with a nominal 100 g keeps the entry an ordinary one (grams × per-100 g) instead of a second kind of
+entry counted in servings. An app from before `sv` doesn't show such an entry until it updates (accepted).
+
 Two phones of one owner (2026-11-03, after a review): a key can be paired twice (or Safari and the home-screen app),
 so a repeat's ops can cross. A skipped day therefore **stays skipped**: the record and the phones keep the union of a
 repeat's ops' skipped days within its days (`repeatAccept`), else one phone's detached day plus the other's stop showed

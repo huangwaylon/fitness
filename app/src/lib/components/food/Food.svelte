@@ -11,15 +11,18 @@
   // NavBar; kept for the session as けんこう's); under it the tabs (TABS, けんこう's group switch): きろく (the day,
   // on each opening), グラフ (FoodChart: the kcal over a period, けんこう's period dropdown, its range row and its Move
   // card; switching whose keeps the tab, the period and the range) and レシピ (マイレシピ, FoodRecipes: everyone's recipes, no whose; a recipe → its level,
-  // FoodRecipe: mine to edit, anyone else's to copy; ごはんに ついか → its amount → an entry on the day shown).
+  // FoodRecipe: mine to edit, anyone else's to copy; ごはんに ついか → its amount → an entry on the day shown; マイ食品 under
+  // them: FoodCustom, mine to edit, anyone else's to copy or log). The searches (a meal's and a recipe's ingredient)
+  // offer everyone's custom foods and じぶんで つくる: the editor, whose ほぞん goes on to the amount for the new food.
   import '#lib/i18n/food.ts'; // the meal log's strings, loaded with it
   import '#lib/i18n/kenkou.ts'; // けんこう's: the period dropdown
   import { flushSync, tick, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
-  import { KCAL_GOAL, MEALS, type FoodEntry, type FoodSnap, type Meal } from '#lib/contract/food.ts';
-  import { foodDay, foodEntries, kcalGoal, proteinGoal, recipes, repeatOn, repeats, type Recipe } from '#lib/model/food.ts';
+  import { customSnap, KCAL_GOAL, MEALS, type FoodCustom as Custom, type FoodEntry, type FoodSnap, type Meal } from '#lib/contract/food.ts';
+  import { customs, foodDay, foodEntries, kcalGoal, proteinGoal, recipes, repeatOn, repeats, type Recipe } from '#lib/model/food.ts';
   import {
-    detachDay, editFood, logFood, logRecipe, removeFood, removeRecipe, saveRecipe, setKcalGoal, startRepeat, stopRepeat, updateRepeat
+    detachDay, editFood, logCustom, logFood, logRecipe, removeCustom, removeFood, removeRecipe, saveCustom, saveRecipe, setKcalGoal, startRepeat,
+    stopRepeat, updateRepeat
   } from '#lib/store/actions.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -43,8 +46,10 @@
   import FoodRepeat from './FoodRepeat.svelte';
   import FoodRecipes from './FoodRecipes.svelte';
   import FoodRecipe from './FoodRecipe.svelte';
+  import FoodCustom from './FoodCustom.svelte';
   import {
-    DAYS, foodDb, foodDbNow, foodLast, itemOf, KCAL_GOAL_MIN, mealAt, parseKcalGoal, recentOf, recipeItem, sameItems, type RecipeDraft
+    customDraft, customItem, customOf, DAYS, foodDb, foodDbNow, foodLast, itemOf, KCAL_GOAL_MIN, mealAt, parseKcalGoal, recentOf, recipeItem,
+    recipeServing, sameItems, servingOnly, type CustomDraft, type RecipeDraft
   } from './foodUi.ts';
 
   let { title = $bindable(''), back = $bindable(null), lead = $bindable(null) }: {
@@ -97,14 +102,20 @@
   /** My repeat of a meal still going (the one to manage; an ended one only fills its days). */
   const liveRepeat = (k: Meal) => (m ? (repeats(m.state, me).find((r) => r.m === k && (!r.to || r.to > today)) ?? null) : null);
 
+  /** A food picked: a custom food still there logs afresh (`cid`); a serving with no weight (`sv`) by the serving; an
+   *  `sv` snapshot whose food is gone (or a recipe's) logs from that snapshot (`snap`). */
+  type Picked = { item: Item; cid?: string; sv?: boolean; snap?: FoodSnap };
+  /** Where the custom food editor goes on to once saved: a meal's amount, a recipe's ingredient, or back (the tab). */
+  type Then = { meal: Meal } | { ingredient: true } | null;
   type Level =
     | { k: 'search'; meal: Meal }
-    | { k: 'amount'; meal: Meal; item: Item; g0?: number; u0?: string; entry?: FoodEntry }
+    | ({ k: 'amount'; meal: Meal; g0?: number; u0?: string; entry?: FoodEntry; fromTab?: true } & Picked)
+    | { k: 'custom'; id: string | null; then: Then }
     | { k: 'goal' }
     | { k: 'repeat'; meal: Meal }
     | { k: 'recipe'; id: string | null }
     | { k: 'rsearch' }
-    | { k: 'ritem'; item: Item; g0?: number; u0?: string; i?: number }
+    | ({ k: 'ritem'; g0?: number; u0?: string; i?: number } & Picked)
     | { k: 'rlog'; r: Recipe; meal?: Meal };
   let stack = $state<Level[]>([]);
   const top = $derived(stack.at(-1) ?? null);
@@ -115,7 +126,8 @@
   $effect(() => {
     title = !top ? '' : top.k === 'goal' ? t('goal.title') : top.k === 'repeat' ? t('food.rep.title', { meal: t(`food.meal.${top.meal}`) })
       : top.k === 'recipe' ? t(top.id ? 'food.rcp.title' : 'food.rcp.new') : top.k === 'rsearch' ? t('food.rcp.addItem')
-      : top.k === 'ritem' ? t('food.rcp.item') : top.k === 'rlog' ? t('food.rcp.log') : t(`food.meal.${top.meal}`);
+      : top.k === 'ritem' ? t('food.rcp.item') : top.k === 'rlog' ? t('food.rcp.log')
+      : top.k === 'custom' ? t(top.id ? 'food.my.head' : 'food.my.newTitle') : t(`food.meal.${top.meal}`);
     back = top ? up : null;
     lead = !top && tab !== 'recipe' ? whoPill : null;
   });
@@ -161,15 +173,32 @@
     root?.querySelector<HTMLInputElement>('[data-food-q]')?.focus({ preventScroll: true });
   }
 
-  function add(item: Item, meal: Meal, g0?: number, u0?: string) {
-    go({ k: 'amount', meal, item, g0, u0 });
+  function add(item: Item, meal: Meal, g0?: number, u0?: string, f?: FoodSnap) {
+    go({ k: 'amount', meal, ...pickOf(item, f), g0, u0 });
+  }
+  /** A food picked (a catalog item, a recent entry's food `f`, a custom food as customItem): a custom food still there
+   *  as it is now, logged by logCustom; else an `sv` snapshot kept as logged (its values per serving). */
+  function pickOf(item: Item, f?: FoodSnap): Picked {
+    const c = item.id.startsWith('custom:') ? allCustoms.find((x) => `custom:${x.id}` === item.id) : undefined;
+    if (c) return { item: customItem(c), cid: c.id, sv: c.g === undefined };
+    return f && servingOnly(f) ? { item, sv: true, snap: f } : { item };
+  }
+  /** A snapshot as logged, picked by another portion (`u`). */
+  function withU(f: FoodSnap, u: string | null): FoodSnap {
+    const { u: _, ...rest } = f;
+    return u ? { ...rest, u } : rest;
+  }
+  /** What a picked food logs as (portion label `u`): its custom food's snapshot now, its own, or the catalog item's. */
+  function snapOf(l: Picked, u: string | null): FoodSnap {
+    const c = l.cid ? allCustoms.find((x) => x.id === l.cid) : undefined;
+    return c ? customSnap(c, u ?? undefined) : l.snap ? withU(l.snap, u) : toSnap(l.item, u ?? undefined);
   }
   /** A confirmation inside the sheet: short, docked low (never over the level it lands on). */
   const said = (key: string, vars: Record<string, string> = {}, sad = false) => toasts.show(t(key, vars), 2200, { low: true, ...(sad ? {} : { reaction: 'pleased' }) });
   /** An entry of mine → its amount at once, from its snapshot (its own portion); the catalog's portions swapped in
    *  when it comes. A いつもの's entry stays the repeat's until ほぞん / けす (real()). */
   function edit(e: FoodEntry) {
-    openSnap({ k: 'amount', meal: e.m, item: itemOf(e.f, foodDbNow(), e.g), g0: e.g, u0: e.f.u, entry: e }, e, `[data-entry="${e.id}"]`);
+    openSnap({ k: 'amount', meal: e.m, item: itemOf(e.f, foodDbNow(), e.g), sv: servingOnly(e.f), g0: e.g, u0: e.f.u, entry: e }, e, `[data-entry="${e.id}"]`);
   }
   /** An amount level for a logged snapshot, open at once; the catalog's item put in when it is in (if still open). */
   function openSnap(l: Extract<Level, { item: Item }>, x: { g: number; f: FoodSnap }, focus: string) {
@@ -188,10 +217,15 @@
   }
   function done(l: Extract<Level, { k: 'amount' }>, v: { m: Meal; g: number; u: string | null }) {
     const e = l.entry && real(l.entry);
+    const d = l.fromTab && date > today ? today : date;
     if (l.entry) {
       if (e && editFood(e.id, { m: v.m, g: v.g, u: v.u }).ok) said('food.saved');
-    } else if (logFood({ d: date, m: v.m, g: v.g, f: toSnap(l.item, v.u ?? undefined) }).ok) {
+    } else if ((l.cid ? logCustom({ customId: l.cid, d, m: v.m, g: v.g, u: v.u ?? undefined }) : logFood({ d, m: v.m, g: v.g, f: snapOf(l, v.u) })).ok) {
       said('food.added', { meal: t(`food.meal.${v.m}`) });
+    }
+    if (l.fromTab) {
+      picked = foodLast.who = null;
+      tab = 'log';
     }
     home();
   }
@@ -234,7 +268,7 @@
   /** The draft as last saved (null: a new one): ほぞん waits while nothing changed. */
   let savedAs = $state<string | null>(null);
   const clean = $derived(savedAs !== null && savedAs === JSON.stringify(draft));
-  const ownerOf = (r: Recipe) => ({ who: r.who, name: names[r.who], villager: villagerOf(r.who) });
+  const ownerOf = (r: { who: Who }) => ({ who: r.who, name: names[r.who], villager: villagerOf(r.who) });
   const toRecipeLevel = () => backTo(stack.findIndex((l) => l.k === 'recipe') + 1);
 
   function openRecipe(r: Recipe | null) {
@@ -243,7 +277,7 @@
     go({ k: 'recipe', id: r?.id ?? null }, r ? `[data-recipe-open="${r.id}"]` : '[data-recipe-new]');
   }
   function itemDone(l: Extract<Level, { k: 'ritem' }>, v: { g: number; u: string | null }) {
-    const x = { g: v.g, f: toSnap(l.item, v.u ?? undefined) };
+    const x = { g: v.g, f: snapOf(l, v.u) };
     if (l.i === undefined) draft.it.push(x);
     else draft.it[l.i] = x;
     toRecipeLevel();
@@ -254,7 +288,8 @@
   }
   function editItem(i: number) {
     const x = draft.it[i];
-    openSnap({ k: 'ritem', item: itemOf(x.f, foodDbNow(), x.g), g0: x.g, u0: x.f.u, i }, x, `[data-recipe-item="${i}"]`);
+    const sv = servingOnly(x.f);
+    openSnap({ k: 'ritem', item: itemOf(x.f, foodDbNow(), x.g), ...(sv ? { sv, snap: x.f } : {}), g0: x.g, u0: x.f.u, i }, x, `[data-recipe-item="${i}"]`);
   }
   function recipeSave(id: string | null) {
     if (saveRecipe({ id: id ?? undefined, n: draft.n, sv: draft.sv, it: draft.it }).ok) said('food.rcp.saved', { name: draft.n.trim() });
@@ -281,6 +316,46 @@
     tab = 'log';
     home();
   }
+
+  // ---- マイ食品: the editor edits a draft (kept here, as the recipe's); ほぞん goes on where it came from (Then)
+  const allCustoms = $derived(m ? customs(m.state) : []);
+  let cdraft = $state<CustomDraft>(customDraft(null));
+  /** The draft as last saved (null: a new one): ほぞん waits while nothing changed. */
+  let csaved = $state<string | null>(null);
+  const cclean = $derived(csaved !== null && csaved === JSON.stringify(cdraft));
+
+  function openCustom(c: Custom | null, then: Then, focus: string, name = '') {
+    cdraft = customDraft(c, name);
+    csaved = c ? JSON.stringify(cdraft) : null;
+    go({ k: 'custom', id: c?.id ?? null, then }, focus);
+  }
+  /** Swap the level on top for another (the editor for the amount it goes on to, a copy's editor). */
+  function swap(l: Level) {
+    stack = [...stack.slice(0, -1), l];
+    void tick().then(() => sheet()?.scrollTo({ top: 0 }));
+  }
+  function customSave(l: Extract<Level, { k: 'custom' }>) {
+    const v = customOf(cdraft);
+    const res = saveCustom({ id: l.id ?? undefined, ...v });
+    if (!res.ok || !res.id) return;
+    said('food.my.saved', { name: v.n });
+    if (!l.then) return home();
+    const c: Custom = { ...v, id: res.id, at: 0, who: me };
+    const p: Picked = { item: customItem(c), cid: res.id, sv: c.g === undefined };
+    swap('meal' in l.then ? { k: 'amount', meal: l.then.meal, ...p } : { k: 'ritem', ...p });
+  }
+  function customRemove(id: string) {
+    if (removeCustom(id).ok) said('food.my.removed', { name: cdraft.n }, true);
+    home();
+  }
+  /** Someone else's → a custom food of mine with the same values, opened in the editor. */
+  function customCopy(l: Extract<Level, { k: 'custom' }>) {
+    const res = saveCustom(customOf(cdraft));
+    if (!res.ok || !res.id) return;
+    csaved = JSON.stringify(cdraft);
+    swap({ k: 'custom', id: res.id, then: l.then });
+    said('food.my.copied');
+  }
 </script>
 
 {#snippet whoPill()}
@@ -295,11 +370,12 @@
     {#key stack.length}<div class="lv" class:lvl={!!top}>
     {#if top?.k === 'search'}
       {@const meal = top.meal}
-      <FoodSearch {recent} onpick={(item, g, u) => add(item, meal, g, u)} recipes={allRecipes} {names} onrecipe={(r) => go({ k: 'rlog', r, meal })} />
+      <FoodSearch {recent} onpick={(item, g, u, f) => add(item, meal, g, u, f)} recipes={allRecipes} {names} onrecipe={(r) => go({ k: 'rlog', r, meal })}
+        customs={allCustoms} oncustom={(c) => go({ k: 'amount', meal, ...pickOf(customItem(c)) })} oncreate={(n) => openCustom(null, { meal }, '[data-custom-new]', n)} />
     {:else if top?.k === 'amount'}
       {@const l = top}
       {#key l}
-        <FoodAmount item={l.item} meal={l.meal} g0={l.g0} u0={l.u0} editing={!!l.entry} ondone={(v) => done(l, v)} onremove={() => l.entry && remove(l.entry)} />
+        <FoodAmount item={l.item} meal={l.meal} g0={l.g0} u0={l.u0} serving={!!l.sv} editing={!!l.entry} ondone={(v) => done(l, v)} onremove={() => l.entry && remove(l.entry)} />
       {/key}
     {:else if top?.k === 'recipe'}
       {@const id = top.id}
@@ -311,17 +387,27 @@
           onlog={() => theirs && go({ k: 'rlog', r: theirs }, '[data-recipe-log]')} />
       {/key}
     {:else if top?.k === 'rsearch'}
-      <FoodSearch {recent} onpick={(item, g, u) => go({ k: 'ritem', item, g0: g, u0: u })} />
+      <FoodSearch {recent} onpick={(item, g, u, f) => go({ k: 'ritem', ...pickOf(item, f), g0: g, u0: u })} {names} customs={allCustoms}
+        oncustom={(c) => go({ k: 'ritem', ...pickOf(customItem(c)) })} oncreate={(n) => openCustom(null, { ingredient: true }, '[data-custom-new]', n)} />
+    {:else if top?.k === 'custom'}
+      {@const l = top}
+      {@const c = l.id ? allCustoms.find((x) => x.id === l.id) : undefined}
+      {@const theirs = c && c.who !== me ? c : null}
+      {#key l.id}
+        <FoodCustom bind:draft={cdraft} owner={theirs ? ownerOf(theirs) : null} saved={!!c && !theirs} clean={cclean} onsave={() => customSave(l)}
+          onremove={() => l.id && customRemove(l.id)} oncopy={() => customCopy(l)}
+          onlog={() => theirs && go({ k: 'amount', meal: mealAt(m.now), ...pickOf(customItem(theirs)), fromTab: true }, '[data-custom-log]')} />
+      {/key}
     {:else if top?.k === 'ritem'}
       {@const l = top}
       {#key l}
-        <FoodAmount item={l.item} meal="b" g0={l.g0} u0={l.u0} editing={l.i !== undefined} pick ondone={(v) => itemDone(l, v)}
+        <FoodAmount item={l.item} meal="b" g0={l.g0} u0={l.u0} serving={!!l.sv} editing={l.i !== undefined} pick ondone={(v) => itemDone(l, v)}
           onremove={() => l.i !== undefined && itemRemove(l.i)} />
       {/key}
     {:else if top?.k === 'rlog'}
       {@const l = top}
       {#key l}
-        <FoodAmount item={recipeItem(l.r)} meal={l.meal ?? mealAt(m.now)} ondone={(v) => recipeLog(l, v)} />
+        <FoodAmount item={recipeItem(l.r)} meal={l.meal ?? mealAt(m.now)} serving={recipeServing(l.r)} ondone={(v) => recipeLog(l, v)} />
       {/key}
     {:else if top?.k === 'repeat'}
       {@const meal = top.meal}
@@ -350,7 +436,8 @@
       {/if}
 
       {#if tab === 'recipe'}
-        <FoodRecipes list={allRecipes} {names} {villagerOf} onnew={() => openRecipe(null)} onopen={openRecipe} onlog={(r) => go({ k: 'rlog', r }, `[data-recipe-log="${r.id}"]`)} />
+        <FoodRecipes list={allRecipes} {names} {villagerOf} onnew={() => openRecipe(null)} onopen={openRecipe} onlog={(r) => go({ k: 'rlog', r }, `[data-recipe-log="${r.id}"]`)}
+          customs={allCustoms} oncustomnew={() => openCustom(null, null, '[data-custom-new]')} oncustom={(c) => openCustom(c, null, `[data-custom-open="${c.id}"]`)} />
       {:else if tab === 'chart'}
         <FoodChart {who} name={names[who]} {period} />
       {:else}

@@ -3,12 +3,14 @@
 // (the kcal goal, a pref; protein from the latest weigh-in), and the repeats (いつもの: `food_repeat` folded alike),
 // whose items are read into each day they cover as virtual entries (never copied into the record: a past day stays as
 // it was, since a change of a repeat is an end and a new one), and the recipes (マイレシピ: `food_recipe` folded alike,
-// everyone's, each with its totals and a serving's). Everyone's are read alike: the guest sees every meal and
+// everyone's, each with its totals and a serving's), and the custom foods (マイ食品: `food_custom` folded alike,
+// everyone's). Everyone's are read alike: the guest sees every meal and
 // logs its own. Pure; the economy never imports this (deps.test.ts): a meal is worth no ベル.
 import type { LocalDate, Who } from '#lib/types.ts';
 import {
-  entryOrder, foodAccept, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, MEALS, recipePortion, recipeTotals, repeatCovers,
-  type FoodEntry, type FoodOp, type FoodRecipe, type FoodRepeat, type Meal, type RecipeOp, type RepeatOp
+  entryOrder, foodAccept, foodCustomFold, foodCustomOp, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, MEALS, recipePortion,
+  recipeTotals, repeatCovers, type CustomOp, type FoodCustom, type FoodEntry, type FoodOp, type FoodRecipe, type FoodRepeat, type Meal, type RecipeOp,
+  type RepeatOp
 } from '#lib/contract/food.ts';
 import { isPersonId, isRec, type EventRow } from '#lib/contract/api.ts';
 import type { State } from './state.ts';
@@ -128,12 +130,14 @@ function repeatsOf(s: Pick<State, 'foodRepeat'>): FoodRepeat[] {
 /** The meal log's raw event types whose ops compaction may drop, and how each op is read (as the record reads it:
  *  contract/food.ts): those folded by foodAccept alone, the latest op per id. Not `food_repeat`: its fold
  *  (repeatAccept) takes every op's skipped days, so an op it replaced still counts. */
-const PARSE: Partial<Record<EventRow[3], (d: unknown) => (object & { id: string; at: number; rm?: true }) | null>> = { food: foodOp, food_recipe: foodRecipeOp };
+const PARSE: Partial<Record<EventRow[3], (d: unknown) => (object & { id: string; at: number; rm?: true }) | null>> = {
+  food: foodOp, food_recipe: foodRecipeOp, food_custom: foodCustomOp
+};
 
 /**
  * For the client cache's compaction (model/compact.ts): the meal log's rows of `events` its fold no longer reads, an
- * op of an entry or a recipe another op of the same id replaced (a polling phone gets every op; the record keeps the
- * latest only) and an op the fold refuses (someone else's, a stale one, anything after a removal). What is left per id
+ * op of an entry, a recipe or a custom food another op of the same id replaced (a polling phone gets every op; the
+ * record keeps the latest only) and an op the fold refuses (someone else's, a stale one, anything after a removal). What is left per id
  * is the op the record keeps, a removal with the op it removed (final). Unreadable rows stay (the model skips them, as the other tabs').
  */
 export function foldedAway(events: readonly EventRow[]): Set<EventRow> {
@@ -271,6 +275,15 @@ export function recipes(s: Pick<State, 'foodRecipe'>): Recipe[] {
     });
     recMemo.set(s.foodRecipe, out);
   }
+  return out;
+}
+
+const cusMemo = new WeakMap<State['foodCustom'], FoodCustom[]>();
+/** Every live custom food, everyone's (anyone logs any of them as an entry of their own: contract/food.ts customSnap),
+ *  the latest changed first, each with who set it (its owner, the only one who edits it). Memoised per list. */
+export function customs(s: Pick<State, 'foodCustom'>): FoodCustom[] {
+  let out = cusMemo.get(s.foodCustom);
+  if (!out) cusMemo.set(s.foodCustom, (out = foodCustomFold(opsOf<CustomOp>(s.foodCustom, foodCustomOp))));
   return out;
 }
 

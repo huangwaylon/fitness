@@ -1,9 +1,13 @@
 // ごはん's small helpers (docs/design.md "Gohan"): the catalog loaded once a session, an entry's amount in words, the
 // food an entry was logged from (its catalog item when the catalog has it, for its portions; else its own portion), the
 // さいきん list, a portion's start and step, whose day kept for the session, a repeat's weekdays in words, and a recipe
-// as a food (マイレシピ: its portions) and the meal the clock suggests.
+// as a food (マイレシピ: its portions), a custom food as a food and its editor's fields (マイ食品), and the meal the clock
+// suggests.
 import type { Who } from '#lib/types.ts';
-import { FOOD_GRAMS, isKcalGoal, recipePortion, recipeSnap, type FoodEntry, type FoodSnap, type Meal, type RepeatItem } from '#lib/contract/food.ts';
+import {
+  CUSTOM, customDensityOk, customPortions, customSnap, FOOD_GRAMS, isKcalGoal, recipePortion, recipeSnap, type FoodCustom, type FoodEntry, type FoodSnap, type Meal,
+  type RepeatItem
+} from '#lib/contract/food.ts';
 import type { Recipe } from '#lib/model/food.ts';
 import { ZONE_OFFSET_MS } from '#lib/time/dates.ts';
 import { loadFoodDb, portionsOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
@@ -50,8 +54,17 @@ export function portionText(label: string | null | undefined, g: number, unit: '
   return !bare || /^\d+(\.\d+)?\s*(g|ml)$/i.test(bare.normalize('NFKC')) ? w : `${bare}×${x}（${w}）`;
 }
 
-/** An entry's amount: the portion it was picked by and its weight (portionText), or the weight alone. */
-export const amountText = (e: Pick<FoodEntry, 'g' | 'f'>): string => portionText(e.f.u, e.g);
+/** A snapshot of a serving with no known weight (a custom food's, `sv`): its grams are a nominal 100 per serving,
+ *  shown as servings, never as grams. */
+export const servingOnly = (f: Pick<FoodSnap, 'sv'>): boolean => f.sv === true;
+
+/** An entry's amount: the portion it was picked by and its weight (portionText), or the weight alone; a serving with
+ *  no weight: its label alone (「1食」, 「1食×2」). */
+export const amountText = (e: Pick<FoodEntry, 'g' | 'f'>): string =>
+  servingOnly(e.f) ? (e.f.u ?? `×${gramsText(e.g / 100)}`) : portionText(e.f.u, e.g);
+
+/** Full-width digits, point and comma typed on a Japanese keyboard (「６５０」, 「１２．５」) as ASCII. */
+export const halfWidth = (text: string): string => text.replace(/[０-９．，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
 
 /** A logged snapshot as a catalog item: the catalog's own when it has it (its portions), else the snapshot's values
  *  and, with its grams `g`, the portion it was logged by (「茶碗1杯」 of 150 g; offline, a recipe's 1人前). */
@@ -144,7 +157,7 @@ export const KCAL_GOAL_MIN = 1200;
 /** What was typed as a daily kcal goal → kcal, or null: `1800`, `2,000`, full-width `１８００`, a trailing `kcal`;
  *  KCAL_GOAL_MIN up to KCAL_GOAL's max, in whole steps only. */
 export function parseKcalGoal(text: string): number | null {
-  const s = text.trim().replace(/[０-９，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/\s*kcal$/i, '').replace(/,/g, '');
+  const s = halfWidth(text.trim()).replace(/\s*kcal$/i, '').replace(/,/g, '');
   if (!/^\d{1,4}$/.test(s)) return null;
   const n = Number(s);
   return isKcalGoal(n) && n >= KCAL_GOAL_MIN ? n : null;
@@ -177,14 +190,19 @@ export function daysText(w: number): string {
 }
 
 /** A recipe as a food to log (its values per 100 g: recipeSnap), its portions 1人前 (recipePortion) and, making more
- *  than one, ぜんぶ (its grams, within an entry's). */
+ *  than one, ぜんぶ (its grams, within an entry's). With an ingredient of no known weight (`sv`) a serving is a nominal
+ *  100 g (FoodAmount's `serving` mode: recipeServing), ぜんぶ its servings × 100. */
 export function recipeItem(r: Recipe): Item {
   const f = recipeSnap(r);
   const one = recipePortion(r);
   const portions: Portion[] = [{ label: one.label, g: one.g }];
-  if (r.sv > 1 && r.total.g <= FOOD_GRAMS.max) portions.push({ label: 'ぜんぶ', g: r.total.g });
+  const all = f.sv ? one.g * r.sv : r.total.g;
+  if (r.sv > 1 && all <= FOOD_GRAMS.max) portions.push({ label: 'ぜんぶ', g: all });
   return { id: f.id, name: f.n, kcal: f.k, p: f.p, f: f.fa, c: f.c, salt: f.s, portions };
 }
+
+/** Whether a recipe logs by the serving (an ingredient of no known weight: its snapshot `sv`). */
+export const recipeServing = (r: Recipe): boolean => recipeSnap(r).sv === true;
 
 /** The meal the clock (Tokyo) suggests: 朝 until 10:00, 昼 until 15:00, おやつ until 17:00, then 夜. */
 export function mealAt(ms: number): Meal {
@@ -194,3 +212,59 @@ export function mealAt(ms: number): Meal {
 
 /** A recipe as its editor changes it: the name, the servings, the ingredients. */
 export interface RecipeDraft { n: string; sv: number; it: RepeatItem[] }
+
+// ---- マイ食品: a food typed in by someone as one serving (contract/food.ts FoodCustom)
+
+/** A custom food as a food to log: its values per 100 g (customSnap) and its portions (its serving first; 100g after
+ *  it when its weight is known). With no weight its one portion is a nominal 100 g: FoodAmount's `serving` mode. */
+export function customItem(c: FoodCustom): Item {
+  const f = customSnap(c);
+  return { id: f.id, name: f.n, kcal: f.k, p: f.p, f: f.fa, c: f.c, salt: f.s, portions: customPortions(c) };
+}
+
+/** A custom food's serving in words: 「1食」, 「1パック（120g）」. */
+export const servingText = (c: Pick<FoodCustom, 'u' | 'g'>): string => (c.g === undefined ? c.u : portionText(c.u, c.g));
+
+/** The custom food editor's fields, as typed (numbers as text: full-width digits welcome). */
+export interface CustomDraft { n: string; u: string; g: string; k: string; p: string; fa: string; c: string; s: string }
+const NUTS = ['p', 'fa', 'c', 's'] as const;
+const num1 = (v: number | null | undefined): string => (v === null || v === undefined ? '' : gramsText(v));
+
+/** A new custom food's fields (the name: what was typed in the search), or a saved one's. */
+export function customDraft(c: FoodCustom | null, name = ''): CustomDraft {
+  if (!c) return { n: name.trim().slice(0, CUSTOM.nameChars), u: t('food.my.one'), g: '', k: '', p: '', fa: '', c: '', s: '' };
+  return { n: c.n, u: c.u, g: num1(c.g), k: String(c.k), p: num1(c.p), fa: num1(c.fa), c: num1(c.c), s: num1(c.s) };
+}
+
+/** A typed amount → a number to one decimal within [min, max]; '' → null (left blank); undefined when it isn't one.
+ *  Full-width digits, a decimal comma and a trailing unit (g, kcal) are fine. */
+export function parseAmount(text: string, min: number, max: number): number | null | undefined {
+  const s = halfWidth(text.trim()).replace(/\s*(g|kcal|グラム)$/i, '').replace(',', '.');
+  if (!s) return null;
+  if (!/^\d{1,5}(\.\d+)?$/.test(s)) return undefined;
+  const v = Math.round(Number(s) * 10) / 10;
+  return v >= min && v <= max ? v : undefined;
+}
+
+/** Which of the editor's fields don't read (the name and kcal are needed; the rest may be blank). A serving whose
+ *  weight is too light for what it holds (more than any food per 100 g: the record refuses it) marks the weight. */
+export function customErrors(d: CustomDraft): Set<keyof CustomDraft> {
+  const bad = new Set<keyof CustomDraft>();
+  if (!d.n.trim()) bad.add('n');
+  const k = parseAmount(d.k, 0, CUSTOM.kcalMax);
+  if (k === null || k === undefined) bad.add('k');
+  if (parseAmount(d.g, CUSTOM.grams.min, CUSTOM.grams.max) === undefined) bad.add('g');
+  for (const x of NUTS) if (parseAmount(d[x], 0, CUSTOM.nutrientMax) === undefined) bad.add(x);
+  if (!bad.size && !customDensityOk(customOf(d))) bad.add('g');
+  return bad;
+}
+
+/** The editor's fields as saveCustom takes them (customErrors empty first): kcal whole, a blank label 1食. */
+export function customOf(d: CustomDraft): { n: string; u: string; g?: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null } {
+  const g = parseAmount(d.g, CUSTOM.grams.min, CUSTOM.grams.max) ?? undefined;
+  const nut = (x: (typeof NUTS)[number]) => parseAmount(d[x], 0, CUSTOM.nutrientMax) ?? null;
+  return {
+    n: d.n.trim(), u: d.u.trim() || t('food.my.one'), ...(g === undefined ? {} : { g }), k: Math.round(parseAmount(d.k, 0, CUSTOM.kcalMax) ?? 0),
+    p: nut('p'), fa: nut('fa'), c: nut('c'), s: nut('s')
+  };
+}

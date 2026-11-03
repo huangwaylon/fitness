@@ -1,7 +1,7 @@
 // The rules of the record shared by its writers (docs/backend.md#events): what an `event` must look like to be
 // accepted (relay/src/store.ts checks it), and which events replace an earlier one (the
 // store's slots: a tally and an island day per person and day, a cosmetic pref per person, a goal per person and
-// Tokyo day, a board post, a meal entry, a repeat and a recipe per id). Pure, over the contract only (relative imports), since the relay imports it from here.
+// Tokyo day, a board post, a meal entry, a repeat, a recipe and a custom food per id). Pure, over the contract only (relative imports), since the relay imports it from here.
 import { isBodyFatGoal, isFind, isId, isLocalDate, isWeightKg, nextDay, PREF_KEYS, type EventType } from '../contract/api.ts';
 import { isTally } from '../contract/tally.ts';
 import { isIslandDay } from '../contract/island.ts';
@@ -9,7 +9,7 @@ import { decorOpOf } from '../contract/decor.ts';
 import { tentOpOf } from '../contract/tent.ts';
 import { layoutOpOf } from '../contract/layout.ts';
 import { boardOpOf } from '../contract/board.ts';
-import { foodOp, foodRecipeOp, foodRepeatOp, isKcalGoal } from '../contract/food.ts';
+import { foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, isKcalGoal } from '../contract/food.ts';
 import { shopPriced } from '../contract/shop.ts';
 import { isStepsGoal, LIMITS, MOVE_GOAL, shopPrice } from '../config/rules.ts';
 import { localDateAt } from '../time/dates.ts';
@@ -60,6 +60,11 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       const op = foodRecipeOp(d);
       return op !== null && atNear(op.at, now);
     }
+    case 'food_custom': {
+      // a custom food set or removed (contract/food.ts: already normalized)
+      const op = foodCustomOp(d);
+      return op !== null && atNear(op.at, now);
+    }
     case 'sell':
     case 'buy':
       // the shop (contract/shop.ts): a sell at its species' price, a buy at its piece's from a stock of about today;
@@ -102,8 +107,8 @@ export function prefTaken(key: unknown, v: unknown): boolean {
  *   force on each past day stays (a goal applies from the day it's made; the last of a day is the one that counts);
  * - a `decor` op: its scope and item id (`decorAccept` / `tentAccept` decide whether it replaces);
  * - a `board` op: its post's id (`boardAccept` decides whether it replaces);
- * - a `food` op: its entry's id, a `food_repeat` op its repeat's, a `food_recipe` op its recipe's (`foodAccept` decides
- *   whether it replaces).
+ * - a `food` op: its entry's id, a `food_repeat` op its repeat's, a `food_recipe` op its recipe's, a `food_custom` op
+ *   its custom food's (`foodAccept` decides whether it replaces).
  * A pref the model would ignore takes no slot, so it never replaces one it takes. `subject`: `eventSubject`.
  */
 export function eventSlot(type: EventType | string, sender: Who, subject: Who, d: Rec, at: number): string | null {
@@ -119,6 +124,7 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
       return typeof d.id === 'string' ? `food|${d.id}` : null;
     case 'food_repeat':
     case 'food_recipe':
+    case 'food_custom':
       return typeof d.id === 'string' ? `${type}|${d.id}` : null;
     case 'pref':
       if (!prefTaken(d.key, d.value)) return null;

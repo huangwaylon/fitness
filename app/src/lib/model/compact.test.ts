@@ -8,7 +8,7 @@ import { addDays, weekKeyOf } from '#lib/time/dates.ts';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import { tallyTotals } from './tally.ts';
 import { FIRST_DAY, foodRows, jst, syntheticRows, withEvents } from '../../../scripts/bench-rows.ts';
-import { foodDay, foodEntries, recipes, repeats } from './food.ts';
+import { customs, foodDay, foodEntries, recipes, repeats } from './food.ts';
 
 /** Everything the app shows, as one comparable value. */
 function views(rows: SnapshotRows, now: number, rev: string | null = null) {
@@ -175,10 +175,10 @@ describe('compactRows: the island days', () => {
 });
 
 describe('compactRows: the meal log', () => {
-  /** Everything ごはん shows: the recipes, each person's entries (the 最近 list), repeats, and a few days' totals. */
+  /** Everything ごはん shows: the recipes, the custom foods, each person's entries (the 最近 list), repeats, and a few days' totals. */
   const meals = (rows: SnapshotRows, days: string[]) => {
     const s = reduce(rows);
-    return JSON.stringify([recipes(s), ...(['A', 'B', 'G'] as const).map((w) => [foodEntries(s, w), repeats(s, w), days.map((d) => foodDay(s, w, d))])]);
+    return JSON.stringify([recipes(s), customs(s), ...(['A', 'B', 'G'] as const).map((w) => [foodEntries(s, w), repeats(s, w), days.map((d) => foodDay(s, w, d))])]);
   };
   const food = foodRows(60);
   const rows = withEvents(syntheticRows(60), food);
@@ -214,9 +214,14 @@ describe('compactRows: the meal log', () => {
     // a recipe set, then edited: only the edit stays
     const rec = (at: number, sv: number): EventRow => [new Date(at).toISOString(), 'A', `c${at}`, 'food_recipe', JSON.stringify({ id: 'crecipe01', at, n: 'カレー', sv, it: [{ g: 200, f: set.f }] })];
     r.events.splice(6, 0, rec(T + 5, 2), rec(T + 6, 4));
+    // a custom food set, edited, someone else's edit (refused), then another removed: the edit, the removal with its set
+    const cus = (at: number, who: 'A' | 'B', data: object): EventRow => [new Date(at).toISOString(), who, `m${at}`, 'food_custom', JSON.stringify({ at, n: '弁当', u: '1個', k: 600, ...data })];
+    r.events.splice(8, 0, cus(T + 5, 'A', { id: 'mcustom01' }), cus(T + 6, 'A', { id: 'mcustom01', k: 700 }), cus(T + 7, 'B', { id: 'mcustom01', k: 1 }),
+      cus(T + 8, 'B', { id: 'mcustom02' }), [new Date(T + 9).toISOString(), 'B', `m${T + 9}`, 'food_custom', JSON.stringify({ id: 'mcustom02', at: T + 9, rm: true })]);
     const small = compactRows(r, now);
     // the unreadable rows stay (the model skips them, as the other tabs')
-    expect(small.events.map((x) => x[2])).toEqual([`x${T + 2}`, `x${T + 3}`, `x${T + 4}`, `c${T + 6}`, 'x0', 'x1']);
+    expect(small.events.map((x) => x[2])).toEqual([`x${T + 2}`, `x${T + 3}`, `x${T + 4}`, `c${T + 6}`, `m${T + 6}`, `m${T + 8}`, `m${T + 9}`, 'x0', 'x1']);
+    expect(customs(reduce(small)).map((c) => [c.id, c.k])).toEqual([['mcustom01', 700]]);
     expect(compactRows(small, now)).toBe(small);
     expect(meals(small, ['2026-11-03'])).toBe(meals(r, ['2026-11-03']));
     // this phone's queued ops over either: an edit, and one of the removed entry (refused)

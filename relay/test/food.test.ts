@@ -1,13 +1,14 @@
 // The meal log in the record (docs/backend.md#events `food`): an entry set or removed, each entry's latest op kept
 // (one row per entry), removal final; the food's name cleaned here as on the phone; anyone logs their own (the guest
 // too), only the owner edits or removes; every phone sees every meal, the guest's too; the daily kcal goal a pref. A
-// repeat (`food_repeat`) and a recipe (`food_recipe`) by the same rules: one row per id, its owner's alone; a recipe
-// everyone's to see and to log as a food entry of their own.
+// repeat (`food_repeat`), a recipe (`food_recipe`) and a custom food (`food_custom`) by the same rules: one row per id,
+// its owner's alone; a recipe and a custom food everyone's to see and to log as a food entry of their own.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { StoreCore } from '../src/store.ts';
 import {
-  foodFold, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, recipePortion, recipeSnap,
-  type FoodEntry, type FoodOp, type FoodRecipe, type FoodRepeat, type RecipeOp, type RepeatOp
+  customPortions, customSnap, foodCustomFold, foodCustomOp, foodFold, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp,
+  recipePortion, recipeSnap, type CustomOp, type FoodCustom, type FoodEntry, type FoodOp, type FoodRecipe, type FoodRepeat, type RecipeOp,
+  type RepeatOp
 } from '../../app/src/lib/contract/food.ts';
 import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
 import { memSql } from './sqlite.ts';
@@ -332,5 +333,108 @@ describe('the meal log in the record', () => {
     expect(store.load({ rows: { events: [edit] } })).toMatchObject({ ok: true, events: 1 });
     expect(recipes()).toMatchObject([{ id: 'cmeal040', n: 'カレー', sv: 2 }]);
     expect(recRows()).toHaveLength(1);
+  });
+
+  // ---- custom foods (マイ食品)
+  const sendCus = (who: 'A' | 'B' | 'G', data: object) => call(keyOf[who], 'event', { id: `e${++n}`, type: 'food_custom', data });
+  const custom = (who: 'A' | 'B' | 'G', id: string, extra: object = {}, at = (now += 1000)) =>
+    sendCus(who, { id, at, n: '会社の弁当', u: '1個', k: 650, ...extra });
+  const cusRows = (key = KEY_A) => (call(key, 'snapshot').rows.events as [string, 'A' | 'B' | 'G', string, string, string][]).filter((r) => r[3] === 'food_custom');
+  const customs = (key = KEY_A): FoodCustom[] =>
+    foodCustomFold(cusRows(key).map((r) => ({ ...foodCustomOp(JSON.parse(r[4]))!, who: r[1] }) as CustomOp & { who: 'A' | 'B' | 'G' }));
+
+  it('keeps a custom food, normalized, seen by every phone; the partner and the guest log it as their own entry', () => {
+    expect(custom('A', 'mmeal001', { n: '  会社の\u0007弁当\n ', u: ' 1\t個 ', p: 20, fa: null })).toMatchObject({ ok: true });
+    expect(notices.at(-1)).toMatchObject({ what: 'event', who: 'A' });
+    expect(JSON.parse(cusRows()[0][4])).toEqual({ id: 'mmeal001', at: now, n: '会社の弁当', u: '1 個', k: 650, p: 20, fa: null, c: null, s: null });
+    for (const key of [KEY_B, KEY_C]) expect(customs(key)).toMatchObject([{ id: 'mmeal001', who: 'A', n: '会社の弁当', k: 650 }]);
+    // no weight: a serving logs as a nominal 100 g of a per-serving snapshot (`sv`), over a food's 950 kcal per 100 g
+    const c = customs(KEY_B)[0];
+    const [{ g, label }] = customPortions(c);
+    expect(g).toBe(100);
+    for (const who of ['B', 'G'] as const) expect(log(who, `fmealm0${who.toLowerCase()}`, { g: g * 2, f: customSnap(c, label) })).toMatchObject({ ok: true });
+    expect(entries().map((e) => [e.who, e.g, e.f])).toEqual([
+      ['B', 200, { id: 'custom:mmeal001', n: '会社の弁当', k: 650, p: 20, fa: null, c: null, s: null, u: '1 個', sv: true }],
+      ['G', 200, { id: 'custom:mmeal001', n: '会社の弁当', k: 650, p: 20, fa: null, c: null, s: null, u: '1 個', sv: true }]
+    ]);
+    // with a weight: per 100 g, its serving's grams
+    expect(custom('B', 'mmeal002', { n: 'おにぎり', u: '1個', g: 110, k: 180, c: 39.6 })).toMatchObject({ ok: true });
+    const o = customs(KEY_C).find((x) => x.id === 'mmeal002')!;
+    expect(customPortions(o)).toEqual([{ label: '1個', g: 110 }, { label: '100g', g: 100 }]);
+    expect(log('G', 'fmealm1g', { g: 110, f: customSnap(o, '1個') })).toMatchObject({ ok: true });
+    const e = entries().find((x) => x.id === 'fmealm1g')!;
+    expect(e.f).toEqual({ id: 'custom:mmeal002', n: 'おにぎり', k: 163.6, p: null, fa: null, c: 36, s: null, u: '1個' });
+    expect((e.f.k * e.g) / 100).toBeCloseTo(180, 0);
+  });
+
+  it('refuses a malformed custom food, an `at` over a day ahead, a serving denser than any food; a bad `sv` snapshot', () => {
+    const ok = { id: 'mmeal010', at: now, n: '弁当', u: '1個', k: 650 };
+    for (const d of [
+      { ...ok, id: 'cmeal010' }, { ...ok, n: ' ' }, { ...ok, u: '' }, { ...ok, k: 5001 }, { ...ok, k: -1 }, { ...ok, g: 0 }, { ...ok, g: 1.25 },
+      { ...ok, p: 501 }, { ...ok, g: 50, k: 500 }, { ...ok, g: 10, s: 11 }, { ...ok, x: 1 }, { ...ok, person: 'B' }, { ...ok, at: now + 86_400_001 }
+    ]) expect(sendCus('A', d)).toMatchObject({ ok: false, error: 'bad_request' });
+    // limits: a name cut at 30, a label at 20; 5000 kcal and 500 g of a nutrient in a serving with no weight
+    expect(custom('A', 'mmeal011', { n: 'あ'.repeat(40), u: 'い'.repeat(30), k: 5000, p: 500 })).toMatchObject({ ok: true });
+    expect(customs()[0]).toMatchObject({ n: 'あ'.repeat(30), u: 'い'.repeat(20), k: 5000, p: 500 });
+    expect(log('A', 'fmealm11', { g: 100, f: customSnap(customs()[0]) })).toMatchObject({ ok: true });
+    // `sv` only `true`; without it, a food's per 100 g limits
+    const big = { id: 'custom:x', n: 'x', k: 1200, p: null, fa: null, c: null, s: null };
+    expect(log('A', 'fmealm12', { f: { ...big, sv: false } })).toMatchObject({ ok: false, error: 'bad_request' });
+    expect(log('A', 'fmealm13', { f: big })).toMatchObject({ ok: false, error: 'bad_request' });
+    expect(log('A', 'fmealm14', { f: { ...big, sv: true } })).toMatchObject({ ok: true });
+    expect(JSON.parse(rows().find((r) => r[4].includes('fmealm14'))![4]).f).toEqual({ ...big, sv: true });
+  });
+
+  it('keeps each custom food’s latest op as its one row; an older op, a set after a removal, a removal it never held acknowledged', () => {
+    const at = now + 1000;
+    custom('B', 'mmeal020', {}, at);
+    expect(custom('B', 'mmeal020', { k: 700 }, at + 5000)).toMatchObject({ ok: true });
+    expect(custom('B', 'mmeal020', { k: 800 }, at + 2000)).toMatchObject({ ok: true, duplicate: true });
+    expect(customs()).toMatchObject([{ id: 'mmeal020', k: 700, at: at + 5000 }]);
+    expect(cusRows()).toHaveLength(1);
+    now = at + 5000;
+    expect(sendCus('B', { id: 'mmeal020', at: (now += 1000), rm: true })).toMatchObject({ ok: true });
+    expect(custom('B', 'mmeal020', { k: 900 })).toMatchObject({ ok: true, duplicate: true });
+    expect(sendCus('B', { id: 'mmeal021', at: (now += 1000), rm: true })).toMatchObject({ ok: true, duplicate: true });
+    expect(customs()).toEqual([]);
+    expect(cusRows()).toHaveLength(1); // the removal's row
+  });
+
+  it('lets only the owner change a custom food; the guest keeps its own; a copy is a new one of the copier', () => {
+    custom('G', 'mmeal030');
+    custom('A', 'mmeal031');
+    expect(custom('A', 'mmeal030', { k: 1 })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(sendCus('B', { id: 'mmeal030', at: (now += 1000), rm: true })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(custom('G', 'mmeal031', { k: 1 })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(sendCus('G', { id: 'mmeal031', at: (now += 1000), rm: true })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(custom('G', 'mmeal030', { n: 'ゲスト弁当' })).toMatchObject({ ok: true });
+    expect(custom('B', 'mmeal032', { n: '会社の弁当（コピー）' })).toMatchObject({ ok: true });
+    expect(customs(KEY_C).map((r) => [r.id, r.who, r.n])).toEqual([['mmeal032', 'B', '会社の弁当（コピー）'], ['mmeal030', 'G', 'ゲスト弁当'], ['mmeal031', 'A', '会社の弁当']]);
+  });
+
+  it('a custom food persists and loads back from a dump; someone else’s op in a load keeps only its id', () => {
+    custom('A', 'mmeal040');
+    store = open();
+    expect(customs().map((r) => r.id)).toEqual(['mmeal040']);
+    const dumped = store.dump().rows.events.filter((r) => r[3] === 'food_custom');
+    db = memSql();
+    store = open();
+    expect(store.load({ rows: { events: dumped } })).toMatchObject({ ok: true, events: 1 });
+    expect(store.load({ rows: { events: dumped } })).toMatchObject({ ok: true, events: 0 }); // idempotent
+    const other = [new Date(now + 5000).toISOString(), 'B', 'e-other-m', 'food_custom', JSON.stringify({ id: 'mmeal040', at: now + 5000, rm: true })];
+    const bad = [new Date(now + 7000).toISOString(), 'A', 'e-bad-m', 'food_custom', JSON.stringify({ id: 'mmeal041', at: now, n: 'x', u: '1個', k: -5 })];
+    expect(store.load({ rows: { events: [other, bad] } })).toMatchObject({ ok: true, events: 0 });
+    expect(customs().map((r) => [r.id, r.who])).toEqual([['mmeal040', 'A']]);
+    const edit = [new Date(now + 8000).toISOString(), 'A', 'e-edit-m', 'food_custom', JSON.stringify({ id: 'mmeal040', at: now + 8000, n: '弁当', u: '1食', g: 400, k: 600 })];
+    expect(store.load({ rows: { events: [edit] } })).toMatchObject({ ok: true, events: 1 });
+    expect(customs()).toMatchObject([{ id: 'mmeal040', n: '弁当', u: '1食', g: 400, k: 600 }]);
+    expect(cusRows()).toHaveLength(1);
+  });
+
+  it('a custom food is a recipe’s ingredient as any food', () => {
+    custom('A', 'mmeal050', { n: 'ドレッシング', u: '大さじ1', g: 15, k: 60, fa: 6 });
+    const c = customs()[0];
+    expect(recipe('B', 'cmeal050', { n: 'サラダ', sv: 1, it: [{ g: 15, f: customSnap(c) }, { g: 100, f: RICE }] })).toMatchObject({ ok: true });
+    expect(recipes()[0].it[0].f).toMatchObject({ id: 'custom:mmeal050', k: 400, fa: 40 });
   });
 });

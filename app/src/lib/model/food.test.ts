@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { foldEvents, reduce } from './state.ts';
-import { foodDay, foodEntries, foodSeries, kcalGoal, proteinGoal, recipes, repeatOn, repeats } from './food.ts';
+import { customs, foodDay, foodEntries, foodSeries, kcalGoal, proteinGoal, recipes, repeatOn, repeats } from './food.ts';
 import { rangeFor, seriesBuckets, seriesStats } from './health.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { guestRows } from '#lib/contract/guest.ts';
 import type { EventRow, MetricRow } from '#lib/contract/api.ts';
-import { foodFold, foodOp } from '#lib/contract/food.ts';
+import { customPortions, customSnap, foodFold, foodOp } from '#lib/contract/food.ts';
 import { foodRows } from '../../../scripts/bench-rows.ts';
 
 const T = Date.parse('2026-11-03T03:00:00.000Z');
@@ -276,3 +276,45 @@ describe('recipes: everyone’s, with totals and a serving’s', () => {
     expect(recipes(base).map((r) => r.n)).toEqual(['納豆ごはん']);
   });
 });
+
+describe('customs: everyone’s custom foods', () => {
+  const cus = (who: 'A' | 'B' | 'G', id: string, at: number, extra: object = {}) =>
+    ev(who, at, { id, at, n: '会社の弁当', u: '1個', k: 650, ...extra }, 'food_custom');
+
+  it('keeps the rows raw in reduce; folds them when read (an edit, a removal, someone else’s op), the latest changed first', () => {
+    const rows = {
+      metrics: [] as MetricRow[],
+      events: [
+        cus('A', 'mcus0001', T),
+        cus('B', 'mcus0002', T + 1000, { n: 'おにぎり', g: 110, k: 180 }),
+        cus('A', 'mcus0001', T + 2000, { k: 700 }), // edited
+        cus('B', 'mcus0001', T + 2500, { k: 1 }), // not B's: refused
+        cus('G', 'mcus0003', T + 4000, { n: 'ゲスト弁当' }),
+        ev('B', T + 5000, { id: 'mcus0002', at: T + 5000, rm: true }, 'food_custom'), // removed
+        cus('A', 'mcus0004', T + 6000, { k: -1 }), // malformed: ignored
+        ev('A', T + 7000, { id: 'mcus0005', at: T + 7000, n: '弁当', u: '1個', k: 1, person: 'B' }, 'food_custom') // a `person`: ignored
+      ]
+    };
+    const s = reduce(rows);
+    expect(s.foodCustom).toHaveLength(rows.events.length); // raw, as given
+    expect(customs(s).map((c) => [c.id, c.who, c.k])).toEqual([['mcus0003', 'G', 650], ['mcus0001', 'A', 700]]);
+    expect(customs(s)).toBe(customs(s)); // memoised
+    expect(customs(reduce(guestRows(rows))).map((c) => c.id)).toEqual(['mcus0003', 'mcus0001']);
+  });
+
+  it('shows a queued op at once (foldEvents); logged, an ordinary entry that an edit never changes', () => {
+    const base = reduce({ metrics: [], events: [cus('A', 'mcus0010', T)] });
+    const s = foldEvents(base, [cus('A', 'mcus0010', T + 1000, { n: '弁当' }), cus('B', 'mcus0011', T + 2000, { n: 'おにぎり', g: 110, k: 180 })], null)!;
+    expect(customs(s).map((c) => [c.id, c.n])).toEqual([['mcus0011', 'おにぎり'], ['mcus0010', '弁当']]);
+    expect(customs(base).map((c) => c.n)).toEqual(['会社の弁当']);
+    const [onigiri, bento] = customs(s);
+    const logged = foldEvents(s, [
+      set('G', 'fcus0001', T + 3000, { g: customPortions(bento)[0].g * 1.5, f: customSnap(bento, '1個') }),
+      set('G', 'fcus0002', T + 3001, { g: 110, f: customSnap(onigiri, '1個') }),
+      cus('A', 'mcus0010', T + 4000, { k: 2000 })
+    ], null)!;
+    expect(foodDay(logged, 'G', '2026-11-03')).toMatchObject({ kcal: 975 + 180 });
+    expect(foodDay(logged, 'G', '2026-11-03').entries.map((e) => e.f.sv)).toEqual([true, undefined]);
+  });
+});
+

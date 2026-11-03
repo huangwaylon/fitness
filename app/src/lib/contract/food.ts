@@ -7,7 +7,8 @@
 // imports this. A recurring meal (いつもの, `food_repeat`) is one person's one meal on chosen weekdays from a day on:
 // its days' items are computed on read (model/food.ts), never copied into the record, and a change of its items or
 // days is an end and a new repeat, so a past day never changes. A recipe (マイレシピ, `food_recipe`) is one person's dish
-// of foods and servings, everyone's to log as a food of its own (`recipeSnap`). Shared by the record (relay/src/store.ts), the model
+// of foods and servings, everyone's to log as a food of its own (`recipeSnap`); a custom food (マイ食品, `food_custom`) one
+// person's food typed in as one serving, everyone's to log alike (`customSnap`). Shared by the record (relay/src/store.ts), the model
 // and the food sheet; pure and dependency-free.
 import { isLocalDate, isRec } from './api.ts';
 import { cleanLine } from './text.ts';
@@ -20,8 +21,10 @@ export type Meal = 'b' | 'l' | 'd' | 's';
 export const MEALS: readonly Meal[] = ['b', 'l', 'd', 's'];
 
 /** A food per 100 g as it was logged: `n` its name, `k` kcal, `p` protein, `fa` fat, `c` carbs, `s` salt (g; null
- *  unknown), `u` the portion it was picked by (a label: 「1杯」). */
-export interface FoodSnap { id: string; n: string; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; u?: string }
+ *  unknown), `u` the portion it was picked by (a label: 「1杯」). `sv`: a serving with no known weight (a custom food's:
+ *  `customSnap`), its values per serving and an entry's grams a nominal 100 per serving (shown as servings, never
+ *  grams); within a custom food's per-serving limits (CUSTOM) rather than a food's per 100 g. */
+export interface FoodSnap { id: string; n: string; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; u?: string; sv?: true }
 
 export type FoodOp =
   | { id: string; at: number; d: string; m: Meal; g: number; f: FoodSnap; rm?: undefined }
@@ -58,6 +61,9 @@ const SNAP_ID_CHARS = 64;
 export const FOOD_GRAMS = { min: 0.1, max: 5000 } as const;
 const KCAL_MAX = 950;
 const NUTRIENT_MAX = 100;
+/** A serving with no known weight logs as this many (nominal) grams: an entry of `n` servings is `n` × 100 g of a
+ *  snapshot whose values are per serving (`sv`). */
+const NOMINAL_G = 100;
 /** The daily kcal goal (`pref kcalGoal`): an integer in range, a whole `step`. */
 export const KCAL_GOAL = { min: 1000, max: 5000, step: 50 } as const;
 
@@ -80,21 +86,25 @@ export const newRepeatId = (at: number): string => newFoodId(at, 'r');
 /** A food snapshot, its known keys only, each well-formed (the name and the label cleaned, a missing nutrient null),
  *  or null. */
 function snapOf(f: unknown): FoodSnap | null {
-  if (!isRec(f) || Object.keys(f).some((k) => f[k] !== undefined && !['id', 'n', 'k', 'p', 'fa', 'c', 's', 'u'].includes(k))) return null;
-  if (typeof f.id !== 'string' || !f.id || f.id.length > SNAP_ID_CHARS || !inRange(f.k, 0, KCAL_MAX)) return null;
+  if (!isRec(f) || Object.keys(f).some((k) => f[k] !== undefined && !['id', 'n', 'k', 'p', 'fa', 'c', 's', 'u', 'sv'].includes(k))) return null;
+  if (f.sv !== undefined && f.sv !== true) return null;
+  const sv = f.sv === true;
+  const [kMax, nMax] = sv ? [CUSTOM.kcalMax, CUSTOM.nutrientMax] : [KCAL_MAX, NUTRIENT_MAX];
+  if (typeof f.id !== 'string' || !f.id || f.id.length > SNAP_ID_CHARS || !inRange(f.k, 0, kMax)) return null;
   const n = cleanLine(f.n, FOOD_NAME_CHARS);
   if (!n) return null;
   const out: FoodSnap = { id: f.id, n, k: f.k, p: null, fa: null, c: null, s: null };
   for (const k of ['p', 'fa', 'c', 's'] as const) {
     const v = f[k];
     if (v === undefined || v === null) continue;
-    if (!inRange(v, 0, NUTRIENT_MAX)) return null;
+    if (!inRange(v, 0, nMax)) return null;
     out[k] = v;
   }
   if (f.u !== undefined) {
     const u = cleanLine(f.u, FOOD_PORTION_CHARS);
     if (u) out.u = u;
   }
+  if (sv) out.sv = true;
   return out;
 }
 
@@ -303,19 +313,118 @@ export function recipeTotals(it: readonly RepeatItem[]): RecipeTotals {
 
 const clampGrams = (g: number): number => Math.min(FOOD_GRAMS.max, Math.max(FOOD_GRAMS.min, Math.round(g * 10) / 10));
 
+/** Whether some ingredients include a serving with no known weight (`sv`: a custom food's). */
+const anySv = (it: readonly RepeatItem[]): boolean => it.some((x) => x.f.sv === true);
+
 /** A recipe as a food per 100 g (its id `recipe:<recipe id>`, its name, `u` the portion label given): its totals over
- *  its grams, kcal to one decimal and each nutrient to two (a mean of foods in range stays in range: snapOf takes it). */
-export function recipeSnap(r: { id: string; n: string; it: readonly RepeatItem[] }, u?: string): FoodSnap {
+ *  its grams, kcal to one decimal and each nutrient to two (a mean of foods in range stays in range: snapOf takes it).
+ *  With an ingredient of no known weight (`sv`) its grams mean nothing: then one serving (its totals over its
+ *  servings) per a nominal 100 g, an `sv` snapshot (recipePortion: 1人前 = 100). */
+export function recipeSnap(r: { id: string; n: string; sv: number; it: readonly RepeatItem[] }, u?: string): FoodSnap {
   const t = recipeTotals(r.it);
-  const per = (v: number, by: number): number => Math.round(((v * 100) / t.g) * by) / by;
+  const sv = anySv(r.it);
+  const per = (v: number, by: number): number => Math.round((sv ? v / r.sv : (v * 100) / t.g) * by) / by;
   const nut = (v: number | null): number | null => (v === null ? null : per(v, 100));
   const f: FoodSnap = { id: `recipe:${r.id}`, n: r.n, k: per(t.k, 10), p: nut(t.p), fa: nut(t.fa), c: nut(t.c), s: nut(t.s) };
   if (u) f.u = u;
+  if (sv) f.sv = true;
   return f;
 }
 
 /** One serving of a recipe: 「1人前」, its grams (its total over its servings, to one decimal, within a `food` entry's
- *  grams). */
+ *  grams; a nominal 100 with an ingredient of no known weight: recipeSnap). */
 export function recipePortion(r: { sv: number; it: readonly RepeatItem[] }): { label: string; g: number } {
-  return { label: '1人前', g: clampGrams(recipeTotals(r.it).g / r.sv) };
+  return { label: '1人前', g: anySv(r.it) ? NOMINAL_G : clampGrams(recipeTotals(r.it).g / r.sv) };
+}
+
+// ---- My foods (マイ食品, `food_custom`): a food not in the food data, typed in by someone as one serving (`u` its label,
+// `g` its grams when known) and what that serving holds. Shared like a recipe: its owner's alone to edit or remove
+// (foodAccept), everyone's to log; logging one is an ordinary `food` entry of the logger's own whose food is the
+// custom food per 100 g (`customSnap`), a snapshot, so an edit never changes a meal already logged. A serving with no
+// weight logs as a nominal 100 g per serving, its snapshot's values per serving (`sv`).
+
+/** A `food_custom` op: a custom food set (`n` its name, `u` its serving's label, `g` the serving's grams (absent:
+ *  unknown), `k` kcal and `p`/`fa`/`c`/`s` protein, fat, carbs and salt in one serving: g; null unknown) or removed
+ *  (final). */
+export type CustomOp =
+  | { id: string; at: number; n: string; u: string; g?: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; rm?: undefined }
+  | { id: string; at: number; rm: true };
+type CustomOpBy = CustomOp & { who: Who };
+/** A custom food as the record keeps it (its latest op), with who set it. */
+export type FoodCustom = Exclude<CustomOp, { rm: true }> & { who: Who };
+/** What a custom food is made of (an op's set data, or a FoodCustom). */
+type CustomData = { id: string; n: string; u: string; g?: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null };
+
+/** A custom food's name and serving label at most (characters), its serving's grams (one decimal), kcal and each
+ *  nutrient in one serving (inclusive). */
+export const CUSTOM = { nameChars: 30, labelChars: 20, grams: { min: 0.1, max: 5000 }, kcalMax: 5000, nutrientMax: 500 } as const;
+const CUSTOM_ID = /^m[0-9a-z]{6,24}$/;
+const NUTRIENTS = ['p', 'fa', 'c', 's'] as const;
+
+/** A new custom food's id. */
+export const newCustomId = (at: number): string => newFoodId(at, 'm');
+
+/** The grams one serving of a custom food logs as: its own, or NOMINAL_G with no weight known. */
+export const customGrams = (c: { g?: number }): number => c.g ?? NOMINAL_G;
+
+/** A `food_custom` op's data, its known keys only, each well-formed (the name and the label cleaned, the grams to one
+ *  decimal, a missing nutrient null), or null. A serving with grams can't hold more than a food per 100 g (KCAL_MAX,
+ *  NUTRIENT_MAX): refused. The record keeps it as returned here. */
+export function foodCustomOp(d: unknown): CustomOp | null {
+  if (!isRec(d) || typeof d.id !== 'string' || !CUSTOM_ID.test(d.id) || !isMs(d.at)) return null;
+  const keys = Object.keys(d).filter((k) => d[k] !== undefined);
+  const rm = rmOf(d, keys);
+  if (rm !== undefined) return rm;
+  if (keys.some((k) => !['id', 'at', 'n', 'u', 'g', 'k', 'p', 'fa', 'c', 's'].includes(k))) return null;
+  const n = cleanLine(d.n, CUSTOM.nameChars);
+  const u = cleanLine(d.u, CUSTOM.labelChars);
+  if (!n || !u || !inRange(d.k, 0, CUSTOM.kcalMax)) return null;
+  const out: CustomOp = { id: d.id, at: d.at, n, u, k: d.k, p: null, fa: null, c: null, s: null };
+  if (d.g !== undefined) {
+    if (!inRange(d.g, CUSTOM.grams.min, CUSTOM.grams.max) || !oneDecimal(d.g)) return null;
+    out.g = Math.round(d.g * 10) / 10;
+  }
+  for (const k of NUTRIENTS) {
+    const v = d[k];
+    if (v === undefined || v === null) continue;
+    if (!inRange(v, 0, CUSTOM.nutrientMax)) return null;
+    out[k] = v;
+  }
+  return customDensityOk(out) ? out : null;
+}
+
+/** Whether a custom food's serving, when its weight is known, is no denser than a food can be (at most KCAL_MAX kcal
+ *  and NUTRIENT_MAX g of each nutrient per 100 g; foodCustomOp refuses it else). True with no weight. */
+export function customDensityOk(c: { g?: number; k: number; p?: number | null; fa?: number | null; c?: number | null; s?: number | null }): boolean {
+  const g = c.g;
+  return g === undefined || ((c.k * 100) / g <= KCAL_MAX && NUTRIENTS.every((k) => ((c[k] ?? 0) * 100) / g <= NUTRIENT_MAX));
+}
+
+/** The custom foods as the record keeps them (each one's latest op taken by `foodAccept`, as `foodFold`), the removed
+ *  ones gone: the latest changed first, then id. */
+export function foodCustomFold(ops: Iterable<CustomOpBy>): FoodCustom[] {
+  const m = new Map<string, CustomOpBy>();
+  for (const e of ops) if (foodAccept(m.get(e.id) ?? null, e) === 'append') m.set(e.id, e);
+  const out: FoodCustom[] = [];
+  for (const e of m.values()) if (!e.rm) out.push(e);
+  return out.sort((a, b) => b.at - a.at || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+}
+
+/** A custom food as a food per 100 g (its id `custom:<custom food id>`, its name, `u` the portion label given): one
+ *  serving over its grams, kcal to one decimal and each nutrient to two; with no weight, its serving's own values
+ *  (per a nominal 100 g) and `sv` set. */
+export function customSnap(c: CustomData, u?: string): FoodSnap {
+  const by = 100 / customGrams(c);
+  const nut = (v: number | null): number | null => (v === null ? null : Math.round(v * by * 100) / 100);
+  const f: FoodSnap = { id: `custom:${c.id}`, n: c.n, k: Math.round(c.k * by * 10) / 10, p: nut(c.p), fa: nut(c.fa), c: nut(c.c), s: nut(c.s) };
+  if (u) f.u = u;
+  if (c.g === undefined) f.sv = true;
+  return f;
+}
+
+/** A custom food's portions: its serving (its label, `customGrams`), then 100g when its serving's weight is known. */
+export function customPortions(c: Pick<CustomData, 'u' | 'g'>): { label: string; g: number }[] {
+  const ps = [{ label: c.u, g: customGrams(c) }];
+  if (c.g !== undefined && c.g !== 100) ps.push({ label: '100g', g: 100 });
+  return ps;
 }

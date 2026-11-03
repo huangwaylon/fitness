@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CUSTOM, customDensityOk, customGrams, customPortions, customSnap, foodCustomFold, foodCustomOp, newCustomId,
   foodAccept, foodFold, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, isKcalGoal, newFoodId, newRecipeId, newRepeatId,
-  recipePortion, recipeSnap, recipeTotals, repeatAccept, repeatCovers, repeatNext, weekdayBit, WEEKDAYS, type FoodOp, type RecipeOp, type RepeatOp
+  recipePortion, recipeSnap, recipeTotals, repeatAccept, repeatCovers, repeatNext, weekdayBit, WEEKDAYS, type CustomOp, type FoodOp, type RecipeOp, type RepeatOp
 } from './food.ts';
 import { cleanLine } from './text.ts';
 
@@ -171,3 +172,74 @@ describe('food_recipe', () => {
     expect(recipePortion({ sv: 1, it: Array(2).fill({ g: 5000, f: RICE }) }).g).toBe(5000);
   });
 });
+
+describe('food_custom', () => {
+  const BENTO = { id: 'mabcdef1', at: T, n: '会社の弁当', u: '1個', k: 650 };
+  const ONIGIRI = { id: 'mabcdef2', at: T, n: 'おにぎり', u: '1個', g: 110, k: 180, p: 3, fa: null, c: 39.6 };
+  it('reads a set and a removal, known keys only, normalized', () => {
+    expect(foodCustomOp({ ...BENTO, n: ' 会社の\u0007弁当\n', u: ' 1\t個 ' })).toEqual({ ...BENTO, u: '1 個', p: null, fa: null, c: null, s: null });
+    expect(foodCustomOp(ONIGIRI)).toEqual({ ...ONIGIRI, s: null });
+    expect(foodCustomOp({ ...ONIGIRI, g: 110.0 })).toMatchObject({ g: 110 });
+    expect(foodCustomOp({ ...BENTO, n: 'あ'.repeat(40), u: 'い'.repeat(30) })).toMatchObject({ n: 'あ'.repeat(CUSTOM.nameChars), u: 'い'.repeat(CUSTOM.labelChars) });
+    expect(foodCustomOp({ id: 'mabcdef1', at: T, rm: true })).toEqual({ id: 'mabcdef1', at: T, rm: true });
+    expect(newCustomId(T)).toMatch(/^m[0-9a-z]{6,24}$/);
+    expect(foodCustomOp({ ...BENTO, id: newCustomId(T) })).not.toBeNull();
+  });
+  it('refuses anything malformed, and a weighed serving denser than a food', () => {
+    for (const d of [
+      null, { ...BENTO, id: 'cabcdef1' }, { ...BENTO, id: 'm123' }, { ...BENTO, at: 5 }, { ...BENTO, n: '' }, { ...BENTO, n: 5 }, { ...BENTO, u: ' ' },
+      { ...BENTO, k: 5001 }, { ...BENTO, k: '650' }, { ...BENTO, g: 0 }, { ...BENTO, g: 5000.1 }, { ...BENTO, g: 1.25 }, { ...BENTO, p: 500.1 },
+      { ...BENTO, s: -1 }, { ...BENTO, x: 1 }, { id: 'mabcdef1', at: T, rm: true, n: 'x' }, { id: 'mabcdef1', at: T, rm: 1 },
+      { ...BENTO, g: 50, k: 476 }, { ...BENTO, g: 10, p: 10.1 }
+    ]) expect(foodCustomOp(d)).toBeNull();
+    expect(foodCustomOp({ ...BENTO, g: 50, k: 475, p: 50 })).not.toBeNull();
+    expect(customDensityOk({ k: 5000 })).toBe(true);
+    expect(customDensityOk({ g: 100, k: 950, s: 100 })).toBe(true);
+    expect(customDensityOk({ g: 100, k: 951 })).toBe(false);
+    expect(customDensityOk({ g: 20, k: 10, fa: 21 })).toBe(false);
+  });
+  it('keeps each one’s latest op, its owner’s alone, latest changed first', () => {
+    const op = (id: string, who: 'A' | 'B' | 'G', at: number, k = 100) => ({ ...(foodCustomOp({ ...BENTO, id, at, k }) as object), who }) as CustomOp & { who: 'A' | 'B' | 'G' };
+    const out = foodCustomFold([op('mabcdef1', 'A', T, 1), op('mabcdef1', 'A', T + 2, 2), op('mabcdef1', 'B', T + 3, 3), op('mabcdef2', 'G', T + 1), op('mabcdef1', 'A', T + 1, 9)]);
+    expect(out.map((c) => [c.id, c.who, c.k])).toEqual([['mabcdef1', 'A', 2], ['mabcdef2', 'G', 100]]);
+    expect(foodCustomFold([op('mabcdef1', 'A', T), { id: 'mabcdef1', at: T + 1, rm: true, who: 'A' }, op('mabcdef1', 'A', T + 2)])).toEqual([]);
+  });
+  it('as a food: per 100 g of a weighed serving; a serving with no weight a nominal 100 g at its own values (`sv`)', () => {
+    const o = foodCustomOp(ONIGIRI) as typeof ONIGIRI & { s: null };
+    const f = customSnap(o, '1個');
+    expect(f).toEqual({ id: 'custom:mabcdef2', n: 'おにぎり', k: 163.6, p: 2.73, fa: null, c: 36, s: null, u: '1個' });
+    expect(customGrams(o)).toBe(110);
+    expect(customPortions(o)).toEqual([{ label: '1個', g: 110 }, { label: '100g', g: 100 }]);
+    expect(customPortions({ u: '100g入り', g: 100 })).toEqual([{ label: '100g入り', g: 100 }]);
+    expect(foodOp({ id: 'fabcdef1', at: T, d: '2026-11-03', m: 'l', g: 110, f })).toMatchObject({ g: 110, f });
+    expect((f.k * 110) / 100).toBeCloseTo(180, 0);
+    // no weight: 1 serving = 100 g, its values per serving even over a food's 950 kcal per 100 g
+    const b = foodCustomOp({ ...BENTO, k: 1200, s: 4.5 }) as typeof BENTO & { p: null; fa: null; c: null; s: number };
+    const fb = customSnap(b);
+    expect(fb).toEqual({ id: 'custom:mabcdef1', n: '会社の弁当', k: 1200, p: null, fa: null, c: null, s: 4.5, sv: true });
+    expect(customPortions(b)).toEqual([{ label: '1個', g: 100 }]);
+    expect(foodOp({ id: 'fabcdef1', at: T, d: '2026-11-03', m: 'l', g: 150, f: fb })).toMatchObject({ g: 150, f: fb });
+    // a snapshot's `sv`: only true; per-serving limits with it, a food's without
+    const snap = (f: object) => (foodOp({ id: 'fabcdef1', at: T, d: '2026-11-03', m: 'l', g: 100, f }) as { f?: object } | null)?.f;
+    expect(snap({ ...fb, sv: false })).toBeUndefined();
+    expect(snap({ ...fb, sv: 1 })).toBeUndefined();
+    expect(snap({ ...fb, sv: undefined })).toBeUndefined();
+    expect(snap({ ...fb, k: 5000, p: 500 })).toMatchObject({ k: 5000, p: 500, sv: true });
+    expect(snap({ ...fb, k: 5001 })).toBeUndefined();
+  });
+  it('as a recipe’s ingredient: by weight as any food; with no weight, the recipe a serving per nominal 100 g (`sv`)', () => {
+    const o = customSnap(foodCustomOp(ONIGIRI) as typeof ONIGIRI & { s: null });
+    expect(foodRecipeOp({ id: 'cabcdef1', at: T, n: 'おにぎり定食', sv: 1, it: [{ g: 110, f: o }, { g: 100, f: RICE }] })).not.toBeNull();
+    const bento = customSnap(foodCustomOp({ ...BENTO, k: 1200, p: 40 }) as typeof BENTO & { p: number; fa: null; c: null; s: null });
+    const r = foodRecipeOp({ id: 'cabcdef2', at: T, n: '弁当とごはん', sv: 2, it: [{ g: 200, f: bento }, { g: 150, f: RICE }] }) as Extract<RecipeOp, { n: string }>;
+    expect(r.it[0].f.sv).toBe(true);
+    const f = recipeSnap(r, '1人前');
+    // two bentos and 150 g of rice, over two servings
+    expect(f).toEqual({ id: 'recipe:cabcdef2', n: '弁当とごはん', k: 1317, p: 41.88, fa: 0.23, c: 27.83, s: 0, u: '1人前', sv: true });
+    expect(recipePortion(r)).toEqual({ label: '1人前', g: 100 });
+    expect(foodOp({ id: 'fabcdef1', at: T, d: '2026-11-03', m: 'l', g: 100, f })).toMatchObject({ f });
+    // without one, nothing changes
+    expect(recipeSnap({ ...r, it: [{ g: 150, f: RICE }] }).sv).toBeUndefined();
+  });
+});
+

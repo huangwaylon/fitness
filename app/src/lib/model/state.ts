@@ -107,6 +107,9 @@ export interface State {
   /** My recipes (`food_recipe`: each recipe's ops, contract/food.ts) as raw rows (RAW_EVENTS); everyone's, read by
    *  everyone (model/food.ts recipes). Never read by the economy. */
   foodRecipe: EventRow[];
+  /** My foods (`food_custom`: each custom food's ops, contract/food.ts) as raw rows (RAW_EVENTS); everyone's, read by
+   *  everyone (model/food.ts customs). Never read by the economy. */
+  foodCustom: EventRow[];
   /** The shop's rows (`sell`, `buy`: contract/shop.ts), each with whose they are (the guest's too), in server order;
    *  the pockets and かいがら are their fold over the tallies (model/shop.ts). Never read by the economy. */
   shop: ShopRowAt[];
@@ -205,8 +208,10 @@ const weekOf = (d: LocalDate): WeekKey => {
  * memoised per row and per list (model/food.ts opOf, entriesOf). A new such type is one entry here, a list in State
  * and its reader.
  */
-const RAW_EVENTS = new Map<string, 'food' | 'foodRepeat' | 'foodRecipe'>([['food', 'food'], ['food_repeat', 'foodRepeat'], ['food_recipe', 'foodRecipe']]);
-type RawEvent = 'food' | 'food_repeat' | 'food_recipe';
+const RAW_EVENTS = new Map<string, 'food' | 'foodRepeat' | 'foodRecipe' | 'foodCustom'>([
+  ['food', 'food'], ['food_repeat', 'foodRepeat'], ['food_recipe', 'foodRecipe'], ['food_custom', 'foodCustom']
+]);
+type RawEvent = 'food' | 'food_repeat' | 'food_recipe' | 'food_custom';
 
 const bodyMaps = (): Record<BodyMetric, Map<LocalDate, Timed<number>[]>> => ({ body_fat_pct: new Map(), bmi: new Map(), lean_kg: new Map() });
 
@@ -229,6 +234,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     food: [],
     foodRepeat: [],
     foodRecipe: [],
+    foodCustom: [],
     shop: [],
     prefs: { A: {}, B: {}, G: {} },
     moveGoals: { A: [], B: [] },
@@ -313,6 +319,7 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     food: [...base.food],
     foodRepeat: [...base.foodRepeat],
     foodRecipe: [...base.foodRecipe],
+    foodCustom: [...base.foodCustom],
     shop: [...base.shop],
     prefs: { A: { ...base.prefs.A }, B: { ...base.prefs.B }, G: { ...base.prefs.G } },
     moveGoals: { A: [...base.moveGoals.A], B: [...base.moveGoals.B] },

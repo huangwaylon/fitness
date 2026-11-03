@@ -13,10 +13,10 @@ import { addToTally, latestByDay } from '#lib/model/tally.ts';
 import { localDateAt } from '#lib/time/dates.ts';
 import { MOVE_GOAL, isStepsGoal, shopPrice } from '#lib/config/rules.ts';
 import {
-  foodOp, foodRecipeOp, foodRepeatOp, isKcalGoal, newFoodId, newRecipeId, newRepeatId, recipeSnap, repeatCovers, type FoodEntry, type FoodRepeat,
-  type FoodSnap, type Meal, type RepeatItem, type RepeatOp
+  customSnap, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, isKcalGoal, newCustomId, newFoodId, newRecipeId, newRepeatId, recipeSnap, repeatCovers,
+  type FoodEntry, type FoodRepeat, type FoodSnap, type Meal, type RepeatItem, type RepeatOp
 } from '#lib/contract/food.ts';
-import { foodDay, foodEntries, recipes, repeats } from '#lib/model/food.ts';
+import { customs, foodDay, foodEntries, recipes, repeats } from '#lib/model/food.ts';
 import { buyPrice, sellPrice, stockOf } from '#lib/contract/shop.ts';
 import { shopView } from '#lib/model/shop.ts';
 import { world } from './world.svelte.ts';
@@ -444,6 +444,56 @@ export function removeRecipe(id: string): SendResult {
 export function logRecipe(e: { recipeId: string; d: LocalDate; m: Meal; g: number; u?: string }): SendResult {
   const r = aRecipe(e.recipeId);
   return r ? logFood({ d: e.d, m: e.m, g: e.g, f: recipeSnap(r, e.u) }) : { ok: false };
+}
+
+// ---- My foods (マイ食品, docs/backend.md#events `food_custom`): a custom food of mine is one op carrying its whole
+// state. Anyone's is mine to log, like a recipe: an ordinary entry of mine whose food is the custom food per 100 g
+// (contract/food.ts customSnap: with no weight, a nominal 100 g per serving), a snapshot.
+
+/** Send a custom food op as the record will keep it (contract/food.ts foodCustomOp); `{ok:false}` when it isn't one. */
+function sendCustom(d: Record<string, unknown>): SendResult {
+  const op = foodCustomOp(d);
+  return op ? week.send('food_custom', { ...op }) : { ok: false };
+}
+
+/** A custom food, anyone's, as the model has it (queued changes included). */
+const aCustom = (id: string) => {
+  const m = week.model;
+  return m ? customs(m.state).find((c) => c.id === id) : undefined;
+};
+
+/**
+ * Save a custom food of mine: `n` its name, `u` its serving's label, `g` the serving's grams (absent: unknown), `k`
+ * kcal and `p`/`fa`/`c`/`s` (g; null or absent: unknown) in one serving. With `id`, an edit of mine (someone else's
+ * isn't mine to change); without, a new one, which is also how another's is copied to mine. `{ok:false}` when it isn't
+ * one the record takes (contract/food.ts foodCustomOp: limits, customDensityOk). The custom food's id.
+ */
+export function saveCustom(e: {
+  id?: string; n: string; u: string; g?: number | null; k: number; p?: number | null; fa?: number | null; c?: number | null; s?: number | null;
+}): SendResult & { id?: string } {
+  const me = week.model?.me;
+  if (!me) return { ok: false };
+  const held = e.id === undefined ? undefined : aCustom(e.id);
+  if (e.id !== undefined && held?.who !== me) return { ok: false };
+  const at = foodNow(held?.at);
+  const id = held?.id ?? newCustomId(at);
+  const g = e.g === undefined || e.g === null ? undefined : Math.round(e.g * 10) / 10;
+  const r = sendCustom({ id, at, n: e.n, u: e.u, g, k: e.k, p: e.p ?? null, fa: e.fa ?? null, c: e.c ?? null, s: e.s ?? null });
+  return r.ok ? { ...r, id } : r;
+}
+
+/** Remove a custom food of mine (final; the meals logged from it stay as they were). */
+export function removeCustom(id: string): SendResult {
+  const c = aCustom(id);
+  if (!c || c.who !== week.model?.me) return { ok: false };
+  return sendCustom({ id, at: foodNow(c.at), rm: true });
+}
+
+/** Log a custom food, anyone's, as a meal of mine: `g` grams of it (customPortions: its serving's, a nominal 100 with no
+ *  weight) on day `d` at meal `m`, `u` the portion it was picked by (default: its serving's label). */
+export function logCustom(e: { customId: string; d: LocalDate; m: Meal; g: number; u?: string }): SendResult {
+  const c = aCustom(e.customId);
+  return c ? logFood({ d: e.d, m: e.m, g: e.g, f: customSnap(c, e.u ?? c.u) }) : { ok: false };
 }
 
 /**
