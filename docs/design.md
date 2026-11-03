@@ -793,7 +793,9 @@ picked up is gone on both, what a shake drops lies on both, each villager stands
   ring, the bite's plunge and splash, the reel. The shadow it's cast at swims up to their float and is theirs while the
   line is out: a tap on it here casts nothing, a soft boop says so (Critters' `__fish.why()`: the partner's); a catch
   is their `catch` as ever (the plate), and the line clears. A phone that comes while a line is out hears its step
-  again (its angler's phone sends it when it sees them come); an angler whose phone goes is no longer fishing. The
+  again (its angler's phone sends it when it sees them come); an angler whose phone goes is no longer fishing, nor
+  one who goes through a door with the line out (its `off` as the island goes); a line cast again elsewhere frees
+  the shadow the old one was at; and back from a room, the others' villagers hold no rod till their next step. The
   guest's line too.
 - **The partner's doings, played here:** when their change arrives (within 12 s of it), their villager turns to it
   where it stands (no run over, as on their phone) and it plays at the target (the net or the shovel there, a splash,
