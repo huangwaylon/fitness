@@ -32,6 +32,8 @@ interface Family {
   kb: number;
   v: string;
   colours: Record<string, string[]>;
+  /** A wall's doorway (model units): NH's DoorModel0 joint, where its door stands (the door's own origin there). */
+  door?: number[];
 }
 /** NH's house parts as converted (scripts/home-models.ts): family → its bounds, size, hash, colours. */
 export const FAMILIES = (HOMES_JSON as unknown as { families: Record<string, Family> }).families;
@@ -72,7 +74,7 @@ export function doorPartOf(id: string | undefined): { style: string; shape: 'R' 
 
 /** The parts a style is drawn from (families and colours), mended where it names something that isn't (a roof of
  *  another shape, an unknown colour: the shape's first material, the family's first colour). */
-export function partsOf(s: HomeStyle | undefined): { family: string; colour: string }[] {
+export function partsOf(s: HomeStyle | undefined): { family: string; colour: string; at?: readonly number[] }[] {
   if (!s || s.m === 'campsite') return [];
   if (s.m === 'tent-n') return [{ family: 'tent-n', colour: s.w === 'B' ? 'B' : 'A' }];
   if (s.m === 'tent-p') return [{ family: 'tent-p', colour: 'A' }];
@@ -86,7 +88,8 @@ export function partsOf(s: HomeStyle | undefined): { family: string; colour: str
   return [
     { family: wall.family, colour: wall.colour },
     { family: roof.family, colour: roof.colour },
-    { family: door.family, colour: door.colour }
+    // (in the wall's doorway: up its step, across to a villager house's door)
+    { family: door.family, colour: door.colour, at: FAMILIES[wall.family]?.door ?? [0, 0, 0] }
   ];
 }
 

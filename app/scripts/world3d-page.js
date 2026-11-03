@@ -205,12 +205,17 @@ function plain(mesh) {
 }
 
 /** o: { parts: [{folder, dae}], files: [[folder, names]], maxTex, maxEmi, grdRow?, hide? } → the glTF (JSON, images
- *  as PNG data URIs), the bounds, triangles and materials. */
+ *  as PNG data URIs), the bounds, triangles and materials, and the doorway's place (a frame's DoorModel0 joint: a wall's,
+ *  where a door family stands; a door part converted with its frame is put there already). */
 window.convert = async (o) => {
   const group = new THREE.Group();
+  /** NH's doorway: the frame's DoorModel0 joint (a house's wall, a tent), where its door stands. */
+  let doorway = null;
   for (const p of o.parts) {
     const c = await dae.loadAsync(`/src/${p.folder}/${p.dae}`);
     c.scene.traverse((n) => { if (n.isMesh) n.userData.folder = p.folder; });
+    // a door part in its frame's doorway (else it stood at the model's origin: down and off the opening)
+    if (doorway && /Door/.test(p.dae)) c.scene.applyMatrix4(doorway);
     // a part's place (a snowboy's head on its body; the countdown board's display in its frame): moved up (and across,
     // and nearer) and scaled about its origin
     if (p.at) {
@@ -220,6 +225,11 @@ window.convert = async (o) => {
       c.scene.scale.multiplyScalar(p.at[1]);
     }
     group.add(c.scene);
+    if (!doorway) {
+      group.updateMatrixWorld(true);
+      const j = group.getObjectByName('DoorModel0');
+      if (j) doorway = j.matrixWorld.clone();
+    }
   }
   // a pose: a joint turned (degrees about its own x, y, z), scripts/models-page.js's (the shishi-odoshi's tube tipped)
   for (const [jn, r] of Object.entries(o.pose || {})) {
@@ -262,7 +272,8 @@ window.convert = async (o) => {
   const gltf = await exporter.parseAsync(scene, { binary: false, onlyVisible: true });
   return {
     gltf: JSON.stringify(gltf), box: [box.min.toArray(), box.max.toArray()], tris: Math.round(tris),
-    mats: [...baked.keys()].map((k) => k.split('|').pop()), lit, parts
+    mats: [...baked.keys()].map((k) => k.split('|').pop()), lit, parts,
+    door: doorway ? new THREE.Vector3().setFromMatrixPosition(doorway).toArray().map((n) => +n.toFixed(3)) : null
   };
 };
 
