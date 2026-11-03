@@ -49,6 +49,8 @@
   import { GRASS_Y, SEA_Y as LAYOUT_SEA_Y, WATER_DROP as LAYOUT_DROP, fieldOf } from '#lib/layout/height.ts';
   import { TIER_H } from '#lib/layout/grid.ts';
   import type { EditStage } from '../layoutEdit/IslandEdit.svelte';
+  import { drawOff } from '../../ui-state/testMode.ts';
+  import { DEVICE, localKV } from '#lib/sync/storage.ts';
 
   /** A villager on this island now (IslandScene's cast). */
   export interface Cast {
@@ -709,6 +711,23 @@
   /** A software renderer (no GPU: headless CI's SwiftShader, llvmpipe), asked of a throwaway context before the
    *  island's own is made (its antialiasing is fixed at its making). */
   function softwareGL(): boolean {
+    // (asked once a device: a throwaway context costs seconds under SwiftShader; the e2e's logic mode draws nothing)
+    if (drawOff()) return true;
+    try {
+      const was = localKV()?.getItem(DEVICE.softGL);
+      if (was === '1' || was === '0') return was === '1';
+    } catch {
+      // (private mode: asked each time)
+    }
+    const soft = askGL();
+    try {
+      localKV()?.setItem(DEVICE.softGL, soft ? '1' : '0');
+    } catch {
+      // (as above)
+    }
+    return soft;
+  }
+  function askGL(): boolean {
     try {
       const c = document.createElement('canvas'), gl = (c.getContext('webgl2') ?? c.getContext('webgl')) as WebGLRenderingContext | null;
       if (!gl) return false;
@@ -743,7 +762,8 @@
     }
     eng = e;
     // (?ambient= the frames a second of the ambience, anywhere)
-    const amb = num('ambient') ?? (soft ? 2 : null);
+    // (not in the e2e's logic mode: nothing's drawn, a frame costs nothing, and the island's life runs in its frames)
+    const amb = num('ambient') ?? (soft && !drawOff() ? 2 : null);
     if (amb !== null) e.options({ ambient: Math.max(0, amb) });
     fitEnds(e);
     e.go(start ?? e.limits().min);

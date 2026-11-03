@@ -15,7 +15,7 @@ const local = [
   ...(process.env.E2E_ISLAND === '3d' ? [{ name: 'island.render', value: '3d' }] : []),
   ...(process.env.E2E_RENDER === 'none' ? [{ name: 'e2e.render', value: 'none' }] : []),
   // E2E_LAYOUT=1 (with E2E_ISLAND=3d): the 3D island on the editable layout, as at the cutover (island/site.svelte.ts)
-  ...(process.env.E2E_LAYOUT ? [{ name: 'island.layout', value: 'on' }] : [])
+  ...(process.env.E2E_LAYOUT ? [{ name: 'island.layoutOn', value: 'on' }] : [])
 ];
 const ISLAND = local.length ? { storageState: { cookies: [], origins: [{ origin: `http://127.0.0.1:${PORT}`, localStorage: local }] } } : {};
 
