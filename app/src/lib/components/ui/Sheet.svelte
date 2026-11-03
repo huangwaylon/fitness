@@ -97,7 +97,7 @@
 <style>
   dialog {
     margin: auto auto 0; padding: 0; border: 0; width: 100%; max-width: var(--col);
-    max-height: calc(var(--vh-fill) - var(--safe-top) - 24px);
+    max-height: calc(var(--vh-fill) - var(--ui-top) - 24px);
     background: var(--surface); color: var(--text);
     border-radius: var(--r-sheet) var(--r-sheet) 0 0; box-shadow: var(--sh-float);
     /* vertical only: a stray wide child can never turn a sheet into a 2-D pan */
@@ -141,7 +141,7 @@
   }
   dialog.top .inner, dialog.pop .inner {
     flex: 1; min-height: 0; display: flex; flex-direction: column;
-    padding: calc(var(--safe-top) + 8px) calc(var(--side) + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
+    padding: calc(var(--ui-top) + 8px) calc(var(--side) + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
   }
   /* An undo banner is up: the last row can scroll clear of it… */
   dialog.toasting .inner { padding-bottom: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }

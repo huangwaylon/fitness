@@ -808,7 +808,7 @@
   /* the say button: bottom right, just above the foot's buttons (いえを かえる and もようがえ fill the foot's width) */
   .say-dock { position: absolute; z-index: 3; right: calc(var(--safe-right, 0px) + 8px); bottom: calc(var(--safe-bottom, 0px) + 14px + 56px + 10px); }
   .whose {
-    position: absolute; left: 50%; top: calc(var(--safe-top, 0px) + 70px); transform: translateX(-50%); margin: 0; padding: 6px 14px;
+    position: absolute; left: 50%; top: calc(var(--ui-top, 0px) + 70px); transform: translateX(-50%); margin: 0; padding: 6px 14px;
     border-radius: 999px; background: var(--c-cream); color: var(--c-ink); font-weight: 700; font-size: var(--fs-s, 13px); pointer-events: none;
   }
   .tent {
@@ -817,7 +817,7 @@
     --plate: var(--c-cream); --plate-lip: var(--c-lip); --plate-ink: var(--c-ink);
   }
   .room { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; -webkit-tap-highlight-color: transparent; }
-  .top { position: absolute; left: calc(var(--side) + var(--safe-left)); top: calc(var(--safe-top) + 8px); z-index: 2; min-height: var(--hit); }
+  .top { position: absolute; left: calc(var(--side) + var(--safe-left)); top: calc(var(--ui-top) + 8px); z-index: 2; min-height: var(--hit); }
   .foot {
     position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; display: flex; justify-content: center; gap: 10px;
     padding: 0 12px calc(var(--safe-bottom, 0px) + 14px); pointer-events: none; min-height: 72px;
@@ -831,7 +831,7 @@
   .edit:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-yuzu-lip, #D9B21E); }
   .edit:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .switch {
-    position: absolute; right: calc(var(--side) + var(--safe-right) + 62px); top: calc(var(--safe-top) + 8px); z-index: 2;
+    position: absolute; right: calc(var(--side) + var(--safe-right) + 62px); top: calc(var(--ui-top) + 8px); z-index: 2;
     width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer;
     color: var(--c-ink); background: var(--c-yuzu, #F7D94C); box-shadow: var(--sh-obj); -webkit-tap-highlight-color: transparent;
   }
@@ -840,7 +840,7 @@
   .switch:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
   .switch:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .hha {
-    position: absolute; right: calc(var(--side) + var(--safe-right) + 124px); top: calc(var(--safe-top) + 8px); z-index: 2;
+    position: absolute; right: calc(var(--side) + var(--safe-right) + 124px); top: calc(var(--ui-top) + 8px); z-index: 2;
     width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer;
     background: var(--c-card); box-shadow: var(--sh-obj); -webkit-tap-highlight-color: transparent;
   }
@@ -850,7 +850,7 @@
   .hha:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
   .hha:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .reset {
-    position: absolute; right: calc(var(--side) + var(--safe-right)); top: calc(var(--safe-top) + 8px); z-index: 2;
+    position: absolute; right: calc(var(--side) + var(--safe-right)); top: calc(var(--ui-top) + 8px); z-index: 2;
     width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer;
     color: var(--c-ink); background: var(--c-card); box-shadow: var(--sh-obj); -webkit-tap-highlight-color: transparent;
     animation: pop .22s var(--ease-bounce) both;
