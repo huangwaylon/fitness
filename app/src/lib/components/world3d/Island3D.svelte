@@ -370,9 +370,13 @@
   let fishing = false;
   /** An emitter on the island now (bubbles, a firefly, flames): ambience. */
   let emitting = false;
-  function mirror(e: Island3, t: number): boolean {
+  /** A model's move this slow on screen (px/s) or off it is ambience (the ambient rate: a fish's shadow drifting);
+   *  the canvas's size from the ResizeObserver (a read in the frame forced a layout each frame). */
+  const SLOW_PX = 60;
+  let cw = 0, ch = 0, slowAmbient = true;
+  function mirror(e: Island3, t: number): boolean | 'ambient' {
     const winter = season === 'winter', seen = new Set<string>(), add: Inst[] = [];
-    let moving = false;
+    let moving: boolean | 'ambient' = false;
     fishing = false;
     emitting = false;
     for (const n of world.models3()) {
@@ -418,8 +422,12 @@
         L.ms = n.m3.ms ?? 0;
       }
       const k = L.ms > 0 ? Math.min(1, (t - L.t0) / L.ms) : 1, q = smooth(k);
-      if (k < 1) moving = true;
       const x = L.from[0] + (L.to[0] - L.from[0]) * q, z = L.from[1] + (L.to[1] - L.from[1]) * q, lf = L.from[2] + (L.to[2] - L.from[2]) * q;
+      if (k < 1 && moving !== true) {
+        const p = e.at(x, z, lf), on = p.visible && p.sx > -80 && p.sx < cw + 80 && p.sy > -80 && p.sy < ch + 80;
+        const px = (Math.hypot(L.to[0] - L.from[0], L.to[1] - L.from[1], L.to[2] - L.from[2]) / L.ms) * 1000 * p.k;
+        moving = (on && px >= SLOW_PX) || !slowAmbient ? true : 'ambient';
+      }
       let yaw = (n.m3.yaw ?? 0) + ((a.yaw ?? 0) * Math.PI) / 180;
       if (n.m3.face === 'move') {
         const dx = L.to[0] - L.from[0], dz = L.to[1] - L.from[1];
@@ -773,6 +781,8 @@
     // (not in the e2e's logic mode: nothing's drawn, a frame costs nothing, and the island's life runs in its frames)
     const amb = num('ambient') ?? (soft && !drawOff() ? 2 : null);
     if (amb !== null) e.options({ ambient: Math.max(0, amb) });
+    // (a slow move as ambience only where the ambience runs near the full rate: not on a software renderer's 2)
+    slowAmbient = (amb ?? 30) >= 24;
     fitEnds(e);
     e.go(start ?? e.limits().min);
     const proj: Proj3 = {
@@ -802,9 +812,9 @@
       sky(e);
       const acting = characterCards(e, t);
       actorFx(e, t);
-      if (villagerCards(t, camMoved || more) || more || moving || acting) return true;
-      // the ambience (the ambient rate): the season's fall, the stream's floats, an emitter, a villager's blink
-      return ambient3.kind || floatsOn || emitting || cast().some((c) => c.shown) ? 'ambient' : false;
+      if (villagerCards(t, camMoved || more) || more || moving === true || acting) return true;
+      // the ambience (the ambient rate): a slow move, the season's fall, the stream's floats, an emitter, a blink
+      return moving || ambient3.kind || floatsOn || emitting || cast().some((c) => c.shown) ? 'ambient' : false;
     });
     // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
     listenFx3((kind, x, z, lift, o) => e.fx(kind, x, z, lift, o));
@@ -824,7 +834,9 @@
       else e.cards.jiggle(`s:${id}`, k);
     });
     const off = attachGestures(scene, e, { enabled, top: () => scene.getBoundingClientRect().top, left: () => scene.getBoundingClientRect().left });
+    [cw, ch] = [canvas.clientWidth, canvas.clientHeight];
     const ro = new ResizeObserver(() => {
+      [cw, ch] = [canvas!.clientWidth, canvas!.clientHeight];
       e.resize();
       fitEnds(e);
       world.invalidate();
