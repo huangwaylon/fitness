@@ -19,9 +19,7 @@ import { DECOR_SLOTS, DECOR_U, SCENERY, seatAt } from '../island/world.ts';
 import type { Face } from '../villager3d/faces.ts';
 import type { Motion } from '../motion/reactions.ts';
 import { site } from '../island/site.svelte.ts';
-import { seatsOf } from '#lib/layout/nav.ts';
-import { objMid } from '#lib/layout/model.ts';
-import { kindDef } from '#lib/layout/catalog.ts';
+import { seatAnchor } from '../island/sitting.ts';
 
 export interface VSpec {
   /** The slot (an actor: mine, partner, third, visitor) and the roster id it draws. */
@@ -102,23 +100,11 @@ function islandSeat(name: string, floor: number): Anchor | null {
   const s = slot ? DECOR_U : sc!.h / (MU[sc!.key]?.mu[1] ?? 4.2), yaw = sc?.flip ? 0.7 : 0;
   return anchorsOf(shapeOf('island', model), { x: p.x, z: -p.z, y: floor, yaw, s })[n] ?? null;
 }
-/** A seat on the layout (site.on): a bench's or a stool's of the layout's, default or new (layout/nav.ts seatsOf's
- *  names: `seat-<id>-0|1`, `seat-<id>`), on its model as placeObjects stands it (NH's furniture scale, turned by its
- *  facing). */
-const SEAT_KINDS = new Set(['park-bench', 'log-bench', 'log-stool']);
+/** A seat on the layout (site.on): any piece's of the layout's with a model seat, default or new (island/sitting.ts:
+ *  layout/nav.ts seatsOf's names, on its model as placeObjects stands it). */
 function layoutSeat(name: string, floor: number): Anchor | null {
   const l = site.on ? site.layout : null;
-  if (!l) return null;
-  for (const o of l.objects.values()) {
-    if (!SEAT_KINDS.has(o.k)) continue;
-    const i = seatsOf(l, o).findIndex(([n]) => n === name);
-    if (i < 0) continue;
-    // (the island's default stools keep their scenery's size: islandSeat's)
-    if (SEAT_ON[name] && !DECOR_SLOTS.some((d) => d.id === o.id)) return null;
-    const [x, z] = objMid(l, o), yaw = kindDef(o.k)?.turns ? (o.f * Math.PI) / 2 : o.f % 2 ? 0.9 : 0;
-    return anchorsOf(shapeOf('island', o.k), { x, z: -z, y: floor, yaw, s: DECOR_U })[i] ?? null;
-  }
-  return null;
+  return l ? seatAnchor(l, name, floor) : null;
 }
 /** My line's steps as my villager's moments (fishing3d.ts). */
 const ANGLE_ACT: Partial<Record<Phase, Action>> = { cast: 'cast', bite: 'tug', reel: 'reel' };
@@ -337,7 +323,8 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       // its state, and its moment (the director's motion, once each)
       // on a seat: on its model's own (villager3d sitAt: the villager sits down there itself), dozing off on it asleep
       const anchor = s.seat !== null ? anchorAt(s) : null;
-      const state: State = anchor ? 'sit' : s.asleep ? (s.seat !== null ? 'nap' : 'doze') : s.seat !== null ? 'sit' : s.walking ? 'walk' : rod ? 'fish' : 'idle';
+      // (lying on one, the hammock: asleep it naps there)
+      const state: State = anchor ? (anchor.lie ? (s.asleep ? 'nap' : 'lie') : 'sit') : s.asleep ? (s.seat !== null ? 'nap' : 'doze') : s.seat !== null ? 'sit' : s.walking ? 'walk' : rod ? 'fish' : 'idle';
       if (v.state() !== state) w.posing = true;
       v.set(state);
       if (s.motionN !== w.motionN) {

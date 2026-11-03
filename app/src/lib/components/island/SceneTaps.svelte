@@ -78,8 +78,11 @@
     /** A tap on a tree (Scenery's data-tree: an oak, a cedar, a palm): it rustles, three quick ones shake it (IslandScene;
      *  true when it took the tap). */
     tree?: (id: string) => boolean;
+    /** A tap on a seat (Scenery's data-sit, its piece's id: a bench, a stool, the hammock): my villager walks up to it and
+     *  sits or lies on it (IslandScene sitOn; true when it took the tap). */
+    sit?: (piece: string) => boolean;
   }
-  let { scene, season, tod, enabled, swallowed, say, ontrick, exercise = false, skyTap, cake = false, walk, tree }: Props = $props();
+  let { scene, season, tod, enabled, swallowed, say, ontrick, exercise = false, skyTap, cake = false, walk, tree, sit }: Props = $props();
   const w = useWorld();
 
   type Kind = 'bush' | 'fire' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'wish' | 'splash' | 'sand' | 'grass';
@@ -253,6 +256,9 @@
     const fireEl = t.closest<HTMLElement>('[data-campfire]');
     const fire = fireEl && SCENERY.find((s) => s.id === fireEl.dataset.campfire);
     if (fireEl && fire) return poke(fireEl, fire);
+    // a seat: walked up to and sat or lain on (the one exception, with the doors, to "it answers where it stands")
+    const sitEl = t.closest<HTMLElement>('[data-sit]');
+    if (sitEl && sit?.(sitEl.dataset.sit ?? '')) return;
     const fxEl = t.closest<HTMLElement>('[data-fixture]');
     if (fxEl) return fixture(fxEl, fxEl.dataset.fixture ?? '', fxEl.dataset.look ?? '');
     const flowerEl = t.closest<HTMLElement>('[data-flower]');

@@ -631,3 +631,16 @@ NH's hold-up (the item lifted over the villager's head, a squash-and-rise pose, 
 catch or a find, mine, the partner's or the guest's, is only its plate in the bottom stack, its icon popping up from
 where it happened. Why: the user ("we don't need that now that we have the messaging system at the bottom center of
 the screen"); the stack already says what was caught and by whom, and the item over the head doubled it.
+
+### A tap on a seat sits on it, outside as in the tent (2026-11-03)
+A tap on the island's benches, stools, iron chair, hammock or beach chair walks my villager up to it and sits or lies it
+there, as a chair or a bed in the tent does: the third exception to "a tap on something acts in place", after the tent's
+door and the board. The seat's spot (`layout/nav.ts` seatsOf) moves from just behind the piece (the 2D island's, its legs
+hidden by the seat) to a step in front of it, the room's `from`, so the 3D villager walks up to the front and turns and
+sits down on the model's own seat (the same `seats3d.json` anchors and `villager3d` sitAt as the rooms; a test holds the
+spot and the anchor together), and gets up there again. Nothing new goes over the relay: outside, a villager standing
+still on a seat's spot is on it, so the walk is the whole story on every phone, a phone opening later and the walk
+home after 3 minutes included, and an older phone draws the same; the room's `seat` field isn't needed. One villager a
+seat (a bench two): taken, the other seat or a boop, as in the room. Why: the user ("similar to when they're inside a
+home, have them sit/sleep on that object - be consistent"). Not done: the picnic set and the illuminated tree, a seat's
+spot's other looks, aren't sat on.

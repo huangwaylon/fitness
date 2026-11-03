@@ -13,9 +13,10 @@ import { assetFor } from './assets.ts';
 import { keyModel, modelBounds } from './models3d.ts';
 import { POND_LILIES, POND_Y } from './pond.ts';
 import { pondPlaces } from '#lib/layout/ponds.ts';
+import { yawOf } from '#lib/layout/nav.ts';
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
 import { kindDef } from '#lib/layout/catalog.ts';
-import { doorOf, facingVec, footOf, objMid, type Layout, type Obj } from '#lib/layout/model.ts';
+import { doorOf, facingVec, footOf, objMid, type Layout } from '#lib/layout/model.ts';
 import { WHO_OF_HOME, homePorch, type HomeStyle } from '#lib/layout/homes.ts';
 
 export interface Day {
@@ -78,8 +79,6 @@ const SEASONAL = new Set(['beach-chair', 'sandcastle', 'snowboy']);
 /** The fixed decor's kinds (world.ts DECOR_SLOTS): NH's furniture scale, as the decorations'. */
 const SLOT_KINDS = new Set(['park-bench', 'log-bench', 'hammock', 'rod-stand', 'pump', 'shishiodoshi', 'pullup', 'firewood', ...SEASONAL]);
 
-/** A turning kind's yaw (f 0 faces the camera; a quarter turn each), a look-only facing's (odd: a little turned). */
-const yawOf = (o: Obj): number => (kindDef(o.k)?.turns ? (o.f * Math.PI) / 2 : o.f % 2 ? 0.9 : 0);
 
 /** The whole island: its models, and its stand-ins for what has none yet. */
 export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standins: Standin[] } {

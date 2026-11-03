@@ -86,7 +86,8 @@
   import { mushroomSpots } from './mushrooms.ts';
   import { giftTreesOn } from './treeGifts.ts';
   import { perches } from './critters.ts';
-  import { arrive, attachAvatar, homeAgain, homeRoute, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, snapHome, stayingAt, stepOut, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
+  import { arrive, attachAvatar, homeAgain, homeRoute, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, sitTo, snapHome, stayingAt, stepOut, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
+  import { freeSeat, seatNamed, seatOpen, seatPieceAt, seatSpots, type SeatSpot } from './sitting.ts';
   import { where } from '#lib/store/where.svelte.ts';
   import { JOIN_SAY_MS, RUN_RING_U_S, homeAfter, linkVillagers, playPartner, playWake, setHomeAfter } from './villagerSync.ts';
   import { canonical, hash, type DayEvent } from '#lib/sync/world-day.ts';
@@ -97,7 +98,7 @@
   import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
   import { piecesOn, swapsOn } from './fixedDecor.ts';
   import { islandSeed } from './devHooks.ts';
-  import { ARCH, SCENERY } from './world.ts';
+  import { ARCH, DECOR_SLOTS, SCENERY } from './world.ts';
   import { echo3d } from './echo3d.ts';
   import { fx3d } from './fx3d.ts';
 
@@ -444,15 +445,21 @@
   }
   const feet = (id: VillagerActor) => livePos(id);
 
-  // Sitting (docs/design.md "Decor: sitting"): a villager standing still on a seat (world.ts SEATS: the benches', the
-  // campfire's stools) is drawn seated, sunk behind the seat; one at the pull-up bar on its person's exercise day does a
+  // Sitting (docs/design.md "Decor: sitting"): a villager standing still on a seat's spot (world.ts SEATS: a step in
+  // front of a bench's seat, a stool, a chair, the hammock) is on it (the 3D villager sits or lies down there itself:
+  // world3d/villagers.ts; a card sinks behind it); one at the pull-up bar on its person's exercise day does a
   // few pull-ups. From where it stands only, so both phones draw the same. Both on one bench: a heart each.
-  const seated = $derived(Object.fromEntries(VILLAGERS.map((id) => [id, actors[id].walking || actors[id].asleep ? null : seatAt(Math.round(actors[id].x), Math.round(actors[id].y))])) as Record<VillagerActor, string | null>);
+  // (asleep too: it dozes off on it; a seat whose spot has another piece today is none: seatHere)
+  const seated = $derived(Object.fromEntries(VILLAGERS.map((id) => [id, actors[id].walking ? null : seatHere(seatAt(Math.round(actors[id].x), Math.round(actors[id].y)))])) as Record<VillagerActor, string | null>);
   const repping = $derived(Object.fromEntries(VILLAGERS.map((id) => {
     const a = actors[id], pid = whoOf(id);
     return [id, pid !== 'G' && !a.walking && !a.asleep && Math.abs(a.x - PULLUP_AT[0]) <= 3 && Math.abs(a.y - PULLUP_AT[1]) <= 3 && todayPct(view.people[pid].rings.peach) >= 100];
   })) as Record<VillagerActor, boolean>);
-  const benchOf = (seat: string | null) => (seat?.startsWith('seat') ? seat.slice(0, -1) : null);
+  /** The bench (a piece of two seats) a seat is on, or null. */
+  const benchOf = (seat: string | null) => {
+    const l = site.layout, s = seat && l ? seatNamed(l, seat) : null, o = s && l?.objects.get(s.piece);
+    return o && l && seatSpots(l, o).length > 1 ? o.id : null;
+  };
   let sharedBench: string | null = null;
   $effect(() => {
     const b = benchOf(seated.mine);
@@ -511,11 +518,39 @@
     if (hit.kind !== 'grass' && hit.kind !== 'sand') return false;
     const b0 = buildingAt(x, z), door = b0 && sceneEl?.querySelector<HTMLElement>(`[data-building="${b0}"] .door`);
     if (b0 && door) return building(b0, door), true;
+    // a seat's foot (a 3D piece with no tap area of its own: an iron chair): up to it and on
+    const sp = site.layout && seatPieceAt(site.layout, x, z);
+    if (sp && sitOn(sp.id)) return true;
     // (the partner's phone plays the very walk: villagerSync.ts tells it every move of mine, and the relay keeps it)
     const r = sendTo(x, z);
     if (!r) return false;
     ring(r.to[0], r.to[1]);
     return true;
+  }
+
+  // ---- sitting and lying (sitting.ts, docs/design.md "Decor: sitting"): a tap on a seat walks my villager up to it,
+  //      a step in front, and there it sits or lies down, as in the tent; one villager a seat (a bench two) ----
+  /** A seat (its piece's id: SceneTaps' data-sit, or the ground at its foot) tapped: my villager walks up to its free
+   *  seat nearest it, and on (all taken: a boop; on it already: nothing more). True when it took the tap. */
+  function sitOn(piece: string): boolean {
+    if (!live || covered || decorating || actors.mine.asleep) return false;
+    const l = site.layout, o = l?.objects.get(piece);
+    const spots = l && o ? seatSpots(l, o).filter((q) => seatHere(q.name)) : [];
+    if (!spots.length) return false;
+    if (spots.some((q) => q.name === seated.mine)) return true;
+    const taken = (q: SeatSpot) => VILLAGERS.some((id) => id !== 'mine' && seated[id] === q.name);
+    const st = freeSeat(spots, livePos('mine'), taken);
+    if (!st) return cue('boop'), true;
+    // (the partner's phone plays the very walk; standing still on the spot is on it there too: world.ts seatAt)
+    const ms = sitTo(st.at, () => {
+      // another got on it first (while mine walked up): off it again, to the piece's other seat if it's free
+      if (!taken(st)) return cue('scene-bench');
+      const next = freeSeat(spots, st.at, taken);
+      if (next) sitTo(next.at, () => cue('scene-bench'));
+      else sendTo(st.at[0], st.at[1] - 20);
+      cue('boop');
+    });
+    return ms !== null;
   }
 
   // ---- the partner off screen: a round face of their villager pinned at the top or the bottom edge (a cue only) ----
@@ -591,6 +626,8 @@
       mine: () => livePos('mine'),
       /** The partner's villager's feet now (e2e: the shared world). */
       partner: () => livePos('partner'),
+      /** The seat a villager is on (its spot's name: world.ts SEATS), or null (e2e: sitting). */
+      seated: (id: VillagerActor) => seated[id],
       /** Anyone's villager's feet now (A, B or G), null when it isn't on this island (e2e: the guest). */
       who: (w: Who) => (onIsland(actorOf(w)) && !inTent(actorOf(w)) ? livePos(actorOf(w)) : null),
       /** The camera's two ends for this screen (まえ, おく: the 3D island's; world.ts CAMS before it's up). */
@@ -1038,6 +1075,12 @@
     return SCENERY.map((x) => (sw[x.id] ? { ...x, key: sw[x.id].key, h: sw[x.id].h } : x));
   });
   const pieces3 = $derived((void site.rev, piecesOn(today, jst(clock).hour, islandSeed(), ARCH)));
+  /** The seat whose spot is `name` if it's there today (sitting.ts seatOpen: a decor spot's piece of the day its own),
+   *  else null. */
+  function seatHere(name: string | null): string | null {
+    const l = site.layout, s = name && l ? seatNamed(l, name) : null;
+    return !s || seatOpen(s, pieces3, DECOR_SLOTS) ? name : null;
+  }
   /** The goal trees' spots (world.ts's, on the island's layout: site.rev). */
   const goalTrees = $derived((void site.rev, GOAL_TREES));
   const cast3 = () => VILLAGERS.map((id) => ({
@@ -1153,7 +1196,7 @@
         <Particles {season} {foliage} {tod} quiet={asleepNow} mode="fireflies" raining={live && raining()} />
         {#if live}
           <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
-          <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden && !decorating} swallowed={() => closedBy} walk={walkThere}
+          <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden && !decorating} swallowed={() => closedBy} walk={walkThere} sit={sitOn}
             exercise={view.people.A.rings.peach.met || view.people.B.rings.peach.met} cake={bday.length > 0}
             skyTap={(x, y) => !!fireworks?.tap(x, y)}
             say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={trick} tree={treeTap} />

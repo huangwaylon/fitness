@@ -21,6 +21,7 @@
   import PLACES from './models.json';
   import { pose3d } from './echo3d.ts';
   import { site } from './site.svelte.ts';
+  import { sitLook } from './sitting.ts';
 
   interface Props {
     season: Season;
@@ -122,7 +123,7 @@
   {@const th = trunkHit(s, part)}
   <div class="spr" data-scenery-id={s.id} data-kind={s.kind} data-part={part} {@attach w.at({ x: s.x, z: s.z, h: s.h, dz: part === 'canopy' ? -14 : 0, inv: !!th, model: true })}>
     <span class="art" data-look={key} class:flip={s.flip} class:snow={winter && s.kind === 'bush' && !P[key]} class:bush={s.kind === 'bush'} class:fire={live && !!FIRE_AT[s.key]}
-      data-bush={s.kind === 'bush' ? s.id : undefined} data-campfire={FIRE_AT[s.key] ? s.id : undefined}
+      data-bush={s.kind === 'bush' ? s.id : undefined} data-campfire={FIRE_AT[s.key] ? s.id : undefined} data-sit={live && sitLook(key) ? s.id : undefined}
       style={at3d(key, s.h, s.flip)} style:height="calc({s.h} * var(--u))" style:width="calc({wOf(key, s.h)} * var(--u))"
       style:clip-path={layered(base) ? inset3d(key, s.flip) : clip}>
       <OfficialArt {key} size="calc({s.h} * var(--u))" eager={s.z < 1080} />
@@ -157,7 +158,7 @@
         <span class="frame tip"><OfficialArt key={`${f.key}-tip`} size="calc({f.h} * var(--u))" eager /></span>
       </span>
     {:else}
-      <span class="art fixture" data-fixture={live ? f.fixture : undefined} data-look={f.key}
+      <span class="art fixture" data-fixture={live ? f.fixture : undefined} data-sit={live && sitLook(f.key) ? f.id : undefined} data-look={f.key}
         style={at3d(f.key, f.h)} style:height="calc({f.h} * var(--u))" style:width="calc({wOf(f.key, f.h)} * var(--u))">
         <OfficialArt key={f.key} size="calc({f.h} * var(--u))" eager={f.z < 1080} />
       </span>
@@ -198,7 +199,7 @@
     line-height: 0; pointer-events: none;
   }
   .art :global(.official), .door :global(.official) { max-width: none; }
-  .art.bush, .art.fire, .art.fixture[data-fixture] { pointer-events: auto; cursor: pointer; }
+  .art.bush, .art.fire, .art.fixture[data-fixture], .art[data-sit] { pointer-events: auto; cursor: pointer; }
   /* the shishi-odoshi's two frames: at rest, and tipped while it spills */
   .shishi .frame { position: absolute; inset: 0; display: flex; justify-content: center; align-items: flex-end; line-height: 0; }
   .shishi .tip { opacity: 0; }

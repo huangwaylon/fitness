@@ -483,8 +483,8 @@ went in November 2026 (docs/cleanup-2d.md).
   (NH's snowball and its face), melting through NH's three stages over the next three days; Bunny Day's egg arch on the
   arch's spot. The seasonal lamps and the illuminated tree light at dusk like the lanterns. All from the date, the hour
   and the seed: the same on both phones. Every spot is a walk obstacle all year and a spot a decoration can't take
-  ([Decorating](#decorating)), so a seasonal piece never lands on one. Their shadows are the 3D island's. A tap answers where it stands (nobody walks, my villager turns to it): a bench creaks and
-  sheds a leaf (`creak`), the bar rings (`clang`), the pump gushes (`pump`), the sandcastle and the snowboy puff, the
+  ([Decorating](#decorating)), so a seasonal piece never lands on one. Their shadows are the 3D island's. A tap answers where it stands (nobody walks, my villager turns to it), but for a seat (it
+  sits: below): the bar rings (`clang`), the pump gushes (`pump`), the sandcastle and the snowboy puff, the
   rest knock softly. The shishi-odoshi tips (NH's model posed: `deco/shishiodoshi-tip`) every 15–25 s while it's in
   view and on a tap, and knocks back on its stone: `kon` (local, cosmetic). The new sounds are synthesized
   (`sound/synth.ts`).
@@ -493,11 +493,23 @@ went in November 2026 (docs/cleanup-2d.md).
   villager goes to sit at the campfire on its own stool (A west, B east) for 30–60 s; on a day its person met the
   exercise goal (🍑) a villager goes to the pull-up bar now and then and does pull-ups there; when both met every goal
   today, at dusk (17:00–19:00, each quarter hour both are home) they set off together for the front bench and sit side
-  by side facing the sea for 90 s. A villager standing still on a seat (`world.ts` SEATS, just behind it) is drawn
-  seated (sunk SEAT_DROP behind the seat, which covers its legs); both on one bench: a ♥ each. Like every outing, each
-  phone sends its own villager's walk (villagerSync) and plays the partner's from the slot only while they're away;
-  seated, the pull-ups and the ♥ follow from where the villagers stand, so both phones draw the same
-  (`e2e/sync-harness.spec.ts`: A seated on the front bench is seated on B). Ambient only: a tap never sends one to sit.
+  by side facing the sea for 90 s. A villager standing still on a seat's spot (`world.ts` SEATS: `layout/nav.ts`
+  seatsOf, a step in front of the seat, where the room's walk to a chair ends) is on it: the 3D villager turns and sits
+  down on the piece's own seat (`villager3d` sitAt on its `seats3d.json` anchor, as in the tent), or lies in the
+  hammock (asleep, it naps there); both on one bench: a ♥ each. Like every outing, each phone sends its own villager's
+  walk (villagerSync) and plays the partner's from the slot only while they're away; seated, the pull-ups and the ♥
+  follow from where the villagers stand, so both phones draw the same (`e2e/sync-harness.spec.ts`: A seated on the
+  front bench is seated on B).
+  **Sitting on a tap** (`island/sitting.ts`, IslandScene `sitOn`, `e2e/sit-outdoors.spec.ts`; the user: "similar to
+  when they're inside a home, have them sit/sleep on that object - be consistent"): a tap on a seat (the park bench and
+  the log bench, two each; a log stool; an iron garden chair; the hammock and, in its summer, the beach chair, lain in)
+  walks my villager up to its free seat nearest it and on, as in the tent: the second exception, with the doors and the
+  board, to "a tap on something acts in place". Taken by another villager: the other seat, else a `boop`; got there
+  second: off to the other seat, else a step aside. On it a tap on the ground gets it up and walks it; a tap on another
+  seat moves it there; a tap on it is its squish. Only a seat that's there today sits (the illuminated tree in the
+  hammock's spot, the picnic set on the pond's bench don't). Nothing new goes over the relay: the walk ends on the
+  seat's spot, so the partner's and the guest's phones see it sit, a phone opening later finds it seated, and 3 minutes
+  after its phone has gone it gets up and walks home like any.
   The pump waters every wild flower within 70u (each the shared `watered` op, as a tap's watering). The snowboy says a
   line in its voice on a tap (「さむいって いいね〜」…; melting: 「すこし ちいさく なっちゃった…」).
   `fixedDecor.test` holds the plan's rules: まえ one piece for good and two seasonal at most,
@@ -624,7 +636,8 @@ NH).
 `island/SceneTaps.svelte`, `island/sceneTaps.ts`, `e2e/scenery.spec.ts`. Every part of the island answers a tap softly
 and counts for nothing (no ベル, state, navigation or writes); one `click` listener (a drag scrolls, so it never
 reaches it); ≤ 4 flourishes at once, drawn as world nodes where the tap landed; taps on controls are ignored; nothing
-while covered or hidden; decorative, `aria-hidden`, pointer-only. What nothing else took is a walk ([Walking](#walking)).
+while covered or hidden; decorative, `aria-hidden`, pointer-only. What nothing else took is a walk ([Walking](#walking));
+a seat (its tap area's `data-sit`, or the ground at its foot) is sat on ([World](#world), "Sitting on a tap").
 
 A bush jiggles and sheds seasonal leaves (1 in 10 a bug flies out; on the partner's phone our villager shakes it too,
 the same bug: [Shared world](#shared-world)); a tree's leaves rustle (three quick taps shake it: [Shaking a
@@ -1086,7 +1099,7 @@ plate for every discovery (catches, finds, a present, its first-find page): the 
 
 ### Villager taps
 
-A tap on my villager is a squish and the tap sound (R9; no ♪), and in NH's flea months now and then a flea hops off
+A tap on my villager is a squish and the tap sound (R9; no ♪; seated, it squishes where it sits, as in the tent), and in NH's flea months now and then a flea hops off
 it ([Critters](#critters)); nothing opens. The say button at the scene's bottom right ([Island](#island): 「ひとこと いう」)
 opens the phrase picker above it (`island/SayButton.svelte`, `island/SayPicker.svelte`, `island/say.ts`,
 `e2e/say.spec.ts`), never a sheet. The picker is a small cream card in the reactions wheel's spirit, standing above the
@@ -1302,7 +1315,8 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
 
 - **My villager is me, and only empty ground walks it:** a tap on something to do (a tree, a bush, a flower, the rock,
   a weed, a dig spot, a shell or a find, a fallen fruit, branch, coconut, mushroom or present, a bug, a fish shadow,
-  the bubbles, the water, the tape deck, a building, a visitor, the partner) acts in place: my villager turns to it
+  the bubbles, the water, the tape deck, a building, a visitor, the partner) acts in place (the exceptions: the tent's
+  door, the board, and a seat, walked up to and sat or lain on: [World](#world), "Sitting on a tap"): my villager turns to it
   where it stands and the action plays at the target, its tool there (NH's floating can, shovel and net; a cast's line
   from the bank). A catch or a find is its plate in the bottom stack; my villager stays where it stood. A flea is tapped off my
   villager itself.

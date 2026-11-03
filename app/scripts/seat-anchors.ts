@@ -2,7 +2,8 @@
 // sits or lies on each piece NH lets one use, from the converted models' own geometry (the rays down of
 // scripts/room-surfaces-page.js, the rules in scripts/room-surfaces.ts seatOf / bedOf), plus OVERRIDES for the odd
 // ones. The tent's and the homes' furniture (tent/items.json: `u` s or l, by n) and the island's seats (the park bench,
-// the log bench, the log stools, the hammock: world3d/assets.json). Writes src/lib/components/villager3d/seats3d.json.
+// the log bench, the log stools, the hammock, the iron garden chair, the beach chair: world3d/assets.json). Writes
+// src/lib/components/villager3d/seats3d.json.
 //   npm run seat-anchors [-- --only=f4039,park-bench]
 // Needs Google Chrome (Playwright's channel 'chrome'); reads only the repo's own converted GLBs (static/room/).
 import { chromium } from '@playwright/test';
@@ -24,7 +25,9 @@ const ISLAND: Record<string, { key: string; n: number; u: 's' | 'l' }> = {
   'park-bench': { key: 'deco/park-bench', n: 2, u: 's' },
   'log-bench': { key: 'deco/log-bench', n: 2, u: 's' },
   'log-stool': { key: 'deco/log-stool', n: 1, u: 's' },
-  hammock: { key: 'deco/hammock', n: 1, u: 'l' }
+  hammock: { key: 'deco/hammock', n: 1, u: 'l' },
+  'iron-chair': { key: 'decor/iron-chair-0', n: 1, u: 's' },
+  'beach-chair': { key: 'deco/beach-chair', n: 1, u: 'l' }
 };
 /** What the rays get wrong or can't tell, by hand: merged over what they found. A hammock sways (its cloth sags in the
  *  middle; the lying height is the sag's, a little under the rim the rays see first). */

@@ -8,7 +8,7 @@
 // villager to their tree (`goalWalk`), ふたりでぜんぶ brings both to the middle for a high-five (`meetUp`).
 // The scene attaches what this needs from the DOM (`attachAvatar`): the walk geometry, a check that a villager standing
 // at a spot covers no control, and where an actor's feet are right now.
-import { actors, addFx, applyStep, awayFromHome, busy, faceToward, isRemote, later, place, setEmote, setMotion, setRouter, walkTo } from '../motion/director.svelte.ts';
+import { actors, addFx, applyStep, awayFromHome, busy, faceToward, isRemote, later, place, setEmote, setMotion, setRouter, walkTo, type Facing } from '../motion/director.svelte.ts';
 import { cue } from '#lib/sound/cues.ts';
 import { FOLLOW_MS, MAX_HOPS, MEET, POI_LINGER, adjacent, besideSpots, pickPoi, pois, shouldFollow, type PoiKind } from './wander.ts';
 import type { ActorId } from '../motion/reactions.ts';
@@ -170,13 +170,33 @@ export function sendTo(x: number, z: number): TapPlan | null {
   steered.mine = Date.now();
   clearTimeout(homeTimers.mine);
   c.hush?.();
-  const ms = walkTo('mine', p.pts, { speed: SPEED.run, from, face: p.snap.face });
+  return { ...p, ms: run(from, p.pts, p.to, p.snap.face) };
+}
+
+/** Up to a seat (IslandScene sitOn, sitting.ts): my villager runs to its spot (a step in front of it) by the walk
+ *  graph, faces us there and, standing still on it, is on it (world.ts seatAt: the 3D villager turns and sits or lies
+ *  down); it stays there as a tap-walk's end does. `then` on arrival. Null when there's no way there. */
+export function sitTo(at: Pt, then: () => void): number | null {
+  const c = ctx;
+  if (!c || !c.enabled() || actors.mine.asleep) return null;
+  const from = c.where('mine'), pts = route(c.geo(), from, at);
+  if (!pts) return null;
+  steered.mine = Date.now();
+  clearTimeout(homeTimers.mine);
+  c.hush?.();
+  return run(from, pts.length ? pts : [at], at, 'home', then);
+}
+
+/** My villager's run of a tap (to the ground, or a seat): kept as where it stays, and the partner may follow. */
+function run(from: Pt, pts: readonly Pt[], to: Pt, face: Facing | undefined, then?: () => void): number {
+  const me = actors.mine;
+  const ms = walkTo('mine', pts, { speed: SPEED.run, from, face, then });
   me.busyUntil = Math.max(me.busyUntil, Date.now() + ms);
-  keepStay(Math.hypot(p.to[0] - me.home[0], p.to[1] - me.home[1]) <= 8 ? null : p.to);
+  keepStay(Math.hypot(to[0] - me.home[0], to[1] - me.home[1]) <= 8 ? null : to);
   away.since ||= Date.now();
   clearTimeout(followTimer);
   followTimer = setTimeout(checkFollow, Math.max(0, away.since + FOLLOW_MS - Date.now()) + ms + 50);
-  return { ...p, ms };
+  return ms;
 }
 
 /** The partner tapped somewhere on their phone (the relay's `walk`, world units): their villager here runs there too,
