@@ -3,11 +3,9 @@
 // spot before a line (the balloon anchors to them there), they arrive from the campsite and leave to it (or by their
 // own way), and the partner comes over to say hello to a visitor near home (never across the island to centre stage).
 import { expect, test, type Page } from '@playwright/test';
-import { BUILDINGS } from '../src/lib/components/island/world.ts';
-import { is3d, sawIt, watchFor } from './island.ts';
+import { campDoor, geo, is3d, oku, sawIt, watchFor } from './island.ts';
 
 /** The campsite's door, where the visitors come from and go back to (world x, z). */
-const CAMP = ((b) => [b.x, b.z - 16] as const)(BUILDINGS.find((b) => b.id === 'campsite')!);
 
 test.use({ viewport: { width: 390, height: 844 } });
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
@@ -23,7 +21,7 @@ const rig = (page: Page, id: string) =>
   });
 const NIGHT = new Set(['wisp', 'celeste', 'kk-slider', 'jack']);
 /** Where each stands: Daisy Mae and Gulliver at まえ, the rest at centre stage (おく). */
-const camOf = (id: string) => (id === 'daisy-mae' || id === 'gulliver' ? 30 : 642);
+const camOf = async (page: Page, id: string) => (id === 'daisy-mae' || id === 'gulliver' ? 30 : await oku(page));
 /** The camera to a world z (まえ, 642 おく: the campsite's clearing), settled. */
 async function camera(page: Page, z: number) {
   await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world);
@@ -42,7 +40,7 @@ for (const id of ['kk-slider', 'daisy-mae', 'wisp', 'gulliver', 'jack', 'celeste
   test(`${id}: alive on centre stage (breathing, its own loop, a shadow that breathes with it)`, async ({ page }) => {
     await page.goto(`?demo&date=2026-11-04T${NIGHT.has(id) ? '21' : '12'}:00&visitor=${id}&critter=none`);
     await expect(ribbon(page)).toBeVisible();
-    await camera(page, camOf(id));
+    await camera(page, await camOf(page, id));
     const v = page.locator(`[data-visitor="${id}"]`);
     await expect(v).toHaveAttribute('data-phase', 'here', { timeout: 3000 });
     await expect(v.locator('.art')).toBeVisible();
@@ -116,7 +114,7 @@ test('arriving: from the campsite on foot along the paths (?arrive); leaving to 
   // from the campsite, out of sight from まえ: she comes into view on the lawn as she nears her spot (the 3D island
   // shows the whole island: she sets off from the campsite's door in view)
   const three = await is3d(page);
-  const door = three ? await page.evaluate(([x, z]) => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x, z), CAMP) : null;
+  const door = three ? await page.evaluate(([x, z]) => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x, z), campDoor(await geo(page))) : null;
   const start = (await v.boundingBox())!;
   if (!three) {
     await expect(v.locator('.art')).toBeHidden();
@@ -173,17 +171,18 @@ test('nobody crosses the island to say hello at centre stage (the partner keeps 
   await expect(page.locator('[data-visitor="jingle"]')).toHaveAttribute('data-phase', 'here', { timeout: 3000 });
   await page.waitForTimeout(6000);
   // still on the front lawn (an idle wander may take it about there), nowhere near the campsite
-  const d = await page.evaluate(() => {
+  const stage = (await geo(page)).CENTRE_STAGE;
+  const d = await page.evaluate(([sx, sz]) => {
     const p = document.querySelector('[data-actor="partner"]')!.getBoundingClientRect();
-    const [x, y] = (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(195, 900);
+    const [x, y] = (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(sx, sz);
     return Math.hypot(p.left - x, p.top - y);
-  });
+  }, stage);
   expect(d).toBeGreaterThan(150);
 });
 
 test('Celeste points at a falling star', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T21:00&visitor=celeste&critter=none');
-  await camera(page, 642);
+  await camera(page, await oku(page));
   const v = page.locator('[data-visitor="celeste"]');
   await expect(v).toHaveAttribute('data-phase', 'here', { timeout: 3000 });
   await page.evaluate(() => document.querySelector('.if-scene')!.dispatchEvent(new CustomEvent('island:star', { detail: { x: 40 } })));

@@ -7,6 +7,7 @@ import { POND_FISH } from '../src/lib/components/island/pondFish.ts';
 import { FOSSIL_SETS, digSpots } from '../src/lib/components/island/beach.ts';
 import { addDays } from '../src/lib/time/dates.ts';
 import { readFileSync } from 'node:fs';
+import { fossilOnScreen } from './island.ts';
 /** The catalogue's rows (island/catalog.json; its module needs Vite's JSON import). */
 const { items: ITEMS, recipes: RECIPES } = JSON.parse(readFileSync(new URL('../src/lib/components/island/catalog.json', import.meta.url), 'utf8')) as { items: string[]; recipes: string[] };
 
@@ -43,16 +44,11 @@ test('the fossils: a dug-up piece shows under its dinosaur with the set’s coun
   // a day whose dig spots are all pieces of a dinosaur (seeded by the date: both phones see the same)
   const piece = (id: string) => Object.entries(FOSSIL_SETS).find(([, ids]) => (ids as readonly string[]).includes(id));
   let date = '2026-07-01';
-  // (and one of them on the front lawn, in clear view from まえ)
-  while (!digSpots(date, new Set()).every((s) => piece(s.fossil)) || !digSpots(date, new Set()).some((s) => s.y < 200)) date = addDays(date, 1);
+  while (!digSpots(date, new Set()).every((s) => piece(s.fossil))) date = addDays(date, 1);
   await page.goto(`?demo&date=${date}T12:00`);
   await expect(ribbon(page)).toBeVisible();
-  const spot = page.locator('[data-find="fossil"]').first();
-  await expect(spot).toBeAttached();
-  // the one on screen (a world node out of view keeps a stale box)
-  const p = await page.locator('[data-find="fossil"]').evaluateAll((els) => els.map((el) => el.getBoundingClientRect())
-    .filter((r, i) => (els[i] as HTMLElement).checkVisibility({ visibilityProperty: true }) && r.top > 0 && r.bottom < innerHeight)
-    .map((r) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 }))[0]);
+  // the one on screen (on the layout they lie all over the island: the camera to it)
+  const p = await fossilOnScreen(page);
   await page.mouse.click(p.x, p.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText('化石を ほりだした！');
   const id = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).find((e: { type: string }) => e.type === 'find')?.data.id as string);

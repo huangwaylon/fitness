@@ -480,12 +480,14 @@
   let noteEl = $state<HTMLElement>();
 </script>
 
+<!-- (how many dig spots the island has out now, wherever they are: the e2e's) -->
+<i hidden data-digs={spots.length}></i>
 <!-- each item a world node at its foot (the anchor: a 0 × 0 point there); a dig spot and a hole flat on the ground -->
 {#each visibleSpots as s (s.uid)}
   <!-- NH's dig spot: a dark, uneven star-shaped crack in the soil (jagged arms of unequal length, little side cracks),
        a lighter lip of earth under each, foreshortened -->
   <div class="node" aria-hidden="true" {@attach w.at({ x: s.x, z: s.y, mode: 'flat', h: 12, m3: { key: 'finds/dig-spot' } })}>
-    <span class="item spot" data-m3art data-find="fossil" data-uid={s.uid}>
+    <span class="item spot" data-m3art data-find="fossil" data-uid={s.uid} data-x={s.x} data-z={s.y}>
       <svg viewBox="-10 -10 20 20">
         <path class="lip" d={CRACK} transform="translate(0 .8)" /><path class="crack" d={CRACK} />
       </svg>
