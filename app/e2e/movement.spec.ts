@@ -35,7 +35,8 @@ const overlaps = (page: Page, id = 'mine') =>
     const x = s.left + m.m41, y = s.top + m.m42, h = fig.height;
     const me = { x0: x - h * 0.225, x1: x + h * 0.225, y0: y - h * 0.92, y1: y };
     return [...document.querySelectorAll('button')].flatMap((b) => {
-      if (actor.contains(b)) return [];
+      // (a world node out of view keeps its last box: not on screen, not a control there)
+      if (actor.contains(b) || !b.checkVisibility({ visibilityProperty: true })) return [];
       const r = b.getBoundingClientRect();
       const hit = r.width && me.x0 < r.right && r.left < me.x1 && me.y0 < r.bottom && r.top < me.y1;
       return hit ? [b.className.split(' ')[0]] : [];

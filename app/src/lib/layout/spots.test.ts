@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { defaultLayout, layoutOf, withChanges } from './model.ts';
+import { defaultLayout, layoutOf, objTiles, withChanges } from './model.ts';
 import { daySpots, openGrass } from './spots.ts';
 import { migratedId, migrationOps } from './migrate.ts';
 import { codeOf, tileAt } from './grid.ts';
@@ -7,10 +7,12 @@ import type { LayoutEntry } from '#lib/contract/layout.ts';
 
 const l = defaultLayout();
 describe('the day’s spots from the layout (spots.ts)', () => {
-  test('never under or before a tree’s canopy, nor by a bush or a flower (it, or the spot, takes the other’s tap)', () => {
+  test('never under or before a tree’s canopy, nor by a bush, a flower, the rock or a bench (it, or the spot, takes the other’s tap)', () => {
+    const near = [...l.objects.values()].filter((o) => ['rock', 'tape-deck', 'park-bench', 'log-bench'].includes(o.k)).flatMap((o) => objTiles(l, o).map((t) => [o.id, ...t] as const));
+    for (const [c, r] of openGrass(l)) for (const [id, tc, tr] of near) expect(Math.abs(c - tc) <= 1 && Math.abs(r - tr) <= 1, `${c},${r} by ${id}`).toBe(false);
     const tall = [...l.objects.values()].filter((o) => ['oak', 'cedar', 'palm', 'bamboo', 'goal-tree', 'bush', 'hedge', 'flower'].includes(o.k));
     for (const [c, r] of openGrass(l))
-      for (const t of tall) expect(Math.abs(c - t.x) <= 1 && r - t.z >= (['bush', 'hedge', 'flower'].includes(t.k) ? 0 : -1) && r - t.z <= (['bush', 'hedge', 'flower'].includes(t.k) ? 1 : 2), `${c},${r} by ${t.id}`).toBe(false);
+      for (const t of tall) expect(Math.abs(c - t.x) <= 1 && r - t.z >= -1 && r - t.z <= (['bush', 'hedge', 'flower'].includes(t.k) ? 1 : 2), `${c},${r} by ${t.id}`).toBe(false);
   });
   test('the same on every phone for a date, another the next day; on open grass, the dig spots apart from the weeds', () => {
     const a = daySpots(l, '2026-11-04', 'island-fund'), b = daySpots(layoutOf([]), '2026-11-04', 'island-fund');
