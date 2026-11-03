@@ -911,7 +911,8 @@ northern-hemisphere months; hours still hold.
 - **Fishing** (the sea in front of the beach, seen from まえ, or a fresh water: `critters.ts` `Water`): a shadow (NH
   sizes 1–6) dawdles there. A tap near it casts a bobber, the line from the bank in front of it (my villager turns to
   it where it stands); the fish closes in over 2–3 darts, nibbles
-  0–3 times, then bites: the bobber is yanked under, a small 「！」 pops over it, and a tap anywhere in the next 1.6 s
+  1–3 times (each a small dip and a ring: it's coming), then bites: the bobber is yanked under with a splash, a small
+  「！」 pops over it (on the 3D island over my villager's head: docs/world3d-assets.md "Fishing"), and a tap anywhere in the next 1.6 s
   catches it. The first early tap makes it hesitate; a second scares it off. 1 in 14 a boot, tire or can.
 - **Fish** (all 34 of NH's sea and pier fish, `FISH`): NH's shadows by size (20–64u, the eels long and thin; a fin for
   the sharks, the ocean sunfish and the suckerfish); the coelacanth only in rain or snow.

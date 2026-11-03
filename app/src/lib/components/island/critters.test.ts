@@ -233,10 +233,11 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
 });
 
 describe('fishing', () => {
-  it('a plan: the swim up, 0–3 nibbles, then the bite with its window', () => {
+  it('a plan: the swim up, 1–3 nibbles, then the bite with its window', () => {
     for (let s = 0; s < 200; s++) {
       const p = bitePlan(NOTICE_U * (s % 3) / 2, mulberry32(s));
       expect(p.nibbles.length).toBeLessThanOrEqual(3);
+      expect(p.nibbles.length).toBeGreaterThanOrEqual(1);
       expect(p.nibbles.every((t) => t > p.arrive && t < p.bite)).toBe(true);
       expect(p.bite).toBeGreaterThan(p.arrive);
       expect(p.bite).toBeLessThan(8000);

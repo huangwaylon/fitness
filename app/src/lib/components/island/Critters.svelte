@@ -8,7 +8,7 @@
   // line, and the first of each a ずかん find (never ベル).
   //   Fishing, the same in every water (critters.ts `Water`): a tap in the water near a shadow (CAST_U) walks my villager
   //   to its fishing spot (the beach in front, z ≈ 18, facing the sea; the pond's back bank, walkGraph's pondside; the
-  //   river's bank) and casts a bobber; the fish swims up, nibbles 0–3 times (small wiggles of the bobber) and bites: the
+  //   river's bank) and casts a bobber; the fish swims up, nibbles 1–3 times (small wiggles of the bobber) and bites: the
   //   bobber is yanked under with a splash, its own sound and NH's 「！」 over it. While the bobber is out any tap is the
   //   reel: on the bite (within 1.6 s) it catches the fish; a first tap any earlier only makes it hesitate (it backs
   //   off, comes back, nibbles and bites later), a second early tap or none in time and it flees. 1 in 14 the line
@@ -39,7 +39,7 @@
   //   staying until caught (the e2e's hook; it comes where the camera can see it if it can, else at its place);
   //   ?sea=<id>|pearl: a bubble spot; ?flea: a tap on my villager always sends a flea off it.
   import { fx3d } from './fx3d.ts';
-  import { angle, angling } from '../world3d/fishing3d.ts';
+  import { angle, angling, floatLift, nibbled } from '../world3d/fishing3d.ts';
   import CatchPlate from './CatchPlate.svelte';
   import { cardFor, type CatchCard } from './catchCard.ts';
   import { timers } from './timers.ts';
@@ -53,7 +53,7 @@
   import { jst, now } from '#lib/time/clock.ts';
   import { crittersAt, msToNextSlot, slotAt, slotStart, spawnRand, type Spawn } from './ambient.ts';
   import { relayOffset } from './ambientClock.ts';
-  import { su, type Tod } from './scene.ts';
+  import { su, VILLAGER, type Tod } from './scene.ts';
   import { hitWorld, sceneSfx } from './sceneTaps.ts';
   import type { Box } from './geom.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
@@ -152,6 +152,8 @@
   interface Net { n: number; x: number; y: number; in3d?: boolean }
 
   const rand = Math.random;
+  /** My 3D villager holds the rod within this of its float (u: world3d/villagers.ts LINE_REACH), else the line's the bank's. */
+  const ROD_U = 220;
   const between = (a: number, b: number) => a + rand() * (b - a);
   const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
   /** A node's inner offset (local units: before the node's perspective scale). */
@@ -171,6 +173,13 @@
     else if (angling.phase !== 'reel') angle(null);
   });
   onMount(() => () => angle(null));
+  /** Where the 3D float is this frame (one array, rewritten: read every frame). */
+  const floatXYZ: [number, number, number] = [0, 0, 0];
+  const floatAt = (c: Cast) => ((floatXYZ[0] = c.x), (floatXYZ[1] = c.z), (floatXYZ[2] = floatLift(performance.now())), floatXYZ);
+  // the 3D float bobs, dips and plunges each frame (fishing3d.ts floatLift): frames at full rate while it's on the water
+  $effect(() => {
+    if (cast?.landed && w.rest.three) return w.moveStart();
+  });
   let bug = $state<Bug | null>(null);
   let card = $state<CatchCard | null>(null);
   let net = $state<Net | null>(null);
@@ -472,7 +481,10 @@
       c.bdx = clamp(cx, half, w.view.vw - half) - cx;
       c.under = true;
       c.rings++;
-      c.bang3 = fx3d('bang', c.x, c.z, 26, { ms: plan.window }) && fx3d('splash', c.x, c.z, 0, { size: 0.8 });
+      // (the 3D island's pops over my villager's head while it holds the line, else over the bank the line runs from;
+      // till the reel or the miss. Its splash and big ring are the float's node's: on the water's surface)
+      const [mx, mz] = livePos('mine'), near = Math.hypot(mx - c.x, mz - c.z) < ROD_U;
+      c.bang3 = fx3d('bang', near ? mx : c.sx, near ? mz : c.sz, near ? VILLAGER.h + 10 : 26, { ms: plan.window, held: () => cast === c && c.under });
       sceneSfx('bite');
     }, at(plan.bite));
     later(() => live() && flee(), at(plan.bite + plan.window)); // too late
@@ -491,6 +503,7 @@
   }
   /** A nibble: the bobber twitches, a small gentle wiggle (nothing like the bite's plunge). */
   function nibble(f?: Fish) {
+    nibbled();
     // the shadow's nose bumps the bobber (2u toward its head and back), in step with the bobber's twitch
     const fin = f ? fishEls[f.water]?.querySelector('.fin') : null;
     if (fin && f) {
@@ -1224,11 +1237,20 @@
   {#if cast}
     {@const c = cast}
     <!-- the float on the water, sinking at the bite; the line from my villager's rod (or the bank) to it -->
-    <i class="m3n" {@attach w.at({ x: c.x, z: c.z, lift: c.under ? -7 : 0, h: 4, always: true, m3: { key: 'tools/bobber', id: 'bobber', water: true, ms: 160, off: !c.landed && !c.under, art: () => scene?.querySelector('[data-bobber]'),
+    <!-- (its bob, a nibble's dip and the bite's plunge: fishing3d.ts floatLift, each frame; a soft ring now and then while
+         it waits) -->
+    <i class="m3n" {@attach w.at({ x: c.x, z: c.z, h: 4, always: true, live: () => floatAt(c), m3: { key: 'tools/bobber', id: 'bobber', water: true, off: !c.landed && !c.under, art: () => scene?.querySelector('[data-bobber]'),
+      emit: c.landed && !c.under ? { kind: 'ripple', every: 2600, size: 0.45 } : undefined,
       line: () => {
         const [mx, mz] = livePos('mine');
         return Math.hypot(mx - c.x, mz - c.z) < 90 ? [mx + (c.x - mx) * 0.12, mz + (c.z - mz) * 0.12, 34] as const : [c.sx, c.sz, 4] as const;
       } } })}></i>
+    <!-- each nibble's small ring on the water, and the bite's splash and big ring (once each: a node of its own) -->
+    {#key c.rings}
+      {#if c.rings > 1}
+        <i class="m3n" {@attach w.at({ x: c.x, z: c.z, h: 4, always: true, m3: { key: '', id: `ring-${c.rings}`, water: true, emit: c.under ? { kind: 'splash', every: 60_000 } : { kind: 'ripple', every: 60_000, size: 0.7 } } })}></i>
+      {/if}
+    {/key}
   {/if}
   {#if bug}
     {@const b = bug}

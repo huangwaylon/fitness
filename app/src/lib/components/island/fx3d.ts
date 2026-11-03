@@ -4,7 +4,8 @@
 export type Fx3 =
   | 'dust' | 'sand' | 'snow' | 'splash' | 'ripple' | 'sparkle' | 'sparks' | 'bang' | 'leaves' | 'drops' | 'hearts'
   | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'flame';
-type Opts = { v?: string; ms?: number; size?: number; dir?: number };
+/** `held`: a held one (the bite's 「！」) stays while it says so (effects.ts FxOpts). */
+type Opts = { v?: string; ms?: number; size?: number; dir?: number; held?: () => boolean };
 let sink: ((kind: Fx3, x: number, z: number, lift: number, o: Opts) => void) | null = null;
 
 /** The 3D island listens (null: it's gone). */

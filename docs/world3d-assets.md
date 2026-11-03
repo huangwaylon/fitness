@@ -71,7 +71,15 @@ float is; my 3D villager (world3d/villagers.ts) holds NH's rod while the line is
 in its hand to point out over the water in the fishing pose, faces the float, swings it out on the cast, is tugged at
 the bite and reels in (the rod kept in hand till the reel is over). Within LINE_REACH (220u) of the float only:
 further off (a cast across the island) the line runs from the bank, as the 2D one, and nobody holds a rod. The float
-sinks 7u at the bite. The line is Island3D's (a bent `Line` from `tip()`); a tube line (thicker than a 1 px GL line on
+moves as the 2D one does, on Critters' same timers (`floatLift`, read each frame by the bobber node's `live`): a gentle
+±0.6u bob over 1.5 s while it waits, a soft ring (`fx/ripple`) every 2.6 s; a quick 380 ms dip and a small ring at each
+nibble (and the line's twitch at an early tap); at the bite a little hop and a plunge 7u under, a splash and a big
+ring (the rings and the splash are emitters on the water's surface: `m3.emit` on a node of their own), and NH's 「！」
+(`fx/bang`, turned to the camera) pops over my villager's head (over the bank where nobody holds the rod) with an
+overshoot, hops while the window lasts and pops out at the reel or the miss (effects.ts FxOpts `held`). Frames run at
+full rate while the float is out (`moveStart`), the ambient rate again once it's gone. `window.__fx3` (dev and ?demo):
+each source's live parts and the spawns' log (e2e/fishing3d.spec.ts: the nibbles' rings come before the 「！」). The
+fx/* meshes draw in their vertex colours unless tinted (they drew all white before: the 「！」 a blank disc). The line is Island3D's (a bent `Line` from `tip()`); a tube line (thicker than a 1 px GL line on
 a 3× phone) is open for the lead.
 
 Not converted (see the table's last section): the villagers (billboards), Pavé (not in the files), the emotes and the
