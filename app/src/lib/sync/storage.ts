@@ -84,7 +84,10 @@ export const DEVICE = {
   islandRender: 'island.render',
   /** localStorage: `on`: the 3D island reads the layout, as `?layout` does, ahead of the cutover (the e2e's E2E_LAYOUT;
    *  island/site.svelte.ts). */
-  islandLayout: 'island.layout'
+  islandLayout: 'island.layoutOn',
+  /** localStorage: `1` | `0`: this device's WebGL is a software renderer (asked once: a throwaway context costs
+   *  seconds under SwiftShader; world3d/Island3D.svelte draws at its lightest on one). */
+  softGL: 'island.softGL'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */
