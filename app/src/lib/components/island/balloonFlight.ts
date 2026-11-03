@@ -6,6 +6,10 @@
 // SceneTaps.svelte draws the fall. The flight's clock is its own age: it runs in the island's frames (and the World's
 // game clock), so it holds while the page is hidden or a sheet covers the island.
 
+/** NH's balloon of a colour (its model, world3d-assets.ts's five): 1 in 20 the gold (4), else one of the other four,
+ *  each as likely. */
+export const balloonModel = (r: () => number = Math.random): string => `balloon/${r() < 0.05 ? 4 : Math.floor(r() * 4)}`;
+
 /** World units, the rig's sizes: the balloon (NH's model, its middle on the rig), the string from its knot, the present
  *  hanging on it (NH's, smaller than it lies on the ground). */
 export const RIG = { balloon: 40, string: 11, gift: 18 } as const;

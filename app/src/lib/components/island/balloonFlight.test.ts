@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { mulberry32 as mulberry } from '#lib/random.ts';
-import { ALT, RIG, fallAt, fallMs, laneY, planFlight, rigAt, type SkyView } from './balloonFlight.ts';
+import { ALT, RIG, balloonModel, fallAt, fallMs, laneY, planFlight, rigAt, type SkyView } from './balloonFlight.ts';
 
 /** A pinhole camera over the island like the 3D island's (no bend): at x 195, `back` u in front of the pivot z and
  *  `up` u high, looking down at the pivot; 390 × 844 px. */
@@ -95,5 +95,18 @@ describe('balloonFlight.ts: the balloon present across the island', () => {
     expect(near).toBeGreaterThanOrEqual(1600);
     expect(far).toBeGreaterThan(near);
     expect(far).toBeLessThanOrEqual(3000);
+  });
+});
+
+describe('the balloon’s colour', () => {
+  test('1 in 20 the gold; the other four each as likely', () => {
+    const r = mulberry(7), n: Record<string, number> = {}, N = 20_000;
+    for (let i = 0; i < N; i++) {
+      const m = balloonModel(r);
+      n[m] = (n[m] ?? 0) + 1;
+    }
+    expect(Object.keys(n).sort()).toEqual(['balloon/0', 'balloon/1', 'balloon/2', 'balloon/3', 'balloon/4']);
+    expect(Math.abs(n['balloon/4'] / N - 0.05)).toBeLessThan(0.01);
+    for (const c of [0, 1, 2, 3]) expect(Math.abs(n[`balloon/${c}`] / N - 0.95 / 4)).toBeLessThan(0.015);
   });
 });
