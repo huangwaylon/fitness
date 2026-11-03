@@ -5,6 +5,7 @@
 // each villager stands where its person sent it. Pure: no clock, no storage (store/world.svelte.ts keeps it).
 import { claimOf, tokyoDay, type Drop, type How, type Intent, type Pt, type Target, type Who } from './live-protocol.ts';
 import { ISLAND_MAX } from '#lib/contract/island.ts';
+import { fnv1a } from '#lib/random.ts';
 
 type Walk = Extract<Intent, { kind: 'walk' }>;
 
@@ -174,9 +175,7 @@ export function canonical(d: WorldDay): string {
 }
 /** A short hash of a string (FNV-1a, 32 bits, hex): the two-phone checks compare these. */
 export function hash(s: string): string {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193);
-  return (h >>> 0).toString(16).padStart(8, '0');
+  return fnv1a(s).toString(16).padStart(8, '0');
 }
 
 /** Whether a critter (by its shared id) is gone today: caught, or it got away. */

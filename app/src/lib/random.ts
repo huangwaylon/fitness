@@ -12,15 +12,15 @@ export function mulberry32(seed: number): () => number {
   };
 }
 
-/** A string's 32-bit FNV-1a hash: a seed for mulberry32. */
-function hashSeed(s: string): number {
-  let h = 2166136261;
-  for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0;
-  return h;
+/** A string's 32-bit FNV-1a hash (by UTF-16 code unit): a seed for mulberry32, a stable pick from an id. */
+export function fnv1a(s: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193);
+  return h >>> 0;
 }
 
 /** A PRNG seeded by a string. */
-export const seeded = (s: string): (() => number) => mulberry32(hashSeed(s));
+export const seeded = (s: string): (() => number) => mulberry32(fnv1a(s));
 
 /** A weighted pick from [item, weight] pairs (weights > 0 in total). */
 export function weighted<T>(list: readonly (readonly [T, number])[], r: () => number): T {
