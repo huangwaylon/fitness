@@ -101,14 +101,6 @@ export function homePorch(s: HomeStyle | undefined): number {
   return OTHER[s?.m ?? 'campsite']?.porch ?? 0;
 }
 
-/** Whether a style is one the catalogue has (a look op naming anything else is drawn as its mended parts). */
-export function knownStyle(s: HomeStyle): boolean {
-  if (s.m === 'campsite' || s.m === 'tent-p') return true;
-  if (s.m === 'tent-n') return s.w === 'A' || s.w === 'B';
-  if (s.m !== 'house') return false;
-  const w = partOf('wall', s.w), r = partOf('roof', s.r);
-  return !!w && !!r && r.shape === w.shape && !!doorPartOf(s.d);
-}
 
 /** The catalogue's choices for a picker: each shape's wall and roof materials (their colours), the doors (shapes,
  *  colours). */

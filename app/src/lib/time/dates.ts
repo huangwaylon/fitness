@@ -147,8 +147,3 @@ export function easter(year: number): LocalDate {
   return ymd(new Date(Date.UTC(year, Math.floor((h + l - 7 * m + 114) / 31) - 1, ((h + l - 7 * m + 114) % 31) + 1)));
 }
 
-/** Whether a date's `MM-DD` falls in [from, to] (inclusive), handling ranges that wrap past New Year. */
-export function inMonthDayRange(date: LocalDate, from: string, to: string): boolean {
-  const md = date.slice(5);
-  return from <= to ? md >= from && md <= to : md >= from || md <= to;
-}

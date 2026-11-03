@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BITE_WINDOW_MS, BUGS, CAST_U, FISH, HESITATE_MS, JUNK, NOTICE_U, bitePlan, bushBug, castPhase, caption, hesitatePlan,
-  fleaJumps, hookItem, IN_SEASON, inHours, netSwing, oddsAt, pickBug, pickFish, reel, stalkTap, pondBox, castInto, waterAt, shadowLen, POND_SHADOW,
+  fleaJumps, hookItem, IN_SEASON, inHours, netSwing, oddsAt, pickBug, pickFish, reel, stalkTap, castInto, waterAt, shadowLen, POND_SHADOW,
   FRESH, SEA_SWIM, bugPlace, freshAreas, patches, perches, swimAt, type BugId, type FishId
 } from './critters.ts';
 import { mulberry32 } from '#lib/random.ts';
@@ -338,10 +338,6 @@ describe('the waters (world units): the sea, the pond, the river, its mouth, the
     const p = swimAt(SEA_SWIM, 0, 1);
     expect(p.z).toBeLessThan(-10);
     expect(SEA_SWIM.cx - SEA_SWIM.L).toBe(SEA_BOX.x0);
-  });
-  it('a pond shadow keeps to the open water inside the rim', () => {
-    const b = pondBox();
-    for (const [x, z] of [[b.x0, b.z0], [b.x1, b.z0], [b.x0, b.z1], [b.x1, b.z1]]) expect(inOval(POND, x, z)).toBe(true);
   });
   it('a cast lands inside the water, clear of its edge', () => {
     for (const [x, z] of [[POND.x, POND.z], [POND.x + POND.rx + 6, POND.z], [POND.x - 30, POND.z - 20]]) {

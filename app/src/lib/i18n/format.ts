@@ -2,7 +2,6 @@
 // in UTC so they never shift); stamps (sync, buys) are shown in Tokyo time.
 import { i18n, t } from './index.ts';
 import { addDays, dateMs } from '#lib/time/dates.ts';
-import { jst } from '#lib/time/clock.ts';
 
 /** ISO weekday of a `YYYY-MM-DD`: 1 = Monday … 7 = Sunday. */
 const isoWeekday = (d: string): number => new Date(dateMs(d)).getUTCDay() || 7;
@@ -19,11 +18,6 @@ export function formatDate(d: string): string {
   return new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(dateMs(d)));
 }
 
-/** The device clock (HUD, the panel): `9:05`. */
-export const clockTime = (d: Date): string => {
-  const { hour, minute } = jst(d);
-  return `${hour}:${String(minute).padStart(2, '0')}`;
-};
 
 const ZONE = 'Asia/Tokyo';
 const hm = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: ZONE });

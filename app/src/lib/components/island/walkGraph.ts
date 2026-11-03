@@ -279,9 +279,6 @@ export function routeLength(from: Pt, pts: readonly Pt[]): number {
 /** Walk speeds (u/s): brisk (a goal met walks to its tree, the meet-up), running where a tap sends it (spec §4), and
  *  strolling (idle outings, visitors). */
 export const SPEED = { action: 240, run: 200, wander: 90 } as const;
-/** A wander's duration (ms) at SPEED.wander. */
-export const wanderMs = (len: number): number => (len / SPEED.wander) * 1000;
-
 /** How far from a target its action spots are (u): close, then a little further out. */
 export const REACH = [26, 40] as const;
 
@@ -298,12 +295,6 @@ export function actionSpots(g: WalkGeo, tx: number, tz: number, from: Pt, reach:
       if (walkable(g, x, z)) out.push([Math.round(x), Math.round(z)]);
     }
   return out;
-}
-
-/** The facing for a walk from a to b: by the horizontal direction (null when it's nearly straight up or down). */
-export function facingFor(a: Pt, b: Pt): 'l' | 'r' | null {
-  const dx = b[0] - a[0];
-  return Math.abs(dx) < 3 ? null : dx < 0 ? 'l' : 'r';
 }
 
 /** The nearest walkable point to (x, z) within `max` u (a tap on water goes to the bank), or null. */

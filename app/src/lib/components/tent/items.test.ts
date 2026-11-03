@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import catalog from '../island/catalog.json';
 import ja from '#lib/i18n/tent.ja.json';
 import en from '#lib/i18n/tent.en.json';
-import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, ITEMS, STARTER, WALLS, codeOfFind, iconUrl, isFloor, isItem, isWall } from './items.ts';
+import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, ITEMS, STARTER, WALLS, codeOfFind, iconUrl } from './items.ts';
 
 const STATIC = join(import.meta.dirname, '..', '..', '..', '..', 'static');
 const JA = ja as Record<string, string>, EN = en as Record<string, string>;
@@ -47,7 +47,6 @@ describe('the tent’s catalogue (scripts/room-models.ts)', () => {
         expect(JA[`tent.${k}.${c}`], c).toBeTruthy();
       }
     }
-    expect(isWall(DEFAULT_WALL) && isFloor(DEFAULT_FLOOR) && !isWall(DEFAULT_FLOOR) && isItem(STARTER[0]) && !isItem('f0')).toBe(true);
   });
 
   it('every surface (NH’s, the spreadsheet’s flag) has its top from its model: under its bounds, inside its footprint', () => {

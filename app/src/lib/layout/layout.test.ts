@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { CHUNKS_X, CHUNKS_Z, GRID, chunkIndex, chunkOf, chunkString, codeOf, codeOfChar, charOf, kindOf, tierOf, writeChunk, KINDS, TIERS, tileAt, tileMid } from './grid.ts';
 import { defaultLayout, doorOf, extentOf, layoutOf, objMid, objTiles, opsBetween, toJson, fromJson, withChanges, footOf, type Obj } from './model.ts';
 import { CHUNK_COUNT, chunkMesh, stairsMesh } from './mesh.ts';
-import { DEFAULT_HOMES, FAMILIES, catalogue, homeFoot, knownStyle, partsOf } from './homes.ts';
+import { DEFAULT_HOMES, FAMILIES, catalogue, homeFoot, partsOf } from './homes.ts';
 import { diffLayouts } from './diff.ts';
 import { heightAt, fieldOf, GRASS_Y } from './height.ts';
 import { Ch, fieldsOf } from './fields.ts';
@@ -351,8 +351,6 @@ describe('the homes (layout/homes.ts)', () => {
     expect(mended[2]).toEqual({ family: 'door-lattice-s', colour: 'B' });
     expect(partsOf({ m: 'tent-n', w: 'B' })).toEqual([{ family: 'tent-n', colour: 'B' }]);
     expect(partsOf({ m: 'campsite' })).toEqual([]);
-    expect(knownStyle(DEFAULT_HOMES.B)).toBe(true);
-    expect(knownStyle({ m: 'house', w: 'NCJapanese.A', r: 'PA04Stone.A', d: 'Lattice.S.B' })).toBe(false);
     const cat = catalogue();
     expect(Object.keys(cat.walls).sort()).toEqual(['NA', 'NB', 'NC', 'ND', 'PA04']);
     expect(cat.doors.length).toBe(14);
