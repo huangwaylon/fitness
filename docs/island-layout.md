@@ -191,8 +191,12 @@ for their spots with no visual change (the default's offsets); the 3D island rea
   stay flat however long the island grows; the camera shows ~6 of the 12. Measured in the editor's phone view at
   393 × 852 (×3, desktop Chrome): 78–94 draws (the models' instancing and the shadow pass included), 180–230k
   triangles, 60 fps; the island's first build ~0.4–1.2 s with the models' loading.
-- **The water:** NH's sea round the island (translucent over the baked shallows, opaque by the grid's edge, the shore
-  foam where the land's field says), the rivers' flow (each tile's way down, breadth-first along the river to the sea
+- **The water:** NH's sea round the island (the shore foam where the land's field says; the shallows' turquoise
+  reaching ~70u out, twice the old band, then a long ~200u fade into the deep blue, opaque only far out: the user,
+  2026-11-03, "the transition from shallow water to deep water is very sudden, fish are very hard to see". A fish's
+  shadow reads under the see-through water across the fishing range. Near the shore the bake's bed shows through; past
+  the field's reach (FAR) the bed is the deep plane's blue, and the deep plane is lit as the ground is, so the grid's
+  edge never shows through the water at dusk or night), the rivers' flow (each tile's way down, breadth-first along the river to the sea
   or a fall) and the ponds' ripples, the falls' streaks; all on water.ts's shared clock, tint and fog uniforms.
   The river's look is the hand-made river's (the user, 2026-11-03: "the river water animation still isn't as good as
   the original"; `water.ts` RIVER_FRAG / FOAM_FRAG, the /world3d era): on a stem its streaks run on the length along
