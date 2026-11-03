@@ -678,6 +678,9 @@
    *  the screen (unless the goal trees' canopies would go under the HUD), おく the campsite's feet CAMP_AT down it with
    *  its top clear of the HUD. */
   const SHORE_AT = 0.83, CAMP_AT = 0.5, CLEAR = 16;
+  /** The layout ground's bake (px a unit): nothing drawn (the e2e's logic mode), a token one; a software renderer
+   *  half the phone's (its bake held every tab of CI's browser up for seconds). */
+  const groundPx = (soft: boolean) => (drawOff() ? 0.05 : soft ? 0.8 : undefined);
   /** The ends' landmarks: the layout's (its front shore, ウェイ's home's door) on its layout, else the props'. */
   function endsNow(): { shore: number; canopy: readonly [number, number, number]; back: readonly [number, number, number] } {
     const l = onLayout ? site.layout : null;
@@ -748,7 +751,7 @@
     // tabs share their runner's cores: at the phone's pixel ratio a frame took ~0.5 s)
     const soft = softwareGL();
     try {
-      e = createIsland(canvas, onLayout ? (renderer) => (lground = buildGround(site.layout!, { renderer, look: lookNow(), stairs: false })) : ground, {
+      e = createIsland(canvas, onLayout ? (renderer) => (lground = buildGround(site.layout!, { renderer, look: lookNow(), stairs: false, px: groundPx(soft) })) : ground, {
         dpr: num('dpr') ?? (soft ? 0.5 : Math.min(2, window.devicePixelRatio || 1)),
         water: q.get('water') !== '0',
         shadows: soft ? q.get('shadows') === '1' : q.get('shadows') !== '0',
