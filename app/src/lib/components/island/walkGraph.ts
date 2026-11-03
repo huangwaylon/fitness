@@ -13,6 +13,7 @@ import {
 } from './world.ts';
 import { art } from '#lib/art.ts';
 import * as onGrid from '#lib/layout/nav.ts';
+import { dist } from '#lib/layout/nav.ts';
 import { walkNav } from './nav.ts';
 
 export type { Pt };
@@ -177,7 +178,6 @@ export function segmentClear(g: WalkGeo, a: Pt, b: Pt, loose = 0): boolean {
   return true;
 }
 
-const dist = (a: Pt, b: Pt) => Math.hypot(b[0] - a[0], b[1] - a[1]);
 /** Edges longer than this aren't tried (the graph stays sparse; a long walk goes node to node). */
 const EDGE_MAX = 720;
 

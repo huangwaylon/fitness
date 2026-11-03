@@ -70,7 +70,7 @@
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { caught } from '#lib/sync/world-day.ts';
   import type { FishPhase, How, Relayed, Who } from '#lib/sync/live-protocol.ts';
-  import { LANDS, PACE, STILL, bubblesAt, bugPath, critterId, fishPath, freshWater, groundOk, inWater, legAt, type Leg } from './critterPath.ts';
+  import { LANDS, PACE, STILL, bubblesAt, bugPath, clamp, critterId, fishPath, freshWater, groundOk, inWater, legAt, type Leg } from './critterPath.ts';
   import { tellPartner } from './partnerNews.ts';
   import { livePos } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -173,7 +173,6 @@
    *  mouth, the falls' pool and the river below it are one water to the eye). */
   const NEAR_U = 90;
   const between = (a: number, b: number) => a + rand() * (b - a);
-  const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
   /** A node's inner offset (local units: before the node's perspective scale). */
   const loc = (dx: number, dy: number) => `calc(${dx.toFixed(2)} * var(--u)) calc(${dy.toFixed(2)} * var(--u))`;
   const fishLoc = (f: Fish) => loc(f.x - f.ax, -(f.z - f.az));

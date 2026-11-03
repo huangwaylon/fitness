@@ -15,6 +15,7 @@
 import { isLocalDate, nextDay } from './api.ts';
 import { SELL, BUY } from './shopPrices.ts';
 import type { LocalDate, Who } from '../types.ts';
+import { seeded } from '../random.ts';
 
 export interface SellData { species: string; n: number; v: number }
 export interface BuyData { item: string; price: number; d: LocalDate }
@@ -76,23 +77,6 @@ export function shopPriced(type: 'sell' | 'buy', d: Record<string, unknown>, tod
 
 // ---- the stock
 
-/** FNV-1a of a string: the day's seed. */
-function hash(s: string): number {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193);
-  return h >>> 0;
-}
-/** mulberry32: a small seeded generator in [0, 1). */
-function seeded(seed: number): () => number {
-  let a = seed;
-  return () => {
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 const POOL: readonly string[] = Object.keys(BUY).filter((c) => !BASICS.includes(c)).sort();
 const stockMemo = new Map<string, readonly string[]>();
 
@@ -101,7 +85,7 @@ const stockMemo = new Map<string, readonly string[]>();
 export function stockOf(date: LocalDate): readonly string[] {
   const hit = stockMemo.get(date);
   if (hit) return hit;
-  const r = seeded(hash(`shop:${date}`));
+  const r = seeded(`shop:${date}`);
   const pool = [...POOL];
   const out: string[] = [];
   for (let i = 0; i < STOCK_N && pool.length; i++) out.push(pool.splice(Math.floor(r() * pool.length), 1)[0]);

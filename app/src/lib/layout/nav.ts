@@ -63,7 +63,8 @@ const cellOf = (x: number, z: number): [number, number] => [Math.floor((x - GRID
 const cellMid = (i: number, j: number): Pt => [GRID.x0 + (i + 0.5) * CELL, GRID.z0 + (j + 0.5) * CELL];
 const inCells = (i: number, j: number) => i >= 0 && j >= 0 && i < COLS && j < ROWS;
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
-const dist = (a: Pt, b: Pt) => Math.hypot(b[0] - a[0], b[1] - a[1]);
+/** The distance between two points (u). */
+export const dist = (a: Pt, b: Pt) => Math.hypot(b[0] - a[0], b[1] - a[1]);
 
 /** An object's block box (u, unpadded): its kind's trunk or its whole footprint. */
 export function blockBox(layout: Layout, o: Obj): Box | null {

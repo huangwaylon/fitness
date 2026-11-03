@@ -8,6 +8,9 @@ export const dayTitle = (d: string) => t('kiroku.dayTitle', { m: Number(d.slice(
 
 export const num = (n: number | null) => (n === null ? '–' : formatNum(n));
 
+/** Calories: `1,234 kcal`. */
+export const kcalText = (n: number): string => t('kiroku.kcal', { n: formatNum(n) });
+
 /** A weight: `68.4 kg`. */
 export const kgText = (kg: number): string => t('weight.kg', { kg: kg.toFixed(1) });
 

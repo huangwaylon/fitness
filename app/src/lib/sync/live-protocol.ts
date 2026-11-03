@@ -512,7 +512,8 @@ export function parseServer(raw: unknown): ServerMsg | null {
 
 // ---------- the shared world's day (docs/backend.md#shared-world) ----------
 
-/** Tokyo's offset from UTC (no daylight saving): the island's day starts at Tokyo midnight. */
+/** Tokyo's offset from UTC (no daylight saving): the island's day starts at Tokyo midnight (time/dates.ts'
+ *  ZONE_OFFSET_MS, restated: no imports here). */
 const TOKYO_MS = 9 * 3600_000;
 const DAY_MS = 86_400_000;
 /** The Tokyo day (days since the epoch) a relay time falls in: the room keeps one day's world. */

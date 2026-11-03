@@ -7,6 +7,7 @@
   import type { Who } from '#lib/types.ts';
   import { RECIPE, recipeTotals, type RepeatItem } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
+  import { kcalText } from '../kiroku/fmt.ts';
   import Avatar from '../characters/Avatar.svelte';
   import { amountText, servingOnly, type RecipeDraft } from './foodUi.ts';
 
@@ -30,7 +31,6 @@
   const ro = $derived(owner !== null);
   const tot = $derived(recipeTotals(draft.it));
   const per = (v: number | null) => (v === null ? '–' : (v / draft.sv).toFixed(1));
-  const kcal = (n: number) => t('kiroku.kcal', { n: formatNum(Math.round(n)) });
   const kcalOf = (it: RepeatItem) => Math.round((it.f.k * it.g) / 100);
   const ok = $derived(draft.n.trim().length > 0 && draft.it.length > 0 && !clean);
   let removing = $state(false);
@@ -73,7 +73,7 @@
   </section>
 
   <section class="card">
-    <header class="ih"><h4>{t('food.rcp.items')}</h4><b class="money">{kcal(tot.k)}</b></header>
+    <header class="ih"><h4>{t('food.rcp.items')}</h4><b class="money">{kcalText(Math.round(tot.k))}</b></header>
     {#if draft.it.length}
       <ul data-recipe-items>
         {#each draft.it as it, i (i)}
@@ -94,7 +94,7 @@
   </section>
 
   <section class="card">
-    <header class="ih"><h4>{t('food.rcp.perOne')}</h4><b class="big money" data-recipe-live-per>{kcal(tot.k / draft.sv)}</b></header>
+    <header class="ih"><h4>{t('food.rcp.perOne')}</h4><b class="big money" data-recipe-live-per>{kcalText(Math.round(tot.k / draft.sv))}</b></header>
     <dl class="cells">
       {#each [['p', tot.p], ['fa', tot.fa], ['c', tot.c], ['s', tot.s]] as const as [k, v] (k)}
         <div><dt>{t(`food.${k}`)}</dt><dd class="money">{per(v)}</dd></div>

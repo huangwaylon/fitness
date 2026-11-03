@@ -6,7 +6,8 @@
   // なし」 on a past one (not 0 kcal, which reads as eaten nothing), 0 kcal today; no nutrient tiles either way.
   import type { Who } from '#lib/types.ts';
   import type { FoodDay } from '#lib/model/food.ts';
-  import { formatNum, t } from '#lib/i18n/index.ts';
+  import { t } from '#lib/i18n/index.ts';
+  import { kcalText } from '../kiroku/fmt.ts';
   import Glyph from '../kiroku/Glyph.svelte';
   import { goalChip } from './foodUi.ts';
 
@@ -22,7 +23,6 @@
   }
   let { day, who, goal, protein, when, onedit = null }: Props = $props();
 
-  const kcal = (n: number) => t('kiroku.kcal', { n: formatNum(n) });
   const share = $derived(goal ? Math.min(1, day.kcal / goal) : 0);
   const empty = $derived(day.entries.length === 0);
   const chip = $derived(goal === null || when === 'next' || (empty && when === 'past') ? null : goalChip(day.kcal, goal, when === 'today'));
@@ -39,7 +39,7 @@
   <header>
     <h3 id="fs-h">{t('food.kcalHead')}</h3>
     <span class="goal" data-kcal-goal>
-      {#if goal !== null}{t('food.goalOf', { g: kcal(goal) })}{:else}{t('food.noGoal')}{/if}
+      {#if goal !== null}{t('food.goalOf', { g: kcalText(goal) })}{:else}{t('food.noGoal')}{/if}
     </span>
     {#if onedit}<button type="button" class="pen-btn" data-sfx="page" data-focus="kcal-goal" aria-label={t('food.goalEdit')} onclick={onedit}><Glyph kind="pen" size={18} /></button>{/if}
   </header>
@@ -47,7 +47,7 @@
     {#if empty && when === 'past'}
       <b class="total none" data-food-total data-food-none>{t('food.noLog')}</b>
     {:else}
-      <b class="total money" data-food-total>{kcal(day.kcal)}</b>
+      <b class="total money" data-food-total>{kcalText(day.kcal)}</b>
     {/if}
     {#if chip}<span class="chg" class:over={chip.over} data-food-chip>{chip.text}</span>{/if}
   </div>

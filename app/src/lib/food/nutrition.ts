@@ -1,11 +1,8 @@
 // Portions and nutrient math (ported from the calorie PoC's core/nutrition.js), and the snapshot an entry keeps.
 // Nutrients are per 100 g; 100 ml of a drink counts as 100 g.
 import { cleanLine } from '#lib/contract/text.ts';
-import { FOOD_NAME_CHARS, FOOD_PORTION_CHARS, type FoodSnap } from '#lib/contract/food.ts';
+import { FOOD_NAME_CHARS, FOOD_PORTION_CHARS, round1, type FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from './types.ts';
-
-
-const round1 = (v: number): number => Math.round(v * 10) / 10;
 
 /** 'ml' when the item's portions are measured in ml (a drink). */
 const unitOf = (item: Pick<Item, 'portions'>): 'g' | 'ml' =>

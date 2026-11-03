@@ -22,7 +22,7 @@ export const critterId = (s: Spawn): string => (s.water ? `${s.kind}:${s.water}:
 const subRand = (seed: number, salt: number): (() => number) => mulberry32((seed ^ Math.imul(salt + 1, 0x9e3779b1)) >>> 0);
 
 const between = (r: () => number, a: number, b: number) => a + r() * (b - a);
-const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+export const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const dist = (ax: number, az: number, bx: number, bz: number) => Math.sqrt((ax - bx) ** 2 + (az - bz) ** 2);
 
 /** A world point and its height above the ground. */
