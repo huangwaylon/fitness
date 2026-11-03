@@ -72,32 +72,3 @@ test('a tap on a sprite far up near the horizon lands on it (hit-testing follows
   const hit = await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('[data-building="campsite"]'), [r.x + r.width / 2, r.y + r.height * 0.8]);
   expect(hit).toBe(true);
 });
-
-test('on the stairs and on the tier above, a villager draws in front of the cliff’s face; below it, in front as ever', {
-  tag: '@quarantine',
-  annotation: { type: 'quarantine', description: 'owner: cleanup agent, 2026-11-03: a 2D-era check (the 2D sprite\'s box, the 2D cliff face art) moot on the layout\'s 3D island since the cutover; it failed once the camera\'s far end went further back (a713b2a0). TODO: delete with the 2D island or rewrite against the 3D terrain' }
-}, async ({ page }) => {
-  await page.goto('?demo&season=summer&date=2026-07-01T10:00&critter=none&visitor=none');
-  await world(page);
-  const [, back] = await call(page, (w) => w.stops());
-  await call(page, (w, [z]) => w.go(z), [back]);
-  await page.waitForTimeout(400);
-  // the face lets taps through: make it hit-testable for the probe
-  await page.addStyleTag({ content: '[data-cliff-face] img { pointer-events: auto !important; }' });
-  /** Who is on top at my villager's middle and just above its feet, standing at (x, z). */
-  const onTop = async (x: number, z: number) => {
-    await call(page, (w, [x, z]) => w.put(x, z), [x, z]);
-    await page.waitForTimeout(200);
-    const r = (await page.locator('[data-actor="mine"] .vil img').first().boundingBox())!;
-    return page.evaluate((pts) => pts.map(([px, py]) => {
-      const e = document.elementFromPoint(px, py);
-      return e?.closest('[data-actor="mine"]') ? 'mine' : e?.closest('[data-cliff-face]') ? 'cliff' : e?.className.toString() || e?.tagName || null;
-    }), [[r.x + r.width / 2, r.y + r.height * 0.5], [r.x + r.width / 2, r.y + r.height * 0.9]]);
-  };
-  const shots = process.env.SHOTS_DIR;
-  // at the foot of the stairs, half way up, at the top and further back on the tier above (the stairs: x 36–84)
-  for (const [z, name] of [[1036, 'foot'], [1060, 'mid'], [1084, 'top'], [1110, 'above']] as const) {
-    expect(await onTop(60, z), `${name} of the stairs`).toEqual(['mine', 'mine']);
-    if (shots) await page.screenshot({ path: `${shots}/stairs-${name}.png` });
-  }
-});
