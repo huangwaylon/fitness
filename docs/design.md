@@ -1083,10 +1083,11 @@ it ([Critters](#critters)); nothing opens. The say button at the scene's bottom 
 opens the phrase picker above it (`island/SayButton.svelte`, `island/SayPicker.svelte`, `island/say.ts`,
 `e2e/say.spec.ts`), never a sheet. The picker is a small cream card in the reactions wheel's spirit, standing above the
 button, its right edge at the button's (inside the screen; above the keyboard while one is up; outside the scroller, so its
-field never scrolls the island): 「なにを いう？」 and ✕, six presets in two columns (やっほー！ おつかれさま！
-がんばろう！ やったね！ いっしょに あるこう！ おやすみ〜), my own last three (kept on this phone, `island.says`), and
-「じぶんで かく…」: a field of at most 20 characters (cut only when the IME isn't composing; a counter), もどる and
-いう; Enter sends. Every target ≥ 44px. ✕, Esc or a tap elsewhere closes it, as a tree's popup: on the ground that tap
+field never scrolls the island): 「なにを いう？」 and ✕, my own last four, newest first (kept on this phone,
+`island.says`; a quick pick said again goes first; a list kept when it was three reads as it is), and 「じぶんで かく…」:
+a field of at most 20 characters (cut only when the IME isn't composing; a counter), もどる and いう; Enter sends. No
+presets: only my own words (the user: "get rid of all the default messages. only custom messages"). With nothing kept
+yet it opens straight on the field (no lone button, no もどる; ✕ closes). Every target ≥ 44px. ✕, Esc or a tap elsewhere closes it, as a tree's popup: on the ground that tap
 only closes (nobody walks), on a control it still acts (the flea is netted), on the button it only closes; ✕ and Esc
 give the focus back to the button. My villager stays put while it's open. A pick
 closes it, hops my villager and shows the phrase in its balloon for 4 s (`island/Says.svelte`: Talk's cream balloon,

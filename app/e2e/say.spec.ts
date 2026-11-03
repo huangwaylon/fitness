@@ -1,5 +1,6 @@
 // My villager's phrases (docs/design.md "Villager taps"): the say button at the island's bottom right opens the picker
-// above it (six presets, my own last few, じぶんで かく…); a pick shows the phrase in a balloon over my villager for ~4 s
+// above it (only my own words: my last four, じぶんで かく…; with none yet, straight on the field); a pick shows the
+// phrase in a balloon over my villager for ~4 s
 // (and on the partner's phone: e2e/sync-harness.spec.ts). A tap on my villager only squishes it. The picker never
 // walks anyone, never sits under the HUD, closes on ✕, Esc or a tap elsewhere; the button hides under a sheet and in
 // もようがえ. Own text is capped at 20 characters and cleaned; it's shown as text. No ベル.
@@ -8,6 +9,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { quiet } from './island.ts';
 import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
 import { fromMenu } from './hud.ts';
+import { sayOwn } from './say.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -25,7 +27,9 @@ const feet = (page: Page) =>
     return [Math.round(m.m41), Math.round(m.m42)];
   });
 
-async function open(page: Page, at = '2026-11-04T12:00') {
+async function open(page: Page, at = '2026-11-04T12:00', said?: string[]) {
+  // my own words kept from before (island.says, newest first)
+  if (said) await page.addInitScript((s) => localStorage.setItem('island.says', s), JSON.stringify(said));
   await page.goto(`?demo&date=${at}&critter=none`);
   await expect(hudJar(page)).toBeVisible({ timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
   await expect(mine(page)).toBeEnabled();
@@ -74,14 +78,14 @@ test('the say button: small, bottom right, clear of the home indicator; a tap on
   await shot(page, 'button-day');
 });
 
-test('the say button: the picker above it; a preset shows in my villager’s balloon for a few seconds', async ({ page }) => {
-  await open(page);
+test('the say button: the picker above it; a phrase of mine shows in my villager’s balloon for a few seconds', async ({ page }) => {
+  await open(page, undefined, ['がんばろう！', 'やっほー！']);
   const bells = await hudJar(page).getAttribute('aria-label');
   const home = await feet(page);
   await sayBtn(page).click();
   await expect(picker(page)).toBeVisible();
   await expect(sayBtn(page)).toHaveAttribute('aria-expanded', 'true');
-  await expect(picker(page).locator('[data-say-preset]')).toHaveText(['やっほー！', 'おつかれさま！', 'がんばろう！', 'やったね！', 'いっしょに あるこう！', 'おやすみ〜']);
+  await expect(picker(page).locator('[data-say-recent]')).toHaveText(['がんばろう！', 'やっほー！']);
   expect(await clearOfHud(page)).toBe(true);
   await page.waitForTimeout(300); // its pop-in is over
   // above the button, its right edge by the button's
@@ -145,7 +149,7 @@ test('the picker closes on ✕, Esc and a tap elsewhere (which walks nobody); th
 test('my own words: at most 20, cleaned, shown as text, Enter sends, kept as a quick pick', async ({ page }) => {
   await open(page);
   await sayBtn(page).click();
-  await picker(page).getByRole('button', { name: 'じぶんで かく…' }).click();
+  // nothing of mine yet: straight on the field
   const field = picker(page).locator('[data-say-field]');
   await expect(field).toBeFocused();
   // いう does nothing until there's something to say
@@ -167,12 +171,48 @@ test('my own words: at most 20, cleaned, shown as text, Enter sends, kept as a q
   expect(await page.evaluate(() => localStorage.getItem('island.says'))).toBe(JSON.stringify(['<b>ジム</b>いく！']));
 });
 
+test('only my own words: no presets; none yet, the field at once; after five, the newest four, newest first', async ({ page }) => {
+  await open(page);
+  await sayBtn(page).click();
+  await expect(picker(page)).toBeVisible();
+  // the user: "get rid of all the default messages. only custom messages"
+  await expect(picker(page).locator('[data-say-preset], [data-say-recent]')).toHaveCount(0);
+  for (const gone of ['やっほー！', 'おつかれさま！', 'がんばろう！', 'やったね！', 'いっしょに あるこう！', 'おやすみ〜'])
+    await expect(picker(page).getByText(gone)).toHaveCount(0);
+  // nothing kept yet: straight on the field, no lone button, no もどる
+  await expect(picker(page).locator('[data-say-field]')).toBeFocused();
+  await expect(picker(page).getByRole('button', { name: 'じぶんで かく…' })).toHaveCount(0);
+  await expect(picker(page).getByRole('button', { name: 'もどる' })).toHaveCount(0);
+  await shot(page, 'first');
+  await page.keyboard.press('Escape');
+  for (const w of ['ジム', 'さんぽ', 'ねむい', 'ごはん', 'はしる']) {
+    await sayOwn(page, w);
+    await expect(balloon(page).locator('.text')).toHaveText(w);
+  }
+  await sayBtn(page).click();
+  await expect(picker(page).locator('[data-say-recent]')).toHaveText(['はしる', 'ごはん', 'ねむい', 'さんぽ']);
+  await expect(picker(page).locator('[data-say-field]')).toHaveCount(0);
+  await page.waitForTimeout(300); // its pop-in is over
+  for (const b of await picker(page).locator('button').all()) {
+    const r = (await b.boundingBox())!;
+    expect(Math.min(r.width, r.height)).toBeGreaterThanOrEqual(44);
+  }
+  expect(await clearOfHud(page)).toBe(true);
+  await shot(page, 'recent-four');
+  // じぶんで かく… and もどる back to them; a quick pick goes first again
+  await picker(page).getByRole('button', { name: 'じぶんで かく…' }).click();
+  await expect(picker(page).locator('[data-say-field]')).toBeFocused();
+  await picker(page).getByRole('button', { name: 'もどる' }).click();
+  await picker(page).getByRole('button', { name: 'ねむい' }).click();
+  await expect(balloon(page).locator('.text')).toHaveText('ねむい');
+  expect(await page.evaluate(() => localStorage.getItem('island.says'))).toBe(JSON.stringify(['ねむい', 'はしる', 'ごはん', 'さんぽ']));
+});
+
 test('じぶんで かく: the picker stays above the keyboard as it comes and goes (iOS: the simulated one)', async ({ page }) => {
   await fakeKeyboard(page);
   await open(page);
   await sayBtn(page).click();
-  await picker(page).getByRole('button', { name: 'じぶんで かく…' }).click();
-  await expect(picker(page).locator('[data-say-field]')).toBeFocused();
+  await expect(picker(page).locator('[data-say-field]')).toBeFocused(); // (nothing of mine yet: straight on it)
   await keyboard(page, KEYBOARD_PX);
   await expect.poll(async () => (await aboveKeyboard(page, '[data-say-picker]')).ok).toBe(true);
   expect((await aboveKeyboard(page, '[data-say-picker]')).bottom).toBeLessThanOrEqual(844 - KEYBOARD_PX);
@@ -185,7 +225,7 @@ test('じぶんで かく: the picker stays above the keyboard as it comes and g
 });
 
 test('at night: the picker and the balloon in their cream, over the night tint', async ({ page }) => {
-  await open(page, '2026-11-04T22:00');
+  await open(page, '2026-11-04T22:00', ['おやすみ〜']);
   await sayBtn(page).click();
   await expect(picker(page)).toBeVisible();
   const bg = await picker(page).evaluate((el) => getComputedStyle(el).backgroundColor);

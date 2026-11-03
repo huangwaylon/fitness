@@ -265,9 +265,9 @@
     says?.say(id, text, el, { name: sd.person.villagerName, colour: SAY_TAG[sd.person.person] });
     if (!actors[id].asleep && !actors[id].walking) applyStep(id, { actor: id, motion: 'hop' });
   }
-  function pickSay(text: string, own: boolean) {
+  function pickSay(text: string) {
     closePicker();
-    if (own) rememberSay(text);
+    rememberSay(text); // (a quick pick again: first)
     showSay('mine', text);
     sayOut.say(text);
   }

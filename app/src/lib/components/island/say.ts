@@ -1,6 +1,6 @@
 // My villager's phrases (docs/design.md "Villager taps"): a tap on my villager opens the picker (SayPicker.svelte), a
 // pick shows the phrase in a balloon over it for SAY_MS on both phones (Says.svelte; the relay's `say`, presence only).
-// The presets are i18n keys; my own phrases (じぶんで かく) are kept on this phone, the last few, as quick picks. Plain
+// Only my own words (じぶんで かく; no presets): the last RECENT_MAX are kept on this phone as quick picks. Plain
 // TS: the storage and the clock come in.
 import { DEVICE, localKV, readJson, writeJson, type KV } from '#lib/sync/storage.ts';
 import { cleanSay } from '#lib/sync/live-protocol.ts';
@@ -16,14 +16,12 @@ export interface SaySpeaker {
 /** A balloon's name tag: the person's colour (tokens.css --person-a / --person-b; the guest's lilac). */
 export const SAY_TAG = { A: '#2F86BD', B: '#D2701F', G: '#8E6CC8' } as const;
 
-/** The preset phrases (i18n `say.<id>`): greetings and cheer, in the picker's order. */
-export const SAY_PRESETS = ['hi', 'otsukare', 'ganbaro', 'yatta', 'aruko', 'oyasumi'] as const;
 /** A phrase's balloon shows this long (ms). */
 export const SAY_MS = 4000;
 /** One phrase over the relay at most this often (ms); a newer pick within it waits, replacing the waiting one. */
 export const SAY_GAP_MS = 1500;
-/** My own phrases kept as quick picks, newest first. */
-export const RECENT_MAX = 3;
+/** My own phrases kept as quick picks, newest first (was 3: a list kept then reads as it is). */
+export const RECENT_MAX = 4;
 
 /** My own phrases kept on this phone (newest first; cleaned again: the storage is the phone's, not ours). */
 export function recentSays(kv: KV | null = localKV()): string[] {

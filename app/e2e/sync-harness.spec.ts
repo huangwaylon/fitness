@@ -8,6 +8,7 @@
 //                                                         one at a time: each person's key opens one socket)
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { campDoor, geo, oku, tapOn, quiet } from './island.ts';
+import { sayOwn } from './say.ts';
 import { existsSync, readFileSync } from 'node:fs';
 
 /** The edit tray open, and the room re-centred above it (a tap's px only holds once the camera is at rest). */
@@ -278,24 +279,26 @@ test('a phrase is presence: the partner sees it over my villager at once, a phon
   for (const p of [a, b]) await expect.poll(() => w<{ connected: boolean; peer: boolean } | null>(p, 'status').then((s) => !!s?.connected && s.peer), { timeout: 10_000 }).toBe(true);
   await quiet(a); // the opening beats are over
   const said = b.locator('[data-say="partner"]');
-  // a preset, each way
+  // a phrase, each way (A's first: nothing kept yet, the field at once; the demo's tabs share one storage, so B's
+  // picker lists A's and goes through じぶんで かく…)
   let saidAt = 0;
   for (const [from, to, name] of [[a, b, 'やっほー！'], [b, a, 'おつかれさま！']] as const) {
     await from.getByRole('button', { name: 'ひとこと いう' }).click();
+    const box = from.getByRole('dialog', { name: 'なにを いう？' }), field = box.locator('[data-say-field]');
+    await expect(box).toBeVisible();
+    if (!(await field.count())) await box.getByRole('button', { name: 'じぶんで かく…' }).click();
+    await field.fill(name);
     const t0 = Date.now();
     if (from === a) saidAt = t0;
-    await from.getByRole('dialog', { name: 'なにを いう？' }).getByRole('button', { name }).click();
+    await field.press('Enter');
     await expect(to.locator('[data-say="partner"]')).toHaveText(new RegExp(name), { timeout: 2000 });
-    console.log(`[${RELAY ? 'relay' : 'demo'}] say → there: ${Date.now() - t0} ms (the click included)`);
+    console.log(`[${RELAY ? 'relay' : 'demo'}] say → there: ${Date.now() - t0} ms (the Enter included)`);
     await expect(from.locator('[data-say="mine"]')).toHaveText(new RegExp(name));
   }
   // my own words, cleaned on the way (A's last phrase was the first round's: one per 1.5 s, a time rule, so what's left
   // of it waited out)
   await a.waitForTimeout(Math.max(0, 1600 - (Date.now() - saidAt)));
-  await a.getByRole('button', { name: 'ひとこと いう' }).click();
-  await a.getByRole('button', { name: 'じぶんで かく…' }).click();
-  await a.locator('[data-say-field]').fill(' ジム\u202Eいこう ');
-  await a.locator('[data-say-field]').press('Enter');
+  await sayOwn(a, ' ジム\u202Eいこう ');
   await expect(said.locator('.text')).toHaveText('ジムいこう', { timeout: 2000 });
   await expect(said.locator('.who')).toHaveText('ウェイ');
   // gone after a few seconds, and never replayed to a phone opening later
@@ -328,8 +331,7 @@ test('a phrase in the tent: B in there sees it over A; B on the island doesn’t
   };
   const say = async (p: Page, name: string) => {
     await p.bringToFront();
-    await p.getByRole('button', { name: 'ひとこと いう' }).click();
-    await p.getByRole('dialog', { name: 'なにを いう？' }).getByRole('button', { name }).click();
+    await sayOwn(p, name);
     await expect(p.locator('[data-say="mine"]')).toHaveText(new RegExp(name));
   };
   const a = await ctxA.newPage(), b = await ctxB.newPage();
