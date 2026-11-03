@@ -143,6 +143,15 @@ changes a meal already eaten. Why: the user ("assemble my own recipes with selec
 to register that as a meal item"; shared with all users); a recipe referenced by the entry instead would rewrite past
 days on every edit and make each entry depend on another row.
 
+Two phones of one owner (2026-11-03, after a review): a key can be paired twice (or Safari and the home-screen app),
+so a repeat's ops can cross. A skipped day therefore **stays skipped**: the record and the phones keep the union of a
+repeat's ops' skipped days within its days (`repeatAccept`), else one phone's detached day plus the other's stop showed
+that day's items twice. A change of a repeat is **both or neither**: the new repeat goes first and the old one's end
+names it (`nx`), refused unless the record holds it, since the queue drops a refused event and sends the rest (an end
+without its successor silently stopped the habit). A food op's `at` may be at most a day past the record's clock (a
+clock far ahead would make every later edit stale). Left as a known limit: an edit from a phone that hadn't fetched a
+later one is acknowledged as stale and reverts on the next read, without a message (one phone never hits it).
+
 ## Economy
 
 ### Bells are play money

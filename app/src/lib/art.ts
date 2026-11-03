@@ -99,10 +99,11 @@ export const GROUP_ART: Record<'activity' | 'body', string> = {
 };
 
 /** ごはん's tabs → a catalogue icon each on their switch, as けんこう's groups: きろく a plate meal (the day's meals),
- *  グラフ the whiteboard (the chart). */
-export const FOOD_TAB_ART: Record<'log' | 'chart', string> = {
+ *  グラフ the whiteboard (the chart), レシピ the stewpot (マイレシピ). */
+export const FOOD_TAB_ART: Record<'log' | 'chart' | 'recipe', string> = {
   log: 'finds/items/luncheon-plate-meal',
-  chart: 'finds/items/whiteboard'
+  chart: 'finds/items/whiteboard',
+  recipe: 'finds/items/stewpot'
 };
 
 /** One of the four ring fruits → inventory icon key. */

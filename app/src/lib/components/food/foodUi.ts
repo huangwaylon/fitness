@@ -1,7 +1,9 @@
 // ごはん's small helpers (docs/design.md "Gohan"): the catalog loaded once a session, an entry's amount in words, the
 // food an entry was logged from (its catalog item when the catalog has it, for its portions), the 最近 list, and a
-// repeat's weekdays in words.
-import { isKcalGoal, type FoodEntry, type FoodSnap } from '#lib/contract/food.ts';
+// repeat's weekdays in words, and a recipe as a food (マイレシピ: its portions) and the meal the clock suggests.
+import { FOOD_GRAMS, isKcalGoal, recipePortion, recipeSnap, type FoodEntry, type FoodSnap, type Meal, type RepeatItem } from '#lib/contract/food.ts';
+import type { Recipe } from '#lib/model/food.ts';
+import { ZONE_OFFSET_MS } from '#lib/time/dates.ts';
 import { loadFoodDb, portionsOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
 import { t } from '#lib/i18n/index.ts';
 
@@ -17,8 +19,13 @@ export function foodDb(): Promise<FoodDb> {
 /** Grams as typed: one decimal at most, no trailing `.0`. */
 export const gramsText = (g: number): string => String(Math.round(g * 10) / 10);
 
-/** An entry's amount: the portion it was picked by and its grams (「茶碗1杯（150g）」), or the grams alone. */
-export const amountText = (e: Pick<FoodEntry, 'g' | 'f'>): string => (e.f.u ? `${e.f.u}（${gramsText(e.g)}g）` : `${gramsText(e.g)}g`);
+/** Whether a portion label already says its weight (「1枚(60g)」, 「200ml」): no second （Ng） after it. */
+export const hasWeight = (label: string): boolean => /\d\s*(g|ml|グラム)/i.test(label.normalize('NFKC'));
+
+/** An entry's amount: the portion it was picked by and its grams (「茶碗1杯（150g）」; the label alone when it says its
+ *  weight), or the grams alone. */
+export const amountText = (e: Pick<FoodEntry, 'g' | 'f'>): string =>
+  e.f.u ? (hasWeight(e.f.u) && !e.f.u.includes('×') ? e.f.u : `${e.f.u}（${gramsText(e.g)}g）`) : `${gramsText(e.g)}g`;
 
 /** A logged snapshot as a catalog item: the catalog's own when it has it (its portions), else the snapshot's values. */
 export function itemOf(f: FoodSnap, db: FoodDb | null): Item {
@@ -82,3 +89,22 @@ export function daysText(w: number): string {
   for (let i = 0; i < 7; i++) if (w & (1 << i)) days.push(t(`food.rep.d${i}`));
   return days.join(t('food.rep.join'));
 }
+
+/** A recipe as a food to log (its values per 100 g: recipeSnap), its portions 1人前 (recipePortion) and, making more
+ *  than one, ぜんぶ (its grams, within an entry's). */
+export function recipeItem(r: Recipe): Item {
+  const f = recipeSnap(r);
+  const one = recipePortion(r);
+  const portions: Portion[] = [{ label: one.label, g: one.g }];
+  if (r.sv > 1 && r.total.g <= FOOD_GRAMS.max) portions.push({ label: 'ぜんぶ', g: r.total.g });
+  return { id: f.id, name: f.n, kcal: f.k, p: f.p, f: f.fa, c: f.c, salt: f.s, portions };
+}
+
+/** The meal the clock (Tokyo) suggests: 朝 until 10:00, 昼 until 15:00, おやつ until 17:00, then 夜. */
+export function mealAt(ms: number): Meal {
+  const h = new Date(ms + ZONE_OFFSET_MS).getUTCHours();
+  return h >= 4 && h < 10 ? 'b' : h >= 10 && h < 15 ? 'l' : h >= 15 && h < 17 ? 's' : 'd';
+}
+
+/** A recipe as its editor changes it: the name, the servings, the ingredients. */
+export interface RecipeDraft { n: string; sv: number; it: RepeatItem[] }

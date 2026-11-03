@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   foodAccept, foodFold, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, isKcalGoal, newFoodId, newRecipeId, newRepeatId,
-  recipePortion, recipeSnap, recipeTotals, repeatCovers, weekdayBit, WEEKDAYS, type FoodOp, type RecipeOp, type RepeatOp
+  recipePortion, recipeSnap, recipeTotals, repeatAccept, repeatCovers, repeatNext, weekdayBit, WEEKDAYS, type FoodOp, type RecipeOp, type RepeatOp
 } from './food.ts';
-import { cleanLine } from './board.ts';
+import { cleanLine } from './text.ts';
 
 const T = Date.parse('2026-11-03T03:00:00.000Z');
 const RICE = { id: 'mext:01088', n: 'ごはん', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0 };
@@ -55,9 +55,11 @@ describe('foodAccept and foodFold', () => {
   });
 });
 
-describe('newFoodId and isKcalGoal', () => {
-  it('a new id is well-formed', () => {
+describe('new ids and isKcalGoal', () => {
+  it('a new entry’s, repeat’s and recipe’s id is well-formed', () => {
     expect(foodOp({ id: newFoodId(T), at: T, rm: true })).not.toBeNull();
+    expect(foodRepeatOp({ id: newRepeatId(T), at: T, rm: true })).not.toBeNull();
+    expect(foodRecipeOp({ id: newRecipeId(T), at: T, rm: true })).not.toBeNull();
   });
   it('a kcal goal is a whole 50 in 1,000–5,000', () => {
     expect([1000, 1850, 5000].every(isKcalGoal)).toBe(true);
@@ -102,8 +104,23 @@ describe('food_repeat', () => {
     expect(foodRepeatFold([...ops, { id: 'r0000003', at: T + 3, rm: true as const, who: 'G' as const }, rep('r0000003', 'G', T + 4)]).map((r) => r.id)).toEqual(['r0000001', 'r0000002']);
     expect(foodAccept(rep('r0000002', 'A', T), rep('r0000002', 'A', T))).toBe('stale');
   });
-  it('a new id is well-formed', () => {
-    expect(foodRepeatOp({ ...ok, id: newRepeatId(T) })).not.toBeNull();
+  it('a day skipped stays skipped, whichever op comes first: the newer kept, with both’s skips within its days', () => {
+    const held = rep('r0000004', 'A', T + 1, { sk: ['2026-11-04', '2026-11-05'] }); // a phone made 11/04 and 11/05 ordinary
+    const stop = rep('r0000004', 'A', T + 2, { to: '2026-11-04' }); // the other, not fetched yet, stopped it
+    const kept = { ...stop, sk: ['2026-11-04'] };
+    expect(repeatAccept(held, stop)).toEqual({ v: 'append', keep: kept });
+    expect(repeatAccept(stop, held)).toEqual({ v: 'stale', keep: kept });
+    expect(repeatAccept(kept, held)).toEqual({ v: 'stale', keep: null }); // nothing new: the one held, unchanged
+    for (const ops of [[held, stop], [stop, held]]) expect(foodRepeatFold(ops)).toEqual([kept]);
+    // a removal stays final, someone else's op stays refused
+    expect(repeatAccept(held, { id: 'r0000004', at: T + 2, rm: true, who: 'A' }).keep).toMatchObject({ rm: true });
+    expect(repeatAccept(held, { ...stop, who: 'B' })).toEqual({ v: 'forbidden', keep: null });
+  });
+  it('`nx` (the repeat an end is followed by) is read, never kept', () => {
+    expect(foodRepeatOp({ ...ok, to: '2026-11-03', nx: 'rabcdef2' })).toEqual({ ...ok, to: '2026-11-03' });
+    expect(foodRepeatOp({ id: 'rabcdef1', at: T, rm: true, nx: 'rabcdef2' })).toEqual({ id: 'rabcdef1', at: T, rm: true });
+    expect(repeatNext({ nx: 'rabcdef2' })).toBe('rabcdef2');
+    for (const nx of ['fabcdef2', 5, null]) expect(foodRepeatOp({ ...ok, nx })).toBeNull();
   });
 });
 
@@ -152,8 +169,5 @@ describe('food_recipe', () => {
     // a serving's grams stay within a food entry's
     expect(recipePortion({ sv: 20, it: [{ g: 0.1, f: RICE }] }).g).toBe(0.1);
     expect(recipePortion({ sv: 1, it: Array(2).fill({ g: 5000, f: RICE }) }).g).toBe(5000);
-  });
-  it('a new id is well-formed', () => {
-    expect(foodRecipeOp({ ...ok, id: newRecipeId(T) })).not.toBeNull();
   });
 });

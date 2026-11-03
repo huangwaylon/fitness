@@ -21,7 +21,7 @@ import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contr
 import { tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
 import { isRoomScope, isVoid, layoutAccept, layoutOpOf, scopeMayWrite, type LayoutEntry } from '../../app/src/lib/contract/layout.ts';
 import { BOARD_MAX, boardAccept, boardOpOf, cleanText, type BoardEntry } from '../../app/src/lib/contract/board.ts';
-import { foodAccept, foodOp, foodRecipeOp, foodRepeatOp } from '../../app/src/lib/contract/food.ts';
+import { foodAccept, foodOp, foodRecipeOp, foodRepeatOp, repeatAccept, repeatNext, type RepeatOpBy } from '../../app/src/lib/contract/food.ts';
 import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
 import { notifySecret, notifySig, verifyNotify } from './notify.ts';
 import { keyOwner, type Keys } from './auth.ts';
@@ -408,20 +408,27 @@ export class StoreCore {
         }
         if (v.v === 'append') drop = v.drop;
       }
+      let kept = json;
       if (isFoodType(type)) {
         // only its owner changes an entry, a repeat or a recipe; an op beaten by the one held is acknowledged (contract/food.ts
-        // foodAccept)
+        // foodAccept); a repeat's skipped days are never lost (repeatAccept)
         const v = this.foodTarget(type, me, data);
         if (v === 'forbidden') return fail('forbidden');
+        // a repeat's end that names the repeat following it (`nx`) only once the record holds that one, so a change is
+        // both or neither (contract/food.ts repeatNext)
+        const nx = type === 'food_repeat' ? repeatNext(sent) : undefined;
+        const next = nx === undefined ? null : this.foodHeld('food_repeat', nx);
+        if (nx !== undefined && (!next || next.rm || next.who !== me)) return fail('bad_request', 'no such repeat');
         if (v === 'stale') {
           this.io.sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
           return { ok: true, duplicate: true };
         }
+        kept = JSON.stringify(v);
       }
       const at = this.nextAt();
       if (drop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', `board|${drop}`);
       if (type === 'decor' && data.sc === 'r' && typeof data.at === 'number') this.dropVoided(data.at);
-      this.put(id, at, me, type, json, eventSlot(type, me, subject, data, Date.parse(at)), null);
+      this.put(id, at, me, type, kept, eventSlot(type, me, subject, data, Date.parse(at)), null);
       if (type === 'board' && data.rm === true) this.pruneBoard();
       return { ok: true, at };
     });
@@ -496,18 +503,31 @@ export class StoreCore {
   }
 
   /** A meal, a repeat or a recipe op against the entry's (the repeat's, the recipe's) latest op the record holds (its
-   *  slot's row, with who sent it). */
-  private foodTarget(type: FoodType, me: Who, d: Rec): ReturnType<typeof foodAccept> {
+   *  slot's row, with who sent it): `forbidden`, `stale` (nothing to keep), or the op its slot then keeps (a repeat's
+   *  with every op's skipped days: contract/food.ts repeatAccept). */
+  private foodTarget(type: FoodType, me: Who, d: Rec): 'forbidden' | 'stale' | Rec {
     const parse = FOOD_PARSE[type];
-    const r = this.io.sql.exec<{ person: string; data: string }>('SELECT person, data FROM events WHERE slot = ?', `${type}|${String(d.id)}`).toArray()[0];
-    let held: { at: number; rm?: true; who: Who } | null = null;
-    if (r && isWho(r.person)) {
-      let x: unknown;
-      try { x = JSON.parse(r.data); } catch { x = null; }
-      const op = parse(x);
-      if (op) held = { ...op, who: r.person };
+    const held = this.foodHeld(type, String(d.id));
+    const e = { ...parse(d)!, who: me };
+    if (type === 'food_repeat') {
+      const { v, keep } = repeatAccept(held as RepeatOpBy | null, e as RepeatOpBy);
+      if (v === 'forbidden') return v;
+      if (!keep) return 'stale';
+      const { who: _who, ...op } = keep;
+      return op;
     }
-    return foodAccept(held, { ...parse(d)!, who: me });
+    const v = foodAccept(held, e);
+    return v === 'append' ? parse(d)! : v;
+  }
+
+  /** The op a meal's, a repeat's or a recipe's slot holds, with who sent it, or null. */
+  private foodHeld(type: FoodType, id: string): (NonNullable<ReturnType<(typeof FOOD_PARSE)[FoodType]>> & { who: Who }) | null {
+    const r = this.io.sql.exec<{ person: string; data: string }>('SELECT person, data FROM events WHERE slot = ?', `${type}|${id}`).toArray()[0];
+    if (!r || !isWho(r.person)) return null;
+    let x: unknown;
+    try { x = JSON.parse(r.data); } catch { x = null; }
+    const op = FOOD_PARSE[type](x);
+    return op ? { ...op, who: r.person } : null;
   }
 
   /** Every decor row (its seq, sender and data). */
@@ -584,12 +604,15 @@ export class StoreCore {
       }
       if (v.drop) sql.exec('DELETE FROM events WHERE slot = ?', `board|${v.drop}`);
     }
+    let json = raw || '{}';
     if (isFoodType(type)) {
       if (!FOOD_PARSE[type](d)) return 'skipped';
-      if (this.foodTarget(type, person, d) !== 'append') {
+      const v = this.foodTarget(type, person, d);
+      if (typeof v === 'string') {
         sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
         return 'had';
       }
+      if (type === 'food_repeat') json = JSON.stringify(v); // with the skipped days of the one it replaces
     }
     if (type === 'decor' && (decorOpOf(d) || tentOpOf(d) || layoutOpOf(d)) && this.decorTarget(person, d) !== 'append') {
       sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id); // beaten (or past the cap): only its id is kept
@@ -603,7 +626,7 @@ export class StoreCore {
         return 'had';
       }
     }
-    this.put(id, at, person, type, raw || '{}', slot, this.seeAt(at) ? arrived : null);
+    this.put(id, at, person, type, json, slot, this.seeAt(at) ? arrived : null);
     return 'added';
   }
 

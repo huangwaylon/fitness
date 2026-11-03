@@ -5,7 +5,9 @@
 // `at`, then G over B over A): commutative, so the record and every phone reach the same board whatever order the ops
 // come in. Who may do what (`boardMayWrite`) and how many are kept (BOARD_MAX) are the record's rules, the phones apply
 // the same. Text is plain text, sanitised the same way on the phone and in the record (`cleanText`), and only ever
-// drawn as text. Shared by the record (relay/src/store.ts), the model and the board; pure and dependency-free.
+// drawn as text. Shared by the record (relay/src/store.ts), the model and the board; pure and dependency-free (the plain text
+// rules: contract/text.ts).
+import { BREAKS, STRIP } from './text.ts';
 
 /** Who wrote it: the merge's tie-break is a fixed order, A < B < G. */
 type Who = 'A' | 'B' | 'G';
@@ -37,18 +39,6 @@ const isInt = (n: unknown, lo: number, hi: number): n is number => Number.isInte
 /** A time in ms since the epoch (2001 … 5138). */
 const isMs = (n: unknown): n is number => isInt(n, 1e12, 1e14);
 
-/** Characters a note never keeps: C0 and C1 controls but the line break, DEL, the bidirectional overrides and isolates
- *  (they reorder what others read), zero-width joiners' look-alikes that hide text, the BOM and lone surrogates. */
-const u4 = (n: number): string => `\\u${n.toString(16).padStart(4, '0')}`;
-const charClass = (ranges: readonly (readonly [number, number])[]): string => `[${ranges.map(([a, b]) => (a === b ? u4(a) : `${u4(a)}-${u4(b)}`)).join('')}]`;
-const STRIP = new RegExp(
-  `${charClass([[0x0, 0x8], [0xb, 0x1f], [0x7f, 0x9f], [0x200b, 0x200f], [0x202a, 0x202e], [0x2060, 0x2064], [0x2066, 0x2069], [0xfeff, 0xfeff], [0xfff9, 0xfffb]])}` +
-    '|[\\ud800-\\udbff](?![\\udc00-\\udfff])|(?<![\\ud800-\\udbff])[\\udc00-\\udfff]',
-  'g'
-);
-/** Line breaks of other kinds: CR (with or without LF), NEL, the line and paragraph separators. */
-const BREAKS = new RegExp(`\\r\\n?|${charClass([[0x85, 0x85], [0x2028, 0x2029]])}`, 'g');
-
 /**
  * A note's text as the board keeps it: line breaks made `\n` (also `\r\n`, `\r`, U+2028/9), the control characters
  * stripped, each line's trailing spaces and the whole's leading and trailing blank space trimmed, at most BOARD_LINES
@@ -65,17 +55,6 @@ export function cleanText(raw: unknown): string {
   const cps = Array.from(s);
   if (cps.length > BOARD_CHARS) s = cps.slice(0, BOARD_CHARS).join('').replace(/\s+$/u, '');
   return s;
-}
-
-/**
- * One line of plain text (a meal's food name, contract/food.ts): the control characters stripped as `cleanText` does,
- * every run of blank space (line breaks too) one space, trimmed, at most `max` characters. '' when nothing is left.
- * Idempotent.
- */
-export function cleanLine(raw: unknown, max: number): string {
-  if (typeof raw !== 'string') return '';
-  const s = raw.normalize('NFC').replace(BREAKS, ' ').replace(STRIP, '').replace(/\s+/gu, ' ').trim();
-  return Array.from(s).slice(0, max).join('').trimEnd();
 }
 
 /** How many characters a note's text is (code points). */

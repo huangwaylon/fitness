@@ -16,7 +16,7 @@ const set = (who: 'A' | 'B' | 'G', id: string, at: number, extra: object = {}) =
   ev(who, at, { id, at, d: '2026-11-03', m: 'b', g: 150, f: RICE, ...extra });
 
 describe('foodDay: a day’s meals and their totals', () => {
-  it('folds the ops (edits, removals, someone else’s refused) and adds up the day, an unknown nutrient as none', () => {
+  it('folds the ops (contract/food.ts foodFold: an edit, a removal) and adds up the day, an unknown nutrient as none', () => {
     const s = reduce({
       metrics: [],
       events: [
@@ -25,7 +25,6 @@ describe('foodDay: a day’s meals and their totals', () => {
         set('A', 'fmeal002', T + 2000, { f: NATTO, g: 50 }), // edited
         set('A', 'fmeal003', T + 3000),
         ev('A', T + 4000, { id: 'fmeal003', at: T + 4000, rm: true }), // removed
-        set('B', 'fmeal001', T + 5000, { g: 999 }), // not B's: ignored
         set('A', 'fmeal004', T + 6000, { d: '2026-11-02' }), // another day
         set('B', 'fmeal005', T + 7000)
       ]
@@ -112,13 +111,8 @@ describe('repeats: a meal’s items read into the days it fills', () => {
     expect(ids(s, 'A', '2027-01-04')).toEqual(['rmeal002:0', 'rmeal002:1', 'fmeal010', 'fmeal011']);
   });
 
-  it('by the food rule: only its owner changes it, a removal is final, a queued op shows at once', () => {
-    const base = reduce({
-      metrics: [],
-      events: [rep('G', 'rmeal003', T), rep('B', 'rmeal003', T + 1000, { w: 1 }), rep('A', 'rmeal004', T), ev('A', T + 2000, { id: 'rmeal004', at: T + 2000, rm: true }, 'food_repeat')]
-    });
-    expect(repeats(base, 'G').map((r) => [r.id, r.w])).toEqual([['rmeal003', 127]]);
-    expect(repeats(base, 'A')).toEqual([]);
+  it('a queued op shows at once (foldEvents), the guest’s own too', () => {
+    const base = reduce({ metrics: [], events: [rep('G', 'rmeal003', T)] });
     const s = foldEvents(base, [rep('G', 'rmeal003', T + 3000, { sk: ['2026-11-03'] })], null)!;
     expect(ids(s, 'G', '2026-11-03')).toEqual([]);
     expect(ids(base, 'G', '2026-11-03')).toEqual(['rmeal003:0', 'rmeal003:1']); // the base untouched
@@ -200,14 +194,13 @@ describe('recipes: everyone’s, with totals and a serving’s', () => {
   const rec = (who: 'A' | 'B' | 'G', id: string, at: number, extra: object = {}) =>
     ev(who, at, { id, at, n: '納豆ごはん', sv: 2, it: [{ g: 300, f: RICE }, { g: 90, f: NATTO }], ...extra }, 'food_recipe');
 
-  it('folds the ops (edits, removals, someone else’s refused), the latest changed first, each with its owner', () => {
+  it('folds the ops (contract/food.ts foodRecipeFold: an edit, a removal), the latest changed first, each with its owner', () => {
     const rows = {
       metrics: [] as MetricRow[],
       events: [
         rec('A', 'crec0001', T),
         rec('B', 'crec0002', T + 1000),
         rec('A', 'crec0001', T + 2000, { sv: 3 }), // edited
-        rec('B', 'crec0001', T + 3000, { sv: 9 }), // not B's: ignored
         rec('G', 'crec0003', T + 4000),
         ev('B', T + 5000, { id: 'crec0002', at: T + 5000, rm: true }, 'food_recipe'), // removed
         rec('A', 'crec0004', T + 6000, { sv: 0 }) // malformed: ignored

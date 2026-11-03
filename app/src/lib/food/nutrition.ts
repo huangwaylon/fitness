@@ -1,6 +1,6 @@
 // Portions and nutrient math (ported from the calorie PoC's core/nutrition.js), and the snapshot an entry keeps.
 // Nutrients are per 100 g; 100 ml of a drink counts as 100 g.
-import { cleanLine } from '#lib/contract/board.ts';
+import { cleanLine } from '#lib/contract/text.ts';
 import { FOOD_NAME_CHARS, FOOD_PORTION_CHARS, type FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from './types.ts';
 

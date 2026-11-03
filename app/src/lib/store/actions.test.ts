@@ -278,8 +278,8 @@ describe('recurring meals (いつもの)', () => {
     await model();
     const r = updateRepeat(id!, { itemsFromDate: '2026-11-18', w: 31 });
     expect(r).toMatchObject({ ok: true });
-    const [old, next] = reps().slice(-2);
-    expect(old).toMatchObject({ id, to: '2026-11-18' });
+    const [next, old] = reps().slice(-2);
+    expect(old).toMatchObject({ id, to: '2026-11-18', nx: r.id }); // sent after the new one, naming it
     expect(old.sk).toBeUndefined(); // the 19th is the new one's to skip
     expect(next).toMatchObject({ id: r.id, from: '2026-11-19', w: 31, sk: ['2026-11-19'] });
     await model();
@@ -289,6 +289,34 @@ describe('recurring meals (いつもの)', () => {
     expect((await day('2026-11-20')).map((e) => [e[1], e[3]])).toEqual([['ごはん', r.id], ['納豆', r.id], ['トースト', r.id]]);
     expect(await day('2026-11-21')).toEqual([]); // a Saturday, now 平日 only
     expect(updateRepeat(id!, { w: 127 }).ok).toBe(false); // ended
+  });
+
+  it('updateRepeat is both or neither: the new one refused by the record, the old one’s end is too and it goes on', async () => {
+    const { startRepeat, updateRepeat } = await import('./actions.ts');
+    const { validEventData } = await import('#lib/model/record.ts');
+    const { repeatNext } = await import('#lib/contract/food.ts');
+    const { reduce } = await import('#lib/model/state.ts');
+    const { repeats } = await import('#lib/model/food.ts');
+    await breakfast('2026-11-17');
+    const { id } = startRepeat({ meal: 'b', date: '2026-11-17', w: 127 });
+    await model();
+    // the phone's clock past Tokyo midnight (the 19th), the record's still on the 18th: the new one's first day (the
+    // 20th) is after the record's tomorrow
+    vi.setSystemTime(Date.parse('2026-11-18T15:30:00.000Z'));
+    expect(updateRepeat(id!, { w: 31 }).ok).toBe(true);
+    // the queue sends in order, a refused event dropped and the rest going on (sync/queue.ts flush); the record by its
+    // rules (model/record.ts), an end naming a repeat it doesn't hold refused (relay/src/store.ts)
+    const kept: string[][] = [], held = new Set<string>(), refused: Record<string, unknown>[] = [];
+    for (const e of queued()) {
+      const d = e.data, nx = repeatNext(d);
+      if (!validEventData(e.type, d, NOW) || (nx !== undefined && !held.has(nx))) refused.push(d);
+      else {
+        if (e.type === 'food_repeat') held.add(String(d.id));
+        kept.push([new Date(NOW + kept.length).toISOString(), 'A', e.id, e.type, JSON.stringify(d)]);
+      }
+    }
+    expect(refused).toMatchObject([{ from: '2026-11-20', w: 31 }, { id, to: '2026-11-19', nx: expect.any(String) }]);
+    expect(repeats(reduce({ metrics: [], events: kept as never }), 'A').map((x) => [x.id, x.to, x.w])).toEqual([[id, undefined, 127]]);
   });
 
   it('stopRepeat: ends today (past days kept, tomorrow on nothing); one that starts tomorrow is removed', async () => {

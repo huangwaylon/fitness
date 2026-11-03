@@ -1,13 +1,14 @@
 <script lang="ts">
   // ごはん's amount (a level over the search or the day): the food and its values per 100 g; its portions as chips
   // (the first the default; 100 g last), −/＋ by half a portion, the grams field (typed grams leave the portions);
-  // what that amount holds, live; which meal; then 追加 (a new entry) or 保存 / 削除 (my entry).
+  // what that amount holds, live; which meal; then 追加 (a new entry) or 保存 / 削除 (my entry). For a recipe's
+  // ingredient (`pick`, マイレシピ): no meal, and ついか (into the recipe) or ほぞん / けす (an ingredient of it).
   import { untrack } from 'svelte';
   import type { Meal } from '#lib/contract/food.ts';
   import { FOOD_GRAMS, MEALS } from '#lib/contract/food.ts';
   import { nutrientsFor, portionsOf, type Item } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { gramsText, matchPortion, portionLabel } from './foodUi.ts';
+  import { gramsText, hasWeight, matchPortion, portionLabel } from './foodUi.ts';
 
   interface Props {
     item: Item;
@@ -17,10 +18,12 @@
     u0?: string;
     /** An entry of mine: 保存 and 削除 instead of 追加. */
     editing?: boolean;
+    /** A recipe's ingredient, not a meal: no meal to pick, the recipe's words. */
+    pick?: boolean;
     ondone: (v: { m: Meal; g: number; u: string | null }) => void;
     onremove?: () => void;
   }
-  let { item, meal, g0, u0, editing = false, ondone, onremove }: Props = $props();
+  let { item, meal, g0, u0, editing = false, pick = false, ondone, onremove }: Props = $props();
 
   const ps = $derived(portionsOf(item));
   /** The start: the portion named by the label (「茶碗1杯×2」), else one that makes the grams, else typed grams. */
@@ -77,7 +80,7 @@
     <div class="chips" role="group" aria-label={t('food.amount')}>
       {#each ps as p, i (p.label)}
         <button type="button" class="chip" aria-pressed={!custom && pi === i} data-sfx={!custom && pi === i ? 'none' : 'tick'} data-portion={p.label} onclick={() => portion(i)}>
-          {p.label}{#if !/^100(g|ml)$/.test(p.label)}<small>{gramsText(p.g)}g</small>{/if}
+          {p.label}{#if !hasWeight(p.label)}<small>{gramsText(p.g)}g</small>{/if}
         </button>
       {/each}
     </div>
@@ -101,15 +104,19 @@
     </dl>
   </section>
 
-  <div class="seg" role="group" aria-label={t('food.whichMeal')}>
-    {#each MEALS as id (id)}
-      <button type="button" class="sb" aria-pressed={m === id} data-pick-meal={id} data-sfx={m === id ? 'none' : 'tick'} onclick={() => (m = id)}>{t(`food.meal.${id}`)}</button>
-    {/each}
-  </div>
+  {#if !pick}
+    <div class="seg" role="group" aria-label={t('food.whichMeal')}>
+      {#each MEALS as id (id)}
+        <button type="button" class="sb" aria-pressed={m === id} data-pick-meal={id} data-sfx={m === id ? 'none' : 'tick'} onclick={() => (m = id)}>{t(`food.meal.${id}`)}</button>
+      {/each}
+    </div>
+  {/if}
 
   <div class="acts">
-    {#if editing}<button type="button" class="btn paper small" data-sfx="undo" data-remove onclick={() => onremove?.()}>{t('food.remove')}</button>{/if}
-    <button type="submit" class="btn small" data-sfx="confirm" data-done aria-disabled={!ok}>{editing ? t('food.save') : t('food.addOk')}</button>
+    {#if editing}<button type="button" class="btn paper small" data-sfx="undo" data-remove onclick={() => onremove?.()}>{t(pick ? 'food.rcp.itemRemove' : 'food.remove')}</button>{/if}
+    <button type="submit" class="btn small" data-sfx="confirm" data-done aria-disabled={!ok}>
+      {pick ? t(editing ? 'food.rcp.save' : 'food.rcp.itemAdd') : editing ? t('food.save') : t('food.addOk')}
+    </button>
   </div>
 </form>
 
