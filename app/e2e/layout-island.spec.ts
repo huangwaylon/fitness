@@ -201,3 +201,24 @@ test('the guest comes ashore and walks up to its own house (home-G)', async ({ p
     return Math.hypot(x - door[0], z - door[1]);
   }, { timeout: 40_000 }).toBeLessThan(60);
 });
+
+test('the layout’s water flows: the river, the waterfall and the pond move from frame to frame when nothing else does', { tag: '@render' }, async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.goto(ISLAND);
+  expect(await is3d(page)).toBe(true);
+  const g = await page.evaluate(() => (window as unknown as { __world: { geo(): { RIVER: [number, number, number][]; POND: { x: number; z: number }; CLIFF: { z0: number } } } }).__world.geo());
+  // a point on each: the river's crossing reach (beside the bridge), the falls over the cliff, the pond's middle
+  const cross = g.RIVER.filter(([, z]) => Math.abs(z - g.RIVER.at(-3)![1]) < 20).at(2)!;
+  const fall = g.RIVER.find(([, z]) => Math.abs(z - g.CLIFF.z0) < 20)!;
+  for (const [name, x, z] of [['river', cross[0], cross[1]], ['falls', fall[0], fall[1]], ['pond', g.POND.x, g.POND.z]] as const) {
+    await page.evaluate(([x, z]) => (window as unknown as { __world3d: { go(z: number, k: number, x: number): void } }).__world3d.go(z - 60, 2.4, x), [x, z]);
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { camStill(): boolean } }).__world3d.camStill())).toBe(true);
+    await page.waitForTimeout(800);
+    const [cx, cy] = await page.evaluate(([x, z]) => (window as unknown as { __world3d: { client(x: number, z: number): [number, number] } }).__world3d.client(x, z), [x, z]);
+    const clip = { x: Math.round(cx - 8), y: Math.round(cy - 4), width: 16, height: 8 };
+    const a = await page.screenshot({ clip });
+    await page.waitForTimeout(500);
+    expect(a.equals(await page.screenshot({ clip })), `${name} flows`).toBe(false);
+  }
+});
+

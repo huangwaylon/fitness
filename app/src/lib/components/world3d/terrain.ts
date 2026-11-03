@@ -44,8 +44,9 @@ export interface Ground {
   feet(x: number, z: number): number;
   /** The land's box (its corners rounded by r): the engine's sea and camera read it. */
   land: { x0: number; x1: number; z0: number; z1: number; r: number };
-  /** A frame (engine.ts calls it each one): nothing of its own to animate (the water runs on waterU). */
-  update(t: number): boolean;
+  /** A frame (engine.ts calls it each one): the water's clock (waterU.uTime: the rivers' flow, the falls' streaks and
+   *  foam, the ponds' ripples, the sea's wash) runs on, at the ambient rate. */
+  update(t: number): boolean | 'ambient';
   look(l: Look): void;
   /** Each band's meshes (a row of chunks across the island: 4 draws), for the camera's culling (world z extent). */
   chunks(): { z0: number; z1: number; meshes: Mesh[] }[];
@@ -620,7 +621,11 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     group,
     ready,
     land,
-    update: () => false,
+    // (the engine's own water ran this clock: on the layout's ground there's none of it, and the water stood still)
+    update: (t: number) => {
+      waterU.uTime.value = (t / 1000) % 3600;
+      return 'ambient' as const;
+    },
     rebuild(l: Layout, changed?: readonly number[]) {
       lay = l;
       field = fieldOf(l);
