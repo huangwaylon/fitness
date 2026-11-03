@@ -108,7 +108,8 @@ test('a second phone sees the note at once; an author edits and takes down their
   await view(b).getByRole('button', { name: 'はがす' }).click();
   await view(b).getByRole('button', { name: 'ほんとうに はがす？' }).click();
   await expect(view(b).locator('[data-note]')).toHaveCount(0);
-  await expect(view(b)).toHaveAttribute('data-board-view', process.env.E2E_ISLAND === '3d' ? '3d' : 'sheet');
+  // (the board's own view on the 3D island, the sheet on the 2D one)
+  await expect(view(b)).toHaveAttribute('data-board-view', (await b.locator('.if-scene[data-r3]').count()) ? '3d' : 'sheet');
   await close(b);
   // ウェイ's phone: both gone
   await openBoard(a);
