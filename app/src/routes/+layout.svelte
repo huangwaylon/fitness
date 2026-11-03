@@ -27,6 +27,7 @@
   import { startTaps } from '#lib/sound/taps.ts';
   import { startModality } from '#lib/components/ui/modality.ts';
   import { dropPush } from '#lib/sync/pushGone.ts';
+  import { startTelemetry } from '#lib/sync/telemetry.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { children }: { children: Snippet } = $props();
@@ -85,7 +86,10 @@
     const stopTaps = startTaps();
     // no focus ring after a touch (focus is still restored for keyboard and VoiceOver users)
     const stopModality = startModality();
+    // the app's health, sparsely and anonymously (sync/telemetry.ts): an error, once a session the island's frames
+    const stopTelemetry = startTelemetry(() => !!document.querySelector('canvas[data-w3d][data-loaded]'), !!week.demo);
     return () => {
+      stopTelemetry();
       stopModality();
       stopTaps();
       stopSound();

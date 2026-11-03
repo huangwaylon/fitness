@@ -312,3 +312,25 @@ describe('import (rows that already have their `at`)', () => {
     expect(a('snapshot').rows.events.at(-1)[0]).toBe('2026-11-01T02:00:00.001Z');
   });
 });
+
+describe('telemetry', () => {
+  it('keeps a known record anonymously (its fields bounded, no person), the admin reads the newest first', () => {
+    expect(a('telemetry', { kind: 'session', data: { loadMs: 1234.56, p95: 21.04, os: 'iOS 27.1', standalone: true, person: 'A', junk: { x: 1 } } })).toEqual({ ok: true, kept: true });
+    tick();
+    expect(call(KEY_B, 'telemetry', { kind: 'error', data: { msg: 'x'.repeat(500), stack: 'at f (a.js:1:2)' } })).toEqual({ ok: true, kept: true });
+    const rows = store.telemetryRows();
+    expect(rows.map((r) => r.kind)).toEqual(['error', 'session']);
+    expect(rows[1].data).toEqual({ loadMs: 1234.6, p95: 21, os: 'iOS 27.1', standalone: true });
+    expect((rows[0].data.msg as string).length).toBe(200);
+    expect(JSON.stringify(rows)).not.toMatch(/"person"|"A"|"B"/);
+  });
+  it("a bad kind is refused; past the day's cap it is dropped quietly", () => {
+    expect(a('telemetry', { kind: 'secrets' })).toEqual({ ok: false, error: 'bad_request' });
+    expect(store.handle({ action: 'telemetry', kind: 'error' }, 10)).toEqual({ ok: false, error: 'unauthorized' });
+    for (let i = 0; i < 205; i++) {
+      if (i % 50 === 0) tick(61_000); // (the rate limit's minute)
+      a('telemetry', { kind: 'error', data: { msg: String(i) } });
+    }
+    expect(store.telemetryRows(500).length).toBe(200);
+  });
+});
