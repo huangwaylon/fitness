@@ -99,7 +99,9 @@
 </div>
 
 <style>
-  .search { display: grid; gap: 10px; padding-bottom: 8px; }
+  /* one column no wider than the sheet: WebKit's text field is ~20 characters wide by itself (its min-content), which
+     an auto track would grow to, pushing the box and the rows off the right edge */
+  .search { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding-bottom: 8px; }
   .box {
     position: sticky; top: -6px; z-index: 2; display: flex; align-items: center; gap: 6px; margin: 0; min-height: var(--hit);
     padding: 0 6px 0 12px; border-radius: var(--r-pill); background: var(--ctl); box-shadow: var(--sh-ctl);

@@ -55,6 +55,25 @@ test('the bowl sits in the top-right cluster, left of the jar (the jar beside th
   await expect.poll(() => kcalOf(page)).toBe(before);
 });
 
+// WebKit's text field is ~20 characters wide by itself: in an auto grid track it pushed the search box and the rows past
+// the sheet's right edge on an iPhone 15 (the sheet clips them). Each level is checked: nothing wider than the sheet.
+test('the day, the search and the amount all fit the sheet’s width', async ({ page }) => {
+  const overflow = () => sheet(page).evaluate((d) => {
+    const right = d.getBoundingClientRect().right;
+    return [...d.querySelectorAll('*')].filter((e) => e.getBoundingClientRect().right > right + 0.5).map((e) => e.className).slice(0, 3);
+  });
+  await openFood(page);
+  expect(await overflow()).toEqual([]);
+  await sheet(page).locator('[data-add=b]').click();
+  await sheet(page).locator('[data-food-q]').fill('ごはん');
+  const rice = sheet(page).locator('[data-food-results] button', { hasText: 'ごはん（精白米）' }).first();
+  await expect(rice).toBeVisible({ timeout: 15_000 });
+  expect(await overflow()).toEqual([]);
+  await rice.click();
+  await expect(sheet(page).locator('[data-done]')).toBeVisible();
+  expect(await overflow()).toEqual([]);
+});
+
 test('another person’s day is read-only; the guest sees the members’ meals and logs its own', async ({ page }) => {
   await openFood(page);
   await expect(sheet(page).locator('[data-add]')).toHaveCount(4); // my day: ＋ per meal and ✎ the goal

@@ -114,8 +114,8 @@
 </form>
 
 <style>
-  .amt { display: grid; gap: 12px; padding-bottom: 8px; }
-  .card { display: grid; gap: 10px; padding: 12px 14px; }
+  .amt { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-bottom: 8px; }
+  .card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px 14px; }
   .head { gap: 4px; }
   h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; overflow-wrap: anywhere; }
   h4 { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
