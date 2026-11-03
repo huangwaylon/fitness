@@ -94,3 +94,28 @@ Most red runs so far were the spec, not the app. Before pushing a new or changed
 8. **Each test starts clean**: a fresh context, service workers blocked. Don't lean on another test's leftovers, and
    don't make one test do the work of three: a short test fails clearly and shards evenly.
 9. **Don't loosen an assertion to make it pass.** If the app is wrong, it's a bug: fix it or say so in the commit.
+
+## The iOS Simulator check (the real target, on the Mac)
+
+CI draws in software (SwiftShader): no judge of the phones' rendering (iPhone 15/16, Safari, Metal). The rendering is
+checked on the iOS Simulator instead, on this Mac: `npm run ios:check` (scripts/ios-sim-check.ts) boots the newest
+installed iOS's iPhone, turns on Safari's Remote Automation in it, drives Safari over WebDriver (safaridriver ships with
+macOS), opens the live site's demo (`--url` for another, e.g. a local build), and writes `test-results/ios-sim/<time>/`:
+`report.md` / `report.json` (the 3D island's load time, idle and scrolling fps with the frames' p50/p95 and the long
+ones, the engine's stats, the page's errors) and two screenshots. Exit 1 when the island didn't come up or it failed.
+
+Nightly, a launchd agent (`~/Library/LaunchAgents/fund.island.ios-check.plist`, then
+`launchctl load ~/Library/LaunchAgents/fund.island.ios-check.plist`):
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>fund.island.ios-check</string>
+  <key>ProgramArguments</key><array><string>/bin/zsh</string><string>-lc</string>
+    <string>cd ~/Documents/other/fitness/app &amp;&amp; npm run ios:check</string></array>
+  <key>StartCalendarInterval</key><dict><key>Hour</key><integer>4</integer><key>Minute</key><integer>30</integer></dict>
+  <key>StandardOutPath</key><string>/tmp/island-ios-check.log</string>
+  <key>StandardErrorPath</key><string>/tmp/island-ios-check.log</string>
+</dict></plist>
+```

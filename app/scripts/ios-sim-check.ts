@@ -1,0 +1,133 @@
+// The real target, on this Mac (docs/ops/testing.md "The iOS Simulator check"): the app in the iOS Simulator's Safari
+// (the latest installed iOS, an iPhone, Metal under it), driven over WebDriver (safaridriver, its Simulator support),
+// opened as the demo on the 3D island; screenshots, the frames (idle and while scrolling), long frames, the load's
+// time and the page's errors into a short report. CI's software GL is no judge of the phones' rendering: this is.
+//
+//   npm run ios:check -- [--url URL] [--device "iPhone 17"] [--out DIR] [--keep]
+//
+//   --url     the page (default: the live site, https://huangwaylon.github.io/fitness/?demo)
+//   --device  a simulator by name (default: the first available "iPhone 1…" of the newest iOS)
+//   --out     where the report and screenshots go (default: app/test-results/ios-sim/<date>)
+//   --keep    leave the simulator booted
+// Once per Mac: nothing (the script turns on Safari's Remote Automation in the simulator); safaridriver ships with
+// macOS. Nightly: a launchd agent (docs/ops/testing.md has the plist) runs `npm run ios:check` and keeps its reports.
+import { execFileSync, spawn } from 'node:child_process';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const args = process.argv.slice(2);
+const opt = (name: string, def: string) => {
+  const i = args.indexOf(name);
+  return i >= 0 ? args[i + 1] : def;
+};
+const URL_ = opt('--url', 'https://huangwaylon.github.io/fitness/?demo');
+const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+const OUT = opt('--out', join(import.meta.dirname, '..', 'test-results', 'ios-sim', stamp));
+const PORT = 4730 + Math.floor(Math.random() * 50);
+mkdirSync(OUT, { recursive: true });
+
+// ---- the simulator ----
+type Dev = { udid: string; name: string; state: string; isAvailable: boolean };
+const list = JSON.parse(execFileSync('xcrun', ['simctl', 'list', 'devices', 'available', '-j'], { encoding: 'utf8' })) as { devices: Record<string, Dev[]> };
+const runtimes = Object.keys(list.devices).filter((r) => r.includes('iOS')).sort((a, b) => {
+  const v = (r: string) => (r.match(/iOS-(\d+)-(\d+)/) ?? []).slice(1).map(Number);
+  const [a1, a2] = v(a), [b1, b2] = v(b);
+  return b1 - a1 || b2 - a2;
+});
+const wantName = opt('--device', '');
+let dev: Dev | undefined, runtime = '';
+for (const r of runtimes) {
+  dev = list.devices[r].find((d) => (wantName ? d.name === wantName : /^iPhone \d/.test(d.name)));
+  if (dev) {
+    runtime = r;
+    break;
+  }
+}
+if (!dev) throw new Error('no iPhone simulator available (Xcode → Settings → Platforms)');
+const ios = runtime.replace(/.*iOS-/, '').replace('-', '.');
+console.log(`simulator: ${dev.name}, iOS ${ios}`);
+if (dev.state !== 'Booted') execFileSync('xcrun', ['simctl', 'boot', dev.udid]);
+execFileSync('xcrun', ['simctl', 'bootstatus', dev.udid, '-b'], { stdio: 'ignore' });
+execFileSync('xcrun', ['simctl', 'spawn', dev.udid, 'defaults', 'write', 'com.apple.mobilesafari', 'WebDriverEnabled', '-bool', 'YES']);
+
+// ---- WebDriver ----
+const driver = spawn('safaridriver', ['-p', String(PORT)], { stdio: 'ignore' });
+const wd = async (method: string, path: string, body?: unknown) => {
+  const r = await fetch(`http://127.0.0.1:${PORT}${path}`, { method, headers: { 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  const j = (await r.json()) as { value: unknown };
+  if (!r.ok) throw new Error(`${method} ${path}: ${JSON.stringify(j.value).slice(0, 300)}`);
+  return j.value;
+};
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+let sid = '';
+const run = async <T,>(script: string, ...a: unknown[]): Promise<T> => (await wd('POST', `/session/${sid}/execute/sync`, { script, args: a })) as T;
+const runAsync = async <T,>(script: string, ...a: unknown[]): Promise<T> => (await wd('POST', `/session/${sid}/execute/async`, { script, args: a })) as T;
+const shot = async (name: string) => writeFileSync(join(OUT, `${name}.png`), Buffer.from((await wd('GET', `/session/${sid}/screenshot`)) as string, 'base64'));
+
+/** The frames over `ms`: their count, the gaps' median and 95th, the long ones (> 50 ms). */
+const FRAMES = `const [ms, done] = arguments; const t = []; const end = performance.now() + ms;
+  (function f(now) { t.push(now); if (now < end) requestAnimationFrame(f); else {
+    const g = t.slice(1).map((x, i) => x - t[i]).sort((a, b) => a - b), q = (p) => g[Math.min(g.length - 1, Math.floor(p * g.length))] || 0;
+    done({ fps: Math.round((t.length - 1) / (ms / 1000)), p50: +q(0.5).toFixed(1), p95: +q(0.95).toFixed(1), long: g.filter((x) => x > 50).length }); } })(performance.now());`;
+
+const report: Record<string, unknown> = { when: new Date().toISOString(), device: dev.name, ios, url: URL_ };
+try {
+  for (let i = 0; i < 20 && !sid; i++) {
+    try {
+      const s = (await wd('POST', '/session', { capabilities: { alwaysMatch: { browserName: 'Safari', platformName: 'iOS', 'safari:useSimulator': true, 'safari:deviceUDID': dev.udid } } })) as { sessionId: string };
+      sid = s.sessionId;
+    } catch (e) {
+      if (i === 19) throw e;
+      await sleep(1000);
+    }
+  }
+  const t0 = Date.now();
+  await wd('POST', `/session/${sid}/url`, { url: URL_ });
+  // the page's errors from here on (the load's own are in its console: the 3D island's loaded() says it came up)
+  await run(`window.__iosErrs = []; addEventListener('error', (e) => __iosErrs.push(String(e.message).slice(0, 200))); addEventListener('unhandledrejection', (e) => __iosErrs.push('rejection: ' + String(e.reason).slice(0, 200)));`);
+  let loaded = false;
+  for (let i = 0; i < 120 && !loaded; i++) {
+    loaded = await run<boolean>('return !!(window.__world3d && window.__world3d.loaded());').catch(() => false);
+    if (!loaded) await sleep(500);
+  }
+  report.loadMs = loaded ? Date.now() - t0 : null;
+  report.island3d = loaded;
+  await sleep(3000);
+  await shot('island');
+  report.idle = await runAsync(FRAMES, 5000);
+  report.engine = await run('const s = window.__world3d && window.__world3d.stats(); return s && { fps: s.fps, cpu: s.cpu, gap: s.gap, calls: s.calls, tris: s.tris, dpr: s.dpr, why: s.why };');
+  // a scroll up the island (the camera's own pan, as a finger's) and back, its frames meanwhile
+  report.scroll = await runAsync(`const done = arguments[0]; const w = window.__world3d; const l = w.limits(); let k = 0;
+    const t = []; (function f(now) { t.push(now); k++; w.pan(6); if (k < 150) requestAnimationFrame(f); else {
+      const g = t.slice(1).map((x, i) => x - t[i]).sort((a, b) => a - b); done({ fps: Math.round((t.length - 1) / ((t[t.length - 1] - t[0]) / 1000)), p95: +(g[Math.floor(0.95 * g.length)] || 0).toFixed(1), long: g.filter((x) => x > 50).length, camZ: Math.round(w.view().camZ), max: Math.round(l.max) }); } })(performance.now());`);
+  await sleep(800);
+  await shot('scrolled');
+  report.errors = await run('return window.__iosErrs;');
+} catch (e) {
+  report.failure = String(e);
+} finally {
+  if (sid) await wd('DELETE', `/session/${sid}`).catch(() => {});
+  driver.kill();
+  if (!args.includes('--keep')) execFileSync('xcrun', ['simctl', 'shutdown', dev.udid]);
+}
+
+writeFileSync(join(OUT, 'report.json'), JSON.stringify(report, null, 2));
+const idle = report.idle as { fps: number; p50: number; p95: number; long: number } | undefined;
+const scroll = report.scroll as { fps: number; p95: number; long: number } | undefined;
+const md = [
+  `# iOS Simulator check, ${report.when}`,
+  '',
+  `${dev.name}, iOS ${ios}, Safari; ${URL_}`,
+  '',
+  `- the 3D island: ${report.island3d ? `up in ${report.loadMs} ms` : 'did not come up'}`,
+  idle ? `- idle: ${idle.fps} fps (frame p50 ${idle.p50} ms, p95 ${idle.p95} ms), ${idle.long} long frames in 5 s` : '',
+  scroll ? `- scrolling: ${scroll.fps} fps (p95 ${scroll.p95} ms), ${scroll.long} long frames` : '',
+  `- errors: ${(report.errors as string[] | undefined)?.length ? (report.errors as string[]).join('; ') : 'none'}`,
+  report.failure ? `- FAILED: ${report.failure}` : '',
+  '',
+  '![island](island.png) ![scrolled](scrolled.png)'
+].filter((l) => l !== '').join('\n');
+writeFileSync(join(OUT, 'report.md'), md + '\n');
+console.log(md);
+console.log(`\n${OUT}`);
+if (report.failure || !report.island3d) process.exitCode = 1;
