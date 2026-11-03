@@ -19,6 +19,7 @@ import { waterU } from './water.ts';
 import { CHUNKS_X, CHUNKS_Z, GRID, TILE, chunkOf, idx, kindOf } from '#lib/layout/grid.ts';
 import { chunkMesh, stairsMesh, type Part, type WallPart, type WaterPart } from '#lib/layout/mesh.ts';
 import { FAR, STEP, fieldsOf } from '#lib/layout/fields.ts';
+import { SWASH_GLSL } from '#lib/layout/swash.ts';
 import { SEA_Y, fieldOf } from '#lib/layout/height.ts';
 import { extentOf, type Layout } from '#lib/layout/model.ts';
 
@@ -381,6 +382,7 @@ void main() {
 }`;
 const SEA_FRAG = /* glsl */ `
 ${W_COMMON}
+${SWASH_GLSL}
 uniform sampler2D uSdfA;
 uniform vec4 uGrid;
 uniform vec4 uLand;
@@ -410,13 +412,33 @@ void main() {
   col += vec3(0.07, 0.09, 0.1) * smoothstep(0.95, 1.4, n);
   float g = noise(p * 0.32 + vec2(uTime * 0.7, uTime * 0.4));
   col += vec3(0.35) * smoothstep(0.93, 0.99, g) * smoothstep(25.0, 80.0, d) * smoothstep(0.5, 0.9, n);
-  float wave = 4.0 + 3.0 * sin(uTime * 0.85 + p.x * 0.015 + p.y * 0.01);
-  float lace = noise(p * 0.22 + vec2(0.0, uTime * 0.35));
-  float foam = smoothstep(wave + 2.0, wave - 2.5, d) * smoothstep(-5.0, -0.5, d);
-  float line = smoothstep(1.6, 0.0, abs(d - wave)) * 0.9;
-  float fo = max(foam * (0.55 + 0.45 * lace), line * lace);
-  col = mix(col, vec3(0.97, 1.0, 1.0), fo);
-  a = max(a, fo * 0.9);
+  // NH's waves washing ashore (layout/swash.ts): out in the water, each wave's foam line rolls in over the shallows to
+  // the waterline (then runs up the sand: the ground's shader) and its backwash drains back into the sea, a lacy rim of
+  // foam on it fading as it goes; a thin lace always where the water meets the sand. The coast's phase is its point on
+  // the shoreline's (the field's normal back along the distance), so a front stays a line along the coast.
+  float sw = SW_WATERLINE - d;
+  if (sw > -SW_APPROACH - 4.0 && near < uFar - 1.0) {
+    vec2 st = 5.0 / uGrid.zw;
+    vec2 gr = vec2(texture2D(uSdfA, clamp(uv + vec2(st.x, 0.0), 0.0, 1.0)).r, texture2D(uSdfA, clamp(uv + vec2(0.0, st.y), 0.0, 1.0)).r)
+      - texture2D(uSdfA, clamp(uv, 0.0, 1.0)).r;
+    vec2 cp = p - normalize(gr + 1e-6) * d;
+    vec3 fr = swashFront(cp, uTime);
+    float lace = 0.55 + 0.45 * noise(p * 0.24 + vec2(uTime * 0.25, -uTime * 0.18));
+    // the incoming line (from the backwash's end to the next run-up), fading in out there, a softer trail behind it
+    float inc = smoothstep(SW_DOWN, SW_DOWN + 0.07, fr.z);
+    float line = (1.0 - smoothstep(0.0, 1.6, abs(sw - fr.x))) + 0.45 * smoothstep(fr.x - 5.0, fr.x - 0.5, sw) * step(sw, fr.x);
+    float fo = inc * line * lace * 0.85;
+    // the backwash draining in: the foam rim on its front as it goes under, fading
+    float back = step(SW_UP, fr.z) * step(fr.z, SW_DOWN) * smoothstep(-SW_DRAIN, 0.0, fr.x);
+    fo = max(fo, back * (1.0 - smoothstep(0.0, 2.2, abs(sw - fr.x))) * lace * 0.8);
+    // while it runs up, the water at the waterline whitens a little (the wave's body coming in behind its front)
+    float up = 1.0 - smoothstep(0.0, SW_UP, fr.z);
+    fo = max(fo, up * smoothstep(-6.0, 0.0, sw) * 0.35 * lace);
+    // the rim where the water meets the sand
+    fo = max(fo, smoothstep(-2.4, 0.0, sw) * 0.4 * lace);
+    col = mix(col, vec3(0.97, 1.0, 1.0), fo);
+    a = max(a, fo * 0.9);
+  }
   gl_FragColor = finish(col, a);
 }`;
 
@@ -426,6 +448,72 @@ function waterMat(vert: string, frag: string, extra: Record<string, { value: unk
   m.userData.bent = true;
   return m;
 }
+
+/** NH's waves on the sand (layout/swash.ts), in the ground's own (lit) shader: as each wave runs up the beach, a thin
+ *  sheet of water over the sand, the sea's turquoise showing through it deeper down, a lacy white foam edge on its
+ *  front and a fainter line inside it; as it drains, the foam thins and the sand it covered stays dark and wet, drying
+ *  in a second or two. Lit as the ground is (the moonlight at night, the dusk's warmth): nothing to switch on or off.
+ *  Only the beach at the sea's level (under the grass's height, on the sand field), within the waves' reach; a texture
+ *  tap and two for the coast's normal there, nothing elsewhere. */
+function washed(m: MeshLambertMaterial, u: Record<string, { value: unknown }>): MeshLambertMaterial {
+  m.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, u);
+    sh.vertexShader = 'varying vec3 vWashP;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvWashP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+    sh.fragmentShader = WASH_HEAD + sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n' + WASH_SAND);
+  };
+  m.customProgramCacheKey = () => 'wash';
+  return m;
+}
+const WASH_HEAD = /* glsl */ `
+uniform float uTime;
+uniform sampler2D uWashSdf;
+uniform vec4 uWashGrid;
+uniform float uWashFar;
+varying vec3 vWashP;
+${SWASH_GLSL}
+float wHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float wNoise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(wHash(i), wHash(i + vec2(1.0, 0.0)), u.x), mix(wHash(i + vec2(0.0, 1.0)), wHash(i + vec2(1.0, 1.0)), u.x), u.y);
+}
+`;
+const WASH_SAND = /* glsl */ `
+{
+  vec2 wp = vec2(vWashP.x, -vWashP.z);
+  vec2 wuv = (wp - uWashGrid.xy) / uWashGrid.zw;
+  vec4 wA = texture2D(uWashSdf, wuv);
+  float dL = (wA.r * 2.0 - 1.0) * uWashFar;
+  float s = SW_WATERLINE - dL;
+  // the beach at the sea's level, on the sand (not a cliff's top by the sea, not the grass)
+  float on = (1.0 - smoothstep(2.2, 2.8, vWashP.y)) * (1.0 - smoothstep(-1.0, 2.0, (wA.g * 2.0 - 1.0) * uWashFar));
+  if (s > -0.5 && s < 30.0 && on > 0.0) {
+    vec2 st = 5.0 / uWashGrid.zw;
+    vec2 gr = vec2(texture2D(uWashSdf, wuv + vec2(st.x, 0.0)).r, texture2D(uWashSdf, wuv + vec2(0.0, st.y)).r) - wA.r;
+    vec2 cp = wp - normalize(gr + 1e-6) * dL;
+    vec3 fr = swashFront(cp, uTime);
+    float front = fr.x;
+    float wet = swashWet(s, cp, uTime, fr);
+    float drained = smoothstep(SW_UP, SW_DOWN, fr.z);
+    vec3 c = diffuseColor.rgb;
+    // the wet sand left behind: darker, a touch cooler
+    float cov = 1.0 - smoothstep(front - 0.8, front, s);
+    c *= mix(vec3(1.0), vec3(0.70, 0.71, 0.77), wet * (1.0 - cov));
+    // the sheet of water: thin at its front, the sea's turquoise deeper down (linear colours: the sand's are)
+    float depth = smoothstep(0.0, 8.0, front - s);
+    vec3 sheet = mix(c * vec3(0.66, 0.70, 0.74), vec3(0.30, 0.74, 0.78), 0.14 + 0.36 * depth);
+    float glint = smoothstep(0.86, 0.97, wNoise(wp * vec2(0.18, 0.3) + vec2(uTime * 0.5, uTime * 0.2))) * 0.12 * depth;
+    c = mix(c, sheet + glint, cov * step(0.0, front));
+    // the foam: a lacy edge on the front (thinning as it drains back), a fainter line inside the sheet as it runs up
+    float lace = 0.6 + 0.4 * wNoise(wp * 0.3 + vec2(uTime * 0.35, -uTime * 0.2));
+    float edge = smoothstep(front - 3.6, front - 0.6, s) * (1.0 - smoothstep(front - 0.2, front + 0.4, s));
+    float inner = (1.0 - smoothstep(0.0, 1.0, abs(s - front * 0.55))) * (1.0 - smoothstep(0.0, SW_UP, fr.z)) * 0.45;
+    float foam = (edge * mix(0.95, 0.45, drained) + inner) * lace * step(0.0, front);
+    c = mix(c, vec3(0.92, 0.96, 0.97), clamp(foam, 0.0, 1.0));
+    diffuseColor.rgb = mix(diffuseColor.rgb, c, on);
+  }
+}
+`;
 
 // ---- the ground -------------------------------------------------------------------------------------------------------
 
@@ -482,6 +570,8 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     codes.needsUpdate = true;
   }
   upload(lay);
+  // the waves on the sand: the land's field and the water's clock
+  const washU = { uTime: waterU.uTime, uWashSdf: { value: sdfA }, uWashGrid: { value: [GRID.x0, GRID.z0, GW, GD] }, uWashFar: { value: FAR } };
 
   // the bake: one quad, a render target a chunk
   const bakeMat = new RawShaderMaterial({
@@ -589,7 +679,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   for (let row = 0; row < CHUNKS_Z; row++) {
     const rt = new WebGLRenderTarget(Math.round(GW * px), Math.round(BAND_D * px), { generateMipmaps: true, minFilter: LinearMipmapLinearFilter, magFilter: LinearFilter, colorSpace: SRGBColorSpace });
     rt.texture.anisotropy = 4;
-    const tm = bend(new MeshLambertMaterial({ map: rt.texture, color: 0xf4f4f4 }));
+    const tm = bend(washed(new MeshLambertMaterial({ map: rt.texture, color: 0xf4f4f4 }), washU));
     topMats.push(tm);
     const top = new Mesh(new BufferGeometry(), tm);
     top.receiveShadow = true;

@@ -432,6 +432,16 @@ went in November 2026 (docs/cleanup-2d.md).
 - **The ground and the water** are the layout's, built on the phone (`world3d/terrain.ts` buildGround: NH's ground
   textures in `static/terrain/nh/`, its looks by the season and the blossom and foliage weeks; `world3d/water.ts`: the
   sea, the rivers' flow, the falls, the ponds), docs/island-layout.md.
+  - **The sea's wash** (the user, 2026-11-03: "add a wave animation - be faithful to the original animal crossing
+    game, waves washing ashore onto the beach"; `layout/swash.ts`, drawn by `terrain.ts`): NH's gentle waves on every
+    sea shore of the layout, round its smoothed coast. Every 5 s a wave's white foam line rolls in over the shallows,
+    runs up the sand (easing out, 11–22u up: its reach varies wave to wave), a thin sheet of water behind its lacy
+    front with the sea's turquoise showing through it deeper down and a fainter foam line inside it; then it drains
+    back, faster as it goes, its foam thinning, into the water, and the sand it covered stays dark and wet, drying in a
+    second or two. The waves are out of step along the coast (each point's phase is its nearest shoreline point's, so a
+    front stays a line along the coast) and travel along a beach a little. Lit like the ground: dim and moonlit at
+    night, warm at dusk, nothing switched. Cheap: a shader on the ground's own material and the sea's (no geometry),
+    on the water's clock (the ambient 30 fps when nothing else moves).
 - **Layout** (`world.ts`: the old fixed island's, which the editable layout's default was drawn from: `npm run
   layout:default`; the live island reads the layout, docs/island-layout.md): まえ: the wide front beach with the island's only palms (three, out of the way: one at each of its outer corners and a
   young one by the water on the left; the palm beetles keep to them), plumeria at the

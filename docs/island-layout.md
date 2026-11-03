@@ -196,7 +196,12 @@ for their spots with no visual change (the default's offsets); the 3D island rea
   2026-11-03, "the transition from shallow water to deep water is very sudden, fish are very hard to see". A fish's
   shadow reads under the see-through water across the fishing range. Near the shore the bake's bed shows through; past
   the field's reach (FAR) the bed is the deep plane's blue, and the deep plane is lit as the ground is, so the grid's
-  edge never shows through the water at dusk or night), the rivers' flow (each tile's way down, breadth-first along the river to the sea
+  edge never shows through the water at dusk or night), NH's waves washing ashore (`layout/swash.ts`, design.md "The sea's wash"): a point's place on
+  the shore is its land distance less the waterline (1.7u, where the sea's surface meets the beach), its wave's phase
+  its nearest shoreline point's (the point less the field's normal, from two more taps of the field, times its
+  distance); the ground's top material draws the run-up, the foam and the wet sand on the beach at the sea's level,
+  the sea's shader the incoming foam line and the backwash in the water: one rhythm, the same maths (SWASH_GLSL) on
+  both and on the CPU (what washes in rides a wave: Finds), the rivers' flow (each tile's way down, breadth-first along the river to the sea
   or a fall) and the ponds' ripples, the falls' streaks; all on water.ts's shared clock, tint and fog uniforms.
   The river's look is the hand-made river's (the user, 2026-11-03: "the river water animation still isn't as good as
   the original"; `water.ts` RIVER_FRAG / FOAM_FRAG, the /world3d era): on a stem its streaks run on the length along
