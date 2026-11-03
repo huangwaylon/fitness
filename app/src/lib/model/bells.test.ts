@@ -321,7 +321,7 @@ describe('the steps goal in force: 8,000 for everyone by default, per person fro
     expect([v.people.A.stepsGoal, v.people.B.stepsGoal]).toEqual([8000, 8000]);
   });
 
-  it('a change applies from its Tokyo day on: the week, the ribbon’s ring, the stretch, and the history keeps each day’s', () => {
+  it('a change applies from its Tokyo day on: the week, the day’s ring, the stretch, and the history keeps each day’s', () => {
     const r = plus(walked, { events: [goal(jst(D[2], '07:00'), 'A', 12000), goal(jst(D[4], '23:59'), 'B', 6500, 'A')] });
     expect(apples(r, MON_AFTER)).toEqual([[1, 8000], [1, 8000], [0, 12000], [0, 12000], [2, 6500], [2, 6500], [2, 6500]]);
     expect(buildWeekView(reduce(r), 'A', ms(D[1], '23:00')).people.A.stepsGoal).toBe(8000); // Tuesday: still the old goal
@@ -338,7 +338,7 @@ describe('the steps goal in force: 8,000 for everyone by default, per person fro
   });
 });
 
-describe('がんばり: +1 per goal at 1.5×, at most +2 a person a day, in the wallet, the ribbon and きろく', () => {
+describe('がんばり: +1 per goal at 1.5×, at most +2 a person a day, in the wallet, the ベル row and きろく', () => {
   /** A's day: every goal met, these metrics raised to (at least) 1.5×. */
   const big = (at: string, d: string, over: Partial<Record<MetricRow[3], number>>): MetricRow[] =>
     allFour(at, 'A', d).map((m) => (over[m[3]] !== undefined ? metric(at, 'A', d, m[3], over[m[3]]!) : m));
@@ -351,7 +351,7 @@ describe('がんばり: +1 per goal at 1.5×, at most +2 a person a day, in the 
     expect(v.people.A.rings.apple).toEqual({ today: 12000, goal: 8000, met: true, stretched: true });
     expect(v.people.A.rings.peach.stretched).toBe(false);
     expect(v.together).toEqual({ met: true, left: 0 });
-    expect(v.wallet.today).toBe(6 + 4 + 2); // the ribbon: both people's ベル with がんばり, + ふたりでぜんぶ
+    expect(v.wallet.today).toBe(6 + 4 + 2); // the ベル row: both people's ベル with がんばり, + ふたりでぜんぶ
     expect(v.wallet.balance).toBe(3 * 10 + 2);
     expect(v.people.A.weekBells).toBe(3 * 4 + 2);
   });

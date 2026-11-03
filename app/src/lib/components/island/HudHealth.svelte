@@ -1,6 +1,6 @@
 <script lang="ts">
-  // The health button, the HUD cluster's right end in the top-right corner (docs/design.md "Island"): a small cream pill,
-  // 44px tall, with NH's red dumbbell across it, no number (the numbers live in the popup), as wide as the jar. Tap:
+  // The health button, the HUD cluster's left end in the top-right corner (docs/design.md "Island"): a small cream pill,
+  // 44px tall, with NH's red dumbbell across it, no number (the numbers live in the popup), as wide as the bowl. Tap:
   // a press squash, the villagers glance up at it (R18), and the health popup grows out of the dumbbell
   // (HealthSheet, Sheet's `pop`: the zoom's origin is the dumbbell, --pop-x / --pop-y on the root).
   //   <HudHealth onopen={() => …} {later} />
@@ -35,7 +35,7 @@
 </button>
 
 <style>
-  /* One small cream pill, the tap target's height with the cream lip, the jar's width (--hud-side): the
+  /* One small cream pill, the tap target's height with the cream lip, the bowl's width (--hud-side): the
      dumbbell across it, its plates a little over the pill's ends. */
   .hud-health {
     --art: clamp(62px, calc(8 * var(--vh1)), 70px);

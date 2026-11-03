@@ -1,6 +1,6 @@
 // The 3D island's echo of a DOM reaction (world3d/Island3D.svelte): a tap's jiggle, a tree's rustle or shake, a rock
 // struck, played on the DOM's art (invisible in 3D) is played on the model too. The DOM island calls it where it
-// animates its art; nothing listens on the 2D island.
+// animates its art.
 let sink: ((id: string, strength: number) => void) | null = null;
 
 /** The 3D island listens (null: it's gone). */

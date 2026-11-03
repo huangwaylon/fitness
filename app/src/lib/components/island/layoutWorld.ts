@@ -1,8 +1,7 @@
 // world.ts's island from the layout (docs/island-layout.md "What the 3D integration must change" 7), pure: every
 // position, spot, seat, water and box the island's gameplay reads (the walk's names, the critters' waters, the
 // fishing, the finds, the visitors, the doors, the decor's spots, the scenery's tap areas), derived from a Layout so a
-// moved pond or tent carries everything with it. world.ts setWorld(worldOf(layout)) swaps them in (the 3D island on the
-// long layout); the 2D island keeps world.ts's own.
+// moved pond or tent carries everything with it. world.ts setWorld(worldOf(layout)) swaps them in.
 //   Shapes kept as world.ts has them (an oval pond, a centreline river, a cliff line), so their readers stay as they
 //   are: the river's centreline runs through its tiles from the spring to the sea (breadth-first from the mouth, each
 //   step's tiles' middle), the pond and the spring are their tiles' ovals, the cliff the first upper tier's row. The

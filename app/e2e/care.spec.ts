@@ -40,7 +40,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     const n = Number(await day.getAttribute('data-weeds'));
     expect(n).toBeGreaterThanOrEqual(2);
     expect(n).toBeLessThanOrEqual(3);
-    // the camera over the first (on the 2D island they're on the lawn in view at まえ)
+    // the camera over the first
     const z = Number((await day.getAttribute('data-at'))!.split(' ')[0].split(',')[1]);
     if (z > 300) await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z - 160);
     await page.waitForTimeout(600); // measured once the camera has settled

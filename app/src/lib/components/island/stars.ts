@@ -49,7 +49,7 @@ function clearOf(s: Streak, b: Box): boolean {
 }
 
 /** Where a streak may run: inside the night sky `sky` (px), its whole path clear of every box in `avoid` (the HUD's
- *  jar and health button, the sync chip: every control). 40 tries at random, each a little shorter and flatter than the last (a short
+ *  dumbbell, bowl and leaf menu, the sync chip: every control). 40 tries at random, each a little shorter and flatter than the last (a short
  *  sky beside a wide HUD leaves a narrow lane above or below it), else none. */
 export function streakPath(sky: Box, avoid: readonly Box[], r: () => number): Streak | null {
   const w = sky.x1 - sky.x0, h = sky.y1 - sky.y0;

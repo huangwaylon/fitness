@@ -120,8 +120,7 @@ repo. Edit `JOBS` in `app/scripts/models.ts`, then `cd app && NH_MODELS=~/Downlo
 (`-- --only=trees/` for some keys, `--png=/tmp/x` keeps the PNGs; needs Google Chrome and `cwebp`). It copies only the
 folders it names into a scratch dir, renders them in Chrome and writes `static/art/<key>.webp`, their manifest entries
 (source "rendered") and `src/lib/components/island/models.json`; ~4 s for all. Never commit anything from the model
-folder itself. `assets:fetch` keeps rendered entries; a key moved to the renders leaves `SPECS`. The stone bridge's deck
-(`bridges/stone-deck`) is baked into the ground: after re-rendering it, run `npm run terrain` too.
+folder itself. `assets:fetch` keeps rendered entries; a key moved to the renders leaves `SPECS`.
 
 ## 9. What the sheet should hold
 `README` (what the sheet is: a read-only export, in English and Japanese, the last export's time, the newest row, the

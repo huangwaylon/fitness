@@ -1,5 +1,5 @@
 // The 3D island (docs/design.md "World", docs/decisions.md "The island in 3D"): the island drawn in three.js, NH's way,
-// under the same island the 2D one runs (IslandScene: its World places every DOM node through this camera, and the DOM
+// under the island's DOM (IslandScene: its World places every DOM node through this camera, and the DOM
 // keeps the taps, the popups, the balloons and the marks; their art goes invisible where a model or a card draws it).
 //   The camera: NH's fixed, high island camera with a long lens, the rolling log bending the world away (bend.ts, every
 //   material). One finger scrolls along the island (z) with a free fling and soft ends; two pinch the zoom (clamped,
@@ -190,7 +190,7 @@ export interface Island3 {
   touching(on: boolean): void;
   /** The camera (the e2e, the way back from the tent). */
   view(): { camZ: number; zoom: number; pitch: number; camX: number };
-  /** `free`: past the ends if need be (the e2e's camera, at the 2D island's stops: the ends widen to take it); `x` the
+  /** `free`: past the ends if need be (the e2e's camera, at world.ts's old stops: the ends widen to take it); `x` the
    *  camera's x (clamped: centred at the default zoom). */
   go(camZ: number, zoom?: number, free?: boolean, x?: number): void;
   /** How far the camera's x may be from the middle at this zoom (u): 0 at the default or wider. */
@@ -241,7 +241,7 @@ export interface Island3 {
   kick(): void;
   /** Nothing moving (the ambience may still run at its rate). */
   idle(): boolean;
-  /** No frames at all while paused (a sheet over the island: the 2D island's pause); a frame at once when it ends. */
+  /** No frames at all while paused (a sheet over the island); a frame at once when it ends. */
   pause(on: boolean): void;
   /** Paused (pause()). */
   isPaused(): boolean;

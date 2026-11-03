@@ -328,7 +328,7 @@
     let left = Math.min(st.width - 8 - wd, Math.max(8, tx - wd / 2));
     let top = Math.min(ceil - h, Math.max(floor, (floor + ceil) / 2 - h / 2));
     // the 3D island's camera shows both goal trees well inside the screen: the popup goes over their canopies when it
-    // fits there (both stay tappable), else in the band as on the 2D island
+    // fits there (both stay tappable), else in the band
     if (w.three) {
       const crown = w.clientAt(x, z, H)[1] - st.top;
       if (crown - 10 - h >= floor) top = crown - 10 - h;

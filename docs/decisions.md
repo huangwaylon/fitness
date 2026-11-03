@@ -327,7 +327,9 @@ would read as a notification. The guest sees the members' today, as the ribbon s
 
 ### The dumbbell beside the ribbon (2026-11-02)
 (Replaces *The jar beside the ribbon*.) The HUD's button on the right of 「きょう +N ベル」 is NH's dumbbell, opening
-けんこう in a popup of its own; the panel (the ribbon) has three tabs, きろく · ごほうび · せってい, and opens on きろく.
+けんこう in a popup of its own; the panel (the ribbon) has three tabs, きろく · ごほうび · せってい, and opens on きろく
+(the tabs superseded by *The jar goes into the leaf, ごほうび is the panel*: the panel is ごほうび alone, ずかん and
+せってい the leaf menu's).
 The button shows no number; today's new coins fly into the ribbon. In けんこう whose data and the period are two native
 dropdowns in one row, かつどう / からだ the row under them. Why (the user's): the health numbers are what we look at
 most, so they get the one button; the wallet is spent rarely and reads fine as a tab; two rows of selectors instead of
@@ -530,7 +532,7 @@ long tasks, ≤ 83 style writes a frame for ~140 nodes, nothing pending once sti
 existing component stay; nothing runs when still.
 
 ### The ground is baked raster, the water live (superseded: the layout's ground, built on the phone)
-The terrain was painted offline (`scripts/terrain.ts`: a WebGL shader in Chrome, noise, soft distance-field edges,
+The terrain was painted offline (`scripts/terrain.ts`, since deleted: a WebGL shader in Chrome, noise, soft distance-field edges,
 supersampling) into 8 WebP chunks per season (~440 KB a season, 2 px a unit; the back half lazy) and drawn by 40 bands;
 only the water's motion (the shore's wash, the waterfall, glints, flow streaks, the pond's ripple) is live CSS, plus a
 few upright sprites (the cliff's face, the bridges' fronts). Why: the user rejected the flat vector paths, river,
