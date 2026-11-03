@@ -3,7 +3,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { AUDIO_CACHE, ROOM_CACHE, SHELL, isAudio, isCritterArt, isDecorArt, isFont, isMusic, isRoomAsset, isVillagerArt, keepShell, lruEvict, precachable, staleCaches } from './caches.ts';
+import { AUDIO_CACHE, ROOM_CACHE, SHELL, isAudio, isCritterArt, isDecorArt, isFont, isMusic, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches } from './caches.ts';
 
 // The app may live under a base path (GitHub Pages: /fitness/); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -31,7 +31,21 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE);
-      await cache.addAll(PRECACHE.map((p) => (HASHED.has(p) ? p : fresh(p))));
+      // a hashed chunk an older shell holds is the very same file: copied over, not downloaded again (each deploy
+      // fetched every chunk and font anew, ~3 MB; now only what changed)
+      const olds = await Promise.all(olderShells(await caches.keys(), CACHE).map((k) => caches.open(k)));
+      const todo: (string | Request)[] = [];
+      for (const p of PRECACHE) {
+        if (!HASHED.has(p)) {
+          todo.push(fresh(p));
+          continue;
+        }
+        let hit: Response | undefined;
+        for (const c of olds) if ((hit = await c.match(p))) break;
+        if (hit) await cache.put(p, hit);
+        else todo.push(p);
+      }
+      await cache.addAll(todo);
       // The SPA shell (ssr = false): any navigation can be served by the scope root.
       try {
         await cache.add(fresh(SCOPE));
