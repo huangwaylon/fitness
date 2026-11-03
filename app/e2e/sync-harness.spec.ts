@@ -7,9 +7,8 @@
 //   RELAY_E2E=1 npm run e2e -- sync-harness --workers=1   two browser contexts against the test relay (relay/.smoke-keys;
 //                                                         one at a time: each person's key opens one socket)
 import { expect, test, type Browser, type Page } from '@playwright/test';
-import { tapOn } from './island.ts';
+import { campDoor, geo, oku, tapOn } from './island.ts';
 import { existsSync, readFileSync } from 'node:fs';
-import { BUILDINGS, CAMS, HOMES, SEATS } from '../src/lib/components/island/world.ts';
 
 /** The edit tray open, and the room re-centred above it (a tap's px only holds once the camera is at rest). */
 async function openEdit(p: Page) {
@@ -20,10 +19,12 @@ async function openEdit(p: Page) {
  *  room: a px is only where the finger lands once it's still). */
 const settled = (p: Page) => p.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still(), null, { timeout: 10_000 });
 
-/** Where a villager stands at the tent's door (nav.ts doorOf). */
-const DOOR = ((b) => [b.x, b.z - 16] as const)(BUILDINGS.find((b) => b.id === 'campsite')!);
-/** Where a villager stands just out of the tent (buildings.ts outOfTent): ±12 of the door, 30 in front. */
-const OUT = (who: 'A' | 'B') => [DOOR[0] + (who === 'A' ? -12 : 12), DOOR[1] - 30] as const;
+/** Where a villager stands just out of the tent (buildings.ts outOfTent): ±12 of the tent's door, 30 in front (the
+ *  page's island's door: the layout's on it). */
+const OUT = async (p: Page, who: 'A' | 'B') => {
+  const d = campDoor(await geo(p));
+  return [d[0] + (who === 'A' ? -12 : 12), d[1] - 30] as const;
+};
 
 /** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
 async function tapTent(p: Page) {
@@ -235,7 +236,7 @@ test('two phones, one island: a scripted session leaves both (and a phone openin
   await expect.poll(async () => (await w<string>(a, 'decorCanon')) === (await w<string>(b, 'decorCanon')), { timeout: 4000 }).toBe(true);
   // the fixed decor (docs/design.md "The fixed decor"): A's pump waters the flowers round it (the shared watered op:
   // on both), and A's villager sitting on the front bench is drawn seated on both phones (from where it stands)
-  await w(a, 'go', CAMS.oku);
+  await w(a, 'go', await oku(a));
   await atRest(a);
   const pump = await a.locator('[data-fixture="pump"]').evaluate((el) => {
     const r = el.getBoundingClientRect();
@@ -243,7 +244,7 @@ test('two phones, one island: a scripted session leaves both (and a phone openin
   });
   await a.mouse.click(pump[0], pump[1]);
   await w(a, 'go', 300);
-  await w(a, 'put', ...SEATS.seatMaeL);
+  await w(a, 'put', ...(await geo(a)).SEATS.seatMaeL);
   await expect(a.locator('[data-actor="mine"]')).toHaveAttribute('data-seat', 'seatMaeL');
   await expect(b.locator('[data-actor="partner"]')).toHaveAttribute('data-seat', 'seatMaeL', { timeout: 4000 });
   // both grab the same thing at once: one wins, both agree on who
@@ -505,7 +506,7 @@ test('one place at a time: A in the tent is gone from B’s island, there with B
   const inside = (p: Page) => p.locator('[data-actor="partner"]').getAttribute('data-inside');
   const door = async (p: Page) => {
     await p.bringToFront();
-    await w(p, 'go', 642);
+    await w(p, 'go', await oku(p));
     await atRest(p);
     await tapTent(p);
     await expect(p).toHaveURL(/\/tent\?/, { timeout: 10_000 });
@@ -525,9 +526,10 @@ test('one place at a time: A in the tent is gone from B’s island, there with B
   await a.bringToFront();
   await a.getByRole('button', { name: '島へ' }).click();
   await a.waitForFunction(() => (window as unknown as { __world?: { state?: unknown } }).__world?.state);
+  const out = await OUT(a, 'A');
   await expect.poll(async () => {
     const at = await w<[number, number]>(a, 'mine');
-    return Math.hypot(at[0] - OUT('A')[0], at[1] - OUT('A')[1]);
+    return Math.hypot(at[0] - out[0], at[1] - out[1]);
   }, { timeout: 3000 }).toBeLessThan(2);
   await expect.poll(() => tt(b, (t) => t.partner()), { timeout: 4000 }).toBeNull();
   // B comes out: A on B's island, at the door too
@@ -546,6 +548,7 @@ test('one place at a time: A in the tent is gone from B’s island, there with B
   await a.close({ runBeforeUnload: true }); // (its bye: else the demo's relay notices it 10 s on, the walk maybe over)
   await expect.poll(() => inside(b), { timeout: 15_000 }).toBeNull();
   // out of the door and home at a stroll (villagerSync's walk home), not put there: anywhere but home, it's walking
+  const { HOMES } = await geo(b);
   await expect.poll(async () => {
     const v = (await w<State>(b, 'state')).villagers.A;
     return v.walking || Math.hypot(v.x - HOMES.A[0], v.z - HOMES.A[1]) <= 3;
@@ -577,6 +580,7 @@ test('a phone gone a while: its villager walks home on the other phone; back mid
   const b = await open('B', ctxB);
   for (const p of [a, b]) await connected(p);
   await joined(a, b);
+  const { HOMES } = await geo(a);
   // A walks far from home (the first spot of open ground that takes the tap), and stays there
   await a.bringToFront();
   await w(a, 'go', 400);

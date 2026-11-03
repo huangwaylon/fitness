@@ -3,6 +3,7 @@
 // is the camera with two stops (まえ, おく), taps land on transformed sprites near the horizon, and nothing
 // runs once it is still.
 import { expect, test, type Page } from '@playwright/test';
+import { geo, type Geo } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -14,10 +15,12 @@ const world = async (page: Page) => {
 const call = <T,>(page: Page, fn: (w: W, a: number[]) => T, args: number[] = []) =>
   page.evaluate(([f, a]) => new Function('w', 'a', `return (${f})(w, a)`)((window as unknown as { __world: W }).__world, a), [fn.toString(), args] as const) as Promise<T>;
 
-async function open(page: Page, cam: number) {
+/** `cam`: a camera z, or one from the page's island's places (world.ts's: the layout's on it). */
+async function open(page: Page, cam: number | ((g: Geo) => number)) {
   await page.goto('?demo&season=summer&date=2026-07-01T10:00');
   await world(page);
-  await call(page, (w, [z]) => w.go(z), [cam]);
+  const z = typeof cam === 'number' ? cam : cam(await geo(page));
+  await call(page, (w, [z]) => w.go(z), [z]);
   await page.waitForTimeout(400);
 }
 
@@ -52,10 +55,12 @@ test('a villager behind a tree is hidden by it; just in front it covers the trun
 });
 
 test('behind a building it is hidden, in front of it it covers it', async ({ page }) => {
-  await open(page, 760);
-  // the campsite's tent at (196, 984)
-  expect(await topAt(page, 196, 1000, 0.6)).toBe('building:campsite');
-  expect(await topAt(page, 196, 960, 0.4)).toBe('mine');
+  const tent = (g: Geo) => g.BUILDINGS.find((b) => b.id === 'campsite')!;
+  await open(page, (g) => tent(g).z - 224);
+  // the campsite's tent (its door line at x, z)
+  const b = tent(await geo(page));
+  expect(await topAt(page, b.x, b.z + 16, 0.6)).toBe('building:campsite');
+  expect(await topAt(page, b.x, b.z - 24, 0.4)).toBe('mine');
 });
 
 // (2D only: the 3D island's camera is its own, no scroller: world3d.spec's camera tests)
@@ -90,7 +95,7 @@ test('the camera is the scroller: two stops, the sprites follow it, nothing runs
 });
 
 test('a tap on a sprite far up near the horizon lands on it (hit-testing follows the transforms)', async ({ page }) => {
-  await open(page, 300);
+  await open(page, (g) => g.BUILDINGS.find((b) => b.id === 'campsite')!.z - 684);
   // the campsite, far up the island: its door is a button, small near the horizon
   const door = page.locator('[data-building="campsite"] button');
   const r = (await door.boundingBox())!;
