@@ -3,7 +3,7 @@
 // wanders between points of interest with footsteps under it. Neither ends up over a control, mine stays a
 // thumb-sized button while it walks, and a sheet stops them where they are.
 import { expect, test, type Page } from '@playwright/test';
-import { openNear, plateOnly, quiet } from './island.ts';
+import { openNear, plateOnly, quiet, sawIt, watchFor } from './island.ts';
 
 const hudJar = (page: Page) => page.getByRole('button', { name: /^ごほうび · ふたりのベル / });
 async function open(page: Page, q = '') {
@@ -93,7 +93,9 @@ test('a tap on the ground walks there, never over a control, a thumb-sized butto
   expect(await overlaps(page)).toEqual([]);
 });
 
-test('a netted bug holds still under the net, swung where it is (no walk); the catch is its plate, flown in from the bug, nothing over the head', async ({ page }) => {
+test('a netted bug holds still under the net, swung where it is (no walk); the catch is its plate, flown in from the bug, nothing over the head, my villager bouncing', async ({ page }) => {
+  const SQUISH = '[data-actor="mine"] .body[data-act="squish"]';
+  await watchFor(page, [SQUISH]);
   await open(page, '&critter=common-butterfly');
   const bug = page.locator('[data-critter="common-butterfly"]');
   await expect(bug).toBeAttached();
@@ -115,6 +117,8 @@ test('a netted bug holds still under the net, swung where it is (no walk); the c
   // the plate in the bottom stack, its icon flown in from where the bug was; nothing over my villager's head
   const from = await plateOnly(page, 'critters/common-butterfly');
   expect(Math.hypot(from.x - p.x, from.y - p.y)).toBeLessThan(60);
+  // and my villager gave the tap's little bounce
+  expect(await sawIt(page, SQUISH)).toBe(true);
   const f = await feet(page);
   expect(Math.hypot(f.x - home.x, f.y - home.y)).toBeLessThan(1); // where it stood
   await page.screenshot({ path: test.info().outputPath('catch.png') });
