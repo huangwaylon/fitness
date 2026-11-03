@@ -3,13 +3,13 @@
 // wanders between points of interest with footsteps under it. Neither ends up over a control, mine stays a
 // thumb-sized button while it walks, and a sheet stops them where they are.
 import { expect, test, type Page } from '@playwright/test';
-import { openNear } from './island.ts';
+import { openNear, quiet } from './island.ts';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
 async function open(page: Page, q = '') {
   await page.goto(`?demo&date=2026-11-04T12:00${q}`);
   await expect(ribbon(page)).toBeVisible();
-  await page.waitForTimeout(800); // the opening beats
+  await quiet(page); // the opening beats are over
 }
 /** A world point on screen (client px). */
 const at = (page: Page, x: number, z: number) =>
@@ -49,7 +49,11 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     const weeds = page.locator('[data-care="weed"]');
     // the lawn runs on up to the campsite: the camera half way up it, then the weed nearest the screen's middle
     await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(300));
-    await page.waitForTimeout(500);
+    // (the camera there and the island at rest: the weeds where they're drawn)
+    await expect.poll(() => page.evaluate(() => {
+      const w = window as unknown as { __world: { idle(): boolean }; __world3d?: { camStill(): boolean } };
+      return w.__world3d ? w.__world3d.camStill() : w.__world.idle();
+    })).toBe(true);
     const home = await feet(page);
     const p = await page.locator('[data-care="weed"]').evaluateAll((els) => els.filter((el) => el.checkVisibility({ visibilityProperty: true })).map((el) => [el, el.getBoundingClientRect()] as const)
       .map(([el, r]) => ({ uid: (el as HTMLElement).dataset.uid, x: r.left + r.width / 2, y: r.top + r.height / 2 })).filter((q) => q.y > 150 && q.y < innerHeight - 30)
@@ -58,7 +62,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       .sort((a, b) => Math.abs(a.y - innerHeight * 0.5) - Math.abs(b.y - innerHeight * 0.5))[0]);
     await page.mouse.click(p.x, p.y - 4);
     // pulled at once (that one: another may come into view as the island settles), nobody walked
-    await expect(weeds.and(page.locator(`[data-uid="${p.uid}"]`))).toHaveCount(0, { timeout: 1000 });
+    await expect(weeds.and(page.locator(`[data-uid="${p.uid}"]`))).toHaveCount(0, { timeout: 3000 });
     await page.waitForTimeout(400);
     await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
     const there = await feet(page);

@@ -3,6 +3,7 @@
 // mound and a tap digs it up; a tap on my villager now and then sends a flea hopping off it; the stink bugs on the
 // flowers. Each keeps clear of every control and is a ずかん find, never ベル. `?critter=<id>` brings one on at once.
 import { expect, test, type Page } from '@playwright/test';
+import { quiet } from './island.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { PERCH_3D, REAR_MS, type Perch } from '../src/lib/components/island/critters.ts';
 
@@ -72,7 +73,7 @@ test('a mole cricket chirps under a mound in the grass; a tap digs it up', async
 
 test('a tap on my villager sends a flea hopping off into the grass; a tap on it nets it', async ({ page }) => {
   await open(page, '&date=2026-07-10T12:00&flea&critter=none'); // (no visiting bug: one out takes the flea's place)
-  await page.waitForTimeout(2600); // the opening beats are over
+  await quiet(page); // the opening beats are over
   await page.locator('button.vil').first().click();
   const flea = page.locator('[data-critter="flea"]');
   await expect(flea).toBeAttached();

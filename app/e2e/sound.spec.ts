@@ -1,6 +1,7 @@
 // Sound in the built app (docs/design.md "Engine lifecycle", "Taps"), in Chrome with an instrumented
 // media element and AudioContext.
 import { expect, test, type Page } from '@playwright/test';
+import { quiet } from './island.ts';
 
 type Play = { music: boolean; gesture: boolean; ok: boolean };
 type Probe = { plays: Play[]; decks: HTMLMediaElement[]; contexts: number; music: Set<string> };
@@ -165,7 +166,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
 
   // 島
   await expect(btn(/^きょう [\d,]+\sベル$/)).toBeVisible();
-  await page.waitForTimeout(1500); // the opening beats
+  await quiet(page); // the opening beats are over
   await step('島', 'tree canopy', () => page.locator('button.canopy').first().tap(), ['tree-shake']);
   await expect(page.locator('.detail')).toHaveCount(1);
   await step('島', 'the tree popup (closes)', () => page.locator('.detail .plate').tap(), ['tick']);

@@ -46,6 +46,8 @@ const once = (key: string): boolean => firstOn(SCENE.beat(key), dayKey());
 
 export class IslandLife {
   /** The page is hidden (the scene pauses its animations). */
+  /** The island's opening beats not yet played (its first 700 ms: the greeting, the morning's, the evening's). */
+  opening = true;
   hidden = $state(typeof document !== 'undefined' && document.hidden); // a scene mounted in a hidden tab starts paused
   balloon = $state(false);
   devFireworks = $state(false);
@@ -211,7 +213,11 @@ export class IslandLife {
       if (wd >= 4 && wd <= 6 && me.weekBells < LOW_WEEK_BELLS && once('lowweek')) beats.push('R15');
     }
     // the director's event queue plays them one at a time
-    this.later(() => beats.forEach((r) => react(r)), 700);
+    this.opening = true;
+    this.later(() => {
+      beats.forEach((r) => react(r));
+      this.opening = false;
+    }, 700);
 
     const stopIdle = startIdleLife({
       paused: () => ctx.covered() || this.hidden,

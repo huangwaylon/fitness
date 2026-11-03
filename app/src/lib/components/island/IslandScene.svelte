@@ -80,7 +80,7 @@
   import { hybridFor, hybridsOf } from './care.ts';
   import { garden } from './sceneDay.ts';
   import { addDays } from '#lib/time/dates.ts';
-  import { actors, addFx, applyStep, busy, inMotion, react, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
+  import { actors, addFx, applyStep, busy, eventsQuiet, inMotion, react, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { walkGeo, walkable } from './walkGraph.ts';
   import { weedsAt } from './care.ts';
@@ -634,6 +634,8 @@
   function expose() {
     (window as unknown as { __world?: unknown }).__world = {
       cam: () => world.view.camZ, idle: () => world.idle(), perf: world.perf,
+      /** The opening beats are over: none to come, no event playing or queued (idle life may still wander). */
+      quiet: () => !life.opening && eventsQuiet(),
       /** Put the camera at z at once (e2e). */
       go: (z: number) => goTo(z),
       at: (x: number, z: number) => world.clientAt(x, z), P: world.P,

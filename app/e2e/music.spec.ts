@@ -2,7 +2,7 @@
 // its track plays instead of the hour's; the wasps' chase and sting cut in over the island's music; a tap on K.K. plays
 // one of his songs. Dates are mocked with ?date= (Tokyo). Checked by the files the engine fetches.
 import { expect, test, type Page } from '@playwright/test';
-import { is3d } from './island.ts';
+import { is3d, quiet } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -50,7 +50,7 @@ test('the wasps: Chased by Bees cuts in as they come out, Stung by Bees after th
   await page.clock.install({ time: new Date('2026-11-04T12:00:00+09:00') });
   await page.clock.resume();
   const audio = await open(page, '2026-11-04T12:00&shake=nest');
-  await page.waitForTimeout(2600); // the opening beats are over
+  await quiet(page); // the opening beats are over
   await tapSky(page);
   await expect.poll(() => audio).toContain('music/hour-12.m4a');
   const c = (await page.locator('button.canopy').first().boundingBox())!;

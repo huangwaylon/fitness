@@ -7,7 +7,7 @@
 //   RELAY_E2E=1 npm run e2e -- sync-harness --workers=1   two browser contexts against the test relay (relay/.smoke-keys;
 //                                                         one at a time: each person's key opens one socket)
 import { expect, test, type Browser, type Page } from '@playwright/test';
-import { campDoor, geo, oku, tapOn } from './island.ts';
+import { campDoor, geo, oku, tapOn, quiet } from './island.ts';
 import { existsSync, readFileSync } from 'node:fs';
 
 /** The edit tray open, and the room re-centred above it (a tap's px only holds once the camera is at rest). */
@@ -155,7 +155,7 @@ test('two phones, one island: a scripted session leaves both (and a phone openin
     console.log('at the start, A vs B:', diff(JSON.parse(await w<string>(a, 'canon')), JSON.parse(await w<string>(b, 'canon'))), JSON.stringify(await w(a, 'state')), JSON.stringify(await w(b, 'state')), JSON.stringify(await w(a, 'metrics')), JSON.stringify(await w(b, 'metrics')));
     throw e;
   });
-  await a.waitForTimeout(2600); // the opening beats are over (no hook says the director's queue is empty yet: a time wait)
+  await quiet(a); // the opening beats are over
   for (const p of [a, b]) await w(p, 'go', 300);
   await atRest(a, b);
   const lat: Record<string, number[]> = {};
@@ -276,7 +276,7 @@ test('a phrase is presence: the partner sees it over my villager at once, a phon
   const { open, ctxB, close } = await phones(browser);
   const a = await open('A'), b = await open('B');
   for (const p of [a, b]) await expect.poll(() => w<{ connected: boolean; peer: boolean } | null>(p, 'status').then((s) => !!s?.connected && s.peer), { timeout: 10_000 }).toBe(true);
-  await a.waitForTimeout(2600); // the opening beats are over (no hook says the director's queue is empty yet: a time wait)
+  await quiet(a); // the opening beats are over
   const said = b.locator('[data-say="partner"]');
   // a preset, each way
   let saidAt = 0;
@@ -349,7 +349,7 @@ test('a phrase in the tent: B in there sees it over A; B on the island doesn’t
   await b.waitForTimeout(1500); // (proving nothing comes)
   await expect(b.locator('[data-say]')).toHaveCount(0);
   // and B's on the island isn't for A in the tent
-  await b.waitForTimeout(2600); // the island's opening beats are over
+  await quiet(b); // the opening beats are over
   await say(b, 'おつかれさま！');
   await a.waitForTimeout(1500); // (proving nothing comes)
   await expect(a.locator('[data-say="partner"]')).toHaveCount(0);
@@ -447,7 +447,7 @@ test('a high-five over the relay: the partner plays the same moment at once, its
   const { open, ctxB, close } = await phones(browser);
   const a = await open('A'), b = await open('B');
   for (const p of [a, b]) await expect.poll(() => w<{ connected: boolean; peer: boolean } | null>(p, 'status').then((s) => !!s?.connected && s.peer), { timeout: 10_000 }).toBe(true);
-  await a.waitForTimeout(2600); // the opening beats are over (no hook says the director's queue is empty yet: a time wait)
+  await quiet(a); // the opening beats are over
   // B watches for the moment: the sparkle flying from A's villager, hearts on B's own
   const plays = b.evaluate(async () => {
     const t0 = Date.now();

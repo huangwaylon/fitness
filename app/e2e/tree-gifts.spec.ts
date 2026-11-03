@@ -4,7 +4,7 @@
 // in the tent (みつけた). Shared: the other phone sees it fall and, once opened, gone.
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
-import { geo, type Geo } from './island.ts';
+import { geo, type Geo, quiet } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -22,7 +22,7 @@ async function open(page: Page, q = '') {
   await page.goto(Q + q);
   await expect(ribbon(page)).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
-  await page.waitForTimeout(2600); // the opening beats are over
+  await quiet(page); // the opening beats are over
   G = await geo(page);
   TREE = G.GIFT_TREES[0];
   TREE_Z = G.SCENERY.find((s) => s.id === TREE)!.z;

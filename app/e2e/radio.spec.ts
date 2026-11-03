@@ -27,12 +27,27 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await expect(deck(page)).toBeVisible();
     await expect(page.locator('[data-visitor="daisy-mae"] .art')).toBeVisible();
     expect(await under(page)).toEqual([]);
+    // every change of what they're doing, recorded in the page (a sample from the test could miss a 2 s pose on a busy
+    // runner): the three poses, each by everyone at once, in order
+    await page.evaluate(() => {
+      const w = window as { __acts?: string[] };
+      w.__acts = [];
+      const snap = () => {
+        const a = [...document.querySelectorAll('.vil .body, [data-visitor] .body')].map((e) => e.getAttribute('data-act'));
+        const s = a.join(',');
+        if (w.__acts![w.__acts!.length - 1] !== s) w.__acts!.push(s);
+      };
+      new MutationObserver(snap).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-act'], childList: true });
+    });
     const r = (await deck(page).boundingBox())!;
     await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
     await expect(page.locator('[data-stretch="on"]')).toBeAttached();
     expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('stretch');
-    for (const pose of ['warmup', 'sidebend', 'leap']) await expect.poll(() => acts(page), { timeout: 3000 }).toEqual([pose, pose, pose]);
-    await expect(page.locator('[data-stretch]')).toHaveCount(0, { timeout: 4000 });
+    await expect(page.locator('[data-stretch]')).toHaveCount(0, { timeout: 15_000 });
+    const seen = await page.evaluate(() => (window as { __acts?: string[] }).__acts ?? []);
+    const at = ['warmup', 'sidebend', 'leap'].map((p) => seen.indexOf([p, p, p].join(',')));
+    expect(at.every((i) => i >= 0), seen.join(' | ')).toBe(true);
+    expect([...at].sort((a, b) => a - b)).toEqual(at);
     await expect(ribbon(page)).toHaveAttribute('aria-label', bells!);
     // once a day per phone
     await page.reload();

@@ -4,7 +4,7 @@
 // Every tree shakes (NH's three quick taps): an oak's branch, a palm's coconuts; the partner's tab sees the shake,
 // their villager turns to it where it stands, and what's picked up on one tab is gone on the other.
 import { expect, test, type Page } from '@playwright/test';
-import { geo, openNear } from './island.ts';
+import { geo, openNear, quiet } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -19,7 +19,7 @@ async function open(page: Page, q = '') {
   await page.goto(`?demo&date=${DATE}&critter=none${q}`);
   await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
-  await page.waitForTimeout(2600); // the opening beats are over (no hook says the director's queue is empty yet: a time wait)
+  await quiet(page); // the opening beats are over
 }
 
 /** A point on a tree's leaves the finger reaches (its tap area's middle, else the nearest part nothing covers). */
