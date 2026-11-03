@@ -335,7 +335,7 @@
     void Promise.all([import('./engine.ts'), import('./plan.ts')]).then(
       ([{ createMuseum }, { walkPath }]) => {
         if (!alive || !canvas) return;
-        const e = createMuseum(canvas, { base: asset('room/museum/' as Parameters<typeof asset>[0]), critters: asset('room/world3d/critters/' as Parameters<typeof asset>[0]) });
+        const e = createMuseum(canvas, { base: asset('room/museum/' as Parameters<typeof asset>[0]), world: asset('room/world3d/' as Parameters<typeof asset>[0]) });
         walkPathOf = (from, to) => walkPath(e.nav(), from, to);
         e.resize(insets());
         e.night(nightOf(theme.tod));

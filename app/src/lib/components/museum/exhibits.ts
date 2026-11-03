@@ -4,6 +4,7 @@
 import type { Exhibit, Museum } from './engine.ts';
 import type { Specimen } from './species.ts';
 import { buildAquarium } from './aquarium.ts';
+import { buildGarden } from './garden.ts';
 
 const built = new WeakMap<Museum, Map<string, { key: string; e: Exhibit }>>();
 
@@ -21,4 +22,6 @@ export function show(m: Museum, list: readonly Specimen[]): void {
   };
   const fish = list.filter((s) => s.kind === 'fish');
   put('fish', fish, () => buildAquarium(m.kit, fish));
+  const bugs = list.filter((s) => s.kind === 'bug');
+  put('bug', bugs, () => buildGarden(m.kit, bugs));
 }

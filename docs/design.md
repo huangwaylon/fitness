@@ -1198,7 +1198,7 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   museum's ±320; live-protocol.ts): the others' villagers are here while they are, walking as they walk, and nowhere on
   the island meanwhile (store/where.svelte.ts `home` `M`). The guest comes in like anyone.
 - **What's on show** (species.ts): every fish and bug in the ずかん's first finds (anyone's, the guest's too), as it's
-  found; nothing else. A tap on one: its card (MuseumCard: NH's icon, its Japanese and English names, 「7/4 ウェイが
+  found; nothing else (the guest visits too, and its finds are on show under its name). A tap on one: its card (MuseumCard: NH's icon, its Japanese and English names, 「7/4 ウェイが
   見つけた」, ×n from the tallies as the ずかん counts).
 - **The aquarium** (`aquarium.ts`, `tanks.ts`, `boids.ts`): NH's grouping (species.ts tankOf): the great sea tank along
   the back wall (the sea's middling and big fish, the rays and sharks: a whale shark scaled to it), the deep-sea tank
@@ -1212,6 +1212,22 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   swaying (the vertex shader: one program for every fish). The water is one shader (NH's blue to its depth, caustics
   shimmering on its back and floor, rays from the surface), its glass tinted its water's colour, its bubbles one Points
   risen in the shader. A species is one InstancedMesh; a wing off screen rests; nothing allocated in a frame.
+- **The bug wing** (`garden.ts`): NH's garden under glass (its sky and palms on the walls, dusk-blue at night): stone
+  paths, a pond, NH's oaks and a palm (the island's models), NH's flowers in rows, the museum's own garden props
+  (flower beds, bushes, a fallen log with its autumn leaves, ferns, cacti, the mangroves), and five glass display
+  cases on stands along the back. Each bug found lives there as it lives (species.ts habitatOf, from island/critters.ts):
+  a butterfly, a moth or a bee flies a slow path round a flower bed, its wings beating (the vertex shader); a dragonfly
+  hovers over the pond and darts to another spot; a firefly drifts over it, glowing (brighter at night); a ladybug, a
+  mantis or a stink bug sits on a bloom; a grasshopper or a cricket hops in the grass; a cicada, a stag or a beetle
+  clings to an oak's trunk head up (the palm beetles to the palm); the snail and the walking leaf creep on the bushes;
+  the tiger beetle and the dung beetle crawl the soil by the log; the pondskater and the diving beetle glide on the
+  pond; the tarantula, the scorpion, the centipede, the beach's crawlers and the mole cricket walk the soil of a case;
+  the bagworm and the spider hang from an oak's branch on their threads. Drawn a little bigger than NH's (1.9×, the
+  island's way), one InstancedMesh a species, placed each frame where it is; off screen the wing rests.
+- **Performance:** the wings' exhibits are built only once the finds are in (exhibits.ts: a wing rebuilt only when its
+  own list changes), their models loaded per species (the museum chunk, its props and textures under /room/: cached on
+  first use); every frame moves only the wing on screen; 60 a second while something moves (a walk, the camera), the
+  exhibits' 30 while only they do, nothing while nothing on screen does.
 - No music of its own: the app has no NH museum track (NH's museum is quiet ambience); the island's hour plays on.
 
 ### Dialogue

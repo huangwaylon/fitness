@@ -17,6 +17,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { createVillager, type Villager3D } from '../villager3d/villager3d.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
 import M from './models.json' with { type: 'json' };
+import { modelBounds } from '../world3d/models3d.ts';
 import {
   BUG_WING, DOORMAT, FISH_WING, HALL, HALL_H, OPENING, WALLS, inRect, navOf, roomAt, walkable,
   type Nav, type Pt, type Rect, type Wall, type Wing
@@ -64,6 +65,9 @@ export interface Kit {
   prop(name: string, x: number, z: number, o?: { yaw?: number; s?: number; y?: number; parent?: Object3D }): Group;
   /** A catch's model (static/room/world3d/critters/<kind>/<id>.glb). */
   critter(kind: 'fish' | 'bugs', id: string): Promise<GLTF | null>;
+  /** One of the island's models (static/room/world3d/<name>.glb: an oak, a palm, a clump of NH's flowers), and its bounds. */
+  island(name: string): Promise<GLTF | null>;
+  islandBounds(name: string): { min: number[]; max: number[] } | null;
   lambert(o: { color?: number; map?: Texture | null; transparent?: boolean; opacity?: number }): MeshLambertMaterial;
   invalidate(): void;
   noDraw: boolean;
@@ -252,7 +256,7 @@ function grass(): CanvasTexture {
   return t;
 }
 
-export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; critters: string }): Museum {
+export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world: string }): Museum {
   const noDraw = drawOff();
   const renderer = new WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
   const dprFull = noDraw ? 1 : Math.min(DPR_MAX, window.devicePixelRatio || 1);
@@ -350,7 +354,12 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; critt
   }
   const kit: Kit = {
     tex, model, prop, lambert, invalidate: () => invalidate(), noDraw,
-    critter: (kind, id) => load(`${o.critters}${kind}/${id}.glb`)
+    critter: (kind, id) => kit.island(`critters/${kind}/${id}`),
+    island: (name) => {
+      const b = modelBounds(name);
+      return b ? load(`${o.world}${name}.glb?v=${b.v}`) : Promise.resolve(null);
+    },
+    islandBounds: (name) => modelBounds(name)
   };
 
   // ---- the floors ----
@@ -368,7 +377,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; critt
   const grassTex = grass();
   grassTex.repeat.set(...tw(BUG_WING, 50));
   disposables.push(grassTex);
-  floor(BUG_WING, lambert({ map: grassTex }));
+  const grassMat = lambert({ map: grassTex });
+  floor(BUG_WING, grassMat);
   // the openings' thresholds (through the walls)
   for (const x of [HALL.x0, HALL.x1]) floor({ x0: x - 2, x1: x + 2, z0: OPENING.z0, z1: OPENING.z1 }, lambert({ map: tex('hall-floor', [0.1, 0.75]) }), 0.01);
   // the red carpets: the door to the medallion, and on to each opening
@@ -700,9 +710,13 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; critt
     hemi.color.set(0xfff1dc).lerp(new Color(0xd6c9e8), nightN * 0.5);
     key.intensity = 1.6 - 0.8 * nightN;
     key.color.set(0xfff0d8).lerp(new Color(0xffcf96), nightN);
+    // the garden's glass: its sky and palms dusk-blue, its grass with them
+    (wallMat.bug as MeshLambertMaterial).color.set(0xffffff).lerp(NIGHT_GLASS, nightN * 0.75);
+    grassMat.color.set(0xffffff).lerp(NIGHT_GLASS, nightN * 0.35);
     for (const e of exhibits) e.night(nightN);
     invalidate();
   }
+  const NIGHT_GLASS = new Color(0x2c3358);
 
   // ---- taps ----
   const ray = new Raycaster();

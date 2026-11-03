@@ -90,6 +90,7 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
   const geos: BufferGeometry[] = [];
   const uTime = { value: 0 };
   const uNight = { value: 0 };
+  let disposed = false;
   const glassOf = new Map<Tank['look'], MeshBasicMaterial>();
   const glass = (look: Tank['look']) => {
     let g = glassOf.get(look);
@@ -244,7 +245,6 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
       kit.invalidate();
     });
   }
-  let disposed = false;
   const M4 = new Matrix4(), Q = new Quaternion(), P = new Vector3(), S = new Vector3(), E = new Vector3(0, 1, 0), Qp = new Quaternion(), X = new Vector3(1, 0, 0);
   function write(sc: School) {
     if (!sc.mesh) return;
