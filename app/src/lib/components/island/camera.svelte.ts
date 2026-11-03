@@ -207,7 +207,7 @@ export class World {
     this.invalidate();
   }
 
-  /** Fit the camera to a viewport (the scroller's size and its client offset). */
+  /** Fit the camera to a viewport (the island's size and its client offset). */
   fit(vw: number, vh: number, left = 0, top = 0): void {
     const s = vw / 390, v = this.view;
     Object.assign(v, { s, vw, vh, left, top });

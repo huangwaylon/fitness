@@ -105,13 +105,13 @@ describe('setWorld: the island on its layout', () => {
     expect(W.onLayout()).toBe(true);
     expect(W.CAMPSITE.z).toBeGreaterThan(1350);
     expect(W.SCENERY).toBe(g.SCENERY);
-    expect(W.CAM_MAX).toBe(g.CAMS.oku);
+    expect(W.CAMS.oku).toBe(g.CAMS.oku);
     expect(W.surfaceAt(g.POND.x, g.POND.z)).toBe('water');
     expect(W.worldGen()).toBe(gen + 1);
     W.setWorld(null);
     expect(W.CAMPSITE).toBe(W.WORLD_2D.BUILDINGS[0]);
     expect(W.SCENERY).toBe(W.WORLD_2D.SCENERY);
-    expect(W.CAM_MAX).toBe(642);
+    expect(W.CAMS.oku).toBe(642);
   });
   test('the walk is the layout’s: up to the tent’s door, to うめ’s, over the bridge', () => {
     W.setWorld(g);

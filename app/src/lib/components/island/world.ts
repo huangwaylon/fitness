@@ -1,9 +1,8 @@
-// The rolling-log island's world (docs/design.md "World"): one flat plan bent over a log by roll.ts. World units
-// (1u = 1 CSS px at 390 wide at the pivot): x across (0…390 is the screen at the pivot, centre 195), z into the island
-// (bigger = further back; the front shoreline is SHORE_Z, a wide beach in front of the health lawn). Two sections: まえ
-// (the sea, the beach, the health lawn) and おく (the campsite's clearing, the pond, the bamboo, the falls). Everything
-// here is pure data: the terrain bake (scripts/terrain.ts), the scene's sprites, the walk graph and the critters all
-// read the same constants.
+// The island's world (docs/design.md "World"): its places as one flat plan, in world units: x across (centre 195), z
+// into the island (bigger = further back; the front shoreline is SHORE_Z). These are the old fixed island's values
+// (WORLD_2D) until the island applies its editable layout (site.svelte.ts: setWorld(worldOf(layout)), always on the
+// live island), then the layout's: the DOM nodes over the 3D canvas, the walk, the critters and the 3D scene all read
+// the same live bindings. The unit tests and the layout scripts read the fixed ones.
 
 import SCATTER from './scatter.json' with { type: 'json' };
 import type { LayoutNav } from '#lib/layout/nav.ts';
@@ -13,7 +12,8 @@ type RoundRect = { readonly x0: number; readonly x1: number; readonly z0: number
 type Box4 = { readonly x0: number; readonly x1: number; readonly z0: number; readonly z1: number };
 type Oval = { readonly x: number; readonly z: number; readonly rx: number; readonly rz: number };
 
-/** The plan's extent (the baked terrain covers it; wider than the land so the perspective never shows an edge). */
+/** The plan's extent (wider than the land: the depth order's far end, camera.svelte.ts; the old 3D heightfield's,
+ *  world3d/ground.ts). */
 export const PLAN = { x0: -230, x1: 620, z0: -460, z1: 1700 } as const;
 
 /** The island (land incl. beaches): a rounded rectangle with a 130u corner radius and a ±4u wobble. */
@@ -31,7 +31,6 @@ export let GRASS: RoundRect = { x0: LAND.x0 + BEACH_SIDE, x1: LAND.x1 - BEACH_SI
 /** The camera's two stops (camZ), front to back: まえ (home: the sea, the beach, the health lawn) and おく (the
  *  campsite's end); the 3D island's camera fits its own ends to the screen (world3d/engine.ts limits). */
 export let CAMS: { readonly mae: number; readonly oku: number } = { mae: 30, oku: 642 };
-export let CAM_MAX: number = CAMS.oku;
 
 /** The live window (spec §7): only sprites in [camZ − BEHIND, camZ + AHEAD] are displayed. */
 export const BEHIND = 600;
@@ -53,8 +52,8 @@ export let RIVER: readonly (readonly [number, number, number])[] = [
 ];
 /** The z where the stream's north–south reach ends (it bends west there): riverNS's. */
 export let RIVER_BEND = 768;
-/** The stone bridge where the path crosses the stream (NH's stone bridge, scripts/models.ts bridges/stone-deck baked
- *  into the ground, its near end upright: bridges/stone-front): centred on x, the deck from z0 (its near end) to z1,
+/** The stone bridge where the path crosses the stream (NH's stone bridge): centred on x, the deck from z0 (its near
+ *  end) to z1,
  *  w wide (NH's proportions: 30.2 × 40.8 model units, 1.18u each). The deck is walkable `BRIDGE_RAIL` in from its sides. */
 export let BRIDGE: { readonly x: number; readonly z0: number; readonly z1: number; readonly w: number } = { x: 195, z0: 622, z1: 670, w: 35.5 };
 export const BRIDGE_RAIL = 5;
@@ -403,7 +402,7 @@ export const WORLD_2D: Readonly<Values> = snapshot();
 let geo: WorldGeo | null = null;
 let gen = 0;
 
-/** The island's geometry from now on: the layout's (worldOf), or null for world.ts's own (the 2D island). Every value
+/** The island's geometry from now on: the layout's (worldOf), or null for world.ts's own (the old fixed island). Every value
  *  above is reassigned (an import reads the new one: a live binding); a cache of one keys on worldGen(). */
 export function setWorld(g: WorldGeo | null): void {
   if (g === geo) return;
@@ -412,7 +411,6 @@ export function setWorld(g: WorldGeo | null): void {
   ({ LAND, SHORE_Z, GRASS, CAMS, RIVER, RIVER_BEND, BRIDGE, SPRING, POND, CLIFF, BUILDINGS, HOMES, GOAL_TREES, TAPE_DECK, ROCK, DIG_SPOTS,
     LAWN_SPOTS, HEDGE_Z, HEDGE_XS, BEACH_BOX, SEA_BOX, CENTRE_STAGE, ARCH, CAKE, SCENERY, DECOR_SLOTS, SEATS, PULLUP_AT, FLOWERS, PONDS } = v);
   CAMPSITE = BUILDINGS.find((b) => b.id === 'campsite') ?? BUILDINGS[0];
-  CAM_MAX = CAMS.oku;
   gen++;
 }
 /** The geometry's generation (bumped by each setWorld): a cache keyed on it is fresh. */
