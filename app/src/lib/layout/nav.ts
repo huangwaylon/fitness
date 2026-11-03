@@ -181,20 +181,39 @@ export function navOf(layout: Layout): LayoutNav {
   return shell;
 }
 
-/** @public (the scene's seats) Where a villager sits on a bench or a stool, or stands at the pull-up bar (world.ts SEATS's names for the default's
- *  pieces, so a node id means the same on the old island and the new). */
+/** The seats on a piece (villager3d/seats3d.json's, its model's own, at NH's furniture scale: 3u a model unit): each
+ *  one across the piece (u, +x its right as it faces us) and how far in front of its middle one stands to get on and
+ *  off (the anchor's `from`: villager3d/seats3d.ts anchorsOf, a test holds the two together), sat or lain on. */
+const SEAT_ON: Readonly<Record<string, { x: readonly number[]; front: number; lie?: true }>> = {
+  'park-bench': { x: [-11.7, 11.7], front: 27.9 },
+  'log-bench': { x: [-10.5, 12], front: 29.4 },
+  'log-stool': { x: [0], front: 24.9 },
+  'iron-chair': { x: [0], front: 24.9 },
+  hammock: { x: [1.7], front: 30, lie: true },
+  'beach-chair': { x: [1.7], front: 30, lie: true }
+};
+/** A piece's turn (three's yaw: 0 its front toward us, −z; a quarter turn each), as the 3D island stands it
+ *  (world3d/objects.ts): a turning kind by its facing, a look-only facing (odd) a little turned. */
+export const yawOf = (o: Obj): number => (kindDef(o.k)?.turns ? (o.f * Math.PI) / 2 : o.f % 2 ? 0.9 : 0);
+/** Whether one lies on a seat (a hammock, a beach chair) rather than sits, by its piece's kind. */
+export const liesOn = (k: string): boolean => !!SEAT_ON[k]?.lie;
+
+/** @public (the scene's seats) Where a villager gets on a seat (a bench's two, a stool, a chair, a hammock: a step in
+ *  front of it, where the 3D villager turns and sits or lies down) or stands at the pull-up bar (world.ts SEATS's names
+ *  for the default's pieces, so a node id means the same on the old island and the new; a new piece's `seat-<id>`, two
+ *  to a bench `seat-<id>-0|1`, left to right as it faces us). */
 export function seatsOf(layout: Layout, o: Obj): [string, Pt][] {
   const [mx, mz] = objMid(layout, o);
   const [fx, fz] = facingVec(o.f);
   const back = (u: number): Pt => [mx - fx * u, mz - fz * u];
-  const NAMES: Record<string, [string, string]> = { 'bench-mae': ['seatMaeL', 'seatMaeR'], 'bench-pond': ['seatPondL', 'seatPondR'] };
-  if (o.k === 'park-bench' || o.k === 'log-bench') {
-    const [l, r] = NAMES[o.id] ?? [`seat-${o.id}-0`, `seat-${o.id}-1`];
-    const [sx, sz] = back(16);
-    const ax = -fz, az = fx; // along the bench
-    return [[l, [sx - ax * 13, sz - az * 13]], [r, [sx + ax * 13, sz + az * 13]]];
+  const on = SEAT_ON[o.k];
+  if (on) {
+    const NAMES: Record<string, readonly string[]> = { 'bench-mae': ['seatMaeL', 'seatMaeR'], 'bench-pond': ['seatPondL', 'seatPondR'], 'stool-1': ['stoolW'], 'stool-2': ['stoolE'] };
+    const names = NAMES[o.id] ?? (on.x.length > 1 ? on.x.map((_, i) => `seat-${o.id}-${i}`) : [`seat-${o.id}`]);
+    // the model's across (+x) and front (+z, toward us at yaw 0) turned by its yaw, in the layout's x / z (z into the island)
+    const a = yawOf(o), c = Math.cos(a), sn = Math.sin(a);
+    return on.x.map((x, i) => [names[i], [Math.round(mx + x * c + on.front * sn), Math.round(mz + x * sn - on.front * c)]] as [string, Pt]);
   }
-  if (o.k === 'log-stool') return [[o.id === 'stool-1' ? 'stoolW' : o.id === 'stool-2' ? 'stoolE' : `seat-${o.id}`, back(13)]];
   if (o.k === 'pullup') return [[o.id === 'pullup' ? 'pullup' : `pullup-${o.id}`, back(15)]];
   return [];
 }

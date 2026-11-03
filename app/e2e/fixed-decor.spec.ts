@@ -1,6 +1,6 @@
 // The fixed decor (docs/design.md "Decor"): NH's outdoor furniture standing for good and the seasons' pieces taking
-// their spots; a tap answers where the piece stands (nobody walks); the shishi-odoshi tips and knocks; the sandcastle
-// is gone at 18:00; the seasonal lamps light at night.
+// their spots; a tap answers where the piece stands (nobody walks), but for a seat (sit-outdoors.spec: walked up to and
+// sat on); the shishi-odoshi tips and knocks; the sandcastle is gone at 18:00; the seasonal lamps light at night.
 import { expect, test, type Page } from '@playwright/test';
 import { geo, is3d, tapOn, w3 } from './island.ts';
 
@@ -26,15 +26,21 @@ const centre = (page: Page, sel: string) =>
   });
 const mine = (page: Page) => page.locator('[data-actor="mine"]').evaluate((el) => getComputedStyle(el).transform);
 
-test('まえ in summer: the bench at the grass edge, the beach chair and the sandcastle; a tap on the bench creaks it where it is', async ({ page }) => {
+test('まえ in summer: the bench at the grass edge, the beach chair and the sandcastle; a tap on the bench sits on it, on the sandcastle answers where it is', async ({ page }) => {
   await open(page, '2026-07-20T11:00', 'mae');
   for (const id of ['bench-mae', 'beach-chair', 'sandcastle']) await expect(page.locator(`[data-fixture="${id}"]`), id).toBeVisible();
+  // the seats sit (the bench, the beach chair in its summer), the sandcastle doesn't
+  await expect(page.locator('[data-fixture="beach-chair"]')).toHaveAttribute('data-sit', 'beach-chair');
+  await expect(page.locator('[data-fixture="sandcastle"]')).not.toHaveAttribute('data-sit');
   const home = await mine(page);
-  // (where it's the bench's: a palm's leaves may hang over it)
-  await tapOn(page, page.locator('[data-fixture="bench-mae"]'));
-  await expect.poll(() => cues(page)).toContain('scene-bench');
+  await tapOn(page, page.locator('[data-fixture="sandcastle"]'));
+  await expect.poll(() => cues(page)).toContain('scene-sand');
   await page.waitForTimeout(400);
   expect(await mine(page)).toBe(home);
+  // (where it's the bench's: a palm's leaves may hang over it)
+  await tapOn(page, page.locator('[data-fixture="bench-mae"]'));
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __world: { seated(id: string): string | null } }).__world.seated('mine')), { timeout: 8000 }).toMatch(/^seatMae[LR]$/);
+  await expect.poll(() => cues(page)).toContain('scene-bench');
   // the tide takes the sandcastle at 18:00 (the same on both phones: the date and the hour)
   await open(page, '2026-07-20T18:05', 'mae');
   await expect(page.locator('[data-fixture="bench-mae"]')).toBeVisible();
@@ -54,6 +60,8 @@ test('おく: the hammock, the pond bench and rod stand, the pump, the shishi-od
 test('the seasons swap their pieces in: the blossom days’ picnic set and pond stone, November’s mushroom lamp lit at night, the winter’s illuminated tree', async ({ page }) => {
   await open(page, '2026-04-05T11:00', 'oku');
   await expect(page.locator('[data-fixture="bench-pond"]')).toHaveAttribute('data-look', 'deco/picnic-set');
+  // (the picnic set in the bench's place is no seat; nor the illuminated tree in the hammock's)
+  await expect(page.locator('[data-fixture="bench-pond"]')).not.toHaveAttribute('data-sit');
   await expect(page.locator('[data-scenery-id="rock-m1"] [data-look]')).toHaveAttribute('data-look', 'deco/pond-stone-sakura');
   await open(page, '2026-11-10T21:00', 'oku');
   await expect(page.locator('[data-scenery-id="lantern-1"] [data-look]')).toHaveAttribute('data-look', 'deco/mushroom-lamp');
@@ -64,6 +72,7 @@ test('the seasons swap their pieces in: the blossom days’ picnic set and pond 
   await expect.poll(() => w3(page, (w) => w.stats().points)).toBeGreaterThan(0);
   await open(page, '2026-12-20T11:00', 'oku');
   await expect(page.locator('[data-fixture="hammock"]')).toHaveAttribute('data-look', 'deco/illumi-tree');
+  await expect(page.locator('[data-fixture="hammock"]')).not.toHaveAttribute('data-sit');
 });
 
 test('the pump waters the flowers round it (each glitters for the day, on both phones as a tap’s watering)', async ({ page }) => {

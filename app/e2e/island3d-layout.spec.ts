@@ -73,12 +73,10 @@ test('on its layout my villager sits on a bench where the layout has it (its sea
   await open(page);
   type V3 = { state(slot: string): string | null };
   await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3?: V3 }).__villagers3?.state('mine') ?? null), { timeout: 30_000 }).not.toBeNull();
-  const seat = await page.evaluate(() => {
-    const l = (window as unknown as { __layout: { pos(id: string): [number, number]; obj(id: string): { f: number } } }).__layout;
-    const [mx, mz] = l.pos('bench-mae'), [fx, fz] = ([[0, -1], [1, 0], [0, 1], [-1, 0]] as const)[l.obj('bench-mae').f & 3];
-    const sx = mx - fx * 16, sz = mz - fz * 16, ax = -fz, az = fx;
-    return [sx - ax * 13, sz - az * 13] as [number, number];
-  });
+  // (its left seat's spot: a step in front of the bench, by its facing; its walk graph's node)
+  const seat = await page.evaluate(() => (window as unknown as { __world: { site(): { named: Record<string, [number, number]> } } }).__world.site().named.seatMaeL);
+  const mid = await page.evaluate(() => (window as unknown as { __layout: { pos(id: string): [number, number] } }).__layout.pos('bench-mae'));
+  expect(Math.hypot(seat[0] - mid[0], seat[1] - mid[1])).toBeLessThan(40);
   await page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z), seat);
   await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3: V3 }).__villagers3.state('mine')), { timeout: 8000 }).toBe('sit');
 });

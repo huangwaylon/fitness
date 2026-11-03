@@ -126,7 +126,7 @@ export async function fossilOnScreen(page: Page): Promise<{ x: number; y: number
   const zs = (at ?? '').split(' ').filter(Boolean).map((p) => Number(p.split(',')[1]));
   const find = () => page.locator('[data-find="fossil"]').evaluateAll((els) => els.map((el) => [el, el.getBoundingClientRect()] as const)
     .filter(([el, r]) => (el as HTMLElement).checkVisibility({ visibilityProperty: true }) && r.top > 100 && r.bottom < innerHeight - 60
-      && !document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest('button, [data-flower], [data-tree], [data-bush], [data-care], [data-fixture], [data-visitor], [data-actor], [data-critter]'))
+      && !document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest('button, [data-flower], [data-tree], [data-bush], [data-care], [data-fixture], [data-sit], [data-visitor], [data-actor], [data-critter]'))
     .map(([, r]) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 }))[0] ?? null);
   // each in turn (a villager may stand over one)
   for (const z of zs) {
@@ -150,7 +150,7 @@ export const campDoor = (g: Geo): [number, number] => ((b) => [b.x, b.z - 16] as
 export async function openNear(page: Page, x: number, z: number, away = 45, onScreen = false): Promise<[number, number]> {
   const p = await page.evaluate(([x, z, away, onScreen]) => {
     const w = (window as unknown as { __world: { free(x: number, z: number, away: number): boolean; at(x: number, z: number): [number, number] } }).__world;
-    const TAPS = 'button, a, [data-flower], [data-tree], [data-bush], [data-care], [data-find], [data-fixture], [data-campfire], [data-decor], [data-visitor], [data-actor], [data-critter]';
+    const TAPS = 'button, a, [data-flower], [data-tree], [data-bush], [data-care], [data-find], [data-fixture], [data-sit], [data-campfire], [data-decor], [data-visitor], [data-actor], [data-critter]';
     const bare = (px: number, pz: number) => {
       if (!onScreen) return true;
       const [sx, sy] = w.at(px, pz);
