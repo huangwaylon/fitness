@@ -32,6 +32,26 @@ const sample = (page: Page, id: string, ms: number) => page.evaluate(([id, ms]) 
   frame();
 }), [id, ms] as const);
 
+/** The first model `prefix`N's spot, fade and scale every frame from the frame it comes for `ms` after (in the page, from
+ *  before it's there: a poll from the test found it late, now and then 0.8 faded in already under CI's load). */
+const sampleFirst = (page: Page, prefix: string, ms: number) => page.evaluate(([prefix, ms]) => new Promise<Sample[]>((ok, no) => {
+  const w = (window as unknown as { __world3d: { where(id: string): { x: number; z: number; fade: number; scale: number; hidden: boolean } | null } }).__world3d;
+  const out: Sample[] = [], start = performance.now();
+  let id: string | null = null, t0 = 0;
+  const frame = () => {
+    if (!id) {
+      for (let n = 0; n < 400 && !id; n++) if (w.where(prefix + n)) id = prefix + n;
+      if (!id) return performance.now() - start > 30_000 ? no(new Error(`no model ${prefix}N`)) : void requestAnimationFrame(frame);
+      t0 = performance.now();
+    }
+    const p = w.where(id);
+    out.push(p && { t: performance.now() - t0, x: p.x, z: p.z, fade: p.fade, scale: p.scale, hidden: p.hidden });
+    if (performance.now() - t0 < ms) requestAnimationFrame(frame);
+    else ok(out);
+  };
+  frame();
+}), [prefix, ms] as const);
+
 /** The biggest move between two frames (u), at 60 frames a second (a slow frame of a busy runner moves it further:
  *  speed, not a jump). */
 const maxStep = (s: Sample[]) => {
@@ -51,8 +71,7 @@ const ramps = (fades: number[], n = 3) => fades.filter((f) => f > 0.05 && f < 0.
 test('a fish shadow fades in where it comes and swims smoothly: never a jump between frames', async ({ page }) => {
   await page.goto('?demo&visitor=none&critter=fish&date=2026-11-04T12:00');
   expect(await is3d(page)).toBe(true);
-  const id = await modelId(page, 'fish-sea-');
-  const s = await sample(page, id, 4000);
+  const s = await sampleFirst(page, 'fish-sea-', 4000);
   const shown = s.filter((p): p is NonNullable<Sample> => !!p && !p.hidden);
   // faded in: from (nearly) nothing, through the frames of a ramp, to whole; a slight scale-up with it
   expect(shown[0].fade).toBeLessThan(0.5);
@@ -144,17 +163,17 @@ test('a missed bite: the fish darts away fast with a wiggle, fading as it goes',
 test('a bug fades in where it comes, moves smoothly, and fades out where it goes (never popped)', async ({ page }) => {
   await page.goto('?demo&visitor=none&critter=common-butterfly&date=2026-05-04T11:00');
   expect(await is3d(page)).toBe(true);
+  const s = await sampleFirst(page, 'bug-', 2500);
   const id = await modelId(page, 'bug-');
-  const s = await sample(page, id, 2500);
   const shown = s.filter((p): p is NonNullable<Sample> => !!p && !p.hidden);
   expect(shown[0].fade).toBeLessThan(0.5);
   expect(ramps(shown.map((p) => p.fade))).toBe(true);
   expect(shown.at(-1)!.fade).toBe(1);
   expect(shown[0].scale).toBeLessThan(0.95);
   expect(maxStep(s)).toBeLessThan(12);
-  // netted (a tap on it): gone from the island, its model fades out where it was
-  const r = (await page.locator('[data-critter="common-butterfly"]').boundingBox())!;
-  await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
+  // netted (a tap on it where it's drawn): gone from the island, its model fades out where it was
+  const [bx, by] = await w3(page, new Function('w', `const q = w.where('${id}'); return w.client(q.x, -q.z, q.y);`) as (w: unknown) => number[]);
+  await page.mouse.click(bx, by);
   const out = await sample(page, id, 2500);
   const going = out.filter((p): p is NonNullable<Sample> => !!p);
   expect(going.length).toBeGreaterThan(2);
