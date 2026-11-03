@@ -105,6 +105,23 @@ test('place from the palette; the check shows a tree in the river; reset to the 
   await expect.poll(() => page.evaluate(() => (window as unknown as { __editor: E }).__editor.layout().objects.size)).toBe(before);
 });
 
+test('the museum: on the palette (greyed while it stands, one to an island), picked up and moved, R turns it, never deleted', async ({ page }) => {
+  await openEditor(page);
+  await expect(page.locator('[data-kind="museum"]')).toBeDisabled();
+  // (the whole island in view: the museum's at its back)
+  await page.keyboard.press('0');
+  const from = (await objAt(page, 'museum'))! as [number, number];
+  // a drag from a tile inside it moves it by as many tiles (forward: room on the grid to turn it there)
+  await dragTile(page, [from[0] + 3, from[1] + 1], [from[0] + 2, from[1] - 4]);
+  await expect.poll(() => objAt(page, 'museum')).toEqual([from[0] - 1, from[1] - 5]);
+  const f = () => page.evaluate(() => (window as unknown as { __editor: E }).__editor.layout().objects.get('museum')?.f);
+  await page.keyboard.press('r');
+  await expect.poll(f).toBe(1);
+  await page.keyboard.press('Delete');
+  await expect(page.getByRole('status')).toContainText('けせません');
+  expect(await objAt(page, 'museum')).not.toBeNull();
+});
+
 test('the guest is shown the door: the editor is the members’ only', async ({ page }) => {
   await page.goto(`editor/?demo&as=G&date=${DATE}`);
   await expect(page.locator('[data-members-only]')).toBeVisible();

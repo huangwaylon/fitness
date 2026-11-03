@@ -17,6 +17,15 @@ describe('where the partner’s villager is', () => {
     expect(where.partnerInTent).toBe(false);
   });
 
+  it('which place: a home by its `sc` (none the tent), the museum by `m`', () => {
+    for (const [sc, place] of [[undefined, 'A'], ['u', 'B'], ['v', 'G'], ['m', 'M']] as const) {
+      where.heard({ ...tent(true), ...(sc ? { sc } : {}) } as Relayed);
+      expect([where.partnerInTent, where.home.B]).toEqual([true, place]);
+    }
+    where.heard(tent(false));
+    expect(where.home.B).toBeNull();
+  });
+
   it('gone quiet inside: home on the island after the timeout, unless they come back first', () => {
     where.heard(tent(true));
     where.peer(false);

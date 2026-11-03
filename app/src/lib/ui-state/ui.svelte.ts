@@ -13,6 +13,13 @@ class Ui {
     this.fromTent = false;
     return f;
   }
+  /** My villager just came out of another building's door (the museum): where it steps out (world u), once. */
+  outAt: readonly [number, number] | null = null;
+  takeOutAt(): readonly [number, number] | null {
+    const p = this.outAt;
+    this.outAt = null;
+    return p;
+  }
   /** The camera to come back to, once (then null). */
   takeIslandZ(): number | null {
     const z = this.islandZ;

@@ -429,7 +429,10 @@
   if (live) {
     // just out of the tent: at its door, facing out; else where a tap sent it this session
     const stay = stayingAt();
+    const outAt = ui.takeOutAt();
     if ((fromTentNow = ui.takeFromTent())) stepOut(outOfTent(view.viewer));
+    // (out of the museum's door: there)
+    else if ((fromTentNow = !!outAt)) stepOut(outAt!);
     else if (stay && !actors.mine.walking) place('mine', stay[0], stay[1]);
   }
   // My villager walks to what I tap (avatar.ts): the walk geometry from the world's constants, a spot is fine when a
@@ -815,6 +818,8 @@
       islandLayout.rows(m.state.layout);
       // the old もようがえ's decorations, mine, into the layout once (layout/migrate.ts)
       islandLayout.migrateDecor(decorLayout(m.state.decor));
+      // a building new to the island (the museum) off a taken default spot, once (layout/buildings.ts)
+      islandLayout.placeBuildings();
     });
   });
   $effect(() => {
@@ -1008,9 +1013,10 @@
     cue('scene-bench');
     const q = new URLSearchParams(location.search);
     q.delete('home');
-    if (id !== 'campsite') q.set('home', id.slice(-1));
+    if (id !== 'campsite' && id !== 'museum') q.set('home', id.slice(-1));
     const qs = q.toString();
-    void goto(resolve('/tent') + (qs ? `?${qs}` : '')).finally(() => (entering = false));
+    // the museum is its own screen (routes/museum); a home's the room's
+    void goto((id === 'museum' ? resolve('/museum') : resolve('/tent')) + (qs ? `?${qs}` : '')).finally(() => (entering = false));
   }
   let entering = false;
   /** The door going in through (the iris closes on it). */

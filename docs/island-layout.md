@@ -297,6 +297,26 @@ anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the pho
 - **The e2e** (`e2e/homes.spec.ts`): うめ arranges her room (her piece in her room only, kept), the guest comes in and
   sees it but can't arrange it; うめ swaps her house's look and the other phone holds it live; the guest swaps its own.
 
+## The island's buildings
+
+- **The kinds** (`catalog.ts` group `building`, `door: true`): the museum (`museum`, はくぶつかん, NH's 7 × 4, one to
+  an island, `fixed`: never deleted, moved and turned freely); the shop comes later as a kind of the same group. A
+  building's door is the middle of its front edge (`model.ts doorOf`, as a home's, but its `(x, z)` is its footprint's
+  own back-left tile); its door's tile must stay clear and reachable (`validate.ts` `door`); `nav.ts` keeps it in
+  `doors` (no padding round its footprint, `door-<id>` named, a tap on it snaps to its door: `catalog.ts goesIn`).
+- **Drawn:** NH's StrcMuseumA02 and its doors (`npm run world3d-models -- --only=museum`: static/room/world3d/museum.glb,
+  models.json), at NH's building scale (3u a model unit), its steps on the footprint's front edge (`objects.ts`
+  placeObjects). On the island it's a building (`island/layoutWorld.ts` BUILDINGS `museum`: its tap area, its door) and
+  a tap on it walks up and goes in to `/museum` (IslandScene goInto); the editor's plan draws it as a home is drawn,
+  named, its door marked; its palette and the phone's tray (たてもの) offer it only while the island has none.
+- **The default** puts it at the back, on the clifftop behind the campsite (`scripts/layout-default.ts` MUSEUM: tiles
+  6…12 × 54…57, its door's row kept clear; the clifftop's cedars claim their tiles after it). An island arranged
+  before it came (the record) may hold something there: then, once, a member's phone moves it to the free spot nearest
+  its default, facing the camera if it can (`layout/buildings.ts` buildingOps: one `o` op of its id, as the editor's
+  move; the guest never sends one; an island where it has an op of its own is left as it is). IslandScene runs it after
+  the record's rows (`layout.placeBuildings()`). On the record of 2026-11-03 (the user's own cedars on the clifftop) it
+  lands at tiles 8…14 × 46…49, at the back by the campsite (`buildings.test.ts`).
+
 ## Turning a home
 
 A home's facing (`f`, 0–3) is part of its look (the `h` op's `f`), so only its owner turns it, and the record and the

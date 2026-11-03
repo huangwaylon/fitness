@@ -47,8 +47,8 @@ const OKU_BACK = 146;
 const HEDGE_H = 40;
 
 /** The building ids of the homes (ウェイ's is the campsite, whatever its look). */
-export const BUILDING_OF: Record<string, BuildingId> = { 'home-A': 'campsite', 'home-B': 'home-B', 'home-G': 'home-G' };
-export const HOME_OF: Record<BuildingId, string> = { campsite: 'home-A', 'home-B': 'home-B', 'home-G': 'home-G' };
+export const BUILDING_OF: Record<string, BuildingId> = { 'home-A': 'campsite', 'home-B': 'home-B', 'home-G': 'home-G', museum: 'museum' };
+export const HOME_OF: Record<BuildingId, string> = { campsite: 'home-A', 'home-B': 'home-B', 'home-G': 'home-G', museum: 'museum' };
 
 const kindAt = (l: Layout, x: number, z: number): Kind => {
   const [c, r] = tileAt(x, z);
@@ -180,6 +180,12 @@ export function worldOf(l: Layout, nav: LayoutNav = navOf(l)): WorldGeo {
     if (!o) continue;
     const at = doorOf(l, o).at, [w, d] = footOf(l, o);
     BUILDINGS.push({ id: BUILDING_OF[id], key: 'deco/campsite', x: at[0], z: at[1], h: 80, depth: (o.f % 2 ? w : d) * TILE, w: (o.f % 2 ? d : w) * TILE - 8 });
+  }
+  // the island's buildings (the museum): its door on the layout, its tap area its front (the 3D model is objects.ts's)
+  for (const o of objs) {
+    if (o.k !== 'museum') continue;
+    const at = doorOf(l, o).at, [w, d] = footOf(l, o);
+    BUILDINGS.push({ id: 'museum', key: 'deco/campsite', x: at[0], z: at[1], h: 110, depth: (o.f % 2 ? w : d) * TILE, w: (o.f % 2 ? d : w) * TILE - 8 });
   }
   const named = nav.named;
   const HOMES = { A: (named.homeA ?? WORLD_2D.HOMES.A) as Pt, B: (named.homeB ?? WORLD_2D.HOMES.B) as Pt };

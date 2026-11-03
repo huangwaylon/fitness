@@ -5,7 +5,12 @@
 // meshopt-compresses) into static/room/world3d/<name>.glb (under /room/: the service worker caches it on first use,
 // never at install), plus src/lib/components/world3d/models.json (each model's bounds and bytes).
 //
-// Usage (from app/): NH_MODELS=~/Downloads/Model npm run world3d-models [-- --only=oak,cedar]
+// With --museum it converts the museum's inside instead (routes/museum, components/museum): NH's own aquarium and bug
+// garden props (its tanks' kelp, coral and river stones, the garden's trees, flower beds, logs and terrarium) and Blathers,
+// into static/room/museum/<name>.glb and src/lib/components/museum/models.json, and NH's museum floors and walls into
+// static/room/museum/tex/<name>.webp (each its own albedo, scaled down, tiled at run time).
+//
+// Usage (from app/): NH_MODELS=~/Downloads/Model npm run world3d-models [-- --only=oak,cedar] [--museum]
 // The model folder is untrusted input and never part of the repo: only the named folders' .dae and .png files are
 // copied into a scratch dir (three.js reads them in the page; nothing in them is run). Needs Google Chrome
 // (Playwright's channel 'chrome') and cwebp.
@@ -22,8 +27,9 @@ import { fxGltf, type Fx } from './world3d-fx.ts';
 const APP = join(import.meta.dirname, '..');
 /** Try a list of jobs from a JSON file instead (`--probe=jobs.json --out=dir`): GLBs only, the manifests untouched. */
 const probe = process.argv.find((a) => a.startsWith('--probe='))?.slice(8);
-const OUT = probe ? resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? join(tmpdir(), 'world3d-probe')) : join(APP, 'static', 'room', 'world3d');
-const META = join(APP, 'src', 'lib', 'components', 'world3d', 'models.json');
+const MUSEUM = process.argv.includes('--museum');
+const OUT = probe ? resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? join(tmpdir(), 'world3d-probe')) : join(APP, 'static', 'room', MUSEUM ? 'museum' : 'world3d');
+const META = join(APP, 'src', 'lib', 'components', MUSEUM ? 'museum' : 'world3d', 'models.json');
 const arg = (k: string) => process.argv.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3);
 const only = (arg('only') ?? '').split(',').filter(Boolean);
 /** Triangles over this are simplified (gltfpack -si). */
@@ -87,6 +93,8 @@ const JOBS: Job[] = [
   { name: 'flat-rock', parts: [['FtrGardenrockLow', 'FtrGardenrockLow']] },
   { name: 'bridge-stone', parts: [['BridgeStone', 'BridgeStone03']], tris: 8000 },
   { name: 'tent', parts: [['StrcCampsiteTentA00', 'StrcCampsiteTentA00'], ['StrcCampsiteTentA00', 'StrcCampsiteTentA00Door0']], maxTex: 512, tris: 8000 },
+  // NH's museum, built up in full (its art gallery's banners): the layout's `museum` (7 × 4 tiles), its doors in their frame
+  { name: 'museum', parts: [['StrcMuseumA02', 'StrcMuseumA02'], ['StrcMuseumA02', 'StrcMuseumA02Door0']], maxTex: 512, tris: 8000 },
   // the lamps (their _Emi lights at night), the campfire, the furniture
   ftr('streetlamp', 'FtrStreetlamp'),
   ftr('garden-lantern', 'FtrLampGarden'),
@@ -110,6 +118,40 @@ const JOBS: Job[] = [
   }))
 ];
 
+// the museum's inside (--museum): [name, folder, .dae, extra]; the props' textures are their room's (`<room>_Tex_*`)
+const room = (r: string) => (name: string, dae: string, extra: Partial<Job> = {}): Job => ({ name, parts: [[r, dae]], tex: [`${r}_Tex`], maxTex: 256, tris: 4000, ...extra });
+const fish0 = room('IdrMuseumFish0Obj'), fish1 = room('IdrMuseumFish1Obj'), fish2 = room('IdrMuseumFish2Obj');
+const bug0 = room('IdrMuseumInsect0Obj'), bug1 = room('IdrMuseumInsect1Obj'), bug2 = room('IdrMuseumInsect2Obj');
+const MUSEUM_JOBS: Job[] = [
+  // the aquarium's tanks: the sea's kelp on its rocks and its coral, the deep's dark rocks, the river's stones, logs and
+  // water plants, the big tank's diver and little submarine
+  fish0('kelp-rocks', 'IdrMuseumFish0Obj00'), fish0('kelp-rock', 'IdrMuseumFish0Obj02'), fish0('kelp-small', 'IdrMuseumFish0Obj03'),
+  fish0('coral', 'IdrMuseumFish0Obj05'), fish0('coral-2', 'IdrMuseumFish0Obj06'), fish0('deep-rocks', 'IdrMuseumFish0Obj07'),
+  fish1('river-rock', 'IdrMuseumFish1Obj01'), fish1('river-rock-2', 'IdrMuseumFish1Obj02'), fish1('diver', 'IdrMuseumFish1Obj04'),
+  fish2('river-stones', 'IdrMuseumFish2Obj01'), fish2('mossy-log', 'IdrMuseumFish2Obj08'), fish2('water-plants', 'IdrMuseumFish2Obj13'),
+  fish2('lily-plants', 'IdrMuseumFish2Obj06'), fish2('driftwood-rock', 'IdrMuseumFish2Obj11'),
+  // the bug garden: its trees (the mangroves, the palms), flower beds and bushes, a fallen log with its autumn leaves,
+  // ferns, cacti, the lab's terrarium, a potted plant, NH's single garden plants
+  bug0('mangroves', 'IdrMuseumInsect0Obj14'), bug0('palm', 'IdrMuseumInsect0Obj17'), bug0('palms', 'IdrMuseumInsect0Obj18'),
+  bug0('flower-bed', 'IdrMuseumInsect0Obj10'), bug0('bushes', 'IdrMuseumInsect0Obj04'), bug0('hydrangeas', 'IdrMuseumInsect0Obj01'),
+  bug0('lily-log', 'IdrMuseumInsect0Obj02'), bug0('heliconia-rock', 'IdrMuseumInsect0Obj08'),
+  bug0('agave', 'Agave'), bug0('anthurium', 'Anthurium'), bug0('heliconia', 'Heliconia'), bug0('coleus', 'COLOUMre'),
+  bug1('potted', 'IdrMuseumInsect1Obj07'),
+  bug2('autumn-log', 'IdrMuseumInsect2Obj00'), bug2('pink-flowers', 'IdrMuseumInsect2Obj01'), bug2('small-trees', 'IdrMuseumInsect2Obj02'),
+  bug2('logs-ferns', 'IdrMuseumInsect2Obj03'), bug2('cacti', 'IdrMuseumInsect2Obj04'), bug2('terrarium', 'IdrMuseumInsect2Obj10'),
+  // the museum's curator at the front desk, his wings lowered from the bind pose (scripts/world3d-assets.ts's visitors')
+  { name: 'blathers', parts: [['NpcSpOwl', 'NpcSpOwl']], hide: ['FaceBad', 'FaceGood', 'FaceNothing'], pose: { Arm_1_L: [0, 0, -65], Arm_1_R: [0, 0, 65] }, tris: 4000 }
+];
+/** The museum's floors and walls (--museum): [name, NH's texture folder, longest side px]. */
+const MUSEUM_TEX: [string, string, number][] = [
+  ['hall-floor', 'IdrMuseumArt_0_Tex_mStoneFloor_Alb', 512], ['hall-wall', 'IdrMuseumEnt02_Tex_mBrick_Alb', 512],
+  ['hall-marble', 'IdrMuseumArt_0_Tex_mWallMarble_Alb', 256], ['hall-red', 'IdrMuseumArt_0_Tex_mWallRed_Alb', 256],
+  ['fish-floor', 'IdrMuseumFish_0_Tex_mFloorCarpet_Alb', 256], ['fish-wall', 'IdrMuseumFish_0_Tex_mWallMortarBlue_Alb', 256],
+  ['fish-sand', 'IdrMuseumFish_0_Tex_mFishSand_Alb', 256], ['bug-path', 'IdrMuseumInsect_0_Tex_mRoadTile_Alb', 256],
+  ['bug-outside', 'IdrMuseumInsect_1_Tex_mOutside_Alb', 512], ['bug-frame', 'IdrMuseumInsect_0_Tex_mWallGreenHouse_Alb', 256],
+  ['bug-soil', 'IdrMuseumInsect_0_Tex_mFloorGravel_Alb', 256]
+];
+
 const MODELS = process.env.NH_MODELS?.replace(/^~(?=\/)/, process.env.HOME ?? '~');
 if (!MODELS || !existsSync(MODELS)) {
   console.error('Set NH_MODELS to the folder of NH model folders (<Model>.Nin_NX_NVN), e.g. NH_MODELS=~/Downloads/Model node scripts/world3d-models.ts');
@@ -118,9 +160,11 @@ if (!MODELS || !existsSync(MODELS)) {
 const ROOT: string = MODELS;
 const F = (n: string) => `${n}.Nin_NX_NVN`;
 const SAFE = /^[A-Za-z0-9_]+$/;
+const roomTex = (prefix: string) => readdirSync(ROOT).filter((d) => d.startsWith(`${prefix}_`) && d.endsWith('.Nin_NX_NVN')).map((d) => d.slice(0, -11));
 const has = (folder: string) => SAFE.test(folder) && existsSync(join(ROOT, F(folder)));
 
 if (probe) JOBS.splice(0, JOBS.length, ...(JSON.parse(readFileSync(probe, 'utf8')) as Job[]));
+else if (MUSEUM) JOBS.splice(0, JOBS.length, ...MUSEUM_JOBS);
 else JOBS.push(...ASSETS);
 const todo = JOBS.filter((j) => !only.length || only.some((o) => j.name.includes(o)));
 const scratch = mkdtempSync(join(tmpdir(), 'nh-world3d-'));
@@ -134,7 +178,8 @@ const copy = (folder: string) => {
 };
 for (const j of todo) {
   for (const [f, d] of j.parts) if (!has(f) || !SAFE.test(d)) throw new Error(`${j.name}: no model ${f}/${d}`);
-  j.tex = (j.tex ?? []).filter(has);
+  // (a room's textures, `<room>_Tex`: every one of its own folders, `<room>_Tex_<material>_<map>`)
+  j.tex = (j.tex ?? []).flatMap((t) => (t.endsWith('_Tex') ? roomTex(t) : [t])).filter(has);
   for (const f of [...j.parts.map((p) => p[0]), ...j.tex]) copy(f);
 }
 mkdirSync(OUT, { recursive: true });
@@ -212,6 +257,25 @@ for (const j of todo) {
   console.log(`${j.name}: ${(bytes / 1024).toFixed(1)} KB, ${r.tris} tris${si.length ? ` → ${max}` : ''}${r.lit ? ', lit' : ''}, h ${(r.box[1][1] - r.box[0][1]).toFixed(1)}`);
 }
 await browser.close();
+if (MUSEUM) {
+  // the floors and walls: each albedo scaled down to a WebP
+  mkdirSync(join(OUT, 'tex'), { recursive: true });
+  for (const [name, folder, px] of MUSEUM_TEX) {
+    if (only.length && !only.some((o) => name.includes(o))) continue;
+    const src = join(ROOT, F(folder)), png = readdirSync(src).find((f) => /^[A-Za-z0-9_]+\.png$/.test(f));
+    if (!png || !SAFE.test(folder)) throw new Error(`no texture ${folder}`);
+    const tmp = join(scratch, `${name}.png`), out = join(OUT, 'tex', `${name}.webp`);
+    cpSync(join(src, png), tmp);
+    execFileSync('cwebp', ['-quiet', '-q', '80', '-resize', String(px), '0', tmp, '-o', out]);
+    total += statSync(out).size;
+  }
+  const sortedM = Object.fromEntries(Object.entries(metas).filter(([k]) => MUSEUM_JOBS.some((j) => j.name === k)).sort(([a], [b]) => a.localeCompare(b)));
+  writeFileSync(META, `{\n  "_": "scripts/world3d-models.ts --museum: the museum's props and its curator (bounds in model units, triangles, KB, content hash)",\n  "models": {\n${Object.entries(sortedM).map(([k, m]) => `    ${JSON.stringify(k)}: ${JSON.stringify(m)}`).join(',\n')}\n  }\n}\n`);
+  console.log(`${todo.length} models and ${MUSEUM_TEX.length} textures, ${(total / 1024 / 1024).toFixed(2)} MB`);
+  rmSync(scratch, { recursive: true, force: true });
+  rmSync(work, { recursive: true, force: true });
+  process.exit(0);
+}
 if (probe) {
   // the scratch copies of NH's files never outlive the run
   rmSync(scratch, { recursive: true, force: true });

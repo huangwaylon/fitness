@@ -58,7 +58,9 @@ describe('the default layout (today island on the grid)', () => {
   test('keeps world.ts ids, each piece on the grid near where it stands today', () => {
     const at = (id: string) => objMid(l, l.objects.get(id)!);
     const near = (id: string, x: number, z: number) => expect(Math.hypot(at(id)[0] - x, at(id)[1] - long(z)), id).toBeLessThanOrEqual(80);
-    for (const s of SCENERY) near(s.id, s.x, s.z);
+    // (the clifftop's cedars that made room round the museum: scripts/layout-default.ts)
+    const ROOM = new Set(['cedar-f3', 'cedar-f4', 'cedar-f5', 'cedar-f6']);
+    for (const s of SCENERY) if (!ROOM.has(s.id)) near(s.id, s.x, s.z);
     HEDGE_XS.forEach((x, i) => near(`hedge-${i}`, x, HEDGE_Z));
     near('goal-A', ...GOAL_TREES.A);
     near('goal-B', ...GOAL_TREES.B);
@@ -297,7 +299,7 @@ describe('walking on it (layout/nav.ts, planTap drop-in)', () => {
   });
   test('from home to うめ house; up the stairs, the only way up the cliff', () => {
     expect(findPath(g, g.named.homeA, g.named['door-home-B'])).not.toBeNull();
-    const p = findPath(g, g.named.homeA, [200, 1630]);
+    const p = findPath(g, g.named.homeA, [225, 1515]); // the clifftop, before the museum's door
     expect(p).not.toBeNull();
     const st = l.objects.get('stairs')!, [w, d] = footOf(l, st);
     const x0 = -90 + st.x * 30, z0 = -90 + st.z * 30;
@@ -312,11 +314,11 @@ describe('walking on it (layout/nav.ts, planTap drop-in)', () => {
   test('without the stairs, the upper tier is out of reach (a pocket)', () => {
     const l2 = withChanges(l, { remove: ['stairs'] });
     const g2 = navOf(l2);
-    expect(reachable(g2, 200, 1630)).toBe(false);
+    expect(reachable(g2, 225, 1515)).toBe(false);
     expect(validate(l2, g2).some((i) => i.code === 'pocket' && i.tiles.length > 30)).toBe(true);
-    // a home up there would be walled in
-    const up = withChanges(l2, { set: [{ ...l.objects.get('home-B')!, z: 54, x: 7 }] });
-    expect(validate(up).filter((i) => i.code === 'door').flatMap((i) => i.ids)).toEqual(['home-B']);
+    // a home up there would be walled in, as the museum is
+    const up = withChanges(l2, { set: [{ ...l.objects.get('home-B')!, z: 55, x: 4 }] });
+    expect(validate(up).filter((i) => i.code === 'door').flatMap((i) => i.ids)).toEqual(['home-B', 'museum']);
   });
   test('a tap: on a home goes to its door; on the pond to its bank; on the lawn there', () => {
     const [hx, hz] = objMid(l, l.objects.get('home-A')!);

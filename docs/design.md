@@ -582,9 +582,9 @@ went in November 2026 (docs/cleanup-2d.md).
 
 ### Buildings
 
-`island/buildings.ts`, `island/Scenery.svelte`, `e2e/tapwalk.spec.ts`. The campsite is the island's one building (the
-others went with the two-section island): a tap on it or its footprint's ground (my villager turns to it where it
-stands, no walk) goes straight in through its door to the tent's inside ([The tent](#the-tent)). The partner's presence
+`island/buildings.ts`, `island/Scenery.svelte`, `e2e/tapwalk.spec.ts`. The campsite, the homes and the museum
+([The museum](#the-museum)): a tap on one walks my villager up to its door and goes in (the tent's inside: [The
+tent](#the-tent); a home's room; the museum's own screen). The partner's presence
 is their villager and the edge face, not a character of its own (`partnerOnline`: the relay's presence, never in the
 demo).
 
@@ -1146,6 +1146,33 @@ and build their grid a slice per frame, as the むらびと picker. A kind's pag
 ？？？ for the rest, 「コンプリート！」 when all are in. The page's head is pinned: the kind and its count, and the picked
 entry (icon, name, 「7/4 ウェイが 見つけた」 and NH's catch line, two lines, ▼ for more); the grid scrolls under it.
 Names of everything catchable live in their own catalog (`i18n/catch.ts`), loaded with the ずかん or the first catch.
+
+### The museum
+
+`museum/` (`MuseumRoom.svelte`, `engine.ts`, `plan.ts`, `species.ts`, `exhibits.ts`, `MuseumCard.svelte`),
+`routes/museum`, `layout/buildings.ts`, `e2e/museum.spec.ts`. NH's museum (はくぶつかん) is a building on the layout
+(docs/island-layout.md "The island's buildings"): NH's own model (StrcMuseumA02, the built-up museum with its banners),
+7 × 4 tiles, one to an island, at the back on the clifftop behind the campsite by default; the members move and turn it
+in the editor and on the phone's もようがえ, never take it away. A tap on it walks my villager up to its door and goes in
+(the door's iris, as a home's) to its own screen; ‹ 島へ or the doormat comes back out, just out of its door.
+
+- **Inside** (plan.ts, model units, the rooms' scale: a tile 10, a villager 16): one floor, NH's layout: the entrance
+  hall in the middle (NH's lobby: its marble floor, its stone walls with a gold cornice, the red carpets from the door to
+  the owl's medallion and on to each wing, pillars at the openings, red banners, Blathers at his desk, NH's model), the
+  bug wing to the left (こんちゅう), the aquarium to the right (さかな), each through an opening in the hall's side wall.
+  NH's own museum floors and walls (scripts/world3d-models.ts `--museum`: static/room/museum/tex/), lit warm; a little
+  dimmer at night.
+- **Like the rooms:** a tap on the floor walks my villager there (plan.ts walkPath: a half-tile grid, A* with its corners
+  pulled straight, round the walls and what stands on the floor); a drag turns the camera, a pinch zooms, ⌂ puts it
+  back; the camera is NH's room view following my villager through the rooms (kept over the floors near the door), the
+  walls between it and my villager cut away. The say button says a phrase in here only (`say` `sc: 'm'`).
+- **Who else is in:** the rooms' presence, the museum's own scope (`tent` with `sc: 'm'`, its points within the
+  museum's ±320; live-protocol.ts): the others' villagers are here while they are, walking as they walk, and nowhere on
+  the island meanwhile (store/where.svelte.ts `home` `M`). The guest comes in like anyone.
+- **What's on show** (species.ts): every fish and bug in the ずかん's first finds (anyone's, the guest's too), as it's
+  found; nothing else. A tap on one: its card (MuseumCard: NH's icon, its Japanese and English names, 「7/4 ウェイが
+  見つけた」, ×n from the tallies as the ずかん counts).
+- No music of its own: the app has no NH museum track (NH's museum is quiet ambience); the island's hour plays on.
 
 ### Dialogue
 

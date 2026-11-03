@@ -12,6 +12,7 @@ import { layoutOpOf, mergeLayout, type LayoutEntry, type LayoutOp } from '#lib/c
 import { defaultLayout, layoutOf, objMid, type Layout, type Obj } from '#lib/layout/model.ts';
 import { diffLayouts, type LayoutDiff } from '#lib/layout/diff.ts';
 import { migrationOps } from '#lib/layout/migrate.ts';
+import { buildingOps } from '#lib/layout/buildings.ts';
 import type { Placed } from '#lib/contract/decor.ts';
 import type { HomeStyle } from '#lib/layout/homes.ts';
 import type { Relayed, Who } from '#lib/sync/live-protocol.ts';
@@ -181,6 +182,15 @@ class IslandLayout {
     this.#load();
     if (!this.#me) return 0;
     const ops = migrationOps(this.#map, placed, this.#me);
+    return ops.length ? this.apply(ops).length : 0;
+  }
+
+  /** The default's buildings new to an arranged island (the museum) onto a free spot, once, where theirs is taken
+   *  (layout/buildings.ts): their ops, sent as mine; how many. */
+  placeBuildings(): number {
+    this.#load();
+    if (!this.#me) return 0;
+    const ops = buildingOps(this.#map, this.#me, this.stamp());
     return ops.length ? this.apply(ops).length : 0;
   }
 

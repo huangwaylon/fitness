@@ -3,7 +3,7 @@
 // stand, its drawn height (u: the 2D sprites' and the 3D models' size), its palette icon (an art key) and its names.
 // The editor's palette, the validation, the nav and the 3D placement (world3d/objects.ts) all read this one table.
 
-type Group = 'tree' | 'bush' | 'flower' | 'rock' | 'light' | 'furniture' | 'season' | 'structure' | 'home' | 'spot';
+type Group = 'tree' | 'bush' | 'flower' | 'rock' | 'light' | 'furniture' | 'season' | 'structure' | 'building' | 'home' | 'spot';
 /** Where a kind may stand: any land tile (`land`), on grass only (`grass`: a tree, a flower), over water with land at
  *  both ends (`span`: a bridge), in front of a cliff one tier up (`cliff`: stairs). */
 type On = 'land' | 'grass' | 'span' | 'cliff';
@@ -36,6 +36,9 @@ export interface KindDef {
   /** A villager stands in front of it to use it (NH's bulletin board): the tile(s) before its front must stay clear and
    *  reachable, as a home's door's (validate.ts), and nav.ts names the spot (`front-<id>`). */
   front?: boolean;
+  /** A building one goes into at the middle of its front edge (the museum): its door's tile(s) must stay clear and
+   *  reachable, as a home's (validate.ts), and nav.ts walks up to it (`door-<id>`; a tap on it snaps to its door). */
+  door?: boolean;
 }
 
 const k = (def: KindDef): KindDef => def;
@@ -100,6 +103,10 @@ export const KIND_LIST: readonly KindDef[] = [
   k({ k: 'pond', group: 'structure', ja: 'いけ', en: 'Pond', w: 3, d: 2, block: true, foot: [86, 54], on: 'grass', h: 4, icon: 'deco/pond-stone-sakura', turns: true }),
   // NH's incline: 2 tiles across, 4 up the flight (NH's own: scripts/home-models.ts --structures)
   k({ k: 'stairs', group: 'structure', ja: 'さか', en: 'Stairs', w: 2, d: 4, block: false, on: 'cliff', h: 40, icon: '', turns: true, variants: ['stone', 'brick', 'iron', 'wood', 'log', 'natural'] }),
+  // the island's public buildings, one of each (NH's: 7 × 4 tiles, the door the middle of the front edge, model.ts doorOf;
+  // a tap walks up to it and goes in): the museum (はくぶつかん: the ずかん's finds swim and fly in it, routes/museum).
+  // The shop comes later, a kind of this group beside it.
+  k({ k: 'museum', group: 'building', ja: 'はくぶつかん', en: 'Museum', w: 7, d: 4, block: true, on: 'land', h: 117, icon: 'villagers/blathers-icon', turns: true, fixed: true, door: true }),
   // the homes (their footprint is their style's: layout/homes.ts)
   k({ k: 'home', group: 'home', ja: 'いえ', en: 'Home', w: 3, d: 2, block: true, on: 'land', h: 80, icon: 'deco/campsite', fixed: true, turns: true, hidden: true }),
   // named spots: where a villager stands at home, centre stage (visitors), nothing drawn
@@ -108,6 +115,8 @@ export const KIND_LIST: readonly KindDef[] = [
 
 const KINDS: Readonly<Record<string, KindDef>> = Object.fromEntries(KIND_LIST.map((d) => [d.k, d]));
 export const kindDef = (k: string): KindDef | undefined => KINDS[k];
+/** Whether one goes into it at its door: a home, or a building of the island's (the museum). */
+export const goesIn = (k: string): boolean => k === 'home' || !!KINDS[k]?.door;
 
 /** A kind's footprint (tiles) in a facing: [across, deep]. */
 export function footprintOf(def: Pick<KindDef, 'w' | 'd' | 'turns'>, f: number): [number, number] {
