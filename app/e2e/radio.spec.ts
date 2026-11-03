@@ -14,8 +14,23 @@ const under = (page: Page) =>
   page.evaluate(() => {
     const b = document.querySelector('[data-stretch] .radio')!.getBoundingClientRect();
     const pts = [[b.left + 2, b.top + 2], [b.right - 2, b.top + 2], [b.left + 2, b.bottom - 2], [b.right - 2, b.bottom - 2], [(b.left + b.right) / 2, (b.top + b.bottom) / 2]];
-    return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button')).map((e) => e.className));
+    // (the villagers only pass by: their figures may stand in front of it a while)
+    return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('[data-actor]')).map((e) => e.className));
   });
+/** A point of the deck nothing stands in front of (a villager passing by), polled. */
+async function deckPoint(page: Page): Promise<{ x: number; y: number }> {
+  const find = () => page.evaluate(() => {
+    const b = document.querySelector('[data-stretch] .radio')!.getBoundingClientRect();
+    for (const [fx, fy] of [[0.5, 0.5], [0.5, 0.25], [0.25, 0.5], [0.75, 0.5], [0.5, 0.8], [0.2, 0.2], [0.8, 0.2], [0.2, 0.8], [0.8, 0.8]]) {
+      const x = b.left + b.width * fx, y = b.top + b.height * fy;
+      if (!document.elementFromPoint(x, y)?.closest('button')) return { x, y };
+    }
+    return null;
+  });
+  let p: { x: number; y: number } | null = null;
+  await expect.poll(async () => (p = await find()), { message: 'a point of the deck with nothing in front of it' }).not.toBeNull();
+  return p!;
+}
 /** What each of the villagers and the visitor is doing (their rig's motion). */
 const acts = (page: Page) =>
   page.evaluate(() => [...document.querySelectorAll('.vil .body, [data-visitor] .body')].map((e) => e.getAttribute('data-act')));
@@ -42,8 +57,8 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       };
       new MutationObserver(snap).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-act'], childList: true });
     });
-    const r = (await deck(page).boundingBox())!;
-    await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
+    const pt = await deckPoint(page);
+    await page.mouse.click(pt.x, pt.y);
     await expect(page.locator('[data-stretch="on"]')).toBeAttached();
     expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('stretch');
     await expect(page.locator(LIVE)).toHaveCount(0, { timeout: 15_000 });
@@ -76,8 +91,8 @@ test('no deck on a later hour without Exercise met; a morning opening keeps it o
 // that today's is done.
 const talk = (page: Page) => page.locator('.talk');
 const tapDeck = async (page: Page) => {
-  const r = (await deck(page).boundingBox())!;
-  await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
+  const p = await deckPoint(page);
+  await page.mouse.click(p.x, p.y);
 };
 test.describe('the layout’s deck', () => {
   test.beforeEach(async ({ page }) => {
