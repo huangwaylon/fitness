@@ -165,7 +165,7 @@
     // in place: my villager turns to it and the net swings at the bug; caught at the tap
     turnTo(d.x);
     dangler = null;
-    // the partner's claim reached the relay first: theirs (their villager holds it up)
+    // the partner's claim reached the relay first: theirs (its plate is the news's)
     const c = caught(world.day, d.id);
     if (c && c.who !== world.me) return;
     net = { n: ++seq, x: d.x, z: d.y, lift: DANGLE_UP };
@@ -249,7 +249,7 @@
     }, 160);
   }
 
-  /** A tap picks it up where it lies (a pop, gone; a coconut held up with its line), my villager turning to it
+  /** A tap picks it up where it lies (a pop, gone; a coconut's plate with its line), my villager turning to it
    *  (avatar.ts). First wins: claimed at the tap. */
   function pick(id: string) {
     const b = lyingNow.find((x) => x.id === id);

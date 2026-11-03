@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { FADE_MS, STACK_MAX, clearCards, dropCard, pushCard, pushed, putsAway, stack, type CatchCard } from './catchStack.svelte.ts';
+import { FADE_MS, STACK_MAX, clearCards, dropCard, pushCard, pushed, stack, type CatchCard } from './catchStack.svelte.ts';
 
 const card = (n: number, o: Partial<CatchCard> = {}): CatchCard => ({ n, x: 0, y: 0, art: 'critters/sea-bass', parts: ['x'], ...o });
 const shown = () => stack.cards.filter((c) => !c.leaving).map((c) => c.parts[0]);
@@ -24,11 +24,17 @@ describe('the catch stack', () => {
     expect(pushed([card(1, { leaving: true }), card(2), card(3)], card(4)).out).toEqual([]);
   });
 
-  it("puts an item away only when no other plate of that villager's is still showing", () => {
-    expect(putsAway([card(1), card(2)], [card(1)])).toEqual([]);
-    expect(putsAway([card(1), card(2, { who: 'partner' })], [card(1)])).toEqual(['mine']);
-    expect(putsAway([card(1), card(2, { leaving: true })], [card(1)])).toEqual(['mine']);
-    expect(putsAway([], [card(1, { who: 'partner' }), card(2, { who: 'partner' })])).toEqual(['partner']);
+  it('a catch is only its plate: its icon from where it happened, whose it is; nothing over anyone’s head', async () => {
+    const { showCatch } = await import('./catchCard.ts');
+    const { actors } = await import('../motion/director.svelte.ts');
+    showCatch(120, 340, 'critters/wasp', 'x');
+    showCatch(40, 0, 'critters/sea-bass', 'y', false, 'partner');
+    expect(stack.cards.map(({ x, y, art, who }) => ({ x, y, art, who }))).toEqual([
+      { x: 120, y: 340, art: 'critters/wasp', who: undefined },
+      { x: 40, y: 0, art: 'critters/sea-bass', who: 'partner' }
+    ]);
+    expect(actors.mine.motion).toBeNull();
+    expect(actors.partner.motion).toBeNull();
   });
 
   it('a fourth fades the oldest out early; a done plate fades, then leaves on its own', () => {

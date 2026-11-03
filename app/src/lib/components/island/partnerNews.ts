@@ -1,6 +1,6 @@
 // The partner's doings on this phone (docs/backend.md#shared-world, docs/design.md "Shared world"): when their catch
-// or find arrives over the relay, their villager here holds it up with a small plate (「うめが スズキを つかまえた！」)
-// if the spot is in view, else a gentle notice slides in at the edge their villager is beyond. The island's parts
+// or find arrives over the relay, a small plate (「うめが スズキを つかまえた！」) joins the bottom stack, its icon from
+// their villager if the spot is in view, else from the edge their villager is beyond. The island's parts
 // (Critters, Finds, TreeShakes) tell it through `tellPartner`; PartnerNews.svelte shows it.
 import { loadNames } from './catchLine.ts';
 import { t } from '#lib/i18n/index.ts';
@@ -20,8 +20,6 @@ export interface PartnerNews {
   x: number;
   z: number;
   lift?: number;
-  /** Their villager has it in hand (in view): hold it up. */
-  hold?: boolean;
   /** Whose (absent: the partner's; the guest's on a member's phone, a member's on the guest's). */
   who?: Who;
 }
@@ -43,7 +41,7 @@ async function partnerCaption(n: Pick<PartnerNews, 'verb' | 'name' | 'who'>): Pr
   return t(`world.partner.${n.verb}`, { who, name });
 }
 
-/** Show the partner's news (a plate in the bottom stack; their villager holds it up if it's in view). */
+/** Show the partner's news (a plate in the bottom stack). */
 export function tellPartner(n: PartnerNews): void {
   if (!sink) return;
   void partnerCaption(n).then((text) => sink?.(n, text));

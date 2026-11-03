@@ -26,8 +26,8 @@ const hard = (el: Element): boolean => !el.closest('.stage') || el.matches('.new
  *  padded 6px. `skip`: leave some out. */
 function guards(skip?: (el: Element) => boolean): Box[] {
   const out: Box[] = [];
-  // [data-guard]: what a villager holds up over its head, a said line, and the HUD's art drawn past its button (the
-  // jar taller than the row, the dumbbell's plates over the pill's ends)
+  // [data-guard]: a said line, and the HUD's art drawn past its button (the jar taller than the row, the dumbbell's
+  // plates over the pill's ends)
   for (const el of document.querySelectorAll('button, .detail, .news, [data-guard]')) {
     if (el.classList.contains('balloon') || el.closest('[data-fx]:not(.placed)')) continue; // an overlay still being measured
     if (skip?.(el)) continue;

@@ -640,8 +640,8 @@ NH's balloon present: by day every 45–90 s of on-screen time (the first after 
 HUD (none on a sky too short). A tap pops it; the present falls onto the lawn nearest the current view, on the
 nearest open grass clear of what lies there and of every control, bounces and stays until tapped (not kept across a
 reload). A tap
-opens it where it lies: the wrapping pops (confetti, sparkles, the catch fanfare) and the item is held up while the
-plate reads 「カエルのチェアを てにいれた！」 (`island/catalog.ts`, its own chunk with its names, fetched when a present
+opens it where it lies: the wrapping pops (confetti, sparkles, the catch fanfare) and its plate
+reads 「カエルのチェアを てにいれた！」 (`island/catalog.ts`, its own chunk with its names, fetched when a present
 lands). What's inside follows NH (Nookipedia, Balloon: the item drop rates, Bells and materials left out): furniture 35 :
 clothing 20 : a season's DIY recipe 15 while a recipe season is on, else 50 : 25. The pool is NH's shop stock, 1,836
 base items (no colour variants): orderable, sold by Nook's Cranny or the Able Sisters, no event, never DIY items, Nook
@@ -675,12 +675,12 @@ picked up is gone on both, what a shake drops lies on both, each villager stands
 
 - **The partner's doings, played here:** when their change arrives (within 12 s of it), their villager turns to it
   where it stands (no run over, as on their phone) and it plays at the target (the net or the shovel there, a splash,
-  a shake, a pick-up); a catch or a find is held up over their head when it's in view, and its plate (「うめが スズキを
-  つかまえた！」, `world.partner.*`) joins the bottom stack as mine do (out of view nobody holds it up, the icon comes in
-  from the edge on their side). Heard on opening (older),
+  a shake, a pick-up); a catch or a find is its plate (「うめが スズキを つかまえた！」, `world.partner.*`) in the
+  bottom stack as mine are, nothing held over their head: its icon pops up from their villager when it's in view (out
+  of view it comes in from the edge on their side). Heard on opening (older),
   it only changes the island.
 - **First wins:** of two people tapping the same thing, the relay's first claim is it; the other phone sees it taken
-  by them (their villager holds it up) and its own tap does nothing more.
+  by them (their plate in the stack) and its own tap does nothing more.
 - **Late and alone:** a phone opening later hears the day from the relay (and keeps it: a reload needs only what's
   new); with the relay unreachable each phone keeps its own and they catch up when it's back.
 
@@ -935,7 +935,7 @@ at its time after it came (`critterPath.ts`), so both phones have it at the same
 opening mid-stay finds it where the other shows it; each phone shows it when its camera sees that spot (covered or
 hidden, the critters leave; back, those still staying are there); ≤ 1 in each water and 1 bug. A catch or an escape
 is shared by the critter's id (first wins): it's gone on both phones, and on the partner's their villager turns to it
-and it's netted, reeled in, dived for or dug there, and held up. A bug out of a shaken bush, from under the rock or off my
+and it's netted, reeled in, dived for or dug there, its plate in the stack. A bug out of a shaken bush, from under the rock or off my
 villager is put on the island for both (`put`), its moves from its id. **Seasons are a flavour, not a gate:** any species in any month, 3× likelier in its NH
 northern-hemisphere months; hours still hold.
 
@@ -977,8 +977,8 @@ northern-hemisphere months; hours still hold.
   `island/CatchStack.svelte`): above the home indicator and しずえ's box, clear of the say button (its room kept on
   both sides) and over the partner's edge face. The newest enters at the bottom and the older slide up; each fades out
   on its own timer (the pager's) or a tap, and the ones above slide down into its room. At most 3 show: a fourth
-  fades the oldest out early. Reduced motion: no slide, a quick fade. The catch is held up over my villager's head
-  while it reads (put away when its last plate goes).
+  fades the oldest out early. Reduced motion: no slide, a quick fade. The plate is the whole of it: nothing is held up
+  over a villager's head (the stack says it, its icon from the catch).
 - **Cost:** each critter is a world node; it moves by CSS transitions inside it between waypoints a timer picks (no
   rAF), one wing or fin loop each; one timer between visits; art on first need. World cues `scene-<kind>`, quiet and jittered ([Cues](#cues)).
 
@@ -988,7 +988,7 @@ northern-hemisphere months; hours still hold.
 Tokyo date and time plus a seed, so both phones agree; what either of us picks up, digs or opens is gone on both
 ([Shared world](#shared-world): a `pick`, claimed at the tap, first wins; this phone keeps its own in `scene-day` too),
 the next dig spot is the same on both, and on the other phone our villager turns to it, it's picked up (or dug) where
-it lies, with the line. The first of each shell, fossil and fragment is a ずかん `find`, written when it's picked up (and still ours).
+it lies, its plate in the bottom stack (nothing held over the head). The first of each shell, fossil and fragment is a ずかん `find`, written when it's picked up (and still ours).
 
 - **Seashells** (NH's eight; the summer shell rare, likelier June–September): one washes up every 60–120 s, the newest
   three lie on the sand. A tap picks it up: 「タカラガイを ひろった！」.
@@ -1295,7 +1295,7 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
   a weed, a dig spot, a shell or a find, a fallen fruit, branch, coconut, mushroom or present, a bug, a fish shadow,
   the bubbles, the water, the tape deck, a building, a visitor, the partner) acts in place: my villager turns to it
   where it stands and the action plays at the target, its tool there (NH's floating can, shovel and net; a cast's line
-  from the bank). A catch or a find is held up over my villager's head where it stands. A flea is tapped off my
+  from the bank). A catch or a find is its plate in the bottom stack; my villager stays where it stood. A flea is tapped off my
   villager itself.
 - **Tap-to-walk** (a tap on grass or sand that nothing else took; `tapWalk.ts planTap` over `nav.ts`): my villager runs
   there (200 u/s), over the bridge and up the stairs. A tap on ground it can't stand on snaps to the nearest walkable
@@ -1306,7 +1306,8 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
   relay keeps each person's last walk, so a phone opening later puts their villager where they sent it ([Shared
   world](#shared-world)).
 - **The camera never moves for a walk** (nor for the partner or a visitor): only the finger scrolls.
-- **Hold-up:** a catch or a find is lifted over my villager's head (`if-holdup`) while its plate reads.
+- **No hold-up:** a catch or a find lifts nothing over a villager's head and plays no pose (the bottom stack's plate,
+  its icon popping up from where it happened, says it: [Critters](#critters)).
 - **A phone gone a while:** 3 minutes after the relay saw a member's phone go (the app closed or hidden, offline), their
   villager walks home to its spot by its own tree at a stroll, on every phone the same (a phone opening later finds it
   where that walk has it, or home), then lives there as any (idle beats, dozing at night: it gets up for the walk and

@@ -163,7 +163,7 @@ interface Node extends NodeSpec {
   invY: string;
 }
 
-/** The stacking order of what stands over every world thing (a popup, a held-up item's plate): above any depth. */
+/** The stacking order of what stands over every world thing (a popup, a plate): above any depth. */
 export const OVER = 50_000_000;
 
 /** The depth order of feet at (x, z): nearer in front, ties by x (left first). */
@@ -444,7 +444,7 @@ export class World {
       el.style.left = '0';
       el.style.top = '0';
       // the time of day's tint, at the source (IslandScene): every world node but a light and what stands over
-      // everything (a held-up catch, a popup's anchor)
+      // everything (a popup's anchor)
       const lit = !!n.light || (n.zi ?? 0) >= OVER;
       el.classList.toggle('wn-lit', lit);
       el.classList.toggle('wn', !lit);

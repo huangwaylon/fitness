@@ -71,18 +71,4 @@ describe('walkTo (the director)', () => {
     place('mine', 5, 6);
     expect([actors.mine.x, actors.mine.y, actors.mine.walkMs, actors.mine.from]).toEqual([5, 6, 0, [5, 6]]);
   });
-
-  it('the hold-up: the item over the head, then gone', async () => {
-    const { actors, holdUp, resetAll } = await import('./director.svelte.ts');
-    resetAll();
-    holdUp('mine', 'critters/wasp', 1000);
-    expect(actors.mine.holding?.art).toBe('critters/wasp');
-    expect(actors.mine.motion).toBe('holdup');
-    await vi.advanceTimersByTimeAsync(1001);
-    expect(actors.mine.holding).toBeNull();
-    actors.mine.asleep = true;
-    holdUp('mine', 'critters/wasp');
-    expect(actors.mine.holding).toBeNull(); // asleep: nothing
-    resetAll();
-  });
 });

@@ -88,7 +88,6 @@
   });
   const lean = $derived(wantRight !== null && look.noMirror && wantRight !== look.looksRight);
   const facing = $derived(wantRight === null || look.noMirror ? 1 : wantRight === look.looksRight ? 1 : -1);
-  const holding = $derived(st?.holding ?? null);
 
   // What sits on the head (the birthday hat, Jack's glasses, a sting's swollen eye) goes where this render's head and
   // eyes are (villagers/heads.ts, measured from the art), loaded the first time one is worn.
@@ -139,12 +138,6 @@
       {/if}
     </span>
   </span>
-  {#if holding && !headOnly}
-    <!-- NH's hold-up: the catch or find lifted over the head while its plate reads (placement.ts keeps clear of it) -->
-    {#key holding.n}
-      <span class="held-up" data-holding={holding.art} data-guard><OfficialArt key={holding.art} size="calc(var(--h) * .36)" eager /></span>
-    {/key}
-  {/if}
   {#if shownEmote}
     <span class="emote">
       {#key emoteN}
@@ -187,15 +180,6 @@
   .body.walk { animation: if-walkbounce var(--step, 640ms) linear infinite; }
   .face.lean { transform: translateX(calc(var(--lean) * 4%)) rotate(calc(var(--lean) * 6deg)); }
 
-  /* the hold-up: up out of the hands to over the head, then a slow bob */
-  .held-up {
-    position: absolute; z-index: 2; left: 50%; bottom: 97%; line-height: 0; translate: -50% 0; pointer-events: none;
-    animation: held-rise 520ms cubic-bezier(.3, .8, .4, 1.2) 120ms both, held-bob 1800ms ease-in-out 700ms infinite;
-  }
-  .held-up :global(.official) { max-width: none; filter: var(--leaf-tint,) drop-shadow(0 2px 2px rgb(60 40 20 / .3)); }
-  @keyframes held-rise { from { transform: translateY(60%) scale(.4); opacity: 0; } 50% { opacity: 1; } to { transform: none; opacity: 1; } }
-  @keyframes held-bob { 0%, 100% { transform: none; } 50% { transform: translateY(-5%); } }
-  .body:global([data-act='holdup']) { animation: if-holdup 1600ms var(--ease-soft) both; }
   .face.turning { animation: if-turn 1400ms var(--ease-soft) both; transition: none; }
   .face.turning .body { animation: if-turn-dip 1400ms linear both; }
   .body:global([data-act='squish']) { animation: if-squish 220ms var(--ease-bounce) both; }
