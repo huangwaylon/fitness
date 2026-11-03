@@ -51,6 +51,18 @@ const BUGS = (() => {
   return new Set([...bug].filter(([, b]) => b).map(([m]) => m));
 })();
 const BUG_SHADOW_MS = 66;
+/** The critters' models (assets.json `cat` bug or shadow: a bug, a fish's or a dive's shadow): never popped in or out.
+ *  One fades in (its opacity and a slight scale-up) where it first stands or is shown again, and fades out where it's
+ *  hidden or taken away (kept, still placed by `over`, until it's gone): FADE_IN_MS, FADE_OUT_MS. Each instance's
+ *  opacity is its own (an aFade per instance; a bug's shadow drawn while it's more than half there). */
+const SOFT = (() => {
+  const soft = new Map<string, boolean>();
+  for (const k of Object.values(ASSET_KEYS)) soft.set(k.m, (soft.get(k.m) ?? true) && (k.cat === 'bug' || k.cat === 'shadow'));
+  return new Set([...soft].filter(([, s]) => s).map(([m]) => m));
+})();
+const FADE_IN_MS = 600, FADE_OUT_MS = 600;
+/** A frame's step of a fade at most (ms): a slow frame never jumps it (a fade is never 0 → 1 in one frame). */
+const FADE_STEP_MS = 50;
 
 type Over = { hidden?: boolean; x?: number; z?: number; lift?: number; grey?: number; yaw?: number; pitch?: number; size?: number; face?: boolean };
 
@@ -78,9 +90,10 @@ export interface Things {
   /** Something of the scene's own on an instance (the board's face: docs/board.md), in its model's units, placed, turned,
    *  scaled and bent with it; null takes it off. */
   attach(id: string, obj: Object3D | null): void;
-  /** Where an instance stands now (three's space) and whether it's hidden (the e2e). */
+  /** Where an instance stands now (three's space), whether it's hidden, its opacity (a critter fading in or out: 1
+   *  otherwise) and its scale over its own (the e2e). */
   groups(): unknown;
-  where(id: string): { x: number; y: number; z: number; hidden: boolean; model: string } | null;
+  where(id: string): { x: number; y: number; z: number; hidden: boolean; model: string; fade: number; scale: number } | null;
   pending(): number;
   dispose(): void;
 }
@@ -115,13 +128,14 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   const lit: MeshLambertMaterial[] = [], lifted: MeshLambertMaterial[] = [];
   let lampLevel = 0, liftLevel = 0.32;
   const mats = new Map<Material, { m: MeshLambertMaterial; depth: MeshDepthMaterial }>();
-  function lambert(src: Material, grey: boolean) {
-    const had = mats.get(src);
+  const softMats = new Map<Material, { m: MeshLambertMaterial; depth: MeshDepthMaterial }>();
+  function lambert(src: Material, grey: boolean, soft = false) {
+    const had = (soft ? softMats : mats).get(src);
     if (had) return had;
     const s = src as MeshStandardMaterial;
     const own = !!s.emissiveMap;
     const m = new MeshLambertMaterial({
-      map: s.map, color: s.color, transparent: s.transparent, opacity: s.opacity, alphaTest: grey ? 0 : s.alphaTest, side: s.side, depthWrite: s.depthWrite,
+      map: s.map, color: s.color, transparent: s.transparent || soft, opacity: s.opacity, alphaTest: grey ? 0 : s.alphaTest, side: s.side, depthWrite: s.depthWrite,
       emissive: own ? new Color(0xffe2a8) : s.map ? new Color(0xffffff) : s.color.clone(), emissiveMap: own ? s.emissiveMap : s.map
     });
     // foliage (cut out: NH's leaf cards) is lit through: more lift
@@ -137,12 +151,28 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       };
       m.customProgramCacheKey = () => 'grey';
     }
+    if (soft) {
+      // a critter's: its instance's aFade is its opacity (fading in or out)
+      m.onBeforeCompile = (sh) => {
+        sh.vertexShader = 'attribute float aFade;\nvarying float vFade;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvFade = aFade;');
+        sh.fragmentShader = 'varying float vFade;\n' + sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>\ngl_FragColor.a *= vFade;');
+      };
+      m.customProgramCacheKey = () => 'fade';
+    }
     bend(m);
     // the shadow map is drawn flat (unbent): three's receivers look it up at their unbent world position, so a shadow
     // lands right however far from the pivot, and the map needn't redraw as the camera scrolls (the bend moves)
     const depth = new MeshDepthMaterial({ depthPacking: RGBADepthPacking, map: m.alphaTest ? m.map : null, alphaTest: m.alphaTest });
+    if (soft) {
+      // (a fading critter's shadow: there while it's more than half there)
+      depth.onBeforeCompile = (sh) => {
+        sh.vertexShader = 'attribute float aFade;\nvarying float vFade;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvFade = aFade;');
+        sh.fragmentShader = 'varying float vFade;\n' + sh.fragmentShader.replace('#include <alphatest_fragment>', '#include <alphatest_fragment>\nif (vFade < 0.5) discard;');
+      };
+      depth.customProgramCacheKey = () => 'fade';
+    }
     const r = { m, depth };
-    mats.set(src, r);
+    (soft ? softMats : mats).set(src, r);
     return r;
   }
 
@@ -151,20 +181,36 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     name: ModelName;
     sig: string;
     list: Inst[];
-    meshes: { im: InstancedMesh; local: Matrix4; grey?: InstancedBufferAttribute }[];
+    meshes: { im: InstancedMesh; local: Matrix4; grey?: InstancedBufferAttribute; fade?: InstancedBufferAttribute }[];
     base: Matrix4[];
   }
   const groups = new Map<ModelName, Group>();
   const byId = new Map<string, { g: Group; i: number; inst: Inst }>();
   const overs = new Map<string, Over>();
   const wobbles = new Map<string, { t0: number; k: number }>();
+  /** The critters' fades (SOFT): how much there (0 … 1), heading for `to`, as of `t` (ms); `dying`: taken away, gone
+   *  once faded out. */
+  const fades = new Map<string, { a: number; to: 0 | 1; t: number; dying?: boolean }>();
+  const softId = (id: string) => {
+    const m = byId.get(id)?.g.name ?? extra.get(id)?.model ?? still.get(id)?.model;
+    return !!m && SOFT.has(m);
+  };
+  /** A critter to be shown (or hidden): it fades there from where its fade is (a new one from nothing). */
+  function fadeTo(id: string, show: boolean) {
+    const to = show ? 1 : 0, f = fades.get(id);
+    if (!f) return void fades.set(id, { a: 0, to, t: performance.now() });
+    if (f.to === to) return;
+    f.to = to;
+    f.t = performance.now();
+  }
   const tmpM = new Matrix4(), tmpQ = new Quaternion(), tmpQ2 = new Quaternion(), tmpV = new Vector3(), tmpS = new Vector3();
   const UP = new Vector3(0, 1, 0), FWD = new Vector3(0, 0, 1), RIGHT = new Vector3(1, 0, 0), ZERO = new Matrix4().makeScale(0, 0, 0);
   const sigOf = (o: Inst) => `${o.id}:${o.x}:${o.z}:${o.lift ?? 0}:${o.scale}:${o.yaw ?? 0}:${o.tint ?? ''}`;
   /** An instance's matrix (three's space): its spot on the ground, its yaw, its scale. */
   function matOf(o: Inst, out: Matrix4, wobble = 0, squash = 0): Matrix4 {
-    const ov = overs.get(o.id);
-    if (ov?.hidden) return out.copy(ZERO);
+    const ov = overs.get(o.id), fd = fades.get(o.id);
+    // (a critter's hidden once faded out)
+    if (fd ? fd.a <= 0 : ov?.hidden) return out.copy(ZERO);
     const x = ov?.x ?? o.x, z = ov?.z ?? o.z, lift = ov?.lift ?? o.lift ?? 0;
     tmpQ.setFromAxisAngle(UP, ov?.yaw ?? o.yaw ?? 0);
     // turned to the camera (a flat flourish: a sparkle, a 「！」)
@@ -172,20 +218,23 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     const pitch = ov?.pitch ?? o.pitch ?? 0;
     if (pitch) tmpQ.multiply(tmpQ2.setFromAxisAngle(RIGHT, pitch));
     if (wobble) tmpQ.multiply(tmpQ2.setFromAxisAngle(FWD, wobble));
-    const sc = o.scale * (ov?.size ?? 1);
+    // (a fading critter: a slight scale-up as it comes)
+    const sc = o.scale * (ov?.size ?? 1) * (fd ? 0.85 + 0.15 * fd.a : 1);
     tmpS.set(sc * (1 + squash), sc * (1 - squash), sc * (1 + squash));
     const y = lift + (o.id === 'bridge' ? height(x, z - 30) - 1 : height(x, z));
     return out.compose(tmpV.set(x, y, -z), tmpQ, tmpS);
   }
   function write(g: Group, only?: number) {
-    for (const { im, local, grey } of g.meshes) {
+    for (const { im, local, grey, fade } of g.meshes) {
       for (let i = 0; i < g.base.length; i++) {
         if (only !== undefined && i !== only) continue;
         im.setMatrixAt(i, tmpM.multiplyMatrices(g.base[i], local));
         if (grey) grey.setX(i, overs.get(g.list[i].id)?.grey ?? 0);
+        if (fade) fade.setX(i, fades.get(g.list[i].id)?.a ?? 1);
       }
       im.instanceMatrix.needsUpdate = true;
       if (grey) grey.needsUpdate = true;
+      if (fade) fade.needsUpdate = true;
     }
     // what rides on an instance (the board's face) goes with it
     for (let i = 0; i < g.base.length; i++) {
@@ -213,9 +262,9 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   /** Objects riding on instances, by instance id (attach). */
   const riders = new Map<string, Object3D>();
   function drop(g: Group) {
-    for (const { im, grey } of g.meshes) {
+    for (const { im, grey, fade } of g.meshes) {
       scene.remove(im);
-      if (grey) im.geometry.dispose();
+      if (grey || fade) im.geometry.dispose();
       im.dispose();
     }
     for (const o of g.list) if (byId.get(o.id)?.g === g) byId.delete(o.id);
@@ -229,15 +278,21 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     if (old) drop(old);
     gl.scene.updateMatrixWorld(true);
     const g: Group = { name, sig, list: insts, meshes: [], base: [] };
-    const grey = name.startsWith('fruit-');
+    const grey = name.startsWith('fruit-'), soft = SOFT.has(name);
+    // (a critter new here fades in: now, or once it's shown)
+    if (soft) for (const o of insts) if (!fades.has(o.id)) fades.set(o.id, { a: 0, to: overs.get(o.id)?.hidden ? 0 : 1, t: performance.now() });
     gl.scene.traverse((n) => {
       const mesh = n as Mesh;
       if (!mesh.isMesh) return;
-      const { m, depth } = lambert(mesh.material as Material, grey);
+      const { m, depth } = lambert(mesh.material as Material, grey, soft);
       if (nightTag(m, name)) m.emissiveIntensity += nightLift(m, lampLevel);
-      // (a greyable model's instances carry their grey: its own copy of the geometry, dropped with the group)
+      // (a greyable model's instances carry their grey, a critter's its fade: its own copy of the geometry, dropped
+      // with the group)
       const ga = grey ? new InstancedBufferAttribute(new Float32Array(insts.length), 1) : undefined;
-      const geo = ga ? mesh.geometry.clone().setAttribute('aGrey', ga) : mesh.geometry;
+      const fa = soft ? new InstancedBufferAttribute(new Float32Array(insts.length), 1) : undefined;
+      const geo = ga || fa ? mesh.geometry.clone() : mesh.geometry;
+      if (ga) geo.setAttribute('aGrey', ga);
+      if (fa) geo.setAttribute('aFade', fa);
       const im = new InstancedMesh(geo, m, insts.length);
       im.frustumCulled = false;
       im.castShadow = !FLAT.has(name);
@@ -247,7 +302,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       const mname = (mesh.material as Material).name;
       if (insts.some((o) => o.tint !== undefined) && /Flower|Petal|Flow|Bloom/.test(mname) && !/Body|Leaf/.test(mname))
         insts.forEach((o, i) => im.setColorAt(i, new Color(o.tint ?? 0xffffff)));
-      g.meshes.push({ im, local: mesh.matrixWorld.clone(), grey: ga });
+      g.meshes.push({ im, local: mesh.matrixWorld.clone(), grey: ga, fade: fa });
       scene.add(im);
     });
     insts.forEach((o, i) => {
@@ -305,7 +360,27 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
 
   const JIG_MS = 560;
   function frame(t: number): boolean {
-    let more = false;
+    let more = false, died = false;
+    for (const [id, f] of fades) {
+      if (f.a === f.to) continue;
+      const dt = Math.min(FADE_STEP_MS, Math.max(0, t - f.t));
+      f.t = t;
+      f.a = f.to ? Math.min(1, f.a + dt / FADE_IN_MS) : Math.max(0, f.a - dt / FADE_OUT_MS);
+      if (f.a === 0 && f.dying) {
+        // faded out: gone now
+        fades.delete(id);
+        extra.delete(id);
+        overs.delete(id);
+        died = true;
+      }
+      const a = byId.get(id);
+      if (a) {
+        matOf(a.inst, a.g.base[a.i]);
+        write(a.g, a.i);
+      }
+      more = true;
+    }
+    if (died) void later();
     for (const [id, w] of wobbles) {
       const a = byId.get(id);
       if (!a) {
@@ -328,11 +403,24 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   return {
     place,
     set(list) {
-      for (const o of list) extra.set(o.id, o);
+      for (const o of list) {
+        extra.set(o.id, o);
+        const f = fades.get(o.id);
+        if (f?.dying) f.dying = false;
+      }
       return later();
     },
     remove(ids) {
       for (const id of ids) {
+        // a critter still there fades out where it is first (then it's gone: frame)
+        const f = fades.get(id);
+        if (f && f.a > 0 && extra.has(id)) {
+          f.dying = true;
+          fadeTo(id, false);
+          changed(false);
+          continue;
+        }
+        fades.delete(id);
         extra.delete(id);
         overs.delete(id);
       }
@@ -341,6 +429,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     over(id, o, cast = true) {
       if (o) overs.set(id, { ...overs.get(id), ...o });
       else overs.delete(id);
+      // a critter shown or hidden: it fades (frame)
+      if (o && o.hidden !== undefined && !fades.get(id)?.dying && softId(id)) fadeTo(id, !o.hidden);
       const a = byId.get(id);
       if (!a) return;
       matOf(a.inst, a.g.base[a.i]);
@@ -416,7 +506,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       const a = byId.get(id);
       if (!a) return null;
       tmpV.setFromMatrixPosition(a.g.base[a.i]);
-      return { x: tmpV.x, y: tmpV.y, z: tmpV.z, hidden: !!overs.get(id)?.hidden, model: a.g.name };
+      const scale = tmpS.setFromMatrixScale(a.g.base[a.i]).y / (a.inst.scale || 1);
+      return { x: tmpV.x, y: tmpV.y, z: tmpV.z, hidden: !!overs.get(id)?.hidden, model: a.g.name, fade: fades.get(id)?.a ?? 1, scale };
     },
     pending: () => pending,
     dispose() {
@@ -424,7 +515,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       if (bugTimer) clearTimeout(bugTimer);
       for (const g of groups.values()) drop(g);
       groups.clear();
-      for (const { m, depth } of mats.values()) {
+      for (const { m, depth } of [...mats.values(), ...softMats.values()]) {
         m.dispose();
         depth.dispose();
       }

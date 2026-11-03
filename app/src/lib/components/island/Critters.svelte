@@ -39,7 +39,9 @@
   //   staying until caught (the e2e's hook; it comes where the camera can see it if it can, else at its place);
   //   ?sea=<id>|pearl: a bubble spot; ?flea: a tap on my villager always sends a flea off it.
   import { fx3d } from './fx3d.ts';
-  import { angle, angling, floatLift, nibbled } from '../world3d/fishing3d.ts';
+  import { NIBBLE_MS, PLUNGE_MS, angle, angling, floatLift, nibbled } from '../world3d/fishing3d.ts';
+  import { EASE, Glide, turn, yawOf } from './glide.ts';
+  import { pace } from '../world3d/pace.ts';
   import CatchPlate from './CatchPlate.svelte';
   import { cardFor, type CatchCard } from './catchCard.ts';
   import { timers } from './timers.ts';
@@ -142,6 +144,8 @@
     stalk?: StalkState;
     /** Netted: it holds still where it was seen (its translate frozen) until the swing lands. */
     held?: boolean; freeze?: string;
+    /** When it set off for good (performance.now() ms): the 3D model fades over its leave's last FADE3_MS. */
+    goneAt?: number;
     /** The shared world's (critterPath.ts): its id, its itinerary and when it came (relay ms). */
     cid?: string; legs?: Leg[]; t0?: number;
   }
@@ -462,6 +466,8 @@
     // pauses between them (300–600 ms), nose to the bobber by plan.arrive (all scaled down if that's sooner)
     const end = { x: c.x - ux * len, z: c.z - uz * len };
     Object.assign(f, { ms: 0, x: from.x, z: from.z, spurt: true });
+    // (the 3D model's nose meets the float once it's there)
+    nose = { f, at: c.t0 + plan.arrive, gen };
     face(f, c.x, c.z);
     const n = d > 60 ? 3 : 2, share = n === 3 ? [0.5, 0.82, 1] : [0.62, 1];
     const moves = share.map(() => between(450, 700)), pauses = share.slice(1).map(() => between(300, 600));
@@ -497,8 +503,13 @@
 
   let bobEl = $state<HTMLElement>();
   const fishEls: Partial<Record<Water, HTMLElement>> = $state({});
-  /** Where the shadow is right now (world), mid-transition included: its node's anchor plus its inner offset. */
+  /** Where the shadow is right now (world), mid-transition included: its node's anchor plus its inner offset (the 3D
+   *  island's: where its model is, by the same curves). */
   function fishNow(f: Fish): { x: number; z: number } | null {
+    if (w.rest.three) {
+      const g = fishGlide(f, performance.now());
+      return { x: g.x, z: g.z };
+    }
     const el = fishEls[f.water];
     if (!el) return null;
     const [lx, ly] = getComputedStyle(el).translate.split(' ').map(parseFloat);
@@ -506,6 +517,130 @@
     const s = w.view.s;
     return { x: f.ax + lx / s, z: f.az - (Number.isFinite(ly) ? ly : 0) / s };
   }
+  // ---------- the 3D island's critters, frame by frame (glide.ts) ----------
+  // The 2D sprites move by CSS transitions; the 3D models read the same moves here each frame (their nodes' `live`), by
+  // the same curves: smooth from wherever they are (never a jump), turning toward where they go. A fish's model stands
+  // by its nose (assets.json shadow/*: the body trails behind it), so the middle the game moves is set half a body
+  // behind it. While it plays with my line its nose meets the float: backed off a little, each nibble a bump on it with
+  // the float's dip (fishing3d.ts), the bite a lunge onto it as it plunges; scared, it darts off with a quick tail
+  // wiggle. The models fade in and out (world3d/things.ts: never popped).
+  interface Mo { g: Glide; yaw: number; out: number; t: number; off: number; xyz: [number, number, number] }
+  const mos = new Map<string, Mo>();
+  const moOf = (id: string, yaw: number): Mo => {
+    let m = mos.get(id);
+    if (!m) mos.set(id, (m = { g: new Glide(), yaw, out: yaw, t: performance.now(), off: 0, xyz: [0, 0, 0] }));
+    return m;
+  };
+  const fishId = (f: Fish) => `fish-${f.water}-${f.n}`;
+  const bugId = (b: Bug) => `bug-${b.n}`;
+  /** Its 3D shadow's length (u: the model's, as assets.json scales shadow/*). */
+  const len3 = (f: Fish) => (f.shape === 'fin' ? 64 : shadowLen(f.size, f.shape));
+  /** Backed off from the float between nibbles (u, nose to float). */
+  const NOSE_GAP = 2.4;
+  /** A 3D model's fade out at the end of its leave (world3d/things.ts FADE_OUT_MS). */
+  const FADE3_MS = 600;
+  /** My cast's fish, nose to the float from `at` (performance.now() ms) on, for that plan (`gen`: a hesitation ends it). */
+  let nose: { f: Fish; at: number; gen: number } | null = null;
+  /** The shadow's middle now (the 2D sprite's, by its transition's curve). */
+  const fishGlide = (f: Fish, t: number) =>
+    moOf(fishId(f), yawOf(f.flip ? 1 : -1, 0)).g.to(t, f.x, f.z, 0, f.ms, f.dash ? EASE.dash : f.spurt ? EASE.spurt : EASE.swim).at(t);
+  /** A nibble's bump of the nose on the float (0 … 1, at its height with the float's dip, a quarter in). */
+  const bump = (n: number) => (n < 0.25 ? EASE.smooth(n / 0.25) : n < 0.6 ? 1 - EASE.smooth((n - 0.25) / 0.35) : 0);
+  /** The 3D shadow's spot this frame (its nose: world x, z, lift) and its yaw (`out`). */
+  function fish3(f: Fish): [number, number, number] {
+    const t = performance.now(), m = moOf(fishId(f), yawOf(f.flip ? 1 : -1, 0)), g = fishGlide(f, t);
+    const dt = Math.min(100, Math.max(0, t - m.t));
+    m.t = t;
+    const c = cast, mine = !!c && c.fish === f && c.landed;
+    // its heading: at the float while it plays with my line (backing off, it never turns tail), else the way it swims
+    // (kept while it's still)
+    let want = m.yaw;
+    if (c && mine) {
+      if (Math.hypot(c.x - g.x, c.z - g.z) > 0.5) want = yawOf(c.x - g.x, c.z - g.z);
+    } else if (g.done(t) < 1 && Math.hypot(g.tx - g.fx, g.tz - g.fz) > 0.5) want = yawOf(g.tx - g.fx, g.tz - g.fz);
+    m.yaw = turn(m.yaw, want, dt, f.dash ? 80 : f.spurt ? 110 : 280);
+    const hx = Math.sin(m.yaw), hz = -Math.cos(m.yaw), half = len3(f) / 2;
+    if (c && mine && nose && nose.f === f && nose.gen === c.gen && t >= nose.at) {
+      // nose to the float: backed off NOSE_GAP, each nibble a bump onto it, the bite a lunge over it
+      const gap = Math.hypot(c.x - g.x, c.z - g.z) - half;
+      let off = (gap - NOSE_GAP) * EASE.smooth(Math.min(1, (t - nose.at) / 300));
+      const n = (t - angling.nibble) / NIBBLE_MS;
+      if (angling.nibble >= nose.at && n >= 0 && n < 1) off += NOSE_GAP * bump(n);
+      if (c.under) off += (gap + half * 0.35 - off) * EASE.smooth(Math.min(1, (t - angling.bite) / PLUNGE_MS));
+      m.off = off;
+    } else m.off *= Math.exp(-dt / 140);
+    // its tail: a quick wiggle darting off, a slow wag swimming
+    const wag = f.dash ? Math.sin((t / 1000) * Math.PI * 2 * 7) * 0.42 : Math.sin((t / 1300) * Math.PI * 2) * (g.done(t) < 1 ? 0.07 : 0.035);
+    m.out = m.yaw + wag;
+    m.xyz[0] = g.x + hx * (half + m.off);
+    m.xyz[1] = g.z + hz * (half + m.off);
+    m.xyz[2] = -2.5;
+    return m.xyz;
+  }
+  const fishYaw = (f: Fish) => mos.get(fishId(f))?.out ?? yawOf(f.flip ? 1 : -1, 0);
+  /** The 3D bug's spot this frame (world x, z, lift): its moves by the 3D island's curves, a lift-off rising first, a
+   *  hop an arc; it turns round (`out`) rather than flipping. */
+  function bug3(b: Bug): [number, number, number] {
+    const t = performance.now(), m = moOf(bugId(b), b.flip ? Math.PI : 0);
+    const dt = Math.min(100, Math.max(0, t - m.t));
+    m.t = t;
+    const g = m.g.to(t, b.x, b.z, b.lift, b.ms, b.fled || b.flight === 'dart' ? EASE.out : EASE.smooth, b.gone ? EASE.out : null).at(t);
+    m.out = m.yaw = turn(m.yaw, b.flip ? Math.PI : 0, dt, 90);
+    const k = g.done(t);
+    const hop = b.flight === 'hop' && !b.gone && k < 1 && g.ms <= 500 ? Math.sin(Math.PI * k) * 9 : 0;
+    m.xyz[0] = g.x;
+    m.xyz[1] = g.z;
+    m.xyz[2] = g.l + hop;
+    return m.xyz;
+  }
+  const bugYaw = (b: Bug) => mos.get(bugId(b))?.out ?? (b.flip ? Math.PI : 0);
+  /** Hidden in 3D: once it's leaving, over its leave's last FADE3_MS (it fades out as it goes). */
+  const bugOff = (b: Bug) => b.gone && performance.now() >= (b.goneAt ?? 0) + b.ms - FADE3_MS;
+  // the 3D island's frames for them (world3d/pace.ts): a shadow dawdling at the ambient rate (the engine's 30 a
+  // second: a slow move is ambience), a dart off or a bug's flight at the full rate to its move's end; their fades are
+  // the 3D island's own (world3d/things.ts). The moves' state of the critters gone dropped.
+  let fullTill = 0, fullTimer: ReturnType<typeof setTimeout> | undefined;
+  const wake = () => w.moveStart()();
+  function full3(ms: number) {
+    const till = performance.now() + ms;
+    if (till <= fullTill) return;
+    if (!fullTill) pace.full++;
+    fullTill = till;
+    clearTimeout(fullTimer);
+    fullTimer = setTimeout(() => {
+      pace.full--;
+      fullTill = 0;
+    }, ms);
+    wake();
+  }
+  onMount(() => () => {
+    clearTimeout(fullTimer);
+    if (fullTill) pace.full--;
+    fullTill = 0;
+  });
+  $effect(() => {
+    if (!w.rest.three) return;
+    const ids = new Set<string>();
+    for (const wt of WATERS) {
+      const f = fishes[wt];
+      if (!f) continue;
+      ids.add(fishId(f));
+      void f.x, void f.z, void f.ms;
+      if (f.dash) full3(f.ms + 200);
+    }
+    const b = bug;
+    if (b) {
+      ids.add(bugId(b));
+      void b.x, void b.z, void b.lift, void b.flip, void b.gone;
+      full3(b.ms + 200);
+    }
+    for (const id of mos.keys()) if (!ids.has(id)) mos.delete(id);
+    if (!ids.size) return;
+    pace.ambient++;
+    wake();
+    return () => void pace.ambient--;
+  });
+
   /** A nibble: the bobber twitches, a small gentle wiggle (nothing like the bite's plunge). */
   function nibble(f?: Fish) {
     nibbled();
@@ -763,6 +898,7 @@
     const b = bug;
     if (!b || b.gone || b.held) return;
     b.gone = true;
+    b.goneAt = performance.now();
     const ground = b.flight === 'crawl' || b.flight === 'stalk';
     const dir = away ?? (w.screenAt(b.x, b.z).sx < w.view.vw / 2 ? -1 : 1);
     if (b.flight === 'drift' || b.flight === 'burrow' || ((b.flight === 'hop' || ground || STILL.has(b.id)) && !fast)) {
@@ -952,8 +1088,10 @@
     if (f && cast?.fish === f) cast = null;
     if (how === 'flee') {
       if (f && fishes[f.water] === f) {
-        Object.assign(f, { dash: true, gone: true });
-        swimTo(f, f.x + (f.flip ? 30 : -30), f.z, 650);
+        // (from where it is now: mid-swim)
+        const p = fishNow(f) ?? f;
+        Object.assign(f, { x: p.x, z: p.z, dash: true, gone: true });
+        swimTo(f, p.x + (f.flip ? 30 : -30), p.z, 650);
         later(() => fishes[f.water] === f && (fishes[f.water] = null), 700);
       }
       if (b && bug === b) bugLeave(true);
@@ -1229,7 +1367,8 @@
   {#each WATERS as wt (wt)}
     {@const f = fishes[wt]}
     {#if f}
-      <i class="m3n" {@attach w.at({ x: f.x, z: f.z, lift: -2.5, h: 4, always: true, m3: { key: f.shape ? `shadow/${f.shape}` : `shadow/${wt === 'sea' ? 'sea' : 'fresh'}-${Math.max(1, Math.min(6, Math.round(f.size)))}`, id: `fish-${wt}-${f.n}`, ms: f.ms, face: 'move', water: true, off: f.gone, art: () => fishEls[wt] } })}></i>
+      <!-- (its moves, its heading and its nose at the float: fish3, each frame; it fades in and out: world3d/things.ts) -->
+      <i class="m3n" {@attach w.at({ x: f.ax, z: f.az, lift: -2.5, h: 4, always: true, live: () => fish3(f), m3: { key: f.shape ? `shadow/${f.shape}` : `shadow/${wt === 'sea' ? 'sea' : 'fresh'}-${Math.max(1, Math.min(6, Math.round(f.size)))}`, id: fishId(f), water: true, off: f.gone, get yaw() { return fishYaw(f); }, art: () => fishEls[wt] } })}></i>
     {/if}
   {/each}
   {#if diving?.chase}
@@ -1259,7 +1398,8 @@
   {/if}
   {#if bug}
     {@const b = bug}
-    <i class="m3n" {@attach w.at({ x: b.x, z: b.z, lift: b.lift, h: 4, always: true, m3: { key: `critters/${b.id}`, id: `bug-${b.n}`, ms: b.fled ? 900 : b.ms, yaw: b.flip ? Math.PI : 0, off: b.gone, art: () => bugEl,
+    <!-- (its moves and its turns: bug3, each frame; it fades in where it comes, and out over its leave's end) -->
+    <i class="m3n" {@attach w.at({ x: b.ax, z: b.az, lift: 0, h: 4, always: true, live: () => bug3(b), m3: { key: `critters/${b.id}`, id: bugId(b), get yaw() { return bugYaw(b); }, get off() { return bugOff(b); }, art: () => bugEl,
       // perched on a trunk: flat on its bark, its back to the camera
       pitch: b.sat && (b.place === 'trunk' || b.place === 'palm') ? (b.flip ? -1 : 1) * Math.PI / 2 : 0 } })}></i>
   {/if}
