@@ -68,10 +68,7 @@ const maxStep = (s: Sample[]) => {
 /** A ramp: from under `lo` to over `hi` (or back), through at least `n` frames between. */
 const ramps = (fades: number[], n = 3) => fades.filter((f) => f > 0.05 && f < 0.95).length >= n;
 
-test('a fish shadow fades in where it comes and swims smoothly: never a jump between frames', {
-  tag: '@quarantine',
-  annotation: { type: 'quarantine', description: 'owner: fishing agent, since 2026-11-03: red on CI in logic shard 1 on 41648737532 (before the museum) and on e690cf9e, 41656034060, 41657034933; 30/30 green here (4 workers): a frame-timing flake under CI load' }
-}, async ({ page }) => {
+test('a fish shadow fades in where it comes and swims smoothly: never a jump between frames', async ({ page }) => {
   await page.goto('?demo&visitor=none&critter=fish&date=2026-11-04T12:00');
   expect(await is3d(page)).toBe(true);
   const s = await sampleFirst(page, 'fish-sea-', 4000);
