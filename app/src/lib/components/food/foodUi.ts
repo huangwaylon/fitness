@@ -237,9 +237,11 @@ export function customDraft(c: FoodCustom | null, name = ''): CustomDraft {
 }
 
 /** A typed amount → a number to one decimal within [min, max]; '' → null (left blank); undefined when it isn't one.
- *  Full-width digits, a decimal comma and a trailing unit (g, kcal) are fine. */
+ *  Full-width digits, thousands commas (1,200: as parseKcalGoal reads them), else a decimal comma, and a trailing unit
+ *  (g, kcal) are fine. */
 export function parseAmount(text: string, min: number, max: number): number | null | undefined {
-  const s = halfWidth(text.trim()).replace(/\s*(g|kcal|グラム)$/i, '').replace(',', '.');
+  const t = halfWidth(text.trim()).replace(/\s*(g|kcal|グラム)$/i, '');
+  const s = /^\d{1,3}(,\d{3})+(\.\d+)?$/.test(t) ? t.replace(/,/g, '') : t.replace(',', '.');
   if (!s) return null;
   if (!/^\d{1,5}(\.\d+)?$/.test(s)) return undefined;
   const v = Math.round(Number(s) * 10) / 10;
