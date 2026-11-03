@@ -1,12 +1,11 @@
 // The fixed decor (docs/design.md "Decor"): one scale for the furniture, the plan's placement rules for every spot in
-// every season, the seasons' pieces in their windows taking their own spots (never a new one), the snowboy melting
-// over three days, and a decoration a player puts down never standing on a spot.
+// every season, the seasons' pieces in their windows taking their own spots (never a new one) and the snowboy melting
+// over three days.
 import { describe, expect, it } from 'vitest';
 import { CASTLE_HOURS, decorHeight, piecesOn, snowboyStage, swapsOn, WINDOWS } from './fixedDecor.ts';
 import {
   ARCH, CAKE, CENTRE_STAGE, DECOR_SLOTS, DECOR_U, DIG_SPOTS, FLOWERS, GOAL_TREES, LAWN_SPOTS, PATHS, POND, PULLUP_AT, SCENERY, SEATS, SPRING, inOval, riverNear, seatAt, type Pt
 } from './world.ts';
-import { spotWhy } from './decor.ts';
 import { route, walkGeo, walkable } from './walkGraph.ts';
 import { dayWeather } from './weather.ts';
 import { addDays } from '#lib/time/dates.ts';
@@ -88,8 +87,7 @@ describe('the fixed decor', () => {
     expect(snowboyStage('2026-07-20')).toBeNull();
     expect(piecesOn(addDays(snow, 1), 12).find((p) => p.id === 'snowboy')?.key).toBe('deco/snowboy-1');
   });
-  it('keeps a decoration a player puts down off every spot, filled or not', () => {
-    for (const s of DECOR_SLOTS) expect(spotWhy('tanuki', 0, s.x, s.z, []), s.id).not.toBeNull();
+  it('stands the park bench at its height', () => {
     expect(decorHeight('deco/park-bench')).toBeCloseTo(40, 0);
   });
   it('has flowers round the pump to water, and every seat and the bar on walkable ground', () => {

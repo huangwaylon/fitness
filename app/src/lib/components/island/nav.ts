@@ -218,9 +218,8 @@ function riverQuads(): Poly[] {
   return out;
 }
 
-/** Every obstacle, padded: water, the cliff, the buildings and the things standing on the ground (the decorations'
- *  boxes too). */
-function obstacles(decor: readonly Box[]): Poly[] {
+/** Every obstacle, padded: water, the cliff, the buildings and the things standing on the ground. */
+function obstacles(): Poly[] {
   const out: Poly[] = [...riverQuads(), oval(POND, 16), oval(SPRING, 12)];
   // the cliff face, from shore to shore but for the stairs (the waterfall is the river's)
   const [s0, s1] = CLIFF.stair;
@@ -239,7 +238,6 @@ function obstacles(decor: readonly Box[]): Poly[] {
   for (const d of DECOR_SLOTS) out.push(rect(box(d.x, d.z, d.foot[0] / 2, d.foot[1] / 2), 'thing'));
   for (const x of HEDGE_XS) out.push(rect(box(x, HEDGE_Z, 18, 7, 7), 'thing'));
   out.push(rect(box(ROCK[0], ROCK[1], 12, 5, 5), 'thing'), rect(box(TAPE_DECK[0], TAPE_DECK[1], 7, 4, 4), 'thing'));
-  for (const b of decor) out.push(rect(b, 'thing'));
   return out;
 }
 
@@ -361,20 +359,12 @@ function tangent(n: NavNode, q: Pt): boolean {
 
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
-/** The island's decorations (store/decor.svelte.ts: their boxes, unpadded). */
-let decorBoxes: readonly Box[] = [];
-/** The decorations stand on the island: the next walk builds the graph again with them (~3 ms). */
-export function setNavDecor(boxes: readonly Box[]): void {
-  decorBoxes = boxes;
-  cached = null;
-}
-
-/** The island's navigation, built once (cached; `fresh` rebuilds: the perf test; again when the decorations change). */
+/** The island's navigation, built once (cached; `fresh` rebuilds: the perf test). */
 let cached: Nav | null = null;
 let onIt: { gen: number; nav: onGrid.LayoutNav } | null = null;
 export function nav(fresh = false): Nav {
   if (cached && !fresh) return cached;
-  cached = navWith(decorBoxes);
+  cached = build();
   return cached;
 }
 
@@ -387,10 +377,10 @@ export function walkNav(): Nav | onGrid.LayoutNav {
   return onIt.nav;
 }
 
-/** The navigation with these decorations (uncached: whether a spot would wall anyone in, island/decor.ts). */
-export function navWith(decor: readonly Box[]): Nav {
+/** The navigation, built (uncached: nav()'s). */
+function build(): Nav {
   const t0 = now();
-  const polys = obstacles(decor);
+  const polys = obstacles();
   const shell: Nav = { polys, nodes: [], adj: [], comp: new Int32Array(0), main: 0, named: {}, grid: gridOf(polys), buildMs: 0 };
   const nodes: NavNode[] = [];
   // a named spot a little inside a pad (a casting spot right at the water) moves to the nearest walkable point
