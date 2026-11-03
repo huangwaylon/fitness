@@ -182,10 +182,8 @@ const PROP: Record<string, [string, string?]> = {
   'deco/garden-rock': ['garden-rock'], 'deco/park-bench': ['park-bench'], 'deco/log-bench': ['log-bench'], 'deco/rod-stand': ['rod-stand'],
   'deco/hammock': ['hammock'], 'deco/firewood': ['firewood'], 'deco/pullup': ['pullup'], 'deco/pump': ['pump'], 'deco/shishiodoshi': ['shishiodoshi']
 };
-/** Scenery that gives way to the shop: its oak would stand right behind it (hidden, and a mushroom beside it). */
-const GIVES_WAY: Record<string, readonly [number, number]> = { 'oak-m1': [tileX(4) + TILE / 2, tileZ(20) + TILE / 2] };
 for (const s of SCENERY) {
-  const [x, z] = GIVES_WAY[s.id] ?? [s.x, s.z];
+  const [x, z] = [s.x, s.z];
   const flip = s.flip ? 1 : 0;
   if (s.kind === 'oak' || s.kind === 'cedar' || s.kind === 'palm' || s.kind === 'bamboo') put(s.id, s.kind, x, z, { f: flip });
   else if (s.kind === 'bush') put(s.id, 'bush', x, z, { f: flip, s: s.key.startsWith('month-bush-') ? `month-${s.key.slice(-1)}` : s.key.replace(/^bushes\//, '') });
