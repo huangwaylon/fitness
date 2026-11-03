@@ -96,7 +96,7 @@ export const PATHS: { dirt: readonly (readonly Pt[])[] } = {
 // ---- buildings ------------------------------------------------------------------------------------------------------
 
 /** The one building left: the campsite (its tent), where visitors arrive and stay. */
-export type BuildingId = 'campsite' | 'home-B' | 'home-G' | 'museum';
+export type BuildingId = 'campsite' | 'home-B' | 'home-G' | 'museum' | 'shop';
 export interface Building {
   id: BuildingId;
   /** Art key (static/art). */
