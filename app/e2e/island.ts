@@ -41,8 +41,10 @@ export async function tapOn(page: Page, target: Locator) {
       }
     return null;
   });
-  await expect.poll(find, { message: 'a point of the target not covered by anything in front of it' }).not.toBeNull();
-  const [x, y] = (await find())!;
+  // (the point the poll found: a villager walking by may cover it again a moment later)
+  let pt: number[] | null = null;
+  await expect.poll(async () => (pt = await find()), { message: 'a point of the target not covered by anything in front of it' }).not.toBeNull();
+  const [x, y] = pt!;
   await page.mouse.click(x, y);
 }
 
