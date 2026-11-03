@@ -7,7 +7,8 @@
 // while something moves (a node with a `live` position) and once after a change; never when still. Nothing in the hot
 // path is reactive: `rest` only carries what components need to know when the camera is still.
 import { getContext, setContext } from 'svelte';
-import { ROLL_DEFAULTS, horizonAhead, horizonUp, project, quadMatrix, radiusFor, sinkBelow, unproject, zIndexAt, type Projected, type RollParams } from './roll.ts';
+import { ROLL_DEFAULTS, horizonAhead, horizonUp, project, radiusFor, sinkBelow, unproject, type Projected, type RollParams } from './roll.ts';
+import { quadMatrix, zIndexAt } from './geom.ts';
 import { AHEAD, BEHIND, CAMS, PIVOT, PLAN, SKY, TILT, type Pt } from './world.ts';
 
 type NodeMode = 'up' | 'flat' | 'quad';

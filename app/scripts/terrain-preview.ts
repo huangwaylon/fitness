@@ -8,7 +8,8 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { compile } from 'svelte/compiler';
 import { render } from 'svelte/server';
-import { band, quadMatrix, radiusFor, project, ROLL_DEFAULTS } from '../src/lib/components/island/roll.ts';
+import { band, radiusFor, project, ROLL_DEFAULTS } from '../src/lib/components/island/roll.ts';
+import { quadMatrix } from '../src/lib/components/island/geom.ts';
 import { BAND_D, BANDS, BUILDINGS, CAMS, CLIFF, FACE_H, FALL_H, GOAL_TREES, PIVOT, PLAN, SCENERY, SKY, TILT, TREE_H, HEDGE_XS, HEDGE_Z } from '../src/lib/components/island/world.ts';
 
 const APP = join(import.meta.dirname, '..');
