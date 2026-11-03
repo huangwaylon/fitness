@@ -232,9 +232,9 @@
     // door's handler is delegated to the root, after this one; the 3D island's camera shows the door small behind them)
     if (t instanceof Element && t.closest('[data-building] .door') && visitor?.tap(e.clientX, e.clientY)) return void e.stopPropagation();
     const stage = scene?.querySelector<HTMLElement>('.stage');
-    // a fish's shadow under the island's own buttons (my villager by the bank, a tree's canopy, a door): the shadow's
-    // (it was in view; the cast is what the tap was for), else theirs
-    if (t instanceof Element && stage?.contains(t) && t.closest('button, [role="button"]') && critters?.onShadow(e.clientX, e.clientY) && critters.tap(e.clientX, e.clientY))
+    // a bug in front of the island's own buttons (flying past my villager, a tree's canopy, a door): the bug's (it was in
+    // view; the net is what the tap was for), else theirs
+    if (t instanceof Element && stage?.contains(t) && t.closest('button, [role="button"]') && critters?.onCritter(e.clientX, e.clientY) && critters.tap(e.clientX, e.clientY))
       return void e.stopPropagation();
     if (!(t instanceof Element) || t.closest('button, a, input, select, textarea, label, dialog, [role="button"], [tabindex]')) return;
     if (!stage) return;

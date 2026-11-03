@@ -1041,9 +1041,12 @@ northern-hemisphere months; hours still hold.
   stumps); NH's palm beetles on the palms (the cyclommatus and golden stags, the horned atlas and elephant, the goliath
   beetle); grasshoppers, crickets, the pill bug
   and the centipede in the grass; the hermit crab and the wharf roach on the beach; the mole cricket under a chirping
-  mound (a tap digs it up); the tarantula and the scorpion at night, gentle: the first tap makes one rear up, a second
-  while reared makes it charge off, and once it settles a tap nets it; a flea hops off my villager 1 in 10 taps
-  (Apr–Nov); the pondskater, diving beetle and giant water bug on the pond and the river's still reach. A tap nets one;
+  mound (a tap digs it up); the tarantula and the scorpion at night, gentle: the first tap makes one rear up (on the
+  3D island its front lifts under NH's 「！」 till it settles), a second while reared makes it charge off, and once it
+  settles a tap nets it; a flea hops off my villager 1 in 10 taps
+  (Apr–Nov); the pondskater, diving beetle and giant water bug on the pond and the river's still reach. A tap nets one,
+  judged where the 3D island draws it (its model's spot, not its invisible sprite's: a percher flying in to its trunk
+  is 30–110 px off its sprite), even over my villager, a canopy or a door in front of which it flies (`e2e/bug-taps.spec.ts`);
   within 80px it startles away (on both phones). A bug a dev hook brings keeps clear of every control; one of ambient
   life's sits where its seed puts it (a tap on it comes first, before a control under it). Left out: the blue weevil beetle, the giraffe stag
   and the horned hercules (no icons), the dung beetle, the ant and the fly
