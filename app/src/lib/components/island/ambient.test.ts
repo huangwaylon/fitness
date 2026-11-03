@@ -3,7 +3,7 @@ import { shuffle, seeded } from '#lib/random.ts';
 import type { PersonId as Who } from '#lib/types.ts';
 import {
   DECIDE_MS, HOLD_SLOTS, SLOT_MS, SLOTS_PER_DAY, WANDER_REACH_U, crittersAt, held, msToNextSlot, slotAt, slotRand, slotStart, spawnRand, spawnsIn,
-  villagerBeats, type AmbientWorld, type Poi, type VillagerBeat
+  villagerBeats, type AmbientWorld, type Poi, type Spawn, type VillagerBeat
 } from './ambient.ts';
 import { BUBBLE_SHARE, pickBug, pickFish } from './critters.ts';
 import { pickAct } from './visitorLife.ts';
@@ -180,11 +180,15 @@ describe('ambient life: the villagers', () => {
 describe('ambient life: the critters', () => {
   const all = Array.from({ length: SLOTS_PER_DAY }, (_, s) => spawnsIn(DATE, s)).flat();
 
-  it('never brings two at once to the sea, fresh water or the bugs, each staying its time within its block', () => {
-    for (const ch of [['fish', 'bubbles'], ['fresh'], ['bug']]) {
-      const s = all.filter((x) => ch.includes(x.kind));
+  it('never brings two at once to the sea, a fresh water or the bugs, each staying its time within its block', () => {
+    const fresh = (w: string) => (x: Spawn) => x.kind === 'fresh' && x.water === w;
+    for (const of of [(x: Spawn) => x.kind === 'fish' || x.kind === 'bubbles', ...['pond', 'river', 'mouth', 'clifftop'].map(fresh), (x: Spawn) => x.kind === 'bug']) {
+      const s = all.filter(of);
+      expect(s.length).toBeGreaterThan(100);
       for (let i = 1; i < s.length; i++) expect(s[i].slot).toBeGreaterThanOrEqual(s[i - 1].slot + s[i - 1].slots);
     }
+    // each fresh water has its shadow nearly all the time (the pond on screen is never long empty)
+    for (const w of ['pond', 'river', 'mouth', 'clifftop']) expect(all.filter(fresh(w)).reduce((n, x) => n + x.slots, 0) / SLOTS_PER_DAY, w).toBeGreaterThan(0.6);
     for (const x of all) {
       expect(x.at).toBeLessThan(8000);
       expect(x.slots).toBeLessThanOrEqual(x.kind === 'fish' || x.kind === 'fresh' ? 5 : x.kind === 'bubbles' ? 3 : 2);

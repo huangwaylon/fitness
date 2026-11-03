@@ -20,7 +20,7 @@ describe('the critters where both phones see them (from the spawn alone)', () =>
     expect(spawns.length).toBeGreaterThan(20);
     for (const c of spawns) {
       const water = c.kind === 'fresh' ? freshWater(c) : 'sea';
-      const a = fishPath(c.seed, water, 50_000), b = fishPath(c.seed, water, 50_000);
+      const a = fishPath(c.seed, water, 50_000)!, b = fishPath(c.seed, water, 50_000);
       expect(b).toEqual(a);
       expect(inWater(water, a.start.x, a.start.z) || (a.start.x === a.area.cx && a.start.z === a.area.cz)).toBe(true);
       for (const l of a.legs) {
@@ -46,7 +46,7 @@ describe('the critters where both phones see them (from the spawn alone)', () =>
     const water = c.kind === 'fresh' ? freshWater(c) : 'sea';
     const t0 = slotStart(DATE, c.slot) + c.at;
     // phone A has watched since it came; phone B opens 17.3 s later and computes it afresh
-    const a = fishPath(c.seed, water, 45_000), b = fishPath(c.seed, water, 45_000);
+    const a = fishPath(c.seed, water, 45_000)!, b = fishPath(c.seed, water, 45_000)!;
     for (const ms of [0, 999, 17_300, 30_000]) {
       const pa = legAt(a.legs, { ...a.start, lift: 0 }, ms), pb = legAt(b.legs, { ...b.start, lift: 0 }, ms);
       expect(pb).toEqual(pa);

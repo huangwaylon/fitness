@@ -95,6 +95,18 @@ describe('a pond put down (kind pond): a fresh water as the painted pond’s', (
       W.setWorld(null);
     }
   });
+  test('the painted pond gone, a pond put down: its fish swim in it, never off the island', () => {
+    // (the user's island: no painted pond, two put down; POND is then far off the island and was a third of the patches)
+    const painted = [...l.codes].flatMap((c, i) => (c >> 2 === 8 ? [[i % 20, Math.floor(i / 20), 4] as [number, number, number]] : []));
+    const g2 = worldOf(withChanges(put(0), { tiles: painted }));
+    W.setWorld(g2);
+    const areas = freshAreas('pond');
+    expect(areas).toHaveLength(1);
+    expect([areas[0].cx, areas[0].cz]).toEqual([g2.PONDS[0].x, g2.PONDS[0].z]);
+    // and no pond at all: none
+    W.setWorld(worldOf(withChanges(l, { tiles: painted })));
+    expect(freshAreas('pond')).toEqual([]);
+  });
 });
 
 describe('setWorld: the island on its layout', () => {

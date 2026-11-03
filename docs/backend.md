@@ -410,12 +410,14 @@ show the same island without a message (decisions: *Ambient life from the clock*
 - **Visitor:** `Visitor.svelte beat(r)` runs `visitorLife.ts pickAct`, `pickEmote` and `strollSpots` on the slot's
   `visitor` PRNG; a phone whose visitor is speaking skips it.
 - **Critters** (`spawnsIn(date, slot)`, `crittersAt(date, slot)`): per channel (the sea: a shadow or bubbles,
-  `BUBBLE_SHARE`; fresh water; bugs) a slot brings one with odds 0.6 / 0.6 / 0.5 when the last one's stay is over, at
+  `BUBBLE_SHARE`; each fresh water, the pond, the river, its mouth and the clifftop, a channel of its own; bugs) a slot
+  brings one with odds 0.9 when the last one's stay is over, at
   `at` ms into the slot, staying 4–5 slots (bubbles 3, a bug 2); the stays are chained per 10-minute block from the date
   and slot alone, ending within it, so a phone opening mid-stay finds the ones still there. Where each is comes from its
-  seed too (`critterPath.ts`: the fresh water, its swim patch or the bug's spot, and its itinerary, each move at a time
+  seed too (`critterPath.ts`: its swim patch or the bug's spot, and its itinerary, each move at a time
   after it came, `legAt` for a phone joining mid-stay), never from a camera; `Critters.svelte` places it there and
-  each phone shows it when its camera sees that spot. Its id is `<kind>:<slot>` ([Shared world](#shared-world)).
+  each phone shows it when its camera sees that spot. Its id is `<kind>:<slot>`, a fresh water's `fresh:<water>:<slot>`
+  ([Shared world](#shared-world)).
 - **Agreement and its limits:** the same inputs give the same slot (tested with shuffled inputs and skewed clocks).
   The phones differ where their inputs do: a clock offset off by more than the 500 ms margin, a walk sent within
   ~20 ms of a boundary, a local skip (a sheet, a reaction playing, the 3-minute slow-down), and the camera (each phone
