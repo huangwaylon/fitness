@@ -106,6 +106,9 @@ export interface Model3 {
 
 /** The 3D island's camera (world3d/engine.ts), when it draws the island: every node is placed through it instead of
  *  roll.ts. Px are from the scene's top-left. */
+/** The 3D island's game clock: the World steps itself at least this often (ms) while anything moves, drawn or not. */
+const SIM_MS = 33;
+
 export interface Proj3 {
   /** A world point `lift` units above the ground under it: where it is on screen, the px a unit across there (an upright
    *  thing's scale), how much an upright `model` is foreshortened there (its height's px over k), the ground's
@@ -121,6 +124,8 @@ export interface Proj3 {
   kick(): void;
   /** No frame pending. */
   idle(): boolean;
+  /** Drawing paused (a sheet over the island): the World's own clock holds too. */
+  paused?(): boolean;
   /** The bulletin board's (docs/board.md "To the 3D lead"): dolly and zoom to look at a rect face-on (its middle x, z on
    *  the ground, y above it, w × h u), framed in the screen between `top` and `bottom` px and filling `fill` of it, over `ms` (600):
    *  the user's one exception to "x centred, nothing but the finger moves the camera"; the finger does nothing while
@@ -171,6 +176,14 @@ export class World {
   private lastCam = NaN;
   private win: [number, number] = [-Infinity, Infinity];
   private hook: ((ts: number) => boolean) | null = null;
+  /** The game's own clock under the 3D island (docs/decisions.md "The island in 3D"): the engine steps the World in
+   *  its frames (the DOM in step with the picture), and this steps it whenever no frame has for SIM_MS while anything
+   *  moves, so the island's life keeps real time however slowly (or seldom: the ambience's rate, a software renderer,
+   *  the e2e's logic mode) the picture is drawn. Every position is a function of the time, so a step is the same
+   *  whichever clock runs it. */
+  private lastStep = 0;
+  private simTimer: ReturnType<typeof setTimeout> | 0 = 0;
+  private simWants = false;
   private ground: (() => void) | null = null;
   /** The 3D island's camera, when it draws the island (null: roll.ts, the DOM island). */
   three: Proj3 | null = null;
@@ -377,6 +390,7 @@ export class World {
   /** One frame of the projector: the scene's hook, then what moved (everything when the camera did). True: more
    *  frames wanted (something moves). The 3D island's engine runs it in its own frame, before it draws. */
   step(ts: number): boolean {
+    this.lastStep = performance.now();
     this.perf.writes = 0;
     this.perf.frames++;
     const more = this.hook?.(ts) ?? false;
@@ -395,12 +409,33 @@ export class World {
       for (const n of this.movers) this.placeNode(n);
     }
     this.perf.nodes = this.nodes.size;
-    return more || this.moving > 0;
+    const going = more || this.moving > 0;
+    this.simWants = going;
+    if (going) this.simLater();
+    return going;
   }
+
+  /** The game clock's next step, SIM_MS on (it waits while the engine's frames step it). */
+  private simLater(): void {
+    if (this.simTimer || !this.three) return;
+    this.simTimer = setTimeout(this.simTick, SIM_MS);
+  }
+  private simTick = () => {
+    this.simTimer = 0;
+    const t = this.three;
+    if (!t || !this.simWants || (typeof document !== 'undefined' && document.hidden) || t.paused?.()) return;
+    if (performance.now() - this.lastStep >= SIM_MS - 2) this.step(performance.now());
+    else this.simLater();
+  };
 
   /** Ask for one frame (a scroll, a node changed). */
   kick(): void {
-    if (this.three) return this.three.kick();
+    if (this.three) {
+      // (a frame for the picture; the game clock steps it meanwhile if the frame is slow to come)
+      this.simWants = true;
+      this.simLater();
+      return this.three.kick();
+    }
     if (!this.raf && typeof requestAnimationFrame !== 'undefined') this.raf = requestAnimationFrame(this.tick);
   }
 
@@ -456,6 +491,8 @@ export class World {
 
   /** Stop (the scene unmounts). */
   stop(): void {
+    if (this.simTimer) clearTimeout(this.simTimer);
+    this.simTimer = 0;
     if (this.raf) cancelAnimationFrame(this.raf);
     this.raf = 0;
     this.hook = null;

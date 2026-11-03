@@ -247,6 +247,8 @@ export interface Island3 {
   idle(): boolean;
   /** No frames at all while paused (a sheet over the island: the 2D island's pause); a frame at once when it ends. */
   pause(on: boolean): void;
+  /** Paused (pause()). */
+  isPaused(): boolean;
   /** The camera at rest: no finger, fling, spring back, settle or focus move under way (whatever else moves). */
   camStill(): boolean;
   /** Called in every frame before it draws: true wants another at the full rate (something moves), 'ambient' at the
@@ -1008,6 +1010,7 @@ export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((ren
     rev: () => rev,
     kick: () => kick(),
     camStill: () => !touch && !vel && !velX && !zoomBack && !settling && !move,
+    isPaused: () => paused,
     pause(on) {
       if (on === paused) return;
       paused = on;

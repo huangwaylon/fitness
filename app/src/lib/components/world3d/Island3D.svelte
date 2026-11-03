@@ -772,7 +772,7 @@
     e.go(start ?? e.limits().min);
     const proj: Proj3 = {
       at: (x, z, lift) => e.at(x, z, lift), ground: (sx, sy) => e.groundAt(sx, sy), horizon: () => e.horizon(),
-      rev: () => e.rev(), kick: () => e.kick(), idle: () => e.idle(),
+      rev: () => e.rev(), kick: () => e.kick(), idle: () => e.idle(), paused: () => e.isPaused(),
       focus: (f, ms) => ((focusAt = { x: f.x, z: f.z }), e.frame(f, ms)), unfocus: (ms) => ((focusAt = null), e.restore(ms)), attach: (id, obj) => e.things.attach(id, obj as Object3D | null)
     };
     world.useThree(proj);
