@@ -28,7 +28,7 @@ test('the sim step: on the page\'s clock a ground tap walks my villager only as 
   // (the clock runs the load's timers and frames: the island comes up as it steps)
   await expect.poll(async () => (await step(page, 500), page.evaluate(() => !!(window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded())), { timeout: 30_000 }).toBe(true);
   await step(page, 3000);
-  const [x, y] = await w3(page, (w) => w.client(200, 300));
+  const [x, y] = await w3(page, (w) => w.client(120, 330));
   await expect.poll(async () => (await step(page, 200), page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.matches('.stage'), [x, y]))).toBe(true);
   const from = await mine(page);
   await page.mouse.click(x, y);
@@ -38,5 +38,5 @@ test('the sim step: on the page\'s clock a ground tap walks my villager only as 
   // ten seconds of the game's time, frame by frame (quick: nothing is drawn)
   await step(page, 10_000);
   const [ax, az] = await mine(page);
-  expect(Math.hypot(ax - 200, az - 300)).toBeLessThan(14);
+  expect(Math.hypot(ax - 120, az - 330)).toBeLessThan(14);
 });
