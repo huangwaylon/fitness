@@ -3,7 +3,7 @@
 // one row per person and day (a new one replaces the day's older row) and the model sums the latest row of each day
 // (model/tally.ts). The first find of an entry (who and when) stays the `find` event's. Shared by the Apps Script and
 // the model; pure.
-import { isFind, isLocalDate, isRec } from './api.ts';
+import { isFind, isLocalDate, isRec, nextDay } from './api.ts';
 import type { LocalDate } from '../types.ts';
 
 /** `kind:id` (model/finds.ts findKey) → how many that day. */
@@ -23,9 +23,6 @@ export function isTallyKey(k: string): boolean {
 
 /** A whole count in 1…TALLY_MAX_N. */
 const isCount = (n: unknown): n is number => typeof n === 'number' && Number.isInteger(n) && n >= 1 && n <= TALLY_MAX_N;
-
-/** The day after `date` (both YYYY-MM-DD). */
-const nextDay = (date: LocalDate): LocalDate => new Date(Date.parse(`${date}T00:00:00Z`) + 86400_000).toISOString().slice(0, 10);
 
 /**
  * A `tally`'s data: `{date, counts}` and nothing else, a real date (not after tomorrow when `today`, the server's Tokyo

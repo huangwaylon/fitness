@@ -4,7 +4,7 @@
 // shooting stars and where their villager stands. The phone sends all of it again when it grows (held two minutes,
 // store/world.svelte.ts); the server keeps one row per person and day (a newer one replaces it, as a tally's), and the
 // model reads each person's latest. Shared by the Apps Script and the model; pure.
-import { isLocalDate, isRec } from './api.ts';
+import { isLocalDate, isRec, nextDay } from './api.ts';
 import type { LocalDate } from '../types.ts';
 
 export interface IslandDayData {
@@ -36,9 +36,6 @@ const isInt = (n: unknown, lo: number, hi: number): n is number => Number.isInte
 export const PLAN_X = [-230, 620] as const, PLAN_Z = [-460, 2650] as const;
 const isPt = (p: unknown): p is [number, number] => Array.isArray(p) && p.length === 2 && isInt(p[0], PLAN_X[0], PLAN_X[1]) && isInt(p[1], PLAN_Z[0], PLAN_Z[1]);
 const list = (x: unknown, max: number, ok: (v: unknown) => boolean): boolean => Array.isArray(x) && x.length <= max && x.every(ok);
-
-/** The day after `date` (both YYYY-MM-DD). */
-const nextDay = (date: LocalDate): LocalDate => new Date(Date.parse(`${date}T00:00:00Z`) + 86400_000).toISOString().slice(0, 10);
 
 /**
  * An `island`'s data: `{date, taken, puts, shakes, watered, wishes, at?}` and nothing else, a real date (not after
