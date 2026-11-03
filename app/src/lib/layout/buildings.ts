@@ -7,7 +7,7 @@
 // before) is left as it is.
 import { isVoid, resetAt, type LayoutEntry, type LayoutOp } from '#lib/contract/layout.ts';
 import { KIND_LIST } from './catalog.ts';
-import { GRID, isWater, kindOf, tierOf, idx, onGrid } from './grid.ts';
+import { GRID, PATHS, isWater, kindOf, tierOf, idx, onGrid } from './grid.ts';
 import { defaultLayout, doorOf, layoutOf, objMid, objTiles, withChanges, type Layout, type Obj } from './model.ts';
 import { validate } from './validate.ts';
 
@@ -20,15 +20,37 @@ const TRIES = 40;
 /** Whether the building has an error of its own here (overlapping, off the land, its door walled in). */
 const wrong = (l: Layout, id: string): boolean => validate(l).some((i) => i.level === 'error' && i.ids.includes(id));
 
-/** The free spot nearest `o`'s own for it (its tile and facing), or null when nowhere fits. */
-function freeSpot(l: Layout, o: Obj): { x: number; z: number; f: Facing } | null {
+/** A spot for a building: its tile and facing, and the flowers it clears (their ids). */
+interface Spot { x: number; z: number; f: Facing; clear: string[] }
+/** A flower cleared costs this much more (u): an empty spot first, then the one that clears fewest, nearby. */
+const FLOWER_COST = 60;
+/** At most this many flowers cleared for one building. */
+const FLOWERS_MAX = 12;
+
+/** How a spot may be had: on clear ground; clearing flowers (and only flowers: the island's own trees, bushes, furniture
+ *  and paths stay); over a path, the last resort (the island's ways stay open, the main path most of all). */
+type Way = 'clear' | 'flowers' | 'path';
+
+/**
+ * The free spot nearest `o`'s own for it had `way` (its tile and facing), or null when nowhere fits. An island
+ * planted edge to edge (the record's of 2026-11-04, flower borders down both sides, the main path between) has no 7 × 4
+ * spot clear: there the museum clears a few flowers on one side of the main path and the shop on the other, rather than
+ * the museum straddling the path and leaving the shop no spot at all.
+ */
+function freeSpot(l: Layout, o: Obj, way: Way): Spot | null {
+  const flowers = way === 'flowers';
   const without = withChanges(l, { remove: [o.id] });
-  // the tiles something stands on (a flower too: none may stand in a building), and the ground's kind and tier
+  // the tiles something stands on (a flower too, unless it may be cleared: none may stand in a building), and the
+  // ground's kind and tier
   const taken = new Set<string>();
-  for (const p of without.objects.values()) if (p.k !== 'spot') for (const [c, r] of objTiles(without, p)) taken.add(`${c},${r}`);
+  const bloom = new Map<string, string>();
+  for (const p of without.objects.values()) {
+    if (p.k === 'spot') continue;
+    for (const [c, r] of objTiles(without, p)) (flowers && p.k === 'flower' ? bloom.set(`${c},${r}`, p.id) : taken.add(`${c},${r}`));
+  }
   const ground = (c: number, r: number) => (onGrid(c, r) ? l.codes[idx(c, r)] : -1);
   const [ox, oz] = objMid(l, o);
-  const cands: { x: number; z: number; f: Facing; cost: number }[] = [];
+  const cands: (Spot & { cost: number })[] = [];
   for (let f = 0; f < 4; f++)
     for (let z = 0; z < GRID.rows; z++)
       for (let x = 0; x < GRID.cols; x++) {
@@ -37,16 +59,29 @@ function freeSpot(l: Layout, o: Obj): { x: number; z: number; f: Facing } | null
         const t0 = ground(tiles[0][0], tiles[0][1]);
         if (t0 < 0) continue;
         const tier = tierOf(t0);
+        const clear = new Set<string>();
         const ok = (cc: number, rr: number) => {
           const g = ground(cc, rr);
+          const id = bloom.get(`${cc},${rr}`);
+          if (id) clear.add(id);
           return g >= 0 && !isWater(kindOf(g)) && kindOf(g) !== 'sea' && tierOf(g) === tier && !taken.has(`${cc},${rr}`);
         };
-        if (!tiles.every(([cc, rr]) => ok(cc, rr)) || !doorOf(without, c).tiles.every(([cc, rr]) => ok(cc, rr))) continue;
+        // (over a path only the last way, and then over one at least: a spot off the paths was the first two ways'; its
+        // door may open onto one)
+        const path = (cc: number, rr: number) => PATHS.includes(kindOf(ground(cc, rr)));
+        if (!tiles.every(([cc, rr]) => ok(cc, rr) && (way === 'path' || !path(cc, rr))) || !doorOf(without, c).tiles.every(([cc, rr]) => ok(cc, rr))) continue;
+        if (clear.size > FLOWERS_MAX || (flowers && !clear.size) || (way === 'path' && !tiles.some(([cc, rr]) => path(cc, rr)))) continue;
         const [mx, mz] = objMid(without, c);
-        cands.push({ x, z, f: f as Facing, cost: Math.hypot(mx - ox, mz - oz) + (f ? TURN_COST : 0) });
+        cands.push({ x, z, f: f as Facing, clear: [...clear], cost: Math.hypot(mx - ox, mz - oz) + (f ? TURN_COST : 0) + clear.size * FLOWER_COST });
       }
   cands.sort((a, b) => a.cost - b.cost);
-  for (const c of cands.slice(0, TRIES)) if (!wrong(withChanges(l, { set: [{ ...o, x: c.x, z: c.z, f: c.f }] }), o.id)) return { x: c.x, z: c.z, f: c.f };
+  // nothing wrong of its own, and nothing else made wrong by it (a named spot it would wall in: the shop after the museum)
+  const errors = (x: Layout) => validate(x).filter((i) => i.level === 'error').length;
+  const before = errors(without);
+  for (const c of cands.slice(0, TRIES)) {
+    const at = withChanges(l, { set: [{ ...o, x: c.x, z: c.z, f: c.f }], remove: c.clear });
+    if (!wrong(at, o.id) && errors(at) <= before) return { x: c.x, z: c.z, f: c.f, clear: c.clear };
+  }
   return null;
 }
 
@@ -67,10 +102,12 @@ export function buildingOps(merged: ReadonlyMap<string, LayoutEntry>, me: 'A' | 
       l ??= layoutOf(new Map(merged));
       const o = l.objects.get(d.id);
       if (!o || !wrong(l, o.id)) continue;
-      const s = freeSpot(l, o);
+      const s = freeSpot(l, o, 'clear') ?? freeSpot(l, o, 'flowers') ?? freeSpot(l, o, 'path');
       if (!s) continue;
+      // the flowers it clears go first (each a removal, as the editor's), then the building
+      for (const id of s.clear) out.push({ sc: 'o', id, at: t++, rm: true });
       out.push({ sc: 'o', id: o.id, at: t++, k: o.k, x: s.x, z: s.z, f: s.f });
-      l = withChanges(l, { set: [{ ...o, ...s }] });
+      l = withChanges(l, { set: [{ ...o, x: s.x, z: s.z, f: s.f }], remove: s.clear });
     }
   }
   return out;

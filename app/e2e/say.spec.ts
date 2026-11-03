@@ -6,7 +6,7 @@
 // もようがえ. Own text is capped at 20 characters and cleaned; it's shown as text. No ベル.
 //   SHOTS=<dir> npm run e2e -- say      also writes iPhone-sized screenshots to <dir>/say-*.png
 import { expect, test, type Page } from '@playwright/test';
-import { quiet } from './island.ts';
+import { lawnTap, quiet } from './island.ts';
 import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
 import { fromMenu, hudBells, hudMenu } from './hud.ts';
 import { sayOwn } from './say.ts';
@@ -122,7 +122,7 @@ test('the say button: the picker above it; a phrase of mine shows in my villager
 
 test('the picker closes on ✕, Esc and a tap elsewhere (which walks nobody); the button again only closes it', async ({ page }) => {
   await open(page);
-  const home = await feet(page);
+  const home = await feet(page), lawn = await lawnTap(page, 240, 380);
   await sayBtn(page).click();
   await picker(page).getByRole('button', { name: 'とじる' }).click();
   await expect(picker(page)).toHaveCount(0);
@@ -131,9 +131,8 @@ test('the picker closes on ✕, Esc and a tap elsewhere (which walks nobody); th
   await page.keyboard.press('Escape');
   await expect(picker(page)).toHaveCount(0);
   await sayBtn(page).click();
-  // open lawn
-  const [x, y] = await page.evaluate(() => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(240, 380));
-  await page.mouse.click(x, y);
+  // open lawn (found before the picker was up)
+  await page.mouse.click(lawn.x, lawn.y);
   await expect(picker(page)).toHaveCount(0);
   await expect(page.locator('[data-ring="mine"]')).toHaveCount(0);
   await page.waitForTimeout(500);
