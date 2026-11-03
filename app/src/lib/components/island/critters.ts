@@ -544,7 +544,8 @@ function story(from: number, distU: number, r: () => number, minNibbles = 0): Bi
   return { arrive: Math.round(arrive), nibbles, bite: Math.round(at), window: BITE_WINDOW_MS };
 }
 
-export const bitePlan = (distU: number, r: () => number): BitePlan => story(0, distU, r);
+/** (1–3 nibbles: the float always dips before it plunges, the cue that it's coming; NH's 0 left the bite unannounced) */
+export const bitePlan = (distU: number, r: () => number): BitePlan => story(0, distU, r, 1);
 
 /** The fish hesitates (a first tap before the bite, `ms` after the bobber landed): it backs off HESITATE_U, then
  *  comes back from there and nibbles (at least once) before it bites, later. */

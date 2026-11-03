@@ -30,9 +30,13 @@ export interface FxOpts {
   tag?: string;
   /** Which way (a swing's side: −1 left). */
   dir?: number;
+  /** A held one stays while this says so (the bite's 「！」: till the reel or the miss), `ms` at most, then pops out. */
+  held?: () => boolean;
 }
 
 interface Part {
+  /** Its source (a model's name: bang, ripple, splash…). */
+  name: string;
   obj: Group;
   mats: MeshBasicMaterial[];
   t0: number;
@@ -58,6 +62,11 @@ interface Part {
   tag?: string;
   /** Fades out over its last 40 % (else holds, then a quick end). */
   fade: boolean;
+  /** NH's pop (a quick overshoot in, a little hop now and then) and, once `held` says no more, a quick pop out from
+   *  `end` (its age, ms). */
+  pop?: boolean;
+  held?: () => boolean;
+  end?: number;
 }
 
 export interface Effects {
@@ -89,11 +98,16 @@ const SCALE: Record<string, number> = {
 };
 /** A villager's mark over its head (NH's float: about a third of its head across), world units across. */
 const MARK_U: Record<string, number> = { sparkle: 16, heart: 15, note: 14, zzz: 15, bang: 14, sweat: 11 };
+/** The 「！」's pop in (CSS's cubic-bezier(.3, 1.6, .5, 1) over 320 ms: Critters' 2D one), its hop's period and height
+ *  (u), and its pop out (ms). */
+const POP_IN_MS = 320, HOP_MS = 640, HOP_U = 1.6, POP_OUT_MS = 140;
+/** The pop in's scale at k (0…1): up past its size and back (an ease-out-back: ~20 % over at two thirds in). */
+const popIn = (k: number) => (k >= 1 ? 1 : 1 + 3 * (k - 1) ** 3 + 2 * (k - 1) ** 2);
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 const CONFETTI = ['#ff6f91', '#ffd84a', '#6fd3ff', '#8be07a', '#c89cff', '#ff9d3c'];
 
 /** A source's meshes: their geometry (quantized by the converter: placed by its matrix, never baked), map and colour. */
-type Src = { geo: BufferGeometry; map: Texture | null; color: Color; add?: boolean; m?: Matrix4 }[];
+type Src = { geo: BufferGeometry; map: Texture | null; color: Color; add?: boolean; m?: Matrix4; vc?: boolean }[];
 
 /** A soft round glow (a firefly). */
 function glow(): Texture {
@@ -135,7 +149,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
           const mesh = n as Mesh;
           if (!mesh.isMesh) return;
           const s = mesh.material as MeshStandardMaterial;
-          out.push({ geo: mesh.geometry, map: s.map, color: s.color.clone(), m: mesh.matrixWorld.clone() });
+          out.push({ geo: mesh.geometry, map: s.map, color: s.color.clone(), m: mesh.matrixWorld.clone(), vc: !!mesh.geometry.attributes.color });
         });
         return out;
       }, () => null);
@@ -143,10 +157,12 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     got.set(name, p);
     return p;
   };
-  /** A source's material as a particle has it (one shader for all of them: the warm-up compiles it). */
+  /** A source's material as a particle has it (one shader for all of them: the warm-up compiles it): scripts/world3d-fx.ts'
+   *  own in their vertex colours (the 「！」's red mark on its cream disc, the zzz's blue; they drew all white), unless
+   *  tinted (the tint is its colour then). */
   const matFor = (s: Src[number], tint?: string) => {
     const mat = bend(new MeshBasicMaterial({
-      map: s.map, color: tint ? new Color(tint) : s.color, transparent: true, depthWrite: false, side: DoubleSide, alphaTest: s.add ? 0 : 0.02,
+      map: s.map, color: tint ? new Color(tint) : s.color, vertexColors: !!s.vc && !tint, transparent: true, depthWrite: false, side: DoubleSide, alphaTest: s.add ? 0 : 0.02,
       blending: NormalBlending
     }));
     if (s.add) addLight(mat, true);
@@ -164,15 +180,17 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     const mats: MeshBasicMaterial[] = [];
     for (const src of srcs) for (const s of src) {
       if (s.map) renderer.initTexture(s.map);
-      const m = matFor(s);
-      mats.push(m);
-      const mesh = new Mesh(s.geo, m);
-      if (s.m) {
-        mesh.matrixAutoUpdate = false;
-        mesh.matrix.copy(s.m);
+      // (in its colours, and tinted: the two shaders)
+      for (const m of s.vc ? [matFor(s), matFor(s, '#ffffff')] : [matFor(s)]) {
+        mats.push(m);
+        const mesh = new Mesh(s.geo, m);
+        if (s.m) {
+          mesh.matrixAutoUpdate = false;
+          mesh.matrix.copy(s.m);
+        }
+        mesh.frustumCulled = false;
+        warmScene.add(mesh);
       }
-      mesh.frustumCulled = false;
-      warmScene.add(mesh);
     }
     renderer.compile(warmScene, camera);
     // (kept: disposing them would free the very programs just compiled, mid their parallel compile's status check)
@@ -209,9 +227,9 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
       scene.add(obj);
       const k = SCALE[name] ?? 5;
       parts.push({
-        obj, mats, t0: performance.now(), life: p.life, x, y, z, vx: p.vx ?? 0, vy: p.vy ?? 0, vz: p.vz ?? 0, g: p.g ?? 0, spin: p.spin ?? 0,
+        name, obj, mats, t0: performance.now(), life: p.life, x, y, z, vx: p.vx ?? 0, vy: p.vy ?? 0, vz: p.vz ?? 0, g: p.g ?? 0, spin: p.spin ?? 0,
         s0: (p.s0 ?? 1) * k, s1: (p.s1 ?? 1) * k, face: p.face ?? true, flat: p.flat ?? false, sway: p.sway ?? 0, arc: p.arc ?? 0,
-        blink: p.blink ?? false, tag: p.tag, fade: p.fade ?? true
+        blink: p.blink ?? false, tag: p.tag, fade: p.fade ?? true, pop: p.pop, held: p.held
       });
       if (!p.tag) shown++;
       onLoad?.();
@@ -219,8 +237,18 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
   }
 
   let spawnTag: string | undefined, shown = 0;
+  // the e2e's (dev builds and ?demo): the parts of a source drawn now, where (world x, y, z) and how big, and each
+  // spawn's kind and time (performance.now()): the fishing's rings come before its 「！」
+  const log: { kind: FxKind; t: number; size?: number }[] | null =
+    import.meta.env.DEV || new URLSearchParams(location.search).has('demo') ? [] : null;
+  if (log)
+    (window as unknown as { __fx3?: unknown }).__fx3 = {
+      live: (name: string) => parts.filter((p) => p.name === name && p.obj.scale.x > 0).map((p) => ({ x: p.obj.position.x, y: p.obj.position.y, z: -p.obj.position.z, s: p.obj.scale.x })),
+      log: () => log
+    };
   function spawn(kind: FxKind, x: number, z: number, lift = 0, o: FxOpts = {}) {
     spawnTag = o.tag;
+    if (log && log.push({ kind, t: performance.now(), size: o.size }) > 200) log.shift();
     try {
       spawnOf(kind, x, z, lift, o);
     } finally {
@@ -276,7 +304,8 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         return;
       }
       case 'bang':
-        part('bang', x, y + 8, z, { life: o.ms ?? 900, s0: 0.75 * k, s1: 0.75 * k, face: true, fade: false });
+        // the bite's 「！」: pops up (NH's overshoot), hops a little while it's held, pops out at the reel or the miss
+        part('bang', x, y + 8, z, { life: (o.ms ?? 900) + POP_OUT_MS, s0: 0.75 * k, s1: 0.75 * k, face: true, fade: false, pop: true, held: o.held });
         return;
       case 'leaves': {
         const leaf = o.v && MODEL[o.v] ? o.v : 'maple-leaf';
@@ -343,18 +372,27 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         }
         continue;
       }
+      // a held one let go (the reel, the miss): its pop out from now
+      if (p.held && p.end === undefined && !p.held()) {
+        p.end = age;
+        p.life = Math.min(p.life, age + POP_OUT_MS);
+      }
       const s = age / 1000;
       const px = p.x + p.vx * s + (p.sway ? Math.sin(age / 180) * p.sway : 0), py = p.y + p.vy * s + 0.5 * p.g * s * s, pz = p.z + p.vz * s;
       p.obj.position.set(px, py, -pz);
-      const sc = p.s0 + (p.s1 - p.s0) * Math.sin(Math.min(1, k * 1.4) * Math.PI * 0.5);
-      p.obj.scale.setScalar(sc);
+      if (p.pop) {
+        // in with an overshoot, a little hop now and then (its feet on its spot), out by shrinking
+        const out = p.end === undefined ? 1 : Math.max(0, 1 - (age - p.end) / POP_OUT_MS);
+        p.obj.scale.setScalar(p.s1 * popIn(age / POP_IN_MS) * out);
+        if (age > POP_IN_MS) p.obj.position.y += HOP_U * Math.max(0, Math.sin(((age - POP_IN_MS) / HOP_MS) * Math.PI * 2)) ** 2;
+      } else p.obj.scale.setScalar(p.s0 + (p.s1 - p.s0) * Math.sin(Math.min(1, k * 1.4) * Math.PI * 0.5));
       if (p.face) {
         p.obj.quaternion.copy(q);
         if (p.spin) p.obj.rotateZ(p.spin * s);
       } else if (p.arc) p.obj.rotation.set(0, p.spin, p.arc * k, 'YXZ');
       else if (p.spin) p.obj.rotation.set(0, p.spin * s, 0);
       // in quickly, out at the end (a held one ends at once); a firefly blinks
-      const a = Math.min(1, k * 6) * (p.fade ? (k > 0.6 ? (1 - k) / 0.4 : 1) : k > 0.95 ? (1 - k) / 0.05 : 1);
+      const a = p.pop ? Math.min(1, age / 80) : Math.min(1, k * 6) * (p.fade ? (k > 0.6 ? (1 - k) / 0.4 : 1) : k > 0.95 ? (1 - k) / 0.05 : 1);
       const blink = p.blink ? 0.35 + 0.65 * Math.max(0, Math.sin(age / 420 + p.x)) : 1;
       for (const m of p.mats) m.opacity = a * blink;
     }
