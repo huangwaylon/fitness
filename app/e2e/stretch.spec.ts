@@ -6,6 +6,7 @@
 // in きろく as its own line per day and per person, and in the day. The demo's days (seeded, ?date=):
 // 11-03 ウェイ steps at 1.5× (3 goals + 1); 12-07 うめ all four, Move, Stand and steps at 1.5× (4 + 2, capped).
 import { expect, test, type Page } from '@playwright/test';
+import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -120,8 +121,7 @@ test('きろく: a がんばり line under the day with each person\'s ベル; t
 
 test('あそびかた: the がんばり rule and each goal\'s 1.5× target; the two prices', async ({ page }) => {
   await open(page, '2026-11-03T12:00');
-  await hudJar(page).click();
-  await sheet(page).locator('.tab[data-tab=settings]').click();
+  await fromMenu(page, 'settings');
   await sheet(page).locator('[data-push=help]').click();
   const howto = sheet(page).locator('.howto');
   await expect(howto).toContainText('目標の 1.5ばいまで できたら、がんばりで もう +1 ベル。1日 2 ベルまで！');

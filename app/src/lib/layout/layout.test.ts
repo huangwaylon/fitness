@@ -221,34 +221,31 @@ describe('the soft edges (fields.ts): the data on tiles, the drawn edge round', 
     expect(Math.abs(f.at(Ch.fresh, 195, 645 + 13.5))).toBeLessThan(1);
     expect(f.at(Ch.fresh, 195, 645)).toBeLessThan(-10);
   });
-  test('the stream\'s turn is drawn round (river.ts): its staircase of tiles a quarter circle, its straights straight', () => {
+  test('the stream is drawn curved (river.ts): a staircase of tiles a smooth diagonal, the long reach meandering', () => {
     const [s] = riverStems(l);
     // one stem, from the mouth to the fall below the cliff
     expect(s.tiles).toHaveLength(42);
-    // the staircase from (12, 24) up to (15, 27), between the straight across (row 24) and the straight up column 15:
-    // one quarter circle, deep water through the steps (x 330, z 705), the grass tiles beside it bank (the middle of
-    // (13, 24) and of (12, 26))
-    expect(s.arcs).toHaveLength(1);
-    expect(s.arcs[0].deg).toBeCloseTo(90, 3);
+    // the staircase from (12, 24) down to (15, 27): deep water on the diagonal through the steps (x 330,
+    // z 705), the grass tiles beside it bank (the middle of (13, 24) and of (12, 26))
     expect(f.at(Ch.fresh, 330, 705)).toBeLessThan(-8);
     expect(f.at(Ch.fresh, 315, 645)).toBeGreaterThan(8);
     expect(f.at(Ch.fresh, 285, 705)).toBeGreaterThan(8);
-    // the long reach up column 15 (x 360…390): exactly on its tiles' middle, one breadth
-    const run = [...s.x.keys()].filter((i) => s.z[i] > 830 && s.z[i] < 1300);
-    for (const i of run) {
-      expect(s.x[i]).toBeCloseTo(375, 4);
-      expect(s.hw[i]).toBe(13.5);
-    }
+    // the long reach down column 15 (x 360…390): it sways and swells, and stays on its tiles near enough for the rules
+    const run = [...s.x.keys()].filter((i) => s.z[i] > 800 && s.z[i] < 1300);
+    const xs = run.map((i) => s.x[i]), hw = run.map((i) => s.hw[i]);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(8);
+    expect(Math.max(...hw) - Math.min(...hw)).toBeGreaterThan(3);
+    for (const i of run) expect(Math.abs(s.x[i] - 375) + s.hw[i]).toBeLessThan(15 + 8);
     // the flow along it: downstream (toward the mouth: −z on this reach), on the water only
     const fl = f.flow(375, 1000)!;
     expect(fl[1]).toBeLessThan(-0.9);
     expect(f.flow(375 + 45, 1000)).toBeNull();
-    // and the stream's water goes on over the bank tile beside its arc (the grass at (14, 28), inside the turn)
-    const m = chunkMesh(l, chunkOf(14, 28));
+    // and the stream's water goes on over the bank tile's corner
+    const m = chunkMesh(l, chunkOf(13, 24));
     let over = 0;
     for (let k = 0; k < m.water.pos.length / 3; k++) {
       const x = m.water.pos[k * 3], z = -m.water.pos[k * 3 + 2];
-      if (x > 330 && x < 360 && z > 750 && z < 780) over++;
+      if (x > 300 && x < 330 && z > 630 && z < 660) over++;
     }
     expect(over).toBeGreaterThan(0);
   });

@@ -1,6 +1,7 @@
 <script lang="ts">
-  // ずかん (docs/design.md "Zukan"), on きろく: one row per kind (さかな, むし, うみのさち, かせき, かいがら) with how many of us
-  // have found, each a doorway to its page (Zukan.svelte). Shared between the two of us (the first find of either).
+  // ずかん (docs/design.md "Zukan"), the ずかん sheet's first screen (ZukanSheet): one row per kind (さかな, むし,
+  // うみのさち, かせき, かいがら ...) with how many of us have found, each a doorway to its page
+  // (Zukan.svelte). Shared between the two of us (the first find of either).
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
   import { KIND_ART, ZUKAN_KINDS, entries, type ZukanKind } from './zukan.ts';

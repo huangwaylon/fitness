@@ -1,4 +1,4 @@
-// The ずかん (docs/design.md "Zukan"): in きろく, every fish, bug, fossil and shell; the found ones with their icon, name
+// The ずかん (docs/design.md "Zukan"): the HUD menu's ずかん sheet, every fish, bug, fossil and shell; the found ones with their icon, name
 // and first find (shared between us), silhouettes and ？？？ for the rest.
 import { expect, test, type Page } from '@playwright/test';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
@@ -8,6 +8,7 @@ import { FOSSIL_SETS, digSpots } from '../src/lib/components/island/beach.ts';
 import { addDays } from '../src/lib/time/dates.ts';
 import { readFileSync } from 'node:fs';
 import { fossilOnScreen } from './island.ts';
+import { fromMenu } from './hud.ts';
 /** The catalogue's rows (island/catalog.json; its module needs Vite's JSON import). */
 const { items: ITEMS, recipes: RECIPES } = JSON.parse(readFileSync(new URL('../src/lib/components/island/catalog.json', import.meta.url), 'utf8')) as { items: string[]; recipes: string[] };
 
@@ -21,8 +22,7 @@ test('a netted butterfly appears in the ずかん with who found it and when; th
   const b = (await page.locator('[data-critter="common-butterfly"]').boundingBox())!;
   await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
   await expect(page.locator('[data-fx="catch"]')).toBeAttached();
-  await hudJar(page).click();
-  await page.locator('dialog[open] .tab[data-tab=kiroku]').click(); // (the jar opens the panel on ごほうび)
+  await fromMenu(page, 'zukan');
   const row = page.locator('[data-zukan="bug"]');
   await expect(row).toContainText(`1 / ${Object.keys(BUGS).length}`);
   await expect(page.locator('[data-zukan="fish"]')).toContainText(`0 / ${Object.keys(FISH).length + Object.keys(POND_FISH).length}`);
@@ -53,8 +53,7 @@ test('the fossils: a dug-up piece shows under its dinosaur with the set’s coun
   await expect(page.locator('[data-fx="catch"]')).toContainText('化石を ほりだした！');
   const id = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).find((e: { type: string }) => e.type === 'find')?.data.id as string);
   const [set, ids] = piece(id)!;
-  await hudJar(page).click();
-  await page.locator('dialog[open] .tab[data-tab=kiroku]').click();
+  await fromMenu(page, 'zukan');
   await expect(page.locator('[data-zukan="fossil"]')).toContainText('1 / 73');
   await page.locator('[data-zukan="fossil"]').click();
   await expect(page.locator('h4.set')).toHaveCount(Object.keys(FOSSIL_SETS).length);
@@ -82,8 +81,7 @@ for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
     });
     await page.goto('?demo&date=2026-07-04T12:00');
     await expect(hudJar(page)).toBeVisible();
-    await hudJar(page).click();
-    await page.locator('dialog[open] .tab[data-tab=kiroku]').click();
+    await fromMenu(page, 'zukan');
     await page.locator('[data-zukan="fish"]').click();
     const head = page.locator('[data-zukan-head]');
     const grid = page.locator('[data-zukan-grid]');
@@ -102,7 +100,7 @@ for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
     // scrolled to the bottom: the head hasn't moved and still names the bitterling; the panel body itself never scrolled
     await grid.evaluate((el) => (el.scrollTop = el.scrollHeight));
     await expect.poll(() => grid.evaluate((el) => el.scrollTop)).toBeGreaterThan(300);
-    expect(await page.locator('dialog[open] .panel-body').evaluate((el) => el.scrollTop)).toBe(0);
+    expect(await page.locator('dialog[open] [data-zukan-sheet]').evaluate((el) => el.scrollTop)).toBe(0);
     await expect(head).toBeInViewport({ ratio: 1 });
     await expect(head).toContainText(firstName);
     expect(Math.abs((await head.boundingBox())!.y - headBox.y)).toBeLessThan(1);
@@ -146,8 +144,7 @@ test('the catalogue and the recipes: found entries with their counts, in all and
   });
   await page.goto('?demo&date=2026-07-04T12:00');
   await expect(hudJar(page)).toBeVisible();
-  await hudJar(page).click();
-  await page.locator('dialog[open] .tab[data-tab=kiroku]').click();
+  await fromMenu(page, 'zukan');
   await expect(page.locator('[data-zukan="item"]')).toContainText(`1 / ${ITEMS.length}`);
   await expect(page.locator('[data-zukan="recipe"]')).toContainText(`1 / ${RECIPES.length}`);
 

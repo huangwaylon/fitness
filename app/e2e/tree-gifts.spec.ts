@@ -5,6 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { geo, type Geo, quiet } from './island.ts';
+import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -93,8 +94,7 @@ test('a holding tree’s shake drops its present; opened, it’s the day’s fur
   await page.waitForTimeout(800);
   await expect(page.locator('[data-tree-gift]')).toHaveCount(0);
   // the ずかん's カタログ has it, found by A
-  await hudJar(page).click();
-  await page.locator('dialog[open] .tab[data-tab=kiroku]').click();
+  await fromMenu(page, 'zukan');
   await page.locator('[data-zukan="item"]').click();
   const tile = page.locator(`button.tile[data-entry="${id}"]`);
   await expect(tile).toHaveCount(1, { timeout: 10_000 });

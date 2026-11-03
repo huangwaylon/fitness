@@ -23,8 +23,9 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 ## Simplicity rules
 
-- No tab bar: 島 (the island), one panel for everything else (tap the jar: it opens on ごほうび, its tabs きろく ·
-  ごほうび · せってい), the meal log (tap the bowl: ごはん) and the health popup (tap the dumbbell: けんこう).
+- No tab bar: 島 (the island), one panel for the ベル (tap the jar: it opens on ごほうび, its tabs きろく · ごほうび), the
+  meal log (tap the bowl: ごはん), the health popup (tap the dumbbell: けんこう), and behind the HUD menu's leaf the
+  ずかん and せってい, each its own sheet.
 - One focal point per screen (島: the island itself, the sky clean, the jar the door to the panel; ごほうび: the
   balance, today's ベル under it).
 - A number is shown in full in one place; elsewhere it is only a doorway to it.
@@ -35,8 +36,8 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 ### Island
 
-Top to bottom: the HUD row, the jar in the sky's top-left corner (tap → [the panel](#panel) on ごほうび, where today's
-ベル are), the meal button in its middle and the health button in its top-right; a sync chip only when sync isn't ok; the scene;
+Top to bottom: the HUD row, one cluster in the sky's top-right corner (the menu's leaf, the meal button, the jar (tap →
+[the panel](#panel) on ごほうび, where today's ベル are) and the health button); a sync chip only when sync isn't ok; the scene;
 しずえ's box only with news; the say button at the bottom right. The island is NH's rolling log under them ([World](#world)): a drag scrolls it from まえ
 (home, the health lawn) back to ひろば and おく, a tap on empty ground walks my villager there.
 
@@ -49,34 +50,57 @@ Top to bottom: the HUD row, the jar in the sky's top-left corner (tap → [the p
   ふたりでぜんぶ (「ふたりで ぜんぶ まで：あと 2つ」 or 「ふたりで ぜんぶ！ +2 ふたりに」), outside either total, so both
   totals plus it make today's total (ごほうび's 「きょう +N ベル」). The last line says when that person's data last arrived (「15:24 に とどいた」), with
   a dot once it is over 6 hours old.
-- **HUD row:** [the jar] … [the meal button] … [the health button]: the two top corners and the middle, at `--hud-top` (10px under the safe area, as
-  before: clear of iOS 27's top-edge blur), inset 14px or the safe area's side. No ribbon (removed 2026-11-03,
-  [decisions](decisions.md#the-jar-is-the-door-no-ribbon-2026-11-03)): NH's island view keeps its sky clear and its UI
-  in the corners (the row sits under the safe area, so the Dynamic Island is clear above it), and the sky beside the
-  bowl stays free for the sun, the moon, the balloon and the stars. The two sides are the same width (60px,
-  `--hud-side`), mirrored, so the bowl is on the middle. Every
-  target is 44px or more. No View Transition anywhere in it (the stripes bug); day and night are the same art (the jar's
-  number is ink with a cream outline, the button cream with its lip), both reading on either sky.
+- **HUD row:** [the menu] [the meal button] [the jar] [the health button], one cluster right-aligned in the top-right
+  corner (2026-11-03, the user: "move bell jar to be next to dumbell, right aligned to screen"), at `--hud-top` (10px
+  under the safe area: clear of iOS 27's top-edge blur, the Dynamic Island clear above it), inset 14px or the safe
+  area's side, 6px apart. The bowl, the jar and the dumbbell are the same width (60px, `--hud-side`), the menu a 44px
+  disc. No ribbon (removed 2026-11-03, [decisions](decisions.md#the-jar-is-the-door-no-ribbon-2026-11-03)): NH's island
+  view keeps its sky clear and its UI tucked away, and the sky's left (a third of it from 393px up) stays free for the
+  sun, the moon, the balloon and the stars. Every target is 44px or more. No View Transition anywhere in it (the
+  stripes bug); day and night are the same art (the jar's number is ink with a cream outline, the buttons cream with
+  their lip), both reading on either sky.
+- **Menu** (`island/HudMenu.svelte`, `e2e/hud-menu.spec.ts`): the cluster's left end, a 40px cream disc with the lip in
+  a 44px target, NH's leaf (`money/leaf`) in it; `aria-expanded`, `aria-controls` its pills. Folded by default: the
+  sky shows only the menu, the bowl, the jar and the dumbbell. A tap unfolds it: the disc turns NH's yellow, the leaf
+  tips (−40°, as if it flicked the menu down) and two cream pills drop out of it, one after the other (a 380ms spring,
+  55ms apart), right-aligned under the leaf, the same width: **ずかん** (NH's agrias butterfly) → [the ずかん](#zukan)
+  and **せってい** (a gear in the say button's soft brown: NH has no settings icon) → [せってい](#panel). Each pill is
+  44px tall, its name then its icon (a word as well as a picture: an icon alone would be a guess). It folds back up
+  quicker (160ms, the last pill first) on a second tap of the leaf, a tap anywhere else (that tap still does what it
+  would: no swallowed tap), Esc (focus back on the leaf), any sheet opening or もようがえ, and a pick: a pill's tap
+  is a press squash, the villagers glance up (R18) and its sheet grows out of the pill's icon (Sheet's `pop`, as
+  けんこう). Folded, the pills are `visibility: hidden` and `inert`: no focus, no taps, out of placement.ts' guards (a
+  balloon may stand there). The column is out of the row's flow, so the HUD's box (`.ribbon-wrap`, which the 3D
+  island measures for the sky) stays the row. Reduced motion: the pills fade in and out where they stand, the leaf
+  doesn't tip.
+  - Why (the design pass, 2026-11-03): a game UI view (NH's island view keeps its corners to a few objects; a
+    phone-style drawer, not a second row), an iOS HIG view (one cluster at the thumb's reach of the top, ≥ 44pt
+    targets, the safe area, a disclosure that says so with `aria-expanded`, labels beside icons, outside tap and
+    Esc to dismiss) and an accessibility view (focus order = reading order: the leaf, then its pills, then the bowl,
+    the jar and the dumbbell; nothing hidden reachable; reduced motion honoured; text on cream, never on the sky).
+    The pills drop down rather than slide left: sliding left would cover the sky's middle (the sun, the moon) and
+    put the pills before the leaf in the reading order; under the leaf they're over the island for a moment only.
+    The rarer one (せってい) is the further one.
 - **Jar** (`island/HudJar.svelte`, the one jar drawing `Jar.svelte`): standing in the sky, a little taller than the row
   (its lid over the row's top, its foot under it; 50–56px wide, a little bigger since it's the island's only money
   object: one past 50px hangs lower, its lid never higher than a 50px one's), the shared wallet's ベル written in the glass (ごほうび's balance, the
   app's number font; 1,000 on as 1.2k, 10,000 on as 12k; the full amount in its label). It fills as the wallet grows
   (`walletFill`). Its label carries today's ベル too (「ごほうび · ふたりのベル 129 ベル · きょう 12 ベル」: on the island
   only a screen reader hears today's total; it's shown in full in ごほうび). Tap → a press squash, the villagers glance
-  up at it (R18, to the left), and [the panel](#panel) opens on ごほうび (`aria-expanded` while it's open). No
+  up at it (R18, to the right, as at every HUD control), and [the panel](#panel) opens on ごほうび (`aria-expanded` while it's open). No
   permanent "+N" badge on it (a badge reads as a notification to clear). The guest has it too: ごほうび is view-only
   there, the jar shows the same balance.
 - **Health button** (`island/HudHealth.svelte`): a small cream pill 44px tall with the cream lip, the jar's width, NH's red
   dumbbell (`items/dumbbell`, NH's catalogue icon) across it, its plates a little over the ends; no number (the numbers
-  live in the popup). Tap → the villagers glance up at it
+  live in the popup), the cluster's right end. Tap → the villagers glance up at it
   (R18, to the right) and [けんこう](#kenkou) grows out of the dumbbell (`health/HealthSheet.svelte`, Sheet's `pop`: a live CSS zoom
   about the button, no View Transition: its snapshot of the banded ground striped on iPhone).
-- **Meal button** (`island/HudFood.svelte`): the health button's pill with NH's ramen bowl (`items/dinner`), centred
-  between the jar and the dumbbell. Tap → the villagers glance up and in at it (R18) and [ごはん](#gohan) grows out of
+- **Meal button** (`island/HudFood.svelte`): the health button's pill with NH's ramen bowl (`items/dinner`), left of
+  the jar (the jar stays beside the dumbbell). Tap → the villagers glance up at it (R18) and [ごはん](#gohan) grows out of
   the bowl (`food/FoodSheet.svelte`, Sheet's `pop`).
 - **Coins** (`island/HudCoins.svelte`): each newly met goal flies up as a +1 coin from its fruit into the jar (+2 with
   its がんばり; `CoinFlow`), the jar squashing as each lands; the jar's number holds while coins are in the air
-  (`coinsInFlight`) and counts up by each one as it lands. As each lands, today's ベル so far pop up beside the jar in a
+  (`coinsInFlight`) and counts up by each one as it lands. As each lands, today's ベル so far pop up just under the jar's foot in a
   small yuzu bubble (「+3」, counting up with the coins), hold ~1 s and fade (reduced motion: a plain fade; aria-hidden:
   the label says it); only coins landing flash it, never a とりけす's refund. All of it waits while
   something covers the scene.
@@ -107,18 +131,22 @@ island with the panel open on ごほうび (`?panel=rewards`, dropped from the U
 ### Panel
 
 Tap the HUD's jar → the island panel slides down from the top (`panel/IslandPanel.svelte`): title 「しまの てちょう」,
-full height, three tabs pinned under the title (NH yellow for the one shown): きろく · ごほうび · せってい. Every opening
-starts on ごほうび (the jar's own tab, today's ベル there; no memory of the last tab), so きろく and せってい are a tab
-away. Its own chunk, loaded on the first tap.
+full height, two tabs pinned under the title (NH yellow for the one shown): きろく · ごほうび. Every opening starts on
+ごほうび (the jar's own tab, today's ベル there; no memory of the last tab), so きろく is a tab away. Its own chunk,
+loaded on the first tap.
 
-- **きろく:** the ベル ledger and the ずかん ([Kiroku](#kiroku)); the goals are けんこう's ([Kenkou](#kenkou)).
+- **きろく:** the ベル ledger ([Kiroku](#kiroku)); the goals are けんこう's ([Kenkou](#kenkou)), the ずかん the HUD menu's.
 - **ごほうび:** the wallet: the jar, the shop and the buys ([Wallet](#wallet)).
-- **せってい:** **むらびと** (my villager and よびな; かえる → the picker: 23 special characters and all 417 NH
-  villagers, its head pinned over the scrolling grid), **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 / English), **つうしん** (when each of us last synced; いま つうしん) and **あそびかた** (くわしく → the guide:
-  the goals, ふたりでぜんぶ, the treats, the Sunday recap, a protein hint of 1.6 g per kg a day).
 
-A day, a ずかん kind, the picker and the guide push a level with ‹ (the tabs hide while a level is open); ✕, the backdrop and
-Esc close the panel.
+A week or a day push a level with ‹ (the tabs hide while a level is open); ✕, the backdrop and Esc close the panel.
+
+**せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, grown out of the
+pill (Sheet's `pop`), title せってい: **むらびと** (my villager and よびな; かえる → the picker: 23 special characters
+and all 417 NH villagers, its head pinned over the scrolling grid), **もようがえ** (not the guest's), **サウンド**
+([Sound settings](#sound-settings)), **ことば** (日本語 / English), **つうしん** (when each of us last synced; いま つうしん;
+not the guest's) and **あそびかた** (くわしく → the guide: the goals, ふたりでぜんぶ, the treats, the Sunday recap, a
+protein hint of 1.6 g per kg a day). The picker and the guide push a level with ‹; ✕, the backdrop and Esc close it,
+and the next opening starts at its top. Its own chunk, loaded on the first tap.
 
 ### Kiroku
 
@@ -127,7 +155,6 @@ Esc close the panel.
 - **ベル:** by week (earnings only; the all-time total isn't repeated here: the wallet is ごほうび's) one line per day under the two avatars: each person's four
   fruits (bright = met), a star on a ふたりでぜんぶ day, the day's ベル (tap → the day); on a がんばり day a smaller second
   line with each person's がんばり ベル.
-- **ずかん** ([Zukan](#zukan)): one row per kind with how many either of us has found.
 - **Day:** ふたりでぜんぶ (+2 or —), then each person: the day's ベル and per goal its value (green when met, the
   「がんばり」 chip at 1.5×) and +1, then any がんばり row, like the tree's popup.
 
@@ -760,7 +787,7 @@ NH's outdoor furniture on the island, moves it and takes it away; both phones sh
   モンステラ, みちしるべ (signpost), いちりんしゃ (wheelbarrow). None of them is in the fixed decor (benches, the campfire,
   the shishi-odoshi, the hammock, the pull-up bar) and none is seasonal. At most 30 on the island, shared: either of us
   moves or takes away anyone's.
-- **In:** せってい → もようがえ → はじめる (the panel closes; no new HUD control on the island). The tray stands at the
+- **In:** せってい → もようがえ → はじめる (the sheet closes; no new HUD control on the island). The tray stands at the
   screen's foot in the thumb's reach: the ten items in two rows of five and ✓ おわる with the count (「3/30」); a bar
   above it says what to do, or what is held and why it can't go.
 - **Place:** a tap on an item puts it down as a ghost on the nearest fine spot in the middle of the view (lifted with
@@ -1068,7 +1095,9 @@ and its mouth, and the spring and the river above the cliff.
 ### Zukan
 
 `kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `model/tally.ts`,
-`e2e/zukan.spec.ts`. The ずかん in きろく, shared (the first `find` of either of us): さかな 80 (the sea's 34 and the pond's
+`e2e/zukan.spec.ts`. The ずかん is its own sheet (`kiroku/ZukanSheet.svelte`: the HUD menu's ずかん pill, grown out of it,
+Sheet's `pop`): first one row per kind with how many either of us has found (`ZukanCard`), a row → that kind's page
+with ‹; the next opening starts on the rows. Shared (the first `find` of either of us): さかな 80 (the sea's 34 and the pond's
 46), むし 74, うみのさち 40, かせき 73 (laid out like NH's museum: the standalone ones, then each dinosaur with
 「Tレックス 1 / 3」), かいがら 9 (the pearl last), and a balloon's presents: カタログ 1,836 (by NH's categories: かぐ,
 こもの, かべかけ, てんじょう, トップス... かさ) and レシピ 126 (by season). Every catch and pick-up counts: each found tile shows

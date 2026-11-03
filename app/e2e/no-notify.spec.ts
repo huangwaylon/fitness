@@ -2,6 +2,7 @@
 // is sent to the relay's old /push/* routes, and a phone that had it on lets its Web Push subscription go on the next
 // open (sync/pushGone.ts), its old prefs forgotten.
 import { expect, test, type Page } from '@playwright/test';
+import { fromMenu } from './hud.ts';
 
 /** The page's browser with a service worker holding a subscription (Playwright blocks real ones), and a probe. */
 async function fakePush(page: Page) {
@@ -32,9 +33,8 @@ test('an old subscription is let go on open, its prefs forgotten; nothing asks, 
   await expect.poll(() => probe(page)).toEqual({ asked: 0, subscribed: 0, unsubscribed: 1 });
   expect(await page.evaluate(() => [localStorage.getItem('island.push'), localStorage.getItem('island.goalSent')])).toEqual([null, null]);
   // せってい: no つうち section, no switch for it
-  await page.getByRole('button', { name: /^ごほうび · ふたりのベル / }).click();
+  await fromMenu(page, 'settings');
   const panel = page.locator('dialog[open]');
-  await panel.locator('.tab[data-tab=settings]').click();
   await expect(panel.locator('#sec-sound')).toBeVisible();
   await expect(panel.locator('#sec-notify')).toHaveCount(0);
   await expect(panel).not.toContainText('つうち');

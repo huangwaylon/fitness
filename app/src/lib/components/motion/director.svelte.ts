@@ -205,16 +205,16 @@ export function removeFx(id: ActorId, n: number) {
   if (i >= 0) a.fx.splice(i, 1);
 }
 
-/** Which way R18's glance up at the HUD goes: the jar's corner (left; its idle peek too) or, set just before its
- *  R18 by the dumbbell, the right, or by the meal bowl in the middle, up and in. */
-export const hudGlance: { side: 'l' | 'r' | 'in' } = { side: 'l' };
+/** Which way R18's glance up at the HUD goes (its idle peek too): the HUD's one cluster, top right (the menu, the jar,
+ *  the dumbbell). */
+const HUD_SIDE = 'r';
 
 /** Apply one catalogue step to one actor now. */
 export function applyStep(id: ActorId, s: Step) {
   const a = actors[id];
   if (id === 'host' && !a.present) return;
-  // 'jar': the HUD control tapped (R18), up in the sky's corner: the jar top-left, the bowl in the middle, the dumbbell top-right (hudGlance)
-  if (s.face) a.face = s.face === 'home' ? 'home' : s.face === 'other' ? toward(id, actors[id === 'mine' ? 'partner' : 'mine'].x) : s.face === 'jar' ? hudGlance.side : 'in';
+  // 'jar': the HUD control tapped (R18), up in the sky's top-right corner (HUD_SIDE)
+  if (s.face) a.face = s.face === 'home' ? 'home' : s.face === 'other' ? toward(id, actors[id === 'mine' ? 'partner' : 'mine'].x) : s.face === 'jar' ? HUD_SIDE : 'in';
   // (the third villager's `other` is mine: the one it high-fives on this phone)
   if (s.pose) {
     a.pose = s.pose;

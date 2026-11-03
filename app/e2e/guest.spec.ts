@@ -5,6 +5,7 @@
 // island's もようがえ, つうしん); its catches go into the shared ずかん under its own name; its tent pieces reach
 // both members; and its villager is on the members' islands only while its app is open, moving only when it's moved.
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
+import { fromMenu } from './hud.ts';
 
 const VIEW = { width: 393, height: 659 };
 test.use({ viewport: VIEW });
@@ -48,16 +49,19 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   await expect(panel).not.toContainText('体重');
   await page.keyboard.press('Escape');
   await expect(panel).toHaveCount(0);
-  // きろく (the jar opens the panel on ごほうび, a tab away): the ベル ledger and the ずかん (the goals are けんこう's)
+  // きろく (the jar opens the panel on ごほうび, a tab away): the ベル ledger (the goals are けんこう's, the ずかん the menu's)
   await hudJar(page).click();
   await expect(panel.locator('.tab[data-tab=rewards]')).toHaveAttribute('aria-pressed', 'true');
   await panel.locator('.tab[data-tab=kiroku]').click();
   await expect(panel.locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(panel.locator('.kiroku [data-sec=zukan]')).toBeVisible();
+  await expect(panel.locator('.kiroku')).toBeVisible();
+  await expect(panel.locator('.tab[data-tab=settings], [data-zukan]')).toHaveCount(0);
   await expect(panel.locator('.goals, .pen-btn')).toHaveCount(0);
   for (const text of ['体重', '体脂肪率', 'kg', '%']) await expect(panel, text).not.toContainText(text);
-  // せってい: the villager, the sound and the language; no もようがえ or つうしん (and no つうち: gone for everyone)
-  await panel.locator('.tab[data-tab=settings]').click();
+  await page.keyboard.press('Escape');
+  await expect(panel).toHaveCount(0);
+  // せってい (the HUD menu's): the villager, the sound and the language; no もようがえ or つうしん (and no つうち: gone for everyone)
+  await fromMenu(page, 'settings');
   await expect(panel.locator('[data-guest-note]')).toBeVisible();
   await expect(panel.locator('[data-push="villager"]')).toBeVisible();
   await expect(panel.locator('[data-decor-start]')).toHaveCount(0);
@@ -117,8 +121,7 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
   await expect(g.locator('[data-fx="catch"]')).toBeAttached();
   // A's ずかん: the butterfly, first found by the guest (おきゃくさん), its count under the guest's own name
   await a.bringToFront();
-  await hudJar(a).click();
-  await a.locator('dialog[open] .tab[data-tab=kiroku]').click();
+  await fromMenu(a, 'zukan');
   await expect(a.locator('[data-zukan="bug"]')).toContainText('1 / ', { timeout: 5000 });
   await a.locator('[data-zukan="bug"]').click();
   await expect(a.locator('[data-zukan-first="G"]')).toContainText('1');
@@ -129,8 +132,7 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
   // and after a reload, as it was: the record's rows say who found it
   await a.reload();
   await expect(hudJar(a)).toBeVisible();
-  await hudJar(a).click();
-  await a.locator('dialog[open] .tab[data-tab=kiroku]').click();
+  await fromMenu(a, 'zukan');
   await a.locator('[data-zukan="bug"]').click();
   await a.locator('button.tile[data-entry="common-butterfly"]').click();
   await expect(a.locator('[data-zukan-detail="common-butterfly"]')).toContainText('7/4 おきゃくさんが 見つけた');

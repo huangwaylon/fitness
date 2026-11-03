@@ -1,10 +1,11 @@
 <script lang="ts">
-  // 島's HUD, NH island-view light: the sky clean, three controls along its top (docs/design.md "Island"). On
-  // the left the jar (the shared wallet's ベル written in it, today's +N flashing beside it as coins land) → the
-  // island panel slides down on ごほうび (where today's ベル are shown), its tabs きろく · ごほうび · せってい; on the
-  // right the health button (NH's dumbbell) → the health popup (けんこう); between them, centred, the meal button (NH's
-  // ramen bowl) → the meal log (ごはん). Only when sync is not ok, the sync chip centred under the row. The panel and
-  // the popups are their own chunks, loaded on first open.
+  // 島's HUD, NH island-view light: the sky clean, one small cluster in its top-right corner (docs/design.md "Island"):
+  // [the menu] [the meal button] [the jar] [the health button]. The menu (NH's leaf) drops ずかん and せってい under it,
+  // each opening its own sheet grown out of it; the meal button (NH's ramen bowl) → the meal log (ごはん); the jar (the
+  // shared wallet's ベル written in it, today's +N flashing under it as coins land) → the island panel slides down on
+  // ごほうび (its tabs きろく · ごほうび); the health button (NH's dumbbell) → the health popup (けんこう). Only when sync is
+  // not ok, the sync chip centred under the row. The panel, the popups and the two sheets are their own chunks, loaded
+  // on first open.
   import { onMount } from 'svelte';
   import { replaceState } from '$app/navigation';
   import { page } from '$app/state';
@@ -12,6 +13,7 @@
   import HudFood from './HudFood.svelte';
   import HudHealth from './HudHealth.svelte';
   import HudJar from './HudJar.svelte';
+  import HudMenu from './HudMenu.svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
 
   interface Props {
@@ -32,10 +34,16 @@
   const loadPanel = lazy(() => import('../panel/IslandPanel.svelte'));
   const loadHealth = lazy(() => import('../health/HealthSheet.svelte'));
   const loadFood = lazy(() => import('../food/FoodSheet.svelte'));
+  const loadZukan = lazy(() => import('../kiroku/ZukanSheet.svelte'));
+  const loadSettings = lazy(() => import('../panel/SettingsSheet.svelte'));
   /** Mounted from the first open on (each keeps its state between opens). */
   let opened = $state(false);
   let healthMounted = $state(false);
   let foodMounted = $state(false);
+  let zukanMounted = $state(false);
+  let settingsMounted = $state(false);
+  let zukanOpen = $state(false);
+  let settingsOpen = $state(false);
   // the old /jar page (`?panel=rewards`): the panel open at once
   onMount(() => {
     if (new URLSearchParams(location.search).get('panel') !== 'rewards') return;
@@ -49,8 +57,9 @@
 <!-- (.ribbon-wrap: the HUD's box, by its old name: the 3D island measures it for the sky under it) -->
 <div class="ribbon-wrap">
   <div class="hud-row">
-    <HudJar bells={balance} {today} {later} expanded={panelOpen} onopen={() => (opened = panelOpen = true)} />
+    <HudMenu {later} onzukan={() => { zukanMounted = true; zukanOpen = true; }} onsettings={() => { settingsMounted = true; settingsOpen = true; }} />
     <HudFood {later} onopen={() => { foodMounted = true; foodOpen = true; }} />
+    <HudJar bells={balance} {today} {later} expanded={panelOpen} onopen={() => (opened = panelOpen = true)} />
     <HudHealth {later} onopen={() => { healthMounted = true; healthOpen = true; }} />
   </div>
   <SyncPill />
@@ -61,6 +70,12 @@
 {/if}
 {#if foodMounted}
   {#await loadFood() then { default: FoodSheet }}<FoodSheet bind:open={foodOpen} />{/await}
+{/if}
+{#if zukanMounted}
+  {#await loadZukan() then { default: ZukanSheet }}<ZukanSheet bind:open={zukanOpen} />{/await}
+{/if}
+{#if settingsMounted}
+  {#await loadSettings() then { default: SettingsSheet }}<SettingsSheet bind:open={settingsOpen} />{/await}
 {/if}
 {#if healthMounted}
   {#await loadHealth() then { default: HealthSheet }}<HealthSheet bind:open={healthOpen} />{/await}
@@ -75,13 +90,13 @@
   }
   /* only the controls take taps: the sky between them lets a tap through (the sun, the moon, a wish) */
   .ribbon-wrap > :global(*:not(.hud-row)), .hud-row > :global(*) { pointer-events: auto; }
-  /* [the jar] … [the meal button] … [the health button]: the two top corners the same width (--hud-side) so they
-     mirror each other and the meal button sits on the middle, inset 14px or the safe area's side (a landscape notch);
-     the row is under the safe area (--hud-top), so the Dynamic Island stays clear above it; the sky beside the bowl
-     stays clear for the sun, the moon and the balloon */
+  /* [the menu] [the meal button] [the jar] [the health button]: one cluster in the top-right corner, inset 14px or the
+     safe area's side (a landscape notch), 6px apart; the meal button, the jar and the dumbbell the same width
+     (--hud-side), the menu's 44px disc at the left end; the row is under the safe area (--hud-top), so the Dynamic
+     Island stays clear above it, and the sky's left clear for the sun, the moon and the balloon */
   .hud-row {
     --hud-side: 60px;
-    align-self: stretch; display: flex; align-items: center; justify-content: space-between;
+    align-self: stretch; display: flex; align-items: center; justify-content: flex-end; gap: 6px;
     padding: 0 max(14px, var(--safe-right)) 0 max(14px, var(--safe-left));
   }
 </style>

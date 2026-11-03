@@ -1,4 +1,4 @@
-// ごはん (docs/design.md "Gohan"): the meal log, the HUD's middle button (the ramen bowl). Open it, search ごはん, add
+// ごはん (docs/design.md "Gohan"): the meal log, the HUD cluster's bowl (left of the jar). Open it, search ごはん, add
 // 茶碗1杯 to 朝ごはん and see the day's total go up; another person's day is read-only (no ＋, no entry to tap), and the
 // guest sees the members' meals and logs its own. On `?demo` (its meal rows: model/food.ts over store/demo/rows.ts).
 import { expect, test, type Page } from '@playwright/test';
@@ -17,12 +17,11 @@ async function openFood(page: Page, as = '') {
   await sheet(page).evaluate((d) => Promise.all(d.getAnimations().map((a) => a.finished))); // the zoom in has played
 }
 
-test('the bowl sits between the jar and the dumbbell; search ごはん, add 茶碗1杯 to 朝ごはん, the day’s total goes up', async ({ page }) => {
+test('the bowl sits in the top-right cluster, left of the jar (the jar beside the dumbbell); search ごはん, add 茶碗1杯 to 朝ごはん, the day’s total goes up', async ({ page }) => {
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
   const [jar, bowl, bell] = await Promise.all(['.hud-jar', '.hud-food', '.hud-health'].map((s) => page.locator(s).boundingBox()));
-  expect(jar!.x + jar!.width).toBeLessThan(bowl!.x);
-  expect(bowl!.x + bowl!.width).toBeLessThan(bell!.x);
-  expect(Math.abs(bowl!.x + bowl!.width / 2 - page.viewportSize()!.width / 2)).toBeLessThan(2); // centred
+  expect(bowl!.x + bowl!.width).toBeLessThan(jar!.x);
+  expect(jar!.x + jar!.width).toBeLessThan(bell!.x);
   expect(Math.abs(bowl!.y - bell!.y)).toBeLessThan(1); // one row
   expect(bowl!.height).toBeGreaterThanOrEqual(44);
 

@@ -1,6 +1,7 @@
 // Demo smoke test: buy, undo, the harvest recap, きろく (read-only), けんこう's goals, on `?demo` (no backend, no key).
 import { expect, test, type Page } from '@playwright/test';
 import { tapOn } from './island.ts';
+import { fromMenu, hudMenu } from './hud.ts';
 
 /** The topmost sheet (a confirm over the panel). */
 const sheet = (page: Page) => page.locator('dialog[open]').last();
@@ -43,7 +44,7 @@ const goalCard = (page: Page) => sheet(page).locator('[data-health-sheet] .goals
 /** The topmost sheet's opening animation has played (the health popup zooms in). */
 const settled = (page: Page) => sheet(page).evaluate((d) => Promise.all(d.getAnimations().map((a) => a.finished)));
 /** The panel on this tab, from wherever we are (the health popup is closed first). */
-async function toTab(page: Page, tab: 'kiroku' | 'rewards' | 'settings') {
+async function toTab(page: Page, tab: 'kiroku' | 'rewards') {
   if (!(await sheet(page).locator('.tabs').count())) {
     await closeSheets(page);
     await openPanel(page);
@@ -51,11 +52,10 @@ async function toTab(page: Page, tab: 'kiroku' | 'rewards' | 'settings') {
   await sheet(page).locator(`.tab[data-tab=${tab}]`).click();
   await expect(sheet(page).locator(`.tab[data-tab=${tab}]`)).toHaveAttribute('aria-pressed', 'true');
 }
-/** The panel on its せってい tab (むらびと, サウンド, ことば, つうしん, あそびかた). */
+/** The せってい sheet, from the HUD menu (むらびと, サウンド, ことば, つうしん, あそびかた), from wherever we are. */
 async function openSettings(page: Page) {
-  await openPanel(page);
-  await sheet(page).locator('.tab[data-tab=settings]').click();
-  await expect(sheet(page).locator('.tab[data-tab=settings]')).toHaveAttribute('aria-pressed', 'true');
+  await closeSheets(page);
+  await fromMenu(page, 'settings');
 }
 
 test('buy: a reward comes back with とりけす', async ({ page }) => {
@@ -123,7 +123,8 @@ test('きろく: per day each of us four goals and ふたりで ぜんぶ; a day
   await expect(sheet(page).locator('.pen-btn, .atm, input, .log')).toHaveCount(0);
   // the goals are けんこう's now: none here
   await page.locator('.titlebar .back').click();
-  await expect(sheet(page).locator('.kiroku [data-sec=zukan]')).toBeVisible();
+  await expect(sheet(page).locator('.kiroku section.week').first()).toBeVisible();
+  await expect(sheet(page).locator('[data-zukan]')).toHaveCount(0); // (the ずかん is the HUD menu's)
   await expect(sheet(page).locator('.goals, .pen-btn')).toHaveCount(0);
 });
 
@@ -430,15 +431,18 @@ test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (to
   await expect(page.locator('.if-scene button.vil').nth(1)).toBeEnabled();
   const box = async (sel: ReturnType<Page['locator']>) => (await sel.boundingBox())!;
   const vw = page.viewportSize()!.width;
-  // the panel: three tabs and ✕ at its top level, ‹ + ✕ one level in (a day, the picker, the guide), ‹ goes back
+  // the panel: two tabs and ✕ at its top level, ‹ + ✕ one level in (a day), ‹ goes back
   await openPanel(page);
   const bar = sheet(page).locator('.titlebar');
   const tabs = sheet(page).locator('.tabs');
-  await expect(sheet(page).locator('.tabs .tab')).toHaveText(['きろく', 'ごほうび', 'せってい']); // きろく first
+  await expect(sheet(page).locator('.tabs .tab')).toHaveText(['きろく', 'ごほうび']); // きろく first
   await expect(sheet(page).locator('.tab[data-tab=rewards]')).toHaveAttribute('aria-pressed', 'true'); // the jar's: the panel opens on it
   await expect(bar.locator('.close')).toBeVisible();
   await expect(bar.locator('.back')).toHaveCount(0);
-  await sheet(page).locator('.tab[data-tab=settings]').click();
+  // せってい (the HUD menu's): ✕ at its top, ‹ + ✕ in the picker and the guide
+  await openSettings(page);
+  await expect(bar.locator('.close')).toBeVisible();
+  await expect(bar.locator('.back')).toHaveCount(0);
   for (const push of ['villager', 'help']) {
     await sheet(page).locator(`[data-push=${push}]`).click();
     await expect(bar.locator('.back')).toBeVisible();
@@ -514,10 +518,9 @@ test('サウンド: all off by default; toggles persist on this phone; ミュー
   expect(errors).toEqual([]);
 });
 
-test('focus ring: none on the panel’s くわしく after tap → ‹ back; the keyboard still shows it', async ({ page, browserName }) => {
+test('focus ring: none on せってい’s くわしく after tap → ‹ back; the keyboard still shows it', async ({ page, browserName }) => {
   await page.goto('?demo');
-  await page.getByRole('button', { name: /^ごほうび · ふたりのベル / }).tap();
-  await sheet(page).locator('.tab[data-tab=settings]').tap();
+  await fromMenu(page, 'settings', 'tap');
   const tile = sheet(page).locator('[data-push=help]');
   await tile.tap();
   await sheet(page).locator('.titlebar .back').tap();
@@ -619,7 +622,7 @@ test('きろく opens light: the newest three weeks of ベル; 「まえの週�
 test('the panel: its tabs show whole (lip included, nothing paints over it) and it reaches the screen’s bottom', async ({ page }) => {
   await page.goto('?demo');
   await openPanel(page);
-  for (const tab of ['kiroku', 'rewards', 'settings']) {
+  for (const tab of ['kiroku', 'rewards']) {
     await sheet(page).locator(`.tab[data-tab=${tab}]`).click();
     const m = await sheet(page).evaluate((d) => {
       const row = d.querySelector('.tabs')!.getBoundingClientRect();
@@ -638,7 +641,7 @@ test('the panel: its tabs show whole (lip included, nothing paints over it) and 
 /** The jar's number as it writes it in the glass (HudJar: the digits to 999, then 1.2k, 12k). */
 const jarText = (n: number) => (n < 1000 ? n.toLocaleString('en-US') : n < 10_000 ? `${Math.floor(n / 100) / 10}k` : `${Math.floor(n / 1000)}k`);
 
-test('the HUD row: [the jar] in the top-left corner, [the dumbbell] in the top-right, no ribbon, the sky between clear, every target ≥ 44px, on screen at 320–402 with a notch, day and night', async ({ page }) => {
+test('the HUD row: [the menu] [the bowl] [the jar] [the dumbbell] in the top-right corner, no ribbon, the sky\'s left clear, every target ≥ 44px, on screen at 320–402 with a notch, day and night', async ({ page }) => {
   // an iPhone 15/16's top inset (59px): the row stays where it was, under it
   await page.addInitScript(() => document.addEventListener('DOMContentLoaded', () => {
     const s = document.createElement('style');
@@ -654,20 +657,23 @@ test('the HUD row: [the jar] in the top-left corner, [the dumbbell] in the top-r
       await expect(page.getByRole('button', { name: /^きょう / })).toHaveCount(0);
       const jarBtn = page.getByRole('button', { name: /^ごほうび · ふたりのベル [\d,]+\sベル · きょう [\d,]+\sベル$/ });
       const btn = page.getByRole('button', { name: 'けんこう', exact: true });
-      const [jb, bb] = [(await jarBtn.boundingBox())!, (await btn.boundingBox())!];
-      for (const b of [jb, bb]) {
+      const [mb, fb, jb, bb] = [(await hudMenu(page).boundingBox())!, (await page.locator('.hud-food').boundingBox())!, (await jarBtn.boundingBox())!, (await btn.boundingBox())!];
+      for (const b of [mb, fb, jb, bb]) {
         expect(b.height).toBeGreaterThanOrEqual(44);
         expect(b.width).toBeGreaterThanOrEqual(44);
         expect(b.y).toBeGreaterThanOrEqual(59);
+        expect(Math.abs(b.y - jb.y)).toBeLessThan(1); // one row
       }
-      expect(Math.abs(jb.y - bb.y)).toBeLessThan(1); // one row
-      // the two corners, mirrored: the same width, the same inset from either side
+      // one cluster, right-aligned: the menu, the bowl, the jar, the dumbbell, in that order, apart, the dumbbell 14px in
+      expect(mb.x + mb.width).toBeLessThanOrEqual(fb.x);
+      expect(fb.x + fb.width).toBeLessThanOrEqual(jb.x);
+      expect(jb.x + jb.width).toBeLessThanOrEqual(bb.x);
       expect(Math.abs(jb.width - bb.width)).toBeLessThan(1);
-      expect(jb.x).toBeGreaterThanOrEqual(12);
-      expect(Math.abs(jb.x - (w - bb.x - bb.width))).toBeLessThan(1.5);
-      // the sky's middle clear: nothing of the HUD over the screen's middle third
-      expect(jb.x + jb.width).toBeLessThan(w / 3);
-      expect(bb.x).toBeGreaterThan((w * 2) / 3);
+      expect(Math.abs(w - bb.x - bb.width - 14)).toBeLessThan(1.5);
+      // the sky's left clear (the sun, the moon, the balloon: a third of it from 393 up), and the menu's pills folded away
+      expect(mb.x).toBeGreaterThan(w >= 393 ? w / 3 : w / 6);
+      await expect(page.locator('[data-hud-zukan], [data-hud-settings]')).toHaveCount(2);
+      for (const pill of await page.locator('[data-hud-zukan], [data-hud-settings]').all()) await expect(pill).toBeHidden();
       // the jar drawn whole under the inset, its number inside the glass
       const art = (await jarBtn.locator('.squash').boundingBox())!, num = (await jarBtn.locator('.num').boundingBox())!;
       expect(art.y).toBeGreaterThanOrEqual(59);
@@ -684,8 +690,8 @@ test('the HUD row: [the jar] in the top-left corner, [the dumbbell] in the top-r
       await expect(btn.locator('svg')).toHaveCount(0);
     }
   }
-  // the two taps stay apart: the jar opens the panel on ごほうび (its tabs to きろく and せってい), the dumbbell the
-  // health popup
+  // the taps stay apart: the jar opens the panel on ごほうび (its tab to きろく; no せってい there: the menu's), the
+  // dumbbell the health popup
   const jar = page.locator('.hud-jar');
   await expect(jar).toHaveAttribute('aria-expanded', 'false');
   await jar.click();
@@ -694,8 +700,7 @@ test('the HUD row: [the jar] in the top-left corner, [the dumbbell] in the top-r
   await expect(jar).toHaveAttribute('aria-expanded', 'true');
   await sheet(page).locator('.tab[data-tab=kiroku]').click();
   await expect(sheet(page).locator('.kiroku')).toBeVisible();
-  await sheet(page).locator('.tab[data-tab=settings]').click();
-  await expect(sheet(page).locator('#sec-sound')).toBeVisible();
+  await expect(sheet(page).locator('.tab[data-tab=settings], [data-zukan]')).toHaveCount(0);
   await page.keyboard.press('Escape');
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await page.getByRole('button', { name: 'けんこう', exact: true }).click();
@@ -703,7 +708,7 @@ test('the HUD row: [the jar] in the top-left corner, [the dumbbell] in the top-r
   await expect(sheet(page).locator('.tabs')).toHaveCount(0);
 });
 
-test('the HUD jar writes ごほうび’s balance in its glass, follows a buy and its とりけす, and the day’s coins land in it (its number never drops while they fly, today’s +N flashing beside it)', async ({ page }) => {
+test('the HUD jar writes ごほうび’s balance in its glass, follows a buy and its とりけす, and the day’s coins land in it (its number never drops while they fly, today’s +N flashing under it)', async ({ page }) => {
   // every change of the jar's number, each catch squash and each +N flash, from the first paint
   await page.addInitScript(() => {
     const w = window as unknown as { jarNums: string[]; jarCatches: number; flashes: string[] };
