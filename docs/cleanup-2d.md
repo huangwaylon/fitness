@@ -1,15 +1,28 @@
 # Cleaning up after the 3D cutover (the 2D island's assets and code)
 
-The user wants the 2D island's assets removed right after the 3D island becomes the only island, once they have
-confirmed this list. **Nothing is deleted yet.** The list comes from `npm run unused` (`app/scripts/unused-assets.ts`),
-checked against what the built 3D island draws (`npm run unused:probe`). Snapshot: 2026-11-02, main at 6456bab.
+The cutover goes in two phases (the user: "flip to 3D as soon as the tests pass and start the unused assets cleanup"):
+
+- **Phase A, at the flip** (`DEFAULT = '3d'`, `LAYOUT_3D = true`): せってい's switch keeps the 2D island reachable for one
+  release, so the 2D renderer and everything it draws stay. Only what **neither** island uses may go. The result is
+  below ("Phase A"): no static file qualifies, and the win is the 3D island no longer downloading the DOM's hidden art.
+- **Phase B, after one release with the fallback:** the 2D renderer, its art, the baked ground and the switch go,
+  in the order of "The plan for phase B" (below).
+
+The lists come from `npm run unused` (`app/scripts/unused-assets.ts`), checked against what the built islands draw
+(`npm run unused:probe`, in both islands). Snapshot: 2026-11-03, main at 56fe9be (just before the flip).
 
 ```sh
 cd app
-npm run build && node scripts/serve-build.ts 4396 &          # (a free port: lsof -i :4396)
-npm run unused:probe -- 4396 /tmp/seen.txt                    # 17 scenes on the 3D island: what's drawn or loaded
-npm run unused -- --seen=/tmp/seen.txt                        # the summary; --list=safe|used|unsure for paths; --json
+npm run build && node scripts/serve-build.ts 4396 &                      # (a free port: lsof -i :4396)
+node scripts/unused-probe.ts 4396 /tmp/seen-3d.txt --island=3d --layout   # 17 scenes: what's drawn or loaded
+node scripts/unused-probe.ts 4396 /tmp/seen-2d.txt --island=2d            # the same on the 2D fallback
+sort -u /tmp/seen-3d.txt /tmp/seen-2d.txt > /tmp/seen.txt
+npm run unused -- --seen=/tmp/seen.txt     # the summary; --list=safe|used|unsure for paths; --json
 ```
+
+The probe also lists every 404 under `art/`, `room/` and `terrain/` (and exits 1): after any deletion, both islands
+must show none. Beside its list it writes `<file>.wasted`: what was downloaded into the DOM and never seen drawn.
+(`--layout` is `?layout`, the 3D island on its layout before `LAYOUT_3D` is on; after the flip it's the default.)
 
 ## How it decides
 
@@ -43,21 +56,60 @@ npm run unused -- --seen=/tmp/seen.txt                        # the summary; --l
 
 | | Files | Size |
 |---|---:|---:|
-| **Safe to delete after the cutover** | **126** | **0.58 MB** |
-| Still used | 6,147 | 90.81 MB |
+| **Safe once the 2D fallback goes (phase B)** | **126** | **0.58 MB** |
+| of which the 2D fallback still draws (phase A: stays) | 126 | 0.58 MB |
+| Still used | 6,148 | 90.29 MB |
 | of which 2D art (`art/`) | 3,257 | 15.88 MB |
-| of which 3D models, the tent's room, audio, icons | 2,890 | 74.9 MB |
-| **Unsure** (the baked ground: safe once the layout's ground lands) | **48** | **1.67 MB** |
+| of which 3D models, the tent's room, audio, icons | 2,891 | 74.4 MB |
+| **The baked ground** (the 2D fallback's; the 3D island on its layout no longer loads it: phase B) | **48** | **1.67 MB** |
 
-The 2D island's own art is small: the bulk of `static/` is the 3D models, the music and the villagers' renders, which
-all stay. The cutover frees 0.58 MB of art now, and 2.25 MB once the layout's ground replaces the baked chunks. The
-code is the bigger win (below).
+`static/` is 106 MB (6,322 files); the build (`build-pages/`) 131 MB. The 2D island's own art is small: the bulk is the
+3D models, the music and the villagers' renders, which all stay. Phase B frees 0.58 MB of art and 1.67 MB of baked
+ground; the code is the bigger win (below).
 
-**A win before any deletion:** today the 3D island downloads about 120 2D images it never shows. They are the DOM's
-own art under the canvas at opacity 0: the probe saw 199 fetched and 77 drawn or loaded. Removing the art from the
-nodes (the code below) stops those downloads even before any files go.
+## Phase A (at the flip, with the 2D fallback)
 
-## Safe to delete after the cutover (126 files, 0.58 MB)
+**Static files: none go.** Every one of the 126 "safe" files is the 2D island's art for something the 3D island draws
+as a model, and the 2D fallback still draws it: the flowers (`Flowers.svelte`), the oaks and their layers
+(`FruitTree.svelte`), the fruit, the decorations' looks 1–3 (`Decor.svelte`, the old もようがえ `DecorMode`), the lamps'
+lit looks and glow, the event pieces (`Halloween`, `Wedding`, `Cake`, `Birthday`), the cliff faces (`WorldWater`). The
+2D probe saw 50 of them drawn in its 17 scenes; the other 76 are the 2D island's in other scenes (a flower colour, a
+look, an hour), so the scan's reasons, not the probe, decide. Two more are the bake's input (`bridges/stone-deck*`,
+`scripts/terrain.ts`), which stays while the baked ground does.
+
+**The baked ground stays.** The 3D island on its layout draws `terrain.ts buildGround(layout)` with `terrain/nh/` (the
+probe on the layout loaded no `terrain/<season>/` chunk), but the 2D fallback's `WorldGround` draws the chunks, and so
+does the 3D island off its layout (the no-layout path, `/villagers3d`). They go in phase B.
+
+**Code: nothing is unreachable in either island.**
+
+- `world.ts`'s unread exports: `BANDS`, `BAND_D` (WorldGround), `FACE_H`, `FALL_H` (WorldWater, terrain-preview.ts),
+  `PATHS` (world.ts's `surfaceAt`, scenery.test.ts), `Building` (layoutWorld.ts) are all still read with the 2D
+  renderer in. Phase B.
+- `DecorMode.svelte` is the 2D island's もようがえ (decor.spec's old-mode tests): phase B.
+- `knip` is clean (it gates the deploy). `knip --production` lists 189 exports read only by the unit tests (the rules'
+  constants: kept for the tests) and the two dead modules outside the cutover (`model/record.ts`, `sync/fake-record.ts`).
+- Routes: `/world3d` is already a redirect to `?island=3d` (a kept link; world3d.spec covers it). `/villagers3d` is the
+  3D villagers POC the user judged on the phone (unlinked, noindex); it reads world.ts and the baked ground. **Ask the
+  user** before deleting it (phase B at the latest, or move it onto the layout).
+
+**The win: the 3D island stops downloading the DOM's hidden art** (`characters/artGate.ts`). Its DOM nodes stay over
+the canvas as the tap areas, but their art is hidden where the canvas draws the thing (IslandScene's `[data-r3]` rules,
+which also set `--art3d: off`, inherited). An `<OfficialArt>` under such a node now waits with a blank image (its URL
+in `data-src`) until its node shows it: no model for its key (`m3off`), or the 2D island again (せってい's switch, no
+WebGL). The probe, 17 scenes on the 3D island on its layout:
+
+| | Before | After |
+|---|---:|---:|
+| Distinct images fetched (`art/`, `terrain/`) | 176 | 65 |
+| Requests for them | 1,179 | 401 (about 69 → 24 a load) |
+| Downloaded into the DOM, never drawn | 124 | 11 (the visitors' renders, the engine's cards' too; the HUD's fruit) |
+| Bytes of the images no longer downloaded | | 0.53 MB (113 images) |
+| 404s, either island | 0 | 0 |
+
+The 2D island is unchanged (219 fetched, 133 drawn).
+
+## Safe once the 2D fallback goes: phase B (126 files, 0.58 MB)
 
 Each has a 3D model in `world3d/assets.json` (or is a layer of one), and only the 2D island draws it:
 
@@ -79,7 +131,7 @@ Each has a 3D model in `world3d/assets.json` (or is a layer of one), and only th
 Then remove their entries from `static/art/manifest.json` (fetch-assets / derive-art / models.ts write it), and the
 matching rules in `service-worker/caches.ts`: `isBakeArt`, and `isDecorArt`'s `-lit` and `lamp-glow` cases.
 
-## Still used (6,147 files, 90.81 MB)
+## Still used (6,148 files, 90.29 MB)
 
 - **Flat art for villagers without a 3D model**, and the villagers everywhere else: `art/villagers/` (887, 11.49 MB):
   the roster, the HUD, the tent, and the 3D island's cards where `has3d` is false.
@@ -99,13 +151,13 @@ matching rules in `service-worker/caches.ts`: `isBakeArt`, and `isDecorArt`'s `-
   `terrain/nh/` (NH's ground textures for the layout's live terrain).
 - **Audio, the app icons, the web manifest.**
 
-## Unsure (48 files, 1.67 MB)
+## The baked ground: phase B (48 files, 1.67 MB)
 
 - `terrain/{spring,summer,autumn,winter,spring-petals,autumn-leaves}/0…7.webp`: the baked ground. The 2D island draws
-  it (WorldGround), and so does the **3D island today** (`Island3D.svelte` `groundUrls()` → `engine.groundLook`, and
-  `/villagers3d`). It becomes safe once the 3D island draws `buildGround(layout)` (docs/island-layout.md "What the 3D
-  integration must change" 1). `island/terrain.json`, `scripts/terrain.ts`, `terrain-seasons.ts` and
-  `terrain-preview.ts` go with it, and so does `caches.ts` `isCritterArt`'s `/terrain/` case.
+  it (WorldGround), and so does the 3D island **off** its layout (`Island3D.svelte` `groundUrls()` →
+  `engine.groundLook`; `/villagers3d`). On its layout the 3D island draws `buildGround(layout)` and loads none of it.
+  `island/terrain.json`, `scripts/terrain.ts`, `terrain-seasons.ts` and `terrain-preview.ts` go with it, and so do
+  `caches.ts` `isCritterArt`'s `/terrain/` case and the bake's input `art/bridges/stone-deck*`.
 
 ## The code that goes
 
@@ -171,3 +223,45 @@ From the import graph with the files above gone (`npm run unused`'s last section
   `TAPE_DECK`, `BRIDGE_RAIL`, `HEDGE_Z`, `HEDGE_XS`, `SCENERY`, `FALLS_POOL`, `freshWhere`, `FreshWhere`,
   `riverNear`, `riverNS`, `inRiver`, `inOval`, `onLand`, `onGrass`, `surfaceAt`, `SHORE_Z`, `DIG_SPOTS`,
   `LAWN_SPOTS`, `BEACH_BOX`, `SEA_BOX`.
+
+## The plan for phase B (after one release with the fallback; not before)
+
+Line numbers above are as of 6456bab: find each by its name. Each step is its own commit, green on its own (`npm run
+check`, `npm run knip`, `npx vitest run`, `npm run build`, `npm run e2e:ci-like` on the specs it touches), and after
+each the probe on the 3D island shows no 404 (`node scripts/unused-probe.ts <port> /tmp/seen.txt`).
+
+1. **Move what the 3D path keeps out of roll.ts:** `quadMatrix` (place3's flat quads) and `zIndexAt` (`depthAt`, the
+   DOM's stacking) into `camera.svelte.ts`, with their cases from `roll.test.ts`.
+2. **The switch goes:** `components/panel/RenderSection.svelte` and its row in せってい; `store/islandRender.svelte.ts`
+   (the island is 3D: its readers lose their `mode === '3d'` tests); `sync/storage.ts` `DEVICE.islandRender` and
+   `DEVICE.islandLayout`; `island/site.svelte.ts`'s `LAYOUT_3D`, `fromUrl` and `kept` (`on` is `force ?? true`). The
+   e2e: `E2E_ISLAND` and `E2E_LAYOUT` in `playwright.config.ts`, `is3d` in `e2e/island.ts` (always true), the specs'
+   `(2d)` variants and 2D-only tests (board.spec's `'sheet'` view, decor.spec's old-mode tests, layout-island's
+   no-`?layout` case, world3d.spec's `?island=2d`), and CI's `e2e-3d` job (`pages.yml`: the gate is it now).
+3. **IslandScene draws only in 3D:** `r3` always true; no WebGL is an error card or nothing (**ask the user**, today it
+   falls back to 2D through `failed3`/`onfail`); the `{:else}` branch (WorldGround, WorldWater, `.haze`); the 2D
+   scroller camera (`solveCam`, `scrollFor`, `camAt`, `camMin`/`camMax` from `CAMS`); the time-of-day `shade` filter,
+   `.tint` and `.haze`'s CSS; the `[data-r3]` rules unconditional.
+4. **Delete the 2D renderer's files:** `WorldGround.svelte`, `WorldWater.svelte`, `ShoreWash.svelte`,
+   `Waterfall.svelte`, `roll.ts` + `roll.test.ts`, `DecorMode.svelte`; empty the script's `GONE`.
+5. **`camera.svelte.ts`:** `three` non-null, each `if (this.three) … else` keeps its 3D side, the roll params go.
+6. **The nodes keep their hit boxes, not their art:** the `{#if … !r3}` blocks (Scenery's shade, lit looks and lamp
+   glow, the tent's pool; Particles' DOM fall; FruitTree's 2D oak and DOM fruit; Critters' fish teardrop and sprites,
+   `BugSprite.svelte` trimmed to its tap box), and the `<OfficialArt>` of an m3 node whose key has a model in Finds,
+   Flowers, Decor, Visitor, TreeShakes, Halloween, Wedding, Cake, TapeDeck, Care. Keep the art of keys with no model
+   (cards, `m3off`). Then `characters/artGate.ts` stays only for what is still hidden (else it goes, with the rules'
+   `--art3d`).
+7. **The 3D island's off-layout path:** with `site.on` always true, Island3D's `island(day)` world, `groundUrls()`,
+   `WORLD_GROUND` and `world3d/ground.ts`'s heightfield, `water.ts`'s world.ts waters. Check `editor/Preview3D.svelte`
+   and `/villagers3d` first (**ask the user** about deleting the POC route, or move it onto the layout).
+8. **The static files:** the 126 above (`--list=safe`), the 48 baked chunks, `island/terrain.json`; their entries in
+   `static/art/manifest.json` (fetch-assets / derive-art / models.ts write it, so fix the writers too); `caches.ts`
+   `isBakeArt`, `isDecorArt`'s `-lit` and `lamp-glow` cases, `isCritterArt`'s `/terrain/` case. Rerun `npm run unused`
+   and the probe first: whatever a step above made unreferenced joins the list, and nothing on it may be seen.
+9. **Scripts:** `scripts/terrain.ts`, `terrain-seasons.ts`, `terrain-preview.ts` and the `terrain`, `terrain:preview`
+   npm scripts. `scripts/models.ts` stays while its renders are icons (the tray).
+10. **world.ts:** the 2D camera's `PIVOT`, `TILT`, `BEHIND`, `AHEAD`, `SKY`, `CAMS`, `CAM_MIN`, `CAM_MAX`, `PLAN`;
+    the unread `BANDS`, `BAND_D`, `FACE_H`, `FALL_H`, `PATHS` (and scenery.test's use), `Building`; after step 7, the
+    old ground's `LAND`, `GRASS`, `RIVER`, `SPRING`, `POND`, `CLIFF`, `BRIDGE`, `onBridge` where nothing reads them.
+    The overlays' constants follow the layout (docs/island-layout.md item 7), not this cleanup.
+11. **Docs:** design.md "World", decisions.md "The island in 3D", this page (what's gone), testing.md (the e2e-3d job).
