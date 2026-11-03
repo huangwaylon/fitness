@@ -443,7 +443,6 @@ const NO_MODEL: [string, string][] = [
   ['bushes/white-plumeria, bushes/pink-plumeria', 'no plumeria in NH’s files (no other name either): NH’s hibiscus (the closest shape) in the plumeria’s white and pink (`standIn`)'],
   ['trees/*-canopy, trees/*-trunk', '2D only: the 2D oak’s two layers; the 3D tree is one model'],
   ['reactions/*', 'billboard: the villagers’ emotes'],
-  ['deco/lamp-glow', 'billboard: an additive glow sprite (a light’s halo, not a thing)'],
   ['fx/* (sparkle, bang, dust, splash, ripple)', 'not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the 2D’s colours (scripts/world3d-fx.ts)'],
   ['deco/airport', 'not on the island: the pairing page’s map icon'],
   ['host/*, items/snack, items/dinner, money/*', 'not on the island: the panels’ and the HUD’s art'],

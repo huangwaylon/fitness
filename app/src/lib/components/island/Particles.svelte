@@ -1,16 +1,13 @@
 <script lang="ts">
-  // Seasonal particles (design.md "Particles and events"), transform/opacity only, ONE animation each (the side-to-side
-  // flutter is folded into the fall keyframes; ≤ 3 particles in the idle budget): cherry-blossom
-  // petals, autumn maple leaves (2, 3 in festival week), snowflakes on a snow day (3), all official art, falling in
-  // screen space; summer nights get our fireflies, world nodes over the grass in front of the camera where it settled
-  // (mode="fireflies", inside the stage), and on Toy Day (Dec 24) the same layer sets two presents beside the goal trees.
-  // The falling layer is a size container, so the fall distance is in cqh of the whole scene.
+  // Seasonal particles (design.md "Particles and events"; ≤ 3 in the idle budget): cherry-blossom petals, autumn maple
+  // leaves (2, 3 in festival week), snowflakes on a snow day (3): which and how many, for the 3D island to draw
+  // (ambient3d.svelte.ts); summer nights get our fireflies, world nodes over the grass in front of the camera where it
+  // settled (mode="fireflies", inside the stage), and on Toy Day (Dec 24) the same layer sets two presents beside the
+  // goal trees.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
-  import { seasonArt } from '#lib/art.ts';
   import { eventsAt, u, type Tod } from './scene.ts';
-  import { mulberry32 } from '#lib/random.ts';
   import { minuteNow } from '#lib/time/clock.ts';
   import { useWorld } from './camera.svelte.ts';
   import { ambient3 } from './ambient3d.svelte.ts';
@@ -39,21 +36,6 @@
     foliage === 'blossom' && tod !== 'night' ? 'petal' : foliage === 'fall' && tod !== 'night' ? 'maple-leaf' : snowing ? 'snowflake' : null
   );
   const count = $derived(quiet ? (kind ? 1 : 0) : kind === 'petal' || kind === 'maple-leaf' ? (festival ? 3 : 2) : kind === 'snowflake' ? 3 : 0);
-  const items = $derived.by(() => {
-    const r = mulberry32(season.length * 97 + count);
-    const [d0, d1] = kind === 'snowflake' ? [12, 18] : kind === 'maple-leaf' ? [10, 15] : [9, 14];
-    return Array.from({ length: count }, (_, i) => {
-      const dur = d0 + r() * (d1 - d0);
-      return {
-        x: ((i + r() * 0.8) / count) * 100,
-        size: kind === 'snowflake' ? 8 + r() * 6 : kind === 'maple-leaf' ? 12 + r() * 4 : 10 + r() * 6,
-        dur,
-        delay: -r() * dur,
-        sx: (kind === 'snowflake' ? 10 : 18) * (r() < 0.5 ? -1 : 1),
-        rot: kind === 'maple-leaf' ? 180 + r() * 360 : 40
-      };
-    });
-  });
   const w = useWorld();
   // the 3D island draws the fall itself (ambient3d.svelte.ts)
   $effect(() => {
@@ -80,15 +62,7 @@
   const TOYS: readonly Pt[] = $derived((void site.rev, [[HOMES.A[0] + 42, HOMES.A[1] - 34], [HOMES.B[0] - 42, HOMES.B[1] - 34]]));
 </script>
 
-{#if mode === 'fall' && kind && !w.rest.three}
-  <div class="layer" aria-hidden="true">
-    {#each items as p, i (i)}
-      <span class="p" style:left="{p.x}%" style:animation-duration="{p.dur}s" style:animation-delay="{p.delay}s" style:--rot="{p.rot}deg" style:--sx="{p.sx}px">
-        <OfficialArt key={seasonArt(kind)} size="{p.size.toFixed(1)}px" eager />
-      </span>
-    {/each}
-  </div>
-{:else if mode === 'fireflies' && season === 'summer' && tod === 'night' && !raining}
+{#if mode === 'fireflies' && season === 'summer' && tod === 'night' && !raining}
   {#each FIREFLIES as [x, z, lift], i (`${i}:${x},${z}`)}
     <!-- a light: never tinted (they glow), in their depth -->
     <span class="node" aria-hidden="true" {@attach w.at({ x, z, lift, h: 10, light: true, m3: { key: '', emit: { kind: 'firefly', every: 5200 } } })}>
@@ -103,16 +77,6 @@
 {/if}
 
 <style>
-  .layer { position: absolute; inset: 0; z-index: 70; pointer-events: none; overflow: hidden; container-type: size; }
-  .p { position: absolute; top: 0; line-height: 0; animation: fall 10s linear infinite; will-change: transform; }
-  @keyframes fall {
-    0% { transform: translate(0, -10cqh) rotate(0); }
-    20% { transform: translate(var(--sx), 14cqh) rotate(calc(var(--rot) * .2)); }
-    40% { transform: translate(calc(var(--sx) * -1), 38cqh) rotate(calc(var(--rot) * .4)); }
-    60% { transform: translate(var(--sx), 62cqh) rotate(calc(var(--rot) * .6)); }
-    80% { transform: translate(calc(var(--sx) * -1), 86cqh) rotate(calc(var(--rot) * .8)); }
-    100% { transform: translate(0, 110cqh) rotate(var(--rot)); }
-  }
   /* world nodes (camera.svelte.ts places them): a firefly's glow, a present at its foot */
   .node { width: 0; height: 0; pointer-events: none; line-height: 0; }
   .toy .art { position: absolute; left: 0; bottom: 0; translate: -50% 4%; filter: var(--leaf-tint,) drop-shadow(0 1.5px 1px rgba(80, 50, 20, .3)); }

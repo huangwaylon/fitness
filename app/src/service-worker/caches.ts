@@ -38,11 +38,11 @@ export const isVillagerArt = (path: string): boolean => path.includes('/art/vill
 export const isCritterArt = (path: string): boolean =>
   path.includes('/art/critters/') || path.includes('/art/finds/') || path.includes('/art/presents/') || path.includes('/terrain/');
 /** The world's dressing for a season or the night and its decor (island/scene.ts, world.ts): the buildings' and the
- *  cedar's winter looks, the lit windows, the lamps' glow, the fences, lanterns, rocks, bamboo and the wild flowers (a
- *  season's kinds and their hybrids): cached on first use, not at install. */
+ *  cedar's winter looks, the lit windows, the fences, lanterns, rocks, bamboo and the wild flowers (a season's kinds
+ *  and their hybrids): cached on first use, not at install. */
 export const isDecorArt = (path: string): boolean =>
   /\/art\/.+-(winter|lit)\.webp$/.test(path) ||
-  /\/art\/(deco\/(fence-(wooden|corral|bamboo)|garden-(lantern|lantern-white|rock)|flat-rock|lamp-glow)|trees\/bamboo)\.webp$/.test(path) ||
+  /\/art\/(deco\/(fence-(wooden|corral|bamboo)|garden-(lantern|lantern-white|rock)|flat-rock)|trees\/bamboo)\.webp$/.test(path) ||
   /\/art\/flowers\/[a-z-]+\.webp$/.test(path);
 /** The tent's room (docs/design.md "The tent"): its models, wallpapers, floors and icons, fetched as the tent shows
  *  them and cached on first use in a cache of their own that outlives builds (a re-converted model has a new `?v=`). */

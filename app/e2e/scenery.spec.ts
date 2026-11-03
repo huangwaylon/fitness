@@ -145,7 +145,6 @@ test('the campfire by the tent: unlit by day, its flames and light at night; a t
   await expect(page.locator('[data-lit="campfire"]')).toHaveCount(0);
   await go('2026-11-04T22:00');
   await expect(page.locator('[data-lit="campfire"] .tongue')).toHaveCount(3);
-  await expect(page.locator('[data-pool="campfire"]')).toHaveCount(1);
   const home = await page.locator('[data-actor="mine"]').evaluate((el) => getComputedStyle(el).transform);
   const f = await centre(page, '[data-campfire="campfire"]');
   await page.mouse.click(f.x, f.y);

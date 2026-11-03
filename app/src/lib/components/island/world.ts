@@ -15,9 +15,8 @@ type Oval = { readonly x: number; readonly z: number; readonly rx: number; reado
 
 /** The plan's extent (the baked terrain covers it; wider than the land so the perspective never shows an edge). */
 export const PLAN = { x0: -230, x1: 620, z0: -460, z1: 1700 } as const;
-/** The ground is cut into bands of BAND_D (40 of them). */
-export const BANDS = 40;
-export const BAND_D = (PLAN.z1 - PLAN.z0) / BANDS;
+/** The baked ground's bands (scripts/terrain.ts's chunks are 5 of them deep). */
+export const BAND_D = (PLAN.z1 - PLAN.z0) / 40;
 
 /** The island (land incl. beaches): a rounded rectangle with a 130u corner radius and a ±4u wobble. */
 const LAND_2D = { x0: -40, x1: 430, z0: -30, z1: 1260, r: 130 } as const;
@@ -31,17 +30,10 @@ const BEACH_SIDE = 30;
 /** The grass (tier 1 and tier 2 as one area; the cliff crosses it). */
 export let GRASS: RoundRect = { x0: LAND.x0 + BEACH_SIDE, x1: LAND.x1 - BEACH_SIDE, z0: BEACH_FRONT, z1: LAND.z1 - BEACH_SIDE, r: 90 };
 
-/** The camera's two stops (camZ: the world z at the pivot line), front to back: まえ (home, the scroller's bottom: a
- *  wide band of sea, the beach, the health lawn; sections.ts fits it to the screen) and おく (the scroller's top: the campsite's clearing clear below
- *  the HUD, the pond, the bamboo grove and the falls; sections.ts raises it on a screen whose HUD would cover the
- *  campsite). */
+/** The camera's two stops (camZ), front to back: まえ (home: the sea, the beach, the health lawn) and おく (the
+ *  campsite's end); the 3D island's camera fits its own ends to the screen (world3d/engine.ts limits). */
 export let CAMS: { readonly mae: number; readonly oku: number } = { mae: 30, oku: 642 };
-export let CAM_MIN: number = CAMS.mae;
 export let CAM_MAX: number = CAMS.oku;
-/** The pivot line's share of the height, and the horizon's (the sky above it). */
-export const PIVOT = 0.72;
-export const SKY = 0.21;
-export const TILT = 64;
 
 /** The live window (spec §7): only sprites in [camZ − BEHIND, camZ + AHEAD] are displayed. */
 export const BEHIND = 600;
@@ -83,9 +75,8 @@ export type FreshWhere = 'pond' | 'river' | 'mouth' | 'clifftop';
 /** The cliff to tier 2, behind the campsite: its face from z0 (foot) to z1 (top edge) across x0…x1; stone stairs and
  *  the falls cut it. */
 export let CLIFF: { readonly z0: number; readonly z1: number; readonly x0: number; readonly x1: number; readonly stair: Pt; readonly fall: Pt } = { z0: 1040, z1: 1080, x0: -12, x1: 402, stair: [36, 84], fall: [351, 393] };
-/** The cliff's upright face (a sprite at its foot) and the waterfall's height over it, in u. */
+/** The cliff's upright face's height (u: the bake's cliff-face sprite, scripts/terrain.ts). */
 export const FACE_H = 40;
-export const FALL_H = 45;
 /** The upper tier is beyond the horizon from both stops: the falls' pool (this far in front of the cliff's foot) is
  *  where NH's clifftop river shows (its fish come there). */
 export const FALLS_POOL = 46;
@@ -420,7 +411,6 @@ export function setWorld(g: WorldGeo | null): void {
   ({ LAND, SHORE_Z, GRASS, CAMS, RIVER, RIVER_BEND, BRIDGE, SPRING, POND, CLIFF, BUILDINGS, HOMES, GOAL_TREES, TAPE_DECK, ROCK, DIG_SPOTS,
     LAWN_SPOTS, HEDGE_Z, HEDGE_XS, BEACH_BOX, SEA_BOX, CENTRE_STAGE, ARCH, CAKE, SCENERY, DECOR_SLOTS, SEATS, PULLUP_AT, FLOWERS } = v);
   CAMPSITE = BUILDINGS.find((b) => b.id === 'campsite') ?? BUILDINGS[0];
-  CAM_MIN = CAMS.mae;
   CAM_MAX = CAMS.oku;
   gen++;
 }

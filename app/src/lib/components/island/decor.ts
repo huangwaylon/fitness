@@ -154,5 +154,3 @@ export function nearestSpot(layout: readonly Placed[], item: DecorItem, f: Facin
   return null;
 }
 
-/** A new id for an item placed now (`d` + the time and a random tail, base 36). */
-export const newDecorId = (at: number): string => `d${at.toString(36)}${Math.floor(Math.random() * 36 ** 3).toString(36).padStart(3, '0')}`;

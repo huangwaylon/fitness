@@ -2,7 +2,8 @@
 // editable layout's (layoutWorld.ts worldOf, swapped in by world.ts setWorld) for the gameplay (the walk, the critters'
 // waters, the fishing, the finds, the doors, the seats, the visitors, the tap areas over the 3D canvas) and the 3D
 // scene alike, and follows every change of it (the editor's, a phone's もようがえ) as it lands.
-//   site.on       the island reads the layout (reactive): always, but where a test or the editor forces it off
+//   site.on       the island reads the layout: always (world.ts's own fixed island is only what it is before the
+//                 first sync, and the unit tests')
 //   site.layout   the layout it reads (null when off)
 //   site.nav      the layout's walk grid (layout/nav.ts navOf), or null when off
 //   site.rev      bumped by each change applied (a DOM overlay reading world.ts's values reads it to follow)
@@ -19,11 +20,8 @@ class Site {
   #applied: Layout | null = null;
   #nav: LayoutNav | null = null;
   #heard = false;
-  /** Forced on or off (tests, the editor's phone view); null: on. */
-  force = $state<boolean | null>(null);
-
   get on(): boolean {
-    return this.force ?? true;
+    return true;
   }
   get layout(): Layout | null {
     void this.rev;
