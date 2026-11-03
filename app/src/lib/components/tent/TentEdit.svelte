@@ -6,10 +6,11 @@
   // it's picked up) drags it a tile at a time; a tap on the floor moves it there; ↻ まわす turns it a quarter; ✓ おく
   // places it (greyed while red, the bar saying why); 🗑 しまう takes a placed one away (とりけす on the banner); ✕ やめる
   // puts it back. A wallpaper or a floor is on the walls at once. While I hold a piece the partner's phone sees it move
-  // (dragLink.ts); what the partner holds, I can't pick up. Every change is one op (store/tent.svelte.ts).
+  // (dragLink.ts); what the partner holds, I can't pick up. Every change is one op (store/tent.svelte.ts), in the room
+  // it's given: the home's own (the tent's `t`, うめ's house's `u`, the guest's `v`).
   import { onMount } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
-  import { tent as room } from '#lib/store/tent.svelte.ts';
+  import type { rooms } from '#lib/store/tent.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -20,6 +21,8 @@
   import type { DragLink } from './dragLink.ts';
 
   interface Props {
+    /** The home's room being arranged (store/tent.svelte.ts rooms[home]): never the tent's when it's another home. */
+    room: (typeof rooms)[keyof typeof rooms];
     eng: () => Tent | null;
     link: DragLink;
     /** What the balloons brought that the tent can hold (codes, newest first). */
@@ -32,7 +35,7 @@
     holderName: (id: string) => string;
     ondone: () => void;
   }
-  let { eng, link, finds, villagers, relayNow, holderName, ondone }: Props = $props();
+  let { room, eng, link, finds, villagers, relayNow, holderName, ondone }: Props = $props();
 
   type Tab = 'recent' | 'furniture' | 'rugs' | 'walled' | 'finds' | 'wall' | 'floor';
   /** The pieces I picked last (this phone's, newest first): NH's quick access to what's at hand. */
