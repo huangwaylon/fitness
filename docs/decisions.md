@@ -667,3 +667,15 @@ empty three turns in four), and a layout without the painted pond no longer has 
 user ("often i see fish in the water, tapping the water, no reel is cast"; "i don't see any fish shadows inside the
 ponds … i also don't see any fish in the rivers"). Critters' `__fish` hook (dev and the demo) names why a tap didn't
 cast.
+
+### The balloon flies in the world; its present lands where it can be tapped (2026-11-03)
+The balloon present is a real 3D model flying over the island (`island/balloonFlight.ts`, `world3d/balloon3d.ts`), not a
+DOM node crossing the screen's sky with its model drawn where the node was: at one height well over the trees, from
+sea to sea, its lane picked from the view as it starts (biased to the front), a blob shadow under it, bent with the
+log. Popped, its present's landing spot is chosen first (`island/presentLanding.ts`: open sand or grass in the front
+of the view, clear of every control and of what lies there) and the fall steered to it, so it never drops where it
+can't be seen or tapped: no more dropping into the sea, and a pop over the back of the island drifts forward. The spot
+is this phone's (its view) and is sent with the `put`, so both phones have it where it landed; the flight itself stays
+each phone's own. Its frames are the ambience's (a slow drift), its clock the island's (it holds under a sheet).
+Why: the user ("implement it as a real 3d model flying directly over the world, in 3d space … it should consistently
+drop to the front area, somewhere open").

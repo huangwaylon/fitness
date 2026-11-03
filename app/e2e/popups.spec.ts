@@ -127,7 +127,8 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       await expect.poll(async () => { const r = await balloon.boundingBox(); return !!r && r.x > 40 && r.x + r.width < w - 40; }, { timeout: 15_000 }).toBe(true);
       const r = (await balloon.boundingBox())!;
       await page.mouse.click(r.x + r.width / 2, r.y + r.height * 0.25);
-      await expect(page.locator('[data-find="present"]')).toHaveCount(1, { timeout: 4000 });
+      // (its fall: up to 3 s, to open ground in the front of the view)
+      await expect(page.locator('[data-find="present"]')).toHaveCount(1, { timeout: 6000 });
       await page.waitForTimeout(1000); // landed and settled
       const g = await centre(page, '[data-find="present"] > *');
       // a villager wandering past may stand over it for a moment (it lies behind them): tap once it's clear

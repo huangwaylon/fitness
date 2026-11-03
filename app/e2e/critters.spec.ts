@@ -1,6 +1,7 @@
-// The island's critters and the balloon (docs/design.md "Scene interactions"): a tap pops the balloon and its present
-// falls; a fish shadow can be fished (caught on the bite, lost on an early tap); a bug can be netted. None of it
-// changes ベル, opens a sheet or navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
+// The island's critters and the balloon (docs/design.md "Scene interactions", "Balloon"): the balloon flies over the
+// island in 3D, a tap pops it and its present falls to open ground in the front of the view; a fish shadow can be
+// fished (caught on the bite, lost on an early tap); a bug can be netted. None of it changes ベル, opens a sheet or
+// navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
 import { expect, test, type Page } from '@playwright/test';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { plateOnly } from './island.ts';
@@ -59,7 +60,7 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
   expect(await cues(page)).toContain('scene-balloon');
   // it lands on the lawn and stays there (NH) until it's picked up, clear of everything lying there
   const gift = page.locator('[data-find="present"]');
-  await expect(gift).toHaveCount(1, { timeout: 4000 });
+  await expect(gift).toHaveCount(1, { timeout: 5000 });
   await page.waitForTimeout(5000);
   await expect(gift).toHaveCount(1);
   const g = (await gift.locator(':scope > *').boundingBox())!;
@@ -87,34 +88,107 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
   await unchanged(page, before);
 });
 
-type Sky3 = { __world3d?: { loaded(): boolean; where(id: string): { hidden: boolean; model: string } | null } };
-test('a popped balloon leaves nothing in the sky: only its present falls (no copy hanging where it burst)', async ({ page }) => {
+type Rig = { model: string; balloon: number[]; gift: number[]; shadow: number[]; loaded: boolean };
+type W3b = {
+  __world3d?: { loaded(): boolean; balloon(): Rig | null; where(id: string): { hidden: boolean; model: string } | null; go(z: number, k?: number, x?: number): void; zoomRange(): { min: number; max: number }; limits(): { min: number; max: number } };
+  __balloon?: { flight(): { f: { x0: number; x1: number; z: number; y: number; ms: number }; age: number } | null; pop(): void; move(x: number, z: number): void };
+  __world: { at(x: number, z: number): [number, number]; ground(x: number, z: number): { surface: string } };
+  __lands?: ([number, number, number] | null)[];
+};
+const W3b = (page: Page) => page.evaluate(() => (window as unknown as W3b).__world3d?.balloon() ?? null);
+
+test('a balloon flies over the island in world space (its height steady, its shadow under it); popped, nothing is left in the sky', async ({ page }) => {
   await open(page, '&balloon');
-  await page.waitForFunction(() => (window as unknown as Sky3).__world3d?.loaded(), null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as W3b).__world3d?.loaded(), null, { timeout: 30_000 });
+  await expect.poll(() => W3b(page), { timeout: 10_000 }).not.toBeNull();
+  const a = (await W3b(page))!;
+  await page.waitForTimeout(1200);
+  const b = (await W3b(page))!;
+  // it crosses: on along x, at its height (a gentle bob), the present on its string under the balloon, the blob
+  // shadow on the ground right under it, well below
+  expect(Math.abs(b.balloon[0] - a.balloon[0])).toBeGreaterThan(5);
+  expect(Math.abs(b.balloon[1] - a.balloon[1])).toBeLessThan(8);
+  expect(b.gift[1]).toBeLessThan(b.balloon[1] - 15);
+  expect(Math.abs(b.shadow[2] - b.balloon[2])).toBeLessThan(6);
+  expect(b.balloon[1] - b.shadow[1]).toBeGreaterThan(150);
+  const f = await page.evaluate(() => (window as unknown as W3b).__balloon!.flight()!.f);
+  expect(Math.sign(f.x1 - f.x0)).toBe(Math.sign(b.balloon[0] - a.balloon[0]));
+  // its tap area on it: wait until it's well inside the screen, then a tap on it pops it
   const balloon = page.locator('.if-scene .balloon');
   await expect.poll(async () => { const r = await balloon.boundingBox(); return !!r && r.x > 40 && r.x + r.width < 350; }, { timeout: 15_000 }).toBe(true);
-  /** The 3D sky's models shown now (Island3D's sky:<n>: the balloon and the present on its string). */
-  const shown = () => page.evaluate(() => {
-    const w = (window as unknown as Sky3).__world3d!;
-    return [0, 1, 2, 3].map((i) => w.where(`sky:${i}`)).flatMap((q) => (q && !q.hidden ? [q.model] : [])).sort();
-  });
-  const flying = await shown();
-  expect(flying).toHaveLength(2);
-  expect(flying).toContain('finds/present');
-  const b = (await balloon.boundingBox())!;
-  await page.mouse.click(b.x + b.width / 2, b.y + b.height * 0.25);
-  await expect(page.locator('[data-fx="present"]')).toHaveCount(1);
-  // the flight still mounted (the burst's confetti flying out), the balloon and its present are already gone from the
-  // sky, the 3D models and the DOM's alike: only the falling present remains
-  await expect(page.locator('.if-scene .fly.popped')).toHaveCount(1);
-  await expect.poll(shown, { timeout: 300 }).toEqual([]);
-  for (const el of await page.locator('.if-scene .fly [data-m3sky]').all()) await expect(el).toBeHidden();
-  await expect(page.locator('.if-scene .fly.popped')).toHaveCount(1);
-  // then the flight goes, the sky empty
+  const r = (await balloon.boundingBox())!;
+  expect(Math.min(r.width, r.height)).toBeGreaterThanOrEqual(44);
+  await page.mouse.click(r.x + r.width / 2, r.y + r.height * 0.25);
+  // gone at once, the 3D models and the tap area alike: only the falling present remains (its own model on its arc)
+  await expect.poll(() => W3b(page), { timeout: 300 }).toBeNull();
   await expect(balloon).toHaveCount(0);
-  expect(await shown()).toEqual([]);
+  expect(await cues(page)).toContain('scene-balloon');
   await expect(page.locator('[data-fx="present"]')).toHaveCount(1);
+  await expect.poll(() => page.evaluate(() => (window as unknown as W3b).__world3d!.where('drop-1')?.model ?? null)).toBe('finds/present');
+  await expect(page.locator('[data-find="present"]')).toHaveCount(1, { timeout: 5000 });
+  expect(await W3b(page)).toBeNull();
 });
+
+// Where the present lands, wherever it's popped: on open sand or grass in the front of the view, inside it, clear of
+// the HUD and the bottom controls, where a tap picks it up. `cam`: the camera (a share of the way from まえ to おく,
+// and the zoom: 'max' fully in); `over`: the balloon moved over a world point first (null: where it flies).
+const POPS = [
+  { name: 'at まえ, where it flies', cam: [0, 1], over: null },
+  { name: 'over the back of the island (beyond the view): it drifts to the front', cam: [0.3, 1], over: [120, 1500] },
+  { name: 'zoomed fully in', cam: [0.15, 'max'], over: null },
+  { name: 'at おく, over the far side', cam: [1, 1], over: [330, 'back'] },
+  { name: 'over the sea off the side', cam: [0.1, 1], over: [-60, 'mid'] }
+] as const;
+for (const c of POPS)
+  test(`a popped balloon's present lands in the front of the view, on open ground, clear of the controls: ${c.name}`, async ({ page }) => {
+    await open(page, '&balloon');
+    await page.waitForFunction(() => (window as unknown as W3b).__world3d?.loaded(), null, { timeout: 30_000 });
+    await expect.poll(() => W3b(page), { timeout: 10_000 }).not.toBeNull();
+    await page.evaluate(({ cam, over }) => {
+      const w = window as unknown as W3b, w3 = w.__world3d!, lim = w3.limits();
+      w3.go(lim.min + (lim.max - lim.min) * cam[0], cam[1] === 'max' ? w3.zoomRange().max : 1);
+      w.__lands = [];
+      document.querySelector('.if-scene')!.addEventListener('island:present', (e) => w.__lands!.push((e as CustomEvent<{ to: [number, number, number] | null }>).detail.to));
+      if (over) {
+        // (the far end of the view's ground, or its middle)
+        const g = (sy: number) => (w3 as unknown as { ground(x: number, y: number): { z: number } | null }).ground(195, sy)?.z ?? 0;
+        const z = over[1] === 'back' ? g(innerHeight * 0.3) + 250 : over[1] === 'mid' ? g(innerHeight * 0.6) : over[1];
+        w.__balloon!.move(over[0], z);
+      }
+    }, { cam: c.cam, over: c.over });
+    await page.waitForTimeout(300);
+    await page.evaluate(() => (window as unknown as W3b).__balloon!.pop());
+    await expect.poll(() => W3b(page), { timeout: 300 }).toBeNull();
+    const to = (await page.evaluate(() => (window as unknown as W3b).__lands![0]))!;
+    expect(to).not.toBeNull();
+    const at = await page.evaluate(([x, z]) => {
+      const w = window as unknown as W3b;
+      const rib = document.querySelector('.ribbon-wrap')!.getBoundingClientRect(), scene = document.querySelector('.if-scene')!.getBoundingClientRect();
+      const hy = parseFloat(getComputedStyle(document.querySelector('.if-scene')!).getPropertyValue('--horizon-y'));
+      // every control outside the island's stage (the HUD's, the say button, the catch stack)
+      const ui = [...document.querySelectorAll('button, [data-catch-stack]')].filter((el) => !el.closest('.stage') && (el as HTMLElement).checkVisibility()).map((el) => el.getBoundingClientRect()).filter((b) => b.width && b.height)
+        .map((b) => [b.left, b.top, b.right, b.bottom]);
+      return { p: w.__world.at(x, z), surface: w.__world.ground(x, z).surface, top: Math.max(rib.bottom, scene.top + hy), bottom: Math.min(scene.bottom, innerHeight), w: innerWidth, ui };
+    }, [to[0], to[2]]);
+    expect(['grass', 'sand']).toContain(at.surface);
+    const [px, py] = at.p;
+    // in view, in its front (the lower part), not under a control
+    expect(px).toBeGreaterThan(16);
+    expect(px).toBeLessThan(at.w - 16);
+    expect(py).toBeGreaterThan(at.top + (at.bottom - at.top) * 0.25);
+    expect(py).toBeLessThan(at.bottom - 16);
+    for (const [x0, y0, x1, y1] of at.ui) expect(px > x0 && px < x1 && py > y0 && py < y1, `under a control at ${x0},${y0}`).toBe(false);
+    // it lands there and a tap picks it up
+    const gift = page.locator('[data-find="present"]');
+    await expect(gift).toHaveCount(1, { timeout: 5000 });
+    const g = (await gift.locator(':scope > *').boundingBox())!;
+    expect(Math.hypot(g.x + g.width / 2 - px, g.y + g.height - py)).toBeLessThan(40);
+    // (a villager wandering past may stand over it for a moment: it lies behind them)
+    const gc = { x: g.x + g.width / 2, y: g.y + g.height / 2 };
+    await expect.poll(() => page.evaluate(({ x, y }) => !document.elementFromPoint(x, y)?.closest('[data-actor]'), gc), { timeout: 10_000 }).toBe(true);
+    await page.mouse.click(g.x + g.width / 2, g.y + g.height / 2);
+    await expect(page.locator('[data-fx="present-open"]')).toHaveCount(1, { timeout: 3000 });
+  });
 
 /** A tap on the sea well away from the bobber and the shadow (any sea tap is the reel while the bobber is out). */
 async function seaTap(page: Page) {
@@ -260,22 +334,19 @@ test('a stag beetle perches on a trunk at night and is netted', {
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
 });
 
-test('a balloon floats by on its own in the daytime (the first in 30–60 s), in the sky lane under the HUD', async ({ page }) => {
+test('a balloon floats by on its own in the daytime (the first in 20–40 s), across the island under the HUD', async ({ page }) => {
   await page.clock.install();
   await open(page, '');
-  await expect(page.locator('.fly')).toHaveCount(0);
+  await expect(page.locator('.if-scene .balloon')).toHaveCount(0);
   await page.clock.fastForward(61_000); // (its timers, not its every frame: the 3D island would draw each, in software on CI)
-  const fly = page.locator('.fly');
-  await expect(fly).toBeAttached();
-  const box = await page.evaluate(() => {
-    const f = document.querySelector('.fly')!, rib = document.querySelector('.ribbon-wrap')!.getBoundingClientRect();
-    const b = document.querySelector('.fly .balloon')!.getBoundingClientRect();
-    const hy = parseFloat(getComputedStyle(document.querySelector('.if-scene')!).getPropertyValue('--horizon-y'));
-    return { top: b.top, bottom: b.bottom, ribbon: rib.bottom, hy };
-  });
-  // the HUD sits high in the sky, the horizon well under it: the balloon crosses the sky between them
-  expect(box.top).toBeGreaterThanOrEqual(box.ribbon);
-  expect(box.bottom).toBeLessThanOrEqual(box.hy + 8);
+  const balloon = page.locator('.if-scene .balloon');
+  await expect(balloon).toBeAttached();
+  // its tap area (on the balloon and its present) under the HUD and over the island's foot, whatever x it's at
+  await expect.poll(() => page.evaluate(() => {
+    const rib = document.querySelector('.ribbon-wrap')!.getBoundingClientRect(), b = document.querySelector('.if-scene .balloon')!.getBoundingClientRect();
+    const s = document.querySelector('.if-scene')!.getBoundingClientRect();
+    return b.top + b.height / 2 > rib.bottom + 10 && b.bottom < s.bottom && b.height >= 44;
+  }), { timeout: 5000 }).toBe(true);
 });
 
 test('fish shadows: one teardrop each, NH’s sizes reading apart (a clownfish tiny, a whale shark huge)', async ({ page }) => {

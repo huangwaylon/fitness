@@ -35,6 +35,7 @@
   import type { CardSpec } from './cards.ts';
   import type { LampSpot } from './lights.ts';
   import { createVillagers, type VSpec, type Villagers3 } from './villagers.ts';
+  import { createBalloon3, type Balloon3 } from './balloon3d.ts';
   import { has3d } from '../villager3d/manifest.ts';
   import { BufferGeometry, Float32BufferAttribute, Line, LineBasicMaterial, Vector3, type Object3D } from 'three';
   import type { FxKind } from './effects.ts';
@@ -338,6 +339,7 @@
     ms: number;
     yaw: number;
     pitch?: number;
+    size?: number;
     grey: number;
     art?: Element | null;
     /** Its opacity, when it washes in (Over `fade`). */
@@ -449,7 +451,7 @@
         const dx = L.to[0] - L.from[0], dz = L.to[1] - L.from[1];
         yaw += Math.hypot(dx, dz) > 0.5 ? Math.atan2(dx, -dz) : L.yaw - (n.m3.yaw ?? 0);
       }
-      const on = n.shown && !n.m3.off, grey = n.m3.grey ?? 0, pitch = n.m3.pitch ?? 0;
+      const on = n.shown && !n.m3.off, grey = n.m3.grey ?? 0, pitch = n.m3.pitch ?? 0, size = n.m3.size ?? 1;
       // a find washing in from the sea (Finds: its node slides it up the beach): it fades in as it comes
       let fade = L.fade;
       if (n.m3.wash) {
@@ -458,9 +460,9 @@
         // (waiting for its wave: the ambient rate; sliding in: the full)
         if (!w.done) moving = t >= n.m3.wash.t0 ? true : moving || 'ambient';
       }
-      if (fresh || on !== L.on || x !== L.x || z !== L.z || lf !== L.lift || yaw !== L.yaw || grey !== L.grey || pitch !== (L.pitch ?? 0) || fade !== L.fade)
-        e.things.over(n.id, { hidden: !on, x, z, lift: lf, yaw, pitch, grey, face: n.m3.face === 'camera', ...(fade !== undefined && { fade }) });
-      Object.assign(L, { on, x, z, lift: lf, yaw, pitch, grey, art, fade });
+      if (fresh || on !== L.on || x !== L.x || z !== L.z || lf !== L.lift || yaw !== L.yaw || grey !== L.grey || pitch !== (L.pitch ?? 0) || fade !== L.fade || size !== (L.size ?? 1))
+        e.things.over(n.id, { hidden: !on, x, z, lift: lf, yaw, pitch, grey, size, face: n.m3.face === 'camera', ...(fade !== undefined && { fade }) });
+      Object.assign(L, { on, x, z, lift: lf, yaw, pitch, grey, size, art, fade });
       // its line (a fishing line, a thread): from where it starts to it, sagging a little
       if (n.m3.line) {
         let ln = lines.get(n.id);
@@ -538,43 +540,8 @@
     }
   }
 
-  // ---- what flies in the sky (the balloon and its present: data-m3sky): its model where the DOM's is, far out ----
-  const skyOn = new Map<string, string>();
-  let burst = false;
-  function sky(e: Island3) {
-    const els = scene.querySelectorAll<HTMLElement | SVGElement>('[data-m3sky]');
-    if (!els.length && !skyOn.size) return;
-    const cr = canvas!.getBoundingClientRect(), seen = new Set<string>(), add: Inst[] = [];
-    els.forEach((el, i) => {
-      const key = el.getAttribute('data-m3sky') ?? '', a = keyModel(key), b = a && modelBounds(a.m);
-      if (!a || !b) return;
-      const id = `sky:${i}`, r = el.getBoundingClientRect();
-      if (!r.height) return;
-      seen.add(id);
-      const p = e.skyPoint(r.left + r.width / 2 - cr.left, r.top + r.height / 2 - cr.top, 0.9);
-      const scale = r.height / p.px / (b.max[1] - b.min[1]);
-      // its middle at the DOM's middle
-      const lift = p.y - scale * ((b.max[1] + b.min[1]) / 2) - heightOf(p.x, p.z);
-      if (skyOn.get(id) !== a.m) {
-        skyOn.set(id, a.m);
-        add.push({ id, model: a.m, x: p.x, z: p.z, lift, scale });
-      }
-      // popped (Balloon marks its whole flight: data-popped): the balloon and the present on its string both gone at
-      // once; the present that falls is SceneTaps' own (left shown, the string's would hang where it burst, a copy)
-      const popped = !!el.closest('[data-popped]');
-      e.things.over(id, { x: p.x, z: p.z, lift, size: 1, hidden: popped }, false);
-      // popped: a burst of confetti where it was (once)
-      if (popped && !burst && key.startsWith('balloon/')) {
-        burst = true;
-        e.fx('confetti', p.x, p.z, p.y - heightOf(p.x, p.z));
-      }
-    });
-    if (!els.length) burst = false;
-    const gone = [...skyOn.keys()].filter((id) => !seen.has(id));
-    for (const id of gone) skyOn.delete(id);
-    if (gone.length) void e.things.remove(gone);
-    if (add.length) void e.things.set(add);
-  }
+  // ---- the balloon present flying over the island (balloon3d.ts: its flight is island/balloonFlight.ts') ----
+  let b3: Balloon3 | null = null;
 
   // ---- the island's day: its models and stand-ins ----
   let placed = '';
@@ -666,6 +633,7 @@
       const hz = getComputedStyle(scene).getPropertyValue('--sky-hz').trim();
       e.tod(t3, w, hz);
       vil3?.lift(LIFT[t3] * (1 - 0.35 * w));
+      b3?.lift(LIFT[t3] * (1 - 0.35 * w));
     });
   });
 
@@ -817,7 +785,7 @@
     fitEnds(e);
     e.go(start ?? e.limits().min);
     const proj: Proj3 = {
-      at: (x, z, lift) => e.at(x, z, lift), ground: (sx, sy) => e.groundAt(sx, sy), horizon: () => e.horizon(),
+      at: (x, z, lift) => e.at(x, z, lift), ground: (sx, sy) => e.groundAt(sx, sy), feet: (x, z) => feetOf(x, z), horizon: () => e.horizon(),
       rev: () => e.rev(), kick: () => e.kick(), idle: () => e.idle(), paused: () => e.isPaused(),
       focus: (f, ms) => ((focusAt = { x: f.x, z: f.z }), e.frame(f, ms)), unfocus: (ms) => ((focusAt = null), e.restore(ms)), attach: (id, obj) => e.things.attach(id, obj as Object3D | null)
     };
@@ -825,6 +793,8 @@
     let camWas = NaN, horizonWas = NaN, revWas = -1;
     vil3 = createVillagers((o) => e.add(o), asset('room/villagers3d/' as Parameters<typeof asset>[0]), () => e.kick());
     vil3.lift(LIFT[todNow()]);
+    b3 = createBalloon3((o) => e.add(o), heightOf, () => e.kick());
+    b3.lift(LIFT[todNow()]);
     e.onFrame((t) => {
       const z = e.view().camZ;
       world.view.camZ = z;
@@ -840,12 +810,13 @@
       const moving = mirror(e, t);
       floats(e, t);
       fall(e, t);
-      sky(e);
+      b3?.frame(performance.now());
       const acting = characterCards(e, t);
       actorFx(e, t);
       if (villagerCards(t, camMoved || more) || more || moving === true || acting) return true;
-      // the ambience (the ambient rate): a slow move, the season's fall, the stream's floats, an emitter, a blink
-      return moving || ambient3.kind || floatsOn || emitting || cast().some((c) => c.shown) ? 'ambient' : false;
+      // the ambience (the ambient rate): a slow move, the season's fall, the stream's floats, an emitter, a blink, the
+      // balloon drifting over
+      return moving || ambient3.kind || floatsOn || emitting || b3?.shown() || cast().some((c) => c.shown) ? 'ambient' : false;
     });
     // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
     listenFx3((kind, x, z, lift, o) => e.fx(kind, x, z, lift, o));
@@ -898,7 +869,9 @@
       angler: (slot = 'mine') => vil3?.angler(slot) ?? null,
       /** On the layout (site.on): its ground is the layout's; the homes, bridges and stairs placed. */
       onLayout: () => onLayout && !!lground,
-      placedGroups: () => e.placedGroups()
+      placedGroups: () => e.placedGroups(),
+      /** The balloon present drawn now (world space: its balloon's middle, the present's top, its shadow), or null. */
+      balloon: () => b3?.state() ?? null
     };
     setDrawnFps(() => e.stats().fps);
     return () => {
@@ -907,6 +880,8 @@
       listen3d(null);
       vil3?.dispose();
       vil3 = null;
+      b3?.dispose();
+      b3 = null;
       listenPose3d(null);
       listenFx3(null);
       off();

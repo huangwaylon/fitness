@@ -93,6 +93,8 @@ interface M3 {
   /** It washes in from the sea (layout/swash.ts: a shell, the bottle): its model fades in with it (the node's `live`
    *  slides it up the beach). */
   wash?: WashIn;
+  /** Bigger or smaller than its model (a factor: a balloon's falling present growing to its size on the ground). */
+  size?: number;
   /** Turned the way it moves (a fish), `yaw` added; or to the camera (a flat flourish: a sparkle). */
   face?: 'move' | 'camera';
   /** The DOM art it stands for, when it isn't in this node (a critter's sprite in its mover): hidden once drawn. */
@@ -134,6 +136,8 @@ export interface Proj3 {
   at(x: number, z: number, lift: number): { sx: number; sy: number; k: number; up: number; ground: number; depth: number; visible: boolean };
   /** The ground under a screen point, or null in the sky. */
   ground(sx: number, sy: number): { x: number; z: number } | null;
+  /** The ground's height where feet stand at (x, z) (world y): `at`'s lift is above it. */
+  feet?(x: number, z: number): number;
   /** The horizon's height on screen (px from the top). */
   horizon(): number;
   /** Bumped on every camera move. */
@@ -247,6 +251,11 @@ export class World {
   screenU(x: number, z: number, lift = 0): Pt {
     const p = this.screenAt(x, z, lift), k = 390 / this.view.vw;
     return [p.sx * k, p.sy * k];
+  }
+
+  /** The ground's height at (x, z) (world y: `screenAt`'s lift is above it); 0 before the 3D camera is up. */
+  feetAt(x: number, z: number): number {
+    return this.three?.feet?.(x, z) ?? 0;
   }
 
   /** The perspective scale at a world point. */

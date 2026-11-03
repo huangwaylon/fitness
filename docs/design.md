@@ -56,7 +56,7 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   at `--hud-top` (10px under the safe area: clear of iOS 27's top-edge blur, the Dynamic Island clear above it), inset
   14px or the safe area's side, 6px apart. The dumbbell and the bowl are the same width (60px, `--hud-side`), the menu
   a 44px disc. No jar and no ribbon in the sky: NH's island view keeps its sky clear and its UI tucked away, and the
-  sky's left (a third of it from 393px up) stays free for the sun, the moon, the balloon and the stars. Every target
+  sky's left (a third of it from 393px up) stays free for the sun, the moon and the stars. Every target
   is 44px or more. No View Transition anywhere in it (the stripes bug); day and night are the same art (the buttons
   cream with their lip), both reading on either sky.
 - **Menu** (`island/HudMenu.svelte`, `e2e/hud-menu.spec.ts`): the cluster's right end, at the screen's side, a 40px
@@ -688,10 +688,24 @@ smaller world z) when two overlap (`pick`). `?hit` draws them all ([Dev params](
 
 ### Balloon
 
-NH's balloon present: by day every 45–90 s of on-screen time (the first after 20–40 s), in the sky's lane under the
-HUD (none on a sky too short). A tap pops it; the present falls onto the lawn nearest the current view, on the
-nearest open grass clear of what lies there and of every control, bounces and stays until tapped (not kept across a
-reload). A tap
+NH's balloon present: by day every 45–90 s of on-screen time (the first after 20–40 s). It flies over the island in
+3D (`island/balloonFlight.ts`, drawn by `world3d/balloon3d.ts`): NH's balloon with the present swinging on a short
+string under it, at one height (165u over the highest ground under its lane: well above the tallest trees), from the
+sea off one side to the sea off the other in about 22 s, bobbing, swaying in depth and rocking gently, its soft blob
+shadow on the ground right under it; bent with the rolling log like everything else. Its lane is picked from the view
+as it starts, at any scroll and zoom: across the screen a little under the HUD (and the horizon), biased to the front,
+its shadow in view; none when the sky under the HUD is too short, with reduced motion, or with no 3D island. Its tap
+area is a world node on it (`island/Balloon.svelte`: the balloon and its present, 48px at least, never through a
+control over the island). A tap pops it (a "pan!", confetti and a sparkle where it burst): the balloon and the present
+on its string go at once, and the present falls along a short floaty arc (a little hop, a slow start, a sway that
+settles; 1.6–3 s, longer the further it drifts) to a spot chosen before it falls (`island/presentLanding.ts`): open
+sand or grass (the layout's walk grid all round it, one level: not the sea, a river or a pond, a cliff's edge, the
+stairs or under any object's footprint), clear of what lies there, in the lower part of the view (the front, near
+the camera), inside it and clear of every control (the HUD, the bottom controls, the catch stack); popped over the
+back of the island it drifts forward to the front. Each rule gives way a little before none is found; with no open
+ground in view at all nothing falls. It lands with a sparkle and stays until tapped, put on the island for both phones
+(the landing spot is sent: `put`; not kept across a reload). The flight's clock is the island's frames (the
+ambience's rate): it holds while the page is hidden or a sheet covers the island. A tap
 opens it where it lies: the wrapping pops (confetti, sparkles, the catch fanfare) and its plate
 reads 「カエルのチェアを てにいれた！」 (`island/catalog.ts`, its own chunk with its names, fetched when a present
 lands). What's inside follows NH (Nookipedia, Balloon: the item drop rates, Bells and materials left out): furniture 35 :
@@ -702,8 +716,7 @@ likely in its style's season. The 126 recipes balloons carry, each in its NH win
 blossoms Apr 1–10, young spring bamboo Feb 25–May 21, summer shells Jun–Aug, acorns and pine cones Sep 1–Dec 10, maple
 Nov 16–25, mushrooms November, ornaments Dec 15–Jan 6, snowflakes Dec 11–Feb 24, Halloween October, Shamrock Day
 Mar 10–17, Bunny Day's egg balloons on its days; a recipe shows NH's recipe card. Never Bells, nothing kept, but counted
-in the ずかん (カタログ, レシピ: a first one gets the plate's second page). On Bunny Day a sky egg instead. Off the island it
-drops into the sea. The catalogue is built by `npm run catalog:build` (`scripts/catalog.ts`: the ACNH spreadsheet's
+in the ずかん (カタログ, レシピ: a first one gets the plate's second page). On Bunny Day a sky egg instead. The catalogue is built by `npm run catalog:build` (`scripts/catalog.ts`: the ACNH spreadsheet's
 JSON for the rules and the game's ja/en names, Nookipedia for the icons; 96 px webp under `static/art/finds/items|recipes/`,
 ~1.8 KB each, cached by the service worker on first use).
 
