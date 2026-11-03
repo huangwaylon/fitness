@@ -38,7 +38,7 @@ The single red run was popups' catch plate: its reel missed the 1.6 s bite windo
 |---|---|---|---|
 | 1. Logic | pure functions and simulations: spawns, seeds, schedules, paths, scoring, sync merge | vitest (`*.test.ts`, 123 files) | the bulk |
 | 2. Logic-mode e2e | the real app in a browser, the gameplay and DOM tap areas live, **the 3D engines drawing nothing** (`E2E_RENDER=none`) | Playwright, the gate | most e2e |
-| 3. Drawn smoke | real WebGL: it draws, the camera, a tap lands on the model, the tent opens (`@render`, `@smoke`) | Playwright, the gate, 1 runner | 7 tests |
+| 3. Drawn smoke | real WebGL: it draws, the camera, a tap lands on the model, the tent opens (`@render`, `@smoke`) | Playwright, advisory (not the gate), 1 runner | 7 tests |
 | 4. Visual | screenshots at a fixed camera, time and seed, with a tolerance | Playwright `toHaveScreenshot`, full tier | a few |
 
 Best practice for WebGL games (Unity/Unreal's play-mode vs edit-mode tests, three.js projects' headless sims, the
@@ -55,6 +55,8 @@ holidays.spec, celeste.spec, finds.spec (timing and counts), critters.spec and b
 **Determinism** is what makes this work: `?seed=`, `?date=`, the day's seeded RNG (daySeed.ts), and no `Math.random`
 in a rule. A sim stepped with explicit `dt` (not wall time) is the next step: see "Time" below.
 
+**The game clock.** The island's life runs on time, not on frames: every position is a function of the time (the director's walks, the critters' legs, the visitors), and under the 3D island the World steps itself every 33 ms while anything moves whenever no drawn frame has (camera.svelte.ts simTick), so a slow or seldom-drawn picture (the ambience's rate, software GL, logic mode) never slows the game.
+
 **2. Logic mode (`E2E_RENDER=none`, src/lib/ui-state/testMode.ts).** The 3D island and the tent build their scenes, load their
 models, run every frame (cameras, gestures, `world.step`, the villagers' poses, the fishing rod, effects) and project
 the DOM tap areas, but skip `renderer.render` and the shadow map. A frame then costs ~1 ms, not seconds. So a spec taps
@@ -67,7 +69,7 @@ Stays e2e, logic mode: anything that's a flow across the UI and the game (tap-wa
 decorating, tent editing, sheets and popups, sync between two phones, the HUD over the island, the 2D island while
 it's still the default).
 
-**3. Drawn smoke (`@render`, `@smoke`).** Seven tests with real (software) GL: the island draws and a lawn tap
+**3. Drawn smoke (`@render`, `@smoke`), advisory.** The deploy gates on the logic tier only (the user, Nov 2026): CI's software GL isn't representative of the target (iPhone 15/16 Safari, Metal), so rendering is judged on the iOS Simulator and the phones' telemetry; this tier still runs on each push and reports, never blocking. Seven tests with real (software) GL: the island draws and a lawn tap
 walks; the camera's scroll and pinch; screen ↔ world (the tap areas sit on the models); nothing strays or goes NaN; the
 night glows keep the canvas alpha; and the tent opens and its floor tap walks. These catch "it doesn't
 draw" and "the projection is off". They're few, so they get one quiet runner and generous timeouts.
