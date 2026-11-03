@@ -95,7 +95,7 @@ interface Proj3 {
 - **Walk up:** a tap on the board walks my villager to the spot in front of it (the tent door's way: the deliberate
   exception to "interactables act in place"), then the board opens.
 - **The board view:** in 3D the camera dollies and zooms to the face (≈600 ms); the back control (「もどる」, top left
-  under the HUD: `--hud-top` + 44 + the lip + 10 px, never over it) returns it to exactly where it was. On the 2D island (and in 3D before `focus` exists): a sheet over the island showing the same
+  under the HUD: `--hud-top` + 44 + the lip + 10 px, never over it) returns it to exactly where it was. Before the 3D island's `focus` exists: a sheet over the island showing the same
   face (the very canvas the 3D texture is drawn from) with the same controls.
 - **Posts:** the newest first, four to a page as NH's notes (the author's villager name and icon, the date), 「‹」「›」
   and a swipe on the board page through older ones.

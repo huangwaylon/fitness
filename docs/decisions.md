@@ -433,8 +433,8 @@ copyrighted audio and no megabytes for sounds under the music.
 
 ## The island world
 
-### The rolling-log world in 2D DOM
-The island is NH's rolling log: one flat plan (x across, z in) bent over a cylinder by a pure projection (`roll.ts`,
+### The rolling-log world in 2D DOM (superseded: the island in 3D, November 2026)
+The island was NH's rolling log: one flat plan (x across, z in) bent over a cylinder by a pure projection (`roll.ts`,
 option A of the research, kept by the user's iPhone spike at a locked 60 fps), the camera a native scroller with three
 proximity stops (まえ, ひろば, おく), every upright thing a DOM billboard at its feet placed by one projector in one depth
 order. Not WebGL (a bundle, context loss, its own tap model and every animation ported) nor CSS 3D (nested preserve-3d
@@ -442,8 +442,8 @@ misrenders on iOS). Measured at 4× CPU throttling on the iPhone 13 viewport: fl
 long tasks, ≤ 83 style writes a frame for ~140 nodes, nothing pending once still. Why: DOM taps, the e2e and every
 existing component stay; nothing runs when still.
 
-### The ground is baked raster, the water live
-The terrain is painted offline (`scripts/terrain.ts`: a WebGL shader in Chrome, noise, soft distance-field edges,
+### The ground is baked raster, the water live (superseded: the layout's ground, built on the phone)
+The terrain was painted offline (`scripts/terrain.ts`: a WebGL shader in Chrome, noise, soft distance-field edges,
 supersampling) into 8 WebP chunks per season (~440 KB a season, 2 px a unit; the back half lazy) and drawn by 40 bands;
 only the water's motion (the shore's wash, the waterfall, glints, flow streaks, the pond's ripple) is live CSS, plus a
 few upright sprites (the cliff's face, the bridges' fronts). Why: the user rejected the flat vector paths, river,
@@ -563,9 +563,8 @@ can move and rotate, "like NH's room camera but freer", and 2D villagers in 3D t
 front.
 
 ### The island in 3D: three.js under the DOM island
-The island is drawn in three.js (`components/world3d/`, behind `?island=3d` and せってい's しまの えがきかた switch until it
-does all the 2D island does, then the default): NH's models instanced, the ground a heightfield under the baked
-textures, the water live, every material bent onto the rolling log in its vertex shader. The DOM island keeps running
+The island is drawn in three.js (`components/world3d/`): NH's models instanced on the editable layout (its ground
+built on the phone, docs/island-layout.md), the water live. The DOM island keeps running
 over the canvas: its nodes are placed through the 3D camera (`camera.svelte.ts` `Proj3`) and stay the tap areas, the
 popups, the balloons and the marks; their art goes invisible where the canvas draws the thing. The camera is NH's: one
 finger scrolls along the island (z, a free fling; sideways too only when zoomed in past the default, x clamped over
@@ -578,6 +577,17 @@ steps, not on each frame of a scroll. Every lamp is always-on emissive with a ha
 go to the lights nearest the view's centre with hysteresis, fading over 400 ms, so a light never pops. Why: the user
 approved the POC on the phone ("redo the whole map such that it's all 3d. same as the tent room…"), and reusing the
 DOM island's model, director, nav, sync and every overlay means only the drawing and the hit-testing are new.
+
+### The 2D island goes; no WebGL is a line, not a fallback (November 2026)
+The 3D island became the default on the 60-tile layout (behind せってい's 2D/3D switch for a release), then the 2D island
+went (docs/cleanup-2d.md phase B): the rolling log (`roll.ts`), its baked ground (48 chunks and the bake), its CSS water,
+the scroller camera, the old もようがえ (DecorMode: IslandEdit is the one), the switch and `?island` / `?layout`, the
+2D-only art (lit looks, turned facings, the bridge's deck, the cliff sprites), the /villagers3d POC and the e2e's 2D
+variants. Without WebGL the island shows 「この端末では しまを 表示できません」 and the rest of the app (the panel, health,
+ごほうび) works as ever. Why: the users' phones (iPhone 15 / 16 Safari) always have WebGL; a second renderer to keep
+in step cost every feature twice. Kept: the DOM island over the canvas (the tap areas, marks, balloons, popups), and
+the 2D art the app or the tap areas still use (the tent, the homes, the ずかん and catalogue icons, the HUD, villagers
+without 3D models, the flowers' and oaks' tap boxes).
 
 ### The phrases open from a say button, not my villager (2026-11-02)
 A small round button at the island's bottom right (NH's chat glyph, 36px in a 44px target) opens the phrase picker
@@ -593,7 +603,7 @@ and the phones fold by the same rules. 100 characters and 4 lines: legible at th
 only, sanitised on both sides and only ever drawn as text (canvas `fillText`, Svelte text). No live intent: a note is
 over the room's 256-byte messages, and the record's notice already reaches every open phone. The walk up is the tent
 door's exception, the camera's dolly the one automatic camera move (the user's ask), the latter the 3D lead's to add
-(board.md); until then, and on the 2D island, a sheet shows the same face.
+(board.md); before the 3D island's focus is up, a sheet shows the same face.
 
 ### A phrase is said in one place (2026-11-02)
 The say button is in the tent and every home too, its balloon over the speaker's villager in the room. `say` carries

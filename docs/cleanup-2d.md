@@ -1,5 +1,58 @@
 # Cleaning up after the 3D cutover (the 2D island's assets and code)
 
+## Status: phase B done (2026-11-03)
+
+The 2D island is gone; the island is the 3D one on its layout, always (commits "Cleanup 2D, step 1" … "step 10" on
+main). Measured on the same codebase with and without the cleanup (HEAD vs HEAD with the ten commits reverted;
+apparent bytes):
+
+| | Before | After | |
+|---|---:|---:|---:|
+| `static/` | 97.73 MB, 6,337 files | 95.80 MB, 6,239 files | −1.93 MB, −98 files |
+| the build (`build-pages/`) | 102.31 MB, 6,634 files | 100.31 MB, 6,524 files | −2.00 MB |
+| the bundle's JS | 2,736,275 B (850,497 gz), 143 chunks | 2,680,031 B (829,211 gz), 132 chunks | −55 KB (−21 KB gz) |
+
+What went, by step:
+
+| Step | What | Files | Lines (code, tests, scripts) | Static |
+|---|---|---:|---:|---:|
+| 1 | `quadMatrix`, `zIndexAt` out of roll.ts into `island/geom.ts` (+ geom.test) | 0 | +61 −56 | |
+| 2 | せってい's switch (RenderSection, store/islandRender, DEVICE.islandRender / islandLayout, site's LAYOUT_3D and `?layout`); E2E_ISLAND / E2E_LAYOUT, `?island`; the 2D-only and `(2d)` specs; CI's e2e-3d job; /world3d a plain redirect to / | 2 | +146 −508 | |
+| 3–6 | WorldGround, WorldWater, ShoreWash, Waterfall, roll.ts (+ test), DecorMode, terrain-preview.ts, derive-art.ts; IslandScene's scroller camera, ground tint plane and haze; camera.svelte.ts's 2D projector; Scenery's 2D lights; Particles' DOM fall; the gallery's still scenes; the no-WebGL line | 10 | +200 −2,141 | lamp-glow |
+| 7 | /villagers3d (the POC) and its spec; Island3D's baked-ground look (groundUrls) | 2 | +5 −497 | |
+| 8 | the 2D-only art: the lit looks (9), the decorations' turned facings 1–3 (30), the bridge's deck and winter front (3), the campsite's winter look, the goal trees' 2D fruit (4), the cliff-face sprites (2); manifest entries, caches.ts isBakeArt; models.ts writes none of it | 49 | +54 −61 | 0.25 MB |
+| 9 | the baked ground: `static/terrain/<season>/` (48 chunks), island/terrain.json, scripts/terrain.ts and terrain-seasons.ts | 51 | +2 −1,343 | 1.74 MB |
+| 10 | world.ts's 2D constants (PIVOT, SKY, TILT, BANDS, BAND_D, FACE_H, FALL_H, CAM_MIN, CAM_MAX); stale comments; `npm run unused` / `unused:probe` made the plain unused-asset scan | 0 | +41 −56 | |
+
+About 4,700 lines removed, 510 added. The probe (17 scenes on the 3D island): 0 404s under art/, room/, terrain/ after
+each deletion. Also fixed on the way: the decorations' 2D art drew over their 3D models (opacity 1); it's hidden and
+never downloaded now.
+
+**No WebGL** (never on the users' iPhones): 「この端末では しまを 表示できません」 / 「きろくや ごほうびは いつもどおり
+つかえます」 instead of the island; the HUD, the panel, the health popup and ごほうび work (`e2e/world3d.spec.ts`).
+
+**What was kept, and why** (`npm run unused` rules them by hand and now reports 0 safe):
+
+- **The DOM island over the canvas:** the tap areas, marks, balloons, popups, Talk / Says, the art gate
+  (`characters/artGate.ts`: an `m3off` node still shows its art), `camera.svelte.ts`'s projector.
+- **The flowers' and oaks' art** (`art/flowers/`, `art/trees/`): the tap areas' sizes (Flowers' `.fl`) and the oak
+  layers' clips (Scenery's `-trunk` / `-canopy`) come from them; care.spec reads the flowers' looks.
+- **The candy and the party popper:** drawn by the DOM over the 3D island (Jack's treat, the birthday popper). The
+  **cake**'s tap box is its art's.
+- **The event and seasonal pieces** (present, pumpkin, spooky lantern, wedding arch, snowboy stages, lamps, kadomatsu,
+  egg arch, picnic set, pond stones, illuminated tree, the shishi-odoshi tipped, the board's winter look): hidden under
+  their models, but the specs check their nodes' art. A later pass can check their models instead.
+- **world.ts's old geometry** (LAND, GRASS, RIVER, POND, SPRING, CLIFF, BRIDGE, PATHS…): the layout's default and its
+  scripts are drawn from it, the unit tests read it, and `world3d/ground.ts` / `water.ts` still read it (the old
+  heightfield and waters: the pond model is being brought back as a layout object, so they stay). Island3D's
+  off-layout fallback (`ground = WORLD_GROUND`, `island(day)`) and engine.ts's `groundLook` are now unreachable but
+  left to the engine's owner.
+- **The shade at the source** (`--tod-filter`): it still tints what the DOM draws over the canvas at night.
+- **Critters' `w.rest.three` branches:** still mean "the 3D camera is up" (the critters agent's file).
+
+The rest of this page is the plan as written before phase B, kept as its record.
+
+
 The cutover goes in two phases (the user: "flip to 3D as soon as the tests pass and start the unused assets cleanup"):
 
 - **Phase A, at the flip** (`DEFAULT = '3d'`, `LAYOUT_3D = true`): せってい's switch keeps the 2D island reachable for one
