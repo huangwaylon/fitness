@@ -192,7 +192,13 @@
     // (the line in without a reel: it got away, nobody came, the critters left)
     if (!c) untrack(() => tellLine('off'));
   });
-  onMount(() => () => angle(null));
+  // gone with the line out (through a door: the phone's socket stays, so the others hear it end), and the others'
+  // villagers' rods down (their steps go unheard till I'm back)
+  onMount(() => () => {
+    if (cast) tellLine('off');
+    angle(null);
+    for (const l of Object.values(lines)) if (l) angle(null, undefined, l.slot);
+  });
   /** Where the 3D float is this frame (one array, rewritten: read every frame). */
   const floatXYZ: [number, number, number] = [0, 0, 0];
   const floatAt = (c: Cast) => ((floatXYZ[0] = c.x), (floatXYZ[1] = c.z), (floatXYZ[2] = floatLift(performance.now())), floatXYZ);
@@ -1404,7 +1410,9 @@
     if (!m.pt) return;
     if (!was || was.x !== m.pt[0] || was.z !== m.pt[1]) {
       // the line goes out (or a phone coming late hears where it is): their villager's rod swings it out, the float
-      // lands a moment later
+      // lands a moment later (cast again elsewhere, its off unheard: the shadow the old line was at goes free)
+      const old = was && lineFish(was);
+      if (old?.taken === m.who) old.taken = undefined;
       lines = { ...lines, [m.who]: { who: m.who, slot, id: m.id, x: m.pt[0], z: m.pt[1], sx: m.from?.[0] ?? m.pt[0], sz: m.from?.[1] ?? m.pt[1], landed: false, under: false, rings: 0, n: ++seq } };
       angle('cast', { x: m.pt[0], z: m.pt[1] }, slot);
       const l = lines[m.who]!;

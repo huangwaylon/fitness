@@ -5,7 +5,7 @@
 // while a line is out hears its step again; an angler whose phone goes is no longer fishing. The demo's players are two
 // tabs of one browser (sync/live-local.ts plays the room).
 import { expect, test, type Page } from '@playwright/test';
-import { is3d, reelOnBite, sawIt, watchFor } from './island';
+import { is3d, reelOnBite, sawIt, tapOn, watchFor } from './island';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -79,5 +79,96 @@ test('a tab coming while a line is out sees it; the angler’s tab gone, its lin
   await expect.poll(() => h(b, (w) => w.__fish.lines().map((l) => [l.who, Math.round(l.x), Math.round(l.z)])), { timeout: 10_000 }).toEqual([['A', Math.round(at.x), Math.round(at.z)]]);
   await a.close({ runBeforeUnload: true });
   await expect(b.locator('[data-angler]')).toHaveCount(0, { timeout: 15_000 });
+  await ctx.close();
+});
+
+/** Through the museum's door (a button: no tap on the ground reels a line in first), and back out (‹ 島へ). */
+async function intoMuseum(page: Page) {
+  const door = await page.evaluate(() => (window as unknown as { __world: { site(): { doors: Record<string, [number, number]> } } }).__world.site().doors.museum);
+  await page.evaluate(`window.__world.go(${door[1] - 120})`);
+  await expect.poll(() => page.evaluate('window.__world3d.camStill()')).toBe(true);
+  // (my villager a few steps off the door: in at once, the line still out)
+  await page.evaluate(`window.__world.put(${door[0] + 70}, ${door[1] - 40})`);
+  await page.waitForTimeout(300);
+  await tapOn(page, page.locator('[data-building="museum"] .door'));
+  await expect(page).toHaveURL(/\/museum\/?\?/, { timeout: 20_000 });
+}
+async function outOfMuseum(page: Page) {
+  await page.getByRole('button', { name: '島へ' }).click();
+  await expect(page).toHaveURL(/fitness\/?\?/);
+  expect(await is3d(page)).toBe(true);
+}
+/** B taps its sea shadow and casts (the shadow nobody's). */
+async function castsFree(b: Page) {
+  await expect.poll(async () => {
+    const [x, y] = await shadowAt(b);
+    await b.mouse.click(x, y);
+    return h(b, (w) => w.__fish.casting());
+  }, { timeout: 10_000 }).toBe(true);
+}
+
+test('A goes through a door with the line out: A’s tab says the line ended, and it ends on B’s phone', async ({ browser }) => {
+  test.slow();
+  const ctx = await browser.newContext();
+  const a = await ctx.newPage(), b = await ctx.newPage();
+  await open(a);
+  await open(b, '&as=B');
+  // (what A's tab says over the demo's relay: its leaving clears its line on B's phone in any case, as a phone's
+  // socket closing does; going through a door on a phone, the socket stays and only A's `off` ends the line)
+  await b.evaluate(() => {
+    const said: unknown[] = ((window as unknown as { __said: unknown[] }).__said = []);
+    new BroadcastChannel('island-demo-relay').onmessage = (e) => said.push(e.data);
+  });
+  await cast(a);
+  await expect.poll(() => h(b, (w) => w.__fish.lines().map((l) => [l.who, l.landed]))).toEqual([['A', true]]);
+  await intoMuseum(a);
+  await expect.poll(() => b.evaluate(() => (window as unknown as { __said: { k: string; m?: { kind: string; ph?: string; who: string } }[] }).__said
+    .some((w) => w.k === 'm' && w.m?.kind === 'fish' && w.m.ph === 'off' && w.m.who === 'A'))).toBe(true);
+  await expect.poll(() => h(b, (w) => w.__fish.lines().length)).toBe(0);
+  await expect(b.locator('[data-angler]')).toHaveCount(0);
+  await ctx.close();
+});
+
+test('a line cast at a new spot (its off never came) frees the shadow the old one was at', async ({ browser }) => {
+  test.slow();
+  const ctx = await browser.newContext();
+  const a = await ctx.newPage(), b = await ctx.newPage();
+  await open(a);
+  await open(b, '&as=B');
+  // (A's steps as the relay brings them: a cast at B's shadow, then one elsewhere with no off between)
+  const tell = (m: object) => b.evaluate((m) => {
+    const bc = new BroadcastChannel('island-demo-relay');
+    bc.postMessage({ k: 'm', m: { kind: 'fish', who: 'A', v: 3, t: Date.now(), ...m } });
+    bc.close();
+  }, m);
+  const f = await h(b, (w) => w.__fish.fish().find((x) => x.water === 'sea')!);
+  await tell({ ph: 'cast', pt: [Math.round(f.x), Math.round(f.z)], from: [Math.round(f.x), Math.round(f.z) - 40], id: f.cid });
+  await expect.poll(() => h(b, (w) => w.__fish.lines().length)).toBe(1);
+  await b.waitForTimeout(1200); // (it swims up to A's float)
+  const [bx, by] = await shadowAt(b);
+  await b.mouse.click(bx, by);
+  await expect.poll(() => h(b, (w) => w.__fish.why())).toBe('the partner’s');
+  await tell({ ph: 'cast', pt: [Math.round(f.x) + 300, Math.round(f.z)], from: [Math.round(f.x) + 300, Math.round(f.z) - 40] });
+  await expect.poll(() => h(b, (w) => w.__fish.lines().map((l) => l.id))).toEqual([null]);
+  await castsFree(b);
+  await ctx.close();
+});
+
+test('B away while A’s line ends: back on the island, A’s villager no longer holds a rod', async ({ browser }) => {
+  test.slow();
+  const ctx = await browser.newContext();
+  const a = await ctx.newPage(), b = await ctx.newPage();
+  await open(a);
+  await open(b, '&as=B');
+  await cast(a);
+  await expect.poll(() => h(b, (w) => w.__villagers3?.last('partner')?.angling.phase ?? null)).toBe('wait');
+  await intoMuseum(b);
+  // (A's line ends while B's away: the fish bites and gets away, or nobody came)
+  await expect.poll(() => h(a, (w) => w.__fish.casting()), { timeout: 30_000 }).toBe(false);
+  await outOfMuseum(b);
+  await expect.poll(() => h(b, (w) => w.__villagers3?.last('partner') != null)).toBe(true);
+  await b.waitForTimeout(500);
+  expect(await h(b, (w) => w.__fish.lines().length)).toBe(0);
+  expect(await h(b, (w) => w.__villagers3!.last('partner')!.angling.phase)).toBeNull();
   await ctx.close();
 });
