@@ -123,6 +123,16 @@ every meal, the guest included (unlike the body: what was eaten is shared like t
 their calorie tracker into the island, everyone able to see the meals). Not done: barcode scanning (the CSP blocks Open
 Food Facts and the shards aren't shipped), other goals.
 
+Repeats (いつもの, added the same day): a meal eaten the same way most days is one `food_repeat` (the person's one meal,
+its items, weekdays, a first day and an optional last, the days it skips), and its days' items are **computed on read**
+(virtual entries, shown and counted like logged ones, future days too: planned), never copied into the record. History
+is never rewritten: changing the items or the weekdays ends the repeat today and starts a new one tomorrow; stopping
+ends it today; one day done differently is detached (the repeat skips it and that day's items become ordinary entries,
+then edited). Why: the user ("i always eat the same thing for breakfast", with a day changed or the habit stopped); a
+row per day would fill the record with copies and turn a change of habit into rewriting past days, while a computed
+repeat is one row and a past day reads the same forever. Owner-only and latest op per id like an entry; the UI keeps
+one live repeat per meal, the record need not.
+
 ## Economy
 
 ### Bells are play money

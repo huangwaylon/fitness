@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { foodAccept, foodFold, foodOp, isKcalGoal, newFoodId, type FoodOp } from './food.ts';
+import {
+  foodAccept, foodFold, foodOp, foodRepeatFold, foodRepeatOp, isKcalGoal, newFoodId, newRepeatId, repeatCovers, weekdayBit, WEEKDAYS, type FoodOp, type RepeatOp
+} from './food.ts';
 import { cleanLine } from './board.ts';
 
 const T = Date.parse('2026-11-03T03:00:00.000Z');
@@ -59,5 +61,47 @@ describe('newFoodId and isKcalGoal', () => {
   it('a kcal goal is a whole 50 in 1,000–5,000', () => {
     expect([1000, 1850, 5000].every(isKcalGoal)).toBe(true);
     expect([950, 1825, 5050, 2000.5, '2000', null].some(isKcalGoal)).toBe(false);
+  });
+});
+
+describe('food_repeat', () => {
+  const ok = { id: 'rabcdef1', at: T, m: 'b', it: [{ g: 150, f: RICE }], w: 127, from: '2026-11-01' };
+  const rep = (id: string, who: 'A' | 'B' | 'G', at: number, extra: object = {}) => ({ ...(foodRepeatOp({ ...ok, id, at, ...extra }) as RepeatOp), who });
+
+  it('reads a set and a removal, known keys only, normalized', () => {
+    expect(foodRepeatOp({ ...ok, it: [{ g: 12.3, f: { ...RICE, n: ' ごはん\n' } }], to: null, sk: ['2026-11-04', '2026-11-02', '2026-11-04'] })).toEqual({
+      ...ok, it: [{ g: 12.3, f: RICE }], sk: ['2026-11-02', '2026-11-04']
+    });
+    expect(foodRepeatOp({ ...ok, to: '2026-11-01', sk: [] })).toEqual({ ...ok, to: '2026-11-01' });
+    expect(foodRepeatOp({ id: 'rabcdef1', at: T, rm: true })).toEqual({ id: 'rabcdef1', at: T, rm: true });
+  });
+  it('refuses anything malformed', () => {
+    for (const bad of [
+      { ...ok, id: 'fabcdef1' }, { ...ok, at: 5 }, { ...ok, m: 'x' }, { ...ok, w: 0 }, { ...ok, w: 128 }, { ...ok, w: '127' },
+      { ...ok, from: '2026-02-30' }, { ...ok, to: '2026-10-31' }, { ...ok, it: [] }, { ...ok, it: Array(21).fill({ g: 1, f: RICE }) },
+      { ...ok, it: [{ g: 1.25, f: RICE }] }, { ...ok, it: [{ g: 1, f: null }] }, { ...ok, it: [{ g: 1, f: RICE, m: 'b' }] },
+      { ...ok, sk: ['2026-10-31'] }, { ...ok, to: '2026-11-02', sk: ['2026-11-03'] }, { ...ok, sk: [5] }, { ...ok, x: 1 },
+      { id: 'rabcdef1', at: T, rm: true, m: 'b' }, null
+    ]) expect(foodRepeatOp(bad)).toBeNull();
+    expect(foodOp({ id: 'rabcdef1', at: T, rm: true })).toBeNull(); // a repeat's id is no entry's
+  });
+  it('weekdays are of the date: bit 0 Monday … bit 6 Sunday', () => {
+    expect(['2026-11-02', '2026-11-03', '2026-11-07', '2026-11-08'].map(weekdayBit)).toEqual([1, 2, 32, 64]); // Mon, Tue, Sat, Sun
+    expect([WEEKDAYS.weekdays & weekdayBit('2026-11-06'), WEEKDAYS.weekend & weekdayBit('2026-11-06')]).toEqual([16, 0]);
+  });
+  it('covers its days on its weekdays, not the skipped ones, nothing before from or after to', () => {
+    const r = { from: '2026-11-02', to: '2026-11-09', w: WEEKDAYS.weekdays, sk: ['2026-11-04'] };
+    const days = ['2026-11-01', '2026-11-02', '2026-11-03', '2026-11-04', '2026-11-07', '2026-11-09', '2026-11-10'];
+    expect(days.filter((d) => repeatCovers(r, d))).toEqual(['2026-11-02', '2026-11-03', '2026-11-09']);
+    expect(repeatCovers({ from: '2026-11-02', w: 127 }, '2030-01-01')).toBe(true); // open-ended
+  });
+  it('folds by the food rule (owner only, a removal final), by first day then id', () => {
+    const ops = [rep('r0000002', 'A', T), rep('r0000001', 'B', T, { from: '2026-10-01' }), rep('r0000002', 'B', T + 1, { w: 1 }), rep('r0000002', 'A', T + 2, { to: '2026-11-03' }), rep('r0000003', 'G', T)];
+    expect(foodRepeatFold(ops).map((r) => [r.id, r.who, r.to])).toEqual([['r0000001', 'B', undefined], ['r0000002', 'A', '2026-11-03'], ['r0000003', 'G', undefined]]);
+    expect(foodRepeatFold([...ops, { id: 'r0000003', at: T + 3, rm: true as const, who: 'G' as const }, rep('r0000003', 'G', T + 4)]).map((r) => r.id)).toEqual(['r0000001', 'r0000002']);
+    expect(foodAccept(rep('r0000002', 'A', T), rep('r0000002', 'A', T))).toBe('stale');
+  });
+  it('a new id is well-formed', () => {
+    expect(foodRepeatOp({ ...ok, id: newRepeatId(T) })).not.toBeNull();
   });
 });

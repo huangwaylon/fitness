@@ -54,7 +54,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
   });
 
   it('Move and Stand every day; うめ’s Move goal applies from its day', () => {
-    expect(cache.rows.events.filter((e) => !['spend', 'spend_void', 'harvest', 'pref', 'food'].includes(e[3]))).toEqual([]);
+    expect(cache.rows.events.filter((e) => !['spend', 'spend_void', 'harvest', 'pref', 'food', 'food_repeat'].includes(e[3]))).toEqual([]);
     const metrics = new Set(cache.rows.metrics.map((m) => m[3]));
     expect([...metrics].sort()).toEqual(['bmi', 'body_fat_pct', 'exercise_min', 'lean_kg', 'move_kcal', 'stand_min', 'steps', 'weight']);
     const settled = economyWeeks(s, now).filter((wk) => provisionalMs(wk) <= now);
@@ -72,7 +72,11 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
       expect(d.kcal).toBeLessThan(3000);
     }
     const all = [0, 1, 2, 3].flatMap((k) => (['A', 'B'] as const).flatMap((p) => foodDay(s, p, addDays(localDateAt(now), -k)).entries));
-    expect(all).toHaveLength(sent);
+    expect(all.filter((e) => !e.rep)).toHaveLength(sent);
+    // A's breakfast is いつもの from two days back: each of those days', today's too, is the repeat's (not logged too)
+    const breakfast = (k: number) => foodDay(s, 'A', addDays(localDateAt(now), -k)).entries.filter((e) => e.m === 'b');
+    for (const k of [0, 1, 2]) expect(breakfast(k).map((e) => [e.rep, e.f.n])).toEqual([['rdemoab', 'ごはん（精白米）'], ['rdemoab', '納豆（たれ・からし付き）']]);
+    expect(breakfast(3).every((e) => !e.rep)).toBe(true);
     expect([kcalGoal(s, 'A'), kcalGoal(s, 'B')]).toEqual([2200, 1700]);
     expect(foodDay(reduce(demoCache(now, 'G').rows), 'A', yesterday)).toEqual(days[0]);
   });

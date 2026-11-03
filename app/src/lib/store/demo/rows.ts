@@ -13,7 +13,7 @@ import type { SnapshotCache } from '#lib/sync/cache.ts';
 import { maxAt } from '#lib/model/snapshot.ts';
 import { mulberry32 } from '#lib/random.ts';
 import { shopPrice } from '#lib/config/rules.ts';
-import type { FoodSnap, Meal } from '#lib/contract/food.ts';
+import { WEEKDAYS, type FoodSnap, type Meal } from '#lib/contract/food.ts';
 
 const DEMO_WEEKS_BACK = 8;
 /** About one day in 25 only steps reach the sheet (no Move, Exercise or Stand row: 記録なし in けんこう, no fruit). */
@@ -58,6 +58,8 @@ const MEALS_DEMO: Record<PersonId, [h: number, m: Meal, food: string, g: number]
 };
 /** How many days back (today too) the demo has meals. */
 const MEAL_DAYS = 4;
+/** A's breakfast repeat starts this many days back. */
+const REPEAT_FROM = 2;
 
 const iso = (ms: number) => new Date(ms).toISOString();
 const at = (date: string, h: number, m = 0) => jstMs(date, h, m);
@@ -164,11 +166,16 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
   ev(at(addDays(wStart, 2), 21, 1), 'B', 'pref', { key: 'goalBodyFat', value: 26 });
 
   // The meal log: the last days' meals, each logged a few minutes after it was eaten (only what is past by now), and a
-  // kcal goal each. A meal never earns, so none of this moves a ベル.
+  // kcal goal each. A meal never earns, so none of this moves a ベル. A's breakfast is いつもの (a repeat, 毎日) from
+  // REPEAT_FROM days back: those days' breakfasts are its, not logged.
+  const repeatFrom = addDays(today, -REPEAT_FROM);
+  const t0 = at(repeatFrom, 7, 5);
+  ev(t0, 'A', 'food_repeat', { id: 'rdemoab', at: t0, m: 'b', it: [{ g: 150, f: FOODS.rice }, { g: 54, f: FOODS.natto }], w: WEEKDAYS.all, from: repeatFrom });
   for (let k = MEAL_DAYS - 1; k >= 0; k--) {
     const d = addDays(today, -k);
     for (const p of ['A', 'B'] as PersonId[]) {
       MEALS_DEMO[p][k % MEALS_DEMO[p].length].forEach(([h, m, food, g], i) => {
+        if (p === 'A' && m === 'b' && d >= repeatFrom) return;
         const t = at(d, h, 10 + i * 3 + (p === 'B' ? 1 : 0));
         ev(t, p, 'food', { id: `fdemo${d.replace(/-/g, '')}${p.toLowerCase()}${i}`, at: t, d, m, g, f: FOODS[food] });
       });

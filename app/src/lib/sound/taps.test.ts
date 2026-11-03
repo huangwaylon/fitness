@@ -48,6 +48,7 @@ const NONE: Record<string, string> = {
   'lib/components/food/Food.svelte': 'the person or day already shown does nothing; the dropdown ticks on change',
   'lib/components/food/FoodSearch.svelte': 'the search field: the system keyboard clicks',
   'lib/components/food/FoodAmount.svelte': 'the grams field: the system keyboard clicks; the meal already chosen does nothing',
+  'lib/components/food/FoodRepeat.svelte': 'the weekday preset already chosen does nothing',
   'lib/components/island/SayPicker.svelte': 'the phrase field: the system keyboard clicks',
   'lib/components/board/BoardView.svelte': 'the note field: the system keyboard clicks'
 };

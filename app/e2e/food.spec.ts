@@ -8,14 +8,21 @@ const sheet = (page: Page) => page.locator('dialog[open]');
 const total = (page: Page) => sheet(page).locator('[data-food-total]');
 const kcalOf = async (page: Page) => Number((await total(page).textContent())!.replace(/[^\d]/g, ''));
 
-async function openFood(page: Page, as = '') {
-  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none${as}`);
+/** `date`: the scene clock's (none: the page's own, e.g. `page.clock.install`). */
+async function openFood(page: Page, as = '', date = `&date=${DATE}`) {
+  await page.goto(`?demo${date}&critter=none&visitor=none${as}`);
   const bowl = page.getByRole('button', { name: 'ごはん', exact: true });
   await expect(bowl).toBeVisible({ timeout: 15_000 });
   await bowl.click();
   await expect(sheet(page).locator('[data-food-summary]')).toBeVisible();
   await sheet(page).evaluate((d) => Promise.all(d.getAnimations().map((a) => a.finished))); // the zoom in has played
 }
+
+/** What sticks out past the open sheet's right edge (its first three, by class): nothing, on every level. */
+const overflowOf = (page: Page) => sheet(page).evaluate((d) => {
+  const right = d.getBoundingClientRect().right;
+  return [...d.querySelectorAll('*')].filter((e) => e.getBoundingClientRect().right > right + 0.5).map((e) => e.className).slice(0, 3);
+});
 
 test('the bowl sits in the top-right cluster, left of the jar (the jar beside the dumbbell); search ごはん, add 茶碗1杯 to 朝ごはん, the day’s total goes up', async ({ page }) => {
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
@@ -58,20 +65,16 @@ test('the bowl sits in the top-right cluster, left of the jar (the jar beside th
 // WebKit's text field is ~20 characters wide by itself: in an auto grid track it pushed the search box and the rows past
 // the sheet's right edge on an iPhone 15 (the sheet clips them). Each level is checked: nothing wider than the sheet.
 test('the day, the search and the amount all fit the sheet’s width', async ({ page }) => {
-  const overflow = () => sheet(page).evaluate((d) => {
-    const right = d.getBoundingClientRect().right;
-    return [...d.querySelectorAll('*')].filter((e) => e.getBoundingClientRect().right > right + 0.5).map((e) => e.className).slice(0, 3);
-  });
   await openFood(page);
-  expect(await overflow()).toEqual([]);
+  expect(await overflowOf(page)).toEqual([]);
   await sheet(page).locator('[data-add=b]').click();
   await sheet(page).locator('[data-food-q]').fill('ごはん');
   const rice = sheet(page).locator('[data-food-results] button', { hasText: 'ごはん（精白米）' }).first();
   await expect(rice).toBeVisible({ timeout: 15_000 });
-  expect(await overflow()).toEqual([]);
+  expect(await overflowOf(page)).toEqual([]);
   await rice.click();
   await expect(sheet(page).locator('[data-done]')).toBeVisible();
-  expect(await overflow()).toEqual([]);
+  expect(await overflowOf(page)).toEqual([]);
 });
 
 test('another person’s day is read-only; the guest sees the members’ meals and logs its own', async ({ page }) => {
@@ -82,7 +85,7 @@ test('another person’s day is read-only; the guest sees the members’ meals a
   await expect(sheet(page).locator('[data-food-summary]')).toHaveClass(/pB/);
   await expect(sheet(page).locator('[data-kcal-goal]')).toHaveText('目標 1,700 kcal');
   expect(await sheet(page).locator('div.row[data-entry]').count()).toBeGreaterThan(0); // うめ's meals, shown
-  await expect(sheet(page).locator('button[data-entry], [data-add], [data-focus=kcal-goal]')).toHaveCount(0); // never changed here
+  await expect(sheet(page).locator('button[data-entry], [data-add], [data-focus=kcal-goal], button[data-repeat], [data-repeat-new]')).toHaveCount(0); // never changed here
   // the day before: still うめ's, still read-only; きょう comes back
   await sheet(page).locator('[data-nav=back]').click();
   await expect(sheet(page).locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-03');
@@ -99,4 +102,118 @@ test('another person’s day is read-only; the guest sees the members’ meals a
   await who.selectOption('A');
   expect(await sheet(page).locator('div.row[data-entry]').count()).toBeGreaterThan(0);
   await expect(sheet(page).locator('[data-add]')).toHaveCount(0);
+});
+
+// いつもの (a repeat): the days it fills come from it, marked 🔁 (never copied into the record). From うめ's phone (A's
+// breakfast is the demo's repeat already) late on 11/4: 朝ごはん → 🔁 くりかえす → 毎日, and past midnight 11/5 has
+// the same items 🔁. One day's item changed (11/4) changes that day only; やめる (on 11/5) leaves 11/6 empty and 11/5 kept.
+test('いつもの: a recurring 朝ごはん fills the next day; one day’s edit stays on that day; stopping empties tomorrow, today kept', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-04T23:40:00+09:00') });
+  await page.clock.resume();
+  await openFood(page, '&as=B', '');
+  const b = sheet(page).locator('section[data-meal=b]');
+  const rows = b.locator('[data-entry]');
+  const day = sheet(page).locator('[data-food-date]');
+  const names = () => rows.locator('.nm').allTextContents();
+  const amounts = () => rows.locator('.amt').allTextContents();
+  await expect(day).toHaveAttribute('data-food-date', '2026-11-04');
+  const items = await names();
+  expect(items.length).toBeGreaterThan(0);
+  const before = await amounts();
+  const kcal = await kcalOf(page);
+  await expect(b.locator('[data-repeat]')).toHaveCount(0);
+
+  await b.locator('[data-repeat-new]').click();
+  await expect(sheet(page).locator('.navbar h2')).toHaveText('朝ごはんの いつもの');
+  const lv = sheet(page).locator('[data-food-repeat=b]');
+  await expect(lv.locator('[data-days=every]')).toHaveAttribute('aria-pressed', 'true'); // 毎日 first
+  await expect(lv.locator('[data-day][aria-pressed=true]')).toHaveCount(7);
+  await expect(lv.locator('li .nm')).toHaveText(items);
+  expect(await overflowOf(page)).toEqual([]);
+  // 平日, then 毎日 again: the presets set the seven days
+  await lv.locator('[data-days=weekdays]').click();
+  await expect(lv.locator('[data-day][aria-pressed=true]')).toHaveCount(5);
+  await lv.locator('[data-days=every]').click();
+  await lv.locator('[data-rep-start]').click();
+
+  // today looks the same, its items now the repeat's
+  await expect(sheet(page).locator('.navbar h2')).toHaveText('ごはん');
+  await expect(b.locator('button[data-repeat]')).toHaveText('毎日');
+  await expect(b.locator('[data-repeat-new]')).toHaveCount(0);
+  await expect(rows).toHaveCount(items.length);
+  await expect(b.locator('[data-entry][data-rep]')).toHaveCount(items.length);
+  expect(await names()).toEqual(items);
+  expect(await kcalOf(page)).toBe(kcal);
+
+  // past midnight: 11/5's breakfast is the same, 🔁
+  await page.clock.fastForward('30:00');
+  await expect(day).toHaveAttribute('data-food-date', '2026-11-05');
+  await expect(b.locator('[data-entry][data-rep]')).toHaveCount(items.length);
+  expect(await names()).toEqual(items);
+  expect(await amounts()).toEqual(before);
+
+  // 11/4's first item, one portion more: 11/4 changes (its items its own now, nothing doubled), 11/5 doesn't
+  await sheet(page).locator('[data-nav=back]').click();
+  await expect(day).toHaveAttribute('data-food-date', '2026-11-04');
+  await rows.first().click();
+  await expect(sheet(page).locator('[data-done]')).toHaveText('保存');
+  await sheet(page).locator('[data-step="1"]').click();
+  await sheet(page).locator('[data-done]').click();
+  await expect(sheet(page).locator('.navbar h2')).toHaveText('ごはん');
+  await expect(rows).toHaveCount(items.length);
+  await expect(b.locator('[data-entry][data-rep]')).toHaveCount(0);
+  expect(await names()).toEqual(items);
+  const edited = await amounts();
+  expect(edited[0]).not.toBe(before[0]);
+  expect(edited.slice(1)).toEqual(before.slice(1));
+  await expect(b.locator('button[data-repeat]')).toHaveText('毎日'); // still my repeat, to manage
+  await b.locator('button[data-repeat]').click();
+  await expect(lv.locator('[data-rep-fromday]')).toHaveText('この日の内容で くりかえす'); // 11/4 differs from it now
+  expect(await overflowOf(page)).toEqual([]);
+  await sheet(page).locator('.navbar button').first().click(); // ‹
+  await sheet(page).locator('[data-nav=on]').click();
+  await expect(day).toHaveAttribute('data-food-date', '2026-11-05');
+  await expect(b.locator('[data-entry][data-rep]')).toHaveCount(items.length);
+  expect(await amounts()).toEqual(before);
+
+  // やめる (asked twice): 11/5 keeps its breakfast; 11/6 has none
+  await b.locator('button[data-repeat]').click();
+  await expect(lv.locator('[data-rep-fromday]')).toHaveCount(0); // 11/5 is the repeat's own
+  const stop = lv.locator('[data-rep-stop]');
+  await stop.click();
+  await expect(stop).toHaveText('ほんとうに やめる？');
+  await stop.click();
+  await expect(sheet(page).locator('.navbar h2')).toHaveText('ごはん');
+  await expect(b.locator('[data-entry][data-rep]')).toHaveCount(items.length);
+  await expect(b.locator('[data-repeat]')).toHaveText('毎日'); // filling today still: shown, not managed
+  await expect(b.locator('button[data-repeat], [data-repeat-new]')).toHaveCount(0);
+  await page.clock.fastForward('24:00:00');
+  await expect(day).toHaveAttribute('data-food-date', '2026-11-06');
+  await expect(b.locator('[data-entry]')).toHaveCount(0);
+  await expect(b.locator('[data-repeat]')).toHaveCount(0);
+  await sheet(page).locator('[data-nav=back]').click();
+  await expect(b.locator('[data-entry][data-rep]')).toHaveCount(items.length);
+  await sheet(page).locator('[data-nav=back]').click();
+  expect(await amounts()).toEqual(edited);
+});
+
+test('いつもの: someone else’s repeat is shown, 🔁, never managed; the level fits the sheet’s width', async ({ page }) => {
+  await openFood(page, '&as=B');
+  await sheet(page).locator('select[data-pick=who]').selectOption('A');
+  const b = sheet(page).locator('section[data-meal=b]');
+  await expect(b.locator('span[data-repeat]')).toContainText('毎日'); // the demo's: A's breakfast, every day
+  expect(await b.locator('div.row[data-rep]').count()).toBeGreaterThan(0);
+  await expect(sheet(page).locator('button[data-repeat], [data-repeat-new], button[data-entry]')).toHaveCount(0);
+
+  // A's own phone: the chip opens the repeat (its items, the days, the three actions), nothing past the sheet's edge
+  await openFood(page);
+  await sheet(page).locator('section[data-meal=b] button[data-repeat]').click();
+  const lv = sheet(page).locator('[data-food-repeat=b]');
+  await expect(lv.locator('[data-rep-save]')).toHaveAttribute('aria-disabled', 'true'); // nothing changed yet
+  await expect(lv.locator('[data-rep-stop]')).toBeVisible();
+  expect(await overflowOf(page)).toEqual([]);
+  await lv.locator('[data-day="5"]').click(); // 土 off
+  await expect(lv.locator('[data-rep-save]')).toHaveAttribute('aria-disabled', 'false');
+  await lv.locator('[data-rep-save]').click();
+  await expect(sheet(page).locator('section[data-meal=b] button[data-repeat]')).toHaveText('月火水木金日'); // the one going on (from tomorrow); today keeps the old one's items
 });

@@ -1,28 +1,51 @@
 <script lang="ts">
   // One meal of a person's day (朝ごはん · 昼ごはん · 夜ごはん · おやつ): its kcal, then a row per entry (the food,
   // its amount, its kcal). On my own day ＋ opens the search for this meal, and an entry opens its amount to change or
-  // remove it; anyone else's day is read-only (only the owner changes an entry).
+  // remove it; anyone else's day is read-only (only the owner changes an entry). いつもの (a repeat): its weekdays as a
+  // chip in the header (my day: a tap manages it; else only shown), its entries marked; on my day a meal with entries
+  // and no repeat ends with 🔁 くりかえす.
   import type { FoodEntry, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { amountText } from './foodUi.ts';
+  import { amountText, daysText } from './foodUi.ts';
+  import RepeatMark from './RepeatMark.svelte';
 
   interface Props {
     meal: Meal;
-    entries: FoodEntry[];
+    /** The day's entries of this meal; a repeat's carry `rep` (its id). */
+    entries: (FoodEntry & { rep?: string })[];
     /** My own day: ＋ and the entries take taps. */
     mine: boolean;
+    /** The meal's repeat's weekday mask (null: none). */
+    days: number | null;
+    /** The repeat level: the chip's (manage) or, with no repeat, 🔁 くりかえす's (create). Null: neither. */
+    onrepeat: (() => void) | null;
     onadd: () => void;
     onpick: (e: FoodEntry) => void;
   }
-  let { meal, entries, mine, onadd, onpick }: Props = $props();
+  let { meal, entries, mine, days, onrepeat, onadd, onpick }: Props = $props();
   const kcalOf = (e: FoodEntry) => Math.round((e.f.k * e.g) / 100);
   const total = $derived(entries.reduce((s, e) => s + (e.f.k * e.g) / 100, 0));
   const label = $derived(t(`food.meal.${meal}`));
 </script>
 
+{#snippet cells(e: FoodEntry & { rep?: string })}
+  <span class="nm">{e.f.n}</span>
+  <small class="amt">{#if e.rep}<i class="rm" role="img" aria-label={t('food.rep.mark')}><RepeatMark size={12} /></i>{/if}{amountText(e)}</small>
+  <b class="kc money">{formatNum(kcalOf(e))}</b>
+{/snippet}
+
 <section class="card meal" data-meal={meal} aria-labelledby="fm-{meal}">
   <header>
     <h3 id="fm-{meal}">{label}</h3>
+    {#if days !== null}
+      {#if onrepeat}
+        <button type="button" class="rep" data-sfx="page" data-repeat={meal} aria-label={t('food.rep.manage', { meal: label, days: daysText(days) })} onclick={onrepeat}>
+          <RepeatMark /><span>{daysText(days)}</span>
+        </button>
+      {:else}
+        <span class="rep" data-repeat={meal}><i class="rm" role="img" aria-label={t('food.rep.mark')}><RepeatMark /></i><span>{daysText(days)}</span></span>
+      {/if}
+    {/if}
     <b class="sub money">{t('kiroku.kcal', { n: formatNum(total) })}</b>
     {#if mine}
       <button type="button" class="add" data-sfx="page" data-add={meal} aria-label={t('food.add', { meal: label })} onclick={onadd}>
@@ -35,24 +58,29 @@
       {#each entries as e (e.id)}
         <li>
           {#if mine}
-            <button type="button" class="row" data-entry={e.id} data-sfx="page" onclick={() => onpick(e)}>
-              <span class="nm">{e.f.n}</span><small class="amt">{amountText(e)}</small><b class="kc money">{formatNum(kcalOf(e))}</b>
+            <button type="button" class="row" data-entry={e.id} data-rep={e.rep} data-sfx="page" onclick={() => onpick(e)}>
+              {@render cells(e)}
             </button>
           {:else}
-            <div class="row" data-entry={e.id}>
-              <span class="nm">{e.f.n}</span><small class="amt">{amountText(e)}</small><b class="kc money">{formatNum(kcalOf(e))}</b>
+            <div class="row" data-entry={e.id} data-rep={e.rep}>
+              {@render cells(e)}
             </div>
           {/if}
         </li>
       {/each}
     </ul>
   {/if}
+  {#if days === null && onrepeat && entries.length}
+    <button type="button" class="rep new" data-sfx="page" data-repeat-new={meal} aria-label={t('food.rep.newOf', { meal: label })} onclick={onrepeat}>
+      <RepeatMark /><span>{t('food.rep.new')}</span>
+    </button>
+  {/if}
 </section>
 
 <style>
   .meal { display: grid; gap: 2px; padding: 8px 14px; }
   header { display: flex; align-items: center; gap: 8px; min-height: var(--hit); }
-  h3 { margin: 0; font-size: var(--fs-body); font-weight: 700; }
+  h3 { margin: 0; flex: none; font-size: var(--fs-body); font-weight: 700; }
   .sub { margin-left: auto; font-size: var(--fs-body); color: var(--text-soft); white-space: nowrap; }
   /* ＋: GoalCard's ✎ object, a cross in it */
   .add {
@@ -74,4 +102,19 @@
   .nm { grid-area: nm; font-weight: 700; font-size: var(--fs-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .amt { grid-area: amt; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .kc { grid-area: kc; font-size: var(--fs-body); }
+  .rm { display: inline-flex; }
+  .amt .rm { margin-right: 4px; vertical-align: -1px; }
+  /* the repeat's chip: FoodAmount's chip, small; shown only (another's day): the soft pill, no edge */
+  .rep {
+    display: inline-flex; align-items: center; gap: 4px; min-width: 0; padding: 4px 10px; border-radius: var(--r-pill);
+    font: 700 var(--fs-s)/1.1 var(--font-ui); color: var(--text-soft); background: color-mix(in srgb, var(--lip) 40%, transparent);
+  }
+  .rep span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  button.rep {
+    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); padding: 0 12px; margin-bottom: var(--lip-h);
+    color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
+  }
+  button.rep:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  button.rep:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .new { justify-self: start; margin-top: 6px; padding: 0 14px; }
 </style>
