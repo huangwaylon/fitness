@@ -68,7 +68,7 @@
     {"id":"palm-3","k":"palm","x":4,"z":3,"f":1},
     {"id":"plumeria-w","k":"bush","x":6,"z":7,"f":0,"s":"white-plumeria"},
     {"id":"plumeria-p","k":"bush","x":12,"z":7,"f":0,"s":"pink-plumeria"},
-    {"id":"oak-m1","k":"oak","x":12,"z":20,"f":0},
+    {"id":"oak-m1","k":"oak","x":4,"z":20,"f":0},
     {"id":"cedar-m1","k":"cedar","x":4,"z":17,"f":0},
     {"id":"lamp-b1","k":"streetlamp","x":8,"z":23,"f":0},
     {"id":"lamp-b2","k":"streetlamp","x":10,"z":23,"f":0},

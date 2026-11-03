@@ -35,13 +35,13 @@ test('the island draws in 3D and a tap on the lawn walks my villager', { tag: '@
   expect(s.calls).toBeGreaterThan(10);
   expect(s.dpr).toBeLessThanOrEqual(2);
 
-  // a tap on open lawn between the villagers' homes and the stream (world 200, 300) walks mine there
-  const [x, y] = await w3(page, (w) => w.client(200, 300));
+  // a tap on open lawn west of the main path (world 120, 330; the shop stands east of it) walks mine there
+  const [x, y] = await w3(page, (w) => w.client(120, 330));
   await expect.poll(() => page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.matches('.stage'), [x, y])).toBe(true);
   await page.mouse.click(x, y);
   await expect.poll(async () => {
     const [ax, az] = await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
-    return Math.hypot(ax - 200, az - 300);
+    return Math.hypot(ax - 120, az - 330);
   }, { timeout: 10_000 }).toBeLessThan(14);
 });
 
