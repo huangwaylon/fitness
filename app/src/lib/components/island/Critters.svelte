@@ -42,8 +42,7 @@
   import { NIBBLE_MS, PLUNGE_MS, angle, angling, floatLift, nibbled } from '../world3d/fishing3d.ts';
   import { EASE, Glide, turn, yawOf } from './glide.ts';
   import { pace } from '../world3d/pace.ts';
-  import CatchPlate from './CatchPlate.svelte';
-  import { cardFor, type CatchCard } from './catchCard.ts';
+  import { showCatch } from './catchCard.ts';
   import { timers } from './timers.ts';
   import { fnv1a as seedOf, pickOne } from '#lib/random.ts';
   import { hook, hookFlag } from './devHooks.ts';
@@ -185,7 +184,6 @@
     if (cast?.landed && w.rest.three) return w.moveStart();
   });
   let bug = $state<Bug | null>(null);
-  let card = $state<CatchCard | null>(null);
   let net = $state<Net | null>(null);
   /** A spot of bubbles in the sea: something to dive for. */
   let bubbles = $state<{ n: number; item: DiveItem; x: number; z: number; cid?: string } | null>(null);
@@ -216,7 +214,7 @@
   function clearAll() {
     pending.clear();
     fishes = none();
-    cast = bug = card = net = dig = bubbles = diving = null;
+    cast = bug = net = dig = bubbles = diving = null;
   }
 
   // ---------- geometry ----------
@@ -1030,7 +1028,7 @@
 
   // ---------- the catch ----------
   /** The catch held up: NH's caption on a plate with the official icon, popping up out of the catch at (x, y) (stage
-   *  units) (Plate.svelte places it clear of every control). */
+   *  units) (in the bottom stack: CatchStack.svelte). */
   async function show(item: Catch | DiveItem, x: number, y: number, cid?: string) {
     // the partner's claim reached the relay first: it's theirs (their villager holds it up here: the news)
     if (!stillMine(cid)) return;
@@ -1042,7 +1040,7 @@
       const n = ++seq;
       await loadNames().catch(() => {});
       if (seq !== n) return;
-      card = cardFor(n, x, y, findArt('water-egg'), t('beach.fished', { name: t('beach.name.water-egg') }));
+      showCatch(x, y, findArt('water-egg'), t('beach.fished', { name: t('beach.name.water-egg') }));
       return;
     }
     // the shared ずかん: the first catch of each fish, bug or sea creature (junk isn't a find; the pearl is a shell) gets
@@ -1054,7 +1052,7 @@
     const text = pearl ? await loadNames().then(() => t('beach.picked', { name: t('beach.name.pearl') }), () => '') : await catchLine(item as Catch);
     if (seq !== n) return;
     const art = pearl ? findArt(item) : critterArt(item as Catch);
-    card = cardFor(n, x, y, art, text, added);
+    showCatch(x, y, art, text, added);
   }
 
   // ---------- the shared world ----------
@@ -1502,7 +1500,6 @@
       </span>
     {/key}
   {/if}
-  <CatchPlate {scene} bind:card />
 </div>
 
 <style>

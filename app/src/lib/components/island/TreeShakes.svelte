@@ -17,8 +17,7 @@
   // put on the island for both (`put`, by the tree's id: first wins); it lies and opens as a balloon's present does
   // (Finds.svelte). Everything is a world node beside its tree; the swarm's node follows the
   // villager's feet as it flies (its live position, frames only while it's out).
-  import CatchPlate from './CatchPlate.svelte';
-  import { cardFor, type CatchCard } from './catchCard.ts';
+  import { showCatch } from './catchCard.ts';
   import { pickUp } from '../motion/transitions.ts';
   import { timers } from './timers.ts';
   import { hookOneOf, islandSeed } from './devHooks.ts';
@@ -84,7 +83,6 @@
   let swarm = $state<{ n: number; id: string; side: Side; x0: number; z0: number; at: number; stung: boolean; away: number } | null>(null);
   /** The net's swing at world (x, z), `lift` up. */
   let net = $state<{ n: number; x: number; z: number; lift: number } | null>(null);
-  let card = $state<CatchCard | null>(null);
   let dangler = $state<{ n: number; id: string; tree: string; bug: 'bagworm' | 'spider'; x: number; y: number; from: number; up: boolean } | null>(null);
 
   /** What the day's shakes left lying (the shared day: a reload or the partner's phone finds it too), and which of it
@@ -176,10 +174,9 @@
     later(async () => {
       sceneSfx('catch');
       const added = recordFind('bug', d.bug);
-      const n = ++seq;
       const text = await catchLine(d.bug as BugId);
       const [sx, sy] = w.screenU(d.x, d.y, DANGLE_UP);
-      card = cardFor(n, sx, sy, critterArt(d.bug), text, added);
+      showCatch(sx, sy, critterArt(d.bug), text, added);
     }, 160);
   }
 
@@ -246,10 +243,9 @@
     later(async () => {
       sceneSfx('catch');
       const added = recordFind('bug', 'wasp');
-      const n = ++seq;
       const text = await catchLine('wasp');
       const [sx, sy] = w.screenU(x, z, lift);
-      card = cardFor(n, sx, sy, critterArt('wasp'), text, added);
+      showCatch(sx, sy, critterArt('wasp'), text, added);
     }, 160);
   }
 
@@ -266,9 +262,8 @@
     pickedN++;
     sceneSfx('twig');
     if (!coconut) return;
-    const n = ++seq;
     const [sx, sy] = w.screenU(b.x, b.z, 4);
-    void loadNames().then(() => (card = cardFor(n, sx, sy, 'finds/coconut', t('beach.picked', { name: t('beach.name.coconut') }))), () => {});
+    void loadNames().then(() => showCatch(sx, sy, 'finds/coconut', t('beach.picked', { name: t('beach.name.coconut') })), () => {});
   }
 
   // The partner's shakes and catches (the shared day's news): their villager turns to the tree and it shakes, the same
@@ -401,10 +396,6 @@
   {/key}
 {/if}
 
-<div class="held">
-  <CatchPlate {scene} bind:card />
-</div>
-
 <style>
   /* a world node at the feet (camera.svelte.ts places it) */
   .node { width: 0; height: 0; pointer-events: none; }
@@ -445,7 +436,6 @@
   @keyframes dangle-drop { from { translate: 0 calc(var(--len) * -1); } }
   @keyframes dangle-up { from { translate: 0 0; opacity: 1; } to { translate: 0 calc(var(--len) * -1); opacity: 0; } }
   @keyframes sway { from { rotate: -5deg; } to { rotate: 5deg; } }
-  .held { position: absolute; inset: 0; z-index: var(--z-taps); pointer-events: none; }
   /* the swarm: a ≥ 44px button (whatever the perspective: --inv) centred on its node, which flies from the nest to the
      villager's face, wobbling; stung, it flies off */
   .swarm {

@@ -41,6 +41,7 @@
   import Says from './Says.svelte';
   import SayPicker from './SayPicker.svelte';
   import SayButton from './SayButton.svelte';
+  import CatchStack from './CatchStack.svelte';
   import { SAY_TAG, rememberSay, sayGate } from './say.ts';
   import { HIGHFIVE_LIVE_MS, heardHighFive } from './highFives.ts';
   import TreeShakes from './TreeShakes.svelte';
@@ -1057,6 +1058,10 @@
     <!-- the picker's door: bottom right, over the sea, clear of the home indicator and しずえ's box (--news-lift) -->
     <div class="say-dock"><SayButton bind:el={sayBtn} open={!!picking} onopen={openPicker} /></div>
   {/if}
+  {#if live}
+    <!-- every catch's plate: a stack at the bottom centre, outside the scroller (the newest at the bottom) -->
+    <CatchStack scene={sceneEl} />
+  {/if}
   {#if live && FireworksC}<FireworksC bind:this={fireworks} enabled={() => !covered && !life.hidden} forced={life.devFireworks || wedding.fireworks} {allMet} {cheer} />{/if}
 
   <div class="scroller" bind:this={scroller} onscroll={onScroll} data-world-scroller>
@@ -1159,7 +1164,7 @@
           {/if}
           <!-- what a shaken tree drops: a branch, now and then a wasp nest -->
           <TreeShakes bind:this={shakes} scene={sceneEl} onsting={sting} {treeOf} rustle={(tr) => rustle(tr, true)} />
-          <!-- the partner's catches and finds: their villager holds it up here, or a notice at the edge -->
+          <!-- the partner's catches and finds: their villager holds it up here, its plate in the bottom stack -->
           <PartnerNews scene={sceneEl} />
         {/if}
         {#if live && WeatherC}<WeatherC where="stage" />{/if}

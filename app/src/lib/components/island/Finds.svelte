@@ -19,8 +19,7 @@
   //   ?find=bottle | fragment | mushroom | rare-mushroom (dev or ?demo): a bottle, this morning's fragments, a mushroom
   //   now, or the next dig spot's rare mushroom (the e2e's hooks); ?seed= varies the island's seed.
   import { fx3d } from './fx3d.ts';
-  import CatchPlate from './CatchPlate.svelte';
-  import { cardFor, type CatchCard } from './catchCard.ts';
+  import { showCatch } from './catchCard.ts';
   import { timers } from './timers.ts';
   import { hook, islandSeed } from './devHooks.ts';
   import { su } from './scene.ts';
@@ -162,19 +161,17 @@
   interface Dig { n: number; x: number; y: number; in3d?: boolean }
   let lift = $state<Lift | null>(null);
   let dig = $state<Dig | null>(null);
-  let card = $state<CatchCard | null>(null);
   let seq = 0;
   const { later, clear } = timers();
   $effect(() => clear);
 
-  /** The plate by world point (x, z), `up` units above it, `delay` ms after the tap (placed by where that point is on
-   *  screen then); a first find of its kind gets a second page saying it's in the ずかん. */
+  /** The plate for world point (x, z), `up` units above it, `delay` ms after the tap (in the bottom stack, its icon
+   *  popping up from where that point is on screen then); a first find of its kind gets a second page saying it's in the ずかん. */
   function plate(x: number, z: number, up: number, art: string, text: () => string, delay = 0, added = false, hold = true) {
-    const n = ++seq;
     const names = loadNames().catch(() => {});
     later(() => void names.then(() => {
       const [sx, sy] = w.screenU(x, z, up);
-      card = cardFor(n, sx, sy, art, text(), added, hold);
+      showCatch(sx, sy, art, text(), added, hold);
     }), delay);
   }
   function pickUp(uid: string, x: number, y: number, art: string, tilt: number, up = 0) {
@@ -573,7 +570,6 @@
   {#if note}
     {#key note.n}<span class="wish if-caption" class:placed={note.placed} data-fx="wish-note" bind:this={noteEl} style:left="{note.x}px" style:top="{note.y}px">{t('beach.wish')}</span>{/key}
   {/if}
-  <CatchPlate {scene} bind:card />
 </div>
 
 <style>

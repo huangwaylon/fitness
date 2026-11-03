@@ -2,16 +2,13 @@
   // The catch plate (docs/design.md "Scene interactions"): NH's catch line on a plate like the jar's (cream, 4px lip,
   // the plate's ink) with an official icon at its start that pops up out of the catch, read like NH's dialogue box
   // (pager.ts): it types in, two lines a page, a ▼ bobs while a page follows; a tap finishes the page, turns it, and
-  // on the last page closes it; left alone a page turns after 6 s and the last goes after a read's length. Measured
-  // hidden, then placed as close above (else below) the source as it can, centred on it, inside the scene's safe area
-  // and clear of every control and popup (placement.ts); when the nearest room is far from the catch (over NEAR_PX away),
-  // it sits low in the middle instead, like NH's text box; with no room anywhere it's skipped.
+  // on the last page closes it; left alone a page turns after 6 s and the last goes after a read's length. It sits in
+  // the bottom stack (CatchStack.svelte), laid out there: measured hidden (its fonts in), then shown, the icon flying
+  // from the catch to its place.
   //   <Plate {scene} x={u} y={u} art="critters/sea-bass" parts={[line, note]} ondone={…} />   (x, y: the source, stage u)
-  // Used by the critters' catches and the beach finds; the parent keys it per catch and sits it in a layer at --z-taps.
-  import { su } from './scene.ts';
   import { onMount, tick } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { place, stageGeo } from './placement.ts';
+  import { stageGeo } from './placement.ts';
   import { TYPE_MS, arrow, paginate, split, tapBox, typeOne, typing, type PagerState } from './pager.ts';
 
   interface Props {
@@ -22,17 +19,16 @@
     art: string;
     /** The text: each part starts a page; long parts split two lines a page. */
     parts: string | readonly string[];
+    /** Fading out of the stack: its timers stop, and it's no longer the catch's plate (`data-fx`). */
+    leaving?: boolean;
     ondone: () => void;
   }
-  let { scene, x, y, art, parts, ondone }: Props = $props();
-  // the source and text are fixed for the plate's life (the parent keys a new one per catch)
-  // svelte-ignore state_referenced_locally
-  let at = $state({ x, y, dx: 0, dy: 0, placed: false });
+  let { scene, x, y, art, parts, leaving = false, ondone }: Props = $props();
+  let at = $state({ dx: 0, dy: 0, placed: false });
+  // the source and text are fixed for the plate's life (the stack keys a new one per catch)
   // svelte-ignore state_referenced_locally
   let pg = $state<PagerState>({ pages: paginate(parts), page: 0, shown: 0 });
   let el = $state<HTMLElement>();
-  /** Further than this from the catch (px) and the plate goes low in the middle instead (NH's box). */
-  const NEAR_PX = 150;
   const typedNow = $derived(split(pg));
   const typed = $derived(typedNow[0]), untyped = $derived(typedNow[1]);
 
@@ -63,31 +59,23 @@
     run();
   }
 
+  $effect(() => void (leaving && stop()));
+
   onMount(() => {
-    // measured once its glyphs' font subsets are in (laid out hidden, a page's first use of a subset fetches it: measured
-    // in the fallback font, the plate came out a few px wider than its room on Safari)
-    void tick().then(() => (el?.querySelector('.catch-plate')?.getBoundingClientRect(), document.fonts?.ready)).then(() => {
-      if (!el?.isConnected) return;
-      const g = stageGeo(scene), plate = el?.querySelector('.catch-plate')?.getBoundingClientRect();
-      if (!g || !plate || !scene) return;
-      const sx = g.r.left + x / g.k, sy = g.r.top + y / g.k, h = plate.height + 4; // + the plate's lip
-      let p = place(scene, plate.width, h, sx, sy);
-      if (!p || Math.abs(p.y - sy) > NEAR_PX) {
-        // NH's box: low in the middle of the screen (the lowest free spot)
-        const s = scene.getBoundingClientRect();
-        p = place(scene, plate.width, h, (s.left + s.right) / 2, s.bottom + h / 2 + 10) ?? p;
-      }
-      if (!p) return ondone();
-      const cx = (p.x - g.r.left) * g.k, cy = (p.y - g.r.top) * g.k;
-      at = { x: cx, y: cy, dx: x - cx, dy: y - cy, placed: true };
+    // measured once its glyphs' font subsets are in (a page's first use of a subset fetches it), then shown
+    void tick().then(() => document.fonts?.ready).then(() => {
+      if (!el?.isConnected || leaving) return;
+      const g = stageGeo(scene), icon = el.querySelector('.catch-icon')?.getBoundingClientRect();
+      // the icon starts at the catch (px from its place)
+      const dx = g && icon ? g.r.left + x / g.k - (icon.left + icon.width / 2) : 0, dy = g && icon ? g.r.top + y / g.k - (icon.top + icon.height / 2) : 0;
+      at = { dx, dy, placed: true };
       run();
     });
     return stop;
   });
 </script>
 
-<span class="mover catch" class:placed={at.placed} data-fx="catch" bind:this={el}
-  style:translate="{su(at.x)} {su(at.y)}" style:--dx={su(at.dx)} style:--dy={su(at.dy)}>
+<span class="catch" class:placed={at.placed} data-fx={leaving ? 'catch-leaving' : 'catch'} bind:this={el} style:--dx="{at.dx}px" style:--dy="{at.dy}px">
   <button type="button" class="catch-plate" data-sfx="tick" data-page={pg.page} data-pages={pg.pages.length} aria-label={pg.pages.join(' ')} onclick={tapIt}>
     <span class="catch-icon"><OfficialArt key={art} size="clamp(40px, calc(46 * var(--su)), 48px)" eager /></span>
     <span class="catch-say" aria-hidden="true">
@@ -98,14 +86,13 @@
 </span>
 
 <style>
-  .mover { position: absolute; left: 0; top: 0; width: 0; height: 0; }
-  .mover > * { position: absolute; }
-  /* measured hidden, then placed */
+  .catch { display: block; width: max-content; max-width: 100%; }
+  /* measured hidden, then shown */
   .catch:not(.placed), .catch:not(.placed) * { visibility: hidden; animation: none !important; }
   .catch-plate {
     appearance: none; border: 0; margin: 0; cursor: pointer; pointer-events: auto; text-align: left; -webkit-tap-highlight-color: transparent;
-    left: 0; top: 0; translate: -50% -50%; display: flex; align-items: center; gap: 6px;
-    width: max-content; max-width: min(340px, calc(100vw - 24px)); padding: 3px 22px 3px 4px; border-radius: 22px; /* the right pad keeps the ▼'s room */
+    position: relative; display: flex; align-items: center; gap: 6px;
+    width: max-content; max-width: 100%; padding: 3px 22px 3px 4px; border-radius: 22px; /* the right pad keeps the ▼'s room */
     background: var(--plate); color: var(--plate-ink); box-shadow: 0 var(--lip-h) 0 var(--plate-lip);
     font: 700 clamp(13px, calc(14 * var(--su)), 15px) / 1.35 var(--font-ui); text-wrap: balance;
     animation: say .25s ease-out both;
@@ -117,7 +104,7 @@
   .rest { visibility: hidden; }
   .catch-icon { flex: none; line-height: 0; animation: lift .55s cubic-bezier(.3, 1.5, .5, 1) both; }
   .catch-icon :global(.official) { max-width: none; filter: drop-shadow(0 1.5px 1.5px rgba(60, 40, 20, .3)); }
-  /* the icon starts at the source (the plate's centre + --dx/--dy) and pops over to its place */
+  /* the icon starts at the catch (--dx/--dy off its place) and pops over to it */
   @keyframes lift { from { transform: translate(var(--dx), var(--dy)) scale(.4); opacity: 0; } 25% { opacity: 1; } }
   /* NH's "next" arrow */
   .next {
@@ -126,4 +113,9 @@
     animation: bob .6s ease-in-out infinite alternate;
   }
   @keyframes bob { from { transform: translateY(-1.5px); } to { transform: translateY(1.5px); } }
+  @media (prefers-reduced-motion: reduce) {
+    .catch-plate { animation: fade .2s ease-out both; }
+    .catch-icon, .next { animation: none; }
+    @keyframes fade { from { opacity: 0; } }
+  }
 </style>

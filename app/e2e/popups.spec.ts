@@ -1,6 +1,7 @@
 // Every discovery popup (docs/design.md "Critters", "Beach finds", "Balloon", "Shooting stars", "Visitors: life"): the
 // catch plate (a fish, its first-find page, a shell, a present), the wish's caption and Gulliver's sleep talk keep at
-// least 12px from the screen's sides and foot and never sit over the HUD (the jar, the health button, the sync chip).
+// least 12px from the screen's sides and foot and never sit over the HUD (the jar, the health button, the sync chip,
+// the say button). The catch plates stack at the bottom centre, the newest at the bottom, and go on their own.
 import { expect, test, type Page } from '@playwright/test';
 import { reelOnBite } from './island.ts';
 
@@ -30,6 +31,18 @@ async function expectClear(page: Page, sel: string) {
   await expect.poll(measure, { message: `${sel}: 12px from the sides and foot, off the HUD`, timeout: 1500 }).toEqual({ hud: [], top: true, edges: true });
 }
 const plate = '[data-fx="catch"].placed .catch-plate';
+/** The plates showing, top to bottom: their centre's x off the screen's middle, their box, their text. */
+const plates = (page: Page) => page.locator(plate).evaluateAll((els) => els.map((el) => {
+  const r = el.getBoundingClientRect();
+  return { off: Math.abs(r.left + r.width / 2 - innerWidth / 2), top: r.top, bottom: r.bottom, foot: innerHeight - r.bottom, text: el.textContent ?? '' };
+}));
+/** The newest plate at the bottom centre: centred (1px), its foot low on the screen (under 110px off it). */
+async function expectBottomCentre(page: Page) {
+  await expect.poll(async () => {
+    const all = await plates(page), p = all[all.length - 1];
+    return !!p && p.off <= 1 && p.foot < 110;
+  }, { message: 'the newest plate at the bottom centre', timeout: 1500 }).toBe(true);
+}
 /** The open sky's roomiest point: away from the sun or moon, the clouds and every control (as sky.spec's). */
 const openSky = (page: Page) => page.evaluate(() => {
   const scene = document.querySelector('.if-scene')!.getBoundingClientRect(), sky = document.querySelector('.if-scene .sky')!.getBoundingClientRect();
@@ -61,6 +74,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       await reelOnBite(page, b.x, b.y);
       await expect(page.locator(plate)).toBeVisible();
       await expectClear(page, plate);
+      await expectBottomCentre(page);
       // (a tap where it is: Playwright's own click would scroll the island's sticky stage to it, moving the camera)
       while ((await page.locator(plate).getAttribute('data-page')) !== '1') {
         const r = (await page.locator(plate).boundingBox())!;
@@ -69,6 +83,32 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       }
       await expect(page.locator(plate)).toContainText('ずかんに のったよ！');
       await expectClear(page, plate);
+      await expectBottomCentre(page);
+    });
+
+    test('the catch plates stack at the bottom centre, the newest at the bottom, and go on their own', async ({ page }) => {
+      test.skip(h < 600, "a short screen's stack covers the beach's last shells (taps wait, the first plates go)");
+      await open(page, 'date=2026-11-04T12:00&critter=none');
+      const shells = page.locator('[data-find="shell"]');
+      await expect(shells).toHaveCount(3);
+      for (let i = 0; i < 3; i++) {
+        const s = await centre(page, '[data-find="shell"]');
+        // a villager wandering the beach (or a plate) may stand over it for a moment: tap once it's clear
+        await expect.poll(() => page.evaluate(({ x, y }) => !document.elementFromPoint(x, y)?.closest('[data-actor], [data-catch-stack] *'), s), { timeout: 10_000 }).toBe(true);
+        await page.mouse.click(s.x, s.y);
+        await expect(page.locator(plate)).toHaveCount(i + 1, { timeout: 4000 });
+        await expectBottomCentre(page);
+        await expectClear(page, plate);
+      }
+      // older above newer (once they've slid up), each centred, none overlapping
+      await expect.poll(async () => {
+        const all = await plates(page);
+        return all.length === 3 && all.every((p) => p.off <= 1) && all.every((p, i) => !i || all[i - 1].bottom <= p.top);
+      }, { message: 'three plates, centred, stacked', timeout: 2000 }).toBe(true);
+      await page.screenshot({ path: test.info().outputPath('stack.png') });
+      // left alone, each fades out and goes (a first find's two pages: a turn after 6 s, then a read's length)
+      await expect(page.locator('[data-fx="catch"]')).toHaveCount(0, { timeout: 15_000 });
+      await expect(page.locator('[data-catch-stack] > *')).toHaveCount(0);
     });
 
     test('a shell picked up', async ({ page }) => {

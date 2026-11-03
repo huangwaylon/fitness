@@ -245,7 +245,7 @@ test('two players: a bug netted on one tab is gone on the other, where their vil
   await expect(a.locator('[data-fx="catch"]')).toContainText('テントウムシ', { timeout: 4000 });
   // B: gone, and A's villager (B's partner) holds it up: 「〇〇が テントウムシを つかまえた！」
   await expect(b.locator('[data-critter="ladybug"]')).toHaveCount(0, { timeout: 5000 });
-  await expect(b.locator('[data-fx="catch"], [data-partner-news]').first()).toContainText('テントウムシを つかまえた！', { timeout: 5000 });
+  await expect(b.locator('[data-fx="catch"]').first()).toContainText('テントウムシを つかまえた！', { timeout: 5000 });
   // the shared day has it as A's
   const day = JSON.parse((await b.evaluate(() => localStorage.getItem('island-demo.world.B')))!) as { events: { kind: string; id?: string; who: string }[] };
   expect(day.events).toContainEqual(expect.objectContaining({ kind: 'catch', id: 'hook:ladybug', who: 'A' }));
@@ -272,7 +272,7 @@ test('two players: a shell picked up on one tab is gone on the other, and from a
   await expect(shells(a)).toHaveCount(2);
   await expect(shells(b)).toHaveCount(2, { timeout: 4000 });
   // the partner's villager went for it: their line on B (in view at まえ)
-  await expect(b.locator('[data-fx="catch"], [data-partner-news]').first()).toContainText('を ひろった！', { timeout: 5000 });
+  await expect(b.locator('[data-fx="catch"]').first()).toContainText('を ひろった！', { timeout: 5000 });
   // A waters a flower (world.ts FLOWERS): it glitters on B's tab too, the same flower
   // (one of the front lawn's: in view at まえ)
   const fl = `[data-flower="${(await geo(a)).FLOWERS.filter((f) => f.z < 600).sort((p, q) => p.z - q.z)[0].id}"]`;
