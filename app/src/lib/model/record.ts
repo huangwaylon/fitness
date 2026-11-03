@@ -10,6 +10,7 @@ import { tentOpOf } from '../contract/tent.ts';
 import { layoutOpOf } from '../contract/layout.ts';
 import { boardOpOf } from '../contract/board.ts';
 import { foodOp, foodRecipeOp, foodRepeatOp, isKcalGoal } from '../contract/food.ts';
+import { shopPriced } from '../contract/shop.ts';
 import { isStepsGoal, LIMITS, MOVE_GOAL, shopPrice } from '../config/rules.ts';
 import { localDateAt } from '../time/dates.ts';
 import type { Who } from '../types.ts';
@@ -59,6 +60,11 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       const op = foodRecipeOp(d);
       return op !== null && atNear(op.at, now);
     }
+    case 'sell':
+    case 'buy':
+      // the shop (contract/shop.ts): a sell at its species' price, a buy at its piece's from a stock of about today;
+      // whether the pocket or the かいがら cover it is the record's check against the person's rows (shopRefusal)
+      return shopPriced(type, d, localDateAt(now));
     default:
       return true;
   }

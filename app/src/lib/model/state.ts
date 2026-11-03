@@ -11,6 +11,7 @@ import { boardOpOf, type BoardEntry } from '#lib/contract/board.ts';
 import { isKcalGoal } from '#lib/contract/food.ts';
 import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
+import { buyOf, sellOf, type ShopRowAt } from '#lib/contract/shop.ts';
 import type { TallyRow } from './tally.ts';
 import { rowAt } from './snapshot.ts';
 import {
@@ -106,6 +107,9 @@ export interface State {
   /** My recipes (`food_recipe`: each recipe's ops, contract/food.ts) as raw rows (RAW_EVENTS); everyone's, read by
    *  everyone (model/food.ts recipes). Never read by the economy. */
   foodRecipe: EventRow[];
+  /** The shop's rows (`sell`, `buy`: contract/shop.ts), each with whose they are (the guest's too), in server order;
+   *  the pockets and かいがら are their fold over the tallies (model/shop.ts). Never read by the economy. */
+  shop: ShopRowAt[];
   /** Each person's prefs; the guest's (`G`) only ever hold its locale, name, villager and kcal goal (contract/guest.ts). */
   prefs: Record<Who, Prefs>;
   /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
@@ -225,6 +229,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     food: [],
     foodRepeat: [],
     foodRecipe: [],
+    shop: [],
     prefs: { A: {}, B: {}, G: {} },
     moveGoals: { A: [], B: [] },
     stepsGoals: { A: [], B: [] },
@@ -308,6 +313,7 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     food: [...base.food],
     foodRepeat: [...base.foodRepeat],
     foodRecipe: [...base.foodRecipe],
+    shop: [...base.shop],
     prefs: { A: { ...base.prefs.A }, B: { ...base.prefs.B }, G: { ...base.prefs.G } },
     moveGoals: { A: [...base.moveGoals.A], B: [...base.moveGoals.B] },
     stepsGoals: { A: [...base.stepsGoals.A], B: [...base.stepsGoals.B] },
@@ -393,6 +399,14 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
     }
     const op = decorOpOf(d);
     if (op) s.decor.push({ ...op, who: person } as DecorEntry);
+  },
+  sell(s, person, at, d) {
+    const data = sellOf(d);
+    if (data) s.shop.push({ type: 'sell', data, at, person });
+  },
+  buy(s, person, at, d) {
+    const data = buyOf(d);
+    if (data) s.shop.push({ type: 'buy', data, at, person });
   },
   board(s, person, _at, d) {
     const op = boardOpOf(d);
