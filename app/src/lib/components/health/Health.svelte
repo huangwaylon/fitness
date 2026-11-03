@@ -26,7 +26,9 @@
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
   import Avatar from '../characters/Avatar.svelte';
-  import OfficialArt from '../characters/OfficialArt.svelte';
+  import Segmented from '../ui/Segmented.svelte';
+  import RangeNav from './RangeNav.svelte';
+  import Pick from './Pick.svelte';
   import { GROUP_ART } from '#lib/art.ts';
   import MetricCard from './MetricCard.svelte';
   import WeightCard from './WeightCard.svelte';
@@ -170,45 +172,22 @@
   {:else if hs && range}
     <!-- Row 1: whose data and the period, one native dropdown each (iOS's own picker; a cream pill ≥ 44px) -->
     <div class="dds">
-      <label class="dd who" data-who={who}>
-        <span class="sr-only">{t('health.who')}</span>
-        <span class="av" aria-hidden="true"><Avatar person={who} villager={villagers[who]} size={28} /></span>
-        <select data-pick="who" value={who} data-sfx="none" onchange={(e) => setWho(e.currentTarget.value as PersonId)}>
-          {#each [me, partner] as p (p)}<option value={p}>{names[p]}</option>{/each}
-        </select>
-        <i class="sw p{who}" aria-hidden="true"></i>
-        <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 L8 10.5 L12.5 6" /></svg>
-      </label>
-      <label class="dd period" data-period={period}>
-        <span class="sr-only">{t('health.period')}</span>
-        <select data-pick="period" value={period} data-sfx="none" onchange={(e) => setPeriod(e.currentTarget.value as Period)}>
-          {#each PERIODS as id (id)}<option value={id}>{t(`health.period.${id}`)}</option>{/each}
-        </select>
-        <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 L8 10.5 L12.5 6" /></svg>
-      </label>
+      <Pick kind="who" value={who} options={[me, partner].map((id) => ({ id, label: names[id] }))} label={t('health.who')} onpick={setWho}
+        person={{ p: who, villager: villagers[who] }} />
+      <Pick kind="period" value={period} options={PERIODS.map((id) => ({ id, label: t(`health.period.${id}`) }))} label={t('health.period')} onpick={setPeriod} />
     </div>
     {#if !guest}
-      <div class="seg" role="group" aria-label={t('health.group')}>
-        {#each GROUPS as id (id)}
-          <button type="button" class="sb" aria-pressed={group === id} data-group={id} data-sfx={group === id ? 'none' : 'tick'} onclick={() => setGroup(id)}><span class="gi" aria-hidden="true"><OfficialArt key={GROUP_ART[id]} size={22} /></span>{t(`health.group.${id}`)}</button>
-        {/each}
-      </div>
+      <Segmented items={GROUPS.map((id) => ({ id, label: t(`health.group.${id}`), art: GROUP_ART[id] }))} value={group} label={t('health.group')} attr="group" onpick={setGroup} />
     {/if}
 
-    <div class="nav">
-      <button type="button" class="nb" data-nav="back" aria-label={t('health.earlier')} aria-disabled={!can.back} data-sfx="tick" onclick={() => go(-1)}>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19" /></svg>
-      </button>
+    <RangeNav earlier={t('health.earlier')} later={t('health.later')} today={t('health.today')} canBack={can.back} canOn={can.on} atToday={anchor === null}
+      onback={() => go(-1)} onon={() => go(1)} ontoday={jumpToday}>
       <span class="rl" aria-live="polite">
         <!-- the range wraps after its dash when a long one (2024/10–2026/10) doesn't fit beside the buttons -->
         <b class="money">{#each rangeLabel(range, today).split('–') as part, i (i)}{#if i}–<wbr />{/if}<span>{part}</span>{/each}</b>
         <small>{t(`health.unit.${unitKey}`)}</small>
       </span>
-      <button type="button" class="nb" data-nav="on" aria-label={t('health.later')} aria-disabled={!can.on} data-sfx="tick" onclick={() => go(1)}>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19" /></svg>
-      </button>
-      <button type="button" class="nb today" data-nav="today" aria-disabled={anchor === null} data-sfx="tick" onclick={jumpToday}>{t('health.today')}</button>
-    </div>
+    </RangeNav>
 
     {#if !hs.any}
       <section class="card empty"><p>{t('kiroku.empty')}</p></section>
@@ -240,53 +219,8 @@
 
 <style>
   .health { display: grid; gap: 12px; padding-bottom: 8px; }
-  /* a segmented switch: the panel's tab look, smaller */
-  .seg { display: flex; gap: 6px; }
-  .sb {
-    appearance: none; border: 0; cursor: pointer; flex: 1 1 0; min-width: 0; min-height: var(--hit); padding: 0 4px; border-radius: var(--r-pill);
-    display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;
-    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
-  }
-  .sb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
-  .sb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  .gi { display: inline-flex; width: 22px; height: 22px; flex: none; line-height: 0; }
-  /* row 1: two dropdowns side by side, whose data a little wider (the avatar and the name) */
+  /* row 1: two dropdowns side by side (Pick), whose data a little wider (the avatar and the name) */
   .dds { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 8px; }
-  .dd {
-    position: relative; display: flex; align-items: center; min-width: 0; min-height: var(--hit);
-    border-radius: var(--r-pill); background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl);
-  }
-  .dd:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  .dd:has(select:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
-  /* the native select fills the pill (its whole face is the tap target); the avatar, the swatch and the chevron are
-     drawn over it and let taps through */
-  .dd select {
-    appearance: none; -webkit-appearance: none; border: 0; margin: 0; background: transparent; color: inherit; cursor: pointer;
-    width: 100%; min-width: 0; height: var(--hit); padding: 0 34px 0 16px; border-radius: inherit;
-    font: 700 var(--fs-input)/1 var(--font-ui); text-overflow: ellipsis; white-space: nowrap; outline: none;
-  }
-  .dd.who select { padding-left: 46px; }
-  .dd .av { position: absolute; left: 10px; top: 50%; translate: 0 -50%; display: flex; pointer-events: none; }
-  .dd .chev { position: absolute; right: 12px; top: 50%; translate: 0 -50%; width: 16px; height: 16px; pointer-events: none;
-    fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
-  /* the person's colour (their bars), a short stroke under the name */
-  .dd .sw { position: absolute; left: 46px; bottom: 6px; width: 24px; height: 3px; border-radius: 2px; pointer-events: none; }
-  .sw.pA { background: var(--person-a); }
-  .sw.pB { background: var(--person-b); }
-  /* the range row stays at the top of the panel while the charts scroll under it */
-  .nav {
-    position: sticky; top: -6px; z-index: 2; display: flex; align-items: center; gap: 8px; min-width: 0;
-    margin: 0 -8px; padding: 6px 8px calc(var(--lip-h) + 6px); background: var(--surface);
-  }
-  .nav::after { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 12px; pointer-events: none; background: linear-gradient(var(--surface), transparent); }
-  .nb {
-    appearance: none; border: 0; cursor: pointer; flex: none; min-width: var(--hit); height: var(--hit); padding: 0 10px; border-radius: var(--r-pill);
-    display: inline-flex; align-items: center; justify-content: center;
-    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
-  }
-  .nb svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
-  .nb:active:not([aria-disabled='true']) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  .nb[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; transform: translateY(4px); cursor: default; }
   .rl { flex: 1; min-width: 0; display: grid; justify-items: center; gap: 3px; text-align: center; }
   .rl b { font-size: var(--fs-talk); line-height: 1.1; text-wrap: balance; }
   .rl b span { white-space: nowrap; }

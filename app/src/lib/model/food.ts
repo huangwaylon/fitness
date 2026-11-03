@@ -9,6 +9,8 @@ import { foodFold, foodRepeatFold, MEALS, repeatCovers, type FoodEntry, type Foo
 import { isPersonId } from '#lib/contract/api.ts';
 import type { State } from './state.ts';
 import { weighIns } from './weight.ts';
+import { addDays, daysBetween } from '#lib/time/dates.ts';
+import type { DaySeries } from './health.ts';
 
 /** A day's entries and what they add up to: kcal (whole), protein, fat, carbs and salt (g, one decimal; an unknown
  *  nutrient counts as none). */
@@ -70,6 +72,58 @@ export function foodDay(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, date: L
     salt += (f.s ?? 0) * x;
   }
   return { entries, kcal: Math.round(kcal), p: round1(p), fa: round1(fa), c: round1(c), s: round1(salt) };
+}
+
+const totalsMemo = new WeakMap<object, Map<string, Map<LocalDate, number>>>();
+
+/**
+ * `who`'s kcal per day up to `today`, in one pass (グラフ reads a year at once: no foodDay per day): each day with
+ * something in it (a logged entry, or a repeat's items on a day it covers; a 0 kcal item counts) → its unrounded
+ * total, as foodDay adds it up. Future days (a repeat fills them too) are left out. Memoised per State, person and day.
+ */
+function dayTotals(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, today: LocalDate): Map<LocalDate, number> {
+  let byKey = totalsMemo.get(s);
+  if (!byKey) totalsMemo.set(s, (byKey = new Map()));
+  const key = `${who}|${today}`;
+  let out = byKey.get(key);
+  if (out) return out;
+  const totals = new Map<LocalDate, number>();
+  const add = (d: LocalDate, g: number, k: number) => totals.set(d, (totals.get(d) ?? 0) + (k * g) / 100);
+  for (const e of entriesOf(s)) if (e.who === who && e.d <= today) add(e.d, e.g, e.f.k);
+  for (const r of repeatsOf(s)) {
+    if (r.who !== who || !r.it.length) continue;
+    const last = r.to && r.to < today ? r.to : today;
+    for (let d = r.from; d <= last; d = addDays(d, 1)) if (repeatCovers(r, d)) for (const { g, f } of r.it) add(d, g, f.k);
+  }
+  byKey.set(key, (out = totals));
+  return out;
+}
+
+const seriesMemo = new WeakMap<object, Map<string, DaySeries>>();
+
+/**
+ * `who`'s kcal per day for ごはん's グラフ, as けんこう's metrics (health.ts DaySeries, so its bucket and stat rules apply:
+ * seriesBuckets, seriesStats): from their first day with a meal (logged, or a repeat's) to `today`, each day's total
+ * as foodDay rounds it (repeats included); a day with nothing in it is null (記録なし, never a 0), while a 0 kcal entry
+ * is a record. The goal: their kcal goal (one for every day; none: null). Memoised per State, person and day.
+ */
+export function foodSeries(s: Pick<State, 'food' | 'foodRepeat' | 'prefs'>, who: Who, today: LocalDate): DaySeries {
+  let byKey = seriesMemo.get(s);
+  if (!byKey) seriesMemo.set(s, (byKey = new Map()));
+  const key = `${who}|${today}`;
+  let hit = byKey.get(key);
+  if (hit) return hit;
+  const totals = dayTotals(s, who, today);
+  let from = today;
+  for (const d of totals.keys()) if (d < from) from = d;
+  const vals: (number | null)[] = [];
+  for (let i = 0, d = from, n = daysBetween(from, today); i <= n; i++, d = addDays(d, 1)) {
+    const k = totals.get(d);
+    vals.push(k === undefined ? null : Math.round(k));
+  }
+  const goal = kcalGoal(s, who);
+  byKey.set(key, (hit = { from, to: today, first: from, vals, goal: () => goal }));
+  return hit;
 }
 
 /** `who`'s daily kcal goal (`pref kcalGoal`), or null when none is set. */

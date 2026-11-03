@@ -98,6 +98,13 @@ export const GROUP_ART: Record<'activity' | 'body', string> = {
   body: 'finds/items/dreamy-bear-toy'
 };
 
+/** ごはん's tabs → a catalogue icon each on their switch, as けんこう's groups: きろく a plate meal (the day's meals),
+ *  グラフ the whiteboard (the chart). */
+export const FOOD_TAB_ART: Record<'log' | 'chart', string> = {
+  log: 'finds/items/luncheon-plate-meal',
+  chart: 'finds/items/whiteboard'
+};
+
 /** One of the four ring fruits → inventory icon key. */
 export function fruitArt(fruit: RingFruit): string {
   return `fruit3d/${fruit}`;

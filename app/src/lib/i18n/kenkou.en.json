@@ -23,6 +23,7 @@
   "health.noData": "No data",
   "health.todaySoFar": "today, so far",
   "health.tipDays": "goal {n}/{d} days",
+  "health.recDays": "{n} days logged",
   "health.chartLabel": "{metric}, {range}. Daily average: {avg}",
   "health.key.met": "Goal met",
   "health.key.missed": "Not met",

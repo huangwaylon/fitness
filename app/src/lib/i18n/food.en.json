@@ -75,5 +75,14 @@
   "food.rep.fromDaySaved": "From tomorrow, this day’s meal repeats",
   "food.rep.stop": "Stop repeating",
   "food.rep.stopSure": "Really stop?",
-  "food.rep.stopped": "{meal} stopped repeating"
+  "food.rep.stopped": "{meal} stopped repeating",
+  "food.tabs": "View",
+  "food.tab.log": "Log",
+  "food.tab.chart": "Chart",
+  "food.chart.head": "Calories eaten",
+  "food.chart.avgHead": "Daily average ({n} days)",
+  "food.chart.total": "Period total",
+  "food.chart.avg": "Average",
+  "food.chart.label": "Calories eaten by {name}, {range}. Daily average: {avg}",
+  "food.chart.note": "Only days with something logged count. A day with nothing logged is no data (not 0 kcal) and stays out of the average and the total; today, still going, is drawn but not counted."
 }

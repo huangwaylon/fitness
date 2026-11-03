@@ -75,5 +75,14 @@
   "food.rep.fromDaySaved": "あしたから この内容で くりかえします",
   "food.rep.stop": "くりかえしを やめる",
   "food.rep.stopSure": "ほんとうに やめる？",
-  "food.rep.stopped": "{meal}の くりかえしを やめました"
+  "food.rep.stopped": "{meal}の くりかえしを やめました",
+  "food.tabs": "ひょうじ",
+  "food.tab.log": "きろく",
+  "food.tab.chart": "グラフ",
+  "food.chart.head": "たべた カロリー",
+  "food.chart.avgHead": "1日の平均（{n}日分）",
+  "food.chart.total": "期間の合計",
+  "food.chart.avg": "平均",
+  "food.chart.label": "{name}の たべた カロリー {range}。1日の平均 {avg}",
+  "food.chart.note": "たべたものを 入れた日だけが 記録。何も 入れていない日は 記録なし（0 kcal では ありません）で、平均と合計には 入りません。とちゅうの きょうも グラフに 出ますが 入りません。"
 }
