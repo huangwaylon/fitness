@@ -37,11 +37,12 @@ test('a tap on the ground walks there on the layout’s walk (the long middle)',
   await page.goto(ISLAND);
   expect(await is3d(page)).toBe(true);
   await quiet(page); // (the opening beats over: a reaction would stop the walk short)
-  // open ground in the middle a tap there walks to (clear of the day's spots and of every tap area on this screen),
-  // my villager put down on more of it a way off
+  // open ground in the middle a tap there walks to (clear of the day's spots and of every tap area on this screen: the
+  // lawn between うめ's home and the shop, a tap by a building's foot knocks at its door), my villager put down on more
+  // of it a way off
   await world(page, 'go(860)');
   await expect.poll(() => page.evaluate('window.__world3d.camStill()')).toBe(true);
-  const to = await openNear(page, 150, 960, 45, true), from = await openNear(page, to[0] + 110, to[1] - 40);
+  const to = await openNear(page, 75, 870, 45, true), from = await openNear(page, to[0] + 110, to[1] - 40);
   await world(page, `put(${from[0]}, ${from[1]})`);
   const [x, y] = await page.evaluate(`window.__world3d.client(${to[0]}, ${to[1]})`) as [number, number];
   await page.mouse.click(x, y);

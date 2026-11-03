@@ -3,7 +3,7 @@
 // API that acts on the game by what it knows, not by pixels (e2e/island.ts): `tapThing` taps a model by its id where
 // the camera puts it, `settled` waits for the island at rest, `step` runs the page's clock (the engines' frames with it).
 import { expect, test, type Page } from '@playwright/test';
-import { settled, step, tapThing, w3 } from './island.ts';
+import { lawnTap, settled, step, tapThing, w3 } from './island.ts';
 
 const Q = 'demo&date=2026-11-04T12:00&critter=none&visitor=none&rock=clonk&render=none';
 const ready = (page: Page) => page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
@@ -28,7 +28,7 @@ test('the sim step: on the page\'s clock a ground tap walks my villager only as 
   // (the clock runs the load's timers and frames: the island comes up as it steps)
   await expect.poll(async () => (await step(page, 500), page.evaluate(() => !!(window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded())), { timeout: 30_000 }).toBe(true);
   await step(page, 3000);
-  const [x, y] = await w3(page, (w) => w.client(200, 300));
+  const { at: [lx, lz], x, y } = await lawnTap(page, 200, 300);
   await expect.poll(async () => (await step(page, 200), page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.matches('.stage'), [x, y]))).toBe(true);
   const from = await mine(page);
   await page.mouse.click(x, y);
@@ -38,5 +38,5 @@ test('the sim step: on the page\'s clock a ground tap walks my villager only as 
   // ten seconds of the game's time, frame by frame (quick: nothing is drawn)
   await step(page, 10_000);
   const [ax, az] = await mine(page);
-  expect(Math.hypot(ax - 200, az - 300)).toBeLessThan(14);
+  expect(Math.hypot(ax - lx, az - lz)).toBeLessThan(14);
 });
