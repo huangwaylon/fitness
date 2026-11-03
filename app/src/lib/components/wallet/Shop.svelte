@@ -59,18 +59,20 @@
 </section>
 
 <style>
-  .shop { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  /* (a size container: the ⓘ bubble spans the whole row, its tail under its own tile's ⓘ) */
+  .shop { --shop-gap: 12px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--shop-gap); container-type: inline-size; }
   .tile { position: relative; min-width: 0; display: grid; }
   .item {
     appearance: none; border: 0; cursor: pointer; font: inherit; color: var(--text); min-width: 0;
-    display: grid; justify-items: center; align-content: start; gap: 4px; padding: 14px 10px 12px; text-align: center;
+    display: grid; justify-items: center; align-content: start; gap: 2px; padding: 6px 10px 12px; text-align: center;
     border-radius: var(--r-card); background: var(--ctl); box-shadow: var(--sh-ctl);
     transition: transform var(--dur-base) var(--ease-bounce);
   }
   .item:active:not([aria-disabled='true']) { transform: translateY(3px) scale(1.04, .94); box-shadow: var(--sh-ctl-press); transition-duration: var(--dur-tap); }
   .item[aria-disabled='true'] { cursor: default; box-shadow: none; background: var(--ctl-off); color: var(--text-soft); transform: translateY(4px); }
   .item[aria-disabled='true'] .ic { opacity: .5; filter: saturate(.3); }
-  .ic { width: 72px; height: 72px; display: grid; place-items: center; line-height: 0; }
+  /* the art's box hugs it (NH's item art has its own air round it): the tile's top as tight as its sides */
+  .ic { width: 72px; height: 68px; display: grid; place-items: center; line-height: 0; }
   .nm { max-width: 100%; font-size: var(--fs-talk); line-height: 1.25; }
   .pr { font-size: var(--fs-talk); }
 
@@ -86,18 +88,23 @@
   .info[aria-expanded='true'] { background: var(--c-yuzu-lip); color: var(--c-ink); }
   .info:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
-  /* the examples: a small cream speech bubble hanging from the ⓘ (its tail under the disc), over the tile's art,
-     popping in on NH's bounce */
+  /* the examples: a small cream speech bubble hanging from the ⓘ (its tail under the disc), over the tiles' art,
+     as wide as the two tiles (a short line each: at 320px a tile's width broke them after every ・), growing from its
+     own tile's side, popping in on NH's bounce */
   .tip {
-    position: absolute; z-index: 3; top: 40px; right: 2px; left: 2px; margin: 0; padding: 10px 12px;
+    --tile: calc((100cqw - var(--shop-gap)) / 2);
+    position: absolute; z-index: 3; top: 40px; left: 2px; width: calc(100cqw - 4px); margin: 0; padding: 10px 14px;
     border-radius: 16px; background: var(--c-cream); color: var(--c-ink); box-shadow: 0 3px 0 var(--c-lip), 0 8px 18px rgb(60 40 20 / .18);
     font: 700 var(--fs-s)/1.5 var(--font-ui); text-align: left; text-wrap: pretty;
-    transform-origin: calc(100% - 18px) -8px; animation: tip 260ms var(--ease-bounce);
+    transform-origin: calc(var(--tile) - 22px) -8px; animation: tip 260ms var(--ease-bounce);
   }
   .tip::before {
-    content: ''; position: absolute; top: -7px; right: 13px; width: 14px; height: 14px; rotate: 45deg; border-radius: 3px 0 0 0;
+    content: ''; position: absolute; top: -7px; left: calc(var(--tile) - 29px); width: 14px; height: 14px; rotate: 45deg; border-radius: 3px 0 0 0;
     background: var(--c-cream);
   }
+  /* the right tile's: grown leftwards, its tail at the row's right end */
+  .tile + .tile .tip { left: auto; right: 2px; transform-origin: calc(100% - 18px) -8px; }
+  .tile + .tile .tip::before { left: auto; right: 13px; }
   @keyframes tip { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .tip { animation: tip-fade 120ms linear; } @keyframes tip-fade { from { opacity: 0; } } }
 </style>

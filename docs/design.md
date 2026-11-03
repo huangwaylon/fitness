@@ -75,7 +75,8 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   quicker (160ms, the last pill first) on a second tap of the leaf, a tap anywhere else (that tap still does what it
   would: no swallowed tap), Esc (focus back on the leaf), any sheet opening or もようがえ, and a pick: a pill's tap
   is a press squash, the villagers glance up (R18) and its sheet grows out of the pill's icon (Sheet's `pop`, as
-  けんこう). Folded, the pills are `visibility: hidden` and `inert`: no focus, no taps, out of placement.ts' guards (a
+  けんこう); the pick leaves the focus on the leaf, so closing that sheet gives it back there (the pill is inert by
+  then: the focus would fall to the page's top). Folded, the pills are `visibility: hidden` and `inert`: no focus, no taps, out of placement.ts' guards (a
   balloon may stand there). The column is out of the row's flow, so the HUD's box (`.ribbon-wrap`, which the 3D
   island measures for the sky) stays the row. Reduced motion: the pills fade in and out where they stand, the leaf
   doesn't tip.
@@ -121,10 +122,11 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   its right the balance, big, and under it, smaller, today's ベル in a soft yuzu pill with the Bells bag (「きょうの ベル
   +6」: both of us, がんばり and ふたりでぜんぶ included, the number the trees' popups add up to), at 0 a faint cream one
   (shown, not hidden: nothing jumps when the first coin lands). The two as one group centred in the row.
-- **The rewards:** two tiles with NH item art, its name and its price: 🍦 おやつ 40 ベル and 🍜 外食 70 ベル. One the
+- **The rewards:** two tiles with NH item art (6px under the tile's top: the art has its own air), its name and its price: 🍦 おやつ 40 ベル and 🍜 外食 70 ベル. One the
   wallet can't cover is sunk (a tap boops). At each tile's top-right a small round ⓘ (a 24px soft-brown disc, a 44px
   target by its `::after`, `aria-expanded`) shows what counts as that reward (「たこやき・アイス・あんみつ…」) in a little
-  cream speech bubble hanging from it over the tile's art (its tail under the disc, NH's bounce in); ⓘ again, a tap
+  cream speech bubble hanging from it over the tiles' art, as wide as the two tiles (a tile's width broke the list after
+  every ・ at 320px; its tail under the disc, NH's bounce in); ⓘ again, a tap
   anywhere else or Esc (only the bubble: the panel stays) folds it, one at a time. No examples and no 「あと N ベル」 on
   the tiles (2026-11-03, the user: "remove the example items - replace with a small circle info button … to save
   space. remove the ato x bell text"). 買う！ asks first, applies at once and waits 5 s with とりけす before it is sent.

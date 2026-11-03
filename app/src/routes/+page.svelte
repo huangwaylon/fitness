@@ -1,7 +1,7 @@
 <script lang="ts">
-  // 島 Island: the scene full bleed under a light HUD: the jar in the sky's top-left corner (the shared ベル written in
-  // it), the health button (NH's dumbbell) in the top-right; the jar is the door to everything else (tap → the island
-  // panel slides down on ごほうび, today's ベル there: きろく, ごほうび, せってい).
+  // 島 Island: the scene full bleed under a light HUD, one cluster in the sky's top-right corner (Hud): the dumbbell
+  // (けんこう), the bowl (ごはん) and NH's leaf, the door to everything else (「ベル」 → the island panel slides down on
+  // ごほうび, today's ベル there; ずかん; せってい).
   // The day needs zero taps (the Watch and the Shortcut fill the trees);
   // ハイタッチ lives with the partner's villager: a tap on them and mine walks over for it (no card).
   // The app asks no daily questions: the band under the scene is しずえ's, and her dialogue box shows only when she has

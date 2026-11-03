@@ -71,6 +71,9 @@
     popFrom(el.querySelector('.ic') ?? el);
     react('R18');
     open = false;
+    // the pill goes inert as it folds: the leaf holds the focus, so the sheet's dialog gives it back there on close
+    // (not to the page's body: a keyboard or VoiceOver user would start again from the top)
+    toggleEl?.focus({ preventScroll: true });
     later(() => go?.(), 90);
   }
 
