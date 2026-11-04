@@ -18,7 +18,8 @@ import { createVillager, type Villager3D } from '../villager3d/villager3d.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
 import { decal } from './geometry.ts';
-import { due, frameRate } from '#lib/store/frameRate.svelte.ts';
+import { frameRate } from '#lib/store/frameRate.svelte.ts';
+import { pacer } from '../world3d/pace.ts';
 import M from './models.json' with { type: 'json' };
 import { modelBounds } from '../world3d/models3d.ts';
 import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, headAnchor, wrapAngle } from '../rooms/firstPerson.ts';
@@ -1158,17 +1159,18 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
 
   // ---- the frame loop ----
   const frustum = new Frustum(), projScreen = new Matrix4();
-  let raf = 0, frames = 0, lastT = 0;
+  let frames = 0, lastT = 0;
   const cost: number[] = [];
   let ambientOn = 0;
   let readyRes: () => void;
   const ready = new Promise<void>((r) => (readyRes = r));
   /** The last frame's view, rounded (frame: whether the camera moved): its angles and zoom to 4 places, its target 2. */
   const camRev = new Float64Array(5).fill(NaN);
-  let ambientT: ReturnType<typeof setTimeout> | undefined;
   let snapWalls = true;
+  // (the frames: a change's at the next display frame, the exhibits' alone at the ambient rate: world3d/pace.ts)
+  const pace = pacer(frame);
   function invalidate() {
-    if (!raf && !disposed) raf = requestAnimationFrame(frame);
+    if (!disposed) pace.kick();
   }
   const seen = (sp: Sphere) => frustum.intersectsSphere(sp);
   /** The scene drawn (`draws`: each time, the e2e's). Every resize of the canvas's buffer (setSize, setPixelRatio)
@@ -1180,17 +1182,10 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     draws++;
     if (!noDraw) renderer.render(scene, camera);
   }
-  /** The last frame drawn's display time (its rAF's): the frame rate's pacing (せってい's, a gesture's too). */
-  let lastVsync = 0;
   let drawn: (() => void) | null = null;
   function frame(vsync = now()) {
-    raf = 0;
-    if (disposed) return;
-    if (!due(vsync, lastVsync, frameRate.fps)) {
-      raf = requestAnimationFrame(frame);
-      return;
-    }
-    lastVsync = vsync;
+    // (the frame rate's pacing, せってい's, a gesture's too; the ambience's own time)
+    if (disposed || !pace.due(vsync, frameRate.fps)) return;
     const t = now(), dt = lastT ? Math.min(100, t - lastT) : 16;
     let full = false;
     // the camera: eased back to NH's view, following my villager
@@ -1261,9 +1256,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     lastT = t;
     if (frames === 1) readyRes();
     if (full) invalidate();
-    // (one ambient timer at a time: a frame for anything else in between — a tap, a load — would start a second chain
-    // beside it, and the two ran on together at 60 a second)
-    else if (ambient && !ambientT) ambientT = setTimeout(() => ((ambientT = undefined), invalidate()), Math.max(0, 1000 / AMBIENT - (now() - t) - 4));
+    // (one ambient timer at a time, and a frame for anything else in between — a tap, a load — brings it forward: two
+    // chains side by side ran on together at 60 a second)
+    else if (ambient) pace.later(Math.min(AMBIENT, frameRate.fps));
   }
 
   fit();
@@ -1276,7 +1271,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       if (i) insets = i;
       fit();
     },
-    still: () => !easing && !gesturing && !raf && !fp.busy(),
+    still: () => !easing && !gesturing && !pace.asked() && !fp.busy(),
     villager,
     at: (who) => (villagers.get(who) ? [villagers.get(who)!.pos[0], villagers.get(who)!.pos[1]] : null),
     put(who, p, yaw) {
@@ -1370,15 +1365,14 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     nav: () => nav,
     walls: () => walls.map((w) => (w.cut ? 1 : 0)).join(''),
     kit,
-    stats: () => ({ frames, draws, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: [...cost], queued: !!raf, ambient: ambientOn, loading: pending,
+    stats: () => ({ frames, draws, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: [...cost], queued: pace.asked(), ambient: ambientOn, loading: pending,
       mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0] }),
     ready,
     dispose() {
       disposed = true;
-      if (raf) cancelAnimationFrame(raf);
+      pace.stop();
       clearTimeout(warmT);
       clearTimeout(compileT);
-      clearTimeout(ambientT);
       for (const e of exhibits) e.dispose();
       for (const w of villagers.values()) w.v3?.dispose();
       for (const d of disposables) d.dispose();
