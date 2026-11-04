@@ -16,8 +16,6 @@ import enFood from '#lib/i18n/food.en.json';
 import jaNames from '#lib/i18n/catch.ja.json';
 import enNames from '#lib/i18n/catch.en.json';
 import jaCatalog from '#lib/i18n/catalog.ja.json';
-import jaForest from '#lib/i18n/forest.ja.json';
-import enForest from '#lib/i18n/forest.en.json';
 import enCatalog from '#lib/i18n/catalog.en.json';
 import { artKeys, REACTIONS } from '#lib/art.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
@@ -60,10 +58,10 @@ const prefixes = new Set([
 const hostLines = new Set([...code.matchAll(/(?:hostLine\(|===\s*)'(\w+)'/g)].map((m) => m[1]));
 const usedBy = (key: string, prefixOk = true) => literals.has(key) || (prefixOk && [...prefixes].some((p) => p.length > 1 && key.startsWith(p)));
 
-/** The main catalogs, けんこう's (loaded with its tab), ごはん's (with the meal log), くまのもり's (with its screen) and the catchables' names (loaded with the first catch or the
+/** The main catalogs, けんこう's (loaded with its tab), ごはん's (with the meal log) and the catchables' names (loaded with the first catch or the
  *  ずかん), as `t()` sees them once all are in. */
-const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaCatalog, ...jaForest };
-const en: Record<string, string> = { ...enMain, ...enTab, ...enFood, ...enNames, ...enCatalog, ...enForest };
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaCatalog };
+const en: Record<string, string> = { ...enMain, ...enTab, ...enFood, ...enNames, ...enCatalog };
 /** A lazily loaded catalog's own key prefixes. */
 const NAME_KEY = /^(critter|sea|beach)\.name\.|^fossil\.set\./;
 /** The balloon catalogue's names (i18n/catalog.ts, per language). */
@@ -85,10 +83,6 @@ describe('i18n catalogs', () => {
   it('keep the balloon catalogue’s names (i18n/catalog.ts) in their own catalogs, out of the first load', () => {
     for (const c of [jaCatalog, enCatalog]) expect(Object.keys(c).filter((k) => !CATALOG_KEY.test(k))).toEqual([]);
     for (const c of [jaMain, enMain, jaNames, enNames]) expect(Object.keys(c).filter((k) => CATALOG_KEY.test(k))).toEqual([]);
-  });
-  it('keep くまのもり’s strings (forest.*) in its own catalog, out of the first load', () => {
-    for (const c of [jaForest, enForest]) expect(Object.keys(c).filter((k) => !k.startsWith('forest.'))).toEqual([]);
-    for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('forest.'))).toEqual([]);
   });
   it('have the same keys', () => {
     expect(Object.keys(en).sort()).toEqual(Object.keys(ja).sort());
