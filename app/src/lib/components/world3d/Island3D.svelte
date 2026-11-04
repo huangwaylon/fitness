@@ -338,7 +338,7 @@
     /** Its opacity, when it washes in (Over `fade`). */
     fade?: number;
   }
-  const live3 = new Map<string, Live3>();
+  const live3 = new Map<string, Live3>(), seen3 = new Set<string>();
   /** The emitters' last flourish, the lines drawn (by node). */
   const emitted = new Map<string, number>(), seenEmit = new Set<string>();
   const lines = new Map<string, { obj: Line; off: () => void }>(), seenLine = new Set<string>();
@@ -385,7 +385,9 @@
    *  drifting); the canvas's size from the ResizeObserver (a read in the frame forced a layout each frame). */
   let cw = 0, ch = 0, slowAmbient = true;
   function mirror(e: Island3, t: number): boolean | 'ambient' {
-    const winter = season === 'winter', seen = new Set<string>(), add: Inst[] = [];
+    // (per frame for every model: nothing new made where nothing changed, its sets kept from frame to frame)
+    const winter = season === 'winter', seen = seen3, add: Inst[] = [];
+    seen.clear();
     let moving: boolean | 'ambient' = false;
     fishing = false;
     emitting = false;
@@ -416,18 +418,17 @@
       // a flier's model hangs by its middle at the node's height; the rest stand on their feet
       const base = n.m3.y !== undefined ? n.m3.y - heightOf(n.x, n.z) : n.m3.water ? Math.max(waterY(n.x, n.z) + n.lift, Math.min(bedY(n.x, n.z) + 0.1, waterY(n.x, n.z))) - heightOf(n.x, n.z) : n.lift;
       const lift = base - (a.anchor === 'centre' && b ? ((b.min[1] + b.max[1]) / 2) * a.s : 0);
-      const to: [number, number, number] = [n.x, n.z, lift];
       let L = live3.get(n.id);
       const fresh = !L || L.m !== a.m;
       if (!L || fresh) {
         const drop = n.m3.drop ?? 0;
-        L = { m: a.m, on: false, x: to[0], z: to[1], lift: to[2] + drop, to, from: [to[0], to[1], to[2] + drop], t0: t, ms: drop ? (n.m3.ms ?? 500) : 0, yaw: 0, grey: -1, art };
+        L = { m: a.m, on: false, x: n.x, z: n.z, lift: lift + drop, to: [n.x, n.z, lift], from: [n.x, n.z, lift + drop], t0: t, ms: drop ? (n.m3.ms ?? 500) : 0, yaw: 0, grey: -1, art };
         // (one the layout's objects already draw, its id theirs: the rock, the tape deck, the board: not twice)
-        if (!placedIds.has(n.id)) add.push({ id: n.id, model: a.m, x: to[0], z: to[1], lift: to[2], scale: a.s });
+        if (!placedIds.has(n.id)) add.push({ id: n.id, model: a.m, x: n.x, z: n.z, lift, scale: a.s });
         live3.set(n.id, L);
-      } else if (to[0] !== L.to[0] || to[1] !== L.to[1] || to[2] !== L.to[2]) {
+      } else if (n.x !== L.to[0] || n.z !== L.to[1] || lift !== L.to[2]) {
         L.from = [L.x, L.z, L.lift];
-        L.to = to;
+        L.to = [n.x, n.z, lift];
         L.t0 = t;
         L.ms = n.m3.ms ?? 0;
       }
@@ -454,7 +455,7 @@
       }
       if (fresh || on !== L.on || x !== L.x || z !== L.z || lf !== L.lift || yaw !== L.yaw || grey !== L.grey || pitch !== (L.pitch ?? 0) || fade !== L.fade || size !== (L.size ?? 1))
         e.things.over(n.id, { hidden: !on, x, z, lift: lf, yaw, pitch, grey, size, face: n.m3.face === 'camera', ...(fade !== undefined && { fade }) });
-      Object.assign(L, { on, x, z, lift: lf, yaw, pitch, grey, size, art, fade });
+      L.on = on, L.x = x, L.z = z, L.lift = lf, L.yaw = yaw, L.pitch = pitch, L.grey = grey, L.size = size, L.art = art, L.fade = fade;
       // its line (a fishing line, a thread): from where it starts to it, sagging a little
       if (n.m3.line) {
         let ln = lines.get(n.id);
@@ -488,13 +489,14 @@
     seenLine.clear();
     for (const id of emitted.keys()) if (!seenEmit.has(id)) emitted.delete(id);
     seenEmit.clear();
-    const gone = [...live3.keys()].filter((id) => !seen.has(id) && !placedIds.has(id));
-    for (const id of gone) {
+    let gone: string[] | null = null;
+    if (live3.size > seen.size) for (const id of live3.keys()) if (!seen.has(id) && !placedIds.has(id)) (gone ??= []).push(id);
+    for (const id of gone ?? []) {
       const art = live3.get(id)?.art;
       if (art) (art.classList.remove('m3on'), marked.delete(art));
       live3.delete(id);
     }
-    if (gone.length) void e.things.remove(gone).then(() => e.glows(lamps3));
+    if (gone) void e.things.remove(gone).then(() => e.glows(lamps3));
     if (add.length) void e.things.set(add).then(() => e.glows(lamps3));
     return moving;
   }
