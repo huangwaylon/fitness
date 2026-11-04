@@ -938,6 +938,17 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       document.removeEventListener('visibilitychange', onVis);
       canvas.removeEventListener('webglcontextlost', onLost);
       canvas.removeEventListener('webglcontextrestored', onRestored);
+      // every geometry, material and texture still in the scene let go of on this renderer: three's listeners on each
+      // keep it, and one shared with the next island (a cached home's, bridge's or villager's model) kept this whole
+      // renderer and its context alive, one more a room's round trip (~1 MB of heap each in Chromium)
+      scene.traverse((o) => {
+        const m = o as Mesh;
+        m.geometry?.dispose();
+        for (const mat of m.material ? ([] as Material[]).concat(m.material) : []) {
+          for (const v of Object.values(mat)) if (v instanceof Texture) v.dispose();
+          mat.dispose();
+        }
+      });
       things.dispose();
       cards.dispose();
       effects.dispose();

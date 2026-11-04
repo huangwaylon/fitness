@@ -12,7 +12,7 @@
 //   v.head()                the head bone (a balloon's, a hat's anchor)
 import {
   Box3, Matrix4, Quaternion, CircleGeometry, Color, Mesh, MeshBasicMaterial, MeshLambertMaterial, Object3D, SphereGeometry, Vector3, type Bone, type Material,
-  type MeshStandardMaterial, type SkinnedMesh, type Texture
+  type MeshStandardMaterial, type SkinnedMesh, Texture
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -484,6 +484,11 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
     },
     dispose() {
       group.removeFromParent();
+      // its geometries and textures let go of on the renderers that drew them (shared with the cached model and the
+      // other villagers: three's listeners on each else keep a gone room's or island's whole renderer alive; another
+      // villager of the kind uploads them again on its next frame)
+      group.traverse((n) => (n as Mesh).geometry?.dispose());
+      for (const m of owned) for (const v of Object.values(m)) if (v instanceof Texture) v.dispose();
       for (const m of owned) m.dispose();
       for (const f of faces) f.tex.dispose();
       blobMat.dispose();
