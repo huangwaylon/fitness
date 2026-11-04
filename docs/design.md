@@ -1122,8 +1122,13 @@ goes with the leaving).
   its middle); ✓ おく places it (greyed while red); 🗑 しまう takes a placed one back to the storage (とりけす on the banner
   for 5 s); ✕ やめる puts it back. A wallpaper or a floor is on at once. **Where:** on its whole tiles inside the room,
   off the door's two tiles, not over another piece or a villager; a rug lies under the furniture (and may cover the
-  door's tiles), never over another rug. At most 60 pieces, shared (the wallpaper and the floor don't count): 64 tiles
-  and the phone's draw budget.
+  door's tiles), never over another rug. At most 60 pieces a room, shared (the wallpaper and the floor don't count; 40 until 2026-11-04): 64 tiles
+  (rugs under and small things on tables add room) and the phone's draw budget. Measured full (iOS Simulator, own iPhone
+  16, iOS 26.5, `npm run ios:indoor -- --room 60 [--varied]`, against 40): draw calls 80 → 112 (the starter set's
+  30 models repeated; 77 → 114 with every piece its own), triangles 45k → 66–68k, the GPU's geometries and textures
+  59/54 either way (73/72 → 104/106 varied), frame cost p95 2 ms at rest and walking (2 → 3 ms walking, varied), 30 fps
+  walking and orbiting, the first load of the models (a fresh Safari) 1.2–1.6 → 1.8–2.0 s (2.1 → 2.2 s varied), Web
+  Content ~510–590 MB either way. No batching: a repeated model isn't instanced, the room draws only when something moves.
 - **Turning:** ↻ or a tap on the piece I hold turns it a quarter clockwise (a tap: under 8 px and 450 ms; a drag
   moves it), easing round.
 - **Holding** (NH's decorating: one thing held at a time; `TentEdit.svelte`): with nothing held a tap or a press on a

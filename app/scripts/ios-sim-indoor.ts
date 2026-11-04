@@ -7,13 +7,16 @@
 // the rAF callbacks, timer fires and intervals still running there against the island's own (a leak). Each scene a
 // second time: warm.
 //
-//   npm run ios:indoor -- [--url BASE] [--device "iPhone 17"] [--out DIR] [--keep] [--fpv] [--museum]
+//   npm run ios:indoor -- [--url BASE] [--device "iPhone 17"] [--out DIR] [--keep] [--fpv] [--museum] [--room N]
 //
 //   --url     the site's base (default: the live site, https://huangwaylon.github.io/fitness/)
 //   --fpv     every room at my villager's eyes (the first-person view: ?fpv=1)
 //   --museum  the museum only (no tent, no home)
+//   --room N  the tent and うめ's room furnished first with N pieces (4 rugs, then the starter set's small things,
+//             repeated: the room's cap is 60), so a full room is measured against a lighter one
+//   --varied  with --room: every piece a different one (the catalogue's small things), each its own model
 import { execFileSync, spawn } from 'node:child_process';
-import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const args = process.argv.slice(2);
@@ -109,6 +112,24 @@ async function enter(path: string, hook: string | null, ready: string) {
   return { firstMs, allMs, requests: net.n, kb: net.kb, bodyKb: net.body, worstGaps: net.gaps };
 }
 const quiet = (hook: string | null, ms = 4000) => runAsync<Record<string, unknown>>(QUIET, hook, ms);
+/** The resident memory (MB) of this simulator's largest Safari web content process (the page's): the host's processes
+ *  of this device (its UDID in their environment). */
+const webMem = () => {
+  const rows = execFileSync('ps', ['-axo', 'pid=,rss=,command='], { encoding: 'utf8' }).split('\n').filter((l) => l.includes('WebContent'));
+  let best = 0;
+  for (const l of rows) {
+    const [pid, rss] = l.trim().split(/\s+/);
+    const env = (() => { try { return execFileSync('ps', ['eww', '-p', pid], { encoding: 'utf8' }); } catch { return ''; } })();
+    if (env.includes(dev!.udid)) best = Math.max(best, Number(rss));
+  }
+  return best ? Math.round(best / 1024) : null;
+};
+const ROOM_N = Number(opt('--room', '0'));
+const SMALL = ['f1432', 'f4039', 'f4038', 'f1558', 'f3436', 'f4053', 'f4046', 'f4050', 'f1103', 'f4129', 'f3064', 'f889', 'f1433', 'f724', 'f3467', 'f669', 'f1792', 'f4014', 'f4037', 'f915', 'f4106', 'f3275', 'f3559', 'f3562', 'f4727', 'f4726'];
+const CATALOGUE = Object.entries((JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib', 'components', 'tent', 'items.json'), 'utf8')) as { items: Record<string, { w: number; d: number; rug?: 1; wall?: unknown }> }).items)
+  .filter(([, m]) => m.w === 1 && m.d === 1 && !m.rug && !m.wall).map(([c]) => c);
+const small = args.includes('--varied') ? CATALOGUE : SMALL;
+const roomCodes = (n: number) => [...['f7325', 'f7341', 'f11113', 'f8468'].slice(0, Math.min(4, n)), ...Array.from({ length: Math.max(0, n - 4) }, (_, i) => small[i % small.length])];
 
 const report: Record<string, unknown> = { when: new Date().toISOString(), device: dev.name, ios, base: BASE };
 const scenes: Record<string, Record<string, unknown>> = {};
@@ -131,6 +152,19 @@ try {
     localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-11-04', events: arguments[0].map(([kind, id], i) =>
       ({ id: 'seed-' + i, type: 'find', data: { kind, id }, queuedAt: at + i, tries: 0, nextAt: 0, ackedAt: at + i, person: who[i % 3] })) }));`, finds);
   report.finds = finds.length;
+  // a furnished room (--room): each home's room cleared and filled by the tent's own hook, before the island loads
+  if (ROOM_N) {
+    report.room = {};
+    await run(`for (const k of ['island-demo.tent', 'island-demo.tent.u']) localStorage.removeItem(k);`);
+    for (const home of ['', '&home=B']) {
+      await wd('POST', `/session/${sid}/url`, { url: `${BASE}tent/?${Q}${home}` }).catch(() => {});
+      await until('window.__tent && window.__tent.stats() && window.__tent.stats().frames > 0', 60_000);
+      const t0 = Date.now(), n = await run<number>('return __tent.fill(arguments[0]);', roomCodes(ROOM_N));
+      // (its models' first load: fetched, decoded, put in; Safari's cache was cleared by a fresh simulator)
+      await until('window.__tent.loading() === 0', 60_000);
+      (report.room as Record<string, unknown>)[home ? 'home' : 'tent'] = { n, loadMs: Date.now() - t0 };
+    }
+  }
   // (the load's own event may come late: the island's models)
   await wd('POST', `/session/${sid}/url`, { url: `${BASE}?${Q}` }).catch(() => {});
   await until('window.__world3d && window.__world3d.loaded()', 60_000);
@@ -156,6 +190,7 @@ try {
       await until('window.__tent.still() && !window.__tent.walking("A")');
       await sleep(1500);
       sc.rest = await quiet('__tent');
+      sc.memMb = webMem();
       if (pass === 'cold') await shot(name);
       await run('const [x, z] = __tent.mine(); __tent.walkTo(x > 0 ? -25 : 25, z > 0 ? -20 : 20);');
       sc.walk = await quiet('__tent', 1500);

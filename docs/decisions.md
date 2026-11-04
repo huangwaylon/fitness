@@ -823,3 +823,11 @@ a 2D texture on the screen, actually make it more like a subtle, beautiful 3D sp
 done, subtle. Similar to the original game"); NH's rain has depth and lands on the ground. Battery: the island already
 draws at its ambient 30 for the water, so falling rain costs only its two draws (no CPU per particle); a CSS layer
 would have been free on the GPU but flat.
+
+### A room holds 60 pieces (2026-11-04)
+Each room scope (`t`, `u`, `v`) keeps up to 60 pieces (`TENT_MAX`, was 40); the record refuses the 61st (`tent full`).
+The relay went first (it enforces the cap), then the app; an older build stops at 40 and shows a room's oldest 40.
+Measured full on the iOS Simulator (design.md "The tent"): draw calls 80 → ~113, frame cost unchanged (p95 2–3 ms),
+so a repeated model stays a mesh of its own (no instancing: it would complicate moving, turning and table-top things
+for nothing measurable); 3 rooms × 60 ops make a ~48 KB snapshot, and a live op is per piece (≤ 185 of 256 bytes).
+Why: the user ("Can we increase the max number of items in a room to 60?").
