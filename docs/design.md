@@ -791,9 +791,10 @@ a seat (its tap area's `data-sit`, or the ground at its foot) is sat on ([World]
 A bush jiggles and sheds seasonal leaves (1 in 10 a bug flies out; on the partner's phone our villager shakes it too,
 the same bug: [Shared world](#shared-world)); a tree's leaves rustle (three quick taps shake it: [Shaking a
 tree](#shaking-a-tree)); a flower is watered ([Island care](#island-care));
-the sea ripples (1 in 10 a fish shadow); sand leaves footprints; grass puffs dust (snow in winter); a cloud squishes;
+any water casts the line there ([Fishing](#critters): no reach; the sea's ripple only where nothing can cast, 1 in
+10 a fish shadow); sand leaves footprints; grass puffs dust (snow in winter); a cloud squishes;
 the sun glints; the moon bobs; the night sky twinkles (and grants a wish while a shooting star crosses: [Shooting
-stars](#shooting-stars)); the pond rings; the campfire is poked where it is (its logs shift, five embers rise, a soft
+stars](#shooting-stars)); the campfire is poked where it is (its logs shift, five embers rise, a soft
 crackle: `crackle`, synthesized).
 
 **Tap targets** (`island/hitbox.ts`, `e2e/hits.spec.ts`): everything tappable answers on its whole visible body,

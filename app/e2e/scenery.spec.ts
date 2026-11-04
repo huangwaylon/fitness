@@ -1,4 +1,4 @@
-// Scenery taps (docs/design.md "Scene interactions"): the bushes, flowers, grass, sea, sun and clouds answer a tap with a
+// Scenery taps (docs/design.md "Scene interactions"): the bushes, flowers, grass, sun and clouds answer a tap with a
 // short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the HUD still work.
 import { expect, test, type Page } from '@playwright/test';
 import { camTo, geo, lawnTap, oku } from './island.ts';
@@ -59,7 +59,6 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
     // (one of the front lawn's: in view at まえ)
     ['flower', async () => centre(page, `[data-flower="${(await geo(page)).FLOWERS.filter((f) => f.z < 600).sort((a, b) => a.z - b.z)[0].id}"]`), '[data-fx="flower"]'],
     ['grass', () => lawn(page), '.if-scene .tap-ring'],
-    ['sea', () => sea(page), '[data-fx="splash"]'],
     ['sun', () => orb(page), '[data-fx="sun"]']
   ];
   for (const [name, at, sel] of taps) {
@@ -68,6 +67,14 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
     await expect(page.locator(sel), name).toHaveCount(1);
     await expect(page.locator('dialog[open]'), name).toHaveCount(0);
   }
+  // the sea casts the line there (any water: no reach), and the next tap reels it in
+  const s = await sea(page);
+  await page.mouse.click(s.x, s.y);
+  await expect(page.locator('[data-bobber]'), 'sea').toBeAttached();
+  await page.waitForTimeout(400);
+  await page.mouse.click(s.x, s.y);
+  await expect(page.locator('[data-bobber]'), 'reeled').toHaveCount(0);
+  await expect(page.locator('dialog[open]'), 'sea').toHaveCount(0);
   // a flourish is gone within ~1 s, and nothing else moved
   await expect(page.locator('[data-fx]')).toHaveCount(0, { timeout: 4000 }); // a flourish waits for my villager's walk (≤ 0.9 s)
   expect(page.url()).toBe(url);
