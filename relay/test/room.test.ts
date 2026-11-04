@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CLOSE, type ServerMsg } from '../../app/src/lib/sync/live-protocol.ts';
+import { CLOSE, parseServer, type ServerMsg, type Wx } from '../../app/src/lib/sync/live-protocol.ts';
 import { HELLO_MS, MAX_SOCKETS, RING_MAX, RoomCore, type Held, type Meta, type RoomIO } from '../src/room.ts';
 
 const KEY_A = 'a1'.repeat(16);
@@ -738,5 +738,47 @@ describe('high-fives (v2: the relay only, never the sheet)', () => {
     say(a1, { kind: 'got', at: now });
     say2(join2(KEY_A), { kind: 'highfive', at: -1 });
     expect(fives(b)).toEqual([]);
+  });
+});
+
+describe('the real weather (wx, v3)', () => {
+  const joinV = (key: string, v: number) => {
+    const s = new FakeSock();
+    socks.push(s);
+    room.open(s);
+    room.message(s, JSON.stringify({ v, kind: 'hello', key }));
+    return s;
+  };
+  const H = 3600_000;
+  const at = 1_793_786_400_000; // 2026-11-04 10:00 UTC
+  const wx: Wx = { h0: at / H, s: 'rrrooc', fx: [3], at: at - 60_000, src: 'om', rev: 4 };
+
+  it('goes after the welcome to a v3 phone (never an older one), then to every v3 phone when it changes', () => {
+    now = at + 5 * 60_000;
+    let hellos = 0;
+    room = new RoomCore({ ...io(), onHello: () => void hellos++ }, [], null, {}, {}, wx);
+    const a = joinV(KEY_A, 3), b = joinV(KEY_B, 2);
+    expect(a.kinds().slice(0, 2)).toEqual(['welcome', 'wx']);
+    expect(a.sent[1]).toEqual({ v: 3, kind: 'wx', ...wx, t: now });
+    expect(parseServer(JSON.stringify(a.sent[1]))).toEqual({ v: 3, kind: 'wx', ...wx, t: now });
+    expect(b.kinds()).toEqual(['welcome']);
+    expect(hellos).toBe(2);
+    const next: Wx = { ...wx, s: 'rrhhhh', rev: 5 };
+    expect([room.setWx(next, false), a.kinds().filter((k) => k === 'wx').length]).toEqual([0, 1]); // kept, not sent
+    expect(room.setWx(next, true)).toBe(1);
+    expect(a.sent.at(-1)).toMatchObject({ kind: 'wx', s: 'rrhhhh', rev: 5 });
+    expect(b.kinds()).toEqual(['welcome']);
+    // a phone opening later gets the newest
+    expect(joinV(KEY_A, 3).sent[1]).toMatchObject({ kind: 'wx', rev: 5 });
+  });
+
+  it('a timeline that no longer covers the hour, or 36 hours old, is never sent', () => {
+    room = new RoomCore(io(), [], null, {}, {}, wx);
+    now = at + 6 * H; // past its six hours
+    expect(joinV(KEY_A, 3).kinds()).toEqual(['welcome']);
+    expect(room.setWx(wx, true)).toBe(0);
+    room = new RoomCore(io(), [], null, {}, {}, { ...wx, s: 'c'.repeat(36), at: at - 37 * H, h0: at / H - 37 });
+    now = at;
+    expect(joinV(KEY_B, 3).kinds()).toEqual(['welcome']);
   });
 });
