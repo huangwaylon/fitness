@@ -5,7 +5,6 @@
 // away and the float stays out till a tap reels it in. Where the 3D island draws the shadow and the float is where their
 // tap areas are (the DOM's nodes, placed through the same camera): a tap on what's drawn is a tap on it.
 import { expect, test, type Page } from '@playwright/test';
-import { CAMS } from '../src/lib/components/island/world.ts';
 import { camTo, geo, toTheWater } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -37,7 +36,7 @@ const apart = (a: { dom: number[]; model: number[] } | null) => (a ? Math.hypot(
 for (const [water, q, cam, sel, miss] of [
   ['sea', '&critter=fish&date=2026-11-04T12:00', null, '[data-critter="fish"]', false],
   ['river', '&critter=river&date=2026-11-04T21:00', 'oku', '[data-critter="pond"][data-water="river"]', false],
-  ['pond', '&critter=pond&date=2026-11-04T21:00', CAMS.oku, '[data-critter="pond"][data-water="pond"]', false],
+  ['pond', '&critter=pond&date=2026-11-04T21:00', 'oku', '[data-critter="pond"][data-water="pond"]', false],
   // no tap in the bite's window: it gets away, and the 「！」 goes with it
   ['sea', '&critter=fish&date=2026-11-04T12:00', null, '[data-critter="fish"]', true]
 ] as const) {
@@ -50,12 +49,12 @@ for (const [water, q, cam, sel, miss] of [
     await page.goto(`?demo&visitor=none${q}`);
     await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
     // (the river's: おく as the page's island has it, the layout's, held there)
-    if (cam !== null) await camTo(page, cam === 'oku' ? (await geo(page)).CAMS.oku : cam, false);
+    if (cam === 'oku') await camTo(page, (await geo(page)).CAMS.oku, false);
     await expect(page.locator(sel)).toBeAttached({ timeout: 10_000 });
-    // my villager on its bank, within a cast (NH casts from where it stands), the camera on the shadow; the reel's tap
+    // my villager on its bank (NH casts from where it stands), the camera on the shadow; the reel's tap
     // later where the cast's was (open water: no door, nothing over it)
     const [rx, ry] = await toTheWater(page, water);
-    // my villager in 3D (its model in: under CI's software GL that takes a while), else it's a card and holds no rod
+    // my villager in 3D (its model in: under CI's software GL that takes a while)
     await expect.poll(() => v3(page, (v) => v.state('mine')), { timeout: 30_000 }).not.toBeNull();
     // the shadow drawn where its tap area is (it swims: a few px of lag between the two at most): the model's spot is its
     // head (Critters' fish3: the body trails behind it), half its length from the tap area's middle

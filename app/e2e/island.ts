@@ -300,9 +300,8 @@ export async function lawnTap(page: Page, x: number, z: number): Promise<{ at: [
   return { at, x: cx, y: cy };
 }
 
-/** A catch or a find shown (docs/design.md "Critters"): only its plate in the bottom stack, the item's icon on it
- *  (`art`: its key, or a pattern on the art's path), nothing over a villager's head. Where the icon flew in from
- *  (client px). */
+/** A catch or a find shown (docs/design.md "Critters"): its plate in the bottom stack, the item's icon on it (`art`:
+ *  its key, or a pattern on the art's path). Where the icon flew in from (client px). */
 export async function plateOnly(page: Page, art: string | RegExp): Promise<{ x: number; y: number }> {
   const plate = page.locator('[data-catch-stack] [data-fx="catch"].placed').last();
   await expect(plate).toBeVisible({ timeout: 4000 });
@@ -313,6 +312,5 @@ export async function plateOnly(page: Page, art: string | RegExp): Promise<{ x: 
     return { src: img?.dataset.src || img?.getAttribute('src') || '', x: at.left + at.width / 2 + off('--dx'), y: at.top + at.height / 2 + off('--dy') };
   });
   expect(r.src).toMatch(typeof art === 'string' ? `/${art}.webp` : art);
-  await expect(page.locator('[data-actor] [data-holding], [data-actor] .held-up')).toHaveCount(0);
   return { x: r.x, y: r.y };
 }

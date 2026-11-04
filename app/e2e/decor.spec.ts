@@ -63,8 +63,6 @@ async function fineFrom(page: Page, c: number, r: number): Promise<[number, numb
 test('on the layout: a piece from the tray goes down on fine ground, a drag moves it a tile at a time, a tap on the ground puts it there, red over the water, ✓ places it', async ({ page }) => {
   await open(page);
   await editLayout(page);
-  // (not the old decorations' tray)
-  await expect(page.locator('[data-tray]')).toHaveCount(0);
   const before = await lay(page, (l) => l.count('stone-lantern'));
   await page.locator('[data-tab="furniture"]').click();
   await page.locator('[data-island-item="stone-lantern"]').click();

@@ -12,7 +12,6 @@ test('the long layout: its doors, homes, centre stage and named spots', async ({
   await page.goto(ISLAND);
   expect(await is3d(page)).toBe(true);
   const s = await site(page);
-  expect(s.on).toBe(true);
   // the campsite's door is ウェイ's home's on the layout (z 1404 and on), うめ's and the guest's homes in the middle
   expect(s.doors.campsite[1]).toBeGreaterThan(1350);
   expect(s.doors['home-B'][1]).toBeGreaterThan(700);

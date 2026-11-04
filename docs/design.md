@@ -1842,9 +1842,9 @@ Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/previe
 | `?fps=30\|60` | The 3D scenes' frame rate for the tab, not kept (the e2e pin 60 in storage: `playwright.config.ts`) |
 | `?fpv=1\|0` | The rooms' first-person view for the tab, not kept ([First person](#first-person)) |
 
-The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there at once, the stops' snapping off;
-`at(x, z)`: a world point's client px; `put(x, z)`: my villager there; `idle()`; `perf`; `stops()`: the sections'
-camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
+The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there at once; `at(x, z)`: a world point's
+client px; `put(x, z)`: my villager there; `idle()`; `quiet()`: no opening beat or line queued; `perf`; `stops()`: the
+camera's two ends; `mine()`, `partner()`, `geo()`, `site()`, …) for the e2e and the console (e2e/island.ts wraps them).
 
 ## Motion
 
