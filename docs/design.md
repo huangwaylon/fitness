@@ -1280,7 +1280,10 @@ northern-hemisphere months; hours still hold.
   turning as it goes; the fish at my float turns to it, each nibble its nose bumping the float with the float's dip,
   the bite a lunge onto it; scared, it turns tail and darts off with a quick tail wiggle, fading as it goes
   (`e2e/critters3d.spec.ts`). A bug follows its itinerary's own curve (`critterPath.ts` bugAt: a cubic in time through
-  its legs' ends, slowing only where it rests, sits or hops), turned the way it flies.
+  its legs' ends, slowing only where it rests, sits or hops), turned the way it flies. The 3D frame reads each one's
+  fields from a plain mirror (Critters' `mirrorFish` / `mirrorBug`: an attachment re-run as they change; the
+  itinerary a snapshot), not through Svelte's state proxy, whose every read boxed a number: the critters' frame
+  22.0 → 6.4 KB allocated a frame, the island's 158.6 → 141.6 (Chromium heap sampling, the demo at rest).
 - **How the bugs move** (`critterPath.ts` bugPath, NH's paces; `FLY_UPS`, u/s, against a villager's 90 stroll and 200
   run): a butterfly or a moth flutters at 14–26 in a meander of 12–26u steps, its heading wandering a little each
   step and turned back in at its clump's edge, now and then hanging a moment in the air, bobbing with its wingbeats
