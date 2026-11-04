@@ -81,9 +81,9 @@
    *  (`sx`: its screen x) if it can be; null with no open ground in view at all. */
   function landing(sx: number): readonly [number, number] | null {
     const v = w.view, nav = site.nav, lay = site.layout, [z0, z1] = w.zRange();
-    // the controls on screen (scene px): the HUD, the bottom controls, the catch stack, the trees' and the rest's tap
+    // the controls on screen (scene px): the HUD, the bottom controls, the catch stack, a visitor (a tap there is theirs), the trees' and the rest's tap
     // areas (the villagers only pass by: it lies behind them)
-    const extra = [...document.querySelectorAll('.ribbon-wrap, [data-catch-stack]')].filter(shownNow).map((el) => el.getBoundingClientRect()).filter((b) => b.width && b.height)
+    const extra = [...document.querySelectorAll('.ribbon-wrap, [data-catch-stack], [data-visitor] .art')].filter(shownNow).map((el) => el.getBoundingClientRect()).filter((b) => b.width && b.height)
       .map((b) => ({ x0: b.left, x1: b.right, y0: b.top, y1: b.bottom }));
     const guards = [...uiBoxes((el) => !!el.closest('[data-actor]')), ...extra].map((b) => ({ x0: b.x0 - v.left, x1: b.x1 - v.left, y0: b.y0 - v.top, y1: b.y1 - v.top }));
     const view: LandView = {

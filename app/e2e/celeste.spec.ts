@@ -2,7 +2,7 @@
 // seeded by the week (2026-11-12 is one), Celeste comes to watch from 20:00 to 04:00 and shooting stars cross every
 // 3–8 s; each wish that night is a star fragment the next morning (the season's zodiac one likelier). No ベル.
 import { expect, test, type Page } from '@playwright/test';
-import { is3d } from './island.ts';
+import { is3d, stageCam } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
 /** The camera to a world z (まえ, 642 おく: the campsite's clearing), settled. */
@@ -24,12 +24,12 @@ const under = (page: Page, sel: string) =>
   }, sel);
 
 for (const [w, h] of [[390, 844], [320, 568]] as const)
-  test(`a meteor shower's night: Celeste at centre stage (おく), clear of every control, explains wishes (${w}px)`, async ({ page }) => {
+  test(`a meteor shower's night: Celeste at centre stage, clear of every control, explains wishes (${w}px)`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await page.goto('?demo&date=2026-11-12T21:00&critter=none');
     await expect(hudMenu(page)).toBeVisible();
     const bells = await hudBells(page).getAttribute('aria-label');
-    await camera(page, 642);
+    await camera(page, await stageCam(page));
     const art = page.locator('[data-visitor="celeste"] .art');
     await expect(art).toBeVisible();
     expect(await under(page, '[data-visitor="celeste"] .art')).toEqual([]);

@@ -1,7 +1,8 @@
 // Visitors (docs/design.md "Visitors"): K.K. on Saturday nights (a song with the music on), Daisy Mae on Sunday
-// mornings, Wisp on some nights, Gulliver washed up on some days (asleep until the fifth nudge). K.K., Wisp and the
-// hosts stand at centre stage (the campsite's clearing, seen from おく), Gulliver on the front beach and Daisy Mae on the front lawn
-// (seen from まえ), never under a control; a tap gives a line (an introduction first), no trading, no ベル.
+// mornings, one of NH's weekday visitors most other days (Wisp at night, Gulliver washed up and asleep until the fifth
+// nudge). They stand at centre stage (the layout's plaza, a clear patch of lawn behind the villagers, seen as the island
+// opens at まえ), Gulliver on the front beach, never under a control; a tap gives a line (an introduction first), no
+// trading, no ベル.
 import { expect, test, type Page } from '@playwright/test';
 import { geo } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
@@ -71,9 +72,9 @@ test('K.K. comes on Saturday from 18:00 (not on Friday); with the music on he as
   await page.goto('?demo&date=2026-10-24T19:00&critter=none'); // a Saturday (not Halloween: Jack's night)
   await expect(hudMenu(page)).toBeVisible();
   const bells = await hudBells(page).getAttribute('aria-label');
-  // at centre stage: out of sight from まえ (only a speck on the horizon), seen from おく
+  // at centre stage, in view as the island opens (まえ)
   const g = await geo(page);
-  await camera(page, g.CAMS.oku);
+  await camera(page, g.CAMS.mae);
   await expect(page.locator('[data-visitor="kk-slider"] .art')).toBeVisible();
   expect(await offFrom(page, 'kk-slider', ...g.CENTRE_STAGE)).toBeLessThan(2);
   expect(await under(page, '[data-visitor="kk-slider"] .art')).toEqual([]);
@@ -103,22 +104,21 @@ test('K.K. comes on Saturday from 18:00 (not on Friday); with the music on he as
 test('K.K. with the music off just introduces himself', async ({ page }) => {
   await page.goto('?demo&date=2026-10-24T20:00&critter=none');
   await expect(hudMenu(page)).toBeVisible();
-  await camera(page, (await geo(page)).CAMS.oku);
+  await camera(page, (await geo(page)).CAMS.mae);
   await tapOn(page, '[data-visitor="kk-slider"] .art');
   await expect(page.locator('[data-fx="talk"].placed')).toHaveAttribute('data-pages', '2');
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('とたけけ だ');
 });
 
 for (const [w, h] of [[390, 844], [320, 568]] as const)
-  test(`visitors stand where NH puts them (Daisy Mae on the front lawn, Gulliver on the beach, Wisp at centre stage) clear of every control; the first tap is an introduction (${w}px)`, async ({ page }) => {
+  test(`visitors stand where NH puts them (Daisy Mae and Wisp at centre stage, Gulliver on the beach) clear of every control; the first tap is an introduction (${w}px)`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     for (const [q, id, name] of [['2026-11-01T08:00&critter=none', 'daisy-mae', 'ウリ'], ['2026-11-04T22:00&visitor=wisp&critter=none', 'wisp', 'ゆうたろう'], ['2026-11-04T12:00&visitor=gulliver&critter=none', 'gulliver', 'ジョニー']] as const) {
       await page.goto(`?demo&date=${q}`);
       await expect(hudMenu(page)).toBeVisible();
-      const { CAMS, CENTRE_STAGE } = await geo(page);
-      const at = { 'daisy-mae': [CAMS.mae, 206, 396], wisp: [CAMS.oku, CENTRE_STAGE[0], CENTRE_STAGE[1]], gulliver: [CAMS.mae, 96, 30] } as const;
-      const [cam, x, z] = at[id];
-      await camera(page, cam);
+      const { CAMS, CENTRE_STAGE, BEACHED } = await geo(page);
+      const [x, z] = id === 'gulliver' ? BEACHED : CENTRE_STAGE;
+      await camera(page, CAMS.mae);
       await expect(page.locator(`[data-visitor="${id}"] .art`)).toBeVisible();
       expect(await offFrom(page, id, x, z), id).toBeLessThan(2);
       expect(await under(page, `[data-visitor="${id}"] .art`), id).toEqual([]);
@@ -144,21 +144,8 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     }
   });
 
-test('out of view, a visitor takes no tap: K.K. at centre stage seen from まえ', async ({ page }) => {
-  await page.goto('?demo&date=2026-10-24T20:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
-  await camera(page, 114);
-  // his feet: a speck sunk at the horizon (the HUD stands over his head); a tap there just below the horizon
-  const [sx, sz] = (await geo(page)).CENTRE_STAGE;
-  const [x, y] = await page.evaluate(([sx, sz]) => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(sx, sz), [sx, sz]);
-  expect(y).toBeLessThan(200);
-  await page.mouse.click(x, y + 3);
-  await page.waitForTimeout(400);
-  await expect(page.locator('[data-fx="talk"]')).toHaveCount(0);
-});
-
-test('nobody visits on an ordinary weekday evening', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-04T19:00');
+test('nobody visits on a quiet day (about one in ten of the rotation’s)', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-19T19:00');
   await expect(hudMenu(page)).toBeVisible();
   await expect(page.locator('[data-visitor]')).toHaveCount(0);
 });
@@ -172,4 +159,16 @@ test('the day brings its visitor with no hook: Daisy Mae on a Sunday morning, dr
   await expect(page.locator('[data-visitor="daisy-mae"] .art')).toHaveClass(/m3on/);
   await tapOn(page, '[data-visitor="daisy-mae"] .art');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('ウリ');
+});
+
+test('the weekday rotation brings its visitor with no hook: Redd on Wednesday Nov 4 2026, at centre stage, and he talks', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-04T12:00&critter=none');
+  await expect(hudMenu(page)).toBeVisible();
+  const { CAMS, CENTRE_STAGE } = await geo(page);
+  await camera(page, CAMS.mae);
+  await expect(page.locator('[data-visitor="redd"] .art')).toBeVisible();
+  expect(await offFrom(page, 'redd', ...CENTRE_STAGE)).toBeLessThan(2);
+  expect(await under(page, '[data-visitor="redd"] .art')).toEqual([]);
+  await tapOn(page, '[data-visitor="redd"] .art');
+  await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('つねきち');
 });

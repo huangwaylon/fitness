@@ -20,7 +20,7 @@ async function pick(page: Page, ...which: string[]) {
 }
 
 test('ハロウィン in せってい brings Halloween night now; the chip shows it, a reload keeps it, its tap goes back', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-04T12:00&critter=none');
+  await page.goto('?demo&date=2026-11-19T12:00&critter=none'); // (a quiet day: no visitor to walk home before Jack comes)
   await expect(hudMenu(page)).toBeVisible();
   await expect(html(page)).toHaveAttribute('data-tod', 'day');
   await expect(chip(page)).toHaveCount(0);
@@ -33,7 +33,7 @@ test('ハロウィン in せってい brings Halloween night now; the chip shows
   await expect(page.locator('[data-halloween="night"]')).toHaveCount(1);
   await expect(page.locator('[data-visitor="jack"]')).toHaveCount(1);
   // kept on this phone only, for the day it was set on
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('island.preview') ?? 'null'))).toMatchObject({ day: '2026-11-04', event: 'halloween' });
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('island.preview') ?? 'null'))).toMatchObject({ day: '2026-11-19', event: 'halloween' });
 
   await page.reload();
   await expect(chip(page)).toBeVisible();

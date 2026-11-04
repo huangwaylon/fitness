@@ -1,9 +1,9 @@
 // The visitors' life (docs/design.md "Visitors: life"): every visitor breathes and shifts (its idle rig's transform
 // changes over time), Gulliver sleeps face down until the fifth nudge, the ones who roam stroll and come back to their
 // spot before a line (the balloon anchors to them there), they arrive from the campsite and leave to it (or by their
-// own way), and the partner comes over to say hello to a visitor near home (never across the island to centre stage).
+// own way), and the partner comes over to say hello to a visitor near home.
 import { expect, test, type Page } from '@playwright/test';
-import { campDoor, geo, is3d, oku, sawIt, watchFor } from './island.ts';
+import { campDoor, geo, is3d, sawIt, stageCam, watchFor } from './island.ts';
 import { hudMenu } from './hud.ts';
 
 /** The campsite's door, where the visitors come from and go back to (world x, z). */
@@ -20,9 +20,9 @@ const rig = (page: Page, id: string) =>
     return `${s.scale}|${s.rotate}|${s.translate}|${s.transform}|${s.opacity}`;
   });
 const NIGHT = new Set(['wisp', 'celeste', 'kk-slider', 'jack']);
-/** Where each stands: Daisy Mae and Gulliver at まえ, the rest at centre stage (おく). */
-const camOf = async (page: Page, id: string) => (id === 'daisy-mae' || id === 'gulliver' ? 30 : await oku(page));
-/** The camera to a world z (まえ, 642 おく: the campsite's clearing), settled. */
+/** Where each stands: Gulliver on the beach (まえ), the rest at centre stage (the layout's plaza). */
+const camOf = async (page: Page, id: string) => (id === 'gulliver' ? 30 : await stageCam(page));
+/** The camera to a world z, settled. */
 async function camera(page: Page, z: number) {
   await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world);
   // (again until it holds: the scene may still re-fit its camera as it settles in)
@@ -36,7 +36,7 @@ async function camera(page: Page, z: number) {
 /** The visitor node's transform (the projector's: where its feet are on screen). */
 const feet = (page: Page, id: string) => page.locator(`[data-visitor="${id}"]`).evaluate((e) => (e as HTMLElement).style.transform);
 
-for (const id of ['kk-slider', 'daisy-mae', 'wisp', 'gulliver', 'jack', 'celeste', 'franklin', 'jingle', 'pave', 'zipper', 'reese'])
+for (const id of ['kk-slider', 'daisy-mae', 'wisp', 'gulliver', 'kicks', 'label', 'saharah', 'leif', 'redd', 'cj', 'flick', 'jack', 'celeste', 'franklin', 'jingle', 'pave', 'zipper', 'reese'])
   test(`${id}: alive on centre stage (breathing, its own loop, a shadow that breathes with it)`, async ({ page }) => {
     await page.goto(`?demo&date=2026-11-04T${NIGHT.has(id) ? '21' : '12'}:00&visitor=${id}&critter=none`);
     await expect(hudMenu(page)).toBeVisible();
@@ -164,25 +164,9 @@ test('the partner comes over to say hello to Daisy Mae on the lawn: they face ea
   expect(r.over).toBe(false);
 });
 
-test('nobody crosses the island to say hello at centre stage (the partner keeps within 600u)', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-04T12:00&visitor=jingle&critter=none&meet');
-  await expect(hudMenu(page)).toBeVisible();
-  await is3d(page); // (the 3D island up first: on a slow GPU it takes a while)
-  await expect(page.locator('[data-visitor="jingle"]')).toHaveAttribute('data-phase', 'here', { timeout: 3000 });
-  await page.waitForTimeout(6000);
-  // still on the front lawn (an idle wander may take it about there), nowhere near the campsite
-  const stage = (await geo(page)).CENTRE_STAGE;
-  const d = await page.evaluate(([sx, sz]) => {
-    const p = document.querySelector('[data-actor="partner"]')!.getBoundingClientRect();
-    const [x, y] = (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(sx, sz);
-    return Math.hypot(p.left - x, p.top - y);
-  }, stage);
-  expect(d).toBeGreaterThan(150);
-});
-
 test('Celeste points at a falling star', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T21:00&visitor=celeste&critter=none');
-  await camera(page, await oku(page));
+  await camera(page, await stageCam(page));
   const v = page.locator('[data-visitor="celeste"]');
   await expect(v).toHaveAttribute('data-phase', 'here', { timeout: 3000 });
   await page.evaluate(() => document.querySelector('.if-scene')!.dispatchEvent(new CustomEvent('island:star', { detail: { x: 40 } })));

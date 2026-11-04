@@ -6,8 +6,8 @@
 <script lang="ts">
   // Visitors (docs/design.md "Visitors"), after NH: K.K. Slider with his guitar on Saturday nights, Daisy Mae on Sunday
   // mornings, Wisp floating by on some nights (see-through, a slow bob), Gulliver on some days. Most stand at centre
-  // stage (world.ts CENTRE_STAGE: the campsite's clearing, seen from おく); Gulliver lies washed up on the front beach and
-  // Daisy Mae wanders the front lawn (both seen from まえ), as in NH. Each is one world node (camera.svelte.ts) at the
+  // stage (world.ts CENTRE_STAGE: the layout's plaza, a clear patch of lawn behind the villagers' spots, in view as the
+  // island opens); Gulliver lies washed up on the front beach, as in NH. Each is one world node (camera.svelte.ts) at the
   // villagers' scale (their NH height relative to a villager), with the same contact shadow. A tap: their introduction
   // the first time, then one of their lines (no trading, no ベル).
   // K.K.'s show (NH's Saturday concert): with ミュージック on, a tap is his greeting and 「リクエストは あるかな？」
@@ -50,13 +50,13 @@
   import { sceneSfx } from './sceneTaps.ts';
   import { EDGE, clearAt, guardsU, place, stageGeo } from './placement.ts';
   import { zodiacOf } from './beach.ts';
-  import { hook, hookFlag } from './devHooks.ts';
+  import { hook, hookFlag, islandSeed } from './devHooks.ts';
   import { meetVisitor, turnTo, presence, villagerFree, visitorRoute, visitorWalkable } from './avatar.ts';
   import { su, VILLAGER } from './scene.ts';
   import { BUILDINGS, CENTRE_STAGE } from './world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { visitorLine, visitorNow, type VisitorId } from './visitors.ts';
+  import { beachedAt, visitorLine, visitorNow, type VisitorId } from './visitors.ts';
   import type { Choice } from './pager.ts';
   import { stretch } from '../motion/stretch.svelte.ts';
   import { SCENE } from '#lib/sync/storage.ts';
@@ -78,15 +78,16 @@
 
   /** NH heights relative to a villager (VILLAGER.h): K.K. stands about as tall, Daisy Mae is a child, Wisp a small
    *  ghost floating a little off the ground, Gulliver a tall seagull. */
-  const REL: Record<VisitorId, number> = { 'kk-slider': 1, 'daisy-mae': 0.78, wisp: 0.7, gulliver: 1.1, jack: 1, celeste: 0.85,
+  const REL: Record<VisitorId, number> = { 'kk-slider': 1, 'daisy-mae': 0.78, wisp: 0.7, gulliver: 1.1, kicks: 0.9, label: 0.9, saharah: 1, leif: 0.9,
+    redd: 1.05, cj: 0.85, flick: 1, jack: 1, celeste: 0.85,
     franklin: 1, jingle: 1.05, pave: 1.1, zipper: 0.9, reese: 0.76 };
   /** A pair standing side by side (Reese and Cyrus): how many figures wide the clearance is. */
   const WIDE: Partial<Record<VisitorId, number>> = { reese: 1.95 };
   /** Floating off the ground (u). */
   const FLOAT: Partial<Record<VisitorId, number>> = { wisp: 12 };
-  /** Where they stand (world x, z): centre stage, but Gulliver washed up face down near the front beach's water's edge
-   *  (left of the day's finds) and Daisy Mae on the front lawn between the tape deck and the dig spots (NH). */
-  const SPOT: Partial<Record<VisitorId, Pt>> = { gulliver: [96, 30], 'daisy-mae': [206, 396] };
+  /** Gulliver lies washed up face down at the front beach's water's edge (NH), somewhere new each day (visitors.ts
+   *  beachedAt: the layout's sand, by the date); the rest stand on centre stage (spots.ts stageOf: the layout's plaza). */
+  const spotOf = (id: VisitorId, date: string): Pt | null => (id === 'gulliver' ? [...beachedAt(site.layout, date, islandSeed())] : null);
   /** The campsite's door: walkers arrive from it and leave into it (spec §3). */
   const camp = (): Pt => ((b) => [b.x, b.z - 16] as Pt)(BUILDINGS.find((b) => b.id === 'campsite')!);
   /** The partner comes over only to a visitor this near its home (u): never across the island to centre stage. */
@@ -102,6 +103,7 @@
 
   const clock = $derived(minuteNow());
   const who = $derived(visitorNow(clock));
+  const date = $derived(dayKey(clock));
   /** `?leave=<ms>` (dev or ?demo): the visit ends after that long (the departure's hook). */
   let gone = $state(false);
   $effect(() => {
@@ -150,8 +152,8 @@
     const id = shown;
     if (!id) return null;
     void site.rev;
-    const [x, z] = SPOT[id] ?? CENTRE_STAGE;
-    return { x, z, h: VILLAGER.h * REL[id], stage: !SPOT[id], lie: id === 'gulliver' };
+    const own = spotOf(id, date), [x, z] = own ?? CENTRE_STAGE;
+    return { x, z, h: VILLAGER.h * REL[id], stage: !own, lie: id === 'gulliver' };
   });
   // a new visitor with a spot: they arrive (once per visit)
   let arrivedFor: VisitorId | null = null;
@@ -737,7 +739,7 @@
   <!-- one world node at the feet (camera.svelte.ts): its live position is the director's while it walks -->
   <span class="visitor {shown}" aria-hidden="true" {@attach w.at({ x: spot.x, z: spot.z, h: spot.h + 40, live: () => livePos('visitor'), always: true, inv: true,
         m3: playing ? { key: '', emit: { kind: 'notes', every: 1100, lift: spot.h * 0.9 }, art: () => el?.querySelector('.notes') } : null,
-        c3: shown === 'reese' ? { key: 'villagers/reese', h: spot.h, lift: FLOAT[shown] ?? 0, flip: false, actor: 'visitor', art: () => el?.querySelector('.art'), also: { key: 'villagers/cyrus', h: spot.h * 1.05, dx: spot.h * 0.55 } } : { key: ART[shown] ?? `villagers/${shown}`, h: spot.h, lift: FLOAT[shown] ?? 0, flip: facing.flip < 0, actor: 'visitor', art: () => el?.querySelector('.art') } })} class:show={!!playing} class:walking={st.walking} class:edge data-visitor={shown} data-stage={spot.stage || undefined}
+        c3: shown === 'reese' ? { key: 'villagers/reese', h: spot.h, lift: FLOAT[shown] ?? 0, flip: false, actor: 'visitor', art: () => el?.querySelector('.art'), also: { key: 'villagers/cyrus', h: spot.h * 1.05, dx: spot.h * 0.55 } } : { key: ART[shown] ?? `villagers/${shown}`, h: spot.h, lift: FLOAT[shown] ?? 0, flip: facing.flip < 0, lie: sleeping && spot.lie, actor: 'visitor', art: () => el?.querySelector('.art') } })} class:show={!!playing} class:walking={st.walking} class:edge data-visitor={shown} data-stage={spot.stage || undefined}
       data-phase={phase} data-way={way} data-asleep={sleeping ? (spot.lie ? 'lie' : 'stand') : undefined} data-motion={st.motion ?? undefined} bind:this={el}
       style:--h={su(spot.h)} style:--lift={su(FLOAT[shown] ?? 0)}
       style:--breath="{b.breath}ms" style:--step="{st.stepMs}ms" style:--flip={facing.flip} style:--lean={facing.lean}>

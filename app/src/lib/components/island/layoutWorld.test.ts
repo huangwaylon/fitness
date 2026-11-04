@@ -9,6 +9,7 @@ import { mushroomSpots } from './mushrooms.ts';
 import { defaultLayout, withChanges } from '#lib/layout/model.ts';
 import { isLayoutNav } from '#lib/layout/nav.ts';
 import { validate } from '#lib/layout/validate.ts';
+import { stageOf } from '#lib/layout/spots.ts';
 import { freshAreas, waterAt } from './critters.ts';
 
 const l = defaultLayout();
@@ -31,7 +32,7 @@ describe('worldOf: world.ts from the layout', () => {
     expect(near(g.GOAL_TREES.B, W.WORLD_2D.GOAL_TREES.B, 16)).toBe(true);
     expect(g.SHORE_Z).toBe(W.WORLD_2D.SHORE_Z);
     expect(g.SEA_BOX).toEqual(W.WORLD_2D.SEA_BOX);
-    expect(near(g.CENTRE_STAGE, [W.WORLD_2D.CENTRE_STAGE[0], W.WORLD_2D.CENTRE_STAGE[1] + 420], 60)).toBe(true);
+    expect(g.CENTRE_STAGE).toEqual(stageOf(l)); // (the visitors' stage: the layout's plaza, spots.test.ts)
     expect(near([g.POND.x, g.POND.z], [W.WORLD_2D.POND.x, W.WORLD_2D.POND.z + 420], 20)).toBe(true);
   });
   test('the river runs from the upper tier to the sea, the bridge over it', () => {

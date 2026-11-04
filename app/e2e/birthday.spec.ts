@@ -1,9 +1,9 @@
 // Birthdays (docs/design.md "Birthdays"): on one of ours (config: ウェイ Oct 6, うめ Mar 4) NH's birthday hats on both
-// villagers, the cake in front of centre stage (world.ts CAKE, the campsite's clearing seen from おく; a tap: its music box, the candles out for the day), confetti the first
+// villagers, the cake in front of centre stage (world.ts CAKE, the plaza on the front lawn; a tap: its music box, the candles out for the day), confetti the first
 // time the island opens, しずえ's line; an NH villager's own birthday puts the hat on that villager and a line in its
 // chats. Nothing over a control; no ベル.
 import { expect, test, type Page } from '@playwright/test';
-import { geo, sawIt, watchFor } from './island.ts';
+import { geo, sawIt, stageCam, watchFor } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
 /** The controls under a thing's corners and middle (a building's door behind a world prop is the world's, not a control over it). */
@@ -45,7 +45,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await expect(hudMenu(page)).toBeVisible();
     const bells = await hudBells(page).getAttribute('aria-label');
     await expect(page.locator('.vil [data-hat]')).toHaveCount(2);
-    await camera(page, (await geo(page)).CAMS.oku);
+    await camera(page, await stageCam(page));
     await expect(page.locator('[data-cake="lit"] .official')).toBeVisible();
     expect(await offFrom(page, '[data-cake]', ...(await geo(page)).CAKE)).toBeLessThan(2);
     expect(await under(page, '[data-cake] .official')).toEqual([]);

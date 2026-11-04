@@ -43,6 +43,20 @@ export const BEHAVIOUR: Record<VisitorId, Behaviour> = {
   wisp: { roam: 0, arrive: 'float', leave: 'float', breath: 3200, emotes: ['mark-sweat', 'mark-question', 'mark-note'], signature: { motion: 'wiggle', fx: 'glint' }, drawn: null, hello: 'mark-sweat' },
   // Gulliver: asleep face down (NH); awake, he looks about, lost
   gulliver: { roam: 0, arrive: 'appear', leave: 'fly', breath: 3000, emotes: ['mark-question', 'thought', 'surprise'], signature: { motion: 'turn' }, drawn: 'l', hello: 'mark-question' },
+  // NH's plaza visitors (the weekday rotation): Kicks taps his foot (a nod), shoe-proud
+  kicks: { roam: 0, arrive: 'walk', leave: 'walk', breath: 2700, emotes: ['mark-note', 'glee', 'mark-sparkle'], signature: { motion: 'nod', fx: 'glint' }, drawn: null, hello: 'glee' },
+  // Label: shows off the season's look (a proud pose), sketching ideas
+  label: { roam: 0, arrive: 'walk', leave: 'walk', breath: 2500, emotes: ['inspiration', 'mark-sparkle', 'glee'], signature: { motion: 'proud', fx: 'sparkles' }, drawn: null, hello: 'inspiration' },
+  // Saharah: sways to a desert tune, mysterious
+  saharah: { roam: 0, arrive: 'walk', leave: 'walk', breath: 3100, emotes: ['mark-note', 'thought', 'mark-sparkle'], signature: { motion: 'hum', fx: 'notes' }, drawn: null, hello: 'mark-note' },
+  // Leif: a slow, sleepy sway with his seedling; ambles about the flowers
+  leif: { roam: 40, arrive: 'walk', leave: 'walk', breath: 3200, emotes: ['glee', 'mark-heart', 'thought'], signature: { motion: 'wiggle', fx: 'sparkles' }, drawn: null, hello: 'glee' },
+  // Redd: shifty, looks this way and that
+  redd: { roam: 0, arrive: 'walk', leave: 'walk', breath: 2600, emotes: ['mark-sweat', 'mark-question', 'glee'], signature: { motion: 'turn' }, drawn: null, hello: 'glee' },
+  // C.J.: a fist-pump, wanders about looking for fishing spots
+  cj: { roam: 48, arrive: 'walk', leave: 'walk', breath: 2400, emotes: ['glee', 'mark-sparkle', 'surprise'], signature: { motion: 'hop', fx: 'sparkles' }, drawn: null, hello: 'glee' },
+  // Flick: cool, a slow nod; wanders about looking for bugs
+  flick: { roam: 48, arrive: 'walk', leave: 'walk', breath: 2900, emotes: ['thought', 'mark-sparkle', 'curiosity'], signature: { motion: 'nod', emote: 'curiosity' }, drawn: null, hello: 'thought' },
   // Jack: a theatrical sway (CSS), a twirl, a spooky glint
   jack: { roam: 0, arrive: 'spook', leave: 'spook', breath: 2700, emotes: ['mark-question', 'glee', 'mark-sparkle'], signature: { motion: 'twirl', fx: 'sparkles' }, drawn: null, hello: 'glee' },
   // Celeste: looks up at the sky (and points when a star falls: Visitor.svelte), strolls under it

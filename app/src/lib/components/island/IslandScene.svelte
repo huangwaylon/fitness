@@ -50,7 +50,7 @@
   import { FIREWORKS_FROM, archOn, weddingDay } from './wedding.ts';
   import { eventAt } from './events.ts';
   import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
-  import { TRICK_MS } from './visitors.ts';
+  import { TRICK_MS, beachedAt } from './visitors.ts';
   import { STUNG_SWEAT_MS, SWOLLEN_MS, goalTree, shakeTap, treeById, type ShakeTree } from './treeShake.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
@@ -648,7 +648,7 @@
       geo: () => ({
         CAMS: W.CAMS, SHORE_Z: W.SHORE_Z, POND: W.POND, CENTRE_STAGE: W.CENTRE_STAGE, ARCH: W.ARCH, CAKE: W.CAKE, HOMES: W.HOMES, SEATS: W.SEATS,
         BUILDINGS: W.BUILDINGS, FLOWERS: W.FLOWERS, SCENERY: W.SCENERY, DECOR_SLOTS: W.DECOR_SLOTS, CLIFF: W.CLIFF, RIVER: W.RIVER, RIVER_BEND: W.RIVER_BEND, PONDS: W.PONDS,
-        GIFT_TREES: giftTreesOn(today, islandSeed())
+        GIFT_TREES: giftTreesOn(today, islandSeed()), BEACHED: beachedAt(site.layout, today, islandSeed())
       }),
       /** Whether (x, z) is open ground a tap there walks to (e2e: a spot for a tap-walk): walkable, `away` u from
        *  today's weeds, dig spots and mushrooms, 30 from the scenery's and the decor's tap areas, 32 from a flower (a thumb-sized tap area far up the screen),

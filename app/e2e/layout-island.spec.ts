@@ -17,7 +17,9 @@ test('the long layout: its doors, homes, centre stage and named spots', async ({
   expect(s.doors.campsite[1]).toBeGreaterThan(1350);
   expect(s.doors['home-B'][1]).toBeGreaterThan(700);
   expect(s.doors['home-G'][1]).toBeGreaterThan(700);
-  expect(s.stage[1]).toBeGreaterThan(1200);
+  // centre stage: the plaza on the front lawn, behind the villagers' spots (layout/spots.ts stageOf)
+  expect(s.stage[1]).toBeGreaterThan(s.homes.A[1]);
+  expect(s.stage[1]).toBeLessThan(700);
   for (const n of ['homeA', 'homeB', 'centreStage', 'pondside', 'door-campsite', 'seatPondL', 'stoolW', 'pullup', 'riverEast', 'mouth']) expect(s.named[n], n).toBeTruthy();
 });
 
@@ -161,11 +163,10 @@ test('the editor moves うめ’s home: the phone’s door, walk and tap area fo
   await expect.poll(off).toBeLessThan(30);
 });
 
-test('a visitor on the long layout: K.K. at the layout’s centre stage by the campsite, and a tap talks to him', async ({ page }) => {
+test('a visitor on the long layout: K.K. at the layout’s centre stage on the front lawn, and a tap talks to him', async ({ page }) => {
   await page.goto('./?demo&critter=none&date=2026-10-24T19:00'); // a Saturday evening: K.K.
   expect(await is3d(page)).toBe(true);
-  const { stage, doors } = await site(page);
-  expect(Math.hypot(stage[0] - doors.campsite[0], stage[1] - doors.campsite[1])).toBeLessThan(200);
+  const { stage } = await site(page);
   await world(page, `go(${stage[1] - 120})`);
   await settled(page); // (its nodes placed for the camera at rest: their boxes are read)
   const art = page.locator('[data-visitor="kk-slider"] .art');

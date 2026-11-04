@@ -59,6 +59,8 @@ interface C3 {
   h: number;
   lift?: number;
   flip?: boolean;
+  /** Lying flat on the ground, face down (Gulliver asleep). */
+  lie?: boolean;
   actor?: 'visitor' | 'host';
   art?: () => Element | null | undefined;
   /** A second figure beside it (Reese's Cyrus): its art, height and how far across (u). */

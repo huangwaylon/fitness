@@ -127,6 +127,8 @@ export type Geo = {
   RIVER: [number, number, number][]; RIVER_BEND: number; PONDS: { x: number; z: number; rx: number; rz: number }[];
   /** Today's trees holding a present (treeGifts.ts giftTreesOn over the island's trees). */
   GIFT_TREES: string[];
+  /** Where Gulliver lies washed up today (visitors.ts beachedAt). */
+  BEACHED: [number, number];
 };
 export async function geo(page: Page): Promise<Geo> {
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
@@ -167,6 +169,11 @@ export async function fossilOnScreen(page: Page): Promise<{ x: number; y: number
 
 /** The camera's おく stop (the campsite's end: world.ts CAMS as the page's island has them). */
 export const oku = async (page: Page): Promise<number> => (await geo(page)).CAMS.oku;
+/** The camera's z with centre stage (the visitors' spot: the layout's plaza) about the screen's middle. */
+export const stageCam = async (page: Page): Promise<number> => {
+  const g = await geo(page);
+  return Math.min(g.CAMS.oku, Math.max(g.CAMS.mae, g.CENTRE_STAGE[1] - 150));
+};
 
 /** Where my villager stands to go into the tent (nav.ts's door node: a step in front of the campsite's door line). */
 export const campDoor = (g: Geo): [number, number] => ((b) => [b.x, b.z - 16] as [number, number])(g.BUILDINGS.find((b) => b.id === 'campsite')!);
