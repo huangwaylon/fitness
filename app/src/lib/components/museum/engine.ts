@@ -135,7 +135,7 @@ export interface Museum {
   /** Which walls the cutaway takes away (WALLS' order: 1 cut, 0 standing; the e2e). */
   walls(): string;
   kit: Kit;
-  stats(): { frames: number; draws: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; ambient: number; loading: number; mem: [number, number, number] };
+  stats(): { frames: number; draws: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; ambient: number; loading: number; warming: boolean; mem: [number, number, number] };
   ready: Promise<void>;
   dispose(): void;
 }
@@ -686,14 +686,23 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     blocksChanged();
     e.night(nightN);
     invalidate();
+    // (a rebuilt wing's models are cached: no load to wait for, so its materials are warmed from here)
+    warmSoon();
   }
+  /** Exhibits taken down but not yet disposed: their materials hold their programs (three frees a program with its last
+   *  material) until the warm-up has compiled their successor's, which then finds them made: a wing rebuilt with a new
+   *  find while one is inside compiled every program afresh in a frame. */
+  const retired: Exhibit[] = [];
   function drop(e: Exhibit) {
     const i = exhibits.indexOf(e);
     if (i < 0) return;
     exhibits.splice(i, 1);
-    e.dispose();
+    e.group.removeFromParent();
+    if (noDraw) e.dispose();
+    else retired.push(e);
     blocksChanged();
     invalidate();
+    warmSoon();
   }
 
   // ---- the villagers ----
@@ -1112,13 +1121,15 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   //      compiled, so a wing's first sight is no hitch (its hundred-odd critters' textures at once: ~100 ms) ----
   const warmed = new WeakSet<Texture>();
   let warmT: ReturnType<typeof setTimeout> | undefined, compileT: ReturnType<typeof setTimeout> | undefined;
+  /** A warm-up is due or under way (the e2e's: the programs settled once it's done). */
+  let warming = false;
   function warmSoon() {
     clearTimeout(warmT);
     // (a little after the last model: its exhibit's meshes made from it)
-    if (!noDraw && !disposed) warmT = setTimeout(warm, 250);
+    if (!noDraw && !disposed) (warmT = setTimeout(warm, 250)), (warming = true);
   }
   function warm() {
-    if (disposed || pending) return;
+    if (disposed || pending) return void (warming = !!pending);
     const todo: Texture[] = [];
     scene.traverse((n) => {
       const ms = (n as Mesh).material;
@@ -1141,6 +1152,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
         // (three's compileAsync, its poll ours: three's throws in a timer once a material it waits on is disposed, the
         // room left or a fish's hour over, and never settles)
         clearTimeout(compileT);
+        // (those taken down by now go once this compile is done: their programs were there for it)
+        const going = retired.slice();
         const compiling = renderer.compile(scene, camera);
         const poll = () => {
           if (disposed) return;
@@ -1149,7 +1162,14 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
             if (!p || p.isReady()) compiling.delete(m);
           }
           if (compiling.size) compileT = setTimeout(poll, 10);
-          else hashed(false);
+          else {
+            hashed(false);
+            warming = false;
+            for (const e of going) {
+              const i = retired.indexOf(e);
+              if (i >= 0) (retired.splice(i, 1), e.dispose());
+            }
+          }
         };
         poll();
       }
@@ -1365,7 +1385,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     nav: () => nav,
     walls: () => walls.map((w) => (w.cut ? 1 : 0)).join(''),
     kit,
-    stats: () => ({ frames, draws, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: [...cost], queued: pace.asked(), ambient: ambientOn, loading: pending,
+    stats: () => ({ frames, draws, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: [...cost], queued: pace.asked(), ambient: ambientOn, loading: pending, warming,
       mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0] }),
     ready,
     dispose() {
@@ -1373,7 +1393,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       pace.stop();
       clearTimeout(warmT);
       clearTimeout(compileT);
-      for (const e of exhibits) e.dispose();
+      for (const e of [...exhibits, ...retired]) e.dispose();
       for (const w of villagers.values()) w.v3?.dispose();
       for (const d of disposables) d.dispose();
       scene.traverse((n) => {

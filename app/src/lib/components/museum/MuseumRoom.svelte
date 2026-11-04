@@ -76,7 +76,9 @@
 
   // ---- what's on show: the ずかん's first finds (everyone's), the tallies for the card ----
   const finds = $derived(week.model ? findsView(week.model.state) : null);
-  const specimens = $derived<Specimen[]>(finds ? onShow(finds) : []);
+  /** One find kept off show (the e2e's and the Simulator's: let back, it arrives as a new find does, its wing rebuilt). */
+  let withheld = $state<string | null>(null);
+  const specimens = $derived<Specimen[]>(finds ? onShow(finds).filter((s) => s.id !== withheld) : []);
 
   // ---- my villager, told to the others (the very walk) ----
   let myWalk: { from: Pt; via: Pt[]; to: Pt; s: number; ms: number } | null = null;
@@ -447,6 +449,7 @@
       },
       card: () => (card ? card.id : null),
       /** The aquarium's clock an hour on (its pick changes). */
+      withhold: (id: string | null) => (withheld = id),
       nextHour: () => {
         hoursOn++;
         eng?.kit.invalidate();

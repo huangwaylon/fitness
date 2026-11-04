@@ -313,3 +313,26 @@ test('while a drag turns the camera the curator’s balloon stays whole (its box
   await expectWhole(page, '[data-fx="talk"]', h1, near);
   await page.mouse.up();
 });
+
+test('a wing rebuilt with a new find keeps its programs: none freed with the old wing to compile again for the new', { tag: '@render' }, async ({ page }) => {
+  const river = ['koi', 'carp', 'goldfish', 'catfish', 'crawfish', 'bluegill', 'pike', 'char', 'loach', 'pond-smelt'];
+  await seed(page, river.map((id) => ['fish', id, 'A'] as ['fish', string, 'A']));
+  await open(page);
+  await page.evaluate('window.__museum.put(160, 80)');
+  const shown = async () => (await mu<string[]>(page, 'shown()')).length;
+  await expect.poll(shown, { timeout: 15_000 }).toBe(7);
+  const programs = async () => (await mu<{ mem: number[] }>(page, 'stats()')).mem[2];
+  // (the warm-up done: its fading programs compiled with the rest)
+  const warmed = () => expect.poll(() => page.evaluate('((s) => s.warming || s.loading > 0)(window.__museum.stats())'), { timeout: 15_000 }).toBe(false);
+  await warmed();
+  const before = await programs(), seen: number[] = [];
+  // (a find kept off and let back: the aquarium rebuilt each time, as a new find rebuilds it)
+  for (const id of [river[0], null, river[1], null]) {
+    await page.evaluate((id) => (window as unknown as { __museum: { withhold(id: string | null): void } }).__museum.withhold(id), id);
+    await expect.poll(shown, { timeout: 15_000 }).toBe(7);
+    seen.push(await programs());
+    await warmed();
+    seen.push(await programs());
+  }
+  expect(seen).toEqual(seen.map(() => before));
+});

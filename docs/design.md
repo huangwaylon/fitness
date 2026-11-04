@@ -1566,7 +1566,12 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   170, the bug wing 250 → 84; the way in's longest frame 301 → 79 ms. Once everything is in, what isn't on screen yet
   is made ready while the hall is still (its textures up eight at a time, its programs compiled: engine.ts warm), so a
   wing's first sight is no hitch (walking into the aquarium: its longest frame ~100 → 36 ms); the cost, every wing's
-  textures on the GPU whether visited or not (~300 small ones, a few MB).
+  textures on the GPU whether visited or not (~300 small ones, a few MB). A wing rebuilt (a new find while one is
+  inside) keeps its programs: the old wing leaves the scene at once but is disposed only once the warm-up has compiled
+  the new one's materials (engine.ts `retired`), which then find their programs made; disposed first, three freed the
+  programs with their last materials and the new wing compiled them again in a frame, its fading ones at the next
+  hour's swap (iOS Simulator, the aquarium rebuilt three times: programs 31 → 22, then 9 compiled mid-swap; now 31
+  throughout, none; `museum.spec`'s "keeps its programs", `npm run leak -- rebuild`).
 - **Never a blank frame:** a resize of the canvas's buffer (a drag's lighter pixel ratio, 2 → 1.5 and back; a new
   size) clears it, and WebKit shows it cleared (the museum's dark) until the next draw, so it's resized only just before
   a draw, in the same task (engine.ts draw; `museum.spec`'s "never shows blank"). Resized after a frame's draw, each
