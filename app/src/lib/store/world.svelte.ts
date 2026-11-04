@@ -56,6 +56,10 @@ class SharedWorld {
     const r = this.#relay;
     return now().getTime() + (r ? r.serverNow() - Date.now() : 0);
   }
+  /** The relay's own clock (a walk's `s`: never a `?date=` preview's). */
+  serverNow(): number {
+    return this.#relay?.serverNow() ?? Date.now();
+  }
 
   /** Today's day (a new Tokyo day starts empty). */
   get day(): WorldDay {

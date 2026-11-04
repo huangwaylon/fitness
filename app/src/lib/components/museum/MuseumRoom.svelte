@@ -25,11 +25,10 @@
   import { cue } from '#lib/sound/cues.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
-  import { doorOf as layoutDoor, facingVec } from '#lib/layout/model.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { where } from '#lib/store/where.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
-  import { site } from '../island/site.svelte.ts';
+  import { leaveBy } from '../island/doorOut.ts';
   import { findsView } from '#lib/model/finds.ts';
   import { tallyTotals } from '#lib/model/tally.ts';
   import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
@@ -304,28 +303,16 @@
     walkTo([h.x, h.z]);
   }
 
-  // ---- out of the door: on the island just out of the museum's door ----
+  // ---- out of the door: on the island just out of the museum's door, on every phone (island/doorOut.ts) ----
   let leaving = false;
   function leave() {
     if (leaving) return;
     leaving = true;
     cue('scene-bench');
     send({ kind: 'tent', in: false });
-    site.sync();
-    const [dx, dz] = outOfMuseum();
-    ui.outAt = [dx, dz];
-    ui.islandZ ??= dz - 120;
-    send({ kind: 'walk', to: [Math.round(dx), Math.round(dz)], from: [Math.round(dx), Math.round(dz)], s: Math.round(relayNow()), ms: 0, f: 'home' });
+    leaveBy('museum', me);
     const q = new URLSearchParams(location.search);
     void goto(resolve('/') + (q.size ? `?${q}` : '')).finally(() => (leaving = false));
-  }
-  /** Just out of the museum's door on the layout (each of us to one side). */
-  function outOfMuseum(): readonly [number, number] {
-    const l = islandLayout.current, o = [...l.objects.values()].find((x) => x.k === 'museum');
-    if (!o) return [195, 300];
-    const [x, z] = layoutDoor(l, o).at, [fx, fz] = facingVec(o.f);
-    const side = me === 'A' ? -12 : me === 'B' ? 12 : 0;
-    return [x + fx * 30 - fz * side, z + fz * 30 + fx * side];
   }
 
   const nightOf = (tod: string) => (tod === 'night' ? 1 : tod === 'dusk' ? 0.55 : tod === 'dawn' ? 0.3 : 0);

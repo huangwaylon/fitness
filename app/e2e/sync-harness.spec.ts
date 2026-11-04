@@ -7,7 +7,7 @@
 //   RELAY_E2E=1 npm run e2e -- sync-harness --workers=1   two browser contexts against the test relay (relay/.smoke-keys;
 //                                                         one at a time: each person's key opens one socket)
 import { expect, test, type Browser, type Page } from '@playwright/test';
-import { campDoor, geo, lawnTap, oku, tapOn, quiet } from './island.ts';
+import { geo, lawnTap, oku, tapOn, quiet } from './island.ts';
 import { sayOwn } from './say.ts';
 import { existsSync, readFileSync } from 'node:fs';
 
@@ -20,12 +20,10 @@ async function openEdit(p: Page) {
  *  room: a px is only where the finger lands once it's still). */
 const settled = (p: Page) => p.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still(), null, { timeout: 10_000 });
 
-/** Where a villager stands just out of the tent (buildings.ts outOfTent): ±12 of the tent's door, 30 in front (the
- *  page's island's door: the layout's on it). */
-const OUT = async (p: Page, who: 'A' | 'B') => {
-  const d = campDoor(await geo(p));
-  return [d[0] + (who === 'A' ? -12 : 12), d[1] - 30] as const;
-};
+/** Where a villager stands just out of the tent (buildings.ts outOf, the page's island's: 30 in front of its door, each
+ *  to one side, on walkable ground). */
+const OUT = (p: Page, who: 'A' | 'B') =>
+  p.evaluate((who) => (window as unknown as { __world: { exit(id: string, who: string): { at: [number, number] } } }).__world.exit('campsite', who).at, who);
 
 /** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
 async function tapTent(p: Page) {
