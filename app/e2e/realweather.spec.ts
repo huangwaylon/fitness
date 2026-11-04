@@ -47,10 +47,33 @@ test.describe('the real weather', () => {
     await both('&date=2026-06-10T10:00&wx=rain-pm', 'clear');
     await both('&date=2026-06-10T10:00&wx=typhoon', 'heavy');
     await both('&date=2026-06-10T10:00&wx=snow', 'snow');
+    await both('&date=2026-06-10T10:00&wx=cloudy', 'cloudy');
+    // the rain clears at 14:00: the rainbow, on both
+    await both('&date=2026-06-10T14:20&wx=clears', 'clear');
+    await expect(page.locator('.rainbow')).toBeVisible();
+    await expect(other.locator('.rainbow')).toHaveAttribute('data-rainbow', (await page.locator('.rainbow').getAttribute('data-rainbow'))!);
     // winter rain falls as snow; an August Sunday's fireworks night is fine whatever Tokyo does
     await both('&date=2027-01-20T13:00&wx=rain-pm', 'snow');
     await both('&date=2026-08-09T20:00&wx=typhoon', 'clear');
     await other.close();
+  });
+
+  test('cloudy: a paler grey sky, nothing falling; a change of sky on screen fades out over a minute', async ({ page }) => {
+    await page.clock.install({ time: NOON });
+    const wx = { h0: Math.floor(NOON / H) - 12, s: 'o'.repeat(48), at: NOON - H, src: 'om', rev: 3 };
+    await page.addInitScript((w) => localStorage.setItem('island.wx', JSON.stringify(w)), wx);
+    await open(page, '');
+    await expect(scene(page)).toHaveAttribute('data-sky', 'cloudy');
+    const oc = page.locator('.overcast[data-sky="cloudy"]');
+    await expect(oc).toHaveCSS('opacity', '0.5');
+    await expect(page.locator('.precip')).toHaveCount(0);
+    // ゲーム: the seeded day's (2026-06-10 is fine) sky; the grey eases out, then its layers are gone
+    await fromMenu(page, 'settings');
+    await page.locator('dialog[open] [data-wx-mode="game"]').click();
+    await expect(scene(page)).toHaveAttribute('data-sky', 'clear');
+    await expect(oc).toHaveAttribute('style', /opacity: 0;?$/);
+    await page.clock.fastForward(61_000);
+    await expect(page.locator('.overcast')).toHaveCount(0);
   });
 
   test('offline: the cached timeline serves; 36 hours old, the seeded day', async ({ page }) => {
