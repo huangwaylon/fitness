@@ -11,7 +11,7 @@ import { objMid, type Layout, type Obj } from '#lib/layout/model.ts';
 import { kindDef } from '#lib/layout/catalog.ts';
 import MODELS from './models.json' with { type: 'json' };
 import { DECOR_U } from './world.ts';
-import { outsat } from '../tent/seats.ts';
+import { outsat } from '../rooms/seating.ts';
 import type { Who } from '#lib/types.ts';
 
 type Pt = readonly [number, number];
@@ -92,7 +92,7 @@ export function sitTimeOf(w: { s?: number; ms?: number } | null | undefined): nu
 }
 
 /** Others on my seat with me (two phones took it at the same moment, each before it heard the other): whether mine
- *  gets up. The earlier sit keeps it, an exact tie by who (tent/seats.ts outsat: the same rule on every phone, so only
+ *  gets up. The earlier sit keeps it, an exact tie by who (rooms/seating.ts outsat: the same rule on every phone, so only
  *  one gets up); an unknown sit time (an older phone's walk) never outsits a known one, and two unknown both stay. */
 export function yieldsSeat(mine: { who: Who; s: number | null }, others: readonly { who: Who; s: number | null }[]): boolean {
   return others.some((o) => o.s !== null && (mine.s === null || outsat({ s: mine.s, who: mine.who }, { s: o.s, who: o.who })));
