@@ -31,9 +31,11 @@
   import { guardsU, stageGeo } from './placement.ts';
   import { STREAK_MS, WISH_MS, inStarHours, nextShowerMs, showerPlan, streakPath } from './stars.ts';
   import { BUSH_U, FLOWER_U, wildFlower, type Tod } from './scene.ts';
-  import { ARCH, DECOR_SLOTS, FLOWERS, HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type Flower } from './world.ts';
+  import { ARCH, DECOR_SLOTS, FLOWERS, HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type BuildingId, type Flower } from './world.ts';
   import { hitWorld, petalOf, sceneSfx, type SceneHit } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
+  import { notBehind, type Seen } from './hitbox.ts';
+  import { footprint } from './nav.ts';
   import Critters from './Critters.svelte';
   import Finds from './Finds.svelte';
   import Care from './Care.svelte';
@@ -124,8 +126,8 @@
   let finds = $state<ReturnType<typeof Finds>>();
   let care = $state<ReturnType<typeof Care>>();
   let visitor = $state<{ tap(px: number, py: number): boolean }>();
-  let deck = $state<{ tap(px: number, py: number): boolean }>();
-  let cakeEl = $state<{ tap(px: number, py: number): boolean }>();
+  let deck = $state<{ tap(px: number, py: number, seen?: Seen): boolean }>();
+  let cakeEl = $state<{ tap(px: number, py: number, seen?: Seen): boolean }>();
   // Loaded the first time they're due (their chunks stay out of the first load), then kept: a visitor (who leaves
   // the way they came), the tape deck (a fixed piece of the layout, there every day: its tap says when it plays), a
   // birthday's cake.
@@ -230,6 +232,22 @@
     // a visitor standing in front of the campsite (K.K. and Jack at night) over its door: theirs, not the door's (the
     // door's handler is delegated to the root, after this one; the 3D island's camera shows the door small behind them)
     if (t instanceof Element && t.closest('[data-building] .door') && visitor?.tap(e.clientX, e.clientY)) return void e.stopPropagation();
+    // what the island tests by position in front of a building's body (its tap area: the model's silhouette), a present
+    // lying before it, a fish in the pond before it, a bug by its wall: theirs, not the door's; what's behind it is hidden
+    const house = t instanceof Element ? t.closest<HTMLElement>('[data-building]') : null;
+    if (house) {
+      const before = notBehind(footprint(house.dataset.building as BuildingId)), door = house.querySelector('.door');
+      // (behind it, it shows where some of it is off the building's area on screen)
+      const off = (px: number, py: number) => !door || !document.elementsFromPoint(px, py).includes(door);
+      const seen: Seen = (x, z, r = 0) => {
+        if (before(x, z)) return true;
+        const [px, py] = w.clientAt(x, z);
+        return r > 0 && [[0, 0], [r, 0], [-r, 0], [0, r], [0, -r]].some(([dx, dy]) => off(px + dx, py + dy));
+      };
+      const [cx, cy] = [e.clientX, e.clientY];
+      if (critters?.tap(cx, cy, seen, false) || deck?.tap(cx, cy, seen) || cakeEl?.tap(cx, cy, seen) || finds?.tap(cx, cy, seen) || care?.tap(cx, cy, seen))
+        return void e.stopPropagation();
+    }
     const stage = scene?.querySelector<HTMLElement>('.stage');
     // a bug in front of the island's own buttons (flying past my villager, a tree's canopy, a door): the bug's (it was in
     // view; the net is what the tap was for), else theirs

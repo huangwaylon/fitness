@@ -23,7 +23,7 @@
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { taken as takenBy, takenByOthers } from '#lib/sync/world-day.ts';
   import { onMount } from 'svelte';
-  import { hitOf, hitSources, pick, type HitBox } from './hitbox.ts';
+  import { SHOWN, hitOf, hitSources, pick, type HitBox, type Seen } from './hitbox.ts';
   import { fx3d } from './fx3d.ts';
   import { echo3d } from './echo3d.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
@@ -157,11 +157,11 @@
   );
 
   /** The weeds in view and the rock with their tap boxes (hitbox.ts: what each draws, at least 44px). */
-  function targets(): { box: HitBox | null; z: number; kind: string; go: () => void }[] {
+  function targets(): { box: HitBox | null; x: number; z: number; kind: string; go: () => void }[] {
     const el = (sel: string, x: number, z: number) => (w.inView(x, z, 20) ? hitOf(scene?.querySelector(sel)) : null);
     return [
-      ...shown.map((it) => ({ box: el(`[data-care="weed"][data-uid="${it.uid}"]`, it.x, it.y), z: it.y, kind: 'weed', go: () => pull(it) })),
-      { box: el('[data-care="rock"]', ROCK.x, ROCK.y), z: ROCK.y, kind: 'rock', go: hitRock }
+      ...shown.map((it) => ({ box: el(`[data-care="weed"][data-uid="${it.uid}"]`, it.x, it.y), x: it.x, z: it.y, kind: 'weed', go: () => pull(it) })),
+      { box: el('[data-care="rock"]', ROCK.x, ROCK.y), x: ROCK.x, z: ROCK.y, kind: 'rock', go: hitRock }
     ];
   }
   $effect(() => {
@@ -170,9 +170,9 @@
     return () => void hitSources.delete(list);
   });
   /** A tap on the scene (client px), after the finds: true when the care took it (on its tap box; in front wins). */
-  export function tap(px: number, py: number): boolean {
+  export function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
     if (!enabled()) return false;
-    const best = pick(targets(), px, py);
+    const best = pick(targets().filter((t) => seen(t.x, t.z)), px, py);
     if (!best) return false;
     best.go();
     return true;

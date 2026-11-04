@@ -34,7 +34,7 @@
   import { sceneSfx, shownNow } from './sceneTaps.ts';
   import { loadNames } from './catchLine.ts';
   import { guardsU, clearAt, place, stageGeo } from './placement.ts';
-  import { hitOf, hitSources, pick, type HitBox } from './hitbox.ts';
+  import { SHOWN, hitOf, hitSources, pick, type HitBox, type Seen } from './hitbox.ts';
   import { bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
   import { take, takenOn, wish as addWish, wishes } from './sceneDay.ts';
   import { fragmentDay, fragmentsDue } from './stars.ts';
@@ -422,11 +422,11 @@
 
   /** Every find lying in view and its tap box (hitbox.ts: what it draws, at least 44px), in front first on a tie; one
    *  washing in has none while it waits for its wave, unseen in the shallows (riding in, its box goes with it). */
-  function targets(): { box: HitBox | null; z: number; kind: string; go: () => void }[] {
+  function targets(): { box: HitBox | null; x: number; z: number; kind: string; go: () => void }[] {
     const t = performance.now();
     const waiting = (uid: string) => t < (washes.get(uid)?.t0 ?? -Infinity);
     const box = (uid: string, x: number, z: number) => (w.inView(x, z, 20) && !waiting(uid) ? hitOf(scene?.querySelector(`[data-find][data-uid="${uid}"]`)) : null);
-    const one = (kind: string, it: { uid: string; x: number; y: number }, go: () => void) => ({ box: box(it.uid, it.x, it.y), z: it.y, kind, go });
+    const one = (kind: string, it: { uid: string; x: number; y: number }, go: () => void) => ({ box: box(it.uid, it.x, it.y), x: it.x, z: it.y, kind, go });
     return [
       ...shells.map((s) => one('shell', s, () => pickShell(s))),
       ...fragments.map((f) => one('fragment', f, () => pickFragment(f))),
@@ -441,10 +441,11 @@
     hitSources.add(list);
     return () => void hitSources.delete(list);
   });
-  /** A tap on the scene (client px), after the critters: true when a find took it (on its tap box; in front wins). */
-  export function tap(px: number, py: number): boolean {
+  /** A tap on the scene (client px), after the critters: true when a find took it (on its tap box; in front wins; only
+   *  what shows there: `seen`). */
+  export function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
     if (!enabled()) return false;
-    const best = pick(targets(), px, py);
+    const best = pick(targets().filter((t) => seen(t.x, t.z)), px, py);
     if (!best) return false;
     best.go();
     return true;

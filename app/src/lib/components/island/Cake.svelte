@@ -12,7 +12,7 @@
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
   import { blowOut, candlesOut } from './birthday.ts';
-  import { MIN_HIT, grow, inside } from './hitbox.ts';
+  import { MIN_HIT, SHOWN, grow, inside, type Seen } from './hitbox.ts';
 
   let { enabled, on }: { enabled: () => boolean; on: boolean } = $props();
   /** Its height (u; the flames below are placed for it). */
@@ -29,9 +29,9 @@
   const at = $derived((void site.rev, CAKE));
 
   /** A tap on the scene (client px): true when the cake took it. */
-  export function tap(px: number, py: number): boolean {
+  export function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
     const r = el?.querySelector('.cake')?.getBoundingClientRect();
-    if (!on || !r || !enabled() || !w.inView(at[0], at[1])) return false;
+    if (!on || !r || !enabled() || !w.inView(at[0], at[1]) || !seen(at[0], at[1])) return false;
     if (!inside(grow(r, MIN_HIT, 6), px, py)) return false;
     cue('birthday-cake');
     if (!out) {

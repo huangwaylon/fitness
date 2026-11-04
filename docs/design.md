@@ -789,7 +789,12 @@ crackle: `crackle`, synthesized).
 **Tap targets** (`island/hitbox.ts`, `e2e/hits.spec.ts`): everything tappable answers on its whole visible body,
 base included, at least 44 × 44px about its middle; in front wins. A tree is its leaves (Scenery's `.hit`, the canopy
 button) and its trunk down to a little below its foot (`.hit-trunk`, a goal tree's `.trunk-btn`; ≥ 44px wide on
-screen: `--inv`); a flower's `::after` grows it to 44px; what a module hit-tests itself (a shell, a fragment, the
+screen: `--inv`); a building (the campsite, a home, the museum, the shop) its model's silhouette as the camera sees it
+now (camera.svelte.ts `body`: the hull of its model's outermost points, `things.ts` outline; a house built of parts,
+or before its model is in, its footprint up to its height), nothing past it, nowhere once behind the horizon: a tap on
+the river beside the shop fishes (`e2e/building-taps.spec.ts`, on the user's island); what a module tests by position
+in front of a building's area (a tree's present lying before it, a fish in the pond before it, a bug) is that thing's
+(SceneTaps: hitbox.ts `notBehind`; one behind it only where some of it shows past the building's outline); a flower's `::after` grows it to 44px; what a module hit-tests itself (a shell, a fragment, the
 bottle, a dig spot, a mushroom, a present, a weed, the rock, a bug, the tape deck, the cake) is the box of what it
 draws (its img / svg: a node's anchor is a 0 × 0 point at its foot) grown to 44px (`hitOf`), the one in front (the
 smaller world z) when two overlap (`pick`). `?hit` draws them all ([Dev params](#dev-params)).

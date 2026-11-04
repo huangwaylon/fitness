@@ -50,5 +50,16 @@ export function pick<T extends { box: HitBox | null; z: number }>(list: readonly
   return best;
 }
 
+/** Whether a thing at world (x, z) shows at a tap (not hidden by what the tap landed on: a building's body, SceneTaps),
+ *  `r` px of it round its middle on screen (a fish's shadow half behind a roof shows): what a module tests by position
+ *  answers only for what shows. */
+export type Seen = (x: number, z: number, r?: number) => boolean;
+export const SHOWN: Seen = () => true;
+/** What a building's footprint hides: a thing behind its front line within its width (a thing before it or beside it
+ *  stands in front of its body on screen); its model stands a little inside its tiles (NH's museum and shop ~4u each
+ *  side), and a thing at its edge (a present dropped by a tree beside it) shows. */
+const INSET = 12;
+export const notBehind = (f: { x0: number; x1: number; y0: number }) => (x: number, z: number): boolean => z < f.y0 + INSET || x < f.x0 + INSET || x > f.x1 - INSET;
+
 /** The boxes each module tests by position, for `?hit`'s overlay (each registers a lister while mounted). */
 export const hitSources = new Set<() => { box: HitBox; kind: string }[]>();

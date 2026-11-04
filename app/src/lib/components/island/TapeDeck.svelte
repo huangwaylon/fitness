@@ -14,7 +14,7 @@
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
   import { sceneSfx } from './sceneTaps.ts';
-  import { MIN_HIT, grow, inside } from './hitbox.ts';
+  import { MIN_HIT, SHOWN, grow, inside, type Seen } from './hitbox.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { cue } from '#lib/sound/cues.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
@@ -70,10 +70,10 @@
 
   /** A tap on the scene (client px): true when the deck took it. Reach: a 44px target around the radio. Not ready (the
    *  layout's deck, every day): a line saying why. */
-  export function tap(px: number, py: number): boolean {
+  export function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
     const r = el?.querySelector('.radio')?.getBoundingClientRect();
     // (out of view its node is hidden but keeps its last box: no tap there)
-    if (!r || !enabled() || !w.inView(spot[0], spot[1])) return false;
+    if (!r || !enabled() || !w.inView(spot[0], spot[1]) || !seen(spot[0], spot[1])) return false;
     if (!inside(grow(r, MIN_HIT, 6), px, py)) return false;
     if (playing) return true;
     if (ready) play();
