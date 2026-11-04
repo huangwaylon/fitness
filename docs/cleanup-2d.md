@@ -28,6 +28,22 @@ About 4,700 lines removed, 510 added. The probe (17 scenes on the 3D island): 0 
 each deletion. Also fixed on the way: the decorations' 2D art drew over their 3D models (opacity 1); it's hidden and
 never downloaded now.
 
+### The follow-up (2026-11-04)
+
+What the review after phase B found dead, removed in seven commits (HEAD 7337529a vs HEAD with them reverted; the
+bundle's JS: 3,168,493 → 3,151,895 B, −16.6 KB; gzipped 942,234 → 935,190 B, −7.0 KB; 155 → 153 chunks; `static/`
+unchanged):
+
+| Commit | What | Lines |
+|---|---|---:|
+| cec3c697 | tokens.css's 2D-only custom properties (the stage's tree / fruit / villager z-indices, `--jar-h`, the sea's and the ground's paint, `--sh-sand`) and ShopRoom's `--floor`; the unused-asset scan's empty `GONE` machinery | +37 −55 |
+| b015f1eb | unused props, params and hooks (NavButton's `href`, Cake's and Wedding's `scene`, `hudBottom`, `wetK`, `__world3d` `touching` / `focused`, `__world.geo()`'s unread fields, the e2e helpers' unpassed params); say.spec's check that couldn't fail | +38 −67 |
+| 2be849d2 | stale comments (the 2D island, the scroller, the HUD's jar, deleted files) | +62 −69 |
+| c60af0aa | the old もようがえ placement rules (decor.ts' grid and spot rules, nav.ts' `setNavDecor`, walkGraph.ts' `setWalkDecor`) and their tests | +17 −295 |
+| a657b660 | duplicated helpers shared (the shop's PRNG → random.ts, `clamp`, `dist`, `round1`, `kcalText`) | +36 −49 |
+| fdfd8d16 | the 3D island's off-layout fallback: engine.ts' `GroundSource`, baked chunks, `groundLook`, its own water and sea haze, `?water=0`; Island3D's `ground` / `ends` props and world.ts island; `world3d/ground.ts` and `layout3d.ts` deleted, `water.ts` down to its shared uniforms; the always-true `site.on` branches (the tape deck's measured placement, the villagers' seats) | +145 −824 |
+| 7337529a | IslandScene's always-true `live` flag and its forced season / foliage / time-of-day props, into Scenery, camera.svelte.ts and islandLife | +95 −129 |
+
 **No WebGL** (never on the users' iPhones): 「この端末では しまを 表示できません」 / 「きろくや ごほうびは いつもどおり
 つかえます」 instead of the island; the HUD, the panel, the health popup and ごほうび work (`e2e/world3d.spec.ts`).
 
@@ -44,7 +60,7 @@ never downloaded now.
   their models, but the specs check their nodes' art. A later pass can check their models instead.
 - **world.ts's old geometry** (LAND, GRASS, RIVER, POND, SPRING, CLIFF, BRIDGE, PATHS…): the layout's default and its
   scripts are drawn from it, and the gameplay and the unit tests read it. (The old 3D heightfield and waters that read
-  it too, `world3d/ground.ts` and `water.ts`'s, went in the follow-up below once the pond came back as a layout object,
+  it too, `world3d/ground.ts` and `water.ts`'s, went in the follow-up above once the pond came back as a layout object,
   `world3d/pond.ts`, 37b9d417; `water.ts` keeps the shared water uniforms.)
 - **The shade at the source** (`--tod-filter`): it still tints what the DOM draws over the canvas at night.
 - **Critters' `w.rest.three` branches:** still mean "the 3D camera is up" (the critters agent's file).
