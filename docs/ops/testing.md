@@ -111,9 +111,10 @@ and out (the eye button, a bench), three rounds, and checks after a forced GC th
 WeakRefs) or window/document listener is left over, and that inside the museum only its own context lives. To hunt
 one: `npm run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts, its header lists the flows: the rooms, each
 sheet, the picker, visibility, the museum's eye, benches, hours and curator, fishing, selling, the sim's clock over
-midnight and over days) against a served build (`E2E_PORT`), printing per cycle the heap, DOM nodes, listeners, live
-contexts and the room's renderer.info, then a heap-snapshot diff by constructor; `--path=<name>` (`=<name>`: exactly,
-e.g. `--path==WebGL2RenderingContext`) prints what retains it.
+midnight and over days) against a served build (`E2E_PORT`), printing per cycle the heap, DOM nodes, listeners, rAF
+a second, live contexts and the room's renderer.info, then a heap-snapshot diff by constructor (`SNAP_AT=0`: the
+whole heap, for an A/B of two builds); `--path=<name>` (`=<name>`: exactly, e.g. `--path==WebGL2RenderingContext`)
+prints what retains the ones new since the first snapshot.
 - **What a scene leaves behind:** anything page-wide (a `window.__*` hook, a module's callback, a `<link>`'s
   listener) that holds a closure made in a component holds that whole component: its DOM, its renderer. A hook goes
   in the scene's cleanup (only if it's still its own); a callback kept by a module is made at module level. Vite's
@@ -125,7 +126,11 @@ e.g. `--path==WebGL2RenderingContext`) prints what retains it.
   `forceContextLoss()`.
 - **The probe's own handles:** `waitForSelector` and `waitForFunction` return handles that keep their DOM or object
   alive (a heap path through "DevTools console"); wait on booleans.
-- A steady +0.3 MB a trip that's all `[code]` in the diff is V8 compiling; it levels off.
+- A steady +0.3 MB a trip that's all `[code]` in the diff is V8 compiling; it levels off (the museum in and out:
+  from the 12th trip). `blink::NetworkResourcesData` is DevTools' own (the probe's), not the app's.
+- **Models kept:** the page-wide caches keep each model without its loader's parser (release.ts `lean`: the parser
+  holds the GLB's whole file again). Over days they still grow, one entry a new model (a visitor's, a day's thing), and
+  the island's GPU keeps each texture it drew until it goes: bounded by the models there are.
 
 ## The iOS Simulator check (the real target, on the Mac)
 
