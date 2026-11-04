@@ -147,6 +147,7 @@
   "bells.unit": "ベル",
   "wallet.title": "ごほうび",
   "wallet.after": "のこり",
+  "wallet.buyTitle": "かいもの",
   "wallet.buy": "買う！",
   "wallet.bought": "{label}を 買いました！ −{bells}",
   "wallet.short": "ベルが ちょっと たりないみたい…",

@@ -5,7 +5,7 @@
   // my own Move goal), so the page never disagrees with the island.
   import { version } from '$app/env';
   import type { RingFruit, WeekView } from '#lib/types.ts';
-  import { RING_FRUITS, RULES, STRETCH, shopPrice, stretchOf } from '#lib/config/rules.ts';
+  import { GOALS_SHOWN, RULES, STRETCH, shopPrice, stretchOf } from '#lib/config/rules.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { fruitArt } from '#lib/art.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
@@ -45,7 +45,7 @@
     <h3><span class="hi"><OfficialArt key="money/bells" size={32} /></span>{t('help.title')}</h3>
     <p>{t('help.goals', { b: formatBells(RULES.perGoal) })}</p>
     <ul class="fruits">
-      {#each RING_FRUITS as f (f)}
+      {#each GOALS_SHOWN as f (f)}
         <li>
           <OfficialArt key={fruitArt(f)} size={26} />
           <span class="nm"><b>{t(`fruit.${f}`)}</b><small>{goal(f)}</small><small class="st">{stretch(f)}</small></span>
