@@ -63,11 +63,19 @@ export const isMetricKey = (v: unknown): v is MetricKey => v === 'weight' || isA
 /**
  * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`,
  * `goalWeight` (kg), `goalBodyFat` (body fat %), `moveGoal` (kcal), `stepsGoal` (steps) and the meal log's daily
- * goals: `kcalGoal`, `proteinGoal`, `fatGoal`, `carbsGoal` and `saltGoal` (contract/food.ts FOOD_GOALS).
+ * goals: `kcalGoal`, `proteinGoal`, `fatGoal`, `carbsGoal` and `saltGoal` (contract/food.ts FOOD_GOALS); and the
+ * island's `weatherMode` (WEATHER_MODES: island-wide, the members' alone).
  */
 export const PREF_KEYS = [
-  'locale', 'villagerName', 'villager', 'goalWeight', 'goalBodyFat', 'moveGoal', 'stepsGoal', 'kcalGoal', 'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal'
+  'locale', 'villagerName', 'villager', 'goalWeight', 'goalBodyFat', 'moveGoal', 'stepsGoal', 'kcalGoal', 'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'weatherMode'
 ] as const;
+
+/** The island's weather (`pref weatherMode`, docs/design.md "Weather"): Tokyo's real sky by the hour (`real`, the
+ *  default) or the game's seeded one. One for the whole island (no `person`; the last one set wins), so both phones
+ *  agree on the rain-only critters; a member sets it, the guest's phone only shows it. */
+export const WEATHER_MODES = ['real', 'game'] as const;
+export type WeatherMode = (typeof WEATHER_MODES)[number];
+export const isWeatherMode = (v: unknown): v is WeatherMode => v === 'real' || v === 'game';
 
 /** The `pref` keys either person may set for either person (`data.person`): the goals. The rest are the sender's own. */
 const PERSON_PREF_KEYS = ['goalWeight', 'goalBodyFat', 'moveGoal', 'stepsGoal', 'kcalGoal', 'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal'] as const;

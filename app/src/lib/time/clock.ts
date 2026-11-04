@@ -26,6 +26,9 @@ export function now(): Date {
   return new Date(Date.now() + init());
 }
 
+/** Whether a `?date=` preview moved the scene clock off the device's (the real weather's hours are then another day's). */
+export const clockMoved = (): boolean => init() !== 0;
+
 type Doc = Pick<Document, 'hidden' | 'addEventListener' | 'removeEventListener'>;
 
 /**

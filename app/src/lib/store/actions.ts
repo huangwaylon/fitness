@@ -7,7 +7,7 @@ import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import type { LocalDate, PersonId, ShopItemId, Who } from '#lib/types.ts';
-import { isBodyFatGoal, isWeightKg, nextDay, roundKg, type FindKind } from '#lib/contract/api.ts';
+import { isBodyFatGoal, isWeatherMode, isWeightKg, nextDay, roundKg, type FindKind, type WeatherMode } from '#lib/contract/api.ts';
 import { findKey, findsView } from '#lib/model/finds.ts';
 import { addToTally, dayTallies } from '#lib/model/tally.ts';
 import { localDateAt } from '#lib/time/dates.ts';
@@ -114,6 +114,13 @@ export function setVillagerName(name: string): SendResult {
   const villagerName = name.trim().slice(0, VILLAGER_NAME_CHARS);
   if (!villagerName) return { ok: false };
   return week.send('pref', { key: 'villagerName', value: villagerName });
+}
+
+/** The island's weather (せってい → てんき): Tokyo's real sky or the game's, for the whole island. A member's alone (the
+ *  guest's phone shows it, the record refuses the guest's). */
+export function setWeatherMode(mode: WeatherMode): SendResult {
+  if (week.guest || !isWeatherMode(mode)) return { ok: false };
+  return week.send('pref', { key: 'weatherMode', value: mode });
 }
 
 /** Villager from the roster (せってい → むらびと), e.g. 'goldie' (lib/villagers/roster.ts). */

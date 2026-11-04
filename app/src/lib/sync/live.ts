@@ -3,6 +3,7 @@
 // pings. send() is a no-op unless the socket is up (and, for what the room doesn't keep, the partner is there too); it
 // never throws and never waits. Plain TS: the socket, the visibility source and the key are injectable for tests.
 import { LIVE, getKey, localKV, readJson, writeJson } from './storage.ts';
+import { takeWx } from './wx.ts';
 import { CLOSE, LIVE_V, MAX_BYTES, dayStart, guestMaySend, isAcked, isStored, parseClient, parseServer, tokyoDay, type Gone, type Intent, type Notice, type RecordMark, type Relayed, type Who } from './live-protocol.ts';
 
 /** The relay's socket URL; VITE_LIVE_URL overrides it (empty = live off). */
@@ -332,9 +333,11 @@ export function createLive(o: LiveOptions): Live {
         }
         case 'changed':
           return changed({ who: m.who, what: m.what, at: m.at, rev: m.rev });
-        case 'wx':
-          // Tokyo's real sky (the app's data path comes with the island's weather)
-          return;
+        case 'wx': {
+          // Tokyo's real sky by the hour (sync/wx.ts: kept for the island, cached for opening offline)
+          const { v: _v, kind: _k, t: _t, ...w } = m;
+          return safe(() => takeWx(w));
+        }
         default:
           if (m.who === st.me) return;
           if (m.kind === 'saved') return changed({ who: m.who, what: 'event' });

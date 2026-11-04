@@ -15,8 +15,8 @@ import { buyOf, sellOf, type ShopRowAt } from '#lib/contract/shop.ts';
 import type { TallyRow } from './tally.ts';
 import { rowAt } from './snapshot.ts';
 import {
-  BODY_BOUNDS, DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isWho, isActivityMetric, isBodyMetric, isWeightKg, isBodyFatGoal, roundKg, WEIGHT_KG,
-  type ActivityMetric, type BodyMetric, type EventRow, type EventType, type FindKind, type SnapshotRows
+  BODY_BOUNDS, DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isWho, isActivityMetric, isBodyMetric, isWeightKg, isBodyFatGoal, isWeatherMode, roundKg, WEIGHT_KG,
+  type ActivityMetric, type BodyMetric, type EventRow, type EventType, type FindKind, type SnapshotRows, type WeatherMode
 } from '#lib/contract/api.ts';
 
 export const partnerOf = (p: PersonId): PersonId => (p === 'A' ? 'B' : 'A');
@@ -117,6 +117,8 @@ export interface State {
   shop: ShopRowAt[];
   /** Each person's prefs; the guest's (`G`) only ever hold its locale, name, villager and kcal goal (contract/guest.ts). */
   prefs: Record<Who, Prefs>;
+  /** The island's weather (`pref weatherMode`: the last a member set; unset, `real`): Tokyo's real sky or the game's. */
+  weatherMode?: WeatherMode;
   /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
   moveGoals: Record<PersonId, Timed<number>[]>;
   /** Accepted `pref` stepsGoal per person, ascending `at` (`stepsGoalOn` picks the one in force). */
@@ -435,6 +437,10 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   pref(s, person, at, d) {
     if (!isPersonId(person)) {
       if (!GUEST_PREFS.includes(d.key)) return;
+    } else if (d.key === 'weatherMode') {
+      // the island's, whoever set it (no `person`); anything else is ignored (the mode stays)
+      if (isWeatherMode(d.value)) s.weatherMode = d.value;
+      return;
     } else if (d.key === 'moveGoal') {
       // An integer kcal in MOVE_GOAL; anything else is ignored (the previous goal stays).
       const v = d.value;

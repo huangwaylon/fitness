@@ -2,7 +2,7 @@
 // accepted (relay/src/store.ts checks it), and which events replace an earlier one (the
 // store's slots: a tally and an island day per person and day, a cosmetic pref per person, a goal per person and
 // Tokyo day, a board post, a meal entry, a repeat, a recipe and a custom food per id). Pure, over the contract only (relative imports), since the relay imports it from here.
-import { isBodyFatGoal, isFind, isId, isLocalDate, isWeightKg, nextDay, PREF_KEYS, type EventType } from '../contract/api.ts';
+import { isBodyFatGoal, isFind, isId, isLocalDate, isWeatherMode, isWeightKg, nextDay, PREF_KEYS, type EventType } from '../contract/api.ts';
 import { isTally } from '../contract/tally.ts';
 import { isIslandDay } from '../contract/island.ts';
 import { decorOpOf } from '../contract/decor.ts';
@@ -93,6 +93,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
     case 'villager': return typeof v === 'string' && /^[a-z][a-z0-9_-]{0,23}$/.test(v);
     case 'goalWeight': return v === null || v === '' || isWeightKg(v);
     case 'goalBodyFat': return v === null || v === '' || isBodyFatGoal(v);
+    case 'weatherMode': return isWeatherMode(v);
     default: {
       const n = foodGoalOf(key);
       return n !== null && (v === null || isFoodGoal(n, v));
@@ -107,6 +108,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
  *   `kcalGoal` … `saltGoal`): its subject and key;
  * - a goal `pref` (`moveGoal`, `stepsGoal`): its subject, key and the Tokyo day it was made (`at`), so the goal in
  *   force on each past day stays (a goal applies from the day it's made; the last of a day is the one that counts);
+ * - the island's `weatherMode`: one for the island, whoever set it (the last one wins);
  * - a `decor` op: its scope and item id (`decorAccept` / `tentAccept` decide whether it replaces);
  * - a `board` op: its post's id (`boardAccept` decides whether it replaces);
  * - a `food` op: its entry's id, a `food_repeat` op its repeat's, a `food_recipe` op its recipe's, a `food_custom` op
@@ -130,6 +132,7 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
       return typeof d.id === 'string' ? `${type}|${d.id}` : null;
     case 'pref':
       if (!prefTaken(d.key, d.value)) return null;
+      if (d.key === 'weatherMode') return 'pref|island|weatherMode';
       return LATEST_PREFS.includes(d.key) ? `pref|${subject}|${d.key}` : `pref|${subject}|${d.key}|${localDateAt(at)}`;
     default:
       return null;

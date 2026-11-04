@@ -155,6 +155,13 @@ describe('events', () => {
     expect(events().map((r) => r[1])).toEqual(['n2', 'n3', 'n4', 'w2', 'f2', 'f3', 'f4', 'g3', 'g4', 'k1']);
   });
 
+  it("the island's weather mode: one row for the island, the last a member set", () => {
+    expect(a('event', ev('m1', 'pref', { key: 'weatherMode', value: 'game' }))).toEqual({ ok: true });
+    expect(b('event', ev('m2', 'pref', { key: 'weatherMode', value: 'real' }))).toEqual({ ok: true });
+    expect(a('event', ev('m3', 'pref', { key: 'weatherMode', value: 'cloudy' })).ok).toBe(true); // ignored by the model: kept, replaces nothing
+    expect(events().map((r) => r[1])).toEqual(['m2', 'm3']);
+  });
+
   it('decor keeps each item’s latest op: a beaten op is a duplicate, a removal final, a new item past the cap refused', () => {
     const P = T0 - 60_000;
     const set = (id: string, at: number, x = 10) => ev(`e-${id}-${at}`, 'decor', { id, at, item: 'birdbath', x, z: 10, f: 0, p: P });
