@@ -138,18 +138,19 @@ describe('the curator (フータ): his joints and his model', () => {
   it('keeps every joint he poses within its natural range, in every mood', () => {
     expect(all.length).toBeGreaterThan(5000);
     const seen = new Set<string>();
+    // (failures collected, one expect: an expect per angle is ~300k calls, past the timeout on a CI runner)
+    const fails: string[] = [];
     for (const { what, p } of all) {
       for (const [n, v] of Object.entries(p.j)) {
         const r = RANGE[n as keyof typeof RANGE];
-        expect(r, `${n} is one of his posed joints`).toBeDefined();
-        v!.forEach((a, k) => {
-          expect(Number.isFinite(a), `${what}: ${n}[${k}]`).toBe(true);
-          expect(a, `${what}: ${n}[${k}]`).toBeGreaterThanOrEqual(r[k][0] - 1e-9);
-          expect(a, `${what}: ${n}[${k}]`).toBeLessThanOrEqual(r[k][1] + 1e-9);
+        if (!r) fails.push(`${n} is not one of his posed joints`);
+        else v!.forEach((a, k) => {
+          if (!(a >= r[k][0] - 1e-9 && a <= r[k][1] + 1e-9)) fails.push(`${what}: ${n}[${k}] = ${a}`);
         });
       }
       seen.add(what.split(' ')[0]);
     }
+    expect(fails.slice(0, 10)).toEqual([]);
     // (every mood sampled: alone covers the gestures and the doze)
     expect([...seen]).toEqual(expect.arrayContaining(['alone', 'watching', 'talk', 'after', 'doze', 'woken']));
     expect(all.some(({ what }) => what.includes(' doze '))).toBe(true);
