@@ -164,7 +164,7 @@
   <div class="pick" data-home-picker={who}>
     <canvas bind:this={canvas} class="preview" aria-hidden="true"></canvas>
     <div class="chips" role="group" aria-label={t('homes.facing')}>
-      <span class="lbl">{t('homes.facing')}</span>
+      <span class="lbl sec-label">{t('homes.facing')}</span>
       <button type="button" class="chip" data-sfx="tick" data-home-turn onclick={() => (style = { ...style, f: ((((style.f ?? islandLayout.current.objects.get(HOME_IDS[who])?.f ?? 0) + 1) % 4) as 0 | 1 | 2 | 3) })}>↻ {t('decor.turn')}</button>
     </div>
     <div class="chips" role="group" aria-label={t('homes.kind')}>
@@ -173,20 +173,20 @@
       {/each}
     </div>
     {#if style.m === 'tent-n'}
-      <h3>{t('homes.colour')}</h3>
+      <h3 class="sec-label">{t('homes.colour')}</h3>
       <div class="swatches">
         {#each ['A', 'B'] as c (c)}
           <button type="button" data-sfx="tick" class="sw" aria-label={c} aria-pressed={style.w === c} style:background-image={`url(${base}tent-n.${c}.swatch.webp)`} onclick={() => (style = { m: 'tent-n', w: c })}></button>
         {/each}
       </div>
     {:else if style.m === 'house'}
-      <h3>{t('homes.shape')}</h3>
+      <h3 class="sec-label">{t('homes.shape')}</h3>
       <div class="chips">
         {#each Object.entries(SHAPES) as [sh, s] (sh)}
           <button type="button" class="chip" data-sfx="tick" data-shape={sh} aria-pressed={shape === sh} onclick={() => setShape(sh)}>{i18n.locale === 'ja' ? s.ja : s.en}</button>
         {/each}
       </div>
-      <h3>{t('homes.wall')}</h3>
+      <h3 class="sec-label">{t('homes.wall')}</h3>
       {#each cat.walls[shape] ?? [] as w (w.material)}
         <div class="row">
           <span class="mat">{#if shape === 'PA04'}<img src={`${base}icon.wall-pa04-${kebab(w.material)}.webp`} alt="" />{/if}{named(MAT, w.material)}</span>
@@ -198,7 +198,7 @@
           </div>
         </div>
       {/each}
-      <h3>{t('homes.roof')}</h3>
+      <h3 class="sec-label">{t('homes.roof')}</h3>
       {#each cat.roofs[shape] ?? [] as r (r.material)}
         <div class="row">
           <span class="mat">{#if shape === 'PA04'}<img src={`${base}icon.roof-pa04-${kebab(r.material)}.webp`} alt="" />{/if}{named(MAT, r.material)}</span>
@@ -210,7 +210,7 @@
           </div>
         </div>
       {/each}
-      <h3>{t('homes.door')}</h3>
+      <h3 class="sec-label">{t('homes.door')}</h3>
       <div class="doors">
         {#each cat.doors as d (d.style)}
           <button type="button" data-sfx="tick" class="door" data-door={d.style} aria-pressed={door?.style === d.style} onclick={() => setDoor(d.style, door?.shape ?? 'R', door?.colour ?? 'A')}>
@@ -249,9 +249,8 @@
   /* the sheet's skin: the chips (theme.css .chip), the swatches and doors as controls (the edge, yuzu when chosen) */
   .pick { display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; }
   .preview { width: 100%; height: 190px; border-radius: var(--r-card); background: linear-gradient(#bfe6ff, #e8f6d8); display: block; }
-  h3 { margin: 6px 2px 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .chips { align-items: center; }
-  .lbl { margin: 0 4px 0 2px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
+  .lbl.sec-label { margin: 0 4px; }
   .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .mat { display: inline-flex; align-items: center; gap: 4px; min-width: 88px; font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .mat img { width: 28px; height: 28px; }

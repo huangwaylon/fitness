@@ -89,11 +89,11 @@
   header .ic { display: inline-flex; flex: none; }
   h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; }
   .srow { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'lab chg' 'avg chg' 'sub sub'; align-items: center; column-gap: 10px; row-gap: 2px; }
-  .lab { grid-area: lab; font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); }
+  .lab { grid-area: lab; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .avg { grid-area: avg; font-size: var(--fs-title); line-height: 1.15; white-space: nowrap; }
   .chg { grid-area: chg; justify-self: end; display: grid; justify-items: center; gap: 3px; padding: 6px 10px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 35%, transparent); white-space: nowrap; }
   .cv { font-size: var(--fs-body); }
-  .chg small { font: 700 var(--fs-xs)/1 var(--font-ui); color: var(--text-soft); }
+  .chg small { font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); }
   .chg.none { background: none; color: var(--text-soft); }
   .sub { grid-area: sub; display: flex; flex-wrap: wrap; gap: 0 10px; margin-top: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); font-variant-numeric: tabular-nums; }
   .none { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }

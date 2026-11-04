@@ -32,7 +32,8 @@
   .navbar { display: grid; grid-template-columns: var(--hit) minmax(0, 1fr) var(--hit); align-items: center; gap: 8px; min-height: 52px; }
   .side { display: flex; width: var(--hit); }
   .end { justify-content: flex-end; }
-  .ttl { margin: 0; text-align: center; font-size: var(--fs-title); line-height: 1.2; overflow-wrap: anywhere; }
+  /* a long level title (あたらしい マイ食品 at 375) wraps at its space, balanced, rather than running into ✕ */
+  .ttl { margin: 0; text-align: center; font-size: var(--fs-title); line-height: 1.2; overflow-wrap: anywhere; text-wrap: balance; }
   /* with a lead: two equal sides (the title still centred), the lead as wide as its side, ✕ at the far right */
   .navbar.led { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); container: navbar / inline-size; }
   .led .side { width: auto; min-width: 0; }
