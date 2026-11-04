@@ -3,7 +3,7 @@
 // pills hidden), it folds again on a second tap, a tap elsewhere, Esc, or a pick; the ベル row opens the panel
 // (ごほうび), the others their own sheet (the ずかん's kinds, せってい's sections).
 import { expect, test, type Page } from '@playwright/test';
-import { fromMenu, hudBells, hudMenu } from './hud.ts';
+import { fromMenu, hudBells, hudMenu, unfoldMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const pills = (page: Page) => page.locator('#hud-menu-items > button');
@@ -56,8 +56,8 @@ test('folded by default; the leaf unfolds it and folds it again; a tap elsewhere
   const bells = Number(await hudBells(page).getAttribute('data-bells'));
   await expect(hudBells(page)).toHaveText(new RegExp(`^\\s*ベル\\s*${bells.toLocaleString('en-US')}\\s*$`));
   await expect(hudBells(page).locator('img, svg')).toHaveCount(0);
-  // the spring settles (its animations over, not a fixed wait: a busy runner's spring was still under way at 600 ms)
-  await page.locator('#hud-menu-items').evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))));
+  // the spring settles (each pill at rest, not a fixed wait: a busy runner's spring was still under way at 600 ms)
+  await unfoldMenu(page);
   const boxes = await Promise.all((await pills(page).all()).map(async (p) => (await p.boundingBox())!));
   for (const [i, b] of boxes.entries()) {
     expect(b.height).toBeGreaterThanOrEqual(44);
