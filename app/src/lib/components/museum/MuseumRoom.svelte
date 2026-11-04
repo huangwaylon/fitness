@@ -400,6 +400,8 @@
       orbit: (a: number, p = 0) => eng?.orbit(a, p),
       zoom: (f: number) => eng?.zoom(f),
       hit: (cx: number, cy: number) => eng?.hit(cx, cy),
+      /** The walls the cutaway takes away (engine.ts walls). */
+      walls: () => eng?.walls(),
       who: (w: Who) => (eng?.at(w) ? { at: eng.at(w), walking: eng.walking(w) } : null)
     };
   }
