@@ -32,11 +32,11 @@ describe('meteor showers', () => {
     expect(showerAt(next, d, 3)).toBe(true);
     expect(showerAt(next, d, 4)).toBe(false);
     expect(showerAt(next, d, 12)).toBe(false);
-    // the dev hook: any night, still only at night
+    // the seasonal preview's: any day, any hour (it shows the night sky with it)
     const plain = nights.find((x) => !showerNight(x) && !showerNight(addDays(x, -1)))!;
     expect(showerAt(plain, addDays(plain, -1), 21)).toBe(false);
     expect(showerAt(plain, addDays(plain, -1), 21, undefined, true)).toBe(true);
-    expect(showerAt(plain, addDays(plain, -1), 12, undefined, true)).toBe(false);
+    expect(showerAt(plain, addDays(plain, -1), 12, undefined, true)).toBe(true);
   });
   it('shooting stars every 3–8 s on a shower night (a clear one has its showers: stars.test)', () => {
     expect(SHOWER_GAP).toEqual([3_000, 8_000]);

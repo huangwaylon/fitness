@@ -82,7 +82,10 @@ export const DEVICE = {
   tentHoldHint: 'island.tentHoldHint',
   /** localStorage: `1` | `0`: this device's WebGL is a software renderer (asked once: a throwaway context costs
    *  seconds under SwiftShader; world3d/Island3D.svelte draws at its lightest on one). */
-  softGL: 'island.softGL'
+  softGL: 'island.softGL',
+  /** localStorage: `{ day, event, season, weather, tod }`: せってい's きせつ, the scene's seasonal preview on this phone
+   *  for that Tokyo day (ui-state/preview.svelte.ts; a look only, never synced or sent). */
+  preview: 'island.preview'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */

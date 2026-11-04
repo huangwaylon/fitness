@@ -23,7 +23,8 @@
   import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
   import { visitorNow } from './visitors.ts';
   import { timers } from './timers.ts';
-  import { hookFlag, islandSeed } from './devHooks.ts';
+  import { islandSeed } from './devHooks.ts';
+  import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { seasonArt, type SeasonItem } from '#lib/art.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
@@ -408,7 +409,8 @@
       now.wished = true;
       spawn({ kind: 'wish', x, y });
       sceneSfx('wish');
-      return finds?.wish(e.clientX, e.clientY);
+      // a star the preview brought (せってい's きせつ) brings no fragment: the island's finds are the real day's
+      return scenePreview().on ? undefined : finds?.wish(e.clientX, e.clientY);
     }
     if (skyTap?.(e.clientX, e.clientY)) return;
     if (!night) return;
@@ -516,10 +518,10 @@
   // The night sky's shooting stars (stars.ts): on a clear night (no rain or snow: weatherNow.svelte.ts) (NH's star hours) a shower every 3–8 minutes of
   // on-screen night, the first soon after the night sky shows; on a meteor shower's night (meteor.ts, Celeste's) one
   // every 3–8 s. Not while covered or hidden (the countdown holds).
-  const seed = islandSeed(), forceShower = hookFlag('shower');
+  const seed = islandSeed();
   const shower = $derived.by(() => {
     const c = minuteNow(), date = dayKey(c);
-    return showerAt(date, addDays(date, -1), jst(c).hour, seed, forceShower);
+    return showerAt(date, addDays(date, -1), jst(c).hour, seed, scenePreview().event === 'shower');
   });
   $effect(() => {
     if (!night || !shower || !enabled()) return;

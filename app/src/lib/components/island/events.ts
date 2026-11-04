@@ -3,8 +3,9 @@
 // Nookipedia: Halloween Oct 31 (Jack 17:00–24:00); Turkey Day the fourth Thursday of November (Franklin 09:00–24:00);
 // Toy Day Dec 24 (Jingle, all day in NH); Festivale on Shrove Monday, 48 days before Easter (Pavé, all day); Bunny Day
 // on Easter Sunday, its celebrations the seven days before (Zipper on the first and the last day, eggs all week).
-// Another event is one more rule here, and whatever it shows reads `eventAt`. `?event=<id>` (dev or ?demo) forces one
-// on, its main part included.
+// Another event is one more rule here, and whatever it shows reads `eventAt`. The seasonal preview (`?event=<id>`, dev
+// or ?demo, and せってい's きせつ: ui-state/preview.svelte.ts) shows one on, its main part included; what the island
+// yields on it (Bunny Day's eggs in place of a find) follows the real day's, or the dev param only.
 import { dayKey, jst, now } from '#lib/time/clock.ts';
 import { addDays, daysBetween, easter, nthWeekday } from '#lib/time/dates.ts';
 import { hook } from './devHooks.ts';
@@ -57,8 +58,6 @@ export function eventAt(date: string, hour: number, force?: string | null): Even
 /** Bunny Day's celebrations (its week and its two Zipper days): eggs turn up. */
 export const eggTime = (ev: EventNow | null): boolean => ev?.id === 'bunny-day' || ev?.id === 'bunny-week';
 
-/** The forced event of `?event=<id>` (dev or ?demo), or null. */
-export const forcedEvent = (): string | null => hook('event');
-
-/** The event at a scene-clock moment (the forced one included). */
-export const eventNow = (d: Date = now()): EventNow | null => eventAt(dayKey(d), jst(d).hour, forcedEvent());
+/** The event at a scene-clock moment for what the island yields (eggs): the real day's, or `?event=<id>`'s (the scene
+ *  shows the preview's: eventAt with scenePreview().event). */
+export const eventNow = (d: Date = now()): EventNow | null => eventAt(dayKey(d), jst(d).hour, hook('event'));

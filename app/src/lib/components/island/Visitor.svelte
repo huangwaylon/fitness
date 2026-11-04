@@ -62,6 +62,7 @@
   import { SCENE } from '#lib/sync/storage.ts';
   import { critterArt, type FishId } from './critters.ts';
   import { daysUntil } from './wedding.ts';
+  import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
 
   interface Props {
@@ -556,7 +557,7 @@
    *  「ごけっこん おめでとう！」), then they take turns. */
   let coupleTurn = 0;
   function couple(target: Element) {
-    const left = daysUntil(today());
+    const left = scenePreview().event === 'wedding' ? 0 : daysUntil(today());
     const count = left === 0 ? t('chat.sp.reese.day') : t('chat.sp.reese.count', { n: left });
     if (!met.has('reese')) {
       met.add('reese');

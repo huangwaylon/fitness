@@ -49,7 +49,7 @@
   import { timers } from './timers.ts';
   import { fnv1a as seedOf, pickOne } from '#lib/random.ts';
   import { hook, hookFlag, hooksOn } from './devHooks.ts';
-  import { weather } from './weatherNow.svelte.ts';
+  import { yieldSky } from './weatherNow.svelte.ts';
   import { onMount, untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { bodyRect, grow, hitSources, inside } from './hitbox.ts';
@@ -314,7 +314,7 @@
     const t = jst(now()), month = o.month ?? t.month, hour = o.hour ?? t.hour;
     let id: FishId | PondFishId, look: { size: number; shape?: 'narrow' | 'fin' };
     if (water === 'sea') {
-      id = want ?? pickFish(month, hour, r, weather.sky);
+      id = want ?? pickFish(month, hour, r, yieldSky.sky);
       look = FISH[id as FishId];
     } else {
       const { POND_FISH, pickFresh } = await loadPond();
@@ -1004,7 +1004,7 @@
     const b = bushes().find((s) => s.id === id);
     if (!b) return;
     const { month, hour } = jst(now());
-    const bid = bushBug(month, hour, rand, weather.sky);
+    const bid = bushBug(month, hour, rand, yieldSky.sky);
     if (bid) putBug(bid, 'bush', b.x, b.z);
   }
 
@@ -1488,7 +1488,7 @@
     } else if (c.kind === 'fresh') {
       const wt = freshWater(c);
       if (!fishes[wt]) void spawnFish(wt, stay, undefined, false, r, o);
-    } else if (!bug) spawnBug(pickBug(o.month, o.hour, r, weather.sky), { stay, ...o });
+    } else if (!bug) spawnBug(pickBug(o.month, o.hour, r, yieldSky.sky), { stay, ...o });
   }
   $effect(() => {
     if (!scene || !enabled() || pinned) return;

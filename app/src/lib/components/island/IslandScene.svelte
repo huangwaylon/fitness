@@ -46,9 +46,10 @@
   import { HIGHFIVE_LIVE_MS, heardHighFive } from './highFives.ts';
   import TreeShakes from './TreeShakes.svelte';
   import PartnerNews from './PartnerNews.svelte';
-  import { HATS, birthdaysOn, isBirthday } from './birthday.ts';
+  import { HATS, birthdaysShown, isBirthday } from './birthday.ts';
   import { FIREWORKS_FROM, archOn, weddingDay } from './wedding.ts';
-  import { eventAt, forcedEvent } from './events.ts';
+  import { eventAt } from './events.ts';
+  import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
   import { TRICK_MS } from './visitors.ts';
   import { STUNG_SWEAT_MS, SWOLLEN_MS, goalTree, shakeTap, treeById, type ShakeTree } from './treeShake.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
@@ -120,17 +121,18 @@
   const foliage = $derived<Foliage>(theme.foliage);
   const tod = $derived<Tod>(theme.tod);
 
-  // The clock (device time or ?date=), at each new minute.
+  // The clock (device time or ?date=), at each new minute; the seasonal preview (ui-state/preview.svelte.ts: せってい's
+  // きせつ and the dev params) shows another event, season or time of day over it (the theme above follows it too).
   const clock = $derived(minuteNow());
-  const month = $derived(jst(clock).month);
-  const ev = $derived(eventsAt(clock));
+  const preview = $derived(scenePreview());
+  const month = $derived(preview.month ?? jst(clock).month);
+  const ev = $derived(eventsAt(clock, preview.event));
   // NH's dated events (events.ts): Halloween's pumpkins all day, Jack, the lanterns and the villagers' lines at night
-  const forced = forcedEvent();
-  const nhEvent = $derived(eventAt(dayKey(clock), jst(clock).hour, forced));
+  const nhEvent = $derived(eventAt(dayKey(clock), jst(clock).hour, preview.event));
   // the wedding countdown (wedding.ts): the arch on June Sundays, the day itself, its fireworks at night
   const wedding = $derived.by(() => {
-    const date = dayKey(clock), { hour, weekday } = jst(clock);
-    return { date, arch: archOn(date, weekday), day: weddingDay(date), fireworks: weddingDay(date) && hour >= FIREWORKS_FROM };
+    const date = dayKey(clock), { hour, weekday } = jst(clock), shown = preview.event === 'wedding', day = shown || weddingDay(date);
+    return { date, arch: archOn(date, weekday), day, fireworks: day && (shown || hour >= FIREWORKS_FROM) };
   });
 
   // The same island on both phones (docs/design.md "Shared world"): A (ウェイ) lives on the left, B (うめ) on the right,
@@ -349,7 +351,7 @@
   // Birthdays (birthday.ts): ours from the people config (both villagers wear NH's birthday hat, the cake, the
   // confetti, a popper on a goal), and an NH villager's own from the roster's birthdays (a small chunk of its own,
   // loaded with the island, never with the first load or the roster): that villager wears the hat.
-  const bday = $derived(birthdaysOn(today));
+  const bday = $derived(birthdaysShown(today, preview.event));
   let villagerBdays = $state<Record<string, string> | null>(null);
   $effect(() => {
     void import('#lib/villagers/birthdays.ts').then((m) => (villagerBdays = m.BIRTHDAYS));
@@ -1055,7 +1057,7 @@
   const weatherC = lazyComponent(() => import('./Weather.svelte')), fireworksC = lazyComponent(() => import('./Fireworks.svelte'));
   const halloweenC = lazyComponent(() => import('./Halloween.svelte')), birthdayC = lazyComponent(() => import('./Birthday.svelte')), weddingC = lazyComponent(() => import('./Wedding.svelte'));
   const WeatherC = $derived(weatherC.get((weather.sky !== 'clear' || weather.fog || !!weather.rainbow || weather.aurora)));
-  const FireworksC = $derived(fireworksC.get((life.devFireworks || hookFlag('fireworks') || wedding.fireworks || allMet || !!showAt(jst(clock).month, jst(clock).day, jst(clock).weekday, jst(clock).hour))));
+  const FireworksC = $derived(fireworksC.get((life.devFireworks || preview.event === 'fireworks' || wedding.fireworks || allMet || !!showAt(jst(clock).month, jst(clock).day, jst(clock).weekday, jst(clock).hour))));
   const HalloweenC = $derived(halloweenC.get(nhEvent?.id === 'halloween'));
   const BirthdayC = $derived(birthdayC.get(!!bday.length));
   const WeddingC = $derived(weddingC.get(wedding.arch || wedding.day));

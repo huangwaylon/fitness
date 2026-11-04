@@ -87,12 +87,12 @@ export interface Events {
   maple: boolean;
   toyDay: boolean;
 }
-/** (The fireworks keep their own schedule: fireworks.ts.) */
-export function eventsAt(d: Date): Events {
+/** (The fireworks keep their own schedule: fireworks.ts.) `shown`: the seasonal preview's event. */
+export function eventsAt(d: Date, shown: string | null = null): Events {
   const { month: m, day } = jst(d);
   return {
-    cherry: m === 4 && day <= 10,
-    maple: m === 11 && day >= 16 && day <= 25,
-    toyDay: m === 12 && day === 24
+    cherry: shown === 'cherry' || (!shown && m === 4 && day <= 10),
+    maple: shown === 'maple' || (!shown && m === 11 && day >= 16 && day <= 25),
+    toyDay: shown === 'toy-day' || (!shown && m === 12 && day === 24)
   };
 }

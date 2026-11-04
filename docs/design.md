@@ -153,7 +153,7 @@ scrolled where it was); ✕, the backdrop and Esc close the panel.
 **せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, grown out of the
 pill (Sheet's `pop`), title せってい: **むらびと** (my villager and よびな; かえる → the picker: 23 special characters
 and all 417 NH villagers, its head pinned over the scrolling grid), **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 /
-English), **つうしん** (when each of us last synced; いま つうしん; not the guest's), **もようがえ** (one row with its はじめる;
+English), **きせつ** ([Seasonal preview](#seasonal-preview)), **つうしん** (when each of us last synced; いま つうしん; not the guest's), **もようがえ** (one row with its はじめる;
 not the guest's) and **あそびかた** (くわしく → the guide: the goals, ふたりでぜんぶ, the treats, the Sunday recap, a
 protein hint of 1.6 g per kg a day). The picker and the guide push a level with ‹; ✕, the backdrop and Esc close it,
 and the next opening starts at its top. Its own chunk, loaded on the first tap.
@@ -839,7 +839,7 @@ NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)
   buys, 「ちょきんばこは ふたりの もの。」 in place of the shop, no ×; the ledger), the ずかん and
   けんこう's かつどう (whose data: either member; no からだ switch) with its goals read-only (no chip to tap). Never a からだ figure: no からだ switch, no weight or body card, no weight or body fat goal (its snapshot holds
   none: the record leaves them out). せってい: its villager and name (the same picker, its own prefs), the sound, the
-  language and あそびかた; no もようがえ or つうしん, and a line saying it's visiting.
+  language, きせつ and あそびかた; no もようがえ or つうしん, and a line saying it's visiting.
 - **What it does:** walks, catches, digs, picks up and shakes like us (the shared world's claims, first wins), its
   finds and counts its own in the shared ずかん (each entry credited to its first finder, the guest's
   name with 「（おきゃくさん）」 once it has one of its own; per-person counts, and a row of who found how many of the page
@@ -1519,25 +1519,48 @@ goes for the day. On the island's layout the deck is a fixed piece there every d
 scale (about half a villager tall): on its day a tap plays the tape (the 3D villagers do NH's three: villager3d poses
 `warmup`, `sidebend`, `jump`); any other time a tap says when it plays, or that today's is done, and no ♪ floats.
 
+### Seasonal preview
+
+`ui-state/preview.ts` (pure: `resolvePreview`), `ui-state/preview.svelte.ts`, `panel/SeasonSection.svelte`,
+`island/PreviewPill.svelte`, `e2e/preview.spec.ts`. せってい's **きせつ** shows the island another day's look on this
+phone: an event, a season (はる / なつ / あき / ふゆ), the weather (はれ / あめ / ゆき) and the time of day (あさ / ひる /
+ゆうがた / よる), each おまかせ (the real day's) by default. One resolution feeds every seasonal look, with two inputs:
+the dev params below (they win, field by field) and the setting; then what the event implies.
+
+- **Events:** カーニバル, うめの たんじょうび, イースター (Zipper), さくら (petals, blossom), はなび, ウェイの たんじょうび,
+  けっこんしき (Reese and Cyrus, the wedding pose, fireworks), ハロウィン (Jack, the lit pumpkins), もみじ, ハーベスト
+  フェスティバル (Franklin), せいなる よる (Jingle, the presents), りゅうせいぐん (Celeste, the shower's stars). An event's
+  main part is on at once, and it brings its day's look (its season, foliage and hedges: `EVENT_DAY`) and, for the
+  evening ones (Halloween, fireworks, the wedding, a shower), the night sky; fireworks and a shower a clear sky.
+- **What follows it:** the theme (`<html>` data-tod/-season/-foliage, the sky, the chrome), the weather's look and its
+  music, `eventAt` for the scene (pumpkins, hosts, lines), the visitor, the fireworks, the shooting-star shower,
+  birthdays (hats, cake, しずえ), the wedding, cherry/maple/Toy Day's particles and decorations, the hedges' month.
+- **What never does:** the scene clock (`?date=` only), the days records and the scene's keys are by, and whatever the
+  island yields: critters come by the real month and weather (`yieldSky`), Bunny Day's eggs and the mushrooms by the
+  real day, and a wish on a star brings no fragment while it's on. Nothing is synced or sent: it's `island.preview`
+  (`{ day, event, season, weather, tod }`) on this phone, for the Tokyo day it was set on; the next day it's off.
+- **On screen:** while it's on, a chip under the HUD row says what (「きせつ: ハロウィン」); a tap on it, or もどす in
+  きせつ, goes back to the real day. The event music stays the real day's.
+
 ### Dev params
 
-Read once by `island/devHooks.ts`. The island's hooks work in dev builds or with `?demo`; `?date`, `?theme` and
-`?season` work everywhere:
+Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/preview.ts`: the same resolution as せってい's
+きせつ, above). The island's hooks work in dev builds or with `?demo`; `?date`, `?theme` and `?season` work everywhere:
 
 | Param | Effect |
 |---|---|
 | `?demo` (`=harvest`, `&as=B`, `&weeks=60`) | Made-up data, no backend; the harvest recap; play as B; a longer history |
-| `?date=YYYY-MM-DDTHH:mm` | The scene clock (Tokyo), this page load only |
-| `?theme=`, `?season=` | Preview a time of day or a season |
+| `?date=YYYY-MM-DDTHH:mm` | The scene clock (Tokyo), this page load only (it moves the shared day too) |
+| `?theme=dawn\|day\|dusk\|night`, `?season=` | Preview a time of day or a season |
 | `?seed=` | The island's seed (finds, weather, visitors) |
-| `?weather=clear\|rain\|heavy\|snow\|fog\|aurora\|rainbow` | Force the weather |
-| `?event=<id>` | Force an event day (and its evening) |
+| `?weather=clear\|rain\|heavy\|snow\|fog\|aurora\|rainbow` | Force the weather (the critters' too) |
+| `?event=<id>` | Show an event (the preview's ids: `halloween`, `cherry`, `birthday-A`, `wedding`…; its main part on; Bunny Day's eggs too) |
 | `?visitor=<id>`, `?arrive`, `?leave=<ms>`, `?stroll`, `?meet` | A visitor; its arrival; its departure; a stroll; the partner's hello |
 | `?critter=fish\|pond\|<fish>\|<pond fish>\|<bug>\|none`, `?sea=<id>\|pearl`, `?flea` | A critter now (kept until caught; ambient visits off); a dive spot; a flea on every villager tap |
 | `?shake=nest\|branch\|bagworm\|spider` | The next shake drops that |
 | `?rock=clonk\|sparkle\|bug` | Every rock tap has that outcome |
 | `?find=bottle\|fragment\|mushroom\|rare-mushroom\|earth-egg` | A beach find now / every dig spot that |
-| `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid`, `?wander` | A balloon; a show; a meteor shower's night; the tape deck; a hybrid flower; the partner wanders |
+| `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid`, `?wander` | A balloon; a show (`?event=fireworks`); a meteor shower's night at any hour (`?event=shower`); the tape deck; a hybrid flower; the partner wanders |
 | `?hit` | Every tap target drawn over the island (magenta: the scene's elements; cyan: the boxes a module tests) |
 
 The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there at once, the stops' snapping off;

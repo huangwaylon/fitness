@@ -4,12 +4,13 @@
   // the meal button (NH's ramen bowl) → the meal log (ごはん); the menu (NH's leaf, at the screen's side) drops
   // 「ベル 121」, ずかん and せってい under it: the ベル row (the shared wallet's balance; today's +N flashing by the leaf as
   // coins land) → the island panel slides down (ごほうび), the others each open their own sheet grown out of them. Only
-  // when sync is not ok, the sync chip centred under the row. The panel, the popups and the two sheets are their own
-  // chunks, loaded on first open.
+  // when sync is not ok, the sync chip centred under the row; under it, while せってい's きせつ is on, its chip. The
+  // panel, the popups and the two sheets are their own chunks, loaded on first open.
   import { onMount } from 'svelte';
   import { replaceState } from '$app/navigation';
   import { page } from '$app/state';
   import SyncPill from '../ui/SyncPill.svelte';
+  import PreviewPill from './PreviewPill.svelte';
   import HudFood from './HudFood.svelte';
   import HudHealth from './HudHealth.svelte';
   import HudMenu from './HudMenu.svelte';
@@ -62,6 +63,7 @@
       onzukan={() => { zukanMounted = true; zukanOpen = true; }} onsettings={() => { settingsMounted = true; settingsOpen = true; }} />
   </div>
   <SyncPill />
+  <PreviewPill />
 </div>
 
 {#if opened}

@@ -83,14 +83,14 @@ test('a shooting star crosses the sky, never the HUD; a tap meanwhile is a wish,
   await expect(page.locator('[data-find="fragment"]')).toHaveCount(0);
 });
 
-test('no showers by day, nor out of the star hours (after 4:00)', async ({ page }) => {
-  await open(page, '&date=2026-11-04T12:00&shower');
-  await page.waitForTimeout(3000);
+test('no showers by day; ?shower is a shower’s night at any hour (the night sky and its stars)', async ({ page }) => {
+  await open(page, '&date=2026-11-04T12:00');
+  await page.waitForTimeout(3000); // (proving that nothing streaks for a while)
   await expect(page.locator('[data-fx="shoot"]')).toHaveCount(0);
-  await page.goto('?demo&date=2026-11-05T04:20&shower');
+  await page.goto('?demo&date=2026-11-04T12:00&shower');
   await expect(hudMenu(page)).toBeVisible();
-  await page.waitForTimeout(3000);
-  await expect(page.locator('[data-fx="shoot"]')).toHaveCount(0);
+  await expect(page.locator('html')).toHaveAttribute('data-tod', 'night');
+  await expect(page.locator('[data-fx="shoot"]').first()).toBeAttached({ timeout: 15_000 });
 });
 
 for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }, { width: 320, height: 568 }]) {

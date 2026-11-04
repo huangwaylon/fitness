@@ -1,7 +1,8 @@
 <script lang="ts">
   // せってい (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
   // grown out of the button (Sheet's `pop`, as けんこう out of the dumbbell). One scroller: むらびと (かえる → the
-  // picker), サウンド, ことば, つうしん (not the guest's), もようがえ (one row: はじめる; not the guest's) and あそびかた (くわしく → the guide).
+  // picker), サウンド, ことば, きせつ (the seasonal preview), つうしん (not the guest's), もようがえ (one row: はじめる; not
+  // the guest's) and あそびかた (くわしく → the guide).
   // The picker and the guide push a level with ‹; ✕, the backdrop and Esc close it, and the next opening starts at
   // its top.
   import { tick } from 'svelte';
@@ -12,6 +13,7 @@
   import HelpGuide from './HelpGuide.svelte';
   import SoundSection from './SoundSection.svelte';
   import LangSection from './LangSection.svelte';
+  import SeasonSection from './SeasonSection.svelte';
   import SyncSection from './SyncSection.svelte';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -89,6 +91,7 @@
       </section>
       <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound">{t('panel.sound')}</h2><SoundSection /></section>
       <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang">{t('panel.lang')}</h2><LangSection /></section>
+      <section class="sec" aria-labelledby="sec-season"><h2 id="sec-season">{t('panel.season')}</h2><SeasonSection {view} /></section>
       {#if !guest}<section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync">{t('panel.sync')}</h2><SyncSection {view} /></section>{/if}
       {#if !guest}
         <div class="prow static decor">

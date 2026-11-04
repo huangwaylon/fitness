@@ -9,10 +9,10 @@
 import { jst } from '#lib/time/clock.ts';
 
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
-type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
+export type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
 export type Foliage = 'blossom' | 'green' | 'fall' | 'snow';
 
-const SEASONS: Season[] = ['spring', 'summer', 'autumn', 'winter'];
+export const SEASONS: readonly Season[] = ['spring', 'summer', 'autumn', 'winter'];
 
 /** Month-day as a sortable number (Apr 3 → 403). */
 const md = (d: Date) => {
@@ -36,11 +36,6 @@ export function foliageFor(d: Date): Foliage {
   return 'green';
 }
 
-/** A forced `?season=` previews that season's signature look. */
-function defaultFoliage(s: Season): Foliage {
-  return s === 'spring' ? 'blossom' : s === 'summer' ? 'green' : s === 'autumn' ? 'fall' : 'snow';
-}
-
 export function todFor(d: Date): TimeOfDay {
   const h = jst(d).hour;
   if (h >= 19 || h < 5) return 'night';
@@ -49,11 +44,11 @@ export function todFor(d: Date): TimeOfDay {
   return 'day';
 }
 
+/** The preview (ui-state/preview.ts): what to show instead of the clock's (null: the clock's). */
 export interface ThemeInput {
-  /** `?theme=` preview (this load only). */
-  theme?: 'night' | 'day' | null;
-  /** `?season=` preview (this load only). */
+  tod?: TimeOfDay | null;
   season?: Season | null;
+  foliage?: Foliage | null;
 }
 export interface ThemeState {
   /** Night chrome (= tod is night). */
@@ -65,23 +60,8 @@ export interface ThemeState {
 }
 
 export function deriveTheme(d: Date, o: ThemeInput = {}): ThemeState {
-  const clockTod = todFor(d);
-  const tod: TimeOfDay = o.theme === 'night' ? 'night' : o.theme === 'day' ? (clockTod === 'night' ? 'day' : clockTod) : clockTod;
-  const night = tod === 'night';
-  const season = o.season ?? seasonFor(d);
-  const foliage = o.season ? defaultFoliage(o.season) : foliageFor(d);
-  return { night, season, foliage, tod };
-}
-
-/** Read the preview params from a query string (never persisted). */
-export function previewParams(search: string): Pick<ThemeInput, 'theme' | 'season'> {
-  const q = new URLSearchParams(search);
-  const t = q.get('theme');
-  const s = q.get('season') as Season | null;
-  return {
-    theme: t === 'night' || t === 'day' ? t : null,
-    season: s && SEASONS.includes(s) ? s : null
-  };
+  const tod = o.tod ?? todFor(d);
+  return { night: tod === 'night', season: o.season ?? seasonFor(d), foliage: o.foliage ?? foliageFor(d), tod };
 }
 
 /**

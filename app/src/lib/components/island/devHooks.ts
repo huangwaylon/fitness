@@ -1,12 +1,14 @@
 // The island's dev hooks (docs/design.md "Dev params"): URL params that force a visitor, the weather, a critter… for
 // testing and the e2e. They work in dev builds or with `?demo` only, so a live phone never sees them. Read on each call
-// (cheap), so a navigation that drops the query string drops the hooks with it.
+// (cheap), so a navigation that drops the query string drops the hooks with it. The seasonal ones (`?event=`,
+// `?weather=`, `?fireworks`, `?shower`, `?season=`, `?theme=`) are the preview's: ui-state/preview.svelte.ts.
+import { hooksOn as on } from '#lib/ui-state/preview.ts';
 import { ISLAND_SEED } from './daySeed.ts';
 
 const query = (): URLSearchParams => new URLSearchParams(typeof location === 'undefined' ? '' : location.search);
 
 /** Whether the hooks apply: a dev build, or `?demo`. */
-export const hooksOn = (q: URLSearchParams = query()): boolean => import.meta.env.DEV || q.has('demo');
+export const hooksOn = (q: URLSearchParams = query()): boolean => on(q);
 
 /** A hook's value (`''` for a bare `?flag`), or null when it isn't set or the hooks are off. */
 export function hook(name: string): string | null {

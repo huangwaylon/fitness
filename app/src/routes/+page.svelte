@@ -16,7 +16,8 @@
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { t, hostLine } from '#lib/i18n/index.ts';
-  import { birthdaysOn } from '#lib/components/island/birthday.ts';
+  import { birthdaysShown } from '#lib/components/island/birthday.ts';
+  import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { minuteNow } from '#lib/time/clock.ts';
   import type { Who } from '#lib/types.ts';
@@ -50,7 +51,7 @@
     const h = view?.harvest;
     if (!view) return null;
     // one of our birthdays (island/birthday.ts): 「うめさん、おたんじょうび おめでとう！」 (the harvest still comes first)
-    const born = h ? [] : birthdaysOn(localDateAt(minuteNow().getTime()));
+    const born = h ? [] : birthdaysShown(localDateAt(minuteNow().getTime()), scenePreview().event);
     if (born.length) return hostLine('birthday', { name: view.people[born[0]].villagerName });
     if (!h) return null;
     return h.confirmedBy.includes(view.me) ? hostLine('harvest_waiting', { name: view.people[view.partner].villagerName }) : hostLine('harvest_ready');

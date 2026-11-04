@@ -1,10 +1,11 @@
 // Theme on <html>: data-tod (dawn | day | dusk | night, from the clock), data-theme (night iff tod is night),
 // data-season and data-foliage. Time of day alone drives the chrome: the phone's dark mode is ignored.
-// Rules: ui-state/season.ts. `?theme=night|day`, `?season=…` and `?date=` (time/clock.ts) preview for this load
-// only; they are never persisted, so a later plain load is back to the real date and time.
+// Rules: ui-state/season.ts. The seasonal preview (ui-state/preview.svelte.ts: せってい's きせつ, `?season=`, `?theme=`)
+// shows another season or time of day; `?date=` (time/clock.ts) moves the clock itself.
 import { untrack } from 'svelte';
-import { minuteNow, now } from '#lib/time/clock.ts';
-import { deriveTheme, previewParams, themeColor, type Season, type ThemeInput, type ThemeState } from './season.ts';
+import { minuteNow } from '#lib/time/clock.ts';
+import { deriveTheme, themeColor, type Season, type ThemeInput, type ThemeState } from './season.ts';
+import { scenePreview } from './preview.svelte.ts';
 
 export type { Season };
 
@@ -15,9 +16,7 @@ export const theme = $state<ThemeState>({
   foliage: 'green'
 });
 
-let preview: ThemeInput = {};
-
-function apply(at: Date) {
+function apply(at: Date, preview: ThemeInput) {
   Object.assign(theme, deriveTheme(at, preview));
   const root = document.documentElement;
   root.dataset.theme = theme.night ? 'night' : 'day';
@@ -27,14 +26,13 @@ function apply(at: Date) {
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColor(theme));
 }
 
-/** Follow the clock (at each new minute); returns a cleanup function. */
+/** Follow the clock (at each new minute) and the preview; returns a cleanup function. */
 export function startTheme(): () => void {
-  preview = previewParams(location.search);
-  apply(now()); // before the first paint
+  apply(minuteNow(), scenePreview()); // before the first paint
   return $effect.root(() => {
     $effect(() => {
-      const at = minuteNow();
-      untrack(() => apply(at));
+      const at = minuteNow(), preview = scenePreview();
+      untrack(() => apply(at, preview));
     });
   });
 }
