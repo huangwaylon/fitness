@@ -1285,10 +1285,10 @@ too.
   goes to the record, which checks it (the pocket, the wallet, the stock, the price: [backend](backend.md#events)).
 - **Prices:** a catch NH's Bells ÷ 100 (a sea bass 4, a koi 40, a whale shark 130), a piece NH's ÷ 20 (a median piece
   110: about a day's catches).
-- **The menu:** 「かいがら N」 in the leaf's menu under 「ベル N」 (`data-hud-shells`); a tap goes into the shop.
 - **The building:** NH's Nook's Cranny with its タヌキ商店 sign, 7 × 4, one to an island, moved and turned in the editor
   and もようがえ, never deleted ([island-layout.md](island-layout.md#the-islands-buildings)); a tap walks up to its door
-  and goes in, ‹ 島へ comes out of it.
+  and goes in, ‹ 島へ comes out of it. It is the only way in: the leaf's menu has no かいがら row (one goes to the shop
+  to buy and sell, as in NH).
 
 ### Dialogue
 

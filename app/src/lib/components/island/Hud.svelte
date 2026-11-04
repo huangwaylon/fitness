@@ -2,9 +2,8 @@
   // 島's HUD, NH island-view light: the sky clean, one small cluster in its top-right corner (docs/design.md "Island"):
   // [the health button] [the meal button] [the menu]. The health button (NH's dumbbell) → the health popup (けんこう);
   // the meal button (NH's ramen bowl) → the meal log (ごはん); the menu (NH's leaf, at the screen's side) drops
-  // 「ベル 121」, 「かいがら 54」, ずかん and せってい under it: the ベル row (the shared wallet's balance; today's +N flashing
-  // by the leaf as coins land) → the island panel slides down (ごほうび), the かいがら row (my own, the shop's) → the shop,
-  // the others each open their own sheet grown out of them. Only
+  // 「ベル 121」, ずかん and せってい under it: the ベル row (the shared wallet's balance; today's +N flashing by the leaf as
+  // coins land) → the island panel slides down (ごほうび), the others each open their own sheet grown out of them. Only
   // when sync is not ok, the sync chip centred under the row. The panel, the popups and the two sheets are their own
   // chunks, loaded on first open.
   import { onMount } from 'svelte';
@@ -15,10 +14,6 @@
   import HudHealth from './HudHealth.svelte';
   import HudMenu from './HudMenu.svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
-  import { goto } from '$app/navigation';
-  import { resolve } from '$app/paths';
-  import { week } from '#lib/store/week.svelte.ts';
-  import { shopView } from '#lib/model/shop.ts';
 
   interface Props {
     /** Today's ベル so far, both people (the ベル row's label and the flash; shown in full in ごほうび). */
@@ -48,14 +43,6 @@
   let settingsMounted = $state(false);
   let zukanOpen = $state(false);
   let settingsOpen = $state(false);
-  /** My かいがら (the shop's, model/shop.ts; the guest's its own): the menu's かいがら row. */
-  const shells = $derived(week.model ? shopView(week.model.state, week.model.me).shells : 0);
-  /** The かいがら row: into the shop (routes/shop), the query kept. */
-  function intoShop() {
-    const q = new URLSearchParams(location.search);
-    q.delete('home');
-    void goto(resolve('/shop') + (q.size ? `?${q}` : ''));
-  }
   // the old /jar page (`?panel=rewards`): the panel open at once
   onMount(() => {
     if (new URLSearchParams(location.search).get('panel') !== 'rewards') return;
@@ -71,7 +58,7 @@
   <div class="hud-row">
     <HudHealth {later} onopen={() => { healthMounted = true; healthOpen = true; }} />
     <HudFood {later} onopen={() => { foodMounted = true; foodOpen = true; }} />
-    <HudMenu bells={balance} {today} {shells} {later} expanded={panelOpen} onbells={() => (opened = panelOpen = true)} onshells={intoShop}
+    <HudMenu bells={balance} {today} {later} expanded={panelOpen} onbells={() => (opened = panelOpen = true)}
       onzukan={() => { zukanMounted = true; zukanOpen = true; }} onsettings={() => { settingsMounted = true; settingsOpen = true; }} />
   </div>
   <SyncPill />

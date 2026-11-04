@@ -48,11 +48,11 @@ test('folded by default; the leaf unfolds it and folds it again; a tap elsewhere
   await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'true');
   await expect(zukan(page)).toBeVisible();
   await expect(settings(page)).toBeVisible();
-  // the pills hang under the leaf, right-aligned to it, 「ベル 121」 first (no icon), then 「かいがら N」 (mine, the
-  // shop's), ずかん, せってい, each a 44px pill, on screen, the same width
-  await expect(pills(page)).toHaveCount(4);
+  // the pills hang under the leaf, right-aligned to it, 「ベル 121」 first (no icon), then ずかん, せってい, each a
+  // 44px pill, on screen, the same width
+  await expect(pills(page)).toHaveCount(3);
   await expect(pills(page).first()).toHaveAttribute('data-hud-bells', '');
-  await expect(pills(page).nth(1)).toHaveAttribute('data-shells', '0');
+  await expect(page.locator('[data-hud-shells]')).toHaveCount(0); // no かいがら: the shop is the building
   const bells = Number(await hudBells(page).getAttribute('data-bells'));
   await expect(hudBells(page)).toHaveText(new RegExp(`^\\s*ベル\\s*${bells.toLocaleString('en-US')}\\s*$`));
   await expect(hudBells(page).locator('img, svg')).toHaveCount(0);
