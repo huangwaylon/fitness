@@ -8,7 +8,7 @@ import {
   AmbientLight, BoxGeometry, CanvasTexture, CircleGeometry, Color, DirectionalLight, DoubleSide, Group, HemisphereLight,
   LineBasicMaterial, LineSegments, BufferGeometry, Float32BufferAttribute, Material, Mesh, MeshBasicMaterial, MeshStandardMaterial,
   Box3, Object3D, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, PointLight, Raycaster, RepeatWrapping, Scene, Sprite,
-  SpriteMaterial, SRGBColorSpace, Texture, TextureLoader, Vector2, Vector3, WebGLRenderer
+  SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector2, Vector3, WebGLRenderer
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -18,6 +18,8 @@ import { createVillager, VILLAGER_S, type Villager3D } from '../villager3d/villa
 import { seatOf } from '../villager3d/poses.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
+import { lean } from '../world3d/release.ts';
+import { plainImages } from '../world3d/gltf.ts';
 import { due, frameRate } from '#lib/store/frameRate.svelte.ts';
 import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, headAnchor, type Rect } from '../rooms/firstPerson.ts';
 
@@ -243,6 +245,39 @@ function matTexture(): CanvasTexture {
   return t;
 }
 
+/** The furniture as loaded (fetched, decoded: CPU-side), by item, kept across the rooms' visits as the island keeps its
+ *  models (world3d/things.ts): back in the tent, or in another's home, it builds at once, with no fetch, meshopt or
+ *  image decode again. Kept without the loader's parser (release.ts lean). Each room's GPU copies go with its renderer
+ *  (dispose: three uploads them again to the next). A failed load isn't kept. */
+const models = new Map<string, Promise<GLTF | null>>();
+let loader: GLTFLoader | null = null;
+function loadModel(code: string): Promise<GLTF | null> {
+  let p = models.get(code);
+  if (p) return p;
+  if (!loader) (loader = plainImages(new GLTFLoader())).setMeshoptDecoder(MeshoptDecoder);
+  p = loader.loadAsync(modelUrl(code)).then((g) => {
+    g.scene.traverse((n) => {
+      const m = n as Mesh;
+      if (!m.isMesh) return;
+      m.castShadow = !ITEMS[code]?.rug;
+      m.receiveShadow = true;
+      const ms = (Array.isArray(m.material) ? m.material : [m.material]) as MeshStandardMaterial[];
+      for (const x of ms) {
+        if (x.emissiveMap) x.emissiveIntensity = 0;
+        // a rug lies on the floor: drawn over it, never fighting it
+        if (ITEMS[code]?.rug) Object.assign(x, { polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+      }
+    });
+    return lean(g);
+  }, (e: unknown) => {
+    console.warn('tent: model', code, e);
+    models.delete(code);
+    return null;
+  });
+  models.set(code, p);
+  return p;
+}
+
 export function createTent(canvas: HTMLCanvasElement): Tent {
   const renderer = new WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
   // the e2e's logic mode (testMode.ts): every frame runs, nothing is drawn
@@ -281,8 +316,16 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   // ---- the room: the floor on its base and four walls (the front one with the door), each with its cut top; a wall
   //      between the camera and the room is cut away (NH's Happy Home Paradise), so the room shows from any side ----
   const tex = new TextureLoader();
-  const floorMat = new MeshStandardMaterial({ color: 0xd8c4a0, roughness: 0.95 });
-  const wallMat = new MeshStandardMaterial({ color: 0xe8dcc6, roughness: 1 });
+  /** A 1×1 map of a surface's colour till its own arrives: the material has its map from the first frame, so the
+   *  wallpaper's and the flooring's arrival only swaps it (the same program; a map added later compiled another). */
+  const swatch = (hex: number) => {
+    const t = new DataTexture(new Uint8Array([hex >> 16, (hex >> 8) & 255, hex & 255, 255]), 1, 1);
+    t.colorSpace = SRGBColorSpace;
+    t.needsUpdate = true;
+    return t;
+  };
+  const floorMat = new MeshStandardMaterial({ map: swatch(0xd8c4a0), roughness: 0.95 });
+  const wallMat = new MeshStandardMaterial({ map: swatch(0xe8dcc6), roughness: 1 });
   const floor = new Mesh(new PlaneGeometry(ROOM * TILE, ROOM * TILE), floorMat);
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
@@ -370,8 +413,6 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
         t.anisotropy = 4;
         m.map?.dispose();
         m.map = t;
-        m.color.set(0xffffff);
-        m.needsUpdate = true;
         shadowsDirty = true;
         invalidate();
       }, () => {});
@@ -398,35 +439,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   scene.add(gridLines);
 
   // ---- the furniture ----
-  const loader = new GLTFLoader();
-  loader.setMeshoptDecoder(MeshoptDecoder);
-  const models = new Map<string, Promise<GLTF | null>>();
-  const model = (code: string) => {
-    let p = models.get(code);
-    if (!p) {
-      p = loader.loadAsync(modelUrl(code)).then((g) => {
-        g.scene.traverse((n) => {
-          const m = n as Mesh;
-          if (!m.isMesh) return;
-          m.castShadow = !ITEMS[code]?.rug;
-          m.receiveShadow = true;
-          const ms = (Array.isArray(m.material) ? m.material : [m.material]) as MeshStandardMaterial[];
-          for (const x of ms) {
-            if (x.emissiveMap) x.emissiveIntensity = 0;
-            // a rug lies on the floor: drawn over it, never fighting it
-            if (ITEMS[code]?.rug) Object.assign(x, { polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
-          }
-        });
-        return g;
-      }, (e: unknown) => {
-        console.warn('tent: model', code, e);
-        models.delete(code);
-        return null;
-      });
-      models.set(code, p);
-    }
-    return p;
-  };
+  const model = loadModel;
   interface Live {
     spot: Placed;
     root: Group;
@@ -479,7 +492,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       (isWallItem(s.item) ? walls[s.f]?.g ?? scene : scene).add(root);
       pending++;
       void model(s.item).then((g) => {
-        pending--;
+        if (!--pending) warmSoon();
         if (disposed || live.get(s.id) !== l || !g) return;
         const body = g.scene.clone(true);
         // a lamp's own material, so one lamp turns on or off alone
@@ -1631,6 +1644,42 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     lastT3 = t;
     if (more) invalidate();
   }
+  // ---- the warm-up: what the room hasn't drawn yet made ready once it's in and still (the first person's ceiling
+  //      and door, the edit mode's grid and footprints: in the scene, hidden), so turning them on compiles nothing ----
+  // WebKit says a program is compiled (KHR_parallel_shader_compile) long before it is, and compiles every program made
+  // so far at the next query that waits on the GPU (a first use: 10-100 ms each). So each mesh's programs are made
+  // and first used (three's compile, getUniforms) one new program a timer tick, only while no frame is wanted.
+  type Prog = { getUniforms(): unknown };
+  let warmT: ReturnType<typeof setTimeout> | undefined;
+  const warmedTex = new WeakSet<Texture>();
+  function warmSoon() {
+    clearTimeout(warmT);
+    if (!noDraw && !disposed) warmT = setTimeout(warm, 400);
+  }
+  function warm() {
+    if (disposed) return;
+    if (pending || raf || !frames) return warmSoon();
+    const meshes: Object3D[] = [];
+    scene.traverse((n) => void ((n as Mesh).material && meshes.push(n)));
+    const step = () => {
+      if (disposed) return;
+      if (raf) return void (warmT = setTimeout(step, 100));
+      const n0 = renderer.info.programs?.length ?? 0;
+      while (meshes.length && (renderer.info.programs?.length ?? 0) === n0) {
+        const o = meshes.shift()!;
+        if (!o.parent) continue;
+        for (const m of renderer.compile(o, camera, scene)) {
+          // (a see-through two-sided one is two programs, a side each: three's programs by key; one already in use
+          // has its uniforms: at once)
+          for (const p of (renderer.properties.get(m) as { programs?: Map<string, Prog> }).programs?.values() ?? []) p.getUniforms();
+          for (const v of Object.values(m)) if (v instanceof Texture && !warmedTex.has(v)) (warmedTex.add(v), renderer.initTexture(v));
+        }
+      }
+      if (meshes.length) warmT = setTimeout(step, 20);
+    };
+    step();
+  }
+
   // the 3D villagers' blinks while the room is still: their face checked a few times a second, a frame only when one
   // changes (a texture's offset)
   const blinks = setInterval(() => {
@@ -1642,6 +1691,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
 
   fit();
   night(0);
+  warmSoon();
 
   return {
     resize, still, surfaces, pieces, hide, held, pick, wallAt, ghost, onHeld, nudge, flash, surfacePoint, grid, bump, room, pose, night, villager,
@@ -1684,6 +1734,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       disposed = true;
       cancelAnimationFrame(raf);
       clearInterval(blinks);
+      clearTimeout(warmT);
       for (const w of villagers.values()) w.v3?.dispose();
       const seen = new Set<object>();
       const free = (o: Object3D) => o.traverse((n) => {

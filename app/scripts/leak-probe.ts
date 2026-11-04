@@ -10,7 +10,7 @@
 // time; DWELL: ms in a room, default 1500), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells). Inside the museum: eye (the eye
 // button on, off), bench (sit on a bench, a tap on the floor), curator (IDLE_MS there), hours (the aquarium's hour on x3), rebuild (a find kept off
 // and let back x2: the aquarium rebuilt as a new find rebuilds it).
-// --snap: heap snapshots at cycle SNAP_AT (default 3; 0: none, the end's whole heap) and the end, diffed by constructor; --path=<name>: the retainer
+// FILL=1 (a room flow): the room furnished with the starter set first. --snap: heap snapshots at cycle SNAP_AT (default 3; 0: none, the end's whole heap) and the end, diffed by constructor; --path=<name>: the retainer
 // paths of the first PATHS nodes so named (=<name>: exactly) new since the first snapshot. Read handles: the probe never keeps one (a JSHandle holds what it points at).
 import { chromium, webkit, devices, type Page, type CDPSession } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
@@ -232,7 +232,10 @@ let snap0: Map<string, [number, number]> | null = SNAP && process.env.SNAP_AT ==
 const cycle = async () => {
   if (flow in ROOMS) {
     const [p, up] = ROOMS[flow];
-    await nav(p); await up(); await page.waitForTimeout(Number(process.env.DWELL ?? 1500));
+    await nav(p); await up();
+    // (FILL=1: the room furnished with the starter set first, kept: its models come back from the page-wide cache)
+    if (process.env.FILL) await page.evaluate(() => { const t = (window as any).__tent; if (t && t.pieces().length < 10) t.fill(t.starter()); });
+    await page.waitForTimeout(Number(process.env.DWELL ?? 1500));
     await nav(`/fitness/${Q}`); await islandUp(); await page.waitForTimeout(1500);
   } else if (flow in SHEETS) {
     await SHEETS[flow](); await sel('dialog[open]'); await page.waitForTimeout(1200);
