@@ -296,8 +296,7 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   day looks the same, its items now the repeat's). One name, いつもの, for the title, the chip, the marks and the
   verbs. Tapping one of its items opens it; ほぞん or けす changes that day only: the day leaves the repeat then (its
   items become its own, in one go; unmarked under the same chip); ‹ changes nothing.
-- **グラフ (the グラフ tab;** the user: "show total calories over different periods of time … also show average line …
-  also add in the calories burned graph"**):** its range row (`health/RangeNav`, swipe paging) with けんこう's period dropdown (`health/Pick`) after きょう (the
+- **グラフ (the グラフ tab;** what was eaten only; the calories burned are けんこう's 🍐 ムーブ card**):** its range row (`health/RangeNav`, swipe paging) with けんこう's period dropdown (`health/Pick`) after きょう (the
   range's unit wraps in the narrower middle), then たべた カロリー (`FoodIntake`, けんこう's
   `BarChart` and MetricCard's layout; `model/food.ts` foodSeries, one pass over the record up to today, read by
   health.ts's bucket and stat rules): a bar per day (foodDay's total, repeats included) or per week / month (the daily
@@ -305,9 +304,7 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   a target to hit, and a low day is never rewarded); today outlined and uncounted; a day with nothing logged is
   記録なし (the stub, never a 0). 1日の平均（n日分） and 期間の合計 over the finished days with a meal; 記録 n日 ·
   記録なし m日; the goal at the upper right (GoalEdit) and dashed on the chart, the average a flat solid line (「平均」 in
-  the key). Under it, for a member, けんこう's 🍐 ムーブ card as is for the same
-  person, period and range (the calories burned; never subtracted from what was eaten); the guest has none of its own.
-  Then the same card for たんぱく質, 脂質, 炭水化物 and 塩分 (grams, one decimal; foodSeries per nutrient from the same
+  the key). Then the same card for たんぱく質, 脂質, 炭水化物 and 塩分 (grams, one decimal; foodSeries per nutrient from the same
   pass; salt's bars one decimal), each with its catalogue icon (`art.ts` NUTRIENT_ART: the barbecue, the cream and
   sugar, the sticky rice, the spice rack) and its goal; with nothing logged yet, each card its goal chip over 「まだ きろくが ないよ」
   (so the goals are set before the first meal).
