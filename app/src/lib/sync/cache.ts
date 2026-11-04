@@ -106,7 +106,8 @@ function open(): Promise<IDBDatabase | null> {
     r.onupgradeneeded = () => r.result.createObjectStore(STORE);
     r.onsuccess = () => {
       const d = r.result;
-      d.onversionchange = () => d.close();
+      // (closed for a newer version's page: the next read opens it again, not this closed one)
+      d.onversionchange = () => (d.close(), (db = null));
       ok(d);
     };
     r.onerror = () => {
