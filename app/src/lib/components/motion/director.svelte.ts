@@ -495,10 +495,25 @@ export function faceToward(id: ActorId, x: number) {
   actors[id].face = toward(id, x);
 }
 
-/** Night naps (R13): asleep = slow breath + a zzz loop. */
+/** What keeps a villager from nodding off (Critters: my line out; the user: "while fishing don't fall asleep"). */
+let napHold: (id: ActorId) => boolean = () => false;
+export function holdNaps(fn: (id: ActorId) => boolean): () => void {
+  napHold = fn;
+  return () => {
+    if (napHold === fn) napHold = () => false;
+  };
+}
+/** How often a held nap asks again (ms). */
+const NAP_RETRY_MS = 5_000;
+
+/** Night naps (R13): asleep = slow breath + a zzz loop; held off while napHold says so (asked again till it's let go). */
 export function setAsleep(id: ActorId, asleep: boolean) {
   const a = actors[id];
   if (a.asleep === asleep) return;
+  if (asleep && napHold(id)) {
+    later(id, NAP_RETRY_MS, () => setAsleep(id, sleepy()));
+    return;
+  }
   a.asleep = asleep;
   if (asleep) {
     setEmote(id, 'dozing');

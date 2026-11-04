@@ -74,7 +74,7 @@
   import type { FishPhase, How, Relayed, Who } from '#lib/sync/live-protocol.ts';
   import { GLIDE_U, STILL, bubblesAt, bugAt, bugPath, clamp, critterId, fishPath, freshWater, groundOk, inWater, legAt, type BugOpts, type Flying, type Leg } from './critterPath.ts';
   import { tellPartner } from './partnerNews.ts';
-  import { actors, inMotion, livePos, wake as wakeUp } from '../motion/director.svelte.ts';
+  import { actors, holdNaps, inMotion, livePos, wake as wakeUp } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from './sea.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
@@ -183,6 +183,8 @@
   });
   // gone with the line out (through a door: the phone's socket stays, so the others hear it end), and the others'
   // villagers' rods down (their steps go unheard till I'm back)
+  // my villager stays awake while my line is out (NH: no nodding off with a rod in hand)
+  onMount(() => holdNaps((id) => id === 'mine' && !!line));
   onMount(() => () => {
     clearTimeout(tickT);
     if (line) tellLine('off');
