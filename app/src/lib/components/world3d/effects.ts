@@ -246,11 +246,11 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
   // spawn's kind and time (performance.now()): the fishing's rings come before its 「！」
   const log: { kind: FxKind; t: number; size?: number }[] | null =
     import.meta.env.DEV || new URLSearchParams(location.search).has('demo') ? [] : null;
-  if (log)
-    (window as unknown as { __fx3?: unknown }).__fx3 = {
-      live: (name: string) => parts.filter((p) => p.name === name && p.obj.scale.x > 0).map((p) => ({ x: p.obj.position.x, y: p.obj.position.y, z: -p.obj.position.z, s: p.obj.scale.x })),
-      log: () => log
-    };
+  const hook = {
+    live: (name: string) => parts.filter((p) => p.name === name && p.obj.scale.x > 0).map((p) => ({ x: p.obj.position.x, y: p.obj.position.y, z: -p.obj.position.z, s: p.obj.scale.x })),
+    log: () => log
+  };
+  if (log) (window as unknown as { __fx3?: unknown }).__fx3 = hook;
   function spawn(kind: FxKind, x: number, z: number, lift = 0, o: FxOpts = {}) {
     spawnTag = o.tag;
     if (log && log.push({ kind, t: performance.now(), size: o.size }) > 200) log.shift();
@@ -420,6 +420,8 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
       for (const m of warmMats) m.dispose();
       void Promise.all(got.values()).then((ms) => ms?.forEach((m) => m?.forEach((s) => s.geo !== quad && s.geo.dispose())));
       quad.dispose();
+      // (the hook holds this island's renderer: gone with it)
+      if (log && (window as unknown as { __fx3?: unknown }).__fx3 === hook) delete (window as unknown as { __fx3?: unknown }).__fx3;
     }
   };
 }

@@ -90,8 +90,57 @@ test('the rooms and the home picker, in and out: no WebGL context or window list
   for (let i = 0; i < 2; i++) await trips();
   const after = await measure(page);
   // the island's own context (and at most one an earlier island's, held a while by the page): never one a trip
-  // (2 here: the island's and one earlier island's; before the picker's fix, 5 after one round and 11 after three)
-  expect(first.gl, 'WebGL contexts alive after one round').toBeLessThanOrEqual(3);
+  // (1 here; 2 before a lazy chunk's CSS link stopped holding the first island; before the picker's fix, 5 after one
+  // round and 11 after three)
+  expect(first.gl, 'WebGL contexts alive after one round').toBeLessThanOrEqual(2);
+  expect(after.gl, 'WebGL contexts alive after three').toBeLessThanOrEqual(first.gl);
+  expect(after.ls, 'window and document listeners').toBeLessThanOrEqual(first.ls);
+});
+
+// The museum (docs/design.md "The museum", "First person"): in first person and out, the eye button on and off, a
+// bench sat on and left. In the museum only its own context is alive, the island it came from gone (before the fixes
+// one more: the island's hooks, its sleep clock and a lazy chunk's CSS link held a whole island, its DOM and context).
+test('the museum in first person and out, the eye button, a bench: no context or listener left, the island gone inside', { tag: '@chromium' }, async ({ page }) => {
+  test.setTimeout(120_000);
+  /** A function of the museum's hooks (MuseumRoom.svelte hooks()), its value. */
+  const mu = <T>(fn: string) => page.evaluate(`(${fn})(window.__museum)`) as Promise<T>;
+  await watch(page);
+  await page.goto(Q);
+  await islandUp(page);
+  const back = async () => (await nav(page, `/fitness/${Q}`), await islandUp(page));
+  const inside: number[] = [];
+  // the eye button: on (at the eyes) or off (the room's camera)
+  const eye = async (on: boolean) => {
+    await page.locator('[data-fpv]').click();
+    await expect.poll(() => mu<boolean>(`m => (f => !!f && f.on === ${on} && f.inside === ${on} && !f.busy)(m.fpv())`), { timeout: 15_000 }).toBe(true);
+  };
+  const round = async () => {
+    await nav(page, `/fitness/museum${Q}`);
+    await framed(page, '__museum');
+    await eye(true);
+    await back();
+    // in again: in first person from the first frame (kept on this phone), then off
+    await nav(page, `/fitness/museum${Q}`);
+    await framed(page, '__museum');
+    await expect.poll(() => mu<boolean>('m => !!m.fpv()?.inside && !m.fpv().busy'), { timeout: 15_000 }).toBe(true);
+    await eye(false);
+    // a bench: a tap sits my villager on it, a tap on the floor gets it up
+    await page.evaluate('window.__museum.put(150, 10)');
+    await expect.poll(() => mu<boolean>('m => m.still()'), { timeout: 10_000 }).toBe(true);
+    const [bx, by] = await mu<[number, number]>('m => m.benchPx("dmbench1", 0)');
+    await page.mouse.click(bx, by);
+    await expect.poll(() => mu<boolean>('m => !!m.seat() && m.still()'), { timeout: 15_000 }).toBe(true);
+    const [fx, fy] = await mu<[number, number]>('m => m.px(150, 15)');
+    await page.mouse.click(fx, fy);
+    await expect.poll(() => mu<boolean>('m => !m.seat() && m.still()'), { timeout: 15_000 }).toBe(true);
+    inside.push((await measure(page)).gl);
+    await back();
+  };
+  await round();
+  const first = await measure(page);
+  for (let i = 0; i < 2; i++) await round();
+  const after = await measure(page);
+  expect(inside, 'WebGL contexts alive in the museum (its own only)').toEqual([1, 1, 1]);
   expect(after.gl, 'WebGL contexts alive after three').toBeLessThanOrEqual(first.gl);
   expect(after.ls, 'window and document listeners').toBeLessThanOrEqual(first.ls);
 });

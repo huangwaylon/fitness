@@ -367,24 +367,25 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
 
   // the e2e's (dev builds and ?demo): a 3D villager's state, what it holds and its tip (three's space), and what its
   // last frame saw (its spec, the rod)
-  if (debug)
-    (window as unknown as { __villagers3?: unknown }).__villagers3 = {
-      last: (slot: string) => debug.get(slot) ?? null,
-      state: (slot: string) => ws.get(slot)?.v?.state() ?? null,
-      tool: (slot: string) => (ws.get(slot)?.tool?.obj ? ws.get(slot)!.tool!.key : null),
-      tip: (slot: string) => ws.get(slot)?.v?.tip()?.toArray() ?? null,
-      /** The materials on it drawn unbent (engine.ts bend: off the island it stands on), what it took up since included. */
-      unbent: (slot: string) => {
-        const out: string[] = [];
-        ws.get(slot)?.v?.group.traverse((o) => {
-          const m = (o as Mesh).material as Material | Material[] | undefined;
-          for (const x of m ? (Array.isArray(m) ? m : [m]) : []) if (!x.userData.bent) out.push(o.name || o.type);
-        });
-        return out;
-      },
-      /** Its sting's swollen eye showing (the lump on its head bone). */
-      stung: (slot: string) => !!ws.get(slot)?.v?.group.getObjectByName('sting-lump')?.visible
-    };
+  type Hooked = { __villagers3?: unknown };
+  const hook = debug && {
+    last: (slot: string) => debug.get(slot) ?? null,
+    state: (slot: string) => ws.get(slot)?.v?.state() ?? null,
+    tool: (slot: string) => (ws.get(slot)?.tool?.obj ? ws.get(slot)!.tool!.key : null),
+    tip: (slot: string) => ws.get(slot)?.v?.tip()?.toArray() ?? null,
+    /** The materials on it drawn unbent (engine.ts bend: off the island it stands on), what it took up since included. */
+    unbent: (slot: string) => {
+      const out: string[] = [];
+      ws.get(slot)?.v?.group.traverse((o) => {
+        const m = (o as Mesh).material as Material | Material[] | undefined;
+        for (const x of m ? (Array.isArray(m) ? m : [m]) : []) if (!x.userData.bent) out.push(o.name || o.type);
+      });
+      return out;
+    },
+    /** Its sting's swollen eye showing (the lump on its head bone). */
+    stung: (slot: string) => !!ws.get(slot)?.v?.group.getObjectByName('sting-lump')?.visible
+  };
+  if (hook) (window as unknown as Hooked).__villagers3 = hook;
 
   return {
     frame,
@@ -418,6 +419,8 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
         w.v?.dispose();
       }
       ws.clear();
+      // (the hook holds this island: gone with it)
+      if (hook && (window as unknown as Hooked).__villagers3 === hook) delete (window as unknown as Hooked).__villagers3;
     }
   };
 }
