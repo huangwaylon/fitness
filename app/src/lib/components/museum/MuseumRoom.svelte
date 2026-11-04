@@ -408,6 +408,8 @@
     return () => {
       alive = false;
       send({ kind: 'tent', in: false });
+      // (a walk to a bench still on its way: no sit or its sound once out)
+      clearTimeout(arriving);
       for (const f of offs) f();
       ro.disconnect();
       offDoor();
