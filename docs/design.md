@@ -1483,8 +1483,8 @@ too.
   every room I arrange.
 - A sell or a buy shows at once with とりけす for 5 s (the banner up over the counter here, clear of the bar), then
   goes to the record, which checks it (the pocket, the wallet, the stock, the price: [backend](backend.md#events)).
-- **Prices:** a catch NH's Bells ÷ 100 (a sea bass 4, a koi 40, a whale shark 130), a piece NH's ÷ 20 (a median piece
-  110: about a day's catches).
+- **Prices:** NH's Bells ÷ 20 both ways, NH's own ratio (a sell at least 3): a sea bass 20, a koi 200, a whale shark
+  650; a median piece 110, one or two catches ([decisions](decisions.md#the-shops-かいがら-2026-11-04)).
 - **The building:** NH's Nook's Cranny with its タヌキ商店 sign, 7 × 4, one to an island, moved and turned in the editor
   and もようがえ, never deleted ([island-layout.md](island-layout.md#the-islands-buildings)); a tap walks up to its door
   and goes in, ‹ 島へ comes out of it. It is the only way in: the leaf's menu has no かいがら row (one goes to the shop

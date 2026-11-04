@@ -33,26 +33,26 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   // pick one whale shark: the offer; a third tap past the pocket goes back to none (never more than it holds)
   const shark = page.locator('[data-shop-catch="fish:whale-shark"]');
   await shark.click();
-  await expect(page.locator('[data-shop-offer]')).toHaveAttribute('data-shop-offer', '130');
+  await expect(page.locator('[data-shop-offer]')).toHaveAttribute('data-shop-offer', '650');
   await shark.click();
   await shark.click();
   await expect(shark).toHaveAttribute('data-picked', '0');
   await shark.click();
   await page.locator('[data-shop-sell]').click();
-  await expect.poll(() => shells(page)).toBe(130);
+  await expect.poll(() => shells(page)).toBe(650);
   await expect(page.locator('[data-shop-say]')).toHaveAttribute('data-shop-say', 'thanks');
   await expect(shark).toHaveAttribute('data-n', '1');
   // the rest at once (ぜんぶ)
   await page.locator('[data-shop-all]').click();
   await page.locator('[data-shop-sell]').click();
-  await expect.poll(() => shells(page)).toBe(130 + 130 + 80);
+  await expect.poll(() => shells(page)).toBe(650 + 650 + 400);
   await expect(page.locator('[data-shop-empty]')).toBeVisible();
   // かう: the day's stock and the basics; a cardboard box (6)
   await page.locator('[data-shop-tab="buy"]').click();
   await expect(page.locator('[data-shop-stock] [data-shop-item]')).toHaveCount(8);
   await page.locator('[data-shop-item="f3672"]').click();
   await page.locator('[data-shop-buy]').click();
-  await expect.poll(() => shells(page)).toBe(340 - 6);
+  await expect.poll(() => shells(page)).toBe(1700 - 6);
   await expect(page.locator('[data-shop-item="f3672"]')).toHaveAttribute('data-owned', 'true');
   // bought once: picked again, かう only boops
   await page.locator('[data-shop-item="f3672"]').click();
@@ -90,11 +90,11 @@ test('the guest’s pocket and かいがら are its own', async ({ browser }) =>
   await expect(g.locator('[data-shop-pocket] [data-shop-catch]')).toHaveCount(1);
   await g.locator('[data-shop-catch="bug:tarantula"]').click();
   await g.locator('[data-shop-sell]').click();
-  await expect.poll(() => shells(g)).toBe(80);
+  await expect.poll(() => shells(g)).toBe(400);
   await g.locator('[data-shop-tab="buy"]').click();
   await g.locator('[data-shop-item="f3672"]').click();
   await g.locator('[data-shop-buy]').click();
-  await expect.poll(() => shells(g)).toBe(74);
+  await expect.poll(() => shells(g)).toBe(394);
   // a member's phone on the same record: A's own
   const a = await ctx.newPage();
   await a.goto(`shop${Q}`);

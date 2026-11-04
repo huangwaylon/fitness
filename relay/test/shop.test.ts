@@ -1,9 +1,9 @@
 // The shop in the record (docs/backend.md#events `sell` / `buy`, contract/shop.ts): a sell only of what the sender's
-// pocket holds (their tallies' catches less their sells), at exactly its price; a buy only of a piece in a stock of
+// pocket holds (their tallies' catches less their sells), at most its price (an older app's lower list); a buy only of a piece in a stock of
 // about today, at exactly its price, covered by their かいがら, once; each person's own (the guest's too); an id once.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { StoreCore } from '../src/store.ts';
-import { buyPrice, stockOf } from '../../app/src/lib/contract/shop.ts';
+import { buyPrice, sellPrice, stockOf } from '../../app/src/lib/contract/shop.ts';
 import { BUY } from '../../app/src/lib/contract/shopPrices.ts';
 import { memSql } from './sqlite.ts';
 
@@ -13,6 +13,8 @@ const KEY_C = 'c'.repeat(64);
 // 2026-11-04 12:00 Tokyo
 const T0 = Date.parse('2026-11-04T03:00:00.000Z');
 const D = '2026-11-04';
+/** A koi's and a whale shark's price (contract/shopPrices.ts). */
+const K = sellPrice('fish:koi')!, W = sellPrice('fish:whale-shark')!;
 
 describe('the shop in the record', () => {
   let now: number;
@@ -36,16 +38,17 @@ describe('the shop in the record', () => {
     expect(tally('A', { 'fish:koi': 2 })).toMatchObject({ ok: true });
     expect(tally('A', { 'fish:koi': 3 })).toMatchObject({ ok: true }); // the day's tally grows (one row)
     expect(tally('A', { 'fish:koi': 1 }, '2026-11-03')).toMatchObject({ ok: true });
-    expect(sell('A', 'fish:koi', 3, 120)).toEqual({ ok: true });
-    expect(sell('A', 'fish:koi', 2, 80)).toEqual(refused('pocket short')); // 4 caught, 3 sold
-    expect(sell('A', 'fish:koi', 1, 40)).toEqual({ ok: true });
-    expect(sell('A', 'fish:koi', 1, 40)).toEqual(refused('pocket short'));
-    expect(sell('A', 'bug:tarantula', 1, 80)).toEqual(refused('pocket short')); // never caught
+    expect(sell('A', 'fish:koi', 3, 3 * K)).toEqual({ ok: true });
+    expect(sell('A', 'fish:koi', 2, 2 * K)).toEqual(refused('pocket short')); // 4 caught, 3 sold
+    expect(sell('A', 'fish:koi', 1, K)).toEqual({ ok: true });
+    expect(sell('A', 'fish:koi', 1, K)).toEqual(refused('pocket short'));
+    expect(sell('A', 'bug:tarantula', 1, sellPrice('bug:tarantula')!)).toEqual(refused('pocket short')); // never caught
   });
 
-  it('refuses a wrong price, a species that doesn’t sell, a shell', () => {
+  it('refuses a price over the list, a species that doesn’t sell, a shell; keeps one under it (an older app’s list)', () => {
     tally('A', { 'fish:koi': 5, 'shell:cowrie': 3 });
-    expect(sell('A', 'fish:koi', 1, 41)).toEqual(refused());
+    expect(sell('A', 'fish:koi', 1, K + 1)).toEqual(refused());
+    expect(sell('A', 'fish:koi', 1, 40)).toEqual({ ok: true }); // the list before 2026-11-04's rise: a koi 40
     expect(sell('A', 'shell:cowrie', 1, 1)).toEqual(refused());
     expect(sell('A', 'fish:nope', 1, 1)).toEqual(refused());
     expect(sell('A', 'fish:koi', 0, 0)).toEqual(refused());
@@ -53,8 +56,8 @@ describe('the shop in the record', () => {
 
   it('an id once: a retry is a duplicate, never sold twice', () => {
     tally('A', { 'fish:koi': 1 });
-    expect(sell('A', 'fish:koi', 1, 40, 'sell-1')).toEqual({ ok: true });
-    expect(sell('A', 'fish:koi', 1, 40, 'sell-1')).toEqual({ ok: true, duplicate: true });
+    expect(sell('A', 'fish:koi', 1, K, 'sell-1')).toEqual({ ok: true });
+    expect(sell('A', 'fish:koi', 1, K, 'sell-1')).toEqual({ ok: true, duplicate: true });
     expect(buy('A', 'f3672', 6)).toEqual({ ok: true });
     const rows = (store.handle({ key: KEY_A, action: 'snapshot' }, 10) as unknown as { rows: { events: string[][] } }).rows.events;
     expect(rows.filter((r) => r[3] === 'sell')).toHaveLength(1);
@@ -65,7 +68,7 @@ describe('the shop in the record', () => {
     const price = buyPrice(item)!;
     expect(buy('A')).toEqual(refused('wallet short'));
     tally('A', { 'fish:whale-shark': 40 });
-    expect(sell('A', 'fish:whale-shark', 40, 40 * 130)).toEqual({ ok: true });
+    expect(sell('A', 'fish:whale-shark', 40, 40 * W)).toEqual({ ok: true });
     expect(buy('A', item, price + 1)).toEqual(refused());
     const not = Object.keys(BUY).find((c) => !['2026-11-03', D, '2026-11-05'].some((d) => stockOf(d).includes(c)))!;
     expect(buy('A', not)).toEqual(refused()); // not in the stock
@@ -76,7 +79,7 @@ describe('the shop in the record', () => {
     const y = stockOf('2026-11-03').find((c) => c !== item)!;
     expect(buy('A', y, buyPrice(y)!, '2026-11-03')).toEqual({ ok: true });
     // かいがら fall: spend down to the last one
-    const left = 40 * 130 - price - buyPrice(y)!;
+    const left = 40 * W - price - buyPrice(y)!;
     const dear = stockOf(D).filter((c) => c !== item && c !== y).sort((a, b) => buyPrice(b)! - buyPrice(a)!);
     let shells = left;
     for (const c of dear) {
@@ -90,7 +93,7 @@ describe('the shop in the record', () => {
 
   it('a lower tally after a sale (a second phone’s, a queue that waited) takes nothing back: the piece stays bought', () => {
     tally('A', { 'fish:whale-shark': 10, 'bug:moth': 2 });
-    expect(sell('A', 'fish:whale-shark', 10, 10 * 130)).toEqual({ ok: true });
+    expect(sell('A', 'fish:whale-shark', 10, 10 * W)).toEqual({ ok: true });
     expect(buy('A')).toEqual({ ok: true });
     // the other phone's older tally of the day lands after: fewer sharks, a fish this one hadn't sent
     expect(tally('A', { 'fish:whale-shark': 3, 'fish:koi': 1 })).toMatchObject({ ok: true });
@@ -99,10 +102,10 @@ describe('the shop in the record', () => {
     expect(tallies).toHaveLength(1); // still one row of the day: each entry's larger count
     expect(JSON.parse(tallies[0][4])).toEqual({ date: D, counts: { 'fish:whale-shark': 10, 'bug:moth': 2, 'fish:koi': 1 } });
     expect(buy('A')).toEqual(refused('owned')); // still A's
-    expect(sell('A', 'fish:whale-shark', 1, 130)).toEqual(refused('pocket short')); // all ten sold, none come back
-    expect(sell('A', 'fish:koi', 1, 40)).toEqual({ ok: true });
+    expect(sell('A', 'fish:whale-shark', 1, W)).toEqual(refused('pocket short')); // all ten sold, none come back
+    expect(sell('A', 'fish:koi', 1, K)).toEqual({ ok: true });
     // the wallet: the sale's かいがら less the piece, and the koi's
-    const left = 10 * 130 - buyPrice(item)! + 40;
+    const left = 10 * W - buyPrice(item)! + K;
     const dear = Object.keys(BUY).find((c) => stockOf(D).includes(c) && c !== item && buyPrice(c)! > left);
     if (dear) expect(buy('A', dear)).toEqual(refused('wallet short'));
     const cheap = stockOf(D).find((c) => c !== item && buyPrice(c)! <= left)!;
@@ -119,9 +122,9 @@ describe('the shop in the record', () => {
   it('each person’s own: the guest sells its catches and buys with its own かいがら', () => {
     tally('G', { 'fish:koi': 1 });
     tally('A', { 'fish:koi': 10 });
-    expect(sell('B', 'fish:koi', 1, 40)).toEqual(refused('pocket short')); // A's catches aren't B's
-    expect(sell('G', 'fish:koi', 2, 80)).toEqual(refused('pocket short'));
-    expect(sell('G', 'fish:koi', 1, 40)).toEqual({ ok: true });
+    expect(sell('B', 'fish:koi', 1, K)).toEqual(refused('pocket short')); // A's catches aren't B's
+    expect(sell('G', 'fish:koi', 2, 2 * K)).toEqual(refused('pocket short'));
+    expect(sell('G', 'fish:koi', 1, K)).toEqual({ ok: true });
     expect(buy('G', 'f3672', 6)).toEqual({ ok: true }); // the cardboard box, always in stock
     expect(buy('B', 'f3672', 6)).toEqual(refused('wallet short'));
     expect(buy('A', 'f3672', 6)).toEqual(refused('wallet short')); // caught, not sold yet
