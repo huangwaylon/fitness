@@ -455,15 +455,21 @@ export const bushes = (): readonly { id: string; x: number; z: number; h: number
   ...HEDGE_XS.map((x, i) => ({ id: `hedge-${i}`, x, z: HEDGE_Z, h: 40 })),
   ...SCENERY.filter((s) => s.kind === 'bush').map((s) => ({ id: s.id, x: s.x, z: s.z, h: s.h }))
 ];
-/** The wild flowers' clumps (world.ts FLOWERS), each a patch round its flowers: where the butterflies and the bee
- *  flutter and the stink bugs crawl. */
+/** The wild flowers' clumps, each a patch round its flowers: where the butterflies and the bee flutter and the stink
+ *  bugs crawl. A clump is the flowers within CLUMP_U of each other (the layout's own clump tags repeat across the
+ *  island: one patch by them spanned half of it, and a butterfly crossed it in a second). */
+const CLUMP_U = 60;
 const beds = (l0: number, l1: number, grow: number) => {
-  const by = new Map<number, Patch>();
-  for (const f of FLOWERS) {
-    const p = by.get(f.clump);
-    by.set(f.clump, p ? { ...p, x0: Math.min(p.x0, f.x - grow), x1: Math.max(p.x1, f.x + grow), z0: Math.min(p.z0, f.z - grow / 2), z1: Math.max(p.z1, f.z + grow / 2) } : { x0: f.x - grow, x1: f.x + grow, z0: f.z - grow / 2, z1: f.z + grow / 2, l0, l1 });
+  const left = [...FLOWERS], out: Patch[] = [];
+  while (left.length) {
+    const clump = [left.pop()!];
+    for (let i = 0; i < clump.length; i++)
+      for (let j = left.length - 1; j >= 0; j--)
+        if (Math.abs(left[j].x - clump[i].x) <= CLUMP_U && Math.abs(left[j].z - clump[i].z) <= CLUMP_U) clump.push(...left.splice(j, 1));
+    const xs = clump.map((f) => f.x), zs = clump.map((f) => f.z);
+    out.push({ x0: Math.min(...xs) - grow, x1: Math.max(...xs) + grow, z0: Math.min(...zs) - grow / 2, z1: Math.max(...zs) + grow / 2, l0, l1 });
   }
-  return [...by.values()];
+  return out;
 };
 /** The open lawn (off the beds, the trunks and the paths' middle): まえ's and the campsite's ground. */
 const LAWN: Patch[] = [
@@ -486,7 +492,7 @@ function lawnOnLayout(): Patch[] {
 /** Where a bug of `place` keeps to (not the trunks or the flower heads: `perches`, FLOWERS). */
 export function patches(place: BugPlace): Patch[] {
   switch (place) {
-    case 'flowers': return beds(16, 44, 22);
+    case 'flowers': return beds(16, 44, 36);
     case 'beds': return beds(3, 7, 10);
     case 'lights': return SCENERY.filter((s) => s.kind === 'prop' && /lamp/.test(s.key)).map((s) => patch(s.x, s.z - 2, 16, 6, s.h * 0.75, s.h * 1.05));
     case 'bush': return bushes().map((b) => patch(b.x, b.z - 1, 7, 2, b.h * 0.8, b.h * 0.86));
@@ -576,12 +582,20 @@ export function reel(phase: CastPhase, hesitated = false): 'catch' | 'hesitate' 
 
 // ---------- the net ----------
 
-/** A tap near a bug (px from its centre): on it (a 44px target at least) it's caught; close by, it's startled and
- *  flies off; further away it doesn't care. */
+/** A tap near a bug (px from its centre): on it (a 44px target at least, a finger's slack round a small one) it's
+ *  caught; a swing just past it startles it off; further away it doesn't care. */
 export function netSwing(distPx: number, sizePx: number): 'catch' | 'startle' | 'none' {
-  if (distPx <= Math.max(26, sizePx * 0.75)) return 'catch';
-  return distPx <= 80 ? 'startle' : 'none';
+  if (distPx <= Math.max(30, sizePx * 0.8)) return 'catch';
+  return distPx <= 56 ? 'startle' : 'none';
 }
+
+/** My villager running at a bug (u/s: faster than a stroll's 90; a tap-walk runs at 200) within this (u) of it... */
+export const FLEE_U = 70;
+const RUN_UPS = 120;
+/** ...sends a flier, a percher or a hopper off, as NH's bugs take off at a run and keep still for one creeping up
+ *  (or netting from where they stand). */
+export const fleesFrom = (flight: Flight, distU: number, ups: number): boolean =>
+  (flight === 'flutter' || flight === 'dart' || flight === 'perch' || flight === 'hop') && distU <= FLEE_U && ups > RUN_UPS;
 
 // ---------- captions ----------
 

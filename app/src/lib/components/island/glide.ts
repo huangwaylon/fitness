@@ -60,17 +60,20 @@ export class Glide {
   lease: Ease | null = null;
   started = false;
 
+  /** It's at (x, z, l) now (`t`), still: a move set later starts from here. */
+  set(t: number, x: number, z: number, l: number): this {
+    this.started = true;
+    this.x = this.fx = this.tx = x;
+    this.z = this.fz = this.tz = z;
+    this.l = this.fl = this.tl = l;
+    this.t0 = t;
+    this.ms = 0;
+    return this;
+  }
+
   /** Head for (x, z, l) over `ms` from now (`t`); the same target again changes nothing. The first one: it's there. */
   to(t: number, x: number, z: number, l: number, ms: number, ease: Ease, lease: Ease | null = null): this {
-    if (!this.started) {
-      this.started = true;
-      this.x = this.fx = this.tx = x;
-      this.z = this.fz = this.tz = z;
-      this.l = this.fl = this.tl = l;
-      this.t0 = t;
-      this.ms = 0;
-      return this;
-    }
+    if (!this.started) return this.set(t, x, z, l);
     if (x === this.tx && z === this.tz && l === this.tl) return this;
     this.at(t);
     this.fx = this.x; this.fz = this.z; this.fl = this.l;
