@@ -1,0 +1,17 @@
+{"_note": "Dish names read from the PDFs (title text is image/garbled font in pdftotext); nutrition comes from the official per-serving CSVs. g = serving weight estimated by the expansion agent from the listed ingredient amounts (cooked rice, rehydrated dried foods, edible parts).",
+ "recipes": [
+  {"csv": "hitori4_1", "name": "ひじき豆の炊き込みご飯", "cat": "主食", "g": 207, "aliases": ["ひじきご飯", "ひじき豆ご飯"]},
+  {"csv": "hitori4_2", "name": "鮭フレークのふわふわ卵焼き", "cat": "主菜", "g": 87},
+  {"csv": "hitori4_3", "name": "キャベツとツナのコールスロー", "cat": "副菜", "g": 123, "aliases": ["コールスロー", "ツナコールスロー"]},
+  {"csv": "hitori6_1", "name": "きゅうりと切り干し大根のサラダ", "cat": "副菜", "g": 138, "aliases": ["切り干し大根サラダ"]},
+  {"csv": "hitori6_2", "name": "あしたばのくるみ和え", "cat": "副菜", "g": 88, "aliases": ["明日葉のくるみ和え"]},
+  {"csv": "hitori8_1", "name": "じゃがいものカレー炒め", "cat": "副菜", "g": 210},
+  {"csv": "hitori8_2", "name": "島あさりのすまし汁", "cat": "汁物", "g": 200, "aliases": ["あさりのすまし汁"]},
+  {"csv": "hitori10_1", "name": "しかくまめのごま和え", "cat": "副菜", "g": 78},
+  {"csv": "hitori10_2", "name": "ぽりぽり大豆", "cat": "副菜", "g": 75, "aliases": ["大豆の甘辛炒め"]},
+  {"csv": "hitori11_1", "name": "さといもとブロッコリーのミートグラタン", "cat": "主菜", "g": 310, "aliases": ["ミートグラタン"]},
+  {"csv": "hitori11_2", "name": "ピリ辛チリドッグ", "cat": "パン", "g": 206, "aliases": ["チリドッグ"]},
+  {"csv": "hitori12_1", "name": "簡単カルパッチョ（サーモン）", "cat": "主菜", "g": 65, "aliases": ["カルパッチョ", "サーモンカルパッチョ"]},
+  {"csv": "hitori12_2", "name": "基本の煮魚（かれい）", "cat": "主菜", "g": 85, "aliases": ["煮魚", "かれいの煮付け"]},
+  {"csv": "hitori12_3", "name": "いわしのかば焼き丼", "cat": "丼・定食", "g": 245, "aliases": ["かば焼き丼", "いわし丼"]}
+ ]}

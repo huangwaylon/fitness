@@ -1,0 +1,7 @@
+{"items": [
+{"key": "protein_whey", "name": "プロテイン（ホエイ・水で溶く）", "en": "Whey protein shake (with water)", "aliases": ["ぷろていん", "ホエイ", "ホエイプロテイン", "whey", "protein", "プロテインシェイク", "プロテインドリンク", "プロテインパウダー"], "cat": "飲料", "ing": [["typ:whey", 30]], "unit": "1杯（粉30g）", "portions": [["2杯（粉60g）", 2], ["軽め1杯（粉20g）", 0.6667]], "note": "粉の重さ。水は0kcalのため含めない"},
+{"key": "protein_whey_milk", "name": "プロテイン（ホエイ・牛乳で溶く）", "en": "Whey protein shake (with milk)", "aliases": ["プロテイン 牛乳", "プロテイン牛乳", "プロテインシェイク 牛乳", "ホエイ 牛乳"], "cat": "飲料", "ing": [["typ:whey", 30], ["13003", 206]], "unit": "1杯（粉30g＋牛乳200ml）", "note": "牛乳は普通牛乳（成分表）"},
+{"key": "protein_soy", "name": "プロテイン（ソイ・水で溶く）", "en": "Soy protein shake (with water)", "aliases": ["ソイプロテイン", "大豆プロテイン", "soy protein", "プロテイン ソイ"], "cat": "飲料", "ing": [["04057", 30]], "unit": "1杯（粉30g）", "portions": [["軽め1杯（粉20g）", 0.6667]], "note": "成分表「分離大豆たんぱく」で算出（市販品は甘味料・香料入りで少し高め）。粉の重さ。水は0kcalのため含めない"},
+{"key": "greek_yogurt", "name": "ギリシャヨーグルト（プレーン・無糖）", "en": "Greek yogurt (plain, unsweetened)", "aliases": ["ぎりしゃよーぐると", "ギリシャヨーグルト", "ギリシャ ヨーグルト", "水切りヨーグルト", "greek yogurt", "ヨーグルト ギリシャ"], "cat": "乳製品", "ing": [["typ:greek_yogurt", 113]], "unit": "1個（113g）"},
+{"key": "protein_bar", "name": "プロテインバー（一般的）", "en": "Protein bar (typical)", "aliases": ["ぷろていんばー", "プロテインバー", "protein bar", "バー プロテイン"], "cat": "菓子・デザート", "ing": [["typ:protein_bar", 45]], "unit": "1本（45g）", "portions": [["小さめ1本（35g）", 0.778]]}
+]}

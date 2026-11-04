@@ -22,6 +22,14 @@ npm run knip       # unused files, exports, dependencies
 ```
 Needs Node ≥ 24.
 
+The meal log's food data (`app/static/food/`), rebuilt from the repo root ([docs](docs/food-data.md); Python ≥ 3.9, stdlib
+only; the raw downloads in `food-data/raw/` are gitignored):
+```sh
+python3 -I food-data/scripts/build.py all    # → food-data/out/
+cd app && npm run food:data                  # → app/static/food/
+python3 -I -m unittest discover -s food-data/scripts/tests
+```
+
 ## Layout
 | Path | Contents |
 |---|---|
@@ -33,8 +41,9 @@ Needs Node ≥ 24.
 | `app/gas/` → `app/apps-script/` | The sheet's exporter (Apps Script) and its bundle |
 | `relay/` | The Cloudflare Worker: the record, the live room, the Shortcut parser |
 | `app/scripts/` | Asset scripts and the benchmark |
+| `food-data/` | The food data pipeline (Python): `scripts/` builds `out/` from `raw/` (gitignored) and `data_src/`; `npm run food:data` ships it |
 | `app/e2e/` | Playwright tests |
 
 ## Docs
-- [Design](docs/design.md) · [Backend](docs/backend.md) · [Decisions](docs/decisions.md)
+- [Design](docs/design.md) · [Backend](docs/backend.md) · [Decisions](docs/decisions.md) · [Food data](docs/food-data.md)
 - [Runbook](docs/ops/runbook.md) · [Testing](docs/ops/testing.md) · [Google setup](docs/ops/google-setup.md) · [Health sync Shortcut](docs/ops/shortcut-health-sync.md)
