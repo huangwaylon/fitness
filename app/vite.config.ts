@@ -71,12 +71,32 @@ const slimAudioManifest: Plugin = {
   }
 };
 
+/** Vite's preload helper (a lazy chunk's CSS: a <link> in the head, kept) leaves its load and error listeners on the
+ *  link, and the error one's closure holds the import's thunk, so the component that first asked for that CSS (a whole
+ *  island: its DOM, its WebGL context) stays alive for the page's life (docs/ops/testing.md "Memory"). Both go once
+ *  either fires. */
+const preloadListenersOff: Plugin = {
+  name: 'preload-listeners-off',
+  enforce: 'post',
+  transform(code, id) {
+    if (id !== '\0vite/preload-helper.js') return;
+    const re = /link\.addEventListener\("load", res\);\s*link\.addEventListener\("error", \(\) => rej\((.*)\)\);/;
+    const m = re.exec(code);
+    if (!m) throw new Error("vite.config.ts preload-listeners-off: Vite's preload helper changed; recheck its CSS link listeners");
+    const off = `const off = new AbortController(), o = { signal: off.signal };
+      link.addEventListener("load", () => (off.abort(), res()), o);
+      link.addEventListener("error", () => (off.abort(), rej(${m[1]})), o);`;
+    return { code: code.replace(re, () => off), map: null };
+  }
+};
+
 // A static SPA (GitHub Pages). The backend is the relay: the record at its /api (lib/sync/transport.ts), the room at /room.
 // Output goes to build-pages/.
 export default defineConfig({
   plugins: [
     slimArtManifest,
     slimAudioManifest,
+    preloadListenersOff,
     sveltekit({
       adapter: adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }),
       version: { name: appVersion() },
