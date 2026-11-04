@@ -9,9 +9,9 @@
   // level (FoodSheet's title bar: its ‹; back where it was scrolled, the focus on what opened it, as けんこう's).
   // Anyone else's day is read-only. データの出典 at the foot. Whose day sits in the title bar (`lead`, FoodSheet's
   // NavBar; kept for the session as けんこう's); under it the tabs (TABS, けんこう's group switch): きろく (the day,
-  // on each opening) and グラフ (FoodChart: the kcal over a period, けんこう's period dropdown, its range row and its Move
-  // card; switching whose keeps the tab, the period and the range). A meal's search offers everyone's recipes
-  // (マイレシピ) and custom foods (マイ食品), and under its field レシピを つくる (FoodRecipe, the editor) and 食品を
+  // on each opening) and グラフ (FoodChart: the kcal over a period, its range row with けんこう's period dropdown beside
+  // きょう, and its Move card; switching whose keeps the tab, the period and the range). A meal's search offers everyone's
+  // recipes (マイレシピ) and custom foods (マイ食品), and under its field レシピを つくる (FoodRecipe, the editor) and 食品を
   // つくる (FoodCustom, whose ほぞん goes on to the amount for the new food); a recipe's or custom food's amount opens it
   // (mine to edit, anyone else's to copy). A recipe's ingredient search offers the custom foods and 食品を つくる too.
   import '#lib/i18n/food.ts'; // the meal log's strings, loaded with it
@@ -424,15 +424,7 @@
     {:else}
       <Segmented items={TABS.map((id) => ({ id, label: t(`food.tab.${id}`), art: FOOD_TAB_ART[id] }))} value={tab} label={t('food.tabs')} attr="tab" onpick={(id) => (tab = id)} />
       {#if tab === 'chart'}
-        <!-- グラフ: けんこう's period dropdown at the right end, where けんこう has it (there beside its two-way switch;
-             ごはん's tabs take the whole row) -->
-        <div class="per">
-          <Pick kind="period" value={period} options={PERIODS.map((id) => ({ id, label: t(`health.period.${id}`) }))} label={t('health.period')} onpick={setPeriod} />
-        </div>
-      {/if}
-
-      {#if tab === 'chart'}
-        <FoodChart {who} name={names[who]} {period} />
+        <FoodChart {who} name={names[who]} {period} onperiod={setPeriod} />
       {:else}
         <RangeNav earlier={t('food.earlier')} later={t('food.later')} today={t('food.today')} {canOn} atToday={picked_d === null}
           onback={() => shift(-1)} onon={() => shift(1)} ontoday={() => (picked_d = null)}>
@@ -461,7 +453,5 @@
   /* a level slides in from the right (design.md "Navigation": one push motion, 240ms; as けんこう's goal level) */
   .lvl { animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
-  /* グラフ's period under the tabs, at the right end, as wide as けんこう's */
-  .per { display: grid; grid-template-columns: auto; justify-content: end; }
   .rl { flex: 1; min-width: 0; text-align: center; font-size: var(--fs-talk); white-space: nowrap; }
 </style>

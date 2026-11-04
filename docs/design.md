@@ -244,9 +244,8 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
 
 - **Tabs:** first, right under the title bar (stable across tabs), けんこう's group switch (`ui/Segmented`, a list
   of tabs: `Food.svelte` TABS): きろく (on each opening; its icon NH's rice cooker, `art.ts` FOOD_TAB_ART: the plate
-  meal before it was a blur at 22px) · グラフ (`FoodChart`). Under it, per tab: きろく the day row, グラフ the period
-  (at the row's right end, where けんこう has it; the tabs take the whole row) then the range row. Switching whose keeps
-  the tab. Recipes and custom foods have no tab: a meal's search is the way in.
+  meal before it was a blur at 22px) · グラフ (`FoodChart`). Under it, per tab: きろく the day row, グラフ the range row
+  with the period at its right end, beside きょう. Switching whose keeps the tab. Recipes and custom foods have no tab: a meal's search is the way in.
 - **Whose day (きろく, グラフ):** in the title bar left of ごはん, as けんこう's (the same compact pill): this phone's
   person first, then the others (the guest once it has logged a meal, or on its own phone); kept for the session.
   Then (きろく) a sticky row: ‹ the day (「11/4(水)」) › and きょう; › goes past today only to tomorrow, and only when a
@@ -284,7 +283,8 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   verbs. Tapping one of its items opens it; ほぞん or けす changes that day only: the day leaves the repeat then (its
   items become its own, in one go; unmarked under the same chip); ‹ changes nothing.
 - **グラフ (the グラフ tab;** the user: "show total calories over different periods of time … also show average line …
-  also add in the calories burned graph"**):** けんこう's period dropdown (`health/Pick`) under the tabs, its range row (`health/RangeNav`, swipe paging), then たべた カロリー (`FoodIntake`, けんこう's
+  also add in the calories burned graph"**):** its range row (`health/RangeNav`, swipe paging) with けんこう's period dropdown (`health/Pick`) after きょう (the
+  range's unit wraps in the narrower middle), then たべた カロリー (`FoodIntake`, けんこう's
   `BarChart` and MetricCard's layout; `model/food.ts` foodSeries, one pass over the record up to today, read by
   health.ts's bucket and stat rules): a bar per day (foodDay's total, repeats included) or per week / month (the daily
   average of its days with a meal), every bar solid in the person's colour (no goal-met shading: the kcal goal isn't

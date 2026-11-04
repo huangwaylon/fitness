@@ -1,6 +1,7 @@
 <script lang="ts">
   // The sticky ‹ range › きょう row (けんこう's, ごはん's day and its グラフ): it stays at the top of the panel while the
-  // cards scroll under it. The middle (the range, the day) is the caller's, styled there.
+  // cards scroll under it. The middle (the range, the day) is the caller's, styled there; `end` after きょう (ごはん's
+  // グラフ: its period).
   import type { Snippet } from 'svelte';
 
   interface Props {
@@ -17,8 +18,9 @@
     onon: () => void;
     ontoday: () => void;
     children: Snippet;
+    end?: Snippet;
   }
-  let { earlier, later, today, canBack = null, canOn, atToday, onback, onon, ontoday, children }: Props = $props();
+  let { earlier, later, today, canBack = null, canOn, atToday, onback, onon, ontoday, children, end }: Props = $props();
 </script>
 
 <div class="nav">
@@ -30,6 +32,7 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19" /></svg>
   </button>
   <button type="button" class="nb today" data-nav="today" aria-disabled={atToday} data-sfx="tick" onclick={ontoday}>{today}</button>
+  {@render end?.()}
 </div>
 
 <style>
