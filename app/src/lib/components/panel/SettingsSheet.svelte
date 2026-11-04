@@ -7,8 +7,6 @@
   // The picker and the guide push a level with ‹; ✕, the backdrop and Esc close it, and the next opening starts at
   // its top.
   import { tick } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { resolve } from '$app/paths';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import Avatar from '../characters/Avatar.svelte';
@@ -106,10 +104,6 @@
           <button type="button" class="btn small paper" data-decor-start data-sfx="open" onclick={() => ((ui.decorating = true), (open = false))}>{t('panel.decorStart')}</button>
         </div>
       {/if}
-      <div class="prow static forest">
-        <span class="prl">🐻 {t('panel.forest')}<small>{t('panel.forestHint')}</small></span>
-        <button type="button" class="btn small paper" data-forest data-sfx="open" onclick={() => ((open = false), void goto(resolve('/expedition')))}>{t('panel.forestGo')}</button>
-      </div>
       <section class="sec" aria-labelledby="sec-help">
         <h2 id="sec-help" class="sec-label">{t('panel.help')}</h2>
         <div class="card help">
@@ -144,8 +138,8 @@
 
   /* one section per topic: a small heading over its rows */
   .sec { display: grid; gap: 8px; }
-  .me .prl small, .forest .prl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
-  .me .btn, .decor .btn, .forest .btn { flex: none; }
+  .me .prl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
+  .me .btn, .decor .btn { flex: none; }
   .help { display: grid; gap: 10px; padding: 14px 16px; }
   .help p { margin: 0; font-weight: 700; line-height: 1.5; }
   .help .btn { justify-self: end; }

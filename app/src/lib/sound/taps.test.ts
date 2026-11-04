@@ -39,7 +39,6 @@ const SELF: Record<string, string> = {
 
 /** `none`: deliberately silent. */
 const NONE: Record<string, string> = {
-  'lib/components/forest/ForestGame.svelte': 'くまのもり\'s act and seed buttons, pressed mid-chase: the game\'s own sounds answer (a pick-up, a bonk, the chase music), no tick over them',
   'lib/components/ui/Toast.svelte': 'a banner with 取り消す: a tap only holds it (the button is the sound)',
   'routes/pair/+page.svelte': 'the key field: the system keyboard clicks',
   'lib/components/health/GoalEdit.svelte': 'a goal\'s field (its −/＋ tick): the system keyboard clicks',

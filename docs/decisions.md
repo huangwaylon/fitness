@@ -823,18 +823,3 @@ a 2D texture on the screen, actually make it more like a subtle, beautiful 3D sp
 done, subtle. Similar to the original game"); NH's rain has depth and lands on the ground. Battery: the island already
 draws at its ambient 30 for the water, so falling rain costs only its two draws (no CPU per particle); a CSS layer
 would have been free on the GPU but flat.
-
-### くまのもり: a second island for an action round (2026-11-04)
-A proof of concept on its own screen (`/expedition`, design.md "Kuma no mori"): the main island unloads on the way
-(a route change, as the rooms do: its own renderer, disposed and context-lost on the way out), so the forest has the
-phone to itself. Two to three players run and hide from bears (Beardo, 1.8×, darkened, red eyes: NH has no wild bear
-or predator model) while gathering; caught, a partner helps you up within 25 s or you're flown home; one shared 4:00
-clock. Each phone moves its own player; the lowest of A, B, G in the round hosts the bears, the claims and the clock
-(pure `sim.ts`, so a relay room could run it later). The camera follows the player here, the one place it does (the
-island's no-auto-camera rule is the island's), but it still never turns by itself. Nothing there gives ベル (finds and
-ギリギリ are counted, not yet kept). Not done: the relay room for two phones (the POC links tabs of one browser),
-keeping the haul (かいがら, a forest ずかん), the seaplane and the airport. Why: the user ("a new island, we teleport
-over and only load it when we are there"; "an action based game - two players, hiding and running from a bear,
-collecting things in a forest"; "the thrill of barely escaping"; "or even three players"; "or multiple bears";
-"maybe a stun mechanic"; "maybe red glowing eyes").
-
