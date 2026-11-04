@@ -200,7 +200,7 @@ test('3D fishing: the rod stays in the hand, its tip where the line starts, at e
   {
     const [x, z] = (await fish())!;
     await page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z < 0 ? 20 : z + 45), [x, z]);
-    // (my 3D villager there: within a line's reach of the float, it holds the rod)
+    // (my 3D villager there)
     await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3: { last(s: string): { x: number } | null } }).__villagers3.last('mine')?.x), { timeout: 5000 }).toBeCloseTo(x, 0);
   }
   // (the shadow drifts: cast by where it is now, on open water)

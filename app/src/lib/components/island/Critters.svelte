@@ -7,8 +7,8 @@
   // where NH keeps it; a shaken bush sometimes lets a butterfly or a moth out. A catch is an official icon and NH's
   // line, and the first of each a ずかん find (never ベル).
   //   Fishing, NH's, the same in every water (fishing.ts: my line's state machine; critters.ts waterAt, landing: the
-  //   water as the island's tiles have it): a tap on water within CAST_REACH_U of my villager casts there from where it
-  //   stands, turning to it (further: it turns, a boop and 「とどかない」 where the tap was). A shadow near the float on
+  //   water as the island's tiles have it): a tap on any water, however far, casts there from where my villager
+  //   stands, turning to it, the line as long as it takes. A shadow near the float on
   //   open water notices it, swims up, nibbles 1–4 times and bites: the float is yanked under with a splash, its own
   //   sound and NH's 「！」. While the line is out any tap is the reel: on the bite it catches the fish; any earlier
   //   with a fish at it scares it off; with none it just reels in. No tap in time and it gets away (the float stays
@@ -40,7 +40,7 @@
   //   ?sea=<id>|pearl: a bubble spot; ?flea: a tap on my villager always sends a flea off it.
   import { fx3d } from './fx3d.ts';
   import { NIBBLE_MS, PLUNGE_MS, angle, angling, floatLift, nibbled } from '../world3d/fishing3d.ts';
-  import { BITE_WINDOW_MS, NOTICE_U, aim, cast as castLine, due, pull, step as stepLine, type Around, type Line as MyLine, type Plan, type Step } from './fishing.ts';
+  import { BITE_WINDOW_MS, NOTICE_U, cast as castLine, due, pull, step as stepLine, type Around, type Line as MyLine, type Plan, type Step } from './fishing.ts';
   import { actorOf } from '#lib/ui-state/cast.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { EASE, Glide, turn, yawOf } from './glide.ts';
@@ -163,8 +163,6 @@
   let rings = $state(0);
   /** The 「！」's nudge (px) keeping it on screen, and whether the 3D island drew it (fx3d.ts: the DOM's invisible). */
   let bang = $state<{ dx: number; in3d: boolean } | null>(null);
-  /** A tap the line can't answer with a cast: the reason, where it was (world), shown a moment (「とどかない」). */
-  let nope = $state<{ n: number; x: number; z: number } | null>(null);
   /** Why the last tap on water did what it did (the e2e's `__fish.why()`). */
   let why = '';
   // the 3D island's angler (world3d/fishing3d.ts: my 3D villager's rod swings out, tugs at the bite, reels in); a reel
@@ -173,7 +171,7 @@
     const l = line;
     if (l) angle(l.phase === 'bite' ? 'bite' : l.phase === 'flying' ? 'cast' : 'wait', l);
     else if (angling.phase !== 'reel') angle(null);
-    // (the line in without a reel: my villager walked off, the critters left, the day ended)
+    // (the line in without a reel: my villager dozed off, the critters left, the day ended)
     if (!l) untrack(() => tellLine('off'));
   });
   // gone with the line out (through a door: the phone's socket stays, so the others hear it end), and the others'
@@ -224,7 +222,7 @@
     pending.clear();
     clearTimeout(tickT);
     fishes = none();
-    line = bug = net = dig = bubbles = diving = nope = bang = null;
+    line = bug = net = dig = bubbles = diving = bang = null;
   }
 
   // ---------- geometry ----------
@@ -414,9 +412,8 @@
   const today = () => slotAt(now().getTime(), relayOffset()).date;
   /** What a step of my line asks of the island: my villager, the day, the shadows. */
   const around = (): Around => {
-    const [x, z] = livePos('mine');
     return {
-      me: { x, z, asleep: actors.mine.asleep }, day: today(), rand,
+      asleep: actors.mine.asleep, day: today(), rand,
       // the nearest free shadow on that water within NOTICE_U, open water between it and the float
       notice(x, z, water) {
         let best: { fish: string; d: number } | null = null;
@@ -496,24 +493,15 @@
     }
   }
 
-  /** A tap on water at world `at` with no line out: the cast there, from where my villager stands (NH: no walk), or the
-   *  reason it can't (too far: it turns to it, a boop and 「とどかない」 there, and the water rings as any tap on it
-   *  does: false). False too: no water there (not ours). */
+  /** A tap on water at world `at` with no line out: the cast there, however far, from where my villager stands (NH: no
+   *  walk; the user: "I want to be able to fish from anywhere"). False: no water there, or a building's in front of it
+   *  (not ours: the tap goes on to what's there). */
   function castAt(at: { x: number; z: number }, seen: Seen, px: number, py: number): boolean {
     const to = landing(at.x, at.z) ?? onShadow(px, py);
     if (!to) return (why = 'not water'), false;
     // (behind a building's body: the building's tap)
     if (!seen(to.x, to.z)) return (why = 'behind a building'), false;
-    const [mx, mz] = livePos('mine'), a = aim(to, { x: mx, z: mz });
-    if (!a.ok) {
-      why = 'too far';
-      turnTo(to.x);
-      cue('boop');
-      nope = { n: ++seq, x: to.x, z: to.z };
-      const n = nope.n;
-      later(() => nope?.n === n && (nope = null), 1400);
-      return false;
-    }
+    const [mx, mz] = livePos('mine');
     // dozing: the cast wakes it (as a tap on it does: on both phones); walking: it stops where it is, and casts
     if (actors.mine.asleep) wakeUp('mine');
     else if (inMotion('mine')) sendTo(mx, mz);
@@ -1588,8 +1576,9 @@
     <i class="m3n" {@attach w.at({ x: l.x, z: l.z, h: 4, always: true, live: () => floatAt(l), m3: { key: 'tools/bobber', id: 'bobber', water: true, off: !out, art: () => scene?.querySelector('[data-bobber]'),
       emit: out && !under ? { kind: 'ripple', every: 2600, size: 0.45 } : undefined,
       line: () => {
-        const [mx, mz] = livePos('mine');
-        return [mx + (l.x - mx) * 0.12, mz + (l.z - mz) * 0.12, 34] as const;
+        // (a hand's reach toward the float, however far it is)
+        const [mx, mz] = livePos('mine'), d = Math.hypot(l.x - mx, l.z - mz) || 1, k = Math.min(1, 10 / d);
+        return [mx + (l.x - mx) * k, mz + (l.z - mz) * k, 34] as const;
       } } })}></i>
     <!-- each nibble's small ring on the water, and the bite's splash and big ring (once each: a node of its own) -->
     {#key rings}
@@ -1671,14 +1660,6 @@
         <span class="inv" class:in3d={bang.in3d}><span class="bang" data-bite style:left="{bang.dx.toFixed(1)}px">！</span></span>
       </div>
     {/if}
-  {/if}
-  {#if nope}
-    {#key nope.n}
-      <!-- a tap on water out of the line's reach: 「とどかない」 where it was, a moment (never a silent tap) -->
-      <div class="node" {@attach w.at({ x: nope.x, z: nope.z, h: 30, zi: OVER, inv: true, always: true })}>
-        <span class="inv"><span class="nope" data-fish-nope="far">{t('fish.far')}</span></span>
-      </div>
-    {/key}
   {/if}
   {#if bug}
     {@const b = bug}
@@ -1802,13 +1783,6 @@
     transform-origin: 50% 100%; animation: bang .32s cubic-bezier(.3, 1.6, .5, 1) both;
   }
   @keyframes bang { from { transform: scale(.2); opacity: 0; } 40% { opacity: 1; } }
-  /* 「とどかない」: a small cream chip that rises a little and fades */
-  .nope {
-    position: absolute; left: 0; top: 0; translate: -50% -100%; white-space: nowrap; padding: 3px 9px; border-radius: 999px;
-    background: #FFFDF6; color: #7A5A3A; box-shadow: 0 2px 0 rgba(150, 110, 70, .3); font: 700 13px / 1.2 var(--font-ui);
-    animation: nope 1.4s ease-out both;
-  }
-  @keyframes nope { from { opacity: 0; transform: translateY(4px); } 15% { opacity: 1; transform: none; } 75% { opacity: 1; } to { opacity: 0; transform: translateY(-6px); } }
   .ripple {
     display: block; left: 0; top: 0; width: calc(18 * var(--u)); height: calc(6 * var(--u)); margin: calc(-3 * var(--u)) 0 0 calc(-9 * var(--u));
     border: 1.4px solid rgba(255, 255, 255, .85); border-radius: 50%; animation: ripple .8s ease-out both;

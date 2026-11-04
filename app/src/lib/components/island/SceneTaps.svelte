@@ -275,7 +275,7 @@
     if (finds?.tap(cx, cy)) return;
     if (care?.tap(cx, cy)) return;
     // the water under the finger, nothing of the island's over it (a canopy over the pond shakes its tree): a cast from
-    // where my villager stands (NH), or too far (it says so, and the water still rings)
+    // where my villager stands (NH), however far
     if (!t.closest('[data-tree], [data-bush], [data-campfire], [data-sit], [data-fixture], [data-flower]') && critters?.fish(cx, cy)) return;
     // the tapped element: a tree (Scenery's canopy), a bush (Scenery's art) or a flower (Flowers)
     // (a tree top reaching into the sky leaves the sun, the moon and the clouds theirs)

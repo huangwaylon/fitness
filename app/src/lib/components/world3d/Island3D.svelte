@@ -33,6 +33,7 @@
   import type { LampSpot } from './lights.ts';
   import { createVillagers, type VSpec, type Villagers3 } from './villagers.ts';
   import { createBalloon3, type Balloon3 } from './balloon3d.ts';
+  import { LINE_MAX, blocksOf, liftOf, linePoints, pointsFor, type Block } from './fishLine.ts';
   import { has3d } from '../villager3d/manifest.ts';
   import { BufferGeometry, Float32BufferAttribute, Line, LineBasicMaterial, Vector3, type Object3D } from 'three';
   import type { FxKind } from './effects.ts';
@@ -342,8 +343,20 @@
   const live3 = new Map<string, Live3>(), seen3 = new Set<string>();
   /** The emitters' last flourish, the lines drawn (by node). */
   const emitted = new Map<string, number>(), seenEmit = new Set<string>();
-  const lines = new Map<string, { obj: Line; off: () => void }>(), seenLine = new Set<string>();
+  /** The lines drawn (by node): a fishing line's arc kept for its ends (fishLine.ts liftOf: looked at once they move). */
+  const lines = new Map<string, { obj: Line; off: () => void; key?: string; lift?: number }>(), seenLine = new Set<string>();
   const LINE_N = 12;
+  /** What stands in a long line's way on each layout (fishLine.ts), made the first time a line asks. */
+  const blocksOn = new WeakMap<Layout, Block[]>();
+  const blocksNow = () => {
+    const l = layoutNow();
+    let b = blocksOn.get(l);
+    if (!b && lground) blocksOn.set(l, (b = blocksOf(l, heightOf)));
+    return b ?? [];
+  };
+  const lineAB: [[number, number, number], [number, number, number]] = [[0, 0, 0], [0, 0, 0]];
+  /** What a line passes over at (x, z): the ground, or the water's surface over it (a sag never dips into the sea). */
+  const overOf = (x: number, z: number) => Math.max(heightOf(x, z), waterY(x, z));
   /** The water's surface at (x, z): the sea's level, or a stream's or a pond's (its banks less the drop). */
   const waterY = (x: number, z: number) => {
     const l = layoutNow();
@@ -464,7 +477,7 @@
       if (n.m3.line) {
         let ln = lines.get(n.id);
         if (!ln) {
-          const geo = new BufferGeometry().setAttribute('position', new Float32BufferAttribute(new Float32Array(LINE_N * 3), 3));
+          const geo = new BufferGeometry().setAttribute('position', new Float32BufferAttribute(new Float32Array(LINE_MAX * 3), 3));
           const obj = new Line(geo, new LineBasicMaterial({ color: 0xf6f1e4, transparent: true, opacity: 0.85 }));
           ln = { obj, off: e.add(obj) };
           lines.set(n.id, ln);
@@ -475,9 +488,23 @@
         let [sx, sz, sl] = n.m3.line(), y0 = heightOf(sx, sz) + sl;
         if (tip) [sx, sz, y0] = [tip.x, -tip.z, tip.y];
         const pos = ln.obj.geometry.getAttribute('position') as Float32BufferAttribute, y1 = heightOf(x, z) + lf;
-        for (let i = 0; i < LINE_N; i++) {
-          const k = i / (LINE_N - 1), sag = Math.sin(k * Math.PI) * 6;
-          pos.setXYZ(i, sx + (x - sx) * k, y0 + (y1 - y0) * k - sag, -(sz + (z - sz) * k));
+        if (n.id.startsWith('bobber')) {
+          // a fishing line, any length (fishLine.ts): its sag by its length, clear of what's under it, a point every 16u
+          const [a, b] = lineAB;
+          a[0] = sx, a[1] = y0, a[2] = sz, b[0] = x, b[1] = y1, b[2] = z;
+          const len = Math.hypot(x - sx, y1 - y0, z - sz), np = pointsFor(len);
+          const key = `${Math.round(sx / 4)},${Math.round(y0 / 4)},${Math.round(sz / 4)},${Math.round(x)},${Math.round(z)}`;
+          if (ln.key !== key) [ln.key, ln.lift] = [key, liftOf(a, b, overOf, blocksNow())];
+          linePoints(pos.array as Float32Array, np, a, b, ln.lift!);
+          // (three's z is the world's −z)
+          for (let i = 0; i < np; i++) pos.array[i * 3 + 2] = -pos.array[i * 3 + 2];
+          ln.obj.geometry.setDrawRange(0, np);
+        } else {
+          for (let i = 0; i < LINE_N; i++) {
+            const k = i / (LINE_N - 1), sag = Math.sin(k * Math.PI) * 6;
+            pos.setXYZ(i, sx + (x - sx) * k, y0 + (y1 - y0) * k - sag, -(sz + (z - sz) * k));
+          }
+          ln.obj.geometry.setDrawRange(0, LINE_N);
         }
         pos.needsUpdate = true;
         ln.obj.visible = on;
@@ -857,6 +884,14 @@
       lamps: () => e.lamps(),
       /** My angler's line up: its facing, its rod and its line's headings in plan (degrees), or null. */
       angler: (slot = 'mine') => vil3?.angler(slot) ?? null,
+      /** A line as drawn (a bobber's, by its node's id): its points (three's space), or null. */
+      line: (id = 'bobber') => {
+        const ln = lines.get(id), pos = ln?.obj.geometry.getAttribute('position');
+        if (!ln || !pos) return null;
+        const out: number[][] = [];
+        for (let i = 0; i < ln.obj.geometry.drawRange.count && i < pos.count; i++) out.push([pos.getX(i), pos.getY(i), pos.getZ(i)]);
+        return { visible: ln.obj.visible, bent: !!(ln.obj.material as LineBasicMaterial).userData.bent, pts: out };
+      },
       /** On the layout: its ground built (the layout's); the homes, bridges and stairs placed. */
       onLayout: () => !!lground,
       placedGroups: () => e.placedGroups(),

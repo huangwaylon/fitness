@@ -141,8 +141,8 @@ type Fishing = {
   __fish: { fish(): { water: string; x: number; z: number }[] };
   __world: { free(x: number, z: number, away?: number): boolean; put(x: number, z: number): void; at(x: number, z: number): [number, number]; mine(): [number, number] };
 };
-/** My villager on the bank within a cast of the shadow in `water` (island/fishing.ts CAST_REACH_U: NH casts from where
- *  it stands): open ground near it, behind it on screen where there's any (so it never stands over the shadow), put
+/** My villager on the bank near the shadow in `water` (NH casts from where it stands; any water casts, this one's the
+ *  near case): open ground near it, behind it on screen where there's any (so it never stands over the shadow), put
  *  there; the camera on the shadow first. Where the shadow is seen now (client px). */
 export async function toTheWater(page: Page, water: string): Promise<[number, number]> {
   // (the opening beats over: a greeting's balloon at the bottom of the screen lies over the sea)
@@ -172,7 +172,7 @@ export async function toTheWater(page: Page, water: string): Promise<[number, nu
         }
     return null;
   }, water);
-  expect(spot, `open ground within a cast of the ${water}'s shadow`).not.toBeNull();
+  expect(spot, `open ground near the ${water}'s shadow`).not.toBeNull();
   await page.evaluate(([x, z]) => (window as unknown as Fishing).__world.put(x, z), spot!);
   await expect.poll(() => page.evaluate(() => (window as unknown as Fishing).__world.mine()).then(([x, z]) => Math.hypot(x - spot![0], z - spot![1]))).toBeLessThan(1);
   // the shadow's spot, or the water nearest it a finger can tap (nothing of the island's over it: a canopy, a door, a

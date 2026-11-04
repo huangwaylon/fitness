@@ -69,8 +69,8 @@ world.ts SEATS's names) pass their anchors; a piece with no shape keeps the old 
 Fishing (`world3d/fishing3d.ts`): Critters.svelte says each step of my line (cast, wait, bite, reel) and where its
 float is; my 3D villager (world3d/villagers.ts) holds NH's rod while the line is out (`VSpec.tool`, Island3D's), turned
 in its hand to point out over the water in the fishing pose, swings it out on the cast, is tugged at
-the bite and reels in (the rod kept in hand till the reel is over). Within LINE_REACH_U (220u, island/fishing.ts: a
-cast reaches 190u, so the angler always holds its line; walked further off, the line ends). Which way
+the bite and reels in (the rod kept in hand till the reel is over), however far its float (no reach: a cast goes to
+any water). Which way
 (`world3d/facing.ts`, the same on every phone from the same steps): standing, it turns to the float, NH's quick smooth
 turn (~0.2 s), and keeps facing it, square on from the rod's hand, the rod pointed at it; seated or lying it doesn't
 turn, the rod pointed the way it faces. The rod is a 3D child of the hand bone (`Hand_R`) and the line runs in world
@@ -85,7 +85,13 @@ ring (the rings and the splash are emitters on the water's surface: `m3.emit` on
 overshoot, hops while the window lasts and pops out at the reel or the miss (effects.ts FxOpts `held`). Frames run at
 full rate while the float is out (`moveStart`), the ambient rate again once it's gone. `window.__fx3` (dev and ?demo):
 each source's live parts and the spawns' log (e2e/fishing3d.spec.ts: the nibbles' rings come before the 「！」). The
-fx/* meshes draw in their vertex colours unless tinted (they drew all white before: the 「！」 a blank disc). The line is Island3D's (a bent `Line` from `tip()`); a tube line (thicker than a 1 px GL line on
+fx/* meshes draw in their vertex colours unless tinted (they drew all white before: the 「！」 a blank disc). The line is Island3D's (a bent `Line` from `tip()`, `world3d/fishLine.ts`, pure and unit-tested): one quadratic from
+the tip to the float, a point every 16u (12 to 64: a line across the island bends with the island as smoothly as the
+ground under it; one buffer of 64, its draw range the points used); it sags under its own weight by its length (6u for
+a short one, as NH's; 4% of a long one), lifted only where it must to stay 4u over the ground, the water's surface and
+every blocking object's tiles at its drawn height (a cliff, a house, a tree between my villager and the water; bar 24u
+at either end), at most 0.6 of its length. Its shape is worked out when its ends move (by 4u at the tip, 1u at the
+float), not each frame (`__world3d.line()`: its points, e2e/fishing-taps.spec.ts' far cast). A tube line (thicker than a 1 px GL line on
 a 3× phone) is open for the lead.
 
 Not converted here (see the table's last section): the villagers and the visitors (skinned models of their own, below),

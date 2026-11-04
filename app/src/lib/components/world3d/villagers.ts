@@ -24,8 +24,6 @@ import type { Face } from '../villager3d/faces.ts';
 import type { Motion } from '../motion/reactions.ts';
 import { site } from '../island/site.svelte.ts';
 import { seatAnchor } from '../island/sitting.ts';
-// (how far a villager may stand from its float and still hold the line: the line's own, island/fishing.ts)
-import { LINE_REACH_U as LINE_REACH } from '../island/fishing.ts';
 
 export interface VSpec {
   /** The slot (an actor: mine, partner, third, visitor) and the roster id it draws. */
@@ -279,17 +277,16 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       if (ang.n !== w.angleN) {
         w.angleN = ang.n;
         const a = ANGLE_ACT[ang.phase ?? 'wait'];
-        if (a && Math.hypot(ang.x - s.x, ang.z - s.z) < LINE_REACH) {
+        if (a) {
           v.act(a);
           w.busyUntil = t + ACTION_MS[a];
           if (a === 'reel') w.rodUntil = t + ACTION_MS.reel;
         }
       }
-      // (only within a line's reach of the float: a phone a step behind, the angler stands empty-handed a moment)
-      const angled = ang.phase !== null || t < w.rodUntil, reach = !angled || Math.hypot(ang.x - s.x, ang.z - s.z) < LINE_REACH;
-      const rod = reach && (s.tool === 'tools/rod' || t < w.rodUntil || (ang.phase !== null && ang.phase !== 'reel'));
+      // (however far its float: the line runs from the rod's tip wherever it stands)
+      const rod = s.tool === 'tools/rod' || t < w.rodUntil || (ang.phase !== null && ang.phase !== 'reel');
       holdTool(w, rod ? 'tools/rod' : (s.tool ?? null));
-      if (debug) debug.set(s.slot, { t: Math.round(t), x: s.x, z: s.z, shown: s.shown, walking: s.walking, asleep: s.asleep, seat: s.seat, tool: s.tool ?? null, reach, rod, angling: { ...ang } });
+      if (debug) debug.set(s.slot, { t: Math.round(t), x: s.x, z: s.z, shown: s.shown, walking: s.walking, asleep: s.asleep, seat: s.seat, tool: s.tool ?? null, rod, angling: { ...ang } });
       // faded out of the board's way (and back), over FADE_MS
       const aim = s.away ? 0 : 1;
       if (w.alpha !== aim) {
@@ -369,7 +366,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
   }
 
   // the e2e's (dev builds and ?demo): a 3D villager's state, what it holds and its tip (three's space), and what its
-  // last frame saw (its spec, the line's reach, the rod)
+  // last frame saw (its spec, the rod)
   if (debug)
     (window as unknown as { __villagers3?: unknown }).__villagers3 = {
       last: (slot: string) => debug.get(slot) ?? null,

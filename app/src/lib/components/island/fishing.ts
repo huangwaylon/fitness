@@ -1,25 +1,21 @@
 // Fishing, as NH plays it (docs/design.md "Fishing"): my line as one explicit state machine, pure. Its clock (ms), the
-// shadows near the float, my villager's feet, the day and the dice are the caller's, so every step and every edge is a
-// unit test (fishing.test.ts). Critters.svelte steps it with performance.now() and plays what each step says: the float,
+// shadows near the float, whether my villager dozes, the day and the dice are the caller's, so every step and every
+// edge is a unit test (fishing.test.ts). Critters.svelte steps it with performance.now() and plays what each step says: the float,
 // the rod, the shadow's swim, the sounds, the 「！」, the catch plate and the others' phones.
 //
-//   a tap on water ─ aim ─→ too far / not water (a reason shown, never silence)
-//                       └─→ flying ─land→ waiting ─a shadow notices it→ approach ─arrives→ nibble (1–4) ─→ bite
+//   a tap on water, any water (the user: "I want to be able to fish from anywhere"): cast from where my villager stands
+//                       ──→ flying ─land→ waiting ─a shadow notices it→ approach ─arrives→ nibble (1–4) ─→ bite
 //                                         ↑                                                                │
 //                                         └──────────── it got away (no tap in BITE_WINDOW_MS) ────────────┘
 //   a tap while the line is out (NH's A button): flying, waiting → reel (nothing on it); approach, nibble → scare (it
-//   darts off: NH's early pull); bite → catch. Off by itself: my villager walked off, the island hidden or left, the
-//   day over, my villager dozed off (the line just goes: `off`).
+//   darts off: NH's early pull); bite → catch. Off by itself: the island hidden or left, the day over, my villager dozed
+//   off (the line just goes: `off`). No reach: the float may be anywhere on the island's water, the line as long as it
+//   takes; a tap on the ground with the line out reels it in (NH: you reel in to move), the next one walks.
 //
 // The bite's window starts when the bite is shown (the step that enters it), not when it was planned: a late timer
 // (a busy main thread, a throttled tab) never shortens it.
 import type { Water } from './critters.ts';
 
-/** How far from my villager's feet a cast reaches (u: NH's cast lands a few tiles ahead; an 80u villager). */
-export const CAST_REACH_U = 190;
-/** My villager this far from its float (u) no longer holds the line (it walked off: the line goes). The 3D rod's reach
- *  too (world3d/villagers.ts). */
-export const LINE_REACH_U = 220;
 /** A shadow this near a float on its water (u) notices it, there being open water between them. */
 export const NOTICE_U = 180;
 /** The float's flight out (ms). */
@@ -56,7 +52,7 @@ export interface Line {
 }
 
 /** Why a line ended on its own. */
-type OffWhy = 'walked' | 'day' | 'asleep';
+type OffWhy = 'day' | 'asleep';
 /** What a step did, in order, for the caller to play. */
 export type Step =
   | { ev: 'land' }
@@ -74,8 +70,8 @@ export type Pull = { ev: 'reel' } | { ev: 'scare'; fish: string } | { ev: 'catch
 
 /** What a step asks of the island. */
 export interface Around {
-  /** My villager's feet (world) and whether it's dozing. */
-  me: { x: number; z: number; asleep?: boolean };
+  /** Whether my villager is dozing (it dropped the line). */
+  asleep?: boolean;
   /** The island's day now. */
   day: string;
   /** The free shadow nearest a float at (x, z) on `water` within NOTICE_U that can swim to it, and how far (u). */
@@ -86,15 +82,8 @@ export interface Around {
   rand(): number;
 }
 
-/** Where a tap would cast: `to` the float's landing (critters.ts landing: the water there, drawn in from its edge),
- *  null when there's no water there. */
-export type Aim = { ok: true } | { ok: false; why: 'land' | 'far' };
-export function aim(to: { x: number; z: number } | null, me: { x: number; z: number }): Aim {
-  if (!to) return { ok: false, why: 'land' };
-  return Math.hypot(to.x - me.x, to.z - me.z) <= CAST_REACH_U ? { ok: true } : { ok: false, why: 'far' };
-}
-
-/** The line goes out to (x, z) on `water` at `now`. */
+/** The line goes out to (x, z) on `water` at `now` (critters.ts landing: the water tapped, drawn in from its edge),
+ *  however far that is from my villager. */
 export const cast = (to: { x: number; z: number; water: Water }, now: number, day: string): Line => ({
   phase: 'flying', x: to.x, z: to.z, water: to.water, at: now, since: now, fish: null, plan: null, noticed: 0, nibbles: 0, day
 });
@@ -120,11 +109,10 @@ const with_ = (l: Line, o: Partial<Line>): Line => ({ ...l, ...o });
 export function step(line: Line, now: number, w: Around): { line: Line | null; steps: Step[] } {
   const steps: Step[] = [];
   let l: Line = line;
-  // ended on its own: a new day, my villager off (walked away, dozed off)
+  // ended on its own: a new day, my villager dozed off
   const off = (why: OffWhy) => (steps.push({ ev: 'off', why }), { line: null, steps });
   if (w.day !== l.day) return off('day');
-  if (w.me.asleep) return off('asleep');
-  if (Math.hypot(w.me.x - l.x, w.me.z - l.z) > LINE_REACH_U) return off('walked');
+  if (w.asleep) return off('asleep');
   for (let guard = 0; guard < 16; guard++) {
     // the shadow gone before it bit (another caught it, it left): the float waits on
     if (l.fish && l.phase !== 'waiting' && !w.here(l.fish)) {
