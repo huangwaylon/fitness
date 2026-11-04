@@ -211,6 +211,9 @@ export interface Island3 {
   setLimits(min: number, max: number): void;
   // ---- the projection (the World's Proj3; px from the canvas's top-left) ----
   at(x: number, z: number, lift: number): { sx: number; sy: number; k: number; up: number; ground: number; depth: number; visible: boolean };
+  /** An instance's silhouette on screen (its outline's points, bent, as px from the canvas's top-left; null: no such
+   *  model built, or some of it behind the camera). */
+  outline(id: string): [number, number][] | null;
   groundAt(sx: number, sy: number): { x: number; z: number } | null;
   horizon(): number;
   rev(): number;
@@ -221,7 +224,8 @@ export interface Island3 {
   pause(on: boolean): void;
   /** Paused (pause()). */
   isPaused(): boolean;
-  /** The camera at rest: no finger, fling, spring back, settle or focus move under way (whatever else moves). */
+  /** The camera at rest: no finger, fling, spring back, settle or focus move under way (whatever else moves), and its
+   *  last move framed (the DOM's tap areas placed for it: a tap now lands on what the picture shows). */
   camStill(): boolean;
   /** Called in every frame before it draws: true wants another at the full rate (something moves), 'ambient' at the
    *  ambient rate. */
@@ -287,6 +291,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   // ---- the camera ----
   const lim = { min: CAM_Z.min as number, max: CAM_Z.max as number };
   let camZ = lim.min, zoomK = 1, pitch = (PITCH.def * Math.PI) / 180, rev = 0, shadowKey = '';
+  /** The camera's rev in the last frame's scene step (its DOM nodes placed for it). */
+  let framedRev = -1;
   let W = 1, H = 1, D0 = 1500, focal = 1;
   const pitchAt = (k: number) => {
     const kk = Math.max(ZOOM.min, Math.min(ZOOM.max, k));
@@ -382,6 +388,17 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     const cy = camera.position.y - by, cz = camera.position.z - bz;
     const visible = depth > 1 && (ny * cy + nz * cz) / Math.hypot(cy, cz) > -0.12;
     return { sx, sy, k, up, ground, depth, visible };
+  }
+  function outline(id: string): [number, number][] | null {
+    const pts = things.outline(id);
+    if (!pts?.length) return null;
+    const R = bendU.uBendR.value, pz = -camZ, out: [number, number][] = [];
+    for (const p of pts) {
+      const [sx, sy, depth] = screen(...bendPoint(p.x, p.y, p.z, pz, R));
+      if (depth <= 1) return null;
+      out.push([sx, sy]);
+    }
+    return out;
   }
   function groundAt(sx: number, sy: number): { x: number; z: number } | null {
     v3.set((sx / W) * 2 - 1, -(sy / H) * 2 + 1, 0.5).unproject(camera);
@@ -765,6 +782,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       want(true, 'things');
     }
     if (hook) want(hook(t), 'scene');
+    // (the scene placed its nodes for this camera: camStill waits for it)
+    framedRev = rev;
     want(cards.frame(pitch * LEAN, stretch, src.feet), 'cards');
     want(effects.frame(t, camera), 'fx');
     if (ground.update) want(ground.update(t), 'ground');
@@ -913,10 +932,10 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       const gl = renderer.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info');
       return String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
     },
-    at, groundAt, horizon,
+    at, outline, groundAt, horizon,
     rev: () => rev,
     kick: () => kick(),
-    camStill: () => !touch && !vel && !velX && !zoomBack && !settling && !move,
+    camStill: () => !touch && !vel && !velX && !zoomBack && !settling && !move && (framedRev === rev || paused || document.hidden),
     isPaused: () => paused,
     pause(on) {
       if (on === paused) return;

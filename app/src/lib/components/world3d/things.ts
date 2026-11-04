@@ -137,9 +137,18 @@ export interface Things {
    *  otherwise) and its scale over its own (the e2e). */
   groups(): unknown;
   where(id: string): { x: number; y: number; z: number; hidden: boolean; model: string; fade: number; scale: number; order: number } | null;
+  /** An instance's solid as a few of its outermost points (three's space, unbent; null: not built): what the camera
+   *  sees of it is their hull (a building's tap area: camera.svelte.ts `body`). */
+  outline(id: string): readonly Vector3[] | null;
   pending(): number;
   dispose(): void;
 }
+
+/** The ways an outline looks for a model's outermost points: 64 spread over the sphere (a Fibonacci lattice). */
+const SHAPE_DIRS: readonly Vector3[] = Array.from({ length: 64 }, (_, i) => {
+  const y = 1 - ((i + 0.5) / 64) * 2, r = Math.sqrt(1 - y * y), a = i * Math.PI * (3 - Math.sqrt(5));
+  return new Vector3(Math.cos(a) * r, y, Math.sin(a) * r);
+});
 
 /** The models as loaded (fetched, decoded: CPU-side), by URL, kept across the island's mounts: back from a room it
  *  builds from them at once, with no fetch, meshopt or image decode again (~60 of them). Each mount's GPU copies go with
@@ -246,8 +255,28 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     base: Matrix4[];
     /** Its instances fade (a critter's, or one the caller fades: Over `fade`). */
     soft: boolean;
+    /** Its model's outermost points (outline), found once. */
+    shape?: Vector3[];
   }
   const groups = new Map<ModelName, Group>();
+  /** A model's outermost vertex each way of SHAPE_DIRS (in its own space, its meshes' transforms in): its convex hull
+   *  near enough, so the hull of these on screen is its silhouette's. */
+  function shapeOf(g: Group): Vector3[] {
+    if (g.shape) return g.shape;
+    const best: { d: number; p: Vector3 }[] = SHAPE_DIRS.map(() => ({ d: -Infinity, p: new Vector3() }));
+    const v = new Vector3();
+    for (const { im, local } of g.meshes) {
+      const pos = im.geometry.getAttribute('position');
+      for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i).applyMatrix4(local);
+        SHAPE_DIRS.forEach((dir, k) => {
+          const d = v.dot(dir);
+          if (d > best[k].d) (best[k].d = d), best[k].p.copy(v);
+        });
+      }
+    }
+    return (g.shape = best.filter((b) => b.d > -Infinity).map((b) => b.p));
+  }
   const byId = new Map<string, { g: Group; i: number; inst: Inst }>();
   const overs = new Map<string, Over>();
   /** A flier's wings' angle now (radians), by instance id (flap). */
@@ -603,6 +632,10 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       tmpV.setFromMatrixPosition(a.g.base[a.i]);
       const scale = tmpS.setFromMatrixScale(a.g.base[a.i]).y / (a.inst.scale || 1);
       return { x: tmpV.x, y: tmpV.y, z: tmpV.z, hidden: !!overs.get(id)?.hidden, model: a.g.name, fade: opacity(id), scale, order: a.g.meshes[0]?.im.renderOrder ?? 0 };
+    },
+    outline(id) {
+      const a = byId.get(id);
+      return a ? shapeOf(a.g).map((p) => p.clone().applyMatrix4(a.g.base[a.i])) : null;
     },
     pending: () => pending,
     dispose() {

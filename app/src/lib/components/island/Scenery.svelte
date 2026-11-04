@@ -6,7 +6,7 @@
   // point (models.json). An oak is two nodes (its trunk and its canopy, the canopy's depth 14u nearer). The lights,
   // shadows and pools are the canvas's; the campfire's flames are the DOM's. A bush answers a tap (SceneTaps finds it
   // by data-bush), and so does a tree's leaves (data-tree: a rustle, three quick taps shake it); a building is a door
-  // (`onbuilding`).
+  // (`onbuilding`: its tap area its whole body, camera.svelte.ts `body`).
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { art, treeArt } from '#lib/art.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
@@ -22,6 +22,8 @@
   import { pose3d } from './echo3d.ts';
   import { site } from './site.svelte.ts';
   import { sitLook } from './sitting.ts';
+  import { footprint } from './nav.ts';
+  import { HOME_OF } from './layoutWorld.ts';
 
   interface Props {
     season: Season;
@@ -164,12 +166,12 @@
 {/each}
 
 {#each buildings as b (b.id)}
-  <div class="spr building" data-building={b.id} {@attach w.at({ x: b.x, z: b.z, h: b.h, model: true })}>
-    <button type="button" class="door" data-sfx="self" data-scenery data-look={sceneryKey(b.key, season, month)} aria-label={t(`world.building.${b.id}`)}
-      style={at3d(b.key, b.h)} style:height="calc({b.h} * var(--u))" style:width="calc({b.w ?? wOf(b.key, b.h)} * var(--u))"
-      onclick={(e) => onbuilding?.(b.id, e.currentTarget)}>
-      <OfficialArt key={sceneryKey(b.key, season, month)} size="calc({b.h} * var(--u))" eager />
-    </button>
+  {@const f = footprint(b.id)}
+  <!-- its tap area: its whole body as the camera sees it (its model's silhouette; a house built of parts, or before
+       its model is in: its footprint up to its height), nothing past it -->
+  <div class="building" data-building={b.id} {@attach w.at({ x: b.x, z: b.z, h: b.h, mode: 'body', box: { x0: f.x0, x1: f.x1, z0: f.y0, z1: f.y1 }, shape: HOME_OF[b.id] })}>
+    <button type="button" class="door" data-sfx="self" data-scenery aria-label={t(`world.building.${b.id}`)}
+      onclick={(e) => onbuilding?.(b.id, e.currentTarget)}></button>
   </div>
 {/each}
 
@@ -191,11 +193,12 @@
 
 <style>
   .spr { width: 0; height: 0; transform-origin: 0 0; will-change: transform; pointer-events: none; }
-  .art, .door {
+  .art {
     position: absolute; left: 0; bottom: 0; translate: -50% 0; display: flex; justify-content: center; align-items: flex-end;
     line-height: 0; pointer-events: none;
   }
-  .art :global(.official), .door :global(.official) { max-width: none; }
+  .art :global(.official) { max-width: none; }
+  .building { transform-origin: 0 0; pointer-events: none; }
   .art.bush, .art.fire, .art.fixture[data-fixture], .art[data-sit] { pointer-events: auto; cursor: pointer; }
   /* the shishi-odoshi's two frames: at rest, and tipped while it spills */
   .shishi .frame { position: absolute; inset: 0; display: flex; justify-content: center; align-items: flex-end; line-height: 0; }
@@ -223,11 +226,10 @@
   .art.flip :global(.official) { transform: scaleX(-1); }
   .lit { transition: opacity 1.2s ease; }
   .door {
-    appearance: none; border: 0; padding: 0; margin: 0; background: none; cursor: pointer; pointer-events: auto;
-    -webkit-tap-highlight-color: transparent; border-radius: 10% 10% 4% 4%;
+    position: absolute; inset: 0; appearance: none; border: 0; padding: 0; margin: 0; background: none; cursor: pointer; pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
   }
   .door:disabled { cursor: default; pointer-events: none; }
-  .door:active :global(.official) { transform: scale(.98, .985); transform-origin: 50% 100%; }
   .door:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   /* winter: snow settles on the bushes' tops */
   .art.snow::after {
