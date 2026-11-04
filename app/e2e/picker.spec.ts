@@ -72,3 +72,17 @@ test('heads load as they near the view: opening fetches about a screenful, not t
   await grid(page).evaluate((el) => (el.scrollTop = el.scrollHeight));
   await expect(sheet(page).getByRole('radio').last().locator('img')).toHaveAttribute('src', /-icon\.webp$/);
 });
+
+// (its chip was once called .chip, and theme.css's shared choice chip's 0 12px padding squeezed every icon to 27x48)
+test('every head is square, the icon at 86% of its round chip (as <Avatar>)', async ({ page }) => {
+  await openPicker(page);
+  const heads = await sheet(page).locator('.rv img').evaluateAll((imgs) => imgs.map((img) => {
+    const b = img.getBoundingClientRect(), r = img.closest('.rv')!.getBoundingClientRect();
+    return { w: b.width, h: b.height, s: r.width };
+  }));
+  expect(heads.length).toBeGreaterThan(20);
+  for (const { w, h, s } of heads) {
+    expect(Math.abs(w / h - 1)).toBeLessThan(0.05);
+    expect(w / s).toBeCloseTo(0.86, 1);
+  }
+});
