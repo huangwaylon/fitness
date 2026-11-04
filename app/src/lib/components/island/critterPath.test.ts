@@ -162,7 +162,7 @@ describe('how the bugs move (NH: a butterfly is easy to walk up to)', () => {
     const bob = [0.3, 0.5, 0.7].map((k) => bugAt(p.flight, p.legs, p.start, f.t + f.ms * k).lift);
     expect(bob.some((b, i) => i && Math.abs(b - bob[0]) > 0.5)).toBe(true);
   });
-  it('every bug keeps a pace one can follow: none faster than a running villager (200 u/s)', () => {
+  it('every bug keeps a pace one can follow: none faster than 200 u/s (a running villager runs at 300)', () => {
     for (const id of Object.keys(BUGS) as BugId[]) {
       if (BUGS[id].flight === 'dangle') continue;
       for (const seed of [3, 41]) if (bugPath(id, seed, 20_000)) expect(sample(id, seed, 20_000).top, id).toBeLessThan(200);

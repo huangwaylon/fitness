@@ -13,6 +13,7 @@ import { WAKE_MS, actors, along, isRemote, livePos, onOwnMove, onWake, place, se
 import { VIA_MAX, type Face, type Intent, type Pt, type Who } from '#lib/sync/live-protocol.ts';
 import { actorOfFor, whoOfFor, type VillagerActor } from '#lib/ui-state/cast.ts';
 import { dist } from '#lib/layout/nav.ts';
+import { SPEED } from './walkGraph.ts';
 
 type Walk = Extract<Intent, { kind: 'walk' }>;
 /** A villager woke (`id` whose, `at` when on the relay's clock). */
@@ -45,8 +46,10 @@ export const JUMP_U = 160;
 const CATCH_U = 120;
 const CATCH_MS = 600;
 const GLIDE_MS = 1500;
-const RUN_U_S = 240;
-/** A partner's walk this brisk (u/s) is a tap-walk's run: its ring shows where it goes (a wander home is slower). */
+/** A correction's pace (u/s): a player's brisk walk. */
+const RUN_U_S = SPEED.action;
+/** A partner's walk this brisk (u/s) is a tap-walk's run: its ring shows where it goes (a wander home, 90, is slower;
+ *  a run is 300, an older phone's 200). */
 export const RUN_RING_U_S = 170;
 
 const round = (p: Pt): [number, number] => [Math.round(p[0]), Math.round(p[1])];

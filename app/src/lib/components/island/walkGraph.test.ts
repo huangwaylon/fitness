@@ -110,11 +110,11 @@ describe('action spots and the plan', () => {
     for (const [x, z] of spots) expect(walkable(g, x, z)).toBe(true);
     expect(spots[0][0]).toBeLessThan(196); // homeA (132) is to the left
   });
-  it('the plan takes the nearest clear spot and its route, at 240 u/s', () => {
+  it('the plan takes the nearest clear spot and its route, at 360 u/s', () => {
     const p = plan(g, g.nodes.homeA, 160, 300, () => true)!;
     sound(g, g.nodes.homeA, p.pts as Pt[]);
     const wide: WalkGeo = { zones: [{ x0: 0, x1: 1000, y0: 0, y1: 100 }], obstacles: [], nodes: {}, pad: 8 };
-    expect(plan(wide, [0, 50], 200, 50, () => true)!.ms).toBeCloseTo(((200 - 26) / 240) * 1000, 0);
+    expect(plan(wide, [0, 50], 200, 50, () => true)!.ms).toBeCloseTo(((200 - 26) / 360) * 1000, 0);
   });
   it('nowhere clear to stand: no walk', () => {
     expect(plan(g, g.nodes.homeA, 160, 300, () => false)).toBeNull();

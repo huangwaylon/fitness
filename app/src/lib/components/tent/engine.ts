@@ -25,8 +25,9 @@ import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, headAnch
 const WALL_H = 40;
 /** A villager's height in the room (model units: a little over a tile and a half, NH's proportions against its beds). */
 export const VILLAGER_H = 16;
-/** Walking pace (model units a second: about three tiles). */
-export const PACE = 30;
+/** Walking pace (model units a second: four and a half tiles; three before the user's "increase the walk speed of
+ *  players by 50%", 2026-11-04). Only a player walks in here. */
+export const PACE = 45;
 /** Camera: degrees down from the horizontal and the lens (NH's room camera: steep, a long lens). */
 const PITCH = 47;
 const FOV = 32;

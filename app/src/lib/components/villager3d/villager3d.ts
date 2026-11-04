@@ -17,7 +17,7 @@ import {
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
-import { ACTION_MS, FADE_MS, STRIDE, action, base, mix, over, type Action, type Pose, type State } from './poses.ts';
+import { ACTION_MS, FADE_MS, action, base, mix, over, strideOf, type Action, type Pose, type State } from './poses.ts';
 import { cellTransform, eyeAt, mouthAt, type Face } from './faces.ts';
 import { rigOf, type Rig } from './rig.ts';
 import type { Anchor } from './seats3d.ts';
@@ -432,7 +432,7 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
     },
     step(t, moved = 0, sp = 0) {
       lastT = t;
-      phase += moved / (STRIDE * VILLAGER_S);
+      phase += moved / (strideOf(sp) * VILLAGER_S);
       speed = sp;
       o.phase = phase;
       o.speed = speed;

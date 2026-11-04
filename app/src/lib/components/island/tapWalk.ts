@@ -1,7 +1,7 @@
 // Tap-to-walk (spec §4, docs/design.md "Walking"): what a tap on the ground does with my villager. Pure: nothing here
 // touches the DOM, so every rule is a unit test.
 //   A tap → nav.ts snaps it (a building's door, a bank facing the water, the nearest walkable point) and finds the way;
-//   my villager runs it at SPEED.run (walkGraph.ts: 200 u/s; idle strolls and visitors 90 u/s). The cream tap ring marks
+//   my villager runs it at SPEED.run (walkGraph.ts: 300 u/s; idle strolls and visitors 90 u/s). The cream tap ring marks
 //   where it ends. The camera never moves for it (only the finger scrolls the island).
 import { findPath, pathLength, snapTap, type Extra, type Nav, type Snap } from './nav.ts';
 import * as onLayout from '#lib/layout/nav.ts';
