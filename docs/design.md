@@ -1831,6 +1831,53 @@ goes for the day. On the island's layout the deck is a fixed piece there every d
 scale (about half a villager tall): on its day a tap plays the tape (the 3D villagers do NH's three: villager3d poses
 `warmup`, `sidebend`, `jump`); any other time a tap says when it plays, or that today's is done, and no ♪ floats.
 
+### Kuma no mori
+くまのもり is a proof of concept: a second island the players fly to (せってい's くまのもり row → `/expedition`, its own
+screen: the main island unloads, as it does for a room) for a short action round. One to three players (the guest
+too) gather mushrooms and five lost pieces in a foggy dusk forest while bears hunt them. Nothing there gives ベル.
+Code: `components/forest/` (map.ts the island, sim.ts the bears and the host's rules, player.ts my own moves,
+engine.ts the 3D, link.ts the players' link, ForestGame.svelte the screen); unit tests in sim.test.ts, the two-player
+flow in e2e/forest.spec.ts.
+- **The island.** 80 × 80 m from the round's seed: about 165 trees (cedar, oak), 30 bushes, a river with one bridge,
+  three cliffs with a ladder each, four dead trees leaning at choke points, three wasp nests, a seaplane dock and a
+  camp (both safe: bears won't enter, finds are banked there). Mushrooms on the ground, two finds on each cliff's top,
+  two lost pieces past the river (the bears' side), six pitfall seeds.
+- **A round.** A lobby (everyone here says they're ready; the lowest of A, B, G present hosts) → a shared 3 s
+  countdown → 4:00 on one clock: dusk, night from 1:30 (thicker fog, bears see farther and run a little faster), the
+  last flight for the final 30 s (no relief, the dock's lanterns burn). At the end anyone out in the forest loses the
+  basket; whatever was banked is everyone's. Anyone can fly home early from the dock.
+- **Moving.** The left side's stick (pushed to its rim: a sprint, five seconds of stamina, a wheeze when it runs dry);
+  the right side's drag turns the camera, which follows me but never turns by itself (pulled in short of a tree
+  between it and me); WASD, Shift, E, Q on a keyboard. Walking is quiet (4 m), running loud (14 m). Wading is slow.
+- **The bears.** Beardo, 1.8× a villager, darkened, red eyes glowing (hotter on the hunt). One per two players by
+  default (the lobby can pick 1–4). Asleep for the first seconds, then wander → hear a noise and sniff toward it →
+  see someone (a cone, 18 m at dusk, 24 m at night, blocked by trunks and bushes; anyone within 2.5 m) → roar (0.6 s)
+  → chase at 4.2 m/s (between a walk and a sprint) → lose them after 3 s unseen → search. In range it lunges: a 0.45 s
+  crouch with an orange arc on the ground, then 3 m in a locked line; a miss leaves it stumbling 1.2 s. Its catch
+  reaches 0.9 m from its snout (less than it looks). Once a chase it trips on a root when close (slower 1.5 s).
+- **Getting away.** The river (a bear won't wade: it paces the bank, then goes for the bridge or gives up), a cliff's
+  ladder (1.6 s up, catchable on it; a bear can't climb; off any edge is a jump down), a bush (hidden, unless a bear
+  saw you go in within 2 s: it digs you out), the dock and the camp. A dead tree pushed over falls across the way (a
+  bear must go round; one under it is stunned 3 s). A pitfall seed planted behind you stuns the bear that steps on it
+  4 s; a wasp nest shaken down sends the swarm at the nearest bear (3.5 s), or stings you if none is near. A bear just
+  stunned can't be stunned again for 8 s. A narrow escape (a lunge that misses by a step, an escape with a bear within
+  3 m) is ギリギリ! (up to five a round).
+- **The menace.** Each bear's rises while it hunts or is near someone and falls while nobody's around; at 100 it backs
+  off to a far corner for 25–35 s (not in the last flight). Too quiet for 40 s, its wandering leans toward the nearest
+  player.
+- **Caught.** Down (dazed, stars), half the basket dropped as a pile anyone can pick up; the bear that caught you
+  leaves everyone alone 8 s. A partner holding act beside you for 2.5 s helps you up (once a round); otherwise after
+  25 s you're flown home (the rest of the basket dropped) and watch the others. Solo, you get up once on your own after
+  6 s. Everyone down ends the round.
+- **The link.** Each phone moves its own player and sends it 15 times a second; the host runs the bears (30 steps a
+  second, sent 15), the items' first claims, the traps, the fallen trees, the nests and the bank (`sim.ts handle`). The
+  POC's link is a BroadcastChannel between tabs of one browser (the demo's `?demo`, `?demo&as=B`, `?demo&as=G`, in
+  separate windows: a hidden tab's timers crawl). Two phones need a relay room carrying the same messages (not built).
+- **Frames.** せってい's フレームレート (30 or 60). No shadow map (blob shadows), fog to 36 m and a 42 m far plane, the
+  trees and bushes instanced in 20 m chunks so the frustum drops those behind: about 70–90 draw calls and 110k
+  triangles in Chromium. Sound: NH's Chased by Bees while a bear is after me (with ミュージック on), a heartbeat that
+  quickens as it closes in (with 効果音 on), a red vignette.
+
 ### Seasonal preview
 
 `ui-state/preview.ts` (pure: `resolvePreview`), `ui-state/preview.svelte.ts`, `panel/SeasonSection.svelte`,
