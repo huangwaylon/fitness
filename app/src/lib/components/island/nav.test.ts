@@ -66,13 +66,16 @@ describe('the obstacles', () => {
 
   it('keeps a pad from the water: feet never stand within PAD of it', () => {
     const r = rng(7);
+    // (failures collected, one expect)
+    const fails: string[] = [];
     for (let i = 0; i < 4000; i++) {
       const [x, z] = randomWalkable(r, g);
       if (onBridge(x, z)) continue;
       const near = riverNear(x, z);
-      expect(near.d - near.hw, `${x}, ${z}`).toBeGreaterThan(PAD - 0.5);
-      expect(inOval(POND, x, z, PAD - 0.5)).toBe(false);
+      if (!(near.d - near.hw > PAD - 0.5)) fails.push(`${x}, ${z}: ${near.d - near.hw} from the stream`);
+      if (inOval(POND, x, z, PAD - 0.5)) fails.push(`${x}, ${z}: by the pond`);
     }
+    expect(fails.slice(0, 10)).toEqual([]);
   });
 
   it('names the campsite’s door, both ends of the stairs, the homes, the shore and the casting spots, all walkable', () => {

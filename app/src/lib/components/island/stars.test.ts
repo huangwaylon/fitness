@@ -30,13 +30,17 @@ describe('showers of shooting stars (NH: clear nights, 7 pm – 4 am)', () => {
     const r = mulberry32(9);
     let big = 0;
     const N = 6000;
+    // (failures collected, one expect: an expect a sample is ~28k calls)
+    const fails: string[] = [];
     for (let i = 0; i < N; i++) {
       const p = showerPlan(r);
-      expect(p[0]).toBe(0);
-      expect(p.length).toBeGreaterThanOrEqual(1), expect(p.length).toBeLessThanOrEqual(8);
+      if (p[0] !== 0) fails.push(`plan ${i}: starts at ${p[0]}`);
+      if (!(p.length >= 1 && p.length <= 8)) fails.push(`plan ${i}: ${p.length} streaks`);
       if (p.length >= 5) big++;
-      for (let k = 1; k < p.length; k++) expect(p[k] - p[k - 1]).toBeGreaterThanOrEqual(STREAK_MS); // one streak at a time
+      // one streak at a time
+      for (let k = 1; k < p.length; k++) if (!(p[k] - p[k - 1] >= STREAK_MS)) fails.push(`plan ${i}: streak ${k} ${p[k] - p[k - 1]} ms after the last`);
     }
+    expect(fails.slice(0, 10)).toEqual([]);
     expect(big / N).toBeGreaterThan(1 / BIG_ODDS - 0.03);
     expect(big / N).toBeLessThan(1 / BIG_ODDS + 0.03);
     expect(WISH_MS).toBeGreaterThan(STREAK_MS);
@@ -50,18 +54,20 @@ describe('a streak keeps to the sky and off the UI', () => {
   it('its whole path inside the sky, never across the ribbon', () => {
     const r = mulberry32(1);
     let n = 0;
+    // (failures collected, one expect: an expect a point is ~180k calls)
+    const fails: string[] = [];
     for (let i = 0; i < 500; i++) {
       const s = streakPath(sky, [ribbon], r);
       if (!s) continue;
       n++;
       for (let d = 0; d <= s.len; d += 2) {
-        const p = along(s, d);
-        expect(p.x).toBeGreaterThanOrEqual(sky.x0 - 0.01), expect(p.x).toBeLessThanOrEqual(sky.x1 + 0.01);
-        expect(p.y).toBeGreaterThanOrEqual(sky.y0 - 0.01), expect(p.y).toBeLessThanOrEqual(sky.y1 + 0.01);
-        expect(p.x > ribbon.x0 && p.x < ribbon.x1 && p.y > ribbon.y0 && p.y < ribbon.y1).toBe(false);
+        const p = along(s, d), at = `streak ${i} at ${d}: (${p.x.toFixed(2)}, ${p.y.toFixed(2)})`;
+        if (!(p.x >= sky.x0 - 0.01 && p.x <= sky.x1 + 0.01 && p.y >= sky.y0 - 0.01 && p.y <= sky.y1 + 0.01)) fails.push(`${at} out of the sky`);
+        if (p.x > ribbon.x0 && p.x < ribbon.x1 && p.y > ribbon.y0 && p.y < ribbon.y1) fails.push(`${at} across the ribbon`);
       }
-      expect(s.angle).toBeGreaterThan(90), expect(s.angle).toBeLessThan(180); // falling to the lower left
+      if (!(s.angle > 90 && s.angle < 180)) fails.push(`streak ${i}: angle ${s.angle}`); // falling to the lower left
     }
+    expect(fails.slice(0, 10)).toEqual([]);
     expect(n).toBeGreaterThan(400); // there's usually room
   });
   it('a short sky beside a wide HUD: a shorter, flatter streak in the lane above or below it', () => {

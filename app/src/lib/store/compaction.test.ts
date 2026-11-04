@@ -39,12 +39,13 @@ describe('compacted cache through applySnapshot', () => {
       model = composeModel(cache, [], t, model);
       // Checking every poll is slow; every few polls and around the cutoffs is enough.
       if (i % 9 && !(t >= at(41, '19:00') && t <= at(44, '05:00'))) continue;
-      const full = between(all, 0, t);
-      expect(shown(model), new Date(t).toISOString()).toBe(shown({ state: reduce(full), now: t }));
+      // (the full rows reduced once, for both checks)
+      const full = reduce(between(all, 0, t));
+      expect(shown(model), new Date(t).toISOString()).toBe(shown({ state: full, now: t }));
       // The minute tick: same rows, later now (the reduced state is reused).
       const later = composeModel(cache, [], t + 50 * 60_000, model);
       expect(later.state).toBe(model.state);
-      expect(shown(later)).toBe(shown({ state: reduce(full), now: t + 50 * 60_000 }));
+      expect(shown(later)).toBe(shown({ state: full, now: t + 50 * 60_000 }));
     }
     expect(cache!.rows.metrics.length).toBeLessThan(between(all, 0, last).metrics.length * 0.3);
   });

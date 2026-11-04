@@ -34,22 +34,26 @@ function ranges(weight: number): [number, number][] {
   return out;
 }
 
+/** Every distinct character of the catalogs (their {placeholders} dropped), once for both weights. */
+const catalogChars = new Set<string>();
+for (const text of [...Object.values(ja), ...Object.values(en)]) for (const ch of text.replace(/\{\w+\}/g, '')) catalogChars.add(ch);
+/** The source files' characters (scripts/font-subsets.ts wanted(): a walk of src/), read once for both weights. */
+let used: Set<number> | null = null;
+
 describe('trimmed Zen Maru Gothic', () => {
   it.each([500, 700])('weight %i covers every catalog character', (w) => {
     const rs = ranges(w);
     const missing = new Set<string>();
-    for (const text of [...Object.values(ja), ...Object.values(en)]) {
-      for (const ch of text.replace(/\{\w+\}/g, '')) {
-        const cp = ch.codePointAt(0)!;
-        if (cp > 0x20 && !rs.some(([a, b]) => cp >= a && cp <= b)) missing.add(ch);
-      }
+    for (const ch of catalogChars) {
+      const cp = ch.codePointAt(0)!;
+      if (cp > 0x20 && !rs.some(([a, b]) => cp >= a && cp <= b)) missing.add(ch);
     }
     expect([...missing].join('')).toBe('');
   });
   it.each([500, 700])('weight %i covers every character the full font has that any source file uses (r2 N9)', (w) => {
     const rs = ranges(w);
     const full = [...readFileSync(join(PKG, `${w}.css`), 'utf8').matchAll(/unicode-range:\s*([^;]+);/g)].flatMap((m) => parseRanges(m[1]));
-    const missing = [...wanted()].filter((cp) => cp > 0x20 && covers(full, cp) && !covers(rs, cp));
+    const missing = [...(used ??= wanted())].filter((cp) => cp > 0x20 && covers(full, cp) && !covers(rs, cp));
     expect(String.fromCodePoint(...missing)).toBe('');
   });
   it('stays far below the full font CSS (250 rules)', () => {

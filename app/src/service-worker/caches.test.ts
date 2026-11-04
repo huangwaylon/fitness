@@ -165,11 +165,12 @@ describe('food data fetches (foodFetch)', () => {
     offline = true;
     expect(await get(`${BASE}index.json`)).toBe(index('aaa'));
     offline = false;
-    slow = 500;
+    // (the network at 200 ms, past the 40 ms timeout: settled() below waits it out, so no slower than it needs to be)
+    slow = 200;
     serve('bbb');
     const t0 = Date.now();
-    expect(await get(`${BASE}index.json`)).toBe(index('aaa')); // the cached copy, not the 500 ms one
-    expect(Date.now() - t0).toBeLessThan(300);
+    expect(await get(`${BASE}index.json`)).toBe(index('aaa')); // the cached copy, not the 200 ms one
+    expect(Date.now() - t0).toBeLessThan(150);
     for (const f of files('aaa')) expect(await get(f)).toBe(`${f}-body`); // its files, all cached
     await settled(); // the late answer stored, for when its files come
   });
