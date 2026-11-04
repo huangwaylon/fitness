@@ -7,7 +7,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { FISH } from '../src/lib/components/island/critters.ts';
 import { POND_FISH, freshPool } from '../src/lib/components/island/pondFish.ts';
-import { geo, reelOnBite, type Geo } from './island';
+import { camTo, camToFish, geo, reelOnBite, type Geo } from './island';
 import { fromMenu, hudBells, hudMenu } from './hud.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
@@ -21,11 +21,9 @@ const finds = (page: Page) =>
   page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? [])
     .filter((e: { type: string }) => e.type === 'find').map((e: { data: unknown }) => e.data));
 type W = { __world: { go(z: number): void; at(x: number, z: number): [number, number] } };
-/** Move the camera (instantly) and let the nodes settle. */
-async function cam(page: Page, z: number) {
-  await page.evaluate((z) => (window as unknown as W).__world.go(z), z);
-  await page.waitForTimeout(250);
-}
+/** Move the camera (instantly), held there (camTo: a single move was now and then undone by the scene's own fit as it
+ *  opened, the camera back at まえ with the water's shadow out of view) and still. */
+const cam = (page: Page, z: number) => camTo(page, z, false);
 /** The pond's water on screen (client px): its oval's box from the world. */
 const pond = (page: Page) => page.evaluate(() => {
   const w = (window as unknown as W & { __world: { geo(): Geo } }).__world, { x, z, rx, rz } = w.geo().POND;
@@ -46,6 +44,8 @@ async function open(page: Page, q: string, at: 'mae' | 'oku' = 'oku') {
 /** Cast at the shadow in `water` where it's seen now (__fish: its model's spot, which a tap goes by; the sprite's box
  *  may trail it a little as it swims), wait for the 「！」 and reel in with a tap anywhere. */
 async function fish(page: Page, water: string, reel: { x: number; y: number }) {
+  // (the shadow comes in a reach of that water the camera saw as it came: the camera to it, if off screen)
+  await camToFish(page, water);
   const [x, y] = await page.evaluate((water) => {
     const W = window as unknown as { __fish: { fish(): { water: string; x: number; z: number }[] }; __world: { at(x: number, z: number): [number, number] } };
     const f = W.__fish.fish().find((f) => f.water === water)!;
@@ -131,7 +131,8 @@ test('fresh-water fish come by on their own, in the fresh water their seed picks
   expect(chunks).toEqual([]);
   // within a couple of visits a shadow swims in a fresh water: the one its seed picks, the same on both phones, in
   // view or not (the camera shows it when it sees that water: docs/backend.md#shared-world)
-  await expect(page.locator('[data-critter="pond"]')).toBeAttached({ timeout: 40_000 });
+  // (the first: by then more than one fresh water may have its shadow, one a water at most)
+  await expect(page.locator('[data-critter="pond"]').first()).toBeAttached({ timeout: 40_000 });
   const water = await page.locator('[data-critter="pond"]').first().getAttribute('data-water');
   expect(['pond', 'river', 'mouth', 'clifftop']).toContain(water);
 });

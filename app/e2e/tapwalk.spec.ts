@@ -3,7 +3,7 @@
 // day, the camera stays where the finger left it; a tap on the water acts in place (no walk): a ripple. The tent's door
 // is the one exception: my villager walks up to it, then goes in.
 import { expect, test, type Page } from '@playwright/test';
-import { campDoor, geo, lawnTap, openNear, tapOn } from './island.ts';
+import { camTo, campDoor, geo, lawnTap, openNear, tapOn } from './island.ts';
 import { mkdirSync } from 'node:fs';
 
 /** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
@@ -30,17 +30,11 @@ async function open(page: Page, q = '&date=2026-07-01T10:00', cam?: number) {
   await page.goto(`?demo&season=summer${q}`);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await page.waitForTimeout(600);
-  if (cam !== undefined) {
-    await call(page, (w, [z]) => w.go(z), [cam]);
-    await page.waitForTimeout(300);
-  }
+  if (cam !== undefined) await camTo(page, cam, false);
 }
 
-/** The camera at おく (the campsite's end: world.ts CAMS as the page has them). */
-async function oku(page: Page) {
-  await call(page, (w, [z]) => w.go(z), [(await geo(page)).CAMS.oku]);
-  await page.waitForTimeout(300);
-}
+/** The camera at おく (the campsite's end: world.ts CAMS as the page has them), held there (camTo). */
+const oku = async (page: Page) => camTo(page, (await geo(page)).CAMS.oku, false);
 
 /** My villager's feet every ~30 ms until it stops (or `ms` runs out). */
 async function track(page: Page, ms = 8000): Promise<[number, number][]> {
@@ -65,8 +59,7 @@ test('a tap by the campsite runs my villager up the path, never through the wate
   const g = await geo(page), door = campDoor(g);
   // the lawn in front of the campsite (clear of the day's weeds: a weed's thumb-sized box reaches far up the 3D
   // island's far end), the camera in front of it
-  await call(page, (w, [z]) => w.go(z), [door[1] - 408]);
-  await page.waitForTimeout(300);
+  await camTo(page, door[1] - 408, false);
   const to = await openNear(page, door[0], door[1] - 108, 45, true);
   const [x, y] = await call(page, (w, [x, z]) => w.at(x, z), to);
   await page.mouse.click(x, y);
@@ -84,8 +77,7 @@ test('a tap by the campsite runs my villager up the path, never through the wate
 test('a tap on the pond ripples and walks nowhere; a walk stays for the session', async ({ page }) => {
   await open(page);
   const { POND } = await geo(page);
-  await call(page, (w, [z]) => w.go(z), [POND.z - 212]);
-  await page.waitForTimeout(300);
+  await camTo(page, POND.z - 212, false);
   const home = await call(page, (w) => w.mine());
   const [x, y] = await call(page, (w, [x, z]) => w.at(x, z), [POND.x, POND.z]);
   await page.mouse.click(x, y);
@@ -93,8 +85,8 @@ test('a tap on the pond ripples and walks nowhere; a walk stays for the session'
   await expect(page.locator('.tap-ring')).toHaveCount(0);
   expect((await track(page, 1500)).at(-1)).toEqual(home);
   // a tap on the grass beside it walks there, and it's still there after a reload
-  const grass = await openNear(page, POND.x + 52, POND.z - 34);
-  const [gx, gy] = await call(page, (w, [x, z]) => w.at(x, z), grass);
+  // (on this screen with nothing over it: lawnTap; open ground off screen or under a thumb's tap area took the tap elsewhere)
+  const { at: grass, x: gx, y: gy } = await lawnTap(page, POND.x + 52, POND.z - 34);
   await page.mouse.click(gx, gy);
   const end = (await track(page)).at(-1)!;
   expect(Math.hypot(end[0] - grass[0], end[1] - grass[1])).toBeLessThan(3);
