@@ -29,7 +29,25 @@ export function waterOf(t: Tank): Box {
 /** Whether a tank's long side runs along x (else z). */
 export const alongX = (b: Box): boolean => b.x1 - b.x0 >= b.z1 - b.z0;
 
-/** How much of its water's narrowest side (and its depth) a fish may reach across at most: the rest is its room to swim. */
+/** How much of a tank's water, in from its back across its narrow side, is its props' (NH's: the rocks, kelp and logs
+ *  along the back, the fish swimming in front of them). */
+const BACK = 0.4;
+/** The props' margin to the glass and to the open water (model units). */
+const MARGIN = 0.5;
+/** A tank's back strip: its props' (all of each inside it). */
+export function backOf(t: Tank): Box {
+  const w = waterOf(t), k = BACK;
+  return alongX(t.box) ? { ...w, z1: w.z0 + (w.z1 - w.z0) * k } : { ...w, x0: w.x1 - (w.x1 - w.x0) * k };
+}
+/** A tank's open water, in front of its back strip (its swimmers' and walkers': all of each inside it, so none ever
+ *  touches a prop). */
+export function openOf(t: Tank): Box {
+  const w = waterOf(t), b = backOf(t);
+  return alongX(t.box) ? { ...w, z0: b.z1 + MARGIN } : { ...w, x1: b.x0 - MARGIN };
+}
+
+/** How much of its open water's narrowest side (and its depth) a fish may reach across at most: the rest is its room
+ *  to swim. */
 const FIT = 0.8;
 /** The least a fish is drawn long (model units): a little one scaled up to it (NH's tanks show the little ones big). */
 const MIN_LEN = 6;
@@ -37,10 +55,10 @@ const MIN_LEN = 6;
  *  (model units, at NH's own size), half its length drawn (a walker's spread, if longer), and its reach (reachOf, drawn). */
 export interface Body { s: number; half: [number, number, number]; sway: number; r: number; reach: [number, number] }
 /** How a fish of this model's box is drawn in a tank: NH's own size (a little one up to MIN_LEN long), a big one scaled
- *  down till all of it (any way it heads, pitched, its tail swaying: reachOf; a walker level, no sway) fits with room
- *  to turn. */
+ *  down till all of it (any way it heads, pitched, its tail swaying: reachOf; a walker level, no sway) fits its open
+ *  water (openOf: clear of the props) with room to turn. */
 export function bodyIn(t: Tank, min: ArrayLike<number>, max: ArrayLike<number>, walker = false): Body {
-  const w = waterOf(t);
+  const w = openOf(t);
   const half: [number, number, number] = [(max[0] - min[0]) / 2, (max[1] - min[1]) / 2, (max[2] - min[2]) / 2];
   const sway = walker ? 0 : half[2] * 2 * 0.06;
   const [h, v] = reachOf(half[0], half[1], half[2], sway, walker ? 0 : undefined);
@@ -49,19 +67,20 @@ export function bodyIn(t: Tank, min: ArrayLike<number>, max: ArrayLike<number>, 
   return { s, half, sway, r: long * s, reach: [h * s, v * s] };
 }
 
-/** The props in each tank: [model, where along its long side (0…1), where in from its back (0…1), scale]. */
+/** The props in each tank: [model, where along its long side (0…1), where in its back strip from the glass (0…1),
+ *  scale]. */
 const PROPS: Record<TankId, [string, number, number, number][]> = {
-  sea: [['kelp-rocks', 0.14, 0.2, 0.55], ['coral', 0.4, 0.3, 0.8], ['kelp-rock', 0.66, 0.22, 0.6], ['coral-2', 0.88, 0.32, 0.8], ['diver', 0.52, 0.6, 0.5]],
+  sea: [['kelp-rocks', 0.14, 0.2, 0.55], ['coral', 0.4, 0.3, 0.8], ['kelp-rock', 0.66, 0.22, 0.6], ['coral-2', 0.88, 0.32, 0.8]],
   deep: [['deep-rocks', 0.2, 0.3, 1.1], ['deep-rocks', 0.75, 0.5, 0.9]],
   river: [['mossy-log', 0.18, 0.4, 0.6], ['river-rock', 0.5, 0.25, 0.9], ['water-plants', 0.8, 0.3, 0.4], ['driftwood-rock', 0.95, 0.6, 0.35]]
 };
 const MODELS = M.models as Record<string, { min: number[]; max: number[] }>;
 export interface Placed { name: string; x: number; z: number; y: number; s: number; yaw: number }
 /** A tank's props as drawn (engine.ts Kit.prop: the model's box's middle over (x, z), its foot on the sand, turned to
- *  face the front): each scaled down till it fits its water (height and width, a margin to the glass) and moved in
- *  from the glass as far as it must, so none pokes out. */
+ *  face the front): each scaled down till it fits its back strip (backOf: height and width, a margin to the glass and
+ *  to the open water) and moved in as far as it must, so none pokes out of the glass or into the fish's water. */
 export function propsOf(t: Tank): Placed[] {
-  const w = waterOf(t), along = alongX(t.box), m = 0.5;
+  const w = backOf(t), along = alongX(t.box), m = MARGIN;
   return PROPS[t.id].map(([name, u, v, s0]) => {
     const b = MODELS[name];
     const sx = b.max[0] - b.min[0], sy = b.max[1] - b.min[1], sz = b.max[2] - b.min[2];

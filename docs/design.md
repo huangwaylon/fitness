@@ -1337,8 +1337,9 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   (dark: the oarfish, the coelacanth, the barreleye, the football fish, the squid, the sea butterfly), the river tank as an
   island in front (the fresh water's: the river's and the pond's fish, the turtles, the frog), its middle in line with
   the great tank's; between them an aisle from the opening to the deep's glass, NH's two park benches in it facing the
-  great tank, a plant in three corners. Each tank with NH's own props (kelp on its rocks, coral, the deep's dark rocks,
-  the river's stones, logs and water plants, NH's diver and little submarine in the great tank).
+  great tank, a plant in three corners. Each tank with NH's own props along its back (kelp on its rocks, coral, the
+  deep's dark rocks, the river's stones, logs and water plants), the fish swimming in front of them. No diver (NH's
+  diver and little submarine model read as a person standing in the tank: left out).
 - **The hour's fish** (species.ts onDisplay): each tank shows at most five of its own species, only those the ずかん
   says were caught, none twice; a shuffle seeded by (Tokyo's date and hour, the tank), so every phone shows the same
   five and a new five each hour. A tank with none of its own caught is empty water. The hour turning while one's inside:
@@ -1346,9 +1347,11 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
 - **Nothing clips** (tanks.ts bodyIn, propsOf; boids.ts reachOf): a fish's reach is its model's box, turned any way,
   pitched up to 0.35 rad, its tail's sway added; its middle keeps to the water less that reach (the sand's top to the
   water's surface), so all of it stays inside the glass. A big one is scaled till its reach fits 80% of its water's
-  narrowest side (room to turn: a whale shark ×0.8), a little one drawn at least 6 long. A prop is scaled to fit its
-  water and moved in from the glass. tanks.test samples every species' corners for two minutes of swimming, five at a
-  time, and every prop's.
+  narrowest side (room to turn), a little one drawn at least 6 long. The props keep to a back strip (tanks.ts backOf:
+  the back 40% of the narrow side, the far wall's for the deep tank), each scaled to fit it and moved in from the glass;
+  the fish (the walkers too) keep to the open water in front of it (openOf), so none ever swims into a rock or lies on
+  a log. tanks.test samples every species' corners in the open water for two minutes of swimming, five at a time, and
+  every prop's in its back strip.
 - **Swimming:** each fish boid-like: its own slow wandering heading, mostly along its tank's long side, turned off the
   glass before it, off the others' bodies; facing its way, its tail swaying (the vertex shader: one program for every
   fish). The bottom walkers walk the river tank's sand (boids.ts stepWalker: a walk to a spot about a patch of its own, a
