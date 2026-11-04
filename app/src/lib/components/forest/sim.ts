@@ -8,7 +8,7 @@ import type { Who } from '#lib/sync/live-protocol.ts';
 
 export const TUNE = {
   round: 240, nightAt: 90, lastAt: 210, wakeS: 8,
-  walk: 2.6, run: 5.0, wade: 1.8, wheeze: 2.0, stamina: 5, regenDelay: 1.5, regen: 0.2, stungSlow: 0.55, stungS: 4,
+  walk: 2.6, run: 5.0, wade: 1.8, wheeze: 2.0, stamina: 8, regenDelay: 1.0, regen: 0.28, stungSlow: 0.55, stungS: 4,
   noiseWalk: 4, noiseRun: 14,
   wander: 1.5, investigate: 2.2, chase: 4.2, chaseNight: 4.5, alone: 0.2, turn: 2.1,
   vision: 18, cone: (70 * Math.PI) / 180, visionNight: 24, coneNight: (90 * Math.PI) / 180, sense: 2.5,
