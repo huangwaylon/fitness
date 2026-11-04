@@ -1142,6 +1142,9 @@ goes with the leaving).
   (the room's ~14 programs, ~275 ms of compiling either way) 62–100, 51–68, 194–264, 64–100 ms as the models came →
   one of 337–354 ms; programs compiled turning the first person on 0–1 → 0, the edit mode 0–1 → 0 (22 made, 14–16
   before).
+- **At rest** the room draws only a blink: a timer to the next time a villager's face changes (a blink's start or
+  end, a snore: villager3d `nextBlink`, faces.ts `faceChangeIn`), not a check 8 times a second (iOS Simulator, the
+  tent and うめ's home still: timer fires 8.3–8.5 → 1.0–1.3 a second, the frames the same 0.7–1).
 - **Turning:** ↻ or a tap on the piece I hold turns it a quarter clockwise (a tap: under 8 px and 450 ms; a drag
   moves it), easing round.
 - **Holding** (NH's decorating: one thing held at a time; `TentEdit.svelte`): with nothing held a tap or a press on a

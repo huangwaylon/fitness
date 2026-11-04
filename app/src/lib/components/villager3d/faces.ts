@@ -38,6 +38,33 @@ export function eyeAt(face: Face, t: number, seed = 0): number {
 }
 const frac = (x: number) => x - Math.floor(x);
 
+/** How long (ms) from t till the face's eye or mouth cell next changes (eyeAt, mouthAt): a blink's start or end, a
+ *  snore's; Infinity when it never does (a closed face, no snore). A room asks again then, not a few times a second. */
+export function faceChangeIn(face: Face, t: number, seed = 0): number {
+  let next = Infinity;
+  const [eye] = FACES[face];
+  if (eye !== 14 && eye !== 9 && eye !== 11) {
+    const [a, b] = BLINK.every, span = (a + b) / 2;
+    const n0 = Math.floor((t + seed * 997) / span);
+    for (let n = n0; n <= n0 + 1 && next === Infinity; n++) {
+      const at = n * span + frac(Math.sin(n * 12.9898 + seed * 78.233) * 43758.5453) * (span - BLINK.ms) - seed * 997;
+      if (t < at) next = at - t;
+      else if (t < at + BLINK.ms) next = at + BLINK.ms - t;
+    }
+  }
+  if (face === 'sleepy') {
+    // (sin(t / 900) crossing 0.55: up at asin, down at π − asin, each turn)
+    const th = t / 900, a0 = Math.asin(0.55), turn = Math.PI * 2, k = Math.floor(th / turn);
+    for (const c of [a0, Math.PI - a0, a0 + turn, Math.PI - a0 + turn].map((x) => x + k * turn)) {
+      if (c > th) {
+        next = Math.min(next, (c - th) * 900);
+        break;
+      }
+    }
+  }
+  return next;
+}
+
 /** The mouth cell at time t: asleep, a slow snore (the small "o" now and then); otherwise the expression's. */
 export function mouthAt(face: Face, t: number): number {
   if (face === 'sleepy') return Math.sin(t / 900) > 0.55 ? 1 : 0;

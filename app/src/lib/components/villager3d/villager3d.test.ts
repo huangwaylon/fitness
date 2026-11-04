@@ -5,7 +5,7 @@ import MANIFEST from './villagers.json' with { type: 'json' };
 import MAP from '../../../../scripts/villagers3d-map.json' with { type: 'json' };
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
 import { ACTION_MS, FADE_MS, STRIDE, action, base, idle, mix, over, sit, walk, type Body } from './poses.ts';
-import { BLINK, FACES, cellTransform, eyeAt, mouthAt } from './faces.ts';
+import { BLINK, FACES, cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { has3d, url3d } from './manifest.ts';
 
 const DIR = join(import.meta.dirname, '..', '..', '..', '..', 'static', 'room', 'villagers3d');
@@ -140,6 +140,23 @@ describe('the villagers’ faces (faces.ts)', () => {
     const mouths = new Set(Array.from({ length: 100 }, (_, i) => mouthAt('sleepy', i * 100)));
     expect(mouths.size).toBe(2);
     expect(mouthAt('surprised', 0)).toBe(FACES.surprised[1]);
+  });
+
+  it('says when its face next changes: no change before then, one just after (a room asks again then)', () => {
+    const bad: string[] = [];
+    const cells = (f: Face, t: number, seed: number) => `${eyeAt(f, t, seed)}/${mouthAt(f, t)}`;
+    for (const [f, seed] of [['neutral', 0], ['neutral', 1.7], ['sleepy', 0.4], ['surprised', 2.2]] as [Face, number][]) {
+      for (let t = 0; t < 20000; t += 53) {
+        const d = faceChangeIn(f, t, seed), now = cells(f, t, seed);
+        if (d === Infinity) {
+          if (f !== 'sleepy' && [0, 5000, 9000].some((k) => cells(f, t + k, seed) !== now)) bad.push(`${f} ${t}: never, but changes`);
+          continue;
+        }
+        if (cells(f, t + d - 1, seed) !== now) bad.push(`${f} ${t}: changed before ${d.toFixed(1)}`);
+        if (cells(f, t + d + 1, seed) === now) bad.push(`${f} ${t}: no change at ${d.toFixed(1)}`);
+      }
+    }
+    expect([bad.length, bad.slice(0, 5)]).toEqual([0, []]);
   });
 
   it('shows cell i of the atlas over the texture’s own (dequantising) transform', () => {

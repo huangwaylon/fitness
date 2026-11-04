@@ -19,7 +19,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
 import { ACTION_MS, FADE_MS, action, base, mix, over, strideOf, type Action, type Pose, type State } from './poses.ts';
-import { cellTransform, eyeAt, mouthAt, type Face } from './faces.ts';
+import { cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { rigOf, type Rig } from './rig.ts';
 import type { Anchor } from './seats3d.ts';
 
@@ -47,6 +47,8 @@ export interface Villager3D {
   step(t: number, moved?: number, speed?: number): boolean;
   /** Only its face at t (a blink, an expression: a texture's offset, no bones): true when it changed (a redraw). */
   blink(t: number): boolean;
+  /** How long (ms) from t till blink(t) may next change its face (a blink's start or end, a snore, an action's end). */
+  nextBlink(t: number): number;
   /** The self-light (the island's time of day: engine.ts TOD lift). */
   lift(l: number): void;
   /** Its opacity (the board's focus fades one standing between the camera and the board): 1 drawn as ever. */
@@ -509,6 +511,10 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       // the rod aimed at the float, once the pose and the body are set
       orient();
       return k < 1 || !!act || moving;
+    },
+    nextBlink(t) {
+      const end = act ? act.t0 + ACTION_MS[act.a] - t : Infinity;
+      return Math.max(0, Math.min(end, faceChangeIn(faceOf(), t, seed)));
     },
     blink(t) {
       lastT = t;

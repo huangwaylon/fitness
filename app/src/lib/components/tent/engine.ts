@@ -1643,6 +1643,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     if (frames === 1) readyFn();
     lastT3 = t;
     if (more) invalidate();
+    else blinkSoon();
   }
   // ---- the warm-up: what the room hasn't drawn yet made ready once it's in and still (the first person's ceiling
   //      and door, the edit mode's grid and footprints: in the scene, hidden), so turning them on compiles nothing ----
@@ -1680,14 +1681,28 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     step();
   }
 
-  // the 3D villagers' blinks while the room is still: their face checked a few times a second, a frame only when one
-  // changes (a texture's offset)
-  const blinks = setInterval(() => {
-    if (document.hidden || raf) return;
+  // the 3D villagers' blinks while the room is still: a timer to the next time a face changes (a blink's start or end,
+  // a snore: villager3d nextBlink), a frame only when one did (a texture's offset); asked again after every frame (it
+  // was a check 8 times a second)
+  let blinkT: ReturnType<typeof setTimeout> | undefined;
+  function blinkSoon() {
+    clearTimeout(blinkT);
+    if (disposed) return;
+    const t = now();
+    let next = Infinity;
+    for (const w of villagers.values()) if (w.v3) next = Math.min(next, w.v3.nextBlink(t));
+    if (next < Infinity) blinkT = setTimeout(blinks, next + 2);
+  }
+  function blinks() {
+    blinkT = undefined;
+    if (disposed) return;
+    // (hidden: the next frame's own step shows the face; a frame coming draws it)
+    if (document.hidden || raf) return blinkSoon();
     let changed = false;
     for (const w of villagers.values()) if (w.v3 && !w.path && !w.posing && w.v3.blink(now())) changed = true;
     if (changed) invalidate();
-  }, 120);
+    else blinkSoon();
+  }
 
   fit();
   night(0);
@@ -1733,7 +1748,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     dispose() {
       disposed = true;
       cancelAnimationFrame(raf);
-      clearInterval(blinks);
+      clearTimeout(blinkT);
       clearTimeout(warmT);
       for (const w of villagers.values()) w.v3?.dispose();
       const seen = new Set<object>();
