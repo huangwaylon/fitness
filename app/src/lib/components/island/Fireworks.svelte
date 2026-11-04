@@ -11,9 +11,9 @@
   // Cheap: a burst is ~20–30 sparks, each a dot with ONE transform/opacity keyframe animation (on the compositor), gone
   // after 2.7 s; at most 4 bursts at once; between bursts nothing but one timer. Paused with the scene (data-paused), and
   // no new ones while covered or hidden. In its layer's px.
-  //   ?fireworks (dev or ?demo): a show now, whatever the date (the e2e's hook).
+  //   The seasonal preview's fireworks (せってい's きせつ; `?fireworks`, dev or ?demo: the e2e's hook): a show now.
   import { timers } from './timers.ts';
-  import { hookFlag } from './devHooks.ts';
+  import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
   import { untrack } from 'svelte';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
@@ -33,7 +33,7 @@
   }
   let { enabled, forced = false, allMet = false, cheer }: Props = $props();
 
-  const pinned = hookFlag('fireworks');
+  const pinned = $derived(scenePreview().event === 'fireworks');
   const rand = Math.random;
 
   const clock = $derived(minuteNow());

@@ -22,6 +22,10 @@ export function isBirthday(md: string | null | undefined, date: string): boolean
 export const birthdaysOn = (date: string, people: Record<PersonId, { birthday: string | null }> = PEOPLE): PersonId[] =>
   (['A', 'B'] as const).filter((p) => isBirthday(people[p].birthday, date));
 
+/** Whose birthday the scene shows on a date: the seasonal preview's `event` (`birthday-A|B`) or the real ones. */
+export const birthdaysShown = (date: string, event: string | null): PersonId[] =>
+  event === 'birthday-A' ? ['A'] : event === 'birthday-B' ? ['B'] : birthdaysOn(date);
+
 /** The party hat each person's villager wears (NH's birthday hats: mine pink, the partner's blue). */
 export const HATS = { mine: 'deco/birthday-hat-pink', partner: 'deco/birthday-hat-blue' } as const;
 

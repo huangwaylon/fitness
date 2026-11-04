@@ -24,10 +24,11 @@ function showerOfWeek(monday: string, seed: string): string | null {
 export const showerNight = (date: string, seed = ISLAND_SEED): boolean => showerOfWeek(weekKeyOf(date), seed) === date;
 
 /** Whether a meteor shower is on at this Tokyo hour (the evening's date, or the day before after midnight). `force`:
- *  the dev hook. */
+ *  the seasonal preview's, any hour. */
 export function showerAt(date: string, prevDate: string, hour: number, seed = ISLAND_SEED, force = false): boolean {
-  if (hour >= CELESTE.from) return force || showerNight(date, seed);
-  if (hour < CELESTE.to) return force || showerNight(prevDate, seed);
+  if (force) return true;
+  if (hour >= CELESTE.from) return showerNight(date, seed);
+  if (hour < CELESTE.to) return showerNight(prevDate, seed);
   return false;
 }
 

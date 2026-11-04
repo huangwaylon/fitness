@@ -10,9 +10,10 @@
 import { pickOne } from '#lib/random.ts';
 import { dayKey, jst } from '#lib/time/clock.ts';
 import { addDays } from '#lib/time/dates.ts';
+import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
-import { hookFlag, hookOneOf, islandSeed } from './devHooks.ts';
-import { eventAt, forcedEvent, type EventId, type EventNow } from './events.ts';
+import { hookOneOf, islandSeed } from './devHooks.ts';
+import { eventAt, type EventId, type EventNow } from './events.ts';
 import { showerAt } from './meteor.ts';
 import { coupleAt } from './wedding.ts';
 
@@ -41,13 +42,16 @@ export function visitorAt(date: string, prevDate: string, hour: number, weekday:
   return null;
 }
 
-/** Who visits at a scene-clock moment, the dev hooks included (`?visitor=`, `?event=`, `?shower`, `?seed=`). */
+/** Who visits at a scene-clock moment, the dev hooks (`?visitor=`, `?seed=`) and the seasonal preview included (an
+ *  event's host, Celeste on a shower, Reese and Cyrus on the wedding). */
 export function visitorNow(clock: Date): VisitorId | null {
   const want = hookOneOf('visitor', VISITORS);
   if (want) return want;
+  const shown = scenePreview().event;
+  if (shown === 'wedding') return 'reese';
   const date = dayKey(clock), prev = addDays(date, -1), seed = islandSeed();
   const { hour, weekday } = jst(clock);
-  return visitorAt(date, prev, hour, weekday, seed, eventAt(date, hour, forcedEvent()), showerAt(date, prev, hour, seed, hookFlag('shower')));
+  return visitorAt(date, prev, hour, weekday, seed, eventAt(date, hour, shown), showerAt(date, prev, hour, seed, shown === 'shower'));
 }
 
 /** A visitor's line on a tap (an i18n key): one of theirs, never the last one again. */

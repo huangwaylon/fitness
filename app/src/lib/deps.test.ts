@@ -24,8 +24,9 @@ const ALLOW: Record<string, string[]> = {
   i18n: ['types', 'time', 'config'],
   sync: [...DOMAIN, 'random'],
   store: [...DOMAIN, 'layout', 'sync', 'i18n', 'ui-state', 'random'],
-  // store → ui-state (toasts), never back: ui-state importing store would close a cycle
-  'ui-state': [...DOMAIN, 'i18n'],
+  // store → ui-state (toasts), never back: ui-state importing store would close a cycle; sync's storage keeps the
+  // seasonal preview's device key (ui-state/preview.svelte.ts)
+  'ui-state': [...DOMAIN, 'i18n', 'sync'],
   art: ['types', 'ui-state'],
   villagers: ['types', 'art', 'i18n'],
   sound: ['types', 'time', 'sync', 'i18n', 'random'],

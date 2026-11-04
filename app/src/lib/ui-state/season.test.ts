@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { deriveTheme, foliageFor, previewParams, seasonFor, SKY_TOP, themeColor, TOD_TOP, todFor } from './season.ts';
+import { deriveTheme, foliageFor, seasonFor, SKY_TOP, themeColor, TOD_TOP, todFor } from './season.ts';
 
 const at = (s: string) => new Date(`${s}+09:00`); // Tokyo time (time/clock.ts jst)
 
@@ -59,19 +59,11 @@ describe('time of day follows the clock', () => {
   });
 });
 
-describe('previews', () => {
-  it('?season= shows that season’s signature foliage', () => {
-    expect(deriveTheme(at('2026-10-29T12:00'), { season: 'spring' })).toMatchObject({ season: 'spring', foliage: 'blossom' });
-    expect(deriveTheme(at('2026-10-29T12:00'), { season: 'winter' }).foliage).toBe('snow');
-  });
-  it('?theme= forces chrome and sky', () => {
-    expect(deriveTheme(at('2026-10-29T12:00'), { theme: 'night' })).toMatchObject({ night: true, tod: 'night' });
-    expect(deriveTheme(at('2026-10-29T22:00'), { theme: 'day' })).toMatchObject({ night: false, tod: 'day' });
-    expect(deriveTheme(at('2026-10-29T17:00'), { theme: 'day' }).tod).toBe('dusk');
-  });
-  it('parses only valid params', () => {
-    expect(previewParams('?demo&season=spring&theme=night')).toEqual({ season: 'spring', theme: 'night' });
-    expect(previewParams('?demo&season=monsoon&theme=dim')).toEqual({ season: null, theme: null });
-    expect(previewParams('?demo')).toEqual({ season: null, theme: null });
+describe('previews (ui-state/preview.ts resolves them)', () => {
+  it('show the season, foliage and time of day given, the clock’s for the rest', () => {
+    expect(deriveTheme(at('2026-10-29T12:00'), { season: 'spring', foliage: 'blossom' })).toMatchObject({ season: 'spring', foliage: 'blossom', tod: 'day' });
+    expect(deriveTheme(at('2026-10-29T12:00'), { tod: 'night' })).toMatchObject({ night: true, tod: 'night', season: 'autumn', foliage: 'fall' });
+    expect(deriveTheme(at('2026-10-29T22:00'), { tod: 'day' })).toMatchObject({ night: false, tod: 'day' });
+    expect(deriveTheme(at('2026-10-29T17:00'), { tod: null }).tod).toBe('dusk');
   });
 });
