@@ -1,6 +1,6 @@
 // Demo smoke test: buy, undo, the harvest recap, the ベル ledger (read-only), けんこう's goals, on `?demo` (no backend, no key).
 import { expect, test, type Page } from '@playwright/test';
-import { fromMenu, hudBells, hudMenu, openRewards } from './hud.ts';
+import { fromMenu, hudBells, hudMenu, openRewards, unfoldMenu } from './hud.ts';
 import { lawnTap, quiet } from './island.ts';
 
 /** The topmost sheet (a confirm over the panel). */
@@ -833,10 +833,8 @@ test('the HUD row: [the dumbbell] [the bowl] [the menu] in the top-right corner,
       await expect(btn).toHaveText('');
       await expect(btn.locator('svg')).toHaveCount(0);
       // unfolded, the pills hang under the leaf, right-aligned to it, on screen: 「ベル 121」 first
-      await hudMenu(page).click();
+      await unfoldMenu(page); // (the spring settled: a fixed 600 ms wasn't, on a busy machine)
       const pills = page.locator('#hud-menu-items > button');
-      await expect(pills.first()).toBeVisible();
-      await page.waitForTimeout(600); // the spring settles
       for (const p of await pills.all()) {
         const b = (await p.boundingBox())!;
         expect(b.x).toBeGreaterThanOrEqual(0);

@@ -96,6 +96,10 @@ Most red runs so far were the spec, not the app. Before pushing a new or changed
 10. **Fishing**: a cast reaches only from my villager's bank (island/fishing.ts CAST_REACH_U): `e2e/island.ts`
     `toTheWater` puts it there and gives a water point to tap; the bite's window is short, so `reelOnBite` taps in the
     page the moment the 「！」 shows. `__fish.why()` names what the last tap on water did; `__fish.line()` its phase.
+11. **Tap a pill only once it's at rest.** Playwright calls a moving thing "stable" while a staggered transition is in
+    its delay, then the tap lands where it has moved off to (the menu's せってい sits over the ベル row 110 ms first):
+    `e2e/hud.ts` `unfoldMenu` / `fromMenu` wait for the pills' spring. A route that fails chunks fails every lazy load
+    under it (a critter's, a visitor's): pin the scene and route just before the one tap it's for (`e2e/stale.spec.ts`).
 
 ## Memory
 The PWA stays open for days, so a scene's round trip must leave nothing behind. `e2e/leaks.spec.ts` (`@chromium`, in
