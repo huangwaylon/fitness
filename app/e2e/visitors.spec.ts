@@ -150,13 +150,15 @@ test('nobody visits on a quiet day (about one in ten of the rotation’s)', asyn
   await expect(page.locator('[data-visitor]')).toHaveCount(0);
 });
 
-test('the day brings its visitor with no hook: Daisy Mae on a Sunday morning, drawn on the 3D island as her card, and she talks', async ({ page }) => {
+test('the day brings its visitor with no hook: Daisy Mae on a Sunday morning, drawn on the 3D island as her NH model, and she talks', async ({ page }) => {
   await page.goto('?demo&date=2026-11-08T09:00&critter=none');
   await expect(hudMenu(page)).toBeVisible();
   const { CAMS } = await geo(page);
   await camera(page, CAMS.mae);
-  // the 3D island stands her card where her node is (her DOM art the tap box only)
-  await expect(page.locator('[data-visitor="daisy-mae"] .art')).toHaveClass(/m3on/);
+  // the 3D island stands her model where her node is (posed as the villagers are; her DOM node the tap box only), and
+  // no visitor is ever a card
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3: { state(s: string): string | null } }).__villagers3.state('visitor')), { timeout: 15_000 }).toBe('idle');
+  await expect(page.locator('[data-visitor="daisy-mae"] .art .official')).toHaveCount(0);
   await tapOn(page, '[data-visitor="daisy-mae"] .art');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('ウリ');
 });

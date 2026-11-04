@@ -1,5 +1,6 @@
-// The 3D island's billboards (docs/design.md "World"): the villagers (their official renders, as the tent draws them),
-// the visitors, and anything whose NH model hasn't landed yet (today's art on a card). Each is a card standing at its
+// The 3D island's billboards (docs/design.md "World"): a villager with no NH model (or while its model loads: their
+// official renders, as the tent draws them), and anything whose NH model hasn't landed yet (today's art on a card). The
+// visitors are never cards: NH's models only (world3d/villagers.ts). Each is a card standing at its
 // feet, leaning back a little with the camera's pitch (all the way would cut its head into what stands behind it),
 // stretched up so it shows as tall as the 2D island draws it (the island's overlays, a balloon or a 「！」, sit on its
 // head), alpha-tested and depth-tested, with a soft blob shadow. Textures are shared by URL.
@@ -21,9 +22,6 @@ export interface CardSpec {
   lift?: number;
   /** Mirrored. */
   flip?: boolean;
-  /** Lying flat on the ground, head to the left, its middle at (x, z) (Gulliver asleep on the beach): no lean, no
-   *  stretch. */
-  lie?: boolean;
   hidden?: boolean;
   /** A squash and stretch (+: wider and shorter), and a tilt (radians, about its feet). */
   squash?: number;
@@ -184,15 +182,9 @@ export function createCards(scene: Scene, changed: (shadows: boolean) => void): 
       const j = jigs.get(id), jk = j ? (t - j.t0) / JIG_MS : 1, je = j ? (1 - jk) * j.k : 0;
       if (j) more = true;
       const sq = (s.squash ?? 0) + Math.sin(jk * Math.PI * 3) * 0.07 * je;
-      const w = s.h * s.aspect * (1 + sq), h = s.h * (1 - sq) * (s.lie ? 1 : k);
-      if (s.lie) {
-        // flat on the ground (its normal up), its head toward −x, its feet's end at +x: centred on its spot
-        c.mesh.position.set(s.x + h / 2, y + 0.6, -s.z);
-        c.mesh.rotation.set(-Math.PI / 2, 0, Math.PI / 2, 'XYZ');
-      } else {
-        c.mesh.position.set(s.x + (0.5 - (s.ax ?? 0.5)) * w * (s.flip ? -1 : 1), y - (s.foot ?? 0) * h, -s.z);
-        c.mesh.rotation.set(-lean, 0, (s.tilt ?? 0) + Math.sin(jk * Math.PI * 4) * 0.07 * je, 'XZY');
-      }
+      const w = s.h * s.aspect * (1 + sq), h = s.h * (1 - sq) * k;
+      c.mesh.position.set(s.x + (0.5 - (s.ax ?? 0.5)) * w * (s.flip ? -1 : 1), y - (s.foot ?? 0) * h, -s.z);
+      c.mesh.rotation.set(-lean, 0, (s.tilt ?? 0) + Math.sin(jk * Math.PI * 4) * 0.07 * je, 'XZY');
       c.mesh.scale.set(s.flip ? -w : w, h, 1);
       if (s.opacity !== undefined) c.mat.opacity = s.opacity;
       if (s.shadow) {

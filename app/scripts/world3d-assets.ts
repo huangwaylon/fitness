@@ -86,11 +86,11 @@ export interface Use {
   /** Its winter look's key (bushes/holly → bushes/holly-winter). */
   winter?: string;
   /** Loaded with its group, lazily (a critter: when one of the month's is about). */
-  lazy?: 'bug' | 'fish' | 'sea' | 'event' | 'visitor';
+  lazy?: 'bug' | 'fish' | 'sea' | 'event';
   /** No NH model of its own: another stands in (the plumeria: NH's hibiscus in its colours). */
   standIn?: true;
 }
-export type Cat = 'bug' | 'fish' | 'shadow' | 'sea' | 'find' | 'fruit' | 'flower' | 'bush' | 'tree' | 'deco' | 'decor' | 'event' | 'visitor' | 'scenery' | 'fx' | 'tool' | 'accessory';
+export type Cat = 'bug' | 'fish' | 'shadow' | 'sea' | 'find' | 'fruit' | 'flower' | 'bush' | 'tree' | 'deco' | 'decor' | 'event' | 'scenery' | 'fx' | 'tool' | 'accessory';
 
 /** A conversion (scripts/world3d-models.ts Job) and the keys it serves. */
 export interface AssetJob {
@@ -117,7 +117,7 @@ export interface AssetJob {
 
 const DECOR_U = 3;
 /** The villagers' scale: an NH villager is 14.9 model units, the island's 80u (engine.ts VILLAGER_H). The critters and
- *  the visitors are drawn at it, in NH's proportions to the villagers (the 2D island's bugs are about as big: 1.6× the
+ *  the visitors (villager3d) are drawn at it, in NH's proportions to the villagers (the 2D island's bugs are about as big: 1.6× the
  *  furniture's scale, BugSprite.svelte). */
 const VILLAGER_S = 5.4;
 /** The 2D island's night looks (`<key>-lit`): in 3D the same model, its emissive lit. */
@@ -309,16 +309,7 @@ const events: AssetJob[] = [
   }, { key: 'deco/countdown-board' })
 ];
 
-// the visitors (Visitor.svelte), NH's special characters, their arms lowered from the bind pose (NH animates them; the
-// files have no clips), their resting face (the first of their eyes' and mouths' textures). Pavé isn't in the files.
-const VISITOR: Record<string, string> = {
-  'kk-slider': 'Tkk', 'daisy-mae': 'Boc', wisp: 'GstA', gulliver: 'Gul', jack: 'Pkn', celeste: 'Ows', franklin: 'Tuk', jingle: 'Rei',
-  zipper: 'Pyn', reese: 'Alw', cyrus: 'Alp'
-};
-const visitors = Object.entries(VISITOR).map(([id, c]): AssetJob => ({
-  name: `visitors/${id}`, parts: one(`NpcSp${c}`), hide: ['FaceBad', 'FaceGood', 'FaceNothing'], pose: { Arm_1_L: [0, 0, -65], Arm_1_R: [0, 0, 65] }, tris: 4000,
-  uses: [{ key: `villagers/${id}`, cat: 'visitor', s: VILLAGER_S, lazy: 'visitor' }]
-}));
+// (the visitors are NH's skinned special characters, posed at runtime as the villagers are: scripts/villagers3d-models.ts)
 
 // the island's bulletin board (docs/board.md): NH's board outside Resident Services (EvtobjBbs: its cork face at model
 // x −6.85…6.80, y 3.49…13.52, z +0.30 once centred), centred on its origin, in winter its snow; the bird that perches on
@@ -359,7 +350,7 @@ const accessories: AssetJob[] = [
   { name: 'accessories/party-glasses', parts: one('AccessoryGlassBirthday0'), maxTex: 128, uses: [{ key: 'accessories/party-glasses', cat: 'accessory', s: VILLAGER_S, anchor: 'joint', lazy: 'event' }] }
 ];
 
-export const ASSETS: AssetJob[] = [...bugs, ...fish, ...sea, ...shadows, ...finds, ...flowers, ...bushes, ...trees, ...decos, ...decor, ...events, ...visitors, ...board, ...fxs, ...tools, ...accessories];
+export const ASSETS: AssetJob[] = [...bugs, ...fish, ...sea, ...shadows, ...finds, ...flowers, ...bushes, ...trees, ...decos, ...decor, ...events, ...board, ...fxs, ...tools, ...accessories];
 
 /** The POC's models (models.json: static/room/world3d/<name>.glb) serving the island's keys as they are. */
 export const POC_USES: [string, Use[]][] = [
@@ -387,11 +378,11 @@ export const POC_USES: [string, Use[]][] = [
 interface Meta { min: number[]; max: number[]; tris: number; kb: number; v: string; lit?: 1 }
 /** A model's budget (KB) by kind: the unit test holds every file to it (src/lib/components/world3d/assets.test.ts). */
 const BUDGET_KB: Record<Cat, number> = {
-  bug: 40, fish: 40, shadow: 4, sea: 40, find: 30, fruit: 30, flower: 24, bush: 90, tree: 160, deco: 120, decor: 120, event: 160, visitor: 120, scenery: 200, fx: 30, tool: 40, accessory: 40
+  bug: 40, fish: 40, shadow: 4, sea: 40, find: 30, fruit: 30, flower: 24, bush: 90, tree: 160, deco: 120, decor: 120, event: 160, scenery: 200, fx: 30, tool: 40, accessory: 40
 };
 /** The tile (u): docs/island-layout.md. */
 const TILE = 30;
-const CATS_WITH_FOOT = new Set<Cat>(['bush', 'tree', 'deco', 'decor', 'event', 'scenery', 'visitor']);
+const CATS_WITH_FOOT = new Set<Cat>(['bush', 'tree', 'deco', 'decor', 'event', 'scenery']);
 
 /** assets.json: the models (bounds in model units, triangles, KB, content hash; under static/room/world3d/<name>.glb)
  *  and per art key: its model, kind, scale, anchor, footprint (tiles, unturned), hit radius (u), shadow, lit (an
@@ -440,8 +431,7 @@ ${sorted(keys).map(([k, v]) => `    ${JSON.stringify(k)}: ${JSON.stringify(v)}`)
 
 /** The island's art without a model of its own (a key or a group `<group>/*`) and why: it stays a billboard (or 2D). */
 const NO_MODEL: [string, string][] = [
-  ['villagers/*', 'billboard: 391 villager models at ~100 KB each is over budget (the visitors have models)'],
-  ['villagers/pave', 'billboard: Pavé isn’t in NH’s files (none of the 31 special characters there is him)'],
+  ['villagers/*', 'not here: the villagers and the visitors are skinned models of their own (scripts/villagers3d-models.ts); a villager with none is its card'],
   ['bushes/white-plumeria, bushes/pink-plumeria', 'no plumeria in NH’s files (no other name either): NH’s hibiscus (the closest shape) in the plumeria’s white and pink (`standIn`)'],
   ['trees/*-canopy, trees/*-trunk', '2D only: the 2D oak’s two layers; the 3D tree is one model'],
   ['reactions/*', 'billboard: the villagers’ emotes'],

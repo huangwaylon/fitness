@@ -4309,12 +4309,6 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Cyrano_NH_Villager_Icon.png"
     },
-    "villagers/cyrus": {
-      "path": "villagers/cyrus.webp",
-      "w": 326,
-      "h": 512,
-      "source": "https://nookipedia.com/wiki/File:Cyrus_NH_Model.png"
-    },
     "villagers/daisy": {
       "path": "villagers/daisy.webp",
       "w": 308,
@@ -4806,12 +4800,6 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Frank_NH_Villager_Icon.png"
-    },
-    "villagers/franklin": {
-      "path": "villagers/franklin.webp",
-      "w": 271,
-      "h": 512,
-      "source": "https://nookipedia.com/wiki/File:Franklin_NH_Model.png"
     },
     "villagers/freckles": {
       "path": "villagers/freckles.webp",
@@ -5317,12 +5305,6 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Isabelle_NH_Character_Icon.png"
     },
-    "villagers/jack": {
-      "path": "villagers/jack.webp",
-      "w": 348,
-      "h": 512,
-      "source": "https://nookipedia.com/wiki/File:Jack_NH_Model.png"
-    },
     "villagers/jacob": {
       "path": "villagers/jacob.webp",
       "w": 273,
@@ -5382,12 +5364,6 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Jeremiah_NH_Villager_Icon.png"
-    },
-    "villagers/jingle": {
-      "path": "villagers/jingle.webp",
-      "w": 363,
-      "h": 512,
-      "source": "https://nookipedia.com/wiki/File:Jingle_NH_Model.png"
     },
     "villagers/jitters": {
       "path": "villagers/jitters.webp",
@@ -6529,12 +6505,6 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Paula_NH_Villager_Icon.png"
     },
-    "villagers/pave": {
-      "path": "villagers/pave.webp",
-      "w": 440,
-      "h": 512,
-      "source": "https://nookipedia.com/wiki/File:Pavé_NH_Model.png"
-    },
     "villagers/peaches": {
       "path": "villagers/peaches.webp",
       "w": 290,
@@ -6942,12 +6912,6 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Redd_NH_Character_Icon.png"
-    },
-    "villagers/reese": {
-      "path": "villagers/reese.webp",
-      "w": 315,
-      "h": 512,
-      "source": "https://nookipedia.com/wiki/File:Reese_NH_Model.png"
     },
     "villagers/renee": {
       "path": "villagers/renee.webp",
@@ -8208,12 +8172,6 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Zell_NH_Villager_Icon.png"
-    },
-    "villagers/zipper": {
-      "path": "villagers/zipper.webp",
-      "w": 232,
-      "h": 512,
-      "source": "https://nookipedia.com/wiki/File:Zipper_T._Bunny_NH_Model.png"
     },
     "villagers/zoe": {
       "path": "villagers/zoe.webp",

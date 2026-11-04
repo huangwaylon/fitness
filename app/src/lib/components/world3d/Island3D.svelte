@@ -1,7 +1,7 @@
 <script lang="ts">
   // The island in 3D (docs/design.md "World", docs/decisions.md "The island in 3D"): IslandScene's drawing. A canvas
   // behind the island's DOM: NH's
-  // models, the ground and the water, the lights (engine.ts), the villagers as cards. The DOM island still runs over it,
+  // models, the ground and the water, the lights (engine.ts), the villagers and the day's visitor (NH's models). The DOM island still runs over it,
   // every node placed through this camera (camera.svelte.ts Proj3): its taps, popups, balloons and marks; its art goes
   // invisible where the canvas draws the thing (IslandScene's [data-r3] rules). The finger is gestures.ts': one finger
   // scrolls along the island (z only, a free fling), two pinch the zoom; nothing else moves the camera.
@@ -14,7 +14,7 @@
   import type { VillagerActor } from '#lib/ui-state/cast.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import { actors, livePos } from '../motion/director.svelte.ts';
-  import type { Proj3, World } from '../island/camera.svelte.ts';
+  import type { Proj3, V3, World } from '../island/camera.svelte.ts';
   import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '../island/world.ts';
   import { GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
   import { LAMP_GLOW, type Piece } from '../island/fixedDecor.ts';
@@ -158,7 +158,7 @@
   }
 
   // ---- the villagers: cards of their renders (the director's state: where, which way, its motion) ----
-  const motionAt: Partial<Record<VillagerActor | 'visitor' | 'host', { n: number; t0: number }>> = {};
+  const motionAt: Partial<Record<VillagerActor, { n: number; t0: number }>> = {};
   const PULL_MS = 4200;
   /** The pull-up bar's three reps (IslandScene's keyframes): up at 8–16 % and 40–48 % of the cycle. */
   function pullLift(t: number): number {
@@ -196,12 +196,47 @@
     const lift = hb ? (hb.getWorldPosition(headV).y - feet) * 2 + 10 : VILLAGER.h + 10;
     e.fx('mark', x, z, lift, { v: m, ms: 2200, tag: again ? 'mark' : undefined });
   }
+  // ---- the day's visitor: NH's model (world3d/villagers.ts, slot 'visitor'; Reese's Cyrus 'visitor:b'), posed by the
+  // director's 'visitor' actor as the villagers are by theirs; its two specs kept and written over (no allocation a frame) ----
+  const visSpecs: VSpec[] = ['visitor', 'visitor:b'].map((slot) => ({
+    slot, id: '', x: 0, z: 0, y: 0, walking: false, face: 'home', side: 'left', asleep: false, prone: false, seat: null, lift: 0,
+    motion: null, motionN: 0, emote: null, stung: false, shown: false, hat: null, tool: null, away: false
+  }));
+  let visN = 0;
+  function visSpec(s: VSpec, id: string, x: number, z: number, v: V3, shown: boolean) {
+    const a = actors.visitor;
+    s.id = id;
+    s.x = x;
+    s.z = z;
+    s.y = feetOf(x, z);
+    s.walking = a.walking;
+    s.face = a.face === 'in' ? 'home' : a.face;
+    s.prone = v.prone();
+    s.lift = v.lift();
+    s.motion = a.motion;
+    s.motionN = a.motionN;
+    s.emote = a.emote;
+    s.shown = shown;
+    s.away = v.away() || inFocusWay(x, z);
+  }
+  const onV3 = (v: V3, x: number, z: number, shown: boolean) => {
+    if (visN) return; // (one visitor at a time)
+    const half = v.also ? v.also.dx / 2 : 0;
+    visSpec(visSpecs[0], v.id, x - half, z, v, shown);
+    visN = 1;
+    if (v.also) visSpec(visSpecs[visN++], v.also.id, x + half, z - 1, v, shown);
+  };
+
   function villagerCards(t: number, active: boolean): boolean {
     if (!eng) return false;
     let moving = false;
     const swaying = scene.hasAttribute('data-show');
-    // NH's own 3D villagers where they have one (world3d/villagers.ts); a card for the rest, and while one loads
+    // NH's own 3D villagers where they have one (world3d/villagers.ts); a card for the rest, and while one loads; the
+    // day's visitor (no card: drawn once its model is in)
     const specs: VSpec[] = [];
+    visN = 0;
+    world.eachV3(onV3);
+    for (let i = 0; i < visN; i++) specs.push(visSpecs[i]);
     for (const c of cast()) {
       const a = actors[c.id], look = resolveLook({ villager: c.villager, person: c.person });
       if (!has3d(look.id)) continue;
@@ -280,42 +315,6 @@
       }
     }
     if (fxSeen.size > 200) fxSeen.clear();
-  }
-
-  // ---- the other characters (a visitor): cards of their renders where their nodes are, posed by their actors ----
-  let cards3 = new Set<string>();
-  function characterCards(e: Island3, t: number): boolean {
-    const seen = new Set<string>();
-    let moving = false;
-    for (const n of world.cards3()) {
-      const c = n.c3, base = artCard(c.key, c.h);
-      const art = c.art?.();
-      if (art && marked.get(art) !== !!base) {
-        marked.set(art, !!base);
-        art.classList.toggle('m3on', !!base);
-      }
-      if (!base) continue;
-      const id = `c:${n.id}`;
-      seen.add(id);
-      const a = c.actor ? actors[c.actor] : null;
-      let pose = { lift: 0, squash: 0, tilt: 0 };
-      if (a) {
-        const m = motionAt[c.actor!];
-        if (!m || m.n !== a.motionN) motionAt[c.actor!] = { n: a.motionN, t0: t };
-        const mp = a.motion ? motionPose(a.motion, t - motionAt[c.actor!]!.t0) : null, ip = idlePose(t, a.walking, a.asleep, a.stepMs || 640, 2.1);
-        if (mp || a.walking) moving = true;
-        pose = { lift: (mp?.lift ?? 0) + ip.lift, squash: (mp?.squash ?? 0) + ip.squash, tilt: (mp?.tilt ?? 0) + ip.tilt };
-      }
-      e.cards.set(id, { ...base, x: n.x - (c.also ? c.also.dx / 2 : 0), z: n.z, flip: c.flip, lie: c.lie, shadow: c.lie ? 0 : 15, hidden: !n.shown, lift: (c.lift ?? 0) + pose.lift, squash: pose.squash, tilt: pose.tilt });
-      const b2 = c.also ? artCard(c.also.key, c.also.h) : null;
-      if (c.also && b2) {
-        seen.add(`${id}:b`);
-        e.cards.set(`${id}:b`, { ...b2, x: n.x + c.also.dx / 2, z: n.z - 1, flip: c.flip, shadow: 15, hidden: !n.shown, lift: (c.lift ?? 0) + pose.lift, squash: pose.squash, tilt: -pose.tilt });
-      }
-    }
-    for (const id of cards3) if (!seen.has(id)) e.cards.set(id, null);
-    cards3 = seen;
-    return moving;
   }
 
   // ---- what comes and goes (a find, a weed, a decoration, a fallen fruit): the DOM nodes with an `m3` key ----
@@ -802,12 +801,11 @@
       floats(e, t);
       fall(e, t);
       b3?.frame(performance.now());
-      const acting = characterCards(e, t);
       actorFx(e, t);
-      if (villagerCards(t, camMoved || more) || more || moving === true || acting) return true;
+      if (villagerCards(t, camMoved || more) || more || moving === true) return true;
       // the ambience (the ambient rate): a slow move, the season's fall, the stream's floats, an emitter, a blink, the
       // balloon drifting over
-      return moving || ambient3.kind || floatsOn || emitting || b3?.shown() || cast().some((c) => c.shown) ? 'ambient' : false;
+      return moving || ambient3.kind || floatsOn || emitting || b3?.shown() || visN > 0 || cast().some((c) => c.shown) ? 'ambient' : false;
     });
     // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
     listenFx3((kind, x, z, lift, o) => e.fx(kind, x, z, lift, o));

@@ -6,8 +6,8 @@
 //   villager's left, +z rolls it toward its right. A child's rotation is in its parent's rest frame (the parent's turn
 //   carries it): so a forearm bends about y (+y folds the right one forward, −y the left), as it would from NH's bind
 //   pose, a T, whatever the upper arm does. The arms are lowered from the T by ARMS (each pose says how far).
-//   Base states loop (idle, walk, sit, lie, nap, doze); actions play once over a base (hop, wave, high five, the
-//   surprise, the sting's wobble) and hand back; a state change crossfades over FADE_MS.
+//   Base states loop (idle, walk, sit, lie, nap, doze, prone); actions play once over a base (hop, wave, high five, the
+//   surprise, the sting's wobble, a sleeper's twitch) and hand back; a state change crossfades over FADE_MS.
 
 type V3 = readonly [number, number, number];
 export const JOINTS = [
@@ -22,7 +22,7 @@ export interface Pose {
   /** Joint → rotation (radians about the model's x, y, z at rest). A joint not named is at rest. */
   j: Partial<Record<Joint, V3>>;
   /** The body lifted (model units), squashed (1 none; under 1 squat and wider), pitched (radians: −π/2 lies it on its
-   *  back, its head away from the camera). */
+   *  back, its head away from the camera; +π/2 on its front, face down). */
   y: number;
   sq: number;
   pitch: number;
@@ -35,10 +35,10 @@ export interface Body {
   hip: number;
 }
 
-export type State = 'idle' | 'walk' | 'sit' | 'lie' | 'nap' | 'doze' | 'fish';
-export type Action = 'hop' | 'wave' | 'highfive' | 'surprise' | 'sting' | 'cast' | 'tug' | 'reel' | 'warmup' | 'sidebend' | 'jump';
+export type State = 'idle' | 'walk' | 'sit' | 'lie' | 'nap' | 'doze' | 'fish' | 'prone';
+export type Action = 'hop' | 'wave' | 'highfive' | 'surprise' | 'sting' | 'cast' | 'tug' | 'reel' | 'warmup' | 'sidebend' | 'jump' | 'twitch';
 export const ACTION_MS: Record<Action, number> = {
-  hop: 720, wave: 1700, highfive: 1000, surprise: 650, sting: 1400, cast: 620, tug: 420, reel: 700,
+  hop: 720, wave: 1700, highfive: 1000, surprise: 650, sting: 1400, cast: 620, tug: 420, reel: 700, twitch: 460,
   // group stretching's three (island/stretching.ts POSE_MS each, a beat less: each hands over to the next)
   warmup: 1950, sidebend: 1950, jump: 1950
 };
@@ -190,6 +190,20 @@ function nap(t: number, seed = 0): Pose {
   return p;
 }
 
+/** Asleep face down on the ground (Gulliver washed up on the beach, NH): flat on its front, the arms limp out by its
+ *  sides, the legs straight, the head turned a little to one side, slow snoring breaths. */
+function prone(t: number, seed = 0): Pose {
+  const p = arms(rest(), ARMS * 0.55);
+  breathe(p, t, 4000, 2.4);
+  p.pitch = Math.PI / 2;
+  p.j.Head = [0.05, 0.18 + 0.03 * Math.sin(t / 2600 + seed), 0];
+  p.j.Leg_1_L = [0, 0, -0.08];
+  p.j.Leg_1_R = [0, 0, 0.08];
+  p.j.Ankle_L = [0.5, 0, 0];
+  p.j.Ankle_R = [0.5, 0, 0];
+  return p;
+}
+
 /** Dozing on its feet (NH's villagers nodding off at night): the head drooping, slow deep breaths, a sway, and now
  *  and then the nod as it catches itself. */
 function doze(t: number, seed = 0): Pose {
@@ -228,6 +242,7 @@ export function base(state: State, t: number, o: { phase: number; speed: number;
     case 'lie': return lie(t, o.seed);
     case 'nap': return nap(t, o.seed);
     case 'doze': return doze(t, o.seed);
+    case 'prone': return prone(t, o.seed);
     default: return idle(t, o.seed);
   }
 }
@@ -356,6 +371,14 @@ export function action(a: Action, u: number): { p: Pose; w: number } {
         p.j.Leg_1_L = [-0.35 * Math.sin(f * Math.PI), 0, -0.12 * Math.sin(f * Math.PI)];
         p.j.Leg_1_R = [-0.35 * Math.sin(f * Math.PI), 0, 0.12 * Math.sin(f * Math.PI)];
       } else p.sq = 1 - 0.14 * Math.sin(((k - 0.72) / 0.28) * Math.PI);
+      return { p, w };
+    }
+    case 'twitch': {
+      // a sleeper's twitch (Gulliver nudged): a kick of the feet and a jerk of a wing, no lift (the head the sleep's)
+      const k = Math.sin(clamp01(u / T) * Math.PI) * Math.sin((u / T) * 3 * Math.PI);
+      p.j.Leg_2_L = [0.5 * k, 0, 0];
+      p.j.Leg_2_R = [-0.3 * k, 0, 0];
+      p.j.Arm_2_L = [0, -0.5 * k, 0];
       return { p, w };
     }
     case 'sting': {

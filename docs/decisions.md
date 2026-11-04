@@ -338,7 +338,7 @@ four leave the charts more of the screen. A native `<select>` is iOS's own picke
 nothing to break on Safari.
 
 ### NH events by date rule
-Each dated NH event (Halloween, Turkey Day, Toy Day, Festivale, Bunny Day) is one rule in `island/events.ts`, and its
+Each dated NH event (Halloween, Turkey Day, Toy Day, Bunny Day; no Festivale: its host Pavé has no 3D model) is one rule in `island/events.ts`, and its
 host takes the visitor slot. Why: NH's calendar on the island with no new screens and nothing to sync.
 
 ### The rest of NH's bugs: what the island can hold

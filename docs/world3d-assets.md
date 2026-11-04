@@ -88,12 +88,15 @@ each source's live parts and the spawns' log (e2e/fishing3d.spec.ts: the nibbles
 fx/* meshes draw in their vertex colours unless tinted (they drew all white before: the 「！」 a blank disc). The line is Island3D's (a bent `Line` from `tip()`); a tube line (thicker than a 1 px GL line on
 a 3× phone) is open for the lead.
 
-Not converted (see the table's last section): the villagers (billboards), Pavé (not in the files), the emotes and the
-UI's art. The plumeria isn't in NH's files under any name: NH's hibiscus (the closest shape) stands in, in the
+Not converted here (see the table's last section): the villagers and the visitors (skinned models of their own, below),
+the emotes and the UI's art. The plumeria isn't in NH's files under any name: NH's hibiscus (the closest shape) stands in, in the
 plumeria's white and pink.
 
 The villagers' own 3D models (the villager3d runtime, 411 of them) are converted apart, by `scripts/villagers3d-models.ts`
-and `scripts/villagers3d-page.js` into `app/static/room/villagers3d/<id>.glb` (≤ 100 KB each). A material's textures
+and `scripts/villagers3d-page.js` into `app/static/room/villagers3d/<id>.glb` (≤ 100 KB each), skinned and posed in code.
+So are the island's visitors: the roster's special characters (K.K., Daisy Mae, Wisp, Gulliver, Celeste, Kicks, Label,
+Saharah, Leif, Redd, C.J., Flick) and, by `VISITOR_ONLY` (not in the picker), Franklin (NpcSpTuk), Jack (Pkn), Jingle
+(Rei), Zipper (Pyn), Reese (Alw) and Cyrus (Alp), their face at rest. Pavé isn't in NH's files: he never visits. A material's textures
 are the ones its Collada effect samples, not the ones named after it: NH's `mCapVis` (the ears, horns and hair a hat
 hides: 195 villagers) and `mGlassCap` sample `mBody_Alb` and `mGlass_Alb`, a hedgehog's or a kangaroo's `mSoftmesh`
 the body's or the cloth's; looked up by their own names they came out plain white (the user saw the ears). The texture
@@ -104,7 +107,7 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 ## The inventory
 
 <!-- assets:start -->
-549 keys, 431 models, 6.22 MB in all.
+538 keys, 420 models, 5.32 MB in all.
 
 | kind | keys | models | KB | loads |
 | --- | --- | --- | --- | --- |
@@ -124,7 +127,6 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 | shadow | 15 | 15 | 41.9 | with the island |
 | tool | 3 | 3 | 18.3 | with the island |
 | tree | 10 | 10 | 325.1 | with the island |
-| visitor | 11 | 11 | 926.5 | lazily (visitor) |
 
 ### accessory
 
@@ -744,32 +746,14 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 | trees/palm | palm | 3 | feet | 4×3 | 53 | 22.9 | winter: trees/palm-winter |
 | trees/palm-winter | trees/palm-winter | 3 | feet | 4×3 | 53 | 36.7 |  |
 
-### visitor
-
-| key | model | scale | anchor | foot | hit | KB | notes |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| villagers/celeste | visitors/celeste | 5.4 | feet | 3×2 | 36 | 87.4 |  |
-| villagers/cyrus | visitors/cyrus | 5.4 | feet | 2×2 | 26 | 72.7 |  |
-| villagers/daisy-mae | visitors/daisy-mae | 5.4 | feet | 2×2 | 28 | 96.7 |  |
-| villagers/franklin | visitors/franklin | 5.4 | feet | 2×2 | 32 | 80.2 |  |
-| villagers/gulliver | visitors/gulliver | 5.4 | feet | 2×2 | 28 | 88.8 |  |
-| villagers/jack | visitors/jack | 5.4 | feet | 2×2 | 25 | 67.8 |  |
-| villagers/jingle | visitors/jingle | 5.4 | feet | 2×2 | 32 | 107.1 |  |
-| villagers/kk-slider | visitors/kk-slider | 5.4 | feet | 2×2 | 24 | 98.2 |  |
-| villagers/reese | visitors/reese | 5.4 | feet | 2×2 | 23 | 90.3 |  |
-| villagers/wisp | visitors/wisp | 5.4 | feet | 2×2 | 24 | 21.4 |  |
-| villagers/zipper | visitors/zipper | 5.4 | feet | 2×2 | 24 | 115.9 |  |
-
 ### No model of its own
 
 | keys | status |
 | --- | --- |
-| villagers/* | billboard: 391 villager models at ~100 KB each is over budget (the visitors have models) |
-| villagers/pave | billboard: Pavé isn’t in NH’s files (none of the 31 special characters there is him) |
+| villagers/* | not here: the villagers and the visitors are skinned models of their own (scripts/villagers3d-models.ts); a villager with none is its card |
 | bushes/white-plumeria, bushes/pink-plumeria | no plumeria in NH’s files (no other name either): NH’s hibiscus (the closest shape) in the plumeria’s white and pink (`standIn`) |
 | trees/*-canopy, trees/*-trunk | 2D only: the 2D oak’s two layers; the 3D tree is one model |
 | reactions/* | billboard: the villagers’ emotes |
-| deco/lamp-glow | billboard: an additive glow sprite (a light’s halo, not a thing) |
 | fx/* (sparkle, bang, dust, splash, ripple) | not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the 2D’s colours (scripts/world3d-fx.ts) |
 | deco/airport | not on the island: the pairing page’s map icon |
 | host/*, items/snack, items/dinner, money/* | not on the island: the panels’ and the HUD’s art |

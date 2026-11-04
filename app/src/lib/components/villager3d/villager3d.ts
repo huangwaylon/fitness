@@ -5,7 +5,7 @@
 // island's models are (Lambert, a little self-light by its own colour: engine.ts's "lift"), and a soft blob of shadow
 // under it. Plain three.js: whatever scene it stands in moves the group (x, z, yaw) and calls step() in each frame.
 //   v.group                 add it (engine.ts attach() bends its materials with the island)
-//   v.set(state)            idle, walk, sit, lie, nap, doze: crossfaded over FADE_MS
+//   v.set(state)            idle, walk, sit, lie, nap, doze, prone: crossfaded over FADE_MS (PRONE_MS to and from prone)
 //   v.act(action)           hop, wave, highfive, surprise, sting: once, over the state
 //   v.face(f | null)        an expression (null: the state's own: asleep closed, else resting)
 //   v.step(t, moved, speed) one frame: `moved` the u walked since the last (the stride follows it), `speed` u/s
@@ -26,6 +26,8 @@ import type { Anchor } from './seats3d.ts';
 const SIT_MS = 420;
 /** How far the seat's top is under the hips' joint (model units): the body's round bottom sits into it a little. */
 const SINK = 0.55;
+/** Down onto its front, or up off it (ms): getting up is slower than a state's change. */
+const PRONE_MS = 600;
 
 /** World units per model unit: an NH villager is 14.9 model units, the island's 80u (world3d-assets.ts VILLAGER_S). */
 export const VILLAGER_S = 5.4;
@@ -151,7 +153,7 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
   // its measures at rest (model units): how tall, how far its back is behind its middle (lying on it, it's lifted by
   // that; sitting, its hips sit that far out from the seat's back)
   const restBox = new Box3().setFromObject(model);
-  const tall = restBox.max.y, backDepth = Math.max(1, -restBox.min.z);
+  const tall = restBox.max.y, backDepth = Math.max(1, -restBox.min.z), frontDepth = Math.max(1, restBox.max.z);
   // the faces NH swaps whole meshes for (a bird's beak, a deer's or a gorilla's muzzle: scripts/villagers3d-page.js
   // keeps FaceNothing, FaceGood and FaceBad, named for their face): the one for the expression shows
   const swaps: { kind: 'Nothing' | 'Good' | 'Bad'; mesh: Object3D }[] = [];
@@ -307,7 +309,7 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
     if (faceSet) return faceSet;
     if (act?.a === 'hop' || act?.a === 'highfive' || act?.a === 'wave') return 'happy';
     if (act?.a === 'surprise') return 'surprised';
-    return cur === 'nap' || cur === 'doze' ? 'sleepy' : 'neutral';
+    return cur === 'nap' || cur === 'doze' || cur === 'prone' ? 'sleepy' : 'neutral';
   };
 
   return {
@@ -317,7 +319,7 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       prev = cur;
       cur = s;
       since = lastT;
-      fadeMs = seat || (leaving && lastT - leaving.t0 < SIT_MS) ? SIT_MS : FADE_MS;
+      fadeMs = seat || (leaving && lastT - leaving.t0 < SIT_MS) ? SIT_MS : s === 'prone' || prev === 'prone' ? PRONE_MS : FADE_MS;
     },
     sitAt(a) {
       if (a && seat && seat.a === a) return;
@@ -481,9 +483,11 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
         inner.position.set(0, 0, 0);
         blob.position.y = (anchored.a.floor - tf.y) / group.scale.x + 0.6;
       } else {
-        inner.position.y = p.y * VILLAGER_S + (p.pitch ? -Math.sin(p.pitch) * 2.2 * VILLAGER_S : 0);
-        // lying, its middle over the group's origin (the bed's), not its feet
-        inner.position.z = p.pitch ? Math.sin(p.pitch) * -6.5 * VILLAGER_S : 0;
+        // lying on its back: lifted onto it; on its front (prone): lifted onto its front (its beak, its belly: sunk a
+        // little in the sand); either way its middle over the group's origin (the bed's), not its feet
+        const back = p.pitch < 0 ? -Math.sin(p.pitch) : 0, front = p.pitch > 0 ? Math.sin(p.pitch) : 0;
+        inner.position.y = (p.y + back * 2.2 + front * frontDepth * 0.85) * VILLAGER_S;
+        inner.position.z = (back * 6.5 - front * tall * 0.5) * VILLAGER_S;
         blob.position.y = 0.6;
       }
       blob.scale.setScalar(p.pitch ? 30 : 17 * (1 - Math.min(0.4, Math.max(0, p.y) * 0.12)));

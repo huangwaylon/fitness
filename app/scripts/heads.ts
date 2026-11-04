@@ -51,7 +51,7 @@ const EYES: Record<string, [number, number, number | null]> = {
   gladys: [0.38, 0.21, null], gloria: [0.245, 0.335, 0.74], graham: [0.32, 0.39, 0.67], greta: [0.37, 0.51, 0.61],
   gruff: [0.33, 0.26, 0.7], gulliver: [0.73, 0.29, null], hamphrey: [0.29, 0.41, 0.71], harvey: [0.32, 0.235, 0.62],
   hazel: [0.22, 0.35, 0.56], hippeux: [0.68, 0.27, null], huck: [0.23, 0.125, 0.75], ione: [0.63, 0.415, 0.94],
-  jack: [0.31, 0.31, 0.61], jacques: [0.21, 0.29, 0.78], judy: [0.24, 0.33, 0.73], julian: [0.67, 0.18, null],
+  jacques: [0.21, 0.29, 0.78], judy: [0.24, 0.33, 0.73], julian: [0.67, 0.18, null],
   kappn: [0.25, 0.265, 0.67], katt: [0.37, 0.4, 0.62], keaton: [0.5, 0.15, null], kevin: [0.26, 0.25, 0.71],
   kicks: [0.3, 0.29, 0.7], kitty: [0.23, 0.41, 0.74], klaus: [0.37, 0.2, 0.64], kody: [0.25, 0.325, 0.77],
   leonardo: [0.31, 0.245, 0.69], leopold: [0.33, 0.255, 0.66], lily: [0.24, 0.105, 0.74], lopez: [0.29, 0.375, 0.69],
@@ -60,7 +60,7 @@ const EYES: Record<string, [number, number, number | null]> = {
   mathilda: [0.56, 0.26, null], megan: [0.33, 0.18, 0.67], merry: [0.2, 0.4, 0.76], mira: [0.25, 0.415, 0.74],
   moe: [0.2, 0.4, 0.8], monique: [0.31, 0.415, 0.69], mott: [0.36, 0.23, 0.68], olaf: [0.63, 0.15, null],
   olivia: [0.25, 0.4, 0.75], orville: [0.45, 0.195, null], ozzie: [0.31, 0.215, 0.68], pancetti: [0.25, 0.305, 0.8],
-  paolo: [0.57, 0.27, null], pascal: [0.23, 0.31, 0.82], patty: [0.33, 0.125, 0.65], pave: [0.37, 0.225, 0.61],
+  paolo: [0.57, 0.27, null], pascal: [0.23, 0.31, 0.82], patty: [0.33, 0.125, 0.65],
   peaches: [0.49, 0.135, null], peanut: [0.17, 0.4, 0.49], peck: [0.21, 0.24, 0.78], peewee: [0.42, 0.17, 0.59],
   peggy: [0.23, 0.285, 0.76], pekoe: [0.26, 0.32, 0.74], petri: [0.33, 0.49, 0.68], phil: [0.21, 0.2, 0.75],
   piper: [0.21, 0.26, 0.79], portia: [0.31, 0.21, 0.7], prince: [0.23, 0.1, 0.76], puck: [0.35, 0.23, 0.62],
@@ -75,7 +75,7 @@ const EYES: Record<string, [number, number, number | null]> = {
   truffles: [0.3, 0.245, 0.7], tucker: [0.36, 0.22, null], tulin: [0.27, 0.26, 0.67], twiggy: [0.26, 0.22, 0.72],
   ursala: [0.32, 0.215, 0.68], velma: [0.37, 0.26, 0.62], vesta: [0.6, 0.18, null], vic: [0.37, 0.17, 0.62],
   viche: [0.5, 0.35, 0.82], 'wart-jr': [0.23, 0.105, 0.76], wilbur: [0.28, 0.245, 0.52], winnie: [0.54, 0.155, null],
-  zipper: [0.35, 0.37, 0.7]
+ 
 };
 
 type Px = { w: number; h: number; a: (x: number, y: number) => number; l: (x: number, y: number) => number };

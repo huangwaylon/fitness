@@ -487,8 +487,8 @@ went in November 2026 (docs/cleanup-2d.md).
   water does; a model's or a critter's move slower than 60 px/s on screen, or off it, is ambience: `world3d/pace.ts`), and the World steps itself on the game's own clock when no frame has (camera.svelte.ts `simTick`). The
   ground and the water are the layout's (`terrain.ts` buildGround with NH's textures, on `water.ts`'s shared uniforms); the objects
   `objects.ts` placeObjects from the layout and the day's scenery and decor pieces (a card of today's art for what has
-  no model yet); the villagers NH's models (`villagers.ts`, villager3d/), the visitors cards of their renders posed
-  from the director (`motion3d.ts`); the lights `lights.ts`; the finger `gestures.ts`. The camera's ends come from the
+  no model yet); the villagers and the day's visitor NH's models (`villagers.ts`, villager3d/: a villager with none
+  is its render's card, a visitor never is); the lights `lights.ts`; the finger `gestures.ts`. The camera's ends come from the
   layout's extent (the shoreline at まえ, the far end at ウェイ's door). `window.__world3d` (stats, view, go, client,
   ground, where, focus, xRoom, strays, alphaBlends, away) for the e2e (`e2e/world3d.spec.ts`).
   - **The camera** (the user, 2026-11-02): the default zoom (1) is the widest it rests at, x centred, and one finger
@@ -502,7 +502,7 @@ went in November 2026 (docs/cleanup-2d.md).
   - **What comes and goes** is drawn from the DOM island's own nodes (`camera.svelte.ts`): a node with an `m3` art key
     stands as NH's model where the node is (its live position too; a move eases over `ms` as its sprite's CSS
     transition; `drop` falls in from above; `y` an absolute height: a fish's shadow under the sea), and one with a
-    `c3` is a character's card (a visitor) posed by its actor; their DOM art goes invisible (`.m3on`, IslandScene's
+    `v3` is a character's model (the visitor: world3d/villagers.ts, posed by its actor as the villagers are); their DOM art goes invisible (`.m3on`, IslandScene's
     `[data-r3]` rules) and stays as the tap box, its image never downloaded (`characters/artGate.ts`) unless the 3D
     island has no model for its key (`m3off`). Finds, weeds, the rock, decorations, the tape deck, the events' pieces,
     the critters (the bugs at their flight height, the fish shadows turned the way they swim: under the water, above its
@@ -1569,7 +1569,8 @@ day went with it). Off screen, the edge chip by the screen's side (「うめの 
 
 ### Visitors
 
-`island/Visitor.svelte`, `island/visitors.ts`, `e2e/visitors.spec.ts`. NH's visitors (official renders), one at a time,
+`island/Visitor.svelte`, `island/visitors.ts`, `e2e/visitors.spec.ts`. NH's visitors, one at a time, each NH's own 3D
+model (the user: "only 3D models; no model, not included": a character with none never comes, so no Pavé),
 seeded by the date, so a visitor comes most days as in NH: **K.K. Slider** on Saturday nights 18:00–24:00, **Daisy
 Mae** on Sunday mornings 05:00–12:00, and Monday to Saturday one of NH's weekday visitors (`ROTATION`, each at most
 once a week, drawn by the week's Monday, with about one quiet day in ten): **Kicks**, **Label**, **Saharah**,
@@ -1577,9 +1578,11 @@ once a week, drawn by the week's Monday, with about one quiet day in ten): **Kic
 (none on a Saturday: K.K.'s); **Jack** on Halloween night, **Celeste** on a meteor shower's night, the holiday hosts on
 their days, the wedding couple on its days. Priority (`visitorAt`): the event's host (Jack included), the wedding
 couple, Celeste, K.K., Daisy Mae, then the day's. `?visitor=none`: nobody. They stand on centre stage in the plaza
-(ひろば: derived from the layout, `stageOf`; it moves with a もようがえ) at the villagers' scale times their NH height,
-with a contact shadow; as in NH, **Gulliver washes up on the front beach** (`washedUp`: a new stretch of sand some
-days), lying flat on his face (his 3D card laid on the sand). A tap (while they're on screen): my villager turns to
+(ひろば: derived from the layout, `stageOf`; it moves with a もようがえ), its skinned model converted as the villagers'
+are (`scripts/villagers3d-models.ts`: the special characters, and `VISITOR_ONLY` for the hosts, Jack and the wedding's
+pair) and drawn and posed by the same code and materials (`world3d/villagers.ts`, slot `visitor`; Cyrus `visitor:b`),
+at NH's proportions to them, with the same blob shadow; as in NH, **Gulliver washes up on the front beach** (`washedUp`:
+a new stretch of sand some days), lying face down on the sand, his head to the left (villager3d's `prone`). A tap (while they're on screen): my villager turns to
 them where it stands, then their introduction the first time, then one of their lines. No trading, no ベル.
 
 **K.K.'s show:** with ミュージック on, a tap is his greeting with NH's choice box, **リクエスト** (up to four songs) or
@@ -1594,14 +1597,13 @@ talks.
 `e2e/visitor-life.spec.ts`. The visitor is the stage director's fourth actor (`'visitor'`): its walks, motions,
 emotes, fx and facing use the villagers' calls, and idle life gives it a beat on every slot (awake or asleep), drawn from the slot's PRNG.
 
-- **Always (CSS):** a breath (2.4–3.2 s, each its own) and now and then a weight shift, on separate transform
-  properties so loops add up; the contact shadow breathes with it.
-- **Signatures (NH):** K.K. strums with a head-bob (harder mid-song); Wisp floats, drifts and flickers; Jack sways and
-  twirls with a spooky glint; Daisy Mae shifts her turnips and hums; Franklin waddles, flaps and looks about; Jingle
-  bounces with a sparkle; Pavé dances Festivale's steps and a samba with confetti; Zipper hops; Celeste looks up and
-  points when a shooting star crosses (`island:star`); Reese and Cyrus lean toward each other and nuzzle; Kicks and
-  Flick nod, Label strikes a pose, Saharah hums, Leif sways, Redd looks about, C.J. hops.
-- **Gulliver** sleeps face down on the front beach (snoring, zzz, a twitch; his card lies flat on the sand). A tap is a nudge: a twitch and his sleep talk
+- **Always:** the villagers' idle pose (villager3d `idle`: breathing, a look about), held still when nothing moves as
+  theirs is; the director's motions are its actions (a hop, a wave, NH's three stretches with the villagers).
+- **Signatures (NH):** K.K. nods with notes; Wisp floats a little off the ground in his glow; Jack twirls with a spooky
+  glint; Daisy Mae hums; Franklin flaps and looks about; Jingle hops with a sparkle; Zipper hops; Celeste looks up and
+  points (a wave) when a shooting star crosses (`island:star`); Reese and Cyrus side by side, hearts; Kicks and Flick
+  nod, Label strikes a pose, Saharah hums, Leif sways, Redd looks about, C.J. hops.
+- **Gulliver** sleeps face down on the front beach (zzz, a twitch of his feet and a wing). A tap is a nudge: a twitch and his sleep talk
   (「…ムニャムニャ…」, a small caption); the **fifth** wakes him: a start, a 「！」, he gets up and introduces himself
   (awake for the day).
 - **A beat** (`pickAct`): the signature, an emote (never the same twice running), a look at the nearest villager, a
@@ -1613,9 +1615,10 @@ emotes, fx and facing use the villagers' calls, and idle life gives it a beat on
 - **A tap:** my villager turns to them where it stands; the visitor walks back to its spot if it strolled, turns to
   my villager with a little hop and speaks, standing still until the balloon closes. A tap elsewhere now and then draws a glance.
 - **Arriving and leaving:** when a visit starts or ends with the island open: walkers come from the campsite along
-  the paths (and go back there), Wisp floats down, Celeste flies down, K.K. and Gulliver appear, Jack in a spooky puff;
-  they leave the same way. On a page's first paint they're simply there.
-- **Cost:** CSS keyframes and the director's timers; the one rAF only while it walks; paused with the scene.
+  the paths (and go back there, fading at the door), Wisp floats down, Celeste flies down (`liftNow`), K.K. and Gulliver
+  appear, Jack in his spooky puff; they leave the same way (up again, or fading). On a page's first paint they're simply there.
+- **Cost:** one more skinned character on the villagers' code and materials (its GLB ≤ 100 KB, loaded on its first
+  visit and cached), its spec written over each frame (no allocation); the director's timers; paused with the scene.
 
 ### Halloween
 
@@ -1639,7 +1642,6 @@ an introduction, four lines and two villager day lines:
   fish caught that day (`island:catch`) makes him happy and he thanks you by its name. Kept for the day on this phone
   (`scene-franklin`).
 - **Jingle**, Toy Day (Dec 24, from 05:00), beside the Toy Day decorations.
-- **Pavé**, Festivale (Shrove Monday, 48 days before Easter), all day.
 - **Zipper**, Bunny Day (Easter Sunday; the seven days before are the celebration, and he comes on the first and the
   last). All week NH's eggs turn up as captions: a balloon drops a sky egg 1 in 3, a dig spot holds an earth egg 1 in
   4, a fish on the line is a water egg 1 in 6.
@@ -1712,7 +1714,7 @@ phone: an event, a season (はる / なつ / あき / ふゆ), the weather (は�
 ゆうがた / よる), each おまかせ (the real day's) by default. One resolution feeds every seasonal look, with two inputs:
 the dev params below (they win, field by field) and the setting; then what the event implies.
 
-- **Events:** カーニバル, うめの たんじょうび, イースター (Zipper), さくら (petals, blossom), はなび, ウェイの たんじょうび,
+- **Events:** うめの たんじょうび, イースター (Zipper), さくら (petals, blossom), はなび, ウェイの たんじょうび,
   けっこんしき (Reese and Cyrus, the wedding pose, fireworks), ハロウィン (Jack, the lit pumpkins), もみじ, ハーベスト
   フェスティバル (Franklin), せいなる よる (Jingle, the presents), りゅうせいぐん (Celeste, the shower's stars). An event's
   main part is on at once, and it brings its day's look (its season, foliage and hedges: `EVENT_DAY`) and, for the

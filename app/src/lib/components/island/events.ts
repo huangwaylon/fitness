@@ -1,16 +1,15 @@
 // NH's dated events on the island (docs/design.md "Halloween", "Holiday hosts"): a date rule per event, on the Tokyo
 // calendar, with the hour its main part starts (Halloween's evening; a host's arrival). Pure. Every rule verified on
 // Nookipedia: Halloween Oct 31 (Jack 17:00–24:00); Turkey Day the fourth Thursday of November (Franklin 09:00–24:00);
-// Toy Day Dec 24 (Jingle, all day in NH); Festivale on Shrove Monday, 48 days before Easter (Pavé, all day); Bunny Day
-// on Easter Sunday, its celebrations the seven days before (Zipper on the first and the last day, eggs all week).
+// Toy Day Dec 24 (Jingle, all day in NH); Bunny Day on Easter Sunday, its celebrations the seven days before (Zipper on the first and the last day, eggs all week).
 // Another event is one more rule here, and whatever it shows reads `eventAt`. The seasonal preview (`?event=<id>`, dev
 // or ?demo, and せってい's きせつ: ui-state/preview.svelte.ts) shows one on, its main part included; what the island
 // yields on it (Bunny Day's eggs in place of a find) follows the real day's, or the dev param only.
 import { dayKey, jst, now } from '#lib/time/clock.ts';
-import { addDays, daysBetween, easter, nthWeekday } from '#lib/time/dates.ts';
+import { daysBetween, easter, nthWeekday } from '#lib/time/dates.ts';
 import { hook } from './devHooks.ts';
 
-export type EventId = 'halloween' | 'turkey-day' | 'toy-day' | 'festivale' | 'bunny-day' | 'bunny-week';
+export type EventId = 'halloween' | 'turkey-day' | 'toy-day' | 'bunny-day' | 'bunny-week';
 
 interface Rule {
   /** Whether a Tokyo date (YYYY-MM-DD) is its day. */
@@ -28,15 +27,12 @@ const fromEaster = (date: string): number => daysBetween(easter(yearOf(date)), d
 
 /** Turkey Day: the fourth Thursday of November. */
 export const turkeyDay = (year: number): string => nthWeekday(year, 11, 4, 4);
-/** Festivale: Shrove Monday, the Monday before Ash Wednesday (48 days before Easter). */
-export const festivale = (year: number): string => addDays(easter(year), -48);
 
 // the order is the priority when two fall on one day (Bunny Day's Zipper days before its week)
 const RULES: Record<EventId, Rule> = {
   halloween: { on: fixedDay('10-31'), night: 17 },
   'turkey-day': { on: (d) => d === turkeyDay(yearOf(d)), night: 9 },
   'toy-day': { on: fixedDay('12-24'), night: 5 },
-  festivale: { on: (d) => d === festivale(yearOf(d)), night: 5 },
   'bunny-day': { on: (d) => fromEaster(d) === 0 || fromEaster(d) === -7, night: 5 },
   'bunny-week': { on: (d) => fromEaster(d) > -7 && fromEaster(d) < 0, night: 24 }
 };

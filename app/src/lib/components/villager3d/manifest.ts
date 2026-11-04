@@ -17,3 +17,7 @@ export function url3d(id: string, dir: string): string | null {
   const e = M.villagers[id];
   return e ? `${dir.replace(/\/?$/, '/')}${id}.glb?v=${e.v}` : null;
 }
+
+/** How tall its model stands (u: its height at rest by villager3d.ts VILLAGER_S, 5.4 u a model unit), or 0 when it has
+ *  none: a visitor's tap area and room (island/Visitor.svelte). */
+export const tall3d = (id: string): number => Math.round((M.villagers[id]?.h ?? 0) * 5.4);

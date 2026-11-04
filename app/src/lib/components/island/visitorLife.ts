@@ -1,6 +1,6 @@
-// The visitors' life on the island (docs/design.md "Visitors: life"), the pure part. Every visitor breathes and shifts
-// its weight (CSS, Visitor.svelte); on idle life's beat (motion/idleLife.svelte.ts, the villagers' scheduler) one small
-// thing: its NH signature (K.K. strums on, Jack twirls, Zipper hops, Pavé dances, Celeste looks up at the stars, …), an
+// The visitors' life on the island (docs/design.md "Visitors: life"), the pure part. Every visitor breathes and looks
+// about (its 3D model's idle pose, as the villagers'); on idle life's beat (motion/idleLife.svelte.ts, the villagers' scheduler) one small
+// thing: its NH signature (K.K. strums on, Jack twirls, Zipper hops, Celeste looks up at the stars, …), an
 // emote of its own, a look toward the nearest villager, a stroll for the ones who roam in NH (Daisy Mae, Franklin,
 // Zipper, Celeste, within a small radius of their spot) or, now and then, a villager comes over to say hello
 // (island/avatar.ts meetVisitor). Gulliver sleeps face down until he's been nudged five times (NH). They arrive (walk
@@ -17,60 +17,53 @@ import type { Pt } from './walkGraph.ts';
 export type Way = 'walk' | 'hop' | 'float' | 'fly' | 'appear' | 'spook';
 
 export interface Behaviour {
-  /** How far from their spot they stroll (u); 0: they stay put (NH: K.K. on his stool, Gulliver, Jack, Pavé…). */
+  /** How far from their spot they stroll (u); 0: they stay put (NH: K.K. on his stool, Gulliver, Jack…). */
   roam: number;
   arrive: Way;
   leave: Way;
-  /** One breath (ms): 2.4–3.2 s, each their own so two figures never breathe together. */
-  breath: number;
   /** Their own emotes, now and then (villagers' set: colour glyphs and marks). */
   emotes: readonly EmoteIcon[];
   /** Their NH signature on a beat. */
   signature: { motion?: Motion; fx?: FxKind; emote?: EmoteIcon };
-  /** Which way the render looks as drawn ('l' | 'r'), or null when it faces the camera: only a side-on render turns by
-   *  mirroring; one that faces us leans toward what it looks at (K.K.'s guitar, Reese and Cyrus never mirror). */
-  drawn: 'l' | 'r' | null;
   /** The emote they answer a villager's hello with. */
   hello: EmoteIcon;
 }
 
 export const BEHAVIOUR: Record<VisitorId, Behaviour> = {
   // K.K. on his stool: strums (CSS), a nod to the beat now and then, notes floating off the guitar
-  'kk-slider': { roam: 0, arrive: 'appear', leave: 'appear', breath: 2800, emotes: ['mark-note', 'glee'], signature: { motion: 'nod', fx: 'notes' }, drawn: null, hello: 'mark-note' },
+  'kk-slider': { roam: 0, arrive: 'appear', leave: 'appear', emotes: ['mark-note', 'glee'], signature: { motion: 'nod', fx: 'notes' }, hello: 'mark-note' },
   // Daisy Mae: shifts the turnip bundle on her head and hums; strolls about selling (NH: she walks around the island)
-  'daisy-mae': { roam: 64, arrive: 'walk', leave: 'walk', breath: 2600, emotes: ['mark-note', 'glee', 'mark-sweat'], signature: { motion: 'wiggle', fx: 'notes' }, drawn: 'r', hello: 'glee' },
+  'daisy-mae': { roam: 64, arrive: 'walk', leave: 'walk', emotes: ['mark-note', 'glee', 'mark-sweat'], signature: { motion: 'wiggle', fx: 'notes' }, hello: 'glee' },
   // Wisp: floats and drifts with a flicker (CSS); a shy little wobble
-  wisp: { roam: 0, arrive: 'float', leave: 'float', breath: 3200, emotes: ['mark-sweat', 'mark-question', 'mark-note'], signature: { motion: 'wiggle', fx: 'glint' }, drawn: null, hello: 'mark-sweat' },
+  wisp: { roam: 0, arrive: 'float', leave: 'float', emotes: ['mark-sweat', 'mark-question', 'mark-note'], signature: { motion: 'wiggle', fx: 'glint' }, hello: 'mark-sweat' },
   // Gulliver: asleep face down (NH); awake, he looks about, lost
-  gulliver: { roam: 0, arrive: 'appear', leave: 'fly', breath: 3000, emotes: ['mark-question', 'thought', 'surprise'], signature: { motion: 'turn' }, drawn: 'l', hello: 'mark-question' },
+  gulliver: { roam: 0, arrive: 'appear', leave: 'fly', emotes: ['mark-question', 'thought', 'surprise'], signature: { motion: 'turn' }, hello: 'mark-question' },
   // NH's plaza visitors (the weekday rotation): Kicks taps his foot (a nod), shoe-proud
-  kicks: { roam: 0, arrive: 'walk', leave: 'walk', breath: 2700, emotes: ['mark-note', 'glee', 'mark-sparkle'], signature: { motion: 'nod', fx: 'glint' }, drawn: null, hello: 'glee' },
+  kicks: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['mark-note', 'glee', 'mark-sparkle'], signature: { motion: 'nod', fx: 'glint' }, hello: 'glee' },
   // Label: shows off the season's look (a proud pose), sketching ideas
-  label: { roam: 0, arrive: 'walk', leave: 'walk', breath: 2500, emotes: ['inspiration', 'mark-sparkle', 'glee'], signature: { motion: 'proud', fx: 'sparkles' }, drawn: null, hello: 'inspiration' },
+  label: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['inspiration', 'mark-sparkle', 'glee'], signature: { motion: 'proud', fx: 'sparkles' }, hello: 'inspiration' },
   // Saharah: sways to a desert tune, mysterious
-  saharah: { roam: 0, arrive: 'walk', leave: 'walk', breath: 3100, emotes: ['mark-note', 'thought', 'mark-sparkle'], signature: { motion: 'hum', fx: 'notes' }, drawn: null, hello: 'mark-note' },
+  saharah: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['mark-note', 'thought', 'mark-sparkle'], signature: { motion: 'hum', fx: 'notes' }, hello: 'mark-note' },
   // Leif: a slow, sleepy sway with his seedling; ambles about the flowers
-  leif: { roam: 40, arrive: 'walk', leave: 'walk', breath: 3200, emotes: ['glee', 'mark-heart', 'thought'], signature: { motion: 'wiggle', fx: 'sparkles' }, drawn: null, hello: 'glee' },
+  leif: { roam: 40, arrive: 'walk', leave: 'walk', emotes: ['glee', 'mark-heart', 'thought'], signature: { motion: 'wiggle', fx: 'sparkles' }, hello: 'glee' },
   // Redd: shifty, looks this way and that
-  redd: { roam: 0, arrive: 'walk', leave: 'walk', breath: 2600, emotes: ['mark-sweat', 'mark-question', 'glee'], signature: { motion: 'turn' }, drawn: null, hello: 'glee' },
+  redd: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['mark-sweat', 'mark-question', 'glee'], signature: { motion: 'turn' }, hello: 'glee' },
   // C.J.: a fist-pump, wanders about looking for fishing spots
-  cj: { roam: 48, arrive: 'walk', leave: 'walk', breath: 2400, emotes: ['glee', 'mark-sparkle', 'surprise'], signature: { motion: 'hop', fx: 'sparkles' }, drawn: null, hello: 'glee' },
+  cj: { roam: 48, arrive: 'walk', leave: 'walk', emotes: ['glee', 'mark-sparkle', 'surprise'], signature: { motion: 'hop', fx: 'sparkles' }, hello: 'glee' },
   // Flick: cool, a slow nod; wanders about looking for bugs
-  flick: { roam: 48, arrive: 'walk', leave: 'walk', breath: 2900, emotes: ['thought', 'mark-sparkle', 'curiosity'], signature: { motion: 'nod', emote: 'curiosity' }, drawn: null, hello: 'thought' },
+  flick: { roam: 48, arrive: 'walk', leave: 'walk', emotes: ['thought', 'mark-sparkle', 'curiosity'], signature: { motion: 'nod', emote: 'curiosity' }, hello: 'thought' },
   // Jack: a theatrical sway (CSS), a twirl, a spooky glint
-  jack: { roam: 0, arrive: 'spook', leave: 'spook', breath: 2700, emotes: ['mark-question', 'glee', 'mark-sparkle'], signature: { motion: 'twirl', fx: 'sparkles' }, drawn: null, hello: 'glee' },
+  jack: { roam: 0, arrive: 'spook', leave: 'spook', emotes: ['mark-question', 'glee', 'mark-sparkle'], signature: { motion: 'twirl', fx: 'sparkles' }, hello: 'glee' },
   // Celeste: looks up at the sky (and points when a star falls: Visitor.svelte), strolls under it
-  celeste: { roam: 40, arrive: 'fly', leave: 'fly', breath: 2900, emotes: ['inspiration', 'mark-sparkle', 'glee'], signature: { motion: 'lookup', emote: 'mark-sparkle' }, drawn: null, hello: 'inspiration' },
+  celeste: { roam: 40, arrive: 'fly', leave: 'fly', emotes: ['inspiration', 'mark-sparkle', 'glee'], signature: { motion: 'lookup', emote: 'mark-sparkle' }, hello: 'inspiration' },
   // Franklin: a flap and a bob, looks around for something to cook, waddles about
-  franklin: { roam: 48, arrive: 'walk', leave: 'walk', breath: 2500, emotes: ['curiosity', 'thought', 'mark-question'], signature: { motion: 'flap', emote: 'curiosity' }, drawn: null, hello: 'glee' },
+  franklin: { roam: 48, arrive: 'walk', leave: 'walk', emotes: ['curiosity', 'thought', 'mark-question'], signature: { motion: 'flap', emote: 'curiosity' }, hello: 'glee' },
   // Jingle: bounces (CSS) with a jingle of sparkle
-  jingle: { roam: 0, arrive: 'walk', leave: 'walk', breath: 2400, emotes: ['glee', 'mark-sparkle', 'mark-note'], signature: { motion: 'hop', fx: 'glint' }, drawn: null, hello: 'glee' },
-  // Pavé: dance steps all day (Festivale, CSS) and a bigger samba with confetti
-  pave: { roam: 0, arrive: 'walk', leave: 'walk', breath: 2400, emotes: ['glee', 'mark-note', 'mark-sparkle'], signature: { motion: 'samba', fx: 'confetti' }, drawn: null, hello: 'mark-note' },
+  jingle: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['glee', 'mark-sparkle', 'mark-note'], signature: { motion: 'hop', fx: 'glint' }, hello: 'glee' },
   // Zipper: hops on the spot (CSS) and hops about
-  zipper: { roam: 48, arrive: 'hop', leave: 'hop', breath: 2500, emotes: ['glee', 'mark-heart', 'mark-note'], signature: { motion: 'hop2', fx: 'sparkles' }, drawn: null, hello: 'glee' },
+  zipper: { roam: 48, arrive: 'hop', leave: 'hop', emotes: ['glee', 'mark-heart', 'mark-note'], signature: { motion: 'hop2', fx: 'sparkles' }, hello: 'glee' },
   // Reese and Cyrus: lean toward each other (CSS), a nuzzle with hearts
-  reese: { roam: 0, arrive: 'walk', leave: 'walk', breath: 3000, emotes: ['mark-heart', 'love', 'mark-note'], signature: { motion: 'nuzzle', fx: 'hearts' }, drawn: null, hello: 'mark-heart' }
+  reese: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['mark-heart', 'love', 'mark-note'], signature: { motion: 'nuzzle', fx: 'hearts' }, hello: 'mark-heart' }
 };
 
 /** What a visitor does on a beat. */
