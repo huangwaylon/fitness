@@ -153,7 +153,7 @@ scrolled where it was); ✕, the backdrop and Esc close the panel.
 **せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, grown out of the
 pill (Sheet's `pop`), title せってい: **むらびと** (my villager and よびな; かえる → the picker: 23 special characters
 and all 417 NH villagers, its head pinned over the scrolling grid), **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 /
-English), **きせつ** ([Seasonal preview](#seasonal-preview)), **つうしん** (when each of us last synced; いま つうしん; not the guest's), **もようがえ** (one row with its はじめる;
+English), **きせつ** ([Seasonal preview](#seasonal-preview)), **フレームレート** (30 / 60: [Frame rate](#frame-rate)), **つうしん** (when each of us last synced; いま つうしん; not the guest's), **もようがえ** (one row with its はじめる;
 not the guest's) and **あそびかた** (くわしく → the guide: the goals, ふたりでぜんぶ, the treats, the Sunday recap, a
 protein hint of 1.6 g per kg a day). The picker and the guide push a level with ‹; ✕, the backdrop and Esc close it,
 and the next opening starts at its top. Its own chunk, loaded on the first tap.
@@ -476,7 +476,7 @@ went in November 2026 (docs/cleanup-2d.md).
   panel, the health popup and ごほうび work as ever (`e2e/world3d.spec.ts`).
 - **The 3D island** (docs/decisions.md "The island in 3D"): `Island3D.svelte` puts a canvas under the stage's nodes
   (over the DOM sky: the sun and the moon stay behind the world) and hands the projector its camera (`World.useThree`);
-  the engine (`engine.ts`) runs the World's step in its own frame (60 a second while anything moves, 30 while only the
+  the engine (`engine.ts`) runs the World's step in its own frame ([the frame rate](#frame-rate) while anything moves, 30 while only the
   water does; a model's or a critter's move slower than 60 px/s on screen, or off it, is ambience: `world3d/pace.ts`), and the World steps itself on the game's own clock when no frame has (camera.svelte.ts `simTick`). The
   ground and the water are the layout's (`terrain.ts` buildGround with NH's textures, on `water.ts`'s shared uniforms); the objects
   `objects.ts` placeObjects from the layout and the day's scenery and decor pieces (a card of today's art for what has
@@ -633,6 +633,41 @@ went in November 2026 (docs/cleanup-2d.md).
   own filter takes the tint first (`var(--leaf-tint,)`). The 3D island's light is its own scene's.
 - **Cost:** nothing runs when still: a camera move, a walk or a change places what moved (the engine's frames, the
   game clock's steps while something moves); style writes only when a value changes. Measured at 4× CPU throttling: see `docs/decisions.md`.
+
+### Frame rate
+
+せってい → **フレームレート**: **30** (the default) or **60**, kept on this phone only (`store/frameRate.svelte.ts`,
+localStorage `island.fps`; `?fps=` for a tab). It is the full rate of every 3D engine (the island, the rooms, the
+museum; the shop has none) while something moves, a finger's gesture included; the ambience stays at ≤ 30 and a still
+scene draws nothing, either way. At 30 on the phones' 60 Hz screens each engine draws every other display frame
+(`due()`: the rAF's vsync time against the last drawn, half a vsync's slack: an even 33 ms, never a 2-3 mix); the
+skipped frames cost a callback. The simulation runs on real time (walks, flings, springs by `dt`), so nothing moves
+slower at 30. A touch moves the camera on its event and the next due frame draws it: at most one vsync (17 ms) later.
+
+Measured on the iOS Simulator (iPhone 16, iOS 26.5, the Mac's GPU; `?demo`, a local build; Nov 2026, the Mac's load
+average 25–120): frames drawn a second, and the CPU of the Simulator's WebKit processes (% of a core: WebContent / GPU,
+`ps` over 5–8 s). A frame's own CPU is 2–3 ms either way (Safari's timer is 1 ms; Chrome's: 1.5 / 2 ms p50 / p95):
+
+| Scene | 60: fps | 60: CPU | 30: fps | 30: CPU |
+|---|---|---|---|---|
+| Island at rest (the ambience) | 30 | 10 / 6 | 30 | 11 / 6 |
+| Scrolling (a finger, a frame's step each vsync) | 60 | 42 / 19 | 30 | 23 / 9 |
+| Pinching | 44 (the page drops to 49) | 46 / 18 | 30 | 33 / 12 |
+| Walking (taps on the lawn) | 45–60 | 21 / 11 | 30 | 17 / 7 |
+| Fishing (the float out) | 59 | 23 / 13 | 30 | 14 / 7 |
+| Museum, walking | 60 | 9 / 6 | 30 | 6 / 3 |
+| Tent, walking | 60 | 7 / 6 | 30 | 6 / 3 |
+| Museum, tent at rest | 0 | 2 / 0 | 0 | 2 / 0 |
+
+At 30 the drawn gaps were 33 ms in 97–100 % of frames (no 50s beyond the odd one); Chromium (iPhone 13 profile, Chrome
+on the Mac's GPU) agrees: scrolling 58 → 30 fps, its main thread 22 → 15 %. The GPU's work halves with the frames;
+the page's (the World placing the DOM, three's matrices) falls by a third to a half. The Simulator draws on the Mac,
+so the battery and heat are estimates: on the phone the GPU's and the display pipeline's energy scale roughly with
+the frames drawn, so 30 is about half the island's drawing power while anything moves, and the same at rest.
+
+A gesture stays at the setting's rate: the measured cost of a gesture at 60 is the highest of all (scrolling and
+pinching), the added latency at 30 is under a vsync, NH itself runs at 30, and 60 then means 60 everywhere (a switch
+whose difference shows where one looks for it, a scroll). 60 is there for whoever prefers smoothness to battery.
 
 ### Buildings
 
@@ -1581,6 +1616,7 @@ Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/previe
 | `?find=bottle\|fragment\|mushroom\|rare-mushroom\|earth-egg` | A beach find now / every dig spot that |
 | `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid`, `?wander` | A balloon; a show (`?event=fireworks`); a meteor shower's night at any hour (`?event=shower`); the tape deck; a hybrid flower; the partner wanders |
 | `?hit` | Every tap target drawn over the island (magenta: the scene's elements; cyan: the boxes a module tests) |
+| `?fps=30\|60` | The 3D scenes' frame rate for the tab, not kept (the e2e pin 60 in storage: `playwright.config.ts`) |
 
 The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there at once, the stops' snapping off;
 `at(x, z)`: a world point's client px; `put(x, z)`: my villager there; `idle()`; `perf`; `stops()`: the sections'

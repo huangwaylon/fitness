@@ -10,8 +10,9 @@ const BASE = process.env.BASE_PATH ?? '/fitness';
 // Each test's phone starts with these in localStorage:
 // E2E_RENDER=none: the logic mode, the 3D engines run every frame but draw nothing (src/lib/ui-state/testMode.ts,
 // docs/ops/test-strategy.md): CI's software GL then costs nothing;
-const local = [...(process.env.E2E_RENDER === 'none' ? [{ name: 'e2e.render', value: 'none' }] : [])];
-const ISLAND = local.length ? { storageState: { cookies: [], origins: [{ origin: `http://127.0.0.1:${PORT}`, localStorage: local }] } } : {};
+// island.fps 60: the 3D engines at 60 (せってい's default is 30), as the specs' timings were made (a spec of 30's own sets it)
+const local = [{ name: 'island.fps', value: '60' }, ...(process.env.E2E_RENDER === 'none' ? [{ name: 'e2e.render', value: 'none' }] : [])];
+const ISLAND = { storageState: { cookies: [], origins: [{ origin: `http://127.0.0.1:${PORT}`, localStorage: local }] } };
 
 export default defineConfig({
   testDir: 'e2e',

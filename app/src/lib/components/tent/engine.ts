@@ -18,6 +18,7 @@ import { createVillager, VILLAGER_S, type Villager3D } from '../villager3d/villa
 import { seatOf } from '../villager3d/poses.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
+import { due, frameRate } from '#lib/store/frameRate.svelte.ts';
 
 /** The walls' height (RoomMdlWall: 40 model units, four tiles). */
 const WALL_H = 40;
@@ -1332,9 +1333,16 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   }
   /** The camera moved since the last frame (the 3D villagers are posed while it does). */
   let cameraMoving = false, camRev = '';
-  function frame() {
+  /** The last frame drawn's display time (its rAF's): the frame rate's pacing (せってい's, a gesture's too). */
+  let lastVsync = 0;
+  function frame(vsync = now()) {
     raf = 0;
     if (disposed) return;
+    if (!due(vsync, lastVsync, frameRate.fps)) {
+      raf = requestAnimationFrame(frame);
+      return;
+    }
+    lastVsync = vsync;
     const t = now();
     let more = false;
     const rv = `${view.az}:${view.pitch}:${view.k}`;

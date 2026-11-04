@@ -759,7 +759,6 @@
       e = createIsland(canvas, (renderer) => (lground = buildGround(layoutNow(), { renderer, look: lookNow(), stairs: false, px: groundPx(soft) })), {
         dpr: num('dpr') ?? (soft ? 0.5 : Math.min(2, window.devicePixelRatio || 1)),
         shadows: soft ? q.get('shadows') === '1' : q.get('shadows') !== '0',
-        cap: num('cap') === 30 ? 30 : 60,
         aa: q.get('aa') !== null ? q.get('aa') !== '0' : !soft
       });
     } catch (err) {
