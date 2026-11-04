@@ -272,6 +272,10 @@ describe('live protocol: the tent (v2)', () => {
     expect(parseClient(j2(museum))).toEqual({ v: 3, ...museum });
     expect(parseServer(j2({ kind: 'tent', in: true, to: [-250, 80], sc: 'm', who: 'G', t: T }))).toEqual({ v: 3, kind: 'tent', in: true, to: [-250, 80], sc: 'm', who: 'G', t: T });
     for (const bad of [j2({ ...museum, to: [400, 0] }), j2({ ...museum, sc: 'u' }), j2({ ...museum, sc: 'x' })]) expect(parseClient(bad), bad).toBeNull();
+    // in the shop (`sc: 's'`): in or out, nowhere to stand
+    expect(parseClient(j2({ kind: 'tent', in: true, sc: 's' }))).toEqual({ v: 3, kind: 'tent', in: true, sc: 's' });
+    expect(parseServer(j2({ kind: 'tent', in: true, sc: 's', who: 'A', t: T }))).toEqual({ v: 3, kind: 'tent', in: true, sc: 's', who: 'A', t: T });
+    for (const bad of [j2({ kind: 'tent', in: true, sc: 's', to: [0, 0] }), j2({ kind: 'tent', in: true, sc: 's', seat: 'dmh1sofa01', s: T })]) expect(parseClient(bad), bad).toBeNull();
     // sitting or lying on a piece
     const sit = { kind: 'tent', in: true, to: [0, 10], seat: 'dmh1sofa01', n: 1, s: T };
     expect(parseClient(j2(sit))).toEqual({ v: 3, ...sit });

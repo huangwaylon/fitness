@@ -586,17 +586,47 @@ describe('the shared world (v2, docs/backend.md#shared-world)', () => {
     expect(a2.sent.map((m) => (m as { drop: string }).drop)).toEqual(['branch']);
   });
 
-  it('a new Tokyo day forgets yesterday’s claims and walks', () => {
+  it('a new Tokyo day forgets yesterday’s claims, and keeps each person’s last walk (stamped into today)', () => {
     const a = join2(KEY_A);
     const b = join2(KEY_B);
     say2(a, { kind: 'pick', id: 'f1', what: 'fossil:amber' });
     say2(a, { kind: 'walk', to: [100, 500] });
+    say2(a, { kind: 'walk', to: [120, 520] });
+    say2(b, { kind: 'walk', to: [300, 700] });
     now = Date.UTC(2026, 10, 1, 15); // 2026-11-02 00:00 Tokyo
     b.sent = [];
     say2(a, { kind: 'pick', id: 'f1', what: 'fossil:ammonite' }); // today's f1 is another dig spot
     expect(b.sent.map((m) => m.kind)).toEqual(['pick']);
-    const b2 = join2(KEY_B, 0);
-    expect(b2.kinds()).toEqual(['welcome', 'pick']);
+    // a phone opening today (from Tokyo midnight) hears where each villager was left, however long ago (carried in as
+    // the day's first change)
+    const b2 = join2(KEY_B, now - 1);
+    expect(b2.kinds()).toEqual(['welcome', 'walk', 'pick']);
+    const a1 = join2(KEY_A, now - 1);
+    const walks = a1.sent.filter((m) => m.kind === 'walk') as { who: string; to: unknown; t: number }[];
+    expect(walks.map((m) => [m.who, m.to])).toEqual([['B', [300, 700]]]);
+    expect(b2.sent.find((m) => m.kind === 'walk')).toMatchObject({ who: 'A', to: [120, 520] });
+    expect(walks.every((m) => m.t >= now)).toBe(true);
+    // days later, after a restart, still there (and a walk of today's replaces it as ever)
+    room = new RoomCore(io(), saved.at(-1) as never);
+    now += 3 * 86_400_000;
+    const a2 = join2(KEY_A, now - 1);
+    expect(a2.sent.filter((m) => m.kind === 'walk').map((m) => (m as { to: unknown }).to)).toEqual([[300, 700]]);
+    say2(a2, { kind: 'walk', to: [140, 540] });
+    const b3 = join2(KEY_B, now - 1);
+    expect(b3.sent.filter((m) => m.kind === 'walk').map((m) => (m as { to: unknown }).to)).toEqual([[140, 540]]);
+  });
+
+  it('a walk outlasts a busy day: past RING_MAX the oldest other change goes, never a walk', () => {
+    const a = join2(KEY_A);
+    say2(a, { kind: 'walk', to: [100, 500] });
+    for (let i = 0; i < RING_MAX + 10; i++) {
+      now += 100;
+      say2(a, { kind: 'world', op: 'weed-pulled', id: `w${i}` });
+    }
+    const ring = saved.at(-1) as { kind: string; id?: string }[];
+    expect(ring).toHaveLength(RING_MAX);
+    expect(ring[0].kind).toBe('walk');
+    expect(ring[1].id).toBe('w11');
   });
 
   it('the shared world’s kinds are v2 only, and a v1 phone never gets a v2 walk replayed', () => {
