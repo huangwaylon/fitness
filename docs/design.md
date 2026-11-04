@@ -730,7 +730,7 @@ nights are always fine.
   once per phone, the first time the island shows it met; a reload finds it lying there.
 - **Picking up:** a tap on a fallen fruit picks it up (a hop, a sparkle, a pop), gone on both phones until the next
   Tokyo day (the shared day's `fr:<person>:<fruit>`; our villager picks it up on the other). Either person may pick up
-  either tree's fruit; cosmetic (no ベル). The fruit row is one button: a tap within 22u of a fallen fruit picks up the
+  either tree's fruit; into my pocket for the shop (no ベル). The fruit row is one button: a tap within 22u of a fallen fruit picks up the
   nearest, else it opens the popup.
 - **All four met:** four warm glints twinkle on the canopy over a soft gold pulse (NH's money tree).
 - **The popup** stands in screen space over every tint, in the middle of the band between the HUD and the screen's
@@ -750,10 +750,15 @@ NH).
   within 1.2 s (and each quick tap after) is a shake: a goal tree's popup closes, the tree shakes where it stands and
   rustles (`tree-shake`), my villager turning to it (no walk).
 - **What falls, by the kind of tree (NH's):** a hardwood (an oak, a goal tree) or a cedar: 1 in 8 a wasp nest, else 1
-  in 7 a dangling bug, else 1 in 5 a branch (it lies beside the trunk until a tap picks it up; cosmetic). A palm: its
-  two coconuts the first time it's shaken in a Tokyo day (they lie round its foot; a tap picks one up, NH's 「ヤシのみを
-  ひろった！」), after that only, 1 in 8, a nest (NH: no branches or bagworms from a palm). At most one nest per tree an
+  in 7 a dangling bug, else 1 in 5 a branch (it lies beside the trunk until a tap picks it up, into my pocket). A palm:
+  its two coconuts the first time it's shaken in a Tokyo day (they lie round its foot; a tap picks one up into my
+  pocket, NH's 「ヤシのみを ひろった！」), after that only, 1 in 8, a nest (NH: no branches or bagworms from a palm). At most one nest per tree an
   hour, on both phones. No fruit from a goal tree: its fruit falls when its goal is met.
+- **Wood** (NH's axe, without one: `treeShake.ts woodFall`): besides that, any tree's shake knocks a piece of wood out
+  1 in 2 times (木材, やわらかい木材 or かたい木材, alike), three a tree a Tokyo day at most, none while its present lies
+  under it. Seeded by the date, the tree and the shake's place among the day's shakes of it, so both phones say the
+  same; it crosses as a `put` (`wd:<tree>:<k>`, first wins) and lies in front of the trunk on land until a tap picks it
+  up into my pocket. `?shake=wood` forces one.
 - **A tree's present** (`island/treeGifts.ts`, `e2e/tree-gifts.spec.ts`; NH's furniture from the trees): each Tokyo
   day two of the oaks and cedars (`GIFT_TREES`: not a palm, which has its coconuts, nor a goal tree, which has its fruit
   and its popup) hold a piece of furniture, and the first shake of one drops it before anything else, once. It falls
@@ -1493,10 +1498,16 @@ too.
   time of day). At dusk and night the wood warms under a lamp's glow. My かいがら top right; ‹ 島へ top left goes back out
   (just out of the shop's door). While I'm in here the others' islands show my villager nowhere, as in the museum and
   the rooms ([The tent](#the-tent) "One place at a time": `tent {in, sc: 's'}`); coming out, they see it at the door.
-- **うる** (sell): my pocket, each fish, bug and sea creature I caught (my day tallies, model/tally.ts) less what I sold,
-  dearest first: its icon, name, price and ×n. A tap picks one more (past the pocket: none again), − one less, ぜんぶ all;
-  the bar says 「3こで 120 かいがら」 and うる sells them (one `sell` a species). Selling never takes a species out of the
-  ずかん or the museum. Shells, fossils and presents don't sell.
+- **うる** (sell): my pocket, everything I caught, found or picked up (my day tallies, model/tally.ts) less what I sold,
+  in sections (むし, さかな, うみのさち, かいがら, しげん, くだもの, かせき, そのた: `shop/pocket.ts`), each dearest first:
+  its icon, name, price and ×n. A tap picks one more (past the pocket: none again), − one less, ぜんぶ all; the bar
+  says 「3こで 120 かいがら」 and うる sells them (one `sell` a kind). Selling never takes anything out of the ずかん or
+  the museum. A present's furniture or recipe never sells (it's もようがえ's), nor a message bottle.
+- **What a pocket holds** (`contract/pocket.ts`, one table: kind, id, names, icon, price): the fish, bugs and sea
+  creatures; the beach's shells (the pearl and coral among them), fossils and star fragments (the ずかん's, counted in
+  the tallies since they first turned up); and the goods, `goods:<id>` tally keys with no ずかん page: a tree's wood
+  ([Shaking a tree](#shaking-a-tree)) and branch, a pulled weed, the goal trees' fruit and a palm's coconuts, the
+  mushrooms, Bunny Day's eggs, junk off the line.
 - **かう** (buy): today's stock (きょうの しなもの: 8 pieces of NH furniture a Tokyo day, the same on every phone, from the
   date alone) and the basics always (いつもの: a cardboard box, a zen cushion, a mini cactus set), each with its NH icon,
   name and price; one picked, かう buys it. A piece I own says もってる; too dear or owned, かう boops and the twins say
@@ -1505,7 +1516,7 @@ too.
 - A sell or a buy shows at once with とりけす for 5 s (the banner up over the counter here, clear of the bar), then
   goes to the record, which checks it (the pocket, the wallet, the stock, the price: [backend](backend.md#events)).
 - **Prices:** NH's Bells ÷ 20 both ways, NH's own ratio (a sell at least 3): a sea bass 20, a koi 200, a whale shark
-  650; a median piece 110, one or two catches ([decisions](decisions.md#the-shops-かいがら-2026-11-04)).
+  650, wood 3, a coral 25, a T. rex skull 300; a median piece 110, one or two catches ([decisions](decisions.md#the-shops-かいがら-2026-11-04)).
 - **The building:** NH's Nook's Cranny with its タヌキ商店 sign, 7 × 4, one to an island, moved and turned in the editor
   and もようがえ, never deleted ([island-layout.md](island-layout.md#the-islands-buildings)); a tap walks up to its door
   and goes in, ‹ 島へ comes out of it. It is the only way in: the leaf's menu has no かいがら row (one goes to the shop

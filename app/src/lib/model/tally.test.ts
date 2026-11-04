@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TALLY_MAX_KEYS, TALLY_MAX_N, isTally, isTallyKey, mergeTally } from '#lib/contract/tally.ts';
 import { isFind } from '#lib/contract/api.ts';
+import { GOODS } from '#lib/contract/pocket.ts';
 import { addDays } from '#lib/time/dates.ts';
 import type { PersonId } from '#lib/types.ts';
 import { addToTally, countOf, dayTallies, tallyTotals, type TallyRow } from './tally.ts';
@@ -33,6 +34,11 @@ describe('a tally’s data (contract/tally.ts isTally: the Apps Script and the m
   it('takes the ids a find takes', () => {
     for (const id of ['sea-bass', 't-rex-skull', 'x'.repeat(48), 'Sea Bass', '7up', 'x'.repeat(49), 'a_b'])
       expect(isTallyKey(`fish:${id}`), id).toBe(isFind({ kind: 'fish', id }));
+  });
+  it('takes the pocket’s goods (contract/pocket.ts), never as a find', () => {
+    const bad = [...Object.keys(GOODS).filter((id) => !isTallyKey(`goods:${id}`)), ...['goods:', 'goods:Wood', 'good:wood', 'wood'].filter(isTallyKey)];
+    expect(bad).toEqual([]);
+    expect(isFind({ kind: 'goods', id: 'wood' })).toBe(false);
   });
 });
 

@@ -1,5 +1,5 @@
 {
-  "version": 54,
+  "version": 55,
   "files": {
     "bridges/stone-front": {
       "path": "bridges/stone-front.webp",
@@ -1915,6 +1915,12 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Giant_Clam_NH_Inv_Icon.png"
     },
+    "finds/hardwood": {
+      "path": "finds/hardwood.webp",
+      "w": 64,
+      "h": 64,
+      "source": "https://nookipedia.com/wiki/File:Hardwood_NH_Inv_Icon.png"
+    },
     "finds/iguanodon-skull": {
       "path": "finds/iguanodon-skull.webp",
       "w": 96,
@@ -2197,6 +2203,12 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Sky_Egg_NH_Inv_Icon.png"
     },
+    "finds/softwood": {
+      "path": "finds/softwood.webp",
+      "w": 64,
+      "h": 64,
+      "source": "https://nookipedia.com/wiki/File:Softwood_NH_Inv_Icon.png"
+    },
     "finds/spino-skull": {
       "path": "finds/spino-skull.webp",
       "w": 96,
@@ -2322,6 +2334,18 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Watering_Can_NH_Icon.png"
+    },
+    "finds/weeds": {
+      "path": "finds/weeds.webp",
+      "w": 64,
+      "h": 64,
+      "source": "https://nookipedia.com/wiki/File:Clump_of_Weeds_NH_Inv_Icon.png"
+    },
+    "finds/wood": {
+      "path": "finds/wood.webp",
+      "w": 64,
+      "h": 64,
+      "source": "https://nookipedia.com/wiki/File:Wood_NH_Inv_Icon.png"
     },
     "flowers/black-cosmos": {
       "path": "flowers/black-cosmos.webp",
@@ -2574,6 +2598,30 @@
       "w": 66,
       "h": 107,
       "source": "https://nookipedia.com/wiki/File:Yellow_Tulips_NH_Inv_Icon.png"
+    },
+    "fruit/apple": {
+      "path": "fruit/apple.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Apple_NH_Inv_Icon.png"
+    },
+    "fruit/cherry": {
+      "path": "fruit/cherry.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Cherry_NH_Inv_Icon.png"
+    },
+    "fruit/peach": {
+      "path": "fruit/peach.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Peach_NH_Inv_Icon.png"
+    },
+    "fruit/pear": {
+      "path": "fruit/pear.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Pear_NH_Inv_Icon.png"
     },
     "fruit3d/apple": {
       "path": "fruit3d/apple.webp",

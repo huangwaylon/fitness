@@ -25,11 +25,12 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   await page.goto(`shop${Q}`);
   await expect(page.locator('[data-shop]')).toBeVisible();
   expect(await shells(page)).toBe(0);
-  // the pocket: the catches (never a shell), most valuable first
+  // the pocket by its sections (むし, さかな, …, かいがら), each dearest first
   const pocket = page.locator('[data-shop-pocket] [data-shop-catch]');
-  await expect(pocket).toHaveCount(2);
-  await expect(pocket.first()).toHaveAttribute('data-shop-catch', 'fish:whale-shark');
-  await expect(pocket.first()).toHaveAttribute('data-n', '2');
+  await expect(pocket).toHaveCount(3);
+  await expect(page.locator('[data-shop-sec]')).toHaveText(['むし', 'さかな', 'かいがら']);
+  await expect(pocket.nth(1)).toHaveAttribute('data-shop-catch', 'fish:whale-shark');
+  await expect(pocket.nth(1)).toHaveAttribute('data-n', '2');
   // pick one whale shark: the offer; a third tap past the pocket goes back to none (never more than it holds)
   const shark = page.locator('[data-shop-catch="fish:whale-shark"]');
   await shark.click();
@@ -45,14 +46,14 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   // the rest at once (ぜんぶ)
   await page.locator('[data-shop-all]').click();
   await page.locator('[data-shop-sell]').click();
-  await expect.poll(() => shells(page)).toBe(650 + 650 + 400);
+  await expect.poll(() => shells(page)).toBe(650 + 650 + 400 + 3 * 3); // a cowrie 3
   await expect(page.locator('[data-shop-empty]')).toBeVisible();
   // かう: the day's stock and the basics; a cardboard box (6)
   await page.locator('[data-shop-tab="buy"]').click();
   await expect(page.locator('[data-shop-stock] [data-shop-item]')).toHaveCount(8);
   await page.locator('[data-shop-item="f3672"]').click();
   await page.locator('[data-shop-buy]').click();
-  await expect.poll(() => shells(page)).toBe(1700 - 6);
+  await expect.poll(() => shells(page)).toBe(1709 - 6);
   await expect(page.locator('[data-shop-item="f3672"]')).toHaveAttribute('data-owned', 'true');
   // bought once: picked again, かう only boops
   await page.locator('[data-shop-item="f3672"]').click();
@@ -64,6 +65,22 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   await page.locator('[data-tent-edit-open]').click();
   await page.locator('[data-tab="bought"]').click();
   await expect(page.locator('[data-tent-items] [data-tent-item="f3672"]')).toBeVisible();
+});
+
+test('the beach’s finds and the island’s goods sell too: a coral, a fossil, wood; never the ずかん’s page', async ({ page }) => {
+  await seed(page, [tally({ 'shell:coral': 2, 'fossil:amber': 1, 'goods:hardwood': 3, 'item:froggy-chair': 1 }), ['find', { kind: 'shell', id: 'coral' }, 'A']]);
+  await page.goto(`shop${Q}`);
+  await expect(page.locator('[data-shop-sec]')).toHaveText(['かいがら', 'しげん', 'かせき']); // never a present's piece
+  await page.locator('[data-shop-catch="shell:coral"]').click();
+  await page.locator('[data-shop-sell]').click();
+  await expect.poll(() => shells(page)).toBe(25); // NH's 500 ÷ 20
+  await page.locator('[data-shop-all]').click();
+  await page.locator('[data-shop-sell]').click();
+  await expect.poll(() => shells(page)).toBe(25 + 25 + 60 + 3 * 3);
+  await expect(page.locator('[data-shop-empty]')).toBeVisible();
+  // the coral's ずかん page stays
+  const events = await page.evaluate(() => JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events as { type: string }[]);
+  expect(events.filter((e) => e.type === 'find')).toHaveLength(1);
 });
 
 test('overspending is refused: too dear, かう only boops and the twins say so; a forged sell past the pocket counts for nothing', async ({ page }) => {

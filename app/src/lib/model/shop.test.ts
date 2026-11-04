@@ -20,7 +20,7 @@ const price = buyPrice(item)!;
 describe('the pocket and かいがら', () => {
   const events: EventRow[] = [
     ev(at('09:00'), 'A', 'tally', { date: D, counts: { 'fish:koi': 1 } }),
-    ev(at('09:05'), 'A', 'tally', { date: D, counts: { 'fish:koi': 3, 'bug:tarantula': 2, 'shell:cowrie': 4 } }), // replaces the 09:00 row
+    ev(at('09:05'), 'A', 'tally', { date: D, counts: { 'fish:koi': 3, 'bug:tarantula': 2, 'shell:cowrie': 4, 'item:froggy-chair': 1 } }), // replaces the 09:00 row
     ev(at('12:00', '2026-11-03'), 'A', 'tally', { date: '2026-11-03', counts: { 'fish:koi': 2 } }),
     ev(at('09:10'), 'A', 'sell', { species: 'fish:koi', n: 4, v: 160 }),
     ev(at('09:11'), 'A', 'sell', { species: 'fish:koi', n: 2, v: 80 }, 'q1'), // queued, past the pocket (5 caught, 4 sold): nothing
@@ -36,7 +36,7 @@ describe('the pocket and かいがら', () => {
 
   it('each person’s own: the catches less the sells, the sells less the buys', () => {
     const a = shopView(s, 'A');
-    expect([...a.pocket]).toEqual([['fish:koi', 1], ['bug:tarantula', 1]]); // never a shell
+    expect([...a.pocket]).toEqual([['fish:koi', 1], ['bug:tarantula', 1], ['shell:cowrie', 4]]); // never a present's piece
     expect(a.shells).toBe(160 + 80 - price);
     expect(a.owned).toEqual([item]);
     expect(shopView(s, 'G')).toEqual({ pocket: new Map(), shells: 40, owned: [] });

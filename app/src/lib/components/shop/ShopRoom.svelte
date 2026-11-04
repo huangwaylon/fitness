@@ -1,7 +1,8 @@
 <script lang="ts">
   // タヌキ商店: the shop's inside (docs/design.md "The shop"), behind its door on the island. NH's Nook's Cranny as a
   // screen, not a room: the twins behind their counter (NH's render, host/timmy-tommy) under the shop's sign, and NH's
-  // counter menu under them, うる (sell: my pocket's catches, from my day tallies less what I sold: model/shop.ts) and
+  // counter menu under them, うる (sell: my pocket, everything I caught, found or picked up, from my day tallies less what
+  // I sold: model/shop.ts; by its sections, shop/pocket.ts) and
   // かう (buy: the day's stock, the same on every phone: contract/shop.ts stockOf). Prices and my かいがら in NH's shell
   // (the cowrie). A sell or a buy shows at once with もとに戻す (store/actions.ts sell, buyPiece); a bought piece joins
   // my もようがえ. The guest's pocket and かいがら are its own. Never ベル. ‹ 島へ goes back out, just out of its door.
@@ -15,6 +16,7 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { iconUrl } from '../tent/items.ts';
   import { bare } from '../kiroku/zukan.ts';
+  import { SECTIONS, pocketItem } from './pocket.ts';
   import { findArt } from '../island/beach.ts';
   import type { WeekView } from '#lib/types.ts';
   import { BASICS, buyPrice, sellPrice, stockOf } from '#lib/contract/shop.ts';
@@ -66,19 +68,23 @@
   const relay: Live | null = demo ? own : LIVE_URL ? liveRelay() : null;
   const inside = (on: boolean) => relay?.send({ kind: 'tent', in: on, sc: 's' });
 
-  /** A tally key's name and icon (the ずかん's: `critter.name.*`, `sea.name.*`; the official icon). */
-  const speciesName = (k: string) => {
-    const [kind, id] = k.split(':');
-    return bare(t(`${kind === 'sea' ? 'sea' : 'critter'}.name.${id}`));
-  };
-  const speciesArt = (k: string) => `critters/${k.split(':')[1]}`;
+  /** A tally key's name and icon (the pocket's table: the ずかん's names, the official icon). */
+  const speciesName = (k: string) => bare(t(pocketItem(k)?.name ?? k));
   /** The pieces' names (NH's, i18n/tent.ts: loaded with the screen, the language on screen). */
   let names = $state(0);
   $effect(() => void loadTentNames(i18n.locale).then(() => names++, () => {}));
   const itemName = (code: string) => (void names, t(`tent.item.${code}`));
 
   // ---- うる
-  const pocket = $derived([...shop.pocket].map(([k, n]) => ({ k, n, p: sellPrice(k) ?? 0 })).sort((a, b) => b.p - a.p || a.k.localeCompare(b.k)));
+  /** My pocket by うる's sections (pocket.ts SECTIONS), each dearest first. */
+  const pocket = $derived([...shop.pocket].flatMap(([k, n]) => {
+    const it = pocketItem(k);
+    return it ? [{ k, n, p: sellPrice(k) ?? 0, it }] : [];
+  }).sort((a, b) => SECTIONS.indexOf(a.it.section) - SECTIONS.indexOf(b.it.section) || b.p - a.p || a.k.localeCompare(b.k)));
+  const sections = $derived(SECTIONS.flatMap((s) => {
+    const rows = pocket.filter((r) => r.it.section === s);
+    return rows.length ? [{ s, rows }] : [];
+  }));
   const picked = $derived(Object.entries(picks).filter(([k, n]) => n > 0 && (shop.pocket.get(k) ?? 0) >= n));
   const pickedN = $derived(picked.reduce((a, [, n]) => a + n, 0));
   const pickedV = $derived(picked.reduce((a, [k, n]) => a + n * (sellPrice(k) ?? 0), 0));
@@ -208,21 +214,26 @@
 
     {#if tab === 'sell'}
       {#if pocket.length}
-        <ul class="grid" data-shop-pocket>
-          {#each pocket as { k, n, p } (k)}
-            {@const c = picks[k] ?? 0}
-            <li class="tile" class:on={c > 0}>
-              <button type="button" class="pickable" data-shop-catch={k} data-n={n} data-picked={c} data-sfx="self"
-                aria-label={t('shop.catchLabel', { name: speciesName(k), n: String(n), v: String(p), c: String(c) })} onclick={() => more(k)}>
-                <span class="ic"><OfficialArt key={speciesArt(k)} size={46} /></span>
-                <span class="nm">{speciesName(k)}</span>
-                <span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{formatNum(p)}</span>
-                <span class="count" aria-hidden="true">{c ? `${c}/${n}` : `×${n}`}</span>
-              </button>
-              {#if c}<button type="button" class="less" data-shop-less={k} data-sfx="tick" aria-label={t('shop.less', { name: speciesName(k) })} onclick={() => less(k)}>−</button>{/if}
-            </li>
+        <div class="pocket" data-shop-pocket>
+          {#each sections as { s, rows } (s)}
+            <h2 class="sec-label" data-shop-sec={s}>{t(`shop.sec.${s}`)}</h2>
+            <ul class="grid">
+              {#each rows as { k, n, p, it } (k)}
+                {@const c = picks[k] ?? 0}
+                <li class="tile" class:on={c > 0}>
+                  <button type="button" class="pickable" data-shop-catch={k} data-n={n} data-picked={c} data-sfx="self"
+                    aria-label={t('shop.catchLabel', { name: speciesName(k), n: String(n), v: String(p), c: String(c) })} onclick={() => more(k)}>
+                    <span class="ic"><OfficialArt key={it.art} size={46} /></span>
+                    <span class="nm">{speciesName(k)}</span>
+                    <span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{formatNum(p)}</span>
+                    <span class="count" aria-hidden="true">{c ? `${c}/${n}` : `×${n}`}</span>
+                  </button>
+                  {#if c}<button type="button" class="less" data-shop-less={k} data-sfx="tick" aria-label={t('shop.less', { name: speciesName(k) })} onclick={() => less(k)}>−</button>{/if}
+                </li>
+              {/each}
+            </ul>
           {/each}
-        </ul>
+        </div>
       {:else}
         <p class="empty" data-shop-empty>{t('shop.emptyPocket')}</p>
       {/if}
@@ -232,11 +243,11 @@
         <button type="button" class="btn small" data-shop-sell data-sfx="self" aria-disabled={!pickedN} onclick={sellPicked}>{t('shop.sell')}</button>
       </div>
     {:else}
-      <h2 class="head">{t('shop.today')}</h2>
+      <h2 class="sec-label">{t('shop.today')}</h2>
       <ul class="grid" data-shop-stock>
         {#each daily as code (code)}{@render piece(code)}{/each}
       </ul>
-      <h2 class="head">{t('shop.basics')}</h2>
+      <h2 class="sec-label">{t('shop.basics')}</h2>
       <ul class="grid">
         {#each BASICS as code (code)}{@render piece(code)}{/each}
       </ul>
@@ -322,7 +333,7 @@
     --text: var(--c-ink); --text-soft: var(--c-ink-soft); --ctl: var(--c-card); --ctl-sel: var(--c-yuzu); --ctl-off: #EADBB8;
     --sh-ctl: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); --sh-ctl-press: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge);
   }
-  .head { margin: 4px 0 0; font: 700 var(--fs-s)/1 var(--font-ui); color: var(--c-ink-soft); letter-spacing: .04em; }
+  .pocket { display: flex; flex-direction: column; gap: 10px; }
   .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
   .tile { position: relative; }
   .pickable {
