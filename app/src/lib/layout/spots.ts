@@ -160,9 +160,9 @@ export function daySpots(layout: Layout, date: string, seed: string): { lawn: Pt
   const key = `${date}|${seed}`;
   const had = days.get(key);
   if (had && had.layout === layout) return had;
-  // (the visitors' stage and the tiles round it stay clear)
+  // (the visitors' stage and the tiles round it stay clear, and a few behind it: a figure there covers their tap)
   const st = stageOf(layout), [sc, sr] = st ? tileAt(st[0], st[1]) : [-9, -9];
-  const tiles = openGrass(layout).filter(([c, r]) => Math.abs(c - sc) > 1 || r - sr > 1 || sr - r > 2);
+  const tiles = openGrass(layout).filter(([c, r]) => Math.abs(c - sc) > 1 || r - sr > 3 || sr - r > 2);
   const rand = seeded(`${seed}|${date}|layout-spots`);
   const jit = (t: [number, number]): Pt => {
     const [x, z] = tileMid(t[0], t[1]);
