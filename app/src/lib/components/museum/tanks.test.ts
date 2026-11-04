@@ -2,7 +2,7 @@
 import { describe, expect, test } from 'vitest';
 import { Matrix4, Quaternion, Vector3 } from 'three';
 import { poseOf, spawn, stepSchool, stepWalker, swimBox, type Swimmer } from './boids.ts';
-import { TANKS, bodyIn, propsOf, waterOf, type Box, type Tank } from './tanks.ts';
+import { TANKS, backOf, bodyIn, openOf, propsOf, waterOf, type Box, type Tank } from './tanks.ts';
 import { FISH_IDS, WALKERS, tankOf } from './species.ts';
 import { ENTRANCE, FISH_WING, navOf, walkPath } from './plan.ts';
 import { modelBounds } from '../world3d/models3d.ts';
@@ -15,7 +15,7 @@ const inside = (b: Box, p: readonly number[], e = 1e-6) =>
 /** A fish of NH's in its tank as the aquarium draws it: its body (tanks.ts bodyIn, from its model's bounds) and a swimmer. */
 function fishIn(t: Tank, id: string, seed: number) {
   const b = modelBounds(`critters/fish/${id}`)!;
-  const walker = !!WALKERS[id], body = bodyIn(t, b.min, b.max, walker), w = waterOf(t);
+  const walker = !!WALKERS[id], body = bodyIn(t, b.min, b.max, walker), w = openOf(t);
   const f = spawn(w, body.r, body.reach, 6, seed);
   if (walker) f.p[1] = w.y0 + body.half[1] * body.s;
   return { id, body, f, walker: WALKERS[id] };
@@ -49,26 +49,30 @@ describe('the tanks', () => {
   test('the big ones fit: a whale shark in the great tank, an oarfish in the deep, an arapaima in the river; a neon tetra drawn bigger', () => {
     for (const [id, t] of [['whale-shark', 'sea'], ['oarfish', 'deep'], ['arapaima', 'river']] as const) {
       expect(tankOf(id)).toBe(t);
-      const x = fishIn(tank(t), id, 1), w = waterOf(tank(t));
+      const x = fishIn(tank(t), id, 1), w = openOf(tank(t));
       expect(x.body.s).toBeLessThan(1);
       // (room to turn: its reach well under half its water's narrowest)
       expect(x.body.reach[0] * 2).toBeLessThanOrEqual(0.8 * Math.min(w.x1 - w.x0, w.z1 - w.z0) + 1e-9);
     }
     expect(fishIn(tank('river'), 'neon-tetra', 1).body.s).toBeGreaterThan(1);
   });
-  test('every prop on its tank’s sand and all of it inside the glass, under the water’s top', () => {
+  test('every prop on its tank’s sand, all of it inside the glass, under the water’s top, and in its back strip: none reaches into the fish’s open water', () => {
     const models = M.models as Record<string, { min: number[]; max: number[] }>;
     for (const t of TANKS) {
-      const w = waterOf(t), ps = propsOf(t);
+      const w = waterOf(t), back = backOf(t), open = openOf(t), ps = propsOf(t);
       expect(ps.length, t.id).toBeGreaterThan(0);
+      // (the open water and the back strip apart, both in the water)
+      for (const b of [back, open]) expect(inside(w, [b.x0, b.y0, b.z0]) && inside(w, [b.x1, b.y1, b.z1]), t.id).toBe(true);
+      expect(back.x0 >= open.x1 || back.x1 <= open.x0 || back.z0 >= open.z1 || back.z1 <= open.z0, t.id).toBe(true);
       for (const p of ps) {
         const b = models[p.name];
+        expect(p.y, `${t.id} ${p.name}`).toBe(w.y0);
         // (its box's middle over the spot, its foot on the sand, turned by its yaw: engine.ts Kit.prop)
         const m = new Matrix4().compose(new Vector3(p.x, p.y, p.z), new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), p.yaw), new Vector3().setScalar(p.s));
         const mid = [(b.min[0] + b.max[0]) / 2, b.min[1], (b.min[2] + b.max[2]) / 2];
         for (const x of [b.min[0], b.max[0]]) for (const y of [b.min[1], b.max[1]]) for (const z of [b.min[2], b.max[2]]) {
           const c = new Vector3(x - mid[0], y - mid[1], z - mid[2]).applyMatrix4(m);
-          expect(inside(w, c.toArray()), `${t.id} ${p.name} ${c.toArray().map((v) => v.toFixed(1))}`).toBe(true);
+          expect(inside(back, c.toArray()), `${t.id} ${p.name} ${c.toArray().map((v) => v.toFixed(1))}`).toBe(true);
         }
       }
     }
@@ -76,9 +80,9 @@ describe('the tanks', () => {
 });
 
 describe('the swimmers (boid-like), all of each inside its glass', () => {
-  test('every species in its tank, five at a time, swims for two minutes: every corner of its body (turned, pitched, its tail swaying) in the water', () => {
+  test('every species in its tank, five at a time, swims for two minutes: every corner of its body (turned, pitched, its tail swaying) in the open water, clear of every prop', () => {
     for (const t of TANKS) {
-      const w = waterOf(t), ids = FISH_IDS.filter((id) => tankOf(id) === t.id && modelBounds(`critters/fish/${id}`));
+      const w = openOf(t), ids = FISH_IDS.filter((id) => tankOf(id) === t.id && modelBounds(`critters/fish/${id}`));
       expect(ids.length, t.id).toBeGreaterThan(0);
       for (let g = 0; g < ids.length; g += 5) {
         const five = ids.slice(g, g + 5).map((id, i) => fishIn(t, id, g * 7 + i * 13 + 3));

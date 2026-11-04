@@ -2,7 +2,8 @@
 // (the sea's kelp and coral, the deep's dark rocks, the river's stones and logs: scripts/world3d-models.ts --museum),
 // the aisle's benches and the corners' plants, and in each tank the hour's pick of the fish found for it (species.ts
 // onDisplay: five at most, a new pick each hour, fading out and in where it's on screen), NH's catch models
-// (static/room/world3d/critters/fish/), each all inside its glass (tanks.ts bodyIn, propsOf). Cheap:
+// (static/room/world3d/critters/fish/), each all inside its glass, the props along its back and the fish in
+// front of them, never touching (tanks.ts bodyIn, openOf, propsOf). Cheap:
 //   - a species is one fish, one InstancedMesh, its tail swaying in the vertex shader (one program for every fish: the
 //     sway grows toward its tail, its phase the instance's own);
 //   - each tank's water is one shader (its glow, NH's blue to its depth, caustics shimmering over its back and floor,
@@ -17,7 +18,7 @@ import {
 } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
 import { WALKERS, hourOf, onDisplay, type Specimen, type TankId } from './species.ts';
-import { TANKS, alongX, bodyIn, propsOf, waterOf, type Body, type Box, type Tank } from './tanks.ts';
+import { TANKS, alongX, bodyIn, openOf, propsOf, waterOf, type Body, type Box, type Tank } from './tanks.ts';
 import { poseOf, spawn, stepSchool, stepWalker, type Swimmer } from './boids.ts';
 import type { Rect } from './plan.ts';
 import { batcher, decal, openBox, plainGeometry } from './geometry.ts';
@@ -222,7 +223,8 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
   const swimmers = new Map<TankId, Swimmer[]>(TANKS.map((t) => [t.id, []]));
   const walkers = new Map<TankId, Swimmer[]>(TANKS.map((t) => [t.id, []]));
   const tankOfId = new Map<TankId, Tank>(TANKS.map((t) => [t.id, t]));
-  const waters = new Map<TankId, Box>(TANKS.map((t) => [t.id, waterOf(t)]));
+  /** Each tank's open water, in front of its props (tanks.ts openOf): its fish swim and walk only there. */
+  const waters = new Map<TankId, Box>(TANKS.map((t) => [t.id, openOf(t)]));
   /** A fish's fading: dithered (alphaHash: still opaque and unsorted) only while it fades, solid again after. */
   const fadeTo = (s: School, k: number) => {
     s.fade = k;

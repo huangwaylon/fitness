@@ -126,10 +126,10 @@ const fish0 = room('IdrMuseumFish0Obj'), fish1 = room('IdrMuseumFish1Obj'), fish
 const bug0 = room('IdrMuseumInsect0Obj'), bug1 = room('IdrMuseumInsect1Obj'), bug2 = room('IdrMuseumInsect2Obj');
 const MUSEUM_JOBS: Job[] = [
   // the aquarium's tanks: the sea's kelp on its rocks and its coral, the deep's dark rocks, the river's stones, logs and
-  // water plants, the big tank's diver and little submarine
+  // water plants (not NH's diver and little submarine, IdrMuseumFish1Obj04: a person standing in a tank)
   fish0('kelp-rocks', 'IdrMuseumFish0Obj00'), fish0('kelp-rock', 'IdrMuseumFish0Obj02'), fish0('kelp-small', 'IdrMuseumFish0Obj03'),
   fish0('coral', 'IdrMuseumFish0Obj05'), fish0('coral-2', 'IdrMuseumFish0Obj06'), fish0('deep-rocks', 'IdrMuseumFish0Obj07'),
-  fish1('river-rock', 'IdrMuseumFish1Obj01'), fish1('river-rock-2', 'IdrMuseumFish1Obj02'), fish1('diver', 'IdrMuseumFish1Obj04'),
+  fish1('river-rock', 'IdrMuseumFish1Obj01'), fish1('river-rock-2', 'IdrMuseumFish1Obj02'),
   fish2('river-stones', 'IdrMuseumFish2Obj01'), fish2('mossy-log', 'IdrMuseumFish2Obj08'), fish2('water-plants', 'IdrMuseumFish2Obj13'),
   fish2('lily-plants', 'IdrMuseumFish2Obj06'), fish2('driftwood-rock', 'IdrMuseumFish2Obj11'),
   // the bug garden: its trees (the mangroves, the palms), flower beds and bushes, a fallen log with its autumn leaves,
