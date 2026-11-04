@@ -102,7 +102,7 @@
     <h4>{t('food.amount')}</h4>
     <div class="chips" role="group" aria-label={t('food.amount')}>
       {#each ps as p, i (p.label)}
-        <button type="button" class="chip" aria-pressed={!custom && pi === i} data-sfx={!custom && pi === i ? 'none' : 'tick'} data-portion={p.label} onclick={() => portion(i)}>
+        <button type="button" class="chip big" aria-pressed={!custom && pi === i} data-sfx={!custom && pi === i ? 'none' : 'tick'} data-portion={p.label} onclick={() => portion(i)}>
           {p.label}{#if !serving && !hasWeight(p.label)}<small>{gramsText(p.g)}{unit}</small>{/if}
         </button>
       {/each}
@@ -151,16 +151,15 @@
   h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; overflow-wrap: anywhere; }
   h4 { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .per { margin: 0; font-size: var(--fs-s); color: var(--text-soft); line-height: 1.4; }
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip, .sb, .nb {
+  /* the portions: theme.css .chip.big */
+  .sb, .nb {
     appearance: none; border: 0; cursor: pointer; min-height: var(--hit); border-radius: var(--r-pill);
     font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
   }
-  .chip { padding: 0 14px; }
   .chip small { margin-left: 4px; font-size: var(--fs-xs); color: var(--text-soft); }
   .chip[aria-pressed='true'] small { color: inherit; opacity: .7; }
-  .chip[aria-pressed='true'], .sb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
-  .chip:active, .sb:active, .nb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  .sb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
+  .sb:active, .nb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .qty { display: flex; align-items: center; gap: 8px; }
   .nb { width: var(--hit); flex: none; font-size: var(--fs-talk); }
   .mult { min-width: 3.4em; text-align: center; font-size: var(--fs-talk); }
