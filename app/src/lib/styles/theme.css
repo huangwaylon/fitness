@@ -91,6 +91,17 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .btn.small svg { width: 20px; height: 20px; }
 .btn.paper { --fill: var(--c-card); --lip-c: var(--c-edge); }
 
+/* ---------- a level's actions (ごはん's amount, マイ食品, マイレシピ, いつもの): its one action and what goes with it, held at the
+   foot of the sheet's scroller while the level is longer than the screen, and over the keyboard while a field is being
+   typed in (sticky keeps clear of the scroller's bottom padding, --body-pad, which holds the home indicator and the
+   keyboard: Sheet's --kb); the action (the leaf .btn) takes the row's room, the cream ones their own ---------- */
+.level-acts {
+  position: sticky; bottom: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 8px; margin: 0 -8px; padding: 14px 8px 6px;
+  background: linear-gradient(transparent, var(--surface) 14px);
+}
+.level-acts > .btn { margin: 0 0 var(--lip-h); width: auto; flex: none; }
+.level-acts > .btn:not(.paper) { flex: 1 1 8em; }
+
 /* ---------- a chip: a choice among a few (せってい's きせつ, いえを かえる): 36px drawn in a 44px target, the edge;
    chosen: yuzu (aria-checked in a radiogroup, aria-pressed in a group of toggles) ---------- */
 .chip {

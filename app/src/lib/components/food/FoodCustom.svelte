@@ -96,7 +96,7 @@
     </section>
   {/if}
 
-  <div class="acts">
+  <div class="acts level-acts">
     {#if ro}
       <button type="button" class="btn paper small" data-sfx="confirm" data-custom-copy onclick={() => oncopy?.()}>{t('food.rcp.copy')}</button>
       <button type="button" class="btn small" data-sfx="page" data-custom-log onclick={() => onlog?.()}>{t('food.rcp.log')}</button>
@@ -140,6 +140,4 @@
   .cells div { min-width: 0; padding: 8px 6px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 22%, transparent); }
   .cells dt { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cells dd { margin: 3px 0 0; font-size: var(--fs-body); }
-  .acts { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
-  .acts .btn { margin: 0; min-width: 7em; max-width: 100%; }
 </style>
