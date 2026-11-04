@@ -1436,7 +1436,7 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   trevally, tuna, blue marlin, mahi-mahi), the rest in the shuffle's order, so its feeders come every hour. Caught-only
   still: with no sea predator caught yet there's none (and no feeders there). The deep and river tanks have no such
   rule (their predators come and go with the shuffle). A tank with none of its own caught is empty water. The hour turning while one's inside:
-  the outgoing fade out and the new fade in (1.6 s, dithered: alphaHash only while fading), at once off screen.
+  the outgoing fade out and the new fade in (1.6 s, dithered: alphaHash only while fading), at once off screen. The fading program is compiled in the warm-up with the walls' (engine.ts warm, the exhibit's `dither`): the swap compiles nothing mid-fade.
 - **Nothing clips** (tanks.ts bodyIn, propsOf; boids.ts reachOf): a fish's reach is its model's box, turned any way,
   pitched up to 0.35 rad and banked up to 0.22, its tail's sway added; its middle keeps to the water less that reach (the sand's top to the
   water's surface), so all of it stays inside the glass. A big one is scaled till its reach fits 68% of its water's

@@ -65,6 +65,9 @@ export interface Exhibit {
   /** The species on show (ids). */
   shown(): string[];
   night(n: number): void;
+  /** Its fading materials dithered (alphaHash) or solid again: the warm-up compiles their fading program up front, so a
+   *  fade (the hour's fish) never compiles one mid-frame. Only those not fading now. */
+  dither?(on: boolean): void;
   dispose(): void;
 }
 /** What an exhibit is built with: the textures and models the museum loads, its lights' warmth. */
@@ -1128,9 +1131,10 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       for (const t of todo.splice(0, 8)) renderer.initTexture(t);
       if (todo.length) warmT = setTimeout(step, 32);
       else {
-        // (the walls' fading programs too: dithered, alphaHash, compiled with the rest; solid again after)
+        // (the walls' and the fish's fading programs too: dithered, alphaHash, compiled with the rest; solid again after)
         const hashed = (on: boolean) => {
           for (const wm of walls) if (wm.fade === 0 || wm.fade === 1) for (const m of wm.mats) (m.alphaHash = on), (m.needsUpdate = true);
+          for (const e of exhibits) e.dither?.(on);
         };
         hashed(true);
         // (three's compileAsync, its poll ours: three's throws in a timer once a material it waits on is disposed, the
