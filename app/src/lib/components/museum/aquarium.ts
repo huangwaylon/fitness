@@ -319,6 +319,7 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
 
   return {
     group,
+    wing: 'fish',
     blocks,
     frame(t, dt, seen) {
       // (a new hour: a new pick; the clock read once a second)

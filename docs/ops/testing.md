@@ -120,7 +120,7 @@ ones, the engine's stats and the frames it draws a second idle; then けんこ�
 opened from the HUD: the island's frames under each (0: it pauses), the CSS animations still running, and the
 sheet's own scroll's fps; the page's errors) and four screenshots. Exit 1 when the island didn't come up or it failed.
 
-The indoor scenes likewise: `npm run ios:indoor -- --url <base>` (scripts/ios-sim-indoor.ts; the base, e.g. a local
+The indoor scenes likewise: `npm run ios:indoor -- --url <base>` (`--fpv`: every room at my villager's eyes; scripts/ios-sim-indoor.ts; the base, e.g. a local
 `vite preview`'s `http://127.0.0.1:4962/fitness/`) seeds a full museum (every fish and bug found), opens the island,
 then goes into the shop, the tent, うめ's house and the museum by the app's own navigation, twice (cold, then warm):
 each one's time to its first frame and to everything in, the bytes fetched, the longest frame gaps on the way in, the

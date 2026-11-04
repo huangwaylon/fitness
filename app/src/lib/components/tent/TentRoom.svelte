@@ -19,6 +19,9 @@
   import Says from '../island/Says.svelte';
   import SayPicker from '../island/SayPicker.svelte';
   import SayButton from '../island/SayButton.svelte';
+  import EyeToggle from '../rooms/EyeToggle.svelte';
+  import { isDrag, isTap } from '../rooms/gesture.ts';
+  import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
   import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '../island/say.ts';
   import { loadHha, rate, type HhaRating } from './hha.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
@@ -275,17 +278,26 @@
   function speakerOf(w: Who): SaySpeaker {
     return {
       get isConnected() {
-        return !!eng?.at(w);
+        // (at my villager's eyes another's balloon goes once it's out of view: behind the camera it has no place)
+        const h = eng?.at(w) && eng.headPoint(w);
+        return !!h && (w === me || !fpv || eng!.inView(h[0], h[1], h[2]));
       },
       getBoundingClientRect() {
         const h = eng?.headPoint(w), at = eng?.at(w);
         if (!eng || !h || !at) return new DOMRect();
+        // mine, at its eyes: from the foot of the view, as one's own voice
+        if (w === me && fpv && canvas) return ownVoice(canvas, insets().bottom);
         const [hx, hy] = eng.client(h[0], h[1], h[2]), [, fy] = eng.client(at[0], 0, at[1]);
         const tall = Math.max(12, fy - hy), wide = tall * 0.55;
         return new DOMRect(hx - wide / 2, hy, wide, tall);
       }
     };
   }
+  /** At my villager's eyes, my own balloon stands by the middle of the view's foot. */
+  const ownVoice = (c: HTMLCanvasElement, bottom: number) => {
+    const r = c.getBoundingClientRect();
+    return new DOMRect(r.left + r.width / 2 - 20, r.bottom - bottom - 70, 40, 40);
+  };
   /** `text` over a villager in here (mine: picked here; another's: from the relay) and a hop. */
   function showSay(w: Who, text: string) {
     if (!eng?.at(w)) return;
@@ -372,18 +384,20 @@
     if (g.kind === 'edit') return void (g.id === e.pointerId && edit?.move(e));
     if (!ptrs.has(e.pointerId)) return;
     ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (g.kind === 'maybe' && Math.hypot(e.clientX - g.x0, e.clientY - g.y0) > 10) {
+    if (g.kind === 'maybe' && isDrag(e.clientX - g.x0, e.clientY - g.y0)) {
       clearTimeout(longTimer);
       g.kind = 'orbit';
       eng.moving(true);
       says?.hold(true);
     }
     if (g.kind === 'orbit') {
-      eng.orbit(-(e.clientX - g.lx) * 0.0085, (e.clientY - g.ly) * 0.005);
+      // (at my villager's eyes the head turns: rooms/firstPerson.ts)
+      if (fpv) eng.look(e.clientX - g.lx, e.clientY - g.ly);
+      else eng.orbit(-(e.clientX - g.lx) * 0.0085, (e.clientY - g.ly) * 0.005);
       g.lx = e.clientX;
       g.ly = e.clientY;
       turned = !eng.isDefault();
-    } else if (g.kind === 'pinch' && ptrs.size === 2) {
+    } else if (g.kind === 'pinch' && ptrs.size === 2 && !fpv) {
       const n = spread();
       if (g.d > 0) eng.zoom(n.d / g.d);
       eng.orbit(0, (n.my - g.my) * 0.004);
@@ -401,7 +415,7 @@
       return;
     }
     if (!ptrs.delete(e.pointerId)) return;
-    if (g?.kind === 'maybe' && whenOf(e) - g.t0 < 700) tap(e.clientX, e.clientY);
+    if (g?.kind === 'maybe' && isTap(e.clientX - g.x0, e.clientY - g.y0, whenOf(e) - g.t0)) tap(e.clientX, e.clientY);
     if (!ptrs.size) {
       gesture = null;
       eng?.moving(false);
@@ -425,6 +439,7 @@
   function onWheel(e: WheelEvent) {
     if (!eng) return;
     e.preventDefault();
+    if (fpv) return;
     eng.zoom(Math.exp(-e.deltaY * 0.0015));
     turned = !eng.isDefault();
   }
@@ -508,6 +523,10 @@
     if (m) untrack(() => (room.rows(m.state.tent), islandLayout.rows(m.state.layout)));
   });
   $effect(() => eng?.night(nightOf(theme.tod)));
+  /** At my villager's eyes (docs/design.md "First person"): the phone's choice, but never in もようがえ (the room's
+   *  camera arranges it). Local only. */
+  const fpv = $derived(firstPerson.on && !editing);
+  $effect(() => eng?.firstPerson(fpv ? me : null));
   // the edit tray opening or closing: the usable band changes (after it has laid out)
   /** A refit to come (the tray's, after it has laid out). */
   let refit = false;
@@ -588,7 +607,7 @@
       eng.bump(e.id);
       if (e.who !== me) eng.face(e.who, centreOf(p));
     }));
-    const offDoor = provideDoor(() => (eng ? (([x, y]) => ({ x, y }))(eng.client(0, 0, HALF - 2)) : null));
+    const offDoor = provideDoor(() => (eng?.inView(0, 0, HALF - 2) ? (([x, y]) => ({ x, y }))(eng.client(0, 0, HALF - 2)) : null));
     void import('./engine.ts').then(
       ({ createTent }) => {
         if (!alive || !canvas) return;
@@ -596,8 +615,9 @@
         e.resize(insets());
         e.night(nightOf(theme.tod));
         e.villager(me, lookOf(me));
-        // in at the door, a few steps into the room
+        // in at the door, a few steps into the room (at my villager's eyes from the first frame, if that's the choice)
         e.put(me, DOOR_IN, faceOf(me));
+        e.firstPerson(fpv ? me : null, true);
         eng = e;
         partnerShown();
         walkTo([sideX(me, 7), me === 'G' ? 26 : 22]);
@@ -695,6 +715,9 @@
       },
       /** Where the floor's middle and the usable band's middle are on screen. */
       centre: () => eng?.centre(),
+      /** The first-person view (on, fully in, yaw, pitch, the eye), and a finger's look (px). */
+      fpv: () => eng?.fpv() ?? null,
+      look: (dx: number, dy: number) => eng?.look(dx, dy),
       /** Turn the camera (radians), zoom it; whether it's NH's view. */
       orbit: (dAz: number, dPitch = 0) => (eng?.orbit(dAz, dPitch), (turned = !eng?.isDefault())),
       zoom: (f: number) => (eng?.zoom(f), (turned = !eng?.isDefault())),
@@ -753,7 +776,7 @@
       <svg viewBox="0 0 64 80" aria-hidden="true"><path d="M14 70c0-12 2-20 4-28-6-2-10-7-10-11 4 0 8 3 11 6 1-10 6-27 13-27s12 17 13 27c3-3 7-6 11-6 0 4-4 9-10 11 2 8 4 16 4 28Z" /><ellipse cx="25" cy="24" rx="3.2" ry="4.2" /><ellipse cx="39" cy="24" rx="3.2" ry="4.2" /><ellipse cx="32" cy="37" rx="4" ry="5" /></svg>
     </button>
   {/if}
-  {#if turned}
+  {#if turned && !fpv}
     <!-- back to NH's view of the room -->
     <button type="button" class="reset" data-tent-reset data-sfx="tick" aria-label={t('tent.resetView')} onclick={resetView}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5M6.5 10v9h11v-9" /><path d="M10 19v-5h4v5" /></svg>
@@ -791,6 +814,8 @@
   {#if sayShown}
     <!-- the picker's door: bottom right, as on the island, above the foot's buttons -->
     <div class="say-dock"><SayButton bind:el={sayBtn} open={!!sayAt} onopen={(el) => (sayAt = el)} /></div>
+    <!-- my villager's eyes, the say button's mirror at the bottom left -->
+    <div class="eye-dock"><EyeToggle /></div>
   {/if}
   {#if letter}<HhaLetter rating={letter} onclose={() => (letter = null)} />{/if}
   {#if picking}<HomePicker bind:open={picking} who={home} />{/if}
@@ -801,6 +826,7 @@
   .foot :global(.look) { margin-right: 8px; }
   /* the say button: bottom right, just above the foot's buttons (いえを かえる and もようがえ fill the foot's width) */
   .say-dock { position: absolute; z-index: 3; right: calc(var(--safe-right, 0px) + 8px); bottom: calc(var(--safe-bottom, 0px) + 14px + 56px + 10px); }
+  .eye-dock { position: absolute; z-index: 3; left: calc(var(--safe-left, 0px) + 8px); bottom: calc(var(--safe-bottom, 0px) + 14px + 56px + 10px); }
   .whose {
     position: absolute; left: 50%; top: calc(var(--ui-top, 0px) + 70px); transform: translateX(-50%); margin: 0; padding: 6px 14px;
     border-radius: 999px; background: var(--c-cream); color: var(--c-ink); font-weight: 700; font-size: var(--fs-s, 13px); pointer-events: none;

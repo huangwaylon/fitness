@@ -447,6 +447,7 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
 
   return {
     group,
+    wing: 'bug',
     blocks,
     frame(t, _dt, seen) {
       const s = t / 1000;

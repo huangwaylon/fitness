@@ -49,6 +49,11 @@ export interface Villager3D {
   /** Its opacity (the board's focus fades one standing between the camera and the board): 1 drawn as ever. */
   opacity(a: number): void;
   head(): Bone | null;
+  /** Its eyes' middle, on the face's front, as it's posed now (world space: the caller updates the group's matrices
+   *  first), written to `out`; null for a model without NH's eyes. The rooms' first-person camera stands there. */
+  eyes(out: Vector3): Vector3 | null;
+  /** Its body drawn or not (its blob of shadow stays): hidden, the first-person camera inside its head sees out. */
+  show(body: boolean): void;
   /** Put something on its head (a hat: its origin its base, y up, in model units) or take it off (null): it rides the
    *  head bone, upright as the head is at rest, its base on the head's top (a little sunk in). */
   wear(obj: Object3D | null): void;
@@ -214,6 +219,14 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
     head.add(lump);
   }
 
+  // the eyes' middle on the face's front, in the head bone's frame (the model's own at rest)
+  let eyeLocal: Vector3 | null = null;
+  if (head && eyeBox) {
+    const [a, b] = eyeBox as [Vector3, Vector3];
+    model.updateMatrixWorld(true);
+    eyeLocal = head.worldToLocal(new Vector3((a.x + b.x) / 2, (a.y + b.y) / 2, b.z));
+  }
+
   const inner = new Object3D();
   inner.add(model);
   inner.scale.setScalar(VILLAGER_S);
@@ -343,6 +356,10 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       faceSet = f;
     },
     head: () => head,
+    eyes: (out) => (head && eyeLocal ? head.localToWorld(out.copy(eyeLocal)) : null),
+    show(body) {
+      inner.visible = body;
+    },
     wear(obj) {
       if (obj === worn) return;
       worn?.removeFromParent();
