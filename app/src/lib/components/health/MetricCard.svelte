@@ -41,7 +41,7 @@
   }));
 </script>
 
-<section class="card mc" data-metric={metric} data-person={p} aria-labelledby="mc-{metric}">
+<section class="card hcard mc" data-metric={metric} data-person={p} aria-labelledby="mc-{metric}">
   <header>
     <span class="ic"><OfficialArt key={fruitArt(fruit)} size={24} /></span>
     <h3 id="mc-{metric}">{t(`fruit.${fruit}`)}</h3>
@@ -84,10 +84,6 @@
 </section>
 
 <style>
-  .mc { display: grid; gap: 8px; padding: 12px 14px 10px; }
-  header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-  header .ic { display: inline-flex; flex: none; }
-  h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; }
   /* one person: the average large, the change beside it, the counts under it */
   .srow { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'lab chg' 'avg chg' 'sub sub'; align-items: center; column-gap: 10px; row-gap: 2px; }
   .lab { grid-area: lab; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
@@ -97,12 +93,8 @@
   .chg small { font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); }
   .chg.none { background: none; color: var(--text-soft); }
   .sub { grid-area: sub; display: flex; flex-wrap: wrap; gap: 0 10px; margin-top: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); font-variant-numeric: tabular-nums; }
-  .none { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .key { display: flex; flex-wrap: wrap; gap: 2px 12px; margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .key.pA { --pc: var(--person-a); }
   .key.pB { --pc: var(--person-b); }
-  .key span { display: inline-flex; align-items: center; gap: 5px; }
-  .key i { display: inline-block; flex: none; }
   .k-met, .k-miss, .k-mid { width: 8px; height: 11px; border-radius: 2px 2px 0 0; background: var(--pc); }
   .k-miss { opacity: .34; }
   .k-mid { opacity: .67; margin-left: -3px; }
