@@ -6,6 +6,7 @@ import { milestoneOn } from './wedding.ts';
 import { addDays } from '#lib/time/dates.ts';
 import type { EventNow } from './events.ts';
 import { mulberry32 } from '#lib/random.ts';
+import { has3d } from '../villager3d/manifest.ts';
 import ja from '#lib/i18n/ja.json';
 import en from '#lib/i18n/en.json';
 
@@ -13,6 +14,10 @@ const at = (date: string, hour: number, weekday: number, ev?: EventNow | null) =
   ev === undefined ? visitorAt(date, addDays(date, -1), hour, weekday) : visitorAt(date, addDays(date, -1), hour, weekday, undefined, ev);
 
 describe('visitors (NH)', () => {
+  it('every visitor the schedule can bring is drawn as NH’s own 3D model (the user: only 3D models, else not at all), Reese with Cyrus', () => {
+    // (each one's model on its spot, posed: visitor-life.spec, for one of each kind)
+    expect([...VISITORS, 'cyrus'].filter((id) => !has3d(id))).toEqual([]);
+  });
   it('Jack on Halloween night, 17:00 to midnight, before anyone else (K.K. on a Saturday Halloween too)', () => {
     expect(at('2026-10-31', 16, 6)).not.toBe('jack'); // 16:59
     expect(at('2026-10-31', 17, 6)).toBe('jack'); // 17:00

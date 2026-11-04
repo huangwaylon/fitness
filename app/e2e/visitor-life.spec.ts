@@ -16,7 +16,9 @@ const camOf = async (page: Page, id: string) => (id === 'gulliver' ? 30 : await 
 /** The visitor node's transform (the projector's: where its feet are on screen). */
 const feet = (page: Page, id: string) => page.locator(`[data-visitor="${id}"]`).evaluate((e) => (e as HTMLElement).style.transform);
 
-for (const id of ['kk-slider', 'daisy-mae', 'wisp', 'gulliver', 'kicks', 'label', 'saharah', 'leif', 'redd', 'cj', 'flick', 'jack', 'celeste', 'franklin', 'jingle', 'zipper', 'reese'])
+// (one of each kind: a roster special by day and at night, the one lying down, a model outside the roster, the pair;
+// that every visitor the schedule brings has its model is visitors.test's, the GLBs' villager3d.test's)
+for (const id of ['daisy-mae', 'kk-slider', 'wisp', 'gulliver', 'jack', 'reese'])
   test(`${id}: on its spot as NH's own 3D model (no card, no render), posed as the villagers are`, async ({ page }) => {
     await page.goto(`?demo&date=2026-11-04T${NIGHT.has(id) ? '21' : '12'}:00&visitor=${id}&critter=none`);
     await expect(hudMenu(page)).toBeVisible();
