@@ -38,6 +38,10 @@ const balloonMs = (first = false, r = Math.random): number => (first ? 20_000 + 
 const stage = (pct: number): number => (pct >= 100 ? 3 : pct >= 60 ? 2 : pct >= 25 ? 1 : 0);
 const asleepHour = (d: Date) => jst(d).hour >= 22 || jst(d).hour < 5;
 const HOUR_MS = 3600_000;
+/** Sleeping time now, on the relay's clock (`?awake`, the hooks on: never: the two-phone harness against the relay runs
+ *  at whatever hour it is). Module-level: the director keeps it past the scene, and a closure made in the constructor
+ *  would keep the whole island (its DOM, its renderer) alive through a room's visit. */
+const sleepyNow = () => !hookFlag('awake') && asleepHour(new Date(now().getTime() + relayOffset()));
 
 /** True the first time `key` is seen today on this device. */
 const once = (key: string): boolean => firstOn(SCENE.beat(key), dayKey());
@@ -74,8 +78,6 @@ export class IslandLife {
     // Naps 22:00–5:00 on the relay's clock (the same moment on both phones; a tap wakes a villager for a moment, on
     // both: director.svelte.ts wake, villagerSync): put to sleep or woken at the hour it turns, not at every minute
     // (that put a woken villager back to sleep early).
-    // (`?awake`, the hooks on: never: the two-phone harness against the relay runs at whatever hour it is)
-    const sleepyNow = () => !hookFlag('awake') && asleepHour(new Date(now().getTime() + relayOffset()));
     setSleepClock(sleepyNow);
     $effect(() => {
       let was: boolean | null = null;

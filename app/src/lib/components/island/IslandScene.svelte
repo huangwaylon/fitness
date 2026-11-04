@@ -610,8 +610,10 @@
       requestAnimationFrame(() => world.invalidate());
     });
     ro.observe(scroller);
-    expose();
+    const hooks = expose();
     return () => {
+      // (the hooks hold this island: its DOM and its renderer, through a room's visit)
+      if ((window as unknown as { __world?: unknown }).__world === hooks) delete (window as unknown as { __world?: unknown }).__world;
       offMove();
       ro.disconnect();
       clearTimeout(settle);
@@ -621,7 +623,7 @@
   });
   /** The e2e's hooks on the island (window.__world). */
   function expose() {
-    (window as unknown as { __world?: unknown }).__world = {
+    return ((window as unknown as { __world?: unknown }).__world = {
       cam: () => world.view.camZ, idle: () => world.idle(), perf: world.perf,
       /** The opening beats are over: none to come, no event playing or queued (idle life may still wander). */
       quiet: () => !life.opening && eventsQuiet(),
@@ -694,7 +696,7 @@
         metrics: () => (relay ?? demoRelay)?.metrics?.() ?? null,
         status: () => (relay ?? demoRelay)?.status() ?? null
       } : {})
-    };
+    });
   }
 
   onMount(() => {
