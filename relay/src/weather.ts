@@ -5,8 +5,9 @@
 // shows the same sky at the same hour, whenever it got it. Pure but for `tick`'s fetch, which comes in.
 import { WX_MAX_HOURS, type Wx, type WxSky } from '../../app/src/lib/sync/live-protocol.ts';
 
-/** Hours the timeline holds from the current one. */
+/** Hours the timeline holds from the current one, and before it. */
 export const WX_HOURS = 36;
+export const WX_PAST = 12;
 const HOUR_MS = 3600_000;
 /** A good fetch is fresh this long; then the next cron (or hello) fetches again. */
 export const FRESH_MS = 30 * 60_000;
@@ -22,7 +23,8 @@ export const STALE_MS = 36 * HOUR_MS;
 /** Where the weather is fetched for (wrangler.toml [vars] WX_LAT / WX_LON: central Tokyo, by the 東京 AMeDAS station). */
 export const TOKYO = { lat: 35.69, lon: 139.75 } as const;
 
-/** Open-Meteo's forecast for a point: JMA's models, the hour before now and 36 after it, epoch-second times. */
+/** Open-Meteo's forecast for a point: JMA's models, the 13 hours before now (the past hours, and the one before them
+ *  for the dead bands), now and the 35 after it, epoch-second times. */
 export function omUrl(lat: number = TOKYO.lat, lon: number = TOKYO.lon): string {
   const q = new URLSearchParams({
     latitude: lat.toFixed(2),
@@ -31,8 +33,8 @@ export function omUrl(lat: number = TOKYO.lat, lon: number = TOKYO.lon): string 
     hourly: 'weather_code,precipitation,cloud_cover,visibility,temperature_2m',
     timezone: 'GMT',
     timeformat: 'unixtime',
-    past_hours: '1',
-    forecast_hours: String(WX_HOURS + 1)
+    past_hours: String(WX_PAST + 1),
+    forecast_hours: String(WX_HOURS)
   });
   return `https://api.open-meteo.com/v1/forecast?${q}`;
 }
@@ -144,40 +146,45 @@ export function hourOf(wx: Wx | null, h: number): { sky: WxSky; fog: boolean } |
 }
 
 /**
- * The timeline from the current hour (`now`) for a forecast's hours, keeping what `prev` (the one kept) has for the
- * hours already locked: the current one and before, and the next one once `prev` was fetched at or after this hour's
- * :45. The first hour the forecast sets is mapped from the locked one before it (the dead bands carry on), and the
- * gap fill never changes a locked hour. Null when the forecast doesn't cover the current hour.
+ * The timeline around the current hour (`now`): the past WX_PAST hours (a rainbow is the first clear hour after rain:
+ * the phones look back) and the next WX_HOURS, keeping what `prev` (the one kept) has for the hours already locked: the
+ * current one and before, and the next one once `prev` was fetched at or after this hour's :45. Each open hour is mapped
+ * from the sky before it (the dead bands carry on from a locked one), and the gap fill never changes a locked hour. Null
+ * when the forecast doesn't cover the current hour.
  */
 export function timeline(hours: readonly Hour[], prev: Wx | null, now: number, src: Wx['src'] = 'om'): Omit<Wx, 'rev'> | null {
   const cur = Math.floor(now / HOUR_MS);
   const lastLocked = prev && prev.at >= cur * HOUR_MS + LOCK_MIN * 60_000 ? cur + 1 : cur;
   const byHour = new Map(hours.map((h) => [h.h, h]));
   if (!byHour.has(cur)) return null;
-  const hb = byHour.get(cur - 1);
-  const before = hourOf(prev, cur - 1)?.sky ?? (hb ? mapHour(hb, null).sky : null);
+  const kept = (h: number) => (h <= lastLocked ? hourOf(prev, h) : null);
+  // the first hour: as far back as WX_PAST while every hour to now is known
+  let first = cur;
+  while (first > cur - WX_PAST && (kept(first - 1) || byHour.has(first - 1))) first--;
+  const hb = byHour.get(first - 1);
+  const before = hourOf(prev, first - 1)?.sky ?? (hb ? mapHour(hb, null).sky : null);
   const out: Sk[] = [], locked: boolean[] = [];
   let p = before;
-  for (let h = cur; h < cur + WX_HOURS; h++) {
-    const kept = h <= lastLocked ? hourOf(prev, h) : null;
+  for (let h = first; h < cur + WX_HOURS; h++) {
+    const k = kept(h);
     const fh = byHour.get(h);
-    if (!kept && !fh) break;
-    const m = kept ?? mapHour(fh!, p);
+    if (!k && !fh) break;
+    const m = k ?? mapHour(fh!, p);
     out.push(m);
-    locked.push(kept !== null);
+    locked.push(k !== null);
     p = m.sky;
   }
   gapFill(out, before, locked);
   const n = Math.min(out.length, WX_MAX_HOURS);
   const fx = out.slice(0, n).flatMap((x, i) => (x.fog ? [i] : []));
-  return { h0: cur, s: out.slice(0, n).map((x) => x.sky).join(''), ...(fx.length ? { fx } : {}), at: now, src };
+  return { h0: first, s: out.slice(0, n).map((x) => x.sky).join(''), ...(fx.length ? { fx } : {}), at: now, src };
 }
 
 /** Whether `next` changes what a phone holding `prev` would show: an hour both cover reads otherwise, or `next` reaches
  *  6 hours or more further, or `prev` no longer covers the current hour (or there was none). */
 export function changed(prev: Wx | null, next: Omit<Wx, 'rev'>): boolean {
   if (!prev || prev.src !== next.src) return true;
-  if (!hourOf(prev, next.h0)) return true;
+  if (!hourOf(prev, Math.floor(next.at / HOUR_MS))) return true;
   for (let i = 0; i < next.s.length; i++) {
     const a = hourOf(prev, next.h0 + i), b = hourOf(next as Wx, next.h0 + i);
     if (a && b && (a.sky !== b.sky || a.fog !== b.fog)) return true;

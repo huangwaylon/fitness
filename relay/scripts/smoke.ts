@@ -354,7 +354,7 @@ if (KEY_C) {
   const live = (await admin({ op: 'wx', refresh: true })) as { ok?: boolean; fail?: string; health?: { src: string; hours: number; age: number } };
   check(live.ok === true && live.health?.src === 'om' && live.health.hours >= 30, `a fetch from Open-Meteo now: ${live.health?.hours ?? 0} hours (${(performance.now() - t0).toFixed(0)} ms${live.fail ? `, ${live.fail}` : ''})`);
   const real = await w3.next((m) => m.kind === 'wx' && m.src === 'om');
-  check(/^[corhs]{30,36}$/.test(String(real.s)), `the phone hears the real sky when it changes (${String(real.s).slice(0, 12)}…)`);
+  check(/^[corhs]{30,48}$/.test(String(real.s)), `the phone hears the real sky when it changes (${String(real.s).slice(0, 12)}…)`);
   await pause(300);
   check(!w2.inbox.some((m) => m.kind === 'wx'), 'a v2 phone never hears wx');
   const h = await fetch(new URL('/health', http)).then((r) => r.json() as Promise<{ wx?: { src: string; age: number } }>);
