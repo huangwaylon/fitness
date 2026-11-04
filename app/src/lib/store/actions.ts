@@ -7,11 +7,12 @@ import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import type { LocalDate, PersonId, ShopItemId, Who } from '#lib/types.ts';
-import { isBodyFatGoal, isWeatherMode, isWeightKg, nextDay, roundKg, type FindKind, type WeatherMode } from '#lib/contract/api.ts';
+import { isWeatherMode, isWeightKg, nextDay, roundKg, type FindKind, type WeatherMode } from '#lib/contract/api.ts';
 import { findKey, findsView } from '#lib/model/finds.ts';
 import { addToTally, dayTallies } from '#lib/model/tally.ts';
 import { localDateAt } from '#lib/time/dates.ts';
-import { MOVE_GOAL, isStepsGoal, shopPrice } from '#lib/config/rules.ts';
+import { shopPrice } from '#lib/config/rules.ts';
+import { isGoalValue } from '#lib/contract/goals.ts';
 import {
   customSnap, FOOD_GOALS, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, isFoodGoal, newCustomId, newFoodId, newRecipeId, newRepeatId, recipeSnap, repeatCovers,
   type FoodEntry, type FoodGoalOf, type FoodRepeat, type FoodSnap, type Meal, type RepeatItem, type RepeatOp
@@ -79,7 +80,7 @@ export function setGoalWeight(person: PersonId, kg: number | null): SendResult {
 export function setGoalBodyFat(person: PersonId, pct: number | null): SendResult {
   if (pct === null) return week.send('pref', { person, key: 'goalBodyFat', value: null });
   const value = roundKg(pct);
-  if (!isBodyFatGoal(value)) return { ok: false };
+  if (!isGoalValue('body_fat_pct', value)) return { ok: false };
   return week.send('pref', { person, key: 'goalBodyFat', value });
 }
 
@@ -89,7 +90,7 @@ export function setGoalBodyFat(person: PersonId, pct: number | null): SendResult
  */
 export function setMoveGoal(person: PersonId, kcal: number): SendResult {
   const value = Math.round(kcal);
-  if (!Number.isFinite(value) || value < MOVE_GOAL.min || value > MOVE_GOAL.max) return { ok: false };
+  if (!isGoalValue('move', value)) return { ok: false };
   return week.send('pref', { person, key: 'moveGoal', value });
 }
 
@@ -98,7 +99,7 @@ export function setMoveGoal(person: PersonId, kcal: number): SendResult {
  * `{ok:false}` for anything else.
  */
 export function setStepsGoal(person: PersonId, steps: number): SendResult {
-  if (!isStepsGoal(steps)) return { ok: false };
+  if (!isGoalValue('steps', steps)) return { ok: false };
   return week.send('pref', { person, key: 'stepsGoal', value: steps });
 }
 

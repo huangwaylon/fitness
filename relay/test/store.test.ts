@@ -146,13 +146,20 @@ describe('events', () => {
     b('event', ev('f2', 'pref', { key: 'goalBodyFat', value: 21.5 })); // B's own: replaces f1, latest only like the weight goal
     a('event', ev('f3', 'pref', { key: 'goalBodyFat', value: 25 }));
     a('event', ev('f4', 'pref', { key: 'goalBodyFat', value: 61 })); // past 60 %: ignored by the model, replaces nothing
+    a('event', ev('i1', 'pref', { key: 'goalBmi', value: 22 }));
+    b('event', ev('i2', 'pref', { key: 'goalBmi', value: 23.5, person: 'A' })); // replaces i1
+    a('event', ev('l1', 'pref', { key: 'goalLean', value: 9 })); // under 10 kg: replaces nothing
+    a('event', ev('e1', 'pref', { key: 'exerciseGoal', value: 30 }));
+    a('event', ev('e2', 'pref', { key: 'exerciseGoal', value: 40 })); // the same day: replaces e1
+    a('event', ev('s1', 'pref', { key: 'standGoal', value: 125 })); // off its grid of 10: replaces nothing
     a('event', ev('g1', 'pref', { key: 'moveGoal', value: 400 }));
     a('event', ev('g2', 'pref', { key: 'moveGoal', value: 450 }));
     b('event', ev('g3', 'pref', { key: 'moveGoal', value: 500, person: 'A' })); // the same goal, set by the partner
     now = Date.parse('2026-11-02T15:00:00.000Z'); // 00:00 Tokyo, the next day
     a('event', ev('g4', 'pref', { key: 'moveGoal', value: 550 }));
     a('event', ev('k1', 'pref', { key: 'stepsGoal', value: 9000 }));
-    expect(events().map((r) => r[1])).toEqual(['n2', 'n3', 'n4', 'w2', 'f2', 'f3', 'f4', 'g3', 'g4', 'k1']);
+    a('event', ev('e3', 'pref', { key: 'exerciseGoal', value: 50 })); // the next day: its own
+    expect(events().map((r) => r[1])).toEqual(['n2', 'n3', 'n4', 'w2', 'f2', 'f3', 'f4', 'i2', 'l1', 'e2', 's1', 'g3', 'g4', 'k1', 'e3']);
   });
 
   it("the island's weather mode: one row for the island, the last a member set", () => {

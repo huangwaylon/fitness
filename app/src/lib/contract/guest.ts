@@ -1,14 +1,15 @@
 // The guest (docs/design.md "The guest", docs/backend.md#the-guest): a third key, KEY_C, for a visitor who plays on the
 // island and in the tent, sees the members' activity and ベル, but never earns or spends and never sees their bodies
-// (weight, body fat, BMI, lean mass, the weight and body fat goals). These are the record's rules for that key, shared by the record
+// (weight, body fat, BMI, lean mass and their goals). These are the record's rules for that key, shared by the record
 // (relay/src/store.ts: what it accepts from the guest and what its snapshot leaves out) and the demo (`?demo&as=G`
 // shows what the guest's phone would get). Pure.
 import { isActivityMetric, isRec, type EventRow, type SnapshotRows } from './api.ts';
 import { scopeMayWrite } from './layout.ts';
+import { goalKeysOf } from './goals.ts';
 
 /** The guest's own prefs: cosmetic, and its meal log's daily goals (kcal and the nutrients; never another goal,
  *  never another person's). */
-const GUEST_PREF_KEYS = ['locale', 'villagerName', 'villager', 'kcalGoal', 'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal'] as const;
+const GUEST_PREF_KEYS: readonly unknown[] = ['locale', 'villagerName', 'villager', ...goalKeysOf('food')];
 
 type Rec = Record<string, unknown>;
 
@@ -41,16 +42,17 @@ export function guestMayWrite(type: string, d: Rec): boolean {
     case 'decor':
       return scopeMayWrite('G', d);
     case 'pref':
-      return d.person === undefined && (GUEST_PREF_KEYS as readonly unknown[]).includes(d.key);
+      return d.person === undefined && GUEST_PREF_KEYS.includes(d.key);
     default:
       return false;
   }
 }
 
-/** The からだ goals (`pref`): never sent to the guest. */
-const BODY_GOAL_KEYS: readonly unknown[] = ['goalWeight', 'goalBodyFat'];
+/** The からだ goals (`pref goalWeight`, `goalBodyFat`, `goalBmi`, `goalLean`: contract/goals.ts group `body`): never
+ *  sent to the guest. */
+const BODY_GOAL_KEYS: readonly unknown[] = goalKeysOf('body');
 
-/** Whether an event row reaches the guest: all but the からだ goals (`pref goalWeight` / `goalBodyFat`); every meal,
+/** Whether an event row reaches the guest: all but the からだ goals; every meal,
  *  everyone's, does. */
 function guestSeesEvent(r: EventRow): boolean {
   if (r[3] !== 'pref') return true;

@@ -61,14 +61,23 @@ export const isBodyMetric = (v: unknown): v is BodyMetric => v === 'body_fat_pct
 export const isMetricKey = (v: unknown): v is MetricKey => v === 'weight' || isActivityMetric(v) || isBodyMetric(v);
 
 /**
- * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`,
- * `goalWeight` (kg), `goalBodyFat` (body fat %), `moveGoal` (kcal), `stepsGoal` (steps) and the meal log's daily
- * goals: `kcalGoal`, `proteinGoal`, `fatGoal`, `carbsGoal` and `saltGoal` (contract/food.ts FOOD_GOALS); and the
- * island's `weatherMode` (WEATHER_MODES: island-wide, the members' alone).
+ * Every goal's `pref` key (contract/goals.ts GOALS, the registry, holds each one's rules; written out here so this file
+ * stays dependency-free: goals.test.ts checks they agree). Either person may set these for either person
+ * (`data.person`); the other prefs are the sender's own.
  */
-export const PREF_KEYS = [
-  'locale', 'villagerName', 'villager', 'goalWeight', 'goalBodyFat', 'moveGoal', 'stepsGoal', 'kcalGoal', 'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'weatherMode'
-] as const;
+export const GOAL_PREF_KEYS: readonly string[] = [
+  'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'kcalGoal', 'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal'
+];
+
+/**
+ * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`, every
+ * goal (contract/goals.ts GOALS: the activity, body and meal-log goals, each its own key) and the island's
+ * `weatherMode` (WEATHER_MODES: island-wide, the members' alone).
+ */
+export const PREF_KEYS: readonly string[] = [
+  'locale', 'villagerName', 'villager', 'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'kcalGoal',
+  'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'weatherMode'
+];
 
 /** The island's weather (`pref weatherMode`, docs/design.md "Weather"): Tokyo's real sky by the hour (`real`, the
  *  default) or the game's seeded one. One for the whole island (no `person`; the last one set wins), so both phones
@@ -77,8 +86,6 @@ export const WEATHER_MODES = ['real', 'game'] as const;
 export type WeatherMode = (typeof WEATHER_MODES)[number];
 export const isWeatherMode = (v: unknown): v is WeatherMode => v === 'real' || v === 'game';
 
-/** The `pref` keys either person may set for either person (`data.person`): the goals. The rest are the sender's own. */
-const PERSON_PREF_KEYS = ['goalWeight', 'goalBodyFat', 'moveGoal', 'stepsGoal', 'kcalGoal', 'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal'] as const;
 
 export const isPersonId = (v: unknown): v is PersonId => v === 'A' || v === 'B';
 /** A member or the guest (`G`): who sent a row. */
@@ -91,7 +98,7 @@ export const isWho = (v: unknown): v is Who => v === 'A' || v === 'B' || v === '
  */
 export function eventSubject(type: string, d: Record<string, unknown>, sender: Who): Who | null {
   if (d.person === undefined) return sender;
-  if (!isPersonId(d.person) || type !== 'pref' || !(PERSON_PREF_KEYS as readonly unknown[]).includes(d.key)) return null;
+  if (!isPersonId(d.person) || type !== 'pref' || !GOAL_PREF_KEYS.includes(d.key as string)) return null;
   return d.person;
 }
 
@@ -125,19 +132,12 @@ export const BODY_BOUNDS: Record<BodyMetric, { min: number; max: number }> = {
   lean_kg: { min: 10, max: 150 }
 };
 
-/** A body fat goal in % (inclusive): a `goalBodyFat` outside it is refused. */
-export const BODY_FAT_GOAL = { min: 3, max: 60 } as const;
-
 /** kg to one decimal (how weights are stored; the body metrics too). */
 export const roundKg = (v: number): number => Math.round(v * 10) / 10;
 
 /** A weight in kg: finite, within WEIGHT_KG, at most one decimal. */
 export const isWeightKg = (v: unknown): v is number =>
   typeof v === 'number' && Number.isFinite(v) && v >= WEIGHT_KG.min && v <= WEIGHT_KG.max && Math.abs(v * 10 - Math.round(v * 10)) < 1e-6;
-
-/** A body fat goal in %: finite, within BODY_FAT_GOAL, at most one decimal. */
-export const isBodyFatGoal = (v: unknown): v is number =>
-  typeof v === 'number' && Number.isFinite(v) && v >= BODY_FAT_GOAL.min && v <= BODY_FAT_GOAL.max && Math.abs(v * 10 - Math.round(v * 10)) < 1e-6;
 
 /** `snapshot` rows: compact arrays in tab column order. `at` is ISO 8601 UTC with milliseconds (`…T…:…:….sssZ`). */
 export type MetricRow = [at: string, person: PersonId, date: string, metric: MetricKey, value: number];

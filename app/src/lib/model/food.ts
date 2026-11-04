@@ -17,6 +17,7 @@ import type { State } from './state.ts';
 import { rowAt } from './snapshot.ts';
 import { weighIns } from './weight.ts';
 import { addDays, daysBetween } from '#lib/time/dates.ts';
+import type { LatestGoalKey } from '#lib/contract/goals.ts';
 import type { DaySeries } from './health.ts';
 
 /** A day's entries and what they add up to: kcal (whole), protein, fat, carbs and salt (g, one decimal; an unknown
@@ -301,7 +302,7 @@ export function customs(s: Pick<State, 'foodCustom'>): FoodCustom[] {
 
 /** `who`'s daily goal of `n` as they set it (`pref kcalGoal` … `saltGoal`: contract/food.ts FOOD_GOALS), or null. */
 export function setGoal(s: Pick<State, 'prefs'>, who: Who, n: FoodGoalOf): number | null {
-  return s.prefs[who][FOOD_GOALS[n].key] ?? null;
+  return s.prefs[who][FOOD_GOALS[n].key as LatestGoalKey] ?? null;
 }
 
 /** `who`'s daily goal of `n`: theirs as set, else protein's default (proteinDefault); kcal, fat, carbs and salt have

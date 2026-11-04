@@ -10,7 +10,8 @@ export const GOALS_SHOWN = ['apple', 'pear', 'peach', 'cherry'] as const satisfi
 
 /**
  * The stamp card. Per person per Tokyo day, all or nothing per goal: +`perGoal` ベル for each daily goal met (🍐 the
- * person's Move goal, `moveGoalOn`; 🍑 exerciseMin; 🍒 standMin; 🍎 the person's steps goal, `stepsGoalOn`), so at most
+ * person's Move goal, `moveGoalOn`; 🍑 exerciseMin; 🍒 standMin; 🍎 the person's steps goal, `stepsGoalOn`: their
+ * ranges and defaults are contract/goals.ts GOALS'; the Exercise and Stand goals set in けんこう never change these), so at most
  * 4 a day. ふたりでぜんぶ:
  * +`together` shared when both people meet all four goals on the same day.
  */
@@ -41,29 +42,15 @@ export const SHOP = [
 export const shopPrice = (id: unknown): number | undefined => SHOP.find((x) => x.id === id)?.bells;
 
 /**
- * The default villager names (until changed in むらびと), Move goals in kcal (until set with `pref` moveGoal) and
- * birthdays ('MM-DD', Tokyo; null turns the island's birthday off for that person: docs/design.md "Birthdays").
+ * The default villager names (until changed in むらびと) and birthdays ('MM-DD', Tokyo; null turns the island's birthday off for that person: docs/design.md "Birthdays").
  */
-export const PEOPLE: Record<PersonId, { villager: string; moveGoal: number; birthday: string | null }> = {
-  A: { villager: 'ウェイ', moveGoal: 600, birthday: '10-06' },
-  B: { villager: 'うめ', moveGoal: 400, birthday: '03-04' }
+export const PEOPLE: Record<PersonId, { villager: string; birthday: string | null }> = {
+  A: { villager: 'ウェイ', birthday: '10-06' },
+  B: { villager: 'うめ', birthday: '03-04' }
 };
 
 /** The guest (docs/design.md "The guest"): the name its villager has until it picks one (its look: villagers/look.ts). */
 export const GUEST = { villager: 'おきゃくさん' } as const;
-
-/** A `pref` moveGoal: an integer kcal in this range (inclusive); anything else is ignored (the previous goal stays). */
-export const MOVE_GOAL = { min: 100, max: 2000 } as const;
-
-/**
- * The daily steps goal (🍎): `fallback` for everyone until set with `pref` stepsGoal, which takes a whole multiple of
- * `step` in [min, max] (anything else is ignored: the previous goal stays).
- */
-export const STEPS_GOAL = { fallback: 8000, min: 1000, max: 30000, step: 500 } as const;
-
-/** A steps goal that may be set: a whole multiple of STEPS_GOAL.step in [min, max]. */
-export const isStepsGoal = (v: unknown): v is number =>
-  typeof v === 'number' && Number.isInteger(v) && v >= STEPS_GOAL.min && v <= STEPS_GOAL.max && v % STEPS_GOAL.step === 0;
 
 /**
  * A week's two times (JST): Sunday 19:30 (the harvest recap opens) and the Wednesday 04:00 after (the week locks: rows

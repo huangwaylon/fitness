@@ -14,7 +14,4 @@ describe('rules', () => {
     for (const v of ['cafe', 'trip', '', null, undefined, 6, {}]) expect(shopPrice(v)).toBeUndefined();
   });
 
-  it('the Move goal defaults per person', () => {
-    expect([PEOPLE.A.moveGoal, PEOPLE.B.moveGoal]).toEqual([600, 400]);
-  });
 });

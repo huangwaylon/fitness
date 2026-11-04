@@ -1,6 +1,6 @@
 // Small formatters shared by the きろく screens (the day title, numbers, weights, the goal fields); dates: i18n/format.ts.
-import { isBodyFatGoal, isWeightKg } from '#lib/contract/api.ts';
-import { MOVE_GOAL, isStepsGoal } from '#lib/config/rules.ts';
+import { isWeightKg } from '#lib/contract/api.ts';
+import { isGoalValue } from '#lib/contract/goals.ts';
 import { formatNum, i18n, t } from '#lib/i18n/index.ts';
 import { weekdayOf } from '#lib/i18n/format.ts';
 
@@ -41,7 +41,7 @@ export function parsePctInput(text: string): number | null {
   const s = text.trim().replace(/[０-９．，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/\s*[%％]$/, '').replace(',', '.');
   if (!/^\d{1,2}(\.\d+)?$/.test(s)) return null;
   const v = Math.round(Number(s) * 10) / 10;
-  return isBodyFatGoal(v) ? v : null;
+  return isGoalValue('body_fat_pct', v) ? v : null;
 }
 
 /** What was typed as a Move goal → whole kcal, or null: `600`, `1,200`, full-width `６００`, a trailing `kcal`. */
@@ -49,7 +49,7 @@ export function parseKcalInput(text: string): number | null {
   const s = text.trim().replace(/[０-９，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/\s*kcal$/i, '').replace(/,/g, '');
   if (!/^\d{1,4}$/.test(s)) return null;
   const n = Number(s);
-  return n >= MOVE_GOAL.min && n <= MOVE_GOAL.max ? n : null;
+  return isGoalValue('move', n) ? n : null;
 }
 
 /** What was typed as a steps goal → steps, or null: `8000`, `10,000`, full-width `８０００`, a trailing `歩` or
@@ -58,7 +58,7 @@ export function parseStepsInput(text: string): number | null {
   const s = text.trim().replace(/[０-９，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/\s*(歩|steps?)$/i, '').replace(/,/g, '');
   if (!/^\d{1,5}$/.test(s)) return null;
   const n = Number(s);
-  return isStepsGoal(n) ? n : null;
+  return isGoalValue('steps', n) ? n : null;
 }
 
 /** A month, for a projected goal date: `2027年3月` / `Mar 2027`. */

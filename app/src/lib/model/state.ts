@@ -2,20 +2,20 @@
 // read-time rules here (an invalid or unknown event is ignored, not refused), so the sheet stays a dumb append-only log.
 // Health data comes only from the Shortcut's `metrics` rows: Apple Health is the source of truth.
 import type { LocalDate, PersonId, ShopItemId, WeekKey, Who } from '#lib/types.ts';
-import { CUTOFFS, LIMITS, MOVE_GOAL, PEOPLE, STEPS_GOAL, isStepsGoal, shopPrice } from '#lib/config/rules.ts';
+import { CUTOFFS, LIMITS, shopPrice } from '#lib/config/rules.ts';
 import { addDays, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
 import { isTally } from '#lib/contract/tally.ts';
 import { isIslandDay, type IslandDayData } from '#lib/contract/island.ts';
 import { decorOpOf, type DecorEntry } from '#lib/contract/decor.ts';
 import { boardOpOf, type BoardEntry } from '#lib/contract/board.ts';
-import { FOOD_GOALS, foodGoalOf, isFoodGoal, type FoodGoalOf } from '#lib/contract/food.ts';
+import { goalFallback, goalKeysOf, goalOfKey, GOALS, isGoalValue, type DailyGoalId, type LatestGoalKey } from '#lib/contract/goals.ts';
 import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import { buyOf, sellOf, type ShopRowAt } from '#lib/contract/shop.ts';
 import type { TallyRow } from './tally.ts';
 import { rowAt } from './snapshot.ts';
 import {
-  BODY_BOUNDS, DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isWho, isActivityMetric, isBodyMetric, isWeightKg, isBodyFatGoal, isWeatherMode, roundKg, WEIGHT_KG,
+  BODY_BOUNDS, DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isWho, isActivityMetric, isBodyMetric, isWeatherMode, roundKg, WEIGHT_KG,
   type ActivityMetric, type BodyMetric, type EventRow, type EventType, type FindKind, type SnapshotRows, type WeatherMode
 } from '#lib/contract/api.ts';
 
@@ -55,10 +55,9 @@ interface Timed<T> { at: number; v: T }
 /** A buy from the wallet: `{spendId, item, bells}`, a SHOP item at its price. */
 interface BellSpendRec { at: number; person: PersonId; spendId: string; item: ShopItemId; bells: number }
 
-/** `goalWeight` / `goalBodyFat`: the person's optional goals in kg / body fat %, shown on the weight / body fat
- *  charts; `kcalGoal` … `saltGoal`: the meal log's daily goals (model/food.ts foodGoal). None ever earns. */
-type FoodGoalKey = (typeof FOOD_GOALS)[FoodGoalOf]['key'];
-interface Prefs extends Partial<Record<FoodGoalKey, number>> { locale?: 'ja' | 'en'; villagerName?: string; villager?: string; goalWeight?: number; goalBodyFat?: number }
+/** The goals kept as their latest (contract/goals.ts history `latest`: `goalWeight`, `goalBodyFat`, `goalBmi`,
+ *  `goalLean`, the meal log's `kcalGoal` … `saltGoal`), each optional and shown only: none ever earns. */
+interface Prefs extends Partial<Record<LatestGoalKey, number>> { locale?: 'ja' | 'en'; villagerName?: string; villager?: string }
 
 export interface State {
   /** Ingested activity rows per person: date → metric → rows, ascending `at` (no key string built per row). */
@@ -119,10 +118,9 @@ export interface State {
   prefs: Record<Who, Prefs>;
   /** The island's weather (`pref weatherMode`: the last a member set; unset, `real`): Tokyo's real sky or the game's. */
   weatherMode?: WeatherMode;
-  /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
-  moveGoals: Record<PersonId, Timed<number>[]>;
-  /** Accepted `pref` stepsGoal per person, ascending `at` (`stepsGoalOn` picks the one in force). */
-  stepsGoals: Record<PersonId, Timed<number>[]>;
+  /** The goals a day keeps (`pref` stepsGoal, moveGoal, exerciseGoal, standGoal) per person, each ascending `at`
+   *  (`goalOn` picks the one in force on a day). */
+  dailyGoals: Record<PersonId, Record<DailyGoalId, Timed<number>[]>>;
   /** Newest metrics row per person (the sheet keeps no per-upload row in the snapshot). */
   lastSync: Record<PersonId, string | null>;
   /** The economy's first week (`firstWeek`). */
@@ -243,8 +241,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null, queued?: Read
     foodCustom: [],
     shop: [],
     prefs: { A: {}, B: {}, G: {} },
-    moveGoals: { A: [], B: [] },
-    stepsGoals: { A: [], B: [] },
+    dailyGoals: { A: noGoals(), B: noGoals() },
     lastSync: { A: null, B: null },
     start: null,
     rev,
@@ -330,8 +327,7 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     foodCustom: [...base.foodCustom],
     shop: [...base.shop],
     prefs: { A: { ...base.prefs.A }, B: { ...base.prefs.B }, G: { ...base.prefs.G } },
-    moveGoals: { A: [...base.moveGoals.A], B: [...base.moveGoals.B] },
-    stepsGoals: { A: [...base.stepsGoals.A], B: [...base.stepsGoals.B] },
+    dailyGoals: { A: copyGoals(base.dailyGoals.A), B: copyGoals(base.dailyGoals.B) },
     rev,
     ats: [base.ats[0] ?? [], [...baseAts]]
   };
@@ -374,8 +370,11 @@ type MemberEvent = (s: State, person: PersonId, at: number, d: Data) => void;
 const members = (fn: MemberEvent): OnEvent => (s, person, at, d) => {
   if (isPersonId(person)) fn(s, person, at, d);
 };
-/** The prefs the guest has (its villager, name, language and kcal goal): anything else of `G` is ignored. */
-const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', ...Object.values(FOOD_GOALS).map((g) => g.key)];
+/** The prefs the guest has (its villager, name, language and meal-log goals): anything else of `G` is ignored. */
+const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', ...goalKeysOf('food')];
+const noGoals = (): Record<DailyGoalId, Timed<number>[]> => ({ steps: [], move: [], exercise: [], stand: [] });
+const copyGoals = (g: Record<DailyGoalId, Timed<number>[]>): Record<DailyGoalId, Timed<number>[]> =>
+  ({ steps: [...g.steps], move: [...g.move], exercise: [...g.exercise], stand: [...g.stand] });
 
 /** One handler per event type: each accepts (indexes) the event or ignores it. */
 const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
@@ -441,14 +440,11 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
       // the island's, whoever set it (no `person`); anything else is ignored (the mode stays)
       if (isWeatherMode(d.value)) s.weatherMode = d.value;
       return;
-    } else if (d.key === 'moveGoal') {
-      // An integer kcal in MOVE_GOAL; anything else is ignored (the previous goal stays).
-      const v = d.value;
-      if (typeof v === 'number' && Number.isInteger(v) && v >= MOVE_GOAL.min && v <= MOVE_GOAL.max) s.moveGoals[person].push({ at, v });
-      return;
-    } else if (d.key === 'stepsGoal') {
-      // A whole STEPS_GOAL.step in STEPS_GOAL's range; anything else is ignored (the previous goal stays).
-      if (isStepsGoal(d.value)) s.stepsGoals[person].push({ at, v: d.value });
+    }
+    const id = goalOfKey(d.key);
+    if (id !== null && GOALS[id].history === 'daily') {
+      // in its range and on its grid; anything else is ignored (the previous goal stays)
+      if (isPersonId(person) && isGoalValue(id, d.value)) s.dailyGoals[person][id as DailyGoalId].push({ at, v: d.value });
       return;
     }
     const p = s.prefs[person];
@@ -457,36 +453,27 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
       const v = d.value.trim();
       if (v.length >= 1 && v.length <= LIMITS.villagerNameMaxChars) p.villagerName = v;
     } else if (d.key === 'villager' && typeof d.value === 'string' && /^[a-z][a-z0-9_-]{0,23}$/.test(d.value)) p.villager = d.value;
-    else if (d.key === 'goalWeight') {
-      // A goal in kg, or null / '' to clear it; anything else is ignored (the previous goal stays).
-      if (d.value === null || d.value === '') delete p.goalWeight;
-      else if (isWeightKg(d.value)) p.goalWeight = d.value;
-    } else if (d.key === 'goalBodyFat') {
-      // A goal in body fat %, or null / '' to clear it; anything else is ignored (the previous goal stays).
-      if (d.value === null || d.value === '') delete p.goalBodyFat;
-      else if (isBodyFatGoal(d.value)) p.goalBodyFat = d.value;
-    } else {
-      // A meal-log goal (kcal, a nutrient), or null to clear it; anything else is ignored (the previous goal stays).
-      const n = foodGoalOf(d.key);
-      if (n === null) return;
-      if (d.value === null) delete p[FOOD_GOALS[n].key];
-      else if (isFoodGoal(n, d.value)) p[FOOD_GOALS[n].key] = d.value;
+    else if (id !== null) {
+      // a goal kept as its latest, or null / '' to clear it; anything else is ignored (the previous goal stays)
+      const key = GOALS[id].key as LatestGoalKey;
+      if (d.value === null || d.value === '') delete p[key];
+      else if (isGoalValue(id, d.value)) p[key] = d.value;
     }
   }
 };
 
 /**
- * A person's Move goal on `date`: the latest `pref` moveGoal made on or before that Tokyo date (and
- * stamped by t), else PEOPLE[p].moveGoal. A change applies from the day it's made, never to earlier days.
+ * A person's goal of `id` on `date` (a goal a day keeps: steps, Move, Exercise, Stand): the latest `pref` made on or
+ * before that Tokyo date (and stamped by t), else its default (contract/goals.ts fallback). A change applies from the
+ * day it's made, never to earlier days.
  */
-export function moveGoalOn(s: Pick<State, 'moveGoals'>, person: PersonId, date: LocalDate, t = Infinity): number {
-  return goalOn(s.moveGoals[person], date, t) ?? PEOPLE[person].moveGoal;
+export function dailyGoalOn(s: Pick<State, 'dailyGoals'>, person: PersonId, id: DailyGoalId, date: LocalDate, t = Infinity): number {
+  return goalOn(s.dailyGoals[person][id], date, t) ?? goalFallback(id, person) ?? 0;
 }
-
-/** A person's steps goal on `date`, as moveGoalOn: the latest `pref` stepsGoal by then, else STEPS_GOAL.fallback. */
-export function stepsGoalOn(s: Pick<State, 'stepsGoals'>, person: PersonId, date: LocalDate, t = Infinity): number {
-  return goalOn(s.stepsGoals[person], date, t) ?? STEPS_GOAL.fallback;
-}
+/** A person's Move goal on `date` (dailyGoalOn: what the ベル price a day by). */
+export const moveGoalOn = (s: Pick<State, 'dailyGoals'>, person: PersonId, date: LocalDate, t = Infinity): number => dailyGoalOn(s, person, 'move', date, t);
+/** A person's steps goal on `date`, as moveGoalOn. */
+export const stepsGoalOn = (s: Pick<State, 'dailyGoals'>, person: PersonId, date: LocalDate, t = Infinity): number => dailyGoalOn(s, person, 'steps', date, t);
 
 /** The latest goal made on or before that Tokyo date (and stamped by t), or undefined. */
 function goalOn(list: Timed<number>[], date: LocalDate, t: number): number | undefined {

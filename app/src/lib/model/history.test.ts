@@ -131,7 +131,7 @@ describe('goals: either person sets either person’s', () => {
     const s = reduce(rows);
     expect(s.prefs.A.villagerName).toBeUndefined();
     expect(s.prefs.B.villagerName).toBeUndefined();
-    expect(s.moveGoals.A.length + s.moveGoals.B.length).toBe(0);
+    expect(s.dailyGoals.A.move.length + s.dailyGoals.B.move.length).toBe(0);
     expect(s.bellSpends).toEqual([]);
   });
 });

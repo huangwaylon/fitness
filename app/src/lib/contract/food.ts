@@ -12,6 +12,7 @@
 // and the food sheet; pure and dependency-free.
 import { isLocalDate, isRec } from './api.ts';
 import { cleanLine } from './text.ts';
+import { GOALS, isGoalValue } from './goals.ts';
 
 /** Who logged it: the owner, the only one who edits or removes it. */
 type Who = 'A' | 'B' | 'G';
@@ -64,15 +65,9 @@ const NUTRIENT_MAX = 100;
 /** A serving with no known weight logs as this many (nominal) grams: an entry of `n` servings is `n` × 100 g of a
  *  snapshot whose values are per serving (`sv`). */
 const NOMINAL_G = 100;
-/** The meal log's daily goals, each a `pref` per person (`key`), in range and a whole `step`: kcal, then protein,
- *  fat, carbs and salt in g. */
-export const FOOD_GOALS = {
-  k: { key: 'kcalGoal', min: 1000, max: 5000, step: 50 },
-  p: { key: 'proteinGoal', min: 10, max: 400, step: 5 },
-  fa: { key: 'fatGoal', min: 10, max: 300, step: 5 },
-  c: { key: 'carbsGoal', min: 20, max: 800, step: 5 },
-  s: { key: 'saltGoal', min: 1, max: 20, step: 0.5 }
-} as const;
+/** The meal log's daily goals (contract/goals.ts GOALS, the registry: each a `pref` per person, its key, range, step
+ *  and direction): kcal, then protein, fat, carbs and salt in g. */
+export const FOOD_GOALS = { k: GOALS.k, p: GOALS.p, fa: GOALS.fa, c: GOALS.c, s: GOALS.s } as const;
 /** What a meal-log goal is of: kcal (`k`) or a nutrient, as a snapshot's keys. */
 export type FoodGoalOf = keyof typeof FOOD_GOALS;
 export const FOOD_GOAL_OF = ['k', 'p', 'fa', 'c', 's'] as const satisfies readonly FoodGoalOf[];
@@ -85,12 +80,7 @@ const isMeal = (v: unknown): v is Meal => (MEALS as readonly unknown[]).includes
 const oneDecimal = (n: number): boolean => Math.abs(n * 10 - Math.round(n * 10)) < 1e-6;
 
 /** A daily goal of `n` (FOOD_GOALS): within its range, a whole step. */
-export function isFoodGoal(n: FoodGoalOf, v: unknown): v is number {
-  const g = FOOD_GOALS[n];
-  if (typeof v !== 'number' || !Number.isFinite(v) || v < g.min || v > g.max) return false;
-  const k = v / g.step;
-  return Math.abs(k - Math.round(k)) < 1e-9;
-}
+export const isFoodGoal = (n: FoodGoalOf, v: unknown): v is number => isGoalValue(n, v);
 /** A daily kcal goal (`pref kcalGoal`): an integer within FOOD_GOALS.k, a whole step. */
 export const isKcalGoal = (v: unknown): v is number => isFoodGoal('k', v);
 /** The pref key of a meal-log goal → what it is of (`kcalGoal` → `k`), or null for any other key. */

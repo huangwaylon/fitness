@@ -61,7 +61,11 @@ describe('the record and the guest', () => {
       [b, ev('b3', 'spend_void', { spendId: 's1' })],
       [a, ev('a4', 'harvest', { week: '2026-10-26' })],
       [a, ev('a5', 'pref', { key: 'villagerName', value: 'ウェイ' })],
-      [b, ev('b4', 'find', { kind: 'fish', id: 'sea-bass' })]
+      [b, ev('b4', 'find', { kind: 'fish', id: 'sea-bass' })],
+      [a, ev('a7', 'pref', { key: 'goalBmi', value: 23.4 })],
+      [b, ev('b6', 'pref', { key: 'goalLean', value: 41.2, person: 'B' })],
+      [a, ev('a8', 'pref', { key: 'exerciseGoal', value: 45 })],
+      [b, ev('b7', 'pref', { key: 'standGoal', value: 150, person: 'A' })]
     ] as const) {
       expect(who('event', e), e.id).toMatchObject({ ok: true });
       tick();
@@ -80,11 +84,11 @@ describe('the record and the guest', () => {
     expect(metrics.map((r) => r[3]).sort()).toEqual(['exercise_min', 'move_kcal', 'stand_min', 'steps', 'steps']);
     // no からだ: no weight, body fat, BMI or lean mass anywhere in the reply, nor the weight or body fat goal
     const text = JSON.stringify(snap);
-    for (const m of ['weight', 'body_fat_pct', 'bmi', 'lean_kg', 'goalWeight', 'goalBodyFat']) expect(text, m).not.toContain(m);
-    for (const v of ['68.4', '52.3', '21.3', '22.9', '53.8', '24.1', '18.5']) expect(text, v).not.toContain(v);
-    // the events but the からだ goals: the goals, the buy, its void, the harvest, a name, a find
-    expect((snap.rows.events as unknown[][]).map((r) => r[2])).toEqual(['a2', 'b2', 'a3', 'b3', 'a4', 'a5', 'b4']);
-    expect((full.rows.events as unknown[][]).map((r) => r[2])).toEqual(['a1', 'b1', 'a6', 'b5', 'a2', 'b2', 'a3', 'b3', 'a4', 'a5', 'b4']);
+    for (const m of ['weight', 'body_fat_pct', 'bmi', 'lean_kg', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean']) expect(text, m).not.toContain(m);
+    for (const v of ['68.4', '52.3', '21.3', '22.9', '53.8', '24.1', '18.5', '23.4', '41.2']) expect(text, v).not.toContain(v);
+    // the events but the からだ goals: the activity goals, the buy, its void, the harvest, a name, a find
+    expect((snap.rows.events as unknown[][]).map((r) => r[2])).toEqual(['a2', 'b2', 'a3', 'b3', 'a4', 'a5', 'b4', 'a8', 'b7']);
+    expect((full.rows.events as unknown[][]).map((r) => r[2])).toEqual(['a1', 'b1', 'a6', 'b5', 'a2', 'b2', 'a3', 'b3', 'a4', 'a5', 'b4', 'a7', 'b6', 'a8', 'b7']);
   });
 
   it('a delta (`since`) leaves them out too, the late ones included', () => {
@@ -94,7 +98,7 @@ describe('the record and the guest', () => {
     const d = g('snapshot', { since });
     expect(d.ok).toBe(true);
     expect((d.rows.metrics as unknown[][]).length).toBe(5);
-    expect(JSON.stringify(d)).not.toMatch(/weight|body_fat_pct|bmi|lean_kg|goalWeight|goalBodyFat/);
+    expect(JSON.stringify(d)).not.toMatch(/weight|body_fat_pct|bmi|lean_kg|goalWeight|goalBodyFat|goalBmi|goalLean/);
   });
 
   it('takes the guest’s finds, tallies, tent decor and own cosmetic prefs, credited to G', () => {
@@ -131,6 +135,10 @@ describe('the record and the guest', () => {
       ev('x5', 'pref', { key: 'stepsGoal', value: 8000, person: 'A' }),
       ev('x6', 'pref', { key: 'goalWeight', value: 60 }),
       ev('x6f', 'pref', { key: 'goalBodyFat', value: 20 }),
+      ev('x6b', 'pref', { key: 'goalBmi', value: 22 }),
+      ev('x6l', 'pref', { key: 'goalLean', value: 50 }),
+      ev('x6e', 'pref', { key: 'exerciseGoal', value: 30 }),
+      ev('x6s', 'pref', { key: 'standGoal', value: 100, person: 'A' }),
       ev('x7', 'pref', { key: 'villagerName', value: 'うめ', person: 'B' }),
       ev('x7w', 'pref', { key: 'weatherMode', value: 'game' }), // the island's weather: the members'
       ev('x8', 'decor', { id: 'dabc1234', at: T0, item: 'tanuki', x: 100, z: 200, f: 0, p: T0 }),

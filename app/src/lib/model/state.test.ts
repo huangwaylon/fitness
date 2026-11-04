@@ -1,6 +1,6 @@
 // reduce: one block per event type, accepted vs ignored (the read-time rules).
 import { describe, expect, it } from 'vitest';
-import { reduce } from './state.ts';
+import { dailyGoalOn, reduce } from './state.ts';
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
 import type { EventRow, SnapshotRows } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
@@ -40,9 +40,22 @@ describe('reduce: events', () => {
       goal(at(WK, '10:00'), 'A', '500'), goal(at(WK, '10:00'), 'A', null),
       goal(at(WK, '12:30'), 'A', 100), goal(at(WK, '12:00'), 'B', 2000)
     ]));
-    expect(s.moveGoals.A.map((x) => x.v)).toEqual([700, 100]);
-    expect(s.moveGoals.B.map((x) => x.v)).toEqual([2000]);
+    expect(s.dailyGoals.A.move.map((x) => x.v)).toEqual([700, 100]);
+    expect(s.dailyGoals.B.move.map((x) => x.v)).toEqual([2000]);
     expect(s.prefs).toEqual({ A: {}, B: {}, G: {} });
+  });
+
+  it('pref exerciseGoal / standGoal: kept per day like Move (dailyGoalOn, the fixed 60 / 120 until set); goalBmi / goalLean the latest, null clears', () => {
+    const p = (when: string, person: PersonId, key: string, value: unknown, more: object = {}) => ev(when, person, 'pref', { key, value, ...more });
+    const s = reduce(rows([
+      p(at(WK, '09:00'), 'A', 'exerciseGoal', 30), p(at(WK, '09:00'), 'A', 'exerciseGoal', 33), p(at(WK, '09:00'), 'A', 'exerciseGoal', null),
+      p(at(WK, '09:00'), 'B', 'standGoal', 150, { person: 'A' }), p(at(WK, '09:00'), 'A', 'standGoal', 125),
+      p(at(WK, '09:00'), 'A', 'goalBmi', 22.5), p(at(WK, '09:00'), 'A', 'goalBmi', 41), p(at(WK, '09:00'), 'B', 'goalLean', 45.5),
+      p(at(WK, '10:00'), 'B', 'goalLean', null), p(at(WK, '10:00'), 'G' as PersonId, 'goalBmi', 20), p(at(WK, '10:00'), 'G' as PersonId, 'exerciseGoal', 20)
+    ]));
+    const day = '2026-11-08';
+    expect([dailyGoalOn(s, 'A', 'exercise', day), dailyGoalOn(s, 'A', 'exercise', WK), dailyGoalOn(s, 'A', 'stand', WK), dailyGoalOn(s, 'B', 'stand', WK)]).toEqual([60, 30, 150, 120]);
+    expect(s.prefs).toEqual({ A: { goalBmi: 22.5 }, B: {}, G: {} });
   });
 
   it('pref stepsGoal: a whole 500 steps in 1,000–30,000 per person, in at order; anything else is ignored', () => {
@@ -53,9 +66,9 @@ describe('reduce: events', () => {
       goal(at(WK, '10:00'), 'A', '9000'), goal(at(WK, '10:00'), 'A', null),
       goal(at(WK, '12:30'), 'A', 1000), goal(at(WK, '12:00'), 'B', 30000)
     ]));
-    expect(s.stepsGoals.A.map((x) => x.v)).toEqual([10000, 1000]);
-    expect(s.stepsGoals.B.map((x) => x.v)).toEqual([30000]);
-    expect(s.moveGoals).toEqual({ A: [], B: [] });
+    expect(s.dailyGoals.A.steps.map((x) => x.v)).toEqual([10000, 1000]);
+    expect(s.dailyGoals.B.steps.map((x) => x.v)).toEqual([30000]);
+    expect([s.dailyGoals.A.move, s.dailyGoals.B.move]).toEqual([[], []]);
     expect(s.prefs).toEqual({ A: {}, B: {}, G: {} });
   });
 

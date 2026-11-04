@@ -17,7 +17,7 @@ describe('prefTaken', () => {
     for (const [key, value] of cases) {
       const base = reduce({ metrics: [], events: [[...before.slice(0, 4), JSON.stringify({ key, value: seed[key] ?? 1 })] as EventRow] });
       const after = reduce({ metrics: [], events: [[...before.slice(0, 4), JSON.stringify({ key, value: seed[key] ?? 1 })] as EventRow, ['2026-11-01T00:00:01.000Z', 'A', 'p1', 'pref', JSON.stringify({ key, value })]] });
-      const pick = (s: ReturnType<typeof reduce>) => JSON.stringify([s.prefs.A, s.moveGoals.A.map((g) => g.v), s.stepsGoals.A.map((g) => g.v)]);
+      const pick = (s: ReturnType<typeof reduce>) => JSON.stringify([s.prefs.A, s.dailyGoals.A.move.map((g) => g.v), s.dailyGoals.A.steps.map((g) => g.v)]);
       const changedOrSame = pick(after) !== pick(base) || value === seed[key];
       expect(prefTaken(key, value), `${key} ${JSON.stringify(value)}`).toBe(key !== 'nope' && changedOrSame);
     }
