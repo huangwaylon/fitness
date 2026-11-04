@@ -130,7 +130,7 @@
               <button type="button" class="rv" role="radio" aria-checked={current === id} tabindex={tabStop === id ? 0 : -1} aria-label={vName(id)}
                 title={vName(id)} data-sfx={current === id ? 'none' : 'tick'} onclick={() => current !== id && setVillager(id)}>
                 {#if src}
-                  <span class="chip"><img data-src={src} alt="" width="128" height="128" decoding="async" draggable="false" {@attach lazy}
+                  <span class="disc"><img data-src={src} alt="" width="128" height="128" decoding="async" draggable="false" {@attach lazy}
                     onerror={() => (failed[id] = true)} /></span>
                 {:else}
                   <Avatar person={me.who} villager={id} size={64} />
@@ -206,12 +206,13 @@
     width: var(--s); height: var(--s);
     box-shadow: 0 0 0 3px transparent; transition: transform var(--dur-base) var(--ease-bounce), box-shadow var(--dur-quick);
   }
-  /* the head on the person's chip (as <Avatar>: yuzu A, mint B), the icon at 86% */
-  .chip {
+  /* the head on the person's chip (as <Avatar>: yuzu A, mint B), the icon at 86%. Not called .chip: that is theme.css's
+     shared choice chip, whose 0 12px padding, 36px min-height and shadow then applied here too (the icon 27x48) */
+  .disc {
     display: grid; place-items: center; width: 100%; height: 100%; overflow: hidden; border-radius: 50%;
     background: color-mix(in srgb, var(--tag) 55%, var(--c-cream));
   }
-  .chip img { display: block; width: 86%; height: 86%; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+  .disc img { display: block; width: 86%; height: 86%; user-select: none; -webkit-user-drag: none; pointer-events: none; }
   .rv:active { transform: scale(1.06, .92); transition-duration: var(--dur-tap); }
   .rv[aria-checked='true'] { box-shadow: 0 0 0 4px var(--c-leaf-edge); }
   .ck {
