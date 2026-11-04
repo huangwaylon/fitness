@@ -58,6 +58,8 @@
   import { drawOff } from '../../ui-state/testMode.ts';
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
   import { setDrawnFps } from '#lib/sync/telemetry.ts';
+  import { weather } from '../island/weatherNow.svelte.ts';
+  import { createPrecip, type Precip } from './precip.ts';
 
   /** A villager on this island now (IslandScene's cast). */
   export interface Cast {
@@ -172,6 +174,24 @@
   /** The seats' tops (u): a bench's, a stool's (NH's park bench and log stool at 3u a model unit). */
   const seatTop = (name: string) => (name.startsWith('stool') ? 9 : 13);
   let vil3: Villagers3 | null = null;
+
+  // ---- the rain and the snow (precip.ts: in the world, one draw call each, the motion in the shader) ----
+  let p3 = $state.raw<Precip | null>(null);
+  /** The page's first seconds: the sky it opens to is there at once (Weather.svelte's OPENING_MS). */
+  const OPENING_MS = 20_000;
+  $effect(() => {
+    const p = p3, s = weather.sky;
+    if (p) untrack(() => p.set(s, performance.now() < OPENING_MS));
+  });
+  /** The rings' surface on the layout (precip.ts surface): the ground's height, or the water's over it. */
+  function precipSurface(p: Precip) {
+    const lay = layoutNow();
+    if (!lground || !p.wantsSurface() || p.has(lay)) return;
+    p.surface(lay, (x, z) => {
+      const g = heightOf(x, z), w = waterY(x, z);
+      return w > g + 0.1 ? { h: w, water: true } : { h: g, water: false };
+    }, extentOf(lay).land);
+  }
   /** The board's focus (its face's middle on the ground): a villager between the camera and it fades out of the way. */
   let focusAt: { x: number; z: number } | null = null;
   function inFocusWay(x: number, z: number): boolean {
@@ -680,6 +700,7 @@
     untrack(() => {
       const hz = getComputedStyle(scene).getPropertyValue('--sky-hz').trim();
       e.tod(t3, w, hz);
+      p3?.tod(t3);
       vil3?.lift(LIFT[t3] * (1 - 0.35 * w));
       b3?.lift(LIFT[t3] * (1 - 0.35 * w));
     });
@@ -840,6 +861,8 @@
     vil3.lift(LIFT[todNow()]);
     b3 = createBalloon3((o) => e.add(o), heightOf, () => e.kick());
     b3.lift(LIFT[todNow()]);
+    p3 = createPrecip((o) => e.add(o), () => e.kick());
+    p3.tod(todNow());
     let zoomWas = NaN, xWas = NaN;
     e.onFrame((t) => {
       const cv = e.view(), z = cv.camZ;
@@ -864,10 +887,15 @@
       const posed = villagerCards(t, camMoved || more);
       // (after the villagers are posed: the 「！」 on the head where it's drawn this frame)
       bites(e);
+      let falling: 'ambient' | false = false;
+      if (p3) {
+        precipSurface(p3);
+        falling = p3.frame(t, cv.camX, z, cv.zoom, e.at(cv.camX, z, 0).depth, ch);
+      }
       if (posed || more || moving === true) return true;
       // the ambience (the ambient rate): a slow move, the season's fall, the stream's floats, an emitter, a blink, the
       // balloon drifting over
-      return moving || ambient3.kind || floatsOn || emitting || b3?.shown() || visN > 0 || cast().some((c) => c.shown) ? 'ambient' : false;
+      return moving || falling || ambient3.kind || floatsOn || emitting || b3?.shown() || visN > 0 || cast().some((c) => c.shown) ? 'ambient' : false;
     });
     // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
     listenFx3((kind, x, z, lift, o) => e.fx(kind, x, z, lift, o));
@@ -943,7 +971,10 @@
       onLayout: () => !!lground,
       placedGroups: () => e.placedGroups(),
       /** The balloon present drawn now (world space: its balloon's middle, the present's top, its shadow), or null. */
-      balloon: () => b3?.state() ?? null
+      balloon: () => b3?.state() ?? null,
+      /** The rain or the snow now (precip.ts PrecipState), and the e2e's: hidden (its draw calls with and without). */
+      precip: () => p3?.state() ?? null,
+      precipHide: (on: boolean) => p3?.hide(on)
     };
     setDrawnFps(() => e.stats().fps);
     return () => {
@@ -954,6 +985,8 @@
       vil3 = null;
       b3?.dispose();
       b3 = null;
+      p3?.dispose();
+      p3 = null;
       listenPose3d(null);
       listenFx3(null);
       onAngle(null);

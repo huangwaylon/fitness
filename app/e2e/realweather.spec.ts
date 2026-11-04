@@ -43,7 +43,7 @@ test.describe('the real weather', () => {
       await expect(scene(other)).toHaveAttribute('data-sky', want);
     };
     await both('&date=2026-06-10T13:00&wx=rain-pm', 'rain');
-    await expect(page.locator('.precip .rain')).toBeVisible();
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d?: { precip(): { kind: string | null } | null } }).__world3d?.precip()?.kind)).toBe('rain');
     await both('&date=2026-06-10T10:00&wx=rain-pm', 'clear');
     await both('&date=2026-06-10T10:00&wx=typhoon', 'heavy');
     await both('&date=2026-06-10T10:00&wx=snow', 'snow');
@@ -66,7 +66,7 @@ test.describe('the real weather', () => {
     await expect(scene(page)).toHaveAttribute('data-sky', 'cloudy');
     const oc = page.locator('.overcast[data-sky="cloudy"]');
     await expect(oc).toHaveCSS('opacity', '0.5');
-    await expect(page.locator('.precip')).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d?: { precip(): { kind: string | null } | null } }).__world3d?.precip())).toMatchObject({ kind: null });
     // ゲーム: the seeded day's (2026-06-10 is fine) sky; the grey eases out, then its layers are gone
     await fromMenu(page, 'settings');
     await page.locator('dialog[open] [data-wx-mode="game"]').click();

@@ -525,7 +525,7 @@ the trees, the villagers) before ever standing further off; never over the HUD. 
 covering a tree for a few seconds is fine.
 
 ### Weather days by the date
-Seeded by the date with NH's rules; tiled layers moved by transform. No umbrellas (the renders have no hand to hold
+Seeded by the date with NH's rules; screen layers moved by transform (the rain and snow since in 3D, below). No umbrellas (the renders have no hand to hold
 one). Why: both phones see the same sky with nothing stored.
 
 ### Official NH art
@@ -815,6 +815,14 @@ the wedding night stay fine; the morning fog and the aurora stay as seeded treat
 rain-only critters in a dry spell. One island-wide setting (`pref weatherMode`, ほんもの by default, members only) keeps
 the game's weather a tap away. The point is central Tokyo. Why: the user ("We are based in Tokyo, Japan. Can we get
 the game weather to sync with the real weather?").
+
+### Rain and snow in the world, one draw call each (2026-11-04)
+What falls is the 3D island's (design.md "Weather"), not a screen layer: streaks and rings, or flakes, instanced, moved
+in the vertex shader, wrapped in boxes that follow the view and anchored in the world. Why: the user ("instead of just
+a 2D texture on the screen, actually make it more like a subtle, beautiful 3D splash, drop, falling effect. Not overly
+done, subtle. Similar to the original game"); NH's rain has depth and lands on the ground. Battery: the island already
+draws at its ambient 30 for the water, so falling rain costs only its two draws (no CPU per particle); a CSS layer
+would have been free on the GPU but flat.
 
 ### くまのもり: a second island for an action round (2026-11-04)
 A proof of concept on its own screen (`/expedition`, design.md "Kuma no mori"): the main island unloads on the way
