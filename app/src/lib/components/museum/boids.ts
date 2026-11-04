@@ -44,6 +44,10 @@ export interface Swimmer {
   /** Its tail: its beat's phase (rad) and how wide it sways (0…1 of its sway). */
   beat: number;
   kick: number;
+  /** A predator's hunt (feeding.ts): 0 none, STALK (after its prey slowly), CHASE (quick) or LUNGE (a burst); its goal then its prey's.
+   *  Its snap: 1 as it bites, easing to 0 (its head dipped and back). */
+  chase: number;
+  snap: number;
 }
 
 /** The most a swimmer pitches up or down, and rolls into a turn (radians). */
@@ -70,7 +74,9 @@ export function poseOf(f: Swimmer): readonly [yaw: number, pitch: number, roll: 
   }
   const sp = Math.hypot(f.v[0], f.v[2]);
   POSE[0] = f.yaw;
-  POSE[1] = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, -Math.atan2(f.v[1], Math.max(0.01, sp)) * 0.6));
+  // (a bite: its head dipped and back up)
+  const dip = f.snap > 0 ? Math.sin(Math.PI * f.snap) * 0.3 : 0;
+  POSE[1] = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, -Math.atan2(f.v[1], Math.max(0.01, sp)) * 0.6 + dip));
   POSE[2] = Math.max(-MAX_ROLL, Math.min(MAX_ROLL, f.roll));
   return POSE;
 }
@@ -118,7 +124,7 @@ export function spawn(water: Box, r: number, reach: [number, number], speed: num
   const a = u(4) * Math.PI * 2, y = b.y0 + (b.y1 - b.y0) * (band[0] + (band[1] - band[0]) * u(2));
   const f: Swimmer = {
     p: [b.x0 + (b.x1 - b.x0) * u(1), y, b.z0 + (b.z1 - b.z0) * u(3)], v: [Math.sin(a) * speed, 0, Math.cos(a) * speed], speed, r, reach, seed,
-    yaw: a, u: speed, turn: 0, roll: 0, band, goal: [0, y, 0], way: 1, leg: 0, bout: 0, mode: CRUISE, pace: 1, until: -Infinity, beat: u(5) * 6, kick: 1
+    yaw: a, u: speed, turn: 0, roll: 0, band, goal: [0, y, 0], way: 1, leg: 0, bout: 0, mode: CRUISE, pace: 1, until: -Infinity, beat: u(5) * 6, kick: 1, chase: 0, snap: 0
   };
   nextLeg(f, b, false);
   return f;
@@ -126,6 +132,16 @@ export function spawn(water: Box, r: number, reach: [number, number], speed: num
 
 /** A pace's kinds: cruising, a slow drift, a pause hovering, the glide off after it. */
 const CRUISE = 0, DRIFT = 1, HOVER = 2, GLIDE = 3;
+/** A hunt's kinds (Swimmer.chase): stalking (slow, after its prey), chasing (quick), the lunge at the end (a burst). */
+export const STALK = 1, CHASE = 2, LUNGE = 3;
+/** A hunt's pace (of its cruise): a stalk, a chase, a lunge. */
+const HUNT_PACE = [1, 0.55, 1.28, 1.6];
+/** A hunt over (caught or given up): a predator back to its own swimming, cruising off on a new leg. */
+export function endChase(s: Swimmer, water: Box, t: number): void {
+  s.chase = 0;
+  nextLeg(s, swimBox(water, s.reach, tmp), false);
+  nextPace(s, t, CRUISE);
+}
 /** The next bout of a swimmer's pace from time t (a hover always followed by a glide). */
 function nextPace(s: Swimmer, t: number, mode = -1): void {
   const n = ++s.bout, a = hash(s.seed, n * 3.17), c = hash(s.seed, n * 5.31 + 0.5);
@@ -157,17 +173,23 @@ export function stepSchool(fish: Swimmer[], water: Box, dt: number, t: number): 
   const h = Math.min(0.1, Math.max(0, dt));
   for (let i = 0; i < fish.length; i++) {
     const s = fish[i], b = swimBox(water, s.reach, tmp), x = s.p[0], y = s.p[1], z = s.p[2];
-    const along = b.x1 - b.x0 >= b.z1 - b.z0, w = turnOf(s.r), cruise = s.speed;
+    const along = b.x1 - b.x0 >= b.z1 - b.z0, w = turnOf(s.r) * (s.chase === LUNGE ? 1.6 : 1), cruise = s.speed;
     // its pace (a new bout when this one's over, or the clock jumped: a tank back on screen)
-    if (t >= s.until || s.until - t > 20) nextPace(s, t);
+    if (s.chase) {
+      // (hunting: its pace the hunt's, its goal its prey, no legs)
+      s.mode = s.chase === STALK ? DRIFT : GLIDE;
+      s.pace = HUNT_PACE[s.chase];
+    } else if (t >= s.until || s.until - t > 20) nextPace(s, t);
+    if (s.snap > 0) s.snap = Math.max(0, s.snap - h * 2);
     // its leg: the next once it's there (or past it, along the long side)
     // (along the long side only: a goal beside it, inside its turning circle, never circled round)
     const L = along ? 0 : 2;
-    if ((s.goal[L] - s.p[L]) * s.way < Math.max(2, s.r * 0.6) && nextLeg(s, b, true)) nextPace(s, t, HOVER);
+    if (!s.chase && (s.goal[L] - s.p[L]) * s.way < Math.max(2, s.r * 0.6) && nextLeg(s, b, true)) nextPace(s, t, HOVER);
     // where it wants to head: its goal, a little wander about it
     const fx = Math.sin(s.yaw), fz = Math.cos(s.yaw);
     let dx = s.goal[0] - x, dz = s.goal[2] - z;
-    const dn = Math.hypot(dx, dz) || 1, wa = 0.22 * Math.sin(t * 0.23 + s.seed) + 0.12 * Math.sin(t * 0.61 + s.seed * 1.7);
+    // (none hunting: straight at its prey)
+    const dn = Math.hypot(dx, dz) || 1, wa = s.chase ? 0 : 0.22 * Math.sin(t * 0.23 + s.seed) + 0.12 * Math.sin(t * 0.61 + s.seed * 1.7);
     const cw = Math.cos(wa), sw = Math.sin(wa);
     const ux = dx / dn, uz = dz / dn;
     dx = ux * cw + uz * sw;
@@ -177,7 +199,6 @@ export function stepSchool(fish: Swimmer[], water: Box, dt: number, t: number): 
     const qx = x + fx * look, qz = z + fz * look;
     const room = cruise / w;
     const mx = Math.min(room, (b.x1 - b.x0) * (along ? 0.2 : 0.45)), mz = Math.min(room, (b.z1 - b.z0) * (along ? 0.45 : 0.2));
-    const soft = (d: number, m: number) => (d < m ? ((m - d) / Math.max(1e-6, m)) ** 2 * 2 : 0);
     dx += soft(qx - b.x0, mx) - soft(b.x1 - qx, mx);
     dz += soft(qz - b.z0, mz) - soft(b.z1 - qz, mz);
     // the others' bodies: kept off lightly (and slowed behind one ahead)
@@ -213,10 +234,14 @@ export function stepSchool(fish: Swimmer[], water: Box, dt: number, t: number): 
     s.u = Math.max(cruise * 0.04, s.u + Math.max(-acc * h, Math.min(acc * h, du)));
     // up and down: toward its leg's depth, a slow drift about it
     const band = (b.y1 - b.y0) * (s.band[1] - s.band[0]);
-    const ty = Math.min(b.y1, Math.max(b.y0, s.goal[1] + band * 0.2 * Math.sin(t * 0.17 + s.seed * 0.9)));
-    const vmax = cruise * 0.06 + s.u * 0.22;
-    const vyT = Math.max(-vmax, Math.min(vmax, (ty - y) * 0.3 + vyAway));
+    const ty = Math.min(b.y1, Math.max(b.y0, s.goal[1] + (s.chase ? 0 : band * 0.2 * Math.sin(t * 0.17 + s.seed * 0.9))));
+    // (a hunter rises and dives to its prey quicker)
+    const vmax = s.chase === LUNGE ? cruise * 0.2 + s.u * 0.45 : s.chase ? cruise * 0.12 + s.u * 0.3 : cruise * 0.06 + s.u * 0.22;
+    const vyT = Math.max(-vmax, Math.min(vmax, (ty - y) * (s.chase === LUNGE ? 0.8 : 0.3) + vyAway));
     let vy = s.v[1] + (vyT - s.v[1]) * Math.min(1, h * 1.5);
+    // (never past its pace's speed all told: 1.3 of its cruise, a lunge's 1.6)
+    const vyMax = Math.sqrt(Math.max(0, (cruise * Math.max(1.3, s.pace)) ** 2 - s.u * s.u));
+    vy = Math.max(-vyMax, Math.min(vyMax, vy));
     // banked into its turn (less as it slows)
     s.roll += (-(s.turn / w) * MAX_ROLL * Math.min(1, s.u / (cruise * 0.5)) - s.roll) * Math.min(1, h * 2);
     // its tail: wider and quicker the faster, a burst as it speeds up
@@ -235,6 +260,8 @@ export function stepSchool(fish: Swimmer[], water: Box, dt: number, t: number): 
     s.v[2] = vz;
   }
 }
+/** The glass's soft push on a point d from it, within m of it (no closure made a step). */
+const soft = (d: number, m: number): number => (d < m ? ((m - d) / Math.max(1e-6, m)) ** 2 * 2 : 0);
 /** How far (u) from (x, z) heading (fx, fz) to the edge of box b, level. */
 function rayOut(x: number, z: number, fx: number, fz: number, b: Box): number {
   const tx = fx > 1e-6 ? (b.x1 - x) / fx : fx < -1e-6 ? (b.x0 - x) / fx : Infinity;

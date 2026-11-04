@@ -1410,6 +1410,25 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   tank's bounds; a tank off screen rests; nothing allocated in a frame. iOS Simulator (iPhone 17 Pro, a full museum):
   the aquarium at rest 177 → 81 draw calls, 123k → 58k triangles, 285 → 193 geometries, by the three tanks and their
   fifteen fish in place of nineteen tanks and every fish.
+- **Feeding time** (`feeding.ts`, pure; the user: "sharks and other large fish should be able to eat smaller fish"):
+  in a tank with a predator on show (PREDATORS: NH's big fish that eat little ones, the sharks but the whale shark, a
+  filter feeder; the giant trevally, tuna, blue marlin, mahi-mahi; the river's arapaima, pike, gar, dorado, stringfish,
+  black bass, giant snakehead, arowana; the deep's coelacanth and football fish), a few little **feeder fish** come in
+  from the top: generic silvery fish (one tiny low-poly InstancedMesh a tank, the fish shader's tail), never a ずかん
+  species (the caught-only rule stands). The first school 5–12 s after the tank comes on screen, then every 30–90 s,
+  3–5 at a time, at most 6 (FEEDERS) in a tank; they fade in and swim as a loose school (together, the same way, a
+  little apart, off the glass); after 80 s, or with no predator left (the hour's pick), they swim up and fade away. A
+  hunt: the predator notices the nearest feeder within ~30 u (and one it can reach: not one up by the glass, where its
+  body can't go), **stalks** it (slow, straight at it, up to 4 s), then **chases** it (quicker, up to 7 s; its turn
+  bounded by its size as always, so a little one jinks away), the school **scattering** from it (a feeder's dash spent in
+  ~2.5 s, back in ~6); close and just ahead, a **lunge** (a burst, 1.6 of its cruise and of its turn, up to 1.2 s;
+  straight to its prey's depth); at its nose a **bite**: its head dips and back, a small puff
+  of bubbles, the feeder gone in 0.4 s. A miss, a feeder slipped off to the glass or the time out: an escape, and it
+  cruises off on a new leg, resting 8–18 s before the next. About four hunts in ten end in a bite (a feeder that jinks
+  aside as it lunges gets away), roughly one a minute. Cosmetic and local (each phone its own seed), stepped only while the tank's on screen,
+  nothing allocated in a step. feeding.test (a shark's, a hammerhead's, a giant trevally's, a pike's, a dorado's and the
+  football fish's tank, ten minutes, two seeds): every hunt over in 12.2 s, over a fifth each bites and escapes, never over 6, every feeder and fish inside
+  its water; none in the whale shark's or the koi's tank; the predator gone, its feeders leave.
 - **The bug wing** (`garden.ts`): NH's garden under glass (its sky and palms on the walls, dusk-blue at night): stone
   paths, a pond (NH's museum water, one small opaque shader: clear aqua at its rim deepening to blue, a soft net of
   light drifting over it, a thin pale wavering edge at the stones; moving only while it's on screen, at the exhibits'
