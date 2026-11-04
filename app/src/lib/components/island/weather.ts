@@ -3,10 +3,15 @@
 // one in eight a double one); in NH's winter (December to February) the wet days snow instead. Rare extras on fine
 // days: heavy fog at 07:00 on autumn-to-spring mornings (October to March) and the aurora on winter nights, never on
 // a meteor shower's night. A weather day runs 05:00 → 05:00 (NH's day), seeded by its date (beach.ts dayRand), so
-// both phones agree. Pure; the island's state is weatherNow.svelte.ts. Nothing here pays: no ベル.
+// both phones agree. Tokyo's real sky (realWeatherAt: the relay's timeline, live-protocol.ts Wx) takes its place in
+// the `real` mode while the phone has a timeline that covers the hour; the seeded one is the fallback and the `game`
+// mode. Pure; the island's state is weatherNow.svelte.ts. Nothing here pays: no ベル.
 import { weighted } from '#lib/random.ts';
+import type { Wx, WxSky } from '#lib/sync/live-protocol.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
-import { showerNight } from './meteor.ts';
+import { showAt } from './fireworks.ts';
+import { showerAt, showerNight } from './meteor.ts';
+import { FIREWORKS_FROM, weddingDay } from './wedding.ts';
 import { addDays } from '#lib/time/dates.ts';
 
 /** The sky at an hour: fine, rain, a downpour, snow. */
@@ -59,21 +64,28 @@ function alwaysFine(date: string, seed: string): boolean {
   return (m === 8 && weekday === 0) || (m === 12 && d === 31) || (m === 1 && d === 1) || showerNight(date, seed);
 }
 
-/** The weather of the day that starts at 05:00 on `date` (YYYY-MM-DD, Tokyo). */
-export function dayWeather(date: string, seed = ISLAND_SEED): DayWeather {
+/** A day's seeded treats, whatever its sky: the 07:00 fog (October–March), the aurora (a winter night, not a meteor
+ *  shower's) and a double rainbow; the seeded day has them on a fine day (the double on its `clears` day), the real
+ *  weather on a real clear hour (a rainbow: after real rain). */
+function dayDraw(date: string, seed: string): { pattern: Pattern; fog: boolean; aurora: boolean; double: boolean } {
   const r = dayRand(date, 'weather', seed);
   const month = Number(date.slice(5, 7));
   const winter = winterMonth(month);
   const wet = r() < (winter ? WINTER_WET_ODDS : WET_ODDS);
   const kind = weighted<Pattern>(winter ? SNOW_PATTERNS : RAIN_PATTERNS, r);
   const fogRoll = r(), auroraRoll = r(), doubleRoll = r();
-  const pattern: Pattern = wet && !alwaysFine(date, seed) ? kind : 'clear';
   return {
-    pattern,
-    fog: pattern === 'clear' && (month >= 10 || month <= 3) && fogRoll < FOG_ODDS,
-    aurora: pattern === 'clear' && winter && !showerNight(date, seed) && auroraRoll < AURORA_ODDS,
-    double: pattern === 'clears' && doubleRoll < DOUBLE_ODDS
+    pattern: wet && !alwaysFine(date, seed) ? kind : 'clear',
+    fog: (month >= 10 || month <= 3) && fogRoll < FOG_ODDS,
+    aurora: winter && !showerNight(date, seed) && auroraRoll < AURORA_ODDS,
+    double: doubleRoll < DOUBLE_ODDS
   };
+}
+
+/** The weather of the day that starts at 05:00 on `date` (YYYY-MM-DD, Tokyo). */
+export function dayWeather(date: string, seed = ISLAND_SEED): DayWeather {
+  const d = dayDraw(date, seed);
+  return { pattern: d.pattern, fog: d.pattern === 'clear' && d.fog, aurora: d.pattern === 'clear' && d.aurora, double: d.pattern === 'clears' && d.double };
 }
 
 /** The sky of a pattern at an hour of its day (0–23; before 05:00 belongs to the day before). */
@@ -105,6 +117,68 @@ export function weatherAt(date: string, hour: number, seed = ISLAND_SEED, force:
     fog: w.fog && hour === FOG_HOUR,
     rainbow: w.pattern === 'clears' && hour === RAINBOW_HOUR ? (w.double ? 2 : 1) : 0,
     aurora: w.aurora && night && sky === 'clear'
+  };
+}
+
+// ---------- Tokyo's real sky (the relay's timeline: docs/design.md "Weather") ----------
+
+const HOUR_MS = 3600_000;
+const TOKYO_MS = 9 * HOUR_MS;
+/** A timeline serves while it was fetched at most this long ago (the relay's weather.ts STALE_MS) and covers the hour. */
+export const WX_TTL_MS = 36 * HOUR_MS;
+/** The timeline's letters as the game's skies (cloudy reads as fine for now: the game has no cloudy sky yet). */
+const LETTER: Record<WxSky, Sky> = { c: 'clear', o: 'clear', r: 'rain', h: 'heavy', s: 'snow' };
+
+/** Snow on the ground (ui-state/season.ts: December 11 – February 24): what falls from the sky then is snow (NH). */
+export function snowSeason(date: string): boolean {
+  const md = Number(date.slice(5, 7)) * 100 + Number(date.slice(8, 10));
+  return md >= 1211 || md < 225;
+}
+
+/** The hours held fine whatever Tokyo is doing (NH's promise): the fireworks (August Sundays 19:00–24:00, New Year's
+ *  23:00–01:00), a meteor shower's night (20:00–04:00) and our wedding night (from its fireworks, 19:00). The days
+ *  around them are real. */
+export function heldFine(date: string, hour: number, seed = ISLAND_SEED): boolean {
+  const [y, m, d] = date.split('-').map(Number);
+  const weekday = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+  return showAt(m, d, weekday, hour) !== null || showerAt(date, addDays(date, -1), hour, seed) || (weddingDay(date) && hour >= FIREWORKS_FROM);
+}
+
+/** An absolute hour (hours since the epoch) as Tokyo's date and hour. */
+function tokyoHour(h: number): { date: string; hour: number } {
+  const d = new Date(h * HOUR_MS + TOKYO_MS);
+  return { date: d.toISOString().slice(0, 10), hour: d.getUTCHours() };
+}
+
+/** The game's sky of absolute hour `h` by a timeline (snow in the snowy season, fine on the held nights), or null when
+ *  it doesn't cover it. */
+function realSkyAt(wx: Wx, h: number, seed: string): { sky: Sky; fog: boolean } | null {
+  const i = h - wx.h0;
+  if (i < 0 || i >= wx.s.length) return null;
+  const { date, hour } = tokyoHour(h);
+  if (heldFine(date, hour, seed)) return { sky: 'clear', fog: false };
+  const sky = LETTER[wx.s[i] as WxSky];
+  return { sky: (sky === 'rain' || sky === 'heavy') && snowSeason(date) ? 'snow' : sky, fog: wx.fx?.includes(i) ?? false };
+}
+
+/**
+ * Tokyo's weather at `now` (ms) by a timeline, or null when it doesn't serve (fetched over 36 hours ago, or not
+ * covering the hour): then the seeded day's. Each hour comes whole from one or the other. The seeded treats stay: the
+ * 07:00 fog and the aurora on a real clear hour; real fog any hour.
+ */
+export function realWeatherAt(wx: Wx | null, now: number, seed = ISLAND_SEED): WeatherNow | null {
+  if (!wx || now - wx.at > WX_TTL_MS || now < wx.at - WX_TTL_MS) return null;
+  const h = Math.floor(now / HOUR_MS);
+  const here = realSkyAt(wx, h, seed);
+  if (!here) return null;
+  const { date, hour } = tokyoHour(h);
+  const t = dayDraw(hour < DAY_START ? addDays(date, -1) : date, seed);
+  const fine = here.sky === 'clear';
+  return {
+    sky: here.sky,
+    fog: here.fog || (fine && t.fog && hour === FOG_HOUR),
+    rainbow: 0,
+    aurora: fine && t.aurora && (hour >= 19 || hour < 4)
   };
 }
 

@@ -1,7 +1,8 @@
 <script lang="ts">
   // せってい (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
   // grown out of the button (Sheet's `pop`, as けんこう out of the dumbbell). One scroller: むらびと (かえる → the
-  // picker), サウンド, ことば, きせつ (the seasonal preview), フレームレート, つうしん (not the guest's), もようがえ (one row: はじめる; not
+  // picker), サウンド, ことば, きせつ (the seasonal preview), てんき (the island's: real or the game's), フレームレート, つうしん (not
+  // the guest's), もようがえ (one row: はじめる; not
   // the guest's) and あそびかた (くわしく → the guide).
   // The picker and the guide push a level with ‹; ✕, the backdrop and Esc close it, and the next opening starts at
   // its top.
@@ -14,6 +15,7 @@
   import SoundSection from './SoundSection.svelte';
   import LangSection from './LangSection.svelte';
   import SeasonSection from './SeasonSection.svelte';
+  import WeatherSection from './WeatherSection.svelte';
   import FpsSection from './FpsSection.svelte';
   import SyncSection from './SyncSection.svelte';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
@@ -93,6 +95,7 @@
       <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound" class="sec-label">{t('panel.sound')}</h2><SoundSection /></section>
       <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang" class="sec-label">{t('panel.lang')}</h2><LangSection /></section>
       <section class="sec" aria-labelledby="sec-season"><h2 id="sec-season" class="sec-label">{t('panel.season')}</h2><SeasonSection {view} /></section>
+      <section class="sec" aria-labelledby="sec-weather" data-weather-section><h2 id="sec-weather" class="sec-label">{t('panel.weather')}</h2><WeatherSection {guest} /></section>
       <section class="sec" aria-labelledby="sec-fps"><h2 id="sec-fps" class="sec-label">{t('panel.fps')}</h2><FpsSection /></section>
       {#if !guest}<section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync" class="sec-label">{t('panel.sync')}</h2><SyncSection {view} /></section>{/if}
       {#if !guest}

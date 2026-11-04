@@ -132,6 +132,7 @@ describe('the record and the guest', () => {
       ev('x6', 'pref', { key: 'goalWeight', value: 60 }),
       ev('x6f', 'pref', { key: 'goalBodyFat', value: 20 }),
       ev('x7', 'pref', { key: 'villagerName', value: 'うめ', person: 'B' }),
+      ev('x7w', 'pref', { key: 'weatherMode', value: 'game' }), // the island's weather: the members'
       ev('x8', 'decor', { id: 'dabc1234', at: T0, item: 'tanuki', x: 100, z: 200, f: 0, p: T0 }),
       ev('x9', 'island', { date: '2026-11-02', taken: [], puts: [], shakes: [], watered: [], wishes: {} }),
       ev('x10', 'highfive', {})

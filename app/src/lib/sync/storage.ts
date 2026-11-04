@@ -35,7 +35,9 @@ export const LIVE = {
   layout: 'island.layout',
   /** `{ [who]: at }`: the newest board post (its last change, ms) this phone had seen when it last opened the board, by
    *  who I am (components/board/posts.svelte.ts: the 「！」 over the board). */
-  boardSeen: 'island.boardSeen'
+  boardSeen: 'island.boardSeen',
+  /** The relay's `wx` (live-protocol.ts Wx): Tokyo's real sky by the hour, for opening offline (sync/wx.ts). */
+  wx: 'island.wx'
 } as const;
 
 export const DEMO = {
