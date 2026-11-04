@@ -1586,7 +1586,11 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   170, the bug wing 250 → 84; the way in's longest frame 301 → 79 ms. Once everything is in, what isn't on screen yet
   is made ready while the hall is still (its textures up eight at a time, its programs compiled: engine.ts warm), so a
   wing's first sight is no hitch (walking into the aquarium: its longest frame ~100 → 36 ms); the cost, every wing's
-  textures on the GPU whether visited or not (~300 small ones, a few MB). A wing rebuilt (a new find while one is
+  textures on the GPU whether visited or not (~300 small ones, a few MB). On WebKit its models' textures are plain
+  images, not ImageBitmaps (world3d/gltf.ts `plainImages`; three's GLTFLoader makes ImageBitmaps on Safari 17+): WebKit
+  uploads an ImageBitmap at ~1.5–2 ms a texture against ~0.17 for an image (iOS Simulator, the critters' 196: 280–340
+  against 34 ms), the same pixels; the museum's uploads on a visit 406–502 → 83–95 ms of the main thread. The island
+  keeps its ImageBitmaps (an earlier try of plain images there froze it up to 913 ms in a frame). A wing rebuilt (a new find while one is
   inside) keeps its programs: the old wing leaves the scene at once but is disposed only once the warm-up has compiled
   the new one's materials (engine.ts `retired`), which then find their programs made; disposed first, three freed the
   programs with their last materials and the new wing compiled them again in a frame, its fading ones at the next

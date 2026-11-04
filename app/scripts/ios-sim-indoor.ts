@@ -223,7 +223,7 @@ try {
         else done({ worst: gaps.sort((a, b) => b - a).slice(0, 3).map(Math.round), programs: [p0, __museum.stats().mem[2]] }); })(s);`);
     // a new find while inside: the aquarium rebuilt (a fish on show kept off, then let back): the longest frame gaps
     // over 3 s after each (a program compiled afresh) and the programs
-    mu.rebuild = await runAsync(`const done = arguments[0], id = __museum.shown()[0], p0 = __museum.stats().mem[2], out = [];
+    mu.rebuild = await runAsync(`const done = arguments[0]; if (!__museum.withhold) return done(null); const id = __museum.shown()[0], p0 = __museum.stats().mem[2];
       const watch = (then) => { const s = performance.now(), gaps = []; let last = s;
         (function f(now) { gaps.push(now - last); last = now; if (now - s < 3000) requestAnimationFrame(f);
           else then(gaps.sort((a, b) => b - a).slice(0, 3).map(Math.round)); })(s); };
