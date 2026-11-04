@@ -142,6 +142,8 @@ export interface Proj3 {
   horizon(): number;
   /** Bumped on every camera move. */
   rev(): number;
+  /** Where the camera is now (world z): the move's own, before the frame that writes it into the view. */
+  camZ?(): number;
   /** Ask for a frame (the engine runs the World's step in it, then draws). */
   kick(): void;
   /** No frame pending. */
@@ -357,7 +359,10 @@ export class World {
     if (cam !== this.lastCam) {
       this.lastCam = cam;
       if (this.three) v.horizon = this.three.horizon();
-      this.win = [v.camZ - BEHIND, v.camZ + AHEAD];
+      // (the camera's own z: a step of the game clock's between an instant move, its rev bumped, and the engine's frame
+      // that writes the view's camZ placed every node by the old window, and nothing past it showed till the next move)
+      const cz = this.three?.camZ?.() ?? v.camZ;
+      this.win = [cz - BEHIND, cz + AHEAD];
       for (const n of this.nodes) this.placeNode(n);
       this.dirty.clear();
     } else {

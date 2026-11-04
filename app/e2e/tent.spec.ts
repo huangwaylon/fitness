@@ -2,7 +2,7 @@
 // its own: the room's code and three.js come only then (the island never loads them); my villager walks where the
 // floor is tapped; the doormat and ‹ 島へ go back out, to the island as it was.
 import { expect, test, type Page } from '@playwright/test';
-import { campDoor, geo, is3d, tapOn } from './island.ts';
+import { camTo, campDoor, geo, is3d, tapOn } from './island.ts';
 
 /** The edit tray open, and the room re-centred above it (a tap's px only holds once the camera is at rest). */
 async function openEdit(p: Page) {
@@ -15,11 +15,9 @@ const settled = (p: Page) => p.waitForFunction(() => (window as unknown as { __t
 
 /** Where a villager stands just out of the tent (buildings.ts outOfTent): ±12 of the door, 30 in front. */
 const OUT = (door: readonly [number, number], who: 'A' | 'B') => [door[0] + (who === 'A' ? -12 : 12), door[1] - 30] as const;
-/** The camera at おく, the campsite's end (world.ts CAMS as the page has them). */
-const oku = async (page: Page) => {
-  const z = (await geo(page)).CAMS.oku;
-  await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
-};
+/** The camera at おく, the campsite's end (world.ts CAMS as the page has them), held there and the island at rest
+ *  (camTo: a camera put there before the scene's own fit was overridden by it on a loaded runner, the door off screen). */
+const oku = async (page: Page) => camTo(page, (await geo(page)).CAMS.oku);
 
 /** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
 async function tapTent(p: Page) {

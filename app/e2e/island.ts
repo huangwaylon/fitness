@@ -77,6 +77,21 @@ export async function tapThing(page: Page, id: string, { lift = 0 }: { lift?: nu
 /** The 3D island at rest: its camera still and nothing moving (polled; a villager wandering by doesn't count). */
 export const settled = (page: Page) => expect.poll(() => w3(page, (w) => w.camStill() && w.idle()), { timeout: 20_000, message: 'the 3D island at rest' }).toBe(true);
 
+/** The camera to world z and held there (again till it holds: the scene may still re-fit its camera as it opens, a
+ *  loaded runner's late), then the island at rest (`settled`: its nodes placed for that camera, so a DOM box read
+ *  next is where the island draws it, not where the last camera had it). `rest` false: the camera still only (a
+ *  critter swimming or flying keeps the island's frames coming: never at rest). */
+export async function camTo(page: Page, z: number, rest = true) {
+  await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
+  await expect.poll(async () => {
+    await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
+    await page.waitForTimeout(250);
+    return page.evaluate((z) => Math.abs((window as unknown as { __world: { cam(): number } }).__world.cam() - z), z);
+  }, { timeout: 10_000, message: `the camera held at ${z}` }).toBeLessThan(1.5); // (WebKit scrolls by whole px: within a px of z)
+  if (rest) await settled(page);
+  else await expect.poll(() => w3(page, (w) => w.camStill()), { message: 'the camera still' }).toBe(true);
+}
+
 /** Time on: the page's clock (`page.clock.install()` first) runs `ms`, the 3D engines' frames included (the clock fakes
  *  requestAnimationFrame): the sim step. Quick in the logic tier (nothing drawn); drawn under software GL a minute of
  *  frames takes minutes (use `page.clock.fastForward` there). */

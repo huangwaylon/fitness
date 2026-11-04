@@ -1,7 +1,7 @@
 // Scenery taps (docs/design.md "Scene interactions"): the bushes, flowers, grass, sea, sun and clouds answer a tap with a
 // short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the HUD still work.
 import { expect, test, type Page } from '@playwright/test';
-import { geo, lawnTap, oku } from './island.ts';
+import { camTo, geo, lawnTap, oku } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
 /** The island is up: the HUD's leaf menu shows (the app asks no questions, so nothing to answer first). */
@@ -128,12 +128,8 @@ test('the campfire by the tent: unlit by day, its flames and light at night; a t
     await page.goto(`?demo&date=${when}&critter=none&visitor=none`);
     await islandReady(page);
     await page.waitForFunction(() => (window as unknown as { __world?: W }).__world);
-    const z0 = await oku(page);
-    await expect.poll(async () => {
-      await page.evaluate((z) => (window as unknown as { __world: W }).__world.go(z), z0);
-      await page.waitForTimeout(250);
-      return page.evaluate((z) => Math.abs((window as unknown as { __world: { cam(): number } }).__world.cam() - z), z0);
-    }, { timeout: 5000 }).toBeLessThan(1.5); // (WebKit scrolls by whole px: within a px of it)
+    // (held there and at rest: the campfire's box is read for the tap where the island draws it)
+    await camTo(page, await oku(page));
   };
   await go('2026-11-04T12:00');
   await expect(page.locator('[data-campfire="campfire"]')).toBeVisible();
