@@ -12,6 +12,7 @@ import { goalFallback, goalKeysOf, goalOfKey, GOALS, isGoalValue, type DailyGoal
 import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import { buyOf, sellOf, type ShopRowAt } from '#lib/contract/shop.ts';
+import { isBirth, isBmiStd, isProfileKey, isSex, PROFILE_KEYS, type BmiStd, type ProfileKey, type Sex } from '#lib/contract/profile.ts';
 import type { TallyRow } from './tally.ts';
 import { rowAt } from './snapshot.ts';
 import {
@@ -57,7 +58,11 @@ interface BellSpendRec { at: number; person: PersonId; spendId: string; item: Sh
 
 /** The goals kept as their latest (contract/goals.ts history `latest`: `goalWeight`, `goalBodyFat`, `goalBmi`,
  *  `goalLean`, the meal log's `kcalGoal` … `saltGoal`), each optional and shown only: none ever earns. */
-interface Prefs extends Partial<Record<LatestGoalKey, number>> { locale?: 'ja' | 'en'; villagerName?: string; villager?: string }
+interface Prefs extends Partial<Record<LatestGoalKey, number>> {
+  locale?: 'ja' | 'en'; villagerName?: string; villager?: string;
+  /** The profile (contract/profile.ts; model/profile.ts reads it): sex, birth date (`YYYY-MM-DD`), BMI standard. */
+  sex?: Sex; birth?: string; bmiStd?: BmiStd;
+}
 
 export interface State {
   /** Ingested activity rows per person: date → metric → rows, ascending `at` (no key string built per row). */
@@ -370,8 +375,8 @@ type MemberEvent = (s: State, person: PersonId, at: number, d: Data) => void;
 const members = (fn: MemberEvent): OnEvent => (s, person, at, d) => {
   if (isPersonId(person)) fn(s, person, at, d);
 };
-/** The prefs the guest has (its villager, name, language and meal-log goals): anything else of `G` is ignored. */
-const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', ...goalKeysOf('food')];
+/** The prefs the guest has (its villager, name, language, meal-log goals and profile): anything else of `G` is ignored. */
+const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', ...goalKeysOf('food'), ...PROFILE_KEYS];
 const noGoals = (): Record<DailyGoalId, Timed<number>[]> => ({ steps: [], move: [], exercise: [], stand: [] });
 const copyGoals = (g: Record<DailyGoalId, Timed<number>[]>): Record<DailyGoalId, Timed<number>[]> =>
   ({ steps: [...g.steps], move: [...g.move], exercise: [...g.exercise], stand: [...g.stand] });
@@ -453,7 +458,11 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
       const v = d.value.trim();
       if (v.length >= 1 && v.length <= LIMITS.villagerNameMaxChars) p.villagerName = v;
     } else if (d.key === 'villager' && typeof d.value === 'string' && /^[a-z][a-z0-9_-]{0,23}$/.test(d.value)) p.villager = d.value;
-    else if (id !== null) {
+    else if (isProfileKey(d.key)) {
+      // The profile: a value, or null to clear it; anything else is ignored (as the record's slot: prefTaken).
+      if (d.value === null) delete p[d.key];
+      else if (d.key === 'sex' ? isSex(d.value) : d.key === 'bmiStd' ? isBmiStd(d.value) : isBirth(d.value, '9999-12-31')) (p as Record<ProfileKey, unknown>)[d.key] = d.value;
+    } else if (id !== null) {
       // a goal kept as its latest, or null / '' to clear it; anything else is ignored (the previous goal stays)
       const key = GOALS[id].key as LatestGoalKey;
       if (d.value === null || d.value === '') delete p[key];

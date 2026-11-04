@@ -28,7 +28,7 @@ import { foodAccept, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, repeatAcc
 import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
 import { notifySecret, notifySig, verifyNotify } from './notify.ts';
 import { keyOwner, type Keys } from './auth.ts';
-import { guestMayWrite, guestRows } from '../../app/src/lib/contract/guest.ts';
+import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
 import { buyOf, sellOf, shopLedger, shopRefusal, type ShopRow } from '../../app/src/lib/contract/shop.ts';
 import { isTally, mergeTally } from '../../app/src/lib/contract/tally.ts';
 import type { PersonId, Who } from '../../app/src/lib/types.ts';
@@ -260,9 +260,10 @@ export class StoreCore {
       if (Number.isNaN(ms)) return fail('bad_request');
       since = new Date(ms).toISOString();
     } else if (body.since !== undefined && body.since !== null && body.since !== '') return fail('bad_request');
-    // the guest's: the activity and the events, never a からだ row or a からだ goal (contract/guest.ts)
+    // the guest's: the activity and the events, never a からだ row, a からだ goal or a member's profile; a member's:
+    // never the guest's profile (contract/guest.ts rowsFor)
     const rows = this.rowsSince(since);
-    return { ok: true, me, now: new Date(this.io.now()).toISOString(), rev: this.rev(), rows: me === 'G' ? guestRows(rows) : rows };
+    return { ok: true, me, now: new Date(this.io.now()).toISOString(), rev: this.rev(), rows: rowsFor(me, rows) };
   }
 
   /** Every row after `since` ('' = all), in `at` order: the `at` index, and the late rows that came in after it. */

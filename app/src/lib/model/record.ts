@@ -13,6 +13,7 @@ import { boardOpOf } from '../contract/board.ts';
 import { foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp } from '../contract/food.ts';
 import { shopPriced } from '../contract/shop.ts';
 import { LIMITS, shopPrice } from '../config/rules.ts';
+import { isBirth, isBmiStd, isProfileKey, isSex, profileValueOk } from '../contract/profile.ts';
 import { localDateAt } from '../time/dates.ts';
 import type { Who } from '../types.ts';
 
@@ -28,7 +29,9 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
     case 'spend':
       return isId(d.spendId) && shopPrice(d.item) !== undefined && d.bells === shopPrice(d.item);
     case 'pref':
-      return (PREF_KEYS as readonly unknown[]).includes(d.key) && d.value !== undefined;
+      // the profile's values are checked here (contract/profile.ts: a sex, a birth date 1900 … 10 years ago, a BMI
+      // standard, or null); the other prefs' at read time (prefTaken)
+      return (PREF_KEYS as readonly unknown[]).includes(d.key) && d.value !== undefined && (!isProfileKey(d.key) || profileValueOk(d.key, d.value, localDateAt(now)));
     case 'harvest':
       return isLocalDate(d.week);
     case 'spend_void':
@@ -82,7 +85,7 @@ const FOOD_AHEAD_MS = 24 * 60 * 60 * 1000;
 const atNear = (at: number, now: number): boolean => at <= now + FOOD_AHEAD_MS;
 
 /** The prefs only the latest of counts (per person); the goals keep their history (`moveGoalOn` prices past days). */
-const LATEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', ...GOAL_IDS.filter((id) => GOALS[id].history === 'latest').map((id) => GOALS[id].key)];
+const LATEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', ...GOAL_IDS.filter((id) => GOALS[id].history === 'latest').map((id) => GOALS[id].key), 'sex', 'birth', 'bmiStd'];
 
 /** Whether the model takes this pref's value (model/state.ts ON_EVENT.pref; anything else is ignored there). */
 export function prefTaken(key: unknown, v: unknown): boolean {
@@ -91,6 +94,10 @@ export function prefTaken(key: unknown, v: unknown): boolean {
     case 'villagerName': return typeof v === 'string' && v.trim().length >= 1 && v.trim().length <= LIMITS.villagerNameMaxChars;
     case 'villager': return typeof v === 'string' && /^[a-z][a-z0-9_-]{0,23}$/.test(v);
     case 'weatherMode': return isWeatherMode(v);
+    case 'sex': return v === null || isSex(v);
+    // (a birth date's upper bound is the record's check when it's set: validEventData)
+    case 'birth': return v === null || isBirth(v, '9999-12-31');
+    case 'bmiStd': return v === null || isBmiStd(v);
     default: {
       // a goal (contract/goals.ts): in its range, on its grid; a clearable one null / '' too
       const id = goalOfKey(key);
@@ -102,7 +109,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
 /**
  * The slot an event fills, or null: a later event of the same slot replaces it (the record keeps one row per slot).
  * - `tally`, `island`: the sender's day (`date`);
- * - a cosmetic `pref` (`locale`, `villagerName`, `villager`) or a goal kept as its latest (contract/goals.ts history
+ * - a cosmetic `pref` (`locale`, `villagerName`, `villager`), the profile (`sex`, `birth`, `bmiStd`) or a goal kept as its latest (contract/goals.ts history
  *   `latest`: the body and meal-log goals): its subject and key;
  * - a goal a day keeps (history `daily`: `stepsGoal`, `moveGoal`, `exerciseGoal`, `standGoal`): its subject, key and the Tokyo day it was made (`at`), so the goal in
  *   force on each past day stays (a goal applies from the day it's made; the last of a day is the one that counts);

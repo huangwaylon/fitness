@@ -16,8 +16,9 @@ import { isPersonId, isRec, type EventRow } from '#lib/contract/api.ts';
 import type { State } from './state.ts';
 import { rowAt } from './snapshot.ts';
 import { weighIns } from './weight.ts';
+import { kcalDefault, profileOf, ageAt, proteinRda, saltDefault } from './profile.ts';
 import { addDays, daysBetween } from '#lib/time/dates.ts';
-import type { LatestGoalKey } from '#lib/contract/goals.ts';
+import { GOALS, type LatestGoalKey } from '#lib/contract/goals.ts';
 import type { DaySeries } from './health.ts';
 
 /** A day's entries and what they add up to: kcal (whole), protein, fat, carbs and salt (g, one decimal; an unknown
@@ -305,16 +306,26 @@ export function setGoal(s: Pick<State, 'prefs'>, who: Who, n: FoodGoalOf): numbe
   return s.prefs[who][FOOD_GOALS[n].key as LatestGoalKey] ?? null;
 }
 
-/** `who`'s daily goal of `n`: theirs as set, else protein's default (proteinDefault); kcal, fat, carbs and salt have
- *  none until set (docs/design.md "Gohan": what they should be depends on the person and the plan). */
+/** `who`'s daily goal of `n`: theirs as set, else its default: protein's (proteinDefault), and with a profile kcal's
+ *  and salt's (model/profile.ts kcalDefault, saltDefault); fat and carbs have none until set (docs/design.md "Gohan":
+ *  what they should be depends on the plan). A default never overrides a goal that's set. */
 export function foodGoal(s: State, who: Who, n: FoodGoalOf, t: number): number | null {
-  return setGoal(s, who, n) ?? (n === 'p' ? proteinDefault(s, who, t) : null);
+  return setGoal(s, who, n) ?? foodDefault(s, who, n, t);
+}
+
+/** `who`'s default goal of `n` (shown while none is set): the registry's computed one (contract/goals.ts `derived`), or null. */
+function foodDefault(s: State, who: Who, n: FoodGoalOf, t: number): number | null {
+  const d = GOALS[n].derived;
+  return d === 'protein' ? proteinDefault(s, who, t) : d === 'energy' ? kcalDefault(s, who, t) : d === 'salt' ? saltDefault(s, who, t) : null;
 }
 
 /** A member's default daily protein target (g, whole): PROTEIN_PER_KG × the latest weigh-in as of `t` (a lifter's
- *  usual aim). Null for the guest (no body data) and without a weigh-in. */
+ *  usual aim), and with a profile never under the 推奨量 (model/profile.ts proteinRda). Null for the guest (no body
+ *  data) and without a weigh-in. */
 export function proteinDefault(s: State, who: Who, t: number): number | null {
   if (!isPersonId(who)) return null;
   const last = weighIns(s, who, t).at(-1);
-  return last ? Math.round(last.kg * PROTEIN_PER_KG) : null;
+  if (!last) return null;
+  const { sex } = profileOf(s, who), age = ageAt(s, who, t), g = Math.round(last.kg * PROTEIN_PER_KG);
+  return sex && age !== null ? Math.max(g, proteinRda(sex, age)) : g;
 }

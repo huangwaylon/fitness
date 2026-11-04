@@ -3,11 +3,14 @@
   // period's average and how many measurements, its plain change (the first week's average → the last week's, else the
   // first measurement → the last; saying which) and per week, and the chart. Body fat has a goal (`goalBodyFat`, set at
   // the card's upper right: GoalEdit), dashed on its chart and, in the current period, the month it may be reached at that pace, as weight's;
-  // BMI and lean mass have none. Never earns, no good / bad colours.
+  // BMI and lean mass have none. BMI's average carries its category by the person's standard (model/profile.ts
+  // bmiCategory: アジア, the default, or WHO; せってい → プロフィール), said plainly. Never earns, no good / bad colours.
   import type { PersonId } from '#lib/types.ts';
   import type { BodyMetric } from '#lib/contract/api.ts';
   import { bodyBuckets, bodyGoal, bodyStats, type HealthSeries, type Range } from '#lib/model/health.ts';
   import { t } from '#lib/i18n/index.ts';
+  import { week } from '#lib/store/week.svelte.ts';
+  import { bmiCategory, profileOf } from '#lib/model/profile.ts';
   import { BODY_ART } from '#lib/art.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import DotChart from './DotChart.svelte';
@@ -38,6 +41,9 @@
   const fmt = $derived((v: number) => bodyText(metric, v));
   /** The narrowest axis: 2 points of body fat or 2 kg, 1 of BMI. */
   const minSpan = $derived(metric === 'bmi' ? 1 : 2);
+  /** BMI's category for the period's average, by the person's standard. */
+  const std = $derived(week.model ? profileOf(week.model.state, p).bmiStd : 'asia');
+  const cat = $derived(metric === 'bmi' && s.avg !== null ? bmiCategory(s.avg, std) : null);
 </script>
 
 <section class="card hcard bc" data-metric={metric} data-person={p} aria-labelledby="mc-{metric}">
@@ -52,7 +58,8 @@
   {:else}
   {#if s.n}
     <dl class="chips">
-      <div><dt>{t('health.weight.avg')}</dt><dd class="money">{fmt(s.avg ?? 0)}</dd><dd class="n">{t('health.body.count', { n: s.n })}</dd></div>
+      <div><dt>{t('health.weight.avg')}</dt><dd class="money">{fmt(s.avg ?? 0)}</dd><dd class="n">{t('health.body.count', { n: s.n })}</dd>
+        {#if cat}<dd class="n" data-bmi-cat={cat} data-bmi-std={std}>{t('health.bmi.cat', { cat: t(`health.bmi.${cat}`), std: t(`health.bmi.std.${std}`) })}</dd>{/if}</div>
       <div class="chg">
         <dt>{t('health.weight.change')}</dt><dd class="money">{bodyDelta(metric, s.change?.change ?? null)}</dd>
         {#if s.change}<dd class="n basis">{t(s.change.basis === 'weeks' ? 'health.weight.basis.weeks' : 'health.body.basis.ends')}</dd>{/if}

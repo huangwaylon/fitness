@@ -40,6 +40,11 @@ export function newRecord() {
     event(who: Who, type: string, data: Record<string, unknown>) {
       return store.handle({ key: KEY_OF[who], action: 'event', id: `e2e${sent.length}${Date.now().toString(36)}`, type, data }, 100);
     },
+    /** The `pref` rows `who`'s phone gets (its snapshot, as the record filters it): [sender, data]. */
+    prefs(who: Who): [Who, Record<string, unknown>][] {
+      const snap = store.handle({ key: KEY_OF[who], action: 'snapshot' }, 100) as unknown as { rows: { events: [string, Who, string, string, string][] } };
+      return snap.rows.events.filter((r) => r[3] === 'pref').map((r) => [r[1], JSON.parse(r[4])]);
+    },
     /** The record's kept decor rows: [who, data]. */
     decor(): [Who, Record<string, unknown>][] {
       const snap = store.handle({ key: KEYS.KEY_A, action: 'snapshot' }, 100) as unknown as { rows: { events: [string, Who, string, string, string][] } };

@@ -71,13 +71,17 @@ export const GOAL_PREF_KEYS: readonly string[] = [
 
 /**
  * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`, every
- * goal (contract/goals.ts GOALS: the activity, body and meal-log goals, each its own key) and the island's
- * `weatherMode` (WEATHER_MODES: island-wide, the members' alone).
+ * goal (contract/goals.ts GOALS: the activity, body and meal-log goals, each its own key), the profile (`sex`, `birth`,
+ * `bmiStd`: PROFILE_PREF_KEYS) and the island's `weatherMode` (WEATHER_MODES: island-wide, the members' alone).
  */
 export const PREF_KEYS: readonly string[] = [
   'locale', 'villagerName', 'villager', 'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'kcalGoal',
-  'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'weatherMode'
+  'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'weatherMode', 'sex', 'birth', 'bmiStd'
 ];
+
+/** The profile's `pref` keys (contract/profile.ts PROFILE_KEYS, written out here as GOAL_PREF_KEYS are): either member
+ *  sets either member's (`data.person`), the guest only its own; private (contract/guest.ts rowsFor). */
+export const PROFILE_PREF_KEYS: readonly string[] = ['sex', 'birth', 'bmiStd'];
 
 /** The island's weather (`pref weatherMode`, docs/design.md "Weather"): Tokyo's real sky by the hour (`real`, the
  *  default) or the game's seeded one. One for the whole island (no `person`; the last one set wins), so both phones
@@ -92,13 +96,13 @@ export const isPersonId = (v: unknown): v is PersonId => v === 'A' || v === 'B';
 export const isWho = (v: unknown): v is Who => v === 'A' || v === 'B' || v === 'G';
 
 /**
- * Whose data an event changes: `data.person` when present (only on a goal `pref`, and it must be `A` or `B`), else the
+ * Whose data an event changes: `data.person` when present (only on a goal or profile `pref`, and it must be `A` or `B`), else the
  * sender. Null for a `person` that is invalid or on an event that doesn't take one (the record refuses it; the model
  * ignores the event). Shared by the record and the model.
  */
 export function eventSubject(type: string, d: Record<string, unknown>, sender: Who): Who | null {
   if (d.person === undefined) return sender;
-  if (!isPersonId(d.person) || type !== 'pref' || !GOAL_PREF_KEYS.includes(d.key as string)) return null;
+  if (!isPersonId(d.person) || type !== 'pref' || !(GOAL_PREF_KEYS.includes(d.key as string) || PROFILE_PREF_KEYS.includes(d.key as string))) return null;
   return d.person;
 }
 

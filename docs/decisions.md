@@ -110,6 +110,18 @@ subscription go on its next open, `sync/pushGone.ts`, and forgets `island.push` 
 (`/push/*` answers 410 to an old build, so it fails quietly; the room drops its `push_subs` and `push_sent` tables),
 then the `VAPID_PRIVATE` secrets.
 
+### Profile (2026-11-05)
+Each person's sex, birth date and BMI standard are prefs on the record (the user asked for the calculations to account
+for them). Private the way the body data is: the record sends a member's only to the two members and the guest's only
+to the guest (`contract/guest.ts rowsFor`), so a phone never holds what it may not show. Height is derived from
+Health's weight and BMI rather than asked for: the Shortcut sends both, the BMI was computed from Health's own height,
+so the derivation is exact to rounding and nothing has to be kept in step. Energy is Mifflin–St Jeor (the most
+validated resting equation for adults) plus Apple's Move, Apple's own resting + active model; a person without enough
+Move days gets a light activity level. The suggestions are defaults only, never over a set goal: a cut's deficit (15 %)
+only while the goal weight is under the latest weigh-in, floored at the resting energy and a sex minimum. The BMI
+standard defaults to Asian cut-offs (JASSO, WHO's 23 / 25), right for East Asian bodies; WHO's can be chosen. Ethnicity
+itself is not stored: only the standard it suggests.
+
 ### Meal log (2026-11-03)
 An exception to *No manual input*: ごはん (the HUD's button between the jar and the dumbbell) is a meal log, typed in by
 the person (a food from the shipped data, its grams, the meal and the day), and nothing Health measures is: the

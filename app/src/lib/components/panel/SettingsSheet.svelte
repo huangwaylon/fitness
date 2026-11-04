@@ -1,7 +1,7 @@
 <script lang="ts">
   // せってい (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
   // grown out of the button (Sheet's `pop`, as けんこう out of the dumbbell). One scroller: むらびと (かえる → the
-  // picker), サウンド, ことば, きせつ (the seasonal preview), てんき (the island's: real or the game's), フレームレート, つうしん (not
+  // picker), プロフィール (せいべつ, たんじょうび, the BMI standard: ProfileSection), サウンド, ことば, きせつ (the seasonal preview), てんき (the island's: real or the game's), フレームレート, つうしん (not
   // the guest's) and もようがえ (one row: はじめる; not
   // the guest's).
   // The picker pushes a level with ‹; ✕, the backdrop and Esc close it, and the next opening starts at
@@ -17,6 +17,7 @@
   import WeatherSection from './WeatherSection.svelte';
   import FpsSection from './FpsSection.svelte';
   import SyncSection from './SyncSection.svelte';
+  import ProfileSection from './ProfileSection.svelte';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -89,6 +90,7 @@
         </div>
         {#if guest}<p class="guest" data-guest-note>{t('guest.note')}</p>{/if}
       </section>
+      <section class="sec" aria-labelledby="sec-profile" data-profile-section><h2 id="sec-profile" class="sec-label">{t('panel.profile')}</h2><ProfileSection {view} /></section>
       <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound" class="sec-label">{t('panel.sound')}</h2><SoundSection /></section>
       <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang" class="sec-label">{t('panel.lang')}</h2><LangSection /></section>
       <section class="sec" aria-labelledby="sec-season"><h2 id="sec-season" class="sec-label">{t('panel.season')}</h2><SeasonSection {view} /></section>
