@@ -226,7 +226,7 @@ test('いつもの: someone else’s repeat is shown, 🔁, never managed; the l
 
 // グラフ (design.md "Gohan"): the kcal eaten over けんこう's periods, its range row and its 🍐 Move card under it. On the
 // demo's 11/4: ウェイ's meals from 11/1 (11/4 still going), so 1週 has three finished bars and today's outlined.
-test('グラフ: the kcal eaten per day with the average line, the Move card under it; the period, ‹ and whose day; it fits the sheet', async ({ page }) => {
+test('グラフ: the kcal eaten per day with the average line; the period, ‹ and whose day; it fits the sheet', async ({ page }) => {
   await openFood(page);
   const tabs = sheet(page).locator('[data-tab]');
   await expect(tabs).toHaveText(['きろく', 'グラフ']);
@@ -248,20 +248,11 @@ test('グラフ: the kcal eaten per day with the average line, the Move card und
   await expect(card.locator('.key')).toContainText('平均');
   await expect(card.locator('[data-intake-basis]')).toHaveText('1日の平均（3日分）'); // the finished days with a meal (today out)
   await expect(card.locator('.sub')).toContainText('記録 3日');
-  await expect(sheet(page).locator('[data-metric=move][data-person=A]')).toBeVisible(); // the calories burned
+  await expect(sheet(page).locator('[data-metric]')).toHaveCount(0); // no Move card: けんこう has it
   expect(await overflowOf(page)).toEqual([]);
 
-  // ‹: the week before (no meal yet: no bar, no average line), › back
-  const range = sheet(page).locator('[data-food-range]');
-  const now = await range.textContent();
-  await sheet(page).locator('[data-nav=back]').click();
-  await expect(range).not.toHaveText(now!);
-  await expect(card.locator('path.bar')).toHaveCount(0); // before the first meal: no bar, no stub, no average
-  await expect(card.locator('rect.none, line.avg')).toHaveCount(0);
-  await expect(card.locator('[data-intake-avg]')).toHaveText('–');
-  await expect(sheet(page).locator('[data-metric=move]')).toBeVisible();
-  await sheet(page).locator('[data-nav=on]').click();
-  await expect(range).toHaveText(now!);
+  // ‹: nothing before the first meal (the Move card's older activity no longer opens the past here)
+  await expect(sheet(page).locator('[data-nav=back]')).toHaveAttribute('aria-disabled', 'true');
 
   // 3か月: a bar per week (each the daily average of its days with a meal), the same average
   await sheet(page).locator('select[data-pick=period]').selectOption('quarter');
@@ -275,12 +266,11 @@ test('グラフ: the kcal eaten per day with the average line, the Move card und
   await expect(sheet(page).locator('[data-tab=chart]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('select[data-pick=period]')).toHaveValue('quarter');
   await expect(card).toHaveAttribute('data-person', 'B');
-  await expect(sheet(page).locator('[data-metric=move][data-person=B]')).toBeVisible();
   await sheet(page).locator('[data-tab=log]').click();
   await expect(sheet(page).locator('[data-food-summary]')).toHaveClass(/pB/);
 });
 
-test('グラフ on the guest’s phone: its own kcal only (no Health of its own), a member’s with their Move card', async ({ page }) => {
+test('グラフ on the guest’s phone: its own kcal only, a member’s too', async ({ page }) => {
   await openFood(page, '&as=G');
   await sheet(page).locator('[data-tab=chart]').click();
   // nothing logged yet: each intake card says so under its goal (the guest's own, set there)
@@ -289,7 +279,6 @@ test('グラフ on the guest’s phone: its own kcal only (no Health of its own)
   await expect(sheet(page).locator('[data-metric]')).toHaveCount(0);
   await sheet(page).locator('select[data-pick=who]').selectOption('A');
   await expect(sheet(page).locator('[data-food-chart=k] path.bar')).toHaveCount(4);
-  await expect(sheet(page).locator('[data-metric=move][data-person=A]')).toBeVisible();
   expect(await overflowOf(page)).toEqual([]);
 });
 
@@ -537,8 +526,9 @@ test('whose day sits in the title bar, left of ごはん; a level’s ‹ takes 
   expect(await overflowOf(page)).toEqual([]); // (the tab's content has slid in)
   const [tabs, today, per] = await Promise.all([sheet(page).locator('[data-tab=chart]'), sheet(page).locator('[data-nav=today]'),
     sheet(page).locator('select[data-pick=period]')].map(async (l) => (await l.boundingBox())!));
-  const back = (await sheet(page).locator('[data-nav=back]').boundingBox())!; // (きょう, off on today, sits 4px lower: pressed)
-  expect(Math.abs(per.y + per.height / 2 - (back.y + back.height / 2))).toBeLessThan(3); // in the range row
+  const back = (await sheet(page).locator('[data-nav=back]').boundingBox())!;
+  const pressed = (await sheet(page).locator('[data-nav=back]').getAttribute('aria-disabled')) === 'true' ? 4 : 0; // (off: 4px lower)
+  expect(Math.abs(per.y + per.height / 2 - (back.y + back.height / 2 - pressed))).toBeLessThan(3); // in the range row
   expect(per.x).toBeGreaterThan(today.x + today.width); // right of きょう
   expect(Math.abs(per.x + per.width - (tabs.x + tabs.width))).toBeLessThan(3); // at the row's right end
   expect(per.height).toBeGreaterThanOrEqual(44);
