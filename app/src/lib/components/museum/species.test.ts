@@ -6,6 +6,7 @@ import { reduce } from '#lib/model/state.ts';
 import type { EventRow } from '#lib/contract/api.ts';
 import { entries } from '../kiroku/zukan.ts';
 import { BUG_IDS, FISH_IDS, habitatOf, onShow, tankOf } from './species.ts';
+import { TANKS } from './tanks.ts';
 
 const found = (person: 'A' | 'B' | 'G'): FirstFind => ({ date: '2026-11-04', at: 1.8e12, person });
 
@@ -42,16 +43,17 @@ describe('the tanks (NH’s grouping)', () => {
     for (const id of ['oarfish', 'coelacanth', 'barreleye', 'football-fish']) expect(tankOf(id), id).toBe('deep');
     for (const id of ['arapaima', 'sturgeon', 'koi', 'catfish', 'soft-shelled-turtle']) expect(tankOf(id), id).toBe('river');
   });
-  test('the little fish in the small tanks, each group in its two (the pond’s, the stream’s, the tropical, the reef’s)', () => {
+  test('the little fish in the small tanks, one or two each, four tanks to each group (the pond’s, the stream’s, the tropical, the reef’s)', () => {
     expect(tankOf('goldfish')).toBe('small-1');
-    expect(tankOf('crucian-carp')).toBe('small-2');
-    expect(tankOf('neon-tetra')).toMatch(/^small-[56]$/);
-    expect(tankOf('clownfish')).toBe('small-7');
-    // every fish has a tank, the small ones at most five to a tank
+    expect(tankOf('crucian-carp')).toBe('small-4');
+    expect(tankOf('mitten-crab')).toBe(tankOf('crawfish'));
+    expect(tankOf('neon-tetra')).toBe('small-9');
+    expect(tankOf('clownfish')).toBe('small-13');
+    // every fish has a tank that stands in the aquarium, the small ones one or two to a tank
     const per = new Map<string, number>();
     for (const id of FISH_IDS) per.set(tankOf(id), (per.get(tankOf(id)) ?? 0) + 1);
-    for (const [t, n] of per) if (t.startsWith('small')) expect(n, t).toBeLessThanOrEqual(5);
-    expect([...per.keys()].sort()).toEqual(['deep', 'river', 'sea', 'small-1', 'small-2', 'small-3', 'small-4', 'small-5', 'small-6', 'small-7', 'small-8']);
+    for (const [t, n] of per) if (t.startsWith('small')) expect(n, t).toBeLessThanOrEqual(2);
+    expect([...per.keys()].sort()).toEqual(TANKS.map((t) => t.id).sort());
   });
 });
 

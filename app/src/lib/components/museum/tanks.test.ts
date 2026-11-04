@@ -1,6 +1,6 @@
 // The aquarium's tanks and their swimmers (museum/tanks.ts, boids.ts).
 import { describe, expect, test } from 'vitest';
-import { spawn, stepSchool, swimBox, type Swimmer } from './boids.ts';
+import { spawn, stepSchool, stepWalker, swimBox, type Swimmer } from './boids.ts';
 import { TANKS, fishScale, waterOf } from './tanks.ts';
 import { FISH_WING } from './plan.ts';
 
@@ -49,5 +49,53 @@ describe('the swimmers (boid-like)', () => {
     }
     expect(along).toBeGreaterThan(across);
     expect(travelled).toBeGreaterThan(40);
+  });
+});
+
+describe('the bottom walkers (a crab, a crawfish)', () => {
+  const t = TANKS.find((x) => x.id === 'small-8')!, w = waterOf(t);
+  const walk = (sideways: boolean) => {
+    const f = spawn(w, 2, 3, 41);
+    f.p[1] = w.y0 + 1;
+    let moved = 0, square = 0, ahead = 0, rests = 0, travelled = 0;
+    const x0 = f.p[0], z0 = f.p[2];
+    for (let k = 0; k < 60 * 30; k++) {
+      stepWalker(f, w, 1 / 30, k / 30, sideways);
+      expect(inside(swimBox(w, f.r), f.p), `at ${k}`).toBe(true);
+      expect(f.p[1]).toBe(w.y0 + 1);
+      const sp = Math.hypot(f.v[0], f.v[2]);
+      travelled = Math.max(travelled, Math.hypot(f.p[0] - x0, f.p[2] - z0));
+      if (sp < 1e-6) { rests++; continue; }
+      moved++;
+      // how square its facing is to its way (1: sideways, 0: ahead)
+      const c = Math.abs(Math.sin(f.face! - Math.atan2(f.v[0], f.v[2])));
+      if (c > 0.9) square++;
+      if (c < 0.3) ahead++;
+    }
+    return { moved, square, ahead, rests, travelled };
+  };
+  test('a crab walks the sand sideways, with rests, never off it', () => {
+    const c = walk(true);
+    expect(c.moved).toBeGreaterThan(100);
+    expect(c.rests).toBeGreaterThan(100);
+    expect(c.travelled).toBeGreaterThan(4);
+    expect(c.square / c.moved).toBeGreaterThan(0.8);
+  });
+  test('a crawfish turns to its way and walks ahead', () => {
+    const c = walk(false);
+    expect(c.moved).toBeGreaterThan(100);
+    expect(c.ahead / c.moved).toBeGreaterThan(0.8);
+  });
+  test('two in one tank keep off each other’s way', () => {
+    const a = spawn(w, 2.5, 3, 7), b = spawn(w, 2.5, 3, 99);
+    a.p = [w.x0 + 4, w.y0 + 1, (w.z0 + w.z1) / 2];
+    b.p = [w.x1 - 4, w.y0 + 1, (w.z0 + w.z1) / 2];
+    let nearest = Infinity;
+    for (let k = 0; k < 120 * 30; k++) {
+      stepWalker(a, w, 1 / 30, k / 30, true, [a, b]);
+      stepWalker(b, w, 1 / 30, k / 30, false, [a, b]);
+      nearest = Math.min(nearest, Math.hypot(a.p[0] - b.p[0], a.p[2] - b.p[2]));
+    }
+    expect(nearest).toBeGreaterThan((a.r + b.r) * 0.7);
   });
 });
