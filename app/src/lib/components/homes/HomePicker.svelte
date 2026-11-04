@@ -84,7 +84,7 @@
     // `?preview=0`: no 3D (the e2e: a software GL in CI)
     if (new URLSearchParams(location.search).get('preview') === '0') return;
     let gone = false, stop = () => {};
-    void Promise.all([import('three'), import('../world3d/home.ts')]).then(([T, { buildHome }]) => {
+    void Promise.all([import('three'), import('../world3d/home.ts'), import('../world3d/release.ts')]).then(([T, { buildHome }, { releaseAll, resourcesOf }]) => {
       if (gone || !canvas) return;
       let renderer: InstanceType<typeof T.WebGLRenderer>;
       try {
@@ -103,6 +103,8 @@
       const spin = new T.Group();
       scene.add(spin);
       let raf = 0, t0 = performance.now(), seq = 0;
+      // the houses shown and since swapped out (their models the island's cache: released with the rest at the end)
+      const shown: ReturnType<typeof resourcesOf> = new Set();
       // (its size from a ResizeObserver: read in the frame, it forced a layout each one)
       const ro = new ResizeObserver(() => {
         const r = canvas!.getBoundingClientRect();
@@ -121,6 +123,7 @@
         const n = ++seq;
         void buildHome(s, base).then((g) => {
           if (gone || n !== seq || !g) return;
+          resourcesOf(spin, shown);
           spin.clear();
           // centred on its footprint's middle, the camera a little above, the whole house in view
           const box = new T.Box3().setFromObject(g), c = box.getCenter(new T.Vector3()), size = box.getSize(new T.Vector3());
@@ -135,7 +138,11 @@
       stop = () => {
         cancelAnimationFrame(raf);
         ro.disconnect();
+        // the cached models' geometries and textures let go of here: three's listeners on each kept this renderer, its
+        // context and the sheet's whole DOM alive, one more each time the picker opened
+        releaseAll([scene], shown);
         renderer.dispose();
+        renderer.forceContextLoss();
       };
     });
     return () => {
