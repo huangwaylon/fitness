@@ -3,16 +3,17 @@
 // `useThree`) is the camera; every world thing is a DOM node registered with its feet at world (x, z) (its tap area, its
 // marks and balloons over the canvas), and one step places them all through that camera: an upright node (`up`:
 // translate + scale), a flat ground mark (`flat`: also squashed by the ground's foreshortening) or a ground quad
-// (`quad`: a box of the plan laid on the ground by a matrix3d). The step runs in the engine's frames, and on the game's
+// (`quad`: a box of the plan laid on the ground by a matrix3d) or a solid's outline (`body`: a building's box as the
+// camera sees it, its tap area). The step runs in the engine's frames, and on the game's
 // own clock while something moves (a node with a `live` position) and once after a change; never when still. Until
 // the 3D camera is up nothing is placed (every node hidden). Nothing in the hot path is reactive: `rest` only carries
 // what components need to know when the camera is still.
 import type { WashIn } from '#lib/layout/swash.ts';
 import { getContext, setContext } from 'svelte';
-import { quadMatrix, zIndexAt } from './geom.ts';
+import { hull, quadMatrix, zIndexAt } from './geom.ts';
 import { AHEAD, BEHIND, CAMS, PLAN, type Pt } from './world.ts';
 
-type NodeMode = 'up' | 'flat' | 'quad';
+type NodeMode = 'up' | 'flat' | 'quad' | 'body';
 export interface NodeSpec {
   x: number;
   z: number;
@@ -26,8 +27,12 @@ export interface NodeSpec {
   /** Its own stacking order instead (a number), or none set (null). */
   zi?: number | null;
   /** quad: the box's extent in world units (x0…x1 across, z0 near … z1 far); the element is (x1−x0) × (z1−z0) u, its
-   *  top edge the far side. */
+   *  top edge the far side. body: the solid's footprint, `h` its height: the element is the screen box round its 8
+   *  corners, clipped to their outline (a building's tap area: its whole visible body, nothing past it). */
   box?: { x0: number; x1: number; z0: number; z1: number };
+  /** body: the 3D island's model instance it is (its id): the area is that model's silhouette once it's built, the box
+   *  till then (or with none). */
+  shape?: string;
   /** A moving thing's live position (read every frame while anything moves): [x, z, lift?]. */
   live?: () => readonly [number, number, number?];
   /** Always place it, whatever the live window (something that may come into view from far off). */
@@ -136,6 +141,9 @@ export interface Proj3 {
    *  thing's scale), how much an upright `model` is foreshortened there (its height's px over k), the ground's
    *  foreshortening (a flat mark's), its distance from the camera, and whether it's in front of the horizon. */
   at(x: number, z: number, lift: number): { sx: number; sy: number; k: number; up: number; ground: number; depth: number; visible: boolean };
+  /** A model instance's silhouette on screen (px from the scene's top-left: its outline's points), or null (none built,
+   *  or some of it behind the camera). */
+  outline?(id: string): [number, number][] | null;
   /** The ground under a screen point, or null in the sky. */
   ground(sx: number, sy: number): { x: number; z: number } | null;
   /** The ground's height where feet stand at (x, z) (world y): `at`'s lift is above it. */
@@ -196,6 +204,8 @@ export class World {
   private seq3 = 0;
   private movers = new Set<Node>();
   private dirty = new Set<Node>();
+  /** The body nodes whose model isn't built yet (placeBody: their box meanwhile). */
+  private unshaped = new Set<Node>();
   private moving = 0;
   private lastCam = NaN;
   private win: [number, number] = [-Infinity, Infinity];
@@ -309,6 +319,7 @@ export class World {
       }
       return;
     }
+    if (mode === 'body') return this.placeBody(n, t);
     const q = t.at(x, z, lift), h = n.h ?? 80, k = q.k / v.s;
     if (!q.visible || q.sy - (h + lift) * q.k > v.vh + 40 || q.sy < -60 || q.sx < -400 || q.sx > v.vw + 400) return this.hide(n);
     this.show(n);
@@ -330,6 +341,34 @@ export class World {
     }
   }
 
+  /** A solid's outline on screen: the hull of its box's 8 corners (`body`), written as a px box and its clip. */
+  private placeBody(n: Node, t: Proj3): void {
+    const b = n.box!, h = n.h ?? 80, v = this.view;
+    const own = n.shape ? t.outline?.(n.shape) : null;
+    // (its model not built yet: the box till it is, looked at again each step)
+    if (n.shape && !own) this.unshaped.add(n);
+    else this.unshaped.delete(n);
+    // its box's corners (a unit inside its edges: the ground under a corner is its own tier's, not a cliff's beside it):
+    // in view when one of its feet is in front of the horizon (one behind it, the log's bend, is drawn nowhere)
+    const corners = [b.x0 + 1, b.x1 - 1].flatMap((x) => [b.z0 + 1, b.z1 - 1].flatMap((z) => [0, h].map((y) => ({ y, q: t.at(x, z, y) }))));
+    const seen = corners.some((c) => c.y === 0 && c.q.visible), behind = !own && corners.some((c) => c.q.depth <= 1);
+    const pts: [number, number][] = own ?? corners.map((c) => [c.q.sx, c.q.sy]);
+    const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+    const l = Math.min(...xs), r = Math.max(...xs), tp = Math.min(...ys), bt = Math.max(...ys);
+    if (!seen || behind || tp > v.vh + 2 || bt < 0 || r < 0 || l > v.vw) return this.hide(n);
+    this.show(n);
+    const px = (a: number) => a.toFixed(1);
+    const tf = `translate(${px(l)}px,${px(tp)}px)`, size = `${px(r - l)}|${px(bt - tp)}`;
+    if (tf + size !== n.tf) {
+      n.tf = tf + size;
+      n.el.style.transform = tf;
+      n.el.style.width = `${px(r - l)}px`;
+      n.el.style.height = `${px(bt - tp)}px`;
+      n.el.style.clipPath = `polygon(${hull(pts).map(([x, y]) => `${px(x - l)}px ${px(y - tp)}px`).join(',')})`;
+      this.perf.writes++;
+    }
+  }
+
   private zOf(n: Node, x: number, z: number): void {
     if (n.zi === null || n.mode === 'quad') return;
     const zi = n.zi ?? depthAt(x, z + (n.dz ?? 0));
@@ -345,7 +384,7 @@ export class World {
       this.zOf(n, x, z);
       return this.place(n, x, z, lift ?? n.lift ?? 0);
     }
-    if (!n.always && n.mode !== 'quad' && (n.z < this.win[0] || n.z > this.win[1])) return this.hide(n);
+    if (!n.always && n.mode !== 'quad' && n.mode !== 'body' && (n.z < this.win[0] || n.z > this.win[1])) return this.hide(n);
     this.place(n, n.x, n.z, n.lift ?? 0);
   }
 
@@ -371,6 +410,7 @@ export class World {
       for (const n of this.dirty) this.placeNode(n);
       this.dirty.clear();
       for (const n of this.movers) this.placeNode(n);
+      for (const n of this.unshaped) this.placeNode(n);
     }
     this.perf.nodes = this.nodes.size;
     const going = more || this.moving > 0;
@@ -493,6 +533,7 @@ export class World {
         this.c3s.delete(n);
         this.movers.delete(n);
         this.dirty.delete(n);
+        this.unshaped.delete(n);
       };
     };
   }
