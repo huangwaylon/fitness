@@ -72,6 +72,8 @@ interface Stats {
   tris: number;
   textures: number;
   geometries: number;
+  /** The GPU programs compiled (three's). */
+  programs: number;
   dpr: number;
   frames: number;
   loading: number;
@@ -693,6 +695,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
 
   // ---- the frames ----
   let raf = 0, timer: ReturnType<typeof setTimeout> | 0 = 0, frames = 0, disposed = false, shadowsDirty = true, activeUntil = 0, lastFrame = 0;
+  /** The frame asked for is the ambience's next (later()): due at the ambient rate. */
+  let paced = false;
   /** The last frame's: something moved (the full rate), only the ambience did. */
   let busy = false, ambience = false, paused = false, inFrame = false;
   let hook: ((t: number) => Want) | null = null;
@@ -725,6 +729,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
    *  a frame is that frame's own (what it changed is drawn in it): its parts' wants say whether another follows. */
   function kick() {
     if (inFrame || disposed) return;
+    paced = false;
     if (timer) {
       clearTimeout(timer);
       timer = 0;
@@ -734,6 +739,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   /** The next frame after `ms` (the ambient rate: no display frames woken in between). */
   function later(ms: number) {
     if (raf || timer || disposed) return;
+    paced = true;
     if (ms <= 12) raf = requestAnimationFrame(frame);
     else timer = setTimeout(() => {
       timer = 0;
@@ -751,11 +757,14 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     if (disposed || document.hidden || paused) return;
     const t = now();
     const active = touch || t < activeUntil || busy;
-    // (the full rate is せってい's frame rate, a finger's too: at 30 a display frame in between is skipped)
-    if (active && !due(vsync, lastVsync, frameRate.fps)) {
+    // (the full rate is せってい's frame rate, a finger's too: at 30 a display frame in between is skipped; the
+    // ambience's timer lands on the display frame before its time, and a page with no other frames running has its
+    // rAF at once, not at a vsync: there the ambience drew 35-37 a second, so it waits for its own due frame too)
+    if ((active || paced) && !due(vsync, lastVsync, active ? frameRate.fps : Math.min(opts.ambient, frameRate.fps))) {
       raf = requestAnimationFrame(frame);
       return;
     }
+    paced = false;
     lastVsync = vsync;
     inFrame = true;
     busy = ambience = false;
@@ -980,7 +989,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       return {
         fps: stamps.length, cpu: [pctl(cpu, 0.5), pctl(cpu, 0.95)], gap: [pctl(gaps, 0.5), pctl(gaps, 0.95)],
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures,
-        geometries: renderer.info.memory.geometries, dpr: renderer.getPixelRatio(), frames,
+        geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, dpr: renderer.getPixelRatio(), frames,
         loading: things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count(),
         fxShown: effects.shown(), why: [...why], paused, drawn: !noDraw
       };
