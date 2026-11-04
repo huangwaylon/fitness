@@ -283,7 +283,9 @@ test('グラフ: the kcal eaten per day with the average line, the Move card und
 test('グラフ on the guest’s phone: its own kcal only (no Health of its own), a member’s with their Move card', async ({ page }) => {
   await openFood(page, '&as=G');
   await sheet(page).locator('[data-tab=chart]').click();
-  await expect(sheet(page).locator('.card.empty')).toBeVisible(); // nothing logged yet
+  // nothing logged yet: each intake card says so under its goal (the guest's own, set there)
+  await expect(sheet(page).locator('[data-food-chart] [data-food-empty]')).toHaveCount(5);
+  await expect(sheet(page).locator('[data-food-chart=k] button[data-goal]')).toHaveCount(1);
   await expect(sheet(page).locator('[data-metric]')).toHaveCount(0);
   await sheet(page).locator('select[data-pick=who]').selectOption('A');
   await expect(sheet(page).locator('[data-food-chart=k] path.bar')).toHaveCount(4);

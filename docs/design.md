@@ -195,6 +195,8 @@ Health data over time for the personal trainer, one person at a time, computed o
   weight bench (muscle): the user's picks.
 - **A card per activity metric**: the goal (at the upper right: [Goals in place](#goals-in-place)); 1日の平均 with 前の期間より ↑/↓ %;
   目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key.
+- **No Health data yet** (a new couple, `?demo&health=none`): every card is still there with its goal chip (set from it),
+  over one line, 「まだ きろくが ないよ」: no numbers, chart or footnote.
 - **Chart** (`BarChart`, SVG): a bar per day (1週, 1か月), per week (3か月: 13) or per calendar month (1年), each
   the bucket's daily average, in the person's colour (ウェイ blue `--person-a`, うめ orange `--person-b`); solid when
   the goal was met, pale when not; today outlined; a finished bucket with no row gets a short hatched stub (記録なし).
@@ -303,7 +305,8 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   person, period and range (the calories burned; never subtracted from what was eaten); the guest has none of its own.
   Then the same card for たんぱく質, 脂質, 炭水化物 and 塩分 (grams, one decimal; foodSeries per nutrient from the same
   pass; salt's bars one decimal), each with its catalogue icon (`art.ts` NUTRIENT_ART: the barbecue, the cream and
-  sugar, the sticky rice, the spice rack) and its goal.
+  sugar, the sticky rice, the spice rack) and its goal; with nothing logged yet, each card its goal chip over 「まだ きろくが ないよ」
+  (so the goals are set before the first meal).
 - **マイレシピ:** everyone's recipes (`food_recipe`), in a meal's search: all after さいきん (the latest changed first),
   the matching ones above the catalog's; a row: its name, who set it and how many servings, a serving's kcal. One →
   the amount for the recipe as a food (1人前 first, ぜんぶ, 100 g; the search's meal), logging an ordinary entry of mine
@@ -1613,7 +1616,7 @@ Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/previe
 
 | Param | Effect |
 |---|---|
-| `?demo` (`=harvest`, `&as=B`, `&weeks=60`) | Made-up data, no backend; the harvest recap; play as B; a longer history |
+| `?demo` (`=harvest`, `&as=B`, `&weeks=60`, `&health=none`) | Made-up data, no backend; the harvest recap; play as B; a longer history; no Health rows yet |
 | `?date=YYYY-MM-DDTHH:mm` | The scene clock (Tokyo), this page load only (it moves the shared day too) |
 | `?theme=dawn\|day\|dusk\|night`, `?season=` | Preview a time of day or a season |
 | `?seed=` | The island's seed (finds, weather, visitors) |

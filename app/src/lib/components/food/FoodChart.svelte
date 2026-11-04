@@ -94,15 +94,11 @@
         set={mine ? { value: setGoal(m.state, who, n), onsave: (v) => saveFoodGoal(who, n, v) } : null} />
     {/if}
   {/snippet}
-  {#if any && all}
-    {@render intake('k', all[0].ds)}
-  {:else}
-    <section class="card empty"><p>{t('kiroku.empty')}</p></section>
-  {/if}
+  {#if all}{@render intake('k', all[0].ds)}{/if}
   {#if hs && isPersonId(who)}
     <MetricCard metric="move" {hs} {range} p={who} {slide} onswipe={swipe} selected={sel?.k === 'move' ? sel.i : null} onselect={(i) => pick('move', i)} />
   {/if}
-  {#if any && all}
+  {#if all}
     {#each all.slice(1) as x (x.n)}{@render intake(x.n, x.ds)}{/each}
   {/if}
   {#if any}<p class="note">{t('food.chart.note')}</p>{/if}
@@ -116,6 +112,5 @@
   /* (the period beside きょう leaves the range a narrow middle: its unit wraps, 「1か月ごとの / 1日平均」) */
   .rl small { font-size: var(--fs-s); font-weight: 700; line-height: 1.2; color: var(--text-soft); text-wrap: balance; }
   .per { flex: none; display: flex; }
-  .empty p { margin: 0; font-weight: 700; color: var(--text-soft); }
   .note { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

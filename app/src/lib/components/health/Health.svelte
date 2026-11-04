@@ -144,27 +144,23 @@
       </span>
     </RangeNav>
 
-    {#if !hs.any}
-      <section class="card empty"><p>{t('kiroku.empty')}</p></section>
-    {:else}
-      {#each CARDS[group] as k (k)}
-        {#if guest && k !== 'steps' && k !== 'move' && k !== 'exercise' && k !== 'stand'}
-          <!-- (never on the guest's phone) -->
-        {:else if k === 'weight'}
-          <WeightCard {hs} {range} p={who} name={names[who]} {slide} onswipe={swipe}
-            selected={sel?.k === 'weight' ? sel.i : null} onselect={(i) => pick('weight', i)} onsavegoal={(v) => saveGoal('weight', v)} />
-        {:else if isBodyMetric(k)}
-          <BodyCard metric={k} {hs} {range} p={who} name={names[who]} {slide} onswipe={swipe}
-            selected={sel?.k === k ? sel.i : null} onselect={(i) => pick(k, i)} onsavegoal={(v) => saveGoal('fat', v)} />
-        {:else}
-          {@const now = view && !guest && (k === 'steps' || k === 'move') ? view.people[who][k === 'steps' ? 'stepsGoal' : 'moveGoal'] : null}
-          <MetricCard metric={k} {hs} {range} p={who} {slide} onswipe={swipe}
-            selected={sel?.k === k ? sel.i : null} onselect={(i) => pick(k, i)}
-            goal={now === null ? null : { value: now, onsave: (v) => saveGoal(k === 'steps' ? 'steps' : 'move', v) }} />
-        {/if}
-      {/each}
-      {#if group === 'activity'}<p class="note">{t('health.note')}</p>{/if}
-    {/if}
+    {#each CARDS[group] as k (k)}
+      {#if guest && k !== 'steps' && k !== 'move' && k !== 'exercise' && k !== 'stand'}
+        <!-- (never on the guest's phone) -->
+      {:else if k === 'weight'}
+        <WeightCard {hs} {range} p={who} name={names[who]} {slide} onswipe={swipe}
+          selected={sel?.k === 'weight' ? sel.i : null} onselect={(i) => pick('weight', i)} onsavegoal={(v) => saveGoal('weight', v)} />
+      {:else if isBodyMetric(k)}
+        <BodyCard metric={k} {hs} {range} p={who} name={names[who]} {slide} onswipe={swipe}
+          selected={sel?.k === k ? sel.i : null} onselect={(i) => pick(k, i)} onsavegoal={(v) => saveGoal('fat', v)} />
+      {:else}
+        {@const now = view && !guest && (k === 'steps' || k === 'move') ? view.people[who][k === 'steps' ? 'stepsGoal' : 'moveGoal'] : null}
+        <MetricCard metric={k} {hs} {range} p={who} {slide} onswipe={swipe}
+          selected={sel?.k === k ? sel.i : null} onselect={(i) => pick(k, i)}
+          goal={now === null ? null : { value: now, onsave: (v) => saveGoal(k === 'steps' ? 'steps' : 'move', v) }} />
+      {/if}
+    {/each}
+    {#if group === 'activity' && hs.any}<p class="note">{t('health.note')}</p>{/if}
   {/if}
 </div>
 
@@ -177,6 +173,5 @@
   .rl b { font-size: var(--fs-talk); line-height: 1.1; text-wrap: balance; }
   .rl b span { white-space: nowrap; }
   .rl small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); white-space: nowrap; }
-  .empty p { margin: 0; font-weight: 700; color: var(--text-soft); }
   .note { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

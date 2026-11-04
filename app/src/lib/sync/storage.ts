@@ -47,6 +47,8 @@ export const DEMO = {
   as: 'island-demo.as',
   /** sessionStorage: how many weeks of history the demo makes (`?demo&weeks=60`; default 8). */
   weeks: 'island-demo.weeks',
+  /** sessionStorage: `none` for a demo without any Health rows (`?demo&health=none`: a couple whose data hasn't come yet). */
+  health: 'island-demo.health',
   /** localStorage: the demo's relay (sync/live-local.ts): `{ day, log }`, the day's shared world both tabs keep. */
   relay: 'island-demo.relay',
   /** localStorage: when each player's tab last left (sync/live-local.ts: the relay's welcome `gone`). */

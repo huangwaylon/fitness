@@ -48,6 +48,10 @@
     <GoalEdit id="{metric}-goal" spec={metric === 'steps' || metric === 'move' ? GOALS[metric] : null} text={goalText} value={goal?.value ?? null} onsave={goal?.onsave} />
   </header>
 
+  {#if !hs.any}
+    <!-- nobody's Health data has come yet: the goal can still be set (its chip above) -->
+    <p class="none" data-health-empty>{t('kiroku.empty')}</p>
+  {:else}
   <div class="srow">
     <span class="lab">{t('health.avgHead')}</span>
     <b class="avg money">{s.avg === null ? '–' : metricText(metric, s.avg)}</b>
@@ -76,6 +80,7 @@
     <span><i class="k-goal"></i>{t('goal.title')}</span>
     {#if s.missing}<span><i class="k-none"></i>{t('health.noData')}</span>{/if}
   </p>
+  {/if}
 </section>
 
 <style>
@@ -92,6 +97,7 @@
   .chg small { font: 700 var(--fs-xs)/1 var(--font-ui); color: var(--text-soft); }
   .chg.none { background: none; color: var(--text-soft); }
   .sub { grid-area: sub; display: flex; flex-wrap: wrap; gap: 0 10px; margin-top: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); font-variant-numeric: tabular-nums; }
+  .none { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .key { display: flex; flex-wrap: wrap; gap: 2px 12px; margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .key.pA { --pc: var(--person-a); }
   .key.pB { --pc: var(--person-b); }

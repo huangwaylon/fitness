@@ -46,6 +46,10 @@
     <h3 id="mc-{metric}">{title}</h3>
     {#if metric === 'body_fat_pct'}<GoalEdit id="fat-goal" spec={GOALS.fat} text={goal === null ? null : fmt(goal)} value={goal} onsave={onsavegoal} start={s.avg} tone="yuzu" />{/if}
   </header>
+  {#if !hs.any}
+    <!-- nobody's Health data has come yet: the goal can still be set (its chip above) -->
+    <p class="none" data-health-empty>{t('kiroku.empty')}</p>
+  {:else}
   {#if s.n}
     <dl class="chips">
       <div><dt>{t('health.weight.avg')}</dt><dd class="money">{fmt(s.avg ?? 0)}</dd><dd class="n">{t('health.body.count', { n: s.n })}</dd></div>
@@ -72,6 +76,7 @@
     <span><i class="k-dot"></i>{range.unit === 'day' ? t('health.body.dayKey') : t('health.weight.avgKey')}</span>
     {#if metric === 'body_fat_pct'}<span><i class="k-goal"></i>{t('goal.title')}</span>{/if}
   </p>
+  {/if}
 </section>
 
 <style>

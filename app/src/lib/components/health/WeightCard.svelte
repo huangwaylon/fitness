@@ -40,6 +40,10 @@
     <h3 id="mc-weight">{t('goal.weight')}</h3>
     <GoalEdit id="weight-goal" spec={GOALS.weight} text={ps.goalWeight === null ? null : kgText(ps.goalWeight)} value={ps.goalWeight} onsave={onsavegoal} start={s.avg} tone="yuzu" />
   </header>
+  {#if !hs.any}
+    <!-- nobody's Health data has come yet: the goal can still be set (its chip above) -->
+    <p class="none" data-health-empty>{t('kiroku.empty')}</p>
+  {:else}
   {#if s.n}
     <dl class="chips">
       <div><dt>{t('health.weight.avg')}</dt><dd class="money">{kgText(s.avg ?? 0)}</dd><dd class="n">{t('health.weight.count', { n: s.n })}</dd></div>
@@ -66,6 +70,7 @@
     <span><i class="k-dot"></i>{range.unit === 'day' ? t('weight.legend.day') : t('health.weight.avgKey')}</span>
     <span><i class="k-goal"></i>{t('goal.title')}</span>
   </p>
+  {/if}
 </section>
 
 <style>
