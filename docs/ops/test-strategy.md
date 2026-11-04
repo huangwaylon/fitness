@@ -30,7 +30,7 @@ deploy.
 | Runs with a test rerun as flaky | about 2 in 3 (1–4 tests a run) | all 11 (3–5 of ~400 tests a run), mostly 2D specs with short waits: the next thing to fix |
 
 The single red run was popups' catch plate: its reel missed the 1.6 s bite window, now fixed in four specs by
-`reelOnBite`, and the test is quarantined until the full tier shows it green.
+`reelOnBite` (it has since left the quarantine; none is quarantined as of Nov 4).
 
 ## The pyramid for this game
 
@@ -150,10 +150,10 @@ auto-rollback at this size. A red full tier is the next agent's first job, just 
 
 ## What's left (in order)
 
-1. **The 2D specs' flakes** (3–5 reruns a run): short waits, and taps where an ambient critter or a villager wanders. Pin
+1. **The specs' flakes** (a few reruns a run): short waits, and taps where an ambient critter or a villager wanders. Pin
    the scene and wait on state. Each one that fails twice in a week goes to the quarantine with an owner.
-2. **A "director idle" hook** (`__world.quiet()`: no opening beat or line queued), so the specs' remaining "the opening
-   beats are over" sleeps (2.6 s each, dozens of them) become a wait on state.
+2. **The opening beats' sleeps** to `quiet()` (e2e/island.ts: `__world.quiet()`, no opening beat or line queued, is
+   there): the specs' remaining "the opening beats are over" sleeps become a wait on state.
 3. **Rules into vitest:** the rule parts of holidays, celeste, finds, critters, bugs, weather and seasonal (above).
 4. **Visual snapshots:** a handful in the full tier, with baselines made on CI's image (a `--update-snapshots` run on
    demand, its PNGs committed).
