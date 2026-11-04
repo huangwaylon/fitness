@@ -112,27 +112,42 @@ export interface Things {
   dispose(): void;
 }
 
+/** The models as loaded (fetched, decoded: CPU-side), by URL, kept across the island's mounts: back from a room it
+ *  builds from them at once, with no fetch, meshopt or image decode again (~60 of them). Each mount's GPU copies go with
+ *  its renderer (dispose: three uploads them again to the next). A failed load isn't kept. */
+const loaded = new Map<string, Promise<GLTF | null>>();
+let loader: GLTFLoader | null = null;
+function load(url: string, name: string): Promise<GLTF | null> {
+  let p = loaded.get(url);
+  if (p) return p;
+  if (!loader) (loader = new GLTFLoader()).setMeshoptDecoder(MeshoptDecoder);
+  p = loader.loadAsync(url).catch((e: unknown) => {
+    console.warn('world3d: model', name, e);
+    loaded.delete(url);
+    return null;
+  });
+  loaded.set(url, p);
+  return p;
+}
+
 export function createThings(scene: Scene, height: (x: number, z: number) => number, changed: (shadows?: boolean, soon?: boolean) => void): Things {
-  const loader = new GLTFLoader();
-  loader.setMeshoptDecoder(MeshoptDecoder);
   const base = new URL(`room/world3d/`, new URL(document.baseURI)).href;
   let pending = 0, disposed = false, bugShadowAt = -Infinity, bugTimer: ReturnType<typeof setTimeout> | 0 = 0;
-  const gltfs = new Map<ModelName, Promise<GLTF | null>>();
+  /** This mount's models (its own scene's for proc/; the shared loads' for the rest), and those in (on its GPU, once
+   *  built: what its dispose lets go of). */
+  const gltfs = new Map<ModelName, Promise<GLTF | null>>(), got = new Set<GLTF>();
   const model = (name: ModelName) => {
     let p = gltfs.get(name);
     if (!p && name.startsWith('proc/')) {
       // the island's own (proc3d.ts): built in code
-      const scene = procScene(name);
-      p = Promise.resolve(scene ? ({ scene } as unknown as GLTF) : null);
+      const scene = procScene(name), g = scene ? ({ scene } as unknown as GLTF) : null;
+      if (g) got.add(g);
+      p = Promise.resolve(g);
       gltfs.set(name, p);
     }
     if (!p) {
       pending++;
-      p = loader.loadAsync(`${base}${name}.glb?v=${MODELS[name]?.v ?? 0}`).then((g) => (pending--, g), (e: unknown) => {
-        pending--;
-        console.warn('world3d: model', name, e);
-        return null;
-      });
+      p = load(`${base}${name}.glb?v=${MODELS[name]?.v ?? 0}`, name).then((g) => (pending--, g && got.add(g), g));
       gltfs.set(name, p);
     }
     return p;
@@ -544,17 +559,18 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
         m.dispose();
         depth.dispose();
       }
-      void Promise.all(gltfs.values()).then((gs) => {
-        for (const g of gs) g?.scene.traverse((n) => {
-          const mesh = n as Mesh;
-          if (!mesh.isMesh) return;
-          mesh.geometry.dispose();
-          const s = mesh.material as MeshStandardMaterial;
-          s.map?.dispose();
-          s.emissiveMap?.dispose();
-          s.dispose();
-        });
+      // (now, not once every load is in: a model still loading was never on this renderer, and the next island may
+      // already have the shared ones on its own: a late dispose would drop its copies too)
+      for (const g of got) g.scene.traverse((n) => {
+        const mesh = n as Mesh;
+        if (!mesh.isMesh) return;
+        mesh.geometry.dispose();
+        const s = mesh.material as MeshStandardMaterial;
+        s.map?.dispose();
+        s.emissiveMap?.dispose();
+        s.dispose();
       });
+      got.clear();
     }
   };
 }
