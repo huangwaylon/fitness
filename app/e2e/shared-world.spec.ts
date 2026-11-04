@@ -43,7 +43,7 @@ async function shake(page: Page, id: string) {
   }
 }
 
-test('every tree shakes: three quick taps on an oak drop a branch beside it; one tap only rustles', async ({ page }) => {
+test('every tree shakes: three quick taps on an oak drop a branch beside it; one tap only rustles', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=branch');
   await toTree(page, 'oak-m1');
   await atRest(page);
@@ -64,7 +64,7 @@ test('every tree shakes: three quick taps on an oak drop a branch beside it; one
   await expect(page.locator('button[data-branch]')).toHaveCount(0);
 });
 
-test('a palm drops its two coconuts, once a day: a tap picks one up (NH’s line)', async ({ page }) => {
+test('a palm drops its two coconuts, once a day: a tap picks one up (NH’s line)', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=coconut');
   await shake(page, 'palm-3');
   const nuts = page.locator('button[data-coconut]');
@@ -207,7 +207,7 @@ test('two players: Gulliver woken on one tab is up on the other too, and for a t
   await ctx.close();
 });
 
-test('two players: a shake on one tab plays on the other (their villager stays where it is), and a pick-up there is gone here', async ({ browser }) => {
+test('two players: a shake on one tab plays on the other (their villager stays where it is), and a pick-up there is gone here', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ browser }) => {
   test.setTimeout(60_000);
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const a = await ctx.newPage(), b = await ctx.newPage();

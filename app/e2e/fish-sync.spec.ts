@@ -34,7 +34,7 @@ async function cast(a: Page): Promise<Line> {
   return (await h(a, (w) => w.__fish.line()))!;
 }
 
-test('A’s line on B’s phone: the float where it landed, the bite, the shadow taken, the reel clears it', async ({ browser }) => {
+test('A’s line on B’s phone: the float where it landed, the bite, the shadow taken, the reel clears it', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ browser }) => {
   test.slow();
   const ctx = await browser.newContext();
   const a = await ctx.newPage(), b = await ctx.newPage();
@@ -78,7 +78,7 @@ test('A’s line on B’s phone: the float where it landed, the bite, the shadow
   await ctx.close();
 });
 
-test('a tab coming while a line is out sees it; the angler’s tab gone, its line goes with it', async ({ browser }) => {
+test('a tab coming while a line is out sees it; the angler’s tab gone, its line goes with it', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ browser }) => {
   test.slow();
   const ctx = await browser.newContext();
   const a = await ctx.newPage();

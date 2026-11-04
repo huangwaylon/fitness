@@ -27,7 +27,11 @@ The tiers and why: [test-strategy.md](test-strategy.md).
   the drawn smoke only, never the logic tier. `@smoke` is a whole 3D flow worth drawing too: both tiers. `@quarantine`
   is flaky: out of the gate, run in the full tier until fixed. A quarantined test carries who owns it and why:
   `{ tag: '@quarantine', annotation: { type: 'quarantine', description: 'owner: engine agent, 2026-11-03: the rod never
-  comes out on CI (#run)' } }`. List them: `npx playwright test --list --grep @quarantine`.
+  comes out on CI (#run)' } }`. List them: `npx playwright test --list --grep @quarantine`. `@logic` is the gate's
+  only, never drawn (the full tier leaves it out): a timing a software-GL frame of 0.5–1 s can't meet (three quick taps
+  within 1.2 s, frame-by-frame smoothness, a wait sized for the game at full speed, a squish over before a frame shows
+  it), with why in `annotation: { type: 'logic', description: 'drawn: …' }`; it says nothing about the phones, whose
+  frames are 16 ms. List them: `npx playwright test --list --grep @logic`.
 - **Logic mode** (`E2E_RENDER=none`; src/lib/ui-state/testMode.ts): the island's and the tent's 3D engines run every
   frame (the scene, cameras, gestures, the World's step, the villagers' poses, effects, the tap areas) but never call
   `renderer.render`. `__world3d.stats().drawn` is false and `stats().calls` 0. Specs need no change; one that reads draw

@@ -83,7 +83,7 @@ test('a message bottle at the water’s edge: a tap reads its note', async ({ pa
 });
 
 type WashSample = { t: number; x: number; z: number; fade: number; model: number[]; dom: number[] | null } | null;
-test('a bottle the waves bring washes up from the waterline to its spot, fading in, its tap area with it; a tap reads it as ever', async ({ page }) => {
+test('a bottle the waves bring washes up from the waterline to its spot, fading in, its tap area with it; a tap reads it as ever', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {
   test.setTimeout(45_000);
   // (it comes 1.5 s after the island opens: ?find=washed; then it waits for the next wave there, up to its 5 s cycle.)
   // On the page's clock, paused, a frame at a time: its model loads only as it comes (the network's time), and on the

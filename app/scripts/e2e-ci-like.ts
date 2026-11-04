@@ -7,7 +7,7 @@
 //   --tier logic   (default) what the gate runs: the 3D engines draw nothing (E2E_RENDER=none), @render and
 //                  @quarantine left out
 //   --tier render  the drawn smoke: real (software) GL, only the @render and @smoke tests
-//   --tier full    everything drawn, as the full tier after the deploy (quarantine left out)
+//   --tier full    everything drawn, as the full tier after the deploy (quarantine and @logic left out)
 //   --repeat N     each test N times (--repeat-each; default 1; 5 before pushing a new or changed 3D or sync spec)
 //   --workers N    default 3 (CI's); try 6 to load the machine as a busy runner is
 //   --port P       E2E_PORT (default: a free one from 4600)
@@ -60,7 +60,7 @@ const env: NodeJS.ProcessEnv = { ...process.env, CI: '1', E2E_SWIFTSHADER: '1', 
 const pw = ['playwright', 'test', '--project=chromium', `--workers=${workers}`, `--repeat-each=${repeat}`, '--reporter=list'];
 if (tier === 'logic') env.E2E_RENDER = 'none', pw.push('--grep-invert', '@render|@quarantine');
 if (tier === 'render') pw.push('--grep', '@render|@smoke', '--grep-invert', '@quarantine');
-if (tier === 'full') env.E2E_SLOW = '1', pw.push('--grep-invert', '@quarantine');
+if (tier === 'full') env.E2E_SLOW = '1', pw.push('--grep-invert', '@quarantine|@logic');
 console.log(`e2e:ci-like: tier ${tier}, ${workers} workers, each test ${repeat}×, port ${port}${env.E2E_RENDER ? ', E2E_RENDER=none' : ''}`);
 const r = spawnSync('npx', [...pw, ...args], { stdio: 'inherit', env });
 process.exit(r.status ?? 1);

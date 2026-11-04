@@ -97,7 +97,7 @@ test('the guest’s ごほうび shows today’s ベル under the balance: the m
   await ctx.close();
 });
 
-test('a guest’s catch is in the members’ ずかん at once, credited to the guest', async ({ browser }) => {
+test('a guest’s catch is in the members’ ずかん at once, credited to the guest', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ browser }) => {
   test.setTimeout(60_000);
   const ctx = await browser.newContext({ viewport: VIEW });
   const a = await open(ctx, 'A');

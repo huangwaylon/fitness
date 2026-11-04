@@ -45,7 +45,7 @@ const clearOfHud = (page: Page) =>
     return !over && p.left >= 0 && p.right <= innerWidth && p.top >= 0 && p.bottom <= innerHeight;
   });
 
-test('the say button: small, bottom right, clear of the home indicator; a tap on my villager only squishes it', async ({ page }) => {
+test('the say button: small, bottom right, clear of the home indicator; a tap on my villager only squishes it', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a transient pose or effect (a squish, a sparkle) over before a software-GL frame shows it' } }, async ({ page }) => {
   await open(page);
   // a 44px target, a 36px disc drawn, 12px in from the side and the foot
   const r = (await sayBtn(page).boundingBox())!;
@@ -258,7 +258,7 @@ test('the say button hides under the island panel and in もようがえ (its pi
   await expect(sayBtn(page)).toHaveCount(0);
 });
 
-test('mid-pinch my villager’s balloon stays whole (its box, not only its text) and over it', async ({ page }) => {
+test('mid-pinch my villager’s balloon stays whole (its box, not only its text) and over it', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {
   await open(page);
   await sayOwn(page, 'やっほー！');
   await expect(balloon(page)).toHaveClass(/placed/);
