@@ -10,7 +10,7 @@ export type Motion =
   // group stretching (island/stretching.ts, NH's ラジオ体操): Posture Warm-Up, Side Bends, Jump
   | 'warmup' | 'sidebend' | 'leap'
   // the visitors' own (island/Visitor.svelte, visitorLife.ts): Jack's twirl, Gulliver's sleeping twitch, Celeste's
-  // look up at the sky and point, Franklin's flap, Reese and Cyrus leaning together, Pavé's samba, a wake-up stand
+  // look up at the sky and point, Franklin's flap, Reese and Cyrus leaning together, a samba, a wake-up stand
   | 'twirl' | 'twitch' | 'lookup' | 'point' | 'flap' | 'nuzzle' | 'samba';
 
 /** Durations in ms (must match the keyframes). */

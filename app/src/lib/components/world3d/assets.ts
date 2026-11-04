@@ -2,7 +2,7 @@
 // docs/world3d-assets.md): an art key → its model and how it stands in the world.
 import A from './assets.json' with { type: 'json' };
 
-export type AssetCat = 'bug' | 'fish' | 'shadow' | 'sea' | 'find' | 'fruit' | 'flower' | 'bush' | 'tree' | 'deco' | 'decor' | 'event' | 'visitor' | 'scenery' | 'fx' | 'tool' | 'accessory';
+export type AssetCat = 'bug' | 'fish' | 'shadow' | 'sea' | 'find' | 'fruit' | 'flower' | 'bush' | 'tree' | 'deco' | 'decor' | 'event' | 'scenery' | 'fx' | 'tool' | 'accessory';
 /** A model: its bounds (model units), triangles, KB, content hash (the URL's `?v=`), `lit`: an emissive for the night. */
 export interface AssetModel { min: number[]; max: number[]; tris: number; kb: number; v: string; lit?: number }
 export interface AssetKey {
@@ -25,7 +25,7 @@ export interface AssetKey {
   /** Its winter look's key. */
   winter?: string;
   /** Loaded with its group, lazily. */
-  lazy?: 'bug' | 'fish' | 'sea' | 'event' | 'visitor';
+  lazy?: 'bug' | 'fish' | 'sea' | 'event';
   /** No NH model of its own: another stands in. */
   standIn?: number;
 }

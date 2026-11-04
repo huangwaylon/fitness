@@ -1,7 +1,7 @@
 {
   "_": "scripts/world3d-models.ts (scripts/world3d-assets.ts): the island's NH models (docs/world3d-assets.md). models: under static/room/world3d/<name>.glb, bounds in model units, triangles, KB, content hash, lit (an emissive). keys: an art key → its model (m), kind, scale (u per model unit), anchor (feet: the origin on the ground; centre: the bounds' centre), footprint (tiles, unturned), hit radius (u), shadow, lit, yaw (degrees), winter (the key of its winter look), lazy (loaded with its group), standIn (no NH model of its own)",
-  "budgetKb": {"bug":40,"fish":40,"shadow":4,"sea":40,"find":30,"fruit":30,"flower":24,"bush":90,"tree":160,"deco":120,"decor":120,"event":160,"visitor":120,"scenery":200,"fx":30,"tool":40,"accessory":40},
-  "kb": {"accessory":52.6,"bug":1020,"bush":287,"deco":895.5,"decor":198.7,"event":115.2,"find":390,"fish":891.5,"flower":551.5,"fruit":47.9,"fx":45.8,"scenery":68.2,"sea":495,"shadow":41.9,"tool":18.3,"tree":325.1,"visitor":926.5},
+  "budgetKb": {"bug":40,"fish":40,"shadow":4,"sea":40,"find":30,"fruit":30,"flower":24,"bush":90,"tree":160,"deco":120,"decor":120,"event":160,"scenery":200,"fx":30,"tool":40,"accessory":40},
+  "kb": {"accessory":52.6,"bug":1020,"bush":287,"deco":895.5,"decor":198.7,"event":115.2,"find":390,"fish":891.5,"flower":551.5,"fruit":47.9,"fx":45.8,"scenery":68.2,"sea":495,"shadow":41.9,"tool":18.3,"tree":325.1},
   "models": {
     "accessories/birthday-hat-blue": {"min":[-5.28,0,-5.14],"max":[5.28,5.18,5.14],"tris":1172,"kb":20.6,"v":"1f242d20"},
     "accessories/birthday-hat-pink": {"min":[-5.28,0,-5.14],"max":[5.28,5.18,5.14],"tris":1172,"kb":20.8,"v":"a7abeda3"},
@@ -422,18 +422,7 @@
     "trees/bamboo-winter": {"min":[-10.4,-2,-12.1],"max":[10.4,33.4,4.72],"tris":1941,"kb":37.1,"v":"a2ef9f13"},
     "trees/cedar-winter": {"min":[-10.55,-1.04,-10.83],"max":[11.12,39.47,9.78],"tris":2293,"kb":33.9,"v":"524dcc30"},
     "trees/oak-winter": {"min":[-14.25,-1.42,-9.44],"max":[13.39,33.33,6.7],"tris":2368,"kb":45.3,"v":"efc43d96"},
-    "trees/palm-winter": {"min":[-19.99,-4.97,-14],"max":[15.51,34.48,13.45],"tris":1992,"kb":36.7,"v":"6576c5a7"},
-    "visitors/celeste": {"min":[-6.66,0,-4.52],"max":[6.65,12.1,4.77],"tris":4000,"kb":87.4,"v":"d17b12b6"},
-    "visitors/cyrus": {"min":[-4.49,0,-4.21],"max":[4.48,16.92,5.35],"tris":4000,"kb":72.7,"v":"d4329442"},
-    "visitors/daisy-mae": {"min":[-5.12,0,-5.38],"max":[5.15,15.68,4.25],"tris":4000,"kb":96.7,"v":"bc168a4d"},
-    "visitors/franklin": {"min":[-4.46,-0.07,-7.25],"max":[5.52,17.94,4.7],"tris":4000,"kb":80.2,"v":"94a6d1e2"},
-    "visitors/gulliver": {"min":[-4.32,-0.05,-4.67],"max":[4.9,14.86,5.6],"tris":4000,"kb":88.8,"v":"c222521d"},
-    "visitors/jack": {"min":[-4.6,0,-4.61],"max":[4.6,13.62,4.44],"tris":4000,"kb":67.8,"v":"a7d2edf5"},
-    "visitors/jingle": {"min":[-5.96,0,-3.33],"max":[5.96,16.39,5.56],"tris":4000,"kb":107.1,"v":"777a2d4c"},
-    "visitors/kk-slider": {"min":[-4.41,-0.03,-4.21],"max":[4.41,15.93,4.23],"tris":4000,"kb":98.2,"v":"6bdcac12"},
-    "visitors/reese": {"min":[-4.27,0,-4.13],"max":[4.26,16.15,3.97],"tris":4000,"kb":90.3,"v":"672f6978"},
-    "visitors/wisp": {"min":[-4.46,2.1,-3.72],"max":[4.25,11.41,3.76],"tris":2268,"kb":21.4,"v":"141cd690"},
-    "visitors/zipper": {"min":[-4.55,0.01,-3.82],"max":[4.19,19.21,3.49],"tris":4000,"kb":115.9,"v":"c54cb294"}
+    "trees/palm-winter": {"min":[-19.99,-4.97,-14],"max":[15.51,34.48,13.45],"tris":1992,"kb":36.7,"v":"6576c5a7"}
   },
   "keys": {
     "accessories/party-glasses": {"m":"accessories/party-glasses","cat":"accessory","s":5.4,"anchor":"joint","hit":16,"shadow":true,"lazy":"event"},
@@ -973,17 +962,6 @@
     "trees/oak-summer": {"m":"oak-summer","cat":"tree","s":3,"anchor":"feet","foot":[3,2],"hit":40,"shadow":true,"winter":"trees/oak-winter"},
     "trees/oak-winter": {"m":"trees/oak-winter","cat":"tree","s":3,"anchor":"feet","foot":[3,2],"hit":41,"shadow":true},
     "trees/palm": {"m":"palm","cat":"tree","s":3,"anchor":"feet","foot":[4,3],"hit":53,"shadow":true,"winter":"trees/palm-winter"},
-    "trees/palm-winter": {"m":"trees/palm-winter","cat":"tree","s":3,"anchor":"feet","foot":[4,3],"hit":53,"shadow":true},
-    "villagers/celeste": {"m":"visitors/celeste","cat":"visitor","s":5.4,"anchor":"feet","foot":[3,2],"hit":36,"shadow":true,"lazy":"visitor"},
-    "villagers/cyrus": {"m":"visitors/cyrus","cat":"visitor","s":5.4,"anchor":"feet","foot":[2,2],"hit":26,"shadow":true,"lazy":"visitor"},
-    "villagers/daisy-mae": {"m":"visitors/daisy-mae","cat":"visitor","s":5.4,"anchor":"feet","foot":[2,2],"hit":28,"shadow":true,"lazy":"visitor"},
-    "villagers/franklin": {"m":"visitors/franklin","cat":"visitor","s":5.4,"anchor":"feet","foot":[2,2],"hit":32,"shadow":true,"lazy":"visitor"},
-    "villagers/gulliver": {"m":"visitors/gulliver","cat":"visitor","s":5.4,"anchor":"feet","foot":[2,2],"hit":28,"shadow":true,"lazy":"visitor"},
-    "villagers/jack": {"m":"visitors/jack","cat":"visitor","s":5.4,"anchor":"feet","foot":[2,2],"hit":25,"shadow":true,"lazy":"visitor"},
-    "villagers/jingle": {"m":"visitors/jingle","cat":"visitor","s":5.4,"anchor":"feet","foot":[2,2],"hit":32,"shadow":true,"lazy":"visitor"},
-    "villagers/kk-slider": {"m":"visitors/kk-slider","cat":"visitor","s":5.4,"anchor":"feet","foot":[2,2],"hit":24,"shadow":true,"lazy":"visitor"},
-    "villagers/reese": {"m":"visitors/reese","cat":"visitor","s":5.4,"anchor":"feet","foot":[2,2],"hit":23,"shadow":true,"lazy":"visitor"},
-    "villagers/wisp": {"m":"visitors/wisp","cat":"visitor","s":5.4,"anchor":"feet","foot":[2,2],"hit":24,"shadow":true,"lazy":"visitor"},
-    "villagers/zipper": {"m":"visitors/zipper","cat":"visitor","s":5.4,"anchor":"feet","foot":[2,2],"hit":24,"shadow":true,"lazy":"visitor"}
+    "trees/palm-winter": {"m":"trees/palm-winter","cat":"tree","s":3,"anchor":"feet","foot":[4,3],"hit":53,"shadow":true}
   }
 }

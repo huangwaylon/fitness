@@ -7,7 +7,8 @@
 // (events.ts: Oct 31 17:00–24:00) Jack comes instead of anyone else and asks for candy (a choice: a treat, or his
 // trick). On a meteor shower's night (meteor.ts, at most once a week) Celeste comes to watch it, 20:00–04:00. NH's
 // holiday hosts take the slot on their day (events.ts): Franklin on Turkey Day (he asks for a fish), Jingle on Toy Day,
-// Pavé at Festivale, Zipper on the first and last days of Bunny Day. On the wedding countdown's milestone days
+// Zipper on the first and last days of Bunny Day. Every visitor is NH's own 3D model (villager3d/villagers.json):
+// one with none (Pavé: not in NH's files) never comes. On the wedding countdown's milestone days
 // (wedding.ts) Reese and Cyrus come together (one visitor, `reese`, drawn as the pair).
 import { pickOne, shuffle } from '#lib/random.ts';
 import { dayKey, jst } from '#lib/time/clock.ts';
@@ -22,11 +23,11 @@ import { washedUp } from '#lib/layout/spots.ts';
 import type { Layout } from '#lib/layout/model.ts';
 
 export type VisitorId = 'kk-slider' | 'daisy-mae' | 'wisp' | 'gulliver' | 'kicks' | 'label' | 'saharah' | 'leif' | 'redd' | 'cj' | 'flick'
-  | 'jack' | 'celeste' | 'franklin' | 'jingle' | 'pave' | 'zipper' | 'reese';
+  | 'jack' | 'celeste' | 'franklin' | 'jingle' | 'zipper' | 'reese';
 export const VISITORS: readonly VisitorId[] = ['kk-slider', 'daisy-mae', 'wisp', 'gulliver', 'kicks', 'label', 'saharah', 'leif', 'redd', 'cj',
-  'flick', 'jack', 'celeste', 'franklin', 'jingle', 'pave', 'zipper', 'reese'];
+  'flick', 'jack', 'celeste', 'franklin', 'jingle', 'zipper', 'reese'];
 /** Each event's host (NH), in the visitor slot from its main part's hour. */
-export const HOSTS: Partial<Record<EventId, VisitorId>> = { halloween: 'jack', 'turkey-day': 'franklin', 'toy-day': 'jingle', festivale: 'pave', 'bunny-day': 'zipper' };
+export const HOSTS: Partial<Record<EventId, VisitorId>> = { halloween: 'jack', 'turkey-day': 'franklin', 'toy-day': 'jingle', 'bunny-day': 'zipper' };
 /** NH's weekday visitors: one a day Monday to Saturday, each at most once a week. */
 export const ROTATION: readonly VisitorId[] = ['gulliver', 'wisp', 'kicks', 'label', 'saharah', 'leif', 'redd', 'cj', 'flick'];
 /** Quiet days in a week's draw (with ROTATION's nine): about one Monday-to-Saturday day in ten has no visitor. */

@@ -31,9 +31,10 @@ async function deckPoint(page: Page): Promise<{ x: number; y: number }> {
   await expect.poll(async () => (p = await find()), { message: 'a point of the deck with nothing in front of it' }).not.toBeNull();
   return p!;
 }
-/** What each of the villagers and the visitor is doing (their rig's motion). */
+/** What each of the villagers and the visitor is doing (the villagers' rig's motion, the visitor's director motion: its
+ *  3D model's pose). */
 const acts = (page: Page) =>
-  page.evaluate(() => [...document.querySelectorAll('.vil .body, [data-visitor] .body')].map((e) => e.getAttribute('data-act')));
+  page.evaluate(() => [...document.querySelectorAll('.vil .body, [data-visitor]')].map((e) => e.getAttribute(e.hasAttribute('data-visitor') ? 'data-motion' : 'data-act')));
 
 for (const [w, h] of [[390, 844], [320, 568]] as const)
   test(`a morning: the tape deck is out, clear of every control; a tap and everyone stretches in sync (${w}px)`, async ({ page }) => {
@@ -51,11 +52,11 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       const w = window as { __acts?: string[] };
       w.__acts = [];
       const snap = () => {
-        const a = [...document.querySelectorAll('.vil .body, [data-visitor] .body')].map((e) => e.getAttribute('data-act'));
+        const a = [...document.querySelectorAll('.vil .body, [data-visitor]')].map((e) => e.getAttribute(e.hasAttribute('data-visitor') ? 'data-motion' : 'data-act'));
         const s = a.join(',');
         if (w.__acts![w.__acts!.length - 1] !== s) w.__acts!.push(s);
       };
-      new MutationObserver(snap).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-act'], childList: true });
+      new MutationObserver(snap).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-act', 'data-motion'], childList: true });
     });
     const pt = await deckPoint(page);
     await page.mouse.click(pt.x, pt.y);

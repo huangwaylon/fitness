@@ -8,21 +8,22 @@
   // mornings, Wisp floating by on some nights (see-through, a slow bob), Gulliver on some days. Most stand at centre
   // stage (world.ts CENTRE_STAGE: the layout's plaza, a clear patch of lawn behind the villagers' spots, in view as the
   // island opens); Gulliver lies washed up on the front beach, as in NH. Each is one world node (camera.svelte.ts) at the
-  // villagers' scale (their NH height relative to a villager), with the same contact shadow. A tap: their introduction
-  // the first time, then one of their lines (no trading, no ベル).
+  // villagers' scale: NH's own model, drawn and posed by the 3D island as the villagers are (world3d/villagers.ts; the
+  // node here its tap area, its balloon's anchor, its emotes). A tap: their introduction the first time, then one of
+  // their lines (no trading, no ベル).
   // K.K.'s show (NH's Saturday concert): with ミュージック on, a tap is his greeting and 「リクエストは あるかな？」
   // (リクエスト: a few of his songs to pick from; おまかせ: one at random); the island's music stops for the song
   // (sound/kk.ts, sound.svelte.ts playKK), he strums harder, ♪ float up, the villagers sway, a 「♪ title」 caption
   // shows; a tap meanwhile offers ストップ; at the end his sign-off and the island's music comes back. With no songs
-  // he's still tuning his guitar. Official renders.
+  // he's still tuning his guitar.
   // On Halloween night (events.ts) Jack comes instead and asks for candy: 「キャンディを あげる」 delights him (joy, the
   // candy pops up over a spooky sparkle), 「なにも あげない」 earns his trick (my villager's face goes goofy for a minute:
   // `ontrick`). No inventory, no ベル.
   // SceneTaps mounts this inside the stage and asks it about each tap (`tap`). `?visitor=<id>` (dev or ?demo) brings
   // one now.
   // Their life (visitorLife.ts; docs/design.md "Visitors: life"): the director's 'visitor' actor moves them (walks,
-  // motions, emotes, fx, facing), as it does the villagers. Every one breathes, shifts its weight and its shadow
-  // breathes with it (CSS); idle life's beat gives them one small thing at a time: their NH signature, an emote, a look
+  // motions, emotes, fx, facing), as it does the villagers; its model breathes and looks about as theirs do (villager3d
+  // poses). Idle life's beat gives them one small thing at a time: their NH signature, an emote, a look
   // at the nearest villager, a stroll for those who roam, or a villager coming over to say hello. A tap: they turn to
   // my villager with a little hop, back on their spot first if they'd strolled off, then speak (and stand still while
   // they do). Gulliver sleeps face down until the fifth nudge. They arrive when their visit starts (walking from the
@@ -34,12 +35,13 @@
   import { shuffle } from '#lib/random.ts';
   import { tick, untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
+  import { tall3d } from '../villager3d/manifest.ts';
   import Emote from '../characters/Emote.svelte';
   import Fx from '../characters/Fx.svelte';
   import { villagerEmote, type EmoteIcon } from '#lib/art.ts';
   import { actors, addFx, awayFromHome, cancel, faceToward, later, livePos, place as placeActor, removeFx, setEmote, setMotion, walkTo } from '../motion/director.svelte.ts';
   import type { Motion } from '../motion/reactions.ts';
-  import { BEHAVIOUR, EDGE_FADE_MS, MUMBLES, POP_MS, VISITOR_SPEED, nudge, pickAct, pickEmote, strollSpots, tapMotion, wayMs, type Way } from './visitorLife.ts';
+  import { BEHAVIOUR, EDGE_FADE_MS, MUMBLES, POP_MS, VISITOR_SPEED, WAY_MS, nudge, pickAct, pickEmote, strollSpots, tapMotion, wayMs, type Way } from './visitorLife.ts';
   import type { Pt } from './walkGraph.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import { dayKey, minuteNow, now } from '#lib/time/clock.ts';
@@ -76,13 +78,10 @@
   let { scene, enabled, say: rawSay, ontrick }: Props = $props();
 
 
-  /** NH heights relative to a villager (VILLAGER.h): K.K. stands about as tall, Daisy Mae is a child, Wisp a small
-   *  ghost floating a little off the ground, Gulliver a tall seagull. */
-  const REL: Record<VisitorId, number> = { 'kk-slider': 1, 'daisy-mae': 0.78, wisp: 0.7, gulliver: 1.1, kicks: 0.9, label: 0.9, saharah: 1, leif: 0.9,
-    redd: 1.05, cj: 0.85, flick: 1, jack: 1, celeste: 0.85,
-    franklin: 1, jingle: 1.05, pave: 1.1, zipper: 0.9, reese: 0.76 };
-  /** A pair standing side by side (Reese and Cyrus): how many figures wide the clearance is. */
+  /** A pair standing side by side (Reese and Cyrus): how many figures wide the clearance is, and how far apart their
+   *  middles stand (shares of the height). */
   const WIDE: Partial<Record<VisitorId, number>> = { reese: 1.95 };
+  const PAIR_DX = 0.55;
   /** Floating off the ground (u). */
   const FLOAT: Partial<Record<VisitorId, number>> = { wisp: 12 };
   /** Gulliver lies washed up face down at the front beach's water's edge (NH), somewhere new each day (visitors.ts
@@ -93,12 +92,9 @@
   /** The partner comes over only to a visitor this near its home (u): never across the island to centre stage. */
   const MEET_NEAR = 600;
   const w = useWorld();
-  /** Visitors outside the roster (an event's guest): their render and name-tag colour (Jack: his robe's purple; the
-   *  holiday hosts: Nookipedia's title colours). */
-  const ART: Partial<Record<VisitorId, string>> = {
-    jack: 'villagers/jack', franklin: 'villagers/franklin', jingle: 'villagers/jingle', pave: 'villagers/pave', zipper: 'villagers/zipper'
-  };
-  const TAG: Partial<Record<VisitorId, string>> = { jack: '#7A4FB8', franklin: '#FF97CA', jingle: '#E10000', pave: '#0A96AE', zipper: '#FFE20B', reese: '#FFAAD1' };
+  /** Visitors outside the roster (an event's guest): their name-tag colour (Jack: his robe's purple; the holiday hosts:
+   *  Nookipedia's title colours). */
+  const TAG: Partial<Record<VisitorId, string>> = { jack: '#7A4FB8', franklin: '#FF97CA', jingle: '#E10000', zipper: '#FFE20B', reese: '#FFAAD1' };
   const CYRUS_TAG = '#4DDCD9';
 
   const clock = $derived(minuteNow());
@@ -120,6 +116,8 @@
   let way = $state<Way>('appear');
   /** At the water's edge, walking on or off: fading in or out. */
   let edge = $state(false);
+  /** When the arrival or the departure began (performance.now()): a float or a flight's height follows it. */
+  let wayT0 = 0;
   /** Arrivals in the page's first moments are a pop in place (they were already here); `?arrive` plays it. */
   const bornAt = Date.now();
   const forceArrive = hookFlag('arrive');
@@ -153,7 +151,7 @@
     if (!id) return null;
     void site.rev;
     const own = spotOf(id, date), [x, z] = own ?? CENTRE_STAGE;
-    return { x, z, h: VILLAGER.h * REL[id], stage: !own, lie: id === 'gulliver' };
+    return { x, z, h: tall3d(id) || VILLAGER.h, stage: !own, lie: id === 'gulliver' };
   });
   // a new visitor with a spot: they arrive (once per visit)
   let arrivedFor: VisitorId | null = null;
@@ -190,6 +188,7 @@
       return;
     }
     phase = 'arrive';
+    wayT0 = performance.now();
     if (way === 'walk' || way === 'hop') {
       const from = camp(), pts = visitorRoute(from, at);
       if (pts) {
@@ -216,6 +215,7 @@
     if (!id) return;
     cancel('visitor');
     phase = 'leave';
+    wayT0 = performance.now();
     edge = false;
     st.emote = null;
     st.fx = st.fx.filter((f) => f.kind !== 'zzz');
@@ -395,30 +395,28 @@
   });
 
   let el = $state<HTMLElement>();
-  /** Group stretching: an awake visitor joins in on the villagers' beat (Gulliver sleeps through it). */
+  /** Group stretching: an awake visitor joins in on the villagers' beat (Gulliver sleeps through it): each stretch is its
+   *  motion (its model does NH's three, as the villagers' do). */
   const pose = $derived(shown && !sleeping ? stretch.pose : null);
-  /** On the body: the stretch's pose, else the director's motion (replayed back to back: drop, reflow, set). */
-  const act = $derived<Motion | null>(pose ?? st.motion);
-  let bodyEl = $state<HTMLElement>();
   $effect(() => {
-    const m = act;
+    const m = pose;
     void stretch.n;
-    void st.motionN;
-    if (!bodyEl) return;
-    bodyEl.removeAttribute('data-act');
-    if (m) {
-      void bodyEl.offsetWidth;
-      bodyEl.setAttribute('data-act', m);
-    }
+    if (m) untrack(() => setMotion('visitor', m));
   });
-  /** Facing: a side-on render (Gulliver looks left, Daisy Mae right) mirrors to look the other way; one that faces us
-   *  leans toward what it looks at. */
-  const facing = $derived.by(() => {
-    const d = shown ? BEHAVIOUR[shown].drawn : null, f = st.face;
-    const want = f === 'l' ? 'l' : f === 'r' ? 'r' : null;
-    if (!want) return { flip: 1, lean: 0 };
-    return d ? { flip: want === d ? 1 : -1, lean: 0 } : { flip: 1, lean: want === 'r' ? 1 : -1 };
-  });
+  /** How high it floats now (u, read by the 3D island each frame): Wisp a little off the ground; floating or flying
+   *  down on arriving (up again on leaving), from about a figure and a half above its spot. */
+  function liftNow(): number {
+    const id = shown;
+    if (!id) return 0;
+    const base = FLOAT[id] ?? 0;
+    if ((phase !== 'arrive' && phase !== 'leave') || (way !== 'float' && way !== 'fly')) return base;
+    const k = Math.min(1, (performance.now() - wayT0) / WAY_MS[way]), up = phase === 'arrive' ? 1 - k : k;
+    return base + (spot?.h ?? VILLAGER.h) * 1.5 * up * up;
+  }
+  /** Asleep face down on the beach (Gulliver), read by the 3D island. */
+  const proneNow = () => sleeping && !!spot?.lie;
+  /** Faded out: at the campsite's door walking on or off, or leaving in a puff (appearing, spooking) or flying away. */
+  const awayNow = () => edge || (phase === 'leave' && way !== 'walk' && way !== 'hop' && performance.now() - wayT0 > WAY_MS[way] * 0.5);
   /** Visitors who introduced themselves this session. */
   const met = new Set<VisitorId>();
   let last: string | undefined;
@@ -735,26 +733,19 @@
 </script>
 
 {#if shown && spot}
-  {@const b = BEHAVIOUR[shown]}
-  <!-- one world node at the feet (camera.svelte.ts): its live position is the director's while it walks -->
+  <!-- one world node at the feet (camera.svelte.ts): its live position is the director's while it walks; the 3D island
+       draws its model there (v3), the node's .art its tap area and its balloon's anchor -->
   <span class="visitor {shown}" aria-hidden="true" {@attach w.at({ x: spot.x, z: spot.z, h: spot.h + 40, live: () => livePos('visitor'), always: true, inv: true,
         m3: playing ? { key: '', emit: { kind: 'notes', every: 1100, lift: spot.h * 0.9 }, art: () => el?.querySelector('.notes') } : null,
-        c3: shown === 'reese' ? { key: 'villagers/reese', h: spot.h, lift: FLOAT[shown] ?? 0, flip: false, actor: 'visitor', art: () => el?.querySelector('.art'), also: { key: 'villagers/cyrus', h: spot.h * 1.05, dx: spot.h * 0.55 } } : { key: ART[shown] ?? `villagers/${shown}`, h: spot.h, lift: FLOAT[shown] ?? 0, flip: facing.flip < 0, lie: sleeping && spot.lie, actor: 'visitor', art: () => el?.querySelector('.art') } })} class:show={!!playing} class:walking={st.walking} class:edge data-visitor={shown} data-stage={spot.stage || undefined}
+        v3: { id: shown, lift: liftNow, prone: proneNow, away: awayNow, also: shown === 'reese' ? { id: 'cyrus', dx: spot.h * PAIR_DX } : undefined } })}
+      class:show={!!playing} class:walking={st.walking} data-visitor={shown} data-stage={spot.stage || undefined}
       data-phase={phase} data-way={way} data-asleep={sleeping ? (spot.lie ? 'lie' : 'stand') : undefined} data-motion={st.motion ?? undefined} bind:this={el}
-      style:--h={su(spot.h)} style:--lift={su(FLOAT[shown] ?? 0)}
-      style:--breath="{b.breath}ms" style:--step="{st.stepMs}ms" style:--flip={facing.flip} style:--lean={facing.lean}>
-      <i class="shade"></i>
+      style:--h={su(spot.h)} style:--lift={su(FLOAT[shown] ?? 0)} style:--wide={WIDE[shown] ?? 1}>
       {#if shown === 'wisp'}<i class="glow"></i>{/if}
+      <span class="art"></span>
       {#if shown === 'reese'}
-        <!-- Reese and Cyrus, side by side, under their heart float -->
-        <span class="art pair"><span class="face"><span class="body" bind:this={bodyEl}><span class="idle">
-          <span class="one"><OfficialArt key="villagers/reese" size={su(spot.h)} /></span><span class="one cyrus"><OfficialArt key="villagers/cyrus" size={su(spot.h * 1.05)} /></span>
-        </span></span></span></span>
+        <!-- Reese and Cyrus under their heart float -->
         <span class="float" data-heart-float>{@render heart()}</span>
-      {:else}
-        <span class="art"><span class="face" class:turning={st.motion === 'turn'}><span class="body" bind:this={bodyEl}><span class="idle">
-          <OfficialArt key={ART[shown] ?? `villagers/${shown}`} size={su(spot.h)} />
-        </span></span></span></span>
       {/if}
       <!-- emotes and fx over the head (never mirrored or squashed with the body), puffs at the feet -->
       <span class="over">
@@ -792,160 +783,20 @@
   .visitor { width: 0; height: 0; transform-origin: 0 0; pointer-events: none; }
   .visitor.walking { will-change: transform; }
   .visitor > * { position: absolute; left: 0; top: 0; line-height: 0; }
-  .art { translate: -50% calc(-97% - var(--lift)); transform-origin: 50% 100%; transition: opacity .5s ease, rotate .6s ease-out, translate .6s ease-out, scale .6s ease-out, transform-origin .6s ease-out; }
-  .visitor.edge .art { opacity: 0; }
-  .art :global(.official) { max-width: none; }
-  /* facing: a side-on render mirrors (--flip), one facing us leans toward what it looks at (--lean) */
-  .face {
-    display: block; transform-origin: 50% 100%; --facing: var(--flip); --in: 1;
-    transform: scaleX(var(--flip)) translateX(calc(var(--lean) * 3%)) rotate(calc(var(--lean) * 5deg)); transition: transform 240ms var(--ease-soft, ease);
-  }
-  .face.turning { animation: if-turn 1400ms var(--ease-soft, ease) both; transition: none; }
-  .body { display: block; transform-origin: 50% 100%; }
-  /* the shared idle base: a breath (scale: ~1.5% taller, a tiny squash at the bottom of it) and now and then a weight
-     shift (rotate + translate), on their own properties so they add up; walking, the villagers' walk bounce instead */
-  .idle {
-    display: block; transform-origin: 50% 100%;
-    animation: v-breathe var(--breath) ease-in-out infinite, v-shift calc(var(--breath) * 3.3) ease-in-out infinite;
-  }
-  .visitor.walking .idle { animation: if-walkbounce var(--step, 640ms) linear infinite; }
-  @keyframes v-breathe { 0%, 100% { scale: 1.004 .996; } 50% { scale: .993 1.015; } }
-  @keyframes v-shift {
-    0%, 28%, 100% { rotate: 0deg; translate: 0 0; } 36%, 58% { rotate: 1.4deg; translate: .8% 0; }
-    66%, 80% { rotate: -1deg; translate: -.6% 0; } 88% { rotate: 0deg; translate: 0 0; }
-  }
-  /* the villagers' contact shadow (IslandScene .vil .shadow): radial, surface-coloured, under the feet; it breathes with
-     the body and shrinks under a hop */
-  .shade {
-    display: block; width: calc(var(--h) * .6); height: calc(var(--h) * .12); translate: -50% -50%;
-    background: radial-gradient(closest-side, var(--sh-c, rgba(60, 80, 30, .35)), color-mix(in srgb, var(--sh-c, rgba(60, 80, 30, .35)) 70%, transparent) 50%, transparent);
-    animation: v-shade var(--breath) ease-in-out infinite;
-  }
-  @keyframes v-shade { 0%, 100% { scale: 1.02 1; } 50% { scale: .965 .97; } }
-  .visitor:is([data-motion='hop'], [data-motion='hop2'], [data-motion='surprise'], [data-motion='twirl']) .shade { animation: v-sh-hop 600ms ease both; }
-  @keyframes v-sh-hop { 0%, 100% { scale: 1; } 40% { scale: .78; } }
-  .visitor.walking .shade { animation: none; }
-
-  /* the director's motions (tokens.css's, and the visitors' own) */
-  .body:global([data-act='hop']) { animation: if-hop 600ms var(--ease-soft, ease) both; }
-  .body:global([data-act='hop2']) { animation: if-hop2 900ms var(--ease-soft, ease) both; }
-  .body:global([data-act='wiggle']) { animation: if-wiggle 700ms ease-in-out both; }
-  .body:global([data-act='nod']) { animation: if-nod 520ms ease-in-out both; }
-  .body:global([data-act='laugh']) { animation: if-laugh 620ms ease-in-out both; }
-  .body:global([data-act='surprise']) { animation: if-surprise 420ms var(--ease-bounce, ease) both; }
-  .body:global([data-act='stretch']) { animation: if-stretch 1400ms var(--ease-soft, ease) both; }
-  .body:global([data-act='dance']) { animation: if-dance 1600ms ease-in-out both; }
-  .body:global([data-act='samba']) { animation: if-dance 1000ms ease-in-out 2 both; }
-  .body:global([data-act='twirl']) { animation: v-twirl 900ms ease-in-out both; }
-  .body:global([data-act='twitch']) { animation: v-twitch 420ms ease-out both; }
-  .body:global([data-act='lookup']) { animation: v-lookup 1800ms var(--ease-soft, ease) both; }
-  .body:global([data-act='point']) { animation: v-point 1400ms var(--ease-soft, ease) both; }
-  .body:global([data-act='flap']) { animation: v-flap 900ms ease-in-out both; }
-  /* group stretching: the same stretches as the villagers (tokens.css), from the feet */
-  .body:global([data-act='warmup']) { animation: if-warmup 2000ms ease-in-out both; }
-  .body:global([data-act='sidebend']) { animation: if-sidebend 2000ms ease-in-out both; }
-  .body:global([data-act='leap']) { animation: if-leap 2000ms ease-in-out both; }
-  /* Jack's twirl: a spin on the spot (through edge-on and back), a little lift */
-  @keyframes v-twirl {
-    0%, 100% { transform: none; } 25% { transform: translateY(-3%) scaleX(.08); } 50% { transform: translateY(-5%) scaleX(-1); }
-    75% { transform: translateY(-3%) scaleX(.08); }
-  }
-  /* Gulliver's sleeping twitch */
-  @keyframes v-twitch { 0%, 100% { transform: none; } 20% { transform: translateY(-3%) rotate(-2deg); } 45% { transform: rotate(1.5deg); } 70% { transform: translateY(-1.5%); } }
-  /* Celeste: up on her toes, leaning back to the sky, held */
-  @keyframes v-lookup { 0%, 100% { transform: none; } 20%, 75% { transform: translateY(-1.5%) rotate(-3deg) scale(.98, 1.04); } }
-  /* Celeste points at a falling star: a bounce, up and leaning its way */
-  @keyframes v-point {
-    0%, 100% { transform: none; } 15% { transform: scale(1.06, .94); }
-    35%, 80% { transform: translateY(-4%) rotate(calc(var(--lean, 0) * 7deg - 2deg)) scale(.97, 1.05); }
-  }
-  /* Franklin's flap: three little wing beats, a bob each */
-  @keyframes v-flap { 0%, 100% { transform: none; } 12%, 37%, 62% { transform: translateY(-4%) scale(1.06, .96); } 25%, 50%, 75% { transform: scale(.97, 1.03); } }
-
-  /* K.K.: a gentle head-bob as he strums; harder while he plays */
-  .kk-slider .idle { animation: v-breathe var(--breath) ease-in-out infinite, v-strum 1.3s ease-in-out infinite alternate; }
-  .kk-slider.show .idle { animation: v-breathe var(--breath) ease-in-out infinite, v-strum-hard .42s ease-in-out infinite alternate; }
-  @keyframes v-strum { from { rotate: -1.5deg; translate: 0 0; } to { rotate: 1.5deg; translate: 0 -.6%; } }
-  @keyframes v-strum-hard { from { rotate: -3.5deg; translate: 0 0; } to { rotate: 3.5deg; translate: 0 -2%; } }
-  /* Wisp: see-through and glowing, floating with a slow bob, drifting a little side to side, a flicker */
-  .wisp .art { filter: var(--leaf-tint,) drop-shadow(0 0 6px rgba(220, 235, 255, .9)); }
-  .wisp .idle { animation: v-breathe var(--breath) ease-in-out infinite, v-drift 7.4s ease-in-out infinite, v-flicker 5.3s linear infinite; }
-  @keyframes v-drift { 0%, 100% { translate: 0 0; } 25% { translate: 4% -6%; } 50% { translate: 0 -2%; } 75% { translate: -4% -6%; } }
-  @keyframes v-flicker { 0%, 100% { opacity: .84; } 9% { opacity: .62; } 12% { opacity: .84; } 47% { opacity: .8; } 50% { opacity: .56; } 54% { opacity: .82; } 80% { opacity: .88; } }
-  .wisp .shade { opacity: .45; scale: .7; }
+  /* the tap area and the balloon's anchor: the model's core standing (its height, ~0.6 as wide; a pair wider), or lying
+     face down (its length across, low) */
+  .art { display: block; width: calc(var(--h) * .6 * var(--wide)); height: var(--h); translate: -50% calc(-100% - var(--lift)); }
+  .visitor[data-asleep='lie'] .art { width: var(--h); height: calc(var(--h) * .45); translate: -50% -75%; }
+  /* Wisp's glow round him (the model floats in it) */
   .glow {
     display: block; width: calc(var(--h) * 1.3); height: calc(var(--h) * 1.1); translate: -50% calc(-50% - var(--h) * .5 - var(--lift));
     background: radial-gradient(closest-side, rgba(225, 238, 255, .55), rgba(225, 238, 255, 0)); animation: v-glow 3.2s ease-in-out infinite alternate;
   }
   @keyframes v-glow { from { opacity: .45; } to { opacity: .9; } }
-  /* Gulliver asleep: face down on the ground (on his front, his beak in the sand), a slow snoring breath; he eases up
-     onto his feet when woken (the transition) */
-  .visitor[data-asleep='lie'] .art { translate: -50% calc(-50% - var(--h) * .2); rotate: -90deg; scale: .92; transform-origin: 50% 50%; }
-  .visitor[data-asleep] .idle { animation: v-snore 4s ease-in-out infinite; }
-  .visitor[data-asleep='lie'] .shade { width: var(--h); translate: -50% -60%; animation-duration: 4s; }
-  .visitor[data-asleep='stand'] .face { rotate: 5deg; }
-  @keyframes v-snore { 0%, 100% { scale: 1; } 50% { scale: 1.03 .975; } }
   .visitor[data-asleep='lie'] .over { top: calc(var(--h) * -.5); left: calc(var(--h) * -.36); }
-  /* Jack: a theatrical sway */
-  .jack .idle { animation: v-breathe var(--breath) ease-in-out infinite, v-sway 2.6s ease-in-out infinite alternate; }
-  @keyframes v-sway { from { rotate: -3.5deg; translate: -1% 0; } to { rotate: 3.5deg; translate: 1% 0; } }
-  /* Franklin: a waddling bob */
-  .franklin .idle { animation: v-breathe var(--breath) ease-in-out infinite, v-waddle 1.1s ease-in-out infinite alternate; }
-  @keyframes v-waddle { 0% { rotate: -1.5deg; translate: 0 0; } 50% { translate: 0 -1.4%; } 100% { rotate: 1.5deg; translate: 0 0; } }
-  /* Jingle: a jolly bounce */
-  .jingle .idle { animation: v-breathe var(--breath) ease-in-out infinite, v-bounce .9s cubic-bezier(.3, 0, .6, 1) infinite alternate; }
-  @keyframes v-bounce { from { translate: 0 0; } to { translate: 0 -4.5%; } }
-  /* Pavé: Festivale's dance steps, all day */
-  .pave .idle { animation: v-breathe var(--breath) ease-in-out infinite, v-steps 1.2s ease-in-out infinite; }
-  @keyframes v-steps { 0%, 50%, 100% { translate: 0 0; rotate: 0deg; } 25% { translate: -3% -2%; rotate: -5deg; } 75% { translate: 3% -2%; rotate: 5deg; } }
-  /* Zipper: a hop on the spot now and then; walking, he hops along */
-  .zipper .idle { animation: v-breathe var(--breath) ease-in-out infinite, v-hops 1.9s ease-out infinite; }
-  @keyframes v-hops { 0%, 62%, 84%, 92%, 100% { translate: 0 0; } 74% { translate: 0 -9%; } 88% { translate: 0 -2.5%; } }
-  .zipper.walking .idle { animation: v-hopwalk .46s ease-out infinite; }
-  @keyframes v-hopwalk { 0%, 100% { translate: 0 0; scale: 1.04 .96; } 45% { translate: 0 -8%; scale: .96 1.04; } }
-  /* Reese and Cyrus: side by side, a little apart, each leaning toward the other in turn; a nuzzle closer */
-  .pair .idle { display: flex; align-items: flex-end; gap: calc(var(--h) * .03); animation: v-breathe var(--breath) ease-in-out infinite; }
-  .one { display: block; transform-origin: 50% 100%; animation: v-lean-r 3.4s ease-in-out infinite; }
-  .one.cyrus { animation-name: v-lean-c; animation-delay: -.5s; }
-  @keyframes v-lean-r { 0%, 100% { rotate: 0deg; } 40%, 60% { rotate: 3.5deg; } }
-  @keyframes v-lean-c { 0%, 100% { rotate: 0deg; } 40%, 60% { rotate: -3.5deg; } }
-  .pair .body:global([data-act='nuzzle']) .one { animation: v-nuzzle-r 1600ms ease-in-out both; }
-  .pair .body:global([data-act='nuzzle']) .one.cyrus { animation-name: v-nuzzle-c; }
-  @keyframes v-nuzzle-r { 0%, 100% { rotate: 0deg; translate: 0 0; } 30%, 70% { rotate: 8deg; translate: 4% 0; } }
-  @keyframes v-nuzzle-c { 0%, 100% { rotate: 0deg; translate: 0 0; } 30%, 70% { rotate: -8deg; translate: -4% 0; } }
-  .visitor.walking .one { animation: none; }
-
-  /* arriving and leaving (transform and opacity on the figure): a pop in place on the page's first paint; down from the
-     sky (Wisp floats, Celeste flies), appearing (K.K. on his stool, Gulliver washed up), Jack's spooky puff; walking on
-     from the shore fades in at the water's edge (.edge). Leaving plays the same backwards */
-  .visitor[data-phase='pop'] .art { animation: v-pop 700ms ease-out both; }
-  .visitor[data-phase='pop']:is([data-way='float'], [data-way='fly']) .art { animation-name: v-pop-down; }
-  @keyframes v-pop { from { opacity: 0; transform: translateY(4%) scale(.94); } }
-  @keyframes v-pop-down { from { opacity: 0; transform: translateY(-10%); } }
-  .visitor[data-phase='arrive'][data-way='float'] .art { animation: v-float-in 2200ms ease-out both; }
-  .visitor[data-phase='arrive'][data-way='fly'] .art { animation: v-fly-in 1600ms ease-out both; }
-  .visitor[data-phase='arrive'][data-way='appear'] .art { animation: v-appear 900ms ease-out both; }
-  .visitor[data-phase='arrive'][data-way='spook'] .art { animation: v-spook 1200ms ease-out both; }
-  .visitor[data-phase='leave'][data-way='float'] .art { animation: v-float-in 2200ms ease-in reverse both; }
-  .visitor[data-phase='leave'][data-way='fly'] .art { animation: v-fly-in 1600ms ease-in reverse both; }
-  .visitor[data-phase='leave'][data-way='appear'] .art { animation: v-appear 900ms ease-in reverse both; }
-  .visitor[data-phase='leave'][data-way='spook'] .art { animation: v-spook 1200ms ease-in reverse both; }
-  .visitor[data-phase='leave']:not(.walking) .shade, .visitor[data-phase='arrive']:not(.walking):not([data-way='appear']) .shade { animation: v-shade-in 1600ms ease-out both; }
-  .visitor[data-phase='leave']:not(.walking) .shade { animation-direction: reverse; }
-  @keyframes v-float-in { from { opacity: 0; transform: translateY(calc(var(--h) * -1.4)); } 70% { opacity: .9; } to { opacity: 1; transform: none; } }
-  @keyframes v-fly-in {
-    from { opacity: 0; transform: translate(calc(var(--h) * .8), calc(var(--h) * -1.8)) rotate(12deg); }
-    60% { opacity: 1; transform: translate(calc(var(--h) * .1), calc(var(--h) * -.3)) rotate(-4deg); }
-    80% { transform: translateY(2%) scale(1.06, .94); } to { opacity: 1; transform: none; }
-  }
   @keyframes v-appear { from { opacity: 0; transform: scale(.85); } 60% { opacity: 1; transform: scale(1.04); } to { opacity: 1; transform: none; } }
-  @keyframes v-spook {
-    0% { opacity: 0; transform: scale(.4) rotate(-30deg); } 30% { opacity: .6; } 45% { opacity: .2; }
-    60% { opacity: .9; transform: scale(1.1) rotate(8deg); } 100% { opacity: 1; transform: none; }
-  }
-  @keyframes v-shade-in { from { opacity: 0; scale: .4; } }
   /* under a sheet or with the page hidden, everyone holds still */
-  :global(.if-scene:is([data-covered], [data-paused])) .visitor :is(.idle, .one, .shade, .glow, .body, .art, .face) { animation-play-state: paused; }
+  :global(.if-scene:is([data-covered], [data-paused])) .visitor :is(.glow, .float) { animation-play-state: paused; }
 
   /* over the head: the emote, the fx, Gulliver's sleep talk (unmirrored); a walk's puffs at the feet */
   .over { left: 0; top: calc(-1 * (var(--h) + var(--lift))); width: 0; height: 0; }

@@ -77,20 +77,11 @@ const SPECS: Record<string, Spec> = {
   'deco/campsite-sign': [128, 'Campsite_Sign_NH_Icon.png'],
   'deco/present': [96, 'Present_NH_Inv_Icon.png'],
   // Halloween (Oct 31): NH's orange pumpkin by day, the orange spooky lantern (a jack-o'-lantern) from 17:00, the candy
-  // Jack is given; Jack himself (the 3D model: his NH artwork is a small crop; a visitor only, so not in the roster).
+  // Jack is given (Jack himself, and the holiday hosts and the wedding's pair, are their 3D models only: no renders).
   'deco/pumpkin': [96, 'Orange_Pumpkin_NH_Inv_Icon.png'],
   'deco/spooky-lantern': [128, 'Spooky_Lantern_(Orange)_NH_Icon.png'],
   'items/candy': [96, 'Candy_NH_Inv_Icon.png'],
-  'villagers/jack': [512, 'Jack_NH_Model.png', 'Jack_NH.png'],
-  // NH's holiday hosts (island/visitors.ts HOSTS; visitors only, not in the roster): Franklin (Turkey Day), Jingle (Toy
-  // Day), Pavé (Festivale), Zipper (Bunny Day)
-  'villagers/franklin': [512, 'Franklin_NH_Model.png', 'Franklin_NH.png'],
-  'villagers/jingle': [512, 'Jingle_NH_Model.png'],
-  'villagers/pave': [512, 'Pavé_NH_Model.png', 'Pavé_NH.png'],
-  'villagers/zipper': [512, 'Zipper_T._Bunny_NH_Model.png'],
-  // the wedding countdown (island/wedding.ts): Reese and Cyrus, and NH's wedding arch for June Sundays
-  'villagers/reese': [512, 'Reese_NH_Model.png', 'Reese_NH.png'],
-  'villagers/cyrus': [512, 'Cyrus_NH_Model.png', 'Cyrus_NH.png'],
+  // the wedding countdown (island/wedding.ts): NH's wedding arch for June Sundays
   'deco/wedding-arch': [256, 'Wedding_Arch_(Cute)_NH_Icon.png'],
   // birthdays (island/Birthday.svelte): NH's birthday cake, the party hats our villagers wear, the party popper
   'deco/birthday-cake': [128, 'Birthday_Cake_(Strawberry_Buttercream)_NH_Icon.png'],

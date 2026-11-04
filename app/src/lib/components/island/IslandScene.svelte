@@ -1230,7 +1230,6 @@
   .scene[data-r3] :global(:is(.actor, .visitor) .fxa:not(.sweat)) { opacity: 0 !important; --art3d: off; }
   /* a 3D villager's marks are the canvas's (world3d/Island3D marks3: NH's models over its head); a ？ stays the DOM's */
   .scene[data-r3] :global(.actor[data-v3] .float[data-mark]:not([data-mark='question'])) { opacity: 0 !important; --art3d: off; }
-  .scene[data-r3] :global(.visitor:has(> .art.m3on) > .shade) { opacity: 0; --art3d: off; }
   .scene[data-r3] .vil :global(:is(.body > .official, .body > .sil, .shadow)) { opacity: 0; --art3d: off; }
   /* a sting's swollen eye: the 3D villager's own (villager3d's sting face and lump on its head bone), never the 2D
      render's lump floating where that render's eye was */

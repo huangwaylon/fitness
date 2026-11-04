@@ -7,7 +7,7 @@
 import { foliageFor, seasonFor, SEASONS, type Foliage, type Season, type TimeOfDay } from './season.ts';
 
 /** The events the preview can bring on: NH's dated ones (island/events.ts EventId), ours and the sky's. */
-export const PREVIEW_EVENTS = ['festivale', 'birthday-B', 'bunny-day', 'cherry', 'fireworks', 'birthday-A', 'wedding', 'halloween', 'maple', 'turkey-day', 'toy-day', 'shower'] as const;
+export const PREVIEW_EVENTS = ['birthday-B', 'bunny-day', 'cherry', 'fireworks', 'birthday-A', 'wedding', 'halloween', 'maple', 'turkey-day', 'toy-day', 'shower'] as const;
 type PreviewEvent = (typeof PREVIEW_EVENTS)[number];
 /** The setting's weathers (the dev param has island/weather.ts FORCED's whole list). */
 export const PREVIEW_WEATHER = ['clear', 'rain', 'snow'] as const;
@@ -35,7 +35,6 @@ export interface Scene extends Choice {
 
 /** The look of each event's day (MM-DD: its season, foliage and hedges) and its hour (night: the evening's events). */
 const EVENT_DAY: Record<PreviewEvent, { md?: string; tod?: TimeOfDay; weather?: string }> = {
-  festivale: { md: '02-15' },
   'birthday-B': { md: '03-04' },
   'bunny-day': { md: '04-04' },
   cherry: { md: '04-05' },

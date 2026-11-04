@@ -1,8 +1,10 @@
 // The 3D island's villagers in 3D (villager3d/: NH's own models, rigged and posed in code), driven from the director in
 // each frame: where each stands (its live position), which way it faces (the way it walks; else as the director says),
 // its state (walking, standing, sitting on a seat, dozing) and its moments (a hop, a high five, a surprise, a sting),
-// its face from its emote. A villager whose model hasn't loaded, or who has none (NH's 2.0 newcomers), is drawn as its
-// card meanwhile (Island3D: `cards`). Still, a villager holds its pose: its bones are posed only while something moves
+// its face from its emote. The day's visitor is one more (slot `visitor`, and `visitor:b` for Reese's Cyrus: NH's special
+// characters, converted as the villagers are), lying face down asleep when it's Gulliver (`prone`). A villager whose
+// model hasn't loaded, or who has none (NH's 2.0 newcomers), is drawn as its card meanwhile (Island3D: `cards`); a
+// visitor is drawn once its model is in. Still, a villager holds its pose: its bones are posed only while something moves
 // (it walks, it acts, the camera moves); its blinks are a texture's offset, so the island idles as it did. What it
 // wears (a birthday hat, the party glasses: assets.json `joint` models, their origin NH's head joint) rides its head bone.
 import { MeshLambertMaterial, Color, Vector3 as V3, type Vector3, type Material, type Mesh, type MeshStandardMaterial, type Object3D } from 'three';
@@ -39,6 +41,8 @@ export interface VSpec {
   /** Its side of the island (inward: toward the middle). */
   side: 'left' | 'right';
   asleep: boolean;
+  /** Asleep face down on the ground, its head to the left (Gulliver washed up). */
+  prone?: boolean;
   /** On a seat: how high its top is (u), or null. */
   seat: number | null;
   /** Lifted (a pull-up's rep). */
@@ -79,9 +83,11 @@ export interface Villagers3 {
 /** The director's motions as the 3D villagers' moments. */
 const ACT: Partial<Record<Motion, Action>> = {
   hop: 'hop', hop2: 'hop', twirl: 'hop', dance: 'hop', samba: 'hop', laugh: 'hop', flap: 'hop', squish: 'hop',
-  surprise: 'surprise', twitch: 'surprise', nod: 'wave', bow: 'wave', proud: 'wave', wiggle: 'wave',
+  surprise: 'surprise', twitch: 'twitch', nod: 'wave', bow: 'wave', proud: 'wave', wiggle: 'wave',
   // group stretching (island/stretching.ts): NH's three, posed
-  warmup: 'warmup', sidebend: 'sidebend', leap: 'jump'
+  warmup: 'warmup', sidebend: 'sidebend', leap: 'jump',
+  // the visitors' own: Celeste points at a falling star, a wave up at it
+  point: 'wave'
 };
 /** The island's seats (world.ts SEATS) on their pieces: which piece, its model (villager3d/seats3d.json) and which of
  *  its seats (left to right). */
@@ -297,7 +303,8 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       w.z = s.z;
       // which way: the way it walks; else the director's (left, right, inward), else toward the camera
       // (fishing: toward the float)
-      let want = s.walking && moved > 0.05 ? Math.atan2(dx, -dz)
+      // (face down: its head to the left, along the shore)
+      let want = s.prone ? -Math.PI / 2 : s.walking && moved > 0.05 ? Math.atan2(dx, -dz)
         : s.face === 'l' ? -1.1 : s.face === 'r' ? 1.1 : s.face === 'in' ? (s.side === 'left' ? 0.6 : -0.6) : 0;
       // (fishing, standing: straight at the float, NH's quick smooth turn as the cast goes out, and kept on it; square
       // on from the rod's hand, so the facing, the rod and the line are one line in plan. Seated or lying: no body
@@ -316,7 +323,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       // on a seat: on its model's own (villager3d sitAt: the villager sits down there itself), dozing off on it asleep
       const anchor = s.seat !== null ? anchorAt(s) : null;
       // (lying on one, the hammock: asleep it naps there)
-      const state: State = anchor ? (anchor.lie ? (s.asleep ? 'nap' : 'lie') : 'sit') : s.asleep ? (s.seat !== null ? 'nap' : 'doze') : s.seat !== null ? 'sit' : s.walking ? 'walk' : rod ? 'fish' : 'idle';
+      const state: State = anchor ? (anchor.lie ? (s.asleep ? 'nap' : 'lie') : 'sit') : s.prone ? 'prone' : s.asleep ? (s.seat !== null ? 'nap' : 'doze') : s.seat !== null ? 'sit' : s.walking ? 'walk' : rod ? 'fish' : 'idle';
       if (v.state() !== state) w.posing = true;
       v.set(state);
       if (s.motionN !== w.motionN) {

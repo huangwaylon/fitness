@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { eggTime, eventAt, festivale, turkeyDay } from './events.ts';
+import { eggTime, eventAt, turkeyDay } from './events.ts';
 import { easter, nthWeekday } from '#lib/time/dates.ts';
 import { EGG_ODDS, eggInBalloon, eggInDig, eggOnLine } from './eggs.ts';
 import { HOSTS, visitorAt } from './visitors.ts';
@@ -47,11 +47,8 @@ describe('NH events (events.ts)', () => {
     expect(eventAt('2026-12-25', 1)).toBeNull();
     expect(eventAt('2026-12-23', 23)).toBeNull();
   });
-  it('Festivale: Shrove Monday, 48 days before Easter (Nookipedia), Pavé all day', () => {
-    expect([2026, 2027, 2028, 2029].map(festivale)).toEqual(['2026-02-16', '2027-02-08', '2028-02-28', '2029-02-12']);
-    for (const y of [2026, 2027, 2028, 2029]) expect(weekday(festivale(y))).toBe(1);
-    expect(eventAt('2027-02-08', 10)).toEqual({ id: 'festivale', night: true });
-    expect(eventAt('2027-02-09', 10)).toBeNull(); // Mardi Gras itself isn't NH's day
+  it('no Festivale: its host, Pavé, has no 3D model (not in NH’s files), and it had nothing else', () => {
+    expect(eventAt('2027-02-08', 10)).toBeNull();
   });
   it('Bunny Day: Easter Sunday; its celebrations the 7 days before; Zipper on the first and last day (Nookipedia)', () => {
     // 2027: Easter 03-28; the week from Palm Sunday 03-21
@@ -70,7 +67,7 @@ describe('NH events (events.ts)', () => {
 
 describe('holiday hosts in the visitor slot', () => {
   it('each event’s host from its main part, before anyone else; none on its eve or after midnight', () => {
-    expect(HOSTS).toEqual({ halloween: 'jack', 'turkey-day': 'franklin', 'toy-day': 'jingle', festivale: 'pave', 'bunny-day': 'zipper' });
+    expect(HOSTS).toEqual({ halloween: 'jack', 'turkey-day': 'franklin', 'toy-day': 'jingle', 'bunny-day': 'zipper' });
     const at = (d: string, h: number) => visitorAt(d, addDays(d, -1), h, weekday(d));
     expect(at('2026-11-26', 8)).not.toBe('franklin');
     expect(at('2026-11-26', 9)).toBe('franklin');
@@ -78,14 +75,13 @@ describe('holiday hosts in the visitor slot', () => {
     expect(at('2026-11-27', 1)).not.toBe('franklin');
     expect(at('2026-12-24', 12)).toBe('jingle');
     expect(at('2026-12-24', 22)).toBe('jingle');
-    expect(at('2027-02-08', 12)).toBe('pave');
     expect(at('2027-03-21', 8)).toBe('zipper'); // a Sunday morning: before Daisy Mae
     expect(at('2027-03-28', 12)).toBe('zipper');
     expect(at('2027-03-24', 12)).not.toBe('zipper'); // mid-week: eggs, no Zipper
   });
   it('their names and lines in both languages; Franklin asks for a fish and thanks with its name', () => {
     for (const cat of [ja, en] as Record<string, string>[]) {
-      for (const id of ['franklin', 'jingle', 'pave', 'zipper']) {
+      for (const id of ['franklin', 'jingle', 'zipper']) {
         expect(cat[`visitor.${id}`]).toBeTruthy();
         expect(cat[`chat.sp.${id}.intro`].split('\n').length).toBeGreaterThanOrEqual(3);
         for (const i of [0, 1, 2, 3]) expect(cat[`chat.sp.${id}.${i}`]).toBeTruthy();
@@ -94,8 +90,8 @@ describe('holiday hosts in the visitor slot', () => {
       expect(cat['chat.sp.franklin.thanks']).toContain('{fish}');
       expect(cat['beach.fished']).toContain('{name}');
     }
-    expect([(ja as Record<string, string>)['visitor.franklin'], (ja as Record<string, string>)['visitor.pave'], (ja as Record<string, string>)['visitor.zipper']])
-      .toEqual(['フランクリン', 'ベルリーナ', 'ぴょんたろう']);
+    expect([(ja as Record<string, string>)['visitor.franklin'], (ja as Record<string, string>)['visitor.zipper']])
+      .toEqual(['フランクリン', 'ぴょんたろう']);
     expect((jaNames as Record<string, string>)['beach.name.water-egg']).toBe('サカナのたまご');
   });
 });

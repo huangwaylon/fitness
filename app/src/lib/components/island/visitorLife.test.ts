@@ -19,17 +19,13 @@ function acts(id: (typeof VISITORS)[number], s: Partial<BeatState> = {}, n = 200
 }
 
 describe('visitor life (NH behaviours)', () => {
-  it('every visitor has a behaviour: a breath of 2.4–3.2 s, emotes from the villagers’ set, a known motion', () => {
+  it('every visitor has a behaviour: emotes from the villagers’ set, a known motion', () => {
     for (const id of VISITORS) {
       const b = BEHAVIOUR[id];
-      expect(b.breath, id).toBeGreaterThanOrEqual(2400);
-      expect(b.breath, id).toBeLessThanOrEqual(3200);
       expect(b.emotes.length, id).toBeGreaterThan(1);
       for (const e of [...b.emotes, b.hello]) expect(isMark(e) || COLOUR_GLYPHS.includes(e as never), `${id} ${e}`).toBe(true);
       if (b.signature.motion) expect(MOTION_MS[b.signature.motion], id).toBeGreaterThan(0);
     }
-    // no two breathe on the same beat as the villagers' bob (2.4 s) by default… but each has its own
-    expect(new Set(VISITORS.map((id) => BEHAVIOUR[id].breath)).size).toBeGreaterThan(5);
   });
   it('the ones who roam in NH stroll (Daisy Mae, Franklin, Zipper, Celeste); K.K., Gulliver, Jack and the rest stay put', () => {
     for (const id of ['daisy-mae', 'franklin', 'zipper', 'celeste'] as const) {
@@ -37,15 +33,14 @@ describe('visitor life (NH behaviours)', () => {
       expect(BEHAVIOUR[id].roam, id).toBeLessThanOrEqual(80);
       expect(acts(id).has('wander'), id).toBe(true);
     }
-    for (const id of ['kk-slider', 'gulliver', 'jack', 'wisp', 'pave', 'jingle', 'reese'] as const) {
+    for (const id of ['kk-slider', 'gulliver', 'jack', 'wisp', 'jingle', 'reese'] as const) {
       expect(BEHAVIOUR[id].roam, id).toBe(0);
       expect(acts(id).has('wander'), id).toBe(false);
     }
   });
-  it('signatures after NH: Jack twirls, Zipper hops, Pavé dances, Celeste looks up, K.K. nods with notes, Reese and Cyrus nuzzle', () => {
+  it('signatures after NH: Jack twirls, Zipper hops, Celeste looks up, K.K. nods with notes, Reese and Cyrus nuzzle', () => {
     expect(BEHAVIOUR.jack.signature.motion).toBe('twirl');
     expect(BEHAVIOUR.zipper.signature.motion).toBe('hop2');
-    expect(BEHAVIOUR.pave.signature.motion).toBe('samba');
     expect(BEHAVIOUR.celeste.signature.motion).toBe('lookup');
     expect(BEHAVIOUR['kk-slider'].signature).toEqual({ motion: 'nod', fx: 'notes' });
     expect(BEHAVIOUR.reese.signature.fx).toBe('hearts');
@@ -134,11 +129,5 @@ describe('visitor life (NH behaviours)', () => {
     expect(tapMotion('kk-slider')).toBe('nod');
     expect(tapMotion('wisp')).toBe('wiggle');
     expect(tapMotion('gulliver')).toBe('surprise');
-  });
-  it('only side-on renders mirror (Gulliver looks left, Daisy Mae right); K.K. and the pair never do', () => {
-    expect(BEHAVIOUR.gulliver.drawn).toBe('l');
-    expect(BEHAVIOUR['daisy-mae'].drawn).toBe('r');
-    expect(BEHAVIOUR['kk-slider'].drawn).toBeNull();
-    expect(BEHAVIOUR.reese.drawn).toBeNull();
   });
 });

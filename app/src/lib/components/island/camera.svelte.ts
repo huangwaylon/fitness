@@ -49,30 +49,22 @@ export interface NodeSpec {
    *  position too): the node's `[data-m3art]` art goes invisible once the model stands there (world3d/Island3D). `yaw`:
    *  turned (radians); `grey`: drained toward grey (a fruit not grown yet, 0 … 1). */
   m3?: M3 | null;
-  /** The 3D island draws this character as a card of its render (a visitor: depth-tested like the villagers),
-   *  posed by its actor's motion; its art (`art`) invisible once the card stands there. */
-  c3?: C3 | null;
+  /** The 3D island draws this character as its NH model (a visitor: world3d/villagers.ts, as the villagers), posed
+   *  by its actor's state and motions, where the node is (its live position). */
+  v3?: V3 | null;
 }
-interface C3 {
-  key: string;
-  /** Its height (u) and how far it floats above the ground. */
-  h: number;
-  lift?: number;
-  flip?: boolean;
-  /** Lying flat on the ground, face down (Gulliver asleep). */
-  lie?: boolean;
-  actor?: 'visitor' | 'host';
-  art?: () => Element | null | undefined;
-  /** A second figure beside it (Reese's Cyrus): its art, height and how far across (u). */
-  also?: { key: string; h: number; dx: number };
-}
-/** A node the 3D island draws as a card. */
-export interface Card3 {
+export interface V3 {
+  /** Its model (villager3d/villagers.json). */
   id: string;
-  c3: C3;
-  x: number;
-  z: number;
-  shown: boolean;
+  /** How far it floats above the ground now (u: Wisp's float, a flight down), read each frame. */
+  lift: () => number;
+  /** Asleep face down on the ground (Gulliver washed up), read each frame. */
+  prone: () => boolean;
+  /** Faded out (walking on or off at the campsite's door, leaving in a puff), read each frame. */
+  away: () => boolean;
+  /** A second figure beside it (Reese's Cyrus): its model and how far across (u: each stands half of it off the
+   *  node). */
+  also?: { id: string; dx: number };
 }
 interface M3 {
   key: string;
@@ -202,7 +194,7 @@ export class World {
 
   private nodes = new Set<Node>();
   private m3s = new Set<Node>();
-  private c3s = new Set<Node>();
+  private v3s = new Set<Node>();
   private seq3 = 0;
   private movers = new Set<Node>();
   private dirty = new Set<Node>();
@@ -475,11 +467,13 @@ export class World {
     }
   }
 
-  /** The nodes the 3D island draws as cards. */
-  *cards3(): Generator<Card3> {
-    for (const n of this.c3s) {
-      const [x, z] = n.live ? n.live() : [n.x, n.z];
-      yield { id: n.id3, c3: n.c3!, x, z, shown: n.shown };
+  /** The characters the 3D island draws as models (a visitor), where they are now (Island3D, each frame: no allocation). */
+  eachV3(fn: (v3: V3, x: number, z: number, shown: boolean) => void): void {
+    for (const n of this.v3s) {
+      if (n.live) {
+        const p = n.live();
+        fn(n.v3!, p[0], p[1], n.shown);
+      } else fn(n.v3!, n.x, n.z, n.shown);
     }
   }
 
@@ -521,7 +515,7 @@ export class World {
       el.toggleAttribute('data-m3', !!n.m3 && !n.m3.art);
       this.nodes.add(n);
       if (n.m3) this.m3s.add(n);
-      if (n.c3) this.c3s.add(n);
+      if (n.v3) this.v3s.add(n);
       if (n.live) this.movers.add(n);
       if (n.mode !== 'quad') this.zOf(n, n.x, n.z);
       // placed at once when the camera is known (no flash at the origin)
@@ -532,7 +526,7 @@ export class World {
       return () => {
         this.nodes.delete(n);
         this.m3s.delete(n);
-        this.c3s.delete(n);
+        this.v3s.delete(n);
         this.movers.delete(n);
         this.dirty.delete(n);
         this.unshaped.delete(n);

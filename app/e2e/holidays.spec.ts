@@ -1,6 +1,6 @@
 // NH's holiday hosts in the visitor slot (docs/design.md "Holiday hosts"), each on its Nookipedia date rule
-// (events.ts): Franklin on Turkey Day (he asks for a fish; the next catch makes him happy), Jingle on Toy Day, Pavé at
-// Festivale, Zipper on Bunny Day's first and last days; Bunny Day's eggs in a dig spot. No ベル.
+// (events.ts): Franklin on Turkey Day (he asks for a fish; the next catch makes him happy), Jingle on Toy Day,
+// Zipper on Bunny Day's first and last days; Bunny Day's eggs in a dig spot. No ベル.
 import { expect, test, type Page } from '@playwright/test';
 import { fossilOnScreen, reelOnBite, stageCam, toTheWater } from './island.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
@@ -47,7 +47,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await page.setViewportSize({ width: w, height: h });
     for (const [date, id, name] of [
       ['2026-11-26T10:00', 'franklin', 'フランクリン'], ['2026-12-24T12:00', 'jingle', 'ジングル'],
-      ['2027-02-08T12:00', 'pave', 'ベルリーナ'], ['2027-03-21T09:00', 'zipper', 'ぴょんたろう']
+      ['2027-03-21T09:00', 'zipper', 'ぴょんたろう']
     ] as const) {
       await page.goto(`?demo&date=${date}&critter=none`);
       await expect(hudMenu(page)).toBeVisible();
