@@ -14,6 +14,9 @@ sprite. This file is the inventory: every art key the island renders, its model,
   the repo; the converted GLBs are public (the user's call).
 - Output: `app/static/room/world3d/<kind>/<id>.glb` (under `/room/`: the service worker caches a file on first use,
   never at install). The POC's own 43 models stay where they are (`models.json`) and serve their keys from there.
+- See-through two-sided parts (glass, curtains, a critter's fade, the particles) are two meshes, one a side
+  (`world3d/sides.ts`): three's own two passes re-derive the program twice a draw every frame (27–31 a frame, ~13% of
+  `render()`'s CPU on the demo island). The same pixels: the back faces drawn first.
 - Contact sheets: `node scripts/world3d-sheet.ts [-- --only=bug,fish] [-- --night]` draws every model at its world
   scale beside an 80u villager card, at the island's 30° pitch, to `/tmp/world3d-assets/sheet-<kind>-<n>.png`.
 
