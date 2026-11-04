@@ -44,6 +44,7 @@ const NONE: Record<string, string> = {
   'lib/components/panel/VillagerPicker.svelte': 'name and search fields; the villager already chosen does nothing',
   'lib/components/panel/LangSection.svelte': 'the language already chosen does nothing',
   'lib/components/panel/SeasonSection.svelte': 'the choice already made does nothing',
+  'lib/components/panel/FpsSection.svelte': 'the frame rate already chosen does nothing',
   'lib/components/ui/Segmented.svelte': 'the group or tab already shown does nothing (けんこう, ごはん)',
   'lib/components/health/Pick.svelte': 'a dropdown (けんこう, ごはん): its value already shown does nothing; it ticks on change (setWho, setPeriod)',
   'lib/components/food/FoodSearch.svelte': 'the search field: the system keyboard clicks',

@@ -8,10 +8,10 @@
 //   The ground: the layout's (terrain.ts buildGround: its land, cliffs and water, bent here).
 //   The things: NH's models (things.ts); the villagers and what has no model yet: cards (cards.ts).
 //   The lights: lights.ts (always-on emissive and halos, faded point lights). Shadows on by default.
-//   The frames: 60 a second while anything moves; while only the ambience does (the water, the season's fall, a fire's
-//   flicker, a sleeper's zzz, a blink) `ambient` a second (30; a software renderer's few); none when nothing does, none
-//   hidden or paused (a sheet over the island). The World's step runs in each frame before it draws, so the DOM moves
-//   with the picture.
+//   The frames: せってい's frame rate (30 or 60: store/frameRate.svelte.ts) while anything moves; while only the
+//   ambience does (the water, the season's fall, a fire's flicker, a sleeper's zzz, a blink) `ambient` a second (30 at
+//   most; a software renderer's few); none when nothing does, none hidden or paused (a sheet over the island). The
+//   World's step runs in each frame before it draws, so the DOM moves with the picture.
 // Plain TS; world3d/Island3D.svelte drives it.
 import {
   Box3, Color, DirectionalLight, Fog, HemisphereLight, Mesh, PerspectiveCamera, Scene, SRGBColorSpace, Texture, Vector3,
@@ -26,6 +26,7 @@ import { createLights, lampFog, type LampSpot } from './lights.ts';
 import type { Inst } from './objects.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
 import { releaseAll, resourcesOf } from './release.ts';
+import { due, frameRate } from '#lib/store/frameRate.svelte.ts';
 
 type Tod = 'day' | 'dusk' | 'night';
 
@@ -59,8 +60,6 @@ type Want = boolean | 'ambient';
 export interface Options {
   dpr: number;
   shadows: boolean;
-  /** Frames a second at most (30 or 60). */
-  cap: 30 | 60;
   /** Frames a second while only the ambience moves (the water, the fall, a flicker): 0 none (it holds still). */
   ambient: number;
 }
@@ -233,7 +232,7 @@ export interface Island3 {
 }
 
 export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: WebGLRenderer) => BuiltGround, init: Partial<Options> & { aa?: boolean } = {}): Island3 {
-  const opts: Options = { dpr: Math.min(2, window.devicePixelRatio || 1), shadows: true, cap: 60, ambient: 30, ...init };
+  const opts: Options = { dpr: Math.min(2, window.devicePixelRatio || 1), shadows: true, ambient: 30, ...init };
   // the e2e's logic mode (testMode.ts): every frame runs (the scene, the cameras, the hooks), nothing is drawn
   const noDraw = drawOff();
   if (noDraw) Object.assign(opts, { dpr: 1, shadows: false });
@@ -705,16 +704,19 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     if (w === true) busy = true, why.add(name);
     else if (w === 'ambient') ambience = true, why.add(`~${name}`);
   };
-  function frame() {
+  /** The last frame drawn's display time (its rAF's): the full rate's pacing. */
+  let lastVsync = 0;
+  function frame(vsync = now()) {
     raf = 0;
     if (disposed || document.hidden || paused) return;
     const t = now();
     const active = touch || t < activeUntil || busy;
-    // (at the 30 cap a display frame in between is skipped)
-    if (active && opts.cap === 30 && lastFrame && t - lastFrame < 1000 / 30 - 4) {
+    // (the full rate is せってい's frame rate, a finger's too: at 30 a display frame in between is skipped)
+    if (active && !due(vsync, lastVsync, frameRate.fps)) {
       raf = requestAnimationFrame(frame);
       return;
     }
+    lastVsync = vsync;
     inFrame = true;
     busy = ambience = false;
     why.clear();
@@ -725,7 +727,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     }
     // something moves: the next display frame; only the ambience (the water included): at its rate; else none
     if (busy || touch || now() < activeUntil) raf = requestAnimationFrame(frame);
-    else if (ambience && opts.ambient > 0) later(Math.max(0, 1000 / opts.ambient - (now() - t)));
+    else if (ambience && opts.ambient > 0) later(Math.max(0, 1000 / Math.min(opts.ambient, frameRate.fps) - (now() - t)));
   }
   function draw(t: number) {
     // (the real time since the last frame, up to a quarter second: a slow GPU settles as soon as a fast one)

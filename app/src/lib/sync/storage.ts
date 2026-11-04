@@ -85,7 +85,9 @@ export const DEVICE = {
   softGL: 'island.softGL',
   /** localStorage: `{ day, event, season, weather, tod }`: せってい's きせつ, the scene's seasonal preview on this phone
    *  for that Tokyo day (ui-state/preview.svelte.ts; a look only, never synced or sent). */
-  preview: 'island.preview'
+  preview: 'island.preview',
+  /** localStorage: `30` | `60`: the 3D engines' full frame rate (store/frameRate.svelte.ts; 30 by default). */
+  fps: 'island.fps'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */

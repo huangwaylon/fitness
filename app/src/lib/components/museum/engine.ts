@@ -17,6 +17,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { createVillager, type Villager3D } from '../villager3d/villager3d.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
 import { decal } from './geometry.ts';
+import { due, frameRate } from '#lib/store/frameRate.svelte.ts';
 import M from './models.json' with { type: 'json' };
 import { modelBounds } from '../world3d/models3d.ts';
 import {
@@ -918,9 +919,16 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (!raf && !disposed) raf = requestAnimationFrame(frame);
   }
   const seen = (sp: Sphere) => frustum.intersectsSphere(sp);
-  function frame() {
+  /** The last frame drawn's display time (its rAF's): the frame rate's pacing (せってい's, a gesture's too). */
+  let lastVsync = 0;
+  function frame(vsync = now()) {
     raf = 0;
     if (disposed) return;
+    if (!due(vsync, lastVsync, frameRate.fps)) {
+      raf = requestAnimationFrame(frame);
+      return;
+    }
+    lastVsync = vsync;
     const t = now(), dt = lastT ? Math.min(100, t - lastT) : 16;
     let full = false;
     // the camera: eased back to NH's view, following my villager

@@ -4,5 +4,5 @@
 // nibble). `slow`: a slow move (under SLOW_PX on screen) or one off screen may be ambience (Island3D: not where the
 // ambience is a software renderer's few frames). Plain values, no dependencies (the island's chunk imports this, not three.js).
 export const pace = { ambient: 0, full: 0, slow: true };
-/** A move slower than this on screen (px/s) is ambience: drawn at the ambient rate, not the full 60. */
+/** A move slower than this on screen (px/s) is ambience: drawn at the ambient rate, not the full one. */
 export const SLOW_PX = 60;
