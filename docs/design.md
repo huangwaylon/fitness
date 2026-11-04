@@ -1314,8 +1314,13 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   square (the tallest, the one in its own line first) and the others stopping at it (plan.ts wallEnds), the cornice the
   same; what lies flat on another (the carpets, the medallion, the doormat, the shadows, the garden's paths, soil and
   pond, a tank's caustics) is drawn a layer over it in depth (geometry.ts decal: polygonOffset); the glass of the tanks
-  and the cases is open below (its floor the sand's or the soil's top); the garden's paths one mesh in the world's
-  tiling, its pieces never overlapping. The depth range is the museum's only: the near plane just over its tallest top
+  and the cases is open below (its floor the sand's or the soil's top); their frames' posts and rails never overlap
+  (geometry.ts frameOf), a case's posts' feet a little under its soil; every tank's top well under the first person's
+  ceiling (the great tank's glass top was the ceiling's plane at 52: a stair-stepped fight from below, so it's 48 like
+  the deep's); the wings' ceilings start at the hall wall's far face (the lintels' undersides lie at their height too:
+  a dashed seam over each opening); the garden's paths one mesh in the world's tiling, its pieces never overlapping.
+  surfaces.test: no two faces of a tank's or a case's pieces, the floor and the ceiling within 0.05 u in one plane
+  over the same spot facing a same way. The depth range is the museum's only: the near plane just over its tallest top
   (the cornice), the far one past its farthest corner (at the default view ~40× the precision of a fixed near of 4).
 - **Like the rooms:** a tap on the floor walks my villager there (plan.ts walkPath: a half-tile grid, A* with its corners
   pulled straight, round the walls and what stands on the floor); a drag turns the camera, a pinch zooms, ⌂ puts it

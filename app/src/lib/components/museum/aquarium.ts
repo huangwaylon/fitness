@@ -18,7 +18,7 @@ import {
 } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
 import { WALKERS, hourOf, onDisplay, type Specimen, type TankId } from './species.ts';
-import { TANKS, alongX, bodyIn, openOf, propsOf, waterOf, type Body, type Box, type Tank } from './tanks.ts';
+import { TANKS, alongX, bodyIn, openOf, piecesOf, propsOf, waterOf, type Body, type Box, type Tank } from './tanks.ts';
 import { poseOf, spawn, stepSchool, stepWalker, type Swimmer } from './boids.ts';
 import type { Rect } from './plan.ts';
 import { batcher, decal, openBox, plainGeometry } from './geometry.ts';
@@ -135,8 +135,9 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
   for (const t of TANKS) {
     const b = t.box, w = waterOf(t), id = t.id;
     const along = alongX(b);
+    const pc = piecesOf(t);
     // its base
-    box({ x0: b.x0 - 0.5, x1: b.x1 + 0.5, y0: b.y0, y1: w.y0, z0: b.z0 - 0.5, z1: b.z1 + 0.5 }, id === 'deep' ? dark : sand);
+    box(pc.base, id === 'deep' ? dark : sand);
     // its water's back (the side toward the wall: the back for the sea's, the far wall for the deep's; the river's, all
     // round glass, its back the far long side) and its floor's caustics
     const back = new PlaneGeometry(along ? w.x1 - w.x0 : w.z1 - w.z0, w.y1 - w.y0);
@@ -168,13 +169,9 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
     const g = new MeshBasicMaterial({ color: WATER[id].glow, transparent: true, opacity: id === 'deep' ? 0.32 : 0.16, depthWrite: false, side: DoubleSide });
     mats.push(g);
     glasses.add(g);
-    batch.add(openBox(b.x1 - b.x0, b.y1 - w.y0, b.z1 - b.z0, ['-y']), g, at.makeTranslation((b.x0 + b.x1) / 2, (w.y0 + b.y1) / 2, (b.z0 + b.z1) / 2));
-    const e = 0.9;
-    for (const [x, z] of [[b.x0, b.z0], [b.x1, b.z0], [b.x0, b.z1], [b.x1, b.z1]] as const) box({ x0: x - e, x1: x + e, y0: b.y0, y1: b.y1, z0: z - e, z1: z + e }, frame);
-    box({ x0: b.x0 - e, x1: b.x1 + e, y0: b.y1 - e, y1: b.y1 + e, z0: b.z0 - e, z1: b.z0 + e }, frame);
-    box({ x0: b.x0 - e, x1: b.x1 + e, y0: b.y1 - e, y1: b.y1 + e, z0: b.z1 - e, z1: b.z1 + e }, frame);
-    box({ x0: b.x0 - e, x1: b.x0 + e, y0: b.y1 - e, y1: b.y1 + e, z0: b.z0 - e, z1: b.z1 + e }, frame);
-    box({ x0: b.x1 - e, x1: b.x1 + e, y0: b.y1 - e, y1: b.y1 + e, z0: b.z0 - e, z1: b.z1 + e }, frame);
+    const gb = pc.glass;
+    batch.add(openBox(gb.x1 - gb.x0, gb.y1 - gb.y0, gb.z1 - gb.z0, ['-y']), g, at.makeTranslation((gb.x0 + gb.x1) / 2, (gb.y0 + gb.y1) / 2, (gb.z0 + gb.z1) / 2));
+    for (const f of pc.frame) box(f, frame);
   }
   // (the glass over all else, the caustics over the sand)
   geos.push(...batch.done(group, (m) => (glasses.has(m) ? 4 : m.userData.floor ? 1 : 0)));
