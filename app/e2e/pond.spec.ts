@@ -7,7 +7,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { FISH } from '../src/lib/components/island/critters.ts';
 import { POND_FISH, freshPool } from '../src/lib/components/island/pondFish.ts';
-import { camTo, geo, reelOnBite, toTheWater, type Geo } from './island';
+import { camTo, castIn, geo, reelOnBite, type Geo } from './island';
 import { fromMenu, hudBells, hudMenu } from './hud.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
@@ -42,13 +42,13 @@ async function open(page: Page, q: string, at: 'mae' | 'oku' = 'oku') {
 }
 
 /** Cast by the shadow in `water` from its bank (NH casts from where it stands: my villager put there, the camera on
- *  it), wait for the 「！」 and reel in with a tap anywhere. */
-async function fish(page: Page, water: string, reel: { x: number; y: number }) {
-  const [x, y] = await toTheWater(page, water);
-  await page.mouse.click(x, y);
-  await expect(page.locator('[data-bobber]'), await page.evaluate(() => (window as unknown as { __fish: { why(): string } }).__fish.why())).toBeAttached();
+ *  it), wait for the 「！」 and reel in with a tap where it cast (a fixed point could be a building's door: with the line
+ *  out a door goes in, and the bite was missed). */
+async function fish(page: Page, water: string) {
+  const [x, y] = await castIn(page, water);
+  await expect(page.locator('[data-bobber]')).toBeAttached();
   // any tap is the reel, the moment it bites (e2e/island.ts reelOnBite)
-  await reelOnBite(page, reel.x, reel.y, 15_000);
+  await reelOnBite(page, x, y, 15_000);
 }
 
 for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
@@ -65,7 +65,7 @@ for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
     expect(Math.abs(f.y - p.y)).toBeLessThan(p.h / 2);
     expect(await page.evaluate(({ x, y }) => !document.elementFromPoint(x, y)?.closest('button'), f)).toBe(true);
     await page.screenshot({ path: `/tmp/world-build/critters-pond-${vp.width}.png` });
-    await fish(page, 'pond', { x: vp.width / 2, y: vp.height * 0.55 });
+    await fish(page, 'pond');
     // (in place: the line runs from the bank)
     const plate = page.locator('[data-fx="catch"]');
     await expect(plate).toContainText(said('carp'));
@@ -93,7 +93,7 @@ test('the stream at おく: a river fish (NH: River) in its reach, cast from the
   const f = await at(page, '[data-water="river"]');
   expect(f.x).toBeGreaterThan(0), expect(f.x).toBeLessThan(390), expect(f.y).toBeLessThan(844);
   await page.screenshot({ path: '/tmp/world-build/critters-river.png' });
-  await fish(page, 'river', { x: 195, y: 500 });
+  await fish(page, 'river');
   await expect(page.locator('[data-fx="catch"]')).toContainText('釣', { timeout: 4000 });
   const got = (await finds(page)) as { kind: string; id: string }[];
   expect(got).toHaveLength(1);

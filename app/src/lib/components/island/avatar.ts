@@ -12,7 +12,8 @@ import { actors, addFx, applyStep, awayFromHome, busy, faceToward, isRemote, lat
 import { cue } from '#lib/sound/cues.ts';
 import { FOLLOW_MS, MAX_HOPS, MEET, POI_LINGER, adjacent, besideSpots, pickPoi, pois, shouldFollow, type PoiKind } from './wander.ts';
 import type { ActorId } from '../motion/reactions.ts';
-import { REACH, SPEED, actionSpots, route, routeLength, walkGeo, walkable, type Pt, type WalkGeo } from './walkGraph.ts';
+import { SPEED } from './speed.ts';
+import { REACH, actionSpots, route, routeLength, walkGeo, walkable, type Pt, type WalkGeo } from './walkGraph.ts';
 import type { EmoteIcon } from '#lib/art.ts';
 import { walkNav } from './nav.ts';
 import { worldGen } from './world.ts';

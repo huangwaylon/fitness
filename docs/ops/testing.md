@@ -99,6 +99,9 @@ Most red runs so far were the spec, not the app. Before pushing a new or changed
     The sea off the back beach (`?critter=fish&coast=back`) lies high on the screen at the camera's far stop: WebKit's
     touch adjustment moves a touch there onto a door's button a few px off, so `fishing-taps.spec` clicks at the point
     (as `reelOnBite` does), and retries where the shadow has wandered to when a find or a building keeps the tap.
+    `castIn(page, water)` is that for any water: the point checked clear and clicked in one step in the page (a tree's
+    tap area on the bank comes in as its lazy art loads), retried until it cast; it returns where it cast, the place to
+    reel (a fixed reel point can be a building's door, and with the line out a door goes in: the bite is missed).
 11. **Tap a pill only once it's at rest.** Playwright calls a moving thing "stable" while a staggered transition is in
     its delay, then the tap lands where it has moved off to (the menu's せってい sits over the ベル row 110 ms first):
     `e2e/hud.ts` `unfoldMenu` / `fromMenu` wait for the pills' spring. A route that fails chunks fails every lazy load
