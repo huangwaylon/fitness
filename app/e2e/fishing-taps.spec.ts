@@ -67,6 +67,42 @@ for (const layout of ['default', 'user'] as const)
         expect(await cues(page)).toEqual(expect.arrayContaining(['scene-cast', 'scene-plop', 'scene-nibble', 'scene-bite', 'scene-reel', 'scene-catch']));
       });
 
+// The sea all round the island (island/coast.ts: a shadow off every stretch of coast, not just the front beach's): off a
+// side and the back beach, a cast by my villager there brings the shadow up and a tap catches it.
+for (const layout of ['default', 'user'] as const)
+  for (const side of ['left', 'right', 'back'] as const)
+    test(`${layout} island: a cast off the ${side} beach, the shadow there bites, a tap catches it`, async ({ page }) => {
+      test.slow();
+      await open(page, { layout, q: `&critter=fish&coast=${side}` });
+      await expect.poll(() => hooks(page, (h) => h.__fish.fish().map((f) => f.water)), { timeout: 15_000 }).toContain('sea');
+      const f = (await hooks(page, (h) => h.__fish.fish()))[0];
+      // (off that side: left or right of the land, or round the back)
+      if (side === 'left') expect(f.x).toBeLessThan(-30);
+      else if (side === 'right') expect(f.x).toBeGreaterThan(420);
+      else expect(f.z).toBeGreaterThan(1400);
+      // (zoomed in, the view panned to it: a side's sea shows only so, world3d/engine.ts xRoom.) Off the back beach the
+      // camera's far stop leaves the sea high on the screen, a few px past the beach's finds, which keep a tap there
+      // (SceneTaps' order), and the user's buildings by the back beach hide some of it from there ('behind a
+      // building'): the shadow wanders on, so a try where it is a little later, at most six. (The tap is the click a
+      // finger's makes, at that point: WebKit's touch adjustment moves a touch's click this near the horizon onto a
+      // door's button a few px off.)
+      let x = 0, y = 0;
+      for (let i = 0; i < 6; i++) {
+        if (i) await page.waitForTimeout(1500);
+        const at = await toTheWater(page, 'sea', 3).catch(() => null);
+        if (!at) continue;
+        [x, y] = at;
+        await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0 })), [x, y] as const);
+        const cast = await expect.poll(() => hooks(page, (h) => h.__fish.why()), { timeout: 1500 }).toBe('cast in the sea').then(() => true, () => false);
+        if (cast) break;
+      }
+      expect(await hooks(page, (h) => h.__fish.why())).toBe('cast in the sea');
+      await expect.poll(async () => (await line(page))?.fish ?? null, { timeout: 8000 }).not.toBeNull();
+      await reelOnBite(page, x, y, 15_000);
+      await expect(page.locator('[data-fx="catch"]')).toBeVisible({ timeout: 5000 });
+      expect(await hooks(page, (h) => h.__fish.why())).toBe('caught');
+    });
+
 /** The screen's points over water a finger can tap (no tap area of the island's over them), every `step` px. */
 const waterPoints = (page: Page, step: number) => page.evaluate((step) => {
   const h = window as unknown as Hooks, out: [number, number][] = [];

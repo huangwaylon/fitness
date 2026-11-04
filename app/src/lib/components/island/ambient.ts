@@ -140,6 +140,8 @@ export interface Spawn {
   seed: number;
   /** A fresh-water shadow's water (its channel's). */
   water?: FreshWhere;
+  /** A sea shadow's stretch of coast past the first (its channel's: coast.ts). */
+  coast?: number;
 }
 
 
@@ -307,8 +309,11 @@ const CHANNELS = {
   clifftop: { odds: 0.9 },
   bug: { odds: 0.9 }
 } as const;
-type Channel = keyof typeof CHANNELS;
+/** The sea round the rest of the coast past the front's (`sea`): a channel per stretch (coast.ts), `sea1`, `sea2`…,
+ *  as the front's but never bubbles (the dive spots stay off the front beach). */
+type Channel = keyof typeof CHANNELS | `sea${number}`;
 const FRESH_CH: ReadonlySet<Channel> = new Set(['pond', 'river', 'mouth', 'clifftop']);
+const coastOfCh = (ch: Channel): number => (/^sea\d+$/.test(ch) ? +ch.slice(3) : 0);
 const STAY: Record<CritterKind, readonly [number, number]> = { fish: [4, 5], fresh: [4, 5], bubbles: [3, 3], bug: [2, 2] };
 /** A critter comes this far into its first slot at most (ms). */
 const SPAWN_AT_MAX = 8_000;
@@ -324,31 +329,33 @@ function chain(date: LocalDate, block: number, ch: Channel): Spawn[] {
   const first = block * BLOCK, end = first + BLOCK;
   let freeAt = first;
   for (let s = first; s < end; s++) {
-    const r = slotRand(date, s, `critter:${ch}`);
-    if (r() >= CHANNELS[ch].odds || s < freeAt) continue;
+    const r = slotRand(date, s, `critter:${ch}`), coast = coastOfCh(ch);
+    if (r() >= (coast ? CHANNELS.sea : CHANNELS[ch as keyof typeof CHANNELS]).odds || s < freeAt) continue;
     const fresh = FRESH_CH.has(ch);
-    const kind: CritterKind = ch === 'sea' ? (r() < BUBBLE_SHARE ? 'bubbles' : 'fish') : fresh ? 'fresh' : 'bug';
+    const kind: CritterKind = ch === 'sea' ? (r() < BUBBLE_SHARE ? 'bubbles' : 'fish') : coast ? (r(), 'fish') : fresh ? 'fresh' : 'bug';
     const slots = Math.min(between(r, STAY[kind]), end - s);
-    out.push({ kind, slot: s, slots, at: Math.floor(r() * SPAWN_AT_MAX), seed: Math.floor(r() * 2 ** 32), ...(fresh ? { water: ch as FreshWhere } : {}) });
+    out.push({ kind, slot: s, slots, at: Math.floor(r() * SPAWN_AT_MAX), seed: Math.floor(r() * 2 ** 32), ...(fresh ? { water: ch as FreshWhere } : {}), ...(coast ? { coast } : {}) });
     freeAt = s + slots;
   }
-  if (chains.size >= 24) chains.delete(chains.keys().next().value!);
+  if (chains.size >= 160) chains.delete(chains.keys().next().value!);
   chains.set(key, out);
   return out;
 }
 
 /** The critters there in `slot`: those that come in it and those still staying from before (a phone opening mid-stay
- *  shows them too, `slot - spawn.slot` slots in). One at a time in the sea (a shadow or bubbles), in each fresh water
- *  and among the bugs; the phone skips a channel it has no room for (no water in view, no bug about at this hour). */
-export function crittersAt(date: LocalDate, slot: number): Spawn[] {
+ *  shows them too, `slot - spawn.slot` slots in). One at a time off each of the island's `coasts` stretches of coast
+ *  (coast.ts: the front's a shadow or bubbles), in each fresh water and among the bugs; the phone skips a channel it
+ *  has no room for (no such water, no bug about at this hour). */
+export function crittersAt(date: LocalDate, slot: number, coasts = 1): Spawn[] {
   const out: Spawn[] = [];
-  for (const ch of Object.keys(CHANNELS) as Channel[])
+  const chs: Channel[] = [...(Object.keys(CHANNELS) as Channel[]), ...Array.from({ length: Math.max(0, coasts - 1) }, (_, i) => `sea${i + 1}` as const)];
+  for (const ch of chs)
     for (const c of chain(date, Math.floor(slot / BLOCK), ch)) if (c.slot <= slot && slot < c.slot + c.slots) out.push(c);
   return out;
 }
 
 /** The critters coming in `slot`. */
-export const spawnsIn = (date: LocalDate, slot: number): Spawn[] => crittersAt(date, slot).filter((s) => s.slot === slot);
+export const spawnsIn = (date: LocalDate, slot: number, coasts = 1): Spawn[] => crittersAt(date, slot, coasts).filter((s) => s.slot === slot);
 
 /** A species picker's random source for a spawn (pickFish(month, hour, spawnRand(s), sky), …). */
 export const spawnRand = (s: Spawn): (() => number) => mulberry32(s.seed);

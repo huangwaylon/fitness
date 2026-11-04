@@ -9,14 +9,16 @@
 import { mulberry32, pickOne } from '#lib/random.ts';
 import type { Spawn } from './ambient.ts';
 import {
-  BUGS, FRESH, SEA_SWIM, bugPlace, freshAreas, patches, perches, swimAt, waterAt,
+  BUGS, FRESH, SEA_SWIM, bugPlace, freshAreas, patches, perches, swimPick, swimmable, waterAt,
   type BugId, type BugPlace, type Flight, type Patch, type Swim, type Water
 } from './critters.ts';
 import { FLOWERS, surfaceAt, type FreshWhere } from './world.ts';
 import { FLOWER_U } from './scene.ts';
+import { coastOf } from './coast.ts';
 
 /** A critter's shared id: its kind and the slot it came in (one a channel at a time, so unique for the day). */
-export const critterId = (s: Spawn): string => (s.water ? `${s.kind}:${s.water}:${s.slot}` : `${s.kind}:${s.slot}`);
+export const critterId = (s: Spawn): string =>
+  s.water ? `${s.kind}:${s.water}:${s.slot}` : s.coast ? `${s.kind}:c${s.coast}:${s.slot}` : `${s.kind}:${s.slot}`;
 
 /** A seeded stream of one spawn for one purpose (`salt`): the species pickers keep `spawnRand`'s own. */
 const subRand = (seed: number, salt: number): (() => number) => mulberry32((seed ^ Math.imul(salt + 1, 0x9e3779b1)) >>> 0);
@@ -45,13 +47,19 @@ export const freshWater = (s: Spawn): FreshWhere => s.water ?? FRESH[Math.floor(
 /** In that water (the island's tiles: critters.ts waterAt), clear of its edge. */
 export const inWater = (water: Water, x: number, z: number): boolean => waterAt(x, z, -6) === water;
 
-const swimPoint = (a: Swim, water: Water, r: () => number): { x: number; z: number } => {
+/** A point of a patch in its water; along a coast (its tiles: coast.ts), one a glide from `from` can reach by sea
+ *  (a stretch round a corner of the island never has a shadow swim over the land). */
+const swimPoint = (a: Swim, water: Water, r: () => number, from?: { x: number; z: number }): { x: number; z: number } => {
   for (let i = 0; i < 40; i++) {
-    const p = swimAt(a, between(r, -1, 1), between(r, -1, 1));
-    if (inWater(water, p.x, p.z)) return p;
+    const p = swimPick(a, r);
+    if (!inWater(water, p.x, p.z)) continue;
+    if (from && a.tiles && ((p.x - from.x) ** 2 + (p.z - from.z) ** 2 > GLIDE_U ** 2 || !swimmable(water, from.x, from.z, p.x, p.z))) continue;
+    return p;
   }
-  return { x: a.cx, z: a.cz };
+  return from ?? (a.tiles?.length ? { x: a.tiles[0][0], z: a.tiles[0][1] } : { x: a.cx, z: a.cz });
 };
+/** A coast shadow's longest glide (u): a long stretch is a wander along it, not a dash across. */
+export const GLIDE_U = 150;
 
 export interface FishPath {
   area: Swim;
@@ -60,18 +68,19 @@ export interface FishPath {
   legs: Leg[];
 }
 
-/** A shadow's stay in `water` from its seed: its patch, where it shows, and its slow wander to new spots in the patch
- *  (NH shadows dawdle: 2.5–6 s a glide, 0.6–2.2 s between), through `stayMs`. */
-export function fishPath(seed: number, water: Water, stayMs: number): FishPath | null {
+/** A shadow's stay in `water` from its seed: its patch (the sea's: its channel's stretch of coast, coast.ts), where
+ *  it shows, and its slow wander to new spots in the patch (NH shadows dawdle: 2.5–6 s a glide, 0.6–2.2 s between),
+ *  through `stayMs`. */
+export function fishPath(seed: number, water: Water, stayMs: number, coast = 0): FishPath | null {
   const r = subRand(seed, 2);
-  const areas = water === 'sea' ? [SEA_SWIM] : freshAreas(water);
+  const areas = water === 'sea' ? [coastOf(coast).area] : freshAreas(water);
   if (!areas.length) return null; // (no such water on this island)
   const area = areas[Math.floor(r() * areas.length) % areas.length];
   const start = swimPoint(area, water, r);
   const legs: Leg[] = [];
   let at = start, t = 400;
   while (t < stayMs) {
-    const p = swimPoint(area, water, r);
+    const p = swimPoint(area, water, r, at);
     const ms = Math.round(clamp(dist(p.x, p.z, at.x, at.z) * (water === 'sea' ? 110 : 160), 2500, 6000));
     legs.push({ ...p, lift: 0, t, ms });
     t += ms + Math.round(between(r, 600, 2200));

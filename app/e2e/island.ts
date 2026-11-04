@@ -143,31 +143,34 @@ type Fishing = {
 };
 /** My villager on the bank near the shadow in `water` (NH casts from where it stands; any water casts, this one's the
  *  near case): open ground near it, behind it on screen where there's any (so it never stands over the shadow), put
- *  there; the camera on the shadow first. Where the shadow is seen now (client px). */
-export async function toTheWater(page: Page, water: string): Promise<[number, number]> {
+ *  there; the camera on the shadow first (at `zoom`: a side of the island shows zoomed in). Where the shadow is seen
+ *  now (client px). */
+export async function toTheWater(page: Page, water: string, zoom = 1): Promise<[number, number]> {
   // (the opening beats over: a greeting's balloon at the bottom of the screen lies over the sea)
   await quiet(page);
   // (the camera where the shadow is a little below the screen's middle, at the whole island's zoom: a shadow far up
   // the island by the horizon is a speck, and the ground there is the far bank's)
-  await page.evaluate((water) => {
+  await page.evaluate(([water, k]) => {
     type G = { go(z: number, k?: number, x?: number): void; client(x: number, z: number): [number, number]; view(): { camZ: number } };
     const w = (window as unknown as { __world3d: G }).__world3d, f = (window as unknown as Fishing).__fish.fish().find((f) => f.water === water)!;
     let best: [number, number] | null = null;
     for (let z = f.z - 700; z <= f.z + 100; z += 25) {
-      w.go(z, 1, f.x);
+      w.go(z, k, f.x);
       const d = Math.abs(w.client(f.x, f.z)[1] - innerHeight * 0.58);
       if (!best || d < best[1]) best = [w.view().camZ, d];
     }
-    w.go(best![0], 1, f.x);
-  }, water);
+    w.go(best![0], k, f.x);
+  }, [water, zoom] as const);
   await expect.poll(() => w3(page, (w) => w.camStill()), { message: 'the camera still' }).toBe(true);
   const spot = await page.evaluate((water) => {
     const w = window as unknown as Fishing, f = w.__fish.fish().find((f) => f.water === water)!;
-    for (const behind of [true, false])
+    // (behind it; else off to its side, never just in front, where my villager would stand over it on screen: a shadow
+    // off the back beach has no ground behind it)
+    for (const where of ['behind', 'beside', 'any'])
       for (let r = 40; r <= 160; r += 8)
         for (let a = 0; a < 24; a++) {
           const x = Math.round(f.x + Math.cos((a / 24) * Math.PI * 2) * r), z = Math.round(f.z + Math.sin((a / 24) * Math.PI * 2) * r);
-          if (behind && z < f.z + 20) continue;
+          if (where === 'behind' ? z < f.z + 20 : where === 'beside' ? Math.abs(x - f.x) < 60 : false) continue;
           if (w.__world.free(x, z, 0)) return [x, z] as [number, number];
         }
     return null;
@@ -175,6 +178,8 @@ export async function toTheWater(page: Page, water: string): Promise<[number, nu
   expect(spot, `open ground near the ${water}'s shadow`).not.toBeNull();
   await page.evaluate(([x, z]) => (window as unknown as Fishing).__world.put(x, z), spot!);
   await expect.poll(() => page.evaluate(() => (window as unknown as Fishing).__world.mine()).then(([x, z]) => Math.hypot(x - spot![0], z - spot![1]))).toBeLessThan(1);
+  // (and the camera still again: a put may bring it after my villager, and a tap mid-move lands on what was there)
+  await expect.poll(() => w3(page, (w) => w.camStill()), { message: 'the camera still' }).toBe(true);
   // the shadow's spot, or the water nearest it a finger can tap (nothing of the island's over it: a canopy, a door, a
   // bush on the bank), within 60 px
   const find = () => page.evaluate((water) => {

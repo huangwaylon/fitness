@@ -1135,13 +1135,16 @@ goes with the leaving).
 
 `island/Critters.svelte`, `island/critters.ts`, `island/critterPath.ts`, `e2e/critters.spec.ts`. NH species on the Tokyo
 clock, for fun and frequent, and the same on both phones (ambient life's 10-second slots, `island/ambient.ts`,
-docs/backend.md "Ambient life"): the sea holds a shadow or, 1 turn in 4, bubbles most of the time, each fresh water
+docs/backend.md "Ambient life"): the sea holds a shadow off every stretch of the coast most of the time (NH's all round
+the island: `island/coast.ts` cuts the sea within 3 tiles of the shore that the camera can show into one stretch per
+450u of coastline, the front beach's 15 tiles' worth, each a sector round the island's middle from the layout's tiles,
+so both phones cut the same; the front's is 1 turn in 4 bubbles instead), each fresh water
 (the pond, the river, its mouth, the clifftop) its own shadow most of the time too ([Pond](#pond)), and a bug comes by every so often, each of the same kind and species on both phones and
 leaving at the same boundary. **Where it is, is the world's** ([Shared world](#shared-world)): its seed picks the swim
 patch (a pond's on the island's ponds, painted or put down), the trunk, the flower head or the patch of grass, and every glide, hop, dart, rest and landing
 at its time after it came (`critterPath.ts`), so both phones have it at the same spot doing the same thing, and a phone
 opening mid-stay finds it where the other shows it; each phone shows it when its camera sees that spot (covered or
-hidden, the critters leave; back, those still staying are there); ≤ 1 in each water and 1 bug. A catch or an escape
+hidden, the critters leave; back, those still staying are there); ≤ 1 off each stretch of coast, 1 in each fresh water and 1 bug. A catch or an escape
 is shared by the critter's id (first wins): it's gone on both phones, and on the partner's their villager turns to it
 and it's netted, reeled in, dived for or dug there, its plate in the stack. A bug out of a shaken bush, from under the rock or off my
 villager is put on the island for both (`put`), its moves from its id. **Seasons are a flavour, not a gate:** any species in any month, 3× likelier in its NH
@@ -1816,7 +1819,7 @@ Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/previe
 | `?weather=clear\|rain\|heavy\|snow\|fog\|aurora\|rainbow` | Force the weather (the critters' too) |
 | `?event=<id>` | Show an event (the preview's ids: `halloween`, `cherry`, `birthday-A`, `wedding`…; its main part on; Bunny Day's eggs too) |
 | `?visitor=<id>`, `?arrive`, `?leave=<ms>`, `?stroll`, `?meet` | A visitor; its arrival; its departure; a stroll; the partner's hello |
-| `?critter=fish\|pond\|<fish>\|<pond fish>\|<bug>\|none`, `?sea=<id>\|pearl`, `?flea` | A critter now (kept until caught; ambient visits off); a dive spot; a flea on every villager tap |
+| `?critter=fish\|pond\|<fish>\|<pond fish>\|<bug>\|none`, `&coast=front\|back\|left\|right`, `?sea=<id>\|pearl`, `?flea` | A critter now (kept until caught; ambient visits off), a sea fish off that side; a dive spot; a flea on every villager tap |
 | `?shake=nest\|branch\|bagworm\|spider` | The next shake drops that |
 | `?rock=clonk\|sparkle\|bug` | Every rock tap has that outcome |
 | `?find=bottle\|fragment\|mushroom\|rare-mushroom\|earth-egg` | A beach find now / every dig spot that |
