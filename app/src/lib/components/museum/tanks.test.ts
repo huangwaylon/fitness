@@ -2,8 +2,8 @@
 import { describe, expect, test } from 'vitest';
 import { Matrix4, Quaternion, Vector3 } from 'three';
 import { bandOf, cruiseOf, poseOf, spawn, stepSchool, stepWalker, swimBox, type Swimmer } from './boids.ts';
-import { TANKS, backOf, bodyIn, openOf, propsOf, waterOf, type Box, type Tank } from './tanks.ts';
-import { FISH_IDS, WALKERS, tankOf } from './species.ts';
+import { FIT, TANKS, backOf, bodyIn, openOf, propsOf, waterOf, type Box, type Tank } from './tanks.ts';
+import { FISH_IDS, PER_TANK, WALKERS, tankOf } from './species.ts';
 import { ENTRANCE, FISH_WING, navOf, walkPath } from './plan.ts';
 import { modelBounds } from '../world3d/models3d.ts';
 import M from './models.json' with { type: 'json' };
@@ -52,7 +52,7 @@ describe('the tanks', () => {
       const x = fishIn(tank(t), id, 1), w = openOf(tank(t));
       expect(x.body.s).toBeLessThan(1);
       // (room to turn: its reach well under half its water's narrowest)
-      expect(x.body.reach[0] * 2).toBeLessThanOrEqual(0.8 * Math.min(w.x1 - w.x0, w.z1 - w.z0) + 1e-9);
+      expect(x.body.reach[0] * 2).toBeLessThanOrEqual(FIT * Math.min(w.x1 - w.x0, w.z1 - w.z0) + 1e-9);
     }
     expect(fishIn(tank('river'), 'neon-tetra', 1).body.s).toBeGreaterThan(1);
   });
@@ -80,14 +80,14 @@ describe('the tanks', () => {
 });
 
 describe('the swimmers (boid-like), all of each inside its glass', () => {
-  test('every species in its tank, five at a time, swims for two minutes: every corner of its body (turned, pitched, banked, its tail swaying) in the open water, clear of every prop', () => {
+  test('every species in its tank, PER_TANK (seven) at a time, swims for two minutes: every corner of its body (turned, pitched, banked, its tail swaying) in the open water, clear of every prop', () => {
     // (the misses collected, checked once: an expect a sample is too slow for CI's 5 s)
     const out: string[] = [];
     for (const t of TANKS) {
       const w = openOf(t), ids = FISH_IDS.filter((id) => tankOf(id) === t.id && modelBounds(`critters/fish/${id}`));
       expect(ids.length, t.id).toBeGreaterThan(0);
-      for (let g = 0; g < ids.length; g += 5) {
-        const five = ids.slice(g, g + 5).map((id, i) => fishIn(t, id, g * 7 + i * 13 + 3));
+      for (let g = 0; g < ids.length; g += PER_TANK) {
+        const five = ids.slice(g, g + PER_TANK).map((id, i) => fishIn(t, id, g * 7 + i * 13 + 3));
         const swim = five.filter((x) => !x.walker), walk = five.filter((x) => x.walker);
         for (let k = 0; k < 120 * 30; k++) {
           stepSchool(swim.map((x) => x.f), w, 1 / 30, k / 30);

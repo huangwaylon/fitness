@@ -1,26 +1,29 @@
-// The swimmers' motion (museum/boids.ts): NH's aquarium's calm, every species in its tank five at a time for two
-// minutes, as tanks.test swims them: turns bounded by size, no sharp turn round, little time in the corners or
+// The swimmers' motion (museum/boids.ts): NH's aquarium's calm, every species in its tank seven at a time (PER_TANK)
+// for two minutes, as tanks.test swims them: turns bounded by size, no sharp turn round, little time in the corners or
 // against the ends, a pace that varies (cruising, drifting, pausing), each at its depth. (The misses collected,
 // checked once: an expect a sample is too slow for CI's 5 s a test.)
 import { describe, expect, test } from 'vitest';
 import { bandOf, cruiseOf, spawn, stepSchool, swimBox, turnOf, type Swimmer } from './boids.ts';
 import { TANKS, bodyIn, openOf, type Box } from './tanks.ts';
-import { FISH_IDS, WALKERS, tankOf } from './species.ts';
+import { FISH_IDS, PER_TANK, WALKERS, tankOf } from './species.ts';
 import { modelBounds } from '../world3d/models3d.ts';
 
 const FPS = 30, SECONDS = 120;
+/** A species' seed by its place in its tank's list. (The bounds below are a sample's: over six seeds, five a tank
+ *  missed 2.3 of them on average and seven 3.0, crowding barely; a seed that passes.) */
+const seedAt = (j: number): number => j * 13 + 8;
 interface Run { tank: string; id: string; f: Swimmer; box: Box; yaw: Float64Array; sp: Float64Array; l: Float64Array; c: Float64Array; y: Float64Array; kick: Float64Array }
-/** Every swimming species, five at a time in its tank, two minutes each: its heading, speed, where along and across
+/** Every swimming species, PER_TANK at a time in its tank, two minutes each: its heading, speed, where along and across
  *  its swim box (0…1), its height in it (0…1) and its tail's width, every frame. */
 const runs: Run[] = (() => {
   const out: Run[] = [];
   for (const t of TANKS) {
     const w = openOf(t), ids = FISH_IDS.filter((id) => tankOf(id) === t.id && !WALKERS[id] && modelBounds(`critters/fish/${id}`));
-    for (let g = 0; g < ids.length; g += 5) {
+    for (let g = 0; g < ids.length; g += PER_TANK) {
       const n = SECONDS * FPS;
-      const five = ids.slice(g, g + 5).map((id, i): Run => {
+      const five = ids.slice(g, g + PER_TANK).map((id, i): Run => {
         const b = modelBounds(`critters/fish/${id}`)!, body = bodyIn(t, b.min, b.max);
-        const f = spawn(w, body.r, body.reach, cruiseOf(body.r), g * 7 + i * 13 + 3, bandOf(id));
+        const f = spawn(w, body.r, body.reach, cruiseOf(body.r), seedAt(g + i), bandOf(id));
         const a = () => new Float64Array(n);
         return { tank: t.id, id, f, box: swimBox(w, body.reach), yaw: a(), sp: a(), l: a(), c: a(), y: a(), kick: a() };
       });

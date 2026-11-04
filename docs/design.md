@@ -1372,7 +1372,7 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   museum's ±320; live-protocol.ts): the others' villagers are here while they are, walking as they walk, and nowhere on
   the island meanwhile (store/where.svelte.ts `home` `M`). The guest comes in like anyone.
 - **What's on show** (species.ts): one of each fish and bug in the ずかん's first finds (anyone's, the guest's too), as
-  it's found (the fish five a tank at a time: the hour's fish, below); nothing else (the guest visits too, and its finds are on show under its name). The ずかん's alone, never the
+  it's found (the fish seven a tank at a time: the hour's fish, below); nothing else (the guest visits too, and its finds are on show under its name). The ずかん's alone, never the
   pockets': selling every one caught takes nothing out (NH's donation, not a catch kept). A tap on one: its card (MuseumCard: NH's icon, its Japanese and English names, 「7/4 ウェイが
   見つけた」, ×n from the tallies as the ずかん counts).
 - **The aquarium** (`aquarium.ts`, `tanks.ts`, `boids.ts`): NH's three tanks (species.ts tankOf): the great sea tank
@@ -1393,17 +1393,23 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   on one seat, the earlier sit keeps it (`outsat`), the other gets up. Seated, the eyes are at its seated head, the
   head turns but the body stays, and the eye may be over its own bench. Seated at rest: the exhibits' 30 a second, no
   more. `e2e/museum.spec.ts`, `e2e/first-person.spec.ts`.
-- **The hour's fish** (species.ts onDisplay): each tank shows at most five of its own species, only those the ずかん
-  says were caught, none twice; a shuffle seeded by (Tokyo's date and hour, the tank), so every phone shows the same
-  five and a new five each hour. A tank with none of its own caught is empty water. The hour turning while one's inside:
+- **The hour's fish** (species.ts onDisplay; the user: "let's increase to at most 7"): each tank shows at most seven
+  (PER_TANK) of its own species (the feeders not counted), only those the ずかん says were caught, none twice; a shuffle
+  seeded by (Tokyo's date and hour, the tank), so every phone shows the same seven and a new seven each hour. **The great
+  tank always has a hunter** (the user: "in the largest tank, always include at least one predator"): its first is the
+  shuffle's first caught predator (feeding.ts PREDATORS: the great white, hammerhead and saw sharks, the giant
+  trevally, tuna, blue marlin, mahi-mahi), the rest in the shuffle's order, so its feeders come every hour. Caught-only
+  still: with no sea predator caught yet there's none (and no feeders there). The deep and river tanks have no such
+  rule (their predators come and go with the shuffle). A tank with none of its own caught is empty water. The hour turning while one's inside:
   the outgoing fade out and the new fade in (1.6 s, dithered: alphaHash only while fading), at once off screen.
 - **Nothing clips** (tanks.ts bodyIn, propsOf; boids.ts reachOf): a fish's reach is its model's box, turned any way,
   pitched up to 0.35 rad and banked up to 0.22, its tail's sway added; its middle keeps to the water less that reach (the sand's top to the
-  water's surface), so all of it stays inside the glass. A big one is scaled till its reach fits 80% of its water's
-  narrowest side (room to turn), a little one drawn at least 6 long. The props keep to a back strip (tanks.ts backOf:
+  water's surface), so all of it stays inside the glass. A big one is scaled till its reach fits 68% of its water's
+  narrowest side (tanks.ts FIT: room to turn and for six others; 80% with five a tank: seven of the biggest at 0.85 of
+  that overlap pairwise about as often as five did), a little one drawn at least 6 long. The props keep to a back strip (tanks.ts backOf:
   the back 40% of the narrow side, the far wall's for the deep tank), each scaled to fit it and moved in from the glass;
   the fish (the walkers too) keep to the open water in front of it (openOf), so none ever swims into a rock or lies on
-  a log. tanks.test samples every species' corners in the open water for two minutes of swimming, five at a time, and
+  a log. tanks.test samples every species' corners in the open water for two minutes of swimming, seven at a time, and
   every prop's in its back strip.
 - **Swimming** (boids.ts stepSchool, NH's calm): long, gently curving passes along the tank's long side, a leg at a
   time to a spot near the far end (a quarter of legs stop partway), turning round only near the ends. Its turn is
@@ -1414,25 +1420,30 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   and turtles low, the sunfish, the arowana, the gar and the killifish high, the rest mid), drifting up and down a
   little. A soft look-ahead off the glass (inset by its turning room), a light separation off the others, no schooling
   (a tank's fish are one of a kind). Its tail (the vertex shader: one program for every fish) beats quicker and wider
-  the faster it goes. boids.test (every species, five a tank, two minutes): no turn faster than its size's bound, no
+  the faster it goes. boids.test (every species, seven a tank, two minutes): no turn faster than its size's bound, no
   turn of 135° in 1.5 s (100° for a big one), under 5% of its time in a corner and 6% against an end, from near one
   end to the other, its speed varying (slow 2–45% of the time, cruising over 20%), the bottom and surface fish at their
   depths. The bottom walkers walk the river tank's sand (boids.ts stepWalker: a walk to a spot about a patch of its own, a
   rest, keeping off each other's way): the mitten crab sideways, its claws forward, the crawfish ahead (NH's). The water
   is one shader (NH's blue to its depth, caustics shimmering on its back and floor, rays from the surface), its glass
-  tinted its water's colour, its bubbles one Points risen in the shader. A species is one InstancedMesh, culled by its
-  tank's bounds; a tank off screen rests; nothing allocated in a frame. iOS Simulator (iPhone 17 Pro, a full museum):
+  tinted its water's colour (the glass and the floor's caustics one pass each: forceSinglePass, not three's back-then-front
+  two for a transparent DoubleSide), the three tanks' bubbles one Points risen in the shader. A species is one
+  InstancedMesh, culled by its tank's bounds; a tank off screen rests (each tank's frustum test once a frame); the wing
+  off screen, nothing at all; nothing allocated in a frame. iOS Simulator (iPhone 17 Pro, a full museum):
   the aquarium at rest 177 → 81 draw calls, 123k → 58k triangles, 285 → 193 geometries, by the three tanks and their
   fifteen fish in place of nineteen tanks and every fish.
 - **Feeding time** (`feeding.ts`, pure; the user: "sharks and other large fish should be able to eat smaller fish"):
   in a tank with a predator on show (PREDATORS: NH's big fish that eat little ones, the sharks but the whale shark, a
   filter feeder; the giant trevally, tuna, blue marlin, mahi-mahi; the river's arapaima, pike, gar, dorado, stringfish,
   black bass, giant snakehead, arowana; the deep's coelacanth and football fish), a few little **feeder fish** come in
-  from the top: generic silvery fish (one tiny low-poly InstancedMesh a tank, the fish shader's tail), never a ずかん
-  species (the caught-only rule stands). The first school 5–12 s after the tank comes on screen, then every 30–90 s,
-  3–5 at a time, at most 6 (FEEDERS) in a tank; they fade in and swim as a loose school (together, the same way, a
-  little apart, off the glass); after 80 s, or with no predator left (the hour's pick), they swim up and fade away. A
-  hunt: the predator notices the nearest feeder within ~30 u (and one it can reach: not one up by the glass, where its
+  from the top: generic silvery fish (the three tanks' one tiny low-poly InstancedMesh: one draw call and one material,
+  FEEDERS slots a tank, the gone ones scaled to nothing, hidden while none's in; each matrix written straight into its
+  array; the fish shader's tail), never a ずかん species (the caught-only rule stands). The first school 5–12 s after
+  the tank comes on screen, then every 30–90 s, 6–10 at a time (the user: "increase the number of school fish by 2×"),
+  at most 12 (FEEDERS) in a tank; they fade in and swim as a loose school, cheaply: each to its own spot about the
+  school's middle (a sunflower spiral turned the way the school heads: together, the same way, apart, O(n), no pair
+  compared), off the glass; after 80 s, or with no predator left (the hour's pick), they swim up and fade away. A
+  hunt: the predator (looking four times a second) notices the nearest feeder within ~30 u (and one it can reach: not one up by the glass, where its
   body can't go), **stalks** it (slow, straight at it, up to 4 s), then **chases** it (quicker, up to 7 s; its turn
   bounded by its size as always, so a little one jinks away), the school **scattering** from it (a feeder's dash spent in
   ~2.5 s, back in ~6); close and just ahead, a **lunge** (a burst, 1.6 of its cruise and of its turn, up to 1.2 s;
@@ -1440,9 +1451,12 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   of bubbles, the feeder gone in 0.4 s. A miss, a feeder slipped off to the glass or the time out: an escape, and it
   cruises off on a new leg, resting 8–18 s before the next. About four hunts in ten end in a bite (a feeder that jinks
   aside as it lunges gets away), roughly one a minute. Cosmetic and local (each phone its own seed), stepped only while the tank's on screen,
-  nothing allocated in a step. feeding.test (a shark's, a hammerhead's, a giant trevally's, a pike's, a dorado's and the
-  football fish's tank, ten minutes, two seeds): every hunt over in 12.2 s, over a fifth each bites and escapes, never over 6, every feeder and fish inside
-  its water; none in the whale shark's or the koi's tank; the predator gone, its feeders leave.
+  nothing allocated in a step; a bite's puff one Points a tank, reused (its uniforms), hidden between bites. feeding.test (a shark's, a hammerhead's, a giant trevally's, a pike's, a dorado's and the
+  football fish's tank, ten minutes, two seeds): every hunt over in 12.2 s, over a fifth each bites and escapes, schools of
+  6–10, never over 12, every feeder and fish inside its water; none in the whale shark's or the koi's tank; the predator
+  gone, its feeders leave. aquarium.test (the aquarium built with a stub kit): the feeders one InstancedMesh for the
+  three tanks, each tank's slots its own feeders, never over 12, inside its water; the bubbles one Points; no
+  transparent DoubleSide drawn in two passes.
 - **The bug wing** (`garden.ts`): NH's garden under glass (its sky and palms on the walls, dusk-blue at night): stone
   paths, a pond (NH's museum water, one small opaque shader: clear aqua at its rim deepening to blue, a soft net of
   light drifting over it, a thin pale wavering edge at the stones; moving only while it's on screen, at the exhibits'
