@@ -172,12 +172,12 @@ The ベル ledger (`model/history.ts`, `components/kiroku/*`), read-only, in [�
 ### Kenkou
 
 けんこう (`model/health.ts`, `components/health/*`, `e2e/health.spec.ts`): the health popup (the HUD's dumbbell; full
-height like the panel, title けんこう and ✕, ‹ while a goal's field is open; ✕, the backdrop and Esc close it): the
-Health data over time for the personal trainer, one person at a time, computed on read, and the goals under it. Its code and strings load with the first opening.
+height like the panel, title けんこう and ✕; ✕, the backdrop and Esc close it): the
+Health data over time for the personal trainer, one person at a time, computed on read, each card with its goal. Its code and strings load with the first opening.
 
 - **The selectors** (the user: "move the user selector to the left of the title in the same row … move the time
   period selector to the same row as katsudou and karada"). Whose data sits in the title bar, left of けんこう
-  (NavBar's `lead`: the title stays centred, ✕ at the right; a goal's level puts ‹ in its place): one native
+  (NavBar's `lead`: the title stays centred, ✕ at the right): one native
   `<select>` (iOS's own picker; a cream pill ≥ 44px with a chevron, 16px type so Safari doesn't zoom; 「だれの データ」),
   compact (`Pick` `compact`: the avatar, the name, a stroke of their colour; at 320 the name without the avatar).
   The two members, this phone's person first and chosen on opening, kept for the session. Then one row: かつどう ·
@@ -193,14 +193,14 @@ Health data over time for the personal trainer, one person at a time, computed o
   (`art.ts` BODY_ART, 24px, decorative: the heading names it): 体重 the red kitchen scale (a scale, but NH's, and
   readable on the cream and the night cards), 体脂肪率 the protein shaker, BMI the exercise bike, 除脂肪体重 the
   weight bench (muscle): the user's picks.
-- **A card per activity metric**: the goal; 1日の平均 with 前の期間より ↑/↓ %;
+- **A card per activity metric**: the goal (at the upper right: [Goals in place](#goals-in-place)); 1日の平均 with 前の期間より ↑/↓ %;
   目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key.
 - **Chart** (`BarChart`, SVG): a bar per day (1週, 1か月), per week (3か月: 13) or per calendar month (1年), each
   the bucket's daily average, in the person's colour (ウェイ blue `--person-a`, うめ orange `--person-b`); solid when
   the goal was met, pale when not; today outlined; a finished bucket with no row gets a short hatched stub (記録なし).
   The goal dashed (stepped when the Move or steps goal changed). On 1週 each bar carries its value. A tap shows one value; a
   horizontal drag turns the page (right = older); vertical drags scroll the panel.
-- **体重** (`WeightCard`, `DotChart`): 平均 (n回の記録), 期間の変化 ([Weight](#weight)), the chart on an axis fitted
+- **体重** (`WeightCard`, `DotChart`): its goal at the upper right; 平均 (n回の記録), 期間の変化 ([Weight](#weight)), the chart on an axis fitted
   to the weights (dots joined by a thin line; the goal dashed, or a 「目標 66.0 ↓」 label when far off) and the goal
   month at that pace (only when the period ends today).
 - **体脂肪率 · BMI · 除脂肪体重** (`BodyCard`, `DotChart`): as 体重 (体脂肪率 with its own goal, `goalBodyFat`, drawn
@@ -210,15 +210,23 @@ Health data over time for the personal trainer, one person at a time, computed o
   plain change, in the metric's unit: `−0.4%`, `+0.2`, `−0.3 kg`) and per week, and the dot chart on an axis fitted to the
   values (at least 2 points of body fat or 2 kg, 1 of BMI). A day with no measurement has no dot; 記録なし when the
   period has none. Never earns, no good / bad colours.
-- **目標** (`GoalCard`), beneath the charts in either group (the user: "put it at the bottom beneath the graphs"; it was
-  きろく's): the shown person's Move, steps, weight and body fat goals, whose named in its head (the person dropdown
-  picks it; either person sets either person's). Each ✎ pushes a level (`ValueInput`: whose, then the field; けってい
-  or やめる or ‹ come back to the charts where they were, on that ✎). The Move goal (ムーブ（1日）) takes 100–2,000 kcal
-  and the steps goal (歩数（1日）) 1,000–30,000 in 500s, each in a 16px numeric field, from today on; 8,000 steps for both
-  until set. The weight goal (体重, 目標体重: 20–300 kg) and the body fat goal (体脂肪率, 目標体脂肪率: 3–60 %,
-  「3〜60%で 入れてね」) take one decimal in a decimal field, each with 目標をなくす once set (まだ until then); both are
-  shown only, never earn, and each row carries its からだ card's icon. The guest's phone: the card read-only (no ✎),
-  the Move and steps goals only.
+- <a id="goals-in-place"></a>**Goals in place** (`GoalEdit`, `goals.ts`; the user: "every metric card that has a goal gets a
+  tappable goal there"): each goal sits at its card's upper right as a chip, 「- - 目標 8,000歩 ✎」 (the swatch the chart's
+  goal line: soft on the bar charts, yuzu on the dot charts; 「目標 まだ」 when none). A tap opens its editor in place: a tan
+  tray across the card under the header, its notch under the chip (the chart moves down; nothing is covered, and Safari
+  scrolls the field above the keyboard): the goal's title (with きょうから for the goals a day keeps), −/＋ by the goal's
+  step around a 16px field with its keypad (nothing focused on opening, so no keyboard until the field is tapped; −/＋
+  start from the goal, else the period's average for 体重 and 体脂肪率), the range in words (coral after a refused
+  けってい), then 目標をなくす (once set, for the goals that may be cleared), やめる and けってい (dimmed until the field
+  holds a goal). One open at a time; Esc, やめる or a tap anywhere else close it unchanged, the focus back on the chip;
+  saved, a banner says so. The goals, per person, for whose data is shown (either
+  person sets either person's):
+  - 🍎 歩数: 1,000–30,000 in 500s, from today on; 8,000 for both until set. 🍐 ムーブ: 100–2,000 kcal (−/＋ by 10),
+    from today on. The chip shows the goal at the period's end (a past period's own); the editor starts from today's.
+    🍑 エクササイズ and 🍒 スタンド: fixed, the chip read-only.
+  - 体重 (目標体重: 20–300 kg, ±0.5) and 体脂肪率 (目標体脂肪率: 3–60 %, 「3〜60%で 入れてね」, ±0.5): one decimal in a
+    decimal field, clearable; shown only, never earn.
+  - The guest's phone: the chips read-only (and no からだ card, so no からだ goal).
 - **Rules:** a day's value is Health's latest, as reported: every day with a row counts, whatever its value; 記録なし is
   a day with no row (counted from the first activity record); today is drawn but not counted; the previous period is
   the same length just before. The footnote says so.
@@ -817,7 +825,7 @@ NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)
 
 - **What it sees:** our island, the trees and their popups, the HUD menu's ベル row, ごほうび (to look at: the balance, today's ベル (the members') and the
   buys, 「ちょきんばこは ふたりの もの。」 in place of the shop, no ×; the ledger), the ずかん and
-  けんこう's かつどう (whose data: either member; no からだ switch) with 目標 read-only (the Move and steps goals, no ✎). Never a からだ figure: no からだ switch, no weight or body card, no weight or body fat goal (its snapshot holds
+  けんこう's かつどう (whose data: either member; no からだ switch) with its goals read-only (no chip to tap). Never a からだ figure: no からだ switch, no weight or body card, no weight or body fat goal (its snapshot holds
   none: the record leaves them out). せってい: its villager and name (the same picker, its own prefs), the sound, the
   language and あそびかた; no もようがえ or つうしん, and a line saying it's visiting.
 - **What it does:** walks, catches, digs, picks up and shakes like us (the shared world's claims, first wins), its

@@ -39,8 +39,9 @@ async function toHealth(page: Page) {
   await expect(sheet(page).locator('[data-health-sheet] .health')).toBeVisible();
   await settled(page);
 }
-/** けんこう's 目標 card (under the charts). */
-const goalCard = (page: Page) => sheet(page).locator('[data-health-sheet] .goals');
+/** A goal's chip at its card's upper right (GoalEdit), and its editor, open in place. */
+const goalChip = (page: Page, id: string) => sheet(page).locator(`button[data-goal=${id}]`);
+const tray = (page: Page) => sheet(page).locator('form.tray');
 /** The topmost sheet's opening animation has played (the health popup zooms in). */
 const settled = (page: Page) => sheet(page).evaluate((d) => Promise.all(d.getAnimations().map((a) => a.finished)));
 /** The panel, from wherever we are (the open sheets are closed first). */
@@ -231,7 +232,7 @@ test('the ベル ledger: per day each of us four goals and ふたりで ぜん�
   await expect(sheet(page).locator('.goals, .pen-btn')).toHaveCount(0);
 });
 
-test('けんこう: body weight (from Health, no logging by hand); its goal is set in 目標, under the charts', async ({ page }) => {
+test('けんこう: body weight (from Health, no logging by hand); its goal is set at the card\'s upper right, in place', async ({ page }) => {
   await page.goto('?demo');
   await islandReady(page);
   const bells = await hudBells(page).getAttribute('aria-label');
@@ -240,79 +241,112 @@ test('けんこう: body weight (from Health, no logging by hand); its goal is s
   const card = sheet(page).locator('.wc');
   await expect(card.getByRole('heading', { name: '体重' })).toBeVisible();
   await expect(card.getByRole('img', { name: /^ウェイの体重 / })).toHaveCount(1); // this phone's person's (the tab shows one person)
-  await expect(card.locator('.pen-btn, input, .acts')).toHaveCount(0); // nothing to log or fix by hand
-  // the goal is set in the 目標 card at the foot of けんこう (beneath the last chart) and drawn on the weight chart
-  const goals = goalCard(page);
-  await expect(sheet(page).locator('.health > :last-child')).toHaveClass(/\bgoals\b/);
-  await expect(goals).toHaveAttribute('data-person', 'A');
+  await expect(card.locator('.pen-btn, .acts')).toHaveCount(0); // nothing to log or fix by hand
+  await expect(sheet(page).locator('.goals')).toHaveCount(0); // no goals card: each goal is on its own card
+  // the goal chip in the card's header (the demo's 66.0); a tap opens its editor in place, under the header (no level, no ‹)
+  const chip = goalChip(page, 'weight-goal');
+  await expect(chip).toHaveText('目標 66.0 kg');
+  await chip.click();
+  await expect(chip).toHaveAttribute('aria-expanded', 'true');
   await expect(sheet(page).locator('.titlebar .back')).toHaveCount(0);
-  await goals.getByRole('button', { name: '体重 ✎' }).click();
-  await expect(sheet(page).locator('.titlebar .back')).toBeVisible(); // a level: ‹ back to the charts
-  await expect(sheet(page).locator('.wc, .goals')).toHaveCount(0);
-  const input = sheet(page).getByRole('textbox');
+  const ed = tray(page);
+  await expect(card.locator('header form.tray')).toHaveCount(1);
+  await expect(ed).toContainText('目標体重');
+  await expect(ed.getByRole('button', { name: '目標をなくす' })).toBeVisible();
+  const input = ed.getByRole('textbox');
+  await expect(input).toHaveValue('66.0');
   await expect(input).toHaveAttribute('inputmode', 'decimal');
+  await expect(input).not.toBeFocused(); // no keyboard until the field is tapped
+  expect(await input.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(16);
   await input.fill('300.5');
-  await sheet(page).getByRole('button', { name: 'けってい' }).click();
+  await ed.getByRole('button', { name: 'けってい' }).click();
   await expect(input).toHaveAttribute('aria-invalid', 'true');
   await input.fill('65');
-  await sheet(page).getByRole('button', { name: 'けってい' }).click();
-  await expect(goals).toContainText('65.0 kg');
-  await expect(goals.getByRole('button', { name: '体重 ✎' })).toBeFocused(); // back on its ✎
-  await expect(sheet(page).locator('.titlebar .back')).toHaveCount(0);
+  await ed.getByRole('button', { name: 'けってい' }).click();
+  await expect(ed).toHaveCount(0);
+  await expect(chip).toHaveText('目標 65.0 kg');
+  await expect(chip).toBeFocused(); // back on its chip
   // its banner drops over the title bar (and a pointer resting on it holds it there): tap it away, as a thumb would
   const saved = sheet(page).getByRole('status');
   await expect(saved).toContainText('目標を決めました');
   await saved.getByRole('button', { name: 'とじる' }).click();
   await expect(saved).toHaveCount(0);
-  // still on からだ (the level kept the group): the chart draws it
   await expect(sheet(page).locator('[data-group=body]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(sheet(page).locator('.wc[data-person=A]')).toContainText('目標 65.0');
+  await expect(sheet(page).locator('.wc[data-person=A] svg[role=img]')).toContainText('目標 65.0');
+  // −/＋ step by 0.5 kg from the goal; やめる changes nothing
+  await chip.click();
+  await expect(input).toHaveValue('65.0');
+  await ed.getByRole('button', { name: 'へらす' }).click();
+  await ed.getByRole('button', { name: 'へらす' }).click();
+  await expect(input).toHaveValue('64.0');
+  await ed.getByRole('button', { name: 'やめる' }).click();
+  await expect(ed).toHaveCount(0);
+  await expect(chip).toHaveText('目標 65.0 kg');
   // weight never earns: today's ベル didn't move
   await page.keyboard.press('Escape');
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
 });
 
-test('けんこう: the body fat goal, set in 目標 (3–60 %), dashed on the body fat chart; cleared, no line', async ({ page }) => {
+test('けんこう: a goal\'s editor: one open at a time; Esc or a tap elsewhere closes it unchanged, not the sheet', async ({ page }) => {
+  await page.goto('?demo');
+  await toHealth(page);
+  await goalChip(page, 'steps-goal').click();
+  await expect(tray(page)).toHaveCount(1);
+  await goalChip(page, 'move-goal').click(); // another: this one closes
+  await expect(tray(page)).toHaveCount(1);
+  await expect(sheet(page).locator('.mc[data-metric=move] form.tray')).toHaveCount(1);
+  await expect(goalChip(page, 'steps-goal')).toHaveAttribute('aria-expanded', 'false');
+  await tray(page).getByRole('textbox').fill('900');
+  await page.keyboard.press('Escape');
+  await expect(tray(page)).toHaveCount(0);
+  await expect(sheet(page)).toBeVisible(); // the sheet stays
+  await expect(goalChip(page, 'move-goal')).toHaveText('目標 600 kcal');
+  await goalChip(page, 'move-goal').click();
+  await sheet(page).locator('.mc[data-metric=exercise] h3').click(); // elsewhere
+  await expect(tray(page)).toHaveCount(0);
+  await expect(goalChip(page, 'move-goal')).toHaveText('目標 600 kcal');
+});
+
+test('けんこう: the body fat goal, set on its card (3–60 %), dashed on the body fat chart; cleared, no line', async ({ page }) => {
   await page.goto('?demo');
   await toHealth(page);
   await sheet(page).locator('[data-group=body]').click(); // からだ
   const fat = sheet(page).locator('.bc[data-metric=body_fat_pct][data-person=A]');
   await expect(fat.getByRole('heading', { name: '体脂肪率' })).toBeVisible();
   await expect(fat.locator('line.goal')).toHaveCount(0); // no goal yet: no line, no label
-  await expect(fat).not.toContainText(/目標 \d/);
+  await expect(fat.locator('svg[role=img]')).not.toContainText(/目標 \d/);
   // BMI and lean mass never have one
-  await expect(sheet(page).locator('.bc[data-metric=bmi] .k-goal, .bc[data-metric=lean_kg] .k-goal')).toHaveCount(0);
-  const goals = goalCard(page);
-  await expect(goals).toContainText('体脂肪率');
-  await goals.getByRole('button', { name: '体脂肪率 ✎' }).click();
-  const input = sheet(page).getByRole('textbox');
+  await expect(sheet(page).locator('.bc[data-metric=bmi] .k-goal, .bc[data-metric=lean_kg] .k-goal, .bc[data-metric=bmi] [data-goal], .bc[data-metric=lean_kg] [data-goal]')).toHaveCount(0);
+  const chip = goalChip(page, 'fat-goal');
+  await chip.click();
+  const input = tray(page).getByRole('textbox');
   await expect(input).toHaveAttribute('inputmode', 'decimal');
   await input.fill('61');
-  await sheet(page).getByRole('button', { name: 'けってい' }).click();
+  await tray(page).getByRole('button', { name: 'けってい' }).click();
   await expect(input).toHaveAttribute('aria-invalid', 'true');
-  await expect(sheet(page).getByText('3〜60%で 入れてね')).toBeVisible();
+  await expect(tray(page).getByText('3〜60%で 入れてね')).toBeVisible();
   await input.fill('19.5');
-  await sheet(page).getByRole('button', { name: 'けってい' }).click();
-  await expect(goals).toContainText('19.5%');
+  await tray(page).getByRole('button', { name: 'けってい' }).click();
+  await expect(chip).toHaveText('目標 19.5%');
   const saved = sheet(page).getByRole('status');
   await expect(saved).toContainText('目標を決めました');
   await saved.getByRole('button', { name: 'とじる' }).click();
   await expect(saved).toHaveCount(0);
   // drawn on the body fat chart as the weight goal is: the dashed line, its label and the key
   await expect(fat.locator('line.goal')).toHaveCount(1);
-  await expect(fat).toContainText('目標 19.5');
+  await expect(fat.locator('svg[role=img]')).toContainText('目標 19.5');
   await expect(fat.locator('.key .k-goal')).toHaveCount(1);
   // cleared: no line
-  await goals.getByRole('button', { name: '体脂肪率 ✎' }).click();
-  await sheet(page).getByRole('button', { name: '目標をなくす' }).click();
-  await expect(goals.locator('.row', { hasText: '体脂肪率' })).toContainText('まだ');
+  await chip.click();
+  await tray(page).getByRole('button', { name: '目標をなくす' }).click();
+  await expect(chip).toHaveText('目標 まだ');
   const cleared = sheet(page).getByRole('status');
   await expect(cleared).toContainText('目標をなくしました');
   await cleared.getByRole('button', { name: 'とじる' }).click();
   await expect(cleared).toHaveCount(0);
   await expect(fat).toBeVisible();
   await expect(fat.locator('line.goal')).toHaveCount(0);
-  await expect(fat).not.toContainText('目標 19.5');
+  await expect(fat.locator('svg[role=img]')).not.toContainText('目標 19.5');
 });
 
 test('けんこう: each からだ card wears its own NH item, as かつどう wears its fruit (no scale glyph left)', async ({ page }) => {
@@ -329,10 +363,6 @@ test('けんこう: each からだ card wears its own NH item, as かつどう w
     await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0), { message: metric }).toBe(true);
     expect((await sheet(page).locator(`[data-metric=${metric}][data-person=A] header .ic`).boundingBox())!.height, metric).toBeCloseTo(24, 0);
   }
-  await expect(sheet(page).locator('use[href="#i-scale"]')).toHaveCount(0);
-  // the 目標 card's からだ rows too
-  await expect(goalCard(page).locator('.row img[src*="analog-kitchen-scale"]')).toHaveCount(1);
-  await expect(goalCard(page).locator('.row img[src*="protein-shaker-bottle"]')).toHaveCount(1);
   await expect(sheet(page).locator('use[href="#i-scale"]')).toHaveCount(0);
 });
 
@@ -407,60 +437,66 @@ test('partner: a tap is a high-five in place, no card: a sparkle flies between t
 test('けんこう: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from today on; either person’s', async ({ page }) => {
   await page.goto('?demo');
   await toHealth(page);
-  const goals = goalCard(page);
-  await expect(goals).toContainText('600 kcal');
-  await goals.getByRole('button', { name: /ムーブ（1日） ✎$/ }).click();
-  const input = sheet(page).getByRole('textbox');
+  const chip = goalChip(page, 'move-goal');
+  await expect(chip).toHaveText('目標 600 kcal');
+  await chip.click();
+  await expect(tray(page)).toContainText('ムーブの目標（1日）');
+  await expect(tray(page)).toContainText('きょうから');
+  const input = tray(page).getByRole('textbox');
+  await expect(input).toHaveValue('600');
   await expect(input).toHaveAttribute('inputmode', 'numeric');
   expect(await input.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(16);
   await input.fill('50');
-  await sheet(page).getByRole('button', { name: 'けってい' }).click();
+  await tray(page).getByRole('button', { name: 'けってい' }).click();
   await expect(input).toHaveAttribute('aria-invalid', 'true');
   await input.fill('2000');
-  await sheet(page).getByRole('button', { name: 'けってい' }).click();
+  await tray(page).getByRole('button', { name: 'けってい' }).click();
   await expect(page.getByText('ムーブの目標を かえました')).toBeVisible();
-  await expect(goals).toContainText('2,000 kcal');
+  await expect(chip).toHaveText('目標 2,000 kcal');
   // today's tree popup reads the new goal: no day reaches 2,000 kcal, so no ✓
   await page.keyboard.press('Escape');
   await page.locator('button.canopy').nth(0).click();
   await expect(page.locator('.detail .row[data-row=pear] .amt')).toHaveText(/^[\d,]+ \/ 2,000 kcal$/);
   await expect(page.locator('.detail .row[data-row=pear] .amt svg')).toHaveCount(0);
-  // the partner's goals: the popup's person dropdown switches the card, and ✎ sets the partner's goal
+  // the partner's goal: the popup's person dropdown switches the cards, and the chip sets the partner's
   await page.keyboard.press('Escape');
   await toHealth(page);
   const whoSel = sheet(page).locator('select[data-pick=who]');
-  const partner = (await whoSel.locator('option').nth(1).textContent())!.trim();
   await whoSel.selectOption({ index: 1 });
-  await expect(goals).toHaveAttribute('data-person', 'B');
-  await expect(goals.locator('.who')).toContainText(partner);
-  await goals.getByRole('button', { name: /ムーブ（1日） ✎$/ }).click();
-  await expect(sheet(page).locator('.whose')).toContainText(partner);
-  await sheet(page).getByRole('textbox').fill('520');
-  await sheet(page).getByRole('button', { name: 'けってい' }).click();
-  await expect(goals).toContainText('520 kcal');
+  await expect(sheet(page).locator('.mc[data-metric=move]')).toHaveAttribute('data-person', 'B');
+  await chip.click();
+  await tray(page).getByRole('button', { name: 'ふやす' }).click(); // +10 from うめ's 450
+  await expect(tray(page).getByRole('textbox')).toHaveValue('460');
+  await tray(page).getByRole('textbox').fill('520');
+  await tray(page).getByRole('button', { name: 'けってい' }).click();
+  await expect(chip).toHaveText('目標 520 kcal');
   await whoSel.selectOption({ index: 0 });
-  await expect(goals).toContainText('2,000 kcal');
+  await expect(chip).toHaveText('目標 2,000 kcal');
 });
 
 test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by 500, from today on; either person’s; the tree and the chart follow it', async ({ page }) => {
   await page.goto('?demo');
   await toHealth(page);
-  const goals = goalCard(page);
-  await expect(goals).toContainText('8,000歩');
-  await goals.getByRole('button', { name: /歩数（1日） ✎$/ }).click();
-  const input = sheet(page).getByRole('textbox');
+  const chip = goalChip(page, 'steps-goal');
+  await expect(chip).toHaveText('目標 8,000歩');
+  await chip.click();
+  const input = tray(page).getByRole('textbox');
   await expect(input).toHaveAttribute('inputmode', 'numeric');
   expect(await input.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(16);
-  await expect(sheet(page).locator('.wi .hint')).toHaveText('1,000〜30,000歩、500歩ずつで入れてね');
+  await expect(tray(page).locator('.hint')).toHaveText('1,000〜30,000歩、500歩ずつで入れてね');
   for (const bad of ['500', '8250', '30500']) {
     await input.fill(bad);
-    await sheet(page).getByRole('button', { name: 'けってい' }).click();
+    await tray(page).getByRole('button', { name: 'けってい' }).click();
     await expect(input).toHaveAttribute('aria-invalid', 'true');
   }
+  // ＋ from what the field holds, onto the 500s: 8,250 → 8,500
+  await tray(page).getByRole('button', { name: 'ふやす' }).click();
+  await expect(input).toHaveValue('8,500');
+  await expect(input).toHaveAttribute('aria-invalid', 'false');
   await input.fill('30,000');
-  await sheet(page).getByRole('button', { name: 'けってい' }).click();
+  await tray(page).getByRole('button', { name: 'けってい' }).click();
   await expect(page.getByText('歩数の目標を かえました')).toBeVisible();
-  await expect(goals).toContainText('30,000歩');
+  await expect(chip).toHaveText('目標 30,000歩');
   // today's tree popup and けんこう read the new goal: no demo day reaches 30,000 steps
   await page.keyboard.press('Escape');
   await page.locator('button.canopy').nth(0).click();
@@ -468,20 +504,17 @@ test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by
   await expect(page.locator('.detail .row[data-row=apple] .amt svg')).toHaveCount(0);
   await page.keyboard.press('Escape');
   await toHealth(page);
-  await expect(sheet(page).locator('.mc[data-metric=steps] header .goal')).toHaveText('目標 30,000歩');
-  // the partner's: the person dropdown, ✎ sets theirs; mine stays
+  await expect(chip).toHaveText('目標 30,000歩');
+  // the partner's: the person dropdown, the chip sets theirs; mine stays
   const whoSel = sheet(page).locator('select[data-pick=who]');
-  const partner = (await whoSel.locator('option').nth(1).textContent())!.trim();
   await whoSel.selectOption({ index: 1 });
-  await expect(goals).toContainText('8,000歩');
-  await goals.getByRole('button', { name: /歩数（1日） ✎$/ }).click();
-  await expect(sheet(page).locator('.whose')).toContainText(partner);
-  await sheet(page).getByRole('textbox').fill('6500');
-  await sheet(page).getByRole('button', { name: 'けってい' }).click();
-  await expect(goals).toContainText('6,500歩');
-  await expect(sheet(page).locator('.mc[data-metric=steps] header .goal')).toHaveText('目標 6,500歩');
+  await expect(chip).toHaveText('目標 8,000歩');
+  await chip.click();
+  await tray(page).getByRole('textbox').fill('6500');
+  await tray(page).getByRole('button', { name: 'けってい' }).click();
+  await expect(chip).toHaveText('目標 6,500歩');
   await whoSel.selectOption({ index: 0 });
-  await expect(goals).toContainText('30,000歩');
+  await expect(chip).toHaveText('目標 30,000歩');
 });
 
 /** A tap on goal tree `i` where nothing covers it: its canopy, else its trunk (both toggle its popup); where an open

@@ -7,26 +7,23 @@
   // けんこう (health, design.md "Kenkou"): the health popup (the HUD's dumbbell), the Health data over time for
   // the personal trainer, one person at a time. Whose data (ウェイ / うめ, this phone's person by default; switching
   // keeps the period and the range) is a native dropdown in the title bar, left of けんこう (`lead`, bindable: the
-  // popup's NavBar renders it; none on a goal's level, where ‹ is). Then one row: which cards (かつどう / からだ, かつどう
+  // popup's NavBar renders it). Then one row: which cards (かつどう / からだ, かつどう
   // on each opening; switching keeps the period, range and person) and one period for every chart (1週 / 1か月 / 3か月 /
   // 1年, a dropdown) beside it; then a sticky row with ‹ the visible range › and きょう; then a card per metric in the group's CARDS order: かつどう 🍎 Steps,
   // 🍐 Move, 🍑 Exercise, 🍒 Stand; からだ 体重, 体脂肪率, BMI, 除脂肪体重. A horizontal drag on any chart turns the page; a tap shows a bar's numbers.
-  // Under the charts, in either group, 目標 (GoalCard): the shown person's Move, steps, weight and body fat goals, each
-  // ✎ pushing a level with that goal's field (`deep`, bindable: the popup's ‹ calls `back()`); either person sets
-  // either person's, the guest's phone none (shown read-only, without the からだ two).
+  // Each goal sits at its card's upper right (GoalEdit: the steps, Move, weight and body fat goals, tapped to set in
+  // place); either person sets either person's, the guest's phone none (shown read-only; it has no からだ cards).
   // The charts are read-only, computed on read from the store's model (model/health.ts); loaded with the popup, not with the island.
   import '#lib/i18n/kenkou.ts'; // the tab's strings, loaded with it
-  import { tick, type Snippet } from 'svelte';
+  import type { Snippet } from 'svelte';
   import type { LocalDate, PersonId } from '#lib/types.ts';
-  import { BODY_FAT_GOAL, isBodyMetric, type BodyMetric } from '#lib/contract/api.ts';
-  import { MOVE_GOAL, STEPS_GOAL } from '#lib/config/rules.ts';
+  import { isBodyMetric, type BodyMetric } from '#lib/contract/api.ts';
   import { setGoalBodyFat, setGoalWeight, setMoveGoal, setStepsGoal } from '#lib/store/actions.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { CARDS, canShift, GROUPS, healthSeries, PERIODS, rangeFor, shiftAnchor, type Group, type Metric } from '#lib/model/health.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { formatNum, t } from '#lib/i18n/index.ts';
+  import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import Avatar from '../characters/Avatar.svelte';
   import Segmented from '../ui/Segmented.svelte';
   import RangeNav from './RangeNav.svelte';
   import Pick from './Pick.svelte';
@@ -34,13 +31,10 @@
   import MetricCard from './MetricCard.svelte';
   import WeightCard from './WeightCard.svelte';
   import BodyCard from './BodyCard.svelte';
-  import GoalCard from './GoalCard.svelte';
-  import ValueInput from './ValueInput.svelte';
   import { rangeLabel } from './fmt.ts';
-  import { parseKcalInput, parseKgInput, parsePctInput, parseStepsInput } from '../kiroku/fmt.ts';
   import { isGuest } from '#lib/ui-state/viewer.ts';
 
-  let { deep = $bindable(false), lead = $bindable(null) }: { deep?: boolean; lead?: Snippet | null } = $props();
+  let { lead = $bindable(null) }: { lead?: Snippet | null } = $props();
 
   const m = $derived(week.model);
   const view = $derived(week.view);
@@ -111,38 +105,16 @@
     if (i !== null) cue('tick');
   }
 
-  /** The goal being set (a level over the charts), and whose: the person shown when its ✎ was tapped. */
-  type Goal = 'move' | 'steps' | 'weight' | 'fat';
-  let edit = $state<{ k: Goal; p: PersonId } | null>(null);
   $effect(() => {
-    deep = edit !== null;
-    lead = edit === null && hs ? whoPill : null;
+    lead = hs ? whoPill : null;
   });
-  let root: HTMLElement | undefined = $state();
-  /** Where the charts were scrolled to, restored on ‹. */
-  let savedTop = 0;
-  const scroller = () => root?.closest<HTMLElement>('[data-health-sheet]') ?? null;
-  async function setGoal(k: Goal) {
+  /** Sets the shown person's goal (either person sets either person's; never the guest), and says so. */
+  function saveGoal(k: 'move' | 'steps' | 'weight' | 'fat', v: number | null) {
     if (guest) return;
-    savedTop = scroller()?.scrollTop ?? 0;
-    edit = { k, p: who };
-    sel = null;
-    await tick();
-    scroller()?.scrollTo({ top: 0 });
-  }
-  /** ‹ (or けってい, やめる): back to the charts where they were scrolled, focus on that goal's ✎. False at the top. */
-  export function back(): boolean {
-    if (!edit) return false;
-    const k = edit.k;
-    edit = null;
-    void tick().then(() => {
-      scroller()?.scrollTo({ top: savedTop });
-      root?.querySelector<HTMLElement>(`[data-focus="${k}-goal"]`)?.focus({ preventScroll: true });
-    });
-    return true;
-  }
-  function saved(ok: boolean, msg: string) {
-    back();
+    const p = who;
+    const ok = k === 'move' ? v !== null && setMoveGoal(p, v).ok : k === 'steps' ? v !== null && setStepsGoal(p, v).ok
+      : k === 'weight' ? setGoalWeight(p, v).ok : setGoalBodyFat(p, v).ok;
+    const msg = k === 'move' ? 'goal.moveSaved' : k === 'steps' ? 'goal.stepsSaved' : v === null ? 'weight.goalCleared' : 'weight.goalSaved';
     if (ok) toasts.show(t(msg), 2500, { reaction: 'pleased' });
   }
 </script>
@@ -153,31 +125,8 @@
     person={{ p: who, villager: villagers[who] }} compact />
 {/snippet}
 
-<div class="health" bind:this={root}>
-  {#if m && view && hs && range && edit && !guest}
-    <!-- a goal's level: whose goal it sets (either person sets either person's), then its field -->
-    {@const p = edit.p}
-    <div class="lvl">
-      <p class="whose"><Avatar person={p} villager={villagers[p]} size={32} /><b>{names[p]}</b>{#if p === me}<small>· {t('kiroku.me')}</small>{/if}</p>
-      {#if edit.k === 'weight'}
-        {@const goal = m.state.prefs[p].goalWeight ?? null}
-        <ValueInput label={t('weight.goalWeight')} sub="" old={goal} unit="kg" parse={parseKgInput} hint={t('weight.range')}
-          onok={(kg) => saved(setGoalWeight(p, kg).ok, 'weight.goalSaved')} oncancel={back}
-          extra={goal === null ? null : { label: t('weight.clearGoal'), run: () => saved(setGoalWeight(p, null).ok, 'weight.goalCleared') }} />
-      {:else if edit.k === 'fat'}
-        {@const goal = m.state.prefs[p].goalBodyFat ?? null}
-        <ValueInput label={t('weight.goalBodyFat')} sub="" old={goal} unit="%" parse={parsePctInput} hint={t('weight.fatRange', { min: BODY_FAT_GOAL.min, max: BODY_FAT_GOAL.max })}
-          onok={(pct) => saved(setGoalBodyFat(p, pct).ok, 'weight.goalSaved')} oncancel={back}
-          extra={goal === null ? null : { label: t('weight.clearGoal'), run: () => saved(setGoalBodyFat(p, null).ok, 'weight.goalCleared') }} />
-      {:else if edit.k === 'move'}
-        <ValueInput label={t('goal.move')} sub={t('goal.moveNote')} old={view.people[p].moveGoal} unit="kcal" parse={parseKcalInput}
-          hint={t('goal.moveRange', { min: MOVE_GOAL.min, max: formatNum(MOVE_GOAL.max) })} onok={(kcal) => saved(setMoveGoal(p, kcal).ok, 'goal.moveSaved')} oncancel={back} />
-      {:else}
-        <ValueInput label={t('goal.steps')} sub={t('goal.moveNote')} old={view.people[p].stepsGoal} unit="steps" parse={parseStepsInput}
-          hint={t('goal.stepsRange', { min: formatNum(STEPS_GOAL.min), max: formatNum(STEPS_GOAL.max), step: STEPS_GOAL.step })} onok={(n) => saved(setStepsGoal(p, n).ok, 'goal.stepsSaved')} oncancel={back} />
-      {/if}
-    </div>
-  {:else if hs && range}
+<div class="health">
+  {#if hs && range}
     <!-- one row: which cards, and the period beside them (a native dropdown: iOS's own picker; the guest's: the period alone) -->
     <div class="sel">
       {#if !guest}
@@ -203,22 +152,18 @@
           <!-- (never on the guest's phone) -->
         {:else if k === 'weight'}
           <WeightCard {hs} {range} p={who} name={names[who]} {slide} onswipe={swipe}
-            selected={sel?.k === 'weight' ? sel.i : null} onselect={(i) => pick('weight', i)} />
+            selected={sel?.k === 'weight' ? sel.i : null} onselect={(i) => pick('weight', i)} onsavegoal={(v) => saveGoal('weight', v)} />
         {:else if isBodyMetric(k)}
           <BodyCard metric={k} {hs} {range} p={who} name={names[who]} {slide} onswipe={swipe}
-            selected={sel?.k === k ? sel.i : null} onselect={(i) => pick(k, i)} />
+            selected={sel?.k === k ? sel.i : null} onselect={(i) => pick(k, i)} onsavegoal={(v) => saveGoal('fat', v)} />
         {:else}
+          {@const now = view && !guest && (k === 'steps' || k === 'move') ? view.people[who][k === 'steps' ? 'stepsGoal' : 'moveGoal'] : null}
           <MetricCard metric={k} {hs} {range} p={who} {slide} onswipe={swipe}
-            selected={sel?.k === k ? sel.i : null} onselect={(i) => pick(k, i)} />
+            selected={sel?.k === k ? sel.i : null} onselect={(i) => pick(k, i)}
+            goal={now === null ? null : { value: now, onsave: (v) => saveGoal(k === 'steps' ? 'steps' : 'move', v) }} />
         {/if}
       {/each}
       {#if group === 'activity'}<p class="note">{t('health.note')}</p>{/if}
-    {/if}
-    {#if m && view}
-      <!-- 目標, beneath the charts: the shown person's (the guest's phone: read-only, no からだ goal) -->
-      <GoalCard person={who} name={names[who]} villager={villagers[who]} moveGoal={view.people[who].moveGoal} stepsGoal={view.people[who].stepsGoal}
-        goalWeight={guest ? null : (m.state.prefs[who].goalWeight ?? null)} goalBodyFat={guest ? null : (m.state.prefs[who].goalBodyFat ?? null)} readonly={guest}
-        onmove={() => setGoal('move')} onsteps={() => setGoal('steps')} onweight={() => setGoal('weight')} onbodyfat={() => setGoal('fat')} />
     {/if}
   {/if}
 </div>
@@ -233,10 +178,5 @@
   .rl b span { white-space: nowrap; }
   .rl small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); white-space: nowrap; }
   .empty p { margin: 0; font-weight: 700; color: var(--text-soft); }
-  .whose { display: flex; align-items: center; gap: 8px; margin: 0 2px; font-size: var(--fs-body); }
-  .whose small { color: var(--text-soft); font-size: var(--fs-s); font-weight: 700; }
-  /* a goal's level slides in from the right (design.md "Navigation": one push motion, 240ms) */
-  .lvl { display: grid; gap: 12px; animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
-  @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
   .note { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

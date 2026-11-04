@@ -1,8 +1,8 @@
 <script lang="ts">
   // A body metric (けんこう, after 体重): 体脂肪率, BMI or 除脂肪体重, for the chosen person. As the weight card: the
   // period's average and how many measurements, its plain change (the first week's average → the last week's, else the
-  // first measurement → the last; saying which) and per week, and the chart. Body fat has a goal (`goalBodyFat`, set in
-  // きろく), dashed on its chart and, in the current period, the month it may be reached at that pace, as weight's;
+  // first measurement → the last; saying which) and per week, and the chart. Body fat has a goal (`goalBodyFat`, set at
+  // the card's upper right: GoalEdit), dashed on its chart and, in the current period, the month it may be reached at that pace, as weight's;
   // BMI and lean mass have none. Never earns, no good / bad colours.
   import type { PersonId } from '#lib/types.ts';
   import type { BodyMetric } from '#lib/contract/api.ts';
@@ -11,6 +11,8 @@
   import { BODY_ART } from '#lib/art.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import DotChart from './DotChart.svelte';
+  import GoalEdit from './GoalEdit.svelte';
+  import { GOALS } from './goals.ts';
   import { monthText } from '../kiroku/fmt.ts';
   import { bodyDelta, bodyText, rangeLabel } from './fmt.ts';
 
@@ -25,8 +27,10 @@
     onselect: (i: number | null) => void;
     onswipe: (dir: -1 | 1) => void;
     slide: -1 | 0 | 1;
+    /** The goal's setter (absent: read-only). */
+    onsavegoal?: ((v: number | null) => void) | null;
   }
-  let { metric, hs, range, p, name, selected, onselect, onswipe, slide }: Props = $props();
+  let { metric, hs, range, p, name, selected, onselect, onswipe, slide, onsavegoal = null }: Props = $props();
   const s = $derived(bodyStats(hs, p, metric, range));
   const b = $derived(bodyBuckets(hs, p, metric, range));
   const goal = $derived(bodyGoal(hs, p, metric));
@@ -40,6 +44,7 @@
   <header>
     <span class="ic"><OfficialArt key={BODY_ART[metric]} size={24} /></span>
     <h3 id="mc-{metric}">{title}</h3>
+    {#if metric === 'body_fat_pct'}<GoalEdit id="fat-goal" spec={GOALS.fat} text={goal === null ? null : fmt(goal)} value={goal} onsave={onsavegoal} start={s.avg} tone="yuzu" />{/if}
   </header>
   {#if s.n}
     <dl class="chips">
@@ -71,7 +76,7 @@
 
 <style>
   .bc { display: grid; gap: 10px; padding: 12px 14px 10px; }
-  header { display: flex; align-items: center; gap: 8px; }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
   .ic { display: inline-flex; flex: none; }
   h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; }
   .chips { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 8px; margin: 0; }

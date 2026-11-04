@@ -1,8 +1,7 @@
 // けんこう (design.md "Kenkou"): the health popup for the trainer (the HUD's dumbbell). Open it, switch the period,
 // page through the history (‹ ›, a drag on a chart, きょう), tap a bar for its numbers, switch whose data (one person
-// at a time: whose data in the title bar left of けんこう, the かつどう / からだ switch with the period beside it), 目標
-// last under the charts (its ✎:
-// demo.spec); on `?demo` and a longer `?demo&weeks=60`, at 390 and 320.
+// at a time: whose data in the title bar left of けんこう, the かつどう / からだ switch with the period beside it), each
+// goal at its card's upper right (setting them: demo.spec); on `?demo` and a longer `?demo&weeks=60`, at 390 and 320.
 import { expect, test, type Page } from '@playwright/test';
 
 const sheet = (page: Page) => page.locator('dialog[open]');
@@ -52,7 +51,7 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await expect(periodSel(page)).toHaveAccessibleName('きかん');
   await expect(whoSel(page)).toHaveAccessibleName('だれの データ');
   await expect(sheet(page).locator('.health .wk')).toHaveCount(0); // no week card: the charts carry the trends
-  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド', '目標']);
+  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
   await expect(range(page)).toHaveText('10/2–10/31'); // 1か月 = the 30 days to today
   const move = sheet(page).locator('.mc[data-metric=move]');
   await expect(move.locator('.srow')).toHaveCount(1);
@@ -61,7 +60,9 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await expect(move.locator('.chg .cv')).toHaveText(/^[↑↓→] [+−±]\d+%$/);
   await expect(move.locator('.sub')).toContainText(/目標 \d+\/\d+日（\d+%）/);
   await expect(move.locator('.sub')).toContainText(/ベスト [\d,]+ kcal（\d+\/\d+）/);
-  await expect(sheet(page).locator('.mc[data-metric=steps] header .goal')).toHaveText('目標 8,000歩');
+  await expect(sheet(page).locator('.mc[data-metric=steps] header [data-goal]')).toHaveText('目標 8,000歩');
+  await expect(sheet(page).locator('.mc header button[data-goal]')).toHaveCount(2); // steps and Move set there; exercise and stand fixed
+  await expect(sheet(page).locator('.mc[data-metric=stand] header span[data-goal]')).toHaveText('目標 120分');
   await expect(sheet(page).locator('.health > .note')).toContainText('数字を そのまま');
   // one series: every bar in this phone's person's colour
   await expect(sheet(page).locator('.mc path.bar.pB')).toHaveCount(0);
@@ -71,13 +72,13 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await sheet(page).locator('[data-group=body]').click();
   await expect(sheet(page).locator('[data-group=body]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('[data-group=body]')).toHaveAttribute('data-sfx', 'none');
-  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['体重', '体脂肪率', 'BMI', '除脂肪体重', '目標']);
+  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['体重', '体脂肪率', 'BMI', '除脂肪体重']);
   await expect(sheet(page).locator('.health .mc')).toHaveCount(0);
   await expect(periodSel(page)).toHaveValue('month');
   await expect(range(page)).toHaveText('10/2–10/31');
   await expect(sheet(page).locator('.health > .note')).toHaveCount(0);
   await sheet(page).locator('[data-group=activity]').click();
-  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド', '目標']);
+  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
 });
 
 test('whose data: this phone’s person by default; switching changes the numbers and the colour and keeps the period and range', async ({ page }) => {
