@@ -257,3 +257,53 @@ test('the curator at the desk: he watches my villager, dozes off and wakes as it
   // the count of what's on show in his line, when he says it
   for (const l of lines) if (l.includes('しゅるい')) expect(l).toContain('さかなが 1しゅるい');
 });
+
+// Sitting (docs/design.md "The museum": the aquarium's benches; rooms/seating.ts): a tap on a bench walks my villager
+// up to it and sits it facing the great tank, the other phone sees it seated (the rooms' presence, `seat`), its own a
+// tap on the same bench takes the other seat; a tap on the floor gets it up.
+test('the aquarium’s benches: a tap sits my villager on one, the other phone sees it, theirs takes the other seat, a tap on the floor gets up', async ({ page, context }) => {
+  test.setTimeout(60_000);
+  type Who = { at: [number, number]; walking: boolean; seated: boolean } | null;
+  type Seat = { id: string; n: number } | null;
+  const other = await context.newPage();
+  await open(page);
+  await open(other, 'museum?demo&as=B&date=2026-11-04T12:00');
+  // (each sees the other in here)
+  await expect.poll(async () => !!(await mu<Who>(page, 'who("B")')) && !!(await mu<Who>(other, 'who("A")')), { timeout: 15_000 }).toBe(true);
+  for (const [p, x] of [[page, 150], [other, 130]] as const) {
+    await p.evaluate(`window.__museum.put(${x}, 10)`);
+    await expect.poll(() => mu<boolean>(p, 'still()'), { timeout: 10_000 }).toBe(true);
+  }
+  const tapBench = async (p: Page, n: number) => {
+    const [x, y] = (await mu<[number, number]>(p, `benchPx("dmbench1", ${n})`))!;
+    await p.mouse.click(x, y);
+  };
+  await page.bringToFront();
+  await tapBench(page, 0);
+  await expect.poll(() => mu<Seat>(page, 'seat()'), { timeout: 10_000 }).toMatchObject({ id: 'dmbench1' });
+  const mine = (await mu<Seat>(page, 'seat()'))!;
+  expect((await mu<Who>(page, 'who("A")'))!.seated).toBe(true);
+  // the other phone: A seated there too, on that seat
+  await expect.poll(() => mu<Seat>(other, 'theirSeat("A")'), { timeout: 5_000 }).toMatchObject(mine);
+  await expect.poll(async () => (await mu<Who>(other, 'who("A")'))?.seated, { timeout: 5_000 }).toBe(true);
+  // B's tap on the same bench: the other seat (one villager a seat)
+  await other.bringToFront();
+  await expect.poll(() => mu<boolean>(other, 'still()'), { timeout: 10_000 }).toBe(true);
+  await tapBench(other, 1 - mine.n);
+  await expect.poll(() => mu<Seat>(other, 'seat()'), { timeout: 10_000 }).toEqual({ id: 'dmbench1', n: 1 - mine.n });
+  await expect.poll(() => mu<Seat>(page, 'theirSeat("B")'), { timeout: 5_000 }).toMatchObject({ id: 'dmbench1', n: 1 - mine.n });
+  expect(await mu<Seat>(page, 'seat()')).toEqual(mine);
+  // A: a tap on the floor gets up and walks there
+  await page.bringToFront();
+  await expect.poll(() => mu<boolean>(page, 'still()'), { timeout: 10_000 }).toBe(true);
+  const [fx, fy] = await mu<[number, number]>(page, 'px(150, 15)');
+  await page.mouse.click(fx, fy);
+  await expect.poll(() => mu<Seat>(page, 'seat()')).toBeNull();
+  await expect.poll(async () => {
+    const w = (await mu<Who>(page, 'who("A")'))!;
+    return !w.seated && Math.hypot(w.at[0] - 150, w.at[1] - 15) < 6;
+  }, { timeout: 10_000 }).toBe(true);
+  await expect.poll(async () => (await mu<Who>(other, 'who("A")'))?.seated, { timeout: 5_000 }).toBe(false);
+  await expect.poll(() => mu<Seat>(other, 'theirSeat("A")')).toBeNull();
+  await other.close();
+});

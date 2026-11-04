@@ -15,6 +15,7 @@ import {
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { createVillager, type Villager3D } from '../villager3d/villager3d.ts';
+import type { Anchor } from '../villager3d/seats3d.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
 import { decal } from './geometry.ts';
 import { due, frameRate } from '#lib/store/frameRate.svelte.ts';
@@ -44,7 +45,7 @@ const WALL_FADE = 220;
 export type Who = 'A' | 'B' | 'G';
 export interface Look { model: string | null; id: string }
 export interface Insets { top: number; bottom: number }
-export type Hit = { kind: 'villager'; who: Who } | { kind: 'creature'; id: string } | { kind: 'door' } | { kind: 'floor'; x: number; z: number };
+export type Hit = { kind: 'villager'; who: Who } | { kind: 'creature'; id: string } | { kind: 'seat'; id: string } | { kind: 'door' } | { kind: 'floor'; x: number; z: number };
 
 /** One wing's exhibits (aquarium.ts, garden.ts): its group, what stands on the floor (the walk keeps off it), its frame
  *  (t ms; `seen`: whether a sphere is in the camera's view: what isn't rests), whether something on screen moved (the
@@ -54,6 +55,9 @@ export interface Exhibit {
   /** The room it's in (the first person sees a wing only through its opening: hidden behind the walls, it rests). */
   wing: Wing;
   blocks: readonly Rect[];
+  /** What one sits on (the aquarium's benches: seats.ts): its id, its box on the floor (`h` tall). The walk keeps off
+   *  it; a tap on it is the seat's; a seated villager's eye may be over it. */
+  seats?: readonly (Rect & { id: string; h: number })[];
   frame(t: number, dt: number, seen: (s: Sphere) => boolean): boolean;
   pick(project: (x: number, y: number, z: number) => [number, number] | null, cx: number, cy: number): { id: string; d: number } | null;
   /** A creature's world point (the card and the e2e), or null. */
@@ -91,6 +95,11 @@ export interface Museum {
   walking(who: Who): boolean;
   hop(who: Who): void;
   face(who: Who, toward: Pt): void;
+  /** A villager sits on a seat (its anchor: villager3d sitAt; it stands at the anchor's step, `from`, where it gets up
+   *  and walks off from), or gets up there (null). A walk or a put gets it up too. */
+  sit(who: Who, a: Anchor | null): void;
+  /** Its seat (sitting down or seated), or null. */
+  seated(who: Who): Anchor | null;
   headPoint(who: Who): [number, number, number] | null;
   /** Whose villager the camera follows (mine). */
   follow(who: Who): void;
@@ -664,10 +673,19 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   let nav = navOf(BLOCKS);
   /** What stands on the floors (the walk keeps off it; the first person's eye too). */
   let solids: Rect[] = BLOCKS;
+  /** The same less the seats (a seated villager's eye is over its own), and the seats to tap (their boxes). */
+  let solidsSeated: Rect[] = BLOCKS;
+  let seatBoxes: { id: string; box: Box3 }[] = [];
+  function blocksChanged() {
+    solidsSeated = [...BLOCKS, ...exhibits.flatMap((x) => x.blocks)];
+    const seats = exhibits.flatMap((x) => x.seats ?? []);
+    nav = navOf((solids = [...solidsSeated, ...seats]));
+    seatBoxes = seats.map((r) => ({ id: r.id, box: new Box3(new Vector3(r.x0, 0, r.z0), new Vector3(r.x1, r.h, r.z1)) }));
+  }
   function exhibit(e: Exhibit) {
     exhibits.push(e);
     scene.add(e.group);
-    nav = navOf((solids = [...BLOCKS, ...exhibits.flatMap((x) => x.blocks)]));
+    blocksChanged();
     e.night(nightN);
     invalidate();
   }
@@ -676,7 +694,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (i < 0) return;
     exhibits.splice(i, 1);
     e.dispose();
-    nav = navOf((solids = [...BLOCKS, ...exhibits.flatMap((x) => x.blocks)]));
+    blocksChanged();
     invalidate();
   }
 
@@ -693,6 +711,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     posing: boolean;
     /** The way its walk goes now (a yaw), or null standing: the first person's view turns with it. */
     dir: number | null;
+    /** Its seat (villager3d sitAt: the model sits itself there; `pos` is its step in front), or null standing. */
+    seat: Anchor | null;
   }
   const V3_SCALE = VILLAGER_H / 80;
   const villagers = new Map<Who, Walker>();
@@ -714,7 +734,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const shadow = new Mesh(shadowGeo, shadowMat);
     shadow.rotation.x = -Math.PI / 2;
     shadow.renderOrder = 2;
-    const w: Walker = { look, v3: null, shadow, pos: [0, 50], was: [0, 50], yaw: Math.PI, path: null, hop: 0, posing: true, dir: null };
+    const w: Walker = { look, v3: null, shadow, pos: [0, 50], was: [0, 50], yaw: Math.PI, path: null, hop: 0, posing: true, dir: null, seat: null };
     villagers.set(who, w);
     scene.add(shadow);
     if (look.model) void createVillager(look.id, look.model, who.charCodeAt(0) * 0.7).then((v) => {
@@ -723,6 +743,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       v.group.scale.setScalar(V3_SCALE);
       v.lift(0.32);
       v.group.traverse((n) => (n.userData.who = who));
+      // (where it stands first: one already seated sits down from its step, not from the middle of the floor)
+      v.group.position.set(w.pos[0], 0, w.pos[1]);
+      v.group.rotation.set(0, w.yaw, 0);
       scene.add(v.group);
       place(w);
       invalidate();
@@ -730,9 +753,20 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     place(w);
     invalidate();
   }
+  /** Where a villager is on the floor: seated, its seat's middle (its body there), else where it stands. */
+  const spotOf = (w: Walker): [number, number] => {
+    const a = w.seat;
+    if (!a) return w.pos;
+    const out = a.depth * 0.45;
+    return [a.x + Math.sin(a.yaw) * out, a.z + Math.cos(a.yaw) * out];
+  };
   function place(w: Walker) {
-    w.shadow.position.set(w.pos[0], 0.15, w.pos[1]);
+    const [sx, sz] = spotOf(w);
+    w.shadow.position.set(sx, 0.15, sz);
     if (!w.v3) return;
+    // on its seat: the model sits down there itself (the group is its own till it gets up)
+    if (w.seat) return w.v3.sitAt(w.seat);
+    if (w.v3.seat()) w.v3.sitAt(null);
     const lift = w.hop ? Math.max(0, Math.sin(Math.min(1, (now() - w.hop) / 420) * Math.PI)) * 4 : 0;
     w.v3.group.position.set(w.pos[0], lift, w.pos[1]);
     w.v3.group.rotation.set(0, w.yaw, 0);
@@ -754,6 +788,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const from: Pt = p.from ?? [w.pos[0], w.pos[1]];
     const { lens, total } = walkLens(from, pts);
     const ms = p.ms ?? (total / PACE) * 1000;
+    w.seat = null;
     w.path = { from, pts: [...pts], t0: now() - (p.ago ?? 0), ms: Math.max(1, ms), lens, total };
     invalidate();
     return ms;
@@ -795,8 +830,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       if (Math.hypot(a.d[0], a.d[1]) > 0.01) w.yaw += wrapAngle((w.dir = Math.atan2(a.d[0], a.d[1])) - w.yaw) * Math.min(1, (14 * dt) / 1000);
       if (a.done) (w.path = null), (w.dir = null);
       busy = true;
-    } else if (fp.on && w === villagers.get(followed) && Math.abs(wrapAngle(fp.yaw - w.yaw)) > 0.01) {
-      // at its eyes, standing: its body turns to where it looks
+    } else if (!w.seat && fp.on && w === villagers.get(followed) && Math.abs(wrapAngle(fp.yaw - w.yaw)) > 0.01) {
+      // at its eyes, standing: its body turns to where it looks (seated, only its head: the seat holds the body)
       w.yaw += wrapAngle(fp.yaw - w.yaw) * Math.min(1, (6 * dt) / 1000);
       busy = true;
     }
@@ -807,7 +842,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     place(w);
     const v = w.v3;
     if (!v) return busy;
-    const state = w.path ? 'walk' : 'idle';
+    const state = w.seat ? (w.seat.lie ? 'lie' : 'sit') : w.path ? 'walk' : 'idle';
     if (v.state() !== state) w.posing = true;
     v.set(state);
     if (busy || w.posing || camMoved) {
@@ -891,17 +926,17 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     }
     const cx = orbitPos.x, cy = orbitPos.y, cz = orbitPos.z;
     const vx = Math.sin(view.az), vz = Math.cos(view.az), sx = vz, sz = -vx;
-    const me = villagers.get(followed);
+    const me = villagers.get(followed), mp = me && spotOf(me);
     for (const wm of walls) {
       const { a, b } = wm.w, dx = b[0] - a[0], dz = b[1] - a[1], dl = Math.hypot(dx, dz);
       const nx = -dz / dl, nz = dx / dl;
       const sideOf = (x: number, z: number) => (x - a[0]) * nx + (z - a[1]) * nz;
       let cut = sideOf(cx, cz) * sideOf(target.x, target.z) < 0 && Math.abs(nx * vx + nz * vz) >= 0.25;
-      if (!cut && me) {
+      if (!cut && mp) {
         // (ahead by its fade's walk, WALL_FADE at PACE: gone by the time one's behind it; kept a little longer)
         const m = wm.cut ? 12 : 8;
         for (const off of [-4, 4])
-          for (const y of [2, VILLAGER_H]) if (!cut) cut = hides(wm.box, m, cx, cy, cz, me.pos[0] + sx * off, y, me.pos[1] + sz * off);
+          for (const y of [2, VILLAGER_H]) if (!cut) cut = hides(wm.box, m, cx, cy, cz, mp[0] + sx * off, y, mp[1] + sz * off);
       }
       wm.cut = cut;
     }
@@ -1000,19 +1035,27 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const nearer = (x: number, y: number, z: number) => !eyes || camera.position.distanceTo(hitV.set(x, y, z)) < wallD;
     // a villager (its body on screen: a box round its feet to its head)
     for (const [who, w] of villagers) {
-      if (eyes && (who === followed || !inView(w.pos[0], VILLAGER_H / 2, w.pos[1]) || !nearer(w.pos[0], VILLAGER_H / 2, w.pos[1]))) continue;
-      const [fx, fy] = client(w.pos[0], 0, w.pos[1]), [, hy] = client(w.pos[0], VILLAGER_H, w.pos[1]);
+      const [px, pz] = spotOf(w);
+      if (eyes && (who === followed || !inView(px, VILLAGER_H / 2, pz) || !nearer(px, VILLAGER_H / 2, pz))) continue;
+      const [fx, fy] = client(px, 0, pz), [, hy] = client(px, VILLAGER_H, pz);
       const half = Math.max(10, (fy - hy) * 0.32);
       if (cx >= fx - half && cx <= fx + half && cy >= hy - 4 && cy <= fy + 4) return { kind: 'villager', who };
     }
-    // a creature (the nearest drawn within a finger's reach)
+    // a seat (the nearest box on the ray, nearer than the first wall)
+    let seat: string | null = null, seatD = Infinity;
+    for (const s of seatBoxes) {
+      const p = ray.ray.intersectBox(s.box, hitV), d = p ? camera.position.distanceTo(p) : Infinity;
+      if (d < seatD && nearer(hitV.x, hitV.y, hitV.z)) (seat = s.id), (seatD = d);
+    }
+    // a creature (the nearest drawn within a finger's reach; not one behind the seat the ray meets)
     let best: { id: string; d: number } | null = null;
     for (const e of exhibits) {
       if (!wingSeen[e.wing]) continue;
       const p = e.pick(project, cx, cy), at = p && e.where(p.id);
-      if (p && (!best || p.d < best.d) && (!at || nearer(at[0], at[1], at[2]))) best = p;
+      if (p && (!best || p.d < best.d) && (!at || (nearer(at[0], at[1], at[2]) && camera.position.distanceTo(hitV.set(at[0], at[1], at[2])) < seatD))) best = p;
     }
     if (best) return { kind: 'creature', id: best.id };
+    if (seat) return { kind: 'seat', id: seat };
     if (wall?.object === frontDoor) return { kind: 'door' };
     if (!ray.ray.intersectPlane(floorPlane, hitV) || camera.position.distanceTo(hitV) > wallD) {
       // a wall's foot: walk up to it (a little short, on this side); a ceiling, the sky: nowhere
@@ -1037,7 +1080,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       got = !!w.v3.eyes(eyeT);
     }
     if (!got) eyeT.set(w.pos[0], VILLAGER_H * 0.7, w.pos[1]);
-    clampEye(eyeT.x, eyeT.z, FLOORS, solids, EYE_MARGIN, eyeXZ);
+    clampEye(eyeT.x, eyeT.z, FLOORS, w.seat ? solidsSeated : solids, EYE_MARGIN, eyeXZ);
     eyeT.x = eyeXZ[0];
     eyeT.z = eyeXZ[1];
     return eyeT;
@@ -1145,7 +1188,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     }
     if (me) {
       // (kept over the floors: near the front door the camera stays back, not over the dark outside)
-      const [fx, fz] = camSpot(me.pos[0], me.pos[1]);
+      const [mx, mz] = spotOf(me), [fx, fz] = camSpot(mx, mz);
       const f = Math.min(1, (6 * dt) / 1000);
       const dx = fx - target.x, dz = fz - target.z;
       if (Math.hypot(dx, dz) > 0.05) {
@@ -1213,7 +1256,10 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     put(who, p, yaw) {
       const w = villagers.get(who);
       if (!w) return;
+      // (put mid-walk: its way gone with it, or the first person's view turned with a walk that's over, every frame)
       w.path = null;
+      w.dir = null;
+      w.seat = null;
       w.pos = [p[0], p[1]];
       w.was = [p[0], p[1]];
       if (yaw !== undefined) w.yaw = yaw;
@@ -1235,11 +1281,27 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     },
     face(who, toward) {
       const w = villagers.get(who);
-      if (!w || w.path) return;
+      if (!w || w.path || w.seat) return;
       w.yaw = Math.atan2(toward[0] - w.pos[0], toward[1] - w.pos[1]);
       w.posing = true;
       invalidate();
     },
+    sit(who, a) {
+      const w = villagers.get(who);
+      if (!w || w.seat === a) return;
+      w.seat = a;
+      if (a) {
+        w.path = null;
+        w.dir = null;
+        w.pos = [a.from[0], a.from[1]];
+        w.was = [a.from[0], a.from[1]];
+        w.yaw = a.yaw;
+      }
+      w.posing = true;
+      place(w);
+      invalidate();
+    },
+    seated: (who) => villagers.get(who)?.seat ?? null,
     headPoint,
     follow(who) {
       followed = who;

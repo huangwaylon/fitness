@@ -63,7 +63,7 @@ turns one into Anchors where the piece stands; `v.sitAt(anchor)` (villager3d.ts)
 (SIT_MS, 420 ms; an arc over a seat's back when it comes from behind, as at the island's benches, whose seat spots are
 behind them for the 2D island), hips on the seat and back to its back, feet down or dangling by the seat's height
 (poses.ts sitOn), or lies on its back along the bed, head on the pillow end (a hammock rocks); `sitAt(null)` gets up
-to wherever the caller puts it next. The tent's seats (tent/seats.ts) and the island's (world3d/villagers.ts, by
+to wherever the caller puts it next. The tent's seats (tent/seats.ts), the museum's benches (museum/seats.ts: the park bench's, at 1.2×) and the island's (world3d/villagers.ts, by
 world.ts SEATS's names) pass their anchors; a piece with no shape keeps the old placement.
 
 Fishing (`world3d/fishing3d.ts`): Critters.svelte says each step of my line (cast, wait, bite, reel) and where its
