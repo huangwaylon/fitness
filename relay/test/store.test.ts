@@ -178,6 +178,17 @@ describe('events', () => {
     expect(decor[0][3]).toEqual({ id: 'd000001', at: P + 6, rm: true });
   });
 
+  it('a room keeps 60 pieces, each room its own (the 61st refused: tent full; the wallpaper never counts)', () => {
+    const P = T0 - 60_000;
+    const set = (sc: string, i: number) => ev(`r-${sc}-${i}`, 'decor', { sc, id: `d${sc}${String(i).padStart(5, '0')}`, at: P + i, item: 'f4041', x: i % 8, z: (i >> 3) % 8, f: 0, p: P });
+    const got: unknown[] = [];
+    for (let i = 0; i < 60; i++) got.push(a('event', set('t', i)).ok);
+    got.push(a('event', set('t', 60)));
+    got.push(a('event', ev('r-wall', 'decor', { sc: 't', id: 'dtentwall', at: P + 70, item: 'w4840', x: 0, z: 0, f: 0, p: P })).ok);
+    got.push(b('event', set('u', 0)).ok);
+    expect(got).toEqual([...Array(60).fill(true), { ok: false, error: 'bad_request', detail: 'tent full' }, true, true]);
+  });
+
   it('tells the room after an event was kept, never for a duplicate or a refusal', () => {
     a('event', ev('p1', 'pref', { key: 'locale', value: 'en' }));
     a('event', ev('p1', 'pref', { key: 'locale', value: 'en' }));

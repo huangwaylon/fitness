@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { LAYOUT_MAX, layoutAccept, layoutOpOf, mergeLayout, scopeMayWrite, type LayoutEntry } from './layout.ts';
 import { guestMayWrite } from './guest.ts';
-import { tentAccept, tentOpOf, type TentEntry } from './tent.ts';
+import { TENT_MAX, tentAccept, tentOpOf, type TentEntry } from './tent.ts';
 import { parseClient, scopeMaySend } from '../sync/live-protocol.ts';
 import { validEventData, eventSlot } from '../model/record.ts';
 
@@ -72,7 +72,7 @@ describe('layout ops (contract/layout.ts)', () => {
 
   test('a home’s room is its own: its own ids, its own cap', () => {
     const piece = (sc: string, id: string) => tentOpOf({ sc, id, at: T0, item: 'f1', x: 0, z: 0, f: 0, p: T0 })!;
-    const held = Array.from({ length: 40 }, (_, i) => ({ ...piece('t', `dpiece${String(i).padStart(3, '0')}`), who: 'A' }) as TentEntry);
+    const held = Array.from({ length: TENT_MAX }, (_, i) => ({ ...piece('t', `dpiece${String(i).padStart(3, '0')}`), who: 'A' }) as TentEntry);
     expect(tentAccept(held, { ...piece('t', 'dpiecenew'), who: 'A' } as TentEntry)).toBe('full');
     expect(tentAccept(held, { ...piece('u', 'dpiecenew'), who: 'B' } as TentEntry)).toBe('append');
   });

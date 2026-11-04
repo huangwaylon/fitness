@@ -1115,14 +1115,14 @@ goes with the leaving).
 - **もようがえ** (the foot's green button) arranges the room: the grid on the floor and the tray in the thumb's reach:
   tabs かぐ (the starter set), ラグ, みつけた (every furniture either of us found in a balloon's present that NH has a model
   of: the ずかん's カタログ, newest first), かべがみ, ゆか, over NH's own icons in two rows that scroll sideways (60 px), and
-  ✓ おわる with the count (「3/40」). A tap on a piece's icon puts it down as a ghost on the free spot nearest my villager,
+  ✓ おわる with the count (「3/60」). A tap on a piece's icon puts it down as a ghost on the free spot nearest my villager,
   lifted, its footprint on the floor green where it may stand and red where not, the bar above saying why
   (「でいりぐちは あけて おこう」, 「ほかの かぐと かさなります」, 「むらびとが いるよ」…); a finger on it (or on a placed piece,
   which picks it up) drags it a tile at a time; a tap on the floor moves it there (Holding, below); ↻ まわす turns it a quarter (about
   its middle); ✓ おく places it (greyed while red); 🗑 しまう takes a placed one back to the storage (とりけす on the banner
   for 5 s); ✕ やめる puts it back. A wallpaper or a floor is on at once. **Where:** on its whole tiles inside the room,
   off the door's two tiles, not over another piece or a villager; a rug lies under the furniture (and may cover the
-  door's tiles), never over another rug. At most 40 pieces, shared (the wallpaper and the floor don't count): 64 tiles
+  door's tiles), never over another rug. At most 60 pieces, shared (the wallpaper and the floor don't count): 64 tiles
   and the phone's draw budget.
 - **Turning:** ↻ or a tap on the piece I hold turns it a quarter clockwise (a tap: under 8 px and 450 ms; a drag
   moves it), easing round.

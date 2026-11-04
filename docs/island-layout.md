@@ -80,7 +80,7 @@ id's latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (i
 
 - The server enforces it (`contract/layout.ts` `scopeMayWrite` in the record, `live-protocol.ts` `scopeMaySend` in the
   room; tests in `relay/test/guest.test.ts`): the guest can never write an outdoor op.
-- A room scope (`t`, `u`, `v`) is contract/tent.ts's op: its own ids, its own cap of 40 pieces.
+- A room scope (`t`, `u`, `v`) is contract/tent.ts's op: its own ids, its own cap of 60 pieces.
 - The room relays a layout op live but never keeps it in the day's ring (an afternoon in the editor would push the
   shared world out of it); a phone opening later reads it from the record. A `drag` with `sc: 'o'` is an outdoor
   object being moved (x, z its middle in world units): presence, as the tent's.

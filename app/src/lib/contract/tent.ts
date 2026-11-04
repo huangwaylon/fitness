@@ -10,7 +10,7 @@
 // dependency-free (the items themselves are the app's: components/tent/items.json).
 
 /** At most this many pieces in the tent, shared (the rugs count; the wallpaper and the floor don't). */
-export const TENT_MAX = 40;
+export const TENT_MAX = 60;
 /** The room's tiles across and deep (components/tent/grid.ts ROOM). */
 const ROOM = 8;
 /** The wallpaper's and the floor's ids: one op each, the latest wins. */

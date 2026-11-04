@@ -609,7 +609,7 @@ it costs the island nothing. Model files public: the user's call.
 ### The tent's room is the island's decor ops with a room scope; a drag is presence
 The tent's layout, wallpaper and floor are `decor` ops with `sc: 't'` (`contract/tent.ts`): the same event type, the same
 relay intent, the same last-writer-wins merge and the same latest-op-per-id record, but their own ids, tiles (0–7) and
-cap (40 pieces), so an old phone, which knows no scope, ignores them (its parser rejects the unknown key or the item).
+cap (40 pieces; 60 since 2026-11-04), so an old phone, which knows no scope, ignores them (its parser rejects the unknown key or the item).
 While a finger holds a piece its spot crosses as `drag` (≤ 10 a second, only when it moved, again each second while
 it rests) and my villager inside as `tent` (the very walk): presence only, relayed while the partner is there, never
 kept, replayed or written; the drop is the op, sent before the drag's end. The earlier of two holds on one piece
