@@ -9,6 +9,7 @@ import STRUCTURES from '#lib/layout/structures.json' with { type: 'json' };
 import { TIER_H } from '#lib/layout/grid.ts';
 import { footOf, objMid, type Layout, type Obj } from '#lib/layout/model.ts';
 import { lambertAll } from './home.ts';
+import { lean } from './release.ts';
 
 const FAMILIES = (STRUCTURES as unknown as { families: Record<string, { min: number[]; max: number[]; v: string }> }).families;
 /** A bridge's or a stairs' variant → NH's model. */
@@ -56,7 +57,7 @@ const glbs = new Map<string, Promise<GLTF | null>>();
 export async function buildStructure(p: StructurePlace, base?: string): Promise<Group | null> {
   const b = base ?? new URL('room/structures/', new URL(document.baseURI)).href;
   let g = glbs.get(p.family);
-  if (!g) glbs.set(p.family, (g = loader.loadAsync(`${b}${p.family}.glb?v=${FAMILIES[p.family]?.v ?? 0}`).catch(() => null)));
+  if (!g) glbs.set(p.family, (g = loader.loadAsync(`${b}${p.family}.glb?v=${FAMILIES[p.family]?.v ?? 0}`).then(lean, () => null)));
   const gl = await g;
   if (!gl) return null;
   const root = gl.scene.clone(true);

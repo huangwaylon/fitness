@@ -26,3 +26,10 @@ export function releaseAll(roots: Object3D[], also: Iterable<Res> = []) {
   for (const r of roots) resourcesOf(r, all);
   for (const r of all) r.dispose();
 }
+
+/** A model kept (a page-wide cache's) without its loader's parser: the parser holds the GLB's whole body and its JSON,
+ *  besides the buffers three made from them (each drawn model's ~its file again, for the page's life). */
+export function lean<T extends object>(g: T): T {
+  (g as { parser?: unknown }).parser = undefined;
+  return g;
+}

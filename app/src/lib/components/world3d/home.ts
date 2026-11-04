@@ -9,6 +9,7 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { FAMILIES, partsOf, type HomeStyle } from '#lib/layout/homes.ts';
 import { splitSides } from './sides.ts';
+import { lean } from './release.ts';
 
 /** World units a model unit (the island's furniture scale: 10 model units a 30u tile). */
 export const HOME_U = 3;
@@ -23,7 +24,7 @@ const baseUrl = (base?: string) => base ?? new URL('room/homes/', new URL(docume
 function glb(base: string, family: string): Promise<GLTF | null> {
   let p = glbs.get(family);
   if (!p) {
-    p = loader.loadAsync(`${base}${family}.glb?v=${FAMILIES[family]?.v ?? 0}`).catch((e: unknown) => {
+    p = loader.loadAsync(`${base}${family}.glb?v=${FAMILIES[family]?.v ?? 0}`).then(lean, (e: unknown) => {
       console.warn('home: model', family, e);
       return null;
     });
