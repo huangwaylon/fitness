@@ -205,7 +205,7 @@
       my.z = b.z + Math.cos(a2) * 1.3;
       my.bush = undefined;
     } else if (a.k === 'climb') {
-      my.climb = { p: a.p, t0: rt };
+      my.climb = { l: a.l, t0: rt };
       my.st = 'climb';
     } else if (a.k === 'push') link.send({ k: 'push', who: me, id: a.id });
     else if (a.k === 'nest') link.send({ k: 'nest', who: me, id: a.id });

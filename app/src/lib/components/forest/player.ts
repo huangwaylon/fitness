@@ -1,7 +1,7 @@
 // くまのもり's own player, on its own phone (docs/design.md "Kuma no mori"): moving (walk, sprint and its stamina,
 // wading, stung), bumping into trunks and bushes, the cliffs (up only by a ladder, down by jumping off any edge), and
 // what the act button would do where it stands. Pure: the page calls move() each frame and sends where it got to.
-import { CLIFF, CLIFF_H, HALF, LOG_L, WATER, BRIDGE, at, onTop, segDist, type ForestMap, type Plateau } from './map.ts';
+import { CLIFF, CLIFF_H, HALF, LOG_L, WATER, BRIDGE, at, onTop, segDist, type ForestMap, type Ladder } from './map.ts';
 import type { PState } from './protocol.ts';
 import { TUNE } from './sim.ts';
 
@@ -27,7 +27,7 @@ export interface Me {
   wheeze: number;
   stung: number;
   run: boolean;
-  climb: { p: Plateau; t0: number } | null;
+  climb: { l: Ladder; t0: number } | null;
   drop: number;
   downAt: number;
   revived: boolean;
@@ -41,7 +41,7 @@ export function createMe(x: number, z: number): Me {
 /** One frame (dt s, at t s): `dir` the stick's push in world x/z (length ≤ 1), `run` the run button held. */
 export function move(m: ForestMap, me: Me, dir: { x: number; z: number }, run: boolean, t: number, dt: number, fallen: Set<number>): void {
   if (me.climb) {
-    const u = (t - me.climb.t0) / CLIMB_S, p = me.climb.p;
+    const u = (t - me.climb.t0) / CLIMB_S, p = me.climb.l;
     const k = Math.min(1, u);
     me.x = p.foot[0] + (p.head[0] - p.foot[0]) * k;
     me.z = p.foot[1] + (p.head[1] - p.foot[1]) * k;
@@ -118,7 +118,7 @@ function free(m: ForestMap, me: Me, x: number, z: number): boolean {
 export type Act =
   | { k: 'revive'; who: string }
   | { k: 'leave' }
-  | { k: 'climb'; p: Plateau }
+  | { k: 'climb'; l: Ladder }
   | { k: 'push'; id: number }
   | { k: 'nest'; id: number }
   | { k: 'hide'; id: number }
@@ -133,7 +133,7 @@ export function actHere(
   for (const d of o.downs) if (d.top === me.top && Math.hypot(d.x - me.x, d.z - me.z) < TUNE.reviveR) return { k: 'revive', who: d.who };
   if (Math.hypot(m.dock.x - me.x, m.dock.z - me.z) < m.dock.r) return { k: 'leave' };
   if (me.top) return null;
-  for (const p of m.plateaus) if (Math.hypot(p.foot[0] - me.x, p.foot[1] - me.z) < 1.4) return { k: 'climb', p };
+  for (const p of m.plateaus) for (const l of p.ladders) if (Math.hypot(l.foot[0] - me.x, l.foot[1] - me.z) < 1.4) return { k: 'climb', l };
   for (const l of m.leaners) if (!o.fallen.has(l.id) && Math.hypot(l.x - me.x, l.z - me.z) < 2) return { k: 'push', id: l.id };
   for (let i = 0; i < m.nests.length; i++) {
     const t = m.trees[m.nests[i].tree];
