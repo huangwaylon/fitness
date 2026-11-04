@@ -41,7 +41,10 @@ for (const [water, q, cam, sel, miss] of [
   // no tap in the bite's window: it gets away, and the 「！」 goes with it
   ['sea', '&critter=fish&date=2026-11-04T12:00', null, '[data-critter="fish"]', true]
 ] as const) {
-  test(`3D fishing in the ${water}: cast, the rod and its line, the bite, ${miss ? 'too late: it gets away' : 'the catch'}`, async ({ page }) => {
+  // (the pond's: quarantined, red on main twice in run 41831949563 and ~2 in 45 locally before 81ba4a56; pond fishing
+  // stays in the gate through pond.spec's catch)
+  const q = water === 'pond' ? { tag: '@quarantine', annotation: { type: 'quarantine', description: 'owner: the bite-mark (fishing 3D) agent, since 2026-11-04: the pond row fails under load: "no bite" (the in-page wait for the 「！」, the float under and the 3D mark shown together never met in 12 s, CI run 41831949563), the rod state "sit" not "fish", the line-up 7° over 5°, the mark still shown 2 s after the catch (local, 3-4 workers)' } } : {};
+  test(`3D fishing in the ${water}: cast, the rod and its line, the bite, ${miss ? 'too late: it gets away' : 'the catch'}`, q, async ({ page }) => {
     test.setTimeout(90_000);
     // TODO(3D engine): on CI's drawn tier (software GL) the rod and the line-up pass, but the bite's 「！」 or the reel's
     // catch plate is missed (the bite's window under CI's load); the logic tier (E2E_RENDER=none) runs it
