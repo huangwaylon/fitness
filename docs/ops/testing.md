@@ -16,8 +16,9 @@ The tiers and why: [test-strategy.md](test-strategy.md).
 
 - **Red main never deploys, and the newest green does.** One run at a time on `main`, never cancelled: a newer push
   waits, and one still waiting is replaced by the newest. So in a burst of pushes the running one finishes and
-  deploys, then the newest runs (a deploy that has started is never cancelled either). The full tier's runs do cancel
-  each other: only the newest's result matters.
+  deploys, then the newest runs (a deploy that has started is never cancelled either). The full tier likewise runs
+  one at a time to the end (a newer one waits; one waiting is replaced by the newest): when its runs cancelled each
+  other, a burst of pushes left it never finishing, red for hours unseen.
 - **No silent retries.** `retries: 0`. A test that fails is run once more in its own step: passing then, it's named in the
   job summary and annotated on its spec as **flaky**, and the deploy goes on; failing again, or more than 5 failing in a
   shard (broken, not flaky), the job is red. A flaky test goes to the **quarantine** at once (below), and its owner

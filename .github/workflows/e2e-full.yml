@@ -2,7 +2,9 @@
 # gate was until Nov 2026), the quarantine included, after each run of *Deploy UI to GitHub Pages* on main (the nightly
 # one too) and on demand. It never holds a deploy back, and its own workflow keeps the deploy run's result the gate's
 # alone. Its failures are in its summary and annotated on their specs; a red full tier is the next push's to fix. A
-# failed test is run once more (flaky or broken?). A newer run cancels an older one: only the newest commit matters.
+# failed test is run once more (flaky or broken?). One at a time, never cancelled: a newer one waits, and one still
+# waiting is replaced by the newest (cancelling the running one, with agents pushing every few minutes, left the full
+# tier never finishing: red for hours and nobody saw it).
 name: e2e full tier
 
 on:
@@ -17,7 +19,7 @@ permissions:
 
 concurrency:
   group: e2e-full
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   e2e-full:
