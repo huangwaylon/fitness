@@ -1,11 +1,13 @@
 // Build the shop's price list (docs/design.md "The shop", docs/decisions.md "The shop's かいがら"): NH's sell price of
-// every fish, bug and sea creature the island has, and NH's buy price of every piece of furniture the rooms have a model
+// everything a pocket holds (contract/pocket.ts: every fish, bug and sea creature the island has, its shells, fossils
+// and star fragments, and the goods: wood, fruit, mushrooms…), and NH's buy price of every piece of furniture the rooms have a model
 // of, both scaled to かいがら, into src/lib/contract/shopPrices.ts (shared by the record and the phones: what a sell is
 // worth and what a buy costs are the record's rules, so a refresh of this list is a relay deploy first).
 // Usage (from app/): npm run shop:prices
 //
 // Source: the ACNH community spreadsheet as JSON (Norviah/animal-crossing, json/data/*.json, as scripts/catalog.ts
-// reads it; cached for a day under the OS temp dir): Fish, Insects and Sea Creatures' `sell`, the furniture tabs' `buy`.
+// reads it; cached for a day under the OS temp dir): Fish, Insects and Sea Creatures' `sell`, Fossils' (the assessed
+// piece's) and Other's (the shells, fragments and goods, by NH's English name), the furniture tabs' `buy`.
 // The island's species are the catch names' keys (i18n/catch.en.json `critter.name.<id>` / `sea.name.<id>`), matched
 // to the spreadsheet by the catalogue's slug of the English name; the furniture by the rooms' `cat` (tent/items.json:
 // the ずかん's id of a piece NH has a model of).
@@ -13,6 +15,8 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'no
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { slug } from './catalog.ts';
+import { FOSSILS, FRAGMENTS, SHELLS } from '../src/lib/components/island/beach.ts';
+import { GOODS } from '../src/lib/contract/pocket.ts';
 
 const APP = join(import.meta.dirname, '..');
 const OUT = join(APP, 'src', 'lib', 'contract', 'shopPrices.ts');
@@ -69,6 +73,20 @@ async function main() {
       continue;
     }
     sell[`${hit[0]}:${id}`] = scale(bells, SELL_DIV, SELL_MIN);
+  }
+  // the beach's finds and the goods (contract/pocket.ts), by NH's English name
+  const other = new Map([...(await sheet('Other')), ...(await sheet('Fossils'))].map((r) => [slug(r.name), r]));
+  const finds: [string, string][] = [
+    ...[...SHELLS.map(([id]) => id), 'pearl'].map((id): [string, string] => [`shell:${id}`, id]),
+    ...FOSSILS.map((id): [string, string] => [`fossil:${id}`, id]),
+    ...FRAGMENTS.map((id): [string, string] => [`fragment:${id}`, id]),
+    ...Object.entries(GOODS).map(([id, en]): [string, string] => [`goods:${id}`, slug(en)])
+  ];
+  for (const [key, name] of finds) {
+    const r = other.get(name);
+    const bells = r && price(r, 'sell');
+    if (!bells) problems.push(`no sell price: ${key}`);
+    else sell[key] = scale(bells, SELL_DIV, SELL_MIN);
   }
 
   const furniture = new Map<string, Row>();

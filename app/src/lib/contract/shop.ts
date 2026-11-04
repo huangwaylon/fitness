@@ -1,13 +1,14 @@
 // The shop (docs/design.md "The shop", docs/backend.md#events `sell` / `buy`): each person's pocket of catches, their
 // かいがら, and the day's stock. Never ベル: the economy never imports this (deps.test.ts), and nothing here reads one.
 //
-// - **The pocket** is derived: what a person caught of a species (the sum of their day tallies, contract/tally.ts: one
-//   row per person and day, its counts only ever growing) less what they sold of it (`sell`). No write per catch.
+// - **The pocket** is derived: what a person caught, found or picked up of a kind (the sum of their day tallies,
+//   contract/tally.ts: one row per person and day, its counts only ever growing) less what they sold of it (`sell`).
+//   No write per catch. What it holds: contract/pocket.ts.
 // - **かいがら** are derived too: Σ the sells' values − Σ the buys' prices, per person (the guest's its own).
 // - **The stock**: STOCK_N pieces a Tokyo day, picked from the price list's pieces by the date alone (seeded), and the
 //   BASICS always; a buy names the day whose stock it was bought from.
 //
-// A `sell` is `{species, n, v}`: `species` a tally key of a fish, a bug or a sea creature (`fish:koi`), `n` how many,
+// A `sell` is `{species, n, v}`: `species` a tally key of the pocket's (`fish:koi`, `shell:coral`, `goods:wood`), `n` how many,
 // `v` what they fetched (n × the species' price when sold: kept, so a later price list never rewrites the past). A `buy`
 // is `{item, price, d}`: `item` a room's piece (`f…`), `price` its price, `d` the stock's day. The record checks the
 // price, the stock and the cover when it keeps one (relay/src/store.ts, `shopRefusal` over `shopLedger`); the phones
@@ -17,6 +18,7 @@ import { isLocalDate, nextDay } from './api.ts';
 import { SELL, BUY } from './shopPrices.ts';
 import type { LocalDate, Who } from '../types.ts';
 import { seeded } from '../random.ts';
+import { POCKET_KINDS } from './pocket.ts';
 
 export interface SellData { species: string; n: number; v: number }
 export interface BuyData { item: string; price: number; d: LocalDate }
@@ -28,8 +30,8 @@ export const STOCK_N = 8;
 /** Always in stock (NH's shop keeps its basics): a cardboard box, a zen cushion, a mini cactus set. */
 export const BASICS: readonly string[] = ['f3672', 'f7047', 'f4123'];
 
-/** The kinds a pocket holds (the critters; never a shell, a fossil or a present). */
-const SPECIES_RE = /^(fish|bug|sea):[a-z][a-z0-9-]{0,47}$/;
+/** The kinds a pocket holds (contract/pocket.ts: never a present's furniture or recipe). */
+const SPECIES_RE = new RegExp(`^(${POCKET_KINDS.join('|')}):[a-z][a-z0-9-]{0,47}$`);
 const ITEM_RE = /^f\d{1,6}$/;
 const isWhole = (v: unknown, max: number): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= max;
 const keysAre = (d: Record<string, unknown>, keys: readonly string[]): boolean => {
@@ -138,5 +140,5 @@ export function shopLedger(caught: ReadonlyMap<string, number>, rows: Iterable<S
   return l;
 }
 
-/** The species a tally key sells as (a fish, a bug or a sea creature with a price), or null. */
+/** Whether a tally key sells (a pocket's kind with a price). */
 export const isSellable = (key: string): boolean => SPECIES_RE.test(key) && sellPrice(key) !== undefined;

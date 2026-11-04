@@ -3,7 +3,7 @@
 // one row per person and day (a new one replaces the day's older row) and the model sums the latest row of each day
 // (model/tally.ts). The first find of an entry (who and when) stays the `find` event's. Shared by the record
 // (relay/src/store.ts) and the model; pure.
-import { isFind, isLocalDate, isRec, nextDay } from './api.ts';
+import { isFind, isFindId, isLocalDate, isRec, nextDay } from './api.ts';
 import type { LocalDate } from '../types.ts';
 
 /** `kind:id` (model/finds.ts findKey) → how many that day. */
@@ -15,10 +15,13 @@ export interface TallyData { date: LocalDate; counts: Tally }
 export const TALLY_MAX_KEYS = 300;
 export const TALLY_MAX_N = 999;
 
-/** A tally key: `kind:id` of a well-formed find (contract/api.ts isFind: the ずかん's kinds and a present's). */
+/** A tally key: `kind:id` of a well-formed find (contract/api.ts isFind: the ずかん's kinds and a present's), or of the
+ *  pocket's goods (`goods:wood`: picked up, never a find; contract/pocket.ts). */
 export function isTallyKey(k: string): boolean {
   const i = k.indexOf(':');
-  return i > 0 && isFind({ kind: k.slice(0, i), id: k.slice(i + 1) });
+  if (i <= 0) return false;
+  const kind = k.slice(0, i), id = k.slice(i + 1);
+  return kind === 'goods' ? isFindId(id) : isFind({ kind, id });
 }
 
 /** A whole count in 1…TALLY_MAX_N. */

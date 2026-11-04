@@ -32,8 +32,10 @@ export type FindKind = (typeof FIND_KINDS)[number];
 /** A catalog id: lowercase letters, digits and dashes, starting with a letter, at most 48 characters. */
 const FIND_ID_RE = /^[a-z][a-z0-9-]{0,47}$/;
 const isFindKind = (v: unknown): v is FindKind => (FIND_KINDS as readonly unknown[]).includes(v);
+/** A catalog id (a find's, a tally's goods'). */
+export const isFindId = (v: unknown): v is string => typeof v === 'string' && FIND_ID_RE.test(v);
 /** A `find`'s data: a known kind and a well-formed id. Shared by the record and the model. */
-export const isFind = (d: Record<string, unknown>): boolean => isFindKind(d.kind) && typeof d.id === 'string' && FIND_ID_RE.test(d.id);
+export const isFind = (d: Record<string, unknown>): boolean => isFindKind(d.kind) && isFindId(d.id);
 
 /**
  * The activity metrics: they earn ベル, and a day's value is its latest row (Apple Health's current total; a re-sync

@@ -45,13 +45,27 @@ describe('the shop in the record', () => {
     expect(sell('A', 'bug:tarantula', 1, sellPrice('bug:tarantula')!)).toEqual(refused('pocket short')); // never caught
   });
 
-  it('refuses a price over the list, a species that doesn’t sell, a shell; keeps one under it (an older app’s list)', () => {
-    tally('A', { 'fish:koi': 5, 'shell:cowrie': 3 });
+  it('refuses a price over the list, a kind that doesn’t sell (a present’s piece); keeps one under it (an older app’s list)', () => {
+    tally('A', { 'fish:koi': 5, 'shell:cowrie': 3, 'item:froggy-chair': 1 });
     expect(sell('A', 'fish:koi', 1, K + 1)).toEqual(refused());
     expect(sell('A', 'fish:koi', 1, 40)).toEqual({ ok: true }); // the list before 2026-11-04's rise: a koi 40
-    expect(sell('A', 'shell:cowrie', 1, 1)).toEqual(refused());
+    expect(sell('A', 'item:froggy-chair', 1, 1)).toEqual(refused());
     expect(sell('A', 'fish:nope', 1, 1)).toEqual(refused());
     expect(sell('A', 'fish:koi', 0, 0)).toEqual(refused());
+  });
+
+  it('keeps a tally of the goods and sells them, the beach’s finds too, from the pocket (contract/pocket.ts)', () => {
+    const wood = sellPrice('goods:wood')!, coral = sellPrice('shell:coral')!, rex = sellPrice('fossil:t-rex-skull')!;
+    expect(tally('A', { 'goods:wood': 3, 'goods:tree-branch': 1, 'shell:coral': 2, 'fossil:t-rex-skull': 1 })).toMatchObject({ ok: true });
+    expect(tally('A', { 'goods:Wood': 1 })).toEqual(refused()); // not an id
+    expect(sell('A', 'goods:wood', 3, 3 * wood)).toEqual({ ok: true });
+    expect(sell('A', 'goods:wood', 1, wood)).toEqual(refused('pocket short'));
+    expect(sell('A', 'shell:coral', 2, 2 * coral)).toEqual({ ok: true });
+    expect(sell('A', 'fossil:t-rex-skull', 1, rex)).toEqual({ ok: true });
+    expect(sell('G', 'goods:tree-branch', 1, sellPrice('goods:tree-branch')!)).toEqual(refused('pocket short')); // A's, not the guest's
+    // a lower tally of the day after (a second phone's) gives back no wood
+    expect(tally('A', { 'goods:wood': 1 })).toMatchObject({ ok: true });
+    expect(sell('A', 'goods:wood', 1, wood)).toEqual(refused('pocket short'));
   });
 
   it('an id once: a retry is a duplicate, never sold twice', () => {

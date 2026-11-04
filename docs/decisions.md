@@ -222,6 +222,12 @@ furniture; the week's goals still buy the two treats. Pockets and wallets are pe
   keys) isn't in the pocket; two phones of one person racing on one day's tally could lower it, and then the pocket reads
   no lower than empty and the record refuses that species until it's caught again. Selling never takes anything out of
   the ずかん or the museum (they read `find` and the tallies, which a sell never touches).
+- **Anything collectible sells (2026-11-04, the user: "basically anything collectible should be tracked and sellable",
+  fossils too):** the pocket's kinds are one table (`contract/pocket.ts`): the critters, the ずかん's shells, fossils
+  and star fragments (already in the tallies, so what was found before sells too), and the goods (`goods:<id>`: wood,
+  a branch, fruit, weeds, mushrooms, eggs, junk), new tally keys with no ずかん page (a find kind would mean museum and
+  ずかん pages for wood). A present's furniture stays もようがえ's. Wood comes from shaking (no axe in the app), three a
+  tree a day as NH's axe gives.
 - **かいがら = Σ sells − Σ buys**, derived per person; a sell keeps what it fetched (`v`), so a later price list never
   rewrites a past sale. The record refuses a sell past the pocket, a buy past the wallet or of a piece already owned, and
   a price over the list's; the phones fold the same rows by the same function (`contract/shop.ts shopLedger`).
@@ -314,7 +320,7 @@ them, you can occasionally get presents too"); wrapped because our presents are,
 plate, the ずかん, the tent and the sharing with it.
 
 ### Mushrooms are cosmetic
-November's mushrooms are captions only, no ずかん `find`. Why: NH's mushrooms are crafting materials with no catalogue
+November's mushrooms are captions only, no ずかん `find` (since 2026-11-04 they go into the pocket to sell: `goods`). Why: NH's mushrooms are crafting materials with no catalogue
 page, and a new find kind needs a redeploy for a seasonal flourish.
 
 ### The jar is the door, no ribbon (2026-11-03)

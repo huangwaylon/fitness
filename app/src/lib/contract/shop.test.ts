@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { BASICS, STOCK_N, buyOf, buyPrice, isSellable, sellOf, sellPrice, shopLedger, shopPriced, shopRefusal, stockOf, type ShopRow } from './shop.ts';
 import { BUY, SELL } from './shopPrices.ts';
 import { ITEMS } from '../components/tent/items.ts';
+import { FOSSILS, FRAGMENTS, SHELLS } from '../components/island/beach.ts';
+import { GOODS } from './pocket.ts';
 
 describe('the price list (scripts/shop-prices.ts)', () => {
   it('sells a catch and prices a piece at NH’s Bells ÷ 20, nothing selling for under 3', () => {
@@ -18,24 +20,37 @@ describe('the price list (scripts/shop-prices.ts)', () => {
     expect(buyPrice('f7047')).toBe(25); // the zen cushion, 500
   });
   it('has every species the island has, and only pieces the rooms can place', () => {
-    expect(Object.keys(SELL).length).toBe(194); // 80 fish, 74 bugs, 40 sea creatures
+    // 80 fish, 74 bugs, 40 sea creatures; 9 shells (the pearl's), 73 fossils, 14 star fragments; 21 goods
+    expect(Object.keys(SELL).length).toBe(194 + 9 + 73 + 14 + Object.keys(GOODS).length);
     for (const [k, v] of Object.entries(SELL)) expect(isSellable(k) && Number.isInteger(v) && v >= 1, k).toBe(true);
     for (const [code, v] of Object.entries(BUY)) {
       expect(ITEMS[code], code).toBeDefined();
       expect(ITEMS[code].starter, code).toBeUndefined();
       expect(Number.isInteger(v) && v >= 1 && v <= 5000, code).toBe(true);
     }
-    expect(isSellable('shell:cowrie')).toBe(false);
+    expect(isSellable('item:froggy-chair')).toBe(false); // a present's furniture: もようがえ's, never the pocket's
+    expect(isSellable('recipe:log-stool')).toBe(false);
     expect(isSellable('fish:nope')).toBe(false);
     expect(sellPrice('constructor')).toBeUndefined();
     expect(buyPrice('toString')).toBeUndefined();
   });
 });
 
+describe('the pocket’s table (contract/pocket.ts)', () => {
+  it('prices everything the island lets us keep: every shell, fossil, star fragment and good, at NH’s ÷ 20', () => {
+    const keys = [...SHELLS.map(([id]) => `shell:${id}`), 'shell:pearl', ...FOSSILS.map((id) => `fossil:${id}`), ...FRAGMENTS.map((id) => `fragment:${id}`),
+      ...Object.keys(GOODS).map((id) => `goods:${id}`)];
+    expect(keys.filter((k) => !isSellable(k) || !sellOf({ species: k, n: 1, v: sellPrice(k)! }))).toEqual([]);
+    // NH's sell prices ÷ 20: wood 60 Bells (3, the floor), a branch 5 (3), a coral 500, a T. rex skull 6,000, a pearl 10,000
+    expect(['goods:wood', 'goods:softwood', 'goods:hardwood', 'goods:tree-branch', 'shell:coral', 'fossil:t-rex-skull', 'shell:pearl', 'goods:apple', 'fragment:star-fragment']
+      .map(sellPrice)).toEqual([3, 3, 3, 3, 25, 300, 500, 5, 13]);
+  });
+});
+
 describe('a sell and a buy', () => {
   it('reads their shape, nothing more', () => {
     expect(sellOf({ species: 'fish:koi', n: 2, v: 80 })).toEqual({ species: 'fish:koi', n: 2, v: 80 });
-    for (const d of [{}, { species: 'fish:koi', n: 2 }, { species: 'fish:koi', n: 0, v: 0 }, { species: 'fish:koi', n: 1.5, v: 60 }, { species: 'shell:cowrie', n: 1, v: 1 },
+    for (const d of [{}, { species: 'fish:koi', n: 2 }, { species: 'fish:koi', n: 0, v: 0 }, { species: 'fish:koi', n: 1.5, v: 60 }, { species: 'item:froggy-chair', n: 1, v: 1 },
       { species: 'fish:koi', n: 1000, v: 40000 }, { species: 'fish:koi', n: 1, v: 40, at: 1 }, { species: 'koi', n: 1, v: 40 }])
       expect(sellOf(d as Record<string, unknown>), JSON.stringify(d)).toBeNull();
     expect(buyOf({ item: 'f3672', price: 6, d: '2026-11-04' })).toEqual({ item: 'f3672', price: 6, d: '2026-11-04' });

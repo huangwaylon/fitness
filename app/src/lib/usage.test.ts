@@ -28,6 +28,8 @@ import { FOSSILS, FRAGMENTS, SHELLS, findArt } from '#lib/components/island/beac
 import { PEARL, SEA } from '#lib/components/island/sea.ts';
 import { MUSHROOMS } from '#lib/components/island/mushrooms.ts';
 import { EGGS } from '#lib/components/island/eggs.ts';
+import { GOODS } from '#lib/contract/pocket.ts';
+import { pocketItem } from '#lib/components/shop/pocket.ts';
 
 const LIB = import.meta.dirname;
 const SRC = join(LIB, '..');
@@ -139,6 +141,8 @@ describe('official art (static/art/manifest.json)', () => {
     ...[...MUSHROOMS.map(([id]) => id), 'rare-mushroom'].map(findArt),
     // Bunny Day's eggs (island/eggs.ts)
     ...EGGS.map(findArt),
+    // the pocket's goods in the shop's うる (shop/pocket.ts: wood, a weed, the fruit…)
+    ...Object.keys(GOODS).flatMap((id) => pocketItem(`goods:${id}`)?.art ?? []),
     // a present's recipe card (island/Finds.svelte); its items' and recipes' icons are outside the manifest (catalog.test)
     'presents/diy-recipe',
     // the decorations in their four facings (island/decor.ts decorArt)

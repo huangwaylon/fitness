@@ -322,5 +322,14 @@
   "sea.name.spotted-garden-eel": "a spotted garden eel",
   "sea.name.flatworm": "a flatworm",
   "sea.name.venus-flower-basket": "a Venus' flower basket",
-  "beach.name.pearl": "a pearl"
+  "beach.name.pearl": "a pearl",
+  "beach.name.wood": "some wood",
+  "beach.name.softwood": "some softwood",
+  "beach.name.hardwood": "some hardwood",
+  "beach.name.tree-branch": "a tree branch",
+  "beach.name.weeds": "a clump of weeds",
+  "beach.name.apple": "an apple",
+  "beach.name.pear": "a pear",
+  "beach.name.peach": "a peach",
+  "beach.name.cherry": "some cherries"
 }
