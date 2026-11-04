@@ -8,6 +8,7 @@
   import type { PersonId } from '#lib/types.ts';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
+  import { dayTitle } from '../kiroku/fmt.ts';
   import Wallet from '../wallet/Wallet.svelte';
   import DayDetail from '../kiroku/DayDetail.svelte';
   import { dayDetail } from '#lib/model/history.ts';
@@ -69,7 +70,7 @@
 </script>
 
 <Sheet bind:open label={t('wallet.title')} variant="top" onclose={closed}>
-  <div class="titlebar"><NavBar title={t('wallet.title')} onback={date ? back : null} onclose={() => (open = false)} sfx="self" /></div>
+  <div class="titlebar"><NavBar title={date ? dayTitle(date) : t('wallet.title')} onback={date ? back : null} onclose={() => (open = false)} sfx="self" /></div>
 
   <div class="panel-body" bind:this={body}>
     {#if view && me}

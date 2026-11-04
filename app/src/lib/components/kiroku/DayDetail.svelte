@@ -8,9 +8,9 @@
   import type { DayDetail, DayPerson } from '#lib/model/history.ts';
   import Avatar from '../characters/Avatar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { RING_FRUITS, RULES, STRETCH } from '#lib/config/rules.ts';
+  import { GOALS_SHOWN, RING_FRUITS, RULES, STRETCH } from '#lib/config/rules.ts';
   import { fruitArt } from '#lib/art.ts';
-  import { dayTitle, num } from './fmt.ts';
+  import { num } from './fmt.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
 
   interface Props {
@@ -31,7 +31,6 @@
   }
 </script>
 
-<header class="sub"><h3>{dayTitle(d.date)}</h3></header>
 
 <section class="card duo" class:met={d.together}>
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" /></svg>
@@ -50,7 +49,7 @@
       <b class="nm">{names[p]}{#if mine}<small>&nbsp;· {t('kiroku.me')}</small>{/if}</b>
       <b class="money day">{formatBells(x.bells, { signed: true })}</b>
     </div>
-    {#each RING_FRUITS as f (f)}
+    {#each GOALS_SHOWN as f (f)}
       <div class="row">
         <span class="ic"><OfficialArt key={fruitArt(f)} size={22} /></span>
         <span class="k">{t(`fruit.${f}`)}</span>
@@ -74,9 +73,7 @@
 {@render person(partner, d.people[partner], false)}
 
 <style>
-  .sub { margin: 0 2px; }
   /* the date in the numbers' Fredoka */
-  .sub h3 { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-num); }
   .duo { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 6px 14px; font-weight: 700; }
   .duo svg { width: 22px; height: 22px; flex: none; fill: color-mix(in srgb, var(--text) 25%, transparent); }
   .duo.met svg { fill: var(--c-yuzu-lip); }

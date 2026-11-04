@@ -75,7 +75,8 @@
           <span class="money amt">{formatBells(-s.bells)}</span>
           {#if onerase}
             <button type="button" class="x" data-sfx="open" aria-label={t('wallet.erase', { label })} onclick={() => askErase(s)}>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              <!-- the editors' 🗑 (しまう): ✕ is the sheet's close -->
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
             </button>
           {/if}
         </li>
@@ -144,7 +145,7 @@
     flex: none; appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); padding: 0; border-radius: 50%;
     display: grid; place-items: center; background: none; color: var(--text-soft);
   }
-  .x svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
+  .x svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   .x:active { background: var(--hl); transform: scale(.92); }
   .more { justify-self: center; }
 

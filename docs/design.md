@@ -137,7 +137,7 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   280ms grid-row ease, WebKit animates it; reduced motion: at once), folded again on every opening of the panel.
 
 The buys list newest first (art, name, day, who, price), ten at a time
-(「もっと見る」). ✕ on any line (either of us, any buy) asks NH-style (「このかいものを けしますか？ 40 ベル もどります」);
+(「もっと見る」). 🗑 on any line (either of us, any buy; ✕ is only ever a close) asks NH-style (「このかいものを けしますか？ 40 ベル もどります」);
 はい sends a `spend_void`, the ベル go back, and the banner carries とりけす for 5 s. The old `/jar` page redirects to the
 island with the panel open on ごほうび (`?panel=rewards`, dropped from the URL once read).
 
@@ -1271,7 +1271,7 @@ and its mouth, and the spring and the river above the cliff.
 `kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `model/tally.ts`,
 `e2e/zukan.spec.ts`. The ずかん is its own sheet (`kiroku/ZukanSheet.svelte`: the HUD menu's ずかん pill, grown out of it,
 Sheet's `pop`): first one row per kind with how many either of us has found (`ZukanCard`), a row → that kind's page
-with ‹; the next opening starts on the rows. Shared (the first `find` of either of us): さかな 80 (the sea's 34 and the pond's
+with ‹ (titled with the kind: a level's title is its own name, the ledger's day its date); the next opening starts on the rows. Shared (the first `find` of either of us): さかな 80 (the sea's 34 and the pond's
 46), むし 74, うみのさち 40, かせき 73 (laid out like NH's museum: the standalone ones, then each dinosaur with
 「Tレックス 1 / 3」), かいがら 9 (the pearl last), and a balloon's presents: カタログ 1,836 (by NH's categories: かぐ,
 こもの, かべかけ, てんじょう, トップス... かさ) and レシピ 126 (by season). Every catch and pick-up counts: each found tile shows
@@ -1459,7 +1459,7 @@ too.
   name and price; one picked, かう buys it. A piece I own says もってる; too dear or owned, かう boops and the twins say
   why. A bought piece is mine for good in もようがえ (TentEdit's かった tab, and the かべかけ tab for a wall piece) in
   every room I arrange.
-- A sell or a buy shows at once with もとに戻す for 5 s (the banner up over the counter here, clear of the bar), then
+- A sell or a buy shows at once with とりけす for 5 s (the banner up over the counter here, clear of the bar), then
   goes to the record, which checks it (the pocket, the wallet, the stock, the price: [backend](backend.md#events)).
 - **Prices:** a catch NH's Bells ÷ 100 (a sea bass 4, a koi 40, a whale shark 130), a piece NH's ÷ 20 (a median piece
   110: about a day's catches).

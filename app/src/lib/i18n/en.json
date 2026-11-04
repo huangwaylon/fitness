@@ -147,6 +147,7 @@
   "bells.unit": "Bells",
   "wallet.title": "Treats",
   "wallet.after": "Left after",
+  "wallet.buyTitle": "Buy a treat",
   "wallet.buy": "Buy it!",
   "wallet.bought": "Bought {label}! −{bells}",
   "wallet.short": "Not quite enough Bells yet…",

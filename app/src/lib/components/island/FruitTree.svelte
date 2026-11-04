@@ -22,7 +22,7 @@
   import { onDestroy, onMount, untrack } from 'svelte';
   import type { PersonWeekView, RingFruit } from '#lib/types.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
-  import { RING_FRUITS } from '#lib/config/rules.ts';
+  import { RING_FRUITS, GOALS_SHOWN } from '#lib/config/rules.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Fx from '../characters/Fx.svelte';
   import { fruitArt, seasonArt, treeArt } from '#lib/art.ts';
@@ -86,7 +86,7 @@
 
   const ring = (f: RingFruit) => person.rings[f];
   /** The popup's rows: 🍎 steps first, then Apple's rings (the canopy keeps RING_FRUITS). */
-  const POPUP_ORDER: readonly RingFruit[] = ['apple', 'pear', 'peach', 'cherry'];
+  const POPUP_ORDER: readonly RingFruit[] = GOALS_SHOWN;
   /** The day's ledger: goals met (+1 each), がんばり (the fruits at 1.5×, the ベル paid: at most STRETCH.cap, 上限 when
    *  more were reached than that) and this person's total (goals + がんばり; ふたりでぜんぶ is the pair's, apart). */
   const goalBells = $derived(RING_FRUITS.filter((f) => ring(f).met).length * RULES.perGoal);
