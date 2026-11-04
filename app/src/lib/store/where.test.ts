@@ -17,8 +17,8 @@ describe('where the partner’s villager is', () => {
     expect(where.partnerInTent).toBe(false);
   });
 
-  it('which place: a home by its `sc` (none the tent), the museum by `m`', () => {
-    for (const [sc, place] of [[undefined, 'A'], ['u', 'B'], ['v', 'G'], ['m', 'M']] as const) {
+  it('which place: a home by its `sc` (none the tent), the museum by `m`, the shop by `s`', () => {
+    for (const [sc, place] of [[undefined, 'A'], ['u', 'B'], ['v', 'G'], ['m', 'M'], ['s', 'S']] as const) {
       where.heard({ ...tent(true), ...(sc ? { sc } : {}) } as Relayed);
       expect([where.partnerInTent, where.home.B]).toEqual([true, place]);
     }
@@ -26,17 +26,17 @@ describe('where the partner’s villager is', () => {
     expect(where.home.B).toBeNull();
   });
 
-  it('gone quiet inside: home on the island after the timeout, unless they come back first', () => {
+  it('gone quiet inside: back on the island after the timeout, unless they come back first', () => {
     where.heard(tent(true));
     where.peer(false);
     vi.advanceTimersByTime(where.goneMs - 1);
     expect(where.partnerInTent).toBe(true);
     where.peer(true);
     vi.advanceTimersByTime(where.goneMs * 2);
-    expect([where.partnerInTent, where.wentHome]).toEqual([true, 0]);
+    expect(where.partnerInTent).toBe(true);
     where.peer(false);
     vi.advanceTimersByTime(where.goneMs);
-    expect([where.partnerInTent, where.wentHome]).toEqual([false, 1]);
+    expect(where.partnerInTent).toBe(false);
   });
 
   it('by the relay’s leave time: out when it comes; this phone offline (no time known) waits', () => {
@@ -49,12 +49,12 @@ describe('where the partner’s villager is', () => {
     vi.advanceTimersByTime(4999);
     expect(where.partnerInTent).toBe(true);
     vi.advanceTimersByTime(1);
-    expect([where.partnerInTent, where.wentHome]).toEqual([false, 1]);
+    expect(where.partnerInTent).toBe(false);
   });
 
   it('a partner on the island going quiet changes nothing', () => {
     where.peer(false);
     vi.advanceTimersByTime(where.goneMs * 2);
-    expect([where.partnerInTent, where.wentHome]).toEqual([false, 0]);
+    expect(where.partnerInTent).toBe(false);
   });
 });

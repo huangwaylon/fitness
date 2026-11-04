@@ -1,6 +1,7 @@
 // Where my villager is (docs/design.md "Walking", "Buildings"): out of the shop's or the museum's door it stands just
 // in front of it, facing out, and stays there (on the default island and on the user's, the shop at x7 z49 and the
-// museum at x9 z18); the other phone sees it come out there; a reload, or the next day, finds it where it was.
+// museum at x9 z18); the other phone sees it gone while it's in the shop, then come out there; a reload, or the next
+// day, finds it where it was, on both phones.
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { is3d, lawnTap, settled, tapOn } from './island';
@@ -18,16 +19,23 @@ const RECORD = JSON.parse(readFileSync(new URL('../src/lib/layout/record-2026-11
 const USERS = [...RECORD, { who: 'A', sc: 'o', id: 'shop', at: 1.8e12, k: 'shop', x: 7, z: 49, f: 0 }, { who: 'A', sc: 'o', id: 'museum', at: 1.8e12 + 1, k: 'museum', x: 9, z: 18, f: 0 }];
 const onUsers = (page: Page) => page.addInitScript((ops) => localStorage.getItem('island-demo.layout') || localStorage.setItem('island-demo.layout', JSON.stringify(ops)), USERS);
 
-/** In by the door (a tap on it walks up and goes in), out by ‹ 島へ. */
-async function inAndOut(page: Page, id: 'shop' | 'museum') {
+/** In by the door (a tap on it walks up and goes in). */
+async function goIn(page: Page, id: 'shop' | 'museum') {
   const door = await w(page, (w) => w.site().doors);
   await page.evaluate(`window.__world.go(${door[id][1] - 120})`);
   await settled(page);
   await tapOn(page, page.locator(`[data-building="${id}"] .door`));
   await expect(page).toHaveURL(new RegExp(`/${id}/?\\?`), { timeout: 20_000 });
   await expect(page.locator(id === 'shop' ? '[data-shop]' : '[data-museum]')).toBeVisible();
+}
+/** Out by ‹ 島へ. */
+async function goOut(page: Page) {
   await page.getByRole('button', { name: '島へ' }).click();
   await expect(page).toHaveURL(/fitness\/?\?/);
+}
+async function inAndOut(page: Page, id: 'shop' | 'museum') {
+  await goIn(page, id);
+  await goOut(page);
 }
 
 for (const island of ['default', 'user'] as const)
@@ -49,17 +57,43 @@ for (const island of ['default', 'user'] as const)
       expect(far(await w(page, (w) => w.mine()), exit.at)).toBeLessThan(2);
     });
 
-test('the other phone sees me come out of the shop’s door', async ({ context }) => {
+test('the other phone sees me gone while I’m in the shop, then come out of its door', async ({ context }) => {
   test.slow();
   await context.addInitScript((ops) => localStorage.getItem('island-demo.layout') || localStorage.setItem('island-demo.layout', JSON.stringify(ops)), USERS);
   const a = await context.newPage(), b = await context.newPage();
   await a.goto(Q);
   await b.goto(`${Q}&as=B`);
   expect(await is3d(a)).toBe(true);
+  const inside = () => b.locator('[data-actor="partner"]').getAttribute('data-inside');
+  expect(await inside()).toBeNull();
   await a.bringToFront();
-  await inAndOut(a, 'shop');
+  await goIn(a, 'shop');
+  // in the shop: nowhere on B's island (as in the museum and the rooms), not standing at its door
+  await expect.poll(inside, { timeout: 6000 }).toBe('true');
+  await goOut(a);
   const exit = await a.evaluate(() => (window as unknown as { __world: W }).__world.exit('shop'));
+  await expect.poll(inside, { timeout: 6000 }).toBeNull();
   await expect.poll(() => w(b, (w) => w.partner()).then((p) => far(p, exit.at)), { timeout: 10_000 }).toBeLessThan(3);
+});
+
+test('the other phone opening the next day finds my villager where I left it, not at home', async ({ context }) => {
+  test.slow();
+  const a = await context.newPage();
+  await a.goto(Q);
+  expect(await is3d(a)).toBe(true);
+  const home = await w(a, (w) => w.mine());
+  await a.evaluate(`window.__world.go(${home[1] + 60})`);
+  await settled(a);
+  const lawn = await lawnTap(a, home[0] + 60, home[1] + 140);
+  await a.mouse.click(lawn.x, lawn.y);
+  await expect.poll(() => w(a, (w) => w.mine()).then((p) => far(p, lawn.at))).toBeLessThan(3);
+  const at = await w(a, (w) => w.mine());
+  await a.close();
+  // B's phone, the next morning, A's closed all along: A's villager where its last walk ended (the relay's, carried)
+  const b = await context.newPage();
+  await b.goto(`${Q.replace('2026-11-04T12:00', '2026-11-05T09:00')}&as=B`);
+  await b.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
+  await expect.poll(() => w(b, (w) => w.partner()).then((p) => far(p, at)), { timeout: 10_000 }).toBeLessThan(3);
 });
 
 test('a reload, and the next day, find my villager where it was', async ({ page }) => {

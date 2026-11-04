@@ -104,7 +104,7 @@ describe('live: connecting', () => {
     expect(live.status()).toMatchObject({ peer: true, here: ['B', 'G'] });
     last().recv({ kind: 'presence', who: 'G', on: false, t: 1_800_000_000_000 });
     expect(live.status()).toMatchObject({ peer: true, here: ['B'] });
-    // when they left, on the relay's clock (the walk home's start: villagerSync); back, forgotten
+    // when they left, on the relay's clock (store/where.svelte.ts: one gone quiet inside); back, forgotten
     expect(live.status().gone).toEqual({ G: 1_800_000_000_000 });
     last().recv({ kind: 'presence', who: 'G', on: true, t: Date.now() });
     expect(live.status().gone).toEqual({});

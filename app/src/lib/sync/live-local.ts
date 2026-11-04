@@ -1,6 +1,7 @@
 // The demo's relay (docs/backend.md#shared-world): the demo's two players are two tabs of one browser (`?demo` and
 // `?demo&as=B`), so their island is shared through a BroadcastChannel, with the room's rules played by whichever tab
-// sends (the day's world kept in localStorage: first claim wins, one nest per tree per hour, each person's last walk).
+// sends (the day's world kept in localStorage: first claim wins, one nest per tree per hour, each person's last walk,
+// carried into the next day).
 // The same `Live` as the real socket (sync/live.ts), so the island can't tell them apart; the e2e's two-player tests
 // run on it. Its clock is the island's (clock.ts now(): a `?date=` preview moves the shared day too). Never used
 // outside the demo.
@@ -41,7 +42,13 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
   const read = (): Log => {
     const today = tokyoDay(now().getTime());
     const l = readJson<Log>(localKV(), DEMO.relay);
-    return l && l.day === today && Array.isArray(l.log) ? l : { day: today, log: [] };
+    if (l && l.day === today && Array.isArray(l.log)) return l;
+    // a new day starts empty but for each person's last walk, stamped into today (the room's rule: where their
+    // villager was left, however long ago)
+    const t = now().getTime();
+    const fresh: Log = { day: today, log: l && Array.isArray(l.log) ? l.log.filter((x) => x.kind === 'walk').map((x) => ({ ...x, t })) : [] };
+    if (fresh.log.length) writeJson(localKV(), DEMO.relay, fresh);
+    return fresh;
   };
   const deliver = (m: Relayed) => {
     for (const f of subs) {

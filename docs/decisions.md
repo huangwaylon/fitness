@@ -429,6 +429,7 @@ follow while both are here (left out rather than run on two phones at once), the
 waking.
 
 ### A villager whose phone is gone walks home, by the relay's clock (2026-11-02)
+Superseded 2026-11-04: [A villager stays where it was left](#a-villager-stays-where-it-was-left-2026-11-04).
 When a member's phone has been gone from the relay for 3 minutes (`HOME_AFTER_MS`, villagerSync.ts), their villager
 walks home to its spot by its own tree (A left, B right) at a stroll, on every other phone; a phone opening later puts
 it where that walk has it by now (home when it's over). The walk is a function of three shared things only: when the
@@ -450,6 +451,19 @@ mount of the island (back from the museum, the shop, a room) took it afresh, wal
 moments after it stepped out of a door. And a phone that knows it was gone long (`store/seen.ts`) opens with its
 villager home at once instead of where it was, then home a moment later when the welcome came.
 Not done: the partner following mine while theirs is away and home (a per-phone follow, as before).
+
+### A villager stays where it was left (2026-11-04)
+The walk home is gone (its code, the welcome's `gone` acted on by the island, `store/seen.ts`, `?homeafter`): a phone
+gone for any time (closed, hidden, offline) leaves its villager where its last walk ended, and reopening finds it
+there, on every phone. The room carries each person's last walk into each new day (stamped anew, so a phone opening
+from midnight asks for it) and never trims it out of its ring; the demo's relay does the same. Only a player never
+placed starts at home; the guest's villager still shows only while its app is open. The welcome's `gone` stays: one
+gone quiet inside a room leaves it 3 minutes on, back where it went in. And the shop is a place like the museum and
+the rooms: while I'm in it the others' islands show me nowhere (`tent {in, sc: 's'}`, additive: an older phone or
+relay drops it), out of its door they see me there. Why: the user ("spot persists": a villager walking itself home
+read as being moved by someone else; "while I'm inside the shop, the other phones see me gone"). Not done: ambient
+outings for a villager left away from home (they start from home, as before, so a villager left out stays put but
+for its idle beats).
 
 ### Decor is a last-writer-wins map, the record keeps each item's latest op
 The island's decorations ([Decorating](design.md#decorating)) are persistent, shared by both of us, either may move
