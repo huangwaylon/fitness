@@ -124,7 +124,7 @@ test('on the layout: a tap picks a placed piece up, a drag and ✓ move it, ✕ 
   await expect.poll(() => page.evaluate((id) => (window as unknown as { __layout: L }).__layout.obj(id) ?? null, id)).toBeNull();
 });
 
-test('on the layout: both players see the same island, live and after a reload; a tab opening later too', async ({ browser }) => {
+test('on the layout: both players see the same island, live and after a reload; a tab opening later too', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ browser }) => {
   test.setTimeout(60_000);
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const a = await ctx.newPage(), b = await ctx.newPage();

@@ -73,7 +73,7 @@ const fadeInMs = (shown: NonNullable<Sample>[]) => (shown.find((p) => p.fade >= 
 /** A ramp: from under `lo` to over `hi` (or back), through at least `n` frames between. */
 const ramps = (fades: number[], n = 3) => fades.filter((f) => f > 0.05 && f < 0.95).length >= n;
 
-test('a fish shadow fades in where it comes and swims smoothly: never a jump between frames', async ({ page }) => {
+test('a fish shadow fades in where it comes and swims smoothly: never a jump between frames', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: frame-by-frame smoothness, and drawn under software GL the ambience runs at 2 frames a second' } }, async ({ page }) => {
   await page.goto('?demo&visitor=none&critter=fish&date=2026-11-04T12:00');
   expect(await is3d(page)).toBe(true);
   const s = await sampleFirst(page, 'fish-sea-', 4000);
@@ -141,7 +141,7 @@ async function baited(page: Page): Promise<boolean> {
   return true;
 }
 
-test('a missed bite: the fish darts away fast with a wiggle, fading as it goes', async ({ page }) => {
+test('a missed bite: the fish darts away fast with a wiggle, fading as it goes', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: frame-by-frame smoothness, and drawn under software GL the ambience runs at 2 frames a second' } }, async ({ page }) => {
   test.setTimeout(60_000);
   const id = await castAtFish(page);
   await expect(page.locator('[data-bobber="bite"]')).toBeAttached({ timeout: 15_000 });
@@ -162,7 +162,7 @@ test('a missed bite: the fish darts away fast with a wiggle, fading as it goes',
   expect(maxStep(s)).toBeLessThan(25);
 });
 
-test('a bug fades in where it comes, moves smoothly, and fades out where it goes (never popped)', async ({ page }) => {
+test('a bug fades in where it comes, moves smoothly, and fades out where it goes (never popped)', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: frame-by-frame smoothness, and drawn under software GL the ambience runs at 2 frames a second' } }, async ({ page }) => {
   await page.goto('?demo&visitor=none&critter=common-butterfly&date=2026-05-04T11:00');
   expect(await is3d(page)).toBe(true);
   const s = await sampleFirst(page, 'bug-', 2500);

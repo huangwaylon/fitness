@@ -64,7 +64,7 @@ jobs:
       - run: npm run build
       - id: e2e
         continue-on-error: true
-        run: npx playwright test --project=chromium --workers=1 --shard=${{ matrix.shard }}/10
+        run: npx playwright test --project=chromium --workers=1 --grep-invert @logic --shard=${{ matrix.shard }}/10
       - name: A failed test, once more (flaky or broken?)
         if: steps.e2e.outcome == 'failure'
         run: |
@@ -74,7 +74,7 @@ jobs:
           if [ "$n" -eq 0 ] || [ "$n" -gt 5 ]; then
             echo "::error::$n tests failed: broken, not flaky (no rerun)"; exit 1
           fi
-          npx playwright test --project=chromium --workers=1 --last-failed
+          npx playwright test --project=chromium --workers=1 --grep-invert @logic --last-failed
           echo "::warning::$n flaky e2e test(s) in the full tier, shard ${{ matrix.shard }}: failed, then passed; see the summary (docs/ops/testing.md)"
           ANNOTATE=1 node scripts/e2e-report.ts first-run.json "Flaky e2e (full tier)"
           node scripts/e2e-report.ts first-run.json "Flaky e2e (failed, then passed on a rerun): quarantine it and fix the cause, docs/ops/testing.md" >> "$GITHUB_STEP_SUMMARY"

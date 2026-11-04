@@ -442,7 +442,7 @@ test('two phones in the tent: one room, A’s drag live on B (held there), the d
   if (RELAY) await ctxB.close();
 });
 
-test('a high-five over the relay: the partner plays the same moment at once, its banner and hearts once; held while they are away', async ({ browser }) => {
+test('a high-five over the relay: the partner plays the same moment at once, its banner and hearts once; held while they are away', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a transient pose or effect (a squish, a sparkle) over before a software-GL frame shows it' } }, async ({ browser }) => {
   test.setTimeout(90_000);
   const { open, ctxB, close } = await phones(browser);
   const a = await open('A'), b = await open('B');
@@ -491,7 +491,7 @@ test('a high-five over the relay: the partner plays the same moment at once, its
 // One place at a time (docs/design.md "The tent"): a villager in the tent is nowhere on the island, on both phones;
 // inside, the partner's villager is there only while the partner is; out of the door it stands at the tent's door on
 // both; a phone that goes quiet inside has its villager back on the island where it went in after the timeout.
-test('one place at a time: A in the tent is gone from B’s island, there with B inside, out at the door on both; quiet inside, back there', async ({ browser }) => {
+test('one place at a time: A in the tent is gone from B’s island, there with B inside, out at the door on both; quiet inside, back there', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ browser }) => {
   test.setTimeout(90_000);
   const ctxA = await browser.newContext(CTX);
   const ctxB = RELAY ? await browser.newContext(CTX) : ctxA;

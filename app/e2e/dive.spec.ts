@@ -73,7 +73,7 @@ test('left alone, a darting one gets away', async ({ page }) => {
   expect(await finds(page)).toEqual([]);
 });
 
-test('now and then the bubbles hold a pearl: picked up, a shell in the ずかん (9 with the pearl), 「うみのさち」 its own row', async ({ page }) => {
+test('now and then the bubbles hold a pearl: picked up, a shell in the ずかん (9 with the pearl), 「うみのさち」 its own row', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {
   await open(page, '&sea=pearl');
   const b = await at(page, '[data-bubbles]');
   await page.mouse.click(b.x, b.y);

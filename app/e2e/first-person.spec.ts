@@ -95,7 +95,7 @@ for (const room of ROOMS) {
     expect((await r(page, (h) => h.fpv()))!.on).toBe(false);
   });
 
-  test(`${room.name}: a drag mid-walk turns the camera alone (the walk goes on to its spot); the walk never turns it`, async ({ page }) => {
+  test(`${room.name}: a drag mid-walk turns the camera alone (the walk goes on to its spot); the walk never turns it`, { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {
     test.setTimeout(60_000);
     await page.goto(room.path + Q + '&fpv=1');
     await page.waitForFunction((h) => ((window as unknown as Record<string, R | undefined>)[h]?.stats()?.frames ?? 0) > 0, room.hook);

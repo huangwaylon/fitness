@@ -404,7 +404,7 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
   await expect(page.locator('.if-scene [data-fruit]')).toHaveCount(8);
 });
 
-test('partner: a tap is a high-five in place, no card: a sparkle flies between them, both hop, hearts; never a sheet event', async ({ page }) => {
+test('partner: a tap is a high-five in place, no card: a sparkle flies between them, both hop, hearts; never a sheet event', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a transient pose or effect (a squish, a sparkle) over before a software-GL frame shows it' } }, async ({ page }) => {
   await page.goto('?demo');
   await islandReady(page);
   const vil = page.locator('.if-scene button.vil').nth(1);
@@ -794,7 +794,7 @@ test('the panel: titled ごほうび, no tabs, and it reaches the screen’s bot
 /** The ベル row's number as written (the digits, grouped). */
 const bellsText = (n: number) => n.toLocaleString('en-US');
 
-test('the HUD row: [the dumbbell] [the bowl] [the menu] in the top-right corner, the leaf at the screen\'s side, no jar, the sky\'s left clear, every target ≥ 44px, on screen at 320–402 with a notch, day and night', async ({ page }) => {
+test('the HUD row: [the dumbbell] [the bowl] [the menu] in the top-right corner, the leaf at the screen\'s side, no jar, the sky\'s left clear, every target ≥ 44px, on screen at 320–402 with a notch, day and night', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {
   // an iPhone 15/16's top inset (59px): the row stays where it was, under it
   await page.addInitScript(() => document.addEventListener('DOMContentLoaded', () => {
     const s = document.createElement('style');

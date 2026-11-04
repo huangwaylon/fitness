@@ -129,7 +129,7 @@ test('the campsite: a tap from far off walks my villager up to the door (no ring
   await expect(page).toHaveURL(/\/tent\?/, { timeout: 8000 });
 });
 
-test('the campsite: near its door my villager goes straight in', async ({ page }) => {
+test('the campsite: near its door my villager goes straight in', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {
   await open(page, '&date=2026-07-01T10:00&visitor=none');
   await oku(page);
   const door = campDoor(await geo(page));

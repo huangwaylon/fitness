@@ -34,7 +34,7 @@ async function shake(page: Page) {
   }
 }
 
-test('one tap opens the popup and drops nothing; two close it; the third quick tap shakes the tree', async ({ page }) => {
+test('one tap opens the popup and drops nothing; two close it; the third quick tap shakes the tree', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=nest');
   let c = await canopyAt(page);
   await page.mouse.click(c.x, c.y);
@@ -50,7 +50,7 @@ test('one tap opens the popup and drops nothing; two close it; the third quick t
   expect(await cues(page)).toContain('tree-shake');
 });
 
-test('a nest falls; its wasps charge my villager; a tap in time nets one: NH’s line, no sting, no ベル', async ({ page }) => {
+test('a nest falls; its wasps charge my villager; a tap in time nets one: NH’s line, no sting, no ベル', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=nest');
   const bells = await hudBells(page).getAttribute('aria-label');
   await shake(page);
@@ -73,7 +73,7 @@ test('a nest falls; its wasps charge my villager; a tap in time nets one: NH’s
   expect(day.events).toContainEqual(expect.objectContaining({ kind: 'shake', tree: 'goal-A', drop: 'nest' }));
 });
 
-test('too late: the wasps sting the villager on that side (a fright, a sweat drop, the swollen eye) and fly off', async ({ page }) => {
+test('too late: the wasps sting the villager on that side (a fright, a sweat drop, the swollen eye) and fly off', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=nest');
   await shake(page);
   await expect(page.locator('button[data-swarm]')).toBeVisible({ timeout: 2000 });
@@ -90,7 +90,7 @@ test('too late: the wasps sting the villager on that side (a fright, a sweat dro
   await expect(page.locator('[data-actor="partner"] [data-swollen]')).toHaveCount(0);
 });
 
-test('stung on the 3D island: the swollen eye is the 3D villager’s own (its lump on its head), no 2D lump over its head', async ({ page }) => {
+test('stung on the 3D island: the swollen eye is the 3D villager’s own (its lump on its head), no 2D lump over its head', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=nest');
   await is3d(page);
   const v3 = (fn: string) => page.evaluate(`(${fn})(window.__villagers3)`);
@@ -110,7 +110,7 @@ test('stung on the 3D island: the swollen eye is the 3D villager’s own (its lu
   await expect.poll(() => v3('(v) => v.stung("partner")')).toBe(false);
 });
 
-test('a shaken branch lies beside the trunk until a tap picks it up', async ({ page }) => {
+test('a shaken branch lies beside the trunk until a tap picks it up', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=branch');
   await shake(page);
   const twig = page.locator('button[data-branch]');
@@ -123,7 +123,7 @@ test('a shaken branch lies beside the trunk until a tap picks it up', async ({ p
   await expect(page.locator('.detail')).toHaveCount(0);
 });
 
-test('a shake knocks out a piece of wood; picked up, it is in my pocket’s しげん at the shop and sells for かいがら', async ({ page }) => {
+test('a shake knocks out a piece of wood; picked up, it is in my pocket’s しげん at the shop and sells for かいがら', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=wood');
   await shake(page);
   const wood = page.locator('button[data-wood]');
@@ -145,7 +145,7 @@ test('a shake knocks out a piece of wood; picked up, it is in my pocket’s し�
   await expect(tile).toHaveCount(0);
 });
 
-test('a shake drops a bagworm on its thread beside the trunk; a tap nets it (NH’s line, a ずかん find, no ベル)', async ({ page }) => {
+test('a shake drops a bagworm on its thread beside the trunk; a tap nets it (NH’s line, a ずかん find, no ベル)', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=bagworm');
   const bells = await hudBells(page).getAttribute('aria-label');
   await shake(page);

@@ -6,7 +6,7 @@ import { quiet } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
 
-test('a tap on my villager: its squish, no balloon of its own, no picker, no sheet, no ベル', async ({ page }) => {
+test('a tap on my villager: its squish, no balloon of its own, no picker, no sheet, no ベル', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a transient pose or effect (a squish, a sparkle) over before a software-GL frame shows it' } }, async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&critter=none');
   await expect(hudMenu(page)).toBeVisible();
   const bells = await hudBells(page).getAttribute('aria-label');
