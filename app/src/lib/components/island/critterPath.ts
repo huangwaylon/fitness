@@ -155,7 +155,7 @@ export interface BugOpts {
   keep?: (p: P3) => boolean;
 }
 
-/** NH's paces in flight (u/s, at random between; an 80u villager strolls at 90 and runs at 200): a butterfly flutters
+/** NH's paces in flight (u/s, at random between; an 80u villager strolls at 90 and runs at 300): a butterfly flutters
  *  by slower than one strolls, a bee a little quicker, a firefly drifts; a dragonfly darts quick and short, then
  *  hovers; a beetle flies in to its trunk. */
 export const FLY_UPS = {

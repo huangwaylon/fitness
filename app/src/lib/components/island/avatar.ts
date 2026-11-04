@@ -180,7 +180,7 @@ export function turnTo(tx: number): void {
   faceToward('mine', tx);
 }
 
-/** Tap-to-walk (spec §4, tapWalk.ts): my villager runs (200 u/s) to the tapped ground, a building's door (its
+/** Tap-to-walk (spec §4, tapWalk.ts): my villager runs (300 u/s) to the tapped ground, a building's door (its
  *  footprint), the nearest bank facing the water (water) or the nearest walkable point within 40u (anything else),
  *  up the stairs (nav.ts), and stays there for the session. Null when there's nowhere to go. */
 export function sendTo(x: number, z: number): TapPlan | null {

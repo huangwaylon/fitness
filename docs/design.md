@@ -1014,7 +1014,7 @@ goes with the leaving).
   them, in front of it they cover it), 16 model units tall (a bed is 20 long), each with a soft round shadow, mirrored
   to face the way they walk on screen. The renders have no walk frames: the walk is NH's trot, a bob and a squash a
   step. A tap on the floor walks mine there (A* on half tiles round the furniture, rugs walkable, the corners pulled
-  straight; 30 units a second); a tap on a villager hops it (only where it's drawn, its alpha); a tap on a piece acts
+  straight; 45 units a second); a tap on a villager hops it (only where it's drawn, its alpha); a tap on a piece acts
   in place (my villager turns to it, it jiggles, a lamp switches); the doormat or ‹ 島へ goes back out.
 - **The partner's villager** is theirs to move while they're in the tent (each walk of mine goes over the relay as the
   `tent` intent, the very walk: from, the way, when, how long; a join hears where I am); while they're away (not on the
@@ -1853,7 +1853,7 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
   from the bank). A catch or a find is its plate in the bottom stack; my villager stays where it stood. A flea is tapped off my
   villager itself.
 - **Tap-to-walk** (a tap on grass or sand that nothing else took; `tapWalk.ts planTap` over `nav.ts`): my villager runs
-  there (200 u/s), over the bridge and up the stairs. A tap on ground it can't stand on snaps to the nearest walkable
+  there (300 u/s), over the bridge and up the stairs. A tap on ground it can't stand on snaps to the nearest walkable
   point within 40u; ground nobody can reach to the nearest reachable point, facing it. Water never walks (it ripples), and a building's footprint knocks at its door in place.
   The partner's relayed walks replay the same planner (their softer ring where they tapped). A cream ring marks the
   spot and shrinks away (NH has none: the least feedback). It rests there, and so does it on the partner's phone: the

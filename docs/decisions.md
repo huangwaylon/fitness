@@ -385,7 +385,7 @@ once a day. Why: NH's most fitness-like ritual tied to the goal that is exercise
 ### Only a tap on empty ground walks my villager
 A tap on an interactable (a tree, a pond, a bug, a find, a door, a visitor, the partner) acts in place: my villager
 turns to it and the action plays at the target, its tool there (no walk-then-act); a tap on bare ground runs it there
-(200 u/s, the camera staying put), where it stays for the day. With the relay, my tap-to-walk replays on the
+(300 u/s, the camera staying put), where it stays for the day. With the relay, my tap-to-walk replays on the
 partner's phone (the destination only; their planner walks it), and their doings play at the target here without
 their villager running over. Why: the user ("only move the character if the tapped spot is not an interactable
 object… when we click trees, ponds, etc., the character moves there and gets in the way"); every tap keeps its
@@ -792,3 +792,12 @@ previewed star), so the preview can't change ベル, ずかん or the shared wor
 day it was set on. The dev params (`?event=`, `?weather=`, `?season=`, `?theme=`, `?fireworks`, `?shower`) feed the
 same resolution (`ui-state/preview.ts`), so there is one override, not two. Why: the user ("Add an option in settings
 for seasonal overrides to trigger them").
+
+### A player walks half as fast again (2026-11-04)
+A villager its player moves (mine, the partner's, the guest's) runs a tap-walk at 300 u/s on the island (`SPEED.run`,
+was 200), walks to a tree, the meet-up or an action spot at 360 (`SPEED.action`, was 240), and walks the tent and the
+museum at 45 model units a second (`PACE`, was 30); a partner's correction (`villagerSync` RUN_U_S) is the brisk 360.
+The strolls (`SPEED.wander` 90), the visitors and the critters are as they were. Faster than 200 u/s a step reaches
+further and the legs swing wider by the speed's square root (`poses.ts` reachOf), so the run's feet don't slide and it
+steps 4.5 cycles a second, not 5.6. A walk carries its `ms` and its end, so an older phone on the old pace
+still ends a partner's walk where it ends. Why: the user ("Increase the walk speed of players by 50%").

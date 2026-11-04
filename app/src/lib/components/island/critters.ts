@@ -555,7 +555,7 @@ export function netSwing(distPx: number, sizePx: number): 'catch' | 'startle' | 
   return distPx <= 56 ? 'startle' : 'none';
 }
 
-/** My villager running at a bug (u/s: faster than a stroll's 90; a tap-walk runs at 200) within this (u) of it... */
+/** My villager running at a bug (u/s: faster than a stroll's 90; a tap-walk runs at 300) within this (u) of it... */
 export const FLEE_U = 70;
 const RUN_UPS = 120;
 /** ...sends a flier, a percher or a hopper off, as NH's bugs take off at a run and keep still for one creeping up

@@ -9,7 +9,7 @@ const RUN = SPEED.run;
 
 const g = nav();
 describe('planning a tap', () => {
-  it('walks straight to open lawn at the run (200 u/s)', () => {
+  it('walks straight to open lawn at the run (300 u/s)', () => {
     const p = planTap(g, [...HOMES.A], 160, 330)!;
     expect(p.snap.kind).toBe('here');
     expect(p.pts).toEqual([[160, 330]]);

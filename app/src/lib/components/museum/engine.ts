@@ -29,8 +29,8 @@ import {
 
 /** A villager's height (model units: the rooms', tent/engine.ts VILLAGER_H). */
 const VILLAGER_H = 16;
-/** Walking pace (model units a second: the rooms'). */
-export const PACE = 30;
+/** Walking pace (model units a second: the rooms', tent/engine.ts PACE). */
+export const PACE = 45;
 /** The rooms' camera: degrees down from level, the lens. */
 const PITCH = 47;
 const FOV = 32;
@@ -926,8 +926,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       const sideOf = (x: number, z: number) => (x - a[0]) * nx + (z - a[1]) * nz;
       let cut = sideOf(cx, cz) * sideOf(target.x, target.z) < 0 && Math.abs(nx * vx + nz * vz) >= 0.25;
       if (!cut && mp) {
-        // (ahead by its fade's walk, WALL_FADE at PACE: gone by the time one's behind it; kept a little longer)
-        const m = wm.cut ? 12 : 8;
+        // (ahead by its fade's walk, WALL_FADE at PACE (~10): gone by the time one's behind it; kept a little longer)
+        const m = wm.cut ? 18 : 12;
         for (const off of [-4, 4])
           for (const y of [2, VILLAGER_H]) if (!cut) cut = hides(wm.box, m, cx, cy, cz, mp[0] + sx * off, y, mp[1] + sz * off);
       }

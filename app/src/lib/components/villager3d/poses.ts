@@ -46,9 +46,15 @@ export const FADE_MS = 150;
 
 /** The arms lowered from NH's T (radians about z): by the sides, a little out. */
 const ARMS = 1.22;
-/** A walk's cycle (two steps) covers this many model units: at the app's run (200 u/s, a villager 5.4 u a model unit)
- *  about 3.7 cycles a second, NH's quick little steps; at a wander (90 u/s), 1.7. */
+/** A walk's cycle (two steps) covers this many model units up to 200 u/s (a villager 5.4 u a model unit): at 200 about
+ *  3.7 cycles a second, NH's quick little steps; at a wander (90 u/s), 1.7. */
 export const STRIDE = 10;
+/** Faster than 200 u/s a step reaches further, by the speed's square root, and the legs swing as much wider (walk's
+ *  `a`), so the feet still don't slide: the run (walkGraph.ts SPEED.run, 300 u/s) 22% longer steps at 4.5 cycles a
+ *  second, not a frantic 5.6. */
+export const reachOf = (speed: number): number => Math.sqrt(Math.max(1, speed / 200));
+/** A cycle's length (model units) at `speed` (u/s). */
+export const strideOf = (speed: number): number => STRIDE * reachOf(speed);
 const TAU = Math.PI * 2;
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 const ease = (v: number) => {
@@ -92,10 +98,10 @@ export function idle(t: number, seed = 0): Pose {
   return p;
 }
 
-/** Walking or running at `speed` (u/s), `phase` the cycles walked (distance / STRIDE, so the feet never slide): legs
+/** Walking or running at `speed` (u/s), `phase` the cycles walked (distance / strideOf, so the feet never slide): legs
  *  and arms swinging opposite, the knee lifting on the swing, a bounce on each step, leaning into it. */
 export function walk(t: number, phase: number, speed: number): Pose {
-  const k = clamp01(speed / 200), a = 0.55 + 0.45 * k;
+  const k = clamp01(speed / 200), a = (0.55 + 0.45 * k) * reachOf(speed);
   const s = Math.sin(phase * TAU), c = Math.cos(phase * TAU);
   const p = arms(rest(), ARMS - 0.08 * k, 0, 0.25 + 0.25 * k);
   p.j.Leg_1_L = [-0.62 * a * s, 0, 0];
