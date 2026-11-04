@@ -60,7 +60,7 @@ const env: NodeJS.ProcessEnv = { ...process.env, CI: '1', E2E_SWIFTSHADER: '1', 
 const pw = ['playwright', 'test', '--project=chromium', `--workers=${workers}`, `--repeat-each=${repeat}`, '--reporter=list'];
 if (tier === 'logic') env.E2E_RENDER = 'none', pw.push('--grep-invert', '@render|@quarantine');
 if (tier === 'render') pw.push('--grep', '@render|@smoke', '--grep-invert', '@quarantine');
-if (tier === 'full') pw.push('--grep-invert', '@quarantine');
+if (tier === 'full') env.E2E_SLOW = '1', pw.push('--grep-invert', '@quarantine');
 console.log(`e2e:ci-like: tier ${tier}, ${workers} workers, each test ${repeat}×, port ${port}${env.E2E_RENDER ? ', E2E_RENDER=none' : ''}`);
 const r = spawnSync('npx', [...pw, ...args], { stdio: 'inherit', env });
 process.exit(r.status ?? 1);
