@@ -1,7 +1,8 @@
 // Sitting and lying out on the island (docs/design.md "Decor: sitting"), as in the tent: a tap on a bench walks my
 // villager up to it, a step in front, and there it sits on the piece's own seat (the 3D villager's 'sit'); the partner's
 // tab sees it seated too (the walk is all the relay carries: standing still on the seat's spot is on it); a bench takes
-// two, one villager a seat; a tap on the ground gets up and walks there, on both tabs. The hammock is lain in. A tap on
+// two, one villager a seat; a tap on the ground gets up and walks there, on both tabs; two taking one seat at the same
+// moment, the earlier sit keeps it (sitting.ts yieldsSeat). The hammock is lain in. A tap on
 // another of the island's things (the pump) still answers where it stands: nobody walks.
 import { expect, test, type Page } from '@playwright/test';
 import { geo, openNear, quiet, tapOn } from './island.ts';
@@ -78,6 +79,45 @@ test('a bench: walked up to and sat on, the partner\'s tab sees it; two to a ben
   await expect.poll(async () => { const [mx, mz] = await world(a, (w) => w.mine()); return Math.hypot(mx - tx, mz - tz); }, { timeout: 8000 }).toBeLessThan(10);
   await expect.poll(() => v3(a, 'mine'), { timeout: 5000 }).toBe('idle');
   await expect.poll(() => seated(b, 'partner'), { timeout: 8000 }).toBeNull();
+  await ctx.close();
+});
+
+test('two taking one seat at the same moment (each before it heard the other): the earlier sit keeps it, on both tabs', async ({ browser }) => {
+  test.setTimeout(90_000);
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  // each tab's walks held back (the demo's relay is a BroadcastChannel) till both have sat: the two phones' race
+  await ctx.addInitScript(() => {
+    const w = window as unknown as { __holdWalks?: boolean; __releaseWalks?: () => void };
+    const post = BroadcastChannel.prototype.postMessage, held: [BroadcastChannel, unknown][] = [];
+    BroadcastChannel.prototype.postMessage = function (this: BroadcastChannel, m: unknown) {
+      const x = m as { k?: string; m?: { kind?: string } } | null;
+      if (w.__holdWalks && x?.k === 'm' && x.m?.kind === 'walk') return void held.push([this, m]);
+      return post.call(this, m);
+    };
+    w.__releaseWalks = () => {
+      w.__holdWalks = false;
+      for (const [bc, m] of held.splice(0)) post.call(bc, m);
+    };
+  });
+  const a = await ctx.newPage(), b = await ctx.newPage();
+  await open(a);
+  await open(b, '&as=B');
+  for (const p of [a, b]) await toSpot(p, 'hammock');
+  for (const p of [a, b]) await p.evaluate(() => ((window as unknown as { __holdWalks: boolean }).__holdWalks = true));
+  await Promise.all([tapOn(a, a.locator('[data-sit="hammock"]')), tapOn(b, b.locator('[data-sit="hammock"]'))]);
+  // each in the hammock on its own tab, the other not heard yet
+  for (const p of [a, b]) await expect.poll(() => seated(p, 'mine'), { timeout: 10_000 }).toBe('seat-hammock');
+  for (const p of [a, b]) await p.evaluate(() => (window as unknown as { __releaseWalks(): void }).__releaseWalks());
+  // heard: exactly one gets up (one villager a seat), and both tabs agree which
+  const who = async () => [await seated(a, 'mine'), await seated(a, 'partner'), await seated(b, 'mine'), await seated(b, 'partner')];
+  await expect.poll(async () => {
+    const [am, ap, bm, bp] = await who();
+    return am === bp && ap === bm && [am, bm].filter((x) => x === 'seat-hammock').length === 1;
+  }, { timeout: 10_000, message: 'one of the two in the hammock, the same on both tabs' }).toBe(true);
+  // and it stays so (nobody hops back on, the winner isn't stood up)
+  const settled = await who();
+  await a.waitForTimeout(1500);
+  expect(await who()).toEqual(settled);
   await ctx.close();
 });
 

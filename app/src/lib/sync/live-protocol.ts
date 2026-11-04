@@ -82,7 +82,8 @@ export type Target = string | readonly [number, number];
 export type Intent =
   /** A villager's walk (v2): to `to`; with `from`, `via` (the waypoints between, ≤ VIA_MAX), `s` (when it set off, the
    *  relay's clock) and `ms` (how long it takes; 0: put there), the partner's phone plays the very same walk at the same
-   *  time (docs/backend.md#shared-world "Villagers"), facing `f` at the end. */
+   *  time (docs/backend.md#shared-world "Villagers"), facing `f` at the end; its end (`s` + `ms`) is when it sits, on a
+   *  seat there (of two on one, the earlier keeps it: island/sitting.ts yieldsSeat). */
   | { kind: 'walk'; to: Target; at?: number; from?: Pt; via?: Pt[]; s?: number; ms?: number; f?: Face }
   | { kind: 'act'; act: Act; id?: string; at?: number; pt?: Pt }
   | { kind: 'catch'; what: string; id?: string; at?: Pt; how?: How }

@@ -583,9 +583,11 @@ went in November 2026 (docs/cleanup-2d.md).
   when they're inside a home, have them sit/sleep on that object - be consistent"): a tap on a seat (the park bench and
   the log bench, two each; a log stool; an iron garden chair; the hammock and, in its summer, the beach chair, lain in)
   walks my villager up to its free seat nearest it and on, as in the tent: the second exception, with the doors and the
-  board, to "a tap on something acts in place". Taken by another villager: the other seat, else a `boop`; got there
-  second: off to the other seat, else a step aside. On it a tap on the ground gets it up and walks it; a tap on another
-  seat moves it there; a tap on it is its squish. Only a seat that's there today sits (the illuminated tree in the
+  board, to "a tap on something acts in place". Taken by another villager: the other seat, else a `boop`; two on one
+  seat (got there second, or two phones took it at the same moment, each before it heard the other): the earlier sit
+  keeps it (a walk's end, `s` + `ms`, the same numbers on every phone), an exact tie by who (A, then B, then G), and the
+  other gets up for the other seat, else a step aside (`sitting.ts` yieldsSeat, as the tent's `outsat`). On it a tap
+  on the ground gets it up and walks it; a tap on another seat moves it there; a tap on it is its squish. Only a seat that's there today sits (the illuminated tree in the
   hammock's spot, the picnic set on the pond's bench don't). Nothing new goes over the relay: the walk ends on the
   seat's spot, so the partner's and the guest's phones see it sit, a phone opening later finds it seated, and 3 minutes
   after its phone has gone it gets up and walks home like any.

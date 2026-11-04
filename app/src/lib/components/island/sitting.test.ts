@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { freeSeat, seatAnchor, seatNamed, seatOpen, seatPieceAt, seatSpots, sitLook, type SeatSpot } from './sitting.ts';
+import { freeSeat, seatAnchor, seatNamed, seatOpen, seatPieceAt, seatSpots, sitLook, sitTimeOf, yieldsSeat, type SeatSpot } from './sitting.ts';
 import { defaultLayout, objMid, withChanges, type Obj } from '#lib/layout/model.ts';
 import { seatsOf } from '#lib/layout/nav.ts';
 
@@ -74,5 +74,28 @@ describe('sitting.ts: the island\'s seats', () => {
     const o: Obj = { id: 'c1', k: 'iron-chair', x: 8, z: 20, f: 1 }, l = at(o), [mx, mz] = objMid(l, o);
     expect(seatPieceAt(l, mx + 4, mz - 6)?.id).toBe('c1');
     expect(seatPieceAt(l, mx + 60, mz)).toBeNull();
+  });
+});
+
+describe('two on one seat at once (two phones sat at the same moment)', () => {
+  test('a walk\'s sit time: its end (s + ms), else unknown', () => {
+    expect(sitTimeOf({ s: 100, ms: 900 })).toBe(1000);
+    expect([sitTimeOf({ s: 100 }), sitTimeOf({}), sitTimeOf(undefined)]).toEqual([null, null, null]);
+  });
+  test('the earlier sit keeps it: on each phone only the later gets up', () => {
+    expect(yieldsSeat({ who: 'A', s: 2000 }, [{ who: 'B', s: 1999 }])).toBe(true);
+    expect(yieldsSeat({ who: 'B', s: 1999 }, [{ who: 'A', s: 2000 }])).toBe(false);
+    expect(yieldsSeat({ who: 'A', s: 2000 }, [])).toBe(false);
+  });
+  test('an exact tie goes by who (A, then B, then G): exactly one gets up, for each pair, on both phones', () => {
+    for (const [x, y] of [['A', 'B'], ['A', 'G'], ['B', 'G']] as const) {
+      const onX = yieldsSeat({ who: x, s: 1000 }, [{ who: y, s: 1000 }]), onY = yieldsSeat({ who: y, s: 1000 }, [{ who: x, s: 1000 }]);
+      expect([onX, onY]).toEqual([false, true]);
+    }
+  });
+  test('an unknown sit (an older phone\'s walk) never outsits a known one; two unknown both stay, as before', () => {
+    expect(yieldsSeat({ who: 'A', s: 5000 }, [{ who: 'B', s: null }])).toBe(false);
+    expect(yieldsSeat({ who: 'B', s: null }, [{ who: 'A', s: 5000 }])).toBe(true);
+    expect(yieldsSeat({ who: 'A', s: null }, [{ who: 'B', s: null }])).toBe(false);
   });
 });

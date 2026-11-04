@@ -87,7 +87,7 @@
   import { giftTreesOn } from './treeGifts.ts';
   import { perches } from './critters.ts';
   import { arrive, attachAvatar, homeAgain, homeRoute, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, sitTo, snapHome, stayingAt, stepOut, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
-  import { freeSeat, seatNamed, seatOpen, seatPieceAt, seatSpots, type SeatSpot } from './sitting.ts';
+  import { freeSeat, seatNamed, seatOpen, seatPieceAt, seatSpots, sitTimeOf, yieldsSeat, type SeatSpot } from './sitting.ts';
   import { where } from '#lib/store/where.svelte.ts';
   import { JOIN_SAY_MS, RUN_RING_U_S, homeAfter, linkVillagers, playPartner, playWake, setHomeAfter } from './villagerSync.ts';
   import { canonical, hash, type DayEvent } from '#lib/sync/world-day.ts';
@@ -529,15 +529,33 @@
     const st = freeSeat(spots, livePos('mine'), taken);
     if (!st) return cue('boop'), true;
     // (the partner's phone plays the very walk; standing still on the spot is on it there too: world.ts seatAt)
-    const ms = sitTo(st.at, () => {
-      // another got on it first (while mine walked up): off it again, to the piece's other seat if it's free
-      if (!taken(st)) return cue('scene-bench');
-      const next = freeSeat(spots, st.at, taken);
-      if (next) sitTo(next.at, () => cue('scene-bench'));
-      else sendTo(st.at[0], st.at[1] - 20);
-      cue('boop');
-    });
+    // another on it as mine got there, who sat first (yieldSeat, below): mine gets up again
+    const ms = sitTo(st.at, () => !losesSeat() && cue('scene-bench'));
     return ms !== null;
+  }
+  /** When a villager sat where it is (its last walk's, the relay's clock: sitting.ts sitTimeOf), or null: unknown. */
+  const sitTime = (id: VillagerActor) => sitTimeOf(shared.day.walks[whoOf(id)]);
+  /** Whether mine, on a seat with another on it too, is the one to get up (sitting.ts yieldsSeat). */
+  const losesSeat = () => {
+    const on = seated.mine, others = VILLAGERS.filter((id) => id !== 'mine' && !!on && seated[id] === on);
+    return others.length > 0 && yieldsSeat({ who: castMe(), s: sitTime('mine') }, others.map((id) => ({ who: whoOf(id), s: sitTime(id) })));
+  };
+  // Two on one seat (two phones took it at the same moment, each before it heard the other, or another got on it while
+  // mine walked up): the earlier sit keeps it, an exact tie by who, the same on every phone; mine, the later, gets up
+  // for the piece's other seat if it's free, else steps aside (and its walk tells the others).
+  $effect(() => {
+    const on = seated.mine;
+    if (!on || !VILLAGERS.some((id) => id !== 'mine' && seated[id] === on)) return;
+    untrack(() => losesSeat() && yieldSeat(on));
+  });
+  function yieldSeat(name: string) {
+    const l = site.layout, s0 = l && seatNamed(l, name), o = s0 && l?.objects.get(s0.piece);
+    if (!l || !s0 || !o) return;
+    const spots = seatSpots(l, o).filter((q) => seatHere(q.name));
+    const next = freeSeat(spots, s0.at, (q) => VILLAGERS.some((id) => seated[id] === q.name));
+    if (next) sitTo(next.at, () => !losesSeat() && cue('scene-bench'));
+    else sendTo(s0.at[0], s0.at[1] - 20);
+    cue('boop');
   }
 
   // ---- the partner off screen: a round face of their villager pinned at the top or the bottom edge (a cue only) ----
