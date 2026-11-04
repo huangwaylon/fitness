@@ -912,6 +912,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   let readyRes: () => void;
   const ready = new Promise<void>((r) => (readyRes = r));
   let camRev = '';
+  let ambientT: ReturnType<typeof setTimeout> | undefined;
   let snapWalls = true;
   function invalidate() {
     if (!raf && !disposed) raf = requestAnimationFrame(frame);
@@ -975,7 +976,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const dpr = gesturing ? Math.min(dprFull, DPR_MOVING) : dprFull;
     if (dpr !== renderer.getPixelRatio()) renderer.setPixelRatio(dpr);
     if (full) invalidate();
-    else if (ambient) setTimeout(() => invalidate(), Math.max(0, 1000 / AMBIENT - (now() - t) - 4));
+    // (one ambient timer at a time: a frame for anything else in between — a tap, a load — would start a second chain
+    // beside it, and the two ran on together at 60 a second)
+    else if (ambient && !ambientT) ambientT = setTimeout(() => ((ambientT = undefined), invalidate()), Math.max(0, 1000 / AMBIENT - (now() - t) - 4));
   }
 
   fit();
@@ -1062,6 +1065,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       disposed = true;
       if (raf) cancelAnimationFrame(raf);
       clearTimeout(warmT);
+      clearTimeout(ambientT);
       for (const e of exhibits) e.dispose();
       for (const w of villagers.values()) w.v3?.dispose();
       for (const d of disposables) d.dispose();
