@@ -1171,6 +1171,8 @@ northern-hemisphere months; hours still hold.
   dragonfly darts 24–56u at 60–100 and hovers 0.9–2.2 s; a firefly drifts at 5–11, bobbing slowly; a beetle flies in
   to its trunk at 40–55; hoppers hop, crawlers crawl at their own pace (`PACE`). A flier comes in from 60u off on the
   island's nearer side. None goes faster than a running villager (`critterPath.test.ts`: speed bounds, curvature).
+  The moves after its way in are `bugLegs` (its ground, pace, landings, rests and hops as `Ways`), shared with the
+  museum's bug wing (`museum/bugLife.ts`), and its wings' beat `world3d/wings.ts` wingBeat.
   A clump is the flowers within 60u of each other (`critters.ts` beds), not the layout's clump tag (those repeat
   across the island: one patch by them spanned half of it). **Wings** (`world3d/wings.ts` FLAPS, `things.ts`): the butterflies',
   the moths', the bee's and the dragonflies' wings turn in the vertex shader by the instance's angle (`flap`, Critters'
@@ -1410,16 +1412,30 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   light drifting over it, a thin pale wavering edge at the stones; moving only while it's on screen, at the exhibits'
   30 a second), NH's oaks and a palm (the island's models), NH's flowers in rows, the museum's own garden props
   (flower beds, bushes, a fallen log with its autumn leaves, ferns, cacti, the mangroves), and five glass display
-  cases on stands along the back. Each bug found lives there as it lives (species.ts habitatOf, from island/critters.ts):
-  a butterfly, a moth or a bee flies a slow path round a flower bed, its wings beating (the vertex shader); a dragonfly
-  hovers over the pond and darts to another spot; a firefly drifts over it, glowing (brighter at night); a ladybug, a
-  mantis or a stink bug sits on a bloom; a grasshopper or a cricket hops in the grass; a cicada, a stag or a beetle
-  clings to an oak's trunk head up (the palm beetles to the palm); the snail and the walking leaf creep on the bushes;
-  the tiger beetle and the dung beetle crawl the soil by the log; the pondskater and the diving beetle glide on the
-  pond; the tarantula, the scorpion, the centipede, the beach's crawlers (the hermit crab sideways) and the mole
-  cricket walk the soil of a case;
-  the bagworm and the spider hang from an oak's branch on their threads. Drawn a little bigger than NH's (1.9×, the
-  island's way), one InstancedMesh a species, placed each frame where it is, culled by its own bounds.
+  cases on stands along the back. Each bug found lives there as it lives (species.ts habitatOf, from island/critters.ts)
+  and moves as the island's do (`bugLife.ts`, pure: the island's own `critterPath.ts` bugLegs and bugAt, NH's paces,
+  meanders, landings, hops, crawls and rests, and `world3d/wings.ts` wingBeat and flapGlsl, the per-model hinge; no
+  copy), each kept to its enclosure (a box of air over a row of flowers or the pond, a patch of grass or soil, a
+  trunk's bark, a bush's top, the pond's water, its case's floor) shrunk by its own size and its wings' reach, so it
+  never meets a prop, a trunk, a canopy, a flower, the glass or the ground: the butterflies and moths meander over the
+  flowers and land on one now and then for 2.5–5 s, their wings slowly opening and closing; the bee buzzes from flower
+  to flower, a moment over each; a dragonfly darts and hovers over the pond; the firefly drifts low over it, glowing
+  (brighter at night); a ladybug or a mantis sits on a bloom, turning, the stink bugs amble over the row's heads; a
+  grasshopper or a cricket hops in the grass and sits; a beetle or a stag crawls its trunk's bark (head up within 0.5
+  rad, backing down) with now and then a short hop, a cicada clings and shuffles, shivering as it sings in bouts; the
+  snail and the walking leaf creep on the bushes; the ground crawlers (the spider down from its tree too) crawl the soil
+  with pauses; the pondskater glides on the pond, the diving beetle and the giant water bug a little under it; the case
+  bugs walk their case's floor clear of its agave (the hermit crab sideways, the tarantula and the scorpion still a
+  long while, turning to watch); the bagworm hangs on its thread. Its itinerary is drawn a minute at a time from its
+  seed and played on from where the last ended. Drawn a little bigger than NH's (1.9×, the island's way), one
+  InstancedMesh a species (its parts merged, one material a part: a bee's or a dragonfly's wings their own, flapping),
+  culled by the room its enclosure takes: off screen it rests (nothing of it worked out), on screen it steps at the
+  exhibits' 30 a second with nothing allocated a frame. Tests: bugLife.test (every species two simulated minutes at 30
+  fps: never out of its enclosure or case nor in a solid; none faster than NH's pace; the fliers fly, the crawlers and
+  hoppers go and rest; the butterflies and moths land, the bee hovers, every flapping model's wings open and close).
+  iOS Simulator (own iPhone 16, iOS 26.5, a full museum, local builds), the bug wing at rest: 30 frames a second
+  before and after, frame cost p50 1 ms, 87 → 117 draw calls (each bug's every part now drawn: a bee's and a
+  dragonfly's wings were missing).
 - **Performance:** the wings' exhibits are built only once the finds are in (exhibits.ts: a wing rebuilt only when its
   own list changes), their models loaded per species (the museum chunk, its props and textures under /room/: cached on
   first use); every frame moves only the tanks and bugs on screen (each culled by its own bounds, so the hall draws no

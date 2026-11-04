@@ -1,24 +1,18 @@
 // The bug wing's exhibits (docs/design.md "The museum"): NH's garden under glass (its stone paths, a pond, NH's oaks and
 // a palm, flower beds, bushes, a fallen log, ferns, cacti, the museum's own garden props: scripts/world3d-models.ts
 // --museum; NH's flowers from the island) and glass display cases along its back, and every bug found living there as
-// it lives (species.ts habitatOf), NH's catch models (static/room/world3d/critters/bugs/):
-//   fly       on a slow path round a flower bed, its wings flapping (the vertex shader)
-//   dart      over the pond: hovering, then darting to another spot
-//   drift     over the pond, slowly, glowing (a firefly: brighter at night)
-//   flower    sat on a bloom, turning now and then
-//   hop       in the grass: a hop to a spot nearby now and then
-//   trunk     on an oak's trunk, head up, creeping a little; palm the palm's
-//   leaf      on a bush's leaves, creeping
-//   ground    crawling the soil by the log and the ferns
-//   water     on the pond: gliding strokes
-//   terrarium walking the soil of its glass case (the hermit crab sideways)
-//   dangle    hanging from an oak's branch on its thread, bobbing
-// A species is one InstancedMesh (one specimen, NH's museum's), placed each frame in place, culled by its own bounds
-// (a sphere round it); a bug off screen rests, and the wing draws nothing while none is on screen.
+// it lives (species.ts habitatOf), NH's catch models (static/room/world3d/critters/bugs/), moving as the island's do
+// (bugLife.ts: the island's critterPath motion, each kept to its enclosure): the butterflies and moths fluttering over
+// the flowers and landing on them, the bee buzzing from flower to flower, the dragonflies darting and hovering over the
+// pond, the firefly drifting over it glowing, the beetles and cicadas on the trunks, the hoppers hopping, the crawlers
+// crawling and resting, the water bugs gliding on (and in) the pond, the case bugs walking their cases (the hermit
+// crab sideways), the bagworm on its thread. Their wings beat in the vertex shader (world3d/wings.ts).
+// A species is one InstancedMesh (one specimen, NH's museum's: its parts, its wings among them, one geometry), culled
+// by the room it takes; a bug off screen rests, and the wing draws nothing while none is on screen.
 import {
-  BufferGeometry, CircleGeometry, Color, DoubleSide, Float32BufferAttribute, Group, InstancedBufferAttribute, InstancedMesh, LineBasicMaterial,
+  BufferGeometry, CircleGeometry, Color, DoubleSide, Float32BufferAttribute, Group, InstancedMesh, LineBasicMaterial,
   LineSegments, Matrix4, Mesh, MeshBasicMaterial, MeshLambertMaterial, PlaneGeometry, Quaternion, Sprite, SpriteMaterial, CanvasTexture,
-  ShaderMaterial, Sphere, Vector2, Vector3, AdditiveBlending, BoxGeometry, type Material, type Texture
+  ShaderMaterial, Sphere, Vector2, Vector3, Vector4, AdditiveBlending, BoxGeometry, type Material, type Texture
 } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
 import type { Habitat, Specimen } from './species.ts';
@@ -26,20 +20,10 @@ import type { Pt, Rect } from './plan.ts';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { batcher, frameOf, openBox, plainGeometry } from './geometry.ts';
 import type { Box } from './tanks.ts';
+import { BUG_S, CASE, CASES, CASE_AGAVE, FLOWERS, OAKS, OAK_S, PALM, PALM_S, PATHS, POND, POND_Y, PROPS, SOIL, bugLife, bugSeed, pose, type Life, type Pose } from './bugLife.ts';
+import { FLAPS, flapGlsl, wingHinge } from '../world3d/wings.ts';
 
-/** A bug is drawn this much bigger than NH's own (the island's way: a butterfly a hand across). */
-const BUG_S = 1.9;
-
-/** The garden's ground: its paths, the pond, the soil patches, its trees and beds (the bug wing's model units). */
-/** (The cross path in two, either side of the long one: no two pieces overlap.) */
-const PATHS: Rect[] = [{ x0: -292, x1: -60, z0: 2, z1: 18 }, { x0: -176, x1: -162, z0: -62, z1: 2 }, { x0: -176, x1: -162, z0: 18, z1: 96 }];
-const POND: Rect = { x0: -268, x1: -206, z0: 40, z1: 82 };
-const OAKS: Pt[] = [[-250, -36], [-118, -42]];
-const PALM: Pt = [-84, 78];
-const OAK_S = 1.4, PALM_S = 1.3;
-/** The display cases along the back wall (their middles; each 26 × 14, on a stand). */
-export const CASES: Pt[] = [[-278, -84], [-244, -84], [-210, -84], [-132, -84], [-98, -84]];
-const CASE = { w: 26, d: 14, stand: 9, h: 15 };
+export { CASES };
 /** A display case's pieces (its middle at x, z): a wooden stand, its soil, its glass (open below: its floor the soil's
  *  top) and its frame (geometry.ts frameOf), the posts' feet a little under the soil (their bottoms were the soil's
  *  underside's plane). */
@@ -53,26 +37,6 @@ export function casePieces(cx: number, cz: number): { stand: Box; soil: Box; gla
     frame: frameOf(b, y - e, e)
   };
 }
-/** The flower clumps (NH's own, the island's: a tile each) the flower bugs sit on and the flyers circle. */
-const FLOWERS: [string, number, number][] = [
-  ['flowers/red-tulips', -150, 28], ['flowers/yellow-pansies', -138, 30], ['flowers/pink-cosmos', -126, 27], ['flowers/white-lilies', -114, 30],
-  ['flowers/purple-hyacinths', -102, 27], ['flowers/orange-cosmos', -90, 30], ['flowers/pink-tulips', -244, -8], ['flowers/blue-pansies', -232, -10],
-  ['flowers/orange-lilies', -220, -8], ['flowers/pink-roses', -208, -10], ['flowers/purple-pansies', -196, -8], ['flowers/orange-roses', -150, 40]
-];
-/** The garden's props: [model, x, z, scale, yaw]. */
-const PROPS: [string, number, number, number, number][] = [
-  ['flower-bed', -120, 62, 1, 0], ['pink-flowers', -214, -36, 1, 0.4], ['bushes', -86, -30, 0.5, 0], ['hydrangeas', -140, 88, 0.8, 0],
-  ['autumn-log', -284, -24, 0.9, 0.6], ['logs-ferns', -196, 86, 1, 0], ['cacti', -98, 40, 0.8, 0], ['mangroves', -280, 58, 0.75, Math.PI / 2],
-  ['heliconia-rock', -150, -50, 0.6, 0], ['agave', -190, -50, 1.2, 0], ['anthurium', -64 - 10, 92, 1.6, 0], ['coleus', -186, 28, 1.6, 0]
-];
-/** Where the leaf-crawlers keep (the bushes' and hydrangeas' tops) and the ground-crawlers (the soil by the log, the
- *  ferns). */
-const LEAVES: [number, number, number][] = [[-86, -30, 10], [-140, 88, 11], [-96, -24, 10]];
-const SOIL: Pt[] = [[-272, -8], [-222, 92], [-284, -40]];
-/** The grass spots a hopper keeps to. */
-/** The beds the flyers circle: [x, z, radius]. */
-const BEDS: [number, number, number][] = [[-120, 58, 20], [-212, -24, 16], [-120, 30, 22], [-140, 86, 14], [-220, -8, 18]];
-const GRASS: Pt[] = [[-230, 26], [-130, -12], [-200, 52], [-100, -60], [-150, 70], [-262, -60], [-80, 10]];
 
 // NH's museum water, the pond's: clear aqua at its rim deepening to blue in the middle, a soft net of light drifting
 // over it (two layers of folded sines, slow), and a thin white edge where it meets the stones, gently wavering; dusk
@@ -104,24 +68,19 @@ void main() {
   #include <colorspace_fragment>
 }`;
 
-const FLY_FLAP: Record<string, number> = { fly: 0.55, dart: 0.12, drift: 0.25 };
-const hash = (s: string) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 100003, 7);
-
 interface Bug {
   sp: Specimen;
   mesh: InstancedMesh | null;
-  /** Its state: where (x, y, z) and its turn (a full orientation), its own seed and its spot's index. */
-  p: Vector3;
-  q: Quaternion;
-  seed: number;
-  slot: number;
-  /** A hop's or a dart's leg: from, to, when it began (s), how long. */
-  leg: { from: Vector3; to: Vector3; t0: number; ms: number } | null;
-  next: number;
-  /** Its body's lift above its spot (half its height), its drawn size across. */
-  lift: number;
+  /** How it lives (bugLife.ts), where it is this frame. */
+  life: Life;
+  pose: Pose;
+  /** Its wings' angle (its flapping parts' uniform). */
+  flap: { value: number };
+  /** Its drawn size across. */
   size: number;
-  /** Its bounds (round where it is now: the camera's cull and test). */
+  /** Its own seed (a firefly's glow's phase). */
+  seed: number;
+  /** The room it takes (the camera's cull: off screen it rests). */
   sphere: Sphere;
 }
 
@@ -146,7 +105,7 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
   const uTime = { value: 0 };
   const uNight = { value: 0 };
   let disposed = false;
-  const UP = new Vector3(0, 1, 0), O = new Vector3(), X = new Vector3(), Y = new Vector3(), Z = new Vector3(), M4 = new Matrix4(), S = new Vector3(), T = new Vector3();
+  const X = new Vector3(), Y = new Vector3(), Z = new Vector3(), M4 = new Matrix4(), S = new Vector3(), Q = new Quaternion(), P = new Vector3();
 
   // ---- the ground: the stone paths, the pond, the soil ----
   const flat = (r: Rect, m: Material, y: number) => {
@@ -174,10 +133,10 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
     uniforms: { uTime, uNight, uHalf: { value: new Vector2((POND.x1 - POND.x0) / 2, (POND.z1 - POND.z0) / 2) } }
   });
   mats.push(water);
-  flat(POND, water, 0.6);
-  const pondSphere = new Sphere(new Vector3((POND.x0 + POND.x1) / 2, 0.6, (POND.z0 + POND.z1) / 2), Math.hypot(POND.x1 - POND.x0, POND.z1 - POND.z0) / 2);
+  flat(POND, water, POND_Y);
+  const pondSphere = new Sphere(new Vector3((POND.x0 + POND.x1) / 2, POND_Y, (POND.z0 + POND.z1) / 2), Math.hypot(POND.x1 - POND.x0, POND.z1 - POND.z0) / 2);
   for (const s of SOIL) {
-    const g = new CircleGeometry(s[1] > 80 ? 8 : 12, 20);
+    const g = new CircleGeometry(s[2], 20);
     geos.push(g);
     const m = new Mesh(g, kit.lambert({ map: kit.tex('bug-soil', [1, 1]), layer: 2 }));
     m.rotation.x = -Math.PI / 2;
@@ -186,18 +145,12 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
   }
 
   // ---- the trees (NH's oaks and a palm, the island's), the props, the flowers ----
-  interface Trunk { x: number; z: number; r: number; y0: number; y1: number }
-  const trunks: Trunk[] = [];
   const tree = (name: string, at: Pt, s: number, yaw: number) => {
     const holder = new Group();
     holder.position.set(at[0], 0, at[1]);
     holder.rotation.y = yaw;
     holder.scale.setScalar(s);
     group.add(holder);
-    const b = kit.islandBounds(name);
-    // its trunk for the perchers (NH's trunk at the model's origin: a fifth of its height to two fifths)
-    const h = b ? b.max[1] * s : 40;
-    trunks.push({ x: at[0], z: at[1], r: name === 'palm' ? 1.6 * s : 2.4 * s, y0: h * 0.12, y1: h * (name === 'palm' ? 0.3 : 0.42) });
     void kit.island(name).then((g) => {
       if (!g || disposed) return;
       holder.add(g.scene.clone(true));
@@ -236,27 +189,24 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
     for (const f of pc.frame) box(f, frame);
   }
   geos.push(...batch.done(group, (m) => (m === glass ? 4 : 0)));
-  for (const [x, z] of CASES) kit.prop('agave', x - 7, z - 2, { s: 0.45, y: CASE.stand + 2, parent: group });
+  for (const [x, z] of CASES) kit.prop('agave', x + CASE_AGAVE.dx, z + CASE_AGAVE.dz, { s: CASE_AGAVE.s, y: CASE.stand + 2, parent: group });
 
   // ---- the bugs ----
   const glow = glowTex();
   texs.push(glow);
-  const bugMat = (map: Texture | null, flap: number, freq: number, glowy: boolean) => {
+  /** A part's material: its texture lit a little by itself (a firefly's glow); a wing part's flapping in the vertex
+   *  shader about its model's hinge (world3d/wings.ts: the island's flap), by its bug's angle. */
+  const bugMat = (map: Texture | null, glowy: boolean, hinge: Vector4 | null, flap: { value: number }) => {
     const m = new MeshLambertMaterial({ map, emissive: new Color(glowy ? 0xd8ff7a : 0xffffff), emissiveMap: glowy ? null : map, emissiveIntensity: glowy ? 0.4 : 0.25 });
-    m.onBeforeCompile = (sh) => {
-      sh.uniforms.uTime = uTime;
-      sh.uniforms.uFlap = { value: flap };
-      sh.uniforms.uFreq = { value: freq };
-      sh.vertexShader = sh.vertexShader
-        .replace('#include <common>', '#include <common>\nuniform float uTime; uniform float uFlap; uniform float uFreq; attribute float aPhase;')
-        // its wings (out along its x) beating about its body's line
-        .replace('#include <begin_vertex>', `#include <begin_vertex>
-          float wa = sin(uTime * uFreq + aPhase) * uFlap;
-          float ax = abs(position.x);
-          transformed.y += ax * sin(wa);
-          transformed.x = sign(position.x) * ax * cos(wa);`);
-    };
-    m.customProgramCacheKey = () => 'museum-bug';
+    if (hinge) {
+      const uFlap = { value: hinge };
+      m.onBeforeCompile = (sh) => {
+        sh.uniforms.uFlap = uFlap;
+        sh.uniforms.uFlapA = flap;
+        sh.vertexShader = 'uniform vec4 uFlap;\nuniform float uFlapA;\n' + sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>\n${flapGlsl('uFlapA')}`);
+      };
+      m.customProgramCacheKey = () => 'museum-bug-flap';
+    }
     mats.push(m);
     return m;
   };
@@ -267,29 +217,32 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
     const hab = sp.tank as Habitat;
     const slot = byHabitat.get(hab) ?? 0;
     byHabitat.set(hab, slot + 1);
-    const b: Bug = { sp, mesh: null, p: new Vector3(), q: new Quaternion(), seed: hash(sp.id), slot, leg: null, next: 0, lift: 0.5, size: 4, sphere: new Sphere(new Vector3(), 4) };
-    bugs.push(b);
-    place(b, 0);
     void kit.critter('bugs', sp.id).then((g) => {
       if (!g || disposed) return;
-      let src: Mesh | null = null;
-      g.scene.traverse((o) => {
-        if (!src && (o as Mesh).isMesh) src = o as Mesh;
-      });
-      const m = src as Mesh | null;
-      if (!m) return;
-      const geo = plainGeometry(g.scene, m);
-      geo.computeBoundingBox();
-      const bb = geo.boundingBox!;
-      geo.translate(-(bb.min.x + bb.max.x) / 2, -bb.min.y, -(bb.min.z + bb.max.z) / 2);
-      geo.setAttribute('aPhase', new InstancedBufferAttribute(new Float32Array([b.seed % 7]), 1));
-      geos.push(geo);
-      b.size = Math.max(bb.max.x - bb.min.x, bb.max.z - bb.min.z) * BUG_S;
-      const flap = FLY_FLAP[hab] ?? 0;
-      const mesh = new InstancedMesh(geo, bugMat((m.material as { map?: Texture | null }).map ?? null, flap, hab === 'dart' ? 60 : hab === 'fly' ? 11 : 6, hab === 'drift'), 1);
-      b.sphere.radius = Math.max(6, b.size);
+      // its parts (a beetle's wing cases, a bee's or a dragonfly's wings) as one geometry, one group a part
+      const parts: Mesh[] = [];
+      g.scene.traverse((o) => void ((o as Mesh).isMesh && parts.push(o as Mesh)));
+      if (!parts.length) return;
+      const plain = parts.map((m) => plainGeometry(g.scene, m));
+      const all = plain.length > 1 ? mergeGeometries(plain, true) : plain[0];
+      if (!all) return;
+      if (plain.length > 1) for (const p of plain) p.dispose();
+      all.computeBoundingBox();
+      const bb = all.boundingBox!;
+      all.translate(-(bb.min.x + bb.max.x) / 2, -bb.min.y, -(bb.min.z + bb.max.z) / 2);
+      geos.push(all);
+      const size = { w: (bb.max.x - bb.min.x) * BUG_S, h: (bb.max.y - bb.min.y) * BUG_S, l: (bb.max.z - bb.min.z) * BUG_S };
+      const life = bugLife(sp.id, hab, slot, bugSeed(sp.id), size);
+      // its wings' hinge, from the parts as drawn (wings.ts wingHinge)
+      const hinge = FLAPS.test(`critters/bugs/${sp.id}`) ? hingeOf(all, parts) : null;
+      const flap = { value: 0 };
+      const mat = parts.map((m, k) => bugMat((m.material as { map?: Texture | null }).map ?? null, hab === 'drift', hinge && hinge.flaps[k] ? hinge.at : null, flap));
+      const [cx, cy, cz, cr] = life.sphere;
+      const b: Bug = { sp, mesh: null, life, pose: pose(), flap, size: Math.max(size.w, size.l), seed: bugSeed(sp.id), sphere: new Sphere(new Vector3(cx, cy, cz), cr) };
+      const mesh = new InstancedMesh(all, mat.length > 1 ? mat : mat[0], 1);
       mesh.boundingSphere = b.sphere;
       b.mesh = mesh;
+      bugs.push(b);
       group.add(mesh);
       if (hab === 'drift') {
         const sm = new SpriteMaterial({ map: glow, transparent: true, depthWrite: false, blending: AdditiveBlending, color: 0xfff4a0 });
@@ -300,144 +253,58 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
         mesh.userData.glow = sprite;
         group.add(sprite);
       }
+      if (hab === 'dangle') danglers.push(b);
+      life.at(performance.now(), 0, b.pose);
       write(b);
       kit.invalidate();
     });
   }
+  /** A model's wings' hinge (the shader's uFlap) from its merged parts: each part's own points (its group's). */
+  function hingeOf(all: BufferGeometry, parts: Mesh[]): { at: Vector4; flaps: boolean[] } {
+    const pos = all.getAttribute('position'), idx = all.index;
+    const groups = all.groups.length ? all.groups : [{ start: 0, count: idx ? idx.count : pos.count }];
+    const wp = groups.map((gr, k) => {
+      const seen = new Set<number>(), out: number[] = [];
+      for (let i = gr.start; i < gr.start + gr.count; i++) {
+        const v = idx ? idx.getX(i) : i;
+        if (seen.has(v)) continue;
+        seen.add(v);
+        out.push(pos.getX(v), pos.getY(v), pos.getZ(v));
+      }
+      return { pos: out, wing: /wing/i.test((parts[k]?.material as Material | undefined)?.name ?? '') };
+    });
+    const h = wingHinge(wp);
+    return { at: new Vector4(h.x, h.y, h.root, h.ramp), flaps: h.flaps };
+  }
   // threads of the danglers (a line from the branch above each)
+  const danglers: Bug[] = [];
+  const nDangle = list.filter((s) => s.kind === 'bug' && s.tank === 'dangle').length;
   const threadGeo = new BufferGeometry();
-  const danglers = bugs.filter((b) => b.sp.tank === 'dangle');
-  threadGeo.setAttribute('position', new Float32BufferAttribute(new Float32Array(Math.max(1, danglers.length) * 6), 3));
+  threadGeo.setAttribute('position', new Float32BufferAttribute(new Float32Array(Math.max(1, nDangle) * 6), 3));
   geos.push(threadGeo);
   const threads = new LineSegments(threadGeo, new LineBasicMaterial({ color: 0xf2efe6, transparent: true, opacity: 0.7 }));
   mats.push(threads.material as Material);
   threads.frustumCulled = false;
   group.add(threads);
 
-  // ---- where each lives, each frame ----
-  /** Turn it: its head along `fwd`, its back toward `up` (both world). */
-  function orient(q: Quaternion, fwd: Vector3, up: Vector3) {
-    Z.copy(fwd).normalize();
-    X.crossVectors(up, Z).normalize();
-    Y.crossVectors(Z, X);
-    M4.makeBasis(X, Y, Z);
-    q.setFromRotationMatrix(M4);
-  }
-  function rnd(b: Bug, k: number) {
-    return Math.abs(Math.sin(b.seed * 12.9898 + k * 78.233) * 43758.5453) % 1;
-  }
-  function place(b: Bug, t: number) {
-    const s = b.seed, i = b.slot;
-    switch (b.sp.tank as Habitat) {
-      case 'fly': {
-        // round a bed of flowers, its own ellipse, bobbing
-        const [cx, cz, r] = BEDS[i % BEDS.length];
-        const w = 0.35 + (s % 5) * 0.04, a = t * w * (s % 2 ? 1 : -1) + s, rr = r + (i >> 2) * 6;
-        b.p.set(cx + Math.cos(a) * rr, 13 + (i % 3) * 4 + Math.sin(t * 1.7 + s) * 2.5, cz + Math.sin(a * 1.3) * rr * 0.6);
-        T.set(-Math.sin(a) * rr, Math.cos(t * 1.7 + s) * 0.8, Math.cos(a * 1.3) * rr * 0.78).multiplyScalar(s % 2 ? 1 : -1);
-        orient(b.q, T, UP);
-        break;
-      }
-      case 'dart': case 'drift': {
-        // over the pond: a hover, then off to another spot (a dragonfly darts; a firefly drifts there slowly)
-        const slow = b.sp.tank === 'drift';
-        if (!b.leg || t >= b.next) {
-          const from = b.leg ? b.leg.to.clone() : new Vector3((POND.x0 + POND.x1) / 2, 12, (POND.z0 + POND.z1) / 2);
-          const k = Math.floor(t * 10) + i * 13;
-          const to = new Vector3(POND.x0 + 6 + (POND.x1 - POND.x0 - 12) * rnd(b, k), (slow ? 6 : 9) + rnd(b, k + 1) * (slow ? 14 : 8), POND.z0 + 6 + (POND.z1 - POND.z0 - 12) * rnd(b, k + 2));
-          const ms = slow ? 3500 + rnd(b, k + 3) * 2500 : 420;
-          b.leg = { from, to, t0: t, ms };
-          b.next = t + ms / 1000 + (slow ? 0.2 : 1.2 + rnd(b, k + 4) * 1.8);
-        }
-        const L = b.leg, k = Math.min(1, ((t - L.t0) * 1000) / L.ms), e = k * k * (3 - 2 * k);
-        b.p.lerpVectors(L.from, L.to, e);
-        b.p.y += Math.sin(t * (slow ? 1.4 : 6) + s) * (slow ? 1.5 : 0.4);
-        T.subVectors(L.to, L.from).setY(0);
-        if (T.lengthSq() > 0.01) orient(b.q, T, UP);
-        break;
-      }
-      case 'flower': {
-        const [, fx, fz] = FLOWERS[(i * 5 + 1) % FLOWERS.length];
-        b.p.set(fx + Math.sin(s) * 1.5, 6.4, fz + Math.cos(s) * 1.5);
-        const a = s + Math.floor(t / 4 + (s % 3)) * 1.2;
-        orient(b.q, T.set(Math.sin(a), 0, Math.cos(a)), UP);
-        break;
-      }
-      case 'hop': {
-        const home = GRASS[i % GRASS.length];
-        if (!b.leg || t >= b.next) {
-          const from = b.leg ? b.leg.to.clone() : new Vector3(home[0], 0, home[1]);
-          const k = Math.floor(t * 3) + i;
-          const to = new Vector3(home[0] + (rnd(b, k) - 0.5) * 30, 0, home[1] + (rnd(b, k + 1) - 0.5) * 20);
-          b.leg = { from, to, t0: t, ms: 480 };
-          b.next = t + 0.48 + 1.5 + rnd(b, k + 2) * 3;
-        }
-        const L = b.leg, k = Math.min(1, ((t - L.t0) * 1000) / L.ms);
-        b.p.lerpVectors(L.from, L.to, k);
-        b.p.y = Math.sin(k * Math.PI) * 6;
-        T.subVectors(L.to, L.from).setY(0);
-        if (T.lengthSq() > 0.01) orient(b.q, T, UP);
-        break;
-      }
-      case 'trunk': case 'palm': {
-        // on a trunk, its back out from it, its head up, creeping up and down a little
-        const tr = b.sp.tank === 'palm' ? trunks[2] : trunks[i % 2];
-        if (!tr) break;
-        const a = (i * 2.399 + s) % (Math.PI * 2), y = tr.y0 + ((i * 0.37 + s * 0.01) % 1) * (tr.y1 - tr.y0) + Math.sin(t * 0.3 + s) * 1.2;
-        O.set(Math.sin(a), 0, Math.cos(a));
-        b.p.set(tr.x + O.x * tr.r, y, tr.z + O.z * tr.r);
-        orient(b.q, T.copy(UP), O);
-        break;
-      }
-      case 'leaf': {
-        const [lx, lz, ly] = LEAVES[i % LEAVES.length];
-        const a = t * 0.08 + s;
-        b.p.set(lx + Math.cos(a) * 5, ly, lz + Math.sin(a) * 4);
-        orient(b.q, T.set(-Math.sin(a), 0, Math.cos(a)), UP);
-        break;
-      }
-      case 'ground': {
-        const [gx, gz] = SOIL[i % SOIL.length];
-        const a = t * 0.18 * (s % 2 ? 1 : -1) + s;
-        b.p.set(gx + Math.cos(a) * 7, 0.1, gz + Math.sin(a * 1.4) * 6);
-        orient(b.q, T.set(-Math.sin(a), 0, Math.cos(a * 1.4) * 1.4).multiplyScalar(s % 2 ? 1 : -1), UP);
-        break;
-      }
-      case 'water': {
-        // gliding strokes over the pond
-        const a = Math.floor(t / 2.2 + i) * 2.1 + s, k = (t / 2.2 + i) % 1, glide = 1 - Math.pow(1 - Math.min(1, k * 1.6), 3);
-        const cx = (POND.x0 + POND.x1) / 2 + Math.cos(s + i) * 14, cz = (POND.z0 + POND.z1) / 2 + Math.sin(s + i) * 9;
-        b.p.set(cx + Math.cos(a) * 8 * glide, 0.7, cz + Math.sin(a) * 6 * glide);
-        orient(b.q, T.set(Math.cos(a), 0, Math.sin(a)), UP);
-        break;
-      }
-      case 'terrarium': {
-        const [cx, cz] = CASES[i % CASES.length], n = Math.floor(i / CASES.length);
-        const a = t * 0.22 * (s % 2 ? 1 : -1) + s + n * 2;
-        b.p.set(cx + Math.cos(a) * (CASE.w / 2 - 6), CASE.stand + 2, cz + Math.sin(a * 1.3) * (CASE.d / 2 - 4));
-        T.set(-Math.sin(a), 0, Math.cos(a * 1.3) * 1.3).multiplyScalar(s % 2 ? 1 : -1);
-        // (a crab square to its way: sideways)
-        if (b.sp.id === 'hermit-crab') T.set(T.z, 0, -T.x);
-        orient(b.q, T, UP);
-        break;
-      }
-      case 'dangle': {
-        const o = OAKS[i % 2];
-        b.p.set(o[0] + 10 + (i >> 1) * 6, 24 + Math.sin(t * 0.9 + s) * 3, o[1] + 6);
-        orient(b.q, T.set(Math.sin(t * 0.4 + s), 0, Math.cos(t * 0.4 + s)), UP);
-        break;
-      }
-    }
-  }
+  // ---- where each is, each frame ----
   function write(b: Bug) {
     if (!b.mesh) return;
+    const p = b.pose;
+    // its head along f, its back toward u
+    Z.set(p.fx, p.fy, p.fz);
+    X.set(p.ux, p.uy, p.uz).cross(Z).normalize();
+    Y.crossVectors(Z, X);
+    M4.makeBasis(X, Y, Z);
+    Q.setFromRotationMatrix(M4);
     S.setScalar(BUG_S);
-    M4.compose(b.p, b.q, S);
+    M4.compose(P.set(p.x, p.y, p.z), Q, S);
     b.mesh.setMatrixAt(0, M4);
     b.mesh.instanceMatrix.needsUpdate = true;
+    b.flap.value = p.flap;
     const g = b.mesh.userData.glow as Sprite | undefined;
     if (g) {
-      g.position.copy(b.p);
+      g.position.set(p.x, p.y + 1, p.z);
       (g.material as SpriteMaterial).opacity = (0.35 + 0.65 * uNight.value) * (0.55 + 0.45 * Math.sin(uTime.value * 2.6 + b.seed));
     }
   }
@@ -456,23 +323,22 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
     group,
     wing: 'bug',
     blocks,
-    frame(t, _dt, seen) {
-      const s = t / 1000;
+    frame(t, dt, seen) {
       let any = false;
       for (const b of bugs) {
-        if (!b.mesh) continue;
-        place(b, s);
-        b.sphere.center.copy(b.p);
-        if (!seen(b.sphere)) continue;
+        // (off screen it rests: its room unseen, nothing of it is worked out)
+        if (!b.mesh || !seen(b.sphere)) continue;
+        b.life.at(t, dt, b.pose);
         write(b);
         any = true;
       }
       // (the pond's ripples with it on screen, as a bug's wings)
       if (!any && !seen(pondSphere)) return false;
-      uTime.value = s;
+      uTime.value = t / 1000;
       danglers.forEach((b, k) => {
-        threadPos.setXYZ(k * 2, b.p.x, b.p.y + b.size * 0.4, b.p.z);
-        threadPos.setXYZ(k * 2 + 1, b.p.x, 40, b.p.z);
+        const p = b.pose;
+        threadPos.setXYZ(k * 2, p.x, p.y + b.size * 0.4, p.z);
+        threadPos.setXYZ(k * 2 + 1, p.x, 40, p.z);
       });
       threadPos.needsUpdate = true;
       return true;
@@ -481,7 +347,7 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
       let best: { id: string; d: number } | null = null;
       for (const b of bugs) {
         if (!b.mesh) continue;
-        const p = project(b.p.x, b.p.y + 1, b.p.z);
+        const p = project(b.pose.x, b.pose.y + 1, b.pose.z);
         if (!p) continue;
         const d = Math.hypot(p[0] - cx, p[1] - cy);
         if (d < 30 + b.size && (!best || d < best.d)) best = { id: b.sp.id, d };
@@ -490,7 +356,7 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
     },
     where(id) {
       const b = bugs.find((x) => x.sp.id === id);
-      return b ? [b.p.x, b.p.y + 1, b.p.z] : null;
+      return b ? [b.pose.x, b.pose.y + 1, b.pose.z] : null;
     },
     shown: () => bugs.filter((b) => b.mesh).map((b) => b.sp.id),
     night(n) {

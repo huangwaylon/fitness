@@ -60,7 +60,8 @@ export function habitatOf(id: string): Habitat {
     case 'flower': return 'flower';
     case 'hop': return 'hop';
     case 'perch': return b.tree === 'palm' ? 'palm' : 'trunk';
-    case 'dangle': return 'dangle';
+    // (NH's spider, down from its tree, crawls the ground; the bagworm stays on its thread)
+    case 'dangle': return id === 'spider' ? 'ground' : 'dangle';
     case 'stalk': case 'burrow': return 'terrarium';
     case 'crawl':
       if (b.ground === 'pond') return 'water';

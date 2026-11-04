@@ -45,6 +45,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import { EASE, Glide, turn, yawOf } from './glide.ts';
   import { pace, SLOW_PX } from '../world3d/pace.ts';
+  import { wingBeat } from '../world3d/wings.ts';
   import { showCatch } from './catchCard.ts';
   import { timers } from './timers.ts';
   import { fnv1a as seedOf, pickOne } from '#lib/random.ts';
@@ -660,17 +661,8 @@
     m.xyz[0] = g.x;
     m.xyz[1] = g.z;
     m.xyz[2] = g.l + (b.stalk === 'rear' ? 3 : 0);
-    // its wings (world3d/things.ts FLAPS): a butterfly's beat quick in flight and quicker the faster it goes, slow and
-    // now and then on its flower, held half closed; a bee's and a dragonfly's a buzz
-    const buzz = b.id === 'honeybee' || b.flight === 'dart';
-    if (b.sat) {
-      m.ph += (dt / 1000) * Math.PI * 2 * 0.4;
-      m.flap = 1.25 - 0.65 * Math.max(0, Math.sin(m.ph)) ** 2;
-    } else {
-      m.ph += (dt / 1000) * Math.PI * 2 * (buzz ? 13 : Math.min(8, 4 + ups * 0.12));
-      m.flap = buzz ? 0.15 + 0.25 * Math.sin(m.ph) : 0.35 + 0.75 * Math.sin(m.ph);
-    }
-    m.ph %= Math.PI * 2;
+    // its wings (world3d/wings.ts wingBeat)
+    wingBeat(m, dt, b.id === 'honeybee' || b.flight === 'dart', !!b.sat, ups);
     return m.xyz;
   }
   const bugYaw = (b: Bug) => mos.get(bugId(b))?.out ?? (b.flip ? Math.PI : 0);

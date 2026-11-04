@@ -47,10 +47,39 @@ export function wingHinge(parts: WingPart[]): Hinge {
   return { x, y: median(ys), root, ramp: half * 0.1, flaps };
 }
 
-/** A point turned as the vertex shader turns it (FLAP_GLSL), by `angle` (radians, up from flat): for the tests. */
+/** A point turned as the vertex shader turns it (flapGlsl), by `angle` (radians, up from flat): for the tests. */
 export function flapPoint(h: Hinge, px: number, py: number, angle: number): [number, number] {
   const fd = px - h.x, s = Math.sign(fd), u = Math.abs(fd) - h.root, fh = py - h.y;
   const t = Math.min(1, Math.max(0, u / h.ramp)), th = angle * t * t * (3 - 2 * t);
   const c = Math.cos(th), n = Math.sin(th);
   return [h.x + s * (h.root + u * c - fh * n), h.y + u * n + fh * c];
+}
+
+/** The flap in the vertex shader (things.ts, the museum's garden.ts), `angle` its angle's GLSL (the island's per
+ *  instance `aFlap`): the wing's points turned up about a line along the body (the model's z) at the wings' height
+ *  (uFlap.y), each side from its root (uFlap.z out from the body's middle, uFlap.x), coming in over a ramp past it
+ *  (uFlap.w); the body and what's in from the root still. */
+export const flapGlsl = (angle = 'aFlap'): string => `{
+  float fd = transformed.x - uFlap.x, fu = abs(fd) - uFlap.z, fh = transformed.y - uFlap.y;
+  float th = ${angle} * smoothstep(0.0, uFlap.w, fu);
+  float fc = cos(th), fs = sin(th);
+  transformed.x = uFlap.x + sign(fd) * (uFlap.z + fu * fc - fh * fs);
+  transformed.y = uFlap.y + fu * fs + fh * fc;
+}`;
+
+/** A flier's wingbeat: its phase and its wings' angle now (radians, up from flat). */
+export interface Beat { ph: number; flap: number }
+
+/** Its wings over `dt` ms (the island's Critters, the museum's garden): a butterfly's beat quick in flight and quicker
+ *  the faster it goes (`ups` u/s), slow and now and then held half closed while it sits on its flower; a bee's and a
+ *  dragonfly's (`buzz`) a buzz. */
+export function wingBeat(m: Beat, dt: number, buzz: boolean, sat: boolean, ups: number): void {
+  if (sat) {
+    m.ph += (dt / 1000) * Math.PI * 2 * 0.4;
+    m.flap = 1.25 - 0.65 * Math.max(0, Math.sin(m.ph)) ** 2;
+  } else {
+    m.ph += (dt / 1000) * Math.PI * 2 * (buzz ? 13 : Math.min(8, 4 + ups * 0.12));
+    m.flap = buzz ? 0.15 + 0.25 * Math.sin(m.ph) : 0.35 + 0.75 * Math.sin(m.ph);
+  }
+  m.ph %= Math.PI * 2;
 }

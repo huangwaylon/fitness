@@ -17,7 +17,7 @@ import { MODELS } from './models3d.ts';
 import { ASSET_KEYS } from './assets.ts';
 import { nightLift, nightTag } from './nightLift.ts';
 import { procScene } from './proc3d.ts';
-import { FLAPS, wingHinge } from './wings.ts';
+import { FLAPS, flapGlsl, wingHinge } from './wings.ts';
 
 /** Where a lit model's light is (a share of its height), its colour and the halo's and pool's sizes (u). */
 const LAMP: Partial<Record<string, { at: number; kind: LampSpot['kind']; colour: number; glow: number; pool: number; dz?: number }>> = {
@@ -73,16 +73,6 @@ const SHADOWS = (() => {
 })();
 /** After the sea (1) and the fresh water and the ponds (2), under the falls and the foam (3). */
 const UNDER_WATER = 2.5;
-/** The flap in the vertex shader (world3d/wings.ts: FLAPS, wingHinge, flapPoint): the wing's points turned up about a
- *  line along the body (the model's z) at the wings' height (uFlap.y), each side from its root (uFlap.z out from the
- *  body's middle, uFlap.x), coming in over a ramp past it (uFlap.w); the body and what's in from the root still. */
-const FLAP_GLSL = `{
-  float fd = transformed.x - uFlap.x, fu = abs(fd) - uFlap.z, fh = transformed.y - uFlap.y;
-  float th = aFlap * smoothstep(0.0, uFlap.w, fu);
-  float fc = cos(th), fs = sin(th);
-  transformed.x = uFlap.x + sign(fd) * (uFlap.z + fu * fc - fh * fs);
-  transformed.y = uFlap.y + fu * fs + fh * fc;
-}`;
 /** A flier's wings' hinge from its meshes' positions (in their own, quantized space: what the shader sees), and which
  *  of its meshes flap. */
 function hingeOf(root: Object3D): { at: Vector4; flaps: Map<Mesh, boolean> } {
@@ -221,7 +211,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       m.onBeforeCompile = (sh) => {
         if (uFlap) sh.uniforms.uFlap = uFlap;
         sh.vertexShader = `attribute float aFade;\nvarying float vFade;\n${uFlap ? 'attribute float aFlap;\nuniform vec4 uFlap;\n' : ''}` +
-          sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>\nvFade = aFade;\n${uFlap ? FLAP_GLSL : ''}`);
+          sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>\nvFade = aFade;\n${uFlap ? flapGlsl() : ''}`);
         sh.fragmentShader = 'varying float vFade;\n' + sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>\ngl_FragColor.a *= vFade;');
       };
       m.customProgramCacheKey = () => (uFlap ? 'fade-flap' : 'fade');
