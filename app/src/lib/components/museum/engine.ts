@@ -20,6 +20,7 @@ import { drawOff } from '../../ui-state/testMode.ts';
 import { decal } from './geometry.ts';
 import { frameRate } from '#lib/store/frameRate.svelte.ts';
 import { pacer } from '../world3d/pace.ts';
+import { plainImages } from '../world3d/gltf.ts';
 import M from './models.json' with { type: 'json' };
 import { modelBounds } from '../world3d/models3d.ts';
 import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, headAnchor, wrapAngle } from '../rooms/firstPerson.ts';
@@ -392,7 +393,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     disposables.push(m);
     return m;
   };
-  const loader = new GLTFLoader();
+  const loader = plainImages(new GLTFLoader());
   loader.setMeshoptDecoder(MeshoptDecoder);
   const glbs = new Map<string, Promise<GLTF | null>>();
   let pending = 0;
