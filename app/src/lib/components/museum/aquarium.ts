@@ -1,13 +1,17 @@
 // The aquarium wing's exhibits (docs/design.md "The museum"): its three tanks (tanks.ts) with NH's own props in them
 // (the sea's kelp and coral, the deep's dark rocks, the river's stones and logs: scripts/world3d-models.ts --museum),
 // the aisle's benches and the corners' plants, and in each tank the hour's pick of the fish found for it (species.ts
-// onDisplay: five at most, a new pick each hour, fading out and in where it's on screen), NH's catch models
+// onDisplay: seven at most, a new pick each hour, fading out and in where it's on screen), NH's catch models
 // (static/room/world3d/critters/fish/), each all inside its glass, the props along its back and the fish in
 // front of them, never touching (tanks.ts bodyIn, openOf, propsOf). Cheap:
 //   - a species is one fish, one InstancedMesh, its tail swaying in the vertex shader (one program for every fish: the
 //     sway grows toward its tail, its beat and width its swimmer's: boids.ts, quicker and wider the faster it goes);
 //   - each tank's water is one shader (its glow, NH's blue to its depth, caustics shimmering over its back and floor,
-//     light from above), its bubbles one Points (risen in the shader), its glass a faint pane and a metal frame;
+//     light from above), its glass a faint pane and a metal frame (the glass and the floor's caustics drawn in one pass,
+//     not three's two for a transparent DoubleSide: forceSinglePass); the three tanks' bubbles one Points (risen in the
+//     shader);
+//   - the feeders (feeding.ts) of all three tanks one InstancedMesh (FEEDERS a tank, a slot each, the gone ones scaled
+//     to nothing, hidden while none's in), their matrices written straight into its array, one material;
 //   - the swimmers step by boids.ts (the bottom walkers walk the river's sand: a crab sideways), their matrices written
 //     in place; nothing allocated in a frame; a tank off screen rests, its fish culled by its water's bounds (and the
 //     wing draws nothing while none is on screen).
@@ -94,8 +98,9 @@ function feederGeometry(): BufferGeometry {
   g.computeVertexNormals();
   return g;
 }
-/** A tank's feeding as drawn: its state, its feeders' mesh and material, its bite's puff, and its predators on show. */
-interface Feed { fd: Feeding; mesh: InstancedMesh; mat: MeshLambertMaterial; puff: ShaderMaterial; pts: Points; predators: Swimmer[] }
+/** A tank's feeding as drawn: its state, its first slot in the feeders' mesh, its bite's puff (one Points, reused for
+ *  each bite: its uniforms), its predators on show, and whether any of its feeders was in at the last write. */
+interface Feed { fd: Feeding; slot: number; puff: ShaderMaterial; pts: Points; predators: Swimmer[]; drawn: boolean }
 
 interface School {
   sp: Specimen;
@@ -146,8 +151,11 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
       uniforms: { uTime, uNight, uDeep: { value: new Color(w.deep) }, uTop: { value: new Color(w.top) }, uCaustic: { value: w.caustic }, uFloor: { value: floor ? 1 : 0 } },
       ...(floor ? { transparent: true, depthWrite: false, blending: AdditiveBlending } : {})
     });
-    // (the floor's caustics lie on the sand)
-    if (floor) decal(m, 1);
+    // (the floor's caustics lie on the sand; flat and additive: one pass, not a back then a front)
+    if (floor) {
+      decal(m, 1);
+      m.forceSinglePass = true;
+    }
     m.userData.floor = floor;
     mats.push(m);
     return m;
@@ -158,6 +166,9 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
 
   // ---- the tanks ----
   const spheres = new Map<TankId, Sphere>(TANKS.map((t) => [t.id, sphereOf(t.box)]));
+  /** Every tank's bounds (the bubbles' and the feeders' one draw each: the wing's tanks all together). */
+  const allTanks = sphereOf(TANKS.reduce<Box>((a, t) => ({ x0: Math.min(a.x0, t.box.x0), x1: Math.max(a.x1, t.box.x1), y0: Math.min(a.y0, t.box.y0), y1: Math.max(a.y1, t.box.y1), z0: Math.min(a.z0, t.box.z0), z1: Math.max(a.z1, t.box.z1) }), { ...TANKS[0].box }));
+  const bubbleBase: number[] = [], bubblePhase: number[] = [];
   for (const t of TANKS) {
     const b = t.box, w = waterOf(t), id = t.id;
     const along = alongX(b);
@@ -172,32 +183,34 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
     batch.add(new PlaneGeometry(w.x1 - w.x0, w.z1 - w.z0), waterMat(id, true), at.makeRotationX(-Math.PI / 2).setPosition((w.x0 + w.x1) / 2, w.y0 + 0.08, (w.z0 + w.z1) / 2));
     // its props on the sand, each inside its glass (tanks.ts propsOf)
     for (const p of propsOf(t)) kit.prop(p.name, p.x, p.z, { s: p.s, y: p.y, yaw: p.yaw, parent: group });
-    // its bubbles (rising in the shader)
+    // its bubbles (rising in the shader; all three tanks' one Points, below)
     const n = id === 'deep' ? 24 : 40;
-    const base = new Float32Array(n * 4), phase = new Float32Array(n);
     for (let i = 0; i < n; i++) {
       const r1 = Math.abs(Math.sin(i * 12.9898 + b.x0) * 43758.5453) % 1, r2 = Math.abs(Math.sin(i * 78.233 + b.z0) * 12345.678) % 1;
-      base.set([w.x0 + 2 + (w.x1 - w.x0 - 4) * r1, w.y0, w.z0 + 2 + (w.z1 - w.z0 - 4) * r2, w.y1 - w.y0], i * 4);
-      phase[i] = (i * 0.618) % 1;
+      bubbleBase.push(w.x0 + 2 + (w.x1 - w.x0 - 4) * r1, w.y0, w.z0 + 2 + (w.z1 - w.z0 - 4) * r2, w.y1 - w.y0);
+      bubblePhase.push((i * 0.618) % 1);
     }
-    const bg = new BufferGeometry();
-    bg.setAttribute('position', new Float32BufferAttribute(new Float32Array(n * 3), 3));
-    bg.setAttribute('aBase', new Float32BufferAttribute(base, 4));
-    bg.setAttribute('aPhase', new Float32BufferAttribute(phase, 1));
-    geos.push(bg);
-    // (risen in the shader: its bounds the tank's)
-    bg.boundingSphere = spheres.get(id)!;
-    const pts = new Points(bg, bubbleMat);
-    pts.renderOrder = 3;
-    group.add(pts);
     // its glass (one pane each side, faint: the water's own colour over what swims in it, a deep tank darker) and its
     // frame's edges (open below: its floor is the sand's top)
-    const g = new MeshBasicMaterial({ color: WATER[id].glow, transparent: true, opacity: id === 'deep' ? 0.32 : 0.16, depthWrite: false, side: DoubleSide });
+    // (one pass: no depth written and one colour, its back and front panes in either order are the same)
+    const g = new MeshBasicMaterial({ color: WATER[id].glow, transparent: true, opacity: id === 'deep' ? 0.32 : 0.16, depthWrite: false, side: DoubleSide, forceSinglePass: true });
     mats.push(g);
     glasses.add(g);
     const gb = pc.glass;
     batch.add(openBox(gb.x1 - gb.x0, gb.y1 - gb.y0, gb.z1 - gb.z0, ['-y']), g, at.makeTranslation((gb.x0 + gb.x1) / 2, (gb.y0 + gb.y1) / 2, (gb.z0 + gb.z1) / 2));
     for (const f of pc.frame) box(f, frame);
+  }
+  {
+    const bg = new BufferGeometry(), n = bubblePhase.length;
+    bg.setAttribute('position', new Float32BufferAttribute(new Float32Array(n * 3), 3));
+    bg.setAttribute('aBase', new Float32BufferAttribute(bubbleBase, 4));
+    bg.setAttribute('aPhase', new Float32BufferAttribute(bubblePhase, 1));
+    geos.push(bg);
+    // (risen in the shader: its bounds the tanks')
+    bg.boundingSphere = allTanks;
+    const pts = new Points(bg, bubbleMat);
+    pts.renderOrder = 3;
+    group.add(pts);
   }
   // (the glass over all else, the caustics over the sand)
   geos.push(...batch.done(group, (m) => (glasses.has(m) ? 4 : m.userData.floor ? 1 : 0)));
@@ -249,21 +262,25 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
   };
   // (the matrices' scratch: nothing allocated in a frame)
   const M4 = new Matrix4(), Q = new Quaternion(), P = new Vector3(), S = new Vector3(), E = new Vector3(0, 1, 0), Qp = new Quaternion(), X = new Vector3(1, 0, 0), Z = new Vector3(0, 0, 1);
-  // ---- the feeders (feeding.ts): where a predator's on show, a few little generic fish (no ずかん species), one
-  // InstancedMesh a tank (FEEDERS at most, the gone ones scaled to nothing), and a bite's bubbles ----
-  const feederGeo = feederGeometry();
-  feederGeo.setAttribute('aPhase', new InstancedBufferAttribute(Float32Array.from({ length: FEEDERS }, (_, i) => i * 1.7), 1));
+  // ---- the feeders (feeding.ts): where a predator's on show, a school of little generic fish (no ずかん species);
+  // all three tanks' one InstancedMesh (FEEDERS slots a tank, the gone ones scaled to nothing, hidden while none's in:
+  // one draw call, one material), and a bite's bubbles ----
+  const feederGeo = feederGeometry(), slots = FEEDERS * TANKS.length;
+  feederGeo.setAttribute('aPhase', new InstancedBufferAttribute(Float32Array.from({ length: slots }, (_, i) => i * 1.7), 1));
   geos.push(feederGeo);
+  const feederMat = fishMat(null, FEEDER_R, -FEEDER_R, FEEDER_R * 0.18);
+  feederMat.color.set(0xc4d8e2);
+  feederMat.emissive.set(0x24323c);
+  mats.push(feederMat);
+  const feeders = new InstancedMesh(feederGeo, feederMat, slots);
+  feeders.boundingSphere = allTanks;
+  feeders.userData.feeders = true;
+  feeders.visible = false;
+  // (every slot empty to begin with: scaled to nothing)
+  (feeders.instanceMatrix.array as Float32Array).fill(0);
+  group.add(feeders);
   const feeds = new Map<TankId, Feed>();
-  for (const t of TANKS) {
-    const mat = fishMat(null, FEEDER_R, -FEEDER_R, FEEDER_R * 0.18);
-    mat.color.set(0xc4d8e2);
-    mat.emissive.set(0x24323c);
-    mats.push(mat);
-    const mesh = new InstancedMesh(feederGeo, mat, FEEDERS);
-    mesh.boundingSphere = spheres.get(t.id)!;
-    mesh.userData.feeders = true;
-    group.add(mesh);
+  for (const [k, t] of TANKS.entries()) {
     const pg = new BufferGeometry(), dirs = new Float32Array(30);
     for (let i = 0; i < 10; i++) {
       const a = i * 2.4, e = ((i * 0.37) % 1) - 0.3;
@@ -278,34 +295,49 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
     const pts = new Points(pg, puff);
     pts.renderOrder = 3;
     group.add(pts);
-    const fd: Feed = { fd: feedingOf(hash(t.id) + 1), mesh, mat, puff, pts, predators: [] };
-    feeds.set(t.id, fd);
-    writeFeeders(fd);
+    feeds.set(t.id, { fd: feedingOf(hash(t.id) + 1), slot: k * FEEDERS, puff, pts, predators: [], drawn: false });
   }
+  /** A tank's feeders into their slots (each one's yaw, then its pitch to its climb, its fade its scale: the matrix
+   *  written straight into the mesh's array, nothing composed); nothing to write while none's in, nor was. */
   function writeFeeders(f: Feed) {
-    const fs = f.fd.feeders;
-    for (let i = 0; i < fs.length; i++) {
-      const x = fs[i];
-      Q.setFromAxisAngle(E, x.yaw);
-      Q.multiply(Qp.setFromAxisAngle(X, Math.max(-0.4, Math.min(0.4, -Math.atan2(x.v[1], Math.max(0.5, Math.hypot(x.v[0], x.v[2]))) * 0.6))));
-      P.set(x.p[0], x.p[1], x.p[2]);
-      S.setScalar(x.alive ? Math.max(0.001, x.fade) : 0);
-      M4.compose(P, Q, S);
-      f.mesh.setMatrixAt(i, M4);
-    }
-    f.mesh.instanceMatrix.needsUpdate = true;
-    // (none in: nothing drawn)
-    f.mesh.visible = feedersIn(f.fd) > 0;
     f.pts.visible = f.fd.puffT < 1.1;
-    f.mat.userData.beat.value = f.fd.clock * 9;
     f.puff.uniforms.uT.value = f.fd.puffT;
     (f.puff.uniforms.uAt.value as Vector3).set(f.fd.puff[0], f.fd.puff[1], f.fd.puff[2]);
+    const n = feedersIn(f.fd);
+    if (!n && !f.drawn) return;
+    f.drawn = n > 0;
+    const fs = f.fd.feeders, a = feeders.instanceMatrix.array as Float32Array;
+    for (let i = 0; i < fs.length; i++) {
+      const x = fs[i], o = (f.slot + i) * 16, s = x.alive ? Math.max(0.001, x.fade) : 0;
+      const pitch = Math.max(-0.4, Math.min(0.4, -Math.atan2(x.v[1], Math.max(0.5, Math.sqrt(x.v[0] * x.v[0] + x.v[2] * x.v[2]))) * 0.6));
+      const cy = Math.cos(x.yaw) * s, sy = Math.sin(x.yaw) * s, cp = Math.cos(pitch), sp = Math.sin(pitch);
+      // (its yaw about y, then its pitch about x: the columns of Ry·Rx, scaled)
+      a[o] = cy;
+      a[o + 1] = 0;
+      a[o + 2] = -sy;
+      a[o + 3] = 0;
+      a[o + 4] = sy * sp;
+      a[o + 5] = cp * s;
+      a[o + 6] = cy * sp;
+      a[o + 7] = 0;
+      a[o + 8] = sy * cp;
+      a[o + 9] = -sp * s;
+      a[o + 10] = cy * cp;
+      a[o + 11] = 0;
+      a[o + 12] = x.p[0];
+      a[o + 13] = x.p[1];
+      a[o + 14] = x.p[2];
+      a[o + 15] = 1;
+    }
+    feeders.instanceMatrix.needsUpdate = true;
   }
   const schools = new Map<string, School>();
   /** Each tank's swimmers, all its schools' together (they keep off one another), and its bottom walkers. */
   const swimmers = new Map<TankId, Swimmer[]>(TANKS.map((t) => [t.id, []]));
   const walkers = new Map<TankId, Swimmer[]>(TANKS.map((t) => [t.id, []]));
   const tankOfId = new Map<TankId, Tank>(TANKS.map((t) => [t.id, t]));
+  /** Each tank on screen this frame (its sphere tested once). */
+  const onScreen: Record<TankId, boolean> = { sea: false, deep: false, river: false };
   /** Each tank's open water, in front of its props (tanks.ts openOf): its fish swim and walk only there. */
   const waters = new Map<TankId, Box>(TANKS.map((t) => [t.id, openOf(t)]));
   /** A fish's fading: dithered (alphaHash: still opaque and unsorted) only while it fades, solid again after. */
@@ -423,31 +455,37 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
           pick(seen);
         }
       }
-      // (the water's shimmer and the bubbles with any tank on screen; a school only with its own)
+      // (the water's shimmer and the bubbles with any tank on screen; a school only with its own: each tank's test
+      // once a frame)
       let any = false;
-      for (const tk of TANKS) if (seen(spheres.get(tk.id)!)) any = true;
+      for (const tk of TANKS) if ((onScreen[tk.id] = seen(spheres.get(tk.id)!))) any = true;
       uTime.value = t / 1000;
       // (deleting the one at hand while going through a Map is safe: nothing allocated)
       for (const s of schools.values()) {
         if (!s.dir) continue;
         // (a fade off screen is over at once)
-        const k = seen(spheres.get(s.tank.id)!) ? s.fade + (s.dir * dt) / 1000 / FADE : s.dir > 0 ? 1 : 0;
+        const k = onScreen[s.tank.id] ? s.fade + (s.dir * dt) / 1000 / FADE : s.dir > 0 ? 1 : 0;
         fadeTo(s, Math.max(0, Math.min(1, k)));
         if (s.fade >= 1 && s.dir > 0) s.dir = 0;
         else if (s.fade <= 0 && s.dir < 0 && s.mesh) drop(s);
       }
       if (!any) return false;
+      let fed = false;
       for (const tk of TANKS) {
-        const id = tk.id;
-        if (!seen(spheres.get(id)!)) continue;
-        const w = waters.get(id)!;
-        stepSchool(swimmers.get(id)!, w, dt / 1000, t / 1000);
-        const fe = feeds.get(id)!;
-        stepFeeding(fe.fd, fe.predators, w, dt / 1000);
-        writeFeeders(fe);
+        const id = tk.id, fe = feeds.get(id)!;
+        if (onScreen[id]) {
+          const w = waters.get(id)!;
+          stepSchool(swimmers.get(id)!, w, dt / 1000, t / 1000);
+          stepFeeding(fe.fd, fe.predators, w, dt / 1000);
+          writeFeeders(fe);
+        }
+        if (fe.drawn) fed = true;
       }
+      // (none in anywhere: nothing drawn; their tails' beat one clock)
+      feeders.visible = fed;
+      feederMat.userData.beat.value = (t / 1000) * 9;
       for (const s of schools.values()) {
-        if (!seen(spheres.get(s.tank.id)!)) continue;
+        if (!onScreen[s.tank.id]) continue;
         if (s.walk && s.fish) stepWalker(s.fish, s.water, dt / 1000, t / 1000, s.walk === 'side', walkers.get(s.tank.id)!);
         write(s);
       }

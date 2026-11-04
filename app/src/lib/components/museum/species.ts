@@ -5,7 +5,8 @@
 //     deep   the deep-sea tank (dark: the oarfish, the coelacanth, the barreleye, the football fish, the squid…)
 //     river  the river tank (the fresh water's: the river's and the pond's fish, the turtles, the frog; the crawfish and
 //            the mitten crab walking its sand)
-//   each tank showing at most five of its own at a time, a new pick each hour (onDisplay);
+//   each tank showing at most seven of its own at a time, a new pick each hour (onDisplay), the great tank's first a
+//   caught predator (feeding.ts PREDATORS: there's always a hunter for its feeders, once one's been caught);
 //   a bug where NH's garden would have it, by how it lives (island/critters.ts BUGS: its flight, its ground, its tree):
 //     fly the flowers' air (the butterflies, the moths, the bees: on paths round the beds), dart over the pond (the
 //     dragonflies), drift over it (the fireflies), flower (sat on a bloom), hop (in the grass), trunk / palm (perched on
@@ -15,6 +16,7 @@
 // A species' tank is its own, whatever else is found; which of a tank's are swimming is the hour's.
 import { BUGS, FISH, type BugId } from '../island/critters.ts';
 import { POND_FISH } from '../island/pondFish.ts';
+import { PREDATORS } from './feeding.ts';
 import { findKey, type FirstFind } from '#lib/model/finds.ts';
 import { ZONE_OFFSET_MS, localDateAt } from '#lib/time/dates.ts';
 
@@ -87,7 +89,9 @@ export function onShow(finds: ReadonlyMap<string, FirstFind>): Specimen[] {
 }
 
 /** The most of a tank's species swimming in it at once. */
-export const PER_TANK = 5;
+export const PER_TANK = 7;
+/** The largest tank: its pick always leads with a caught predator (none caught: none). */
+export const HUNTED: TankId = 'sea';
 const TANK_IDS: readonly TankId[] = ['sea', 'deep', 'river'];
 const HOUR_MS = 3_600_000;
 
@@ -97,7 +101,8 @@ export const hourOf = (ms: number): number => Math.floor((ms + ZONE_OFFSET_MS) /
 const hourKey = (hour: number): string => `${localDateAt(hour * HOUR_MS - ZONE_OFFSET_MS)}T${String(hour % 24).padStart(2, '0')}`;
 
 /** Which fish swim in each tank this hour: at most PER_TANK of its own from what's on show (the ずかん's finds), by a
- *  shuffle seeded by (the Tokyo date and hour, the tank): the same on every phone, a new pick each hour, none twice. */
+ *  shuffle seeded by (the Tokyo date and hour, the tank): the same on every phone, a new pick each hour, none twice. The
+ *  great tank's (HUNTED) first is the shuffle's first predator caught (feeding.ts PREDATORS), the rest in its order. */
 export function onDisplay(fish: readonly Specimen[], hour: number): Map<TankId, Specimen[]> {
   const key = hourKey(hour), out = new Map<TankId, Specimen[]>(), taken = new Set<string>();
   for (const tank of TANK_IDS) {
@@ -107,6 +112,10 @@ export function onDisplay(fish: readonly Specimen[], hour: number): Map<TankId, 
     for (let i = mine.length - 1; i > 0; i--) {
       const j = Math.floor(rnd() * (i + 1));
       [mine[i], mine[j]] = [mine[j], mine[i]];
+    }
+    if (tank === HUNTED) {
+      const k = mine.findIndex((s) => PREDATORS.has(s.id));
+      if (k > 0) mine.unshift(...mine.splice(k, 1));
     }
     const pick = mine.slice(0, PER_TANK);
     for (const s of pick) taken.add(s.id);

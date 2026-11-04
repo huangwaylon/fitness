@@ -20,11 +20,16 @@ function run(tank: string, ids: string[], minutes: number, seed: number) {
   });
   const all = fish.map((x) => x.f), predators: Swimmer[] = fish.filter((x) => PREDATORS.has(x.id)).map((x) => x.f);
   const fd: Feeding = feedingOf(seed), fb = feederBox(w), out: string[] = [];
-  let most = 0, began = -1, longest = 0;
+  let most = 0, began = -1, longest = 0, was = 0;
+  const schools: number[] = [];
   for (let k = 0; k < minutes * 60 * FPS; k++) {
     stepSchool(all, w, 1 / FPS, k / FPS);
     stepFeeding(fd, predators, w, 1 / FPS);
-    most = Math.max(most, feedersIn(fd));
+    const now = feedersIn(fd);
+    most = Math.max(most, now);
+    // (a school in: how many came at once, and how many slots were free)
+    if (now > was) schools.push(now - was, FEEDERS - was);
+    was = now;
     for (const x of fd.feeders) if (x.alive && !inside(fb, x.p)) out.push(`feeder out at ${k}: ${x.p.map((v) => v.toFixed(1))}`);
     for (const x of all) {
       if (!inside(swimBox(w, x.reach), x.p)) out.push(`swimmer out at ${k}`);
@@ -37,11 +42,12 @@ function run(tank: string, ids: string[], minutes: number, seed: number) {
       began = -1;
     }
   }
-  return { fd, most, longest, out };
+  return { fd, most, longest, out, schools };
 }
 
 describe('the feeding', () => {
-  test('a shark’s and a pike’s tank: schools come, each hunt a bite or an escape within its time, some of each, never more than the cap, all in the water', () => {
+  test('a shark’s and a pike’s tank: schools of 6–10 come, each hunt a bite or an escape within its time, some of each, never more than the cap (12), all in the water', () => {
+    expect(FEEDERS).toBe(12);
     const out: string[] = [];
     let bites = 0, escapes = 0;
     for (const [tank, ids] of [['sea', ['great-white-shark', 'clownfish', 'ray', 'sea-bass']], ['sea', ['hammerhead-shark', 'tuna']], ['river', ['pike', 'koi', 'neon-tetra']], ['deep', ['football-fish', 'squid']], ['sea', ['giant-trevally', 'puffer-fish', 'suckerfish', 'napoleonfish', 'whale-shark']], ['river', ['dorado', 'crucian-carp', 'killifish', 'loach']]] as const)
@@ -49,6 +55,12 @@ describe('the feeding', () => {
         const r = run(tank, [...ids], 10, seed);
         out.push(...r.out.slice(0, 3).map((m) => `${tank} ${ids[0]} ${seed}: ${m}`));
         if (r.most > FEEDERS) out.push(`${tank} ${ids[0]} ${seed}: ${r.most} feeders`);
+        // (each school 6–10, or as many as the free slots let in)
+        for (let i = 0; i < r.schools.length; i += 2) {
+          const n = r.schools[i], free = r.schools[i + 1];
+          if (n > 10 || n < Math.min(6, free)) out.push(`${tank} ${ids[0]} ${seed}: a school of ${n} (${free} free)`);
+        }
+        if (r.most < 6) out.push(`${tank} ${ids[0]} ${seed}: at most ${r.most} feeders`);
         if (!(r.longest <= HUNT_S + 0.1)) out.push(`${tank} ${ids[0]} ${seed}: a hunt of ${r.longest.toFixed(1)} s`);
         if (r.fd.hunts < 3) out.push(`${tank} ${ids[0]} ${seed}: only ${r.fd.hunts} hunts`);
         // (every hunt that's over ended one way or the other)

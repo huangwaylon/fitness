@@ -62,8 +62,9 @@ export function openOf(t: Tank): Box {
 }
 
 /** How much of its open water's narrowest side (and its depth) a fish may reach across at most: the rest is its room
- *  to swim. */
-const FIT = 0.8;
+ *  to swim, and its tank's six others' (0.8 with five a tank; seven of the biggest drawn 0.85 of that kept as far
+ *  apart, a pair's bodies overlapping as rarely as five's did). */
+export const FIT = 0.68;
 /** The least a fish is drawn long (model units): a little one scaled up to it (NH's tanks show the little ones big). */
 const MIN_LEN = 6;
 /** A fish's body as drawn in a tank: its scale, its model's box's half sizes (across, up, along) and its tail's sway

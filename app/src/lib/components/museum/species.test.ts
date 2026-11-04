@@ -5,7 +5,8 @@ import { findKey, findsView, type FirstFind } from '#lib/model/finds.ts';
 import { reduce } from '#lib/model/state.ts';
 import type { EventRow } from '#lib/contract/api.ts';
 import { entries } from '../kiroku/zukan.ts';
-import { BUG_IDS, FISH_IDS, PER_TANK, habitatOf, hourOf, onDisplay, onShow, tankOf, type Specimen } from './species.ts';
+import { BUG_IDS, FISH_IDS, HUNTED, PER_TANK, habitatOf, hourOf, onDisplay, onShow, tankOf, type Specimen } from './species.ts';
+import { PREDATORS } from './feeding.ts';
 import { TANKS } from './tanks.ts';
 
 const found = (person: 'A' | 'B' | 'G'): FirstFind => ({ date: '2026-11-04', at: 1.8e12, person });
@@ -54,7 +55,8 @@ describe('the hour’s pick (onDisplay)', () => {
   const all = onShow(new Map(FISH_IDS.map((id) => [findKey('fish', id), found('A')])));
   const at = (iso: string) => hourOf(Date.parse(iso));
   const ids = (m: Map<string, Specimen[]>) => [...m.entries()].map(([t, l]) => [t, l.map((s) => s.id)] as const);
-  test('five at most a tank, only its own and only what was caught, none twice in the aquarium', () => {
+  test('seven at most a tank, only its own and only what was caught, none twice in the aquarium', () => {
+    expect(PER_TANK).toBe(7);
     const caught = all.filter((s, i) => i % 3 === 0);
     for (let h = 0; h < 48; h++) {
       const pick = onDisplay(caught, at('2026-11-04T00:00+09:00') + h);
@@ -83,6 +85,31 @@ describe('the hour’s pick (onDisplay)', () => {
     const swum = new Set<string>();
     for (let k = 0; k < 24 * 7; k++) for (const s of onDisplay(all, h + k).get('sea')!) swum.add(s.id);
     expect(swum.size).toBe(all.filter((s) => s.tank === 'sea').length);
+  });
+  test('the great tank leads with a caught predator every hour (a seeded one, the rest as shuffled); none caught, none', () => {
+    // (the misses collected, checked once)
+    const out: string[] = [];
+    const sea = all.filter((s) => s.tank === HUNTED), preds = sea.filter((s) => PREDATORS.has(s.id)), prey = sea.filter((s) => !PREDATORS.has(s.id));
+    expect(HUNTED).toBe('sea');
+    expect(preds.length).toBeGreaterThan(1);
+    const h0 = at('2026-11-04T00:00+09:00'), led = new Set<string>();
+    for (const [name, caught] of [['all', all], ['one predator', [...prey, preds[0]]], ['predators only', preds], ['a third', all.filter((s, i) => i % 3 === 0)]] as const)
+      for (let h = 0; h < 72; h++) {
+        const list = onDisplay(caught, h0 + h).get(HUNTED)!, has = caught.some((s) => s.tank === HUNTED && PREDATORS.has(s.id));
+        if (has && !PREDATORS.has(list[0]?.id)) out.push(`${name} ${h}: led by ${list[0]?.id}`);
+        if (list.length !== Math.min(PER_TANK, caught.filter((s) => s.tank === HUNTED).length)) out.push(`${name} ${h}: ${list.length}`);
+        if (new Set(list.map((s) => s.id)).size !== list.length) out.push(`${name} ${h}: a dup`);
+        // (deterministic: the same whatever order the finds come in)
+        const again = onDisplay([...caught].reverse(), h0 + h).get(HUNTED)!;
+        if (again.map((s) => s.id).join() !== list.map((s) => s.id).join()) out.push(`${name} ${h}: not the same reversed`);
+        if (name === 'all') led.add(list[0].id);
+      }
+    // none caught: none, and the pick as shuffled
+    for (let h = 0; h < 24; h++) if (onDisplay(prey, h0 + h).get(HUNTED)!.some((s) => PREDATORS.has(s.id))) out.push(`prey only ${h}: a predator`);
+    // (the other tanks: no such rule; the deep's and the river's predators come and go)
+    expect(out).toEqual([]);
+    // (seeded: not always the same one)
+    expect(led.size).toBeGreaterThan(2);
   });
   test('a tank with none of its own caught stays empty; nothing caught, nothing swims', () => {
     const one = all.filter((s) => s.id === 'koi');
