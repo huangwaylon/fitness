@@ -64,6 +64,29 @@ test('a tap on the floor walks there, through the hall into a wing', async ({ pa
   }, { timeout: 15_000 }).toBeLessThan(6);
 });
 
+test('the walls the camera cuts away stay put as one walks: each goes at most once on a walk, and comes back at most once (a jamb one passed), never back and forth', async ({ page }) => {
+  await open(page);
+  // through the openings into each wing and back, the cutaway read every frame
+  for (const [from, to] of [[[30, 10], [110, 10]], [[110, 10], [30, 10]], [[-30, 10], [-110, 10]], [[-110, 10], [-30, 10]]] as const) {
+    await page.evaluate(`window.__museum.put(${from[0]}, ${from[1]})`);
+    await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
+    const log = await page.evaluate(([x, z]) => new Promise<string[]>((done) => {
+      const m = (window as unknown as { __museum: { walls(): string; walkTo(x: number, z: number): void; mine(): [number, number] } }).__museum;
+      const seen = [m.walls()];
+      m.walkTo(x, z);
+      const step = () => {
+        if (seen.at(-1) !== m.walls()) seen.push(m.walls());
+        const [mx, mz] = m.mine();
+        if (Math.hypot(mx - x, mz - z) > 1) requestAnimationFrame(step);
+        else setTimeout(() => done([...seen, m.walls()]), 800);
+      };
+      requestAnimationFrame(step);
+    }), to as unknown as [number, number]);
+    const flips = log[0].split('').map((_, i) => log.slice(1).filter((s, k) => s[i] !== log[k][i]).length);
+    expect(Math.max(...flips), `${from} → ${to}: ${log.join(' ')}`).toBeLessThanOrEqual(2);
+  }
+});
+
 test('what’s on show: exactly the fish anyone has found (the guest’s too), each in its tank; nothing else', async ({ page }) => {
   await seed(page, [['fish', 'sea-bass', 'A'], ['fish', 'koi', 'B'], ['fish', 'neon-tetra', 'G'], ['fish', 'oarfish', 'A']]);
   await open(page);

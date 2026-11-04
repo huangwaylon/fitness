@@ -1225,7 +1225,11 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
 - **Like the rooms:** a tap on the floor walks my villager there (plan.ts walkPath: a half-tile grid, A* with its corners
   pulled straight, round the walls and what stands on the floor); a drag turns the camera, a pinch zooms, ⌂ puts it
   back; the camera is NH's room view following my villager through the rooms (kept over the floors near the door), the
-  walls between it and my villager cut away. The say button says a phrase in here only (`say` `sc: 'm'`).
+  walls cut away (engine.ts cutaway, each stable as one walks: it changes only as the camera turns past a wall or one
+  passes one): a wall whose line runs between the camera and where it looks and that faces the camera (the front walls,
+  as NH cuts them; whichever ones face it once it turns), and a wall that would hide my villager (a jamb as one walks
+  through an opening, gone a fade's walk ahead of it, back once clear by a margin). A wall going or coming fades in
+  220 ms (dithered: alphaHash, so it stays opaque and unsorted; its programs compiled with the rest). The say button says a phrase in here only (`say` `sc: 'm'`).
 - **Who else is in:** the rooms' presence, the museum's own scope (`tent` with `sc: 'm'`, its points within the
   museum's ±320; live-protocol.ts): the others' villagers are here while they are, walking as they walk, and nowhere on
   the island meanwhile (store/where.svelte.ts `home` `M`). The guest comes in like anyone.

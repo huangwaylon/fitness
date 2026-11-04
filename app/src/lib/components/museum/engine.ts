@@ -36,6 +36,8 @@ const VIEW_W = 92;
 const DPR_MAX = 2, DPR_MOVING = 1.5;
 /** The exhibits' rate (a second) while only they move. */
 const AMBIENT = 30;
+/** How long a wall takes to fade out or in (ms), the cutaway's. */
+const WALL_FADE = 220;
 
 export type Who = 'A' | 'B' | 'G';
 export interface Look { model: string | null; id: string }
@@ -102,6 +104,8 @@ export interface Museum {
   client(x: number, y: number, z: number): [number, number];
   /** The walk grid (the floors less what stands on them). */
   nav(): Nav;
+  /** Which walls the cutaway takes away (WALLS' order: 1 cut, 0 standing; the e2e). */
+  walls(): string;
   kit: Kit;
   stats(): { frames: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; ambient: number; loading: number; mem: [number, number, number] };
   ready: Promise<void>;
@@ -419,15 +423,37 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   scene.add(mat);
 
   // ---- the walls: each a slab, each side the look of the room it faces (the outside's dark), its top a cap ----
-  const wallMat: Record<Wing, Material> = {
+  //      (each wall its own copies of its materials: it fades out and in on its own, the cutaway)
+  const wallMat: Record<Wing, MeshLambertMaterial> = {
     hall: lambert({ map: tex('hall-wall', [4, 2]) }),
     fish: lambert({ map: tex('fish-wall', [6, 1.5]), color: 0xcdd6e8 }),
     bug: lambert({ map: tex('bug-outside', [1, 1]) })
   };
   const outMat = lambert({ color: 0x2a211a });
   const capMat = lambert({ color: 0xe9dcc2 });
-  interface WallMesh { w: Wall; mesh: Mesh; fade: number }
+  const trim = lambert({ color: 0xc9a24a });
+  /** A wall: its slab and its cornice, their own materials, its box (the cutaway's test: its middle, its yaw's cos and
+   *  sin, its half length, height and thickness), whether it's cut away and how far faded in (1: all there). */
+  interface WallMesh {
+    w: Wall;
+    mesh: Mesh;
+    trim: Mesh | null;
+    mats: MeshLambertMaterial[];
+    box: { x: number; z: number; c: number; s: number; l: number; h: number; t: number };
+    cut: boolean;
+    fade: number;
+  }
   const walls: WallMesh[] = [];
+  const own = (mats: Map<Material, MeshLambertMaterial>, m: MeshLambertMaterial) => {
+    let c = mats.get(m);
+    if (!c) {
+      c = m.clone();
+      c.userData.of = m;
+      mats.set(m, c);
+      disposables.push(c);
+    }
+    return c;
+  };
   const T = 3;
   /** A slab along a wall from a to b, its ends run on or held back at the joints (plan.ts wallEnds: no two slabs
    *  overlap, so no faces share a plane), its middle and its yaw. */
@@ -446,26 +472,26 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // BoxGeometry's faces: +x, −x, +y, −y, +z, −z; turned by the yaw below, its local +z is the wall's normal (nx, nz)
     // (the bug wing's backdrop: one picture across each wall, its sky and palms, not tiled)
     const geo = new BoxGeometry(s.len, wl.h, T);
-    const matFor = (r: Wing | null) => (r ? wallMat[r] : outMat);
-    const mesh = new Mesh(geo, [capMat, capMat, capMat, capMat, matFor(side(1)), matFor(side(-1))]);
+    const mats = new Map<Material, MeshLambertMaterial>();
+    const matFor = (r: Wing | null) => own(mats, r ? wallMat[r] : outMat), cap = own(mats, capMat);
+    const mesh = new Mesh(geo, [cap, cap, cap, cap, matFor(side(1)), matFor(side(-1))]);
     mesh.position.set(s.x, wl.h / 2, s.z);
     mesh.rotation.y = s.yaw;
-    mesh.userData.wall = true;
     scene.add(mesh);
-    walls.push({ w: wl, mesh, fade: 1 });
+    // a cornice round the hall's top, gold (NH's lobby trim: a little proud of the wall, its corners one piece's)
+    let trimMesh: Mesh | null = null;
+    if (wl.h === HALL_H) {
+      const t = span(i, 2.5, 1);
+      trimMesh = new Mesh(new BoxGeometry(t.len, 2.5, 5), own(mats, trim));
+      trimMesh.position.set(t.x, wl.h + 1.2, t.z);
+      trimMesh.rotation.y = t.yaw;
+      scene.add(trimMesh);
+    }
+    walls.push({
+      w: wl, mesh, trim: trimMesh, mats: [...mats.values()], cut: false, fade: 1,
+      box: { x: s.x, z: s.z, c: Math.cos(s.yaw), s: Math.sin(s.yaw), l: s.len / 2, h: wl.h + 2.5, t: T / 2 }
+    });
   });
-  // a cornice round the hall's top, gold (NH's lobby trim: a little proud of the wall, its corners one piece's)
-  const trim = lambert({ color: 0xc9a24a });
-  /** Each trim and its wall (cut away with it: the camera's cutaway, each frame). */
-  const trims: [Mesh, WallMesh][] = [];
-  for (let i = 0; i < 7; i++) {
-    const s = span(i, 2.5, 1);
-    const m = new Mesh(new BoxGeometry(s.len, 2.5, 5), trim);
-    m.position.set(s.x, WALLS[i].h + 1.2, s.z);
-    m.rotation.y = s.yaw;
-    trims.push([m, walls[i]]);
-    scene.add(m);
-  }
 
   // ---- the hall's furnishing: pillars at the door and the openings, banners, the plaques, Blathers' desk ----
   const pillarMat = lambert({ color: 0xece2cd });
@@ -713,28 +739,75 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const inHall = Math.abs(x) < HALL.x1 + 10;
     return [Math.max(BUG_WING.x0 + 70, Math.min(FISH_WING.x1 - 70, x)), Math.max(inHall ? -30 : -60, Math.min((inHall ? HALL.z1 : FISH_WING.z1) - 84, z - 4))];
   }
-  /** The walls between the camera and my villager go (and those beside the line, a little either side). */
+  /** The cutaway: which walls go. Two rules, each stable as one walks (a wall changes only when the camera turns past
+   *  it or one passes it, never back and forth on the way):
+   *  - a wall on the far side of its line from where the camera looks (its line between the camera and the target)
+   *    and turned toward the camera (not edge on: |its normal · the view| ≥ 0.25, the rooms' rule) goes: the front
+   *    walls, as NH cuts them, and whichever face the camera once it turns;
+   *  - a wall that would hide my villager (its box on a line from the camera to my villager's feet or head, a body's
+   *    width either side, the box grown by the walk of a fade) goes: a jamb as one walks through an opening. It comes
+   *    back only once clear by a wider margin.
+   *  A wall going or coming fades (wallFade), not pops. */
   function cutaway() {
-    const cx = camera.position.x, cz = camera.position.z;
-    const sx = Math.cos(view.az), sz = -Math.sin(view.az), tx0 = Math.sin(view.az), tz0 = Math.cos(view.az);
+    const cx = camera.position.x, cy = camera.position.y, cz = camera.position.z;
+    const vx = Math.sin(view.az), vz = Math.cos(view.az), sx = vz, sz = -vx;
+    const me = villagers.get(followed);
     for (const wm of walls) {
-      // a wall across the view on the camera's side of my villager (the front walls, as NH cuts them)
-      const mx = (wm.w.a[0] + wm.w.b[0]) / 2 - target.x, mz = (wm.w.a[1] + wm.w.b[1]) / 2 - target.z;
-      const dx = wm.w.b[0] - wm.w.a[0], dz = wm.w.b[1] - wm.w.a[1], dl = Math.hypot(dx, dz) || 1;
-      let cut = mx * tx0 + mz * tz0 > 12 && Math.abs((dx * tx0 + dz * tz0) / dl) < 0.6;
-      for (const off of [-24, 0, 24]) {
-        const tx = target.x + sx * off, tz = target.z + sz * off;
-        if (segCross(cx, cz, tx, tz, wm.w.a[0], wm.w.a[1], wm.w.b[0], wm.w.b[1])) cut = true;
+      const { a, b } = wm.w, dx = b[0] - a[0], dz = b[1] - a[1], dl = Math.hypot(dx, dz);
+      const nx = -dz / dl, nz = dx / dl;
+      const sideOf = (x: number, z: number) => (x - a[0]) * nx + (z - a[1]) * nz;
+      let cut = sideOf(cx, cz) * sideOf(target.x, target.z) < 0 && Math.abs(nx * vx + nz * vz) >= 0.25;
+      if (!cut && me) {
+        // (ahead by its fade's walk, WALL_FADE at PACE: gone by the time one's behind it; kept a little longer)
+        const m = wm.cut ? 12 : 8;
+        for (const off of [-4, 4])
+          for (const y of [2, VILLAGER_H]) if (!cut) cut = hides(wm.box, m, cx, cy, cz, me.pos[0] + sx * off, y, me.pos[1] + sz * off);
       }
-      wm.mesh.visible = !cut;
+      wm.cut = cut;
     }
-    for (const [m, wm] of trims) m.visible = wm.mesh.visible;
   }
-  function segCross(ax: number, az: number, bx: number, bz: number, cx: number, cz: number, dx: number, dz: number): boolean {
-    const d = (bx - ax) * (dz - cz) - (bz - az) * (dx - cx);
-    if (Math.abs(d) < 1e-9) return false;
-    const t = ((cx - ax) * (dz - cz) - (cz - az) * (dx - cx)) / d, u = ((cx - ax) * (bz - az) - (cz - az) * (bx - ax)) / d;
-    return t > 0 && t < 1 && u >= -0.02 && u <= 1.02;
+  /** Whether a wall's box (grown by m) crosses the segment from (ax, ay, az) to (bx, by, bz): the slab test in its frame. */
+  function hides(o: WallMesh['box'], m: number, ax: number, ay: number, az: number, bx: number, by: number, bz: number): boolean {
+    // (into the box's frame: a turn by −yaw about its middle)
+    const lx = (x: number, z: number) => (x - o.x) * o.c - (z - o.z) * o.s, lz = (x: number, z: number) => (x - o.x) * o.s + (z - o.z) * o.c;
+    const p0 = [lx(ax, az), ay, lz(ax, az)], p1 = [lx(bx, bz), by, lz(bx, bz)];
+    const lo = [-o.l - m, 0, -o.t - m], hi = [o.l + m, o.h + m, o.t + m];
+    let t0 = 0, t1 = 1;
+    for (let k = 0; k < 3; k++) {
+      const d = p1[k] - p0[k];
+      if (Math.abs(d) < 1e-9) {
+        if (p0[k] < lo[k] || p0[k] > hi[k]) return false;
+        continue;
+      }
+      let u = (lo[k] - p0[k]) / d, v = (hi[k] - p0[k]) / d;
+      if (u > v) [u, v] = [v, u];
+      t0 = Math.max(t0, u);
+      t1 = Math.min(t1, v);
+      if (t0 > t1) return false;
+    }
+    return true;
+  }
+  /** The walls faded toward what the cutaway wants (WALL_FADE ms either way: dithered, alphaHash, so they stay opaque
+   *  and unsorted; hidden once out, solid once in). Whether one is still fading (the frame goes on). */
+  function wallFade(dt: number, snap: boolean): boolean {
+    let busy = false;
+    for (const wm of walls) {
+      const to = wm.cut ? 0 : 1;
+      if (wm.fade === to) continue;
+      wm.fade = snap ? to : to ? Math.min(1, wm.fade + dt / WALL_FADE) : Math.max(0, wm.fade - dt / WALL_FADE);
+      const mid = wm.fade > 0 && wm.fade < 1;
+      for (const m of wm.mats) {
+        if (m.alphaHash !== mid) {
+          m.alphaHash = mid;
+          m.needsUpdate = true;
+        }
+        m.opacity = wm.fade;
+      }
+      wm.mesh.visible = wm.fade > 0;
+      if (wm.trim) wm.trim.visible = wm.fade > 0;
+      if (mid) busy = true;
+    }
+    return busy;
   }
 
   // ---- night (the garden's glass goes dark, the lamps warmer) ----
@@ -746,7 +819,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     key.intensity = 1.6 - 0.8 * nightN;
     key.color.set(0xfff0d8).lerp(new Color(0xffcf96), nightN);
     // the garden's glass: its sky and palms dusk-blue, its grass with them
-    (wallMat.bug as MeshLambertMaterial).color.set(0xffffff).lerp(NIGHT_GLASS, nightN * 0.75);
+    wallMat.bug.color.set(0xffffff).lerp(NIGHT_GLASS, nightN * 0.75);
+    for (const wm of walls) for (const m of wm.mats) if (m.userData.of === wallMat.bug) m.color.copy(wallMat.bug.color);
     grassMat.color.set(0xffffff).lerp(NIGHT_GLASS, nightN * 0.35);
     for (const e of exhibits) e.night(nightN);
     invalidate();
@@ -819,7 +893,14 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       if (disposed) return;
       for (const t of todo.splice(0, 8)) renderer.initTexture(t);
       if (todo.length) warmT = setTimeout(step, 32);
-      else void renderer.compileAsync(scene, camera).catch(() => {});
+      else {
+        // (the walls' fading programs too: dithered, alphaHash, compiled with the rest; solid again after)
+        const hashed = (on: boolean) => {
+          for (const wm of walls) if (wm.fade === 0 || wm.fade === 1) for (const m of wm.mats) (m.alphaHash = on), (m.needsUpdate = true);
+        };
+        hashed(true);
+        void renderer.compileAsync(scene, camera).catch(() => {}).finally(() => !disposed && hashed(false));
+      }
     };
     step();
   }
@@ -832,6 +913,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   let readyRes: () => void;
   const ready = new Promise<void>((r) => (readyRes = r));
   let camRev = '';
+  let snapWalls = true;
   function invalidate() {
     if (!raf && !disposed) raf = requestAnimationFrame(frame);
   }
@@ -866,6 +948,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const rv = `${view.az.toFixed(4)}:${view.pitch.toFixed(4)}:${view.k.toFixed(4)}:${target.x.toFixed(2)}:${target.z.toFixed(2)}`;
     const camMoved = rv !== camRev;
     camRev = rv;
+    // (at once on the way in and after a jump: only a wall going as one moves fades)
+    if (wallFade(dt, frames === 0 || snapWalls)) full = true;
+    snapWalls = false;
     for (const w of villagers.values()) if (stepVillager(w, t, camMoved)) full = true;
     lastV = t;
     if (gesturing) full = true;
@@ -914,7 +999,10 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       w.pos = [p[0], p[1]];
       w.was = [p[0], p[1]];
       if (yaw !== undefined) w.yaw = yaw;
-      if (who === followed) target.set(...camSpot(p[0], p[1]).flatMap((v, i) => (i ? [8, v] : [v])) as [number, number, number]);
+      if (who === followed) {
+        target.set(...camSpot(p[0], p[1]).flatMap((v, i) => (i ? [8, v] : [v])) as [number, number, number]);
+        snapWalls = true;
+      }
       place(w);
       invalidate();
     },
@@ -966,6 +1054,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     hit,
     client,
     nav: () => nav,
+    walls: () => walls.map((w) => (w.cut ? 1 : 0)).join(''),
     kit,
     stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: [...cost], queued: !!raf, ambient: ambientOn, loading: pending,
       mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0] }),
