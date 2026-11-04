@@ -11,9 +11,11 @@ const DIR = `${import.meta.dirname}/fixtures/open-meteo`;
 const load = (f: string): { hourly: Record<string, unknown[]> } => JSON.parse(readFileSync(`${DIR}/${f}.json`, 'utf8'));
 const FIXTURES = readdirSync(DIR).map((f) => f.replace(/\.json$/, ''));
 const H = 3600_000;
-/** Ten past the fixture's second hour (the first is the hour before). */
-const nowOf = (hours: Hour[]) => hours[1].h * H + 10 * 60_000;
+/** Ten past the fixture's 36th hour from the end (12 past hours before it, the hour before those in the live one). */
+const nowOf = (hours: Hour[]) => hours.at(-36)!.h * H + 10 * 60_000;
 const hoursOf = (f: string) => parseOpenMeteo(load(f))!;
+/** `n` letters of a timeline from hour `h`. */
+const from = (wx: Wx | Omit<Wx, 'rev'> | null, h: number, n: number) => (wx ? wx.s.slice(h - wx.h0, h - wx.h0 + n) : '');
 const hour = (o: Partial<Hour>): Hour => ({ h: 1, code: 0, mm: 0, cloud: 0, vis: null, temp: 15, ...o });
 
 /** A fake fetch answering `body` (or a status, or never: aborted by its signal). */
@@ -31,20 +33,20 @@ function fakeFetch(answer: { body?: unknown; status?: number; hang?: boolean; th
 describe('the real weather (relay)', () => {
   it('maps the recorded forecasts to their golden timelines', () => {
     const golden: Record<string, string> = {
-      clear: 'cccccccccccccccccccccccccccccccccccc',
-      showers: 'oorrrrrrrrrrrrrrrrocccoooocccccccccc',
-      tsuyu: 'rrrrhhhhhhhhhhhhhhrroooooccccccccccc',
-      downpour: 'ccrrrrrhhhhhhhrrrrrrrrrroooooooooooc',
-      typhoon: 'oorrrrhhhhhhhhhhrccccccccccccccccccc',
-      snow: 'ccccccccoooossssssssssssoooooooooooo',
-      'live-2026-11-04': 'rrrrrrrrrrrroooooooccccccccccccrrccc'
+      clear: 'cccccccccccccccccccccccccccccccccccccccccccccccc',
+      showers: 'coorrrrrrrrrrrrrrrrocccooooccccccccccoorrrrrrrrr',
+      tsuyu: 'rrrrrhhhhhhhhhhhhhhrrooooocccccccccccccccccccccc',
+      downpour: 'cccrrrrrhhhhhhhrrrrrrrrrroooooooooooccccccccccco',
+      typhoon: 'coorrrrhhhhhhhhhhrcccccccccccccccccccccccccccccc',
+      snow: 'cccccccccoooossssssssssssooooooooooooooooooooccc',
+      'live-2026-11-04': 'ccooooooorrrrrrrrrrrrrrroooooooccccccccccccrrccc'
     };
     const got: Record<string, string> = {};
     for (const f of FIXTURES) {
       const hours = hoursOf(f);
       const t = timeline(hours, null, nowOf(hours))!;
       got[f] = t.s;
-      expect(t.h0).toBe(hours[1].h);
+      expect([t.h0, t.s.length]).toEqual([hours.at(-48)!.h, 48]);
     }
     expect(got).toEqual(golden);
   });
@@ -102,7 +104,7 @@ describe('the real weather (relay)', () => {
     codes[7] = codes[8] = 45;
     const hours = parseOpenMeteo({ hourly: { ...body.hourly, weather_code: codes } })!;
     const t = timeline(hours, null, nowOf(hours))!;
-    expect([t.s.slice(5, 9), t.fx]).toEqual(['cooc', [6, 7]]);
+    expect([t.s.slice(5, 10), t.fx]).toEqual(['ccooc', [7, 8]]);
   });
 
   it('the gap fill: one dry hour inside rain is rain, inside snow snow; one cloudy hour between clear ones clear', () => {
@@ -132,26 +134,27 @@ describe('the real weather (relay)', () => {
     // the hours up to the first without a code (the model's horizon)
     const short = parseOpenMeteo(with_('weather_code', (a) => a.map((x, i) => (i >= 30 ? null : x))))!;
     expect(short.length).toBe(30);
-    expect(omUrl()).toMatch(/^https:\/\/api\.open-meteo\.com\/v1\/forecast\?latitude=35\.69&longitude=139\.75&models=jma_seamless&hourly=weather_code%2Cprecipitation%2Ccloud_cover%2Cvisibility%2Ctemperature_2m&timezone=GMT&timeformat=unixtime&past_hours=1&forecast_hours=37$/);
+    expect(omUrl()).toMatch(/^https:\/\/api\.open-meteo\.com\/v1\/forecast\?latitude=35\.69&longitude=139\.75&models=jma_seamless&hourly=weather_code%2Cprecipitation%2Ccloud_cover%2Cvisibility%2Ctemperature_2m&timezone=GMT&timeformat=unixtime&past_hours=13&forecast_hours=36$/);
   });
 
   it('locks the hours that have begun, and the next from :45; revises the rest', () => {
     const hours = hoursOf('clear');
     const t0 = nowOf(hours); // :10
+    const cur = Math.floor(t0 / H);
     const first = fold(WX_EMPTY, hours, t0, 'om')!;
     expect(first.send).toBe(true);
     // a later forecast says it rains from now on
     const wet = hours.map((h) => ({ ...h, code: 63, mm: 2 }));
     const at20 = fold(first.st, wet, t0 + 10 * 60_000, 'om')!;
-    expect(at20.st.wx!.s.slice(0, 3)).toBe('crr'); // this hour stays clear; the next ones rain
+    expect([from(at20.st.wx, cur - 12, 12), from(at20.st.wx, cur, 3)]).toEqual(['c'.repeat(12), 'crr']); // the hours begun stay clear; the next ones rain
     expect(at20.send).toBe(true);
     // a fetch at :46 locks the next hour; one at :55 can't change it, the hour after it can
     const at46 = fold(first.st, hours, t0 + 36 * 60_000, 'om')!;
     const at55 = fold(at46.st, wet, t0 + 45 * 60_000, 'om')!;
-    expect(at55.st.wx!.s.slice(0, 3)).toBe('ccr');
+    expect(from(at55.st.wx, cur, 3)).toBe('ccr');
     // the hour turns: what was locked is what shows; it stays so whatever comes
     const next = fold(at55.st, wet, t0 + 55 * 60_000, 'om')!;
-    expect([next.st.wx!.h0, next.st.wx!.s.slice(0, 2)]).toEqual([hours[2].h, 'cr']);
+    expect([next.st.wx!.h0, from(next.st.wx, cur + 1, 2)]).toEqual([cur + 1 - 12, 'cr']);
   });
 
   it('a new revision only when the sky changes (or reaches 6 hours further)', () => {
@@ -162,10 +165,10 @@ describe('the real weather (relay)', () => {
     expect([a.send, a.st.wx!.rev, b.send, b.st.wx!.rev, b.st.wx!.at]).toEqual([true, 1, false, 1, t0 + 30 * 60_000]);
     // the window slides an hour: nothing the phones hold changes
     const c = fold(b.st, hours, t0 + H, 'om')!;
-    expect([c.send, c.st.wx!.rev, c.st.wx!.h0]).toEqual([false, 1, hours[2].h]);
+    expect([c.send, c.st.wx!.rev, c.st.wx!.h0]).toEqual([false, 1, Math.floor(t0 / H) + 1 - 12]);
     // what a phone holds against a newer one: the same hours alike, an hour otherwise, 5 or 6 hours further
     const held: Wx = { h0: 100, s: 'cccrrr', at: 0, src: 'om', rev: 1 };
-    const next = (h0: number, s: string, src: Wx['src'] = 'om') => ({ h0, s, at: 1, src });
+    const next = (h0: number, s: string, src: Wx['src'] = 'om') => ({ h0, s, at: h0 * H, src });
     expect([
       changed(held, next(101, 'ccrrr')),
       changed(held, next(101, 'ccrrrccccc')), // 5 hours further
@@ -198,7 +201,7 @@ describe('the real weather (relay)', () => {
     const hours = hoursOf('live-2026-11-04');
     const t0 = nowOf(hours);
     const ok = await fetchTick(WX_EMPTY, t0, fakeFetch({ body: load('live-2026-11-04') }));
-    expect([ok.send, ok.st.wx?.s, ok.st.fails, ok.fail]).toEqual([true, 'rrrrrrrrrrrroooooooccccccccccccrrccc', 0, undefined]);
+    expect([ok.send, ok.st.wx?.s, ok.st.fails, ok.fail]).toEqual([true, 'ccooooooorrrrrrrrrrrrrrroooooooccccccccccccrrccc', 0, undefined]);
     const results = await Promise.all([
       fetchTick(ok.st, t0 + H, fakeFetch({ status: 500 })),
       fetchTick(ok.st, t0 + H, fakeFetch({ body: { hourly: { time: 'x' } } })),
@@ -237,9 +240,9 @@ describe('the real weather (relay)', () => {
     const hours = hoursOf('clear');
     const t0 = nowOf(hours);
     const fx = fixture(WX_EMPTY, 'rrhh', [1], t0)!;
-    expect(fx.wx).toEqual({ h0: hours[1].h, s: 'rrhh', fx: [1], at: t0, src: 'fx', rev: 1 } satisfies Wx);
+    expect(fx.wx).toEqual({ h0: Math.floor(t0 / H), s: 'rrhh', fx: [1], at: t0, src: 'fx', rev: 1 } satisfies Wx);
     expect([fixture(WX_EMPTY, 'rx', undefined, t0), fixture(WX_EMPTY, 'rr', [2], t0)]).toEqual([null, null]);
     const real = fold(fx, hours, t0 + 60_000, 'om')!;
-    expect([real.send, real.st.wx!.s[0], real.st.wx!.rev]).toEqual([true, 'c', 2]);
+    expect([real.send, from(real.st.wx, Math.floor(t0 / H), 1), real.st.wx!.rev]).toEqual([true, 'c', 2]);
   });
 });
