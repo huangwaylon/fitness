@@ -19,7 +19,6 @@
   "health.met": "Goal {n}/{d} days ({p}%)",
   "health.best": "Best {v} ({date})",
   "health.missing": "No data {n} days",
-  "health.goalOf": "Goal {g}",
   "health.noData": "No data",
   "health.todaySoFar": "today, so far",
   "health.tipDays": "goal {n}/{d} days",

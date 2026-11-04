@@ -1,5 +1,6 @@
 <script lang="ts">
-  // One metric's card (けんこう), for the chosen person: its fruit and name with their goal; the daily average over the
+  // One metric's card (けんこう), for the chosen person: its fruit and name with their goal (GoalEdit: steps and Move
+  // set there, in place); the daily average over the
   // finished days with data (Apple Health's values as is), the change against the previous period, the goal met n/N
   // days (%), the best day and the days with no row (記録なし, only when there are any); then the chart (in the
   // person's colour) and a one-line key (its 記録なし swatch only when the period has such a day).
@@ -10,6 +11,8 @@
   import { t } from '#lib/i18n/index.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import BarChart from './BarChart.svelte';
+  import GoalEdit from './GoalEdit.svelte';
+  import { GOALS } from './goals.ts';
   import { metricText, pctText, rangeLabel } from './fmt.ts';
 
   interface Props {
@@ -22,8 +25,10 @@
     onselect: (i: number | null) => void;
     onswipe: (dir: -1 | 1) => void;
     slide: -1 | 0 | 1;
+    /** The goal in force now and its setter (steps and Move, not on the guest's phone); absent: read-only. */
+    goal?: { value: number; onsave: (v: number | null) => void } | null;
   }
-  let { metric, hs, range, p, selected, onselect, onswipe, slide }: Props = $props();
+  let { metric, hs, range, p, selected, onselect, onswipe, slide, goal = null }: Props = $props();
 
   const fruit = $derived(METRIC_FRUIT[metric]);
   const today: LocalDate = $derived(hs.to);
@@ -40,7 +45,7 @@
   <header>
     <span class="ic"><OfficialArt key={fruitArt(fruit)} size={24} /></span>
     <h3 id="mc-{metric}">{t(`fruit.${fruit}`)}</h3>
-    <span class="goal"><i class="gl" aria-hidden="true"></i>{t('health.goalOf', { g: goalText })}</span>
+    <GoalEdit id="{metric}-goal" spec={metric === 'steps' || metric === 'move' ? GOALS[metric] : null} text={goalText} value={goal?.value ?? null} onsave={goal?.onsave} />
   </header>
 
   <div class="srow">
@@ -75,11 +80,9 @@
 
 <style>
   .mc { display: grid; gap: 8px; padding: 12px 14px 10px; }
-  header { display: flex; align-items: center; gap: 8px; }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
   header .ic { display: inline-flex; flex: none; }
   h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; }
-  .goal { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); font-variant-numeric: tabular-nums; }
-  .gl { width: 14px; border-top: 2px dashed var(--text-soft); }
   /* one person: the average large, the change beside it, the counts under it */
   .srow { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'lab chg' 'avg chg' 'sub sub'; align-items: center; column-gap: 10px; row-gap: 2px; }
   .lab { grid-area: lab; font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); }

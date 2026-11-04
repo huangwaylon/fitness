@@ -258,12 +258,13 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('けんこう', 'きょう again (aria-disabled)', () => dlg.locator('[data-nav=today]').tap({ force: true }), ['boop']);
   await step('けんこう', '› at today (aria-disabled)', () => dlg.locator('[data-nav=on]').tap({ force: true }), ['boop']);
   await step('けんこう', 'back to ウェイ', () => who.selectOption('A'), ['tick']);
-  // 目標, under the charts
-  await step('けんこう', '✎ Move goal', () => btn(/ムーブ（1日） ✎$/, dlg).tap(), ['page']);
+  // a goal, at its card's upper right
+  await step('けんこう', 'the Move goal', () => dlg.locator('button[data-goal=move-goal]').tap(), ['page']);
   await step('けんこう', 'Move goal field', () => dlg.getByRole('textbox').tap(), []);
+  await step('けんこう', '＋ (Move goal)', () => dlg.locator('[data-goal-step="1"]').tap(), ['tick']);
   await step('けんこう', 'やめる (Move goal)', () => btn('やめる', dlg).tap(), ['back']);
-  await step('けんこう', '✎ steps goal', () => btn(/歩数（1日） ✎$/, dlg).tap(), ['page']);
-  await step('けんこう', 'back (‹) to the charts', () => dlg.locator('.titlebar .back').tap(), ['back']);
+  await step('けんこう', 'the steps goal', () => dlg.locator('button[data-goal=steps-goal]').tap(), ['page']);
+  await step('けんこう', 'the steps goal again (closes it)', () => dlg.locator('button[data-goal=steps-goal]').tap(), ['back']);
   await step('けんこう', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['panel-close']);
   await expect(dlg).toHaveCount(0);
   await expect(page.locator('.if-scene')).toBeVisible();

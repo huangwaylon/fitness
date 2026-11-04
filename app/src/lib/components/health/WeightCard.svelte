@@ -1,7 +1,7 @@
 <script lang="ts">
   // 体重 (けんこう), for the chosen person: the period's average weigh-in and how many, its plain change (the first week's
   // average → the last week's, else the first weigh-in → the last; saying which) and per week; the chart (the goal dashed
-  // on it) and, in the current period, the month the goal may be reached at that pace.
+  // on it; set at the card's upper right: GoalEdit) and, in the current period, the month the goal may be reached at that pace.
   // Weight never earns: no ベル here and no colours for good or bad.
   import type { PersonId } from '#lib/types.ts';
   import { weightBuckets, weightStats, type HealthSeries, type Range } from '#lib/model/health.ts';
@@ -9,6 +9,8 @@
   import { BODY_ART } from '#lib/art.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import DotChart from './DotChart.svelte';
+  import GoalEdit from './GoalEdit.svelte';
+  import { GOALS } from './goals.ts';
   import { kgDelta, kgText, monthText } from '../kiroku/fmt.ts';
   import { rangeLabel } from './fmt.ts';
 
@@ -23,8 +25,10 @@
     onselect: (i: number | null) => void;
     onswipe: (dir: -1 | 1) => void;
     slide: -1 | 0 | 1;
+    /** The goal's setter (absent: read-only). */
+    onsavegoal?: ((v: number | null) => void) | null;
   }
-  let { hs, range, p, name, selected, onselect, onswipe, slide }: Props = $props();
+  let { hs, range, p, name, selected, onselect, onswipe, slide, onsavegoal = null }: Props = $props();
   const s = $derived(weightStats(hs, p, range));
   const b = $derived(weightBuckets(hs, p, range));
   const ps = $derived(hs.people[p]);
@@ -34,6 +38,7 @@
   <header>
     <span class="ic"><OfficialArt key={BODY_ART.weight} size={24} /></span>
     <h3 id="mc-weight">{t('goal.weight')}</h3>
+    <GoalEdit id="weight-goal" spec={GOALS.weight} text={ps.goalWeight === null ? null : kgText(ps.goalWeight)} value={ps.goalWeight} onsave={onsavegoal} start={s.avg} tone="yuzu" />
   </header>
   {#if s.n}
     <dl class="chips">
@@ -65,7 +70,7 @@
 
 <style>
   .wc { display: grid; gap: 10px; padding: 12px 14px 10px; }
-  header { display: flex; align-items: center; gap: 8px; }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
   .ic { display: inline-flex; flex: none; }
   h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; }
   .chips { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 8px; margin: 0; }

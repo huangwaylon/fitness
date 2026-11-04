@@ -19,7 +19,6 @@
   "health.met": "目標 {n}/{d}日（{p}%）",
   "health.best": "ベスト {v}（{date}）",
   "health.missing": "記録なし {n}日",
-  "health.goalOf": "目標 {g}",
   "health.noData": "記録なし",
   "health.todaySoFar": "きょう（とちゅう）",
   "health.tipDays": "目標 {n}/{d}日",
