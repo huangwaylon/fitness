@@ -6,12 +6,14 @@ import { BUY, SELL } from './shopPrices.ts';
 import { ITEMS } from '../components/tent/items.ts';
 
 describe('the price list (scripts/shop-prices.ts)', () => {
-  it('sells a catch for NH’s Bells ÷ 100 and prices a piece at NH’s ÷ 20', () => {
-    expect(sellPrice('fish:sea-bass')).toBe(4); // 400 Bells
-    expect(sellPrice('fish:koi')).toBe(40); // 4,000
-    expect(sellPrice('fish:whale-shark')).toBe(130); // 13,000
-    expect(sellPrice('bug:tarantula')).toBe(80); // 8,000
-    expect(sellPrice('sea:octopus')).toBe(12); // 1,200
+  it('sells a catch and prices a piece at NH’s Bells ÷ 20, nothing selling for under 3', () => {
+    expect(sellPrice('fish:sea-bass')).toBe(20); // 400 Bells
+    expect(sellPrice('fish:koi')).toBe(200); // 4,000
+    expect(sellPrice('fish:whale-shark')).toBe(650); // 13,000
+    expect(sellPrice('bug:tarantula')).toBe(400); // 8,000
+    expect(sellPrice('sea:octopus')).toBe(60); // 1,200
+    expect(sellPrice('fish:bitterling')).toBe(45); // 900
+    expect(Math.min(...Object.values(SELL))).toBe(3);
     expect(buyPrice('f3672')).toBe(6); // the cardboard box, 120 Bells
     expect(buyPrice('f7047')).toBe(25); // the zen cushion, 500
   });
@@ -41,10 +43,11 @@ describe('a sell and a buy', () => {
       { item: 'f3672', price: 6 }, { item: 'f3672', price: 6, d: '2026-11-04', x: 1 }])
       expect(buyOf(d as Record<string, unknown>), JSON.stringify(d)).toBeNull();
   });
-  it('the record keeps a sell at exactly its price, a buy at exactly its price from a stock of about today', () => {
+  it('the record keeps a sell at most at its price, a buy at exactly its price from a stock of about today', () => {
     const today = '2026-11-04';
-    expect(shopPriced('sell', { species: 'fish:koi', n: 3, v: 120 }, today)).toBe(true);
-    expect(shopPriced('sell', { species: 'fish:koi', n: 3, v: 121 }, today)).toBe(false);
+    expect(shopPriced('sell', { species: 'fish:koi', n: 3, v: 600 }, today)).toBe(true);
+    expect(shopPriced('sell', { species: 'fish:koi', n: 3, v: 601 }, today)).toBe(false);
+    expect(shopPriced('sell', { species: 'fish:koi', n: 3, v: 120 }, today)).toBe(true); // an older app's list (÷ 100)
     expect(shopPriced('sell', { species: 'fish:nope', n: 1, v: 1 }, today)).toBe(false);
     const item = stockOf(today)[0];
     expect(shopPriced('buy', { item, price: buyPrice(item)!, d: today }, today)).toBe(true);
@@ -83,10 +86,12 @@ describe('the ledger', () => {
   const caught = new Map([['fish:koi', 3], ['bug:tarantula', 1]]);
   const sell = (species: string, n: number): ShopRow => ({ type: 'sell', data: { species, n, v: n * sellPrice(species)! } });
   const buy = (item: string, price = buyPrice(item)!): ShopRow => ({ type: 'buy', data: { item, price, d: '2026-11-04' } });
+  /** Three koi's かいがら. */
+  const KOI3 = 3 * sellPrice('fish:koi')!;
   it('the pocket is the catches less the sells; かいがら the sells less the buys', () => {
     const l = shopLedger(caught, [sell('fish:koi', 2), sell('bug:tarantula', 1), buy('f3672')]);
     expect(l.sold).toEqual(new Map([['fish:koi', 2], ['bug:tarantula', 1]]));
-    expect(l.shells).toBe(80 + 80 - 6);
+    expect(l.shells).toBe(2 * sellPrice('fish:koi')! + sellPrice('bug:tarantula')! - 6);
     expect(l.owned).toEqual(['f3672']);
   });
   const queued = (r: ShopRow): ShopRow => ({ ...r, queued: true });
@@ -94,11 +99,11 @@ describe('the ledger', () => {
     const l = shopLedger(caught, [sell('fish:koi', 3)]);
     expect(shopRefusal(l, caught, sell('fish:koi', 1))).toBe('pocket');
     expect(shopRefusal(l, caught, sell('fish:sea-bass', 1))).toBe('pocket');
-    expect(shopRefusal(l, caught, buy('f3672', 121))).toBe('wallet');
-    expect(shopRefusal(l, caught, buy('f3672', 120))).toBeNull();
+    expect(shopRefusal(l, caught, buy('f3672', KOI3 + 1))).toBe('wallet');
+    expect(shopRefusal(l, caught, buy('f3672', KOI3))).toBeNull();
     const l2 = shopLedger(caught, [sell('fish:koi', 3), buy('f3672'), queued(buy('f3672')), queued(sell('fish:koi', 1)), queued(buy('f7047', 999))]);
     expect(l2.owned).toEqual(['f3672']);
-    expect(l2.shells).toBe(120 - 6);
+    expect(l2.shells).toBe(KOI3 - 6);
     expect(shopRefusal(l2, caught, buy('f3672'))).toBe('owned');
   });
   it('a kept row counts whatever the tallies say now: a lower tally never takes back a sale or a piece', () => {
@@ -107,7 +112,7 @@ describe('the ledger', () => {
     const l = shopLedger(new Map([['fish:koi', 1]]), rows);
     expect(l).toEqual(shopLedger(caught, rows));
     expect(l.owned).toEqual(['f3672']);
-    expect(l.shells).toBe(120 - 6);
+    expect(l.shells).toBe(KOI3 - 6);
     expect(shopLedger(caught, [buy('f3672'), buy('f3672')]).owned).toEqual(['f3672']); // still a piece once
   });
 });

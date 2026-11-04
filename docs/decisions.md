@@ -224,13 +224,14 @@ furniture; the week's goals still buy the two treats. Pockets and wallets are pe
   the ずかん or the museum (they read `find` and the tallies, which a sell never touches).
 - **かいがら = Σ sells − Σ buys**, derived per person; a sell keeps what it fetched (`v`), so a later price list never
   rewrites a past sale. The record refuses a sell past the pocket, a buy past the wallet or of a piece already owned, and
-  a price that isn't the list's; the phones fold the same rows by the same function (`contract/shop.ts shopLedger`).
-- **The scale: sells NH's Bells ÷ 100, buys NH's ÷ 20** (rounded, at least 1). A catch averages ~1,400 Bells at the
-  island's odds (the sea bass and the pond's commons most of the time), so ~14 かいがら; a person catching 10 a day earns
-  ~140. The pieces with a room model sell for a median 2,200 Bells in NH: 110 かいがら, about a day's catches; nine in ten
-  under 1,550 (a week or two); the dearest kept (≤ 100,000 Bells: 5,000) a month of saving. One scale for both (÷ 100)
-  would keep NH's ratio but make the median piece one or two catches, the stock a formality; NH's players also earn from
-  everything else. The 12 pieces over 100,000 Bells (the grand piano, the kimono stand…) stay out of the stock.
+  a price over the list's; the phones fold the same rows by the same function (`contract/shop.ts shopLedger`).
+- **The scale: NH's Bells ÷ 20 both ways** (rounded; a sell at least 3 かいがら, a piece at least 1), since 2026-11-04
+  (the user: selling should be "fun, not too strict"). NH's own sell : buy ratio, as NH plays: a sea bass (400 Bells)
+  20, a 2,000-Bell chair 100 (16 common fish, or one or two rare catches), a shark (15,000) 750. Until then sells were
+  ÷ 100 against buys ÷ 20 (5× stingier than NH: the chair was 50 common butterflies), to make the stock last; it made
+  saving feel like a chore. A sell keeps the `v` it was kept at, so the rise never reprices a past sale, and the record
+  keeps a sell at *most* its list price, so an app from before the rise (its lower list) still sells. The 12 pieces
+  over 100,000 Bells (the grand piano, the kimono stand…) stay out of the stock.
 - **The stock**: 8 pieces a Tokyo day, drawn by the date alone (FNV-1a of `shop:<date>` seeding mulberry32) from the
   priced pieces, plus three basics always (a cardboard box, a zen cushion, a mini cactus set); every phone and the record
   get the same list with nothing stored. Only pieces the rooms can place (379 with NH models, the starter set aside):

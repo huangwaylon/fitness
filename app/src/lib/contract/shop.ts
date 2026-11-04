@@ -61,14 +61,15 @@ const prevDay = (date: string): string => new Date(Date.parse(`${date}T00:00:00Z
 
 /**
  * Whether the record keeps this `sell` or `buy` now (`today`: the server's Tokyo date), cover aside (`shopRefusal`): a
- * sell at exactly n × its species' price; a buy at exactly its piece's price, from the stock of a day from yesterday to
+ * sell at most n × its species' price (an app from before a price rise sells at its own lower list; never above the
+ * record's); a buy at exactly its piece's price, from the stock of a day from yesterday to
  * tomorrow (a buy queued over midnight, a phone's clock a little ahead), the piece in that day's stock.
  */
 export function shopPriced(type: 'sell' | 'buy', d: Record<string, unknown>, today: LocalDate): boolean {
   if (type === 'sell') {
     const s = sellOf(d);
     const p = s ? sellPrice(s.species) : undefined;
-    return !!s && p !== undefined && s.v === s.n * p;
+    return !!s && p !== undefined && s.v <= s.n * p;
   }
   const b = buyOf(d);
   if (!b || b.price !== buyPrice(b.item)) return false;
