@@ -597,6 +597,9 @@
       link.stop();
       if (expiry) clearInterval(expiry);
       clearTimeout(hhaTimer);
+      // (a walk to a seat or a long press still on its way: nothing of it once out)
+      clearTimeout(arriving);
+      clearTimeout(longTimer);
       for (const f of offs) f();
       ro.disconnect();
       offDoor();

@@ -910,50 +910,57 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
    *    width either side, the box grown by the walk of a fade) goes: a jamb as one walks through an opening. It comes
    *    back only once clear by a wider margin.
    *  A wall going or coming fades (wallFade), not pops. */
+  const cutWas = new Float64Array(9).fill(NaN);
   function cutaway() {
     for (const m of fpvOnly) m.visible = fp.mix > 0;
     // (at the eyes, inside: every wall stands)
     if (fp.inside()) {
       for (const wm of walls) wm.cut = false;
+      cutWas[0] = NaN;
       return;
     }
     const cx = orbitPos.x, cy = orbitPos.y, cz = orbitPos.z;
-    const vx = Math.sin(view.az), vz = Math.cos(view.az), sx = vz, sz = -vx;
     const me = villagers.get(followed), mp = me && spotOf(me);
+    const mx = mp ? mp[0] : 0, mz = mp ? mp[1] : 0, has = mp ? 1 : 0;
+    // (the same camera, target and villager as last time: the same walls; a second pass changes nothing, as a cut
+    // wall's wider margin only keeps it cut)
+    const w = cutWas;
+    if (w[0] === cx && w[1] === cy && w[2] === cz && w[3] === target.x && w[4] === target.z && w[5] === view.az && w[6] === mx && w[7] === mz && w[8] === has) return;
+    w[0] = cx, w[1] = cy, w[2] = cz, w[3] = target.x, w[4] = target.z, w[5] = view.az, w[6] = mx, w[7] = mz, w[8] = has;
+    const vx = Math.sin(view.az), vz = Math.cos(view.az), sx = vz, sz = -vx;
     for (const wm of walls) {
       const { a, b } = wm.w, dx = b[0] - a[0], dz = b[1] - a[1], dl = Math.hypot(dx, dz);
       const nx = -dz / dl, nz = dx / dl;
-      const sideOf = (x: number, z: number) => (x - a[0]) * nx + (z - a[1]) * nz;
-      let cut = sideOf(cx, cz) * sideOf(target.x, target.z) < 0 && Math.abs(nx * vx + nz * vz) >= 0.25;
+      const camSide = (cx - a[0]) * nx + (cz - a[1]) * nz, targetSide = (target.x - a[0]) * nx + (target.z - a[1]) * nz;
+      let cut = camSide * targetSide < 0 && Math.abs(nx * vx + nz * vz) >= 0.25;
       if (!cut && mp) {
-        // (ahead by its fade's walk, WALL_FADE at PACE (~10): gone by the time one's behind it; kept a little longer)
-        const m = wm.cut ? 18 : 12;
-        for (const off of [-4, 4])
-          for (const y of [2, VILLAGER_H]) if (!cut) cut = hides(wm.box, m, cx, cy, cz, mp[0] + sx * off, y, mp[1] + sz * off);
+        // (ahead by its fade's walk, WALL_FADE at PACE (~10): gone by the time one's behind it; kept a little longer;
+        // a body's width either side, its feet and its head)
+        const m = wm.cut ? 18 : 12, o = wm.box;
+        cut = hides(o, m, cx, cy, cz, mx - sx * 4, 2, mz - sz * 4) || hides(o, m, cx, cy, cz, mx - sx * 4, VILLAGER_H, mz - sz * 4) ||
+          hides(o, m, cx, cy, cz, mx + sx * 4, 2, mz + sz * 4) || hides(o, m, cx, cy, cz, mx + sx * 4, VILLAGER_H, mz + sz * 4);
       }
       wm.cut = cut;
     }
   }
-  /** Whether a wall's box (grown by m) crosses the segment from (ax, ay, az) to (bx, by, bz): the slab test in its frame. */
+  /** Whether a wall's box (grown by m) crosses the segment from (ax, ay, az) to (bx, by, bz): the slab test in its frame
+   *  (into it: a turn by −yaw about its middle). Nothing allocated: it runs for each wall on every frame the view moves. */
   function hides(o: WallMesh['box'], m: number, ax: number, ay: number, az: number, bx: number, by: number, bz: number): boolean {
-    // (into the box's frame: a turn by −yaw about its middle)
-    const lx = (x: number, z: number) => (x - o.x) * o.c - (z - o.z) * o.s, lz = (x: number, z: number) => (x - o.x) * o.s + (z - o.z) * o.c;
-    const p0 = [lx(ax, az), ay, lz(ax, az)], p1 = [lx(bx, bz), by, lz(bx, bz)];
-    const lo = [-o.l - m, 0, -o.t - m], hi = [o.l + m, o.h + m, o.t + m];
-    let t0 = 0, t1 = 1;
-    for (let k = 0; k < 3; k++) {
-      const d = p1[k] - p0[k];
-      if (Math.abs(d) < 1e-9) {
-        if (p0[k] < lo[k] || p0[k] > hi[k]) return false;
-        continue;
-      }
-      let u = (lo[k] - p0[k]) / d, v = (hi[k] - p0[k]) / d;
-      if (u > v) [u, v] = [v, u];
-      t0 = Math.max(t0, u);
-      t1 = Math.min(t1, v);
-      if (t0 > t1) return false;
-    }
-    return true;
+    const ux = ax - o.x, uz = az - o.z, wx = bx - o.x, wz = bz - o.z;
+    slabT0 = 0;
+    slabT1 = 1;
+    return slab(ux * o.c - uz * o.s, wx * o.c - wz * o.s, -o.l - m, o.l + m) && slab(ay, by, 0, o.h + m) &&
+      slab(ux * o.s + uz * o.c, wx * o.s + wz * o.c, -o.t - m, o.t + m);
+  }
+  let slabT0 = 0, slabT1 = 1;
+  /** One axis of the slab test: the segment p0 → p1 within lo … hi narrows [slabT0, slabT1]; false once it's empty. */
+  function slab(p0: number, p1: number, lo: number, hi: number): boolean {
+    const d = p1 - p0;
+    if (Math.abs(d) < 1e-9) return p0 >= lo && p0 <= hi;
+    const u = (lo - p0) / d, v = (hi - p0) / d;
+    slabT0 = Math.max(slabT0, Math.min(u, v));
+    slabT1 = Math.min(slabT1, Math.max(u, v));
+    return slabT0 <= slabT1;
   }
   /** The walls faded toward what the cutaway wants (WALL_FADE ms either way: dithered, alphaHash, so they stay opaque
    *  and unsorted; hidden once out, solid once in). Whether one is still fading (the frame goes on). */
@@ -1139,7 +1146,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   let ambientOn = 0;
   let readyRes: () => void;
   const ready = new Promise<void>((r) => (readyRes = r));
-  let camRev = '';
+  /** The last frame's view, rounded (frame: whether the camera moved): its angles and zoom to 4 places, its target 2. */
+  const camRev = new Float64Array(5).fill(NaN);
   let ambientT: ReturnType<typeof setTimeout> | undefined;
   let snapWalls = true;
   function invalidate() {
@@ -1197,9 +1205,10 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       }
     }
     aim();
-    const rv = `${view.az.toFixed(4)}:${view.pitch.toFixed(4)}:${view.k.toFixed(4)}:${target.x.toFixed(2)}:${target.z.toFixed(2)}`;
-    const camMoved = rv !== camRev || fpMoved;
-    camRev = rv;
+    const r = camRev, a4 = Math.round(view.az * 1e4), p4 = Math.round(view.pitch * 1e4), k4 = Math.round(view.k * 1e4);
+    const x2 = Math.round(target.x * 100), z2 = Math.round(target.z * 100);
+    const camMoved = r[0] !== a4 || r[1] !== p4 || r[2] !== k4 || r[3] !== x2 || r[4] !== z2 || fpMoved;
+    r[0] = a4, r[1] = p4, r[2] = k4, r[3] = x2, r[4] = z2;
     // (at once on the way in and after a jump: only a wall going as one moves fades)
     if (wallFade(dt, frames === 0 || snapWalls)) full = true;
     snapWalls = false;
