@@ -74,8 +74,8 @@ test('a tap by the campsite runs my villager up the path, never through the wate
   await shot(page, 'after-run');
 });
 
-test('a tap on the pond ripples and walks nowhere; a walk stays for the session', async ({ page }) => {
-  // (no critters: a fish's shadow in the pond would take the tap as a cast, and the grass tap then only reels it in)
+test('a tap on the pond casts from where my villager stands and walks nowhere; the grass reels in, then walks; a walk stays for the session', async ({ page }) => {
+  // (no critters: nothing bites while the line is out)
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await open(page, '&date=2026-07-01T10:00&critter=none');
   const { POND } = await geo(page);
@@ -83,13 +83,18 @@ test('a tap on the pond ripples and walks nowhere; a walk stays for the session'
   const home = await call(page, (w) => w.mine());
   const [x, y] = await call(page, (w, [x, z]) => w.at(x, z), [POND.x, POND.z]);
   await page.mouse.click(x, y);
-  // the ripple played (its cue: its flourish lives 1.1 s, gone before a look on a loaded drawn page)
-  await expect.poll(() => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? [])).toContain('scene-splash');
+  // any water casts (fishing has no reach): the line out to it, my villager where it stood
+  await expect.poll(() => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? [])).toContain('scene-cast');
   await expect(page.locator('.tap-ring')).toHaveCount(0);
   expect((await track(page, 1500)).at(-1)).toEqual(home);
-  // a tap on the grass beside it walks there, and it's still there after a reload
+  // the first tap on the grass is the reel (NH reels in to move): it stays put
+  // (well off its bank: a tap within a finger's slack of the water casts)
+  const { at: grass, x: gx, y: gy } = await lawnTap(page, POND.x + 80, POND.z - 60);
+  await page.mouse.click(gx, gy);
+  await expect(page.locator('[data-bobber]')).toHaveCount(0);
+  expect((await track(page, 600)).at(-1)).toEqual(home);
+  // the next walks there, and it's still there after a reload
   // (on this screen with nothing over it: lawnTap; open ground off screen or under a thumb's tap area took the tap elsewhere)
-  const { at: grass, x: gx, y: gy } = await lawnTap(page, POND.x + 52, POND.z - 34);
   await page.mouse.click(gx, gy);
   const end = (await track(page)).at(-1)!;
   expect(Math.hypot(end[0] - grass[0], end[1] - grass[1])).toBeLessThan(3);
