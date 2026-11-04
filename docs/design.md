@@ -1309,12 +1309,17 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   as NH cuts them; whichever ones face it once it turns), and a wall that would hide my villager (a jamb as one walks
   through an opening, gone a fade's walk ahead of it, back once clear by a margin). A wall going or coming fades in
   220 ms (dithered: alphaHash, so it stays opaque and unsorted; its programs compiled with the rest). The say button says a phrase in here only (`say` `sc: 'm'`).
-- **The curator** (`curator.ts`, `lines.ts`): フータ (Blathers, NH's model: static, no rig) behind his desk lives by his
-  holder alone: now and then (every 4–8 s) a blink (his eyes squashed shut) or a gentle rock side to side, and a little
-  hop as he talks. Between gestures nothing is drawn for him (the hall at rest stays still; a timer wakes the frame for
-  the next one only while he's on screen). A tap on him is his line in NH's balloon (island/Talk.svelte, his name on a
-  brown tag): his welcome first in a visit, then one of six (museum.curator.*, ja/en: what's on show counted, the fish
-  tanks, his dread of bugs, the ずかん…), never the same twice running; my villager turns to him.
+- **The curator** (`curator.ts`, `lines.ts`): フータ (Blathers) behind his desk is the villagers' skinned model
+  (villagers3d/blathers.glb: NH's skeleton; NH's files have no clips), posed on his bones every frame by curator.ts
+  `mind()`: breathing (his chest, a little bob), an owl's quick glances about with now and then a curious tilt, his
+  blinks, a wing gesture every 5–12 s (a ruffle, a wing to his chin in thought, a stretch); with my villager in the hall
+  in front of him he watches it. Alone for half a minute or so he nods off on his feet (a yawn, his head drooping to one
+  side, eyes shut, slow breaths, the little nod as he catches himself) and wakes with a start when my villager comes up
+  or taps him. A tap perks him up (eyes wide, a hop, his tufts up) and is his line in NH's balloon (island/Talk.svelte,
+  his name on a brown tag): his welcome first in a visit, then one of six (museum.curator.*, ja/en: what's on show
+  counted, the fish tanks, his dread of bugs, the ずかん…), never the same twice running; a wing raised as he explains,
+  his beak moving while it types, till it closes; my villager turns to him. The cost: while he's on screen the hall
+  draws at the exhibits' 30 a second (his pose only, no allocation); off screen he's not stepped and asks for no frame.
 - **Who else is in:** the rooms' presence, the museum's own scope (`tent` with `sc: 'm'`, its points within the
   museum's ±320; live-protocol.ts): the others' villagers are here while they are, walking as they walk, and nowhere on
   the island meanwhile (store/where.svelte.ts `home` `M`). The guest comes in like anyone.
@@ -1356,7 +1361,7 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   own list changes), their models loaded per species (the museum chunk, its props and textures under /room/: cached on
   first use); every frame moves only the tanks and bugs on screen (each culled by its own bounds, so the hall draws no
   wing's fish or bugs); 60 a second while something moves (a walk, the camera), the exhibits' 30 while only they do,
-  nothing while nothing on screen does (the hall at rest: only the curator's gestures, a blink's few frames every 4–8 s). The tanks' and the cases' stands, bases, water, glass
+  nothing while nothing on screen does (the hall at rest: 30 a second while the curator is on screen, his idle). The tanks' and the cases' stands, bases, water, glass
   and frames are one mesh a material (geometry.ts batcher). Measured on the iOS Simulator (`npm run ios:indoor`, a
   museum with every fish and bug): the hall at rest 30 → 0 frames a second, 258 → 93 draw calls; the aquarium 335 →
   170, the bug wing 250 → 84; the way in's longest frame 301 → 79 ms. Once everything is in, what isn't on screen yet

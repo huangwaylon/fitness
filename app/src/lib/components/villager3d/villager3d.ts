@@ -420,10 +420,10 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       const k = Math.min(1, (t - since) / fadeMs);
       // (the pose's legs follow the seat's height while on it and getting up off it)
       if (!seat && !(leaving && t - leaving.t0 < SIT_MS)) o.seatH = undefined;
-      let p: Pose = base(cur, t, o);
-      if (k < 1) p = mix(base(prev, t, o), p, k);
-      if (held) p = held;
-      else if (act) {
+      // (a held pose alone: none of the states' computed under it)
+      let p: Pose = held ?? base(cur, t, o);
+      if (!held && k < 1) p = mix(base(prev, t, o), p, k);
+      if (!held && act) {
         const u = t - act.t0;
         if (u >= ACTION_MS[act.a]) act = null;
         else {

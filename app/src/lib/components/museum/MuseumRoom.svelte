@@ -191,11 +191,12 @@
   };
   function curatorTalk() {
     if (!eng || !curator) return;
-    curator.talk();
     cue('host-tap');
     curatorSaid = curatorLine(Math.random, curatorSaid);
     const fish = specimens.filter((s) => s.kind === 'fish').length, bugs = specimens.length - fish;
-    talk?.say(t('museum.curator'), t(curatorSaid, { fish, bugs }), curatorSpeaker, { colour: CURATOR_TAG });
+    const line = t(curatorSaid, { fish, bugs }), him = curator;
+    him.talk([...line].length);
+    talk?.say(t('museum.curator'), line, curatorSpeaker, { colour: CURATOR_TAG, ondone: () => him.quiet() });
     const p = curator.where(CURATOR);
     if (p) eng.face(me, [p[0], p[2]]);
   }
@@ -367,7 +368,7 @@
         e.night(nightOf(theme.tod));
         e.villager(me, lookOf(me));
         e.follow(me);
-        curator = buildCurator(e.kit);
+        curator = buildCurator(e.kit, { model: url3d('blathers', asset('room/villagers3d/' as Parameters<typeof asset>[0])), me: () => e.at(me) });
         e.exhibit(curator);
         // in at the front door, a few steps into the hall
         e.put(me, [ENTRANCE[0] + sideX(me), ENTRANCE[1] + 6], Math.PI);
@@ -423,11 +424,12 @@
         return p && eng ? eng.client(p[0], p[1], p[2]) : null;
       },
       card: () => (card ? card.id : null),
-      /** The curator's head's client px, and what he's doing (a gesture, or null at rest). */
+      /** The curator's head's client px, and what he's doing (idle, watching my villager, dozing, talking). */
       curator: () => {
         const p = curator?.where(CURATOR);
         return p && eng ? { at: eng.client(p[0], p[1] - 4, p[2]), doing: curator!.doing() } : null;
       },
+      curatorDoze: () => curator?.doze(),
       put: (x: number, z: number) => eng?.put(me, [x, z]),
       walkTo: (x: number, z: number) => walkTo([x, z]),
       orbit: (a: number, p = 0) => eng?.orbit(a, p),

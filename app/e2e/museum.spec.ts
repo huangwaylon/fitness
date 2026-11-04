@@ -190,18 +190,29 @@ test('the guest visits too: in, walking, the finds on show', async ({ page }) =>
   }, { timeout: 15_000 }).toBeLessThan(6);
 });
 
-test('the curator at the desk: his idle life (a blink or a rock, then still), and a tap is his line, a new one each time', async ({ page }) => {
+test('the curator at the desk: he watches my villager, dozes off and wakes as it comes up, and a tap is his line, a new one each time', async ({ page }) => {
   await seed(page, [['fish', 'koi', 'B'], ['bug', 'tarantula', 'A']]);
   await open(page);
   type C = { at: [number, number]; doing: string | null } | null;
-  await page.evaluate('window.__museum.put(0, -12)');
-  // now and then a gesture, then at rest (the hall drawing nothing between)
   const doing = async () => {
     const c = await mu<C>(page, 'curator()');
     return c ? c.doing : 'not in';
   };
-  await expect.poll(doing, { timeout: 15_000 }).toMatch(/^(blink|rock)$/);
-  await expect.poll(doing, { timeout: 5_000 }).toBeNull();
+  // my villager in front of the desk: he watches it, and the hall draws while he's on screen (his idle)
+  await page.evaluate('window.__museum.put(0, -12)');
+  await expect.poll(doing, { timeout: 15_000 }).toBe('look');
+  const frames = async () => (await mu<{ frames: number }>(page, 'stats()')).frames;
+  const f0 = await frames();
+  await page.waitForTimeout(600);
+  expect(await frames()).toBeGreaterThan(f0 + 5);
+  // nodding off; my villager walking away and back up wakes him
+  await page.evaluate('window.__museum.curatorDoze()');
+  expect(await doing()).toBe('doze');
+  await page.evaluate('window.__museum.put(0, 60)');
+  await page.waitForTimeout(500);
+  expect(await doing()).toBe('doze');
+  await page.evaluate('window.__museum.put(0, -12)');
+  await expect.poll(doing, { timeout: 5_000 }).toBe('look');
   const balloon = page.locator('[data-fx="talk"]');
   const tapHim = async () => {
     const c = (await mu<C>(page, 'curator()'))!;
@@ -209,7 +220,7 @@ test('the curator at the desk: his idle life (a blink or a rock, then still), an
   };
   await tapHim();
   await expect(balloon).toHaveAttribute('aria-label', /^フータ: .*ようこそ/);
-  expect((await mu<C>(page, 'curator()'))?.doing).toBe('talk');
+  expect(await doing()).toBe('talk');
   const lines = new Set<string>();
   for (let i = 0; i < 3; i++) {
     const was = await balloon.getAttribute('aria-label');
