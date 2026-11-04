@@ -87,6 +87,50 @@ test('the walls the camera cuts away stay put as one walks: each goes at most on
   }
 });
 
+test('the canvas never shows blank: each resize of its buffer (a drag’s lighter pixel ratio, its end, a new size) is drawn over in the same task', async ({ page }) => {
+  // (a resize clears the canvas, and WebKit shows it cleared, the museum's dark, till the next draw: resized after a
+  // frame's draw, a drag's start and end flashed black on the phone. The logic tier's pixel ratio is 1 either way, so
+  // there the new sizes; the drawn tier's 2 → 1.5 → 2 too)
+  await page.addInitScript(() => {
+    const w = window as unknown as { __blank: string[]; __resized: number; __museum?: { stats(): { draws: number } } };
+    w.__blank = [];
+    w.__resized = 0;
+    for (const k of ['width', 'height'] as const) {
+      const d = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, k)!;
+      Object.defineProperty(HTMLCanvasElement.prototype, k, {
+        get() { return d.get!.call(this); },
+        set(v: number) {
+          d.set!.call(this, v);
+          const m = w.__museum;
+          if (!m || !this.hasAttribute('data-museum-room')) return;
+          w.__resized++;
+          const d0 = m.stats().draws;
+          queueMicrotask(() => m.stats().draws === d0 && w.__blank.push(`${k} ${v}`));
+        }
+      });
+    }
+  });
+  await open(page);
+  await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
+  const box = (await page.locator('[data-museum-room]').boundingBox())!;
+  const [cx, cy] = [box.x + box.width / 2, box.y + box.height / 2];
+  for (const dx of [120, -120]) {
+    await page.mouse.move(cx, cy);
+    await page.mouse.down();
+    for (let i = 1; i <= 6; i++) await page.mouse.move(cx + (dx * i) / 6, cy);
+    await page.waitForTimeout(150);
+    await page.mouse.up();
+    await page.waitForTimeout(300);
+  }
+  const size = page.viewportSize()!;
+  await page.setViewportSize({ width: size.width, height: size.height - 80 });
+  await page.waitForTimeout(300);
+  await page.setViewportSize(size);
+  await page.waitForTimeout(300);
+  expect(await page.evaluate('window.__resized')).toBeGreaterThan(0);
+  expect(await page.evaluate('window.__blank')).toEqual([]);
+});
+
 test('what’s on show: exactly the fish anyone has found (the guest’s too), each in its tank; nothing else', async ({ page }) => {
   await seed(page, [['fish', 'sea-bass', 'A'], ['fish', 'koi', 'B'], ['fish', 'neon-tetra', 'G'], ['fish', 'oarfish', 'A']]);
   await open(page);

@@ -108,7 +108,7 @@ export interface Museum {
   /** Which walls the cutaway takes away (WALLS' order: 1 cut, 0 standing; the e2e). */
   walls(): string;
   kit: Kit;
-  stats(): { frames: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; ambient: number; loading: number; mem: [number, number, number] };
+  stats(): { frames: number; draws: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; ambient: number; loading: number; mem: [number, number, number] };
   ready: Promise<void>;
   dispose(): void;
 }
@@ -711,6 +711,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     camera.setViewOffset(W, H, 0, shiftY, W, H);
     camera.updateProjectionMatrix();
     aim();
+    // (setSize cleared the canvas: drawn again now, not at the next due frame; see draw)
+    if (frames) draw();
     invalidate();
   }
   function aim() {
@@ -919,6 +921,15 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (!raf && !disposed) raf = requestAnimationFrame(frame);
   }
   const seen = (sp: Sphere) => frustum.intersectsSphere(sp);
+  /** The scene drawn (`draws`: each time, the e2e's). Every resize of the canvas's buffer (setSize, setPixelRatio)
+   *  clears it, and WebKit shows the cleared canvas (the museum's dark) until the next draw: so the buffer is resized
+   *  only just before a draw, in the same task (a gesture's lighter pixel ratio, a resize). Resized after a frame's
+   *  draw, the screen flashed black at each drag's start and end, and stayed so till something next drew. */
+  let draws = 0;
+  function draw() {
+    draws++;
+    if (!noDraw) renderer.render(scene, camera);
+  }
   /** The last frame drawn's display time (its rAF's): the frame rate's pacing (せってい's, a gesture's too). */
   let lastVsync = 0;
   function frame(vsync = now()) {
@@ -973,16 +984,17 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       ambient = true;
       ambientOn++;
     }
+    // (only when it changes: three's setPixelRatio sets the canvas's size, which reallocates its buffers, every frame;
+    // and before the draw, never after it: see draw)
+    const dpr = gesturing ? Math.min(dprFull, DPR_MOVING) : dprFull;
+    if (dpr !== renderer.getPixelRatio()) renderer.setPixelRatio(dpr);
     const c0 = now();
-    if (!noDraw) renderer.render(scene, camera);
+    draw();
     cost.push(now() - c0);
     if (cost.length > 240) cost.shift();
     frames++;
     lastT = t;
     if (frames === 1) readyRes();
-    // (only when it changes: three's setPixelRatio sets the canvas's size, which reallocates its buffers, every frame)
-    const dpr = gesturing ? Math.min(dprFull, DPR_MOVING) : dprFull;
-    if (dpr !== renderer.getPixelRatio()) renderer.setPixelRatio(dpr);
     if (full) invalidate();
     // (one ambient timer at a time: a frame for anything else in between — a tap, a load — would start a second chain
     // beside it, and the two ran on together at 60 a second)
@@ -1066,7 +1078,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     nav: () => nav,
     walls: () => walls.map((w) => (w.cut ? 1 : 0)).join(''),
     kit,
-    stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: [...cost], queued: !!raf, ambient: ambientOn, loading: pending,
+    stats: () => ({ frames, draws, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: [...cost], queued: !!raf, ambient: ambientOn, loading: pending,
       mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0] }),
     ready,
     dispose() {
