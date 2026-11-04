@@ -522,7 +522,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     post.position.set(x, 7, OPENING.z1 + 5.6);
     scene.add(board, post);
   }
-  // Blathers' desk at the back of the hall, NH's: wood, a green top; Blathers behind it
+  // Blathers' desk at the back of the hall, NH's: wood, a green top; Blathers behind it (curator.ts, an exhibit)
   const desk = new Group();
   const wood = wood0;
   const top = new Mesh(new BoxGeometry(44, 1.6, 12), lambert({ color: 0x3f6b4a }));
@@ -532,7 +532,6 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   desk.add(top, body);
   desk.position.set(0, 0, -30);
   scene.add(desk);
-  prop('blathers', 0, -38, { s: 1.5 });
   const BLOCKS: Rect[] = [{ x0: -23, x1: 23, z0: -36, z1: -24 }, { x0: -24, x1: 24, z0: -50, z1: -36 }];
   for (const [x, z] of [[-50, -40], [50, -40], [-50, 58], [50, 58]] as const) {
     prop(x < 0 ? 'heliconia' : 'anthurium', x, z, { s: x < 0 ? 1.6 : 2.4 });

@@ -145,3 +145,35 @@ test('the guest visits too: in, walking, the finds on show', async ({ page }) =>
     return Math.hypot(x + 150, z - 10);
   }, { timeout: 15_000 }).toBeLessThan(6);
 });
+
+test('the curator at the desk: his idle life (a blink or a rock, then still), and a tap is his line, a new one each time', async ({ page }) => {
+  await seed(page, [['fish', 'koi', 'B'], ['bug', 'tarantula', 'A']]);
+  await open(page);
+  type C = { at: [number, number]; doing: string | null } | null;
+  await page.evaluate('window.__museum.put(0, -12)');
+  // now and then a gesture, then at rest (the hall drawing nothing between)
+  const doing = async () => {
+    const c = await mu<C>(page, 'curator()');
+    return c ? c.doing : 'not in';
+  };
+  await expect.poll(doing, { timeout: 15_000 }).toMatch(/^(blink|rock)$/);
+  await expect.poll(doing, { timeout: 5_000 }).toBeNull();
+  const balloon = page.locator('[data-fx="talk"]');
+  const tapHim = async () => {
+    const c = (await mu<C>(page, 'curator()'))!;
+    await page.mouse.click(c.at[0], c.at[1] + 10);
+  };
+  await tapHim();
+  await expect(balloon).toHaveAttribute('aria-label', /^フータ: .*ようこそ/);
+  expect((await mu<C>(page, 'curator()'))?.doing).toBe('talk');
+  const lines = new Set<string>();
+  for (let i = 0; i < 3; i++) {
+    const was = await balloon.getAttribute('aria-label');
+    await tapHim();
+    await expect(balloon).not.toHaveAttribute('aria-label', was!);
+    lines.add((await balloon.getAttribute('aria-label'))!);
+  }
+  expect([...lines].some((l) => l.includes('ようこそ'))).toBe(false);
+  // the count of what's on show in his line, when he says it
+  for (const l of lines) if (l.includes('しゅるい')) expect(l).toContain('さかなが 1しゅるい');
+});

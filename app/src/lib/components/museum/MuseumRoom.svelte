@@ -3,6 +3,7 @@
   // three.js) comes in its own chunk once the screen opens; until its first frame the door's black covers it
   // (ui-state/doorTransition.ts). A tap on the floor walks my villager there (through the hall's openings into a wing);
   // a tap on a fish or a bug shows its card (MuseumCard: its names, who found it first and when, how many we've had);
+  // a tap on the curator at the desk (フータ: curator.ts, his idle life) is his line in NH's balloon (Talk, lines.ts);
   // the doormat or ‹ 島へ goes back out. What's on show is the ずかん's (model/finds.ts: every fish and bug anyone has
   // found, the guest's too), and comes as it's found. The others in here are seen (the relay's `tent` with `sc: 'm'`,
   // the rooms' presence); the say button says a phrase here (`say` with `sc: 'm'`). Nothing gives ベル.
@@ -11,6 +12,7 @@
   import { onMount, untrack } from 'svelte';
   import NavButton from '../ui/NavButton.svelte';
   import Says from '../island/Says.svelte';
+  import Talk from '../island/Talk.svelte';
   import SayPicker from '../island/SayPicker.svelte';
   import SayButton from '../island/SayButton.svelte';
   import MuseumCard from './MuseumCard.svelte';
@@ -36,6 +38,9 @@
   import { hook } from '../island/devHooks.ts';
   import { ENTRANCE, type Pt } from './plan.ts';
   import { onShow, type Specimen } from './species.ts';
+  import { CURATOR, curatorLine } from './lines.ts';
+  import { t } from '#lib/i18n/index.ts';
+  import type { Curator } from './curator.ts';
   import type { Hit, Museum, Who } from './engine.ts';
 
   let { view }: { view: WeekView } = $props();
@@ -167,6 +172,35 @@
     if (sayAt && !sayShown) untrack(() => closeSay());
   });
 
+  // ---- the curator (フータ): a tap, his line in NH's balloon by him, never the same twice running ----
+  let talk = $state<ReturnType<typeof Talk>>();
+  let curator: Curator | null = null;
+  let curatorSaid: string | undefined;
+  /** NH's name tag colour for him (his brown). */
+  const CURATOR_TAG = '#A0784A';
+  const curatorSpeaker: SaySpeaker = {
+    get isConnected() {
+      return !!eng && !!curator;
+    },
+    getBoundingClientRect() {
+      const p = curator?.where(CURATOR);
+      if (!eng || !p) return new DOMRect();
+      const [hx, hy] = eng.client(p[0], p[1], p[2]), [, fy] = eng.client(p[0], p[1] * 0.45, p[2]);
+      const tall = Math.max(12, fy - hy), wide = tall * 0.9;
+      return new DOMRect(hx - wide / 2, hy, wide, tall);
+    }
+  };
+  function curatorTalk() {
+    if (!eng || !curator) return;
+    curator.talk();
+    cue('host-tap');
+    curatorSaid = curatorLine(Math.random, curatorSaid);
+    const fish = specimens.filter((s) => s.kind === 'fish').length, bugs = specimens.length - fish;
+    talk?.say(t('museum.curator'), t(curatorSaid, { fish, bugs }), curatorSpeaker, { colour: CURATOR_TAG });
+    const p = curator.where(CURATOR);
+    if (p) eng.face(me, [p[0], p[2]]);
+  }
+
   // ---- the finger: a tap walks (or shows a creature's card); a drag turns the camera; two fingers pinch to zoom ----
   const ptrs = new Map<number, { x: number; y: number }>();
   const whenOf = (e: PointerEvent) => (e.timeStamp > 0 ? e.timeStamp : performance.now());
@@ -187,6 +221,7 @@
       gesture = { kind: 'pinch', ...spread() };
       eng?.moving(true);
       says?.hold(true);
+      talk?.hold(true);
     }
   }
   function onMove(e: PointerEvent) {
@@ -197,6 +232,7 @@
       g.kind = 'orbit';
       eng.moving(true);
       says?.hold(true);
+      talk?.hold(true);
     }
     if (g.kind === 'orbit') {
       eng.orbit(-(e.clientX - g.lx) * 0.0085, (e.clientY - g.ly) * 0.005);
@@ -219,6 +255,7 @@
       gesture = null;
       eng?.moving(false);
       says?.hold(false);
+      talk?.hold(false);
     } else if (g?.kind === 'pinch') {
       const [p] = [...ptrs.values()];
       gesture = { kind: 'orbit', x0: p.x, y0: p.y, t0: 0, lx: p.x, ly: p.y };
@@ -230,6 +267,7 @@
       gesture = null;
       eng?.moving(false);
       says?.hold(false);
+      talk?.hold(false);
     }
   }
   function onWheel(e: WheelEvent) {
@@ -251,6 +289,7 @@
       cue('villager-tap');
       return;
     }
+    if (h.kind === 'creature' && h.id === CURATOR) return curatorTalk();
     if (h.kind === 'creature') {
       const s = specimens.find((x) => x.id === h.id);
       if (!s) return;
@@ -332,8 +371,8 @@
       }));
     }
     const offDoor = provideDoor(() => (eng ? (([x, y]) => ({ x, y }))(eng.client(ENTRANCE[0], 0, ENTRANCE[1] + 10)) : null));
-    void Promise.all([import('./engine.ts'), import('./plan.ts')]).then(
-      ([{ createMuseum }, { walkPath }]) => {
+    void Promise.all([import('./engine.ts'), import('./plan.ts'), import('./curator.ts')]).then(
+      ([{ createMuseum }, { walkPath }, { buildCurator }]) => {
         if (!alive || !canvas) return;
         const e = createMuseum(canvas, { base: asset('room/museum/' as Parameters<typeof asset>[0]), world: asset('room/world3d/' as Parameters<typeof asset>[0]) });
         walkPathOf = (from, to) => walkPath(e.nav(), from, to);
@@ -341,6 +380,8 @@
         e.night(nightOf(theme.tod));
         e.villager(me, lookOf(me));
         e.follow(me);
+        curator = buildCurator(e.kit);
+        e.exhibit(curator);
         // in at the front door, a few steps into the hall
         e.put(me, [ENTRANCE[0] + sideX(me), ENTRANCE[1] + 6], Math.PI);
         eng = e;
@@ -395,6 +436,11 @@
         return p && eng ? eng.client(p[0], p[1], p[2]) : null;
       },
       card: () => (card ? card.id : null),
+      /** The curator's head's client px, and what he's doing (a gesture, or null at rest). */
+      curator: () => {
+        const p = curator?.where(CURATOR);
+        return p && eng ? { at: eng.client(p[0], p[1] - 4, p[2]), doing: curator!.doing() } : null;
+      },
       put: (x: number, z: number) => eng?.put(me, [x, z]),
       walkTo: (x: number, z: number) => walkTo([x, z]),
       orbit: (a: number, p = 0) => eng?.orbit(a, p),
@@ -424,6 +470,7 @@
     <MuseumCard specimen={card} {counts} {view} onclose={() => (card = null)} />
   {/if}
   <Says bind:this={says} {scene} />
+  <Talk bind:this={talk} {scene} />
   {#if sayAt && scene}
     <SayPicker {scene} anchor={sayAt} onpick={pickSay} onclose={(e) => {
       closeSay(e);
