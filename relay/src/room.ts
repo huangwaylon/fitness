@@ -1,8 +1,9 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, NEST_GAP_MS, REPLAY_BYTES, claimOf, guestMaySend, isStored, scopeMaySend, otherVersion, parseClient, sameWalk, tokyoDay, type Gone, type LiveV, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
+import { CLOSE, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, NEST_GAP_MS, REPLAY_BYTES, claimOf, guestMaySend, isStored, scopeMaySend, otherVersion, parseClient, sameWalk, tokyoDay, type Gone, type LiveV, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/sync/live-protocol.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
+import { served } from './weather.ts';
 
 /** A socket's attachment (survives hibernation): who it is once its hello was accepted, when it opened, and the protocol
  *  version it spoke in its hello (absent: 1, a socket from before v2). */
@@ -32,6 +33,8 @@ export interface RoomIO<S extends Sock> {
   hold?(held: Held): void;
   /** Persist when each person's phone last left (fire and forget). */
   saveGone?(gone: Gone): void;
+  /** A hello was welcomed (the room fetches the real weather then, when it's due: weather.ts). */
+  onHello?(): void;
 }
 
 /** The high-fives held for people while they were away, one per (sender, recipient) pair (`<from>><to>`, e.g. `G>A`):
@@ -82,7 +85,11 @@ export class RoomCore<S extends Sock> {
    *  quiet inside a room to come out of it on every phone at the same time (app store/where.svelte.ts). */
   private gone: Gone;
 
-  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}) {
+  /** Tokyo's real sky by the hour (weather.ts), sent after each welcome and to everyone when it changes. */
+  private wx: Wx | null;
+
+  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}, wx: Wx | null = null) {
+    this.wx = wx;
     this.held = heldOf(held);
     this.gone = { ...gone };
     for (const e of ring) this.lastT = Math.max(this.lastT, e.t);
@@ -247,6 +254,9 @@ export class RoomCore<S extends Sock> {
     for (const w of ['A', 'B', 'G'] as const) if (this.gone[w] !== undefined && !here.includes(w)) gone[w] = this.gone[w];
     if (this.gone[who] !== undefined) this.setGone(who, undefined);
     this.send(s, { v: LIVE_V, kind: 'welcome', me: who, peer, t, ...(this.rec ? { rec: this.rec } : {}), ...(v >= 3 ? { here, ...(Object.keys(gone).length ? { gone } : {}) } : {}) });
+    // the real sky (v3: an older phone has the seeded weather), when the room has one that still serves
+    const wx = v >= 3 ? served(this.wx, t) : null;
+    if (wx) this.send(s, { v: LIVE_V, kind: 'wx', ...wx, t });
     if (since !== undefined) {
       const day = this.fresh().filter((e) => e.t > since && (e.kind !== 'walk' || sameWalk(e.v, v)) && (v >= 3 || e.who !== 'G'));
       // batch: the day in as few `replay` messages as fit (mine too: a phone that lost its own record gets it back);
@@ -261,6 +271,19 @@ export class RoomCore<S extends Sock> {
       else if (v >= 2 && (v >= 3 || h.from !== 'G')) this.send(s, { v: LIVE_V, kind: 'highfive', at: h.at, who: h.from, t: h.t, ...(v >= 3 ? { to: who } : {}) });
     }
     if (!was.length) for (const p of this.others(who)) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
+    this.io.onHello?.();
+  }
+
+  /** The real sky was fetched (weather.ts): kept for the welcomes, and when it changed (`send`) every v3 phone hears
+   *  it. Returns how many did. */
+  setWx(wx: Wx | null, send: boolean): number {
+    this.wx = wx;
+    const t = this.io.now();
+    const w = send ? served(wx, t) : null;
+    if (!w) return 0;
+    const to = this.authed().filter((s) => this.vOf(s) >= 3);
+    for (const s of to) this.send(s, { v: LIVE_V, kind: 'wx', ...w, t });
+    return to.length;
   }
 
   private setGone(who: Who, t: number | undefined): void {

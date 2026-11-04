@@ -9,6 +9,7 @@ import { HELLO_MS, RoomCore, type Held, type Kept, type Meta } from './room.ts';
 import { isOldPushPath, pushGone } from './pushGone.ts';
 import { IslandStore } from './storeObject.ts';
 import { adminRoute, apiRoute } from './storeRoute.ts';
+import { TOKYO, WX_EMPTY, due, fetchTick, fixture, omUrl, wxHealth, type WxState } from './weather.ts';
 
 export { IslandStore };
 
@@ -25,7 +26,13 @@ export interface Env {
   KEY_C?: string;
   /** The Apps Script web app's /exec URL the cron exports the record to (docs/backend.md#the-record "Export"); unset: no export (the test copy). */
   EXPORT_URL?: string;
+  /** Where the real weather is fetched for (weather.ts): central Tokyo, by the 東京 AMeDAS station. */
+  WX_LAT?: string;
+  WX_LON?: string;
 }
+
+/** What `/health` and the room's weather ops say of the real weather (weather.ts wxHealth). */
+export type WxHealth = ReturnType<typeof wxHealth>;
 
 const RING = 'ring';
 /** The record's last change (welcome `rec`). */
@@ -34,8 +41,13 @@ const REC = 'rec';
 const HELD = 'held';
 /** When each person's phone last left (room.ts gone: the welcome's). */
 const GONE = 'gone';
+/** The real weather (weather.ts WxState): the timeline and the failures since the last good fetch. */
+const WX = 'wx';
 export class IslandRoom extends DurableObject<Env> {
   private core!: RoomCore<WebSocket>;
+  private wx: WxState = WX_EMPTY;
+  /** The fetch under way (one at a time: the cron's and a hello's share it). */
+  private wxBusy: Promise<WxTick> | null = null;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -44,6 +56,7 @@ export class IslandRoom extends DurableObject<Env> {
       const rec = (await ctx.storage.get<RecordMark>(REC)) ?? null;
       const held = (await ctx.storage.get<Held>(HELD)) ?? {};
       const gone = (await ctx.storage.get<Gone>(GONE)) ?? {};
+      this.wx = (await ctx.storage.get<WxState>(WX)) ?? WX_EMPTY;
       this.core = new RoomCore<WebSocket>({
         sockets: () => ctx.getWebSockets(),
         meta: (s) => (s.deserializeAttachment() as Meta | null) ?? null,
@@ -53,8 +66,10 @@ export class IslandRoom extends DurableObject<Env> {
         save: (r) => void ctx.storage.put(RING, r),
         saveRec: (r) => void ctx.storage.put(REC, r),
         hold: (h) => void ctx.storage.put(HELD, h),
-        saveGone: (g) => void ctx.storage.put(GONE, g)
-      }, ring, rec, held, gone);
+        saveGone: (g) => void ctx.storage.put(GONE, g),
+        // the test copy has no cron: a hello fetches the weather when it's due (production's safety net too)
+        onHello: () => void this.weatherTick().catch((e) => console.warn('wx-fail', e))
+      }, ring, rec, held, gone, this.wx.wx);
     });
     // the Web Push subscriptions and the goal days, kept until notifications were removed (2026-11-02): gone
     ctx.storage.sql.exec('DROP TABLE IF EXISTS push_subs');
@@ -93,24 +108,82 @@ export class IslandRoom extends DurableObject<Env> {
     return this.core.notify(n);
   }
 
+  /**
+   * The real weather (weather.ts, docs/backend.md "The real weather"): fetch Open-Meteo's forecast when it's due (or
+   * `force`), keep the timeline, and send `wx` to the phones when it changed. From the cron (every 15 minutes) and a
+   * hello. A failure keeps the timeline it had and backs off.
+   */
+  async weatherTick(force = false): Promise<WxTick> {
+    if (this.wxBusy) return this.wxBusy;
+    const now = Date.now();
+    if (!force && !due(this.wx, now)) return { ok: true, fetched: false, heard: 0, health: wxHealth(this.wx, now) };
+    const lat = Number(this.env.WX_LAT) || TOKYO.lat, lon = Number(this.env.WX_LON) || TOKYO.lon;
+    this.wxBusy = (async () => {
+      try {
+        const r = await fetchTick(this.wx, now, (u, i) => fetch(u, i), omUrl(lat, lon));
+        this.wx = r.st;
+        await this.ctx.storage.put(WX, r.st);
+        if (r.fail) console.warn('wx-fail', r.fail);
+        const heard = this.core.setWx(r.st.wx, r.send);
+        return { ok: !r.fail, fetched: true, ...(r.fail ? { fail: r.fail } : {}), sent: r.send, heard, health: wxHealth(r.st, Date.now()) };
+      } finally {
+        this.wxBusy = null;
+      }
+    })();
+    return this.wxBusy;
+  }
+
+  /** The `/admin` op `wx` (storeObject.ts): `{refresh: true}` fetches now; `{s, fx?}` puts a fixture timeline in from
+   *  the current hour (the smoke test); `{}` says how it is. */
+  async wxAdmin(o: { s?: unknown; fx?: unknown; refresh?: unknown }): Promise<Record<string, unknown>> {
+    if (o.refresh === true) return { ...(await this.weatherTick(true)) };
+    const now = Date.now();
+    if (o.s !== undefined) {
+      const fx = Array.isArray(o.fx) ? (o.fx as number[]) : undefined;
+      const st = typeof o.s === 'string' ? fixture(this.wx, o.s, fx, now) : null;
+      if (!st) return { ok: false, error: 'bad_request' };
+      this.wx = st;
+      await this.ctx.storage.put(WX, st);
+      return { ok: true, wx: st.wx, heard: this.core.setWx(st.wx, true) };
+    }
+    return { ok: true, wx: this.wx.wx, health: wxHealth(this.wx, now) };
+  }
+
+  /** What `/health` says of the weather. */
+  wxHealth(): WxHealth {
+    return wxHealth(this.wx, Date.now());
+  }
+
   async alarm(): Promise<void> {
     const next = this.core.sweep();
     if (next !== null) await this.ctx.storage.setAlarm(next);
   }
 }
 
+/** A weather tick's outcome (the cron's log, the `/admin` op). */
+type WxTick = { ok: boolean; fetched: boolean; fail?: string; sent?: boolean; heard: number; health: WxHealth };
+
 /** The cron's nightly run (UTC 18:00 = Tokyo 03:00): the export goes whatever changed. */
 const NIGHTLY = '0 18 * * *';
 
 export default {
-  /** Every 15 minutes, the record's export to the sheet when it changed (storeObject.ts exportTick). */
+  /** Every 15 minutes, the record's export to the sheet when it changed (storeObject.ts exportTick), and the real
+   *  weather when it's due (IslandRoom weatherTick). */
   async scheduled(ev: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     ctx.waitUntil(env.STORE.get(env.STORE.idFromName('record')).exportTick(ev.cron === NIGHTLY).then((r) => console.log('export', JSON.stringify(r).slice(0, 200))));
+    ctx.waitUntil(
+      env.ROOM.get(env.ROOM.idFromName('island')).weatherTick().then(
+        (r) => r.fetched && console.log('wx', JSON.stringify(r).slice(0, 200)),
+        (e) => console.warn('wx-fail', e)
+      )
+    );
   },
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
     if (url.pathname === '/health') {
-      return Response.json({ ok: true, v: LIVE_V, versions: LIVE_VS, t: Date.now() }, { headers: { 'Cache-Control': 'no-store' } });
+      // the real weather's age (the runbook, the smoke test): never in the way of the health itself
+      const wx = await env.ROOM.get(env.ROOM.idFromName('island')).wxHealth().catch(() => null);
+      return Response.json({ ok: true, v: LIVE_V, versions: LIVE_VS, t: Date.now(), wx }, { headers: { 'Cache-Control': 'no-store' } });
     }
     if (url.pathname === '/notify') return notify(req, env);
     if (url.pathname === '/api') return apiRoute(req, env.ALLOWED_ORIGINS ?? '', () => env.STORE.get(env.STORE.idFromName('record')));

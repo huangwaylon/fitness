@@ -328,3 +328,37 @@ if (KEY_C) {
   check((await api(KEY_C, 'ingest', { dates: 'Nov 1, 2026', steps: '1' })).error === 'forbidden', "the guest's ingest is forbidden");
   for (const c of [ga, gb, g]) c.ws.close(1000);
 }
+
+// The real weather (docs/backend.md "The real weather"): a fixture timeline put in by a signed /admin reaches a v3
+// phone after its welcome and when it changes (never a v2 one), a fetch now from Open-Meteo (JMA's models) gives 30+
+// hours, and /health says how old it is.
+{
+  const admin = async (body: object): Promise<Record<string, unknown>> => {
+    const text = JSON.stringify(body), t = String(Date.now());
+    const r = await fetch(new URL('/admin', http), { method: 'POST', headers: { 'X-Island-Time': t, 'X-Island-Sig': createHmac('sha256', secret).update(`${t}.${text}`).digest('hex') }, body: text });
+    return r.json() as Promise<Record<string, unknown>>;
+  };
+  const put = await admin({ op: 'wx', s: 'rrohsc', fx: [2] });
+  check(put.ok === true && (put.wx as { src?: string })?.src === 'fx', 'an /admin wx fixture is put in');
+  const w3 = new Client(), w2 = new Client();
+  w3.v = 3;
+  w2.v = 2;
+  await Promise.all([w3.open(), w2.open()]);
+  w3.send({ kind: 'hello', key: KEY_A });
+  await w3.next((m) => m.kind === 'welcome');
+  const first = await w3.next((m) => m.kind === 'wx');
+  check(first.s === 'rrohsc' && JSON.stringify(first.fx) === '[2]' && first.src === 'fx', 'a v3 phone gets the fixture sky after its welcome');
+  w2.send({ kind: 'hello', key: KEY_B });
+  await w2.next((m) => m.kind === 'welcome');
+  const t0 = performance.now();
+  const live = (await admin({ op: 'wx', refresh: true })) as { ok?: boolean; fail?: string; health?: { src: string; hours: number; age: number } };
+  check(live.ok === true && live.health?.src === 'om' && live.health.hours >= 30, `a fetch from Open-Meteo now: ${live.health?.hours ?? 0} hours (${(performance.now() - t0).toFixed(0)} ms${live.fail ? `, ${live.fail}` : ''})`);
+  const real = await w3.next((m) => m.kind === 'wx' && m.src === 'om');
+  check(/^[corhs]{30,36}$/.test(String(real.s)), `the phone hears the real sky when it changes (${String(real.s).slice(0, 12)}…)`);
+  await pause(300);
+  check(!w2.inbox.some((m) => m.kind === 'wx'), 'a v2 phone never hears wx');
+  const h = await fetch(new URL('/health', http)).then((r) => r.json() as Promise<{ wx?: { src: string; age: number } }>);
+  check(h.wx?.src === 'om' && h.wx.age <= 1, `/health has the weather's age (${h.wx?.age} min)`);
+  w3.ws.close(1000);
+  w2.ws.close(1000);
+}

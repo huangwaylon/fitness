@@ -75,11 +75,16 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    * - `rev`: start a new epoch (every phone drops its cache and fetches everything);
    * - `dump`: every row (the backup, docs/ops/runbook.md#13-the-record);
    * - `load {rows: {metrics?, events?, uploads?}}`: rows that already have their `at` (a dump's) into the record, by
-   *   its rules (idempotent: what it has is skipped).
+   *   its rules (idempotent: what it has is skipped);
+   * - `wx {refresh?, s?, fx?}`: the room's real weather (index.ts wxAdmin): fetch it now, put a fixture timeline in, or
+   *   say how it is.
    */
   private async admin(o: Record<string, unknown>): Promise<Record<string, unknown>> {
     const storage = this.ctx.storage;
     switch (o.op) {
+      // the real weather, the room's (index.ts wxAdmin): a fetch now, a fixture timeline, or how it is
+      case 'wx':
+        return this.env.ROOM.get(this.env.ROOM.idFromName('island')).wxAdmin(o);
       case 'counts':
         return { ok: true, counts: this.core.counts(), rev: this.core.rev(), newest: this.core.newestAt() };
       case 'bookmark': {
