@@ -4,7 +4,8 @@ import { expect, test } from '@playwright/test';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { BUGS, FISH } from '../src/lib/components/island/critters.ts';
 import { POND_FISH } from '../src/lib/components/island/pondFish.ts';
-import { FOSSIL_SETS, digSpots } from '../src/lib/components/island/beach.ts';
+import { FOSSILS, FOSSIL_SETS, SHELLS, digSpots } from '../src/lib/components/island/beach.ts';
+import { SEA } from '../src/lib/components/island/sea.ts';
 import { addDays } from '../src/lib/time/dates.ts';
 import { readFileSync } from 'node:fs';
 import { fossilOnScreen } from './island.ts';
@@ -36,9 +37,9 @@ test('a netted butterfly appears in the ずかん with who found it and when; th
   const row = page.locator('[data-zukan="bug"]');
   await expect(row).toContainText(`1 / ${Object.keys(BUGS).length}`);
   await expect(page.locator('[data-zukan="fish"]')).toContainText(`0 / ${Object.keys(FISH).length + Object.keys(POND_FISH).length}`);
-  await expect(page.locator('[data-zukan="fossil"]')).toContainText('0 / 73');
-  await expect(page.locator('[data-zukan="sea"]')).toContainText('0 / 40');
-  await expect(page.locator('[data-zukan="shell"]')).toContainText('0 / 9');
+  await expect(page.locator('[data-zukan="fossil"]')).toContainText(`0 / ${FOSSILS.length}`);
+  await expect(page.locator('[data-zukan="sea"]')).toContainText(`0 / ${Object.keys(SEA).length}`);
+  await expect(page.locator('[data-zukan="shell"]')).toContainText(`0 / ${SHELLS.length + 1}`); // (the beach's shells, then the pearl)
   await row.click();
   await expect(page.locator('.tile.unknown')).toHaveCount(Object.keys(BUGS).length - 1);
   await page.locator('button.tile[data-entry="common-butterfly"]').click();
