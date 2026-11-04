@@ -1227,7 +1227,8 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   turned off the glass before it, off the others' bodies, its body always in the water; facing its way, its tail
   swaying (the vertex shader: one program for every fish). The water is one shader (NH's blue to its depth, caustics
   shimmering on its back and floor, rays from the surface), its glass tinted its water's colour, its bubbles one Points
-  risen in the shader. A species is one InstancedMesh; a wing off screen rests; nothing allocated in a frame.
+  risen in the shader. A species is one InstancedMesh, culled by its tank's bounds; a tank off screen rests; nothing
+  allocated in a frame.
 - **The bug wing** (`garden.ts`): NH's garden under glass (its sky and palms on the walls, dusk-blue at night): stone
   paths, a pond, NH's oaks and a palm (the island's models), NH's flowers in rows, the museum's own garden props
   (flower beds, bushes, a fallen log with its autumn leaves, ferns, cacti, the mangroves), and five glass display
@@ -1239,11 +1240,15 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   the tiger beetle and the dung beetle crawl the soil by the log; the pondskater and the diving beetle glide on the
   pond; the tarantula, the scorpion, the centipede, the beach's crawlers and the mole cricket walk the soil of a case;
   the bagworm and the spider hang from an oak's branch on their threads. Drawn a little bigger than NH's (1.9×, the
-  island's way), one InstancedMesh a species, placed each frame where it is; off screen the wing rests.
+  island's way), one InstancedMesh a species, placed each frame where it is, culled by its own bounds.
 - **Performance:** the wings' exhibits are built only once the finds are in (exhibits.ts: a wing rebuilt only when its
   own list changes), their models loaded per species (the museum chunk, its props and textures under /room/: cached on
-  first use); every frame moves only the wing on screen; 60 a second while something moves (a walk, the camera), the
-  exhibits' 30 while only they do, nothing while nothing on screen does.
+  first use); every frame moves only the tanks and bugs on screen (each culled by its own bounds, so the hall draws no
+  wing's fish or bugs); 60 a second while something moves (a walk, the camera), the exhibits' 30 while only they do,
+  nothing while nothing on screen does (the hall at rest: none). The tanks' and the cases' stands, bases, water, glass
+  and frames are one mesh a material (geometry.ts batcher). Measured on the iOS Simulator (`npm run ios:indoor`, a
+  museum with every fish and bug): the hall at rest 30 → 0 frames a second, 258 → 93 draw calls; the aquarium 335 →
+  170, the bug wing 250 → 84; the way in's longest frame 301 → 93 ms.
 - No music of its own: the app has no NH museum track (NH's museum is quiet ambience); the island's hour plays on.
 
 ### The shop

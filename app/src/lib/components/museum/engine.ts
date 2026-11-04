@@ -9,7 +9,7 @@
 // nothing on screen does. Plain TS; the screen (MuseumRoom.svelte) drives it.
 import {
   AmbientLight, BoxGeometry, CanvasTexture, CircleGeometry, Color, CylinderGeometry, DirectionalLight, Frustum, Group, HemisphereLight,
-  Matrix4, Mesh, MeshBasicMaterial, MeshLambertMaterial, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping,
+  Matrix4, Mesh, Sphere, MeshBasicMaterial, MeshLambertMaterial, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping,
   Scene, SRGBColorSpace, TextureLoader, Vector2, Vector3, WebGLRenderer, type Material, type Object3D, type Texture
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -42,13 +42,12 @@ export interface Insets { top: number; bottom: number }
 export type Hit = { kind: 'villager'; who: Who } | { kind: 'creature'; id: string } | { kind: 'door' } | { kind: 'floor'; x: number; z: number };
 
 /** One wing's exhibits (aquarium.ts, garden.ts): its group, what stands on the floor (the walk keeps off it), its frame
- *  (t ms; whether it's on screen: off screen it rests), the creature nearest client px (its id, its distance in px). */
+ *  (t ms; `seen`: whether a sphere is in the camera's view: what isn't rests), whether something on screen moved (the
+ *  ambient rate), the creature nearest client px (its id, its distance in px). */
 export interface Exhibit {
   group: Group;
   blocks: readonly Rect[];
-  /** Its bounds on the floor (the camera tells whether it's on screen by them). */
-  area: Rect;
-  frame(t: number, dt: number, shown: boolean): boolean;
+  frame(t: number, dt: number, seen: (s: Sphere) => boolean): boolean;
   pick(project: (x: number, y: number, z: number) => [number, number] | null, cx: number, cy: number): { id: string; d: number } | null;
   /** A creature's world point (the card and the e2e), or null. */
   where(id: string): [number, number, number] | null;
@@ -102,7 +101,7 @@ export interface Museum {
   /** The walk grid (the floors less what stands on them). */
   nav(): Nav;
   kit: Kit;
-  stats(): { frames: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; ambient: number; loading: number };
+  stats(): { frames: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; ambient: number; loading: number; mem: [number, number, number] };
   ready: Promise<void>;
   dispose(): void;
 }
@@ -444,12 +443,15 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   }
   // a cornice round the hall's top, gold (NH's lobby trim)
   const trim = lambert({ color: 0xc9a24a });
+  /** Each trim and its wall (cut away with it: the camera's cutaway, each frame). */
+  const trims: [Mesh, WallMesh][] = [];
   for (const wl of WALLS.slice(0, 7)) {
     const dx = wl.b[0] - wl.a[0], dz = wl.b[1] - wl.a[1], len = Math.hypot(dx, dz);
     const m = new Mesh(new BoxGeometry(len + 4, 2.5, 5), trim);
     m.position.set((wl.a[0] + wl.b[0]) / 2, wl.h + 1.2, (wl.a[1] + wl.b[1]) / 2);
     m.rotation.y = Math.atan2(-dz, dx);
-    m.userData.wallTrim = walls.find((x) => x.w === wl);
+    const wm = walls.find((x) => x.w === wl);
+    if (wm) trims.push([m, wm]);
     scene.add(m);
   }
 
@@ -705,9 +707,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       }
       wm.mesh.visible = !cut;
     }
-    scene.traverse((n) => {
-      if (n.userData.wallTrim) n.visible = (n.userData.wallTrim as WallMesh).mesh.visible;
-    });
+    for (const [m, wm] of trims) m.visible = wm.mesh.visible;
   }
   function segCross(ax: number, az: number, bx: number, bz: number, cx: number, cz: number, dx: number, dz: number): boolean {
     const d = (bx - ax) * (dz - cz) - (bz - az) * (dx - cx);
@@ -786,10 +786,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   function invalidate() {
     if (!raf && !disposed) raf = requestAnimationFrame(frame);
   }
-  function areaShown(a: Rect): boolean {
-    const b = { min: new Vector3(a.x0, 0, a.z0), max: new Vector3(a.x1, 60, a.z1) };
-    return frustum.intersectsBox(b as never);
-  }
+  const seen = (sp: Sphere) => frustum.intersectsSphere(sp);
   function frame() {
     raf = 0;
     if (disposed) return;
@@ -823,15 +820,16 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     for (const w of villagers.values()) if (stepVillager(w, t, camMoved)) full = true;
     lastV = t;
     if (gesturing) full = true;
-    // the exhibits on screen move (at the ambient rate when nothing else does); off screen they rest
+    // the exhibits on screen move (at the ambient rate when nothing else does); off screen they rest (a tank, a bug:
+    // the hall's view of the wings' far ends is still)
     projScreen.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     frustum.setFromProjectionMatrix(projScreen);
     let ambient = false;
     ambientOn = 0;
     for (const e of exhibits) {
-      const shown = areaShown(e.area);
-      if (shown) ambientOn++;
-      if (e.frame(t, dt, shown)) ambient = true;
+      if (!e.frame(t, dt, seen)) continue;
+      ambient = true;
+      ambientOn++;
     }
     const c0 = now();
     if (!noDraw) renderer.render(scene, camera);
@@ -920,7 +918,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     client,
     nav: () => nav,
     kit,
-    stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: [...cost], queued: !!raf, ambient: ambientOn, loading: pending }),
+    stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: [...cost], queued: !!raf, ambient: ambientOn, loading: pending,
+      mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0] }),
     ready,
     dispose() {
       disposed = true;

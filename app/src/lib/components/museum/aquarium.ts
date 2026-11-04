@@ -5,18 +5,19 @@
 //     every fish: the sway grows toward its tail, its phase the instance's own);
 //   - each tank's water is one shader (its glow, NH's blue to its depth, caustics shimmering over its back and floor,
 //     light from above), its bubbles one Points (risen in the shader), its glass a faint pane and a metal frame;
-//   - the swimmers step by boids.ts, their matrices written in place; nothing allocated in a frame; off screen, at rest.
+//   - the swimmers step by boids.ts, their matrices written in place; nothing allocated in a frame; a tank off screen
+//     rests, its fish culled by its water's bounds (and the wing draws nothing while none is on screen).
 import {
   BoxGeometry, BufferGeometry, Color, DoubleSide, Float32BufferAttribute, Group, InstancedBufferAttribute, InstancedMesh, Matrix4,
-  Mesh, MeshBasicMaterial, MeshLambertMaterial, PlaneGeometry, Points, Quaternion, ShaderMaterial, Vector3, AdditiveBlending,
+  Mesh, MeshBasicMaterial, MeshLambertMaterial, PlaneGeometry, Points, Quaternion, ShaderMaterial, Sphere, Vector3, AdditiveBlending,
   type Material, type Texture
 } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
 import type { Specimen } from './species.ts';
 import { TANKS, fishScale, shoalOf, waterOf, type Box, type Tank } from './tanks.ts';
 import { spawn, stepSchool, type Swimmer } from './boids.ts';
-import { FISH_WING, type Rect } from './plan.ts';
-import { plainGeometry } from './geometry.ts';
+import type { Rect } from './plan.ts';
+import { batcher, plainGeometry } from './geometry.ts';
 
 /** Each look's water: its deep colour, its light colour, how bright its caustics. */
 const WATER: Record<Tank['look'], { deep: number; top: number; caustic: number; glow: number }> = {
@@ -84,6 +85,12 @@ interface School {
   s: number;
 }
 
+/** A tank's bounds as a sphere (the camera's test: its fish culled by it, its water stepped only on screen). */
+function sphereOf(b: Box): Sphere {
+  const c = new Vector3((b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, (b.z0 + b.z1) / 2);
+  return new Sphere(c, Math.hypot(b.x1 - b.x0, b.y1 - b.y0, b.z1 - b.z0) / 2);
+}
+
 export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
   const group = new Group();
   const mats: Material[] = [];
@@ -106,21 +113,22 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
   const stand = kit.lambert({ color: 0x5b4535 });
   const sand = kit.lambert({ map: kit.tex('fish-sand', [3, 1]) });
   const dark = kit.lambert({ color: 0x0a1424 });
-  const box = (b: Box, m: Material, parent = group) => {
-    const g = new BoxGeometry(b.x1 - b.x0, b.y1 - b.y0, b.z1 - b.z0);
-    geos.push(g);
-    const mesh = new Mesh(g, m);
-    mesh.position.set((b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, (b.z0 + b.z1) / 2);
-    parent.add(mesh);
-    return mesh;
-  };
+  // the tanks' stands, bases, water, glass and frames: static, a mesh a material (batcher), not one a piece
+  const batch = batcher(), at = new Matrix4();
+  const box = (b: Box, m: Material) =>
+    batch.add(new BoxGeometry(b.x1 - b.x0, b.y1 - b.y0, b.z1 - b.z0), m, at.makeTranslation((b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, (b.z0 + b.z1) / 2));
+  const waterOfLook = new Map<string, ShaderMaterial>();
   const waterMat = (look: Tank['look'], floor: boolean) => {
+    const k = `${look}|${floor}`, was = waterOfLook.get(k);
+    if (was) return was;
     const w = WATER[look];
     const m = new ShaderMaterial({
       vertexShader: WATER_VERT, fragmentShader: WATER_FRAG, side: DoubleSide,
       uniforms: { uTime, uNight, uDeep: { value: new Color(w.deep) }, uTop: { value: new Color(w.top) }, uCaustic: { value: w.caustic }, uFloor: { value: floor ? 1 : 0 } },
       ...(floor ? { transparent: true, depthWrite: false, blending: AdditiveBlending } : {})
     });
+    m.userData.floor = floor;
+    waterOfLook.set(k, m);
     mats.push(m);
     return m;
   };
@@ -128,6 +136,7 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
   mats.push(bubbleMat);
 
   // ---- the tanks ----
+  const spheres = new Map<string, Sphere>(TANKS.map((t) => [t.id, sphereOf(t.box)]));
   for (const t of TANKS) {
     const b = t.box, w = waterOf(t), look = t.look;
     const along = b.x1 - b.x0 >= b.z1 - b.z0;
@@ -136,17 +145,10 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
     box({ x0: b.x0 - 0.5, x1: b.x1 + 0.5, y0: b.y0, y1: w.y0, z0: b.z0 - 0.5, z1: b.z1 + 0.5 }, look === 'deep' ? dark : sand);
     // its water's back (the side toward the wall: the back for the sea's, the far wall for the deep's; a free-standing
     // tank's all round is glass, its back the far long side) and its floor's caustics
-    const back = new Mesh(new PlaneGeometry(along ? w.x1 - w.x0 : w.z1 - w.z0, w.y1 - w.y0), waterMat(look, false));
-    geos.push(back.geometry);
-    if (along) back.position.set((w.x0 + w.x1) / 2, (w.y0 + w.y1) / 2, w.z0);
-    else (back.position.set(w.x1, (w.y0 + w.y1) / 2, (w.z0 + w.z1) / 2), (back.rotation.y = -Math.PI / 2));
-    group.add(back);
-    const fl = new Mesh(new PlaneGeometry(w.x1 - w.x0, w.z1 - w.z0), waterMat(look, true));
-    geos.push(fl.geometry);
-    fl.rotation.x = -Math.PI / 2;
-    fl.position.set((w.x0 + w.x1) / 2, w.y0 + 0.08, (w.z0 + w.z1) / 2);
-    fl.renderOrder = 1;
-    group.add(fl);
+    const back = new PlaneGeometry(along ? w.x1 - w.x0 : w.z1 - w.z0, w.y1 - w.y0);
+    if (along) batch.add(back, waterMat(look, false), at.makeTranslation((w.x0 + w.x1) / 2, (w.y0 + w.y1) / 2, w.z0));
+    else batch.add(back, waterMat(look, false), at.makeRotationY(-Math.PI / 2).setPosition(w.x1, (w.y0 + w.y1) / 2, (w.z0 + w.z1) / 2));
+    batch.add(new PlaneGeometry(w.x1 - w.x0, w.z1 - w.z0), waterMat(look, true), at.makeRotationX(-Math.PI / 2).setPosition((w.x0 + w.x1) / 2, w.y0 + 0.08, (w.z0 + w.z1) / 2));
     // its props, at their spots on the sand
     for (const [name, u, v, s] of PROPS[t.id] ?? PROPS[look] ?? []) {
       const x = along ? w.x0 + (w.x1 - w.x0) * u : w.x1 - (w.x1 - w.x0) * v;
@@ -166,13 +168,13 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
     bg.setAttribute('aBase', new Float32BufferAttribute(base, 4));
     bg.setAttribute('aPhase', new Float32BufferAttribute(phase, 1));
     geos.push(bg);
+    // (risen in the shader: its bounds the tank's)
+    bg.boundingSphere = spheres.get(t.id)!;
     const pts = new Points(bg, bubbleMat);
-    pts.frustumCulled = false;
     pts.renderOrder = 3;
     group.add(pts);
     // its glass (one pane each side, faint) and its frame's edges
-    const g = box({ ...b, y0: w.y0 }, glass(look));
-    g.renderOrder = 4;
+    box({ ...b, y0: w.y0 }, glass(look));
     const e = 0.9;
     for (const [x, z] of [[b.x0, b.z0], [b.x1, b.z0], [b.x0, b.z1], [b.x1, b.z1]] as const) box({ x0: x - e, x1: x + e, y0: b.y0, y1: b.y1, z0: z - e, z1: z + e }, frame);
     box({ x0: b.x0 - e, x1: b.x1 + e, y0: b.y1 - e, y1: b.y1 + e, z0: b.z0 - e, z1: b.z0 + e }, frame);
@@ -180,6 +182,10 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
     box({ x0: b.x0 - e, x1: b.x0 + e, y0: b.y1 - e, y1: b.y1 + e, z0: b.z0 - e, z1: b.z1 + e }, frame);
     box({ x0: b.x1 - e, x1: b.x1 + e, y0: b.y1 - e, y1: b.y1 + e, z0: b.z0 - e, z1: b.z1 + e }, frame);
   }
+  // (the glass over all else, the caustics over the sand; a look's panes one colour, so their order in a mesh is no
+  // matter)
+  const glasses = new Set<Material>(glassOf.values());
+  geos.push(...batch.done(group, (m) => (glasses.has(m) ? 4 : m.userData.floor ? 1 : 0)));
 
   // ---- the fish: a species' shoal one InstancedMesh, its tail swaying in the shader ----
   const schools: School[] = [];
@@ -232,7 +238,8 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
       geos.push(geo);
       const map = (m.material as { map?: Texture | null }).map ?? null;
       const mesh = new InstancedMesh(geo, fishMat(map, head, tail, len * 0.06), n);
-      mesh.frustumCulled = false;
+      // (culled by its tank's bounds: its fish swim nowhere else)
+      mesh.boundingSphere = spheres.get(tank.id)!;
       mesh.userData.specimen = sp.id;
       // a big fish slow, a little one quick (u/s, at its drawn size)
       const r = (len * school.s) / 2;
@@ -271,11 +278,14 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
   return {
     group,
     blocks,
-    area: FISH_WING,
-    frame(t, dt, shown) {
-      if (!shown) return false;
+    frame(t, dt, seen) {
+      // (the water's shimmer and the bubbles with any tank on screen; a school only with its own)
+      let any = false;
+      for (const tk of TANKS) if (seen(spheres.get(tk.id)!)) any = true;
+      if (!any) return false;
       uTime.value = t / 1000;
       for (const [id, ss] of byTank) {
+        if (!seen(spheres.get(id)!)) continue;
         stepSchool(swimmers.get(id)!, waters.get(id)!, dt / 1000, t / 1000);
         for (const s of ss) write(s);
       }

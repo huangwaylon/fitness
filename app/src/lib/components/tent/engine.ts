@@ -157,8 +157,8 @@ export interface Tent {
   /** Pieces still loading. */
   loading(): number;
   /** Frames drawn, and the last frame's draw calls and triangles (the e2e's budget); `queued`: a frame is asked for
-   *  (something moves: a walk, a camera glide, a model popping in). */
-  stats(): { frames: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean };
+   *  (something moves: a walk, a camera glide, a model popping in); `mem`: the GPU's geometries, textures and programs. */
+  stats(): { frames: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; mem: [number, number, number] };
   /** The first frame was drawn (the room on screen). */
   ready: Promise<void>;
   dispose(): void;
@@ -1512,7 +1512,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     },
     walk, walking: (who) => !!villagers.get(who)?.path, face, hop, headPoint, hit, floorAt, client, orbit, zoom, resetView, isDefault, moving, centre,
     loading: () => pending,
-    stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: cost.slice(), queued: !!raf }),
+    stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: cost.slice(), queued: !!raf,
+      mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0] }),
     ready,
     dispose() {
       disposed = true;

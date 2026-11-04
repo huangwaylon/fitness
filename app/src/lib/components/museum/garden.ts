@@ -13,16 +13,17 @@
 //   water     on the pond: gliding strokes
 //   terrarium walking the soil of its glass case
 //   dangle    hanging from an oak's branch on its thread, bobbing
-// A species is one InstancedMesh (one specimen, NH's museum's), placed each frame in place; the wing off screen rests.
+// A species is one InstancedMesh (one specimen, NH's museum's), placed each frame in place, culled by its own bounds
+// (a sphere round it); a bug off screen rests, and the wing draws nothing while none is on screen.
 import {
   BufferGeometry, CircleGeometry, Color, DoubleSide, Float32BufferAttribute, Group, InstancedBufferAttribute, InstancedMesh, LineBasicMaterial,
   LineSegments, Matrix4, Mesh, MeshBasicMaterial, MeshLambertMaterial, PlaneGeometry, Quaternion, Sprite, SpriteMaterial, CanvasTexture,
-  Vector3, AdditiveBlending, BoxGeometry, type Material, type Texture
+  Sphere, Vector3, AdditiveBlending, BoxGeometry, type Material, type Texture
 } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
 import type { Habitat, Specimen } from './species.ts';
-import { BUG_WING, type Pt, type Rect } from './plan.ts';
-import { plainGeometry } from './geometry.ts';
+import type { Pt, Rect } from './plan.ts';
+import { batcher, plainGeometry } from './geometry.ts';
 
 /** A bug is drawn this much bigger than NH's own (the island's way: a butterfly a hand across). */
 const BUG_S = 1.9;
@@ -53,6 +54,8 @@ const PROPS: [string, number, number, number, number][] = [
 const LEAVES: [number, number, number][] = [[-86, -30, 10], [-140, 88, 11], [-96, -24, 10]];
 const SOIL: Pt[] = [[-272, -8], [-222, 92], [-284, -40]];
 /** The grass spots a hopper keeps to. */
+/** The beds the flyers circle: [x, z, radius]. */
+const BEDS: [number, number, number][] = [[-120, 58, 20], [-212, -24, 16], [-120, 30, 22], [-140, 86, 14], [-220, -8, 18]];
 const GRASS: Pt[] = [[-230, 26], [-130, -12], [-200, 52], [-100, -60], [-150, 70], [-262, -60], [-80, 10]];
 
 const FLY_FLAP: Record<string, number> = { fly: 0.55, dart: 0.12, drift: 0.25 };
@@ -72,6 +75,8 @@ interface Bug {
   /** Its body's lift above its spot (half its height), its drawn size across. */
   lift: number;
   size: number;
+  /** Its bounds (round where it is now: the camera's cull and test). */
+  sphere: Sphere;
 }
 
 function glowTex(): CanvasTexture {
@@ -163,20 +168,15 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
   const frame = kit.lambert({ color: 0x4a3a2a });
   const glass = new MeshBasicMaterial({ color: 0xe8fff4, transparent: true, opacity: 0.14, depthWrite: false, side: DoubleSide });
   mats.push(glass);
-  const box = (x0: number, x1: number, y0: number, y1: number, z0: number, z1: number, m: Material) => {
-    const g = new BoxGeometry(x1 - x0, y1 - y0, z1 - z0);
-    geos.push(g);
-    const mesh = new Mesh(g, m);
-    mesh.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
-    group.add(mesh);
-    return mesh;
-  };
+  // (static: a mesh a material for all five, batcher)
+  const batch = batcher(), at = new Matrix4();
+  const box = (x0: number, x1: number, y0: number, y1: number, z0: number, z1: number, m: Material) =>
+    batch.add(new BoxGeometry(x1 - x0, y1 - y0, z1 - z0), m, at.makeTranslation((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2));
   for (const [cx, cz] of CASES) {
     const x0 = cx - CASE.w / 2, x1 = cx + CASE.w / 2, z0 = cz - CASE.d / 2, z1 = cz + CASE.d / 2, y = CASE.stand;
     box(x0 + 1, x1 - 1, 0, y, z0 + 1, z1 - 1, wood);
     box(x0, x1, y, y + 2, z0, z1, soil);
-    const g = box(x0, x1, y + 2, y + CASE.h, z0, z1, glass);
-    g.renderOrder = 4;
+    box(x0, x1, y + 2, y + CASE.h, z0, z1, glass);
     const e = 0.6;
     for (const [x, z] of [[x0, z0], [x1, z0], [x0, z1], [x1, z1]] as const) box(x - e, x + e, y, y + CASE.h, z - e, z + e, frame);
     // its lid's frame (its glass top open to the camera)
@@ -185,6 +185,7 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
     box(x0 - e, x0 + e, y + CASE.h - e, y + CASE.h + e, z0 - e, z1 + e, frame);
     box(x1 - e, x1 + e, y + CASE.h - e, y + CASE.h + e, z0 - e, z1 + e, frame);
   }
+  geos.push(...batch.done(group, (m) => (m === glass ? 4 : 0)));
   for (const [x, z] of CASES) kit.prop('agave', x - 7, z - 2, { s: 0.45, y: CASE.stand + 2, parent: group });
 
   // ---- the bugs ----
@@ -216,7 +217,7 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
     const hab = sp.tank as Habitat;
     const slot = byHabitat.get(hab) ?? 0;
     byHabitat.set(hab, slot + 1);
-    const b: Bug = { sp, mesh: null, p: new Vector3(), q: new Quaternion(), seed: hash(sp.id), slot, leg: null, next: 0, lift: 0.5, size: 4 };
+    const b: Bug = { sp, mesh: null, p: new Vector3(), q: new Quaternion(), seed: hash(sp.id), slot, leg: null, next: 0, lift: 0.5, size: 4, sphere: new Sphere(new Vector3(), 4) };
     bugs.push(b);
     place(b, 0);
     void kit.critter('bugs', sp.id).then((g) => {
@@ -236,7 +237,8 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
       b.size = Math.max(bb.max.x - bb.min.x, bb.max.z - bb.min.z) * BUG_S;
       const flap = FLY_FLAP[hab] ?? 0;
       const mesh = new InstancedMesh(geo, bugMat((m.material as { map?: Texture | null }).map ?? null, flap, hab === 'dart' ? 60 : hab === 'fly' ? 11 : 6, hab === 'drift'), 1);
-      mesh.frustumCulled = false;
+      b.sphere.radius = Math.max(6, b.size);
+      mesh.boundingSphere = b.sphere;
       b.mesh = mesh;
       group.add(mesh);
       if (hab === 'drift') {
@@ -279,8 +281,7 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
     switch (b.sp.tank as Habitat) {
       case 'fly': {
         // round a bed of flowers, its own ellipse, bobbing
-        const beds: [number, number, number][] = [[-120, 58, 20], [-212, -24, 16], [-120, 30, 22], [-140, 86, 14], [-220, -8, 18]];
-        const [cx, cz, r] = beds[i % beds.length];
+        const [cx, cz, r] = BEDS[i % BEDS.length];
         const w = 0.35 + (s % 5) * 0.04, a = t * w * (s % 2 ? 1 : -1) + s, rr = r + (i >> 2) * 6;
         b.p.set(cx + Math.cos(a) * rr, 13 + (i % 3) * 4 + Math.sin(t * 1.7 + s) * 2.5, cz + Math.sin(a * 1.3) * rr * 0.6);
         T.set(-Math.sin(a) * rr, Math.cos(t * 1.7 + s) * 0.8, Math.cos(a * 1.3) * rr * 0.78).multiplyScalar(s % 2 ? 1 : -1);
@@ -401,15 +402,19 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
   return {
     group,
     blocks,
-    area: BUG_WING,
-    frame(t, _dt, shown) {
-      if (!shown) return false;
+    frame(t, _dt, seen) {
       const s = t / 1000;
-      uTime.value = s;
+      let any = false;
       for (const b of bugs) {
+        if (!b.mesh) continue;
         place(b, s);
+        b.sphere.center.copy(b.p);
+        if (!seen(b.sphere)) continue;
         write(b);
+        any = true;
       }
+      if (!any) return false;
+      uTime.value = s;
       danglers.forEach((b, k) => {
         threadPos.setXYZ(k * 2, b.p.x, b.p.y + b.size * 0.4, b.p.z);
         threadPos.setXYZ(k * 2 + 1, b.p.x, 40, b.p.z);
