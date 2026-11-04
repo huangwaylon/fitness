@@ -219,7 +219,7 @@ Health data over time for the personal trainer, one person at a time, computed o
   start from the goal, else the period's average for 体重 and 体脂肪率), the range in words (coral after a refused
   けってい), then 目標をなくす (once set, for the goals that may be cleared), やめる and けってい (dimmed until the field
   holds a goal). One open at a time; Esc, やめる or a tap anywhere else close it unchanged, the focus back on the chip;
-  saved, a banner says so. The goals, per person, for whose data is shown (either
+  saved, a banner says so. The same control sets ごはん's goals ([Gohan](#gohan)). The goals, per person, for whose data is shown (either
   person sets either person's):
   - 🍎 歩数: 1,000–30,000 in 500s, from today on; 8,000 for both until set. 🍐 ムーブ: 100–2,000 kcal (−/＋ by 10),
     from today on. The chip shows the goal at the period's end (a past period's own); the editor starts from today's.
@@ -250,12 +250,20 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   person first, then the others (the guest once it has logged a meal, or on its own phone); kept for the session.
   Then (きろく) a sticky row: ‹ the day (「11/4(水)」) › and きょう; › goes past today only to tomorrow, and only when a
   いつもの fills it (read-only: a look at what comes).
-- **Summary card:** この日の カロリー, the day's kcal large; with the person's goal (`pref kcalGoal`, 1,200–5,000 by
-  50 in the field, the record takes 1,000+; none until set) 「目標 2,200 kcal」, a bar in the person's colour and,
-  today, あと N kcal / N kcal オーバー, a past day 目標より N kcal 少なめ / 多め; coral only past 20 % over (the lifter's
-  surplus is no fault). Then たんぱく質 · 脂質 · 炭水化物 · 塩分 in grams, protein with 「目標 N g 以上」 (1.6 g × the
-  latest weigh-in; members with a weight only). A day with nothing logged: no tiles; a past one 「きろく なし」 (not
-  0 kcal). On my day ✎ sets my goal (`health/ValueInput`, with 目標をなくす).
+- **Summary card:** この日の カロリー, the day's kcal large; the person's kcal goal at the upper right (「- - 目標 2,200
+  kcal ✎」, set there on my day: けんこう's [goals in place](#goals-in-place)) and, with one, a bar in the person's
+  colour and, today, あと N kcal / N kcal オーバー, a past day 目標より N kcal 少なめ / 多め; coral only past 20 % over
+  (the lifter's surplus is no fault). Then たんぱく質 · 脂質 · 炭水化物 · 塩分 in grams, each with its goal when there is
+  one (「目標 N g 以上」 protein, 「目標 N g」 fat and carbs, 「目標 N g 以下」 salt; set on グラフ) and a small bar,
+  salt's coral once past it. A day with nothing logged: no tiles; a past one 「きろく なし」 (not 0 kcal).
+- **Goals** (`contract/food.ts` FOOD_GOALS, prefs per person, as the health goals: [backend](backend.md#events)): kcal
+  1,200–5,000 by 50 (the record takes 1,000+), protein, fat and carbs in g by 5 (10–400, 10–300, 20–800), salt 1–20 g
+  by 0.5; each set and cleared (目標をなくす) with けんこう's control (`health/GoalEdit`, `foodUi.ts`
+  FOOD_GOAL_SPECS) on my own cards only, anyone else's shown read-only (the guest has its own). **Defaults:** protein
+  1.6 g × the latest weigh-in (a lifter's usual aim; a member with a weight, until set, and again once cleared:
+  「なしなら 体重×1.6 g」); none for kcal, fat, carbs and salt: what they should be depends on the person and the plan
+  (a cut, a bulk, a doctor's salt limit), and a made-up line would read as advice. Salt's is a ceiling (「これより
+  ひかえめに」).
 - **Meals:** 朝ごはん · 昼ごはん · 夜ごはん · おやつ, a card each with its kcal and a row per entry (the food, its
   amount in one format, a weight once: 「茶碗1杯（150g）」, 「1パック（110g）」, 「中ジョッキ×2（700ml）」; kcal). On my
   day ＋ → the search (its field focused in the same tap, so the iPhone's keyboard comes up), an entry → its amount
@@ -290,8 +298,12 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   average of its days with a meal), every bar solid in the person's colour (no goal-met shading: the kcal goal isn't
   a target to hit, and a low day is never rewarded); today outlined and uncounted; a day with nothing logged is
   記録なし (the stub, never a 0). 1日の平均（n日分） and 期間の合計 over the finished days with a meal; 記録 n日 ·
-  記録なし m日; the goal dashed, the average a flat solid line (「平均」 in the key). Under it, for a member, けんこう's 🍐 ムーブ card as is for the same
+  記録なし m日; the goal at the upper right (GoalEdit) and dashed on the chart, the average a flat solid line (「平均」 in
+  the key). Under it, for a member, けんこう's 🍐 ムーブ card as is for the same
   person, period and range (the calories burned; never subtracted from what was eaten); the guest has none of its own.
+  Then the same card for たんぱく質, 脂質, 炭水化物 and 塩分 (grams, one decimal; foodSeries per nutrient from the same
+  pass; salt's bars one decimal), each with its catalogue icon (`art.ts` NUTRIENT_ART: the barbecue, the cream and
+  sugar, the sticky rice, the spice rack) and its goal.
 - **マイレシピ:** everyone's recipes (`food_recipe`), in a meal's search: all after さいきん (the latest changed first),
   the matching ones above the catalog's; a row: its name, who set it and how many servings, a serving's kcal. One →
   the amount for the recipe as a food (1人前 first, ぜんぶ, 100 g; the search's meal), logging an ordinary entry of mine
@@ -1616,7 +1628,7 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
 ## Chrome and tokens
 
 - **Dialogue** (`ui/Bubble.svelte`): cream box, yuzu nameplate, 33 ms a glyph, tap to finish, `aria-live` mirror.
-  **Choices** (`ui/ChoiceList.svelte`), **banner** (`ui/Toast.svelte`, one at a time).
+  **Banner** (`ui/Toast.svelte`, one at a time).
 - **Buttons:** every tappable has an edge (2px outline + 4px lip); static cards only a soft lip. Primary leaf,
   secondary cream, selected yuzu, disabled sunk. "Can't now" = `aria-disabled` ([Taps](#taps)).
 - **Focus:** no ring after a pointer input (`ui/modality.ts`); focus is restored for keyboard and VoiceOver.

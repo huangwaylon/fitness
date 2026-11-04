@@ -82,12 +82,12 @@ test('the day, the search and the amount all fit the sheet’s width', async ({ 
 test('another person’s day is read-only; the guest sees the members’ meals and logs its own', async ({ page }) => {
   await openFood(page);
   await expect(sheet(page).locator('[data-add]')).toHaveCount(4); // my day: ＋ per meal and ✎ the goal
-  await expect(sheet(page).locator('[data-focus=kcal-goal]')).toHaveCount(1);
+  await expect(sheet(page).locator('button[data-goal=kcal-goal]')).toHaveCount(1);
   await sheet(page).locator('select[data-pick=who]').selectOption('B');
   await expect(sheet(page).locator('[data-food-summary]')).toHaveClass(/pB/);
-  await expect(sheet(page).locator('[data-kcal-goal]')).toHaveText('目標 1,700 kcal');
+  await expect(sheet(page).locator('[data-goal=kcal-goal]')).toHaveText('目標 1,700 kcal');
   expect(await sheet(page).locator('div.row[data-entry]').count()).toBeGreaterThan(0); // うめ's meals, shown
-  await expect(sheet(page).locator('button[data-entry], [data-add], [data-focus=kcal-goal], button[data-repeat], [data-repeat-new]')).toHaveCount(0); // never changed here
+  await expect(sheet(page).locator('button[data-entry], [data-add], button[data-goal], button[data-repeat], [data-repeat-new]')).toHaveCount(0); // never changed here
   // the day before: still うめ's, still read-only; きょう comes back
   await sheet(page).locator('[data-nav=back]').click();
   await expect(sheet(page).locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-03');
@@ -237,7 +237,7 @@ test('グラフ: the kcal eaten per day with the average line, the Move card und
   await expect(sheet(page).locator('select[data-pick=period]')).toHaveValue('week');
   await expect(sheet(page).locator('[data-food-summary]')).toHaveCount(0);
 
-  const card = sheet(page).locator('[data-food-chart]');
+  const card = sheet(page).locator('[data-food-chart=k]');
   await expect(card).toHaveAttribute('data-person', 'A');
   await expect(card.locator('path.bar')).toHaveCount(4);
   await expect(card.locator('path.bar.now')).toHaveCount(1); // today: drawn, outlined
@@ -286,9 +286,79 @@ test('グラフ on the guest’s phone: its own kcal only (no Health of its own)
   await expect(sheet(page).locator('.card.empty')).toBeVisible(); // nothing logged yet
   await expect(sheet(page).locator('[data-metric]')).toHaveCount(0);
   await sheet(page).locator('select[data-pick=who]').selectOption('A');
-  await expect(sheet(page).locator('[data-food-chart] path.bar')).toHaveCount(4);
+  await expect(sheet(page).locator('[data-food-chart=k] path.bar')).toHaveCount(4);
   await expect(sheet(page).locator('[data-metric=move][data-person=A]')).toBeVisible();
   expect(await overflowOf(page)).toEqual([]);
+});
+
+// The goals (design.md "Gohan"): kcal at the summary's and the kcal chart's upper right, protein, fat, carbs and salt
+// on their charts, each set in place with けんこう's control (GoalEdit), mine only; protein's default 1.6 g × the latest
+// weigh-in until set, the others none.
+test('the goals: set in place on my cards (kcal, protein, salt), shown on the day\'s summary; anyone else\'s read-only', async ({ page }) => {
+  await openFood(page);
+  // きろく: the kcal goal's chip; a tap opens its tray in the summary, no level
+  const kcal = sheet(page).locator('button[data-goal=kcal-goal]');
+  await expect(kcal).toHaveText('目標 2,200 kcal');
+  await kcal.click();
+  const tray = sheet(page).locator('[data-food-summary] form.tray');
+  await expect(tray).toContainText('カロリーの目標（1日）');
+  await expect(tray.getByRole('textbox')).toHaveValue('2,200');
+  await tray.getByRole('button', { name: 'ふやす' }).click();
+  await tray.getByRole('button', { name: 'けってい' }).click();
+  await expect(kcal).toHaveText('目標 2,250 kcal');
+  await expect(sheet(page).getByRole('status')).toContainText('カロリーの目標を かえました');
+  await sheet(page).getByRole('status').getByRole('button', { name: 'とじる' }).click();
+  // the nutrient tiles: protein's default goal (1.6 g × ウェイ's weigh-in), the rest none yet
+  await expect(sheet(page).locator('[data-nutrient=p] small')).toHaveText(/^目標 \d+ g 以上$/);
+  await expect(sheet(page).locator('[data-nutrient=s] small, [data-nutrient=fa] small, [data-nutrient=c] small')).toHaveCount(0);
+
+  // グラフ: a card each, kcal (then the Move card), protein, fat, carbs, salt; each with its goal's chip
+  await sheet(page).locator('[data-tab=chart]').click();
+  const cards = sheet(page).locator('[data-food-chart]');
+  await expect(cards).toHaveCount(5);
+  expect(await cards.evaluateAll((cs) => cs.map((c) => c.getAttribute('data-food-chart')))).toEqual(['k', 'p', 'fa', 'c', 's']);
+  await expect(sheet(page).locator('[data-food-chart] h3')).toHaveText(['たべた カロリー', 'たんぱく質', '脂質', '炭水化物', '塩分']);
+  await expect(sheet(page).locator('[data-food-chart=k] button[data-goal]')).toHaveText('目標 2,250 kcal');
+  const protein = sheet(page).locator('[data-food-chart=p]');
+  await expect(protein.locator('[data-intake-avg]')).toHaveText(/^\d+\.\d g$/);
+  await expect(protein.locator('path.bar')).toHaveCount(4);
+  await expect(protein.locator('path.goal')).toHaveCount(1); // the default, dashed
+  const salt = sheet(page).locator('[data-food-chart=s]');
+  await expect(salt.locator('button[data-goal]')).toHaveText('目標 まだ');
+  await expect(salt.locator('path.goal')).toHaveCount(0);
+  // salt: 0.5 g steps from 7.5; 7.3 refused
+  await salt.locator('button[data-goal]').click();
+  const sTray = salt.locator('form.tray');
+  await expect(sTray).toContainText('これより ひかえめに');
+  await sTray.getByRole('textbox').fill('7.3');
+  await sTray.getByRole('button', { name: 'けってい' }).click();
+  await expect(sTray.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true');
+  await expect(sTray.locator('.hint')).toHaveText('1〜20 g、0.5 g ずつで入れてね');
+  await sTray.getByRole('textbox').fill('');
+  await sTray.getByRole('button', { name: 'へらす' }).click();
+  await expect(sTray.getByRole('textbox')).toHaveValue('7.0');
+  await sTray.getByRole('button', { name: 'けってい' }).click();
+  await expect(salt.locator('button[data-goal]')).toHaveText('目標 7.0 g');
+  await expect(salt.locator('path.goal')).toHaveCount(1);
+  // protein: set over the default, then cleared back to it
+  await protein.locator('button[data-goal]').click();
+  await protein.locator('form.tray').getByRole('textbox').fill('130');
+  await protein.locator('form.tray').getByRole('button', { name: 'けってい' }).click();
+  await expect(protein.locator('button[data-goal]')).toHaveText('目標 130 g');
+  await protein.locator('button[data-goal]').click();
+  await protein.locator('form.tray').getByRole('button', { name: '目標をなくす' }).click();
+  await expect(protein.locator('button[data-goal]')).not.toHaveText('目標 130 g');
+  expect(await overflowOf(page)).toEqual([]);
+
+  // きろく shows them: salt's goal on its tile
+  await sheet(page).locator('[data-tab=log]').click();
+  await expect(sheet(page).locator('[data-nutrient=s] small')).toHaveText('目標 7.0 g 以下');
+  // うめ's: shown, never set here
+  await sheet(page).locator('select[data-pick=who]').selectOption('B');
+  await expect(sheet(page).locator('span[data-goal=kcal-goal]')).toHaveText('目標 1,700 kcal');
+  await sheet(page).locator('[data-tab=chart]').click();
+  await expect(sheet(page).locator('[data-food-chart] span[data-goal]')).toHaveCount(5);
+  await expect(sheet(page).locator('[data-food-chart] button[data-goal]')).toHaveCount(0);
 });
 
 // マイレシピ: from a meal's search, レシピを つくる (under the field, beside 食品を つくる): a recipe of mine from two
@@ -563,7 +633,7 @@ test('whose day is kept for the session; an empty past day says きろく なし
   await sheet(page).locator('[data-nav=on]').click();
   await expect(sheet(page).locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-05');
   expect(await sheet(page).locator('section[data-meal=b] div.row[data-rep]').count()).toBeGreaterThan(0);
-  await expect(sheet(page).locator('[data-add], button[data-entry], [data-focus=kcal-goal], [data-repeat-new]')).toHaveCount(0);
+  await expect(sheet(page).locator('[data-add], button[data-entry], button[data-goal], [data-repeat-new]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-nav=on]')).toHaveAttribute('aria-disabled', 'true'); // no further
   await sheet(page).locator('[data-nav=today]').click();
 

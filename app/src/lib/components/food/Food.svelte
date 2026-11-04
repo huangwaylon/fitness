@@ -5,7 +5,7 @@
   // day ＋ per meal → the search (its field focused in the tap: the iPhone's keyboard up) → the amount → ついか; an
   // entry → its amount at once (from its snapshot; the catalog's portions swapped in when they come) → ほぞん / けす
   // (けす with とりけす in its banner; a いつもの's entry: the day leaves the repeat only then, detachDay, so ‹ changes
-  // nothing); ✎ → the kcal goal; a meal's 🔁 → いつもの (its repeat, or a new one from the day's entries). Those push a
+  // nothing); the kcal goal at the summary's upper right (GoalEdit, in place); a meal's 🔁 → いつもの (its repeat, or a new one from the day's entries). Those push a
   // level (FoodSheet's title bar: its ‹; back where it was scrolled, the focus on what opened it, as けんこう's).
   // Anyone else's day is read-only. データの出典 at the foot. Whose day sits in the title bar (`lead`, FoodSheet's
   // NavBar; kept for the session as けんこう's); under it the tabs (TABS, けんこう's group switch): きろく (the day,
@@ -18,16 +18,16 @@
   import '#lib/i18n/kenkou.ts'; // けんこう's: the period dropdown
   import { flushSync, tick, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
-  import { customSnap, KCAL_GOAL, MEALS, type FoodCustom as Custom, type FoodEntry, type FoodSnap, type Meal } from '#lib/contract/food.ts';
-  import { customs, foodDay, foodEntries, kcalGoal, proteinGoal, recipes, repeatOn, repeats, type Recipe } from '#lib/model/food.ts';
+  import { customSnap, FOOD_GOAL_OF, MEALS, type FoodCustom as Custom, type FoodEntry, type FoodGoalOf, type FoodSnap, type Meal } from '#lib/contract/food.ts';
+  import { customs, foodDay, foodEntries, foodGoal, recipes, repeatOn, repeats, type Recipe } from '#lib/model/food.ts';
   import {
-    detachDay, editFood, logCustom, logFood, logRecipe, removeCustom, removeFood, removeRecipe, saveCustom, saveRecipe, setKcalGoal, startRepeat,
+    detachDay, editFood, logCustom, logFood, logRecipe, removeCustom, removeFood, removeRecipe, saveCustom, saveRecipe, startRepeat,
     stopRepeat, updateRepeat
   } from '#lib/store/actions.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { addDays } from '#lib/time/dates.ts';
-  import { formatNum, t } from '#lib/i18n/index.ts';
+  import { t } from '#lib/i18n/index.ts';
   import { PERIODS, type Period } from '#lib/model/health.ts';
   import { FOOD_TAB_ART } from '#lib/art.ts';
   import Segmented from '../ui/Segmented.svelte';
@@ -36,7 +36,6 @@
   import FoodChart from './FoodChart.svelte';
   import { cue } from '#lib/sound/cues.ts';
   import { toSnap, type Item } from '#lib/food/index.ts';
-  import ValueInput from '../health/ValueInput.svelte';
   import { dayTitle } from '../kiroku/fmt.ts';
   import FoodSummary from './FoodSummary.svelte';
   import FoodMeal from './FoodMeal.svelte';
@@ -47,7 +46,7 @@
   import FoodRecipe from './FoodRecipe.svelte';
   import FoodCustom from './FoodCustom.svelte';
   import {
-    customDraft, customItem, customOf, DAYS, foodDb, foodDbNow, foodLast, itemOf, KCAL_GOAL_MIN, parseKcalGoal, recentOf, recipeItem,
+    customDraft, customItem, customOf, DAYS, foodDb, foodDbNow, foodLast, itemOf, recentOf, saveFoodGoal, recipeItem,
     recipeServing, sameItems, servingOnly, type CustomDraft, type RecipeDraft
   } from './foodUi.ts';
 
@@ -94,8 +93,8 @@
   const canOn = $derived(date < today || (!!m && date === today && foodDay(m.state, who, addDays(today, 1)).entries.some((e) => e.rep)));
 
   const day = $derived(m && date ? foodDay(m.state, who, date) : null);
-  const goal = $derived(m ? kcalGoal(m.state, who) : null);
-  const protein = $derived(m ? proteinGoal(m.state, who, m.now) : null);
+  /** Whose goals, kcal and each nutrient (protein's default included). */
+  const goals = $derived(Object.fromEntries(FOOD_GOAL_OF.map((n) => [n, m ? foodGoal(m.state, who, n, m.now) : null])) as Record<FoodGoalOf, number | null>);
   const byMeal = (k: Meal) => day?.entries.filter((e) => e.m === k) ?? [];
   const recent = $derived(m ? recentOf(foodEntries(m.state, me)) : []);
   /** My repeat of a meal still going (the one to manage; an ended one only fills its days). */
@@ -110,7 +109,6 @@
     | { k: 'search'; meal: Meal }
     | ({ k: 'amount'; meal: Meal; g0?: number; u0?: string; entry?: FoodEntry } & Picked)
     | { k: 'custom'; id: string | null; then: Then }
-    | { k: 'goal' }
     | { k: 'repeat'; meal: Meal }
     | { k: 'recipe'; id: string | null }
     | { k: 'rsearch' }
@@ -123,7 +121,7 @@
   let scroller: Element | null = null;
   let root: HTMLElement | undefined = $state();
   $effect(() => {
-    title = !top ? '' : top.k === 'goal' ? t('goal.title') : top.k === 'repeat' ? t('food.rep.title', { meal: t(`food.meal.${top.meal}`) })
+    title = !top ? '' : top.k === 'repeat' ? t('food.rep.title', { meal: t(`food.meal.${top.meal}`) })
       : top.k === 'recipe' ? t(top.id ? 'food.rcp.title' : 'food.rcp.new') : top.k === 'rsearch' ? t('food.rcp.addItem')
       : top.k === 'ritem' ? t('food.rcp.item') : top.k === 'rlog' ? t('food.rcp.log')
       : top.k === 'custom' ? t(top.id ? 'food.my.head' : 'food.my.newTitle') : t(`food.meal.${top.meal}`);
@@ -251,10 +249,6 @@
   }
   function repStop(id: string, meal: Meal) {
     if (stopRepeat(id).ok) said('food.rep.stopped', { meal: mealName(meal) }, true);
-    home();
-  }
-  function saveGoal(v: number | null) {
-    if (setKcalGoal(me, v).ok) said(v === null ? 'food.goalCleared' : 'food.goalSaved');
     home();
   }
 
@@ -417,10 +411,6 @@
           <FoodRepeat {meal} items={shown} w0={DAYS.every} live={false} onstart={(w) => repStart(meal, w)} />
         {/if}
       {/key}
-    {:else if top?.k === 'goal'}
-      <ValueInput label={t('food.goal')} sub="" old={goal} unit="kcal" parse={parseKcalGoal}
-        hint={t('food.goalRange', { min: formatNum(KCAL_GOAL_MIN), max: formatNum(KCAL_GOAL.max), step: KCAL_GOAL.step })}
-        onok={saveGoal} oncancel={up} extra={goal === null ? null : { label: t('food.goalClear'), run: () => saveGoal(null) }} />
     {:else}
       <Segmented items={TABS.map((id) => ({ id, label: t(`food.tab.${id}`), art: FOOD_TAB_ART[id] }))} value={tab} label={t('food.tabs')} attr="tab" onpick={(id) => (tab = id)} />
       {#if tab === 'chart'}
@@ -431,7 +421,7 @@
           <b class="rl money" aria-live="polite" data-food-date={date}>{dayTitle(date)}</b>
         </RangeNav>
 
-        <FoodSummary {day} {who} {goal} {protein} when={date < today ? 'past' : date > today ? 'next' : 'today'} onedit={mine ? () => go({ k: 'goal' }, '[data-focus="kcal-goal"]') : null} />
+        <FoodSummary {day} {who} {goals} when={date < today ? 'past' : date > today ? 'next' : 'today'} onsavegoal={mine ? (v) => saveFoodGoal(me, 'k', v) : null} />
         {#each MEALS as k (k)}
           <!-- the 🔁 chip: on my day my repeat still going (a tap manages it), else the one filling the day (shown only);
                none: いつものに する on my today only (from a past day it would fill every day since, today's doubled) -->

@@ -1,6 +1,6 @@
 // The meal log (ごはん, docs/backend.md#events `food`): each person's entries as the record keeps them (the `food` ops
 // folded by the record's rules: contract/food.ts foodFold), a day's of them with its totals, and the day's targets
-// (the kcal goal, a pref; protein from the latest weigh-in), and the repeats (いつもの: `food_repeat` folded alike),
+// (the goals: kcal and the nutrients, prefs; protein by default from the latest weigh-in), and the repeats (いつもの: `food_repeat` folded alike),
 // whose items are read into each day they cover as virtual entries (never copied into the record: a past day stays as
 // it was, since a change of a repeat is an end and a new one), and the recipes (マイレシピ: `food_recipe` folded alike,
 // everyone's, each with its totals and a serving's), and the custom foods (マイ食品: `food_custom` folded alike,
@@ -9,7 +9,7 @@
 import type { LocalDate, Who } from '#lib/types.ts';
 import {
   entryOrder, foodAccept, foodCustomFold, foodCustomOp, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, MEALS, recipePortion,
-  recipeTotals, repeatCovers, round1, type CustomOp, type FoodCustom, type FoodEntry, type FoodOp, type FoodRecipe, type FoodRepeat, type Meal, type RecipeOp,
+  recipeTotals, repeatCovers, round1, FOOD_GOALS, type CustomOp, type FoodCustom, type FoodEntry, type FoodGoalOf, type FoodOp, type FoodSnap, type FoodRecipe, type FoodRepeat, type Meal, type RecipeOp,
   type RepeatOp
 } from '#lib/contract/food.ts';
 import { isPersonId, isRec, type EventRow } from '#lib/contract/api.ts';
@@ -199,56 +199,70 @@ export function foodDay(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, date: L
   return { entries, kcal: Math.round(kcal), p: round1(p), fa: round1(fa), c: round1(c), s: round1(salt) };
 }
 
-const totalsMemo = new WeakMap<object, Map<string, Map<LocalDate, number>>>();
+/** A day's unrounded totals: kcal and each nutrient (g), as a snapshot's keys. */
+type Totals = Record<FoodGoalOf, number>;
+const totalsMemo = new WeakMap<object, Map<string, Map<LocalDate, Totals>>>();
 
 /**
- * `who`'s kcal per day up to `today`, in one pass (グラフ reads a year at once: no foodDay per day): each day with
- * something in it (a logged entry, or a repeat's items on a day it covers; a 0 kcal item counts) → its unrounded
- * total, as foodDay adds it up. Future days (a repeat fills them too) are left out. Memoised per State, person and day.
+ * `who`'s kcal and nutrients per day up to `today`, in one pass (グラフ reads a year at once: no foodDay per day): each
+ * day with something in it (a logged entry, or a repeat's items on a day it covers; a 0 kcal item counts) → its
+ * unrounded totals, as foodDay adds them up (an unknown nutrient as none). Future days (a repeat fills them too) are
+ * left out. Memoised per State, person and day.
  */
-function dayTotals(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, today: LocalDate): Map<LocalDate, number> {
+function dayTotals(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, today: LocalDate): Map<LocalDate, Totals> {
   let byKey = totalsMemo.get(s);
   if (!byKey) totalsMemo.set(s, (byKey = new Map()));
   const key = `${who}|${today}`;
   let out = byKey.get(key);
   if (out) return out;
-  const totals = new Map<LocalDate, number>();
-  const add = (d: LocalDate, g: number, k: number) => totals.set(d, (totals.get(d) ?? 0) + (k * g) / 100);
-  for (const e of entriesOf(s)) if (e.who === who && e.d <= today) add(e.d, e.g, e.f.k);
+  const totals = new Map<LocalDate, Totals>();
+  const add = (d: LocalDate, g: number, f: FoodSnap) => {
+    let t = totals.get(d);
+    if (!t) totals.set(d, (t = { k: 0, p: 0, fa: 0, c: 0, s: 0 }));
+    const x = g / 100;
+    t.k += f.k * x;
+    t.p += (f.p ?? 0) * x;
+    t.fa += (f.fa ?? 0) * x;
+    t.c += (f.c ?? 0) * x;
+    t.s += (f.s ?? 0) * x;
+  };
+  for (const e of entriesOf(s)) if (e.who === who && e.d <= today) add(e.d, e.g, e.f);
   for (const r of repeatsOf(s)) {
     if (r.who !== who || !r.it.length) continue;
     const last = r.to && r.to < today ? r.to : today;
-    for (let d = r.from; d <= last; d = addDays(d, 1)) if (repeatCovers(r, d)) for (const { g, f } of r.it) add(d, g, f.k);
+    for (let d = r.from; d <= last; d = addDays(d, 1)) if (repeatCovers(r, d)) for (const { g, f } of r.it) add(d, g, f);
   }
   byKey.set(key, (out = totals));
   return out;
 }
 
-const seriesMemo = new WeakMap<object, Map<string, DaySeries>>();
+const seriesMemo = new WeakMap<object, Map<string, Omit<DaySeries, 'goal'>>>();
 
 /**
- * `who`'s kcal per day for ごはん's グラフ, as けんこう's metrics (health.ts DaySeries, so its bucket and stat rules apply:
- * seriesBuckets, seriesStats): from their first day with a meal (logged, or a repeat's) to `today`, each day's total
- * as foodDay rounds it (repeats included); a day with nothing in it is null (記録なし, never a 0), while a 0 kcal entry
- * is a record. The goal: their kcal goal (one for every day; none: null). Memoised per State, person and day.
+ * `who`'s kcal (`n` 'k') or a nutrient (g) per day for ごはん's グラフ, as けんこう's metrics (health.ts DaySeries, so
+ * its bucket and stat rules apply: seriesBuckets, seriesStats): from their first day with a meal (logged, or a
+ * repeat's) to `today`, each day's total as foodDay rounds it (repeats included); a day with nothing in it is null
+ * (記録なし, never a 0), while a 0 kcal entry is a record. The goal: theirs as of `t` (foodGoal; one for every day;
+ * none: null). The days memoised per State, person, day and what.
  */
-export function foodSeries(s: Pick<State, 'food' | 'foodRepeat' | 'prefs'>, who: Who, today: LocalDate): DaySeries {
+export function foodSeries(s: State, who: Who, today: LocalDate, n: FoodGoalOf = 'k', t = Infinity): DaySeries {
   let byKey = seriesMemo.get(s);
   if (!byKey) seriesMemo.set(s, (byKey = new Map()));
-  const key = `${who}|${today}`;
+  const key = `${who}|${today}|${n}`;
   let hit = byKey.get(key);
-  if (hit) return hit;
-  const totals = dayTotals(s, who, today);
-  let from = today;
-  for (const d of totals.keys()) if (d < from) from = d;
-  const vals: (number | null)[] = [];
-  for (let i = 0, d = from, n = daysBetween(from, today); i <= n; i++, d = addDays(d, 1)) {
-    const k = totals.get(d);
-    vals.push(k === undefined ? null : Math.round(k));
+  if (!hit) {
+    const totals = dayTotals(s, who, today);
+    let from = today;
+    for (const d of totals.keys()) if (d < from) from = d;
+    const vals: (number | null)[] = [];
+    for (let i = 0, d = from, days = daysBetween(from, today); i <= days; i++, d = addDays(d, 1)) {
+      const v = totals.get(d)?.[n];
+      vals.push(v === undefined ? null : n === 'k' ? Math.round(v) : round1(v));
+    }
+    byKey.set(key, (hit = { from, to: today, first: from, vals }));
   }
-  const goal = kcalGoal(s, who);
-  byKey.set(key, (hit = { from, to: today, first: from, vals, goal: () => goal }));
-  return hit;
+  const goal = foodGoal(s, who, n, t);
+  return { ...hit, goal: () => goal };
 }
 
 /** What a recipe, or one serving of it, adds up to: `g` grams, kcal (whole), protein, fat, carbs and salt (g, one
@@ -285,14 +299,20 @@ export function customs(s: Pick<State, 'foodCustom'>): FoodCustom[] {
   return out;
 }
 
-/** `who`'s daily kcal goal (`pref kcalGoal`), or null when none is set. */
-export function kcalGoal(s: Pick<State, 'prefs'>, who: Who): number | null {
-  return s.prefs[who].kcalGoal ?? null;
+/** `who`'s daily goal of `n` as they set it (`pref kcalGoal` … `saltGoal`: contract/food.ts FOOD_GOALS), or null. */
+export function setGoal(s: Pick<State, 'prefs'>, who: Who, n: FoodGoalOf): number | null {
+  return s.prefs[who][FOOD_GOALS[n].key] ?? null;
 }
 
-/** A member's daily protein target (g, whole): PROTEIN_PER_KG × the latest weigh-in as of `t`. Null for the guest
- *  (no body data) and without a weigh-in. */
-export function proteinGoal(s: State, who: Who, t: number): number | null {
+/** `who`'s daily goal of `n`: theirs as set, else protein's default (proteinDefault); kcal, fat, carbs and salt have
+ *  none until set (docs/design.md "Gohan": what they should be depends on the person and the plan). */
+export function foodGoal(s: State, who: Who, n: FoodGoalOf, t: number): number | null {
+  return setGoal(s, who, n) ?? (n === 'p' ? proteinDefault(s, who, t) : null);
+}
+
+/** A member's default daily protein target (g, whole): PROTEIN_PER_KG × the latest weigh-in as of `t` (a lifter's
+ *  usual aim). Null for the guest (no body data) and without a weigh-in. */
+export function proteinDefault(s: State, who: Who, t: number): number | null {
   if (!isPersonId(who)) return null;
   const last = weighIns(s, who, t).at(-1);
   return last ? Math.round(last.kg * PROTEIN_PER_KG) : null;
