@@ -2,13 +2,13 @@
 // inclines, as converted by scripts/home-models.ts --structures into static/room/structures/ (structures.json), each
 // fitted to its footprint (a bridge spans its length, an incline climbs its one tier over its four tiles), NH's soft
 // Lambert (home.ts's). structurePlaces says where; the scene attaches the group (engine.ts attach: bent there).
-import { Box3, Group, Vector3, type Mesh, type MeshStandardMaterial } from 'three';
+import { Box3, Group, Vector3 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import STRUCTURES from '#lib/layout/structures.json' with { type: 'json' };
 import { TIER_H } from '#lib/layout/grid.ts';
 import { footOf, objMid, type Layout, type Obj } from '#lib/layout/model.ts';
-import { homeLambert } from './home.ts';
+import { lambertAll } from './home.ts';
 
 const FAMILIES = (STRUCTURES as unknown as { families: Record<string, { min: number[]; max: number[]; v: string }> }).families;
 /** A bridge's or a stairs' variant → NH's model. */
@@ -60,12 +60,7 @@ export async function buildStructure(p: StructurePlace, base?: string): Promise<
   const gl = await g;
   if (!gl) return null;
   const root = gl.scene.clone(true);
-  root.traverse((n) => {
-    const mesh = n as Mesh;
-    if (!mesh.isMesh) return;
-    mesh.material = homeLambert(mesh.material as MeshStandardMaterial);
-    mesh.castShadow = mesh.receiveShadow = true;
-  });
+  lambertAll(root, () => null, true);
   const box = new Box3().setFromObject(root), size = box.getSize(new Vector3()), mid = box.getCenter(new Vector3());
   // centred on its footprint, its base on the ground; scaled to span the footprint's length (a bridge 90% of it)
   root.position.set(-mid.x, p.rise ? -box.min.y : 0, -mid.z);

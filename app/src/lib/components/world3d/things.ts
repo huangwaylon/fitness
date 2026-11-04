@@ -5,12 +5,13 @@
 // without a rebuild. Every material is a Lambert (NH's soft look, cheaper than PBR), bent (bend.ts); a lamp's own _Emi
 // map is its night light (lights.ts adds its halo and its pool).
 import {
-  Color, InstancedBufferAttribute, InstancedMesh, Matrix4, MeshDepthMaterial, MeshLambertMaterial, Quaternion, RGBADepthPacking,
-  Vector3, Vector4, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Scene
+  BackSide, Color, DoubleSide, FrontSide, InstancedBufferAttribute, InstancedMesh, Matrix4, MeshDepthMaterial, MeshLambertMaterial, Quaternion,
+  RGBADepthPacking, Vector3, Vector4, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Scene, type Side
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { bend } from './bend.ts';
+import { twoPass } from './sides.ts';
 import type { Inst, ModelName } from './objects.ts';
 import type { LampSpot } from './lights.ts';
 import { MODELS } from './models3d.ts';
@@ -181,15 +182,37 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   // ---- materials: each model's once ----
   const lit: MeshLambertMaterial[] = [], lifted: MeshLambertMaterial[] = [];
   let lampLevel = 0, liftLevel = 0.32;
-  const mats = new Map<Material, { m: MeshLambertMaterial; depth: MeshDepthMaterial }>();
-  const softMats = new Map<Material, { m: MeshLambertMaterial; depth: MeshDepthMaterial }>();
-  function lambert(src: Material, grey: boolean, soft = false, flap: Vector4 | null = null) {
+  type Mats = { m: MeshLambertMaterial; front: MeshLambertMaterial | null; depth: MeshDepthMaterial };
+  const mats = new Map<Material, Mats>();
+  const softMats = new Map<Material, Mats>();
+  function lambert(src: Material, grey: boolean, soft = false, flap: Vector4 | null = null): Mats {
     const had = (soft ? softMats : mats).get(src);
     if (had) return had;
+    // a see-through two-sided one as two (sides.ts): its back faces' material, then its front's
+    const two = twoPass(src.transparent || soft, src.side);
+    const m = one(src, grey, soft, flap, two ? BackSide : src.side);
+    const front = two ? one(src, grey, soft, flap, FrontSide) : null;
+    if (two) m.shadowSide = DoubleSide;
+    // the shadow map is drawn flat (unbent): three's receivers look it up at their unbent world position, so a shadow
+    // lands right however far from the pivot, and the map needn't redraw as the camera scrolls (the bend moves)
+    const depth = new MeshDepthMaterial({ depthPacking: RGBADepthPacking, map: m.alphaTest ? m.map : null, alphaTest: m.alphaTest });
+    if (soft) {
+      // (a fading critter's shadow: there while it's more than half there)
+      depth.onBeforeCompile = (sh) => {
+        sh.vertexShader = 'attribute float aFade;\nvarying float vFade;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvFade = aFade;');
+        sh.fragmentShader = 'varying float vFade;\n' + sh.fragmentShader.replace('#include <alphatest_fragment>', '#include <alphatest_fragment>\nif (vFade < 0.5) discard;');
+      };
+      depth.customProgramCacheKey = () => 'fade';
+    }
+    const r = { m, front, depth };
+    (soft ? softMats : mats).set(src, r);
+    return r;
+  }
+  function one(src: Material, grey: boolean, soft: boolean, flap: Vector4 | null, side: Side): MeshLambertMaterial {
     const s = src as MeshStandardMaterial;
     const own = !!s.emissiveMap;
     const m = new MeshLambertMaterial({
-      map: s.map, color: s.color, transparent: s.transparent || soft, opacity: s.opacity, alphaTest: grey ? 0 : s.alphaTest, side: s.side, depthWrite: s.depthWrite,
+      map: s.map, color: s.color, transparent: s.transparent || soft, opacity: s.opacity, alphaTest: grey ? 0 : s.alphaTest, side, depthWrite: s.depthWrite,
       emissive: own ? new Color(0xffe2a8) : s.map ? new Color(0xffffff) : s.color.clone(), emissiveMap: own ? s.emissiveMap : s.map
     });
     // foliage (cut out: NH's leaf cards) is lit through: more lift
@@ -216,21 +239,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       };
       m.customProgramCacheKey = () => (uFlap ? 'fade-flap' : 'fade');
     }
-    bend(m);
-    // the shadow map is drawn flat (unbent): three's receivers look it up at their unbent world position, so a shadow
-    // lands right however far from the pivot, and the map needn't redraw as the camera scrolls (the bend moves)
-    const depth = new MeshDepthMaterial({ depthPacking: RGBADepthPacking, map: m.alphaTest ? m.map : null, alphaTest: m.alphaTest });
-    if (soft) {
-      // (a fading critter's shadow: there while it's more than half there)
-      depth.onBeforeCompile = (sh) => {
-        sh.vertexShader = 'attribute float aFade;\nvarying float vFade;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvFade = aFade;');
-        sh.fragmentShader = 'varying float vFade;\n' + sh.fragmentShader.replace('#include <alphatest_fragment>', '#include <alphatest_fragment>\nif (vFade < 0.5) discard;');
-      };
-      depth.customProgramCacheKey = () => 'fade';
-    }
-    const r = { m, depth };
-    (soft ? softMats : mats).set(src, r);
-    return r;
+    return bend(m);
   }
 
   // ---- the instances ----
@@ -372,8 +381,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       if (!mesh.isMesh) return;
       // (a bee's, a dragonfly's wings are their own mesh: only those flap; a butterfly is one, its body kept still)
       const flaps = !!flapAt?.flaps.get(mesh);
-      const { m, depth } = lambert(mesh.material as Material, grey, soft, flaps ? flapAt!.at : null);
-      if (nightTag(m, name)) m.emissiveIntensity += nightLift(m, lampLevel);
+      const { m, front, depth } = lambert(mesh.material as Material, grey, soft, flaps ? flapAt!.at : null);
+      for (const x of front ? [m, front] : [m]) if (nightTag(x, name)) x.emissiveIntensity += nightLift(x, lampLevel);
       // (a greyable model's instances carry their grey, a critter's its fade, a flier's its wings' angle: its own copy
       // of the geometry, dropped with the group)
       const ga = grey ? new InstancedBufferAttribute(new Float32Array(insts.length), 1) : undefined;
@@ -383,18 +392,22 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       if (ga) geo.setAttribute('aGrey', ga);
       if (fa) geo.setAttribute('aFade', fa);
       if (wa) geo.setAttribute('aFlap', wa);
-      const im = new InstancedMesh(geo, m, insts.length);
-      im.frustumCulled = false;
-      im.castShadow = !FLAT.has(name);
-      im.receiveShadow = true;
-      im.customDepthMaterial = depth;
-      if (SHADOWS.has(name)) im.renderOrder = UNDER_WATER;
-      // a flower's petals take its colour
-      const mname = (mesh.material as Material).name;
-      if (insts.some((o) => o.tint !== undefined) && /Flower|Petal|Flow|Bloom/.test(mname) && !/Body|Leaf/.test(mname))
-        insts.forEach((o, i) => im.setColorAt(i, new Color(o.tint ?? 0xffffff)));
-      g.meshes.push({ im, local: mesh.matrixWorld.clone(), grey: ga, fade: fa, flap: wa });
-      scene.add(im);
+      // (a two-sided see-through one: its back faces' mesh, then its front's, drawn in that order: the same z, the
+      // lower id first; only the first casts, its shadow both sides)
+      for (const mat of front ? [m, front] : [m]) {
+        const im = new InstancedMesh(geo, mat, insts.length);
+        im.frustumCulled = false;
+        im.castShadow = !FLAT.has(name) && mat === m;
+        im.receiveShadow = true;
+        im.customDepthMaterial = depth;
+        if (SHADOWS.has(name)) im.renderOrder = UNDER_WATER;
+        // a flower's petals take its colour
+        const mname = (mesh.material as Material).name;
+        if (insts.some((o) => o.tint !== undefined) && /Flower|Petal|Flow|Bloom/.test(mname) && !/Body|Leaf/.test(mname))
+          insts.forEach((o, i) => im.setColorAt(i, new Color(o.tint ?? 0xffffff)));
+        g.meshes.push({ im, local: mesh.matrixWorld.clone(), grey: ga, fade: fa, flap: wa });
+        scene.add(im);
+      }
     });
     insts.forEach((o, i) => {
       g.base.push(matOf(o, new Matrix4()));
@@ -630,8 +643,9 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       if (bugTimer) clearTimeout(bugTimer);
       for (const g of groups.values()) drop(g);
       groups.clear();
-      for (const { m, depth } of [...mats.values(), ...softMats.values()]) {
+      for (const { m, front, depth } of [...mats.values(), ...softMats.values()]) {
         m.dispose();
+        front?.dispose();
         depth.dispose();
       }
       // (now, not once every load is in: a model still loading was never on this renderer, and the next island may

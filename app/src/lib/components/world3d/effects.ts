@@ -8,11 +8,12 @@
 // (island/fx3d.ts), whose art then goes invisible.
 import {
   NormalBlending, Scene, CanvasTexture, Color, DoubleSide, Group, Matrix4, Mesh, MeshBasicMaterial, PlaneGeometry, Quaternion, RingGeometry, SphereGeometry,
-  SRGBColorSpace, type BufferGeometry, type Camera, type MeshStandardMaterial, type Texture, type WebGLRenderer
+  SRGBColorSpace, type BufferGeometry, type Camera, type MeshStandardMaterial, type Side, type Texture, type WebGLRenderer
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { bend, glow as addLight } from './bend.ts';
+import { splitSides } from './sides.ts';
 import { MODELS } from './models3d.ts';
 import { pace } from './pace.ts';
 
@@ -161,9 +162,9 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
   /** A source's material as a particle has it (one shader for all of them: the warm-up compiles it): scripts/world3d-fx.ts'
    *  own in their vertex colours (the 「！」's red mark on its cream disc, the zzz's blue; they drew all white), unless
    *  tinted (the tint is its colour then). */
-  const matFor = (s: Src[number], tint?: string) => {
+  const matFor = (s: Src[number], tint?: string, side: Side = DoubleSide) => {
     const mat = bend(new MeshBasicMaterial({
-      map: s.map, color: tint ? new Color(tint) : s.color, vertexColors: !!s.vc && !tint, transparent: true, depthWrite: false, side: DoubleSide, alphaTest: s.add ? 0 : 0.02,
+      map: s.map, color: tint ? new Color(tint) : s.color, vertexColors: !!s.vc && !tint, transparent: true, depthWrite: false, side, alphaTest: s.add ? 0 : 0.02,
       blending: NormalBlending
     }));
     if (s.add) addLight(mat, true);
@@ -224,6 +225,9 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         mesh.renderOrder = 7;
         obj.add(mesh);
         mats.push(mat);
+        // (its back faces, then its front: sides.ts)
+        const front = splitSides(mesh, (side) => matFor(s, p.tint, side));
+        if (front) mats.push(front);
       }
       scene.add(obj);
       const k = SCALE[name] ?? 5;
