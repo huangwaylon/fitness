@@ -8,7 +8,8 @@
 // page's clock 10 sim minutes a cycle from SIM_AT, default 23:00: the island's day running and rolling over; LOGIC=1:
 // not drawn), days (DAY_H sim hours a cycle, fast-forwarded: the visitors coming and going), idle (IDLE_MS of real
 // time; DWELL: ms in a room, default 1500), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells). Inside the museum: eye (the eye
-// button on, off), bench (sit on a bench, a tap on the floor), curator (IDLE_MS there), hours (the aquarium's hour on x3).
+// button on, off), bench (sit on a bench, a tap on the floor), curator (IDLE_MS there), hours (the aquarium's hour on x3), rebuild (a find kept off
+// and let back x2: the aquarium rebuilt as a new find rebuilds it).
 // --snap: heap snapshots at cycle SNAP_AT (default 3; 0: none, the end's whole heap) and the end, diffed by constructor; --path=<name>: the retainer
 // paths of the first PATHS nodes so named (=<name>: exactly) new since the first snapshot. Read handles: the probe never keeps one (a JSHandle holds what it points at).
 import { chromium, webkit, devices, type Page, type CDPSession } from '@playwright/test';
@@ -213,7 +214,7 @@ const SIM = flow === 'sim' || flow === 'days';
 if (SIM) await page.clock.install({ time: Date.now() });
 // the demo's events (as a catch writes them): sell's pocket; hours' and curator's museum full (every fish and bug found)
 const seeds: [string, object][] = flow === 'sell' ? [['tally', { date: '2026-11-04', counts: { 'fish:sea-bass': 999 } }]]
-  : flow === 'hours' || flow === 'curator' ? [...FISH_IDS.map((id) => ['find', { kind: 'fish', id }] as [string, object]), ...BUG_IDS.map((id) => ['find', { kind: 'bug', id }] as [string, object])] : [];
+  : flow === 'hours' || flow === 'curator' || flow === 'rebuild' ? [...FISH_IDS.map((id) => ['find', { kind: 'fish', id }] as [string, object]), ...BUG_IDS.map((id) => ['find', { kind: 'bug', id }] as [string, object])] : [];
 if (seeds.length) await page.addInitScript((list) => {
   if (localStorage.getItem('island-demo.events')) return;
   const at = Date.parse('2026-11-04T09:00:00+09:00');
@@ -278,6 +279,16 @@ const cycle = async () => {
     // (in front of the river tank: its fish fade)
     await mu('put(160, 80)');
     for (let k = 0; k < 3; k++) { await mu('nextHour()'); await page.waitForTimeout(2500); await until('!window.__museum.stats().loading'); }
+  } else if (flow === 'rebuild') {
+    // a find kept off show and let back, twice a cycle: the aquarium rebuilt each time (the old wing kept till the new
+    // one's programs are compiled, then disposed)
+    await inMuseum();
+    await mu('put(160, 80)');
+    for (const id of ['koi', null, 'carp', null]) {
+      await mu(`withhold(${JSON.stringify(id)})`);
+      await page.waitForTimeout(800);
+      await until('((s) => !s.warming && !s.loading)(window.__museum.stats())');
+    }
   } else if (flow === 'fish') {
     // ten casts and reels by the sea's shadow (Q='&critter=fish'): my villager put on the bank within a cast of it, the
     // camera on it (e2e/island.ts toTheWater), once; a tap on the water by the shadow (else by my villager) casts, a
