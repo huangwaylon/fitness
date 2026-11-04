@@ -180,12 +180,12 @@ export function worldOf(l: Layout, nav: LayoutNav = navOf(l)): WorldGeo {
     const at = doorOf(l, o).at, [w, d] = footOf(l, o);
     BUILDINGS.push({ id: BUILDING_OF[id], key: 'deco/campsite', x: at[0], z: at[1], h: 80, depth: (o.f % 2 ? w : d) * TILE, w: (o.f % 2 ? d : w) * TILE - 8 });
   }
-  // the island's buildings (the museum, the shop): its door on the layout, its tap area its footprint up to its model's
-  // height (the catalogue's; the 3D model is objects.ts's)
+  // the island's buildings (the museum, the shop): its door on the layout, its tap area its front (the 3D model is
+  // objects.ts's)
   for (const o of objs) {
     if (o.k !== 'museum' && o.k !== 'shop') continue;
     const at = doorOf(l, o).at, [w, d] = footOf(l, o);
-    BUILDINGS.push({ id: o.k, key: 'deco/campsite', x: at[0], z: at[1], h: kindDef(o.k)?.h ?? 110, depth: (o.f % 2 ? w : d) * TILE, w: (o.f % 2 ? d : w) * TILE - 8 });
+    BUILDINGS.push({ id: o.k, key: 'deco/campsite', x: at[0], z: at[1], h: 110, depth: (o.f % 2 ? w : d) * TILE, w: (o.f % 2 ? d : w) * TILE - 8 });
   }
   const named = nav.named;
   const HOMES = { A: (named.homeA ?? WORLD_2D.HOMES.A) as Pt, B: (named.homeB ?? WORLD_2D.HOMES.B) as Pt };
