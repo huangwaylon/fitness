@@ -49,7 +49,8 @@
   import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfFind } from './items.ts';
   import { DOOR_IN, HALF, centreOf, nearestFree, resolve as resolveRoom, walkPath, type Pt, type Resolved } from './grid.ts';
   import { DragLink } from './dragLink.ts';
-  import { outsat, seatsOf, type Seat } from './seats.ts';
+  import { seatsOf, type Seat } from './seats.ts';
+  import { createSeating } from '../rooms/seating.ts';
   import { drawOff } from '#lib/ui-state/testMode.ts';
   import type { Look, Pose, Tent, Who } from './engine.ts';
 
@@ -138,7 +139,8 @@
   function sayWhere() {
     const at = eng?.at(me);
     if (!at) return;
-    if (mySeat) return void send({ kind: 'tent', in: true, to: r(mySeat.at), seat: mySeat.id, n: mySeat.n, ...(mySeat.lie ? { lie: true as const } : {}), s: Math.round(mySeat.s) });
+    const mine = seats.mine();
+    if (mine) return void send({ kind: 'tent', in: true, to: r(mine.at), ...seats.wire()! });
     const w = myWalk && relayNow() < myWalk.s + myWalk.ms ? myWalk : null;
     send(w ? { kind: 'tent', in: true, from: r(w.from), ...(w.via.length ? { via: w.via.map(r).slice(0, 10) } : {}), to: r(w.to), s: Math.round(w.s), ms: Math.round(w.ms) } : { kind: 'tent', in: true, to: r(at) });
   }
@@ -149,11 +151,8 @@
     const now0 = eng.at(me);
     if (!now0) return;
     let from: Pt = now0;
-    if (mySeat) {
-      from = mySeat.from;
-      eng.put(me, from);
-      mySeat = null;
-    }
+    const up = seats.stand();
+    if (up) eng.put(me, (from = up));
     const pts = walkPath(spots(), from, to);
     if (!pts.length) return void then?.();
     const ms = eng.walk(me, pts);
@@ -164,10 +163,8 @@
   let arriving: ReturnType<typeof setTimeout> | undefined;
 
   // ---- sitting and lying (NH's chairs, sofas, beds: seats.ts): walk up to it, then on; one villager a seat, first wins ----
-  let mySeat: (Seat & { s: number }) | null = null;
-  /** The others' seats (one villager a seat, the first keeps it). */
-  const theirSeats = new Map<Who, { id: string; n: number; s: number }>();
-  const seatTaken = (id: string, n: number) => [...theirSeats.values()].some((st) => st.id === id && st.n === n);
+  // svelte-ignore state_referenced_locally
+  const seats = createSeating<Seat>(me);
   const seatAt = (id: string, n: number) => {
     const p = spots().find((q) => q.id === id);
     return p ? (seatsOf(p)[n] ?? null) : null;
@@ -176,22 +173,12 @@
   function sitOn(id: string) {
     const p = spots().find((q) => q.id === id);
     if (!p || !eng) return false;
-    const here = eng.at(me) ?? [0, 0];
-    const free = seatsOf(p).filter((st) => !seatTaken(st.id, st.n));
-    if (!free.length) {
-      cue('boop');
-      return true;
-    }
-    if (mySeat && mySeat.id === id) return true;
-    const st = free.sort((a, b) => Math.hypot(a.from[0] - here[0], a.from[1] - here[1]) - Math.hypot(b.from[0] - here[0], b.from[1] - here[1]))[0];
-    walkTo(st.from, () => {
-      // still free (another may have got there first)
-      if (!eng || seatTaken(st.id, st.n)) return;
-      mySeat = { ...st, s: relayNow() };
-      eng.pose(me, poseOf(st));
+    const go = seats.tap(seatsOf(p), eng.at(me) ?? [0, 0], relayNow, walkTo, (st) => {
+      eng?.pose(me, poseOf(st));
       cue('scene-bench');
       sayWhere();
     });
+    if (go === 'full') cue('boop');
     return true;
   }
 
@@ -218,13 +205,11 @@
     if (m.to) theirAt.set(w, m.to);
     partnerShown();
     // on a seat: one villager to a seat, the first to sit keeps it (I stand up if they were there first)
-    const seat = m.in && m.seat !== undefined ? { id: m.seat, n: m.n ?? 0, s: m.s ?? m.t } : null;
-    if (seat) theirSeats.set(w, seat);
-    else theirSeats.delete(w);
+    const { seat, yields } = seats.heard(w, m);
     if (seat) {
-      const st = seatAt(seat.id, seat.n);
-      if (mySeat && mySeat.id === seat.id && mySeat.n === seat.n && outsat({ s: mySeat.s, who: me }, { s: seat.s, who: w })) {
-        walkTo(mySeat.from);
+      const st = seatAt(seat.id, seat.n), mine = seats.mine();
+      if (yields && mine) {
+        walkTo(mine.from);
         cue('boop');
       }
       if (st) return void eng.pose(w, poseOf(st));
@@ -302,7 +287,7 @@
   function showSay(w: Who, text: string) {
     if (!eng?.at(w)) return;
     says?.say(sayId(w), text, speakerOf(w), { name: nameOf(w), colour: SAY_TAG[w] });
-    if (!eng.walking(w) && !(w === me ? mySeat : theirSeats.has(w))) eng.hop(w);
+    if (!eng.walking(w) && !(w === me ? seats.mine() : seats.seated(w))) eng.hop(w);
   }
   function closeSay(by?: Event) {
     if (!sayAt) return;
@@ -514,7 +499,8 @@
       e.pieces(resolveRoom(ps.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, ...(p.on ? { on: p.on } : {}), ...(p.l !== undefined ? { l: p.l } : {}) }))));
       e.room(room.lights);
       // a seat whose piece moved or went: up and off it
-      if (mySeat && !seatAt(mySeat.id, mySeat.n)) walkTo(mySeat.from);
+      const sat = seats.mine();
+      if (sat && !seatAt(sat.id, sat.n)) walkTo(sat.from);
       e.surfaces(w ?? DEFAULT_WALL, f ?? DEFAULT_FLOOR);
     });
   });
@@ -689,8 +675,8 @@
       partner: () => (eng?.at(partner) ? { at: eng.at(partner), walking: eng.walking(partner) } : null),
       starter: () => STARTER,
       /** Where my villager sits or lies (null: standing), and the partner's. */
-      seat: () => (mySeat ? { id: mySeat.id, n: mySeat.n, lie: mySeat.lie } : null),
-      partnerSeat: () => theirSeats.get(partner) ?? null,
+      seat: () => ((st) => (st ? { id: st.id, n: st.n, lie: st.lie } : null))(seats.mine()),
+      partnerSeat: () => seats.their(partner),
       /** Anyone's villager in here (A, B or G), null when it isn't (e2e: the guest). */
       who: (w: Who) => (eng?.at(w) ? { at: eng.at(w), walking: eng.walking(w) } : null),
       lights: () => ({ room: room.lights, pieces: room.pieces.filter((p) => ITEMS[p.item]?.lt).map((p) => ({ id: p.id, on: (p.l ?? 1) === 1 })) }),
