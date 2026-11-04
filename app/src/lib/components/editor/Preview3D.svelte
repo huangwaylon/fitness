@@ -29,8 +29,8 @@
 
   onMount(() => {
     let gone = false, stop = () => {};
-    void Promise.all([import('three'), import('three/examples/jsm/controls/OrbitControls.js'), import('../world3d/terrain.ts'), import('../world3d/objects.ts'), import('../world3d/things.ts'), import('../world3d/bend.ts'), import('../world3d/water.ts'), import('../world3d/home.ts'), import('../world3d/structure.ts')]).then(
-      ([T, { OrbitControls }, { buildGround }, { placeObjects, homePlaces }, { createThings }, { bendU, bend, bendPoint, unbendRay }, { waterU, waterFog }, { buildHome }, { structurePlaces, buildStructure }]) => {
+    void Promise.all([import('three'), import('three/examples/jsm/controls/OrbitControls.js'), import('../world3d/terrain.ts'), import('../world3d/objects.ts'), import('../world3d/things.ts'), import('../world3d/bend.ts'), import('../world3d/water.ts'), import('../world3d/home.ts'), import('../world3d/structure.ts'), import('../world3d/release.ts')]).then(
+      ([T, { OrbitControls }, { buildGround }, { placeObjects, homePlaces }, { createThings }, { bendU, bend, bendPoint, unbendRay }, { waterU, waterFog }, { buildHome }, { structurePlaces, buildStructure }, { releaseAll, resourcesOf }]) => {
         if (gone || !canvas) return;
         let renderer: InstanceType<typeof T.WebGLRenderer>;
         try {
@@ -68,6 +68,9 @@
         controls.update();
 
         let cur = layout;
+        // the homes and bridges taken out of the scene (the models' cache's): let go of with the rest at the end
+        const gone3: ReturnType<typeof resourcesOf> = new Set();
+        const drop = (g: InstanceType<typeof T.Group>) => (scene.remove(g), resourcesOf(g, gone3));
         const ground = buildGround(cur, { renderer, look, stairs: false });
         scene.add(ground.group);
         let dirty = true;
@@ -81,7 +84,7 @@
         function placeHomes(l: typeof cur) {
           const want = homePlaces(l);
           for (const [id, h] of homes) if (!want.some((p) => p.id === id)) {
-            if (h.g) scene.remove(h.g);
+            if (h.g) drop(h.g);
             homes.delete(id);
           }
           for (const p of want) {
@@ -92,7 +95,7 @@
             homes.set(p.id, entry);
             void buildHome(p.style).then((g) => {
               if (!g || homes.get(p.id) !== entry) return;
-              if (had?.g) scene.remove(had.g);
+              if (had?.g) drop(had.g);
               g.traverse((n) => {
                 const mm = (n as InstanceType<typeof T.Mesh>).material;
                 if (mm && !Array.isArray(mm)) bend(mm);
@@ -111,7 +114,7 @@
         function placeStructures(l: typeof cur) {
           const want = structurePlaces(l);
           for (const [id, h] of structs) if (!want.some((p) => p.id === id)) {
-            if (h.g) scene.remove(h.g);
+            if (h.g) drop(h.g);
             structs.delete(id);
           }
           for (const p of want) {
@@ -121,7 +124,7 @@
             structs.set(p.id, entry);
             void buildStructure(p).then((g) => {
               if (!g || structs.get(p.id) !== entry) return;
-              if (had?.g) scene.remove(had.g);
+              if (had?.g) drop(had.g);
               g.traverse((n) => {
                 const mm = (n as InstanceType<typeof T.Mesh>).material;
                 if (mm && !Array.isArray(mm)) bend(mm);
@@ -285,10 +288,18 @@
           cancelAnimationFrame(raf);
           ro.disconnect();
           canvas?.removeEventListener('wheel', onWheel);
+          // (OrbitControls r170 takes its keydown listener off the canvas's root node, by now not the document: the
+          // page's canvas is gone first, so the listener and with it the controls, the canvas and its context stayed)
+          document.removeEventListener('keydown', (controls as unknown as { _interceptControlDown: EventListener })._interceptControlDown, { capture: true });
           controls.dispose();
           things.dispose();
           ground.dispose();
+          // the cached homes' and bridges' resources let go of on this renderer (their listeners kept it alive), the
+          // shadow map, then the context
+          releaseAll([scene], gone3);
+          sun.shadow.dispose();
           renderer.dispose();
+          renderer.forceContextLoss();
           bendU.uBendR.value = 1300;
         };
       },
