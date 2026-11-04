@@ -33,6 +33,7 @@ async function inAndOut(page: Page, id: 'shop' | 'museum') {
 for (const island of ['default', 'user'] as const)
   for (const id of ['shop', 'museum'] as const)
     test(`out of the ${id}'s door on the ${island} island: just in front of it, facing out, and there it stays`, async ({ page }) => {
+      test.slow(); // (the island twice and a room: drawn under software GL, the full tier, over 30 s)
       if (island === 'user') await onUsers(page);
       await page.goto(Q);
       expect(await is3d(page)).toBe(true);
@@ -49,6 +50,7 @@ for (const island of ['default', 'user'] as const)
     });
 
 test('the other phone sees me come out of the shop’s door', async ({ context }) => {
+  test.slow();
   await context.addInitScript((ops) => localStorage.getItem('island-demo.layout') || localStorage.setItem('island-demo.layout', JSON.stringify(ops)), USERS);
   const a = await context.newPage(), b = await context.newPage();
   await a.goto(Q);
@@ -61,6 +63,7 @@ test('the other phone sees me come out of the shop’s door', async ({ context }
 });
 
 test('a reload, and the next day, find my villager where it was', async ({ page }) => {
+  test.slow();
   await page.goto(Q);
   expect(await is3d(page)).toBe(true);
   const home = await w(page, (w) => w.mine());
