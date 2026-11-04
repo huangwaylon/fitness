@@ -152,8 +152,8 @@ scrolled where it was); ✕, the backdrop and Esc close the panel.
 
 **せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, grown out of the
 pill (Sheet's `pop`), title せってい: **むらびと** (my villager and よびな; かえる → the picker: 23 special characters
-and all 417 NH villagers, its head pinned over the scrolling grid), **もようがえ** (not the guest's), **サウンド**
-([Sound settings](#sound-settings)), **ことば** (日本語 / English), **つうしん** (when each of us last synced; いま つうしん;
+and all 417 NH villagers, its head pinned over the scrolling grid), **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 /
+English), **つうしん** (when each of us last synced; いま つうしん; not the guest's), **もようがえ** (one row with its はじめる;
 not the guest's) and **あそびかた** (くわしく → the guide: the goals, ふたりでぜんぶ, the treats, the Sunday recap, a
 protein hint of 1.6 g per kg a day). The picker and the guide push a level with ‹; ✕, the backdrop and Esc close it,
 and the next opening starts at its top. Its own chunk, loaded on the first tap.
