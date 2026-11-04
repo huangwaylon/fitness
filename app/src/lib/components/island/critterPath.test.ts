@@ -21,20 +21,22 @@ describe('the critters where both phones see them (from the spawn alone)', () =>
   it('a shadow: the same water, patch, start and waypoints from the same seed, every one in its water', () => {
     const spawns = Array.from({ length: 60 }, (_, i) => crittersAt(DATE, i * 37)).flat().filter((c) => c.kind !== 'bug');
     expect(spawns.length).toBeGreaterThan(20);
+    // (failures collected, one expect: an expect a leg is ~13k calls)
+    const fails: string[] = [];
     for (const c of spawns) {
-      const water = c.kind === 'fresh' ? freshWater(c) : 'sea';
+      const water = c.kind === 'fresh' ? freshWater(c) : 'sea', who = `seed ${c.seed} (${water})`;
       const a = fishPath(c.seed, water, 50_000)!, b = fishPath(c.seed, water, 50_000);
       expect(b).toEqual(a);
-      expect(inWater(water, a.start.x, a.start.z) || (a.start.x === a.area.cx && a.start.z === a.area.cz)).toBe(true);
+      if (!(inWater(water, a.start.x, a.start.z) || (a.start.x === a.area.cx && a.start.z === a.area.cz))) fails.push(`${who}: starts out of it at ${a.start.x},${a.start.z}`);
       for (const l of a.legs) {
-        expect(inWater(water, l.x, l.z) || (l.x === a.area.cx && l.z === a.area.cz), `${water} ${l.x},${l.z}`).toBe(true);
-        expect(l.ms).toBeGreaterThanOrEqual(2500);
-        expect(l.ms).toBeLessThanOrEqual(6000);
+        if (!(inWater(water, l.x, l.z) || (l.x === a.area.cx && l.z === a.area.cz))) fails.push(`${who}: a leg to ${l.x},${l.z}`);
+        if (!(l.ms >= 2500 && l.ms <= 6000)) fails.push(`${who}: a leg of ${l.ms} ms`);
       }
       // in order, one after another, within the stay
-      for (let i = 1; i < a.legs.length; i++) expect(a.legs[i].t).toBeGreaterThanOrEqual(a.legs[i - 1].t + a.legs[i - 1].ms + 600);
-      expect(a.legs.at(-1)!.t).toBeLessThan(50_000);
+      for (let i = 1; i < a.legs.length; i++) if (!(a.legs[i].t >= a.legs[i - 1].t + a.legs[i - 1].ms + 600)) fails.push(`${who}: leg ${i} at ${a.legs[i].t}, the last ends ${a.legs[i - 1].t + a.legs[i - 1].ms}`);
+      if (!(a.legs.at(-1)!.t < 50_000)) fails.push(`${who}: its last leg at ${a.legs.at(-1)!.t}`);
     }
+    expect(fails.slice(0, 10)).toEqual([]);
   });
 
   it('fresh water spawns come to every fresh water, about a share each', () => {

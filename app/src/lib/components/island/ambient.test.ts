@@ -183,18 +183,22 @@ describe('ambient life: the critters', () => {
 
   it('never brings two at once to the sea, a fresh water or the bugs, each staying its time within its block', () => {
     const fresh = (w: string) => (x: Spawn) => x.kind === 'fresh' && x.water === w;
-    for (const of of [(x: Spawn) => x.kind === 'fish' || x.kind === 'bubbles', ...['pond', 'river', 'mouth', 'clifftop'].map(fresh), (x: Spawn) => x.kind === 'bug']) {
+    // (failures collected, one expect: an expect a spawn is ~56k calls)
+    const fails: string[] = [];
+    for (const [name, of] of [['sea', (x: Spawn) => x.kind === 'fish' || x.kind === 'bubbles'], ...['pond', 'river', 'mouth', 'clifftop'].map((w) => [w, fresh(w)] as const), ['bug', (x: Spawn) => x.kind === 'bug']] as const) {
       const s = all.filter(of);
-      expect(s.length).toBeGreaterThan(100);
-      for (let i = 1; i < s.length; i++) expect(s[i].slot).toBeGreaterThanOrEqual(s[i - 1].slot + s[i - 1].slots);
+      if (!(s.length > 100)) fails.push(`${name}: only ${s.length}`);
+      for (let i = 1; i < s.length; i++) if (!(s[i].slot >= s[i - 1].slot + s[i - 1].slots)) fails.push(`${name}: two at once at slot ${s[i].slot}`);
     }
     // each fresh water has its shadow nearly all the time (the pond on screen is never long empty)
     for (const w of ['pond', 'river', 'mouth', 'clifftop']) expect(all.filter(fresh(w)).reduce((n, x) => n + x.slots, 0) / SLOTS_PER_DAY, w).toBeGreaterThan(0.6);
     for (const x of all) {
-      expect(x.at).toBeLessThan(8000);
-      expect(x.slots).toBeLessThanOrEqual(x.kind === 'fish' || x.kind === 'fresh' ? 5 : x.kind === 'bubbles' ? 3 : 2);
-      expect(Math.floor(x.slot / 60)).toBe(Math.floor((x.slot + x.slots - 1) / 60)); // within its 10-minute block
+      const at = `${x.kind} at slot ${x.slot}`;
+      if (!(x.at < 8000)) fails.push(`${at}: at ${x.at}`);
+      if (!(x.slots <= (x.kind === 'fish' || x.kind === 'fresh' ? 5 : x.kind === 'bubbles' ? 3 : 2))) fails.push(`${at}: ${x.slots} slots`);
+      if (Math.floor(x.slot / 60) !== Math.floor((x.slot + x.slots - 1) / 60)) fails.push(`${at}: ${x.slots} slots, past its 10-minute block`);
     }
+    expect(fails.slice(0, 10)).toEqual([]);
     const busy = (k: string[]) => all.filter((x) => k.includes(x.kind)).reduce((n, x) => n + x.slots, 0) / SLOTS_PER_DAY;
     expect(busy(['fish', 'bubbles'])).toBeGreaterThan(0.6); // a fish is basically always there
     expect(busy(['bug'])).toBeGreaterThan(0.3);

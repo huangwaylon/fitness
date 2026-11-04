@@ -55,13 +55,15 @@ describe('bursts', () => {
   it("NH's shapes, each with a few dozen sparks at most, inside its radius", () => {
     const seen = new Set<Shape>();
     const r = mulberry32(8);
+    // (failures collected, one expect)
+    const fails: string[] = [];
     for (let i = 0; i < 400; i++) {
       const b = burstPlan(r);
       seen.add(b.shape);
-      expect(b.sparks.length).toBeGreaterThanOrEqual(14);
-      expect(b.sparks.length).toBeLessThanOrEqual(36);
-      for (const s of b.sparks) expect(Math.hypot(s.x, s.y)).toBeLessThanOrEqual(1.3);
+      if (!(b.sparks.length >= 14 && b.sparks.length <= 36)) fails.push(`burst ${i} (${b.shape}): ${b.sparks.length} sparks`);
+      for (const s of b.sparks) if (!(Math.hypot(s.x, s.y) <= 1.3)) fails.push(`burst ${i} (${b.shape}): a spark at ${s.x},${s.y}`);
     }
+    expect(fails.slice(0, 10)).toEqual([]);
     expect(seen).toEqual(new Set(['peony', 'ring', 'willow', 'heart', 'star', 'pattern']));
   });
   const sky: Box = { x0: 0, x1: 390, y0: 0, y1: 180 };
@@ -71,15 +73,21 @@ describe('bursts', () => {
   it('opens inside the sky and never over the UI, of every size, smaller where the room is small', () => {
     const r = mulberry32(5);
     const sizes = new Set<number>();
+    // (failures collected, one expect)
+    const fails: string[] = [];
     for (let i = 0; i < 300; i++) {
-      const s = burstSpot(sky, [ribbon], r)!;
-      expect(s).not.toBeNull();
-      expect(overlaps(s, ribbon)).toBe(false);
-      expect(s.x - s.rad).toBeGreaterThanOrEqual(0), expect(s.x + s.rad).toBeLessThanOrEqual(390);
-      expect(s.y - s.rad).toBeGreaterThanOrEqual(0), expect(s.y + s.rad + 12).toBeLessThanOrEqual(180);
-      expect(s.rad).toBeLessThanOrEqual(MAX_R), expect(s.rad).toBeGreaterThanOrEqual(MIN_R);
+      const s = burstSpot(sky, [ribbon], r);
+      if (!s) {
+        fails.push(`spot ${i}: none`);
+        continue;
+      }
+      const at = `spot ${i} at ${s.x},${s.y} r ${s.rad}`;
+      if (overlaps(s, ribbon)) fails.push(`${at}: over the ribbon`);
+      if (!(s.x - s.rad >= 0 && s.x + s.rad <= 390 && s.y - s.rad >= 0 && s.y + s.rad + 12 <= 180)) fails.push(`${at}: out of the sky`);
+      if (!(s.rad <= MAX_R && s.rad >= MIN_R)) fails.push(`${at}: its size`);
       sizes.add(Math.round(s.rad / 10));
     }
+    expect(fails.slice(0, 10)).toEqual([]);
     expect(sizes.size).toBeGreaterThan(3);
     // a short sky beside a wide HUD: only small ones, above or below it
     const tight = burstSpot({ x0: 0, x1: 320, y0: 0, y1: 150 }, [{ x0: 10, x1: 310, y0: 50, y1: 100 }], r)!;

@@ -59,10 +59,13 @@ describe('week helpers', () => {
 describe('parseInstant on the server format', () => {
   it('equals Date.parse for every in-range instant, and leaves the rest to it', () => {
     let t = Date.UTC(1999, 11, 31, 23, 59, 59, 999);
+    // (mismatches collected, one expect)
+    const fails: string[] = [];
     for (let i = 0; i < 20_000; i++, t += 7_919_377) {
-      const s = new Date(t).toISOString();
-      expect(parseInstant(s), s).toBe(Date.parse(s));
+      const s = new Date(t).toISOString(), got = parseInstant(s);
+      if (!Object.is(got, Date.parse(s))) fails.push(`${s}: ${got}, Date.parse ${Date.parse(s)}`);
     }
+    expect(fails.slice(0, 10)).toEqual([]);
     for (const s of ['2028-02-29T12:00:00.000Z', '2026-12-31T23:59:59.999Z', '2026-01-01T00:00:00.000Z']) expect(parseInstant(s)).toBe(Date.parse(s));
     expect(parseInstant('2026-02-30T00:00:00.000Z')).toBe(Date.parse('2026-02-30T00:00:00.000Z')); // Date.parse's call (it rolls over)
     expect(() => parseInstant('2026-13-01T00:00:00.000Z')).toThrow();

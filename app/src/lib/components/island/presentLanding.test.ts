@@ -13,16 +13,20 @@ const open = openGround(g.nav, g.surfaceAt, feet);
 describe('presentLanding.ts: open ground for a present', () => {
   test('only open sand or grass, walkable all round, one level, off every footprint', () => {
     let n = 0;
+    // (failures collected, one expect: an expect a point is ~54k calls)
+    const fails: string[] = [];
     for (let z = -60; z < 1700; z += 7)
       for (let x = -80; x < 500; x += 7) {
         if (!open(x, z)) continue;
         n++;
         for (const [dx, dz] of [[0, 0], [12, 0], [-12, 0], [0, 12], [0, -12]]) {
-          expect(['grass', 'sand']).toContain(g.surfaceAt(x + dx, z + dz));
-          expect(walkable(g.nav, x + dx, z + dz)).toBe(true);
+          const surface = g.surfaceAt(x + dx, z + dz);
+          if (surface !== 'grass' && surface !== 'sand') fails.push(`open at ${x},${z}: ${surface} at ${x + dx},${z + dz}`);
+          if (!walkable(g.nav, x + dx, z + dz)) fails.push(`open at ${x},${z}: not walkable at ${x + dx},${z + dz}`);
         }
-        expect(feet.some((b) => x > b.x0 && x < b.x1 && z > b.y0 && z < b.y1)).toBe(false);
+        if (feet.some((b) => x > b.x0 && x < b.x1 && z > b.y0 && z < b.y1)) fails.push(`open at ${x},${z}: on a footprint`);
       }
+    expect(fails.slice(0, 10)).toEqual([]);
     // plenty of the island is open
     expect(n).toBeGreaterThan(2000);
   });
