@@ -185,12 +185,13 @@ export function saveFoodGoal(who: Who, n: FoodGoalOf, v: number | null): void {
 }
 
 /** ごはん's goals for GoalEdit (けんこう's control): kcal from KCAL_GOAL_MIN, the nutrients over their whole range;
- *  each may be cleared (protein then falls back to its default, model/food.ts foodGoal). −/＋ start from about a
+ *  each may be cleared (protein, and with a profile kcal and salt, then fall back to their defaults: model/food.ts
+ *  foodGoal). −/＋ start from about a
  *  day's usual when none is set. */
 export const FOOD_GOAL_SPECS: Record<FoodGoalOf, GoalSpec> = {
   k: {
     head: () => t('food.goalHead.k'), unit: () => 'kcal', decimals: 0, min: KCAL_GOAL_MIN, max: FOOD_GOALS.k.max, step: FOOD_GOALS.k.step,
-    parse: parseKcalGoal, clearable: true, start: 2000,
+    parse: parseKcalGoal, clearable: true, start: 2000, note: () => t('food.goalNote.k'),
     hint: () => t('food.goalRange', { min: formatNum(KCAL_GOAL_MIN), max: formatNum(FOOD_GOALS.k.max), step: FOOD_GOALS.k.step })
   },
   p: gramSpec('p', 100, () => t('food.goalNote.p')),

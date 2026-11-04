@@ -22,6 +22,7 @@ import { buyPrice, sellPrice, stockOf } from '#lib/contract/shop.ts';
 import { GOODS } from '#lib/contract/pocket.ts';
 import { shopView } from '#lib/model/shop.ts';
 import { world } from './world.svelte.ts';
+import { profileValueOk, type ProfileKey } from '#lib/contract/profile.ts';
 
 /** 買う！ and its とりけす wait this long before they are sent, with もとに戻す on the banner. */
 const UNDO_MS = 5000;
@@ -74,6 +75,17 @@ export function setGoalWeight(person: PersonId, kg: number | null): SendResult {
   const value = roundKg(kg);
   if (!isWeightKg(value)) return { ok: false };
   return week.send('pref', { person, key: 'goalWeight', value });
+}
+
+/**
+ * A profile pref (せってい → プロフィール: `sex`, `birth`, `bmiStd`; contract/profile.ts), or null to clear it: a member
+ * sets either member's, the guest only its own. Private: the record sends a member's to the members alone, the
+ * guest's to the guest alone. `{ok:false}` for a value the record would refuse.
+ */
+export function setProfile(who: Who, key: ProfileKey, value: string | null): SendResult {
+  const m = week.model;
+  if (!m || (m.me === 'G') !== (who === 'G') || !profileValueOk(key, value, localDateAt(m.now))) return { ok: false };
+  return week.send('pref', who === 'G' ? { key, value } : { person: who, key, value });
 }
 
 /** A body fat goal in % (one decimal), or null to clear it. Both of us see it; it never earns. */

@@ -3,13 +3,14 @@
 // (weight, body fat, BMI, lean mass and their goals). These are the record's rules for that key, shared by the record
 // (relay/src/store.ts: what it accepts from the guest and what its snapshot leaves out) and the demo (`?demo&as=G`
 // shows what the guest's phone would get). Pure.
-import { isActivityMetric, isRec, type EventRow, type SnapshotRows } from './api.ts';
+import { isActivityMetric, isPersonId, isRec, PROFILE_PREF_KEYS, type EventRow, type SnapshotRows } from './api.ts';
+import type { Who } from '../types.ts';
 import { scopeMayWrite } from './layout.ts';
 import { goalKeysOf } from './goals.ts';
 
-/** The guest's own prefs: cosmetic, and its meal log's daily goals (kcal and the nutrients; never another goal,
- *  never another person's). */
-const GUEST_PREF_KEYS: readonly unknown[] = ['locale', 'villagerName', 'villager', ...goalKeysOf('food')];
+/** The guest's own prefs: cosmetic, its meal log's daily goals (kcal and the nutrients; never another goal, never
+ *  another person's) and its own profile (contract/profile.ts: its sex, birth date and BMI standard). */
+const GUEST_PREF_KEYS: readonly unknown[] = ['locale', 'villagerName', 'villager', ...goalKeysOf('food'), ...PROFILE_PREF_KEYS];
 
 type Rec = Record<string, unknown>;
 
@@ -52,23 +53,52 @@ export function guestMayWrite(type: string, d: Rec): boolean {
  *  sent to the guest. */
 const BODY_GOAL_KEYS: readonly unknown[] = goalKeysOf('body');
 
-/** Whether an event row reaches the guest: all but the からだ goals; every meal,
- *  everyone's, does. */
-function guestSeesEvent(r: EventRow): boolean {
-  if (r[3] !== 'pref') return true;
-  let d: unknown;
+/** A `pref` row's data: null for any other row, false for an unreadable one. */
+function prefData(r: EventRow): Rec | null | false {
+  if (r[3] !== 'pref') return null;
   try {
-    d = JSON.parse(r[4] || '{}');
+    const d: unknown = JSON.parse(r[4] || '{}');
+    return isRec(d) && d;
   } catch {
     return false;
   }
-  return isRec(d) && !BODY_GOAL_KEYS.includes(d.key);
+}
+
+/**
+ * Whether a profile `pref` row (sex, birth date, BMI standard: contract/profile.ts) reaches `viewer`: a member's
+ * (its subject `person`, else its sender, A or B) only the two members, the guest's only the guest. Any other row: yes.
+ */
+function profileSeen(viewer: Who, r: EventRow, d: Rec): boolean {
+  if (!PROFILE_PREF_KEYS.includes(d.key as string)) return true;
+  const subject = d.person === undefined ? r[1] : d.person;
+  return isPersonId(viewer) ? isPersonId(subject) : subject === 'G' && r[1] === 'G';
+}
+
+/** Whether an event row reaches the guest: all but the からだ goals and the members' profiles; every meal,
+ *  everyone's, does. */
+function guestSeesEvent(r: EventRow): boolean {
+  const d = prefData(r);
+  return d === null || (d !== false && !BODY_GOAL_KEYS.includes(d.key) && profileSeen('G', r, d));
 }
 
 /**
  * The rows the guest's phone gets: the activity metrics (steps, Move, Exercise, Stand: the trees, today's ベル, きろく)
- * and every event but the からだ goals. Never a からだ row: weight, body fat, BMI, lean mass.
+ * and every event but the からだ goals and the members' profiles (its own profile it does get). Never a からだ row:
+ * weight, body fat, BMI, lean mass.
  */
 export function guestRows(rows: SnapshotRows): SnapshotRows {
   return { metrics: rows.metrics.filter((r) => isActivityMetric(r[3])), events: rows.events.filter(guestSeesEvent) };
+}
+
+/**
+ * The rows `me`'s phone gets (every `snapshot` and delta, relay/src/store.ts): the guest's, guestRows; a member's,
+ * everything but the guest's profile (the guest's alone). @public (relay/src/store.ts)
+ */
+export function rowsFor(me: Who, rows: SnapshotRows): SnapshotRows {
+  if (me === 'G') return guestRows(rows);
+  const events = rows.events.filter((r) => {
+    const d = prefData(r);
+    return d === null || d === false || profileSeen(me, r, d);
+  });
+  return events.length === rows.events.length ? rows : { metrics: rows.metrics, events };
 }

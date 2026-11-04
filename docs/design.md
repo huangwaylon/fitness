@@ -153,10 +153,30 @@ scrolled where it was); ✕, the backdrop and Esc close the panel.
 
 **せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, grown out of the
 pill (Sheet's `pop`), title せってい: **むらびと** (my villager and よびな; かえる → the picker: 23 special characters
-and all 417 NH villagers, its head pinned over the scrolling grid), **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 /
+and all 417 NH villagers, its head pinned over the scrolling grid), **プロフィール** ([Profile](#profile)), **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 /
 English), **きせつ** ([Seasonal preview](#seasonal-preview)), **てんき** (ほんもの / ゲーム: [Weather](#weather)), **フレームレート** (30 / 60: [Frame rate](#frame-rate)), **つうしん** (when each of us last synced; いま つうしん; not the guest's), and **もようがえ** (one row with its
 はじめる; not the guest's). The picker pushes a level with ‹; ✕, the backdrop and Esc close it,
 and the next opening starts at its top. Its own chunk, loaded on the first tap.
+
+<a id="profile"></a>**プロフィール** (`panel/ProfileSection.svelte`, `model/profile.ts`, `e2e/profile.spec.ts`; the user: "store the
+user's gender and birthdate so that the calculations and recommendations can account for that"): one card. Whose, in
+けんこう's dropdown (the two members, this phone's first; the guest has no dropdown: its own only) with the age at the
+right (「29さい」, by the Tokyo day); せいべつ (おとこ · おんな · ひみつ: unset), たんじょうび (a native date field,
+1900 … 10 years ago) and BMIの めやす (アジア, the default · WHO; not the guest's: no body data). Under them, a member's:
+「身長 … cm（体重と BMI から）・基礎代謝 … kcal・1日 約… kcal」 and ごはん's suggested goals (kcal, protein with 1食 a
+third, salt), or what is still missing; then who sees it (「ふたりだけに みえるよ」 / the guest's 「じぶんだけに」).
+Prefs on the record ([backend](backend.md#events) `sex`, `birth`, `bmiStd`): either member sets either's; private to the
+two members (the guest's to the guest), enforced by the record. What it feeds (decisions: *Profile*):
+- **Height:** from Health's own BMI: √(weight ÷ BMI) of the latest day with both (the Shortcut sends both; no height pref).
+- **Energy:** resting by Mifflin–St Jeor (10 × kg + 6.25 × cm − 5 × age, + 5 a man, − 161 a woman), the latest
+  weigh-in; daily = resting + the average Move (Apple's active kcal) of the last 28 days with a row (at least 7), else
+  resting × 1.4; kept within 1.2–2.2 × resting.
+- **ごはん's defaults** ([Gohan](#gohan)), only while no goal is set: kcal the daily energy, less 15 % while the goal weight is
+  more than 0.5 kg under the latest weigh-in, never under the resting energy nor 1,500 (a man) / 1,200 (a woman), up to
+  a 50; salt 日本人の食事摂取基準（2025年版）'s ceiling, 7.5 g a man, 6.5 g a woman (from 15); protein 1.6 g × the
+  weigh-in, at least the 推奨量 (65 g a man, 60 from 65; 50 g a woman). Registered as the goals' `derived` defaults
+  (`contract/goals.ts`).
+- **BMI's category** on the BMI card ([Kenkou](#kenkou)).
 
 ### Kiroku
 
@@ -208,7 +228,8 @@ Health data over time for the personal trainer, one person at a time, computed o
 - **体脂肪率 · BMI · 除脂肪体重** (`BodyCard`, `DotChart`): as 体重 (体脂肪率 with its own goal, `goalBodyFat`, drawn
   and keyed exactly as the weight goal: the dashed yuzu line, 「目標 19.5」 or the ↑/↓ label when far off, the axis
   fitted to it when near, 「- - 目標」 in the key, and the goal month at that pace; BMI and 除脂肪体重 have none;
-  unset = no line): 平均 (n回の記録), 期間の変化 (the same
+  unset = no line): 平均 (n回の記録; BMI's with its category by the person's standard, 「普通体重（アジア基準）」: under 18.5
+  低体重, then アジア 23 過体重 and 25 肥満 (JASSO, WHO's Asian cut-offs) or WHO 25 and 30; [Profile](#profile)), 期間の変化 (the same
   plain change, in the metric's unit: `−0.4%`, `+0.2`, `−0.3 kg`) and per week, and the dot chart on an axis fitted to the
   values (at least 2 points of body fat or 2 kg, 1 of BMI). A day with no measurement has no dot; 記録なし when the
   period has none. Never earns, no good / bad colours.
@@ -263,8 +284,9 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   by 0.5; each set and cleared (目標をなくす) with けんこう's control (`health/GoalEdit`, `foodUi.ts`
   FOOD_GOAL_SPECS) on my own cards only, anyone else's shown read-only (the guest has its own). **Defaults:** protein
   1.6 g × the latest weigh-in (a lifter's usual aim; a member with a weight, until set, and again once cleared:
-  「なしなら 体重×1.6 g」); none for kcal, fat, carbs and salt: what they should be depends on the person and the plan
-  (a cut, a bulk, a doctor's salt limit), and a made-up line would read as advice. Salt's is a ceiling (「これより
+  「なしなら 体重×1.6 g」; at least the 推奨量 with a profile); with a profile ([Profile](#profile)) kcal from the daily
+  energy and salt the 食事摂取基準's ceiling by sex (「なしなら からだと 活動からの めやす」); none for fat and carbs
+  (they depend on the plan). A default never overrides a goal that's set. Salt's is a ceiling (「これより
   ひかえめに」).
 - **Meals:** 朝ごはん · 昼ごはん · 夜ごはん · おやつ, a card each with its kcal and a row per entry (the food, its
   amount in one format, a weight once: 「茶碗1杯（150g）」, 「1パック（110g）」, 「中ジョッキ×2（700ml）」; kcal). On my

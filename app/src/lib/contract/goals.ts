@@ -35,8 +35,12 @@ export interface GoalDef {
   /** May be cleared (`value: null`): a `latest` goal is optional; a `daily` one always has a value (its default). */
   clearable: boolean;
   /** The goal until one is set (a member's own: the Move goal), or null: none. ごはん's protein has a computed one
-   *  (model/food.ts proteinDefault). */
+   *  (model/food.ts proteinDefault), and kcal and salt one from the profile (`derived`). */
   fallback: number | Readonly<Record<'A' | 'B', number>> | null;
+  /** A default computed from the person's data where `fallback` has none (model/food.ts foodDefault): `protein` (1.6 g ×
+   *  the latest weigh-in, at least the 推奨量), `energy` (the daily energy from the profile, less a deficit while
+   *  losing: model/profile.ts kcalDefault), `salt` (食事摂取基準's ceiling by sex: saltDefault). Never over a set goal. */
+  derived?: 'protein' | 'energy' | 'salt';
   /** `target` only: met within ± this share of the goal (0.1: 2,000 kcal ± 200). */
   band?: number;
   /** Whether the ベル read it (the stamp card: steps and Move). Exercise and Stand earn on config/rules.ts RULES.goals' fixed values
@@ -61,11 +65,11 @@ const DEFS = {
   body_fat_pct: { group: 'body', key: 'goalBodyFat', dir: 'atMost', min: 3, max: 60, step: 0.1, history: 'latest', clearable: true, fallback: null },
   bmi: { group: 'body', key: 'goalBmi', dir: 'target', min: 15, max: 40, step: 0.1, history: 'latest', clearable: true, fallback: null, band: 0.04 },
   lean_kg: { group: 'body', key: 'goalLean', dir: 'atLeast', min: 10, max: 150, step: 0.1, history: 'latest', clearable: true, fallback: null },
-  k: { group: 'food', key: 'kcalGoal', dir: 'target', min: 1000, max: 5000, step: 50, history: 'latest', clearable: true, fallback: null, band: 0.1 },
-  p: { group: 'food', key: 'proteinGoal', dir: 'atLeast', min: 10, max: 400, step: 5, history: 'latest', clearable: true, fallback: null },
+  k: { group: 'food', key: 'kcalGoal', dir: 'target', min: 1000, max: 5000, step: 50, history: 'latest', clearable: true, fallback: null, band: 0.1, derived: 'energy' },
+  p: { group: 'food', key: 'proteinGoal', dir: 'atLeast', min: 10, max: 400, step: 5, history: 'latest', clearable: true, fallback: null, derived: 'protein' },
   fa: { group: 'food', key: 'fatGoal', dir: 'atMost', min: 10, max: 300, step: 5, history: 'latest', clearable: true, fallback: null },
   c: { group: 'food', key: 'carbsGoal', dir: 'target', min: 20, max: 800, step: 5, history: 'latest', clearable: true, fallback: null, band: 0.15 },
-  s: { group: 'food', key: 'saltGoal', dir: 'atMost', min: 1, max: 20, step: 0.5, history: 'latest', clearable: true, fallback: null }
+  s: { group: 'food', key: 'saltGoal', dir: 'atMost', min: 1, max: 20, step: 0.5, history: 'latest', clearable: true, fallback: null, derived: 'salt' }
 } as const satisfies Record<GoalId, GoalDef>;
 export const GOALS: Readonly<Record<GoalId, GoalDef>> = DEFS;
 /** A goal's `pref` key; `LatestGoalKey` those kept as the latest only (model/state.ts Prefs). */

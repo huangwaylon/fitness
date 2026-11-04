@@ -5,7 +5,7 @@
 // (ごはん) with a kcal goal each, and a recipe of A's (マイレシピ). Deterministic per date
 // (a seeded RNG), so a reload shows the same history.
 import type { PersonId, ShopItemId, Who } from '#lib/types.ts';
-import { guestRows } from '#lib/contract/guest.ts';
+import { rowsFor } from '#lib/contract/guest.ts';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import { addDays, jstMs, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import { provisionalMs } from '#lib/model/state.ts';
@@ -176,6 +176,12 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
   ev(at(addDays(wStart, 2), 21, 0), 'B', 'pref', { key: 'goalWeight', value: WEIGHT_DEMO.B.goal });
   // B's body fat goal too (A's is left unset: the demo shows both a chart with one and one without)
   ev(at(addDays(wStart, 2), 21, 1), 'B', 'pref', { key: 'goalBodyFat', value: 26 });
+  // made-up profiles (せってい → プロフィール): the defaults' and the BMI card's category's inputs
+  ev(at(wStart, 21, 2), 'A', 'pref', { key: 'sex', value: 'm' });
+  ev(at(wStart, 21, 3), 'A', 'pref', { key: 'birth', value: '1991-05-12' });
+  ev(at(wStart, 21, 4), 'A', 'pref', { key: 'bmiStd', value: 'asia' });
+  ev(at(addDays(wStart, 2), 21, 2), 'B', 'pref', { key: 'sex', value: 'f' });
+  ev(at(addDays(wStart, 2), 21, 3), 'B', 'pref', { key: 'birth', value: '1994-08-20' });
 
   // The meal log: the last days' meals, each logged a few minutes after it was eaten (only what is past by now), and a
   // kcal goal each. A meal never earns, so none of this moves a ベル. A's breakfast is いつもの (a repeat, 毎日) from
@@ -212,7 +218,7 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
 export function demoCache(now: number, me: Who = 'A', weeks = DEMO_WEEKS_BACK, health = true): SnapshotCache {
   const made = demoRows(now, Math.max(1, Math.min(260, Math.round(weeks))));
   const all = health ? made : { ...made, metrics: [] };
-  // the guest's (`?demo&as=G`): what the record would send its key, without the からだ rows (contract/guest.ts)
-  const rows = me === 'G' ? guestRows(all) : all;
+  // what the record would send this key (contract/guest.ts rowsFor): the guest's (`?demo&as=G`) without the からだ rows
+  const rows = rowsFor(me, all);
   return { v: 1, me, rows, since: maxAt(rows), skewMs: 0, fetchedAt: now, demo: true };
 }
