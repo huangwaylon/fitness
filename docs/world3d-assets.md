@@ -107,12 +107,12 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 ## The inventory
 
 <!-- assets:start -->
-538 keys, 420 models, 5.32 MB in all.
+541 keys, 423 models, 5.33 MB in all.
 
 | kind | keys | models | KB | loads |
 | --- | --- | --- | --- | --- |
 | accessory | 3 | 3 | 52.6 | lazily (event) |
-| find | 126 | 49 | 390 | with the island |
+| find | 129 | 52 | 406.8 | with the island |
 | scenery | 4 | 2 | 68.2 | with the island |
 | bush | 24 | 24 | 287 | with the island |
 | sea | 40 | 40 | 495 | lazily (sea) |
@@ -190,6 +190,7 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 | finds/fossil | finds/fossil | 4.545 | feet |  | 12 | 7.6 |  |
 | finds/gemini-fragment | finds/gemini-fragment | 5.114 | feet |  | 12 | 7.1 |  |
 | finds/giant-clam | finds/clam | 6.811 | feet |  | 12 | 7.1 |  |
+| finds/hardwood | finds/hardwood | 3.374 | feet |  | 12 | 5.6 |  |
 | finds/hole | finds/hole | 2.589 | feet |  | 12 | 6.2 |  |
 | finds/iguanodon-skull | finds/fossil | 4.545 | feet |  | 12 | 7.6 |  |
 | finds/iguanodon-tail | finds/fossil | 4.545 | feet |  | 12 | 7.6 |  |
@@ -238,6 +239,7 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 | finds/shovel | finds/shovel | 2.451 | feet |  | 12 | 7.2 |  |
 | finds/skinny-mushroom | finds/skinny-mushroom | 4.819 | feet |  | 12 | 7.5 |  |
 | finds/sky-egg | finds/sky-egg | 6.094 | feet |  | 12 | 7.3 |  |
+| finds/softwood | finds/softwood | 3.374 | feet |  | 12 | 5.6 |  |
 | finds/spino-skull | finds/fossil | 4.545 | feet |  | 12 | 7.6 |  |
 | finds/spino-tail | finds/fossil | 4.545 | feet |  | 12 | 7.6 |  |
 | finds/spino-torso | finds/fossil | 4.545 | feet |  | 12 | 7.6 |  |
@@ -264,6 +266,7 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 | finds/weed-spring | finds/weed-spring | 1.322 | feet |  | 12 | 18.6 |  |
 | finds/weed-summer | finds/weed-summer | 1.464 | feet |  | 12 | 18 |  |
 | finds/weed-winter | finds/weed-winter | 1.559 | feet |  | 12 | 17.1 |  |
+| finds/wood | finds/wood | 3.374 | feet |  | 12 | 5.6 |  |
 | items/candy | finds/candy | 3.712 | feet |  | 12 | 7.9 |  |
 | presents/diy-recipe | finds/diy-recipe | 6.687 | feet |  | 12 | 6.5 |  |
 

@@ -3,7 +3,8 @@
   // canopy, 🍐 🍑 🍒 🍎 left to right (RING_FRUITS, TREE_FRUIT). Each hangs grey at 0 and fills with colour as today's
   // amount nears its goal (fruitDay.ts greyAt). Once met it drops to the ground in front of the trunk (FRUIT_SPOTS): the
   // tree shakes, the fruit falls and bounces, a little dust, once (fruit-day in localStorage: a reload finds it lying
-  // there). A tap on it picks it up (a hop, a sparkle; gone until the next Tokyo day). Picking up is cosmetic: the ベル
+  // there). A tap on it picks it up (a hop, a sparkle; gone until the next Tokyo day) into my pocket (the shop buys it,
+  // かいがら, never ベル: the ベル
   // come from the goal, on read. With all four met the canopy glints now and then like NH's money tree, so the day's progress stays after the pick-up.
   // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, toggles the popup) and the fruit row (≥ 44px
   // tall: picks up the fallen fruit nearest the tap, else the same popup with the nearest fruit highlighted). The popup
@@ -43,6 +44,7 @@
   import { fx3d } from './fx3d.ts';
   import { echo3d } from './echo3d.ts';
   import { GOAL_TREES } from './world.ts';
+  import { recordGoods } from '#lib/store/actions.ts';
 
   interface Props {
     person: PersonWeekView;
@@ -198,16 +200,18 @@
   const dropFx = (n: number) => (fx = fx.filter((e) => e.n !== n));
 
   /** NH's pick-up: the fruit hops up and shrinks away (an out transition: transform and opacity only). */
-  /** Picks up a fallen fruit: gone from this phone until the next Tokyo day (no ベル: those come from the goal). */
+  /** Picks up a fallen fruit: gone from this phone until the next Tokyo day, into my pocket to sell at the shop (no
+   *  ベル: those come from the goal). */
   function collect(f: RingFruit) {
     const s = spots.find((p) => p.f === f);
     if (!s || s.stage !== 'ground') return;
     // first wins: claimed at the tap (the partner's phone sees it picked up, by my villager)
     const sid = `fr:${fruitId(person.person, f)}`;
     if (!shared.share({ kind: 'pick', id: sid, what: `fruit:${f}`, at: [Math.round(s.gx), Math.round(s.gz)] }).fresh) return;
-    // picked up where it lies, my villager turning to it (avatar.ts)
+    // picked up where it lies, my villager turning to it (avatar.ts); into my pocket (the shop's くだもの)
     turnTo(s.gx);
     pick(f);
+    recordGoods(f);
   }
   function pick(f: RingFruit) {
     const s = spots.find((p) => p.f === f);

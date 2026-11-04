@@ -62,7 +62,7 @@
   import { hitWorld, sceneSfx } from './sceneTaps.ts';
   import type { Box } from './geom.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
-  import { recordFind } from '#lib/store/actions.ts';
+  import { recordFind, recordGoods } from '#lib/store/actions.ts';
   import { catchLine, loadLines, loadNames } from './catchLine.ts';
   import { findArt } from './beach.ts';
   import { eggTime, eventNow } from './events.ts';
@@ -1072,12 +1072,15 @@
       const n = ++seq;
       await loadNames().catch(() => {});
       if (seq !== n) return;
+      recordGoods('water-egg');
       showCatch(x, y, findArt('water-egg'), t('beach.fished', { name: t('beach.name.water-egg') }));
       return;
     }
     // the shared ずかん: the first catch of each fish, bug or sea creature (junk isn't a find; the pearl is a shell) gets
     // a second page saying so
     const added = kind ? recordFind(kind, item) : false;
+    // junk is no find, but it's kept (the shop buys it: contract/pocket.ts goods)
+    if (!kind) recordGoods(item);
     // a fish tells the island (Turkey Day: Franklin is waiting for one)
     if (kind === 'fish') scene?.dispatchEvent(new CustomEvent('island:catch', { detail: { kind: 'fish', id: item } }));
     const n = ++seq;

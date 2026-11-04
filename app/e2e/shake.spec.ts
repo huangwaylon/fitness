@@ -2,7 +2,7 @@
 // A shake may drop a branch (a tap picks it up), a bagworm or a spider dangling on its thread (a tap nets it) or, rarely,
 // a wasp nest: its wasps charge the villager on that side; a tap on them in time nets one (NH's catch line), else they
 // sting (a fright, a sweat drop and NH's swollen eye on the villager's own eye). `?shake=nest|branch|bagworm|spider`
-// forces the next shake's drop. Nothing changes ベル.
+// forces the next shake's drop (`wood`: a piece of wood, into my pocket for the shop). Nothing changes ベル.
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { is3d, quiet } from './island.ts';
@@ -165,6 +165,28 @@ test('a shaken branch lies beside the trunk until a tap picks it up', async ({ p
   await expect(twig).toHaveCount(0);
   expect(await cues(page)).toContain('scene-twig');
   await expect(page.locator('.detail')).toHaveCount(0);
+});
+
+test('a shake knocks out a piece of wood; picked up, it is in my pocket’s しげん at the shop and sells for かいがら', async ({ page }) => {
+  await open(page, '&shake=wood');
+  await shake(page);
+  const wood = page.locator('button[data-wood]');
+  await expect(wood).toHaveCount(1);
+  await expect(wood).toHaveAttribute('aria-label', 'もくざいを ひろう');
+  const what = (await wood.getAttribute('data-wood'))!;
+  await page.waitForTimeout(700);
+  await wood.click();
+  await expect(wood).toHaveCount(0);
+  await expect(page.locator('.detail')).toHaveCount(0);
+  await page.goto('shop?demo&date=2026-11-04T12:00&critter=none&visitor=none');
+  const tile = page.locator(`[data-shop-sec="material"] + ul [data-shop-catch="goods:${what}"]`);
+  await expect(tile).toHaveAttribute('data-n', '1');
+  const shells = () => page.locator('[data-shop]').getAttribute('data-shells').then(Number);
+  const before = await shells();
+  await tile.click();
+  await page.locator('[data-shop-sell]').click();
+  await expect.poll(shells).toBe(before + 3); // NH's 60 Bells ÷ 20
+  await expect(tile).toHaveCount(0);
 });
 
 test('a shake drops a bagworm on its thread beside the trunk; a tap nets it (NH’s line, a ずかん find, no ベル)', async ({ page }) => {

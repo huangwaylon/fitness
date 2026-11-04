@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { mulberry32 } from '#lib/random.ts';
 import {
-  BUG_ODDS, NEST_GAP_MS, NEST_ODDS, sceneryTrees, SHAKE_WINDOW_MS, SWARM_MS, bearsCoconuts, dropIds, fallen, goalTree, lastNestOf, netsSwarm,
-  shakeDrop, shakeTap, shakenBug, treeById, wireDrop
+  BUG_ODDS, NEST_GAP_MS, NEST_ODDS, dropAt, sceneryTrees, SHAKE_WINDOW_MS, SWARM_MS, WOOD_A_DAY, WOODS, bearsCoconuts, dropIds, fallen, goalTree, lastNestOf, netsSwarm,
+  shakeDrop, shakeTap, shakenBug, treeById, wireDrop, woodAt, woodFall, woodId, woodOut, woodTree
 } from './treeShake.ts';
+import type { Put } from '#lib/sync/world-day.ts';
 import { BUGS, pickBug } from './critters.ts';
 import { CATCH_LINES } from './catchLines.ts';
 import { SCENERY, surfaceAt } from './world.ts';
@@ -146,6 +147,62 @@ describe("the day's shakes (shared by both phones)", () => {
   });
 });
 
+describe('the wood (NH’s axe, without one)', () => {
+  /** A phone shaking `tree` `shakes` times on `date`: the puts it makes, as treeShakes' shaken does (the shake's place
+   *  among the tree's, the pieces out so far). */
+  const shakeOut = (date: string, tree: string, shakes: number, puts: Record<string, Put> = {}) => {
+    for (let n = 0; n < shakes; n++) {
+      const w = woodFall(date, tree, n, woodOut(puts, tree));
+      if (w) puts[w.id] = { id: w.id, what: w.what, at: [0, 0], who: 'A', t: n };
+    }
+    return puts;
+  };
+  const trees = [...sceneryTrees(), goalTree('A'), goalTree('B')];
+  it('is the date’s and the tree’s: the same shakes give the same wood on both phones, another day another', () => {
+    const days = Array.from({ length: 20 }, (_, i) => `2026-11-${String(i + 1).padStart(2, '0')}`);
+    const differ = days.flatMap((d) => trees.filter((t) => JSON.stringify(shakeOut(d, t.id, 12)) !== JSON.stringify(shakeOut(d, t.id, 12))).map((t) => `${d} ${t.id}`));
+    expect(differ).toEqual([]);
+    const a = trees.map((t) => Object.values(shakeOut('2026-11-04', t.id, 6)).map((p) => p.what).join());
+    const b = trees.map((t) => Object.values(shakeOut('2026-11-05', t.id, 6)).map((p) => p.what).join());
+    expect(a).not.toEqual(b);
+  });
+  it('gives at most WOOD_A_DAY a tree a day, about half the shakes until then, NH’s three kinds about alike', () => {
+    const kinds: Record<string, number> = {};
+    let over = 0, first = 0, n = 0;
+    for (let d = 1; d <= 60; d++) for (const t of trees) {
+      const date = `2026-${String(9 + Math.floor((d - 1) / 30)).padStart(2, '0')}-${String(((d - 1) % 30) + 1).padStart(2, '0')}`;
+      const puts = shakeOut(date, t.id, 30);
+      const ids = Object.keys(puts);
+      if (ids.length > WOOD_A_DAY || ids.some((id, k) => id !== `wd:${t.id}:${k}` || woodTree(id) !== t.id)) over++;
+      for (const p of Object.values(puts)) kinds[p.what] = (kinds[p.what] ?? 0) + 1;
+      if (woodFall(date, t.id, 0, 0)) first++;
+      n++;
+    }
+    expect(over).toBe(0);
+    expect(first / n).toBeGreaterThan(0.4);
+    expect(first / n).toBeLessThan(0.6);
+    expect(Object.keys(kinds).sort()).toEqual([...WOODS].sort());
+    for (const w of WOODS) expect(kinds[w] / (n * WOOD_A_DAY)).toBeGreaterThan(0.25);
+    // the fourth and later: none, even forced
+    const full = shakeOut('2026-11-04', 'goal-A', 40);
+    expect(woodOut(full, 'goal-A')).toBe(WOOD_A_DAY);
+    expect(woodFall('2026-11-04', 'goal-A', 41, WOOD_A_DAY, undefined, true)).toBeNull();
+    expect(woodFall('2026-11-04', 'goal-A', 0, 0, undefined, true)).not.toBeNull();
+    // every id the relay takes (live-protocol's ID: at most 32), a put-down tree's longest (`d` + 24) too
+    expect([...trees.map((t) => t.id), `d${'x'.repeat(24)}`].map((id) => woodId(id, WOOD_A_DAY - 1)).filter((id) => !/^[\w:.-]{1,32}$/.test(id))).toEqual([]);
+  });
+  it('lands by its trunk on the ground (never the sea), a tap’s width clear of its others and of what else lies there', () => {
+    // apart on screen: the camera's tilt shortens z (cos 47°); a pick-up's button is ~30u wide
+    const apart = ([ax, az]: readonly number[], [bx, bz]: readonly number[]) => Math.hypot(ax - bx, (az - bz) * 0.68) >= 22;
+    const bad = trees.flatMap((t) => [0, 1, 2].flatMap((k) => {
+      const at = woodAt(t, k);
+      const others = [...[0, 1, 2].filter((j) => j !== k).map((j) => woodAt(t, j)),
+        ...(['branch', 'nest', 'bagworm'] as const).map((w) => dropAt(t, w)), dropAt(t, 'coconut', 0), dropAt(t, 'coconut', 1)].map((p) => ('x' in p ? [p.x, p.z] : p));
+      return ['grass', 'sand', 'dirt'].includes(surfaceAt(at[0], at[1])) && others.every((o) => apart(at, o)) ? [] : [`${t.id}:${k}`];
+    }));
+    expect(bad).toEqual([]);
+  });
+});
 
 describe('the swarm', () => {
   it('a tap nets it while it is on its way; after SWARM_MS it has stung', () => {

@@ -176,6 +176,7 @@
   "shake.swarm": "ハチを つかまえる",
   "shake.branch": "木のえだを ひろう",
   "shake.coconut": "ヤシのみを ひろう",
+  "shake.wood": "もくざいを ひろう",
   "world.partner.caught": "{who}が {name}を つかまえた！",
   "world.partner.fished": "{who}が {name}を つりあげた！",
   "world.partner.dived": "{who}が {name}を とったよ！",
