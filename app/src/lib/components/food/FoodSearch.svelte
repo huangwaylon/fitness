@@ -7,8 +7,9 @@
   // never searched; the search runs on each committed change. A row opens the amount. From a meal's ＋, マイレシピ
   // too (everyone's recipes: all of them after さいきん, the matching ones before the catalog's); a recipe opens its own.
   // マイ食品 (everyone's custom foods) likewise from both a meal and a recipe's ingredient: all of them after さいきん, the
-  // matching ones above the catalog's; one opens its amount. 「＋ じぶんで つくる」 ends the list (a card of its own when
-  // nothing matches): the custom food editor, the typed text its name.
+  // matching ones above the catalog's; one opens its amount. Under the field, side by side: ＋ レシピを つくる (a meal's
+  // search: the recipe editor) and ＋ 食品を つくる (the custom food editor, the typed text its name); nothing matching,
+  // a card says so, with じぶんで つくる (the same editor).
   import type { Who } from '#lib/types.ts';
   import type { FoodCustom, FoodEntry } from '#lib/contract/food.ts';
   import type { Recipe } from '#lib/model/food.ts';
@@ -27,12 +28,14 @@
     recipes?: readonly Recipe[];
     names?: Record<Who, string>;
     onrecipe?: (r: Recipe) => void;
+    /** レシピを つくる: a new recipe (a meal's search only). */
+    onnewrecipe?: () => void;
     /** マイ食品 to offer (everyone's), one picked, and じぶんで つくる (the name typed so far). */
     customs?: readonly FoodCustom[];
     oncustom?: (c: FoodCustom) => void;
     oncreate?: (name: string) => void;
   }
-  let { recent, onpick, recipes = [], names, onrecipe, customs = [], oncustom, oncreate }: Props = $props();
+  let { recent, onpick, recipes = [], names, onrecipe, onnewrecipe, customs = [], oncustom, oncreate }: Props = $props();
 
   let db = $state.raw<FoodDb | null>(null);
   let failed = $state(false);
@@ -96,13 +99,7 @@
   {/if}
 {/snippet}
 
-{#snippet create(big: boolean)}
-  {#if oncreate}
-    <button type="button" class="btn small make" class:paper={!big} data-sfx="page" data-custom-new onclick={() => oncreate(q.trim())}>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5 V19 M5 12 H19" /></svg>{t('food.my.make')}
-    </button>
-  {/if}
-{/snippet}
+{#snippet plus()}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5 V19 M5 12 H19" /></svg>{/snippet}
 
 {#snippet recipeRows()}
   {#if onrecipe && myRecipes.length}
@@ -127,12 +124,17 @@
       oninput={onInput} oncompositionend={() => (q = text)} />
     {#if text}<button type="button" class="x" data-sfx="tick" aria-label={t('food.clear')} onclick={clear}>✕</button>{/if}
   </form>
+  {#if onnewrecipe || oncreate}
+    <div class="new">
+      {#if onnewrecipe}<button type="button" class="btn paper small make" data-sfx="page" data-recipe-new onclick={onnewrecipe}>{@render plus()}{t('food.rcp.make')}</button>{/if}
+      {#if oncreate}<button type="button" class="btn paper small make" data-sfx="page" data-custom-new onclick={() => oncreate(q.trim())}>{@render plus()}{t('food.my.new')}</button>{/if}
+    </div>
+  {/if}
 
   {#if !q.trim()}
     {@render recentRows()}
     {@render recipeRows()}
     {@render customRows()}
-    {@render create(false)}
   {:else}
     {@render recipeRows()}
     {@render customRows()}
@@ -163,7 +165,6 @@
       <p class="note" role="status">{t('food.loadFail')}</p>
       <button type="button" class="btn paper small" data-sfx="tick" data-food-retry onclick={() => tries++}>{t('food.retry')}</button>
     </div>
-    {@render create(false)}
     {@render recentRows()}
   {:else if !db}
     <p class="note" role="status">{t('food.loading')}</p>
@@ -171,11 +172,11 @@
     {#if noneOfOurs}
       <section class="card none" data-food-none>
         <p class="note" role="status">{t('food.none', { q: q.trim() })}</p>
-        {#if oncreate}<p class="note">{t('food.my.noneHint')}</p>{/if}
-        {@render create(true)}
+        {#if oncreate}
+          <p class="note">{t('food.my.noneHint')}</p>
+          <button type="button" class="btn small make" data-sfx="page" data-custom-make onclick={() => oncreate(q.trim())}>{@render plus()}{t('food.my.make')}</button>
+        {/if}
       </section>
-    {:else}
-      {@render create(false)}
     {/if}
   {:else}
     <ul class="list" data-food-results>
@@ -189,7 +190,6 @@
         </button></li>
       {/each}
     </ul>
-    {@render create(false)}
   {/if}
 {/snippet}
 
@@ -240,7 +240,10 @@
   .fail .btn { margin: 0; }
   .kc { grid-area: kc; display: grid; justify-items: end; gap: 3px; font-size: var(--fs-body); white-space: nowrap; }
   .kc small { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); max-width: 12em; overflow: hidden; text-overflow: ellipsis; }
+  /* the two ＋ buttons side by side under the field (one: the whole row) */
+  .new { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; }
   .make { margin: 0; width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .new .make { min-width: 0; padding: 0 8px; gap: 4px; white-space: nowrap; }
   .make svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
   .none { display: grid; gap: 8px; padding: 12px 14px; }
   .none .note { margin: 0 2px; }

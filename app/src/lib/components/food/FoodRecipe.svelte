@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A recipe (マイレシピ; a level over the レシピ tab, docs/design.md "Gohan"). Mine or a new one: its name, how many
+  // A recipe (マイレシピ; a level over a meal's search or a recipe's amount, docs/design.md "Gohan"). Mine or a new one: its name, how many
   // servings (−/＋, 1–20), its ingredients (each: the food, its amount, its kcal; a tap → its amount to change or
   // take out), ＋ ざいりょうを ついか (→ the search → the amount), what it adds up to (a serving's kcal and P/F/C/salt, and
   // the whole's), then けす (a saved one; tapped twice: the board's ほんとうに？) and ほぞん. Anyone else's: the same,

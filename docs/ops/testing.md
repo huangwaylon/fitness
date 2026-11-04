@@ -100,8 +100,8 @@ checked on the iOS Simulator instead, on this Mac: `npm run ios:check` (scripts/
 installed iOS's iPhone, turns on Safari's Remote Automation in it, drives Safari over WebDriver (safaridriver ships with
 macOS), opens the live site's demo (`--url` for another, e.g. a local build), and writes `test-results/ios-sim/<time>/`:
 `report.md` / `report.json` (the 3D island's load time, idle and scrolling fps with the frames' p50/p95 and the long
-ones, the engine's stats and the frames it draws a second idle; then けんこう (1週, 1年) and ごはん (きろく, グラフ,
-レシピ) opened from the HUD: the island's frames under each (0: it pauses), the CSS animations still running, and the
+ones, the engine's stats and the frames it draws a second idle; then けんこう (1週, 1年) and ごはん (きろく, グラフ)
+opened from the HUD: the island's frames under each (0: it pauses), the CSS animations still running, and the
 sheet's own scroll's fps; the page's errors) and four screenshots. Exit 1 when the island didn't come up or it failed.
 
 The indoor scenes likewise: `npm run ios:indoor -- --url <base>` (scripts/ios-sim-indoor.ts; the base, e.g. a local

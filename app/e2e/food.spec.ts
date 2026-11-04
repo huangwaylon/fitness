@@ -229,7 +229,7 @@ test('いつもの: someone else’s repeat is shown, 🔁, never managed; the l
 test('グラフ: the kcal eaten per day with the average line, the Move card under it; the period, ‹ and whose day; it fits the sheet', async ({ page }) => {
   await openFood(page);
   const tabs = sheet(page).locator('[data-tab]');
-  await expect(tabs).toHaveText(['きろく', 'グラフ', 'レシピ']);
+  await expect(tabs).toHaveText(['きろく', 'グラフ']);
   await expect(sheet(page).locator('[data-tab=log]')).toHaveAttribute('aria-pressed', 'true'); // きろく on opening
   await expect(sheet(page).locator('select[data-pick=period]')).toHaveCount(0);
   await sheet(page).locator('[data-tab=chart]').click();
@@ -291,21 +291,29 @@ test('グラフ on the guest’s phone: its own kcal only (no Health of its own)
   expect(await overflowOf(page)).toEqual([]);
 });
 
-// マイレシピ (the レシピ tab): a recipe of mine from two ingredients (ごはん 茶碗1杯 150 g = 234 kcal and 100 g typed = 156
-// kcal), 2人前: its card says 195 kcal a serving and 390 in all; ごはんに ついか logs one serving (1人前, the meal the
-// clock suggests: 昼 at 12:30) and きろく's total rises by it. Everything fits the sheet's width.
-test('マイレシピ: make a recipe of 2 ingredients, 2人前; its card shows a serving’s kcal; ごはんに ついか adds a serving to the day', async ({ page }) => {
+// マイレシピ: from a meal's search, レシピを つくる (under the field, beside 食品を つくる): a recipe of mine from two
+// ingredients (ごはん 茶碗1杯 150 g = 234 kcal and 100 g typed = 156 kcal), 2人前; ほぞん comes back to the search, which
+// lists it at 195 kcal a serving; picked, its amount logs one serving (1人前) to the meal and きろく's total rises by it.
+// Its amount opens it again (mine: the editor; けす asked twice). Everything fits the sheet's width.
+test('マイレシピ: made from a meal’s search (2 ingredients, 2人前), listed there, logged as a serving; its amount opens the editor', async ({ page }) => {
   await openFood(page);
   const before = await kcalOf(page);
-  await expect(sheet(page).locator('[data-tab]')).toHaveText(['きろく', 'グラフ', 'レシピ']);
-  await sheet(page).locator('[data-tab=recipe]').click();
-  await expect(sheet(page).locator('[data-recipe]').first()).toBeVisible(); // the demo's おうちカレー (A's)
-  await expect(sheet(page).locator('select[data-pick]')).toHaveCount(0); // everyone's: no whose day, no period
-  await expect(sheet(page).locator('[data-food-date], [data-food-range]')).toHaveCount(0);
+  const h2 = sheet(page).locator('.navbar h2');
+  await expect(sheet(page).locator('[data-tab]')).toHaveText(['きろく', 'グラフ']);
+  await sheet(page).locator('[data-add=l]').click();
+  // the two ＋ buttons side by side, right under the field, inside the sheet (once the level has slid in)
   expect(await overflowOf(page)).toEqual([]);
+  const [box, rb, cb] = await Promise.all([sheet(page).locator('form[role=search]'), sheet(page).locator('[data-recipe-new]'),
+    sheet(page).locator('[data-custom-new]')].map(async (l) => (await l.boundingBox())!));
+  await expect(sheet(page).locator('[data-recipe-new]')).toHaveText('レシピを つくる');
+  await expect(sheet(page).locator('[data-custom-new]')).toHaveText('食品を つくる');
+  expect(rb.y).toBeGreaterThan(box.y + box.height - 1);
+  expect(rb.y).toBeLessThan(box.y + box.height + 24);
+  expect(Math.abs(rb.y - cb.y)).toBeLessThan(1);
+  expect(cb.x).toBeGreaterThan(rb.x + rb.width);
 
   await sheet(page).locator('[data-recipe-new]').click();
-  await expect(sheet(page).locator('.navbar h2')).toHaveText('あたらしい レシピ');
+  await expect(h2).toHaveText('あたらしい レシピ');
   const lv = sheet(page).locator('[data-recipe-level=edit]');
   await expect(lv.locator('[data-recipe-save]')).toHaveAttribute('aria-disabled', 'true'); // no name, no ingredient yet
   await expect(lv.locator('[data-recipe-remove]')).toHaveCount(0);
@@ -313,8 +321,8 @@ test('マイレシピ: make a recipe of 2 ingredients, 2人前; its card shows a
   await expect(lv.locator('[data-recipe-sv]')).toHaveText('2人前');
   const pick = async (grams?: string) => {
     await sheet(page).locator('[data-recipe-add]').click();
-    await expect(sheet(page).locator('.navbar h2')).toHaveText('ざいりょうを ついか');
-    await expect(sheet(page).locator('[data-food-recipes]')).toHaveCount(0); // no recipe in a recipe
+    await expect(h2).toHaveText('ざいりょうを ついか');
+    await expect(sheet(page).locator('[data-food-recipes], [data-recipe-new]')).toHaveCount(0); // no recipe in a recipe
     await sheet(page).locator('[data-food-q]').fill('ごはん');
     const rice = sheet(page).locator('[data-food-results] button', { hasText: 'ごはん（精白米）' }).first();
     await expect(rice).toBeVisible({ timeout: 15_000 });
@@ -324,7 +332,7 @@ test('マイレシピ: make a recipe of 2 ingredients, 2人前; its card shows a
     await expect(sheet(page).locator('[data-done]')).toHaveText('ついか');
     expect(await overflowOf(page)).toEqual([]);
     await sheet(page).locator('[data-done]').click();
-    await expect(sheet(page).locator('.navbar h2')).toHaveText('あたらしい レシピ');
+    await expect(h2).toHaveText('あたらしい レシピ');
   };
   await pick();
   await pick('100');
@@ -340,49 +348,54 @@ test('マイレシピ: make a recipe of 2 ingredients, 2人前; its card shows a
   expect(await overflowOf(page)).toEqual([]);
   await lv.locator('[data-recipe-save]').click();
 
-  await expect(sheet(page).locator('.navbar h2')).toHaveText('ごはん');
-  const card = sheet(page).locator('[data-recipe]').first(); // the latest changed first
-  await expect(card.locator('.nm')).toHaveText('テストごはん');
-  await expect(card).toHaveAttribute('data-owner', 'A');
-  await expect(card.locator('[data-recipe-per]')).toHaveText('195 kcal');
-  await expect(card.locator('[data-recipe-total]')).toHaveText('ぜんぶで 390 kcal');
-  await expect(card).toContainText('2人前');
-  expect(await overflowOf(page)).toEqual([]);
-
-  await card.locator('[data-recipe-log]').click();
-  await expect(sheet(page).locator('.navbar h2')).toHaveText('ごはんに ついか');
+  // back in the search: listed first (the latest changed), a serving's kcal
+  await expect(h2).toHaveText('昼ごはん');
+  const row = sheet(page).locator('[data-food-recipes] [data-recipe]').first();
+  await expect(row.locator('.nm')).toHaveText('テストごはん');
+  await expect(row).toContainText('195 kcal');
+  await expect(row).toContainText('2人前');
+  await row.click();
+  await expect(h2).toHaveText('ごはんに ついか');
   await expect(sheet(page).locator('.chip[aria-pressed=true]')).toContainText('1人前');
-  await expect(sheet(page).locator('[data-pick-meal=l]')).toHaveAttribute('aria-pressed', 'true'); // 12:30
+  await expect(sheet(page).locator('[data-pick-meal=l]')).toHaveAttribute('aria-pressed', 'true'); // the meal's own
   await expect(sheet(page).locator('[data-food-live] .k')).toContainText('195');
+  expect(await overflowOf(page)).toEqual([]);
   await sheet(page).locator('[data-done]').click();
-  await expect(sheet(page).locator('[data-tab=log]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(h2).toHaveText('ごはん');
   await expect.poll(() => kcalOf(page)).toBe(before + 195);
   await expect(sheet(page).locator('section[data-meal=l] [data-entry]').last()).toContainText('テストごはん');
   await expect(sheet(page).locator('section[data-meal=l] [data-entry]').last()).toContainText('1人前（125g）');
 
-  // mine: the card opens the editor, ほぞん waits until something changes; けす asks twice
-  await sheet(page).locator('[data-tab=recipe]').click();
-  await card.locator('[data-recipe-open]').click();
-  await expect(sheet(page).locator('.navbar h2')).toHaveText('レシピ');
+  // mine: its amount opens the editor, ほぞん waits until something changes; けす asks twice, back to the search
+  await sheet(page).locator('[data-add=d]').click();
+  await sheet(page).locator('[data-food-recipes] [data-recipe]', { hasText: 'テストごはん' }).click();
+  await expect(sheet(page).locator('[data-amount-open]')).toHaveText('レシピを ひらく');
+  await sheet(page).locator('[data-amount-open]').click();
+  await expect(h2).toHaveText('レシピ');
+  await expect(lv.locator('[data-recipe-n]')).toHaveValue('テストごはん');
   await expect(lv.locator('[data-recipe-save]')).toHaveAttribute('aria-disabled', 'true');
   const rm = lv.locator('[data-recipe-remove]');
   await rm.click();
   await expect(rm).toHaveText('ほんとうに けす？');
   await rm.click();
-  await expect(sheet(page).locator('[data-recipe] .nm', { hasText: 'テストごはん' })).toHaveCount(0);
+  await expect(h2).toHaveText('夜ごはん');
+  await expect(sheet(page).locator('[data-food-recipes] [data-recipe]', { hasText: 'テストごはん' })).toHaveCount(0);
 });
 
-// Everyone's recipes: うめ's phone sees ウェイ's おうちカレー read-only, logs a serving of it, and copies it (a recipe of
-// うめ's own, opened in the editor). From a meal's ＋ the search offers マイレシピ too.
-test('マイレシピ: someone else’s recipe is read-only, logged and copied; the meal search offers recipes', async ({ page }) => {
+// Everyone's recipes: うめ's phone finds ウェイ's おうちカレー in a meal's search; its amount opens it read-only, whose
+// ごはんに ついか comes back to the amount; logged; and copied (a recipe of うめ's own, opened in the editor).
+test('マイレシピ: someone else’s recipe in the meal search is read-only from its amount, logged and copied', async ({ page }) => {
   await openFood(page, '&as=B');
   const before = await kcalOf(page);
-  await sheet(page).locator('[data-tab=recipe]').click();
-  const curry = sheet(page).locator('[data-recipe][data-owner=A]', { hasText: 'おうちカレー' });
+  const h2 = sheet(page).locator('.navbar h2');
+  await sheet(page).locator('[data-add=d]').click();
+  const curry = sheet(page).locator('[data-food-recipes] [data-recipe]', { hasText: 'おうちカレー' });
+  await expect(curry).toHaveCount(1);
   await expect(curry).toContainText('4人前');
-  const per = Number((await curry.locator('[data-recipe-per]').textContent())!.replace(/[^\d]/g, ''));
+  await curry.click();
+  const per = Number((await sheet(page).locator('[data-food-live] .k').textContent())!.replace(/[^\d]/g, ''));
   expect(per).toBeGreaterThan(0);
-  await curry.locator('[data-recipe-open]').click();
+  await sheet(page).locator('[data-amount-open]').click();
   const view = sheet(page).locator('[data-recipe-level=view]');
   await expect(view.locator('[data-recipe-name]')).toHaveText('おうちカレー');
   await expect(view).toContainText('の レシピ');
@@ -391,42 +404,40 @@ test('マイレシピ: someone else’s recipe is read-only, logged and copied; 
   expect(await overflowOf(page)).toEqual([]);
 
   await view.locator('[data-recipe-log]').click();
-  await expect(sheet(page).locator('[data-food-live] .k')).toContainText(String(per));
-  await sheet(page).locator('[data-pick-meal=d]').click();
+  await expect(h2).toHaveText('ごはんに ついか');
+  await expect(sheet(page).locator('[data-pick-meal=d]')).toHaveAttribute('aria-pressed', 'true');
   await sheet(page).locator('[data-done]').click();
   await expect.poll(async () => Math.abs((await kcalOf(page)) - (before + per))).toBeLessThanOrEqual(1); // (the day sums unrounded kcal)
   await expect(sheet(page).locator('section[data-meal=d] [data-entry]').last()).toContainText('おうちカレー');
 
-  // the copy: mine now, in the editor (its name, servings and ingredients), and listed as うめ's
-  await sheet(page).locator('[data-tab=recipe]').click();
-  await curry.locator('[data-recipe-open]').click();
+  // the copy: mine now, in the editor (its name, servings and ingredients), and in the search as うめ's too
+  const now = await kcalOf(page);
+  await sheet(page).locator('[data-add=s]').click();
+  await curry.click();
+  await sheet(page).locator('[data-amount-open]').click();
   await view.locator('[data-recipe-copy]').click();
   const lv = sheet(page).locator('[data-recipe-level=edit]');
   await expect(lv.locator('[data-recipe-n]')).toHaveValue('おうちカレー');
   await expect(lv.locator('[data-recipe-sv]')).toHaveText('4人前');
   await expect(lv.locator('[data-recipe-item]')).toHaveCount(6);
   await expect(lv.locator('[data-recipe-remove]')).toHaveCount(1);
-  await sheet(page).getByRole('button', { name: 'もどる' }).click(); // ‹
-  await expect(sheet(page).locator('[data-recipe][data-owner=B]', { hasText: 'おうちカレー' })).toHaveCount(1);
-  await expect(curry).toHaveCount(1);
+  await sheet(page).getByRole('button', { name: 'もどる' }).click(); // ‹: the amount
+  await expect(h2).toHaveText('ごはんに ついか');
+  await sheet(page).getByRole('button', { name: 'もどる' }).click(); // ‹: the search
+  await expect(curry).toHaveCount(2);
 
-  // a meal's ＋: マイレシピ after さいきん, and the matching ones when typed; one → its amount → ついか
-  await sheet(page).locator('[data-tab=log]').click();
-  const now = await kcalOf(page);
-  await sheet(page).locator('[data-add=s]').click();
-  await expect(sheet(page).locator('[data-food-recipes] [data-recipe]')).toHaveCount(2);
+  // typed: the matching ones; one → its amount (the meal's own) → ついか
   await sheet(page).locator('[data-food-q]').fill('カレー');
-  const hit = sheet(page).locator('[data-food-recipes] button', { hasText: 'おうちカレー' }).first();
-  await expect(hit).toBeVisible();
-  await hit.click();
-  await expect(sheet(page).locator('[data-pick-meal=s]')).toHaveAttribute('aria-pressed', 'true'); // the meal's own
+  await expect(curry.first()).toBeVisible();
+  await curry.first().click();
+  await expect(sheet(page).locator('[data-pick-meal=s]')).toHaveAttribute('aria-pressed', 'true');
   await sheet(page).locator('[data-done]').click();
   await expect.poll(async () => Math.abs((await kcalOf(page)) - (now + per))).toBeLessThanOrEqual(1);
 });
 
 // The title bar (the user: "move the user selector to the left of the title in the same row"): whose day left of
-// ごはん, the title still centred, ✕ at the right; a level's ‹ takes the pill's place; レシピ (everyone's) has none.
-// グラフ's period sits under the tabs at the right end (けんこう has it beside its switch; the three tabs fill the row).
+// ごはん, the title still centred, ✕ at the right; a level's ‹ takes the pill's place.
+// グラフ's period sits under the tabs at the right end (けんこう has it beside its switch; the tabs fill the row).
 test('whose day sits in the title bar, left of ごはん; a level’s ‹ takes its place; グラフ’s period under the tabs; きろく’s art', async ({ page }) => {
   await openFood(page);
   const bar = sheet(page).locator('.navbar');
@@ -451,11 +462,9 @@ test('whose day sits in the title bar, left of ごはん; a level’s ‹ takes 
 
   await sheet(page).locator('[data-tab=chart]').click();
   await expect(who).toBeVisible();
-  const [tabs, per] = await Promise.all([sheet(page).locator('[data-tab=recipe]'), sheet(page).locator('select[data-pick=period]')].map(async (l) => (await l.boundingBox())!));
+  const [tabs, per] = await Promise.all([sheet(page).locator('[data-tab=chart]'), sheet(page).locator('select[data-pick=period]')].map(async (l) => (await l.boundingBox())!));
   expect(per.y).toBeGreaterThan(tabs.y + tabs.height - 1); // under the tabs
   expect(Math.abs(per.x + per.width - (tabs.x + tabs.width))).toBeLessThan(3); // at the right end
-  await sheet(page).locator('[data-tab=recipe]').click();
-  await expect(who).toHaveCount(0);
   expect(await overflowOf(page)).toEqual([]);
 });
 
@@ -580,9 +589,9 @@ test('search rows: a product’s brand on its second line, the same name, brand 
 
 // マイ食品 (the user: "create my own food and record its calories for future use in case there's a food not in the
 // existing database"): a search that finds nothing offers じぶんで つくる, the typed text its name; ほぞん goes on to its
-// amount (by the serving: no weight, so no grams), logged at once; next time the search offers it, and the レシピ tab
-// lists it (mine: its editor, けす asked twice).
-test('マイ食品: made from a search that finds nothing (no weight), logged at once; offered next time, listed under レシピ', async ({ page }) => {
+// amount (by the serving: no weight, so no grams), logged at once; next time the search offers it, and its amount
+// opens it (mine: its editor, けす asked twice).
+test('マイ食品: made from a search that finds nothing (no weight), logged at once; offered next time, its amount opens the editor', async ({ page }) => {
   await openFood(page);
   const before = await kcalOf(page);
   const h2 = sheet(page).locator('.navbar h2');
@@ -591,7 +600,7 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   const none = sheet(page).locator('[data-food-none]');
   await expect(none).toBeVisible({ timeout: 15_000 }); // the catalog's first fetch, then nothing
   await expect(none).toContainText('「会社の弁当」は 見つかりませんでした');
-  await none.locator('[data-custom-new]').click();
+  await none.locator('[data-custom-make]').click();
   await expect(h2).toHaveText('あたらしい マイ食品');
   const lv = sheet(page).locator('[data-custom-level=edit]');
   const save = lv.locator('[data-custom-save]');
@@ -628,6 +637,7 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   await row.click();
   await expect(sheet(page).locator('[data-grams]')).toHaveCount(0);
   await expect(sheet(page).locator('.chip[aria-pressed=true]')).toHaveText('1食');
+  await expect(sheet(page).locator('[data-amount-open]')).toHaveCount(0); // an entry: no opening its food
   await sheet(page).getByRole('button', { name: 'もどる' }).click();
 
   // the next search: under マイ食品 (all of them before anything is typed; the matching ones when typed)
@@ -637,16 +647,14 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   await sheet(page).locator('[data-food-q]').fill('弁当');
   await expect(mine).toBeVisible();
   await expect(mine).toContainText('650 kcal');
-  await expect(sheet(page).locator('[data-food-results] + [data-custom-new]')).toBeVisible({ timeout: 15_000 }); // at the end of the results
-  await sheet(page).getByRole('button', { name: 'もどる' }).click();
+  await expect(sheet(page).locator('[data-food-results]')).toBeVisible({ timeout: 15_000 });
+  await expect(sheet(page).locator('[data-custom-make]')).toHaveCount(0); // something found: the ＋ under the field only
 
-  // the レシピ tab: its card (who, the serving, its kcal) → my editor (ほぞん waits; けす asked twice)
-  await sheet(page).locator('[data-tab=recipe]').click();
-  const card = sheet(page).locator('[data-customs] [data-custom][data-owner=A]', { hasText: '会社の弁当' });
-  await expect(card.locator('[data-custom-serving]')).toHaveText('1食');
-  await expect(card.locator('[data-custom-kcal]')).toHaveText('650 kcal');
+  // its amount → my editor (ほぞん waits; けす asked twice), back to the search
+  await mine.click();
+  await expect(sheet(page).locator('[data-amount-open]')).toHaveText('マイ食品を ひらく');
   expect(await overflowOf(page)).toEqual([]);
-  await card.locator('[data-custom-open]').click();
+  await sheet(page).locator('[data-amount-open]').click();
   await expect(h2).toHaveText('マイ食品');
   await expect(lv.locator('[data-custom-k]')).toHaveValue('650');
   await expect(save).toHaveAttribute('aria-disabled', 'true');
@@ -654,9 +662,10 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   await rm.click();
   await expect(rm).toHaveText('ほんとうに けす？');
   await rm.click();
-  await expect(h2).toHaveText('ごはん');
-  await expect(card).toHaveCount(0);
-  await expect.poll(() => sheet(page).locator('[data-tab=log]').click().then(() => kcalOf(page))).toBe(before + 650); // the meal logged stays
+  await expect(h2).toHaveText('夜ごはん');
+  await expect(mine).toHaveCount(0);
+  await sheet(page).getByRole('button', { name: 'もどる' }).click();
+  await expect.poll(() => kcalOf(page)).toBe(before + 650); // the meal logged stays
 });
 
 // With a weight: made while picking a recipe's ingredient (the editor goes on to the ingredient's amount, by grams too),
@@ -664,16 +673,18 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
 test('マイ食品 with a weight, made while adding a recipe ingredient: P/F/C, its amount by grams, the recipe total includes it', async ({ page }) => {
   await openFood(page);
   const h2 = sheet(page).locator('.navbar h2');
-  await sheet(page).locator('[data-tab=recipe]').click();
+  await sheet(page).locator('[data-add=l]').click();
   await sheet(page).locator('[data-recipe-new]').click();
   const rl = sheet(page).locator('[data-recipe-level=edit]');
   await rl.locator('[data-recipe-n]').fill('バーと ごはん');
   await sheet(page).locator('[data-recipe-add]').click();
   await expect(sheet(page).locator('[data-food-customs] [data-custom]')).toHaveCount(2); // the demo's, everyone's
+  await expect(sheet(page).locator('[data-custom-new]')).toHaveText('食品を つくる'); // alone under the field
+  expect(await overflowOf(page)).toEqual([]);
   await sheet(page).locator('[data-food-q]').fill('てづくりバー');
   const none = sheet(page).locator('[data-food-none]');
   await expect(none).toBeVisible({ timeout: 15_000 });
-  await none.locator('[data-custom-new]').click();
+  await none.locator('[data-custom-make]').click();
   const lv = sheet(page).locator('[data-custom-level=edit]');
   const save = lv.locator('[data-custom-save]');
   await expect(lv.locator('[data-custom-n]')).toHaveValue('てづくりバー');
@@ -709,21 +720,25 @@ test('マイ食品 with a weight, made while adding a recipe ingredient: P/F/C, 
   await expect(rl.locator('[data-recipe-live-total]')).toHaveText('ぜんぶで 240 kcal（120g）');
   await expect(rl.locator('[data-recipe-live-per]')).toHaveText('120 kcal'); // 2人前
   await rl.locator('[data-recipe-save]').click();
-  const card = sheet(page).locator('[data-recipe]', { hasText: 'バーと ごはん' });
-  await expect(card.locator('[data-recipe-total]')).toHaveText('ぜんぶで 240 kcal');
-  // and it is listed with its weight
-  await expect(sheet(page).locator('[data-customs] [data-custom]', { hasText: 'てづくりバー' }).locator('[data-custom-serving]')).toHaveText('1本（120g）');
+  // back in the meal's search: the recipe (a serving's kcal), and the custom food with its weight
+  await expect(h2).toHaveText('昼ごはん');
+  await expect(sheet(page).locator('[data-food-recipes] [data-recipe]', { hasText: 'バーと ごはん' })).toContainText('120 kcal');
+  await expect(sheet(page).locator('[data-food-customs] [data-custom]', { hasText: 'てづくりバー' })).toContainText('1本（120g）');
 });
 
-// Everyone's: うめ's phone sees ウェイ's 社食の日替わり定食 read-only (no field, no けす), logs it (by the serving) and
-// copies it (a custom food of うめ's own, in the editor); ウェイ's phone sees うめ's おにぎり (by weight) in its search.
-test('マイ食品: someone else’s is read-only, logged and copied; the partner’s are in the search', async ({ page }) => {
+// Everyone's: うめ's phone finds ウェイ's 社食の日替わり定食 in a meal's search; its amount opens it read-only (no field,
+// no けす), whose ごはんに ついか comes back to the amount; logged (by the serving) and copied (a custom food of うめ's
+// own, in the editor); ウェイ's phone sees うめ's おにぎり (by weight) in its search.
+test('マイ食品: someone else’s is read-only from its amount, logged and copied; the partner’s are in the search', async ({ page }) => {
   await openFood(page, '&as=B');
   const before = await kcalOf(page);
-  await sheet(page).locator('[data-tab=recipe]').click();
-  const teishoku = sheet(page).locator('[data-customs] [data-custom][data-owner=A]', { hasText: '社食の日替わり定食' });
-  await expect(teishoku.locator('[data-custom-serving]')).toHaveText('1個');
-  await teishoku.locator('[data-custom-open]').click();
+  const h2 = sheet(page).locator('.navbar h2');
+  await sheet(page).locator('[data-add=l]').click();
+  const teishoku = sheet(page).locator('[data-food-customs] [data-custom]', { hasText: '社食の日替わり定食' });
+  await expect(teishoku).toHaveCount(1);
+  await expect(teishoku).toContainText('1個');
+  await teishoku.click();
+  await sheet(page).locator('[data-amount-open]').click();
   const view = sheet(page).locator('[data-custom-level=view]');
   await expect(view.locator('[data-custom-name]')).toHaveText('社食の日替わり定食');
   await expect(view).toContainText('の マイ食品');
@@ -732,25 +747,29 @@ test('マイ食品: someone else’s is read-only, logged and copied; the partne
   expect(await overflowOf(page)).toEqual([]);
 
   await view.locator('[data-custom-log]').click();
+  await expect(h2).toHaveText('昼ごはん');
   await expect(sheet(page).locator('[data-grams]')).toHaveCount(0);
-  await expect(sheet(page).locator('[data-pick-meal=l]')).toHaveAttribute('aria-pressed', 'true'); // 12:30
+  await expect(sheet(page).locator('[data-pick-meal=l]')).toHaveAttribute('aria-pressed', 'true');
   await sheet(page).locator('[data-done]').click();
-  await expect(sheet(page).locator('[data-tab=log]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(h2).toHaveText('ごはん');
   await expect.poll(() => kcalOf(page)).toBe(before + 650);
   await expect(sheet(page).locator('section[data-meal=l] [data-entry]').last()).toContainText('社食の日替わり定食');
   await expect(sheet(page).locator('section[data-meal=l] [data-entry] .amt').last()).toHaveText('1個');
 
-  // the copy: うめ's own, in the editor (けす there), listed as うめ's beside ウェイ's
-  await sheet(page).locator('[data-tab=recipe]').click();
-  await teishoku.locator('[data-custom-open]').click();
+  // the copy: うめ's own, in the editor (けす there), in the search beside ウェイ's
+  await page.mouse.move(0, 0); // (a pointer resting on the banner holds it)
+  await expect(sheet(page).locator('.banner')).toHaveCount(0, { timeout: 10_000 }); // docked low, it covers the search's rows
+  await sheet(page).locator('[data-add=d]').click();
+  await teishoku.click();
+  await sheet(page).locator('[data-amount-open]').click();
   await view.locator('[data-custom-copy]').click();
   const lv = sheet(page).locator('[data-custom-level=edit]');
   await expect(lv.locator('[data-custom-n]')).toHaveValue('社食の日替わり定食');
   await expect(lv.locator('[data-custom-k]')).toHaveValue('650');
   await expect(lv.locator('[data-custom-remove]')).toHaveCount(1);
-  await sheet(page).getByRole('button', { name: 'もどる' }).click();
-  await expect(sheet(page).locator('[data-customs] [data-custom][data-owner=B]', { hasText: '社食の日替わり定食' })).toHaveCount(1);
-  await expect(teishoku).toHaveCount(1);
+  await sheet(page).getByRole('button', { name: 'もどる' }).click(); // ‹: the amount
+  await sheet(page).getByRole('button', { name: 'もどる' }).click(); // ‹: the search
+  await expect(teishoku).toHaveCount(2);
 
   // ウェイ's phone: うめ's おにぎり in a meal's search, by weight (its serving and 100g)
   await openFood(page);

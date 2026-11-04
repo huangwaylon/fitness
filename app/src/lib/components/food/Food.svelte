@@ -9,11 +9,11 @@
   // level (FoodSheet's title bar: its ‹; back where it was scrolled, the focus on what opened it, as けんこう's).
   // Anyone else's day is read-only. データの出典 at the foot. Whose day sits in the title bar (`lead`, FoodSheet's
   // NavBar; kept for the session as けんこう's); under it the tabs (TABS, けんこう's group switch): きろく (the day,
-  // on each opening), グラフ (FoodChart: the kcal over a period, けんこう's period dropdown, its range row and its Move
-  // card; switching whose keeps the tab, the period and the range) and レシピ (マイレシピ, FoodRecipes: everyone's recipes, no whose; a recipe → its level,
-  // FoodRecipe: mine to edit, anyone else's to copy; ごはんに ついか → its amount → an entry on the day shown; マイ食品 under
-  // them: FoodCustom, mine to edit, anyone else's to copy or log). The searches (a meal's and a recipe's ingredient)
-  // offer everyone's custom foods and じぶんで つくる: the editor, whose ほぞん goes on to the amount for the new food.
+  // on each opening) and グラフ (FoodChart: the kcal over a period, けんこう's period dropdown, its range row and its Move
+  // card; switching whose keeps the tab, the period and the range). A meal's search offers everyone's recipes
+  // (マイレシピ) and custom foods (マイ食品), and under its field レシピを つくる (FoodRecipe, the editor) and 食品を
+  // つくる (FoodCustom, whose ほぞん goes on to the amount for the new food); a recipe's or custom food's amount opens it
+  // (mine to edit, anyone else's to copy). A recipe's ingredient search offers the custom foods and 食品を つくる too.
   import '#lib/i18n/food.ts'; // the meal log's strings, loaded with it
   import '#lib/i18n/kenkou.ts'; // けんこう's: the period dropdown
   import { flushSync, tick, type Snippet } from 'svelte';
@@ -44,11 +44,10 @@
   import FoodAmount from './FoodAmount.svelte';
   import FoodCredits from './FoodCredits.svelte';
   import FoodRepeat from './FoodRepeat.svelte';
-  import FoodRecipes from './FoodRecipes.svelte';
   import FoodRecipe from './FoodRecipe.svelte';
   import FoodCustom from './FoodCustom.svelte';
   import {
-    customDraft, customItem, customOf, DAYS, foodDb, foodDbNow, foodLast, itemOf, KCAL_GOAL_MIN, mealAt, parseKcalGoal, recentOf, recipeItem,
+    customDraft, customItem, customOf, DAYS, foodDb, foodDbNow, foodLast, itemOf, KCAL_GOAL_MIN, parseKcalGoal, recentOf, recipeItem,
     recipeServing, sameItems, servingOnly, type CustomDraft, type RecipeDraft
   } from './foodUi.ts';
 
@@ -72,7 +71,7 @@
   const villagerOf = (w: Who) => (w === 'G' ? (view?.guest.villager ?? null) : (view?.people[w].villager ?? null));
 
   /** ごはん's tabs, in order (a new one: its id here, its string, its art and its branch below). */
-  const TABS = ['log', 'chart', 'recipe'] as const;
+  const TABS = ['log', 'chart'] as const;
   type Tab = (typeof TABS)[number];
   let tab = $state<Tab>('log');
   /** グラフ's period (1週 on each opening, as けんこう's). */
@@ -105,18 +104,18 @@
   /** A food picked: a custom food still there logs afresh (`cid`); a serving with no weight (`sv`) by the serving; an
    *  `sv` snapshot whose food is gone (or a recipe's) logs from that snapshot (`snap`). */
   type Picked = { item: Item; cid?: string; sv?: boolean; snap?: FoodSnap };
-  /** Where the custom food editor goes on to once saved: a meal's amount, a recipe's ingredient, or back (the tab). */
+  /** Where the custom food editor goes on to once saved: a meal's amount, a recipe's ingredient, or back (to the search). */
   type Then = { meal: Meal } | { ingredient: true } | null;
   type Level =
     | { k: 'search'; meal: Meal }
-    | ({ k: 'amount'; meal: Meal; g0?: number; u0?: string; entry?: FoodEntry; fromTab?: true } & Picked)
+    | ({ k: 'amount'; meal: Meal; g0?: number; u0?: string; entry?: FoodEntry } & Picked)
     | { k: 'custom'; id: string | null; then: Then }
     | { k: 'goal' }
     | { k: 'repeat'; meal: Meal }
     | { k: 'recipe'; id: string | null }
     | { k: 'rsearch' }
     | ({ k: 'ritem'; g0?: number; u0?: string; i?: number } & Picked)
-    | { k: 'rlog'; r: Recipe; meal?: Meal };
+    | { k: 'rlog'; r: Recipe; meal: Meal };
   let stack = $state<Level[]>([]);
   const top = $derived(stack.at(-1) ?? null);
   /** Under each level: where the one below was scrolled and what opened it (`[data-add="b"]`), restored on ‹. */
@@ -129,7 +128,7 @@
       : top.k === 'ritem' ? t('food.rcp.item') : top.k === 'rlog' ? t('food.rcp.log')
       : top.k === 'custom' ? t(top.id ? 'food.my.head' : 'food.my.newTitle') : t(`food.meal.${top.meal}`);
     back = top ? up : null;
-    lead = !top && tab !== 'recipe' ? whoPill : null;
+    lead = !top ? whoPill : null;
   });
   const sheet = () => (scroller ??= root?.closest('[data-food-sheet]') ?? null);
   /** Push a level; `focus`: what opened it (a selector, found again once the level below is back: Safari never
@@ -155,6 +154,8 @@
     backTo(stack.length - 1);
   }
   const home = () => backTo(0);
+  /** Back to the meal's search under the levels (a recipe or custom food saved, removed); none: the day. */
+  const toSearch = () => backTo(stack.findIndex((l) => l.k === 'search') + 1);
 
   function setWho(w: Who) {
     if (w === who || !order.includes(w)) return;
@@ -217,15 +218,10 @@
   }
   function done(l: Extract<Level, { k: 'amount' }>, v: { m: Meal; g: number; u: string | null }) {
     const e = l.entry && real(l.entry);
-    const d = l.fromTab && date > today ? today : date;
     if (l.entry) {
       if (e && editFood(e.id, { m: v.m, g: v.g, u: v.u }).ok) said('food.saved');
-    } else if ((l.cid ? logCustom({ customId: l.cid, d, m: v.m, g: v.g, u: v.u ?? undefined }) : logFood({ d, m: v.m, g: v.g, f: snapOf(l, v.u) })).ok) {
+    } else if ((l.cid ? logCustom({ customId: l.cid, d: date, m: v.m, g: v.g, u: v.u ?? undefined }) : logFood({ d: date, m: v.m, g: v.g, f: snapOf(l, v.u) })).ok) {
       said('food.added', { meal: t(`food.meal.${v.m}`) });
-    }
-    if (l.fromTab) {
-      picked = foodLast.who = null;
-      tab = 'log';
     }
     home();
   }
@@ -274,7 +270,7 @@
   function openRecipe(r: Recipe | null) {
     draft = r ? { n: r.n, sv: r.sv, it: r.it.map((x) => ({ ...x })) } : { n: '', sv: 2, it: [] };
     savedAs = r ? JSON.stringify(draft) : null;
-    go({ k: 'recipe', id: r?.id ?? null }, r ? `[data-recipe-open="${r.id}"]` : '[data-recipe-new]');
+    go({ k: 'recipe', id: r?.id ?? null }, r ? '[data-amount-open]' : '[data-recipe-new]');
   }
   function itemDone(l: Extract<Level, { k: 'ritem' }>, v: { g: number; u: string | null }) {
     const x = { g: v.g, f: snapOf(l, v.u) };
@@ -293,11 +289,11 @@
   }
   function recipeSave(id: string | null) {
     if (saveRecipe({ id: id ?? undefined, n: draft.n, sv: draft.sv, it: draft.it }).ok) said('food.rcp.saved', { name: draft.n.trim() });
-    home();
+    toSearch();
   }
   function recipeRemove(id: string) {
     if (removeRecipe(id).ok) said('food.rcp.removed', { name: draft.n }, true);
-    home();
+    toSearch();
   }
   /** Someone else's → a recipe of mine with its name, servings and ingredients, opened in the editor. */
   function recipeCopy() {
@@ -307,13 +303,9 @@
     stack = [...stack.slice(0, -1), { k: 'recipe', id: res.id }];
     said('food.rcp.copied');
   }
-  /** A recipe logged as a meal of mine on the day shown; from the レシピ tab, きろく then shows it on my day. */
+  /** A recipe logged as a meal of mine on the day shown. */
   function recipeLog(l: Extract<Level, { k: 'rlog' }>, v: { m: Meal; g: number; u: string | null }) {
-    if (logRecipe({ recipeId: l.r.id, d: date > today ? today : date, m: v.m, g: v.g, u: v.u ?? undefined }).ok) {
-      said('food.added', { meal: mealName(v.m) });
-    }
-    picked = foodLast.who = null;
-    tab = 'log';
+    if (logRecipe({ recipeId: l.r.id, d: date, m: v.m, g: v.g, u: v.u ?? undefined }).ok) said('food.added', { meal: mealName(v.m) });
     home();
   }
 
@@ -339,14 +331,14 @@
     const res = saveCustom({ id: l.id ?? undefined, ...v });
     if (!res.ok || !res.id) return;
     said('food.my.saved', { name: v.n });
-    if (!l.then) return home();
+    if (!l.then) return toSearch();
     const c: Custom = { ...v, id: res.id, at: 0, who: me };
     const p: Picked = { item: customItem(c), cid: res.id, sv: c.g === undefined };
     swap('meal' in l.then ? { k: 'amount', meal: l.then.meal, ...p } : { k: 'ritem', ...p });
   }
   function customRemove(id: string) {
     if (removeCustom(id).ok) said('food.my.removed', { name: cdraft.n }, true);
-    home();
+    toSearch();
   }
   /** Someone else's → a custom food of mine with the same values, opened in the editor. */
   function customCopy(l: Extract<Level, { k: 'custom' }>) {
@@ -359,7 +351,7 @@
 </script>
 
 {#snippet whoPill()}
-  <!-- whose day, in the title bar (NavBar's lead; on きろく and グラフ: レシピ is everyone's) -->
+  <!-- whose day, in the title bar (NavBar's lead) -->
   <Pick kind="who" value={who} options={order.map((id) => ({ id, label: names[id] }))} label={t('food.who')} onpick={setWho}
     person={{ p: who, villager: villagerOf(who) }} compact />
 {/snippet}
@@ -371,11 +363,14 @@
     {#if top?.k === 'search'}
       {@const meal = top.meal}
       <FoodSearch {recent} onpick={(item, g, u, f) => add(item, meal, g, u, f)} recipes={allRecipes} {names} onrecipe={(r) => go({ k: 'rlog', r, meal })}
-        customs={allCustoms} oncustom={(c) => go({ k: 'amount', meal, ...pickOf(customItem(c)) })} oncreate={(n) => openCustom(null, { meal }, '[data-custom-new]', n)} />
+        onnewrecipe={() => openRecipe(null)} customs={allCustoms} oncustom={(c) => go({ k: 'amount', meal, ...pickOf(customItem(c)) })}
+        oncreate={(n) => openCustom(null, { meal }, '[data-custom-new]', n)} />
     {:else if top?.k === 'amount'}
       {@const l = top}
       {#key l}
-        <FoodAmount item={l.item} meal={l.meal} g0={l.g0} u0={l.u0} serving={!!l.sv} editing={!!l.entry} ondone={(v) => done(l, v)} onremove={() => l.entry && remove(l.entry)} />
+        {@const c = !l.entry && l.cid ? allCustoms.find((x) => x.id === l.cid) : undefined}
+        <FoodAmount item={l.item} meal={l.meal} g0={l.g0} u0={l.u0} serving={!!l.sv} editing={!!l.entry} ondone={(v) => done(l, v)} onremove={() => l.entry && remove(l.entry)}
+          open={c ? { label: t('food.my.open'), run: () => openCustom(c, null, '[data-amount-open]') } : null} />
       {/key}
     {:else if top?.k === 'recipe'}
       {@const id = top.id}
@@ -384,7 +379,7 @@
       {#key id}
         <FoodRecipe bind:draft owner={theirs ? ownerOf(theirs) : null} saved={!!r && !theirs} clean={clean} onadd={() => go({ k: 'rsearch' }, '[data-recipe-add]')}
           onitem={editItem} onsave={() => recipeSave(id)} onremove={() => id && recipeRemove(id)} oncopy={recipeCopy}
-          onlog={() => theirs && go({ k: 'rlog', r: theirs }, '[data-recipe-log]')} />
+          onlog={up} />
       {/key}
     {:else if top?.k === 'rsearch'}
       <FoodSearch {recent} onpick={(item, g, u, f) => go({ k: 'ritem', ...pickOf(item, f), g0: g, u0: u })} {names} customs={allCustoms}
@@ -396,7 +391,7 @@
       {#key l.id}
         <FoodCustom bind:draft={cdraft} owner={theirs ? ownerOf(theirs) : null} saved={!!c && !theirs} clean={cclean} onsave={() => customSave(l)}
           onremove={() => l.id && customRemove(l.id)} oncopy={() => customCopy(l)}
-          onlog={() => theirs && go({ k: 'amount', meal: mealAt(m.now), ...pickOf(customItem(theirs)), fromTab: true }, '[data-custom-log]')} />
+          onlog={up} />
       {/key}
     {:else if top?.k === 'ritem'}
       {@const l = top}
@@ -407,7 +402,8 @@
     {:else if top?.k === 'rlog'}
       {@const l = top}
       {#key l}
-        <FoodAmount item={recipeItem(l.r)} meal={l.meal ?? mealAt(m.now)} serving={recipeServing(l.r)} ondone={(v) => recipeLog(l, v)} />
+        <FoodAmount item={recipeItem(l.r)} meal={l.meal} serving={recipeServing(l.r)} ondone={(v) => recipeLog(l, v)}
+          open={{ label: t('food.rcp.open'), run: () => openRecipe(allRecipes.find((x) => x.id === l.r.id) ?? l.r) }} />
       {/key}
     {:else if top?.k === 'repeat'}
       {@const meal = top.meal}
@@ -429,16 +425,13 @@
       <Segmented items={TABS.map((id) => ({ id, label: t(`food.tab.${id}`), art: FOOD_TAB_ART[id] }))} value={tab} label={t('food.tabs')} attr="tab" onpick={(id) => (tab = id)} />
       {#if tab === 'chart'}
         <!-- グラフ: けんこう's period dropdown at the right end, where けんこう has it (there beside its two-way switch;
-             ごはん's three tabs take the whole row) -->
+             ごはん's tabs take the whole row) -->
         <div class="per">
           <Pick kind="period" value={period} options={PERIODS.map((id) => ({ id, label: t(`health.period.${id}`) }))} label={t('health.period')} onpick={setPeriod} />
         </div>
       {/if}
 
-      {#if tab === 'recipe'}
-        <FoodRecipes list={allRecipes} {names} {villagerOf} onnew={() => openRecipe(null)} onopen={openRecipe} onlog={(r) => go({ k: 'rlog', r }, `[data-recipe-log="${r.id}"]`)}
-          customs={allCustoms} oncustomnew={() => openCustom(null, null, '[data-custom-new]')} oncustom={(c) => openCustom(c, null, `[data-custom-open="${c.id}"]`)} />
-      {:else if tab === 'chart'}
+      {#if tab === 'chart'}
         <FoodChart {who} name={names[who]} {period} />
       {:else}
         <RangeNav earlier={t('food.earlier')} later={t('food.later')} today={t('food.today')} {canOn} atToday={picked_d === null}

@@ -236,9 +236,9 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
 
 - **Tabs:** first, right under the title bar (stable across tabs), けんこう's group switch (`ui/Segmented`, a list
   of tabs: `Food.svelte` TABS): きろく (on each opening; its icon NH's rice cooker, `art.ts` FOOD_TAB_ART: the plate
-  meal before it was a blur at 22px) · グラフ (`FoodChart`) · レシピ (`FoodRecipes`). Under it, per tab: きろく the day
-  row, グラフ the period (at the row's right end, where けんこう has it; the three tabs take the whole row) then the
-  range row, レシピ nothing (the recipes are everyone's: no whose either). Switching whose keeps the tab.
+  meal before it was a blur at 22px) · グラフ (`FoodChart`). Under it, per tab: きろく the day row, グラフ the period
+  (at the row's right end, where けんこう has it; the tabs take the whole row) then the range row. Switching whose keeps
+  the tab. Recipes and custom foods have no tab: a meal's search is the way in.
 - **Whose day (きろく, グラフ):** in the title bar left of ごはん, as けんこう's (the same compact pill): this phone's
   person first, then the others (the guest once it has logged a meal, or on its own phone); kept for the session.
   Then (きろく) a sticky row: ‹ the day (「11/4(水)」) › and きょう; › goes past today only to tomorrow, and only when a
@@ -255,7 +255,8 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   at once (from its snapshot: its own portion; the catalog's portions swapped in when they come); anyone else's day is
   read-only. Levels slide in (240 ms, as けんこう's); ‹ comes back where the day was scrolled, the focus on what
   opened it. Confirmations are short (「夜ごはんに ついかしました」) and docked low, never over the level they land on.
-- **Search:** a 16px field (no search mid-IME composition), its ✕ the app's 44px lipped round button; empty,
+- **Search:** a 16px field (no search mid-IME composition), its ✕ the app's 44px lipped round button; under it, side
+  by side (half the row each, on 393 px too), ＋ レシピを つくる (a meal's search only) and ＋ 食品を つくる; empty,
   さいきん (my latest entry of each food, as I had it); typed, the best matches: the name, ✓n when n independent
   sources agree on its kcal, a product's brand and kcal per 100 g, and its default portion (with its weight) and kcal;
   the same name, brand and kcal shown once. ー counts (カレー is not かれい). Offline: 「データを よみこめませんでした
@@ -283,30 +284,28 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   記録なし (the stub, never a 0). 1日の平均（n日分） and 期間の合計 over the finished days with a meal; 記録 n日 ·
   記録なし m日; the goal dashed, the average a flat solid line (「平均」 in the key). Under it, for a member, けんこう's 🍐 ムーブ card as is for the same
   person, period and range (the calories burned; never subtracted from what was eaten); the guest has none of its own.
-- **マイレシピ (the レシピ tab):** everyone's recipes (`food_recipe`), the latest changed first, a card each: its name,
-  who set it (avatar and name) and how many servings, a serving's kcal large and ぜんぶで N kcal, a serving's P/F/C/salt,
-  and 「ごはんに ついか」; ＋ あたらしい レシピ on top. Mine opens its editor (`FoodRecipe`): the name, なん人前 (−/＋,
-  1–20), the ingredients (each a row like a meal's; a tap → the amount: ほぞん / けす), ＋ ざいりょうを ついか (the search
-  and the amount, no meal: ついか puts it in the recipe), 1人前あたり and ぜんぶで live, then けす (asked twice: ほんとうに
-  けす？) and ほぞん (waiting until something changed). Anyone else's: the same read-only, 「〇〇の レシピ」, with
-  「コピーして へんしゅう」 (a recipe of mine, opened in the editor) and 「ごはんに ついか」. ごはんに ついか opens the amount
-  for the recipe as a food (1人前 first, ぜんぶ, 100 g; the meal the clock suggests) and logs an ordinary entry of mine
-  on the day shown in きろく, which it then shows. A meal's search lists マイレシピ too: all after さいきん, the matching ones
-  above the catalog's; one → the same amount.
+- **マイレシピ:** everyone's recipes (`food_recipe`), in a meal's search: all after さいきん (the latest changed first),
+  the matching ones above the catalog's; a row: its name, who set it and how many servings, a serving's kcal. One →
+  the amount for the recipe as a food (1人前 first, ぜんぶ, 100 g; the search's meal), logging an ordinary entry of mine
+  on the day shown; its 「レシピを ひらく」 (left of ついか) opens it. ＋ レシピを つくる (under the search's field) opens a
+  new one. Mine opens in the editor (`FoodRecipe`): the name, なん人前 (−/＋, 1–20), the ingredients (each a row like a
+  meal's; a tap → the amount: ほぞん / けす), ＋ ざいりょうを ついか (the search and the amount, no meal: ついか puts it in
+  the recipe), 1人前あたり and ぜんぶで live, then けす (asked twice: ほんとうに けす？) and ほぞん (waiting until something
+  changed); both go back to the meal's search. Anyone else's: the same read-only, 「〇〇の レシピ」, with 「コピーして
+  へんしゅう」 (a recipe of mine, opened in the editor) and 「ごはんに ついか」 (back to its amount).
 - **マイ食品 (the user: "create my own food and record its calories for future use in case there's a food not in the
   existing database"):** everyone's custom foods (`food_custom`, contract/food.ts `customSnap`), a food typed in as one
   serving. Both searches (a meal's and a recipe's ingredient) list them under マイ食品 (all after さいきん / マイレシピ,
-  the matching ones above the catalog's) and end with 「＋ じぶんで つくる」 (a card of its own, with a line on what it is
-  for, when nothing matches), the typed text its name. The editor (`FoodCustom`): なまえ, 1食の めやす (「1食」 unless
+  the matching ones above the catalog's); ＋ 食品を つくる under the field, and when nothing matches a card saying so with
+  a line on what it is for and 「＋ じぶんで つくる」, open the editor, the typed text its name. The editor (`FoodCustom`): なまえ, 1食の めやす (「1食」 unless
   typed) and その重さ g (may stay blank: then it logs by the serving), カロリー kcal (needed) and P/F/C/塩分 g (only
   what is known), all per serving, full-width digits welcome; a weight too light for its values (denser than any food:
   `customDensityOk`) is refused before ほぞん. ほぞん goes on where it came from: its amount (a meal's ついか, or the
-  ingredient's). With no weight the amount steps whole servings, no grams field and no weight shown anywhere (the
+  ingredient's); a custom food's amount (from the search) has 「マイ食品を ひらく」: mine in the editor (ほぞん and けす,
+  asked twice, go back to the search), anyone else's read-only with 「コピーして へんしゅう」 and 「ごはんに ついか」 (back to
+  its amount). With no weight the amount steps whole servings, no grams field and no weight shown anywhere (the
   entry's snapshot says `sv`: 「1食」, 「1食×2」, a nominal 100 g a serving underneath; a recipe with such an ingredient
-  logs by 1人前 alike). The レシピ tab lists them under its recipes (a card: the name, who made it, the serving and its
-  kcal; ＋ じぶんの 食品を つくる): mine opens the editor (けす asked twice), anyone else's the same read-only with
-  「コピーして へんしゅう」 and 「ごはんに ついか」. The tab keeps the name レシピ (「レシピ・マイ食品」 doesn't fit a third of
-  393 px beside its art); the searches are the way in.
+  logs by 1人前 alike).
 - **データの出典** at the foot: each dataset's label, attribution and license (the data's licenses ask for it).
 - Food names come from the data, so their kanji are not all in the trimmed Zen Maru subset: those fall back to the
   system font (the copy's own strings are covered: `npm run fonts:subset`).

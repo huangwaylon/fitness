@@ -253,7 +253,7 @@ export function foodSeries(s: Pick<State, 'food' | 'foodRepeat' | 'prefs'>, who:
 
 /** What a recipe, or one serving of it, adds up to: `g` grams, kcal (whole), protein, fat, carbs and salt (g, one
  *  decimal; null: no ingredient knows it). */
-export interface RecipeSums { g: number; kcal: number; p: number | null; fa: number | null; c: number | null; s: number | null }
+interface RecipeSums { g: number; kcal: number; p: number | null; fa: number | null; c: number | null; s: number | null }
 /** A recipe as the gohan shows it: who set it (its owner, the only one who edits it), its totals and a serving's. */
 export type Recipe = FoodRecipe & { total: RecipeSums; per: RecipeSums };
 
