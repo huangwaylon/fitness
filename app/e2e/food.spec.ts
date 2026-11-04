@@ -224,7 +224,7 @@ test('いつもの: someone else’s repeat is shown, 🔁, never managed; the l
   await expect(lv.locator('[data-rep-fromday]')).toHaveCount(0);
 });
 
-// グラフ (design.md "Gohan"): the kcal eaten over けんこう's periods, its range row (no Move card: けんこう has it). On the
+// グラフ (design.md "Gohan"): the kcal eaten over けんこう's periods, its range row and its 🍐 Move card under it. On the
 // demo's 11/4: ウェイ's meals from 11/1 (11/4 still going), so 1週 has three finished bars and today's outlined.
 test('グラフ: the kcal eaten per day with the average line; the period, ‹ and whose day; it fits the sheet', async ({ page }) => {
   await openFood(page);
@@ -303,7 +303,7 @@ test('the goals: set in place on my cards (kcal, protein, salt), shown on the da
   await expect(sheet(page).locator('[data-nutrient=p] small')).toHaveText(/^目標 \d+\sg\s以上$/); // (no-break spaces: it wraps only after 目標)
   await expect(sheet(page).locator('[data-nutrient=s] small, [data-nutrient=fa] small, [data-nutrient=c] small')).toHaveCount(0);
 
-  // グラフ: a card each, kcal, protein, fat, carbs, salt; each with its goal's chip
+  // グラフ: a card each, kcal (then the Move card), protein, fat, carbs, salt; each with its goal's chip
   await sheet(page).locator('[data-tab=chart]').click();
   const cards = sheet(page).locator('[data-food-chart]');
   await expect(cards).toHaveCount(5);

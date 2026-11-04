@@ -4,7 +4,7 @@
 // trees with a band of sea under the beach, おく the campsite. A tree's popup opens in screen space, wholly in view,
 // over the canopies when it fits, never dimmed at night.
 import { expect, test, type Page } from '@playwright/test';
-import { geo } from './island.ts';
+import { SHORE_Z } from '../src/lib/components/island/world.ts';
 
 type W = { cam(): number; stops(): number[]; at(x: number, z: number): [number, number]; idle(): boolean; go(z: number): void };
 const call = <T,>(page: Page, fn: (w: W, a: number[]) => T, args: number[] = []) =>
@@ -29,7 +29,7 @@ for (const vp of [{ width: 393, height: 852 }, { width: 402, height: 874 }, { wi
     test('the HUD covers none of the key content at either end; the front shows sea under the beach', async ({ page }) => {
       await open(page);
       for (const r of await clearOfHud(page, ['[data-actor] .vil', 'button.canopy'])) expect(r.top, r.sel).toBeGreaterThanOrEqual(r.hud);
-      const shore = (await call(page, (w, [z]) => w.at(195, z), [(await geo(page)).SHORE_Z]))[1];
+      const shore = (await call(page, (w, [z]) => w.at(195, z), [SHORE_Z]))[1];
       expect(shore).toBeLessThan(vp.height * 0.9);
       expect(shore).toBeGreaterThan(vp.height * 0.7);
       // おく

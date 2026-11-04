@@ -55,6 +55,10 @@ export interface Villager3D {
   /** Its eyes' middle, on the face's front, as it's posed now (world space: the caller updates the group's matrices
    *  first), written to `out`; null for a model without NH's eyes. The rooms' first-person camera stands there. */
   eyes(out: Vector3): Vector3 | null;
+  /** Its head's top (the rest pose's highest point, over the head bone, carried by the bone as it's posed now), world
+   *  space, written to `out` (its matrices brought up to date first); null without a head bone. With the head bone's
+   *  own spot, the head's span: the bite's 「！」 goes over it standing, seated or lying (world3d/biteMark.ts). */
+  crown(out: Vector3): Vector3 | null;
   /** Its body drawn or not (its blob of shadow stays): hidden, the first-person camera inside its head sees out. */
   show(body: boolean): void;
   /** Put something on its head (a hat: its origin its base, y up, in model units) or take it off (null): it rides the
@@ -178,11 +182,13 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
   const head = rig.bone('Head');
   // where a hat goes, from the rest pose (the model's own frame): the head's top over the head bone, as a matrix in the
   // head bone's space (upright: the bone's own rest turn undone)
-  let hatAt: Matrix4 | null = null;
+  let hatAt: Matrix4 | null = null, crownLocal: Vector3 | null = null;
   if (head) {
     model.updateMatrixWorld(true);
     const top = new Box3().setFromObject(model).max.y, hp = new Vector3().setFromMatrixPosition(head.matrixWorld);
     hatAt = head.matrixWorld.clone().invert().multiply(new Matrix4().makeTranslation(hp.x, top - (top - hp.y) * 0.12, hp.z));
+    // (the head's top in the head bone's frame: wherever the bone goes, its top goes with it)
+    crownLocal = head.worldToLocal(new Vector3(hp.x, top, hp.z));
   }
   let worn: Object3D | null = null;
   const hand = rig.bone('Hand_R');
@@ -360,6 +366,11 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
     },
     head: () => head,
     eyes: (out) => (head && eyeLocal ? head.localToWorld(out.copy(eyeLocal)) : null),
+    crown(out) {
+      if (!head || !crownLocal) return null;
+      head.updateWorldMatrix(true, false);
+      return head.localToWorld(out.copy(crownLocal));
+    },
     show(body) {
       inner.visible = body;
     },

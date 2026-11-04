@@ -41,6 +41,8 @@ test('the もようがえ on the layout is IslandEdit over the 3D island: a benc
   await fromMenu(page, 'settings');
   await page.locator('[data-decor-start]').click();
   await expect(page.locator('[data-island-edit]')).toBeVisible();
+  // (not the decorations' mode)
+  await expect(page.locator('[data-tray]')).toHaveCount(0);
   const before = await page.evaluate(() => (window as unknown as { __layout: { count(k: string): number } }).__layout.count('park-bench'));
   await page.locator('[data-tab="furniture"]').click();
   await page.locator('[data-island-item="park-bench"]').click();

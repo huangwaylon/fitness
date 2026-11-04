@@ -6,7 +6,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { geo, openNear, plateOnly, quiet } from './island.ts';
 import { hudMenu } from './hud.ts';
-import { SPEED } from '../src/lib/components/island/speed.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -131,10 +130,7 @@ test('two players: a tap-walk on one tab plays on the other from the same start 
     const [tx, tz] = await openNear(tapper, nx, nz, 45, true);
     const [x, y] = await tapper.evaluate(([tx, tz]) => (window as unknown as { __world: W }).__world.at(tx, tz), [tx, tz]);
     await tapper.mouse.click(x, y);
-    // under way: the two tabs have it within a few steps of each other (one frame and the evaluate's skew apart: the
-    // two reads up to 0.2 s apart, as far as the tap-walk's run goes in that time). Not drawn (the full tier): two tabs
-    // drawing under software GL each take a second a frame, and a walk's next leg starts in a frame, so it measures
-    // SwiftShader (80–150u); never two drawn 3D tabs in a sync check (docs/ops/test-strategy.md "Two phones")
+    // under way: the two tabs have it within a few steps of each other (one frame and the evaluate's skew apart)
     let worst = 0;
     for (let i = 0; i < 8; i++) {
       await tapper.waitForTimeout(150); // (a sample every 150 ms of the walk)
@@ -142,7 +138,7 @@ test('two players: a tap-walk on one tab plays on the other from the same start 
       worst = Math.max(worst, Math.hypot(p[0] - q[0], p[1] - q[1]));
     }
     console.log(`drift under way (worst of 8 samples): ${worst.toFixed(1)}u`);
-    if (process.env.E2E_RENDER === 'none') expect(worst).toBeLessThan(SPEED.run * 0.2);
+    expect(worst).toBeLessThan(40);
     // the walk over on both tabs
     const who = tapper === a ? 'A' : 'B';
     for (const t of [tapper, watcher])

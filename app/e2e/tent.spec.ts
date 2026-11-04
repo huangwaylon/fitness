@@ -30,10 +30,6 @@ test.use({ viewport: { width: 390, height: 844 } });
 type T = { stats(): { frames: number; calls: number; tris: number; dpr: number; queued: boolean }; still(): boolean; mine(): [number, number]; walking(w: string): boolean; px(x: number, z: number, y?: number): [number, number]; loading(): number };
 const tent = <R,>(page: Page, fn: (t: T) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
 const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
-/** Drawn (the advisory render tier, CI's software GL): a frame takes ~0.5–2 s, so a test that loads the island, the
- *  room and the island again drawn needs more than 30 s, and its waits on the scenes more than their 5 s. */
-const drawn = process.env.E2E_RENDER !== 'none';
-const SLOW = drawn ? 20_000 : 5000;
 
 /** My villager a few steps from the campsite's door, off it (back out, it stands at the door, and a tap there would be
  *  its; from home the walk up is ~6 s, over 10 under CI's software GL with three workers drawing). */
@@ -49,14 +45,13 @@ async function enter(page: Page) {
   await page.waitForTimeout(300);
   await tapTent(page);
   // (my villager walks up to the door first)
-  await expect(page).toHaveURL(/\/tent\?/, { timeout: 2 * SLOW });
+  await expect(page).toHaveURL(/\/tent\?/, { timeout: 10_000 });
   await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
   // the door's iris has opened
-  await expect(page.locator('html')).not.toHaveAttribute('data-door', /./, { timeout: SLOW });
+  await expect(page.locator('html')).not.toHaveAttribute('data-door', /./, { timeout: 4000 });
 }
 
 test('the tent opens through the door and goes back out to the island as it was', { tag: '@smoke' }, async ({ page }) => {
-  test.slow(drawn, 'three scenes loaded drawn under software GL');
   const scripts: string[] = [];
   page.on('response', async (r) => {
     if (r.url().endsWith('.js')) scripts.push((await r.text().catch(() => '')).includes('WebGLRenderer') ? 'three' : 'other');
@@ -70,39 +65,37 @@ test('the tent opens through the door and goes back out to the island as it was'
   const cam = await page.evaluate(() => (window as unknown as { __world: { cam(): number } }).__world.cam());
   await tapTent(page);
   // (my villager walks up to the door first)
-  await expect(page).toHaveURL(/\/tent\?/, { timeout: 2 * SLOW });
+  await expect(page).toHaveURL(/\/tent\?/, { timeout: 10_000 });
   await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
   expect(scripts).toContain('three');
-  await expect(page.locator('html')).not.toHaveAttribute('data-door', /./, { timeout: SLOW });
+  await expect(page.locator('html')).not.toHaveAttribute('data-door', /./, { timeout: 4000 });
   // the device pixel ratio is capped (the iPhone 13 profile is 3)
   expect((await tent(page, (t) => t.stats())).dpr).toBeLessThanOrEqual(2);
   // out by the doormat (the front edge's middle)
   const [x, y] = await tent(page, (t) => t.px(0, 36.5));
   await page.mouse.click(x, y);
   await expect(page).toHaveURL(/\/fitness\/\?/);
-  // (the camera where it was: the island puts its scroll back as it lays out; cam() reads the engine's camera from its
-  // first frame on, before that the island's default, and drawn under software GL that first frame takes seconds)
-  await is3d(page);
-  await expect.poll(async () => Math.abs((await page.evaluate(() => (window as unknown as { __world: { cam(): number } }).__world.cam())) - cam), { timeout: SLOW }).toBeLessThan(2);
+  await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
+  // (the camera where it was: the island puts its scroll back as it lays out, just after its hook is up)
+  await expect.poll(async () => Math.abs((await page.evaluate(() => (window as unknown as { __world: { cam(): number } }).__world.cam())) - cam), { timeout: 2000 }).toBeLessThan(2);
   // my villager just outside the tent's door
   const out = await OUT(page);
   await expect.poll(async () => {
     const [mx, mz] = await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
     return Math.hypot(mx - out[0], mz - out[1]);
-  }, { timeout: SLOW }).toBeLessThan(2);
+  }).toBeLessThan(2);
   expect(Math.hypot(out[0] - door[0], out[1] - door[1])).toBeLessThan(50);
   await expect(page.locator('[data-tent]')).toHaveCount(0);
 });
 
 test('a tap on the floor walks my villager there; ‹ 島へ goes back out; nothing is drawn while nothing moves', { tag: '@smoke' }, async ({ page }) => {
-  test.slow(drawn, 'the island and the room loaded drawn under software GL');
   await enter(page);
   await page.waitForFunction(() => !(window as unknown as { __tent: { walking(w: string): boolean } }).__tent.walking('A'));
   const [x, y] = await tent(page, (t) => t.px(25, -20));
   await page.mouse.click(x, y);
   await page.waitForTimeout(200);
   expect(await tent(page, (t) => t.walking('A'))).toBe(true);
-  await page.waitForFunction(() => !(window as unknown as { __tent: { walking(w: string): boolean } }).__tent.walking('A'), null, { timeout: SLOW });
+  await page.waitForFunction(() => !(window as unknown as { __tent: { walking(w: string): boolean } }).__tent.walking('A'), null, { timeout: 5000 });
   const [mx, mz] = await tent(page, (t) => t.mine());
   expect(Math.hypot(mx - 25, mz + 20)).toBeLessThan(1.5);
   // still: no frames (once the room is all in and at rest: on a slow GPU, CI's software GL, its models may still be
@@ -121,10 +114,10 @@ test('a tap on the floor walks my villager there; ‹ 島へ goes back out; noth
   await page.mouse.down();
   await page.mouse.move(cx + 120, cy + 20, { steps: 8 });
   await page.mouse.up();
-  await expect.poll(() => page.evaluate(() => (window as unknown as { __tent: { isDefault(): boolean } }).__tent.isDefault()), { timeout: SLOW }).toBe(false);
+  expect(await page.evaluate(() => (window as unknown as { __tent: { isDefault(): boolean } }).__tent.isDefault())).toBe(false);
   expect(await tent(page, (t) => t.walking('A'))).toBe(false);
   await page.locator('[data-tent-reset]').click();
-  await expect.poll(() => page.evaluate(() => (window as unknown as { __tent: { isDefault(): boolean } }).__tent.isDefault()), { timeout: SLOW }).toBe(true);
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __tent: { isDefault(): boolean } }).__tent.isDefault())).toBe(true);
   await expect(page.locator('[data-tent-reset]')).toHaveCount(0);
   await page.getByRole('button', { name: '島へ' }).click();
   await expect(page).toHaveURL(/\/fitness\/\?/);

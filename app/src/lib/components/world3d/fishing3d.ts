@@ -42,6 +42,13 @@ export function angle(phase: Phase | null, at?: { x: number; z: number }, slot =
   }
   a.phase = phase;
   a.n++;
+  poke?.();
+}
+
+let poke: (() => void) | null = null;
+/** The 3D island hears each step (a frame for it: the bite's 「！」 pops in at once, the island idle or not); null: gone. */
+export function onAngle(fn: (() => void) | null): void {
+  poke = fn;
 }
 
 /** A nibble (or the line's twitch at an early tap): the float dips. */

@@ -38,9 +38,9 @@
   //   ?critter=fish | pond | river | mouth | clifftop | <fish id> | <fresh fish id> | <bug id> (dev or ?demo): one now,
   //   staying until caught (the e2e's hook; it comes where the camera can see it if it can, else at its place);
   //   ?sea=<id>|pearl: a bubble spot; ?flea: a tap on my villager always sends a flea off it.
-  import { fx3d } from './fx3d.ts';
+  import { fx3d, has3d } from './fx3d.ts';
   import { NIBBLE_MS, PLUNGE_MS, angle, angling, floatLift, nibbled } from '../world3d/fishing3d.ts';
-  import { BITE_WINDOW_MS, NOTICE_U, cast as castLine, due, pull, step as stepLine, type Around, type Line as MyLine, type Plan, type Step } from './fishing.ts';
+  import { NOTICE_U, cast as castLine, due, pull, step as stepLine, type Around, type Line as MyLine, type Plan, type Step } from './fishing.ts';
   import { actorOf } from '#lib/ui-state/cast.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { EASE, Glide, turn, yawOf } from './glide.ts';
@@ -59,7 +59,7 @@
   import { crittersAt, msToNextSlot, slotAt, slotStart, spawnRand, type Spawn } from './ambient.ts';
   import { relayOffset } from './ambientClock.ts';
   import { coasts } from './coast.ts';
-  import { su, VILLAGER, type Tod } from './scene.ts';
+  import { su, type Tod } from './scene.ts';
   import { hitWorld, sceneSfx } from './sceneTaps.ts';
   import type { Box } from './geom.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
@@ -481,10 +481,10 @@
         return;
       case 'bite': {
         // NH's 「！」 (the phone's cue: NH has only the plunk) kept inside the screen, 8px from its sides; the 3D
-        // island's over my villager's head while the bite lasts (its splash and big ring are the float's node's)
+        // island draws its own over my villager's head while the bite lasts (world3d/biteMark.ts, from the angler's
+        // step: on the others' phones too), this one hidden (its splash and big ring are the float's node's)
         const cx = w.clientAt(l.x, l.z)[0] - w.view.left, half = 22;
-        const [mx, mz] = livePos('mine');
-        bang = { dx: clamp(cx, half, w.view.vw - half) - cx, in3d: fx3d('bang', mx, mz, VILLAGER.h + 10, { ms: BITE_WINDOW_MS, held: () => line?.phase === 'bite' }) };
+        bang = { dx: clamp(cx, half, w.view.vw - half) - cx, in3d: has3d() };
         rings++;
         tellLine('bite');
         sceneSfx('bite');

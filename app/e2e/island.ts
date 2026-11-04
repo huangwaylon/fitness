@@ -205,26 +205,6 @@ export async function toTheWater(page: Page, water: string, zoom = 1): Promise<[
   return pt!;
 }
 
-const TAPS = 'button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor], [data-fx="talk"]';
-/** A cast by the shadow in `water` from its bank (toTheWater), checked: the point's checked clear and clicked in one
- *  step in the page (a tree's tap area on the bank comes in as its lazy art loads, between a check and a click from
- *  here: the tap was the tree's), and tried again where the shadow has gone (at most four) until the tap cast. Where
- *  it cast (client px): a reel's tap there is on the island, never on a door (a door with the line out goes in). */
-export async function castIn(page: Page, water: string, zoom = 1): Promise<[number, number]> {
-  for (let i = 0; i < 4; i++) {
-    const [x, y] = await toTheWater(page, water, zoom);
-    const tapped = await page.evaluate(([x, y, taps]) => {
-      const el = document.elementFromPoint(x, y);
-      if (!el || el.closest(taps)) return false;
-      el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0 }));
-      return true;
-    }, [x, y, TAPS] as const);
-    if (tapped && (await expect.poll(() => page.evaluate(() => (window as unknown as { __fish: { line(): unknown } }).__fish.line()), { timeout: 1500 }).not.toBeNull().then(() => true, () => false)))
-      return [x, y];
-  }
-  throw new Error(`no cast in the ${water}: ${await page.evaluate(() => (window as unknown as { __fish: { why(): string } }).__fish.why())}`);
-}
-
 /** A dig spot on screen and where to tap it (client px): the camera to each of the day's in turn (Finds' `data-digs`
  *  list: on the layout they lie all over the long island) until one is in view with nothing over it. */
 export async function fossilOnScreen(page: Page): Promise<{ x: number; y: number }> {
@@ -300,8 +280,9 @@ export async function lawnTap(page: Page, x: number, z: number): Promise<{ at: [
   return { at, x: cx, y: cy };
 }
 
-/** A catch or a find shown (docs/design.md "Critters"): its plate in the bottom stack, the item's icon on it (`art`:
- *  its key, or a pattern on the art's path). Where the icon flew in from (client px). */
+/** A catch or a find shown (docs/design.md "Critters"): only its plate in the bottom stack, the item's icon on it
+ *  (`art`: its key, or a pattern on the art's path), nothing over a villager's head. Where the icon flew in from
+ *  (client px). */
 export async function plateOnly(page: Page, art: string | RegExp): Promise<{ x: number; y: number }> {
   const plate = page.locator('[data-catch-stack] [data-fx="catch"].placed').last();
   await expect(plate).toBeVisible({ timeout: 4000 });
@@ -312,5 +293,6 @@ export async function plateOnly(page: Page, art: string | RegExp): Promise<{ x: 
     return { src: img?.dataset.src || img?.getAttribute('src') || '', x: at.left + at.width / 2 + off('--dx'), y: at.top + at.height / 2 + off('--dy') };
   });
   expect(r.src).toMatch(typeof art === 'string' ? `/${art}.webp` : art);
+  await expect(page.locator('[data-actor] [data-holding], [data-actor] .held-up')).toHaveCount(0);
   return { x: r.x, y: r.y };
 }

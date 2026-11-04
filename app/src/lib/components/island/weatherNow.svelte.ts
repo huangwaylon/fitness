@@ -18,7 +18,7 @@ import { heldWx, onWx } from '#lib/sync/wx.ts';
 import type { Wx } from '#lib/sync/live-protocol.ts';
 import { isWeatherMode, type WeatherMode } from '#lib/contract/api.ts';
 import { hook, hookOneOf, islandSeed } from './devHooks.ts';
-import { FORCED, isRain, musicWeather, realWeatherAt, weatherAt, type Forced, type Sky, type WeatherNow } from './weather.ts';
+import { FORCED, musicWeather, realWeatherAt, weatherAt, type Forced, type Sky, type WeatherNow } from './weather.ts';
 import { WX_FIXTURES, wxFixture } from './wxFixtures.ts';
 
 export const weather = $state<WeatherNow>({ sky: 'clear', fog: false, rainbow: 0, aurora: false });
@@ -29,7 +29,7 @@ export const yieldSky = $state<{ sky: Sky }>({ sky: 'clear' });
 export const weatherSource = $state<{ mode: WeatherMode; real: boolean; at: number | null }>({ mode: 'real', real: false, at: null });
 
 /** Raining now (the ground is wet: footsteps splash, the rain-only critters are about). */
-export const raining = (): boolean => isRain(weather.sky);
+export const raining = (): boolean => weather.sky === 'rain' || weather.sky === 'heavy';
 
 const forcedOf = (w: string | null): Forced | null => ((FORCED as readonly string[]).includes(w ?? '') ? (w as Forced) : null);
 
