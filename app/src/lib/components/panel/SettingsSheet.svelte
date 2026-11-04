@@ -1,7 +1,7 @@
 <script lang="ts">
   // せってい (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
   // grown out of the button (Sheet's `pop`, as けんこう out of the dumbbell). One scroller: むらびと (かえる → the
-  // picker), もようがえ (not the guest's), サウンド, ことば, つうしん (not the guest's) and あそびかた (くわしく → the guide).
+  // picker), サウンド, ことば, つうしん (not the guest's), もようがえ (one row: はじめる; not the guest's) and あそびかた (くわしく → the guide).
   // The picker and the guide push a level with ‹; ✕, the backdrop and Esc close it, and the next opening starts at
   // its top.
   import { tick } from 'svelte';
@@ -87,18 +87,15 @@
         </div>
         {#if guest}<p class="guest" data-guest-note>{t('guest.note')}</p>{/if}
       </section>
-      {#if !guest}
-        <section class="sec" aria-labelledby="sec-decor">
-          <h2 id="sec-decor">{t('panel.decor')}</h2>
-          <div class="card help">
-            <p>{t('panel.decorSummary')}</p>
-            <button type="button" class="btn small paper" data-decor-start data-sfx="open" onclick={() => ((ui.decorating = true), (open = false))}>{t('panel.decorStart')}</button>
-          </div>
-        </section>
-      {/if}
       <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound">{t('panel.sound')}</h2><SoundSection /></section>
       <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang">{t('panel.lang')}</h2><LangSection /></section>
       {#if !guest}<section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync">{t('panel.sync')}</h2><SyncSection {view} /></section>{/if}
+      {#if !guest}
+        <div class="prow static decor">
+          <span class="prl">{t('panel.decor')}</span>
+          <button type="button" class="btn small paper" data-decor-start data-sfx="open" onclick={() => ((ui.decorating = true), (open = false))}>{t('panel.decorStart')}</button>
+        </div>
+      {/if}
       <section class="sec" aria-labelledby="sec-help">
         <h2 id="sec-help">{t('panel.help')}</h2>
         <div class="card help">
@@ -135,7 +132,7 @@
   .sec { display: grid; gap: 8px; }
   .sec h2 { margin: 6px 2px 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); letter-spacing: .04em; }
   .me .prl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
-  .me .btn { flex: none; }
+  .me .btn, .decor .btn { flex: none; }
   .help { display: grid; gap: 10px; padding: 14px 16px; }
   .help p { margin: 0; font-weight: 700; line-height: 1.5; }
   .help .btn { justify-self: end; }
