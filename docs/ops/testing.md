@@ -71,8 +71,7 @@ Most red runs so far were the spec, not the app. Before pushing a new or changed
    `&rock=clonk`, `&shake=…`, `?weather=…`, `?seed=` (docs/design.md "Dev params"). Prefer a locator's own click
    (Playwright checks what receives it) to `page.mouse.click(x, y)` when the island isn't the target.
 2. **Wait on the app's state, not on time.** `expect(…).toBeVisible()`, `expect.poll(() => window.__world.cam())`,
-   `__world.idle()`, `__tent.stats().frames`, `data-*` attributes (`__world3d.camStill()` once the camera's last move is
-   framed: the DOM's tap areas placed for it, not where the previous camera had them); never `waitForTimeout` to "let it settle". A fixed
+   `__world.idle()`, `__tent.stats().frames`, `data-*` attributes; never `waitForTimeout` to "let it settle". A fixed
    wait is only for proving that nothing happens for a while (a toast that must stay 3 s), and then say so.
 3. **Fix the clock.** `?date=2026-11-04T12:00` for the day and hour; `page.clock.install({ time })` when the app's
    timers matter, `page.clock.runFor(ms)` to skip an animation's wait instead of sleeping through it. The clock fakes
