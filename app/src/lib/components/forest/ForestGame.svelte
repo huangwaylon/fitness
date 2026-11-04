@@ -107,7 +107,11 @@
   let yaw = 0, pitch = 0.42;
   const keys = new Set<string>();
   let actHeld = false, actDownAt = 0, act: Act | null = null;
-  const STICK_R = 56;
+  /** The stick's ring (px): inside it a walk, its speed by how far; past it, out to the sprint ring (SPRINT_ON × the
+   *  ring), a sprint, kept till the thumb comes back inside the ring itself (SPRINT_OFF). The base follows a thumb that
+   *  wanders past the sprint ring. */
+  const STICK_R = 56, DEAD = 0.15, SPRINT_ON = 1.55, SPRINT_OFF = 1.05, STICK_MAX = 1.75;
+  let sprinting = $state(false);
 
   function onDown(e: PointerEvent) {
     if (phase !== 'play') return;
@@ -120,10 +124,10 @@
     if (stick && e.pointerId === stick.id) {
       let dx = e.clientX - stick.ox, dy = e.clientY - stick.oy;
       const d = Math.hypot(dx, dy);
-      if (d > STICK_R * 1.15) {
+      if (d > STICK_R * STICK_MAX) {
         // (the stick's base follows a thumb that wanders off it)
-        stick.ox += (dx / d) * (d - STICK_R * 1.15);
-        stick.oy += (dy / d) * (d - STICK_R * 1.15);
+        stick.ox += (dx / d) * (d - STICK_R * STICK_MAX);
+        stick.oy += (dy / d) * (d - STICK_R * STICK_MAX);
         dx = e.clientX - stick.ox;
         dy = e.clientY - stick.oy;
       }
@@ -155,10 +159,13 @@
     let sx = 0, sy = 0, run = false;
     if (stick) {
       const d = Math.hypot(stick.x, stick.y);
-      sx = stick.x / Math.max(1, d);
-      sy = stick.y / Math.max(1, d);
-      run = d > 0.92;
-    }
+      // a dead zone in the middle; the walk's speed by how far inside the ring
+      const k = d < DEAD ? 0 : Math.min(1, (d - DEAD) / (1 - DEAD));
+      sx = d ? (stick.x / d) * k : 0;
+      sy = d ? (stick.y / d) * k : 0;
+      sprinting = sprinting ? d > SPRINT_OFF : d >= SPRINT_ON;
+      run = sprinting;
+    } else sprinting = false;
     if (keys.has('w') || keys.has('arrowup')) sy -= 1;
     if (keys.has('s') || keys.has('arrowdown')) sy += 1;
     if (keys.has('a') || keys.has('arrowleft')) sx -= 1;
@@ -670,7 +677,12 @@
     </header>
     <div class="stamina"><i style:width="{stamina * 100}%" class:low={stamina < 0.25}></i></div>
     {#if stick}
-      <div class="stickbase" style:left="{stick.ox}px" style:top="{stick.oy}px"><i style:transform="translate({Math.max(-1, Math.min(1, stick.x)) * 40}px, {Math.max(-1, Math.min(1, stick.y)) * 40}px)"></i></div>
+      {@const sd = Math.hypot(stick.x, stick.y)}
+      {@const sk = Math.min(sd, SPRINT_ON) / Math.max(sd, 1e-3)}
+      <div class="stickbase" class:sprint={sprinting} class:near={!sprinting && sd > 1} style:left="{stick.ox}px" style:top="{stick.oy}px">
+        <b class="sprintring" style:--r="{STICK_R * SPRINT_ON * 2}px"><span>🏃</span></b>
+        <i style:transform="translate({stick.x * sk * STICK_R}px, {stick.y * sk * STICK_R}px)"></i>
+      </div>
     {/if}
     {#if phase === 'play' && (myState === 'ok' || myState === 'hide')}
       <div class="buttons">
@@ -843,6 +855,36 @@
     background: #fff2;
     border: 2px solid #fff5;
     pointer-events: none;
+  }
+  .sprintring {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: var(--r);
+    height: var(--r);
+    margin: calc(var(--r) / -2) 0 0 calc(var(--r) / -2);
+    border-radius: 50%;
+    border: 2px dashed #fff4;
+    opacity: 0;
+    transition: opacity 0.15s, border-color 0.15s;
+  }
+  .sprintring span {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 16px;
+  }
+  .stickbase.near .sprintring {
+    opacity: 1;
+  }
+  .stickbase.sprint .sprintring {
+    opacity: 1;
+    border: 3px solid #ff9a3c;
+    background: #ff9a3c22;
+  }
+  .stickbase.sprint i {
+    background: #ffb36b;
   }
   .stickbase i {
     position: absolute;

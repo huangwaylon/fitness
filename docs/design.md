@@ -1846,7 +1846,10 @@ flow in e2e/forest.spec.ts.
   countdown → 4:00 on one clock: dusk, night from 1:30 (thicker fog, bears see farther and run a little faster), the
   last flight for the final 30 s (no relief, the dock's lanterns burn). At the end anyone out in the forest loses the
   basket; whatever was banked is everyone's. Anyone can fly home early from the dock.
-- **Moving.** The left side's stick (pushed to its rim: a sprint, five seconds of stamina, a wheeze when it runs dry);
+- **Moving.** The left side's stick: inside its ring a walk (its speed by how far, a dead zone in the middle); dragged
+  out past it to the sprint ring (1.55× the ring, shown dashed as the thumb nears it, orange while sprinting) a sprint,
+  kept till the thumb comes back inside the ring (so it never flickers at the edge); eight seconds of stamina, back a
+  second after stopping, a wheeze when it runs dry;
   the right side's drag turns the camera, which follows me but never turns by itself (pulled in short of a tree
   between it and me); WASD, Shift, E, Q on a keyboard. Walking is quiet (4 m), running loud (14 m). Wading is slow.
 - **The bears.** Beardo, 1.8× a villager, darkened, red eyes glowing (hotter on the hunt). One per two players by
