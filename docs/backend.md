@@ -156,7 +156,7 @@ model reads a day's latest row ([design.md](design.md#health-data)); a locked we
 ### Storage keys
 
 `sync/storage.ts` registers every key: live `island.key`, `island.me`, `island.queue`, `island.acked`; the demo
-`island-demo.*` (it can never touch a live key); per device `island.sound` and `island.locale` (the language last shown, so an English launch loads its strings before the first paint). If storage fails (full, private mode) the
+`island-demo.*` (it can never touch a live key); per device `island.sound` and `island.locale` (the language last shown, so an English launch loads its strings before the first paint), and `island.wx` (the relay's last real-weather timeline, for opening offline: [The real weather](#the-real-weather)). If storage fails (full, private mode) the
 data lives in memory for the session and a banner says so once. Pairing as a different person clears the cache, queue
 and acked list. `sync/transport.ts` `post()` never throws (20 s timeout; network failure = `offline`; timeout,
 non-2xx or non-JSON = `unavailable`).
@@ -304,7 +304,8 @@ catches an offline phone up.
 - **Where:** `relay/` (its own package, outside the app's build): a Worker (`src/index.ts`) and one Durable Object,
   `IslandRoom` (`idFromName('island')`), SQLite-backed (`new_sqlite_classes`, the only kind the Free plan has).
   Production `wss://island-fund-relay.island-fund-relay.workers.dev/room`; a test copy, `island-fund-relay-test`, with
-  its own secrets and room for the smoke test. `GET /health` → `{ok, v, versions, t}`; `POST /api` and `/admin`
+  its own secrets and room for the smoke test. `GET /health` → `{ok, v, versions, t, wx}` (`wx`: the real weather's
+  `{at, src, age, hours, fails}`, [The real weather](#the-real-weather)); `POST /api` and `/admin`
   ([The record](#the-record)); `POST /notify` ([Push](#push)); `/push/*`: 410 Gone (the old notifications'
   routes, for an app build from before their removal: `relay/src/pushGone.ts`).
 - **Admission:** the Worker accepts `/room` upgrades only from `ALLOWED_ORIGINS` (`https://huangwaylon.github.io`) and
@@ -328,7 +329,7 @@ catches an offline phone up.
   `catch {what, id?, at?, how?}`, `emote {emote}`, `world {op, id}` (`weed-pulled`, `fruit-collected`, `dug`,
   `present-opened`, `watered`, `shaken`, `wished`, `woke`), `saved {}` ([Push](#push)), `decor {id, at, item, x, z, f, p} | {id, at, rm}` (v2: a decoration set or removed, as the record's `decor` op, the tent's with `sc: 't'`; kept for the day and replayed, never claimed: the merge is commutative), `drag {id, x, z, f, it?, end?}` (v2: a tent piece under the finger, ~10 a second while it moves, ≤ 60 bytes; presence only: relayed while the partner is there, never kept, replayed or written), `tent {in, to?, from?, via?, s?, ms?, seat?, n?, lie?, sc?}` (v2: my villager in the tent, its walk there in the room's model units, or seated on a piece's seat `n` since `s` (rooms/seating.ts: the earlier sit keeps a seat); `sc` `u` / `v` another home's room, `m` the museum (`seat` a bench: `dmbench1`/`2`), its points within ±320, `s` the shop, no points (2026-11-04: an
 older phone or relay drops it, and shows the villager at the shop's door as before); presence only) `highfive {at}` (v2: a high-five, `at` the tap on the relay's clock, numbered; relayed live, and with the partner away the room holds the last one for them in its storage (`held`, one per recipient, a newer one replacing it), sends it after the welcome of their next v2 hello, and lets it go at their `got {at}` or after a day; never the record; see [decisions](decisions.md#a-high-five-goes-over-the-relay-only-2026-11-02)) `fish {ph, id?, pt?, from?, s?}` (v3: a line's step, `ph` one of `cast`, `nibble`, `bite`, `reel`, `off`; `pt` its float, `from` the angler's feet (its line runs from the rod there), world points; `id` the shadow at the float now, its shared id (a `cast` again at the same `pt` says a shadow noticed it, or with none that it got away and the float is back up); `s` when it went out; presence only: relayed live to everyone here, never kept, replayed, acked or written; the angler's phone sends its step again when someone comes, and a phone drops an angler's line at their presence off; [Shared world](design.md#shared-world)) and `say {text, sc?}` (v2: a phrase over my villager, [Villager taps](design.md#villager-taps); `sc` where it was said, a home's room `t`, `u` or `v`, the museum `m`, none the island: the phones show it only in the same place, an unknown `sc` refused; presence only: relayed live to a v2 partner, never kept, replayed or sent to the record; `text` cleaned on both sides by `cleanSay`: NFC, no control, newline or bidi characters, blanks squeezed, trimmed, ≤ 20 code points, else dropped; the room passes one per person per second, the phone one per 1.5 s); the shared world's (v2 only, [Shared
-  world](#shared-world)): `pick {id, what, at?}`, `put {id, what, at}`, `shake {tree, drop}`. Relay-only: `changed {what, who, at, rev}`. The room drops any client-sent `who`/`t`, stamps its own (`t` strictly increasing) and sends it
+  world](#shared-world)): `pick {id, what, at?}`, `put {id, what, at}`, `shake {tree, drop}`. Relay-only: `changed {what, who, at, rev}`, `wx {h0, s, fx?, at, src, rev}` (v3: [The real weather](#the-real-weather)). The room drops any client-sent `who`/`t`, stamps its own (`t` strictly increasing) and sends it
   to the other person only. Any intent may carry `c`, the phone's sequence number (increasing through the day: its
   `Date.now()` at sending, or one more): the room answers the sender `ack {c, t, ok}` (`t` its stamp; `ok` false when
   the world refused it: a claim already made, a nest too soon, a walk numbered before the one it keeps), and a resend
@@ -371,6 +372,56 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
   notify secret, signatures and window) with `cd relay && npm test`
   (also `.github/workflows/relay.yml`); `live-protocol.test.ts`, `live.test.ts` and `store/push.test.ts` in the app's vitest; the push's
   script side in `gas/main.test.ts`.
+
+## The real weather
+
+Tokyo's sky by the hour for the island ([design](design.md#weather); decisions: *Weather from Tokyo, by the hour*).
+`relay/src/weather.ts` (pure but for its fetch), `IslandRoom.weatherTick` (`relay/src/index.ts`), the phones'
+`sync/wx.ts` and `island/weather.ts` `realWeatherAt`.
+
+- **Source:** Open-Meteo's forecast, JMA's models (`/v1/forecast?models=jma_seamless`, hourly `weather_code`,
+  `precipitation`, `cloud_cover`, `visibility`, `temperature_2m`; `past_hours=13`, `forecast_hours=36`), for one
+  fixed point (`wrangler.toml` `WX_LAT` / `WX_LON`: 35.69, 139.75, central Tokyo by the 東京 AMeDAS station). No key,
+  free for non-commercial use, data CC BY 4.0, credited in せってい (「天気: Open-Meteo（気象庁モデル）」). No phone
+  calls a weather API, and nothing about us leaves the relay but that coordinate. JMA's model gives no snow, fog or
+  thunder codes and no visibility for Tokyo: snow comes by temperature, and the fog and thunder rows stay for a
+  model that has them.
+- **When:** the existing `*/15` cron calls the room's `weatherTick` next to the export. A fetch is due 30 minutes
+  after a good one, or past :45 with none since (so the next hour is locked before it begins): about 48 a day, at
+  :15 and :45. A hello fetches too when it's due (the test copy has no cron; production's safety net). One fetch at a
+  time, a 5 s timeout. A failure (an error status, a bad body, a timeout, no current hour) keeps the timeline it had,
+  logs `wx-fail <why>` and backs off 30 min, 1 h, then 2 h.
+- **The timeline** (storage `wx`: `{wx, fails, failAt?}`): `wx = {h0, s, fx?, at, src, rev}`. `h0` is the first hour
+  (hours since the epoch, UTC) and `s` a letter an hour: `c` fine, `o` cloudy, `r` rain, `h` a downpour, `s` snow. The
+  12 hours before now (the phones' rainbow looks back) and the next 36, ≤ 48 letters. `fx` lists the foggy hours,
+  `at` is the fetch time, `src` is `om` (Open-Meteo) or `fx` (an admin fixture), and `rev` bumps when an hour a phone
+  holds would read otherwise (or it reaches 6 hours further). The response is checked strictly (hourly times, WMO
+  codes, numbers in range), so bad data never replaces good.
+- **The mapping** (dead bands on the hour before's sky): wet from 0.5 mm/h or a rain code (lighter drizzle is
+  cloudy), kept down to 0.2; a downpour from 4 mm/h, a heavy code, freezing rain or thunder, kept down to 2.5; snow by
+  a snow code or wet at ≤ 1 °C, kept up to 2 °C; cloudy from 85 % cloud cover (overcast's code without one), kept
+  down to 60 %; fog by a fog code or under 1 km while dry. Then a lone dry hour between wet ones is wet, and a lone
+  hour between two alike is theirs.
+- **Locks:** an hour that has begun (and the next one, once a fetch came after :45) keeps the sky it had; a fetch
+  rewrites only the hours after. The sky changes at most once an hour, at :00, and a phone that cached it before the
+  hour shows the same as one that's online.
+- **To the phones:** `wx` after the welcome (v3 only, while the timeline serves: fetched within 36 h and covering the
+  hour) and to every v3 phone when its `rev` changes; ≤ ~190 bytes. An older phone drops the unknown kind and keeps
+  the seeded weather. The phone keeps the newest one and caches it (`island.wx`).
+- **The phones:** in ほんもの mode (`pref weatherMode`: one island-wide row in the record, slot `pref|island|weatherMode`,
+  the last a member set; the guest's refused) the hour's sky comes from the timeline while it serves, else from the
+  seeded day; winter's snow, the event nights held fine, the seeded fog and aurora, and the rainbow are the phone's
+  rules (pure, by the date: both phones agree).
+- **Ops:** `GET /health` → `wx {at, src, age (min), hours (ahead), fails}`. The signed `/admin` op `wx` (via the
+  record's object): `{refresh: true}` fetches now, `{s, fx?}` puts a fixture timeline in from the current hour (the
+  smoke test), `{}` says how it is. Weather is never written to the record or the Sheet; only the mode is.
+- **Tests:** `relay/test/weather.test.ts` (Open-Meteo responses recorded 2026-11-04, a clear winter day, spring
+  showers, a rainy-season day, a downpour, a typhoon, the snow of 2024-02-05 and that day's forecast, against golden
+  timelines; no one-hour flicker; the dead bands, fog, the gap fill, the strict parse, the locks, the revisions, when
+  it's due, the backoff; a 500, a bad body, a timeout and no network keeping the good timeline, with a fake fetch and
+  a fixed clock), `room.test.ts` (`wx` after the welcome, v3 only, on change), `store.test.ts` / `guest.test.ts` (the
+  mode's row); the app's `island/realWeather.test.ts`; `e2e/realweather.spec.ts`; `npm run smoke` (a fixture reaches a
+  v3 phone; a fetch from Open-Meteo; `/health`'s age).
 
 ## The guest
 
@@ -606,7 +657,8 @@ writes/day (unused). A generous day for two phones:
 | Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
 | Shortcut ingests (2 phones, ~24 runs each; ~300 rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
 | The export (cron every 15 min; a dump when changed, ≤ 96, waiting ~3–8 s on Apps Script) | 97 | 97 | 97 | ~100 | ~75,000 | ~100 |
-| **Total** (Free plan limit) | | **~670 (0.7 % of 100,000)** | **~930 (0.9 % of 100,000)** | **~700 (5 % of 13,000)** | **~95,000 (1.9 % of 5 M)** | **~4,600 (4.6 % of 100,000)** |
+| The real weather (the same cron: the room's tick, a fetch at :15 and :45, a `wx` on change) | 96 ticks, ~48 fetches | 0 | 96 | ~10 | | ~48 (one storage key) |
+| **Total** (Free plan limit) | | **~670 (0.7 % of 100,000)** | **~1,030 (1.0 % of 100,000)** | **~710 (5 % of 13,000)** | **~95,000 (1.9 % of 5 M)** | **~4,650 (4.7 % of 100,000)** |
 
 Measured 2026-11-01 (a UTC day, test traffic included, before the record): Worker 1.8k requests, DO 9.9k (the
 smoke and latency runs), 3.7k rows written, 346 rows read, ~25 GB-s. Duration stays the binding limit and under a

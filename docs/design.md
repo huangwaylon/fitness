@@ -154,7 +154,7 @@ scrolled where it was); ✕, the backdrop and Esc close the panel.
 **せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, grown out of the
 pill (Sheet's `pop`), title せってい: **むらびと** (my villager and よびな; かえる → the picker: 23 special characters
 and all 417 NH villagers, its head pinned over the scrolling grid), **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 /
-English), **きせつ** ([Seasonal preview](#seasonal-preview)), **フレームレート** (30 / 60: [Frame rate](#frame-rate)), **つうしん** (when each of us last synced; いま つうしん; not the guest's), **もようがえ** (one row with its はじめる;
+English), **きせつ** ([Seasonal preview](#seasonal-preview)), **てんき** (ほんもの / ゲーム: [Weather](#weather)), **フレームレート** (30 / 60: [Frame rate](#frame-rate)), **つうしん** (when each of us last synced; いま つうしん; not the guest's), **もようがえ** (one row with its はじめる;
 not the guest's) and **あそびかた** (くわしく → the guide: the goals, ふたりでぜんぶ, the treats, the Sunday recap, a
 protein hint of 1.6 g per kg a day). The picker and the guide push a level with ‹; ✕, the backdrop and Esc close it,
 and the next opening starts at its top. Its own chunk, loaded on the first tap.
@@ -712,19 +712,53 @@ and maple leaves in maple week. Events (`eventsAt`): cherry blossom Apr 1–10, 
 
 ### Weather
 
-`island/weather.ts` (pure), `island/weatherNow.svelte.ts`, `island/Weather.svelte`, `e2e/weather.spec.ts`. Seeded by the
-date (a weather day runs 05:00 → 05:00), so both phones agree: about one day in six is wet (rain all day, light or a
-downpour; a wet morning; or heavy rain that clears at 16:00 and leaves a **rainbow** 16:00–17:00, 1 in 8 double). In
-December–February a wet day snows instead (about one in four). Fine days only: **fog** at 07:00 October–March (1 in 8),
-the **aurora** on winter nights 19:00–04:00 (1 in 10, not on a meteor shower's night). Fireworks days and meteor shower
-nights are always fine.
+`island/weather.ts` (pure), `island/weatherNow.svelte.ts`, `island/Weather.svelte`, `island/wxFixtures.ts`,
+`sync/wx.ts`, `panel/WeatherSection.svelte`, relay `src/weather.ts`; `e2e/weather.spec.ts`, `e2e/realweather.spec.ts`.
+The island has **Tokyo's real weather by the hour** (the user: "We are based in Tokyo, Japan. Can we get the game
+weather to sync with the real weather?"), or the game's own seeded days. Both phones and the guest show the same sky
+at the same hour. The skies are NH's: **fine**, **cloudy** (曇り), **rain**, **a downpour**, **snow**, with **fog** as
+an hour's extra.
 
-- **Look:** an overcast sky and a darker tint on a wet day; rain one tiled layer of streaks moved by transform; snow
-  two tiled layers plus NH's snowflakes (only on snow days); fog a haze with two drifting banks; the rainbow soft arcs
-  low on the right; the aurora three swaying curtains. Over the tint, under every control.
-- **Sound:** the hour's rain or snow arrangement when there is one, the rain bed, footsteps splash.
-- **Critters:** the coelacanth only in rain or snow; the snail only in rain; NH's "any except rain" bugs stay away
-  while it rains. No shooting-star showers unless the night is clear.
+- **ほんもの (the default):** the relay fetches Open-Meteo's forecast from JMA's models for central Tokyo on its
+  15-minute cron and keeps a 48-hour timeline, one sky an hour (the 12 past hours and the next 36: backend.md
+  [The real weather](backend.md#the-real-weather)). Each phone gets it after the welcome and whenever it changes, and
+  caches it (`island.wx`), so a phone opening offline still has the next hours. An hour is locked once it begins, so
+  the sky changes at most once an hour, at :00, on both phones together. The mapping has dead bands, so there's no
+  one-hour flicker: rain from 0.5 mm/h (it stays rain down to 0.2), a downpour from 4 mm/h or thunder (it stays one
+  down to 2.5), cloudy from 85 % cloud cover (it stays cloudy down to 60 %), snow by a snow code or when it's wet at
+  1 °C. A lone hour between two alike takes theirs.
+- **Fallbacks:** the cached timeline while it covers the hour and was fetched within 36 hours; otherwise (and in
+  ゲーム) the seeded day. Each hour comes whole from one or the other. A `?date=` preview moves the clock off the real
+  hours, so it shows the seeded day.
+- **On the phone, as NH:** from December 11 to February 24 (the snowy ground's season), real rain falls as **snow**.
+  The event nights stay fine whatever Tokyo is doing: the August Sunday fireworks (19:00–24:00), New Year's
+  (23:00–01:00), a meteor shower's night (20:00–04:00) and our wedding night (from 19:00). Their days are real. The
+  seeded treats stay on real fine hours: the 07:00 **fog** (October–March, 1 in 8) and the **aurora** (winter nights,
+  1 in 10, never a shower's). Real fog (a fog code, or under 1 km while dry) shows at any hour. The **rainbow** is the
+  first fine hour 07:00–17:00 right after rain or a downpour, once a day. It builds to its peak at half past and is
+  double 1 day in 8 (by the date). There's no dry-spell rescue for the rain-only critters (the user's choice):
+  Tokyo's ~100 wet days a year bring them in shorter spells.
+- **ゲーム (the seeded days):** seeded by the date (a weather day runs 05:00 → 05:00). About one day in six is wet: rain
+  all day (light, or a downpour), a wet morning, or heavy rain that clears at 16:00 and leaves a rainbow 16:00–17:00.
+  In December–February a wet day snows instead (about one in four). Fog and the aurora come on fine days only.
+  Fireworks days and meteor shower nights are always fine.
+- **The switch:** せってい → **てんき**: **ほんもの** (「とうきょうの いまの てんき」) or **ゲーム**. It's one setting for the
+  whole island (`pref weatherMode`, the last a member set, kept in the record), so the two phones never disagree on
+  the rain-only critters. Under it is what the island has now (「いま: とうきょう あめ」, the fetch's time when it's
+  over 2 h old, or 「ほんものの てんきが とれません（ゲームの てんき）」), and the credit 「天気: Open-Meteo（気象庁モデル）」.
+  On the guest's phone it's read-only. The きせつ preview's weather still overrides the look on one phone, and
+  `?weather=` both the look and the critters.
+- **Look:** a grey sky and a darker tint on a wet day; a cloudy day's at about half, with nothing falling. Rain is one
+  tiled layer of streaks moved by transform, snow two tiled layers plus NH's snowflakes, fog a haze with two drifting
+  banks, the rainbow soft arcs low on the right, the aurora three swaying curtains. Over the tint, under every control.
+  A change of sky on screen fades: the grey sky, the tint and what falls ease in and out over a minute (CSS
+  transitions). The island's darkening (the sprites' tint and the 3D lights) eases in twelve steps, and the rain bed
+  over ~10 s. Nothing runs per frame. The sky the page opens to is there at once.
+- **Sound:** the hour's rain or snow arrangement when there is one (cloudy: the sunny one), the rain bed, footsteps
+  splash.
+- **Critters:** cloudy counts as fine. The coelacanth comes only in rain or snow, the snail only in rain, and NH's "any
+  except rain" bugs stay away while it rains. Shooting stars (and their showers) come only on a fine night, not
+  through clouds.
 
 ### Trees
 
@@ -1831,7 +1865,9 @@ Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/previe
 | `?date=YYYY-MM-DDTHH:mm` | The scene clock (Tokyo), this page load only (it moves the shared day too) |
 | `?theme=dawn\|day\|dusk\|night`, `?season=` | Preview a time of day or a season |
 | `?seed=` | The island's seed (finds, weather, visitors) |
-| `?weather=clear\|rain\|heavy\|snow\|fog\|aurora\|rainbow` | Force the weather (the critters' too) |
+| `?weather=clear\|cloudy\|rain\|heavy\|snow\|fog\|aurora\|rainbow` | Force the weather (the critters' too) |
+| `?wx=real\|game` | The island's weather mode for this load ([Weather](#weather)) |
+| `?wx=rain-pm\|clears\|typhoon\|snow\|fog\|cloudy\|stale` | A canned real-weather timeline on the scene clock's hours (`island/wxFixtures.ts`): rain 12:00–18:00; rain until 14:00 then fine (a rainbow); a downpour; snow; foggy mornings; overcast; one fetched 37 h ago (the seeded day) |
 | `?event=<id>` | Show an event (the preview's ids: `halloween`, `cherry`, `birthday-A`, `wedding`…; its main part on; Bunny Day's eggs too) |
 | `?visitor=<id>`, `?arrive`, `?leave=<ms>`, `?stroll`, `?meet` | A visitor; its arrival; its departure; a stroll; the partner's hello |
 | `?critter=fish\|pond\|<fish>\|<pond fish>\|<bug>\|none`, `&coast=front\|back\|left\|right`, `?sea=<id>\|pearl`, `?flea` | A critter now (kept until caught; ambient visits off), a sea fish off that side; a dive spot; a flea on every villager tap |

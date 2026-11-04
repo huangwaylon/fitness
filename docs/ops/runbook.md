@@ -44,7 +44,11 @@ curl -sS https://island-fund-relay.island-fund-relay.workers.dev/health         
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data '{"action":"health"}'   # the record
 ```
 Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these every 6 hours (and on demand) and fails (GitHub e-mails
-the owner) unless both are ok. The sheet's export: its `README` tab's time (≤ 15 minutes after the last change, and
+the owner) unless both are ok. The relay's `wx` is the real weather ([backend](../backend.md#the-real-weather)):
+`age` (minutes since the last good fetch) under ~35 and `hours` ahead over 30 is normal. An older one or `fails` > 0
+means Open-Meteo is failing (`npx wrangler tail` shows `wx-fail <why>`); the phones keep the last timeline for 36
+hours, then the game's weather. The workflow warns past 3 hours. A fetch now: the signed `/admin` op
+`{"op":"wx","refresh":true}` (signed as `relay/scripts/smoke.ts` signs it). The sheet's export: its `README` tab's time (≤ 15 minutes after the last change, and
 every night), or `node scripts/record.ts export` (§13); the script's own health:
 
 ```sh

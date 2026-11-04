@@ -801,3 +801,17 @@ The strolls (`SPEED.wander` 90), the visitors and the critters are as they were.
 further and the legs swing wider by the speed's square root (`poses.ts` reachOf), so the run's feet don't slide and it
 steps 4.5 cycles a second, not 5.6. A walk carries its `ms` and its end, so an older phone on the old pace
 still ends a partner's walk where it ends. Why: the user ("Increase the walk speed of players by 50%").
+
+### Weather from Tokyo, by the hour (2026-11-04)
+The island's weather is Tokyo's (design.md "Weather", backend.md "The real weather"): the relay fetches Open-Meteo's
+forecast from JMA's models on the cron it already runs and keeps a 48-hour timeline of NH's skies (fine, cloudy, rain,
+a downpour, snow; fog an extra) on the room's object. Each phone gets it after the welcome and on change, and caches
+it. Why this way: one fetch and one cache for every phone (no phone calls a weather API, and the iOS PWA can't fetch in
+the background anyway); hours locked once they begin, so the two phones can't disagree or flicker; a free keyless
+source with an hourly forecast for offline phones (JMA's own JSON has only three daily slots, WeatherKit needs a paid
+membership and Apple's branding). The fallbacks are the cached timeline (≤ 36 h), then the seeded days. Kept from the
+game, by the user's answers: winter rain (Dec 11 – Feb 24) falls as snow; the fireworks nights, the meteor showers and
+the wedding night stay fine; the morning fog and the aurora stay as seeded treats on real fine hours; no rescue for the
+rain-only critters in a dry spell. One island-wide setting (`pref weatherMode`, ほんもの by default, members only) keeps
+the game's weather a tap away. The point is central Tokyo. Why: the user ("We are based in Tokyo, Japan. Can we get
+the game weather to sync with the real weather?").
