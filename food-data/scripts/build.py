@@ -114,6 +114,11 @@ EATOUT_NOTE = '一般的な推定値（成分表から独自レシピで算出�
 TYPICAL_NOTE = '成分表に収載のない食品を含むため、一般的な市販品の目安値で算出。商品により異なります'
 
 
+# MEXT values that are unmeasured ("-") but known, filled only inside the eat-out recipes (foods.json keeps MEXT's):
+# 本格焼酎 is a distilled spirit, which carries no salt (焼酎甲類, ウイスキー, 泡盛: 0).
+RECIPE_FILL = {'16015': {'salt': 0.0}}
+
+
 def load_typical():
     """data_src/eatout/_typical.json: {"foods": {key: {name, kcal, p, f, c, salt, note}}} -> {"typ:<key>": food}.
     Typical per-100 g values for foods MEXT does not list (protein powder, Greek yogurt ...)."""
@@ -133,6 +138,8 @@ def build_eatout(b):
     unit?, portions?: [[label, multiplier]], aliases?, en?, note?}]}."""
     typical = load_typical()
     foods, popular = dict(b.foods, **typical), lib.load_popular('eatout')
+    for no, fill in ((no, fill) for no, fill in RECIPE_FILL.items() if no in foods):
+        foods[no] = dict(foods[no], **{n: v for n, v in fill.items() if foods[no][n] is None})
     comps = load_json(os.path.join(SRC, 'eatout', '_components.json'))['components']
     refs = {k: c['ing'] for k, c in comps.items()}
     items = []

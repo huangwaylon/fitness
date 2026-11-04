@@ -41,7 +41,7 @@
  "ing":[["@tkg",1],["@miso-tofu-wakame",1]]},
 {"id":"toast-medamayaki","name":"トーストと目玉焼き","en":"Toast with fried egg","aliases":["とーすとめだまやき","トースト目玉焼き","洋食の朝ごはん"],"cat":"パン",
  "ing":[["@toast-butter",1],["@medamayaki",1]]},
-{"id":"yo-choshoku","name":"洋朝食（トースト・ベーコンエッグ・サラダ・ヨーグルト）","en":"Western-style breakfast set","aliases":["ようちょうしょく","モーニング","もーにんぐ","洋定食"],"cat":"パン",
+{"id":"yo-choshoku","name":"洋朝食（トースト・ベーコンエッグ・サラダ・ヨーグルト・牛乳）","en":"Western-style breakfast set","aliases":["ようちょうしょく","モーニング","もーにんぐ","洋定食"],"cat":"パン",
  "ing":[["@toast-butter",1],["@bacon-egg",1],["@green-salad",1],["13025",100,"ヨーグルト全脂無糖"],["13003",200,"牛乳"]]},
 {"id":"bento-karaage","name":"手作り弁当（唐揚げ）","en":"Homemade bento (karaage)","aliases":["べんとう","お弁当","からあげべんとう","唐揚げ弁当"],"cat":"丼・定食",
  "ing":[["01088",180],["11289",90,"唐揚げ3個"],["@tamagoyaki",0.5],["06264",30],["06183",20,"ミニトマト"],["@kinpira-gobo",0.5],["07023",5,"梅干し"]]},
