@@ -35,6 +35,7 @@
   import { createLocalLive } from '#lib/sync/live-local.ts';
   import type { Intent, Pt as WirePt, Relayed } from '#lib/sync/live-protocol.ts';
   import { hook } from '../island/devHooks.ts';
+  import { now } from '#lib/time/clock.ts';
   import { ENTRANCE, type Pt } from './plan.ts';
   import { onShow, type Specimen } from './species.ts';
   import { CURATOR, curatorLine } from './lines.ts';
@@ -326,7 +327,10 @@
     const m = week.model;
     if (m) untrack(() => islandLayout.rows(m.state.layout));
   });
-  // the exhibits as the finds come (the museum's own chunk builds them: exhibits.ts)
+  // the exhibits as the finds come (the museum's own chunk builds them: exhibits.ts); the aquarium's fish by the scene
+  // clock's hour (?date; the e2e's nextHour() a later one)
+  let hoursOn = 0;
+  const clock = () => now().getTime() + hoursOn * 3_600_000;
   let shownKey = '';
   $effect(() => {
     const list = specimens, e = eng;
@@ -334,7 +338,7 @@
     const k = list.map((s) => s.id).join(',');
     if (k === shownKey) return;
     shownKey = k;
-    untrack(() => void import('./exhibits.ts').then(({ show }) => show(e, list)));
+    untrack(() => void import('./exhibits.ts').then(({ show }) => show(e, list, clock)));
   });
 
   onMount(() => {
@@ -424,6 +428,11 @@
         return p && eng ? eng.client(p[0], p[1], p[2]) : null;
       },
       card: () => (card ? card.id : null),
+      /** The aquarium's clock an hour on (its pick changes). */
+      nextHour: () => {
+        hoursOn++;
+        eng?.kit.invalidate();
+      },
       /** The curator's head's client px, and what he's doing (idle, watching my villager, dozing, talking). */
       curator: () => {
         const p = curator?.where(CURATOR);

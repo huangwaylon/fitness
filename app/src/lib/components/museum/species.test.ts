@@ -5,7 +5,7 @@ import { findKey, findsView, type FirstFind } from '#lib/model/finds.ts';
 import { reduce } from '#lib/model/state.ts';
 import type { EventRow } from '#lib/contract/api.ts';
 import { entries } from '../kiroku/zukan.ts';
-import { BUG_IDS, FISH_IDS, habitatOf, onShow, tankOf } from './species.ts';
+import { BUG_IDS, FISH_IDS, PER_TANK, habitatOf, hourOf, onDisplay, onShow, tankOf, type Specimen } from './species.ts';
 import { TANKS } from './tanks.ts';
 
 const found = (person: 'A' | 'B' | 'G'): FirstFind => ({ date: '2026-11-04', at: 1.8e12, person });
@@ -43,17 +43,52 @@ describe('the tanks (NH’s grouping)', () => {
     for (const id of ['oarfish', 'coelacanth', 'barreleye', 'football-fish']) expect(tankOf(id), id).toBe('deep');
     for (const id of ['arapaima', 'sturgeon', 'koi', 'catfish', 'soft-shelled-turtle']) expect(tankOf(id), id).toBe('river');
   });
-  test('the little fish in the small tanks, one or two each, four tanks to each group (the pond’s, the stream’s, the tropical, the reef’s)', () => {
-    expect(tankOf('goldfish')).toBe('small-1');
-    expect(tankOf('crucian-carp')).toBe('small-4');
-    expect(tankOf('mitten-crab')).toBe(tankOf('crawfish'));
-    expect(tankOf('neon-tetra')).toBe('small-9');
-    expect(tankOf('clownfish')).toBe('small-13');
-    // every fish has a tank that stands in the aquarium, the small ones one or two to a tank
-    const per = new Map<string, number>();
-    for (const id of FISH_IDS) per.set(tankOf(id), (per.get(tankOf(id)) ?? 0) + 1);
-    for (const [t, n] of per) if (t.startsWith('small')) expect(n, t).toBeLessThanOrEqual(2);
-    expect([...per.keys()].sort()).toEqual(TANKS.map((t) => t.id).sort());
+  test('the little ones by their water: the pond’s and the stream’s in the river tank, the tropical and the reef’s in the sea’s; every tank one that stands', () => {
+    for (const id of ['goldfish', 'neon-tetra', 'crucian-carp', 'tadpole', 'frog', 'crawfish', 'mitten-crab', 'piranha']) expect(tankOf(id), id).toBe('river');
+    for (const id of ['clownfish', 'sea-horse', 'anchovy', 'horse-mackerel']) expect(tankOf(id), id).toBe('sea');
+    expect([...new Set(FISH_IDS.map(tankOf))].sort()).toEqual(TANKS.map((t) => t.id).sort());
+  });
+});
+
+describe('the hour’s pick (onDisplay)', () => {
+  const all = onShow(new Map(FISH_IDS.map((id) => [findKey('fish', id), found('A')])));
+  const at = (iso: string) => hourOf(Date.parse(iso));
+  const ids = (m: Map<string, Specimen[]>) => [...m.entries()].map(([t, l]) => [t, l.map((s) => s.id)] as const);
+  test('five at most a tank, only its own and only what was caught, none twice in the aquarium', () => {
+    const caught = all.filter((s, i) => i % 3 === 0);
+    for (let h = 0; h < 48; h++) {
+      const pick = onDisplay(caught, at('2026-11-04T00:00+09:00') + h);
+      const seen = new Set<string>();
+      for (const [tank, list] of pick) {
+        expect(list.length).toBeLessThanOrEqual(PER_TANK);
+        expect(list.length).toBe(Math.min(PER_TANK, caught.filter((s) => s.tank === tank).length));
+        for (const s of list) {
+          expect(s.tank).toBe(tank);
+          expect(caught).toContain(s);
+          expect(seen.has(s.id), s.id).toBe(false);
+          seen.add(s.id);
+        }
+      }
+    }
+  });
+  test('the same on every phone (by the Tokyo hour, whatever order the finds come in); a new pick the next hour', () => {
+    const h = at('2026-11-04T12:30+09:00');
+    expect(ids(onDisplay(all, h))).toEqual(ids(onDisplay([...all].reverse(), h)));
+    expect(ids(onDisplay(all, at('2026-11-04T12:00+09:00')))).toEqual(ids(onDisplay(all, at('2026-11-04T12:59+09:00'))));
+    // (03:00 UTC is 12:00 in Tokyo)
+    expect(at('2026-11-04T03:10Z')).toBe(at('2026-11-04T12:10+09:00'));
+    const next = onDisplay(all, h + 1), now = onDisplay(all, h);
+    for (const t of ['sea', 'river'] as const) expect(next.get(t)!.map((s) => s.id), t).not.toEqual(now.get(t)!.map((s) => s.id));
+    // over a day every sea fish caught swims now and then
+    const swum = new Set<string>();
+    for (let k = 0; k < 24 * 7; k++) for (const s of onDisplay(all, h + k).get('sea')!) swum.add(s.id);
+    expect(swum.size).toBe(all.filter((s) => s.tank === 'sea').length);
+  });
+  test('a tank with none of its own caught stays empty; nothing caught, nothing swims', () => {
+    const one = all.filter((s) => s.id === 'koi');
+    const pick = onDisplay(one, at('2026-11-04T12:00+09:00'));
+    expect(ids(pick)).toEqual([['sea', []], ['deep', []], ['river', ['koi']]]);
+    expect([...onDisplay([], 0).values()].flat()).toEqual([]);
   });
 });
 
