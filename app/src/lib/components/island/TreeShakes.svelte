@@ -2,8 +2,10 @@
   // What a shaken tree drops (docs/design.md "Trees", "Shaking a tree"; island/treeShake.ts), for every tree on the
   // island: a goal tree reports a shake from its canopy (FruitTree), any other from SceneTaps (IslandScene counts the
   // taps), and this rolls the drop by the kind of tree. A tree branch falls beside the trunk on the inner side and lies
-  // there until a tap picks it up (a pop, gone; cosmetic); a palm drops its two coconuts round its foot (a tap picks one
-  // up). Now and then a bagworm (at night sometimes a spider) drops out of the canopy on its thread beside the trunk
+  // there until a tap picks it up (a pop, into my pocket: the shop buys it); a palm drops its two coconuts round its foot
+  // (a tap picks one up, into my pocket too). Any tree now and then knocks out a piece of NH's wood (wood, softwood or
+  // hardwood: treeShake.ts woodFall, three a tree a day), put on the island for both (`wd:<tree>:<k>`, first wins); it
+  // lies in front of the trunk until a tap picks it up into my pocket. Now and then a bagworm (at night sometimes a spider) drops out of the canopy on its thread beside the trunk
   // on the outer side and dangles there, swaying, for DANGLE_MS: a tap nets it (NH's catch line, the ずかん's bagworm or
   // spider), else it climbs back up. Rarely a wasp nest falls beside the trunk on the outer side: it lands with a thud,
   // and SWARM_DELAY_MS later three wasps buzz out and charge the villager who shook it for SWARM_MS. A tap on them in
@@ -12,8 +14,8 @@
   // Shared (docs/backend.md#shared-world): my shake's outcome goes to the partner (world.share), and theirs plays here:
   // their villager turns to the tree and it shakes, the same drop falls, their wasps charge them. What lies (branches,
   // coconuts) is the shared day's, so a reload or the partner's phone finds it there; a pick-up or a catch by either of
-  // us takes it on both phones (first wins). `?shake=nest|branch|bagworm|spider|coconut` (dev or ?demo) makes the next
-  // shake drop that (the e2e's hook). Two oaks or cedars a day hold a present (treeGifts.ts): their first shake drops it,
+  // us takes it on both phones (first wins). `?shake=nest|branch|bagworm|spider|coconut|wood` (dev or ?demo) makes the
+  // next shake drop that (the e2e's hook; `wood`: a piece of wood and nothing else, while the tree has some today). Two oaks or cedars a day hold a present (treeGifts.ts): their first shake drops it,
   // put on the island for both (`put`, by the tree's id: first wins); it lies and opens as a balloon's present does
   // (Finds.svelte). Everything is a world node beside its tree; the swarm's node follows the
   // villager's feet as it flies (its live position, frames only while it's out).
@@ -27,7 +29,7 @@
   import { take, takenOn } from './sceneDay.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
-  import { recordFind } from '#lib/store/actions.ts';
+  import { recordFind, recordGoods } from '#lib/store/actions.ts';
   import { world } from '#lib/store/world.svelte.ts';
   import { caught, taken } from '#lib/sync/world-day.ts';
   import type { Drop } from '#lib/sync/live-protocol.ts';
@@ -40,8 +42,8 @@
   import { dayKey, jst } from '#lib/time/clock.ts';
   import { artUrl } from '#lib/art.ts';
   import {
-    DANGLE_MS, SWARM_DELAY_MS, SWARM_MS, bearsCoconuts, dropAt, dropIds, fallen, lastNestOf, netsSwarm, shakeDrop, wireDrop,
-    type ShakeDrop, type ShakeTree
+    DANGLE_MS, SWARM_DELAY_MS, SWARM_MS, WOODS, bearsCoconuts, dropAt, dropIds, fallen, lastNestOf, netsSwarm, shakeDrop, wireDrop,
+    woodAt, woodFall, woodOut, woodTree, type ShakeDrop, type ShakeTree, type Wood
   } from './treeShake.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { livePos } from '../motion/director.svelte.ts';
@@ -102,18 +104,43 @@
   const dropping = new SvelteSet<string>();
 
   // the dev hook: the next shake drops this (a bagworm or a spider: that bug)
-  let forced: string | undefined = hookOneOf('shake', ['nest', 'branch', 'bagworm', 'spider', 'coconut']) ?? undefined;
+  let forced: string | undefined = hookOneOf('shake', ['nest', 'branch', 'bagworm', 'spider', 'coconut', 'wood']) ?? undefined;
+
+  /** The day's wood lying under the trees (the shared day's puts, `wd:`), as the branches: the partner's pick-up takes
+   *  it at once, mine once my villager has got there. */
+  const woodLying = $derived.by(() => {
+    const d = world.day;
+    void pickedN;
+    const mine = takenOn(dayKey());
+    return Object.values(d.puts).flatMap((p) => {
+      const tree = woodTree(p.id);
+      if (!tree || !(WOODS as readonly string[]).includes(p.what)) return [];
+      const c = taken(d, p.id);
+      if (c && (c.who !== world.me || mine.has(p.id))) return [];
+      return [{ id: p.id, tree, what: p.what as Wood, x: p.at[0], z: p.at[1] }];
+    });
+  });
+  /** A piece of wood falls out of the tree (mine as I shake it, the partner's as theirs comes in). */
+  function woodFalls(id: string) {
+    dropping.add(id);
+    later(() => sceneSfx('twig'), 520);
+    later(() => dropping.delete(id), 900);
+  }
 
   /** My villager shook `tree` (where it stands: a tap acts in place): roll what falls by its kind, share it, play it. */
   export function shaken(tree: ShakeTree) {
     const d = world.day, now = world.now();
     const bugForced = forced === 'bagworm' || forced === 'spider' ? forced : undefined;
-    const force = bugForced ? 'bug' : (forced as ShakeDrop | undefined);
+    const woodForced = forced === 'wood';
+    const force = bugForced ? 'bug' : woodForced ? null : (forced as ShakeDrop | undefined);
+    // this shake's place among the tree's shakes today (both of ours): its wood's seed
+    const nth = d.shakes.filter((s) => s.tree === tree.id).length;
     const gift = holdsGift(dayKey(), tree.id, d.puts, islandSeed());
     let drop: ShakeDrop = shakeDrop(Math.random, now, lastNestOf(d.shakes, tree.id), force, tree.kind, bearsCoconuts(d.shakes, tree.id), gift);
     forced = undefined;
     // one thing of a kind at a tree at a time; while its present lies unopened under it, only a rustle (its spot clear)
-    if (!force && drop !== 'gift' && d.puts[giftId(tree.id)] && !taken(d, giftId(tree.id))) drop = null;
+    const giftLies = !!d.puts[giftId(tree.id)] && !taken(d, giftId(tree.id));
+    if (!force && drop !== 'gift' && giftLies) drop = null;
     if (drop === 'nest' && (swarm || dangler?.tree === tree.id || nests.some((s) => s.tree === tree.id))) drop = null;
     if (drop === 'branch' && lyingNow.some((b) => b.tree === tree.id && b.what === 'branch')) drop = null;
     if (drop === 'bug' && (dangler || nests.some((s) => s.tree === tree.id))) drop = null;
@@ -123,6 +150,13 @@
     // dropped it a moment before (the relay keeps the first)
     if (drop === 'gift' && world.share({ kind: 'put', id: giftId(tree.id), what: 'present', at: giftAt(tree) }).fresh) later(() => sceneSfx('twig'), 520);
     play(tree, 'mine', wire);
+    // NH's wood without an axe: now and then a piece, three a tree a day (treeShake.ts woodFall); put for both, first
+    // wins (the partner's phone may have knocked the same piece out a moment before); none with its present
+    const wood = (giftLies || drop === 'gift') && !woodForced ? null : woodFall(dayKey(), tree.id, nth, woodOut(d.puts, tree.id), islandSeed(), woodForced);
+    if (wood) {
+      const [x, z] = woodAt(tree, woodOut(d.puts, tree.id));
+      if (world.share({ kind: 'put', id: wood.id, what: wood.what, at: [x, z] }).fresh) woodFalls(wood.id);
+    }
   }
 
   /** The `drop` of a shake of `tree` by `side`, as it falls here (its ids from the day's shakes). */
@@ -261,9 +295,27 @@
     take(dayKey(), id);
     pickedN++;
     sceneSfx('twig');
-    if (!coconut) return;
-    const [sx, sy] = w.screenU(b.x, b.z, 4);
-    void loadNames().then(() => showCatch(sx, sy, 'finds/coconut', t('beach.picked', { name: t('beach.name.coconut') })), () => {});
+    const good = coconut ? 'coconut' : 'tree-branch';
+    recordGoods(good);
+    picked(b.x, b.z, `finds/${good}`, good);
+  }
+  /** Picked up (into my pocket): NH's line on the plate, 「ヤシのみを ひろった！」. */
+  function picked(x: number, z: number, art: string, id: string) {
+    const [sx, sy] = w.screenU(x, z, 4);
+    void loadNames().then(() => showCatch(sx, sy, art, t('beach.picked', { name: t(`beach.name.${id}`) })), () => {});
+  }
+  /** A tap picks up a piece of wood where it lies, into my pocket. First wins: claimed at the tap. */
+  function pickWood(id: string) {
+    const b = woodLying.find((x) => x.id === id);
+    if (!b) return;
+    void loadNames().catch(() => {});
+    if (!world.share({ kind: 'pick', id, what: b.what, at: [b.x, b.z] }).fresh) return;
+    turnTo(b.x);
+    take(dayKey(), id);
+    pickedN++;
+    sceneSfx('twig');
+    recordGoods(b.what);
+    picked(b.x, b.z, `finds/${b.what}`, b.what);
   }
 
   // The partner's shakes and catches (the shared day's news): their villager turns to the tree and it shakes, the same
@@ -295,6 +347,12 @@
           if (nest) fadeNest(nest.n);
           if (live) tellPartner({ who: e.who, art: critterArt('wasp'), verb: 'caught', name: 'critter.name.wasp', x: s.x0, z: s.z0 });
         }
+      } else if (e.kind === 'put' && woodTree(e.id) && live && e.who !== world.me) {
+        // the partner knocked a piece of wood out: it falls here too
+        woodFalls(e.id);
+      } else if (e.kind === 'pick' && /^wd:/.test(e.id) && live) {
+        const p = world.day.puts[e.id];
+        if (p) partnerTurnTo(p.at[0], e.who);
       } else if (e.kind === 'pick' && /^(br|co):/.test(e.id) && live) {
         const b = fallen(world.day.shakes, treeOf, () => false).find((x) => x.id === e.id);
         if (!b) return;
@@ -333,6 +391,17 @@
       <button type="button" class="pick" data-coconut={b.id} data-sfx="self" aria-label={t('shake.coconut')} style:top={u(-7)}
         onclick={() => pick(b.id)}></button>
     {/if}
+  </div>
+{/each}
+
+{#each woodLying as b (b.id)}
+  {@const from = (treeOf(b.tree)?.h ?? 120) * 0.55}
+  <div class="node" {@attach w.at({ x: b.x, z: b.z, h: from, dz: NEAR, inv: true, m3: { key: `finds/${b.what}`, id: `drop-${b.id}`, drop: dropping.has(b.id) ? from : 0, ms: 520 } })}>
+    <span class="drop wood" class:still={!dropping.has(b.id)} style:--from={u(-from)} out:pickUp>
+      <OfficialArt key={`finds/${b.what}`} size={u(26)} eager />
+    </span>
+    <button type="button" class="pick" data-wood={b.what} data-wood-id={b.id} data-sfx="self" aria-label={t('shake.wood')} style:top={u(-7)}
+      onclick={() => pickWood(b.id)}></button>
   </div>
 {/each}
 

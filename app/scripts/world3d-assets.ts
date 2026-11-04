@@ -188,6 +188,8 @@ const finds: AssetJob[] = [
     .map(([id, m]) => find(id, one(`UnitIconPltMush${m}`), 20)),
   find('coconut', one('UnitIconPltFruitCoconut'), 22),
   find('tree-branch', one('UnitIconPltBranch'), 30),
+  // a tree's wood (treeShake.ts woodFall): NH's one bundle, its gradient's rows wood, softwood, hardwood
+  ...(['wood', 'softwood', 'hardwood'] as const).map((id, i) => find(id, one('UnitIconPltWood'), 22, { grdRow: row(i) })),
   find('earth-egg', one('UnitIconEggGround'), 22), find('sky-egg', one('UnitIconEggSky'), 22), find('water-egg', one('UnitIconEggFish'), 22),
   // the tools a villager holds (a dig, a watering)
   find('shovel', one('ToolScoopWood'), 30), find('watering-can', one('ToolWateringWood'), 22),

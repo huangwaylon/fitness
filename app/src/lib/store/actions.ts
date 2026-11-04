@@ -18,6 +18,7 @@ import {
 } from '#lib/contract/food.ts';
 import { customs, foodDay, foodEntries, recipes, repeats } from '#lib/model/food.ts';
 import { buyPrice, sellPrice, stockOf } from '#lib/contract/shop.ts';
+import { GOODS } from '#lib/contract/pocket.ts';
 import { shopView } from '#lib/model/shop.ts';
 import { world } from './world.svelte.ts';
 
@@ -129,13 +130,13 @@ const TALLY_HOLD_MS = 60_000;
 /** The tally waiting to be sent: a newer one replaces it within the same window. */
 let held: { date: LocalDate; until: number; undo: () => boolean; hold?: (ms: number | null) => number } | null = null;
 
-/** One more of `kind:id` in my tally of today (the model's day, so the demo's `?date=` too). */
-function countOne(kind: FindKind, id: string): void {
+/** One more of `key` (`kind:id`) in my tally of today (the model's day, so the demo's `?date=` too). */
+function countOne(key: string): void {
   const m = week.model;
   if (!m) return;
   const date = localDateAt(m.now);
   const mine = dayTallies(m.state.tallies).find((r) => r.person === m.me && r.date === date);
-  const counts = addToTally(mine?.counts ?? {}, findKey(kind, id));
+  const counts = addToTally(mine?.counts ?? {}, key);
   const now = Date.now();
   const same = held && held.date === date && held.until > now ? held : null;
   const holdMs = same ? same.until - now : TALLY_HOLD_MS;
@@ -156,9 +157,15 @@ function releaseTally(): void {
 export function recordFind(kind: FindKind, id: string): boolean {
   const m = week.model;
   if (!m) return false;
-  countOne(kind, id);
+  countOne(findKey(kind, id));
   if (findsView(m.state).has(findKey(kind, id))) return false;
   return week.send('find', { kind, id }).ok;
+}
+
+/** Record a pick-up the ずかん has no page for (contract/pocket.ts GOODS: wood, a branch, fruit, a weed…): one more in
+ *  today's tally, so in my pocket for the shop; never a find. */
+export function recordGoods(id: string): void {
+  if (Object.hasOwn(GOODS, id)) countOne(`goods:${id}`);
 }
 
 // ---- The shop (docs/design.md "The shop", contract/shop.ts): my pocket's catches sold and the day's stock bought, with

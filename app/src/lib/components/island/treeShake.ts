@@ -1,7 +1,7 @@
 // Shaking a tree (docs/design.md "Trees", "Shaking a tree"): NH's shake, for every tree on the island. On a goal tree a
 // single tap still opens (or closes) its popup; on any tree a quick run of taps, the third within SHAKE_WINDOW_MS and
 // every quick tap after it, is a shake. What falls is NH's for the kind of tree: a hardwood (the oaks and the goal
-// trees) or a cedar now and then drops a tree branch to pick up (cosmetic), a bagworm (at night sometimes a spider)
+// trees) or a cedar now and then drops a tree branch to pick up (into the pocket: the shop buys it), a bagworm (at night sometimes a spider)
 // dangling on its thread for a while to net, and rarely a wasp nest; a palm drops its two coconuts (once a day) and
 // otherwise only, rarely, a nest (NH: no branches or bagworms from a palm). Two oaks or cedars a day hold a present
 // (NH's furniture, wrapped: treeGifts.ts), which their first shake drops before anything else. At most one
@@ -9,12 +9,15 @@
 // wasps charge the villager who shook it, and a tap on them within SWARM_MS nets one (the ずかん's wasp), else they
 // sting (a fright: a 「！」 and a sweat drop, and NH's swollen eye for a while). No ベル ever (scenery never pays). A shake is shared (docs/backend.md#
 // shared-world): its outcome goes to the partner, whose phone plays it at the same tree, and what it left (a branch,
-// coconuts) lies there on both phones, by ids from the day's shakes, until one of us picks it up.
+// coconuts) lies there on both phones, by ids from the day's shakes, until one of us picks it up. Every tree also gives
+// NH's wood, without an axe: a shake knocks a piece out now and then, three a tree a Tokyo day at most (`woodFall`,
+// seeded by the date and the tree's shakes, the same on both phones), put on the island for both (`wd:<tree>:<k>`).
 import type { Drop } from '#lib/sync/live-protocol.ts';
 import { NEST_GAP_MS } from '#lib/sync/live-protocol.ts';
-import type { Shake } from '#lib/sync/world-day.ts';
+import type { Put, Shake } from '#lib/sync/world-day.ts';
 import { BUGS, inHours } from './critters.ts';
-import { GOAL_TREES, SCENERY, TREE_H } from './world.ts';
+import { GOAL_TREES, SCENERY, TREE_H, surfaceAt } from './world.ts';
+import { ISLAND_SEED, dayRand } from './daySeed.ts';
 
 export { NEST_GAP_MS };
 
@@ -177,3 +180,51 @@ export function fallen(shakes: readonly Shake[], tree: (id: string) => ShakeTree
   });
   return out;
 }
+
+// ---------- wood (NH's axe, without one) ----------
+
+/** A tree gives this many pieces of wood a Tokyo day (NH: three hits of an axe, then nothing till the next day). */
+export const WOOD_A_DAY = 3;
+/** A shake knocks a piece out 1 in WOOD_ODDS times, while the tree has some left today. */
+const WOOD_ODDS = 2;
+/** NH's three, each as likely (bamboo's none: it doesn't shake). */
+export const WOODS = ['wood', 'softwood', 'hardwood'] as const;
+export type Wood = (typeof WOODS)[number];
+
+const WOOD_PREFIX = 'wd:';
+/** The shared id of `tree`'s `k`-th piece of wood today (the day's put). */
+export const woodId = (tree: string, k: number): string => `${WOOD_PREFIX}${tree}:${k}`;
+/** The tree a piece of wood fell from (its id's), or null when the id isn't wood's. */
+export const woodTree = (id: string): string | null => (id.startsWith(WOOD_PREFIX) ? id.slice(WOOD_PREFIX.length, id.lastIndexOf(':')) : null);
+/** How many pieces `tree` has given today (the day's puts). */
+export const woodOut = (puts: Readonly<Record<string, Put>>, tree: string): number => {
+  let k = 0;
+  while (k < WOOD_A_DAY && puts[woodId(tree, k)]) k++;
+  return k;
+};
+/** Which wood `tree`'s `k`-th piece of `date` is (seeded: every phone says the same). */
+const woodOf = (date: string, tree: string, k: number, seed = ISLAND_SEED): Wood =>
+  WOODS[Math.floor(dayRand(date, `wood:${tree}:${k}`, seed)() * WOODS.length)];
+
+/**
+ * The piece of wood the `n`-th shake of `tree` on `date` (counting both of ours: the day's shakes before it) knocks out,
+ * with `out` pieces given already today, or null. Seeded by the date, the tree and `n` (and the island's seed), so the
+ * same shake says the same on every phone; never past WOOD_A_DAY. `force` (the dev hook) knocks one out if any are left.
+ */
+export function woodFall(date: string, tree: string, n: number, out: number, seed = ISLAND_SEED, force = false): { id: string; what: Wood } | null {
+  if (out >= WOOD_A_DAY) return null;
+  if (!force && dayRand(date, `wood-shake:${tree}:${n}`, seed)() * WOOD_ODDS >= 1) return null;
+  return { id: woodId(tree, out), what: woodOf(date, tree, out, seed) };
+}
+
+/** Where a tree's `k`-th piece lands (world): the k-th of WOOD_AT's spots on land (a beach palm's front may be the sea):
+ *  a row out in front of the trunk, then one behind it; the three apart and a tap's width clear of what else lies there
+ *  (the branch inside, the nest and the dangling bug outside, a palm's coconuts at its foot; never with a present: no
+ *  wood on the shake that drops one, nor while it lies). */
+const WOOD_AT: readonly (readonly [number, number])[] = [[0, -40], [34, -36], [-34, -38], [0, 40], [34, 40], [-34, 40]];
+const LAND = new Set(['sand', 'grass', 'dirt']);
+export const woodAt = (t: ShakeTree, k: number): [number, number] => {
+  const spots = WOOD_AT.map(([a, b]): [number, number] => [Math.round(t.x + t.out * a), Math.round(t.z + b)]);
+  const land = spots.filter(([x, z]) => LAND.has(surfaceAt(x, z)));
+  return land[k] ?? spots[k % spots.length];
+};

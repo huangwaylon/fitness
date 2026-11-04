@@ -754,7 +754,7 @@ NH).
 - **Wood** (NH's axe, without one: `treeShake.ts woodFall`): besides that, any tree's shake knocks a piece of wood out
   1 in 2 times (木材, やわらかい木材 or かたい木材, alike), three a tree a Tokyo day at most, none while its present lies
   under it. Seeded by the date, the tree and the shake's place among the day's shakes of it, so both phones say the
-  same; it crosses as a `put` (`wd:<tree>:<k>`, first wins) and lies in front of the trunk on land until a tap picks it
+  same; it crosses as a `put` (`wd:<tree>:<k>`, first wins) and lies in front of the trunk (behind it where the front is the sea) until a tap picks it
   up into my pocket. `?shake=wood` forces one.
 - **A tree's present** (`island/treeGifts.ts`, `e2e/tree-gifts.spec.ts`; NH's furniture from the trees): each Tokyo
   day two of the oaks and cedars (`GIFT_TREES`: not a palm, which has its coconuts, nor a goal tree, which has its fruit

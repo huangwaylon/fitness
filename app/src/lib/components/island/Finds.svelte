@@ -5,8 +5,9 @@
   // beach the morning after each wish on a shooting star (stars.ts: one per wish, from 5:00, at most 8); in mushroom
   // season, mushrooms beside the trees (mushrooms.ts). A tap picks a shell, a fragment or the bottle up (it lifts off the
   // sand) or digs a fossil up (a shovel, a puff of earth, a hole), with NH's caption on the catch plate. The first find
-  // of each shell, fossil and fragment goes to the shared ずかん (`find`); none of it is ベル. Mushrooms are cosmetic (no
-  // find): picked up, or the rare one dug up (1 in 20 November dig spots) with NH's caption.
+  // of each shell, fossil and fragment goes to the shared ずかん (`find`); none of it is ベル. Mushrooms are no
+  // find: picked up, or the rare one dug up (1 in 20 November dig spots) with NH's caption, they go into my pocket to
+  // sell (contract/pocket.ts goods), as Bunny Day's eggs do.
   // Everything derives from the Tokyo date and the time (beach.ts), so both phones see the same island; what either of
   // us takes is gone on both (the shared day: docs/backend.md#shared-world, a `pick` claimed at the tap, first wins;
   // this phone's own record too, sceneDay.ts), and the partner's pick-up plays here: their villager turns to it, it
@@ -30,7 +31,7 @@
   import { i18n, t } from '#lib/i18n/index.ts';
   import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
   import { addDays } from '#lib/time/dates.ts';
-  import { recordFind } from '#lib/store/actions.ts';
+  import { recordFind, recordGoods } from '#lib/store/actions.ts';
   import { sceneSfx, shownNow } from './sceneTaps.ts';
   import { loadNames } from './catchLine.ts';
   import { guardsU, clearAt, place, stageGeo } from './placement.ts';
@@ -320,6 +321,7 @@
       take(date, p.uid);
       taken++;
       if (!inside) {
+        recordGoods('sky-egg');
         const n = ++seq;
         lift = { n, x: p.x, y: p.y, lift: p.size / 2, art: p.art, tilt: 0 };
         later(() => lift?.n === n && (lift = null), 500);
@@ -344,6 +346,7 @@
     if (!claim(m.uid, `mushroom:${m.id}`, m.x, m.y)) return;
     pickHere(m.x, () => {
       if (!stillMine(m.uid)) return;
+      recordGoods(m.id);
       pickUp(m.uid, m.x, m.y, findArt(m.id), 0, 6);
       sceneSfx('mushroom');
       plate(m.x, m.y, 6, findArt(m.id), () => t('beach.picked', { name: t(`beach.name.${m.id}`) }), 180);
@@ -364,7 +367,7 @@
     holdTimer = setTimeout(() => (digHold = 0), digHold - Date.now());
     pickHere(s.x, () => {
       if (!stillMine(s.uid)) return;
-      const added = special ? false : recordFind('fossil', s.fossil);
+      const added = special ? (recordGoods(special), false) : recordFind('fossil', s.fossil);
       take(date, s.uid);
       taken++;
       sceneSfx('dig');
