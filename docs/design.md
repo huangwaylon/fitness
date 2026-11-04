@@ -1248,7 +1248,10 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   nothing while nothing on screen does (the hall at rest: none). The tanks' and the cases' stands, bases, water, glass
   and frames are one mesh a material (geometry.ts batcher). Measured on the iOS Simulator (`npm run ios:indoor`, a
   museum with every fish and bug): the hall at rest 30 → 0 frames a second, 258 → 93 draw calls; the aquarium 335 →
-  170, the bug wing 250 → 84; the way in's longest frame 301 → 93 ms.
+  170, the bug wing 250 → 84; the way in's longest frame 301 → 79 ms. Once everything is in, what isn't on screen yet
+  is made ready while the hall is still (its textures up eight at a time, its programs compiled: engine.ts warm), so a
+  wing's first sight is no hitch (walking into the aquarium: its longest frame ~100 → 36 ms); the cost, every wing's
+  textures on the GPU whether visited or not (~300 small ones, a few MB).
 - No music of its own: the app has no NH museum track (NH's museum is quiet ambience); the island's hour plays on.
 
 ### The shop
