@@ -75,7 +75,7 @@ export const FOOD_GOALS = {
 } as const;
 /** What a meal-log goal is of: kcal (`k`) or a nutrient, as a snapshot's keys. */
 export type FoodGoalOf = keyof typeof FOOD_GOALS;
-export const FOOD_GOAL_OF = ['k', 'p', 'fa', 'c', 's'] as const satisfies readonly FoodGoalOf[];
+const FOOD_GOAL_OF = ['k', 'p', 'fa', 'c', 's'] as const satisfies readonly FoodGoalOf[];
 /** The daily kcal goal (`pref kcalGoal`). */
 export const KCAL_GOAL = FOOD_GOALS.k;
 
