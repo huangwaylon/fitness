@@ -222,7 +222,10 @@ export function createLive(o: LiveOptions): Live {
 
   const ping = () => {
     const c = Date.now();
-    if (raw({ v: LIVE_V, kind: 'ping', c })) sent.add(c);
+    if (!raw({ v: LIVE_V, kind: 'ping', c })) return;
+    // a pong lost on a socket open for days: only the last few awaited (one a minute)
+    for (const old of sent) if (sent.size >= 8) sent.delete(old);
+    sent.add(c);
   };
 
   const drop = (code = 1000, reason = 'bye') => {
@@ -282,6 +285,8 @@ export function createLive(o: LiveOptions): Live {
           samples = [];
           setStatus({ connected: true, me: m.me, peer: m.peer, here: m.here ?? (m.peer ? [partnerOf(m.me)] : []), rec: m.rec, gone: m.gone ?? {} });
           for (const at of PING_MS) pings.push(setTimeout(ping, at));
+          // (a second welcome on one socket: the one interval still)
+          if (pingEvery) clearInterval(pingEvery);
           pingEvery = setInterval(ping, PING_EVERY_MS);
           // what never got its ack goes again (the relay acks a repeat without relaying it twice); another day's is
           // that day's, gone
