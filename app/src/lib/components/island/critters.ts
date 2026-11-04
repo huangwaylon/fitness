@@ -413,10 +413,17 @@ export const POND_SHADOW = 0.65;
 // ---------- where they live in the world (world.ts units) ----------
 
 /** A patch of water a shadow swims in: an oriented box round (cx, cz), half-length L along (ux, uz) (a river's
- *  reach runs along its channel), half-width W across. */
-export interface Swim { cx: number; cz: number; ux: number; uz: number; L: number; W: number }
+ *  reach runs along its channel), half-width W across; a stretch of coast (coast.ts) its tiles' middles too, where it
+ *  swims (the box only says roughly where it is). */
+export interface Swim { cx: number; cz: number; ux: number; uz: number; L: number; W: number; tiles?: readonly (readonly [number, number])[] }
 /** A point of a swim patch (s along, t across, each −1…1). */
 export const swimAt = (a: Swim, s: number, t: number): { x: number; z: number } => ({ x: a.cx + a.ux * s * a.L - a.uz * t * a.W, z: a.cz + a.uz * s * a.L + a.ux * t * a.W });
+/** A random point of a swim patch: anywhere in one of its tiles, or in its box. */
+export function swimPick(a: Swim, r: () => number): { x: number; z: number } {
+  if (!a.tiles?.length) return swimAt(a, r() * 2 - 1, r() * 2 - 1);
+  const [x, z] = a.tiles[Math.min(a.tiles.length - 1, Math.floor(r() * a.tiles.length))];
+  return { x: x + (r() - 0.5) * 30, z: z + (r() - 0.5) * 30 };
+}
 
 /** The sea's fishing water: SEA_BOX, reaching in to just past the foam (from まえ only its near strip is on screen). */
 export const SEA_SWIM: Swim = {

@@ -7,6 +7,7 @@ import {
 } from './ambient.ts';
 import { BUBBLE_SHARE, pickBug, pickFish } from './critters.ts';
 import { pickAct } from './visitorLife.ts';
+import { critterId } from './critterPath.ts';
 
 const DATE = '2026-11-01';
 const T0 = Date.parse('2026-11-01T00:00:00+09:00');
@@ -198,6 +199,20 @@ describe('ambient life: the critters', () => {
     expect(busy(['fish', 'bubbles'])).toBeGreaterThan(0.6); // a fish is basically always there
     expect(busy(['bug'])).toBeGreaterThan(0.3);
     expect(all.filter((x) => x.kind === 'bubbles').length / all.filter((x) => x.kind === 'fish' || x.kind === 'bubbles').length).toBeCloseTo(BUBBLE_SHARE, 1);
+  });
+
+  it('the rest of the coast (coast.ts): a channel per stretch, fish only, one at a time each; the front and the rest as with one', () => {
+    const many = Array.from({ length: SLOTS_PER_DAY / 4 }, (_, s) => spawnsIn(DATE, s, 9)).flat();
+    const one = all.filter((x) => x.slot < SLOTS_PER_DAY / 4);
+    expect(many.filter((x) => !x.coast)).toEqual(one);
+    const bad: string[] = [];
+    for (let k = 1; k < 9; k++) {
+      const s = many.filter((x) => x.coast === k);
+      if (s.length < 100 || s.some((x) => x.kind !== 'fish')) bad.push(`coast ${k}: ${s.length}`);
+      for (let i = 1; i < s.length; i++) if (s[i].slot < s[i - 1].slot + s[i - 1].slots) bad.push(`coast ${k}: two at once at ${s[i].slot}`);
+    }
+    expect(bad).toEqual([]);
+    expect(new Set(many.map((x) => critterId(x))).size).toBe(many.length);
   });
 
   it('a phone opening mid-stay sees who is there, as the phone that saw them come', () => {

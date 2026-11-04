@@ -1,7 +1,7 @@
 <script lang="ts">
   // The island's critters (docs/design.md "Scene interactions", "Critters"), after NH, in the rolling-log world
   // (world.ts units: x across, z into the island): now and then (ambient life's slots, island/ambient.ts: the same on both phones) a fish
-  // shadow swims in the sea in front of the front beach (seen from まえ), another in a fresh water in view, NH's fresh
+  // shadow swims off each stretch of the coast (island/coast.ts), another in each fresh water, NH's fresh
   // water by where it is (the pond, the river's reaches, the river mouth on the west beach, the falls' pool (clifftop) and the
   // spring: pondFish.ts, its own chunk, fetched with the first such shadow), or a bug of the season and hour comes by
   // where NH keeps it; a shaken bush sometimes lets a butterfly or a moth out. A catch is an official icon and NH's
@@ -58,6 +58,7 @@
   import { jst, now } from '#lib/time/clock.ts';
   import { crittersAt, msToNextSlot, slotAt, slotStart, spawnRand, type Spawn } from './ambient.ts';
   import { relayOffset } from './ambientClock.ts';
+  import { coasts } from './coast.ts';
   import { su, VILLAGER, type Tod } from './scene.ts';
   import { hitWorld, sceneSfx } from './sceneTaps.ts';
   import type { Box } from './geom.ts';
@@ -71,7 +72,7 @@
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { caught } from '#lib/sync/world-day.ts';
   import type { FishPhase, How, Relayed, Who } from '#lib/sync/live-protocol.ts';
-  import { STILL, bubblesAt, bugAt, bugPath, clamp, critterId, fishPath, freshWater, groundOk, inWater, legAt, type BugOpts, type Flying, type Leg } from './critterPath.ts';
+  import { GLIDE_U, STILL, bubblesAt, bugAt, bugPath, clamp, critterId, fishPath, freshWater, groundOk, inWater, legAt, type BugOpts, type Flying, type Leg } from './critterPath.ts';
   import { tellPartner } from './partnerNews.ts';
   import { actors, inMotion, livePos, wake as wakeUp } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -81,13 +82,17 @@
   import {
     BUGS, bushes, FISH, FRESH, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS,
     bugPlace, bushBug, critterArt, findKind, fleesFrom, freshAreas, shadowLen, fleaJumps, hookItem, landing, netSwing,
-    oddsAt, patches, perch3d, perches, pickBug, pickFish, sameWater, stalkTap, swimAt, swimmable, type BugId, type BugPlace, type Catch,
+    oddsAt, patches, perch3d, perches, pickBug, pickFish, sameWater, stalkTap, swimAt, swimPick, swimmable, type BugId, type BugPlace, type Catch,
     type FishId, type Flight, type JunkId, type Patch, type StalkState, type Swim, type Water
   } from './critters.ts';
   import type { PondFishId } from './pondFish.ts';
   import type { FreshWhere } from './world.ts';
 
-  const WATERS: readonly Water[] = ['sea', ...FRESH];
+  /** Where a shadow is, one at a time each: a stretch of the coast (coast.ts: `sea` off the front beach, `sea1`…
+   *  round the rest, ambient life's sea channels) or a fresh water. */
+  type Pool = Water | `sea${number}`;
+  const seaPool = (coast = 0): Pool => (coast ? `sea${coast}` : 'sea');
+  const poolOf = (water: Water, coast = 0): Pool => (water === 'sea' ? seaPool(coast) : water);
 
   interface Props {
     scene?: HTMLElement;
@@ -101,7 +106,7 @@
   /** A world point (units) and its height above the ground. */
   interface P3 { x: number; z: number; lift: number }
   interface Fish {
-    n: number; item: FishId | PondFishId | JunkId; water: Water; size: number; shape?: 'narrow' | 'fin';
+    n: number; item: FishId | PondFishId | JunkId; water: Water; pool: Pool; size: number; shape?: 'narrow' | 'fin';
     /** Where it is heading (world) and how long that takes; its node's anchor (its spawn point). */
     x: number; z: number; ms: number; ax: number; az: number;
     /** Heading: mirrored (head right) and turned toward where it swims (deg, −90…90 on screen). */
@@ -151,9 +156,11 @@
   const fishLoc = (f: Fish) => loc(f.x - f.ax, -(f.z - f.az));
   const bugLoc = (b: Bug) => loc(b.x - b.ax, -(b.z - b.az) * b.g - b.lift);
 
-  /** One shadow in the sea and one in each fresh water, at most. */
-  const none = (): Record<Water, Fish | null> => ({ sea: null, pond: null, river: null, mouth: null, clifftop: null });
-  let fishes = $state<Record<Water, Fish | null>>(none());
+  /** One shadow off each stretch of coast and one in each fresh water, at most. */
+  const none = (): Partial<Record<Pool, Fish | null>> => ({});
+  let fishes = $state<Partial<Record<Pool, Fish | null>>>(none());
+  /** The shadows here now. */
+  const allFish = (): Fish[] => Object.values(fishes).filter((f): f is Fish => !!f);
   // ---------- my line (fishing.ts: its state machine; here, what each of its steps plays) ----------
   /** My line, as the machine has it (null: none out). */
   let line = $state.raw<MyLine | null>(null);
@@ -262,7 +269,7 @@
   }
   function freeSwim(a: Swim, ok: (x: number, z: number) => boolean): { x: number; z: number } | null {
     for (let i = 0; i < 40; i++) {
-      const p = swimAt(a, between(-1, 1), between(-1, 1));
+      const p = swimPick(a, rand);
       if (ok(p.x, p.z)) return p;
     }
     return null;
@@ -273,8 +280,13 @@
   const swimOk = (f: { water: Water; size: number; shape?: 'narrow' | 'fin' }, keep: Box[]) => (x: number, z: number) =>
     inWater(f.water, x, z) && seen(x, z, 0, keep, sizeU(f as Fish) / 2, 4);
   /** The swim patches of a water whose middle is on screen. */
-  const areasOf = (water: Water): Swim[] => (water === 'sea' ? [SEA_SWIM] : freshAreas(water));
-  const inViewArea = (a: Swim) => [0, -0.7, 0.7].some((s) => [0, -0.8, 0.8].some((t) => { const p = swimAt(a, s, t); return w.inView(p.x, p.z, -16); }));
+  /** (`?coast=front|back|left|right`, dev or ?demo: a hook's sea shadow off that side of the island) */
+  const coastSide = hook('coast');
+  const areasOf = (water: Water): Swim[] =>
+    water === 'sea' ? coasts().filter((c) => !coastSide || c.side === coastSide).map((c) => c.area) : freshAreas(water);
+  const inViewArea = (a: Swim) => a.tiles
+    ? a.tiles.some(([x, z], i) => i % 3 === 0 && w.inView(x, z, -16))
+    : [0, -0.7, 0.7].some((s) => [0, -0.8, 0.8].some((t) => { const p = swimAt(a, s, t); return w.inView(p.x, p.z, -16); }));
 
   /** The bugs' sprites (BugSprite.svelte): loaded with the first bug of a session, out of the island's first load. */
   let Sprite = $state<typeof import('./BugSprite.svelte').default | null>(null);
@@ -295,8 +307,9 @@
    *  (the projector shows it when the camera sees it); else (a dev hook's) where the camera can see it (`pinned`: or
    *  anywhere in it). `stay`: how long it stays (ms; true: STAY_MS.fish, false: until caught); `r`: what it is
    *  (ambient life's seeded species, the same on both phones). */
-  async function spawnFish(water: Water, stay: boolean | number = true, want?: FishId | PondFishId, pinned = false, r = rand, o: Shared & { month?: number; hour?: number } = {}): Promise<boolean> {
-    if (fishes[water]) return true;
+  async function spawnFish(water: Water, stay: boolean | number = true, want?: FishId | PondFishId, pinned = false, r = rand, o: Shared & { month?: number; hour?: number; coast?: number } = {}): Promise<boolean> {
+    const pool = poolOf(water, o.coast);
+    if (fishes[pool]) return true;
     const t = jst(now()), month = o.month ?? t.month, hour = o.hour ?? t.hour;
     let id: FishId | PondFishId, look: { size: number; shape?: 'narrow' | 'fin' };
     if (water === 'sea') {
@@ -304,7 +317,7 @@
       look = FISH[id as FishId];
     } else {
       const { POND_FISH, pickFresh } = await loadPond();
-      if (fishes[water] || !enabled()) return !!fishes[water];
+      if (fishes[pool] || !enabled()) return !!fishes[pool];
       id = want ?? pickFresh(water, month, hour, r);
       look = POND_FISH[id as PondFishId];
     }
@@ -312,7 +325,7 @@
     let legs: Leg[] | undefined;
     if (o.path) {
       // the shared world's: from its seed, where it is now in its stay
-      const path = fishPath(o.path.seed, water, o.path.total);
+      const path = fishPath(o.path.seed, water, o.path.total, o.coast);
       if (!path) return false;
       area = path.area;
       anchor = path.start;
@@ -327,7 +340,7 @@
       if (!p && pinned) {
         // nowhere on screen: at its water all the same (the e2e brings the camera to it)
         area = areas[0] ?? areasOf(water)[0] ?? null;
-        p = area && { x: area.cx, z: area.cz };
+        p = area && (freeSwim(area, (x, z) => inWater(water, x, z)) ?? { x: area.cx, z: area.cz });
       }
     }
     if (!area || !p) return false;
@@ -337,11 +350,11 @@
     preload(critterArt(item));
     void loadLines().catch(() => {});
     const f: Fish = {
-      n: ++seq, item, water, size: look.size, shape: look.shape, x: p.x, z: p.z, ax: anchor.x, az: anchor.z, ms: 0, flip: rand() < 0.5, rot: 0, area,
+      n: ++seq, item, water, pool, size: look.size, shape: look.shape, x: p.x, z: p.z, ax: anchor.x, az: anchor.z, ms: 0, flip: rand() < 0.5, rot: 0, area,
       gone: false, dash: false, ...(o.cid ? { cid: o.cid } : {}), ...(legs ? { legs, t0: o.path!.t0 } : {})
     };
-    fishes[water] = f;
-    const fp = fishes[water]!; // the state's proxy (the timers compare against it)
+    fishes[pool] = f;
+    const fp = fishes[pool]!; // the state's proxy (the timers compare against it)
     later(() => swim(fp), legs ? 60 : 400);
     if (stay) later(() => leaveFish(fp), stay === true ? STAY_MS.fish : stay);
     return true;
@@ -364,7 +377,7 @@
   /** A slow wander to another spot in its patch of water (NH shadows dawdle), unless it's busy with a bobber: a shared
    *  one along its itinerary, leg by leg at its time (the same on both phones). */
   function swim(f: Fish) {
-    if (fishes[f.water] !== f || f.gone) return;
+    if (fishes[f.pool] !== f || f.gone) return;
     if (f.legs && f.t0 !== undefined) {
       const e = shared.now() - f.t0;
       const k = f.legs.findIndex((l) => l.t + l.ms > e);
@@ -379,23 +392,25 @@
     }
     if (!busy(f)) {
       f.spurt = false;
-      const p = freeSwim(f.area, swimOk(f, guards(4))) ?? f;
+      // (along a coast, a glide at a time and by sea, as the shared ones: critterPath.ts)
+      const ok = swimOk(f, guards(4)), from = { x: f.x, z: f.z };
+      const p = freeSwim(f.area, f.area.tiles ? (x, z) => Math.hypot(x - from.x, z - from.z) <= GLIDE_U && swimmable(f.water, from.x, from.z, x, z) && ok(x, z) : ok) ?? f;
       swimTo(f, p.x, p.z, clamp(Math.hypot(p.x - f.x, p.z - f.z) * (f.water === 'sea' ? 110 : 160), 2500, 6000));
     }
     later(() => swim(f), f.ms + between(600, 2200));
   }
   function leaveFish(f: Fish) {
-    if (fishes[f.water] !== f) return;
+    if (fishes[f.pool] !== f) return;
     if (busy(f)) return void (f.due = true); // (letGo: once the line lets it go)
     f.gone = true;
-    later(() => fishes[f.water] === f && (fishes[f.water] = null), 1200);
+    later(() => fishes[f.pool] === f && (fishes[f.pool] = null), 1200);
   }
   /** A line let go of it (reeled in, ended, another came to it): its stay over meanwhile, it leaves now. */
   const letGo = (f: Fish | null | undefined) => f && f.due && !busy(f) && leaveFish(f);
   /** Spooked (an early pull, or the bite missed): a quick dart away from the float (x, z) and gone (on both phones: it
    *  got away). */
   function fleeFrom(f: Fish, x: number, z: number) {
-    if (fishes[f.water] !== f || f.gone) return;
+    if (fishes[f.pool] !== f || f.gone) return;
     const p = fishNow(f) ?? f;
     claim(f.cid, f.item, p.x, p.z, 'flee');
     const d = Math.hypot(p.x - x, p.z - z) || 1;
@@ -403,11 +418,11 @@
     Object.assign(f, { x: p.x, z: p.z });
     swimTo(f, p.x + ((p.x - x) / d) * run, p.z + ((p.z - z) / d) * run, 650);
     Object.assign(f, { dash: true, gone: true });
-    later(() => fishes[f.water] === f && (fishes[f.water] = null), 700);
+    later(() => fishes[f.pool] === f && (fishes[f.pool] = null), 700);
   }
 
   /** The shadow under a key (fishId), while it's here. */
-  const fishByKey = (k: string | null | undefined): Fish | null => (k ? (WATERS.map((wt) => fishes[wt]).find((f) => !!f && fishId(f) === k) ?? null) : null);
+  const fishByKey = (k: string | null | undefined): Fish | null => (k ? (allFish().find((f) => fishId(f) === k) ?? null) : null);
   /** The island's day (ambient life's, on the relay's clock: the shadows' own). */
   const today = () => slotAt(now().getTime(), relayOffset()).date;
   /** What a step of my line asks of the island: my villager, the day, the shadows. */
@@ -417,9 +432,8 @@
       // the nearest free shadow on that water within NOTICE_U, open water between it and the float
       notice(x, z, water) {
         let best: { fish: string; d: number } | null = null;
-        for (const wt of WATERS) {
-          const f = fishes[wt];
-          if (!f || f.gone || f.taken || theirs(f.cid) || !sameWater(water, f.water)) continue;
+        for (const f of allFish()) {
+          if (f.gone || f.taken || theirs(f.cid) || !sameWater(water, f.water)) continue;
           const p = fishNow(f) ?? f, d = Math.hypot(p.x - x, p.z - z);
           if (d <= NOTICE_U && (!best || d < best.d) && swimmable(f.water, p.x, p.z, x, z)) best = { fish: fishId(f), d };
         }
@@ -547,7 +561,7 @@
   }
 
   let bobEl = $state<HTMLElement>();
-  const fishEls: Partial<Record<Water, HTMLElement>> = $state({});
+  const fishEls: Partial<Record<Pool, HTMLElement>> = $state({});
   /** Where the shadow is right now (world), mid-transition included: its node's anchor plus its inner offset (the 3D
    *  island's: where its model is, by the same curves). */
   function fishNow(f: Fish): { x: number; z: number } | null {
@@ -555,7 +569,7 @@
       const g = fishGlide(f, performance.now());
       return { x: g.x, z: g.z };
     }
-    const el = fishEls[f.water];
+    const el = fishEls[f.pool];
     if (!el) return null;
     const [lx, ly] = getComputedStyle(el).translate.split(' ').map(parseFloat);
     if (!Number.isFinite(lx)) return null;
@@ -691,9 +705,7 @@
   $effect(() => {
     if (!w.rest.three) return;
     const ids = new Set<string>();
-    for (const wt of WATERS) {
-      const f = fishes[wt];
-      if (!f) continue;
+    for (const f of allFish()) {
       ids.add(fishId(f));
       void f.x, void f.z, void f.ms;
       if (f.dash) full3(f.ms + 200);
@@ -716,7 +728,7 @@
     nibbled();
     tellLine('nibble');
     // the shadow's nose bumps the float (2u toward its head and back), in step with the float's twitch
-    const fin = f ? fishEls[f.water]?.querySelector('.fin') : null;
+    const fin = f ? fishEls[f.pool]?.querySelector('.fin') : null;
     if (fin && f) {
       const dx = f.flip ? 2 : -2;
       fin.animate([{ translate: '-50% -50%' }, { translate: `calc(-50% + ${dx} * var(--u)) -50%`, offset: 0.3 }, { translate: '-50% -50%' }], { duration: 380, easing: 'ease-out' });
@@ -746,7 +758,7 @@
       return fleeFrom(f, l.x, l.z);
     }
     why = 'caught';
-    if (fishes[f.water] === f) fishes[f.water] = null;
+    if (fishes[f.pool] === f) fishes[f.pool] = null;
     // first wins: the partner reeling in the same shadow a moment before has it (their news says so here)
     if (!claim(f.cid, f.item, l.x, l.z, 'rod')) return;
     sceneSfx('catch');
@@ -1101,19 +1113,19 @@
    *  of view, its icon from the edge); `beat`: I tapped it too, and the relay heard them first. */
   function theirCatch(e: { what: string; id?: string; at?: readonly [number, number]; how?: How; who?: Who }, live: boolean, beat: boolean) {
     const id = e.id, how = e.how;
-    const f = WATERS.map((wt) => fishes[wt]).find((x) => !!x && x.cid === id) ?? null;
+    const f = allFish().find((x) => x.cid === id) ?? null;
     const b = bug && bug.cid === id ? bug : null;
     const bb = bubbles && bubbles.cid === id ? bubbles : null;
     const dv = diving && diving.cid === id ? diving : null;
     // my line was out for it: it's theirs now (my float waits on: the next step finds it gone)
     if (f && line?.fish === fishId(f)) queueMicrotask(tick);
     if (how === 'flee') {
-      if (f && fishes[f.water] === f) {
+      if (f && fishes[f.pool] === f) {
         // (from where it is now: mid-swim)
         const p = fishNow(f) ?? f;
         Object.assign(f, { x: p.x, z: p.z, dash: true, gone: true });
         swimTo(f, p.x + (f.flip ? 30 : -30), p.z, 650);
-        later(() => fishes[f.water] === f && (fishes[f.water] = null), 700);
+        later(() => fishes[f.pool] === f && (fishes[f.pool] = null), 700);
       }
       if (b && bug === b) bugLeave(true);
       if (bb && bubbles === bb) bubbles = null;
@@ -1122,9 +1134,9 @@
     }
     const at = e.at ?? (f ? [f.x, f.z] : b ? [b.x, b.z] : bb ? [bb.x, bb.z] : null);
     const gone = () => {
-      if (f && fishes[f.water] === f) {
+      if (f && fishes[f.pool] === f) {
         f.gone = true;
-        later(() => fishes[f.water] === f && (fishes[f.water] = null), 500);
+        later(() => fishes[f.pool] === f && (fishes[f.pool] = null), 500);
       }
       if (b && bug === b) bug = null;
       if (bb && bubbles === bb) bubbles = null;
@@ -1295,9 +1307,8 @@
   /** A tap on a shadow as drawn (its body and half a finger round it: the ground under the finger may be the bank
    *  behind a narrow stream, near the horizon): where its float lands. */
   function onShadow(px: number, py: number): ReturnType<typeof landing> {
-    for (const wt of WATERS) {
-      const f = fishes[wt];
-      if (!f || f.gone) continue;
+    for (const f of allFish()) {
+      if (f.gone) continue;
       const { p, cx, cy, half, shown } = seenOf(f);
       if (shown && Math.hypot(px - cx, py - cy) <= half + 22) return landing(p.x, p.z);
     }
@@ -1348,7 +1359,7 @@
     });
   }
   let lines = $state<Partial<Record<Who, Line>>>({});
-  const lineFish = (l: Line) => (l.id ? (WATERS.map((wt) => fishes[wt]).find((f) => f && !f.gone && f.cid === l.id) ?? null) : null);
+  const lineFish = (l: Line) => (l.id ? (allFish().find((f) => !f.gone && f.cid === l.id) ?? null) : null);
   /** The shadow another's line is at: theirs, swimming up to their float (never one at my line). */
   function takeFor(l: Line) {
     const f = lineFish(l);
@@ -1447,7 +1458,8 @@
     const o = { cid, path: { seed: c.seed, t0, total: end - t0 }, month: +date.slice(5, 7), hour: Math.floor(c.slot / 360) };
     const r = spawnRand(c);
     if (c.kind === 'fish') {
-      if (!fishes.sea && !bubbles && !diving) void spawnFish('sea', stay, undefined, false, r, o);
+      // (off its stretch of coast; the front's waits on a dive there)
+      if (!fishes[seaPool(c.coast)] && (c.coast || (!bubbles && !diving))) void spawnFish('sea', stay, undefined, false, r, { ...o, coast: c.coast });
     } else if (c.kind === 'bubbles') {
       if (!fishes.sea && !bubbles && !diving) void spawnBubbles(stay, undefined, false, r, o);
     } else if (c.kind === 'fresh') {
@@ -1461,7 +1473,7 @@
     /** The slot now: those coming in it (at their `at`) and, the first time, those still staying from before. */
     const slotNow = (first: boolean) => {
       const t = slotAt(now().getTime(), relayOffset());
-      for (const c of crittersAt(t.date, t.slot)) {
+      for (const c of crittersAt(t.date, t.slot, coasts().length)) {
         const end = slotStart(t.date, c.slot + c.slots);
         if (c.slot === t.slot && c.at > t.into) later(() => visit(c, t.date, end), c.at - t.into);
         else if (first || c.slot === t.slot) visit(c, t.date, end);
@@ -1483,11 +1495,10 @@
     if (!hooksOn()) return;
     (window as unknown as { __fish?: unknown }).__fish = {
       why: () => why,
-      fish: () => WATERS.flatMap((wt) => {
-        const f = fishes[wt];
-        if (!f || f.gone) return [];
+      fish: () => allFish().flatMap((f) => {
+        if (f.gone) return [];
         const p = fishNow(f) ?? f;
-        return [{ water: wt, id: fishId(f), x: p.x, z: p.z, to: [f.x, f.z], len: sizeU(f), cid: f.cid ?? null, theirs: theirs(f.cid) }];
+        return [{ water: f.water, pool: f.pool, id: fishId(f), x: p.x, z: p.z, to: [f.x, f.z], len: sizeU(f), cid: f.cid ?? null, theirs: theirs(f.cid) }];
       }),
       casting: () => !!line,
       /** My line now (fishing.ts: its phase, where its float is, the shadow at it) and the others' as their phones tell
@@ -1539,11 +1550,10 @@
   <!-- the 3D island's (world3d/Island3D: camera.svelte.ts m3): each critter NH's model where it is, moving as its
        sprite does (the sprite stays as its tap box, invisible) -->
   {#if w.rest.three}
-  {#each WATERS as wt (wt)}
-    {@const f = fishes[wt]}
+  {#each Object.entries(fishes) as [pk, f] (pk)}
     {#if f}
       <!-- (its moves, its heading and its nose at the float: fish3, each frame; it fades in and out: world3d/things.ts) -->
-      <i class="m3n" {@attach w.at({ x: f.ax, z: f.az, lift: -2.5, h: 4, always: true, live: () => fish3(f), m3: { key: f.shape ? `shadow/${f.shape}` : `shadow/${wt === 'sea' ? 'sea' : 'fresh'}-${Math.max(1, Math.min(6, Math.round(f.size)))}`, id: fishId(f), water: true, off: f.gone, get yaw() { return fishYaw(f); }, art: () => fishEls[wt] } })}></i>
+      <i class="m3n" {@attach w.at({ x: f.ax, z: f.az, lift: -2.5, h: 4, always: true, live: () => fish3(f), m3: { key: f.shape ? `shadow/${f.shape}` : `shadow/${f.water === 'sea' ? 'sea' : 'fresh'}-${Math.max(1, Math.min(6, Math.round(f.size)))}`, id: fishId(f), water: true, off: f.gone, get yaw() { return fishYaw(f); }, art: () => fishEls[f.pool] } })}></i>
     {/if}
   {/each}
   {#if diving?.chase}
@@ -1595,14 +1605,14 @@
       pitch: b.sat && (b.place === 'trunk' || b.place === 'palm') ? (b.flip ? -1 : 1) * Math.PI / 2 : 0 } })}></i>
   {/if}
   {/if}
-  {#each WATERS as wt (wt)}
-    {@const f = fishes[wt]}
+  {#each Object.entries(fishes) as [pk, f] (pk)}
     {#if f}
+      {@const wt = f.water}
       {#key f.n}
         <!-- a flat ground mark at its spawn point; it swims inside the node (local x = across, local y = −z) -->
         <div class="node" data-shadow-of={wt} data-ax={Math.round(f.ax)} data-az={Math.round(f.az)} {@attach w.at({ x: f.ax, z: f.az, mode: 'flat', h: 10 })}>
           <span class="mover shadow {f.shape ? `is-${f.shape}` : ''} {wt}" class:gone={f.gone} class:dash={f.dash} class:spurt={f.spurt}
-            data-critter={wt === 'sea' ? 'fish' : 'pond'} data-water={wt} bind:this={fishEls[wt]}
+            data-critter={wt === 'sea' ? 'fish' : 'pond'} data-water={wt} data-pool={pk} bind:this={fishEls[f.pool]}
             style:translate={fishLoc(f)} style:transition-duration="{f.ms}ms" style:--w="calc({sizeU(f).toFixed(1)} * var(--u))">
             <i class="turn" style:rotate="{f.rot.toFixed(1)}deg"><i class="fin" class:flip={f.flip}>{@render teardrop()}</i></i>
           </span>
