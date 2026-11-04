@@ -283,6 +283,9 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   counted (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック · ジョッキ …) and by half for 茶碗, 人前 and weights (±10 g once
   grams are typed), a grams field (ml for a drink; typing grams leaves the portions); kcal and P/F/C/salt live; which
   meal; ついか, or ほぞん / けす for my entry (けす at once, its banner's とりけす logs it again).
+- **A level's actions** (the amount, マイ食品, マイレシピ, いつもの; theme.css `.level-acts`): at its end, held at the
+  sheet's foot while the level runs past the screen and over the keyboard while a field is typed in; the action (leaf)
+  takes the row's room, the cream ones (けす, レシピを ひらく, コピーして へんしゅう) their own.
 - **いつもの (a repeat):** a meal eaten the same way on set weekdays. Its items fill each day it covers, marked with
   the drawn 🔁 (`RepeatMark`, not an emoji) on each row, and count like any entry; everyone sees them. Its days sit in
   the meal's header as a chip (毎日 · 平日 · 週末 · 月水金…), on my day a tap → the repeat level (`FoodRepeat`):

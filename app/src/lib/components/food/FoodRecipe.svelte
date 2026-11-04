@@ -103,7 +103,7 @@
     <p class="all money" data-recipe-live-total>{draft.it.some((x) => servingOnly(x.f)) ? t('food.rcp.all', { k: formatNum(Math.round(tot.k)) }) : t('food.rcp.allOf', { k: formatNum(Math.round(tot.k)), g: formatNum(Math.round(tot.g)) })}</p>
   </section>
 
-  <div class="acts">
+  <div class="acts level-acts">
     {#if ro}
       <button type="button" class="btn paper small" data-sfx="confirm" data-recipe-copy onclick={() => oncopy?.()}>{t('food.rcp.copy')}</button>
       <button type="button" class="btn small" data-sfx="page" data-recipe-log onclick={() => onlog?.()}>{t('food.rcp.log')}</button>
@@ -165,6 +165,4 @@
   .cells dd { margin: 3px 0 0; font-size: var(--fs-body); }
   .all { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .note { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
-  .acts { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
-  .acts .btn { margin: 0; min-width: 7em; max-width: 100%; }
 </style>

@@ -135,7 +135,7 @@
     </div>
   {/if}
 
-  <div class="acts">
+  <div class="acts level-acts">
     {#if open}<button type="button" class="btn paper small open" data-sfx="page" data-amount-open onclick={open.run}>{open.label}</button>{/if}
     {#if editing}<button type="button" class="btn paper small" data-sfx="undo" data-remove onclick={() => onremove?.()}>{t(pick ? 'food.rcp.itemRemove' : 'food.remove')}</button>{/if}
     <button type="submit" class="btn small" data-sfx="confirm" data-done aria-disabled={!ok}>
@@ -183,7 +183,4 @@
   .live .k small { margin-left: 4px; font-size: var(--fs-s); color: var(--text-soft); }
   .seg { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
   .sb { padding: 0 2px; font-size: var(--fs-s); white-space: nowrap; }
-  .acts { display: flex; justify-content: flex-end; gap: 10px; }
-  .acts .btn { margin: 0; min-width: 7em; }
-  .acts .open { margin-right: auto; }
 </style>
