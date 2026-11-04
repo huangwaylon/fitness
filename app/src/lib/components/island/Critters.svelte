@@ -546,11 +546,11 @@
   // behind it. While it plays with my line its nose meets the float: backed off a little, each nibble a bump on it with
   // the float's dip (fishing3d.ts), the bite a lunge onto it as it plunges; scared, it darts off with a quick tail
   // wiggle. The models fade in and out (world3d/things.ts: never popped).
-  interface Mo { g: Glide; yaw: number; out: number; t: number; off: number; xyz: [number, number, number] }
+  interface Mo { g: Glide; yaw: number; out: number; t: number; off: number; xyz: [number, number, number]; ph: number; flap: number }
   const mos = new Map<string, Mo>();
   const moOf = (id: string, yaw: number): Mo => {
     let m = mos.get(id);
-    if (!m) mos.set(id, (m = { g: new Glide(), yaw, out: yaw, t: performance.now(), off: 0, xyz: [0, 0, 0] }));
+    if (!m) mos.set(id, (m = { g: new Glide(), yaw, out: yaw, t: performance.now(), off: 0, xyz: [0, 0, 0], ph: 0, flap: 0 }));
     return m;
   };
   const fishId = (f: Fish) => `fish-${f.water}-${f.n}`;
@@ -609,10 +609,10 @@
     const dt = Math.min(100, Math.max(0, t - m.t));
     m.t = t;
     if (b.held && m.g.started) return m.xyz;
-    let want = b.flip ? Math.PI : 0;
+    let want = b.flip ? Math.PI : 0, ups = b.fled || b.gone ? 80 : 0;
     if (b.legs && b.start && b.t0 !== undefined) {
       const p = bugAt(b.flight, b.legs, b.start, shared.now() - b.t0, flying);
-      const ups = Math.hypot(p.vx, p.vz) * 1000;
+      ups = Math.hypot(p.vx, p.vz) * 1000;
       // (NH's models face their +z, as the fish's: yawOf)
       if (!(b.sat && (b.place === 'trunk' || b.place === 'palm'))) want = ups > 4 ? yawOf(p.vx, p.vz) : m.yaw;
       m.g.set(t, p.x, p.z, p.lift);
@@ -626,6 +626,17 @@
     m.xyz[0] = g.x;
     m.xyz[1] = g.z;
     m.xyz[2] = g.l + (b.stalk === 'rear' ? 3 : 0);
+    // its wings (world3d/things.ts FLAPS): a butterfly's beat quick in flight and quicker the faster it goes, slow and
+    // now and then on its flower, held half closed; a bee's and a dragonfly's a buzz
+    const buzz = b.id === 'honeybee' || b.flight === 'dart';
+    if (b.sat) {
+      m.ph += (dt / 1000) * Math.PI * 2 * 0.4;
+      m.flap = 1.25 - 0.65 * Math.max(0, Math.sin(m.ph)) ** 2;
+    } else {
+      m.ph += (dt / 1000) * Math.PI * 2 * (buzz ? 13 : Math.min(8, 4 + ups * 0.12));
+      m.flap = buzz ? 0.15 + 0.25 * Math.sin(m.ph) : 0.35 + 0.75 * Math.sin(m.ph);
+    }
+    m.ph %= Math.PI * 2;
     return m.xyz;
   }
   const bugYaw = (b: Bug) => mos.get(bugId(b))?.out ?? (b.flip ? Math.PI : 0);
@@ -1176,6 +1187,7 @@
         if (act !== 'none') offLegs(b); // (come at, it stays where it is till it charges off or is netted)
         if (act === 'rear') {
           b.stalk = 'rear';
+          full3(REAR_MS + 200); // (its front lifted, drawn at once: it may have been resting, its model still)
           // reared up, on the 3D island too: it lifts its front (bug3) under NH's 「！」 till it settles (the 3D model
           // had no rear: the first tap showed nothing, the second came while it was reared and it always charged off)
           fx3d('bang', b.x, b.z, b.lift + 12, { ms: REAR_MS, held: () => bug === b && b.stalk === 'rear' });
@@ -1586,7 +1598,7 @@
   {#if bug}
     {@const b = bug}
     <!-- (its moves and its turns: bug3, each frame; it fades in where it comes, and out over its leave's end) -->
-    <i class="m3n" {@attach w.at({ x: b.ax, z: b.az, lift: 0, h: 4, always: true, live: () => bug3(b), m3: { key: `critters/${b.id}`, id: bugId(b), get yaw() { return bugYaw(b); }, get off() { return bugOff(b); }, art: () => bugEl,
+    <i class="m3n" {@attach w.at({ x: b.ax, z: b.az, lift: 0, h: 4, always: true, live: () => bug3(b), m3: { key: `critters/${b.id}`, id: bugId(b), get yaw() { return bugYaw(b); }, get flap() { return mos.get(bugId(b))?.flap ?? 0; }, get off() { return bugOff(b); }, art: () => bugEl,
       // perched on a trunk: flat on its bark, its back to the camera
       pitch: b.sat && (b.place === 'trunk' || b.place === 'palm') ? (b.flip ? -1 : 1) * Math.PI / 2 : 0 } })}></i>
   {/if}

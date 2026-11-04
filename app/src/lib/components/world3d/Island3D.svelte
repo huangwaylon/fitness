@@ -335,6 +335,8 @@
     size?: number;
     grey: number;
     art?: Element | null;
+    /** Its wings' angle as last written (a flier's: things.ts flap). */
+    flap?: number;
     /** Its opacity, when it washes in (Over `fade`). */
     fade?: number;
   }
@@ -456,6 +458,9 @@
       if (fresh || on !== L.on || x !== L.x || z !== L.z || lf !== L.lift || yaw !== L.yaw || grey !== L.grey || pitch !== (L.pitch ?? 0) || fade !== L.fade || size !== (L.size ?? 1))
         e.things.over(n.id, { hidden: !on, x, z, lift: lf, yaw, pitch, grey, size, face: n.m3.face === 'camera', ...(fade !== undefined && { fade }) });
       L.on = on, L.x = x, L.z = z, L.lift = lf, L.yaw = yaw, L.pitch = pitch, L.grey = grey, L.size = size, L.art = art, L.fade = fade;
+      // a flier's wings (things.ts flap), written only while it's drawn
+      const flap = n.m3.flap;
+      if (on && flap !== undefined && (fresh || flap !== L.flap)) e.things.flap(n.id, (L.flap = flap));
       // its line (a fishing line, a thread): from where it starts to it, sagging a little
       if (n.m3.line) {
         let ln = lines.get(n.id);
