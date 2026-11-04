@@ -473,14 +473,14 @@
 </script>
 
 <main class="museum" bind:this={scene} data-museum>
-  <h1 class="sr-only">はくぶつかん</h1>
+  <h1 class="sr-only">{t('museum.title')}</h1>
   <canvas bind:this={canvas} class="room" data-museum-room onpointerdown={onDown} onpointermove={onMove} onpointerup={onUp}
-    onpointercancel={onCancel} onwheel={onWheel} aria-label="はくぶつかんの なか"></canvas>
+    onpointercancel={onCancel} onwheel={onWheel} aria-label={t('museum.room')}></canvas>
   <div class="top" bind:this={top}>
-    <NavButton kind="back" text="島へ" onclick={leave} sfx="self" />
+    <NavButton kind="back" text={t('tent.back')} onclick={leave} sfx="self" />
   </div>
   {#if turned && !fpv}
-    <button type="button" class="reset" data-museum-reset data-sfx="tick" aria-label="カメラを もどす" onclick={resetView}>
+    <button type="button" class="reset" data-museum-reset data-sfx="tick" aria-label={t('tent.resetView')} onclick={resetView}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5M6.5 10v9h11v-9" /><path d="M10 19v-5h4v5" /></svg>
     </button>
   {/if}

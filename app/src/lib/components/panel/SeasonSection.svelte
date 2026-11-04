@@ -46,15 +46,7 @@
   .season { display: grid; gap: 12px; padding: 14px 16px; }
   .group { display: grid; gap: 6px; }
   h3 { margin: 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip {
-    appearance: none; border: 0; cursor: pointer; min-height: 36px; padding: 0 12px; border-radius: var(--r-pill);
-    background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); font: 700 var(--fs-s)/1 var(--font-ui); position: relative;
-  }
-  /* a 44px tap target around the 36px chip */
-  .chip::after { content: ''; position: absolute; inset: -4px -3px; }
-  .chip:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  .chip[aria-checked='true'] { background: var(--ctl-sel); color: var(--c-ink); }
+  /* (.chips / .chip: theme.css) */
   .note { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .reset { justify-self: end; }
 </style>

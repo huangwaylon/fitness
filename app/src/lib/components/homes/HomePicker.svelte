@@ -11,6 +11,7 @@
   import { withChanges } from '#lib/layout/model.ts';
   import { validate } from '#lib/layout/validate.ts';
   import { cue } from '#lib/sound/cues.ts';
+  import { i18n, t } from '#lib/i18n/index.ts';
 
   let { open = $bindable(), who }: { open: boolean; who: Who } = $props();
 
@@ -25,6 +26,9 @@
     Simple: 'シンプル', Standard: 'スタンダード', Simplicity: 'すっきり', Window: 'まど', VerticalWindow: 'たてまど', CercleWindow: 'まるまど', Lattice: 'こうし',
     Iron: 'てつ', IronGrill: 'アイアングリル', Ironparts: 'かなぐ', Relief: 'レリーフ', Carving: 'ほりもの', Chinese: 'ちゅうか', Japanese: 'わふう'
   };
+  /** A material's or a door's name: NH's Japanese, else its English key spaced out (Woodsiding → Wood siding). */
+  const named = (ja: Record<string, string>, k: string) => (i18n.locale === 'ja' ? (ja[k] ?? k) : k.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^(\w)(\w*?)(siding|frame|panel|tile|weight)$/i, (_, a, b, c) => `${a}${b} ${c}`));
+  const MODELS = ['house', 'tent-n', 'tent-p', 'campsite'] as const;
   const kebab = (s: string) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 
   // the look being chosen (from the home's own)
@@ -67,7 +71,7 @@
     const l = withChanges(islandLayout.current, { homes: { [who]: style } });
     const id = HOME_IDS[who];
     const bad = validate(l).filter((i) => i.level === 'error' && i.ids.includes(id) && ['overlap', 'off-land', 'on-water', 'split', 'door'].includes(i.code));
-    return bad.length ? bad[0].ja : null;
+    return bad.length ? (i18n.locale === 'ja' ? bad[0].ja : bad[0].en) : null;
   });
   function choose() {
     if (same || fit) return;
@@ -156,71 +160,71 @@
   });
 </script>
 
-<Sheet bind:open label="いえを かえる" title="いえを かえる">
+<Sheet bind:open label={t('homes.title')} title={t('homes.title')}>
   <div class="pick" data-home-picker={who}>
     <canvas bind:this={canvas} class="preview" aria-hidden="true"></canvas>
-    <div class="seg" role="group" aria-label="むき">
-      <span class="lbl">むき</span>
-      <button type="button" data-sfx="tick" data-home-turn onclick={() => (style = { ...style, f: ((((style.f ?? islandLayout.current.objects.get(HOME_IDS[who])?.f ?? 0) + 1) % 4) as 0 | 1 | 2 | 3) })}>↻ まわす</button>
+    <div class="chips" role="group" aria-label={t('homes.facing')}>
+      <span class="lbl">{t('homes.facing')}</span>
+      <button type="button" class="chip" data-sfx="tick" data-home-turn onclick={() => (style = { ...style, f: ((((style.f ?? islandLayout.current.objects.get(HOME_IDS[who])?.f ?? 0) + 1) % 4) as 0 | 1 | 2 | 3) })}>↻ {t('decor.turn')}</button>
     </div>
-    <div class="seg" role="group" aria-label="かたち">
-      {#each [['house', 'いえ'], ['tent-n', 'テント'], ['tent-p', 'ちいさなテント'], ['campsite', 'キャンプのテント']] as [m, name] (m)}
-        <button type="button" data-sfx="tick" data-model={m} aria-pressed={style.m === m} onclick={() => setModel(m)}>{name}</button>
+    <div class="chips" role="group" aria-label={t('homes.kind')}>
+      {#each MODELS as m (m)}
+        <button type="button" class="chip" data-sfx="tick" data-model={m} aria-pressed={style.m === m} onclick={() => setModel(m)}>{t(`homes.model.${m}`)}</button>
       {/each}
     </div>
     {#if style.m === 'tent-n'}
-      <h3>いろ</h3>
+      <h3>{t('homes.colour')}</h3>
       <div class="swatches">
         {#each ['A', 'B'] as c (c)}
           <button type="button" data-sfx="tick" class="sw" aria-label={c} aria-pressed={style.w === c} style:background-image={`url(${base}tent-n.${c}.swatch.webp)`} onclick={() => (style = { m: 'tent-n', w: c })}></button>
         {/each}
       </div>
     {:else if style.m === 'house'}
-      <h3>いえの かたち</h3>
+      <h3>{t('homes.shape')}</h3>
       <div class="chips">
         {#each Object.entries(SHAPES) as [sh, s] (sh)}
-          <button type="button" data-sfx="tick" data-shape={sh} aria-pressed={shape === sh} onclick={() => setShape(sh)}>{s.ja}</button>
+          <button type="button" class="chip" data-sfx="tick" data-shape={sh} aria-pressed={shape === sh} onclick={() => setShape(sh)}>{i18n.locale === 'ja' ? s.ja : s.en}</button>
         {/each}
       </div>
-      <h3>かべ</h3>
+      <h3>{t('homes.wall')}</h3>
       {#each cat.walls[shape] ?? [] as w (w.material)}
         <div class="row">
-          <span class="mat">{#if shape === 'PA04'}<img src={`${base}icon.wall-pa04-${kebab(w.material)}.webp`} alt="" />{/if}{MAT[w.material] ?? w.material}</span>
+          <span class="mat">{#if shape === 'PA04'}<img src={`${base}icon.wall-pa04-${kebab(w.material)}.webp`} alt="" />{/if}{named(MAT, w.material)}</span>
           <div class="swatches">
             {#each w.colours as c (c)}
-              <button type="button" data-sfx="tick" class="sw" data-wall={`${w.material}.${c}`} aria-label={`${MAT[w.material] ?? w.material} ${c}`} aria-pressed={wall?.material === w.material && wall?.colour === c}
+              <button type="button" data-sfx="tick" class="sw" data-wall={`${w.material}.${c}`} aria-label={`${named(MAT, w.material)} ${c}`} aria-pressed={wall?.material === w.material && wall?.colour === c}
                 style:background-image={`url(${base}wall-${shape.toLowerCase()}-${kebab(w.material)}.${c}.swatch.webp)`} onclick={() => setWall(w.material, c)}></button>
             {/each}
           </div>
         </div>
       {/each}
-      <h3>やね</h3>
+      <h3>{t('homes.roof')}</h3>
       {#each cat.roofs[shape] ?? [] as r (r.material)}
         <div class="row">
-          <span class="mat">{#if shape === 'PA04'}<img src={`${base}icon.roof-pa04-${kebab(r.material)}.webp`} alt="" />{/if}{MAT[r.material] ?? r.material}</span>
+          <span class="mat">{#if shape === 'PA04'}<img src={`${base}icon.roof-pa04-${kebab(r.material)}.webp`} alt="" />{/if}{named(MAT, r.material)}</span>
           <div class="swatches">
             {#each r.colours as c (c)}
-              <button type="button" data-sfx="tick" class="sw" data-roof={`${r.material}.${c}`} aria-label={`${MAT[r.material] ?? r.material} ${c}`} aria-pressed={roof?.material === r.material && roof?.colour === c}
+              <button type="button" data-sfx="tick" class="sw" data-roof={`${r.material}.${c}`} aria-label={`${named(MAT, r.material)} ${c}`} aria-pressed={roof?.material === r.material && roof?.colour === c}
                 style:background-image={`url(${base}roof-${shape.toLowerCase()}-${kebab(r.material)}.${c}.swatch.webp)`} onclick={() => setRoof(r.material, c)}></button>
             {/each}
           </div>
         </div>
       {/each}
-      <h3>ドア</h3>
+      <h3>{t('homes.door')}</h3>
       <div class="doors">
         {#each cat.doors as d (d.style)}
           <button type="button" data-sfx="tick" class="door" data-door={d.style} aria-pressed={door?.style === d.style} onclick={() => setDoor(d.style, door?.shape ?? 'R', door?.colour ?? 'A')}>
             <img src={`${base}icon.door-${kebab(d.style)}-${(door?.style === d.style ? door.shape : d.shapes[0]).toLowerCase()}.webp`} alt="" />
-            <span>{DOOR[d.style] ?? d.style}</span>
+            <span>{named(DOOR, d.style)}</span>
           </button>
         {/each}
       </div>
       {#if door}
         {@const e = cat.doors.find((x) => x.style === door.style)}
         <div class="row">
-          <div class="seg small">
+          <div class="chips">
             {#each e?.shapes ?? [] as sh (sh)}
-              <button type="button" data-sfx="tick" aria-pressed={door.shape === sh} onclick={() => setDoor(door.style, sh, door.colour)}>{sh === 'R' ? 'まるい' : 'しかく'}</button>
+              <button type="button" class="chip" data-sfx="tick" aria-pressed={door.shape === sh} onclick={() => setDoor(door.style, sh, door.colour)}>{t(sh === 'R' ? 'homes.round' : 'homes.square')}</button>
             {/each}
           </div>
           <div class="swatches">
@@ -235,34 +239,39 @@
   </div>
   {#snippet footer()}
     <div class="foot">
-      {#if fit && !same}<p class="why" role="status">{fit}（ここには おけません）</p>{/if}
-      <button type="button" class="ok" data-home-choose data-sfx="self" aria-disabled={same || !!fit} onclick={choose}>これにする</button>
+      {#if fit && !same}<p class="why" role="status">{t('homes.noFit', { why: fit })}</p>{/if}
+      <button type="button" class="btn" data-home-choose data-sfx="self" aria-disabled={same || !!fit} onclick={choose}>{t('homes.choose')}</button>
     </div>
   {/snippet}
 </Sheet>
 
 <style>
-  .pick { display: flex; flex-direction: column; gap: 8px; padding: 0 4px 12px; }
-  .preview { width: 100%; height: 190px; border-radius: 18px; background: linear-gradient(#bfe6ff, #e8f6d8); display: block; }
-  h3 { margin: 6px 0 0; font-size: var(--fs-s, 13px); color: var(--text-soft); }
-  .seg, .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .seg button, .chips button, .door {
-    font: inherit; font-weight: 700; font-size: 13px; border: 2px solid var(--c-edge); background: var(--c-card); color: var(--c-ink); border-radius: 999px; padding: 6px 12px;
-  }
-  .seg button[aria-pressed='true'], .chips button[aria-pressed='true'], .door[aria-pressed='true'] { background: var(--c-yuzu); }
-  .seg.small button { padding: 4px 10px; font-size: 12px; }
-  .lbl { align-self: center; font-size: 13px; color: var(--text-soft); }
+  /* the sheet's skin: the chips (theme.css .chip), the swatches and doors as controls (the edge, yuzu when chosen) */
+  .pick { display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; }
+  .preview { width: 100%; height: 190px; border-radius: var(--r-card); background: linear-gradient(#bfe6ff, #e8f6d8); display: block; }
+  h3 { margin: 6px 2px 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
+  .chips { align-items: center; }
+  .lbl { margin: 0 4px 0 2px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .mat { display: inline-flex; align-items: center; gap: 4px; min-width: 88px; font-size: 13px; font-weight: 700; }
+  .mat { display: inline-flex; align-items: center; gap: 4px; min-width: 88px; font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .mat img { width: 28px; height: 28px; }
   .swatches { display: flex; flex-wrap: wrap; gap: 6px; }
-  .sw { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--c-edge); background-size: cover; background-position: center; padding: 0; }
-  .sw[aria-pressed='true'] { outline: 3px solid var(--c-yuzu); outline-offset: 1px; }
-  .doors { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
-  .door { border-radius: 14px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px; font-size: 11px; }
+  /* a 36px swatch in a 44px target */
+  .sw {
+    position: relative; width: 36px; height: 36px; border-radius: 50%; border: 0; padding: 0; cursor: pointer;
+    background-size: cover; background-position: center; box-shadow: var(--sh-ctl);
+  }
+  .sw::after { content: ''; position: absolute; inset: -4px; }
+  .sw[aria-pressed='true'] { outline: 3px solid var(--c-yuzu); outline-offset: 2px; }
+  .doors { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; }
+  .door {
+    appearance: none; border: 0; cursor: pointer; border-radius: var(--r-btn); display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 6px 4px 8px; background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); font: 700 var(--fs-s)/1.2 var(--font-ui);
+  }
+  .door[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); }
+  .door:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .door img { width: 44px; height: 44px; }
   .foot { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
-  .why { margin: 0; font-size: 12px; color: #a23a26; text-align: center; }
-  .ok { font: inherit; font-weight: 700; font-size: 18px; border: 2px solid var(--c-leaf-edge); background: var(--c-leaf); color: #fff; border-radius: 999px; padding: 10px; }
-  .ok[aria-disabled='true'] { opacity: 0.5; }
+  .why { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text); text-align: center; }
+  .why::before { content: '! '; color: var(--c-coral); }
 </style>
