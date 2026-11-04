@@ -72,6 +72,8 @@ interface M3 {
   yaw?: number;
   /** Tipped about its own x (radians): a bug flat on a trunk's bark. */
   pitch?: number;
+  /** A flier's wings' angle (radians, up from flat: world3d/things.ts FLAPS). */
+  flap?: number;
   grey?: number;
   /** Hidden in 3D for now (a fallen fruit mid-drop). */
   off?: boolean;
