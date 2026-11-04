@@ -97,8 +97,8 @@ for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
     const grid = page.locator('[data-zukan-grid]');
     // nothing picked: the head shows the page's count
     await expect(head).toContainText(`3 / ${Object.keys(FISH).length + Object.keys(POND_FISH).length}`);
-    // the grid keeps most of the screen
-    expect((await grid.boundingBox())!.height).toBeGreaterThan(vp.height * 0.5);
+    // the grid keeps most of the screen (polled: the sheet may still be growing open, 37 px of it on a loaded runner)
+    await expect.poll(async () => (await grid.boundingBox())?.height ?? 0).toBeGreaterThan(vp.height * 0.5);
 
     const first = page.locator('button.tile[data-entry="bitterling"]');
     const firstName = (await first.getAttribute('aria-label'))!;
@@ -120,7 +120,12 @@ for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
     expect(last.y + last.height).toBeLessThanOrEqual(vp.height);
 
     // another pick from down there: the head updates, the grid stays where it was
-    const top = await grid.evaluate((el) => el.scrollTop);
+    // (where its scroll came to rest: the same over two frames, not the first read of a scroll still settling)
+    const top = await grid.evaluate((el) => new Promise<number>((ok) => {
+      let last = -1;
+      const f = () => (el.scrollTop === last ? ok(last) : ((last = el.scrollTop), requestAnimationFrame(() => requestAnimationFrame(f))));
+      f();
+    }));
     const other = page.locator('button.tile[data-entry="coelacanth"]');
     const otherName = (await other.getAttribute('aria-label'))!;
     await other.click();
