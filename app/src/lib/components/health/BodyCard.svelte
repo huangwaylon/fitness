@@ -40,7 +40,7 @@
   const minSpan = $derived(metric === 'bmi' ? 1 : 2);
 </script>
 
-<section class="card bc" data-metric={metric} data-person={p} aria-labelledby="mc-{metric}">
+<section class="card hcard bc" data-metric={metric} data-person={p} aria-labelledby="mc-{metric}">
   <header>
     <span class="ic"><OfficialArt key={BODY_ART[metric]} size={24} /></span>
     <h3 id="mc-{metric}">{title}</h3>
@@ -80,21 +80,13 @@
 </section>
 
 <style>
-  .bc { display: grid; gap: 10px; padding: 12px 14px 10px; }
-  header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-  .ic { display: inline-flex; flex: none; }
-  h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; }
   .chips { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 8px; margin: 0; }
   .chips div { padding: 7px 10px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 28%, transparent); display: grid; gap: 3px; align-content: start; }
   .chips dt { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .chips dd { margin: 0; }
   .chips .money { font-size: var(--fs-talk); }
   .chips .n { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); font-variant-numeric: tabular-nums; }
-  .none { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .key { display: flex; flex-wrap: wrap; gap: 2px 12px; margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .key span { display: inline-flex; align-items: center; gap: 5px; }
   .proj { margin: 0; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); }
-  .key i { display: inline-block; flex: none; }
   .k-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-soft); opacity: .7; }
   .k-goal { width: 14px; border-top: 2px dashed var(--c-yuzu-lip); }
 </style>

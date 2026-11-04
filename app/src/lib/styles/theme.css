@@ -57,6 +57,17 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
   box-shadow: var(--sh-lip); padding: 16px;
 }
 
+/* ---------- a chart card (けんこう's metrics, weight and body cards; ごはん's グラフ): its icon, title and goal chip in the
+   header, the figures, the chart, a one-line key; one padding and rhythm for all of them ---------- */
+.hcard { display: grid; gap: 10px; padding: 12px 14px 10px; }
+.hcard > header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.hcard > header .ic { display: inline-flex; flex: none; }
+.hcard > header h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; }
+.hcard .none { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+.hcard .key { display: flex; flex-wrap: wrap; gap: 2px 12px; margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+.hcard .key span { display: inline-flex; align-items: center; gap: 5px; }
+.hcard .key i { display: inline-block; flex: none; }
+
 /* ---------- nameplate: the tilted yuzu tag (dialogue box, sheet titles) ---------- */
 .plate {
   display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--r-pill);

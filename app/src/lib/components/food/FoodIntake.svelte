@@ -45,7 +45,7 @@
   const label = $derived(t('food.chart.label', { name, what, range: rangeLabel(range, today), avg: s.avg === null ? t('health.noData') : fmt(s.avg) }));
 </script>
 
-<section class="card mc" data-food-chart={n} data-person={p} aria-labelledby="fi-{n}">
+<section class="card hcard mc" data-food-chart={n} data-person={p} aria-labelledby="fi-{n}">
   <header>
     <span class="ic"><OfficialArt key={NUTRIENT_ART[n]} size={24} /></span>
     <h3 id="fi-{n}">{kcal ? t('food.chart.head') : what}</h3>
@@ -84,10 +84,6 @@
 
 <style>
   /* MetricCard's (health/MetricCard.svelte) */
-  .mc { display: grid; gap: 8px; padding: 12px 14px 10px; }
-  header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-  header .ic { display: inline-flex; flex: none; }
-  h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; }
   .srow { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'lab chg' 'avg chg' 'sub sub'; align-items: center; column-gap: 10px; row-gap: 2px; }
   .lab { grid-area: lab; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .avg { grid-area: avg; font-size: var(--fs-title); line-height: 1.15; white-space: nowrap; }
@@ -96,10 +92,6 @@
   .chg small { font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); }
   .chg.none { background: none; color: var(--text-soft); }
   .sub { grid-area: sub; display: flex; flex-wrap: wrap; gap: 0 10px; margin-top: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); font-variant-numeric: tabular-nums; }
-  .none { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .key { display: flex; flex-wrap: wrap; gap: 2px 12px; margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .key span { display: inline-flex; align-items: center; gap: 5px; }
-  .key i { display: inline-block; flex: none; }
   /* the average: solid, the goal: dashed (BarChart's .avg and .goal) */
   .k-avg { width: 14px; border-top: 2px solid var(--text); }
   .k-goal { width: 14px; border-top: 2px dashed var(--text-soft); }

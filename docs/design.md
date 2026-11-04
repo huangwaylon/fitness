@@ -1807,7 +1807,8 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
   secondary cream, selected yuzu, disabled sunk. "Can't now" = `aria-disabled` ([Taps](#taps)).
   Shared skins in `styles/theme.css`: `.btn` (`.paper`, `.small`; `.off`: sunk but still takes the tap to say why),
   `.chip` / `.chips` (a choice among a few: 36px in a 44px target, yuzu when chosen), `.edit-tray` (both もようがえ
-  editors' bar and tray); the ‹ / ✕ are always `NavButton`.
+  editors' bar and tray), `.hcard` (けんこう's and グラフ's chart cards), `.sec-label` (a section's small heading),
+  `.level-acts` (a level's action row); the ‹ / ✕ are always `NavButton`.
 - **Focus:** no ring after a pointer input (`ui/modality.ts`); focus is restored for keyboard and VoiceOver.
 - **Type:** Zen Maru Gothic (UI, Japanese) and Fredoka (numbers); `word-break: keep-all` for Japanese.
 - **Tokens** (`styles/tokens.css`): ink `#4A3A2C`, cream `#FFF9E3`, paper `#F5E4BC`, card `#FFFCF2`, edge `#937047`,
