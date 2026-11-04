@@ -669,6 +669,12 @@ the page's (the World placing the DOM, three's matrices) falls by a third to a h
 so the battery and heat are estimates: on the phone the GPU's and the display pipeline's energy scale roughly with
 the frames drawn, so 30 is about half the island's drawing power while anything moves, and the same at rest.
 
+Every frame the canvas draws, the screen's compositor (the render server: the Simulator's backboardd) recomposites
+every layer over it, so the DOM island over the canvas keeps as few as it can: the art the canvas draws instead is
+hidden (opacity 0) and carries no filter (the night's tint, a drop shadow) and none of its own endless animations (a
+campfire's flames) under the 3D island (IslandScene's `[data-r3]` rules). With them, the island at rest at night cost
+the render server 60–70 % of a core against 17 by day; without, 20 (iOS Simulator, nothing else running frames).
+
 A gesture stays at the setting's rate: the measured cost of a gesture at 60 is the highest of all (scrolling and
 pinching), the added latency at 30 is under a vsync, NH itself runs at 30, and 60 then means 60 everywhere (a switch
 whose difference shows where one looks for it, a scroll). 60 is there for whoever prefers smoothness to battery.
