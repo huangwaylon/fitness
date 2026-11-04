@@ -332,6 +332,9 @@ export function createLive(o: LiveOptions): Live {
         }
         case 'changed':
           return changed({ who: m.who, what: m.what, at: m.at, rev: m.rev });
+        case 'wx':
+          // Tokyo's real sky (the app's data path comes with the island's weather)
+          return;
         default:
           if (m.who === st.me) return;
           if (m.kind === 'saved') return changed({ who: m.who, what: 'event' });
