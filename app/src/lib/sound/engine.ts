@@ -92,11 +92,6 @@ function firstEvent(el: HTMLMediaElement, events: string[], ms?: number): Promis
 }
 const clock = () => performance.now();
 
-/** The rain bed's fade in and out (a time constant, s: ~95 % in 10 s): the real weather's rain comes and goes with
- *  the hour, so it eases in and out as the rain on screen fades (island/Weather.svelte), not in a second or two. */
-const RAIN_TAU = 3.3;
-const isRainBed = (key: string): boolean => key === 'rain' || key.startsWith('rain:');
-
 export class Engine {
   ctx: AudioContext | null = null;
   #master!: GainNode;
@@ -743,8 +738,7 @@ export class Engine {
     );
   }
 
-  /** The ambience layers to sound now: new ones fade in, gone ones fade out (the rain bed over about 10 s: RAIN_TAU,
-   *  as the real weather's rain comes and goes with the hour; `immediate`: stop at once, for pause():
+  /** The ambience layers to sound now: new ones fade in, gone ones fade out (`immediate`: stop at once, for pause():
    *  the suspended clock would freeze a fade, so they'd still sound on the way back). Loops are buffers (short, mono),
    *  so they loop without the gap an <audio loop> can have. */
   async setAmbient(layers: AmbientLayer[], immediate = false): Promise<void> {
@@ -763,9 +757,8 @@ export class Engine {
         a.gain.gain.value = 0;
         a.src.stop();
       } else {
-        const tau = isRainBed(key) ? RAIN_TAU : 0.5;
-        a.gain.gain.setTargetAtTime(0, ctx.currentTime, tau);
-        a.src.stop(ctx.currentTime + 5 * tau);
+        a.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.5);
+        a.src.stop(ctx.currentTime + 2.5);
       }
       this.#ambient.delete(key);
     }
@@ -780,7 +773,7 @@ export class Engine {
       src.loop = true;
       const g = ctx.createGain();
       g.gain.value = 0;
-      g.gain.setTargetAtTime(l.gain, ctx.currentTime, isRainBed(key) ? RAIN_TAU : 0.8);
+      g.gain.setTargetAtTime(l.gain, ctx.currentTime, 0.8);
       src.connect(g).connect(this.#bus.ambient);
       src.onended = () => g.disconnect();
       src.start(ctx.currentTime, Math.random() * buf.duration); // a random point: not the same surf every launch

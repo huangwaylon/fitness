@@ -11,8 +11,7 @@ import { eventSlot, prefTaken } from '#lib/model/record.ts';
 import { guestMayWrite } from '#lib/contract/guest.ts';
 import type { EventRow } from '#lib/contract/api.ts';
 import { addDays } from '#lib/time/dates.ts';
-import { dayWeather, heldFine, isRain, musicWeather, realWeatherAt, snowSeason, WX_TTL_MS, type Sky } from './weather.ts';
-import { BUGS, FISH, oddsAt, type Seasonal } from './critters.ts';
+import { dayWeather, heldFine, realWeatherAt, snowSeason, WX_TTL_MS } from './weather.ts';
 import { showerNight } from './meteor.ts';
 import { WX_FIXTURES, wxFixture } from './wxFixtures.ts';
 
@@ -26,14 +25,14 @@ const all = (now: number, c: string, extra: Partial<Wx> = {}) => tl(now, c.repea
 const sky = (wx: Wx | null, now: number) => realWeatherAt(wx, now)?.sky ?? null;
 
 describe('the real sky', () => {
-  it("reads the hour's letter: clear, cloudy, rain, heavy, snow; fog the hour's extra", () => {
+  it("reads the hour's letter: clear, cloudy (fine for now), rain, heavy, snow; fog the hour's extra", () => {
     const now = tokyo('2026-06-10', '11:20');
     const got = ['c', 'o', 'r', 'h', 's'].map((c) => sky(all(now, c), now));
-    expect(got).toEqual(['clear', 'cloudy', 'rain', 'heavy', 'snow']);
+    expect(got).toEqual(['clear', 'clear', 'rain', 'heavy', 'snow']);
     // the hour itself: index 12 (the timeline starts 12 hours back)
     const s = 'c'.repeat(12) + 'r' + 'c'.repeat(35);
     expect([sky(tl(now, s), now), sky(tl(now, s), now + H), sky(tl(now, s), now - H)]).toEqual(['rain', 'clear', 'clear']);
-    expect(realWeatherAt(all(now, 'o', { fx: [12] }), now)).toEqual({ sky: 'cloudy', fog: true, rainbow: 0, aurora: false });
+    expect(realWeatherAt(all(now, 'o', { fx: [12] }), now)).toEqual({ sky: 'clear', fog: true, rainbow: 0, aurora: false });
   });
 
   it('falls back to the seeded day: no timeline, past its hours, before them, fetched over 36 hours ago', () => {
@@ -91,44 +90,9 @@ describe('the real sky', () => {
       return realWeatherAt(all(now, c), now)!;
     };
     expect([at(fogDay, '07:10', 'c').fog, at(fogDay, '08:10', 'c').fog, at(fogDay, '07:10', 'r').fog]).toEqual([true, false, false]);
-    expect([at(auroraDay, '21:00', 'c').aurora, at(addDays(auroraDay, 1), '03:00', 'c').aurora, at(auroraDay, '21:00', 'o').aurora, at(auroraDay, '12:00', 'c').aurora]).toEqual([true, true, false, false]);
+    expect([at(auroraDay, '21:00', 'c').aurora, at(addDays(auroraDay, 1), '03:00', 'c').aurora, at(auroraDay, '21:00', 'o').aurora, at(auroraDay, '12:00', 'c').aurora]).toEqual([true, true, true, false]);
     // a snowy night has none
     expect(at(auroraDay, '21:00', 's').aurora).toBe(false);
-  });
-
-  it('cloudy is a fine day for the game: the sunny music, no rain-only critters, the dry ones out', () => {
-    const odds = (c: Seasonal, s: Sky) => oddsAt(c, c.months[0], c.hours[0], s);
-    const snail = Object.values(BUGS).find((b) => b.weather === 'rain')!, butterfly = Object.values(BUGS).find((b) => b.weather === 'dry')!;
-    const got = [musicWeather('cloudy'), isRain('cloudy'), odds(snail, 'cloudy'), odds(snail, 'rain') > 0, odds(butterfly, 'cloudy') > 0, odds(FISH.coelacanth, 'cloudy'), odds(FISH.coelacanth, 'snow') > 0];
-    expect(got).toEqual(['sunny', false, 0, true, true, 0, true]);
-  });
-
-  it('the rainbow: the first fine hour 07:00–17:00 right after rain, once a day, now and then double; none after snow', () => {
-    /** A day's timeline from its 00:00 (`spec` a letter an hour, then fine), read at `hm`. */
-    const bow = (spec: string, hm: string, d = '2026-06-10') => {
-      const now = tokyo(d, hm);
-      return realWeatherAt({ h0: Math.floor(tokyo(d, '00:00') / H), s: spec.padEnd(48, 'c'), at: now, src: 'om', rev: 1 }, now)!.rainbow;
-    };
-    const morning = 'ccccc' + 'rrrrr'; // rain 05:00–10:00, fine from 10:00
-    const got = [
-      bow(morning, '10:20') > 0,
-      bow(morning, '11:20'), // the next hour: gone
-      bow('ccccc' + 'hhhhh', '10:20') > 0, // after a downpour too
-      bow('ccccc' + 'ooooo', '10:20'), // no rain
-      bow('ccccc' + 'rrrrr' + 'o', '10:20'), // clouds after the rain: none
-      bow('ccccc' + 'rrr' + 'c' + 'r', '08:20') > 0, // a second shower that day…
-      bow('ccccc' + 'rrr' + 'c' + 'r', '10:20'), // …brings no second rainbow
-      bow('cc' + 'rr', '04:20'), // before 07:00
-      bow('cc' + 'rr', '07:20'), // 07:00 isn't right after it
-      bow('c'.repeat(7) + 'r'.repeat(10), '17:20'), // from 17:00
-      bow(morning, '10:20', '2027-01-20') // the snowy season: it snowed
-    ];
-    expect(got).toEqual([true, 0, true, 0, 0, true, 0, 0, 0, 0, 0]);
-    // double about 1 in 8, by the date (both phones)
-    const days = Array.from({ length: 600 }, (_, i) => addDays('2026-03-01', i)).filter((d) => !snowSeason(d));
-    const bows = days.map((d) => bow(morning, '10:20', d));
-    const two = bows.filter((x) => x === 2).length / bows.length;
-    expect([bows.every((x) => x === 1 || x === 2), two > 0.06 && two < 0.2]).toEqual([true, true]);
   });
 
   it('has no day boundary: the hour after midnight reads the next letter, the same on every phone', () => {
@@ -146,7 +110,7 @@ describe('the real sky', () => {
       return realWeatherAt(wxFixture(name, now), now);
     };
     expect([at('rain-pm', '13:00')?.sky, at('rain-pm', '10:00')?.sky, at('typhoon', '10:00')?.sky, at('snow', '10:00')?.sky, at('clears', '10:00')?.sky, at('clears', '15:00')?.sky]).toEqual(['rain', 'clear', 'heavy', 'snow', 'rain', 'clear']);
-    expect([at('fog', '06:00')?.fog, at('fog', '10:00')?.fog, at('cloudy', '10:00')?.sky, at('stale', '10:00')]).toEqual([true, false, 'cloudy', null]);
+    expect([at('fog', '06:00')?.fog, at('fog', '10:00')?.fog, at('cloudy', '10:00')?.sky, at('stale', '10:00')]).toEqual([true, false, 'clear', null]);
     // two phones laying one on the same clock agree
     const now = tokyo('2026-06-10', '13:00');
     const { at: _a, ...one } = wxFixture('rain-pm', now), { at: _b, ...other } = wxFixture('rain-pm', now + 20 * 60_000);

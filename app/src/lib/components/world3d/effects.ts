@@ -1,6 +1,6 @@
 // The 3D island's effects (docs/design.md "World: in 3D"): NH's little flourishes as small meshes in world space, depth
 // tested with everything (a tree in front hides a sparkle): a tap's dust and ring, a splash, a bush's falling leaves, a
-// campfire's sparks, a watering's drops, sparkles, the 「！」 of a bite, K.K.'s notes, a sleeper's zzz, hearts, confetti,
+// campfire's sparks, a watering's drops, sparkles, a rearing bug's 「！」 (the bite's: biteMark.ts), K.K.'s notes, a sleeper's zzz, hearts, confetti,
 // the net's and the shovel's swing, a dive spot's bubbles; and the ambient ones that keep coming (`tag`): the season's
 // falling leaves, petals or snow, a summer night's fireflies. Each a few particles of the fx/* models
 // (static/room/world3d/fx: the flat ones turned to the camera) or of the island's own (a ring, a glyph drawn on a
@@ -16,6 +16,7 @@ import { bend, glow as addLight } from './bend.ts';
 import { splitSides } from './sides.ts';
 import { MODELS } from './models3d.ts';
 import { pace } from './pace.ts';
+import { HOP_MS, POP_IN_MS, POP_OUT_MS, popIn } from './biteMark.ts';
 
 export type FxKind =
   | 'dust' | 'sand' | 'snow' | 'splash' | 'ripple' | 'sparkle' | 'sparks' | 'bang' | 'leaves' | 'drops' | 'hearts'
@@ -32,7 +33,7 @@ export interface FxOpts {
   tag?: string;
   /** Which way (a swing's side: −1 left). */
   dir?: number;
-  /** A held one stays while this says so (the bite's 「！」: till the reel or the miss), `ms` at most, then pops out. */
+  /** A held one stays while this says so (a rearing bug's 「！」: till it's down), `ms` at most, then pops out. */
   held?: () => boolean;
 }
 
@@ -100,11 +101,8 @@ const SCALE: Record<string, number> = {
 };
 /** A villager's mark over its head (NH's float: about a third of its head across), world units across. */
 const MARK_U: Record<string, number> = { sparkle: 16, heart: 15, note: 14, zzz: 15, bang: 14, sweat: 11 };
-/** The 「！」's pop in (CSS's cubic-bezier(.3, 1.6, .5, 1) over 320 ms: Critters' 2D one), its hop's period and height
- *  (u), and its pop out (ms). */
-const POP_IN_MS = 320, HOP_MS = 640, HOP_U = 1.6, POP_OUT_MS = 140;
-/** The pop in's scale at k (0…1): up past its size and back (an ease-out-back: ~20 % over at two thirds in). */
-const popIn = (k: number) => (k >= 1 ? 1 : 1 + 3 * (k - 1) ** 3 + 2 * (k - 1) ** 2);
+/** A 「！」's hop's height (u: a bug's rear; the bite's is biteMark.ts's, its pop the same). */
+const HOP_U = 1.6;
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 const CONFETTI = ['#ff6f91', '#ffd84a', '#6fd3ff', '#8be07a', '#c89cff', '#ff9d3c'];
 
@@ -309,7 +307,8 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         return;
       }
       case 'bang':
-        // the bite's 「！」: pops up (NH's overshoot), hops a little while it's held, pops out at the reel or the miss
+        // a 「！」 over a bug as it rears (the bite's is biteMark.ts's, on the angler's head): pops up (NH's overshoot),
+        // hops a little while it's held, pops out as it's let go
         part('bang', x, y + 8, z, { life: (o.ms ?? 900) + POP_OUT_MS, s0: 0.75 * k, s1: 0.75 * k, face: true, fade: false, pop: true, held: o.held });
         return;
       case 'leaves': {

@@ -507,7 +507,8 @@ went in November 2026 (docs/cleanup-2d.md).
     (greyed until grown, falling as the same model), a shaken tree's drops; the stream's petals and leaves
     (`floats3d.ts`); the seasonal fall (petals, leaves, snow: `ambient3d.svelte.ts`).
   - **Flourishes** (`effects.ts`, `island/fx3d.ts`): a tap's dust and splash, a bush's leaves, sparks, drops, sparkles,
-    the 「！」 of a bite: a few particles of NH's fx/* models in world space, depth-tested, fading; the DOM's own
+    a rearing bug's 「！」: a few particles of NH's fx/* models in world space, depth-tested, fading (the bite's 「！」 is
+    `biteMark.ts`'s, on the angler's head, over everything); the DOM's own
     `.in3d`, invisible. A DOM reaction on art the canvas draws (a jiggle, a rustle, a shake) moves the model too
     (`island/echo3d.ts`).
   - **The board's focus** (docs/board.md): `world.three.focus(rect)` / `unfocus()` / `attach(id, obj)`.
@@ -1161,8 +1162,8 @@ northern-hemisphere months; hours still hold.
   walking to a pond got in the way; tap the shore to go there). A canopy, a bush, a find or a visitor over the water
   keeps its tap. A shadow (NH sizes 1–6) on that water within `NOTICE_U` (180u) of the float (my villager's distance doesn't
   matter), with open water between, notices the float, closes in over 2–3 darts, nibbles 1–4 times (each a small dip and a ring: it's coming), then bites: the float
-  is yanked under with a splash and NH's 「！」 (on the 3D island over my villager's head: docs/world3d-assets.md
-  "Fishing"). While the line is out any tap on the island but a building's door is the reel (NH's A button: my villager,
+  is yanked under with a splash and NH's 「！」 (on the 3D island over the angler's head, as posed: standing, seated
+  or lying, at every zoom, on the others' phones too: docs/world3d-assets.md "Fishing"). While the line is out any tap on the island but a building's door is the reel (NH's A button: my villager,
   a tree, the water alike): on the bite it catches the fish; earlier, with a fish at the float, it scares it off; with
   none, it just comes in. `BITE_WINDOW_MS` (1 s) from when the bite shows (a late timer never shortens it); missed, the
   fish darts off and the float stays out, bobbing, for the next. Walking reels in first (NH: you reel in to move): a tap on
@@ -1842,9 +1843,9 @@ Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/previe
 | `?fps=30\|60` | The 3D scenes' frame rate for the tab, not kept (the e2e pin 60 in storage: `playwright.config.ts`) |
 | `?fpv=1\|0` | The rooms' first-person view for the tab, not kept ([First person](#first-person)) |
 
-The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there at once; `at(x, z)`: a world point's
-client px; `put(x, z)`: my villager there; `idle()`; `quiet()`: no opening beat or line queued; `perf`; `stops()`: the
-camera's two ends; `mine()`, `partner()`, `geo()`, `site()`, …) for the e2e and the console (e2e/island.ts wraps them).
+The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there at once, the stops' snapping off;
+`at(x, z)`: a world point's client px; `put(x, z)`: my villager there; `idle()`; `perf`; `stops()`: the sections'
+camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
 
 ## Motion
 

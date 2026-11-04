@@ -22,6 +22,7 @@ import { waterFog, waterU } from './water.ts';
 import { createThings, type Things } from './things.ts';
 import { createCards, type Cards } from './cards.ts';
 import { createEffects, type FxKind, type FxOpts } from './effects.ts';
+import { createBiteMarks, type MarkState } from './biteMark.ts';
 import { createLights, lampFog, type LampSpot } from './lights.ts';
 import type { Inst } from './objects.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
@@ -192,6 +193,10 @@ export interface Island3 {
   restore(ms?: number): Promise<void>;
   /** A flourish in the world (effects.ts): a tap's dust, a splash, sparkles, a 「！」. */
   fx(kind: FxKind, x: number, z: number, lift?: number, o?: FxOpts): void;
+  /** The bite's 「！」 over a villager's head (biteMark.ts: `at` its anchor, three's space, set each frame it's held;
+   *  null pops it out), and as last drawn (the e2e's). */
+  bite(slot: string, at: Vector3 | null): void;
+  biteState(slot: string): MarkState | null;
   /** A built model of the scene's own stood on the island (a home, a bridge, stairs: world3d/home.ts, structure.ts),
    *  its origin on the ground at (x, z) (or at `y`), turned by `yaw`, bent with the island, casting shadows; again
    *  with the same id replaces it, null takes it away. */
@@ -281,6 +286,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   const cards = createCards(scene, (sh) => (sh && (shadowsDirty = true), kick()));
   const lights = createLights(scene);
   const effects = createEffects(scene, src.feet, () => kick());
+  const marks = createBiteMarks(addObj);
   let extraGlows: readonly LampSpot[] = [];
   const relight = () => lights.set([...things.lamps(), ...extraGlows]);
   async function place(list: readonly Inst[]) {
@@ -818,6 +824,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     framedRev = rev;
     want(cards.frame(pitch * LEAN, stretch, src.feet), 'cards');
     want(effects.frame(t, camera), 'fx');
+    want(marks.frame(t, camera, focal, W, H), 'bite');
     if (ground.update) want(ground.update(t), 'ground');
     want(lights.frame(t, camX, camZ + 110, bendU.uBendR.value, -camZ), 'lights');
     if (opts.shadows && shadowsDirty) {
@@ -954,6 +961,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     placedGroups: () => [...groupsPlaced.keys()],
     warmFx: () => effects.warm(renderer, camera),
     fxWarmed: () => effects.warmed(),
+    bite: (slot, at) => marks.set(slot, at),
+    biteState: (slot) => marks.state(slot),
     fx(kind, x, z, lift, o) {
       effects.spawn(kind, x, z, lift, o);
       // (an ambient one, tagged: the fall, a sleeper's zzz, an emitter's, plays at the ambient rate)
@@ -1008,6 +1017,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       things.dispose();
       cards.dispose();
       effects.dispose();
+      marks.dispose();
       lights.dispose();
       ground.dispose?.();
       for (const v of Object.values(sun.shadow)) if (v instanceof Texture) v.dispose();

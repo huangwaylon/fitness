@@ -6,6 +6,7 @@
 // tabs of one browser (sync/live-local.ts plays the room).
 import { expect, test, type Page } from '@playwright/test';
 import { is3d, reelOnBite, sawIt, tapOn, toTheWater, watchFor } from './island';
+import { overHead, type Mark } from './biteMark.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -39,6 +40,16 @@ test('A’s line on B’s phone: the float where it landed, the bite, the shadow
   const a = await ctx.newPage(), b = await ctx.newPage();
   const BITE = '[data-angler="A"][data-line="bite"]';
   await watchFor(b, [BITE]);
+  // (B's 3D island: A's 「！」 over their villager's head, as last seen drawn: world3d/biteMark.ts, from A's step)
+  await b.addInitScript(() => {
+    const W = window as unknown as { __world3d?: { bite(slot: string): Mark | null }; __partnerBite?: Mark };
+    const look = () => {
+      const m = W.__world3d?.bite('partner');
+      if (m?.shown) W.__partnerBite = m;
+      requestAnimationFrame(look);
+    };
+    requestAnimationFrame(look);
+  });
   await open(a);
   await open(b, '&as=B');
   const at = await cast(a);
@@ -59,6 +70,8 @@ test('A’s line on B’s phone: the float where it landed, the bite, the shadow
   // A's bite reaches B (the float under), and A reels it in: the catch on both, B's view of the line cleared
   await reel;
   expect(await sawIt(b, BITE)).toBe(true);
+  // (its pop in on B, a frame or two after the bite's step came)
+  await expect.poll(async () => overHead(await b.evaluate(() => (window as unknown as { __partnerBite?: Mark }).__partnerBite ?? null)), { timeout: 3000 }).toEqual([]);
   await expect.poll(() => h(a, (w) => w.__fish.casting())).toBe(false);
   await expect(b.locator('[data-angler="A"]')).toHaveCount(0);
   await expect.poll(() => h(b, (w) => w.__world3d.where('bobber-partner')?.hidden ?? true)).toBe(true);

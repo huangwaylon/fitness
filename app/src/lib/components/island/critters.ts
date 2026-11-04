@@ -271,9 +271,8 @@ export const IN_SEASON = 3;
 const inHoursOf = (c: Seasonal, hour: number) => inHours(c.hours, hour) || (!!c.also && inHours(c.also, hour));
 /** Whether the weather lets it out (Seasonal `weather`). */
 function weatherLets(c: Seasonal, sky: Sky): boolean {
-  // cloudy is a fine day's for the critters (NH)
   const rain = sky === 'rain' || sky === 'heavy';
-  return c.weather === 'dry' ? !rain : c.weather === 'rain' ? rain : c.weather === 'wet' ? rain || sky === 'snow' : true;
+  return c.weather === 'dry' ? !rain : c.weather === 'rain' ? rain : c.weather === 'wet' ? sky !== 'clear' : true;
 }
 /** Its odds at (month, hour, sky): 0 outside its hours or its weather, else its weight, ×IN_SEASON in its months. */
 export const oddsAt = (c: Seasonal, month: number, hour: number, sky: Sky = 'clear'): number =>

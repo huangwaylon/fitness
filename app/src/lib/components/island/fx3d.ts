@@ -3,7 +3,7 @@
 export type Fx3 =
   | 'dust' | 'sand' | 'snow' | 'splash' | 'ripple' | 'sparkle' | 'sparks' | 'bang' | 'leaves' | 'drops' | 'hearts'
   | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'flame';
-/** `held`: a held one (the bite's 「！」) stays while it says so (effects.ts FxOpts). */
+/** `held`: a held one (a rearing bug's 「！」) stays while it says so (effects.ts FxOpts). */
 type Opts = { v?: string; ms?: number; size?: number; dir?: number; held?: () => boolean };
 let sink: ((kind: Fx3, x: number, z: number, lift: number, o: Opts) => void) | null = null;
 
@@ -17,4 +17,9 @@ export function fx3d(kind: Fx3, x: number, z: number, lift = 0, o: Opts = {}): b
   if (!sink) return false;
   sink(kind, x, z, lift, o);
   return true;
+}
+
+/** The 3D island is up (it draws what it's asked: the bite's 「！」 is its own, world3d/biteMark.ts, from the anglers). */
+export function has3d(): boolean {
+  return !!sink;
 }

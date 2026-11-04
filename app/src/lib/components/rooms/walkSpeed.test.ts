@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SPEED } from '../island/speed.ts';
+import { SPEED } from '../island/walkGraph.ts';
 import { PACE as TENT_PACE } from '../tent/engine.ts';
 import { PACE as MUSEUM_PACE } from '../museum/engine.ts';
 import { reachOf, strideOf, walk } from '../villager3d/poses.ts';

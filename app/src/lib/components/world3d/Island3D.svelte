@@ -38,6 +38,9 @@
   import { BufferGeometry, Float32BufferAttribute, Line, LineBasicMaterial, Vector3, type Object3D } from 'three';
   import type { FxKind } from './effects.ts';
   import { pace, SLOW_PX } from './pace.ts';
+  import { anglerOf, onAngle } from './fishing3d.ts';
+  import { OVER_U, POP_IN_MS } from './biteMark.ts';
+  import { BITE_WINDOW_MS } from '../island/fishing.ts';
   import { site } from '../island/site.svelte.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
@@ -196,6 +199,30 @@
     const hb = vil3?.head(slot), feet = feetOf(x, z);
     const lift = hb ? (hb.getWorldPosition(headV).y - feet) * 2 + 10 : VILLAGER.h + 10;
     e.fx('mark', x, z, lift, { v: m, ms: 2200, tag: again ? 'mark' : undefined });
+  }
+  // ---- the bite's 「！」 (world3d/biteMark.ts): over each angler's head while its fish bites (mine, and the others' as
+  // their phones tell it: fishing3d.ts), on its head as it's posed this frame ----
+  const biteAt = new Vector3();
+  /** The e2e's: a villager's 「！」 held up (its anchor as a bite's), whatever its line; null: the anglers' own. */
+  let pinned: string | null = null;
+  function bites(e: Island3) {
+    const now = performance.now();
+    for (const c of cast()) {
+      // (while it bites, the window at most; a bite reeled in at once still pops in whole: the others' phones may hear
+      // the bite and the reel in one go)
+      const a = anglerOf(c.id), since = now - a.bite;
+      const on = c.shown && (pinned === c.id || (since < BITE_WINDOW_MS && (a.phase === 'bite' || since < POP_IN_MS)));
+      if (!on) {
+        e.bite(c.id, null);
+        continue;
+      }
+      // its 3D model's head; a card's (no model, or loading): over the card's top
+      if (!vil3?.overHead(c.id, biteAt)) {
+        const [x, z] = livePos(c.id);
+        biteAt.set(x, feetOf(x, z) + VILLAGER.h + OVER_U, -z);
+      }
+      e.bite(c.id, biteAt);
+    }
   }
   // ---- the day's visitor: NH's model (world3d/villagers.ts, slot 'visitor'; Reese's Cyrus 'visitor:b'), posed by the
   // director's 'visitor' actor as the villagers are by theirs; its two specs kept and written over (no allocation a frame) ----
@@ -834,13 +861,18 @@
       fall(e, t);
       b3?.frame(performance.now());
       actorFx(e, t);
-      if (villagerCards(t, camMoved || more) || more || moving === true) return true;
+      const posed = villagerCards(t, camMoved || more);
+      // (after the villagers are posed: the 「！」 on the head where it's drawn this frame)
+      bites(e);
+      if (posed || more || moving === true) return true;
       // the ambience (the ambient rate): a slow move, the season's fall, the stream's floats, an emitter, a blink, the
       // balloon drifting over
       return moving || ambient3.kind || floatsOn || emitting || b3?.shown() || visN > 0 || cast().some((c) => c.shown) ? 'ambient' : false;
     });
     // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
     listenFx3((kind, x, z, lift, o) => e.fx(kind, x, z, lift, o));
+    // (an angler's step: a frame at once, the 「！」 popped in with the bite however idle the island was)
+    onAngle(() => e.kick());
     listenPose3d((id, key) => e.things.swap(id, key ? (keyModel(key)?.m ?? null) : null));
     // the layout changed (the editor, a phone's もようがえ): the ground's changed chunks rebuilt (site's own listener,
     // first, has re-derived world.ts and bumped site.rev: the objects, the homes and the ends follow in the day's effect)
@@ -883,6 +915,20 @@
       water: (x: number, z: number) => [waterY(x, z), bedY(x, z)],
       /** The ids of the lamps lit now (a model's id; a stand-in's `s:` prefixed). */
       lamps: () => e.lamps(),
+      /** A villager's bite 「！」 as drawn (biteMark.ts MarkState: canvas px), with its head's: the head bone's spot and
+       *  the head's top (the ball's highest point, overHead's anchor less OVER_U) on screen; null: none yet. */
+      bite: (slot = 'mine') => {
+        const st = e.biteState(slot), hb = vil3?.head(slot), o = new Vector3();
+        if (!st) return null;
+        const r = canvas!.getBoundingClientRect(), px = (p: Vector3) => {
+          const q = e.at(p.x, -p.z, p.y - feetOf(p.x, -p.z));
+          return [q.sx, q.sy];
+        };
+        const head = hb ? px(hb.getWorldPosition(new Vector3())) : null, top = vil3?.overHead(slot, o) ? px(o.setY(o.y - OVER_U)) : null;
+        return { ...st, head, crown: top, canvas: [r.left, r.top] };
+      },
+      /** Hold a villager's 「！」 up (the e2e's: zoom and seat it without a fish's timing), or let it go (null). */
+      pinBite: (slot: string | null) => ((pinned = slot), e.kick()),
       /** My angler's line up: its facing, its rod and its line's headings in plan (degrees), or null. */
       angler: (slot = 'mine') => vil3?.angler(slot) ?? null,
       /** A line as drawn (a bobber's, by its node's id): its points (three's space), or null. */
@@ -910,6 +956,7 @@
       b3 = null;
       listenPose3d(null);
       listenFx3(null);
+      onAngle(null);
       off();
       ro.disconnect();
       e.onFrame(null);

@@ -1020,41 +1020,18 @@
   // takes it as one multiply plane over its bands and the sky's low band; every world node takes the same multiply as
   // a colour-matrix filter, so a light (a lamp's glow, a lit window, a firefly: camera.svelte.ts `light`) sorts in depth
   // like anything else, untinted (a tree in front of a lamp covers its glow). Recomputed when the time of day or the
-  // weather changes; nothing per frame. A change of sky on screen (the real weather's hour turning) eases the
-  // darkening over about a minute, in steps of WET_STEP every WET_STEP_MS (the 3D lights' too: Island3D `wet`), as
-  // the grey sky and the rain fade (Weather.svelte); the sky the page opens to is there at once.
+  // weather changes; nothing per frame.
   const fid = `${uid}-tod`;
-  const WET_STEP = 0.06, WET_STEP_MS = 5000, WET_OPENING_MS = 20_000;
-  const wetTarget = $derived(weather.sky !== 'clear' ? WET[weather.sky] : null);
-  /** The darkening now: the last grey sky's colour and how strong (eased toward wetTarget's). */
-  let wetNow = $state<{ c: string; a: number }>(untrack(() => ({ c: wetTarget?.[0] ?? '#FFFFFF', a: wetTarget?.[1] ?? 0 })));
-  $effect(() => {
-    const to = wetTarget;
-    let t: ReturnType<typeof setTimeout> | undefined;
-    untrack(() => {
-      if (to) wetNow = { c: to[0], a: wetNow.a };
-      const goal = to?.[1] ?? 0;
-      // the page's first seconds: the sky it opens to, at once
-      if (performance.now() < WET_OPENING_MS) return void (wetNow = { c: wetNow.c, a: goal });
-      const step = () => {
-        const d = goal - wetNow.a;
-        wetNow = { c: wetNow.c, a: Math.abs(d) <= WET_STEP ? goal : wetNow.a + Math.sign(d) * WET_STEP };
-        if (wetNow.a !== goal) t = setTimeout(step, WET_STEP_MS);
-      };
-      if (wetNow.a !== goal) step();
-    });
-    return () => clearTimeout(t);
-  });
   let shade = $state<[number, number, number] | null>(null);
   $effect(() => {
     void tod;
-    const wet = wetNow;
+    const sky = weather.sky;
     const el = sceneEl;
     if (!el) return;
     const hex = (h: string): [number, number, number] | null => (/^#[0-9a-f]{6}$/i.test(h) ? [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255) as [number, number, number] : null);
     const base = hex(getComputedStyle(el).getPropertyValue('--tod-tint').trim()) ?? [1, 1, 1];
-    const w = wet.a > 0 ? hex(wet.c) : null;
-    const rgb = base.map((c, i) => c * (w ? 1 - wet.a * (1 - w[i]) : 1)) as [number, number, number];
+    const wet = sky !== 'clear' ? WET[sky] : null, w = wet && hex(wet[0]);
+    const rgb = base.map((c, i) => c * (w ? 1 - wet![1] * (1 - w[i]) : 1)) as [number, number, number];
     shade = rgb.every((c) => c > 0.995) ? null : rgb;
   });
   const shadeMatrix = $derived(shade ? `${shade[0].toFixed(3)} 0 0 0 0 0 ${shade[1].toFixed(3)} 0 0 0 0 0 ${shade[2].toFixed(3)} 0 0 0 0 0 1 0` : '');
@@ -1127,7 +1104,7 @@
         {#if WeatherC}<WeatherC where="sky" />{/if}
         {#if r3 && Island3DC && sceneEl}
           <Island3DC bind:this={island3d} {world} scene={sceneEl} {season} {foliage} {month} {tod} scenery={scenery3} pieces={pieces3} {hybrid} floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null}
-            wet={wetNow.a} cast={cast3} enabled={() => !covered && !life.hidden}
+            wet={weather.sky !== 'clear' ? WET[weather.sky][1] : 0} cast={cast3} enabled={() => !covered && !life.hidden}
             start={start3} onscroll={onScroll} onhorizon={(px) => (horizonPx = px)} onfail={() => (failed3 = true)} onready={() => measure()} />
         {:else if failed3}
           <!-- no WebGL (never on the users' iPhones): a line instead of the island; the rest of the app works as ever -->

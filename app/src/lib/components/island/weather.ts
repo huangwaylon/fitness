@@ -14,14 +14,10 @@ import { showerAt, showerNight } from './meteor.ts';
 import { FIREWORKS_FROM, weddingDay } from './wedding.ts';
 import { addDays } from '#lib/time/dates.ts';
 
-/** The sky at an hour: fine, cloudy (NH's 曇り: fine for the game's rules, only its look differs; the real weather's),
- *  rain, a downpour, snow. */
-export type Sky = 'clear' | 'cloudy' | 'rain' | 'heavy' | 'snow';
-/** A grey sky's darkening: a colour multiplied in at an opacity (Weather's ground plane and IslandScene's sprite tint);
- *  cloudy at about half a wet day's. */
-export const WET: Record<Exclude<Sky, 'clear'>, readonly [string, number]> = { cloudy: ['#C6CDD8', 0.3], rain: ['#AEB8C8', 0.55], heavy: ['#97A2B4', 0.65], snow: ['#DCE2EA', 0.5] };
-/** Rain falling (the ground wet: the rain-only critters, the footsteps' splash, no fireflies). */
-export const isRain = (sky: Sky): boolean => sky === 'rain' || sky === 'heavy';
+/** The sky at an hour: fine, rain, a downpour, snow. */
+export type Sky = 'clear' | 'rain' | 'heavy' | 'snow';
+/** A wet sky's darkening: a colour multiplied in at an opacity (Weather's ground plane and IslandScene's sprite tint). */
+export const WET: Record<Exclude<Sky, 'clear'>, readonly [string, number]> = { rain: ['#AEB8C8', 0.55], heavy: ['#97A2B4', 0.65], snow: ['#DCE2EA', 0.5] };
 /** A day's weather: fine all day; rain all day (light or heavy); rain until noon; heavy rain until 16:00, then clear
  *  (the rainbow's day); snow all day (light or heavy). */
 export type Pattern = 'clear' | 'rain' | 'heavy' | 'am-rain' | 'clears' | 'snow' | 'heavy-snow';
@@ -103,13 +99,13 @@ export function skyOf(p: Pattern, hour: number): Sky {
 }
 
 /** Forced weathers (`?weather=`, dev or `?demo`). */
-export const FORCED = ['clear', 'cloudy', 'rain', 'heavy', 'snow', 'fog', 'aurora', 'rainbow'] as const;
+export const FORCED = ['clear', 'rain', 'heavy', 'snow', 'fog', 'aurora', 'rainbow'] as const;
 export type Forced = (typeof FORCED)[number];
 
 /** The weather at a Tokyo date and hour. `force`: the dev hook, any hour. */
 export function weatherAt(date: string, hour: number, seed = ISLAND_SEED, force: Forced | null = null): WeatherNow {
   if (force) {
-    const sky: Sky = force === 'cloudy' || force === 'rain' || force === 'heavy' || force === 'snow' ? force : 'clear';
+    const sky: Sky = force === 'rain' || force === 'heavy' || force === 'snow' ? force : 'clear';
     return { sky, fog: force === 'fog', rainbow: force === 'rainbow' ? 1 : 0, aurora: force === 'aurora' };
   }
   const day = hour < DAY_START ? addDays(date, -1) : date;
@@ -130,10 +126,8 @@ const HOUR_MS = 3600_000;
 const TOKYO_MS = 9 * HOUR_MS;
 /** A timeline serves while it was fetched at most this long ago (the relay's weather.ts STALE_MS) and covers the hour. */
 export const WX_TTL_MS = 36 * HOUR_MS;
-/** The timeline's letters as the game's skies. */
-const LETTER: Record<WxSky, Sky> = { c: 'clear', o: 'cloudy', r: 'rain', h: 'heavy', s: 'snow' };
-/** A rainbow comes in the first fine hour of these after rain (NH: by day), once a day. */
-const RAINBOW_HOURS = [7, 17] as const;
+/** The timeline's letters as the game's skies (cloudy reads as fine for now: the game has no cloudy sky yet). */
+const LETTER: Record<WxSky, Sky> = { c: 'clear', o: 'clear', r: 'rain', h: 'heavy', s: 'snow' };
 
 /** Snow on the ground (ui-state/season.ts: December 11 – February 24): what falls from the sky then is snow (NH). */
 export function snowSeason(date: string): boolean {
@@ -183,21 +177,10 @@ export function realWeatherAt(wx: Wx | null, now: number, seed = ISLAND_SEED): W
   return {
     sky: here.sky,
     fog: here.fog || (fine && t.fog && hour === FOG_HOUR),
-    rainbow: rainbowAt(wx, h, seed) ? (t.double ? 2 : 1) : 0,
+    rainbow: 0,
     aurora: fine && t.aurora && (hour >= 19 || hour < 4)
   };
 }
 
-/** Whether absolute hour `h` brings the day's rainbow: the first fine hour 07:00–17:00 right after rain (a downpour or
- *  rain: the snowy season's falls as snow, and leaves none), by the timeline's hours (its past ones: the relay keeps
- *  12). */
-function rainbowAt(wx: Wx, h: number, seed: string): boolean {
-  const { hour } = tokyoHour(h);
-  if (hour < RAINBOW_HOURS[0] || hour >= RAINBOW_HOURS[1]) return false;
-  const bow = (k: number) => realSkyAt(wx, k, seed)?.sky === 'clear' && isRain(realSkyAt(wx, k - 1, seed)?.sky ?? 'clear');
-  for (let k = h - (hour - RAINBOW_HOURS[0]); k < h; k++) if (bow(k)) return false;
-  return bow(h);
-}
-
 /** The music's arrangement and the ambience's rain for a sky (sound/hourly.ts Weather). */
-export const musicWeather = (sky: Sky): 'sunny' | 'rain' | 'snow' => (isRain(sky) ? 'rain' : sky === 'snow' ? 'snow' : 'sunny');
+export const musicWeather = (sky: Sky): 'sunny' | 'rain' | 'snow' => (sky === 'clear' ? 'sunny' : sky === 'snow' ? 'snow' : 'rain');

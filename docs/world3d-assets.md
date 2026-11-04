@@ -84,8 +84,23 @@ moves on my line's steps (`floatLift`, read each frame by the bobber node's `liv
 ±0.6u bob over 1.5 s while it waits, a soft ring (`fx/ripple`) every 2.6 s; a quick 380 ms dip and a small ring at each
 nibble; at the bite a little hop and a plunge 7u under, a splash and a big
 ring (the rings and the splash are emitters on the water's surface: `m3.emit` on a node of their own), and NH's 「！」
-(`fx/bang`, turned to the camera) pops over my villager's head with an
-overshoot, hops while the window lasts and pops out at the reel or the miss (effects.ts FxOpts `held`). Frames run at
+pops over the angler's head (`world3d/biteMark.ts`, from the angler's step: mine, and the others' on their phones'
+islands too): one quad a villager, made at its first bite and then shown and hidden, its art a canvas drawn once (the
+2D one's cream disc, red rim and ！). **Where**: over the head as it's posed this frame (villager3d `crown()`: the rest
+pose's highest point carried by the head bone; the head taken as the ball from the bone to its top, the mark OVER_U 3u
+over the ball's highest point), so standing it's over the head's top, seated on its head on the bench, lying over the
+head's side; a card's (no model yet) over the card. **Bend and facing**: its own vertex shader bends only its anchor
+(bend.ts bendW) and lays the quad out from there in the camera's plane, so it sits on the curved world with the head,
+upright (the camera never rolls) and square on at every pitch; a bent quad leaned back with the curve, and a quad
+turned only about the world's up (cylindrical) is squashed to about half by the camera's 40–63° look down.
+**Size**: 20u in the world (it grows with the head as a pinch zooms in), held to 30–52 px on screen (the widest zoom
+draws 20u at 19 px, too small to read; fully in, 60). **On top**: no depth test, drawn last: NH's is over everything,
+and it's the cue to tap. Its pop is the 2D one's overshoot (320 ms), a small hop while held, 140 ms out at the reel or
+the miss (a bite reeled at once still pops in whole). Before, it was an `fx/bang` particle spawned once at the feet's
+ground + 98u (a standing head's guess: off seated, never on the others' phones), turned with the camera's whole
+turn, its corners bent (leaning back with the curve), depth-tested and 19 px wide at the widest zoom.
+`__world3d.bite(slot)` (dev and ?demo): a mark as drawn (canvas px: its bottom, top and sides, its size) and its head's
+on screen; `__world3d.pinBite(slot)` holds one up (e2e/bite-mark.spec.ts). Frames run at
 full rate while the float is out (`moveStart`), the ambient rate again once it's gone. `window.__fx3` (dev and ?demo):
 each source's live parts and the spawns' log (e2e/fishing3d.spec.ts: the nibbles' rings come before the 「！」). The
 fx/* meshes draw in their vertex colours unless tinted (they drew all white before: the 「！」 a blank disc). The line is Island3D's (a bent `Line` from `tip()`, `world3d/fishLine.ts`, pure and unit-tested): one quadratic from

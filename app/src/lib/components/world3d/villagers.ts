@@ -16,6 +16,7 @@ import { url3d } from '../villager3d/manifest.ts';
 import { ACTION_MS, seatOf, type Action, type State } from '../villager3d/poses.ts';
 import { anglerOf, type Phase } from './fishing3d.ts';
 import { bend } from './bend.ts';
+import { overHead } from './biteMark.ts';
 import { faceFloat, FACE_FLOAT_K, rodTarget, turn } from './facing.ts';
 import { anchorsOf, shapeOf, type Anchor } from '../villager3d/seats3d.ts';
 import ISLAND_MODELS from '../island/models.json' with { type: 'json' };
@@ -66,6 +67,9 @@ export interface Villagers3 {
   lift(l: number): void;
   /** A villager's head (a balloon's, a hat's anchor), its world position (three's space) or null. */
   head(slot: string): Object3D | null;
+  /** The bite's 「！」's spot over a villager's head as it's posed now (biteMark.ts overHead: three's space, unbent),
+   *  written to `out`; null while it has no model (a card). */
+  overHead(slot: string, out: Vector3): Vector3 | null;
   /** What a villager holds, its far end (a rod's tip: the fishing line's start), world space, or null. */
   tip(slot: string): Vector3 | null;
   /** A villager's tap area (u: its width across, its height over its feet): its body's core, from its head's height
@@ -161,7 +165,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     return seats.get(name)!;
   };
   let lastT = 0, liftL = 0.32, disposed = false;
-  const headP = new V3(), aimP = new V3();
+  const headP = new V3(), aimP = new V3(), crownP = new V3();
   const debug = import.meta.env.DEV || new URLSearchParams(location.search).has('demo') ? new Map<string, unknown>() : null;
 
   function ensure(s: VSpec): W {
@@ -394,6 +398,12 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       for (const w of ws.values()) w.v?.lift(l);
     },
     head: (slot) => ws.get(slot)?.v?.head() ?? null,
+    overHead(slot, out) {
+      const v = ws.get(slot)?.v, hb = v?.head();
+      if (!v || !hb || !v.crown(crownP)) return null;
+      // (crown() brought the bone's matrices up to date)
+      return overHead(headP.setFromMatrixPosition(hb.matrixWorld), crownP, out);
+    },
     tip: (slot) => ws.get(slot)?.v?.tip() ?? null,
     angler(slot) {
       const w = ws.get(slot), v = w?.v, tip = v?.tip(), hand = v?.hand(), a = anglerOf(slot);
