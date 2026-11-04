@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { VISITORS, VISITOR_LINES, VISIT_ODDS, visitorAt, visitorLine } from './visitors.ts';
+import { ROTATION, VISITORS, VISITOR_LINES, dayVisitor, visitorAt, visitorLine } from './visitors.ts';
+import { showerAt } from './meteor.ts';
 import { eventAt } from './events.ts';
 import { milestoneOn } from './wedding.ts';
 import { addDays } from '#lib/time/dates.ts';
@@ -30,24 +31,51 @@ describe('visitors (NH)', () => {
     expect(at('2026-11-01', 11, 0)).toBe('daisy-mae');
     expect(at('2026-11-01', 12, 0)).not.toBe('daisy-mae');
   });
-  it('Wisp on some nights (past midnight too), Gulliver on some days; both about 1 in 4, seeded by the date', () => {
-    let wisp = 0, gulliver = 0;
-    for (let d = 0; d < 400; d++) {
-      const date = addDays('2026-01-05', d);
-      const wd = (d + 1) % 7; // 2026-01-05 is a Monday
-      if (wd === 6 || wd === 0) continue;
-      // a holiday host's day (events.ts) has its own visitor until midnight
-      if (eventAt(date, 12) || eventAt(addDays(date, 1), 2) || milestoneOn(date) !== null) continue; // and the wedding countdown's
-      const night = at(date, 22, wd), dawn = visitorAt(addDays(date, 1), date, 2, (wd + 1) % 7);
-      expect(dawn).toBe(night); // the same night across midnight
-      if (night === 'wisp') wisp++;
-      const day = at(date, 12, wd);
-      expect([null, 'gulliver']).toContain(day);
-      if (day) gulliver++;
-      expect(at(date, 19, wd)).toBeNull(); // dusk: nobody
+  it('a visitor most days (NH): Monday to Saturday one of the rotation, each at most once a week, seeded by the week', () => {
+    let days = 0, visited = 0;
+    const seen = new Map<string, number>();
+    for (let d = 0; d < 7 * 60; d++) {
+      const date = addDays('2026-01-05', d), wd = (d + 1) % 7; // 2026-01-05 is a Monday
+      if (wd === 1) seen.clear();
+      const v = dayVisitor(date, wd);
+      expect(dayVisitor(date, wd)).toBe(v); // the same on every phone
+      if (wd === 0) expect(v).toBeNull(); // Sunday: Daisy Mae's
+      if (!v) continue;
+      expect(ROTATION).toContain(v);
+      seen.set(v, (seen.get(v) ?? 0) + 1);
+      expect(seen.get(v), `${date} ${v}`).toBe(1);
     }
-    expect(wisp / 286).toBeGreaterThan(VISIT_ODDS - 0.08), expect(wisp / 286).toBeLessThan(VISIT_ODDS + 0.08);
-    expect(gulliver / 286).toBeGreaterThan(VISIT_ODDS - 0.08), expect(gulliver / 286).toBeLessThan(VISIT_ODDS + 0.08);
+    // somebody comes on most days, an ordinary one (no event, shower or wedding) at its hour
+    for (let d = 0; d < 7 * 60; d++) {
+      const date = addDays('2026-01-05', d), wd = (d + 1) % 7, prev = addDays(date, -1);
+      if (eventAt(date, 12) || eventAt(date, 21) || milestoneOn(date) !== null || showerAt(date, prev, 21)) continue;
+      days++;
+      if ([7, 12, 21].some((h) => visitorAt(date, prev, h, wd) !== null)) visited++;
+    }
+    expect(visited / days).toBeGreaterThan(0.85);
+    // their hours: Gulliver by day, Wisp by night (past midnight too), the plaza's 06:00 to 22:00
+    for (let d = 0; d < 7 * 60; d++) {
+      const date = addDays('2026-01-05', d), wd = (d + 1) % 7, next = addDays(date, 1), prev = addDays(date, -1);
+      if (wd === 0 || wd === 6 || eventAt(date, 12) || eventAt(next, 2) || eventAt(date, 21) || milestoneOn(date) !== null || milestoneOn(next) !== null || showerAt(date, prev, 21) || showerAt(next, date, 2)) continue;
+      const v = dayVisitor(date, wd);
+      if (v === 'wisp') {
+        expect(at(date, 12, wd)).toBeNull();
+        expect(at(date, 21, wd)).toBe('wisp');
+        expect(visitorAt(next, date, 2, (wd + 1) % 7)).toBe('wisp');
+      } else if (v === 'gulliver') {
+        expect(at(date, 6, wd)).toBe('gulliver');
+        expect(at(date, 18, wd)).toBeNull();
+      } else if (v) {
+        expect(at(date, 6, wd)).toBe(v);
+        expect(at(date, 21, wd)).toBe(v);
+        expect(at(date, 22, wd)).toBeNull();
+      }
+      expect(at(date, 5, wd)).toBeNull(); // dawn: nobody
+    }
+  });
+  it('the week of Nov 2 2026 has its visitors (the gap that had none from Mon 04:00 to Thu 06:00)', () => {
+    const week = ['2026-11-02', '2026-11-03', '2026-11-04'].map((d, i) => [6, 12, 21].map((h) => at(d, h, i + 1)));
+    expect(week.filter((hours) => hours.some(Boolean)).length).toBeGreaterThanOrEqual(2);
   });
   it('each has an introduction and their own lines in both languages; never the same line twice in a row', () => {
     for (const id of VISITORS) {

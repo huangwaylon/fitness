@@ -110,7 +110,8 @@ export const KIND_LIST: readonly KindDef[] = [
   k({ k: 'shop', group: 'building', ja: 'タヌキ商店', en: "Nook's Cranny", w: 7, d: 4, block: true, on: 'land', h: 118, icon: 'host/timmy-tommy', turns: true, fixed: true, door: true }),
   // the homes (their footprint is their style's: layout/homes.ts)
   k({ k: 'home', group: 'home', ja: 'いえ', en: 'Home', w: 3, d: 2, block: true, on: 'land', h: 80, icon: 'deco/campsite', fixed: true, turns: true, hidden: true }),
-  // named spots: where a villager stands at home, centre stage (visitors), nothing drawn
+  // named spots: where a villager stands at home, nothing drawn ('stage': the old fixed visitors' spot, kept so the
+  // layouts fold as they did; the visitors' stage is derived now, spots.ts stageOf)
   k({ k: 'spot', group: 'spot', ja: 'ばしょ', en: 'Spot', w: 1, d: 1, block: false, on: 'land', h: 0, icon: '', variants: ['villager-a', 'villager-b', 'stage'], fixed: true, hidden: true })
 ];
 

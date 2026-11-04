@@ -158,7 +158,7 @@ export function navOf(layout: Layout): LayoutNav {
   }
   // the named spots
   const named: Record<string, Pt> = {};
-  const SPOT_NAME: Record<string, string> = { 'villager-a': 'homeA', 'villager-b': 'homeB', stage: 'centreStage' };
+  const SPOT_NAME: Record<string, string> = { 'villager-a': 'homeA', 'villager-b': 'homeB' };
   for (const o of layout.objects.values()) {
     if (o.k === 'spot' && o.s && SPOT_NAME[o.s]) named[SPOT_NAME[o.s]] = objMid(layout, o);
     for (const [name, p] of seatsOf(layout, o)) named[name] = p;

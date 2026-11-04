@@ -104,7 +104,8 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   motion: a plain fade; aria-hidden: the label says it); only coins landing flash it, never a とりけす's refund. All of
   it waits while something covers the scene. The leaf, not the bowl or the dumbbell: it is where the ベル live now,
   and the corner it sits in is where NH's own bells pickup flies (up to the phone's corner).
-- **Centre stage:** the plaza's middle (`world.ts` `CENTRE_STAGE`, ひろば), where visitors stand.
+- **Centre stage:** the plaza (`world.ts` `CENTRE_STAGE`, ひろば: `layout/spots.ts` `stageOf`, a clear patch of lawn
+  behind the villagers' spots, in view as the island opens), where visitors stand.
 - **Villagers:** a tap on mine is a squish; a tap on the partner's is a high-five ([Villager taps](#villager-taps)).
   Neither opens a sheet.
 - **Say button** (`island/SayButton.svelte`): a small round cream button at the scene's bottom right, NH's chat glyph
@@ -1457,13 +1458,17 @@ day went with it). Off screen, the edge chip by the screen's side (「うめの 
 ### Visitors
 
 `island/Visitor.svelte`, `island/visitors.ts`, `e2e/visitors.spec.ts`. NH's visitors (official renders), one at a time,
-seeded by the date: **K.K. Slider** on Saturday nights 18:00–24:00, **Daisy Mae** on Sunday mornings 05:00–12:00,
-**Wisp** on 1 in 4 nights 20:00–04:00, **Gulliver** on 1 in 4 days 06:00–18:00; **Jack** on Halloween night,
-**Celeste** on a meteor shower's night, the holiday hosts on their days, the wedding couple on its days. Priority
-(`visitorAt`): the event's host (Jack included), the wedding couple, Celeste, then K.K. and the rest. They stand on
-centre stage in the plaza (ひろば) at the villagers' scale times their NH height, with a contact shadow; as in NH,
-**Gulliver washes up on the front beach** and **Daisy Mae wanders the front lawn** (both seen from まえ). A tap (while
-they're on screen): my villager turns to them where it stands, then their introduction the first time, then one of their lines No trading, no ベル.
+seeded by the date, so a visitor comes most days as in NH: **K.K. Slider** on Saturday nights 18:00–24:00, **Daisy
+Mae** on Sunday mornings 05:00–12:00, and Monday to Saturday one of NH's weekday visitors (`ROTATION`, each at most
+once a week, drawn by the week's Monday, with about one quiet day in ten): **Kicks**, **Label**, **Saharah**,
+**Leif**, **Redd**, **C.J.** and **Flick** 06:00–22:00, **Gulliver** 06:00–18:00, **Wisp** that night 20:00–04:00
+(none on a Saturday: K.K.'s); **Jack** on Halloween night, **Celeste** on a meteor shower's night, the holiday hosts on
+their days, the wedding couple on its days. Priority (`visitorAt`): the event's host (Jack included), the wedding
+couple, Celeste, K.K., Daisy Mae, then the day's. `?visitor=none`: nobody. They stand on centre stage in the plaza
+(ひろば: derived from the layout, `stageOf`; it moves with a もようがえ) at the villagers' scale times their NH height,
+with a contact shadow; as in NH, **Gulliver washes up on the front beach** (`washedUp`: a new stretch of sand some
+days), lying flat on his face (his 3D card laid on the sand). A tap (while they're on screen): my villager turns to
+them where it stands, then their introduction the first time, then one of their lines. No trading, no ベル.
 
 **K.K.'s show:** with ミュージック on, a tap is his greeting with NH's choice box, **リクエスト** (up to four songs) or
 **おまかせ**. The island's music stops for the song ([K.K. Slider](#kk-slider)), he strums harder, ♪ float up, the
@@ -1482,15 +1487,16 @@ emotes, fx and facing use the villagers' calls, and idle life gives it a beat on
 - **Signatures (NH):** K.K. strums with a head-bob (harder mid-song); Wisp floats, drifts and flickers; Jack sways and
   twirls with a spooky glint; Daisy Mae shifts her turnips and hums; Franklin waddles, flaps and looks about; Jingle
   bounces with a sparkle; Pavé dances Festivale's steps and a samba with confetti; Zipper hops; Celeste looks up and
-  points when a shooting star crosses (`island:star`); Reese and Cyrus lean toward each other and nuzzle.
-- **Gulliver** sleeps face down on the front beach (snoring, zzz, a twitch). A tap is a nudge: a twitch and his sleep talk
+  points when a shooting star crosses (`island:star`); Reese and Cyrus lean toward each other and nuzzle; Kicks and
+  Flick nod, Label strikes a pose, Saharah hums, Leif sways, Redd looks about, C.J. hops.
+- **Gulliver** sleeps face down on the front beach (snoring, zzz, a twitch; his card lies flat on the sand). A tap is a nudge: a twitch and his sleep talk
   (「…ムニャムニャ…」, a small caption); the **fifth** wakes him: a start, a 「！」, he gets up and introduces himself
   (awake for the day).
 - **A beat** (`pickAct`): the signature, an emote (never the same twice running), a look at the nearest villager, a
   stroll for those who roam, home when away, or at most every 45 s **the partner comes over** when the visitor is within
   600u of their home (beside them, they face each other, a nod and emotes, then home; one walker at a time). Nothing
   while their line is in the balloon.
-- **Strolls:** Daisy Mae, Franklin, Zipper and Celeste amble to a walkable spot around theirs (level or in front, clear
+- **Strolls:** Daisy Mae, Leif, C.J., Flick, Franklin, Zipper and Celeste amble to a walkable spot around theirs (level or in front, clear
   of every control and the villagers) and back 4–7 s later; the others stay put. The villagers route around them.
 - **A tap:** my villager turns to them where it stands; the visitor walks back to its spot if it strolled, turns to
   my villager with a little hop and speaks, standing still until the balloon closes. A tap elsewhere now and then draws a glance.

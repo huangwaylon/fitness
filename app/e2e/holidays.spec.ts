@@ -2,7 +2,7 @@
 // (events.ts): Franklin on Turkey Day (he asks for a fish; the next catch makes him happy), Jingle on Toy Day, Pavé at
 // Festivale, Zipper on Bunny Day's first and last days; Bunny Day's eggs in a dig spot. No ベル.
 import { expect, test, type Page } from '@playwright/test';
-import { fossilOnScreen, oku, reelOnBite } from './island.ts';
+import { fossilOnScreen, reelOnBite, stageCam } from './island.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
@@ -43,7 +43,7 @@ async function readAll(page: Page) {
 }
 
 for (const [w, h] of [[390, 844], [320, 568]] as const)
-  test(`each host on its day, at centre stage (おく) clear of every control, introducing themselves (${w}px)`, async ({ page }) => {
+  test(`each host on its day, at centre stage clear of every control, introducing themselves (${w}px)`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     for (const [date, id, name] of [
       ['2026-11-26T10:00', 'franklin', 'フランクリン'], ['2026-12-24T12:00', 'jingle', 'ジングル'],
@@ -52,7 +52,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       await page.goto(`?demo&date=${date}&critter=none`);
       await expect(hudMenu(page)).toBeVisible();
       const sel = `[data-visitor="${id}"] .art`;
-      await camera(page, await oku(page));
+      await camera(page, await stageCam(page));
       await expect(page.locator(sel)).toBeVisible();
       expect(await under(page, sel), id).toEqual([]);
       await tapOn(page, sel);
@@ -65,8 +65,8 @@ test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and 
   await page.goto('?demo&date=2026-11-26T10:00&critter=sea-bass');
   await expect(hudMenu(page)).toBeVisible();
   const bells = await hudBells(page).getAttribute('aria-label');
-  // he stands at centre stage (おく); the sea is at まえ
-  await camera(page, await oku(page));
+  // he stands at centre stage; the sea is at まえ
+  await camera(page, await stageCam(page));
   await tapOn(page, '[data-visitor="franklin"] .art');
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('サンクスギビング', { timeout: 4000 });
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('さかなが 1ぴき');
@@ -91,7 +91,7 @@ test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and 
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('scene-franklin') ?? '{}'))).toMatchObject({ date: '2026-11-26', asked: true, fed: true });
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
   await page.goto('?demo&date=2026-11-26T11:00&critter=none');
-  await camera(page, await oku(page));
+  await camera(page, await stageCam(page));
   await expect(page.locator('[data-visitor="franklin"] .art')).toBeVisible();
   await tapOn(page, '[data-visitor="franklin"] .art');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('フランクリン', { timeout: 4000 });

@@ -37,7 +37,7 @@ the editor, the homes) and the 3D integration (the scene, the camera, porting th
   the seasonal spots (`beach-chair`, `sandcastle`, `snowboy`), NH's bulletin board (`board`: 2 × 1, one on the
   island, used from the tile in front of it, which must stay clear and reachable like a home's door), the pieces that
   join terrain (`bridge` over water, `stairs` up a cliff), the homes (`home`) and named spots (`spot`: `villager-a|b`
-  the villagers' home spots, `stage`).
+  the villagers' home spots; `stage`, the old fixed visitors' spot, kept but unused: the stage is derived).
   Each: `id`, kind `k`, tile `x, z` (its footprint's lowest column and row), facing `f` 0–3 (0 toward the camera, −z;
   1 +x, 2 away, 3 −x), variant `s`. A footprint is `w × d` tiles, turned by `f` for the kinds that `turn` (a bench);
   for the others an odd `f` only mirrors the look.
@@ -99,9 +99,15 @@ id's latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (i
   is walkable over them), so does every blocking footprint (its kind's block box, padded 5u: a trunk, not its whole
   tile); a step keeps to its tier but on stairs (a ramp's cells rise along it). A* with the corners pulled straight;
   `findPath`, `snapTap` (home → its door, water → the nearest bank, else the nearest walkable point), `walkable`,
-  `reachable`, `named` (`homeA`, `homeB`, `centreStage`, `door-home-A|B|G`, the default's seats `seatMaeL`…
+  `reachable`, `named` (`homeA`, `homeB`, `door-home-A|B|G`, the default's seats `seatMaeL`…
   `stoolW`, `pullup`). **A drop-in for planTap:** `planTap(navOf(layout), from, x, z)` (tapWalk.ts takes either nav).
   Builds in ~4 ms.
+- **The visitors' stage** (`layout/spots.ts` `stageOf(layout)`, NH's plaza): the open grass tile nearest the island's
+  middle 200u behind the villagers' spots (in view as the camera opens at まえ), with a tile clear on each side, behind
+  and in front (no path, water, door or thing on it), nothing tall in front of it on screen (a tree's canopy, a home,
+  a villager at its spot) nor right behind it; looser if none has that. `washedUp(layout, date, seed)`: Gulliver's
+  beach, a free sand tile two in from the sea in the beach's middle, by the date. The day's weeds and fossils keep off
+  the stage. Pure: every phone with the layout agrees, and a もようがえ moves them.
 - **Validation** (`layout/validate.ts` `validate(layout)` → issues, each `error` or `warn` with its tiles and ids): an
   object off the land or in water, one straddling a cliff, two footprints over each other, a tree off the grass
   (warn), stairs that join no cliff, a bridge that spans no water, a home whose door can't be reached, a missing or
@@ -411,7 +417,7 @@ red over the river; no 🗑 for a one-off; none for the guest).
    the door's iris to `tent/?home=B` (the guest's: `?home=G`); the campsite's as today (`/tent`). Their lamps:
    `homeTod(group, lamps)` in the time of day.
 6. **Walking:** `planTap(navOf(layout.current), …)` (rebuild the nav on a layout change, ~4 ms), feet from
-   `ground.feet`. Named nodes: `homeA`, `homeB` (the villagers' spots), `centreStage`, `door-home-A|B|G`, the
+   `ground.feet`. Named nodes: `homeA`, `homeB` (the villagers' spots), `centreStage` (island/nav.ts: `stageOf`'s), `door-home-A|B|G`, the
    default's seats (`seatMaeL` … `stoolW`, `pullup`), `front-<id>` (a bulletin board's spot).
 7. **The gameplay on the layout (landed): `island/site.svelte.ts` `site.on`, always on** (the switch, `?layout` and
    `LAYOUT_3D` went with the 2D island). world.ts's geometry is the layout's: `island/layoutWorld.ts worldOf(layout)` derives every value the island reads (`HOMES`, `CAMPSITE` /

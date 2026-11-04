@@ -10,7 +10,7 @@ import { GRID, TILE, idx, kindOf, onGrid, tierOf, tileAt, tileMid, tileX, tileZ,
 import { doorOf, extentOf, footOf, objMid, originOf, type Layout, type Obj } from '#lib/layout/model.ts';
 import { kindDef, footprintOf } from '#lib/layout/catalog.ts';
 import { navOf, seatsOf, type LayoutNav } from '#lib/layout/nav.ts';
-import { daySpots, openGrass } from '#lib/layout/spots.ts';
+import { daySpots, openGrass, stageOf } from '#lib/layout/spots.ts';
 import { pondOval, pondPlaces } from '#lib/layout/ponds.ts';
 import { WORLD_2D, FALLS_POOL, inOval, type Building, type BuildingId, type DecorSlot, type Flower, type FreshWhere, type Pt, type Scenery, type Surface, type WorldGeo } from './world.ts';
 
@@ -191,8 +191,10 @@ export function worldOf(l: Layout, nav: LayoutNav = navOf(l)): WorldGeo {
   const HOMES = { A: (named.homeA ?? WORLD_2D.HOMES.A) as Pt, B: (named.homeB ?? WORLD_2D.HOMES.B) as Pt };
   const goal = (s: string) => objs.find((o) => o.k === 'goal-tree' && o.s === s);
   const GOAL_TREES = { A: mid(goal('a'), WORLD_2D.GOAL_TREES.A), B: mid(goal('b'), WORLD_2D.GOAL_TREES.B) };
-  const CENTRE_STAGE = (named.centreStage ?? WORLD_2D.CENTRE_STAGE) as Pt;
-  const ARCH: Pt = [CENTRE_STAGE[0], CENTRE_STAGE[1] + 24], CAKE: Pt = [CENTRE_STAGE[0], CENTRE_STAGE[1] - 46];
+  // the visitors' stage: NH's plaza, derived from the layout (spots.ts stageOf)
+  const CENTRE_STAGE = (stageOf(l) ?? WORLD_2D.CENTRE_STAGE) as Pt;
+  // (the arch just behind it, the cake a step in front: on its clear patch)
+  const ARCH: Pt = [CENTRE_STAGE[0], CENTRE_STAGE[1] + 24], CAKE: Pt = [CENTRE_STAGE[0], CENTRE_STAGE[1] - 40];
 
   // ---- the scenery, the decor's spots, the seats, the flowers ----
   const SCENERY: Scenery[] = [];

@@ -306,7 +306,7 @@
         if (mp || a.walking) moving = true;
         pose = { lift: (mp?.lift ?? 0) + ip.lift, squash: (mp?.squash ?? 0) + ip.squash, tilt: (mp?.tilt ?? 0) + ip.tilt };
       }
-      e.cards.set(id, { ...base, x: n.x - (c.also ? c.also.dx / 2 : 0), z: n.z, flip: c.flip, shadow: 15, hidden: !n.shown, lift: (c.lift ?? 0) + pose.lift, squash: pose.squash, tilt: pose.tilt });
+      e.cards.set(id, { ...base, x: n.x - (c.also ? c.also.dx / 2 : 0), z: n.z, flip: c.flip, lie: c.lie, shadow: c.lie ? 0 : 15, hidden: !n.shown, lift: (c.lift ?? 0) + pose.lift, squash: pose.squash, tilt: pose.tilt });
       const b2 = c.also ? artCard(c.also.key, c.also.h) : null;
       if (c.also && b2) {
         seen.add(`${id}:b`);
