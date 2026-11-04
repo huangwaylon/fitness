@@ -148,10 +148,7 @@ test('the ずかん lists every fish, the fresh waters’ and the sea’s, in NH
   expect(await page.locator('.tile').first().getAttribute('data-entry')).toBe('bitterling');
 });
 
-test('water bugs: a pondskater skates on fresh water on a summer day; a tap nets it (a ずかん bug)', {
-  tag: '@quarantine',
-  annotation: { type: 'quarantine', description: 'owner: the next critters session (Critters.svelte), 2026-11-04 final pass: back in the gate on 2f12a120, red on CI (the tap on its sprite box missed it mid-glide); the tap now goes by its model at rest, but 1 in 15 under three workers the model is never found (__world3d.where of no bug-<n>) though its node is m3on. TODO: why the pondskater\'s model is missing, then back in the gate' }
-}, async ({ page }) => {
+test('water bugs: a pondskater skates on fresh water on a summer day; a tap nets it (a ずかん bug)', async ({ page }) => {
   // (drawn under CI's software GL, a frame or two a second, its model comes late and trails the skater's quick glides
   // between frames, and the tap misses it; the logic tier runs it, as fishing3d.spec's bite)
   test.fixme(!!process.env.CI && process.env.E2E_RENDER !== 'none', 'CI drawn tier: the skater trails its glides under its software GL');
@@ -159,7 +156,8 @@ test('water bugs: a pondskater skates on fresh water on a summer day; a tap nets
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto('?demo&date=2026-07-04T12:00&critter=pondskater');
   await expect(hudMenu(page)).toBeVisible({ timeout: 15_000 });
-  await cam(page, await stop(page, 'oku'));
+  // (the camera stays where it opened: the skater comes on a fresh water in view then, the pond from まえ; a camera
+  // moved to おく as it came left it off screen, its model faded out, and no bug-<n> was ever found shown)
   const bug = page.locator('[data-critter="pondskater"]');
   await expect(bug).toBeAttached();
   await page.waitForTimeout(800);
