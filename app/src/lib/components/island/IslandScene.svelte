@@ -573,6 +573,9 @@
     clearTimeout(settle);
     talk?.hold(true);
     says?.hold(true);
+    // (in the camera's frame: the balloons carried with their speakers)
+    talk?.track();
+    says?.track();
     settle = setTimeout(() => {
       world.rest.z = Math.round(world.view.camZ);
       talk?.hold(false);

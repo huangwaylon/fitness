@@ -5,6 +5,7 @@
 //   SHOTS=<dir> npm run e2e -- say-rooms      also writes iPhone-sized screenshots to <dir>/say-room-*.png
 import { expect, test, type Page } from '@playwright/test';
 import { sayOwn } from './say.ts';
+import { balloonState, expectWhole } from './balloon.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -149,4 +150,24 @@ test('at night: the button, the picker and a balloon in the tent', async ({ page
   await expect(balloon(page)).toHaveClass(/placed/);
   expect(await byHead(page, 'A')).toMatchObject({ across: true, inside: true, over: false });
   await shot(page, 'balloon-night');
+});
+
+test('the tent: while a drag turns the camera my villager’s balloon stays whole (its box, not only its text) by its head', async ({ page }) => {
+  await openRoom(page, 'A', 'A');
+  await settle(page, 'A');
+  await sayOwn(page, 'やっほー！');
+  await expect(balloon(page)).toHaveClass(/placed/);
+  await page.waitForTimeout(300); // (its pop-in)
+  const head = async () => ((h) => ({ x: h[0], y: h[1] }))((await tent(page, (t) => t.head('A')))!);
+  const near = (await balloonState(page, '[data-say="mine"]', await head()))!.dist + 8;
+  const [cx, cy] = await tent(page, (t) => t.tile(6, 5)), h1 = await head();
+  await page.mouse.move(cx, cy);
+  await page.mouse.down();
+  for (let i = 1; i <= 6; i++) await page.mouse.move(cx + i * 15, cy);
+  await page.waitForTimeout(100);
+  // (the camera turned: the head moved on screen)
+  const h0 = await head();
+  expect(Math.hypot(h0.x - h1.x, h0.y - h1.y)).toBeGreaterThan(10);
+  await expectWhole(page, '[data-say="mine"]', h0, near);
+  await page.mouse.up();
 });

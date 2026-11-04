@@ -10,6 +10,7 @@ import { lawnTap, quiet } from './island.ts';
 import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
 import { fromMenu, hudBells, hudMenu } from './hud.ts';
 import { sayOwn } from './say.ts';
+import { balloonState, expectWhole, fingers, liftFingers, spreading } from './balloon.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -255,4 +256,18 @@ test('the say button hides under the island panel and in もようがえ (its pi
   // (the old decorations' tray, or on the island's layout its own もようがえ: IslandEdit)
   await expect(page.locator('[data-tray]').first().or(page.locator('[data-island-edit]'))).toBeVisible();
   await expect(sayBtn(page)).toHaveCount(0);
+});
+
+test('mid-pinch my villager’s balloon stays whole (its box, not only its text) and over it', async ({ page }) => {
+  await open(page);
+  await sayOwn(page, 'やっほー！');
+  await expect(balloon(page)).toHaveClass(/placed/);
+  await page.waitForTimeout(300); // (its pop-in)
+  const near = (await balloonState(page, '[data-say="mine"]', '[data-actor="mine"] .vil'))!.dist + 8;
+  await fingers(page, spreading(200, 420, 8, 6));
+  await page.waitForTimeout(50);
+  await expectWhole(page, '[data-say="mine"]', '[data-actor="mine"] .vil', near);
+  await liftFingers(page);
+  await page.waitForTimeout(400);
+  await expectWhole(page, '[data-say="mine"]', '[data-actor="mine"] .vil', 56);
 });

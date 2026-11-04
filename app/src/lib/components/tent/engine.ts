@@ -157,6 +157,8 @@ export interface Tent {
   isDefault(): boolean;
   /** A gesture under way (a lighter pixel ratio while the camera moves). */
   moving(on: boolean): void;
+  /** After each frame drawn (the scene's overlays that follow the camera: a speech balloon carried with its speaker). */
+  onDrawn(fn: (() => void) | null): void;
   /** Where the floor's middle and the usable band's middle are on screen (client px). */
   centre(): { at: [number, number]; band: [number, number] };
   /** What a tap at client px hits, in front first. */
@@ -1465,6 +1467,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   let cameraMoving = false, camRev = '';
   /** The last frame drawn's display time (its rAF's): the frame rate's pacing (せってい's, a gesture's too). */
   let lastVsync = 0;
+  let drawn: (() => void) | null = null;
   function frame(vsync = now()) {
     raf = 0;
     if (disposed) return;
@@ -1618,6 +1621,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     // pieces still popping change their shadows
     if (more && [...live.values()].some((l) => l.pop || l.bump)) shadowsDirty = true;
     if (!noDraw) renderer.render(scene, camera);
+    drawn?.();
     // the frame's own cost (the CPU side: three's work and the GL calls), for the budget checks
     cost.push(now() - t);
     if (cost.length > 600) cost.shift();
@@ -1640,7 +1644,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
 
   return {
     resize, still, surfaces, pieces, hide, held, pick, wallAt, ghost, onHeld, nudge, flash, surfacePoint, grid, bump, room, pose, night, villager,
-    firstPerson, inView,
+    firstPerson, inView, onDrawn: (fn: (() => void) | null) => void (drawn = fn),
     look(dx, dy) {
       fp.look(dx, dy, canvas.clientWidth);
       invalidate();

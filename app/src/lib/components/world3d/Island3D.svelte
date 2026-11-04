@@ -785,12 +785,16 @@
     vil3.lift(LIFT[todNow()]);
     b3 = createBalloon3((o) => e.add(o), heightOf, () => e.kick());
     b3.lift(LIFT[todNow()]);
+    let zoomWas = NaN, xWas = NaN;
     e.onFrame((t) => {
-      const z = e.view().camZ;
+      const cv = e.view(), z = cv.camZ;
       world.view.camZ = z;
-      if (z !== camWas) {
+      // (the camera moved: a scroll, or a pinch's zoom and its sideways pan, which may leave z where it was)
+      if (z !== camWas || cv.zoom !== zoomWas || cv.camX !== xWas) {
         if (!Number.isNaN(camWas)) onscroll();
         camWas = z;
+        zoomWas = cv.zoom;
+        xWas = cv.camX;
       }
       const hz = e.horizon();
       if (!(Math.abs(hz - horizonWas) <= 0.5)) onhorizon((horizonWas = hz));

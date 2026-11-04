@@ -574,6 +574,8 @@
         // in at the door, a few steps into the room (at my villager's eyes from the first frame, if that's the choice)
         e.put(me, DOOR_IN, faceOf(me));
         e.firstPerson(fpv ? me : null, true);
+        // (a balloon carried with its villager while the camera moves: Says.track)
+        e.onDrawn(() => says?.track());
         eng = e;
         partnerShown();
         walkTo([sideX(me, 7), me === 'G' ? 26 : 22]);
