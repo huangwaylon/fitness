@@ -65,6 +65,11 @@ const maxStep = (s: Sample[]) => {
   return m;
 };
 
+/** How long its fade took to come in whole (ms), from its first frame shown: a pop is one frame; things.ts's fade-in
+ *  takes FADE_IN_MS (600). (Its first frame shown may come late, half faded in already, under a busy runner: the
+ *  time it then still takes, not where it starts, says it faded.) */
+const fadeInMs = (shown: NonNullable<Sample>[]) => (shown.find((p) => p.fade >= 0.99)?.t ?? Infinity) - shown[0].t;
+
 /** A ramp: from under `lo` to over `hi` (or back), through at least `n` frames between. */
 const ramps = (fades: number[], n = 3) => fades.filter((f) => f > 0.05 && f < 0.95).length >= n;
 
@@ -74,7 +79,8 @@ test('a fish shadow fades in where it comes and swims smoothly: never a jump bet
   const s = await sampleFirst(page, 'fish-sea-', 4000);
   const shown = s.filter((p): p is NonNullable<Sample> => !!p && !p.hidden);
   // faded in: from (nearly) nothing, through the frames of a ramp, to whole; a slight scale-up with it
-  expect(shown[0].fade).toBeLessThan(0.5);
+  expect(shown[0].fade).toBeLessThan(0.75);
+  expect(fadeInMs(shown)).toBeGreaterThan(150);
   expect(ramps(shown.map((p) => p.fade))).toBe(true);
   expect(shown.at(-1)!.fade).toBe(1);
   expect(shown[0].scale).toBeLessThan(0.95);
@@ -166,7 +172,8 @@ test('a bug fades in where it comes, moves smoothly, and fades out where it goes
   const s = await sampleFirst(page, 'bug-', 2500);
   const id = await modelId(page, 'bug-');
   const shown = s.filter((p): p is NonNullable<Sample> => !!p && !p.hidden);
-  expect(shown[0].fade).toBeLessThan(0.5);
+  expect(shown[0].fade).toBeLessThan(0.75);
+  expect(fadeInMs(shown)).toBeGreaterThan(150);
   expect(ramps(shown.map((p) => p.fade))).toBe(true);
   expect(shown.at(-1)!.fade).toBe(1);
   expect(shown[0].scale).toBeLessThan(0.95);
