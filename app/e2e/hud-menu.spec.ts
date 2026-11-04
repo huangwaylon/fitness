@@ -139,7 +139,7 @@ test('ずかん opens the ずかん (its kinds, a kind\'s page with ‹), せっ
   await fromMenu(page, 'settings');
   await folded(page);
   await expect(dlg.locator('.navbar')).toContainText('せってい');
-  for (const id of ['#sec-villager', '[data-decor-start]', '#sec-sound', '#sec-lang', '#sec-sync', '#sec-help']) await expect(dlg.locator(id)).toBeAttached(); // (もようがえ one row since fd2966b1: its はじめる)
+  for (const id of ['#sec-villager', '[data-decor-start]', '#sec-sound', '#sec-lang', '#sec-sync']) await expect(dlg.locator(id)).toBeAttached(); // (もようがえ one row since fd2966b1: its はじめる)
   await dlg.locator('.titlebar .close').click();
   await expect(dlg).toHaveCount(0);
 });

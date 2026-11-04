@@ -115,7 +115,7 @@ test('sound off: no AudioContext, no media element, however much is tapped', asy
   const { x, y } = await sea(page);
   await page.touchscreen.tap(x, y);
   await fromMenu(page, 'settings', 'tap');
-  await page.locator('[data-push=help]').click();
+  await page.locator('[data-push=villager]').click();
   await page.locator('.titlebar .back').click();
   await page.locator('.titlebar .close').click();
   await page.waitForTimeout(500);
@@ -228,8 +228,6 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('ことば', '日本語 (already chosen)', () => dlg.getByRole('radio', { name: '日本語' }).tap(), []);
   await step('つうしん', 'いま つうしん', () => dlg.locator('.prows .btn').tap(), ['sync']);
   await step('つうしん', 'いま つうしん while syncing (aria-disabled)', () => dlg.locator('.prows .btn[aria-disabled="true"]').tap({ force: true, timeout: 300 }).catch(() => {}));
-  await step('あそびかた', 'くわしく', () => dlg.locator('[data-push=help]').tap(), ['page']);
-  await step('あそびかた', 'back (‹)', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('せってい', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['panel-close']);
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);

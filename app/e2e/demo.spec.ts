@@ -49,7 +49,7 @@ async function toPanel(page: Page) {
   await closeSheets(page);
   await openPanel(page);
 }
-/** The せってい sheet, from the HUD menu (むらびと, サウンド, ことば, つうしん, あそびかた), from wherever we are. */
+/** The せってい sheet, from the HUD menu (むらびと, サウンド, ことば, つうしん), from wherever we are. */
 async function openSettings(page: Page) {
   await closeSheets(page);
   await fromMenu(page, 'settings');
@@ -594,18 +594,15 @@ test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (to
   const wallet = sheet(page).locator('[data-wallet]');
   await expect(bar.locator('.close')).toBeVisible();
   await expect(bar.locator('.back')).toHaveCount(0);
-  // せってい (the HUD menu's): ✕ at its top, ‹ + ✕ in the picker and the guide
+  // せってい (the HUD menu's): ✕ at its top, ‹ + ✕ in the picker
   await openSettings(page);
   await expect(bar.locator('.close')).toBeVisible();
   await expect(bar.locator('.back')).toHaveCount(0);
-  for (const push of ['villager', 'help']) {
-    await sheet(page).locator(`[data-push=${push}]`).click();
-    await expect(bar.locator('.back')).toBeVisible();
-    const b = await box(bar.locator('.back'));
-    expect(b.width).toBeGreaterThanOrEqual(44);
-    await bar.locator('.back').click();
-    await expect(sheet(page).locator(`[data-push=${push}]`)).toBeVisible();
-  }
+  await sheet(page).locator('[data-push=villager]').click();
+  await expect(bar.locator('.back')).toBeVisible();
+  expect((await box(bar.locator('.back'))).width).toBeGreaterThanOrEqual(44);
+  await bar.locator('.back').click();
+  await expect(sheet(page).locator('[data-push=villager]')).toBeVisible();
   // the ledger: a day, then ‹ back to the wallet, where it was scrolled to
   await toPanel(page);
   await sheet(page).locator('button.dbtn').first().scrollIntoViewIfNeeded();
@@ -676,10 +673,10 @@ test('サウンド: all off by default; toggles persist on this phone; ミュー
   expect(errors).toEqual([]);
 });
 
-test('focus ring: none on せってい’s くわしく after tap → ‹ back; the keyboard still shows it', async ({ page, browserName }) => {
+test('focus ring: none on せってい’s かえる after tap → ‹ back; the keyboard still shows it', async ({ page, browserName }) => {
   await page.goto('?demo');
   await fromMenu(page, 'settings', 'tap');
-  const tile = sheet(page).locator('[data-push=help]');
+  const tile = sheet(page).locator('[data-push=villager]');
   await tile.tap();
   await sheet(page).locator('.titlebar .back').tap();
   await expect(tile).toBeFocused();
