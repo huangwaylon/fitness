@@ -1,7 +1,7 @@
 // The aquarium's tanks and their swimmers (museum/tanks.ts, boids.ts).
 import { describe, expect, test } from 'vitest';
 import { spawn, stepSchool, swimBox, type Swimmer } from './boids.ts';
-import { TANKS, fishScale, shoalOf, waterOf } from './tanks.ts';
+import { TANKS, fishScale, waterOf } from './tanks.ts';
 import { FISH_WING } from './plan.ts';
 
 const inside = (b: { x0: number; x1: number; y0: number; y1: number; z0: number; z1: number }, p: number[]) =>
@@ -18,8 +18,6 @@ describe('the tanks', () => {
     const sea = TANKS.find((t) => t.id === 'sea')!, small = TANKS.find((t) => t.id === 'small-5')!;
     expect(39.5 * fishScale(sea, 39.5)).toBeLessThanOrEqual(sea.maxLen);
     expect(fishScale(small, 2.2)).toBeGreaterThan(1);
-    expect(shoalOf(1, 'small')).toBe(3);
-    expect(shoalOf(6, 'sea')).toBe(1);
   });
 });
 

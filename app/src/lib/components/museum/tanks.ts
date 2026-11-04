@@ -38,6 +38,3 @@ export function waterOf(t: Tank): Box {
 /** How big a fish of NH's length `len` (model units) is drawn in a tank: NH's own size (a little one bigger), a big one
  *  down to the tank's longest. */
 export const fishScale = (t: Tank, len: number): number => Math.min(t.scale, t.maxLen / Math.max(1, len));
-
-/** How many of a species swim in a tank: the little ones a few together (NH's tanks' shoals), the rest alone. */
-export const shoalOf = (size: number, look: Tank['look']): number => (look === 'small' ? (size <= 1 ? 3 : 2) : size <= 2 ? 3 : size <= 3 ? 2 : 1);

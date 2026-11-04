@@ -1,7 +1,7 @@
 // The aquarium wing's exhibits (docs/design.md "The museum"): its tanks (tanks.ts) with NH's own props in them (the sea's
 // kelp and coral, the deep's dark rocks, the river's stones and logs: scripts/world3d-models.ts --museum), and every fish
 // found swimming in its own (species.ts tankOf), NH's catch models (static/room/world3d/critters/fish/). Cheap:
-//   - a species is one InstancedMesh (its shoal: one to three), its tail swaying in the vertex shader (one program for
+//   - a species is one fish (NH's museum: one of each found), one InstancedMesh, its tail swaying in the vertex shader (one program for
 //     every fish: the sway grows toward its tail, its phase the instance's own);
 //   - each tank's water is one shader (its glow, NH's blue to its depth, caustics shimmering over its back and floor,
 //     light from above), its bubbles one Points (risen in the shader), its glass a faint pane and a metal frame;
@@ -14,7 +14,7 @@ import {
 } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
 import type { Specimen } from './species.ts';
-import { TANKS, fishScale, shoalOf, waterOf, type Box, type Tank } from './tanks.ts';
+import { TANKS, fishScale, waterOf, type Box, type Tank } from './tanks.ts';
 import { spawn, stepSchool, type Swimmer } from './boids.ts';
 import type { Rect } from './plan.ts';
 import { batcher, plainGeometry } from './geometry.ts';
@@ -187,7 +187,7 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
   const glasses = new Set<Material>(glassOf.values());
   geos.push(...batch.done(group, (m) => (glasses.has(m) ? 4 : m.userData.floor ? 1 : 0)));
 
-  // ---- the fish: a species' shoal one InstancedMesh, its tail swaying in the shader ----
+  // ---- the fish: one of each species, an InstancedMesh, its tail swaying in the shader ----
   const schools: School[] = [];
   const fishMat = (map: Texture | null, head: number, tail: number, amp: number) => {
     const m = new MeshLambertMaterial({ map, emissive: new Color(0xffffff), emissiveMap: map, emissiveIntensity: 0.25 });
@@ -213,7 +213,6 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
     const tank = TANKS.find((t) => t.id === sp.tank);
     if (!tank) continue;
     const water = waterOf(tank);
-    const n = shoalOf(sp.size, tank.look);
     const school: School = { sp, tank, water, mesh: null, fish: [], off: new Vector3(), s: 1 };
     schools.push(school);
     void kit.critter('fish', sp.id).then((g) => {
@@ -232,19 +231,17 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
       school.off.set(-(bb.min.x + bb.max.x) / 2, -(bb.min.y + bb.max.y) / 2, -(bb.min.z + bb.max.z) / 2);
       geo.translate(school.off.x, school.off.y, school.off.z);
       const head = bb.max.z + school.off.z, tail = bb.min.z + school.off.z;
-      const phase = new Float32Array(n);
-      for (let i = 0; i < n; i++) phase[i] = i * 2.1 + sp.id.length;
-      geo.setAttribute('aPhase', new InstancedBufferAttribute(phase, 1));
+      geo.setAttribute('aPhase', new InstancedBufferAttribute(new Float32Array([sp.id.length]), 1));
       geos.push(geo);
       const map = (m.material as { map?: Texture | null }).map ?? null;
-      const mesh = new InstancedMesh(geo, fishMat(map, head, tail, len * 0.06), n);
+      const mesh = new InstancedMesh(geo, fishMat(map, head, tail, len * 0.06), 1);
       // (culled by its tank's bounds: its fish swim nowhere else)
       mesh.boundingSphere = spheres.get(tank.id)!;
       mesh.userData.specimen = sp.id;
       // a big fish slow, a little one quick (u/s, at its drawn size)
       const r = (len * school.s) / 2;
       const speed = Math.max(4, Math.min(12, 3 + r * 0.9));
-      for (let i = 0; i < n; i++) school.fish.push(spawn(water, r, speed * (1 + i * 0.07), hash(sp.id) + i * 31));
+      school.fish.push(spawn(water, r, speed, hash(sp.id)));
       swimmers.get(tank.id)!.push(...school.fish);
       school.mesh = mesh;
       group.add(mesh);
