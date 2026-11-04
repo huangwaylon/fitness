@@ -70,7 +70,7 @@ test('the fossils: a dug-up piece shows under its dinosaur with the set’s coun
   await expect(page.locator(`h4.set[data-set="${set}"]`)).toContainText(`1 / ${ids.length}`);
   await expect(page.locator('h4.set[data-set="diplo"]')).toContainText(set === 'diplo' ? '1 / 6' : '0 / 6');
   await page.locator(`h4.set[data-set="${set}"]`).scrollIntoViewIfNeeded();
-  await page.screenshot({ path: '/tmp/more-catch/zukan-fossils-390.png' });
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/zukan-fossils-390.png` });
   await page.locator(`button.tile[data-entry="${id}"]`).click();
   await expect(page.locator(`[data-zukan-detail="${id}"]`)).toContainText('の ');
 });
@@ -134,7 +134,7 @@ for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
     await expect(head.locator('.line')).toBeVisible(); // its catch line
     await page.waitForTimeout(300);
     expect(Math.abs((await grid.evaluate((el) => el.scrollTop)) - top)).toBeLessThan(2);
-    await page.screenshot({ path: `/tmp/zukan-pin/fish-${vp.width}.png` });
+    if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/fish-${vp.width}.png` });
   });
 }
 
@@ -181,7 +181,7 @@ test('the catalogue and the recipes: found entries with their counts, in all and
   await expect(detail.locator('[data-zukan-person="A"]')).toContainText('×3');
   await expect(detail.locator('[data-zukan-person="B"]')).toContainText('×2');
   await expect(detail).toContainText('7/4');
-  await page.screenshot({ path: '/tmp/zukan-catalog/catalog-390.png' });
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/catalog-390.png` });
 
   await page.locator('dialog[open] button.nav.back').click();
   await page.locator('[data-zukan="recipe"]').click();
@@ -190,5 +190,5 @@ test('the catalogue and the recipes: found entries with their counts, in all and
   await expect(lamp.locator('[data-times]')).toHaveText('×1');
   await lamp.click();
   await expect(head.locator('[data-zukan-detail="mush-lamp"]')).toContainText('キノコのランプ');
-  await page.screenshot({ path: '/tmp/zukan-catalog/recipes-390.png' });
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/recipes-390.png` });
 });

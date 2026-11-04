@@ -1,10 +1,8 @@
-// The museum (docs/design.md "The museum"): NH's building on the layout, its door walked up to and gone through, its
-// inside (the hall and its two wings) with every fish and bug anyone has found on show, a creature's card, and back out.
+// The museum (docs/design.md "The museum"): its inside (the hall and its two wings) with every fish and bug anyone has
+// found on show, a creature's card. In by its door and back out: positions.spec (both islands), leaks.spec.
 import { expect, test, type Page } from '@playwright/test';
-import { is3d, settled, tapOn } from './island';
 import { balloonState, expectWhole } from './balloon.ts';
 
-const ISLAND = './?demo&visitor=none&critter=none&date=2026-11-04T12:00';
 const MUSEUM = 'museum?demo&date=2026-11-04T12:00';
 type M = {
   stats(): { frames: number };
@@ -30,31 +28,6 @@ const seed = (page: Page, finds: [kind: 'fish' | 'bug', id: string, who: 'A' | '
     const events = list.map(([kind, id, person], i) => ({ id: `seed-${i}`, type: 'find', data: { kind, id }, queuedAt: at + i, tries: 0, nextAt: 0, ackedAt: at + i, person }));
     localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-11-04', events }));
   }, finds);
-
-test('the museum stands on the layout with its door; a tap walks up to it and goes in', async ({ page }) => {
-  await page.goto(ISLAND);
-  expect(await is3d(page)).toBe(true);
-  const door = await page.evaluate(() => (window as unknown as { __world: { site(): { doors: Record<string, [number, number]> } } }).__world.site().doors.museum);
-  expect(door).toBeTruthy();
-  await page.evaluate(`window.__world.go(${door[1] - 120})`);
-  // (at rest: its camera still and its nodes placed for it; the DOM door's box stays where the last camera had it for
-  // a beat after the camera stops, and a tap found on that box landed off the door once it was placed)
-  await settled(page);
-  await tapOn(page, page.locator('[data-building="museum"] .door'));
-  await expect(page).toHaveURL(/\/museum\/?\?/, { timeout: 20_000 });
-  await expect(page.locator('[data-museum]')).toBeVisible();
-});
-
-test('‹ 島へ goes back out, my villager just out of the museum’s door', async ({ page }) => {
-  await open(page);
-  await page.getByRole('button', { name: '島へ' }).click();
-  await expect(page).toHaveURL(/fitness\/?\?/);
-  const door = await page.evaluate(() => (window as unknown as { __world: { site(): { doors: Record<string, [number, number]> } } }).__world.site().doors.museum);
-  await expect.poll(async () => {
-    const [x, z] = await page.evaluate('window.__world.mine()') as [number, number];
-    return Math.hypot(x - door[0], z - door[1]);
-  }).toBeLessThan(60);
-});
 
 test('a tap on the floor walks there, through the hall into a wing', async ({ page }) => {
   await open(page);

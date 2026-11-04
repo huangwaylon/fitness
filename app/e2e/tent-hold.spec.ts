@@ -51,7 +51,7 @@ test('holding a piece, a tap on another doesn’t take it: a head-shake and 「�
   await page.mouse.click(x, y);
   await expect(page.locator('[data-note="hold"]')).toHaveText('いまの かぐを おいてね');
   expect(await sel(page)).toMatchObject({ id: stool.id, x: stool.x, z: stool.z });
-  await page.screenshot({ path: test.info().outputPath('hold-hint.png') });
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/hold-hint.png` });
   // the hint the first three times only (this phone's), then only the head-shake
   for (let i = 0; i < 2; i++) {
     await expect(page.locator('[data-note="hold"]')).toHaveCount(0, { timeout: 4000 });

@@ -43,7 +43,7 @@ test('a tap on the bubbles dives: a slow one (seaweed) is caught, NH’s line, a
   expect(await finds(page)).toEqual([{ kind: 'sea', id: 'seaweed' }]);
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-splash', 'scene-catch']));
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
-  await page.screenshot({ path: '/tmp/world-build/critters-dive-caught.png' });
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/critters-dive-caught.png` });
 });
 
 test('a quick one (a lobster) darts off as a shadow; a second tap on it in time catches it', async ({ page }) => {
@@ -56,7 +56,7 @@ test('a quick one (a lobster) darts off as a shadow; a second tap on it in time 
   // (the tap first: the chase is a 1 s window, a screenshot on a slow runner could eat it)
   const s = await at(page, '[data-dive="chase"]');
   await page.mouse.click(s.x, s.y);
-  await page.screenshot({ path: '/tmp/world-build/critters-dive-chase.png' });
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/critters-dive-chase.png` });
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('lobster'));
   expect(await finds(page)).toEqual([{ kind: 'sea', id: 'lobster' }]);
 });
@@ -87,5 +87,5 @@ test('now and then the bubbles hold a pearl: picked up, a shell in the ずかん
   await expect(page.locator('[data-zukan="shell"]')).toContainText('1 / 9');
   await expect(page.locator('[data-zukan="sea"]')).toContainText('0 / 40');
   await expect(page.locator('[data-zukan="sea"]')).toContainText('うみのさち');
-  await page.screenshot({ path: '/tmp/world-build/critters-zukan-rows.png' });
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/critters-zukan-rows.png` });
 });

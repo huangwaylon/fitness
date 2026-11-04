@@ -3,7 +3,7 @@
 // least 12px from the screen's sides and foot and never sit over the HUD (the leaf, the bowl, the health button, the sync chip,
 // the say button). The catch plates stack at the bottom centre, the newest at the bottom, and go on their own.
 import { expect, test, type Page } from '@playwright/test';
-import { reelOnBite, toTheWater } from './island.ts';
+import { quiet, reelOnBite, toTheWater } from './island.ts';
 import { hudMenu } from './hud.ts';
 
 const centre = (page: Page, sel: string) =>
@@ -15,7 +15,7 @@ const centre = (page: Page, sel: string) =>
 async function open(page: Page, q: string) {
   await page.goto(`?demo&${q}`);
   await expect(hudMenu(page)).toBeVisible();
-  await page.waitForTimeout(1500);
+  await quiet(page); // (the opening beats over)
 }
 
 /** The popup's margins to the screen and any HUD control under it (polled briefly: it may still be popping in). */
@@ -57,7 +57,8 @@ const openSky = (page: Page) => page.evaluate(() => {
   return best;
 });
 
-for (const [w, h] of [[390, 844], [320, 568]] as const)
+// (one width: the target phones, iPhone 15 and 16, are 393 wide)
+for (const [w, h] of [[390, 844]] as const)
   test.describe(`at ${w}`, () => {
     test.use({ viewport: { width: w, height: h } });
 
@@ -105,7 +106,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
         const all = await plates(page);
         return all.length === 3 && all.every((p) => p.off <= 1) && all.every((p, i) => !i || all[i - 1].bottom <= p.top);
       }, { message: 'three plates, centred, stacked', timeout: 2000 }).toBe(true);
-      await page.screenshot({ path: test.info().outputPath('stack.png') });
+      if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/stack.png` });
       // left alone, each fades out and goes (a first find's two pages: a turn after 6 s, then a read's length)
       await expect(page.locator('[data-fx="catch"]')).toHaveCount(0, { timeout: 15_000 });
       await expect(page.locator('[data-catch-stack] > *')).toHaveCount(0);

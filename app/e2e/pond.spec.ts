@@ -51,7 +51,8 @@ async function fish(page: Page, water: string) {
   await reelOnBite(page, x, y, 15_000);
 }
 
-for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
+// (one width: the target phones, iPhone 15 and 16, are 393 wide)
+for (const vp of [{ width: 390, height: 844 }]) {
   test(`pond fishing at ${vp.width}: cast in the pond, the bite, a tap catches it, a ずかん find (no ベル)`, async ({ page }) => {
     await page.setViewportSize(vp);
     const before = await open(page, '&critter=carp');
@@ -64,7 +65,7 @@ for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
     expect(Math.abs(f.x - p.x)).toBeLessThan(p.w / 2);
     expect(Math.abs(f.y - p.y)).toBeLessThan(p.h / 2);
     expect(await page.evaluate(({ x, y }) => !document.elementFromPoint(x, y)?.closest('button'), f)).toBe(true);
-    await page.screenshot({ path: `/tmp/world-build/critters-pond-${vp.width}.png` });
+    if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/critters-pond-${vp.width}.png` });
     await fish(page, 'pond');
     // (in place: the line runs from the bank)
     const plate = page.locator('[data-fx="catch"]');
@@ -92,7 +93,7 @@ test('the stream at おく: a river fish (NH: River) in its reach, cast from the
   await page.waitForTimeout(600);
   const f = await at(page, '[data-water="river"]');
   expect(f.x).toBeGreaterThan(0), expect(f.x).toBeLessThan(390), expect(f.y).toBeLessThan(844);
-  await page.screenshot({ path: '/tmp/world-build/critters-river.png' });
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/critters-river.png` });
   await fish(page, 'river');
   await expect(page.locator('[data-fx="catch"]')).toContainText('釣', { timeout: 4000 });
   const got = (await finds(page)) as { kind: string; id: string }[];
@@ -113,7 +114,7 @@ test("NH's own waters: the salmon at the river mouth, the char on the clifftop, 
     const p = await at(page, `[data-water="${water}"]`);
     expect(p.x, id).toBeGreaterThan(-20), expect(p.x, id).toBeLessThan(410);
     expect(p.y, id).toBeGreaterThan(0), expect(p.y, id).toBeLessThan(844);
-    if (water === 'clifftop') await page.screenshot({ path: '/tmp/world-build/critters-clifftop.png' });
+    if (process.env.SHOTS && water === 'clifftop') await page.screenshot({ path: `${process.env.SHOTS}/critters-clifftop.png` });
   }
 });
 

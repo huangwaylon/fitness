@@ -66,7 +66,7 @@ for (const { code, what } of CASES) {
     const at = (await te(page, (t) => t.placed())).find((p) => p.id === lamp.id)!;
     expect(at.y).toBeCloseTo(m.sy!, 1);
     expect(at.y).toBeLessThanOrEqual(m.h + 0.01);
-    await page.screenshot({ path: test.info().outputPath(`${code}.png`) });
+    if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/${code}.png` });
     // the piece won't be put away with the lamp on it (NH's way): picked up where the lamp isn't (its other tile, or
     // its foot: a tap near the lamp is the lamp's)
     await settled(page);

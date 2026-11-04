@@ -1,9 +1,8 @@
 // The shop (docs/design.md "The shop"): タヌキ商店's counter, its うる (my pocket: what I caught, from my day tallies,
 // less what I sold) and かう (the day's stock), my かいがら; a bought piece in my もようがえ; the guest's pocket and
 // かいがら its own; overselling and overspending refused. On `?demo` (no backend): the demo's events in localStorage, as
-// a catch writes them. Screenshots of the counter by day and by night (test-results/shop-*.png).
+// a catch writes them. In by its door and back out: positions.spec (both islands).
 import { expect, test, type Page } from '@playwright/test';
-import { is3d, settled, tapOn } from './island';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const DATE = '2026-11-04T12:00';
@@ -120,37 +119,3 @@ test('the guest’s pocket and かいがら are its own', async ({ browser }) =>
   await ctx.close();
 });
 
-test('the shop stands on the layout with its door; a tap walks up to it and goes in; ‹ 島へ comes out of its door', async ({ page }) => {
-  await page.goto(`./?demo&visitor=none&critter=none&date=${DATE}`);
-  expect(await is3d(page)).toBe(true);
-  const door = await page.evaluate(() => (window as unknown as { __world: { site(): { doors: Record<string, [number, number]> } } }).__world.site().doors.shop);
-  expect(door).toBeTruthy();
-  await page.evaluate(`window.__world.go(${door[1] - 120})`);
-  // (at rest: its camera still and its nodes placed for it; the DOM door's box stays where the last camera had it for
-  // a beat after the camera stops, and a tap found on that box landed off the door once it was placed)
-  await settled(page);
-  await tapOn(page, page.locator('[data-building="shop"] .door'));
-  await expect(page).toHaveURL(/\/shop\/?\?/, { timeout: 20_000 });
-  await expect(page.locator('[data-shop]')).toBeVisible();
-  await page.getByRole('button', { name: '島へ' }).click();
-  await expect(page).toHaveURL(/fitness\/?\?/);
-  await expect.poll(async () => {
-    const [x, z] = await page.evaluate('window.__world.mine()') as [number, number];
-    return Math.hypot(x - door[0], z - door[1]);
-  }).toBeLessThan(60);
-});
-
-for (const [when, hm] of [['day', '12:00'], ['night', '22:30']] as const) {
-  test(`the counter, by ${when} (screenshot)`, async ({ page }) => {
-    await seed(page, [tally({ 'fish:koi': 2, 'bug:tarantula': 1, 'sea:octopus': 3, 'fish:sea-bass': 4, 'bug:common-butterfly': 2 })]);
-    await page.goto(`shop?demo&date=2026-11-04T${hm}&critter=none&visitor=none`);
-    await expect(page.locator('[data-shop]')).toBeVisible();
-    await page.locator('[data-shop-catch="fish:koi"]').click();
-    await page.evaluate(() => document.fonts.ready);
-    await page.waitForTimeout(400);
-    await page.screenshot({ path: `test-results/shop-${when}-sell.png` });
-    await page.locator('[data-shop-tab="buy"]').click();
-    await page.waitForTimeout(600);
-    await page.screenshot({ path: `test-results/shop-${when}-buy.png` });
-  });
-}
