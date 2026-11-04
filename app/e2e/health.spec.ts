@@ -296,6 +296,26 @@ test('the dumbbell opens it at 1週, every time; whose data is kept for the sess
   await expect(whoSel(page)).toHaveValue('A');
 });
 
+test('no Health data yet (a new couple): every card is there with its goal, saying so; the goals set from it', async ({ page }) => {
+  await openHealth(page, '?demo&health=none');
+  const cards = sheet(page).locator('.health section.card');
+  await expect(cards.locator('h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
+  await expect(cards.locator('[data-health-empty]')).toHaveCount(4);
+  await expect(cards.locator('[data-health-empty]').first()).toHaveText('まだ きろくが ないよ');
+  await expect(sheet(page).locator('.health svg[role=img]')).toHaveCount(0); // no empty charts
+  await expect(sheet(page).locator('.health .note')).toHaveCount(0);
+  const steps = sheet(page).locator('button[data-goal=steps-goal]');
+  await expect(steps).toHaveText(/8,000歩/);
+  await steps.click();
+  await sheet(page).locator('#goal-steps-goal [data-goal-step="1"]').click();
+  await sheet(page).locator('#goal-steps-goal button[type=submit]').click();
+  await expect(steps).toHaveText(/8,500歩/);
+  await sheet(page).locator('[data-group=body]').click();
+  await expect(cards.locator('[data-health-empty]')).toHaveCount(4);
+  await expect(sheet(page).locator('button[data-goal=weight-goal]')).toHaveText(/66.0 kg/); // the demo's goal, kept without a weigh-in
+  await expect(sheet(page).locator('button[data-goal=fat-goal]')).toBeVisible();
+});
+
 for (const [w, h] of [[390, 844], [320, 568]]) {
   test(`${w}x${h}, two years of data: nothing overflows, every control is a thumb’s size, the range row stays put`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });

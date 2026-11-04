@@ -208,9 +208,10 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
   return { metrics: byAt(metrics), events: byAt(events) };
 }
 
-/** A snapshot cache for the demo store (me = A, or B with `?demo&as=B`). */
-export function demoCache(now: number, me: Who = 'A', weeks = DEMO_WEEKS_BACK): SnapshotCache {
-  const all = demoRows(now, Math.max(1, Math.min(260, Math.round(weeks))));
+/** A snapshot cache for the demo store (me = A, or B with `?demo&as=B`; no Health rows with `?demo&health=none`). */
+export function demoCache(now: number, me: Who = 'A', weeks = DEMO_WEEKS_BACK, health = true): SnapshotCache {
+  const made = demoRows(now, Math.max(1, Math.min(260, Math.round(weeks))));
+  const all = health ? made : { ...made, metrics: [] };
   // the guest's (`?demo&as=G`): what the record would send its key, without the からだ rows (contract/guest.ts)
   const rows = me === 'G' ? guestRows(all) : all;
   return { v: 1, me, rows, since: maxAt(rows), skewMs: 0, fetchedAt: now, demo: true };

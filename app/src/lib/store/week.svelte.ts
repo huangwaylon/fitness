@@ -46,6 +46,7 @@ class WeekStore implements Host {
       // `as=B`: うめ's phone; `as=G`: the guest's (docs/design.md "The guest")
       writeRaw(ss, DEMO.as, p.get('as') === 'B' ? 'B' : p.get('as') === 'G' ? 'G' : 'A');
       writeRaw(ss, DEMO.weeks, p.get('weeks') ?? '');
+      writeRaw(ss, DEMO.health, p.get('health') ?? '');
       this.demo = mode;
       this.view = null;
     } else {

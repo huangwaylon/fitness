@@ -40,6 +40,8 @@
   const vals = $derived(seriesBuckets(ds, range));
   const goal = $derived(ds.goal(ds.vals.length - 1));
   const what = $derived(t(kcal ? 'food.kcal' : `food.${n}`));
+  /** Nothing logged at all yet: the card holds its goal (set there) over one line. */
+  const none = $derived(!ds.vals.some((v) => v !== null));
   const label = $derived(t('food.chart.label', { name, what, range: rangeLabel(range, today), avg: s.avg === null ? t('health.noData') : fmt(s.avg) }));
 </script>
 
@@ -51,6 +53,9 @@
       start={goal} />
   </header>
 
+  {#if none}
+    <p class="none" data-food-empty>{t('kiroku.empty')}</p>
+  {:else}
   <div class="srow">
     <span class="lab" data-intake-basis>{s.days ? t('food.chart.avgHead', { n: s.days }) : t('health.avgHead')}</span>
     <b class="avg money" data-intake-avg>{s.avg === null ? '–' : fmt(s.avg)}</b>
@@ -74,6 +79,7 @@
     {#if s.missing}<span><i class="k-none"></i>{t('health.noData')}</span>{/if}
   </p>
   {/if}
+  {/if}
 </section>
 
 <style>
@@ -90,6 +96,7 @@
   .chg small { font: 700 var(--fs-xs)/1 var(--font-ui); color: var(--text-soft); }
   .chg.none { background: none; color: var(--text-soft); }
   .sub { grid-area: sub; display: flex; flex-wrap: wrap; gap: 0 10px; margin-top: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); font-variant-numeric: tabular-nums; }
+  .none { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .key { display: flex; flex-wrap: wrap; gap: 2px 12px; margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .key span { display: inline-flex; align-items: center; gap: 5px; }
   .key i { display: inline-block; flex: none; }
