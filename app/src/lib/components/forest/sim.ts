@@ -133,7 +133,7 @@ function sees(w: World, b: Bear, p: PNet): boolean {
   if (d < TUNE.sense && !p.top) return true;
   const n = night(w.t), range = n ? TUNE.visionNight : TUNE.vision, cone = n ? TUNE.coneNight : TUNE.cone;
   if (d > range || Math.abs(angDiff(b.f, yawTo(b.x, b.z, p.x, p.z))) > cone / 2) return false;
-  return sight(w.map, b.x, b.z, p.x, p.z);
+  return sight(w.map, b.x, b.z, p.x, p.z, !p.top);
 }
 
 /** The cell nearest (x, z) a bear can stand in (the bank across from a player in the river, a cliff's foot). */

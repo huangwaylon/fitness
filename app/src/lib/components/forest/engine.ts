@@ -195,17 +195,19 @@ export async function createForest(
     const banks = new Mesh(strip(map.riverHalf + 0.7, 0.02), own(new MeshLambertMaterial({ color: 0xd9c79a, side: DoubleSide })));
     river.renderOrder = 1;
     scene.add(banks, river);
-    // the bridge: planks across, rails each side
-    const b = map.bridge, plank = own(new MeshLambertMaterial({ map: terrain('plank', 2), color: 0xd9b48a }));
-    const deck = new Mesh(own(new BoxGeometry(b.x1 - b.x0, 0.2, b.z1 - b.z0)), plank);
-    deck.position.set((b.x0 + b.x1) / 2, 0.15, (b.z0 + b.z1) / 2);
-    const railG = own(new BoxGeometry(0.15, 0.6, b.z1 - b.z0));
-    for (const x of [b.x0, b.x1]) {
-      const r = new Mesh(railG, plank);
-      r.position.set(x, 0.55, (b.z0 + b.z1) / 2);
-      scene.add(r);
+    // the bridge: planks across, rails each side; the ford: stepping stones (NH's flat rock) across, in a model below
+    const plank = own(new MeshLambertMaterial({ map: terrain('plank', 2), color: 0xd9b48a }));
+    for (const b of map.crossings.filter((c) => c.kind === 'bridge')) {
+      const deck = new Mesh(own(new BoxGeometry(b.x1 - b.x0, 0.2, b.z1 - b.z0)), plank);
+      deck.position.set((b.x0 + b.x1) / 2, 0.15, (b.z0 + b.z1) / 2);
+      const railG = own(new BoxGeometry(0.15, 0.6, b.z1 - b.z0));
+      for (const x of [b.x0, b.x1]) {
+        const r = new Mesh(railG, plank);
+        r.position.set(x, 0.55, (b.z0 + b.z1) / 2);
+        scene.add(r);
+      }
+      scene.add(deck);
     }
-    scene.add(deck);
   }
 
   // ---- the cliffs and their ladders ----
@@ -220,24 +222,26 @@ export async function createForest(
     const m = new Mesh(box, [cliffSide, cliffSide, cliffTop, cliffSide, cliffSide, cliffSide]);
     m.position.set((p.x0 + p.x1) / 2, CLIFF_H / 2, (p.z0 + p.z1) / 2);
     scene.add(m);
-    // a ladder from its foot up the face
-    const lad = new Group(), dx = p.head[0] - p.foot[0], dz = p.head[1] - p.foot[1];
-    const rail = own(new BoxGeometry(0.08, CLIFF_H + 0.6, 0.08)), rung = own(new BoxGeometry(0.7, 0.06, 0.06));
-    for (const s of [-0.35, 0.35]) {
-      const r = new Mesh(rail, wood);
-      r.position.set(s, (CLIFF_H + 0.6) / 2, 0);
-      lad.add(r);
+    // a ladder from each foot up the face
+    for (const l of p.ladders) {
+      const lad = new Group(), dx = l.head[0] - l.foot[0], dz = l.head[1] - l.foot[1];
+      const rail = own(new BoxGeometry(0.08, CLIFF_H + 0.6, 0.08)), rung = own(new BoxGeometry(0.7, 0.06, 0.06));
+      for (const s2 of [-0.35, 0.35]) {
+        const r = new Mesh(rail, wood);
+        r.position.set(s2, (CLIFF_H + 0.6) / 2, 0);
+        lad.add(r);
+      }
+      for (let y = 0.35; y < CLIFF_H + 0.3; y += 0.4) {
+        const r = new Mesh(rung, wood);
+        r.position.set(0, y, 0);
+        lad.add(r);
+      }
+      const len = Math.hypot(dx, dz);
+      lad.position.set(l.foot[0] + (dx / len) * 1.1, 0, l.foot[1] + (dz / len) * 1.1);
+      lad.rotation.y = Math.atan2(dx, dz);
+      lad.rotation.x = -0.12;
+      scene.add(lad);
     }
-    for (let y = 0.35; y < CLIFF_H + 0.3; y += 0.4) {
-      const r = new Mesh(rung, wood);
-      r.position.set(0, y, 0);
-      lad.add(r);
-    }
-    const len = Math.hypot(dx, dz);
-    lad.position.set(p.foot[0] + (dx / len) * 1.1, 0, p.foot[1] + (dz / len) * 1.1);
-    lad.rotation.y = Math.atan2(dx, dz);
-    lad.rotation.x = -0.12;
-    scene.add(lad);
   }
 
   // ---- the dock (the seaplane's: safe), the camp (safe), their lantern-lit rings ----
@@ -354,6 +358,20 @@ export async function createForest(
     one('campsite-sign', 0.06).then((c) => c && (c.position.set(map.dock.x + 4, 0, map.dock.z - 3), c.rotation.set(0, Math.PI, 0), scene.add(c))),
     lantern(map.dock.x - 3.2, HALF - 1), lantern(map.dock.x + 3.2, HALF - 1), lantern(map.dock.x - 3.2, HALF + 6), lantern(map.dock.x + 3.2, HALF + 6)
   );
+
+  // the ford's stepping stones, the landmarks
+  for (const f of map.crossings.filter((c) => c.kind === 'ford')) {
+    const stones: Matrix4[] = [];
+    for (let z = f.z0 + 0.6, i = 0; z < f.z1; z += 1.3, i++) stones.push(placed((f.x0 + f.x1) / 2 + (i % 2 ? 0.6 : -0.6), 0.02, z, i, 0.075));
+    loads.push(forest('flat-rock', stones));
+  }
+  for (const lm of map.landmarks)
+    loads.push(one(lm.model, 0.06).then((c) => {
+      if (!c) return;
+      c.position.set(lm.x, 0, lm.z);
+      c.rotation.y = lm.a ?? 0;
+      scene.add(c);
+    }));
 
   // ---- the leaners (dead trees that fall when pushed) and the wasp nests ----
   const leaners = new Map<number, Object3D>();

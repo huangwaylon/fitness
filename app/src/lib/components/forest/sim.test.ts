@@ -34,18 +34,25 @@ describe('the forest', () => {
     expect(buildMap(7).trees).toEqual(map.trees);
     expect(buildMap(8).trees).not.toEqual(map.trees);
   });
-  it('has a river with one bridge, three cliffs with ladders, a safe dock and camp', () => {
+  it('has a river with a bridge and a ford, three cliffs with ladders, a safe dock and a camp across the river', () => {
     const cells = Array.from(map.cells);
     expect(cells.some((c) => c & WATER)).toBe(true);
     expect(map.plateaus).toHaveLength(3);
-    for (const p of map.plateaus) {
-      expect(at(map, p.head[0], p.head[1]) & CLIFF).toBeTruthy();
-      expect(at(map, p.foot[0], p.foot[1]) & CLIFF).toBeFalsy();
+    for (const l of map.plateaus.flatMap((p) => p.ladders)) {
+      expect(at(map, l.head[0], l.head[1]) & CLIFF).toBeTruthy();
+      expect(at(map, l.foot[0], l.foot[1]) & CLIFF).toBeFalsy();
     }
+    expect(map.crossings.map((c) => c.kind)).toEqual(['bridge', 'ford']);
+    expect(map.camp.z).toBeLessThan(map.riverZ(map.camp.x));
+    expect(map.dock.z).toBeGreaterThan(map.riverZ(map.dock.x));
+    // one lost piece in each of the five places
+    expect(map.items.filter((i) => i.kind === 'piece').map((i) => i.slot)).toEqual([0, 1, 2, 3, 4]);
     expect(at(map, map.dock.x, map.dock.z) & SAFE).toBeTruthy();
     expect(map.trees.length).toBeGreaterThan(120);
     expect(map.items.filter((i) => i.kind === 'piece')).toHaveLength(5);
     expect(map.items.filter((i) => i.top)).toHaveLength(6);
+    // no bear's den on anything
+    for (const [x, z] of map.dens) expect(bearWalk(map, Math.floor(x + 40), Math.floor(z + 40))).toBe(true);
     // nothing on a trunk or in a bush's cell where an item lies
     for (const i of map.items.filter((i) => !i.top)) expect(at(map, i.x, i.z) & (TRUNK | BUSH | WATER)).toBeFalsy();
     expect(cells.length).toBe(N * N);
@@ -169,12 +176,12 @@ describe('a player', () => {
     expect(me.stamina).toBeLessThan(0.2);
   });
   it('can’t walk into a cliff’s side, and climbs its ladder up', () => {
-    const p = map.plateaus[0];
+    const p = map.plateaus[0].ladders[0];
     const me = createMe(p.foot[0], p.foot[1]);
     for (let t = 0; t < 2; t += 1 / 30) move(map, me, { x: 0, z: -1 }, false, t, 1 / 30, new Set());
     expect(me.top).toBe(false);
     expect(at(map, me.x, me.z) & CLIFF).toBeFalsy();
-    me.climb = { p, t0: 0 };
+    me.climb = { l: p, t0: 0 };
     move(map, me, { x: 0, z: 0 }, false, 2, 1 / 30, new Set());
     expect(me.top).toBe(true);
   });
