@@ -18,6 +18,7 @@
   // not when a new line replaces it.
   import { tick } from 'svelte';
   import { TAIL_IN, placeBy, type Side } from './placement.ts';
+  import type { SaySpeaker } from './say.ts';
   import { TYPE_MS, arrow, paginate, split, tagInk, tapBox, typeOne, typing, type Choice, type PagerState } from './pager.ts';
 
   let { scene }: { scene?: HTMLElement } = $props();
@@ -107,7 +108,7 @@
 
   /** Say `parts` (each starts a page; long ones split two lines a page) from `from` (its top centre is the speaker's
    *  head); `colour`: the name tag's. */
-  export async function say(name: string, parts: string | readonly string[], from: Element, o: { colour?: string; choices?: Choice[]; ondone?: () => void } = {}) {
+  export async function say(name: string, parts: string | readonly string[], from: SaySpeaker, o: { colour?: string; choices?: Choice[]; ondone?: () => void } = {}) {
     halt();
     const n = ++seq;
     done = o.ondone;
@@ -137,13 +138,13 @@
   }
 
   /** The open balloon's speaker (to follow it as it moves). */
-  let speaker: Element | undefined;
+  let speaker: SaySpeaker | undefined;
   let seen: DOMRect | undefined;
   let watcher: ReturnType<typeof setInterval> | undefined;
   /** Place the balloon by its speaker as it stands now (placement.ts placeBy: NH's rule); false when there's no room. */
   function at(n: number): boolean {
     // its layout size (a pop-in's scale, mid-way, would make the box look smaller than it stands)
-    const st = scene?.querySelector('.stage')?.getBoundingClientRect(), box = el && { width: el.offsetWidth, height: el.offsetHeight };
+    const st = (scene?.querySelector('.stage') ?? scene)?.getBoundingClientRect(), box = el && { width: el.offsetWidth, height: el.offsetHeight };
     if (!scene || !st || !box || !speaker || said?.n !== n) return false;
     const src = (seen = speaker.getBoundingClientRect());
     const from = { x0: src.left, x1: src.right, y0: src.top, y1: src.bottom };
