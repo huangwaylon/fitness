@@ -381,6 +381,32 @@ describe('live: messages', () => {
   });
 });
 
+describe('live: days open (nothing piles up)', () => {
+  it('a hundred reconnects leave the timers of one socket (pings, the reconnect)', () => {
+    live.start();
+    last().welcome();
+    const timers = vi.getTimerCount();
+    for (let i = 0; i < 100; i++) {
+      last().drop();
+      vi.advanceTimersByTime(30_000); // past the backoff: a new socket
+      last().welcome();
+    }
+    expect(FakeWS.all).toHaveLength(101);
+    expect(vi.getTimerCount()).toBeLessThanOrEqual(timers);
+  });
+
+  it('a second welcome on one socket keeps one ping a minute', () => {
+    live.start();
+    last().welcome();
+    last().recv({ kind: 'welcome', me: 'A', peer: true, t: Date.now() });
+    vi.advanceTimersByTime(30_000);
+    const pings = () => last().sent.filter((m) => m.kind === 'ping').length;
+    const before = pings();
+    vi.advanceTimersByTime(60_000);
+    expect(pings() - before).toBe(1);
+  });
+});
+
 describe('live: the relay clock', () => {
   it('pings after the welcome, 2 s later and every minute, and takes the shortest round trip\'s offset', () => {
     live.start();

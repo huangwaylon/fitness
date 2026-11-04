@@ -64,7 +64,8 @@ if (cdp) await cdp.send('Performance.enable');
 
 const gc = async () => {
   if (cdp) for (let i = 0; i < 3; i++) await cdp.send('HeapProfiler.collectGarbage');
-  else for (let i = 0; i < 3; i++) await page.evaluate(() => (window as unknown as { gc?: () => void }).gc?.());
+  // (WebKit: no GC to call; garbage made until JSC runs a full collection: ~1.5 GB churned, in pieces)
+  else for (let i = 0; i < 6; i++) await page.evaluate(() => { let keep: unknown[] = []; for (let k = 0; k < 60; k++) { keep.push(new Array(1 << 20).fill(k)); if (keep.length > 8) keep = []; } });
   await page.waitForTimeout(300);
 };
 async function measure(label: string) {
