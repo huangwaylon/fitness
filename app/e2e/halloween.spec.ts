@@ -3,7 +3,7 @@
 // centre stage 17:00–24:00 and asks for candy: a treat delights him, nothing earns his trick (a goofy face on my
 // villager). Never under a control; no ベル.
 import { expect, test, type Page } from '@playwright/test';
-import { geo } from './island.ts';
+import { camTo, geo } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
 async function tapOn(page: Page, sel: string) {
@@ -20,17 +20,9 @@ const under = (page: Page, sel: string, hud = false) =>
       return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('[data-fx]') && !e.closest('[data-building]') && !(hud && e.closest('.stage'))).map((e) => e.className));
     });
   }, [sel, hud] as const);
-/** The camera to a world z (まえ, 642 おく: the campsite's clearing), settled. */
-async function camera(page: Page, z: number) {
-  await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world);
-  // (again until it holds: the scene may still re-fit its camera as it settles in)
-  await expect.poll(async () => {
-    await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
-    await page.waitForTimeout(250);
-    return page.evaluate((z) => Math.abs((window as unknown as { __world: { cam(): number } }).__world.cam() - z), z);
-  }, { timeout: 5000 }).toBeLessThan(1.5); // (WebKit scrolls by whole px: within a px of z)
-  await page.waitForTimeout(500); // the pumpkins re-measured where the camera settled
-}
+/** The camera to a world z (まえ, おく: the campsite's clearing), held there and the island at rest (camTo: the pumpkins
+ *  placed where the camera settled, not a fixed wait for it). */
+const camera = (page: Page, z: number) => camTo(page, z);
 /** Press a balloon's answer where it is on screen (a locator click would first scroll it "into view", moving the
  *  camera: the stage is sticky in its scroller). */
 async function press(page: Page, name: string) {
@@ -57,10 +49,10 @@ test('Oct 31 by day: pumpkins on the lawn and round the campsite, clear of every
   await camera(page, 114);
   await expect(page.locator('[data-halloween="day"] .pumpkin .art:visible').first()).toBeVisible();
   expect(await page.locator('.pumpkin').count()).toBeGreaterThanOrEqual(3);
-  expect(await under(page, '.pumpkin .art')).toEqual([]);
+  await expect.poll(() => under(page, '.pumpkin .art')).toEqual([]); // (re-measured where the camera settled)
   await camera(page, (await geo(page)).CAMS.oku);
   expect(await page.locator('.pumpkin .art').evaluateAll((els) => els.filter((e) => getComputedStyle(e).visibility !== 'hidden' && e.getBoundingClientRect().top > 140).length)).toBeGreaterThanOrEqual(3);
-  expect(await under(page, '.pumpkin .art')).toEqual([]);
+  await expect.poll(() => under(page, '.pumpkin .art')).toEqual([]); // (re-measured where the camera settled)
   await expect(page.locator('[data-visitor="jack"]')).toHaveCount(0);
   await expect(page.locator('.pumpkin .glow')).toHaveCount(0);
 });
@@ -84,7 +76,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     const jack = page.locator('[data-visitor="jack"] .art');
     await expect(jack).toBeVisible();
     expect(await under(page, '[data-visitor="jack"] .art')).toEqual([]);
-    expect(await under(page, '.pumpkin .art')).toEqual([]);
+    await expect.poll(() => under(page, '.pumpkin .art')).toEqual([]); // (re-measured where the camera settled)
     if (w === 390) await page.waitForTimeout(500), await page.screenshot({ path: '/tmp/halloween/night-390.png' });
     await tapOn(page, '[data-visitor="jack"] .art');
     const box = page.locator('[data-fx="talk"].placed');

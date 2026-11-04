@@ -611,15 +611,18 @@ test('a phone gone a while: its villager walks home on the other phone; back mid
   const still = await w<[number, number]>(b, 'partner');
   expect(Math.hypot(still[0] - away[0], still[1] - away[1]), 'there till the timeout').toBeLessThan(3);
   await expect.poll(async () => (await w<State>(b, 'state')).villagers.A.walking, { timeout: AFTER + 12_000 }).toBe(true);
-  // B watches A's villager every frame from here on: the largest step between two frames (a jump would show)
+  // B watches A's villager every frame from here on: the largest step between two frames past what its stroll home
+  // covers in that frame's time (a jump would show; a busy runner's long frame is a long step of the walk, no jump)
   await b.evaluate(() => {
     const g = window as unknown as { __world: W; __steps?: { max: number; on: boolean } };
     const s = (g.__steps = { max: 0, on: true });
-    let last = g.__world.partner();
-    const f = () => {
+    let last = g.__world.partner(), t0 = performance.now();
+    const f = (t: number) => {
       const p = g.__world.partner();
-      s.max = Math.max(s.max, Math.hypot(p[0] - last[0], p[1] - last[1]));
+      // (villagerSync HOME_U_S: 90 u/s; 0.15 u/ms allows for its catch-up)
+      s.max = Math.max(s.max, Math.hypot(p[0] - last[0], p[1] - last[1]) - 0.15 * Math.max(0, t - t0));
       last = p;
+      t0 = t;
       if (s.on) requestAnimationFrame(f);
     };
     requestAnimationFrame(f);
