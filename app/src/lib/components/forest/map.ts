@@ -68,11 +68,11 @@ export interface Leaner {
   a: number;
 }
 export const LOG_L = 6;
-export interface Crossing extends Rect {
+interface Crossing extends Rect {
   kind: 'bridge' | 'ford';
 }
 /** Something to find the way by: a world3d model (its path under room/world3d), lit ones glowing through the fog. */
-export interface Landmark {
+interface Landmark {
   model: string;
   x: number;
   z: number;
