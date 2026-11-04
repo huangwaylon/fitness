@@ -25,6 +25,7 @@ import { createEffects, type FxKind, type FxOpts } from './effects.ts';
 import { createLights, lampFog, type LampSpot } from './lights.ts';
 import type { Inst } from './objects.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
+import { releaseAll, resourcesOf } from './release.ts';
 
 type Tod = 'day' | 'dusk' | 'night';
 
@@ -656,7 +657,11 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   /** The last frame's: something moved (the full rate), only the ambience did. */
   let busy = false, ambience = false, paused = false, inFrame = false;
   let hook: ((t: number) => Want) | null = null;
-  const groupsPlaced = new Map<string, () => void>();
+  const groupsPlaced = new Map<string, { obj: Object3D; off: () => void }>();
+  /** A placed group's resources once it was replaced or removed (a もようがえ's home, bridge or pond: the models'
+   *  cache's, maybe in nothing else in the scene by the end): let go of with the scene's at the end, or they keep this
+   *  renderer alive. */
+  const unplaced: ReturnType<typeof resourcesOf> = new Set();
   function addObj(obj: Object3D): () => void {
     obj.traverse((n) => {
       const m = (n as Mesh).material as Material | Material[] | undefined;
@@ -877,13 +882,17 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     lamps: () => lights.lit(),
     fxCount: (tag) => effects.count(tag),
     placeGroup(id, obj, at) {
-      groupsPlaced.get(id)?.();
-      groupsPlaced.delete(id);
+      const was = groupsPlaced.get(id);
+      if (was) {
+        was.off();
+        resourcesOf(was.obj, unplaced);
+        groupsPlaced.delete(id);
+      }
       if (obj && at) {
         obj.position.set(at.x, at.y ?? src.height(at.x, at.z), -at.z);
         obj.rotation.y = at.yaw ?? 0;
         obj.updateMatrixWorld(true);
-        groupsPlaced.set(id, addObj(obj));
+        groupsPlaced.set(id, { obj, off: addObj(obj) });
       }
       shadowsDirty = true;
       kick();
@@ -939,17 +948,10 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       document.removeEventListener('visibilitychange', onVis);
       canvas.removeEventListener('webglcontextlost', onLost);
       canvas.removeEventListener('webglcontextrestored', onRestored);
-      // every geometry, material and texture still in the scene let go of on this renderer: three's listeners on each
-      // keep it, and one shared with the next island (a cached home's, bridge's or villager's model) kept this whole
-      // renderer and its context alive, one more a room's round trip (~1 MB of heap each in Chromium)
-      scene.traverse((o) => {
-        const m = o as Mesh;
-        m.geometry?.dispose();
-        for (const mat of m.material ? ([] as Material[]).concat(m.material) : []) {
-          for (const v of Object.values(mat)) if (v instanceof Texture) v.dispose();
-          mat.dispose();
-        }
-      });
+      // every geometry, material and texture still in the scene (and once placed) let go of on this renderer: three's
+      // listeners on each keep it, and one shared with the next island (a cached home's, bridge's or villager's model)
+      // kept this whole renderer and its context alive, one more a room's round trip (~1 MB of heap each in Chromium)
+      releaseAll([scene], unplaced);
       things.dispose();
       cards.dispose();
       effects.dispose();
