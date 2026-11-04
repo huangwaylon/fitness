@@ -6,7 +6,7 @@
 import { findPath, pathLength, snapTap, type Extra, type Nav, type Snap } from './nav.ts';
 import * as onLayout from '#lib/layout/nav.ts';
 import type { Pt, Surface } from './world.ts';
-import { SPEED } from './walkGraph.ts';
+import { SPEED } from './speed.ts';
 import type { Cue } from '#lib/sound/cues.ts';
 
 /** The tap ring's life (ms): a cream ring, 34u, flattened like a shadow, shrinking out (IslandScene's .tap-ring). */
