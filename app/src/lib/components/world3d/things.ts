@@ -5,8 +5,8 @@
 // without a rebuild. Every material is a Lambert (NH's soft look, cheaper than PBR), bent (bend.ts); a lamp's own _Emi
 // map is its night light (lights.ts adds its halo and its pool).
 import {
-  Box3, Color, InstancedBufferAttribute, InstancedMesh, Matrix4, MeshDepthMaterial, MeshLambertMaterial, Quaternion, RGBADepthPacking,
-  Vector3, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Scene
+  Color, InstancedBufferAttribute, InstancedMesh, Matrix4, MeshDepthMaterial, MeshLambertMaterial, Quaternion, RGBADepthPacking,
+  Vector3, Vector4, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Scene
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -17,6 +17,7 @@ import { MODELS } from './models3d.ts';
 import { ASSET_KEYS } from './assets.ts';
 import { nightLift, nightTag } from './nightLift.ts';
 import { procScene } from './proc3d.ts';
+import { FLAPS, wingHinge } from './wings.ts';
 
 /** Where a lit model's light is (a share of its height), its colour and the halo's and pool's sizes (u). */
 const LAMP: Partial<Record<string, { at: number; kind: LampSpot['kind']; colour: number; glow: number; pool: number; dz?: number }>> = {
@@ -72,32 +73,28 @@ const SHADOWS = (() => {
 })();
 /** After the sea (1) and the fresh water and the ponds (2), under the falls and the foam (3). */
 const UNDER_WATER = 2.5;
-/** The bugs whose wings flap (NH's butterflies and moths: the whole wing either side of the body; the bee's and the
- *  dragonflies' wing meshes): each instance's wing angle (`flap`, radians: up from flat) is turned in the vertex
- *  shader about the body's long axis, the body itself still. */
-const FLAPS = /butterfly|moth|birdwing|bluebottle|honeybee|dragonfly/;
-/** The flap in the vertex shader: the wing's points turned up about the body's axis (along the model's z, through
- *  uFlap's x and height), the body (within a twentieth of the span of the middle) not, a ramp to the wings at a fifth. */
+/** The flap in the vertex shader (world3d/wings.ts: FLAPS, wingHinge, flapPoint): the wing's points turned up about a
+ *  line along the body (the model's z) at the wings' height (uFlap.y), each side from its root (uFlap.z out from the
+ *  body's middle, uFlap.x), coming in over a ramp past it (uFlap.w); the body and what's in from the root still. */
 const FLAP_GLSL = `{
-  float fd = transformed.x - uFlap.x, fh = transformed.y - uFlap.y;
-  float th = aFlap * sign(fd) * smoothstep(uFlap.z * 0.05, uFlap.z * 0.2, abs(fd));
+  float fd = transformed.x - uFlap.x, fu = abs(fd) - uFlap.z, fh = transformed.y - uFlap.y;
+  float th = aFlap * smoothstep(0.0, uFlap.w, fu);
   float fc = cos(th), fs = sin(th);
-  transformed.x = uFlap.x + fd * fc - fh * fs;
-  transformed.y = uFlap.y + fd * fs + fh * fc;
+  transformed.x = uFlap.x + sign(fd) * (uFlap.z + fu * fc - fh * fs);
+  transformed.y = uFlap.y + fu * fs + fh * fc;
 }`;
-/** A flier's wings' hinge in its meshes' own space (the quantized positions the shader sees): the body's axis (x, a
- *  little above its belly) and half the span; `wings`: they're meshes of their own. */
-function wingAxis(root: Object3D): { at: Vector3; wings: boolean } {
-  const box = new Box3();
-  let wings = false;
-  root.traverse((n) => {
-    const mesh = n as Mesh;
-    if (!mesh.isMesh) return;
-    mesh.geometry.computeBoundingBox();
-    box.union(mesh.geometry.boundingBox!);
-    wings ||= /wing/i.test((mesh.material as Material).name);
+/** A flier's wings' hinge from its meshes' positions (in their own, quantized space: what the shader sees), and which
+ *  of its meshes flap. */
+function hingeOf(root: Object3D): { at: Vector4; flaps: Map<Mesh, boolean> } {
+  const meshes: Mesh[] = [];
+  root.traverse((n) => void ((n as Mesh).isMesh && meshes.push(n as Mesh)));
+  const parts = meshes.map((m) => {
+    const a = m.geometry.attributes.position, pos = new Float32Array(a.count * 3);
+    for (let i = 0; i < a.count; i++) (pos[i * 3] = a.getX(i)), (pos[i * 3 + 1] = a.getY(i)), (pos[i * 3 + 2] = a.getZ(i));
+    return { pos, wing: /wing/i.test((m.material as Material).name) };
   });
-  return { at: new Vector3((box.min.x + box.max.x) / 2, box.min.y + (box.max.y - box.min.y) * 0.4, (box.max.x - box.min.x) / 2), wings };
+  const h = wingHinge(parts);
+  return { at: new Vector4(h.x, h.y, h.root, h.ramp), flaps: new Map(meshes.map((m, i) => [m, h.flaps[i]])) };
 }
 const FADE_IN_MS = 600, FADE_OUT_MS = 600;
 /** A frame's step of a fade at most (ms): a slow frame never jumps it (a fade is never 0 → 1 in one frame). */
@@ -187,7 +184,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   let lampLevel = 0, liftLevel = 0.32;
   const mats = new Map<Material, { m: MeshLambertMaterial; depth: MeshDepthMaterial }>();
   const softMats = new Map<Material, { m: MeshLambertMaterial; depth: MeshDepthMaterial }>();
-  function lambert(src: Material, grey: boolean, soft = false, flap: Vector3 | null = null) {
+  function lambert(src: Material, grey: boolean, soft = false, flap: Vector4 | null = null) {
     const had = (soft ? softMats : mats).get(src);
     if (had) return had;
     const s = src as MeshStandardMaterial;
@@ -214,7 +211,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       const uFlap = flap && { value: flap };
       m.onBeforeCompile = (sh) => {
         if (uFlap) sh.uniforms.uFlap = uFlap;
-        sh.vertexShader = `attribute float aFade;\nvarying float vFade;\n${uFlap ? 'attribute float aFlap;\nuniform vec3 uFlap;\n' : ''}` +
+        sh.vertexShader = `attribute float aFade;\nvarying float vFade;\n${uFlap ? 'attribute float aFlap;\nuniform vec4 uFlap;\n' : ''}` +
           sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>\nvFade = aFade;\n${uFlap ? FLAP_GLSL : ''}`);
         sh.fragmentShader = 'varying float vFade;\n' + sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>\ngl_FragColor.a *= vFade;');
       };
@@ -350,12 +347,12 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     const g: Group = { name, sig, list: insts, meshes: [], base: [], soft };
     // (a critter new here fades in: now, or once it's shown)
     if (SOFT.has(name)) for (const o of insts) if (!fades.has(o.id)) fades.set(o.id, { a: 0, to: overs.get(o.id)?.hidden ? 0 : 1, t: performance.now() });
-    const flapAt = FLAPS.test(name) && soft ? wingAxis(gl.scene) : null;
+    const flapAt = FLAPS.test(name) && soft ? hingeOf(gl.scene) : null;
     gl.scene.traverse((n) => {
       const mesh = n as Mesh;
       if (!mesh.isMesh) return;
       // (a bee's, a dragonfly's wings are their own mesh: only those flap; a butterfly is one, its body kept still)
-      const flaps = !!flapAt && (!flapAt.wings || /wing/i.test((mesh.material as Material).name));
+      const flaps = !!flapAt?.flaps.get(mesh);
       const { m, depth } = lambert(mesh.material as Material, grey, soft, flaps ? flapAt!.at : null);
       if (nightTag(m, name)) m.emissiveIntensity += nightLift(m, lampLevel);
       // (a greyable model's instances carry their grey, a critter's its fade, a flier's its wings' angle: its own copy
