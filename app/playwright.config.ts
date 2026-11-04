@@ -14,12 +14,15 @@ const BASE = process.env.BASE_PATH ?? '/fitness';
 const local = [{ name: 'island.fps', value: '60' }, ...(process.env.E2E_RENDER === 'none' ? [{ name: 'e2e.render', value: 'none' }] : [])];
 const ISLAND = { storageState: { cookies: [], origins: [{ origin: `http://127.0.0.1:${PORT}`, localStorage: local }] } };
 
+// E2E_SLOW=1 (the full tier: everything drawn under CI's software GL, a frame ~0.5 s): 3× the test's time, 2× an expect's
+const SLOW = !!process.env.E2E_SLOW;
+
 export default defineConfig({
   testDir: 'e2e',
-  timeout: 30_000,
+  timeout: SLOW ? 90_000 : 30_000,
   // an expect waits up to 10 s on CI (5 here): a page load there now and then takes over 5 s, several shards at once (the
   // runners starting their browsers), and a spec's first wait after goto (the ribbon) ran out: a wait budget, no assertion looser
-  expect: { timeout: process.env.CI ? 10_000 : 5_000 },
+  expect: { timeout: (process.env.CI ? 10_000 : 5_000) * (SLOW ? 2 : 1) },
   // No silent retries: CI reruns a failed spec in its own step and names it flaky in the job summary (pages.yml).
   retries: 0,
   fullyParallel: true,
