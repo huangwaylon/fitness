@@ -85,21 +85,31 @@ test('a message bottle at the water’s edge: a tap reads its note', async ({ pa
 type WashSample = { t: number; x: number; z: number; fade: number; model: number[]; dom: number[] | null } | null;
 test('a bottle the waves bring washes up from the waterline to its spot, fading in, its tap area with it; a tap reads it as ever', async ({ page }) => {
   test.setTimeout(45_000);
-  // (it comes 1.5 s after the island opens: ?find=washed; then it waits for the next wave there, up to its 5 s cycle)
-  const before = await open(page, '&date=2026-11-04T12:00&find=washed');
-  const s = await page.evaluate(() => new Promise<WashSample[]>((ok) => {
+  // (it comes 1.5 s after the island opens: ?find=washed; then it waits for the next wave there, up to its 5 s cycle.)
+  // On the page's clock, paused, a frame at a time: its model loads only as it comes (the network's time), and on the
+  // real clock a busy runner's came after the wash-in was over, nothing of it seen. Held while the model loads.
+  await page.clock.install({ time: new Date('2026-11-04T12:00:00+09:00') });
+  await page.clock.pauseAt(new Date('2026-11-04T12:00:01+09:00'));
+  await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
+  await page.goto('?demo&date=2026-11-04T12:00&find=washed');
+  await expect.poll(async () => (await step(page, 100), hudMenu(page).isVisible()), { timeout: 20_000 }).toBe(true);
+  const before = { bells: await hudBells(page).getAttribute('aria-label'), url: page.url() };
+  const sample = () => page.evaluate(() => {
     type W = { where(id: string): { x: number; z: number; fade: number } | null; client(x: number, z: number, lift?: number): number[] };
-    const w = (window as unknown as { __world3d: W }).__world3d, out: WashSample[] = [], t0 = performance.now();
-    const frame = () => {
-      const p = w.where('find-b-demo');
-      const r = document.querySelector('[data-find="bottle"]')?.parentElement?.getBoundingClientRect();
-      out.push(p && { t: performance.now() - t0, x: p.x, z: -p.z, fade: p.fade, model: w.client(p.x, -p.z, 0), dom: r ? [r.left, r.top] : null });
-      const settled = out.length > 10 && out.slice(-10).every((q) => q?.fade === 1);
-      if (performance.now() - t0 < 14_000 && !settled) requestAnimationFrame(frame);
-      else ok(out);
-    };
-    frame();
-  }));
+    const w = (window as unknown as { __world3d: W }).__world3d, p = w.where('find-b-demo');
+    const el = document.querySelector('[data-find="bottle"]'), r = el?.parentElement?.getBoundingClientRect();
+    return { el: !!el, p: p && { t: performance.now(), x: p.x, z: -p.z, fade: p.fade, model: w.client(p.x, -p.z, 0), dom: r ? [r.left, r.top] : null } };
+  });
+  const s: WashSample[] = [];
+  for (let i = 0; i < 1200; i++) {
+    const { el, p } = await sample();
+    s.push(p);
+    const shown = s.filter((q) => !!q);
+    if (shown.length > 10 && shown.slice(-10).every((q) => q!.fade === 1)) break;
+    // (the bottle's there and its model isn't: a moment of ours for the load, none of the page's)
+    if (el && !p) await page.waitForTimeout(50);
+    await step(page, 16);
+  }
   const shown = s.filter((p): p is NonNullable<WashSample> => !!p);
   expect(shown.length).toBeGreaterThan(10);
   const first = shown[0], last = shown.at(-1)!;
@@ -121,6 +131,7 @@ test('a bottle the waves bring washes up from the waterline to its spot, fading 
   // taken as ever
   const q = await at(page, '[data-find="bottle"]');
   await page.mouse.click(q.x, q.y);
+  await step(page, 1000);
   await expect(page.locator('[data-fx="catch"]')).toContainText(/メッセージボトル！ 『.+』/);
   await expect(page.locator('[data-find="bottle"]')).toHaveCount(0);
   await unchanged(page, before);
