@@ -1,15 +1,13 @@
 // ごはん's small helpers (docs/design.md "Gohan"): the catalog loaded once a session, an entry's amount in words, the
 // food an entry was logged from (its catalog item when the catalog has it, for its portions; else its own portion), the
 // さいきん list, a portion's start and step, whose day kept for the session, a repeat's weekdays in words, and a recipe
-// as a food (マイレシピ: its portions), a custom food as a food and its editor's fields (マイ食品), and the meal the clock
-// suggests.
+// as a food (マイレシピ: its portions), and a custom food as a food and its editor's fields (マイ食品).
 import type { Who } from '#lib/types.ts';
 import {
-  CUSTOM, customDensityOk, customPortions, customSnap, FOOD_GRAMS, isKcalGoal, recipePortion, recipeSnap, type FoodCustom, type FoodEntry, type FoodSnap, type Meal,
+  CUSTOM, customDensityOk, customPortions, customSnap, FOOD_GRAMS, isKcalGoal, recipePortion, recipeSnap, type FoodCustom, type FoodEntry, type FoodSnap,
   type RepeatItem
 } from '#lib/contract/food.ts';
 import type { Recipe } from '#lib/model/food.ts';
-import { ZONE_OFFSET_MS } from '#lib/time/dates.ts';
 import { loadFoodDb, portionsOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
 
@@ -203,12 +201,6 @@ export function recipeItem(r: Recipe): Item {
 
 /** Whether a recipe logs by the serving (an ingredient of no known weight: its snapshot `sv`). */
 export const recipeServing = (r: Recipe): boolean => recipeSnap(r).sv === true;
-
-/** The meal the clock (Tokyo) suggests: 朝 until 10:00, 昼 until 15:00, おやつ until 17:00, then 夜. */
-export function mealAt(ms: number): Meal {
-  const h = new Date(ms + ZONE_OFFSET_MS).getUTCHours();
-  return h >= 4 && h < 10 ? 'b' : h >= 10 && h < 15 ? 'l' : h >= 15 && h < 17 ? 's' : 'd';
-}
 
 /** A recipe as its editor changes it: the name, the servings, the ingredients. */
 export interface RecipeDraft { n: string; sv: number; it: RepeatItem[] }

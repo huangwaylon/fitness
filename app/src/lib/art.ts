@@ -100,11 +100,10 @@ export const GROUP_ART: Record<'activity' | 'body', string> = {
 
 /** ごはん's tabs → a catalogue icon each on their switch, as けんこう's groups: きろく the rice cooker (ごはん itself; the
  *  plate meal it replaced was a flat blur at 22px, the user couldn't tell what it was), グラフ the whiteboard (the
- *  chart), レシピ the stewpot (マイレシピ). */
-export const FOOD_TAB_ART: Record<'log' | 'chart' | 'recipe', string> = {
+ *  chart). */
+export const FOOD_TAB_ART: Record<'log' | 'chart', string> = {
   log: 'finds/items/rice-cooker',
-  chart: 'finds/items/whiteboard',
-  recipe: 'finds/items/stewpot'
+  chart: 'finds/items/whiteboard'
 };
 
 /** One of the four ring fruits → inventory icon key. */

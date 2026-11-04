@@ -130,11 +130,9 @@ try {
   await waitFor('dialog[open] [data-food-summary]');
   sheets.foodLog = { idle: await quiet(), scroll: await scrollSheet('dialog[open] [data-food-sheet]') };
   await shot('food');
-  for (const [tab, key] of [['chart', 'foodChart'], ['recipe', 'foodRecipe']]) {
-    await run(`document.querySelector('dialog[open] [data-tab=${tab}]').click();`);
-    await sleep(1500);
-    sheets[key] = { idle: await quiet(), scroll: await scrollSheet('dialog[open] [data-food-sheet]') };
-  }
+  await run(`document.querySelector('dialog[open] [data-tab=chart]').click();`);
+  await sleep(1500);
+  sheets.foodChart = { idle: await quiet(), scroll: await scrollSheet('dialog[open] [data-food-sheet]') };
   await run(`document.querySelector('dialog[open]').close();`);
   report.sheets = sheets;
   report.errors = await run('return window.__iosErrs;');

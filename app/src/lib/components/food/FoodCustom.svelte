@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A custom food (マイ食品; a level over the search or the レシピ tab, docs/design.md "Gohan"): a food not in the data,
+  // A custom food (マイ食品; a level over a search or its amount, docs/design.md "Gohan"): a food not in the data,
   // typed in as one serving. Mine or a new one: its name, 1食の めやす (the serving's label, 「1食」 unless typed) and
   // its weight in g (may stay blank: then it is logged by the serving, never by grams), カロリー (needed) and
   // たんぱく質 · 脂質 · 炭水化物 · 塩分 in g (each may stay blank), all for one serving; full-width digits welcome

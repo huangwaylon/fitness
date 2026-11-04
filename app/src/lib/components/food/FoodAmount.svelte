@@ -7,7 +7,8 @@
   // The item may be swapped while it is open (an entry opened from its snapshot, the catalog's portions arriving):
   // untouched, the amount starts again from the same grams; touched, the portion picked stays picked (by its label).
   // A serving with no known weight (`serving`: a custom food's, マイ食品): its values per serving, its one portion stepped
-  // by whole servings, no grams field (its nominal 100 g never shown).
+  // by whole servings, no grams field (its nominal 100 g never shown). A recipe's or custom food's: `open`, a button
+  // left of ついか to open it (mine to edit, anyone else's to copy).
   import { untrack } from 'svelte';
   import type { Meal } from '#lib/contract/food.ts';
   import { FOOD_GRAMS, MEALS } from '#lib/contract/food.ts';
@@ -29,8 +30,10 @@
     serving?: boolean;
     ondone: (v: { m: Meal; g: number; u: string | null }) => void;
     onremove?: () => void;
+    /** What the food came from, to open (a recipe, a custom food). */
+    open?: { label: string; run: () => void } | null;
   }
-  let { item, meal, g0, u0, editing = false, pick = false, serving = false, ondone, onremove }: Props = $props();
+  let { item, meal, g0, u0, editing = false, pick = false, serving = false, ondone, onremove, open = null }: Props = $props();
 
   const ps = $derived(serving ? (item.portions?.length ? item.portions : [{ label: t('food.my.one'), g: 100 }]) : portionsOf(item));
   /** g or ml: a drink's portions are in ml (100 ml counts as 100 g). */
@@ -133,6 +136,7 @@
   {/if}
 
   <div class="acts">
+    {#if open}<button type="button" class="btn paper small open" data-sfx="page" data-amount-open onclick={open.run}>{open.label}</button>{/if}
     {#if editing}<button type="button" class="btn paper small" data-sfx="undo" data-remove onclick={() => onremove?.()}>{t(pick ? 'food.rcp.itemRemove' : 'food.remove')}</button>{/if}
     <button type="submit" class="btn small" data-sfx="confirm" data-done aria-disabled={!ok}>
       {pick ? t(editing ? 'food.rcp.save' : 'food.rcp.itemAdd') : editing ? t('food.save') : t('food.addOk')}
@@ -181,4 +185,5 @@
   .sb { padding: 0 2px; font-size: var(--fs-s); white-space: nowrap; }
   .acts { display: flex; justify-content: flex-end; gap: 10px; }
   .acts .btn { margin: 0; min-width: 7em; }
+  .acts .open { margin-right: auto; }
 </style>
