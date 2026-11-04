@@ -5,7 +5,7 @@
 //     every fish: the sway grows toward its tail, its phase the instance's own);
 //   - each tank's water is one shader (its glow, NH's blue to its depth, caustics shimmering over its back and floor,
 //     light from above), its bubbles one Points (risen in the shader), its glass a faint pane and a metal frame;
-//   - the swimmers step by boids.ts, their matrices written in place; nothing allocated in a frame; a tank off screen
+//   - the swimmers step by boids.ts (the bottom walkers walk its sand: a crab sideways), their matrices written in place; nothing allocated in a frame; a tank off screen
 //     rests, its fish culled by its water's bounds (and the wing draws nothing while none is on screen).
 import {
   BoxGeometry, BufferGeometry, Color, DoubleSide, Float32BufferAttribute, Group, InstancedBufferAttribute, InstancedMesh, Matrix4,
@@ -13,9 +13,9 @@ import {
   type Material, type Texture
 } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
-import type { Specimen } from './species.ts';
+import { WALKERS, type Specimen } from './species.ts';
 import { TANKS, fishScale, waterOf, type Box, type Tank } from './tanks.ts';
-import { spawn, stepSchool, type Swimmer } from './boids.ts';
+import { spawn, stepSchool, stepWalker, type Swimmer } from './boids.ts';
 import type { Rect } from './plan.ts';
 import { batcher, decal, openBox, plainGeometry } from './geometry.ts';
 
@@ -70,9 +70,19 @@ const PROPS: Record<string, [string, number, number, number][]> = {
   sea: [['kelp-rocks', 0.12, 0.25, 0.75], ['coral', 0.42, 0.3, 0.9], ['kelp-rock', 0.68, 0.22, 0.7], ['coral-2', 0.88, 0.35, 1], ['diver', 0.55, 0.6, 0.6]],
   deep: [['deep-rocks', 0.5, 0.15, 1.2], ['deep-rocks', 0.5, 0.75, 0.9]],
   river: [['mossy-log', 0.2, 0.5, 0.7], ['river-rock', 0.5, 0.4, 1], ['water-plants', 0.78, 0.45, 0.55], ['driftwood-rock', 0.95, 0.5, 0.45]],
-  'small-1': [['lily-plants', 0.5, 0.5, 0.2]], 'small-2': [['river-rock-2', 0.5, 0.5, 0.45]], 'small-3': [['river-rock', 0.5, 0.5, 0.4]], 'small-4': [['river-rock-2', 0.5, 0.5, 0.45]],
-  'small-5': [['water-plants', 0.5, 0.5, 0.2]], 'small-6': [['water-plants', 0.5, 0.5, 0.2]], 'small-7': [['coral-2', 0.5, 0.5, 0.22]], 'small-8': [['kelp-small', 0.5, 0.4, 0.18]]
+  // the small tanks', a group's four by turns (species.ts SMALL: the pond's, the stream's, the tropical, the reef's)
+  pond: [['lily-plants', 0.5, 0.5, 0.18]], stream: [['river-rock-2', 0.5, 0.5, 0.4]], 'stream-2': [['river-rock', 0.5, 0.5, 0.36]],
+  // (the walkers' tank: its sand clear, its plants at the back)
+  'small-8': [['water-plants', 0.5, 0.1, 0.14]],
+  tropical: [['water-plants', 0.5, 0.5, 0.18]], reef: [['coral-2', 0.5, 0.5, 0.2]], 'reef-2': [['kelp-small', 0.5, 0.4, 0.16]]
 };
+const SMALL_PROPS = ['pond', 'stream', 'tropical', 'reef'] as const;
+/** A tank's props: its own, else its small group's (every other one the group's second, when it has one). */
+function propsOf(t: Tank): [string, number, number, number][] {
+  if (PROPS[t.id]) return PROPS[t.id];
+  const n = Number(t.id.slice(6)) - 1, g = SMALL_PROPS[n >> 2];
+  return (n % 2 && PROPS[`${g}-2`]) || PROPS[g] || [];
+}
 
 interface School {
   sp: Specimen;
@@ -83,6 +93,8 @@ interface School {
   /** Its model's centre (model units, before the scale) and its scale. */
   off: Vector3;
   s: number;
+  /** A bottom walker's way (species.ts WALKERS: a crab sideways), else it swims. */
+  walk?: 'side' | 'ahead';
 }
 
 /** A tank's bounds as a sphere (the camera's test: its fish culled by it, its water stepped only on screen). */
@@ -152,7 +164,7 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
     else batch.add(back, waterMat(look, false), at.makeRotationY(-Math.PI / 2).setPosition(w.x1, (w.y0 + w.y1) / 2, (w.z0 + w.z1) / 2));
     batch.add(new PlaneGeometry(w.x1 - w.x0, w.z1 - w.z0), waterMat(look, true), at.makeRotationX(-Math.PI / 2).setPosition((w.x0 + w.x1) / 2, w.y0 + 0.08, (w.z0 + w.z1) / 2));
     // its props, at their spots on the sand
-    for (const [name, u, v, s] of PROPS[t.id] ?? PROPS[look] ?? []) {
+    for (const [name, u, v, s] of propsOf(t)) {
       const x = along ? w.x0 + (w.x1 - w.x0) * u : w.x1 - (w.x1 - w.x0) * v;
       const z = along ? w.z0 + (w.z1 - w.z0) * v : w.z0 + (w.z1 - w.z0) * u;
       kit.prop(name, x, z, { s, y: w.y0, yaw: along ? 0 : -Math.PI / 2, parent: group });
@@ -211,12 +223,14 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
   };
   /** Each tank's swimmers, all its schools' together (they keep off one another), as they load. */
   const swimmers = new Map<string, Swimmer[]>(TANKS.map((t) => [t.id, []]));
+  /** And its bottom walkers (they keep off one another's way). */
+  const walkers = new Map<string, Swimmer[]>(TANKS.map((t) => [t.id, []]));
   for (const sp of list) {
     if (sp.kind !== 'fish') continue;
     const tank = TANKS.find((t) => t.id === sp.tank);
     if (!tank) continue;
     const water = waterOf(tank);
-    const school: School = { sp, tank, water, mesh: null, fish: [], off: new Vector3(), s: 1 };
+    const school: School = { sp, tank, water, mesh: null, fish: [], off: new Vector3(), s: 1, walk: WALKERS[sp.id] };
     schools.push(school);
     void kit.critter('fish', sp.id).then((g) => {
       if (!g || disposed) return;
@@ -229,23 +243,28 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
       const geo = plainGeometry(g.scene, m);
       geo.computeBoundingBox();
       const bb = geo.boundingBox!;
-      const len = bb.max.z - bb.min.z;
-      school.s = fishScale(tank, len);
+      // (its length, head to tail; a crab's spread across it may be the longer)
+      const len = bb.max.z - bb.min.z, big = Math.max(len, bb.max.x - bb.min.x);
+      school.s = fishScale(tank, big);
       school.off.set(-(bb.min.x + bb.max.x) / 2, -(bb.min.y + bb.max.y) / 2, -(bb.min.z + bb.max.z) / 2);
       geo.translate(school.off.x, school.off.y, school.off.z);
       const head = bb.max.z + school.off.z, tail = bb.min.z + school.off.z;
       geo.setAttribute('aPhase', new InstancedBufferAttribute(new Float32Array([sp.id.length]), 1));
       geos.push(geo);
       const map = (m.material as { map?: Texture | null }).map ?? null;
-      const mesh = new InstancedMesh(geo, fishMat(map, head, tail, len * 0.06), 1);
+      // (a walker's body stays still: no tail to sway)
+      const mesh = new InstancedMesh(geo, fishMat(map, head, tail, school.walk ? 0 : len * 0.06), 1);
       // (culled by its tank's bounds: its fish swim nowhere else)
       mesh.boundingSphere = spheres.get(tank.id)!;
       mesh.userData.specimen = sp.id;
       // a big fish slow, a little one quick (u/s, at its drawn size)
-      const r = (len * school.s) / 2;
+      const r = ((school.walk ? big : len) * school.s) / 2;
       const speed = Math.max(4, Math.min(12, 3 + r * 0.9));
-      school.fish.push(spawn(water, r, speed, hash(sp.id)));
-      swimmers.get(tank.id)!.push(...school.fish);
+      const f = spawn(water, r, school.walk ? speed * 0.5 : speed, hash(sp.id));
+      school.fish.push(f);
+      // a walker on the sand (its own height off it), else among the tank's swimmers
+      if (school.walk) f.p[1] = water.y0 + ((bb.max.y - bb.min.y) / 2) * school.s;
+      (school.walk ? walkers : swimmers).get(tank.id)!.push(f);
       school.mesh = mesh;
       group.add(mesh);
       write(school);
@@ -257,8 +276,8 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
     if (!sc.mesh) return;
     for (let i = 0; i < sc.fish.length; i++) {
       const f = sc.fish[i];
-      const yaw = Math.atan2(f.v[0], f.v[2]), sp = Math.hypot(f.v[0], f.v[2]);
-      const pitch = -Math.atan2(f.v[1], Math.max(0.01, sp)) * 0.6;
+      const yaw = f.face ?? Math.atan2(f.v[0], f.v[2]), sp = Math.hypot(f.v[0], f.v[2]);
+      const pitch = f.face === undefined ? -Math.atan2(f.v[1], Math.max(0.01, sp)) * 0.6 : 0;
       Q.setFromAxisAngle(E, yaw);
       Qp.setFromAxisAngle(X, pitch);
       Q.multiply(Qp);
@@ -287,7 +306,10 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
       for (const [id, ss] of byTank) {
         if (!seen(spheres.get(id)!)) continue;
         stepSchool(swimmers.get(id)!, waters.get(id)!, dt / 1000, t / 1000);
-        for (const s of ss) write(s);
+        for (const s of ss) {
+          if (s.walk) for (const f of s.fish) stepWalker(f, s.water, dt / 1000, t / 1000, s.walk === 'side', walkers.get(id)!);
+          write(s);
+        }
       }
       return true;
     },

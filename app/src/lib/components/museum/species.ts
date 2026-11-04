@@ -4,7 +4,8 @@
 //     sea       the great tank (the sea's middling and big fish, the rays, the sharks)
 //     deep      the deep-sea tank (dark: the oarfish, the coelacanth, the barreleye, the football fish, the squid…)
 //     river     the river tank (the fresh water's middling and big fish, the turtles)
-//     small-1…8 the small tanks, two to each group of little fish: the pond's, the stream's, the tropical, the reef's
+//     small-1…16 the small tanks, one or two little fish each, four to each group: the pond's, the stream's, the
+//               tropical, the reef's
 //   a bug where NH's garden would have it, by how it lives (island/critters.ts BUGS: its flight, its ground, its tree):
 //     fly the flowers' air (the butterflies, the moths, the bees: on paths round the beds), dart over the pond (the
 //     dragonflies), drift over it (the fireflies), flower (sat on a bloom), hop (in the grass), trunk / palm (perched on
@@ -16,7 +17,7 @@ import { BUGS, FISH, type BugId } from '../island/critters.ts';
 import { POND_FISH } from '../island/pondFish.ts';
 import { findKey, type FirstFind } from '#lib/model/finds.ts';
 
-export type TankId = 'sea' | 'deep' | 'river' | `small-${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8}`;
+export type TankId = 'sea' | 'deep' | 'river' | `small-${number}`;
 export type Habitat = 'fly' | 'dart' | 'drift' | 'flower' | 'hop' | 'trunk' | 'palm' | 'leaf' | 'ground' | 'water' | 'terrarium' | 'dangle';
 type Kind = 'fish' | 'bug';
 export interface Specimen {
@@ -31,15 +32,18 @@ export interface Specimen {
 
 /** The deep sea's (NH's dark tank). */
 const DEEP: ReadonlySet<string> = new Set(['oarfish', 'coelacanth', 'barreleye', 'football-fish', 'squid', 'sea-butterfly']);
-/** The little fish's groups, each two small tanks (the first half of a group's list in the first). */
-const SMALL: Record<string, readonly string[]> = {
-  pond: ['goldfish', 'pop-eyed-goldfish', 'ranchu-goldfish', 'killifish', 'tadpole', 'frog', 'crawfish', 'crucian-carp'],
-  stream: ['bitterling', 'pale-chub', 'freshwater-goby', 'loach', 'bluegill', 'pond-smelt', 'mitten-crab'],
-  tropical: ['guppy', 'nibble-fish', 'angelfish', 'betta', 'neon-tetra', 'rainbowfish', 'piranha'],
-  reef: ['clownfish', 'surgeonfish', 'butterfly-fish', 'sea-horse', 'anchovy', 'horse-mackerel']
-};
-const SMALL_TANK = new Map<string, TankId>();
-Object.values(SMALL).forEach((ids, g) => ids.forEach((id, i) => SMALL_TANK.set(id, `small-${g * 2 + (i < Math.ceil(ids.length / 2) ? 1 : 2)}` as TankId)));
+/** The small tanks, one or two little fish each (NH's), four to a group: the pond's, the stream's, the tropical, the
+ *  reef's; the bottom walkers (the crawfish, the mitten crab) share one. */
+const SMALL: readonly (readonly string[])[] = [
+  ['goldfish', 'pop-eyed-goldfish'], ['ranchu-goldfish', 'killifish'], ['tadpole', 'frog'], ['crucian-carp'],
+  ['bitterling', 'pale-chub'], ['freshwater-goby', 'loach'], ['bluegill', 'pond-smelt'], ['crawfish', 'mitten-crab'],
+  ['guppy', 'neon-tetra'], ['nibble-fish', 'rainbowfish'], ['angelfish', 'betta'], ['piranha'],
+  ['clownfish', 'sea-horse'], ['surgeonfish', 'butterfly-fish'], ['anchovy'], ['horse-mackerel']
+];
+const SMALL_TANK = new Map<string, TankId>(SMALL.flatMap((ids, i) => ids.map((id) => [id, `small-${i + 1}` as TankId] as const)));
+
+/** The aquarium's bottom walkers, on their tank's sand (NH's): the crab sideways, the crawfish ahead. */
+export const WALKERS: Readonly<Record<string, 'side' | 'ahead'>> = { 'mitten-crab': 'side', crawfish: 'ahead' };
 
 export const FISH_IDS: readonly string[] = [...Object.keys(POND_FISH), ...Object.keys(FISH)];
 export const BUG_IDS: readonly string[] = Object.keys(BUGS);

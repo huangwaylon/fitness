@@ -11,7 +11,7 @@
 //   leaf      on a bush's leaves, creeping
 //   ground    crawling the soil by the log and the ferns
 //   water     on the pond: gliding strokes
-//   terrarium walking the soil of its glass case
+//   terrarium walking the soil of its glass case (the hermit crab sideways)
 //   dangle    hanging from an oak's branch on its thread, bobbing
 // A species is one InstancedMesh (one specimen, NH's museum's), placed each frame in place, culled by its own bounds
 // (a sphere round it); a bug off screen rests, and the wing draws nothing while none is on screen.
@@ -376,7 +376,10 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
         const [cx, cz] = CASES[i % CASES.length], n = Math.floor(i / CASES.length);
         const a = t * 0.22 * (s % 2 ? 1 : -1) + s + n * 2;
         b.p.set(cx + Math.cos(a) * (CASE.w / 2 - 6), CASE.stand + 2, cz + Math.sin(a * 1.3) * (CASE.d / 2 - 4));
-        orient(b.q, T.set(-Math.sin(a), 0, Math.cos(a * 1.3) * 1.3).multiplyScalar(s % 2 ? 1 : -1), UP);
+        T.set(-Math.sin(a), 0, Math.cos(a * 1.3) * 1.3).multiplyScalar(s % 2 ? 1 : -1);
+        // (a crab square to its way: sideways)
+        if (b.sp.id === 'hermit-crab') T.set(T.z, 0, -T.x);
+        orient(b.q, T, UP);
         break;
       }
       case 'dangle': {

@@ -68,7 +68,7 @@ test('what’s on show: exactly the fish anyone has found (the guest’s too), e
   await seed(page, [['fish', 'sea-bass', 'A'], ['fish', 'koi', 'B'], ['fish', 'neon-tetra', 'G'], ['fish', 'oarfish', 'A']]);
   await open(page);
   const sp = await mu<{ id: string; kind: string; tank: string; by: string }[]>(page, 'specimens()');
-  expect(sp.map((s) => [s.id, s.tank, s.by]).sort()).toEqual([['koi', 'river', 'B'], ['neon-tetra', 'small-6', 'G'], ['oarfish', 'deep', 'A'], ['sea-bass', 'sea', 'A']]);
+  expect(sp.map((s) => [s.id, s.tank, s.by]).sort()).toEqual([['koi', 'river', 'B'], ['neon-tetra', 'small-9', 'G'], ['oarfish', 'deep', 'A'], ['sea-bass', 'sea', 'A']]);
   // each drawn swimming in the aquarium (its model loaded), and no other
   await expect.poll(async () => (await mu<string[]>(page, 'shown()')).sort(), { timeout: 15_000 }).toEqual(['koi', 'neon-tetra', 'oarfish', 'sea-bass']);
 });

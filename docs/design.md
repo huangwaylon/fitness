@@ -1229,13 +1229,15 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
 - **The aquarium** (`aquarium.ts`, `tanks.ts`, `boids.ts`): NH's grouping (species.ts tankOf): the great sea tank along
   the back wall (the sea's middling and big fish, the rays and sharks: a whale shark scaled to it), the deep-sea tank
   on the far wall (dark: the oarfish, the coelacanth, the barreleye, the football fish, the squid, the sea butterfly),
-  the river tank as an island in the middle (the fresh water's middling and big fish, the turtles), eight small tanks
-  on their stands by the front, two to each group of little fish (the pond's, the stream's, the tropical, the reef's;
-  drawn a little bigger), each with NH's own props (kelp on its rocks, coral, the deep's dark rocks, the river's stones,
+  the river tank as an island in the middle (the fresh water's middling and big fish, the turtles), sixteen small tanks
+  on their stands by the front in two rows of eight, one or two little fish each, four tanks to each group (the pond's,
+  the stream's, the tropical, the reef's; drawn a little bigger), each with NH's own props (kelp on its rocks, coral, the deep's dark rocks, the river's stones,
   logs and water plants, NH's diver and little submarine in the great tank). Each species found swims in its tank, one of
   each (NH's), boid-like: its own slow wandering heading, mostly along its tank's long side,
   turned off the glass before it, off the others' bodies, its body always in the water; facing its way, its tail
-  swaying (the vertex shader: one program for every fish). The water is one shader (NH's blue to its depth, caustics
+  swaying (the vertex shader: one program for every fish). The bottom walkers share a small tank and walk its sand
+  (boids.ts stepWalker: a walk to a spot, a rest, keeping off each other's way): the mitten crab sideways, its claws
+  forward, the crawfish ahead (NH's). The water is one shader (NH's blue to its depth, caustics
   shimmering on its back and floor, rays from the surface), its glass tinted its water's colour, its bubbles one Points
   risen in the shader. A species is one InstancedMesh, culled by its tank's bounds; a tank off screen rests; nothing
   allocated in a frame.
@@ -1248,7 +1250,8 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   mantis or a stink bug sits on a bloom; a grasshopper or a cricket hops in the grass; a cicada, a stag or a beetle
   clings to an oak's trunk head up (the palm beetles to the palm); the snail and the walking leaf creep on the bushes;
   the tiger beetle and the dung beetle crawl the soil by the log; the pondskater and the diving beetle glide on the
-  pond; the tarantula, the scorpion, the centipede, the beach's crawlers and the mole cricket walk the soil of a case;
+  pond; the tarantula, the scorpion, the centipede, the beach's crawlers (the hermit crab sideways) and the mole
+  cricket walk the soil of a case;
   the bagworm and the spider hang from an oak's branch on their threads. Drawn a little bigger than NH's (1.9×, the
   island's way), one InstancedMesh a species, placed each frame where it is, culled by its own bounds.
 - **Performance:** the wings' exhibits are built only once the finds are in (exhibits.ts: a wing rebuilt only when its

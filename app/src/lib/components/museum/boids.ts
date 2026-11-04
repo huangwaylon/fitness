@@ -2,7 +2,8 @@
 // fish wanders on its own slow heading (a smooth noise of its seed and the time), keeps mostly along its tank's long
 // side, turns away from the glass before it gets there, keeps off the others' bodies, rises and dips only a little;
 // its speed is its own (a big fish slow, a little one quick) within bounds. Its body (half its length) never leaves the
-// water: the step clamps it inside. Plain arrays, no allocation in a step (the frames call it for every fish on show).
+// water: the step clamps it inside. A bottom walker (the crawfish, the mitten crab: NH's, on the sand) walks instead
+// (stepWalker). Plain arrays, no allocation in a step (the frames call it for every fish on show).
 import type { Box } from './tanks.ts';
 
 export interface Swimmer {
@@ -14,6 +15,8 @@ export interface Swimmer {
   r: number;
   /** Its own noise's seed. */
   seed: number;
+  /** A walker's heading (radians, as atan2(x, z)): what it faces, not always its way (a crab's is square to it). */
+  face?: number;
 }
 
 /** The box a swimmer's middle keeps to: the water less its body (its length along the tank's long side, half that
@@ -94,3 +97,44 @@ export function stepSchool(fish: Swimmer[], water: Box, dt: number, t: number): 
     s.v[2] = vz;
   }
 }
+
+const hash = (seed: number, k: number): number => Math.abs((Math.sin(seed * 12.9898 + k * 78.233) * 43758.5453) % 1);
+/** How long a walker's bout is (s): a walk to a spot on the sand, then a rest there. */
+const BOUT = 3.2;
+
+/** One step of a bottom walker on its tank's sand (its y kept): each bout a walk to a spot of its own (seeded by the
+ *  bout: the same on every phone), then a rest. A crab goes sideways (its body square to its way, NH's scuttle: whichever
+ *  side is nearer its facing), anything else turns to its way and walks ahead; one about to walk into another waits. */
+export function stepWalker(s: Swimmer, water: Box, dt: number, t: number, sideways: boolean, others: readonly Swimmer[] = []): void {
+  const b = swimBox(water, s.r, tmp), h = Math.min(0.1, Math.max(0, dt));
+  const n = Math.floor(t / BOUT + (s.seed % 7) / 7);
+  const tx = b.x0 + (b.x1 - b.x0) * hash(s.seed, n), tz = b.z0 + (b.z1 - b.z0) * hash(s.seed, n + 0.5);
+  const dx = tx - s.p[0], dz = tz - s.p[2], d = Math.hypot(dx, dz), step = Math.min(d, s.speed * h);
+  s.face ??= Math.atan2(s.v[0], s.v[2]);
+  if (d < 0.05) {
+    s.v[0] = s.v[1] = s.v[2] = 0;
+    return;
+  }
+  const way = Math.atan2(dx, dz);
+  // its facing: a crab's square to its way (the nearer of the two), anything else's toward its way, turned smoothly
+  let want = way;
+  if (sideways) {
+    const l = way + Math.PI / 2, r = way - Math.PI / 2;
+    want = Math.abs(wrap(l - s.face)) < Math.abs(wrap(r - s.face)) ? l : r;
+  }
+  const turn = wrap(want - s.face);
+  s.face += Math.sign(turn) * Math.min(Math.abs(turn), 3 * h);
+  // (a walker that isn't a crab sets off once it's turned most of the way)
+  let go = sideways || Math.abs(turn) < 0.6 ? step : 0;
+  for (const o of others) {
+    if (o === s) continue;
+    const ox = o.p[0] - s.p[0], oz = o.p[2] - s.p[2];
+    if (ox * ox + oz * oz < (s.r + o.r) ** 2 * 0.6 && ox * dx + oz * dz > 0) go = 0;
+  }
+  s.p[0] = Math.min(b.x1, Math.max(b.x0, s.p[0] + (dx / d) * go));
+  s.p[2] = Math.min(b.z1, Math.max(b.z0, s.p[2] + (dz / d) * go));
+  s.v[0] = h ? ((dx / d) * go) / h : 0;
+  s.v[1] = 0;
+  s.v[2] = h ? ((dz / d) * go) / h : 0;
+}
+const wrap = (a: number): number => Math.atan2(Math.sin(a), Math.cos(a));
