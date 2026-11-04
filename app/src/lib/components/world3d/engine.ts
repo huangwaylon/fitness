@@ -368,20 +368,43 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   const v3 = new Vector3();
   /** A three-space point (already bent) → canvas px and its view depth. */
   function screen(x: number, y: number, z: number): [number, number, number] {
+    screenTo(x, y, z);
+    return [sp[0], sp[1], sp[2]];
+  }
+  // (at()'s scratch: it runs for every moving node each frame, every node while the camera moves; bendPoint's and
+  // screen's tuples were six arrays a call)
+  const bp = new Float64Array(3), sp = new Float64Array(3);
+  /** bendPoint into bp. */
+  function bendTo(x: number, y: number, z: number, pivotZ: number, R: number) {
+    const th = (pivotZ - z) / R, r = R + y;
+    bp[0] = x;
+    bp[1] = r * Math.cos(th) - R;
+    bp[2] = pivotZ - r * Math.sin(th);
+  }
+  /** screen into sp. */
+  function screenTo(x: number, y: number, z: number) {
     v3.set(x, y, z).applyMatrix4(camera.matrixWorldInverse);
     const depth = -v3.z;
     v3.applyMatrix4(camera.projectionMatrix);
-    return [((v3.x + 1) / 2) * W, ((1 - v3.y) / 2) * H, depth];
+    sp[0] = ((v3.x + 1) / 2) * W;
+    sp[1] = ((1 - v3.y) / 2) * H;
+    sp[2] = depth;
   }
   function at(x: number, z: number, lift: number) {
     const R = bendU.uBendR.value, pz = -camZ;
     const gy = src.feet(x, z);
-    const [bx, by, bz] = bendPoint(x, gy + lift, -z, pz, R);
-    const [sx, sy, depth] = screen(bx, by, bz);
+    bendTo(x, gy + lift, -z, pz, R);
+    const by = bp[1], bz = bp[2];
+    screenTo(bp[0], by, bz);
+    const sx = sp[0], sy = sp[1], depth = sp[2];
     const k = depth > 1 ? focal / depth : 0;
     // the foreshortening of an upright (a model's height) and of the ground, here
-    const [ux, uy, uz] = bendPoint(x, gy + lift + 10, -z, pz, R), [, uy2] = screen(ux, uy, uz);
-    const [fx, fy, fz] = bendPoint(x, gy, -(z + 6), pz, R), [, fy2] = screen(fx, fy, fz);
+    bendTo(x, gy + lift + 10, -z, pz, R);
+    screenTo(bp[0], bp[1], bp[2]);
+    const uy2 = sp[1];
+    bendTo(x, gy, -(z + 6), pz, R);
+    screenTo(bp[0], bp[1], bp[2]);
+    const fy2 = sp[1];
     const up = k ? Math.max(0.05, (sy - uy2) / (10 * k)) : 1, ground = k ? Math.max(0, (sy - fy2) / (6 * k)) : 0;
     // in front of the horizon: the ground faces the camera here (a tall thing's top may still show over it)
     const th = (z - camZ) / R, ny = Math.cos(th), nz = -Math.sin(th);
