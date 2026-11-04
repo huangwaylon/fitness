@@ -219,6 +219,29 @@ export function seatsOf(layout: Layout, o: Obj): [string, Pt][] {
   return [];
 }
 
+/** Where a villager stands just out of a building's door (docs/design.md "Buildings": NH's step out), facing out: 30u
+ *  beyond its door node (the building stays in view and tappable), each of us to one side (A on the left, B on the
+ *  right of a door facing us) and the guest a step further out in the middle, so all can come out together; on
+ *  walkable ground in the island's main region (the nearest whole point within 40u: a walk goes over the relay in
+ *  whole units), else the door node itself (the editor keeps a door's front clear). Null for an object without a
+ *  door. */
+export function exitOf(g: LayoutNav, id: string, who: 'A' | 'B' | 'G'): { at: Pt; face: 'home' | 'l' | 'r' } | null {
+  const d = g.doors[id], o = g.layout.objects.get(id);
+  if (!d || !o) return null;
+  const [fx, fz] = facingVec(o.f);
+  const face = fx > 0 ? 'r' : fx < 0 ? 'l' : 'home';
+  const out = who === 'G' ? 46 : 30, side = who === 'A' ? -12 : who === 'B' ? 12 : 0;
+  const [wx, wz] = [d.at[0] + fx * out - fz * side, d.at[1] + fz * out + fx * side];
+  for (let r = 0; r <= SNAP_NEAR; r += 2) {
+    const n = r ? Math.max(12, Math.ceil((r * Math.PI * 2) / 3)) : 1;
+    for (let a = 0; a < n; a++) {
+      const x = Math.round(wx + Math.cos((a / n) * Math.PI * 2) * r), z = Math.round(wz + Math.sin((a / n) * Math.PI * 2) * r);
+      if (reachable(g, x, z)) return { at: [x, z], face };
+    }
+  }
+  return { at: [Math.round(d.at[0]), Math.round(d.at[1])], face };
+}
+
 function cellIndex(p: Pt): number {
   const [i, j] = cellOf(p[0], p[1]);
   return inCells(i, j) ? j * COLS + i : -1;

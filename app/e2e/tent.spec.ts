@@ -13,8 +13,9 @@ async function openEdit(p: Page) {
  *  the room re-centres under it). */
 const settled = (p: Page) => p.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still());
 
-/** Where a villager stands just out of the tent (buildings.ts outOfTent): ±12 of the door, 30 in front. */
-const OUT = (door: readonly [number, number], who: 'A' | 'B') => [door[0] + (who === 'A' ? -12 : 12), door[1] - 30] as const;
+/** Where my villager stands just out of the tent (buildings.ts outOf, the page's island's: 30 in front of its door, to
+ *  one side, on walkable ground). */
+const OUT = (p: Page) => p.evaluate(() => (window as unknown as { __world: { exit(id: string): { at: [number, number] } } }).__world.exit('campsite').at);
 /** The camera at おく, the campsite's end (world.ts CAMS as the page has them), held there and the island at rest
  *  (camTo: a camera put there before the scene's own fit was overridden by it on a loaded runner, the door off screen). */
 const oku = async (page: Page) => camTo(page, (await geo(page)).CAMS.oku);
@@ -78,10 +79,12 @@ test('the tent opens through the door and goes back out to the island as it was'
   // (the camera where it was: the island puts its scroll back as it lays out, just after its hook is up)
   await expect.poll(async () => Math.abs((await page.evaluate(() => (window as unknown as { __world: { cam(): number } }).__world.cam())) - cam), { timeout: 2000 }).toBeLessThan(2);
   // my villager just outside the tent's door
+  const out = await OUT(page);
   await expect.poll(async () => {
     const [mx, mz] = await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
-    return Math.hypot(mx - OUT(door, 'A')[0], mz - OUT(door, 'A')[1]);
+    return Math.hypot(mx - out[0], mz - out[1]);
   }).toBeLessThan(2);
+  expect(Math.hypot(out[0] - door[0], out[1] - door[1])).toBeLessThan(50);
   await expect(page.locator('[data-tent]')).toHaveCount(0);
 });
 

@@ -1,8 +1,8 @@
-// My villager is me (docs/design.md "Walking"): only a tap on empty ground walks it there (`sendTo`, and it stays
-// there for the day); a tap on something to do on the island (a bush, a flower, the rock, a weed, a dig spot, a fallen
+// My villager is me (docs/design.md "Walking"): only a tap on empty ground walks it there (`sendTo`, and it rests
+// there); a tap on something to do on the island (a bush, a flower, the rock, a weed, a dig spot, a fallen
 // fruit or branch, a tree to shake, the water to cast into, a bug to net, a shell, a visitor, the partner) acts in
 // place: my villager turns to it (`turnTo`) and the action plays at the target, its tool there. A new tap re-targets a
-// walk from where it is. Under a sheet everyone stops where they are; hidden for over 30 s, everyone is back home.
+// walk from where it is. Under a sheet everyone stops where they are; hidden for over 30 s, everyone is back where it rests.
 // The villagers also go about on their own (phase 2): the partner's wanders between points of interest (idle life asks:
 // `wander`), comes over when mine has been away a while and they chat side by side; a goal met walks that person's
 // villager to their tree (`goalWalk`), ふたりでぜんぶ brings both to the middle for a high-five (`meetUp`).
@@ -16,10 +16,9 @@ import { REACH, SPEED, actionSpots, route, routeLength, walkGeo, walkable, type 
 import type { EmoteIcon } from '#lib/art.ts';
 import { walkNav } from './nav.ts';
 import { worldGen } from './world.ts';
-import { planTap, type TapPlan } from './tapWalk.ts';
-import { dayKey } from '#lib/time/clock.ts';
+import { planTap, standAt, type TapPlan } from './tapWalk.ts';
 import { localKV, readJson, remove, writeJson } from '#lib/sync/storage.ts';
-import { actorOf, guestPhone, otherMember, whoOf } from '#lib/ui-state/cast.ts';
+import { actorOf, castMe, guestPhone, otherMember, whoOf } from '#lib/ui-state/cast.ts';
 import type { Who } from '#lib/types.ts';
 
 export interface AvatarCtx {
@@ -55,32 +54,64 @@ const otherOf = (id: Villager): Villager | null => otherMember(id);
 const guests = (id: Villager): boolean => whoOf(id) === 'G';
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
-/** Where a tap sent my villager (spec §4): it stays there for the rest of the Tokyo day (localStorage, with the date),
- *  not wandering home, and the partner's phone shows it there too (the relay keeps each person's last walk: docs/
- *  backend.md#shared-world); a new day finds it home. */
+/** Where a tap sent my villager (spec §4): it rests there, not wandering home, and the partner's phone shows it there
+ *  too (the relay keeps each person's last walk: docs/backend.md#shared-world), until it walks home by the rule (its
+ *  phone gone a while: villagerSync.ts). And where it stands (`pos`: the end of its latest move, whoever made it),
+ *  so the island opens with it there again: back from a room, a reload, the app reopened (localStorage, with `rest`,
+ *  per person: the demo's two players are two tabs of one browser). */
 const STAY_KEY = 'island-stay';
-let stayAt: Pt | null = readStay();
-function readStay(): Pt | null {
-  const v = readJson<{ date?: string; at?: unknown }>(localKV(), STAY_KEY);
-  const at = v?.at;
-  return v?.date === dayKey() && Array.isArray(at) && at.length === 2 && at.every(Number.isFinite) ? [at[0], at[1]] : null;
+type Kept = { rest?: unknown; pos?: unknown; at?: unknown };
+const ptOf = (v: unknown): Pt | null => (Array.isArray(v) && v.length === 2 && v.every(Number.isFinite) ? [v[0], v[1]] : null);
+// (in memory too: kept only there when storage fails, storage.ts reporting it)
+let mem: { who: Who; rest: Pt | null; pos: Pt | null } | null = null;
+function my(): { who: Who; rest: Pt | null; pos: Pt | null } {
+  const who = castMe();
+  if (mem?.who === who) return mem;
+  // (before Nov 2026: one record, `at` where it rests, for the day)
+  const k = readJson<Kept>(localKV(), `${STAY_KEY}.${who}`) ?? readJson<Kept>(localKV(), STAY_KEY) ?? {};
+  return (mem = { who, rest: ptOf(k.rest ?? k.at), pos: ptOf(k.pos) });
 }
+const write = () => {
+  const m = my();
+  writeJson(localKV(), `${STAY_KEY}.${m.who}`, { ...(m.rest ? { rest: m.rest } : {}), ...(m.pos ? { pos: m.pos } : {}) });
+  remove(localKV(), STAY_KEY);
+};
 function keepStay(p: Pt | null) {
-  stayAt = p;
-  // (not kept: in memory only, the failure reported: storage.ts)
-  if (p) writeJson(localKV(), STAY_KEY, { date: dayKey(), at: p });
-  else remove(localKV(), STAY_KEY);
+  my().rest = p;
+  write();
+}
+/** Where my villager stands now, or will once its move is over (villagerSync's every move of mine, said or not). */
+export function keepPos(p: Pt): void {
+  const m = my();
+  if (m.pos?.[0] === p[0] && m.pos?.[1] === p[1]) return;
+  m.pos = [p[0], p[1]];
+  write();
+}
+/** Where my villager stands as the island opens (not out of a door, nor the guest's arrival): where it last was, on
+ *  standable ground (a layout change since may have put something there), else where it rests; null: home. `gone`:
+ *  this phone was away long enough for the walk home to be over (villagerSync: every other phone has it home), so it
+ *  is home here too (no put somewhere else first, then home once the relay says). */
+export function startAt(gone: boolean): Pt | null {
+  const m = my();
+  if (gone) {
+    m.rest = m.pos = null;
+    write();
+    return null;
+  }
+  const p = m.pos ?? m.rest;
+  return p && standAt(walkNav(), p[0], p[1]);
 }
 /** Where the partner sent their villager today (their last walk, live or replayed by the relay), if anywhere. */
 const stays: Partial<Record<Villager, Pt | null>> = {};
-/** Where a villager rests: where its person sent it today, else its home. */
-const restOf = (id: Villager): Pt => (id === 'mine' ? stayAt : stays[id]) ?? actors[id].home;
-/** Out of the tent's door: my villager stands just outside it, facing out (as if it just stepped out), and stays there
- *  (a put: the partner's phone has it there too). */
-export function stepOut(at: Pt): void {
+/** Where a villager rests: where its person sent it, else its home. */
+const restOf = (id: Villager): Pt => (id === 'mine' ? my().rest : stays[id]) ?? actors[id].home;
+/** Out of a building's door (island/doorOut.ts): my villager stands just outside it, facing out (as if it just
+ *  stepped out), and rests there. */
+export function stepOut(at: Pt, face: Facing = 'home'): void {
   keepStay(at);
+  keepPos(at);
   steered.mine = Date.now();
-  actors.mine.face = 'home';
+  actors.mine.face = face;
   place('mine', at[0], at[1]);
 }
 /** The guest's villager comes ashore (docs/design.md "The guest", once per app open: the scene): put at `from`, it
@@ -110,8 +141,6 @@ export function arrive(from: Pt, to: Pt): void {
   };
   setTimeout(on, 700);
 }
-/** Where my villager stands at the start (the scene mounting): where a tap sent it today, if anywhere. */
-export const stayingAt = (): Pt | null => (stayAt && readStay() ? stayAt : null);
 
 /** How far apart the villagers may be for the partner to come over (u): a walk across the island is too far. */
 const FOLLOW_RANGE = 600;

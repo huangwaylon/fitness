@@ -6,16 +6,10 @@ class Ui {
   decorating = $state(false);
   /** The island's camera when the tent was entered (its world z): the island opens there again on the way out. */
   islandZ: number | null = null;
-  /** My villager just came out of the tent (the island puts it at the tent's door, facing out). */
-  fromTent = false;
-  takeFromTent(): boolean {
-    const f = this.fromTent;
-    this.fromTent = false;
-    return f;
-  }
-  /** My villager just came out of another building's door (the museum): where it steps out (world u), once. */
-  outAt: readonly [number, number] | null = null;
-  takeOutAt(): readonly [number, number] | null {
+  /** My villager just came out of a building's door (island/doorOut.ts): where it steps out (world u) and its facing,
+   *  once. */
+  outAt: { at: readonly [number, number]; face: 'home' | 'l' | 'r' } | null = null;
+  takeOutAt(): { at: readonly [number, number]; face: 'home' | 'l' | 'r' } | null {
     const p = this.outAt;
     this.outAt = null;
     return p;

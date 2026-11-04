@@ -445,6 +445,10 @@ last island walk ended). The guest's villager isn't part of it (it leaves the is
 trees"); a few minutes so a dropped connection isn't mistaken for leaving; the relay's clock and the room's last walk
 make every phone draw the same walk without a message, and a `gone` in the welcome is additive (an older phone
 ignores it). This phone's own socket dropping isn't anyone leaving: it changes nothing until the welcome says.
+A welcome's `gone` is acted on once (2026-11-04): the relay's status keeps it for the socket's life, and each new
+mount of the island (back from the museum, the shop, a room) took it afresh, walking or putting my villager home
+moments after it stepped out of a door. And a phone that knows it was gone long (`store/seen.ts`) opens with its
+villager home at once instead of where it was, then home a moment later when the welcome came.
 Not done: the partner following mine while theirs is away and home (a per-phone follow, as before).
 
 ### Decor is a last-writer-wins map, the record keeps each item's latest op

@@ -21,8 +21,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { buyPiece, buyRefusal, sell, undoBanner } from '#lib/store/actions.ts';
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
-  import { doorOf as layoutDoor, facingVec } from '#lib/layout/model.ts';
-  import { ui } from '#lib/ui-state/ui.svelte.ts';
+  import { leaveBy } from '../island/doorOut.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import { doorReady } from '#lib/ui-state/doorTransition.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -122,25 +121,15 @@
     say = { k: id === 'sell' ? (shop.pocket.size ? 'hello' : 'empty') : 'stock' };
   }
 
-  // ---- out of the door: on the island just out of the shop's door
+  // ---- out of the door: on the island just out of the shop's door, on every phone (island/doorOut.ts)
   let leaving = false;
   function leave() {
     if (leaving) return;
     leaving = true;
     cue('scene-bench');
-    const [dx, dz] = outOfShop();
-    ui.outAt = [dx, dz];
-    ui.islandZ ??= dz - 120;
+    leaveBy('shop', me);
     const q = new URLSearchParams(location.search);
     void goto(resolve('/') + (q.size ? `?${q}` : '')).finally(() => (leaving = false));
-  }
-  /** Just out of the shop's door on the layout (each of us to one side). */
-  function outOfShop(): readonly [number, number] {
-    const l = islandLayout.current, o = [...l.objects.values()].find((x) => x.k === 'shop');
-    if (!o) return [195, 300];
-    const [x, z] = layoutDoor(l, o).at, [fx, fz] = facingVec(o.f);
-    const side = me === 'A' ? -12 : me === 'B' ? 12 : 0;
-    return [x + fx * 30 - fz * side, z + fz * 30 + fx * side];
   }
 
   $effect(() => {

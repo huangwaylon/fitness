@@ -636,9 +636,13 @@ went in November 2026 (docs/cleanup-2d.md).
 
 ### Buildings
 
-`island/buildings.ts`, `island/Scenery.svelte`, `e2e/tapwalk.spec.ts`. The campsite, the homes, the museum
-([The museum](#the-museum)) and the shop ([The shop](#the-shop)): a tap on one walks my villager up to its door and goes
-in (the tent's inside: [The tent](#the-tent); a home's room; the museum's and the shop's own screens). The partner's presence
+`island/buildings.ts`, `island/doorOut.ts`, `island/Scenery.svelte`, `e2e/tapwalk.spec.ts`, `e2e/positions.spec.ts`. The
+campsite, the homes, the museum ([The museum](#the-museum)) and the shop ([The shop](#the-shop)): a tap on one walks my
+villager up to its door and goes in (the tent's inside: [The tent](#the-tent); a home's room; the museum's and the shop's
+own screens). ‹ 島へ comes out of the door, NH's way: my villager stands just in front of it, facing out (`layout/nav.ts`
+exitOf: 30u out from the door node, A to the left and B to the right of a door facing us, the guest a step further out
+between; the nearest whole point there that stands in the island's main region), on every phone at once (the room
+says the put as it leaves: the others see me come out there). The partner's presence
 is their villager and the edge face, not a character of its own (`partnerOnline`: the relay's presence, never in the
 demo).
 
@@ -1603,10 +1607,18 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
   there (200 u/s), over the bridge and up the stairs. A tap on ground it can't stand on snaps to the nearest walkable
   point within 40u; ground nobody can reach to the nearest reachable point, facing it. Water never walks (it ripples), and a building's footprint knocks at its door in place.
   The partner's relayed walks replay the same planner (their softer ring where they tapped). A cream ring marks the
-  spot and shrinks away (NH has none: the least feedback). It stays there for the rest of the Tokyo day
-  (`island-stay` in localStorage, with the date; a new day finds it home), and so does it on the partner's phone: the
+  spot and shrinks away (NH has none: the least feedback). It rests there, and so does it on the partner's phone: the
   relay keeps each person's last walk, so a phone opening later puts their villager where they sent it ([Shared
   world](#shared-world)).
+- **Where my villager is, kept** (`avatar.ts` startAt, `e2e/positions.spec.ts`): the island opens with it where it
+  last stood (the end of its latest move, kept per person in localStorage, `island-stay.<who>`, with where it rests):
+  back from a room or another screen, a reload, the app reopened, the next day. Only a player never placed starts at
+  home (a spot a layout change has since covered snaps to the nearest standable ground). The one exception is the walk
+  home (below): a member's phone gone long enough for it to be over opens with its villager home at once, as every
+  other phone has it (`store/seen.ts`: when the app last hid; once per page load), not first where it was.
+- **Never a teleport on another phone:** their phone plays my walks; a big gap between where it has my villager and
+  where my walk has it (a phone that had it elsewhere, a put) glides off at the run within 1.5 s while it's in view
+  (villagerSync `playPartner`); only a phone opening, or the island hidden, puts it there.
 - **The camera never moves for a walk** (nor for the partner or a visitor): only the finger scrolls.
 - **No hold-up:** a catch or a find lifts nothing over a villager's head and plays no pose (the bottom stack's plate,
   its icon popping up from where it happened, says it: [Critters](#critters)).
@@ -1614,9 +1626,12 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
   villager walks home to its spot by its own tree at a stroll, on every phone the same (a phone opening later finds it
   where that walk has it, or home), then lives there as any (idle beats, dozing at night: it gets up for the walk and
   dozes again at home). Back within the 3 minutes, nothing happens; back mid-walk, their phone picks it up where it
-  is and walks the rest. Not the guest's: it leaves with its app (villagerSync.ts, [decisions](decisions.md)).
+  is and walks the rest. Its own phone takes the relay's word for it once per socket (the welcome's `gone`): the
+  island opening again on the same socket (back from a room) leaves its villager where it was. With no walk of theirs
+  today (a new day), it walks home from where it stood. Not the guest's: it leaves with its app (villagerSync.ts,
+  [decisions](decisions.md)).
 - **Sheets and hiding:** a sheet stops everyone where they are; uncovered, the outings wander back; hidden over 30 s,
-  they're back on return. A balloon opens only over a villager standing still, and steps aside while the camera
+  they're back on return (mine where it rests). A balloon opens only over a villager standing still, and steps aside while the camera
   scrolls.
 - **Walk mask** (`walkGeo`): land, the bridge's deck (inside its rails) and the stairs; not the sea, the river, the pond, the spring,
   the cliff face, building footprints, trunks, the rock, bushes or props. Rasterised once on a 4u grid; named

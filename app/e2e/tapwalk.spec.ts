@@ -133,7 +133,7 @@ test('the campsite: near its door my villager goes straight in', async ({ page }
   await open(page, '&date=2026-07-01T10:00&visitor=none');
   await oku(page);
   const door = campDoor(await geo(page));
-  // (where it stands just out of the tent: buildings.ts outOfTent)
+  // (about where it stands just out of the tent: buildings.ts outOf)
   await call(page, (w, [x, z]) => w.put(x, z), [door[0] - 12, door[1] - 30]);
   await tapTent(page);
   await expect(page).toHaveURL(/\/tent\?/, { timeout: 1500 });

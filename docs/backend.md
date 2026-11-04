@@ -490,8 +490,11 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   very walk: `walk {to, from, via, s, ms, f}`, `s` on the relay's clock. The partner's phone plays it from the same
   start at the same time: on time it walks the way; late (a slow message, a phone opening mid-walk) it starts where
   the walk is by now (`along`) and arrives when it does there; a gap ≤ 160u from where their villager stands here is
-  walked off within the walk's own time, a bigger one (or the scene hidden) is a jump; a walk already over is a
-  brisk catch-up within 120u (≤ 600 ms), else a put at its end, facing `f`. While the partner has the island open
+  walked off within the walk's own time, a bigger one glides off from where it stands (no slower than the run, at most
+  1.5 s, arriving a little late); a walk already over is a brisk catch-up within 120u (≤ 600 ms), further a glide
+  there (≤ 1.5 s), facing `f`: never a jump while the island is in view and the news live. A phone opening (the
+  day's last walk, the replay) or the scene hidden puts it where the walk has it by now. Out of a room's door the
+  room says my put at once (`island/doorOut.ts`, in the shared day). While the partner has the island open
   (presence), their villager is the relay's to move here: this phone's own life (a follow, an outing, a walk home, a
   meeting with the visitor, a put under a sheet) leaves it alone, and a reaction here doesn't stop its walk. On a
   partner's arrival my villager's current walk goes again (they find it where mine is), and a walk under way is

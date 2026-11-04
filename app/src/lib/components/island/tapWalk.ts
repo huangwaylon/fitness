@@ -24,6 +24,13 @@ export interface TapPlan {
   snap: Snap | onLayout.Snap;
 }
 
+/** Where feet may stand for world (x, z), as a tap there would end (a building's door, a bank, the nearest walkable
+ *  point, reachable), or null: nowhere near. */
+export function standAt(g: Nav | onLayout.LayoutNav, x: number, z: number): Pt | null {
+  const s = onLayout.isLayoutNav(g) ? onLayout.snapTap(g, x, z) : snapTap(g as Nav, x, z);
+  return s && [Math.round(s.to[0]), Math.round(s.to[1])];
+}
+
 /** The walk a tap at world (x, z) starts from `from`, or null when it goes nowhere (nothing walkable near, no way
  *  there, or already there). `g`: today's island's nav, or a layout's (layout/nav.ts navOf: the same rules). */
 export function planTap(g: Nav | onLayout.LayoutNav, from: Pt, x: number, z: number, extra?: Extra): TapPlan | null {

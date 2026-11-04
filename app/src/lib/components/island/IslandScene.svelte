@@ -1,6 +1,8 @@
 <script module lang="ts">
   /** The guest's villager came ashore in this page load already (once per app open: docs/design.md "The guest"). */
   let arrivedThisLoad = false;
+  /** The island opened in this page load already (the first open asks how long this phone was gone: avatar.ts startAt). */
+  let openedThisLoad = false;
 </script>
 
 <script lang="ts">
@@ -58,7 +60,7 @@
   import { VILLAGER, eventsAt, u, wildFlower, type Tod } from './scene.ts';
   import { todayPct } from './progress.ts';
   import { CAMS, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, PULLUP_AT, SEAT_DROP, flowerById, freshWhere, seatAt, surfaceAt, worldGen, BUILDINGS, LAWN_SPOTS, type BuildingId } from './world.ts';
-  import { GUEST_ARRIVAL, guestSpot, doorAt, outOfTent, partnerOnline } from './buildings.ts';
+  import { GUEST_ARRIVAL, guestSpot, doorAt, outOf, partnerOnline } from './buildings.ts';
   import { site } from './site.svelte.ts';
   import { digSpots, spotsOn } from './beach.ts';
   import * as W from './world.ts';
@@ -87,10 +89,11 @@
   import { mushroomSpots } from './mushrooms.ts';
   import { giftTreesOn } from './treeGifts.ts';
   import { perches } from './critters.ts';
-  import { arrive, attachAvatar, homeAgain, homeRoute, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, sitTo, snapHome, stayingAt, stepOut, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
+  import { arrive, attachAvatar, homeAgain, homeRoute, keepPos, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, sitTo, snapHome, startAt, stepOut, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
   import { freeSeat, seatNamed, seatOpen, seatPieceAt, seatSpots, sitTimeOf, yieldsSeat, type SeatSpot } from './sitting.ts';
   import { where } from '#lib/store/where.svelte.ts';
-  import { JOIN_SAY_MS, RUN_RING_U_S, homeAfter, linkVillagers, playPartner, playWake, setHomeAfter } from './villagerSync.ts';
+  import { JOIN_SAY_MS, RUN_RING_U_S, homeAfter, linkVillagers, playPartner, playWake, setHomeAfter, walkedHome } from './villagerSync.ts';
+  import { seenAgo } from '#lib/store/seen.ts';
   import { canonical, hash, type DayEvent } from '#lib/sync/world-day.ts';
   import type { SceneHit } from './sceneTaps.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
@@ -410,17 +413,21 @@
     const sd = sides;
     untrack(() => VILLAGERS.forEach((id) => setHome(id, sd[id].home[0], sd[id].home[1])));
   });
-  // where a tap sent my villager this session (it stays there; the next open finds it home)
-  let fromTentNow = false;
+  // Where my villager stands as the island opens: just out of a building's door (a room's ‹ 島へ: island/doorOut.ts),
+  // facing out; else where it last stood (back from another screen, a reload, the app reopened: avatar.ts startAt),
+  // home only when it has never been anywhere, or its phone was gone long enough for the walk home to be over
+  // (villagerSync walkedHome: every other phone has it home by now; a member's, with the relay; once per page load).
+  let fromDoor = false;
   {
-    // just out of the tent: at its door, facing out; else where a tap sent it this session
-    const stay = stayingAt();
-    const outAt = ui.takeOutAt();
-    // svelte-ignore state_referenced_locally
-    if ((fromTentNow = ui.takeFromTent())) stepOut(outOfTent(view.viewer));
-    // (out of the museum's or the shop's door: there)
-    else if ((fromTentNow = !!outAt)) stepOut(outAt!);
-    else if (stay && !actors.mine.walking) place('mine', stay[0], stay[1]);
+    const out = ui.takeOutAt();
+    const ago = openedThisLoad ? null : seenAgo();
+    openedThisLoad = true;
+    if ((fromDoor = !!out)) stepOut(out!.at, out!.face);
+    else {
+      // svelte-ignore state_referenced_locally
+      const at = startAt(!!LIVE_URL && !week.demo && !guestPhone() && ago !== null && walkedHome(ago));
+      if (at && !actors.mine.walking) place('mine', at[0], at[1]);
+    }
   }
   // My villager walks to what I tap (avatar.ts): the walk geometry from the world's constants, a spot is fine when a
   // villager standing there covers no control or visitor and stays on screen, and the feet's live position (a walk
@@ -640,6 +647,8 @@
       /** The island on its layout (site.svelte.ts): whether it reads it, and where its doors, homes and centre stage are
        *  (e2e: the long island). */
       site: () => ({ on: site.on, doors: Object.fromEntries(BUILDINGS.map((b) => [b.id, doorAt(b.id)])), homes: HOMES, stage: CENTRE_STAGE, named: walkNav().named, grass: LAWN_SPOTS }),
+      /** Where a villager (mine, or `who`'s) steps out of a building's door (buildings.ts outOf). */
+      exit: (id: BuildingId, who: Who = castMe()) => outOf(id, who),
       /** What the ground is at a world point and the water a cast there lands in (world.ts: the layout's when on). */
       ground: (x: number, z: number) => ({ surface: surfaceAt(x, z), fresh: freshWhere(x, z) }),
       /** world.ts's places as the island has them now (the layout's when on): the e2e's, never world.ts's imported. */
@@ -698,12 +707,17 @@
     // members see it arrive); back from the tent or another screen it is where it was
     if (guestPhone() && !arrivedThisLoad && !actors.mine.walking) {
       arrivedThisLoad = true;
-      if (!fromTentNow) arrive(GUEST_ARRIVAL, guestSpot());
+      if (!fromDoor) arrive(GUEST_ARRIVAL, guestSpot());
     }
     let hiddenAt = 0;
     const vis = () => {
       if (document.hidden) hiddenAt = Date.now();
-      else if (hiddenAt && Date.now() - hiddenAt > SNAP_HOME_MS) snapHome();
+      else if (hiddenAt && Date.now() - hiddenAt > SNAP_HOME_MS) {
+        // (gone long enough for my villager's walk home to be over, a member's with the relay: home already, as on
+        // every other phone, before the welcome says so)
+        if (relay && !guestPhone() && walkedHome(Date.now() - hiddenAt)) homeAgain('mine');
+        snapHome();
+      }
     };
     document.addEventListener('visibilitychange', vis);
     // footsteps by the ground under the walker (quiet world cues: silent under a sheet; the director spaces them)
@@ -837,7 +851,8 @@
       return w0 ? (pointOf(w0.to) ?? null) : null;
     },
     route: homeRoute,
-    atHome: homeAgain
+    atHome: homeAgain,
+    kept: keepPos
   });
   // (`?homeafter=<ms>`: how long a phone is gone before its villager walks home, and one gone quiet inside the tent
   // leaves it; the e2e's)
@@ -921,8 +936,9 @@
     if (link?.homeBound(id)) return link.replan(id);
     setPartnerRest(to[0], to[1], id);
     steered[id] = Date.now();
-    const how = playPartner(w, relayNow(), !covered && !life.hidden && onIsland(id), id);
-    if (how === 'walk' || how === 'jump') {
+    // (a phone opening, the island hidden: where the walk has it by now; live and in view, a big gap glides off)
+    const how = playPartner(w, relayNow(), now && !covered && !life.hidden && onIsland(id), id);
+    if (how === 'walk' || how === 'glide' || how === 'jump') {
       // a run (a tap on their phone: NH's ring where it goes)
       if (now && onIsland(id) && w.ms && w.from && Math.hypot(to[0] - w.from[0], to[1] - w.from[1]) / (w.ms / 1000) >= RUN_RING_U_S) ring(to[0], to[1], true);
       return;
