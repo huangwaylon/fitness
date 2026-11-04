@@ -18,6 +18,19 @@ const folded = async (page: Page) => {
   await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'false');
   for (const p of await pills(page).all()) await expect(p).toBeHidden();
 };
+/** The sea in front of the beach on this screen (client px), read from the page's island (world z < 0 is the sea),
+ *  with nothing one taps over it: not a fixed screen point, which the layout's beach or a find may come to cover. */
+const sea = (page: Page) =>
+  page.evaluate(() => {
+    const w = (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world;
+    const TAPS = 'button, a, [data-flower], [data-tree], [data-bush], [data-find], [data-fixture], [data-decor], [data-visitor], [data-actor], [data-critter]';
+    for (let z = -40; z < -8; z += 2)
+      for (const x of [60, 120, 200, 280]) {
+        const [cx, cy] = w.at(x, z);
+        if (cy < innerHeight - 16 && cx > 20 && cx < innerWidth - 20 && !document.elementFromPoint(cx, cy)?.closest(TAPS)) return [cx, cy] as [number, number];
+      }
+    throw new Error('no sea on screen');
+  });
 
 test('folded by default; the leaf unfolds it and folds it again; a tap elsewhere and Esc fold it too', async ({ page }) => {
   await open(page);
@@ -43,7 +56,8 @@ test('folded by default; the leaf unfolds it and folds it again; a tap elsewhere
   const bells = Number(await hudBells(page).getAttribute('data-bells'));
   await expect(hudBells(page)).toHaveText(new RegExp(`^\\s*ベル\\s*${bells.toLocaleString('en-US')}\\s*$`));
   await expect(hudBells(page).locator('img, svg')).toHaveCount(0);
-  await page.waitForTimeout(600); // the spring settles
+  // the spring settles (its animations over, not a fixed wait: a busy runner's spring was still under way at 600 ms)
+  await page.locator('#hud-menu-items').evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))));
   const boxes = await Promise.all((await pills(page).all()).map(async (p) => (await p.boundingBox())!));
   for (const [i, b] of boxes.entries()) {
     expect(b.height).toBeGreaterThanOrEqual(44);
@@ -59,7 +73,7 @@ test('folded by default; the leaf unfolds it and folds it again; a tap elsewhere
   // a tap on the sea folds it (and nothing opens)
   await hudMenu(page).click();
   await expect(zukan(page)).toBeVisible();
-  await page.mouse.click(40, 600);
+  await page.mouse.click(...(await sea(page)));
   await folded(page);
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   // Esc folds it, focus back on the leaf

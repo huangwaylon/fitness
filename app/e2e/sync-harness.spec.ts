@@ -7,7 +7,7 @@
 //   RELAY_E2E=1 npm run e2e -- sync-harness --workers=1   two browser contexts against the test relay (relay/.smoke-keys;
 //                                                         one at a time: each person's key opens one socket)
 import { expect, test, type Browser, type Page } from '@playwright/test';
-import { campDoor, geo, oku, tapOn, quiet } from './island.ts';
+import { campDoor, geo, lawnTap, oku, tapOn, quiet } from './island.ts';
 import { sayOwn } from './say.ts';
 import { existsSync, readFileSync } from 'node:fs';
 
@@ -162,12 +162,12 @@ test('two phones, one island: a scripted session leaves both (and a phone openin
   const lat: Record<string, number[]> = {};
   const note = (k: string, ms: number | null) => (ms === null ? null : (lat[k] ??= []).push(ms));
 
-  // tap-walks, each way: the partner's villager sets off on the other phone (on the first spot of open ground that
-  // takes the tap: the day's things, the river and the layout move)
+  // tap-walks, each way: the partner's villager sets off on the other phone (on open lawn near each spot in turn, read
+  // from the page's island: e2e/island.ts lawnTap, never a fixed point the day's things or the layout's may stand on)
   const SPOTS: [number, number][] = [[200, 420], [240, 500], [120, 400], [300, 440], [160, 300], [260, 330], [90, 300]];
   for (const [tapper, watcher] of [[a, b], [b, a], [a, b], [b, a]] as const) {
-    for (const [x, z] of SPOTS) {
-      const [cx, cy] = await w<[number, number]>(tapper, 'at', x, z);
+    for (const [sx, sz] of SPOTS) {
+      const { at: [x, z], x: cx, y: cy } = await lawnTap(tapper, sx, sz);
       const before = await w<[number, number]>(tapper, 'mine');
       if (Math.hypot(before[0] - x, before[1] - z) < 30) continue;
       const off = setsOff(watcher);
@@ -586,13 +586,13 @@ test('a phone gone a while: its villager walks home on the other phone; back mid
   for (const p of [a, b]) await connected(p);
   await joined(a, b);
   const { HOMES } = await geo(a);
-  // A walks far from home (the first spot of open ground that takes the tap), and stays there
+  // A walks far from home (open lawn near each spot in turn, the first that takes the tap: lawnTap), and stays there
   await a.bringToFront();
   await w(a, 'go', 400);
   await atRest(a);
   let at: [number, number] | null = null;
   for (const [x, z] of [[200, 640], [160, 600], [240, 620], [120, 560], [280, 580], [200, 520]] as [number, number][]) {
-    const [cx, cy] = await w<[number, number]>(a, 'at', x, z);
+    const { x: cx, y: cy } = await lawnTap(a, x, z);
     await a.mouse.click(cx, cy);
     if (!(await ringed(a))) continue;
     await expect.poll(async () => (await w<State>(a, 'state')).villagers.A.walking, { timeout: 6000 }).toBe(false);
@@ -627,7 +627,12 @@ test('a phone gone a while: its villager walks home on the other phone; back mid
   // A's phone back, mid-walk: its villager where the walk home has it (near B's), walking the rest home
   a = await open('A', ctxA);
   await connected(a);
-  await a.waitForTimeout(800);
+  // (it takes its villager over once the day's replay is in, JOIN_SAY_MS after its socket is up, later on a busy
+  // runner: till then it stands where this phone left it. Polled till it's off that spot, not a fixed wait)
+  await expect.poll(async () => {
+    const m = await w<[number, number]>(a, 'mine');
+    return Math.hypot(m[0] - away[0], m[1] - away[1]);
+  }, { timeout: 8000, message: 'A’s phone takes its villager over' }).toBeGreaterThan(3);
   const [mine, theirs] = [await w<[number, number]>(a, 'mine'), await w<[number, number]>(b, 'partner')];
   const mid = Math.hypot(mine[0] - HOMES.A[0], mine[1] - HOMES.A[1]);
   if (mid > 3) {
