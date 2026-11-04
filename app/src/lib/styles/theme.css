@@ -91,6 +91,10 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .btn.small svg { width: 20px; height: 20px; }
 .btn.paper { --fill: var(--c-card); --lip-c: var(--c-edge); }
 
+/* ---------- a section's label: the small soft heading over a sheet's group of rows or cards (せってい's, ごほうび's
+   ためた ベル, いえを かえる's), 4px in from the cards' edge ---------- */
+.sec-label { margin: 6px 4px 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); letter-spacing: .04em; }
+
 /* ---------- a level's actions (ごはん's amount, マイ食品, マイレシピ, いつもの): its one action and what goes with it, held at the
    foot of the sheet's scroller while the level is longer than the screen, and over the keyboard while a field is being
    typed in (sticky keeps clear of the scroller's bottom padding, --body-pad, which holds the home indicator and the

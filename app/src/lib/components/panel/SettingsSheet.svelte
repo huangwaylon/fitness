@@ -82,7 +82,7 @@
       <div class="page"><HelpGuide {view} /></div>
     {:else if view && me}
       <section class="sec" aria-labelledby="sec-villager">
-        <h2 id="sec-villager">{t('panel.villager')}</h2>
+        <h2 id="sec-villager" class="sec-label">{t('panel.villager')}</h2>
         <div class="prow static me">
           <Avatar person={me.who} villager={me.villager} size={48} />
           <span class="prl">{me.villagerName}{#if myLook}<small>{i18n.locale === 'ja' ? ROSTER[myLook].nameJa : ROSTER[myLook].nameEn}</small>{/if}</span>
@@ -90,11 +90,11 @@
         </div>
         {#if guest}<p class="guest" data-guest-note>{t('guest.note')}</p>{/if}
       </section>
-      <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound">{t('panel.sound')}</h2><SoundSection /></section>
-      <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang">{t('panel.lang')}</h2><LangSection /></section>
-      <section class="sec" aria-labelledby="sec-season"><h2 id="sec-season">{t('panel.season')}</h2><SeasonSection {view} /></section>
-      <section class="sec" aria-labelledby="sec-fps"><h2 id="sec-fps">{t('panel.fps')}</h2><FpsSection /></section>
-      {#if !guest}<section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync">{t('panel.sync')}</h2><SyncSection {view} /></section>{/if}
+      <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound" class="sec-label">{t('panel.sound')}</h2><SoundSection /></section>
+      <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang" class="sec-label">{t('panel.lang')}</h2><LangSection /></section>
+      <section class="sec" aria-labelledby="sec-season"><h2 id="sec-season" class="sec-label">{t('panel.season')}</h2><SeasonSection {view} /></section>
+      <section class="sec" aria-labelledby="sec-fps"><h2 id="sec-fps" class="sec-label">{t('panel.fps')}</h2><FpsSection /></section>
+      {#if !guest}<section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync" class="sec-label">{t('panel.sync')}</h2><SyncSection {view} /></section>{/if}
       {#if !guest}
         <div class="prow static decor">
           <span class="prl">{t('panel.decor')}</span>
@@ -102,7 +102,7 @@
         </div>
       {/if}
       <section class="sec" aria-labelledby="sec-help">
-        <h2 id="sec-help">{t('panel.help')}</h2>
+        <h2 id="sec-help" class="sec-label">{t('panel.help')}</h2>
         <div class="card help">
           <p>{t('panel.helpSummary')}</p>
           <button type="button" class="btn small paper" data-push="help" data-sfx="page" onclick={() => go('help')}>{t('panel.more')}</button>
@@ -135,7 +135,6 @@
 
   /* one section per topic: a small heading over its rows */
   .sec { display: grid; gap: 8px; }
-  .sec h2 { margin: 6px 2px 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); letter-spacing: .04em; }
   .me .prl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
   .me .btn, .decor .btn { flex: none; }
   .help { display: grid; gap: 10px; padding: 14px 16px; }

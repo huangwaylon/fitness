@@ -132,7 +132,7 @@
   .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
   .nuts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
   .kc input { font-size: var(--fs-title); }
-  .hint { margin: 0 2px; font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
+  .hint { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .hint.bad { color: var(--c-coral); }
   .ih { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
   .ih .big { font-size: var(--fs-title); white-space: nowrap; }

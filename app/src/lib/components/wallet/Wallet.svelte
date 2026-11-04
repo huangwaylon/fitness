@@ -78,7 +78,7 @@
 
     {#if ledger}
       <section class="ledger" data-ledger aria-labelledby="ledger-h">
-        <h2 id="ledger-h" class="sec">{t('wallet.ledger')}</h2>
+        <h2 id="ledger-h" class="sec-label">{t('wallet.ledger')}</h2>
         <BellsLog {ledger} {order} {names} {villagers} {onday} />
       </section>
     {/if}
@@ -112,5 +112,4 @@
   .guest { margin: 0; padding: 12px 14px; font-weight: 700; color: var(--text-soft); text-align: center; line-height: var(--lh); }
   /* the ledger, under the shop: the same small soft heading as the buys' */
   .ledger { display: grid; gap: 8px; }
-  .sec { margin: 0 4px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); letter-spacing: .04em; }
 </style>

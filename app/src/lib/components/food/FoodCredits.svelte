@@ -47,8 +47,8 @@
   .chev { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; transition: rotate 160ms; }
   .chev.up { rotate: 180deg; }
   ul { list-style: none; margin: 0; padding: 0 4px; display: grid; gap: 8px; }
-  li { display: grid; gap: 2px; font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); line-height: var(--lh); overflow-wrap: anywhere; }
+  li { display: grid; gap: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); overflow-wrap: anywhere; }
   li b { color: var(--text); font-size: var(--fs-s); }
   a { color: inherit; }
-  p { margin: 0 4px; font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); }
+  p { margin: 0 4px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
 </style>

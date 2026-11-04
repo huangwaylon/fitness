@@ -97,7 +97,7 @@
   .day { padding: 0 !important; }
   /* fixed columns, so the head's avatars sit over their goals and every day lines up (--mw: one GoalMarks row) */
   .rows { --mk: 15px; --mw: calc(4 * var(--mk) + 6px); }
-  .day, .dbtn { display: grid !important; grid-template-columns: minmax(0, 1fr) var(--mw) var(--mw) 18px 3.2em; align-items: center; column-gap: 10px; }
+  .day, .dbtn { display: grid !important; grid-template-columns: minmax(0, 1fr) var(--mw) var(--mw) 18px 4.4em; align-items: center; column-gap: 10px; }
   .dbtn {
     grid-column: 1 / -1;
     appearance: none; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; text-align: left;

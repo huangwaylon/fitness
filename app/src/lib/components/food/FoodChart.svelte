@@ -21,6 +21,9 @@
   import { rangeLabel } from '../health/fmt.ts';
   import FoodIntake from './FoodIntake.svelte';
   import { saveFoodGoal } from './foodUi.ts';
+  import { setMoveGoal } from '#lib/store/actions.ts';
+  import { toasts } from '#lib/ui-state/toast.svelte.ts';
+  import { isGuest } from '#lib/ui-state/viewer.ts';
 
   let { who, name, period, onperiod }: { who: Who; name: string; period: Period; onperiod: (p: Period) => void } = $props();
 
@@ -35,6 +38,13 @@
   const hs = $derived.by(() => {
     const h = m && isPersonId(who) ? healthSeries(m.state, m.now) : null;
     return h?.any ? h : null;
+  });
+  /** The Move card's goal, set here as in けんこう (either member's, never on the guest's phone). */
+  const move = $derived.by(() => {
+    const v = week.view;
+    if (!v || isGuest(v) || !isPersonId(who)) return null;
+    const p = who;
+    return { value: v.people[p].moveGoal, onsave: (g: number | null) => g !== null && setMoveGoal(p, g).ok && toasts.show(t('goal.moveSaved'), 2500, { reaction: 'pleased' }) };
   });
   const any = $derived(!!ds?.vals.some((v) => v !== null));
 
@@ -96,7 +106,7 @@
   {/snippet}
   {#if all}{@render intake('k', all[0].ds)}{/if}
   {#if hs && isPersonId(who)}
-    <MetricCard metric="move" {hs} {range} p={who} {slide} onswipe={swipe} selected={sel?.k === 'move' ? sel.i : null} onselect={(i) => pick('move', i)} />
+    <MetricCard metric="move" {hs} {range} p={who} {slide} onswipe={swipe} selected={sel?.k === 'move' ? sel.i : null} onselect={(i) => pick('move', i)} goal={move} />
   {/if}
   {#if all}
     {#each all.slice(1) as x (x.n)}{@render intake(x.n, x.ds)}{/each}

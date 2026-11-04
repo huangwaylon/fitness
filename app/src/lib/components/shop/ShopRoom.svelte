@@ -337,7 +337,8 @@
   .owned .ic { opacity: .55; }
   .ic { width: 46px; height: 46px; display: grid; place-items: center; line-height: 0; }
   .ic img { width: 46px; height: 46px; object-fit: contain; }
-  .nm { font: 700 var(--fs-s)/1.2 var(--font-ui); text-align: center; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  /* a long name breaks between its kana where it must, balanced (アウトド / アベンチ, not アウトドアベン / チ) */
+  .nm { font: 700 var(--fs-s)/1.2 var(--font-ui); text-align: center; word-break: normal; overflow-wrap: anywhere; text-wrap: balance; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .price { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-s)/1 var(--font-num); font-variant-numeric: tabular-nums; }
   .mini { display: inline-flex; line-height: 0; }
   .owned-tag { font-family: var(--font-ui); color: var(--c-leaf-text); }
