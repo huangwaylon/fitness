@@ -15,6 +15,7 @@
   import { onKeyboardInset, readKeyboardInset } from '../ui/keyboardInset.svelte.ts';
   import { EDGE } from './placement.ts';
   import { recentSays } from './say.ts';
+  import NavButton from '../ui/NavButton.svelte';
 
   let { scene, anchor, onpick, onclose }: { scene: HTMLElement; anchor: Element; onpick: (text: string) => void; onclose: (e?: Event) => void } = $props();
 
@@ -105,9 +106,7 @@
   style:left={pos ? `${pos.x}px` : null} style:top={pos ? `${pos.y}px` : null}>
   <div class="head">
     <b class="title">{t('say.title')}</b>
-    <button type="button" class="x" aria-label={t('common.close')} data-sfx="back" data-say-close onclick={() => onclose()}>
-      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4 L12 12 M12 4 L4 12" /></svg>
-    </button>
+    <span class="x" data-say-close><NavButton kind="close" onclick={() => onclose()} /></span>
   </div>
   {#if !writing}
     <div class="recent" role="group" aria-label={t('say.recent')}>
@@ -115,7 +114,7 @@
         <button type="button" class="phrase own" data-sfx="choice-pick" data-say-recent onclick={() => onpick(r)}>{r}</button>
       {/each}
     </div>
-    <button type="button" class="phrase write" data-sfx="tick" data-say-write onclick={write}>{t('say.own')}</button>
+    <button type="button" class="btn small paper write" data-sfx="tick" data-say-write onclick={write}>{t('say.own')}</button>
   {:else}
     <!-- Enter sends from the field itself (not the form's: an IME's Enter confirms the word, it doesn't send) -->
     <form class="form" onsubmit={(e) => e.preventDefault()}>
@@ -126,9 +125,9 @@
       <!-- もどる only with phrases to go back to (none kept: ✕ closes) -->
       <div class="row" class:alone={!recent.length}>
         {#if recent.length}
-          <button type="button" class="phrase back" data-sfx="back" onclick={() => (writing = false)}>{t('say.back')}</button>
+          <button type="button" class="btn small paper" data-sfx="back" onclick={() => (writing = false)}>{t('say.back')}</button>
         {/if}
-        <button type="button" class="phrase send" data-sfx="choice-pick" data-say-send aria-disabled={!ready || undefined} onclick={send}>{t('say.send')}</button>
+        <button type="button" class="btn small" data-sfx="choice-pick" data-say-send aria-disabled={!ready || undefined} onclick={send}>{t('say.send')}</button>
       </div>
     </form>
   {/if}
@@ -145,12 +144,9 @@
   }
   .picker.placed { opacity: 1; pointer-events: auto; animation: pop .2s cubic-bezier(.3, 1.4, .5, 1) both; }
   .head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
-  .title { padding-left: 6px; font: 700 14px/1.3 var(--font-ui); color: #8A6A48; }
-  .x {
-    appearance: none; border: 0; margin: -4px -4px 0 0; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
-    background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent;
-  }
-  .x svg { width: 18px; height: 18px; stroke: #8A6A48; stroke-width: 2.4; stroke-linecap: round; fill: none; }
+  .title { padding-left: 6px; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--c-ink-soft); }
+  /* the app's ✕ (NavButton), as every sheet's */
+  .x { display: flex; margin-bottom: var(--lip-h); }
   .recent { display: flex; flex-direction: column; gap: 8px; }
   .phrase {
     appearance: none; border: 0; margin: 0; cursor: pointer; min-height: 48px; padding: 6px 10px; border-radius: 16px;
@@ -158,21 +154,20 @@
     box-shadow: 0 3px 0 rgba(170, 120, 60, .38); -webkit-tap-highlight-color: transparent;
   }
   .phrase:active { translate: 0 2px; box-shadow: 0 1px 0 rgba(170, 120, 60, .38); }
-  .phrase:focus-visible, .x:focus-visible, .field:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .phrase:focus-visible, .field:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .phrase.own { background: #FFF3CC; }
-  .phrase.write { width: 100%; margin-top: 8px; background: #CFEFD3; box-shadow: 0 3px 0 rgba(80, 140, 90, .38); }
-  .phrase[aria-disabled] { opacity: .45; cursor: default; }
+  /* じぶんで かく… / もどる / いう: the app's buttons (theme.css .btn; いう sunk until there's something to say) */
+  .write { width: 100%; margin-top: 8px; }
+  .row .btn { width: 100%; margin-bottom: 0; }
   .form { display: grid; gap: 8px; }
   .field {
-    width: 100%; min-height: 48px; padding: 8px 14px; border-radius: 16px; border: 2px solid #E3CFA4; background: #FFFCF2;
-    color: var(--c-ink, #4A3A2C); font: 700 16px/1.3 var(--font-ui); -webkit-user-select: text; user-select: text;
+    width: 100%; min-height: 48px; padding: 8px 14px; border-radius: var(--r-btn); border: 0; box-shadow: inset 0 0 0 2px var(--c-edge); background: var(--c-card);
+    color: var(--c-ink); font: 700 var(--fs-input)/1.3 var(--font-ui); -webkit-user-select: text; user-select: text;
   }
-  .count { justify-self: end; margin-top: -4px; font: 600 12px/1 var(--font-num, var(--font-ui)); color: #9A7F60; }
-  .count.full { color: #C2683E; }
+  .count { justify-self: end; margin-top: -4px; font: 700 var(--fs-s)/1 var(--font-num); color: var(--c-ink-soft); }
+  .count.full { color: var(--c-ink); }
   .row { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; }
   .row.alone { grid-template-columns: 1fr; }
-  .phrase.send { background: #6ED07A; color: #fff; box-shadow: 0 3px 0 rgba(60, 130, 70, .45); }
-  .phrase.back { background: #F1E6CC; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   @keyframes pop { from { transform: scale(.7); opacity: 0; } }
 </style>

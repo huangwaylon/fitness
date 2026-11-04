@@ -83,6 +83,9 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 /* disabled: sunk into the panel (no edge, no lip), soft text: clearly not the action. aria-disabled is the same look: a
    control that still takes the tap, to answer it with the "can't" boop (sound/taps.ts) */
 .btn:is(:disabled, [aria-disabled='true']) { --fill: var(--ctl-off); color: var(--text-soft); cursor: default; box-shadow: none; transform: translateY(4px); }
+/* .off: the same sunk look on a control that still takes the tap to say why (GoalEdit's けってい with nothing to set:
+   its hint turns coral); aria-disabled swallows the tap (sound/taps.ts) */
+.btn.off { --fill: var(--ctl-off); color: var(--text-soft); box-shadow: none; transform: translateY(4px); }
 .btn svg, .btn .ic { width: 24px; height: 24px; flex: none; }
 .btn.small { min-height: 44px; width: auto; font-size: var(--fs-body); padding: 0 18px; }
 .btn.small svg { width: 20px; height: 20px; }
