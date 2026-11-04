@@ -23,13 +23,15 @@ import {
 import type { Exhibit, Kit } from './engine.ts';
 import type { Habitat, Specimen } from './species.ts';
 import type { Pt, Rect } from './plan.ts';
-import { batcher, plainGeometry } from './geometry.ts';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { batcher, openBox, plainGeometry } from './geometry.ts';
 
 /** A bug is drawn this much bigger than NH's own (the island's way: a butterfly a hand across). */
 const BUG_S = 1.9;
 
 /** The garden's ground: its paths, the pond, the soil patches, its trees and beds (the bug wing's model units). */
-const PATHS: Rect[] = [{ x0: -292, x1: -60, z0: 2, z1: 18 }, { x0: -176, x1: -162, z0: -62, z1: 96 }];
+/** (The cross path in two, either side of the long one: no two pieces overlap.) */
+const PATHS: Rect[] = [{ x0: -292, x1: -60, z0: 2, z1: 18 }, { x0: -176, x1: -162, z0: -62, z1: 2 }, { x0: -176, x1: -162, z0: 18, z1: 96 }];
 const POND: Rect = { x0: -268, x1: -206, z0: 40, z1: 82 };
 const OAKS: Pt[] = [[-250, -36], [-118, -42]];
 const PALM: Pt = [-84, 78];
@@ -112,10 +114,18 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
     group.add(mesh);
     return mesh;
   };
-  for (const p of PATHS) flat(p, kit.lambert({ map: kit.tex('bug-path', [(p.x1 - p.x0) / 20, (p.z1 - p.z0) / 20]) }), 0.06);
+  // the paths: one mesh, its stones in the world's own tiling (a stone 20 across) so the pieces meet in one pattern
+  const path = mergeGeometries(PATHS.map((r) => {
+    const g = new PlaneGeometry(r.x1 - r.x0, r.z1 - r.z0).rotateX(-Math.PI / 2).translate((r.x0 + r.x1) / 2, 0.06, (r.z0 + r.z1) / 2);
+    const pos = g.getAttribute('position'), uv = g.getAttribute('uv');
+    for (let i = 0; i < pos.count; i++) uv.setXY(i, pos.getX(i) / 20, -pos.getZ(i) / 20);
+    return g;
+  }));
+  geos.push(path);
+  group.add(new Mesh(path, kit.lambert({ map: kit.tex('bug-path'), layer: 1 })));
   // the pond: its stone bank, its water (a soft blue, a little see-through over its dark bed)
-  flat({ x0: POND.x0 - 3, x1: POND.x1 + 3, z0: POND.z0 - 3, z1: POND.z1 + 3 }, kit.lambert({ map: kit.tex('bug-path', [3, 2]), color: 0xd8d2c4 }), 0.07);
-  flat(POND, kit.lambert({ color: 0x24493f }), 0.09);
+  flat({ x0: POND.x0 - 3, x1: POND.x1 + 3, z0: POND.z0 - 3, z1: POND.z1 + 3 }, kit.lambert({ map: kit.tex('bug-path', [3, 2]), color: 0xd8d2c4, layer: 1 }), 0.07);
+  flat(POND, kit.lambert({ color: 0x24493f, layer: 2 }), 0.09);
   const water = new MeshLambertMaterial({ color: 0x5cb6c8, transparent: true, opacity: 0.72, depthWrite: false, emissive: new Color(0x1b5560), emissiveIntensity: 0.35 });
   mats.push(water);
   const pondW = flat(POND, water, 0.6);
@@ -123,7 +133,7 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
   for (const s of SOIL) {
     const g = new CircleGeometry(s[1] > 80 ? 8 : 12, 20);
     geos.push(g);
-    const m = new Mesh(g, kit.lambert({ map: kit.tex('bug-soil', [1, 1]) }));
+    const m = new Mesh(g, kit.lambert({ map: kit.tex('bug-soil', [1, 1]), layer: 2 }));
     m.rotation.x = -Math.PI / 2;
     m.position.set(s[0], 0.08, s[1]);
     group.add(m);
@@ -176,7 +186,8 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
     const x0 = cx - CASE.w / 2, x1 = cx + CASE.w / 2, z0 = cz - CASE.d / 2, z1 = cz + CASE.d / 2, y = CASE.stand;
     box(x0 + 1, x1 - 1, 0, y, z0 + 1, z1 - 1, wood);
     box(x0, x1, y, y + 2, z0, z1, soil);
-    box(x0, x1, y + 2, y + CASE.h, z0, z1, glass);
+    // (its glass open below: its floor is the soil's top)
+    batch.add(openBox(x1 - x0, CASE.h - 2, z1 - z0, ['-y']), glass, at.makeTranslation((x0 + x1) / 2, y + 2 + (CASE.h - 2) / 2, (z0 + z1) / 2));
     const e = 0.6;
     for (const [x, z] of [[x0, z0], [x1, z0], [x0, z1], [x1, z1]] as const) box(x - e, x + e, y, y + CASE.h, z - e, z + e, frame);
     // its lid's frame (its glass top open to the camera)

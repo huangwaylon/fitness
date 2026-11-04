@@ -17,7 +17,7 @@ import type { Specimen } from './species.ts';
 import { TANKS, fishScale, waterOf, type Box, type Tank } from './tanks.ts';
 import { spawn, stepSchool, type Swimmer } from './boids.ts';
 import type { Rect } from './plan.ts';
-import { batcher, plainGeometry } from './geometry.ts';
+import { batcher, decal, openBox, plainGeometry } from './geometry.ts';
 
 /** Each look's water: its deep colour, its light colour, how bright its caustics. */
 const WATER: Record<Tank['look'], { deep: number; top: number; caustic: number; glow: number }> = {
@@ -127,6 +127,8 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
       uniforms: { uTime, uNight, uDeep: { value: new Color(w.deep) }, uTop: { value: new Color(w.top) }, uCaustic: { value: w.caustic }, uFloor: { value: floor ? 1 : 0 } },
       ...(floor ? { transparent: true, depthWrite: false, blending: AdditiveBlending } : {})
     });
+    // (the floor's caustics lie on the sand)
+    if (floor) decal(m, 1);
     m.userData.floor = floor;
     waterOfLook.set(k, m);
     mats.push(m);
@@ -174,7 +176,8 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[]): Exhibit {
     pts.renderOrder = 3;
     group.add(pts);
     // its glass (one pane each side, faint) and its frame's edges
-    box({ ...b, y0: w.y0 }, glass(look));
+    // (open below: its floor is the sand's top)
+    batch.add(openBox(b.x1 - b.x0, b.y1 - w.y0, b.z1 - b.z0, ['-y']), glass(look), at.makeTranslation((b.x0 + b.x1) / 2, (w.y0 + b.y1) / 2, (b.z0 + b.z1) / 2));
     const e = 0.9;
     for (const [x, z] of [[b.x0, b.z0], [b.x1, b.z0], [b.x0, b.z1], [b.x1, b.z1]] as const) box({ x0: x - e, x1: x + e, y0: b.y0, y1: b.y1, z0: z - e, z1: z + e }, frame);
     box({ x0: b.x0 - e, x1: b.x1 + e, y0: b.y1 - e, y1: b.y1 + e, z0: b.z0 - e, z1: b.z0 + e }, frame);

@@ -16,10 +16,11 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { createVillager, type Villager3D } from '../villager3d/villager3d.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
+import { decal } from './geometry.ts';
 import M from './models.json' with { type: 'json' };
 import { modelBounds } from '../world3d/models3d.ts';
 import {
-  BUG_WING, DOORMAT, FISH_WING, HALL, HALL_H, OPENING, WALLS, inRect, navOf, roomAt, walkable,
+  BUG_WING, DOORMAT, FISH_WING, HALL, HALL_H, OPENING, WALLS, inRect, navOf, roomAt, walkable, wallEnds,
   type Nav, type Pt, type Rect, type Wall, type Wing
 } from './plan.ts';
 
@@ -67,7 +68,8 @@ export interface Kit {
   /** One of the island's models (static/room/world3d/<name>.glb: an oak, a palm, a clump of NH's flowers), and its bounds. */
   island(name: string): Promise<GLTF | null>;
   islandBounds(name: string): { min: number[]; max: number[] } | null;
-  lambert(o: { color?: number; map?: Texture | null; transparent?: boolean; opacity?: number }): MeshLambertMaterial;
+  /** `layer`: a decal's on the floor (decal): a layer over what lies under it. */
+  lambert(o: { color?: number; map?: Texture | null; transparent?: boolean; opacity?: number; layer?: number }): MeshLambertMaterial;
   invalidate(): void;
   noDraw: boolean;
 }
@@ -107,6 +109,8 @@ export interface Museum {
 }
 
 const now = () => performance.now();
+/** The top of the tallest thing in the museum (the hall's cornice): the near plane comes down to just over it. */
+const TOP = 70;
 const ease = (t: number) => 1 - Math.pow(1 - t, 3);
 const wrapAngle = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
@@ -292,8 +296,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     }
     return t;
   }
-  const lambert = (p: { color?: number; map?: Texture | null; transparent?: boolean; opacity?: number }) => {
+  const lambert = (p: { color?: number; map?: Texture | null; transparent?: boolean; opacity?: number; layer?: number }) => {
     const m = new MeshLambertMaterial({ color: p.color ?? 0xffffff, map: p.map ?? null, ...(p.transparent ? { transparent: true, opacity: p.opacity ?? 1, depthWrite: false } : {}) });
+    if (p.layer) decal(m, p.layer);
     disposables.push(m);
     return m;
   };
@@ -380,7 +385,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const grassMat = lambert({ map: grassTex });
   floor(BUG_WING, grassMat);
   // the openings' thresholds (through the walls)
-  for (const x of [HALL.x0, HALL.x1]) floor({ x0: x - 2, x1: x + 2, z0: OPENING.z0, z1: OPENING.z1 }, lambert({ map: tex('hall-floor', [0.1, 0.75]) }), 0.01);
+  for (const x of [HALL.x0, HALL.x1]) floor({ x0: x - 2, x1: x + 2, z0: OPENING.z0, z1: OPENING.z1 }, lambert({ map: tex('hall-floor', [0.1, 0.75]), layer: 1 }), 0.01);
   // the red carpets: the door to the medallion, and on to each opening
   const carpetTex = carpet();
   disposables.push(carpetTex);
@@ -389,7 +394,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     t.repeat.set(1, len / 16);
     t.needsUpdate = true;
     disposables.push(t);
-    const m = new Mesh(new PlaneGeometry(16, len), lambert({ map: t }));
+    const m = new Mesh(new PlaneGeometry(16, len), lambert({ map: t, layer: 2 }));
     m.rotation.set(-Math.PI / 2, 0, yaw);
     m.position.set(x, 0.05, z);
     m.userData.floor = true;
@@ -401,13 +406,13 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   // the owl's medallion in the middle
   const medTex = medallion();
   disposables.push(medTex);
-  const med = new Mesh(new CircleGeometry(22, 48), lambert({ map: medTex }));
+  const med = new Mesh(new CircleGeometry(22, 48), lambert({ map: medTex, layer: 3 }));
   med.rotation.x = -Math.PI / 2;
   med.position.set(0, 0.08, 10);
   med.userData.floor = true;
   scene.add(med);
   // the doormat inside the front door (a tap on it goes back out)
-  const mat = new Mesh(new PlaneGeometry(DOORMAT.x1 - DOORMAT.x0, DOORMAT.z1 - DOORMAT.z0 - 1), lambert({ color: 0x6b4a33 }));
+  const mat = new Mesh(new PlaneGeometry(DOORMAT.x1 - DOORMAT.x0, DOORMAT.z1 - DOORMAT.z0 - 1), lambert({ color: 0x6b4a33, layer: 4 }));
   mat.rotation.x = -Math.PI / 2;
   mat.position.set(0, 0.1, (DOORMAT.z0 + DOORMAT.z1) / 2);
   mat.userData.door = true;
@@ -424,35 +429,41 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   interface WallMesh { w: Wall; mesh: Mesh; fade: number }
   const walls: WallMesh[] = [];
   const T = 3;
-  for (const wl of WALLS) {
-    const dx = wl.b[0] - wl.a[0], dz = wl.b[1] - wl.a[1], len = Math.hypot(dx, dz);
-    const yaw = Math.atan2(-dz, dx);
+  /** A slab along a wall from a to b, its ends run on or held back at the joints (plan.ts wallEnds: no two slabs
+   *  overlap, so no faces share a plane), its middle and its yaw. */
+  const span = (i: number, run: number, free: number) => {
+    const wl = WALLS[i], [e0, e1] = wallEnds(WALLS, i);
+    const dx = wl.b[0] - wl.a[0], dz = wl.b[1] - wl.a[1], len = Math.hypot(dx, dz), ux = dx / len, uz = dz / len;
+    const s0 = e0 ? e0 * run : free, s1 = e1 ? e1 * run : free;
+    return { len: len + s0 + s1, x: (wl.a[0] + wl.b[0]) / 2 + (ux * (s1 - s0)) / 2, z: (wl.a[1] + wl.b[1]) / 2 + (uz * (s1 - s0)) / 2, yaw: Math.atan2(-dz, dx) };
+  };
+  WALLS.forEach((wl, i) => {
+    const s = span(i, T / 2, 0);
     // its two sides: +z of the slab (its local frame) and −z, each facing a room or the outside
-    const nx = -dz / len, nz = dx / len;
+    const len = Math.hypot(wl.b[0] - wl.a[0], wl.b[1] - wl.a[1]), nx = -(wl.b[1] - wl.a[1]) / len, nz = (wl.b[0] - wl.a[0]) / len;
     const mx = (wl.a[0] + wl.b[0]) / 2, mz = (wl.a[1] + wl.b[1]) / 2;
-    const side = (s: number) => roomAt(mx + nx * s * 4, mz + nz * s * 4);
+    const side = (k: number) => roomAt(mx + nx * k * 4, mz + nz * k * 4);
     // BoxGeometry's faces: +x, −x, +y, −y, +z, −z; turned by the yaw below, its local +z is the wall's normal (nx, nz)
     // (the bug wing's backdrop: one picture across each wall, its sky and palms, not tiled)
-    const geo = new BoxGeometry(len + T, wl.h, T);
+    const geo = new BoxGeometry(s.len, wl.h, T);
     const matFor = (r: Wing | null) => (r ? wallMat[r] : outMat);
     const mesh = new Mesh(geo, [capMat, capMat, capMat, capMat, matFor(side(1)), matFor(side(-1))]);
-    mesh.position.set(mx, wl.h / 2, mz);
-    mesh.rotation.y = yaw;
+    mesh.position.set(s.x, wl.h / 2, s.z);
+    mesh.rotation.y = s.yaw;
     mesh.userData.wall = true;
     scene.add(mesh);
     walls.push({ w: wl, mesh, fade: 1 });
-  }
-  // a cornice round the hall's top, gold (NH's lobby trim)
+  });
+  // a cornice round the hall's top, gold (NH's lobby trim: a little proud of the wall, its corners one piece's)
   const trim = lambert({ color: 0xc9a24a });
   /** Each trim and its wall (cut away with it: the camera's cutaway, each frame). */
   const trims: [Mesh, WallMesh][] = [];
-  for (const wl of WALLS.slice(0, 7)) {
-    const dx = wl.b[0] - wl.a[0], dz = wl.b[1] - wl.a[1], len = Math.hypot(dx, dz);
-    const m = new Mesh(new BoxGeometry(len + 4, 2.5, 5), trim);
-    m.position.set((wl.a[0] + wl.b[0]) / 2, wl.h + 1.2, (wl.a[1] + wl.b[1]) / 2);
-    m.rotation.y = Math.atan2(-dz, dx);
-    const wm = walls.find((x) => x.w === wl);
-    if (wm) trims.push([m, wm]);
+  for (let i = 0; i < 7; i++) {
+    const s = span(i, 2.5, 1);
+    const m = new Mesh(new BoxGeometry(s.len, 2.5, 5), trim);
+    m.position.set(s.x, WALLS[i].h + 1.2, s.z);
+    m.rotation.y = s.yaw;
+    trims.push([m, walls[i]]);
     scene.add(m);
   }
 
@@ -538,7 +549,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const disc = softDisc();
   disposables.push(disc);
   const shadowGeo = new CircleGeometry(4.6, 20);
-  const shadowMat = new MeshBasicMaterial({ map: disc, transparent: true, depthWrite: false });
+  const shadowMat = decal(new MeshBasicMaterial({ map: disc, transparent: true, depthWrite: false }), 5);
   disposables.push(shadowGeo, shadowMat);
   let followed: Who = 'A';
   function villager(who: Who, look: Look | null) {
@@ -685,6 +696,15 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     );
     camera.lookAt(target);
     camera.updateMatrixWorld(true);
+    // the depth range only as deep as the museum: the near plane just over its tallest top (everything lies below the
+    // camera, at least ~its drop away in depth), the far one past its farthest corner; at the default view ~40× the
+    // depth buffer's precision of a fixed near of 4, so floors and what lies on them never fight
+    const near = Math.max(4, 0.8 * (camera.position.y - TOP)), far = d + 700;
+    if (Math.abs(camera.near - near) > 0.5 || Math.abs(camera.far - far) > 10) {
+      camera.near = near;
+      camera.far = far;
+      camera.updateProjectionMatrix();
+    }
     cutaway();
   }
   /** Where the camera looks for a villager at (x, z): a little ahead of it, kept over the floors (the view's lower edge
