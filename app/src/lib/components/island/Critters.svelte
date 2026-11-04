@@ -70,9 +70,9 @@
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { caught } from '#lib/sync/world-day.ts';
   import type { FishPhase, How, Relayed, Who } from '#lib/sync/live-protocol.ts';
-  import { LANDS, PACE, STILL, bubblesAt, bugPath, clamp, critterId, fishPath, freshWater, groundOk, inWater, legAt, type Leg } from './critterPath.ts';
+  import { STILL, bubblesAt, bugAt, bugPath, clamp, critterId, fishPath, freshWater, groundOk, inWater, legAt, type BugOpts, type Flying, type Leg } from './critterPath.ts';
   import { tellPartner } from './partnerNews.ts';
-  import { livePos } from '../motion/director.svelte.ts';
+  import { inMotion, livePos } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from './sea.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
@@ -80,7 +80,7 @@
   import { nearestWalkable, walkGeo } from './walkGraph.ts';
   import {
     BUGS, bushes, CAST_U, FISH, FRESH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS, bitePlan,
-    bugPlace, bushBug, castInto, castPhase, critterArt, findKind, freshAreas, shadowLen, fleaJumps, hesitatePlan, hookItem, netSwing,
+    bugPlace, bushBug, castInto, castPhase, critterArt, findKind, fleesFrom, freshAreas, shadowLen, fleaJumps, hesitatePlan, hookItem, netSwing,
     oddsAt, patches, perch3d, perches, pickBug, pickFish, reel, stalkTap, swimAt, waterAt, type BitePlan, type BugId, type BugPlace, type Catch,
     type FishId, type Flight, type JunkId, type Patch, type StalkState, type Swim, type Water
   } from './critters.ts';
@@ -141,12 +141,8 @@
     /** Where it is (world, lift above the ground), its node's anchor and the ground's foreshortening there. */
     x: number; z: number; lift: number; ax: number; az: number; g: number;
     ms: number; flip: boolean; gone: boolean;
-    /** Its patch (null: it stays put: a perch, a flower head) and a check for a spot in it (on screen, clear). */
-    patch: Patch | null; ok: (p: P3) => boolean;
     /** Sat down: a cicada on its trunk, a butterfly resting on a flower (its wings slowly open and close). */
     sat: boolean;
-    /** A butterfly's hops since it last rested on a flower, and how many it makes before the next rest. */
-    hops?: number; rest?: number;
     /** Startled: it rises up and away, fully seen, and fades out at the end. */
     fled?: boolean;
     /** A tarantula's or a scorpion's mood (stalkTap). */
@@ -155,8 +151,9 @@
     held?: boolean; freeze?: string;
     /** When it set off for good (performance.now() ms): the 3D model fades over its leave's last FADE3_MS. */
     goneAt?: number;
-    /** The shared world's (critterPath.ts): its id, its itinerary and when it came (relay ms). */
-    cid?: string; legs?: Leg[]; t0?: number;
+    /** Its itinerary (critterPath.ts: the shared world's, from its seed, or this phone's own), where it set off and
+     *  when it came (relay ms); dropped when something else moves it (a startle, a charge, a rear). */
+    cid?: string; legs?: Leg[]; start?: P3; t0?: number;
   }
   /** A shared critter's id and where its itinerary comes from: its seed, when it came (relay ms) and how long it stays
    *  in all (ms). */
@@ -603,19 +600,32 @@
     return m.xyz;
   }
   const fishYaw = (f: Fish) => mos.get(fishId(f))?.out ?? yawOf(f.flip ? 1 : -1, 0);
-  /** The 3D bug's spot this frame (world x, z, lift): its moves by the 3D island's curves, a lift-off rising first, a
-   *  hop an arc; it turns round (`out`) rather than flipping. */
+  /** The 3D bug's spot this frame (world x, z, lift): on its itinerary, the itinerary's own curve (critterPath.ts bugAt:
+   *  a butterfly's meander and bob, a hop's arc), turned the way it flies; off it (startled, leaving), its moves by
+   *  the 3D island's curves, a lift-off rising first; netted, it holds still. */
+  const flying: Flying = { x: 0, z: 0, lift: 0, vx: 0, vz: 0 };
   function bug3(b: Bug): [number, number, number] {
     const t = performance.now(), m = moOf(bugId(b), b.flip ? Math.PI : 0);
     const dt = Math.min(100, Math.max(0, t - m.t));
     m.t = t;
-    const g = m.g.to(t, b.x, b.z, b.lift, b.ms, b.fled || b.flight === 'dart' ? EASE.out : EASE.smooth, b.gone ? EASE.out : null).at(t);
-    m.out = m.yaw = turn(m.yaw, b.flip ? Math.PI : 0, dt, 90);
-    const k = g.done(t);
-    const hop = (b.flight === 'hop' && !b.gone && k < 1 && g.ms <= 500 ? Math.sin(Math.PI * k) * 9 : 0) + (b.stalk === 'rear' ? 3 : 0);
+    if (b.held && m.g.started) return m.xyz;
+    let want = b.flip ? Math.PI : 0;
+    if (b.legs && b.start && b.t0 !== undefined) {
+      const p = bugAt(b.flight, b.legs, b.start, shared.now() - b.t0, flying);
+      const ups = Math.hypot(p.vx, p.vz) * 1000;
+      // (NH's models face their +z, as the fish's: yawOf)
+      if (!(b.sat && (b.place === 'trunk' || b.place === 'palm'))) want = ups > 4 ? yawOf(p.vx, p.vz) : m.yaw;
+      m.g.set(t, p.x, p.z, p.lift);
+    } else {
+      const g = m.g.to(t, b.x, b.z, b.lift, b.ms, b.fled || b.flight === 'dart' ? EASE.out : EASE.smooth, b.gone ? EASE.out : null).at(t);
+      const dx = g.tx - g.fx, dz = g.tz - g.fz;
+      if (!(b.sat && (b.place === 'trunk' || b.place === 'palm'))) want = g.done(t) < 1 && Math.hypot(dx, dz) > 0.5 ? yawOf(dx, dz) : m.yaw;
+    }
+    const g = m.g;
+    m.out = m.yaw = turn(m.yaw, want, dt, 90);
     m.xyz[0] = g.x;
     m.xyz[1] = g.z;
-    m.xyz[2] = g.l + hop;
+    m.xyz[2] = g.l + (b.stalk === 'rear' ? 3 : 0);
     return m.xyz;
   }
   const bugYaw = (b: Bug) => mos.get(bugId(b))?.out ?? (b.flip ? Math.PI : 0);
@@ -728,7 +738,7 @@
   }
 
   // ---------- bugs ----------
-  // (what they are and how they move: critterPath.ts STILL, LANDS, PACE, groundOk)
+  // (what they are and how they move: critterPath.ts)
   /** The wild flowers' heads (world, lift measured from the flower as drawn): where a ladybug or a mantis sits and a
    *  butterfly rests. The orchid mantis prefers white flowers. */
   function flowerHeads(): (P3 & { fid: string; white: boolean })[] {
@@ -772,7 +782,7 @@
     void loadSprite();
     preload(critterArt(id));
     void loadLines().catch(() => {});
-    if (o.path) return sharedBug(id, o, o.path);
+    if (o.path) return placeBug(id, o, o.path);
     const flight = BUGS[id].flight, place = bugPlace(id);
     let spot: P3 | null = null, patch: Patch | null = null;
     const keep = guards(flight === 'perch' || flight === 'flower' ? 4 : 10);
@@ -814,126 +824,60 @@
     const shown = seen(spot.x, spot.z, spot.lift, null);
     // (a perch's or a flower's spot is its one, vetted already with its own margins: the walk in never looks again)
     const oneSpot = flight === 'perch' || flight === 'flower';
-    // a firefly blinks on, a grasshopper or a crawler is just there, a shell or a walking stick is on its trunk already
-    const inPlace = flight === 'drift' || flight === 'flower' || flight === 'hop' || flight === 'crawl' || flight === 'stalk' || flight === 'burrow' || STILL.has(id);
-    // flyers come in from the nearer side of the screen (a percher from above its trunk)
-    const side = w.screenAt(spot.x, spot.z).sx < w.view.vw / 2 ? -1 : 1;
-    const start = from ?? (inPlace ? spot : { x: spot.x + side * 300, z: spot.z, lift: spot.lift + (flight === 'perch' ? 40 : 0) });
-    bug = {
-      n: ++seq, id, flight, place, ...start, ax: spot.x, az: spot.z, g: Math.max(0.2, w.screenAt(spot.x, spot.z).ground), ms: 0, flip: side < 0,
-      gone: false, patch: flight === 'perch' || flight === 'flower' ? null : patch, ok: shown && !oneSpot ? ok : (p) => groundOk(place, p.x, p.z), sat: false,
-      hops: 0, rest: 2 + Math.floor(rand() * 2), ...(flight === 'stalk' && { stalk: 'calm' as const }), cid: o.cid
-    };
-    // a perch or a flower is its one spot
-    if (!bug.patch) bug.patch = { x0: spot.x, x1: spot.x, z0: spot.z, z1: spot.z, l0: spot.lift, l1: spot.lift };
-    later(fly, 60);
-    if (stay) later(() => bugLeave(), stay === true ? STAY_MS.bug : stay);
-    return true;
+    // this phone's own itinerary from there (critterPath.ts, as a shared one's), kept on screen and clear of the
+    // controls when its spot is
+    const total = typeof stay === 'number' ? stay : stay ? STAY_MS.bug : KEPT_MS;
+    return placeBug(id, { ...o, at: { spot, patch: oneSpot ? null : patch }, keep: shown && !oneSpot ? ok : undefined }, { seed: (rand() * 2 ** 32) >>> 0, t0: shared.now(), total });
   }
-  /** A shared bug: where its seed puts it (critterPath.ts bugPath), wherever that is (the projector shows it when the
-   *  camera sees it), and where in its stay it is now. */
-  function sharedBug(id: BugId, o: { from?: P3; area?: Patch; avoid?: Patch[]; stay?: boolean | number } & Shared, p: NonNullable<Shared['path']>): boolean {
+  /** How long a bug kept until it's caught (a dev hook's) has moves for. */
+  const KEPT_MS = 30 * 60_000;
+  /** A bug on its itinerary (critterPath.ts bugPath: a shared one's from its seed, wherever that is: the projector
+   *  shows it when the camera sees it), where in its stay it is now. */
+  function placeBug(id: BugId, o: { from?: P3; area?: Patch; avoid?: Patch[]; stay?: boolean | number; at?: BugOpts['at']; keep?: BugOpts['keep'] } & Shared, p: NonNullable<Shared['path']>): boolean {
     const white = flowerHeads().filter((h) => h.white).map((h) => h.fid);
-    const path = bugPath(id, p.seed, p.total, { from: o.from, area: o.area, white, avoid: o.avoid });
+    const path = bugPath(id, p.seed, p.total, { from: o.from, area: o.area, white, avoid: o.avoid, at: o.at, keep: o.keep });
     if (!path) return false;
-    const e = shared.now() - p.t0, { k, at } = legAt(path.legs, path.start, e);
-    const spot = path.spot, last = k >= 0 ? path.legs[k] : null;
+    const e = shared.now() - p.t0, at = bugAt(path.flight, path.legs, path.start, e);
+    const k = path.legs.findLastIndex((l) => l.t <= e), spot = path.spot, last = k >= 0 ? path.legs[k] : null;
     bug = {
-      n: ++seq, id, flight: path.flight, place: path.place, ...at, ax: spot.x, az: spot.z, g: Math.max(0.2, w.screenAt(spot.x, spot.z).ground), ms: 0,
-      flip: spot.x >= 195, gone: false, patch: path.patch, ok: (q) => groundOk(path.place, q.x, q.z), sat: !!last?.sat && e >= last.t + last.ms,
-      ...(path.flight === 'stalk' && { stalk: 'calm' as const }), cid: o.cid, legs: path.legs, t0: p.t0
+      n: ++seq, id, flight: path.flight, place: path.place, x: at.x, z: at.z, lift: at.lift, ax: spot.x, az: spot.z, g: Math.max(0.2, w.screenAt(spot.x, spot.z).ground), ms: 0,
+      flip: spot.x >= 195, gone: false, sat: !!last?.sat && e >= last.t + last.ms,
+      ...(path.flight === 'stalk' && { stalk: 'calm' as const }), cid: o.cid, legs: path.legs, start: path.start, t0: p.t0
     };
     later(fly, 60);
     const stay = o.stay ?? true;
     if (stay) later(() => bugLeave(), stay === true ? STAY_MS.bug : stay);
     return true;
   }
-  function go(b: Bug, p: P3, ms: number) {
-    Object.assign(b, { ms, flip: p.x > b.x, x: p.x, z: p.z, lift: p.lift });
-  }
-  /** A shared bug's next move, at its time (critterPath.ts): the same moves at the same moments on both phones. */
-  function flyLegs(b: Bug, legs: Leg[], t0: number) {
+  /** Its next move, at its time (critterPath.ts): a shared one's the same moves at the same moments on both phones.
+   *  The 3D model follows the itinerary's own curve (bug3); the invisible sprite, the tap box's fallback, its legs. */
+  function fly() {
+    const b = bug;
+    if (!b || b.gone || b.held || !b.legs || b.t0 === undefined) return;
     if (b.stalk === 'rear') return later(fly, 600); // reared up at my tap: it holds still
-    const e = shared.now() - t0;
-    const k = legs.findIndex((l) => l.t + l.ms > e);
+    const e = shared.now() - b.t0;
+    const k = b.legs.findIndex((l) => l.t + l.ms > e);
     if (k < 0) return;
-    const l = legs[k];
+    const l = b.legs[k];
     if (l.t > e) return later(fly, l.t - e);
     const left = Math.max(0, l.t + l.ms - e);
     b.sat = false;
-    go(b, l, left);
+    Object.assign(b, { ms: left, flip: l.x > b.x, x: l.x, z: l.z, lift: l.lift });
     if (l.hop) hopEl?.animate([{ translate: '0 0' }, { translate: '0 calc(-9 * var(--u))', offset: 0.45 }, { translate: '0 0' }], { duration: Math.max(120, left), easing: 'ease-out' });
     if (l.sat) later(() => bug === b && !b.gone && !b.held && (b.sat = true), left);
     later(fly, left + 20);
   }
-  function fly() {
-    const b = bug;
-    if (!b || b.gone || b.held || !b.patch) return;
-    if (b.legs && b.t0 !== undefined) return flyLegs(b, b.legs, b.t0);
-    const p = freeIn(b.patch, b.ok);
-    if (!p) return later(fly, 1000); // nowhere else clear just now: it stays where it is a while
-    if (b.flight === 'perch') {
-      // in to the trunk, then it sits there and sings until it's netted, startled or done
-      go(b, p, b.x === p.x && b.lift === p.lift ? 0 : 1500);
-      return later(() => bug === b && (b.sat = true), b.ms);
-    }
-    if (b.flight === 'hop') {
-      // a short hop along the grass toward a free spot, then a sit
-      // (off a villager, or wherever it isn't clear: the first hop goes straight to a clear spot in the grass)
-      const a = b.patch, away = b.lift > 0 || !b.ok({ x: b.x, z: b.z, lift: 0 });
-      const x = away ? p.x : clamp(b.x + Math.sign(p.x - b.x || 1) * Math.min(Math.abs(p.x - b.x), between(14, 30)), a.x0, a.x1);
-      const z = away ? p.z : clamp(b.z + between(-8, 8), a.z0, a.z1);
-      const next = { x, z, lift: 0 };
-      if (!away && !b.ok(next)) return later(fly, 600); // a hop onto a control: it waits and tries again
-      go(b, next, 420);
-      hopEl?.animate([{ translate: '0 0' }, { translate: '0 calc(-9 * var(--u))', offset: 0.45 }, { translate: '0 0' }], { duration: 420, easing: 'ease-out' });
-      return later(fly, 420 + between(1400, 2800));
-    }
-    if (b.flight === 'burrow') return; // under its mound, chirping, until it's dug up or done
-    if (b.flight === 'flower') {
-      // flown in from a shaken bush: down onto its flower; else it's just there, sitting still (a slow bob)
-      go(b, p, b.x === p.x && b.z === p.z && b.lift === p.lift ? 0 : 1200);
-      return;
-    }
-    if (b.flight === 'flutter' && LANDS(b.id)) {
-      // NH's butterflies: every 2–3 hops it lands on a flower head, rests 2–4 s with its wings slowly opening and
-      // closing, then lifts off again
-      if (b.sat) {
-        b.sat = false;
-        b.hops = 0;
-        b.rest = 2 + Math.floor(rand() * 2);
-      } else if ((b.hops = (b.hops ?? 0) + 1) > (b.rest ?? 2)) {
-        const keep = guards(4);
-        const p = b.patch;
-        const h = pickOne(flowerHeads().filter((h) => (p ? h.x >= p.x0 && h.x <= p.x1 && h.z >= p.z0 && h.z <= p.z1 : Math.abs(h.x - b.x) < 120 && Math.abs(h.z - b.z) < 120) && seen(h.x, h.z, h.lift, keep, 5, 5)), rand);
-        if (h) {
-          const ms = between(1100, 1600);
-          go(b, { ...h, lift: h.lift + 2 }, ms);
-          later(() => bug === b && !b.gone && !b.held && (b.sat = true), ms);
-          return later(fly, ms + between(2000, 4000));
-        }
-      }
-    }
-    if (b.flight === 'crawl' || b.flight === 'stalk') {
-      // a little way along its ground, then a rest: a hermit crab scuttles sideways, a snail barely moves; a reared
-      // tarantula holds still
-      if (b.stalk === 'rear') return later(fly, 600);
-      const [reach, m0, m1] = PACE[b.id] ?? [18, 1600, 2600];
-      const a = b.patch, crab = b.id === 'hermit-crab';
-      const x = clamp(b.x + clamp(p.x - b.x, -reach, reach), a.x0, a.x1);
-      const z = clamp(b.z + clamp(p.z - b.z, -reach / 2, reach / 2), a.z0, a.z1);
-      const ms = between(m0, m1);
-      Object.assign(b, { ms, flip: crab ? b.flip : x > b.x, x, z, lift: p.lift });
-      return later(fly, ms + between(1200, 3200));
-    }
-    const ms = b.flight === 'dart' ? between(240, 380) : b.flight === 'drift' ? between(2600, 4000) : between(1100, 1800);
-    go(b, p, ms);
-    later(fly, ms + (b.flight === 'dart' ? between(900, 2000) : 0)); // a dragonfly hovers between darts
+  /** Off its itinerary, from where it's drawn now (a startle, a charge, a rear, the net take it from there). */
+  function offLegs(b: Bug) {
+    if (!b.legs || !b.start || b.t0 === undefined) return;
+    const m = mos.get(bugId(b)), p = m?.g.started ? { x: m.xyz[0], z: m.xyz[1], lift: m.xyz[2] } : bugAt(b.flight, b.legs, b.start, shared.now() - b.t0);
+    Object.assign(b, { x: p.x, z: p.z, lift: p.lift, ms: 0, legs: undefined });
   }
   /** Off to the nearer side, up a little, fading (a firefly or a cricket just fades where it is). */
   function bugLeave(fast = false, away?: number) {
     const b = bug;
     if (!b || b.gone || b.held) return;
+    offLegs(b);
     b.gone = true;
     b.goneAt = performance.now();
     const ground = b.flight === 'crawl' || b.flight === 'stalk';
@@ -947,10 +891,30 @@
       // startled: it rises 40u up and away, in full view, and fades only at the end
       Object.assign(b, { ms: 800, sat: false, fled: true, flip: dir > 0, x: b.x + dir * 50, lift: b.lift + 40 });
     } else {
-      Object.assign(b, { ms: 1600, sat: false, flip: dir > 0, x: b.x + dir * 300, lift: b.lift + 30 });
+      Object.assign(b, { ms: 2000, sat: false, flip: dir > 0, x: b.x + dir * 90, lift: b.lift + 30 });
     }
     later(() => bug === b && (bug = null), b.ms + 50);
   }
+
+  // my villager running at a flier, a percher or a hopper sends it off (on both phones), as in NH; walked up to slowly
+  // or netted from where it stands, it stays (critters.ts fleesFrom). Looked at 5 times a second while one is about.
+  $effect(() => {
+    const b = bug;
+    if (!b || b.gone || b.held || !fleesFrom(b.flight, 0, Infinity)) return;
+    let last = livePos('mine'), lt = performance.now();
+    const id = setInterval(() => {
+      const p = livePos('mine'), t = performance.now(), m = mos.get(bugId(b));
+      const qx = m?.g.started ? m.xyz[0] : b.x, qz = m?.g.started ? m.xyz[1] : b.z;
+      const ups = (Math.hypot(p[0] - last[0], p[1] - last[1]) / Math.max(1, t - lt)) * 1000;
+      [last, lt] = [p, t];
+      if (bug !== b || b.gone || b.held || theirs(b.cid) || !inMotion('mine')) return;
+      if (!fleesFrom(b.flight, Math.hypot(p[0] - qx, p[1] - qz), ups)) return;
+      claim(b.cid, b.id, b.x, b.z, 'flee');
+      sceneSfx('bug-flee');
+      bugLeave(true, Math.sign(qx - p[0]) || 1);
+    }, 200);
+    return () => clearInterval(id);
+  });
 
   /** A pill bug (or, in its hours, a centipede) crawls out from under the rock (Care's rock tap). */
   export function fromRock(_x?: number, _y?: number) {
@@ -1209,6 +1173,7 @@
         // NH's tarantula: it rears up when it's come at, charges if you keep coming; settled again, it can be netted
         const act = stalkTap(b.stalk, swing);
         if (act === 'rear' || act === 'charge') turnTo(b.x); // no walk: its mood is the game
+        if (act !== 'none') offLegs(b); // (come at, it stays where it is till it charges off or is netted)
         if (act === 'rear') {
           b.stalk = 'rear';
           // reared up, on the 3D island too: it lifts its front (bug3) under NH's 「！」 till it settles (the 3D model
@@ -1250,6 +1215,7 @@
       if (swing === 'catch') {
         if (b.held) return true;
         // first wins: claimed at the tap (the relay's first claim is the catch)
+        offLegs(b); // (netted where it's drawn)
         if (!claim(b.cid, b.id, b.x, b.z, 'net')) return true;
         // it holds still where it is (mid-flight included) under the net, swung where it is (my villager turns to it)
         const cs = getComputedStyle(bugEl).translate;

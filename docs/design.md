@@ -1098,10 +1098,20 @@ northern-hemisphere months; hours still hold.
   「！」 pops over it (on the 3D island over my villager's head: docs/world3d-assets.md "Fishing"), and a tap anywhere in the next 1.6 s
   catches it. The first early tap makes it hesitate; a second scares it off. 1 in 14 a boot, tire or can.
   On the 3D island (`island/glide.ts`, `world3d/things.ts`) nothing pops: a shadow or a bug fades in (0.6 s, a slight
-  scale-up) where it comes and out where it goes; they move by the 2D's own curves, smooth from wherever they are,
-  turning as they go; my cast's fish turns to the float, each nibble its nose bumping the float with the float's dip,
+  scale-up) where it comes and out where it goes; a shadow moves by its eased glides, smooth from wherever it is,
+  turning as it goes; my cast's fish turns to the float, each nibble its nose bumping the float with the float's dip,
   the bite a lunge onto it; scared, it turns tail and darts off with a quick tail wiggle, fading as it goes
-  (`e2e/critters3d.spec.ts`).
+  (`e2e/critters3d.spec.ts`). A bug follows its itinerary's own curve (`critterPath.ts` bugAt: a cubic in time through
+  its legs' ends, slowing only where it rests, sits or hops), turned the way it flies.
+- **How the bugs move** (`critterPath.ts` bugPath, NH's paces; `FLY_UPS`, u/s, against a villager's 90 stroll and 200
+  run): a butterfly or a moth flutters at 14–26 in a meander of 12–26u steps, its heading wandering a little each
+  step and turned back in at its clump's edge, now and then hanging a moment in the air, bobbing with its wingbeats
+  (2.5u), and every 3–5 turns lands on a flower of its clump for 2.5–5 s; a bee the same at 22–36, never landing; a
+  dragonfly darts 24–56u at 60–100 and hovers 0.9–2.2 s; a firefly drifts at 5–11, bobbing slowly; a beetle flies in
+  to its trunk at 40–55; hoppers hop, crawlers crawl at their own pace (`PACE`). A flier comes in from 60u off on the
+  island's nearer side. None goes faster than a running villager (`critterPath.test.ts`: speed bounds, curvature).
+  A clump is the flowers within 60u of each other (`critters.ts` beds), not the layout's clump tag (those repeat
+  across the island: one patch by them spanned half of it).
 - **Fish** (all 34 of NH's sea and pier fish, `FISH`): NH's shadows by size (20–64u, the eels long and thin; a fin for
   the sharks, the ocean sunfish and the suckerfish); the coelacanth only in rain or snow.
 - **Bugs** (74 of NH's 80, `BUGS`), each where NH keeps it: butterflies and moths in flight and landing on the flowers
@@ -1116,7 +1126,9 @@ northern-hemisphere months; hours still hold.
   (Apr–Nov); the pondskater, diving beetle and giant water bug on the pond and the river's still reach. A tap nets one,
   judged where the 3D island draws it (its model's spot, not its invisible sprite's: a percher flying in to its trunk
   is 30–110 px off its sprite), even over my villager, a canopy or a door in front of which it flies (`e2e/bug-taps.spec.ts`);
-  within 80px it startles away (on both phones). A bug a dev hook brings keeps clear of every control; one of ambient
+  a tap within 30px (or its size) nets it, one just past it (within 56px) startles it away (on both phones), and so does
+  my villager running at a flier, a percher or a hopper within 70u (NH: they keep still for one creeping up;
+  `critters.ts` fleesFrom). A bug a dev hook brings keeps clear of every control; one of ambient
   life's sits where its seed puts it (a tap on it comes first, before a control under it). Left out: the blue weevil beetle, the giraffe stag
   and the horned hercules (no icons), the dung beetle, the ant and the fly
   ([decisions.md](decisions.md#the-rest-of-nhs-bugs-what-the-island-can-hold)).

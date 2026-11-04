@@ -1,7 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { crittersAt, slotStart, SLOTS_PER_DAY } from './ambient.ts';
 import { BUGS, FRESH, bugPlace, patches, perches, type BugId } from './critters.ts';
-import { flowerHeads, bubblesAt, bugPath, critterId, fishPath, freshWater, groundOk, inWater, legAt } from './critterPath.ts';
+import { FLY_UPS, flowerHeads, bubblesAt, bugAt, bugPath, critterId, fishPath, freshWater, groundOk, inWater, legAt } from './critterPath.ts';
+import { worldOf } from './layoutWorld.ts';
+import { setWorld } from './world.ts';
+import { defaultLayout } from '#lib/layout/model.ts';
 
 const DATE = '2026-11-04';
 
@@ -102,5 +105,75 @@ describe('the critters where both phones see them (from the spawn alone)', () =>
     const out = bugPath('common-butterfly', 42, 18_000, { from, area })!;
     expect(out.start).toEqual(from);
     for (const l of out.legs) if (!l.sat) expect(l.x >= 120 && l.x <= 180).toBe(true);
+  });
+});
+
+describe('how the bugs move (NH: a butterfly is easy to walk up to)', () => {
+  beforeAll(() => setWorld(worldOf(defaultLayout())));
+  afterAll(() => setWorld(null));
+  /** A stay sampled at 60 Hz: the top and mean ground speed (u/s) and how fast its heading turns while it flies (rad/s). */
+  function sample(id: BugId, seed: number, ms = 60_000) {
+    const p = bugPath(id, seed, ms)!, o = bugAt(p.flight, p.legs, p.start, 0);
+    let px = o.x, pz = o.z, top = 0, flown = 0, turned = 0, flyMs = 0, h: number | null = null;
+    for (let t = 16; t < ms; t += 16) {
+      bugAt(p.flight, p.legs, p.start, t, o);
+      const v = Math.hypot(o.x - px, o.z - pz) / 0.016;
+      top = Math.max(top, v);
+      if (v > 2) {
+        const a = Math.atan2(o.z - pz, o.x - px);
+        if (h !== null) turned += Math.abs(Math.atan2(Math.sin(a - h), Math.cos(a - h)));
+        h = a;
+        flown += v * 0.016;
+        flyMs += 16;
+      } else h = null;
+      px = o.x;
+      pz = o.z;
+    }
+    return { top, mean: flown / (flyMs / 1000), turn: turned / (flyMs / 1000) };
+  }
+  const butterflies = (Object.keys(BUGS) as BugId[]).filter((id) => /butterfly/.test(id));
+
+  it('the flowers’ patches are their own clumps, never one across the island (the layout’s clump tags repeat)', () => {
+    for (const a of patches('flowers')) expect(a.z1 - a.z0, JSON.stringify(a)).toBeLessThan(160);
+  });
+  it('a butterfly flutters slowly, slower than a villager strolls (90 u/s), and never darts', () => {
+    for (const id of butterflies)
+      for (const seed of [1, 7, 99, 2024, 123456]) {
+        const s = sample(id, seed);
+        expect(s.top, `${id} ${seed}`).toBeLessThan(FLY_UPS.flutter[1] * 1.8);
+        expect(s.mean, `${id} ${seed}`).toBeGreaterThan(FLY_UPS.flutter[0] * 0.5);
+        expect(s.mean, `${id} ${seed}`).toBeLessThan(FLY_UPS.flutter[1]);
+      }
+  });
+  it('a butterfly meanders in gentle curves, not straight lines nor jitter', () => {
+    for (const id of butterflies)
+      for (const seed of [1, 7, 99, 2024, 123456]) {
+        const s = sample(id, seed);
+        expect(s.turn, `${id} ${seed}`).toBeGreaterThan(0.3);
+        expect(s.turn, `${id} ${seed}`).toBeLessThan(4);
+      }
+  });
+  it('a butterfly bobs as it flies and is still on its flower', () => {
+    const p = bugPath('common-butterfly', 7, 60_000)!;
+    const l = p.legs.find((l) => l.sat)!, rest = l.t + l.ms + 200;
+    const lifts = [0, 140, 280, 420].map((d) => bugAt(p.flight, p.legs, p.start, rest + d).lift);
+    expect(Math.max(...lifts) - Math.min(...lifts)).toBeLessThan(1e-9);
+    const f = p.legs.find((l, i) => i > 1 && !l.sat && !p.legs[i - 1].sat)!;
+    const bob = [0.3, 0.5, 0.7].map((k) => bugAt(p.flight, p.legs, p.start, f.t + f.ms * k).lift);
+    expect(bob.some((b, i) => i && Math.abs(b - bob[0]) > 0.5)).toBe(true);
+  });
+  it('every bug keeps a pace one can follow: none faster than a running villager (200 u/s)', () => {
+    for (const id of Object.keys(BUGS) as BugId[]) {
+      if (BUGS[id].flight === 'dangle') continue;
+      for (const seed of [3, 41]) if (bugPath(id, seed, 20_000)) expect(sample(id, seed, 20_000).top, id).toBeLessThan(200);
+    }
+  });
+  it('its curve runs through each leg’s end, from where it is when it comes', () => {
+    const p = bugPath('common-butterfly', 99, 30_000)!;
+    expect(bugAt(p.flight, p.legs, p.start, 0)).toMatchObject({ x: p.start.x, z: p.start.z });
+    for (const l of p.legs.slice(0, 20)) {
+      const at = bugAt(p.flight, p.legs, p.start, l.t + l.ms);
+      expect(Math.hypot(at.x - l.x, at.z - l.z)).toBeLessThan(1e-6);
+    }
   });
 });

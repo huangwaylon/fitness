@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BITE_WINDOW_MS, BUGS, CAST_U, FISH, HESITATE_MS, JUNK, NOTICE_U, bitePlan, bushBug, castPhase, caption, hesitatePlan,
-  fleaJumps, hookItem, IN_SEASON, inHours, netSwing, oddsAt, pickBug, pickFish, reel, stalkTap, castInto, waterAt, shadowLen, POND_SHADOW,
+  FLEE_U, fleaJumps, fleesFrom, hookItem, IN_SEASON, inHours, netSwing, oddsAt, pickBug, pickFish, reel, stalkTap, castInto, waterAt, shadowLen, POND_SHADOW,
   FRESH, SEA_SWIM, bugPlace, freshAreas, patches, perches, swimAt, type BugId, type FishId
 } from './critters.ts';
 import { mulberry32 } from '#lib/random.ts';
@@ -282,6 +282,14 @@ describe('the net', () => {
     expect(netSwing(30, 50)).toBe('catch');
     expect(netSwing(40, 10)).toBe('startle');
     expect(netSwing(120, 10)).toBe('none');
+  });
+  it('a bug takes off at my villager running at it, never at one walking up or far off', () => {
+    expect(fleesFrom('flutter', FLEE_U - 1, 200)).toBe(true);
+    expect(fleesFrom('perch', 30, 200)).toBe(true);
+    expect(fleesFrom('flutter', FLEE_U + 1, 200)).toBe(false);
+    expect(fleesFrom('flutter', 20, 90)).toBe(false); // a stroll
+    expect(fleesFrom('crawl', 20, 200)).toBe(false);
+    expect(fleesFrom('burrow', 20, 200)).toBe(false);
   });
 });
 
