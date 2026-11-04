@@ -25,6 +25,7 @@
   import { lazy, reloadUnlessLeaving, safeReload } from '#lib/ui-state/reload.ts';
   import { startSound } from '#lib/sound/sound.svelte.ts';
   import { startTaps } from '#lib/sound/taps.ts';
+  import { startExactTaps } from '#lib/ui-state/exactTaps.ts';
   import { startModality } from '#lib/components/ui/modality.ts';
   import { dropPush } from '#lib/sync/pushGone.ts';
   import { startTelemetry } from '#lib/sync/telemetry.ts';
@@ -80,6 +81,8 @@
     const onStale = () => void reloadUnlessLeaving();
     window.addEventListener('vite:preloadError', onStale);
     const stopViewport = startViewport();
+    // a touch's click where the finger was, over the island and in the rooms (no snapping onto a door nearby)
+    const stopExactTaps = startExactTaps();
     // Sound (all off by default): unlocks on the first tap, muffles the music under a sheet, the panel or the harvest.
     const stopSound = startSound({ muffled: () => ui.sheets.length > 0 || showHarvest });
     // every tap's sound (data-sfx) and the "can't" boop (aria-disabled): after startSound, so its unlock runs first
@@ -94,6 +97,7 @@
       stopTaps();
       stopSound();
       stopViewport();
+      stopExactTaps();
       stopTheme();
       stopWeather();
       document.removeEventListener('visibilitychange', onVisible);

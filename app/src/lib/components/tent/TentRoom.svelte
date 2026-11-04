@@ -715,7 +715,7 @@
   }
 </script>
 
-<main class="tent" bind:this={scene} data-tent data-room-home={home} data-editing={editing || undefined}>
+<main class="tent" bind:this={scene} data-tent data-exact-taps data-room-home={home} data-editing={editing || undefined}>
   <h1 class="sr-only">{t('tent.title')}</h1>
   <canvas bind:this={canvas} class="room" data-room onpointerdown={onDown} onpointermove={onMove} onpointerup={onUp}
     onpointercancel={onCancel} onwheel={onWheel} aria-label={t('tent.room')}></canvas>

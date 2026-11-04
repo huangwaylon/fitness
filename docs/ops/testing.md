@@ -103,10 +103,12 @@ Most red runs so far were the spec, not the app. Before pushing a new or changed
     page the moment the 「！」 shows. `__fish.why()` names what the last tap on water did; `__fish.line()` its phase.
     The 「！」's spot on screen against the head is `__world3d.bite(slot)` (e2e/biteMark.ts `overHead`); to check it at
     several zooms or seated, hold it up with `__world3d.pinBite('mine')` rather than wait for bites (bite-mark.spec).
-    The sea off the back beach (`?critter=fish&coast=back`) lies high on the screen at the camera's far stop: WebKit's
-    touch adjustment moves a touch there onto a door's button a few px off, so `fishing-taps.spec` clicks at the point
-    (as `reelOnBite` does), and retries where the shadow has wandered to when a find or a building keeps the tap.
-    `castIn(page, water)` is that for any water: the point checked clear and clicked in one step in the page (a tree's
+    The sea off the back beach (`?critter=fish&coast=back`) lies high on the screen at the camera's far stop, beside
+    the doors and the beach's finds: a real touch there casts (`page.touchscreen.tap`; ui-state/exactTaps.ts takes a
+    touch's click from its pointerup's point, so WebKit's touch adjustment never moves it onto a door, and a find's 44px
+    margin over the water is the water's: `e2e/exact-taps.spec.ts`). `toTheWater('sea')` gives a point on the sea
+    itself (a clifftop pool by the back beach is water too) and on the screen.
+    `castIn(page, water)` casts in any water: `toTheWater`'s point checked clear and clicked in one step in the page (a tree's
     tap area on the bank comes in as its lazy art loads), retried until it cast; it returns where it cast, the place to
     reel (a fixed reel point can be a building's door, and with the line out a door goes in: the bite is missed).
 11. **Tap a pill only once it's at rest.** Playwright calls a moving thing "stable" while a staggered transition is in

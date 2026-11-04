@@ -190,7 +190,9 @@ export async function toTheWater(page: Page, water: string, zoom = 1): Promise<[
       for (let a = 0, n = r ? 16 : 1; a < n; a++) {
         const x = cx + Math.cos((a / n) * Math.PI * 2) * r, y = cy + Math.sin((a / n) * Math.PI * 2) * r;
         const g = w.__world3d.ground(x, y), s = g && w.__world.ground(g.x, g.z).surface;
-        if ((s === 'water' || s === 'sea') && !document.elementFromPoint(x, y)?.closest(TAPS)) return [x, y] as [number, number];
+        // (on screen; for the sea, the sea's: a clifftop pool by the back beach is water too)
+        if (x < 8 || x > innerWidth - 8 || y < 8 || y > innerHeight - 8) continue;
+        if ((water === 'sea' ? s === 'sea' : s === 'water' || s === 'sea') && !document.elementFromPoint(x, y)?.closest(TAPS)) return [x, y] as [number, number];
       }
     return null;
   }, water);
