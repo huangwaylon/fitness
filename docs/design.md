@@ -1129,6 +1129,19 @@ goes with the leaving).
   59/54 either way (73/72 → 104/106 varied), frame cost p95 2 ms at rest and walking (2 → 3 ms walking, varied), 30 fps
   walking and orbiting, the first load of the models (a fresh Safari) 1.2–1.6 → 1.8–2.0 s (2.1 → 2.2 s varied), Web
   Content ~510–590 MB either way. No batching: a repeated model isn't instanced, the room draws only when something moves.
+- **Loading:** the furniture's models are kept page-wide as loaded (tent/engine.ts `loadModel`: fetched, decoded,
+  without the loader's parser, as the island's models are: release.ts `lean`), so a room comes back with no fetch,
+  meshopt or image decode; each room's GPU copies go with its renderer (disposed with it: three's listeners else hold
+  it). Its models' textures are plain images on WebKit (world3d/gltf.ts, as the museum's). The wallpaper and the
+  flooring start as a 1×1 map of their colour, so their arrival swaps a map (the same program; a map added later
+  compiled another). Once the room's in and still, what it hasn't drawn yet (the first person's ceiling and door, the
+  edit mode's grid and footprints: in the scene, hidden) is compiled a program a timer tick (engine.ts `warm`; WebKit
+  compiles every program made so far at the first query that waits on the GPU, so one at a time), so turning them on
+  compiles nothing. iOS Simulator (own iPhone 16, iOS 26.5, the starter set's 40 placed, back from the shop, local
+  builds A/B, load average 7–85): 40 model requests → 0, everything in 545–631 → 365–402 ms; the way in's long frames
+  (the room's ~14 programs, ~275 ms of compiling either way) 62–100, 51–68, 194–264, 64–100 ms as the models came →
+  one of 337–354 ms; programs compiled turning the first person on 0–1 → 0, the edit mode 0–1 → 0 (22 made, 14–16
+  before).
 - **Turning:** ↻ or a tap on the piece I hold turns it a quarter clockwise (a tap: under 8 px and 450 ms; a drag
   moves it), easing round.
 - **Holding** (NH's decorating: one thing held at a time; `TentEdit.svelte`): with nothing held a tap or a press on a
