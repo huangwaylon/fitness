@@ -20,6 +20,7 @@ import type { Exhibit, Kit } from './engine.ts';
 import { WALKERS, hourOf, onDisplay, type Specimen, type TankId } from './species.ts';
 import { TANKS, alongX, bodyIn, openOf, piecesOf, propsOf, waterOf, type Body, type Box, type Tank } from './tanks.ts';
 import { bandOf, cruiseOf, poseOf, spawn, stepSchool, stepWalker, type Swimmer } from './boids.ts';
+import { FEEDERS, FEEDER_R, PREDATORS, feedersIn, feedingOf, stepFeeding, type Feeding } from './feeding.ts';
 import type { Rect } from './plan.ts';
 import { BENCHES, BENCH_MODEL, BENCH_S } from './seats.ts';
 import { batcher, decal, openBox, plainGeometry } from './geometry.ts';
@@ -68,6 +69,33 @@ void main() {
 const BUBBLE_FRAG = /* glsl */ `
 varying float vA;
 void main() { vec2 d = gl_PointCoord - 0.5; float r = length(d); if (r > 0.5) discard; float ring = smoothstep(0.5, 0.35, r) * (0.35 + smoothstep(0.25, 0.45, r)); gl_FragColor = vec4(0.85, 0.97, 1.0, ring * vA * 0.75); }`;
+
+// a bite's puff: a few bubbles out from where it was and up, gone in a second (uT: s since; past that, none)
+const PUFF_VERT = /* glsl */ `
+uniform float uT; uniform vec3 uAt; uniform float uPx;
+attribute vec3 aDir;
+varying float vA;
+void main() {
+  float k = clamp(uT / 1.1, 0.0, 1.0);
+  vec3 p = uAt + aDir * (1.0 - (1.0 - k) * (1.0 - k)) * 4.0 + vec3(0.0, k * 5.0, 0.0);
+  vA = uT < 1.1 ? (1.0 - k) : 0.0;
+  vec4 mv = modelViewMatrix * vec4(p, 1.0);
+  gl_PointSize = vA > 0.0 ? uPx * (0.5 + fract(aDir.x * 7.0) * 0.6) / -mv.z : 0.0;
+  gl_Position = projectionMatrix * mv;
+}`;
+/** A feeder (feeding.ts): a little low-poly fish, its nose +z, 2 FEEDER_R long (flat-shaded: a body of eight faces, a
+ *  forked tail both sides). */
+function feederGeometry(): BufferGeometry {
+  const L = FEEDER_R, n = [0, 0, L], t = [0, 0, -L * 0.45], up = [0, L * 0.38, L * 0.1], dn = [0, -L * 0.32, L * 0.1], l = [-L * 0.2, 0, L * 0.1], r = [L * 0.2, 0, L * 0.1];
+  const f0 = [0, 0, -L * 0.4], f1 = [0, L * 0.4, -L], f2 = [0, -L * 0.4, -L];
+  const tris = [n, up, r, n, r, dn, n, dn, l, n, l, up, t, r, up, t, dn, r, t, l, dn, t, up, l, f0, f1, f2, f0, f2, f1];
+  const g = new BufferGeometry();
+  g.setAttribute('position', new Float32BufferAttribute(tris.flat(), 3));
+  g.computeVertexNormals();
+  return g;
+}
+/** A tank's feeding as drawn: its state, its feeders' mesh and material, its bite's puff, and its predators on show. */
+interface Feed { fd: Feeding; mesh: InstancedMesh; mat: MeshLambertMaterial; puff: ShaderMaterial; pts: Points; predators: Swimmer[] }
 
 interface School {
   sp: Specimen;
@@ -219,6 +247,60 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
     m.customProgramCacheKey = () => 'museum-fish';
     return m;
   };
+  // (the matrices' scratch: nothing allocated in a frame)
+  const M4 = new Matrix4(), Q = new Quaternion(), P = new Vector3(), S = new Vector3(), E = new Vector3(0, 1, 0), Qp = new Quaternion(), X = new Vector3(1, 0, 0), Z = new Vector3(0, 0, 1);
+  // ---- the feeders (feeding.ts): where a predator's on show, a few little generic fish (no ずかん species), one
+  // InstancedMesh a tank (FEEDERS at most, the gone ones scaled to nothing), and a bite's bubbles ----
+  const feederGeo = feederGeometry();
+  feederGeo.setAttribute('aPhase', new InstancedBufferAttribute(Float32Array.from({ length: FEEDERS }, (_, i) => i * 1.7), 1));
+  geos.push(feederGeo);
+  const feeds = new Map<TankId, Feed>();
+  for (const t of TANKS) {
+    const mat = fishMat(null, FEEDER_R, -FEEDER_R, FEEDER_R * 0.18);
+    mat.color.set(0xc4d8e2);
+    mat.emissive.set(0x24323c);
+    mats.push(mat);
+    const mesh = new InstancedMesh(feederGeo, mat, FEEDERS);
+    mesh.boundingSphere = spheres.get(t.id)!;
+    mesh.userData.feeders = true;
+    group.add(mesh);
+    const pg = new BufferGeometry(), dirs = new Float32Array(30);
+    for (let i = 0; i < 10; i++) {
+      const a = i * 2.4, e = ((i * 0.37) % 1) - 0.3;
+      dirs.set([Math.cos(a), e, Math.sin(a)], i * 3);
+    }
+    pg.setAttribute('position', new Float32BufferAttribute(new Float32Array(30), 3));
+    pg.setAttribute('aDir', new Float32BufferAttribute(dirs, 3));
+    pg.boundingSphere = spheres.get(t.id)!;
+    geos.push(pg);
+    const puff = new ShaderMaterial({ vertexShader: PUFF_VERT, fragmentShader: BUBBLE_FRAG, uniforms: { uT: { value: 99 }, uAt: { value: new Vector3() }, uPx: bubbleMat.uniforms.uPx }, transparent: true, depthWrite: false });
+    mats.push(puff);
+    const pts = new Points(pg, puff);
+    pts.renderOrder = 3;
+    group.add(pts);
+    const fd: Feed = { fd: feedingOf(hash(t.id) + 1), mesh, mat, puff, pts, predators: [] };
+    feeds.set(t.id, fd);
+    writeFeeders(fd);
+  }
+  function writeFeeders(f: Feed) {
+    const fs = f.fd.feeders;
+    for (let i = 0; i < fs.length; i++) {
+      const x = fs[i];
+      Q.setFromAxisAngle(E, x.yaw);
+      Q.multiply(Qp.setFromAxisAngle(X, Math.max(-0.4, Math.min(0.4, -Math.atan2(x.v[1], Math.max(0.5, Math.hypot(x.v[0], x.v[2]))) * 0.6))));
+      P.set(x.p[0], x.p[1], x.p[2]);
+      S.setScalar(x.alive ? Math.max(0.001, x.fade) : 0);
+      M4.compose(P, Q, S);
+      f.mesh.setMatrixAt(i, M4);
+    }
+    f.mesh.instanceMatrix.needsUpdate = true;
+    // (none in: nothing drawn)
+    f.mesh.visible = feedersIn(f.fd) > 0;
+    f.pts.visible = f.fd.puffT < 1.1;
+    f.mat.userData.beat.value = f.fd.clock * 9;
+    f.puff.uniforms.uT.value = f.fd.puffT;
+    (f.puff.uniforms.uAt.value as Vector3).set(f.fd.puff[0], f.fd.puff[1], f.fd.puff[2]);
+  }
   const schools = new Map<string, School>();
   /** Each tank's swimmers, all its schools' together (they keep off one another), and its bottom walkers. */
   const swimmers = new Map<TankId, Swimmer[]>(TANKS.map((t) => [t.id, []]));
@@ -270,6 +352,8 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
       // a walker on the sand (its own height off it), else among the tank's swimmers
       if (s.walk) f.p[1] = s.water.y0 + body.half[1] * body.s;
       (s.walk ? walkers : swimmers).get(tank.id)!.push(f);
+      // (a hunter: the feeders come to its tank)
+      if (!s.walk && PREDATORS.has(sp.id)) feeds.get(tank.id)!.predators.push(f);
       Object.assign(s, { geo, mat, mesh, fish: f, body });
       fadeTo(s, s.fade);
       group.add(mesh);
@@ -282,8 +366,8 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
     s.mesh?.removeFromParent();
     s.geo?.dispose();
     s.mat?.dispose();
-    for (const m of [swimmers, walkers]) {
-      const a = m.get(s.tank.id)!, i = s.fish ? a.indexOf(s.fish) : -1;
+    for (const a of [swimmers.get(s.tank.id)!, walkers.get(s.tank.id)!, feeds.get(s.tank.id)!.predators]) {
+      const i = s.fish ? a.indexOf(s.fish) : -1;
       if (i >= 0) a.splice(i, 1);
     }
   }
@@ -306,7 +390,6 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
   }
   pick(null);
 
-  const M4 = new Matrix4(), Q = new Quaternion(), P = new Vector3(), S = new Vector3(), E = new Vector3(0, 1, 0), Qp = new Quaternion(), X = new Vector3(1, 0, 0), Z = new Vector3(0, 0, 1);
   function write(sc: School) {
     if (!sc.mesh || !sc.fish || !sc.body) return;
     const f = sc.fish, pose = poseOf(f);
@@ -359,6 +442,9 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
         if (!seen(spheres.get(id)!)) continue;
         const w = waters.get(id)!;
         stepSchool(swimmers.get(id)!, w, dt / 1000, t / 1000);
+        const fe = feeds.get(id)!;
+        stepFeeding(fe.fd, fe.predators, w, dt / 1000);
+        writeFeeders(fe);
       }
       for (const s of schools.values()) {
         if (!seen(spheres.get(s.tank.id)!)) continue;
@@ -380,6 +466,11 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
       return best;
     },
     where(id) {
+      // (a feeder: 'feeder:<tank>:<i>', while it's in)
+      if (id.startsWith('feeder:')) {
+        const [, tank, i] = id.split(':'), x = feeds.get(tank as TankId)?.fd.feeders[Number(i)];
+        return x?.alive ? [x.p[0], x.p[1], x.p[2]] : null;
+      }
       const f = schools.get(id)?.fish;
       return f ? [f.p[0], f.p[1], f.p[2]] : null;
     },
