@@ -1,13 +1,21 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-beforeEach(() => {
+const stub = () => {
   vi.useFakeTimers();
   vi.stubGlobal('document', { hidden: false, addEventListener: vi.fn(), removeEventListener: vi.fn() });
-});
-afterEach(() => {
+};
+const unstub = () => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
+};
+// (the modules loaded once in the hook, under the tests' stubs: their ~0.5–1.5 s of transform isn't charged to the first test)
+beforeAll(async () => {
+  stub();
+  await import('./director.svelte.ts');
 });
+afterAll(unstub);
+beforeEach(stub);
+afterEach(unstub);
 
 describe('walkTo (the director)', () => {
   it('segment by segment: facing, and the feet move along each segment by the clock (livePos)', async () => {

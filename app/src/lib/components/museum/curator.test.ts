@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { Box3, Vector3, type SkinnedMesh } from 'three';
+import { Box3, Matrix4, Mesh, Vector3, type SkinnedMesh } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { AT, mind, RANGE, S, type Mind } from './curator.ts';
@@ -134,6 +134,11 @@ function poses(): { what: string; p: Pose }[] {
 
 describe('the curator (フータ): his joints and his model', () => {
   const all = poses();
+  // (his model parsed once, in the hook: its ~1 s isn't charged to the first test's 5 s)
+  let m: Model;
+  beforeAll(async () => {
+    m = await model();
+  });
 
   it('keeps every joint he poses within its natural range, in every mood', () => {
     expect(all.length).toBeGreaterThan(5000);
@@ -157,7 +162,6 @@ describe('the curator (フータ): his joints and his model', () => {
   });
 
   it('keeps his model whole in every pose: no vertex flung off, no strip stretched, no wing turned edge-on (a needle)', async () => {
-    const m = await loaded();
     const fails: string[] = [];
     const before = { needle: m.needle(m.rest), stretch: 0 };
     for (const { what, p } of all.filter((_, i) => i % 7 === 0)) {
@@ -174,7 +178,6 @@ describe('the curator (フータ): his joints and his model', () => {
   });
 
   it('stands clear of his desk in every pose: no vertex of his in its box (the bob, the doze, the hop, the wings)', async () => {
-    const m = await loaded();
     const fails: string[] = [];
     // (every 8th sampled pose, a different set from the shape's: ~700 poses of his ~2900 vertices skinned, ~0.6 s)
     for (const { what, p } of all.filter((_, i) => i % 8 === 3)) {
@@ -197,8 +200,7 @@ const NEEDLE = 0.18;
  *  turned 1.1, a9e29ce7's, 0.09). */
 const STRETCH = 0.08;
 
-let loading: ReturnType<typeof model> | null = null;
-const loaded = () => (loading ??= model());
+type Model = Awaited<ReturnType<typeof model>>;
 
 /** His model (static/room/villagers3d/blathers.glb, its textures dropped: node has no images), on its rig. */
 async function model() {
@@ -223,22 +225,57 @@ async function model() {
   const root = g.scene, rig = rigOf(root);
   const meshes: SkinnedMesh[] = [];
   root.traverse((n) => (n as SkinnedMesh).isSkinnedMesh && meshes.push(n as SkinnedMesh));
-  const v = new Vector3(), w = new Vector3();
-  const at3 = (s: SkinnedMesh, i: number, to: Vector3) => s.getVertexPosition(i, to).applyMatrix4(s.matrixWorld);
+  const v = new Vector3(), base = new Vector3(), t3 = new Vector3();
+  // SkinnedMesh.getVertexPosition's skinning, its bone matrices (bone world × bone inverse) multiplied once a pose instead
+  // of once a vertex and influence: the same products, the same sums, in the same order (the same floats)
+  const boneM = meshes.map((s) => s.skeleton.bones.map(() => new Matrix4()));
+  const skinPose = () => meshes.forEach((s, k) => s.skeleton.bones.forEach((bn, i) => boneM[k][i].multiplyMatrices(bn.matrixWorld, s.skeleton.boneInverses[i])));
+  const at3 = (k: number, i: number, to: Vector3) => {
+    const s = meshes[k], ji = s.geometry.attributes.skinIndex, jw = s.geometry.attributes.skinWeight;
+    Mesh.prototype.getVertexPosition.call(s, i, base); // (its morphs, none posed)
+    base.applyMatrix4(s.bindMatrix);
+    to.set(0, 0, 0);
+    for (let c = 0; c < 4; c++) {
+      const wt = jw.getComponent(i, c);
+      if (wt !== 0) to.addScaledVector(t3.copy(base).applyMatrix4(boneM[k][ji.getComponent(i, c)]), wt);
+    }
+    return to.applyMatrix4(s.bindMatrixInverse).applyMatrix4(s.matrixWorld);
+  };
+  /** Every vertex posed, world space, xyz packed: one array a mesh, rewritten each call. */
+  const buf = meshes.map((s) => new Float64Array(3 * s.geometry.attributes.position.count));
   const posed = (p: Pose) => {
     rig.apply(p);
     root.updateMatrixWorld(true);
-    return meshes.map((s) => Array.from({ length: s.geometry.attributes.position.count }, (_, i) => at3(s, i, new Vector3())));
+    skinPose();
+    meshes.forEach((s, k) => {
+      const o = buf[k];
+      for (let i = 0; i < s.geometry.attributes.position.count; i++) (at3(k, i, v), (o[3 * i] = v.x), (o[3 * i + 1] = v.y), (o[3 * i + 2] = v.z));
+    });
+    return buf;
   };
+  const dist = (a: Float64Array, i: number, c: Float64Array, j: number) =>
+    Math.sqrt((a[3 * i] - c[3 * j]) ** 2 + (a[3 * i + 1] - c[3 * j + 1]) ** 2 + (a[3 * i + 2] - c[3 * j + 2]) ** 2);
   // his body at rest (NH's T, its wings out: its tips the farthest from his middle): a vertex further from his middle than
   // a tip by a tenth of his height is flung off (a raised wing's tip may well stand over his tufts)
-  const bind = posed({ j: {}, y: 0, sq: 1, pitch: 0 });
+  const bind = posed({ j: {}, y: 0, sq: 1, pitch: 0 }).map((a) => a.slice());
   const box = new Box3();
-  for (const ps of bind) for (const q of ps) box.expandByPoint(q);
-  const height = box.max.y - box.min.y, mid = box.getCenter(new Vector3());
+  for (const ps of bind) for (let i = 0; i < ps.length; i += 3) box.expandByPoint(v.fromArray(ps, i));
+  const height = box.max.y - box.min.y, mid = box.getCenter(new Vector3()), m3 = new Float64Array(mid.toArray());
   let reach = 0;
-  for (const ps of bind) for (const q of ps) reach = Math.max(reach, q.distanceTo(mid));
+  for (const ps of bind) for (let i = 0; i < ps.length / 3; i++) reach = Math.max(reach, dist(ps, i, m3, 0));
   reach += 0.1 * height;
+  // each mesh's edges, once each (a triangle's three; an edge two triangles share counted once), and their bind lengths
+  const edges = meshes.map((s, k) => {
+    const ix = s.geometry.index!.array, seen = new Set<number>(), n = s.geometry.attributes.position.count, ab: number[] = [];
+    for (let i = 0; i < ix.length; i += 3)
+      for (let e = 0; e < 3; e++) {
+        const a = ix[i + e], c = ix[i + ((e + 1) % 3)], key = Math.min(a, c) * n + Math.max(a, c);
+        if (!seen.has(key)) (seen.add(key), ab.push(a, c));
+      }
+    const pairs = Uint32Array.from(ab), len = new Float64Array(pairs.length / 2);
+    for (let e = 0; e < len.length; e++) len[e] = dist(bind[k], pairs[2 * e], bind[k], pairs[2 * e + 1]);
+    return { pairs, len };
+  });
   // each wing's outer half (its vertices mostly on Arm_2_L/R and their helpers)
   const wings = (['L', 'R'] as const).map((side) => {
     const body = meshes.findIndex((s) => (s.material as { name: string }).name === 'mBody'), s = meshes[body];
@@ -252,8 +289,8 @@ async function model() {
   });
   const el = (PITCH * Math.PI) / 180, up = new Vector3(0, Math.cos(el), -Math.sin(el));
   /** The narrowest wing's silhouette, its width over its length (the 2D spread's minor over major axis). */
-  const needleOf = (ps: Vector3[][]) => Math.min(...wings.map(({ body, ids }) => {
-    const pts = ids.map((i) => [ps[body][i].x, ps[body][i].dot(up)]);
+  const needleOf = (ps: Float64Array[]) => Math.min(...wings.map(({ body, ids }) => {
+    const q = ps[body], pts = ids.map((i) => [q[3 * i], q[3 * i] * up.x + q[3 * i + 1] * up.y + q[3 * i + 2] * up.z]);
     const mx = pts.reduce((a, q) => a + q[0], 0) / pts.length, my = pts.reduce((a, q) => a + q[1], 0) / pts.length;
     let xx = 0, yy = 0, xy = 0;
     for (const [x, y] of pts) (xx += (x - mx) ** 2), (yy += (y - my) ** 2), (xy += (x - mx) * (y - my));
@@ -270,11 +307,12 @@ async function model() {
     inDesk(p: Pose, at: Pt = AT) {
       rig.apply(p);
       root.updateMatrixWorld(true);
+      skinPose();
       const k = S / Math.sqrt(p.sq);
       let n = 0, deep = 0;
-      for (const s of meshes)
-        for (let i = 0; i < s.geometry.attributes.position.count; i++) {
-          at3(s, i, v);
+      for (let m = 0; m < meshes.length; m++)
+        for (let i = 0; i < meshes[m].geometry.attributes.position.count; i++) {
+          at3(m, i, v);
           const x = at[0] + k * v.x, y = S * (v.y * p.sq + p.y), z = at[1] + k * v.z;
           if (x > dx0 && x < dx1 && z > dz0 && z < dz1 && y < dy1) (n++, (deep = Math.max(deep, Math.min(z - dz0, dy1 - y))));
         }
@@ -285,13 +323,12 @@ async function model() {
       const ps = posed(p);
       let out = 0, far = 0, stretch = 0;
       ps.forEach((q, k) => {
-        for (const x of q) if (x.distanceTo(mid) > reach) (out++, (far = Math.max(far, x.distanceTo(mid) - reach)));
-        const ix = meshes[k].geometry.index!.array;
-        for (let i = 0; i < ix.length; i += 3)
-          for (let e = 0; e < 3; e++) {
-            const a = ix[i + e], c = ix[i + ((e + 1) % 3)];
-            stretch = Math.max(stretch, v.copy(q[a]).distanceTo(q[c]) - w.copy(bind[k][a]).distanceTo(bind[k][c]));
-          }
+        for (let i = 0; i < q.length / 3; i++) {
+          const d = dist(q, i, m3, 0);
+          if (d > reach) (out++, (far = Math.max(far, d - reach)));
+        }
+        const { pairs, len } = edges[k];
+        for (let e = 0; e < len.length; e++) stretch = Math.max(stretch, dist(q, pairs[2 * e], q, pairs[2 * e + 1]) - len[e]);
       });
       return { out, far, stretch, needle: needleOf(ps) };
     }
