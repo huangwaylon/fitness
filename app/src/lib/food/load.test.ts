@@ -1,6 +1,7 @@
 // The shipped data (static/food/, scripts/food-data.ts) as loadFoodDb reads it: every file index.json lists is there
 // and nothing else, every item makes a snapshot the record accepts, and the PoC's searches still find their food.
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { foodOp } from '#lib/contract/food.ts';
@@ -34,6 +35,12 @@ describe('static/food', () => {
     expect(readdirSync(DIR).sort()).toEqual(['index.json', 'verify.json', ...index.datasets.map((d) => d.file)].sort());
     expect(index.version).toMatch(/^[0-9a-f]{12}$/);
     expect(index.datasets.filter((d) => d.lazy).map((d) => d.file)).toEqual(['products.json']);
+  });
+
+  it('versions the files as shipped (scripts/food-data.ts): a change to any of them is a new ?v= for every phone', () => {
+    const hash = createHash('sha256');
+    for (const f of ['verify.json', ...index.datasets.map((d) => d.file)]) hash.update(`${f}\0`).update(readFileSync(join(DIR, f))).update('\0');
+    expect(index.version).toBe(hash.digest('hex').slice(0, 12));
   });
 
   it('every item makes a snapshot the record accepts, and has a 100 g portion to pick', () => {

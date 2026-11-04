@@ -6,6 +6,10 @@
 // file fails, nothing is copied). static/food/ is replaced whole, so a dropped dataset goes too.
 // Each item gets its search keys (`keys`: lib/food/search.ts keysOf), so the app builds none while the user types; a
 // product's barcode is then dropped when the id has it (`off:<jan>`: the app reads it from `keys` only).
+// index.json is written last, its `version` that of the files as shipped (fileVersion: their names and bytes, keys
+// included), so a change here (keys, a dropped field) is a new version too and every phone refetches; out/'s index
+// keeps the pipeline's own hash.
+import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { keysOf } from '../src/lib/food/search.ts';
@@ -44,7 +48,7 @@ for (const f of files) {
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 let bytes = 0;
-for (const f of SIDECARS) copyFileSync(join(SRC, f), join(OUT, f));
+copyFileSync(join(SRC, 'verify.json'), join(OUT, 'verify.json'));
 for (const [f, d] of data) {
   d.items = d.items.map((it) => {
     const keys = keysOf(it);
@@ -54,5 +58,13 @@ for (const [f, d] of data) {
   });
   writeFileSync(join(OUT, f), JSON.stringify(d));
 }
+/** The first 12 hex digits of the sha256 of each shipped file's name and bytes, verify.json then the datasets in
+ * index order (load.test.ts recomputes it). */
+const hash = createHash('sha256');
+for (const f of ['verify.json', ...files]) hash.update(`${f}\0`).update(readFileSync(join(OUT, f))).update('\0');
+const version = hash.digest('hex').slice(0, 12);
+const indexText = readFileSync(join(SRC, 'index.json'), 'utf8');
+if (!indexText.includes(`"${index.version}"`)) fail('index.json: its version is not where it is expected');
+writeFileSync(join(OUT, 'index.json'), indexText.replace(`"${index.version}"`, `"${version}"`));
 for (const f of [...SIDECARS, ...files]) bytes += statSync(join(OUT, f)).size;
-console.log(`food:data: ${files.length} datasets + ${SIDECARS.join(', ')} (${(bytes / 1e6).toFixed(1)} MB), version ${index.version}, from ${SRC}`);
+console.log(`food:data: ${files.length} datasets + ${SIDECARS.join(', ')} (${(bytes / 1e6).toFixed(1)} MB), version ${version} (out/: ${index.version}), from ${SRC}`);

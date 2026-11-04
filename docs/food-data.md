@@ -30,7 +30,8 @@ the build reads.
 `npm run food:data` (`app/scripts/food-data.ts`) checks that `index.json` and the files agree, replaces
 `app/static/food/` whole, adds each item's search keys (`keys`) and drops a product's `jan` when its id has it. The
 barcode shards (`jan/`) are built but not shipped (no barcode scanning). The app fetches the files at runtime
-(`lib/food/load.ts`) under `?v=<index.version>`. A meal keeps a per-100 g snapshot, so a data refresh never rewrites one.
+(`lib/food/load.ts`) under `?v=<index.version>`; the shipped `index.json` is written last, its `version` that of the
+files as shipped (so a change to the keys alone is a new version too; `load.test.ts` recomputes it). A meal keeps a per-100 g snapshot, so a data refresh never rewrites one.
 
 ## Format
 
@@ -55,7 +56,8 @@ header fields as they are written in the file.
 MEXT markers are converted as follows: `Tr`/`(Tr)` → 0, `(N)` → N, `-` → null. Recipe datasets don't ship their ingredient lists.
 
 **`index.json`**: `{ "version", "datasets": [{ "file", "source", "badge", "secondary", "lazy" }] }`. `version` is
-the first 12 hex digits of the sha256 of every generated file (`jan/` included). The app appends `?v=<version>` to
+the first 12 hex digits of the sha256 of every generated file (`jan/` included) in `out/`; in `static/food/`, of the
+shipped files' names and bytes (`food-data.ts`: `verify.json`, then the datasets in index order). The app appends `?v=<version>` to
 data URLs, and the service worker caches them cache-first under that key. `secondary` datasets rank slightly below the core ones
 (mext, dishes, eatout) for equally good matches. `lazy` datasets (`products.json`) load only after the others are
 searchable.
