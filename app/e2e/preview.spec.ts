@@ -7,8 +7,17 @@ import { fromMenu, hudMenu } from './hud.ts';
 const chip = (page: Page) => page.locator('[data-preview-chip]');
 const html = (page: Page) => page.locator('html');
 
+/** Unfold せってい's きせつ row (folded by default) if it isn't open. */
+async function unfold(page: Page) {
+  const tg = page.locator('[data-preview-toggle]');
+  await tg.scrollIntoViewIfNeeded();
+  if ((await tg.getAttribute('aria-expanded')) !== 'true') await tg.click();
+  await expect(tg).toHaveAttribute('aria-expanded', 'true');
+}
+
 async function pick(page: Page, ...which: string[]) {
   await fromMenu(page, 'settings');
+  await unfold(page);
   for (const w of which) {
     const b = page.locator(`[data-preview="${w}"]`);
     await b.scrollIntoViewIfNeeded();
@@ -59,8 +68,11 @@ test('a season, the weather and the time of day; もどす is the real day again
   await expect(chip(page)).toContainText('ふゆ');
 
   await fromMenu(page, 'settings');
+  await expect(page.locator('[data-preview-summary]')).toHaveText('ふゆ · ゆき · ゆうがた'); // folded: what's showing
   await page.locator('[data-preview-reset]').click();
   await expect(page.locator('[data-preview-reset]')).toHaveCount(0);
+  await expect(page.locator('[data-preview-summary]')).toHaveText('おまかせ');
+  await unfold(page);
   await expect(page.locator('[data-preview="season:auto"]')).toHaveAttribute('aria-checked', 'true');
   await page.keyboard.press('Escape');
   await expect(chip(page)).toHaveCount(0);

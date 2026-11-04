@@ -1900,7 +1900,8 @@ scale (about half a villager tall): on its day a tap plays the tape (the 3D vill
 `ui-state/preview.ts` (pure: `resolvePreview`), `ui-state/preview.svelte.ts`, `panel/SeasonSection.svelte`,
 `island/PreviewPill.svelte`, `e2e/preview.spec.ts`. せってい's **きせつ** shows the island another day's look on this
 phone: an event, a season (はる / なつ / あき / ふゆ), the weather (はれ / あめ / ゆき) and the time of day (あさ / ひる /
-ゆうがた / よる), each おまかせ (the real day's) by default. One resolution feeds every seasonal look, with two inputs:
+ゆうがた / よる), each おまかせ (the real day's) by default. Folded to one row by default: what's showing (おまかせ, or
+「ハロウィン · ふゆ」) and a chevron that opens the four chip groups; もどす sits in that row while a preview is on. One resolution feeds every seasonal look, with two inputs:
 the dev params below (they win, field by field) and the setting; then what the event implies.
 
 - **Events:** うめの たんじょうび, イースター (Zipper), さくら (petals, blossom), はなび, ウェイの たんじょうび,
