@@ -70,6 +70,12 @@ for (const room of ROOMS) {
     await rest(page);
     const [mx, mz] = await r(page, (h) => h.mine());
     expect(Math.hypot(mx - goal[0], mz - goal[1])).toBeLessThan(3);
+    // standing at its eyes, its head settled: the idle never moves the eye, so nothing draws (the tent: a blink's
+    // frames; the museum: at most its exhibits' 30 a second, under the e2e's 60 cap)
+    await page.waitForTimeout(1500);
+    const n0 = (await r(page, (h) => h.stats())).frames;
+    await page.waitForTimeout(1000);
+    expect((await r(page, (h) => h.stats())).frames - n0).toBeLessThanOrEqual(room.path === 'tent' ? 3 : 33);
     // off: the room's camera again
     await eyeBtn.click();
     await expect(eyeBtn).toHaveAttribute('data-fpv', 'off');

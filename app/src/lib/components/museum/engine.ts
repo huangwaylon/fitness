@@ -21,7 +21,7 @@ import { decal } from './geometry.ts';
 import { due, frameRate } from '#lib/store/frameRate.svelte.ts';
 import M from './models.json' with { type: 'json' };
 import { modelBounds } from '../world3d/models3d.ts';
-import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, wrapAngle } from '../rooms/firstPerson.ts';
+import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, headAnchor, wrapAngle } from '../rooms/firstPerson.ts';
 import {
   BUG_WING, DOOR_HALF, DOORMAT, FISH_WING, HALL, HALL_H, OPENING, WALLS, WING_H, inRect, navOf, roomAt, walkable, wallEnds, wingAt,
   type Nav, type Pt, type Rect, type Wall, type Wing
@@ -1072,13 +1072,18 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const eyeT = new Vector3(), eyeXZ: [number, number] = [0, 0];
   /** The floors the eye may be over: the rooms and the openings through the hall's walls. */
   const FLOORS: Rect[] = [HALL, BUG_WING, FISH_WING, ...[HALL.x0, HALL.x1].map((x) => ({ x0: x - 10, x1: x + 10, z0: OPENING.z0, z1: OPENING.z1 }))];
-  function eyeOf(w: Walker): Vector3 {
-    let got = false;
+  function headOf(w: Walker): Vector3 {
     if (w.v3) {
       w.v3.group.updateMatrixWorld(true);
-      got = !!w.v3.eyes(eyeT);
+      if (w.v3.eyes(eyeT)) return eyeT;
     }
-    if (!got) eyeT.set(w.pos[0], VILLAGER_H * 0.7, w.pos[1]);
+    return eyeT.set(w.pos[0], VILLAGER_H * 0.7, w.pos[1]);
+  }
+  /** The eye's anchor (rooms/firstPerson.ts headAnchor): held once my villager is still (its idle never moves the camera). */
+  const anchor = headAnchor();
+  function eyeOf(w: Walker, t: number): Vector3 {
+    const S = w.seat;
+    eyeT.copy(anchor(t, w.path ? null : [w.pos[0], w.pos[1], w.yaw, w.posing ? 1 : 0, S ? S.yaw : -1e9], () => headOf(w)));
     clampEye(eyeT.x, eyeT.z, FLOORS, w.seat ? solidsSeated : solids, EYE_MARGIN, eyeXZ);
     eyeT.x = eyeXZ[0];
     eyeT.z = eyeXZ[1];
@@ -1181,7 +1186,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // the first person: the glide, the head, the eye following my villager's (its body hidden once the camera's near)
     let fpMoved = false;
     if (me && (fp.on || fp.mix > 0)) {
-      fpMoved = fp.step(t, dt, eyeOf(me));
+      fpMoved = fp.step(t, dt, eyeOf(me, t));
       me.v3?.show(!(fp.mix > 0.5));
       if (fpMoved) full = true;
     }

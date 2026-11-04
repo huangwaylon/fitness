@@ -1448,7 +1448,9 @@ only: the others see my villager as ever. Off during もようがえ (the room's
 
 - **The eyes:** the model's own eyes (villager3d `eyes()`: the eye mesh's middle on the face's front, riding the head
   bone, so a seat or a bed takes them along; a card's: 0.7 of its height), followed closely across and with its walk's
-  bob damped (140 ms up and down). The eye is kept 3 u off the walls (4 in the rooms: what hangs on them), out of what
+  bob damped (140 ms up and down). Standing or seated, the eye follows the head for 0.9 s after it last moved (a walk's
+  end, a turn, a sit), then holds there (`headAnchor`): the idle's breath and sway never move the camera, so at rest
+  the eyes draw nothing (the museum: only its exhibits' 30 a second). The eye is kept 3 u off the walls (4 in the rooms: what hangs on them), out of what
   stands taller than it (a tent's piece, a museum tank's or case's block), within the floors and the openings
   (`clampEye`). My villager's body is hidden once the camera is near its head (its blob shadow stays).
 - **The lens:** 70° (the rooms' 32° is a long lens from afar), the near plane 1 u (the eye is ≥ 3 u off anything), the

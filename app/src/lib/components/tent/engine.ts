@@ -19,7 +19,7 @@ import { seatOf } from '../villager3d/poses.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
 import { due, frameRate } from '#lib/store/frameRate.svelte.ts';
-import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, type Rect } from '../rooms/firstPerson.ts';
+import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, headAnchor, type Rect } from '../rooms/firstPerson.ts';
 
 /** The walls' height (RoomMdlWall: 40 model units, four tiles). */
 const WALL_H = 40;
@@ -1258,17 +1258,21 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       tall.push({ x0, x1: x0 + w * TILE, z0, z1: z0 + d * TILE });
     }
   }
-  function eyeOf(w: Walker): Vector3 {
-    let got = false;
+  function headOf(w: Walker): Vector3 {
     if (w.v3) {
       w.v3.group.updateMatrixWorld(true);
-      got = !!w.v3.eyes(eyeT);
+      if (w.v3.eyes(eyeT)) return eyeT;
     }
-    if (!got) {
-      const P = w.pose;
-      if (P) eyeT.set(P.at[0], P.lie ? P.y + 3 : P.y + VILLAGER_H * 0.45, P.at[1]);
-      else eyeT.set(w.pos[0], EYE_H, w.pos[1]);
-    }
+    const P = w.pose;
+    if (P) eyeT.set(P.at[0], P.lie ? P.y + 3 : P.y + VILLAGER_H * 0.45, P.at[1]);
+    else eyeT.set(w.pos[0], EYE_H, w.pos[1]);
+    return eyeT;
+  }
+  /** The eye's anchor (rooms/firstPerson.ts headAnchor): held once my villager is still (its idle never moves the camera). */
+  const anchor = headAnchor();
+  function eyeOf(w: Walker, t: number): Vector3 {
+    const P = w.pose;
+    eyeT.copy(anchor(t, w.path ? null : [w.pos[0], w.pos[1], w.yaw, w.posing ? 1 : 0, P ? P.at[0] : -1e9, P ? P.at[1] : -1e9], () => headOf(w)));
     // (seated, the seat is under it: only the walls)
     clampEye(eyeT.x, eyeT.z, ROOM_IN, w.pose ? NONE : tall, EYE_MARGIN, eyeXZ);
     eyeT.x = eyeXZ[0];
@@ -1564,7 +1568,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     // the first person: the glide, the head, the eye following my villager's (kept off the walls and what stands tall)
     if (fpWho && (fp.on || fp.mix > 0)) {
       const w = villagers.get(fpWho);
-      if (w && fp.step(t, lastT3 ? Math.min(100, t - lastT3) : 16, eyeOf(w))) {
+      if (w && fp.step(t, lastT3 ? Math.min(100, t - lastT3) : 16, eyeOf(w, t))) {
         aim();
         cameraMoving = more = true;
       }
