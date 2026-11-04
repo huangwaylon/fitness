@@ -1319,7 +1319,9 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   his name on a brown tag): his welcome first in a visit, then one of six (museum.curator.*, ja/en: what's on show
   counted, the fish tanks, his dread of bugs, the ずかん…), never the same twice running; a wing raised as he explains,
   his beak moving while it types, till it closes; my villager turns to him. The cost: while he's on screen the hall
-  draws at the exhibits' 30 a second (his pose only, no allocation); off screen he's not stepped and asks for no frame.
+  draws at the exhibits' 30 a second (his pose only, no allocation; the iOS Simulator, iPhone 16: 29.9 frames a second,
+  ~1 ms a frame, 96 draw calls, Safari's WebContent and GPU processes ~3.5 % of a core each); off screen he's not stepped
+  and asks for no frame.
 - **Who else is in:** the rooms' presence, the museum's own scope (`tent` with `sc: 'm'`, its points within the
   museum's ±320; live-protocol.ts): the others' villagers are here while they are, walking as they walk, and nowhere on
   the island meanwhile (store/where.svelte.ts `home` `M`). The guest comes in like anyone.
