@@ -3,7 +3,8 @@
   // three.js) comes in its own chunk once the screen opens; until its first frame the door's black covers it
   // (ui-state/doorTransition.ts). A tap on the floor walks my villager there (through the hall's openings into a wing);
   // a tap on a fish or a bug shows its card (MuseumCard: its names, who found it first and when, how many we've had);
-  // a tap on the curator at the desk (フータ: curator.ts, his idle life) is his line in NH's balloon (Talk, lines.ts);
+  // a tap on a bench walks my villager up to its free seat and sits it down facing the great tank (the rooms' sitting:
+  // rooms/seating.ts, its seats seats.ts), a tap on the floor gets it up; a tap on the curator at the desk (フータ: curator.ts, his idle life) is his line in NH's balloon (Talk, lines.ts);
   // the doormat or ‹ 島へ goes back out. What's on show is the ずかん's (model/finds.ts: every fish and bug anyone has
   // found, the guest's too), and comes as it's found. The others in here are seen (the relay's `tent` with `sc: 'm'`,
   // the rooms' presence); the say button says a phrase here (`say` with `sc: 'm'`). Nothing gives ベル.
@@ -42,6 +43,8 @@
   import { ENTRANCE, type Pt } from './plan.ts';
   import { onShow, type Specimen } from './species.ts';
   import { CURATOR, curatorLine } from './lines.ts';
+  import { benchSeats, seatOf, type MuseumSeat } from './seats.ts';
+  import { createSeating } from '../rooms/seating.ts';
   import { t } from '#lib/i18n/index.ts';
   import type { Curator } from './curator.ts';
   import type { Hit, Museum, Who } from './engine.ts';
@@ -81,6 +84,8 @@
   function sayWhere() {
     const at = eng?.at(me);
     if (!at) return;
+    const mine = seats.mine();
+    if (mine) return void send({ kind: 'tent', in: true, to: r(mine.at), ...seats.wire()! });
     const w = myWalk && relayNow() < myWalk.s + myWalk.ms ? myWalk : null;
     send(w ? { kind: 'tent', in: true, from: r(w.from), ...(w.via.length ? { via: w.via.map(r).slice(0, 10) } : {}), to: r(w.to), s: Math.round(w.s), ms: Math.round(w.ms) } : { kind: 'tent', in: true, to: r(at) });
   }
@@ -88,8 +93,12 @@
   function walkTo(to: Pt, then?: () => void) {
     if (!eng) return;
     clearTimeout(arriving);
-    const from = eng.at(me);
-    if (!from) return;
+    const at = eng.at(me);
+    if (!at) return;
+    let from: Pt = at;
+    // (seated: up first, at the seat's step)
+    const up = seats.stand();
+    if (up) eng.put(me, (from = up));
     const pts = walkPathOf(from, to);
     if (!pts.length) return void then?.();
     const ms = eng.walk(me, pts);
@@ -98,6 +107,18 @@
     if (then) arriving = setTimeout(then, ms + 30);
   }
   let walkPathOf: (from: Pt, to: Pt) => Pt[] = () => [];
+
+  // ---- the benches (seats.ts): walk up to the nearest free seat, then on; one villager a seat, the first keeps it ----
+  const seats = createSeating<MuseumSeat>(me);
+  function sitOn(id: string) {
+    if (!eng) return;
+    const go = seats.tap(benchSeats(id), eng.at(me) ?? ENTRANCE, relayNow, walkTo, (st) => {
+      eng?.sit(me, st.anchor);
+      cue('scene-bench');
+      sayWhere();
+    });
+    if (go === 'full') cue('boop');
+  }
 
   // ---- the others: each here only while they're in the museum (store/where.svelte.ts) ----
   const theirAt = new Map<Who, Pt>(others.map((w) => [w, [ENTRANCE[0] + sideX(w), ENTRANCE[1] - 10] as Pt]));
@@ -121,6 +142,14 @@
     const w = m.who;
     if (m.to) theirAt.set(w, m.to);
     othersShown();
+    // on a seat: one villager a seat, the first to sit keeps it (mine gets up if they were there first)
+    const { seat, yields } = seats.heard(w, m), mine = seats.mine();
+    if (yields && mine) {
+      walkTo(mine.from);
+      cue('boop');
+    }
+    const st = seat && seatOf(seat.id, seat.n);
+    if (st) return void eng.sit(w, st.anchor);
     if (!m.in || !m.to) return;
     if (m.from && m.s !== undefined && m.ms) {
       const ago = relayNow() - m.s;
@@ -163,7 +192,7 @@
   function showSay(w: Who, text: string) {
     if (!eng?.at(w)) return;
     says?.say(sayId(w), text, speakerOf(w), { name: nameOf(w), colour: SAY_TAG[w] });
-    if (!eng.walking(w)) eng.hop(w);
+    if (!eng.walking(w) && !eng.seated(w)) eng.hop(w);
   }
   function closeSay(by?: Event) {
     if (!sayAt) return;
@@ -315,6 +344,7 @@
     }
     card = null;
     if (h.kind === 'door') return leave();
+    if (h.kind === 'seat') return sitOn(h.id);
     walkTo([h.x, h.z]);
   }
 
@@ -347,10 +377,11 @@
   // clock's hour (?date; the e2e's nextHour() a later one)
   let hoursOn = 0;
   const clock = () => now().getTime() + hoursOn * 3_600_000;
-  let shownKey = '';
+  // (none found yet: the wings built all the same, their tanks and benches empty of fish; once the record is in)
+  let shownKey: string | null = null;
   $effect(() => {
     const list = specimens, e = eng;
-    if (!e) return;
+    if (!e || !finds) return;
     const k = list.map((s) => s.id).join(',');
     if (k === shownKey) return;
     shownKey = k;
@@ -466,7 +497,14 @@
       hit: (cx: number, cy: number) => eng?.hit(cx, cy),
       /** The walls the cutaway takes away (engine.ts walls). */
       walls: () => eng?.walls(),
-      who: (w: Who) => (eng?.at(w) ? { at: eng.at(w), walking: eng.walking(w) } : null)
+      who: (w: Who) => (eng?.at(w) ? { at: eng.at(w), walking: eng.walking(w), seated: !!eng.seated(w) } : null),
+      /** My seat (a bench's id, which of its seats), another's as heard, and a bench's seat's client px (its seat's top). */
+      seat: () => ((st) => (st ? { id: st.id, n: st.n } : null))(seats.mine()),
+      theirSeat: (w: Who) => seats.their(w),
+      benchPx: (id: string, n = 0) => {
+        const a = seatOf(id, n)?.anchor;
+        return a && eng ? eng.client(a.x, a.y + 2, a.z) : null;
+      }
     };
   }
   const counts = $derived(week.model ? tallyTotals(week.model.state.tallies) : null);

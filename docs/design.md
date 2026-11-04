@@ -1069,7 +1069,7 @@ goes with the leaving).
   over the door or another), lands on the first free spot of the back wall, goes where a wall is tapped or dragged
   along the walls; its facing is its wall's (no ↻). Its op: x the tile across, z the step, f the wall. A wall cut away
   takes its things with it.
-- **Sit, lie and switch** (`tent/seats.ts`): NH's own interaction from the ACNH spreadsheet (`interact`: a Chair is sat
+- **Sit, lie and switch** (`tent/seats.ts`; the flow, shared with the museum's benches: `rooms/seating.ts`): NH's own interaction from the ACNH spreadsheet (`interact`: a Chair is sat
   on, a Bed lain on: 38 and 20 of the pieces); a sofa seats one a tile across, a double bed two. Outside the edit mode a
   tap on one walks my villager up to it (a step in front: physical, like the door) and it sits facing the piece's front,
   or lies on the bed; a tap on the floor gets it up and walks it. The renders have no sitting or lying art: sitting, the
@@ -1361,7 +1361,17 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   the great tank's; between them an aisle from the opening to the deep's glass, NH's two park benches in it facing the
   great tank, a plant in three corners. Each tank with NH's own props along its back (kelp on its rocks, coral, the
   deep's dark rocks, the river's stones, logs and water plants), the fish swimming in front of them. No diver (NH's
-  diver and little submarine model read as a person standing in the tank: left out).
+  diver and little submarine model read as a person standing in the tank: left out). The tanks and benches are there
+  with nothing found yet (empty water).
+- **The benches** (`seats.ts`, `rooms/seating.ts`; the user: "I should be able to sit on seats and benches"): the
+  island's park bench at 1.2× (`dmbench1`, `dmbench2`), two seats each, its own seat anchors (`seats3d.json`
+  `park-bench`, scripts/seat-anchors.ts) facing the great tank. As in the tent: a tap on a bench (its box on the tap's
+  ray, before a fish behind it) walks my villager to its nearest free seat's step and it sits down there (villager3d
+  sitAt: the engine's `sit`); a tap on the floor gets it up and walks; both seats taken: a `boop`. The others see it
+  through the rooms' presence (`tent` with `sc: 'm'` and the seat: `seat`, `n`, `s`), a phone opening later too; two
+  on one seat, the earlier sit keeps it (`outsat`), the other gets up. Seated, the eyes are at its seated head, the
+  head turns but the body stays, and the eye may be over its own bench. Seated at rest: the exhibits' 30 a second, no
+  more. `e2e/museum.spec.ts`, `e2e/first-person.spec.ts`.
 - **The hour's fish** (species.ts onDisplay): each tank shows at most five of its own species, only those the ずかん
   says were caught, none twice; a shuffle seeded by (Tokyo's date and hour, the tank), so every phone shows the same
   five and a new five each hour. A tank with none of its own caught is empty water. The hour turning while one's inside:
@@ -1454,7 +1464,8 @@ only: the others see my villager as ever. Off during もようがえ (the room's
   above.
 - **The head:** a drag turns it (the world follows the finger, 0.3° a px: right turns left, down looks up), the pitch
   within ±60°, eased (45 ms); it starts where my villager faces (its walk's way, or what it turned to), a little down.
-  On a walk the view turns with it (the body's way) unless a finger holds it; standing, the body turns to where I look.
+  On a walk the view turns with it (the body's way) unless a finger holds it; standing, the body turns to where I look;
+  seated (a museum bench), only the head, and a tap on the floor gets up and walks.
   No pinch, no zoom, no ⌂ (the lens is the head's). A tap (within 10 px, under 700 ms: the rooms' rule; a cancelled
   pointer is nothing) walks to the floor under it from the eyes' own camera; the museum's taps stop at the first wall,
   cornice, lintel or ceiling on the ray (a wall's foot walks up to the wall; a fish behind a wall isn't tapped);

@@ -96,3 +96,50 @@ test('the tent: もようがえ arranges with the room’s camera, and the eyes 
   await page.locator('[data-tent-done]').click();
   await expect.poll(async () => (await t())?.inside).toBe(true);
 });
+
+test('the museum: seated on a bench, the eye at the seated head, a look round keeps it seated, a tap on the floor gets up and walks', async ({ page }) => {
+  test.setTimeout(60_000);
+  type H = R & { put(x: number, z: number): void; still(): boolean; seat(): { id: string; n: number } | null; benchPx(id: string, n: number): [number, number]; look(dx: number, dy: number): void };
+  const m = <T,>(fn: (h: H) => T) => page.evaluate(`(${fn.toString()})(window.__museum)`) as Promise<T>;
+  await page.goto('museum' + Q);
+  await page.waitForFunction(() => ((window as unknown as { __museum?: R }).__museum?.stats()?.frames ?? 0) > 0);
+  await m((h) => h.put(150, 10));
+  await expect.poll(() => m((h) => h.still()), { timeout: 10_000 }).toBe(true);
+  const [bx, by] = await m((h) => h.benchPx('dmbench1', 0));
+  await page.mouse.click(bx, by);
+  await expect.poll(() => m((h) => h.seat()), { timeout: 10_000 }).not.toBeNull();
+  // the eyes: at its head where it sits, over its seat (not at its step in front, where it stood), a villager's
+  // seated eye height up (NH's short legs: about as high as standing)
+  await page.locator('[data-fpv]').click();
+  await expect.poll(() => m((h) => h.fpv()?.inside), { timeout: 10_000 }).toBe(true);
+  await expect.poll(() => m((h) => !h.fpv()?.busy), { timeout: 10_000 }).toBe(true);
+  const f0 = (await m((h) => h.fpv()))!;
+  const seat = (await m((h) => h.seat()))!;
+  // (the bench's seats: x 124 ± 4.68, museum/seats.ts)
+  expect(Math.abs(f0.eye[0] - (seat.n === 0 ? 128.68 : 119.32))).toBeLessThan(3);
+  expect(Math.abs(f0.eye[2] + 21)).toBeLessThan(5);
+  expect(f0.eye[1]).toBeGreaterThan(10);
+  expect(f0.eye[1]).toBeLessThan(17);
+  // facing the great tank (−z)
+  expect(Math.cos(f0.yaw)).toBeLessThan(-0.9);
+  // a look round: the head turns, still seated, the eye where it was
+  await m((h) => h.look(-150, 0));
+  await expect.poll(() => m((h) => !h.fpv()?.busy), { timeout: 10_000 }).toBe(true);
+  const f1 = (await m((h) => h.fpv()))!;
+  expect(Math.abs(Math.atan2(Math.sin(f1.yaw - f0.yaw), Math.cos(f1.yaw - f0.yaw)))).toBeGreaterThan(0.3);
+  expect(await m((h) => h.seat())).not.toBeNull();
+  expect(Math.hypot(f1.eye[0] - f0.eye[0], f1.eye[2] - f0.eye[2])).toBeLessThan(1.5);
+  // a tap on the floor ahead (toward the tank, from the eyes' own camera): up and walking there
+  await m((h) => h.look(150, -120));
+  await expect.poll(() => m((h) => !h.fpv()?.busy), { timeout: 10_000 }).toBe(true);
+  const f2 = (await m((h) => h.fpv()))!;
+  const goal: [number, number] = [f2.eye[0] + Math.sin(f2.yaw) * 14, f2.eye[2] + Math.cos(f2.yaw) * 14];
+  const [tx, ty] = await page.evaluate(([x, z]) => (window as unknown as { __museum: R }).__museum.px(x, z), goal);
+  await page.mouse.click(tx, ty);
+  await expect.poll(() => m((h) => h.seat())).toBeNull();
+  await expect.poll(async () => {
+    const [x, z] = await m((h) => h.mine());
+    return !(await m((h) => h.walking('A'))) && Math.hypot(x - goal[0], z - goal[1]) < 4;
+  }, { timeout: 10_000 }).toBe(true);
+  expect((await m((h) => h.fpv()))!.inside).toBe(true);
+});
