@@ -60,13 +60,15 @@ export const isMetricKey = (v: unknown): v is MetricKey => v === 'weight' || isA
 
 /**
  * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`,
- * `goalWeight` (kg), `goalBodyFat` (body fat %), `moveGoal` (kcal), `stepsGoal` (steps) and `kcalGoal` (the meal
- * log's daily kcal, contract/food.ts).
+ * `goalWeight` (kg), `goalBodyFat` (body fat %), `moveGoal` (kcal), `stepsGoal` (steps) and the meal log's daily
+ * goals: `kcalGoal`, `proteinGoal`, `fatGoal`, `carbsGoal` and `saltGoal` (contract/food.ts FOOD_GOALS).
  */
-export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'goalBodyFat', 'moveGoal', 'stepsGoal', 'kcalGoal'] as const;
+export const PREF_KEYS = [
+  'locale', 'villagerName', 'villager', 'goalWeight', 'goalBodyFat', 'moveGoal', 'stepsGoal', 'kcalGoal', 'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal'
+] as const;
 
 /** The `pref` keys either person may set for either person (`data.person`): the goals. The rest are the sender's own. */
-const PERSON_PREF_KEYS = ['goalWeight', 'goalBodyFat', 'moveGoal', 'stepsGoal', 'kcalGoal'] as const;
+const PERSON_PREF_KEYS = ['goalWeight', 'goalBodyFat', 'moveGoal', 'stepsGoal', 'kcalGoal', 'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal'] as const;
 
 export const isPersonId = (v: unknown): v is PersonId => v === 'A' || v === 'B';
 /** A member or the guest (`G`): who sent a row. */

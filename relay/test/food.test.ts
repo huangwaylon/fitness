@@ -131,6 +131,20 @@ describe('the meal log in the record', () => {
     ]);
   });
 
+  it('takes the nutrient goals as the kcal goal: either member for either, the guest its own', () => {
+    const pref = (who: 'A' | 'B' | 'G', data: object) => call(keyOf[who], 'event', { id: `p${++n}`, type: 'pref', data });
+    expect(pref('A', { person: 'B', key: 'proteinGoal', value: 110 })).toMatchObject({ ok: true });
+    expect(pref('B', { key: 'saltGoal', value: 7.5 })).toMatchObject({ ok: true });
+    expect(pref('G', { key: 'fatGoal', value: 60 })).toMatchObject({ ok: true });
+    expect(pref('G', { key: 'carbsGoal', value: null })).toMatchObject({ ok: true });
+    expect(pref('G', { person: 'A', key: 'proteinGoal', value: 100 })).toMatchObject({ ok: false, error: 'forbidden' });
+    // the latest per person and key: a second protein goal replaces the first
+    expect(pref('B', { person: 'B', key: 'proteinGoal', value: 120 })).toMatchObject({ ok: true });
+    const goals = (call(KEY_C, 'snapshot').rows.events as unknown[][]).filter((r) => r[3] === 'pref').map((r) => JSON.parse(r[4] as string));
+    expect(goals.filter((d) => d.key === 'proteinGoal')).toEqual([{ person: 'B', key: 'proteinGoal', value: 120 }]);
+    expect(goals.map((d) => d.key).sort()).toEqual(['carbsGoal', 'fatGoal', 'proteinGoal', 'saltGoal']);
+  });
+
   it('persists: a new store has the entries, and a dump loads back as it was (a beaten op skipped)', () => {
     log('A', 'fmeal060');
     log('G', 'fmeal061');

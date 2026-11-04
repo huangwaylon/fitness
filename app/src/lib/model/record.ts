@@ -9,7 +9,7 @@ import { decorOpOf } from '../contract/decor.ts';
 import { tentOpOf } from '../contract/tent.ts';
 import { layoutOpOf } from '../contract/layout.ts';
 import { boardOpOf } from '../contract/board.ts';
-import { foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, isKcalGoal } from '../contract/food.ts';
+import { FOOD_GOALS, foodCustomOp, foodGoalOf, foodOp, foodRecipeOp, foodRepeatOp, isFoodGoal } from '../contract/food.ts';
 import { shopPriced } from '../contract/shop.ts';
 import { isStepsGoal, LIMITS, MOVE_GOAL, shopPrice } from '../config/rules.ts';
 import { localDateAt } from '../time/dates.ts';
@@ -81,7 +81,7 @@ const FOOD_AHEAD_MS = 24 * 60 * 60 * 1000;
 const atNear = (at: number, now: number): boolean => at <= now + FOOD_AHEAD_MS;
 
 /** The prefs only the latest of counts (per person); the goals keep their history (`moveGoalOn` prices past days). */
-const LATEST_PREFS = ['locale', 'villagerName', 'villager', 'goalWeight', 'goalBodyFat', 'kcalGoal'] as const;
+const LATEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'goalWeight', 'goalBodyFat', ...Object.values(FOOD_GOALS).map((g) => g.key)];
 
 /** Whether the model takes this pref's value (model/state.ts ON_EVENT.pref; anything else is ignored there). */
 export function prefTaken(key: unknown, v: unknown): boolean {
@@ -93,16 +93,18 @@ export function prefTaken(key: unknown, v: unknown): boolean {
     case 'villager': return typeof v === 'string' && /^[a-z][a-z0-9_-]{0,23}$/.test(v);
     case 'goalWeight': return v === null || v === '' || isWeightKg(v);
     case 'goalBodyFat': return v === null || v === '' || isBodyFatGoal(v);
-    case 'kcalGoal': return v === null || isKcalGoal(v);
-    default: return false;
+    default: {
+      const n = foodGoalOf(key);
+      return n !== null && (v === null || isFoodGoal(n, v));
+    }
   }
 }
 
 /**
  * The slot an event fills, or null: a later event of the same slot replaces it (the record keeps one row per slot).
  * - `tally`, `island`: the sender's day (`date`);
- * - a cosmetic `pref` (`locale`, `villagerName`, `villager`, `goalWeight`, `goalBodyFat`, `kcalGoal`): its subject and
- *   key;
+ * - a cosmetic `pref` (`locale`, `villagerName`, `villager`, `goalWeight`, `goalBodyFat`, the meal log's goals
+ *   `kcalGoal` … `saltGoal`): its subject and key;
  * - a goal `pref` (`moveGoal`, `stepsGoal`): its subject, key and the Tokyo day it was made (`at`), so the goal in
  *   force on each past day stays (a goal applies from the day it's made; the last of a day is the one that counts);
  * - a `decor` op: its scope and item id (`decorAccept` / `tentAccept` decide whether it replaces);
@@ -128,7 +130,7 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
       return typeof d.id === 'string' ? `${type}|${d.id}` : null;
     case 'pref':
       if (!prefTaken(d.key, d.value)) return null;
-      return (LATEST_PREFS as readonly unknown[]).includes(d.key) ? `pref|${subject}|${d.key}` : `pref|${subject}|${d.key}|${localDateAt(at)}`;
+      return LATEST_PREFS.includes(d.key) ? `pref|${subject}|${d.key}` : `pref|${subject}|${d.key}|${localDateAt(at)}`;
     default:
       return null;
   }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   CUSTOM, customDensityOk, customGrams, customPortions, customSnap, foodCustomFold, foodCustomOp, newCustomId,
-  foodAccept, foodFold, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, isKcalGoal, newFoodId, newRecipeId, newRepeatId,
+  foodAccept, foodFold, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, isFoodGoal, foodGoalOf, isKcalGoal, newFoodId, newRecipeId, newRepeatId,
   recipePortion, recipeSnap, recipeTotals, repeatAccept, repeatCovers, repeatNext, weekdayBit, WEEKDAYS, type CustomOp, type FoodOp, type RecipeOp, type RepeatOp
 } from './food.ts';
 import { cleanLine } from './text.ts';
@@ -65,6 +65,12 @@ describe('new ids and isKcalGoal', () => {
   it('a kcal goal is a whole 50 in 1,000–5,000', () => {
     expect([1000, 1850, 5000].every(isKcalGoal)).toBe(true);
     expect([950, 1825, 5050, 2000.5, '2000', null].some(isKcalGoal)).toBe(false);
+  });
+  it('a nutrient goal: protein, fat and carbs whole 5s of g, salt halves of g, each in its range; its pref key', () => {
+    expect([isFoodGoal('p', 120), isFoodGoal('fa', 60), isFoodGoal('c', 250), isFoodGoal('s', 7.5), isFoodGoal('s', 1)]).toEqual([true, true, true, true, true]);
+    expect([isFoodGoal('p', 5), isFoodGoal('p', 122), isFoodGoal('fa', 305), isFoodGoal('c', 15), isFoodGoal('s', 7.3), isFoodGoal('s', 21), isFoodGoal('p', '120')])
+      .toEqual([false, false, false, false, false, false, false]);
+    expect(['kcalGoal', 'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'moveGoal'].map(foodGoalOf)).toEqual(['k', 'p', 'fa', 'c', 's', null]);
   });
 });
 

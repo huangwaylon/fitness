@@ -8,7 +8,7 @@ import { isTally } from '#lib/contract/tally.ts';
 import { isIslandDay, type IslandDayData } from '#lib/contract/island.ts';
 import { decorOpOf, type DecorEntry } from '#lib/contract/decor.ts';
 import { boardOpOf, type BoardEntry } from '#lib/contract/board.ts';
-import { isKcalGoal } from '#lib/contract/food.ts';
+import { FOOD_GOALS, foodGoalOf, isFoodGoal, type FoodGoalOf } from '#lib/contract/food.ts';
 import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import { buyOf, sellOf, type ShopRowAt } from '#lib/contract/shop.ts';
@@ -56,8 +56,9 @@ interface Timed<T> { at: number; v: T }
 interface BellSpendRec { at: number; person: PersonId; spendId: string; item: ShopItemId; bells: number }
 
 /** `goalWeight` / `goalBodyFat`: the person's optional goals in kg / body fat %, shown on the weight / body fat
- *  charts; `kcalGoal`: the meal log's daily kcal (model/food.ts). None ever earns. */
-interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string; goalWeight?: number; goalBodyFat?: number; kcalGoal?: number }
+ *  charts; `kcalGoal` … `saltGoal`: the meal log's daily goals (model/food.ts foodGoal). None ever earns. */
+type FoodGoalKey = (typeof FOOD_GOALS)[FoodGoalOf]['key'];
+interface Prefs extends Partial<Record<FoodGoalKey, number>> { locale?: 'ja' | 'en'; villagerName?: string; villager?: string; goalWeight?: number; goalBodyFat?: number }
 
 export interface State {
   /** Ingested activity rows per person: date → metric → rows, ascending `at` (no key string built per row). */
@@ -372,7 +373,7 @@ const members = (fn: MemberEvent): OnEvent => (s, person, at, d) => {
   if (isPersonId(person)) fn(s, person, at, d);
 };
 /** The prefs the guest has (its villager, name, language and kcal goal): anything else of `G` is ignored. */
-const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'kcalGoal'];
+const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', ...Object.values(FOOD_GOALS).map((g) => g.key)];
 
 /** One handler per event type: each accepts (indexes) the event or ignores it. */
 const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
@@ -458,10 +459,12 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
       // A goal in body fat %, or null / '' to clear it; anything else is ignored (the previous goal stays).
       if (d.value === null || d.value === '') delete p.goalBodyFat;
       else if (isBodyFatGoal(d.value)) p.goalBodyFat = d.value;
-    } else if (d.key === 'kcalGoal') {
-      // A daily kcal goal, or null to clear it; anything else is ignored (the previous goal stays).
-      if (d.value === null) delete p.kcalGoal;
-      else if (isKcalGoal(d.value)) p.kcalGoal = d.value;
+    } else {
+      // A meal-log goal (kcal, a nutrient), or null to clear it; anything else is ignored (the previous goal stays).
+      const n = foodGoalOf(d.key);
+      if (n === null) return;
+      if (d.value === null) delete p[FOOD_GOALS[n].key];
+      else if (isFoodGoal(n, d.value)) p[FOOD_GOALS[n].key] = d.value;
     }
   }
 };
