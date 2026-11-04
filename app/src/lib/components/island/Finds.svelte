@@ -164,6 +164,11 @@
       const ms = wi.ms;
       later(() => later(w.moveStart(), ms + 100), wi.t0 - t);
     }
+    // only what lies there now kept (a shell comes every 60–120 s all day and the tide takes the oldest: ~1000 a day)
+    if (washes.size >= 16) {
+      const here = new Set([...shells, ...fragments, ...(bottle ? [bottle] : [])].map((x) => x.uid));
+      for (const k of washes.keys()) if (!here.has(k)) washes.delete(k);
+    }
     washes.set(uid, wi);
     return wi;
   }
