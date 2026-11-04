@@ -97,7 +97,8 @@ const PITCH = { def: 58, near: 40, far: 63 };
  *  rubber-band resistance and springs back on release, ZOOM_BACK_MS); fully in (the user: "increase the maximum zoom
  *  level", 1.8 before) close enough for a villager's face and a flower: the camera ~420u off, its near plane 20. */
 const ZOOM = { min: 1, max: 3.2 };
-/** How far past a limit a pinch may go (eased back on release), as a factor (zooming out: further, a felt stretch). */
+/** How far past a limit a pinch may go (eased back on release), as a factor: in past the end ZOOM_OVER, out past the
+ *  default ZOOM_UNDER (further, a felt stretch). */
 const ZOOM_OVER = 1.12, ZOOM_UNDER = 1.2;
 /** A pinch released zoomed out past the default goes back to it over this, eased out (the user's approved move). */
 const ZOOM_BACK_MS = 350;
@@ -469,7 +470,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   let rawK = zoomK;
   const clampK = (k: number) => {
     const lo = ZOOM.min, hi = ZOOM.max;
-    if (k < lo) return lo / (1 + (ZOOM_OVER - 1) * (1 - 1 / ((lo / k - 1) * 4 + 1)));
+    if (k < lo) return lo / (1 + (ZOOM_UNDER - 1) * (1 - 1 / ((lo / k - 1) * 4 + 1)));
     if (k > hi) return hi * (1 + (ZOOM_OVER - 1) * (1 - 1 / ((k / hi - 1) * 4 + 1)));
     return k;
   };

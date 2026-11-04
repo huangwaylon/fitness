@@ -126,6 +126,9 @@ test('the 3D camera zoomed in: one finger pans sideways too, held over the islan
   await touches(page, line(5, (i) => [[60 + i * 24, 420], [330 - i * 24, 440]]), false);
   const held = await w3(page, (w) => w.view());
   expect(held.zoom).toBeLessThan(1);
+  // (out past the default it stretches further than in past the end: 1 / 1.2 at most, past 1 / 1.12 for a pinch this far)
+  expect(held.zoom).toBeLessThan(1 / 1.12);
+  expect(held.zoom).toBeGreaterThan(1 / 1.2);
   expect(held.camX).toBeCloseTo(195, 3);
   await lift(page);
   await idle(page);
