@@ -56,7 +56,7 @@ const opened = (page: Page, who: 'A' | 'B' = 'A') =>
     return day.events.find((e) => e.kind === 'pick' && e.id === `tf:${tree}`)?.what?.split(':')[2] ?? null;
   }, [TREE, who] as const);
 
-test('a holding tree’s shake drops its present; opened, it’s the day’s furniture: in the ずかん’s カタログ and the tent’s みつけた', async ({ page }) => {
+test('a holding tree’s shake drops its present; opened, it’s the day’s furniture: in the ずかん’s カタログ and the tent’s みつけた', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   test.setTimeout(60_000);
   await page.addInitScript(() => localStorage.removeItem('island-demo.tent'));
   await open(page);
@@ -112,7 +112,7 @@ test('a holding tree’s shake drops its present; opened, it’s the day’s fur
   await expect.poll(() => page.evaluate(() => (window as unknown as { __tent: { pieces(): { item: string }[] } }).__tent.pieces().map((p) => p.item))).toContain(code);
 });
 
-test('two phones: the present falls on both; opened on one, it’s gone on the other, which can’t drop it again', async ({ browser }) => {
+test('two phones: the present falls on both; opened on one, it’s gone on the other, which can’t drop it again', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ browser }) => {
   test.setTimeout(60_000);
   const ctx = await browser.newContext({ viewport: { width: 393, height: 852 } });
   const a = await ctx.newPage(), b = await ctx.newPage();
