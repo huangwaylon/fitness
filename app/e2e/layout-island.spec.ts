@@ -1,7 +1,7 @@
 // The island on its editable layout (docs/island-layout.md "What the 3D integration must change"; island/site.svelte.ts):
 // the gameplay reads the long layout: the doors, the homes, the walk, the waters.
 import { expect, test, type Page } from '@playwright/test';
-import { geo, is3d, openNear, quiet, tapOn } from './island';
+import { geo, is3d, openNear, quiet, settled, tapOn } from './island';
 
 type Site = { on: boolean; doors: Record<string, [number, number]>; homes: { A: [number, number]; B: [number, number] }; stage: [number, number]; named: Record<string, [number, number]>; grass: [number, number][] };
 const site = (page: Page) => page.evaluate(() => (window as unknown as { __world: { site(): Site } }).__world.site());
@@ -26,7 +26,9 @@ test('うめ’s home: a tap walks up to its door and goes in to its room', asyn
   expect(await is3d(page)).toBe(true);
   const door = (await site(page)).doors['home-B'];
   await world(page, `go(${door[1] - 120})`);
-  await expect.poll(() => page.evaluate('window.__world3d.camStill()')).toBe(true);
+  // (at rest: its camera still and its nodes placed for it; the DOM door's box stays where the last camera had it for
+  // a beat after the camera stops, and a tap found on that box landed off the door once it was placed)
+  await settled(page);
   await tapOn(page, page.locator('[data-building="home-B"] .door'));
   // my villager walks up to the door, then in
   await expect(page).toHaveURL(/\/tent\/?\?.*home=B/, { timeout: 15_000 });
@@ -165,7 +167,7 @@ test('a visitor on the long layout: K.K. at the layout’s centre stage by the c
   const { stage, doors } = await site(page);
   expect(Math.hypot(stage[0] - doors.campsite[0], stage[1] - doors.campsite[1])).toBeLessThan(200);
   await world(page, `go(${stage[1] - 120})`);
-  await expect.poll(() => page.evaluate('window.__world3d.camStill()')).toBe(true);
+  await settled(page); // (its nodes placed for the camera at rest: their boxes are read)
   const art = page.locator('[data-visitor="kk-slider"] .art');
   await expect(art).toBeAttached();
   // his feet (the node's origin) on centre stage

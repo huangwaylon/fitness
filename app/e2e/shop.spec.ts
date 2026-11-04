@@ -4,7 +4,7 @@
 // a catch writes them. Screenshots of the counter by day and by night (test-results/shop-*.png).
 import { expect, test, type Page } from '@playwright/test';
 import { hudMenu } from './hud.ts';
-import { is3d, tapOn } from './island';
+import { is3d, settled, tapOn } from './island';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const DATE = '2026-11-04T12:00';
@@ -114,7 +114,9 @@ test('the shop stands on the layout with its door; a tap walks up to it and goes
   const door = await page.evaluate(() => (window as unknown as { __world: { site(): { doors: Record<string, [number, number]> } } }).__world.site().doors.shop);
   expect(door).toBeTruthy();
   await page.evaluate(`window.__world.go(${door[1] - 120})`);
-  await expect.poll(() => page.evaluate('window.__world3d.camStill()')).toBe(true);
+  // (at rest: its camera still and its nodes placed for it; the DOM door's box stays where the last camera had it for
+  // a beat after the camera stops, and a tap found on that box landed off the door once it was placed)
+  await settled(page);
   await tapOn(page, page.locator('[data-building="shop"] .door'));
   await expect(page).toHaveURL(/\/shop\/?\?/, { timeout: 20_000 });
   await expect(page.locator('[data-shop]')).toBeVisible();
