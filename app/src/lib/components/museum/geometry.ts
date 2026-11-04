@@ -2,6 +2,7 @@
 // wings' static pieces batched.
 import { BoxGeometry, BufferGeometry, Float32BufferAttribute, Mesh, type Material, type Matrix4, type Object3D } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import type { Box } from './tanks.ts';
 
 /** A model's mesh as plain floats in its model's space: gltfpack quantises a GLB's positions, normals and uvs (their
  *  node's transform scales them back), so the geometry alone would stand huge and skewed; its node's transform baked in. */
@@ -56,6 +57,18 @@ export function openBox(w: number, h: number, d: number, without: readonly ('+x'
   g.setIndex(keep);
   g.clearGroups();
   return g;
+}
+
+/** A glass box's metal frame (a tank's, a case's; `e` its half thickness, the glass's edges along its middle): a post
+ *  at each corner from `y0` up to the top rails' underside, the two rails along x over the whole length, the two along z
+ *  between them. No two pieces overlap, so none shares a face's plane with another over the same spot. */
+export function frameOf(b: Box, y0: number, e: number): Box[] {
+  const top = { y0: b.y1 - e, y1: b.y1 + e };
+  const out: Box[] = [];
+  for (const [x, z] of [[b.x0, b.z0], [b.x1, b.z0], [b.x0, b.z1], [b.x1, b.z1]] as const) out.push({ x0: x - e, x1: x + e, y0, y1: b.y1 - e, z0: z - e, z1: z + e });
+  for (const z of [b.z0, b.z1]) out.push({ x0: b.x0 - e, x1: b.x1 + e, ...top, z0: z - e, z1: z + e });
+  for (const x of [b.x0, b.x1]) out.push({ x0: x - e, x1: x + e, ...top, z0: b.z0 + e, z1: b.z1 - e });
+  return out;
 }
 
 /** A flat thing lying on another (a carpet on the floor, the medallion on the carpets): drawn `layer` steps over it in

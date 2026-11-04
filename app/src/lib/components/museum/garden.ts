@@ -24,7 +24,8 @@ import type { Exhibit, Kit } from './engine.ts';
 import type { Habitat, Specimen } from './species.ts';
 import type { Pt, Rect } from './plan.ts';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { batcher, openBox, plainGeometry } from './geometry.ts';
+import { batcher, frameOf, openBox, plainGeometry } from './geometry.ts';
+import type { Box } from './tanks.ts';
 
 /** A bug is drawn this much bigger than NH's own (the island's way: a butterfly a hand across). */
 const BUG_S = 1.9;
@@ -37,8 +38,21 @@ const OAKS: Pt[] = [[-250, -36], [-118, -42]];
 const PALM: Pt = [-84, 78];
 const OAK_S = 1.4, PALM_S = 1.3;
 /** The display cases along the back wall (their middles; each 26 × 14, on a stand). */
-const CASES: Pt[] = [[-278, -84], [-244, -84], [-210, -84], [-132, -84], [-98, -84]];
+export const CASES: Pt[] = [[-278, -84], [-244, -84], [-210, -84], [-132, -84], [-98, -84]];
 const CASE = { w: 26, d: 14, stand: 9, h: 15 };
+/** A display case's pieces (its middle at x, z): a wooden stand, its soil, its glass (open below: its floor the soil's
+ *  top) and its frame (geometry.ts frameOf), the posts' feet a little under the soil (their bottoms were the soil's
+ *  underside's plane). */
+export function casePieces(cx: number, cz: number): { stand: Box; soil: Box; glass: Box; frame: Box[] } {
+  const x0 = cx - CASE.w / 2, x1 = cx + CASE.w / 2, z0 = cz - CASE.d / 2, z1 = cz + CASE.d / 2, y = CASE.stand, e = 0.6;
+  const b = { x0, x1, y0: y, y1: y + CASE.h, z0, z1 };
+  return {
+    stand: { x0: x0 + 1, x1: x1 - 1, y0: 0, y1: y, z0: z0 + 1, z1: z1 - 1 },
+    soil: { ...b, y1: y + 2 },
+    glass: { ...b, y0: y + 2 },
+    frame: frameOf(b, y - e, e)
+  };
+}
 /** The flower clumps (NH's own, the island's: a tile each) the flower bugs sit on and the flyers circle. */
 const FLOWERS: [string, number, number][] = [
   ['flowers/red-tulips', -150, 28], ['flowers/yellow-pansies', -138, 30], ['flowers/pink-cosmos', -126, 27], ['flowers/white-lilies', -114, 30],
@@ -212,21 +226,14 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
   mats.push(glass);
   // (static: a mesh a material for all five, batcher)
   const batch = batcher(), at = new Matrix4();
-  const box = (x0: number, x1: number, y0: number, y1: number, z0: number, z1: number, m: Material) =>
-    batch.add(new BoxGeometry(x1 - x0, y1 - y0, z1 - z0), m, at.makeTranslation((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2));
+  const box = (b: Box, m: Material) =>
+    batch.add(new BoxGeometry(b.x1 - b.x0, b.y1 - b.y0, b.z1 - b.z0), m, at.makeTranslation((b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, (b.z0 + b.z1) / 2));
   for (const [cx, cz] of CASES) {
-    const x0 = cx - CASE.w / 2, x1 = cx + CASE.w / 2, z0 = cz - CASE.d / 2, z1 = cz + CASE.d / 2, y = CASE.stand;
-    box(x0 + 1, x1 - 1, 0, y, z0 + 1, z1 - 1, wood);
-    box(x0, x1, y, y + 2, z0, z1, soil);
-    // (its glass open below: its floor is the soil's top)
-    batch.add(openBox(x1 - x0, CASE.h - 2, z1 - z0, ['-y']), glass, at.makeTranslation((x0 + x1) / 2, y + 2 + (CASE.h - 2) / 2, (z0 + z1) / 2));
-    const e = 0.6;
-    for (const [x, z] of [[x0, z0], [x1, z0], [x0, z1], [x1, z1]] as const) box(x - e, x + e, y, y + CASE.h, z - e, z + e, frame);
-    // its lid's frame (its glass top open to the camera)
-    box(x0 - e, x1 + e, y + CASE.h - e, y + CASE.h + e, z0 - e, z0 + e, frame);
-    box(x0 - e, x1 + e, y + CASE.h - e, y + CASE.h + e, z1 - e, z1 + e, frame);
-    box(x0 - e, x0 + e, y + CASE.h - e, y + CASE.h + e, z0 - e, z1 + e, frame);
-    box(x1 - e, x1 + e, y + CASE.h - e, y + CASE.h + e, z0 - e, z1 + e, frame);
+    const pc = casePieces(cx, cz), g = pc.glass;
+    box(pc.stand, wood);
+    box(pc.soil, soil);
+    batch.add(openBox(g.x1 - g.x0, g.y1 - g.y0, g.z1 - g.z0, ['-y']), glass, at.makeTranslation((g.x0 + g.x1) / 2, (g.y0 + g.y1) / 2, (g.z0 + g.z1) / 2));
+    for (const f of pc.frame) box(f, frame);
   }
   geos.push(...batch.done(group, (m) => (m === glass ? 4 : 0)));
   for (const [x, z] of CASES) kit.prop('agave', x - 7, z - 2, { s: 0.45, y: CASE.stand + 2, parent: group });

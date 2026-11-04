@@ -590,8 +590,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   ceilMats.forEach((m, i) => m.color.set(CEIL_DAY[i]));
   disposables.push(cofferTex, roofTex, ...ceilMats);
   ceil(HALL, CORNICE, ceilMats[0]);
-  ceil(FISH_WING, WING_H, ceilMats[1]);
-  ceil(BUG_WING, WING_H, ceilMats[2]);
+  // (the wings' from the far face of the hall's wall: the lintels' undersides lie at WING_H too, over the wall)
+  ceil({ ...FISH_WING, x0: FISH_WING.x0 + T / 2 }, WING_H, ceilMats[1]);
+  ceil({ ...BUG_WING, x1: BUG_WING.x1 - T / 2 }, WING_H, ceilMats[2]);
   const lintel = (x0: number, x1: number, y0: number, z0: number, z1: number) => {
     const b = fpvMesh(new Mesh(new BoxGeometry(x1 - x0, CORNICE - y0, z1 - z0), lambert({ map: tex('hall-wall', [Math.max(x1 - x0, z1 - z0) / 30, (CORNICE - y0) / 32]) })));
     b.position.set((x0 + x1) / 2, (CORNICE + y0) / 2, (z0 + z1) / 2);

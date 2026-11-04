@@ -7,6 +7,7 @@
 import M from './models.json' with { type: 'json' };
 import { reachOf } from './boids.ts';
 import type { TankId } from './species.ts';
+import { frameOf } from './geometry.ts';
 
 export interface Box { x0: number; x1: number; y0: number; y1: number; z0: number; z1: number }
 export interface Tank {
@@ -15,8 +16,10 @@ export interface Tank {
   box: Box;
 }
 
+/** (Each one's top, its frame's too, well under the wing's ceiling (plan.ts WING_H, the first person's): the great
+ *  tank's glass top was the ceiling's plane, the two fighting over it from below.) */
 export const TANKS: readonly Tank[] = [
-  { id: 'sea', box: { x0: 72, x1: 248, y0: 0, y1: 52, z0: -98, z1: -46 } },
+  { id: 'sea', box: { x0: 72, x1: 248, y0: 0, y1: 48, z0: -98, z1: -46 } },
   { id: 'deep', box: { x0: 256, x1: 296, y0: 0, y1: 48, z0: -30, z1: 58 } },
   { id: 'river', box: { x0: 110, x1: 210, y0: 0, y1: 24, z0: 30, z1: 66 } }
 ];
@@ -25,6 +28,18 @@ export const TANKS: readonly Tank[] = [
 export function waterOf(t: Tank): Box {
   const b = t.box, glass = 1.2, sand = 4;
   return { x0: b.x0 + glass, x1: b.x1 - glass, y0: b.y0 + sand, y1: b.y1 - 2.5, z0: b.z0 + glass, z1: b.z1 - glass };
+}
+/** A tank's frame's half thickness (model units). */
+const FRAME = 0.9;
+/** A tank's static pieces (aquarium.ts draws them): its base (the sand, under its water, a little wider than the glass),
+ *  its glass (open below: its floor the sand's top) and its frame (geometry.ts frameOf). */
+export function piecesOf(t: Tank): { base: Box; glass: Box; frame: Box[] } {
+  const b = t.box, w = waterOf(t);
+  return {
+    base: { x0: b.x0 - 0.5, x1: b.x1 + 0.5, y0: b.y0, y1: w.y0, z0: b.z0 - 0.5, z1: b.z1 + 0.5 },
+    glass: { ...b, y0: w.y0 },
+    frame: frameOf(b, b.y0, FRAME)
+  };
 }
 /** Whether a tank's long side runs along x (else z). */
 export const alongX = (b: Box): boolean => b.x1 - b.x0 >= b.z1 - b.z0;
