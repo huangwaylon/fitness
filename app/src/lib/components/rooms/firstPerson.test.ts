@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PerspectiveCamera, Vector3 } from 'three';
-import { BLEND_MS, EYE_MARGIN, FOV, NEAR, PITCH_LIMIT, START_PITCH, camAz, clampEye, clampPitch, firstPerson, lookPerPx, wrapAngle, type Rect } from './firstPerson.ts';
+import { BLEND_MS, EYE_MARGIN, FOV, NEAR, PITCH_LIMIT, SETTLE_MS, START_PITCH, camAz, clampEye, clampPitch, firstPerson, headAnchor, lookPerPx, wrapAngle, type Rect } from './firstPerson.ts';
+import { due } from '#lib/store/frameRate.svelte.ts';
 
 const deg = (d: number) => (d * Math.PI) / 180;
 /** Steps a first person at 30 a second for `ms` toward `eye`, the frames that moved. */
@@ -150,6 +151,46 @@ describe('the glide and the eye', () => {
     expect(cam.fov).toBeLessThan(FOV);
     expect(cam.near).toBeLessThan(40);
     expect(cam.near).toBeGreaterThan(NEAR);
+  });
+});
+
+describe('at rest the eyes draw nothing', () => {
+  /** An engine's loop on a 120 Hz screen at `fps` for `ms`: my villager walks for `walkMs`, then stands; its head, as
+   *  posed, bobs and sways with its idle every drawn frame (a mixer stepped when drawn). The frames drawn each second. */
+  function loop(fps: number, ms: number, walkMs: number) {
+    const fp = firstPerson(), anchor = headAnchor(), head = new Vector3(), per: number[] = [];
+    fp.set(true, 0, 0, true);
+    let wanted = true, last = 0;
+    for (let t = 8; t <= ms; t += 1000 / 120) {
+      if (!wanted || !due(t, last, fps)) continue;
+      const dt = last ? t - last : 16;
+      last = t;
+      per[Math.floor(t / 1000)] = (per[Math.floor(t / 1000)] ?? 0) + 1;
+      const walking = t < walkMs, x = Math.min(t, walkMs) * 0.02;
+      const at = anchor(t, walking ? null : [x, 0, 0, 0], () => head.set(x + 0.4 * Math.sin(t / 700), 12 + 0.3 * Math.sin(t / 450), 0.2 * Math.cos(t / 900)));
+      wanted = fp.step(t, dt, at) || walking;
+    }
+    return Array.from({ length: Math.ceil(ms / 1000) }, (_, i) => per[i] ?? 0);
+  }
+  it('walking it draws at the cap, never above; standing, once its head settles, not one frame (the idle never moves the eye)', () => {
+    const bad: string[] = [];
+    for (const fps of [30, 60]) {
+      const per = loop(fps, 10_000, 2000);
+      if (per.some((n) => n > fps)) bad.push(`${fps}: over the cap ${per}`);
+      if (per[0] < fps - 2) bad.push(`${fps}: walking under the cap ${per}`);
+      // (from a second after its settle: nothing)
+      const from = Math.ceil((2000 + SETTLE_MS) / 1000) + 1;
+      if (per.slice(from).some((n) => n > 0)) bad.push(`${fps}: at rest ${per}`);
+    }
+    expect(bad).toEqual([]);
+  });
+  it('the anchor follows the head while it moves or settles, then holds it; any move follows it again', () => {
+    const a = headAnchor(), h = new Vector3();
+    expect(a(0, null, () => h.set(1, 2, 3)).toArray()).toEqual([1, 2, 3]);
+    expect(a(100, [5, 5, 0], () => h.set(4, 2, 3)).toArray()).toEqual([4, 2, 3]);
+    expect(a(100 + SETTLE_MS - 1, [5, 5, 0], () => h.set(4, 2.5, 3)).toArray()).toEqual([4, 2.5, 3]);
+    expect(a(100 + SETTLE_MS, [5, 5, 0], () => h.set(9, 9, 9)).toArray()).toEqual([4, 2.5, 3]);
+    expect(a(5000, [5, 5, 0.2], () => h.set(4, 2, 4)).toArray()).toEqual([4, 2, 4]);
   });
 });
 

@@ -63,6 +63,31 @@ export function clampEye(x: number, z: number, inside: readonly Rect[], solid: r
   return out;
 }
 
+/** How long a villager's head is followed after it last moved (ms: the walk's end into its idle, a sit down), before
+ *  the eye is held. */
+export const SETTLE_MS = 900;
+
+/**
+ * The eye's anchor: the head as posed while my villager walks (or turns, sits, gets up) and for SETTLE_MS after, then
+ * held while it stays put, so the idle's breath and sway never move the camera (at rest the eyes draw nothing). `rest`
+ * is what it stands as (x, z, yaw, its seat or pose: any number), null while walking; `head` reads the posed head.
+ */
+export function headAnchor(): (now: number, rest: readonly number[] | null, head: () => Vector3) => Vector3 {
+  const held = new Vector3(), key: number[] = [];
+  let since = -Infinity, fresh = false;
+  return (now, rest, head) => {
+    const same = !!rest && fresh && rest.length === key.length && rest.every((v, i) => Math.abs(v - key[i]) < 1e-3);
+    if (!same) {
+      since = now;
+      key.length = 0;
+      if (rest) key.push(...rest);
+      fresh = !!rest;
+    }
+    if (!same || now - since < SETTLE_MS) held.copy(head());
+    return held;
+  };
+}
+
 export interface FirstPerson {
   /** Wanted on (the glide may be under way). */
   readonly on: boolean;
