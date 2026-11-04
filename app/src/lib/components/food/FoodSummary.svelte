@@ -83,6 +83,6 @@
   .cell { min-width: 0; padding: 8px 6px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 22%, transparent); }
   dt { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   dd { margin: 4px 0 0; font-size: var(--fs-body); white-space: nowrap; }
-  /* 「目標 110 g 以上」 wraps in a narrow tile rather than running past it */
-  dd small { display: block; margin-top: 3px; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); white-space: normal; }
+  /* 「目標 110 g 以上」 wraps in a narrow tile rather than running past it, only after 目標 (the copy's no-break spaces) */
+  dd small { display: block; margin-top: 3px; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); white-space: normal; text-wrap: balance; }
 </style>

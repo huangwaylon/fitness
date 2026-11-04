@@ -101,7 +101,7 @@
     --pair-host: 72px;
     max-width: 420px; margin: 0 auto; min-height: var(--vh-page); display: flex; flex-direction: column; align-items: stretch; justify-content: center;
     gap: 14px; position: relative;
-    padding: calc(var(--safe-top) + 60px) calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 20px + var(--kb, 0px)) calc(var(--side) + var(--safe-left));
+    padding: calc(var(--ui-top) + 60px) calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 20px + var(--kb, 0px)) calc(var(--side) + var(--safe-left));
   }
   .lang {
     position: absolute; top: calc(var(--ui-top) + 8px); right: calc(var(--side) + var(--safe-right)); cursor: pointer; min-height: 44px; padding: 0 14px;

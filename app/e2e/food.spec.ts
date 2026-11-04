@@ -311,7 +311,7 @@ test('the goals: set in place on my cards (kcal, protein, salt), shown on the da
   await expect(sheet(page).getByRole('status')).toContainText('カロリーの目標を かえました');
   await sheet(page).getByRole('status').getByRole('button', { name: 'とじる' }).click();
   // the nutrient tiles: protein's default goal (1.6 g × ウェイ's weigh-in), the rest none yet
-  await expect(sheet(page).locator('[data-nutrient=p] small')).toHaveText(/^目標 \d+ g 以上$/);
+  await expect(sheet(page).locator('[data-nutrient=p] small')).toHaveText(/^目標 \d+\sg\s以上$/); // (no-break spaces: it wraps only after 目標)
   await expect(sheet(page).locator('[data-nutrient=s] small, [data-nutrient=fa] small, [data-nutrient=c] small')).toHaveCount(0);
 
   // グラフ: a card each, kcal (then the Move card), protein, fat, carbs, salt; each with its goal's chip

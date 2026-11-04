@@ -354,7 +354,7 @@
   .less::after { content: ''; position: absolute; inset: -6px; }
   .empty { margin: 18px 4px; text-align: center; color: var(--c-ink-soft); font-weight: 700; }
   .bar {
-    position: sticky; bottom: 0; margin: auto calc(-1 * var(--side)) 0; padding: 10px var(--side) calc(var(--pad-bottom) + 8px);
+    position: sticky; bottom: 0; margin: auto calc(-1 * var(--side)) 0; padding: 10px var(--side) var(--pad-foot);
     display: flex; align-items: center; gap: 8px; background: var(--c-cream); box-shadow: 0 -2px 0 var(--c-lip);
   }
   .bar .btn { margin: 0; flex: none; }

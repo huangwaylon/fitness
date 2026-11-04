@@ -140,7 +140,7 @@
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
   .col {
     position: relative; z-index: 1; max-width: 440px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;
-    padding: calc(var(--ui-top) + 12px) calc(var(--side) + var(--safe-right)) var(--pad-bottom) calc(var(--side) + var(--safe-left));
+    padding: calc(var(--ui-top) + 12px) calc(var(--side) + var(--safe-right)) var(--pad-foot) calc(var(--side) + var(--safe-left));
   }
   /* the plate | the step dots, centred on the screen | ✕ (equal 1fr sides keep the dots on the true centre) */
   .head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 44px; gap: 8px; }

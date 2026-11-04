@@ -1311,7 +1311,7 @@
     -webkit-tap-highlight-color: transparent;
   }
   .edge.top { top: calc(var(--hud-bottom, 0px) + 8px); }
-  .edge.bottom { bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); }
+  .edge.bottom { bottom: calc(var(--safe-bottom) + 12px); }
   .tap-ring {
     position: absolute; left: 0; top: 0; width: calc(34 * var(--u)); height: calc(34 * var(--u)); translate: -50% -50%; border-radius: 50%;
     border: calc(3 * var(--u)) solid #FFF7DE; box-shadow: 0 0 0 1px rgba(120, 90, 40, .18); animation: tap-ring 400ms ease-out both;
