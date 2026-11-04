@@ -496,11 +496,14 @@ export function faceToward(id: ActorId, x: number) {
 }
 
 /** What keeps a villager from nodding off (Critters: my line out; the user: "while fishing don't fall asleep"). */
-let napHold: (id: ActorId) => boolean = () => false;
+// (the let-go hold made at module level: an arrow made in the cleanup below would share its scope, and with it `fn`,
+// Critters' closure, so the page-wide napHold kept the whole island alive: leaks.spec, 3 contexts in the museum)
+const NO_HOLD = (): boolean => false;
+let napHold: (id: ActorId) => boolean = NO_HOLD;
 export function holdNaps(fn: (id: ActorId) => boolean): () => void {
   napHold = fn;
   return () => {
-    if (napHold === fn) napHold = () => false;
+    if (napHold === fn) napHold = NO_HOLD;
   };
 }
 /** How often a held nap asks again (ms). */
