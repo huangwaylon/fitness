@@ -117,6 +117,8 @@ export interface Museum {
   resetView(): void;
   isDefault(): boolean;
   moving(on: boolean): void;
+  /** After each frame drawn (the scene's overlays that follow the camera: a speech balloon carried with its speaker). */
+  onDrawn(fn: (() => void) | null): void;
   night(n: number): void;
   /** The wings' exhibits (each built once its data is in: MuseumRoom), and one taken down (rebuilt with new finds). */
   exhibit(e: Exhibit): void;
@@ -1155,6 +1157,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   }
   /** The last frame drawn's display time (its rAF's): the frame rate's pacing (せってい's, a gesture's too). */
   let lastVsync = 0;
+  let drawn: (() => void) | null = null;
   function frame(vsync = now()) {
     raf = 0;
     if (disposed) return;
@@ -1226,6 +1229,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const c0 = now();
     draw();
     cost.push(now() - c0);
+    drawn?.();
     if (cost.length > 240) cost.shift();
     frames++;
     lastT = t;
@@ -1324,6 +1328,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       invalidate();
     },
     isDefault: () => Math.abs(wrapAngle(view.az - DEF.az)) < 0.01 && Math.abs(view.pitch - DEF.pitch) < 0.01 && Math.abs(view.k - DEF.k) < 0.01,
+    onDrawn(fn) {
+      drawn = fn;
+    },
     moving(on) {
       gesturing = on;
       invalidate();

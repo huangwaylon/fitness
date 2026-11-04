@@ -1086,7 +1086,7 @@ goes with the leaving).
   open only closes it (nobody walks). The phrase shows in the island's balloon (`island/Says.svelte`) over the speaker's
   villager in the room, by its head as the room's camera sees it (the tent engine's `headPoint(who)`: the top of its
   card for now, the 3D model's head bone once switched), by the island's placement rule (never over the room's
-  controls); it follows a walk, steps aside while the camera turns, 4 s, a newer one replacing it. It goes out as
+  controls); it follows a walk, stays whole by its head while the camera turns or zooms ([Dialogue](#dialogue)), 4 s, a newer one replacing it. It goes out as
   `say {text, sc}` with the room's scope (`t` the tent, `u` うめ's, `v` the guest's) and shows only on a phone whose
   villager is in that room; one said on the island (no `sc`) only on the island (one place at a time). `e2e/say-rooms.spec.ts`.
 - **The Happy Home Academy** (`tent/hha.ts`, `HhaLetter.svelte`): the first time someone comes in through the door
@@ -1582,7 +1582,12 @@ Where it stands, one rule for every speaker (my villager, the visitors; `placeme
 else beside it, else below the feet, sliding along so the tail still reaches. Room gives way step by step, nearness
 doesn't: clear of every control, else over the museum (both within 16px); else over the island's things (trees, fruit
 rows) but not the villagers; else over them too. Never over the HUD, しずえ's box, a popup or another overlay, the
-speaker, or off the scene. It follows a speaker who moves (a move lasting 0.6 s) and closes if they go. Captions
+speaker, or off the scene. It follows a speaker who moves (a move lasting 0.6 s) and closes if they go. While the
+camera moves (a scroll, a pinch, a room's turn) every balloon stays whole, its box, tail and text, carried with its
+speaker each of the camera's frames by a transform (`island/balloonFollow.ts`: the speaker's point from the camera, the
+island's world node's map, `World.frameOf`, or a room's projected head; no layout read in the frame), and once the
+camera settles it is placed again by the rule (`e2e/balloon.ts`; the bug: it hid while the camera moved, and its page's
+text, `visibility: visible` of its own, stayed alone on screen). Captions
 (`place`: the wish, K.K.'s caption) keep clear of every control, nearest first; the catch plates stand in their stack
 at the bottom centre ([Critters](#critters) "The catch"). Every balloon,
 plate and caption keeps 12px (`EDGE`) from the screen's sides and foot, above the home indicator. The catch plate is one
@@ -1606,7 +1611,7 @@ only closes (nobody walks), on a control it still acts (the flea is netted), on 
 give the focus back to the button. My villager stays put while it's open. A pick
 closes it, hops my villager and shows the phrase in its balloon for 4 s (`island/Says.svelte`: Talk's cream balloon,
 the name on a tag in the person's colour, its tail at the villager, clear of its emote and the other villager's; it
-follows a walk, steps aside while the camera moves; text, never markup; taps go through it). A newer phrase replaces
+follows a walk, stays whole by it while the camera moves; text, never markup; taps go through it). A newer phrase replaces
 it. On the partner's phone the same balloon shows over my villager there, which hops too (the relay's `say`, presence
 only: a phone that is closed simply never sees it, one opening later doesn't either; at most one per 1.5 s, the newer
 waiting). No sound beyond the UI cues, no ベル. The speech balloon (`island/Talk.svelte`) is for the island's other
@@ -1867,8 +1872,8 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
   carries it into each new day, so a phone opening later puts it there; the island's own life gives it its idle beats
   in place. Not the guest's: it shows only while its app is open ([The guest](#the-guest)).
 - **Sheets and hiding:** a sheet stops everyone where they are; uncovered, the outings wander back; hidden over 30 s,
-  they're back on return (mine where it rests). A balloon opens only over a villager standing still, and steps aside while the camera
-  scrolls.
+  they're back on return (mine where it rests). A balloon opens only over a villager standing still, and is carried with it while the camera
+  scrolls or zooms ([Dialogue](#dialogue)).
 - **Walk mask** (`walkGeo`): land, the bridge's deck (inside its rails) and the stairs; not the sea, the river, the pond, the spring,
   the cliff face, building footprints, trunks, the rock, bushes or props. Rasterised once on a 4u grid; named
   nodes (homes, the trees, the shore, both ends of the bridge and of the stairs, every door, the pondside, the river's

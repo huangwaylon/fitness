@@ -3,8 +3,8 @@
   // speech balloon over that villager for SAY_MS, on both phones (mine here at once, the partner's when the relay
   // brings it). Talk's balloon (cream, the soft lip, a tail to the speaker, the name on a tilted tag in the person's
   // colour), one per villager, a newer phrase replacing the one showing. It stands by its speaker by the one rule
-  // (placement.ts placeBy), clear of the other villager's, follows the villager as it moves, and steps aside while the
-  // camera moves. Not a control: taps go through it. The text is text (never markup). A home's room (TentRoom) uses it
+  // (placement.ts placeBy), clear of the other villager's, follows the villager as it moves, and is carried with
+  // it, whole, while the camera moves (balloonFollow.ts). Not a control: taps go through it. The text is text (never markup). A home's room (TentRoom) uses it
   // too: its villagers are in the room's 3D, so their speaker is a box worked out from the camera (a SaySpeaker), and
   // with no island stage the balloons stand in the scene's own box.
   //   <Says bind:this={says} scene={el} />   says.say('mine', text, speakerEl, { name, colour })
@@ -14,8 +14,12 @@
   import { SAY_MS } from './say.ts';
   import type { Box } from './geom.ts';
   import type { SaySpeaker } from './say.ts';
+  import { followOf } from './balloonFollow.ts';
+  import { useWorld } from './camera.svelte.ts';
 
   let { scene }: { scene?: HTMLElement } = $props();
+  // (the island's: its villagers are world nodes; a room has none, its speakers are boxes from its camera)
+  const world = useWorld() as ReturnType<typeof useWorld> | undefined;
 
   type Id = 'mine' | 'partner' | 'third';
   interface One { n: number; text: string; name: string; colour: string; x: number; y: number; tail: number; side: Side; placed: boolean; follow: boolean }
@@ -25,6 +29,9 @@
   let seq = 0;
   const speakers: Record<Id, SaySpeaker | undefined> = { mine: undefined, partner: undefined, third: undefined };
   const seen: Record<Id, DOMRect | undefined> = { mine: undefined, partner: undefined, third: undefined };
+  /** How each placed balloon follows its speaker through a camera move (balloonFollow.ts), and its carry written. */
+  const follows: Record<Id, ReturnType<typeof followOf>> = { mine: null, partner: null, third: null };
+  const shifted: Record<Id, string> = { mine: '', partner: '', third: '' };
   const timers: Record<Id, { end?: ReturnType<typeof setTimeout>; watch?: ReturnType<typeof setInterval> }> = { mine: {}, partner: {}, third: {} };
 
   function halt(id: Id) {
@@ -46,6 +53,9 @@
   export async function say(id: Id, text: string, from: SaySpeaker, o: { name: string; colour: string }) {
     halt(id);
     const n = ++seq;
+    // (a new balloon: none of the last one's carry)
+    shifted[id] = '';
+    follows[id] = null;
     shown[id] = { n, text, name: o.name, colour: o.colour, x: 0, y: 0, tail: 0, side: 'top', placed: false, follow: false };
     speakers[id] = from;
     timers[id].end = setTimeout(() => shown[id]?.n === n && hush(id), SAY_MS);
@@ -55,12 +65,41 @@
     watch(id, n);
   }
 
-  /** The camera is moving (a scroll): the balloons step aside until it settles, then stand by their speakers again. */
-  let held = $state(false);
+  /** The camera is moving (a scroll, a pinch, a turn): the balloons stay whole by their speakers, carried with them each
+   *  frame (track), and once it settles they stand by them again by the rule. */
+  let held = false;
   export function hold(on: boolean) {
     if (on === held) return;
     held = on;
-    if (!on) for (const id of ['mine', 'partner', 'third'] as const) if (shown[id]?.placed && !at(id, shown[id]!.n)) hush(id);
+    if (on) return;
+    for (const id of ['mine', 'partner', 'third'] as const) {
+      const s = shown[id];
+      shift(id, '');
+      if (!s?.placed) continue;
+      // (no ease from where it was placed before the move: it is already where it's carried)
+      s.follow = false;
+      if (!at(id, s.n)) hush(id);
+    }
+  }
+  /** One of the camera's frames while it moves: each balloon carried with its speaker (transforms only, no layout read:
+   *  balloonFollow.ts), or out of sight till it settles when its speaker can't be followed. Every point read first,
+   *  then every write. */
+  export function track() {
+    if (!held) return;
+    const to = (['mine', 'partner', 'third'] as const).map((id) => {
+      const f = shown[id]?.placed ? follows[id] : undefined;
+      if (f === undefined) return null;
+      const a = f?.now();
+      return [id, a && f ? `calc(-50% + ${(a[0] - f.aim[0]).toFixed(1)}px) calc(-50% + ${(a[1] - f.aim[1]).toFixed(1)}px)` : 'away'] as const;
+    });
+    for (const t of to) if (t) shift(t[0], t[1]);
+  }
+  function shift(id: Id, v: string) {
+    const el = els[id];
+    if (v === shifted[id] || !el) return;
+    shifted[id] = v;
+    el.style.translate = v === 'away' ? '' : v;
+    el.style.opacity = v === 'away' ? '0' : '';
   }
 
   const boxOf = (r: DOMRect, pad = 0): Box => ({ x0: r.left - pad, x1: r.right + pad, y0: r.top - pad, y1: r.bottom + pad });
@@ -79,6 +118,8 @@
     if (other && shown[id === 'mine' ? 'partner' : 'mine']?.placed) extra.push(boxOf(other.getBoundingClientRect(), 4));
     const p = placeBy(scene, w, h, boxOf(src), extra, layer);
     if (!p) return false;
+    shift(id, '');
+    follows[id] = followOf(speaker, src, p.side, world && ((e) => world.frameOf(e)));
     const vert = p.side === 'top' || p.side === 'bottom';
     const tail = vert
       ? Math.max(-w / 2 + TAIL_IN, Math.min(w / 2 - TAIL_IN, (src.left + src.right) / 2 - p.x))
@@ -104,7 +145,7 @@
   }
 </script>
 
-<div class="says" class:held bind:this={layer}>
+<div class="says" bind:this={layer}>
   {#each ['mine', 'partner', 'third'] as const as id (id)}
     {@const s = shown[id]}
     {#if s}
@@ -121,7 +162,6 @@
 
 <style>
   .says { position: absolute; inset: 0; z-index: var(--z-taps); pointer-events: none; }
-  .says.held { visibility: hidden; }
   /* Talk's balloon: cream, round, a soft lip, the name tag on its top-left edge, a tail to the speaker */
   .say {
     position: absolute; translate: -50% -50%; width: max-content; max-width: min(240px, calc(100vw - 24px));

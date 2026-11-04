@@ -390,6 +390,8 @@
         // in at the front door, a few steps into the hall
         e.put(me, [ENTRANCE[0] + sideX(me), ENTRANCE[1] + 6], Math.PI);
         e.firstPerson(fpv, true);
+        // (the balloons carried with their speakers while the camera moves: Talk.track, Says.track)
+        e.onDrawn(() => (talk?.track(), says?.track()));
         eng = e;
         othersShown();
         walkTo([ENTRANCE[0] + sideX(me), ENTRANCE[1] - 14]);

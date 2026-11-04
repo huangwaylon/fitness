@@ -2,6 +2,7 @@
 // them, never over the HUD, never off screen, never over the speaker's face; it follows a speaker who moves. The bug: a
 // visitor's balloon floated above a building (the museum then), 100px+ off their head.
 import { expect, test, type Page } from '@playwright/test';
+import { expectWhole, fingers, liftFingers, spreading } from './balloon.ts';
 
 /** The balloon against its speaker and the HUD (the controls outside the stage). */
 const measure = (page: Page, speaker: string) =>
@@ -85,4 +86,37 @@ test('the balloon follows a speaker who moves while talking, and closes if they 
   await expectBy(page, art, 56);
   await page.locator('[data-visitor="gulliver"]').evaluate((el) => el.remove());
   await expect(page.locator('[data-fx="talk"]')).toHaveCount(0);
+});
+
+// The bug (the user, on the phone): "When speech bubbles appear from NPCs, if we change the zoom level, the speech bubble
+// disappears, leaving only the text, until we let go." The balloon stepped aside while the camera moved (its layer
+// visibility: hidden), but its page's text is visibility: visible of its own, so the text stayed alone. Now it's carried
+// with its speaker each of the camera's frames, whole.
+test('mid-pinch and mid-scroll the balloon stays whole (its box, not only its text) and by its speaker; let go, it stands by them again', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-04T12:00&visitor=reese&critter=none');
+  await go(page, 642);
+  const art = '[data-visitor="reese"] .art', box = '[data-fx="talk"]';
+  await expect(page.locator(art)).toBeVisible();
+  await tapAt(page, art, 0.3);
+  await balloon(page);
+  await page.waitForTimeout(400); // (its pop-in)
+  const zoom = () => page.evaluate(() => (window as unknown as { __world3d: { view(): { zoom: number } } }).__world3d.view().zoom);
+  const z0 = await zoom();
+  // two fingers down and apart, held there: zoomed in, the balloon whole at the head
+  await fingers(page, spreading(200, 640, 8, 6));
+  await expect.poll(zoom).toBeGreaterThan(z0 * 1.1);
+  await expectWhole(page, box, art, 16);
+  // further, still held
+  await fingers(page, spreading(200, 640, 8, 6, 6).slice(1));
+  await page.waitForTimeout(50);
+  await expectWhole(page, box, art, 16);
+  await liftFingers(page);
+  await page.waitForTimeout(600); // (the camera settles; the balloon placed again by the rule)
+  await expect(page.locator(`${box}.placed`)).toBeVisible();
+  await expectWhole(page, box, art, 56);
+  // one finger along the island, held: the same
+  await fingers(page, Array.from({ length: 6 }, (_, i) => [[200, 300 + i * 14]]));
+  await page.waitForTimeout(50);
+  await expectWhole(page, box, art, 16);
+  await liftFingers(page);
 });

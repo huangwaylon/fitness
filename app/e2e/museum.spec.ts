@@ -2,6 +2,7 @@
 // inside (the hall and its two wings) with every fish and bug anyone has found on show, a creature's card, and back out.
 import { expect, test, type Page } from '@playwright/test';
 import { is3d, settled, tapOn } from './island';
+import { balloonState, expectWhole } from './balloon.ts';
 
 const ISLAND = './?demo&visitor=none&critter=none&date=2026-11-04T12:00';
 const MUSEUM = 'museum?demo&date=2026-11-04T12:00';
@@ -306,4 +307,28 @@ test('the aquarium’s benches: a tap sits my villager on one, the other phone s
   await expect.poll(async () => (await mu<Who>(other, 'who("A")'))?.seated, { timeout: 5_000 }).toBe(false);
   await expect.poll(() => mu<Seat>(other, 'theirSeat("A")')).toBeNull();
   await other.close();
+});
+
+test('while a drag turns the camera the curator’s balloon stays whole (its box, not only its text) by him', async ({ page }) => {
+  await open(page);
+  type C = { at: [number, number]; doing: string | null } | null;
+  await page.evaluate('window.__museum.put(0, -12)');
+  await expect.poll(async () => (await mu<C>(page, 'curator()'))?.doing, { timeout: 15_000 }).toBe('look');
+  const him = async () => ((c) => ({ x: c.at[0], y: c.at[1] }))((await mu<C>(page, 'curator()'))!);
+  const h = await him();
+  await page.mouse.click(h.x, h.y + 10);
+  await expect(page.locator('[data-fx="talk"].placed')).toBeVisible();
+  await page.waitForTimeout(300); // (its pop-in)
+  const near = (await balloonState(page, '[data-fx="talk"]', await him()))!.dist + 8;
+  const box = (await page.locator('[data-museum-room]').boundingBox())!;
+  const [cx, cy] = [box.x + box.width / 2, box.y + box.height * 0.75];
+  await page.mouse.move(cx, cy);
+  await page.mouse.down();
+  for (let i = 1; i <= 6; i++) await page.mouse.move(cx + i * 12, cy);
+  await page.waitForTimeout(100);
+  // (the camera turned: he moved on screen)
+  const h1 = await him();
+  expect(Math.hypot(h1.x - h.x, h1.y - h.y)).toBeGreaterThan(10);
+  await expectWhole(page, '[data-fx="talk"]', h1, near);
+  await page.mouse.up();
 });

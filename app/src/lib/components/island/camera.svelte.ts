@@ -12,6 +12,7 @@ import type { WashIn } from '#lib/layout/swash.ts';
 import { getContext, setContext } from 'svelte';
 import { hull, quadMatrix, zIndexAt } from './geom.ts';
 import { AHEAD, BEHIND, CAMS, PLAN, type Pt } from './world.ts';
+import type { NodeFrame } from './balloonFollow.ts';
 
 type NodeMode = 'up' | 'flat' | 'quad' | 'body';
 export interface NodeSpec {
@@ -193,6 +194,8 @@ export class World {
   readonly perf = { writes: 0, nodes: 0, frames: 0 };
 
   private nodes = new Set<Node>();
+  /** Each node by its element (frameOf). */
+  private byEl = new WeakMap<Element, Node>();
   private m3s = new Set<Node>();
   private v3s = new Set<Node>();
   private seq3 = 0;
@@ -243,6 +246,24 @@ export class World {
   clientAt(x: number, z: number, lift = 0): Pt {
     const p = this.screenAt(x, z, lift);
     return [p.sx + this.view.left, p.sy + this.view.top];
+  }
+
+  /** The map of the world node `el` is in (itself or an ancestor), on screen now: its origin in client px and its scale,
+   *  from the 3D camera as the projector places it (no layout read: a speech balloon follows its speaker through a camera
+   *  move, island/balloonFollow.ts). Null when `el` is in none, or in a quad's or a body's (no plain map). */
+  frameOf(el: Element): (() => NodeFrame | null) | null {
+    let at: Element | null = el, n: Node | undefined;
+    while (at && !(n = this.byEl.get(at))) at = at.parentElement;
+    if (!n || n.mode === 'quad' || n.mode === 'body') return null;
+    const node = n;
+    return () => {
+      const t = this.three, v = this.view;
+      if (!t || !this.nodes.has(node)) return null;
+      const [x, z, lift] = node.live ? node.live() : [node.x, node.z, node.lift];
+      const q = t.at(x, z, lift ?? node.lift ?? 0), k = q.k / v.s;
+      const ky = node.mode === 'flat' ? k * Math.max(0.02, q.ground) : node.model ? k * q.up : k;
+      return { x: q.sx + v.left, y: q.sy + v.top, kx: k, ky };
+    };
   }
 
   /** The world point under a screen point (px from the scene's top-left), or null in the sky. */
@@ -514,6 +535,7 @@ export class World {
       // into view)
       el.toggleAttribute('data-m3', !!n.m3 && !n.m3.art);
       this.nodes.add(n);
+      this.byEl.set(el, n);
       if (n.m3) this.m3s.add(n);
       if (n.v3) this.v3s.add(n);
       if (n.live) this.movers.add(n);
@@ -525,6 +547,7 @@ export class World {
       this.kick();
       return () => {
         this.nodes.delete(n);
+        if (this.byEl.get(el) === n) this.byEl.delete(el);
         this.m3s.delete(n);
         this.v3s.delete(n);
         this.movers.delete(n);

@@ -19,9 +19,13 @@
   import { tick } from 'svelte';
   import { TAIL_IN, placeBy, type Side } from './placement.ts';
   import type { SaySpeaker } from './say.ts';
+  import { followOf } from './balloonFollow.ts';
+  import { useWorld } from './camera.svelte.ts';
   import { TYPE_MS, arrow, paginate, split, tagInk, tapBox, typeOne, typing, type Choice, type PagerState } from './pager.ts';
 
   let { scene }: { scene?: HTMLElement } = $props();
+  // (the island's: its speakers are in world nodes; a room has none, its speakers are boxes from its camera)
+  const world = useWorld() as ReturnType<typeof useWorld> | undefined;
 
   interface Said { n: number; name: string; colour: string; x: number; y: number; tail: number; side: Side; follow: boolean; placed: boolean; choices: Choice[]; mx: number; my: number; mw: number; mh: number }
   let said = $state<Said | null>(null);
@@ -111,6 +115,9 @@
   export async function say(name: string, parts: string | readonly string[], from: SaySpeaker, o: { colour?: string; choices?: Choice[]; ondone?: () => void } = {}) {
     halt();
     const n = ++seq;
+    // (a new box: none of the last one's carry)
+    shifted = '';
+    follow = null;
     done = o.ondone;
     pg = { pages: paginate(parts), page: 0, shown: 0 };
     said = { n, name, colour: o.colour ?? '#FFD84D', x: 0, y: 0, tail: 0, side: 'top', follow: false, placed: false, choices: o.choices ?? [], mx: 0, my: 0, mw: 0, mh: 0 };
@@ -128,18 +135,47 @@
     watch(n);
   }
 
-  /** The camera is moving (a scroll): the balloon steps aside until it settles, then stands by its speaker again
-   *  (placing it every frame would measure every control each frame). */
-  let held = $state(false);
+  /** The camera is moving (a scroll, a pinch, a turn): the balloon stays whole by its speaker, carried with them each
+   *  frame (track), and once it settles it is placed again by the rule (placing it every frame would measure every
+   *  control each frame). */
+  let held = false;
   export function hold(on: boolean) {
     if (on === held) return;
     held = on;
-    if (!on && said?.placed && !at(said.n)) close();
+    if (on) return;
+    shift('');
+    if (!said?.placed) return;
+    // (no ease from where it was placed before the move: it is already where it's carried)
+    said.follow = false;
+    if (!at(said.n)) close();
+  }
+  /** One of the camera's frames while it moves: the balloon carried with its speaker (transforms only, no layout read:
+   *  balloonFollow.ts), or out of sight till it settles when its speaker can't be followed. */
+  export function track() {
+    if (!held || !said?.placed) return;
+    const a = follow?.now();
+    shift(a && follow ? `${(a[0] - follow.aim[0]).toFixed(1)}px ${(a[1] - follow.aim[1]).toFixed(1)}px` : 'away');
+  }
+  /** The carry written ('': none; 'away': out of sight, its page's text too: opacity, as visibility can't). */
+  let shifted = '';
+  function shift(v: string) {
+    if (v === shifted) return;
+    shifted = v;
+    const [dx, dy] = v && v !== 'away' ? v.split(' ') : ['0px', '0px'];
+    for (const e of [el, menu]) {
+      if (!e) continue;
+      // (the box's own translate centres it: -50% -50%)
+      e.style.translate = !v || v === 'away' ? '' : e === el ? `calc(-50% + ${dx}) calc(-50% + ${dy})` : v;
+      e.style.opacity = v === 'away' ? '0' : '';
+      e.style.pointerEvents = v === 'away' ? 'none' : '';
+    }
   }
 
   /** The open balloon's speaker (to follow it as it moves). */
   let speaker: SaySpeaker | undefined;
   let seen: DOMRect | undefined;
+  /** How the placed balloon follows its speaker through a camera move. */
+  let follow: ReturnType<typeof followOf> = null;
   let watcher: ReturnType<typeof setInterval> | undefined;
   /** Place the balloon by its speaker as it stands now (placement.ts placeBy: NH's rule); false when there's no room. */
   function at(n: number): boolean {
@@ -151,6 +187,8 @@
     // never over the speaker
     const p = placeBy(scene, box.width, box.height, from, [{ x0: src.left - 4, x1: src.right + 4, y0: src.top - 4, y1: src.bottom + 4 }], layer);
     if (!p) return false;
+    shift('');
+    follow = followOf(speaker, src, p.side, world && ((e) => world.frameOf(e)));
     // the tail: along the balloon's edge facing the speaker, at its head (from above or below) or upper part (beside)
     const side = p.side === 'top' || p.side === 'bottom';
     const tail = side
@@ -184,6 +222,8 @@
     watcher = setInterval(() => {
       if (said?.n !== n || !speaker) return clearInterval(watcher);
       if (!speaker.isConnected) return close();
+      // (the camera moving: carried by track, placed again once it settles)
+      if (held) return void (moved = 0);
       const r = speaker.getBoundingClientRect();
       if (!seen || Math.abs(r.left - seen.left) + Math.abs(r.top - seen.top) + Math.abs(r.width - seen.width) < 8) return void (moved = 0);
       if (++moved < 3) return;
@@ -193,7 +233,7 @@
   }
 </script>
 
-<div class="talk" class:held bind:this={layer}>
+<div class="talk" bind:this={layer}>
   {#if said}
     {@const [typed, untyped] = split(pg)}
     {#key said.n}
@@ -225,7 +265,6 @@
 
 <style>
   .talk { position: absolute; inset: 0; z-index: var(--z-taps); pointer-events: none; }
-  .talk.held { visibility: hidden; }
   /* NH's speech balloon: cream, round, a soft lip, the name tag on its top-left edge, a tail to the speaker */
   .say {
     appearance: none; border: 0; margin: 0; cursor: pointer; pointer-events: auto; text-align: left; -webkit-tap-highlight-color: transparent;
@@ -254,6 +293,8 @@
   .text { display: grid; white-space: pre-line; }
   .pg { grid-area: 1 / 1; visibility: hidden; }
   .pg.now { visibility: visible; }
+  /* (the page's text is visible on its own: hidden too while the box is being measured) */
+  .say:not(.placed) .pg.now { visibility: hidden; }
   .rest { visibility: hidden; } /* the untyped rest keeps its room */
   /* NH's "next" arrow: a small rounded orange triangle at the bottom-right, bobbing gently */
   .next {
