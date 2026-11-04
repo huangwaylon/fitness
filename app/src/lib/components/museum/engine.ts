@@ -709,8 +709,6 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     path: { from: Pt; pts: Pt[]; t0: number; ms: number; lens: number[]; total: number } | null;
     hop: number;
     posing: boolean;
-    /** The way its walk goes now (a yaw), or null standing: the first person's view turns with it. */
-    dir: number | null;
     /** Its seat (villager3d sitAt: the model sits itself there; `pos` is its step in front), or null standing. */
     seat: Anchor | null;
   }
@@ -734,7 +732,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const shadow = new Mesh(shadowGeo, shadowMat);
     shadow.rotation.x = -Math.PI / 2;
     shadow.renderOrder = 2;
-    const w: Walker = { look, v3: null, shadow, pos: [0, 50], was: [0, 50], yaw: Math.PI, path: null, hop: 0, posing: true, dir: null, seat: null };
+    const w: Walker = { look, v3: null, shadow, pos: [0, 50], was: [0, 50], yaw: Math.PI, path: null, hop: 0, posing: true, seat: null };
     villagers.set(who, w);
     scene.add(shadow);
     if (look.model) void createVillager(look.id, look.model, who.charCodeAt(0) * 0.7).then((v) => {
@@ -827,11 +825,12 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (w.path) {
       const a = along(w, t);
       w.pos = a.p;
-      if (Math.hypot(a.d[0], a.d[1]) > 0.01) w.yaw += wrapAngle((w.dir = Math.atan2(a.d[0], a.d[1])) - w.yaw) * Math.min(1, (14 * dt) / 1000);
-      if (a.done) (w.path = null), (w.dir = null);
+      if (Math.hypot(a.d[0], a.d[1]) > 0.01) w.yaw += wrapAngle(Math.atan2(a.d[0], a.d[1]) - w.yaw) * Math.min(1, (14 * dt) / 1000);
+      if (a.done) w.path = null;
       busy = true;
     } else if (!w.seat && fp.on && w === villagers.get(followed) && Math.abs(wrapAngle(fp.yaw - w.yaw)) > 0.01) {
-      // at its eyes, standing: its body turns to where it looks (seated, only its head: the seat holds the body)
+      // at its eyes, standing: its (hidden) body turns to where it looks (seated, only its head: the seat holds the body);
+      // never the other way round (the head is the finger's alone: rooms/firstPerson.ts)
       w.yaw += wrapAngle(fp.yaw - w.yaw) * Math.min(1, (6 * dt) / 1000);
       busy = true;
     }
@@ -1182,7 +1181,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // the first person: the glide, the head, the eye following my villager's (its body hidden once the camera's near)
     let fpMoved = false;
     if (me && (fp.on || fp.mix > 0)) {
-      fpMoved = fp.step(t, dt, eyeOf(me), me.dir);
+      fpMoved = fp.step(t, dt, eyeOf(me));
       me.v3?.show(!(fp.mix > 0.5));
       if (fpMoved) full = true;
     }
@@ -1256,9 +1255,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     put(who, p, yaw) {
       const w = villagers.get(who);
       if (!w) return;
-      // (put mid-walk: its way gone with it, or the first person's view turned with a walk that's over, every frame)
+      // (put mid-walk: its way gone with it)
       w.path = null;
-      w.dir = null;
       w.seat = null;
       w.pos = [p[0], p[1]];
       w.was = [p[0], p[1]];
@@ -1292,7 +1290,6 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       w.seat = a;
       if (a) {
         w.path = null;
-        w.dir = null;
         w.pos = [a.from[0], a.from[1]];
         w.was = [a.from[0], a.from[1]];
         w.yaw = a.yaw;
@@ -1309,7 +1306,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     },
     firstPerson,
     look(dx, dy) {
-      fp.look(dx, dy);
+      fp.look(dx, dy, canvas.clientWidth);
       invalidate();
     },
     fpv: () => ({ on: fp.on, inside: fp.inside(), busy: fp.busy(), yaw: fp.yaw, pitch: fp.pitch, eye: [fp.eye.x, fp.eye.y, fp.eye.z] }),
@@ -1332,7 +1329,6 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     isDefault: () => Math.abs(wrapAngle(view.az - DEF.az)) < 0.01 && Math.abs(view.pitch - DEF.pitch) < 0.01 && Math.abs(view.k - DEF.k) < 0.01,
     moving(on) {
       gesturing = on;
-      fp.hold(on);
       invalidate();
     },
     night,

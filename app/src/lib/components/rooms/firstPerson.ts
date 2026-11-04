@@ -1,6 +1,6 @@
 // The rooms' first-person view (docs/design.md "First person"), shared by the tent's and the museum's engines: the
-// camera at my villager's eyes, a finger turning the head (yaw and pitch, clamped, smoothed), the view turning with a
-// walk, and the short glide between it and the room's own camera. Its math is plain; the camera's blend is three's.
+// camera at my villager's eyes, a finger turning the head (yaw and pitch, clamped, smoothed: the player's alone, a walk
+// never turns it), and the short glide between it and the room's own camera. Its math is plain; the camera's blend is three's.
 // The engine places the room's camera first (its orbit), then apply() takes it toward the eyes by the blend.
 import { Euler, Vector3, type PerspectiveCamera } from 'three';
 
@@ -10,18 +10,18 @@ export const FOV = 70;
 export const PITCH_LIMIT = (60 * Math.PI) / 180;
 /** Looking a little down to start with (the floor to tap on in view). */
 export const START_PITCH = (-12 * Math.PI) / 180;
-/** A finger's px → radians (about 0.3° a px: a swipe across the phone turns about 120°). */
-export const LOOK_PER_PX = 0.0052;
+/** A finger's px → radians: a drag across the whole canvas turns the head the lens's 70° (0.18° a px on a 390 px
+ *  phone; a narrow canvas counts as 240 px). */
+export const lookPerPx = (width: number): number => (FOV * Math.PI) / 180 / Math.max(240, width);
 /** The near plane at the eyes (model units: a villager is 16): the eye is kept EYE_MARGIN off anything. */
 export const NEAR = 1;
 /** How far the eye stays from a wall or a tall thing (model units). */
 export const EYE_MARGIN = 3;
 /** The glide between the room's camera and the eyes (ms). */
 export const BLEND_MS = 450;
-/** The head's smoothing (ms), the eye's following it (ms: across, and up and down: the walk's bob damped). */
+/** The head's smoothing (ms: light, no inertia), the eye's following it (ms: across, and up and down: the walk's bob
+ *  damped). */
 const LOOK_TC = 45, EYE_TC = 40, EYE_TC_Y = 140;
-/** How fast the view turns with a walk (a second's share of the way to its heading). */
-const FOLLOW = 3;
 
 export interface Rect { x0: number; x1: number; z0: number; z1: number }
 
@@ -75,13 +75,12 @@ export interface FirstPerson {
   readonly eye: Vector3;
   /** On or off; `yaw` the way to look on (the villager's facing); `snap`: there at once (coming in through the door). */
   set(on: boolean, now: number, yaw: number, snap?: boolean): void;
-  /** A finger's move (px): the head turns (drag the world: right turns left, down looks up). */
-  look(dx: number, dy: number): void;
-  /** A finger is on it (the view doesn't turn with a walk meanwhile). */
-  hold(on: boolean): void;
-  /** One frame: the glide, the head eased to where it's wanted (turned with a walk's `heading`, null standing), the eye
-   *  toward `eye` (already kept off the walls). True while the camera moves (a frame wanted). */
-  step(now: number, dt: number, eye: Vector3, heading: number | null): boolean;
+  /** A finger's move (px, on a canvas `width` px wide): the head turns (drag the world: right turns left, down looks
+   *  up). Once on, the only thing that turns it. */
+  look(dx: number, dy: number, width: number): void;
+  /** One frame: the glide, the head eased to where it's wanted, the eye toward `eye` (already kept off the walls; a
+   *  walk moves the eye, never turns the head). True while the camera moves (a frame wanted). */
+  step(now: number, dt: number, eye: Vector3): boolean;
   /** Fully at the eyes (the walls all stand, the ceilings show). */
   inside(): boolean;
   /** The glide or the head still easing. */
@@ -98,7 +97,7 @@ const LOOK_AT = 30;
 
 export function firstPerson(): FirstPerson {
   let on = false, mix = 0, from = 0, t0 = 0, yaw = 0, pitch = START_PITCH, wantYaw = 0, wantPitch = START_PITCH;
-  let placed = false, held = false, easing = false;
+  let placed = false, easing = false;
   const eye = new Vector3();
   const e = new Euler(0, 0, 0, 'YXZ'), at = new Vector3();
   return {
@@ -126,16 +125,14 @@ export function firstPerson(): FirstPerson {
       t0 = now;
       if (snap) mix = from = v ? 1 : 0;
     },
-    look(dx, dy) {
+    look(dx, dy, width) {
       if (!on) return;
-      wantYaw = wrapAngle(wantYaw + dx * LOOK_PER_PX);
-      wantPitch = clampPitch(wantPitch + dy * LOOK_PER_PX);
+      const k = lookPerPx(width);
+      wantYaw = wrapAngle(wantYaw + dx * k);
+      wantPitch = clampPitch(wantPitch + dy * k);
       easing = true;
     },
-    hold(v) {
-      held = v;
-    },
-    step(now, dt, to, heading) {
+    step(now, dt, to) {
       let moved = false;
       const goal = on ? 1 : 0;
       if (mix !== goal) {
@@ -144,16 +141,12 @@ export function firstPerson(): FirstPerson {
         moved = true;
       }
       if (!on && !mix) return moved;
-      if (heading !== null && !held) {
-        wantYaw = wrapAngle(wantYaw + wrapAngle(heading - wantYaw) * Math.min(1, (FOLLOW * dt) / 1000));
-        easing = true;
-      }
       if (easing) {
         const a = 1 - Math.exp(-dt / LOOK_TC), dy = wrapAngle(wantYaw - yaw), dp = wantPitch - pitch;
         if (Math.abs(dy) < 1e-4 && Math.abs(dp) < 1e-4) {
           yaw = wantYaw;
           pitch = wantPitch;
-          easing = heading !== null;
+          easing = false;
         } else {
           yaw = wrapAngle(yaw + dy * a);
           pitch += dp * a;

@@ -1,7 +1,8 @@
 // The first-person view (docs/design.md "First person"): in the tent and the museum the eye button takes the camera
 // to my villager's eyes (the walls all standing), a drag turns the head (nobody walks), a tap on the floor walks there
 // (from the eyes' own camera), the button again puts the room's camera back; the choice is kept on this phone, so
-// leaving and coming back in finds it as it was.
+// leaving and coming back in finds it as it was. A drag mid-walk turns the camera alone: the walk goes on to its spot,
+// the head stays where the finger left it.
 import { expect, test, type Page } from '@playwright/test';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -47,7 +48,11 @@ for (const room of ROOMS) {
     const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
     await page.mouse.move(cx, cy);
     await page.mouse.down();
-    await page.mouse.move(cx + 120, cy + 30, { steps: 8 });
+    for (let i = 1; i <= 8; i++) {
+      await page.mouse.move(cx + 15 * i, cy + (30 * i) / 8);
+      // (never a walk, at any point of it)
+      expect(await r(page, (h) => h.walking('A'))).toBe(false);
+    }
     await page.mouse.up();
     await rest(page);
     const f1 = (await r(page, (h) => h.fpv()))!;
@@ -82,6 +87,35 @@ for (const room of ROOMS) {
     await open(page);
     await expect(page.locator('[data-fpv]')).toHaveAttribute('data-fpv', 'off');
     expect((await r(page, (h) => h.fpv()))!.on).toBe(false);
+  });
+
+  test(`${room.name}: a drag mid-walk turns the camera alone (the walk goes on to its spot); the walk never turns it`, async ({ page }) => {
+    test.setTimeout(60_000);
+    await page.goto(room.path + Q + '&fpv=1');
+    await page.waitForFunction((h) => ((window as unknown as Record<string, R | undefined>)[h]?.stats()?.frames ?? 0) > 0, room.hook);
+    await expect.poll(() => r(page, (h) => h.fpv()?.inside)).toBe(true);
+    await page.evaluate(`window.${room.hook}.look(0, -200)`);
+    await rest(page);
+    const f0 = (await r(page, (h) => h.fpv()))!;
+    const goal: [number, number] = [f0.eye[0] + Math.sin(f0.yaw) * 18, f0.eye[2] + Math.cos(f0.yaw) * 18];
+    const [tx, ty] = await page.evaluate(([h, x, z]) => (window as unknown as Record<string, R>)[h].px(x, z), [room.hook, ...goal] as const);
+    const box = (await page.locator('canvas').first().boundingBox())!;
+    const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
+    await page.mouse.click(tx, ty);
+    await expect.poll(() => r(page, (h) => h.walking('A'))).toBe(true);
+    // on the way: a drag right turns the head left by the drag's share of the lens (70° a canvas width)
+    await page.mouse.move(cx, cy);
+    await page.mouse.down();
+    await page.mouse.move(cx + 150, cy, { steps: 5 });
+    await page.mouse.up();
+    expect(await r(page, (h) => h.walking('A'))).toBe(true);
+    await rest(page);
+    const [mx, mz] = await r(page, (h) => h.mine());
+    expect(Math.hypot(mx - goal[0], mz - goal[1])).toBeLessThan(3);
+    const f1 = (await r(page, (h) => h.fpv()))!, want = f0.yaw + (150 * (70 * Math.PI)) / 180 / box.width;
+    // (the walk went on ahead, the head stayed where the finger left it; the pitch too)
+    const off = { yaw: Math.abs(Math.atan2(Math.sin(f1.yaw - want), Math.cos(f1.yaw - want))) < 0.01, pitch: Math.abs(f1.pitch - f0.pitch) < 1e-6 };
+    expect(off, JSON.stringify({ f0, f1, want, end: [mx, mz], goal })).toEqual({ yaw: true, pitch: true });
   });
 }
 
