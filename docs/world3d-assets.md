@@ -68,9 +68,15 @@ world.ts SEATS's names) pass their anchors; a piece with no shape keeps the old 
 
 Fishing (`world3d/fishing3d.ts`): Critters.svelte says each step of my line (cast, wait, bite, reel) and where its
 float is; my 3D villager (world3d/villagers.ts) holds NH's rod while the line is out (`VSpec.tool`, Island3D's), turned
-in its hand to point out over the water in the fishing pose, faces the float, swings it out on the cast, is tugged at
+in its hand to point out over the water in the fishing pose, swings it out on the cast, is tugged at
 the bite and reels in (the rod kept in hand till the reel is over). Within LINE_REACH (220u) of the float only:
-further off (a cast across the island) the line runs from the bank, as the 2D one, and nobody holds a rod. The float
+further off (a cast across the island) the line runs from the bank, as the 2D one, and nobody holds a rod. Which way
+(`world3d/facing.ts`, the same on every phone from the same steps): standing, it turns to the float, NH's quick smooth
+turn (~0.2 s), and keeps facing it, square on from the rod's hand, the rod pointed at it; seated or lying it doesn't
+turn, the rod pointed the way it faces. The rod is a 3D child of the hand bone (`Hand_R`) and the line runs in world
+space from its tip; like everything the villager takes up after it's on the island (the rod, a hat), its material is
+bent with the island (`bend.ts`): unbent, it drew off the hand by the bend's drop and slid with every pinch and scroll
+(`e2e/fishing3d.spec.ts`: its tip against the feet the same at every zoom, nothing on the villager unbent). The float
 moves as the 2D one does, on Critters' same timers (`floatLift`, read each frame by the bobber node's `live`): a gentle
 ±0.6u bob over 1.5 s while it waits, a soft ring (`fx/ripple`) every 2.6 s; a quick 380 ms dip and a small ring at each
 nibble (and the line's twitch at an early tap); at the bite a little hop and a plunge 7u under, a splash and a big

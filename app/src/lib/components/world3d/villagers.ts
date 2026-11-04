@@ -5,7 +5,7 @@
 // card meanwhile (Island3D: `cards`). Still, a villager holds its pose: its bones are posed only while something moves
 // (it walks, it acts, the camera moves); its blinks are a texture's offset, so the island idles as it did. What it
 // wears (a birthday hat, the party glasses: assets.json `joint` models, their origin NH's head joint) rides its head bone.
-import { MeshLambertMaterial, Color, Vector3 as V3, type Vector3, type Mesh, type MeshStandardMaterial, type Object3D } from 'three';
+import { MeshLambertMaterial, Color, Vector3 as V3, type Vector3, type Material, type Mesh, type MeshStandardMaterial, type Object3D } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { keyModel, MODELS } from './models3d.ts';
@@ -13,6 +13,8 @@ import { createVillager, VILLAGER_S, type Villager3D } from '../villager3d/villa
 import { url3d } from '../villager3d/manifest.ts';
 import { ACTION_MS, seatOf, type Action, type State } from '../villager3d/poses.ts';
 import { anglerOf, type Phase } from './fishing3d.ts';
+import { bend } from './bend.ts';
+import { faceFloat, FACE_FLOAT_K, rodTarget, turn } from './facing.ts';
 import { anchorsOf, shapeOf, type Anchor } from '../villager3d/seats3d.ts';
 import ISLAND_MODELS from '../island/models.json' with { type: 'json' };
 import { DECOR_SLOTS, DECOR_U, SCENERY, seatAt } from '../island/world.ts';
@@ -119,12 +121,6 @@ function faceOf(emote: string | null, stung: boolean): Face | null {
   if (/cross|anger/.test(emote)) return 'cross';
   return null;
 }
-const turn = (a: number, b: number, dt: number, k: number) => {
-  let d = b - a;
-  while (d > Math.PI) d -= Math.PI * 2;
-  while (d < -Math.PI) d += Math.PI * 2;
-  return a + d * Math.min(1, (k * dt) / 1000);
-};
 /** A fade out of the board's way, or back (ms). */
 const FADE_MS = 220;
 
@@ -205,7 +201,10 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
           const m = n as Mesh;
           if (!m.isMesh) return;
           const s0 = m.material as MeshStandardMaterial;
-          m.material = new MeshLambertMaterial({ map: s0.map, color: s0.color, alphaTest: s0.alphaTest, side: s0.side, emissive: new Color(0xffffff), emissiveMap: s0.map, emissiveIntensity: liftL });
+          // (bent with the island, as the villager it's put on: engine.ts add() bent what the villager had then, not
+          // what its hand or head takes later; unbent, the rod and a hat were drawn off their hand and head by the
+          // bend's drop, more the further from the camera's pivot, and slid as a pinch or a scroll moved the camera)
+          m.material = bend(new MeshLambertMaterial({ map: s0.map, color: s0.color, alphaTest: s0.alphaTest, side: s0.side, emissive: new Color(0xffffff), emissiveMap: s0.map, emissiveIntensity: liftL }));
           m.castShadow = false;
           m.frustumCulled = false;
         });
@@ -299,28 +298,20 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       // which way: the way it walks; else the director's (left, right, inward), else toward the camera
       // (fishing: toward the float)
       let want = s.walking && moved > 0.05 ? Math.atan2(dx, -dz)
-        : rod && ang.phase ? Math.atan2(ang.x - s.x, -(ang.z - s.z))
         : s.face === 'l' ? -1.1 : s.face === 'r' ? 1.1 : s.face === 'in' ? (s.side === 'left' ? 0.6 : -0.6) : 0;
-      // (fishing: straight at the float, turned to it quickly as the cast goes out; square on from the rod's hand, so
-      // the facing, the rod and the line are one line in plan: the hand's offset from the feet turned with the yaw)
-      const aiming = rod && !!ang.phase && s.seat === null;
+      // (fishing, standing: straight at the float, NH's quick smooth turn as the cast goes out, and kept on it; square
+      // on from the rod's hand, so the facing, the rod and the line are one line in plan. Seated or lying: no body
+      // turn, the rod the way it faces: facing.ts)
+      const angling = rod && !!ang.phase, aiming = angling && s.seat === null;
       if (aiming && !s.walking) {
-        const hp = v.hand();
-        if (hp) {
-          const c = Math.cos(-w.yaw), sn = Math.sin(-w.yaw), ox = hp.x - v.group.position.x, oz = hp.z - v.group.position.z;
-          // the hand in the body's own frame (three's), then where it is at a trial yaw
-          const lx = ox * c + oz * sn, lz = -ox * sn + oz * c;
-          for (let i = 0; i < 4; i++) {
-            const cw = Math.cos(want), sw = Math.sin(want);
-            const hx = s.x + lx * cw + lz * sw, hz = s.z - (-lx * sw + lz * cw);
-            want = Math.atan2(ang.x - hx, -(ang.z - hz));
-          }
-        }
+        const hp = v.hand(), c = Math.cos(-w.yaw), sn = Math.sin(-w.yaw);
+        const ox = hp ? hp.x - v.group.position.x : 0, oz = hp ? hp.z - v.group.position.z : 0;
+        // (the hand in the body's own frame, three's)
+        want = faceFloat(s.x, s.z, ang.x, ang.z, ox * c + oz * sn, -ox * sn + oz * c);
       }
       const to = s.seat !== null ? 0 : want;
-      w.yaw = turn(w.yaw, to, dt, s.walking ? 14 : aiming ? 22 : 6);
+      w.yaw = turn(w.yaw, to, dt, s.walking ? 14 : aiming ? FACE_FLOAT_K : 6);
       const turning = Math.abs(Math.atan2(Math.sin(to - w.yaw), Math.cos(to - w.yaw))) > 0.005;
-      v.aim(aiming ? aimP.set(ang.x, 0, -ang.z) : null);
       // its state, and its moment (the director's motion, once each)
       // on a seat: on its model's own (villager3d sitAt: the villager sits down there itself), dozing off on it asleep
       const anchor = s.seat !== null ? anchorAt(s) : null;
@@ -348,6 +339,9 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
         v.group.position.set(s.x, s.y + lift, -s.z + (s.seat !== null ? 2 : 0));
         v.group.rotation.y = w.yaw;
       }
+      // the rod: at the float standing, straight ahead seated (its seat's way, once it's on it)
+      const hp = angling ? v.hand() : null, at = hp ? rodTarget(!aiming, w.yaw, hp, ang) : null;
+      v.aim(at ? aimP.set(at.x, 0, at.z) : null);
       const busy = s.walking || t < w.busyUntil || Math.abs(dx) + Math.abs(dz) > 0.01 || turning;
       if (busy) moving = true;
       // posed (its breathing, its moment, its walk) while anything moves; still, it holds its pose and only its face
@@ -375,6 +369,15 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       state: (slot: string) => ws.get(slot)?.v?.state() ?? null,
       tool: (slot: string) => (ws.get(slot)?.tool?.obj ? ws.get(slot)!.tool!.key : null),
       tip: (slot: string) => ws.get(slot)?.v?.tip()?.toArray() ?? null,
+      /** The materials on it drawn unbent (engine.ts bend: off the island it stands on), what it took up since included. */
+      unbent: (slot: string) => {
+        const out: string[] = [];
+        ws.get(slot)?.v?.group.traverse((o) => {
+          const m = (o as Mesh).material as Material | Material[] | undefined;
+          for (const x of m ? (Array.isArray(m) ? m : [m]) : []) if (!x.userData.bent) out.push(o.name || o.type);
+        });
+        return out;
+      },
       /** Its sting's swollen eye showing (the lump on its head bone). */
       stung: (slot: string) => !!ws.get(slot)?.v?.group.getObjectByName('sting-lump')?.visible
     };
