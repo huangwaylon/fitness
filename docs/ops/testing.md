@@ -128,8 +128,8 @@ the gate) goes in and out of the shop, the museum and うめ's house, opening �
 and out (the eye button, a bench), three rounds, and checks after a forced GC that no WebGL context (watched by
 WeakRefs) or window/document listener is left over, and that inside the museum only its own context lives. To hunt
 one: `npm run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts, its header lists the flows: the rooms, each
-sheet, the picker, visibility, the museum's eye, benches, hours and curator, fishing, selling, the sim's clock over
-midnight and over days) against a served build (`E2E_PORT`), printing per cycle the heap, DOM nodes, listeners, rAF
+sheet, the picker, visibility, the museum's eye, benches, hours, curator and a wing rebuilt, fishing, selling, the
+sim's clock over midnight and over days; `FILL=1`: a room furnished first) against a served build (`E2E_PORT`), printing per cycle the heap, DOM nodes, listeners, rAF
 a second, live contexts and the room's renderer.info, then a heap-snapshot diff by constructor (`SNAP_AT=0`: the
 whole heap, for an A/B of two builds); `--path=<name>` (`=<name>`: exactly, e.g. `--path==WebGL2RenderingContext`)
 prints what retains the ones new since the first snapshot.
@@ -142,6 +142,8 @@ prints what retains the ones new since the first snapshot.
   dispose listeners hold it). Anything drawn from a page-wide model cache (homes, bridges, villagers) is disposed when
   its renderer goes (world3d/release.ts `releaseAll`), the ones that left the scene earlier too; then
   `forceContextLoss()`.
+- **A closure made inside a cleanup** shares the cleanup's scope: `napHold = () => false` written in holdNaps' let-go
+  held `fn` (Critters' closure) and so the whole island; a let-go value is made at module level.
 - **The probe's own handles:** `waitForSelector` and `waitForFunction` return handles that keep their DOM or object
   alive (a heap path through "DevTools console"); wait on booleans.
 - A steady +0.3 MB a trip that's all `[code]` in the diff is V8 compiling; it levels off (the museum in and out:
@@ -166,7 +168,8 @@ The indoor scenes likewise: `npm run ios:indoor -- --url <base>` (`--fpv`: every
 then goes into the shop, the tent, うめ's house and the museum by the app's own navigation, twice (cold, then warm):
 each one's time to its first frame and to everything in, the bytes fetched, the longest frame gaps on the way in, the
 frames it draws a second at rest and walking (the museum's hall, aquarium and bug wing), each frame's cost, its draw
-calls, triangles and the GPU's geometries, textures and programs, a camera orbit's frames (the rooms); and out to the
+calls, triangles and the GPU's geometries, textures and programs, a camera orbit's frames (the rooms), the museum's
+hour swap and a wing rebuilt (its worst gaps, its programs); and out to the
 shop after each: the rAF callbacks, timer fires and intervals still running (a leak); the page's Web Content process's
 resident memory in each room. `report.json` and screenshots.
 
