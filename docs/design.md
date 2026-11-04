@@ -645,7 +645,9 @@ localStorage `island.fps`; `?fps=` for a tab). It is the full rate of every 3D e
 museum; the shop has none) while something moves, a finger's gesture included; the ambience stays at ≤ 30 and a still
 scene draws nothing, either way. At 30 on the phones' 60 Hz screens each engine draws every other display frame
 (`due()`: the rAF's vsync time against the last drawn, half a vsync's slack: an even 33 ms, never a 2-3 mix); the
-skipped frames cost a callback. The simulation runs on real time (walks, flings, springs by `dt`), so nothing moves
+skipped frames cost a callback. The ambience's next frame is a timer to the display frame before it's due, then the
+same `due()` at the ambient rate: a page with nothing else drawing has its rAF at once, not at a vsync (the Simulator:
+the island at rest drew 36–38 a second, 30 now). The simulation runs on real time (walks, flings, springs by `dt`), so nothing moves
 slower at 30. A touch moves the camera on its event and the next due frame draws it: at most one vsync (17 ms) later.
 
 Measured on the iOS Simulator (iPhone 16, iOS 26.5, the Mac's GPU; `?demo`, a local build; Nov 2026, the Mac's load
