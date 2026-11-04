@@ -17,6 +17,7 @@ import {
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { lean } from '../world3d/release.ts';
 import { ACTION_MS, FADE_MS, action, base, mix, over, strideOf, type Action, type Pose, type State } from './poses.ts';
 import { cellTransform, eyeAt, mouthAt, type Face } from './faces.ts';
 import { rigOf, type Rig } from './rig.ts';
@@ -104,7 +105,7 @@ function load(url: string): Promise<GLTF> {
         s.dispose();
         m.material = l;
       });
-      return g;
+      return lean(g);
     });
     p.catch(() => cache.delete(url));
     cache.set(url, p);
