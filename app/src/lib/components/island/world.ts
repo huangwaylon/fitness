@@ -12,8 +12,7 @@ type RoundRect = { readonly x0: number; readonly x1: number; readonly z0: number
 type Box4 = { readonly x0: number; readonly x1: number; readonly z0: number; readonly z1: number };
 type Oval = { readonly x: number; readonly z: number; readonly rx: number; readonly rz: number };
 
-/** The plan's extent (wider than the land: the depth order's far end, camera.svelte.ts; the old 3D heightfield's,
- *  world3d/ground.ts). */
+/** The plan's extent (wider than the land: the depth order's far end, camera.svelte.ts). */
 export const PLAN = { x0: -230, x1: 620, z0: -460, z1: 1700 } as const;
 
 /** The island (land incl. beaches): a rounded rectangle with a 130u corner radius and a ±4u wobble. */
@@ -25,8 +24,8 @@ export let SHORE_Z: number = LAND.z0;
  *  beaches. */
 const BEACH_FRONT = 110;
 const BEACH_SIDE = 30;
-/** The grass (tier 1 and tier 2 as one area; the cliff crosses it). */
-export let GRASS: RoundRect = { x0: LAND.x0 + BEACH_SIDE, x1: LAND.x1 - BEACH_SIDE, z0: BEACH_FRONT, z1: LAND.z1 - BEACH_SIDE, r: 90 };
+/** The grass (tier 1 and tier 2 as one area; the cliff crosses it): onGrass's. */
+let GRASS: RoundRect = { x0: LAND.x0 + BEACH_SIDE, x1: LAND.x1 - BEACH_SIDE, z0: BEACH_FRONT, z1: LAND.z1 - BEACH_SIDE, r: 90 };
 
 /** The camera's two stops (camZ), front to back: まえ (home: the sea, the beach, the health lawn) and おく (the
  *  campsite's end); the 3D island's camera fits its own ends to the screen (world3d/engine.ts limits). */

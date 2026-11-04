@@ -43,10 +43,9 @@ never downloaded now.
   egg arch, picnic set, pond stones, illuminated tree, the shishi-odoshi tipped, the board's winter look): hidden under
   their models, but the specs check their nodes' art. A later pass can check their models instead.
 - **world.ts's old geometry** (LAND, GRASS, RIVER, POND, SPRING, CLIFF, BRIDGE, PATHS…): the layout's default and its
-  scripts are drawn from it, the unit tests read it, and `world3d/ground.ts` / `water.ts` still read it (the old
-  heightfield and waters: the pond model is being brought back as a layout object, so they stay). Island3D's
-  off-layout fallback (`ground = WORLD_GROUND`, `island(day)`) and engine.ts's `groundLook` are now unreachable but
-  left to the engine's owner.
+  scripts are drawn from it, and the gameplay and the unit tests read it. (The old 3D heightfield and waters that read
+  it too, `world3d/ground.ts` and `water.ts`'s, went in the follow-up below once the pond came back as a layout object,
+  `world3d/pond.ts`, 37b9d417; `water.ts` keeps the shared water uniforms.)
 - **The shade at the source** (`--tod-filter`): it still tints what the DOM draws over the canvas at night.
 - **Critters' `w.rest.three` branches:** still mean "the 3D camera is up" (the critters agent's file).
 

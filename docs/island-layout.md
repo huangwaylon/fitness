@@ -227,7 +227,7 @@ buildGround(layout, { renderer, look?, base?, px? }): Ground   // engine.ts's Bu
   ground.chunks(): { z0, z1, meshes }[]     // each band, for the camera's culling
   ground.ready: Promise<void>         // NH's textures in (the bands bake again then)
   ground.dispose()
-placeObjects(layout, day): { insts: Inst[]; standins: Standin[] }   // layout3d.ts island()'s, from the layout
+placeObjects(layout, day): { insts: Inst[]; standins: Standin[] }   // objects.ts: the engine's instances, from the layout
   day = { season, foliage, month, swaps?: swapsOn(date), pieces?: piecesOn(date, hour, seed), fruit? }
 extentOf(layout): { grid, land, shore, home }   // model.ts: the island's box, the front shoreline's z, ウェイ's door
 ```

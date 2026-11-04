@@ -459,7 +459,7 @@ went in November 2026 (docs/cleanup-2d.md).
   (over the DOM sky: the sun and the moon stay behind the world) and hands the projector its camera (`World.useThree`);
   the engine (`engine.ts`) runs the World's step in its own frame (60 a second while anything moves, 30 while only the
   water does; a model's or a critter's move slower than 60 px/s on screen, or off it, is ambience: `world3d/pace.ts`), and the World steps itself on the game's own clock when no frame has (camera.svelte.ts `simTick`). The
-  ground and the water are the layout's (`terrain.ts` buildGround with NH's textures, `water.ts`); the objects
+  ground and the water are the layout's (`terrain.ts` buildGround with NH's textures, on `water.ts`'s shared uniforms); the objects
   `objects.ts` placeObjects from the layout and the day's scenery and decor pieces (a card of today's art for what has
   no model yet); the villagers NH's models (`villagers.ts`, villager3d/), the visitors cards of their renders posed
   from the director (`motion3d.ts`); the lights `lights.ts`; the finger `gestures.ts`. The camera's ends come from the

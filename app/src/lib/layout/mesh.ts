@@ -156,7 +156,7 @@ function flows(layout: Layout): Float32Array {
 const flowCache = new WeakMap<Layout, Float32Array>();
 
 /** The falls' lip and foot reach (u): the water hurries and whitens over the last LIP before it falls, and foams over
- *  the first FOOT below it (the hand-made river's ramp and its foam pool, water.ts, on the layout's walls). */
+ *  the first FOOT below it (the hand-made river's ramp and its foam pool, the old water.ts's, on the layout's walls). */
 const LIP = 22, FOOT = 34;
 /** Every waterfall's edge (world u, a tile's side where fresh water steps down to fresh water), its upper and its
  *  lower tier. */

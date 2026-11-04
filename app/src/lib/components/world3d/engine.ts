@@ -5,43 +5,29 @@
 //   material). One finger scrolls along the island (z) with a free fling and soft ends; two pinch the zoom (clamped,
 //   eased back at the limits, the pitch lowering as it zooms in, as NH's does). Its x is always the island's middle;
 //   it never rotates, and nothing but the finger moves it.
-//   The ground: the island's baked chunks on a heightfield (ground.ts, from the layout); the water live (water.ts).
+//   The ground: the layout's (terrain.ts buildGround: its land, cliffs and water, bent here).
 //   The things: NH's models (things.ts); the villagers and what has no model yet: cards (cards.ts).
-//   The lights: lights.ts (always-on emissive and halos, faded point lights). Water and shadows on by default.
+//   The lights: lights.ts (always-on emissive and halos, faded point lights). Shadows on by default.
 //   The frames: 60 a second while anything moves; while only the ambience does (the water, the season's fall, a fire's
 //   flicker, a sleeper's zzz, a blink) `ambient` a second (30; a software renderer's few); none when nothing does, none
 //   hidden or paused (a sheet over the island). The World's step runs in each frame before it draws, so the DOM moves
 //   with the picture.
 // Plain TS; world3d/Island3D.svelte drives it.
 import {
-  Box3, BufferGeometry, Color, DirectionalLight, Float32BufferAttribute, Fog, HemisphereLight, Mesh, MeshLambertMaterial,
-  PerspectiveCamera, Scene, SRGBColorSpace, Texture, TextureLoader, Uint32BufferAttribute, Vector3, WebGLRenderer,
-  PCFSoftShadowMap, type Material, type Object3D
+  Box3, Color, DirectionalLight, Fog, HemisphereLight, Mesh, PerspectiveCamera, Scene, SRGBColorSpace, Texture, Vector3,
+  WebGLRenderer, PCFSoftShadowMap, type Material, type Object3D
 } from 'three';
 import { bend, bendPoint, bendU, unbendRay } from './bend.ts';
-import { createWater, seaFog, waterFog, waterU } from './water.ts';
+import { waterFog, waterU } from './water.ts';
 import { createThings, type Things } from './things.ts';
 import { createCards, type Cards } from './cards.ts';
 import { createEffects, type FxKind, type FxOpts } from './effects.ts';
 import { createLights, lampFog, type LampSpot } from './lights.ts';
-import type { Inst } from './layout3d.ts';
+import type { Inst } from './objects.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
 
 type Tod = 'day' | 'dusk' | 'night';
 
-/** @public The ground the island stands on (ground.ts from world.ts today; the island layout's terrain once it lands). */
-export interface GroundSource {
-  /** How many chunks, and one chunk's heightfield (three's space) with uvs into its baked texture. */
-  chunks: number;
-  grid(i: number): { pos: Float32Array; uv: Float32Array; index: Uint32Array };
-  /** A chunk's world z extent. */
-  span(i: number): [number, number];
-  /** The ground's height, and where a walker's feet are (a bridge's deck). */
-  height(x: number, z: number): number;
-  feet(x: number, z: number): number;
-  /** The land's box (world units; its corners rounded by r): the sea's shallows round it, the sea's length past it. */
-  land: Land;
-}
 /** @public */
 export interface Land {
   x0: number;
@@ -50,30 +36,27 @@ export interface Land {
   z1: number;
   r: number;
 }
-/** @public A ground built elsewhere (the island layout's terrain.ts buildGround): its own meshes (the land, the cliffs and all
- *  its water), added once and bent here; the engine's water is not drawn. */
+/** @public The ground the island stands on (the layout's: terrain.ts buildGround): its own meshes (the land, the cliffs
+ *  and all its water), added once and bent here. */
 export interface BuiltGround {
   group: Object3D;
   heightAt(x: number, z: number): number;
   /** Where a walker's feet are (a bridge's deck); the ground's height if absent. */
   feet?(x: number, z: number): number;
   land: Land;
-  /** Its bands (a row of chunks across the island), culled with the camera as the baked chunks are. */
+  /** Its bands (a row of chunks across the island), culled with the camera. */
   chunks?(): { z0: number; z1: number; meshes: Mesh[] }[];
   /** Called in each frame (its water's time, a paint stroke's rebuild): true while it moves (frames at the full rate),
    *  'ambient' while only its ambience does (its water: the ambient rate), false when still. */
   update?(t: number): Want;
   dispose?(): void;
 }
-export type Ground = GroundSource | BuiltGround;
 /** What a frame's part wants next: true something moves (the full rate), 'ambient' only its ambience (the ambient rate),
  *  false nothing. */
 type Want = boolean | 'ambient';
-const built = (g: Ground): g is BuiltGround => 'group' in g;
 
 export interface Options {
   dpr: number;
-  water: boolean;
   shadows: boolean;
   /** Frames a second at most (30 or 60). */
   cap: 30 | 60;
@@ -128,16 +111,10 @@ const CAM_Z = { min: 30, max: 1000 } as const;
 const MID_X = 195;
 /** The width the camera shows at the pivot at zoom 1 (u): the land is 470 (its beaches just off the sides). */
 const VIEW_W = 420;
-/** The baked ground already has its light painted in: under the models' brighter light it's dimmed back to the bake. */
-const GROUND_K = 0xe2e2e2;
 /** How far below the screen's middle the pivot sits (a share of the height). */
 const PIVOT_DROP = 0.16;
-/** The haze's start and end, as shares of the horizon's view depth. */
-const HAZE = [0.66, 1.0] as const;
-/** The land's (and the models'): only what stands by the horizon fades a little. */
+/** The haze's start and end, as shares of the horizon's view depth: only what stands by the horizon fades a little. */
 const LAND_HAZE = [0.8, 1.35] as const;
-/** …and the haze at most this deep (u): zoomed out, the island itself stays clear. */
-const HAZE_U = 800;
 /** The shadow map's box moves in steps of this (u): it redraws when it steps, not on every frame of a scroll. */
 const SHADOW_STEP = 40;
 /** The shadow box's least half width (u; its reach ahead 1.4 of it). */
@@ -170,8 +147,6 @@ const TOD: Record<Tod, TodLook> = {
 
 export interface Island3 {
   resize(): void;
-  /** The ground's baked look (its chunk URLs). */
-  groundLook(urls: readonly string[]): void;
   /** What stands on the island (a full list: only what changed rebuilds). */
   place(list: readonly Inst[]): Promise<void>;
   things: Things;
@@ -255,8 +230,8 @@ export interface Island3 {
   dispose(): void;
 }
 
-export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((renderer: WebGLRenderer) => Ground), init: Partial<Options> & { aa?: boolean } = {}): Island3 {
-  const opts: Options = { dpr: Math.min(2, window.devicePixelRatio || 1), water: true, shadows: true, cap: 60, ambient: 30, ...init };
+export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: WebGLRenderer) => BuiltGround, init: Partial<Options> & { aa?: boolean } = {}): Island3 {
+  const opts: Options = { dpr: Math.min(2, window.devicePixelRatio || 1), shadows: true, cap: 60, ambient: 30, ...init };
   // the e2e's logic mode (testMode.ts): every frame runs (the scene, the cameras, the hooks), nothing is drawn
   const noDraw = drawOff();
   if (noDraw) Object.assign(opts, { dpr: 1, shadows: false });
@@ -269,7 +244,7 @@ export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((ren
   renderer.shadowMap.autoUpdate = false;
   bendU.uBendR.value = 1300;
   // (a ground built on this renderer: the layout's terrain bakes its look on the GPU)
-  const ground = typeof groundIn === 'function' ? groundIn(renderer) : groundIn;
+  const ground = makeGround(renderer);
 
   const scene = new Scene();
   const camera = new PerspectiveCamera(FOV, 1, 20, 6000);
@@ -285,62 +260,16 @@ export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((ren
   scene.add(hemi, sun, sun.target);
   let todLook = TOD.day;
 
-  // ---- the ground: its chunks, each its baked texture (or a ground built elsewhere, bent here) ----
-  const own = built(ground) ? null : ground;
-  const src = {
-    height: built(ground) ? (x: number, z: number) => ground.heightAt(x, z) : ground.height,
-    feet: built(ground) ? (x: number, z: number) => (ground.feet ?? ground.heightAt)(x, z) : ground.feet,
-    land: ground.land
-  };
-  if (built(ground)) {
-    ground.group.traverse((n) => {
-      const m = (n as Mesh).material as Material | Material[] | undefined;
-      for (const x of m ? (Array.isArray(m) ? m : [m]) : []) bend(x);
-      (n as Mesh).frustumCulled = false;
-    });
-    scene.add(ground.group);
-  }
-  const tex = new TextureLoader();
-  const chunks: Mesh[] = [];
-  for (let i = 0; i < (own?.chunks ?? 0); i++) {
-    const src = own!;
-    const g = src.grid(i);
-    const geo = new BufferGeometry();
-    geo.setAttribute('position', new Float32BufferAttribute(g.pos, 3));
-    geo.setAttribute('uv', new Float32BufferAttribute(g.uv, 2));
-    geo.setIndex(new Uint32BufferAttribute(g.index, 1));
-    geo.computeVertexNormals();
-    const m = new Mesh(geo, bend(new MeshLambertMaterial({ color: GROUND_K })));
-    m.frustumCulled = false;
-    m.receiveShadow = true;
-    m.userData.span = src.span(i);
-    chunks.push(m);
-    scene.add(m);
-  }
-  let groundUrls: readonly string[] = [];
-  function groundLook(urls: readonly string[]) {
-    if (urls.join() === groundUrls.join()) return;
-    groundUrls = urls;
-    urls.forEach((u, i) => {
-      if (!chunks[i]) return;
-      pending++;
-      tex.loadAsync(u).then((t) => {
-        pending--;
-        if (disposed || groundUrls !== urls) return t.dispose();
-        t.colorSpace = SRGBColorSpace;
-        t.anisotropy = 4;
-        const mm = chunks[i].material as MeshLambertMaterial;
-        mm.map?.dispose();
-        mm.map = t;
-        mm.needsUpdate = true;
-        kick();
-      }, () => void pending--);
-    });
-  }
+  // ---- the ground (built on the layout), bent here ----
+  const src = { height: (x: number, z: number) => ground.heightAt(x, z), feet: (x: number, z: number) => (ground.feet ?? ground.heightAt)(x, z) };
+  ground.group.traverse((n) => {
+    const m = (n as Mesh).material as Material | Material[] | undefined;
+    for (const x of m ? (Array.isArray(m) ? m : [m]) : []) bend(x);
+    (n as Mesh).frustumCulled = false;
+  });
+  scene.add(ground.group);
 
-  // ---- the water, the things, the cards, the lights ----
-  const water = built(ground) ? { all: [] as Mesh[] } : createWater(src.land);
-  for (const m of water.all) scene.add(m);
+  // ---- the things, the cards, the lights ----
   const things = createThings(scene, src.height, (sh = true, soon = false) => (sh && (shadowsDirty = true), soon && (raf || timer) ? undefined : kick()));
   const cards = createCards(scene, (sh) => (sh && (shadowsDirty = true), kick()));
   const lights = createLights(scene);
@@ -389,9 +318,6 @@ export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((ren
     waterFog(fog);
     lampFog.near.value = fog.near;
     lampFog.far.value = fog.far;
-    // (the sea's own, deeper: it meets the sky in the haze; the land only softens near the horizon)
-    seaFog.uFogNear.value = Math.max(hd * HAZE[0], hd - HAZE_U);
-    seaFog.uFogFar.value = hd * HAZE[1];
     // the shadow's box follows the pivot, as wide as the view, in steps (the shadow map redraws only when it steps)
     const zq = Math.round(camZ / SHADOW_STEP) * SHADOW_STEP, kq = Math.round(zoomK * 8) / 8;
     const xq = Math.round(camX / SHADOW_STEP) * SHADOW_STEP;
@@ -407,12 +333,8 @@ export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((ren
       sun.target.updateMatrixWorld();
       shadowsDirty = true;
     }
-    // the ground chunks in reach (the bend drops the far ones behind the horizon)
-    for (const c of chunks) {
-      const [z0, z1] = c.userData.span as [number, number];
-      c.visible = z1 > camZ - 700 && z0 < camZ + 1500;
-    }
-    if (built(ground) && ground.chunks)
+    // the ground's bands in reach (the bend drops the far ones behind the horizon)
+    if (ground.chunks)
       for (const b of ground.chunks()) {
         const on = b.z1 > camZ - 700 && b.z0 < camZ + 1500;
         for (const m of b.meshes) m.visible = on;
@@ -725,12 +647,11 @@ export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((ren
       });
       shadowsDirty = true;
     }
-    for (const m of water.all) m.visible = opts.water;
     activity();
   }
 
   // ---- the frames ----
-  let raf = 0, timer: ReturnType<typeof setTimeout> | 0 = 0, frames = 0, disposed = false, shadowsDirty = true, pending = 0, activeUntil = 0, lastFrame = 0;
+  let raf = 0, timer: ReturnType<typeof setTimeout> | 0 = 0, frames = 0, disposed = false, shadowsDirty = true, activeUntil = 0, lastFrame = 0;
   /** The last frame's: something moved (the full rate), only the ambience did. */
   let busy = false, ambience = false, paused = false, inFrame = false;
   let hook: ((t: number) => Want) | null = null;
@@ -838,13 +759,8 @@ export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((ren
     if (hook) want(hook(t), 'scene');
     want(cards.frame(pitch * LEAN, stretch, src.feet), 'cards');
     want(effects.frame(t, camera), 'fx');
-    if (built(ground) && ground.update) want(ground.update(t), 'ground');
+    if (ground.update) want(ground.update(t), 'ground');
     want(lights.frame(t, camX, camZ + 110, bendU.uBendR.value, -camZ), 'lights');
-    // the water: ambience (its time runs only while frames are drawn: none still, none in a pause)
-    if (opts.water && water.all.length && opts.ambient > 0) {
-      waterU.uTime.value = (t / 1000) % 3600;
-      want('ambient', 'water');
-    }
     if (opts.shadows && shadowsDirty) {
       renderer.shadowMap.needsUpdate = true;
       shadowsDirty = false;
@@ -877,10 +793,9 @@ export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((ren
 
   resize();
   tod('day');
-  options({ water: opts.water });
 
   return {
-    resize, groundLook, place, things, cards, tod, pan, zoom, fling, options,
+    resize, place, things, cards, tod, pan, zoom, fling, options,
     glows(list) {
       extraGlows = list;
       relight();
@@ -1012,7 +927,7 @@ export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((ren
         fps: stamps.length, cpu: [pctl(cpu, 0.5), pctl(cpu, 0.95)], gap: [pctl(gaps, 0.5), pctl(gaps, 0.95)],
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures,
         geometries: renderer.info.memory.geometries, dpr: renderer.getPixelRatio(), frames,
-        loading: pending + things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count(),
+        loading: things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count(),
         fxShown: effects.shown(), why: [...why], paused, drawn: !noDraw
       };
     },
@@ -1027,17 +942,7 @@ export function createIsland(canvas: HTMLCanvasElement, groundIn: Ground | ((ren
       cards.dispose();
       effects.dispose();
       lights.dispose();
-      for (const c of chunks) {
-        c.geometry.dispose();
-        const m = c.material as MeshLambertMaterial;
-        m.map?.dispose();
-        m.dispose();
-      }
-      if (built(ground)) ground.dispose?.();
-      for (const m of water.all) {
-        m.geometry.dispose();
-        (m.material as Material).dispose();
-      }
+      ground.dispose?.();
       for (const v of Object.values(sun.shadow)) if (v instanceof Texture) v.dispose();
       sun.shadow.map?.dispose();
       renderer.dispose();

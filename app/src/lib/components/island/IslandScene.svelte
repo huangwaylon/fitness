@@ -655,13 +655,9 @@
           && !near(W.FLOWERS.map((f) => [f.x, f.z] as const), 32);
       },
       /** The trunks a bug perches on (critters.ts perches: the island's trees as they stand) and the ground's height
-       *  at a point (the layout's on it, else world3d/ground.ts's): the e2e's bug on its bark. */
+       *  at a point (the layout's): the e2e's bug on its bark. */
       perches: (palm: boolean) => perches(palm),
-      height: async (x: number, z: number) => {
-        const l = site.layout;
-        if (l) return (await import('#lib/layout/height.ts')).heightAt(l, x, z);
-        return (await import('../world3d/ground.ts')).groundHeight(x, z);
-      },
+      height: async (x: number, z: number) => (await import('#lib/layout/height.ts')).heightAt(site.layout ?? islandLayout.current, x, z),
       /** Today's weed and dig spots (beach.ts spotsOn: the layout's open grass when on). */
       spots: () => spotsOn(today, islandSeed()),
       /** The island as both phones must have it (e2e: the two-phone checks): the shared day's canonical hash, and each

@@ -1,31 +1,28 @@
 <script lang="ts">
   // Group stretching's tape deck (docs/design.md "Group stretching"), after NH's ラジオ体操 in the plaza: it turns up on the
-  // lawn on a day either of us met 🍑 Exercise, or when the island is opened 06:00–08:00 (stretching.ts), at world.ts
-  // TAPE_DECK between the villagers (a world node at its foot), where this screen's controls leave room (else not now). A tap plays its tape (an original little march: the hour's
-  // music ducks) and both villagers, and the visitor if one is out and awake, do three of NH's stretches together (~6 s,
-  // motion/stretch.svelte.ts), ♪ rising from the deck; once a day per phone, then the deck goes for the day. No ベル.
+  // lawn's world.ts TAPE_DECK (a world node at its foot), the layout's fixed piece (world3d/objects.ts: NH's boom box at
+  // the villagers' scale, there every day). Its tape is ready on a day either of us met 🍑 Exercise, or when the island
+  // is opened 06:00–08:00 (stretching.ts): a tap plays it (an original little march: the hour's music ducks) and both
+  // villagers, and the visitor if one is out and awake, do three of NH's stretches together (~6 s,
+  // motion/stretch.svelte.ts), ♪ rising from the deck; once a day per phone. Not ready, a tap says why not (done today,
+  // or when it plays), and its ♪ floats only when it's ready. No ベル.
   // A scene item like the visitors (aria-hidden, a 44px reach): SceneTaps asks it about each tap (`tap`).
-  // On the 3D island's layout the deck is the layout's (a fixed piece, world3d/objects.ts: NH's boom box at the
-  // villagers' scale, there every day): a tap on it plays the tape when it's out, else says why not (done today, or
-  // when it plays: an Exercise day or a morning), and its ♪ floats only when it's ready.
   //   ?stretch (dev or ?demo) brings the deck out now.
   import { hookFlag } from './devHooks.ts';
   import { su } from './scene.ts';
   import { TAPE_DECK } from './world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { sceneSfx, shownNow } from './sceneTaps.ts';
+  import { sceneSfx } from './sceneTaps.ts';
   import { MIN_HIT, grow, inside } from './hitbox.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { cue } from '#lib/sound/cues.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
-  import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { POSES, POSE_MS, STRETCH_MS, deckOut, sawIsland, stretched, stretchedToday } from './stretching.ts';
   import { t } from '#lib/i18n/index.ts';
   import { groupStretch } from '../motion/stretch.svelte.ts';
 
   interface Props {
-    scene?: HTMLElement;
     /** Live, not covered by a sheet, page visible. */
     enabled: () => boolean;
     /** Either of us met 🍑 Exercise today. */
@@ -33,13 +30,13 @@
     /** A line in a balloon from the deck (Talk's). */
     say?: (name: string, parts: string | string[], from: Element, o?: { colour?: string }) => void;
   }
-  let { scene, enabled, exercise, say }: Props = $props();
+  let { enabled, exercise, say }: Props = $props();
   const w = useWorld();
 
   const want = hookFlag('stretch');
 
-  /** Half its width and its height (u: the radio is about 1.4 times as wide as tall), for the clearance check. */
-  const HW = 12.5, UP = 18;
+  /** Its height off the 3D island (u). */
+  const UP = 18;
   /** Its height on the 3D island (u): NH's boom box (7.3 model units) at the villagers' scale (assets.json
    *  deco/tape-deck: 5.4u a unit, as NH has it beside them), its tap area that high. */
   const UP3 = 39.5;
@@ -57,39 +54,9 @@
     void clock;
     return playing || (want && bump === 0) || deckOut(date, jst(clock).hour, exercise);
   });
-  /** On the layout the deck always stands (the layout's piece): only its tape waits for its day. */
-  const fixed = $derived(site.on);
-  const out = $derived(fixed || ready);
-
   let el = $state<HTMLElement>();
-  /** Its spot (world x, z), or null when a control covers it on this screen (measured when the camera settles, once the
-   *  projector has placed everything; off screen it stays: the projector hides it). */
-  let spot = $state<readonly [number, number] | null>(null);
-  $effect(() => {
-    const show = out;
-    void site.rev;
-    void w.rest.z;
-    void w.rest.vw;
-    if (!show) return void (spot = null);
-    // (the layout's own piece stands there whatever's on screen: its tap area with it)
-    if (fixed) return void (spot = TAPE_DECK);
-    if (!w.rest.ready || (playing && spot)) return;
-    let id = requestAnimationFrame(() => (id = requestAnimationFrame(() => {
-      const g = stageGeo(scene);
-      const [x, z] = TAPE_DECK;
-      if (!g || !w.inView(x, z)) return void (spot = TAPE_DECK);
-      // flat on the lawn: clear of the controls themselves (their 6px tap padding may run over it; the villagers only
-      // pass by), and of the rock, a dig spot or a mushroom (a weed may stand behind it)
-      const keep = guardsU(g, -5 * g.k, (el) => !!el.closest('[data-actor]') || !shownNow(el));
-      for (const it of scene?.querySelectorAll('[data-care="rock"], [data-find], [data-arch]') ?? []) {
-        const r = (it.firstElementChild ?? it).getBoundingClientRect();
-        if (r.width && shownNow(it)) keep.push({ x0: (r.left - g.r.left) * g.k, x1: (r.right - g.r.left) * g.k, y0: (r.top - g.r.top) * g.k, y1: (r.bottom - g.r.top) * g.k });
-      }
-      const k = w.scaleAt(x, z), [sx, sy] = w.screenU(x, z, UP / 2);
-      spot = clearAt(keep, sx, sy, HW * k, (UP / 2) * k) ? TAPE_DECK : null;
-    })));
-    return () => cancelAnimationFrame(id);
-  });
+  /** Its spot (world x, z): the layout's (re-read as the layout changes); off screen the projector hides it. */
+  const spot = $derived((void site.rev, TAPE_DECK));
 
   function play() {
     playing = true;
@@ -106,7 +73,7 @@
   export function tap(px: number, py: number): boolean {
     const r = el?.querySelector('.radio')?.getBoundingClientRect();
     // (out of view its node is hidden but keeps its last box: no tap there)
-    if (!spot || !r || !enabled() || !w.inView(spot[0], spot[1])) return false;
+    if (!r || !enabled() || !w.inView(spot[0], spot[1])) return false;
     if (!inside(grow(r, MIN_HIT, 6), px, py)) return false;
     if (playing) return true;
     if (ready) play();
@@ -118,8 +85,7 @@
   }
 </script>
 
-{#if out && spot}
-  <div class="node" aria-hidden="true" {@attach w.at({ x: spot[0], z: spot[1], h: up + 22, m3: { key: 'deco/tape-deck', id: 'tape-deck', emit: playing ? { kind: 'notes', every: 1300, lift: up * 0.8 } : undefined } })}>
+<div class="node" aria-hidden="true" {@attach w.at({ x: spot[0], z: spot[1], h: up + 22, m3: { key: 'deco/tape-deck', id: 'tape-deck', emit: playing ? { kind: 'notes', every: 1300, lift: up * 0.8 } : undefined } })}>
   <span class="deck" class:playing data-stretch={playing ? 'on' : ready ? 'ready' : 'idle'} bind:this={el} style:--up={up}>
     <span class="radio"><OfficialArt key="deco/tape-deck" size={su(up)} /></span>
     {#if playing}
@@ -128,8 +94,7 @@
       <span class="hint">♪</span>
     {/if}
   </span>
-  </div>
-{/if}
+</div>
 
 <style>
   /* a world node on the lawn between the villagers, among everything else by depth (it never sits under a control:

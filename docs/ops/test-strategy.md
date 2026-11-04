@@ -74,7 +74,7 @@ night glows keep the canvas alpha; and the tent opens and its floor tap walks. T
 draw" and "the projection is off". They're few, so they get one quiet runner and generous timeouts.
 
 **4. Visual snapshots (to add).** A handful of `toHaveScreenshot` tests, each one scene at a fixed camera
-(`__world3d.go(z, k)`), `?date=` and `?seed=`, `?critter=none&visitor=none`, ambience off (`?ambient=0&water=0`), and
+(`__world3d.go(z, k)`), `?date=` and `?seed=`, `?critter=none&visitor=none`, ambience off (`?ambient=0`), and
 DPR 1 at a small viewport, with `maxDiffPixelRatio` ~1 %. Candidates: the island by day and at night, the tent with a
 few pieces, a villager's face. They run in the full tier only, against baselines made on the same CI image (software GL
 renders differently from a Mac's GPU: never compare across the two). They catch lighting, material and shader
