@@ -162,3 +162,14 @@ test('nobody visits on an ordinary weekday evening', async ({ page }) => {
   await expect(hudMenu(page)).toBeVisible();
   await expect(page.locator('[data-visitor]')).toHaveCount(0);
 });
+
+test('the day brings its visitor with no hook: Daisy Mae on a Sunday morning, drawn on the 3D island as her card, and she talks', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-08T09:00&critter=none');
+  await expect(hudMenu(page)).toBeVisible();
+  const { CAMS } = await geo(page);
+  await camera(page, CAMS.mae);
+  // the 3D island stands her card where her node is (her DOM art the tap box only)
+  await expect(page.locator('[data-visitor="daisy-mae"] .art')).toHaveClass(/m3on/);
+  await tapOn(page, '[data-visitor="daisy-mae"] .art');
+  await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('ウリ');
+});
