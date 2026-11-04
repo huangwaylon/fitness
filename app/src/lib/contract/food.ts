@@ -75,9 +75,7 @@ export const FOOD_GOALS = {
 } as const;
 /** What a meal-log goal is of: kcal (`k`) or a nutrient, as a snapshot's keys. */
 export type FoodGoalOf = keyof typeof FOOD_GOALS;
-const FOOD_GOAL_OF = ['k', 'p', 'fa', 'c', 's'] as const satisfies readonly FoodGoalOf[];
-/** The daily kcal goal (`pref kcalGoal`). */
-export const KCAL_GOAL = FOOD_GOALS.k;
+export const FOOD_GOAL_OF = ['k', 'p', 'fa', 'c', 's'] as const satisfies readonly FoodGoalOf[];
 
 const ID = /^f[0-9a-z]{6,24}$/;
 const REPEAT_ID = /^r[0-9a-z]{6,24}$/;
@@ -93,7 +91,7 @@ export function isFoodGoal(n: FoodGoalOf, v: unknown): v is number {
   const k = v / g.step;
   return Math.abs(k - Math.round(k)) < 1e-9;
 }
-/** A daily kcal goal: an integer within KCAL_GOAL, a whole KCAL_GOAL.step. */
+/** A daily kcal goal (`pref kcalGoal`): an integer within FOOD_GOALS.k, a whole step. */
 export const isKcalGoal = (v: unknown): v is number => isFoodGoal('k', v);
 /** The pref key of a meal-log goal → what it is of (`kcalGoal` → `k`), or null for any other key. */
 export const foodGoalOf = (key: unknown): FoodGoalOf | null => FOOD_GOAL_OF.find((n) => FOOD_GOALS[n].key === key) ?? null;

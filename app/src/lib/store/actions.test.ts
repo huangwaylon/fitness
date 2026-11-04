@@ -181,20 +181,25 @@ describe('the meal log', () => {
     expect(food()[1]).toEqual({ id, at: expect.any(Number), rm: true });
   });
 
-  it('setKcalGoal: a whole 50 in 1,000–5,000 or null; a member for either member, the guest its own', async () => {
-    const { setKcalGoal } = await import('./actions.ts');
+  it('setFoodGoal: each in its range and step or null; a member for either member, the guest its own', async () => {
+    const { setFoodGoal } = await import('./actions.ts');
     await model();
-    for (const bad of [950, 1825, 5050, NaN]) expect(setKcalGoal('A', bad).ok).toBe(false);
-    expect(setKcalGoal('G', 2000).ok).toBe(false);
-    expect(setKcalGoal('B', 1800).ok).toBe(true);
-    expect(setKcalGoal('A', null).ok).toBe(true);
+    for (const bad of [950, 1825, 5050, NaN]) expect(setFoodGoal('A', 'k', bad).ok).toBe(false);
+    expect([setFoodGoal('A', 'p', 122).ok, setFoodGoal('A', 's', 7.3).ok, setFoodGoal('A', 'c', 900).ok]).toEqual([false, false, false]);
+    expect(setFoodGoal('G', 'k', 2000).ok).toBe(false);
+    expect(setFoodGoal('B', 'k', 1800).ok).toBe(true);
+    expect(setFoodGoal('A', 'k', null).ok).toBe(true);
+    expect(setFoodGoal('A', 's', 7.5).ok).toBe(true);
     week.model = { ...week.model!, me: 'G' };
-    expect(setKcalGoal('A', 2000).ok).toBe(false);
-    expect(setKcalGoal('G', 2200).ok).toBe(true);
+    expect(setFoodGoal('A', 'k', 2000).ok).toBe(false);
+    expect(setFoodGoal('G', 'k', 2200).ok).toBe(true);
+    expect(setFoodGoal('G', 'p', 90).ok).toBe(true);
     expect(queued().filter((e) => e.type === 'pref').map((e) => e.data)).toEqual([
       { person: 'B', key: 'kcalGoal', value: 1800 },
       { person: 'A', key: 'kcalGoal', value: null },
-      { key: 'kcalGoal', value: 2200 }
+      { person: 'A', key: 'saltGoal', value: 7.5 },
+      { key: 'kcalGoal', value: 2200 },
+      { key: 'proteinGoal', value: 90 }
     ]);
   });
 });

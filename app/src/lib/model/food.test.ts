@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { foldEvents, reduce } from './state.ts';
-import { customs, foodDay, foodEntries, foodSeries, kcalGoal, proteinGoal, recipes, repeatOn, repeats } from './food.ts';
+import { customs, foodDay, foodEntries, foodGoal, foodSeries, proteinDefault, recipes, repeatOn, repeats, setGoal } from './food.ts';
 import { rangeFor, seriesBuckets, seriesStats } from './health.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { guestRows } from '#lib/contract/guest.ts';
@@ -103,9 +103,9 @@ describe('foodEntries: a person’s entries across days', () => {
   });
 });
 
-describe('kcalGoal and proteinGoal', () => {
+describe('the goals: as set, and protein\'s default', () => {
   const pref = (who: 'A' | 'B' | 'G', at: number, data: object) => ev(who, at, data, 'pref');
-  it('kcalGoal: the latest valid pref (a member’s for either, the guest’s own), null cleared or unset', () => {
+  it('setGoal: the latest valid pref (a member’s for either, the guest’s own), null cleared or unset', () => {
     const s = reduce({
       metrics: [],
       events: [
@@ -116,19 +116,37 @@ describe('kcalGoal and proteinGoal', () => {
         pref('B', T + 4000, { key: 'kcalGoal', value: null })
       ]
     });
-    expect([kcalGoal(s, 'A'), kcalGoal(s, 'B'), kcalGoal(s, 'G')]).toEqual([1800, null, 2200]);
+    expect([setGoal(s, 'A', 'k'), setGoal(s, 'B', 'k'), setGoal(s, 'G', 'k')]).toEqual([1800, null, 2200]);
   });
 
-  it('proteinGoal: 1.6 g per kg of the latest weigh-in, members only', () => {
+  it('the nutrient goals: each its own pref, in its range and step (salt by 0.5 g), cleared by null', () => {
+    const s = reduce({
+      metrics: [],
+      events: [
+        pref('A', T, { key: 'proteinGoal', value: 120 }),
+        pref('A', T + 1000, { key: 'proteinGoal', value: 121 }), // not a whole 5: ignored
+        pref('B', T + 2000, { person: 'A', key: 'saltGoal', value: 7.5 }),
+        pref('A', T + 3000, { key: 'fatGoal', value: 60 }),
+        pref('A', T + 4000, { key: 'fatGoal', value: null }),
+        pref('G', T + 5000, { key: 'carbsGoal', value: 250 })
+      ]
+    });
+    expect((['p', 'fa', 'c', 's'] as const).map((n) => setGoal(s, 'A', n))).toEqual([120, null, null, 7.5]);
+    expect(setGoal(s, 'G', 'c')).toBe(250);
+    expect(foodGoal(s, 'A', 'p', T)).toBe(120); // as set, over the default
+  });
+
+  it('proteinDefault: 1.6 g per kg of the latest weigh-in, members only; foodGoal falls back to it, the rest to none', () => {
     const metrics: MetricRow[] = [
       ['2026-11-01T22:00:00.000Z', 'A', '2026-11-02', 'weight', 70],
       ['2026-11-02T22:00:00.000Z', 'A', '2026-11-03', 'weight', 68.4]
     ];
     const s = reduce({ metrics, events: [] });
-    expect(proteinGoal(s, 'A', T)).toBe(109);
-    expect(proteinGoal(s, 'A', Date.parse('2026-11-02T03:00:00.000Z'))).toBe(112);
-    expect(proteinGoal(s, 'B', T)).toBeNull();
-    expect(proteinGoal(s, 'G', T)).toBeNull();
+    expect(proteinDefault(s, 'A', T)).toBe(109);
+    expect(proteinDefault(s, 'A', Date.parse('2026-11-02T03:00:00.000Z'))).toBe(112);
+    expect(proteinDefault(s, 'B', T)).toBeNull();
+    expect(proteinDefault(s, 'G', T)).toBeNull();
+    expect((['k', 'p', 'fa', 'c', 's'] as const).map((n) => foodGoal(s, 'A', n, T))).toEqual([null, 109, null, null, null]);
   });
 });
 
@@ -181,24 +199,22 @@ describe('foodSeries: kcal per day for グラフ, by けんこう’s bucket and
   const WATER = { id: 'mext:16103', n: '水', k: 0, p: 0, fa: 0, c: 0, s: 0 };
   // A: 10-28 rice (234), 10-30 natto 50 g (95), 10-29 and 10-31 nothing; a 毎日 breakfast from 11-01 (rice 150 g +
   // natto 45 g = 320), today with a rice more (554); 11-02 a glass of water besides (0 kcal: still the repeat's 320)
-  const s = reduce({
-    metrics: [],
-    events: [
-      set('A', 'fmeal100', T, { d: '2026-10-28' }),
-      set('A', 'fmeal101', T, { d: '2026-10-30', f: NATTO, g: 50 }),
-      ev('A', T, { id: 'rmeal100', at: T, m: 'b', it: [{ g: 150, f: RICE }, { g: 45, f: NATTO }], w: 127, from: '2026-11-01' }, 'food_repeat'),
-      set('A', 'fmeal102', T, { d: TODAY, m: 'l' }),
-      set('A', 'fmeal103', T, { d: '2026-11-02', m: 's', f: WATER, g: 200 }),
-      set('B', 'fmeal104', T, { d: '2026-11-01', f: WATER, g: 200 }),
-      ev('B', T, { key: 'kcalGoal', value: 2000 }, 'pref')
-    ]
-  });
+  const events = [
+    set('A', 'fmeal100', T, { d: '2026-10-28' }),
+    set('A', 'fmeal101', T, { d: '2026-10-30', f: NATTO, g: 50 }),
+    ev('A', T, { id: 'rmeal100', at: T, m: 'b', it: [{ g: 150, f: RICE }, { g: 45, f: NATTO }], w: 127, from: '2026-11-01' }, 'food_repeat'),
+    set('A', 'fmeal102', T, { d: TODAY, m: 'l' }),
+    set('A', 'fmeal103', T, { d: '2026-11-02', m: 's', f: WATER, g: 200 }),
+    set('B', 'fmeal104', T, { d: '2026-11-01', f: WATER, g: 200 }),
+    ev('B', T, { key: 'kcalGoal', value: 2000 }, 'pref')
+  ];
+  const s = reduce({ metrics: [], events });
 
   it('a day’s total from foodDay (repeats included) from the first meal to today; nothing logged is null, 0 kcal is a record', () => {
     const ds = foodSeries(s, 'A', TODAY);
     expect(ds).toMatchObject({ from: '2026-10-28', to: TODAY, first: '2026-10-28', vals: [234, null, 95, null, 320, 320, 554] });
     expect(ds.goal(0)).toBeNull();
-    expect(foodSeries(s, 'A', TODAY)).toBe(ds); // memoised
+    expect(foodSeries(s, 'A', TODAY).vals).toBe(ds.vals); // memoised
     // one pass over the record, the same totals as foodDay's day by day; the repeat's days after today aren't read
     ds.vals.forEach((v, i) => {
       const day = foodDay(s, 'A', addDays(ds.from, i));
@@ -209,6 +225,20 @@ describe('foodSeries: kcal per day for グラフ, by けんこう’s bucket and
     expect(b).toMatchObject({ from: '2026-11-01', vals: [0, null, null] });
     expect(b.goal(2)).toBe(2000);
     expect(foodSeries(s, 'G', TODAY)).toMatchObject({ from: TODAY, vals: [null] }); // nothing yet
+  });
+
+  it('a nutrient\'s series: its grams per day as foodDay has them (one decimal), the same days; its goal as set', () => {
+    for (const n of ['p', 'fa', 'c', 's'] as const) {
+      const ds = foodSeries(s, 'A', TODAY, n);
+      expect(ds.from).toBe('2026-10-28');
+      ds.vals.forEach((v, i) => {
+        const day = foodDay(s, 'A', addDays(ds.from, i));
+        expect(v, `${n} ${i}`).toBe(day.entries.length ? day[n] : null);
+      });
+      expect(ds.goal(0)).toBeNull();
+    }
+    const withGoal = reduce({ metrics: [], events: [...events, ev('A', T + 1, { key: 'saltGoal', value: 6.5 }, 'pref')] });
+    expect(foodSeries(withGoal, 'A', TODAY, 's').goal(0)).toBe(6.5);
   });
 
   it('1週: a bar per day, today running; the stats over the finished days with a record (today out), 記録なし counted', () => {

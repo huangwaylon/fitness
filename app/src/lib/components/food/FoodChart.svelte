@@ -2,12 +2,15 @@
   // ごはん's グラフ tab (docs/design.md "Gohan"): けんこう's range row (‹ the range › きょう, then けんこう's period
   // dropdown, Food's period; a horizontal drag on a chart turns the page), then the kcal eaten (FoodIntake: a bar per day / the daily
   // average per week or month, the flat average line) and, for a member, けんこう's 🍐 Move card for the same person,
-  // period and range (the calories burned; the guest has no Health rows of its own: the intake only). One callout open.
+  // period and range (the calories burned; the guest has no Health rows of its own: the intake only), then protein,
+  // fat, carbs and salt the same way (FoodIntake, in g). Each intake card's goal at its upper right, mine to set
+  // (GoalEdit), anyone else's read-only. One callout open.
   import '#lib/i18n/kenkou.ts'; // けんこう's strings: the periods, the range row, the Move card
   import type { LocalDate, Who } from '#lib/types.ts';
   import { isPersonId } from '#lib/contract/api.ts';
   import { canShift, healthSeries, PERIODS, rangeFor, shiftAnchor, type Period } from '#lib/model/health.ts';
-  import { foodSeries } from '#lib/model/food.ts';
+  import { foodSeries, setGoal } from '#lib/model/food.ts';
+  import { FOOD_GOAL_OF, type FoodGoalOf } from '#lib/contract/food.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -17,12 +20,17 @@
   import MetricCard from '../health/MetricCard.svelte';
   import { rangeLabel } from '../health/fmt.ts';
   import FoodIntake from './FoodIntake.svelte';
+  import { saveFoodGoal } from './foodUi.ts';
 
   let { who, name, period, onperiod }: { who: Who; name: string; period: Period; onperiod: (p: Period) => void } = $props();
 
   const m = $derived(week.model);
   const today = $derived<LocalDate>(m ? localDateAt(m.now) : '');
-  const ds = $derived(m ? foodSeries(m.state, who, today) : null);
+  /** Each intake's days: kcal, then the nutrients (one pass over the record for all: model/food.ts dayTotals). */
+  const all = $derived(m ? FOOD_GOAL_OF.map((n) => ({ n, ds: foodSeries(m.state, who, today, n, m.now) })) : null);
+  const ds = $derived(all?.[0].ds ?? null);
+  /** My own goals take a tap; anyone else's are shown. */
+  const mine = $derived(who === week.view?.viewer);
   /** けんこう's series, for a member with any Health record (the Move card). */
   const hs = $derived.by(() => {
     const h = m && isPersonId(who) ? healthSeries(m.state, m.now) : null;
@@ -33,7 +41,7 @@
   /** The last day shown (null: today, following the clock). */
   let anchor = $state<LocalDate | null>(null);
   let slide = $state<-1 | 0 | 1>(0);
-  let sel = $state<{ k: 'intake' | 'move'; i: number } | null>(null);
+  let sel = $state<{ k: FoodGoalOf | 'move'; i: number } | null>(null);
   /** A new period: no slide, no callout (as けんこう's setPeriod). */
   let shown: Period | null = null;
   $effect.pre(() => {
@@ -62,7 +70,7 @@
     sel = null;
   }
   const swipe = (dir: -1 | 1) => go(dir, true);
-  function pick(k: 'intake' | 'move', i: number | null) {
+  function pick(k: FoodGoalOf | 'move', i: number | null) {
     sel = i === null ? null : { k, i };
     if (i !== null) cue('tick');
   }
@@ -80,13 +88,22 @@
     {/snippet}
   </RangeNav>
 
-  {#if any}
-    <FoodIntake {ds} {range} {today} p={who} {name} {slide} onswipe={swipe} selected={sel?.k === 'intake' ? sel.i : null} onselect={(i) => pick('intake', i)} />
+  {#snippet intake(n: FoodGoalOf, d: typeof ds)}
+    {#if d && m}
+      <FoodIntake {n} ds={d} {range} {today} p={who} {name} {slide} onswipe={swipe} selected={sel?.k === n ? sel.i : null} onselect={(i) => pick(n, i)}
+        set={mine ? { value: setGoal(m.state, who, n), onsave: (v) => saveFoodGoal(who, n, v) } : null} />
+    {/if}
+  {/snippet}
+  {#if any && all}
+    {@render intake('k', all[0].ds)}
   {:else}
     <section class="card empty"><p>{t('kiroku.empty')}</p></section>
   {/if}
   {#if hs && isPersonId(who)}
     <MetricCard metric="move" {hs} {range} p={who} {slide} onswipe={swipe} selected={sel?.k === 'move' ? sel.i : null} onselect={(i) => pick('move', i)} />
+  {/if}
+  {#if any && all}
+    {#each all.slice(1) as x (x.n)}{@render intake(x.n, x.ds)}{/each}
   {/if}
   {#if any}<p class="note">{t('food.chart.note')}</p>{/if}
 {/if}

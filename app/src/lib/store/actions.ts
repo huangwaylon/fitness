@@ -13,8 +13,8 @@ import { addToTally, dayTallies } from '#lib/model/tally.ts';
 import { localDateAt } from '#lib/time/dates.ts';
 import { MOVE_GOAL, isStepsGoal, shopPrice } from '#lib/config/rules.ts';
 import {
-  customSnap, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, isKcalGoal, newCustomId, newFoodId, newRecipeId, newRepeatId, recipeSnap, repeatCovers,
-  type FoodEntry, type FoodRepeat, type FoodSnap, type Meal, type RepeatItem, type RepeatOp
+  customSnap, FOOD_GOALS, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, isFoodGoal, newCustomId, newFoodId, newRecipeId, newRepeatId, recipeSnap, repeatCovers,
+  type FoodEntry, type FoodGoalOf, type FoodRepeat, type FoodSnap, type Meal, type RepeatItem, type RepeatOp
 } from '#lib/contract/food.ts';
 import { customs, foodDay, foodEntries, recipes, repeats } from '#lib/model/food.ts';
 import { buyPrice, sellPrice, stockOf } from '#lib/contract/shop.ts';
@@ -497,11 +497,12 @@ export function logCustom(e: { customId: string; d: LocalDate; m: Meal; g: numbe
 }
 
 /**
- * A daily kcal goal (a whole 50 in 1,000–5,000), or null to clear it. A member sets either member's (`person`); the
- * guest only its own. `{ok:false}` for anything else.
+ * A meal-log daily goal of `n` (kcal or a nutrient: contract/food.ts FOOD_GOALS, in its range and step), or null to
+ * clear it. A member sets either member's (`person`); the guest only its own. `{ok:false}` for anything else.
  */
-export function setKcalGoal(who: Who, kcal: number | null): SendResult {
+export function setFoodGoal(who: Who, n: FoodGoalOf, v: number | null): SendResult {
   const me = week.model?.me;
-  if (!me || (me === 'G') !== (who === 'G') || (kcal !== null && !isKcalGoal(kcal))) return { ok: false };
-  return week.send('pref', who === 'G' ? { key: 'kcalGoal', value: kcal } : { person: who, key: 'kcalGoal', value: kcal });
+  if (!me || (me === 'G') !== (who === 'G') || (v !== null && !isFoodGoal(n, v))) return { ok: false };
+  const key = FOOD_GOALS[n].key;
+  return week.send('pref', who === 'G' ? { key, value: v } : { person: who, key, value: v });
 }

@@ -5,7 +5,7 @@
   // no row at all gets a short faint hatched stub on the axis (plainly missing: not a gap that reads as zero, and not a
   // column that reads as a value). The dashed line is their
   // goal (stepped when their Move goal changed; none without one); with room (1週) each bar carries its value. ごはん's
-  // グラフ (FoodChart) draws the kcal eaten with it: `plain` (no goal-met shading, every bar solid) and `avg`, the
+  // グラフ (FoodChart) draws the kcal and nutrients eaten with it: `plain` (no goal-met shading, every bar solid), `fmt` (grams) and `avg`, the
   // period's daily average as a flat solid line (けんこう's cards pass neither). A tap shows that bar's exact numbers; a horizontal drag turns the page (gestures.ts).
   // Hand-drawn SVG at the measured width.
   import type { LocalDate, Who } from '#lib/types.ts';
@@ -37,8 +37,13 @@
     avg?: number | null;
     /** No goal-met shading: every bar solid, the callout without ✓ and goal days (a log with a goal that isn't a target). */
     plain?: boolean;
+    /** A value in words (the callout) and over its bar, when not the metric's (ごはん's grams). */
+    fmt?: ((v: number) => string) | null;
+    barFmt?: ((v: number) => string) | null;
   }
-  let { metric, range, p, vals, first, today, label, selected, onselect, onswipe, slide, id = metric, avg = null, plain = false }: Props = $props();
+  let { metric, range, p, vals, first, today, label, selected, onselect, onswipe, slide, id = metric, avg = null, plain = false, fmt = null, barFmt = null }: Props = $props();
+  const valText = $derived(fmt ?? ((v: number) => metricText(metric, v)));
+  const barText = $derived(barFmt ?? barNum);
 
   let w = $state(0);
   let dx = $state(0);
@@ -134,7 +139,7 @@
             {#if avg !== null}<line class="avg-u" x1={pad.l} x2={pad.l + plotW} y1={y(avg)} y2={y(avg)} /><line class="avg" data-avg={Math.floor(avg)} x1={pad.l} x2={pad.l + plotW} y1={y(avg)} y2={y(avg)} />{/if}
             {#if labels}
               {#each vals as b, i (i)}
-                {#if b.v !== null}<text class="val" x={cx(i)} y={Math.min(y(b.v), base - 1) - 4} text-anchor="middle">{barNum(b.v)}</text>{/if}
+                {#if b.v !== null}<text class="val" x={cx(i)} y={Math.min(y(b.v), base - 1) - 4} text-anchor="middle">{barText(b.v)}</text>{/if}
               {/each}
             {/if}
           </g>
@@ -150,8 +155,8 @@
         <b>{bucketTitle(sel)}{#if b.today}<small> · {t('health.todaySoFar')}</small>{/if}</b>
         <span class="trow"><i class="dot p{p}"></i>
           {#if b.v === null}<span class="soft">{t('health.noData')}</span>
-          {:else if range.unit === 'day'}<span class="money">{metricText(metric, b.v)}</span>{#if b.met && !plain}<span class="ok">✓</span>{/if}
-          {:else}<span class="money">{metricText(metric, b.v)}</span><span class="soft">{plain ? t('health.recDays', { n: b.days }) : t('health.tipDays', { n: b.met, d: b.days })}</span>{/if}
+          {:else if range.unit === 'day'}<span class="money">{valText(b.v)}</span>{#if b.met && !plain}<span class="ok">✓</span>{/if}
+          {:else}<span class="money">{valText(b.v)}</span><span class="soft">{plain ? t('health.recDays', { n: b.days }) : t('health.tipDays', { n: b.met, d: b.days })}</span>{/if}
         </span>
       </div>
     {/if}

@@ -11,8 +11,9 @@ export function metricText(m: Metric, v: number): string {
   return m === 'move' ? t('kiroku.kcal', { n }) : m === 'steps' ? t('kiroku.steps', { n }) : t('kiroku.min', { n });
 }
 
-/** An axis number: `600`, `8,000`, `12k`. */
-export const axisNum = (v: number): string => (v >= 10000 ? `${Math.round(v / 100) / 10}k` : formatNum(v));
+/** An axis number: `600`, `8,000`, `12k`, `2.5` (a step under 1: ごはん's salt). */
+export const axisNum = (v: number): string =>
+  v >= 10000 ? `${Math.round(v / 100) / 10}k` : Number.isInteger(v) ? formatNum(v) : String(Math.round(v * 10) / 10);
 
 /** A value over its bar: `620`, `9.2k` (short enough for a day's column). */
 export const barNum = (v: number): string => (v >= 1000 ? `${(Math.floor(v / 100) / 10).toFixed(1)}k` : formatNum(Math.floor(v)));

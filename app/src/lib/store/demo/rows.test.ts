@@ -9,7 +9,7 @@ import { bellsLedger, dayDetail } from '#lib/model/history.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { shopPrice } from '#lib/config/rules.ts';
 import { isActivityMetric } from '#lib/contract/api.ts';
-import { customs, foodDay, kcalGoal, recipes } from '#lib/model/food.ts';
+import { customs, foodDay, recipes, setGoal } from '#lib/model/food.ts';
 import { localDateAt } from '#lib/time/dates.ts';
 
 describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-08T11:00:00.000Z', '2026-12-20T13:00:00.000Z'])('demo at %s', (iso) => {
@@ -77,7 +77,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     const breakfast = (k: number) => foodDay(s, 'A', addDays(localDateAt(now), -k)).entries.filter((e) => e.m === 'b');
     for (const k of [0, 1, 2]) expect(breakfast(k).map((e) => [e.rep, e.f.n])).toEqual([['rdemoab', 'ごはん（精白米）'], ['rdemoab', '納豆（たれ・からし付き）']]);
     expect(breakfast(3).every((e) => !e.rep)).toBe(true);
-    expect([kcalGoal(s, 'A'), kcalGoal(s, 'B')]).toEqual([2200, 1700]);
+    expect([setGoal(s, 'A', 'k'), setGoal(s, 'B', 'k')]).toEqual([2200, 1700]);
     expect(foodDay(reduce(demoCache(now, 'G').rows), 'A', yesterday)).toEqual(days[0]);
   });
 
