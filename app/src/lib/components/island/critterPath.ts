@@ -101,7 +101,7 @@ export const STILL = new Set<BugId>(['cicada-shell', 'walking-stick']);
 const LANDS = (id: BugId): boolean => /butterfly|birdwing|bluebottle|emperor/.test(id);
 /** A crawler's pace: how far it goes at a time (u) and how long that takes (ms). A hermit crab scuttles, a tiger beetle
  *  runs, a snail or a walking leaf barely moves, a stink bug ambles over the flowers. */
-const PACE: Partial<Record<BugId, [number, number, number]>> = {
+export const PACE: Partial<Record<BugId, [number, number, number]>> = {
   'hermit-crab': [30, 450, 700], 'tiger-beetle': [34, 260, 420], snail: [4, 3500, 5000], 'walking-leaf': [6, 3000, 4200],
   stinkbug: [10, 2200, 3200], 'man-faced-stink-bug': [10, 2200, 3200], tarantula: [14, 1800, 2600], scorpion: [16, 1600, 2400],
   // on the water: the pondskater skates in quick glides, the diving beetle paddles, the giant water bug lurks
@@ -230,22 +230,63 @@ export function bugPath(id: BugId, seed: number, stayMs: number, o: BugOpts = {}
     return done;
   }
   const pace = id === 'honeybee' ? FLY_UPS.bee : flight === 'flutter' || flight === 'drift' || flight === 'dart' ? FLY_UPS[flight] : null;
+  legs.push(...bugLegs(flight, {
+    ok, pace, crawl: PACE[id] ?? CRAWL,
+    // NH's butterflies: every few turns it lands on a flower head of its own clump (its patch holds them), rests
+    // 2.5–5 s with its wings slowly opening and closing, then lifts off again
+    land: flight === 'flutter' && LANDS(id) ? { heads: flowerHeads(), over: 2, rest: [2500, 5000] } : null
+  }, r, spot, start, a, stayMs));
+  return done;
+}
+
+/** A crawler's pace when it has none of its own (PACE). */
+const CRAWL = [18, 1600, 2600] as const;
+
+/** How a bug goes about its patch (bugPath's; the museum's garden's too: museum/bugLife.ts). */
+export interface Ways {
+  /** Where it may be (its ground, clear of what it keeps off). */
+  ok: (p: P3) => boolean;
+  /** A flier's pace (u/s, at random between); null: it hops or crawls. */
+  pace: readonly [number, number] | null;
+  /** A flutterer's landing every 3–5 turns: on one of `heads` in its patch, `over` it, for `rest` ms. */
+  land: { heads: readonly P3[]; over: number; rest: readonly [number, number] } | null;
+  /** A crawler's pace: how far it goes at a time (u) and how long that takes (ms, between). */
+  crawl: readonly [number, number, number];
+  /** A crawler's rest between goes (ms; else 1200–3200). */
+  rest?: readonly [number, number];
+  /** A crawler's chance a go is a short flight instead (a hop's arc: a beetle off its bark). */
+  flits?: number;
+}
+
+/**
+ * A bug's moves through `stayMs` from `start` in its patch `a`: a flier flies to its spot, then meanders (a dragonfly
+ * darting and hovering, a butterfly landing now and then); a hopper hops along and sits; a crawler goes a little way
+ * at its pace and rests.
+ */
+export function bugLegs(flight: Flight, w: Ways, r: () => number, spot: P3, start: P3, a: Patch, stayMs: number): Leg[] {
+  const legs: Leg[] = [];
+  let at: P3 = start, t = 60;
+  const go = (p: P3, ms: number, extra: Partial<Leg> = {}) => {
+    legs.push({ x: p.x, z: p.z, lift: p.lift, t: Math.round(t), ms: Math.round(ms), ...extra });
+    at = p;
+    t = Math.round(t) + Math.round(ms);
+  };
+  const same = (p: P3) => at.x === p.x && at.z === p.z && at.lift === p.lift;
+  const { ok, pace } = w;
   const flyTo = (p: P3, ups: readonly [number, number], extra: Partial<Leg> = {}) =>
     go(p, Math.max(200, (dist3(at, p) / between(r, ...ups)) * 1000), extra);
   if (pace && !same(spot)) flyTo(spot, pace);
   let heading = r() * Math.PI * 2, flown = 0, landAfter = 3 + Math.floor(r() * 3);
   for (let guard = 0; t < stayMs && guard < 4000; guard++) {
     if (pace) {
-      if (flight === 'flutter' && LANDS(id) && ++flown > landAfter) {
-        // NH's butterflies: every few turns it lands on a flower head of its own clump (its patch holds them), rests
-        // 2.5–5 s with its wings slowly opening and closing, then lifts off again
-        const near = flowerHeads().filter((h) => h.x >= a.x0 && h.x <= a.x1 && h.z >= a.z0 && h.z <= a.z1);
+      if (flight === 'flutter' && w.land && ++flown > landAfter) {
+        const near = w.land.heads.filter((h) => h.x >= a.x0 && h.x <= a.x1 && h.z >= a.z0 && h.z <= a.z1);
         const h = near.length ? pickOne(near, r) : null;
         flown = 0;
         landAfter = 3 + Math.floor(r() * 3);
         if (h) {
-          flyTo({ x: h.x, z: h.z, lift: h.lift + 2 }, pace, { sat: true });
-          t += between(r, 2500, 5000);
+          flyTo({ x: h.x, z: h.z, lift: h.lift + w.land.over }, pace, { sat: true });
+          t += between(r, ...w.land.rest);
           continue;
         }
       }
@@ -282,16 +323,22 @@ export function bugPath(id: BugId, seed: number, stayMs: number, o: BugOpts = {}
       t += between(r, 1400, 2800);
       continue;
     }
+    if (w.flits && r() < w.flits) {
+      // a short flight to another spot on its ground, its wings out a moment
+      go(p, Math.max(500, (dist3(at, p) / 30) * 1000), { hop: true });
+      t += between(r, ...(w.rest ?? [1200, 3200]));
+      continue;
+    }
     // a crawler: a little way along its ground, then a rest (a hermit crab scuttles sideways, a snail barely moves)
-    const [reach, m0, m1] = PACE[id] ?? [18, 1600, 2600];
+    const [reach, m0, m1] = w.crawl;
     const x = clamp(at.x + clamp(p.x - at.x, -reach, reach), a.x0, a.x1);
     const z = clamp(at.z + clamp(p.z - at.z, -reach / 2, reach / 2), a.z0, a.z1);
     // (a step short of the spot that isn't its ground, a bank's corner: on to the spot itself)
     const next = { x, z, lift: p.lift };
     go(ok(next) ? next : p, between(r, m0, m1));
-    t += between(r, 1200, 3200);
+    t += between(r, ...(w.rest ?? [1200, 3200]));
   }
-  return done;
+  return legs;
 }
 
 const dist3 = (a: P3, b: P3) => Math.sqrt((a.x - b.x) ** 2 + (a.z - b.z) ** 2 + (a.lift - b.lift) ** 2);
@@ -319,7 +366,7 @@ function meander(a: Patch, at: P3, h: number, step: number, ok: (p: P3) => boole
 export interface Flying extends P3 { vx: number; vz: number }
 
 /** A flier's bob (u, period ms): a butterfly's wingbeats, a firefly's slow float, a dragonfly's hover. */
-const BOB: Partial<Record<Flight, readonly [number, number]>> = { flutter: [2.5, 560], drift: [2, 1900], dart: [1.2, 800] };
+export const BOB: Partial<Record<Flight, readonly [number, number]>> = { flutter: [2.5, 560], drift: [2, 1900], dart: [1.2, 800] };
 
 /** Whether leg `i` flows on into the next (no rest, sit or hop between): the curve keeps going through its end. */
 const flows = (legs: readonly Leg[], i: number) => {
@@ -354,15 +401,15 @@ export function bugAt(flight: Flight, legs: readonly Leg[], start: P3, ms: numbe
     const s2 = s * s, s3 = s2 * s;
     const h00 = 2 * s3 - 3 * s2 + 1, h10 = s3 - 2 * s2 + s, h01 = 3 * s2 - 2 * s3, h11 = s3 - s2;
     const d00 = 6 * s2 - 6 * s, d10 = 3 * s2 - 4 * s + 1, d11 = 3 * s2 - 2 * s;
-    const pos = (axis: 'x' | 'z' | 'lift', m0: number, m1: number) => h00 * from[axis] + h10 * d * m0 + h01 * to[axis] + h11 * d * m1;
-    const vel = (axis: 'x' | 'z', m0: number, m1: number) => (d ? (d00 * (from[axis] - to[axis])) / d : 0) + d10 * m0 + d11 * m1;
-    const m = (axis: 'x' | 'z' | 'lift') => [in0 ? slope(legs, start, k - 1, axis) : 0, on1 ? slope(legs, start, k, axis) : 0] as const;
-    const [x0, x1] = m('x'), [z0, z1] = m('z'), [l0, l1] = m('lift');
-    out.x = pos('x', x0, x1);
-    out.z = pos('z', z0, z1);
-    out.lift = pos('lift', l0, l1) + (s < 1 && to.hop ? Math.sin(Math.PI * s) * 9 : 0);
-    out.vx = s < 1 ? vel('x', x0, x1) : 0;
-    out.vz = s < 1 ? vel('z', z0, z1) : 0;
+    // (each axis inline: no closure or array a frame, the museum's every frame)
+    const x0 = in0 ? slope(legs, start, k - 1, 'x') : 0, x1 = on1 ? slope(legs, start, k, 'x') : 0;
+    const z0 = in0 ? slope(legs, start, k - 1, 'z') : 0, z1 = on1 ? slope(legs, start, k, 'z') : 0;
+    const l0 = in0 ? slope(legs, start, k - 1, 'lift') : 0, l1 = on1 ? slope(legs, start, k, 'lift') : 0;
+    out.x = h00 * from.x + h10 * d * x0 + h01 * to.x + h11 * d * x1;
+    out.z = h00 * from.z + h10 * d * z0 + h01 * to.z + h11 * d * z1;
+    out.lift = h00 * from.lift + h10 * d * l0 + h01 * to.lift + h11 * d * l1 + (s < 1 && to.hop ? Math.sin(Math.PI * s) * 9 : 0);
+    out.vx = s < 1 ? (d ? (d00 * (from.x - to.x)) / d : 0) + d10 * x0 + d11 * x1 : 0;
+    out.vz = s < 1 ? (d ? (d00 * (from.z - to.z)) / d : 0) + d10 * z0 + d11 * z1 : 0;
     // the bob fades out as it lands on a flower and back in as it lifts off (none while it sits)
     env = s >= 1 ? (to.sat ? 0 : 1) : (to.sat ? 1 - s : 1) * (k > 0 && legs[k - 1].sat ? s : 1);
   }
