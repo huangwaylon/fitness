@@ -102,6 +102,8 @@ describe('the counts (model/tally.ts)', () => {
     const ms = performance.now() - t0;
     expect(t.all.size).toBe(80);
     expect([...t.all.values()].reduce((s, n) => s + n, 0)).toBe(2 * 3 * 365 * (10 * 2 + 10 * 3 + 10 * 4));
-    expect(ms).toBeLessThan(50);
+    // (linear: ~10 ms alone; a quadratic one, each row re-reading the rows before it, takes seconds. 250, not 50: a
+    // loaded runner's other files ran it in 70)
+    expect(ms).toBeLessThan(250);
   });
 });
