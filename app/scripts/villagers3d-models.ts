@@ -63,6 +63,10 @@ const SPECIAL: Record<string, [string, string?, string?]> = {
   brewster: ['Pge'], harvey: ['Spn'], 'daisy-mae': ['Boc'], redd: ['Fox', 'NpcSpTopsFoxOuterL'], flick: ['Chy'], cj: ['Bey'], saharah: ['Cml'],
   leif: ['Slo'], gulliver: ['Gul'], kappn: ['Kpp'], wisp: ['GstA'], pascal: ['Seo'], orville: ['Dod'], wilbur: ['Doc']
 };
+/** The visitors that aren't in the picker's roster (island/visitors.ts: the holiday hosts, Jack, the wedding's pair),
+ *  their NH codes: converted as the special characters are (face at rest), into the same folder and manifest
+ *  (`visitors`). Pavé isn't in the files. */
+const VISITOR_ONLY: Record<string, string> = { franklin: 'Tuk', jack: 'Pkn', jingle: 'Rei', zipper: 'Pyn', reese: 'Alw', cyrus: 'Alp' };
 async function buildMap(): Promise<Record<string, MapRow>> {
   registerHooks({
     resolve: (spec, ctx, next) => (spec === '$app/paths' ? { url: 'data:text/javascript,export const asset = (p) => p;', shortCircuit: true } : next(spec, ctx)),
@@ -119,6 +123,7 @@ if (process.argv.includes('--map') || !existsSync(MAP)) {
   console.log(`map: ${Object.values(map).filter((r) => r[0]).length} of ${Object.keys(map).length} have a model`);
 }
 
+for (const [id, c] of Object.entries(VISITOR_ONLY)) map[id] = has(`NpcSp${c}`) ? [`NpcSp${c}`, null, null] : [null, null, null, 'not in the game files'];
 const todo = Object.entries(map).filter(([id, r]) => r[0] && (!only.length || only.includes(id)));
 const scratch = mkdtempSync(join(tmpdir(), 'nh-villagers3d-'));
 const work = mkdtempSync(join(tmpdir(), 'nh-villagers3d-out-'));
@@ -212,7 +217,7 @@ for (const [id, [body, tops, tex]] of todo) {
       r = await page.evaluate((o) => (window as unknown as { convertVillager: (o: unknown) => Promise<R> }).convertVillager(o), {
         body: [F(body!), body], tops: tops ? [F(tops), tops] : null, topsTex: tex ? F(tex) : null, files, maxTex: size.maxTex, eye: EYE, mouth: MOUTH,
         // a special character's face at rest only (its three whole faces would be over budget): a villager's every one
-        swaps: !SPECIAL[id]
+        swaps: !SPECIAL[id] && !VISITOR_ONLY[id]
       });
       tris = size.tris;
       pack(id, r, size.tris, out);
