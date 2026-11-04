@@ -24,8 +24,6 @@ const LOW_WEEK_BELLS = 6;
 
 interface Ctx {
   view: () => WeekView;
-  /** Interactive + idle life + reactions (false for gallery thumbnails). Read once, at init. */
-  live: boolean;
   /** A sheet or overlay covers the scene. */
   covered: () => boolean;
   night: () => boolean;
@@ -61,7 +59,6 @@ export class IslandLife {
 
   constructor(ctx: Ctx) {
     this.#ctx = ctx;
-    if (!ctx.live) return;
 
     // Reactions from the view diff (never on the first render).
     let prev: WeekView | null = null;
@@ -133,7 +130,6 @@ export class IslandLife {
 
   /** My villager tapped: wake it or play its squish (the partner's tap is the high-five, IslandScene). */
   tapMine(): void {
-    if (!this.#ctx.live) return;
     if (actors.mine.asleep) wake('mine');
     else react('R9');
   }

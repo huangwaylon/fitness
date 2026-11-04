@@ -27,8 +27,6 @@
     season: Season;
     foliage: Foliage;
     month: number;
-    /** False in the gallery's thumbnails (nothing answers a tap). */
-    live?: boolean;
     /** The campsite's door was tapped (the art's element, for a balloon's tail). */
     onbuilding?: (id: BuildingId, el: HTMLElement) => void;
     /** At dusk and night the campfire burns. */
@@ -37,7 +35,7 @@
     date?: string;
     hour?: number;
   }
-  let { season, foliage, month, live = true, onbuilding, tod = 'day', date, hour = 12 }: Props = $props();
+  let { season, foliage, month, onbuilding, tod = 'day', date, hour = 12 }: Props = $props();
   const w = useWorld();
 
   /** An icon oak's trunk and canopy cut from its one image (a rendered oak has its own -trunk / -canopy layers). */
@@ -71,7 +69,6 @@
     }, TIP_MS);
   }
   $effect(() => {
-    if (!live) return;
     let timer = 0;
     const idle = () => {
       const scene = shishiEl?.closest('.if-scene');
@@ -114,7 +111,7 @@
   /** A tree's trunk tap area round its foot, as shares of its height (wide, tall): the trunk and its base down to the
    *  ground, at least 44px wide on screen (--inv); the leaves have their own (.hit). Unclipped by the layer's box. */
   const TRUNK_HIT: Partial<Record<Scenery['kind'], readonly [number, number]>> = { oak: [0.32, 0.6], cedar: [0.24, 0.42], palm: [0.3, 0.72] };
-  const trunkHit = (s: Scenery, part: string) => (live && (part === 'trunk' || (part === 'body' && s.kind !== 'oak')) ? TRUNK_HIT[s.kind] : undefined);
+  const trunkHit = (s: Scenery, part: string) => (part === 'trunk' || (part === 'body' && s.kind !== 'oak') ? TRUNK_HIT[s.kind] : undefined);
 </script>
 
 {#snippet sprite(s: Scenery, clip: string | null = null, part = 'body')}
@@ -122,12 +119,12 @@
   {@const key = part !== 'body' && layered(base) ? `${base}-${part}` : base}
   {@const th = trunkHit(s, part)}
   <div class="spr" data-scenery-id={s.id} data-kind={s.kind} data-part={part} {@attach w.at({ x: s.x, z: s.z, h: s.h, dz: part === 'canopy' ? -14 : 0, inv: !!th, model: true })}>
-    <span class="art" data-look={key} class:flip={s.flip} class:snow={winter && s.kind === 'bush' && !P[key]} class:bush={s.kind === 'bush'} class:fire={live && !!FIRE_AT[s.key]}
-      data-bush={s.kind === 'bush' ? s.id : undefined} data-campfire={FIRE_AT[s.key] ? s.id : undefined} data-sit={live && sitLook(key) ? s.id : undefined}
+    <span class="art" data-look={key} class:flip={s.flip} class:snow={winter && s.kind === 'bush' && !P[key]} class:bush={s.kind === 'bush'} class:fire={!!FIRE_AT[s.key]}
+      data-bush={s.kind === 'bush' ? s.id : undefined} data-campfire={FIRE_AT[s.key] ? s.id : undefined} data-sit={sitLook(key) ? s.id : undefined}
       style={at3d(key, s.h, s.flip)} style:height="calc({s.h} * var(--u))" style:width="calc({wOf(key, s.h)} * var(--u))"
       style:clip-path={layered(base) ? inset3d(key, s.flip) : clip}>
       <OfficialArt {key} size="calc({s.h} * var(--u))" eager={s.z < 1080} />
-      {#if live && (s.kind === 'cedar' || s.kind === 'palm' || part === 'canopy')}
+      {#if s.kind === 'cedar' || s.kind === 'palm' || part === 'canopy'}
         <!-- its leaves answer a tap (SceneTaps: a rustle; three quick taps shake it) -->
         <i class="hit {s.kind}" data-tree={s.id}></i>
       {/if}
@@ -152,13 +149,13 @@
   <!-- the fixed decor (fixedDecor.ts): a tap answers where it stands (SceneTaps: data-fixture) -->
   <div class="spr" data-scenery-id={f.id} data-kind="decor" data-part="body" {@attach w.at({ x: f.x, z: f.z, h: f.h, model: true })}>
     {#if f.fixture === 'shishi'}
-      <span class="art fixture shishi" class:tipped bind:this={shishiEl} data-fixture={live ? f.fixture : undefined} data-look={f.key} data-tipped={tipped || undefined}
+      <span class="art fixture shishi" class:tipped bind:this={shishiEl} data-fixture={f.fixture} data-look={f.key} data-tipped={tipped || undefined}
         style={at3d(f.key, f.h)} style:height="calc({f.h} * var(--u))" style:width="calc({wOf(f.key, f.h)} * var(--u))">
         <span class="frame rest"><OfficialArt key={f.key} size="calc({f.h} * var(--u))" eager /></span>
         <span class="frame tip"><OfficialArt key={`${f.key}-tip`} size="calc({f.h} * var(--u))" eager /></span>
       </span>
     {:else}
-      <span class="art fixture" data-fixture={live ? f.fixture : undefined} data-sit={live && sitLook(f.key) ? f.id : undefined} data-look={f.key}
+      <span class="art fixture" data-fixture={f.fixture} data-sit={sitLook(f.key) ? f.id : undefined} data-look={f.key}
         style={at3d(f.key, f.h)} style:height="calc({f.h} * var(--u))" style:width="calc({wOf(f.key, f.h)} * var(--u))">
         <OfficialArt key={f.key} size="calc({f.h} * var(--u))" eager={f.z < 1080} />
       </span>
@@ -168,7 +165,7 @@
 
 {#each buildings as b (b.id)}
   <div class="spr building" data-building={b.id} {@attach w.at({ x: b.x, z: b.z, h: b.h, model: true })}>
-    <button type="button" class="door" disabled={!live} data-sfx="self" data-scenery data-look={sceneryKey(b.key, season, month)} aria-label={t(`world.building.${b.id}`)}
+    <button type="button" class="door" data-sfx="self" data-scenery data-look={sceneryKey(b.key, season, month)} aria-label={t(`world.building.${b.id}`)}
       style={at3d(b.key, b.h)} style:height="calc({b.h} * var(--u))" style:width="calc({b.w ?? wOf(b.key, b.h)} * var(--u))"
       onclick={(e) => onbuilding?.(b.id, e.currentTarget)}>
       <OfficialArt key={sceneryKey(b.key, season, month)} size="calc({b.h} * var(--u))" eager />

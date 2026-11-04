@@ -494,10 +494,10 @@ export class World {
 const KEY = Symbol('world');
 let liveWorld: World | null = null;
 
-/** The scene's World for its children (IslandScene calls this once). `isLive`: the interactive island. */
-export function provideWorld(w: World, isLive: boolean): void {
+/** The scene's World for its children (IslandScene calls this once). */
+export function provideWorld(w: World): void {
   setContext(KEY, w);
-  if (isLive) liveWorld = w;
+  liveWorld = w;
 }
 /** The surrounding scene's World (a component of the island). */
 export const useWorld = (): World => getContext<World>(KEY);

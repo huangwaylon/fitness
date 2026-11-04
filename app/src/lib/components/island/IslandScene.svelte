@@ -15,7 +15,7 @@
   // Layout contract (for the page): give it the whole page (--scene-h, e.g. 100dvh); --hud-bottom is the top chrome's
   // bottom edge. Read back --horizon-y (set on .if-scene) to place overlays in the sky.
   // Life (islandLife.svelte.ts): the motion bus (emit('highfive-sent') etc.), reactions to the `view` diff (partner
-  // data, fruit stages, a received high-five), naps, the balloon; idle life runs while `live` and not `paused`.
+  // data, fruit stages, a received high-five), naps, the balloon; idle life runs while not `paused`.
   import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
   import { showAt } from './fireworks.ts';
   import { hook, hookFlag, hooksOn } from './devHooks.ts';
@@ -24,8 +24,8 @@
   import Villager from '../characters/Villager.svelte';
   import { artGate, setArtGate } from '../characters/artGate.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
-  import { theme, type Season } from '#lib/ui-state/theme.svelte.ts';
-  import { defaultFoliage, type Foliage } from '#lib/ui-state/season.ts';
+  import { theme } from '#lib/ui-state/theme.svelte.ts';
+  import type { Foliage } from '#lib/ui-state/season.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import Sky from './Sky.svelte';
@@ -112,23 +112,13 @@
     onguest?: (name: string) => void;
     /** A sheet / overlay covers the scene: idle life and particles pause. */
     paused?: boolean;
-    /** Interactive + idle life + reactions (false for gallery thumbnails). */
-    live?: boolean;
-    /** Dev gallery: force a season / time of day instead of the theme clock. */
-    season?: Season;
-    /** Oak foliage (defaults to the season's signature look when `season` is forced, else the clock). */
-    foliage?: Foliage;
-    tod?: Tod;
   }
-  let {
-    view, onhighfive, onhighfivegot, onguest, paused = false, live = true,
-    season: seasonProp, foliage: foliageProp, tod: todProp
-  }: Props = $props();
+  let { view, onhighfive, onhighfivegot, onguest, paused = false }: Props = $props();
 
   const uid = $props.id();
-  const season = $derived(seasonProp ?? theme.season);
-  const foliage = $derived<Foliage>(foliageProp ?? (seasonProp ? defaultFoliage(seasonProp) : theme.foliage));
-  const tod = $derived<Tod>(todProp ?? theme.tod);
+  const season = $derived(theme.season);
+  const foliage = $derived<Foliage>(theme.foliage);
+  const tod = $derived<Tod>(theme.tod);
 
   // The clock (device time or ?date=), at each new minute.
   const clock = $derived(minuteNow());
@@ -149,7 +139,7 @@
   // open), this phone's own on the guest's (A and B then the partner and the third: ui-state/cast.ts). It has no home
   // or tree: its spot is by the campsite.
   // svelte-ignore state_referenced_locally
-  if (live) setCast(view.viewer);
+  setCast(view.viewer);
   const sideOf = (pid: Who): 'left' | 'right' => (pid === 'A' ? 'left' : 'right');
   /** Who each villager actor draws: its person, name and look, today's ベル (null: the guest's, which has none). */
   type Look = { person: Who; villagerName: string; villager: string | null; bells: number | null };
@@ -173,11 +163,10 @@
   // The island in 3D (world3d/Island3D.svelte: its own chunk with three.js); the DOM island runs over its canvas as the
   // taps and the overlays. No WebGL (failed3): the island's message instead (never on the users' iPhones).
   let failed3 = $state(false);
-  const r3 = $derived(live && !failed3);
+  const r3 = $derived(!failed3);
   // the island on its layout (site.svelte.ts): world.ts's geometry is the layout's from here on (before anything below
   // reads it)
-  // svelte-ignore state_referenced_locally
-  if (live) site.sync();
+  site.sync();
   const island3dC = lazyComponent(() => import('../world3d/Island3D.svelte'));
   const Island3DC = $derived(island3dC.get(r3));
   let island3d = $state<{ go(z: number, k?: number): void; limits(): { min: number; max: number }; editStage(): import('../layoutEdit/IslandEdit.svelte').EditStage | null }>();
@@ -226,9 +215,7 @@
       document.removeEventListener('keydown', esc);
     };
   });
-  // `live` is fixed per scene (the gallery's thumbnails are never live).
-  // svelte-ignore state_referenced_locally
-  const life = new IslandLife({ view: () => view, live, covered: () => covered, night: () => tod === 'night', day: () => tod === 'day' });
+  const life = new IslandLife({ view: () => view, covered: () => covered, night: () => tod === 'night', day: () => tod === 'day' });
   // A tap on mine squishes (R9; now and then a flea hops off it). The say button at the bottom right (SayButton) opens
   // the phrase picker above it (SayPicker): a pick hops my villager and shows the phrase in its balloon (Says) for a
   // few seconds, here and on the partner's phone (the relay's `say`, presence only: at most one per 1.5 s, the newer
@@ -239,7 +226,7 @@
   let picking = $state<HTMLElement | null>(null);
   let sayBtn = $state<HTMLButtonElement>();
   /** The say button shows on the live island with nothing over it: no sheet, the harvest, a tree's popup, もようがえ. */
-  const sayShown = $derived(live && !covered && !ui.decorating && !openTree && !ui.sheets.length);
+  const sayShown = $derived(!covered && !ui.decorating && !openTree && !ui.sheets.length);
   const vilEls = $state<Record<VillagerActor, HTMLElement | undefined>>({ mine: undefined, partner: undefined, third: undefined });
   function openPicker(el: HTMLElement) {
     if (!sayShown) return;
@@ -299,7 +286,7 @@
     cue('emote-joy');
   }
   function highFiveTap(id: VillagerActor = 'partner') {
-    if (!live || covered || fiving.has(id) || inTent(id) || !onIsland(id)) return;
+    if (covered || fiving.has(id) || inTent(id) || !onIsland(id)) return;
     fiving.add(id);
     cue('villager-tap');
     for (const a of ['mine', id] as const) if (actors[a].asleep) wake(a);
@@ -365,12 +352,11 @@
   const bday = $derived(birthdaysOn(today));
   let villagerBdays = $state<Record<string, string> | null>(null);
   $effect(() => {
-    if (live) void import('#lib/villagers/birthdays.ts').then((m) => (villagerBdays = m.BIRTHDAYS));
+    void import('#lib/villagers/birthdays.ts').then((m) => (villagerBdays = m.BIRTHDAYS));
   });
   const hatOf = (id: VillagerActor, person: Look): string | null =>
     (bday.length && id !== 'third') || isBirthday(villagerBdays?.[resolveLook({ villager: person.villager, person: person.person }).id], today) ? HATS[id === 'third' ? 'partner' : id] : null;
   const hybrid = $derived.by(() => {
-    if (!live) return null;
     const kindOf = (id: string) => wildFlower(flowerById(id) ?? FLOWERS[0], season);
     if (hookFlag('hybrid')) return { id: FLOWERS[0].id, flower: hybridsOf(kindOf(FLOWERS[0].id))[0] };
     const mine = garden(today, addDays(today, -1), (w) => hybridFor(today, w.filter(flowerById), kindOf)).hybrid;
@@ -410,26 +396,25 @@
   // The world: its camera (the 3D island's, fitted to the viewport) and projector, shared with every part of the island
   // (camera.svelte.ts).
   const world = new World();
-  // svelte-ignore state_referenced_locally
-  provideWorld(world, live);
+  provideWorld(world);
   let scroller = $state<HTMLElement>();
   let vh = $state(844), s = $state(1), horizonPx = $state(135);
 
   // Where each villager lives (the director walks them from there and back; design.md "Walking").
   // svelte-ignore state_referenced_locally
-  if (live) for (const id of VILLAGERS) setHome(id, sides[id].home[0], sides[id].home[1]);
+  for (const id of VILLAGERS) setHome(id, sides[id].home[0], sides[id].home[1]);
   // (a home spot moved on the layout: there from now on)
   $effect(() => {
     const sd = sides;
-    if (live) untrack(() => VILLAGERS.forEach((id) => setHome(id, sd[id].home[0], sd[id].home[1])));
+    untrack(() => VILLAGERS.forEach((id) => setHome(id, sd[id].home[0], sd[id].home[1])));
   });
   // where a tap sent my villager this session (it stays there; the next open finds it home)
   let fromTentNow = false;
-  // svelte-ignore state_referenced_locally
-  if (live) {
+  {
     // just out of the tent: at its door, facing out; else where a tap sent it this session
     const stay = stayingAt();
     const outAt = ui.takeOutAt();
+    // svelte-ignore state_referenced_locally
     if ((fromTentNow = ui.takeFromTent())) stepOut(outOfTent(view.viewer));
     // (out of the museum's or the shop's door: there)
     else if ((fromTentNow = !!outAt)) stepOut(outAt!);
@@ -515,7 +500,7 @@
   /** SceneTaps' last step: the tap landed on the ground at (x, z) and nothing else took it. A tap at a building's foot
    *  knocks at its door (walk there, then its line). */
   function walkThere(x: number, z: number, hit: SceneHit): boolean {
-    if (!live || covered || decorating || actors.mine.asleep) return false;
+    if (covered || decorating || actors.mine.asleep) return false;
     // only empty ground walks: water ripples and a building's footprint knocks at its door where my villager stands
     if (hit.kind !== 'grass' && hit.kind !== 'sand') return false;
     const b0 = buildingAt(x, z), door = b0 && sceneEl?.querySelector<HTMLElement>(`[data-building="${b0}"] .door`);
@@ -535,7 +520,7 @@
   /** A seat (its piece's id: SceneTaps' data-sit, or the ground at its foot) tapped: my villager walks up to its free
    *  seat nearest it, and on (all taken: a boop; on it already: nothing more). True when it took the tap. */
   function sitOn(piece: string): boolean {
-    if (!live || covered || decorating || actors.mine.asleep) return false;
+    if (covered || decorating || actors.mine.asleep) return false;
     const l = site.layout, o = l?.objects.get(piece);
     const spots = l && o ? seatSpots(l, o).filter((q) => seatHere(q.name)) : [];
     if (!spots.length) return false;
@@ -585,14 +570,14 @@
     measure();
     world.onTick(() => {
       // (the camera is the 3D island's engine's: Island3D writes camZ in each of its frames)
-      if (live) edgeCheck();
+      edgeCheck();
       return anyMoving();
     });
     // back out of the tent: the camera where it was when we went in (else まえ, the 3D island's own start)
-    start3 = live ? ui.takeIslandZ() : null;
+    start3 = ui.takeIslandZ();
     world.rest.ready = true;
     world.invalidate();
-    const offMove = live ? onMove(() => world.kick()) : () => {};
+    const offMove = onMove(() => world.kick());
     let first = true;
     const ro = new ResizeObserver(() => {
       // the first call is the observe itself (already measured)
@@ -602,7 +587,7 @@
       requestAnimationFrame(() => world.invalidate());
     });
     ro.observe(scroller);
-    if (live) expose();
+    expose();
     return () => {
       offMove();
       ro.disconnect();
@@ -688,7 +673,6 @@
   }
 
   onMount(() => {
-    if (!live) return;
     const off = attachAvatar({ geo: () => (presence.visitor ? geoVisited() : geo()), clear: standsClear, where: feet, enabled: () => !covered && !life.hidden, hush: () => talk?.hush() });
     // the guest's villager comes ashore once each time its app opens, and walks up to its spot by the campsite (the
     // members see it arrive); back from the tent or another screen it is where it was
@@ -719,7 +703,7 @@
   let wasCovered = false;
   $effect(() => {
     const c = covered;
-    if (!live || c === wasCovered) return;
+    if (c === wasCovered) return;
     wasCovered = c;
     untrack(() => (c ? freeze() : thaw()));
   });
@@ -738,7 +722,7 @@
   const treeTaps: Record<string, number[]> = {};
   function treeTap(id: string): boolean {
     const tr = treeOf(id);
-    if (!live || covered || !tr || tr.kind === 'goal') return false;
+    if (covered || !tr || tr.kind === 'goal') return false;
     const run = shakeTap(treeTaps[id] ?? [], Date.now());
     treeTaps[id] = run.taps;
     rustle(tr, true);
@@ -761,8 +745,7 @@
   // phone's one relay socket (sync/live.ts liveRelay, shared with the sync's push); never a second.
   let partnerHere = $state(false);
   /** The relay, when there is one (never in the demo): presence, and the partner's walks (spec §4, LIVE_V 2). */
-  // svelte-ignore state_referenced_locally
-  const relay = live && LIVE_URL && !week.demo ? liveRelay() : null;
+  const relay = LIVE_URL && !week.demo ? liveRelay() : null;
   // The shared island (docs/backend.md#shared-world, store/world.svelte.ts): the day's changes, mine and the partner's,
   // over this relay; in the demo the two players' tabs share it (sync/live-local.ts: `?demo` and `?demo&as=B`).
   // `?relay=<wss url>&key=<person key>` (the hooks on: the e2e's two-phone harness against the test relay, each its own
@@ -772,9 +755,8 @@
     return url && /^wss?:\/\//.test(url) && key ? createLive({ url, key: () => key }) : null;
   };
   // svelte-ignore state_referenced_locally
-  const demoRelay = live && week.demo ? (testRelay() ?? createLocalLive(view.viewer)) : null;
+  const demoRelay = week.demo ? (testRelay() ?? createLocalLive(view.viewer)) : null;
   $effect(() => {
-    if (!live) return;
     const me = view.viewer;
     untrack(() => {
       shared.attach(relay ?? demoRelay, me, !!week.demo);
@@ -786,7 +768,6 @@
   $effect(() => () => demoRelay?.stop());
   // the sheet keeps each person's part of the day (held: one row per person and day), and gives the partner's back
   $effect(() => {
-    if (!live) return;
     shared.sink = (date, row) => sendIslandDay(date, row);
     decor.sink = (op) => sendDecor(op);
     islandLayout.sink = (op) => sendDecor(op);
@@ -801,7 +782,7 @@
   let fedState: unknown = null;
   $effect(() => {
     const m = week.model;
-    if (!live || !m) return;
+    if (!m) return;
     const day = dayKey(now());
     if (m.state === fedState && day === fed) return;
     fedState = m.state;
@@ -828,9 +809,8 @@
   // theirs to move (this phone's own life leaves it alone).
   // (on the relay's own clock: a `?date=` preview shifts the island's day, not when a walk set off)
   const relayNow = () => (relay ?? demoRelay)?.serverNow() ?? Date.now();
-  // svelte-ignore state_referenced_locally
-  const link = live ? linkVillagers({
-    share: (w) => void shared.share(w), me: castMe, serverNow: relayNow, enabled: () => live,
+  const link = linkVillagers({
+    share: (w) => void shared.share(w), me: castMe, serverNow: relayNow, enabled: () => true,
     // a phone gone a while: its villager walks home from where its last walk (the relay's day) ended, by the nav
     lastAt: (id) => {
       const w0 = shared.day.walks[whoOf(id)];
@@ -838,7 +818,7 @@
     },
     route: homeRoute,
     atHome: homeAgain
-  }) : null;
+  });
   // (`?homeafter=<ms>`: how long a phone is gone before its villager walks home, and one gone quiet inside the tent
   // leaves it; the e2e's)
   if (hook('homeafter')) setHomeAfter(Number(hook('homeafter')));
@@ -887,7 +867,7 @@
   $effect(() => {
     for (const w of ['A', 'B', 'G'] as const) {
       const n = where.homeN[w];
-      if (n === homeSeen[w] || !live || w === castMe()) continue;
+      if (n === homeSeen[w] || w === castMe()) continue;
       homeSeen[w] = n;
       const id = actorOf(w);
       // (a member's villager walks home out of the door by villagerSync's rule; without the relay's leave time, put)
@@ -897,7 +877,7 @@
   // the partner's phrases, live (never replayed: a phone opening later hears none)
   $effect(() => {
     const r = relay ?? demoRelay;
-    if (!live || !r) return;
+    if (!r) return;
     return r.on((m) => {
       if (m.who === castMe()) return;
       // (one said in a home's room, `sc`, is for the phones in there: not the island's)
@@ -932,7 +912,6 @@
     if (partnerTo(to[0], to[1], id)) ring(to[0], to[1], true);
   }
   onMount(() => {
-    if (!live) return;
     // where the partner's villager is today (a phone opening later: the shared day's last walk, played to now)
     for (const w of ['A', 'B', 'G'] as const) {
       const w0 = w === castMe() ? null : shared.day.walks[w];
@@ -958,7 +937,7 @@
   // the door first (the walk goes over the relay like any), unless it's there already; a tap on anything else on the
   // way (it steers my villager anew) is the end of going in.
   function building(id: BuildingId, _el: HTMLElement) {
-    if (!live || covered || entering || (id !== 'campsite' && !BUILDINGS.some((b) => b.id === id))) return;
+    if (covered || entering || (id !== 'campsite' && !BUILDINGS.some((b) => b.id === id))) return;
     const door = doorAt(id), at = livePos('mine');
     const goIn = () => goInto(id);
     clearTimeout(walkingIn);
@@ -1042,7 +1021,7 @@
   let shade = $state<[number, number, number] | null>(null);
   $effect(() => {
     void tod;
-    const sky = live ? weather.sky : 'clear';
+    const sky = weather.sky;
     const el = sceneEl;
     if (!el) return;
     const hex = (h: string): [number, number, number] | null => (/^#[0-9a-f]{6}$/i.test(h) ? [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255) as [number, number, number] : null);
@@ -1057,13 +1036,13 @@
   // it's due, then kept, so its code stays out of the first load.
   const weatherC = lazyComponent(() => import('./Weather.svelte')), fireworksC = lazyComponent(() => import('./Fireworks.svelte'));
   const halloweenC = lazyComponent(() => import('./Halloween.svelte')), birthdayC = lazyComponent(() => import('./Birthday.svelte')), weddingC = lazyComponent(() => import('./Wedding.svelte'));
-  const WeatherC = $derived(weatherC.get(live && (weather.sky !== 'clear' || weather.fog || !!weather.rainbow || weather.aurora)));
-  const FireworksC = $derived(fireworksC.get(live && (life.devFireworks || hookFlag('fireworks') || wedding.fireworks || allMet || !!showAt(jst(clock).month, jst(clock).day, jst(clock).weekday, jst(clock).hour))));
-  const HalloweenC = $derived(halloweenC.get(live && nhEvent?.id === 'halloween'));
-  const BirthdayC = $derived(birthdayC.get(live && !!bday.length));
-  const WeddingC = $derived(weddingC.get(live && (wedding.arch || wedding.day)));
+  const WeatherC = $derived(weatherC.get((weather.sky !== 'clear' || weather.fog || !!weather.rainbow || weather.aurora)));
+  const FireworksC = $derived(fireworksC.get((life.devFireworks || hookFlag('fireworks') || wedding.fireworks || allMet || !!showAt(jst(clock).month, jst(clock).day, jst(clock).weekday, jst(clock).hour))));
+  const HalloweenC = $derived(halloweenC.get(nhEvent?.id === 'halloween'));
+  const BirthdayC = $derived(birthdayC.get(!!bday.length));
+  const WeddingC = $derived(weddingC.get(wedding.arch || wedding.day));
   // The decorate mode (docs/design.md "Decorating"): its tray and ghost are their own chunk, loaded on the first use.
-  const decorating = $derived(live && ui.decorating);
+  const decorating = $derived(ui.decorating);
   const islandEditC = lazyComponent(() => import('../layoutEdit/IslandEdit.svelte'));
   const IslandEditC = $derived(islandEditC.get(decorating));
   /** The 3D island's stage for IslandEdit (while decorating). */
@@ -1085,12 +1064,12 @@
   const goalTrees = $derived((void site.rev, GOAL_TREES));
   const cast3 = () => VILLAGERS.map((id) => ({
     id, person: sides[id].person.person, villager: sides[id].person.villager, side: sides[id].side,
-    shown: onIsland(id) && !inTent(id), seated: !!seated[id], seat: seated[id], stung: swollen[id], rep: repping[id], hat: live ? hatOf(id, sides[id].person) : null
+    shown: onIsland(id) && !inTent(id), seated: !!seated[id], seat: seated[id], stung: swollen[id], rep: repping[id], hat: hatOf(id, sides[id].person)
   }));
 </script>
 
-<div class="if-scene scene" bind:this={sceneEl} data-r3={r3 || undefined} data-decorating={decorating || undefined} data-season={season} data-tod={tod} data-sky={live ? weather.sky : undefined} data-paused={life.hidden || undefined}
-  data-covered={covered || undefined} data-sheet={paused || undefined} data-live={live || undefined} style:--horizon-y="{horizonPx}px" style:--sky-h="{horizonPx + 6}px">
+<div class="if-scene scene" bind:this={sceneEl} data-r3={r3 || undefined} data-decorating={decorating || undefined} data-season={season} data-tod={tod} data-sky={weather.sky} data-paused={life.hidden || undefined}
+  data-covered={covered || undefined} data-sheet={paused || undefined} data-live="true" style:--horizon-y="{horizonPx}px" style:--sky-h="{horizonPx + 6}px">
   {#if picking && sceneEl}
     <!-- what my villager says: outside the viewport (its field's focus never moves the island), over the stage -->
     <SayPicker scene={sceneEl} anchor={picking} onpick={pickSay} onclose={(e) => {
@@ -1102,11 +1081,9 @@
     <!-- the picker's door: bottom right, over the sea, clear of the home indicator and しずえ's box (--news-lift) -->
     <div class="say-dock"><SayButton bind:el={sayBtn} open={!!picking} onopen={openPicker} /></div>
   {/if}
-  {#if live}
-    <!-- every catch's plate: a stack at the bottom centre, outside the viewport (the newest at the bottom) -->
-    <CatchStack scene={sceneEl} />
-  {/if}
-  {#if live && FireworksC}<FireworksC bind:this={fireworks} enabled={() => !covered && !life.hidden} forced={life.devFireworks || wedding.fireworks} {allMet} {cheer} />{/if}
+  <!-- every catch's plate: a stack at the bottom centre, outside the viewport (the newest at the bottom) -->
+  <CatchStack scene={sceneEl} />
+  {#if FireworksC}<FireworksC bind:this={fireworks} enabled={() => !covered && !life.hidden} forced={life.devFireworks || wedding.fireworks} {allMet} {cheer} />{/if}
 
   <div class="scroller" bind:this={scroller} data-world-scroller>
     <div class="track" style:height="{vh}px">
@@ -1120,17 +1097,17 @@
         <Sky {tod} layer="lights" />
         <!-- the balloon present: NH's, flying over the island in 3D (its tap area a world node on it) -->
         {#if life.balloon}<Balloon ondone={() => (life.balloon = false)} />{/if}
-        {#if live && WeatherC}<WeatherC where="sky" />{/if}
+        {#if WeatherC}<WeatherC where="sky" />{/if}
         {#if r3 && Island3DC && sceneEl}
           <Island3DC bind:this={island3d} {world} scene={sceneEl} {season} {foliage} {month} {tod} scenery={scenery3} pieces={pieces3} {hybrid} floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null}
             wet={weather.sky !== 'clear' ? WET[weather.sky][1] : 0} cast={cast3} enabled={() => !covered && !life.hidden}
             start={start3} onscroll={onScroll} onhorizon={(px) => (horizonPx = px)} onfail={() => (failed3 = true)} onready={() => measure()} />
-        {:else if live && failed3}
+        {:else if failed3}
           <!-- no WebGL (never on the users' iPhones): a line instead of the island; the rest of the app works as ever -->
           <div class="no3d" role="status" data-no3d><p>{t('island.no3d')}</p><p class="sub">{t('island.no3dSub')}</p></div>
         {/if}
 
-        <Scenery {season} {foliage} {month} {live} {tod} date={today} hour={jst(clock).hour} onbuilding={building} />
+        <Scenery {season} {foliage} {month} {tod} date={today} hour={jst(clock).hour} onbuilding={building} />
 
         {#each ['A', 'B'] as const as pid (pid)}
           {@const t = goalTrees[pid]}
@@ -1141,20 +1118,18 @@
 
         <Flowers {season} {hybrid} />
 
-        {#if live}
-          <Decor editing={decorating} />
-          <!-- the bulletin board on the front beach (docs/board.md): a tap walks up to it and opens it -->
-          <Board enabled={() => !covered && !life.hidden && !decorating} night={tod === 'night'} {season} />
-          <!-- the もようがえ: the layout's own (IslandEdit over the 3D camera) -->
-          {#if decorating && IslandEditC && editStage}<IslandEditC stage={editStage} {relay} me={castMe() === 'B' ? 'B' : 'A'} ondone={() => (ui.decorating = false)} />{/if}
-        {/if}
+        <Decor editing={decorating} />
+        <!-- the bulletin board on the front beach (docs/board.md): a tap walks up to it and opens it -->
+        <Board enabled={() => !covered && !life.hidden && !decorating} night={tod === 'night'} {season} />
+        <!-- the もようがえ: the layout's own (IslandEdit over the 3D camera) -->
+        {#if decorating && IslandEditC && editStage}<IslandEditC stage={editStage} {relay} me={castMe() === 'B' ? 'B' : 'A'} ondone={() => (ui.decorating = false)} />{/if}
 
         {#each VILLAGERS as id (id)}
           {@const sd = sides[id]}
-          {#if live ? onIsland(id) : id !== 'third'}
-          <div class="actor" class:walking={live && actors[id].walking} class:inside={inTent(id)} data-inside={inTent(id) || undefined} data-actor={id} data-who={sd.person.person} data-seat={seated[id]} data-rep={repping[id] || undefined} style:--seat-drop={u(SEAT_DROP)} style:--rep-lift={u(9)} data-person={sd.person.person} data-stung={stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : id === 'third' ? '-0.6s' : '0s'}
-            {@attach world.at(live ? { x: sd.home[0], z: sd.home[1], h: VILLAGER.h, live: () => livePos(id), always: true } : { x: sd.home[0], z: sd.home[1], h: VILLAGER.h })}>
-            <button type="button" class="vil" disabled={!live} data-sfx="self" bind:this={vilEls[id]}
+          {#if onIsland(id)}
+          <div class="actor" class:walking={actors[id].walking} class:inside={inTent(id)} data-inside={inTent(id) || undefined} data-actor={id} data-who={sd.person.person} data-seat={seated[id]} data-rep={repping[id] || undefined} style:--seat-drop={u(SEAT_DROP)} style:--rep-lift={u(9)} data-person={sd.person.person} data-stung={stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : id === 'third' ? '-0.6s' : '0s'}
+            {@attach world.at({ x: sd.home[0], z: sd.home[1], h: VILLAGER.h, live: () => livePos(id), always: true })}>
+            <button type="button" class="vil" data-sfx="self" bind:this={vilEls[id]}
               aria-label={id !== 'mine'
                 ? t('island.highfive', { name: sd.person.villagerName })
                 : sd.person.bells === null ? sd.person.villagerName
@@ -1166,13 +1141,13 @@
                 } else highFiveTap(id);
               }}>
               <Villager person={sd.person.person} villager={sd.person.villager} size={u(VILLAGER.h)} eager
-                actor={live ? id : undefined} side={sd.side} emoteSize="var(--emote-size)" shadow animate={live} tricked={id === 'mine' && tricked} swollen={swollen[id]} hat={live ? hatOf(id, sd.person) : null} />
+                actor={id} side={sd.side} emoteSize="var(--emote-size)" shadow animate tricked={id === 'mine' && tricked} swollen={swollen[id]} hat={hatOf(id, sd.person)} />
             </button>
           </div>
           {/if}
         {/each}
 
-        {#if live && edge && partnerHere && !where.partnerInTent}
+        {#if edge && partnerHere && !where.partnerInTent}
           <!-- the partner out of view: their villager's face at the edge they're off (a cue; the finger scrolls) -->
           <span class="edge {edge}" data-partner-edge={edge} aria-hidden="true">
             <Villager person={sides.partner.person.person} villager={sides.partner.person.villager} size={28} head />
@@ -1192,29 +1167,27 @@
           <div class="ring-node" {@attach world.at({ mode: 'flat', x: r.x, z: r.z, h: 4, zi: 8 })}><i class="tap-ring" class:partner={r.partner} class:in3d={r.in3d} data-ring={r.partner ? 'partner' : 'mine'}></i></div>
         {/each}
 
-        <Particles {season} {foliage} {tod} quiet={asleepNow} mode="fireflies" raining={live && raining()} />
-        {#if live}
-          <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
-          <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden && !decorating} swallowed={() => closedBy} walk={walkThere} sit={sitOn}
-            exercise={view.people.A.rings.peach.met || view.people.B.rings.peach.met} cake={bday.length > 0}
-            skyTap={(x, y) => !!fireworks?.tap(x, y)}
-            say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={trick} tree={treeTap} />
-          <Talk bind:this={talk} scene={sceneEl} />
-          <Says bind:this={says} scene={sceneEl} />
-          {#if hookFlag('hit')}
-            <!-- ?hit: every tap target drawn over the island (its own chunk) -->
-            {#await import('./HitOverlay.svelte') then m}<m.default scene={sceneEl} />{/await}
-          {/if}
-          <!-- what a shaken tree drops: a branch, now and then a wasp nest -->
-          <TreeShakes bind:this={shakes} scene={sceneEl} onsting={sting} {treeOf} rustle={(tr) => rustle(tr, true)} />
-          <!-- the partner's catches and finds: their plates in the bottom stack -->
-          <PartnerNews scene={sceneEl} />
+        <Particles {season} {foliage} {tod} quiet={asleepNow} mode="fireflies" raining={raining()} />
+        <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
+        <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden && !decorating} swallowed={() => closedBy} walk={walkThere} sit={sitOn}
+          exercise={view.people.A.rings.peach.met || view.people.B.rings.peach.met} cake={bday.length > 0}
+          skyTap={(x, y) => !!fireworks?.tap(x, y)}
+          say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={trick} tree={treeTap} />
+        <Talk bind:this={talk} scene={sceneEl} />
+        <Says bind:this={says} scene={sceneEl} />
+        {#if hookFlag('hit')}
+          <!-- ?hit: every tap target drawn over the island (its own chunk) -->
+          {#await import('./HitOverlay.svelte') then m}<m.default scene={sceneEl} />{/await}
         {/if}
-        {#if live && WeatherC}<WeatherC where="stage" />{/if}
-        {#if live && nhEvent?.id === 'halloween' && HalloweenC}<HalloweenC scene={sceneEl} night={nhEvent.night} />{/if}
-        {#if live && bday.length && BirthdayC}<BirthdayC {view} people={bday} date={today} />{/if}
-        {#if live && (wedding.arch || wedding.day) && WeddingC}<WeddingC arch={wedding.arch} day={wedding.day} date={wedding.date} />{/if}
-        <Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} snowing={live ? weather.sky === 'snow' : undefined} />
+        <!-- what a shaken tree drops: a branch, now and then a wasp nest -->
+        <TreeShakes bind:this={shakes} scene={sceneEl} onsting={sting} {treeOf} rustle={(tr) => rustle(tr, true)} />
+        <!-- the partner's catches and finds: their plates in the bottom stack -->
+        <PartnerNews scene={sceneEl} />
+        {#if WeatherC}<WeatherC where="stage" />{/if}
+        {#if nhEvent?.id === 'halloween' && HalloweenC}<HalloweenC scene={sceneEl} night={nhEvent.night} />{/if}
+        {#if bday.length && BirthdayC}<BirthdayC {view} people={bday} date={today} />{/if}
+        {#if (wedding.arch || wedding.day) && WeddingC}<WeddingC arch={wedding.arch} day={wedding.day} date={wedding.date} />{/if}
+        <Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} snowing={weather.sky === 'snow'} />
       </div>
     </div>
   </div>

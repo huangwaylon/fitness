@@ -37,7 +37,7 @@ export function foliageFor(d: Date): Foliage {
 }
 
 /** A forced `?season=` previews that season's signature look. */
-export function defaultFoliage(s: Season): Foliage {
+function defaultFoliage(s: Season): Foliage {
   return s === 'spring' ? 'blossom' : s === 'summer' ? 'green' : s === 'autumn' ? 'fall' : 'snow';
 }
 
