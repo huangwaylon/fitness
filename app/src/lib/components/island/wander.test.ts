@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WeekView } from '#lib/types.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { FOLLOW_MS, adjacent, besideSpots, goalMoves, pickPoi, pois, shouldFollow } from './wander.ts';
@@ -70,14 +70,23 @@ describe('goal reactions', () => {
 });
 
 describe('the walkers (avatar.ts on a stand-in scene)', () => {
-  beforeEach(() => {
+  const stub = () => {
     vi.useFakeTimers();
     vi.stubGlobal('document', { hidden: false, addEventListener: vi.fn(), removeEventListener: vi.fn() });
-  });
-  afterEach(() => {
+  };
+  const unstub = () => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
+  };
+  // (the modules loaded once in the hook, under the tests' stubs: their ~0.5–1.5 s of transform isn't charged to the first test)
+  beforeAll(async () => {
+    stub();
+    await import('../motion/director.svelte.ts');
+    await import('./avatar.ts');
   });
+  afterAll(unstub);
+  beforeEach(stub);
+  afterEach(unstub);
   async function scene() {
     const d = await import('../motion/director.svelte.ts');
     const a = await import('./avatar.ts');

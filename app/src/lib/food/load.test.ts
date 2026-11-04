@@ -116,9 +116,17 @@ describe('loadFoodDb', () => {
       return out;
     };
     const kana = Array.from({ length: 0x3093 - 0x3041 + 1 }, (_, i) => String.fromCharCode(0x3041 + i));
+    // (sortAll's list stops at `limit` and is otherwise the same: its top 5 and 40 are its top 60's first, one sort a query;
+    // mismatches collected, one expect)
+    const fails: { q: string; limit: number; got: string[]; want: string[] }[] = [];
     for (const q of [...kana, ...'abcdefghijklmnopqrstuvwxyz', 'ごはん', 'とりむね', 'らーめん', 'カレー', '牛乳', '豆腐', 'ごはん 大盛', 'chicken', '49']) {
-      for (const limit of [5, 40, 60]) expect(searchFoods(db, q, limit).map((x) => x.id), q).toEqual(sortAll(q, limit).map((x) => x.id));
+      const all = sortAll(q, 60).map((x) => x.id);
+      for (const limit of [5, 40, 60]) {
+        const got = searchFoods(db, q, limit).map((x) => x.id), want = all.slice(0, limit);
+        if (got.length !== want.length || got.some((id, i) => id !== want[i])) fails.push({ q, limit, got, want });
+      }
     }
+    expect(fails.slice(0, 3)).toEqual([]);
   });
 
   it('indexes a dataset a slice at a time, pausing in between', async () => {

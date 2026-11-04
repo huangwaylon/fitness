@@ -1,16 +1,25 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Node has no DOM: stub just what the scheduler touches.
-beforeEach(() => {
+const stub = () => {
   vi.useFakeTimers();
   vi.stubGlobal('document', { hidden: false, addEventListener: vi.fn(), removeEventListener: vi.fn() });
   vi.stubGlobal('addEventListener', vi.fn());
   vi.stubGlobal('removeEventListener', vi.fn());
-});
-afterEach(() => {
+};
+const unstub = () => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
+};
+// (the modules loaded once in the hook, under the tests' stubs: their ~0.5–1.5 s of transform isn't charged to the first test)
+beforeAll(async () => {
+  stub();
+  await import('./idleLife.svelte.ts');
+  await import('./director.svelte.ts');
 });
+afterAll(unstub);
+beforeEach(stub);
+afterEach(unstub);
 
 const WORLD = {
   villagers: { A: { at: [132, 214], home: [132, 214], free: true }, B: { at: [262, 214], home: [262, 214], free: true } },

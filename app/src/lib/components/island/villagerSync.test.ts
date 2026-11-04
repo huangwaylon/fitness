@@ -1,21 +1,29 @@
 // The villagers on both phones (villagerSync.ts): every move of mine as the very walk; the partner's played from the
 // same start at the same time (caught up when late, a big gap a jump), their villager the relay's to move while they're
 // here; and two phones linked through a fake relay end with both villagers at the same points.
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Intent } from '#lib/sync/live-protocol.ts';
 
 type Walk = Extract<Intent, { kind: 'walk' }>;
 
-beforeEach(() => {
+const stub = () => {
   vi.useFakeTimers();
   vi.stubGlobal('document', { hidden: false, addEventListener: vi.fn(), removeEventListener: vi.fn() });
-});
-afterEach(() => {
+};
+const unstub = () => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
-});
+};
 
 const load = async () => ({ ...(await import('../motion/director.svelte.ts')), ...(await import('./villagerSync.ts')) });
+// (the modules loaded once in the hook, under the tests' stubs: their ~0.5–1.5 s of transform isn't charged to the first test)
+beforeAll(async () => {
+  stub();
+  await load();
+});
+afterAll(unstub);
+beforeEach(stub);
+afterEach(unstub);
 
 describe('a walk as the relay carries it', () => {
   it('rounds, keeps at most VIA_MAX waypoints (the end always), and its facing', async () => {
