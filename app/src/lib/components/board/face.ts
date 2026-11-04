@@ -56,19 +56,25 @@ function wrap(ctx: Pick<CanvasRenderingContext2D, 'measureText'>, text: string, 
   return out;
 }
 
+const waiting = new WeakMap<HTMLImageElement, () => void>();
 const images = new Map<string, HTMLImageElement>();
 /** An image, once it's loaded (null until then; `ready` runs when it is). */
 function image(url: string | null, ready: () => void): HTMLImageElement | null {
   if (!url || typeof Image === 'undefined') return null;
   let im = images.get(url);
   if (!im) {
-    im = new Image();
-    im.decoding = 'async';
-    im.src = url;
-    images.set(url, im);
+    const one = new Image();
+    im = one;
+    one.decoding = 'async';
+    // who waits for it: the last redraw's only (each draw passes a new one; a listener each, an icon that never loads
+    // kept every draw's), told once on its load, let go of on an error too
+    one.onload = () => (waiting.get(one)?.(), waiting.delete(one));
+    one.onerror = () => waiting.delete(one);
+    one.src = url;
+    images.set(url, one);
   }
   if (im.complete && im.naturalWidth) return im;
-  im.addEventListener('load', ready, { once: true });
+  waiting.set(im, ready);
   return null;
 }
 
