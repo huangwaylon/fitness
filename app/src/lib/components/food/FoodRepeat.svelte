@@ -48,7 +48,7 @@
     <h4>{t('food.rep.days')}</h4>
     <div class="chips" role="group" aria-label={t('food.rep.days')}>
       {#each presets as [k, v] (k)}
-        <button type="button" class="chip" aria-pressed={w === v} data-sfx={w === v ? 'none' : 'tick'} data-days={k} onclick={() => (w = v)}>{t(`food.rep.${k}`)}</button>
+        <button type="button" class="chip big" aria-pressed={w === v} data-sfx={w === v ? 'none' : 'tick'} data-days={k} onclick={() => (w = v)}>{t(`food.rep.${k}`)}</button>
       {/each}
     </div>
     <div class="week" role="group" aria-label={daysText(w)}>
@@ -89,14 +89,13 @@
   .rep-lv { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-bottom: 8px; }
   .card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px 14px; }
   h4 { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip, .sb {
+  /* 毎日 · 平日 · 週末: theme.css .chip.big */
+  .sb {
     appearance: none; border: 0; cursor: pointer; min-height: var(--hit); border-radius: var(--r-pill);
     font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
   }
-  .chip { padding: 0 14px; }
-  .chip[aria-pressed='true'], .sb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
-  .chip:active, .sb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  .sb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
+  .sb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
   .sb { padding: 0; font-size: var(--fs-s); white-space: nowrap; }
   .ih { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }

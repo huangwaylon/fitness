@@ -128,6 +128,9 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .chip:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
 .chip:is([aria-checked='true'], [aria-pressed='true']) { background: var(--ctl-sel); color: var(--c-ink); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px 6px; }
+/* a chip at the full 44px (ごはん's portions and いつもの's days: the choice is the level's main control) */
+.chip.big { min-height: var(--hit); padding: 0 14px; font-size: var(--fs-body); }
+.chip.big::after { content: none; }
 
 /* ---------- もようがえ's tray (tent/TentEdit, layoutEdit/IslandEdit): one look for both editors ----------
    The bar (what's held: its name or why not, ↻ 🗑 ✕ ✓) over the tray (tabs, the icons' grid, ✓ おわる), fixed-cream
