@@ -1,7 +1,7 @@
 // NH's dialogue box (docs/design.md "Dialogue"): the speech balloon and the catch plate type their text in, two lines a
 // page; a tap finishes the page, the next turns it (a ▼ bobs only while a page follows), the last tap closes it.
 import { expect, test, type Page } from '@playwright/test';
-import { reelOnBite } from './island.ts';
+import { reelOnBite, toTheWater } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -54,13 +54,12 @@ test('a visitor’s introduction: typed, two pages, the ▼ only before the last
 test('the catch plate pages NH’s catch line (two lines a page) and, on a first find, says it’s in the ずかん', async ({ page }) => {
   await page.goto('?demo&date=2026-07-04T12:00&critter=olive-flounder');
   await expect(hudMenu(page)).toBeVisible();
-  const fish = page.locator('[data-critter="fish"]');
-  await expect(fish).toBeAttached();
-  await page.waitForTimeout(600);
-  const f = await fish.evaluate((el) => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top }; });
-  await page.mouse.click(f.x + (f.x < 195 ? 40 : -40), f.y);
+  await expect(page.locator('[data-critter="fish"]')).toBeAttached();
+  // from the beach by the shadow (NH casts from where it stands)
+  const [fx, fy] = await toTheWater(page, 'sea');
+  await page.mouse.click(fx, fy);
   const bobber = page.locator('[data-bobber]');
-  // the reel the moment it bites (the 1.6 s window: e2e/island.ts reelOnBite)
+  // the reel the moment it bites (e2e/island.ts reelOnBite)
   await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 }); // landed
   const b = await bobber.evaluate((el) => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top }; });
   await reelOnBite(page, b.x < 195 ? 366 : 24, b.y);

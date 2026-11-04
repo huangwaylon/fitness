@@ -232,6 +232,12 @@
     // a visitor standing in front of the campsite (K.K. and Jack at night) over its door: theirs, not the door's (the
     // door's handler is delegated to the root, after this one; the 3D island's camera shows the door small behind them)
     if (t instanceof Element && t.closest('[data-building] .door') && visitor?.tap(e.clientX, e.clientY)) return void e.stopPropagation();
+    // my line out: a tap anywhere on the island is its reel (NH's A button: my villager, a tree, a seat, the water), but
+    // a building's door, which one goes through with it (the line ends there)
+    if (critters?.lineOut() && t instanceof Element && scene?.querySelector('.stage')?.contains(t) && !t.closest('[data-building] .door')) {
+      critters.tap(e.clientX, e.clientY);
+      return void e.stopPropagation();
+    }
     // what the island tests by position in front of a building's body (its tap area: the model's silhouette), a present
     // lying before it, a fish in the pond before it, a bug by its wall: theirs, not the door's; what's behind it is hidden
     const house = t instanceof Element ? t.closest<HTMLElement>('[data-building]') : null;
@@ -245,7 +251,7 @@
         return r > 0 && [[0, 0], [r, 0], [-r, 0], [0, r], [0, -r]].some(([dx, dy]) => off(px + dx, py + dy));
       };
       const [cx, cy] = [e.clientX, e.clientY];
-      if (critters?.tap(cx, cy, seen, false) || deck?.tap(cx, cy, seen) || cakeEl?.tap(cx, cy, seen) || finds?.tap(cx, cy, seen) || care?.tap(cx, cy, seen))
+      if (critters?.tap(cx, cy, seen, false) || deck?.tap(cx, cy, seen) || cakeEl?.tap(cx, cy, seen) || finds?.tap(cx, cy, seen) || care?.tap(cx, cy, seen) || critters?.fish(cx, cy, seen))
         return void e.stopPropagation();
     }
     const stage = scene?.querySelector<HTMLElement>('.stage');
@@ -268,6 +274,9 @@
     if (visitor?.tap(cx, cy)) return;
     if (finds?.tap(cx, cy)) return;
     if (care?.tap(cx, cy)) return;
+    // the water under the finger, nothing of the island's over it (a canopy over the pond shakes its tree): a cast from
+    // where my villager stands (NH), or too far (it says so, and the water still rings)
+    if (!t.closest('[data-tree], [data-bush], [data-campfire], [data-sit], [data-fixture], [data-flower]') && critters?.fish(cx, cy)) return;
     // the tapped element: a tree (Scenery's canopy), a bush (Scenery's art) or a flower (Flowers)
     // (a tree top reaching into the sky leaves the sun, the moon and the clouds theirs)
     const treeEl = t.closest<HTMLElement>('[data-tree]');

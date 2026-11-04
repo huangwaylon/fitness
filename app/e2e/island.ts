@@ -92,22 +92,6 @@ export async function camTo(page: Page, z: number, rest = true) {
   else await expect.poll(() => w3(page, (w) => w.camStill()), { message: 'the camera still' }).toBe(true);
 }
 
-/** The camera to the shadow in `water` (Critters' __fish: where it's seen now) when it's off this screen: a pinned
- *  fish comes in a reach of its water the camera saw as it came, and a camera moved after that may have it out of view
- *  (the river's reaches run the island's length). Its spot a little up the screen, the camera within its stops. */
-export async function camToFish(page: Page, water: string) {
-  const at = () => page.evaluate((water) => {
-    const W = window as unknown as { __fish: { fish(): { water: string; x: number; z: number }[] }; __world: { at(x: number, z: number): [number, number] } };
-    const f = W.__fish.fish().find((f) => f.water === water);
-    return f ? { z: f.z, y: W.__world.at(f.x, f.z)[1] } : null;
-  }, water);
-  await expect.poll(at, { message: `the shadow in the ${water}` }).not.toBeNull();
-  const { z, y } = (await at())!;
-  if (y > 140 && y < (page.viewportSize()?.height ?? 844) - 120) return;
-  const [lo, hi] = await page.evaluate(() => (window as unknown as { __world: { stops(): [number, number] } }).__world.stops());
-  await camTo(page, Math.max(lo, Math.min(hi, z - 100)), false);
-}
-
 /** Time on: the page's clock (`page.clock.install()` first) runs `ms`, the 3D engines' frames included (the clock fakes
  *  requestAnimationFrame): the sim step. Quick in the logic tier (nothing drawn); drawn under software GL a minute of
  *  frames takes minutes (use `page.clock.fastForward` there). */
@@ -135,18 +119,85 @@ export async function geo(page: Page): Promise<Geo> {
   return page.evaluate(() => (window as unknown as { __world: { geo(): Geo } }).__world.geo());
 }
 
-/** A tap at (x, y) the moment the fish bites (the 「！」, `[data-bite]`): waited for in the page (a MutationObserver), not
- *  by expect's polling, which backs off to a look a second, past NH's 1.6 s bite window (critters.ts BITE_WINDOW_MS)
- *  under CI's load, so the reel came after the fish had gone. Work out (x, y) before the bite. */
+/** A tap at (x, y) the moment the fish bites (the 「！」, `[data-bite]`): watched for and tapped in the page (a
+ *  MutationObserver, then a click on what's at (x, y), as a finger's goes), not by expect's polling and a round trip
+ *  back, which under CI's load came after NH's short window (island/fishing.ts BITE_WINDOW_MS). Work out (x, y) before
+ *  the bite. */
 export async function reelOnBite(page: Page, x: number, y: number, timeout = 12_000) {
-  await page.evaluate((timeout) => new Promise<void>((ok, no) => {
+  await page.evaluate(([x, y, timeout]) => new Promise<void>((ok, no) => {
     const bit = () => !!document.querySelector('[data-bite]');
-    if (bit()) return ok();
-    const mo = new MutationObserver(() => bit() && (mo.disconnect(), clearTimeout(t), ok()));
+    const tap = () => {
+      document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0 }));
+      ok();
+    };
+    if (bit()) return tap();
+    const mo = new MutationObserver(() => bit() && (mo.disconnect(), clearTimeout(t), tap()));
     const t = setTimeout(() => (mo.disconnect(), no(new Error('no bite'))), timeout);
     mo.observe(document, { childList: true, subtree: true, attributes: true });
-  }), timeout);
-  await page.mouse.click(x, y);
+  }), [x, y, timeout] as const);
+}
+
+type Fishing = {
+  __fish: { fish(): { water: string; x: number; z: number }[] };
+  __world: { free(x: number, z: number, away?: number): boolean; put(x: number, z: number): void; at(x: number, z: number): [number, number]; mine(): [number, number] };
+};
+/** My villager on the bank within a cast of the shadow in `water` (island/fishing.ts CAST_REACH_U: NH casts from where
+ *  it stands): open ground near it, behind it on screen where there's any (so it never stands over the shadow), put
+ *  there; the camera on the shadow first. Where the shadow is seen now (client px). */
+export async function toTheWater(page: Page, water: string): Promise<[number, number]> {
+  // (the opening beats over: a greeting's balloon at the bottom of the screen lies over the sea)
+  await quiet(page);
+  // (the camera where the shadow is a little below the screen's middle, at the whole island's zoom: a shadow far up
+  // the island by the horizon is a speck, and the ground there is the far bank's)
+  await page.evaluate((water) => {
+    type G = { go(z: number, k?: number, x?: number): void; client(x: number, z: number): [number, number]; view(): { camZ: number } };
+    const w = (window as unknown as { __world3d: G }).__world3d, f = (window as unknown as Fishing).__fish.fish().find((f) => f.water === water)!;
+    let best: [number, number] | null = null;
+    for (let z = f.z - 700; z <= f.z + 100; z += 25) {
+      w.go(z, 1, f.x);
+      const d = Math.abs(w.client(f.x, f.z)[1] - innerHeight * 0.58);
+      if (!best || d < best[1]) best = [w.view().camZ, d];
+    }
+    w.go(best![0], 1, f.x);
+  }, water);
+  await expect.poll(() => w3(page, (w) => w.camStill()), { message: 'the camera still' }).toBe(true);
+  const spot = await page.evaluate((water) => {
+    const w = window as unknown as Fishing, f = w.__fish.fish().find((f) => f.water === water)!;
+    for (const behind of [true, false])
+      for (let r = 40; r <= 160; r += 8)
+        for (let a = 0; a < 24; a++) {
+          const x = Math.round(f.x + Math.cos((a / 24) * Math.PI * 2) * r), z = Math.round(f.z + Math.sin((a / 24) * Math.PI * 2) * r);
+          if (behind && z < f.z + 20) continue;
+          if (w.__world.free(x, z, 0)) return [x, z] as [number, number];
+        }
+    return null;
+  }, water);
+  expect(spot, `open ground within a cast of the ${water}'s shadow`).not.toBeNull();
+  await page.evaluate(([x, z]) => (window as unknown as Fishing).__world.put(x, z), spot!);
+  await expect.poll(() => page.evaluate(() => (window as unknown as Fishing).__world.mine()).then(([x, z]) => Math.hypot(x - spot![0], z - spot![1]))).toBeLessThan(1);
+  // the shadow's spot, or the water nearest it a finger can tap (nothing of the island's over it: a canopy, a door, a
+  // bush on the bank), within 60 px
+  const find = () => page.evaluate((water) => {
+    const w = window as unknown as Fishing & { __world3d: { ground(cx: number, cy: number): { x: number; z: number } | null }; __world: { ground(x: number, z: number): { surface: string } } };
+    const f = w.__fish.fish().find((f) => f.water === water)!, [cx, cy] = w.__world.at(f.x, f.z);
+    const TAPS = 'button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor], [data-fx="talk"]';
+    for (let r = 0; r <= 60; r += 6)
+      for (let a = 0, n = r ? 16 : 1; a < n; a++) {
+        const x = cx + Math.cos((a / n) * Math.PI * 2) * r, y = cy + Math.sin((a / n) * Math.PI * 2) * r;
+        const g = w.__world3d.ground(x, y), s = g && w.__world.ground(g.x, g.z).surface;
+        if ((s === 'water' || s === 'sea') && !document.elementFromPoint(x, y)?.closest(TAPS)) return [x, y] as [number, number];
+      }
+    return null;
+  }, water);
+  // (still clear a moment later: nothing walking over it, a villager or a balloon)
+  const clear = (p: [number, number]) => page.evaluate(([x, y]) => !document.elementFromPoint(x, y)?.closest('button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor], [data-fx="talk"]'), p);
+  let pt: [number, number] | null = null;
+  await expect.poll(async () => {
+    if (pt && (await clear(pt))) return true;
+    pt = await find();
+    return false;
+  }, { message: `water a finger can tap by the ${water}'s shadow` }).toBe(true);
+  return pt!;
 }
 
 /** A dig spot on screen and where to tap it (client px): the camera to each of the day's in turn (Finds' `data-digs`

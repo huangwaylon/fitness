@@ -1,7 +1,7 @@
 // The island on its editable layout (docs/island-layout.md "What the 3D integration must change"; island/site.svelte.ts):
 // the gameplay reads the long layout: the doors, the homes, the walk, the waters.
 import { expect, test, type Page } from '@playwright/test';
-import { geo, is3d, openNear, quiet, settled, tapOn } from './island';
+import { geo, is3d, openNear, quiet, reelOnBite, settled, tapOn } from './island';
 
 type Site = { on: boolean; doors: Record<string, [number, number]>; homes: { A: [number, number]; B: [number, number] }; stage: [number, number]; named: Record<string, [number, number]>; grass: [number, number][] };
 const site = (page: Page) => page.evaluate(() => (window as unknown as { __world: { site(): Site } }).__world.site());
@@ -104,9 +104,8 @@ test('a pond fish on the long layout: cast beside it, the bite, a tap catches it
   const f = (await where())!;
   await page.mouse.click(f.x + 6, f.y);
   await expect(page.locator('[data-bobber]')).toBeAttached();
-  await expect(page.locator('[data-bite]')).toHaveText('！', { timeout: 10_000 });
-  await page.waitForTimeout(400); // (the bite's beat: a tap before it is a miss)
-  await page.mouse.click(196, 420);
+  // the reel the moment it bites (a tap before it scares it off: e2e/island.ts reelOnBite)
+  await reelOnBite(page, 196, 420);
   await expect(page.locator('[data-fx="catch"]')).toBeAttached({ timeout: 5000 });
 });
 

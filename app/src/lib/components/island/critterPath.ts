@@ -42,9 +42,8 @@ export interface Leg extends P3 {
 /** The fresh water a fresh-water spawn swims in (the pond, the river, the mouth, the clifftop): its channel's. */
 export const freshWater = (s: Spawn): FreshWhere => s.water ?? FRESH[Math.floor(subRand(s.seed, 1)() * FRESH.length) % FRESH.length];
 
-/** In that water, clear of its edge. */
-export const inWater = (water: Water, x: number, z: number): boolean =>
-  water === 'sea' ? z <= -14 && surfaceAt(x, z) === 'sea' : waterAt(x, z, false, -4) === water;
+/** In that water (the island's tiles: critters.ts waterAt), clear of its edge. */
+export const inWater = (water: Water, x: number, z: number): boolean => waterAt(x, z, -6) === water;
 
 const swimPoint = (a: Swim, water: Water, r: () => number): { x: number; z: number } => {
   for (let i = 0; i < 40; i++) {
@@ -111,7 +110,7 @@ const PACE: Partial<Record<BugId, [number, number, number]>> = {
 
 /** The ground a place's bugs keep to (the spot's surface). */
 export function groundOk(place: BugPlace, x: number, z: number): boolean {
-  if (place === 'water') return waterAt(x, z, false, -3) !== null;
+  if (place === 'water') return ((w) => w !== null && w !== 'sea')(waterAt(x, z, -3));
   const s = surfaceAt(x, z);
   if (place === 'beach') return s === 'sand';
   if (place === 'grass' || place === 'under-tree' || place === 'rock') return s === 'grass' || s === 'dirt';
@@ -287,7 +286,9 @@ export function bugPath(id: BugId, seed: number, stayMs: number, o: BugOpts = {}
     const [reach, m0, m1] = PACE[id] ?? [18, 1600, 2600];
     const x = clamp(at.x + clamp(p.x - at.x, -reach, reach), a.x0, a.x1);
     const z = clamp(at.z + clamp(p.z - at.z, -reach / 2, reach / 2), a.z0, a.z1);
-    go({ x, z, lift: p.lift }, between(r, m0, m1));
+    // (a step short of the spot that isn't its ground, a bank's corner: on to the spot itself)
+    const next = { x, z, lift: p.lift };
+    go(ok(next) ? next : p, between(r, m0, m1));
     t += between(r, 1200, 3200);
   }
   return done;

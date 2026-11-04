@@ -22,6 +22,8 @@ import type { Face } from '../villager3d/faces.ts';
 import type { Motion } from '../motion/reactions.ts';
 import { site } from '../island/site.svelte.ts';
 import { seatAnchor } from '../island/sitting.ts';
+// (how far a villager may stand from its float and still hold the line: the line's own, island/fishing.ts)
+import { LINE_REACH_U as LINE_REACH } from '../island/fishing.ts';
 
 export interface VSpec {
   /** The slot (an actor: mine, partner, third, visitor) and the roster id it draws. */
@@ -81,8 +83,6 @@ const ACT: Partial<Record<Motion, Action>> = {
   // group stretching (island/stretching.ts): NH's three, posed
   warmup: 'warmup', sidebend: 'sidebend', leap: 'jump'
 };
-/** How far my villager may stand from its float and still hold the line (u: the beach from the lawn, not across the island). */
-const LINE_REACH = 220;
 /** The island's seats (world.ts SEATS) on their pieces: which piece, its model (villager3d/seats3d.json) and which of
  *  its seats (left to right). */
 const SEAT_ON: Record<string, [piece: string, model: string, n: number]> = {
@@ -279,8 +279,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
           if (a === 'reel') w.rodUntil = t + ACTION_MS.reel;
         }
       }
-      // (only within a line's reach of the float: further off, the line runs from the bank, as Critters' 2D line, and
-      // its angler stands there empty-handed)
+      // (only within a line's reach of the float: a phone a step behind, the angler stands empty-handed a moment)
       const angled = ang.phase !== null || t < w.rodUntil, reach = !angled || Math.hypot(ang.x - s.x, ang.z - s.z) < LINE_REACH;
       const rod = reach && (s.tool === 'tools/rod' || t < w.rodUntil || (ang.phase !== null && ang.phase !== 'reel'));
       holdTool(w, rod ? 'tools/rod' : (s.tool ?? null));

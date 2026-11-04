@@ -93,6 +93,9 @@ Most red runs so far were the spec, not the app. Before pushing a new or changed
 8. **Each test starts clean**: a fresh context, service workers blocked. Don't lean on another test's leftovers, and
    don't make one test do the work of three: a short test fails clearly and shards evenly.
 9. **Don't loosen an assertion to make it pass.** If the app is wrong, it's a bug: fix it or say so in the commit.
+10. **Fishing**: a cast reaches only from my villager's bank (island/fishing.ts CAST_REACH_U): `e2e/island.ts`
+    `toTheWater` puts it there and gives a water point to tap; the bite's window is short, so `reelOnBite` taps in the
+    page the moment the 「！」 shows. `__fish.why()` names what the last tap on water did; `__fish.line()` its phase.
 
 ## Memory
 The PWA stays open for days, so a scene's round trip must leave nothing behind. `e2e/leaks.spec.ts` (`@chromium`, in

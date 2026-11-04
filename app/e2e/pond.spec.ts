@@ -7,7 +7,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { FISH } from '../src/lib/components/island/critters.ts';
 import { POND_FISH, freshPool } from '../src/lib/components/island/pondFish.ts';
-import { camTo, camToFish, geo, reelOnBite, type Geo } from './island';
+import { camTo, geo, reelOnBite, toTheWater, type Geo } from './island';
 import { fromMenu, hudBells, hudMenu } from './hud.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
@@ -41,20 +41,14 @@ async function open(page: Page, q: string, at: 'mae' | 'oku' = 'oku') {
   return { bells: await hudBells(page).getAttribute('aria-label'), url: page.url() };
 }
 
-/** Cast at the shadow in `water` where it's seen now (__fish: its model's spot, which a tap goes by; the sprite's box
- *  may trail it a little as it swims), wait for the 「！」 and reel in with a tap anywhere. */
+/** Cast by the shadow in `water` from its bank (NH casts from where it stands: my villager put there, the camera on
+ *  it), wait for the 「！」 and reel in with a tap anywhere. */
 async function fish(page: Page, water: string, reel: { x: number; y: number }) {
-  // (the shadow comes in a reach of that water the camera saw as it came: the camera to it, if off screen)
-  await camToFish(page, water);
-  const [x, y] = await page.evaluate((water) => {
-    const W = window as unknown as { __fish: { fish(): { water: string; x: number; z: number }[] }; __world: { at(x: number, z: number): [number, number] } };
-    const f = W.__fish.fish().find((f) => f.water === water)!;
-    return W.__world.at(f.x, f.z);
-  }, water);
+  const [x, y] = await toTheWater(page, water);
   await page.mouse.click(x, y);
   await expect(page.locator('[data-bobber]'), await page.evaluate(() => (window as unknown as { __fish: { why(): string } }).__fish.why())).toBeAttached();
-  // any tap is the reel, the moment it bites (the 1.6 s window: e2e/island.ts reelOnBite)
-  await reelOnBite(page, reel.x, reel.y, 10_000);
+  // any tap is the reel, the moment it bites (e2e/island.ts reelOnBite)
+  await reelOnBite(page, reel.x, reel.y, 15_000);
 }
 
 for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {

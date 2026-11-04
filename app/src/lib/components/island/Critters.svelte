@@ -6,14 +6,13 @@
   // spring: pondFish.ts, its own chunk, fetched with the first such shadow), or a bug of the season and hour comes by
   // where NH keeps it; a shaken bush sometimes lets a butterfly or a moth out. A catch is an official icon and NH's
   // line, and the first of each a ずかん find (never ベル).
-  //   Fishing, the same in every water (critters.ts `Water`): a tap on a shadow or in the water near it (`fishFor`: CAST_U
-  //   in its water, NEAR_U in another, whatever water the tapped ground is) walks my villager
-  //   to its fishing spot (the beach in front, z ≈ 18, facing the sea; the pond's back bank, walkGraph's pondside; the
-  //   river's bank) and casts a bobber; the fish swims up, nibbles 1–3 times (small wiggles of the bobber) and bites: the
-  //   bobber is yanked under with a splash, its own sound and NH's 「！」 over it. While the bobber is out any tap is the
-  //   reel: on the bite (within 1.6 s) it catches the fish; a first tap any earlier only makes it hesitate (it backs
-  //   off, comes back, nibbles and bites later), a second early tap or none in time and it flees. 1 in 14 the line
-  //   brings up a boot, a tire or a can.
+  //   Fishing, NH's, the same in every water (fishing.ts: my line's state machine; critters.ts waterAt, landing: the
+  //   water as the island's tiles have it): a tap on water within CAST_REACH_U of my villager casts there from where it
+  //   stands, turning to it (further: it turns, a boop and 「とどかない」 where the tap was). A shadow near the float on
+  //   open water notices it, swims up, nibbles 1–4 times and bites: the float is yanked under with a splash, its own
+  //   sound and NH's 「！」. While the line is out any tap is the reel: on the bite it catches the fish; any earlier
+  //   with a fish at it scares it off; with none it just reels in. No tap in time and it gets away (the float stays
+  //   out). 1 in 14 the line brings up a boot, a tire or a can.
   //   Diving (island/sea.ts, loaded with the first bubble spot): 1 sea turn in 4 brings a spot of bubbles rising instead
   //   of a shadow; a tap on it is a dive (a splash, a ripple): a slow sea creature is caught; a quick one darts off as a
   //   shadow and a second tap on it in time catches it, or it gets away. Now and then the spot holds NH's pearl.
@@ -41,6 +40,7 @@
   //   ?sea=<id>|pearl: a bubble spot; ?flea: a tap on my villager always sends a flea off it.
   import { fx3d } from './fx3d.ts';
   import { NIBBLE_MS, PLUNGE_MS, angle, angling, floatLift, nibbled } from '../world3d/fishing3d.ts';
+  import { BITE_WINDOW_MS, NOTICE_U, aim, cast as castLine, due, pull, step as stepLine, type Around, type Line as MyLine, type Plan, type Step } from './fishing.ts';
   import { actorOf } from '#lib/ui-state/cast.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { EASE, Glide, turn, yawOf } from './glide.ts';
@@ -66,26 +66,25 @@
   import { findArt } from './beach.ts';
   import { eggTime, eventNow } from './events.ts';
   import { eggOnLine } from './eggs.ts';
-  import { partnerTurnTo, turnTo } from './avatar.ts';
+  import { partnerTurnTo, sendTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { caught } from '#lib/sync/world-day.ts';
   import type { FishPhase, How, Relayed, Who } from '#lib/sync/live-protocol.ts';
   import { STILL, bubblesAt, bugAt, bugPath, clamp, critterId, fishPath, freshWater, groundOk, inWater, legAt, type BugOpts, type Flying, type Leg } from './critterPath.ts';
   import { tellPartner } from './partnerNews.ts';
-  import { inMotion, livePos } from '../motion/director.svelte.ts';
+  import { actors, inMotion, livePos, wake as wakeUp } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from './sea.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
-  import { GOAL_TREES, POND, ROCK, SEA_BOX, SHORE_Z, flowerById, pondAt, surfaceAt } from './world.ts';
-  import { nearestWalkable, walkGeo } from './walkGraph.ts';
+  import { GOAL_TREES, ROCK, SEA_BOX, SHORE_Z, flowerById } from './world.ts';
   import {
-    BUGS, bushes, CAST_U, FISH, FRESH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS, bitePlan,
-    bugPlace, bushBug, castInto, castPhase, critterArt, findKind, fleesFrom, freshAreas, shadowLen, fleaJumps, hesitatePlan, hookItem, netSwing,
-    oddsAt, patches, perch3d, perches, pickBug, pickFish, reel, stalkTap, swimAt, waterAt, type BitePlan, type BugId, type BugPlace, type Catch,
+    BUGS, bushes, FISH, FRESH, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS,
+    bugPlace, bushBug, critterArt, findKind, fleesFrom, freshAreas, shadowLen, fleaJumps, hookItem, landing, netSwing,
+    oddsAt, patches, perch3d, perches, pickBug, pickFish, sameWater, stalkTap, swimAt, swimmable, type BugId, type BugPlace, type Catch,
     type FishId, type Flight, type JunkId, type Patch, type StalkState, type Swim, type Water
   } from './critters.ts';
   import type { PondFishId } from './pondFish.ts';
-  import { RIVER, riverNear, type FreshWhere } from './world.ts';
+  import type { FreshWhere } from './world.ts';
 
   const WATERS: readonly Water[] = ['sea', ...FRESH];
 
@@ -113,25 +112,8 @@
     cid?: string; legs?: Leg[]; t0?: number;
     /** Another's line is out at it (their phone's `fish` steps): theirs while it is, swimming up to their float. */
     taken?: Who;
-  }
-  interface Cast {
-    /** The shadow it was cast to (its water). */
-    fish: Fish;
-    /** Where the bobber is (world) and where the line starts, relative to it (local units: the rod's tip, measured,
-     *  or the bank). */
-    x: number; z: number; fx: number; fy: number;
-    /** The bank the line starts from when my villager didn't walk there (world). */
-    sx: number; sz: number;
-    landed: boolean; t0: number; plan: BitePlan | null; under: boolean; rings: number;
-    /** The 「！」's nudge (px) keeping it on screen; the 3D island draws it (fx3d.ts: the DOM's invisible). */
-    bdx: number;
-    bang3?: boolean;
-    /** Bumped by each new plan (and a hesitation): the old plan's timers check it and stand down. */
-    gen: number;
-    /** A first tap before the bite made the fish hesitate: the next early one scares it off. */
-    hesitated: boolean;
-    /** When it went out (the relay's clock: the others' phones hear it). */
-    s0: number;
+    /** Its stay is over: it leaves once no line holds it (never while it plays with a float). */
+    due?: boolean;
   }
   /** Another's line as their phone tells it (`fish` steps): its float at (x, z), the line from their villager's rod (the
    *  bank's sx, sz when it isn't in reach), at a shadow `id`. */
@@ -162,13 +144,6 @@
   interface Net { n: number; x: number; y: number; in3d?: boolean }
 
   const rand = Math.random;
-  /** My 3D villager holds the rod within this of its float (u: world3d/villagers.ts LINE_REACH), else the line's the bank's. */
-  const ROD_U = 220;
-  /** A tap this far round a shadow as drawn is on it (px: a finger's slack, Apple's 44pt target). */
-  const FINGER_PX = 44;
-  /** A tap in another water this close to a shadow casts to it all the same (u: the river by its mouth, the sea at the
-   *  mouth, the falls' pool and the river below it are one water to the eye). */
-  const NEAR_U = 90;
   const between = (a: number, b: number) => a + rand() * (b - a);
   /** A node's inner offset (local units: before the node's perspective scale). */
   const loc = (dx: number, dy: number) => `calc(${dx.toFixed(2)} * var(--u)) calc(${dy.toFixed(2)} * var(--u))`;
@@ -178,29 +153,43 @@
   /** One shadow in the sea and one in each fresh water, at most. */
   const none = (): Record<Water, Fish | null> => ({ sea: null, pond: null, river: null, mouth: null, clifftop: null });
   let fishes = $state<Record<Water, Fish | null>>(none());
-  let cast = $state<Cast | null>(null);
+  // ---------- my line (fishing.ts: its state machine; here, what each of its steps plays) ----------
+  /** My line, as the machine has it (null: none out). */
+  let line = $state.raw<MyLine | null>(null);
+  /** Each line's number (a shadow's darts at an older one stand down), when it went out (the relay's clock: the others'
+   *  phones hear it), and its rings so far (the landing's, each nibble's small ring, the bite's splash: a node each). */
+  let lineN = 0, lineS = 0;
+  let rings = $state(0);
+  /** The 「！」's nudge (px) keeping it on screen, and whether the 3D island drew it (fx3d.ts: the DOM's invisible). */
+  let bang = $state<{ dx: number; in3d: boolean } | null>(null);
+  /** A tap the line can't answer with a cast: the reason, where it was (world), shown a moment (「とどかない」). */
+  let nope = $state<{ n: number; x: number; z: number } | null>(null);
+  /** Why the last tap on water did what it did (the e2e's `__fish.why()`). */
+  let why = '';
   // the 3D island's angler (world3d/fishing3d.ts: my 3D villager's rod swings out, tugs at the bite, reels in); a reel
   // stays said till the next cast
   $effect(() => {
-    const c = cast;
-    if (c) angle(c.under ? 'bite' : c.landed ? 'wait' : 'cast', { x: c.x, z: c.z });
+    const l = line;
+    if (l) angle(l.phase === 'bite' ? 'bite' : l.phase === 'flying' ? 'cast' : 'wait', l);
     else if (angling.phase !== 'reel') angle(null);
-    // (the line in without a reel: it got away, nobody came, the critters left)
-    if (!c) untrack(() => tellLine('off'));
+    // (the line in without a reel: my villager walked off, the critters left, the day ended)
+    if (!l) untrack(() => tellLine('off'));
   });
   // gone with the line out (through a door: the phone's socket stays, so the others hear it end), and the others'
   // villagers' rods down (their steps go unheard till I'm back)
   onMount(() => () => {
-    if (cast) tellLine('off');
+    clearTimeout(tickT);
+    if (line) tellLine('off');
     angle(null);
     for (const l of Object.values(lines)) if (l) angle(null, undefined, l.slot);
   });
   /** Where the 3D float is this frame (one array, rewritten: read every frame). */
   const floatXYZ: [number, number, number] = [0, 0, 0];
-  const floatAt = (c: Cast) => ((floatXYZ[0] = c.x), (floatXYZ[1] = c.z), (floatXYZ[2] = floatLift(performance.now())), floatXYZ);
+  const floatAt = (l: MyLine) => ((floatXYZ[0] = l.x), (floatXYZ[1] = l.z), (floatXYZ[2] = floatLift(performance.now())), floatXYZ);
   // the 3D float bobs, dips and plunges each frame (fishing3d.ts floatLift): frames at full rate while it's on the water
+  const floatOut = $derived(!!line && line.phase !== 'flying');
   $effect(() => {
-    if (cast?.landed && w.rest.three) return w.moveStart();
+    if (floatOut && w.rest.three) return w.moveStart();
   });
   let bug = $state<Bug | null>(null);
   let net = $state<Net | null>(null);
@@ -232,8 +221,9 @@
   const pending = timers(), later = pending.later;
   function clearAll() {
     pending.clear();
+    clearTimeout(tickT);
     fishes = none();
-    cast = bug = net = dig = bubbles = diving = null;
+    line = bug = net = dig = bubbles = diving = nope = bang = null;
   }
 
   // ---------- geometry ----------
@@ -371,7 +361,7 @@
     Object.assign(f, { x, z, ms });
   }
   /** Playing with a bobber: mine, or another's line out at it. */
-  const busy = (f: Fish) => cast?.fish === f || !!f.taken;
+  const busy = (f: Fish) => line?.fish === fishId(f) || !!f.taken;
   /** A slow wander to another spot in its patch of water (NH shadows dawdle), unless it's busy with a bobber: a shared
    *  one along its itinerary, leg by leg at its time (the same on both phones). */
   function swim(f: Fish) {
@@ -397,100 +387,166 @@
   }
   function leaveFish(f: Fish) {
     if (fishes[f.water] !== f) return;
-    if (busy(f)) return later(() => leaveFish(f), 4000); // never while it's playing with a bobber
+    if (busy(f)) return void (f.due = true); // (letGo: once the line lets it go)
     f.gone = true;
     later(() => fishes[f.water] === f && (fishes[f.water] = null), 1200);
   }
-  /** The fish is spooked: a quick dart away from the bobber and gone (on both phones: it got away). */
-  function flee() {
-    const c = cast, f = c?.fish;
-    cast = null;
-    sceneSfx('flee');
-    if (!f || fishes[f.water] !== f) return;
-    claim(f.cid, f.item, f.x, f.z, 'flee');
+  /** A line let go of it (reeled in, ended, another came to it): its stay over meanwhile, it leaves now. */
+  const letGo = (f: Fish | null | undefined) => f && f.due && !busy(f) && leaveFish(f);
+  /** Spooked (an early pull, or the bite missed): a quick dart away from the float (x, z) and gone (on both phones: it
+   *  got away). */
+  function fleeFrom(f: Fish, x: number, z: number) {
+    if (fishes[f.water] !== f || f.gone) return;
     const p = fishNow(f) ?? f;
-    const d = c ? Math.hypot(p.x - c.x, p.z - c.z) || 1 : 1;
-    const [ux, uz] = c ? [(p.x - c.x) / d, (p.z - c.z) / d] : [f.flip ? 1 : -1, 0];
+    claim(f.cid, f.item, p.x, p.z, 'flee');
+    const d = Math.hypot(p.x - x, p.z - z) || 1;
     const run = f.water === 'sea' ? 40 : 14; // a small water: it dives instead of darting off
     Object.assign(f, { x: p.x, z: p.z });
-    swimTo(f, p.x + ux * run, p.z + uz * run, 650);
+    swimTo(f, p.x + ((p.x - x) / d) * run, p.z + ((p.z - z) / d) * run, 650);
     Object.assign(f, { dash: true, gone: true });
     later(() => fishes[f.water] === f && (fishes[f.water] = null), 700);
   }
 
-  /** Where the angler stands to cast at a bobber at (x, z) in `water` (world): on the beach in front of it, facing the
-   *  sea; the pond's back bank (walkGraph's pondside: in front, my villager would hide the little pond); the river's
-   *  bank, the far one where the channel runs across (the line in view), else the island's side. */
-  function anglerSpot(water: Water, x: number, z: number): readonly [number, number] {
-    if (water === 'sea') return [Math.round(clamp(x, SEA_BOX.x0 + 20, SEA_BOX.x1)), SHORE_Z + 18];
-    const g = walkGeo();
-    if (water === 'pond') {
-      // the painted pond's back bank (pondside); a pond put down: its own back bank
-      const o = pondAt(x, z, 14);
-      if (!o || o === POND) return g.nodes.pondside;
-      return nearestWalkable(g, o.x, o.z + o.rz + 14, 40) ?? nearestWalkable(g, o.x, o.z - o.rz - 14, 40) ?? [x, z];
+  /** The shadow under a key (fishId), while it's here. */
+  const fishByKey = (k: string | null | undefined): Fish | null => (k ? (WATERS.map((wt) => fishes[wt]).find((f) => !!f && fishId(f) === k) ?? null) : null);
+  /** The island's day (ambient life's, on the relay's clock: the shadows' own). */
+  const today = () => slotAt(now().getTime(), relayOffset()).date;
+  /** What a step of my line asks of the island: my villager, the day, the shadows. */
+  const around = (): Around => {
+    const [x, z] = livePos('mine');
+    return {
+      me: { x, z, asleep: actors.mine.asleep }, day: today(), rand,
+      // the nearest free shadow on that water within NOTICE_U, open water between it and the float
+      notice(x, z, water) {
+        let best: { fish: string; d: number } | null = null;
+        for (const wt of WATERS) {
+          const f = fishes[wt];
+          if (!f || f.gone || f.taken || theirs(f.cid) || !sameWater(water, f.water)) continue;
+          const p = fishNow(f) ?? f, d = Math.hypot(p.x - x, p.z - z);
+          if (d <= NOTICE_U && (!best || d < best.d) && swimmable(f.water, p.x, p.z, x, z)) best = { fish: fishId(f), d };
+        }
+        return best;
+      },
+      here(k) {
+        const f = fishByKey(k);
+        return !!f && !f.gone && !f.taken && !theirs(f.cid);
+      }
+    };
+  };
+  /** The look between steps while the float waits (ms): a shadow swimming near it notices it within this. */
+  const LOOK_MS = 250;
+  let tickT: ReturnType<typeof setTimeout> | undefined;
+  /** My line stepped to now (fishing.ts step), what it did played, and the next step set for when it's due. */
+  function tick() {
+    clearTimeout(tickT);
+    const l = line;
+    if (!l) return;
+    const t = performance.now(), r = stepLine(l, t, around());
+    line = r.line;
+    for (const st of r.steps) play(st, l);
+    if (l.fish && r.line?.fish !== l.fish) letGo(fishByKey(l.fish));
+    if (r.line) tickT = setTimeout(tick, Math.max(10, Math.min(due(r.line), t + LOOK_MS) - t));
+  }
+  /** A step of my line, played: the float, the shadow, the sounds, the 「！」, the others' phones. */
+  function play(st: Step, was: MyLine) {
+    const l = line ?? was, f = 'fish' in st ? fishByKey(st.fish) : null;
+    switch (st.ev) {
+      case 'land':
+        rings++;
+        sceneSfx('plop');
+        return;
+      case 'notice':
+        // (the others' phones: the shadow at it is mine now)
+        tellLine('cast');
+        if (f) follow(f, l, st.plan);
+        return;
+      case 'arrive':
+        return;
+      case 'nibble':
+        rings++;
+        nibble(f ?? undefined);
+        sceneSfx('nibble');
+        return;
+      case 'bite': {
+        // NH's 「！」 (the phone's cue: NH has only the plunk) kept inside the screen, 8px from its sides; the 3D
+        // island's over my villager's head while the bite lasts (its splash and big ring are the float's node's)
+        const cx = w.clientAt(l.x, l.z)[0] - w.view.left, half = 22;
+        const [mx, mz] = livePos('mine');
+        bang = { dx: clamp(cx, half, w.view.vw - half) - cx, in3d: fx3d('bang', mx, mz, VILLAGER.h + 10, { ms: BITE_WINDOW_MS, held: () => line?.phase === 'bite' }) };
+        rings++;
+        tellLine('bite');
+        sceneSfx('bite');
+        return;
+      }
+      case 'escape':
+        // too late: it got away (the float stays out, bobbing)
+        bang = null;
+        tellLine('cast');
+        sceneSfx('flee');
+        if (f) fleeFrom(f, l.x, l.z);
+        return;
+      case 'lost':
+        bang = null;
+        tellLine('cast');
+        return;
+      case 'off':
+        bang = null;
+        return;
     }
-    const r = riverNear(x, z), [ax, az] = RIVER[r.i], [bx, bz] = RIVER[r.i + 1];
-    const len = Math.hypot(bx - ax, bz - az) || 1, ux = (bx - ax) / len, uz = (bz - az) / len;
-    let [nx, nz] = [-uz, ux];
-    if (Math.abs(nz) > 0.4 ? nz < 0 : nx * (195 - x) < 0) [nx, nz] = [-nx, -nz];
-    const reach = Math.max(r.hw, 18) + 14;
-    return nearestWalkable(g, x + nx * reach, z + nz * reach, 30) ?? nearestWalkable(g, x, z, 90) ?? [x, z];
-  }
-  function castAt(f: Fish, x: number, z: number) {
-    const to = castInto(f.water, x, z);
-    const spot = anglerSpot(f.water, to.x, to.z);
-    // in place (only a tap on empty ground walks): my villager turns to it and the line flies out from the bank
-    turnTo(to.x);
-    // the partner's phone: their line goes out there too
-    if (f.cid) shared.share({ kind: 'act', act: 'cast', id: f.cid, pt: [Math.round(to.x), Math.round(to.z)] });
-    throwLine(f, { ...to, sx: spot[0], sz: spot[1] });
-  }
-  /** The line's start relative to the bobber (its node's local units): the bank, where an angler would stand. */
-  function lineFrom(c: Cast): [number, number] {
-    const [bx, by] = w.clientAt(c.x, c.z), k = w.scaleAt(c.x, c.z) * w.view.s;
-    const [tx, ty] = w.clientAt(c.sx, c.sz, 6);
-    return [(tx - bx) / k, (ty - by) / k];
-  }
-  function throwLine(f: Fish, to: { x: number; z: number; sx: number; sz: number }) {
-    if (fishes[f.water] !== f || f.gone) return;
-    const c0: Cast = { fish: f, ...to, fx: 0, fy: 0, landed: false, t0: 0, plan: null, under: false, rings: 0, bdx: 0, gen: 0, hesitated: false, s0: Math.round(shared.now()) };
-    [c0.fx, c0.fy] = lineFrom(c0);
-    cast = c0;
-    tellLine('cast');
-    sceneSfx('cast');
-    sceneSfx('plop');
-    later(() => {
-      const c = cast;
-      if (!c) return;
-      c.landed = true;
-      c.t0 = performance.now();
-      c.rings++;
-      const d = Math.hypot(f.x - c.x, f.z - c.z);
-      if (d > NOTICE_U || fishes[f.water] !== f) return later(() => cast === c && (cast = null), 9000); // nobody noticed
-      follow(c, f, bitePlan(d, rand));
-    }, 300);
   }
 
-  /** Play out a plan (ms from the bobber landing): the swim up to it, nose to the bobber, the nibbles, the bite and its
-   *  window. A new plan (the fish hesitated) supersedes the old one's timers. */
-  function follow(c: Cast, f: Fish, plan: BitePlan) {
-    const gen = ++c.gen;
-    c.plan = plan;
-    const live = () => cast === c && c.gen === gen;
-    const at = (ms: number) => Math.max(0, ms - (performance.now() - c.t0));
+  /** A tap on water at world `at` with no line out: the cast there, from where my villager stands (NH: no walk), or the
+   *  reason it can't (too far: it turns to it, a boop and 「とどかない」 there, and the water rings as any tap on it
+   *  does: false). False too: no water there (not ours). */
+  function castAt(at: { x: number; z: number }, seen: Seen, px: number, py: number): boolean {
+    const to = landing(at.x, at.z) ?? onShadow(px, py);
+    if (!to) return (why = 'not water'), false;
+    // (behind a building's body: the building's tap)
+    if (!seen(to.x, to.z)) return (why = 'behind a building'), false;
+    const [mx, mz] = livePos('mine'), a = aim(to, { x: mx, z: mz });
+    if (!a.ok) {
+      why = 'too far';
+      turnTo(to.x);
+      cue('boop');
+      nope = { n: ++seq, x: to.x, z: to.z };
+      const n = nope.n;
+      later(() => nope?.n === n && (nope = null), 1400);
+      return false;
+    }
+    // dozing: the cast wakes it (as a tap on it does: on both phones); walking: it stops where it is, and casts
+    if (actors.mine.asleep) wakeUp('mine');
+    else if (inMotion('mine')) sendTo(mx, mz);
+    turnTo(to.x);
+    line = castLine(to, performance.now(), today());
+    lineN++;
+    lineS = Math.round(shared.now());
+    rings = 0;
+    bang = null;
+    // the partner's phone: their villager of mine turns to it (the line itself is the `fish` steps')
+    shared.share({ kind: 'act', act: 'cast', pt: [Math.round(to.x), Math.round(to.z)] });
+    tellLine('cast');
+    sceneSfx('cast');
+    why = `cast in the ${to.water}`;
+    tick();
+    return true;
+  }
+
+  /** The shadow that noticed my float swims up to it (NH): it turns to it, then closes in over 2–3 short darts with
+   *  pauses between, nose to the float by the plan's `arrive` (all from when it noticed). */
+  function follow(f: Fish, l: MyLine, plan: Plan) {
+    const n = lineN, key = fishId(f), t0 = l.noticed || performance.now();
+    const live = () => lineN === n && line?.fish === key;
+    const at = (ms: number) => Math.max(0, t0 + ms - performance.now());
     const from = fishNow(f) ?? f;
-    const d = Math.hypot(from.x - c.x, from.z - c.z) || 1;
-    const ux = (c.x - from.x) / d, uz = (c.z - from.z) / d;
+    const d = Math.hypot(from.x - l.x, from.z - l.z) || 1;
+    const ux = (l.x - from.x) / d, uz = (l.z - from.z) / d;
     const len = sizeU(f) * 0.5;
-    // NH: the shadow turns to the bobber, then closes in over 2–3 short darts (450–700 ms each, a long one first) with
-    // pauses between them (300–600 ms), nose to the bobber by plan.arrive (all scaled down if that's sooner)
-    const end = { x: c.x - ux * len, z: c.z - uz * len };
+    const end = { x: l.x - ux * len, z: l.z - uz * len };
     Object.assign(f, { ms: 0, x: from.x, z: from.z, spurt: true });
     // (the 3D model's nose meets the float once it's there)
-    nose = { f, at: c.t0 + plan.arrive, gen };
-    face(f, c.x, c.z);
-    const n = d > 60 ? 3 : 2, share = n === 3 ? [0.5, 0.82, 1] : [0.62, 1];
+    nose = { f, at: t0 + plan.arrive, n };
+    face(f, l.x, l.z);
+    const k3 = d > 60 ? 3 : 2, share = k3 === 3 ? [0.5, 0.82, 1] : [0.62, 1];
     const moves = share.map(() => between(450, 700)), pauses = share.slice(1).map(() => between(300, 600));
     const total = [...moves, ...pauses].reduce((a, b) => a + b, 0), avail = at(plan.arrive);
     const k = Math.min(1, avail / total);
@@ -499,28 +555,6 @@
       later(() => live() && Object.assign(f, { ms: m * k, x: from.x + (end.x - from.x) * share[i], z: from.z + (end.z - from.z) * share[i] }), t);
       t += (m + (pauses[i] ?? 0)) * k;
     });
-    for (const t of plan.nibbles)
-      later(() => {
-        if (!live()) return;
-        c.rings++;
-        nibble(f);
-        sceneSfx('nibble');
-      }, at(t));
-    later(() => {
-      if (!live()) return;
-      // NH's 「！」 (the phone's cue: NH has only the plunk) kept inside the screen, 8px from its sides
-      const cx = w.clientAt(c.x, c.z)[0] - w.view.left, half = 22;
-      c.bdx = clamp(cx, half, w.view.vw - half) - cx;
-      c.under = true;
-      c.rings++;
-      tellLine('bite');
-      // (the 3D island's pops over my villager's head while it holds the line, else over the bank the line runs from;
-      // till the reel or the miss. Its splash and big ring are the float's node's: on the water's surface)
-      const [mx, mz] = livePos('mine'), near = Math.hypot(mx - c.x, mz - c.z) < ROD_U;
-      c.bang3 = fx3d('bang', near ? mx : c.sx, near ? mz : c.sz, near ? VILLAGER.h + 10 : 26, { ms: plan.window, held: () => cast === c && c.under });
-      sceneSfx('bite');
-    }, at(plan.bite));
-    later(() => live() && flee(), at(plan.bite + plan.window)); // too late
   }
 
   let bobEl = $state<HTMLElement>();
@@ -561,8 +595,8 @@
   const NOSE_GAP = 2.4;
   /** A 3D model's fade out at the end of its leave (world3d/things.ts FADE_OUT_MS). */
   const FADE3_MS = 600;
-  /** My cast's fish, nose to the float from `at` (performance.now() ms) on, for that plan (`gen`: a hesitation ends it). */
-  let nose: { f: Fish; at: number; gen: number } | null = null;
+  /** My line's fish, nose to the float from `at` (performance.now() ms) on, for that line (`n`: lineN). */
+  let nose: { f: Fish; at: number; n: number } | null = null;
   /** The shadow's middle now (the 2D sprite's, by its transition's curve). */
   const fishGlide = (f: Fish, t: number) =>
     moOf(fishId(f), yawOf(f.flip ? 1 : -1, 0)).g.to(t, f.x, f.z, 0, f.ms, f.dash ? EASE.dash : f.spurt ? EASE.spurt : EASE.swim).at(t);
@@ -573,7 +607,7 @@
     const t = performance.now(), m = moOf(fishId(f), yawOf(f.flip ? 1 : -1, 0)), g = fishGlide(f, t);
     const dt = Math.min(100, Math.max(0, t - m.t));
     m.t = t;
-    const c = cast, mine = !!c && c.fish === f && c.landed;
+    const c = line, mine = !!c && c.fish === fishId(f);
     // its heading: at the float while it plays with my line (backing off, it never turns tail), else the way it swims
     // (kept while it's still)
     let want = m.yaw;
@@ -582,13 +616,13 @@
     } else if (g.done(t) < 1 && Math.hypot(g.tx - g.fx, g.tz - g.fz) > 0.5) want = yawOf(g.tx - g.fx, g.tz - g.fz);
     m.yaw = turn(m.yaw, want, dt, f.dash ? 80 : f.spurt ? 110 : 280);
     const hx = Math.sin(m.yaw), hz = -Math.cos(m.yaw), half = len3(f) / 2;
-    if (c && mine && nose && nose.f === f && nose.gen === c.gen && t >= nose.at) {
+    if (c && mine && nose && nose.f === f && nose.n === lineN && t >= nose.at) {
       // nose to the float: backed off NOSE_GAP, each nibble a bump onto it, the bite a lunge over it
       const gap = Math.hypot(c.x - g.x, c.z - g.z) - half;
       let off = (gap - NOSE_GAP) * EASE.smooth(Math.min(1, (t - nose.at) / 300));
       const n = (t - angling.nibble) / NIBBLE_MS;
       if (angling.nibble >= nose.at && n >= 0 && n < 1) off += NOSE_GAP * bump(n);
-      if (c.under) off += (gap + half * 0.35 - off) * EASE.smooth(Math.min(1, (t - angling.bite) / PLUNGE_MS));
+      if (c.phase === 'bite') off += (gap + half * 0.35 - off) * EASE.smooth(Math.min(1, (t - angling.bite) / PLUNGE_MS));
       m.off = off;
     } else m.off *= Math.exp(-dt / 140);
     // its tail: a quick wiggle darting off, a slow wag swimming
@@ -697,11 +731,11 @@
     return () => void pace.ambient--;
   });
 
-  /** A nibble: the bobber twitches, a small gentle wiggle (nothing like the bite's plunge). */
+  /** A nibble: the float twitches, a small gentle wiggle (nothing like the bite's plunge). */
   function nibble(f?: Fish) {
     nibbled();
     tellLine('nibble');
-    // the shadow's nose bumps the bobber (2u toward its head and back), in step with the bobber's twitch
+    // the shadow's nose bumps the float (2u toward its head and back), in step with the float's twitch
     const fin = f ? fishEls[f.water]?.querySelector('.fin') : null;
     if (fin && f) {
       const dx = f.flip ? 2 : -2;
@@ -714,37 +748,29 @@
     );
   }
 
-  /** NH's A button while the bobber is out. */
+  /** NH's A button while the line is out (fishing.ts pull, on the line as it's shown): the line comes in; on the bite
+   *  the fish with it, any earlier with a fish at it, it's scared off. */
   function reelIn() {
-    const c = cast!, f = c.fish;
-    turnTo(c.x);
-    if (!c.landed) return; // still in the air
-    const ms = performance.now() - c.t0;
-    const r = reel(castPhase(c.plan, ms), c.hesitated);
-    if (r === 'flee') return flee();
-    if (r === 'hesitate') {
-      // the line twitches; the fish backs off a little, thinks it over, and comes back for another try
-      c.hesitated = true;
-      c.gen++;
-      c.rings++;
-      nibble();
-      // from where it is now (it may still be swimming up), straight back from the bobber
-      const p = fishNow(f) ?? f;
-      const d = Math.hypot(p.x - c.x, p.z - c.z) || 1;
-      Object.assign(f, { ms: HESITATE_MS, x: p.x + ((p.x - c.x) / d) * HESITATE_U, z: p.z + ((p.z - c.z) / d) * HESITATE_U });
-      const plan = hesitatePlan(ms, rand);
-      return later(() => cast === c && fishes[f.water] === f && follow(c, f, plan), HESITATE_MS);
-    }
-    angle('reel', c);
-    tellLine('reel');
-    cast = null;
+    const l = line!, p = pull(l), f = 'fish' in p ? fishByKey(p.fish) : null;
+    clearTimeout(tickT);
+    line = null;
+    bang = null;
+    turnTo(l.x);
+    angle('reel', l);
+    tellLine('reel', l);
     sceneSfx('reel');
-    if (r === 'reel') return;
+    if (p.ev === 'reel' || !f) return void ((why = 'reel'), letGo(fishByKey(l.fish)));
+    if (p.ev === 'scare') {
+      why = 'scared';
+      sceneSfx('flee');
+      return fleeFrom(f, l.x, l.z);
+    }
+    why = 'caught';
     if (fishes[f.water] === f) fishes[f.water] = null;
     // first wins: the partner reeling in the same shadow a moment before has it (their news says so here)
-    if (!claim(f.cid, f.item, c.x, c.z, 'rod')) return;
+    if (!claim(f.cid, f.item, l.x, l.z, 'rod')) return;
     sceneSfx('catch');
-    const at = stageAt(c.x, c.z);
+    const at = stageAt(l.x, l.z);
     show(f.item, at.x, at.y, f.cid);
   }
 
@@ -1096,8 +1122,8 @@
     const b = bug && bug.cid === id ? bug : null;
     const bb = bubbles && bubbles.cid === id ? bubbles : null;
     const dv = diving && diving.cid === id ? diving : null;
-    // my line was out for it: it's theirs now
-    if (f && cast?.fish === f) cast = null;
+    // my line was out for it: it's theirs now (my float waits on: the next step finds it gone)
+    if (f && line?.fish === fishId(f)) queueMicrotask(tick);
     if (how === 'flee') {
       if (f && fishes[f.water] === f) {
         // (from where it is now: mid-swim)
@@ -1164,18 +1190,16 @@
   /** A tap on the scene (client px), before SceneTaps' own flourishes: true when a critter took it; only what shows there
    *  (`seen`); a line out reels in (`reel`: not on a building's door, which one goes through with it out). */
   export function tap(px: number, py: number, seen: Seen = SHOWN, reel = true): boolean {
-    if (cast && !reel) return false;
-    if (cast) {
-      why = 'reel';
+    if (line) {
+      if (!reel) return false;
       reelIn();
       return true;
     }
     const g = geo();
     if (!g) return false;
     const b = bug;
-    // the partner has it already (their villager is on the way): a tap here takes nothing
-    if (b && theirs(b.cid)) return true;
-    if (b && !b.gone && bugEl && seen(b.x, b.z)) {
+    // (the partner has it already, their villager on the way: it's theirs, the tap goes on to whatever else is there)
+    if (b && !b.gone && bugEl && !theirs(b.cid) && seen(b.x, b.z)) {
       // what it draws (its mover is a 0 × 0 point): on its tap box (hitbox.ts, at least 44px) it's caught
       const r = bugBox(b, bugEl);
       const d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
@@ -1276,12 +1300,28 @@
         return true;
       }
     }
-    const pick = fishFor(px, py, at, sea, seen);
-    why = pick.why;
-    if (!pick.f) return false;
-    castAt(pick.f, pick.x, pick.z);
-    return true;
+    return false;
   }
+  /** A tap on the water (SceneTaps, once nothing on it took the tap: a find, a visitor, a tree over it): the cast there
+   *  from where my villager stands, or why not. True when it cast. */
+  export function fish(px: number, py: number, seen: Seen = SHOWN): boolean {
+    if (line || !geo()) return false;
+    const at = w.worldAtClient(px, py);
+    return !!at && castAt(at, seen, px, py);
+  }
+  /** A tap on a shadow as drawn (its body and half a finger round it: the ground under the finger may be the bank
+   *  behind a narrow stream, near the horizon): where its float lands. */
+  function onShadow(px: number, py: number): ReturnType<typeof landing> {
+    for (const wt of WATERS) {
+      const f = fishes[wt];
+      if (!f || f.gone) continue;
+      const { p, cx, cy, half, shown } = seenOf(f);
+      if (shown && Math.hypot(px - cx, py - cy) <= half + 22) return landing(p.x, p.z);
+    }
+    return null;
+  }
+  /** My line is out (SceneTaps: any tap on the island but a door is its reel, NH's A button). */
+  export const lineOut = (): boolean => !!line;
   /** Where a shadow is seen now (client px), its half-length there (px: the 3D model's, longer than the 2D sprite's in a
    *  fresh water) and whether it's in view. */
   function seenOf(f: Fish): { p: { x: number; z: number }; cx: number; cy: number; half: number; shown: boolean } {
@@ -1303,79 +1343,38 @@
    *  button over it hides it, and the button keeps its tap (a canopy over the pond shakes its tree). */
   export function onCritter(px: number, py: number): boolean {
     const b = bug;
-    if (cast || !b || b.gone || !bugEl || theirs(b.cid)) return false;
+    if (line || !b || b.gone || !bugEl || theirs(b.cid)) return false;
     return inside(grow(bugBox(b, bugEl), 0, 0), px, py);
   }
-  /** Why the last tap cast or didn't (the e2e's `__fish.why()`). */
-  let why = '';
-  /** The shadow a tap at client (px, py), world `at`, casts to, and where its bobber goes; else why not. Every shadow
-   *  in view counts, whatever water the tap's ground is: a tap on a shadow as drawn (its body and a finger round it,
-   *  even over the drawn coast past the water's tiles), or on any water near it (CAST_U, the same water; NEAR_U
-   *  another: the river by its mouth, the sea at the mouth, the falls' pool and the river below), casts toward it,
-   *  the bobber in its own water nearest the tap. Where it is is where it's seen now (mid-glide: fishNow), or where
-   *  it's heading. The nearest on screen wins. */
-  function fishFor(px: number, py: number, at: { x: number; z: number }, sea: boolean, seen: Seen): { f: Fish | null; x: number; z: number; why: string } {
-    const water = waterAt(at.x, at.z, sea);
-    let best: { f: Fish; d: number } | null = null, why = water ? `no fish in the ${water}` : 'not water';
-    for (const wt of WATERS) {
-      const f = fishes[wt];
-      if (!f || f.gone) continue;
-      if (theirs(f.cid) || f.taken) {
-        why = 'the partner’s';
-        continue;
-      }
-      const { p, cx, cy, half, shown } = seenOf(f);
-      if (!seen(p.x, p.z, half)) {
-        why = `the ${wt}’s hidden there`;
-        continue;
-      }
-      const dPx = Math.hypot(px - cx, py - cy), dU = Math.min(Math.hypot(at.x - p.x, at.z - p.z), Math.hypot(at.x - f.x, at.z - f.z));
-      // on it, by the screen (the ground under a finger by a narrow river's bank or near the horizon is the bank's):
-      // its body's half-length round its middle, and a finger more
-      const onIt = shown && dPx <= half + FINGER_PX;
-      const near = water === wt ? dU < CAST_U : !!water && dU < NEAR_U;
-      if (!onIt && !near) {
-        why = `too far from the ${wt}’s (${Math.round(dU)}u)`;
-        continue;
-      }
-      if (!best || dPx < best.d) best = { f, d: dPx };
-    }
-    // (a shadow another's line is out at, tapped on: theirs; a soft boop says so, not silence)
-    if (!best && why === 'the partner’s') cue('boop');
-    if (!best) return { f: null, x: at.x, z: at.z, why };
-    const f = best.f, to = bobberAt(f, at.x, at.z);
-    return { f, ...to, why: `cast to the ${f.water}’s` };
-  }
-  /** Where a tap at (x, z) puts the bobber for `f`: there when that's its water, else its water's nearest point on
-   *  the way from the tap to it. */
-  function bobberAt(f: Fish, x: number, z: number): { x: number; z: number } {
-    const p = fishNow(f) ?? f;
-    const ours = (qx: number, qz: number) => (f.water === 'sea' ? surfaceAt(qx, qz) === 'sea' : waterAt(qx, qz, false) === f.water);
-    for (let i = 0; i <= 10; i++) {
-      const t = 1 - i / 10, qx = p.x + (x - p.x) * t, qz = p.z + (z - p.z) * t;
-      if (ours(qx, qz)) return { x: qx, z: qz };
-    }
-    return { x: p.x, z: p.z };
-  }
-
   // ---------- the others' lines (docs/design.md "Shared world") ----------
   // Each step of my line goes to the others' phones (`fish`: presence only), and theirs come here: their villager's rod,
-  // the line to their float, its dips and plunge and the reel, and the shadow they cast at swims up to their float,
-  // theirs while the line is out (a tap on it here only boops). Someone coming while my line is out hears its step
-  // again; someone whose phone goes is no longer fishing.
+  // the line to their float, its dips and plunge and the reel, and the shadow at their float swims up to it, theirs
+  // while it's at it (it never notices mine). A `cast` step again at the same float says which shadow is at it now
+  // (one noticed it, or it got away: none). Someone coming while my line is out hears its step again; someone whose
+  // phone goes is no longer fishing.
   /** The last step of mine told (`off` and `reel` end it). */
   let told: FishPhase | null = null;
-  function tellLine(ph: FishPhase) {
-    const c = cast;
-    if (ph === 'off' ? told === null || told === 'reel' || told === 'off' : !c) return;
+  function tellLine(ph: FishPhase, l: MyLine | null = line) {
+    if (ph === 'off' ? told === null || told === 'reel' || told === 'off' : !l) return;
     told = ph;
+    // (the line runs from my villager's rod: `from` its feet, where a phone draws it from when the rod isn't in)
+    const [mx, mz] = livePos('mine'), cid = fishByKey(l?.fish)?.cid;
     shared.tell({
       kind: 'fish', ph,
-      ...(c ? { pt: [Math.round(c.x), Math.round(c.z)] as const, from: [Math.round(c.sx), Math.round(c.sz)] as const, s: c.s0, ...(c.fish.cid ? { id: c.fish.cid } : {}) } : {})
+      ...(l ? { pt: [Math.round(l.x), Math.round(l.z)] as const, from: [Math.round(mx), Math.round(mz)] as const, s: lineS, ...(cid ? { id: cid } : {}) } : {})
     });
   }
   let lines = $state<Partial<Record<Who, Line>>>({});
   const lineFish = (l: Line) => (l.id ? (WATERS.map((wt) => fishes[wt]).find((f) => f && !f.gone && f.cid === l.id) ?? null) : null);
+  /** The shadow another's line is at: theirs, swimming up to their float (never one at my line). */
+  function takeFor(l: Line) {
+    const f = lineFish(l);
+    if (!f || !f.cid || theirs(f.cid) || line?.fish === fishId(f) || f.taken === l.who) return;
+    f.taken = l.who;
+    const p = fishNow(f) ?? f, d = Math.hypot(p.x - l.x, p.z - l.z) || 1, gap = Math.min(d, sizeU(f) / 2 + 2);
+    Object.assign(f, { x: p.x, z: p.z, ms: 0 });
+    swimTo(f, l.x + ((p.x - l.x) / d) * gap, l.z + ((p.z - l.z) / d) * gap, clamp(d * 12, 600, 2400));
+  }
   /** A step of another's line. */
   function theirLine(m: Extract<Relayed, { kind: 'fish' }>) {
     const slot = actorOf(m.who);
@@ -1385,7 +1384,7 @@
       if (!was) return;
       angle(m.ph === 'reel' ? 'reel' : null, undefined, slot);
       const f = lineFish(was);
-      if (f?.taken === m.who) f.taken = undefined; // (a catch or its getting away comes as their `catch`)
+      if (f?.taken === m.who) (f.taken = undefined), letGo(f); // (a catch or its getting away comes as their `catch`)
       const { [m.who]: _gone, ...rest } = lines;
       lines = rest;
       return;
@@ -1395,7 +1394,7 @@
       // the line goes out (or a phone coming late hears where it is): their villager's rod swings it out, the float
       // lands a moment later (cast again elsewhere, its off unheard: the shadow the old line was at goes free)
       const old = was && lineFish(was);
-      if (old?.taken === m.who) old.taken = undefined;
+      if (old?.taken === m.who) (old.taken = undefined), letGo(old);
       lines = { ...lines, [m.who]: { who: m.who, slot, id: m.id, x: m.pt[0], z: m.pt[1], sx: m.from?.[0] ?? m.pt[0], sz: m.from?.[1] ?? m.pt[1], landed: false, under: false, rings: 0, n: ++seq } };
       angle('cast', { x: m.pt[0], z: m.pt[1] }, slot);
       const l = lines[m.who]!;
@@ -1405,16 +1404,15 @@
         l.rings++;
         angle(l.under ? 'bite' : 'wait', undefined, slot);
       }, m.ph === 'cast' ? 300 : 0);
-      // the shadow it's cast at: theirs, swimming up to the float
-      const f = lineFish(l);
-      if (f && f.cid && !theirs(f.cid) && cast?.fish !== f) {
-        f.taken = m.who;
-        const p = fishNow(f) ?? f, d = Math.hypot(p.x - l.x, p.z - l.z) || 1, gap = Math.min(d, sizeU(f) / 2 + 2);
-        Object.assign(f, { x: p.x, z: p.z, ms: 0 });
-        swimTo(f, l.x + ((p.x - l.x) / d) * gap, l.z + ((p.z - l.z) / d) * gap, clamp(d * 12, 600, 2400));
-      }
+    } else if (m.ph === 'cast' && was.id !== m.id) {
+      // the same float, another shadow at it (or none: it got away), the float back up bobbing
+      const old = lineFish(was);
+      if (old?.taken === m.who) (old.taken = undefined), letGo(old);
+      was.id = m.id;
+      if (was.under) (was.under = false), angle('wait', undefined, slot);
     }
     const l = lines[m.who]!;
+    takeFor(l);
     if (m.ph === 'nibble') {
       if (!l.landed) (l.landed = true), angle('wait', undefined, slot);
       l.rings++;
@@ -1431,8 +1429,8 @@
       // someone came: my line's step again (they see it as it is); someone gone: their line with them
       shared.onHere((here) => {
         for (const w of Object.keys(lines) as Who[]) if (!here.includes(w)) theirLine({ kind: 'fish', ph: 'off', who: w, v: 3, t: 0 });
-        const c = cast, now = here.join();
-        if (c && told && told !== 'off' && told !== 'reel' && now !== hereWas && here.some((w) => !hereWas.split(',').includes(w))) tellLine(c.under ? 'bite' : 'cast');
+        const l = line, now = here.join();
+        if (l && told && told !== 'off' && told !== 'reel' && now !== hereWas && here.some((w) => !hereWas.split(',').includes(w))) tellLine(l.phase === 'bite' ? 'bite' : 'cast');
         hereWas = now;
       })
     ];
@@ -1496,8 +1494,8 @@
     };
   });
 
-  // the e2e's view of the fishing (dev builds and the demo): why the last tap cast or didn't, and the shadows now
-  // (world: where each is seen now, and its water)
+  // the e2e's view of the fishing (dev builds and the demo): what the last tap on water did and why, and the shadows
+  // now (world: where each is seen now, and its water)
   onMount(() => {
     if (!hooksOn()) return;
     (window as unknown as { __fish?: unknown }).__fish = {
@@ -1508,9 +1506,10 @@
         const p = fishNow(f) ?? f;
         return [{ water: wt, id: fishId(f), x: p.x, z: p.z, to: [f.x, f.z], len: sizeU(f), cid: f.cid ?? null, theirs: theirs(f.cid) }];
       }),
-      casting: () => !!cast,
-      /** My line now (world: where its float is) and the others' as their phones tell them. */
-      line: () => (cast ? { x: cast.x, z: cast.z, landed: cast.landed, under: cast.under } : null),
+      casting: () => !!line,
+      /** My line now (fishing.ts: its phase, where its float is, the shadow at it) and the others' as their phones tell
+       *  them. */
+      line: () => (line ? { x: line.x, z: line.z, water: line.water, phase: line.phase, landed: line.phase !== 'flying', under: line.phase === 'bite', fish: line.fish } : null),
       lines: () => Object.values(lines).map((l) => l && { who: l.who, x: l.x, z: l.z, landed: l.landed, under: l.under, id: l.id ?? null })
     };
     return () => void delete (window as unknown as { __fish?: unknown }).__fish;
@@ -1583,21 +1582,24 @@
       {/key}
     {/if}
   {/each}
-  {#if cast}
-    {@const c = cast}
-    <!-- the float on the water, sinking at the bite; the line from my villager's rod (or the bank) to it -->
+  {#if line}
+    {@const l = line}
+    {@const out = l.phase !== 'flying'}
+    {@const under = l.phase === 'bite'}
+    <!-- the float on the water, sinking at the bite; the line from my villager's rod to it (from the hand's height at its
+         feet till its model holds the rod) -->
     <!-- (its bob, a nibble's dip and the bite's plunge: fishing3d.ts floatLift, each frame; a soft ring now and then while
          it waits) -->
-    <i class="m3n" {@attach w.at({ x: c.x, z: c.z, h: 4, always: true, live: () => floatAt(c), m3: { key: 'tools/bobber', id: 'bobber', water: true, off: !c.landed && !c.under, art: () => scene?.querySelector('[data-bobber]'),
-      emit: c.landed && !c.under ? { kind: 'ripple', every: 2600, size: 0.45 } : undefined,
+    <i class="m3n" {@attach w.at({ x: l.x, z: l.z, h: 4, always: true, live: () => floatAt(l), m3: { key: 'tools/bobber', id: 'bobber', water: true, off: !out, art: () => scene?.querySelector('[data-bobber]'),
+      emit: out && !under ? { kind: 'ripple', every: 2600, size: 0.45 } : undefined,
       line: () => {
         const [mx, mz] = livePos('mine');
-        return Math.hypot(mx - c.x, mz - c.z) < 90 ? [mx + (c.x - mx) * 0.12, mz + (c.z - mz) * 0.12, 34] as const : [c.sx, c.sz, 4] as const;
+        return [mx + (l.x - mx) * 0.12, mz + (l.z - mz) * 0.12, 34] as const;
       } } })}></i>
     <!-- each nibble's small ring on the water, and the bite's splash and big ring (once each: a node of its own) -->
-    {#key c.rings}
-      {#if c.rings > 1}
-        <i class="m3n" {@attach w.at({ x: c.x, z: c.z, h: 4, always: true, m3: { key: '', id: `ring-${c.rings}`, water: true, emit: c.under ? { kind: 'splash', every: 60_000 } : { kind: 'ripple', every: 60_000, size: 0.7 } } })}></i>
+    {#key rings}
+      {#if rings > 1}
+        <i class="m3n" {@attach w.at({ x: l.x, z: l.z, h: 4, always: true, m3: { key: '', id: `ring-${rings}`, water: true, emit: under ? { kind: 'splash', every: 60_000 } : { kind: 'ripple', every: 60_000, size: 0.7 } } })}></i>
       {/if}
     {/key}
   {/if}
@@ -1653,18 +1655,14 @@
   {#each Object.values(lines) as l (l.n)}
     {#if l}<i hidden data-angler={l.who} data-line={l.under ? 'bite' : l.landed ? 'wait' : 'cast'} data-x={l.x} data-z={l.z} data-fish={l.id}></i>{/if}
   {/each}
-  {#if cast}
-    {@const c = cast}
-    <!-- the bobber, upright where it landed; the line from the rod's tip (or the bank) is drawn in its node -->
-    <div class="node" {@attach w.at({ x: c.x, z: c.z, h: 24 })}>
-      <span class="mover bobber" data-bobber={c.under ? 'bite' : c.landed ? 'wait' : 'cast'} class:under={c.under}
-        style:--fx="calc({c.fx.toFixed(1)} * var(--u))" style:--fy="calc({c.fy.toFixed(1)} * var(--u))">
-        <svg class="line" class:landed={c.landed} width="1" height="1">
-          <!-- from the rod's tip to the bobber, slack: it sags 8u in the middle -->
-          <path transform="scale({w.rest.s})" d="M{c.fx.toFixed(1)} {c.fy.toFixed(1)} Q{(c.fx / 2).toFixed(1)} {(c.fy / 2 + 8).toFixed(1)} 0 -1.5" />
-        </svg>
-        {#key c.rings}{#if c.rings}<i class="ripple" class:big={c.under}></i>{/if}{/key}
-        {#if c.under}
+  {#if line}
+    {@const l = line}
+    {@const under = l.phase === 'bite'}
+    <!-- the float, upright where it landed (its phase for the e2e: cast, wait, bite) -->
+    <div class="node" {@attach w.at({ x: l.x, z: l.z, h: 24 })}>
+      <span class="mover bobber" data-bobber={under ? 'bite' : l.phase === 'flying' ? 'cast' : 'wait'} data-phase={l.phase} class:under>
+        {#key rings}{#if rings}<i class="ripple" class:big={under}></i>{/if}{/key}
+        {#if under}
           <i class="ripple big late"></i>
           <!-- the bite's splash: seven drops, 14u high -->
           <span class="splash big">{#each [-75, -50, -25, 0, 25, 50, 75] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
@@ -1672,12 +1670,20 @@
         <span class="float" bind:this={bobEl}><i class="ball"></i></span>
       </span>
     </div>
-    {#if c.under}
+    {#if under && bang}
       <!-- NH's 「！」 over every world thing at its true size, nudged inside the screen -->
-      <div class="node" {@attach w.at({ x: c.x, z: c.z, h: 40, zi: OVER, inv: true, always: true })}>
-        <span class="inv" class:in3d={c.bang3}><span class="bang" data-bite style:left="{c.bdx.toFixed(1)}px">！</span></span>
+      <div class="node" {@attach w.at({ x: l.x, z: l.z, h: 40, zi: OVER, inv: true, always: true })}>
+        <span class="inv" class:in3d={bang.in3d}><span class="bang" data-bite style:left="{bang.dx.toFixed(1)}px">！</span></span>
       </div>
     {/if}
+  {/if}
+  {#if nope}
+    {#key nope.n}
+      <!-- a tap on water out of the line's reach: 「とどかない」 where it was, a moment (never a silent tap) -->
+      <div class="node" {@attach w.at({ x: nope.x, z: nope.z, h: 30, zi: OVER, inv: true, always: true })}>
+        <span class="inv"><span class="nope" data-fish-nope="far">{t('fish.far')}</span></span>
+      </div>
+    {/key}
   {/if}
   {#if bug}
     {@const b = bug}
@@ -1761,16 +1767,8 @@
   .dive .shadow { animation: fade-in .2s ease-out both; }
   .dive .fin svg { fill: rgba(10, 36, 70, .55); }
 
-  /* the line: a thin arc from the rod to the bobber, drawn once the bobber lands */
-  .line { left: 0; top: 0; overflow: visible; opacity: 0; transition: opacity .25s; }
-  .line.landed { opacity: 1; }
-  .line path { fill: none; stroke: rgba(255, 255, 255, .6); stroke-width: 1px; vector-effect: non-scaling-stroke; }
-  /* the bobber: NH's red-and-white float, arcing in from the rod, then bobbing; under on the bite */
-  .bobber .float { left: 0; top: 0; transform-origin: 50% 100%; animation: cast .3s cubic-bezier(.3, .2, .6, 1) both; }
-  @keyframes cast {
-    from { transform: translate(var(--fx), var(--fy)) translateY(calc(-14 * var(--u))); }
-    50% { transform: translate(calc(var(--fx) * .5), calc(var(--fy) * .5)) translateY(calc(-16 * var(--u))); }
-  }
+  /* the bobber: NH's red-and-white float, bobbing; under on the bite */
+  .bobber .float { left: 0; top: 0; transform-origin: 50% 100%; }
   .ball {
     display: block; width: calc(8 * var(--u)); height: calc(8 * var(--u)); margin: calc(-6.4 * var(--u)) 0 0 calc(-4 * var(--u));
     border-radius: 50%; background: linear-gradient(180deg, #F2484A 0 48%, #FFFDF6 52%); box-shadow: inset -1px -1px 0 rgba(0, 0, 0, .12);
@@ -1809,6 +1807,13 @@
     transform-origin: 50% 100%; animation: bang .32s cubic-bezier(.3, 1.6, .5, 1) both;
   }
   @keyframes bang { from { transform: scale(.2); opacity: 0; } 40% { opacity: 1; } }
+  /* 「とどかない」: a small cream chip that rises a little and fades */
+  .nope {
+    position: absolute; left: 0; top: 0; translate: -50% -100%; white-space: nowrap; padding: 3px 9px; border-radius: 999px;
+    background: #FFFDF6; color: #7A5A3A; box-shadow: 0 2px 0 rgba(150, 110, 70, .3); font: 700 13px / 1.2 var(--font-ui);
+    animation: nope 1.4s ease-out both;
+  }
+  @keyframes nope { from { opacity: 0; transform: translateY(4px); } 15% { opacity: 1; transform: none; } 75% { opacity: 1; } to { opacity: 0; transform: translateY(-6px); } }
   .ripple {
     display: block; left: 0; top: 0; width: calc(18 * var(--u)); height: calc(6 * var(--u)); margin: calc(-3 * var(--u)) 0 0 calc(-9 * var(--u));
     border: 1.4px solid rgba(255, 255, 255, .85); border-radius: 50%; animation: ripple .8s ease-out both;
