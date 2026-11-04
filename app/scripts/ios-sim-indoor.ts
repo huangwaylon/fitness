@@ -87,7 +87,7 @@ const QUIET = `const [hook, ms, done] = arguments; const ind = window.__ind, h =
     const q = (xs, p) => +(xs[Math.min(xs.length - 1, Math.floor(p * xs.length))] || 0).toFixed(2); gaps.sort((a, b) => a - b);
     done({ raf: +((ind.raf - r0 - gaps.length) * k).toFixed(1), timers: +((ind.to - t0) * k).toFixed(1), intervals: ind.iv.size,
       anims: document.getAnimations().filter((a) => a.playState === 'running').length,
-      drawn: +(n * k).toFixed(1), cost: [q(c, 0.5), q(c, 0.95)], gap95: q(gaps, 0.95), long: gaps.filter((g) => g > 50).length,
+      drawn: +(n * k).toFixed(1), cost: [q(c, 0.5), q(c, 0.95)], gap95: q(gaps, 0.95), max: Math.round(gaps[gaps.length - 1] || 0), long: gaps.filter((g) => g > 50).length,
       calls: st?.calls, tris: st?.tris, dpr: st?.dpr, mem: st?.mem }); } })(s);`;
 
 /** Into a scene by a link (the app's own navigation): to its first frame and everything in, the bytes fetched and
@@ -167,6 +167,13 @@ try {
     await sleep(1500);
     mu.restHall = await quiet('__museum');
     if (pass === 'cold') await shot('museum-hall');
+    // into each wing from the hall, walking (its models' first draw: textures up, programs compiled)
+    await run('__museum.walkTo(150, 20);');
+    mu.intoAquarium = await quiet('__museum', 4000);
+    await run('__museum.put(0, 20);');
+    await until('window.__museum.still()');
+    await run('__museum.walkTo(-150, 10);');
+    mu.intoBugs = await quiet('__museum', 4000);
     await run('__museum.put(176, 32);');
     await sleep(1500);
     mu.restAquarium = await quiet('__museum');
