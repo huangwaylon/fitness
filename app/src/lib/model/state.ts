@@ -80,7 +80,7 @@ export interface State {
   /** The island's finds (`find`: catches and pick-ups for the ずかん), in server order. Never read by the economy. */
   finds: { at: number; person: Who; kind: FindKind; id: string }[];
   /** Each person's day tallies (`tally`: the ずかん's counts, model/tally.ts), in server order, replaced rows included
-   *  (a day's latest wins). Never read by the economy. */
+   *  (a day's rows fold by each entry's largest count). Never read by the economy. */
   tallies: TallyRow[];
   /** Each person's island days (`island`: their part of a day's shared island, contract/island.ts), in server order,
    *  replaced rows included (a day's latest wins: `latestIslandDay`). Never read by the economy. */
@@ -110,8 +110,9 @@ export interface State {
   /** My foods (`food_custom`: each custom food's ops, contract/food.ts) as raw rows (RAW_EVENTS); everyone's, read by
    *  everyone (model/food.ts customs). Never read by the economy. */
   foodCustom: EventRow[];
-  /** The shop's rows (`sell`, `buy`: contract/shop.ts), each with whose they are (the guest's too), in server order;
-   *  the pockets and かいがら are their fold over the tallies (model/shop.ts). Never read by the economy. */
+  /** The shop's rows (`sell`, `buy`: contract/shop.ts), each with whose they are (the guest's too), in server order,
+   *  a queued one marked `queued`; the pockets and かいがら are their fold over the tallies (model/shop.ts). Never read
+   *  by the economy. */
   shop: ShopRowAt[];
   /** Each person's prefs; the guest's (`G`) only ever hold its locale, name, villager and kcal goal (contract/guest.ts). */
   prefs: Record<Who, Prefs>;
@@ -215,8 +216,10 @@ type RawEvent = 'food' | 'food_repeat' | 'food_recipe' | 'food_custom';
 
 const bodyMaps = (): Record<BodyMetric, Map<LocalDate, Timed<number>[]>> => ({ body_fat_pct: new Map(), bmi: new Map(), lean_kg: new Map() });
 
-/** Index and validate all rows. Rows are only ever appended, so nothing here depends on "now". */
-export function reduce(r: SnapshotRows, rev: string | null = null): State {
+/** Index and validate all rows. Rows are only ever appended, so nothing here depends on "now". `queued`: the ids of
+ *  rows the record hasn't kept yet (a phone's queue: its sells and buys are judged as the record will, contract/shop.ts
+ *  shopLedger). */
+export function reduce(r: SnapshotRows, rev: string | null = null, queued?: ReadonlySet<string>): State {
   const s: State = {
     metrics: { A: new Map(), B: new Map() },
     bellSpends: [],
@@ -287,12 +290,14 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     else if (isWho(row[1])) s[list].push(row);
   }
   for (const { r: row, at } of byAt(events)) {
-    const [, person, , type, raw] = row;
+    const [, person, id, type, raw] = row;
     const d = parseData(raw);
     // A type the server doesn't accept (a hand edit of the sheet) is ignored, and so is a bad `person`.
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
     const subject = eventSubject(type, d, person);
+    const shopN = s.shop.length;
     if (subject) ON_EVENT[type as Exclude<EventType, RawEvent>](s, subject, at, d);
+    if (queued?.has(id)) markQueued(s, shopN);
   }
   return s;
 }
@@ -343,9 +348,16 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     const d = parseData(row[4]);
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
     const subject = eventSubject(type, d, row[1]);
+    const shopN = s.shop.length;
     if (subject) ON_EVENT[type as Exclude<EventType, RawEvent>](s, subject, at, d);
+    markQueued(s, shopN);
   }
   return s;
+}
+
+/** The shop rows from `from` on are queued ones (not the record's yet). */
+function markQueued(s: State, from: number): void {
+  for (let i = from; i < s.shop.length; i++) s.shop[i] = { ...s.shop[i], queued: true };
 }
 
 // ---------- events ----------

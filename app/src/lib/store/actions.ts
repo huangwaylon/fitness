@@ -9,7 +9,7 @@ import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import type { LocalDate, PersonId, ShopItemId, Who } from '#lib/types.ts';
 import { isBodyFatGoal, isWeightKg, nextDay, roundKg, type FindKind } from '#lib/contract/api.ts';
 import { findKey, findsView } from '#lib/model/finds.ts';
-import { addToTally, latestByDay } from '#lib/model/tally.ts';
+import { addToTally, dayTallies } from '#lib/model/tally.ts';
 import { localDateAt } from '#lib/time/dates.ts';
 import { MOVE_GOAL, isStepsGoal, shopPrice } from '#lib/config/rules.ts';
 import {
@@ -134,7 +134,7 @@ function countOne(kind: FindKind, id: string): void {
   const m = week.model;
   if (!m) return;
   const date = localDateAt(m.now);
-  const mine = latestByDay(m.state.tallies).find((r) => r.person === m.me && r.date === date);
+  const mine = dayTallies(m.state.tallies).find((r) => r.person === m.me && r.date === date);
   const counts = addToTally(mine?.counts ?? {}, findKey(kind, id));
   const now = Date.now();
   const same = held && held.date === date && held.until > now ? held : null;

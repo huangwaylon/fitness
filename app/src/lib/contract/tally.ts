@@ -36,3 +36,22 @@ export function isTally(d: Record<string, unknown>, today?: LocalDate): d is Rec
   for (const k of keys) if (!isTallyKey(k) || !isCount(d.counts[k])) return false;
   return true;
 }
+
+/**
+ * Two tallies of one person's day as one: each entry's larger count (a day's counts only grow, so a lower one is a
+ * stale send: a second phone's, a queue that waited). `held`'s entries first, then `next`'s new ones while there is room
+ * (TALLY_MAX_KEYS: the row stays valid). The record keeps this over the slot's row (relay/src/store.ts) and the model
+ * folds a day's rows by it (model/tally.ts), so a count never goes down and a sale it covered is never uncovered.
+ */
+export function mergeTally(held: Tally, next: Tally): Tally {
+  const out: Tally = { ...held };
+  let n = Object.keys(out).length;
+  for (const k in next) {
+    if (Object.hasOwn(out, k)) out[k] = Math.max(out[k], next[k]);
+    else if (n < TALLY_MAX_KEYS) {
+      out[k] = next[k];
+      n++;
+    }
+  }
+  return out;
+}

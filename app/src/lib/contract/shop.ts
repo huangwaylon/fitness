@@ -11,7 +11,8 @@
 // `v` what they fetched (n × the species' price when sold: kept, so a later price list never rewrites the past). A `buy`
 // is `{item, price, d}`: `item` a room's piece (`f…`), `price` its price, `d` the stock's day. The record checks the
 // price, the stock and the cover when it keeps one (relay/src/store.ts, `shopRefusal` over `shopLedger`); the phones
-// fold the same rows by the same rules (model/shop.ts). Shared by the record and the model; pure.
+// fold the same rows by the same rules (model/shop.ts), a kept row as kept and a queued one as the record would judge
+// it. Shared by the record and the model; pure.
 import { isLocalDate, nextDay } from './api.ts';
 import { SELL, BUY } from './shopPrices.ts';
 import type { LocalDate, Who } from '../types.ts';
@@ -100,8 +101,9 @@ export function stockOf(date: LocalDate): readonly string[] {
 /** A person's shop as their rows leave it: sold per species, かいがら, the pieces bought (in order). */
 export interface Ledger { sold: Map<string, number>; shells: number; owned: string[] }
 
-/** A row of the shop: a sell or a buy, as `sellOf` / `buyOf` read it. */
-export type ShopRow = { type: 'sell'; data: SellData } | { type: 'buy'; data: BuyData };
+/** A row of the shop: a sell or a buy, as `sellOf` / `buyOf` read it; `queued` when the record hasn't kept it yet (a
+ *  phone's queue, model/state.ts foldEvents). */
+export type ShopRow = ({ type: 'sell'; data: SellData } | { type: 'buy'; data: BuyData }) & { queued?: true };
 /** A shop row as the model keeps it (model/state.ts `shop`): whose, and the record's time. */
 export type ShopRowAt = ShopRow & { at: number; person: Who };
 
@@ -113,12 +115,17 @@ export function shopRefusal(l: Ledger, caught: ReadonlyMap<string, number>, row:
   return row.data.price > l.shells ? 'wallet' : null;
 }
 
-/** One person's rows (server order) folded: each one the ledger covers counts, any other is ignored (the record
- *  refused it; a phone's view of a stale one never shows a negative pocket or wallet). */
+/**
+ * One person's rows (server order) folded. A row the record kept counts whatever the tallies say now: it was covered
+ * when it was kept, so a tally that reads lower since (a stale one, from before the record kept each day's largest
+ * counts) never takes back a sale's かいがら or a bought piece; only a piece twice is ignored. A queued row counts only
+ * when the ledger covers it (the record would refuse it), so a phone's view never shows a negative wallet.
+ */
 export function shopLedger(caught: ReadonlyMap<string, number>, rows: Iterable<ShopRow>): Ledger {
   const l: Ledger = { sold: new Map(), shells: 0, owned: [] };
   for (const row of rows) {
-    if (shopRefusal(l, caught, row)) continue;
+    const why = shopRefusal(l, caught, row);
+    if (why === 'owned' || (why && row.queued)) continue;
     if (row.type === 'sell') {
       l.sold.set(row.data.species, (l.sold.get(row.data.species) ?? 0) + row.data.n);
       l.shells += row.data.v;
