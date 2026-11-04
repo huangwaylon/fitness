@@ -1271,7 +1271,9 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   risen in the shader. A species is one InstancedMesh, culled by its tank's bounds; a tank off screen rests; nothing
   allocated in a frame.
 - **The bug wing** (`garden.ts`): NH's garden under glass (its sky and palms on the walls, dusk-blue at night): stone
-  paths, a pond, NH's oaks and a palm (the island's models), NH's flowers in rows, the museum's own garden props
+  paths, a pond (NH's museum water, one small opaque shader: clear aqua at its rim deepening to blue, a soft net of
+  light drifting over it, a thin pale wavering edge at the stones; moving only while it's on screen, at the exhibits'
+  30 a second), NH's oaks and a palm (the island's models), NH's flowers in rows, the museum's own garden props
   (flower beds, bushes, a fallen log with its autumn leaves, ferns, cacti, the mangroves), and five glass display
   cases on stands along the back. Each bug found lives there as it lives (species.ts habitatOf, from island/critters.ts):
   a butterfly, a moth or a bee flies a slow path round a flower bed, its wings beating (the vertex shader); a dragonfly

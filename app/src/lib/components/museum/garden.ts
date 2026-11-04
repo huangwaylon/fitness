@@ -18,7 +18,7 @@
 import {
   BufferGeometry, CircleGeometry, Color, DoubleSide, Float32BufferAttribute, Group, InstancedBufferAttribute, InstancedMesh, LineBasicMaterial,
   LineSegments, Matrix4, Mesh, MeshBasicMaterial, MeshLambertMaterial, PlaneGeometry, Quaternion, Sprite, SpriteMaterial, CanvasTexture,
-  Sphere, Vector3, AdditiveBlending, BoxGeometry, type Material, type Texture
+  ShaderMaterial, Sphere, Vector2, Vector3, AdditiveBlending, BoxGeometry, type Material, type Texture
 } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
 import type { Habitat, Specimen } from './species.ts';
@@ -59,6 +59,36 @@ const SOIL: Pt[] = [[-272, -8], [-222, 92], [-284, -40]];
 /** The beds the flyers circle: [x, z, radius]. */
 const BEDS: [number, number, number][] = [[-120, 58, 20], [-212, -24, 16], [-120, 30, 22], [-140, 86, 14], [-220, -8, 18]];
 const GRASS: Pt[] = [[-230, 26], [-130, -12], [-200, 52], [-100, -60], [-150, 70], [-262, -60], [-80, 10]];
+
+// NH's museum water, the pond's: clear aqua at its rim deepening to blue in the middle, a soft net of light drifting
+// over it (two layers of folded sines, slow), and a thin white edge where it meets the stones, gently wavering; dusk
+// blue and dimmer at night. Its local plane in model units (centred), uHalf its half size.
+const POND_VERT = /* glsl */ `
+varying vec2 vP;
+void main() { vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+const POND_FRAG = /* glsl */ `
+uniform float uTime; uniform float uNight; uniform vec2 uHalf;
+varying vec2 vP;
+float net(vec2 p, float t) {
+  float a = sin(p.x * 0.23 + t * 0.6) + sin(p.y * 0.29 - t * 0.75) + sin((p.x - p.y) * 0.16 + t * 0.45);
+  float b = sin(p.x * 0.31 - t * 0.5 + 1.7) + sin(p.y * 0.21 + t * 0.65) + sin((p.x + p.y) * 0.13 - t * 0.35);
+  return pow(1.0 - abs(sin(a * 1.1)), 7.0) * 0.6 + pow(1.0 - abs(sin(b * 1.1)), 9.0) * 0.4;
+}
+void main() {
+  // how far in from the rim (model units)
+  float d = min(uHalf.x - abs(vP.x), uHalf.y - abs(vP.y));
+  // (linear: NH's #5cc6c4 at the rim to #1f7fa8 in the middle)
+  float deep = smoothstep(0.5, 11.0, d);
+  vec3 col = mix(vec3(0.107, 0.565, 0.55), vec3(0.014, 0.21, 0.39), deep);
+  col += vec3(0.75, 0.95, 1.0) * net(vP, uTime) * (0.09 + 0.09 * deep);
+  // the edge: a thin pale line on the stones' side, wavering a little
+  float wob = (sin(vP.x * 0.55 + uTime * 1.2) + sin(vP.y * 0.65 - uTime * 0.9)) * 0.2;
+  float rim = 1.0 - smoothstep(0.4, 1.3, d + wob);
+  col = mix(col, vec3(0.8, 0.95, 0.93), rim * 0.55);
+  col = mix(col, col * vec3(0.42, 0.5, 0.78), uNight * 0.6);
+  gl_FragColor = vec4(col, 1.0);
+  #include <colorspace_fragment>
+}`;
 
 const FLY_FLAP: Record<string, number> = { fly: 0.55, dart: 0.12, drift: 0.25 };
 const hash = (s: string) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 100003, 7);
@@ -123,13 +153,15 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
   }));
   geos.push(path);
   group.add(new Mesh(path, kit.lambert({ map: kit.tex('bug-path'), layer: 1 })));
-  // the pond: its stone bank, its water (a soft blue, a little see-through over its dark bed)
+  // the pond: its stone bank, its water (NH's: one small shader, opaque; its ripples move only while it's on screen)
   flat({ x0: POND.x0 - 3, x1: POND.x1 + 3, z0: POND.z0 - 3, z1: POND.z1 + 3 }, kit.lambert({ map: kit.tex('bug-path', [3, 2]), color: 0xd8d2c4, layer: 1 }), 0.07);
-  flat(POND, kit.lambert({ color: 0x24493f, layer: 2 }), 0.09);
-  const water = new MeshLambertMaterial({ color: 0x5cb6c8, transparent: true, opacity: 0.72, depthWrite: false, emissive: new Color(0x1b5560), emissiveIntensity: 0.35 });
+  const water = new ShaderMaterial({
+    vertexShader: POND_VERT, fragmentShader: POND_FRAG,
+    uniforms: { uTime, uNight, uHalf: { value: new Vector2((POND.x1 - POND.x0) / 2, (POND.z1 - POND.z0) / 2) } }
+  });
   mats.push(water);
-  const pondW = flat(POND, water, 0.6);
-  pondW.renderOrder = 2;
+  flat(POND, water, 0.6);
+  const pondSphere = new Sphere(new Vector3((POND.x0 + POND.x1) / 2, 0.6, (POND.z0 + POND.z1) / 2), Math.hypot(POND.x1 - POND.x0, POND.z1 - POND.z0) / 2);
   for (const s of SOIL) {
     const g = new CircleGeometry(s[1] > 80 ? 8 : 12, 20);
     geos.push(g);
@@ -427,7 +459,8 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
         write(b);
         any = true;
       }
-      if (!any) return false;
+      // (the pond's ripples with it on screen, as a bug's wings)
+      if (!any && !seen(pondSphere)) return false;
       uTime.value = s;
       danglers.forEach((b, k) => {
         threadPos.setXYZ(k * 2, b.p.x, b.p.y + b.size * 0.4, b.p.z);
@@ -454,8 +487,6 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
     shown: () => bugs.filter((b) => b.mesh).map((b) => b.sp.id),
     night(n) {
       uNight.value = n;
-      // the pond darker, its glow kept
-      water.color.set(0x5cb6c8).lerp(new Color(0x1d3550), n * 0.6);
     },
     dispose() {
       disposed = true;
