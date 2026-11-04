@@ -20,8 +20,12 @@
   import { sound, waspMusic } from '#lib/sound/sound.svelte.ts';
   import { frameRate } from '#lib/store/frameRate.svelte.ts';
   import { at, buildMap, SAFE, type ForestMap, type Item } from './map.ts';
-  import { createLocalLink } from './link.ts';
-  import { TUNE, bearNet, createWorld, handle, step, type World } from './sim.ts';
+  import { createLocalLink, createRelayLink, type Heard, type Link } from './link.ts';
+  import { TUNE, adopt, bearNet, createWorld, handle, step, type World } from './sim.ts';
+  import { LIVE_URL } from '#lib/sync/live.ts';
+  import { getKey } from '#lib/sync/storage.ts';
+  import { week } from '#lib/store/week.svelte.ts';
+  import { hook } from '../island/devHooks.ts';
   import { actHere, createMe, move, type Act, type Me } from './player.ts';
   import type { BNet, Msg, PNet } from './protocol.ts';
   import type { Forest, PView } from './engine.ts';
@@ -38,7 +42,12 @@
   const showStats = params.has('stats');
 
 
-  const link = createLocalLink();
+  // the relay's forest room (two phones); the demo's tabs on a BroadcastChannel (?relay=&key= a test relay)
+  const relayUrl = hook('relay') ?? (week.demo ? null : LIVE_URL ? LIVE_URL.replace(/\/room$/, '/expedition') : null);
+  const relayKey = hook('key') ?? getKey();
+  const link: Link = relayUrl && relayKey ? createRelayLink(relayUrl, relayKey, me) : createLocalLink();
+  const online = !!(relayUrl && relayKey);
+  let linkUp = $state(!online);
   // ---- the lobby ----
   type Here = { who: Who; name: string; vid: string; ready: boolean; bears: number; at: number };
   let here = $state<Record<string, Here>>({});
@@ -225,13 +234,25 @@
   }
 
   // ---- the messages ----
-  function onMsg(m: Msg) {
+  /** The round's host last heard from (its bears), on the shared clock. */
+  let hostHeard = 0;
+  function onMsg(m: Heard) {
+    // a host's message from someone else than the host I know: they took over (I was away), so I'm not it any more
+    if ((m.k === 'bear' || m.k === 'host') && m.from && m.from !== me && (phase === 'play' || phase === 'count')) {
+      if (m.from !== host) {
+        host = m.from;
+        world = null;
+        claimed.clear();
+      }
+      hostHeard = now();
+    }
     if (m.k === 'hi') {
       here[m.who] = { who: m.who, name: m.name, vid: m.vid, ready: m.ready, bears: m.bears, at: Date.now() };
       return;
     }
     if (m.k === 'bye') {
       delete here[m.who];
+      if (m.who === host && m.who !== me && phase === 'play') takeOver();
       return;
     }
     if (m.k === 'start') {
@@ -250,6 +271,8 @@
         break;
       case 'bear':
         if (me !== host) bears = m.b;
+        break;
+      case 'host':
         break;
       case 'picked':
         taken.add(m.id);
@@ -331,6 +354,19 @@
     }
   }
 
+  /** The host went quiet (its phone locked, its tab closed): the lowest of us still here runs the world from what we
+   *  last heard (the bears where they were, what's taken, fallen, planted, banked) and says so. */
+  function takeOver() {
+    if (!map || world || phase !== 'play') return;
+    const nowMs = now();
+    const still = roundPlayers.filter((w) => w !== host && (w === me || nowMs - (others.get(w)?.at ?? 0) < 3000));
+    if ([...still].sort()[0] !== me) return;
+    world = adopt(map, roundPlayers, { t: roundT(), bears, items, taken, traps, fallen: fallen.keys(), nests: nests.keys(), bank });
+    host = me;
+    claimed.clear();
+    link.send({ k: 'host', who: me });
+  }
+
   function begin(m: Extract<Msg, { k: 'start' }>) {
     map = buildMap(m.seed);
     t0 = m.t0;
@@ -353,6 +389,7 @@
     my = createMe(map.spawn[k][0], map.spawn[k][1]);
     yaw = 0;
     world = me === host ? createWorld(map, nBears, roundPlayers) : null;
+    hostHeard = m.t0;
     bears = world ? bearNet(world) : [];
     bearDraw = bears.map((b) => ({ ...b }));
     phase = 'count';
@@ -409,6 +446,8 @@
 
   function play(dt: number) {
     const m = map!;
+    linkUp = link.status().up;
+    if (phase === 'play' && !world && now() - hostHeard > 2500) takeOver();
     const t = Math.max(0, roundT());
     clock = Math.max(0, TUNE.round - t);
     const live = phase === 'play';
@@ -464,7 +503,7 @@
     // the host: the world on a fixed 30 a second, the bears out 15 a second
     if (world && live) {
       acc += dt;
-      const players = [net, ...[...others.values()].filter((o) => nowMs - o.at < 5000)];
+      const players = [net, ...[...others.values()].filter((o) => nowMs - o.at < 1200)];
       while (acc >= 1 / 30) {
         acc -= 1 / 30;
         for (const r of step(world, players, 1 / 30)) link.send(r);
@@ -576,13 +615,14 @@
     // (the demo's test hook: where I am, the bears, a teleport)
     if (params.has('demo'))
       (window as unknown as { __forest: unknown }).__forest = {
-        me: () => ({ ...my }), bears: () => bears, phase: () => phase, bank: () => bank, basket: () => basket,
+        me: () => ({ ...my }), bears: () => bears, phase: () => phase, host: () => host, bank: () => bank, basket: () => basket,
         put: (x: number, z: number) => Object.assign(my, { x, z, top: false, climb: null }),
         wake: () => world?.bears.forEach((b) => Object.assign(b, { st: 'wander', until: 0 }))
       };
     const off = link.on(onMsg);
     hello();
     const hi = setInterval(() => {
+      linkUp = link.status().up;
       hello();
       maybeStart();
     }, 700);
@@ -658,6 +698,7 @@
     <section class="card lobby">
       <h1>🐻 {t('forest.title')}</h1>
       <p>{t('forest.lead')}</p>
+      {#if !linkUp}<p class="hint">{t('forest.connecting')}</p>{/if}
       <ul class="who">
         {#each present as h (h.who)}
           <li class:ready={h.who === me ? ready : h.ready}>{h.name}{h.who === me ? ` (${t('forest.you')})` : ''}<span>{(h.who === me ? ready : h.ready) ? t('forest.ready') : t('forest.waiting')}</span></li>

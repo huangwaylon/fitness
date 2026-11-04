@@ -8,6 +8,7 @@ import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
 import { HELLO_MS, RoomCore, type Held, type Kept, type Meta } from './room.ts';
 import { isOldPushPath, pushGone } from './pushGone.ts';
 import { IslandStore } from './storeObject.ts';
+import { FOREST_HELLO_MS, ForestCore, type FMeta } from './expedition.ts';
 import { adminRoute, apiRoute } from './storeRoute.ts';
 import { TOKYO, WX_EMPTY, due, fetchTick, fixture, omUrl, wxHealth, type WxState } from './weather.ts';
 
@@ -15,6 +16,8 @@ export { IslandStore };
 
 export interface Env {
   ROOM: DurableObjectNamespace<IslandRoom>;
+  /** くまのもり's room (expedition.ts): one object, `idFromName('forest')`. */
+  FOREST: DurableObjectNamespace<ExpeditionRoom>;
   /** The record (docs/backend.md#the-record): one SQLite-backed object, `idFromName('record')`. */
   STORE: DurableObjectNamespace<IslandStore>;
   /** Comma-separated page origins allowed to connect (localhost is always allowed). */
@@ -160,6 +163,55 @@ export class IslandRoom extends DurableObject<Env> {
   }
 }
 
+/** くまのもり's room (expedition.ts, docs/backend.md "The forest room"): a relay between the players' phones for a
+ *  round, keeping nothing. Hibernating like the island room: an idle socket costs nothing. */
+export class ExpeditionRoom extends DurableObject<Env> {
+  private core: ForestCore<WebSocket>;
+
+  constructor(ctx: DurableObjectState, env: Env) {
+    super(ctx, env);
+    this.core = new ForestCore<WebSocket>({
+      sockets: () => ctx.getWebSockets(),
+      meta: (s) => (s.deserializeAttachment() as FMeta | null) ?? null,
+      setMeta: (s, m) => s.serializeAttachment(m),
+      keys: { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C },
+      now: () => Date.now()
+    });
+  }
+
+  async fetch(req: Request): Promise<Response> {
+    if (req.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return new Response('expected a WebSocket', { status: 426 });
+    if (!this.core.roomFor()) return new Response('room full', { status: 503 });
+    const { 0: client, 1: server } = new WebSocketPair();
+    this.ctx.acceptWebSocket(server);
+    this.core.open(server);
+    if ((await this.ctx.storage.getAlarm()) === null) await this.ctx.storage.setAlarm(Date.now() + FOREST_HELLO_MS);
+    return new Response(null, { status: 101, webSocket: client });
+  }
+
+  webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void {
+    this.core.message(ws, typeof message === 'string' ? message : null);
+  }
+
+  webSocketClose(ws: WebSocket, code: number): void {
+    this.core.close(ws);
+    try {
+      ws.close(code === 1005 || code === 1006 ? 1000 : code, 'bye');
+    } catch {
+      /* already closed */
+    }
+  }
+
+  webSocketError(ws: WebSocket): void {
+    this.core.close(ws);
+  }
+
+  async alarm(): Promise<void> {
+    const next = this.core.sweep();
+    if (next !== null) await this.ctx.storage.setAlarm(next);
+  }
+}
+
 /** A weather tick's outcome (the cron's log, the `/admin` op). */
 type WxTick = { ok: boolean; fetched: boolean; fail?: string; sent?: boolean; heard: number; health: WxHealth };
 
@@ -190,6 +242,11 @@ export default {
     if (url.pathname === '/admin') return adminRoute(req, () => env.STORE.get(env.STORE.idFromName('record')));
     // notifications are gone: an old app's /push/* gets 410 (pushGone.ts)
     if (isOldPushPath(url.pathname)) return pushGone(req, env.ALLOWED_ORIGINS ?? '');
+    if (url.pathname === '/expedition') {
+      if (!originAllowed(req.headers.get('Origin'), env.ALLOWED_ORIGINS ?? '')) return new Response('forbidden', { status: 403 });
+      if (req.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return new Response('expected a WebSocket', { status: 426 });
+      return env.FOREST.get(env.FOREST.idFromName('forest')).fetch(req);
+    }
     if (url.pathname !== '/room') return new Response('not found', { status: 404 });
     if (!originAllowed(req.headers.get('Origin'), env.ALLOWED_ORIGINS ?? '')) return new Response('forbidden', { status: 403 });
     if (req.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return new Response('expected a WebSocket', { status: 426 });

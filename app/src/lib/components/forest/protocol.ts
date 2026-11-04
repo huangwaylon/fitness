@@ -1,7 +1,7 @@
 // くまのもり's messages (docs/design.md "Kuma no mori"): what the players' phones say to each other. The POC carries them
 // over a BroadcastChannel between tabs of one browser (link.ts); a relay room would carry the same shapes. The host
 // (the lowest of A, B, G in the round) runs the bears, the items' claims and the clock; each phone moves its own player.
-import type { Who } from '#lib/sync/live-protocol.ts';
+import type { Who } from '../../sync/live-protocol.ts';
 
 /** A player as the others see it: where, facing, how fast (m/s), what it's doing. */
 export type PState = 'ok' | 'hide' | 'climb' | 'down' | 'home' | 'out';
@@ -67,4 +67,6 @@ export type Msg =
   | { k: 'swarm'; id: number; bear?: number; who?: Who }
   /** A near miss (ギリギリ!) for `who`. */
   | { k: 'giri'; who: Who }
-  | { k: 'end'; why: 'time' | 'wiped' | 'left'; total: number };
+  | { k: 'end'; why: 'time' | 'wiped' | 'left'; total: number }
+  /** The host went quiet: `who` runs the world from here (from what it last heard). */
+  | { k: 'host'; who: Who };

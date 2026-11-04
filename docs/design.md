@@ -1871,8 +1871,9 @@ flow in e2e/forest.spec.ts.
   6 s. Everyone down ends the round.
 - **The link.** Each phone moves its own player and sends it 15 times a second; the host runs the bears (30 steps a
   second, sent 15), the items' first claims, the traps, the fallen trees, the nests and the bank (`sim.ts handle`). The
-  POC's link is a BroadcastChannel between tabs of one browser (the demo's `?demo`, `?demo&as=B`, `?demo&as=G`, in
-  separate windows: a hidden tab's timers crawl). Two phones need a relay room carrying the same messages (not built).
+  phones go over the relay's forest room (backend.md "The forest room"); a host whose phone locks hands the world to
+  the next. The demo's link is a BroadcastChannel between tabs of one browser (`?demo`, `?demo&as=B`, `?demo&as=G`, in
+  separate windows: a hidden tab's timers crawl).
 - **Frames.** せってい's フレームレート (30 or 60). No shadow map (blob shadows), fog to 36 m and a 42 m far plane, the
   trees and bushes instanced in 20 m chunks so the frustum drops those behind: about 70–90 draw calls and 110k
   triangles in Chromium. Sound: NH's Chased by Bees while a bear is after me (with ミュージック on), a heartbeat that

@@ -10,6 +10,7 @@
     "deploy": "wrangler deploy",
     "deploy:test": "wrangler deploy --env test",
     "smoke": "node scripts/smoke.ts",
+    "smoke:forest": "node scripts/smoke-forest.ts",
     "latency": "node scripts/latency.ts"
   },
   "devDependencies": {

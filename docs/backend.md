@@ -373,6 +373,30 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
   (also `.github/workflows/relay.yml`); `live-protocol.test.ts`, `live.test.ts` and `store/push.test.ts` in the app's vitest; the push's
   script side in `gas/main.test.ts`.
 
+### The forest room
+くまのもり's rounds (design.md "Kuma no mori") go over their own Durable Object, `ExpeditionRoom` (one room,
+`idFromName('forest')`), behind the Worker's `/expedition`: the same origin check and person keys as the island room,
+apart from it (its own sockets, no change to the island's protocol). Code: `relay/src/expedition.ts` (ForestCore, unit
+tested in `relay/test/expedition.test.ts`), the wire in `app/src/lib/components/forest/wire.ts` (bundled by both),
+the phone's side in `forest/link.ts` (createRelayLink).
+- **It keeps nothing.** Hibernating sockets, no storage: the round lives on the phones. The bears, the items' claims,
+  the traps, the fallen trees and the bank run on the round's host (the lowest of A, B, G present at the start: its
+  `start` makes it the host); the others move their own players.
+- **Who's who.** `hello {key, v}` first (a bad key: 4001; none in 10 s: 4003); one socket a person (a newer replaces
+  the older: 4002). `welcome {me, here, host, t}`; `here {who, on}` as sockets come and go. Each relayed message is
+  stamped `from`, and the room writes the sender into `who` (or `by`, for a help-up) so nobody speaks for another.
+- **The host's own.** The bears and the world's answers (`bear`, `picked`, `pile`, `banked`, `catch`, `trap`, `fell`,
+  `swarm`, `giri`, `end`) only from the host. A host gone quiet (its phone locked: the socket closes off screen, as the
+  island's does) hands over: after 2.5 s without its bears, the lowest still here rebuilds the world from what it last
+  heard (`sim.ts adopt`) and says `host`; the room takes it only once the old host's socket is gone. A host back later
+  sees someone else's bears and steps down.
+- **Rates.** Positions and bears (`p`, `bear`) have their own bucket (40, 40 a second), the rest another (30, 30), so a
+  pickup never waits behind the stream; beyond them, dropped. 2 KB a message at most. `ping {c}` → `pong {c, t}`: the
+  phone's clock is the room's, from the shortest of the last eight round trips (five at the welcome).
+- **Cost.** A round is 2–3 phones × 15 positions a second plus the host's 15 bear updates: ~12k incoming messages in
+  4 minutes ≈ 600 of the Free plan's 100k requests a day (20:1), the object awake ~4 minutes. Smoke test:
+  `npm run smoke:forest` (the test copy).
+
 ## The real weather
 
 Tokyo's sky by the hour for the island ([design](design.md#weather); decisions: *Weather from Tokyo, by the hour*).

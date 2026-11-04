@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BUSH, CLIFF, N, SAFE, TRUNK, WATER, at, bearWalk, buildMap, cellOf, sight } from './map.ts';
-import { TUNE, createWorld, handle, step, type World } from './sim.ts';
+import { TUNE, adopt, bearNet, createWorld, handle, step, type World } from './sim.ts';
 import { createMe, move } from './player.ts';
 import type { Msg, PNet } from './protocol.ts';
 
@@ -136,6 +136,26 @@ describe('the host', () => {
     expect(step(v, [P({ who: 'A', st: 'down' }), P({ who: 'B', st: 'home' })], 0.05)).toContainEqual({ k: 'end', why: 'wiped', total: 0 });
     const u = createWorld(map, 1, ['A']);
     expect(step(u, [P({ who: 'A', st: 'down', up: true })], 0.05).some((m) => m.k === 'end')).toBe(false);
+  });
+});
+
+describe('a host gone quiet', () => {
+  it('is taken over from what the others last heard: the bears where they were, the taken, fallen, planted and banked', () => {
+    const w = createWorld(map, 2, ['A', 'B']);
+    handle(w, { k: 'pick', who: 'A', id: 3 });
+    handle(w, { k: 'push', who: 'A', id: 1 });
+    handle(w, { k: 'seed', who: 'B', x: 1, z: 2 });
+    handle(w, { k: 'bank', who: 'B', n: 4 });
+    w.t = 50;
+    w.bears[0].x = 5;
+    const v = adopt(map, ['A', 'B'], { t: w.t, bears: bearNet(w), items: w.items, taken: w.taken, traps: w.traps, fallen: w.fallen, nests: w.nests, bank: w.bank });
+    expect(v.bears.map((b) => b.x)).toEqual(w.bears.map((b) => b.x));
+    expect([...v.taken]).toEqual([3]);
+    expect([...v.fallen]).toEqual([1]);
+    expect(v.traps).toHaveLength(1);
+    expect(v.bank).toBe(4);
+    expect(Array.from(v.logs).some(Boolean)).toBe(true);
+    expect(handle(v, { k: 'pick', who: 'B', id: 3 })).toEqual([]);
   });
 });
 
