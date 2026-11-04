@@ -12,7 +12,9 @@
 type V3 = readonly [number, number, number];
 export const JOINTS = [
   'Spine_1', 'Spine_2', 'Spine_3', 'Neck', 'Head', 'Clavicle_L', 'Clavicle_R', 'Arm_1_L', 'Arm_1_R', 'Arm_2_L', 'Arm_2_R', 'Hand_L', 'Hand_R',
-  'Leg_1_L', 'Leg_1_R', 'Leg_2_L', 'Leg_2_R', 'Ankle_L', 'Ankle_R', 'TailRoot', 'Tail_1', 'Side_Ear_1_L', 'Side_Ear_1_R'
+  'Leg_1_L', 'Leg_1_R', 'Leg_2_L', 'Leg_2_R', 'Ankle_L', 'Ankle_R', 'TailRoot', 'Tail_1', 'Side_Ear_1_L', 'Side_Ear_1_R',
+  // (the beak's two halves and an owl's ear tufts: the museum's curator, museum/curator.ts)
+  'Mouth', 'Mouth_U', 'Crest_L', 'Crest_R'
 ] as const;
 export type Joint = (typeof JOINTS)[number];
 

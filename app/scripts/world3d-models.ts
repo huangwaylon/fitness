@@ -6,7 +6,7 @@
 // never at install), plus src/lib/components/world3d/models.json (each model's bounds and bytes).
 //
 // With --museum it converts the museum's inside instead (routes/museum, components/museum): NH's own aquarium and bug
-// garden props (its tanks' kelp, coral and river stones, the garden's trees, flower beds, logs and terrarium) and Blathers,
+// garden props (its tanks' kelp, coral and river stones, the garden's trees, flower beds, logs and terrarium),
 // into static/room/museum/<name>.glb and src/lib/components/museum/models.json, and NH's museum floors and walls into
 // static/room/museum/tex/<name>.webp (each its own albedo, scaled down, tiled at run time).
 //
@@ -140,9 +140,8 @@ const MUSEUM_JOBS: Job[] = [
   bug0('agave', 'Agave'), bug0('anthurium', 'Anthurium'), bug0('heliconia', 'Heliconia'), bug0('coleus', 'COLOUMre'),
   bug1('potted', 'IdrMuseumInsect1Obj07'),
   bug2('autumn-log', 'IdrMuseumInsect2Obj00'), bug2('pink-flowers', 'IdrMuseumInsect2Obj01'), bug2('small-trees', 'IdrMuseumInsect2Obj02'),
-  bug2('logs-ferns', 'IdrMuseumInsect2Obj03'), bug2('cacti', 'IdrMuseumInsect2Obj04'), bug2('terrarium', 'IdrMuseumInsect2Obj10'),
-  // the museum's curator at the front desk, his wings lowered from the bind pose (scripts/world3d-assets.ts's visitors')
-  { name: 'blathers', parts: [['NpcSpOwl', 'NpcSpOwl']], hide: ['FaceBad', 'FaceGood', 'FaceNothing'], pose: { Arm_1_L: [0, 0, -65], Arm_1_R: [0, 0, 65] }, tris: 4000 }
+  bug2('logs-ferns', 'IdrMuseumInsect2Obj03'), bug2('cacti', 'IdrMuseumInsect2Obj04'), bug2('terrarium', 'IdrMuseumInsect2Obj10')
+  // (the curator at the front desk is the villagers' skinned Blathers: scripts/villagers3d-models.ts, museum/curator.ts)
 ];
 /** The museum's floors and walls (--museum): [name, NH's texture folder, longest side px]. */
 const MUSEUM_TEX: [string, string, number][] = [
@@ -272,7 +271,7 @@ if (MUSEUM) {
     total += statSync(out).size;
   }
   const sortedM = Object.fromEntries(Object.entries(metas).filter(([k]) => MUSEUM_JOBS.some((j) => j.name === k)).sort(([a], [b]) => a.localeCompare(b)));
-  writeFileSync(META, `{\n  "_": "scripts/world3d-models.ts --museum: the museum's props and its curator (bounds in model units, triangles, KB, content hash)",\n  "models": {\n${Object.entries(sortedM).map(([k, m]) => `    ${JSON.stringify(k)}: ${JSON.stringify(m)}`).join(',\n')}\n  }\n}\n`);
+  writeFileSync(META, `{\n  "_": "scripts/world3d-models.ts --museum: the museum's props (bounds in model units, triangles, KB, content hash)",\n  "models": {\n${Object.entries(sortedM).map(([k, m]) => `    ${JSON.stringify(k)}: ${JSON.stringify(m)}`).join(',\n')}\n  }\n}\n`);
   console.log(`${todo.length} models and ${MUSEUM_TEX.length} textures, ${(total / 1024 / 1024).toFixed(2)} MB`);
   rmSync(scratch, { recursive: true, force: true });
   rmSync(work, { recursive: true, force: true });

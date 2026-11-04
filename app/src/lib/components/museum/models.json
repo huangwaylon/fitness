@@ -1,10 +1,9 @@
 {
-  "_": "scripts/world3d-models.ts --museum: the museum's props and its curator (bounds in model units, triangles, KB, content hash)",
+  "_": "scripts/world3d-models.ts --museum: the museum's props (bounds in model units, triangles, KB, content hash)",
   "models": {
     "agave": {"min":[-7.33,-0.08,-6.37],"max":[6.78,7.95,7.14],"tris":392,"kb":8.2,"v":"8090f74c"},
     "anthurium": {"min":[-5.51,-0.29,-4.12],"max":[6.13,6.28,5.42],"tris":879,"kb":12.2,"v":"5ccba393"},
     "autumn-log": {"min":[-152.17,6.92,-41.7],"max":[-121.88,25.76,-15.43],"tris":2206,"kb":53.5,"v":"0bd68ff1"},
-    "blathers": {"min":[-7.12,0,-4.55],"max":[7.46,13.58,6.02],"tris":4000,"kb":84.3,"v":"81a0a057"},
     "bushes": {"min":[-34.26,19.57,-32.54],"max":[29.47,39.42,31.99],"tris":4000,"kb":69.2,"v":"c190b4be"},
     "cacti": {"min":[12.23,6.05,-25.09],"max":[43.26,16.43,-7.5],"tris":2262,"kb":36.3,"v":"135898ca"},
     "coleus": {"min":[-5.11,0,-5.11],"max":[5.11,2.64,5.11],"tris":256,"kb":7.1,"v":"ede29ab0"},
