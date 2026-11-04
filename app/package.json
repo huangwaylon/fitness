@@ -29,6 +29,7 @@
     "gas:deploy": "node gas/deploy.ts",
     "heads": "node scripts/heads.ts",
     "bench": "node scripts/bench-model.ts",
+    "leak": "node scripts/leak-probe.ts",
     "knip": "knip",
     "models": "node scripts/models.ts",
     "room-models": "node scripts/room-models.ts",

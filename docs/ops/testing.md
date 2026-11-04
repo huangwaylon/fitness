@@ -93,6 +93,21 @@ Most red runs so far were the spec, not the app. Before pushing a new or changed
    don't make one test do the work of three: a short test fails clearly and shards evenly.
 9. **Don't loosen an assertion to make it pass.** If the app is wrong, it's a bug: fix it or say so in the commit.
 
+## Memory
+The PWA stays open for days, so a scene's round trip must leave nothing behind. `e2e/leaks.spec.ts` (`@chromium`, in
+the gate) goes in and out of the shop, the museum and うめ's house, opening いえを かえる, three rounds, and checks after
+a forced GC that no WebGL context (watched by WeakRefs) or window/document listener is left over. To hunt one:
+`npm run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts, its header lists the flows: the rooms, each sheet, the
+picker, visibility, the sim's clock over midnight) against a served build (`E2E_PORT`), printing per cycle the heap,
+DOM nodes, listeners and live contexts, then a heap-snapshot diff by constructor; `--path=<name>` prints what retains it.
+- **three.js:** a renderer stays alive as long as any geometry, material or texture it drew isn't disposed (three's
+  dispose listeners hold it). Anything drawn from a page-wide model cache (homes, bridges, villagers) is disposed when
+  its renderer goes (world3d/release.ts `releaseAll`), the ones that left the scene earlier too; then
+  `forceContextLoss()`.
+- **The probe's own handles:** `waitForSelector` and `waitForFunction` return handles that keep their DOM or object
+  alive (a heap path through "DevTools console"); wait on booleans.
+- A steady +0.3 MB a trip that's all `[code]` in the diff is V8 compiling; it levels off.
+
 ## The iOS Simulator check (the real target, on the Mac)
 
 CI draws in software (SwiftShader): no judge of the phones' rendering (iPhone 15/16, Safari, Metal). The rendering is
