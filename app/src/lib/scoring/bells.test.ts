@@ -4,7 +4,8 @@
 import { describe, expect, it } from 'vitest';
 import type { PersonId, RingFruit } from '#lib/types.ts';
 import { weekDays } from '#lib/time/dates.ts';
-import { RING_FRUITS, RULES, SHOP, STEPS_GOAL, STRETCH, shopPrice, stretchOf } from '#lib/config/rules.ts';
+import { RING_FRUITS, RULES, SHOP, STRETCH, shopPrice, stretchOf } from '#lib/config/rules.ts';
+import { GOALS } from '#lib/contract/goals.ts';
 import { allMet, earnWeek, ringBells, togetherDays, type EarnDay, type WeekEarning } from './bells.ts';
 
 const WK = '2026-11-02';
@@ -44,12 +45,14 @@ const pairWeek = (a: WeekEarning, b: WeekEarning): number =>
 describe('the rules', () => {
   it('are a stamp card: +1 a goal, +2 ふたりでぜんぶ, goals 60 min / 120 min, steps 8,000 unless set (1,000–30,000 by 500)', () => {
     expect(RULES).toEqual({ goals: { exerciseMin: 60, standMin: 120 }, perGoal: 1, together: 2 });
-    expect(STEPS_GOAL).toEqual({ fallback: 8000, min: 1000, max: 30000, step: 500 });
+    expect(GOALS.steps).toMatchObject({ fallback: 8000, min: 1000, max: 30000, step: 500 });
+    // the けんこう defaults for Exercise and Stand are the ベル's fixed goals (setting another never changes the ベル)
+    expect([GOALS.exercise.fallback, GOALS.stand.fallback]).toEqual([RULES.goals.exerciseMin, RULES.goals.standMin]);
   });
 
   it('がんばり: +1 per goal at 1.5×, at most +2 a day: 90 min, 180 min, 12,000 steps, 900 / 600 kcal', () => {
     expect(STRETCH).toEqual({ multiplier: 1.5, perGoal: 1, cap: 2 });
-    expect([RULES.goals.exerciseMin, RULES.goals.standMin, STEPS_GOAL.fallback, 600, 400].map(stretchOf)).toEqual([90, 180, 12000, 900, 600]);
+    expect([RULES.goals.exerciseMin, RULES.goals.standMin, GOALS.steps.fallback as number, 600, 400].map(stretchOf)).toEqual([90, 180, 12000, 900, 600]);
   });
 });
 

@@ -20,10 +20,10 @@
 //   (ending on the anchor), 1年 = 12 calendar months by month. The previous period is the same length just before
 //   (1年: the 12 months before).
 import type { LocalDate, PersonId, RingFruit } from '#lib/types.ts';
-import { RULES } from '#lib/config/rules.ts';
 import { addDays, daysBetween, localDateAt } from '#lib/time/dates.ts';
 import type { ActivityMetric, BodyMetric } from '#lib/contract/api.ts';
-import { latestAt, moveGoalOn, stepsGoalOn, type State } from './state.ts';
+import { dailyGoalOn, latestAt, type State } from './state.ts';
+import { goalMet } from '#lib/contract/goals.ts';
 import { metricAsOf } from './inputs.ts';
 import { plainChange, project, weighIns, type PlainChange, type WeighIn, type WeightProjection } from './weight.ts';
 
@@ -52,10 +52,8 @@ const DAYS: Partial<Record<Period, number>> = { week: 7, month: 30, quarter: 91 
 /** One person's days, index i = `from` + i days: Apple Health's value as is, null = no row. */
 interface PersonSeries {
   values: Record<Metric, (number | null)[]>;
-  /** The Move goal in force each day (Exercise and Stand are fixed). */
-  moveGoal: number[];
-  /** The steps goal in force on day i. */
-  stepsGoal: number[];
+  /** Each metric's goal in force on day i (model/state.ts dailyGoalOn). */
+  goals: Record<Metric, number[]>;
   /** That day's weigh-in (kg), null without one. */
   kg: (number | null)[];
   /** That day's body metrics (latest row), null without one. */
@@ -102,30 +100,25 @@ function buildSeries(s: State, to: LocalDate, now: number): HealthSeries {
   const n = daysBetween(from, to) + 1;
   const person = (p: PersonId): PersonSeries => {
     const values = { move: [], exercise: [], stand: [], steps: [] } as Record<Metric, (number | null)[]>;
-    const moveGoal: number[] = [], stepsGoal: number[] = [];
+    const goals = { move: [], exercise: [], stand: [], steps: [] } as Record<Metric, number[]>;
     const kgBy = new Map(weighIns(s, p, now).map((x) => [x.date, x.kg] as const));
     const kg: (number | null)[] = [];
     const body = { body_fat_pct: [], bmi: [], lean_kg: [] } as Record<BodyMetric, (number | null)[]>;
     for (let i = 0, d = from; i < n; i++, d = addDays(d, 1)) {
-      for (const m of METRICS) values[m].push(metricAsOf(s, p, d, ROW[m], now));
-      moveGoal.push(moveGoalOn(s, p, d));
-      stepsGoal.push(stepsGoalOn(s, p, d));
+      for (const m of METRICS) {
+        values[m].push(metricAsOf(s, p, d, ROW[m], now));
+        goals[m].push(dailyGoalOn(s, p, m, d));
+      }
       kg.push(kgBy.get(d) ?? null);
       for (const b of BODY) body[b].push(latestAt(s.body[p][b].get(d), now) ?? null);
     }
-    return { values, moveGoal, stepsGoal, kg, body, goalWeight: s.prefs[p].goalWeight ?? null, goalBodyFat: s.prefs[p].goalBodyFat ?? null };
+    return { values, goals, kg, body, goalWeight: s.prefs[p].goalWeight ?? null, goalBodyFat: s.prefs[p].goalBodyFat ?? null };
   };
   return { from, to, activityFrom, any, people: { A: person('A'), B: person('B') } };
 }
 
 /** A metric's goal on day i. */
-const goalOf = (ps: PersonSeries, m: Metric, i: number): number =>
-  m === 'move' ? ps.moveGoal[i] : m === 'exercise' ? RULES.goals.exerciseMin : m === 'stand' ? RULES.goals.standMin : ps.stepsGoal[i];
-
-/** The stamp card's rule (scoring/bells.ts earnWeek). */
-function metGoal(m: Metric, v: number, goal: number): boolean {
-  return m === 'stand' ? Math.floor(v) >= goal : v >= goal;
-}
+const goalOf = (ps: PersonSeries, m: Metric, i: number): number => ps.goals[m][i];
 
 // ---------- ranges ----------
 
@@ -219,7 +212,7 @@ function metricSeries(hs: HealthSeries, p: PersonId, m: Metric): DaySeries {
   const ps = hs.people[p];
   return {
     from: hs.from, to: hs.to, first: hs.activityFrom, vals: ps.values[m],
-    goal: (i) => goalOf(ps, m, i), met: (v, i) => metGoal(m, v, goalOf(ps, m, i))
+    goal: (i) => goalOf(ps, m, i), met: (v, i) => goalMet(m, v, goalOf(ps, m, i))
   };
 }
 

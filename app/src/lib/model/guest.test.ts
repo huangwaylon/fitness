@@ -63,7 +63,7 @@ describe('the guest’s rows', () => {
     expect(s.prefs.G).toEqual({ villager: 'judy', villagerName: 'ゆき' });
     expect(s.bellSpends).toEqual([]);
     expect(s.harvests).toEqual([]);
-    expect(s.moveGoals).toEqual({ A: [], B: [] });
+    expect([s.dailyGoals.A.move, s.dailyGoals.B.move]).toEqual([[], []]);
     expect(Object.keys(s.metrics)).toEqual(['A', 'B']);
     expect(weekBells(s, WK, Date.parse(at(WK, '23:00'))).A.days.find((d) => d.date === WK)?.steps).toBe(9000);
   });

@@ -2,16 +2,17 @@
 // accepted (relay/src/store.ts checks it), and which events replace an earlier one (the
 // store's slots: a tally and an island day per person and day, a cosmetic pref per person, a goal per person and
 // Tokyo day, a board post, a meal entry, a repeat, a recipe and a custom food per id). Pure, over the contract only (relative imports), since the relay imports it from here.
-import { isBodyFatGoal, isFind, isId, isLocalDate, isWeatherMode, isWeightKg, nextDay, PREF_KEYS, type EventType } from '../contract/api.ts';
+import { isFind, isId, isLocalDate, isWeatherMode, nextDay, PREF_KEYS, type EventType } from '../contract/api.ts';
+import { GOAL_IDS, GOALS, goalOfKey, goalPrefTaken } from '../contract/goals.ts';
 import { isTally } from '../contract/tally.ts';
 import { isIslandDay } from '../contract/island.ts';
 import { decorOpOf } from '../contract/decor.ts';
 import { tentOpOf } from '../contract/tent.ts';
 import { layoutOpOf } from '../contract/layout.ts';
 import { boardOpOf } from '../contract/board.ts';
-import { FOOD_GOALS, foodCustomOp, foodGoalOf, foodOp, foodRecipeOp, foodRepeatOp, isFoodGoal } from '../contract/food.ts';
+import { foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp } from '../contract/food.ts';
 import { shopPriced } from '../contract/shop.ts';
-import { isStepsGoal, LIMITS, MOVE_GOAL, shopPrice } from '../config/rules.ts';
+import { LIMITS, shopPrice } from '../config/rules.ts';
 import { localDateAt } from '../time/dates.ts';
 import type { Who } from '../types.ts';
 
@@ -81,22 +82,19 @@ const FOOD_AHEAD_MS = 24 * 60 * 60 * 1000;
 const atNear = (at: number, now: number): boolean => at <= now + FOOD_AHEAD_MS;
 
 /** The prefs only the latest of counts (per person); the goals keep their history (`moveGoalOn` prices past days). */
-const LATEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'goalWeight', 'goalBodyFat', ...Object.values(FOOD_GOALS).map((g) => g.key)];
+const LATEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', ...GOAL_IDS.filter((id) => GOALS[id].history === 'latest').map((id) => GOALS[id].key)];
 
 /** Whether the model takes this pref's value (model/state.ts ON_EVENT.pref; anything else is ignored there). */
 export function prefTaken(key: unknown, v: unknown): boolean {
   switch (key) {
-    case 'moveGoal': return typeof v === 'number' && Number.isInteger(v) && v >= MOVE_GOAL.min && v <= MOVE_GOAL.max;
-    case 'stepsGoal': return isStepsGoal(v);
     case 'locale': return v === 'ja' || v === 'en';
     case 'villagerName': return typeof v === 'string' && v.trim().length >= 1 && v.trim().length <= LIMITS.villagerNameMaxChars;
     case 'villager': return typeof v === 'string' && /^[a-z][a-z0-9_-]{0,23}$/.test(v);
-    case 'goalWeight': return v === null || v === '' || isWeightKg(v);
-    case 'goalBodyFat': return v === null || v === '' || isBodyFatGoal(v);
     case 'weatherMode': return isWeatherMode(v);
     default: {
-      const n = foodGoalOf(key);
-      return n !== null && (v === null || isFoodGoal(n, v));
+      // a goal (contract/goals.ts): in its range, on its grid; a clearable one null / '' too
+      const id = goalOfKey(key);
+      return id !== null && goalPrefTaken(id, v);
     }
   }
 }
@@ -104,9 +102,9 @@ export function prefTaken(key: unknown, v: unknown): boolean {
 /**
  * The slot an event fills, or null: a later event of the same slot replaces it (the record keeps one row per slot).
  * - `tally`, `island`: the sender's day (`date`);
- * - a cosmetic `pref` (`locale`, `villagerName`, `villager`, `goalWeight`, `goalBodyFat`, the meal log's goals
- *   `kcalGoal` … `saltGoal`): its subject and key;
- * - a goal `pref` (`moveGoal`, `stepsGoal`): its subject, key and the Tokyo day it was made (`at`), so the goal in
+ * - a cosmetic `pref` (`locale`, `villagerName`, `villager`) or a goal kept as its latest (contract/goals.ts history
+ *   `latest`: the body and meal-log goals): its subject and key;
+ * - a goal a day keeps (history `daily`: `stepsGoal`, `moveGoal`, `exerciseGoal`, `standGoal`): its subject, key and the Tokyo day it was made (`at`), so the goal in
  *   force on each past day stays (a goal applies from the day it's made; the last of a day is the one that counts);
  * - the island's `weatherMode`: one for the island, whoever set it (the last one wins);
  * - a `decor` op: its scope and item id (`decorAccept` / `tentAccept` decide whether it replaces);

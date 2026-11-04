@@ -1,8 +1,11 @@
 // The goals GoalEdit sets, one spec each (docs/design.md "Kenkou", "Gohan"): its title, the field's unit and keypad,
 // the range −/＋ step through and the parse that checks what was typed (the record's own rules), the range in words,
 // whether it may be cleared and the value −/＋ start from when none is set.
-import { BODY_FAT_GOAL, WEIGHT_KG } from '#lib/contract/api.ts';
-import { MOVE_GOAL, STEPS_GOAL } from '#lib/config/rules.ts';
+import { WEIGHT_KG } from '#lib/contract/api.ts';
+import { GOALS as DEFS } from '#lib/contract/goals.ts';
+const BODY_FAT_GOAL = DEFS.body_fat_pct;
+const MOVE_GOAL = DEFS.move;
+const STEPS_GOAL = { ...DEFS.steps, fallback: 8000 };
 import { formatNum, t } from '#lib/i18n/index.ts';
 import { parseKcalInput, parseKgInput, parsePctInput, parseStepsInput } from '../kiroku/fmt.ts';
 
