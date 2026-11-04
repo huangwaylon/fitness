@@ -1,7 +1,9 @@
 // What the museum shows and where (museum/species.ts): the ずかん's first finds, each fish in its tank, each bug in its
 // place.
 import { describe, expect, test } from 'vitest';
-import { findKey, type FirstFind } from '#lib/model/finds.ts';
+import { findKey, findsView, type FirstFind } from '#lib/model/finds.ts';
+import { reduce } from '#lib/model/state.ts';
+import type { EventRow } from '#lib/contract/api.ts';
 import { entries } from '../kiroku/zukan.ts';
 import { BUG_IDS, FISH_IDS, habitatOf, onShow, tankOf } from './species.ts';
 
@@ -16,6 +18,17 @@ describe('on show', () => {
     const s = onShow(finds);
     expect(s.map((x) => [x.id, x.kind, x.found.person]).sort()).toEqual([['koi', 'fish', 'B'], ['sea-bass', 'fish', 'A'], ['tarantula', 'bug', 'G']]);
     expect(onShow(new Map())).toEqual([]);
+  });
+  test('the ずかん’s, never the pocket’s: everything caught sold, the museum the same', () => {
+    const ev = (hm: string, type: string, data: object, id: string): EventRow => [`2026-11-04T${hm}:00+09:00`, 'A', id, type as EventRow[3], JSON.stringify(data)];
+    const caught = [
+      ev('09:00', 'find', { kind: 'fish', id: 'koi' }, 'e1'), ev('09:01', 'find', { kind: 'bug', id: 'tarantula' }, 'e2'),
+      ev('09:02', 'tally', { date: '2026-11-04', counts: { 'fish:koi': 3, 'bug:tarantula': 1 } }, 'e3')
+    ];
+    const sold = [...caught, ev('10:00', 'sell', { species: 'fish:koi', n: 3, v: 120 }, 'e4'), ev('10:01', 'sell', { species: 'bug:tarantula', n: 1, v: 80 }, 'e5')];
+    const shown = (events: EventRow[]) => onShow(findsView(reduce({ metrics: [], events }, null))).map((x) => x.id);
+    expect(shown(caught)).toEqual(['koi', 'tarantula']);
+    expect(shown(sold)).toEqual(shown(caught));
   });
   test('the ずかん’s fish and bugs, every one', () => {
     expect([...FISH_IDS].sort()).toEqual(entries('fish').map((e) => e.id).sort());

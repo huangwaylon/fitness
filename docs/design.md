@@ -1215,8 +1215,9 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
 - **Who else is in:** the rooms' presence, the museum's own scope (`tent` with `sc: 'm'`, its points within the
   museum's ±320; live-protocol.ts): the others' villagers are here while they are, walking as they walk, and nowhere on
   the island meanwhile (store/where.svelte.ts `home` `M`). The guest comes in like anyone.
-- **What's on show** (species.ts): every fish and bug in the ずかん's first finds (anyone's, the guest's too), as it's
-  found; nothing else (the guest visits too, and its finds are on show under its name). A tap on one: its card (MuseumCard: NH's icon, its Japanese and English names, 「7/4 ウェイが
+- **What's on show** (species.ts): one of each fish and bug in the ずかん's first finds (anyone's, the guest's too), as
+  it's found; nothing else (the guest visits too, and its finds are on show under its name). The ずかん's alone, never the
+  pockets': selling every one caught takes nothing out (NH's donation, not a catch kept). A tap on one: its card (MuseumCard: NH's icon, its Japanese and English names, 「7/4 ウェイが
   見つけた」, ×n from the tallies as the ずかん counts).
 - **The aquarium** (`aquarium.ts`, `tanks.ts`, `boids.ts`): NH's grouping (species.ts tankOf): the great sea tank along
   the back wall (the sea's middling and big fish, the rays and sharks: a whale shark scaled to it), the deep-sea tank
@@ -1224,8 +1225,8 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   the river tank as an island in the middle (the fresh water's middling and big fish, the turtles), eight small tanks
   on their stands by the front, two to each group of little fish (the pond's, the stream's, the tropical, the reef's;
   drawn a little bigger), each with NH's own props (kelp on its rocks, coral, the deep's dark rocks, the river's stones,
-  logs and water plants, NH's diver and little submarine in the great tank). Each species found swims in its tank (a
-  little one in a shoal of two or three), boid-like: its own slow wandering heading, mostly along its tank's long side,
+  logs and water plants, NH's diver and little submarine in the great tank). Each species found swims in its tank, one of
+  each (NH's), boid-like: its own slow wandering heading, mostly along its tank's long side,
   turned off the glass before it, off the others' bodies, its body always in the water; facing its way, its tail
   swaying (the vertex shader: one program for every fish). The water is one shader (NH's blue to its depth, caustics
   shimmering on its back and floor, rays from the surface), its glass tinted its water's colour, its bubbles one Points
