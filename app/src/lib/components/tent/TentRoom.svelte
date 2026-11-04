@@ -665,6 +665,8 @@
       stats: () => eng?.stats(),
       loading: () => eng?.loading() ?? 0,
       mine: () => eng?.at(me),
+      /** Walk my villager to a floor point (model units), as a tap there. */
+      walkTo: (x: number, z: number) => walkTo([x, z]),
       v3: (who: Who) => eng?.v3(who) ?? null,
       at: (who: Who) => eng?.at(who),
       walking: (who: Who) => eng?.walking(who),
