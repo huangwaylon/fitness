@@ -185,8 +185,6 @@
   .hint.bad::before { content: '! '; color: var(--c-coral); }
   .acts { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 2px; }
   .acts .btn { margin: 0; width: auto; padding: 0 16px; }
-  /* nothing to set yet: dimmed, but it still takes the tap (to say why) */
-  .acts .btn.off { opacity: .5; }
   /* 目標をなくす: a quiet text button at the left, 44px tall */
   .clr {
     appearance: none; border: 0; background: none; cursor: pointer; margin-right: auto; min-height: var(--hit); padding: 0 4px;

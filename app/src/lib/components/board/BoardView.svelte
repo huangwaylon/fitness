@@ -13,6 +13,7 @@
   import { postDate } from './date.ts';
   import { BOARD_S, FACE, inFront, type BoardProj } from './spot.ts';
   import { keyboardInset, onKeyboardInset } from '../ui/keyboardInset.svelte.ts';
+  import NavButton from '../ui/NavButton.svelte';
 
   interface Props {
     canvas: HTMLCanvasElement;
@@ -213,7 +214,7 @@
 
   <!-- writing, the face gets the room 「もどる」 had (やめる and Esc go back): from the visible part's top, under the safe area -->
   <span class="edge" bind:this={edge} aria-hidden="true"></span>
-  {#if !writing}<button type="button" class="back" data-sfx="back" data-board-back onclick={back}>‹ {t('common.back')}</button>{/if}
+  {#if !writing}<div class="back" data-board-back><NavButton kind="back" text={t('common.back')} onclick={back} /></div>{/if}
 
   {#if box && ready}
     <!-- the notes: a button over each (its text for a screen reader; what's drawn is the canvas); inert while writing -->
@@ -235,8 +236,8 @@
           placeholder={t('board.placeholder')} enterkeyhint="enter" data-sfx="none" data-board-field></textarea>
         <div class="row">
           <span class="count" class:low={left <= 10} aria-live="polite">{t('board.left', { n: left })}</span>
-          <button type="button" class="btn ghost" data-sfx="back" onclick={cancel}>{t('board.cancel')}</button>
-          <button type="submit" class="btn go" data-sfx="confirm" aria-disabled={!can} data-board-post>{writing.id ? t('board.save') : t('board.post')}</button>
+          <button type="button" class="btn small paper" data-sfx="back" onclick={cancel}>{t('board.cancel')}</button>
+          <button type="submit" class="btn small" data-sfx="confirm" aria-disabled={!can} data-board-post>{writing.id ? t('board.save') : t('board.post')}</button>
         </div>
       </form>
     {:else if picked}
@@ -244,19 +245,19 @@
         <div class="who"><b>{board.author(picked.who).name}</b><span>{postDate(picked.p)}{picked.at > picked.p ? ` · ${t('board.edited')}` : ''}</span></div>
         <p class="text">{picked.t}</p>
         <div class="row">
-          {#if board.mayEdit(picked)}<button type="button" class="btn" data-sfx="open" data-board-edit onclick={() => startWriting(picked)}>{t('board.edit')}</button>{/if}
+          {#if board.mayEdit(picked)}<button type="button" class="btn small paper" data-sfx="open" data-board-edit onclick={() => startWriting(picked)}>{t('board.edit')}</button>{/if}
           {#if board.mayRemove(picked)}
-            <button type="button" class="btn warn" data-sfx={removing ? 'confirm' : 'tick'} data-board-remove onclick={() => remove(picked)}>{removing ? t('board.removeSure') : t('board.remove')}</button>
+            <button type="button" class="btn small paper" data-sfx={removing ? 'confirm' : 'tick'} data-board-remove onclick={() => remove(picked)}>{removing ? t('board.removeSure') : t('board.remove')}</button>
           {/if}
-          <button type="button" class="btn ghost" data-sfx="back" onclick={() => ((face.selected = null), (removing = false))}>{t('common.close')}</button>
+          <button type="button" class="btn small paper" data-sfx="back" onclick={() => ((face.selected = null), (removing = false))}>{t('common.close')}</button>
         </div>
       </div>
     {:else}
       <div class="row pager">
-        <button type="button" class="btn arrow" data-sfx="page" aria-label={t('board.newer')} aria-disabled={page === 0} data-board-newer onclick={() => turn(-1)}>‹</button>
+        <button type="button" class="btn small paper arrow" data-sfx="page" aria-label={t('board.newer')} aria-disabled={page === 0} data-board-newer onclick={() => turn(-1)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19" /></svg></button>
         <span class="pg" data-board-page={page + 1}>{page + 1} / {pages}</span>
-        <button type="button" class="btn arrow" data-sfx="page" aria-label={t('board.older')} aria-disabled={page >= pages - 1} data-board-older onclick={() => turn(1)}>›</button>
-        <button type="button" class="btn go" data-sfx="open" data-board-write-open onclick={() => startWriting(null)}>{t('board.write')}</button>
+        <button type="button" class="btn small paper arrow" data-sfx="page" aria-label={t('board.older')} aria-disabled={page >= pages - 1} data-board-older onclick={() => turn(1)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19" /></svg></button>
+        <button type="button" class="btn small go" data-sfx="open" data-board-write-open onclick={() => startWriting(null)}>{t('board.write')}</button>
       </div>
     {/if}
   </div>
@@ -269,7 +270,7 @@
     --hud-end: calc(var(--hud-top) + var(--hit) + var(--lip-h));
     --back-top: calc(var(--hud-end) + 10px);
     /* top and height: the visible part of the screen (inline, from visualViewport) */
-    position: fixed; left: 0; right: 0; top: 0; height: 100%; z-index: 1000; display: flex; flex-direction: column; font-family: var(--font-ui); color: #5A4632;
+    position: fixed; left: 0; right: 0; top: 0; height: 100%; z-index: 1000; display: flex; flex-direction: column; font-family: var(--font-ui); color: var(--c-ink);
     background: linear-gradient(#8fd3e6ee, #bfe7c8ee); -webkit-user-select: none; user-select: none; touch-action: none;
     animation: bv-in .25s ease-out both;
   }
@@ -287,10 +288,8 @@
   }
   .slot { width: 100%; height: 100%; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 6px rgba(0, 0, 0, .35); }
   .slot :global(canvas) { display: block; width: 100%; height: 100%; }
-  .back {
-    position: absolute; left: 12px; top: var(--back-top); z-index: 2; padding: 8px 16px; border: 0; border-radius: 999px;
-    background: #FFF8E4; color: #6B5232; font: 700 16px / 1 var(--font-ui); box-shadow: 0 3px 0 #D9C8A2; min-height: 44px;
-  }
+  /* the rooms' ‹ pill (NavButton), at the side's inset */
+  .back { position: absolute; left: calc(var(--side) + var(--safe-left)); top: var(--back-top); z-index: 2; }
   .edge { position: absolute; left: 0; top: 0; width: 0; height: calc(var(--safe-top) + 8px); pointer-events: none; }
   .notes { position: fixed; z-index: 1; }
   .note { position: absolute; padding: 0; border: 0; background: none; border-radius: 10px; -webkit-tap-highlight-color: transparent; }
@@ -303,28 +302,24 @@
   .bv.kb .bar { padding-bottom: 8px; }
   .bar > * { width: min(100%, 560px); }
   .row { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
-  .pager { justify-content: center; background: #FFF8E4f2; border-radius: 22px; padding: 8px; box-shadow: 0 4px 0 #D9C8A2; }
-  .pg { min-width: 56px; text-align: center; font: 700 16px / 1 var(--font-num); }
-  .btn {
-    min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: #F3E7C9; color: #6B5232; font: 700 16px / 1 var(--font-ui);
-    box-shadow: 0 3px 0 #D9C8A2;
-  }
-  .btn.arrow { width: 48px; padding: 0; font-size: 26px; }
+  /* the app's buttons (theme.css .btn: leaf the action, cream the rest, sunk when it can't) on fixed-cream game panels */
+  .pager { justify-content: center; background: var(--c-cream); border-radius: var(--r-card); padding: 8px 8px 4px; box-shadow: 0 var(--lip-h) 0 var(--c-lip); }
+  .pg { min-width: 56px; text-align: center; font: 700 var(--fs-body) / 1 var(--font-num); color: var(--c-ink); }
+  .row .btn { flex: none; }
+  .btn.arrow { min-width: var(--hit); padding: 0; }
+  .btn.arrow svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
   .bv.night:not(.three) { background: linear-gradient(#1f2f5cee, #2c4a6cee); }
-  .btn[aria-disabled='true'] { opacity: .4; }
-  .btn.go { background: #F7C948; box-shadow: 0 3px 0 #D6A42A; margin-left: auto; }
   .pager .btn.go { margin-left: 12px; }
-  .btn.warn { background: #FFD9CF; box-shadow: 0 3px 0 #E8B2A4; }
-  .btn.ghost { background: transparent; box-shadow: none; }
-  .read, .write { background: #FFFDF2; border-radius: 18px; padding: 12px 14px; box-shadow: 0 4px 0 #D9C8A2, 0 10px 24px rgba(40, 30, 10, .2); }
-  .who { display: flex; justify-content: space-between; gap: 8px; font-size: 15px; }
-  .who span { color: #9A8466; }
-  .text { margin: 8px 0 10px; font: 500 17px / 1.45 var(--font-ui); white-space: pre-wrap; overflow-wrap: anywhere; -webkit-user-select: text; user-select: text; }
+  .read, .write { background: var(--c-card); color: var(--c-ink); border-radius: var(--r-card); padding: 12px 14px 8px; box-shadow: 0 var(--lip-h) 0 var(--c-lip), var(--sh-float); }
+  .who { display: flex; justify-content: space-between; gap: 8px; font-size: var(--fs-body); }
+  .who span { color: var(--c-ink-soft); }
+  .text { margin: 8px 0 10px; font: 500 var(--fs-talk) / 1.45 var(--font-ui); white-space: pre-wrap; overflow-wrap: anywhere; -webkit-user-select: text; user-select: text; }
   textarea {
-    width: 100%; box-sizing: border-box; resize: none; border: 2px solid #E8DBBB; border-radius: 12px; padding: 10px; font: 500 17px / 1.4 var(--font-ui);
-    color: #5A4632; background: #FFFEF8; -webkit-user-select: text; user-select: text;
+    width: 100%; box-sizing: border-box; resize: none; border: 0; border-radius: var(--r-btn); padding: 10px 12px; margin-bottom: 8px; font: 500 var(--fs-input) / 1.4 var(--font-ui);
+    color: var(--c-ink); background: var(--c-cream); box-shadow: inset 0 0 0 2px var(--c-edge); -webkit-user-select: text; user-select: text;
   }
-  textarea:focus { outline: none; border-color: #F2B632; }
-  .count { margin-right: auto; color: #9A8466; font: 600 14px / 1 var(--font-num); white-space: nowrap; }
-  .count.low { color: #E8603C; }
+  textarea:focus { outline: none; box-shadow: inset 0 0 0 3px var(--c-ink); }
+  .count { margin-right: auto; color: var(--c-ink-soft); font: 700 var(--fs-s) / 1 var(--font-num); white-space: nowrap; }
+  .count.low { color: var(--c-ink); }
+  .count.low::before { content: '! '; color: var(--c-coral); }
 </style>
