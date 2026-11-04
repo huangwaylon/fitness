@@ -92,6 +92,22 @@ export async function camTo(page: Page, z: number, rest = true) {
   else await expect.poll(() => w3(page, (w) => w.camStill()), { message: 'the camera still' }).toBe(true);
 }
 
+/** The camera to the shadow in `water` (Critters' __fish: where it's seen now) when it's off this screen: a pinned
+ *  fish comes in a reach of its water the camera saw as it came, and a camera moved after that may have it out of view
+ *  (the river's reaches run the island's length). Its spot a little up the screen, the camera within its stops. */
+export async function camToFish(page: Page, water: string) {
+  const at = () => page.evaluate((water) => {
+    const W = window as unknown as { __fish: { fish(): { water: string; x: number; z: number }[] }; __world: { at(x: number, z: number): [number, number] } };
+    const f = W.__fish.fish().find((f) => f.water === water);
+    return f ? { z: f.z, y: W.__world.at(f.x, f.z)[1] } : null;
+  }, water);
+  await expect.poll(at, { message: `the shadow in the ${water}` }).not.toBeNull();
+  const { z, y } = (await at())!;
+  if (y > 140 && y < (page.viewportSize()?.height ?? 844) - 120) return;
+  const [lo, hi] = await page.evaluate(() => (window as unknown as { __world: { stops(): [number, number] } }).__world.stops());
+  await camTo(page, Math.max(lo, Math.min(hi, z - 100)), false);
+}
+
 /** Time on: the page's clock (`page.clock.install()` first) runs `ms`, the 3D engines' frames included (the clock fakes
  *  requestAnimationFrame): the sim step. Quick in the logic tier (nothing drawn); drawn under software GL a minute of
  *  frames takes minutes (use `page.clock.fastForward` there). */
