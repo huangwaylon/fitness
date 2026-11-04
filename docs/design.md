@@ -1250,8 +1250,9 @@ northern-hemisphere months; hours still hold.
   a tree, the water alike): on the bite it catches the fish; earlier, with a fish at the float, it scares it off; with
   none, it just comes in. `BITE_WINDOW_MS` (1 s) from when the bite shows (a late timer never shortens it); missed, the
   fish darts off and the float stays out, bobbing, for the next. Walking reels in first (NH: you reel in to move): a tap on
-  the ground with the line out is the reel, the next tap walks. The line ends by itself only when my villager dozes
-  off, goes through a door (the island hidden), the island is covered, or the day turns. Nobody near:
+  the ground with the line out is the reel, the next tap walks. The line ends by itself only when my villager goes
+  through a door (the island hidden), the island is covered, or the day turns; it never nods off with the line out
+  (the night nap waits: director's `holdNaps`, asked again every 5 s). Nobody near:
   the float waits as long as it takes; a shadow swimming by later notices it. 1 in 14 a boot, tire or can. Every tap on
   water answers (`e2e/fishing-taps.spec.ts`: each water on both islands at 30 and 60 frames a second; every water
   point on screen casts, near or far; a cast from across the island caught, its line from the rod's tip to the float;
