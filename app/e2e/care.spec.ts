@@ -30,9 +30,8 @@ const nearestWeed = (page: Page) =>
     return on.sort((a, b) => b.r.top - a.r.top)[0]?.i ?? -1;
   });
 
-for (const [w, h] of [[390, 844], [320, 568]] as const)
-  test(`weeds sprout on open lawn, never over a control; a tap pulls one, and it stays pulled (${w}px)`, async ({ page }) => {
-    await page.setViewportSize({ width: w, height: h });
+test('weeds sprout on open lawn, never over a control; a tap pulls one, and it stays pulled', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
     const before = await open(page, '&date=2026-11-04T12:00');
     const weeds = page.locator('[data-care="weed"]'), day = page.locator('[data-weeds]');
     // the day's two or three (wherever they are: on the layout they sprout all over the long island)

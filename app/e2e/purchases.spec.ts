@@ -94,14 +94,14 @@ for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
     await expect(hist.locator('li')).toHaveCount(10);
     await noOverlap(page);
     await hist.scrollIntoViewIfNeeded();
-    await page.screenshot({ path: `test-results/purchases-${vp.width}x${vp.height}.png`, fullPage: true });
+    if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/purchases-${vp.width}x${vp.height}.png`, fullPage: true });
     const more = hist.getByRole('button', { name: 'もっと見る' });
     await more.click();
     expect(await hist.locator('li').count()).toBeGreaterThan(10);
     await noOverlap(page);
     await hist.locator('li').first().locator('button.x').click();
     await expect(sheet(page).getByRole('button', { name: 'はい' })).toBeVisible();
-    await page.waitForTimeout(800); // the sheet's slide-in
-    await page.screenshot({ path: `test-results/purchases-confirm-${vp.width}x${vp.height}.png` });
+    if (process.env.SHOTS) await page.waitForTimeout(800); // the sheet's slide-in, for the screenshot
+    if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/purchases-confirm-${vp.width}x${vp.height}.png` });
   });
 }

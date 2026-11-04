@@ -109,6 +109,12 @@ Most red runs so far were the spec, not the app. Before pushing a new or changed
     `e2e/hud.ts` `unfoldMenu` / `fromMenu` wait for the pills' spring. A route that fails chunks fails every lazy load
     under it (a critter's, a visitor's): pin the scene and route just before the one tap it's for (`e2e/stale.spec.ts`).
 
+12. **One width, the phones'.** The users' phones are an iPhone 15 and an iPhone 16 (393 px wide): a flow runs at one
+    width (390 or 393), not again at 320 or 375; a narrow width only where the layout itself is the test (the HUD's
+    row, a sheet's fit). **Debug pictures** (`page.screenshot` that asserts nothing) only under `SHOTS=<dir>`:
+    ``if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/name.png` })``, and a wait that is only
+    for the picture inside the same `if`.
+
 ## Memory
 The PWA stays open for days, so a scene's round trip must leave nothing behind. `e2e/leaks.spec.ts` (`@chromium`, in
 the gate) goes in and out of the shop, the museum and うめ's house, opening いえを かえる, and the museum in first person

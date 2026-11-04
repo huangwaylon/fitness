@@ -43,9 +43,8 @@ const overlaps = (page: Page, id = 'mine') =>
     });
   }, id);
 
-for (const [w, h] of [[390, 844], [320, 568]] as const)
-  test(`a tap on a weed pulls it where it is: my villager stays put (${w}px)`, async ({ page }) => {
-    await page.setViewportSize({ width: w, height: h });
+test('a tap on a weed pulls it where it is: my villager stays put', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
     await open(page);
     const weeds = page.locator('[data-care="weed"]');
     // the lawn runs on up to the campsite: the camera half way up it, then the weed nearest the screen's middle
@@ -71,7 +70,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     // (where it stands on the island: the camera may still ease a px or two on the long island)
     const at1 = await mine();
     expect(Math.hypot(at1[0] - at0[0], at1[1] - at0[1])).toBeLessThan(1);
-    await page.screenshot({ path: test.info().outputPath(`weed-${w}.png`) });
+    if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/weed.png` });
   });
 
 test('a tap on the ground walks there, never over a control, a thumb-sized button on the way; a second tap re-targets the walk from where the villager is', async ({ page }) => {
@@ -121,7 +120,7 @@ test('a netted bug holds still under the net, swung where it is (no walk); the c
   expect(await sawIt(page, SQUISH)).toBe(true);
   const f = await feet(page);
   expect(Math.hypot(f.x - home.x, f.y - home.y)).toBeLessThan(1); // where it stood
-  await page.screenshot({ path: test.info().outputPath('catch.png') });
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/catch.png` });
 });
 
 test('a sheet stops the walk where it is', async ({ page }) => {
@@ -141,9 +140,8 @@ test('a sheet stops the walk where it is', async ({ page }) => {
 const footsteps = (page: Page) =>
   page.evaluate(() => ((window as { __cues?: string[] }).__cues ?? []).filter((c) => c.startsWith('footstep-')).length);
 
-for (const [w, h] of [[390, 844], [320, 568]] as const)
-  test(`the partner wanders off to a point of interest and back, footsteps under it, never over a control (${w}px)`, async ({ page }) => {
-    await page.setViewportSize({ width: w, height: h });
+test('the partner wanders off to a point of interest and back, footsteps under it, never over a control', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
     await page.goto('?demo&date=2026-11-04T12:00&wander');
     // (the island up first: under CI's load the page takes more than 5 s; ?wander's outing starts 3.2 s after it)
@@ -156,7 +154,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     const there = await feet(page, 'partner');
     expect(Math.hypot(there.x - home.x, there.y - home.y)).toBeGreaterThan(20);
     expect(await overlaps(page, 'partner')).toEqual([]);
-    await page.screenshot({ path: test.info().outputPath(`wander-${w}.png`) });
+    if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/wander.png` });
     // an outing ends at home
     await expect.poll(async () => {
       const f = await feet(page, 'partner');
@@ -179,9 +177,8 @@ test('under a sheet the walkers stop and no footstep sounds', async ({ page }) =
   expect(await footsteps(page)).toBe(n);
 });
 
-for (const [w, h] of [[390, 844], [320, 568]] as const)
-  test(`a visitor: a tap and they speak, my villager turning to them where it stands (${w}px)`, async ({ page }) => {
-    await page.setViewportSize({ width: w, height: h });
+test('a visitor: a tap and they speak, my villager turning to them where it stands', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('?demo&date=2026-11-04T12:00&visitor=jingle&critter=none');
     await expect(hudMenu(page)).toBeVisible();
     await page.waitForTimeout(800);

@@ -162,30 +162,14 @@ test('a dragonfly darts near the water (NH: flying near water), clear of every c
   expect(await clear(page, p)).toBe('');
 });
 
-test("NH's palm beetles on the palms at night (a horned atlas), the stags on a hardwood trunk; each netted", async ({ page }) => {
-  for (const [id, place] of [['horned-atlas', 'palm'], ['golden-stag', 'palm'], ['saw-stag', 'trunk']] as const) {
-    await open(page, `&date=2026-07-10T22:00&critter=${id}`);
-    const b = page.locator(`[data-critter="${id}"]`);
-    await expect(b).toHaveAttribute('data-place', place);
-    await expect(page.locator(`[data-critter="${id}"].sat`)).toBeAttached({ timeout: 5000 });
-    const p = await at(page, `[data-critter="${id}"]`);
-    expect(await clear(page, p), id).toBe('');
-    // on a palm's (or a tree's) trunk: within a few units of one of its kind's foot, up the trunk
-    const trunks = await page.evaluate((kind) => [...document.querySelectorAll(kind === 'palm' ? '[data-kind="palm"] .art' : '.tree, [data-kind="oak"][data-part="trunk"] .art, [data-kind="cedar"] .art')]
-      .map((el) => { const r = el.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; }), place === 'palm' ? 'palm' : 'oak');
-    expect(trunks.some(([l, t, r, bt]) => p.x > l && p.x < r && p.y > t && p.y < bt), id).toBe(true);
-    await page.screenshot({ path: `/tmp/world-build/critters-bug-${place}.png` });
-    await page.mouse.click(p.x, p.y);
-    await expect(page.locator('[data-fx="catch"]')).toContainText(said(id).slice(0, 8), { timeout: 4000 }); // (a three-line line turns a page)
-  }
-});
-
 type W3 = { __world3d?: { loaded(): boolean; where(id: string): { x: number; y: number; z: number; hidden: boolean } | null; client(x: number, z: number, lift?: number): [number, number] } };
 test('on the 3D island a bug perched on a trunk sits on its bark, in view under the canopy, and a tap where it\'s drawn nets it (by day and at night)', async ({ page }) => {
-  test.setTimeout(60_000);
-  for (const [date, id, palm] of [['2026-07-10T12:00', 'robust-cicada', false], ['2026-07-10T22:00', 'saw-stag', false], ['2026-07-10T22:00', 'horned-atlas', true]] as const) {
+  test.setTimeout(75_000);
+  // (NH's palm beetles on the palms at night, a horned atlas and a golden stag; a stag on a hardwood trunk)
+  for (const [date, id, palm] of [['2026-07-10T12:00', 'robust-cicada', false], ['2026-07-10T22:00', 'saw-stag', false], ['2026-07-10T22:00', 'horned-atlas', true], ['2026-07-10T22:00', 'golden-stag', true]] as const) {
     await open(page, `&date=${date}&critter=${id}&visitor=none`);
     await page.waitForFunction(() => (window as unknown as W3).__world3d?.loaded(), null, { timeout: 30_000 });
+    await expect(page.locator(`[data-critter="${id}"]`)).toHaveAttribute('data-place', palm ? 'palm' : 'trunk');
     await expect(page.locator(`[data-critter="${id}"].sat`)).toBeAttached({ timeout: 5000 });
     // its model, and the trunk it's on: on the bark's front (out of the trunk toward the camera), under the canopy
     const m = await page.evaluate(() => {

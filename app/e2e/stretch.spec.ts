@@ -43,7 +43,7 @@ test('the popup: a がんばり chip on the row at 1.5×, the ledger adds up; to
   await expect(page.locator('button.canopy').nth(0)).toHaveAttribute('aria-label', /^ウェイ: 歩数 [\d,]+ \/ 8,000歩 ✓ がんばり、ムーブ .*。もくひょう \+3、がんばり \+1、ウェイの きょう \+4\sベル/);
   // ウェイ 3 + 1, うめ 2: today's total (the ベル row's label, ごほうび's pill) is the day's with がんばり
   await expect(hudBells(page)).toHaveAttribute('aria-label', / · きょう 6\sベル$/);
-  await page.screenshot({ path: '/tmp/stretch/popup-1.png' });
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/popup-1.png` });
 });
 
 test('the cap: three goals at 1.5× all show the same chip, the ledger pays +2 with 上限 2; the popups and ふたりでぜんぶ add up to today’s total', async ({ page }) => {
@@ -65,7 +65,7 @@ test('the cap: three goals at 1.5× all show the same chip, the ledger pays +2 w
   const box = (await pop.boundingBox())!;
   expect(box.x).toBeGreaterThanOrEqual(0);
   expect(box.x + box.width).toBeLessThanOrEqual(390);
-  await page.screenshot({ path: '/tmp/stretch/popup-cap.png' });
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/popup-cap.png` });
   await tap(page, pop); // a tap on the popup closes it
   await page.waitForTimeout(700); // the camera back from making room for it
   const other = await popup(page, 0);
@@ -105,7 +105,7 @@ test('the ベル ledger: a がんばり line under the day with each person\'s �
   // a day without がんばり has no second line
   const plain = sheet(page).locator('li.day:not(.head)').filter({ hasText: '12/5(土)' });
   await expect(plain.locator('.gbk')).toHaveCount(0);
-  await sheet(page).locator('.panel-body').screenshot({ path: '/tmp/stretch/kiroku.png' });
+  if (process.env.SHOTS) await sheet(page).locator('.panel-body').screenshot({ path: `${process.env.SHOTS}/kiroku.png` });
   await day.locator('button.dbtn').click();
   const b = sheet(page).locator('.pc[data-person=B]');
   await expect(b.locator('.row')).toHaveCount(4);
@@ -114,8 +114,8 @@ test('the ベル ledger: a がんばり line under the day with each person\'s �
   await expect(b.locator('.gbrow .k')).toHaveText('がんばり（上限 2）');
   await expect(b.locator('.gbrow .b')).toHaveText('+2');
   await expect(sheet(page).locator('.pc[data-person=A] .gbrow')).toHaveCount(0);
-  await page.waitForTimeout(600); // the page's slide-in, for the screenshot
-  await sheet(page).locator('.panel-body').screenshot({ path: '/tmp/stretch/day.png' });
+  if (process.env.SHOTS) await page.waitForTimeout(600); // the page's slide-in, for the screenshot
+  if (process.env.SHOTS) await sheet(page).locator('.panel-body').screenshot({ path: `${process.env.SHOTS}/day.png` });
 });
 
 test('あそびかた: the がんばり rule and each goal\'s 1.5× target; the two prices', async ({ page }) => {
@@ -126,7 +126,7 @@ test('あそびかた: the がんばり rule and each goal\'s 1.5× target; the 
   await expect(howto).toContainText('目標の 1.5ばいまで できたら、がんばりで もう +1 ベル。1日 2 ベルまで！');
   await expect(howto.locator('.fruits small.st')).toHaveText(['がんばり 12,000歩', 'がんばり 900 kcal', 'がんばり 90分', 'がんばり 180分']); // the goals' one order (rules.ts GOALS_SHOWN: steps first)
   await expect(howto).toContainText(/おやつは 40\sベル、外食は 70\sベル。/);
-  await howto.screenshot({ path: '/tmp/stretch/howto.png' });
+  if (process.env.SHOTS) await howto.screenshot({ path: `${process.env.SHOTS}/howto.png` });
 });
 
 test.describe('at 320x568', () => {
@@ -138,7 +138,7 @@ test.describe('at 320x568', () => {
       const box = (await pop.boundingBox())!;
       expect(box.x).toBeGreaterThanOrEqual(0);
       expect(box.x + box.width).toBeLessThanOrEqual(320);
-      if (tree) await page.screenshot({ path: '/tmp/stretch/popup-cap-320.png' });
+      if (process.env.SHOTS && tree) await page.screenshot({ path: `${process.env.SHOTS}/popup-cap-320.png` });
     }
   });
 });
