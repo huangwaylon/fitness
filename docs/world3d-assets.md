@@ -50,7 +50,8 @@ InsectSakurapetal, InsectSnowCrystal). NH's files have no effect models (no Eff*
 the dust puff, the splash and its ripple are small stylised meshes in the 2D's colours, unlit, 2 KB each
 (`scripts/world3d-fx.ts`, the `fx/*` keys; flat ones face +z for the runtime to turn to the camera). So are the
 zzz, the sweat drop, the confetti, the campfire's flame (`lit`) and the pond's lily pad; the heart and the ♪ are
-NH's own (its item icons UnitIconLove, UnitIconMusic).
+NH's own (its item icons UnitIconLove, UnitIconMusic). The rain's streaks and rings and the snow's flakes have no assets: they're drawn in their shaders
+(`world3d/precip.ts`, design.md "Weather").
 
 Held tools and accessories: the bug net, the rod and its bobber (NH's wooden ones: the plain ones have no textures
 in the files; the fishing line is the runtime's, a line from the rod's tip), the birthday's cake hats (pink, blue)

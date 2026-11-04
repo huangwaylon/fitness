@@ -714,7 +714,7 @@ and maple leaves in maple week. Events (`eventsAt`): cherry blossom Apr 1–10, 
 
 ### Weather
 
-`island/weather.ts` (pure), `island/weatherNow.svelte.ts`, `island/Weather.svelte`, `island/wxFixtures.ts`,
+`island/weather.ts` (pure), `island/weatherNow.svelte.ts`, `island/Weather.svelte`, `world3d/precip.ts`, `island/wxFixtures.ts`,
 `sync/wx.ts`, `panel/WeatherSection.svelte`, relay `src/weather.ts`; `e2e/weather.spec.ts`, `e2e/realweather.spec.ts`.
 The island has **Tokyo's real weather by the hour** (the user: "We are based in Tokyo, Japan. Can we get the game
 weather to sync with the real weather?"), or the game's own seeded days. Both phones and the guest show the same sky
@@ -750,12 +750,45 @@ an hour's extra.
   over 2 h old, or 「ほんものの てんきが とれません（ゲームの てんき）」), and the credit 「天気: Open-Meteo（気象庁モデル）」.
   On the guest's phone it's read-only. The きせつ preview's weather still overrides the look on one phone, and
   `?weather=` both the look and the critters.
-- **Look:** a grey sky and a darker tint on a wet day; a cloudy day's at about half, with nothing falling. Rain is one
-  tiled layer of streaks moved by transform, snow two tiled layers plus NH's snowflakes, fog a haze with two drifting
-  banks, the rainbow soft arcs low on the right, the aurora three swaying curtains. Over the tint, under every control.
-  A change of sky on screen fades: the grey sky, the tint and what falls ease in and out over a minute (CSS
-  transitions). The island's darkening (the sprites' tint and the 3D lights) eases in twelve steps, and the rain bed
-  over ~10 s. Nothing runs per frame. The sky the page opens to is there at once.
+- **Look:** a grey sky and a darker tint on a wet day; a cloudy day's at about half, with nothing falling. Fog a haze
+  with two drifting banks, the rainbow soft arcs low on the right, the aurora three swaying curtains: over the tint,
+  under every control. A change of sky on screen fades: the grey sky, the tint and what falls ease in and out over a
+  minute (CSS transitions; what falls by its own level, below). The island's darkening (the sprites' tint and the 3D
+  lights) eases in twelve steps, and the rain bed over ~10 s. The sky the page opens to is there at once.
+- **Rain and snow fall in the 3D world** (`world3d/precip.ts`; the user: "instead of just a 2D texture on the screen,
+  actually make it more like a subtle, beautiful 3D splash, drop, falling effect. Not overly done, subtle. Similar to
+  the original game"). NH's: rain is thin, faint, pale streaks (alpha 0.32, ~1 px) falling at a slight slant, near ones
+  and far ones sliding past at their own depths as the camera scrolls, with small soft rings where drops land on flat
+  ground and on the water (a wider double one on the water; none on slopes or cliff edges); a downpour is denser
+  (1500 streaks against 900), quicker, longer, more slanted and its rings twice as many. Snow is soft round flakes
+  (680) drifting down slowly with a sway, of mixed sizes, the big ones blurrier and fainter (a depth blur); nothing
+  settles (the ground is snowy already). Bluer and dimmer at night. Indoors nothing falls. How, battery first: one
+  draw call an effect (the streaks, the rings, the flakes: an instanced quad each, set up once), all motion in the
+  vertex shader from a time uniform, nothing per particle or per frame on the CPU but a few uniforms. Each particle's
+  seed is its place in a box that follows the view, wrapped there and anchored in the world (the box moving changes
+  only which copy shows at its faded edges), bent with the island (bend.ts). Three boxes: the view's, a smaller one
+  round the near and middle ground (always), and a smallest one fading in from zoom 2.1 to 2.7, so zoomed in the
+  screen keeps a rain's worth; ones near the camera fade out, far ones into the haze. A light rain draws a share of the
+  set count (the shader drops the rest outside the clip). The rings' heights come from a small float texture of the
+  layout's surface (8u cells: the ground's or the water's height, flat, water), built once a layout when rain first
+  needs it (~15 ms on the Simulator). The fade is its own level (0 … 1 over a minute, Weather.svelte's rules: from
+  rain to snow at once, the opening sky at once). The island draws at its ambient rate meanwhile, as it already does
+  for the water. `__world3d.precip()` (dev and ?demo) says what falls, its level, the meshes drawn and the rings'
+  surface; `precipHide(on)` for a draw-call count with and without (`e2e/weather.spec.ts`).
+  Measured on the iOS Simulator (own iPhone 16, iOS 26.5, a local build, the island at rest, 8 s a sample, two
+  rounds; load average 15-40): the engine at 30.0 fps and a frame's CPU 2 ms (p95) in every case; the draw calls
+  176 → 178 in rain (the streaks, the rings), the winter island's 188 → 189 in snow; WebContent / GPU % of a core:
+
+  | Zoom 1 / 3 | WebContent | GPU | Frame gap p95 |
+  |---|---|---|---|
+  | Fine | 10.1-10.2 / 10.2-11.0 | 6.0-6.5 / 5.8-6.0 | 34 ms |
+  | Rain | 9.7-10.2 / 9.9-10.5 | 5.5-6.2 / 6.2-6.4 | 34 ms |
+  | A downpour | 9.8-10.7 / 10.4-10.5 | 6.4-7.1 / 6.2-6.9 | 34 ms |
+  | Winter, fine / snow / snow hidden (zoom 3) | 9.9-18.0 / 18.0-18.3 / 16.8-17.1 | 5.7-7.9 / 7.4-8.0 / 7.6-7.8 | 34 ms |
+
+  Within the noise: the rain's cost is its two draws on the GPU. (The winter island's own scene costs more than the
+  summer's on a loaded Mac, snow or not.) Before, rain was one tiled screen layer of streaks moved by transform and
+  snow two.
 - **Sound:** the hour's rain or snow arrangement when there is one (cloudy: the sunny one), the rain bed, footsteps
   splash.
 - **Critters:** cloudy counts as fine. The coelacanth comes only in rain or snow, the snail only in rain, and NH's "any

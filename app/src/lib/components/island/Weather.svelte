@@ -7,13 +7,12 @@
   // a downpour clears (16:00–17:00, brightest at half past, now and then double) and the aurora on a winter night;
   // `stage` (inside the stage, the whole viewport, fixed while the island scrolls under it: over the time-of-day tint
   // and every world thing, under the scenery taps and every control): the wet day's darker tint over the ground (from
-  // the horizon down), the rain (ONE tiled layer of streaks moving by transform, denser and faster in a downpour), the
-  // snow (two tiled layers of soft flakes, slow) and the morning fog (a haze and two drifting banks), over sky and
-  // ground. Screen space, never bent by the log. Transform and opacity only; paused with the scene (data-paused /
-  // data-covered). Nothing to tap.
-  // A change of sky while the island is on screen (the real weather's hour turning) fades: the grey sky, its tint and
-  // what falls come in and go out over a minute (a CSS opacity transition, nothing per frame); from one grey sky to
-  // another the layers change at once. The sky the page opens to is there at once.
+  // the horizon down) and the morning fog (a haze and two drifting banks), over sky and ground. Screen space, never
+  // bent by the log. Transform and opacity only; paused with the scene (data-paused / data-covered). Nothing to tap.
+  // The rain and the snow are the 3D island's, in the world (world3d/precip.ts), with the same fade.
+  // A change of sky while the island is on screen (the real weather's hour turning) fades: the grey sky and its tint
+  // come in and go out over a minute (a CSS opacity transition, nothing per frame); from one grey sky to another the
+  // layers change at once. The sky the page opens to is there at once.
   import { weather } from './weatherNow.svelte.ts';
   import { minuteNow } from '#lib/time/clock.ts';
 
@@ -84,15 +83,6 @@
 {:else}
   {#if sky !== 'clear'}
     <div class="wet" class:fading data-sky={sky} aria-hidden="true" style:background={WET[sky][0]} style:opacity={WET[sky][1] * level}></div>
-    {#if sky !== 'cloudy'}
-      <div class="precip" class:fading aria-hidden="true" style:opacity={level}>
-        {#if sky === 'snow'}
-          <i class="snow far"></i><i class="snow near"></i>
-        {:else}
-          <i class="rain" class:heavy={sky === 'heavy'}></i>
-        {/if}
-      </div>
-    {/if}
   {/if}
   {#if weather.fog}
     <div class="fog" aria-hidden="true"><i class="bank b1"></i><i class="bank b2"></i></div>
@@ -141,32 +131,10 @@
 
   /* ---- the stage (the whole viewport; z over the time-of-day tint, under the scenery taps and every control: the
      stage's own tokens, IslandScene) ---- */
-  .wet, .precip, .fog { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .wet, .fog { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
   /* the wet day's darkening (weather.ts WET): on the ground like the time-of-day tint, fading out up the sky (no edge);
      the sprites take it in their own filter (IslandScene --tod-filter) */
   .wet { z-index: var(--z-ground-tint); mix-blend-mode: multiply; -webkit-mask-image: var(--tint-mask); mask-image: var(--tint-mask); }
-  .precip { z-index: calc(var(--z-tint) + 1); }
-  /* one tile of streaks, moved down one tile per loop (seamless) */
-  .rain {
-    position: absolute; left: 0; right: 0; top: -160px; bottom: 0; will-change: transform;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='160' stroke='%23fff' stroke-linecap='round' stroke-opacity='.42' stroke-width='1.2'%3E%3Cpath d='M12 6l-3 16M47 40l-3 16M88 18l-3 16M30 92l-3 16M70 76l-3 16M108 104l-3 16M18 132l-3 16M58 128l-3 16M96 150l-2 10M100 60l-3 16'/%3E%3C/svg%3E") 0 0 / 120px 160px;
-    animation: rain .5s linear infinite;
-  }
-  .rain.heavy {
-    background:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='160' stroke='%23fff' stroke-linecap='round' stroke-opacity='.6' stroke-width='1.3'%3E%3Cpath d='M12 6l-4 22M47 40l-4 22M88 18l-4 22M30 92l-4 22M70 76l-4 22M108 104l-4 22M18 132l-4 22M58 128l-4 22M100 60l-4 22M80 120l-4 22M40 10l-4 22M114 4l-4 22M4 70l-4 22'/%3E%3C/svg%3E") 0 0 / 120px 160px;
-    animation-duration: .36s;
-  }
-  @keyframes rain { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 160px, 0); } }
-  .snow {
-    position: absolute; left: 0; right: 0; top: -200px; bottom: 0; will-change: transform;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' fill='%23fff'%3E%3Ccircle cx='20' cy='30' r='2.2'/%3E%3Ccircle cx='90' cy='12' r='1.6'/%3E%3Ccircle cx='150' cy='60' r='2.4'/%3E%3Ccircle cx='60' cy='100' r='1.8'/%3E%3Ccircle cx='180' cy='140' r='2'/%3E%3Ccircle cx='120' cy='170' r='1.6'/%3E%3Ccircle cx='30' cy='160' r='2.3'/%3E%3C/svg%3E") 0 0 / 200px 200px;
-    opacity: .9; animation: snow 9s linear infinite;
-  }
-  .snow.far { background-size: 140px 140px; top: -140px; opacity: .6; animation: snow-far 13s linear infinite; }
-  @keyframes snow { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 200px, 0); } }
-  @keyframes snow-far { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 140px, 0); } }
-
   /* NH's soft morning haze (the user: "morning fog is too strong"): the far end (the top of the view) softened, the
      near and middle island clear; two light banks drifting over the far half */
   .fog { z-index: calc(var(--z-tint) + 1); background: linear-gradient(180deg, #F4F6F8c0 0%, #F4F6F880 20%, #F4F6F830 42%, #F4F6F800 62%); opacity: .7; }
@@ -178,6 +146,6 @@
   .b2 { right: -25%; top: 30%; animation-duration: 52s; animation-delay: -20s; }
   @keyframes drift { from { transform: translateX(-12%); } to { transform: translateX(12%); } }
 
-  :global(.if-scene[data-paused]) :is(.rain, .snow, .bank, .aurora i),
-  :global(.if-scene[data-covered]) :is(.rain, .snow, .bank, .aurora i) { animation-play-state: paused; }
+  :global(.if-scene[data-paused]) :is(.bank, .aurora i),
+  :global(.if-scene[data-covered]) :is(.bank, .aurora i) { animation-play-state: paused; }
 </style>
