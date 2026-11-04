@@ -405,7 +405,8 @@
     let moving: boolean | 'ambient' = false;
     fishing = false;
     emitting = false;
-    for (const n of world.models3()) {
+    for (const node of world.models3()) {
+      const n = world.model3(node);
       const a = n.m3.key ? keyModel(n.m3.key, winter) : null, drawn = !!a || !!n.m3.emit;
       const art = n.m3.art ? n.m3.art() : n.el;
       if (art && marked.get(art) !== drawn) {

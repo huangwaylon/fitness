@@ -480,13 +480,24 @@ export class World {
     };
   }
 
-  /** The nodes the 3D island draws as models, where they are now (Island3D reads them each frame). */
-  *models3(): Generator<Model3> {
-    for (const n of this.m3s) {
-      const [x, z, lift] = n.live ? n.live() : [n.x, n.z, n.lift];
-      yield { id: n.m3!.id ?? n.id3, m3: n.m3!, x, z, lift: lift ?? n.lift ?? 0, el: n.el, shown: n.shown };
-    }
+  /** The nodes the 3D island draws as models (Island3D reads them each frame, each through model3). */
+  models3(): readonly Node[] {
+    if (!this.m3list) this.m3list = [...this.m3s];
+    return this.m3list;
   }
+  /** A node's model where it is now, in one record rewritten each call (read it before the next: each frame for every
+   *  model, so nothing is allocated; a generator's records and the tuples were 2–3 objects a node a frame). */
+  model3(n: Node): Model3 {
+    const r = this.m3rec;
+    if (n.live) {
+      const p = n.live();
+      r.x = p[0], r.z = p[1], r.lift = p[2] ?? n.lift ?? 0;
+    } else r.x = n.x, r.z = n.z, r.lift = n.lift ?? 0;
+    r.id = n.m3!.id ?? n.id3, r.m3 = n.m3!, r.el = n.el, r.shown = n.shown;
+    return r;
+  }
+  private m3list: Node[] | null = null;
+  private m3rec: Model3 = { id: '', m3: null as unknown as M3, x: 0, z: 0, lift: 0, el: null as unknown as HTMLElement, shown: false };
 
   /** The characters the 3D island draws as models (a visitor), where they are now (Island3D, each frame: no allocation). */
   eachV3(fn: (v3: V3, x: number, z: number, shown: boolean) => void): void {
@@ -536,7 +547,7 @@ export class World {
       el.toggleAttribute('data-m3', !!n.m3 && !n.m3.art);
       this.nodes.add(n);
       this.byEl.set(el, n);
-      if (n.m3) this.m3s.add(n);
+      if (n.m3) this.m3s.add(n), (this.m3list = null);
       if (n.v3) this.v3s.add(n);
       if (n.live) this.movers.add(n);
       if (n.mode !== 'quad') this.zOf(n, n.x, n.z);
@@ -548,7 +559,7 @@ export class World {
       return () => {
         this.nodes.delete(n);
         if (this.byEl.get(el) === n) this.byEl.delete(el);
-        this.m3s.delete(n);
+        if (this.m3s.delete(n)) this.m3list = null;
         this.v3s.delete(n);
         this.movers.delete(n);
         this.dirty.delete(n);
