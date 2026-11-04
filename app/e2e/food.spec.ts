@@ -437,8 +437,8 @@ test('マイレシピ: someone else’s recipe in the meal search is read-only f
 
 // The title bar (the user: "move the user selector to the left of the title in the same row"): whose day left of
 // ごはん, the title still centred, ✕ at the right; a level's ‹ takes the pill's place.
-// グラフ's period sits under the tabs at the right end (けんこう has it beside its switch; the tabs fill the row).
-test('whose day sits in the title bar, left of ごはん; a level’s ‹ takes its place; グラフ’s period under the tabs; きろく’s art', async ({ page }) => {
+// グラフ's period sits in the range row, right of きょう, at the row's right end.
+test('whose day sits in the title bar, left of ごはん; a level’s ‹ takes its place; グラフ’s period beside きょう; きろく’s art', async ({ page }) => {
   await openFood(page);
   const bar = sheet(page).locator('.navbar');
   const who = bar.locator('select[data-pick=who]');
@@ -462,10 +462,14 @@ test('whose day sits in the title bar, left of ごはん; a level’s ‹ takes 
 
   await sheet(page).locator('[data-tab=chart]').click();
   await expect(who).toBeVisible();
-  const [tabs, per] = await Promise.all([sheet(page).locator('[data-tab=chart]'), sheet(page).locator('select[data-pick=period]')].map(async (l) => (await l.boundingBox())!));
-  expect(per.y).toBeGreaterThan(tabs.y + tabs.height - 1); // under the tabs
-  expect(Math.abs(per.x + per.width - (tabs.x + tabs.width))).toBeLessThan(3); // at the right end
-  expect(await overflowOf(page)).toEqual([]);
+  expect(await overflowOf(page)).toEqual([]); // (the tab's content has slid in)
+  const [tabs, today, per] = await Promise.all([sheet(page).locator('[data-tab=chart]'), sheet(page).locator('[data-nav=today]'),
+    sheet(page).locator('select[data-pick=period]')].map(async (l) => (await l.boundingBox())!));
+  const back = (await sheet(page).locator('[data-nav=back]').boundingBox())!; // (きょう, off on today, sits 4px lower: pressed)
+  expect(Math.abs(per.y + per.height / 2 - (back.y + back.height / 2))).toBeLessThan(3); // in the range row
+  expect(per.x).toBeGreaterThan(today.x + today.width); // right of きょう
+  expect(Math.abs(per.x + per.width - (tabs.x + tabs.width))).toBeLessThan(3); // at the row's right end
+  expect(per.height).toBeGreaterThanOrEqual(44);
 });
 
 test('a いつもの’s entry: opened and ‹ leaves the day the repeat’s; ほぞん takes the day out of it; けす has とりけす', async ({ page }) => {

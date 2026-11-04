@@ -1,23 +1,24 @@
 <script lang="ts">
-  // ごはん's グラフ tab (docs/design.md "Gohan"): けんこう's range row (‹ the range › きょう, the period from Food's
-  // dropdown; a horizontal drag on a chart turns the page), then the kcal eaten (FoodIntake: a bar per day / the daily
+  // ごはん's グラフ tab (docs/design.md "Gohan"): けんこう's range row (‹ the range › きょう, then けんこう's period
+  // dropdown, Food's period; a horizontal drag on a chart turns the page), then the kcal eaten (FoodIntake: a bar per day / the daily
   // average per week or month, the flat average line) and, for a member, けんこう's 🍐 Move card for the same person,
   // period and range (the calories burned; the guest has no Health rows of its own: the intake only). One callout open.
   import '#lib/i18n/kenkou.ts'; // けんこう's strings: the periods, the range row, the Move card
   import type { LocalDate, Who } from '#lib/types.ts';
   import { isPersonId } from '#lib/contract/api.ts';
-  import { canShift, healthSeries, rangeFor, shiftAnchor, type Period } from '#lib/model/health.ts';
+  import { canShift, healthSeries, PERIODS, rangeFor, shiftAnchor, type Period } from '#lib/model/health.ts';
   import { foodSeries } from '#lib/model/food.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
   import RangeNav from '../health/RangeNav.svelte';
+  import Pick from '../health/Pick.svelte';
   import MetricCard from '../health/MetricCard.svelte';
   import { rangeLabel } from '../health/fmt.ts';
   import FoodIntake from './FoodIntake.svelte';
 
-  let { who, name, period }: { who: Who; name: string; period: Period } = $props();
+  let { who, name, period, onperiod }: { who: Who; name: string; period: Period; onperiod: (p: Period) => void } = $props();
 
   const m = $derived(week.model);
   const today = $derived<LocalDate>(m ? localDateAt(m.now) : '');
@@ -74,6 +75,9 @@
       <b class="money" data-food-range>{#each rangeLabel(range, today).split('–') as part, i (i)}{#if i}–<wbr />{/if}<span>{part}</span>{/each}</b>
       <small>{t(`health.unit.${range.unit}`)}</small>
     </span>
+    {#snippet end()}
+      <span class="per"><Pick kind="period" value={period} options={PERIODS.map((id) => ({ id, label: t(`health.period.${id}`) }))} label={t('health.period')} onpick={onperiod} compact /></span>
+    {/snippet}
   </RangeNav>
 
   {#if any}
@@ -92,7 +96,9 @@
   .rl { flex: 1; min-width: 0; display: grid; justify-items: center; gap: 3px; text-align: center; }
   .rl b { font-size: var(--fs-talk); line-height: 1.1; text-wrap: balance; }
   .rl b span { white-space: nowrap; }
-  .rl small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); white-space: nowrap; }
+  /* (the period beside きょう leaves the range a narrow middle: its unit wraps, 「1か月ごとの / 1日平均」) */
+  .rl small { font-size: var(--fs-s); font-weight: 700; line-height: 1.2; color: var(--text-soft); text-wrap: balance; }
+  .per { flex: none; display: flex; }
   .empty p { margin: 0; font-weight: 700; color: var(--text-soft); }
   .note { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>
