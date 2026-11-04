@@ -1,46 +1,103 @@
-// The aquarium's tanks and their swimmers (museum/tanks.ts, boids.ts).
+// The aquarium's tanks and their swimmers (museum/tanks.ts, boids.ts): every fish, crab and prop all inside its glass.
 import { describe, expect, test } from 'vitest';
-import { spawn, stepSchool, stepWalker, swimBox, type Swimmer } from './boids.ts';
-import { TANKS, fishScale, waterOf } from './tanks.ts';
-import { FISH_WING } from './plan.ts';
+import { Matrix4, Quaternion, Vector3 } from 'three';
+import { poseOf, spawn, stepSchool, stepWalker, swimBox, type Swimmer } from './boids.ts';
+import { TANKS, bodyIn, propsOf, waterOf, type Box, type Tank } from './tanks.ts';
+import { FISH_IDS, WALKERS, tankOf } from './species.ts';
+import { ENTRANCE, FISH_WING, navOf, walkPath } from './plan.ts';
+import { modelBounds } from '../world3d/models3d.ts';
+import M from './models.json' with { type: 'json' };
 
-const inside = (b: { x0: number; x1: number; y0: number; y1: number; z0: number; z1: number }, p: number[]) =>
-  p[0] >= b.x0 - 1e-9 && p[0] <= b.x1 + 1e-9 && p[1] >= b.y0 - 1e-9 && p[1] <= b.y1 + 1e-9 && p[2] >= b.z0 - 1e-9 && p[2] <= b.z1 + 1e-9;
+const tank = (id: string) => TANKS.find((t) => t.id === id)!;
+const inside = (b: Box, p: readonly number[], e = 1e-6) =>
+  p[0] >= b.x0 - e && p[0] <= b.x1 + e && p[1] >= b.y0 - e && p[1] <= b.y1 + e && p[2] >= b.z0 - e && p[2] <= b.z1 + e;
+
+/** A fish of NH's in its tank as the aquarium draws it: its body (tanks.ts bodyIn, from its model's bounds) and a swimmer. */
+function fishIn(t: Tank, id: string, seed: number) {
+  const b = modelBounds(`critters/fish/${id}`)!;
+  const walker = !!WALKERS[id], body = bodyIn(t, b.min, b.max, walker), w = waterOf(t);
+  const f = spawn(w, body.r, body.reach, 6, seed);
+  if (walker) f.p[1] = w.y0 + body.half[1] * body.s;
+  return { id, body, f, walker: WALKERS[id] };
+}
+/** Its model's box's corners where it's drawn (aquarium.ts write: turned, pitched, scaled about its middle), its tail's
+ *  sway widening it either side. */
+const M4 = new Matrix4(), Q = new Quaternion(), Qp = new Quaternion(), V = new Vector3();
+function corners(x: ReturnType<typeof fishIn>): Vector3[] {
+  const [yaw, pitch] = poseOf(x.f), [hx, hy, hz] = x.body.half, sw = x.body.sway;
+  Q.setFromAxisAngle(new Vector3(0, 1, 0), yaw).multiply(Qp.setFromAxisAngle(new Vector3(1, 0, 0), pitch));
+  M4.compose(V.set(...x.f.p), Q, new Vector3().setScalar(x.body.s));
+  const out: Vector3[] = [];
+  for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) out.push(new Vector3(sx * (hx + sw), sy * hy, sz * hz).applyMatrix4(M4));
+  return out;
+}
 
 describe('the tanks', () => {
-  test('each in the aquarium wing, none over another', () => {
+  test('three, in the aquarium wing, none over another, the walk round them from the hall', () => {
+    expect(TANKS.map((t) => t.id).sort()).toEqual(['deep', 'river', 'sea']);
     for (const t of TANKS) expect(t.box.x0 >= FISH_WING.x0 && t.box.x1 <= FISH_WING.x1 && t.box.z0 >= FISH_WING.z0 && t.box.z1 <= FISH_WING.z1, t.id).toBe(true);
     for (const a of TANKS)
       for (const b of TANKS)
-        if (a !== b) expect(a.box.x0 < b.box.x1 && b.box.x0 < a.box.x1 && a.box.z0 < b.box.z1 && b.box.z0 < a.box.z1, `${a.id} ${b.id}`).toBe(false);
+        if (a !== b) expect(a.box.x0 < b.box.x1 + 8 && b.box.x0 < a.box.x1 + 8 && a.box.z0 < b.box.z1 + 8 && b.box.z0 < a.box.z1 + 8, `${a.id} ${b.id}`).toBe(false);
+    // from the door to the aisle, in front of the river tank and up to the deep tank's glass
+    const g = navOf(TANKS.map((t) => t.box));
+    for (const to of [[160, -10], [160, 80], [245, 10]] as const) {
+      const p = walkPath(g, ENTRANCE, to);
+      expect(Math.hypot(p.at(-1)![0] - to[0], p.at(-1)![1] - to[1]), `${to}`).toBeLessThan(1);
+    }
   });
-  test('a whale shark fits the great tank; a neon tetra is drawn bigger in its small one', () => {
-    const sea = TANKS.find((t) => t.id === 'sea')!, small = TANKS.find((t) => t.id === 'small-5')!;
-    expect(39.5 * fishScale(sea, 39.5)).toBeLessThanOrEqual(sea.maxLen);
-    expect(fishScale(small, 2.2)).toBeGreaterThan(1);
+  test('the big ones fit: a whale shark in the great tank, an oarfish in the deep, an arapaima in the river; a neon tetra drawn bigger', () => {
+    for (const [id, t] of [['whale-shark', 'sea'], ['oarfish', 'deep'], ['arapaima', 'river']] as const) {
+      expect(tankOf(id)).toBe(t);
+      const x = fishIn(tank(t), id, 1), w = waterOf(tank(t));
+      expect(x.body.s).toBeLessThan(1);
+      // (room to turn: its reach well under half its water's narrowest)
+      expect(x.body.reach[0] * 2).toBeLessThanOrEqual(0.8 * Math.min(w.x1 - w.x0, w.z1 - w.z0) + 1e-9);
+    }
+    expect(fishIn(tank('river'), 'neon-tetra', 1).body.s).toBeGreaterThan(1);
+  });
+  test('every prop on its tank’s sand and all of it inside the glass, under the water’s top', () => {
+    const models = M.models as Record<string, { min: number[]; max: number[] }>;
+    for (const t of TANKS) {
+      const w = waterOf(t), ps = propsOf(t);
+      expect(ps.length, t.id).toBeGreaterThan(0);
+      for (const p of ps) {
+        const b = models[p.name];
+        // (its box's middle over the spot, its foot on the sand, turned by its yaw: engine.ts Kit.prop)
+        const m = new Matrix4().compose(new Vector3(p.x, p.y, p.z), new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), p.yaw), new Vector3().setScalar(p.s));
+        const mid = [(b.min[0] + b.max[0]) / 2, b.min[1], (b.min[2] + b.max[2]) / 2];
+        for (const x of [b.min[0], b.max[0]]) for (const y of [b.min[1], b.max[1]]) for (const z of [b.min[2], b.max[2]]) {
+          const c = new Vector3(x - mid[0], y - mid[1], z - mid[2]).applyMatrix4(m);
+          expect(inside(w, c.toArray()), `${t.id} ${p.name} ${c.toArray().map((v) => v.toFixed(1))}`).toBe(true);
+        }
+      }
+    }
   });
 });
 
-describe('the swimmers (boid-like)', () => {
-  test('in every tank, a shoal swims for ten minutes and never leaves its water (its body inside), keeping a speed', () => {
+describe('the swimmers (boid-like), all of each inside its glass', () => {
+  test('every species in its tank, five at a time, swims for two minutes: every corner of its body (turned, pitched, its tail swaying) in the water', () => {
     for (const t of TANKS) {
-      const w = waterOf(t);
-      const fish: Swimmer[] = [3, 6, 12].map((len, i) => spawn(w, (len * fishScale(t, len)) / 2, 6 + i, i * 17 + 3));
-      for (const f of fish) expect(inside(swimBox(w, f.r), f.p), `${t.id} spawn`).toBe(true);
-      for (let k = 0; k < 600 * 30; k++) {
-        stepSchool(fish, w, 1 / 30, k / 30);
-        if (k % 97) continue;
-        for (const f of fish) {
-          expect(inside(swimBox(w, f.r), f.p), `${t.id} at ${k}`).toBe(true);
-          expect(Math.hypot(...f.v)).toBeLessThanOrEqual(f.speed * 1.31);
+      const w = waterOf(t), ids = FISH_IDS.filter((id) => tankOf(id) === t.id && modelBounds(`critters/fish/${id}`));
+      expect(ids.length, t.id).toBeGreaterThan(0);
+      for (let g = 0; g < ids.length; g += 5) {
+        const five = ids.slice(g, g + 5).map((id, i) => fishIn(t, id, g * 7 + i * 13 + 3));
+        const swim = five.filter((x) => !x.walker), walk = five.filter((x) => x.walker);
+        for (let k = 0; k < 120 * 30; k++) {
+          stepSchool(swim.map((x) => x.f), w, 1 / 30, k / 30);
+          for (const x of walk) stepWalker(x.f, w, 1 / 30, k / 30, x.walker === 'side', walk.map((y) => y.f));
+          if (k % 23) continue;
+          for (const x of five) for (const c of corners(x)) expect(inside(w, c.toArray()), `${t.id} ${x.id} at ${k}: ${c.toArray().map((v) => v.toFixed(2))}`).toBe(true);
+          for (const x of swim) expect(Math.hypot(...x.f.v)).toBeLessThanOrEqual(x.f.speed * 1.31);
         }
       }
     }
   });
   test('it moves (not stuck in a corner), mostly along its tank’s long side', () => {
-    const t = TANKS.find((x) => x.id === 'sea')!, w = waterOf(t);
-    const f = spawn(w, 5, 8, 5);
-    let along = 0, across = 0, x0 = f.p[0], travelled = 0;
+    const w = waterOf(tank('sea'));
+    const f = spawn(w, 5, [6, 3], 8, 5);
+    let along = 0, across = 0, travelled = 0;
+    const x0 = f.p[0];
     for (let k = 0; k < 3000; k++) {
       stepSchool([f], w, 1 / 30, k / 30);
       along += Math.abs(f.v[0]);
@@ -52,16 +109,16 @@ describe('the swimmers (boid-like)', () => {
   });
 });
 
-describe('the bottom walkers (a crab, a crawfish)', () => {
-  const t = TANKS.find((x) => x.id === 'small-8')!, w = waterOf(t);
+describe('the bottom walkers (a crab, a crawfish) on the river tank’s sand', () => {
+  const w = waterOf(tank('river'));
   const walk = (sideways: boolean) => {
-    const f = spawn(w, 2, 3, 41);
+    const f: Swimmer = spawn(w, 2, [3, 1], 3, 41);
     f.p[1] = w.y0 + 1;
     let moved = 0, square = 0, ahead = 0, rests = 0, travelled = 0;
     const x0 = f.p[0], z0 = f.p[2];
     for (let k = 0; k < 60 * 30; k++) {
       stepWalker(f, w, 1 / 30, k / 30, sideways);
-      expect(inside(swimBox(w, f.r), f.p), `at ${k}`).toBe(true);
+      expect(inside(swimBox(w, f.reach), f.p), `at ${k}`).toBe(true);
       expect(f.p[1]).toBe(w.y0 + 1);
       const sp = Math.hypot(f.v[0], f.v[2]);
       travelled = Math.max(travelled, Math.hypot(f.p[0] - x0, f.p[2] - z0));
@@ -74,6 +131,9 @@ describe('the bottom walkers (a crab, a crawfish)', () => {
     }
     return { moved, square, ahead, rests, travelled };
   };
+  test('they live in the river tank', () => {
+    for (const id of Object.keys(WALKERS)) expect(tankOf(id), id).toBe('river');
+  });
   test('a crab walks the sand sideways, with rests, never off it', () => {
     const c = walk(true);
     expect(c.moved).toBeGreaterThan(100);
@@ -87,9 +147,9 @@ describe('the bottom walkers (a crab, a crawfish)', () => {
     expect(c.ahead / c.moved).toBeGreaterThan(0.8);
   });
   test('two in one tank keep off each other’s way', () => {
-    const a = spawn(w, 2.5, 3, 7), b = spawn(w, 2.5, 3, 99);
-    a.p = [w.x0 + 4, w.y0 + 1, (w.z0 + w.z1) / 2];
-    b.p = [w.x1 - 4, w.y0 + 1, (w.z0 + w.z1) / 2];
+    const a = spawn(w, 2.5, [3, 1], 3, 7), b = spawn(w, 2.5, [3, 1], 3, 99);
+    a.p = [w.x0 + 20, w.y0 + 1, (w.z0 + w.z1) / 2];
+    b.p = [w.x0 + 40, w.y0 + 1, (w.z0 + w.z1) / 2];
     let nearest = Infinity;
     for (let k = 0; k < 120 * 30; k++) {
       stepWalker(a, w, 1 / 30, k / 30, true, [a, b]);

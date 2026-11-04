@@ -11,6 +11,7 @@ type M = {
   still(): boolean;
   specimens(): { id: string; kind: string; tank: string; by: string }[];
   shown(): string[];
+  nextHour(): void;
   creature(id: string): [number, number] | null;
   card(): string | null;
   put(x: number, z: number): void;
@@ -135,17 +136,41 @@ test('what’s on show: exactly the fish anyone has found (the guest’s too), e
   await seed(page, [['fish', 'sea-bass', 'A'], ['fish', 'koi', 'B'], ['fish', 'neon-tetra', 'G'], ['fish', 'oarfish', 'A']]);
   await open(page);
   const sp = await mu<{ id: string; kind: string; tank: string; by: string }[]>(page, 'specimens()');
-  expect(sp.map((s) => [s.id, s.tank, s.by]).sort()).toEqual([['koi', 'river', 'B'], ['neon-tetra', 'small-9', 'G'], ['oarfish', 'deep', 'A'], ['sea-bass', 'sea', 'A']]);
+  expect(sp.map((s) => [s.id, s.tank, s.by]).sort()).toEqual([['koi', 'river', 'B'], ['neon-tetra', 'river', 'G'], ['oarfish', 'deep', 'A'], ['sea-bass', 'sea', 'A']]);
   // each drawn swimming in the aquarium (its model loaded), and no other
   await expect.poll(async () => (await mu<string[]>(page, 'shown()')).sort(), { timeout: 15_000 }).toEqual(['koi', 'neon-tetra', 'oarfish', 'sea-bass']);
+});
+
+test('five at most a tank, from what was caught: a new pick as the hour changes while one’s in, the same on every phone', async ({ page, context }) => {
+  const river = ['koi', 'carp', 'goldfish', 'catfish', 'crawfish', 'bluegill', 'pike', 'char'];
+  await seed(page, [...river.map((id) => ['fish', id, 'A'] as ['fish', string, 'A']), ['fish', 'sea-bass', 'B']]);
+  await open(page);
+  const riverShown = async () => (await mu<string[]>(page, 'shown()')).filter((id) => river.includes(id)).sort();
+  await expect.poll(async () => (await riverShown()).length, { timeout: 15_000 }).toBe(5);
+  expect(await mu<string[]>(page, 'shown()')).toContain('sea-bass');
+  const first = await riverShown();
+  // another tab (another phone), the same hour: the same five
+  const other = await context.newPage();
+  await seed(other, [...river.map((id) => ['fish', id, 'A'] as ['fish', string, 'A']), ['fish', 'sea-bass', 'B']]);
+  await open(other);
+  await expect.poll(async () => (await mu<string[]>(other, 'shown()')).filter((id) => river.includes(id)).sort(), { timeout: 15_000 }).toEqual(first);
+  await other.close();
+  // in front of the river tank as the hour turns: a new five (the old fading out, the new in), still none but those caught
+  await page.evaluate('window.__museum.put(160, 80)');
+  await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
+  await page.evaluate('window.__museum.nextHour()');
+  await expect.poll(riverShown, { timeout: 15_000 }).not.toEqual(first);
+  await expect.poll(async () => (await riverShown()).length, { timeout: 15_000 }).toBe(5);
+  const next = await riverShown();
+  for (const id of next) expect(river).toContain(id);
 });
 
 test('a tap on a fish shows its card: its names, who found it first and when, how many', async ({ page }) => {
   await seed(page, [['fish', 'koi', 'B']]);
   await open(page);
   await expect.poll(async () => (await mu<string[]>(page, 'shown()')).length, { timeout: 15_000 }).toBe(1);
-  // by the river tank, the camera on it
-  await page.evaluate('window.__museum.put(176, 32)');
+  // in front of the river tank, the camera on it
+  await page.evaluate('window.__museum.put(160, 80)');
   await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
   await expect.poll(async () => {
     const p = await mu<[number, number] | null>(page, 'creature("koi")');

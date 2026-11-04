@@ -1324,24 +1324,35 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   museum's ±320; live-protocol.ts): the others' villagers are here while they are, walking as they walk, and nowhere on
   the island meanwhile (store/where.svelte.ts `home` `M`). The guest comes in like anyone.
 - **What's on show** (species.ts): one of each fish and bug in the ずかん's first finds (anyone's, the guest's too), as
-  it's found; nothing else (the guest visits too, and its finds are on show under its name). The ずかん's alone, never the
+  it's found (the fish five a tank at a time: the hour's fish, below); nothing else (the guest visits too, and its finds are on show under its name). The ずかん's alone, never the
   pockets': selling every one caught takes nothing out (NH's donation, not a catch kept). A tap on one: its card (MuseumCard: NH's icon, its Japanese and English names, 「7/4 ウェイが
   見つけた」, ×n from the tallies as the ずかん counts).
-- **The aquarium** (`aquarium.ts`, `tanks.ts`, `boids.ts`): NH's grouping (species.ts tankOf): the great sea tank along
-  the back wall (the sea's middling and big fish, the rays and sharks: a whale shark scaled to it), the deep-sea tank
-  on the far wall (dark: the oarfish, the coelacanth, the barreleye, the football fish, the squid, the sea butterfly),
-  the river tank as an island in the middle (the fresh water's middling and big fish, the turtles), sixteen small tanks
-  on their stands by the front in two rows of eight, one or two little fish each, four tanks to each group (the pond's,
-  the stream's, the tropical, the reef's; drawn a little bigger), each with NH's own props (kelp on its rocks, coral, the deep's dark rocks, the river's stones,
-  logs and water plants, NH's diver and little submarine in the great tank). Each species found swims in its tank, one of
-  each (NH's), boid-like: its own slow wandering heading, mostly along its tank's long side,
-  turned off the glass before it, off the others' bodies, its body always in the water; facing its way, its tail
-  swaying (the vertex shader: one program for every fish). The bottom walkers share a small tank and walk its sand
-  (boids.ts stepWalker: a walk to a spot, a rest, keeping off each other's way): the mitten crab sideways, its claws
-  forward, the crawfish ahead (NH's). The water is one shader (NH's blue to its depth, caustics
-  shimmering on its back and floor, rays from the surface), its glass tinted its water's colour, its bubbles one Points
-  risen in the shader. A species is one InstancedMesh, culled by its tank's bounds; a tank off screen rests; nothing
-  allocated in a frame.
+- **The aquarium** (`aquarium.ts`, `tanks.ts`, `boids.ts`): NH's three tanks (species.ts tankOf): the great sea tank
+  along the back wall (the sea's fish, the rays and sharks), the deep-sea tank on the far wall across from the opening
+  (dark: the oarfish, the coelacanth, the barreleye, the football fish, the squid, the sea butterfly), the river tank as an
+  island in front (the fresh water's: the river's and the pond's fish, the turtles, the frog), its middle in line with
+  the great tank's; between them an aisle from the opening to the deep's glass, NH's two park benches in it facing the
+  great tank, a plant in three corners. Each tank with NH's own props (kelp on its rocks, coral, the deep's dark rocks,
+  the river's stones, logs and water plants, NH's diver and little submarine in the great tank).
+- **The hour's fish** (species.ts onDisplay): each tank shows at most five of its own species, only those the ずかん
+  says were caught, none twice; a shuffle seeded by (Tokyo's date and hour, the tank), so every phone shows the same
+  five and a new five each hour. A tank with none of its own caught is empty water. The hour turning while one's inside:
+  the outgoing fade out and the new fade in (1.6 s, dithered: alphaHash only while fading), at once off screen.
+- **Nothing clips** (tanks.ts bodyIn, propsOf; boids.ts reachOf): a fish's reach is its model's box, turned any way,
+  pitched up to 0.35 rad, its tail's sway added; its middle keeps to the water less that reach (the sand's top to the
+  water's surface), so all of it stays inside the glass. A big one is scaled till its reach fits 80% of its water's
+  narrowest side (room to turn: a whale shark ×0.8), a little one drawn at least 6 long. A prop is scaled to fit its
+  water and moved in from the glass. tanks.test samples every species' corners for two minutes of swimming, five at a
+  time, and every prop's.
+- **Swimming:** each fish boid-like: its own slow wandering heading, mostly along its tank's long side, turned off the
+  glass before it, off the others' bodies; facing its way, its tail swaying (the vertex shader: one program for every
+  fish). The bottom walkers walk the river tank's sand (boids.ts stepWalker: a walk to a spot about a patch of its own, a
+  rest, keeping off each other's way): the mitten crab sideways, its claws forward, the crawfish ahead (NH's). The water
+  is one shader (NH's blue to its depth, caustics shimmering on its back and floor, rays from the surface), its glass
+  tinted its water's colour, its bubbles one Points risen in the shader. A species is one InstancedMesh, culled by its
+  tank's bounds; a tank off screen rests; nothing allocated in a frame. iOS Simulator (iPhone 17 Pro, a full museum):
+  the aquarium at rest 177 → 81 draw calls, 123k → 58k triangles, 285 → 193 geometries, by the three tanks and their
+  fifteen fish in place of nineteen tanks and every fish.
 - **The bug wing** (`garden.ts`): NH's garden under glass (its sky and palms on the walls, dusk-blue at night): stone
   paths, a pond (NH's museum water, one small opaque shader: clear aqua at its rim deepening to blue, a soft net of
   light drifting over it, a thin pale wavering edge at the stones; moving only while it's on screen, at the exhibits'

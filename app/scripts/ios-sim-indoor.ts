@@ -174,11 +174,11 @@ try {
     await until('window.__museum.still()');
     await run('__museum.walkTo(-150, 10);');
     mu.intoBugs = await quiet('__museum', 4000);
-    await run('__museum.put(176, 32);');
+    await run('__museum.put(160, 80);');
     await sleep(1500);
     mu.restAquarium = await quiet('__museum');
     if (pass === 'cold') await shot('museum-aquarium');
-    await run('__museum.walkTo(110, 40);');
+    await run('__museum.walkTo(90, 84);');
     mu.walkAquarium = await quiet('__museum', 1500);
     await run('__museum.put(-250, -50);');
     await sleep(1500);
