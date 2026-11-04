@@ -124,7 +124,7 @@ test('あそびかた: the がんばり rule and each goal\'s 1.5× target; the 
   await sheet(page).locator('[data-push=help]').click();
   const howto = sheet(page).locator('.howto');
   await expect(howto).toContainText('目標の 1.5ばいまで できたら、がんばりで もう +1 ベル。1日 2 ベルまで！');
-  await expect(howto.locator('.fruits small.st')).toHaveText(['がんばり 900 kcal', 'がんばり 90分', 'がんばり 180分', 'がんばり 12,000歩']);
+  await expect(howto.locator('.fruits small.st')).toHaveText(['がんばり 12,000歩', 'がんばり 900 kcal', 'がんばり 90分', 'がんばり 180分']); // the goals' one order (rules.ts GOALS_SHOWN: steps first)
   await expect(howto).toContainText(/おやつは 40\sベル、外食は 70\sベル。/);
   await howto.screenshot({ path: '/tmp/stretch/howto.png' });
 });
