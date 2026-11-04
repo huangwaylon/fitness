@@ -22,6 +22,9 @@ export const DOOR_HALF = 12;
 /** Where one comes in (just inside the front door) and the doormat's tap area (a tap there goes back out). */
 export const ENTRANCE: Pt = [0, 56];
 export const DOORMAT: Rect = { x0: -DOOR_HALF, x1: DOOR_HALF, z0: 60, z1: 70 };
+/** Blathers' reception desk at the back of the hall (its green top's extents and its height: engine.ts builds it, the
+ *  walk keeps off it; the curator stands behind it, curator.ts AT, clear of it in every pose: curator.test). */
+export const DESK: Rect & { h: number } = { x0: -22, x1: 22, z0: -32, z1: -20, h: 8.6 };
 /** The walls' heights: the hall's grand, the wings' a little lower. */
 export const HALL_H = 64;
 export const WING_H = 52;

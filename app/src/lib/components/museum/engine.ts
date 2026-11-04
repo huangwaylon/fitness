@@ -1,6 +1,6 @@
 // The museum in 3D (docs/design.md "The museum"): three.js, loaded only when the museum opens (its own chunk). NH's
 // museum on one floor (plan.ts): the entrance hall (its stone floor, NH's lobby brick, a red carpet to each wing, the
-// owl's medallion, pillars at the openings, Blathers at his desk), the bug wing to the left (a garden under glass:
+// owl's medallion, Blathers at his desk), the bug wing to the left (a garden under glass:
 // garden.ts) and the aquarium to the right (its tanks: aquarium.ts). NH's floors and walls (scripts/world3d-models.ts
 // --museum: static/room/museum/tex/), lit warm. The camera is the rooms' (tent/engine.ts): NH's steep view, a drag turns
 // it, a pinch zooms; here it follows my villager through the rooms, and a wall between it and my villager is cut away.
@@ -23,7 +23,7 @@ import M from './models.json' with { type: 'json' };
 import { modelBounds } from '../world3d/models3d.ts';
 import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, headAnchor, wrapAngle } from '../rooms/firstPerson.ts';
 import {
-  BUG_WING, DOOR_HALF, DOORMAT, FISH_WING, HALL, HALL_H, OPENING, WALLS, WING_H, inRect, navOf, roomAt, walkable, wallEnds, wingAt,
+  BUG_WING, DESK, DOOR_HALF, DOORMAT, FISH_WING, HALL, HALL_H, OPENING, WALLS, WING_H, inRect, navOf, roomAt, walkable, wallEnds, wingAt,
   type Nav, type Pt, type Rect, type Wall, type Wing
 } from './plan.ts';
 
@@ -623,15 +623,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   };
   const wingSeen: Record<Wing, boolean> = { hall: true, bug: true, fish: true };
 
-  // ---- the hall's furnishing: pillars at the door and the openings, banners, the plaques, Blathers' desk ----
-  const pillarMat = lambert({ color: 0xece2cd });
-  const pillarGeo = new CylinderGeometry(3.4, 3.8, HALL_H - 4, 16);
-  disposables.push(pillarGeo);
-  for (const [x, z] of [[-56, OPENING.z0 - 4], [-56, OPENING.z1 + 4], [56, OPENING.z0 - 4], [56, OPENING.z1 + 4]] as const) {
-    const p = new Mesh(pillarGeo, pillarMat);
-    p.position.set(x, (HALL_H - 4) / 2, z);
-    scene.add(p);
-  }
+  // ---- the hall's furnishing: banners, the plaques, Blathers' desk ----
   const wood0 = lambert({ color: 0x7a5234 });
   const redTex = tex('hall-red', [1, 2]);
   for (const x of [-34, 34]) {
@@ -655,14 +647,14 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   // Blathers' desk at the back of the hall, NH's: wood, a green top; Blathers behind it (curator.ts, an exhibit)
   const desk = new Group();
   const wood = wood0;
-  const top = new Mesh(new BoxGeometry(44, 1.6, 12), lambert({ color: 0x3f6b4a }));
-  top.position.y = 7.8;
-  const body = new Mesh(new BoxGeometry(42, 7, 10), wood);
-  body.position.y = 3.5;
+  const top = new Mesh(new BoxGeometry(DESK.x1 - DESK.x0, 1.6, DESK.z1 - DESK.z0), lambert({ color: 0x3f6b4a }));
+  top.position.y = DESK.h - 0.8;
+  const body = new Mesh(new BoxGeometry(DESK.x1 - DESK.x0 - 2, DESK.h - 1.6, DESK.z1 - DESK.z0 - 2), wood);
+  body.position.y = (DESK.h - 1.6) / 2;
   desk.add(top, body);
-  desk.position.set(0, 0, -30);
+  desk.position.set((DESK.x0 + DESK.x1) / 2, 0, (DESK.z0 + DESK.z1) / 2);
   scene.add(desk);
-  const BLOCKS: Rect[] = [{ x0: -23, x1: 23, z0: -36, z1: -24 }, { x0: -24, x1: 24, z0: -50, z1: -36 }];
+  const BLOCKS: Rect[] = [{ x0: DESK.x0 - 1, x1: DESK.x1 + 1, z0: DESK.z0, z1: DESK.z1 }, { x0: DESK.x0 - 2, x1: DESK.x1 + 2, z0: HALL.z0, z1: DESK.z0 }];
   for (const [x, z] of [[-50, -40], [50, -40], [-50, 58], [50, 58]] as const) {
     prop(x < 0 ? 'heliconia' : 'anthurium', x, z, { s: x < 0 ? 1.6 : 2.4 });
     BLOCKS.push({ x0: x - 4, x1: x + 4, z0: z - 4, z1: z + 4 });

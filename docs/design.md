@@ -1310,7 +1310,7 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
 
 - **Inside** (plan.ts, model units, the rooms' scale: a tile 10, a villager 16): one floor, NH's layout: the entrance
   hall in the middle (NH's lobby: its marble floor, its stone walls with a gold cornice, the red carpets from the door to
-  the owl's medallion and on to each wing, pillars at the openings, red banners, Blathers at his desk, NH's model), the
+  the owl's medallion and on to each wing, red banners, Blathers at his desk, NH's model; no pillars), the
   bug wing to the left (こんちゅう), the aquarium to the right (さかな), each through an opening in the hall's side wall.
   NH's own museum floors and walls (scripts/world3d-models.ts `--museum`: static/room/museum/tex/), lit warm; a little
   dimmer at night.
@@ -1334,7 +1334,10 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   as NH cuts them; whichever ones face it once it turns), and a wall that would hide my villager (a jamb as one walks
   through an opening, gone a fade's walk ahead of it, back once clear by a margin). At my villager's eyes none is cut ([First person](#first-person)). A wall going or coming fades in
   220 ms (dithered: alphaHash, so it stays opaque and unsorted; its programs compiled with the rest). The say button says a phrase in here only (`say` `sc: 'm'`).
-- **The curator** (`curator.ts`, `lines.ts`): フータ (Blathers) behind his desk is the villagers' skinned model
+- **The curator** (`curator.ts`, `lines.ts`): フータ (Blathers) behind his desk (plan.ts `DESK`, its top 8.6 high; he
+  stands 8.5 behind its back, his own back 0.8 off the hall's back wall: no pose of his reaches into it, curator.test
+  posing his model in every mood against the desk's box grown by 0.25; at 2 behind it, as he first stood, his belly and
+  wings went through its top) is the villagers' skinned model
   (villagers3d/blathers.glb: NH's skeleton; NH's files have no clips), posed on his bones every frame by curator.ts
   `mind()`: breathing (his chest, a little bob), an owl's quick glances about with now and then a curious tilt, his
   blinks, a wing gesture every 5–12 s (a ruffle, a wing raised to his cheek in thought, a stretch); with my villager in the hall
