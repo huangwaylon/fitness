@@ -7,10 +7,11 @@
 // the rAF callbacks, timer fires and intervals still running there against the island's own (a leak). Each scene a
 // second time: warm.
 //
-//   npm run ios:indoor -- [--url BASE] [--device "iPhone 17"] [--out DIR] [--keep] [--fpv]
+//   npm run ios:indoor -- [--url BASE] [--device "iPhone 17"] [--out DIR] [--keep] [--fpv] [--museum]
 //
 //   --url     the site's base (default: the live site, https://huangwaylon.github.io/fitness/)
 //   --fpv     every room at my villager's eyes (the first-person view: ?fpv=1)
+//   --museum  the museum only (no tent, no home)
 import { execFileSync, spawn } from 'node:child_process';
 import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -150,7 +151,7 @@ try {
   await shot('shop');
   report.baseline = await out();
   for (const pass of ['cold', 'warm']) {
-    for (const [name, home] of [['tent', ''], ['home', '&home=B']]) {
+    for (const [name, home] of args.includes('--museum') ? [] : [['tent', ''], ['home', '&home=B']]) {
       const sc: Record<string, unknown> = { entry: await enter(`tent/?${Q}${home}`, '__tent', tentReady) };
       await until('window.__tent.still() && !window.__tent.walking("A")');
       await sleep(1500);
@@ -179,6 +180,12 @@ try {
     await sleep(1500);
     mu.restAquarium = await quiet('__museum');
     if (pass === 'cold') await shot('museum-aquarium');
+    // the hour turning in front of the river tank: its seven fading out, the next seven in (aquarium.ts pick): the
+    // longest frame gaps meanwhile (a program compiled mid-fade) and the programs before and after
+    mu.hourSwap = await runAsync(`const done = arguments[0], p0 = __museum.stats().mem[2], s = performance.now(), gaps = []; let last = s;
+      __museum.nextHour();
+      (function f(now) { gaps.push(now - last); last = now; if (now - s < 4000) requestAnimationFrame(f);
+        else done({ worst: gaps.sort((a, b) => b - a).slice(0, 3).map(Math.round), programs: [p0, __museum.stats().mem[2]] }); })(s);`);
     await run('__museum.walkTo(90, 84);');
     mu.walkAquarium = await quiet('__museum', 1500);
     await run('__museum.put(-250, -50);');

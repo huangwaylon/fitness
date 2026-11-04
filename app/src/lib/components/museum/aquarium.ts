@@ -516,6 +516,10 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
     night(n) {
       uNight.value = n;
     },
+    dither(on) {
+      // (one program for every fish: the first settled one's compiles it for the hour's fades)
+      for (const s of schools.values()) if (s.mat && !s.dir && s.mat.alphaHash !== on) (s.mat.alphaHash = on), (s.mat.needsUpdate = true);
+    },
     dispose() {
       disposed = true;
       for (const s of [...schools.values()]) drop(s);
