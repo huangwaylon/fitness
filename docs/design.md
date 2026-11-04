@@ -1074,7 +1074,7 @@ northern-hemisphere months; hours still hold.
 
 - **Fishing** (the sea in front of the beach, seen from まえ, or a fresh water: `critters.ts` `Water`): a shadow (NH
   sizes 1–6) dawdles there. A tap near it casts a bobber, the line from the bank in front of it (my villager turns to
-  it where it stands): a tap on a shadow as drawn (its body and a finger round it, the drawn coast past the water's
+  it where it stands, smoothly, and keeps facing it; seated or lying it stays as it is, the rod pointed ahead): a tap on a shadow as drawn (its body and a finger round it, the drawn coast past the water's
   tiles included), on its water within CAST_U, or on another water within NEAR_U (the river by its mouth, the sea at
   the mouth, the falls' pool and the river below: one water to the eye), the bobber in the shadow's own water nearest
   the tap; the nearest shadow on screen wins (`e2e/fishing-taps.spec.ts`); the fish closes in over 2–3 darts, nibbles

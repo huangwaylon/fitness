@@ -167,3 +167,53 @@ for (const water of ['pond', 'river', 'mouth', 'sea'] as const)
     expect(s.y).toBeGreaterThan(Math.min(bed, top) - 0.01);
     expect(s.y).toBeLessThanOrEqual(top + 0.01);
   });
+
+// The rod stays in the hand at every zoom (the user: "when fishing, the rod's position changes with the zoom level"):
+// the rod and a hat, put on after the villager was added to the island, were drawn unbent (engine.ts bend), off the
+// bent hand and the line's start by the bend's drop, and slid as a pinch or a scroll moved the camera. Everything on the
+// villager is bent with the island, and the rod's tip (the line's start) stays where it is against the villager's feet.
+test('3D fishing: the rod stays in the hand, its tip where the line starts, at every zoom', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.goto('?demo&visitor=none&critter=fish&date=2026-11-04T12:00');
+  await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
+  await expect.poll(() => v3(page, (v) => v.state('mine')), { timeout: 30_000 }).not.toBeNull();
+  const fish = () => page.evaluate(() => {
+    const w = (window as unknown as { __world3d: W3 }).__world3d;
+    for (let n = 0; n < 200; n++) {
+      const q = w.where(`fish-sea-${n}`);
+      if (q && !q.hidden) return [q.x, -q.z, q.y];
+    }
+    return null;
+  });
+  await expect.poll(fish, { timeout: 10_000 }).not.toBeNull();
+  {
+    const [x, z] = (await fish())!;
+    await page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z < 0 ? 20 : z + 45), [x, z]);
+    // (my 3D villager there: within a line's reach of the float, it holds the rod)
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3: { last(s: string): { x: number } | null } }).__villagers3.last('mine')?.x), { timeout: 5000 }).toBeCloseTo(x, 0);
+  }
+  // (the shadow drifts: cast where it is now)
+  const [fx, fz, fy] = (await fish())!;
+  const at = await page.evaluate(([x, z, y]) => (window as unknown as { __world3d: W3 }).__world3d.client(x, z, y), [fx, fz, fy]);
+  await page.mouse.click(at[0] + 6, at[1]);
+  await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 8000 });
+  await expect.poll(() => v3(page, (v) => [v.tool('mine'), v.state('mine')]), { timeout: 15_000 }).toEqual(['tools/rod', 'fish']);
+  type V = V3 & { last(slot: string): { x: number; z: number }; unbent(slot: string): string[] };
+  type G = { view(): { camZ: number }; go(z: number, k: number): void; camStill(): boolean };
+  /** The rod's tip against the villager's feet (three's space: the feet's world z turned), and what's drawn unbent. */
+  const tipNow = () => page.evaluate(() => {
+    const v = (window as unknown as { __villagers3: V }).__villagers3, t = v.tip('mine'), l = v.last('mine');
+    return t && { d: [t[0] - l.x, t[1], t[2] + l.z], unbent: v.unbent('mine') };
+  });
+  const camZ = await page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.view().camZ);
+  let first: number[] | null = null;
+  for (const k of [1, 2, 3.2, 1]) {
+    await page.evaluate(([z, k]) => (window as unknown as { __world3d: G }).__world3d.go(z, k), [camZ, k]);
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.camStill()), { timeout: 5000 }).toBe(true);
+    const t = (await tipNow())!;
+    expect(t.unbent).toEqual([]);
+    first ??= t.d;
+    // (the fishing pose's breathing and the cast's swing move the tip a little: a few units of the rod's 81)
+    expect(Math.hypot(t.d[0] - first[0], t.d[1] - first[1], t.d[2] - first[2])).toBeLessThan(8);
+  }
+});
