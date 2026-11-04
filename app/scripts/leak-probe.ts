@@ -2,13 +2,17 @@
 // an iPhone 15: --webkit, no CDP: no GC, no heap), after each a forced GC and the JS heap, DOM nodes, JS listeners, the
 // WebGL contexts still alive (WeakRefs), intervals, the window's/document's listeners and the island's renderer.info.
 //   npm run leak -- <flow> [cycles] [--snap] [--path=<name>]     (the build served at E2E_PORT, default 4693)
-// flows: shop tent home museum editor (the island ⇄ there), all (the four rooms), food health zukan settings bells
-// sheets (open, close), picker (いえを かえる; Q='&as=B'), vis (hidden ⇄ visible), sim (LOGIC=1: the page's clock
-// 10 sim minutes a cycle from SIM_AT, default 23:00: the island's day running and rolling over), idle (IDLE_MS of real time).
+// flows: shop tent home museum fpv (the museum in first person) editor (the island ⇄ there), all (the four rooms), food
+// health zukan settings bells sheets (open, close), picker (いえを かえる; Q='&as=B'), vis (hidden ⇄ visible), sim (the
+// page's clock 10 sim minutes a cycle from SIM_AT, default 23:00: the island's day running and rolling over; LOGIC=1:
+// not drawn), days (DAY_H sim hours a cycle, fast-forwarded: the visitors coming and going), idle (IDLE_MS of real
+// time; DWELL: ms in a room, default 1500), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells). Inside the museum: eye (the eye
+// button on, off), bench (sit on a bench, a tap on the floor), curator (IDLE_MS there), hours (the aquarium's hour on x3).
 // --snap: heap snapshots at cycle SNAP_AT (default 3) and the end, diffed by constructor; --path=<name>: the retainer
-// paths of the first PATHS nodes so named. Read handles: the probe never keeps one (a JSHandle holds what it points at).
+// paths of the first PATHS nodes so named (=<name>: exactly). Read handles: the probe never keeps one (a JSHandle holds what it points at).
 import { chromium, webkit, devices, type Page, type CDPSession } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
+import { BUG_IDS, FISH_IDS } from '../src/lib/components/museum/species.ts';
 
 const PORT = Number(process.env.E2E_PORT ?? 4693);
 const BASE = `http://127.0.0.1:${PORT}/fitness/`;
@@ -16,7 +20,7 @@ const flow = process.argv[2] ?? 'shop';
 const N = Number(process.argv[3] ?? 6);
 const SNAP = process.argv.includes('--snap');
 const WK = process.argv.includes('--webkit');
-const Q = `?demo&date=2026-11-04T12:00${process.env.Q ?? ''}`;
+const Q = `?demo&date=2026-11-04T12:00${flow === 'fpv' ? '&fpv=1' : ''}${process.env.Q ?? ''}`;
 
 const browser = WK ? await webkit.launch() : await chromium.launch({ channel: 'chrome', args: ['--enable-unsafe-swiftshader', '--js-flags=--expose-gc'] });
 const ctx = await browser.newContext({ ...(WK ? devices['iPhone 15'] : devices['iPhone 13']), locale: 'ja-JP', timezoneId: 'Asia/Tokyo', serviceWorkers: 'block' });
@@ -76,7 +80,9 @@ async function measure(label: string) {
   const r3 = await page.evaluate(() => {
     const W = window as unknown as Record<string, { stats?(): Record<string, number> } | undefined>;
     const st = W.__world3d?.stats?.();
-    return [st?.textures, st?.geometries, st?.fx, document.querySelectorAll('*').length].join('/');
+    // (a room's renderer.info: geometries/textures/programs)
+    const room = (W.__museum ?? W.__tent) as { stats?(): { mem?: number[] } } | undefined;
+    return [st?.textures, st?.geometries, st?.fx, document.querySelectorAll('*').length].join('/') + (room?.stats?.()?.mem ? ` room ${room.stats().mem!.join('/')}` : '');
   }).catch(() => null);
   const row = { label, heapMB: +((m.JSHeapUsedSize ?? 0) / 1e6).toFixed(2), nodes: m.Nodes, listeners: m.JSEventListeners, docs: m.Documents, gl: p.gl, ivs: p.ivs, ls: Object.values(p.ls).reduce((a, b) => a + b, 0), r3 };
   console.log(JSON.stringify(row));
@@ -132,7 +138,9 @@ function retainers(s: any, needle: string) {
   const nm = (n: number) => `${ntypes[s.nodes[n * nf + ti]]}:${String(s.strings[s.nodes[n * nf + ni]]).slice(0, 90)}`;
   let shown = 0;
   for (let n = 0; n < N && shown < Number(process.env.PATHS ?? 3); n++) {
-    if (ntypes[s.nodes[n * nf + ti]] === 'string' || !String(s.strings[s.nodes[n * nf + ni]]).includes(needle)) continue;
+    // (=name: that name exactly; a code or a string never)
+    const t = ntypes[s.nodes[n * nf + ti]], name = String(s.strings[s.nodes[n * nf + ni]]);
+    if (t === 'string' || t === 'code' || !(needle.startsWith('=') ? name === needle.slice(1) : name.includes(needle))) continue;
     shown++;
     console.log('--- retainer path of', nm(n), par[n] === -1 ? '(unreachable)' : '');
     const chain: string[] = [];
@@ -149,13 +157,22 @@ const diff = (a: Map<string, [number, number]>, b: Map<string, [number, number]>
 const nav = (path: string) => page.evaluate((h) => { const a = document.createElement('a'); a.href = h; document.body.append(a); a.click(); a.remove(); }, path);
 const islandUp = () => page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
 const tentUp = () => page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 2, null, { timeout: 30_000 });
+const museumUp = () => page.waitForFunction(() => ((window as unknown as { __museum?: { stats(): { frames: number } } }).__museum?.stats()?.frames ?? 0) > 2, null, { timeout: 30_000 });
+/** The museum's e2e hooks (MuseumRoom.svelte hooks()): a call's value, never a handle. */
+const mu = <T>(js: string) => page.evaluate(`window.__museum?.${js}`) as Promise<T>;
+const until = async (js: string, ms = 20_000) => { for (const t0 = Date.now(); Date.now() - t0 < ms; await page.waitForTimeout(100)) if (await page.evaluate(js)) return; throw new Error(`timed out: ${js}`); };
+async function inMuseum() {
+  if (await page.evaluate(() => location.pathname.includes('museum'))) return;
+  await nav(`/fitness/museum${Q}`); await museumUp(); await page.waitForTimeout(1500);
+}
 const sel = (s: string) => page.waitForFunction((q) => !!document.querySelector(q), s, { timeout: 30_000 });
 
 const ROOMS: Record<string, [string, () => Promise<unknown>]> = {
   shop: [`/fitness/shop${Q}`, () => sel('[data-shop]')],
   tent: [`/fitness/tent${Q}`, tentUp],
   home: [`/fitness/tent${Q}&home=B`, tentUp],
-  museum: [`/fitness/museum${Q}`, () => page.waitForFunction(() => ((window as unknown as { __museum?: { stats(): { frames: number } } }).__museum?.stats()?.frames ?? 0) > 2, null, { timeout: 30_000 })],
+  museum: [`/fitness/museum${Q}`, () => museumUp()],
+  fpv: [`/fitness/museum${Q}`, async () => { await museumUp(); await until('(f => f && f.inside && !f.busy)(window.__museum.fpv())'); }],
   editor: [`/fitness/editor/${Q}`, () => page.waitForFunction(() => !!(window as unknown as { __editor?: unknown }).__editor, null, { timeout: 30_000 })]
 };
 const SHEETS: Record<string, () => Promise<void>> = {
@@ -179,17 +196,29 @@ async function vis(state: 'hidden' | 'visible') {
   }, state);
 }
 
-const SIM = flow === 'sim';
+const SIM = flow === 'sim' || flow === 'days';
 if (SIM) await page.clock.install({ time: Date.now() });
-await page.goto(`${BASE}${SIM ? `?demo&date=${process.env.SIM_AT ?? '2026-11-04T23:00'}` : Q}`);
+// the demo's events (as a catch writes them): sell's pocket; hours' and curator's museum full (every fish and bug found)
+const seeds: [string, object][] = flow === 'sell' ? [['tally', { date: '2026-11-04', counts: { 'fish:sea-bass': 999 } }]]
+  : flow === 'hours' || flow === 'curator' ? [...FISH_IDS.map((id) => ['find', { kind: 'fish', id }] as [string, object]), ...BUG_IDS.map((id) => ['find', { kind: 'bug', id }] as [string, object])] : [];
+if (seeds.length) await page.addInitScript((list) => {
+  if (localStorage.getItem('island-demo.events')) return;
+  const at = Date.parse('2026-11-04T09:00:00+09:00');
+  const events = list.map(([type, data], i) => ({ id: `seed-${i}`, type, data, queuedAt: at + i, tries: 0, nextAt: 0, ackedAt: at + i, person: 'A' }));
+  localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-11-04', events }));
+}, seeds);
+await page.goto(`${BASE}${SIM ? `?demo&date=${process.env.SIM_AT ?? '2026-11-04T23:00'}${process.env.Q ?? ''}` : Q}`);
 if (SIM) { for (let k = 0; k < 60; k++) { await page.clock.runFor(500); if (await page.evaluate(() => (window as any).__world3d?.loaded())) break; } }
 else { await islandUp(); await page.waitForTimeout(3000); }
 const rows = [];
+/** The fish flow's taps, by what each did (__fish.why()). */
+const fished: Record<string, number> = {};
+let fishAt: [number, number] | null = null;
 let snap0: Map<string, [number, number]> | null = null;
 const cycle = async () => {
   if (flow in ROOMS) {
     const [p, up] = ROOMS[flow];
-    await nav(p); await up(); await page.waitForTimeout(1500);
+    await nav(p); await up(); await page.waitForTimeout(Number(process.env.DWELL ?? 1500));
     await nav(`/fitness/${Q}`); await islandUp(); await page.waitForTimeout(1500);
   } else if (flow in SHEETS) {
     await SHEETS[flow](); await sel('dialog[open]'); await page.waitForTimeout(1200);
@@ -207,6 +236,102 @@ const cycle = async () => {
     const ms = await page.locator('[data-home-picker] [data-model]').count();
     for (let k = 0; k < Math.min(ms, 4); k++) { await page.locator('[data-home-picker] [data-model]').nth(k).click(); await page.waitForTimeout(700); }
     await page.keyboard.press('Escape'); await page.waitForFunction(() => !document.querySelector('[data-home-picker]'), null, { timeout: 10_000 }); await page.waitForTimeout(500);
+  } else if (flow === 'eye') {
+    // the eye button inside: first person on (at the eyes) and off (the room's camera)
+    await inMuseum();
+    for (const on of [true, false]) {
+      await page.locator('[data-fpv]').click();
+      await until(`(f => f && f.on === ${on} && f.inside === ${on} && !f.busy)(window.__museum.fpv())`);
+    }
+    await page.waitForTimeout(500);
+  } else if (flow === 'bench') {
+    // a tap on the aquarium's bench sits my villager; a tap on the floor gets it up
+    await inMuseum();
+    await mu('put(150, 10)');
+    await until('window.__museum.still()');
+    const [bx, by] = await mu<[number, number]>('benchPx("dmbench1", 0)');
+    await page.mouse.click(bx, by);
+    await until('!!window.__museum.seat() && window.__museum.still()');
+    const [fx, fy] = await mu<[number, number]>('px(150, 15)');
+    await page.mouse.click(fx, fy);
+    await until('!window.__museum.seat() && window.__museum.still()');
+  } else if (flow === 'curator') {
+    // the museum left running (the curator's moods, the fish, the bugs): IDLE_MS of real time a cycle
+    await inMuseum();
+    await page.waitForTimeout(Number(process.env.IDLE_MS ?? 20_000));
+  } else if (flow === 'hours') {
+    // the aquarium's hour on, three times a cycle: its pick fading out and in (aquarium.ts pick)
+    await inMuseum();
+    // (in front of the river tank: its fish fade)
+    await mu('put(160, 80)');
+    for (let k = 0; k < 3; k++) { await mu('nextHour()'); await page.waitForTimeout(2500); await until('!window.__museum.stats().loading'); }
+  } else if (flow === 'fish') {
+    // ten casts and reels by the sea's shadow (Q='&critter=fish'): my villager put on the bank within a cast of it, the
+    // camera on it (e2e/island.ts toTheWater), once; a tap on the water by the shadow (else by my villager) casts, a
+    // tap reels in (a bite or not)
+    if (!fishAt) fishAt = await page.evaluate(() => {
+      type H = { __fish: { fish(): { water: string; x: number; z: number }[] }; __world3d: { go(z: number, k?: number, x?: number): void; client(x: number, z: number): [number, number]; view(): { camZ: number } }; __world: { free(x: number, z: number, away?: number): boolean; put(x: number, z: number): void } };
+      const h = window as unknown as H, f = h.__fish.fish().find((f) => f.water === 'sea');
+      if (!f) return null;
+      let best: [number, number] | null = null;
+      for (let z = f.z - 700; z <= f.z + 100; z += 25) {
+        h.__world3d.go(z, 1, f.x);
+        const d = Math.abs(h.__world3d.client(f.x, f.z)[1] - innerHeight * 0.58);
+        if (!best || d < best[1]) best = [h.__world3d.view().camZ, d];
+      }
+      h.__world3d.go(best![0], 1, f.x);
+      for (const behind of [true, false]) for (let r = 40; r <= 160; r += 8) for (let a = 0; a < 24; a++) {
+        const x = Math.round(f.x + Math.cos((a / 24) * Math.PI * 2) * r), z = Math.round(f.z + Math.sin((a / 24) * Math.PI * 2) * r);
+        if (behind && z < f.z + 20) continue;
+        if (h.__world.free(x, z, 0)) return (h.__world.put(x, z), [x, z]);
+      }
+      return null;
+    });
+    if (!fishAt) throw new Error('no shadow in the sea, or no bank by it');
+    await page.waitForTimeout(1500);
+    for (let k = 0; k < 10; k++) {
+      const pt = await page.evaluate(() => {
+        type H = { __fish: { fish(): { water: string; x: number; z: number }[] }; __world3d: { ground(x: number, y: number): { x: number; z: number } | null }; __world: { ground(x: number, z: number): { surface: string }; at(x: number, z: number): [number, number]; mine(): [number, number] } };
+        const h = window as unknown as H, f = h.__fish.fish().find((f) => f.water === 'sea');
+        const [cx, cy] = f ? h.__world.at(f.x, f.z) : h.__world.at(...h.__world.mine());
+        const TAPS = 'button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor], [data-fx="talk"]';
+        // (by my villager: off its own tap area)
+        for (let r = f ? 0 : 70; r <= 200; r += 6) for (let a = 0, n = r ? 16 : 1; a < n; a++) {
+          const x = cx + Math.cos((a / n) * Math.PI * 2) * r, y = cy + Math.sin((a / n) * Math.PI * 2) * r;
+          const g = h.__world3d.ground(x, y), s = g && h.__world.ground(g.x, g.z).surface;
+          if ((s === 'water' || s === 'sea') && !document.elementFromPoint(x, y)?.closest(TAPS)) return [x, y];
+        }
+        return null;
+      });
+      if (!pt) throw new Error('no water to tap');
+      const tally = async () => { const w = String(await page.evaluate('window.__fish.why()')); fished[w] = (fished[w] ?? 0) + 1; };
+      await page.touchscreen.tap(pt[0], pt[1]);
+      await until('(l => !l || l.landed)(window.__fish.line())', 8000).catch(() => {});
+      await page.waitForTimeout(300);
+      await tally();
+      // (a while out: the shadow may come and nibble)
+      await page.waitForTimeout(1500);
+      if (await page.evaluate('!!window.__fish.line()')) {
+        await page.touchscreen.tap(pt[0], pt[1]);
+        await until('!window.__fish.line()', 8000).catch(() => {});
+        await tally();
+      }
+      await page.waitForTimeout(800);
+    }
+  } else if (flow === 'sell') {
+    // the shop's うる: one catch picked and sold, five times a cycle (the demo's pocket seeded with 999 sea bass)
+    if (!(await page.evaluate(() => location.pathname.includes('shop')))) { await nav(`/fitness/shop${Q}`); await sel('[data-shop-pocket] [data-shop-catch]'); await page.waitForTimeout(1500); }
+    for (let k = 0; k < 5; k++) {
+      const n0 = await page.locator('[data-shop]').getAttribute('data-shells');
+      await page.locator('[data-shop-catch="fish:sea-bass"]').click();
+      await page.locator('[data-shop-sell]').click();
+      await until(`document.querySelector('[data-shop]').dataset.shells !== ${JSON.stringify(n0)}`);
+      await page.waitForTimeout(400);
+    }
+  } else if (flow === 'days') {
+    // the island's clock DAY_H hours on a cycle (fast-forwarded: each timer once), then 5 s of it run (the visitors')
+    await page.clock.fastForward(Number(process.env.DAY_H ?? 4) * 3_600_000);
+    for (let k = 0; k < 10; k++) await page.clock.runFor(500);
   } else if (SIM) {
     for (let k = 0; k < 10; k++) await page.clock.runFor(60_000);
   } else if (flow === 'idle') {
@@ -230,6 +355,7 @@ for (let i = 1; i <= N; i++) {
   lastLs = ls;
   if (SNAP && i === Number(process.env.SNAP_AT ?? 3)) snap0 = await snapshot();
 }
+if (flow === 'fish') console.log('taps', JSON.stringify(fished));
 console.log('listeners grown', JSON.stringify(Object.fromEntries(Object.entries(lastLs).filter(([k, n]) => n !== (w0.ls[k] ?? 0)).map(([k, n]) => [k, n - (w0.ls[k] ?? 0)]))));
 if (SNAP && snap0) {
   const d = diff(snap0, await snapshot());
