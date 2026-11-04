@@ -155,7 +155,19 @@
 <div class="hud-menu" class:open bind:this={root}>
   <button type="button" class="more" bind:this={toggleEl} aria-label={t('island.menu')} aria-expanded={open} aria-controls="hud-menu-items"
     data-hud-menu data-sfx={open ? 'toggle-off' : 'toggle-on'} onclick={() => (open = !open)}>
-    <span class="leaf" data-guard onanimationend={(e) => e.currentTarget.classList.remove('catch')}><OfficialArt key="money/leaf" size="100%" eager /></span>
+    <span class="leaf" data-guard onanimationend={(e) => e.currentTarget.classList.remove('catch')}>
+      <!-- NH's leaf mark, drawn (NH's art has no flat one): two greens either side of the vein, the stem curled -->
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <g transform="rotate(32 16 15)">
+          <path d="M16 25.6c.1 2.4-.9 4.1-2.7 4.4-1.3.2-2-.9-1.2-1.6" fill="none" stroke="#2F7D2B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M16 1.6C24.6 4.6 29.4 12.2 26.4 19.4 24.4 24 20 26.4 16 26.4S7.6 24 5.6 19.4C2.6 12.2 7.4 4.6 16 1.6Z" fill="#43A83B" />
+          <path d="M16 1.6C7.4 4.6 2.6 12.2 5.6 19.4 7.6 24 12 26.4 16 26.4 14 18.4 14.2 9.6 16 1.6Z" fill="#94D550" />
+          <path d="M16 25.4C14.6 18.6 14.6 11.6 16.3 5" fill="none" stroke="#F0FAD2" stroke-width="1.4" stroke-linecap="round" />
+          <path d="M16 1.6C24.6 4.6 29.4 12.2 26.4 19.4 24.4 24 20 26.4 16 26.4S7.6 24 5.6 19.4C2.6 12.2 7.4 4.6 16 1.6Z" fill="none" stroke="#2F7D2B" stroke-width="1.5" stroke-linejoin="round" />
+          <ellipse cx="9.6" cy="11.4" rx="1.4" ry="3.2" transform="rotate(20 9.6 11.4)" fill="#fff" opacity=".6" />
+        </g>
+      </svg>
+    </span>
   </button>
   {#if !open}{@render plus()}{/if}
   <div class="items" id="hud-menu-items" role="group" aria-label={t('island.menu')} inert={!open}>
@@ -205,6 +217,7 @@
     position: relative; width: 26px; height: 26px; margin-top: -2px; display: flex; pointer-events: none;
     filter: drop-shadow(0 1px 0 rgb(0 0 0 / .12)); transition: transform 320ms var(--ease-bounce);
   }
+  .leaf svg { width: 100%; height: 100%; }
   .more:active .leaf { transform: scale(.88); transition-duration: 80ms; }
   .open .leaf { transform: rotate(-40deg) scale(1.06); }
   /* a coin lands in it (HudCoins): the leaf's (or, open, the ベル number's) small catch squash */

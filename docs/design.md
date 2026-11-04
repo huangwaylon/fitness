@@ -60,7 +60,7 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   is 44px or more. No View Transition anywhere in it (the stripes bug); day and night are the same art (the buttons
   cream with their lip), both reading on either sky.
 - **Menu** (`island/HudMenu.svelte`, `e2e/hud-menu.spec.ts`): the cluster's right end, at the screen's side, a 40px
-  cream disc with the lip in a 44px target, NH's leaf (`money/leaf`) in it; `aria-expanded`, `aria-controls` its
+  cream disc with the lip in a 44px target, NH's leaf mark in it (drawn inline: two greens either side of a pale vein, a dark outline, a curled stem; NH's art has no flat one, `money/leaf` is the 3D item); `aria-expanded`, `aria-controls` its
   pills. Folded by default: the sky shows only the dumbbell, the bowl and the menu. A tap unfolds it: the disc turns
   NH's yellow, the leaf tips (−40°, as if it flicked the menu down) and three cream pills drop out of it, one after
   the other (a 380ms spring, 55ms apart), right-aligned under the leaf (along the screen's side), the same width:
