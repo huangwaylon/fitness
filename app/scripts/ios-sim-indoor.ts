@@ -7,9 +7,10 @@
 // the rAF callbacks, timer fires and intervals still running there against the island's own (a leak). Each scene a
 // second time: warm.
 //
-//   npm run ios:indoor -- [--url BASE] [--device "iPhone 17"] [--out DIR] [--keep]
+//   npm run ios:indoor -- [--url BASE] [--device "iPhone 17"] [--out DIR] [--keep] [--fpv]
 //
 //   --url     the site's base (default: the live site, https://huangwaylon.github.io/fitness/)
+//   --fpv     every room at my villager's eyes (the first-person view: ?fpv=1)
 import { execFileSync, spawn } from 'node:child_process';
 import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -20,7 +21,7 @@ const opt = (name: string, def: string) => {
   return i >= 0 ? args[i + 1] : def;
 };
 const BASE = opt('--url', 'https://huangwaylon.github.io/fitness/').replace(/\/?$/, '/');
-const Q = 'demo&date=2026-11-04T12:00&critter=none&visitor=none';
+const Q = `demo&date=2026-11-04T12:00&critter=none&visitor=none${args.includes('--fpv') ? '&fpv=1' : ''}`;
 const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
 const OUT = opt('--out', join(import.meta.dirname, '..', 'test-results', 'ios-sim', `indoor-${stamp}`));
 const PORT = 4780 + Math.floor(Math.random() * 50);

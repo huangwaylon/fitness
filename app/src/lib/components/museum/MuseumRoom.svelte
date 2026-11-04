@@ -15,6 +15,9 @@
   import Talk from '../island/Talk.svelte';
   import SayPicker from '../island/SayPicker.svelte';
   import SayButton from '../island/SayButton.svelte';
+  import EyeToggle from '../rooms/EyeToggle.svelte';
+  import { isDrag, isTap } from '../rooms/gesture.ts';
+  import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
   import MuseumCard from './MuseumCard.svelte';
   import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '../island/say.ts';
   import { url3d } from '../villager3d/manifest.ts';
@@ -139,11 +142,18 @@
   function speakerOf(w: Who): SaySpeaker {
     return {
       get isConnected() {
-        return !!eng?.at(w);
+        // (at my villager's eyes another's balloon goes once it's out of view: behind the camera it has no place)
+        const h = eng?.at(w) && eng.headPoint(w);
+        return !!h && (w === me || !fpv || eng!.inView(h[0], h[1], h[2]));
       },
       getBoundingClientRect() {
         const h = eng?.headPoint(w), at = eng?.at(w);
         if (!eng || !h || !at) return new DOMRect();
+        // mine, at its eyes: from the foot of the view, as one's own voice
+        if (w === me && fpv && canvas) {
+          const r = canvas.getBoundingClientRect();
+          return new DOMRect(r.left + r.width / 2 - 20, r.bottom - insets().bottom - 70, 40, 40);
+        }
         const [hx, hy] = eng.client(h[0], h[1], h[2]), [, fy] = eng.client(at[0], 0, at[1]);
         const tall = Math.max(12, fy - hy), wide = tall * 0.55;
         return new DOMRect(hx - wide / 2, hy, wide, tall);
@@ -229,18 +239,20 @@
     const g = gesture;
     if (!g || !eng || !ptrs.has(e.pointerId)) return;
     ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (g.kind === 'maybe' && Math.hypot(e.clientX - g.x0, e.clientY - g.y0) > 10) {
+    if (g.kind === 'maybe' && isDrag(e.clientX - g.x0, e.clientY - g.y0)) {
       g.kind = 'orbit';
       eng.moving(true);
       says?.hold(true);
       talk?.hold(true);
     }
     if (g.kind === 'orbit') {
-      eng.orbit(-(e.clientX - g.lx) * 0.0085, (e.clientY - g.ly) * 0.005);
+      // (at my villager's eyes the head turns: rooms/firstPerson.ts)
+      if (fpv) eng.look(e.clientX - g.lx, e.clientY - g.ly);
+      else eng.orbit(-(e.clientX - g.lx) * 0.0085, (e.clientY - g.ly) * 0.005);
       g.lx = e.clientX;
       g.ly = e.clientY;
       turned = !eng.isDefault();
-    } else if (g.kind === 'pinch' && ptrs.size === 2) {
+    } else if (g.kind === 'pinch' && ptrs.size === 2 && !fpv) {
       const n = spread();
       if (g.d > 0) eng.zoom(n.d / g.d);
       eng.orbit(0, (n.my - g.my) * 0.004);
@@ -251,7 +263,7 @@
   function onUp(e: PointerEvent) {
     const g = gesture;
     if (!ptrs.delete(e.pointerId)) return;
-    if (g?.kind === 'maybe' && whenOf(e) - g.t0 < 700) tap(e.clientX, e.clientY);
+    if (g?.kind === 'maybe' && isTap(e.clientX - g.x0, e.clientY - g.y0, whenOf(e) - g.t0)) tap(e.clientX, e.clientY);
     if (!ptrs.size) {
       gesture = null;
       eng?.moving(false);
@@ -274,6 +286,7 @@
   function onWheel(e: WheelEvent) {
     if (!eng) return;
     e.preventDefault();
+    if (fpv) return;
     eng.zoom(Math.exp(-e.deltaY * 0.0015));
     turned = !eng.isDefault();
   }
@@ -319,6 +332,9 @@
 
   const nightOf = (tod: string) => (tod === 'night' ? 1 : tod === 'dusk' ? 0.55 : tod === 'dawn' ? 0.3 : 0);
   $effect(() => eng?.night(nightOf(theme.tod)));
+  /** At my villager's eyes (docs/design.md "First person"): the phone's choice. Local only. */
+  const fpv = $derived(firstPerson.on);
+  $effect(() => eng?.firstPerson(fpv));
   $effect(() => {
     for (const w of others) void where.inTent[w];
     untrack(() => othersShown());
@@ -362,7 +378,7 @@
         othersShown();
       }));
     }
-    const offDoor = provideDoor(() => (eng ? (([x, y]) => ({ x, y }))(eng.client(ENTRANCE[0], 0, ENTRANCE[1] + 10)) : null));
+    const offDoor = provideDoor(() => (eng?.inView(ENTRANCE[0], 0, ENTRANCE[1] + 10) ? (([x, y]) => ({ x, y }))(eng.client(ENTRANCE[0], 0, ENTRANCE[1] + 10)) : null));
     void Promise.all([import('./engine.ts'), import('./plan.ts'), import('./curator.ts')]).then(
       ([{ createMuseum }, { walkPath }, { buildCurator }]) => {
         if (!alive || !canvas) return;
@@ -376,6 +392,7 @@
         e.exhibit(curator);
         // in at the front door, a few steps into the hall
         e.put(me, [ENTRANCE[0] + sideX(me), ENTRANCE[1] + 6], Math.PI);
+        e.firstPerson(fpv, true);
         eng = e;
         othersShown();
         walkTo([ENTRANCE[0] + sideX(me), ENTRANCE[1] - 14]);
@@ -442,6 +459,9 @@
       put: (x: number, z: number) => eng?.put(me, [x, z]),
       walkTo: (x: number, z: number) => walkTo([x, z]),
       orbit: (a: number, p = 0) => eng?.orbit(a, p),
+      /** The first-person view (on, fully in, yaw, pitch, the eye), and a finger's look (px). */
+      fpv: () => eng?.fpv() ?? null,
+      look: (dx: number, dy: number) => eng?.look(dx, dy),
       zoom: (f: number) => eng?.zoom(f),
       hit: (cx: number, cy: number) => eng?.hit(cx, cy),
       /** The walls the cutaway takes away (engine.ts walls). */
@@ -459,7 +479,7 @@
   <div class="top" bind:this={top}>
     <NavButton kind="back" text="島へ" onclick={leave} sfx="self" />
   </div>
-  {#if turned}
+  {#if turned && !fpv}
     <button type="button" class="reset" data-museum-reset data-sfx="tick" aria-label="カメラを もどす" onclick={resetView}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5M6.5 10v9h11v-9" /><path d="M10 19v-5h4v5" /></svg>
     </button>
@@ -477,6 +497,8 @@
   {/if}
   {#if sayShown}
     <div class="say-dock"><SayButton bind:el={sayBtn} open={!!sayAt} onopen={(el) => (sayAt = el)} /></div>
+    <!-- my villager's eyes, the say button's mirror at the bottom left -->
+    <div class="eye-dock"><EyeToggle /></div>
   {/if}
   {#if failed}<p class="fail" role="alert">はくぶつかんを ひらけませんでした</p>{/if}
 </main>
@@ -486,6 +508,7 @@
   .room { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; -webkit-tap-highlight-color: transparent; }
   .top { position: absolute; left: calc(var(--side) + var(--safe-left)); top: calc(var(--ui-top) + 8px); z-index: 2; min-height: var(--hit); }
   .say-dock { position: absolute; z-index: 3; right: calc(var(--safe-right, 0px) + 8px); bottom: calc(var(--safe-bottom, 0px) + 14px); }
+  .eye-dock { position: absolute; z-index: 3; left: calc(var(--safe-left, 0px) + 8px); bottom: calc(var(--safe-bottom, 0px) + 14px); }
   .reset {
     position: absolute; right: calc(var(--side) + var(--safe-right)); top: calc(var(--ui-top) + 8px); z-index: 2;
     width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer;

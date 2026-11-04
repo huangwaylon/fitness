@@ -8,7 +8,7 @@
 // something moves (a walk, the camera), the exhibits' ambient rate (30 a second) while only they do, and nothing while
 // nothing on screen does. Plain TS; the screen (MuseumRoom.svelte) drives it.
 import {
-  AmbientLight, BoxGeometry, CanvasTexture, CircleGeometry, Color, CylinderGeometry, DirectionalLight, Frustum, Group, HemisphereLight,
+  AmbientLight, Box3, BoxGeometry, CanvasTexture, CircleGeometry, Color, CylinderGeometry, DirectionalLight, Frustum, Group, HemisphereLight,
   Matrix4, Mesh, Sphere, MeshBasicMaterial, MeshLambertMaterial, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping,
   Scene, SRGBColorSpace, TextureLoader, Vector2, Vector3, WebGLRenderer, type Material, type Object3D, type Texture
 } from 'three';
@@ -20,8 +20,9 @@ import { decal } from './geometry.ts';
 import { due, frameRate } from '#lib/store/frameRate.svelte.ts';
 import M from './models.json' with { type: 'json' };
 import { modelBounds } from '../world3d/models3d.ts';
+import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, wrapAngle } from '../rooms/firstPerson.ts';
 import {
-  BUG_WING, DOORMAT, FISH_WING, HALL, HALL_H, OPENING, WALLS, inRect, navOf, roomAt, walkable, wallEnds,
+  BUG_WING, DOOR_HALF, DOORMAT, FISH_WING, HALL, HALL_H, OPENING, WALLS, WING_H, inRect, navOf, roomAt, walkable, wallEnds, wingAt,
   type Nav, type Pt, type Rect, type Wall, type Wing
 } from './plan.ts';
 
@@ -50,6 +51,8 @@ export type Hit = { kind: 'villager'; who: Who } | { kind: 'creature'; id: strin
  *  ambient rate), the creature nearest client px (its id, its distance in px). */
 export interface Exhibit {
   group: Group;
+  /** The room it's in (the first person sees a wing only through its opening: hidden behind the walls, it rests). */
+  wing: Wing;
   blocks: readonly Rect[];
   frame(t: number, dt: number, seen: (s: Sphere) => boolean): boolean;
   pick(project: (x: number, y: number, z: number) => [number, number] | null, cx: number, cy: number): { id: string; d: number } | null;
@@ -91,6 +94,15 @@ export interface Museum {
   headPoint(who: Who): [number, number, number] | null;
   /** Whose villager the camera follows (mine). */
   follow(who: Who): void;
+  /** The first-person view (docs/design.md "First person"): the camera at the followed villager's eyes (on), a short
+   *  glide there (`snap`: at once); its body hidden from it, the walls all standing, the ceilings on. Local only. */
+  firstPerson(on: boolean, snap?: boolean): void;
+  /** A finger's move in the first-person view (px): the head turns. */
+  look(dx: number, dy: number): void;
+  /** The first-person view now (the e2e): wanted on, fully in, still gliding or easing, where it looks (radians), the eye (model units). */
+  fpv(): { on: boolean; inside: boolean; busy: boolean; yaw: number; pitch: number; eye: [number, number, number] };
+  /** Whether a model point is in front of the camera and on the canvas (a balloon's anchor: not behind the eyes). */
+  inView(x: number, y: number, z: number): boolean;
   orbit(dAz: number, dPitch: number): void;
   zoom(f: number): void;
   resetView(): void;
@@ -117,7 +129,6 @@ const now = () => performance.now();
 /** The top of the tallest thing in the museum (the hall's cornice): the near plane comes down to just over it. */
 const TOP = 70;
 const ease = (t: number) => 1 - Math.pow(1 - t, 3);
-const wrapAngle = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
 /** A soft round shadow's texture. */
 function softDisc(): CanvasTexture {
@@ -243,6 +254,63 @@ function plaque(text: string): CanvasTexture {
   return t;
 }
 
+/** The garden's glass roof from under it (the first person's): a pale sky through panes in white frames, tiled. */
+function glassRoof(): CanvasTexture {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d')!;
+  const sky = g.createLinearGradient(0, 0, 64, 64);
+  sky.addColorStop(0, '#cfeaf2');
+  sky.addColorStop(1, '#b4dbe9');
+  g.fillStyle = sky;
+  g.fillRect(0, 0, 64, 64);
+  g.fillStyle = '#f4f1e6';
+  g.fillRect(0, 0, 64, 3);
+  g.fillRect(0, 0, 3, 64);
+  g.fillRect(0, 31, 64, 1.5);
+  const t = new CanvasTexture(c);
+  t.colorSpace = SRGBColorSpace;
+  t.wrapS = t.wrapT = RepeatWrapping;
+  return t;
+}
+
+/** The hall's ceiling from below (the first person's): plaster coffers in a stone frame, a thread of gold, tiled. */
+function coffers(): CanvasTexture {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d')!;
+  g.fillStyle = '#cdbd9e';
+  g.fillRect(0, 0, 64, 64);
+  g.fillStyle = '#efe5d2';
+  g.fillRect(6, 6, 52, 52);
+  g.strokeStyle = '#c9a24a';
+  g.lineWidth = 1.5;
+  g.strokeRect(11, 11, 42, 42);
+  const t = new CanvasTexture(c);
+  t.colorSpace = SRGBColorSpace;
+  t.wrapS = t.wrapT = RepeatWrapping;
+  return t;
+}
+
+/** NH's museum door from inside (the first person's): two wooden leaves, their panels, brass handles. */
+function doorTex(): CanvasTexture {
+  const c = document.createElement('canvas');
+  c.width = 96;
+  c.height = 128;
+  const g = c.getContext('2d')!;
+  g.fillStyle = '#6b4630';
+  g.fillRect(0, 0, 96, 128);
+  g.fillStyle = '#5a3a27';
+  for (const x of [8, 54]) for (const y of [10, 70]) g.fillRect(x, y, 34, 48);
+  g.fillStyle = '#3b261a';
+  g.fillRect(47, 0, 2, 128);
+  g.fillStyle = '#d5ad55';
+  for (const x of [40, 52]) g.fillRect(x, 64, 4, 10);
+  const t = new CanvasTexture(c);
+  t.colorSpace = SRGBColorSpace;
+  return t;
+}
+
 /** NH's grass under the garden's glass, a little mottled (one canvas, tiled). */
 function grass(): CanvasTexture {
   const c = document.createElement('canvas');
@@ -275,6 +343,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const camera = new PerspectiveCamera(FOV, 1, 4, 3000);
   let insets: Insets = { top: 0, bottom: 0 };
   let disposed = false;
+  /** The first-person view (rooms/firstPerson.ts), at the followed villager's eyes. */
+  const fp = createFirstPerson();
 
   // the warm light of NH's museum: a soft sky over a warm floor bounce, a key from the upper front left
   const hemi = new HemisphereLight(0xfff1dc, 0x8a6a4c, 1.9);
@@ -494,6 +564,55 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     });
   });
 
+  // ---- the first person's (fpvOnly: shown only then): the ceilings, facing down (from above, their backs: culled, so the
+  //      glide down past them shows nothing), a lintel over each opening from the wings' height up to the hall's
+  //      cornice, the front doorway's lintel and its closed door ----
+  const fpvOnly: Mesh[] = [];
+  const fpvMesh = (m: Mesh) => {
+    m.visible = false;
+    fpvOnly.push(m);
+    scene.add(m);
+    return m;
+  };
+  const CORNICE = HALL_H + 2.45;
+  const ceil = (r: Rect, y: number, m: Material) => {
+    const c = fpvMesh(new Mesh(new PlaneGeometry(r.x1 - r.x0, r.z1 - r.z0), m));
+    c.rotation.x = Math.PI / 2;
+    c.position.set((r.x0 + r.x1) / 2, y, (r.z0 + r.z1) / 2);
+    c.userData.ceiling = true;
+  };
+  // (unlit: the lights all shine down, so a lit ceiling was a muddy brown; each its own colour, dimmed at night)
+  const cofferTex = coffers(), roofTex = glassRoof();
+  cofferTex.repeat.set(...tw(HALL, 20));
+  roofTex.repeat.set(...tw(BUG_WING, 40));
+  const CEIL_DAY = [0xe6dccb, 0x1c2a42, 0xffffff];
+  const ceilMats = [new MeshBasicMaterial({ map: cofferTex }), new MeshBasicMaterial(), new MeshBasicMaterial({ map: roofTex })];
+  ceilMats.forEach((m, i) => m.color.set(CEIL_DAY[i]));
+  disposables.push(cofferTex, roofTex, ...ceilMats);
+  ceil(HALL, CORNICE, ceilMats[0]);
+  ceil(FISH_WING, WING_H, ceilMats[1]);
+  ceil(BUG_WING, WING_H, ceilMats[2]);
+  const lintel = (x0: number, x1: number, y0: number, z0: number, z1: number) => {
+    const b = fpvMesh(new Mesh(new BoxGeometry(x1 - x0, CORNICE - y0, z1 - z0), lambert({ map: tex('hall-wall', [Math.max(x1 - x0, z1 - z0) / 30, (CORNICE - y0) / 32]) })));
+    b.position.set((x0 + x1) / 2, (CORNICE + y0) / 2, (z0 + z1) / 2);
+  };
+  for (const x of [HALL.x0, HALL.x1]) lintel(x - T / 2, x + T / 2, WING_H, OPENING.z0, OPENING.z1);
+  const DOOR_H = 32;
+  lintel(-DOOR_HALF, DOOR_HALF, DOOR_H, HALL.z1 - T / 2, HALL.z1 + T / 2);
+  const doorT = doorTex();
+  disposables.push(doorT);
+  const frontDoor = fpvMesh(new Mesh(new PlaneGeometry(DOOR_HALF * 2, DOOR_H), lambert({ map: doorT })));
+  frontDoor.position.set(0, DOOR_H / 2, HALL.z1 + 0.5);
+  frontDoor.rotation.y = Math.PI;
+  /** What a tap's ray stops at, at the eyes: the walls, their cornices, the lintels, the door, the ceilings. */
+  const occluders: Object3D[] = [...walls.flatMap((w) => (w.trim ? [w.mesh, w.trim] : [w.mesh])), ...fpvOnly];
+  /** Each wing's opening in the hall's wall (the first person sees into a wing only through it). */
+  const PORTAL: Record<'bug' | 'fish', Box3> = {
+    bug: new Box3(new Vector3(HALL.x0 - T / 2, 0, OPENING.z0), new Vector3(HALL.x0 + T / 2, CORNICE, OPENING.z1)),
+    fish: new Box3(new Vector3(HALL.x1 - T / 2, 0, OPENING.z0), new Vector3(HALL.x1 + T / 2, CORNICE, OPENING.z1))
+  };
+  const wingSeen: Record<Wing, boolean> = { hall: true, bug: true, fish: true };
+
   // ---- the hall's furnishing: pillars at the door and the openings, banners, the plaques, Blathers' desk ----
   const pillarMat = lambert({ color: 0xece2cd });
   const pillarGeo = new CylinderGeometry(3.4, 3.8, HALL_H - 4, 16);
@@ -542,10 +661,12 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   // ---- the exhibits ----
   const exhibits: Exhibit[] = [];
   let nav = navOf(BLOCKS);
+  /** What stands on the floors (the walk keeps off it; the first person's eye too). */
+  let solids: Rect[] = BLOCKS;
   function exhibit(e: Exhibit) {
     exhibits.push(e);
     scene.add(e.group);
-    nav = navOf([...BLOCKS, ...exhibits.flatMap((x) => x.blocks)]);
+    nav = navOf((solids = [...BLOCKS, ...exhibits.flatMap((x) => x.blocks)]));
     e.night(nightN);
     invalidate();
   }
@@ -554,7 +675,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (i < 0) return;
     exhibits.splice(i, 1);
     e.dispose();
-    nav = navOf([...BLOCKS, ...exhibits.flatMap((x) => x.blocks)]);
+    nav = navOf((solids = [...BLOCKS, ...exhibits.flatMap((x) => x.blocks)]));
     invalidate();
   }
 
@@ -569,6 +690,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     path: { from: Pt; pts: Pt[]; t0: number; ms: number; lens: number[]; total: number } | null;
     hop: number;
     posing: boolean;
+    /** The way its walk goes now (a yaw), or null standing: the first person's view turns with it. */
+    dir: number | null;
   }
   const V3_SCALE = VILLAGER_H / 80;
   const villagers = new Map<Who, Walker>();
@@ -590,7 +713,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const shadow = new Mesh(shadowGeo, shadowMat);
     shadow.rotation.x = -Math.PI / 2;
     shadow.renderOrder = 2;
-    const w: Walker = { look, v3: null, shadow, pos: [0, 50], was: [0, 50], yaw: Math.PI, path: null, hop: 0, posing: true };
+    const w: Walker = { look, v3: null, shadow, pos: [0, 50], was: [0, 50], yaw: Math.PI, path: null, hop: 0, posing: true, dir: null };
     villagers.set(who, w);
     scene.add(shadow);
     if (look.model) void createVillager(look.id, look.model, who.charCodeAt(0) * 0.7).then((v) => {
@@ -668,8 +791,12 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (w.path) {
       const a = along(w, t);
       w.pos = a.p;
-      if (Math.hypot(a.d[0], a.d[1]) > 0.01) w.yaw += wrapAngle(Math.atan2(a.d[0], a.d[1]) - w.yaw) * Math.min(1, (14 * dt) / 1000);
-      if (a.done) w.path = null;
+      if (Math.hypot(a.d[0], a.d[1]) > 0.01) w.yaw += wrapAngle((w.dir = Math.atan2(a.d[0], a.d[1])) - w.yaw) * Math.min(1, (14 * dt) / 1000);
+      if (a.done) (w.path = null), (w.dir = null);
+      busy = true;
+    } else if (fp.on && w === villagers.get(followed) && Math.abs(wrapAngle(fp.yaw - w.yaw)) > 0.01) {
+      // at its eyes, standing: its body turns to where it looks
+      w.yaw += wrapAngle(fp.yaw - w.yaw) * Math.min(1, (6 * dt) / 1000);
       busy = true;
     }
     const moved = Math.hypot(w.pos[0] - w.was[0], w.pos[1] - w.was[1]);
@@ -715,6 +842,12 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (frames) draw();
     invalidate();
   }
+  /** The camera's heading as it is now (the view's az, or the eyes' in the first person). */
+  let az = DEF.az;
+  /** Where the room's camera is (before the first person's glide moves it): the cutaway's, so the walls it cut stay
+   *  cut all the way down to the eyes. */
+  const orbitPos = new Vector3();
+  const azV = new Vector3();
   function aim() {
     const d = baseD * view.k;
     camera.position.set(
@@ -723,16 +856,14 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       target.z + Math.cos(view.az) * Math.cos(view.pitch) * d
     );
     camera.lookAt(target);
-    camera.updateMatrixWorld(true);
     // the depth range only as deep as the museum: the near plane just over its tallest top (everything lies below the
     // camera, at least ~its drop away in depth), the far one past its farthest corner; at the default view ~40× the
-    // depth buffer's precision of a fixed near of 4, so floors and what lies on them never fight
-    const near = Math.max(4, 0.8 * (camera.position.y - TOP)), far = d + 700;
-    if (Math.abs(camera.near - near) > 0.5 || Math.abs(camera.far - far) > 10) {
-      camera.near = near;
-      camera.far = far;
-      camera.updateProjectionMatrix();
-    }
+    // depth buffer's precision of a fixed near of 4, so floors and what lies on them never fight. At the eyes (the
+    // first person's glide toward them) the near plane comes in to a unit, the far one still past every corner
+    camera.far = d + 700;
+    orbitPos.copy(camera.position);
+    fp.apply(camera, FOV, Math.max(4, 0.8 * (camera.position.y - TOP)), target);
+    az = fp.mix > 0 ? camAz(camera, azV) : view.az;
     cutaway();
   }
   /** Where the camera looks for a villager at (x, z): a little ahead of it, kept over the floors (the view's lower edge
@@ -751,7 +882,13 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
    *    back only once clear by a wider margin.
    *  A wall going or coming fades (wallFade), not pops. */
   function cutaway() {
-    const cx = camera.position.x, cy = camera.position.y, cz = camera.position.z;
+    for (const m of fpvOnly) m.visible = fp.mix > 0;
+    // (at the eyes, inside: every wall stands)
+    if (fp.inside()) {
+      for (const wm of walls) wm.cut = false;
+      return;
+    }
+    const cx = orbitPos.x, cy = orbitPos.y, cz = orbitPos.z;
     const vx = Math.sin(view.az), vz = Math.cos(view.az), sx = vz, sz = -vx;
     const me = villagers.get(followed);
     for (const wm of walls) {
@@ -824,6 +961,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     wallMat.bug.color.set(0xffffff).lerp(NIGHT_GLASS, nightN * 0.75);
     for (const wm of walls) for (const m of wm.mats) if (m.userData.of === wallMat.bug) m.color.copy(wallMat.bug.color);
     grassMat.color.set(0xffffff).lerp(NIGHT_GLASS, nightN * 0.35);
+    // (the ceilings dimmer, the glass roof dusk-blue as its walls)
+    ceilMats.forEach((m, i) => m.color.set(CEIL_DAY[i]).multiplyScalar(i === 2 ? 1 : 1 - 0.35 * nightN));
+    ceilMats[2].color.lerp(NIGHT_GLASS, nightN * 0.75);
     for (const e of exhibits) e.night(nightN);
     invalidate();
   }
@@ -851,8 +991,15 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     return [r.left + ((v.x + 1) / 2) * r.width, r.top + ((1 - v.y) / 2) * r.height];
   };
   function hit(cx: number, cy: number): Hit | null {
+    toNdc(cx, cy);
+    // at the eyes: what's tapped is nearer than the first wall (a cornice, a lintel, the door, a ceiling) on the ray;
+    // not my own villager (the camera is in its head)
+    const eyes = fp.inside();
+    const wall = eyes ? (ray.intersectObjects(occluders, false)[0] ?? null) : null, wallD = wall?.distance ?? Infinity;
+    const nearer = (x: number, y: number, z: number) => !eyes || camera.position.distanceTo(hitV.set(x, y, z)) < wallD;
     // a villager (its body on screen: a box round its feet to its head)
     for (const [who, w] of villagers) {
+      if (eyes && (who === followed || !inView(w.pos[0], VILLAGER_H / 2, w.pos[1]) || !nearer(w.pos[0], VILLAGER_H / 2, w.pos[1]))) continue;
       const [fx, fy] = client(w.pos[0], 0, w.pos[1]), [, hy] = client(w.pos[0], VILLAGER_H, w.pos[1]);
       const half = Math.max(10, (fy - hy) * 0.32);
       if (cx >= fx - half && cx <= fx + half && cy >= hy - 4 && cy <= fy + 4) return { kind: 'villager', who };
@@ -860,17 +1007,53 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // a creature (the nearest drawn within a finger's reach)
     let best: { id: string; d: number } | null = null;
     for (const e of exhibits) {
-      const p = e.pick(project, cx, cy);
-      if (p && (!best || p.d < best.d)) best = p;
+      if (!wingSeen[e.wing]) continue;
+      const p = e.pick(project, cx, cy), at = p && e.where(p.id);
+      if (p && (!best || p.d < best.d) && (!at || nearer(at[0], at[1], at[2]))) best = p;
     }
     if (best) return { kind: 'creature', id: best.id };
-    toNdc(cx, cy);
-    if (!ray.ray.intersectPlane(floorPlane, hitV)) return null;
+    if (wall?.object === frontDoor) return { kind: 'door' };
+    if (!ray.ray.intersectPlane(floorPlane, hitV) || camera.position.distanceTo(hitV) > wallD) {
+      // a wall's foot: walk up to it (a little short, on this side); a ceiling, the sky: nowhere
+      if (!wall || wall.object.userData.ceiling) return null;
+      const dx = ray.ray.direction.x, dz = ray.ray.direction.z, l = Math.hypot(dx, dz) || 1;
+      hitV.set(wall.point.x - (dx / l) * 4, 0, wall.point.z - (dz / l) * 4);
+    }
     if (inRect(DORMAT_PAD, hitV.x, hitV.z)) return { kind: 'door' };
     if (!roomAt(hitV.x, hitV.z) && !walkable(nav, hitV.x, hitV.z)) return null;
     return { kind: 'floor', x: hitV.x, z: hitV.z };
   }
   const DORMAT_PAD: Rect = { x0: DOORMAT.x0 - 2, x1: DOORMAT.x1 + 2, z0: DOORMAT.z0, z1: DOORMAT.z1 + 4 };
+
+  // ---- the first person's eye: my villager's (its model's eyes), kept off the walls and what stands on the floors ----
+  const eyeT = new Vector3(), eyeXZ: [number, number] = [0, 0];
+  /** The floors the eye may be over: the rooms and the openings through the hall's walls. */
+  const FLOORS: Rect[] = [HALL, BUG_WING, FISH_WING, ...[HALL.x0, HALL.x1].map((x) => ({ x0: x - 10, x1: x + 10, z0: OPENING.z0, z1: OPENING.z1 }))];
+  function eyeOf(w: Walker): Vector3 {
+    let got = false;
+    if (w.v3) {
+      w.v3.group.updateMatrixWorld(true);
+      got = !!w.v3.eyes(eyeT);
+    }
+    if (!got) eyeT.set(w.pos[0], VILLAGER_H * 0.7, w.pos[1]);
+    clampEye(eyeT.x, eyeT.z, FLOORS, solids, EYE_MARGIN, eyeXZ);
+    eyeT.x = eyeXZ[0];
+    eyeT.z = eyeXZ[1];
+    return eyeT;
+  }
+  function firstPerson(on: boolean, snap = false) {
+    if (on === fp.on) return;
+    const w = villagers.get(followed);
+    // (back out of its eyes, it faces where it looked)
+    if (!on && w) (w.yaw = fp.yaw), (w.posing = true);
+    fp.set(on, now(), w?.yaw ?? Math.PI, snap);
+    invalidate();
+  }
+  const frontV = new Vector3();
+  function inView(x: number, y: number, z: number): boolean {
+    const v = frontV.set(x, y, z).project(camera);
+    return v.z > -1 && v.z < 1 && Math.abs(v.x) <= 1.05 && Math.abs(v.y) <= 1.05;
+  }
 
   // ---- what isn't on screen yet made ready once everything is in: its textures up a few at a time and its programs
   //      compiled, so a wing's first sight is no hitch (its hundred-odd critters' textures at once: ~100 ms) ----
@@ -952,6 +1135,13 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       full = true;
     }
     const me = villagers.get(followed);
+    // the first person: the glide, the head, the eye following my villager's (its body hidden once the camera's near)
+    let fpMoved = false;
+    if (me && (fp.on || fp.mix > 0)) {
+      fpMoved = fp.step(t, dt, eyeOf(me), me.dir);
+      me.v3?.show(!(fp.mix > 0.5));
+      if (fpMoved) full = true;
+    }
     if (me) {
       // (kept over the floors: near the front door the camera stays back, not over the dark outside)
       const [fx, fz] = camSpot(me.pos[0], me.pos[1]);
@@ -965,7 +1155,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     }
     aim();
     const rv = `${view.az.toFixed(4)}:${view.pitch.toFixed(4)}:${view.k.toFixed(4)}:${target.x.toFixed(2)}:${target.z.toFixed(2)}`;
-    const camMoved = rv !== camRev;
+    const camMoved = rv !== camRev || fpMoved;
     camRev = rv;
     // (at once on the way in and after a jump: only a wall going as one moves fades)
     if (wallFade(dt, frames === 0 || snapWalls)) full = true;
@@ -979,8 +1169,13 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     frustum.setFromProjectionMatrix(projScreen);
     let ambient = false;
     ambientOn = 0;
+    // (at the eyes a wing shows only through its opening: one behind the hall's walls is hidden and rests)
+    const inside = fp.inside(), eyeWing = inside ? wingAt(fp.eye.x) : null;
+    wingSeen.bug = !inside || eyeWing === 'bug' || frustum.intersectsBox(PORTAL.bug);
+    wingSeen.fish = !inside || eyeWing === 'fish' || frustum.intersectsBox(PORTAL.fish);
     for (const e of exhibits) {
-      if (!e.frame(t, dt, seen)) continue;
+      e.group.visible = wingSeen[e.wing];
+      if (!e.group.visible || !e.frame(t, dt, seen)) continue;
       ambient = true;
       ambientOn++;
     }
@@ -1011,7 +1206,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       if (i) insets = i;
       fit();
     },
-    still: () => !easing && !gesturing && !raf,
+    still: () => !easing && !gesturing && !raf && !fp.busy(),
     villager,
     at: (who) => (villagers.get(who) ? [villagers.get(who)!.pos[0], villagers.get(who)!.pos[1]] : null),
     put(who, p, yaw) {
@@ -1049,6 +1244,13 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       followed = who;
       invalidate();
     },
+    firstPerson,
+    look(dx, dy) {
+      fp.look(dx, dy);
+      invalidate();
+    },
+    fpv: () => ({ on: fp.on, inside: fp.inside(), busy: fp.busy(), yaw: fp.yaw, pitch: fp.pitch, eye: [fp.eye.x, fp.eye.y, fp.eye.z] }),
+    inView,
     orbit(dAz, dPitch) {
       easing = null;
       view.az = wrapAngle(view.az + dAz);
@@ -1067,6 +1269,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     isDefault: () => Math.abs(wrapAngle(view.az - DEF.az)) < 0.01 && Math.abs(view.pitch - DEF.pitch) < 0.01 && Math.abs(view.k - DEF.k) < 0.01,
     moving(on) {
       gesturing = on;
+      fp.hold(on);
       invalidate();
     },
     night,

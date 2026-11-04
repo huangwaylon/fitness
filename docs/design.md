@@ -998,7 +998,7 @@ goes with the leaving).
   tilts it (28°–78°), a pinch (or the wheel) zooms it (0.55–1.35 ×), the 🏠 button (shown once it moved) eases it back.
   A corner-on view steps back to keep the square in; the walls between the camera and the room are cut away (Happy
   Home Paradise's look), so the room shows from any side. A tap walks, a drag turns (in the edit mode a drag that
-  starts on a piece moves the piece instead).
+  starts on a piece moves the piece instead). Or at my villager's eyes: [First person](#first-person).
 - **The light:** warm interior light (a soft sky over a warm floor bounce, a key from the upper front left casting the
   room's one small shadow map, 1024², redrawn only when a piece changes, a fill from the camera's side); at dusk and
   night dimmer and warmer, the lamps' emissive on and up to four warm point lights at the lamps (a tap turns a lamp on
@@ -1307,7 +1307,7 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   walls cut away (engine.ts cutaway, each stable as one walks: it changes only as the camera turns past a wall or one
   passes one): a wall whose line runs between the camera and where it looks and that faces the camera (the front walls,
   as NH cuts them; whichever ones face it once it turns), and a wall that would hide my villager (a jamb as one walks
-  through an opening, gone a fade's walk ahead of it, back once clear by a margin). A wall going or coming fades in
+  through an opening, gone a fade's walk ahead of it, back once clear by a margin). At my villager's eyes none is cut ([First person](#first-person)). A wall going or coming fades in
   220 ms (dithered: alphaHash, so it stays opaque and unsorted; its programs compiled with the rest). The say button says a phrase in here only (`say` `sc: 'm'`).
 - **The curator** (`curator.ts`, `lines.ts`): フータ (Blathers) behind his desk is the villagers' skinned model
   (villagers3d/blathers.glb: NH's skeleton; NH's files have no clips), posed on his bones every frame by curator.ts
@@ -1387,6 +1387,46 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   drag's start and end flashed black on the phone for 60–85 ms (iOS Simulator, a screen recording: 5 flashes in 6
   drags → 0).
 - No music of its own: the app has no NH museum track (NH's museum is quiet ambience); the island's hour plays on.
+
+### First person
+
+`rooms/firstPerson.ts` (the shared math and the camera's glide), `rooms/gesture.ts`, `rooms/EyeToggle.svelte`,
+`store/firstPerson.svelte.ts`, the tent's and the museum's engines (`firstPerson`, `look`), `e2e/first-person.spec.ts`.
+In the tent, the homes and the museum the eye button (bottom left, the say button's mirror; yuzu while on) puts the
+camera at my villager's eyes, and back. Kept on this phone (localStorage `island.fpv`; `?fpv=1|0` for a tab); local
+only: the others see my villager as ever. Off during もようがえ (the room's camera arranges), back after.
+
+- **The eyes:** the model's own eyes (villager3d `eyes()`: the eye mesh's middle on the face's front, riding the head
+  bone, so a seat or a bed takes them along; a card's: 0.7 of its height), followed closely across and with its walk's
+  bob damped (140 ms up and down). The eye is kept 3 u off the walls (4 in the rooms: what hangs on them), out of what
+  stands taller than it (a tent's piece, a museum tank's or case's block), within the floors and the openings
+  (`clampEye`). My villager's body is hidden once the camera is near its head (its blob shadow stays).
+- **The lens:** 70° (the rooms' 32° is a long lens from afar), the near plane 1 u (the eye is ≥ 3 u off anything), the
+  far one as before: no fighting at the museum's 600 u.
+- **The glide:** 450 ms both ways, the camera eased from the room's view to the eye, what it looks at from the room's
+  middle to where the eyes look (the room stays in view), the lens and the near plane with it. In the eyes come at once
+  (through the door, the first frame already there).
+- **Closed rooms:** at the eyes every wall stands (the cutaway is the room's camera's: the walls it cut stay cut down
+  the glide, and come back once in), and the first person's own pieces show: a ceiling over each room facing down (seen
+  from above, its back: culled, so the glide down shows none), unlit (the lights all shine down: a lit ceiling was a
+  muddy brown) and dimmed at night and with the room's light: the tent's plaster and beams, the hall's coffers under its
+  gold cornice, the aquarium's dark blue, the bug wing's glass roof (dusk blue at night); a lintel over each wing's
+  opening (from the wings' height up to the hall's) and over the front door; a closed door in each doorway (a tap on it
+  goes out, as the doormat). The tanks' glass and water and the cases are open only below: seen from the side as from
+  above.
+- **The head:** a drag turns it (the world follows the finger, 0.3° a px: right turns left, down looks up), the pitch
+  within ±60°, eased (45 ms); it starts where my villager faces (its walk's way, or what it turned to), a little down.
+  On a walk the view turns with it (the body's way) unless a finger holds it; standing, the body turns to where I look.
+  No pinch, no zoom, no ⌂ (the lens is the head's). A tap (within 10 px, under 700 ms: the rooms' rule; a cancelled
+  pointer is nothing) walks to the floor under it from the eyes' own camera; the museum's taps stop at the first wall,
+  cornice, lintel or ceiling on the ray (a wall's foot walks up to the wall; a fish behind a wall isn't tapped);
+  villagers, pieces, the curator and the exhibits as ever, not my own villager. My balloon stands at the view's foot;
+  another's goes once its speaker is out of view.
+- **Cost:** frames only while the glide, the head, the eye or a walk moves (no allocation in a frame). At the eyes a
+  wing's exhibits are drawn and moved only while its opening is in view (or one is in it); the hall alone, 55 draw
+  calls (93 from above). The aquarium seen from inside has every tank in view: 387 calls at rest (170 from above), a
+  frame's own cost p50 2–3 ms (iOS Simulator, iPhone 16, iOS 26.5, a full museum, `npm run ios:indoor -- --fpv`); the
+  tent 9–13. The ceilings' programs compile with the rest (the museum's warm-up: they're in the scene, hidden).
 
 ### The shop
 
@@ -1659,6 +1699,7 @@ Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/previe
 | `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid`, `?wander` | A balloon; a show (`?event=fireworks`); a meteor shower's night at any hour (`?event=shower`); the tape deck; a hybrid flower; the partner wanders |
 | `?hit` | Every tap target drawn over the island (magenta: the scene's elements; cyan: the boxes a module tests) |
 | `?fps=30\|60` | The 3D scenes' frame rate for the tab, not kept (the e2e pin 60 in storage: `playwright.config.ts`) |
+| `?fpv=1\|0` | The rooms' first-person view for the tab, not kept ([First person](#first-person)) |
 
 The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there at once, the stops' snapping off;
 `at(x, z)`: a world point's client px; `put(x, z)`: my villager there; `idle()`; `perf`; `stops()`: the sections'
