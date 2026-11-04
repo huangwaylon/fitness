@@ -27,7 +27,8 @@ import { createLights, lampFog, type LampSpot } from './lights.ts';
 import type { Inst } from './objects.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
 import { releaseAll, resourcesOf } from './release.ts';
-import { due, frameRate } from '#lib/store/frameRate.svelte.ts';
+import { frameRate } from '#lib/store/frameRate.svelte.ts';
+import { pacer } from './pace.ts';
 
 type Tod = 'day' | 'dusk' | 'night';
 
@@ -282,7 +283,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   scene.add(ground.group);
 
   // ---- the things, the cards, the lights ----
-  const things = createThings(scene, src.height, (sh = true, soon = false) => (sh && (shadowsDirty = true), soon && (raf || timer) ? undefined : kick()));
+  const things = createThings(scene, src.height, (sh = true, soon = false) => (sh && (shadowsDirty = true), soon && pace.queued() ? undefined : kick()));
   const cards = createCards(scene, (sh) => (sh && (shadowsDirty = true), kick()));
   const lights = createLights(scene);
   const effects = createEffects(scene, src.feet, () => kick());
@@ -700,9 +701,11 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   }
 
   // ---- the frames ----
-  let raf = 0, timer: ReturnType<typeof setTimeout> | 0 = 0, frames = 0, disposed = false, shadowsDirty = true, activeUntil = 0, lastFrame = 0;
-  /** The frame asked for is the ambience's next (later()): due at the ambient rate. */
-  let paced = false;
+  let frames = 0, disposed = false, shadowsDirty = true, activeUntil = 0, lastFrame = 0;
+  // (world3d/pace.ts: The full rate is せってい's frame rate, a finger's too: at 30 a display frame in
+  // between is skipped; a kick from outside while nothing moves draws at once; the ambience's next is due at its own
+  // rate: its timer lands just before, and a page with no other frames running has its rAF at once, not at a vsync)
+  const pace = pacer(frame);
   /** The last frame's: something moved (the full rate), only the ambience did. */
   let busy = false, ambience = false, paused = false, inFrame = false;
   let hook: ((t: number) => Want) | null = null;
@@ -735,43 +738,17 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
    *  a frame is that frame's own (what it changed is drawn in it): its parts' wants say whether another follows. */
   function kick() {
     if (inFrame || disposed) return;
-    paced = false;
-    if (timer) {
-      clearTimeout(timer);
-      timer = 0;
-    }
-    if (!raf) raf = requestAnimationFrame(frame);
-  }
-  /** The next frame after `ms` (the ambient rate: no display frames woken in between). */
-  function later(ms: number) {
-    if (raf || timer || disposed) return;
-    paced = true;
-    if (ms <= 12) raf = requestAnimationFrame(frame);
-    else timer = setTimeout(() => {
-      timer = 0;
-      if (!raf && !disposed) raf = requestAnimationFrame(frame);
-    }, ms - 8);
+    pace.kick();
   }
   const want = (w: Want, name: string) => {
     if (w === true) busy = true, why.add(name);
     else if (w === 'ambient') ambience = true, why.add(`~${name}`);
   };
-  /** The last frame drawn's display time (its rAF's): the full rate's pacing. */
-  let lastVsync = 0;
   function frame(vsync = now()) {
-    raf = 0;
     if (disposed || document.hidden || paused) return;
     const t = now();
     const active = touch || t < activeUntil || busy;
-    // (the full rate is せってい's frame rate, a finger's too: at 30 a display frame in between is skipped; the
-    // ambience's timer lands on the display frame before its time, and a page with no other frames running has its
-    // rAF at once, not at a vsync: there the ambience drew 35-37 a second, so it waits for its own due frame too)
-    if ((active || paced) && !due(vsync, lastVsync, active ? frameRate.fps : Math.min(opts.ambient, frameRate.fps))) {
-      raf = requestAnimationFrame(frame);
-      return;
-    }
-    paced = false;
-    lastVsync = vsync;
+    if (!pace.due(vsync, active ? frameRate.fps : 0)) return;
     inFrame = true;
     busy = ambience = false;
     why.clear();
@@ -781,8 +758,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       inFrame = false;
     }
     // something moves: the next display frame; only the ambience (the water included): at its rate; else none
-    if (busy || touch || now() < activeUntil) raf = requestAnimationFrame(frame);
-    else if (ambience && opts.ambient > 0) later(Math.max(0, 1000 / Math.min(opts.ambient, frameRate.fps) - (now() - t)));
+    if (busy || touch || now() < activeUntil) pace.kick();
+    else if (ambience && opts.ambient > 0) pace.later(Math.min(opts.ambient, frameRate.fps));
   }
   function draw(t: number) {
     // (the real time since the last frame, up to a quarter second: a slow GPU settles as soon as a fast one)
@@ -982,11 +959,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       if (on === paused) return;
       paused = on;
       lastFrame = 0;
-      if (on) {
-        if (raf) cancelAnimationFrame(raf);
-        if (timer) clearTimeout(timer);
-        raf = timer = 0;
-      } else kick();
+      if (on) pace.stop();
+      else kick();
     },
     idle: () => !busy && !touch && !vel && !velX && !zoomBack && !settling && now() > activeUntil,
     onFrame(fn) {
@@ -1005,8 +979,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     },
     dispose() {
       disposed = true;
-      cancelAnimationFrame(raf);
-      if (timer) clearTimeout(timer);
+      pace.stop();
       document.removeEventListener('visibilitychange', onVis);
       canvas.removeEventListener('webglcontextlost', onLost);
       canvas.removeEventListener('webglcontextrestored', onRestored);
