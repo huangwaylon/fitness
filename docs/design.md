@@ -1146,9 +1146,12 @@ northern-hemisphere months; hours still hold.
   to its trunk at 40–55; hoppers hop, crawlers crawl at their own pace (`PACE`). A flier comes in from 60u off on the
   island's nearer side. None goes faster than a running villager (`critterPath.test.ts`: speed bounds, curvature).
   A clump is the flowers within 60u of each other (`critters.ts` beds), not the layout's clump tag (those repeat
-  across the island: one patch by them spanned half of it). **Wings** (`world3d/things.ts` FLAPS): the butterflies',
-  the moths', the bee's and the dragonflies' wings turn in the vertex shader about the body's axis by the instance's
-  angle (`flap`, Critters' bug3 each frame it's drawn): a butterfly's beat 4–8 Hz by its speed, slow and now and then
+  across the island: one patch by them spanned half of it). **Wings** (`world3d/wings.ts` FLAPS, `things.ts`): the butterflies',
+  the moths', the bee's and the dragonflies' wings turn in the vertex shader by the instance's angle (`flap`, Critters'
+  bug3 each frame it's drawn) about a hinge each model's own geometry gives (`wingHinge`: along the body, its +z the
+  head, at the wings' plane, from the body's edge or the wing mesh's root; the bee's and the dragonflies' wing meshes
+  alone, a butterfly or moth whole, the atlas moth's two wing layers together; `wings.test.ts` checks every model's:
+  body still, roots on it, tips up). Seen on the iOS Simulator: heads lead, the roots stay on the body: a butterfly's beat 4–8 Hz by its speed, slow and now and then
   held half closed on its flower; a bee's and a dragonfly's a buzz.
 - **Fish** (all 34 of NH's sea and pier fish, `FISH`): NH's shadows by size (20–64u, the eels long and thin; a fin for
   the sharks, the ocean sunfish and the suckerfish); the coelacanth only in rain or snow.
