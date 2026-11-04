@@ -85,6 +85,30 @@ export function createWorld(map: ForestMap, bears: number, players: Who[]): Worl
 }
 
 const night = (t: number) => t >= TUNE.nightAt;
+/** The world taken over from a host gone quiet, as its players last heard it: the bears where they were (searching,
+ *  a stunned one still dazed a moment), what's taken, planted, fallen, knocked down and banked. */
+export function adopt(
+  map: ForestMap, players: Who[],
+  o: { t: number; bears: BNet[]; items: Item[]; taken: Iterable<number>; traps: { id: number; x: number; z: number; live: boolean }[]; fallen: Iterable<number>; nests: Iterable<number>; bank: number }
+): World {
+  const w = createWorld(map, Math.max(1, o.bears.length), players);
+  w.t = o.t;
+  w.items = o.items.map((i) => ({ ...i }));
+  w.taken = new Set(o.taken);
+  w.traps = o.traps.map((x) => ({ ...x }));
+  for (const id of o.fallen) {
+    w.fallen.add(id);
+    for (const c of logCells(map.leaners[id])) w.logs[c] = 1;
+  }
+  w.nests = new Set(o.nests);
+  w.bank = o.bank;
+  o.bears.forEach((b, i) => {
+    const st: BState = b.st === 'sleep' || b.st === 'stun' || b.st === 'trap' ? b.st : 'search';
+    Object.assign(w.bears[i], { x: b.x, z: b.z, f: b.f, st, since: o.t, until: o.t + 2, goal: [b.x, b.z] });
+  });
+  return w;
+}
+
 export const bearNet = (w: World): BNet[] =>
   w.bears.map((b) => ({ x: r2(b.x), z: r2(b.z), f: r2(b.f), v: r2(b.v), st: b.st, ...(b.tg ? { tg: b.tg } : {}), ...(b.tripUntil > w.t ? { trip: true } : {}) }));
 const r2 = (v: number) => Math.round(v * 100) / 100;
