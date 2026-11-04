@@ -3,7 +3,7 @@ import { nav, walkable } from './nav.ts';
 import { CAMPSITE, CLIFF, HOMES, POND, surfaceAt } from './world.ts';
 import { planTap, stepCue } from './tapWalk.ts';
 import { CUES } from '#lib/sound/cues.ts';
-import { SPEED } from './walkGraph.ts';
+import { SPEED } from './speed.ts';
 
 const RUN = SPEED.run;
 

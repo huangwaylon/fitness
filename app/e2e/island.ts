@@ -205,6 +205,26 @@ export async function toTheWater(page: Page, water: string, zoom = 1): Promise<[
   return pt!;
 }
 
+const TAPS = 'button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor], [data-fx="talk"]';
+/** A cast by the shadow in `water` from its bank (toTheWater), checked: the point's checked clear and clicked in one
+ *  step in the page (a tree's tap area on the bank comes in as its lazy art loads, between a check and a click from
+ *  here: the tap was the tree's), and tried again where the shadow has gone (at most four) until the tap cast. Where
+ *  it cast (client px): a reel's tap there is on the island, never on a door (a door with the line out goes in). */
+export async function castIn(page: Page, water: string, zoom = 1): Promise<[number, number]> {
+  for (let i = 0; i < 4; i++) {
+    const [x, y] = await toTheWater(page, water, zoom);
+    const tapped = await page.evaluate(([x, y, taps]) => {
+      const el = document.elementFromPoint(x, y);
+      if (!el || el.closest(taps)) return false;
+      el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0 }));
+      return true;
+    }, [x, y, TAPS] as const);
+    if (tapped && (await expect.poll(() => page.evaluate(() => (window as unknown as { __fish: { line(): unknown } }).__fish.line()), { timeout: 1500 }).not.toBeNull().then(() => true, () => false)))
+      return [x, y];
+  }
+  throw new Error(`no cast in the ${water}: ${await page.evaluate(() => (window as unknown as { __fish: { why(): string } }).__fish.why())}`);
+}
+
 /** A dig spot on screen and where to tap it (client px): the camera to each of the day's in turn (Finds' `data-digs`
  *  list: on the layout they lie all over the long island) until one is in view with nothing over it. */
 export async function fossilOnScreen(page: Page): Promise<{ x: number; y: number }> {

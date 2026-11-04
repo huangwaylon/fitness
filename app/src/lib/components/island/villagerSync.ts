@@ -13,7 +13,7 @@ import { WAKE_MS, actors, along, isRemote, livePos, onOwnMove, onWake, place, se
 import { VIA_MAX, type Face, type Intent, type Pt, type Who } from '#lib/sync/live-protocol.ts';
 import { actorOfFor, whoOfFor, type VillagerActor } from '#lib/ui-state/cast.ts';
 import { dist } from '#lib/layout/nav.ts';
-import { SPEED } from './walkGraph.ts';
+import { SPEED } from './speed.ts';
 
 type Walk = Extract<Intent, { kind: 'walk' }>;
 /** A villager woke (`id` whose, `at` when on the relay's clock). */
