@@ -141,7 +141,7 @@ test('edit: place a piece from the tray, turn it, drag it, put it away; the wall
   await enter(page);
   await page.evaluate(() => localStorage.removeItem('island-demo.tent'));
   await openEdit(page);
-  await expect(page.locator('[data-tent-count]')).toHaveText('0/40');
+  await expect(page.locator('[data-tent-count]')).toHaveText('0/60');
   // the camping cot (2 × 1) as a ghost, tapped over to the back row, turned a quarter, placed
   await page.locator('[data-tent-item="f4081"]').click();
   expect((await te(page, (t) => t.edit()))?.sel).toMatchObject({ item: 'f4081', fresh: true, f: 0 });
@@ -163,7 +163,7 @@ test('edit: place a piece from the tray, turn it, drag it, put it away; the wall
   await page.locator('[data-act="place"]').click();
   await expect.poll(() => te(page, (t) => t.pieces())).toEqual([expect.objectContaining({ item: 'f4081', f: 3 })]);
   const placed = (await te(page, (t) => t.pieces()))[0];
-  await expect(page.locator('[data-tent-count]')).toHaveText('1/40');
+  await expect(page.locator('[data-tent-count]')).toHaveText('1/60');
   await settled(page);
   // a finger on it drags it, a tile at a time, and ✓ puts it there
   [x, y] = await tile(page, placed.x, placed.z);
@@ -238,6 +238,46 @@ test('みつけた: what either of us found in a balloon that NH has a model of,
   await page.locator('[data-tent-item="f287"]').click();
   await page.locator('[data-act="place"]').click();
   await expect.poll(() => te(page, (t) => t.pieces().map((p) => p.item))).toEqual(['f287']);
+});
+
+/** Small pieces (1 × 1, the starter set's) and rugs, repeated: a room furnished up to the cap. */
+const SMALL = ['f1432', 'f4039', 'f4038', 'f1558', 'f3436', 'f4053', 'f4046', 'f4050', 'f1103', 'f4129', 'f3064', 'f889', 'f1433', 'f724', 'f3467', 'f669', 'f1792', 'f4014', 'f4037', 'f915', 'f4106', 'f3275', 'f3559', 'f3562', 'f4727', 'f4726'];
+const furnish = (page: Page, n: number, rugs = true) =>
+  page.evaluate((codes) => (window as unknown as { __tent: { fill(c: string[]): number } }).__tent.fill(codes), [...(rugs ? ['f7325', 'f7341'] : []), ...Array.from({ length: n }, (_, i) => SMALL[i % SMALL.length])]);
+
+test('up to 60 pieces a room: past 40 from the tray, the 61st refused', async ({ page }) => {
+  await page.addInitScript(() => localStorage.removeItem('island-demo.tent'));
+  await page.goto('tent' + Q);
+  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  // 45 in (2 rugs and 43 small things)
+  expect(await furnish(page, 43)).toBe(45);
+  await openEdit(page);
+  await expect(page.locator('[data-tent-count]')).toHaveText('45/60');
+  // the 46th from the tray, tapped over to a free tile away from my villager (the ghost comes in front of it, and in a
+  // room this full that is where it stands) and put down
+  await page.locator('[data-tent-item="f4038"]').click();
+  await expect.poll(() => te(page, (t) => t.edit()?.sel?.fresh)).toBe(true);
+  await settled(page);
+  const free = await page.evaluate(() => {
+    const t = (window as unknown as { __tent: { placed(): { id: string; x: number; z: number }[]; pieces(): { id: string; item: string }[]; mine(): [number, number] } }).__tent;
+    const rugs = new Set(t.pieces().filter((p) => p.item === 'f7325' || p.item === 'f7341').map((p) => p.id));
+    const taken = new Set(t.placed().filter((p) => !rugs.has(p.id)).map((p) => `${p.x},${p.z}`));
+    const [mx, mz] = t.mine();
+    for (let z = 0; z < 7; z++) for (let x = 0; x < 8; x++) if (!taken.has(`${x},${z}`) && Math.hypot(-40 + (x + 0.5) * 10 - mx, -40 + (z + 0.5) * 10 - mz) > 15) return [x, z];
+    return null;
+  });
+  expect(free).not.toBeNull();
+  const [fx, fy] = await tile(page, free![0], free![1]);
+  await page.mouse.click(fx, fy);
+  await expect.poll(() => te(page, (t) => t.edit()?.sel)).toMatchObject({ x: free![0], z: free![1] });
+  await page.locator('[data-act="place"]').click();
+  await expect(page.locator('[data-tent-count]')).toHaveText('46/60');
+  // up to 60: the tray's next piece is refused, the room as it was
+  expect(await furnish(page, 20, false)).toBe(60);
+  await expect(page.locator('[data-tent-count]')).toHaveText('60/60');
+  await page.locator('[data-tent-item="f4038"]').click();
+  await expect(page.getByText('これ以上 おけません（60こまで）')).toBeVisible();
+  expect([await te(page, (t) => t.edit()?.sel ?? null), (await te(page, (t) => t.pieces())).length]).toEqual([null, 60]);
 });
 
 type Placed = { id: string; x: number; z: number; f: number; y: number };

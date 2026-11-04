@@ -73,4 +73,20 @@ describe('the room’s layout', () => {
     expect(tentAccept(held, e('dp00001', T0, 'B'))).toBe('stale');
     expect(tentAccept(held, e('dp00001', T0 + 100, 'B', { x: 6 }))).toBe('append');
   });
+
+  it('60 pieces a room, each room its own: the 61st refused, a removed one frees its place', () => {
+    expect(TENT_MAX).toBe(60);
+    const held: TentEntry[] = [];
+    const got: string[] = [];
+    for (let i = 0; i < 61; i++) {
+      const n = e(`dp${String(i).padStart(5, '0')}`, T0 + i, i % 2 ? 'B' : 'A');
+      const v = tentAccept(held, n);
+      got.push(v);
+      if (v === 'append') held.push(n);
+    }
+    const other = { ...e('dother01', T0 + 99, 'B'), sc: 'u' as const };
+    const freed = [...held, { sc: 't' as const, id: 'dp00000', at: T0 + 200, rm: true as const, who: 'A' as const }];
+    expect([got.filter((v) => v === 'append').length, got[60], tentAccept(held, other), tentAccept(freed, e('dlate0001', T0 + 201, 'A')), tentLayout(held).pieces.length])
+      .toEqual([60, 'full', 'append', 'append', 60]);
+  });
 });
