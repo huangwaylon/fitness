@@ -1367,16 +1367,26 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   five and a new five each hour. A tank with none of its own caught is empty water. The hour turning while one's inside:
   the outgoing fade out and the new fade in (1.6 s, dithered: alphaHash only while fading), at once off screen.
 - **Nothing clips** (tanks.ts bodyIn, propsOf; boids.ts reachOf): a fish's reach is its model's box, turned any way,
-  pitched up to 0.35 rad, its tail's sway added; its middle keeps to the water less that reach (the sand's top to the
+  pitched up to 0.35 rad and banked up to 0.22, its tail's sway added; its middle keeps to the water less that reach (the sand's top to the
   water's surface), so all of it stays inside the glass. A big one is scaled till its reach fits 80% of its water's
   narrowest side (room to turn), a little one drawn at least 6 long. The props keep to a back strip (tanks.ts backOf:
   the back 40% of the narrow side, the far wall's for the deep tank), each scaled to fit it and moved in from the glass;
   the fish (the walkers too) keep to the open water in front of it (openOf), so none ever swims into a rock or lies on
   a log. tanks.test samples every species' corners in the open water for two minutes of swimming, five at a time, and
   every prop's in its back strip.
-- **Swimming:** each fish boid-like: its own slow wandering heading, mostly along its tank's long side, turned off the
-  glass before it, off the others' bodies; facing its way, its tail swaying (the vertex shader: one program for every
-  fish). The bottom walkers walk the river tank's sand (boids.ts stepWalker: a walk to a spot about a patch of its own, a
+- **Swimming** (boids.ts stepSchool, NH's calm): long, gently curving passes along the tank's long side, a leg at a
+  time to a spot near the far end (a quarter of legs stop partway), turning round only near the ends. Its turn is
+  bounded by its size (turnOf: ~1.5 rad/s for a little one, ~0.85 for a shark or a whale shark), eased in and out,
+  banked a little into it (up to 0.22 rad); it slows as the glass ahead nears and while turning round, so it never
+  whips round in a corner. Its pace is its own: cruising, a slow drift, now and then a pause hovering then a glide off;
+  a big fish slower for its length (cruiseOf). Each species at its depth (bandOf: the flatfish, rays, eels, catfish
+  and turtles low, the sunfish, the arowana, the gar and the killifish high, the rest mid), drifting up and down a
+  little. A soft look-ahead off the glass (inset by its turning room), a light separation off the others, no schooling
+  (a tank's fish are one of a kind). Its tail (the vertex shader: one program for every fish) beats quicker and wider
+  the faster it goes. boids.test (every species, five a tank, two minutes): no turn faster than its size's bound, no
+  turn of 135° in 1.5 s (100° for a big one), under 5% of its time in a corner and 6% against an end, from near one
+  end to the other, its speed varying (slow 2–45% of the time, cruising over 20%), the bottom and surface fish at their
+  depths. The bottom walkers walk the river tank's sand (boids.ts stepWalker: a walk to a spot about a patch of its own, a
   rest, keeping off each other's way): the mitten crab sideways, its claws forward, the crawfish ahead (NH's). The water
   is one shader (NH's blue to its depth, caustics shimmering on its back and floor, rays from the surface), its glass
   tinted its water's colour, its bubbles one Points risen in the shader. A species is one InstancedMesh, culled by its

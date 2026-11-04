@@ -5,7 +5,7 @@
 // (static/room/world3d/critters/fish/), each all inside its glass, the props along its back and the fish in
 // front of them, never touching (tanks.ts bodyIn, openOf, propsOf). Cheap:
 //   - a species is one fish, one InstancedMesh, its tail swaying in the vertex shader (one program for every fish: the
-//     sway grows toward its tail, its phase the instance's own);
+//     sway grows toward its tail, its beat and width its swimmer's: boids.ts, quicker and wider the faster it goes);
 //   - each tank's water is one shader (its glow, NH's blue to its depth, caustics shimmering over its back and floor,
 //     light from above), its bubbles one Points (risen in the shader), its glass a faint pane and a metal frame;
 //   - the swimmers step by boids.ts (the bottom walkers walk the river's sand: a crab sideways), their matrices written
@@ -19,7 +19,7 @@ import {
 import type { Exhibit, Kit } from './engine.ts';
 import { WALKERS, hourOf, onDisplay, type Specimen, type TankId } from './species.ts';
 import { TANKS, alongX, bodyIn, openOf, piecesOf, propsOf, waterOf, type Body, type Box, type Tank } from './tanks.ts';
-import { poseOf, spawn, stepSchool, stepWalker, type Swimmer } from './boids.ts';
+import { bandOf, cruiseOf, poseOf, spawn, stepSchool, stepWalker, type Swimmer } from './boids.ts';
 import type { Rect } from './plan.ts';
 import { batcher, decal, openBox, plainGeometry } from './geometry.ts';
 
@@ -201,16 +201,21 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
   // ---- the fish: the hour's pick (species.ts onDisplay), a species an InstancedMesh, its tail swaying in the shader ----
   const fishMat = (map: Texture | null, head: number, tail: number, amp: number) => {
     const m = new MeshLambertMaterial({ map, emissive: new Color(0xffffff), emissiveMap: map, emissiveIntensity: 0.25 });
+    // (its tail's beat and width: its swimmer's, written each frame)
+    const beat = { value: 0 }, kick = { value: 1 };
+    m.userData.beat = beat;
+    m.userData.kick = kick;
     m.onBeforeCompile = (sh) => {
-      sh.uniforms.uTime = uTime;
+      sh.uniforms.uBeat = beat;
+      sh.uniforms.uKick = kick;
       sh.uniforms.uHead = { value: head };
       sh.uniforms.uTail = { value: tail };
       sh.uniforms.uAmp = { value: amp };
       sh.vertexShader = sh.vertexShader
-        .replace('#include <common>', '#include <common>\nuniform float uTime; uniform float uHead; uniform float uTail; uniform float uAmp; attribute float aPhase;')
+        .replace('#include <common>', '#include <common>\nuniform float uBeat; uniform float uKick; uniform float uHead; uniform float uTail; uniform float uAmp; attribute float aPhase;')
         .replace('#include <begin_vertex>', `#include <begin_vertex>
           float tw = clamp((uHead - position.z) / max(0.001, uHead - uTail), 0.0, 1.0);
-          transformed.x += sin(uTime * 5.0 + aPhase - position.z * 0.35) * uAmp * tw * tw;`);
+          transformed.x += sin(uBeat + aPhase - position.z * 0.35) * uAmp * uKick * tw * tw;`);
     };
     m.customProgramCacheKey = () => 'museum-fish';
     return m;
@@ -260,9 +265,9 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
       // (culled by its tank's bounds: its fish swim nowhere else)
       mesh.boundingSphere = spheres.get(tank.id)!;
       mesh.userData.specimen = sp.id;
-      // a big fish slow, a little one quick (u/s, at its drawn size)
-      const speed = Math.max(4, Math.min(12, 3 + body.r * 0.9));
-      const f = spawn(s.water, body.r, body.reach, s.walk ? speed * 0.5 : speed, hash(sp.id));
+      // a big fish slow for its length, a little one quicker (u/s, at its drawn size: boids.ts cruiseOf), at its depth
+      const speed = cruiseOf(body.r);
+      const f = spawn(s.water, body.r, body.reach, s.walk ? speed * 0.6 : speed, hash(sp.id), bandOf(sp.id));
       // a walker on the sand (its own height off it), else among the tank's swimmers
       if (s.walk) f.p[1] = s.water.y0 + body.half[1] * body.s;
       (s.walk ? walkers : swimmers).get(tank.id)!.push(f);
@@ -302,13 +307,18 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
   }
   pick(null);
 
-  const M4 = new Matrix4(), Q = new Quaternion(), P = new Vector3(), S = new Vector3(), E = new Vector3(0, 1, 0), Qp = new Quaternion(), X = new Vector3(1, 0, 0);
+  const M4 = new Matrix4(), Q = new Quaternion(), P = new Vector3(), S = new Vector3(), E = new Vector3(0, 1, 0), Qp = new Quaternion(), X = new Vector3(1, 0, 0), Z = new Vector3(0, 0, 1);
   function write(sc: School) {
     if (!sc.mesh || !sc.fish || !sc.body) return;
-    const f = sc.fish, [yaw, pitch] = poseOf(f);
-    Q.setFromAxisAngle(E, yaw);
-    Qp.setFromAxisAngle(X, pitch);
-    Q.multiply(Qp);
+    const f = sc.fish, pose = poseOf(f);
+    // (its heading, then its pitch, then its bank about its length)
+    Q.setFromAxisAngle(E, pose[0]);
+    Q.multiply(Qp.setFromAxisAngle(X, pose[1]));
+    Q.multiply(Qp.setFromAxisAngle(Z, pose[2]));
+    if (sc.mat) {
+      sc.mat.userData.beat.value = f.beat;
+      sc.mat.userData.kick.value = f.kick;
+    }
     P.set(f.p[0], f.p[1], f.p[2]);
     S.setScalar(sc.body.s);
     M4.compose(P, Q, S);
