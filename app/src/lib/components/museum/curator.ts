@@ -18,9 +18,12 @@ import { createVillager, VILLAGER_S, type Villager3D } from '../villager3d/villa
 import type { Joint, Pose } from '../villager3d/poses.ts';
 import type { Face } from '../villager3d/faces.ts';
 
-/** Where he stands (behind the desk: engine.ts) and his scale (world units a model unit). */
-const AT: readonly [number, number] = [0, -38];
-const S = 1.5;
+/** Where he stands and his scale (world units a model unit): behind his desk (plan.ts DESK), far enough back that no
+ *  pose of his (the bob, the doze's droop, the hop, the wings) reaches into it (it was 2 behind its back, his belly and
+ *  wings through its top: the user's "clipping into the desk"), and clear of the back wall (its face at −48.5); his body
+ *  over the desktop may lean over it. curator.test poses his model in every mood against the desk's box. */
+export const AT: readonly [number, number] = [0, -40.5];
+export const S = 1.5;
 /** His head's top (model units over the floor: NH's 13.6 at his scale). */
 const CURATOR_TOP = 13.6 * S;
 /** He watches my villager within this of him, in front of the desk. */

@@ -4,10 +4,10 @@ import { join } from 'node:path';
 import { Box3, Vector3, type SkinnedMesh } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
-import { mind, RANGE, type Mind } from './curator.ts';
+import { AT, mind, RANGE, S, type Mind } from './curator.ts';
 import { rigOf } from '../villager3d/rig.ts';
 import type { Pose } from '../villager3d/poses.ts';
-import type { Pt } from './plan.ts';
+import { DESK, type Pt } from './plan.ts';
 
 /** The museum camera's pitch (engine.ts PITCH, degrees). */
 const PITCH = 47;
@@ -157,7 +157,7 @@ describe('the curator (フータ): his joints and his model', () => {
   });
 
   it('keeps his model whole in every pose: no vertex flung off, no strip stretched, no wing turned edge-on (a needle)', async () => {
-    const m = await model();
+    const m = await loaded();
     const fails: string[] = [];
     const before = { needle: m.needle(m.rest), stretch: 0 };
     for (const { what, p } of all.filter((_, i) => i % 7 === 0)) {
@@ -172,7 +172,23 @@ describe('the curator (フータ): his joints and his model', () => {
     const chin: Pose = { j: { Arm_1_L: [0, 0, -1.22], Arm_1_R: [-0.9, 0.2, 0.7], Arm_2_R: [0, 1.3, 0] }, y: 0, sq: 1, pitch: 0 };
     expect(m.shape(chin).needle).toBeLessThan(NEEDLE);
   });
+
+  it('stands clear of his desk in every pose: no vertex of his in its box (the bob, the doze, the hop, the wings)', async () => {
+    const m = await loaded();
+    const fails: string[] = [];
+    // (every 8th sampled pose, a different set from the shape's: ~700 poses of his ~2900 vertices skinned, ~0.6 s)
+    for (const { what, p } of all.filter((_, i) => i % 8 === 3)) {
+      const d = m.inDesk(p);
+      if (d.n) fails.push(`${what}: ${d.n} vertices in the desk (${d.deep.toFixed(2)} deep)`);
+    }
+    expect(fails.slice(0, 10)).toEqual([]);
+    // (the test sees the clip: stood 2 behind the desk's back, as he was, his belly is through its top)
+    expect(m.inDesk(m.rest, [AT[0], DESK.z0 - 2]).n).toBeGreaterThan(100);
+  });
 });
+
+/** How far clear of the desk he keeps (world units: no face of his near its top's or its back's). */
+const DESK_CLEAR = 0.25;
 
 /** A wing's silhouette from the museum's camera (engine.ts PITCH, from the front) is at least this wide for its length:
  *  hanging 0.21–0.26, raised 0.55–0.65; a9e29ce7's wing to his chin 0.16 (the needle). */
@@ -180,6 +196,9 @@ const NEEDLE = 0.18;
 /** No edge of his mesh grows by more than this of his height (his head turned stretches the back of his neck: 0.05;
  *  turned 1.1, a9e29ce7's, 0.09). */
 const STRETCH = 0.08;
+
+let loading: ReturnType<typeof model> | null = null;
+const loaded = () => (loading ??= model());
 
 /** His model (static/room/villagers3d/blathers.glb, its textures dropped: node has no images), on its rig. */
 async function model() {
@@ -205,11 +224,11 @@ async function model() {
   const meshes: SkinnedMesh[] = [];
   root.traverse((n) => (n as SkinnedMesh).isSkinnedMesh && meshes.push(n as SkinnedMesh));
   const v = new Vector3(), w = new Vector3();
-  const at = (s: SkinnedMesh, i: number, to: Vector3) => s.getVertexPosition(i, to).applyMatrix4(s.matrixWorld);
+  const at3 = (s: SkinnedMesh, i: number, to: Vector3) => s.getVertexPosition(i, to).applyMatrix4(s.matrixWorld);
   const posed = (p: Pose) => {
     rig.apply(p);
     root.updateMatrixWorld(true);
-    return meshes.map((s) => Array.from({ length: s.geometry.attributes.position.count }, (_, i) => at(s, i, new Vector3())));
+    return meshes.map((s) => Array.from({ length: s.geometry.attributes.position.count }, (_, i) => at3(s, i, new Vector3())));
   };
   // his body at rest (NH's T, its wings out: its tips the farthest from his middle): a vertex further from his middle than
   // a tip by a tenth of his height is flung off (a raised wing's tip may well stand over his tufts)
@@ -242,8 +261,25 @@ async function model() {
     return Math.sqrt((tr / 2 - d) / (tr / 2 + d));
   }));
   const rest: Pose = { j: { Arm_1_L: [0, 0, -1.22], Arm_1_R: [0, 0, 1.22] }, y: 0, sq: 1, pitch: 0 };
+  // the desk's box, grown by DESK_CLEAR
+  const dx0 = DESK.x0 - DESK_CLEAR, dx1 = DESK.x1 + DESK_CLEAR, dz0 = DESK.z0 - DESK_CLEAR, dz1 = DESK.z1 + DESK_CLEAR, dy1 = DESK.h + DESK_CLEAR;
   return {
     height, rest,
+    /** His vertices inside the desk's box with him standing at `at` in pose p (villager3d's placing: his scale S, the
+     *  pose's lift p.y and its squash p.sq, its volume kept), and the deepest of them past the box's back face or top. */
+    inDesk(p: Pose, at: Pt = AT) {
+      rig.apply(p);
+      root.updateMatrixWorld(true);
+      const k = S / Math.sqrt(p.sq);
+      let n = 0, deep = 0;
+      for (const s of meshes)
+        for (let i = 0; i < s.geometry.attributes.position.count; i++) {
+          at3(s, i, v);
+          const x = at[0] + k * v.x, y = S * (v.y * p.sq + p.y), z = at[1] + k * v.z;
+          if (x > dx0 && x < dx1 && z > dz0 && z < dz1 && y < dy1) (n++, (deep = Math.max(deep, Math.min(z - dz0, dy1 - y))));
+        }
+      return { n, deep };
+    },
     needle: (p: Pose) => needleOf(posed(p)),
     shape(p: Pose) {
       const ps = posed(p);
