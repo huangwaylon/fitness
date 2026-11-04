@@ -103,11 +103,19 @@ Most red runs so far were the spec, not the app. Before pushing a new or changed
 
 ## Memory
 The PWA stays open for days, so a scene's round trip must leave nothing behind. `e2e/leaks.spec.ts` (`@chromium`, in
-the gate) goes in and out of the shop, the museum and うめ's house, opening いえを かえる, three rounds, and checks after
-a forced GC that no WebGL context (watched by WeakRefs) or window/document listener is left over. To hunt one:
-`npm run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts, its header lists the flows: the rooms, each sheet, the
-picker, visibility, the sim's clock over midnight) against a served build (`E2E_PORT`), printing per cycle the heap,
-DOM nodes, listeners and live contexts, then a heap-snapshot diff by constructor; `--path=<name>` prints what retains it.
+the gate) goes in and out of the shop, the museum and うめ's house, opening いえを かえる, and the museum in first person
+and out (the eye button, a bench), three rounds, and checks after a forced GC that no WebGL context (watched by
+WeakRefs) or window/document listener is left over, and that inside the museum only its own context lives. To hunt
+one: `npm run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts, its header lists the flows: the rooms, each
+sheet, the picker, visibility, the museum's eye, benches, hours and curator, fishing, selling, the sim's clock over
+midnight and over days) against a served build (`E2E_PORT`), printing per cycle the heap, DOM nodes, listeners, live
+contexts and the room's renderer.info, then a heap-snapshot diff by constructor; `--path=<name>` (`=<name>`: exactly,
+e.g. `--path==WebGL2RenderingContext`) prints what retains it.
+- **What a scene leaves behind:** anything page-wide (a `window.__*` hook, a module's callback, a `<link>`'s
+  listener) that holds a closure made in a component holds that whole component: its DOM, its renderer. A hook goes
+  in the scene's cleanup (only if it's still its own); a callback kept by a module is made at module level. Vite's
+  preload helper left its CSS links' listeners (holding the first island for the page's life): vite.config.ts
+  `preloadListenersOff` takes them off.
 - **three.js:** a renderer stays alive as long as any geometry, material or texture it drew isn't disposed (three's
   dispose listeners hold it). Anything drawn from a page-wide model cache (homes, bridges, villagers) is disposed when
   its renderer goes (world3d/release.ts `releaseAll`), the ones that left the scene earlier too; then
