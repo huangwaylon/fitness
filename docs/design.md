@@ -1464,12 +1464,21 @@ only: the others see my villager as ever. Off during もようがえ (the room's
   opening (from the wings' height up to the hall's) and over the front door; a closed door in each doorway (a tap on it
   goes out, as the doormat). The tanks' glass and water and the cases are open only below: seen from the side as from
   above.
-- **The head:** a drag turns it (the world follows the finger, 0.3° a px: right turns left, down looks up), the pitch
-  within ±60°, eased (45 ms); it starts where my villager faces (its walk's way, or what it turned to), a little down.
-  On a walk the view turns with it (the body's way) unless a finger holds it; standing, the body turns to where I look;
-  seated (a museum bench), only the head, and a tap on the floor gets up and walks.
-  No pinch, no zoom, no ⌂ (the lens is the head's). A tap (within 10 px, under 700 ms: the rooms' rule; a cancelled
-  pointer is nothing) walks to the floor under it from the eyes' own camera; the museum's taps stop at the first wall,
+- **The finger** (`rooms/gesture.ts`, the tent's and the museum's one rule, at the eyes and off them): a tap is a
+  finger lifted within 10 px (CSS px: iOS points at any pixel ratio) under 500 ms, acting where it lifts: on a
+  villager, a piece, a seat, a door, the curator or an exhibit it acts; else on the floor it walks there; else (a wall,
+  the ceiling, the dark) a soft boop. Past 10 px it's a drag from then until the finger lifts: the camera only, never a
+  walk, never a tap at its end (back where it began included). Held still longer than 500 ms: nothing. A second finger
+  makes a pinch (never a tap; at the eyes it does nothing), the finger left drags on; a cancelled pointer is nothing.
+- **The head:** the player's alone: only a drag turns it (the world follows the finger, a canvas's width the lens's 70°,
+  0.18° a px on a phone: right turns left, down looks up), the pitch within ±60°, eased 45 ms, no inertia. It starts
+  where my villager faces (its walk's way, or what it turned to), a little down; after that a walk never turns it, with
+  a finger down or not: the eye rides along, a drag mid-walk turns the head while the walk goes on to its spot, and a
+  new tap re-aims the walk. The body faces its walk; standing, it turns to where I look (hidden, so unseen: it keeps
+  the eye on its face's front where I look, and the way back out facing it; never the other way round); seated (a
+  museum bench), only the head, and a tap on the floor gets up and walks.
+  No pinch, no zoom, no ⌂ (the lens is the head's). A tap walks to the floor under it from the eyes' own camera (as
+  turned now); the museum's taps stop at the first wall,
   cornice, lintel or ceiling on the ray (a wall's foot walks up to the wall; a fish behind a wall isn't tapped);
   villagers, pieces, the curator and the exhibits as ever, not my own villager. My balloon stands at the view's foot;
   another's goes once its speaker is out of view.

@@ -1221,7 +1221,6 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   let movingNow = false, restTimer: ReturnType<typeof setTimeout> | undefined;
   function moving(on: boolean) {
     clearTimeout(restTimer);
-    fp.hold(on);
     if (on && !movingNow) {
       movingNow = true;
       renderer.setPixelRatio(Math.min(DPR_MOVING, dpr));
@@ -1565,7 +1564,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     // the first person: the glide, the head, the eye following my villager's (kept off the walls and what stands tall)
     if (fpWho && (fp.on || fp.mix > 0)) {
       const w = villagers.get(fpWho);
-      if (w && fp.step(t, lastT3 ? Math.min(100, t - lastT3) : 16, eyeOf(w), w.path ? w.heading : null)) {
+      if (w && fp.step(t, lastT3 ? Math.min(100, t - lastT3) : 16, eyeOf(w))) {
         aim();
         cameraMoving = more = true;
       }
@@ -1639,7 +1638,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     resize, still, surfaces, pieces, hide, held, pick, wallAt, ghost, onHeld, nudge, flash, surfacePoint, grid, bump, room, pose, night, villager,
     firstPerson, inView,
     look(dx, dy) {
-      fp.look(dx, dy);
+      fp.look(dx, dy, canvas.clientWidth);
       invalidate();
     },
     fpv: () => ({ on: fp.on, inside: fp.inside(), busy: fp.busy(), yaw: fp.yaw, pitch: fp.pitch, eye: [fp.eye.x, fp.eye.y, fp.eye.z] }),

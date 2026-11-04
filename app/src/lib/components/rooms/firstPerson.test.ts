@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { PerspectiveCamera, Vector3 } from 'three';
-import { BLEND_MS, EYE_MARGIN, FOV, LOOK_PER_PX, NEAR, PITCH_LIMIT, START_PITCH, camAz, clampEye, clampPitch, firstPerson, type Rect } from './firstPerson.ts';
-import { SLOP, TAP_MS, isDrag, isTap } from './gesture.ts';
+import { BLEND_MS, EYE_MARGIN, FOV, NEAR, PITCH_LIMIT, START_PITCH, camAz, clampEye, clampPitch, firstPerson, lookPerPx, wrapAngle, type Rect } from './firstPerson.ts';
 
 const deg = (d: number) => (d * Math.PI) / 180;
-/** Steps a first person at 30 a second for `ms` toward `eye` (heading: a walk's), the frames that moved. */
-function run(fp: ReturnType<typeof firstPerson>, t0: number, ms: number, eye: Vector3, heading: number | null = null) {
+/** Steps a first person at 30 a second for `ms` toward `eye`, the frames that moved. */
+function run(fp: ReturnType<typeof firstPerson>, t0: number, ms: number, eye: Vector3) {
   let moved = 0;
-  for (let t = t0 + 33; t <= t0 + ms; t += 33) if (fp.step(t, 33, eye, heading)) moved++;
+  for (let t = t0 + 33; t <= t0 + ms; t += 33) if (fp.step(t, 33, eye)) moved++;
   return moved;
 }
 
@@ -21,19 +20,19 @@ describe('the head: yaw and pitch', () => {
   it('a drag turns the head (the world follows the finger: right turns left, down looks up), smoothed, clamped', () => {
     const fp = firstPerson(), eye = new Vector3(0, 12, 0);
     fp.set(true, 0, 0, true);
-    fp.step(0, 16, eye, null);
+    fp.step(0, 16, eye);
     expect(fp.pitch).toBeCloseTo(START_PITCH);
-    fp.look(100, 0);
+    fp.look(100, 0, 390);
     // (smoothed: not there in one frame, there within a few)
-    fp.step(33, 33, eye, null);
+    fp.step(33, 33, eye);
     expect(fp.yaw).toBeGreaterThan(0);
-    expect(fp.yaw).toBeLessThan(100 * LOOK_PER_PX);
+    expect(fp.yaw).toBeLessThan(100 * lookPerPx(390));
     run(fp, 33, 600, eye);
-    expect(fp.yaw).toBeCloseTo(100 * LOOK_PER_PX, 4);
-    fp.look(0, 5000);
+    expect(fp.yaw).toBeCloseTo(100 * lookPerPx(390), 4);
+    fp.look(0, 5000, 390);
     run(fp, 700, 600, eye);
     expect(fp.pitch).toBeCloseTo(PITCH_LIMIT, 4);
-    fp.look(0, -50000);
+    fp.look(0, -50000, 390);
     run(fp, 1400, 600, eye);
     expect(fp.pitch).toBeCloseTo(-PITCH_LIMIT, 4);
   });
@@ -44,20 +43,39 @@ describe('the head: yaw and pitch', () => {
     expect(fp.busy()).toBe(false);
     expect(run(fp, 300, 300, eye)).toBe(0);
   });
-  it('the view turns with a walk (toward its heading), not while a finger holds it', () => {
-    const fp = firstPerson(), eye = new Vector3();
-    fp.set(true, 0, 0, true);
-    fp.hold(true);
-    run(fp, 0, 500, eye, deg(90));
-    expect(fp.yaw).toBeCloseTo(0, 4);
-    fp.hold(false);
-    run(fp, 500, 3000, eye, deg(90));
-    expect(fp.yaw).toBeCloseTo(deg(90), 1);
-    // (the shorter way round: from 170° to −170° is 20°, not 340°)
-    const b = firstPerson();
-    b.set(true, 0, deg(170), true);
-    b.step(33, 33, eye, deg(-170));
-    expect(Math.abs(b.yaw)).toBeGreaterThan(deg(170));
+  it('a walk never turns the head: round its corners the camera keeps its yaw and pitch; a drag on the way turns it', () => {
+    const fp = firstPerson(), eye = new Vector3(0, 12, 0), cam = new PerspectiveCamera(32, 0.5, 40, 2000), v = new Vector3();
+    fp.set(true, 0, deg(30), true);
+    // a walk east, north, then back west (its way turning 90° twice), the eye following its head a step a frame
+    const legs: [number, number][] = [[1, 0], [0, 1], [-1, 0]], bad: string[] = [];
+    let t = 0, n = 0;
+    const walk = (want: number) => {
+      for (const [dx, dz] of legs)
+        for (let i = 0; i < 30; i++, n++) {
+          eye.x += dx * 0.5;
+          eye.z += dz * 0.5;
+          fp.step((t += 33), 33, eye);
+          fp.apply(cam, 32, 40, eye);
+          if (Math.abs(fp.yaw - want) > 1e-12 || Math.abs(fp.pitch - START_PITCH) > 1e-12) bad.push(`${n}: yaw ${fp.yaw} pitch ${fp.pitch}`);
+          if (Math.abs(camAz(cam, v) - (want - Math.PI)) > 1e-6 && Math.abs(camAz(cam, v) - (want + Math.PI)) > 1e-6) bad.push(`${n}: az ${camAz(cam, v)}`);
+        }
+    };
+    walk(deg(30));
+    expect(bad).toEqual([]);
+    // a drag mid-walk: the head goes where the finger took it, and stays there for the rest of the walk
+    fp.look(-90, 0, 390);
+    const turned = wrapAngle(deg(30) - 90 * lookPerPx(390));
+    for (let i = 0; i < 30; i++) fp.step((t += 33), 33, eye);
+    expect(fp.yaw).toBeCloseTo(turned, 6);
+    walk(fp.yaw);
+    expect(bad).toEqual([]);
+    expect(fp.busy()).toBe(false);
+  });
+  it('the turn scales to the canvas: a drag across it all turns the lens’s 70°', () => {
+    expect(390 * lookPerPx(390)).toBeCloseTo(deg(FOV));
+    expect(1200 * lookPerPx(1200)).toBeCloseTo(deg(FOV));
+    // (a sliver of a canvas turns no faster than a 240 px one)
+    expect(lookPerPx(10)).toBeCloseTo(lookPerPx(240));
   });
   it('turned on, it looks where the villager faces, a little down', () => {
     const fp = firstPerson();
@@ -72,15 +90,15 @@ describe('the glide and the eye', () => {
     const fp = firstPerson(), eye = new Vector3(0, 12, 0);
     fp.set(true, 0, 0);
     expect(fp.mix).toBe(0);
-    fp.step(BLEND_MS / 2, 16, eye, null);
+    fp.step(BLEND_MS / 2, 16, eye);
     expect(fp.mix).toBeCloseTo(0.5);
     expect(fp.inside()).toBe(false);
-    fp.step(BLEND_MS, 16, eye, null);
+    fp.step(BLEND_MS, 16, eye);
     expect(fp.mix).toBe(1);
     expect(fp.inside()).toBe(true);
     fp.set(false, 1000, 0);
     expect(fp.inside()).toBe(false);
-    fp.step(1000 + BLEND_MS, 16, eye, null);
+    fp.step(1000 + BLEND_MS, 16, eye);
     expect(fp.mix).toBe(0);
     const s = firstPerson();
     s.set(true, 0, 0, true);
@@ -89,11 +107,11 @@ describe('the glide and the eye', () => {
   it('the eye starts at the villager’s eyes, then follows them: across closely, its walk’s bob damped', () => {
     const fp = firstPerson(), to = new Vector3(10, 12, -4);
     fp.set(true, 0, 0, true);
-    fp.step(0, 16, to, null);
+    fp.step(0, 16, to);
     expect(fp.eye.toArray()).toEqual([10, 12, -4]);
     // one frame's step of a walk across and a bob up: the eye keeps up across far more than it bobs
     to.set(11, 13, -4);
-    fp.step(33, 33, to, null);
+    fp.step(33, 33, to);
     expect(fp.eye.x - 10).toBeGreaterThan(0.5);
     expect(fp.eye.y - 12).toBeLessThan(0.3);
     run(fp, 33, 1500, to);
@@ -103,7 +121,7 @@ describe('the glide and the eye', () => {
     const fp = firstPerson(), cam = new PerspectiveCamera(32, 0.5, 40, 2000), eye = new Vector3(3, 12, 7), v = new Vector3();
     cam.position.set(0, 300, 300);
     fp.set(true, 0, deg(90), true);
-    fp.step(0, 16, eye, null);
+    fp.step(0, 16, eye);
     fp.apply(cam, 32, 40, new Vector3());
     expect(cam.position.toArray()).toEqual([3, 12, 7]);
     expect(cam.fov).toBe(FOV);
@@ -124,7 +142,7 @@ describe('the glide and the eye', () => {
     expect(cam.position.toArray()).toEqual([0, 200, 200]);
     expect([cam.fov, cam.near]).toEqual([32, 40]);
     fp.set(true, 0, Math.PI);
-    fp.step(BLEND_MS / 2, 16, eye, null);
+    fp.step(BLEND_MS / 2, 16, eye);
     fp.apply(cam, 32, 40, target);
     expect(cam.position.y).toBeGreaterThan(12);
     expect(cam.position.y).toBeLessThan(200);
@@ -159,15 +177,5 @@ describe('the eye kept off the walls and what stands tall', () => {
     // in the wall beside the opening: back into the nearest room
     const [x, z] = clampEye(60, -20, rooms, [], EYE_MARGIN, out);
     expect(Math.abs(x - 60) >= EYE_MARGIN || (z >= -5 + EYE_MARGIN && z <= 25 - EYE_MARGIN)).toBe(true);
-  });
-});
-
-describe('a tap or a drag', () => {
-  it('a finger that stays within the slop and lifts soon is a tap; past the slop a drag', () => {
-    expect(isTap(3, 4, 120)).toBe(true);
-    expect(isTap(SLOP, 0, 120)).toBe(true);
-    expect(isDrag(SLOP + 1, 0)).toBe(true);
-    expect(isTap(SLOP + 1, 0, 120)).toBe(false);
-    expect(isTap(0, 0, TAP_MS)).toBe(false);
   });
 });

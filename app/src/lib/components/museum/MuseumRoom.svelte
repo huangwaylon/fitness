@@ -17,7 +17,7 @@
   import SayPicker from '../island/SayPicker.svelte';
   import SayButton from '../island/SayButton.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
-  import { isDrag, isTap } from '../rooms/gesture.ts';
+  import { gestures } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
   import MuseumCard from './MuseumCard.svelte';
   import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '../island/say.ts';
@@ -242,76 +242,41 @@
   }
 
   // ---- the finger: a tap walks (or shows a creature's card); a drag turns the camera; two fingers pinch to zoom ----
-  const ptrs = new Map<number, { x: number; y: number }>();
-  const whenOf = (e: PointerEvent) => (e.timeStamp > 0 ? e.timeStamp : performance.now());
-  type G = { kind: 'maybe' | 'orbit'; x0: number; y0: number; t0: number; lx: number; ly: number } | { kind: 'pinch'; d: number; my: number };
-  let gesture: G | null = null;
   let turned = $state(false);
-  const spread = () => {
-    const [a, b] = [...ptrs.values()];
-    return { d: Math.hypot(a.x - b.x, a.y - b.y), my: (a.y + b.y) / 2 };
-  };
-  function onDown(e: PointerEvent) {
-    if (e === sayClosedBy) return void (sayClosedBy = null);
-    canvas?.setPointerCapture(e.pointerId);
-    if (e.isPrimary) (ptrs.clear(), (gesture = null));
-    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (ptrs.size === 1) gesture = { kind: 'maybe', x0: e.clientX, y0: e.clientY, t0: whenOf(e), lx: e.clientX, ly: e.clientY };
-    else if (ptrs.size === 2) {
-      gesture = { kind: 'pinch', ...spread() };
+  const fingers = gestures({
+    tap: (x, y) => tap(x, y),
+    start() {
       eng?.moving(true);
       says?.hold(true);
       talk?.hold(true);
-    }
-  }
-  function onMove(e: PointerEvent) {
-    const g = gesture;
-    if (!g || !eng || !ptrs.has(e.pointerId)) return;
-    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (g.kind === 'maybe' && isDrag(e.clientX - g.x0, e.clientY - g.y0)) {
-      g.kind = 'orbit';
-      eng.moving(true);
-      says?.hold(true);
-      talk?.hold(true);
-    }
-    if (g.kind === 'orbit') {
+    },
+    drag(dx, dy) {
+      if (!eng) return;
       // (at my villager's eyes the head turns: rooms/firstPerson.ts)
-      if (fpv) eng.look(e.clientX - g.lx, e.clientY - g.ly);
-      else eng.orbit(-(e.clientX - g.lx) * 0.0085, (e.clientY - g.ly) * 0.005);
-      g.lx = e.clientX;
-      g.ly = e.clientY;
+      if (fpv) eng.look(dx, dy);
+      else eng.orbit(-dx * 0.0085, dy * 0.005);
       turned = !eng.isDefault();
-    } else if (g.kind === 'pinch' && ptrs.size === 2 && !fpv) {
-      const n = spread();
-      if (g.d > 0) eng.zoom(n.d / g.d);
-      eng.orbit(0, (n.my - g.my) * 0.004);
-      Object.assign(g, n);
+    },
+    pinch(scale, dy) {
+      if (!eng || fpv) return;
+      eng.zoom(scale);
+      eng.orbit(0, dy * 0.004);
       turned = !eng.isDefault();
-    }
-  }
-  function onUp(e: PointerEvent) {
-    const g = gesture;
-    if (!ptrs.delete(e.pointerId)) return;
-    if (g?.kind === 'maybe' && isTap(e.clientX - g.x0, e.clientY - g.y0, whenOf(e) - g.t0)) tap(e.clientX, e.clientY);
-    if (!ptrs.size) {
-      gesture = null;
-      eng?.moving(false);
-      says?.hold(false);
-      talk?.hold(false);
-    } else if (g?.kind === 'pinch') {
-      const [p] = [...ptrs.values()];
-      gesture = { kind: 'orbit', x0: p.x, y0: p.y, t0: 0, lx: p.x, ly: p.y };
-    }
-  }
-  function onCancel(e: PointerEvent) {
-    ptrs.delete(e.pointerId);
-    if (!ptrs.size) {
-      gesture = null;
+    },
+    end() {
       eng?.moving(false);
       says?.hold(false);
       talk?.hold(false);
     }
+  });
+  function onDown(e: PointerEvent) {
+    if (e === sayClosedBy) return void (sayClosedBy = null);
+    canvas?.setPointerCapture(e.pointerId);
+    fingers.down(e);
   }
+  const onMove = (e: PointerEvent) => fingers.move(e);
+  const onUp = (e: PointerEvent) => fingers.up(e);
+  const onCancel = (e: PointerEvent) => fingers.cancel(e);
   function onWheel(e: WheelEvent) {
     if (!eng) return;
     e.preventDefault();
@@ -326,7 +291,8 @@
   function tap(cx: number, cy: number) {
     if (!eng) return;
     const h: Hit | null = eng.hit(cx, cy);
-    if (!h) return;
+    // (nothing there: a soft no)
+    if (!h) return void cue('boop');
     if (h.kind === 'villager') {
       eng.hop(h.who);
       cue('villager-tap');

@@ -20,7 +20,7 @@
   import SayPicker from '../island/SayPicker.svelte';
   import SayButton from '../island/SayButton.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
-  import { isDrag, isTap } from '../rooms/gesture.ts';
+  import { gestures } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
   import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '../island/say.ts';
   import { loadHha, rate, type HhaRating } from './hha.ts';
@@ -312,18 +312,35 @@
 
   // ---- the finger: a tap walks (or acts on what it's on); a drag turns the camera round the room (in the edit mode a
   //      drag that starts on a piece moves it instead); two fingers pinch to zoom and tilt ----
-  const ptrs = new Map<number, { x: number; y: number }>();
-  /** When the finger did it (the event's own time: a busy frame between the press and the lift doesn't make a tap a
-   *  long one; a made-up event, now). */
-  const whenOf = (e: PointerEvent) => (e.timeStamp > 0 ? e.timeStamp : performance.now());
-  type G = { kind: 'maybe' | 'orbit'; x0: number; y0: number; t0: number; lx: number; ly: number } | { kind: 'pinch'; d: number; my: number } | { kind: 'edit'; id: number };
-  let gesture: G | null = null;
+  /** The finger the edit mode has (TentEdit: its moves and its lift go to it alone). */
+  let editId: number | null = null;
   /** The camera isn't NH's view (the reset button shows). */
   let turned = $state(false);
-  const spread = () => {
-    const [a, b] = [...ptrs.values()];
-    return { d: Math.hypot(a.x - b.x, a.y - b.y), my: (a.y + b.y) / 2 };
-  };
+  const fingers = gestures({
+    tap: (x, y) => tap(x, y),
+    start() {
+      clearTimeout(longTimer);
+      eng?.moving(true);
+      says?.hold(true);
+    },
+    drag(dx, dy) {
+      if (!eng) return;
+      // (at my villager's eyes the head turns: rooms/firstPerson.ts)
+      if (fpv) eng.look(dx, dy);
+      else eng.orbit(-dx * 0.0085, dy * 0.005);
+      turned = !eng.isDefault();
+    },
+    pinch(scale, dy) {
+      if (!eng || fpv) return;
+      eng.zoom(scale);
+      eng.orbit(0, dy * 0.004);
+      turned = !eng.isDefault();
+    },
+    end() {
+      eng?.moving(false);
+      says?.hold(false);
+    }
+  });
   /** The edit mode's long press: held this still this long on another piece, it takes that one (TentEdit.longPress). */
   const LONG_MS = 400;
   let longTimer: ReturnType<typeof setTimeout> | undefined;
@@ -333,93 +350,46 @@
     if (e === sayClosedBy) return void (sayClosedBy = null);
     canvas?.setPointerCapture(e.pointerId);
     // the first finger down: nothing else is (a pointer whose up never came, a lost capture, is forgotten)
-    if (e.isPrimary) {
-      ptrs.clear();
-      if (gesture?.kind !== 'edit') gesture = null;
-    }
-    if (editing && !ptrs.size && edit?.down(e)) {
-      gesture = { kind: 'edit', id: e.pointerId };
+    if (e.isPrimary) fingers.reset();
+    if (editing && !fingers.count && edit?.down(e)) {
+      editId = e.pointerId;
       return;
     }
-    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (ptrs.size === 1) {
-      gesture = { kind: 'maybe', x0: e.clientX, y0: e.clientY, t0: whenOf(e), lx: e.clientX, ly: e.clientY };
-      // holding a piece, a finger kept still on another one takes that one instead (a tap doesn't: NH's one at a time)
-      if (editing && edit?.holding()) {
-        const g0 = gesture, id = e.pointerId;
-        longTimer = setTimeout(() => {
-          const at = ptrs.get(id);
-          if (gesture !== g0 || g0.kind !== 'maybe' || ptrs.size !== 1 || !at) return;
-          if (edit?.longPress({ pointerId: id, clientX: at.x, clientY: at.y } as PointerEvent)) {
-            ptrs.clear();
-            gesture = { kind: 'edit', id };
-          }
-        }, LONG_MS);
-      }
-    } else if (ptrs.size === 2) {
-      clearTimeout(longTimer);
-      gesture = { kind: 'pinch', ...spread() };
-      eng?.moving(true);
-      says?.hold(true);
+    editId = null;
+    fingers.down(e);
+    // holding a piece, a finger kept still on another one takes that one instead (a tap doesn't: NH's one at a time)
+    if (fingers.count === 1 && editing && edit?.holding()) {
+      const id = e.pointerId;
+      longTimer = setTimeout(() => {
+        const at = fingers.pending(id);
+        if (at && edit?.longPress({ pointerId: id, clientX: at.x, clientY: at.y } as PointerEvent)) {
+          fingers.reset(true);
+          editId = id;
+        }
+      }, LONG_MS);
     }
   }
   function onMove(e: PointerEvent) {
-    const g = gesture;
-    if (!g || !eng) return;
-    if (g.kind === 'edit') return void (g.id === e.pointerId && edit?.move(e));
-    if (!ptrs.has(e.pointerId)) return;
-    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (g.kind === 'maybe' && isDrag(e.clientX - g.x0, e.clientY - g.y0)) {
-      clearTimeout(longTimer);
-      g.kind = 'orbit';
-      eng.moving(true);
-      says?.hold(true);
-    }
-    if (g.kind === 'orbit') {
-      // (at my villager's eyes the head turns: rooms/firstPerson.ts)
-      if (fpv) eng.look(e.clientX - g.lx, e.clientY - g.ly);
-      else eng.orbit(-(e.clientX - g.lx) * 0.0085, (e.clientY - g.ly) * 0.005);
-      g.lx = e.clientX;
-      g.ly = e.clientY;
-      turned = !eng.isDefault();
-    } else if (g.kind === 'pinch' && ptrs.size === 2 && !fpv) {
-      const n = spread();
-      if (g.d > 0) eng.zoom(n.d / g.d);
-      eng.orbit(0, (n.my - g.my) * 0.004);
-      Object.assign(g, n);
-      turned = !eng.isDefault();
-    }
+    if (editId !== null) return void (editId === e.pointerId && edit?.move(e));
+    fingers.move(e);
   }
   function onUp(e: PointerEvent) {
     clearTimeout(longTimer);
-    const g = gesture;
-    if (g?.kind === 'edit') {
-      if (g.id !== e.pointerId) return;
-      gesture = null;
+    if (editId !== null) {
+      if (editId !== e.pointerId) return;
+      editId = null;
       edit?.up(e);
       return;
     }
-    if (!ptrs.delete(e.pointerId)) return;
-    if (g?.kind === 'maybe' && isTap(e.clientX - g.x0, e.clientY - g.y0, whenOf(e) - g.t0)) tap(e.clientX, e.clientY);
-    if (!ptrs.size) {
-      gesture = null;
-      eng?.moving(false);
-      says?.hold(false);
-    } else if (g?.kind === 'pinch') {
-      // one finger left: it turns the camera on from where it is
-      const [p] = [...ptrs.values()];
-      gesture = { kind: 'orbit', x0: p.x, y0: p.y, t0: 0, lx: p.x, ly: p.y };
-    }
+    fingers.up(e);
   }
   function onCancel(e: PointerEvent) {
     clearTimeout(longTimer);
-    if (gesture?.kind === 'edit') edit?.up(e);
-    ptrs.delete(e.pointerId);
-    if (!ptrs.size) {
-      gesture = null;
-      eng?.moving(false);
-      says?.hold(false);
+    if (editId !== null) {
+      editId = null;
+      edit?.up(e);
     }
+    fingers.cancel(e);
   }
   function onWheel(e: WheelEvent) {
     if (!eng) return;
@@ -440,8 +410,8 @@
       if (wp) return void edit.tapWall(wp.wall, wp.u, wp.y);
     }
     const h = eng.hit(cx, cy);
-    // off the room (a wall, the dark round it): what the edit mode holds is put down
-    if (!h) return void (editing && edit?.putDown());
+    // off the room (a wall, the dark round it): what the edit mode holds is put down; else a soft no
+    if (!h) return void (editing ? edit?.putDown() : cue('boop'));
     if (h.kind === 'villager') {
       eng.hop(h.who);
       cue('villager-tap');
