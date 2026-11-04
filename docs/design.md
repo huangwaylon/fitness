@@ -608,8 +608,8 @@ went in November 2026 (docs/cleanup-2d.md).
   other gets up for the other seat, else a step aside (`sitting.ts` yieldsSeat, as the tent's `outsat`). On it a tap
   on the ground gets it up and walks it; a tap on another seat moves it there; a tap on it is its squish. Only a seat that's there today sits (the illuminated tree in the
   hammock's spot, the picnic set on the pond's bench don't). Nothing new goes over the relay: the walk ends on the
-  seat's spot, so the partner's and the guest's phones see it sit, a phone opening later finds it seated, and 3 minutes
-  after its phone has gone it gets up and walks home like any.
+  seat's spot, so the partner's and the guest's phones see it sit, and a phone opening later finds it seated, however
+  long its phone has been gone.
   The pump waters every wild flower within 70u (each the shared `watered` op, as a tap's watering). The snowboy says a
   line in its voice on a tap (「さむいって いいね〜」…; melting: 「すこし ちいさく なっちゃった…」).
   `fixedDecor.test` holds the plan's rules: まえ one piece for good and two seasonal at most,
@@ -677,7 +677,8 @@ villager up to its door and goes in (the tent's inside: [The tent](#the-tent); a
 own screens). ‹ 島へ comes out of the door, NH's way: my villager stands just in front of it, facing out (`layout/nav.ts`
 exitOf: 30u out from the door node, A to the left and B to the right of a door facing us, the guest a step further out
 between; the nearest whole point there that stands in the island's main region), on every phone at once (the room
-says the put as it leaves: the others see me come out there). The partner's presence
+says the put as it leaves: the others see me come out there). Inside any of them (the tent, a home, the museum, the
+shop) my villager is nowhere on the others' islands. The partner's presence
 is their villager and the edge face, not a character of its own (`partnerOnline`: the relay's presence, never in the
 demo).
 
@@ -893,8 +894,8 @@ NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)
 - **Its villager on the island:** there only while its app is open (the relay's presence), like an NH visitor. Each
   time the app opens it comes ashore at the front beach's right end and strolls up to its spot by the campsite, on
   every phone (its walk goes over the relay). It has no home and no tree. It moves only when the guest moves it
-  (taps, the tent, a seat): no phone's idle life walks it, on its own phone or ours, no outing, no follow, no walk
-  home after a while away; in place it bobs and blinks like anyone. It dozes 22:00–05:00 on the relay's clock with
+  (taps, the tent, a seat): no phone's idle life walks it, on its own phone or ours, no outing, no follow; in place it bobs and
+  blinks like anyone. It dozes 22:00–05:00 on the relay's clock with
   everyone. Closing the app takes it off our islands.
 - **On our phones:** drawn like the partner's villager (the same billboard, its walks played the same way, lilac name
   tag); a tap on it is a high-five (to the guest), its phrases show over it, its catches play there (its villager turns
@@ -980,9 +981,9 @@ goes with the leaving).
   presence over the relay, the tent screen's `tent {in}` as it opens and closes, said again whenever the partner joins
   or the socket comes back; the island says `{in: false}` to a partner who arrives). A villager in the tent is nowhere
   on the partner's island (hidden, its life there, outings, follows and meet-ups leave it alone, no high-five or
-  phrase can reach it); inside, the partner's villager is there only while the partner is. A phone that goes quiet
-  inside (closed, offline) has its villager leave the tent 3 minutes after the relay saw it go: it comes out of the
-  door and walks home ([Walking](#walking) "A phone gone a while").
+  phrase can reach it); inside, the partner's villager is there only while the partner is. The museum and the shop
+  are the same (`sc` `m`, `s`). A phone that goes quiet inside (closed, offline) has its villager leave 3 minutes after
+  the relay saw it go: back on the island where it went in, and there it stays ([Walking](#walking) "A phone gone").
 
 - **The room:** NH's largest, the main room fully expanded: 8 × 8 tiles (Nookipedia's upgrade table: the main room
   6 × 6 → 8 × 8, the second floor and basement 10 × 6 = 60 tiles, so 8 × 8 = 64 is the most floor), NH's own grid (a tile
@@ -1374,7 +1375,8 @@ too.
   with its register, their line in a cream balloon on the counter (「いらっしゃいませだも〜！」, the offer, 「まいど
   ありがとうだも〜！」, 「かいがらが たりないだも…」…), and under it NH's counter menu, a fixed-cream panel (ink, at every
   time of day). At dusk and night the wood warms under a lamp's glow. My かいがら top right; ‹ 島へ top left goes back out
-  (just out of the shop's door).
+  (just out of the shop's door). While I'm in here the others' islands show my villager nowhere, as in the museum and
+  the rooms ([The tent](#the-tent) "One place at a time": `tent {in, sc: 's'}`); coming out, they see it at the door.
 - **うる** (sell): my pocket, each fish, bug and sea creature I caught (my day tallies, model/tally.ts) less what I sold,
   dearest first: its icon, name, price and ×n. A tap picks one more (past the pocket: none again), − one less, ぜんぶ all;
   the bar says 「3こで 120 かいがら」 and うる sells them (one `sell` a species). Selling never takes a species out of the
@@ -1671,24 +1673,18 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
   world](#shared-world)).
 - **Where my villager is, kept** (`avatar.ts` startAt, `e2e/positions.spec.ts`): the island opens with it where it
   last stood (the end of its latest move, kept per person in localStorage, `island-stay.<who>`, with where it rests):
-  back from a room or another screen, a reload, the app reopened, the next day. Only a player never placed starts at
-  home (a spot a layout change has since covered snaps to the nearest standable ground). The one exception is the walk
-  home (below): a member's phone gone long enough for it to be over opens with its villager home at once, as every
-  other phone has it (`store/seen.ts`: when the app last hid; once per page load), not first where it was.
+  back from a room or another screen, a reload, the app reopened, the next day, however long after. Only a player
+  never placed starts at home (a spot a layout change has since covered snaps to the nearest standable ground).
 - **Never a teleport on another phone:** their phone plays my walks; a big gap between where it has my villager and
   where my walk has it (a phone that had it elsewhere, a put) glides off at the run within 1.5 s while it's in view
   (villagerSync `playPartner`); only a phone opening, or the island hidden, puts it there.
 - **The camera never moves for a walk** (nor for the partner or a visitor): only the finger scrolls.
 - **No hold-up:** a catch or a find lifts nothing over a villager's head and plays no pose (the bottom stack's plate,
   its icon popping up from where it happened, says it: [Critters](#critters)).
-- **A phone gone a while:** 3 minutes after the relay saw a member's phone go (the app closed or hidden, offline), their
-  villager walks home to its spot by its own tree at a stroll, on every phone the same (a phone opening later finds it
-  where that walk has it, or home), then lives there as any (idle beats, dozing at night: it gets up for the walk and
-  dozes again at home). Back within the 3 minutes, nothing happens; back mid-walk, their phone picks it up where it
-  is and walks the rest. Its own phone takes the relay's word for it once per socket (the welcome's `gone`): the
-  island opening again on the same socket (back from a room) leaves its villager where it was. With no walk of theirs
-  today (a new day), it walks home from where it stood. Not the guest's: it leaves with its app (villagerSync.ts,
-  [decisions](decisions.md)).
+- **A phone gone** (closed, hidden, offline, for a minute or a week): its villager stays where its last walk ended,
+  on every phone (the user, 2026-11-04: "spot persists"; no walk home). The relay keeps each person's last walk and
+  carries it into each new day, so a phone opening later puts it there; the island's own life gives it its idle beats
+  in place. Not the guest's: it shows only while its app is open ([The guest](#the-guest)).
 - **Sheets and hiding:** a sheet stops everyone where they are; uncovered, the outings wander back; hidden over 30 s,
   they're back on return (mine where it rests). A balloon opens only over a villager standing still, and steps aside while the camera
   scrolls.

@@ -55,8 +55,7 @@ const guests = (id: Villager): boolean => whoOf(id) === 'G';
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
 /** Where a tap sent my villager (spec §4): it rests there, not wandering home, and the partner's phone shows it there
- *  too (the relay keeps each person's last walk: docs/backend.md#shared-world), until it walks home by the rule (its
- *  phone gone a while: villagerSync.ts). And where it stands (`pos`: the end of its latest move, whoever made it),
+ *  too, however long my phone is gone (the relay keeps each person's last walk: docs/backend.md#shared-world). And where it stands (`pos`: the end of its latest move, whoever made it),
  *  so the island opens with it there again: back from a room, a reload, the app reopened (localStorage, with `rest`,
  *  per person: the demo's two players are two tabs of one browser). */
 const STAY_KEY = 'island-stay';
@@ -87,17 +86,11 @@ export function keepPos(p: Pt): void {
   m.pos = [p[0], p[1]];
   write();
 }
-/** Where my villager stands as the island opens (not out of a door, nor the guest's arrival): where it last was, on
- *  standable ground (a layout change since may have put something there), else where it rests; null: home. `gone`:
- *  this phone was away long enough for the walk home to be over (villagerSync: every other phone has it home), so it
- *  is home here too (no put somewhere else first, then home once the relay says). */
-export function startAt(gone: boolean): Pt | null {
+/** Where my villager stands as the island opens (not out of a door, nor the guest's arrival): where it last was,
+ *  however long ago, on standable ground (a layout change since may have put something there), else where it rests;
+ *  null: home (never placed). */
+export function startAt(): Pt | null {
   const m = my();
-  if (gone) {
-    m.rest = m.pos = null;
-    write();
-    return null;
-  }
   const p = m.pos ?? m.rest;
   return p && standAt(walkNav(), p[0], p[1]);
 }
@@ -259,18 +252,6 @@ export function setPartnerRest(x: number, z: number, id: Villager = 'partner'): 
 }
 /** A rest spot (null: home, within 8u of it). */
 const restAt = (p: Pt, home: Pt): Pt | null => (Math.hypot(p[0] - home[0], p[1] - home[1]) <= 8 ? null : [p[0], p[1]]);
-/** A villager is home again (its phone was gone long enough: villagerSync's walk home): it rests at home, mine for
- *  the rest of the day too. */
-export function homeAgain(id: Villager): void {
-  if (id === 'mine') keepStay(null);
-  else stays[id] = null;
-}
-/** The way between two points on the island's nav, as a tap would go (planTap: the stairs, the bridge), without the
- *  visitor's spot (the same on every phone: villagerSync's walk home). Null when there's none. */
-export function homeRoute(from: Pt, to: Pt): Pt[] | null {
-  return planTap(walkNav(), from, to[0], to[1], [])?.pts ?? null;
-}
-
 /** The partner did something on their phone (the shared world: a catch, a pick-up, a shake): their villager here turns
  *  to it where it stands (no walking over, as on their own phone) and the result plays at the target. */
 export function partnerTurnTo(tx: number, who?: Who): void {

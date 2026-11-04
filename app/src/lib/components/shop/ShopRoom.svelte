@@ -5,6 +5,8 @@
   // かう (buy: the day's stock, the same on every phone: contract/shop.ts stockOf). Prices and my かいがら in NH's shell
   // (the cowrie). A sell or a buy shows at once with もとに戻す (store/actions.ts sell, buyPiece); a bought piece joins
   // my もようがえ. The guest's pocket and かいがら are its own. Never ベル. ‹ 島へ goes back out, just out of its door.
+  // While I'm in here the others' islands show my villager nowhere, as in the museum and the rooms (the rooms' `tent`
+  // presence with `sc: 's'`: store/where.svelte.ts); out of the door they see it there.
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { onMount } from 'svelte';
@@ -22,6 +24,12 @@
   import { buyPiece, buyRefusal, sell, undoBanner } from '#lib/store/actions.ts';
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
   import { leaveBy } from '../island/doorOut.ts';
+  import { hook } from '../island/devHooks.ts';
+  import { world as shared } from '#lib/store/world.svelte.ts';
+  import { where } from '#lib/store/where.svelte.ts';
+  import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
+  import { createLocalLive } from '#lib/sync/live-local.ts';
+  import type { Who } from '#lib/types.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import { doorReady } from '#lib/ui-state/doorTransition.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -46,6 +54,17 @@
   const stock = $derived(stockOf(today));
   const daily = $derived(stock.filter((c) => !BASICS.includes(c)));
   const night = $derived(theme.tod === 'night' || theme.tod === 'dusk');
+
+  // ---- my presence (the phone's one socket; the demo's two tabs share a channel; ?relay=&key= a test relay) ----
+  const demo = !!week.demo;
+  const testRelay = (): Live | null => {
+    const url = hook('relay'), key = hook('key');
+    return url && /^wss?:\/\//.test(url) && key ? createLive({ url, key: () => key }) : null;
+  };
+  // svelte-ignore state_referenced_locally
+  const own = demo ? (testRelay() ?? createLocalLive(view.viewer)) : null;
+  const relay: Live | null = demo ? own : LIVE_URL ? liveRelay() : null;
+  const inside = (on: boolean) => relay?.send({ kind: 'tent', in: on, sc: 's' });
 
   /** A tally key's name and icon (the ずかん's: `critter.name.*`, `sea.name.*`; the official icon). */
   const speciesName = (k: string) => {
@@ -127,7 +146,9 @@
     if (leaving) return;
     leaving = true;
     cue('scene-bench');
+    // (out at the door first, then seen: the others' islands show it there, not where it went in)
     leaveBy('shop', me);
+    inside(false);
     const q = new URLSearchParams(location.search);
     void goto(resolve('/') + (q.size ? `?${q}` : '')).finally(() => (leaving = false));
   }
@@ -139,6 +160,26 @@
   onMount(() => {
     if (!shop.pocket.size) say = { k: 'empty' };
     requestAnimationFrame(() => doorReady());
+    shared.attach(relay, me, demo);
+    own?.start();
+    if (!relay) return;
+    inside(true);
+    // said again to whoever arrives; what the others say of themselves is kept for the island (one place at a time)
+    let hereNow: readonly Who[] = [];
+    const offs = [
+      relay.onStatus((st) => {
+        const was = hereNow, here = st.connected ? st.here : [];
+        hereNow = here;
+        if (here.some((w) => !was.includes(w))) inside(true);
+        for (const w of ['A', 'B', 'G'] as const) if (w !== me) where.presence(w, here.includes(w));
+      }),
+      relay.on((m) => m.who !== me && m.kind === 'tent' && where.heard(m))
+    ];
+    return () => {
+      inside(false);
+      for (const f of offs) f();
+      own?.stop();
+    };
   });
   // (the line's language follows the app's)
   const line = $derived((void i18n.locale, t(`shop.say.${say.k}`, say.p)));

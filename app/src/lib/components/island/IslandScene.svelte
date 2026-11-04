@@ -1,8 +1,6 @@
 <script module lang="ts">
   /** The guest's villager came ashore in this page load already (once per app open: docs/design.md "The guest"). */
   let arrivedThisLoad = false;
-  /** The island opened in this page load already (the first open asks how long this phone was gone: avatar.ts startAt). */
-  let openedThisLoad = false;
 </script>
 
 <script lang="ts">
@@ -89,11 +87,10 @@
   import { mushroomSpots } from './mushrooms.ts';
   import { giftTreesOn } from './treeGifts.ts';
   import { perches } from './critters.ts';
-  import { arrive, attachAvatar, homeAgain, homeRoute, keepPos, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, sitTo, snapHome, startAt, stepOut, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
+  import { arrive, attachAvatar, keepPos, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, sitTo, snapHome, startAt, stepOut, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
   import { freeSeat, seatNamed, seatOpen, seatPieceAt, seatSpots, sitTimeOf, yieldsSeat, type SeatSpot } from './sitting.ts';
   import { where } from '#lib/store/where.svelte.ts';
-  import { JOIN_SAY_MS, RUN_RING_U_S, homeAfter, linkVillagers, playPartner, playWake, setHomeAfter, walkedHome } from './villagerSync.ts';
-  import { seenAgo } from '#lib/store/seen.ts';
+  import { JOIN_SAY_MS, RUN_RING_U_S, linkVillagers, playPartner, playWake } from './villagerSync.ts';
   import { canonical, hash, type DayEvent } from '#lib/sync/world-day.ts';
   import type { SceneHit } from './sceneTaps.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
@@ -414,18 +411,14 @@
     untrack(() => VILLAGERS.forEach((id) => setHome(id, sd[id].home[0], sd[id].home[1])));
   });
   // Where my villager stands as the island opens: just out of a building's door (a room's ‹ 島へ: island/doorOut.ts),
-  // facing out; else where it last stood (back from another screen, a reload, the app reopened: avatar.ts startAt),
-  // home only when it has never been anywhere, or its phone was gone long enough for the walk home to be over
-  // (villagerSync walkedHome: every other phone has it home by now; a member's, with the relay; once per page load).
+  // facing out; else where it last stood (back from another screen, a reload, the app reopened, however long after:
+  // avatar.ts startAt), home only when it has never been anywhere.
   let fromDoor = false;
   {
     const out = ui.takeOutAt();
-    const ago = openedThisLoad ? null : seenAgo();
-    openedThisLoad = true;
     if ((fromDoor = !!out)) stepOut(out!.at, out!.face);
     else {
-      // svelte-ignore state_referenced_locally
-      const at = startAt(!!LIVE_URL && !week.demo && !guestPhone() && ago !== null && walkedHome(ago));
+      const at = startAt();
       if (at && !actors.mine.walking) place('mine', at[0], at[1]);
     }
   }
@@ -712,12 +705,7 @@
     let hiddenAt = 0;
     const vis = () => {
       if (document.hidden) hiddenAt = Date.now();
-      else if (hiddenAt && Date.now() - hiddenAt > SNAP_HOME_MS) {
-        // (gone long enough for my villager's walk home to be over, a member's with the relay: home already, as on
-        // every other phone, before the welcome says so)
-        if (relay && !guestPhone() && walkedHome(Date.now() - hiddenAt)) homeAgain('mine');
-        snapHome();
-      }
+      else if (hiddenAt && Date.now() - hiddenAt > SNAP_HOME_MS) snapHome();
     };
     document.addEventListener('visibilitychange', vis);
     // footsteps by the ground under the walker (quiet world cues: silent under a sheet; the director spaces them)
@@ -844,20 +832,10 @@
   // (on the relay's own clock: a `?date=` preview shifts the island's day, not when a walk set off)
   const relayNow = () => (relay ?? demoRelay)?.serverNow() ?? Date.now();
   const link = linkVillagers({
-    share: (w) => void shared.share(w), me: castMe, serverNow: relayNow, enabled: () => true,
-    // a phone gone a while: its villager walks home from where its last walk (the relay's day) ended, by the nav
-    lastAt: (id) => {
-      const w0 = shared.day.walks[whoOf(id)];
-      return w0 ? (pointOf(w0.to) ?? null) : null;
-    },
-    route: homeRoute,
-    atHome: homeAgain,
-    kept: keepPos
+    share: (w) => void shared.share(w), me: castMe, serverNow: relayNow, enabled: () => true, kept: keepPos
   });
-  // (`?homeafter=<ms>`: how long a phone is gone before its villager walks home, and one gone quiet inside the tent
-  // leaves it; the e2e's)
-  if (hook('homeafter')) setHomeAfter(Number(hook('homeafter')));
-  where.goneMs = homeAfter();
+  // (`?quietafter=<ms>`: how long one gone quiet inside a room stays there; the e2e's)
+  if (hook('quietafter')) where.goneMs = Number(hook('quietafter'));
   $effect(() => {
     const r = relay ?? demoRelay;
     if (!link || !r) return;
@@ -865,13 +843,13 @@
     let was: readonly Who[] = [];
     const off = r.onStatus((st) => {
       const here = st.connected ? st.here : [];
-      // each other person here: their villager is the relay's to move (the guest's shows only then); gone, it isn't
-      // (a member's walks home a while after the relay saw them leave: villagerSync)
+      // each other person here: their villager is the relay's to move (the guest's shows only then); gone, it stays
+      // where their last walk left it (villagerSync)
       for (const w of ['A', 'B', 'G'] as const) {
         if (w === castMe()) continue;
         const left = st.connected ? st.gone?.[w] : undefined;
-        link.here(actorOf(w), here.includes(w), left);
-        where.presence(w, here.includes(w), left === undefined ? (st.connected ? homeAfter() : null) : left + homeAfter() - relayNow());
+        link.here(actorOf(w), here.includes(w));
+        where.presence(w, here.includes(w), left === undefined ? (st.connected ? where.goneMs : null) : left + where.goneMs - relayNow());
       }
       // the guest arriving on a member's phone: a banner, once per arrival
       if (here.includes('G') && !was.includes('G') && !guestPhone()) onguest?.(view.guest.villagerName);
@@ -880,33 +858,20 @@
       was = here;
       hereNow = here;
       // (re)connected: once the day's replay is in, my villager as it is here (the room may hold an older walk of it,
-      // from a session that ended elsewhere; gone a while, where its walk home has it by now)
-      if (st.connected && !up) {
-        const myLeft = st.gone?.[castMe()];
-        soon = setTimeout(() => link.joined(myLeft), JOIN_SAY_MS);
-      }
+      // from a session that ended elsewhere)
+      if (st.connected && !up) soon = setTimeout(() => link.joined(), JOIN_SAY_MS);
       if (!st.connected && up) link.down();
       up = st.connected;
     });
     return () => (off(), clearTimeout(soon));
   });
   $effect(() => () => link?.detach());
-  // one place at a time: another's villager in the tent is nowhere here; gone quiet inside, it's home again
+  // one place at a time: another's villager in a room (the tent, a home, the museum, the shop) is nowhere here; gone
+  // quiet inside, it's back where it went in
   $effect(() => {
     for (const id of ['partner', 'third'] as const) {
       const on = inTent(id);
       untrack(() => setInside(id, on));
-    }
-  });
-  const homeSeen = { ...where.homeN };
-  $effect(() => {
-    for (const w of ['A', 'B', 'G'] as const) {
-      const n = where.homeN[w];
-      if (n === homeSeen[w] || w === castMe()) continue;
-      homeSeen[w] = n;
-      const id = actorOf(w);
-      // (a member's villager walks home out of the door by villagerSync's rule; without the relay's leave time, put)
-      untrack(() => !link?.homeBound(id) && place(id, sides[id].home[0], sides[id].home[1], true));
     }
   });
   // the partner's phrases, live (never replayed: a phone opening later hears none)
@@ -932,8 +897,6 @@
   function partnerWalk(w: Extract<DayEvent, { kind: 'walk' }>, now: boolean, id: VillagerActor = 'partner') {
     const to = pointOf(w.to);
     if (!to || id === 'mine') return;
-    // their phone gone a while: the walk home is the villager's (from this walk's end, should it be newer news)
-    if (link?.homeBound(id)) return link.replan(id);
     setPartnerRest(to[0], to[1], id);
     steered[id] = Date.now();
     // (a phone opening, the island hidden: where the walk has it by now; live and in view, a big gap glides off)

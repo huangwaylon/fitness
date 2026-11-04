@@ -312,7 +312,8 @@ catches an offline phone up.
 - **Auth:** the first message is `hello {key, since?}`. The room compares it in constant time with the secrets
   `KEY_A`/`KEY_B`/`KEY_C` (unset = nobody gets in) and answers `welcome {me, peer, t, rec?, here?, gone?}` (`rec`: the record's
   last change; `here`, v3: everyone else who is here; `gone`, v3: when the room saw each person's last socket close,
-  for those not here and my own last one, kept in its storage: the walk home, below), or
+  for those not here and my own last one, kept in its storage: one gone quiet inside a room leaves it then,
+  `store/where.svelte.ts`), or
   closes 4001. No hello within 10 s (a DO alarm sweeps): 4003. A second socket of the same person replaces the first
   (4002, no presence flicker). At most 8 sockets.
 - **Protocol** (`app/src/lib/sync/live-protocol.ts`, imported by both sides and checked by the same parsers): JSON,
@@ -325,7 +326,8 @@ catches an offline phone up.
   world](#shared-world) "Villagers"; integers within the plan `WORLD_X` −230…620 × `WORLD_Z` −400…2500, equal to
   `island/world.ts` PLAN; v1: stage units, |n| ≤ 100,000; a walk never crosses versions), `act {act, id?, at?, pt?}`,
   `catch {what, id?, at?, how?}`, `emote {emote}`, `world {op, id}` (`weed-pulled`, `fruit-collected`, `dug`,
-  `present-opened`, `watered`, `shaken`, `wished`, `woke`), `saved {}` ([Push](#push)), `decor {id, at, item, x, z, f, p} | {id, at, rm}` (v2: a decoration set or removed, as the record's `decor` op, the tent's with `sc: 't'`; kept for the day and replayed, never claimed: the merge is commutative), `drag {id, x, z, f, it?, end?}` (v2: a tent piece under the finger, ~10 a second while it moves, ≤ 60 bytes; presence only: relayed while the partner is there, never kept, replayed or written), `tent {in, to?, from?, via?, s?, ms?, sc?}` (v2: my villager in the tent, its walk there in the room's model units; `sc` `u` / `v` another home's room, `m` the museum, its points within ±320; presence only) `highfive {at}` (v2: a high-five, `at` the tap on the relay's clock, numbered; relayed live, and with the partner away the room holds the last one for them in its storage (`held`, one per recipient, a newer one replacing it), sends it after the welcome of their next v2 hello, and lets it go at their `got {at}` or after a day; never the record; see [decisions](decisions.md#a-high-five-goes-over-the-relay-only-2026-11-02)) `fish {ph, id?, pt?, from?, s?}` (v3: a line's step, `ph` one of `cast`, `nibble`, `bite`, `reel`, `off`; `pt` its float, `from` the bank its line runs from when not from the rod, world points; `id` the shadow's shared id; `s` when it went out; presence only: relayed live to everyone here, never kept, replayed, acked or written; the angler's phone sends its step again when someone comes, and a phone drops an angler's line at their presence off; [Shared world](design.md#shared-world)) and `say {text, sc?}` (v2: a phrase over my villager, [Villager taps](design.md#villager-taps); `sc` where it was said, a home's room `t`, `u` or `v`, the museum `m`, none the island: the phones show it only in the same place, an unknown `sc` refused; presence only: relayed live to a v2 partner, never kept, replayed or sent to the record; `text` cleaned on both sides by `cleanSay`: NFC, no control, newline or bidi characters, blanks squeezed, trimmed, ≤ 20 code points, else dropped; the room passes one per person per second, the phone one per 1.5 s); the shared world's (v2 only, [Shared
+  `present-opened`, `watered`, `shaken`, `wished`, `woke`), `saved {}` ([Push](#push)), `decor {id, at, item, x, z, f, p} | {id, at, rm}` (v2: a decoration set or removed, as the record's `decor` op, the tent's with `sc: 't'`; kept for the day and replayed, never claimed: the merge is commutative), `drag {id, x, z, f, it?, end?}` (v2: a tent piece under the finger, ~10 a second while it moves, ≤ 60 bytes; presence only: relayed while the partner is there, never kept, replayed or written), `tent {in, to?, from?, via?, s?, ms?, sc?}` (v2: my villager in the tent, its walk there in the room's model units; `sc` `u` / `v` another home's room, `m` the museum, its points within ±320, `s` the shop, no points (2026-11-04: an
+older phone or relay drops it, and shows the villager at the shop's door as before); presence only) `highfive {at}` (v2: a high-five, `at` the tap on the relay's clock, numbered; relayed live, and with the partner away the room holds the last one for them in its storage (`held`, one per recipient, a newer one replacing it), sends it after the welcome of their next v2 hello, and lets it go at their `got {at}` or after a day; never the record; see [decisions](decisions.md#a-high-five-goes-over-the-relay-only-2026-11-02)) `fish {ph, id?, pt?, from?, s?}` (v3: a line's step, `ph` one of `cast`, `nibble`, `bite`, `reel`, `off`; `pt` its float, `from` the bank its line runs from when not from the rod, world points; `id` the shadow's shared id; `s` when it went out; presence only: relayed live to everyone here, never kept, replayed, acked or written; the angler's phone sends its step again when someone comes, and a phone drops an angler's line at their presence off; [Shared world](design.md#shared-world)) and `say {text, sc?}` (v2: a phrase over my villager, [Villager taps](design.md#villager-taps); `sc` where it was said, a home's room `t`, `u` or `v`, the museum `m`, none the island: the phones show it only in the same place, an unknown `sc` refused; presence only: relayed live to a v2 partner, never kept, replayed or sent to the record; `text` cleaned on both sides by `cleanSay`: NFC, no control, newline or bidi characters, blanks squeezed, trimmed, ≤ 20 code points, else dropped; the room passes one per person per second, the phone one per 1.5 s); the shared world's (v2 only, [Shared
   world](#shared-world)): `pick {id, what, at?}`, `put {id, what, at}`, `shake {tree, drop}`. Relay-only: `changed {what, who, at, rev}`. The room drops any client-sent `who`/`t`, stamps its own (`t` strictly increasing) and sends it
   to the other person only. Any intent may carry `c`, the phone's sequence number (increasing through the day: its
   `Date.now()` at sending, or one more): the room answers the sender `ack {c, t, ok}` (`t` its stamp; `ok` false when
@@ -467,9 +469,10 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   burst (a microtask after the last change: a replay of 300 changes is one write, not 300). Attached to the phone's
   one socket when the backend starts (`store/live.ts`), so the
   partner's changes are heard on any tab of the app.
-- **The room** (`relay/src/room.ts`): keeps today's world (Tokyo's day on the relay clock, a new day starts empty): the
-  last 400 changes (`world`, `catch` with an id, `pick`, `put`, `shake`) and each person's last v2 `walk` (replacing
-  the one before), in DO storage, its claims and nests rebuilt after a hibernation. It refuses a claim it already
+- **The room** (`relay/src/room.ts`): keeps today's world (Tokyo's day on the relay clock, a new day starts empty but
+  for each person's last walk, carried in with a new stamp so a phone opening asks for it: their villager stays where
+  it was left, however long ago): the last 400 changes (`world`, `catch` with an id, `pick`, `put`, `shake`; past
+  that the oldest that isn't a walk goes) and each person's last v2 `walk` (replacing the one before), in DO storage, its claims and nests rebuilt after a hibernation. It refuses a claim it already
   holds today and a second nest from a tree within the hour (`NEST_GAP_MS`). A hello's `since` replays the partner's
   after it; a page's first hello asks from Tokyo midnight (or the kept `since`), so a phone opening later hears the
   day.
@@ -485,7 +488,7 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   relay's own arrives, so the partner's animation still plays). A shake carries `at`, the shaker's own time, its
   identity on both phones and in the row.
 - **Villagers** (`island/villagerSync.ts`, `motion/director.svelte.ts` `onOwnMove` / `setRemote`): each person's
-  phone moves their own villager and is the one that does. Every walk and put of mine (a tap-walk, a walk home, a
+  phone moves their own villager and is the one that does. Every walk and put of mine (a tap-walk, a
   stop under a sheet or by a reaction, back home after 30 s away; a burst within one task is one message) goes as the
   very walk: `walk {to, from, via, s, ms, f}`, `s` on the relay's clock. The partner's phone plays it from the same
   start at the same time: on time it walks the way; late (a slow message, a phone opening mid-walk) it starts where
@@ -495,15 +498,15 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   there (≤ 1.5 s), facing `f`: never a jump while the island is in view and the news live. A phone opening (the
   day's last walk, the replay) or the scene hidden puts it where the walk has it by now. Out of a room's door the
   room says my put at once (`island/doorOut.ts`, in the shared day). While the partner has the island open
-  (presence), their villager is the relay's to move here: this phone's own life (a follow, an outing, a walk home, a
+  (presence), their villager is the relay's to move here: this phone's own life (a follow, an outing, a
   meeting with the visitor, a put under a sheet) leaves it alone, and a reaction here doesn't stop its walk. On a
   partner's arrival my villager's current walk goes again (they find it where mine is), and a walk under way is
   said again every 5 s while they're here (a phone that missed its start finds it on its way). Idle motions and the
-  ambient beats stay clock-seeded (ambient.ts); an action plays in place on both phones (no walk-then-act). A member's
-  phone gone 3 min (`HOME_AFTER_MS`, from the presence's `t` or the welcome's `gone`): their villager walks home from
-  its last walk's end by the nav at 90 u/s, set off at leave + 3 min, on every phone the same (`homeWay`/`homeAt`;
-  the relay's to move till it's home); their own phone, back, takes it from where that walk has it and tells nothing
-  of its villager until its welcome is in ([decisions](decisions.md#a-villager-whose-phone-is-gone-walks-home-by-the-relays-clock-2026-11-02)).
+  ambient beats stay clock-seeded (ambient.ts); an action plays in place on both phones (no walk-then-act). A phone gone
+  (closed, hidden, offline, however long) leaves its villager where its last walk ended on every phone (the room's
+  last walk, carried across days; no walk home since 2026-11-04,
+  [decisions](decisions.md#a-villager-stays-where-it-was-left-2026-11-04)); back, it says where it stands (its kept
+  spot) once its welcome is in.
 - **Sleep:** the villagers doze 22:00–05:00 on the relay's clock (`islandLife`: put to sleep or woken at the hour it
   turns, the same moment on both phones; no longer re-checked each minute, which put a woken villager back to sleep
   early). A wake here (a tap on mine, a high-five wakes both) is `act {act: wake, id: <whose>, at}` (the relay's
@@ -515,7 +518,7 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   tap so the relay's first wins; my cast as an `act` so my villager walks down with the rod on the other phone too), a
   bug out of a bush, from under the rock or off a villager as a `put` (`bug:<id>:<bush|rock|flea>`, its itinerary
   from its id); where each villager stands (the last walk: a phone opening later puts the partner's villager
-  there; mine stays where I sent it for the day), the partner's tap ring, and every tree's shakes: the outcome
+  there; mine stays where I sent it, across days), the partner's tap ring, and every tree's shakes: the outcome
   (`shake {tree, drop}`), what it left lying (a branch `br:<tree>:<k>`, coconuts `co:<tree>:0|1`, named from the
   day's shakes so both phones agree), a dangling bug (`dg:<tree>:<k>`) and the nest's wasps (`ws:<tree>:<k>`) as
   critters to catch, the nest rule; the day's things on the ground (shells, fragments, the bottle, dig spots and the
@@ -537,7 +540,7 @@ a person does is a small intent over the relay, kept by the room for the day, fo
 - **Budget** (Free plan): an intent is ≤ 100 bytes sent (tested), ≤ 140 relayed. A busy day of two people (~300
   walks, ~200 catches and pick-ups, ~50 shakes) is ~550 incoming messages: ~28 DO requests (20:1), ~550 storage writes
   (of 100,000 rows/day), and a replay on each open (outgoing messages are free). Nothing per frame. With every villager
-  move told (2026-11-01): a walk ~100–200 bytes, one per move (a tap-walk, a walk home, a stop; a burst within one
+  move told (2026-11-01): a walk ~100–200 bytes, one per move (a tap-walk, a stop; a burst within one
   task is one message), said again every 5 s while one is under way and the partner is here, one more on each join
   and reconnect; a wake ~70 bytes. A busy hour together (~120 moves, ~60 resays, ~40 world changes, pings) is ~250
   incoming messages, ~13 DO requests; a day of it ~2,000 messages, ~100 DO requests and ~1,500 storage writes: under

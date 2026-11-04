@@ -490,8 +490,8 @@ test('a high-five over the relay: the partner plays the same moment at once, its
 
 // One place at a time (docs/design.md "The tent"): a villager in the tent is nowhere on the island, on both phones;
 // inside, the partner's villager is there only while the partner is; out of the door it stands at the tent's door on
-// both; a phone that goes quiet inside has its villager home again after the timeout.
-test('one place at a time: A in the tent is gone from B’s island, there with B inside, out at the door on both; quiet inside, home', async ({ browser }) => {
+// both; a phone that goes quiet inside has its villager back on the island where it went in after the timeout.
+test('one place at a time: A in the tent is gone from B’s island, there with B inside, out at the door on both; quiet inside, back there', async ({ browser }) => {
   test.setTimeout(90_000);
   const ctxA = await browser.newContext(CTX);
   const ctxB = RELAY ? await browser.newContext(CTX) : ctxA;
@@ -501,7 +501,7 @@ test('one place at a time: A in the tent is gone from B’s island, there with B
     await p.waitForFunction(() => (window as unknown as { __world?: { state?: unknown } }).__world?.state);
     return p;
   };
-  const a = await open('A', ctxA), b = await open('B', ctxB, '&homeafter=1500');
+  const a = await open('A', ctxA), b = await open('B', ctxB, '&quietafter=1500');
   for (const p of [a, b]) await expect.poll(() => w<{ connected: boolean; peer: boolean } | null>(p, 'status').then((s) => !!s?.connected && s.peer), { timeout: 10_000 }).toBe(true);
   const inside = (p: Page) => p.locator('[data-actor="partner"]').getAttribute('data-inside');
   const door = async (p: Page) => {
@@ -542,115 +542,22 @@ test('one place at a time: A in the tent is gone from B’s island, there with B
     const p = await w<[number, number]>(b, 'partner'), m = await w<[number, number]>(a, 'mine');
     return Math.hypot(p[0] - m[0], p[1] - m[1]);
   }, { timeout: 6000 }).toBeLessThan(3);
-  // A goes in again (right at the door: straight in) and its phone goes quiet: home on B's island after the timeout
+  // A goes in again (right at the door: straight in) and its phone goes quiet: back on B's island after the timeout,
+  // where it went in (its last walk's end), and there it stays (no walk home)
   await door(a);
   await expect.poll(() => inside(b), { timeout: 6000 }).toBe('true');
-  await a.close({ runBeforeUnload: true }); // (its bye: else the demo's relay notices it 10 s on, the walk maybe over)
+  const went = await w<[number, number]>(b, 'partner'); // (where B's island had it as it went in)
+  await a.close({ runBeforeUnload: true }); // (its bye: else the demo's relay notices it 10 s on)
   await expect.poll(() => inside(b), { timeout: 15_000 }).toBeNull();
-  // out of the door and home at a stroll (villagerSync's walk home), not put there: anywhere but home, it's walking
-  const { HOMES } = await geo(b);
-  await expect.poll(async () => {
-    const v = (await w<State>(b, 'state')).villagers.A;
-    return v.walking || Math.hypot(v.x - HOMES.A[0], v.z - HOMES.A[1]) <= 3;
-  }, { timeout: 2000, message: 'on its way home' }).toBe(true);
-  await expect.poll(async () => {
-    const home = await w<[number, number]>(b, 'partner');
-    return Math.hypot(home[0] - HOMES.A[0], home[1] - HOMES.A[1]);
-  }, { timeout: 20_000 }).toBeLessThan(3);
-  await ctxA.close();
-  if (RELAY) await ctxB.close();
-});
-
-// A phone gone a while (docs/decisions.md "A villager whose phone is gone walks home"): after the timeout (shortened
-// here) its villager walks home on the other phone, from where it was, at a stroll; its own phone back mid-walk takes
-// it over from where the walk has it, with no jump on the other phone, and both end with it home.
-test('a phone gone a while: its villager walks home on the other phone; back mid-walk, it takes over without a jump', async ({ browser }) => {
-  // (drawn under CI's software GL, a frame or two a second, the phone back takes over a frame's walk (~130 px) from
-  // where the other drew it last; the logic tier runs it)
-  test.fixme(!!process.env.CI && process.env.E2E_RENDER !== 'none', 'CI drawn tier: a frame apart under its software GL');
-  test.setTimeout(90_000);
-  const AFTER = 2500;
-  const ctxA = await browser.newContext(CTX);
-  const ctxB = RELAY ? await browser.newContext(CTX) : ctxA;
-  const open = async (who: 'A' | 'B', ctx: typeof ctxA) => {
-    const p = await ctx.newPage();
-    await p.goto(q(who) + `&homeafter=${AFTER}`);
-    await p.waitForFunction(() => (window as unknown as { __world?: { state?: unknown } }).__world?.state);
-    return p;
-  };
-  const connected = (p: Page) => expect.poll(() => w<{ connected: boolean; peer: boolean } | null>(p, 'status').then((s) => !!s?.connected && s.peer), { timeout: 10_000 }).toBe(true);
-  let a = await open('A', ctxA);
-  const b = await open('B', ctxB);
-  for (const p of [a, b]) await connected(p);
-  await joined(a, b);
-  const { HOMES } = await geo(a);
-  // A walks far from home (open lawn near each spot in turn, the first that takes the tap: lawnTap), and stays there
-  await a.bringToFront();
-  await w(a, 'go', 400);
-  await atRest(a);
-  let at: [number, number] | null = null;
-  for (const [x, z] of [[200, 640], [160, 600], [240, 620], [120, 560], [280, 580], [200, 520]] as [number, number][]) {
-    const { x: cx, y: cy } = await lawnTap(a, x, z);
-    await a.mouse.click(cx, cy);
-    if (!(await ringed(a))) continue;
-    await expect.poll(async () => (await w<State>(a, 'state')).villagers.A.walking, { timeout: 6000 }).toBe(false);
-    at = await w<[number, number]>(a, 'mine');
-    if (Math.hypot(at[0] - HOMES.A[0], at[1] - HOMES.A[1]) > 250) break;
-  }
-  expect(at, 'a spot far from home').not.toBeNull();
-  const away = at!;
-  await expect.poll(async () => {
+  const near = async () => {
     const p = await w<[number, number]>(b, 'partner');
-    return Math.hypot(p[0] - away[0], p[1] - away[1]);
-  }, { timeout: 6000 }).toBeLessThan(3);
-  // A's phone goes (the app closed): on B, A's villager stays where it was for the timeout, then sets off home
-  await a.close({ runBeforeUnload: true });
-  await expect.poll(() => w<{ here: string[] } | null>(b, 'status').then((s) => s?.here.includes('A')), { timeout: 12_000 }).toBe(false);
-  const still = await w<[number, number]>(b, 'partner');
-  expect(Math.hypot(still[0] - away[0], still[1] - away[1]), 'there till the timeout').toBeLessThan(3);
-  await expect.poll(async () => (await w<State>(b, 'state')).villagers.A.walking, { timeout: AFTER + 12_000 }).toBe(true);
-  // B watches A's villager every frame from here on: the largest step between two frames past what its stroll home
-  // covers in that frame's time (a jump would show; a busy runner's long frame is a long step of the walk, no jump)
-  await b.evaluate(() => {
-    const g = window as unknown as { __world: W; __steps?: { max: number; on: boolean } };
-    const s = (g.__steps = { max: 0, on: true });
-    let last = g.__world.partner(), t0 = performance.now();
-    const f = (t: number) => {
-      const p = g.__world.partner();
-      // (villagerSync HOME_U_S: 90 u/s; 0.15 u/ms allows for its catch-up)
-      s.max = Math.max(s.max, Math.hypot(p[0] - last[0], p[1] - last[1]) - 0.15 * Math.max(0, t - t0));
-      last = p;
-      t0 = t;
-      if (s.on) requestAnimationFrame(f);
-    };
-    requestAnimationFrame(f);
-  });
-  // A's phone back, mid-walk: its villager where the walk home has it (near B's), walking the rest home
-  a = await open('A', ctxA);
-  await connected(a);
-  // (it takes its villager over once the day's replay is in, JOIN_SAY_MS after its socket is up, later on a busy
-  // runner: till then it stands where this phone left it. Polled till it's off that spot, not a fixed wait)
-  await expect.poll(async () => {
-    const m = await w<[number, number]>(a, 'mine');
-    return Math.hypot(m[0] - away[0], m[1] - away[1]);
-  }, { timeout: 8000, message: 'A’s phone takes its villager over' }).toBeGreaterThan(3);
-  const [mine, theirs] = [await w<[number, number]>(a, 'mine'), await w<[number, number]>(b, 'partner')];
-  const mid = Math.hypot(mine[0] - HOMES.A[0], mine[1] - HOMES.A[1]);
-  if (mid > 3) {
-    // (still on the way when it came back: the two phones have it at about the same point)
-    expect(Math.hypot(mine[0] - theirs[0], mine[1] - theirs[1]), 'A’s phone takes it from where it is').toBeLessThan(40);
-  }
-  for (const [p, fn] of [[a, 'mine'], [b, 'partner']] as const)
-    await expect.poll(async () => {
-      const h = await w<[number, number]>(p, fn);
-      return Math.hypot(h[0] - HOMES.A[0], h[1] - HOMES.A[1]);
-    }, { timeout: 15_000 }).toBeLessThan(3);
-  const steps = await b.evaluate(() => {
-    const s = (window as unknown as { __steps: { max: number; on: boolean } }).__steps;
-    s.on = false;
-    return s.max;
-  });
-  expect(steps, 'no jump on B').toBeLessThan(30);
+    return Math.hypot(p[0] - went[0], p[1] - went[1]);
+  };
+  await expect.poll(near, { timeout: 4000 }).toBeLessThan(3);
+  // (proving nothing moves it for a while: a fixed wait, on purpose)
+  await b.waitForTimeout(3000);
+  expect(await near()).toBeLessThan(3);
+  expect((await w<State>(b, 'state')).villagers.A.walking).toBe(false);
   await ctxA.close();
   if (RELAY) await ctxB.close();
 });

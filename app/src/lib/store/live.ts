@@ -12,7 +12,6 @@ import { keyFromHash } from '#lib/sync/pairing.ts';
 import { LIVE_URL, liveRelay, type Live, type SheetChange } from '#lib/sync/live.ts';
 import { pendingAcked } from './view.ts';
 import { world } from './world.svelte.ts';
-import { markSeen } from './seen.ts';
 import { HOLD_MAX_MS, type Backend, type Host, type SendOptions, type SendResult } from './backend.ts';
 
 /** Background refreshes (app becoming visible) at most this often. */
@@ -81,11 +80,6 @@ export class LiveBackend implements Backend {
       // the shared island hears the partner even while another tab of the app is on screen (docs/backend.md#shared-world)
       world.attach(this.#live, getStoredMe());
       this.#live.start();
-      // when this phone was last on screen (store/seen.ts: the walk home's clock, as the relay sees the socket go)
-      if (typeof document !== 'undefined') {
-        document.addEventListener('visibilitychange', () => document.hidden && markSeen());
-        addEventListener('pagehide', markSeen);
-      }
     }
     // Full storage or private mode: the app works from memory, but say so once.
     onStorageProblem((p) => {

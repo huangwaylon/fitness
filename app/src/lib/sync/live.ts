@@ -26,7 +26,7 @@ export interface LiveStatus {
   /** The record's last change as of the welcome (docs/backend.md#the-record), when the relay knew one. */
   rec?: RecordMark;
   /** When each person not here left, on the relay's clock (the welcome's, then each `presence` off; mine: when my
-   *  previous socket did, as of the welcome): a villager whose phone is gone walks home (villagerSync). */
+   *  previous socket did, as of the welcome): one gone quiet inside a room leaves it a while after (store/where.svelte.ts). */
   gone?: Gone;
 }
 

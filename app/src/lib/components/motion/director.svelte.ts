@@ -335,7 +335,7 @@ export function routeHome(id: ActorId): Pt[] {
 // The shared world's villagers (island/villagerSync.ts, docs/backend.md#shared-world "Villagers"): each person's phone
 // moves their own villager and tells the other phone every walk and put of it (`onOwnMove`); there, while that person
 // has the island open, their villager is the relay's to move (`setRemote`): this phone's own life (a follow, an
-// outing, a walk home, a put under a sheet) leaves it alone, and only `remote` walks and puts move it.
+// outing, a put under a sheet) leaves it alone, and only `remote` walks and puts move it.
 /** A walk or a put of an actor (a put: `ms` 0, `pts` empty, `from` where). */
 export interface Move {
   id: ActorId;
@@ -515,16 +515,6 @@ export const WAKE_MS = 10_000;
 let sleepy: () => boolean = () => true;
 export function setSleepClock(fn: () => boolean): void {
   sleepy = fn;
-}
-/** Whether it's sleeping time now (the night's hours on the relay's clock). */
-export const sleepTime = (): boolean => sleepy();
-/** A dozing villager gets up quietly (no surprise: a walk home at night, villagerSync), to doze again on arrival. */
-export function stir(id: 'mine' | 'partner' | 'third'): void {
-  const a = actors[id];
-  if (!a.asleep) return;
-  a.asleep = false;
-  a.fx = a.fx.filter((f) => f.kind !== 'zzz');
-  if (a.emoteHold) setEmote(id, null);
 }
 /** A villager was woken here (a tap, a high-five): the scene tells the other phone (villagerSync), whose own wake of it
  *  is `remote`. */
