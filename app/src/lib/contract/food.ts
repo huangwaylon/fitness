@@ -64,8 +64,20 @@ const NUTRIENT_MAX = 100;
 /** A serving with no known weight logs as this many (nominal) grams: an entry of `n` servings is `n` × 100 g of a
  *  snapshot whose values are per serving (`sv`). */
 const NOMINAL_G = 100;
-/** The daily kcal goal (`pref kcalGoal`): an integer in range, a whole `step`. */
-export const KCAL_GOAL = { min: 1000, max: 5000, step: 50 } as const;
+/** The meal log's daily goals, each a `pref` per person (`key`), in range and a whole `step`: kcal, then protein,
+ *  fat, carbs and salt in g. */
+export const FOOD_GOALS = {
+  k: { key: 'kcalGoal', min: 1000, max: 5000, step: 50 },
+  p: { key: 'proteinGoal', min: 10, max: 400, step: 5 },
+  fa: { key: 'fatGoal', min: 10, max: 300, step: 5 },
+  c: { key: 'carbsGoal', min: 20, max: 800, step: 5 },
+  s: { key: 'saltGoal', min: 1, max: 20, step: 0.5 }
+} as const;
+/** What a meal-log goal is of: kcal (`k`) or a nutrient, as a snapshot's keys. */
+export type FoodGoalOf = keyof typeof FOOD_GOALS;
+export const FOOD_GOAL_OF = ['k', 'p', 'fa', 'c', 's'] as const satisfies readonly FoodGoalOf[];
+/** The daily kcal goal (`pref kcalGoal`). */
+export const KCAL_GOAL = FOOD_GOALS.k;
 
 const ID = /^f[0-9a-z]{6,24}$/;
 const REPEAT_ID = /^r[0-9a-z]{6,24}$/;
@@ -74,9 +86,17 @@ const inRange = (n: unknown, lo: number, hi: number): n is number => typeof n ==
 const isMeal = (v: unknown): v is Meal => (MEALS as readonly unknown[]).includes(v);
 const oneDecimal = (n: number): boolean => Math.abs(n * 10 - Math.round(n * 10)) < 1e-6;
 
+/** A daily goal of `n` (FOOD_GOALS): within its range, a whole step. */
+export function isFoodGoal(n: FoodGoalOf, v: unknown): v is number {
+  const g = FOOD_GOALS[n];
+  if (typeof v !== 'number' || !Number.isFinite(v) || v < g.min || v > g.max) return false;
+  const k = v / g.step;
+  return Math.abs(k - Math.round(k)) < 1e-9;
+}
 /** A daily kcal goal: an integer within KCAL_GOAL, a whole KCAL_GOAL.step. */
-export const isKcalGoal = (v: unknown): v is number =>
-  Number.isInteger(v) && (v as number) >= KCAL_GOAL.min && (v as number) <= KCAL_GOAL.max && (v as number) % KCAL_GOAL.step === 0;
+export const isKcalGoal = (v: unknown): v is number => isFoodGoal('k', v);
+/** The pref key of a meal-log goal → what it is of (`kcalGoal` → `k`), or null for any other key. */
+export const foodGoalOf = (key: unknown): FoodGoalOf | null => FOOD_GOAL_OF.find((n) => FOOD_GOALS[n].key === key) ?? null;
 
 /** A new entry's id. */
 export const newFoodId = (at: number, p = 'f'): string => `${p}${at.toString(36)}${Math.floor(Math.random() * 36 ** 4).toString(36).padStart(4, '0')}`;

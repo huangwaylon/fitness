@@ -6,9 +6,9 @@
 import { isActivityMetric, isRec, type EventRow, type SnapshotRows } from './api.ts';
 import { scopeMayWrite } from './layout.ts';
 
-/** The guest's own prefs: cosmetic, and its daily kcal goal for its meals (never another goal, never another
- *  person's). */
-const GUEST_PREF_KEYS = ['locale', 'villagerName', 'villager', 'kcalGoal'] as const;
+/** The guest's own prefs: cosmetic, and its meal log's daily goals (kcal and the nutrients; never another goal,
+ *  never another person's). */
+const GUEST_PREF_KEYS = ['locale', 'villagerName', 'villager', 'kcalGoal', 'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal'] as const;
 
 type Rec = Record<string, unknown>;
 
@@ -18,7 +18,7 @@ type Rec = Record<string, unknown>;
  * scopeMayWrite), a `board` note (posting; editing and removing only its own: contract/board.ts boardMayWrite), a
  * `food` entry, a `food_repeat`, a `food_recipe` or a `food_custom` (its own meals, recipes and foods: contract/food.ts
  * foodAccept), a `sell` or a
- * `buy` at the shop (its own pocket and かいがら: contract/shop.ts) and its own cosmetic `pref` or kcal goal (no `person`).
+ * `buy` at the shop (its own pocket and かいがら: contract/shop.ts) and its own cosmetic `pref` or meal-log goal (no `person`).
  * Everything else (a buy, a void, a harvest, a member's goal, the
  * island's decor and its layout, an island day, a high-five row) is the members' alone: the record answers `forbidden`.
  * @public (relay/src/store.ts)
