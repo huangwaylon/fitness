@@ -92,6 +92,31 @@ export async function camTo(page: Page, z: number, rest = true) {
   else await expect.poll(() => w3(page, (w) => w.camStill()), { message: 'the camera still' }).toBe(true);
 }
 
+/** The controls under a thing's corners and middle (a building's door behind a world prop is the world's, not a
+ *  control over it): [] when it stands clear of every control. Read once the camera is still (`camTo`). */
+export const controlsUnder = (page: Page, sel: string) =>
+  page.evaluate((s) => {
+    const b = document.querySelector(s)!.getBoundingClientRect();
+    const pts = [[b.left + 2, b.top + 2], [b.right - 2, b.top + 2], [b.left + 2, b.bottom - 2], [b.right - 2, b.bottom - 2], [(b.left + b.right) / 2, (b.top + b.bottom) / 2]];
+    return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('[data-building]')).map((e) => e.className));
+  }, sel);
+
+/** A world node's origin (its foot) on screen against where a world point projects (px apart). */
+export const offFrom = (page: Page, sel: string, x: number, z: number) =>
+  page.evaluate(([sel, x, z]) => {
+    const r = document.querySelector(sel as string)!.getBoundingClientRect();
+    const [px, py] = (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x as number, z as number);
+    return Math.hypot(r.left - px, r.top - py);
+  }, [sel, x, z] as const);
+
+/** A tap on a figure the scene hit-tests itself (a visitor's `.art`, the cake: their layer takes no pointer, so a tap
+ *  goes through to the scene, SceneTaps asks them): at its box's middle (`fy` down it). `tapOn` can't: nothing there
+ *  hit-tests to the figure's own node. */
+export async function tapFigure(page: Page, sel: string, fy = 0.5) {
+  const r = (await page.locator(sel).first().boundingBox())!;
+  await page.mouse.click(r.x + r.width / 2, r.y + r.height * fy);
+}
+
 /** Time on: the page's clock (`page.clock.install()` first) runs `ms`, the 3D engines' frames included (the clock fakes
  *  requestAnimationFrame): the sim step. Quick in the logic tier (nothing drawn); drawn under software GL a minute of
  *  frames takes minutes (use `page.clock.fastForward` there). */

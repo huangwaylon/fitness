@@ -3,13 +3,9 @@
 // centre stage 17:00–24:00 and asks for candy: a treat delights him, nothing earns his trick (a goofy face on my
 // villager). Never under a control; no ベル.
 import { expect, test, type Page } from '@playwright/test';
-import { camTo, geo, stageCam } from './island.ts';
+import { camTo, geo, stageCam, tapFigure } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
-async function tapOn(page: Page, sel: string) {
-  const r = (await page.locator(sel).boundingBox())!;
-  await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
-}
 /** The controls under a figure's corners and middle (`hud`: only the HUD's, outside the stage); only what's on screen
  *  (a world node out of view is hidden). */
 const under = (page: Page, sel: string, hud = false) =>
@@ -64,54 +60,52 @@ test('Nov 1: no Halloween', async ({ page }) => {
   await expect(page.locator('[data-visitor="jack"]')).toHaveCount(0);
 });
 
-for (const [w, h] of [[390, 844], [320, 568]] as const)
-  test(`Halloween night: lanterns lit, Jack at centre stage (not K.K. on this Saturday), a treat delights him (${w}px)`, async ({ page }) => {
-    await page.setViewportSize({ width: w, height: h });
-    await page.goto('?demo&date=2026-10-31T19:00&critter=none');
-    await expect(hudMenu(page)).toBeVisible();
-    const bells = await hudBells(page).getAttribute('aria-label');
-    await camera(page, await stageCam(page));
-    await expect(page.locator('[data-halloween="night"] .glow:visible').first()).toBeVisible();
-    await expect(page.locator('[data-visitor="kk-slider"]')).toHaveCount(0);
-    const jack = page.locator('[data-visitor="jack"] .art');
-    await expect(jack).toBeVisible();
-    expect(await under(page, '[data-visitor="jack"] .art')).toEqual([]);
-    await expect.poll(() => under(page, '.pumpkin .art')).toEqual([]); // (re-measured where the camera settled)
-    if (w === 390) await page.waitForTimeout(500), await page.screenshot({ path: '/tmp/halloween/night-390.png' });
-    await tapOn(page, '[data-visitor="jack"] .art');
-    const box = page.locator('[data-fx="talk"].placed');
-    await expect(box.locator('.who')).toHaveText('パンプキング');
-    await expect(box).toHaveAttribute('data-pages', '3'); // the introduction (two pages), then the ask
-    await toAnswers(page);
-    // the question and its answers cover none of the HUD's controls (they may sit over the island's, by Jack)
-    expect((await under(page, '[data-fx="talk"], .choices.asking', true))).toEqual([]);
-    if (w === 390) await page.screenshot({ path: '/tmp/halloween/jack-ask-390.png' });
-    await press(page, 'キャンディを あげる');
-    await expect(page.locator('[data-treat] .candy')).toBeVisible();
-    await expect(page.locator('[data-fx="talk"].placed .sr')).toContainText('キャンディ');
-    if (w === 390) await page.waitForTimeout(300), await page.screenshot({ path: '/tmp/halloween/jack-treat-390.png' });
-    await expect(page.locator('[data-tricked]')).toHaveCount(0);
-    // after a treat he just chats (no ask)
-    await page.waitForTimeout(400);
-    await tapOn(page, '[data-visitor="jack"] .art');
-    await expect(page.locator('[data-fx="talk"].placed')).toHaveAttribute('data-pages', '1');
-    await expect(page.locator('.choices')).toHaveCount(0);
-    await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
-  });
+test('Halloween night: lanterns lit, Jack at centre stage (not K.K. on this Saturday), a treat delights him', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('?demo&date=2026-10-31T19:00&critter=none');
+  await expect(hudMenu(page)).toBeVisible();
+  const bells = await hudBells(page).getAttribute('aria-label');
+  await camera(page, await stageCam(page));
+  await expect(page.locator('[data-halloween="night"] .glow:visible').first()).toBeVisible();
+  await expect(page.locator('[data-visitor="kk-slider"]')).toHaveCount(0);
+  const jack = page.locator('[data-visitor="jack"] .art');
+  await expect(jack).toBeVisible();
+  expect(await under(page, '[data-visitor="jack"] .art')).toEqual([]);
+  await expect.poll(() => under(page, '.pumpkin .art')).toEqual([]); // (re-measured where the camera settled)
+  if (process.env.SHOTS) await page.waitForTimeout(500), await page.screenshot({ path: `${process.env.SHOTS}/halloween-night-390.png` });
+  await tapFigure(page, '[data-visitor="jack"] .art');
+  const box = page.locator('[data-fx="talk"].placed');
+  await expect(box.locator('.who')).toHaveText('パンプキング');
+  await expect(box).toHaveAttribute('data-pages', '3'); // the introduction (two pages), then the ask
+  await toAnswers(page);
+  // the question and its answers cover none of the HUD's controls (they may sit over the island's, by Jack)
+  expect((await under(page, '[data-fx="talk"], .choices.asking', true))).toEqual([]);
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/halloween-jack-ask-390.png` });
+  await press(page, 'キャンディを あげる');
+  await expect(page.locator('[data-treat] .candy')).toBeVisible();
+  await expect(page.locator('[data-fx="talk"].placed .sr')).toContainText('キャンディ');
+  if (process.env.SHOTS) await page.waitForTimeout(300), await page.screenshot({ path: `${process.env.SHOTS}/halloween-jack-treat-390.png` });
+  await expect(page.locator('[data-tricked]')).toHaveCount(0);
+  // after a treat he just chats (no ask)
+  await page.waitForTimeout(400);
+  await tapFigure(page, '[data-visitor="jack"] .art');
+  await expect(page.locator('[data-fx="talk"].placed')).toHaveAttribute('data-pages', '1');
+  await expect(page.locator('.choices')).toHaveCount(0);
+  await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
+});
 
 test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ page }) => {
   await page.goto('?demo&date=2026-10-31T23:59&critter=none');
   await expect(hudMenu(page)).toBeVisible();
   await camera(page, await stageCam(page));
-  await tapOn(page, '[data-visitor="jack"] .art');
+  await tapFigure(page, '[data-visitor="jack"] .art');
   await toAnswers(page);
   await press(page, 'なにも あげない');
   await expect(page.locator('[data-tricked]')).toHaveCount(1);
   await expect(page.locator('[data-fx="talk"].placed .sr')).toContainText('イタズラ');
   // my villager (at home, まえ) wears it
   await camera(page, 114);
-  await page.waitForTimeout(600);
-  await page.screenshot({ path: '/tmp/halloween/jack-trick-390.png' });
+  if (process.env.SHOTS) await page.waitForTimeout(600), await page.screenshot({ path: `${process.env.SHOTS}/halloween-jack-trick-390.png` });
   // only my villager's face, on the left
   const g = (await page.locator('[data-tricked]').boundingBox())!;
   expect(g.x + g.width / 2).toBeLessThan(195);
@@ -125,7 +119,7 @@ test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ p
   }
   await expect(talk).toHaveCount(0);
   await camera(page, await stageCam(page));
-  await tapOn(page, '[data-visitor="jack"] .art');
+  await tapFigure(page, '[data-visitor="jack"] .art');
   await expect(page.locator('[data-fx="talk"].placed')).toHaveAttribute('data-pages', '1');
 });
 

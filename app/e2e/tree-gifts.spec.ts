@@ -4,7 +4,7 @@
 // in the tent (みつけた). Shared: the other phone sees it fall and, once opened, gone.
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
-import { geo, type Geo, plateOnly, quiet } from './island.ts';
+import { camTo, geo, type Geo, plateOnly, quiet } from './island.ts';
 import { fromMenu, hudBells, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -26,8 +26,7 @@ async function open(page: Page, q = '') {
   G = await geo(page);
   TREE = G.GIFT_TREES[0];
   TREE_Z = G.SCENERY.find((s) => s.id === TREE)!.z;
-  await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), TREE_Z - 114);
-  await page.waitForTimeout(400);
+  await camTo(page, TREE_Z - 114);
 }
 /** A point on a tree's leaves the finger reaches (its tap area's middle, else the nearest part nothing covers). */
 const leaves = (page: Page, id: string) =>
@@ -72,7 +71,7 @@ test('a holding tree’s shake drops its present; opened, it’s the day’s fur
   const gift = page.locator(`[data-tree-gift="${TREE}"]`);
   await expect(gift).toHaveCount(1, { timeout: 3000 });
   await expect(gift).not.toHaveClass(/fall/, { timeout: 3000 });
-  await page.screenshot({ path: '/tmp/tree-gifts/fallen-393.png' });
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/tree-gifts-fallen-393.png` });
   // shaken again, it drops no second one
   await page.waitForTimeout(1300);
   await shake(page, TREE);
@@ -82,7 +81,7 @@ test('a holding tree’s shake drops its present; opened, it’s the day’s fur
   await expect(page.locator('[data-fx="catch"]')).toContainText('てにいれた！', { timeout: 5000 });
   // only its plate, the furniture's icon on it: nothing over my villager's head
   await plateOnly(page, /\/finds\/items\//);
-  await page.screenshot({ path: '/tmp/tree-gifts/opened-393.png' });
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/tree-gifts-opened-393.png` });
   await expect(gift).toHaveCount(0);
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!); // never ベル
   const id = (await opened(page))!;
