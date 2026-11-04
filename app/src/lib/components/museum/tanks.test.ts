@@ -1,7 +1,7 @@
 // The aquarium's tanks and their swimmers (museum/tanks.ts, boids.ts): every fish, crab and prop all inside its glass.
 import { describe, expect, test } from 'vitest';
 import { Matrix4, Quaternion, Vector3 } from 'three';
-import { poseOf, spawn, stepSchool, stepWalker, swimBox, type Swimmer } from './boids.ts';
+import { bandOf, cruiseOf, poseOf, spawn, stepSchool, stepWalker, swimBox, type Swimmer } from './boids.ts';
 import { TANKS, backOf, bodyIn, openOf, propsOf, waterOf, type Box, type Tank } from './tanks.ts';
 import { FISH_IDS, WALKERS, tankOf } from './species.ts';
 import { ENTRANCE, FISH_WING, navOf, walkPath } from './plan.ts';
@@ -16,16 +16,16 @@ const inside = (b: Box, p: readonly number[], e = 1e-6) =>
 function fishIn(t: Tank, id: string, seed: number) {
   const b = modelBounds(`critters/fish/${id}`)!;
   const walker = !!WALKERS[id], body = bodyIn(t, b.min, b.max, walker), w = openOf(t);
-  const f = spawn(w, body.r, body.reach, 6, seed);
+  const f = spawn(w, body.r, body.reach, walker ? 3 : cruiseOf(body.r), seed, bandOf(id));
   if (walker) f.p[1] = w.y0 + body.half[1] * body.s;
   return { id, body, f, walker: WALKERS[id] };
 }
-/** Its model's box's corners where it's drawn (aquarium.ts write: turned, pitched, scaled about its middle), its tail's
- *  sway widening it either side. */
+/** Its model's box's corners where it's drawn (aquarium.ts write: turned, pitched, banked, scaled about its middle),
+ *  its tail's sway widening it either side. */
 const M4 = new Matrix4(), Q = new Quaternion(), Qp = new Quaternion(), V = new Vector3();
 function corners(x: ReturnType<typeof fishIn>): Vector3[] {
-  const [yaw, pitch] = poseOf(x.f), [hx, hy, hz] = x.body.half, sw = x.body.sway;
-  Q.setFromAxisAngle(new Vector3(0, 1, 0), yaw).multiply(Qp.setFromAxisAngle(new Vector3(1, 0, 0), pitch));
+  const [yaw, pitch, roll] = poseOf(x.f), [hx, hy, hz] = x.body.half, sw = x.body.sway;
+  Q.setFromAxisAngle(new Vector3(0, 1, 0), yaw).multiply(Qp.setFromAxisAngle(new Vector3(1, 0, 0), pitch)).multiply(Qp.setFromAxisAngle(new Vector3(0, 0, 1), roll));
   M4.compose(V.set(...x.f.p), Q, new Vector3().setScalar(x.body.s));
   const out: Vector3[] = [];
   for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) out.push(new Vector3(sx * (hx + sw), sy * hy, sz * hz).applyMatrix4(M4));
@@ -80,7 +80,9 @@ describe('the tanks', () => {
 });
 
 describe('the swimmers (boid-like), all of each inside its glass', () => {
-  test('every species in its tank, five at a time, swims for two minutes: every corner of its body (turned, pitched, its tail swaying) in the open water, clear of every prop', () => {
+  test('every species in its tank, five at a time, swims for two minutes: every corner of its body (turned, pitched, banked, its tail swaying) in the open water, clear of every prop', () => {
+    // (the misses collected, checked once: an expect a sample is too slow for CI's 5 s)
+    const out: string[] = [];
     for (const t of TANKS) {
       const w = openOf(t), ids = FISH_IDS.filter((id) => tankOf(id) === t.id && modelBounds(`critters/fish/${id}`));
       expect(ids.length, t.id).toBeGreaterThan(0);
@@ -91,11 +93,12 @@ describe('the swimmers (boid-like), all of each inside its glass', () => {
           stepSchool(swim.map((x) => x.f), w, 1 / 30, k / 30);
           for (const x of walk) stepWalker(x.f, w, 1 / 30, k / 30, x.walker === 'side', walk.map((y) => y.f));
           if (k % 23) continue;
-          for (const x of five) for (const c of corners(x)) expect(inside(w, c.toArray()), `${t.id} ${x.id} at ${k}: ${c.toArray().map((v) => v.toFixed(2))}`).toBe(true);
-          for (const x of swim) expect(Math.hypot(...x.f.v)).toBeLessThanOrEqual(x.f.speed * 1.31);
+          for (const x of five) for (const c of corners(x)) if (!inside(w, c.toArray())) out.push(`${t.id} ${x.id} at ${k}: ${c.toArray().map((v) => v.toFixed(2))}`);
+          for (const x of swim) if (!(Math.hypot(...x.f.v) <= x.f.speed * 1.31)) out.push(`${t.id} ${x.id} at ${k}: speed ${Math.hypot(...x.f.v).toFixed(2)}`);
         }
       }
     }
+    expect(out.slice(0, 10)).toEqual([]);
   });
   test('it moves (not stuck in a corner), mostly along its tank’s long side', () => {
     const w = waterOf(tank('sea'));
