@@ -483,7 +483,7 @@
   const counts = $derived(week.model ? tallyTotals(week.model.state.tallies) : null);
 </script>
 
-<main class="museum" bind:this={scene} data-museum>
+<main class="museum" bind:this={scene} data-museum data-exact-taps>
   <h1 class="sr-only">{t('museum.title')}</h1>
   <canvas bind:this={canvas} class="room" data-museum-room onpointerdown={onDown} onpointermove={onMove} onpointerup={onUp}
     onpointercancel={onCancel} onwheel={onWheel} aria-label={t('museum.room')}></canvas>

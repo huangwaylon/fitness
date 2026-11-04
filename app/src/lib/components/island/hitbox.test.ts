@@ -19,6 +19,16 @@ describe('tap boxes (hitbox.ts)', () => {
     expect(pick([front, near], 102, 100)?.id).toBe('near');
     expect(pick([back], 400, 400)).toBeNull();
   });
+  it('on water, a thing with a body takes the tap only on what it draws: the sea beside a shell is the sea’s', () => {
+    // a shell drawn 14 px wide at (100, 100): its thumb-size box reaches 22 px out, its body 7 (+3)
+    const shell = { box: grow({ left: 93, top: 95, width: 14, height: 10 }), body: { l: 90, t: 92, r: 110, b: 108 }, z: 200, id: 'shell' };
+    expect(pick([shell], 118, 100)?.id).toBe('shell'); // on the sand beside it: its margin
+    expect(pick([shell], 118, 100, true)).toBeNull(); // on the sea beside it: a cast
+    expect(pick([shell], 108, 104, true)?.id).toBe('shell'); // on it, its foot in the shallows
+    // (one with no body of its own keeps its box everywhere)
+    const plain = { box: shell.box, z: 200, id: 'plain' };
+    expect(pick([plain], 118, 100, true)?.id).toBe('plain');
+  });
 });
 
 describe('what a building hides (notBehind)', () => {

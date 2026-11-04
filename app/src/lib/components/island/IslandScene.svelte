@@ -1114,7 +1114,7 @@
 
   <div class="scroller" bind:this={scroller} data-world-scroller>
     <div class="track" style:height="{vh}px">
-      <div class="stage" style:height="{vh}px" style:--u="{s}px" style:--su="{s}px" style:--tod-filter={shade ? `url(#${fid})` : undefined}>
+      <div class="stage" data-exact-taps style:height="{vh}px" style:--u="{s}px" style:--su="{s}px" style:--tod-filter={shade ? `url(#${fid})` : undefined}>
         <svg class="defs" aria-hidden="true" width="0" height="0">
           <filter id={fid} color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values={shadeMatrix || '1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0'} /></filter>
         </svg>

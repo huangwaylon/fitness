@@ -886,7 +886,21 @@ in front of a building's area (a tree's present lying before it, a fish in the p
 (SceneTaps: hitbox.ts `notBehind`; one behind it only where some of it shows past the building's outline); a flower's `::after` grows it to 44px; what a module hit-tests itself (a shell, a fragment, the
 bottle, a dig spot, a mushroom, a present, a weed, the rock, a bug, the tape deck, the cake) is the box of what it
 draws (its img / svg: a node's anchor is a 0 × 0 point at its foot) grown to 44px (`hitOf`), the one in front (the
-smaller world z) when two overlap (`pick`). `?hit` draws them all ([Dev params](#dev-params)).
+smaller world z) when two overlap (`pick`); on water only on what it draws (3px round it: `bareOf`), its 44px margin
+over the water the water's, so a tap on the sea beside a dig spot by the back beach casts. `?hit` draws them all ([Dev params](#dev-params)).
+A touch decides by the point under the finger (`ui-state/exactTaps.ts`, `e2e/exact-taps.spec.ts`): WebKit's touch
+adjustment (Blink has one too) moves a touch's click, when the point under the finger is no clickable element of its
+own (the island's stage, a room's canvas), onto the nearest element within the finger's radius that answers clicks
+(a button, a click listener, `cursor: pointer`, a `:hover` / `:active` rule), its point moved onto it: at the camera's
+far stop the sea off the back beach lies high on the screen a few px from the shop's and the museum's doors, and a
+tap there opened the shop (or with the line out went through the door); in the tent and the museum a tap on the floor
+under the back button left the room. A touch's own pointer events are never adjusted, so inside `data-exact-taps`
+(the island's `.stage`, the tent's and the museum's `<main>`) a window capture listener, the first to see a click,
+drops a touch's click that was moved (another element, or its point a px or more off its pointerup's) and sends the
+click to what's under the finger at the finger's point, from inside the native click (its user activation, the
+sound's unlock); a click moved onto the island from the HUD goes back to the HUD the same way. A mouse's, a keyboard's
+or VoiceOver's click (no tap just before it), a drag's, and the HUD's own fat-finger help outside those places are as
+they were. The doors, the trees and the villagers stay buttons for VoiceOver and the keyboard.
 
 ### Balloon
 

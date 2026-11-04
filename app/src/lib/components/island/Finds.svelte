@@ -32,10 +32,10 @@
   import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
   import { addDays } from '#lib/time/dates.ts';
   import { recordFind, recordGoods } from '#lib/store/actions.ts';
-  import { sceneSfx, shownNow } from './sceneTaps.ts';
+  import { hitWorld, sceneSfx, shownNow } from './sceneTaps.ts';
   import { loadNames } from './catchLine.ts';
   import { guardsU, clearAt, place, stageGeo } from './placement.ts';
-  import { SHOWN, hitOf, hitSources, pick, type HitBox, type Seen } from './hitbox.ts';
+  import { SHOWN, bareOf, hitOf, hitSources, pick, type HitBox, type Seen } from './hitbox.ts';
   import { bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
   import { take, takenOn, wish as addWish, wishes } from './sceneDay.ts';
   import { fragmentDay, fragmentsDue } from './stars.ts';
@@ -425,11 +425,14 @@
 
   /** Every find lying in view and its tap box (hitbox.ts: what it draws, at least 44px), in front first on a tie; one
    *  washing in has none while it waits for its wave, unseen in the shallows (riding in, its box goes with it). */
-  function targets(): { box: HitBox | null; x: number; z: number; kind: string; go: () => void }[] {
+  function targets(): { box: HitBox | null; body: HitBox | null; x: number; z: number; kind: string; go: () => void }[] {
     const t = performance.now();
     const waiting = (uid: string) => t < (washes.get(uid)?.t0 ?? -Infinity);
-    const box = (uid: string, x: number, z: number) => (w.inView(x, z, 20) && !waiting(uid) ? hitOf(scene?.querySelector(`[data-find][data-uid="${uid}"]`)) : null);
-    const one = (kind: string, it: { uid: string; x: number; y: number }, go: () => void) => ({ box: box(it.uid, it.x, it.y), x: it.x, z: it.y, kind, go });
+    const el = (uid: string, x: number, z: number) => (w.inView(x, z, 20) && !waiting(uid) ? scene?.querySelector(`[data-find][data-uid="${uid}"]`) : null);
+    const one = (kind: string, it: { uid: string; x: number; y: number }, go: () => void) => {
+      const e = el(it.uid, it.x, it.y);
+      return { box: hitOf(e), body: bareOf(e), x: it.x, z: it.y, kind, go };
+    };
     return [
       ...shells.map((s) => one('shell', s, () => pickShell(s))),
       ...fragments.map((f) => one('fragment', f, () => pickFragment(f))),
@@ -445,10 +448,11 @@
     return () => void hitSources.delete(list);
   });
   /** A tap on the scene (client px), after the critters: true when a find took it (on its tap box; in front wins; only
-   *  what shows there: `seen`). */
+   *  what shows there: `seen`). On water, only on what it draws (the sea beside a shell is the sea's: a cast). */
   export function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
     if (!enabled()) return false;
-    const best = pick(targets().filter((t) => seen(t.x, t.z)), px, py);
+    const at = w.worldAtClient(px, py), k = at && hitWorld(at.x, at.z).kind, wet = k === 'sea' || k === 'pond' || k === 'river';
+    const best = pick(targets().filter((t) => seen(t.x, t.z)), px, py, wet);
     if (!best) return false;
     best.go();
     return true;

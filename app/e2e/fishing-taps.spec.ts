@@ -81,22 +81,11 @@ for (const layout of ['default', 'user'] as const)
       else if (side === 'right') expect(f.x).toBeGreaterThan(420);
       else expect(f.z).toBeGreaterThan(1400);
       // (zoomed in, the view panned to it: a side's sea shows only so, world3d/engine.ts xRoom.) Off the back beach the
-      // camera's far stop leaves the sea high on the screen, a few px past the beach's finds, which keep a tap there
-      // (SceneTaps' order), and the user's buildings by the back beach hide some of it from there ('behind a
-      // building'): the shadow wanders on, so a try where it is a little later, at most six. (The tap is the click a
-      // finger's makes, at that point: WebKit's touch adjustment moves a touch's click this near the horizon onto a
-      // door's button a few px off.)
-      let x = 0, y = 0;
-      for (let i = 0; i < 6; i++) {
-        if (i) await page.waitForTimeout(1500);
-        const at = await toTheWater(page, 'sea', 3).catch(() => null);
-        if (!at) continue;
-        [x, y] = at;
-        await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0 })), [x, y] as const);
-        const cast = await expect.poll(() => hooks(page, (h) => h.__fish.why()), { timeout: 1500 }).toBe('cast in the sea').then(() => true, () => false);
-        if (cast) break;
-      }
-      expect(await hooks(page, (h) => h.__fish.why())).toBe('cast in the sea');
+      // camera's far stop leaves the sea high on the screen beside the doors and the beach's finds: a touch there is
+      // the sea's (exact-taps.spec), a real tap.
+      const [x, y] = await toTheWater(page, 'sea', 3);
+      await page.touchscreen.tap(x, y);
+      await expect.poll(() => hooks(page, (h) => h.__fish.why())).toBe('cast in the sea');
       await expect.poll(async () => (await line(page))?.fish ?? null, { timeout: 8000 }).not.toBeNull();
       await reelOnBite(page, x, y, 15_000);
       await expect(page.locator('[data-fx="catch"]')).toBeVisible({ timeout: 5000 });
