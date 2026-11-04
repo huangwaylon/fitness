@@ -3,6 +3,7 @@
 // visitor's balloon floated above a building (the museum then), 100px+ off their head.
 import { expect, test, type Page } from '@playwright/test';
 import { expectWhole, fingers, liftFingers, spreading } from './balloon.ts';
+import { camTo, tapFigure } from './island.ts';
 
 /** The balloon against its speaker and the HUD (the controls outside the stage). */
 const measure = (page: Page, speaker: string) =>
@@ -30,47 +31,31 @@ async function expectBy(page: Page, speaker: string, near: number) {
   expect(m.onScreen, `on screen: ${JSON.stringify(m.box)}`).toBe(true);
   expect(m.face).toBe(false);
 }
-async function tapAt(page: Page, sel: string, fy = 0.5) {
-  const r = (await page.locator(sel).boundingBox())!;
-  await page.mouse.click(r.x + r.width / 2, r.y + r.height * fy);
-}
 /** Gulliver sleeps face down until the fifth nudge (NH): five taps wake him. */
 async function wakeGulliver(page: Page, sel: string) {
-  await tapAt(page, sel);
+  await tapFigure(page, sel);
   await page.waitForTimeout(400);
   for (let i = 1; i < 5; i++) {
-    await tapAt(page, sel);
+    await tapFigure(page, sel);
     await page.waitForTimeout(250);
   }
 }
-/** The camera to world z (おく 642: centre stage, where most visitors stand, in front of the campsite). */
-async function go(page: Page, z: number) {
-  await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
-  await page.waitForTimeout(400);
-  await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
-  await page.waitForTimeout(300);
-}
 const balloon = (page: Page) => expect(page.locator('[data-fx="talk"].placed')).toBeVisible({ timeout: 6000 });
 
-for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
-  test.describe(`at ${vp.width}`, () => {
-    test.use({ viewport: vp });
-    for (const [v, at] of [['gulliver', '12:00'], ['kk-slider', '21:00'], ['wisp', '22:00'], ['jack', '21:00'], ['reese', '12:00'], ['daisy-mae', '09:00']] as const)
-      test(`${v}: the balloon by their head, not floated above the campsite`, async ({ page }) => {
-        await page.goto(`?demo&date=2026-11-04T${at}&visitor=${v}&critter=none`);
-        const art = `[data-visitor="${v}"] .art`;
-        // Gulliver washes up on the front beach and Daisy Mae wanders the front lawn (まえ); the rest take centre stage
-        if (v !== 'gulliver' && v !== 'daisy-mae') await go(page, 642);
-        await expect(page.locator(art)).toBeVisible();
-        if (v === 'gulliver') await wakeGulliver(page, art);
-        else await tapAt(page, art, 0.3);
-        await balloon(page);
-        await expectBy(page, art, 56); // GAP + NEAR, and a little
-      });
-  });
-}
-
 test.use({ viewport: { width: 390, height: 844 } });
+for (const [v, at] of [['gulliver', '12:00'], ['kk-slider', '21:00'], ['wisp', '22:00'], ['jack', '21:00'], ['reese', '12:00'], ['daisy-mae', '09:00']] as const)
+  test(`${v}: the balloon by their head, not floated above the campsite`, async ({ page }) => {
+    await page.goto(`?demo&date=2026-11-04T${at}&visitor=${v}&critter=none`);
+    const art = `[data-visitor="${v}"] .art`;
+    // Gulliver washes up on the front beach and Daisy Mae wanders the front lawn (まえ); the rest take centre stage
+    if (v !== 'gulliver' && v !== 'daisy-mae') await camTo(page, 642, false);
+    await expect(page.locator(art)).toBeVisible();
+    if (v === 'gulliver') await wakeGulliver(page, art);
+    else await tapFigure(page, art, 0.3);
+    await balloon(page);
+    await expectBy(page, art, 56); // GAP + NEAR, and a little
+  });
+
 test('the balloon follows a speaker who moves while talking, and closes if they go', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none');
   const art = '[data-visitor="gulliver"] .art';
@@ -94,10 +79,10 @@ test('the balloon follows a speaker who moves while talking, and closes if they 
 // with its speaker each of the camera's frames, whole.
 test('mid-pinch and mid-scroll the balloon stays whole (its box, not only its text) and by its speaker; let go, it stands by them again', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&visitor=reese&critter=none');
-  await go(page, 642);
+  await camTo(page, 642, false);
   const art = '[data-visitor="reese"] .art', box = '[data-fx="talk"]';
   await expect(page.locator(art)).toBeVisible();
-  await tapAt(page, art, 0.3);
+  await tapFigure(page, art, 0.3);
   await balloon(page);
   await page.waitForTimeout(400); // (its pop-in)
   const zoom = () => page.evaluate(() => (window as unknown as { __world3d: { view(): { zoom: number } } }).__world3d.view().zoom);

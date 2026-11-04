@@ -2,7 +2,7 @@
 // while snow lies on the ground (Dec 11 – Feb 24), petals floating on the pond in cherry-blossom week (Apr 1–10)
 // and maple leaves in maple week (Nov 16–25); none of it on an ordinary day.
 import { expect, test, type Page } from '@playwright/test';
-import { geo, is3d, oku, w3 } from './island.ts';
+import { camTo, geo, is3d, oku, w3 } from './island.ts';
 import { hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -11,15 +11,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 async function open(page: Page, date: string) {
   await page.goto(`?demo&date=${date}&weather=clear`);
   await expect(hudMenu(page)).toBeVisible();
-  await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world);
-  const cam = await oku(page);
-  // (again until it holds: the scene may still re-fit its camera as it settles in)
-  await expect.poll(async () => {
-    await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), cam);
-    await page.waitForTimeout(250);
-    return page.evaluate((z) => Math.abs((window as unknown as { __world: { cam(): number } }).__world.cam() - z), cam);
-  }, { timeout: 5000 }).toBeLessThan(1.5); // (WebKit scrolls by whole px: within a px of it)
-  await page.waitForTimeout(250);
+  await camTo(page, await oku(page), false);
 }
 
 test('snow on the campsite’s tent in winter only', async ({ page }) => {

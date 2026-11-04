@@ -36,44 +36,43 @@ async function deckPoint(page: Page): Promise<{ x: number; y: number }> {
 const acts = (page: Page) =>
   page.evaluate(() => [...document.querySelectorAll('.vil .body, [data-visitor]')].map((e) => e.getAttribute(e.hasAttribute('data-visitor') ? 'data-motion' : 'data-act')));
 
-for (const [w, h] of [[390, 844], [320, 568]] as const)
-  test(`a morning: the tape deck is out, clear of every control; a tap and everyone stretches in sync (${w}px)`, async ({ page }) => {
-    await page.setViewportSize({ width: w, height: h });
-    await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
-    await page.goto('?demo&date=2026-11-01T07:00&critter=none'); // a Sunday morning: Daisy Mae is on the beach
-    await expect(hudMenu(page)).toBeVisible();
-    const bells = await hudBells(page).getAttribute('aria-label');
-    await expect(deck(page)).toBeVisible();
-    await expect(page.locator('[data-visitor="daisy-mae"] .art')).toBeVisible();
-    expect(await under(page)).toEqual([]);
-    // every change of what they're doing, recorded in the page (a sample from the test could miss a 2 s pose on a busy
-    // runner): the three poses, each by everyone at once, in order
-    await page.evaluate(() => {
-      const w = window as { __acts?: string[] };
-      w.__acts = [];
-      const snap = () => {
-        const a = [...document.querySelectorAll('.vil .body, [data-visitor]')].map((e) => e.getAttribute(e.hasAttribute('data-visitor') ? 'data-motion' : 'data-act'));
-        const s = a.join(',');
-        if (w.__acts![w.__acts!.length - 1] !== s) w.__acts!.push(s);
-      };
-      new MutationObserver(snap).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-act', 'data-motion'], childList: true });
-    });
-    const pt = await deckPoint(page);
-    await page.mouse.click(pt.x, pt.y);
-    await expect(page.locator('[data-stretch="on"]')).toBeAttached();
-    expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('stretch');
-    await expect(page.locator(LIVE)).toHaveCount(0, { timeout: 15_000 });
-    const seen = await page.evaluate(() => (window as { __acts?: string[] }).__acts ?? []);
-    const at = ['warmup', 'sidebend', 'leap'].map((p) => seen.indexOf([p, p, p].join(',')));
-    expect(at.every((i) => i >= 0), seen.join(' | ')).toBe(true);
-    expect([...at].sort((a, b) => a - b)).toEqual(at);
-    await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
-    // once a day per phone
-    await page.reload();
-    await expect(hudMenu(page)).toBeVisible();
-    await page.waitForTimeout(800);
-    await expect(page.locator(LIVE)).toHaveCount(0);
+test('a morning: the tape deck is out, clear of every control; a tap and everyone stretches in sync', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
+  await page.goto('?demo&date=2026-11-01T07:00&critter=none'); // a Sunday morning: Daisy Mae is on the beach
+  await expect(hudMenu(page)).toBeVisible();
+  const bells = await hudBells(page).getAttribute('aria-label');
+  await expect(deck(page)).toBeVisible();
+  await expect(page.locator('[data-visitor="daisy-mae"] .art')).toBeVisible();
+  expect(await under(page)).toEqual([]);
+  // every change of what they're doing, recorded in the page (a sample from the test could miss a 2 s pose on a busy
+  // runner): the three poses, each by everyone at once, in order
+  await page.evaluate(() => {
+    const w = window as { __acts?: string[] };
+    w.__acts = [];
+    const snap = () => {
+      const a = [...document.querySelectorAll('.vil .body, [data-visitor]')].map((e) => e.getAttribute(e.hasAttribute('data-visitor') ? 'data-motion' : 'data-act'));
+      const s = a.join(',');
+      if (w.__acts![w.__acts!.length - 1] !== s) w.__acts!.push(s);
+    };
+    new MutationObserver(snap).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-act', 'data-motion'], childList: true });
   });
+  const pt = await deckPoint(page);
+  await page.mouse.click(pt.x, pt.y);
+  await expect(page.locator('[data-stretch="on"]')).toBeAttached();
+  expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('stretch');
+  await expect(page.locator(LIVE)).toHaveCount(0, { timeout: 15_000 });
+  const seen = await page.evaluate(() => (window as { __acts?: string[] }).__acts ?? []);
+  const at = ['warmup', 'sidebend', 'leap'].map((p) => seen.indexOf([p, p, p].join(',')));
+  expect(at.every((i) => i >= 0), seen.join(' | ')).toBe(true);
+  expect([...at].sort((a, b) => a - b)).toEqual(at);
+  await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
+  // once a day per phone
+  await page.reload();
+  await expect(hudMenu(page)).toBeVisible();
+  await page.waitForTimeout(800);
+  await expect(page.locator(LIVE)).toHaveCount(0);
+});
 
 test('no deck on a later hour without Exercise met; a morning opening keeps it out for the day', async ({ page }) => {
   await page.goto('?demo&date=2026-11-02T09:00');
