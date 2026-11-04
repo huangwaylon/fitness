@@ -1315,7 +1315,7 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
 - **The curator** (`curator.ts`, `lines.ts`): フータ (Blathers) behind his desk is the villagers' skinned model
   (villagers3d/blathers.glb: NH's skeleton; NH's files have no clips), posed on his bones every frame by curator.ts
   `mind()`: breathing (his chest, a little bob), an owl's quick glances about with now and then a curious tilt, his
-  blinks, a wing gesture every 5–12 s (a ruffle, a wing to his chin in thought, a stretch); with my villager in the hall
+  blinks, a wing gesture every 5–12 s (a ruffle, a wing raised to his cheek in thought, a stretch); with my villager in the hall
   in front of him he watches it. Alone for half a minute or so he nods off on his feet (a yawn, his head drooping to one
   side, eyes shut, slow breaths, the little nod as he catches himself) and wakes with a start when my villager comes up
   or taps him. A tap perks him up (eyes wide, a hop, his tufts up) and is his line in NH's balloon (island/Talk.svelte,
@@ -1324,7 +1324,11 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   his beak moving while it types, till it closes; my villager turns to him. The cost: while he's on screen the hall
   draws at the exhibits' 30 a second (his pose only, no allocation; the iOS Simulator, iPhone 16: 29.9 frames a second,
   ~1 ms a frame, 96 draw calls, Safari's WebContent and GPU processes ~3.5 % of a core each); off screen he's not stepped
-  and asks for no frame.
+  and asks for no frame. Every joint he poses keeps to its natural range (curator.ts `RANGE`; curator.test holds every
+  frame of every mood to it, and poses his model in node: no vertex flung off, no edge stretched, no wing edge-on):
+  his wings move in their own plane (raised, the elbow bent up) with a little forward swing at most, since swung
+  forward or folded they showed the camera their edge, a black needle; his head turns 0.4 at most (further, NH's brow
+  spots, the dotted V from his tufts to his beak, ran across a side-on face as a dotted line); his tufts −0.25 to 0.6.
 - **Who else is in:** the rooms' presence, the museum's own scope (`tent` with `sc: 'm'`, its points within the
   museum's ±320; live-protocol.ts): the others' villagers are here while they are, walking as they walk, and nowhere on
   the island meanwhile (store/where.svelte.ts `home` `M`). The guest comes in like anyone.
