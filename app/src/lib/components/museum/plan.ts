@@ -53,7 +53,27 @@ export const WALLS: readonly Wall[] = [
   w([FISH_WING.x0, HALL.z1], [FISH_WING.x0, FISH_WING.z1], WING_H)
 ];
 
-export const inRect = (r: Rect, x: number, z: number, pad = 0): boolean => x >= r.x0 + pad && x <= r.x1 - pad && z >= r.z0 + pad && z <= r.z1 - pad;
+/** How each end of a wall's slab meets the others (its thickness's square at a joint drawn by one slab only, so no two
+ *  slabs' faces ever share a plane): +1 it runs on over the joint's square (the joint's tallest, one running on in its
+ *  own line before a corner's, then the first), −1 it stops at the slab that does, 0 a free end (a door's, an
+ *  opening's: the wall stops at its point). */
+export function wallEnds(walls: readonly Wall[], i: number): [number, number] {
+  const at = (p: Pt) => walls.map((w, k) => ({ w, k })).filter(({ w }) => same(w.a, p) || same(w.b, p));
+  const dir = (w: Wall, p: Pt) => (same(w.a, p) ? [w.b[0] - w.a[0], w.b[1] - w.a[1]] : [w.a[0] - w.b[0], w.a[1] - w.b[1]]);
+  const end = (p: Pt): number => {
+    const here = at(p);
+    if (here.length < 2) return 0;
+    // (in its own line: another wall at the joint runs on the other way)
+    const through = (w: Wall) => here.some(({ w: o }) => o !== w && cross(dir(w, p), dir(o, p)) === 0);
+    const owner = [...here].sort((x, y) => y.w.h - x.w.h || +through(y.w) - +through(x.w) || x.k - y.k)[0];
+    return owner.k === i ? 1 : -1;
+  };
+  return [end(walls[i].a), end(walls[i].b)];
+}
+const same = (p: Pt, q: Pt) => p[0] === q[0] && p[1] === q[1];
+const cross = (u: number[], v: number[]) => u[0] * v[1] - u[1] * v[0];
+
+export const inRect =(r: Rect, x: number, z: number, pad = 0): boolean => x >= r.x0 + pad && x <= r.x1 - pad && z >= r.z0 + pad && z <= r.z1 - pad;
 /** The room a point is in (null: outside, or in a wall). */
 export function roomAt(x: number, z: number): Wing | null {
   if (inRect(HALL, x, z)) return 'hall';

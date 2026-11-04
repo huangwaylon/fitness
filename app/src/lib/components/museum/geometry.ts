@@ -1,6 +1,6 @@
 // A catch's model as the museum draws it (aquarium.ts, garden.ts): its mesh as plain floats in its own space; and the
 // wings' static pieces batched.
-import { BufferGeometry, Float32BufferAttribute, Mesh, type Material, type Matrix4, type Object3D } from 'three';
+import { BoxGeometry, BufferGeometry, Float32BufferAttribute, Mesh, type Material, type Matrix4, type Object3D } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /** A model's mesh as plain floats in its model's space: gltfpack quantises a GLB's positions, normals and uvs (their
@@ -44,4 +44,25 @@ export function batcher() {
       return out;
     }
   };
+}
+
+/** A box without some of its faces (a glass case's floor: the soil's top is there): BoxGeometry's faces, in its order. */
+export function openBox(w: number, h: number, d: number, without: readonly ('+x' | '-x' | '+y' | '-y' | '+z' | '-z')[]): BufferGeometry {
+  const g = new BoxGeometry(w, h, d), faces = ['+x', '-x', '+y', '-y', '+z', '-z'] as const, idx = g.index!.array;
+  const keep: number[] = [];
+  faces.forEach((f, i) => {
+    if (!without.includes(f)) for (let k = i * 6; k < i * 6 + 6; k++) keep.push(idx[k]);
+  });
+  g.setIndex(keep);
+  g.clearGroups();
+  return g;
+}
+
+/** A flat thing lying on another (a carpet on the floor, the medallion on the carpets): drawn `layer` steps over it in
+ *  depth (its own lift a hair, too small for the depth buffer at a slant), so the two never fight. */
+export function decal<T extends Material>(m: T, layer: number): T {
+  m.polygonOffset = true;
+  m.polygonOffsetFactor = -layer;
+  m.polygonOffsetUnits = -4 * layer;
+  return m;
 }

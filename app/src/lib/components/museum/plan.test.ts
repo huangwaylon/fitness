@@ -1,6 +1,6 @@
 // The museum's plan (museum/plan.ts): its rooms, its walls and its walk.
 import { describe, expect, test } from 'vitest';
-import { BUG_WING, ENTRANCE, FISH_WING, HALL, OPENING, WALLS, nearestOpen, navOf, roomAt, walkPath, walkable, wingAt, type Pt } from './plan.ts';
+import { BUG_WING, ENTRANCE, FISH_WING, HALL, OPENING, WALLS, nearestOpen, navOf, roomAt, walkPath, walkable, wallEnds, wingAt, type Pt } from './plan.ts';
 
 const g = navOf();
 const len = (from: Pt, pts: Pt[]) => pts.reduce((a, p, i) => a + Math.hypot(p[0] - (i ? pts[i - 1][0] : from[0]), p[1] - (i ? pts[i - 1][1] : from[1])), 0);
@@ -21,6 +21,25 @@ describe('the museum’s rooms', () => {
     const covered = (z: number) => side.some((w) => z > Math.min(w.a[1], w.b[1]) && z < Math.max(w.a[1], w.b[1]));
     expect(covered((OPENING.z0 + OPENING.z1) / 2)).toBe(false);
     expect(covered(-30)).toBe(true);
+  });
+  test('no two wall slabs overlap (their faces would share a plane and fight): each joint’s square is one slab’s', () => {
+    const T = 3;
+    const slab = (i: number) => {
+      const w = WALLS[i], [e0, e1] = wallEnds(WALLS, i), ux = Math.sign(w.b[0] - w.a[0]), uz = Math.sign(w.b[1] - w.a[1]);
+      const a = [w.a[0] - ux * e0 * (T / 2), w.a[1] - uz * e0 * (T / 2)], b = [w.b[0] + ux * e1 * (T / 2), w.b[1] + uz * e1 * (T / 2)];
+      return { x0: Math.min(a[0], b[0]) - (uz ? T / 2 : 0), x1: Math.max(a[0], b[0]) + (uz ? T / 2 : 0), z0: Math.min(a[1], b[1]) - (ux ? T / 2 : 0), z1: Math.max(a[1], b[1]) + (ux ? T / 2 : 0) };
+    };
+    const slabs = WALLS.map((_, i) => slab(i));
+    for (let i = 0; i < slabs.length; i++)
+      for (let k = i + 1; k < slabs.length; k++) {
+        const p = slabs[i], q = slabs[k];
+        expect(Math.min(p.x1, q.x1) - Math.max(p.x0, q.x0) <= 0 || Math.min(p.z1, q.z1) - Math.max(p.z0, q.z0) <= 0, `walls ${i} and ${k}`).toBe(true);
+      }
+    // the joints closed: the hall's back corner is the hall's side wall's (the taller, running on), the door's ends free
+    expect(wallEnds(WALLS, 3)[0]).toBe(1);
+    expect(wallEnds(WALLS, 0)[1]).toBe(-1);
+    expect(wallEnds(WALLS, 10)[0]).toBe(-1);
+    expect(wallEnds(WALLS, 1)[1]).toBe(0);
   });
 });
 

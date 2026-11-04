@@ -1208,6 +1208,13 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   bug wing to the left (こんちゅう), the aquarium to the right (さかな), each through an opening in the hall's side wall.
   NH's own museum floors and walls (scripts/world3d-models.ts `--museum`: static/room/museum/tex/), lit warm; a little
   dimmer at night.
+- **No surfaces fighting:** no two faces share a plane. The walls' slabs meet at each joint with one running over its
+  square (the tallest, the one in its own line first) and the others stopping at it (plan.ts wallEnds), the cornice the
+  same; what lies flat on another (the carpets, the medallion, the doormat, the shadows, the garden's paths, soil and
+  pond, a tank's caustics) is drawn a layer over it in depth (geometry.ts decal: polygonOffset); the glass of the tanks
+  and the cases is open below (its floor the sand's or the soil's top); the garden's paths one mesh in the world's
+  tiling, its pieces never overlapping. The depth range is the museum's only: the near plane just over its tallest top
+  (the cornice), the far one past its farthest corner (at the default view ~40× the precision of a fixed near of 4).
 - **Like the rooms:** a tap on the floor walks my villager there (plan.ts walkPath: a half-tile grid, A* with its corners
   pulled straight, round the walls and what stands on the floor); a drag turns the camera, a pinch zooms, ⌂ puts it
   back; the camera is NH's room view following my villager through the rooms (kept over the floors near the door), the
