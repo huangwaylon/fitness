@@ -8,8 +8,8 @@
 // not drawn), days (DAY_H sim hours a cycle, fast-forwarded: the visitors coming and going), idle (IDLE_MS of real
 // time; DWELL: ms in a room, default 1500), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells). Inside the museum: eye (the eye
 // button on, off), bench (sit on a bench, a tap on the floor), curator (IDLE_MS there), hours (the aquarium's hour on x3).
-// --snap: heap snapshots at cycle SNAP_AT (default 3) and the end, diffed by constructor; --path=<name>: the retainer
-// paths of the first PATHS nodes so named (=<name>: exactly). Read handles: the probe never keeps one (a JSHandle holds what it points at).
+// --snap: heap snapshots at cycle SNAP_AT (default 3; 0: none, the end's whole heap) and the end, diffed by constructor; --path=<name>: the retainer
+// paths of the first PATHS nodes so named (=<name>: exactly) new since the first snapshot. Read handles: the probe never keeps one (a JSHandle holds what it points at).
 import { chromium, webkit, devices, type Page, type CDPSession } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
 import { BUG_IDS, FISH_IDS } from '../src/lib/components/museum/species.ts';
@@ -88,6 +88,7 @@ async function measure(label: string) {
   console.log(JSON.stringify(row));
   return { row, ls: p.ls };
 }
+let seenIds: Set<number> | null = null;
 async function snapshot(): Promise<Map<string, [number, number]>> {
   if (!cdp) return new Map();
   await gc();
@@ -102,6 +103,9 @@ async function snapshot(): Promise<Map<string, [number, number]>> {
   const types = s.snapshot.meta.node_types[0] as string[];
   const PATH = process.argv.find((a) => a.startsWith('--path='))?.slice(7);
   if (PATH) retainers(s, PATH);
+  // (each node's id, stable across a session's snapshots: --path's nodes only those new since the first)
+  const idi = f.indexOf('id');
+  if (!seenIds) { seenIds = new Set(); for (let i = 0; i < s.nodes.length; i += nf) seenIds.add(s.nodes[i + idi]); }
   const out = new Map<string, [number, number]>();
   for (let i = 0; i < s.nodes.length; i += nf) {
     const t = types[s.nodes[i + ti]];
@@ -140,6 +144,7 @@ function retainers(s: any, needle: string) {
   for (let n = 0; n < N && shown < Number(process.env.PATHS ?? 3); n++) {
     // (=name: that name exactly; a code or a string never)
     const t = ntypes[s.nodes[n * nf + ti]], name = String(s.strings[s.nodes[n * nf + ni]]);
+    if (seenIds?.has(s.nodes[n * nf + f.indexOf('id')])) continue;
     if (t === 'string' || t === 'code' || !(needle.startsWith('=') ? name === needle.slice(1) : name.includes(needle))) continue;
     shown++;
     console.log('--- retainer path of', nm(n), par[n] === -1 ? '(unreachable)' : '');
@@ -214,7 +219,7 @@ const rows = [];
 /** The fish flow's taps, by what each did (__fish.why()). */
 const fished: Record<string, number> = {};
 let fishAt: [number, number] | null = null;
-let snap0: Map<string, [number, number]> | null = null;
+let snap0: Map<string, [number, number]> | null = SNAP && process.env.SNAP_AT === '0' ? new Map() : null;
 const cycle = async () => {
   if (flow in ROOMS) {
     const [p, up] = ROOMS[flow];
