@@ -1,6 +1,7 @@
 // The memory-leak probe (docs/ops/testing.md "Memory"): N cycles of a flow in Chromium as an iPhone 13 (or WebKit as
 // an iPhone 15: --webkit, no CDP: no GC, no heap), after each a forced GC and the JS heap, DOM nodes, JS listeners, the
-// WebGL contexts still alive (WeakRefs), intervals, the window's/document's listeners and the island's renderer.info.
+// WebGL contexts still alive (WeakRefs), intervals, rAF callbacks a second, the window's/document's listeners and the
+// island's renderer.info.
 //   npm run leak -- <flow> [cycles] [--snap] [--path=<name>]     (the build served at E2E_PORT, default 4693)
 // flows: shop tent home museum fpv (the museum in first person) editor (the island ⇄ there), all (the four rooms), food
 // health zukan settings bells sheets (open, close), picker (いえを かえる; Q='&as=B'), vis (hidden ⇄ visible), sim (the
@@ -59,6 +60,11 @@ await ctx.addInitScript(() => {
   const si = setInterval, ci = clearInterval;
   W.setInterval = (...a: Parameters<typeof setInterval>) => { const id = si(...a) as unknown as number; ivs.add(id); return id; };
   W.clearInterval = (id: number) => { ivs.delete(id); ci(id); };
+  // rAF callbacks asked for (a loop left running: more a second, cycle after cycle)
+  let rafs = 0;
+  const raf0 = requestAnimationFrame;
+  W.requestAnimationFrame = (f: FrameRequestCallback) => (rafs++, raf0(f));
+  W.__rafs = () => rafs;
   W.__probe = () => ({ gl: gls.filter((r) => r.deref()).length, ivs: ivs.size, ls: Object.fromEntries([...net].filter(([, n]) => n > 0)) });
 });
 const page = await ctx.newPage();
@@ -84,7 +90,9 @@ async function measure(label: string) {
     const room = (W.__museum ?? W.__tent) as { stats?(): { mem?: number[] } } | undefined;
     return [st?.textures, st?.geometries, st?.fx, document.querySelectorAll('*').length].join('/') + (room?.stats?.()?.mem ? ` room ${room.stats().mem!.join('/')}` : '');
   }).catch(() => null);
-  const row = { label, heapMB: +((m.JSHeapUsedSize ?? 0) / 1e6).toFixed(2), nodes: m.Nodes, listeners: m.JSEventListeners, docs: m.Documents, gl: p.gl, ivs: p.ivs, ls: Object.values(p.ls).reduce((a, b) => a + b, 0), r3 };
+  // (rAF a second, over a real second: none under the sim's clock)
+  const rafs = SIM ? 0 : await page.evaluate(() => new Promise<number>((ok) => { const W = window as unknown as { __rafs(): number }, r0 = W.__rafs(); setTimeout(() => ok(W.__rafs() - r0), 1000); }));
+  const row = { label, rafs, heapMB: +((m.JSHeapUsedSize ?? 0) / 1e6).toFixed(2), nodes: m.Nodes, listeners: m.JSEventListeners, docs: m.Documents, gl: p.gl, ivs: p.ivs, ls: Object.values(p.ls).reduce((a, b) => a + b, 0), r3 };
   console.log(JSON.stringify(row));
   return { row, ls: p.ls };
 }
