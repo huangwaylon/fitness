@@ -88,6 +88,34 @@ describe('the shop in the record', () => {
     }
   });
 
+  it('a lower tally after a sale (a second phone’s, a queue that waited) takes nothing back: the piece stays bought', () => {
+    tally('A', { 'fish:whale-shark': 10, 'bug:moth': 2 });
+    expect(sell('A', 'fish:whale-shark', 10, 10 * 130)).toEqual({ ok: true });
+    expect(buy('A')).toEqual({ ok: true });
+    // the other phone's older tally of the day lands after: fewer sharks, a fish this one hadn't sent
+    expect(tally('A', { 'fish:whale-shark': 3, 'fish:koi': 1 })).toMatchObject({ ok: true });
+    const snap = () => (store.handle({ key: KEY_A, action: 'snapshot' }, 10) as unknown as { rows: { events: string[][] } }).rows.events;
+    const tallies = snap().filter((r) => r[3] === 'tally');
+    expect(tallies).toHaveLength(1); // still one row of the day: each entry's larger count
+    expect(JSON.parse(tallies[0][4])).toEqual({ date: D, counts: { 'fish:whale-shark': 10, 'bug:moth': 2, 'fish:koi': 1 } });
+    expect(buy('A')).toEqual(refused('owned')); // still A's
+    expect(sell('A', 'fish:whale-shark', 1, 130)).toEqual(refused('pocket short')); // all ten sold, none come back
+    expect(sell('A', 'fish:koi', 1, 40)).toEqual({ ok: true });
+    // the wallet: the sale's かいがら less the piece, and the koi's
+    const left = 10 * 130 - buyPrice(item)! + 40;
+    const dear = Object.keys(BUY).find((c) => stockOf(D).includes(c) && c !== item && buyPrice(c)! > left);
+    if (dear) expect(buy('A', dear)).toEqual(refused('wallet short'));
+    const cheap = stockOf(D).find((c) => c !== item && buyPrice(c)! <= left)!;
+    expect(buy('A', cheap)).toEqual({ ok: true });
+  });
+
+  it('an import keeps a tally’s larger counts too', () => {
+    store.import({ events: [['2026-11-04T01:00:00.000Z', 'A', 'i1', 'tally', JSON.stringify({ date: D, counts: { 'fish:koi': 5 } })]] });
+    store.import({ events: [['2026-11-04T01:05:00.000Z', 'A', 'i2', 'tally', JSON.stringify({ date: D, counts: { 'fish:koi': 2, 'bug:moth': 1 } })]] });
+    const rows = (store.handle({ key: KEY_A, action: 'snapshot' }, 10) as unknown as { rows: { events: string[][] } }).rows.events;
+    expect(rows.filter((r) => r[3] === 'tally').map((r) => JSON.parse(r[4]).counts)).toEqual([{ 'fish:koi': 5, 'bug:moth': 1 }]);
+  });
+
   it('each person’s own: the guest sells its catches and buys with its own かいがら', () => {
     tally('G', { 'fish:koi': 1 });
     tally('A', { 'fish:koi': 10 });

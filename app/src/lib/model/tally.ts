@@ -1,12 +1,13 @@
 // The ずかん's counts (docs/design.md "Zukan"): how many of each fish, bug, sea creature, fossil, shell, star fragment,
 // present and recipe we've had, in all and per person, from the `tally` rows (contract/tally.ts). Each row is one
 // person's whole tally for one Tokyo day and a later row for the same person and day replaces it, so a total is the
-// sum over people and days of each day's latest row. Pure; the economy never imports this (a find is worth no ベル).
+// sum over people and days of each day's row; a day's counts only grow, so the rows a cache holds of one day fold by
+// each entry's largest count (contract/tally.ts mergeTally: a stale lower row never takes a catch back). Pure; the economy never imports this (a find is worth no ベル).
 //
 // Cost: one pass over the rows (two years ≈ 1,460 rows of a few dozen keys each, well under a millisecond), memoised
 // per row list like model/finds.ts.
 import type { LocalDate, Who } from '#lib/types.ts';
-import { TALLY_MAX_KEYS, TALLY_MAX_N, type Tally } from '#lib/contract/tally.ts';
+import { TALLY_MAX_KEYS, TALLY_MAX_N, mergeTally, type Tally } from '#lib/contract/tally.ts';
 
 export interface TallyRow {
   /** Server time (ms): the later row of a person's day wins. */
@@ -24,15 +25,15 @@ export interface Totals {
   by: Readonly<Record<Who, ReadonlyMap<string, number>>>;
 }
 
-/** The latest row of each person's day (ties: the later in the list, the sheet's order). */
-export function latestByDay(rows: readonly TallyRow[]): TallyRow[] {
-  const latest = new Map<string, TallyRow>();
+/** Each person's day as one row: its latest `at`, each entry's largest count of the day's rows (mergeTally). */
+export function dayTallies(rows: readonly TallyRow[]): TallyRow[] {
+  const days = new Map<string, TallyRow>();
   for (const r of rows) {
     const k = `${r.person}|${r.date}`;
-    const prev = latest.get(k);
-    if (!prev || r.at >= prev.at) latest.set(k, r);
+    const prev = days.get(k);
+    days.set(k, prev ? { ...r, at: Math.max(prev.at, r.at), counts: mergeTally(prev.counts, r.counts) } : r);
   }
-  return [...latest.values()];
+  return [...days.values()];
 }
 
 const memo = new WeakMap<readonly TallyRow[], Totals>();
@@ -43,7 +44,7 @@ export function tallyTotals(rows: readonly TallyRow[]): Totals {
   if (cached) return cached;
   const all = new Map<string, number>();
   const by: Record<Who, Map<string, number>> = { A: new Map(), B: new Map(), G: new Map() };
-  for (const r of latestByDay(rows)) {
+  for (const r of dayTallies(rows)) {
     const mine = by[r.person];
     for (const k in r.counts) {
       const n = r.counts[k];

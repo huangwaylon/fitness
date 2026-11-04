@@ -5,9 +5,9 @@
 // - `at` is the record's clock: strictly increasing (max(now, last + 1 ms)), shared by the rows of one ingest.
 // - An event id is accepted once, forever (`ids`: a replaced event's id still dedupes a late retry).
 // - A slot (app model/record.ts eventSlot) holds one event: a later one of the same slot replaces it, so a tally or an
-//   island day is one row per person and day, a cosmetic pref one per person, a goal one per person and Tokyo day,
-//   a decoration one per item, a board post, a meal entry, a repeat, a recipe and a custom food one per id (each
-//   one's latest op).
+//   island day is one row per person and day (a tally's counts the larger of the two rows', entry by entry: they only
+//   grow), a cosmetic pref one per person, a goal one per person and Tokyo day, a decoration one per item, a board
+//   post, a meal entry, a repeat, a recipe and a custom food one per id (each one's latest op).
 // - A `sell` or a `buy` (the shop, contract/shop.ts) is kept only when the sender's own rows cover it: their tallies'
 //   catches less their sells (the pocket), their sells' かいがら less their buys (shopLedger), a piece bought once.
 // - `since` is answered from the `at` index. A row that arrived out of `at` order (only while Apps Script mirrored
@@ -30,7 +30,7 @@ import { notifySecret, notifySig, verifyNotify } from './notify.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { guestMayWrite, guestRows } from '../../app/src/lib/contract/guest.ts';
 import { buyOf, sellOf, shopLedger, shopRefusal, type ShopRow } from '../../app/src/lib/contract/shop.ts';
-import { isTally } from '../../app/src/lib/contract/tally.ts';
+import { isTally, mergeTally } from '../../app/src/lib/contract/tally.ts';
 import type { PersonId, Who } from '../../app/src/lib/types.ts';
 
 type Rec = Record<string, unknown>;
@@ -436,6 +436,9 @@ export class StoreCore {
         }
         kept = JSON.stringify(v);
       }
+      // a day's tally only grows: the slot keeps each entry's larger count of the held row and this one, so a stale
+      // lower send (a second phone's, a queue that waited) never takes back a catch a sale counted (contract/tally.ts)
+      if (type === 'tally') kept = this.tallyKept(me, data);
       const at = this.nextAt();
       if (drop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', `board|${drop}`);
       if (type === 'decor' && data.sc === 'r' && typeof data.at === 'number') this.dropVoided(data.at);
@@ -539,6 +542,15 @@ export class StoreCore {
     try { x = JSON.parse(r.data); } catch { x = null; }
     const op = FOOD_PARSE[type](x);
     return op ? { ...op, who: r.person } : null;
+  }
+
+  /** A `tally` of `who`'s as its slot keeps it (JSON): merged with the day's row held (contract/tally.ts mergeTally). */
+  private tallyKept(who: Who, d: Rec): string {
+    const held = this.io.sql.exec<{ data: string }>('SELECT data FROM events WHERE slot = ?', `tally|${who}|${String(d.date)}`).toArray()[0];
+    let h: unknown;
+    try { h = held ? JSON.parse(held.data) : null; } catch { h = null; }
+    if (!isRec(h) || !isTally(h) || !isTally(d)) return JSON.stringify(d);
+    return JSON.stringify({ date: d.date, counts: mergeTally(h.counts, d.counts) });
   }
 
   /** Why a sell or a buy of `me`'s isn't covered by their rows (contract/shop.ts shopRefusal), or null. The fold reads
@@ -664,6 +676,7 @@ export class StoreCore {
         sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id); // a later one of the slot is there already
         return 'had';
       }
+      if (type === 'tally') json = this.tallyKept(person, d); // with the larger counts of the row it replaces
     }
     this.put(id, at, person, type, json, slot, this.seeAt(at) ? arrived : null);
     return 'added';

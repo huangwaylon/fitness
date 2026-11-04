@@ -49,7 +49,7 @@ export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientN
   // The cached rows' state is reduced once per row set; the queued rows are folded over a copy of it (a tap
   // re-reduces nothing).
   const base = reduceRows(cache.rows, baseRev);
-  const state = extra.length ? (foldEvents(base, extra, rev) ?? reduce({ ...cache.rows, events: [...cache.rows.events, ...extra] }, rev)) : base;
+  const state = extra.length ? (foldEvents(base, extra, rev) ?? reduce({ ...cache.rows, events: [...cache.rows.events, ...extra] }, rev, new Set(extra.map((e) => e[2])))) : base;
   return { state, me: cache.me, now, from };
 }
 

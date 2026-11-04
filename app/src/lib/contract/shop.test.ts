@@ -89,15 +89,25 @@ describe('the ledger', () => {
     expect(l.shells).toBe(80 + 80 - 6);
     expect(l.owned).toEqual(['f3672']);
   });
-  it('refuses selling past the pocket, buying past かいがら, a piece twice; a refused row counts for nothing', () => {
+  const queued = (r: ShopRow): ShopRow => ({ ...r, queued: true });
+  it('refuses selling past the pocket, buying past かいがら, a piece twice; a refused queued row counts for nothing', () => {
     const l = shopLedger(caught, [sell('fish:koi', 3)]);
     expect(shopRefusal(l, caught, sell('fish:koi', 1))).toBe('pocket');
     expect(shopRefusal(l, caught, sell('fish:sea-bass', 1))).toBe('pocket');
     expect(shopRefusal(l, caught, buy('f3672', 121))).toBe('wallet');
     expect(shopRefusal(l, caught, buy('f3672', 120))).toBeNull();
-    const l2 = shopLedger(caught, [sell('fish:koi', 3), buy('f3672'), buy('f3672'), sell('fish:koi', 1), buy('f7047', 999)]);
+    const l2 = shopLedger(caught, [sell('fish:koi', 3), buy('f3672'), queued(buy('f3672')), queued(sell('fish:koi', 1)), queued(buy('f7047', 999))]);
     expect(l2.owned).toEqual(['f3672']);
     expect(l2.shells).toBe(120 - 6);
     expect(shopRefusal(l2, caught, buy('f3672'))).toBe('owned');
+  });
+  it('a kept row counts whatever the tallies say now: a lower tally never takes back a sale or a piece', () => {
+    // sold 3 koi, bought a piece with them; then the koi read as 1 (a stale tally)
+    const rows = [sell('fish:koi', 3), buy('f3672')];
+    const l = shopLedger(new Map([['fish:koi', 1]]), rows);
+    expect(l).toEqual(shopLedger(caught, rows));
+    expect(l.owned).toEqual(['f3672']);
+    expect(l.shells).toBe(120 - 6);
+    expect(shopLedger(caught, [buy('f3672'), buy('f3672')]).owned).toEqual(['f3672']); // still a piece once
   });
 });
