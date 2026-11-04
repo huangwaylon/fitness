@@ -1,6 +1,5 @@
-// Fishing, NH's (docs/design.md "Fishing"; island/fishing.ts): every tap on water answers. Within a cast of my villager
-// it casts there from where it stands; further, 「とどかない」 where the tap was (a boop, my villager turns to it). A
-// shadow near the float swims up, nibbles and bites, and a tap on the bite catches it, in every water on the default
+// Fishing, NH's (docs/design.md "Fishing"; island/fishing.ts): every tap on water answers. Any water, however far from
+// my villager (the user: "I want to be able to fish from anywhere"), it casts there from where it stands. A shadow near the float swims up, nibbles and bites, and a tap on the bite catches it, in every water on the default
 // island and on the user's (the record of 2026-11-03), at 30 and 60 frames a second. The user: "Sometimes I can't
 // fish: tapping with no response". What this guards: a tap right after a scroll (gestures.ts kept its swallow window
 // open: iOS sends no click after a drag, so the next real tap was eaten), a tap on water with no shadow near it (a
@@ -79,17 +78,17 @@ const waterPoints = (page: Page, step: number) => page.evaluate((step) => {
   return out;
 }, step);
 
-// Never silent: every tap on water does something you see. Each lands as a cast (then a tap reels it in) or says it's
-// too far, wherever my villager stands, whatever the zoom, on both islands.
+// Never silent: every tap on water casts (then a tap reels it in), near my villager or far, whatever the zoom, on both
+// islands: no water out of reach.
 for (const layout of ['default', 'user'] as const)
-  test(`${layout} island: every tap on water casts or says it's too far, and every tap with the line out reels it in`, async ({ page }) => {
+  test(`${layout} island: every tap on water casts, near or far, and every tap with the line out reels it in`, async ({ page }) => {
     test.slow();
     await open(page, { layout, fps: 30, q: '&critter=river' });
     await expect.poll(() => hooks(page, (h) => h.__fish.fish().length), { timeout: 15_000 }).toBeGreaterThan(0);
-    // my villager on the river's bank (some water near it, more out of reach)
+    // my villager on the river's bank (some water near it, the rest far off)
     await toTheWater(page, 'river');
     const { min, max } = await hooks(page, (h) => h.__world3d.zoomRange());
-    const said: Record<string, number> = {};
+    let casts = 0, far = 0;
     const camZ = await page.evaluate(() => (window as unknown as { __world3d: { view(): { camZ: number } } }).__world3d.view().camZ);
     for (const k of [min, max]) {
       const [mx] = await hooks(page, (h) => h.__world.mine());
@@ -104,15 +103,12 @@ for (const layout of ['default', 'user'] as const)
         // (a click, the tap's own path: WebKit moves a touch that comes within a double tap's time of the last one to
         // where that one was, and these come one after another)
         await page.mouse.click(x, y);
-        await expect.poll(async () => (await line(page)) !== null || (await hooks(page, (h) => h.__fish.why())) === 'too far', { message: `a tap at ${x},${y}: ${await hooks(page, (h) => h.__fish.why())}` }).toBe(true);
+        await expect.poll(async () => (await line(page)) !== null, { message: `a tap at ${x},${y}: ${await hooks(page, (h) => h.__fish.why())}` }).toBe(true);
         const w = await hooks(page, (h) => h.__fish.why());
-        said[w.replace(/ in the .*/, '')] = (said[w.replace(/ in the .*/, '')] ?? 0) + 1;
-        if (w === 'too far') {
-          await expect(page.locator('[data-fish-nope="far"]')).toBeVisible();
-          expect((await cues(page)).slice(n0)).toContain('boop');
-          continue;
-        }
         expect(w).toMatch(/^cast in the /);
+        const [mx, mz] = await hooks(page, (h) => h.__world.mine()), l = (await line(page))!;
+        far = Math.max(far, Math.hypot(l.x - mx, l.z - mz));
+        casts++;
         // the line out: the next tap anywhere is its reel
         await page.mouse.click(x, y);
         await expect.poll(() => line(page)).toBeNull();
@@ -120,24 +116,77 @@ for (const layout of ['default', 'user'] as const)
         expect((await cues(page)).slice(n0)).toContain('scene-reel');
       }
     }
-    expect(said.cast, 'casts').toBeGreaterThan(0);
+    expect(casts, 'casts').toBeGreaterThan(4);
+    // (some of them well past the old 190u reach)
+    expect(far).toBeGreaterThan(250);
   });
 
-test('too far: a tap on water out of my villager’s reach says so where it was, and nothing goes out', async ({ page }) => {
+/** Open ground at least `min` u from (x, z) (and at most `max`), nothing standing there. */
+const farGround = (page: Page, x: number, z: number, min: number, max: number) => page.evaluate(([x, z, min, max]) => {
+  const w = window as unknown as Hooks;
+  for (let r = min; r <= max; r += 20)
+    for (let a = 0; a < 36; a++) {
+      const px = Math.round(x + Math.cos((a / 36) * Math.PI * 2) * r), pz = Math.round(z + Math.sin((a / 36) * Math.PI * 2) * r);
+      if (pz > z && w.__world.free(px, pz, 0)) return [px, pz] as [number, number];
+    }
+  return null;
+}, [x, z, min, max] as const);
+
+// From anywhere (the user: "I want to be able to fish from anywhere. Get rid of the distance restriction"): my villager
+// far up the island, a tap on the sea's shadow casts from where it stands, the float on the water tapped, and the
+// whole of it plays out there: the shadow notices the float (near the float: my villager's distance doesn't matter),
+// nibbles, bites, and a tap catches it. The line runs from the rod's tip to the float, sagging by its length, clear of the island.
+test('a far cast: from across the island the float lands where the tap was, the line sags to it, and the shadow is caught', async ({ page }) => {
+  test.slow();
   await open(page, { q: '&critter=fish' });
   await expect.poll(() => hooks(page, (h) => h.__fish.fish().length), { timeout: 15_000 }).toBeGreaterThan(0);
   const f = (await hooks(page, (h) => h.__fish.fish()))[0];
-  // my villager well up the lawn, the sea's shadow in view
-  await page.evaluate(([x, z]) => (window as unknown as Hooks).__world.put(x, z), [f.x, f.z + 420] as const);
+  const spot = await farGround(page, f.x, f.z, 450, 900);
+  expect(spot, 'open ground far from the sea').not.toBeNull();
+  await page.evaluate(([x, z]) => (window as unknown as Hooks).__world.put(x, z), spot!);
+  await expect.poll(async () => { const [x, z] = await hooks(page, (h) => h.__world.mine()); return Math.hypot(x - spot![0], z - spot![1]); }).toBeLessThan(1);
+  // the camera back on the shadow (my villager may be off the screen), and a tap on open water by it
   await page.evaluate(([x, z]) => (window as unknown as Hooks).__world3d.go(z - 200, 1, x), [f.x, f.z] as const);
   await expect.poll(() => hooks(page, (h) => h.__world3d.camStill())).toBe(true);
   const [x, y] = await hooks(page, (h) => { const f = h.__fish.fish()[0]; return h.__world3d.client(f.x, f.z); });
+  const at = await hooks(page, (h) => { const f = h.__fish.fish()[0]; const [x, y] = h.__world3d.client(f.x, f.z); return h.__world3d.ground(x, y); });
   await page.touchscreen.tap(x, y);
-  await expect(page.locator('[data-fish-nope="far"]')).toBeVisible();
-  await expect(page.locator('[data-fish-nope="far"]')).toHaveText('とどかない');
-  expect(await hooks(page, (h) => [h.__fish.why(), h.__fish.casting()])).toEqual(['too far', false]);
-  expect(await cues(page)).toContain('boop');
-  await expect(page.locator('[data-fish-nope]')).toHaveCount(0, { timeout: 3000 });
+  await expect.poll(() => hooks(page, (h) => h.__fish.why())).toBe('cast in the sea');
+  const l = (await line(page))!;
+  const [mx, mz] = await hooks(page, (h) => h.__world.mine());
+  // from where it stood (no walk), the float on the water tapped, far off
+  expect(Math.hypot(mx - spot![0], mz - spot![1])).toBeLessThan(1);
+  expect(Math.hypot(l.x - at!.x, l.z - at!.z)).toBeLessThan(14);
+  expect(Math.hypot(l.x - mx, l.z - mz)).toBeGreaterThan(400);
+  // the line as drawn, landed: from the rod's tip to the float, every 16u or so, bent with the island, over the ground
+  await expect.poll(async () => (await line(page))?.phase).not.toBe('flying');
+  type L3 = { visible: boolean; bent: boolean; pts: number[][] } | null;
+  const drawn = () => page.evaluate(() => {
+    const w = window as unknown as { __world3d: { line(id?: string): L3; where(id: string): { x: number; y: number; z: number } | null; water(x: number, z: number): number[] }; __villagers3: { tip(s: string): number[] | null } };
+    return { line: w.__world3d.line(), tip: w.__villagers3.tip('mine'), float: w.__world3d.where('bobber'), bed: (w.__world3d.line()?.pts ?? []).map(([x, , z]) => Math.max(...w.__world3d.water(x, -z))) };
+  });
+  await expect.poll(async () => { const d = await drawn(); return !!d.line?.visible && !!d.tip && !!d.float; }, { timeout: 15_000 }).toBe(true);
+  const d = await drawn(), pts = d.line!.pts, bad: string[] = [];
+  const dist = (p: number[], q: number[]) => Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+  if (!d.line!.bent) bad.push('unbent');
+  // (the tip is read after the line's frame: the cast's swing settling, the fishing pose's breathing move it a little)
+  if (dist(pts[0], d.tip!) > 6) bad.push(`start ${pts[0]} vs tip ${d.tip}`);
+  if (dist(pts.at(-1)!, [d.float!.x, d.float!.y, d.float!.z]) > 3) bad.push(`end ${pts.at(-1)} vs float ${JSON.stringify(d.float)}`);
+  const len = dist(pts[0], pts.at(-1)!);
+  if (pts.length < Math.min(64, len / 16)) bad.push(`${pts.length} points over ${len.toFixed(0)}u`);
+  if (pts.some((p) => !p.every(Number.isFinite))) bad.push('NaN');
+  // a curve, not a straight laser: its middle off the straight line between its ends (its sag, or lifted clear)
+  const mid = pts[Math.floor(pts.length / 2)];
+  if (!(Math.abs(mid[1] - (pts[0][1] + pts.at(-1)![1]) / 2) > 2)) bad.push(`straight: ${mid[1]} over ${len}u`);
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/far-cast.png` });
+  // and never under the ground or the water it passes over (bar the ends: the float sits in the water)
+  pts.forEach((p, i) => { if (i > 2 && i < pts.length - 3 && p[1] < d.bed[i]) bad.push(`under the ground or the water at ${i}: ${p[1].toFixed(1)} < ${d.bed[i].toFixed(1)}`); });
+  expect(bad).toEqual([]);
+  // the shadow notices the float, bites, and a tap catches it (my villager still far off)
+  await expect.poll(async () => (await line(page))?.fish ?? null, { timeout: 10_000 }).not.toBeNull();
+  await reelOnBite(page, x, y, 15_000);
+  await expect(page.locator('[data-fx="catch"]')).toBeVisible({ timeout: 5000 });
+  expect(await hooks(page, (h) => h.__fish.why())).toBe('caught');
 });
 
 test('a tap on the water right after a scroll casts (no tap swallowed after a drag)', async ({ page }) => {
@@ -186,6 +235,26 @@ test('with the line out, a tap on my villager reels it in (NH’s A button), not
   await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
   await expect.poll(() => line(page)).toBeNull();
   expect(['reel', 'scared']).toContain(await hooks(page, (h) => h.__fish.why()));
+});
+
+// NH reels in to move: with the line out, a tap on the ground is the reel (my villager stays), the next one walks.
+test('with the line out, a tap on the ground reels it in where my villager stands; the next tap walks', async ({ page }) => {
+  await open(page, { q: '&critter=fish' });
+  await expect.poll(() => hooks(page, (h) => h.__fish.fish().length), { timeout: 15_000 }).toBeGreaterThan(0);
+  const [x, y] = await toTheWater(page, 'sea');
+  await page.touchscreen.tap(x, y);
+  await expect.poll(() => line(page)).not.toBeNull();
+  const [mx, mz] = await hooks(page, (h) => h.__world.mine());
+  const to = await lawnTap(page, mx + 100, mz + 50);
+  await page.touchscreen.tap(to.x, to.y);
+  await expect.poll(() => line(page)).toBeNull();
+  expect(['reel', 'scared']).toContain(await hooks(page, (h) => h.__fish.why()));
+  await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
+  expect(await hooks(page, (h) => h.__world.mine())).toEqual([mx, mz]);
+  // (past the reel's own moment: a tap on the ground walks)
+  await page.waitForTimeout(400);
+  await page.touchscreen.tap(to.x, to.y);
+  await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(1);
 });
 
 /** The default island with its painted pond grass and a pond put down where one fits (the user's island has only ponds

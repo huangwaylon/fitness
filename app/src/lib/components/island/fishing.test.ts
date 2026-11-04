@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { mulberry32 } from '#lib/random.ts';
 import {
-  BITE_WINDOW_MS, CAST_REACH_U, FLY_MS, LINE_REACH_U, NOTICE_U, aim, cast, due, plan, pull, step, type Around, type Line, type Step
+  BITE_WINDOW_MS, FLY_MS, NOTICE_U, cast, due, plan, pull, step, type Around, type Line, type Step
 } from './fishing.ts';
 
 const DAY = '2026-11-04';
-/** An island round the float: my villager at `me`, at most one shadow (`fish`, `d` u off) that notices it when `near`. */
-function around(o: { me?: { x: number; z: number; asleep?: boolean }; day?: string; fish?: string | null; d?: number; here?: boolean; seed?: number } = {}): Around {
+/** An island round the float: my villager dozing or not, at most one shadow (`fish`, `d` u off) that notices it. */
+function around(o: { asleep?: boolean; day?: string; fish?: string | null; d?: number; here?: boolean; seed?: number } = {}): Around {
   const fish = o.fish === undefined ? 'fish-sea-1' : o.fish;
   return {
-    me: o.me ?? { x: 0, z: 100 }, day: o.day ?? DAY, rand: mulberry32(o.seed ?? 7),
+    asleep: o.asleep, day: o.day ?? DAY, rand: mulberry32(o.seed ?? 7),
     notice: () => (fish ? { fish, d: o.d ?? 60 } : null),
     here: () => o.here ?? true
   };
@@ -27,13 +27,24 @@ function run(l: Line, t0: number, t1: number, w: Around, dt = 33): { line: Line 
   return { line: cur, steps };
 }
 
-describe('aiming a cast', () => {
-  it('water within reach casts; further is too far; no water is not a cast', () => {
-    expect(aim({ x: 0, z: CAST_REACH_U }, { x: 0, z: 0 })).toEqual({ ok: true });
-    expect(aim({ x: 0, z: CAST_REACH_U + 1 }, { x: 0, z: 0 })).toEqual({ ok: false, why: 'far' });
-    expect(aim(null, { x: 0, z: 0 })).toEqual({ ok: false, why: 'land' });
-    // (my villager keeps the line a little past where it can cast: it never drops the moment it lands)
-    expect(LINE_REACH_U).toBeGreaterThan(CAST_REACH_U);
+describe('a cast at any distance (the user: "I want to be able to fish from anywhere")', () => {
+  it('a float across the island lands, is noticed where it is, bites and is caught, the line never ending by itself', () => {
+    const far = { x: 2400, z: -1800, water: 'sea' as const }, asked: [number, number][] = [];
+    const w: Around = { ...around(), notice: (x, z) => (asked.push([x, z]), { fish: 'fish-sea-1', d: 60 }) };
+    let l: Line | null = cast(far, 0, DAY);
+    expect(l).toMatchObject({ phase: 'flying', x: far.x, z: far.z, water: 'sea' });
+    const evs: string[] = [];
+    for (let t = 0; l && l.phase !== 'bite' && t < 20_000; t += 33) {
+      const r = step(l, t, w);
+      evs.push(...r.steps.map((s) => s.ev));
+      l = r.line;
+    }
+    expect(l?.phase).toBe('bite');
+    expect(evs).not.toContain('off');
+    expect(evs.slice(0, 3)).toEqual(['land', 'notice', 'arrive']);
+    // (the shadows are looked for round the float, never round my villager)
+    expect(asked.every(([x, z]) => x === far.x && z === far.z)).toBe(true);
+    expect(pull(l!)).toEqual({ ev: 'catch', fish: 'fish-sea-1' });
   });
 });
 
@@ -164,15 +175,11 @@ describe('a tap on the line (NH’s A button), judged on the line as it shows', 
 
 describe('the line ends on its own (the float just goes): nothing left hanging', () => {
   const l = (): Line => step(out(0), FLY_MS, around({ fish: null })).line!;
-  it('my villager walked off out of its reach (a door, a seat); within reach it stays', () => {
-    expect(step(l(), 1000, around({ me: { x: 0, z: LINE_REACH_U - 1 } })).line).not.toBeNull();
-    expect(step(l(), 1000, around({ me: { x: 0, z: LINE_REACH_U + 1 } }))).toEqual({ line: null, steps: [{ ev: 'off', why: 'walked' }] });
-  });
   it('the day changed (the island’s day: its shadows are a new day’s)', () => {
     expect(step(l(), 1000, around({ day: '2026-11-05' }))).toEqual({ line: null, steps: [{ ev: 'off', why: 'day' }] });
   });
   it('my villager dozed off', () => {
-    expect(step(l(), 1000, around({ me: { x: 0, z: 100, asleep: true } }))).toEqual({ line: null, steps: [{ ev: 'off', why: 'asleep' }] });
+    expect(step(l(), 1000, around({ asleep: true }))).toEqual({ line: null, steps: [{ ev: 'off', why: 'asleep' }] });
   });
   it('the shadow at it went (another phone caught it, it left): the float waits on, and the next shadow can come', () => {
     let l: Line = step(out(0), FLY_MS, around()).line!;

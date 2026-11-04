@@ -863,8 +863,8 @@ picked up is gone on both, what a shake drops lies on both, each villager stands
 
 - **Fishing, seen by everyone** (`e2e/fish-sync.spec.ts`; the user: "we know who's actively trying to catch a
   fish"): each step of a line goes to the others' phones as it happens (`fish {ph, id?, pt?, from?, s?}`, presence only:
-  `cast`, `nibble`, `bite`, `reel`, `off`), so every phone shows it: their villager's rod (in a line's reach of the
-  float, else the line runs from the bank), the line out to their float where it landed, its bob, each nibble's dip and
+  `cast`, `nibble`, `bite`, `reel`, `off`), so every phone shows it: their villager's rod (however far off its
+  float), the line out to their float where it landed, its bob, each nibble's dip and
   ring, the bite's plunge and splash, the reel. The shadow it's cast at swims up to their float and is theirs while the
   line is out: a tap on it here casts nothing, a soft boop says so (Critters' `__fish.why()`: the partner's); a catch
   is their `catch` as ever (the plate), and the line clears. A phone that comes while a line is out hears its step
@@ -1140,24 +1140,26 @@ northern-hemisphere months; hours still hold.
 
 - **Fishing** (NH's: `island/fishing.ts`, my line's state machine, pure and unit-tested; Critters.svelte plays its
   steps; `critters.ts` waterAt / landing: the water is the island's own tiles, `world.ts` surfaceAt, the sea or a fresh
-  water by NH's locations, the one answer for casts, swims and the walk). A tap on water within `CAST_REACH_U` (190u) of
-  my villager casts there from where it stands, turning to it (smoothly, and it keeps facing the float; seated or lying
+  water by NH's locations, the one answer for casts, swims and the walk). A tap on any water, however far from my villager
+  (no reach: the user, 2026-11-04, "I want to be able to fish from anywhere"), casts there from where it stands, turning to it (smoothly, and it keeps facing the float; seated or lying
   it stays as it is, the rod pointed ahead); dozing, the cast wakes it; walking, it stops where it is and casts. The
   float lands on the water tapped, or the nearest within a finger's slack (12u: a narrow stream's bank, a shadow drawn
-  over the coast), drawn in off the bank. Water further off: my villager turns to it, a boop and 「とどかない」 there
-  (the water still rings); nothing goes out (NH: you cast from the bank). No walk to the water (the user, 2026-11-01:
+  over the coast), drawn in off the bank; the line as long as it takes (sagging by its length, clear of the island: docs/world3d-assets.md "Fishing"). No
+  walk to the water (the user, 2026-11-01:
   walking to a pond got in the way; tap the shore to go there). A canopy, a bush, a find or a visitor over the water
-  keeps its tap. A shadow (NH sizes 1–6) on that water within `NOTICE_U` (180u), with open water between, notices the
-  float, closes in over 2–3 darts, nibbles 1–4 times (each a small dip and a ring: it's coming), then bites: the float
+  keeps its tap. A shadow (NH sizes 1–6) on that water within `NOTICE_U` (180u) of the float (my villager's distance doesn't
+  matter), with open water between, notices the float, closes in over 2–3 darts, nibbles 1–4 times (each a small dip and a ring: it's coming), then bites: the float
   is yanked under with a splash and NH's 「！」 (on the 3D island over my villager's head: docs/world3d-assets.md
   "Fishing"). While the line is out any tap on the island but a building's door is the reel (NH's A button: my villager,
   a tree, the water alike): on the bite it catches the fish; earlier, with a fish at the float, it scares it off; with
   none, it just comes in. `BITE_WINDOW_MS` (1 s) from when the bite shows (a late timer never shortens it); missed, the
-  fish darts off and the float stays out, bobbing, for the next. The line ends by itself only when my villager walks
-  out of its reach (220u: a door, a seat), dozes off, the island is hidden or covered, or the day turns. Nobody near:
+  fish darts off and the float stays out, bobbing, for the next. Walking reels in first (NH: you reel in to move): a tap on
+  the ground with the line out is the reel, the next tap walks. The line ends by itself only when my villager dozes
+  off, goes through a door (the island hidden), the island is covered, or the day turns. Nobody near:
   the float waits as long as it takes; a shadow swimming by later notices it. 1 in 14 a boot, tire or can. Every tap on
   water answers (`e2e/fishing-taps.spec.ts`: each water on both islands at 30 and 60 frames a second; every water
-  point on screen casts or says it's too far; a tap right after a scroll).
+  point on screen casts, near or far; a cast from across the island caught, its line from the rod's tip to the float;
+  a tap right after a scroll).
   On the 3D island (`island/glide.ts`, `world3d/things.ts`) nothing pops: a shadow or a bug fades in (0.6 s, a slight
   scale-up) where it comes and out where it goes; a shadow moves by its eased glides, smooth from wherever it is,
   turning as it goes; the fish at my float turns to it, each nibble its nose bumping the float with the float's dip,

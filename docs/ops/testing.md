@@ -93,8 +93,8 @@ Most red runs so far were the spec, not the app. Before pushing a new or changed
 8. **Each test starts clean**: a fresh context, service workers blocked. Don't lean on another test's leftovers, and
    don't make one test do the work of three: a short test fails clearly and shards evenly.
 9. **Don't loosen an assertion to make it pass.** If the app is wrong, it's a bug: fix it or say so in the commit.
-10. **Fishing**: a cast reaches only from my villager's bank (island/fishing.ts CAST_REACH_U): `e2e/island.ts`
-    `toTheWater` puts it there and gives a water point to tap; the bite's window is short, so `reelOnBite` taps in the
+10. **Fishing**: any water casts, however far from my villager; `e2e/island.ts` `toTheWater` puts it on the bank near
+    the shadow (the near case) and gives a water point to tap; the bite's window is short, so `reelOnBite` taps in the
     page the moment the 「！」 shows. `__fish.why()` names what the last tap on water did; `__fish.line()` its phase.
 11. **Tap a pill only once it's at rest.** Playwright calls a moving thing "stable" while a staggered transition is in
     its delay, then the tap lands where it has moved off to (the menu's せってい sits over the ベル row 110 ms first):
