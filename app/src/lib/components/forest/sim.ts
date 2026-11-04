@@ -2,7 +2,7 @@
 // they go, their lunges and catches), the menace that forces them to back off, the items' claims, the traps, the
 // fallen trees, the wasp nests, the bank and the clock. Pure: step() takes the players as their phones last said and
 // returns the messages to send. Seconds and metres.
-import { HALF, LOG_L, N, SAFE, at, bearWalk, cellOf, inGrid, logCells, rng, segDist, sight, type ForestMap, type Item } from './map.ts';
+import { HALF, LOG_L, N, SAFE, VALUE, at, bearWalk, cellOf, inGrid, logCells, rng, segDist, sight, type ForestMap, type Item } from './map.ts';
 import type { BNet, BState, Msg, PNet } from './protocol.ts';
 import type { Who } from '#lib/sync/live-protocol.ts';
 
@@ -528,7 +528,7 @@ export function handle(w: World, m: Msg): Msg[] {
       const it = w.items.find((i) => i.id === m.id);
       if (!it || w.taken.has(m.id)) return [];
       w.taken.add(m.id);
-      return [{ k: 'picked', who: m.who, id: m.id, n: it.n ?? 1 }];
+      return [{ k: 'picked', who: m.who, id: m.id, n: it.n ?? VALUE[it.kind] ?? 1 }];
     }
     case 'drop': {
       if (m.n <= 0) return [];
