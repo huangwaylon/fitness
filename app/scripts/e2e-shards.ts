@@ -12,7 +12,8 @@
 //     how long each shard's tests ran, as Markdown (the run's summary).
 //   node scripts/e2e-shards.ts refresh   (npm run e2e:timings)
 //     e2e/timings.json from the newest green run on main (its `e2e-timings` artifact, the timings job's): commit it
-//     when the shards drift apart (the run's summary says how far). The plan reads the committed file, so every shard
+//     when the shards drift apart (the run's summary says how far), or after renaming or deleting tests: it keeps only
+//     the tests there are now (the fold never forgets a key). The plan reads the committed file, so every shard
 //     of a run has the same plan (a cache restored by each shard could differ between them).
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -103,7 +104,12 @@ if (cmd === 'timings') {
   const id = gh('run', 'list', '--workflow', 'pages.yml', '--branch', 'main', '--status', 'success', '--limit', '1', '--json', 'databaseId', '--jq', '.[0].databaseId');
   const dir = mkdtempSync(join(tmpdir(), 'e2e-timings-'));
   gh('run', 'download', id, '--name', 'e2e-timings', '--dir', dir);
-  writeFileSync('e2e/timings.json', readFileSync(join(dir, 'e2e-timings.json'), 'utf8'));
+  // (the fold keeps every key it ever saw: a renamed or deleted test's time stays unless pruned to today's tests)
+  const got = JSON.parse(readFileSync(join(dir, 'e2e-timings.json'), 'utf8')) as Record<string, number>;
   rmSync(dir, { recursive: true });
-  console.log(`e2e/timings.json from run ${id}`);
+  const json = execFileSync('npx', ['playwright', 'test', '--list', '--reporter=json', '--project=chromium'], { encoding: 'utf8', maxBuffer: 64 << 20 });
+  const now = new Set(tests(JSON.parse(json.slice(json.indexOf('{'))) as Report).map((t) => key(t.file, t.titles)));
+  const kept = Object.fromEntries(Object.entries(got).filter(([k]) => now.has(k)));
+  writeFileSync('e2e/timings.json', JSON.stringify(kept, null, 1) + '\n');
+  console.log(`e2e/timings.json from run ${id}: ${Object.keys(kept).length} tests (${Object.keys(got).length - Object.keys(kept).length} gone dropped, ${[...now].filter((k) => !(k in kept)).length} without a time yet)`);
 } else throw new Error('usage: e2e-shards.ts plan|timings|spread|refresh …');
