@@ -2,14 +2,17 @@
 // bench, a stool, a chair, the hammock or the beach chair walks my villager up to it, a step in front (layout/nav.ts
 // seatsOf: its seat's spot), and there it turns and sits or lies down on the piece's own seat (villager3d/seats3d.ts
 // anchorsOf, villager3d sitAt), one villager a seat (a bench two). A villager standing still on a seat's spot is on it
-// (world.ts seatAt), so every phone draws the same from where the walks leave it: the relay's walk is all it takes.
-// Pure but for the layout it's given.
+// (world.ts seatAt), so every phone draws the same from where the walks leave it: the relay's walk is all it takes,
+// and its end (when it sat) settles two phones taking one seat at the same moment (yieldsSeat). Pure but for the
+// layout it's given.
 import { anchorsOf, shapeOf, type Anchor } from '../villager3d/seats3d.ts';
 import { liesOn, seatsOf, yawOf } from '#lib/layout/nav.ts';
 import { objMid, type Layout, type Obj } from '#lib/layout/model.ts';
 import { kindDef } from '#lib/layout/catalog.ts';
 import MODELS from './models.json' with { type: 'json' };
 import { DECOR_U } from './world.ts';
+import { outsat } from '../tent/seats.ts';
+import type { Who } from '#lib/types.ts';
 
 type Pt = readonly [number, number];
 const MU = MODELS as unknown as Record<string, { mu: [number, number] }>;
@@ -79,4 +82,18 @@ export function seatPieceAt(l: Layout, x: number, z: number, pad = 8): Obj | nul
     if (Math.abs(x - mx) <= w / 2 + pad && Math.abs(z - mz) <= d / 2 + pad) return o;
   }
   return null;
+}
+
+/** When a villager's last walk (the relay's) sat it down, on the relay's clock: the walk's end, `s` + `ms` (both whole
+ *  ms as sent, so every phone has the same number; a field of its own would take the longest walk past the relay's
+ *  MAX_BYTES); null: unknown (an older phone's bare walk, only `to`). */
+export function sitTimeOf(w: { s?: number; ms?: number } | null | undefined): number | null {
+  return w?.s !== undefined && w.ms !== undefined ? w.s + w.ms : null;
+}
+
+/** Others on my seat with me (two phones took it at the same moment, each before it heard the other): whether mine
+ *  gets up. The earlier sit keeps it, an exact tie by who (tent/seats.ts outsat: the same rule on every phone, so only
+ *  one gets up); an unknown sit time (an older phone's walk) never outsits a known one, and two unknown both stay. */
+export function yieldsSeat(mine: { who: Who; s: number | null }, others: readonly { who: Who; s: number | null }[]): boolean {
+  return others.some((o) => o.s !== null && (mine.s === null || outsat({ s: mine.s, who: mine.who }, { s: o.s, who: o.who })));
 }
