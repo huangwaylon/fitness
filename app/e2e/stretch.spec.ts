@@ -118,17 +118,6 @@ test('the ベル ledger: a がんばり line under the day with each person\'s �
   if (process.env.SHOTS) await sheet(page).locator('.panel-body').screenshot({ path: `${process.env.SHOTS}/day.png` });
 });
 
-test('あそびかた: the がんばり rule and each goal\'s 1.5× target; the two prices', async ({ page }) => {
-  await open(page, '2026-11-03T12:00');
-  await fromMenu(page, 'settings');
-  await sheet(page).locator('[data-push=help]').click();
-  const howto = sheet(page).locator('.howto');
-  await expect(howto).toContainText('目標の 1.5ばいまで できたら、がんばりで もう +1 ベル。1日 2 ベルまで！');
-  await expect(howto.locator('.fruits small.st')).toHaveText(['がんばり 12,000歩', 'がんばり 900 kcal', 'がんばり 90分', 'がんばり 180分']); // the goals' one order (rules.ts GOALS_SHOWN: steps first)
-  await expect(howto).toContainText(/おやつは 40\sベル、外食は 70\sベル。/);
-  if (process.env.SHOTS) await howto.screenshot({ path: `${process.env.SHOTS}/howto.png` });
-});
-
 test.describe('at 320x568', () => {
   test.use({ viewport: { width: 320, height: 568 } });
   test('the capped popup fits on both trees', async ({ page }) => {

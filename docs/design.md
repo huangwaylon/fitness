@@ -154,9 +154,8 @@ scrolled where it was); ✕, the backdrop and Esc close the panel.
 **せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, grown out of the
 pill (Sheet's `pop`), title せってい: **むらびと** (my villager and よびな; かえる → the picker: 23 special characters
 and all 417 NH villagers, its head pinned over the scrolling grid), **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 /
-English), **きせつ** ([Seasonal preview](#seasonal-preview)), **てんき** (ほんもの / ゲーム: [Weather](#weather)), **フレームレート** (30 / 60: [Frame rate](#frame-rate)), **つうしん** (when each of us last synced; いま つうしん; not the guest's), **もようがえ** (one row with its はじめる;
-not the guest's) and **あそびかた** (くわしく → the guide: the goals, ふたりでぜんぶ, the treats, the Sunday recap, a
-protein hint of 1.6 g per kg a day). The picker and the guide push a level with ‹; ✕, the backdrop and Esc close it,
+English), **きせつ** ([Seasonal preview](#seasonal-preview)), **てんき** (ほんもの / ゲーム: [Weather](#weather)), **フレームレート** (30 / 60: [Frame rate](#frame-rate)), **つうしん** (when each of us last synced; いま つうしん; not the guest's), and **もようがえ** (one row with its
+はじめる; not the guest's). The picker pushes a level with ‹; ✕, the backdrop and Esc close it,
 and the next opening starts at its top. Its own chunk, loaded on the first tap.
 
 ### Kiroku
@@ -368,7 +367,7 @@ Lists follow Apple's ring order, Move, Exercise, Stand, then steps (`RING_FRUITS
 
 The Move and steps goals on a day are the last ones set on or before that Tokyo date (a change never re-prices an
 earlier day). Everything that reads a goal reads that day's: the ベル, the tree's popup, けんこう's goal
-line and goal days and あそびかた.
+line and goal days.
 
 **がんばり (stretch):** +1 more for each goal reached at 1.5× (`STRETCH.multiplier`): 🍐 1.5 × that day's Move goal,
 🍑 90 min, 🍒 180 min, 🍎 1.5 × that day's steps goal (12,000 for 8,000); at most **+2 a person a day** (`STRETCH.cap`, paid to the first in
@@ -986,7 +985,7 @@ NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)
   buys, 「ちょきんばこは ふたりの もの。」 in place of the shop, no ×; the ledger), the ずかん and
   けんこう's かつどう (whose data: either member; no からだ switch) with its goals read-only (no chip to tap). Never a からだ figure: no からだ switch, no weight or body card, no weight or body fat goal (its snapshot holds
   none: the record leaves them out). せってい: its villager and name (the same picker, its own prefs), the sound, the
-  language, きせつ and あそびかた; no もようがえ or つうしん, and a line saying it's visiting.
+  language and きせつ; no もようがえ or つうしん, and a line saying it's visiting.
 - **What it does:** walks, catches, digs, picks up and shakes like us (the shared world's claims, first wins), its
   finds and counts its own in the shared ずかん (each entry credited to its first finder, the guest's
   name with 「（おきゃくさん）」 once it has one of its own; per-person counts, and a row of who found how many of the page

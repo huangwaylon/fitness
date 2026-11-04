@@ -2,16 +2,15 @@
   // せってい (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
   // grown out of the button (Sheet's `pop`, as けんこう out of the dumbbell). One scroller: むらびと (かえる → the
   // picker), サウンド, ことば, きせつ (the seasonal preview), てんき (the island's: real or the game's), フレームレート, つうしん (not
-  // the guest's), もようがえ (one row: はじめる; not
-  // the guest's) and あそびかた (くわしく → the guide).
-  // The picker and the guide push a level with ‹; ✕, the backdrop and Esc close it, and the next opening starts at
+  // the guest's) and もようがえ (one row: はじめる; not
+  // the guest's).
+  // The picker pushes a level with ‹; ✕, the backdrop and Esc close it, and the next opening starts at
   // its top.
   import { tick } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import Avatar from '../characters/Avatar.svelte';
   import VillagerPicker from './VillagerPicker.svelte';
-  import HelpGuide from './HelpGuide.svelte';
   import SoundSection from './SoundSection.svelte';
   import LangSection from './LangSection.svelte';
   import SeasonSection from './SeasonSection.svelte';
@@ -29,8 +28,8 @@
 
   let { open = $bindable() }: { open: boolean } = $props();
 
-  /** A level of its own: the villager picker or the full guide. */
-  let push = $state<'villager' | 'help' | null>(null);
+  /** A level of its own: the villager picker. */
+  let push = $state<'villager' | null>(null);
   let body: HTMLElement | undefined = $state();
   let savedTop = 0;
 
@@ -42,7 +41,7 @@
   /** The guest's phone (docs/design.md "The guest"): no もようがえ, no つうしん. */
   const guest = $derived(isGuest(view));
 
-  async function go(to: 'villager' | 'help') {
+  async function go(to: 'villager') {
     savedTop = body?.scrollTop ?? 0;
     push = to;
     await tick();
@@ -80,8 +79,6 @@
   <div class="panel-body" class:fill={push === 'villager'} data-settings bind:this={body}>
     {#if push === 'villager' && view}
       <div class="page"><VillagerPicker {view} /></div>
-    {:else if push === 'help' && view}
-      <div class="page"><HelpGuide {view} /></div>
     {:else if view && me}
       <section class="sec" aria-labelledby="sec-villager">
         <h2 id="sec-villager" class="sec-label">{t('panel.villager')}</h2>
@@ -104,13 +101,6 @@
           <button type="button" class="btn small paper" data-decor-start data-sfx="open" onclick={() => ((ui.decorating = true), (open = false))}>{t('panel.decorStart')}</button>
         </div>
       {/if}
-      <section class="sec" aria-labelledby="sec-help">
-        <h2 id="sec-help" class="sec-label">{t('panel.help')}</h2>
-        <div class="card help">
-          <p>{t('panel.helpSummary')}</p>
-          <button type="button" class="btn small paper" data-push="help" data-sfx="page" onclick={() => go('help')}>{t('panel.more')}</button>
-        </div>
-      </section>
       {#if week.demo}<span class="demo">{t('demo.badge')}</span>{/if}
     {/if}
   </div>
@@ -140,9 +130,6 @@
   .sec { display: grid; gap: 8px; }
   .me .prl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
   .me .btn, .decor .btn { flex: none; }
-  .help { display: grid; gap: 10px; padding: 14px 16px; }
-  .help p { margin: 0; font-weight: 700; line-height: 1.5; }
-  .help .btn { justify-self: end; }
   .guest { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .demo { align-self: center; background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 10px; font: 700 var(--fs-s)/1 var(--font-ui); }
 

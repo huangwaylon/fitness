@@ -3,7 +3,7 @@
 import type { PersonId, RingFruit, ShopItemId } from '#lib/types.ts';
 
 /** The four ring fruits in display order, Apple's rings first: 🍐 Move, 🍑 Exercise, 🍒 Stand, then 🍎 steps. Every
- *  list of fruits (the tree, きろく, あそびかた) follows this, except けんこう and the tree's popup (steps first). */
+ *  list of fruits (the tree, きろく) follows this, except けんこう and the tree's popup (steps first). */
 export const RING_FRUITS = ['pear', 'peach', 'cherry', 'apple'] as const satisfies readonly RingFruit[];
 /** The order the four goals are shown in everywhere (the tree's popup, けんこう, the ledger, the guide): 🍎 steps first. */
 export const GOALS_SHOWN = ['apple', 'pear', 'peach', 'cherry'] as const satisfies readonly RingFruit[];
