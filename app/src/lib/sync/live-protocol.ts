@@ -165,7 +165,44 @@ export type ServerMsg =
   | { v: LiveV; kind: 'replay'; es: Relayed[]; t: number }
   | { v: LiveV; kind: 'presence'; who: Who; on: boolean; t: number }
   | ({ v: LiveV; kind: 'changed'; t: number } & Notice)
+  /** (v3, 2026-11) Tokyo's real sky by the hour (Wx): after the welcome, and to everyone when it changes. */
+  | ({ v: LiveV; kind: 'wx'; t: number } & Wx)
   | Relayed;
+
+/** The real sky's letters, one an hour (docs/design.md "Weather"): `c` clear, `o` cloudy, `r` rain, `h` heavy rain,
+ *  `s` snow. @public (relay/, sync/live.ts) */
+export const WX_SKIES = ['c', 'o', 'r', 'h', 's'] as const;
+/** @public (relay/) */
+export type WxSky = (typeof WX_SKIES)[number];
+/** Hours a timeline holds at most (the relay keeps 36; a little room for an older one). @public (relay/) */
+export const WX_MAX_HOURS = 48;
+/** Where a timeline came from: Open-Meteo (JMA's models), or a fixture put in by `/admin`. @public (relay/) */
+export const WX_SRCS = ['om', 'fx'] as const;
+
+/**
+ * Tokyo's sky by the hour, as the room keeps it and sends it (`wx`, ≤ ~150 bytes): `h0` the first hour (hours since the
+ * epoch, UTC), `s` a letter an hour from it (WX_SKIES), `fx` the hours (offsets into `s`) with fog, `at` when it was
+ * fetched (ms), `src` from where, `rev` its revision (bumped when the sky changes). @public (relay/, sync/live.ts)
+ */
+export interface Wx {
+  h0: number;
+  s: string;
+  fx?: number[];
+  at: number;
+  src: (typeof WX_SRCS)[number];
+  rev: number;
+}
+
+const WX_S = /^[corhs]{1,48}$/;
+/** A timeline's fields from `o` (known fields only), or null. @public (relay/, sync/live.ts) */
+export function wxOf(o: unknown): Wx | null {
+  if (!isObj(o) || !Number.isInteger(o.h0) || (o.h0 as number) <= 0 || (o.h0 as number) >= 1e7) return null;
+  if (typeof o.s !== 'string' || !WX_S.test(o.s) || !isTime(o.at) || !oneOf(WX_SRCS)(o.src) || !Number.isInteger(o.rev) || (o.rev as number) < 0 || (o.rev as number) >= 1e12) return null;
+  const n = o.s.length;
+  if (o.fx !== undefined && !(Array.isArray(o.fx) && o.fx.length <= n && o.fx.every((i) => Number.isInteger(i) && i >= 0 && i < n))) return null;
+  const fx = o.fx as number[] | undefined;
+  return { h0: o.h0 as number, s: o.s, ...(fx?.length ? { fx: [...fx] } : {}), at: o.at, src: o.src, rev: o.rev as number };
+}
 
 /** When each person's phone left the room (the relay's clock), as the welcome tells it. @public (relay/, sync/live.ts) */
 export type Gone = Partial<Record<Who, number>>;
@@ -509,6 +546,10 @@ export function parseServer(raw: unknown): ServerMsg | null {
     case 'changed': {
       const n = noticeOf(o);
       return n && { v: LIVE_V, kind: 'changed', ...n, t };
+    }
+    case 'wx': {
+      const w = wxOf(o);
+      return w && { v: LIVE_V, kind: 'wx', ...w, t };
     }
   }
   return relayedOf(o);
