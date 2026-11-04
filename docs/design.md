@@ -1363,6 +1363,11 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   is made ready while the hall is still (its textures up eight at a time, its programs compiled: engine.ts warm), so a
   wing's first sight is no hitch (walking into the aquarium: its longest frame ~100 → 36 ms); the cost, every wing's
   textures on the GPU whether visited or not (~300 small ones, a few MB).
+- **Never a blank frame:** a resize of the canvas's buffer (a drag's lighter pixel ratio, 2 → 1.5 and back; a new
+  size) clears it, and WebKit shows it cleared (the museum's dark) until the next draw, so it's resized only just before
+  a draw, in the same task (engine.ts draw; `museum.spec`'s "never shows blank"). Resized after a frame's draw, each
+  drag's start and end flashed black on the phone for 60–85 ms (iOS Simulator, a screen recording: 5 flashes in 6
+  drags → 0).
 - No music of its own: the app has no NH museum track (NH's museum is quiet ambience); the island's hour plays on.
 
 ### The shop
