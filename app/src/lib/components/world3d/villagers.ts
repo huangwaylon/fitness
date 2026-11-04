@@ -147,13 +147,14 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
   const ws = new Map<string, W>();
   /** The seats' anchors (one object a seat: villager3d sitAt keeps to the one it's on). */
   const seats = new Map<string, Anchor | null>();
+  let seatsRev = -1;
   const anchorAt = (s: VSpec): Anchor | null => {
     const name = seatAt(Math.round(s.x), Math.round(s.z));
     if (!name) return null;
-    // (on the layout, its seats move with it: keyed by its revision)
-    const key = `${name}@${site.rev}`;
-    if (!seats.has(key)) seats.set(key, layoutSeat(name, s.y) ?? islandSeat(name, s.y));
-    return seats.get(key)!;
+    // (on the layout, its seats move with it: worked out again on a new revision, the old ones let go of)
+    if (seatsRev !== site.rev) (seats.clear(), (seatsRev = site.rev));
+    if (!seats.has(name)) seats.set(name, layoutSeat(name, s.y) ?? islandSeat(name, s.y));
+    return seats.get(name)!;
   };
   let lastT = 0, liftL = 0.32, disposed = false;
   const headP = new V3(), aimP = new V3();
