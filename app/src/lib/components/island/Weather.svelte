@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { WET } from './weather.ts';
+  import { onDestroy, untrack } from 'svelte';
+  import { WET, type Sky } from './weather.ts';
   // The weather on the island (design.md "Weather"; the day's weather: weatherNow.svelte.ts, weather.ts).
-  // Two placements, each cheap: `sky` (after the sky, behind the island): the overcast over the sky, the rainbow after
+  // Two placements, each cheap: `sky` (after the sky, behind the island): the overcast over the sky (a cloudy day's at
+  // about half), the rainbow after
   // a downpour clears (16:00–17:00, brightest at half past, now and then double) and the aurora on a winter night;
   // `stage` (inside the stage, the whole viewport, fixed while the island scrolls under it: over the time-of-day tint
   // and every world thing, under the scenery taps and every control): the wet day's darker tint over the ground (from
@@ -9,11 +11,54 @@
   // snow (two tiled layers of soft flakes, slow) and the morning fog (a haze and two drifting banks), over sky and
   // ground. Screen space, never bent by the log. Transform and opacity only; paused with the scene (data-paused /
   // data-covered). Nothing to tap.
+  // A change of sky while the island is on screen (the real weather's hour turning) fades: the grey sky, its tint and
+  // what falls come in and go out over a minute (a CSS opacity transition, nothing per frame); from one grey sky to
+  // another the layers change at once. The sky the page opens to is there at once.
   import { weather } from './weatherNow.svelte.ts';
   import { minuteNow } from '#lib/time/clock.ts';
 
   let { where }: { where: 'sky' | 'stage' } = $props();
-  const sky = $derived(weather.sky);
+  /** The fades' length (ms). */
+  const FADE_MS = 60_000;
+  /** A first grey sky this long into the page's life came with a change (the lazy chunk loaded for it): it fades in. */
+  const OPENING_MS = 20_000;
+  /** The overcast's strength by sky. */
+  const OVERCAST: Record<Exclude<Sky, 'clear'>, number> = { cloudy: 0.5, rain: 0.94, heavy: 0.95, snow: 0.9 };
+  const late = typeof performance !== 'undefined' && performance.now() > OPENING_MS && weather.sky !== 'clear';
+  /** The sky whose layers are drawn (it stays through a fade out) and how far in they are (0 … 1). */
+  let shown = $state<Sky>(weather.sky);
+  let level = $state(late || weather.sky === 'clear' ? 0 : 1);
+  let fading = $state(late);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let raf = 0;
+  /** Fade the layers in from nothing (two frames: the 0 drawn first, so the transition runs). */
+  const fadeIn = () => {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => (raf = requestAnimationFrame(() => (level = 1))));
+  };
+  if (late) fadeIn();
+  $effect(() => {
+    const s = weather.sky;
+    untrack(() => {
+      if (s === shown && level === (s === 'clear' ? 0 : 1)) return;
+      clearTimeout(timer);
+      fading = true;
+      if (s === 'clear') {
+        cancelAnimationFrame(raf);
+        level = 0;
+        timer = setTimeout(() => (shown = 'clear'), FADE_MS);
+      } else if (shown === 'clear' || level === 0) {
+        shown = s;
+        level = 0;
+        fadeIn();
+      } else shown = s;
+    });
+  });
+  onDestroy(() => {
+    clearTimeout(timer);
+    cancelAnimationFrame(raf);
+  });
+  const sky = $derived(shown);
   // the rainbow builds to its peak 30 minutes into the hour and fades by the next (NH)
   const bow = $derived.by(() => {
     if (!weather.rainbow) return 0;
@@ -35,17 +80,19 @@
       {/if}
     </svg>
   {/if}
-  {#if sky !== 'clear'}<div class="overcast" data-sky={sky} aria-hidden="true"></div>{/if}
+  {#if sky !== 'clear'}<div class="overcast" class:fading data-sky={sky} aria-hidden="true" style:opacity={OVERCAST[sky] * level}></div>{/if}
 {:else}
   {#if sky !== 'clear'}
-    <div class="wet" data-sky={sky} aria-hidden="true" style:background={WET[sky][0]} style:opacity={WET[sky][1]}></div>
-    <div class="precip" aria-hidden="true">
-      {#if sky === 'snow'}
-        <i class="snow far"></i><i class="snow near"></i>
-      {:else}
-        <i class="rain" class:heavy={sky === 'heavy'}></i>
-      {/if}
-    </div>
+    <div class="wet" class:fading data-sky={sky} aria-hidden="true" style:background={WET[sky][0]} style:opacity={WET[sky][1] * level}></div>
+    {#if sky !== 'cloudy'}
+      <div class="precip" class:fading aria-hidden="true" style:opacity={level}>
+        {#if sky === 'snow'}
+          <i class="snow far"></i><i class="snow near"></i>
+        {:else}
+          <i class="rain" class:heavy={sky === 'heavy'}></i>
+        {/if}
+      </div>
+    {/if}
   {/if}
   {#if weather.fog}
     <div class="fog" aria-hidden="true"><i class="bank b1"></i><i class="bank b2"></i></div>
@@ -57,10 +104,13 @@
   .overcast {
     position: absolute; inset: 0 0 auto 0; height: var(--sky-h); z-index: 0; pointer-events: none;
     background: linear-gradient(180deg, var(--oc-top), var(--oc-hz));
-    --oc-top: #9AA5B4; --oc-hz: #C9D0D9; opacity: .94;
+    --oc-top: #9AA5B4; --oc-hz: #C9D0D9;
   }
-  .overcast[data-sky='heavy'] { --oc-top: #7E8999; --oc-hz: #AEB7C3; opacity: .95; }
-  .overcast[data-sky='snow'] { --oc-top: #B7C1CE; --oc-hz: #E2E7EE; opacity: .9; }
+  .overcast[data-sky='cloudy'] { --oc-top: #A9B2BF; --oc-hz: #D3D8DF; }
+  .overcast[data-sky='heavy'] { --oc-top: #7E8999; --oc-hz: #AEB7C3; }
+  .overcast[data-sky='snow'] { --oc-top: #B7C1CE; --oc-hz: #E2E7EE; }
+  /* a change of sky on screen: in and out over a minute (FADE_MS) */
+  .fading { transition: opacity 60s linear; }
   :global([data-tod='dusk']) .overcast { --oc-top: #8E8A9E; --oc-hz: #C2B9BE; }
   :global([data-tod='dawn']) .overcast { --oc-top: #A9A8BA; --oc-hz: #D6D2D8; }
   :global([data-tod='night']) .overcast { --oc-top: #2E3550; --oc-hz: #4E5674; }
