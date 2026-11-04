@@ -3,7 +3,6 @@
 // かいがら its own; overselling and overspending refused. On `?demo` (no backend): the demo's events in localStorage, as
 // a catch writes them. Screenshots of the counter by day and by night (test-results/shop-*.png).
 import { expect, test, type Page } from '@playwright/test';
-import { hudMenu } from './hud.ts';
 import { is3d, settled, tapOn } from './island';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -59,11 +58,7 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   await page.locator('[data-shop-item="f3672"]').click();
   await expect(page.locator('[data-shop-buy]')).toHaveAttribute('aria-disabled', 'true');
   await expect(page.locator('[data-shop-say]')).toHaveAttribute('data-shop-say', 'owned');
-  // the menu's かいがら row says the same; the piece is in my もようがえ (かった)
-  await page.goto(Q);
-  await expect(hudMenu(page)).toBeVisible();
-  await page.locator('[data-hud-menu]').click();
-  await expect(page.locator('[data-hud-shells]')).toHaveAttribute('data-shells', '334');
+  // the piece is in my もようがえ (かった)
   await page.goto(`tent${Q}`);
   await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
   await page.locator('[data-tent-edit-open]').click();
@@ -126,16 +121,6 @@ test('the shop stands on the layout with its door; a tap walks up to it and goes
     const [x, z] = await page.evaluate('window.__world.mine()') as [number, number];
     return Math.hypot(x - door[0], z - door[1]);
   }).toBeLessThan(60);
-});
-
-test('the menu’s かいがら row opens the shop; ‹ 島へ goes back', async ({ page }) => {
-  await page.goto(Q);
-  await expect(hudMenu(page)).toBeVisible();
-  await page.locator('[data-hud-menu]').click();
-  await page.locator('[data-hud-shells]').click();
-  await expect(page).toHaveURL(/\/shop\/?\?/);
-  await page.getByRole('button', { name: '島へ' }).click();
-  await expect(page).toHaveURL(/fitness\/?\?/);
 });
 
 for (const [when, hm] of [['day', '12:00'], ['night', '22:30']] as const) {

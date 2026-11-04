@@ -1,15 +1,16 @@
 <script lang="ts">
   // The HUD menu, the cluster's right end (docs/design.md "Island"): a small round cream button with NH's leaf (the
   // toggle; aria-expanded) that drops three pills down under it, right-aligned, one after the other on a small spring:
-  // 「ベル 121」 (the shared wallet's balance, no icon: the number is the picture) → the panel (ごほうび), 「かいがら 54」
-  // (my own shells, the shop's money: never ベル) → the shop, ずかん (NH's agrias butterfly) and せってい (a gear). Folded by default: the sky keeps only the dumbbell, the bowl and the leaf.
+  // 「ベル 121」 (the shared wallet's balance, no icon: the number is the picture) → the panel (ごほうび), ずかん (NH's
+  // agrias butterfly) and せってい (a gear); no かいがら: the shop is the building. Folded by default: the sky keeps only
+  // the dumbbell, the bowl and the leaf.
   // It folds again on a second tap of the leaf, a tap anywhere else (that tap still goes where it was aimed), Esc, a
   // sheet opening, or a pick (a pill: a press squash, the villagers glance up at it (R18), then its sheet grows out of
   // it, Sheet's `pop`). Folded, the pills are hidden and inert (no taps, no focus, out of placement.ts' guards).
   // The goals' coins fly into it (HudCoins): into the leaf while it's folded, into the ベル row's number while it's
   // open; the number holds while they are in the air and counts up as each lands, and today's +N flashes by where
   // they land (a yuzu bubble that fades: earnings only, never a とりけす's refund).
-  //   <HudMenu bells={…} today={…} shells={…} expanded={panelOpen} onbells={() => …} onshells={() => …} onzukan={() => …} onsettings={() => …} {later} />
+  //   <HudMenu bells={…} today={…} expanded={panelOpen} onbells={() => …} onzukan={() => …} onsettings={() => …} {later} />
   import { tick, untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
@@ -29,10 +30,6 @@
     expanded?: boolean;
     /** The ベル row picked (open the panel on ごほうび), after the press beat. */
     onbells?: () => void;
-    /** My かいがら (the shop's: the かいがら row's number). */
-    shells: number;
-    /** The かいがら row picked (into the shop), after the press beat. */
-    onshells?: () => void;
     /** ずかん picked (open the ずかん), after the press beat. */
     onzukan?: () => void;
     /** せってい picked (open せってい), after the press beat. */
@@ -40,7 +37,7 @@
     /** The page's timer (cleared with the page). */
     later: (fn: () => void, ms: number) => void;
   }
-  let { bells, today, shells, expanded = false, onbells, onshells, onzukan, onsettings, later }: Props = $props();
+  let { bells, today, expanded = false, onbells, onzukan, onsettings, later }: Props = $props();
 
   let open = $state(false);
   let root: HTMLElement | undefined = $state();
@@ -177,16 +174,11 @@
       <b class="num money" aria-hidden="true" onanimationend={(e) => e.currentTarget.classList.remove('catch')}>{formatNum(Math.round(shown.current))}</b>
       {#if open}{@render plus()}{/if}
     </button>
-    <button type="button" class="item bells" style="--i: 1" data-hud-shells data-shells={shells}
-      aria-label={t('island.shells', { v: formatNum(shells) })} data-sfx="self" onclick={(e) => pick(e, onshells)}>
-      <span class="lbl" aria-hidden="true">{t('island.shellsRow')}</span>
-      <b class="num money" aria-hidden="true">{formatNum(shells)}</b>
-    </button>
-    <button type="button" class="item" style="--i: 2" data-hud-zukan aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, onzukan)}>
+    <button type="button" class="item" style="--i: 1" data-hud-zukan aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, onzukan)}>
       <span class="lbl">{t('zukan.title')}</span>
       <span class="ic"><OfficialArt key="critters/agrias-butterfly" size={30} eager /></span>
     </button>
-    <button type="button" class="item" style="--i: 3" data-hud-settings aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, onsettings)}>
+    <button type="button" class="item" style="--i: 2" data-hud-settings aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, onsettings)}>
       <span class="lbl">{t('island.settings')}</span>
       <span class="ic">
         <!-- a gear in the say button's soft brown (no settings icon in NH's art) -->
@@ -234,7 +226,7 @@
     pointer-events: none;
   }
   .item {
-    --n: 4;
+    --n: 3;
     position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px; height: var(--hit); margin: 0; padding: 0 4px 0 14px;
     appearance: none; border: 0; border-radius: var(--r-pill); cursor: pointer; white-space: nowrap;
     background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 6px 14px rgb(60 40 20 / .14);

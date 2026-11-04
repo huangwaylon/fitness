@@ -23,8 +23,6 @@
   "island.food": "ごはん",
   "island.bells": "ごほうび · ふたりのベル {bells} · きょう {today}",
   "island.bellsRow": "ベル",
-  "island.shellsRow": "かいがら",
-  "island.shells": "タヌキ商店 · かいがら {v}",
   "island.highfive": "{name}と ハイタッチ",
   "island.highfiveSent": "{name}さんに ハイタッチ！",
   "weekday.1": "月",

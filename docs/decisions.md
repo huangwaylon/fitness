@@ -236,8 +236,8 @@ furniture; the week's goals still buy the two treats. Pockets and wallets are pe
   get the same list with nothing stored. Only pieces the rooms can place (379 with NH models, the starter set aside):
   clothing has nothing to wear it, so a buy is always something for もようがえ. A bought piece joins that person's
   もようがえ for good (their own home's and the tent's), so a piece is bought once.
-- **Where it shows:** the counter (NH's Nook's Cranny, Timmy and Tommy) and one row in the leaf's menu, 「かいがら N」
-  under 「ベル N」 (the guest's phone too): ごほうび stays the ベル's.
+- **Where it shows:** only the counter (NH's Nook's Cranny, Timmy and Tommy): ごほうび stays the ベル's. The leaf's menu
+  had a 「かいがら N」 row into the shop until 2026-11-04; dropped so that one walks to the shop to buy and sell, as in NH.
 - **A screen, not a 3D room:** the shop is a counter: picking catches, counts and prices are lists, which NH itself
   draws as 2D menus; a walkable room would add another three.js scene (the phone already runs hot) for nothing a sale
   needs. NH's building on the island is 3D; inside, NH's render of the twins behind a drawn counter.
