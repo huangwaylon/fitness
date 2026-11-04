@@ -266,7 +266,7 @@
   .bv {
     /* the island's HUD (the dumbbell, the bowl, the leaf menu) ends at its lip (+page.svelte --hud-bottom: the view lives
        on <body>, so it's worked out here from the same tokens); 「もどる」 sits under it, never over it */
-    --hud-end: calc(var(--hud-top, calc(var(--ui-top, env(safe-area-inset-top, 0px)) + 10px)) + var(--hit, 44px) + var(--lip-h, 4px));
+    --hud-end: calc(var(--hud-top) + var(--hit) + var(--lip-h));
     --back-top: calc(var(--hud-end) + 10px);
     /* top and height: the visible part of the screen (inline, from visualViewport) */
     position: fixed; left: 0; right: 0; top: 0; height: 100%; z-index: 1000; display: flex; flex-direction: column; font-family: var(--font-ui); color: #5A4632;
@@ -278,7 +278,7 @@
   @keyframes bv-in { from { opacity: 0; } }
   /* the room between 「もどる」 (writing: the safe area) and the controls; the frame as big as fits in it (its 12px border) */
   .stage { flex: 1; min-height: 0; display: grid; place-items: center; padding: calc(var(--back-top) + 52px) 12px 8px; box-sizing: border-box; container-type: size; }
-  .bv.writing .stage { padding-top: calc(var(--ui-top, env(safe-area-inset-top, 0px)) + 8px); }
+  .bv.writing .stage { padding-top: calc(var(--ui-top) + 8px); }
   .frame {
     /* both sides set (no aspect-ratio: WebKit let the canvas inside stretch it past a short stage) */
     --fw: min(calc(100cqw - 24px), 560px, calc((100cqh - 24px) * var(--ratio))); width: var(--fw); height: calc(var(--fw) / var(--ratio)); min-height: 0;
@@ -291,13 +291,13 @@
     position: absolute; left: 12px; top: var(--back-top); z-index: 2; padding: 8px 16px; border: 0; border-radius: 999px;
     background: #FFF8E4; color: #6B5232; font: 700 16px / 1 var(--font-ui); box-shadow: 0 3px 0 #D9C8A2; min-height: 44px;
   }
-  .edge { position: absolute; left: 0; top: 0; width: 0; height: calc(env(safe-area-inset-top, 0px) + 8px); pointer-events: none; }
+  .edge { position: absolute; left: 0; top: 0; width: 0; height: calc(var(--safe-top) + 8px); pointer-events: none; }
   .notes { position: fixed; z-index: 1; }
   .note { position: absolute; padding: 0; border: 0; background: none; border-radius: 10px; -webkit-tap-highlight-color: transparent; }
   .note:focus-visible { outline: 3px solid #F08A3C; }
   /* at the visible part's foot: just above the keyboard (which covers the home indicator: no safe area then) */
   .bar {
-    position: relative; flex: none; margin-top: auto; z-index: 2; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); box-sizing: border-box;
+    position: relative; flex: none; margin-top: auto; z-index: 2; padding: 10px var(--side) var(--pad-foot); box-sizing: border-box;
     display: flex; justify-content: center;
   }
   .bv.kb .bar { padding-bottom: 8px; }

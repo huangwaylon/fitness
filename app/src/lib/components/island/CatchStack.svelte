@@ -34,7 +34,7 @@
     --su: calc(100cqw / 390); /* the stage's unit, outside it (the plate's icon and type) */
   }
   /* the partner's face at the bottom edge (44px, 12px up): the stack stands over it */
-  :global(.if-scene:has([data-partner-edge='bottom'])) .catch-stack { bottom: calc(env(safe-area-inset-bottom, 0px) + 64px + var(--news-lift, 0px)); }
+  :global(.if-scene:has([data-partner-edge='bottom'])) .catch-stack { bottom: calc(var(--safe-bottom) + 64px + var(--news-lift, 0px)); }
   .slot { max-width: min(340px, 100%); display: flex; justify-content: center; transition: opacity var(--fade) ease, translate var(--fade) ease; }
   .slot.leaving { opacity: 0; translate: 0 -6px; pointer-events: none; }
   @media (prefers-reduced-motion: reduce) { .slot.leaving { translate: none; } }

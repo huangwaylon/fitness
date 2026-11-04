@@ -1742,7 +1742,8 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
 Compact = `(max-height: 700px) or (max-width: 359px)`, tiny = `(max-width: 339px)`; portrait; wider screens centre a
 480px column. No horizontal scroll at 320, inputs ≥ 16px (`inputs.test.ts`), targets ≥ 44px; the keyboard from
 `visualViewport` (`ui/keyboardInset.svelte.ts`: the `keyboardInset` store, the visible part above it, for any text
-field; `withKeyboardInset` sets `--kb`; never `innerHeight`, which iOS shrinks with the keyboard). Short screens scale the island down. Check at 393×852, 375×667 and
+field; `withKeyboardInset` sets `--kb`; never `innerHeight`, which iOS shrinks with the keyboard). Safe areas only through the tokens (`--safe-*`; `--ui-top` for a top control, `--pad-foot` under a bottom action
+row), never `env()` in a component. Short screens scale the island down. Check at 393×852, 375×667 and
 320×568, day, dusk, night and winter.
 
 ## Official art

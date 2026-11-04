@@ -33,7 +33,7 @@
     --nook-h: 120px;
     max-width: 380px; margin: 0 auto; min-height: 100dvh; display: grid; place-content: center stretch; justify-items: center; gap: 14px;
     text-align: center; background: var(--bg); color: var(--text);
-    padding: calc(var(--safe-top) + 24px) calc(var(--side) + var(--safe-right) + 6px) calc(var(--pad-bottom) + 24px) calc(var(--side) + var(--safe-left) + 6px);
+    padding: calc(var(--ui-top) + 24px) calc(var(--side) + var(--safe-right) + 6px) calc(var(--pad-bottom) + 24px) calc(var(--side) + var(--safe-left) + 6px);
   }
   .nook { line-height: 0; }
   h1 { margin: 0; display: grid; gap: 4px; font-size: var(--fs-title); text-wrap: balance; }

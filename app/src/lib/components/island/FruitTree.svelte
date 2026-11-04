@@ -556,7 +556,7 @@
   }
   /* NH-style popup: a nameplate, then one row per fruit (icon · word · ✓ once met and amount / goal · +1), in shared columns
      (subgrid) so the numbers line up */
-  .pop { position: absolute; inset: 0; z-index: var(--z-popup); pointer-events: none; --safe-b: env(safe-area-inset-bottom, 0px); }
+  .pop { position: absolute; inset: 0; z-index: var(--z-popup); pointer-events: none; --safe-b: var(--safe-bottom); }
   .detail {
     position: absolute; left: 0; top: 0; display: grid; grid-template-columns: 20px auto auto auto; gap: 3px 0;
     background: var(--plate); border-radius: var(--r-btn); padding: 16px 10px 8px; white-space: nowrap;

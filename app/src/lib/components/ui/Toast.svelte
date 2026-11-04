@@ -85,7 +85,7 @@
 <style>
   .banner {
     position: fixed; inset: auto 0; margin: 0 auto; z-index: var(--z-toast); overflow: hidden;
-    top: calc(var(--ui-top) + 56px); height: 52px; width: min(100% - 24px, 420px);
+    top: calc(var(--ui-top) + 56px); height: 52px; width: min(100% - 2 * var(--side), 420px);
     display: flex; align-items: center; gap: 10px; padding: 0 12px 0 6px; border-radius: var(--r-pill);
     background: var(--c-card); color: var(--c-ink); border: 0; box-shadow: 0 var(--lip-h) 0 var(--c-lip), var(--sh-float);
     font: 700 var(--fs-body)/1.2 var(--font-ui);

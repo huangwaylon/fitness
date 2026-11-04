@@ -72,6 +72,9 @@
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --pad-bottom: max(var(--safe-bottom), 8px);
+  /* A bottom action row's own room under it (a sheet's footer, the harvest's 受け取る, the shop's bar, the board's): its
+     lip 12px clear of the home indicator */
+  --pad-foot: calc(var(--safe-bottom) + 12px);
   --kb: 0px;          /* on-screen keyboard height (Sheet / pair set it from visualViewport) */
   --col: 480px;
   --side: 18px;       /* page side padding (14 at 320) */

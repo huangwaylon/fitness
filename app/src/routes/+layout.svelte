@@ -163,7 +163,7 @@
     --nook-h: 120px;
     max-width: 380px; margin: 0 auto;
     min-height: var(--vh-page); display: grid; place-content: center stretch; justify-items: center; gap: 16px; text-align: center;
-    padding: calc(var(--safe-top) + 24px) calc(var(--side) + 6px) calc(var(--pad-bottom) + 24px);
+    padding: calc(var(--ui-top) + 24px) calc(var(--side) + 6px) calc(var(--pad-bottom) + 24px);
   }
   .state :global(.talk) { width: 100%; }
   .nook { line-height: 0; }

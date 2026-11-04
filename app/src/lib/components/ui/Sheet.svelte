@@ -109,7 +109,7 @@
   dialog::backdrop { background: var(--scrim); }
   /* The content can scroll above the keyboard too (the footer is lifted by --kb). */
   .inner { padding: 0 calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 18px + var(--kb, 0px)) calc(var(--side) + var(--safe-left)); }
-  dialog:has(.foot) .inner { padding-bottom: calc(8px + var(--kb, 0px)); }
+  dialog:has(> .foot) > .inner { padding-bottom: calc(8px + var(--kb, 0px)); }
   /* the title bar: 14px from the sheet's top edge, the content 10px under it; it stays put while a long sheet scrolls,
      so ✕ is always in reach (a long sheet like the menu editor would scroll it away) */
   .bar {
@@ -119,7 +119,7 @@
   .foot {
     /* `bottom`, not a transform: it can never lift the row above a short sheet's top */
     position: sticky; bottom: var(--kb, 0px); z-index: 2;
-    padding: 10px calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 12px) calc(var(--side) + var(--safe-left));
+    padding: 10px calc(var(--side) + var(--safe-right)) var(--pad-foot) calc(var(--side) + var(--safe-left));
     background: linear-gradient(transparent, var(--surface) 30%);
   }
   /* The top panel: paper (--surface) so its cream cards have a body; a non-scrolling flex column whose `.panel-body`
@@ -139,15 +139,17 @@
     display: flex; transform-origin: var(--pop-x, 85%) var(--pop-y, 6%);
     animation: pop 280ms cubic-bezier(.2, .8, .2, 1);
   }
-  dialog.top .inner, dialog.pop .inner {
+  /* (child combinators throughout: a sheet opened from inside the panel, BuyConfirm say, is a dialog nested in this one's
+     .inner, and must not take the panel's rules) */
+  dialog.top > .inner, dialog.pop > .inner {
     flex: 1; min-height: 0; display: flex; flex-direction: column;
     padding: calc(var(--ui-top) + 8px) calc(var(--side) + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
   }
   /* An undo banner is up: the last row can scroll clear of it… */
-  dialog.toasting .inner { padding-bottom: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
+  dialog.toasting > .inner { padding-bottom: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
   /* …and a footer's buttons (買う！, 保存) rise above it instead of sitting under it (the banner: 56px, 16px over the bottom) */
-  dialog.toasting .foot { padding-bottom: calc(var(--pad-bottom) + 16px + 56px + var(--lip-h) + 10px); }
-  dialog.top.toasting .inner, dialog.pop.toasting .inner { padding-bottom: 0; }
+  dialog.toasting > .foot { padding-bottom: calc(var(--pad-bottom) + 16px + 56px + var(--lip-h) + 10px); }
+  dialog.top.toasting > .inner, dialog.pop.toasting > .inner { padding-bottom: 0; }
   dialog.top.toasting, dialog.pop.toasting { --body-pad: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
   @keyframes down { from { transform: translateY(-100%); } to { transform: none; } }
   @keyframes pop { from { opacity: 0; transform: scale(.08); } 40% { opacity: 1; } to { transform: none; } }

@@ -123,12 +123,12 @@ export function spotBy(w: number, h: number, from: Box, area: Box, tiers: readon
 
 /** How far a balloon, a plate or a caption keeps from the screen's sides and foot (px). */
 export const EDGE = 12;
-/** The home indicator's inset (px), measured once with a probe (CSS env() can't be read from script). */
+/** The home indicator's inset (px), measured once with a probe (the --safe-bottom token: CSS env() can't be read from script). */
 let homeInset: number | null = null;
 function bottomInset(): number {
   if (homeInset !== null) return homeInset;
   const probe = document.createElement('div');
-  probe.style.cssText = 'position: fixed; visibility: hidden; height: env(safe-area-inset-bottom, 0px)';
+  probe.style.cssText = 'position: fixed; visibility: hidden; height: var(--safe-bottom, 0px)';
   document.body.append(probe);
   homeInset = probe.getBoundingClientRect().height;
   probe.remove();
