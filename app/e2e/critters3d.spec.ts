@@ -5,7 +5,7 @@
 // to the float and each nibble is its nose touching it; scared, it darts off fast and fades as it goes. The game's state
 // says where each model is (__world3d.where: its spot, its fade, its scale), sampled every frame in the page.
 import { expect, test, type Page } from '@playwright/test';
-import { is3d, w3 } from './island.ts';
+import { is3d, toTheWater, w3 } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -25,7 +25,7 @@ const sample = (page: Page, id: string, ms: number) => page.evaluate(([id, ms]) 
   const out: Sample[] = [], t0 = performance.now();
   const frame = () => {
     const p = w.where(id);
-    out.push(p && { t: performance.now() - t0, x: p.x, z: p.z, fade: p.fade, scale: p.scale, hidden: p.hidden, line: !!document.querySelector('[data-bobber]') });
+    out.push(p && { t: performance.now() - t0, x: p.x, z: p.z, fade: p.fade, scale: p.scale, hidden: p.hidden, line: !!document.querySelector('[data-bobber="bite"]') });
     if (performance.now() - t0 < ms) requestAnimationFrame(frame);
     else ok(out);
   };
@@ -96,13 +96,9 @@ async function castAtFish(page: Page): Promise<string> {
   await page.goto('?demo&visitor=none&critter=fish&date=2026-11-04T12:00');
   expect(await is3d(page)).toBe(true);
   const id = await modelId(page, 'fish-sea-');
-  // my villager by the water, behind the shadow
-  const p = await w3(page, new Function('w', `const q = w.where('${id}'); return [q.x, -q.z];`) as (w: unknown) => number[]);
-  await page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z < 0 ? 20 : z + 45), p);
-  await page.waitForTimeout(300);
-  // a tap by the shadow's middle (its tap area: the DOM's), where it is now
-  const r = (await page.locator('[data-critter="fish"]').boundingBox())!;
-  await page.mouse.click(r.x + r.width / 2 + 6, r.y + r.height / 2);
+  // my villager on the beach by the shadow (NH casts from where it stands), and a tap by it
+  const [x, y] = await toTheWater(page, 'sea');
+  await page.mouse.click(x, y);
   await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 5000 });
   return id;
 }
@@ -149,7 +145,7 @@ test('a missed bite: the fish darts away fast with a wiggle, fading as it goes',
   test.setTimeout(60_000);
   const id = await castAtFish(page);
   await expect(page.locator('[data-bobber="bite"]')).toBeAttached({ timeout: 15_000 });
-  // no tap: once the bite's window is over it's scared off (the float's gone): every frame from the bite on
+  // no tap: once the bite's window is over it's scared off (the float back up, waiting: NH): every frame from the bite on
   const all = await sample(page, id, 3400);
   const from = all.findIndex((p) => !!p && !p.line);
   expect(from).toBeGreaterThan(0);

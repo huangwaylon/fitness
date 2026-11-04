@@ -1,15 +1,15 @@
 // Fishing seen by everyone (docs/design.md "Shared world"; the user: "i want other players to see others fishing state so
 // we know who's actively trying to catch a fish. this needs to be synced"): each step of a line goes to the others'
 // phones (`fish`, presence only): the line out to the float where it landed, the nibbles and the bite, the reel; the
-// shadow it's cast at is the angler's while the line is out (a tap on it on another phone only boops). A phone coming
-// while a line is out hears its step again; an angler whose phone goes is no longer fishing. The demo's players are two
+// shadow at it is the angler's while it is (another's float by it, it never notices). A phone coming while a line is
+// out hears its step again; an angler whose phone goes is no longer fishing. The demo's players are two
 // tabs of one browser (sync/live-local.ts plays the room).
 import { expect, test, type Page } from '@playwright/test';
-import { is3d, reelOnBite, sawIt, tapOn, watchFor } from './island';
+import { is3d, reelOnBite, sawIt, tapOn, toTheWater, watchFor } from './island';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
-type Line = { x: number; z: number; landed: boolean; under: boolean };
+type Line = { x: number; z: number; landed: boolean; under: boolean; fish?: string | null };
 type Fish = { water: string; x: number; z: number; cid: string | null };
 type H = {
   __fish: { why(): string; fish(): Fish[]; casting(): boolean; line(): Line | null; lines(): (Line & { who: string; id: string | null })[] };
@@ -25,11 +25,9 @@ async function open(page: Page, as = '') {
   expect(await is3d(page)).toBe(true);
   await expect.poll(() => h(page, (w) => w.__fish?.fish().some((f) => f.water === 'sea') ?? false), { timeout: 15_000 }).toBe(true);
 }
-/** Where this tab's sea shadow is on screen (client px). */
-const shadowAt = (page: Page) => h(page, (w) => { const f = w.__fish.fish().find((x) => x.water === 'sea')!; return w.__world3d.client(f.x, f.z); });
-/** A casts at its shadow: where its float went (world). */
+/** A casts at its shadow from the beach by it (NH casts from where it stands): where its float went (world). */
 async function cast(a: Page): Promise<Line> {
-  const [x, y] = await shadowAt(a);
+  const [x, y] = await toTheWater(a, 'sea');
   await a.mouse.click(x, y);
   await expect.poll(() => h(a, (w) => w.__fish.casting())).toBe(true);
   return (await h(a, (w) => w.__fish.line()))!;
@@ -48,22 +46,21 @@ test('A’s line on B’s phone: the float where it landed, the bite, the shadow
   const reel = reelOnBite(a, 200, 400, 20_000);
   // B: A's line, its float at the very spot, landed; their villager's line (the 3D angler) at it too
   await expect.poll(() => h(b, (w) => w.__fish.lines().map((l) => [l.who, Math.round(l.x), Math.round(l.z), l.landed]))).toEqual([['A', Math.round(at.x), Math.round(at.z), true]]);
-  await expect(b.locator('[data-angler="A"]')).toHaveAttribute('data-line', 'wait');
-  expect(await h(b, (w) => w.__fish.lines()[0].id)).toBe('hook:fish');
+  await expect(b.locator('[data-angler="A"]')).toHaveAttribute('data-line', /wait|bite/);
   await expect.poll(() => h(b, (w) => w.__world3d.where('bobber-partner')?.hidden ?? true)).toBe(false);
   await expect.poll(async () => { const p = await h(b, (w) => w.__world3d.where('bobber-partner')); return p ? Math.hypot(p.x - at.x, -p.z - at.z) : Infinity; }).toBeLessThan(2);
-  // the shadow A's working is A's: a tap on it on B's phone casts nothing
-  await b.waitForTimeout(1200); // (it swims up to A's float)
-  const [bx, by] = await shadowAt(b);
+  // the shadow at A's float is A's: B casts by it, and it never comes to B's float
+  await expect.poll(() => h(b, (w) => w.__fish.lines()[0]?.id ?? null)).toBe('hook:fish');
+  await b.bringToFront();
+  const [bx, by] = await toTheWater(b, 'sea');
   await b.mouse.click(bx, by);
-  await expect.poll(() => h(b, (w) => w.__fish.why())).toBe('the partner’s');
-  expect(await h(b, (w) => w.__fish.casting())).toBe(false);
-  expect(await b.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('boop');
+  await expect.poll(() => h(b, (w) => w.__fish.why())).toBe('cast in the sea');
+  expect(await h(b, (w) => w.__fish.line()?.fish ?? null)).toBeNull();
   // A's bite reaches B (the float under), and A reels it in: the catch on both, B's view of the line cleared
   await reel;
   expect(await sawIt(b, BITE)).toBe(true);
   await expect.poll(() => h(a, (w) => w.__fish.casting())).toBe(false);
-  await expect(b.locator('[data-angler]')).toHaveCount(0);
+  await expect(b.locator('[data-angler="A"]')).toHaveCount(0);
   await expect.poll(() => h(b, (w) => w.__world3d.where('bobber-partner')?.hidden ?? true)).toBe(true);
   await ctx.close();
 });
@@ -98,13 +95,13 @@ async function outOfMuseum(page: Page) {
   await expect(page).toHaveURL(/fitness\/?\?/);
   expect(await is3d(page)).toBe(true);
 }
-/** B taps its sea shadow and casts (the shadow nobody's). */
+/** B casts by its sea shadow, and the shadow comes to B's float (nobody's now). */
 async function castsFree(b: Page) {
-  await expect.poll(async () => {
-    const [x, y] = await shadowAt(b);
-    await b.mouse.click(x, y);
-    return h(b, (w) => w.__fish.casting());
-  }, { timeout: 10_000 }).toBe(true);
+  await b.bringToFront();
+  const [x, y] = await toTheWater(b, 'sea');
+  await b.mouse.click(x, y);
+  await expect.poll(() => h(b, (w) => w.__fish.casting())).toBe(true);
+  await expect.poll(() => h(b, (w) => w.__fish.line()?.fish ?? null), { timeout: 8000 }).not.toBeNull();
 }
 
 test('A goes through a door with the line out: A’s tab says the line ended, and it ends on B’s phone', async ({ browser }) => {
@@ -144,10 +141,15 @@ test('a line cast at a new spot (its off never came) frees the shadow the old on
   const f = await h(b, (w) => w.__fish.fish().find((x) => x.water === 'sea')!);
   await tell({ ph: 'cast', pt: [Math.round(f.x), Math.round(f.z)], from: [Math.round(f.x), Math.round(f.z) - 40], id: f.cid });
   await expect.poll(() => h(b, (w) => w.__fish.lines().length)).toBe(1);
-  await b.waitForTimeout(1200); // (it swims up to A's float)
-  const [bx, by] = await shadowAt(b);
+  // (B's float by it: it's A's, it never comes to it; B's tab in front: a hidden tab's island takes no taps)
+  await b.bringToFront();
+  const [bx, by] = await toTheWater(b, 'sea');
   await b.mouse.click(bx, by);
-  await expect.poll(() => h(b, (w) => w.__fish.why())).toBe('the partner’s');
+  await expect.poll(() => h(b, (w) => w.__fish.why())).toBe('cast in the sea');
+  await b.waitForTimeout(1500); // (proving nothing comes for a while: the shadow is A's)
+  expect(await h(b, (w) => w.__fish.line()?.fish ?? null)).toBeNull();
+  await b.mouse.click(bx, by); // (reeled in)
+  await expect.poll(() => h(b, (w) => w.__fish.casting())).toBe(false);
   await tell({ ph: 'cast', pt: [Math.round(f.x) + 300, Math.round(f.z)], from: [Math.round(f.x) + 300, Math.round(f.z) - 40] });
   await expect.poll(() => h(b, (w) => w.__fish.lines().map((l) => l.id))).toEqual([null]);
   await castsFree(b);
@@ -163,8 +165,10 @@ test('B away while A’s line ends: back on the island, A’s villager no longer
   await cast(a);
   await expect.poll(() => h(b, (w) => w.__villagers3?.last('partner')?.angling.phase ?? null)).toBe('wait');
   await intoMuseum(b);
-  // (A's line ends while B's away: the fish bites and gets away, or nobody came)
-  await expect.poll(() => h(a, (w) => w.__fish.casting()), { timeout: 30_000 }).toBe(false);
+  // (A's line ends while B's away: A reels it in)
+  await a.bringToFront();
+  await a.mouse.click(200, 400);
+  await expect.poll(() => h(a, (w) => w.__fish.casting())).toBe(false);
   await outOfMuseum(b);
   await expect.poll(() => h(b, (w) => w.__villagers3?.last('partner') != null)).toBe(true);
   await b.waitForTimeout(500);

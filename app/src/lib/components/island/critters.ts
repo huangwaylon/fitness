@@ -8,8 +8,8 @@ import { pickOne, weighted } from '#lib/random.ts';
 import type { SeaId } from './sea.ts';
 import type { Sky } from './weather.ts';
 import {
-  BEACH_BOX, BRIDGE, CLIFF, FLOWERS, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SHORE_Z, SPRING, TREE_H, freshWhere, inOval,
-  LAWN_SPOTS, PONDS, RIVER_BEND, onLand, onLayout, pondAt, riverNS, riverNear, worldGen, type FreshWhere
+  BEACH_BOX, BRIDGE, CLIFF, FLOWERS, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SHORE_Z, TREE_H, freshWhere, surfaceAt,
+  LAWN_SPOTS, PONDS, RIVER_BEND, onLand, onLayout, riverNS, worldGen, type FreshWhere
 } from './world.ts';
 
 /** NH months (1–12) a critter is about, and its hours [from, to) in Tokyo time (to < from wraps past midnight). */
@@ -344,33 +344,61 @@ export const STAY_MS = { fish: 45_000, bug: 18_000 } as const;
 export type Water = 'sea' | FreshWhere;
 export const FRESH: readonly FreshWhere[] = ['pond', 'river', 'mouth', 'clifftop'];
 
-/** How far around the water's edge a tap still casts into it (u: a finger's slack round a small pond or a narrow
- *  river). */
-const WATER_REACH = 12;
+/** How far round the water's edge a tap still casts into it (u: a finger's slack round a small pond or a narrow
+ *  river), and how far in from the edge a float lands (u). */
+export const WATER_REACH = 12;
+const EDGE_U = 8;
 
-/** The water a tap at world (x, z) lands in, or null (land). `sea`: the ground there is the sea (sceneTaps hitWorld). */
-export function waterAt(x: number, z: number, sea: boolean, reach = WATER_REACH): Water | null {
-  if (pondAt(x, z, reach)) return 'pond';
-  if (inOval(SPRING, x, z, reach)) return 'clifftop';
-  const r = riverNear(x, z);
-  if (r.d <= r.hw + reach) return freshWhere(x, z);
-  return sea ? 'sea' : null;
+/** The water at world (x, z): the island's own tiles say (world.ts surfaceAt: the one answer to "is this water", the
+ *  ground's, the walk's and the taps'), the sea or a fresh water by NH's locations (freshWhere); null: land, a bridge.
+ *  `reach` > 0: else the nearest water within it (a finger's slack round a bank); < 0: only where all of it within
+ *  −reach is water it swims on (sameWater: clear of its banks). */
+export function waterAt(x: number, z: number, reach = 0): Water | null {
+  const at = (px: number, pz: number): Water | null => {
+    const s = surfaceAt(px, pz);
+    return s === 'sea' ? 'sea' : s === 'water' ? freshWhere(px, pz) : null;
+  };
+  const here = at(x, z);
+  if (reach < 0) return here && ring(-reach).every(([dx, dz]) => ((w) => !!w && sameWater(here, w))(at(x + dx, z + dz))) ? here : null;
+  if (here || reach === 0) return here;
+  for (let r = 4; r <= reach; r += 4) for (const [dx, dz] of ring(r)) { const w = at(x + dx, z + dz); if (w) return w; }
+  return null;
+}
+/** Twelve points round a circle of radius r. */
+const ring = (r: number): [number, number][] => Array.from({ length: 12 }, (_, i) => [Math.cos((i / 12) * Math.PI * 2) * r, Math.sin((i / 12) * Math.PI * 2) * r]);
+
+/** Where a cast at world (x, z) lands, and on which water: the water there or the nearest within a finger's slack
+ *  (WATER_REACH), drawn in from its edge by EDGE_U where there's room (NH's float never lands on the bank); null: no
+ *  water there. */
+export function landing(x: number, z: number): { x: number; z: number; water: Water } | null {
+  let px = x, pz = z, w = waterAt(x, z);
+  for (let r = 4; !w && r <= WATER_REACH; r += 4) {
+    const wet = ring(r).find(([dx, dz]) => waterAt(x + dx, z + dz));
+    if (wet) [px, pz, w] = [x + wet[0], z + wet[1], waterAt(x + wet[0], z + wet[1])];
+  }
+  if (!w) return null;
+  // in from the edge: away from the dry points round it, a few steps
+  for (let i = 0; i < 4; i++) {
+    const dry = ring(EDGE_U).filter(([dx, dz]) => waterAt(px + dx, pz + dz) !== w);
+    const sx = dry.reduce((a, [dx]) => a + dx, 0), sz = dry.reduce((a, [, dz]) => a + dz, 0), len = Math.hypot(sx, sz);
+    if (!dry.length || len < 1e-6) break;
+    const qx = px - (sx / len) * 3, qz = pz - (sz / len) * 3;
+    if (waterAt(qx, qz) !== w) break;
+    [px, pz] = [qx, qz];
+  }
+  return { x: px, z: pz, water: w };
 }
 
-/** Where the bobber lands for a cast at (x, z) in `water` (world): kept inside the water, clear of its edge: in the
- *  pond's oval at 0.75 of its size, on the river within 0.55 of its half-width from the centreline, in the sea past the
- *  foam (z ≤ −10). */
-export function castInto(water: Water, x: number, z: number): { x: number; z: number } {
-  if (water === 'sea') return { x, z: Math.min(z, -10) };
-  if (water === 'pond' || (water === 'clifftop' && inOval(SPRING, x, z, WATER_REACH))) {
-    const o = water === 'pond' ? (pondAt(x, z, WATER_REACH) ?? POND) : SPRING;
-    const d = Math.hypot((x - o.x) / o.rx, (z - o.z) / o.rz), k = d > 0.75 ? 0.75 / d : 1;
-    return { x: o.x + (x - o.x) * k, z: o.z + (z - o.z) * k };
+/** The waters a shadow swims between to a float: its own, and the river's lower reach with its mouth (one channel). */
+export const sameWater = (a: Water, b: Water): boolean => a === b || ((a === 'river' || a === 'mouth') && (b === 'river' || b === 'mouth'));
+/** Open water all the way from (ax, az) to (bx, bz) for a shadow of `water` (a look every 6u). */
+export function swimmable(water: Water, ax: number, az: number, bx: number, bz: number): boolean {
+  const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 6));
+  for (let i = 0; i <= n; i++) {
+    const w = waterAt(ax + ((bx - ax) * i) / n, az + ((bz - az) * i) / n);
+    if (!w || !sameWater(water, w)) return false;
   }
-  const r = riverNear(x, z), [ax, az] = RIVER[r.i], [bx, bz] = RIVER[r.i + 1];
-  const cx = ax + (bx - ax) * r.t, cz = az + (bz - az) * r.t, max = r.hw * 0.55;
-  const k = r.d > max ? max / r.d : 1;
-  return { x: cx + (x - cx) * k, z: cz + (z - cz) * k };
+  return true;
 }
 
 /** A shadow's length (u) by NH's size 1 (tiny) – 6 (huge): one teardrop, 0.42 of its length tall; the eels' long thin
@@ -413,12 +441,14 @@ function reaches(i0: number, i1: number, step: number, keep: (x: number, z: numb
  *  under the bridge); the
  *  mouth's wide reach on the west beach; the falls' pool (NH's clifftop: the upper tier is beyond the horizon). */
 export function freshAreas(where: FreshWhere): Swim[] {
-  // (a layout without a painted pond has POND far off the island: layoutWorld.ts FAR_OVAL; never a patch)
-  if (where === 'pond') return [POND, ...PONDS].filter((o) => onLand(o.x, o.z)).map((o) => ({ cx: o.x, cz: o.z, ux: 1, uz: 0, L: o.rx * 0.55, W: o.rz * 0.4 }));
+  // (each patch's middle on that water's own tiles, clear of its edge: never one over a bank or out at sea; a layout
+  // without a painted pond has POND far off the island, layoutWorld.ts FAR_OVAL)
+  const on = (x: number, z: number) => waterAt(x, z, -4) === where;
+  if (where === 'pond') return [POND, ...PONDS].filter((o) => on(o.x, o.z)).map((o) => ({ cx: o.x, cz: o.z, ux: 1, uz: 0, L: o.rx * 0.55, W: o.rz * 0.4 }));
   if (where === 'clifftop')
-    return reaches(0, RIVER.length - 1, 24, (_x, z) => z > CLIFF.z0 - FALLS_POOL && z < CLIFF.z0 - 6);
-  if (where === 'mouth') return reaches(0, RIVER.length - 1, 44, (x, z) => freshWhere(x, z) === 'mouth');
-  return reaches(0, RIVER.length - 1, 80, (x, z) => z < CLIFF.z0 - FALLS_POOL - 8 && freshWhere(x, z) === 'river' && Math.abs(x - BRIDGE.x) > BRIDGE.w / 2 + 24);
+    return reaches(0, RIVER.length - 1, 24, (x, z) => z > CLIFF.z0 - FALLS_POOL && z < CLIFF.z0 - 6 && on(x, z));
+  if (where === 'mouth') return reaches(0, RIVER.length - 1, 44, on);
+  return reaches(0, RIVER.length - 1, 80, (x, z) => z < CLIFF.z0 - FALLS_POOL - 8 && on(x, z) && Math.abs(x - BRIDGE.x) > BRIDGE.w / 2 + 24);
 }
 
 /** A patch a bug keeps to (world): x0…x1 across, z0…z1 deep, l0…l1 units above the ground. */
@@ -514,71 +544,7 @@ export function patches(place: BugPlace): Patch[] {
   }
 }
 
-// ---------- fishing ----------
-
-/** A cast's story, NH-style: the shadow notices the bobber and swims up to it, nibbles it a few times (each a little
- *  bob), then bites (the bobber is pulled under: the moment to reel). All in ms from the bobber landing. */
-export interface BitePlan {
-  /** The shadow reaches the bobber. */
-  arrive: number;
-  /** Each nibble (a little bob). */
-  nibbles: number[];
-  /** The bite: the bobber goes under. */
-  bite: number;
-  /** Reel within this long after the bite, or it gets away. */
-  window: number;
-}
-
-/** The bite window (ms): NH's is about half a second with a controller; a phone tap, reacting to the 「！」, gets
- *  longer (a human sees it, decides and taps in ~0.4–0.8 s). */
-export const BITE_WINDOW_MS = 1600;
-/** A tap in the sea this close to a shadow (world units) casts a bobber... */
-export const CAST_U = 195;
-/** ...and the shadow notices a bobber this close, so every cast it allows is noticed (the bobber lands a little nearer
- *  the beach than the tap, now and then). */
-export const NOTICE_U = 210;
-
-/** A slow, curious swim up to the bobber `distU` away, 0–3 nibbles (or `minNibbles`+), then the bite, all from `from`. */
-function story(from: number, distU: number, r: () => number, minNibbles = 0): BitePlan {
-  const arrive = from + 500 + Math.min(distU, NOTICE_U) * 8 + r() * 500;
-  const n = minNibbles + Math.floor(r() * (4 - minNibbles)); // up to 3 nibbles
-  const nibbles: number[] = [];
-  let at = arrive + 400 + r() * 500;
-  for (let i = 0; i < n; i++) {
-    nibbles.push(Math.round(at));
-    at += 700 + r() * 600;
-  }
-  return { arrive: Math.round(arrive), nibbles, bite: Math.round(at), window: BITE_WINDOW_MS };
-}
-
-/** (1–3 nibbles: the float always dips before it plunges, the cue that it's coming; NH's 0 left the bite unannounced) */
-export const bitePlan = (distU: number, r: () => number): BitePlan => story(0, distU, r, 1);
-
-/** The fish hesitates (a first tap before the bite, `ms` after the bobber landed): it backs off HESITATE_U, then
- *  comes back from there and nibbles (at least once) before it bites, later. */
-export const HESITATE_U = 16;
-export const HESITATE_MS = 700;
-export const hesitatePlan = (ms: number, r: () => number): BitePlan => story(ms + HESITATE_MS, HESITATE_U, r, 1);
-
-/** Where a cast stands when the player taps again. */
-export type CastPhase = 'waiting' | 'approach' | 'nibble' | 'bite' | 'late';
-
-/** The phase of a cast `ms` after the bobber landed (a shadow that never noticed it stays 'waiting'). */
-export function castPhase(plan: BitePlan | null, ms: number): CastPhase {
-  if (!plan) return 'waiting';
-  if (ms < plan.arrive) return 'approach';
-  if (ms < plan.bite) return 'nibble';
-  return ms < plan.bite + plan.window ? 'bite' : 'late';
-}
-
-/** A tap while the bobber is out (NH's A button): reel in on the bite to catch it. A first tap any earlier only makes
- *  the fish hesitate (it backs off and comes back); a second early tap (or one too late) and it's spooked and gone.
- *  With no fish interested it just reels the line back in. */
-export function reel(phase: CastPhase, hesitated = false): 'catch' | 'hesitate' | 'flee' | 'reel' {
-  if (phase === 'bite') return 'catch';
-  if (phase === 'waiting') return 'reel';
-  return phase !== 'late' && !hesitated ? 'hesitate' : 'flee';
-}
+// (fishing: island/fishing.ts)
 
 // ---------- the net ----------
 

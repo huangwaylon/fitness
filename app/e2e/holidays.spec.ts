@@ -2,7 +2,7 @@
 // (events.ts): Franklin on Turkey Day (he asks for a fish; the next catch makes him happy), Jingle on Toy Day, Pavé at
 // Festivale, Zipper on Bunny Day's first and last days; Bunny Day's eggs in a dig spot. No ベル.
 import { expect, test, type Page } from '@playwright/test';
-import { fossilOnScreen, reelOnBite, stageCam } from './island.ts';
+import { fossilOnScreen, reelOnBite, stageCam, toTheWater } from './island.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
@@ -72,16 +72,11 @@ test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and 
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('さかなが 1ぴき');
   await readAll(page);
   await camera(page, 114);
-  // fish one: cast beside the shadow, reel in on the bite
-  const fish = page.locator('[data-critter="fish"]');
-  await expect(fish).toBeAttached();
-  await page.waitForTimeout(500);
-  // (the shadow swims in the sea in front of the beach: on screen, clear of its bottom edge)
-  const vh = page.viewportSize()!.height;
-  await expect.poll(async () => (await at(page, '[data-critter="fish"]')).y, { timeout: 10_000 }).toBeLessThan(vh - 24);
-  const f = await at(page, '[data-critter="fish"]');
-  await page.mouse.click(f.x + (f.x < 195 ? 40 : -40), f.y);
-  // the reel the moment it bites (the 1.6 s window: e2e/island.ts reelOnBite)
+  // fish one: from the beach by the shadow (NH casts from where it stands), cast beside it, reel in on the bite
+  await expect(page.locator('[data-critter="fish"]')).toBeAttached();
+  const [fx, fy] = await toTheWater(page, 'sea');
+  await page.mouse.click(fx, fy);
+  // the reel the moment it bites (e2e/island.ts reelOnBite)
   await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 }); // landed
   const b = await at(page, '[data-bobber]');
   await reelOnBite(page, b.x < 195 ? 366 : 24, b.y);

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BITE_WINDOW_MS, BUGS, CAST_U, FISH, HESITATE_MS, JUNK, NOTICE_U, bitePlan, bushBug, castPhase, caption, hesitatePlan,
-  FLEE_U, fleaJumps, fleesFrom, hookItem, IN_SEASON, inHours, netSwing, oddsAt, pickBug, pickFish, reel, stalkTap, castInto, waterAt, shadowLen, POND_SHADOW,
+  BUGS, FISH, JUNK, bushBug, caption,
+  FLEE_U, fleaJumps, fleesFrom, hookItem, IN_SEASON, inHours, netSwing, oddsAt, pickBug, pickFish, stalkTap, landing, sameWater, swimmable, waterAt, WATER_REACH, shadowLen, POND_SHADOW,
   FRESH, SEA_SWIM, bugPlace, freshAreas, patches, perches, swimAt, type BugId, type FishId
 } from './critters.ts';
 import { mulberry32 } from '#lib/random.ts';
@@ -195,7 +195,7 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
     };
     expect(inside('beach', (x, z) => surfaceAt(x, z) === 'sand')).toBeGreaterThan(0.9);
     expect(inside('grass', (x, z) => ['grass', 'dirt'].includes(surfaceAt(x, z)))).toBeGreaterThan(0.9);
-    expect(inside('water', (x, z) => waterAt(x, z, false, 0) !== null)).toBe(1);
+    expect(inside('water', (x, z) => waterAt(x, z) !== null)).toBe(1);
   });
   it('a tarantula or a scorpion: the first tap makes it rear up; a tap while reared and it charges; settled, a tap nets it', () => {
     expect(stalkTap('calm', 'catch')).toBe('rear'); // came at it too fast
@@ -229,50 +229,6 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
     for (let i = 0; i < 14_000; i++) if ((JUNK as readonly string[]).includes(hookItem('sea-bass', r))) junk++;
     expect(junk).toBeGreaterThan(800);
     expect(junk).toBeLessThan(1200);
-  });
-});
-
-describe('fishing', () => {
-  it('a plan: the swim up, 1–3 nibbles, then the bite with its window', () => {
-    for (let s = 0; s < 200; s++) {
-      const p = bitePlan(NOTICE_U * (s % 3) / 2, mulberry32(s));
-      expect(p.nibbles.length).toBeLessThanOrEqual(3);
-      expect(p.nibbles.length).toBeGreaterThanOrEqual(1);
-      expect(p.nibbles.every((t) => t > p.arrive && t < p.bite)).toBe(true);
-      expect(p.bite).toBeGreaterThan(p.arrive);
-      expect(p.bite).toBeLessThan(8000);
-      expect(p.window).toBe(BITE_WINDOW_MS);
-    }
-  });
-  it('a 1.6 s bite window; the cast reaches 1.5× as far as before, and the shadow notices a bobber that far', () => {
-    expect(BITE_WINDOW_MS).toBe(1600);
-    expect(CAST_U).toBe(195);
-    expect(NOTICE_U).toBeGreaterThanOrEqual(CAST_U);
-  });
-  it('reeling on the bite catches it; a first early tap makes it hesitate, a second scares it off; late it flees', () => {
-    const p = { arrive: 1000, nibbles: [1500, 2300], bite: 3000, window: BITE_WINDOW_MS };
-    expect(reel(castPhase(p, 500))).toBe('hesitate'); // still swimming up
-    expect(reel(castPhase(p, 1600))).toBe('hesitate'); // a nibble
-    expect(reel(castPhase(p, 500), true)).toBe('flee'); // the second early tap
-    expect(reel(castPhase(p, 1600), true)).toBe('flee');
-    expect(reel(castPhase(p, 3000))).toBe('catch');
-    expect(reel(castPhase(p, 4599))).toBe('catch');
-    expect(reel(castPhase(p, 4599), true)).toBe('catch'); // a hesitant fish still bites in the end
-    expect(reel(castPhase(p, 4600))).toBe('flee'); // too late
-    expect(reel(castPhase(null, 5000))).toBe('reel');
-  });
-  it('a hesitating fish backs off, comes back, nibbles at least once, and bites later', () => {
-    for (let s = 0; s < 200; s++) {
-      const tap = 400 + (s % 7) * 500;
-      const h = hesitatePlan(tap, mulberry32(s));
-      expect(h.arrive).toBeGreaterThan(tap + HESITATE_MS);
-      expect(h.nibbles.length).toBeGreaterThanOrEqual(1);
-      expect(h.nibbles.length).toBeLessThanOrEqual(3);
-      expect(h.nibbles.every((t) => t > h.arrive && t < h.bite)).toBe(true);
-      expect(h.bite - tap).toBeLessThan(7000);
-      expect(castPhase(h, tap + 1)).toBe('approach'); // a tap just after: the second early one (flees)
-      expect(h.window).toBe(BITE_WINDOW_MS);
-    }
   });
 });
 
@@ -311,19 +267,44 @@ describe('captions', () => {
 });
 
 describe('the waters (world units): the sea, the pond, the river, its mouth, the clifftop', () => {
-  it('a tap in the pond is the pond, on the stream the river (its mouth on the west beach, the clifftop at the falls’ pool and above the cliff), off the island the sea, on the land neither', () => {
-    expect(waterAt(POND.x, POND.z, false)).toBe('pond');
-    expect(waterAt(POND.x + POND.rx + 8, POND.z, false)).toBe('pond'); // a finger's slack round the rim
-    expect(waterAt(POND.x + POND.rx + 30, POND.z, false)).toBeNull();
-    expect(waterAt(RIVER[6][0], RIVER[6][1], false)).toBe('river');
-    expect(waterAt(RIVER[12][0], RIVER[12][1], false)).toBe('river'); // the reach across, beside the bridge
-    expect(waterAt(195, 560, false)).toBeNull();
-    expect(waterAt(RIVER[18][0], RIVER[18][1], false)).toBe('mouth');
-    expect(waterAt(RIVER[1][0], RIVER[1][1], false)).toBe('clifftop');
-    expect(waterAt(372, CLIFF.z0 - 20, false)).toBe('clifftop'); // the falls' pool
-    expect(waterAt(SPRING.x, SPRING.z, false)).toBe('clifftop'); // the spring
-    expect(waterAt(195, -60, true)).toBe('sea');
-    expect(waterAt(195, 400, false)).toBeNull();
+  it('the water is the tiles’: the pond, the stream (its mouth on the west beach, the clifftop at the falls’ pool and above the cliff), off the island the sea, on the land and the bridge none', () => {
+    expect(waterAt(POND.x, POND.z)).toBe('pond');
+    expect(waterAt(POND.x + POND.rx + 8, POND.z)).toBeNull();
+    expect(waterAt(POND.x + POND.rx + 8, POND.z, WATER_REACH)).toBe('pond'); // a finger's slack round the rim
+    expect(waterAt(POND.x + POND.rx + 30, POND.z, WATER_REACH)).toBeNull();
+    expect(waterAt(RIVER[6][0], RIVER[6][1])).toBe('river');
+    expect(waterAt(RIVER[12][0], RIVER[12][1])).toBeNull(); // under the bridge (its deck is the ground there)
+    expect(waterAt(195, 560)).toBeNull();
+    // the mouth's reach on the west beach (the stream's last points before the sea)
+    const mouth = RIVER.filter(([x, z]) => surfaceAt(x, z) === 'water' && freshWhere(x, z) === 'mouth');
+    expect(mouth.length).toBeGreaterThan(0);
+    for (const [x, z] of mouth) expect(waterAt(x, z)).toBe('mouth');
+    expect(waterAt(RIVER[1][0], RIVER[1][1])).toBe('clifftop');
+    expect(waterAt(372, CLIFF.z0 - 20)).toBe('clifftop'); // the falls' pool
+    expect(waterAt(SPRING.x, SPRING.z)).toBe('clifftop'); // the spring
+    expect(waterAt(195, -60)).toBe('sea');
+    expect(waterAt(195, 400)).toBeNull();
+    expect(waterAt(195, 646)).toBeNull(); // the bridge
+    // every answer is the ground's own (world.ts surfaceAt): no water where the ground isn't, none missed where it is
+    for (let x = -40; x <= 430; x += 23) for (let z = -120; z <= 1300; z += 29) {
+      const s = surfaceAt(x, z), w = waterAt(x, z);
+      expect(w === null, `${x},${z} ${s}`).toBe(s !== 'sea' && s !== 'water');
+      if (w === 'sea') expect(s).toBe('sea');
+    }
+    // clear of its edge (a negative reach): the pond's middle, not its rim
+    expect(waterAt(POND.x, POND.z, -6)).toBe('pond');
+    expect(waterAt(POND.x + POND.rx - 2, POND.z, -6)).toBeNull();
+  });
+  it('the river and its mouth are one channel; the pond, the sea and the clifftop each their own', () => {
+    expect(sameWater('river', 'mouth')).toBe(true);
+    expect(sameWater('mouth', 'river')).toBe(true);
+    expect(sameWater('pond', 'river')).toBe(false);
+    expect(sameWater('sea', 'mouth')).toBe(false);
+    expect(sameWater('clifftop', 'river')).toBe(false);
+    // open water between a shadow and a float: along the stream yes, across its bank no
+    expect(swimmable('river', RIVER[6][0], RIVER[6][1], RIVER[6][0] + (RIVER[7][0] - RIVER[6][0]) * 0.5, RIVER[6][1] + (RIVER[7][1] - RIVER[6][1]) * 0.5)).toBe(true);
+    expect(swimmable('pond', POND.x, POND.z, POND.x + POND.rx + 30, POND.z)).toBe(false);
+    expect(swimmable('sea', 195, -60, 195, 200)).toBe(false);
   });
   it("every fresh water's swim patches lie in that water (NH's locations by where you cast)", () => {
     for (const wh of FRESH) {
@@ -348,16 +329,25 @@ describe('the waters (world units): the sea, the pond, the river, its mouth, the
     expect(p.z).toBeLessThan(-10);
     expect(SEA_SWIM.cx - SEA_SWIM.L).toBe(SEA_BOX.x0);
   });
-  it('a cast lands inside the water, clear of its edge', () => {
-    for (const [x, z] of [[POND.x, POND.z], [POND.x + POND.rx + 6, POND.z], [POND.x - 30, POND.z - 20]]) {
-      const c = castInto('pond', x, z);
-      expect(inOval(POND, c.x, c.z, -POND.rz * 0.2), `${x},${z}`).toBe(true);
+  it('a cast lands on the water tapped, or the nearest within a finger’s slack, drawn in from its edge; none on dry land', () => {
+    for (const [x, z] of [[POND.x, POND.z], [POND.x + POND.rx + 6, POND.z], [POND.x - 30, POND.z - 20], [POND.x + POND.rx - 1, POND.z]]) {
+      const c = landing(x, z)!;
+      expect(c, `${x},${z}`).not.toBeNull();
+      expect(c.water).toBe('pond');
+      expect(inOval(POND, c.x, c.z), `${x},${z}`).toBe(true);
+      expect(Math.hypot(c.x - x, c.z - z)).toBeLessThan(WATER_REACH + 13);
     }
-    for (const [x, z] of [[RIVER[6][0] + 20, RIVER[6][1]], [RIVER[8][0] - 20, RIVER[8][1]], [RIVER[11][0], RIVER[11][1] - 30]]) {
-      const c = castInto(freshWhere(x, z) === 'mouth' ? 'mouth' : 'river', x, z), r = riverNear(c.x, c.z);
-      expect(r.d, `${x},${z}`).toBeLessThanOrEqual(r.hw * 0.56);
+    // on the river: on its water, clear of the banks where there's room
+    for (const [x, z] of [[RIVER[6][0] + 6, RIVER[6][1]], [RIVER[8][0] - 6, RIVER[8][1]], [RIVER[11][0], RIVER[11][1] - 4]]) {
+      const c = landing(x, z)!, r = riverNear(c.x, c.z);
+      expect(c.water === 'river' || c.water === 'mouth', `${x},${z}`).toBe(true);
+      expect(r.d, `${x},${z}`).toBeLessThan(r.hw);
     }
-    expect(castInto('sea', 195, -2).z).toBeLessThanOrEqual(-10);
+    // the sea at the shore: in from the sand
+    const sea = landing(195, -32);
+    if (sea) expect(waterAt(sea.x, sea.z, -4)).toBe('sea');
+    expect(landing(195, 400)).toBeNull();
+    expect(landing(POND.x + POND.rx + 30, POND.z)).toBeNull();
   });
 });
 

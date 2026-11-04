@@ -90,7 +90,7 @@ describe('a pond put down (kind pond): a fresh water as the painted pond’s', (
       expect(g2.freshWhere(o.x, o.z)).toBe('pond');
       W.setWorld(g2);
       expect(W.pondAt(o.x, o.z)).toBe(o);
-      expect(waterAt(o.x, o.z, false)).toBe('pond');
+      expect(waterAt(o.x, o.z)).toBe('pond');
       expect(freshAreas('pond').some((a) => a.cx === o.x && a.cz === o.z)).toBe(true);
       // nobody walks into it
       expect(walkable(walkGeo(), o.x, o.z)).toBe(false);

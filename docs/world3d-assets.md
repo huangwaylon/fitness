@@ -69,19 +69,19 @@ world.ts SEATS's names) pass their anchors; a piece with no shape keeps the old 
 Fishing (`world3d/fishing3d.ts`): Critters.svelte says each step of my line (cast, wait, bite, reel) and where its
 float is; my 3D villager (world3d/villagers.ts) holds NH's rod while the line is out (`VSpec.tool`, Island3D's), turned
 in its hand to point out over the water in the fishing pose, swings it out on the cast, is tugged at
-the bite and reels in (the rod kept in hand till the reel is over). Within LINE_REACH (220u) of the float only:
-further off (a cast across the island) the line runs from the bank, as the 2D one, and nobody holds a rod. Which way
+the bite and reels in (the rod kept in hand till the reel is over). Within LINE_REACH_U (220u, island/fishing.ts: a
+cast reaches 190u, so the angler always holds its line; walked further off, the line ends). Which way
 (`world3d/facing.ts`, the same on every phone from the same steps): standing, it turns to the float, NH's quick smooth
 turn (~0.2 s), and keeps facing it, square on from the rod's hand, the rod pointed at it; seated or lying it doesn't
 turn, the rod pointed the way it faces. The rod is a 3D child of the hand bone (`Hand_R`) and the line runs in world
 space from its tip; like everything the villager takes up after it's on the island (the rod, a hat), its material is
 bent with the island (`bend.ts`): unbent, it drew off the hand by the bend's drop and slid with every pinch and scroll
 (`e2e/fishing3d.spec.ts`: its tip against the feet the same at every zoom, nothing on the villager unbent). The float
-moves as the 2D one does, on Critters' same timers (`floatLift`, read each frame by the bobber node's `live`): a gentle
+moves on my line's steps (`floatLift`, read each frame by the bobber node's `live`): a gentle
 ±0.6u bob over 1.5 s while it waits, a soft ring (`fx/ripple`) every 2.6 s; a quick 380 ms dip and a small ring at each
-nibble (and the line's twitch at an early tap); at the bite a little hop and a plunge 7u under, a splash and a big
+nibble; at the bite a little hop and a plunge 7u under, a splash and a big
 ring (the rings and the splash are emitters on the water's surface: `m3.emit` on a node of their own), and NH's 「！」
-(`fx/bang`, turned to the camera) pops over my villager's head (over the bank where nobody holds the rod) with an
+(`fx/bang`, turned to the camera) pops over my villager's head with an
 overshoot, hops while the window lasts and pops out at the reel or the miss (effects.ts FxOpts `held`). Frames run at
 full rate while the float is out (`moveStart`), the ambient rate again once it's gone. `window.__fx3` (dev and ?demo):
 each source's live parts and the spawns' log (e2e/fishing3d.spec.ts: the nibbles' rings come before the 「！」). The

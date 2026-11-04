@@ -33,6 +33,9 @@ export function attachGestures(el: HTMLElement, cam: Cam, o: { enabled: () => bo
     if (!pts.size && skip(e)) return;
     pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pts.size === 1) {
+      // a new touch is a new gesture: the last drag's click, had it come, came before it (iOS sends none after a drag,
+      // so a window left open ate the next real tap: the tap on the water right after a scroll)
+      swallowUntil = 0;
       mode = 'tap';
       t0 = e.timeStamp;
       start = { x: e.clientX, y: e.clientY };
@@ -97,7 +100,7 @@ export function attachGestures(el: HTMLElement, cam: Cam, o: { enabled: () => bo
     mode = 'none';
     cam.touching(false);
   }
-  /** A drag's or a pinch's click (the finger lifted where it went) is no tap. */
+  /** A drag's or a pinch's click (the finger lifted where it went: a mouse's, right after its release) is no tap. */
   function click(e: MouseEvent) {
     if (performance.now() < swallowUntil) {
       swallowUntil = 0;

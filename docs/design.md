@@ -1136,18 +1136,29 @@ and it's netted, reeled in, dived for or dug there, its plate in the stack. A bu
 villager is put on the island for both (`put`), its moves from its id. **Seasons are a flavour, not a gate:** any species in any month, 3× likelier in its NH
 northern-hemisphere months; hours still hold.
 
-- **Fishing** (the sea in front of the beach, seen from まえ, or a fresh water: `critters.ts` `Water`): a shadow (NH
-  sizes 1–6) dawdles there. A tap near it casts a bobber, the line from the bank in front of it (my villager turns to
-  it where it stands, smoothly, and keeps facing it; seated or lying it stays as it is, the rod pointed ahead): a tap on a shadow as drawn (its body and a finger round it, the drawn coast past the water's
-  tiles included), on its water within CAST_U, or on another water within NEAR_U (the river by its mouth, the sea at
-  the mouth, the falls' pool and the river below: one water to the eye), the bobber in the shadow's own water nearest
-  the tap; the nearest shadow on screen wins (`e2e/fishing-taps.spec.ts`); the fish closes in over 2–3 darts, nibbles
-  1–3 times (each a small dip and a ring: it's coming), then bites: the bobber is yanked under with a splash, a small
-  「！」 pops over it (on the 3D island over my villager's head: docs/world3d-assets.md "Fishing"), and a tap anywhere in the next 1.6 s
-  catches it. The first early tap makes it hesitate; a second scares it off. 1 in 14 a boot, tire or can.
+- **Fishing** (NH's: `island/fishing.ts`, my line's state machine, pure and unit-tested; Critters.svelte plays its
+  steps; `critters.ts` waterAt / landing: the water is the island's own tiles, `world.ts` surfaceAt, the sea or a fresh
+  water by NH's locations, the one answer for casts, swims and the walk). A tap on water within `CAST_REACH_U` (190u) of
+  my villager casts there from where it stands, turning to it (smoothly, and it keeps facing the float; seated or lying
+  it stays as it is, the rod pointed ahead); dozing, the cast wakes it; walking, it stops where it is and casts. The
+  float lands on the water tapped, or the nearest within a finger's slack (12u: a narrow stream's bank, a shadow drawn
+  over the coast), drawn in off the bank. Water further off: my villager turns to it, a boop and 「とどかない」 there
+  (the water still rings); nothing goes out (NH: you cast from the bank). No walk to the water (the user, 2026-11-01:
+  walking to a pond got in the way; tap the shore to go there). A canopy, a bush, a find or a visitor over the water
+  keeps its tap. A shadow (NH sizes 1–6) on that water within `NOTICE_U` (180u), with open water between, notices the
+  float, closes in over 2–3 darts, nibbles 1–4 times (each a small dip and a ring: it's coming), then bites: the float
+  is yanked under with a splash and NH's 「！」 (on the 3D island over my villager's head: docs/world3d-assets.md
+  "Fishing"). While the line is out any tap on the island but a building's door is the reel (NH's A button: my villager,
+  a tree, the water alike): on the bite it catches the fish; earlier, with a fish at the float, it scares it off; with
+  none, it just comes in. `BITE_WINDOW_MS` (1 s) from when the bite shows (a late timer never shortens it); missed, the
+  fish darts off and the float stays out, bobbing, for the next. The line ends by itself only when my villager walks
+  out of its reach (220u: a door, a seat), dozes off, the island is hidden or covered, or the day turns. Nobody near:
+  the float waits as long as it takes; a shadow swimming by later notices it. 1 in 14 a boot, tire or can. Every tap on
+  water answers (`e2e/fishing-taps.spec.ts`: each water on both islands at 30 and 60 frames a second; every water
+  point on screen casts or says it's too far; a tap right after a scroll).
   On the 3D island (`island/glide.ts`, `world3d/things.ts`) nothing pops: a shadow or a bug fades in (0.6 s, a slight
   scale-up) where it comes and out where it goes; a shadow moves by its eased glides, smooth from wherever it is,
-  turning as it goes; my cast's fish turns to the float, each nibble its nose bumping the float with the float's dip,
+  turning as it goes; the fish at my float turns to it, each nibble its nose bumping the float with the float's dip,
   the bite a lunge onto it; scared, it turns tail and darts off with a quick tail wiggle, fading as it goes
   (`e2e/critters3d.spec.ts`). A bug follows its itinerary's own curve (`critterPath.ts` bugAt: a cubic in time through
   its legs' ends, slowing only where it rests, sits or hops), turned the way it flies.
@@ -1261,8 +1272,10 @@ and its mouth, and the spring and the river above the cliff.
   river's own also come to the mouth and the clifftop. `FRESH`, its own chunk fetched with the first freshwater shadow.
   Season weights the odds, hours hold, rare = low weight.
 - **Visits:** as often as the sea's (their own slot), one shadow per water, to the water and reach its seed picks
-  (the same on both phones, in view or not: `critterPath.ts` freshWater), 45 s if nobody fishes, drawn at 0.65 of the sea's size; my villager fishes from the pond's bank (`pondside`) or the
-  river's nearest bank.
+  (the same on both phones, in view or not: `critterPath.ts` freshWater), 45 s if nobody fishes (it stays while a line
+  holds it), drawn at 0.65 of the sea's size; each patch and every point of a swim on that water's own tiles, clear of
+  its banks (`critters.ts` waterAt: a pond's oval no longer puts one over the grass at a put-down pond's corners, nor a
+  river reach out at sea). My villager fishes from wherever it stands on the bank ([Critters](#critters), Fishing).
 - **Its bugs:** the pondskater and diving beetle by day in summer, the giant water bug at night.
 - **The catch:** a ずかん `find` of kind `fish`, like the sea's.
 

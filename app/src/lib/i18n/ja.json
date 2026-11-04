@@ -185,6 +185,7 @@
   "world.partner.beat": "{who}が さきに {name}を つかまえた！",
   "shake.dangle": "むしを つかまえる",
   "beach.picked": "{name}を ひろった！",
+  "fish.far": "とどかない",
   "present.got": "{name}を てにいれた！",
   "present.gotRecipe": "DIYレシピ「{name}」を てにいれた！",
   "beach.fossil": "化石を ほりだした！ {name}だ！",
