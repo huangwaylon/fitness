@@ -57,7 +57,7 @@ export type Kept = Relayed & { c?: number };
 /** A socket must say hello within this long. */
 export const HELLO_MS = 10_000;
 /** The day's world kept for a phone that opens later (docs/backend.md#shared-world): today's (Tokyo) changes, the
- *  last RING_MAX, and each person's last walk. */
+ *  last RING_MAX, and each person's last walk (never trimmed, carried into each new day). */
 export const RING_MAX = 400;
 /** Per connection: a burst of 20, 20 a second after that. */
 const BURST = 20;
@@ -78,8 +78,8 @@ export class RoomCore<S extends Sock> {
   /** When each person's last phrase went out (presence only: not kept). */
   private said = new Map<Who, number>();
 
-  /** When each person's last socket closed (the room's clock), until they're back: the welcome's `gone`, for a villager
-   *  whose phone is gone to walk home on every phone at the same time (app villagerSync HOME_AFTER_MS). */
+  /** When each person's last socket closed (the room's clock), until they're back: the welcome's `gone`, for one gone
+   *  quiet inside a room to come out of it on every phone at the same time (app store/where.svelte.ts). */
   private gone: Gone;
 
   constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}) {
@@ -322,12 +322,18 @@ export class RoomCore<S extends Sock> {
     return this.io.sockets().filter((s) => this.io.meta(s)?.opened !== 0).length < MAX_SOCKETS;
   }
 
-  /** Today's world (a new Tokyo day starts empty): the ring, its claims and nests rebuilt when the day turns. */
+  /** Today's world (a new Tokyo day starts empty but for each person's last walk: where their villager stands, however
+   *  long their phone is gone, stamped into today so a phone opening asks for it): the ring, its claims and nests
+   *  rebuilt when the day turns. */
   private fresh(): Kept[] {
     const today = tokyoDay(this.io.now());
     if (today === this.day) return this.ring;
     this.day = today;
-    this.ring = this.ring.filter((e) => tokyoDay(e.t) === today);
+    const ring = this.ring.filter((e) => tokyoDay(e.t) === today);
+    const walked = new Set(ring.filter((e) => e.kind === 'walk').map((e) => e.who));
+    const carried = this.ring.filter((e) => e.kind === 'walk' && !walked.has(e.who) && tokyoDay(e.t) !== today).map((e) => ({ ...e, t: this.stamp() }));
+    this.ring = [...ring, ...carried];
+    if (carried.length) this.io.save(this.ring);
     this.claims.clear();
     this.nests.clear();
     for (const e of this.ring) this.index(e);
@@ -354,11 +360,14 @@ export class RoomCore<S extends Sock> {
     return true;
   }
 
-  /** Keep a change the world took (admit) in the day's world. A walk replaces its person's last one. */
+  /** Keep a change the world took (admit) in the day's world. A walk replaces its person's last one; past RING_MAX the
+   *  oldest change that isn't a walk goes. */
   private keep(e: Kept): void {
     const ring = this.fresh();
     const rest = e.kind === 'walk' ? ring.filter((x) => !(x.kind === 'walk' && x.who === e.who)) : ring;
-    this.ring = [...rest, e].slice(-RING_MAX);
+    const next = [...rest, e];
+    while (next.length > RING_MAX) next.splice(Math.max(0, next.findIndex((x) => x.kind !== 'walk')), 1);
+    this.ring = next;
     this.index(e);
     this.io.save(this.ring);
   }

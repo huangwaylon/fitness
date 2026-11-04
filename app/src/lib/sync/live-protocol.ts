@@ -105,10 +105,11 @@ export type Intent =
    *  room, the piece's middle), its facing, `it` the item when it isn't placed yet, `end` when the finger let go. */
   | { kind: 'drag'; id: string; x: number; z: number; f: number; it?: string; end?: true; sc?: 'u' | 'v' | 'o' }
   /** My villager in a home (presence only, like a drag; `sc` which: none the tent, ウェイ's, `u` うめ's, `v` the
-   *  guest's; `m` the museum, routes/museum, its points within MUSEUM_U): `in` whether it's inside; a walk there (`from` → `via` → `to`,
+   *  guest's; `m` the museum, routes/museum, its points within MUSEUM_U; `s` the shop, no points: a screen, not a room,
+   *  2026-11-04): `in` whether it's inside; a walk there (`from` → `via` → `to`,
    *  model units of the room, set off at `s` on the relay's clock, `ms` long), or where it stands (`to` alone); sitting
    *  or lying on a piece (`seat`: its id, `n`: which of its seats, `lie`), since `s`. */
-  | { kind: 'tent'; in: boolean; to?: Pt; from?: Pt; via?: Pt[]; s?: number; ms?: number; seat?: string; n?: number; lie?: true; sc?: 'u' | 'v' | 'm' }
+  | { kind: 'tent'; in: boolean; to?: Pt; from?: Pt; via?: Pt[]; s?: number; ms?: number; seat?: string; n?: number; lie?: true; sc?: 'u' | 'v' | 'm' | 's' }
   /** A phrase my villager says (v2; docs/design.md "Villager taps"): its speech balloon over it on both phones for a
    *  few seconds. Presence only: never kept, never replayed, never in the sheet. `text` as cleanSay leaves it. `sc`
    *  (additive): where the speaker is, a home's room (`t` the tent, `u` うめ's, `v` the guest's), the museum (`m`; none: the island), so
@@ -157,7 +158,7 @@ export type Relayed = Intent & { v: LiveV; who: Who; t: number };
 export type ServerMsg =
   /** `peer`: a member's partner is here (the guest's: either member). `here` (v3): everyone else who is. `gone`
    *  (v3, 2026-11): when the room last saw each person's last socket close, on its clock, for those not here (mine:
-   *  my previous one's): a villager whose phone is gone walks home after a while (villagerSync HOME_AFTER_MS). */
+   *  my previous one's): one gone quiet inside a room is out of it a while after (store/where.svelte.ts). */
   | { v: LiveV; kind: 'welcome'; me: Who; peer: boolean; t: number; rec?: RecordMark; here?: Who[]; gone?: Gone }
   | { v: LiveV; kind: 'pong'; c: number; t: number }
   | { v: LiveV; kind: 'ack'; c: number; t: number; ok: boolean }
@@ -388,9 +389,11 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
       if (v === 1 || typeof o.in !== 'boolean' || !opt(o, 'to', isPt) || (o.from !== undefined && !isPt(o.from)) || !opt(o, 's', isTime) || !opt(o, 'ms', isWalkMs)) return null;
       if (o.via !== undefined && !(Array.isArray(o.via) && o.via.length <= VIA_MAX && o.via.every(isPt))) return null;
       if ((o.seat !== undefined && (typeof o.seat !== 'string' || !DECOR_ID.test(o.seat))) || !opt(o, 'n', (x): x is number => within(x, [0, 7])) || (o.lie !== undefined && o.lie !== true)) return null;
-      if (o.sc !== undefined && o.sc !== 'u' && o.sc !== 'v' && o.sc !== 'm') return null;
+      if (o.sc !== undefined && o.sc !== 'u' && o.sc !== 'v' && o.sc !== 'm' && o.sc !== 's') return null;
+      // (the shop: a screen, nowhere to stand)
+      if (o.sc === 's' && (o.to !== undefined || o.from !== undefined || o.via !== undefined || o.seat !== undefined)) return null;
       return {
-        ...(o.sc !== undefined ? { sc: o.sc as 'u' | 'v' | 'm' } : {}),
+        ...(o.sc !== undefined ? { sc: o.sc as 'u' | 'v' | 'm' | 's' } : {}),
         ...(o.seat !== undefined ? { seat: o.seat as string } : {}), ...(o.n !== undefined ? { n: o.n as number } : {}), ...(o.lie ? { lie: true as const } : {}),
         kind: 'tent', in: o.in, ...(o.to !== undefined ? { to: o.to as Pt } : {}), ...(o.from !== undefined ? { from: o.from as Pt } : {}),
         ...(o.via !== undefined ? { via: o.via as Pt[] } : {}), ...(o.s !== undefined ? { s: o.s as number } : {}), ...(o.ms !== undefined ? { ms: o.ms as number } : {})
