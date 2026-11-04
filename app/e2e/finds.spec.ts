@@ -3,7 +3,7 @@
 // and fragment is a ずかん `find` (mushrooms are cosmetic). None of it changes ベル, opens a sheet or navigates. The day
 // items derive from ?date= (deterministic); ?find= forces a bottle, this morning's fragments or the rare mushroom.
 import { expect, test, type Page } from '@playwright/test';
-import { fossilOnScreen } from './island.ts';
+import { fossilOnScreen, step } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -128,29 +128,30 @@ test('a bottle the waves bring washes up from the waterline to its spot, fading 
 
 test('a bottle waiting out in the shallows for its wave (not yet seen) takes no tap till its wave brings it in', async ({ page }) => {
   test.setTimeout(45_000);
-  await open(page, '&date=2026-11-04T12:00&find=washed');
-  // (the moment it's there and still unseen: where its tap area is; and when the tap came and its wave did, page time)
-  type T = { __downAt?: number; __roseAt?: number; __world3d?: { where(id: string): { fade: number } | null } };
-  const p = await page.evaluate(() => new Promise<{ x: number; y: number }>((ok) => {
-    const w = window as unknown as T;
-    addEventListener('pointerdown', () => (w.__downAt ??= performance.now()), { capture: true });
-    let found = false;
-    const frame = () => {
-      const el = document.querySelector('[data-find="bottle"]'), f = w.__world3d?.where('find-b-demo');
-      if (found && f && f.fade > 0) return void (w.__roseAt = performance.now());
-      if (!found && el && f && f.fade === 0) {
-        found = true;
-        const r = el.getBoundingClientRect();
-        ok({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
-      }
-      requestAnimationFrame(frame);
-    };
-    frame();
-  }));
-  await page.mouse.click(p.x, p.y);
-  await page.waitForTimeout(400);
-  const { down, rose } = await page.evaluate(() => ({ down: (window as unknown as T).__downAt!, rose: (window as unknown as T).__roseAt ?? Infinity }));
-  test.skip(down >= rose, 'its wave came as the tap did');
+  // On the page's clock: the bottle comes 1.5 s after the island opens (?find=washed) and waits for its wave there (up
+  // to its 5 s cycle), its model loading as it comes (the network's time, not the page's). On the real clock a busy
+  // runner's model came after the wave, and the bottle was never seen waiting (the test ran out). Here the page's time
+  // moves a frame at a time, held while the model loads, so it's found waiting and tapped then, the clock still.
+  await page.clock.install({ time: new Date('2026-11-04T12:00:00+09:00') });
+  await page.clock.pauseAt(new Date('2026-11-04T12:00:01+09:00'));
+  await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
+  await page.goto('?demo&date=2026-11-04T12:00&find=washed');
+  type T = { __world3d?: { where(id: string): { fade: number } | null } };
+  const state = () => page.evaluate(() => {
+    const el = document.querySelector('[data-find="bottle"]'), f = (window as unknown as T).__world3d?.where('find-b-demo');
+    const r = el?.getBoundingClientRect();
+    return { at: r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null, fade: f ? f.fade : null };
+  });
+  let s = await state();
+  for (let i = 0; i < 800 && !(s.at && s.fade === 0); i++) {
+    await step(page, 16);
+    // (the bottle's there and its model isn't: a moment of ours for the load, none of the page's)
+    if (s.at && s.fade === null) await page.waitForTimeout(50);
+    s = await state();
+  }
+  expect(s.fade, 'the bottle seen waiting for its wave').toBe(0);
+  await page.mouse.click(s.at!.x, s.at!.y);
+  await step(page, 400);
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
   await expect(page.locator('[data-find="bottle"]')).toHaveCount(1);
   expect(await cues(page)).not.toContain('scene-bottle');

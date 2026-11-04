@@ -75,13 +75,16 @@ test('a tap by the campsite runs my villager up the path, never through the wate
 });
 
 test('a tap on the pond ripples and walks nowhere; a walk stays for the session', async ({ page }) => {
-  await open(page);
+  // (no critters: a fish's shadow in the pond would take the tap as a cast, and the grass tap then only reels it in)
+  await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
+  await open(page, '&date=2026-07-01T10:00&critter=none');
   const { POND } = await geo(page);
   await camTo(page, POND.z - 212, false);
   const home = await call(page, (w) => w.mine());
   const [x, y] = await call(page, (w, [x, z]) => w.at(x, z), [POND.x, POND.z]);
   await page.mouse.click(x, y);
-  await expect(page.locator('[data-fx="splash"], .splash').first()).toBeAttached();
+  // the ripple played (its cue: its flourish lives 1.1 s, gone before a look on a loaded drawn page)
+  await expect.poll(() => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? [])).toContain('scene-splash');
   await expect(page.locator('.tap-ring')).toHaveCount(0);
   expect((await track(page, 1500)).at(-1)).toEqual(home);
   // a tap on the grass beside it walks there, and it's still there after a reload
