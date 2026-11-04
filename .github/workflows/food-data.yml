@@ -1,0 +1,24 @@
+# The food-data pipeline's unit tests (docs/food-data.md): stdlib only, no network, no raw inputs, so the runner's
+# python3 does. Rebuilding the data stays manual (the raw downloads are never in the repo).
+name: Food data checks
+
+on:
+  push:
+    branches: [main]
+    paths: ['food-data/**', '.github/workflows/food-data.yml']
+  pull_request:
+    paths: ['food-data/**', '.github/workflows/food-data.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - run: python3 --version
+      - run: python3 -I -m unittest discover -s food-data/scripts/tests

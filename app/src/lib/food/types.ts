@@ -1,5 +1,5 @@
-// The meal log's food data as shipped in static/food/ (copied from the calorie PoC by scripts/food-data.ts; the
-// format is its docs/data.md). Nutrients are per 100 g; 100 ml of a drink counts as 100 g.
+// The meal log's food data as shipped in static/food/ (food-data/'s build, copied by scripts/food-data.ts; the
+// format is in docs/food-data.md). Nutrients are per 100 g; 100 ml of a drink counts as 100 g.
 
 /** A portion: the first of an item's is its default. */
 export interface Portion {

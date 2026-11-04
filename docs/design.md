@@ -228,9 +228,9 @@ Health data over time for the personal trainer, one person at a time, computed o
 ### Gohan
 
 ごはん, the meal log (`model/food.ts`, `components/food/*`, `lib/food/`, `e2e/food.spec.ts`; the data in
-`static/food/`): the HUD's bowl button (NH's ramen bowl, `items/dinner`, set 3px below the pill's centre so the bowl,
-not its nori, sits mid-pill) grows it out of the bowl like けんこう (full height; whose day, title ごはん and ✕; ‹ in
-whose place while a level is open). What each of us ate, typed in by hand; it never earns ベル.
+`static/food/`, built by `food-data/`: [food data](food-data.md)): the HUD's bowl button (NH's ramen bowl,
+`items/dinner`, set 3px below the pill's centre so the bowl, not its nori, sits mid-pill) grows it out
+of the bowl like けんこう (full height; whose day, title ごはん and ✕; ‹ in whose place while a level is open). What each of us ate, typed in by hand; it never earns ベル.
 Everyone sees everyone's meals, the guest's phone too; only the owner changes an entry. Its code, its strings
 (`i18n/food.*.json`) and the food data load with the first opening (the data only with the first search).
 

@@ -4,3 +4,9 @@
 # a stray npm install / svelte-kit sync at the repo root
 node_modules
 .svelte-kit/
+# the food-data pipeline: third-party raw downloads (never committed: the repo is public), its build output
+# (app/static/food/ ships it, via npm run food:data), a build's staging dir
+food-data/raw/
+food-data/out/
+food-data/.build-*/
+food-data/**/__pycache__/

@@ -1,7 +1,7 @@
-// Copy the meal log's food data (the calorie PoC's app/data, built there by scripts/build.py; its docs/data.md) into
-// static/food/: index.json, verify.json and every dataset index.json lists. Not the barcode shards (jan/): no barcode
+// Copy the meal log's food data (food-data/out/, built by `python3 -I food-data/scripts/build.py all` from the repo
+// root; docs/food-data.md) into static/food/: index.json, verify.json and every dataset index.json lists. Not the barcode shards (jan/): no barcode
 // scanning in v1. The app fetches them at runtime (lib/food/load.ts), never precached, under `?v=<index.version>`.
-// Usage (from app/): npm run food:data   [-- <data dir>, default ../../calories/app/data]
+// Usage (from app/): npm run food:data   [-- <data dir>, default ../food-data/out]
 // Checks: index.json lists only files that are there, and every dataset file there is listed (a stray or missing
 // file fails, nothing is copied). static/food/ is replaced whole, so a dropped dataset goes too.
 // Each item gets its search keys (`keys`: lib/food/search.ts keysOf), so the app builds none while the user types; a
@@ -12,7 +12,7 @@ import { keysOf } from '../src/lib/food/search.ts';
 import type { Dataset } from '../src/lib/food/types.ts';
 
 const APP = join(import.meta.dirname, '..');
-const SRC = resolve(APP, process.argv[2] ?? '../../calories/app/data');
+const SRC = resolve(APP, process.argv[2] ?? '../food-data/out');
 const OUT = join(APP, 'static', 'food');
 /** Beside the datasets: the index and the cross-source verify groups. */
 const SIDECARS = ['index.json', 'verify.json'];
