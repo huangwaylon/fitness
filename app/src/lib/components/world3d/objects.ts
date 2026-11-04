@@ -1,14 +1,12 @@
 // What stands on the 3D island, from the layout (docs/island-layout.md "API for the 3D scene"): placeObjects(layout,
-// day) gives the engine's instance list (layout3d.ts's Inst, ids = the layout's object ids) and the stand-ins (a card
-// each) for what has no model yet. The same models, sizes and looks as layout3d.ts's world.ts island (the day's
-// season, its hedge pair, the fixed decor's seasonal pieces, the scenery's swaps), at the layout's spots, turned by
-// their facing. A default object keeps today's size (world.ts's height for its id) wherever it is moved.
+// day) gives the engine's instance list (Inst, ids = the layout's object ids) and the stand-ins (a card each) for what
+// has no model yet. NH's models at the island's sizes and looks (the day's season, its hedge pair, the fixed decor's
+// seasonal pieces, the scenery's swaps), at the layout's spots, turned by their facing. A default object keeps today's size (world.ts's height for its id) wherever it is moved.
 import ISLAND_MODELS from '../island/models.json' with { type: 'json' };
 import W3D from './models.json' with { type: 'json' };
 import { DECOR_U, TREE_H, WORLD_2D } from '../island/world.ts';
 import { FLOWER_U, TREE_FRUIT, TREE_FRUIT_U, flowerScale, hedgePair, wildFlower } from '../island/scene.ts';
 import type { Piece } from '../island/fixedDecor.ts';
-import type { Inst, ModelName, Standin } from './layout3d.ts';
 import { assetFor } from './assets.ts';
 import { keyModel, modelBounds } from './models3d.ts';
 import { POND_LILIES, POND_Y } from './pond.ts';
@@ -18,6 +16,37 @@ import type { Season } from '#lib/ui-state/theme.svelte.ts';
 import { kindDef } from '#lib/layout/catalog.ts';
 import { doorOf, facingVec, footOf, objMid, type Layout } from '#lib/layout/model.ts';
 import { WHO_OF_HOME, homePorch, type HomeStyle } from '#lib/layout/homes.ts';
+
+/** A model (static/room/world3d/<name>.glb). */
+export type ModelName = string;
+export interface Inst {
+  model: ModelName;
+  x: number;
+  z: number;
+  /** Height above the ground under it (a fruit in the canopy). */
+  lift?: number;
+  scale: number;
+  yaw?: number;
+  /** Tipped about its x axis (radians: a leaf lying flat on the water). */
+  pitch?: number;
+  /** Turned to the camera (a flat flourish). */
+  face?: boolean;
+  /** A tint for the petals (a flower's colour, on a model without its own colour). */
+  tint?: number;
+  /** Tappable: what it is (a tree jiggles). */
+  tap?: 'tree' | 'rock' | 'tent' | 'thing';
+  id: string;
+}
+
+/** A thing the 3D island has no model for yet: a card of today's art (cards.ts), its feet at (x, z). */
+export interface Standin {
+  id: string;
+  key: string;
+  x: number;
+  z: number;
+  h: number;
+  flip?: boolean;
+}
 
 export interface Day {
   season: Season;
@@ -108,7 +137,7 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         thing(m, scaleOf(key, m, swap.h));
         continue;
       }
-      // (a seasonal look of its own: NH's mushroom lamp, a pond stone… layout3d.ts's way, fitted to its height)
+      // (a seasonal look of its own: NH's mushroom lamp, a pond stone…, fitted to its height)
       if (k) {
         thing(k.m as ModelName, swap.h / (MU[key]?.mu[1] ?? modelH(k.m as ModelName)));
         continue;
@@ -140,7 +169,7 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
       }
       case 'flower': {
         const clump = Number(o.s?.slice(1)) || 0;
-        // (today's hybrid in its spot; each colour NH's own model, as layout3d.ts: the POC's grey one tinted only for a
+        // (today's hybrid in its spot; each colour NH's own model: the POC's grey one tinted only for a
         // colour NH's files have none of, a dark tint over it drew the flower near black)
         const fid = day.hybrid?.id === o.id ? day.hybrid.flower : wildFlower({ clump }, season);
         const [colour, kind] = [fid.slice(0, fid.indexOf('-')), fid.slice(fid.indexOf('-') + 1)];

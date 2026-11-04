@@ -1,6 +1,6 @@
 // A pond put down on the island (layout kind `pond`; docs/island-layout.md "The layout is data"): the old 3D island's
-// pond as a thing of its own, on the grass: its water an oval of the old pond's slow ripples and glints (water.ts's,
-// on the shared clock and tint: waterU), a darker bed under it, wet earth at its edge and NH-coloured stones round it.
+// pond as a thing of its own, on the grass: its water an oval of the old pond's slow ripples and glints (the old
+// water.ts's, on the shared clock and tint: waterU), a darker bed under it, wet earth at its edge and NH-coloured stones round it.
 // Its lily pads and the lily on the biggest are placeObjects' (models, on the water). layout/ponds.ts pondPlaces says
 // where; the scene stands the group on the ground (engine.ts placeGroup).
 import {

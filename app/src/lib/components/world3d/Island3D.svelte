@@ -15,7 +15,7 @@
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import { actors, livePos } from '../motion/director.svelte.ts';
   import type { Proj3, World } from '../island/camera.svelte.ts';
-  import { CAMPSITE, GOAL_TREES, SEAT_DROP, SHORE_Z, TREE_H } from '../island/world.ts';
+  import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '../island/world.ts';
   import { GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
   import { LAMP_GLOW, type Piece } from '../island/fixedDecor.ts';
   import type { Scenery } from '../island/world.ts';
@@ -23,13 +23,10 @@
   import { listenFx3 } from '../island/fx3d.ts';
   import { ambient3 } from '../island/ambient3d.svelte.ts';
   import PLACES from '../island/models.json' with { type: 'json' };
-  import { createIsland, type Ground, type Island3 } from './engine.ts';
-  import { WORLD_GROUND } from './ground.ts';
-  import { island, type Inst, type Standin } from './layout3d.ts';
+  import { createIsland, type Island3 } from './engine.ts';
   import { assetFor } from './assets.ts';
   import { keyModel, modelBounds } from './models3d.ts';
   import { floats as floatsNow, floatAt, type Float } from './floats3d.ts';
-  import { SEA_Y, WATER_DROP, baseHeight } from './ground.ts';
   import { attachGestures } from './gestures.ts';
   import { idlePose, motionPose } from './motion3d.ts';
   import type { CardSpec } from './cards.ts';
@@ -43,7 +40,7 @@
   import { site } from '../island/site.svelte.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
-  import { homePlaces, placeObjects } from './objects.ts';
+  import { homePlaces, placeObjects, type Inst, type Standin } from './objects.ts';
   import { buildHome, homeTod } from './home.ts';
   import { buildStructure, structurePlaces } from './structure.ts';
   import { POND_Y, buildPond } from './pond.ts';
@@ -104,14 +101,8 @@
     onfail: () => void;
     /** The camera is up and the island's models are in (once). */
     onready: () => void;
-    /** What the camera's ends frame (the island layout's, once it lands; world.ts's today): まえ's shoreline and the
-     *  canopy that must clear the HUD there, おく's landmark (its feet half way down the screen, its top clear). */
-    /** The ground: world.ts's baked heightfield today, the layout's buildGround() once it lands. */
-    ground?: Ground;
-    ends?: { shore: number; canopy: readonly [number, number, number]; back: readonly [number, number, number] };
   }
-  let { world, scene, season, foliage, month, tod, scenery, pieces, hybrid, floating, wet, cast, enabled, start, onscroll, onhorizon, onfail, onready, ground = WORLD_GROUND,
-    ends = { shore: SHORE_Z, canopy: [GOAL_TREES.A[0], GOAL_TREES.A[1], TREE_H], back: [CAMPSITE.x, CAMPSITE.z, CAMPSITE.h] } }: Props = $props();
+  let { world, scene, season, foliage, month, tod, scenery, pieces, hybrid, floating, wet, cast, enabled, start, onscroll, onhorizon, onfail, onready }: Props = $props();
 
   let canvas = $state<HTMLCanvasElement>();
   let eng = $state.raw<Island3 | null>(null);
@@ -120,11 +111,12 @@
   const q = new URLSearchParams(location.search);
   const num = (k: string) => (q.get(k) !== null && q.get(k) !== '' && Number.isFinite(Number(q.get(k))) ? Number(q.get(k)) : null);
 
-  // ---- the island on its layout (island/site.svelte.ts site.on, as the island opens: the page's switch): the layout's
-  // ground (terrain.ts buildGround), its objects (objects.ts placeObjects), its homes and bridges and stairs (home.ts,
-  // structure.ts), the camera's ends from its extent; world.ts's old ground and its floats aren't used ----
-  if (site.on) site.sync();
-  const onLayout = site.on && !!site.layout;
+  // ---- the island on its layout (island/site.svelte.ts, synced as the island opens): the layout's ground (terrain.ts
+  // buildGround), its objects (objects.ts placeObjects), its homes and bridges and stairs (home.ts, structure.ts), the
+  // camera's ends from its extent ----
+  site.sync();
+  /** The layout the island stands on (site's, synced above). */
+  const layoutNow = (): Layout => site.layout ?? layoutStore.current;
   let lground: LayoutGround | null = null;
   /** The ground's look today: the season's, the petals' or the fallen leaves' weeks. */
   const lookNow = (): Look => (season === 'spring' && foliage === 'blossom' ? 'spring-petals' : season === 'autumn' && foliage === 'fall' ? 'autumn-leaves' : season);
@@ -353,8 +345,7 @@
   const LINE_N = 12;
   /** The water's surface at (x, z): the sea's level, or a stream's or a pond's (its banks less the drop). */
   const waterY = (x: number, z: number) => {
-    const l = onLayout ? site.layout : null;
-    if (!l) return Math.max(SEA_Y + 0.2, baseHeight(x, z) - WATER_DROP + 0.2);
+    const l = layoutNow();
     // a pond put down (pond.ts): its water POND_Y over the grass it stands on
     const pd = pondIn(l, x, z);
     if (pd) return heightOf(pd.x, pd.z) + POND_Y + 0.2;
@@ -374,14 +365,15 @@
    *  ground (a river's or a pond's bed, the seabed). A fish's shadow keeps above it: under a pond put down, the shadow's
    *  2.5 under the water was under the grass, hidden. */
   const bedY = (x: number, z: number) => {
-    const l = onLayout ? site.layout : null, pd = l && pondIn(l, x, z);
+    const pd = pondIn(layoutNow(), x, z);
     return pd ? heightOf(pd.x, pd.z) + POND_Y - 0.4 : heightOf(x, z);
   };
   const marked = new WeakMap<Element, boolean>();
   let lamps3: LampSpot[] = [];
   const smooth = (k: number) => k * k * (3 - 2 * k);
-  const heightOf = (x: number, z: number) => (lground ? lground.heightAt(x, z) : 'group' in ground ? ground.heightAt(x, z) : ground.height(x, z));
-  const feetOf = (x: number, z: number) => (lground ? lground.feet(x, z) : 'group' in ground ? (ground.feet ?? ground.heightAt)(x, z) : ground.feet(x, z));
+  // (the ground is built as the engine starts: 0 before it, should anything ask)
+  const heightOf = (x: number, z: number) => lground?.heightAt(x, z) ?? 0;
+  const feetOf = (x: number, z: number) => lground?.feet(x, z) ?? 0;
   /** The self-light of the island's models at each time of day (engine.ts TOD lift): the 3D villagers' too. */
   const LIFT = { day: 0.32, dusk: 0.22, night: 0.08 } as const;
   const todNow = () => (tod === 'night' ? 'night' : tod === 'dusk' || tod === 'dawn' ? 'dusk' : 'day');
@@ -552,17 +544,14 @@
   $effect(() => {
     const e = eng;
     if (!e) return;
-    const lay = onLayout ? site.layout : null;
-    const day = { season, foliage, month, scenery, pieces, hybrid, fruit: false };
-    if (lay && !layoutN.has(lay)) layoutN.set(lay, ++layouts);
-    const sig = `${season}|${foliage}|${month}|${hybrid?.id}:${hybrid?.flower}|${scenery.map((s) => s.id + s.key).join()}|${pieces.map((p) => p.id + p.key).join()}|${lay ? layoutN.get(lay) : ''}`;
+    const lay = layoutNow();
+    if (!layoutN.has(lay)) layoutN.set(lay, ++layouts);
+    const sig = `${season}|${foliage}|${month}|${hybrid?.id}:${hybrid?.flower}|${scenery.map((s) => s.id + s.key).join()}|${pieces.map((p) => p.id + p.key).join()}|${layoutN.get(lay)}`;
     if (sig === placed) return;
     placed = sig;
     untrack(() => {
-      const { insts, standins: st } = lay
-        ? placeObjects(lay, { season, foliage, month, pieces, hybrid, swaps: Object.fromEntries(scenery.map((s) => [s.id, { key: s.key, h: s.h }])), fruit: false, structures: true })
-        : island(day);
-      placedIds = lay ? new Set(insts.map((i) => i.id)) : new Set();
+      const { insts, standins: st } = placeObjects(lay, { season, foliage, month, pieces, hybrid, swaps: Object.fromEntries(scenery.map((s) => [s.id, { key: s.key, h: s.h }])), fruit: false, structures: true });
+      placedIds = new Set(insts.map((i) => i.id));
       void e.place(insts).then(() => {
         if (!loaded) {
           queueMicrotask(onready);
@@ -574,10 +563,8 @@
       standins(st);
       e.glows((lamps3 = standinLamps(st)));
       lground?.look(lookNow());
-      if (lay) {
-        builtOn(e, lay);
-        fitEnds(e);
-      }
+      builtOn(e, lay);
+      fitEnds(e);
     });
   });
 
@@ -688,11 +675,10 @@
   /** The layout ground's bake (px a unit): nothing drawn (the e2e's logic mode), a token one; a software renderer
    *  half the phone's (its bake held every tab of CI's browser up for seconds). */
   const groundPx = (soft: boolean) => (drawOff() ? 0.05 : soft ? 0.8 : undefined);
-  /** The ends' landmarks: the layout's (its front shore, ウェイ's home's door) on its layout, else the props'. */
-  function endsNow(): { shore: number; canopy: readonly [number, number, number]; back: readonly [number, number, number]; edge?: number } {
-    const l = onLayout ? site.layout : null;
-    if (!l) return ends;
-    const x = extentOf(l);
+  /** The ends' landmarks: the layout's (its front shore, ウェイ's home's door; まえ's canopy that must clear the HUD,
+   *  おく's landmark, its feet half way down the screen, its top clear). */
+  function endsNow(): { shore: number; canopy: readonly [number, number, number]; back: readonly [number, number, number]; edge: number } {
+    const x = extentOf(layoutNow());
     // (and the land's far edge: the user, "scroll further back, to see the back of the island too")
     return { shore: x.shore, canopy: [GOAL_TREES.A[0], GOAL_TREES.A[1], TREE_H], back: [x.home[0], x.home[1], CAMPSITE.h], edge: x.land.z1 };
   }
@@ -704,7 +690,7 @@
     if (!H) return;
     const hud = Math.max(0, (document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? 0) - scene.getBoundingClientRect().top);
     const en = endsNow();
-    e.setLimits(en.shore - 400, Math.max(en.back[1], en.edge ?? 0) + 700);
+    e.setLimits(en.shore - 400, Math.max(en.back[1], en.edge) + 700);
     const syAt = (x: number, z: number, lift: number) => (cz: number) => (e.go(cz, 1), e.at(x, z, lift).sy);
     const solve = (f: (cz: number) => number, target: number, lo: number, hi: number) => {
       for (let i = 0; i < 28; i++) {
@@ -715,10 +701,10 @@
       return Math.round((lo + hi) / 2);
     };
     const { shore, canopy: [cx, cz, ch], back: [bx, bz, bh], edge } = endsNow();
-    const lo = shore - 400, hi = Math.max(bz, edge ?? 0) + 700;
+    const lo = shore - 400, hi = Math.max(bz, edge) + 700;
     const min = Math.max(solve(syAt(195, shore, 0), H * SHORE_AT, lo, shore + 530), solve(syAt(cx, cz, ch), hud + CLEAR, lo, cz + 400));
     let max = Math.max(solve(syAt(bx, bz, 0), H * CAMP_AT, min, hi), solve(syAt(bx, bz, bh), hud + CLEAR, min, hi));
-    if (edge !== undefined) max = Math.max(max, solve(syAt(195, edge, 0), Math.max(hud + CLEAR, H * EDGE_AT), min, hi));
+    max = Math.max(max, solve(syAt(195, edge, 0), Math.max(hud + CLEAR, H * EDGE_AT), min, hi));
     e.setLimits(min, max);
     e.go(v.camZ, v.zoom);
   }
@@ -763,9 +749,8 @@
     // tabs share their runner's cores: at the phone's pixel ratio a frame took ~0.5 s)
     const soft = softwareGL();
     try {
-      e = createIsland(canvas, onLayout ? (renderer) => (lground = buildGround(site.layout!, { renderer, look: lookNow(), stairs: false, px: groundPx(soft) })) : ground, {
+      e = createIsland(canvas, (renderer) => (lground = buildGround(layoutNow(), { renderer, look: lookNow(), stairs: false, px: groundPx(soft) })), {
         dpr: num('dpr') ?? (soft ? 0.5 : Math.min(2, window.devicePixelRatio || 1)),
-        water: q.get('water') !== '0',
         shadows: soft ? q.get('shadows') === '1' : q.get('shadows') !== '0',
         cap: num('cap') === 30 ? 30 : 60,
         aa: q.get('aa') !== null ? q.get('aa') !== '0' : !soft
@@ -823,14 +808,11 @@
     listenPose3d((id, key) => e.things.swap(id, key ? (keyModel(key)?.m ?? null) : null));
     // the layout changed (the editor, a phone's もようがえ): the ground's changed chunks rebuilt (site's own listener,
     // first, has re-derived world.ts and bumped site.rev: the objects, the homes and the ends follow in the day's effect)
-    const offLayout = onLayout
-      ? layoutStore.on(({ diff }) => {
-          const l = site.layout ?? layoutStore.current;
-          if (!lground || !diff.chunks.length) return;
-          lground.rebuild(l, diff.chunks);
-          e.kick();
-        })
-      : () => {};
+    const offLayout = layoutStore.on(({ diff }) => {
+      if (!lground || !diff.chunks.length) return;
+      lground.rebuild(layoutNow(), diff.chunks);
+      e.kick();
+    });
     listen3d((id, k) => {
       if (e.things.has(id)) e.things.jiggle(id, k);
       else e.cards.jiggle(`s:${id}`, k);
@@ -867,8 +849,8 @@
       lamps: () => e.lamps(),
       /** My angler's line up: its facing, its rod and its line's headings in plan (degrees), or null. */
       angler: (slot = 'mine') => vil3?.angler(slot) ?? null,
-      /** On the layout (site.on): its ground is the layout's; the homes, bridges and stairs placed. */
-      onLayout: () => onLayout && !!lground,
+      /** On the layout: its ground built (the layout's); the homes, bridges and stairs placed. */
+      onLayout: () => !!lground,
       placedGroups: () => e.placedGroups(),
       /** The balloon present drawn now (world space: its balloon's middle, the present's top, its shadow), or null. */
       balloon: () => b3?.state() ?? null

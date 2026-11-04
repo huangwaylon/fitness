@@ -1,6 +1,6 @@
 // The 3D island's things (docs/design.md "World"): NH's models (static/room/world3d, the world3d manifest), one
-// InstancedMesh per model and material, placed from a layout (a list of instances by id: layout3d.ts from world.ts
-// today, the island layout's placement once it lands). A new list rebuilds only the models whose instances changed.
+// InstancedMesh per model and material, placed from a layout (a list of instances by id: the island layout's,
+// objects.ts placeObjects). A new list rebuilds only the models whose instances changed.
 // Each instance can be hidden, moved (a fruit falling), greyed (a fruit not yet grown) or set wobbling (a tap, a shake)
 // without a rebuild. Every material is a Lambert (NH's soft look, cheaper than PBR), bent (bend.ts); a lamp's own _Emi
 // map is its night light (lights.ts adds its halo and its pool).
@@ -11,7 +11,7 @@ import {
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { bend } from './bend.ts';
-import type { Inst, ModelName } from './layout3d.ts';
+import type { Inst, ModelName } from './objects.ts';
 import type { LampSpot } from './lights.ts';
 import { MODELS } from './models3d.ts';
 import { ASSET_KEYS } from './assets.ts';

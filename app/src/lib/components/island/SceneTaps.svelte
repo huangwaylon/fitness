@@ -22,8 +22,6 @@
   // Decorative and pointer-only (aria-hidden, no focus stops).
   import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
   import { visitorNow } from './visitors.ts';
-  import { deckOut } from './stretching.ts';
-  import { site } from './site.svelte.ts';
   import { timers } from './timers.ts';
   import { hookFlag, islandSeed } from './devHooks.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -128,11 +126,11 @@
   let deck = $state<{ tap(px: number, py: number): boolean }>();
   let cakeEl = $state<{ tap(px: number, py: number): boolean }>();
   // Loaded the first time they're due (their chunks stay out of the first load), then kept: a visitor (who leaves
-  // the way they came), the tape deck (an Exercise day or a morning), a birthday's cake.
+  // the way they came), the tape deck (a fixed piece of the layout, there every day: its tap says when it plays), a
+  // birthday's cake.
   const visitorC = lazyComponent(() => import('./Visitor.svelte')), deckC = lazyComponent(() => import('./TapeDeck.svelte')), cakeC = lazyComponent(() => import('./Cake.svelte'));
   const VisitorC = $derived(visitorC.get(!!visitorNow(minuteNow())));
-  // (on the 3D island's layout the deck is a fixed piece, there every day: its tap says when it plays)
-  const TapeDeckC = $derived(deckC.get(hookFlag('stretch') || site.on || deckOut(dayKey(minuteNow()), jst(minuteNow()).hour, exercise)));
+  const TapeDeckC = $derived(deckC.get(true));
   const CakeC = $derived(cakeC.get(cake));
   /** The shooting star crossing now: a tap in the sky before `until` is a wish on it (NH), once. */
   let streak: { until: number; wished: boolean } | null = null;
@@ -563,7 +561,7 @@
 <Finds bind:this={finds} {scene} {enabled} />
 <Care bind:this={care} {scene} {enabled} rockBug={(x, z) => critters?.fromRock(x, z)} />
 {#if VisitorC}<VisitorC bind:this={visitor} {scene} {enabled} {say} {ontrick} />{/if}
-{#if TapeDeckC}<TapeDeckC bind:this={deck} {scene} {enabled} {exercise} {say} />{/if}
+{#if TapeDeckC}<TapeDeckC bind:this={deck} {enabled} {exercise} {say} />{/if}
 {#if CakeC}<CakeC bind:this={cakeEl} {enabled} on={cake} />{/if}
 
 <!-- a falling present: a world node on its arc (its model the 3D island's; its art only with no model), its landing

@@ -89,7 +89,7 @@ const SEAT_ON: Record<string, [piece: string, model: string, n: number]> = {
   stoolW: ['stool-1', 'log-stool', 0], stoolE: ['stool-2', 'log-stool', 0]
 };
 const MU = ISLAND_MODELS as unknown as Record<string, { mu: [number, number] }>;
-/** A seat's anchor (three's space, on the ground at `floor`), as layout3d.ts puts its piece: the fixed decor at NH's
+/** A seat's anchor (three's space, on the ground at `floor`), as world.ts's island put its piece: the fixed decor at NH's
  *  furniture scale, a stool fitted to its height (the flipped one turned a little), facing the camera. */
 function islandSeat(name: string, floor: number): Anchor | null {
   const on = SEAT_ON[name];
@@ -100,10 +100,10 @@ function islandSeat(name: string, floor: number): Anchor | null {
   const s = slot ? DECOR_U : sc!.h / (MU[sc!.key]?.mu[1] ?? 4.2), yaw = sc?.flip ? 0.7 : 0;
   return anchorsOf(shapeOf('island', model), { x: p.x, z: -p.z, y: floor, yaw, s })[n] ?? null;
 }
-/** A seat on the layout (site.on): any piece's of the layout's with a model seat, default or new (island/sitting.ts:
+/** A seat on the layout: any piece's of the layout's with a model seat, default or new (island/sitting.ts:
  *  layout/nav.ts seatsOf's names, on its model as placeObjects stands it). */
 function layoutSeat(name: string, floor: number): Anchor | null {
-  const l = site.on ? site.layout : null;
+  const l = site.layout;
   return l ? seatAnchor(l, name, floor) : null;
 }
 /** My line's steps as my villager's moments (fishing3d.ts). */
@@ -155,7 +155,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     const name = seatAt(Math.round(s.x), Math.round(s.z));
     if (!name) return null;
     // (on the layout, its seats move with it: keyed by its revision)
-    const key = `${name}@${site.on ? site.rev : ''}`;
+    const key = `${name}@${site.rev}`;
     if (!seats.has(key)) seats.set(key, layoutSeat(name, s.y) ?? islandSeat(name, s.y));
     return seats.get(key)!;
   };
