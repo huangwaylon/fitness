@@ -52,7 +52,7 @@
   import { yieldSky } from './weatherNow.svelte.ts';
   import { onMount, untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { bodyRect, grow, hitSources, inside } from './hitbox.ts';
+  import { SHOWN, bodyRect, grow, hitSources, inside, type Seen } from './hitbox.ts';
   import { artUrl } from '#lib/art.ts';
   import { jst, now } from '#lib/time/clock.ts';
   import { crittersAt, msToNextSlot, slotAt, slotStart, spawnRand, type Spawn } from './ambient.ts';
@@ -1161,8 +1161,10 @@
     })
   );
 
-  /** A tap on the scene (client px), before SceneTaps' own flourishes: true when a critter took it. */
-  export function tap(px: number, py: number): boolean {
+  /** A tap on the scene (client px), before SceneTaps' own flourishes: true when a critter took it; only what shows there
+   *  (`seen`); a line out reels in (`reel`: not on a building's door, which one goes through with it out). */
+  export function tap(px: number, py: number, seen: Seen = SHOWN, reel = true): boolean {
+    if (cast && !reel) return false;
     if (cast) {
       why = 'reel';
       reelIn();
@@ -1173,7 +1175,7 @@
     const b = bug;
     // the partner has it already (their villager is on the way): a tap here takes nothing
     if (b && theirs(b.cid)) return true;
-    if (b && !b.gone && bugEl) {
+    if (b && !b.gone && bugEl && seen(b.x, b.z)) {
       // what it draws (its mover is a 0 × 0 point): on its tap box (hitbox.ts, at least 44px) it's caught
       const r = bugBox(b, bugEl);
       const d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
@@ -1252,7 +1254,7 @@
       }
     }
     const dv = diving;
-    if (dv?.chase && !dv.gone && chaseEl && performance.now() <= dv.until) {
+    if (dv?.chase && !dv.gone && chaseEl && performance.now() <= dv.until && seen(dv.x, dv.z)) {
       const r = chaseEl.getBoundingClientRect(), reach = Math.max((S?.DIVE_U ?? 30) * w.scaleAt(dv.x, dv.z) * w.view.s, 22);
       if (Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2)) <= reach * 1.2) {
         turnTo(dv.x); // no walk: the chase is a timing game
@@ -1265,7 +1267,7 @@
     if (!at) return false;
     const sea = hitWorld(at.x, at.z).kind === 'sea';
     const spot = bubbles;
-    if (spot && S && sea && !theirs(spot.cid)) {
+    if (spot && S && sea && !theirs(spot.cid) && seen(spot.x, spot.z)) {
       const [bx, by] = w.clientAt(spot.x, spot.z), reach = Math.max(S.DIVE_U * w.scaleAt(spot.x, spot.z) * w.view.s, 22);
       if (Math.hypot(px - bx, py - by) <= reach) {
         // in place (avatar.ts): my villager turns to the bubbles and the dive plays there; the chase never walks
@@ -1274,7 +1276,7 @@
         return true;
       }
     }
-    const pick = fishFor(px, py, at, sea);
+    const pick = fishFor(px, py, at, sea, seen);
     why = pick.why;
     if (!pick.f) return false;
     castAt(pick.f, pick.x, pick.z);
@@ -1312,7 +1314,7 @@
    *  another: the river by its mouth, the sea at the mouth, the falls' pool and the river below), casts toward it,
    *  the bobber in its own water nearest the tap. Where it is is where it's seen now (mid-glide: fishNow), or where
    *  it's heading. The nearest on screen wins. */
-  function fishFor(px: number, py: number, at: { x: number; z: number }, sea: boolean): { f: Fish | null; x: number; z: number; why: string } {
+  function fishFor(px: number, py: number, at: { x: number; z: number }, sea: boolean, seen: Seen): { f: Fish | null; x: number; z: number; why: string } {
     const water = waterAt(at.x, at.z, sea);
     let best: { f: Fish; d: number } | null = null, why = water ? `no fish in the ${water}` : 'not water';
     for (const wt of WATERS) {
@@ -1323,6 +1325,10 @@
         continue;
       }
       const { p, cx, cy, half, shown } = seenOf(f);
+      if (!seen(p.x, p.z, half)) {
+        why = `the ${wt}’s hidden there`;
+        continue;
+      }
       const dPx = Math.hypot(px - cx, py - cy), dU = Math.min(Math.hypot(at.x - p.x, at.z - p.z), Math.hypot(at.x - f.x, at.z - f.z));
       // on it, by the screen (the ground under a finger by a narrow river's bank or near the horizon is the bank's):
       // its body's half-length round its middle, and a finger more
