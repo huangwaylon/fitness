@@ -7,6 +7,7 @@
   import ja from '#lib/i18n/catch.ja.json';
   import en from '#lib/i18n/catch.en.json';
   import { t } from '#lib/i18n/index.ts';
+  import NavButton from '../ui/NavButton.svelte';
   import { findKey } from '#lib/model/finds.ts';
   import { countOf, type Totals } from '#lib/model/tally.ts';
   import { GUEST } from '#lib/config/rules.ts';
@@ -40,22 +41,24 @@
     <span class="who" data-museum-finder={who}><Avatar person={who} villager={villagers[who]} size={18} />{t('zukan.foundBy', { date, name: finder })}</span>
     <span class="n" data-museum-times>{t('zukan.times', { n })}</span>
   </div>
-  <button type="button" class="x" aria-label="とじる" data-sfx="back" onclick={onclose}>✕</button>
+  <span class="x"><NavButton kind="close" onclick={onclose} /></span>
 </div>
 
 <style>
   .card {
     position: absolute; z-index: 4; left: 50%; top: calc(var(--ui-top, 0px) + 70px); transform: translateX(-50%);
-    width: min(330px, calc(100% - 24px)); display: flex; gap: 10px; align-items: center; padding: 10px 12px 12px;
-    border-radius: 18px; background: #FBF4DF; color: var(--c-ink); box-shadow: 0 3px 0 #D9C69A, 0 8px 18px rgba(0, 0, 0, .3);
+    width: min(420px, calc(100% - 2 * var(--side))); display: flex; gap: 10px; align-items: center; padding: 12px 12px 12px 14px;
+    border-radius: var(--r-card); background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip), var(--sh-float);
     animation: pop .2s var(--ease-bounce) both;
   }
-  .icon { flex: none; width: 58px; height: 58px; border-radius: 50%; background: #EEE2C2; display: grid; place-items: center; }
+  .icon { flex: none; width: 58px; height: 58px; border-radius: 50%; background: color-mix(in srgb, var(--c-lip) 45%, var(--c-cream)); display: grid; place-items: center; }
   .txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .ja { font-size: var(--fs-m, 16px); line-height: 1.2; }
-  .en { color: var(--text-soft); font-size: var(--fs-s, 13px); text-transform: capitalize; }
-  .who { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s, 13px); }
-  .n { color: var(--text-soft); font-size: var(--fs-s, 13px); }
-  .x { flex: none; align-self: flex-start; appearance: none; border: 0; background: none; font-size: 16px; width: 32px; height: 32px; cursor: pointer; color: var(--c-ink); }
+  /* a fixed-cream game card at every hour: the ink pair, never the night chrome's text tokens */
+  .ja { font-size: var(--fs-talk); line-height: 1.2; }
+  .en { color: var(--c-ink-soft); font-size: var(--fs-s); text-transform: capitalize; }
+  .who { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); }
+  .n { color: var(--c-ink-soft); font-size: var(--fs-s); }
+  /* the app's ✕ (NavButton) */
+  .x { flex: none; align-self: flex-start; display: flex; margin-bottom: var(--lip-h); }
   @keyframes pop { from { scale: .7; opacity: 0; } }
 </style>

@@ -16,6 +16,7 @@
   import { layout as store } from '#lib/store/layout.svelte.ts';
   import { artUrl } from '#lib/art.ts';
   import { cue } from '#lib/sound/cues.ts';
+  import { i18n, t } from '#lib/i18n/index.ts';
   import type { Live } from '#lib/sync/live.ts';
   import { objectAt } from '../editor/edits.ts';
   import { WHO_OF_HOME } from '#lib/layout/homes.ts';
@@ -42,7 +43,9 @@
   let { stage, relay, me, ondone }: Props = $props();
 
   type Facing = Obj['f'];
-  const TABS: [string, string][] = [['tree', 'き'], ['bush', 'かんぼく'], ['flower', 'はな'], ['rock', 'いわ'], ['light', 'あかり'], ['furniture', 'かぐ'], ['structure', 'はし・さか'], ['building', 'たてもの']];
+  const TABS = ['tree', 'bush', 'flower', 'rock', 'light', 'furniture', 'structure', 'building'] as const;
+  /** A kind's or an issue's name in this phone's language. */
+  const say = (x: { ja: string; en: string }) => (i18n.locale === 'ja' ? x.ja : x.en);
   let tab = $state('tree');
   // (the island's one-off buildings only while it has none of them: the museum stands there already, moved by a tap on it)
   const present = (d: KindDef) => [...store.current.objects.values()].some((o) => o.k === d.k);
@@ -68,9 +71,9 @@
     const h = withHeld(store.current);
     if (!h) return void (why = null);
     const [w, d] = footOf(h.l, h.l.objects.get(h.id)!), [x0, z0] = originOf(h.l, h.l.objects.get(h.id)!);
-    if (x0 < 0 || z0 < 0 || x0 + w > GRID.cols || z0 + d > GRID.rows) return void (why = 'しまの そとです');
+    if (x0 < 0 || z0 < 0 || x0 + w > GRID.cols || z0 + d > GRID.rows) return void (why = t('decor.island.outside'));
     const mine = validate(h.l).filter((i) => i.level === 'error' && i.ids.includes(h.id) && i.code !== 'unreachable');
-    why = mine[0]?.ja ?? null;
+    why = mine[0] ? say(mine[0]) : null;
   }
 
   /** Where the middle of the view's ground is (a new thing lands near it). */
@@ -319,45 +322,45 @@
       {#if icon}<img src={icon} alt="" draggable="false" style:height={`${ih}px`} />{:else}<span class="glyph">{ICON_FALLBACK[def.k] ?? '・'}</span>{/if}
     </div>
   {/if}
-  <div class="foot">
+  <div class="foot edit-tray">
     {#if sel && def}
-      <div class="bar" role="toolbar" aria-label={def.ja}>
-        <span class="say" class:bad={!!why} data-why={why ?? ''} aria-live="polite">{why ?? def.ja}</span>
-        {#if turns}<button type="button" class="act" data-act="turn" data-sfx="self" aria-label="まわす" onclick={turn}>
+      <div class="bar" role="toolbar" aria-label={say(def)}>
+        <span class="say" class:bad={!!why} data-why={why ?? ''} aria-live="polite">{why ?? say(def)}</span>
+        {#if turns}<button type="button" class="act" data-act="turn" data-sfx="self" aria-label={t('decor.turn')} onclick={turn}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.05-4.95" /><path d="M19 4v4h-4" /></svg>
         </button>{/if}
         {#if sel.id && !def.fixed}
-          <button type="button" class="act" data-act="remove" data-sfx="self" aria-label="しまう" onclick={putAway}>
+          <button type="button" class="act" data-act="remove" data-sfx="self" aria-label={t('decor.remove')} onclick={putAway}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
           </button>
         {/if}
-        <button type="button" class="act" data-act="cancel" data-sfx="self" aria-label="やめる" onclick={cancel}>
+        <button type="button" class="act" data-act="cancel" data-sfx="self" aria-label={t('decor.cancel')} onclick={cancel}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17" /></svg>
         </button>
-        <button type="button" class="act ok" data-act="place" data-sfx="self" aria-label="ここに おく" aria-disabled={!!why} onclick={place}>
+        <button type="button" class="act ok" data-act="place" data-sfx="self" aria-label={t('decor.place')} aria-disabled={!!why} onclick={place}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7" /></svg>
         </button>
       </div>
     {:else}
-      <div class="bar hint" data-island-hint>しまの ものを タップで もちあげ、ドラッグで うごかす。したから えらんで おく。</div>
+      <div class="bar hint" data-island-hint>{t('decor.island.hint')}</div>
     {/if}
     <div class="tray">
-      <div class="tabs" role="tablist" aria-label="もようがえ">
-        {#each TABS as [g, name] (g)}
-          <button type="button" role="tab" class="tab" data-tab={g} data-sfx="self" aria-selected={tab === g} onclick={() => ((tab = g), cue('tick'))}>{name}</button>
+      <div class="tabs" role="tablist" aria-label={t('panel.decor')}>
+        {#each TABS as g (g)}
+          <button type="button" role="tab" class="tab" data-tab={g} data-sfx="self" aria-selected={tab === g} onclick={() => ((tab = g), cue('tick'))}>{t(`decor.tab.${g}`)}</button>
         {/each}
       </div>
       <div class="row">
-        <div class="items" role="group" aria-label={TABS.find((t) => t[0] === tab)?.[1]}>
+        <div class="items" role="group" aria-label={t(`decor.tab.${tab}`)}>
           {#each list as d (d.k)}
-            <button type="button" class="it" data-island-item={d.k} data-sfx="self" aria-label={d.ja} aria-pressed={!!sel && !sel.id && sel.k === d.k} onclick={() => pickNew(d)}>
+            <button type="button" class="it" data-island-item={d.k} data-sfx="self" aria-label={say(d)} aria-pressed={!!sel && !sel.id && sel.k === d.k} onclick={() => pickNew(d)}>
               {#if d.icon && artUrl(d.icon)}<img src={artUrl(d.icon)} alt="" width="48" height="48" loading="lazy" draggable="false" />{:else}<span class="glyph">{ICON_FALLBACK[d.k] ?? '・'}</span>{/if}
             </button>
           {/each}
-          {#if !list.length}<span class="none" data-island-none>しまに あります（タップで うごかせます）</span>{/if}
+          {#if !list.length}<span class="none" data-island-none>{t('decor.island.none')}</span>{/if}
         </div>
         <button type="button" class="done" data-island-done data-sfx="confirm" onclick={() => (cancel(), ondone())}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7" /></svg><span>おわる</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7" /></svg><span>{t('decor.done')}</span>
         </button>
       </div>
     </div>
@@ -372,33 +375,7 @@
   .lift { position: absolute; transform: translate(-50%, -10px); filter: drop-shadow(0 6px 4px rgba(0, 0, 0, 0.25)); animation: bob 1.4s ease-in-out infinite; }
   .lift img { display: block; width: auto; max-width: 140px; object-fit: contain; }
   .glyph { font-size: 28px; }
-  .foot {
-    position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: stretch; gap: 8px;
-    padding: 0 10px calc(var(--safe-bottom, 0px) + 10px); pointer-events: none;
-  }
-  .bar, .tray { pointer-events: auto; background: var(--plate, #fff9e3); color: var(--plate-ink, #4a3a2c); border-radius: 22px; box-shadow: 0 3px 0 var(--plate-lip, #e0c48a), 0 6px 16px rgba(20, 10, 0, 0.3); }
-  .bar { display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 16px; align-self: center; max-width: 100%; }
-  .hint { padding: 12px 18px; color: var(--c-ink-soft, #7a6a50); text-align: center; }
-  .say { flex: 1; min-width: 0; padding-right: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .say.bad { color: #c2412f; }
-  .tray { display: flex; flex-direction: column; gap: 6px; padding: 8px; }
-  .tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
-  .tab { flex: 1 0 auto; min-height: 44px; padding: 0 9px; border-radius: 14px; border: 0; font: inherit; background: transparent; color: var(--c-ink, #4a3a2c); white-space: nowrap; }
-  .tab[aria-selected='true'] { background: var(--c-yuzu, #f7d94c); box-shadow: 0 2px 0 var(--c-yuzu-lip, #d9b21e); }
-  .row { display: flex; gap: 6px; align-items: stretch; }
-  .items {
-    flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); grid-auto-rows: 60px; gap: 6px;
-    max-height: calc(60px * 2.4 + 12px); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; touch-action: pan-y; padding: 2px;
-  }
-  .it, .act, .done { appearance: none; border: 0; margin: 0; font: inherit; color: inherit; display: grid; place-items: center; flex: none; }
-  .it { width: 100%; height: 60px; border-radius: 16px; background: var(--c-card, #fffcf2); box-shadow: inset 0 0 0 2px var(--c-edge, #e8dcc0); touch-action: pan-y; }
-  .it img { width: 48px; height: 48px; object-fit: contain; pointer-events: none; }
-  .it[aria-pressed='true'] { box-shadow: inset 0 0 0 3px var(--c-leaf-edge, #6dbe5a); background: #f1fbe6; }
-  .act { width: 44px; height: 44px; border-radius: 50%; background: var(--c-card, #fffcf2); box-shadow: inset 0 0 0 2px var(--c-edge, #e8dcc0); }
-  .act svg, .done svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
-  .act.ok { background: var(--c-leaf, #7cc860); color: #fff; box-shadow: 0 2px 0 var(--c-leaf-lip, #4f9a3c); }
-  .act.ok[aria-disabled='true'] { background: #cfc6b0; box-shadow: none; }
-  .done { width: 68px; padding: 6px 4px; gap: 2px; display: flex; flex-direction: column; justify-content: center; border-radius: 16px; background: var(--c-yuzu, #f7d94c); box-shadow: 0 2px 0 var(--c-yuzu-lip, #d9b21e); }
+  /* the tray's look is the editors' one (theme.css .edit-tray) */
   @keyframes bob { 50% { translate: 0 -4px; } }
-  .none { align-self: center; padding: 0 8px; font-size: var(--fs-s, 13px); color: var(--plate-ink, var(--c-ink)); opacity: .75; }
+  .none { align-self: center; padding: 0 8px; font-size: var(--fs-s); color: var(--c-ink-soft); }
 </style>

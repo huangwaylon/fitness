@@ -489,7 +489,7 @@
   export const snapshot = () => ({ sel: sel ? { ...sel, x: at[0], z: at[1], on: onto?.id ?? null } : null, why, tab, note: note?.k ?? null });
 </script>
 
-<div class="te" data-tent-edit>
+<div class="te edit-tray" data-tent-edit>
   {#if sel}
     <div class="bar" role="toolbar" aria-label={nameOf(sel.item)}>
       <span class="say" class:bad={!!why || !!note} data-why={why ?? ''} data-note={note?.k ?? ''} aria-live="polite">{note ? note.text : why ? t(`tent.why.${why}`) : nameOf(sel.item)}</span>
@@ -544,52 +544,16 @@
 </div>
 
 <style>
-  .te {
-    position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; flex-direction: column; align-items: stretch; gap: 8px;
-    padding: 0 10px calc(var(--safe-bottom, 0px) + 10px); pointer-events: none; font: 700 var(--fs-s, 14px)/1.2 var(--font-ui);
-  }
-  .bar, .tray { pointer-events: auto; background: var(--plate); color: var(--plate-ink); border-radius: 22px; box-shadow: 0 3px 0 var(--plate-lip), 0 6px 16px rgba(20, 10, 0, .3); }
-  .bar { display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 16px; align-self: center; max-width: 100%; animation: up .2s var(--ease-soft) both; }
-  .hint { padding: 12px 18px; color: var(--c-ink-soft, #7A6A50); }
-  .say { flex: 1; min-width: 0; padding-right: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .say.bad { color: #C2412F; }
-  .tray { display: flex; flex-direction: column; gap: 6px; padding: 8px; }
-  .tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
-  .tab {
-    flex: 1 0 auto; min-height: 44px; padding: 0 9px; border-radius: 14px; border: 0; font: inherit; color: inherit; cursor: pointer;
-    background: transparent; -webkit-tap-highlight-color: transparent; white-space: nowrap; color: var(--c-ink, #4A3A2C);
-  }
-  .tab[aria-selected='true'] { background: var(--c-yuzu, #F7D94C); box-shadow: 0 2px 0 var(--c-yuzu-lip, #D9B21E); }
-  .row { display: flex; gap: 6px; align-items: stretch; }
-  /* NH's grid: rows of icons, two and a bit in view (the next row peeking: there's more), scrolled up and down; no
-     snapping and no sideways pan, so a tap is never taken for the start of a scroll that jumps the list */
-  .items {
-    flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); grid-auto-rows: 60px; gap: 6px;
-    max-height: calc(60px * 2.4 + 12px); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; touch-action: pan-y;
-    scrollbar-width: none; padding: 2px; -webkit-overflow-scrolling: touch;
-  }
-  .items::-webkit-scrollbar, .tabs::-webkit-scrollbar { display: none; }
-  .it, .act, .done {
-    appearance: none; border: 0; margin: 0; font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
-    display: grid; place-items: center; flex: none;
-  }
-  .it { position: relative; width: 100%; height: 60px; border-radius: 16px; background: var(--c-card, #FFFCF2); box-shadow: inset 0 0 0 2px var(--c-edge, #E8DCC0); touch-action: pan-y; }
-  .it img { width: 48px; height: 48px; object-fit: contain; pointer-events: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  /* the tray's look is the editors' one (theme.css .edit-tray); the tent's own bits: */
+  .te { z-index: 3; }
+  .bar { animation: up .2s var(--ease-soft) both; }
   /* how many already stand in the room */
   .n {
     position: absolute; right: 4px; top: 4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; display: grid; place-items: center;
-    font: 700 11px/1 var(--font-num, inherit); color: #fff; background: var(--c-leaf-lip, #4F9A3C);
+    font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink); background: color-mix(in srgb, var(--c-lip) 60%, var(--c-cream));
   }
-  .it[aria-pressed='true'] { box-shadow: inset 0 0 0 3px var(--c-leaf-edge, #6DBE5A); background: #F1FBE6; }
   .it.full { opacity: .45; }
-  .empty { grid-column: 1 / -1; margin: 0; align-self: center; padding: 12px 8px; color: var(--c-ink-soft, #7A6A50); font-weight: 700; white-space: normal; text-align: center; }
-  .it:active, .act:active, .done:active { scale: .94; }
-  .count { font: 700 12px/1 var(--font-num, inherit); color: var(--c-ink-soft, #7A6A50); }
-  .act { width: var(--hit, 44px); height: var(--hit, 44px); border-radius: 50%; background: var(--c-card, #FFFCF2); box-shadow: inset 0 0 0 2px var(--c-edge, #E8DCC0); }
-  .act svg, .done svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
-  .act.ok { background: var(--c-leaf, #7CC860); color: #fff; box-shadow: 0 2px 0 var(--c-leaf-lip, #4F9A3C); }
-  .act.ok[aria-disabled='true'] { background: #CFC6B0; box-shadow: none; }
-  .done { width: 68px; padding: 6px 4px; gap: 2px; display: flex; flex-direction: column; justify-content: center; border-radius: 16px; background: var(--c-yuzu, #F7D94C); box-shadow: 0 2px 0 var(--c-yuzu-lip, #D9B21E); }
-  .it:focus-visible, .act:focus-visible, .done:focus-visible, .tab:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .empty { grid-column: 1 / -1; margin: 0; align-self: center; padding: 12px 8px; color: var(--c-ink-soft); font-weight: 700; white-space: normal; text-align: center; }
+  .count { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink); }
   @keyframes up { from { translate: 0 8px; opacity: 0; } to { translate: 0 0; opacity: 1; } }
 </style>

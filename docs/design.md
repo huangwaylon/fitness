@@ -1014,7 +1014,7 @@ goes with the leaving).
 - **The partner's villager** is theirs to move while they're in the tent (each walk of mine goes over the relay as the
   `tent` intent, the very walk: from, the way, when, how long; a join hears where I am); while they're away (not on the
   relay) their villager rests in the room where it last stood; while they're on the island it isn't here.
-- **もようがえ** (the foot's yellow button) arranges the room: the grid on the floor and the tray in the thumb's reach:
+- **もようがえ** (the foot's green button) arranges the room: the grid on the floor and the tray in the thumb's reach:
   tabs かぐ (the starter set), ラグ, みつけた (every furniture either of us found in a balloon's present that NH has a model
   of: the ずかん's カタログ, newest first), かべがみ, ゆか, over NH's own icons in two rows that scroll sideways (60 px), and
   ✓ おわる with the count (「3/40」). A tap on a piece's icon puts it down as a ghost on the free spot nearest my villager,
@@ -1799,6 +1799,9 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
   **Banner** (`ui/Toast.svelte`, one at a time).
 - **Buttons:** every tappable has an edge (2px outline + 4px lip); static cards only a soft lip. Primary leaf,
   secondary cream, selected yuzu, disabled sunk. "Can't now" = `aria-disabled` ([Taps](#taps)).
+  Shared skins in `styles/theme.css`: `.btn` (`.paper`, `.small`; `.off`: sunk but still takes the tap to say why),
+  `.chip` / `.chips` (a choice among a few: 36px in a 44px target, yuzu when chosen), `.edit-tray` (both もようがえ
+  editors' bar and tray); the ‹ / ✕ are always `NavButton`.
 - **Focus:** no ring after a pointer input (`ui/modality.ts`); focus is restored for keyboard and VoiceOver.
 - **Type:** Zen Maru Gothic (UI, Japanese) and Fredoka (numbers); `word-break: keep-all` for Japanese.
 - **Tokens** (`styles/tokens.css`): ink `#4A3A2C`, cream `#FFF9E3`, paper `#F5E4BC`, card `#FFFCF2`, edge `#937047`,

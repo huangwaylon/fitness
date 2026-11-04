@@ -761,7 +761,7 @@
   <div class="top" bind:this={top}>
     {#if !editing}<NavButton kind="back" text={t('tent.back')} onclick={leave} sfx="self" />{/if}
   </div>
-  {#if home !== 'A'}<p class="whose" data-guard data-home={home}>{nameOf(home)}の いえ</p>{/if}
+  {#if home !== 'A'}<p class="whose" data-guard data-home={home}>{t('tent.whose', { name: nameOf(home) })}</p>{/if}
   {#if !editing && canEdit}
     <!-- NH's room light switch: the room's own light on or off (the lamps that are on light it then) -->
     <button type="button" class="switch" class:off={!room.lights} data-tent-lights={room.lights ? 'on' : 'off'} data-sfx="self"
@@ -786,7 +786,7 @@
     {#if !editing && mine}
       <button type="button" class="edit look" data-home-look data-sfx="open" onclick={() => (picking = true)}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7M5.5 9.5V20h13V9.5" /><path d="M10 20v-5h4v5" /></svg>
-        <span>いえを かえる</span>
+        <span>{t('homes.title')}</span>
       </button>
     {/if}
     {#if !editing && canEdit}
@@ -844,11 +844,11 @@
   }
   .edit {
     pointer-events: auto; appearance: none; border: 0; cursor: pointer; min-height: 56px; padding: 0 24px 0 18px; border-radius: 28px;
-    display: inline-flex; align-items: center; gap: 8px; font: 700 var(--fs-m, 16px)/1 var(--font-ui); color: var(--c-ink);
-    background: var(--c-yuzu, #F7D94C); box-shadow: 0 3px 0 var(--c-yuzu-lip, #D9B21E), 0 6px 14px rgba(0, 0, 0, .3); -webkit-tap-highlight-color: transparent;
+    display: inline-flex; align-items: center; gap: 8px; font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink);
+    background: var(--c-leaf); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge), 0 6px 14px rgba(0, 0, 0, .3); -webkit-tap-highlight-color: transparent;
   }
   .edit svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-  .edit:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-yuzu-lip, #D9B21E); }
+  .edit:active { transform: translateY(2px); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 1px 0 var(--c-leaf-edge); }
   .edit:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .switch {
     position: absolute; right: calc(var(--side) + var(--safe-right) + 62px); top: calc(var(--ui-top) + 8px); z-index: 2;
