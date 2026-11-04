@@ -1107,7 +1107,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   // ---- what isn't on screen yet made ready once everything is in: its textures up a few at a time and its programs
   //      compiled, so a wing's first sight is no hitch (its hundred-odd critters' textures at once: ~100 ms) ----
   const warmed = new WeakSet<Texture>();
-  let warmT: ReturnType<typeof setTimeout> | undefined;
+  let warmT: ReturnType<typeof setTimeout> | undefined, compileT: ReturnType<typeof setTimeout> | undefined;
   function warmSoon() {
     clearTimeout(warmT);
     // (a little after the last model: its exhibit's meshes made from it)
@@ -1133,7 +1133,20 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
           for (const wm of walls) if (wm.fade === 0 || wm.fade === 1) for (const m of wm.mats) (m.alphaHash = on), (m.needsUpdate = true);
         };
         hashed(true);
-        void renderer.compileAsync(scene, camera).catch(() => {}).finally(() => !disposed && hashed(false));
+        // (three's compileAsync, its poll ours: three's throws in a timer once a material it waits on is disposed, the
+        // room left or a fish's hour over, and never settles)
+        clearTimeout(compileT);
+        const compiling = renderer.compile(scene, camera);
+        const poll = () => {
+          if (disposed) return;
+          for (const m of compiling) {
+            const p = (renderer.properties.get(m) as { currentProgram?: { isReady(): boolean } }).currentProgram;
+            if (!p || p.isReady()) compiling.delete(m);
+          }
+          if (compiling.size) compileT = setTimeout(poll, 10);
+          else hashed(false);
+        };
+        poll();
       }
     };
     step();
@@ -1360,6 +1373,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       disposed = true;
       if (raf) cancelAnimationFrame(raf);
       clearTimeout(warmT);
+      clearTimeout(compileT);
       clearTimeout(ambientT);
       for (const e of exhibits) e.dispose();
       for (const w of villagers.values()) w.v3?.dispose();
