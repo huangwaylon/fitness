@@ -86,6 +86,14 @@ afterEach(() => {
 });
 
 describe('live: connecting', () => {
+  it('says its build in the hello when it has one', () => {
+    live.stop();
+    live = createLive({ url: 'wss://x', key: () => KEY, build: () => '2026-11-05.ef93d8b', WebSocket: FakeWS as never, env });
+    live.start();
+    last().open();
+    expect(last().sent[0]).toMatchObject({ v: 3, kind: 'hello', key: KEY, batch: true, build: '2026-11-05.ef93d8b' });
+  });
+
   it('connects while visible, says hello with the key, and reports the welcome', () => {
     const seen: LiveStatus[] = [];
     live.onStatus((s) => seen.push(s));

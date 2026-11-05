@@ -53,6 +53,7 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `log.drop` | warn | `n`, `why` (cap, full, day, pending) | the phone's log dropped events |
 | `req` (relay) | info; warn refused; error `unavailable` | `action`, `st` (ok or the error code), `ms` (the Worker's wall time), `inB`, `outB`, `n`, `rej`, `dup`, `why` (the first refusal's rule: `buy.pocket_short`, `spend_void.no_such_spend`, `ingest.parse`), ingest's `m` (added), `sk` (skipped), `w` (warnings: a count); `exc` (a thrown class) | every `/api` request: the Shortcut's ingests, rate-limit hits (`busy`), validation refusals |
 | `room.close` / `room.full` | info / warn | `code`, `secs`, `socks` | the live room |
+| `ws.hello` (relay) | info | `v` (the protocol version), `build` (the app's, from the hello; none before 2026-11-05); who | each welcomed hello: which phone speaks what (`report`'s *Live hellos*) |
 | `cron.wx` | info; warn failed | `ok`, `fetched`, `fail`, `hours`, `age`, `ms` | a weather fetch (the cron at :15, :45) |
 | `admin` | info | `op`, `st` | each signed admin op (an audit) |
 | `log.cap` | warn | `bucket` | a day's cap reached (once) |
@@ -98,7 +99,7 @@ own token. Retention 30 days; `npm run logs -- purge --before … [--person A]` 
   round trip to the object, its queue and its work); the record returns its reply with a small `meta`
   (`reqMeta.ts`: enums and counts) and the Worker sends a `req` event by RPC in `ctx.waitUntil`, never in the reply's
   path. An object still on the old code (no `apiMeta`, the seconds after a deploy) is asked the plain way.
-- The room (`room.close`, `room.full`), the cron (`cron.wx`) and the admin ops (`admin`) send theirs the same way,
+- The room (`room.close`, `room.full`, `ws.hello`), the cron (`cron.wx`) and the admin ops (`admin`) send theirs the same way,
   best effort.
 - **Caps** (UTC day, `caps` table, one row written per write): phones 1,000 info/warn and 200 errors per role; the
   relay 4,000 and 500; 8,000 in all (the hard guard on the account's rows written). Over a cap: dropped, `log.cap`

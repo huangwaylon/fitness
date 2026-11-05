@@ -755,14 +755,15 @@ describe('the real weather (wx, v3)', () => {
 
   it('goes after the welcome to a v3 phone (never an older one), then to every v3 phone when it changes', () => {
     now = at + 5 * 60_000;
-    let hellos = 0;
-    room = new RoomCore({ ...io(), onHello: () => void hellos++ }, [], null, {}, {}, wx);
+    const hellos: unknown[][] = [];
+    room = new RoomCore({ ...io(), onHello: (...a) => void hellos.push(a) }, [], null, {}, {}, wx);
     const a = joinV(KEY_A, 3), b = joinV(KEY_B, 2);
     expect(a.kinds().slice(0, 2)).toEqual(['welcome', 'wx']);
     expect(a.sent[1]).toEqual({ v: 3, kind: 'wx', ...wx, t: now });
     expect(parseServer(JSON.stringify(a.sent[1]))).toEqual({ v: 3, kind: 'wx', ...wx, t: now });
     expect(b.kinds()).toEqual(['welcome']);
-    expect(hellos).toBe(2);
+    // whose, the version and the build (none here: a phone before 2026-11-05), for the log's ws.hello
+    expect(hellos).toEqual([['A', 3, undefined], ['B', 2, undefined]]);
     const next: Wx = { ...wx, s: 'rrhhhh', rev: 5 };
     expect([room.setWx(next, false), a.kinds().filter((k) => k === 'wx').length]).toEqual([0, 1]); // kept, not sent
     expect(room.setWx(next, true)).toBe(1);
@@ -770,6 +771,19 @@ describe('the real weather (wx, v3)', () => {
     expect(b.kinds()).toEqual(['welcome']);
     // a phone opening later gets the newest
     expect(joinV(KEY_A, 3).sent[1]).toMatchObject({ kind: 'wx', rev: 5 });
+  });
+
+  it('says whose hello it welcomed, in which version and from which build', () => {
+    const hellos: unknown[][] = [];
+    room = new RoomCore({ ...io(), onHello: (...a) => void hellos.push(a) });
+    const s = new FakeSock();
+    socks.push(s);
+    room.open(s);
+    room.message(s, JSON.stringify({ v: 3, kind: 'hello', key: KEY_B, build: '2026-11-05.ef93d8b' }));
+    expect(hellos).toEqual([['B', 3, '2026-11-05.ef93d8b']]);
+    // an unknown key is never welcomed: nothing said
+    joinV('f'.repeat(32), 3);
+    expect(hellos).toHaveLength(1);
   });
 
   it('a timeline that no longer covers the hour, or 36 hours old, is never sent', () => {

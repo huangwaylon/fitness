@@ -33,8 +33,9 @@ export interface RoomIO<S extends Sock> {
   hold?(held: Held): void;
   /** Persist when each person's phone last left (fire and forget). */
   saveGone?(gone: Gone): void;
-  /** A hello was welcomed (the room fetches the real weather then, when it's due: weather.ts). */
-  onHello?(): void;
+  /** A hello was welcomed: whose, in which version, from which build (absent before 2026-11-05). The room logs it
+   *  (`ws.hello`) and fetches the real weather then, when it's due (weather.ts). */
+  onHello?(who: Who, v: LiveV, build?: string): void;
 }
 
 /** The high-fives held for people while they were away, one per (sender, recipient) pair (`<from>><to>`, e.g. `G>A`):
@@ -168,7 +169,7 @@ export class RoomCore<S extends Sock> {
       else if (!meta.who) this.shut(s, CLOSE.unauthorized, 'hello first');
       return; // a malformed intent from a known person: dropped
     }
-    if (msg.kind === 'hello') return this.hello(s, meta, msg.key, msg.since, msg.v, msg.batch === true);
+    if (msg.kind === 'hello') return this.hello(s, meta, msg.key, msg.since, msg.v, msg.batch === true, msg.build);
     if (!meta.who) return this.shut(s, CLOSE.unauthorized, 'hello first');
     // a socket keeps its hello's version: a phone switching mid-socket is confused, not upgraded
     if (msg.v !== this.vOf(s)) return this.shut(s, CLOSE.version, `version ${msg.v} after a hello in ${this.vOf(s)}`);
@@ -228,7 +229,7 @@ export class RoomCore<S extends Sock> {
     this.send(s, { v: LIVE_V, kind: 'ack', c, t, ok });
   }
 
-  private hello(s: S, meta: Meta, key: string, since: number | undefined, v: LiveV, batch = false): void {
+  private hello(s: S, meta: Meta, key: string, since: number | undefined, v: LiveV, batch = false, build?: string): void {
     const who = keyOwner(key, this.io.keys);
     if (!who) return this.shut(s, CLOSE.unauthorized, 'unknown key');
     // the guest came with v3 (docs/backend.md#the-guest): an older version can't tell it from a member
@@ -271,7 +272,7 @@ export class RoomCore<S extends Sock> {
       else if (v >= 2 && (v >= 3 || h.from !== 'G')) this.send(s, { v: LIVE_V, kind: 'highfive', at: h.at, who: h.from, t: h.t, ...(v >= 3 ? { to: who } : {}) });
     }
     if (!was.length) for (const p of this.others(who)) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
-    this.io.onHello?.();
+    this.io.onHello?.(who, v, build);
   }
 
   /** The real sky was fetched (weather.ts): kept for the welcomes, and when it changed (`send`) every v3 phone hears

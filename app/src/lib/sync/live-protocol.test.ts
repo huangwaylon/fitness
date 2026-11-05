@@ -187,6 +187,10 @@ describe('live protocol: the very walk, acks and the day in one replay', () => {
     expect(parseClient(j2({ kind: 'pick', id: 'a', what: 'weed', c: 1.5 }))).toBeNull();
     expect(parseClient(j2({ kind: 'hello', key: KEY, batch: true }))).toEqual({ v: 3, kind: 'hello', key: KEY, batch: true });
     expect(parseClient(j2({ kind: 'hello', key: KEY, batch: 1 }))).toBeNull();
+    // the build (2026-11-05): kept when it is one, left out (the hello still taken) when not
+    expect(parseClient(j2({ kind: 'hello', key: KEY, build: '2026-11-05.ef93d8b' }))).toEqual({ v: 3, kind: 'hello', key: KEY, build: '2026-11-05.ef93d8b' });
+    expect(parseClient(j2({ kind: 'hello', key: KEY, build: 'a b<script>' }))).toEqual({ v: 3, kind: 'hello', key: KEY });
+    expect(parseClient(j2({ kind: 'hello', key: KEY, build: 'x'.repeat(40) }))).toEqual({ v: 3, kind: 'hello', key: KEY });
     expect(parseClient(j2({ kind: 'act', act: 'wake', id: 'B', at: 1_793_500_000_000 }))).toMatchObject({ act: 'wake', id: 'B' });
     expect(parseClient(j2({ kind: 'world', op: 'woke', id: 'gulliver' }))).toMatchObject({ op: 'woke' });
   });

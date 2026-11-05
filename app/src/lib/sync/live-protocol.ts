@@ -141,10 +141,11 @@ type DecorWire =
   | { sc: 'h'; id: string; at: number; m: string; w?: string; r?: string; d?: string; f?: number };
 
 /** Client → relay. `hello` must come first (the person key; `since` = the last world event's `t` it has seen; `batch`:
- *  the day's world as `replay` messages, mine included). An intent's `c` (this phone's sequence number, increasing
+ *  the day's world as `replay` messages, mine included; `build`: the app's version, `2026-11-05.ef93d8b`, for the log's
+ *  `ws.hello`; absent from a phone before 2026-11-05). An intent's `c` (this phone's sequence number, increasing
  *  through the day) asks for an `ack`, and makes a resend of it (after a reconnect) the same intent, not a second. */
 export type ClientMsg =
-  | { v: LiveV; kind: 'hello'; key: string; since?: number; batch?: true }
+  | { v: LiveV; kind: 'hello'; key: string; since?: number; batch?: true; build?: string }
   | { v: LiveV; kind: 'ping'; c: number }
   /** (v2) I heard the partner's high-five `at` (the one the room held for me goes). */
   | { v: LiveV; kind: 'got'; at: number }
@@ -244,6 +245,8 @@ const ID = /^[\w:.-]{1,32}$/;
 const WHAT = /^[a-z][\w:.-]{0,63}$/;
 const TOKEN = /^[a-z][a-z0-9-]{0,23}$/;
 const KEY = /^[0-9a-f]{32,128}$/;
+/** An app version as vite.config.ts appVersion makes it (`2026-11-05.ef93d8b`, `dev`). */
+const BUILD = /^[0-9A-Za-z.-]{1,24}$/;
 const AT = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/;
 const REV = /^[0-9a-z]{1,24}$/;
 /** A decoration's id and its item (contract/decor.ts: the item list is the app's; any token here). */
@@ -473,7 +476,9 @@ export function parseClient(raw: unknown): ClientMsg | null {
   const v = o.v as LiveV;
   if (o.kind === 'hello') {
     if (typeof o.key !== 'string' || !KEY.test(o.key) || !opt(o, 'since', isTime) || (o.batch !== undefined && o.batch !== true)) return null;
-    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}), ...(o.batch ? { batch: true as const } : {}) };
+    // (a build that isn't one is left out, never the hello refused)
+    const build = typeof o.build === 'string' && BUILD.test(o.build) ? o.build : undefined;
+    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}), ...(o.batch ? { batch: true as const } : {}), ...(build ? { build } : {}) };
   }
   if (o.kind === 'ping') return isTime(o.c) ? { v, kind: 'ping', c: o.c } : null;
   if (o.kind === 'got') return v !== 1 && isTime(o.at) ? { v, kind: 'got', at: o.at } : null;
