@@ -427,8 +427,12 @@
         e.onDrawn(() => (talk?.track(), says?.track(), heardMusic()));
         eng = e;
         othersShown();
-        walkTo([ENTRANCE[0] + sideX(me), ENTRANCE[1] - 14]);
-        void e.ready.then(() => alive && doorReady());
+        // (once the hall's first frame is drawn: it waits for my villager's model, engine.ts holding)
+        void e.ready.then(() => {
+          if (!alive) return;
+          walkTo([ENTRANCE[0] + sideX(me), ENTRANCE[1] - 14]);
+          doorReady();
+        });
         hooks();
       },
       () => {

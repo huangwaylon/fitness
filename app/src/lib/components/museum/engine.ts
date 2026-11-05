@@ -43,6 +43,8 @@ const VIEW_W = 92;
 const DPR_MAX = 2, DPR_MOVING = 1.5;
 /** The exhibits' rate (a second) while only they move. */
 const AMBIENT = 30;
+/** The longest the first frame waits for the villagers' models (ms): holding. */
+const ENTRY_HOLD_MS = 1500;
 /** How long a wall takes to fade out or in (ms), the cutaway's. */
 const WALL_FADE = 220;
 
@@ -735,12 +737,13 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const shadowGeo = new CircleGeometry(4.6, 20);
   const shadowMat = decal(new MeshBasicMaterial({ map: disc, transparent: true, depthWrite: false }), 5);
   disposables.push(shadowGeo, shadowMat);
-  let followed: Who = 'A';
+  let followed: Who = 'A', v3Pending = 0;
   /** Its 3D model up (`look`), placed where the walker is, once loaded; over the one it had (another look: swapped in
    *  place, the walk and the seat going on with the new model). */
   function model3(who: Who, w: Walker, look: Look) {
     const p = look.create(who.charCodeAt(0) * 0.7);
-    if (p) void p.then((v) => {
+    if (p) v3Pending++;
+    if (p) void p.finally(() => v3Pending--).then((v) => {
       if (disposed || villagers.get(who) !== w || w.look !== look) return v.dispose();
       w.v3?.dispose();
       w.v3 = v;
@@ -1161,6 +1164,11 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   let frames = 0, lastT = 0;
   const cost: number[] = [];
   let ambientOn = 0;
+  /** The first frame waits for the villagers' models asked for by then (up to ENTRY_HOLD_MS): their programs (skinned,
+   *  ~6) compile with the hall's in that one frame, before anything shows; drawn in a frame of their own after the
+   *  hall's first, they froze the room just shown (the iOS Simulator, cold: 768 ms). */
+  const born = now(), holding = () => !frames && v3Pending > 0 && now() - born < ENTRY_HOLD_MS;
+  const holdT = setTimeout(() => invalidate(), ENTRY_HOLD_MS + 20);
   let readyRes: () => void;
   const ready = new Promise<void>((r) => (readyRes = r));
   /** The last frame's view, rounded (frame: whether the camera moved): its angles and zoom to 4 places, its target 2. */
@@ -1184,7 +1192,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   let drawn: (() => void) | null = null;
   function frame(vsync = now()) {
     // (the frame rate's pacing, せってい's, a gesture's too; the ambience's own time)
-    if (disposed || !pace.due(vsync, frameRate.fps)) return;
+    if (disposed || holding() || !pace.due(vsync, frameRate.fps)) return;
     const t = now(), dt = lastT ? Math.min(100, t - lastT) : 16;
     let full = false;
     // the camera: eased back to NH's view, following my villager
@@ -1261,7 +1269,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   }
 
   fit();
-  frame();
+  // (the next display frame: the room's caller asks for its villagers first, which the first frame waits for)
+  invalidate();
   // (the first frame as soon as the floor's textures land too)
   setTimeout(() => invalidate(), 300);
 
@@ -1373,6 +1382,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       pace.stop();
       clearTimeout(warmT);
       clearTimeout(compileT);
+      clearTimeout(holdT);
       for (const e of [...exhibits, ...retired]) e.dispose();
       for (const w of villagers.values()) w.v3?.dispose();
       for (const d of disposables) d.dispose();
