@@ -86,3 +86,33 @@ test('E14: after the relay restarts (1012), a phone fetches what the partner wro
   await a.waitForTimeout(1500);
   expect(island.fetches('A')).toBe(after);
 });
+
+test('a dead socket (open, carrying nothing) is found out: what I sent on it reaches the partner', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const island = newIsland();
+  const { page: a } = await demoPhone(browser, island, 'A');
+  const { page: b } = await demoPhone(browser, island, 'B');
+  await connected(a);
+  await connected(b);
+  island.dead('A');
+  const id = `e2e-dead-${Date.now().toString(36).slice(-5)}`;
+  expect(await w<boolean>(a, 'share', fakeCatch(id))).toBe(true);
+  // its ack never comes: the phone gives the socket up, opens another and sends it again
+  await expect.poll(() => w<string>(b, 'canon').then((c) => c.includes(id)), { timeout: 15_000 }).toBe(true);
+});
+
+test('a dead socket is found out on coming back to the app (focus): the partner’s news arrives', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const island = newIsland();
+  const { page: a } = await demoPhone(browser, island, 'A');
+  const { page: b } = await demoPhone(browser, island, 'B');
+  await connected(a);
+  await connected(b);
+  island.dead('A');
+  const id = `e2e-wake-${Date.now().toString(36).slice(-5)}`;
+  expect(await w<boolean>(b, 'share', fakeCatch(id))).toBe(true);
+  // the room's send to A's socket was lost; back in the app, a ping goes unanswered and a new socket replays the day
+  await a.waitForTimeout(300);
+  await a.evaluate(() => window.dispatchEvent(new Event('focus')));
+  await expect.poll(() => w<string>(a, 'canon').then((c) => c.includes(id)), { timeout: 15_000 }).toBe(true);
+});
