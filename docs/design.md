@@ -321,7 +321,14 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   さいきん (my latest entry of each food, as I had it); typed, the best matches: the name, ✓n when n independent
   sources agree on its kcal, a product's brand and kcal per 100 g, and its default portion (with its weight) and kcal;
   the same name, brand and kcal shown once. ー counts (カレー is not かれい). Offline: 「データを よみこめませんでした
-  （オフライン？）」, もういちど, and さい��ん still under it (a recent pick keeps its portion).
+  （オフライン？）」, もういちど, and さいきん still under it (a recent pick keeps its portion). **Ranking** (`food/search.ts`
+  tierOf, each curated pop level worth 0.6 of a tier): the name exact, or its head (up to a bracket or space: 水 finds
+  水（ミネラルウォーター）, ごはん finds ごはん（精白米）); then its prefix, level with an alias exact (a hair under it: たまご
+  finds 卵 first, 鶏むね finds 鶏むね肉 before サラダチキン, whose alias it is); a substring of the name; an alias's prefix,
+  a substring of one; any other field. A secondary dataset's items rank 1.5 tiers lower, a packaged product's (Open Food
+  Facts, JBFD) 2. `food/load.test.ts`'s golden queries (55 common ones: ご飯 · みそ汁 · 卵 · 納豆 · 鶏むね · サラダチキン ·
+  プロテイン · おにぎり · ラーメン · うどん · 水 …) pin the first result, and no product above a generic food in the top
+  three. A keystroke's search over the 20k items takes ~0.7 ms in Playwright's WebKit on a Mac (expect 2–3× on an iPhone).
 - **Amount:** the food's values per 100 g; its portions as chips (100 g last), −/＋ by a whole portion for the things
   counted (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック · ジョッキ …) and by half for 茶碗, 人前 and weights (±10 g once
   grams are typed), a grams field (ml for a drink; typing grams leaves the portions); kcal and P/F/C/salt live; which

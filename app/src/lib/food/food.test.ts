@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { searchKey } from './text.ts';
-import { entryOf, search, SECONDARY_PENALTY } from './search.ts';
+import { entryOf, headOf, PRODUCT_PENALTY, search, SECONDARY_PENALTY } from './search.ts';
 import { nutrientsFor, portionsOf, toSnap } from './nutrition.ts';
 import { addDataset, credits, emptyDb, searchFoods, verifyOf } from './db.ts';
 import type { Item } from './types.ts';
@@ -49,6 +49,19 @@ describe('search', () => {
     const core = entryOf(item('mext:9', '麻婆豆腐', { kcal: 104, aliases: ['マーボー豆腐'] }));
     const other = entryOf(item('kurume:1', 'マーボー豆腐丼'), SECONDARY_PENALTY);
     expect(ids('マーボー豆腐', (id) => ({ 'toyonaka:1': 7, 'mext:9': 7 })[id], [other, lunch, core])).toEqual(['mext:9', 'kurume:1']);
+  });
+  it('an exact alias is level with a name’s prefix (a hair under it); a name’s head is the name; a product a little lower', () => {
+    const egg = entryOf(item('mext:12004', '卵（全卵・生）', { aliases: ['たまご'], pop: 3 }));
+    const sando = entryOf(item('eatout:1', 'サンドイッチ（たまご）', { pop: 3 }));
+    const brand = entryOf(item('off:1', 'たまご', { brand: 'X' }), SECONDARY_PENALTY + PRODUCT_PENALTY);
+    expect(ids('たまご', undefined, [sando, brand, egg])).toEqual(['mext:12004', 'eatout:1', 'off:1']);
+    const breast = entryOf(item('mext:11220', '鶏むね肉 皮なし 生', { pop: 3 }));
+    const chicken = entryOf(item('eatout:2', 'サラダチキン', { aliases: ['鶏むね'], pop: 3 }));
+    expect(ids('鶏むね', undefined, [chicken, breast])).toEqual(['mext:11220', 'eatout:2']);
+    const water = entryOf(item('eatout:3', '水（ミネラルウォーター）'));
+    const saba = entryOf(item('mext:10164', 'さば缶（水煮）', { pop: 3 }));
+    expect(ids('水', undefined, [saba, water])).toEqual(['eatout:3', 'mext:10164']);
+    expect([headOf('鮭（しろさけ） 生'), headOf('ゴハン（精白米）'), headOf('ビール')]).toEqual(['鮭', 'ごはん', 'びーる']);
   });
 });
 

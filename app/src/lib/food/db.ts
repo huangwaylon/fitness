@@ -1,6 +1,6 @@
 // The food catalog in memory: the datasets as they load (index.json's order), their search index and the
 // cross-source verify groups, with the lookups the food sheet uses. Pure: load.ts fetches.
-import { entryOf, search, SECONDARY_PENALTY, type Entry } from './search.ts';
+import { entryOf, PRODUCT_PENALTY, search, SECONDARY_PENALTY, type Entry } from './search.ts';
 import type { Credit, Dataset, FoodIndex, Item, Verify, VerifyGroup } from './types.ts';
 
 export interface FoodDb {
@@ -20,12 +20,16 @@ export const emptyDb = (index: FoodIndex): FoodDb => ({ version: index.version, 
 /** Items indexed per slice: a dataset is added a slice per task (load.ts), so no frame waits on a whole file. */
 export const SLICE = 2000;
 
-/** A dataset into the catalog: its items searchable (a `secondary` one's ranked lower), its header credited. With
- *  `pause`, a slice at a time, awaiting it in between (the slices stay in order and together). */
+/** The packaged products' datasets (Open Food Facts, the JBFD's 市販品): ranked a little under the other secondary
+ *  ones (search.ts PRODUCT_PENALTY). */
+const PRODUCT_SOURCES: ReadonlySet<string> = new Set(['off', 'jbfd']);
+
+/** A dataset into the catalog: its items searchable (a `secondary` one's ranked lower, a product's lower still), its
+ *  header credited. With `pause`, a slice at a time, awaiting it in between (the slices stay in order and together). */
 export async function addDataset(db: FoodDb, meta: FoodIndex['datasets'][number], data: Dataset, pause?: () => Promise<void>): Promise<void> {
   const { label, attribution, license, url } = data;
   db.sets.push({ source: meta.source, badge: meta.badge, label, attribution, license, url });
-  const pen = meta.secondary ? SECONDARY_PENALTY : 0;
+  const pen = (meta.secondary ? SECONDARY_PENALTY : 0) + (PRODUCT_SOURCES.has(meta.source) ? PRODUCT_PENALTY : 0);
   const items = data.items;
   for (let i = 0; i < items.length; i += SLICE) {
     if (i && pause) await pause();

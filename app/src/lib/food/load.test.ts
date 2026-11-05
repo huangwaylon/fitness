@@ -9,7 +9,7 @@ import { loadFoodDb } from './load.ts';
 import { addDataset, credits, emptyDb, searchFoods, SLICE, verifyOf, type FoodDb } from './db.ts';
 import { portionsOf, toSnap } from './nutrition.ts';
 import type { Dataset, FoodIndex, Item } from './types.ts';
-import type { Entry } from './search.ts';
+import { tierOf, type Entry } from './search.ts';
 import { searchKey } from './text.ts';
 
 const DIR = join(import.meta.dirname, '../../../static/food');
@@ -93,8 +93,6 @@ describe('loadFoodDb', () => {
   });
 
   it('ranks a score at a time exactly as one sort of every hit did (search.ts before the top-n ranking)', () => {
-    const tierOf = (e: Entry, q: string): number =>
-      e.n === q ? 0 : e.n.startsWith(q) ? 1 : e.n.includes(q) ? 2 : e.al.includes(q) ? 3 : e.al.some((a) => a.startsWith(q)) ? 4 : e.al.some((a) => a.includes(q)) ? 5 : 6;
     const groupOf = (id: string) => db.verify?.byId[id];
     const sortAll = (query: string, limit: number): Item[] => {
       const tokens = query.trim().split(/[\s　]+/).map(searchKey).filter(Boolean);
@@ -152,5 +150,46 @@ describe('loadFoodDb', () => {
     expect(c.length).toBeGreaterThanOrEqual(index.datasets.length + 1);
     expect(c.find((x) => x.label === 'Open Food Facts')?.attribution).toContain('Open Food Facts');
     expect(c.filter((x) => !x.attribution)).toEqual([]);
+  });
+});
+
+// The golden queries: what people type most, and the food they mean first (docs/design.md "Gohan", search). An exact
+// alias is level with a name's prefix (たまご → 卵), a name's head counts as the name (水 → 水（ミネラルウォーター）), and a
+// packaged product never beats the generic food. Failures collected, one expect.
+const GOLDEN: [q: string, top: string][] = [
+  ['ご飯', 'mext:01088'], ['ごはん', 'mext:01088'], ['白米', 'mext:01088'], ['みそ汁', 'dishes:miso-tofu-wakame'],
+  ['味噌汁', 'dishes:miso-tofu-wakame'], ['みそしる', 'dishes:miso-tofu-wakame'], ['卵', 'mext:12004'], ['たまご', 'mext:12004'],
+  ['ゆで卵', 'mext:12005'], ['目玉焼き', 'dishes:medamayaki'], ['納豆', 'mext:04046'], ['natto', 'mext:04046'],
+  ['鶏むね', 'mext:11220'], ['とりむね', 'mext:11220'], ['サラダチキン', 'eatout:saladchicken'], ['ささみ', 'mext:11227'],
+  ['プロテイン', 'eatout:protein_whey'], ['おにぎり', 'dishes:onigiri-shake'], ['ラーメン', 'eatout:ramen_shoyu'],
+  ['味噌ラーメン', 'eatout:ramen_miso'], ['うどん', 'mext:01039'], ['そば', 'mext:01128'], ['パスタ', 'mext:01064'],
+  ['水', 'eatout:water'], ['牛乳', 'mext:13003'], ['バナナ', 'mext:07107'], ['食パン', 'mext:01026'], ['パン', 'mext:01026'],
+  ['コーヒー', 'mext:16045'], ['お茶', 'mext:16037'], ['緑茶', 'mext:16037'], ['ヨーグルト', 'mext:13025'], ['豆腐', 'mext:04032'],
+  ['鮭', 'mext:10134'], ['カレー', 'dishes:curry-pork'], ['ビール', 'mext:16006'], ['りんご', 'mext:07148'], ['みかん', 'mext:07027'],
+  ['唐揚げ', 'dishes:karaage'], ['牛丼', 'dishes:gyudon'], ['ブロッコリー', 'mext:06263'], ['ぎょうざ', 'mext:18002'],
+  ['餃子', 'dishes:gyoza'], ['アイス', 'mext:13043'], ['チョコ', 'mext:15116'], ['オートミール', 'mext:01004'], ['塩', 'mext:17012'],
+  ['さとう', 'mext:03003'], ['ハンバーグ', 'mext:18050'], ['チャーハン', 'mext:18057'], ['トマト', 'mext:06182'],
+  ['キャベツ', 'mext:06061'], ['ポテチ', 'mext:15103'], ['豚汁', 'dishes:tonjiru'], ['枝豆', 'eatout:edamame']
+];
+const isProduct = (id: string) => id.startsWith('off:') || id.startsWith('jbfd:');
+
+describe('the golden queries', () => {
+  it(`${GOLDEN.length} common queries find their food first`, () => {
+    const fails: string[] = [];
+    for (const [q, top] of GOLDEN) {
+      const got = searchFoods(db, q, 1)[0]?.id;
+      if (got !== top) fails.push(`${q}: ${got} (want ${top})`);
+    }
+    expect(fails).toEqual([]);
+  });
+
+  it('a packaged product never ranks above a generic food in the top three', () => {
+    const fails: string[] = [];
+    for (const [q] of GOLDEN) {
+      const ids = searchFoods(db, q, 3).map((x) => x.id);
+      const firstProduct = ids.findIndex(isProduct);
+      if (firstProduct >= 0 && ids.slice(firstProduct).some((id) => !isProduct(id))) fails.push(`${q}: ${ids.join(' ')}`);
+    }
+    expect(fails).toEqual([]);
   });
 });

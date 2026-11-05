@@ -11,6 +11,8 @@ export interface Entry {
   h: string;
   pop: number;
   pen: number;
+  /** The name's head as a key (headOf), built on its first prefix hit. */
+  hd?: string;
 }
 
 /** Each curated pop level (1–3) outweighs a little over half a match tier, so 食パン (substring, pop 3) beats パン粉
@@ -18,6 +20,9 @@ export interface Entry {
 const POP_WEIGHT = 0.6;
 /** A `secondary` dataset's items (regional, school lunch, products) rank below a core item a curated alias matches. */
 export const SECONDARY_PENALTY = 1.5;
+/** A packaged product (db.ts PRODUCT_SOURCES) ranks a little below the other secondary items too: たまご finds 卵, not
+ *  a brand called たまご. */
+export const PRODUCT_PENALTY = 0.5;
 
 /** An item's searchable fields as keys, in this order: its name, `full`, each alias, `en`, `brand`, the barcode
  *  (`jan`), `cat`. scripts/food-data.ts ships them joined by a space (`keys`: no key holds one, nor a query token),
@@ -34,13 +39,19 @@ export function entryOf(it: Item, pen = 0): Entry {
   return { it, n: keys[0], al: na ? keys.slice(2, 2 + na) : [], h: keys === shipped ? it.keys! : keys.join(' '), pop: it.pop ?? 0, pen };
 }
 
-/** Lower is better: the name exact, its prefix, a substring of it, then an alias exact, prefix, substring, then any
- *  other field. */
-function tierOf(e: Entry, q: string): number {
+/** A name up to its first bracket or space, as a key (「水（ミネラルウォーター）」 → 水, 「鮭（しろさけ） 生」 → 鮭). */
+export const headOf = (name: string): string => searchKey(name.split(/[（(［[【\s　]/)[0]);
+/** An alias exact: level with a name's prefix, a hair under it (鶏むね: 鶏むね肉 before サラダチキン, whose alias it is). */
+const ALIAS_EXACT = 1.05;
+
+/** Lower is better: the name exact (or its head: 水 finds 水（ミネラルウォーター）), then its prefix or an alias exact
+ *  (level: たまご finds 卵 as ごはん finds ごはん（精白米）), a substring of the name, then an alias's prefix, a substring
+ *  of one, then any other field. */
+export function tierOf(e: Entry, q: string): number {
   if (e.n === q) return 0;
-  if (e.n.startsWith(q)) return 1;
+  if (e.n.startsWith(q)) return (e.hd ??= headOf(e.it.name)) === q ? 0 : 1;
+  if (e.al.includes(q)) return ALIAS_EXACT;
   if (e.n.includes(q)) return 2;
-  if (e.al.includes(q)) return 3;
   if (e.al.some((a) => a.startsWith(q))) return 4;
   if (e.al.some((a) => a.includes(q))) return 5;
   return 6;
