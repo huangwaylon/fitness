@@ -37,18 +37,26 @@ self.addEventListener('install', (event) => {
       // a hashed chunk an older shell holds is the very same file: copied over, not downloaded again (each deploy
       // fetched every chunk and font anew, ~3 MB; now only what changed)
       const olds = await Promise.all(olderShells(await caches.keys(), CACHE).map((k) => caches.open(k)));
-      const todo: (string | Request)[] = [];
+      const chunks: string[] = [], statics: Request[] = [];
       for (const p of PRECACHE) {
         if (!HASHED.has(p)) {
-          todo.push(fresh(p));
+          statics.push(fresh(p));
           continue;
         }
         let hit: Response | undefined;
         for (const c of olds) if ((hit = await c.match(p))) break;
         if (hit) await cache.put(p, hit);
-        else todo.push(p);
+        else chunks.push(p);
       }
-      await cache.addAll(todo);
+      // the build's code all or nothing: a chunk not fetched fails the install (the page keeps its worker and asks
+      // again later: ui-state/reload.ts newWorker); the static files (the art, the manifest: ~300) each on its own, so
+      // one that fails costs that file (served from the previous shell's copy or the network: `cached`), not the
+      // install (one flaky fetch of ~370 failed it, and every resume's update with it)
+      await cache.addAll(chunks);
+      await Promise.allSettled(statics.map(async (r) => {
+        const res = await fetch(r);
+        if (res.ok) await cache.put(r, res);
+      }));
       // The SPA shell (ssr = false): any navigation can be served by the scope root. Only this build's (a deploy
       // landing during the install would give a newer build's HTML, whose chunks this cache hasn't): else none, and
       // navigations go to the network till a newer worker installs its own.

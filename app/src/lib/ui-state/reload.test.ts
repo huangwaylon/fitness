@@ -59,38 +59,56 @@ describe('lazy', () => {
 });
 
 describe('newWorker (a deploy\'s reload waits for its service worker)', () => {
-  const container = (o: { controller?: boolean; installs?: boolean; claims?: boolean }) => {
+  type Outcome = 'claims' | 'fails' | 'hangs';
+  const container = (o: { controller?: boolean; installs?: Outcome; offline?: boolean }) => {
     const listeners: (() => void)[] = [];
+    const worker = { state: 'installing', on: [] as (() => void)[], addEventListener(_: string, f: () => void) { this.on.push(f); } };
     const reg = { installing: null as unknown, waiting: null, update: vi.fn(async () => {
+      if (o.offline) throw new TypeError('Failed to update a ServiceWorker');
       if (!o.installs) return;
-      reg.installing = {};
-      if (o.claims) setTimeout(() => listeners.forEach((f) => f()), 10);
+      reg.installing = worker;
+      if (o.installs === 'claims') setTimeout(() => listeners.forEach((f) => f()), 10);
+      if (o.installs === 'fails') setTimeout(() => ((worker.state = 'redundant'), worker.on.forEach((f) => f())), 10);
     }) };
     const sw = { controller: o.controller ? {} : null, getRegistration: async () => reg, addEventListener: (_: string, f: () => void) => listeners.push(f) };
     return { sw: sw as unknown as ServiceWorkerContainer, reg };
   };
   it('at once with no worker in control (a first visit)', async () => {
     const { sw, reg } = container({});
-    await newWorker(sw, 60_000);
+    expect(await newWorker(sw)).toBe(true);
     expect(reg.update).not.toHaveBeenCalled();
   });
   it('at once when the worker is already the newest', async () => {
     const { sw, reg } = container({ controller: true });
-    await newWorker(sw, 60_000);
+    expect(await newWorker(sw)).toBe(true);
     expect(reg.update).toHaveBeenCalledTimes(1);
   });
   it('once the new worker claims the page, once a page', async () => {
-    const { sw, reg } = container({ controller: true, installs: true, claims: true });
+    const { sw, reg } = container({ controller: true, installs: 'claims' });
     const t = Date.now();
-    await newWorker(sw, 60_000);
+    expect(await newWorker(sw)).toBe(true);
     expect(Date.now() - t).toBeLessThan(1000);
-    await newWorker(sw, 60_000);
+    expect(await newWorker(sw)).toBe(true);
     expect(reg.update).toHaveBeenCalledTimes(1);
   });
-  it('gives up after its wait (the reload then goes ahead)', async () => {
-    const { sw } = container({ controller: true, installs: true });
-    const t = Date.now();
-    await newWorker(sw, 50);
-    expect(Date.now() - t).toBeGreaterThanOrEqual(45);
+  it('never on a timer: a slow install is waited for, however long', async () => {
+    vi.useFakeTimers();
+    try {
+      const { sw } = container({ controller: true, installs: 'hangs' });
+      let done = false;
+      void newWorker(sw).then(() => (done = true));
+      await vi.advanceTimersByTimeAsync(10 * 60_000);
+      expect(done).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+  it('false when the install fails or the update can\'t be fetched; the next call asks again', async () => {
+    for (const o of [{ installs: 'fails' as const }, { offline: true }]) {
+      const { sw, reg } = container({ controller: true, ...o });
+      expect(await newWorker(sw)).toBe(false);
+      expect(await newWorker(sw)).toBe(false);
+      expect(reg.update).toHaveBeenCalledTimes(2);
+    }
   });
 });
