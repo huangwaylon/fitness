@@ -120,6 +120,25 @@ test('a dead socket is found out on coming back to the app (focus): the partnerâ
   await expect.poll(() => w<string>(a, 'canon').then((c) => c.includes(id)), { timeout: 15_000 }).toBe(true);
 });
 
+test('an intent the relay drops without a word (one it canâ€™t read): sent again on the same socket, never a reconnect loop', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const island = newIsland();
+  const { page: a } = await demoPhone(browser, island, 'A');
+  const { page: b } = await demoPhone(browser, island, 'B');
+  await connected(a);
+  await connected(b);
+  const id = `e2e-mute-${Date.now().toString(36).slice(-5)}`;
+  island.ctl.drop = (who, text) => who === 'A' && text.includes(id);
+  const hellos = island.said('A').hello;
+  expect(await w<boolean>(a, 'share', fakeCatch(id))).toBe(true);
+  // its ack overdue at 5 s with nothing heard since: the socket is asked (it answers), and the catch goes again on it at
+  // 10 s (was: given up as dead at 5 s, a new socket, the same again, for good)
+  await a.waitForTimeout(16_000);
+  expect(island.said('A').hello).toBe(hellos);
+  expect(island.said('A').catch).toBe(2);
+  expect(await w<{ closed: number } | null>(a, 'metrics').then((m) => m?.closed)).toBe(0);
+});
+
 test('kill: a change made offline and the app killed before it went is sent when the app opens again', async ({ browser }) => {
   test.setTimeout(60_000);
   const island = newIsland();
