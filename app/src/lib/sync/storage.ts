@@ -24,6 +24,9 @@ export const LIVE = {
   /** `{ off }`: the relay's clock less this device's, as last measured (sync/live.ts): what the phone stamps before the
    *  first welcome is on the relay's clock too. */
   offset: 'island.liveOffset',
+  /** `{ me, d, cs }`: the day's claims I counted (`cs`: claim → tally key; store/actions.ts): a race lost after a reload
+   *  or a kill still takes its catch back. Today's only, mine only. */
+  counted: 'island.counted',
   /** `{ day, events }`: today's shared world as this phone folded it (store/world.svelte.ts: mine and the partner's). */
   world: 'island.world',
   /** `{ <morning>: { A?, B? } }`: both people's wishes on shooting stars by the morning each brings its fragment
@@ -66,6 +69,8 @@ export const DEMO = {
   gone: 'island-demo.gone',
   /** localStorage `island-demo.world.<A|B>`: the demo's shared world as each player's tab folded it (store/world.svelte.ts). */
   world: 'island-demo.world',
+  /** localStorage `island-demo.counted.<A|B>`: the claims each player's tab counted today (store/actions.ts). */
+  counted: 'island-demo.counted',
   /** localStorage: the demo's decorations (store/decor.svelte.ts), both players' tabs' (kept for good, as the sheet). */
   decor: 'island-demo.decor',
   /** localStorage: the demo's tent (store/tent.svelte.ts), both players' tabs' (kept for good, as the sheet). */

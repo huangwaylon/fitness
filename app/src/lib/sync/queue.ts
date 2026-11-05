@@ -150,10 +150,11 @@ const isHeld = (ev: QueuedEvent, now: number): boolean => ev.tries === 0 && ev.n
  * What an event changes, for ordering: a later event on the same spend never passes a held one, so the server keeps
  * the order the screen showed (a `spend_void` stamped before its `spend` would be ignored on read); nor does a sell or
  * a buy pass a held tally, sell or buy (the shop: the record checks a sell against the tallies it holds and a buy
- * against the sells, contract/shop.ts). Null: nothing else touches it.
+ * against the sells, contract/shop.ts), nor a `tally_back` (the record takes one only while the day's tally covers it:
+ * a catch given back after a reload, its tally still held). Null: nothing else touches it.
  */
 function subjectOf(ev: Pick<QueuedEvent, 'type' | 'data'>): string | null {
-  if (ev.type === 'tally' || ev.type === 'sell' || ev.type === 'buy') return 'shop';
+  if (ev.type === 'tally' || ev.type === 'tally_back' || ev.type === 'sell' || ev.type === 'buy') return 'shop';
   return ev.type === 'spend' || ev.type === 'spend_void' ? `spend|${String(ev.data.spendId)}` : null;
 }
 

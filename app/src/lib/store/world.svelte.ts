@@ -74,6 +74,10 @@ class SharedWorld {
   get me(): Who | null {
     return this.#me;
   }
+  /** The demo's own keys in use (store/actions.ts keeps its claims beside them). */
+  get demo(): boolean {
+    return this.#demo;
+  }
 
   #key(): string {
     // the demo's two players are two tabs of one browser: one record each
@@ -113,7 +117,7 @@ class SharedWorld {
     this.#me = me;
     this.#demo = demo;
     if (relay) {
-      const off = [relay.on((m) => this.#heard(m)), relay.onStatus((st) => this.#here(st.connected ? (st.here ?? []) : []))];
+      const off = [relay.on((m) => this.#heard(m)), relay.onStatus((st) => this.#here(st.connected ? (st.here ?? []) : [])), relay.onRefused?.((i) => this.#refused(i)) ?? (() => {})];
       this.#off = () => off.forEach((f) => f());
     } else this.#here([]);
     this.rev++;
@@ -300,6 +304,31 @@ class SharedWorld {
       } catch (err) {
         console.error('world:', err);
       }
+    }
+  }
+
+  /**
+   * The room refused a claim of mine (its `ack` said `ok: false`): someone's reached it first, and this phone never
+   * heard theirs (the room's day ring past it, a replay missed). Still mine here, it's lost as a race heard would be
+   * (store/actions.ts lostRace takes the catch back): the winner, unknown, is taken to be the partner (the guest's
+   * phone: A), as the record's day rows will say or correct; kept, so a reload keeps it theirs.
+   */
+  #refused(i: Intent): void {
+    if (i.kind !== 'catch' && i.kind !== 'pick') return;
+    const me = this.#me, k = claimOf(i);
+    if (!me || !k) return;
+    const d = this.#today(), mine = d.claims[k];
+    if (!mine || mine.who !== me) return; // its winner heard already (the race's `beat`)
+    const who: Who = me === 'A' ? 'B' : 'A';
+    const { v: _v, c: _c, ...rest } = i as Intent & { v?: number; c?: number };
+    const e = { ...rest, who, t: mine.t } as DayEvent;
+    apply(d, e, me);
+    this.#keep(e);
+    this.rev++;
+    try {
+      this.lost?.(k, who, false, i.kind);
+    } catch (err) {
+      console.error('world:', err);
     }
   }
 

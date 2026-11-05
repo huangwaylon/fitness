@@ -22,6 +22,7 @@ import { buyPrice, sellPrice, stockOf } from '#lib/contract/shop.ts';
 import { GOODS } from '#lib/contract/pocket.ts';
 import { shopView } from '#lib/model/shop.ts';
 import { world } from './world.svelte.ts';
+import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { profileValueOk, type ProfileKey } from '#lib/contract/profile.ts';
 
 /** 買う！ and its とりけす wait this long before they are sent, with もとに戻す on the banner. */
@@ -154,6 +155,7 @@ function countOne(key: string, claim?: string): void {
   if (claim) {
     counted.set(claim, { key, date, w });
     if (counted.size > COUNTED_MAX) counted.delete(counted.keys().next().value!);
+    keepCounted(m.me, date, claim, key);
   }
 }
 
@@ -162,19 +164,42 @@ function countOne(key: string, claim?: string): void {
 const counted = new Map<string, { key: string; date: LocalDate; w: number }>();
 const COUNTED_MAX = 400;
 
+/** The day's claims kept across a reload or a kill (`island.counted` = `{me, d, cs: {claim: key}}`; the demo's per
+ *  player): a race lost after one (the partner's claim heard on the next open, or the room's refusal of a resend) still
+ *  gives its catch back. Only today's, only mine. */
+const countedKey = (): string => (world.demo ? `${DEMO.counted}.${world.me ?? 'A'}` : LIVE.counted);
+type KeptCounts = { me?: unknown; d?: unknown; cs?: Record<string, unknown> };
+function keepCounted(me: Who, date: LocalDate, claim: string, key: string): void {
+  const k = readJson<KeptCounts>(localKV(), countedKey());
+  const cs = k && k.me === me && k.d === date && k.cs && typeof k.cs === 'object' ? k.cs : {};
+  const all = Object.entries({ ...cs, [claim]: key }).slice(-COUNTED_MAX);
+  writeJson(localKV(), countedKey(), { me, d: date, cs: Object.fromEntries(all) });
+}
+function keptCounted(claim: string): { key: string; date: LocalDate; w: number } | undefined {
+  const me = week.model?.me, k = readJson<KeptCounts>(localKV(), countedKey());
+  if (!me || !k || k.me !== me || typeof k.d !== 'string' || !k.cs) return undefined;
+  const key = k.cs[claim];
+  if (typeof key !== 'string') return undefined;
+  const { [claim]: _gone, ...rest } = k.cs;
+  writeJson(localKV(), countedKey(), { ...k, cs: rest });
+  // (no held window: the page that held it is gone, its tally queued or sent: given back by a tally_back)
+  return { key, date: k.d as LocalDate, w: 0 };
+}
+
 /**
  * The partner got there first (store/world.svelte.ts: the relay heard their claim before mine, `beat`): what my claim
  * put in my pocket comes out again, and a gentle line says who has it. A day's counts only grow on the record
  * (contract/tally.ts mergeTally), so a catch counted in the tally still waiting to be sent (held a minute, or queued
  * while offline) is taken out of it; one whose tally went is given back by a `tally_back` of its day (2026-11-05:
- * the record keeps it while that day's tally covers it). True when it was taken back (the line shows either way,
- * unless `quiet`: the island's own news says so).
+ * the record keeps it while that day's tally covers it), as is one counted before a reload (the claim kept with its
+ * day: `island.counted`). True when it was taken back (the line shows either way, unless `quiet`: the island's own
+ * news says so).
  */
 export function lostRace(claim: string, who: Who, quiet = false): boolean {
-  const c = counted.get(claim);
+  const kept = keptCounted(claim), c = counted.get(claim) ?? kept;
   counted.delete(claim);
   if (c === undefined) return false;
-  const took = (c.w === held?.w && uncount(c.key)) || giveBack(c.date, c.key);
+  const took = (c.w !== 0 && c.w === held?.w && uncount(c.key)) || giveBack(c.date, c.key);
   if (!quiet) {
     const v = week.view;
     const name = !v ? '' : who === 'G' ? v.guest.villagerName : v.people[who].villagerName;

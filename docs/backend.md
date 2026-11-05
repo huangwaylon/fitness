@@ -484,7 +484,8 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
   resend by its number and acks it without relaying it twice. Two tabs share that one copy: each merges the other's
   entries in before it writes (by number; what it took out itself stays out), and takes the other's writes as their
   `storage` events land: what the other tab added it sends on its own socket if that's the one up, what the other had
-  acked leaves it too. The day
+  acked leaves it too. Paired again as someone else on the same page (the backend's reset stops and starts the one
+  socket), the outbox is the new key's: the last person's is neither sent nor kept under the new key. The day
   comes as `replay`, each change delivered in order, mine too. `metrics()`: messages and bytes
   each way, resends, the last acks' round trips, what's waiting.
 - **Measured** (`npm run smoke` from a Mac in Tokyo, edge NRT): connect ~65 ms, ping RTT median 18–21 ms (p90 23–40),
@@ -646,7 +647,13 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   minute: a catch made offline, resolved at the reconnect) is given back by a `tally_back` of its day (2026-11-05,
   [Events](#events): the day's given-back counts with one more, never past what the day's tally holds). A catch
   counted in an earlier minute than the held one is given back too (taking it out of the held tally did nothing: the
-  record keeps each count's larger value). A repeat changes nothing; another day's is
+  record keeps each count's larger value). Across a reload or a kill (2026-11-05, round 2): the claims counted today
+  are kept beside it (`island.counted` `{me, d, cs}`: claim → tally key; the demo's per player), so a race lost after
+  the page that counted it is gone (the partner's claim heard in the next open's replay) still gives the catch back, by
+  a `tally_back` (the queue never lets one pass a held tally: the record takes it only while the day's tally covers
+  it). **A refused claim** (the room's `ack {ok: false}`, `live.onRefused`): someone reached it first and this phone
+  never heard theirs (the room's day ring past it); still mine here, it's a race lost as above, the claim the
+  partner's (the guest's phone: A's), kept with the day, until the record's rows say otherwise. A repeat changes nothing; another day's is
   ignored. A claim in the day is gone on every phone, mine too (`lying`, `takenIds`; the island's finds, care, fruit,
   branches and wood): a phone that lost its own scene record (a new origin, Safari's cleared storage) gets my claims
   back in the replay and the day's row, and a claim can't be made twice, so a thing kept lying for one was drawn but
