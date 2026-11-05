@@ -265,9 +265,8 @@ type Look = {
 
 **For the user:**
 - **Resolved:** clothes are all free (the user, 2026-11-05).
-
-1. **Keep the villager look as an option** (the switch at the foot of すがた)? I recommend yes. Otherwise it stays for
-   the guest only.
+- **Resolved:** the villager look stays as an option, the switch at the foot of すがた, for the members and the guest
+  (the user, 2026-11-05).
 
 **Phases:**
 1. **Done:** sign-off renders of A and B.
