@@ -4,7 +4,8 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import raw from '../../../static/audio/manifest.json';
+import manifestJson from '../../../static/audio/manifest.json';
+import kkJson from '../../../static/audio/kk.json';
 import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent } from './settings.ts';
 import { AUDIO, hasMusic, parseManifest } from './manifest.ts';
 import { DEVICE, type KV } from '#lib/sync/storage.ts';
@@ -45,10 +46,13 @@ describe('settings', () => {
   });
 });
 
-describe('audio manifest (static/audio/manifest.json)', () => {
+/** Both files' entries (K.K.'s are their own file: kk.ts). */
+const raw = { ...manifestJson, ...kkJson };
+
+describe('audio manifest (static/audio/manifest.json, kk.json)', () => {
   const STATIC = join(import.meta.dirname, '../../../static/audio');
   it('parses cleanly: no unknown ids, hours or weathers', () => {
-    expect(parseManifest(raw).problems).toEqual([]);
+    expect(parseManifest(manifestJson).problems).toEqual([]);
   });
   // Per folder: the most one file and all of them may weigh (MB). Every file streams on its own (never precached), so
   // one file's cap is what a phone waits for; the folder's is what the repo carries.
@@ -76,7 +80,7 @@ describe('audio manifest (static/audio/manifest.json)', () => {
     }
     // and every audio file on disk is named (nothing ships unused)
     const onDisk = readdirSync(STATIC, { recursive: true, withFileTypes: true })
-      .filter((d) => d.isFile() && d.name !== 'manifest.json')
+      .filter((d) => d.isFile() && !d.name.endsWith('.json'))
       .map((d) => relative(STATIC, join(d.parentPath, d.name)));
     expect(onDisk.filter((p) => !paths.includes(p))).toEqual([]);
   });
@@ -120,8 +124,6 @@ describe('audio manifest (static/audio/manifest.json)', () => {
       },
       ambient: { waves: 'ambient/waves.m4a', traffic: 'x' },
       events: { halloween: { file: 'music/h.m4a', start: 2, end: 80, gain: -1 }, easter: 'music/e.m4a' },
-      kk: [{ id: 'kk-a', ja: 'あ', en: 'A', file: 'kk/a.m4a', start: 5 }, { id: 'kk-b', file: 'kk/b.m4a' }, { id: 'kk-a', ja: 'あ', en: 'A', file: 'kk/a2.m4a' }],
-      kkAircheck: { 'kk-a': { file: 'kk/aircheck/kk-a.m4a', start: 3, gain: -1 }, 'kk-b': 'kk/b.m4a' },
       opening: 4
     });
     expect(manifest).toEqual({
@@ -139,15 +141,12 @@ describe('audio manifest (static/audio/manifest.json)', () => {
       },
       ambient: { waves: 'ambient/waves.m4a' },
       events: { halloween: { file: 'music/h.m4a', start: 2, end: 80, gain: -1 } },
-      places: {},
-      kk: [{ id: 'kk-a', ja: 'あ', en: 'A', file: 'kk/a.m4a', start: 0 }],
-      // (an aircheck is a one-shot: from its start)
-      kkAircheck: { 'kk-a': { file: 'kk/aircheck/kk-a.m4a', start: 0, gain: -1 } }
+      places: {}
     });
-    expect(problems).toEqual(['sfx.nope', 'sfx.pop', 'music.sunny.24', 'music.fog', 'ambient.traffic', 'opening', 'events.easter', 'kk.1', 'kk.2', 'kkAircheck.kk-b']);
+    expect(problems).toEqual(['sfx.nope', 'sfx.pop', 'music.sunny.24', 'music.fog', 'ambient.traffic', 'opening', 'events.easter']);
   });
   it('an empty or broken manifest is just silence', () => {
-    expect(parseManifest(null)).toEqual({ manifest: { sfx: {}, opening: null, music: {}, ambient: {}, events: {}, places: {}, kk: [], kkAircheck: {} }, problems: [] });
+    expect(parseManifest(null)).toEqual({ manifest: { sfx: {}, opening: null, music: {}, ambient: {}, events: {}, places: {} }, problems: [] });
   });
 });
 

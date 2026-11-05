@@ -16,7 +16,7 @@
 // every entry's `v` (its file's content hash: the app fetches `file?v=`, so a re-cut file under the same name is a new
 // URL and /audio/* can be cached as immutable).
 // Output: AAC-LC stereo 44.1 kHz .m4a with +faststart at 64 kbps (K.K.'s from the GameCube rip mono at 40), and the
-// entries of static/audio/manifest.json (the rest of the file is kept as is).
+// entries of static/audio/manifest.json and kk.json (K.K.'s; the rest of the files is kept as is).
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -27,6 +27,29 @@ import { LEVELS } from '../src/lib/sound/mix.ts';
 const FFMPEG = process.env.FFMPEG ?? '/opt/homebrew/bin/ffmpeg';
 const OUT = join(import.meta.dirname, '../static/audio');
 const MANIFEST = join(import.meta.dirname, '../static/audio/manifest.json');
+/** K.K.'s songs and airchecks: their own file (the app loads it when first needed: src/lib/sound/kk.ts). */
+const KK_MANIFEST = join(import.meta.dirname, '../static/audio/kk.json');
+const KK_KEYS = ['kk', 'kkAircheck'];
+
+/** Both files as one (`kk`, `kkAircheck` from kk.json). */
+function readManifest(): Manifest {
+  const kk = JSON.parse(readFileSync(KK_MANIFEST, 'utf8')) as Record<string, unknown>;
+  const man = JSON.parse(readFileSync(MANIFEST, 'utf8')) as Manifest;
+  for (const k of KK_KEYS) if (kk[k] !== undefined) man[k] = kk[k];
+  return Object.assign(man, { _kkReadme: kk._readme });
+}
+
+/** Split back into the two files. */
+function writeManifest(man: Manifest): void {
+  const { _kkReadme, ...rest } = man;
+  const kk: Record<string, unknown> = { _readme: _kkReadme };
+  for (const k of KK_KEYS) {
+    kk[k] = rest[k];
+    delete rest[k];
+  }
+  writeFileSync(MANIFEST, JSON.stringify(rest, null, 2) + '\n');
+  writeFileSync(KK_MANIFEST, JSON.stringify(kk, null, 2) + '\n');
+}
 const SR = 44100;
 /** Analysis rate and frame (≈ 93 ms hop). */
 const ASR = 11025, FRAME = 2048, HOP = 1024, BANDS = 32;
@@ -467,7 +490,7 @@ function put(man: Manifest, key: string, value: Entry | string, row?: Row): Entr
 
 /** Build the catalogue's files found in `src` whose key matches `only`, and write their manifest entries. */
 function build(src: string, only: RegExp, dry: boolean): void {
-  const man = JSON.parse(readFileSync(MANIFEST, 'utf8')) as Manifest;
+  const man = readManifest();
   const built: Entry[] = [];
   for (const file of readdirSync(src).filter((f) => f.endsWith('.mp3')).sort()) {
     const num = file.match(/^(\d+-\d+)\. |^(\d+) - /);
@@ -500,7 +523,7 @@ function build(src: string, only: RegExp, dry: boolean): void {
   if (dry) return;
   for (const e of built) e.gain = trackGain(loudness(join(OUT, e.file)));
   writeHashes(man);
-  writeFileSync(MANIFEST, JSON.stringify(man, null, 2) + '\n');
+  writeManifest(man);
 }
 
 /** Integrated loudness (LUFS) and true peak (dBTP) of a file, from ffmpeg's loudnorm analysis pass. A mono file is
@@ -556,10 +579,10 @@ function writeGains(man: Manifest): void {
 function main(): void {
   const args = process.argv.slice(2).filter((a) => a !== '--extras'); // --extras: the old name of the same build
   if (args[0] === '--gains' || args[0] === '--hashes') {
-    const man = JSON.parse(readFileSync(MANIFEST, 'utf8')) as Manifest;
+    const man = readManifest();
     if (args[0] === '--gains') writeGains(man);
     writeHashes(man);
-    writeFileSync(MANIFEST, JSON.stringify(man, null, 2) + '\n');
+    writeManifest(man);
     return;
   }
   const [src] = args;

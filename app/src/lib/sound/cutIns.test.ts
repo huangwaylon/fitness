@@ -110,10 +110,11 @@ describe('cut-ins', () => {
 
   it('the volume at 0 ends a K.K. song (its caption with it)', async () => {
     const { m } = await musicOn();
-    const { kkTracks } = await import('./kk.ts');
-    const song = kkTracks[0];
+    const { loadKK } = await import('./kk.ts');
+    const song = (await loadKK()).tracks[0];
     expect(m.playKK(song.id)).toBe(true);
-    expect(m.sound.kk).toBe(song.id);
+    expect(m.sound.kk).toEqual({ id: song.id, from: 'live' });
+    expect(m.playingLabel('kk', 20)).toContain(song.ja);
     m.setSound({ volume: 0 });
     expect(m.sound.kk).toBeNull();
   });

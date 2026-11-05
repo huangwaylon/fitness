@@ -49,6 +49,13 @@ export const CROSSFADE = { out: 3, inAt: 1, inFor: 2 } as const;
 /** A cut-in (the wasps' chase or sting, a K.K. song) and the hand back after the chase: NH swaps the music at once,
  *  so the old track is gone in a quarter second as the new one comes up. */
 const CUT = { out: 0.25, inAt: 0, inFor: 0.25 } as const;
+/** Through a building's door (sound.svelte.ts setPlace): timed to the door's black (ui-state/doorTransition.ts: the
+ *  iris closes in 260 ms and opens in 420): the old music is gone as the black falls, the room's rises as it opens,
+ *  0.65 s in all rather than the hour's 3. */
+const DOOR = { out: 0.35, inAt: 0.15, inFor: 0.5 } as const;
+/** How a track change fades: the hour's crossfade, a cut-in's swap, a doorway's. */
+export type Fade = 'hour' | 'cut' | 'door';
+const FADES = { hour: CROSSFADE, cut: CUT, door: DOOR } as const;
 /** Coming back to the app (or a first start): the track fades in from where it was. */
 export const FADE_IN = 0.8;
 /** The next hour's file is fetched this long before the change, so the crossfade never waits on the network. */
@@ -64,9 +71,10 @@ interface FadePlan {
 }
 
 /** The fade for a change that starts at `at` (s on the audio clock). With nothing playing there is nothing to fade
- *  out: the track just fades in. `cut`: the quick swap (CUT) instead of the hour's crossfade. */
-export function crossfadePlan(at: number, playing: boolean, cut = false): FadePlan {
-  if (!playing) return { outFrom: at, outTo: at, inFrom: at, inTo: at + (cut ? CUT.inFor : FADE_IN) };
-  const c = cut ? CUT : CROSSFADE;
+ *  out: the track just fades in (FADE_IN, a cut-in's or a doorway's own). `fade`: the hour's crossfade, a cut-in's
+ *  quick swap (CUT), a doorway's (DOOR). */
+export function crossfadePlan(at: number, playing: boolean, fade: Fade = 'hour'): FadePlan {
+  const c = FADES[fade];
+  if (!playing) return { outFrom: at, outTo: at, inFrom: at, inTo: at + (fade === 'hour' ? FADE_IN : c.inFor) };
   return { outFrom: at, outTo: at + c.out, inFrom: at + c.inAt, inTo: at + c.inAt + c.inFor };
 }

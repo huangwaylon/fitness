@@ -454,7 +454,7 @@
       eng.bump(h.id);
       // a music player (stereo.ts): playing, a tap stops it; else its song list (this phone's music only)
       if (p && isStereo(p.item)) {
-        if (stereoTap(p.id, stereo, sound.kkFrom === 'aircheck') === 'stop') {
+        if (stereoTap(p.id, stereo, sound.kk?.from === 'aircheck') === 'stop') {
           stopKK('aircheck');
           stereo = null;
           cue('toggle-off');
@@ -488,7 +488,7 @@
   }
   // its song over (or cut off: K.K. on the island, the music turned off): nothing plays there now
   $effect(() => {
-    if (sound.kkFrom !== 'aircheck') untrack(() => (stereo = null));
+    if (sound.kk?.from !== 'aircheck') untrack(() => (stereo = null));
   });
   // the room left (or its player put away): its song stops, the island's music comes back
   $effect(() => () => untrack(() => stopKK('aircheck')));

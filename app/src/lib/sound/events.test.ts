@@ -1,8 +1,7 @@
-// Event music by Tokyo date and hour (docs/design.md#event-music), and K.K.'s song list (#kk-slider).
+// Event music by Tokyo date and hour (docs/design.md#event-music).
 import { describe, expect, it } from 'vitest';
 import { EVENT_MUSIC_IDS, eventMusicAt, msToNextEdge } from './events.ts';
 import { nthWeekday } from '#lib/time/dates.ts';
-import { kkPick, kkTracks } from './kk.ts';
 import { AUDIO } from './manifest.ts';
 import ja from '#lib/i18n/ja.json';
 import en from '#lib/i18n/en.json';
@@ -137,40 +136,5 @@ describe('event music schedule (Tokyo)', () => {
       expect(t.gain).toBeGreaterThanOrEqual(-12);
       expect(t.gain).toBeLessThanOrEqual(6);
     }
-  });
-});
-
-describe('K.K. songs (kk.ts)', () => {
-  it('the list: NH’s official titles, one file each under kk/, in the song-list order', () => {
-    // the user's NH rip's nine among them in that order (the rest the GameCube / e+ live recordings: 73 songs, all
-    // but NH's new ones)
-    const nine = [
-      ['kk-chorale', 'けけさんびか', 'K.K. Chorale'],
-      ['kk-march', 'けけマーチ', 'K.K. March'],
-      ['kk-waltz', 'けけワルツ', 'K.K. Waltz'],
-      ['kk-swing', 'けけスウィング', 'K.K. Swing'],
-      ['kk-bossa', 'けけボッサ', 'K.K. Bossa'],
-      ['kk-salsa', 'けけサルサ', 'K.K. Salsa'],
-      ['kk-reggae', 'けけレゲエ', 'K.K. Reggae'],
-      ['kk-rock', 'けけロック', 'K.K. Rock'],
-      ['kk-rockin', 'けけのロケンロール', "Rockin' K.K."]
-    ];
-    expect(kkTracks.filter((k) => nine.some(([id]) => id === k.id)).map((k) => [k.id, k.ja, k.en])).toEqual(nine);
-    expect(kkTracks).toHaveLength(73);
-    expect(kkTracks.find((k) => k.id === 'kk-mariachi')).toMatchObject({ ja: 'セニョールけけ', en: 'K.K. Mariachi' }); // e+'s Señor K.K.
-    expect(Object.keys(AUDIO.kkAircheck).every((id) => kkTracks.some((k) => k.id === id))).toBe(true);
-    for (const k of kkTracks) {
-      expect(k.file).toMatch(new RegExp(`^kk/${k.id}\\.m4a\\?v=`));
-      expect(k.start).toBe(0);
-      expect(k.end).toBeUndefined(); // one-shots: he plays a song once
-    }
-  });
-  it('picks any song but the last one', () => {
-    const t = kkTracks.slice(0, 3);
-    expect(kkPick(() => 0, null, t)?.id).toBe('kk-chorale');
-    expect(kkPick(() => 0, 'kk-chorale', t)?.id).toBe('kk-march');
-    expect(kkPick(() => 0.99, 'kk-waltz', t)?.id).toBe('kk-march');
-    expect(kkPick(() => 0.5, 'kk-march', t.slice(1, 2))?.id).toBe('kk-march'); // the only one
-    expect(kkPick(() => 0.5, null, [])).toBeNull();
   });
 });

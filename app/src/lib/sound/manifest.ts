@@ -1,5 +1,6 @@
 // static/audio/manifest.json → which sounds have real files (docs/design.md#audio-files). Bundled at build time like
-// the art manifest, so the engine knows synchronously what to fetch and what to synthesise. The audio SOURCE is
+// the art manifest, so the engine knows synchronously what to fetch and what to synthesise (K.K.'s songs, the
+// manifest's bulk, are their own kk.json, loaded when first needed: kk.ts). The audio SOURCE is
 // pluggable: drop a file under static/audio/, add its line to the JSON, rebuild. Unknown keys are ignored (and
 // flagged by the test), so a typo never breaks the app.
 import { asset } from '$app/paths';
@@ -9,13 +10,6 @@ import { WEATHERS, hourKey, type MusicFiles, type MusicTrack, type Weather } fro
 import { AMBIENT_IDS, type AmbientId } from './ambient.ts';
 import { EVENT_MUSIC_IDS, type EventMusicId } from './events.ts';
 import { PLACE_IDS, type PlaceId } from './places.ts';
-
-/** One of K.K.'s songs (`kk[]`, in NH's song-list order): NH's official titles, a one-shot file under audio/kk/. */
-export interface KKTrack extends MusicTrack {
-  id: string;
-  ja: string;
-  en: string;
-}
 
 interface AudioManifest {
   sfx: Partial<Record<SoundId, string>>;
@@ -27,15 +21,11 @@ interface AudioManifest {
   events: Partial<Record<EventMusicId, MusicTrack>>;
   /** A building's room's music (places.ts): loops like the hours, played indoors in place of the island's. */
   places: Partial<Record<PlaceId, MusicTrack>>;
-  kk: KKTrack[];
-  /** The aircheck of a K.K. song (NH's stereo version, the tent's stereos play it), by its `kk` id: a one-shot
-   *  (`start` 0). A song with none plays its live file. */
-  kkAircheck: Partial<Record<string, MusicTrack>>;
 }
 
 const HOURS = new Set(Array.from({ length: 24 }, (_, h) => hourKey(h)));
-const str = (v: unknown): v is string => typeof v === 'string' && v.length > 0;
-const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {});
+export const str = (v: unknown): v is string => typeof v === 'string' && v.length > 0;
+export const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {});
 
 const num = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 
@@ -53,7 +43,7 @@ function path(v: unknown): string | null {
 
 /** `{ file, start, end?, gain?, v? }` plays from `start` s (see MusicTrack). A bad `end` (not after `start`) falls
  *  back to `<audio loop>`; a bad `gain` to 0 dB. */
-function track(v: unknown): MusicTrack | null {
+export function track(v: unknown): MusicTrack | null {
   const t = obj(v);
   if (!str(t.file)) return null;
   const start = num(t.start) && t.start >= 0 ? t.start : 0;
@@ -107,19 +97,7 @@ export function parseManifest(json: unknown): { manifest: AudioManifest; problem
     if (PLACE_IDS.includes(k as PlaceId) && t) places[k as PlaceId] = t;
     else problems.push(`places.${k}`);
   }
-  const kk: KKTrack[] = [];
-  (Array.isArray(root.kk) ? root.kk : []).forEach((v: unknown, i) => {
-    const o = obj(v), t = track(v);
-    if (t && str(o.id) && str(o.ja) && str(o.en) && !kk.some((k) => k.id === o.id)) kk.push({ id: o.id, ja: o.ja, en: o.en, ...t, start: 0 });
-    else problems.push(`kk.${i}`);
-  });
-  const kkAircheck: AudioManifest['kkAircheck'] = {};
-  for (const [k, v] of Object.entries(obj(root.kkAircheck))) {
-    const t = track(v);
-    if (t && /^[a-z0-9-]+$/.test(k)) kkAircheck[k] = { ...t, start: 0 };
-    else problems.push(`kkAircheck.${k}`);
-  }
-  return { manifest: { sfx, opening: opening && { ...opening, start: 0 }, music, ambient, events, places, kk, kkAircheck }, problems };
+  return { manifest: { sfx, opening: opening && { ...opening, start: 0 }, music, ambient, events, places }, problems };
 }
 
 export const AUDIO = parseManifest(raw).manifest;

@@ -91,10 +91,10 @@ describe('src/lib folder boundaries', () => {
   });
 
   it('imports only what its folder allows', () => {
-    // art.ts and sound/manifest.ts bundle static/art/manifest.json and static/audio/manifest.json (outside src/lib):
-    // the only allowed reaches outside.
+    // art.ts and sound/manifest.ts bundle static/art/manifest.json and static/audio/manifest.json (outside src/lib),
+    // sound/kk.ts imports static/audio/kk.json (its own chunk): the only allowed reaches outside.
     const outside = (e: { from: string; to: string }) =>
-      (e.from === 'art' && e.to.endsWith('static/art/manifest.json')) || (e.from === 'sound' && e.to.endsWith('static/audio/manifest.json'));
+      (e.from === 'art' && e.to.endsWith('static/art/manifest.json')) || (e.from === 'sound' && /static\/audio\/(manifest|kk)\.json$/.test(e.to));
     const bad = edges
       .filter((e) => !(ALLOW[e.from] ?? []).includes(e.to) && !outside(e))
       .map((e) => `${e.file} → ${e.to}`);

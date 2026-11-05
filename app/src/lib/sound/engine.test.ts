@@ -109,6 +109,12 @@ class FakeAudio {
     FakeAudio.all.push(this);
   }
   setAttribute() {}
+  getAttribute(n: string) {
+    return n === 'src' ? this.src || null : null;
+  }
+  removeAttribute(n: string) {
+    if (n === 'src') this.src = '';
+  }
   addEventListener(type: string, f: () => void, o?: { once?: boolean; signal?: AbortSignal }) {
     const set = this.listeners.get(type) ?? new Set();
     this.listeners.set(type, set);
@@ -156,11 +162,12 @@ afterEach(() => {
 const OPENING: MusicTrack = { file: 'music/opening.m4a', start: 0 };
 const HOUR: MusicTrack = { file: 'music/hour-10.m4a', start: 0 };
 
-/** An engine unlocked by a tap with ミュージック on (the context and the two decks). */
-async function unlocked() {
+/** An engine unlocked by a tap with ミュージック on (the context and the two decks), 効果音 on unless `sfx: false`. */
+async function unlocked(o: { sfx?: boolean } = {}) {
   const { Engine } = await import('./engine.ts');
   const e = new Engine();
   e.unlock(true);
+  e.setLevels({ music: true, sfx: o.sfx ?? true, volume: 1 });
   await vi.advanceTimersByTimeAsync(0);
   for (const a of FakeAudio.all) a.readyState = 1; // the files' metadata is known at once
   return { e, ctx: FakeContext.last, decks: FakeAudio.all };
@@ -214,7 +221,7 @@ describe('a track that can’t play (onfailed)', () => {
     const failed: string[] = [];
     e.onfailed = (k) => failed.push(k);
     vi.mocked(fetch).mockImplementationOnce(async () => ({ ok: false }) as Response);
-    await e.setTrack('kk/live/kk-march', { file: 'kk/kk-march.m4a', start: 0 }, false, true);
+    await e.setTrack('kk/live/kk-march', { file: 'kk/kk-march.m4a', start: 0 }, false, 'cut');
     expect(failed).toEqual(['kk/live/kk-march']);
   });
   it('an undecodable file reports it from its deck, and stops there', async () => {
@@ -236,13 +243,31 @@ describe('a track that can’t play (onfailed)', () => {
     const { e, ctx } = await unlocked();
     let arrive!: () => void;
     vi.mocked(fetch).mockImplementationOnce(() => new Promise((ok) => (arrive = () => ok({ ok: true, blob: async () => new Blob(['x']) } as Response))));
-    const done = e.setTrack('event/bee-chase', HOUR, true, true);
+    const done = e.setTrack('event/bee-chase', HOUR, true, 'cut');
     await vi.advanceTimersByTimeAsync(IDLE_SUSPEND_MS * 2);
     expect(ctx.suspends).toBe(0);
     arrive();
     await done;
     await settle();
     expect([ctx.state, e.track]).toEqual(['running', 'event/bee-chase']);
+  });
+});
+
+describe('release (ミュージック off)', () => {
+  it('after the fade the files and their URLs go and the decks let go of their media; a track started meanwhile keeps them', async () => {
+    const { e, decks } = await unlocked();
+    void e.setTrack('10', HOUR);
+    await settle();
+    e.stopMusic();
+    e.release();
+    void e.setTrack('10', HOUR); // back on at once
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(URL.revokeObjectURL).not.toHaveBeenCalled();
+    e.stopMusic();
+    e.release();
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(URL.revokeObjectURL).toHaveBeenCalled();
+    expect(decks.every((d) => !d.src)).toBe(true);
   });
 });
 
@@ -397,18 +422,26 @@ describe('lazy effects (ids.ts `lazy`: the radio jingles)', () => {
     expect((src?.buffer as AudioBuffer | undefined)?.duration).toBe(1); // the decoded file (the fake's 1 s)
   });
 
-  it('keeps four decoded at most, the least recently played going first', async () => {
+  it('keeps two decoded at most, the least recently played going first', async () => {
     const { e } = await unlocked();
-    for (const id of RADIO) {
+    for (const id of RADIO.slice(0, 3)) {
       e.play(id);
       await vi.advanceTimersByTimeAsync(20_000); // past the jingle (one at a time)
     }
-    e.play('radio-morning-5');
+    e.play('radio-morning-3');
     await vi.advanceTimersByTimeAsync(0);
-    expect(fetched('sfx/radio-morning-5.m4a')).toBe(1); // still here
+    expect(fetched('sfx/radio-morning-3.m4a')).toBe(1); // still here
     e.play('radio-morning-1');
     await vi.advanceTimersByTimeAsync(0);
     expect(fetched('sfx/radio-morning-1.m4a')).toBe(2); // let go, fetched again
+  });
+
+  it('with 効果音 off the unlock fetches no effect file; turning it on does', async () => {
+    const { e } = await unlocked({ sfx: false });
+    expect(fetched('sfx/coin.m4a')).toBe(0);
+    e.setLevels({ music: true, sfx: true, volume: 1 });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetched('sfx/coin.m4a')).toBe(1);
   });
 
   it("a file that can't be had plays the placeholder (the chime's), and isn't asked for again at once", async () => {
