@@ -137,5 +137,9 @@
   "food.my.nutHint": "たんぱく質・脂質・炭水化物・塩分は わかるものだけで OK",
   "food.my.saved": "「{name}」を ほぞんしました",
   "food.my.removed": "「{name}」を けしました",
-  "food.my.copied": "コピーしました"
+  "food.my.copied": "コピーしました",
+  "food.quickAdd": "「{name}」を そのまま ついか",
+  "food.addedHead": "ついかした もの（{n}）",
+  "food.finish": "おわり",
+  "food.unadd": "「{name}」を けす"
 }

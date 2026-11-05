@@ -343,6 +343,12 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   at once (from its snapshot: its own portion; the catalog's portions swapped in when they come); anyone else's day is
   read-only. Levels slide in (240 ms, as けんこう's); ‹ comes back where the day was scrolled, the focus on what
   opened it. Confirmations are short (「夜ごはんに ついかしました」) and docked low, never over the level they land on.
+  **Several foods a trip** (the user approved, 2026-11-05): a new entry logged from a meal's search (its amount's
+  ついか, a recipe's or a custom food's) comes back to that search, not the day: the field cleared and focused in the
+  same tap (the keyboard stays up), and under it 「ついかした もの（n）」, this trip's entries (each with ✕: removed at
+  once, it was only just logged) and おわり (the day). Each food row of a meal's search (the catalog's, さいきん's,
+  マイ食品's) has its own ＋ beside it (FoodMeal's ＋ object): one tap logs it as it comes, its default portion (a recent
+  one as I had it; a custom food by its serving), no amount level.
 - **Search:** a 16px field (no search mid-IME composition), its ✕ the app's 44px lipped round button; under it, side
   by side (half the row each, on 393 px too), ＋ レシピを つくる (a meal's search only) and ＋ 食品を つくる, hidden once
   something is typed (room for the results over the keyboard; nothing found, its card has じぶんで つくる); empty,

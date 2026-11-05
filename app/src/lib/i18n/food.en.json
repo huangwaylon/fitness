@@ -137,5 +137,9 @@
   "food.my.nutHint": "Protein, fat, carbs and salt: only what you know",
   "food.my.saved": "Saved “{name}”",
   "food.my.removed": "Removed “{name}”",
-  "food.my.copied": "Copied"
+  "food.my.copied": "Copied",
+  "food.quickAdd": "Add “{name}” as it is",
+  "food.addedHead": "Added ({n})",
+  "food.finish": "Done",
+  "food.unadd": "Remove “{name}”"
 }

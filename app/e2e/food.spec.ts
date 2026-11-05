@@ -52,6 +52,11 @@ test('the bowl sits in the top-right cluster, between the dumbbell and the leaf;
   await expect(sheet(page).locator('[data-pick-meal=b]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('[data-food-live] .k')).toContainText('234');
   await sheet(page).locator('[data-done]').click();
+  // back in the meal's search for the next food, this one listed at its top; おわり → the day
+  await expect(sheet(page).locator('.navbar h2')).toHaveText('朝ごはん');
+  await expect(sheet(page).locator('[data-food-added] [data-added]')).toHaveCount(1);
+  await expect(sheet(page).locator('[data-food-q]')).toBeFocused();
+  await sheet(page).locator('[data-food-finish]').click();
 
   await expect(sheet(page).locator('.navbar h2')).toHaveText('ごはん');
   await expect.poll(() => kcalOf(page)).toBe(before + 234);
@@ -458,6 +463,7 @@ test('マイレシピ: made from a meal’s search (2 ingredients, 2人前), lis
   await expect(sheet(page).locator('[data-food-live] .k')).toContainText('195');
   expect(await overflowOf(page)).toEqual([]);
   await sheet(page).locator('[data-done]').click();
+  await sheet(page).locator('[data-food-finish]').click(); // おわり: the day
   await expect(h2).toHaveText('ごはん');
   await expect.poll(() => kcalOf(page)).toBe(before + 195);
   await expect(sheet(page).locator('section[data-meal=l] [data-entry]').last()).toContainText('テストごはん');
@@ -504,6 +510,7 @@ test('マイレシピ: someone else’s recipe in the meal search is read-only f
   await expect(h2).toHaveText('ごはんに ついか');
   await expect(sheet(page).locator('[data-pick-meal=d]')).toHaveAttribute('aria-pressed', 'true');
   await sheet(page).locator('[data-done]').click();
+  await sheet(page).locator('[data-food-finish]').click(); // おわり: the day
   await expect.poll(async () => Math.abs((await kcalOf(page)) - (before + per))).toBeLessThanOrEqual(1); // (the day sums unrounded kcal)
   await expect(sheet(page).locator('section[data-meal=d] [data-entry]').last()).toContainText('おうちカレー');
 
@@ -529,6 +536,7 @@ test('マイレシピ: someone else’s recipe in the meal search is read-only f
   await curry.first().click();
   await expect(sheet(page).locator('[data-pick-meal=s]')).toHaveAttribute('aria-pressed', 'true');
   await sheet(page).locator('[data-done]').click();
+  await sheet(page).locator('[data-food-finish]').click(); // おわり: the day
   await expect.poll(async () => Math.abs((await kcalOf(page)) - (now + per))).toBeLessThanOrEqual(1);
 });
 
@@ -652,6 +660,7 @@ test('＋ focuses the search; counted portions step whole, rice by half; drinks 
   await expect(banner).toHaveText(/夜ごはんに ついかしました/);
   const [bb, d] = [(await banner.boundingBox())!, (await sheet(page).boundingBox())!];
   expect(bb.y).toBeGreaterThan(d.y + d.height / 2);
+  await sheet(page).locator('[data-food-finish]').click(); // おわり: the day
   await expect(sheet(page).locator('section[data-meal=d] [data-entry] .amt').last()).not.toHaveText(/）（/); // never a weight twice
 });
 
@@ -691,7 +700,7 @@ test('search rows: a product’s brand on its second line, the same name, brand 
   await expect(sheet(page).locator('[data-recipe-new]')).toBeVisible();
   await sheet(page).locator('[data-food-q]').fill('サラダチキン');
   await expect(sheet(page).locator('[data-recipe-new], [data-custom-new]')).toHaveCount(0); // room for the results
-  const rows = sheet(page).locator('[data-food-results] button');
+  const rows = sheet(page).locator('[data-food-results] button.it');
   await expect(rows.first()).toBeVisible({ timeout: 15_000 });
   // ✓n in words on the row itself (a title alone never shows on an iPhone)
   await expect(sheet(page).locator('[data-food-results] [data-verified]').first()).toHaveText(/^✓\d+ 一致$/);
@@ -742,6 +751,7 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   await expect(sheet(page).locator('[data-pick-meal=l]')).toHaveAttribute('aria-pressed', 'true');
   expect(await overflowOf(page)).toEqual([]);
   await sheet(page).locator('[data-done]').click();
+  await sheet(page).locator('[data-food-finish]').click(); // おわり: the day
 
   await expect(h2).toHaveText('ごはん');
   await expect.poll(() => kcalOf(page)).toBe(before + 650);
@@ -866,6 +876,7 @@ test('マイ食品: someone else’s is read-only from its amount, logged and co
   await expect(sheet(page).locator('[data-grams]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-pick-meal=l]')).toHaveAttribute('aria-pressed', 'true');
   await sheet(page).locator('[data-done]').click();
+  await sheet(page).locator('[data-food-finish]').click(); // おわり: the day
   await expect(h2).toHaveText('ごはん');
   await expect.poll(() => kcalOf(page)).toBe(before + 650);
   await expect(sheet(page).locator('section[data-meal=l] [data-entry]').last()).toContainText('社食の日替わり定食');
@@ -895,4 +906,50 @@ test('マイ食品: someone else’s is read-only from its amount, logged and co
   await oni.click();
   await expect(sheet(page).locator('[data-grams]')).toHaveValue('110');
   await expect(sheet(page).locator('[data-food-live] .k')).toContainText('180');
+});
+
+// Several foods a trip (the user approved, 2026-11-05: "after ついか, stay in the meal's search"): a row's own ＋ logs
+// it as it comes (its default portion), the field cleared and focused for the next; ついか from an amount comes back
+// to the search too; the trip's foods are listed under the field, ✕ takes one back; おわり → the day.
+test('several foods a trip: a row’s ＋ logs it at once, ついか comes back to the search, ✕ takes one back, おわり ends it', async ({ page }) => {
+  await openFood(page);
+  const s = sheet(page);
+  const dinner = s.locator('section[data-meal=d] [data-entry]');
+  const n0 = await dinner.count();
+  await s.locator('[data-add=d]').click();
+  const q = s.locator('[data-food-q]');
+  const added = s.locator('[data-food-added] [data-added]');
+  await expect(s.locator('[data-food-added]')).toHaveCount(0); // nothing yet
+  await q.fill('ごはん');
+  const quickOf = (id: string) => s.locator(`[data-food-results] li:has([data-item="${id}"]) [data-quick]`);
+  await expect(quickOf('mext:01088')).toBeVisible({ timeout: 15_000 });
+  await expect(quickOf('mext:01088')).toHaveAttribute('aria-label', '「ごはん（精白米）」を そのまま ついか');
+  await quickOf('mext:01088').click();
+  await expect(added).toHaveCount(1);
+  await expect(q).toHaveValue('');
+  await expect(q).toBeFocused(); // in the tap: the keyboard stays up
+  await expect(added.first()).toContainText('茶碗1杯（150g）');
+  await q.fill('みそ汁');
+  await quickOf('dishes:miso-tofu-wakame').click();
+  await expect(added).toHaveCount(2);
+  // one by its amount: ついか comes back here, the field focused
+  await q.fill('卵');
+  await s.locator('[data-food-results] [data-item="mext:12004"]').click();
+  await s.locator('[data-step="1"]').click();
+  await s.locator('[data-done]').click();
+  await expect(s.locator('.navbar h2')).toHaveText('夜ごはん');
+  await expect(added).toHaveCount(3);
+  await expect(added.last()).toContainText('1個（M）×2（100g）');
+  await expect(q).toBeFocused();
+  await expect(s.locator('[data-food-added] h3')).toHaveText('ついかした もの（3）');
+  expect(await overflowOf(page)).toEqual([]);
+  // ✕: taken back (it was only just logged)
+  await s.locator('[data-food-added] [data-unadd]').nth(1).click();
+  await expect(added).toHaveCount(2);
+  await expect(s.locator('[data-food-added]')).not.toContainText('味噌汁');
+  await s.locator('[data-food-finish]').click();
+  await expect(s.locator('.navbar h2')).toHaveText('ごはん');
+  await expect(dinner).toHaveCount(n0 + 2);
+  await expect(dinner.nth(n0)).toContainText('ごはん（精白米）');
+  await expect(dinner.nth(n0 + 1)).toContainText('卵（全卵・生）');
 });

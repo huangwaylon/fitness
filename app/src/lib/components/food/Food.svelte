@@ -14,6 +14,8 @@
   // recipes (マイレシピ) and custom foods (マイ食品), and under its field レシピを つくる (FoodRecipe, the editor) and 食品を
   // つくる (FoodCustom, whose ほぞん goes on to the amount for the new food); a recipe's or custom food's amount opens it
   // (mine to edit, anyone else's to copy). A recipe's ingredient search offers the custom foods and 食品を つくる too.
+  // Several foods a trip: a new entry logged from a meal's search (its amount's ついか, a row's own ＋, a recipe's or a
+  // custom food's) comes back to that search, listed at its top (each with ✕), its field focused; おわり ends the trip.
   import '#lib/i18n/food.ts'; // the meal log's strings, loaded with it
   import '#lib/i18n/kenkou.ts'; // けんこう's: the period dropdown
   import { flushSync, tick, type Snippet } from 'svelte';
@@ -35,7 +37,7 @@
   import Pick from '../health/Pick.svelte';
   import FoodChart from './FoodChart.svelte';
   import { cue } from '#lib/sound/cues.ts';
-  import { toSnap, type Item } from '#lib/food/index.ts';
+  import { portionsOf, toSnap, type Item } from '#lib/food/index.ts';
   import { dayTitle } from '../kiroku/fmt.ts';
   import FoodSummary from './FoodSummary.svelte';
   import { kcalWarn, saveGoal } from '../health/goals.ts';
@@ -47,7 +49,7 @@
   import FoodRecipe from './FoodRecipe.svelte';
   import FoodCustom from './FoodCustom.svelte';
   import {
-    customDraft, customItem, customOf, DAYS, foodDb, foodDbNow, foodLast, itemOf, recentOf, recipeItem,
+    customDraft, customItem, customOf, DAYS, foodDb, foodDbNow, foodLast, itemOf, portionLabel, recentOf, recipeItem,
     recipeServing, sameItems, servingOnly, type CustomDraft, type RecipeDraft
   } from './foodUi.ts';
 
@@ -107,7 +109,7 @@
   /** Where the custom food editor goes on to once saved: a meal's amount, a recipe's ingredient, or back (to the search). */
   type Then = { meal: Meal } | { ingredient: true } | null;
   type Level =
-    | { k: 'search'; meal: Meal }
+    | { k: 'search'; meal: Meal; added: string[] }
     | ({ k: 'amount'; meal: Meal; g0?: number; u0?: string; entry?: FoodEntry } & Picked)
     | { k: 'custom'; id: string | null; then: Then }
     | { k: 'repeat'; meal: Meal }
@@ -168,9 +170,44 @@
   }
   /** ＋: the search, its field focused in this same tap (iOS raises the keyboard only for a focus inside the gesture). */
   function openSearch(meal: Meal) {
-    go({ k: 'search', meal }, `[data-add="${meal}"]`);
+    go({ k: 'search', meal, added: [] }, `[data-add="${meal}"]`);
+    focusQ();
+  }
+  const focusQ = () => {
     flushSync();
     root?.querySelector<HTMLInputElement>('[data-food-q]')?.focus({ preventScroll: true });
+  };
+  /** A new entry logged from a meal's search (`id`; none: it failed): back to that search, the entry listed at its top
+   *  and its field focused in the same tap (the keyboard up for the next food); from anywhere else, the day. */
+  function logged(id: string | undefined) {
+    const i = stack.findIndex((l) => l.k === 'search');
+    const l = stack[i];
+    if (!l || l.k !== 'search') return home();
+    if (id) l.added = [...l.added, id];
+    backTo(i + 1);
+    focusQ();
+  }
+  /** This trip's entries, in the order added (one taken back is gone). */
+  function addedOf(ids: readonly string[]): FoodEntry[] {
+    const mine = m ? foodEntries(m.state, me) : [];
+    return ids.map((id) => mine.find((e) => e.id === id)).filter((e): e is FoodEntry => !!e);
+  }
+  /** A row's own ＋ (one tap, no amount): its default portion, or a recent one's amount as I had it. */
+  function quick(item: Item, meal: Meal, g?: number, u?: string, f?: FoodSnap) {
+    const p = pickOf(item, f);
+    const d = g === undefined ? (p.sv && p.item.portions?.length ? p.item.portions : portionsOf(p.item))[0] : null;
+    const gg = d ? d.g : g!;
+    const uu = d ? portionLabel(d, 1) : (u ?? null);
+    const r = p.cid ? logCustom({ customId: p.cid, d: date, m: meal, g: gg, u: uu ?? undefined }) : logFood({ d: date, m: meal, g: gg, f: snapOf(p, uu) });
+    if (r.ok && r.id) {
+      said('food.added', { meal: t(`food.meal.${meal}`) });
+      const l = top;
+      if (l?.k === 'search') l.added = [...l.added, r.id];
+    }
+  }
+  /** ✕ on one of this trip's: removed (it was only just logged; no とりけす). */
+  function unadd(e: FoodEntry) {
+    if (removeFood(e.id).ok) cue('undo');
   }
 
   function add(item: Item, meal: Meal, g0?: number, u0?: string, f?: FoodSnap) {
@@ -219,10 +256,11 @@
     const e = l.entry && real(l.entry);
     if (l.entry) {
       if (e && editFood(e.id, { m: v.m, g: v.g, u: v.u }).ok) said('food.saved');
-    } else if ((l.cid ? logCustom({ customId: l.cid, d: date, m: v.m, g: v.g, u: v.u ?? undefined }) : logFood({ d: date, m: v.m, g: v.g, f: snapOf(l, v.u) })).ok) {
-      said('food.added', { meal: t(`food.meal.${v.m}`) });
+      return home();
     }
-    home();
+    const r = l.cid ? logCustom({ customId: l.cid, d: date, m: v.m, g: v.g, u: v.u ?? undefined }) : logFood({ d: date, m: v.m, g: v.g, f: snapOf(l, v.u) });
+    if (r.ok) said('food.added', { meal: t(`food.meal.${v.m}`) });
+    logged(r.id);
   }
   /** けす, one tap: its banner's とりけす logs it again (a removal is final: the same food, day, meal and grams). */
   function remove(v: FoodEntry) {
@@ -300,8 +338,9 @@
   }
   /** A recipe logged as a meal of mine on the day shown. */
   function recipeLog(l: Extract<Level, { k: 'rlog' }>, v: { m: Meal; g: number; u: string | null }) {
-    if (logRecipe({ recipeId: l.r.id, d: date, m: v.m, g: v.g, u: v.u ?? undefined }).ok) said('food.added', { meal: mealName(v.m) });
-    home();
+    const r = logRecipe({ recipeId: l.r.id, d: date, m: v.m, g: v.g, u: v.u ?? undefined });
+    if (r.ok) said('food.added', { meal: mealName(v.m) });
+    logged(r.id);
   }
 
   // ---- マイ食品: the editor edits a draft (kept here, as the recipe's); ほぞん goes on where it came from (Then)
@@ -359,7 +398,8 @@
       {@const meal = top.meal}
       <FoodSearch {recent} onpick={(item, g, u, f) => add(item, meal, g, u, f)} recipes={allRecipes} {names} onrecipe={(r) => go({ k: 'rlog', r, meal })}
         onnewrecipe={() => openRecipe(null)} customs={allCustoms} oncustom={(c) => go({ k: 'amount', meal, ...pickOf(customItem(c)) })}
-        oncreate={(n) => openCustom(null, { meal }, '[data-custom-new]', n)} />
+        oncreate={(n) => openCustom(null, { meal }, '[data-custom-new]', n)} onquick={(item, g, u, f) => quick(item, meal, g, u, f)}
+        oncustomquick={(c) => quick(customItem(c), meal)} added={addedOf(top.added)} onunadd={unadd} onfinish={home} />
     {:else if top?.k === 'amount'}
       {@const l = top}
       {#key l}
