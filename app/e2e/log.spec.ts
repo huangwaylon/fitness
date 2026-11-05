@@ -59,6 +59,8 @@ test('a forced error reaches the log, scrubbed, with the session, the role and t
   const read = (): Row[] => LIVE
     ? JSON.parse(execFileSync('node', ['scripts/logs.ts', '--test', '--sid', sid, '--since', '10m', '--json'], { cwd: `${import.meta.dirname}/../../relay`, encoding: 'utf8' })) as Row[]
     : logs.query({ since: 0, sid }).rows;
+  // (the test relay's: once the forwarded batch is in)
+  await expect.poll(() => read().some((r) => r.ev === 'js.error'), { timeout: 20_000 }).toBe(true);
   const rows = read();
   const err = rows.find((r) => r.ev === 'js.error');
   const bad: string[] = [];
