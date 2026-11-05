@@ -133,7 +133,7 @@ committed (the output gate).
 
 `rev` is the record's epoch (`e1`, `e2`, …): it changes only when the record is rebuilt (a restore: the room, told
 before the restart, has the restored record start a new epoch ~5 s later; or `node scripts/record.ts rev`). A new
-epoch, and a `load` that added rows, send `changed` (`what: 'ingest'`) so the open phones refetch at once. A `snapshot` whose `rev` or `me` differs from the cache's makes the client drop the cache
+epoch, and a `load` that added rows, send `changed` (`what: 'ingest'`) so the open phones refetch at once (the test relay, 2026-11-05: a restore to a bookmark of a second before, `e3` → `e4` by itself within ~8 s; a `rev` heard as `changed` by an open socket). A `snapshot` whose `rev` or `me` differs from the cache's makes the client drop the cache
 (never the unsent queue) and fetch everything. Locked weeks' earnings are memoised per `rev`. Nothing edits the
 record by hand.
 
