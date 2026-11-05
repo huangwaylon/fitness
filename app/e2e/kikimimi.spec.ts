@@ -1,4 +1,4 @@
-// ききみみ クイズ (docs/kikimimi.md): the English listening game from せってい's 「えいご ききとり」. Solo from the lobby to
+// ききみみ クイズ (docs/kikimimi.md): the English listening game from the menu's 「えいご ききとり」. Solo from the lobby to
 // the results and its review list; two players over the demo's relay (`?demo` and `?demo&as=B`, two tabs of one
 // browser: sync/live-local.ts plays the room) from B's invite banner to both phones' results, scored alike; and the
 // 「やめる？」 path (mid-game a backdrop tap or Esc keeps the sheet; ✕ asks first). `?kikimimi=fast` shortens the
@@ -21,12 +21,8 @@ async function open(ctx: BrowserContext | Page, as: 'A' | 'B' = 'A'): Promise<Pa
   await expect(hudMenu(page)).toBeVisible();
   return page;
 }
-/** せってい → えいご ききとり [あそぶ]: the game's sheet. */
-async function play(page: Page) {
-  await fromMenu(page, 'settings');
-  await page.locator('[data-kikimimi-start]').click();
-  await expect(sheet(page)).toBeVisible();
-}
+/** The menu's えいご ききとり: the game's sheet. */
+const play = (page: Page) => fromMenu(page, 'kikimimi');
 /** Answer the current question: the right choice, or (`wrong`) another; waits for the answer window first. */
 async function answer(page: Page, wrong = false) {
   await expect(sheet(page)).toHaveAttribute('data-phase', 'answer', { timeout: 15_000 });
@@ -117,6 +113,8 @@ test('two players: A’s lobby invites B (the banner’s さんか), they play t
   // B: the invite banner, 「ウェイが ききとりクイズに さそっています」 [さんか]
   const banner = b.locator('.banner', { hasText: 'ききとりクイズに さそっています' });
   await expect(banner).toBeVisible({ timeout: 15_000 });
+  // and the menu's leaf marks it (a dot) while it's live
+  await expect(b.locator('[data-hud-invited]')).toBeVisible();
   await b.bringToFront();
   await banner.getByRole('button', { name: 'さんか' }).click();
   await expect(sheet(b)).toHaveAttribute('data-phase', 'lobby');

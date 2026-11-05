@@ -20,8 +20,17 @@ const GOING_MS = 15_000;
 let heard: { m: QuizIn; at: number }[] = [];
 let link: Live | null = null;
 
-/** The latest invite heard: its game, host, when it opened, whether it started and when its host was last heard. */
+/** The latest invite heard: its game, host, when it opened, whether it started and when its host was last heard
+ *  (dropped as it goes stale, so the marks on the menu go with it). */
 const invite = $state<{ v: { g: string; host: Who; opened: number; started: boolean; last: number } | null }>({ v: null });
+let expiry: ReturnType<typeof setTimeout> | undefined;
+function arm() {
+  clearTimeout(expiry);
+  const v = invite.v;
+  if (!v) return;
+  const until = v.started ? v.last + GOING_MS : v.opened + KEEP_MS;
+  expiry = setTimeout(() => (invitedNow() ? arm() : (invite.v = null)), Math.max(0, until - Date.now()) + 50);
+}
 
 /** The quiz intents heard lately, oldest first (the sheet's session takes them as it starts). */
 export function heardQuiz(now = Date.now()): QuizIn[] {
@@ -29,7 +38,7 @@ export function heardQuiz(now = Date.now()): QuizIn[] {
   return heard.map((h) => h.m);
 }
 
-/** Someone's invite is live (a lobby of theirs open, or its game going): せってい's row says so. */
+/** Someone's invite is live (a lobby of theirs open, or its game going): the menu's ききとり pill and leaf say so. */
 export function invitedNow(now = Date.now()): boolean {
   const v = invite.v;
   return !!v && (v.started ? now - v.last < GOING_MS : now - v.opened < KEEP_MS);
@@ -38,8 +47,11 @@ export function invitedNow(now = Date.now()): boolean {
 /** The island's Live, for the sheet (null: no relay, a solo game). */
 export const quizLive = (): Live | null => link;
 
-/** Open the sheet (**inside a tap**: the voice session starts here, so the clips can play with the silent switch
- *  on); `join` a game heard of (the banner's さんか). */
+/** The menu pill's tap, before its press beat: the voice session must begin inside the tap itself (iOS). */
+export const wakeQuizVoice = (): void => void voiceSession(true);
+
+/** Open the sheet (**inside a tap**, or after wakeQuizVoice in one: the voice session starts here, so the clips can
+ *  play with the silent switch on); `join` a game heard of (the banner's さんか). */
 export function openQuiz(join: string | null = null): void {
   voiceSession(true);
   quiz.join = join;
@@ -66,6 +78,7 @@ export function listenQuiz(live: Live | null, invited: (host: Who, g: string) =>
       if (m.op === 'end' || m.op === 'leave') invite.v = null;
       else invite.v = { ...v, started: v.started || m.op === 'go' || m.op === 'skip', last: at };
     }
+    arm();
     if (m.op === 'open' && !asked.has(m.g) && !quiz.open) {
       asked.set(m.g, m.who);
       invited(m.who, m.g);

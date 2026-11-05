@@ -1,6 +1,6 @@
 # ききみみ クイズ: English listening game (spec v2, 2026-11-05)
 
-The user asked for a game for several players. It's started from せってい, syncs so everyone starts and plays together, and is for Japanese speakers learning English. It trains **listening** with spoken English sentences, using the Animal Crossing characters and world.
+The user asked for a game for several players. It's started from the HUD menu (originally せってい), syncs so everyone starts and plays together, and is for Japanese speakers learning English. It trains **listening** with spoken English sentences, using the Animal Crossing characters and world.
 
 Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX designer and an engineer, and this is the result. Builders follow this spec and update it as they go. When the feature lands, its prose moves into docs/design.md (`### ききみみ クイズ`), the wire format into docs/backend.md and the choices into docs/decisions.md.
 
@@ -124,7 +124,7 @@ Field validation:
 
 ## UI
 
-- **Starting a game.** せってい → the row 「えいご ききとり」 [あそぶ] (「さそわれています！」 under it while someone's invite is live: invite.svelte.ts `invitedNow()`) opens `components/kikimimi/KikimimiSheet.svelte`, a lazy chunk (`lazy(() => import(...))`, as Hud's sheets do; a chunk that fails to load leaves it closed and ends the voice session).
+- **Starting a game.** The HUD menu's pill 「えいご ききとり」 (しずえ's head, right above せってい; moved out of せってい 2026-11-05 at the user's request) opens it; the voice session begins in the pill's tap itself (`wakeQuizVoice`), the sheet after the press beat. While someone's invite is live (invite.svelte.ts `invitedNow()`) the pill says 「さそわれています！」 under its name and the folded leaf has a coral dot. It opens `components/kikimimi/KikimimiSheet.svelte`, a lazy chunk (`lazy(() => import(...))`, as Hud's sheets do; a chunk that fails to load leaves it closed and ends the voice session).
 - **The lobby** opens on this phone alone (nothing sent): the level, 🔊 「きこえる？」 (full width), and 「ひとりで はじめる」 (primary) over 「みんなを さそう」. さそう sends the `open`; then who's here and who joined, 「おなじ へやで あそぶ」 (its sub-label only when on), and 「はじめる（Nにん）」.
 - **The invite banner** is a tiny always-loaded listener on the shared Live. It shows 「ウェイが ききとりクイズに さそっています」 [さんか], through the existing toast/banner host.
 - **Mid-game,** a backdrop tap or Esc doesn't close the sheet. ✕ asks 「やめる？」.
@@ -136,7 +136,7 @@ Field validation:
 
 - **Built (phase 2):**
   - `components/kikimimi/KikimimiHost.svelte` + `invite.svelte.ts` (always loaded): `quiz` {mounted, open, join}, `openQuiz(join?)` (calls `voiceSession(true)` in the tap), `listenQuiz(live, invited, ended)` keeping the last 10 min of quiz intents (`heardQuiz()`, replayed into the sheet's session as it opens), the banner via `toasts.show(…, {person, low, action: さんか})`, dropped when the host ends or leaves that lobby. Mounted in IslandScene with `relay ?? demoRelay`; `quiz.open` covers the island (its 3D engine paused).
-  - `KikimimiSheet.svelte` (lazy, `Sheet` variant `pop`): from せってい a lobby of mine at once unless an invite is waiting (then the invite and 「じぶんで はじめる」); the level last played is kept (`DEVICE.kikimimiLv`). `Lobby.svelte`, `Play.svelte`, `Results.svelte`, `PlayerChip.svelte`; `game.svelte.ts` (the session wired to the Live, the deck adapter, clip scheduling and prefetch, cues `quiz-pop` / `quiz-right` / `quiz-wrong` / `quiz-end`).
+  - `KikimimiSheet.svelte` (lazy, `Sheet` variant `pop`): from the menu a lobby of mine at once unless an invite is waiting (then the invite and 「じぶんで はじめる」); the level last played is kept (`DEVICE.kikimimiLv`). `Lobby.svelte`, `Play.svelte`, `Results.svelte`, `PlayerChip.svelte`; `game.svelte.ts` (the session wired to the Live, the deck adapter, clip scheduling and prefetch, cues `quiz-pop` / `quiz-right` / `quiz-wrong` / `quiz-end`).
   - `Sheet.svelte` gained `ondismiss` (false keeps it open: the game's 「やめる？」).
   - おなじへや: 🔁 / 🐢 play only on the phone that speaks (the host's); the others show them disabled with 「ホストの スマホで ながれます」 (game.svelte.ts `listenOnly`) and hear the host's replays.
   - Notices: 「ホストが ゲームを とじました」 (cancelled), 「ホストが いなくなりました」, 「じかんが たったので おわりました」 (stale).

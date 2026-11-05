@@ -1,9 +1,10 @@
 <script lang="ts">
   // The HUD menu, the cluster's right end (docs/design.md "Island"): a small round cream button with NH's leaf (the
-  // toggle; aria-expanded) that drops three pills down under it, right-aligned, one after the other on a small spring:
+  // toggle; aria-expanded) that drops four pills down under it, right-aligned, one after the other on a small spring:
   // 「ベル 121」 (the shared wallet's balance, no icon: the number is the picture) → the panel (ごほうび), ずかん (NH's
-  // agrias butterfly) and せってい (a gear); no かいがら: the shop is the building. Folded by default: the sky keeps only
-  // the dumbbell, the bowl and the leaf.
+  // agrias butterfly), えいご ききとり (しずえ's head: ききみみ クイズ, its sheet opened here, the voice session begun in the
+  // tap itself; 「さそわれています！」 on it, and a dot on the leaf, while someone's invite is live) and せってい (a gear);
+  // no かいがら: the shop is the building. Folded by default: the sky keeps only the dumbbell, the bowl and the leaf.
   // It folds again on a second tap of the leaf, a tap anywhere else (that tap still goes where it was aimed), Esc, a
   // sheet opening, or a pick (a pill: a press squash, the villagers glance up at it (R18), then its sheet grows out of
   // it, Sheet's `pop`). Folded, the pills are hidden and inert (no taps, no focus, out of placement.ts' guards).
@@ -15,6 +16,8 @@
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
   import OfficialArt from '../characters/OfficialArt.svelte';
+  import Host from '../characters/Host.svelte';
+  import { invitedNow, openQuiz, wakeQuizVoice } from '../kikimimi/invite.svelte.ts';
   import { coinsInFlight } from './HudCoins.svelte';
   import { react } from '../motion/director.svelte.ts';
   import { popFrom } from './popFrom.ts';
@@ -40,6 +43,8 @@
   let { bells, today, expanded = false, onbells, onzukan, onsettings, later }: Props = $props();
 
   let open = $state(false);
+  /** Someone's ききみみ invite is live. */
+  const invited = $derived(invitedNow());
   let root: HTMLElement | undefined = $state();
   let toggleEl: HTMLButtonElement | undefined = $state();
 
@@ -165,6 +170,7 @@
         </g>
       </svg>
     </span>
+    {#if invited && !open}<span class="dot" data-hud-invited aria-hidden="true"></span>{/if}
   </button>
   {#if !open}{@render plus()}{/if}
   <div class="items" id="hud-menu-items" role="group" aria-label={t('island.menu')} inert={!open}>
@@ -178,7 +184,13 @@
       <span class="lbl">{t('zukan.title')}</span>
       <span class="ic"><OfficialArt key="critters/agrias-butterfly" size={30} eager /></span>
     </button>
-    <button type="button" class="item" style="--i: 2" data-hud-settings aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, onsettings)}>
+    <!-- the voice session begins in the tap itself (iOS: the clips play with the silent switch on), the sheet after the beat -->
+    <button type="button" class="item" style="--i: 2" data-hud-kikimimi aria-haspopup="dialog" data-sfx="self"
+      onclick={(e) => (wakeQuizVoice(), pick(e, () => openQuiz()))}>
+      <span class="lbl">{t('panel.kikimimi')}{#if invited}<small class="invited" data-hud-kikimimi-invited>{t('panel.kikimimiInvited')}</small>{/if}</span>
+      <span class="ic"><Host head size={30} animate={false} eager /></span>
+    </button>
+    <button type="button" class="item" style="--i: 3" data-hud-settings aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, onsettings)}>
       <span class="lbl">{t('island.settings')}</span>
       <span class="ic">
         <!-- a gear in the say button's soft brown (no settings icon in NH's art) -->
@@ -226,7 +238,7 @@
     pointer-events: none;
   }
   .item {
-    --n: 3;
+    --n: 4;
     position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px; height: var(--hit); margin: 0; padding: 0 4px 0 14px;
     appearance: none; border: 0; border-radius: var(--r-pill); cursor: pointer; white-space: nowrap;
     background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 6px 14px rgb(60 40 20 / .14);
@@ -243,6 +255,12 @@
   .open .item:active { transform: translateY(2px) scale(.97); box-shadow: 0 2px 0 var(--c-lip); transition: transform 80ms var(--ease-squash), box-shadow 80ms; }
   .item:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .lbl { letter-spacing: .02em; }
+  .invited { display: block; margin-top: 3px; font-size: var(--fs-xs); color: var(--c-coral); }
+  /* an invite waiting (the leaf folded): a small coral dot on its rim */
+  .dot {
+    position: absolute; top: 3px; right: 3px; width: 10px; height: 10px; border-radius: 50%; pointer-events: none;
+    background: var(--c-coral); box-shadow: 0 0 0 2px var(--c-cream);
+  }
   .ic { flex: none; width: 36px; height: 36px; display: grid; place-items: center; line-height: 0; }
   .ic svg { width: 26px; height: 26px; }
   .gear { fill: #A88B68; }
