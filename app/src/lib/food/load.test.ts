@@ -208,3 +208,28 @@ describe('the golden queries', () => {
     expect(fails).toEqual([]);
   });
 });
+
+describe('a dataset that fails to load', () => {
+  it('is left out at first, fetched again at its next chance, and added when it comes', async () => {
+    const real = JSON.parse(readFileSync(join(DIR, index.datasets[0].file), 'utf8')) as Dataset;
+    const small: Dataset = { ...real, items: real.items.slice(0, 20) };
+    const idx: FoodIndex = { version: 'v1', datasets: [{ ...index.datasets[0], file: 'a.json', lazy: false }, { ...index.datasets[0], file: 'b.json', lazy: false }] };
+    let failB = 1;
+    vi.useFakeTimers();
+    vi.stubGlobal('fetch', async (href: string) => {
+      if (href.includes('index.json')) return new Response(JSON.stringify(idx));
+      if (href.includes('b.json') && failB-- > 0) throw new TypeError('offline');
+      if (href.includes('verify.json')) return new Response(null, { status: 404 });
+      return new Response(JSON.stringify(small));
+    });
+    try {
+      const got = await loadFoodDb((n) => new Promise((ok) => setTimeout(ok, 2000 * 2 ** n)));
+      await vi.advanceTimersByTimeAsync(100);
+      expect(got.sets.length).toBe(1);
+      await vi.advanceTimersByTimeAsync(2100);
+      expect(got.sets.length).toBe(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});

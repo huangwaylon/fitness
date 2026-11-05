@@ -10,12 +10,13 @@ import {
 import type { Recipe } from '#lib/model/food.ts';
 import { loadFoodDb, portionsOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
+import { nextChance } from '#lib/ui-state/retry.ts';
 
 let dbP: Promise<FoodDb> | null = null;
 let ready: FoodDb | null = null;
 /** The food catalog, fetched on the first search of the session (a failure lets the next one try again). */
 export function foodDb(): Promise<FoodDb> {
-  return (dbP ??= loadFoodDb().then(
+  return (dbP ??= loadFoodDb(nextChance).then(
     (db) => (ready = db),
     (e: unknown) => {
       dbP = null;
