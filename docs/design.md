@@ -814,6 +814,16 @@ the camera, the frames), `island/Scenery.svelte`, `e2e/world.spec.ts`, `e2e/worl
 - **Cost:** nothing runs when still: a camera move, a walk or a change places what moved (the engine's frames, the
   game clock's steps while something moves); style writes only when a value changes. Measured at 4× CPU throttling: see `docs/decisions.md`.
 
+### Startup
+
+What a launch waits for, and what it doesn't (the startup review, 2026-11-05; measured on a production build served
+with gzip at Fast 4G, Chromium 393 × 852 at 4× CPU, `?demo`):
+- **The shell:** a second visit's page is the service worker's cached shell at once (docs/backend.md "Service worker").
+- **The players:** drawn from the bundled part table; the whole one (~1.1 MB) only for a part it lacks
+  ([Players](#players)).
+- **three.js:** imported by name everywhere (`world3d/threePreview.ts` for the editor's preview and the home picker: a
+  whole-module `import('three')` kept all of three in the shared chunk, 680 → 526 KB raw, 171 → 131 KB gzipped).
+
 ### Frame rate
 
 せってい → **フレームレート**: **30** (the default) or **60**, kept on this phone only (`store/frameRate.svelte.ts`,

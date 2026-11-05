@@ -88,7 +88,7 @@
     // `?preview=0`: no 3D (the e2e: a software GL in CI)
     if (new URLSearchParams(location.search).get('preview') === '0') return;
     let gone = false, stop = () => {};
-    void Promise.all([import('three'), import('../world3d/home.ts'), import('../world3d/release.ts')]).then(([T, { buildHome }, { releaseAll, resourcesOf }]) => {
+    void Promise.all([import('../world3d/threePreview.ts'), import('../world3d/home.ts'), import('../world3d/release.ts')]).then(([T, { buildHome }, { releaseAll, resourcesOf }]) => {
       if (gone || !canvas) return;
       let renderer: InstanceType<typeof T.WebGLRenderer>;
       try {
