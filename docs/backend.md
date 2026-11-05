@@ -866,7 +866,9 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
   cache). The hashed chunks (an older shell's copy where it has one, else fetched) are all or nothing (`addAll`): one
   not fetched fails the install, and the page asks again later. The static files (~300: the art, the manifest) each
   on its own (`allSettled`): one that fails is served from the previous shell or the network, and no longer fails the
-  install (one flaky fetch of ~370 did, and each resume's update with it).
+  install (one flaky fetch of ~370 did, and each resume's update with it). The worker's script carries only the
+  precached paths (`vite.config.ts swPrecacheOnly` filters Kit's `$app/manifest` lists by `caches.ts precachable` at
+  build time): 22 KB (6 KB gzipped), from 565 KB (56 KB) listing all ~11,700 files of the build.
 - **Activate:** keeps the current shell (`island-shell-<version>`), the previous one (an old page loads its lazy chunks
   from it) and the runtime caches; deletes the rest.
 - **Navigations:** stale-while-revalidate: this version's cached shell at once (installed with its chunks, so the HTML

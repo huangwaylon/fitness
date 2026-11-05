@@ -2,6 +2,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import adapterStatic from '@sveltejs/adapter-static';
 import { defineConfig, type Plugin } from 'vitest/config';
 import { execSync } from 'node:child_process';
+import { precachable } from './src/service-worker/caches.ts';
 
 /** The app version (the log's `build`, names the SW cache, and in _app/version.json for Kit's update check): the build date (UTC) + the commit, e.g. `2026-10-29.ef93d8b`. Deterministic per commit and day. */
 function appVersion(): string {
@@ -89,6 +90,28 @@ const preloadListenersOff: Plugin = {
   }
 };
 
+/** The service worker's `$app/manifest` carries only what it precaches (service-worker/caches.ts precachable): Kit's
+ *  lists every file of the build (~11,700: the art, the rooms, the fonts' subsets), which the worker filtered as it
+ *  started, 560 KB of script (56 KB gzipped) fetched with each update check that finds a deploy. The lists are Kit's
+ *  defines, set on the worker's environment just before its build; its manifest module names them, and here they're
+ *  written in already filtered. */
+const swPrecacheOnly: Plugin = {
+  name: 'sw-precache-only',
+  applyToEnvironment: (env) => env.name === 'serviceWorker',
+  transform(code, id) {
+    if (!id.split('?')[0].endsWith('/generated/build/app-manifest.js')) return;
+    const define = (this.environment.config.define ?? {}) as Record<string, unknown>;
+    let out = code;
+    for (const name of ['__SVELTEKIT_MANIFEST_IMMUTABLE__', '__SVELTEKIT_MANIFEST_ASSETS__']) {
+      const list = define[name];
+      if (typeof list !== 'string' || !out.includes(name)) throw new Error(`vite.config.ts sw-precache-only: Kit's ${name} changed; recheck the service worker's manifest`);
+      const kept = (JSON.parse(list) as { path: string }[]).filter((f) => precachable(f.path));
+      out = out.replace(name, JSON.stringify(kept));
+    }
+    return { code: out, map: null };
+  }
+};
+
 // A static SPA (GitHub Pages). The backend is the relay: the record at its /api (lib/sync/transport.ts), the room at /room.
 // Output goes to build-pages/.
 export default defineConfig({
@@ -96,6 +119,7 @@ export default defineConfig({
     slimArtManifest,
     slimAudioManifest,
     preloadListenersOff,
+    swPrecacheOnly,
     sveltekit({
       adapter: adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }),
       version: { name: appVersion() },
