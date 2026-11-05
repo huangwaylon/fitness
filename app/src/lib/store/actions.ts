@@ -262,11 +262,13 @@ function sendFood(d: Record<string, unknown>): SendResult {
   return op ? week.send('food', { ...op }) : { ok: false };
 }
 
-/** Log a meal: `g` grams of `f` (per 100 g, contract/food.ts) on day `d` at meal `m`. */
-export function logFood(e: { d: LocalDate; m: Meal; g: number; f: FoodSnap }): SendResult {
+/** Log a meal: `g` grams of `f` (per 100 g, contract/food.ts) on day `d` at meal `m`; `id` the new entry's. */
+export function logFood(e: { d: LocalDate; m: Meal; g: number; f: FoodSnap }): SendResult & { id?: string } {
   if (!week.model) return { ok: false };
   const at = foodNow();
-  return sendFood({ id: newFoodId(at), at, d: e.d, m: e.m, g: Math.round(e.g * 10) / 10, f: e.f });
+  const id = newFoodId(at);
+  const res = sendFood({ id, at, d: e.d, m: e.m, g: Math.round(e.g * 10) / 10, f: e.f });
+  return res.ok ? { ...res, id } : res;
 }
 
 /** One of my entries, as the model has it (queued changes included). */
@@ -447,7 +449,7 @@ export function removeRecipe(id: string): SendResult {
 
 /** Log a recipe, anyone's, as a meal of mine: `g` grams of it (recipePortion: 1人前's) on day `d` at meal `m`, `u` the
  *  portion it was picked by (「1人前」). */
-export function logRecipe(e: { recipeId: string; d: LocalDate; m: Meal; g: number; u?: string }): SendResult {
+export function logRecipe(e: { recipeId: string; d: LocalDate; m: Meal; g: number; u?: string }): SendResult & { id?: string } {
   const r = aRecipe(e.recipeId);
   return r ? logFood({ d: e.d, m: e.m, g: e.g, f: recipeSnap(r, e.u) }) : { ok: false };
 }
@@ -497,7 +499,7 @@ export function removeCustom(id: string): SendResult {
 
 /** Log a custom food, anyone's, as a meal of mine: `g` grams of it (customPortions: its serving's, a nominal 100 with no
  *  weight) on day `d` at meal `m`, `u` the portion it was picked by (default: its serving's label). */
-export function logCustom(e: { customId: string; d: LocalDate; m: Meal; g: number; u?: string }): SendResult {
+export function logCustom(e: { customId: string; d: LocalDate; m: Meal; g: number; u?: string }): SendResult & { id?: string } {
   const c = aCustom(e.customId);
   return c ? logFood({ d: e.d, m: e.m, g: e.g, f: customSnap(c, e.u ?? c.u) }) : { ok: false };
 }

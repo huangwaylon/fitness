@@ -9,7 +9,10 @@
   // マイ食品 (everyone's custom foods) likewise from both a meal and a recipe's ingredient: all of them after さいきん, the
   // matching ones above the catalog's; one opens its amount. Under the field, side by side: ＋ レシピを つくる (a meal's
   // search: the recipe editor) and ＋ 食品を つくる (the custom food editor, the typed text its name); nothing matching,
-  // a card says so, with じぶんで つくる (the same editor).
+  // a card says so, with じぶんで つくる (the same editor). From a meal's ＋ (`onquick`), each food row has a ＋ of its
+  // own beside it: one tap logs it as it comes (its default portion; a recent one as I had it), the field cleared and
+  // focused for the next; the foods added on this trip (`added`) are listed under the field, each with ✕, with おわり
+  // (back to the day).
   import type { Who } from '#lib/types.ts';
   import type { FoodCustom, FoodEntry } from '#lib/contract/food.ts';
   import type { Recipe } from '#lib/model/food.ts';
@@ -34,8 +37,19 @@
     customs?: readonly FoodCustom[];
     oncustom?: (c: FoodCustom) => void;
     oncreate?: (name: string) => void;
+    /** One tap, no amount (a meal's search): a food logged as it comes (a recent one as I had it), a custom food by
+     *  its serving. */
+    onquick?: (item: Item, g?: number, u?: string, f?: FoodEntry['f']) => void;
+    oncustomquick?: (c: FoodCustom) => void;
+    /** The entries this trip added (oldest first), each taken back by ✕ (`onunadd`); おわり (`onfinish`) ends the trip. */
+    added?: readonly FoodEntry[];
+    onunadd?: (e: FoodEntry) => void;
+    onfinish?: () => void;
   }
-  let { recent, onpick, recipes = [], names, onrecipe, onnewrecipe, customs = [], oncustom, oncreate }: Props = $props();
+  let {
+    recent, onpick, recipes = [], names, onrecipe, onnewrecipe, customs = [], oncustom, oncreate, onquick, oncustomquick, added = [], onunadd,
+    onfinish
+  }: Props = $props();
 
   let db = $state.raw<FoodDb | null>(null);
   let failed = $state(false);
@@ -82,6 +96,11 @@
     text = q = '';
     input?.focus();
   }
+  /** A row's ＋: logged at once, the field cleared and focused in the same tap (the keyboard stays up for the next). */
+  function quick(run: () => void) {
+    run();
+    clear();
+  }
 </script>
 
 {#snippet customRows()}
@@ -89,17 +108,22 @@
     <h3 class="lh">{t('food.my.head')}</h3>
     <ul class="list" data-food-customs>
       {#each myFoods as c (c.id)}
-        <li><button type="button" class="card it" data-sfx="page" data-custom={c.id} onclick={() => oncustom?.(c)}>
+        <li class:rw={!!oncustomquick}><button type="button" class="card it" data-sfx="page" data-custom={c.id} onclick={() => oncustom?.(c)}>
           <span class="nm">{c.n}</span>
           <small class="meta">{names?.[c.who] ?? c.who}</small>
           <span class="kc"><b class="money">{kcalText(c.k)}</b><small>{servingText(c)}</small></span>
-        </button></li>
+        </button>{#if oncustomquick}{@render qa(c.n, () => oncustomquick(c))}{/if}</li>
       {/each}
     </ul>
   {/if}
 {/snippet}
 
 {#snippet plus()}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5 V19 M5 12 H19" /></svg>{/snippet}
+
+<!-- a row's own ＋: logged as it comes, in one tap -->
+{#snippet qa(name: string, run: () => void)}
+  <button type="button" class="qa" data-sfx="confirm" data-quick aria-label={t('food.quickAdd', { name })} onclick={() => quick(run)}>{@render plus()}</button>
+{/snippet}
 
 {#snippet recipeRows()}
   {#if onrecipe && myRecipes.length}
@@ -132,6 +156,25 @@
     </div>
   {/if}
 
+  {#if onfinish && added.length}
+    <section class="card added" data-food-added aria-labelledby="fs-added">
+      <header>
+        <h3 id="fs-added">{t('food.addedHead', { n: added.length })}</h3>
+        <button type="button" class="btn small" data-sfx="confirm" data-food-finish onclick={onfinish}>{t('food.finish')}</button>
+      </header>
+      <ul>
+        {#each added as e (e.id)}
+          <li data-added={e.id}>
+            <span class="nm">{e.f.n}</span>
+            <small class="meta">{amountText(e)}</small>
+            <b class="kc money">{kcalText(Math.round((e.f.k * e.g) / 100))}</b>
+            <button type="button" class="un" data-sfx="undo" data-unadd={e.id} aria-label={t('food.unadd', { name: e.f.n })} onclick={() => onunadd?.(e)}>✕</button>
+          </li>
+        {/each}
+      </ul>
+    </section>
+  {/if}
+
   {#if !q.trim()}
     {@render recentRows()}
     {@render recipeRows()}
@@ -148,11 +191,11 @@
   {#if recent.length}
     <ul class="list" data-food-recent>
       {#each recent as e (e.id)}
-        <li><button type="button" class="card it" data-sfx="page" data-item={e.f.id} onclick={() => onpick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f)}>
+        <li class:rw={!!onquick}><button type="button" class="card it" data-sfx="page" data-item={e.f.id} onclick={() => onpick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f)}>
           <span class="nm">{e.f.n}</span>
           <small class="meta">{amountText(e)}</small>
           <b class="kc money">{kcalText(Math.round((e.f.k * e.g) / 100))}</b>
-        </button></li>
+        </button>{#if onquick}{@render qa(e.f.n, () => onquick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f))}{/if}</li>
       {/each}
     </ul>
   {:else}
@@ -184,11 +227,11 @@
       {#each results as it (it.id)}
         {@const p = defaultPortion(it)}
         {@const v = verifyOf(db, it.id)}
-        <li><button type="button" class="card it" data-sfx="page" data-item={it.id} onclick={() => onpick(it)}>
+        <li class:rw={!!onquick}><button type="button" class="card it" data-sfx="page" data-item={it.id} onclick={() => onpick(it)}>
           <span class="nm">{it.name}{#if v && v.n >= 2}<i class="ok" role="img" data-verified={v.n} aria-label={t('food.verified', { n: v.n })}>{t('food.verifiedBadge', { n: v.n })}</i>{/if}</span>
           <small class="meta">{#if it.brand}<span class="br" data-brand>{it.brand}</span>{' · '}{/if}{t('food.per100', { k: formatNum(it.kcal) })}</small>
           <span class="kc"><b class="money">{kcalText(p.kcal)}</b><small>{p.label}</small></span>
-        </button></li>
+        </button>{#if onquick}{@render qa(it.name, () => onquick(it))}{/if}</li>
       {/each}
     </ul>
   {/if}
@@ -246,6 +289,33 @@
   .make { margin: 0; width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
   .new .make { min-width: 0; padding: 0 8px; gap: 4px; white-space: nowrap; }
   .make svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
+  /* a row with its own ＋ beside it (FoodMeal's ＋ object) */
+  .rw { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+  .qa {
+    appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: var(--r-btn); flex: none;
+    display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj); margin-bottom: var(--lip-h);
+  }
+  .qa:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
+  .qa:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .qa svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
+  /* this trip's foods: a meal card's rows, each with ✕; おわり at the header's end */
+  .added { display: grid; gap: 2px; padding: 8px 14px; }
+  .added header { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: var(--hit); }
+  .added h3 { margin: 0; font-size: var(--fs-body); font-weight: 700; }
+  .added header .btn { margin: 0 0 var(--lip-h); }
+  .added ul { list-style: none; margin: 0; padding: 0; }
+  .added li {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: 'nm kc un' 'meta kc un'; align-items: center;
+    column-gap: 10px; min-height: var(--row-obj); padding: 4px 0 4px 2px;
+  }
+  .added li + li { border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
+  .added .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .un {
+    grid-area: un; position: relative; appearance: none; border: 0; cursor: pointer; width: 36px; height: 36px; border-radius: 50%;
+    display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj); font: 700 var(--fs-s)/1 var(--font-ui);
+  }
+  .un::before { content: ''; position: absolute; inset: -4px; }
+  .un:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
   .none { display: grid; gap: 8px; padding: 12px 14px; }
   .none .note { margin: 0 2px; }
   .note { margin: 4px 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
