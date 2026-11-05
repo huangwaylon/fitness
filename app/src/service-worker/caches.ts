@@ -62,6 +62,38 @@ export const isDecorArt = (path: string): boolean =>
  *  them and cached on first use in a cache of their own that outlives builds (a re-converted model has a new `?v=`). */
 export const ROOM_CACHE = 'island-room-v1';
 export const isRoomAsset = (path: string): boolean => path.includes('/room/');
+/** The room cache's bound: its bytes past this, the least recently used go (the players' parts alone are ~30 MB, the
+ *  villagers' models ~29 MB: grown whole, with the shell and the record's IndexedDB under one origin, WebKit may evict
+ *  all of it at once). */
+export const ROOM_CAP_BYTES = 40_000_000;
+/** What was used within this is never evicted for the bound (what the island, the tent and the museum show now). */
+export const ROOM_KEEP_MS = 3 * 24 * 3600_000;
+/** The room cache's own index (beside its files, under this path in the scope): each URL's bytes and last use. */
+export const ROOM_INDEX = '__room-index';
+export type RoomIndex = Record<string, [bytes: number, usedAt: number]>;
+
+/** Which of the room cache's entries go (`index` in any order): a file's older versions (the same path under another
+ *  `?v=`, used less recently: a re-converted model, never asked for again), then, while the rest is over `cap`, the
+ *  least recently used, never one used within `keepMs`. */
+export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, keepMs = ROOM_KEEP_MS): string[] {
+  const urls = Object.keys(index);
+  const pathOf = (u: string) => new URL(u, 'https://x/').pathname;
+  const newest = new Map<string, string>();
+  for (const u of urls) {
+    const p = pathOf(u), n = newest.get(p);
+    if (!n || index[u][1] >= index[n][1]) newest.set(p, u);
+  }
+  const out = new Set(urls.filter((u) => newest.get(pathOf(u)) !== u));
+  let total = 0;
+  for (const u of urls) if (!out.has(u)) total += index[u][0];
+  const old = urls.filter((u) => !out.has(u) && now - index[u][1] > keepMs).sort((a, b) => index[a][1] - index[b][1]);
+  for (const u of old) {
+    if (total <= cap) break;
+    out.add(u);
+    total -= index[u][0];
+  }
+  return [...out];
+}
 /** The meal log's food data (static/food/, lib/food/load.ts): ~5 MB, fetched when the food sheet first opens and kept in
  *  a cache of its own that outlives builds. Its files carry the data's version (`?v=`); index.json, which names it,
  *  doesn't. */

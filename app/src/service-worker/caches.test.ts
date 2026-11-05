@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { AUDIO_CACHE, foodFetch, isAudio, isFoodData, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, staleCaches, staleFood, staleUse } from './caches.ts';
+import { AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, isAudio, isFoodData, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -232,5 +232,25 @@ describe('food data fetches (foodFetch)', () => {
     expect(await get(`${BASE}index.json`)).toBe('');
     await settled();
     expect(cache.m.size).toBe(0);
+  });
+});
+
+describe('the room cache\'s bound (roomEvict)', () => {
+  const R = 'https://x/room/';
+  const day = 24 * 3600_000, now = 100 * day;
+  it('a file\'s older versions go at once (a re-converted model\'s old ?v=), the newest stays', () => {
+    const idx: RoomIndex = { [`${R}models/a.glb?v=1`]: [10, now - 50 * day], [`${R}models/a.glb?v=2`]: [10, now - 40 * day], [`${R}wall/w.webp`]: [5, now - 60 * day] };
+    expect(roomEvict(idx, now)).toEqual([`${R}models/a.glb?v=1`]);
+  });
+  it('over the bound, the least recently used first, till it fits', () => {
+    const idx: RoomIndex = { [`${R}a.glb?v=1`]: [20, now - 10 * day], [`${R}b.glb?v=1`]: [20, now - 30 * day], [`${R}c.glb?v=1`]: [20, now - 20 * day] };
+    expect(roomEvict(idx, now, 45)).toEqual([`${R}b.glb?v=1`]);
+    expect(roomEvict(idx, now, 20).sort()).toEqual([`${R}b.glb?v=1`, `${R}c.glb?v=1`]);
+    expect(roomEvict(idx, now, 60)).toEqual([]);
+  });
+  it('never what was used lately (what the island shows now), even over the bound', () => {
+    const idx: RoomIndex = { [`${R}world3d/tree.glb?v=1`]: [50, now - 1000], [`${R}player/mesh/x.glb?v=1`]: [50, now - ROOM_KEEP_MS - 1] };
+    expect(roomEvict(idx, now, 10)).toEqual([`${R}player/mesh/x.glb?v=1`]);
+    expect(roomEvict({ [`${R}world3d/tree.glb?v=1`]: [ROOM_CAP_BYTES * 2, now] }, now)).toEqual([]);
   });
 });
