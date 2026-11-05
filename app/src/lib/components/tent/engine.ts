@@ -6,9 +6,9 @@
 // piece popping in, a jiggle), nothing while still. Plain TS; the screen (TentRoom.svelte) drives it.
 import {
   AmbientLight, BoxGeometry, CanvasTexture, CircleGeometry, Color, DirectionalLight, DoubleSide, Group, HemisphereLight,
-  LineBasicMaterial, LineSegments, BufferGeometry, Float32BufferAttribute, Material, Mesh, MeshBasicMaterial, MeshStandardMaterial,
+  LineBasicMaterial, LineSegments, BufferGeometry, Float32BufferAttribute, Material, Mesh, MeshBasicMaterial, MeshLambertMaterial,
   Box3, Object3D, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, PointLight, Raycaster, RepeatWrapping, Scene, Sprite,
-  SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector3, WebGLRenderer, type SkinnedMesh
+  SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector3, WebGLRenderer, type MeshStandardMaterial, type SkinnedMesh
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -267,12 +267,20 @@ function loadModel(code: string): Promise<GLTF | null> {
       if (!m.isMesh) return;
       m.castShadow = !ITEMS[code]?.rug;
       m.receiveShadow = true;
-      const ms = (Array.isArray(m.material) ? m.material : [m.material]) as MeshStandardMaterial[];
-      for (const x of ms) {
-        if (x.emissiveMap) x.emissiveIntensity = 0;
-        // a rug lies on the floor: drawn over it, never fighting it
-        if (ITEMS[code]?.rug) Object.assign(x, { polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
-      }
+      // Lambert, as the museum's and the island's are (the models' own are standard, rough 1, metal 0: the same light
+      // but a faint sheen; their programs ~3× the size, the room's first entry a long compile): a lamp's glow off
+      // till it's switched on (lights)
+      const lam = (x: MeshStandardMaterial) => {
+        const l = new MeshLambertMaterial({
+          name: x.name, map: x.map, color: x.color, alphaTest: x.alphaTest, side: x.side, transparent: x.transparent, opacity: x.opacity,
+          depthWrite: x.depthWrite, emissive: x.emissive, emissiveMap: x.emissiveMap, emissiveIntensity: x.emissiveMap ? 0 : x.emissiveIntensity,
+          // a rug lies on the floor: drawn over it, never fighting it
+          ...(ITEMS[code]?.rug ? { polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 } : {})
+        });
+        x.dispose();
+        return l;
+      };
+      m.material = Array.isArray(m.material) ? (m.material as MeshStandardMaterial[]).map(lam) : lam(m.material as MeshStandardMaterial);
     });
     return lean(g);
   }, (e: unknown) => {
@@ -333,13 +341,13 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     t.needsUpdate = true;
     return t;
   };
-  const floorMat = new MeshStandardMaterial({ map: swatch(0xd8c4a0), roughness: 0.95 });
-  const wallMat = new MeshStandardMaterial({ map: swatch(0xe8dcc6), roughness: 1 });
+  const floorMat = new MeshLambertMaterial({ map: swatch(0xd8c4a0) });
+  const wallMat = new MeshLambertMaterial({ map: swatch(0xe8dcc6) });
   const floor = new Mesh(new PlaneGeometry(ROOM * TILE, ROOM * TILE), floorMat);
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
-  const trimMat = new MeshStandardMaterial({ color: 0x5b4330, roughness: 1 });
-  const capMat = new MeshStandardMaterial({ color: 0xf1e6cf, roughness: 1 });
+  const trimMat = new MeshLambertMaterial({ color: 0x5b4330 });
+  const capMat = new MeshLambertMaterial({ color: 0xf1e6cf });
   const T = 2;
   const L = ROOM * TILE;
   /** A wall's face from u0 to u1 along it and y0 to y1 up, its UVs the wallpaper's (two tiles across, the wall's height). */
@@ -387,7 +395,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   wall([0, 1], true);
   const base = new Mesh(new BoxGeometry(L + T * 2 + 0.6, 4, L + T * 2 + 0.6), trimMat);
   base.position.set(0, -2.01, 0);
-  const mat = new Mesh(new PlaneGeometry(18, 6.5), new MeshStandardMaterial({ map: matTexture(), transparent: true, roughness: 1 }));
+  const mat = new Mesh(new PlaneGeometry(18, 6.5), new MeshLambertMaterial({ map: matTexture(), transparent: true }));
   mat.rotation.x = -Math.PI / 2;
   mat.position.set(0, 0.06, HALF - 3.6);
   mat.receiveShadow = true;
@@ -406,14 +414,14 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   const ceiling = new Mesh(new PlaneGeometry(L + 0.2, L + 0.2), ceilingMat);
   ceiling.rotation.x = Math.PI / 2;
   ceiling.position.y = WALL_H;
-  const door = new Mesh(new PlaneGeometry(2 * TILE, 30), new MeshStandardMaterial({ color: 0x7a5234, roughness: 0.9 }));
+  const door = new Mesh(new PlaneGeometry(2 * TILE, 30), new MeshLambertMaterial({ color: 0x7a5234 }));
   door.position.set(0, 15, HALF + 0.08);
   door.rotation.y = Math.PI;
   ceiling.visible = door.visible = false;
   scene.add(ceiling, door);
 
   function surfaces(wallCode: string, fl: string) {
-    const load = (url: string, m: MeshStandardMaterial, rx: number, ry: number) =>
+    const load = (url: string, m: MeshLambertMaterial, rx: number, ry: number) =>
       tex.loadAsync(url).then((t) => {
         if (disposed) return t.dispose();
         t.colorSpace = SRGBColorSpace;
@@ -456,7 +464,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     pop: number;
     bump: number;
     on: boolean | null;
-    lit: MeshStandardMaterial[];
+    lit: MeshLambertMaterial[];
   }
   const live = new Map<string, Live>();
   /** Pieces not drawn where they stand: the one I'm moving, the ones the partner holds. */
@@ -508,7 +516,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
         if (ITEMS[s.item]?.lit) body.traverse((n) => {
           const m = n as Mesh;
           if (!m.isMesh) return;
-          const x = m.material as MeshStandardMaterial;
+          const x = m.material as MeshLambertMaterial;
           if (x.emissiveMap) {
             const c = x.clone();
             l.lit.push(c);
