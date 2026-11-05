@@ -7,6 +7,7 @@ import { isActivityMetric, isPersonId, isRec, PROFILE_PREF_KEYS, type EventRow, 
 import type { Who } from '../types.ts';
 import { scopeMayWrite } from './layout.ts';
 import { goalKeysOf } from './goals.ts';
+import { listenSeen, listenSummaryJson } from './listen.ts';
 
 /** The guest's own prefs: cosmetic (its look and コーデ too: contract/look.ts), its meal log's daily goals (kcal and the nutrients; never another goal, never
  *  another person's) and its own profile (contract/profile.ts: its sex, birth date and BMI standard). */
@@ -37,9 +38,10 @@ export function guestMayWrite(type: string, d: Rec): boolean {
     case 'food_custom':
     case 'sell':
     case 'buy':
+    case 'listen':
       // its catches; a note on the board (its own to edit and remove: the record checks, contract/board.ts); its
       // meals, repeats, recipes and custom foods (only its own: contract/food.ts); its own pocket's sells and its own かいがら's buys
-      // (contract/shop.ts: never ベル)
+      // (contract/shop.ts: never ベル); its own ききみみ games (contract/listen.ts: seen by it alone)
       return true;
     case 'decor':
       return scopeMayWrite('G', d);
@@ -84,22 +86,40 @@ function guestSeesEvent(r: EventRow): boolean {
 
 /**
  * The rows the guest's phone gets: the activity metrics (steps, Move, Exercise, Stand: the trees, today's ベル, きろく)
- * and every event but the からだ goals and the members' profiles (its own profile it does get). Never a からだ row:
- * weight, body fat, BMI, lean mass.
+ * and every event but the からだ goals, the members' profiles (its own profile it does get) and the members' ききみみ games
+ * (its own it does get). Never a からだ row: weight, body fat, BMI, lean mass.
  */
 export function guestRows(rows: SnapshotRows): SnapshotRows {
-  return { metrics: rows.metrics.filter((r) => isActivityMetric(r[3])), events: rows.events.filter(guestSeesEvent) };
+  return { metrics: rows.metrics.filter((r) => isActivityMetric(r[3])), events: rows.events.filter((r) => guestSeesEvent(r) && (r[3] !== 'listen' || r[1] === 'G')) };
+}
+
+/**
+ * A `listen` row (ききみみ クイズ's answers, contract/listen.ts) as `me` gets it: its owner's whole; the other member's
+ * summary only (`{d, g, n, ms}`: a game played, never the level or the answers); null between the guest and a member,
+ * or for a row that isn't one. Any other row as it is.
+ */
+function listenFor(me: Who, r: EventRow): EventRow | null {
+  if (r[3] !== 'listen') return r;
+  const seen = listenSeen(me, r[1]);
+  if (seen === 'all') return r;
+  const summary = seen === 'summary' ? listenSummaryJson(r[4]) : null;
+  return summary === null ? null : [r[0], r[1], r[2], r[3], summary];
 }
 
 /**
  * The rows `me`'s phone gets (every `snapshot` and delta, relay/src/store.ts): the guest's, guestRows; a member's,
- * everything but the guest's profile (the guest's alone). @public (relay/src/store.ts)
+ * everything but the guest's profile (the guest's alone) and the guest's ききみみ games, the partner's games as their
+ * summaries (listenFor). @public (relay/src/store.ts)
  */
 export function rowsFor(me: Who, rows: SnapshotRows): SnapshotRows {
   if (me === 'G') return guestRows(rows);
-  const events = rows.events.filter((r) => {
+  let changed = false;
+  const events: EventRow[] = [];
+  for (const r of rows.events) {
     const d = prefData(r);
-    return d === null || d === false || profileSeen(me, r, d);
-  });
-  return events.length === rows.events.length ? rows : { metrics: rows.metrics, events };
+    const out = d === null || d === false || profileSeen(me, r, d) ? listenFor(me, r) : null;
+    if (out !== r) changed = true;
+    if (out) events.push(out);
+  }
+  return changed ? { metrics: rows.metrics, events } : rows;
 }

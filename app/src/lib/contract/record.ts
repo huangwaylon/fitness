@@ -13,6 +13,7 @@ import { layoutOpOf } from './layout.ts';
 import { boardOpOf } from './board.ts';
 import { foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp } from './food.ts';
 import { shopPriced } from './shop.ts';
+import { listenOf } from './listen.ts';
 import { LIMITS, shopPrice } from './rules.ts';
 import { isBirth, isBmiStd, isProfileKey, isSex, profileValueOk } from './profile.ts';
 import { lookPrefOk, lookPrefRead, savedLooksOk } from './look.ts';
@@ -83,6 +84,11 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       // the shop (contract/shop.ts): a sell at its species' price, a buy at its piece's from a stock of about today;
       // whether the pocket or the かいがら cover it is the record's check against the person's rows (shopRefusal)
       return shopPriced(type, d, localDateAt(now));
+    case 'listen': {
+      // a ききみみ game's answers (contract/listen.ts), its day not after tomorrow
+      const row = listenOf(d);
+      return row !== null && row.d <= nextDay(localDateAt(now));
+    }
     default:
       return true;
   }

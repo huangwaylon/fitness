@@ -1,0 +1,90 @@
+// ききみみ クイズ's progress rows (docs/kikimimi.md "Progress & feedback", docs/backend.md "Events" `listen`): one row
+// per person per game, written once at its results, with every answer of theirs. The record checks the shape
+// (validEventData) and sends a row whole to its owner only; the other member gets its summary (that a game was played,
+// when, how long, with how many: the couple summary), and nothing goes between the guest and the members
+// (contract/guest.ts rowsFor). Pure, over the contract only (the relay imports it).
+import { isLocalDate, isPersonId } from './api.ts';
+import type { LocalDate, Who } from '../types.ts';
+
+/** One answer: the item's id, right (1) or not (0), the authored choice picked (−1: timed out), the replays before it
+ *  (🔁 and 🐢 alike; 0 is a first listen). */
+type ListenAnswer = [id: string, ok: 0 | 1, pick: number, rp: number];
+
+export interface ListenRow {
+  /** The Tokyo day it was played. */
+  d: LocalDate;
+  /** The game (the session's id). */
+  g: string;
+  /** Its level (the protocol's 1-5). */
+  lv: number;
+  /** The players in it (1-3). */
+  n: number;
+  /** How long it took, ms (≤ 1 h). */
+  ms: number;
+  /** にがて れんしゅう (a solo deck of my weak spots), else absent. */
+  p?: 1;
+  /** My answers, in the game's order (the questions sat out aren't). */
+  r: ListenAnswer[];
+}
+
+/** What the other member sees of a row (docs/kikimimi.md "Storage"): never the level, the answers or the score. */
+export type ListenSummary = Pick<ListenRow, 'd' | 'g' | 'n' | 'ms'>;
+
+/** The most answers a row holds (a game is 8). */
+const LISTEN_MAX_Q = 12;
+const LISTEN_MAX_MS = 60 * 60 * 1000;
+const GAME_RE = /^[a-z0-9]{4,12}$/;
+const ITEM_RE = /^[a-z0-9][a-z0-9-]{0,31}$/;
+const KEYS = new Set(['d', 'g', 'lv', 'n', 'ms', 'p', 'r']);
+
+const int = (v: unknown, lo: number, hi: number): v is number => Number.isInteger(v) && (v as number) >= lo && (v as number) <= hi;
+
+function answerOf(a: unknown): ListenAnswer | null {
+  if (!Array.isArray(a) || a.length !== 4) return null;
+  const [id, ok, pick, rp] = a as unknown[];
+  return typeof id === 'string' && ITEM_RE.test(id) && (ok === 0 || ok === 1) && int(pick, -1, 3) && int(rp, 0, 99) ? [id, ok, pick, rp] : null;
+}
+
+/** A row as sent or kept, or null when it isn't one (an unknown key, a field out of range). Its day's bound (not after
+ *  tomorrow) is the record's check (contract/record.ts validEventData). */
+export function listenOf(d: unknown): ListenRow | null {
+  if (!d || typeof d !== 'object' || Array.isArray(d)) return null;
+  const o = d as Record<string, unknown>;
+  if (Object.keys(o).some((k) => !KEYS.has(k))) return null;
+  if (!isLocalDate(o.d) || typeof o.g !== 'string' || !GAME_RE.test(o.g) || !int(o.lv, 1, 5) || !int(o.n, 1, 3) || !int(o.ms, 0, LISTEN_MAX_MS)) return null;
+  if (o.p !== undefined && o.p !== 1) return null;
+  if (!Array.isArray(o.r) || o.r.length < 1 || o.r.length > LISTEN_MAX_Q) return null;
+  const r: ListenAnswer[] = [];
+  for (const a of o.r) {
+    const x = answerOf(a);
+    if (!x) return null;
+    r.push(x);
+  }
+  return { d: o.d, g: o.g, lv: o.lv, n: o.n, ms: o.ms, ...(o.p === 1 && { p: 1 as const }), r };
+}
+
+/** A summary as the other member's phone gets it (`r` absent), or null. */
+export function listenSummaryOf(d: unknown): ListenSummary | null {
+  if (!d || typeof d !== 'object') return null;
+  const o = d as Record<string, unknown>;
+  return isLocalDate(o.d) && typeof o.g === 'string' && GAME_RE.test(o.g) && int(o.n, 1, 3) && int(o.ms, 0, LISTEN_MAX_MS) ? { d: o.d, g: o.g, n: o.n, ms: o.ms } : null;
+}
+
+/**
+ * What `viewer` gets of a `listen` row `sender` wrote: its own whole (`all`), the other member's summary (`summary`),
+ * and nothing between the guest and a member (`none`). @public (contract/guest.ts)
+ */
+export function listenSeen(viewer: Who, sender: Who): 'all' | 'summary' | 'none' {
+  if (viewer === sender) return 'all';
+  return isPersonId(viewer) && isPersonId(sender) ? 'summary' : 'none';
+}
+
+/** A row's summary as JSON (the other member's copy), or null for a row that isn't one. */
+export function listenSummaryJson(raw: string): string | null {
+  try {
+    const row = listenOf(JSON.parse(raw));
+    return row ? JSON.stringify({ d: row.d, g: row.g, n: row.n, ms: row.ms } satisfies ListenSummary) : null;
+  } catch {
+    return null;
+  }
+}

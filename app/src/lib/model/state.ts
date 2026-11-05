@@ -123,6 +123,9 @@ export interface State {
   /** My foods (`food_custom`: each custom food's ops, contract/food.ts) as raw rows (RAW_EVENTS); everyone's, read by
    *  everyone (model/food.ts customs). Never read by the economy. */
   foodCustom: EventRow[];
+  /** ききみみ クイズ's games (`listen`, contract/listen.ts) as raw rows (RAW_EVENTS): my own whole, the partner's as
+   *  summaries (contract/guest.ts rowsFor); read by the game's きろく only (kikimimi/progress.ts). Never read by the economy. */
+  listen: EventRow[];
   /** The shop's rows (`sell`, `buy`: contract/shop.ts), each with whose they are (the guest's too), in server order,
    *  a queued one marked `queued`; the pockets and かいがら are their fold over the tallies (model/shop.ts). Never read
    *  by the economy. */
@@ -224,10 +227,10 @@ const weekOf = (d: LocalDate): WeekKey => {
  * memoised per row and per list (model/food.ts opOf, entriesOf). A new such type is one entry here, a list in State
  * and its reader.
  */
-const RAW_EVENTS = new Map<string, 'food' | 'foodRepeat' | 'foodRecipe' | 'foodCustom'>([
-  ['food', 'food'], ['food_repeat', 'foodRepeat'], ['food_recipe', 'foodRecipe'], ['food_custom', 'foodCustom']
+const RAW_EVENTS = new Map<string, 'food' | 'foodRepeat' | 'foodRecipe' | 'foodCustom' | 'listen'>([
+  ['food', 'food'], ['food_repeat', 'foodRepeat'], ['food_recipe', 'foodRecipe'], ['food_custom', 'foodCustom'], ['listen', 'listen']
 ]);
-type RawEvent = 'food' | 'food_repeat' | 'food_recipe' | 'food_custom';
+type RawEvent = 'food' | 'food_repeat' | 'food_recipe' | 'food_custom' | 'listen';
 
 const bodyMaps = (): Record<BodyMetric, Map<LocalDate, Timed<number>[]>> => ({ body_fat_pct: new Map(), bmi: new Map(), lean_kg: new Map() });
 
@@ -274,6 +277,7 @@ function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<str
     foodRepeat: [],
     foodRecipe: [],
     foodCustom: [],
+    listen: [],
     shop: [],
     prefs: { A: {}, B: {}, G: {} },
     dailyGoals: { A: noGoals(), B: noGoals() },
@@ -451,6 +455,7 @@ function copyLists(base: State, rev: string | null): State {
     foodRepeat: [...base.foodRepeat],
     foodRecipe: [...base.foodRecipe],
     foodCustom: [...base.foodCustom],
+    listen: [...base.listen],
     shop: [...base.shop],
     prefs: { A: { ...base.prefs.A }, B: { ...base.prefs.B }, G: { ...base.prefs.G } },
     dailyGoals: { A: copyGoals(base.dailyGoals.A), B: copyGoals(base.dailyGoals.B) },
