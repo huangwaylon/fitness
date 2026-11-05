@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_LOOKS, isPlayerLook } from '#lib/contract/look.ts';
-import { closetFrom, hueOf, itemKey, stubCloset, wear, wornIn } from './closet.ts';
+import { DEFAULT_LOOKS, isOnepiece, isPlayerLook, type PlayerLook } from '#lib/contract/look.ts';
+import PARTS from '../player3d/parts.json' with { type: 'json' };
+import SWATCHES from './swatches.json' with { type: 'json' };
+import { closet, closetFrom, GARMENT_KINDS, hueOf, HUES, itemKey, wear, wornIn, type ClosetKind } from './closet.ts';
+
+const KINDS: ClosetKind[] = ['eye', 'mouth', 'hair', 'top', 'onepiece', 'bottom', 'socks', 'shoes', 'glasses', 'ornament'];
+const ITEMS = PARTS.items as Record<string, { slot: string; line: string; onepiece?: boolean; icon: string | null }>;
 
 describe('the closet adapter', () => {
   it('buckets colours as the filter row does', () => {
@@ -16,22 +21,29 @@ describe('the closet adapter', () => {
     expect(hueOf('#222222')).toBe('black');
   });
 
-  it('groups variants into items by their id without the colour digits', () => {
+  it('groups variants into items by their colour line, the face parts and hair one tile each', () => {
     expect(itemKey('TopsTexTopOuterLAran3')).toBe('TopsTexTopOuterLAran');
-    const aran = stubCloset.items('top').find((i) => i.key === 'TopsTexTopOuterLAran')!;
+    const c = closetFrom({
+      top: [{ id: 'TopsTexTopOuterLAran3', swatch: '#004f28' }, { id: 'TopsTexTopOuterLAran1', swatch: '#d2cda0' }],
+      eye: [{ id: 'PlayerEye00', swatch: '#000000' }, { id: 'PlayerEye01', swatch: '#000000' }]
+    }, closet().colours);
+    const aran = c.items('top')[0];
     expect(aran.variants.map((v) => v.id)).toEqual(['TopsTexTopOuterLAran3', 'TopsTexTopOuterLAran1']);
-    expect(stubCloset.find('TopsTexTopOuterLAran1')?.item).toBe(aran);
-    expect(stubCloset.find('TopsTexNope0')).toBeNull();
-    // face parts and hair are one tile each (their digits are the shape, not a colour)
-    expect(stubCloset.items('hair')).toHaveLength(37);
-    const c = closetFrom({ eye: [['PlayerEye00', '#000000'], ['PlayerEye01', '#000000']] }, stubCloset.colours);
+    expect(c.find('TopsTexTopOuterLAran1')?.item).toBe(aran);
+    expect(c.find('TopsTexNope0')).toBeNull();
     expect(c.items('eye')).toHaveLength(2);
   });
 
-  it('holds every part of both default looks', () => {
-    for (const look of Object.values(DEFAULT_LOOKS))
-      for (const id of [look.hair, look.eye, look.mouth, look.top, look.bottom, look.socks, look.shoes, look.glasses, look.ornament])
-        if (id) expect(stubCloset.find(id), id).not.toBeNull();
+  it('shows a line’s icon as it is on its nearest colour and tints it on the others', () => {
+    const icon = { url: '/i.webp', colour: '#f5f2d3' };
+    const c = closetFrom({
+      top: [{ id: 'TopsTexA0', swatch: '#891f1f', icon }, { id: 'TopsTexA1', swatch: '#d2cda0', icon }, { id: 'TopsTexA2', swatch: '#004f28', icon }]
+    }, closet().colours);
+    const [red, cream, green] = c.items('top')[0].variants;
+    expect(cream.tint).toBeNull();
+    expect(red.tint).toBeGreaterThanOrEqual(1);
+    expect(green.tint).toBe(red.tint);
+    expect([red, cream, green].every((v) => v.icon === '/i.webp')).toBe(true);
   });
 
   it('wears by NH’s rules: a one-piece clears the bottoms, a bottom clears a one-piece', () => {
@@ -46,5 +58,65 @@ describe('the closet adapter', () => {
     expect(isPlayerLook(back)).toBe(true);
     expect(wear(a, 'glasses', null).glasses).toBeNull();
     expect(wear(a, 'top', null)).toBe(a); // a top isn't taken off by the grid
+  });
+});
+
+describe('the part table’s closet (components/player3d/parts.json)', () => {
+  const c = closet();
+
+  it('holds every part of both default looks', () => {
+    for (const look of Object.values(DEFAULT_LOOKS))
+      for (const k of ['hair', 'eye', 'mouth', 'top', 'bottom', 'socks', 'shoes', 'glasses', 'ornament'] as const)
+        if (look[k]) expect(c.find(look[k]), `${k} ${look[k]}`).not.toBeNull();
+  });
+
+  it('has something in every grid, every hairstyle, eye and mouth, and every garment once', () => {
+    for (const k of KINDS) expect(c.items(k).length, k).toBeGreaterThan(0);
+    expect(c.items('hair')).toHaveLength(Object.keys(PARTS.hair).length);
+    expect(c.items('eye').length + c.items('mouth').length).toBe(Object.keys(PARTS.face).length);
+    const listed = KINDS.filter((k) => GARMENT_KINDS.has(k)).flatMap((k) => c.items(k).flatMap((i) => i.variants.map((v) => v.id)));
+    expect(new Set(listed).size).toBe(listed.length);
+    expect(new Set(listed)).toEqual(new Set(Object.keys(ITEMS)));
+  });
+
+  it('measured every garment’s colour and every icon’s (else: npm run look:swatches)', () => {
+    for (const [id, it] of Object.entries(ITEMS)) {
+      expect(SWATCHES.items[id as keyof typeof SWATCHES.items], id).toMatch(/^#[0-9a-f]{6}$/);
+      if (it.icon) expect(SWATCHES.icons[it.icon as keyof typeof SWATCHES.icons], it.icon).toMatch(/^#[0-9a-f]{6}$/);
+    }
+  });
+
+  it('groups a line’s colours in one tile with its icon, and keeps one-pieces apart from tops', () => {
+    for (const k of KINDS.filter((x) => GARMENT_KINDS.has(x)))
+      for (const item of c.items(k)) {
+        for (const v of item.variants) {
+          expect(ITEMS[v.id].line, v.id).toBe(item.key);
+          expect(v.icon, v.id).toMatch(new RegExp(`/art/finds/items/${ITEMS[v.id].icon}\\.webp$`));
+          expect(HUES).toContain(v.hue);
+        }
+        expect(item.variants.filter((v) => v.tint === null), item.key).toHaveLength(1);
+      }
+    expect(c.items('onepiece').every((i) => i.variants.every((v) => isOnepiece(v.id)))).toBe(true);
+    expect(c.items('top').some((i) => i.variants.some((v) => isOnepiece(v.id)))).toBe(false);
+  });
+
+  it('spreads the closet over the colour filter (no garment grid all one bucket)', () => {
+    const hues = new Set(KINDS.filter((k) => GARMENT_KINDS.has(k)).flatMap((k) => c.items(k).flatMap((i) => i.variants.map((v) => v.hue))));
+    expect(hues.size).toBe(HUES.length);
+    for (const k of ['top', 'bottom', 'shoes'] as const) expect(new Set(c.items(k).flatMap((i) => i.variants.map((v) => v.hue))).size, k).toBeGreaterThan(4);
+  });
+
+  it('dresses and undresses by the rule with the table’s own parts', () => {
+    const dressId = c.items('onepiece')[0].variants[0].id;
+    for (const look of Object.values(DEFAULT_LOOKS) as PlayerLook[]) {
+      const dress = wear(look, 'onepiece', dressId);
+      expect(dress.bottom).toBeNull();
+      expect(isPlayerLook(dress)).toBe(true);
+      const pants = wear(dress, 'bottom', c.items('bottom')[0].variants[0].id);
+      expect(pants.top).toBeNull();
+      expect(isPlayerLook(pants)).toBe(true);
+      const top = wear(pants, 'top', c.items('top')[0].variants[0].id);
+      expect(top.bottom).toBe(pants.bottom);
+    }
   });
 });
