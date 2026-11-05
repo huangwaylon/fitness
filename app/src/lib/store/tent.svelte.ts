@@ -127,6 +127,10 @@ class TentRoom {
   get room(): number {
     return TENT_MAX - this.pieces.length;
   }
+  /** A piece's (or a surface's) own entry: its place, never its light's switch (that's `<id>/l`: contract/tent.ts tentKey). */
+  #own(id: string): Exclude<TentEntry, { lt: 0 | 1 }> | undefined {
+    return this.#map.get(id) as Exclude<TentEntry, { lt: 0 | 1 }> | undefined;
+  }
   byId(id: string): TentPiece | undefined {
     return this.pieces.find((p) => p.id === id);
   }
@@ -192,7 +196,7 @@ class TentRoom {
 
   /** Place or move a piece (its whole state): false when it didn't take (a new piece past the cap, a removed one). */
   set(p: { id: string; item: string; x: number; z: number; f: TentPiece['f']; p?: number; on?: string; l?: 0 | 1 }): boolean {
-    const known = this.#map.get(p.id);
+    const known = this.#own(p.id);
     if (known?.rm) return false;
     if (!known && this.room <= 0) return false;
     const at = this.#now(known?.at);
@@ -203,7 +207,7 @@ class TentRoom {
 
   /** Take a piece away (final: an undo puts a new one down). */
   remove(id: string): boolean {
-    const known = this.#map.get(id);
+    const known = this.#own(id);
     if (!this.byId(id) || !known) return false;
     return !!this.#mine({ sc: this.sc, id, at: this.#now(known.at), rm: true });
   }
@@ -211,7 +215,7 @@ class TentRoom {
   /** The wallpaper or the floor. */
   surface(kind: 'wall' | 'floor', code: string): boolean {
     const id = kind === 'wall' ? TENT_WALL : TENT_FLOOR;
-    const known = this.#map.get(id);
+    const known = this.#own(id);
     if (known && !known.rm && known.item === code) return false;
     const at = this.#now(known?.at);
     return !!this.#mine({ sc: this.sc, id, at, item: code, x: 0, z: 0, f: 0, p: known && !known.rm ? known.p : at });
@@ -222,14 +226,14 @@ class TentRoom {
    *  switch stamped now beat a move the partner made meanwhile and put the piece back where this phone last saw it;
    *  now that move (later) wins and the switch is the one lost (both phones agree: the light as the move left it). */
   switchLight(id: string, on: boolean): boolean {
-    const p = this.byId(id), known = this.#map.get(id);
+    const p = this.byId(id), known = this.#own(id);
     if (!p || !known || known.rm) return false;
     return !!this.#mine({ sc: this.sc, id: p.id, at: known.at + 1, item: p.item, x: p.x, z: p.z, f: p.f, p: p.p, ...(p.on ? { on: p.on } : {}), l: on ? 1 : 0 });
   }
   /** NH's room light switch. */
   switchRoom(on: boolean): boolean {
     if (this.lights === on) return false;
-    const known = this.#map.get(TENT_ROOM);
+    const known = this.#own(TENT_ROOM);
     const at = this.#now(known?.at);
     return !!this.#mine({ sc: this.sc, id: TENT_ROOM, at, item: on ? 'r1' : 'r0', x: 0, z: 0, f: 0, p: known && !known.rm ? known.p : at });
   }

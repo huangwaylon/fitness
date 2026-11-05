@@ -258,6 +258,21 @@ describe('events', () => {
     expect(got).toEqual([...Array(60).fill(true), { ok: false, error: 'bad_request', detail: 'tent full' }, true, true]);
   });
 
+  it('a room light’s switch is its own row beside its piece’s: a move after it never undoes it, nor it the move', () => {
+    const P = T0 - 60_000;
+    const lamp = (at: number, x: number) => ev(`l-${at}`, 'decor', { sc: 'u', id: 'dlamp001', at, item: 'f1432', x, z: 0, f: 0, p: P });
+    const sw = (at: number, lt: number) => ev(`s-${at}`, 'decor', { sc: 'u', id: 'dlamp001', at, lt });
+    expect(b('event', lamp(P, 1)).ok).toBe(true);
+    expect(b('event', sw(P + 10, 0))).toEqual({ ok: true });
+    expect(b('event', lamp(P + 20, 5)).ok).toBe(true); // moved by a phone that never saw the switch
+    expect(b('event', sw(P + 5, 1))).toEqual({ ok: true, duplicate: true }); // an older switch
+    expect(b('event', ev('s-none', 'decor', { sc: 'u', id: 'dnone001', at: P + 30, lt: 1 }))).toEqual({ ok: true, duplicate: true }); // no such piece
+    expect(b('event', ev('s-bad', 'decor', { sc: 'u', id: 'dlamp001', at: P + 30, lt: 1, x: 3 })).ok).toBe(false);
+    expect(events().filter((r) => r[2] === 'decor').map((r) => r[3])).toEqual([
+      { sc: 'u', id: 'dlamp001', at: P + 10, lt: 0 }, { sc: 'u', id: 'dlamp001', at: P + 20, item: 'f1432', x: 5, z: 0, f: 0, p: P }
+    ]);
+  });
+
   it('tells the room after an event was kept, never for a duplicate or a refusal', () => {
     a('event', ev('p1', 'pref', { key: 'locale', value: 'en' }));
     a('event', ev('p1', 'pref', { key: 'locale', value: 'en' }));
