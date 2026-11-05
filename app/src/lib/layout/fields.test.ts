@@ -2,13 +2,13 @@
 // structured-cloned as a worker's message is, are the main thread's own, bit for bit, on the default island and the
 // user's; an adopted set is what fieldsOf hands out, to any layout with the same tiles and bridges (the island's layout
 // object is replaced as its store attaches), so the main thread never builds them again.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import RECORD from './record-2026-11-03.json' with { type: 'json' };
 import { layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import { Ch, adoptFields, computeFields, fieldsOf, hasFields, type RawFields } from './fields.ts';
 import { codeOf, idx } from './grid.ts';
 import { Layout, defaultLayout, layoutOf } from './model.ts';
-import { primeFields } from './fieldsPrime.ts';
+import { fieldsSoon, primeFields } from './fieldsPrime.ts';
 
 const record = () =>
   layoutOf((RECORD as Record<string, unknown>[]).map((r) => {
@@ -49,6 +49,30 @@ describe('the fields off the main thread (fieldsPrime.ts)', () => {
     expect(fieldsOf(l)).toBe(f);
     const main = fieldsOf(altered(record(), 4));
     for (let x = -100; x < 520; x += 37.3) for (let z = -100; z < 1720; z += 41.7) expect(typeof main.at(Ch.fresh, x, z)).toBe('number');
+  });
+  it('a late answer is dropped: it never pushes out the set the island has now', () => {
+    const now = altered(record(), 6), stale = altered(record(), 7);
+    const f = fieldsOf(now);
+    adoptFields(stale, computeFields(stale));
+    expect(hasFields(stale)).toBe(false);
+    expect(fieldsOf(new Layout(now.codes.slice(), new Map(now.objects), now.homes))).toBe(f);
+  });
+  it('the mount waits for the prime in flight, at most its cap; nothing to wait for without one', async () => {
+    const m = altered(defaultLayout(), 8);
+    expect(fieldsSoon(m, 300)).toBeNull();
+    // a worker that never answers: the cap, then the main thread
+    class Mute { onmessage = null; onerror = null; onmessageerror = null; postMessage() {} terminate() {} }
+    vi.stubGlobal('Worker', Mute);
+    try {
+      void primeFields(m, 60_000);
+      const t = Date.now();
+      await fieldsSoon(m, 50);
+      expect(Date.now() - t).toBeGreaterThanOrEqual(45);
+      expect(Date.now() - t).toBeLessThan(1000);
+      expect(hasFields(m)).toBe(false);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
   it('resolves at once with no worker (the main thread then builds them)', async () => {
     const m = altered(defaultLayout(), 5);

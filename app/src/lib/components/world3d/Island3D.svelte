@@ -46,6 +46,7 @@
   import { site } from '../island/site.svelte.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
+  import { fieldsSoon } from '#lib/layout/fieldsPrime.ts';
   import { placeObjects, type Inst, type Standin } from './objects.ts';
   import { homeTod } from './home.ts';
   import { createBuilt } from './built.ts';
@@ -893,7 +894,24 @@
     }
   }
 
+  /** How long the mount waits for the ground's fields from their worker (layout/fieldsPrime.ts) before building them
+   *  itself: the worker's ~200 ms (4× CPU) saved off the main thread before the first frame, never a launch held up.
+   *  (Not in the e2e's logic mode: nothing's drawn there, and its tests read the island's projection as the HUD shows.) */
+  const FIELDS_WAIT_MS = 300;
   onMount(() => {
+    let stop: (() => void) | undefined, gone = false;
+    const go = () => {
+      if (!gone) stop = mount();
+    };
+    const soon = drawOff() ? null : fieldsSoon(layoutNow(), FIELDS_WAIT_MS);
+    if (soon) void soon.then(go);
+    else go();
+    return () => {
+      gone = true;
+      stop?.();
+    };
+  });
+  function mount(): (() => void) | undefined {
     if (!canvas) return;
     let e: Island3;
     // a software renderer draws a frame in a fraction of a second only at its lightest: half the pixels, no
@@ -1077,7 +1095,7 @@
       eng = null;
       delete window.__world3d;
     };
-  });
+  }
 </script>
 
 <canvas class="w3d" bind:this={canvas} data-w3d data-loaded={loaded || undefined} aria-hidden="true"></canvas>
