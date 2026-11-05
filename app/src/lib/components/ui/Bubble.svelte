@@ -3,7 +3,8 @@
   // letter-by-letter reveal at 33 ms/char (tap to finish). The box holds --talk-lines lines (2; 1 on compact screens)
   // and never grows. しずえ stands on the left with her feet on the bubble's baseline (official art by pose; the season
   // picks her outfit), the tail pointing at her.
-  // The real text lives in an aria-live node. The typing is silent (the villagers don't speak).
+  // The real text lives in an aria-live node. The typing is silent (the villagers don't speak). The root's data-typing is
+  // true while it types (screenshots and e2e wait for false); reduced motion shows the line whole, the box not popping.
   import { t } from '#lib/i18n/index.ts';
   import Host from '../characters/Host.svelte';
   import { hostIsNook } from '../characters/hostWho.ts';
@@ -41,9 +42,9 @@
   });
   const total = $derived((glyphs.at(-1)?.at ?? 0) + 140);
 
-  // Restart typing whenever the line changes.
+  // Restart typing whenever the line changes (reduced motion: the whole line at once).
   $effect(() => {
-    if (!text) {
+    if (!text || globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
       typing = false;
       return;
     }
@@ -58,7 +59,7 @@
   }
 </script>
 
-<div class="talk">
+<div class="talk" data-typing={typing}>
   {#if host}
     <button type="button" class="spk" style:--h={h} aria-label={hostName} data-sfx="self" onclick={tap}>
       <Host pose={host} size={h} talking={typing} eager />
@@ -126,5 +127,9 @@
   .spk {
     flex: none; display: grid; justify-items: center; align-items: end; height: var(--h); min-width: 56px; margin-bottom: 4px;
     appearance: none; border: 0; padding: 0; background: none; cursor: pointer; border-radius: var(--r-btn);
+  }
+  /* reduced motion: the box and its nameplate simply there (the line shows whole: no typing) */
+  @media (prefers-reduced-motion: reduce) {
+    .bubble, .who { animation: none; }
   }
 </style>

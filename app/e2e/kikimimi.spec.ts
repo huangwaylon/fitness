@@ -14,6 +14,11 @@ type Kiki = { view(): { phase: string; i: number; n: number; amHost: boolean; pl
 const kiki = <R,>(p: Page, fn: (k: Kiki) => R) => p.evaluate(`(${fn.toString()})(window.__kiki)`) as Promise<R>;
 const sheet = (p: Page) => p.locator('dialog[open] [data-kikimimi]');
 const phase = (p: Page) => sheet(p).getAttribute('data-phase');
+/** A screenshot (KIKI_SHOTS=1) once しずえ's line has typed out (ui/Bubble's data-typing). */
+async function snap(p: Page, path: string, fullPage = false) {
+  await expect(p.locator('dialog[open] [data-typing="true"]')).toHaveCount(0);
+  await p.screenshot({ path, fullPage });
+}
 
 async function open(ctx: BrowserContext | Page, as: 'A' | 'B' = 'A'): Promise<Page> {
   const page = 'newPage' in ctx ? await ctx.newPage() : ctx;
@@ -120,7 +125,7 @@ test('dialogues (gist, next): both speakers while it plays, the two-sided transc
     await expect(sheet(page).locator('[data-kiki-card] [data-vill]')).toHaveCount(2);
     await expect(sheet(page).locator('[data-kiki-transcript]')).toHaveCount(0);
     await expect(sheet(page).locator('.ask')).toHaveText(next ? 'つぎの ひとことは？' : '男性は このあと どうする？');
-    if (shots && i === 1) await page.screenshot({ path: `${shots}/dialogue-play.png` });
+    if (shots && i === 1) await snap(page, `${shots}/dialogue-play.png`);
     await answer(page, i === 1);
     await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');
     const tr = sheet(page).locator(`[data-kiki-transcript="${next ? 'd4-oat-latte' : 'd4-train-cancelled'}"]`);
@@ -131,13 +136,13 @@ test('dialogues (gist, next): both speakers while it plays, the two-sided transc
     await expect(tr.locator('[data-kiki-next-line]')).toHaveCount(next ? 1 : 0);
     if (next) await expect(tr.locator('[data-kiki-next-line] .en')).toHaveText("No worries, I'm not in a rush.");
     await expect(sheet(page).locator('[data-kiki-note]')).toBeVisible();
-    if (shots) await page.screenshot({ path: `${shots}/dialogue-reveal-${next ? 'next' : 'gist'}.png` });
+    if (shots) await snap(page, `${shots}/dialogue-reveal-${next ? 'next' : 'gist'}.png`);
     await sheet(page).locator('[data-kiki-next]').click();
   }
   await expect(sheet(page)).toHaveAttribute('data-phase', 'results');
   await expect(sheet(page).locator('[data-review] [data-kiki-transcript]')).toHaveCount(2);
   await expect(sheet(page).locator('[data-review="1"] .ans')).toContainText("He'll take a bus from outside the station.");
-  if (shots) await page.screenshot({ path: `${shots}/dialogue-results.png`, fullPage: true });
+  if (shots) await snap(page, `${shots}/dialogue-results.png`, true);
 });
 
 /** A and B in A's shared lobby (B from the banner's さんか); `vs`: A turns たいせん on before starting. */
@@ -215,7 +220,7 @@ test('two players, co-op (the default): A’s lobby invites B, they play togethe
     // no ranking, and each phone's own tally only
     await expect(sheet(p).locator('[data-rank]')).toHaveCount(0);
     await expect(sheet(p).locator('[data-kiki-tally]')).toHaveText(p === a ? 'じぶんは 8もん中 7もん' : 'じぶんは 8もん中 4もん');
-    if (process.env.KIKI_SHOTS) await p.screenshot({ path: `/tmp/kikimimi-shots/inc34/coop-results-${p === a ? 'A' : 'B'}.png` });
+    if (process.env.KIKI_SHOTS) await snap(p, `/tmp/kikimimi-shots/inc34/coop-results-${p === a ? 'A' : 'B'}.png`);
   }
   await ctx.close();
 });
