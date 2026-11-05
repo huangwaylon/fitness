@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import PARTS from './parts.json' with { type: 'json' };
 import PART_IDS from '#lib/contract/partIds.json' with { type: 'json' };
 import { DEFAULT_LOOKS, PART_SLOTS, isOnepiece } from '#lib/contract/look.ts';
+import { covers, type PartTable } from './parts.ts';
 
 /** Every id partIds.json holds (its lines unpacked). */
 const IDS = [...PART_IDS.exact, ...Object.entries(PART_IDS.lines as Record<string, string>).flatMap(([l, ds]) => [...ds].map((d) => l + d))];
@@ -68,5 +69,16 @@ describe('the player parts (scripts/players3d-models.ts)', () => {
       expect(total).toBeLessThan(110);
     }
     for (const [id, m] of Object.entries(T.mesh)) expect(m.kb, id).toBeLessThan(40);
+  });
+  it('draws the いつもの looks from the bundled table, the whole one only for a part it lacks (covers)', () => {
+    const full = JSON.parse(readFileSync(join(DIR, 'parts.json'), 'utf8')) as PartTable;
+    const B = PARTS as unknown as PartTable;
+    // (the bundled entries are the whole table's own: one may stand for the other)
+    for (const k of ['items', 'mesh', 'hair', 'face'] as const) for (const [id, e] of Object.entries(B[k])) expect(e, id).toEqual(full[k][id]);
+    for (const look of Object.values(DEFAULT_LOOKS)) expect(covers(look, B)).toBe(true);
+    const missing = Object.keys(full.items).find((id) => !B.items[id] && full.items[id].slot === 'top')!;
+    expect(covers({ ...DEFAULT_LOOKS.A, top: missing }, B)).toBe(false);
+    expect(covers({ ...DEFAULT_LOOKS.A, top: missing }, full)).toBe(true);
+    expect(covers({ ...DEFAULT_LOOKS.A, hair: 'PlayerHairNone' }, full)).toBe(false);
   });
 });

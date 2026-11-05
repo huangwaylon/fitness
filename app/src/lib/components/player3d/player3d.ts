@@ -18,7 +18,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
 import { animateModel, type Villager3D } from '../villager3d/villager3d.ts';
-import { PARTS, bodyUrl, faceUrl, irisUrl, loadParts, meshUrl, texUrl, type ItemSpec, type PartTable, type TexSpec } from './parts.ts';
+import { PARTS, bodyUrl, covers, faceUrl, irisUrl, loadParts, meshUrl, texUrl, type ItemSpec, type PartTable, type TexSpec } from './parts.ts';
 import { playerKind } from './tune.ts';
 
 /** @public (the 2D heads' portraits, the closet's tiles) */
@@ -142,7 +142,10 @@ interface Worn { key: string; meshes: SkinnedMesh[]; bones: Bone[]; mats: Materi
  * asset), `seed` its blink's rhythm. Rejects if a part it needs isn't there (the caller keeps its stand-in).
  */
 export async function createPlayer(id: string, look: PlayerLook, dir: string, seed = 0): Promise<Player3D> {
-  const [body, T] = await Promise.all([glb(bodyUrl(dir)), loadParts(dir)]);
+  // (the bundled table when it has every part of the look: the whole one, ~1.1 MB, only for a part it hasn't)
+  const table = (l: PlayerLook, t: PartTable) => (covers(l, t) ? Promise.resolve(t) : loadParts(dir));
+  const [body, T0] = await Promise.all([glb(bodyUrl(dir)), table(look, PARTS)]);
+  let T = T0;
   const model = cloneSkinned(body.scene);
   const bones = new Map<string, Bone>();
   model.traverse((n) => {
@@ -381,6 +384,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   };
   let busy: Promise<void> = Promise.resolve();
   const dress = async (next: PlayerLook) => {
+    T = await table(next, T);
     const prev = cur;
     cur = { ...next };
     tints();
