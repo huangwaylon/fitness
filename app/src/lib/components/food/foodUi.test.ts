@@ -6,8 +6,10 @@ import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
 import {
   amountText, customDraft, customErrors, customItem, customOf, DAYS, daysText, defaultPortion, goalChip, itemOf, matchPortion,
-  parseAmount, portionLabel, portionText, recentOf, sameItems, servingText, startOf, stepOf, uniqueItems, unitOf
+  parseAmount, portionLabel, portionText, quickDraft, quickErrors, quickSnap, recentOf, sameItems, servingText, startOf, stepOf, typedKcal,
+  uniqueItems, unitOf
 } from './foodUi.ts';
+import { foodOp } from '#lib/contract/food.ts';
 
 const snap = (id: string, u?: string): FoodSnap => ({ id, n: id, k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0, ...(u ? { u } : {}) });
 const entry = (id: string, f: FoodSnap, g: number): FoodEntry => ({ id, at: 0, d: '2026-11-04', m: 'b', g, f }) as FoodEntry;
@@ -164,5 +166,25 @@ describe('マイ食品: the editor\'s fields, a custom food as a food', () => {
     const sv: FoodSnap = { ...snap('custom:mabc1234'), sv: true, u: '1食×2' };
     expect(amountText(entry('e', sv, 200))).toBe('1食×2');
     expect(amountText(entry('e', { ...sv, u: undefined }, 100))).toBe('×1');
+  });
+});
+
+describe('クイック: kcal (and what else is known) as one entry, no food saved', () => {
+  it('quickSnap: one serving (sv, 1食), its own quick: id, the name クイック unless typed; the record takes it as logged', () => {
+    const f = quickSnap({ ...quickDraft('６５０'), p: '25' }, 'qabc1234');
+    expect(f).toEqual({ id: 'quick:qabc1234', n: 'クイック', k: 650, p: 25, fa: null, c: null, s: null, u: '1食', sv: true });
+    expect(quickSnap({ ...quickDraft('1,200'), n: ' 焼肉 ', fa: '60', c: '80', s: '4.5' }, 'q2')).toMatchObject({ n: '焼肉', k: 1200, fa: 60, c: 80, s: 4.5 });
+    const op = foodOp({ id: 'fquick001', at: 1.8e12, d: '2026-11-05', m: 'd', g: 100, f });
+    expect(op && !op.rm && op.f).toEqual(f);
+  });
+  it('quickErrors: kcal needed (0–5,000), the name may stay blank, a nutrient that doesn’t read is wrong', () => {
+    expect([...quickErrors(quickDraft(''))]).toEqual(['k']);
+    expect([...quickErrors(quickDraft('650'))]).toEqual([]);
+    expect([...quickErrors(quickDraft('5001'))]).toEqual(['k']);
+    expect([...quickErrors({ ...quickDraft('650'), p: 'abc' })]).toEqual(['p']);
+  });
+  it('typedKcal: a number typed in the search (full width, a comma, kcal after it); anything else null', () => {
+    expect(['650', '６５０', '1,200', '800kcal', '450 kcal', '12.4'].map(typedKcal)).toEqual([650, 650, 1200, 800, 450, 12]);
+    expect(['', 'ごはん', '0', '6000', '7-11', 'kcal', '1個'].map(typedKcal)).toEqual([null, null, null, null, null, null, null]);
   });
 });

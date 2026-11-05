@@ -164,5 +164,13 @@
   "food.copy.prev": "Same as the day before",
   "food.copy.of": "Same as {name}",
   "food.copy.meta": "{n} · {k} kcal",
-  "food.copied": "Copied {n} to {meal}"
+  "food.copied": "Copied {n} to {meal}",
+  "food.quick.name": "Quick",
+  "food.quick.title": "Quick add",
+  "food.quick.make": "Quick add (kcal only)",
+  "food.quick.hint": "Eating out, kcal is all you know? The name may stay blank (“Quick”). Not saved as a My food",
+  "food.quick.head": "What you ate",
+  "food.quick.row": "Add the kcal only",
+  "food.quick.of": "Quick {k} kcal",
+  "food.my.saveLog": "Save and add"
 }

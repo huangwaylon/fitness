@@ -164,5 +164,13 @@
   "food.copy.prev": "前の日と おなじ",
   "food.copy.of": "{name}と おなじ",
   "food.copy.meta": "{n}品 {k} kcal",
-  "food.copied": "{meal}に {n}品 コピーしました"
+  "food.copied": "{meal}に {n}品 コピーしました",
+  "food.quick.name": "クイック",
+  "food.quick.title": "クイック ついか",
+  "food.quick.make": "クイック ついか（カロリーだけ）",
+  "food.quick.hint": "外食などで カロリーだけ わかるとき。なまえは なくても OK（「クイック」）。マイ食品には のこりません",
+  "food.quick.head": "たべた ぶん",
+  "food.quick.row": "カロリーだけ ついか",
+  "food.quick.of": "クイック {k} kcal",
+  "food.my.saveLog": "ほぞんして ついか"
 }

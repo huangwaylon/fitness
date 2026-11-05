@@ -4,12 +4,14 @@
   // its weight in g (may stay blank: then it is logged by the serving, never by grams), カロリー (needed) and
   // たんぱく質 · 脂質 · 炭水化物 · 塩分 · 食物繊維 · アルコール in g (each may stay blank), all for one serving; full-width digits welcome
   // (foodUi parseAmount). Then けす (a saved one; tapped twice: ほんとうに けす？) and ほぞん (waiting until something
-  // changed). Anyone else's: the same, read-only, with who made it, 「コピーして へんしゅう」 and 「ごはんに ついか」.
+  // changed). Anyone else's: the same, read-only, with who made it, 「コピーして へんしゅう」 and 「ごはんに ついか」. A new one
+  // from a meal (`andLog`): 「ほぞんして ついか」, saved and one serving logged in the one tap. `quick` (クイック, eating
+  // out): the same fields for one entry, no food saved: no serving or weight, the name optional (クイック), ついか.
   import type { Who } from '#lib/types.ts';
   import { CUSTOM } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import Avatar from '../characters/Avatar.svelte';
-  import { CUSTOM_NUTS, customErrors, customOf, servingText, type CustomDraft } from './foodUi.ts';
+  import { CUSTOM_NUTS, customErrors, customOf, quickErrors, servingText, type CustomDraft } from './foodUi.ts';
 
   interface Props {
     draft: CustomDraft;
@@ -23,11 +25,15 @@
     onremove?: () => void;
     oncopy?: () => void;
     onlog?: () => void;
+    /** A new one from a meal: its save logs one serving too (ほぞんして ついか). */
+    andLog?: boolean;
+    /** A quick entry (クイック), not a food: kcal and what is known, logged (ついか), nothing saved. */
+    quick?: boolean;
   }
-  let { draft = $bindable(), owner = null, saved = false, clean = false, onsave, onremove, oncopy, onlog }: Props = $props();
+  let { draft = $bindable(), owner = null, saved = false, clean = false, onsave, onremove, oncopy, onlog, andLog = false, quick = false }: Props = $props();
 
   const ro = $derived(owner !== null);
-  const bad = $derived(customErrors(draft));
+  const bad = $derived(quick ? quickErrors(draft) : customErrors(draft));
   const ok = $derived(bad.size === 0 && !clean);
   /** A field shows as wrong once something is typed in it that doesn't read (ほぞん waits for the name and kcal). */
   const wrong = (k: keyof CustomDraft) => bad.has(k) && draft[k].trim() !== '';
@@ -45,7 +51,7 @@
   const g1 = (v: number | null | undefined) => (v === null || v === undefined ? '–' : v.toFixed(1));
 </script>
 
-<form class="cus" data-custom-level={ro ? 'view' : 'edit'} onsubmit={(e) => { e.preventDefault(); save(); }}>
+<form class="cus" data-custom-level={ro ? 'view' : quick ? 'quick' : 'edit'} onsubmit={(e) => { e.preventDefault(); save(); }}>
   {#if ro && owner && shown}
     <section class="card">
       <h3 class="title" data-custom-name>{shown.n}</h3>
@@ -62,8 +68,11 @@
       <label class="field">
         <span class="lbl">{t('food.my.name')}</span>
         <input type="text" bind:value={draft.n} data-sfx="none" data-custom-n maxlength={CUSTOM.nameChars} autocomplete="off" enterkeyhint="next"
-          placeholder={t('food.my.nameHint')} />
+          placeholder={t(quick ? 'food.quick.name' : 'food.my.nameHint')} />
       </label>
+      {#if quick}
+        <p class="hint">{t('food.quick.hint')}</p>
+      {:else}
       <div class="two">
         <label class="field">
           <span class="lbl">{t('food.my.serving')}</span>
@@ -75,10 +84,11 @@
         </label>
       </div>
       <p class="hint" class:bad={wrong('g')} data-custom-g-hint>{t(wrong('g') ? 'food.my.weightBad' : 'food.my.weightHint')}</p>
+      {/if}
     </section>
 
     <section class="card">
-      <h4>{t('food.my.perOne', { u: draft.u.trim() || t('food.my.one') })}</h4>
+      <h4>{quick ? t('food.quick.head') : t('food.my.perOne', { u: draft.u.trim() || t('food.my.one') })}</h4>
       <label class="field kc">
         <span class="lbl">{t('food.my.kcal')}</span>
         <span class="unit"><input type="text" inputmode="decimal" bind:value={draft.k} data-sfx="none" data-custom-k autocomplete="off" enterkeyhint="next" maxlength="6"
@@ -104,7 +114,7 @@
       {#if saved}
         <button type="button" class="btn paper small" data-sfx={removing ? 'undo' : 'tick'} data-custom-remove onclick={remove}>{t(removing ? 'food.rcp.removeSure' : 'food.remove')}</button>
       {/if}
-      <button type="submit" class="btn small" data-sfx="confirm" data-custom-save aria-disabled={!ok}>{t('food.save')}</button>
+      <button type="submit" class="btn small" data-sfx="confirm" data-custom-save aria-disabled={!ok}>{t(quick ? 'food.addOk' : andLog ? 'food.my.saveLog' : 'food.save')}</button>
     {/if}
   </div>
 </form>

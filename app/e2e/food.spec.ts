@@ -736,21 +736,13 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   expect(await overflowOf(page)).toEqual([]);
   await lv.locator('[data-custom-k]').fill('６５０'); // full-width, as the Japanese keyboard types it
   await expect(save).toHaveAttribute('aria-disabled', 'false');
+  await expect(save).toHaveText('ほぞんして ついか'); // made from a meal: saved and one serving logged, in one tap
   await save.click();
 
-  // its amount: one serving (1食), stepped by whole servings, no grams anywhere
+  // back in the meal's search, one serving (1食) of it added
   await expect(h2).toHaveText('昼ごはん');
-  await expect(sheet(page).locator('.chip[aria-pressed=true]')).toHaveText('1食');
-  await expect(sheet(page).locator('[data-grams]')).toHaveCount(0);
-  await expect(sheet(page).locator('.amt .head')).toContainText('1食あたり 650 kcal');
-  await expect(sheet(page).locator('.amt .head')).not.toContainText('100g');
-  await expect(sheet(page).locator('[data-food-live] .k')).toContainText('650');
-  await sheet(page).locator('[data-step="1"]').click();
-  await expect(sheet(page).locator('[data-food-live] .k')).toContainText('1,300');
-  await sheet(page).locator('[data-step="-1"]').click();
-  await expect(sheet(page).locator('[data-pick-meal=l]')).toHaveAttribute('aria-pressed', 'true');
-  expect(await overflowOf(page)).toEqual([]);
-  await sheet(page).locator('[data-done]').click();
+  await expect(sheet(page).locator('[data-food-added] [data-added]')).toHaveCount(1);
+  await expect(sheet(page).locator('[data-food-added] [data-added] .meta')).toHaveText('1食');
   await sheet(page).locator('[data-food-finish]').click(); // おわり: the day
 
   await expect(h2).toHaveText('ごはん');
@@ -758,11 +750,16 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   const row = sheet(page).locator('section[data-meal=l] [data-entry]').last();
   await expect(row).toContainText('会社の弁当');
   await expect(row.locator('.amt')).toHaveText('1食'); // never a nominal weight
-  // tapped: its amount by the serving again
+  // tapped: its amount by the serving: whole servings, no grams anywhere
   await row.click();
   await expect(sheet(page).locator('[data-grams]')).toHaveCount(0);
   await expect(sheet(page).locator('.chip[aria-pressed=true]')).toHaveText('1食');
+  await expect(sheet(page).locator('.amt .head')).toContainText('1食あたり 650 kcal');
+  await expect(sheet(page).locator('.amt .head')).not.toContainText('100g');
+  await sheet(page).locator('[data-step="1"]').click();
+  await expect(sheet(page).locator('[data-food-live] .k')).toContainText('1,300');
   await expect(sheet(page).locator('[data-amount-open]')).toHaveCount(0); // an entry: no opening its food
+  expect(await overflowOf(page)).toEqual([]);
   await sheet(page).getByRole('button', { name: 'もどる' }).click();
 
   // the next search: under マイ食品 (all of them before anything is typed; the matching ones when typed)
@@ -1091,4 +1088,108 @@ test('最新の値にする: an entry whose food was corrected since offers its 
   await expect(s.locator('[data-food-summary]')).toHaveClass(/pB/);
   await expect(s.locator('[data-entry]').first()).toBeVisible();
   await expect(fresh).toHaveCount(0);
+});
+
+// クイック (the user approved, 2026-11-05: "kcal and protein only, for eating out"): from the search's ⚡ button (its
+// form: a name, クイック if blank, kcal needed, the nutrients optional) or a kcal typed in the search (its ＋ logs it at
+// once); one entry by the serving, no マイ食品 saved.
+test('クイック: the form from ⚡ (a name, kcal, protein), a kcal typed logged at once; one entry each, no マイ食品', async ({ page }) => {
+  await openFood(page);
+  const s = sheet(page);
+  const h2 = s.locator('.navbar h2');
+  const before = await kcalOf(page);
+  await s.locator('[data-add=d]').click();
+  await s.locator('[data-quick-new]').click();
+  await expect(h2).toHaveText('クイック ついか');
+  const lv = s.locator('[data-custom-level=quick]');
+  await expect(lv.locator('[data-custom-k]')).toBeFocused(); // in the tap: the number pad comes up
+  await expect(lv.locator('[data-custom-n]')).toHaveAttribute('placeholder', 'クイック');
+  await expect(lv.locator('[data-custom-u], [data-custom-g]')).toHaveCount(0); // no serving, no weight
+  const add = lv.locator('[data-custom-save]');
+  await expect(add).toHaveText('ついか');
+  await expect(add).toHaveAttribute('aria-disabled', 'true'); // kcal first
+  await lv.locator('[data-custom-n]').fill('ラーメン屋');
+  await lv.locator('[data-custom-k]').fill('850');
+  await lv.locator('[data-custom-nut=p]').fill('30');
+  expect(await overflowOf(page)).toEqual([]);
+  await add.click();
+  // back in the meal's search, listed
+  await expect(h2).toHaveText('夜ごはん');
+  const added = s.locator('[data-food-added] [data-added]');
+  await expect(added).toHaveCount(1);
+  await expect(added.first()).toContainText('ラーメン屋');
+  await expect(added.first()).toContainText('850 kcal');
+  // a kcal typed: offered as クイック, its ＋ logs it at once
+  await s.locator('[data-food-q]').fill('６５０');
+  const row = s.locator('[data-food-quick] li');
+  await expect(row).toContainText('クイック');
+  await expect(row).toContainText('650 kcal');
+  await row.locator('[data-quick]').click();
+  await expect(added).toHaveCount(2);
+  await s.locator('[data-food-finish]').click();
+  await expect.poll(() => kcalOf(page)).toBe(before + 1500);
+  const rows = s.locator('section[data-meal=d] [data-entry]');
+  await expect(rows.filter({ hasText: 'ラーメン屋' }).locator('.amt')).toHaveText('1食');
+  await expect(rows.filter({ hasText: 'クイック' })).toHaveCount(1);
+  // nothing saved as a マイ食品
+  await s.locator('[data-add=s]').click();
+  await expect(s.locator('[data-food-customs]')).not.toContainText('ラーメン屋');
+});
+
+// The tap counts the food review measured (2026-11; before: a repeat meal 3 taps an item from さいきん, a new 3-item
+// breakfast 9 taps + 7 characters, a konbini lunch 8 + 10, a 650 kcal meal out 4 + 8 as a new マイ食品), from the open
+// sheet. The user's targets: a repeat meal in ≤ 3, a new 3-item breakfast in ≤ 5 plus typing.
+test('tap counts: the same meal as yesterday in 1, a new 3-item meal in 5, a konbini lunch in 6, a meal out by kcal in 3', async ({ page }) => {
+  await openFood(page);
+  const s = sheet(page);
+  const c = { taps: 0, chars: 0 };
+  const tap = async (sel: string) => { c.taps++; await s.locator(sel).first().click(); };
+  const type = async (text: string) => { c.chars += text.length; await s.locator('[data-food-q]').fill(text); };
+  const count = (k: string) => s.locator(`section[data-meal=${k}] [data-entry]`).count();
+  const run = async (name: string, go: () => Promise<void>) => {
+    c.taps = c.chars = 0;
+    await go();
+    console.log(`TAPS ${name}: ${c.taps} taps + ${c.chars} characters`);
+    return { ...c };
+  };
+  // the same dinner as yesterday (焼き鮭定食)
+  const same = await run('the same meal as yesterday', async () => {
+    await tap('section[data-meal=d] [data-copy=prev]');
+    await expect.poll(() => count('d')).toBe(1);
+  });
+  // ご飯 + みそ汁 + 卵, each by its row's ＋
+  const n0 = await count('s');
+  const fresh = await run('a new 3-item meal', async () => {
+    await tap('[data-add=s]');
+    for (const [q, id] of [['ごはん', 'mext:01088'], ['みそ汁', 'dishes:miso-tofu-wakame'], ['卵', 'mext:12004']]) {
+      await type(q);
+      await expect(s.locator(`[data-food-results] li:has([data-item="${id}"]) [data-quick]`)).toBeVisible({ timeout: 15_000 });
+      await tap(`[data-food-results] li:has([data-item="${id}"]) [data-quick]`);
+    }
+    await tap('[data-food-finish]');
+    await expect.poll(() => count('s')).toBe(n0 + 3);
+  });
+  // おにぎり ×2 (＋ steps by the piece) + サラダチキン
+  const l0 = await count('l');
+  const konbini = await run('a konbini lunch', async () => {
+    await tap('[data-add=l]');
+    await type('おにぎり');
+    await tap('[data-food-results] [data-item="dishes:onigiri-shake"]');
+    await tap('[data-step="1"]');
+    await expect(s.locator('.mult')).toHaveText('×2');
+    await tap('[data-done]');
+    await type('サラダチキン');
+    await tap('[data-food-results] li:has([data-item="eatout:saladchicken"]) [data-quick]');
+    await tap('[data-food-finish]');
+    await expect.poll(() => count('l')).toBe(l0 + 2);
+  });
+  // a 650 kcal meal out: its kcal typed, its ＋
+  const out = await run('a meal out by kcal', async () => {
+    await tap('[data-add=d]');
+    await type('650');
+    await tap('[data-food-quick] [data-quick]');
+    await tap('[data-food-finish]');
+    await expect.poll(() => count('d')).toBe(2);
+  });
+  expect([same, fresh, konbini, out]).toEqual([{ taps: 1, chars: 0 }, { taps: 5, chars: 7 }, { taps: 6, chars: 10 }, { taps: 3, chars: 3 }]);
 });
