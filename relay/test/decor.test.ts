@@ -45,3 +45,39 @@ describe('the outdoors’ cap', () => {
     expect(decor({ sc: 'o', id: 'oz', at: T0 + 9e6, rm: true })).toEqual({ ok: true });
   }, 30_000);
 });
+
+describe('a decor op’s reads (O6)', () => {
+  it('reads its own slots and the caps’ count, never every decor row; the count stays the rows’ through every kind of op', () => {
+    // 2026-11-05 relay review O6: every decor op parsed every decor row
+    many(Array.from({ length: 1000 }, (_, i) => obj(i, T0 + i)));
+    many(Array.from({ length: 40 }, (_, i) => ({ sc: 't', id: `dpiece${String(i).padStart(3, '0')}`, at: T0 + i, item: 'f1', x: 0, z: 0, f: 0, p: T0 })));
+    const before = db.reads();
+    expect(decor(obj('new', T0 + 9e6))).toEqual({ ok: true });
+    expect(db.reads() - before).toBeLessThan(20);
+    // removals, a removed piece back, a room's pieces and a switch, the island's decorations, a move
+    expect(decor({ sc: 'o', id: 'o1', at: T0 + 9e6, rm: true })).toEqual({ ok: true });
+    expect(decor({ sc: 'o', id: 'o2', at: T0 + 9e6, rm: true })).toEqual({ ok: true });
+    expect(decor(obj(2, T0 + 9e6 + 1))).toEqual({ ok: true });
+    expect(decor(obj(3, T0 + 9e6 + 1))).toEqual({ ok: true }); // a move: no change
+    expect(decor({ sc: 't', id: 'dpiece000', at: T0 + 9e6, rm: true })).toEqual({ ok: true });
+    expect(decor({ sc: 't', id: 'dpiece001', at: T0 + 9e6, lt: 0 })).toEqual({ ok: true });
+    expect(decor({ id: 'dlantern01', at: T0 + 9e6, item: 'stone-lantern', x: 10, z: 10, f: 0, p: T0 })).toEqual({ ok: true });
+    expect(store.decorCheck()).toEqual({ ok: true, kept: { '': 1, t: 39, u: 0, v: 0, o: 1000 }, counted: { '': 1, t: 39, u: 0, v: 0, o: 1000 } });
+    // a reset: everything before it void, the voided rows dropped (by their slots and `at`), counted again
+    expect(decor({ sc: 'r', id: 'reset', at: T0 + 9e6 + 5 })).toEqual({ ok: true });
+    expect(decor(obj('after', T0 + 9e6 + 6))).toEqual({ ok: true });
+    expect(store.decorCheck()).toMatchObject({ counted: { '': 1, t: 39, o: 1 }, kept: { o: 1 } });
+    expect(store.counts().events).toBeLessThan(60);
+  }, 30_000);
+
+  it('a load brings rows the counts never saw: within its batch they count, and afterwards they are counted again', () => {
+    many(Array.from({ length: LAYOUT_MAX - 1 }, (_, i) => obj(i, T0 + i)));
+    const at = (i: number) => new Date(T0 + 9e6 + i).toISOString();
+    const r = store.load({ rows: { events: [
+      [at(1), 'A', 'x1', 'decor', JSON.stringify(obj('l1', T0 + 9e6))],
+      [at(2), 'A', 'x2', 'decor', JSON.stringify(obj('l2', T0 + 9e6))] // past the cap: only its id kept
+    ] } });
+    expect(r).toMatchObject({ ok: true, events: 1 });
+    expect(decor(obj('x', T0 + 9e7))).toEqual({ ok: false, error: 'bad_request', detail: 'layout full' });
+  }, 30_000);
+});

@@ -322,6 +322,11 @@ made after it carries no `l`, the switch's op keeps the light.
   (until 2026-11-05 every sale reread it: a year's 20-sale batch read ~153k rows, 112 ms; now a few). Folded from the
   rows when it isn't there (the first sale after this deploy; after a `load`, which lets them go); the admin's
   `shopcheck {fix?}` compares each with the full fold (`same`, `differs`, `none`) and takes the fold's with `fix`.
+- **A decor op's check** (`decorTarget`): reads only its own slots' rows (the piece's and its light switch's, the
+  layout's reset) and the caps' counts (meta `decor_live`: the island's decorations, each room's pieces, the outdoors'
+  pieces standing; kept by every decor op in its transaction, `decorNote`; let go by a reset or a load and counted
+  from the rows at the next op; the admin's `decorcheck {fix?}` compares); until 2026-11-05 every op parsed every decor
+  row. A reset drops the voided object and chunk rows by their slots' range and `at` (`dropVoided`, no row parsed).
 - **Ingest:** `relay/src/parse.ts` and the audit row (`relay/src/audit.ts`); a day's latest
   value read from `metrics_latest` over the body's days (one row a day and metric: a 32-day body reads ≤ 32 × its
   metrics, never the history; until 2026-11-05 every row of the 32 days, ~23,000 after a month of hourly runs). `relay/test/ingest-golden.test.ts` runs a week of
