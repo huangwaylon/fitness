@@ -95,6 +95,19 @@ describe('ingest', () => {
   });
 });
 
+describe('a restore under way', () => {
+  it('answers every request unavailable (the phones retry), acknowledging nothing the bookmark would drop', () => {
+    // 2026-11-05 relay review O4: writes in the ~200 ms between the bookmark and the restart were acked, then lost
+    store.freeze();
+    expect(a('event', { id: 'r1', type: 'pref', data: { key: 'locale', value: 'en' } })).toEqual({ ok: false, error: 'unavailable', detail: 'restoring' });
+    expect(a('ingest', { dates: 'Sep 29, 2026', steps: '9106' })).toMatchObject({ ok: false, error: 'unavailable' });
+    expect(a('snapshot')).toMatchObject({ ok: false, error: 'unavailable' });
+    expect(store.counts()).toMatchObject({ metrics: 0, events: 0, uploads: 0 });
+    store.thaw(); // (the bookmark refused: on as before)
+    expect(a('event', { id: 'r1', type: 'pref', data: { key: 'locale', value: 'en' } })).toMatchObject({ ok: true });
+  });
+});
+
 describe('a new epoch', () => {
   it('tells the phones: a `changed` with the new rev (each refetches everything)', () => {
     // 2026-11-05 review: `rev` (and a restore's) told nobody: a phone open on the island kept its cache till its next poll

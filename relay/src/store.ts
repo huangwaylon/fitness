@@ -266,10 +266,26 @@ export class StoreCore {
     return ++this.rate[me] <= RATE_PER_MINUTE;
   }
 
+  /** Set while a restore is under way (storeObject.ts restore): every request is `unavailable` (the phones retry) until
+   *  the object restarts on the bookmark, so nothing is acknowledged that the restore then drops. In memory only: the
+   *  restart is its end. */
+  private frozen = false;
+
+  /** A restore begins (before its bookmark is set): no request is answered but `unavailable` from now on. */
+  freeze(): void {
+    this.frozen = true;
+  }
+
+  /** The restore didn't go ahead (its bookmark refused): requests are answered again. */
+  thaw(): void {
+    this.frozen = false;
+  }
+
   /** An API request's parsed body (`bytes`: its size, for the audit). Never throws. */
   handle(body: unknown, bytes: number): Reply {
     this.exc = null;
     this.told.clear();
+    if (this.frozen) return fail('unavailable', 'restoring');
     try {
       return this.route(body, bytes);
     } catch (e) {

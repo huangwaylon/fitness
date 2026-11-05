@@ -141,7 +141,7 @@ keys; without either, the keys file: §4). It signs `POST /admin` with the serve
 - **`counts`**: rows per table, the revision (`e1`, `e2`, …: the epoch), the newest `at`.
 - **Backups:** point-in-time recovery works on the Free plan (tested on the test relay: a bookmark from before an
   ingest restored the empty record). `bookmark [ms]` prints the bookmark now and `ms` ago (any moment of the
-  last 30 days); `restore <bookmark>` restarts the object on it, and the room (told before the restart, its own storage) calls the restored record ~5 s later (retrying every 30 s, 10 tries) to start a new epoch, so every phone refetches; only when the reply's `note` says the room wasn't told, run `rev` yourself. Beyond 30 days:
+  last 30 days); `restore <bookmark>` restarts the object on it (from the moment it's asked until the restart every request is answered `unavailable`, which the phones retry: nothing is acknowledged that the bookmark then drops; a Shortcut run in those seconds is covered by its next one), and the room (told before the restart, its own storage) calls the restored record ~5 s later (retrying every 30 s, 10 tries) to start a new epoch, so every phone refetches; only when the reply's `note` says the room wasn't told, run `rev` yourself. Beyond 30 days:
   `dump > island-record-YYYY-MM-DD.json` (every row; keep it off the repo) and `load <file>` into an empty record.
 - **`rev`**: a new epoch: every phone drops its cache and fetches everything on its next refresh.
 - **`held [A|B]`**: the values an ingest held back (a past day's 0 over a value above it, [backend](../backend.md#ingest)
