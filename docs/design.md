@@ -169,8 +169,9 @@ Prefs on the record ([backend](backend.md#events) `sex`, `birth`, `bmiStd`): eit
 two members (the guest's to the guest), enforced by the record. What it feeds (decisions: *Profile*):
 - **Height:** from Health's own BMI: √(weight ÷ BMI) of the latest day with both (the Shortcut sends both; no height pref).
 - **Energy:** resting by Mifflin–St Jeor (10 × kg + 6.25 × cm − 5 × age, + 5 a man, − 161 a woman), the latest
-  weigh-in; daily = resting + the average Move (Apple's active kcal) of the last 28 days with a row (at least 7), else
-  resting × 1.4; kept within 1.2–2.2 × resting.
+  weigh-in; daily = resting + the average Move (Apple's active kcal) of the last 28 days with a Move and the Watch worn
+  (at least 7; a day with Move, Exercise and Stand all 0 is a day without the Watch, not one at rest: `model/health.ts`
+  `activityOn`), else resting × 1.4; kept within 1.2–2.2 × resting.
 - **ごはん's defaults** ([Gohan](#gohan)), only while no goal is set: kcal the daily energy, less 15 % while the goal weight is
   more than 0.5 kg under the latest weigh-in, never under the resting energy nor 1,500 (a man) / 1,200 (a woman), up to
   a 50; salt 日本人の食事摂取基準（2025年版）'s ceiling, 7.5 g a man, 6.5 g a woman (from 15); protein 1.6 g × the
@@ -260,6 +261,14 @@ Health data over time for the personal trainer, one person at a time, computed o
 - **Rules:** a day's value is Health's latest, as reported: every day with a row counts, whatever its value; 記録なし is
   a day with no row (counted from the first activity record); today is drawn but not counted; the previous period is
   the same length just before. The footnote says so.
+- **A day without the Watch** (the user, 2026-11-05: "treat as missing"; [decisions](decisions.md#no-watch-days)): the
+  Shortcut sends `0` when Health has no samples, so such a day arrives as Move 0, Exercise 0, Stand 0 with the phone's
+  steps. A day whose three watch metrics are all 0 or absent is read as no data for them (`model/health.ts` `noWatch`,
+  `activityOn`: the one reader of a day's activity, for the series, bars, averages, goal days and the TDEE's Move): the
+  stub and 記録なし, as a day with no row; steps stay (the phone's). Any of the three above 0 (Stand 9) is a worn day,
+  its zeros real. Read-time only: the stored rows stay. The ベル, the tree popups and the stretch need no such rule (a 0
+  and a missing value earn and show no fruit alike: `scoring/bells.ts`). `?demo&health=zero` sends the demo's no-watch
+  days as 0/0/0.
 - **Cost:** the tab's code and strings (`i18n/kenkou.*.json`) load with the tab; the daily series is memoised per
   model and day. `?demo&weeks=60` makes a longer history with some missing Watch days.
 
@@ -296,6 +305,11 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   「なしなら 体重×1.6 g」; at least the 推奨量 with a profile); with a profile ([Profile](#profile)) kcal from the daily
   energy and salt the 食事摂取基準's ceiling by sex (「なしなら からだと 活動からの めやす」, 「なしなら 食事摂取基準の めやす」);
   none for fat and carbs (they depend on the plan). A default never overrides a goal that's set.
+  **Warn, allow** (the user, 2026-11-05; [decisions](decisions.md#low-kcal-goals-warn-allow)): a kcal goal typed under my resting energy (with a profile,
+  [Profile](#profile)) gets a gentle note under the field, 「きそたいしゃ（約1,630 kcal）より ひくい めやす です。きんにくが
+  へりやすく なります」; else under the safe floor (1,500 a man, 1,200 a woman or unknown), 「1日 1,500 kcal より ひくい
+  めやす です…」 (`model/profile.ts` `lowKcal`, `health/goals.ts` `kcalWarn`, GoalEdit `warn`: on the summary's and
+  グラフ's kcal chip). Never coral, never blocking: けってい still saves it. No note for the other goals.
 - **Meals:** 朝ごはん · 昼ごはん · 夜ごはん · おやつ, a card each with its kcal and a row per entry (the food, its
   amount in one format, a weight once: 「茶碗1杯（150g）」, 「1パック（110g）」, 「中ジョッキ×2（700ml）」; kcal). On my
   day ＋ → the search (its field focused in the same tap, so the iPhone's keyboard comes up), an entry → its amount

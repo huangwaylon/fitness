@@ -10,6 +10,7 @@ import type { BmiStd, Sex } from '#lib/contract/profile.ts';
 import { addDays, localDateAt } from '#lib/time/dates.ts';
 import { latestAt, type State } from './state.ts';
 import { weighIns } from './weight.ts';
+import { activityOn } from './health.ts';
 
 /** A person's profile as set (unset: null; the BMI standard `asia` until chosen). */
 export interface Profile { sex: Sex | null; birth: LocalDate | null; bmiStd: BmiStd }
@@ -56,14 +57,15 @@ export const PAL_FALLBACK = 1.4;
 /** The daily energy's bounds as a multiple of the resting (a Move far off either way is clipped to them). */
 const PAL = { min: 1.2, max: 2.2 } as const;
 
-/** The average Move (active kcal) over the ACTIVE.days before the Tokyo day of `t`, of the days with a row, or null
- *  with fewer than ACTIVE.min. */
+/** The average Move (active kcal) over the ACTIVE.days before the Tokyo day of `t`, of the days with a Move and the
+ *  Watch worn (model/health.ts activityOn: a 0/0/0 day is no data, not a day at rest), or null with fewer than
+ *  ACTIVE.min. */
 export function activeKcal(s: State, p: PersonId, t: number): number | null {
   const today = localDateAt(t);
   let sum = 0, n = 0;
   for (let i = 1; i <= ACTIVE.days; i++) {
-    const v = latestAt(s.metrics[p].get(addDays(today, -i))?.move_kcal, t);
-    if (v !== undefined) (sum += v), (n += 1);
+    const v = activityOn(s, p, addDays(today, -i), t).move;
+    if (v !== null) (sum += v), (n += 1);
   }
   return n >= ACTIVE.min ? sum / n : null;
 }
@@ -95,6 +97,18 @@ export function kcalDefault(s: State, who: Who, t: number): number | null {
   const want = losing ? e.tdee * (1 - KCAL_DEFAULT.deficit) : e.tdee;
   const g = FOOD_GOALS.k, floor = Math.max(e.bmr, KCAL_DEFAULT.floor[e.sex]);
   return Math.min(g.max, Math.ceil(Math.max(want, floor) / g.step) * g.step);
+}
+
+/** Why a kcal goal is low ("warn, allow": the editor says so under the field and still saves it): under the person's
+ *  resting energy (energyOf: with a full profile and a weigh-in), else under the safe floor (KCAL_DEFAULT.floor by
+ *  their sex; unknown: the women's 1,200). `kcal`: the line it's under. Null: not low. */
+type LowKcal = { why: 'bmr' | 'floor'; kcal: number };
+
+export function lowKcal(s: State, who: Who, t: number, v: number): LowKcal | null {
+  const e = energyOf(s, who, t);
+  if (e && v < e.bmr) return { why: 'bmr', kcal: e.bmr };
+  const floor = KCAL_DEFAULT.floor[profileOf(s, who).sex ?? 'f'];
+  return v < floor ? { why: 'floor', kcal: floor } : null;
 }
 
 /** Salt's ceiling a day (g), 日本人の食事摂取基準（2025年版）'s 目標量 from 15: men under 7.5, women under 6.5. */

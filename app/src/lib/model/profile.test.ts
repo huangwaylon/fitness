@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { reduce } from './state.ts';
 import { foodGoal, proteinDefault } from './food.ts';
-import { activeKcal, ageAt, ageOn, bmiCategory, energyOf, heightCm, heightFrom, kcalDefault, mifflinStJeor, PAL_FALLBACK, profileOf, saltDefault } from './profile.ts';
+import { activeKcal, ageAt, ageOn, bmiCategory, energyOf, heightCm, heightFrom, kcalDefault, lowKcal, mifflinStJeor, PAL_FALLBACK, profileOf, saltDefault } from './profile.ts';
 import { addDays } from '#lib/time/dates.ts';
 import type { EventRow, MetricRow } from '#lib/contract/api.ts';
 import { isBirth, latestBirth, PROFILE_KEYS } from '#lib/contract/profile.ts';
@@ -116,6 +116,43 @@ describe('the profile: age, height, energy, the BMI category, the defaults', () 
       goals: [2600, 8, 1700, 7.5, null],
       // 1.6 g per kg (69.6 → 111), never under the 推奨量 (B: 84 over 50)
       protein: [111, 84]
+    });
+  });
+
+  it('the TDEE’s Move: only days with the Watch worn (a 0/0/0 day is no data, not a day at rest; partial wear counts)', () => {
+    const profile = [pref('A', T - 9e8, { key: 'sex', value: 'm' }), pref('A', T - 9e8, { key: 'birth', value: '1990-05-12' })];
+    const body = [m('A', '2026-11-02', 'weight', 70), m('A', '2026-11-02', 'bmi', 22.9)];
+    /** Day i back from yesterday with the given Move, Exercise and Stand (and the phone's steps). */
+    const wd = (i: number, kcal: number, ex: number, stand: number) => {
+      const d = addDays('2026-11-03', -1 - i);
+      return [m('A', d, 'steps', 3000), m('A', d, 'move_kcal', kcal), m('A', d, 'exercise_min', ex), m('A', d, 'stand_min', stand)];
+    };
+    // the live shape: 27 of 28 days 0/0/0 (no Watch), one worn: too few Move days, so × 1.4, not pinned at 1.2
+    const live = reduce({ metrics: [...body, ...Array.from({ length: 27 }, (_, i) => wd(i, 0, 0, 0)).flat(), ...wd(27, 600, 40, 100)], events: profile });
+    // 8 worn days (one of them Move 0 with Stand 9: worn, a real 0) and 20 without the Watch
+    const mixed = reduce({
+      metrics: [...body, ...Array.from({ length: 7 }, (_, i) => wd(i, 560, 30, 120)).flat(), ...wd(7, 0, 0, 9), ...Array.from({ length: 20 }, (_, i) => wd(8 + i, 0, 0, 0)).flat()],
+      events: profile
+    });
+    const bmr = energyOf(live, 'A', T)!.bmr;
+    expect({ active: [activeKcal(live, 'A', T), activeKcal(mixed, 'A', T)], tdee: [energyOf(live, 'A', T)!.tdee, energyOf(mixed, 'A', T)!.tdee] })
+      .toEqual({ active: [null, (7 * 560) / 8], tdee: [Math.round(bmr * PAL_FALLBACK), Math.round(energyOf(mixed, 'A', T)!.bmr + 490)] });
+  });
+
+  it('lowKcal ("warn, allow"): under the resting energy with a profile, else under the floor (men 1,500, women and unknown 1,200)', () => {
+    const profile = [pref('A', T - 9e8, { key: 'sex', value: 'm' }), pref('A', T - 9e8, { key: 'birth', value: '1990-05-12' }), pref('B', T - 9e8, { key: 'sex', value: 'f' })];
+    const s = reduce({ metrics: [m('A', '2026-11-02', 'weight', 70), m('A', '2026-11-02', 'bmi', 22.9)], events: profile });
+    const bmr = energyOf(s, 'A', T)!.bmr; // 1,650 (70 kg, 174.8 cm, 36)
+    const none = reduce({ metrics: [], events: [] });
+    expect({
+      a: [lowKcal(s, 'A', T, bmr - 50), lowKcal(s, 'A', T, bmr), lowKcal(s, 'A', T, 2200)],
+      // B: a sex but no weigh-in or height: her floor only; the guest and a blank profile: the generic 1,200
+      b: [lowKcal(s, 'B', T, 1150), lowKcal(s, 'B', T, 1200)],
+      blank: [lowKcal(none, 'A', T, 1199), lowKcal(none, 'A', T, 1400), lowKcal(s, 'G', T, 1100)]
+    }).toEqual({
+      a: [{ why: 'bmr', kcal: bmr }, null, null],
+      b: [{ why: 'floor', kcal: 1200 }, null],
+      blank: [{ why: 'floor', kcal: 1200 }, null, { why: 'floor', kcal: 1200 }]
     });
   });
 

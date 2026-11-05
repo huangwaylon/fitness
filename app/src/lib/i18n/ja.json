@@ -153,6 +153,8 @@
   "goal.range": "{min}〜{max}{u}、{step}{u}ずつで入れてね",
   "goal.note.today": "きょうから",
   "goal.note.fixed": "きょうから · ベルは {g}のまま",
+  "goal.low.bmr": "きそたいしゃ（約{n} kcal）より ひくい めやす です。きんにくが へりやすく なります",
+  "goal.low.floor": "1日 {n} kcal より ひくい めやす です。えいようが たりなく なりやすいので、むりは しないでね",
   "goal.saved": "{what}の目標を かえました",
   "goal.cleared": "目標をなくしました",
   "bells.unit": "ベル",

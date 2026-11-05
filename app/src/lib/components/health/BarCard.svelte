@@ -30,6 +30,8 @@
     now: number | null;
     start?: number | null;
     onsave?: ((v: number | null) => void) | null;
+    /** The editor's gentle note on a value (the kcal goal's: goals.ts kcalWarn). */
+    warn?: ((v: number) => string | null) | null;
     /** ごはん's: the total beside the average, the average line, every value to one decimal of a gram. */
     food?: boolean;
     selected: number | null;
@@ -37,7 +39,7 @@
     onswipe: (dir: -1 | 1) => void;
     slide: -1 | 0 | 1;
   }
-  let { id, ds, range, today, p, name, title, empty, now, start = null, onsave = null, food = false, selected, onselect, onswipe, slide }: Props = $props();
+  let { id, ds, range, today, p, name, title, empty, now, start = null, onsave = null, warn = null, food = false, selected, onselect, onswipe, slide }: Props = $props();
 
   /** `9,214歩` · `620 kcal` · `84.5 g` (a day's grams to one decimal). */
   const fmt = $derived((v: number) => valueText(id, v, food && id !== 'k' ? 1 : 0));
@@ -49,7 +51,7 @@
   const label = $derived(t('health.chartLabel', { name, what: title, range: rangeLabel(range, today), avg: s.avg === null ? t('health.noData') : fmt(s.avg), goal: gl }));
 </script>
 
-<ChartCard {id} {title} {p} {goal} {now} {start} {onsave} tone="soft" {empty} kind={food ? 'food' : 'metric'}>
+<ChartCard {id} {title} {p} {goal} {now} {start} {onsave} {warn} tone="soft" {empty} kind={food ? 'food' : 'metric'}>
   <div class="srow">
     <span class="lab" data-intake-basis={food ? '' : undefined}>{food && s.days ? t('food.chart.avgHead', { n: s.days }) : t('health.avgHead')}</span>
     <b class="avg money" data-intake-avg={food ? '' : undefined}>{s.avg === null ? '–' : fmt(s.avg)}</b>

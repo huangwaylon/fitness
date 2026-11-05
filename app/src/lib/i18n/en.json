@@ -153,6 +153,8 @@
   "goal.range": "{min}–{max}{u}, in steps of {step}",
   "goal.note.today": "From today",
   "goal.note.fixed": "From today · ベル still at {g}",
+  "goal.low.bmr": "Under your resting energy (about {n} kcal): muscle is easier to lose.",
+  "goal.low.floor": "Under {n} kcal a day: it’s hard to get enough nutrients, so go gently.",
   "goal.saved": "{what} goal changed",
   "goal.cleared": "Goal removed",
   "bells.unit": "Bells",

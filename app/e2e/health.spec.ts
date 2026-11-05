@@ -112,6 +112,28 @@ test('whose data: this phone’s person by default; switching changes the number
   await expect(range(page)).toHaveText('10/18–10/24');
 });
 
+test('a day without the Watch (the Shortcut’s Move 0, Exercise 0, Stand 0) is 記録なし, as a day with no rows; steps stay', async ({ page, context }) => {
+  /** Per card: its 記録なし days in the 1か月 view and its stubs. */
+  const counts = async (page: Page) => {
+    await pickPeriod(page, 'month');
+    const out: Record<string, [string, number]> = {};
+    for (const m of ['move', 'exercise', 'stand', 'steps']) {
+      const card = sheet(page).locator(`.mc[data-metric=${m}]`);
+      out[m] = [(await card.locator('.sub').textContent())!.match(/記録なし \d+日/)?.[0] ?? '', await card.locator('rect.none').count()];
+    }
+    return out;
+  };
+  await openHealth(page, '?demo&weeks=60&health=zero'); // the no-watch days sent as 0/0/0
+  const zero = await counts(page);
+  const other = await context.newPage();
+  await openHealth(other, '?demo&weeks=60'); // the same days with no watch rows
+  const none = await counts(other);
+  expect(zero).toEqual(none);
+  expect(zero.move[1]).toBeGreaterThan(0);
+  expect(zero.move).toEqual(zero.stand);
+  expect(zero.steps).toEqual(['', 0]); // the phone's steps: every day a bar
+});
+
 test('every day with data is its bar, as reported; only a day with no row is a short faint stub on the axis and 記録なし', async ({ page }) => {
   await openHealth(page, '?demo&weeks=60');
   await pickPeriod(page, 'month');

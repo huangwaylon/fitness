@@ -9,6 +9,8 @@ import { METRIC_FRUIT, type Metric } from '#lib/model/health.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
 import { setGoal } from '#lib/store/actions.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
+import { lowKcal } from '#lib/model/profile.ts';
+import type { State } from '#lib/model/state.ts';
 
 export interface GoalSpec {
   id: GoalId;
@@ -117,6 +119,15 @@ export function nudge(s: Pick<GoalSpec, 'min' | 'max' | 'step'>, from: number, d
   const on = Math.abs(k * s.step - from) < 1e-6;
   const next = (on ? k + dir : dir > 0 ? Math.ceil(from / s.step) : Math.floor(from / s.step)) * s.step;
   return Math.round(Math.min(s.max, Math.max(s.min, next)) * 10) / 10;
+}
+
+/** The kcal editor's gentle note for `who` (GoalEdit `warn`): 「きそたいしゃ（約1,630 kcal）より ひくい めやす です…」
+ *  under their resting energy, else under the safe floor (model/profile.ts lowKcal); null when the goal isn't low. */
+export function kcalWarn(s: State, who: Who, now: number): (v: number) => string | null {
+  return (v) => {
+    const low = lowKcal(s, who, now, v);
+    return low && t(`goal.low.${low.why}`, { n: formatNum(low.kcal) });
+  };
 }
 
 /** Sets `who`'s goal of `id` (GoalEdit's onsave; null clears it) and says so: low on ごはん, where its confirmations sit. */

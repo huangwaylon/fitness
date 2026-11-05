@@ -26,6 +26,8 @@
     start?: number | null;
     /** Sets the goal (null clears it); absent: read-only. */
     onsave?: ((v: number | null) => void) | null;
+    /** The editor's gentle note on a value (GoalEdit `warn`: the kcal goal's). */
+    warn?: ((v: number) => string | null) | null;
     /** The chart's goal line: the bar charts' soft, the dot charts' yuzu (the chip's swatch matches it). */
     tone: 'soft' | 'yuzu';
     /** Nothing recorded yet: the one line. */
@@ -34,7 +36,7 @@
     kind: 'metric' | 'food';
     children: Snippet;
   }
-  let { id, title, p, goal, now, start = null, onsave = null, tone, empty, kind, children }: Props = $props();
+  let { id, title, p, goal, now, start = null, onsave = null, warn = null, tone, empty, kind, children }: Props = $props();
 
   const art = $derived(id in NUTRIENT_ART ? NUTRIENT_ART[id as keyof typeof NUTRIENT_ART] : id in BODY_ART ? BODY_ART[id as keyof typeof BODY_ART] : fruitArt(METRIC_FRUIT[id as Metric]));
   const cur = $derived(now === undefined ? goal : now);
@@ -46,7 +48,7 @@
   <header>
     <span class="ic"><OfficialArt key={art} size={24} /></span>
     <h3 id={hid}>{title}</h3>
-    <GoalEdit id="{id}-goal" spec={GOAL_SPECS[id]} label={goalLabel(id, goal)} value={cur} {onsave} {start} {tone} />
+    <GoalEdit id="{id}-goal" spec={GOAL_SPECS[id]} label={goalLabel(id, goal)} value={cur} {onsave} {start} {warn} {tone} />
   </header>
   {#if empty}
     <p class="none" data-health-empty={kind === 'metric' ? '' : undefined} data-food-empty={kind === 'food' ? '' : undefined}>{t('kiroku.empty')}</p>
