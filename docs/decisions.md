@@ -997,3 +997,15 @@ only when every item of it has a clip (`deck.ts LEVELS`), so main stays shippabl
 the same time, so the relay (which validates `lv`) is redeployed long before any phone sends 4, and 5 needs no deploy
 later. Rejected: generating `say` clips now to be replaced (the user rejected them; a level shipped with them would be
 played), a feature flag (the clips themselves are the readiness signal, nothing to forget to flip).
+
+### ききみみ スピード はしご: a quiz mode on the seed, rungs by time-stretch, climbs scored flat (2026-11-06)
+スピード はしご (docs/curriculum.md §14, increment 7) is the quiz's session with another deck: 2 ladders × 4 rungs = 8
+questions, so the protocol, the relay and the co-op / たいせん code are the quiz's. The mode rides on the `open`'s seed's
+bit 1 beside たいせん's bit 0: no new field and no relay deploy; `lv` 5 stays the next level's room. The rungs are one take
+per line stretched with ffmpeg atempo to 0.8-1.4 × 4.3 syllables a second, pre-rendered: the voice path's Web Audio
+`playbackRate` shifts pitch, and atempo measured nearly free to 1.25× and about −0.35 UTMOS at 1.4×. Each rung asks a
+different question (Japanese for rungs 1-3, so no English is read before a faster listen; the top a dictation-lite pick
+of near-sound forms of the chunk), and below the top the reveal keeps the line hidden and silent. Scoring follows the
+learning-science review: a rung counts only when climbed in order on the first listen, stopping at the first miss or
+replay, a flat 100 each. Rejected: a payout weighted to the top (invites guessing), separate faster takes per rung (not
+the same line, and the engine's pace isn't steerable), a level value for the mode (contends with increment 6).
