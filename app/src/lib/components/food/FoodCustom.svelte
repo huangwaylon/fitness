@@ -55,7 +55,7 @@
   {#if ro && owner && shown}
     <section class="card">
       <h3 class="title" data-custom-name>{shown.n}</h3>
-      <p class="who"><span class="av" aria-hidden="true"><Avatar person={owner.who} villager={owner.villager} size={22} /></span>{t('food.my.by', { name: owner.name })}</p>
+      <p class="who"><span class="av" aria-hidden="true"><Avatar worn person={owner.who} villager={owner.villager} size={22} /></span>{t('food.my.by', { name: owner.name })}</p>
     </section>
     <section class="card">
       <header class="ih"><h4>{t('food.my.perOne', { u: servingText(shown) })}</h4><b class="big money" data-custom-kcal>{t('kiroku.kcal', { n: formatNum(shown.k) })}</b></header>

@@ -22,6 +22,7 @@
   import type { PersonId, WeekView, Who } from '#lib/types.ts';
   import { actorOf, castMe, guestPhone, setCast, whoOf, type VillagerActor } from '#lib/ui-state/cast.ts';
   import Villager from '../characters/Villager.svelte';
+  import Avatar from '../characters/Avatar.svelte';
   import { artGate, setArtGate } from '../characters/artGate.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
@@ -1188,7 +1189,8 @@
         {#if edge && partnerHere && !where.partnerInTent}
           <!-- the partner out of view: their villager's face at the edge they're off (a cue; the finger scrolls) -->
           <span class="edge {edge}" data-partner-edge={edge} aria-hidden="true">
-            <Villager person={sides.partner.person.person} villager={sides.partner.person.villager} size={28} head />
+            {#if sides.partner.person.worn.kind === 'player'}<Avatar worn person={sides.partner.person.person} size={28} />
+            {:else}<Villager person={sides.partner.person.person} villager={sides.partner.person.villager} size={28} head />{/if}
           </span>
         {/if}
 

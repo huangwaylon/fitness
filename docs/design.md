@@ -2019,7 +2019,12 @@ while its key stays and swap it in place when it changes (on leaving すがた, 
 the old one drawn till the new one is in, the rooms keep the walker (its spot, seat, walk, first person). A player
 shows no villager card while it loads (the island draws nothing, the tent's card is its tap area only). Its models'
 `dispose()` also disposes their skeletons (three's bone textures, else left on the island's renderer at each swap or
-visitor gone). The island's tap area for a player is from its crown (0.45 × its height wide). `npm run leak -- look`
+visitor gone). The island's tap area for a player is its core from its crown (0.88 of the crown's height, half that
+wide). **The 2D heads** (`characters/Avatar.svelte` `worn`: the sync rows, きろく, ずかん, the museum's finder, けんこう's
+select, ごはん's owner, the purchases, the harvest, the toasts, the edge chip) show the look the person wears: a
+player's portrait (`look/portraits.svelte.ts`, by the look's hash), the flat stand-in till it's drawn, or the villager's
+icon. Besides the すがた preview, the island's renderer draws missing portraits when it's idle or paused under a sheet
+(`person3d` `createPainter`, `useIdlePainter`): one player kept for the shots, let go of 5 s after the last. `npm run leak -- look`
 swaps looks on the island. The fishing specs fish as a villager (`fishing3d.spec` seeds the look); a player's rod
 line-up is the 3D engine's to tune (the spec's fixme).
 

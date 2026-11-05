@@ -216,6 +216,8 @@ export interface Island3 {
   lamps(): string[];
   /** The GPU's name (a software renderer, CI's: the scene draws at its lightest). */
   gpu(): string;
+  /** Its renderer (a still through it, into a render target: the players' portraits, person3d). */
+  renderer(): WebGLRenderer;
   /** The camera's ends for this screen (the scene fits them: まえ's shore, おく's campsite). */
   setLimits(min: number, max: number): void;
   // ---- the projection (the World's Proj3; px from the canvas's top-left) ----
@@ -952,6 +954,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       if (o?.tag) kick();
       else activity(400);
     },
+    renderer: () => renderer,
     gpu() {
       const gl = renderer.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info');
       return String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));

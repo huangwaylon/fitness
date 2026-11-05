@@ -45,7 +45,7 @@
 {#snippet person(p: PersonId, x: DayPerson, mine: boolean)}
   <section class="card pc" data-person={p}>
     <div class="who">
-      <Avatar person={p} villager={villagers[p]} size={34} />
+      <Avatar worn person={p} villager={villagers[p]} size={34} />
       <b class="nm">{names[p]}{#if mine}<small>&nbsp;· {t('kiroku.me')}</small>{/if}</b>
       <b class="money day">{formatBells(x.bells, { signed: true })}</b>
     </div>

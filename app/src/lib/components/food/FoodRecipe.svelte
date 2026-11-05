@@ -52,7 +52,7 @@
   <section class="card">
     {#if ro && owner}
       <h3 class="title" data-recipe-name>{draft.n}</h3>
-      <p class="who"><span class="av" aria-hidden="true"><Avatar person={owner.who} villager={owner.villager} size={22} /></span>{t('food.rcp.by', { name: owner.name })}</p>
+      <p class="who"><span class="av" aria-hidden="true"><Avatar worn person={owner.who} villager={owner.villager} size={22} /></span>{t('food.rcp.by', { name: owner.name })}</p>
     {:else}
       <label class="field">
         <span class="lbl">{t('food.rcp.name')}</span>

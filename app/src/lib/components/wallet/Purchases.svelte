@@ -50,7 +50,7 @@
 
 {#snippet when(s: LedgerSpend)}
   <span class="money">{dayTitle(localDateAt(s.at))}</span>
-  <span class="who"><Avatar person={s.by} villager={villagers[s.by]} size={20} />{names[s.by]}</span>
+  <span class="who"><Avatar worn person={s.by} villager={villagers[s.by]} size={20} />{names[s.by]}</span>
 {/snippet}
 
 <section class="hist" class:expanded aria-labelledby="hist-h">

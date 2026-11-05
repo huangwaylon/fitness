@@ -57,7 +57,7 @@
         <!-- whose goals each column shows -->
         <li class="day head" aria-hidden="true">
           <span class="dt"></span>
-          {#each order as p (p)}<span class="pv"><Avatar person={p} villager={villagers[p]} size={20} /></span>{/each}
+          {#each order as p (p)}<span class="pv"><Avatar worn person={p} villager={villagers[p]} size={20} /></span>{/each}
           <span class="st"></span><span class="tot"></span>
         </li>
       {/if}

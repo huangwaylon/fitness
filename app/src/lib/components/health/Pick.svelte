@@ -22,7 +22,7 @@
 
 <label class="dd {kind}" class:compact {...{ [`data-${kind}`]: value }}>
   <span class="sr-only">{label}</span>
-  {#if person}<span class="av" aria-hidden="true"><Avatar person={person.p} villager={person.villager} size={compact ? 24 : 28} /></span>{/if}
+  {#if person}<span class="av" aria-hidden="true"><Avatar worn person={person.p} villager={person.villager} size={compact ? 24 : 28} /></span>{/if}
   <select data-pick={kind} class:withav={!!person} {value} data-sfx="none" onchange={(e) => onpick(e.currentTarget.value as T)}>
     {#each options as o (o.id)}<option value={o.id}>{o.label}</option>{/each}
   </select>
