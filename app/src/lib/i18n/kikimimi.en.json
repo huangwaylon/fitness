@@ -70,5 +70,6 @@
   "kiki.notice.stale": "Time ran out, so it ended",
   "kiki.back": "Back",
   "kiki.play": "Play",
-  "kiki.playSlow": "Play slowly"
+  "kiki.playSlow": "Play slowly",
+  "kiki.practice": "Weak-spot practice"
 }

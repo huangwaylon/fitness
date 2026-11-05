@@ -34,9 +34,15 @@ export interface Tags {
   /** Speech conditions for the mix (none: studio clean). */
   conditions?: readonly ('phone' | 'voicemail' | 'pa' | 'video' | 'cafe' | 'station' | 'desk')[];
   /** The sound features it trains (curriculum §3). */
-  features?: readonly ('contraction' | 'weak-form' | 'flap' | 'yod' | 'gonna' | 'wanna' | 'gotta' | 'lemme' | 'dunno' | 'kinda' |
-    'can-cant' | 't-glottal' | 'teen-ty' | 'self-repair' | 'numbers' | 'ellipsis' | 'idiom' | 'intonation')[];
+  features?: readonly Feature[];
 }
+
+/** The sound and listening features an item trains (curriculum §3): level 4's (bank4.ts `tags`) and S0's segmentals
+ *  (levels 1-3, tags.ts): L/R, the vowel contrasts, b/v/f/p, th, s/sh/ch, f/h, word endings (-s, -ed), katakana
+ *  traps, a "not X but Y" contrast, clock talk (quarter past, half seven). */
+export type Feature = 'contraction' | 'weak-form' | 'flap' | 'yod' | 'gonna' | 'wanna' | 'gotta' | 'lemme' | 'dunno' | 'kinda' |
+  'can-cant' | 't-glottal' | 'teen-ty' | 'self-repair' | 'numbers' | 'ellipsis' | 'idiom' | 'intonation' |
+  'l-r' | 'vowel' | 'b-v' | 'th' | 'sh-s' | 'f-h' | 'ending' | 'katakana' | 'contrast' | 'clock';
 
 export interface Item {
   /** Stable: the clip's file name. */

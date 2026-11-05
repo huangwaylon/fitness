@@ -16,7 +16,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { game, onlevel }: { game: QuizGame; onlevel: (lv: Level) => void } = $props();
+  let { game, onlevel, onpractice }: { game: QuizGame; onlevel: (lv: Level) => void; onpractice: () => void } = $props();
   const v = $derived(game.view);
   /** Everyone in the lobby or on the island: joined first (A B G), then those here who haven't. */
   const people = $derived(ORDER.filter((w) => w === game.me || v.players.some((p) => p.who === w) || game.here.includes(w)));
@@ -92,6 +92,7 @@
 <div class="level-acts">
   {#if v.amHost && v.local}
     <button type="button" class="btn" data-kiki-start data-sfx="confirm" onclick={() => game.go()}>{t('kiki.startSolo')}</button>
+    <button type="button" class="btn paper" data-kiki-practice data-sfx="confirm" onclick={onpractice}>🎯 {t('kiki.practice')}</button>
     <button type="button" class="btn paper wide" data-kiki-invite-all data-sfx="open" onclick={() => game.invite()}>{t('kiki.inviteAll')}</button>
   {:else if v.amHost}
     <button type="button" class="btn" data-kiki-start data-sfx="confirm" onclick={() => game.go()}>{t('kiki.startN', { n: v.players.length })}</button>

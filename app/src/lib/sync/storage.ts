@@ -116,7 +116,11 @@ export const DEVICE = {
   newYearIntro: 'island.newYearIntro',
   /** localStorage: `1` | `2` | `3`: the ききみみ クイズ level last played on this phone (the next lobby's;
    *  components/kikimimi/KikimimiSheet.svelte). */
-  kikimimiLv: 'island.kikimimiLv'
+  kikimimiLv: 'island.kikimimiLv',
+  /** localStorage: `{who, rows: [{at, row}]}`, my last ききみみ games' `listen` rows (contract/listen.ts) as recorded on
+   *  this phone: きろく's fallback while offline or before the record has them (components/kikimimi/progress.svelte.ts;
+   *  the record's rows win, by game id). */
+  kikimimiGames: 'island.kikimimiGames'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */
