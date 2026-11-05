@@ -66,10 +66,20 @@ export interface VSpec {
   away?: boolean;
 }
 
+/** A frame's outcome (one object, written over each frame): the slots drawn as cards, whether one moves (the full
+ *  rate), whether one's loop is the island's ambience (a gym piece's), and how long (ms) till a still one's face next
+ *  changes (a blink: one frame then, Infinity none). */
+interface Frame3 {
+  cards: Set<string>;
+  moving: boolean;
+  ambient: boolean;
+  wake: number;
+}
+
 export interface Villagers3 {
   /** One frame: `active` the island moves (the camera, a walk): the bones are posed. Returns the slots still drawn as
    *  cards (no model, or loading) and whether one moves. */
-  frame(t: number, specs: readonly VSpec[], active: boolean): { cards: Set<string>; moving: boolean };
+  frame(t: number, specs: readonly VSpec[], active: boolean): Frame3;
   /** The time of day's self-light (engine.ts TOD lift). */
   lift(l: number): void;
   /** A villager's head (a balloon's, a hat's anchor), its world position (three's space) or null. */
@@ -229,6 +239,8 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     return k < 1;
   }
   let lastT = 0, liftL = 0.32, disposed = false;
+  /** The frame's outcome and its slots seen (kept from frame to frame: no allocation a frame). */
+  const out: Frame3 = { cards: new Set(), moving: false, ambient: false, wake: Infinity }, seenSlots = new Set<string>();
   const headP = new V3(), aimP = new V3(), crownP = new V3();
   const debug = import.meta.env.DEV || new URLSearchParams(location.search).has('demo') || drawOff() ? new Map<string, unknown>() : null;
 
@@ -344,8 +356,10 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
   function frame(t: number, specs: readonly VSpec[], active: boolean) {
     const dt = lastT ? Math.min(100, t - lastT) : 16;
     lastT = t;
-    const cards = new Set<string>(), seen = new Set<string>();
-    let moving = false;
+    const cards = out.cards, seen = seenSlots;
+    cards.clear();
+    seen.clear();
+    let moving = false, ambient = false, wake = Infinity;
     for (const s of specs) {
       seen.add(s.slot);
       const w = ensure(s), v = w.v;
@@ -449,7 +463,13 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
         // (a gym piece's loop alone is the island's ambience: its ambient rate, the frames it draws anyway while a
         // villager shows, not the full one)
         if (going && !v.looping()) moving = true;
-      } else v.blink(t);
+        else if (going) ambient = true;
+      } else {
+        // still: only its face changes (a blink, a snore), one frame when it does: its next change asked for, not the
+        // ambient rate's frames for as long as it stands there
+        v.blink(t);
+        wake = Math.min(wake, v.nextBlink(t));
+      }
       // the weight bench's bar: in its hands while it presses on it (asleep there, it's on the rack)
       const bench = anchor?.use === 'press' && v.state() === 'press' ? (pieceOf.get(anchor) ?? null) : null;
       if ((bench || w.bar) && press(w, v, bench, t)) moving = true;
@@ -460,7 +480,10 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       w.v?.dispose();
       ws.delete(slot);
     }
-    return { cards, moving };
+    out.moving = moving;
+    out.ambient = ambient;
+    out.wake = wake;
+    return out;
   }
 
   // the e2e's (dev builds, ?demo and the logic tier): a 3D villager's state, what it holds and its tip (three's space), and what its

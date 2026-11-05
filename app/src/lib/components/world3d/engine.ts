@@ -10,7 +10,8 @@
 //   The lights: lights.ts (always-on emissive and halos, faded point lights). Shadows on by default.
 //   The frames: せってい's frame rate (30 or 60: store/frameRate.svelte.ts) while anything moves; while only the
 //   ambience does (the water, the season's fall, a fire's flicker, a sleeper's zzz, a blink) `ambient` a second (30 at
-//   most; a software renderer's few); none when nothing does, none hidden or paused (a sheet over the island). The
+//   most; a software renderer's few; REST_FPS once no finger has touched it for REST_MS), the water's only while some
+//   is on screen; none when nothing does, none hidden or paused (a sheet over the island). The
 //   World's step runs in each frame before it draws, so the DOM moves with the picture.
 // Plain TS; world3d/Island3D.svelte drives it.
 import {
@@ -127,6 +128,11 @@ const SHADOW_STEP = 40;
 const SHADOW_MIN = 200;
 /** The cards lean back this share of the camera's pitch. */
 const LEAN = 0.42;
+/** No finger on the island for this long (ms), the ambience's frames drop to REST_FPS a second (the battery and the
+ *  phone's heat at rest: the water, the fall and the weather still move, at a calm rate). */
+const REST_MS = 8000, REST_FPS = 20;
+/** The screen's samples (columns × rows, below the horizon) where the camera's view is looked for water. */
+const WATER_COLS = 12, WATER_ROWS = 20;
 const now = () => performance.now();
 const pctl = (a: number[], p: number) => {
   if (!a.length) return 0;
@@ -231,6 +237,11 @@ export interface Island3 {
   kick(): void;
   /** Nothing moving (the ambience may still run at its rate). */
   idle(): boolean;
+  /** One frame `ms` from now (a still villager's next blink): the soonest asked for wins; nothing else is drawn for it. */
+  wake(ms: number): void;
+  /** Where the island's water is (the sea, a river, a pond: true at a world x, z): its ambience (the ground's water
+   *  moving) is drawn only while some of it is on screen. Again when the water changes (a layout's edit). */
+  water(at: ((x: number, z: number) => boolean) | null): void;
   /** No frames at all while paused (a sheet over the island); a frame at once when it ends. */
   pause(on: boolean): void;
   /** Paused (pause()). */
@@ -509,6 +520,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     return Math.max(MID_X - r, Math.min(MID_X + r, x));
   };
   function pan(dy: number, dx = 0) {
+    lastInput = now();
     if (focus) return;
     light(true);
     settling = false;
@@ -527,6 +539,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     return k;
   };
   function zoom(f: number, sy = H * (0.5 + PIVOT_DROP), sx = W / 2) {
+    lastInput = now();
     if (focus) return;
     light(true);
     settling = false;
@@ -550,6 +563,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   }
   let velX = 0;
   function fling(vy: number, vx = 0) {
+    lastInput = now();
     if (focus) return;
     vel = vy;
     velX = xRoom() > 0 ? vx : 0;
@@ -704,7 +718,36 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   }
 
   // ---- the frames ----
-  let frames = 0, disposed = false, shadowsDirty = true, activeUntil = 0, lastFrame = 0;
+  let frames = 0, disposed = false, shadowsDirty = true, activeUntil = 0, lastFrame = 0, lastInput = now();
+  /** The ground's water wanted its ambience in the last frame; the water's test and whether it's in view (as of
+   *  the camera's rev `waterRev`). */
+  let groundAmb = false, waterAt: ((x: number, z: number) => boolean) | null = null, waterRev = -1, waterOn = true;
+  /** Whether any water is on screen: the screen's samples below the horizon on the ground (once a camera's rev). */
+  function waterSeen(): boolean {
+    if (!waterAt) return true;
+    if (waterRev === rev) return waterOn;
+    waterRev = rev;
+    const top = Math.min(H - 1, horizon() + 2);
+    for (let r = 0; r < WATER_ROWS; r++)
+      for (let c = 0; c < WATER_COLS; c++) {
+        const g = groundAt(((c + 0.5) / WATER_COLS) * W, top + ((r + 0.5) / WATER_ROWS) * (H - top));
+        if (g && waterAt(g.x, g.z)) return (waterOn = true);
+      }
+    return (waterOn = false);
+  }
+  let wakeTimer: ReturnType<typeof setTimeout> | 0 = 0, wakeDue = Infinity;
+  function wake(ms: number) {
+    if (!Number.isFinite(ms) || disposed) return;
+    const due = now() + Math.max(0, ms);
+    if (wakeTimer && due >= wakeDue - 1) return;
+    if (wakeTimer) clearTimeout(wakeTimer);
+    wakeDue = due;
+    wakeTimer = setTimeout(() => {
+      wakeTimer = 0;
+      wakeDue = Infinity;
+      kick();
+    }, Math.max(0, ms));
+  }
   // (world3d/pace.ts: The full rate is せってい's frame rate, a finger's too: at 30 a display frame in
   // between is skipped; a kick from outside while nothing moves draws at once; the ambience's next is due at its own
   // rate: its timer lands just before, and a page with no other frames running has its rAF at once, not at a vsync)
@@ -738,9 +781,12 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     kick();
   };
   /** A frame as soon as the display has one (a change from outside: a model in, a tap, the camera). A kick from inside
-   *  a frame is that frame's own (what it changed is drawn in it): its parts' wants say whether another follows. */
+   *  a frame is that frame's own (what it changed is drawn in it): its parts' wants say whether another follows. At
+   *  rest (no finger for REST_MS) with a frame already coming, it waits for that one (a critter's node, a falling
+   *  leaf's model in: ~35 kicks a second on the demo, each a frame at once, held the ambience at 30, not REST_FPS). */
   function kick() {
     if (inFrame || disposed) return;
+    if (pace.queued() && now() - lastInput > REST_MS) return;
     pace.kick();
   }
   const want = (w: Want, name: string) => {
@@ -753,16 +799,21 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     const active = touch || t < activeUntil || busy;
     if (!pace.due(vsync, active ? frameRate.fps : 0)) return;
     inFrame = true;
-    busy = ambience = false;
+    busy = ambience = groundAmb = false;
     why.clear();
     try {
       draw(t);
     } finally {
       inFrame = false;
     }
-    // something moves: the next display frame; only the ambience (the water included): at its rate; else none
+    // something moves: the next display frame; only the ambience: at its rate (calmer at rest), the water's only while
+    // some of it is in view; else none
     if (busy || touch || now() < activeUntil) pace.kick();
-    else if (ambience && opts.ambient > 0) pace.later(Math.min(opts.ambient, frameRate.fps));
+    else {
+      if (groundAmb && !ambience && waterSeen()) (ambience = true), why.add('~ground');
+      const fps = now() - lastInput > REST_MS ? Math.min(opts.ambient, REST_FPS) : opts.ambient;
+      if (ambience && fps > 0) pace.later(Math.min(fps, frameRate.fps));
+    }
   }
   function draw(t: number) {
     // (the real time since the last frame, up to a quarter second: a slow GPU settles as soon as a fast one)
@@ -805,7 +856,12 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     want(cards.frame(pitch * LEAN, stretch, src.feet), 'cards');
     want(effects.frame(t, camera), 'fx');
     want(marks.frame(t, camera, focal, W, H), 'bite');
-    if (ground.update) want(ground.update(t), 'ground');
+    if (ground.update) {
+      // (its water's ambience: whether it's in view is asked once nothing else wants a frame: frame())
+      const g = ground.update(t);
+      if (g === 'ambient') groundAmb = true;
+      else want(g, 'ground');
+    }
     want(lights.frame(t, camX, camZ + 110, bendU.uBendR.value, -camZ), 'lights');
     if (opts.shadows && shadowsDirty) {
       renderer.shadowMap.needsUpdate = true;
@@ -854,6 +910,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     },
     touching(on) {
       touch = on;
+      lastInput = now();
       if (on) {
         vel = velX = 0;
         zoomBack = null;
@@ -972,6 +1029,12 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       else kick();
     },
     idle: () => !busy && !touch && !vel && !velX && !zoomBack && !settling && now() > activeUntil,
+    wake,
+    water(at) {
+      waterAt = at;
+      waterRev = -1;
+      kick();
+    },
     onFrame(fn) {
       hook = fn;
       kick();
@@ -989,6 +1052,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     dispose() {
       disposed = true;
       pace.stop();
+      if (wakeTimer) clearTimeout(wakeTimer);
       document.removeEventListener('visibilitychange', onVis);
       canvas.removeEventListener('webglcontextlost', onLost);
       canvas.removeEventListener('webglcontextrestored', onRestored);
