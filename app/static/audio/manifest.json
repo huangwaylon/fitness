@@ -1,10 +1,6 @@
 {
   "_readme": "Audio files for the app (docs/design.md#audio-files). Paths are relative to static/audio/. Add a file and its entry here; no code change. Every entry is built by `npm run audio:music -- <dir> [--only <key regex>]` (scripts/music.ts, its CATALOGUE: source track number -> key) from the user's own files; `npm run audio:music -- --gains` re-measures only the gains, `-- --hashes` rewrites only the hashes. Every entry carries `v`, its file's content hash (the app fetches file?v=, so a re-cut file is a new URL: /audio/* is cached as immutable); a file replaced by hand needs `--hashes`. A music entry is { file, start, end?, gain, v }: a loop is one seamless period (start = the second where the loop begins musically; playback starts there) plus a 3 s copy of the period's start, `end` = where the period ends (the engine's two decks hand over inside the copy); a one-shot has start 0 and no `end`. gain = dB to the common loudness (-16 LUFS). Music: AAC-LC stereo 44.1 kHz, 64 kbps (K.K.'s from the GameCube / e+ rip mono at 40: the rip is all but mono). music.<sunny|rain|snow>.<00-23> = the Tokyo hour's loop (music/hour-HH, rain-HH, snow-HH). opening = the opening theme (one-shot). events.<id> = the event music and cut-ins (src/lib/sound/events.ts EVENT_MUSIC_IDS), music/<id>. places.<id> = a room's loop (src/lib/sound/places.ts), places/<id>. K.K.'s songs and airchecks are in kk.json (loaded when first needed). sfx.<id> = a file for a sound id in src/lib/sound/ids.ts (without one, the id plays its procedural placeholder from src/lib/sound/synth.ts or its `like`'s): AAC .m4a, mono 44.1 kHz 64 kbps, { file, v } (no gain: the jingles from the OST, sfx/<id>, are trimmed, faded and normalised in the file to -16 LUFS as heard, from both speakers). ambient.<waves|birds|cicadas|higurashi|crickets|wind|rain> = mono loops of 10-30 s. The music files are user-provided and committed by the user's decision (docs/design.md#audio-files). Do not commit downloaded effects.",
   "sfx": {
-    "island-broadcast": {
-      "file": "sfx/island-broadcast.m4a",
-      "v": "44156f3b"
-    },
     "get-fanfare": {
       "file": "sfx/get-fanfare.m4a",
       "v": "57c2dfbc"
@@ -788,13 +784,6 @@
     }
   },
   "places": {
-    "resident-services": {
-      "file": "places/resident-services.m4a",
-      "start": 62.545,
-      "end": 64,
-      "gain": -2,
-      "v": "2f66fda2"
-    },
     "shop": {
       "file": "places/shop.m4a",
       "start": 53.472,

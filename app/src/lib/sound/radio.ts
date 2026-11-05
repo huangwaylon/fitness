@@ -19,6 +19,6 @@ export function radioJingleAt(d: Date): RadioJingle {
   const date = dayKey(d);
   const h = holidayOn(date);
   if (h) return `radio-${HOLIDAY_JINGLE[h]}`;
-  const n = 1 + Math.floor(seeded(`radio:${date}`)() * RADIO_VARIANTS);
-  return `radio-${radioSlot(jst(d).hour)}-${n as 1 | 2 | 3 | 4 | 5 | 6}`;
+  const n = RADIO_VARIANTS[Math.floor(seeded(`radio:${date}`)() * RADIO_VARIANTS.length)];
+  return `radio-${radioSlot(jst(d).hour)}-${n}`;
 }

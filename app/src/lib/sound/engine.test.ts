@@ -400,7 +400,7 @@ describe('lazy effects (ids.ts `lazy`: the radio jingles)', () => {
     vi.resetModules();
     vi.doMock('./manifest.ts', async (orig) => {
       const m = await orig<typeof import('./manifest.ts')>();
-      const sfx = { coin: 'sfx/coin.m4a', 'island-broadcast': 'sfx/broadcast.m4a', ...Object.fromEntries(RADIO.map((id) => [id, `sfx/${id}.m4a`])) };
+      const sfx = { coin: 'sfx/coin.m4a', fanfare: 'sfx/fanfare.m4a', ...Object.fromEntries(RADIO.map((id) => [id, `sfx/${id}.m4a`])) };
       return { ...m, audioUrl: (p: string) => `/audio/${p}`, AUDIO: { ...m.AUDIO, sfx } };
     });
   });
@@ -459,11 +459,37 @@ describe('lazy effects (ids.ts `lazy`: the radio jingles)', () => {
     expect(fetched('sfx/radio-morning-2.m4a')).toBe(1);
   });
 
-  it("a jingle with no file of its own plays its `like`'s (the radio's: the broadcast's file)", async () => {
-    const { e } = await unlocked();
+  it("a sound with no file of its own plays its `like`'s: the item-get fanfare the fanfare's file, a radio jingle the chime's placeholder", async () => {
+    const { e, ctx } = await unlocked();
+    await vi.advanceTimersByTimeAsync(1000); // the files and the renderer
+    let before = ctx.sources.length;
+    e.play('get-fanfare');
+    expect((ctx.sources.slice(before).find((s) => s.buffer)?.buffer as AudioBuffer | undefined)?.duration).toBe(1); // the fanfare's file
+    ctx.currentTime = 20; // past the fanfare (jingles never overlap)
+    before = ctx.sources.length;
+    const calls = vi.mocked(fetch).mock.calls.length;
     e.play('radio-noon-6');
     await vi.advanceTimersByTimeAsync(0);
-    expect(fetched('sfx/broadcast.m4a')).toBe(1);
+    expect(vi.mocked(fetch).mock.calls.length).toBe(calls); // nothing to fetch
+    expect((ctx.sources.slice(before).find((s) => s.buffer)?.buffer as AudioBuffer | undefined)?.duration).toBeGreaterThan(1); // the chime's ~1.7 s placeholder
+  });
+
+  it('a file too slow to arrive plays the placeholder at the wait’s end, not nothing (and not the file late)', async () => {
+    const { e, ctx } = await unlocked();
+    await vi.advanceTimersByTimeAsync(1000); // the files and the renderer
+    let arrive!: () => void;
+    vi.mocked(fetch).mockImplementationOnce(() => new Promise((ok) => (arrive = () => ok({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) } as Response))));
+    const before = ctx.sources.length;
+    e.play('radio-morning-4');
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(ctx.sources.slice(before).filter((s) => s.buffer)).toHaveLength(0); // still waiting
+    await vi.advanceTimersByTimeAsync(600);
+    const placeholder = ctx.sources.slice(before).filter((s) => s.buffer);
+    expect(placeholder).toHaveLength(1);
+    expect((placeholder[0].buffer as AudioBuffer).duration).toBeGreaterThan(1); // the chime's
+    arrive();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(ctx.sources.slice(before).filter((s) => s.buffer)).toHaveLength(1);
   });
 
   it('nothing is fetched while effects are off (no context, no play)', async () => {

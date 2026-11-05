@@ -11,10 +11,13 @@ export const EVENT_MUSIC_IDS = [
   'halloween', 'turkey-day', 'happy-new-year', 'new-year-0am', 'new-year-2am', 'new-years-day', 'bee-chase', 'bee-stung',
   'bunny-day', 'toy-day', 'toy-day-snow', 'festivale', 'fireworks-show', 'wedding', 'wedding-party',
   'countdown-2300', 'countdown-2330', 'countdown-2350', 'countdown-2355',
-  // cut-ins (sound.svelte.ts eventJingle): the stretch's loop, Festivale's dance; one-shots
-  'aerobics', 'kimedance', 'kimedance-done', 'turkey-cooking-start', 'turkey-cooking-done', 'happy-birthday'
+  // cut-ins (sound.svelte.ts eventJingle): the stretch's loop; one-shots
+  'aerobics', 'turkey-cooking-start', 'turkey-cooking-done', 'happy-birthday'
 ] as const;
 export type EventMusicId = (typeof EVENT_MUSIC_IDS)[number];
+/** The tracks that cut in over the island's music (sound.svelte.ts eventJingle; the wasps' through waspMusic) rather
+ *  than replace the hour's. */
+export type CutInId = Extract<EventMusicId, 'bee-chase' | 'bee-stung' | 'aerobics' | 'turkey-cooking-start' | 'turkey-cooking-done' | 'happy-birthday'>;
 
 /** An event's track for the moment: `id` loops in place of the hour's; `intro` is a one-shot heard first when the
  *  event has only just begun (the midnight jingle); `alt`: the track to play when `id` has no file (a weather's
