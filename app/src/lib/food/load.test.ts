@@ -54,6 +54,20 @@ describe('static/food', () => {
     }
     expect(bad).toEqual([]);
   });
+
+  it('carries MEXT’s fibre and alcohol (食物繊維総量, アルコール; food-data/ build), alcohol on drinks only', () => {
+    const items = new Map<string, Item>();
+    for (const d of index.datasets) for (const it of (JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Dataset).items) items.set(it.id, it);
+    const of = (id: string) => [items.get(id)?.fib, items.get(id)?.alc];
+    // ごはん, 玄米, ブロッコリー, まこんぶ, 鶏むね: fibre; ビール, 純米酒, ウイスキー: alcohol; 本みりん (a seasoning): none
+    const ids = ['mext:01088', 'mext:01080', 'mext:06263', 'mext:09017', 'mext:11220', 'mext:16006', 'mext:16002', 'mext:16016', 'mext:16025'];
+    const notDrinks = [...items.values()].filter((it) => it.alc !== undefined && it.cat !== '酒').map((it) => it.id);
+    const withFib = (src: string) => [...items.values()].filter((it) => it.id.startsWith(`${src}:`) && typeof it.fib === 'number').length;
+    expect([ids.map(of), notDrinks, withFib('off'), withFib('dishes') > 300, toSnap(items.get('mext:16006')!)]).toEqual([
+      [[1.5, undefined], [3, undefined], [5.1, undefined], [32.1, undefined], [0, undefined], [0, 3.7], [0, 12.3], [0, 33.4], [undefined, undefined]],
+      [], 0, true, { id: 'mext:16006', n: 'ビール', k: 39, p: 0.3, fa: 0, c: 3.1, s: 0, fi: 0, al: 3.7 }
+    ]);
+  });
 });
 
 describe('loadFoodDb', () => {

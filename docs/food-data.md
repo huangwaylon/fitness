@@ -48,12 +48,14 @@ header fields as they are written in the file.
 | `aliases` | optional search terms (readings, variants, Wikidata/Wikipedia names); never equal to `name` |
 | `cat` | one of 主食 麺 丼・定食 主菜 副菜 汁物 寿司 パン 肉 魚介 卵 大豆・豆 野菜 果物 きのこ 海藻 乳製品 菓子・デザート 飲料 酒 調味料 油脂 ナッツ・種 いも コンビニ 外食 その他 |
 | `kcal` `p` `f` `c` `salt` | **per 100 g** (100 ml of a drink counts as 100 g). `kcal` is an int; the others have 1 decimal or are `null` when unknown. `c` = total carbohydrate as on Japanese labels; `salt` = 食塩相当量 |
+| `fib` `alc` | optional, per 100 g, 1 decimal (0–100), **absent when unknown**: `fib` = 食物繊維総量, `alc` = アルコール (pure alcohol, g). MEXT's own (FIB-, ALC); the recipe sets sum their MEXT ingredients' (as P/F/C: unknown only when every ingredient lacks it); the school lunches sum their 食物繊維 rows. `alc` only on a 酒 (`lib.tidy`: a dish's or a seasoning's みりん, 料理酒 or 奈良漬 mostly cooks off, and would read as drinking). Kurume, Tokyo, JBFD and the products have neither (their sources don't give them; the OFF Japan subset keeps no fibre) |
 | `portions` | optional `[{label, g}]`; the first one is the default. The app always adds a 100 g option |
 | `pop` | optional 1–3, a curated search-ranking boost (from `data_src/popular.json` and `scripts/mext_overrides.txt`) |
 | `jan`, `brand` | packaged products only |
 | `note` | how the value was derived, shown in the picker |
 
-MEXT markers are converted as follows: `Tr`/`(Tr)` → 0, `(N)` → N, `-` → null. Recipe datasets don't ship their ingredient lists.
+MEXT markers are converted as follows: `Tr`/`(Tr)` → 0, `(N)` → N, `-` → null (absent for `fib`/`alc`), a footnote mark
+dropped (還元水あめ's fibre `14.0†`). kcal is MEXT's energy as given: it already holds alcohol's 7 kcal/g. Recipe datasets don't ship their ingredient lists.
 
 **`index.json`**: `{ "version", "datasets": [{ "file", "source", "badge", "secondary", "lazy" }] }`. `version` is
 the first 12 hex digits of the sha256 of every generated file (`jan/` included) in `out/`; in `static/food/`, of the
@@ -99,7 +101,8 @@ dropped, and so are bread spreads (〜クリーム, ソース クラス, チル�
 < 0.6 × kcal (blank cells in the source), or when a row's protein and fat alone exceed its energy (a typo). A blank cell is
 a zero only where the row needs none (`build.py` `blank_null`): salt is null when rows with protein but a blank salt cell
 hold ≥ 20 % of the dish's kcal and the rest adds up to no salt (さわらの西京焼); carbohydrate, when rows whose energy protein
-and fat don't explain leave it blank (いかフライ).
+and fat don't explain leave it blank (いかフライ); fibre, when plant rows (MEXT groups 01, 02, 04–09) with a blank 食物繊維 cell hold
+≥ 20 % of the kcal (Kumagaya leaves meat, milk, oil and seasoning rows blank: those are none), or no row has one.
 
 **Open Food Facts plausibility** (`scripts/off.py` `plausible`, all per 100 g):
 - kJ entered as kcal (≈ 4.184 × (4P+9F+4C)) → divide by 4.184.

@@ -42,11 +42,12 @@ def make_xlsx(rows, sheet='表全体'):
 
 MEXT_FIXTURE = {
     2: {'A': '食品群', 'B': '食品番号', 'D': '食品名', 'J': '備考'},
-    12: {'E': 'REFUSE', 'F': 'ENERC_KCAL', 'G': 'PROT-', 'H': 'FAT-', 'I': 'CHOCDF-', 'K': 'NACL_EQ'},
+    12: {'E': 'REFUSE', 'F': 'ENERC_KCAL', 'G': 'PROT-', 'H': 'FAT-', 'I': 'CHOCDF-', 'K': 'NACL_EQ', 'L': 'FIB-', 'M': 'ALC'},
     13: {'A': '01', 'B': '01088', 'D': 'こめ［水稲めし］精白米', 'E': '0', 'F': '156', 'G': '2.5', 'H': '(0.3)',
-         'I': '37.1', 'K': 'Tr', 'J': '別名：めし'},
-    14: {'A': '17', 'B': '17012', 'D': '食塩', 'E': '0', 'F': '0', 'G': '-', 'H': '-', 'I': '(0)', 'K': '99.5'},
+         'I': '37.1', 'K': 'Tr', 'J': '別名：めし', 'L': '1.5', 'M': '-'},
+    14: {'A': '17', 'B': '17012', 'D': '食塩', 'E': '0', 'F': '0', 'G': '-', 'H': '-', 'I': '(0)', 'K': '99.5', 'L': '(0)', 'M': '-'},
     15: {'A': '01', 'B': '0108', 'D': 'not a food id'},
+    16: {'A': '16', 'B': '16006', 'D': 'ビール 淡色', 'E': '0', 'F': '39', 'G': '0.3', 'H': '0', 'I': '3.1', 'K': '0', 'L': '0', 'M': '3.7'},
 }
 FOODS = {'A': {'kcal': 100, 'p': 10.0, 'f': 0.0, 'c': 20.0, 'salt': None},
          'B': {'kcal': 300, 'p': 0.0, 'f': 30.0, 'c': None, 'salt': 2.0}}
@@ -54,7 +55,7 @@ FOODS = {'A': {'kcal': 100, 'p': 10.0, 'f': 0.0, 'c': 20.0, 'salt': None},
 
 class MextReader(unittest.TestCase):
     def test_markers(self):
-        for s, want in (('Tr', 0.0), ('(Tr)', 0.0), ('(1.2)', 1.2), ('-', None), ('', None), (' 3.5 ', 3.5)):
+        for s, want in (('Tr', 0.0), ('(Tr)', 0.0), ('(1.2)', 1.2), ('-', None), ('', None), (' 3.5 ', 3.5), ('14.0†', 14.0)):
             self.assertEqual(lib.mext_num(s), want, s)
         with self.assertRaises(ValueError):   # an unknown marker fails the build instead of becoming None
             lib.mext_num('*')
@@ -63,11 +64,13 @@ class MextReader(unittest.TestCase):
         rows = lib.xlsx_rows(make_xlsx(MEXT_FIXTURE), '表全体')
         self.assertEqual(rows[13][3], 'こめ［水稲めし］精白米')       # furigana skipped
         recs = lib.mext_rows(make_xlsx(MEXT_FIXTURE))
-        self.assertEqual([r['id'] for r in recs], ['01088', '17012'])   # 4-digit id row ignored
+        self.assertEqual([r['id'] for r in recs], ['01088', '17012', '16006'])   # 4-digit id row ignored
         self.assertEqual(recs[0]['note'], '別名：めし')
         foods = lib.mext_foods(recs)
         self.assertEqual(foods['01088'], {'name': 'こめ［水稲めし］精白米', 'kcal': 156.0, 'p': 2.5, 'f': 0.3,
-                                          'c': 37.1, 'salt': 0.0})
+                                          'c': 37.1, 'salt': 0.0, 'fib': 1.5, 'alc': None})
+        # fibre (FIB-, 食物繊維総量) and alcohol (ALC): the beer's alcohol, salt's '(0)' fibre a zero
+        self.assertEqual([foods['16006']['fib'], foods['16006']['alc'], foods['17012']['fib']], [0.0, 3.7, 0.0])
         self.assertIsNone(foods['17012']['p'])
         self.assertEqual(foods['17012']['c'], 0.0)
 
@@ -98,6 +101,21 @@ class Numbers(unittest.TestCase):
         self.assertIsNone(per['salt'])                # every ingredient lacks it -> None
         per, _ = lib.per100([('water', 100)], FOODS)
         self.assertEqual(per['kcal'], 0.0)
+
+    def test_fibre_and_alcohol(self):
+        foods = {'A': dict(FOODS['A'], fib=2.0, alc=None), 'B': dict(FOODS['B'], fib=None, alc=10.0), 'C': dict(FOODS['A'])}
+        per, _ = lib.per100([('A', 100), ('B', 50), ('water', 50)], foods)
+        self.assertEqual([per['fib'], per['alc']], [1.0, 2.5])   # one lacking counts as 0, as the others
+        per, _ = lib.per100([('C', 100)], foods)                  # no fibre or alcohol known at all (_typical.json's)
+        self.assertEqual([per['fib'], per['alc']], [None, None])
+        # an item has them only when known; the five always
+        self.assertEqual(lib.nutrients({'kcal': 39.4, 'p': 0.3, 'f': 0, 'c': 3.14, 'salt': None, 'fib': None, 'alc': 3.66}),
+                         {'kcal': 39, 'p': 0.3, 'f': 0.0, 'c': 3.1, 'salt': None, 'alc': 3.7})
+        self.assertEqual(sorted(lib.nutrients({'kcal': 1, 'p': 1, 'f': 1, 'c': 1, 'salt': 1})), ['c', 'f', 'kcal', 'p', 'salt'])
+        # alcohol only on a drink: a dish's or a seasoning's (みりん, 奈良漬) cooks off or is no drinking
+        drink = lib.tidy({'id': 'x:1', 'name': 'ビール', 'cat': '酒', 'alc': 3.7})
+        dish = lib.tidy({'id': 'x:2', 'name': '肉じゃが', 'cat': '主菜', 'alc': 0.4, 'fib': 1.2})
+        self.assertEqual([drink.get('alc'), dish.get('alc'), dish.get('fib')], [3.7, None, 1.2])
 
     def test_split_portion_and_kana(self):
         self.assertEqual(lib.split_portion('焼き餃子（5個）'), ('焼き餃子', '5個'))
@@ -209,6 +227,19 @@ class LunchBlanks(unittest.TestCase):
         typo = self.tot(self.rows(('47', '14.6', '1.8', '0.6', '0.4')))          # P alone > its energy
         self.assertEqual((typo['p'], typo['f'], typo['c'], typo['salt']), (None, None, None, 0.4))
 
+    def test_blank_fibre(self):
+        def fib(*rs):   # (kcal, 食品ID, 食物繊維)
+            rows = [{'kcal': k, 'p': '1', 'f': '1', 'c': '1', 'salt': '0.1', 'fid': fid, 'fib': f} for k, fid, f in rs]
+            t = {k: sum(lib.fnum(r[k], 0.0) for r in rows) for k in ('kcal', 'p', 'f', 'c', 'salt', 'fib')}
+            build.blank_null(rows, t)
+            return t['fib']
+        self.assertEqual([
+            fib(('100', '11220', ''), ('30', '06263', '2.5')),   # the chicken's blank: none (Kumagaya leaves meat blank)
+            fib(('30', '11220', ''), ('100', '06263', '')),      # the broccoli's blank: unknown
+            fib(('100', '01088', '1.5'), ('5', '06263', '')),    # a small plant row's blank: counted as none
+            fib(('100', '11220', ''), ('20', '17012', '')),      # every cell blank (no column): unknown
+        ], [2.5, None, 1.5, None])
+
 
 class MaffAmounts(unittest.TestCase):
     def test_grams(self):
@@ -310,7 +341,8 @@ class Validation(unittest.TestCase):
     def test_each_rule_one_error(self):
         for bad in (item(cat='肉料理'), item(id='off:1'), item(kcal=1.5), item(kcal=True), item(p='1'),
                     item(portions=[{'label': '', 'g': 1}]), item(portions=[]), item(aliases=['米']), item(pop=4),
-                    item(ingredients=[]), item(name=''), item(jan='123')):
+                    item(ingredients=[]), item(name=''), item(jan='123'), item(fib=100.5), item(fib=None), item(alc='1', cat='酒'),
+                    item(alc=1.0)):   # fibre and alcohol: absent when unknown, 0-100; alcohol on a drink only
             self.assertEqual(len(lib.validate(self.doc(bad))), 1, bad)
         self.assertEqual(len(lib.validate(self.doc(item(), item()))), 1)          # duplicate id
         self.assertIn('missing url', lib.validate(dict(self.doc(item()), url='')))
