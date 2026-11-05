@@ -8,6 +8,7 @@ import { isSoundId, type SoundId } from './ids.ts';
 import { WEATHERS, hourKey, type MusicFiles, type MusicTrack, type Weather } from './hourly.ts';
 import { AMBIENT_IDS, type AmbientId } from './ambient.ts';
 import { EVENT_MUSIC_IDS, type EventMusicId } from './events.ts';
+import { PLACE_IDS, type PlaceId } from './places.ts';
 
 /** One of K.K.'s songs (`kk[]`, in NH's song-list order): NH's official titles, a one-shot file under audio/kk/. */
 export interface KKTrack extends MusicTrack {
@@ -24,6 +25,8 @@ interface AudioManifest {
   ambient: Partial<Record<AmbientId, string>>;
   /** Event music (events.ts): loops like the hours, the midnight jingle and the sting one-shots. */
   events: Partial<Record<EventMusicId, MusicTrack>>;
+  /** A building's room's music (places.ts): loops like the hours, played indoors in place of the island's. */
+  places: Partial<Record<PlaceId, MusicTrack>>;
   kk: KKTrack[];
 }
 
@@ -81,13 +84,19 @@ export function parseManifest(json: unknown): { manifest: AudioManifest; problem
     if (EVENT_MUSIC_IDS.includes(k as EventMusicId) && t) events[k as EventMusicId] = t;
     else problems.push(`events.${k}`);
   }
+  const places: AudioManifest['places'] = {};
+  for (const [k, v] of Object.entries(obj(root.places))) {
+    const t = track(v);
+    if (PLACE_IDS.includes(k as PlaceId) && t) places[k as PlaceId] = t;
+    else problems.push(`places.${k}`);
+  }
   const kk: KKTrack[] = [];
   (Array.isArray(root.kk) ? root.kk : []).forEach((v: unknown, i) => {
     const o = obj(v), t = track(v);
     if (t && str(o.id) && str(o.ja) && str(o.en) && !kk.some((k) => k.id === o.id)) kk.push({ id: o.id, ja: o.ja, en: o.en, ...t, start: 0 });
     else problems.push(`kk.${i}`);
   });
-  return { manifest: { sfx, opening: opening && { ...opening, start: 0 }, music, ambient, events, kk }, problems };
+  return { manifest: { sfx, opening: opening && { ...opening, start: 0 }, music, ambient, events, places, kk }, problems };
 }
 
 export const AUDIO = parseManifest(raw).manifest;

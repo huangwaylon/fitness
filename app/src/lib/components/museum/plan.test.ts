@@ -1,6 +1,6 @@
 // The museum's plan (museum/plan.ts): its rooms, its walls and its walk.
 import { describe, expect, test } from 'vitest';
-import { BUG_WING, ENTRANCE, FISH_WING, HALL, OPENING, WALLS, nearestOpen, navOf, roomAt, walkPath, walkable, wallEnds, wingAt, type Pt } from './plan.ts';
+import { BUG_WING, ENTRANCE, FISH_WING, HALL, OPENING, WALLS, nearestOpen, navOf, roomAt, walkPath, walkable, wallEnds, wingAt, wingHeld, type Pt } from './plan.ts';
 
 const g = navOf();
 const len = (from: Pt, pts: Pt[]) => pts.reduce((a, p, i) => a + Math.hypot(p[0] - (i ? pts[i - 1][0] : from[0]), p[1] - (i ? pts[i - 1][1] : from[1])), 0);
@@ -14,6 +14,15 @@ describe('the museum’s rooms', () => {
     expect(wingAt(HALL.x0)).toBe('hall');
     expect(BUG_WING.x1).toBe(HALL.x0);
     expect(FISH_WING.x0).toBe(HALL.x1);
+  });
+  test('the wing held at a doorway (its music): the room one came from until well through the opening', () => {
+    expect(wingHeld('hall', HALL.x0 - 5)).toBe('hall'); // in the doorway: still the hall
+    expect(wingHeld('bug', HALL.x0 - 5)).toBe('bug'); // the same spot coming back: still the wing
+    expect(wingHeld('hall', HALL.x0 - 12)).toBe('bug');
+    expect(wingHeld('bug', HALL.x0 - 1)).toBe('bug');
+    expect(wingHeld('bug', 0)).toBe('hall');
+    expect(wingHeld('hall', HALL.x1 + 12)).toBe('fish');
+    expect(wingHeld('fish', HALL.x1 + 5)).toBe('fish');
   });
   test('every wall stands on a room’s edge, and the hall’s side walls leave the openings', () => {
     for (const w of WALLS) expect(w.h).toBeGreaterThan(40);

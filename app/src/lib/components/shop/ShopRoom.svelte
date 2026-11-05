@@ -35,6 +35,7 @@
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import { doorReady } from '#lib/ui-state/doorTransition.ts';
   import { cue } from '#lib/sound/cues.ts';
+  import { setPlace } from '#lib/sound/sound.svelte.ts';
   import { formatNum, i18n, t } from '#lib/i18n/index.ts';
   import '#lib/i18n/catch.ts';
   import { loadTentNames } from '#lib/i18n/tent.ts';
@@ -163,6 +164,9 @@
     const m = week.model;
     if (m) islandLayout.rows(m.state.layout);
   });
+  // NH's タヌキ商店 music while in here (sound/places.ts; no hours or upgrade here, so never its closing or big shop's),
+  // the island's again out of the door
+  onMount(() => (setPlace('shop'), () => setPlace(null)));
   onMount(() => {
     if (!shop.pocket.size) say = { k: 'empty' };
     requestAnimationFrame(() => doorReady());

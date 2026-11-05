@@ -56,6 +56,7 @@ describe('audio manifest (static/audio/manifest.json)', () => {
       ...Object.values(AUDIO.music).flatMap((h) => Object.values(h ?? {}).map((t) => t!.file)),
       ...(AUDIO.opening ? [AUDIO.opening.file] : []),
       ...Object.values(AUDIO.events).map((t) => t!.file),
+      ...Object.values(AUDIO.places).map((t) => t!.file),
       ...AUDIO.kk.map((k) => k.file)
     ] as string[];
     const missing = paths.filter((p) => !existsSync(join(STATIC, p)));
@@ -118,12 +119,13 @@ describe('audio manifest (static/audio/manifest.json)', () => {
       },
       ambient: { waves: 'ambient/waves.m4a' },
       events: { halloween: { file: 'music/h.m4a', start: 2, end: 80, gain: -1 } },
+      places: {},
       kk: [{ id: 'kk-a', ja: 'あ', en: 'A', file: 'kk/a.m4a', start: 0 }]
     });
     expect(problems).toEqual(['sfx.nope', 'sfx.pop', 'music.sunny.24', 'music.fog', 'ambient.traffic', 'opening', 'events.easter', 'kk.1', 'kk.2']);
   });
   it('an empty or broken manifest is just silence', () => {
-    expect(parseManifest(null)).toEqual({ manifest: { sfx: {}, opening: null, music: {}, ambient: {}, events: {}, kk: [] }, problems: [] });
+    expect(parseManifest(null)).toEqual({ manifest: { sfx: {}, opening: null, music: {}, ambient: {}, events: {}, places: {}, kk: [] }, problems: [] });
   });
 });
 

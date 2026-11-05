@@ -5,6 +5,7 @@
 //   setSound({ music: true })                             // from a tap (the settings app)
 //   sound.weather = 'rain'; sound.heavy = true                // set by the island's weather (island/weatherNow.svelte.ts)
 //   waspMusic('chase') · playKK('kk-march')               // cut-ins over the island's music (events.ts, kk.ts)
+//   setPlace('shop') · setPlace(null)                     // a building's room plays its own track (places.ts)
 import { untrack } from 'svelte';
 import type { SoundId } from './ids.ts';
 import { Engine } from './engine.ts';
@@ -14,6 +15,7 @@ import { AUDIO, hasMusic } from './manifest.ts';
 import { trackAt, type MusicTrack, type Weather } from './hourly.ts';
 import { eventMusicAt, type EventMusicId } from './events.ts';
 import { kkTracks } from './kk.ts';
+import { pickMusic, placeTrack, type PlaceId } from './places.ts';
 import { HourClock } from './session.ts';
 import { ambientFor } from './ambient.ts';
 import { localKV } from '#lib/sync/storage.ts';
@@ -21,9 +23,9 @@ import { dayKey, jst, now } from '#lib/time/clock.ts';
 import { i18n, t } from '#lib/i18n/index.ts';
 import { asset } from '$app/paths';
 
-/** What the music is: the opening theme, the hour's track, an event's (events.ts, the wasps' too), a K.K. song, or
- *  nothing. */
-export type Playing = 'opening' | 'hour' | EventMusicId | 'kk' | null;
+/** What the music is: the opening theme, the hour's track, an event's (events.ts, the wasps' too), a room's
+ *  (places.ts), a K.K. song, or nothing. */
+export type Playing = 'opening' | 'hour' | EventMusicId | PlaceId | 'kk' | null;
 
 export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: boolean; playing: Playing; kk: string | null }>({
   settings: { ...DEFAULT_SOUND },
@@ -53,6 +55,9 @@ let cutInTimer: ReturnType<typeof setTimeout> | undefined;
 const CHASE_MAX_MS = 6000;
 /** The days whose midnight jingle was heard (events.ts intro): never twice. */
 const introHeard = new Set<string>();
+
+/** The building's room the player is in (places.ts; null: outdoors, or a room that keeps the island's music). */
+let place: PlaceId | null = null;
 
 let engine: Engine | null = null;
 /** The opening theme is playing (or about to): the hourly track waits for it to end. */
@@ -132,6 +137,15 @@ function musicAt(d: Date): Want | null {
   return tr && { key: tr.key, track: tr, playing: 'hour', loop: true };
 }
 
+/** The room's track (null: outdoors, or the room has no file, so the island's music goes on). */
+function placeMusic(): Want | null {
+  const tr = placeTrack(place, AUDIO.places);
+  return tr && { key: `place/${tr.id}`, track: tr, playing: tr.id, loop: true };
+}
+
+/** What plays under a cut-in: the room's track indoors, else the island's (places.ts pickMusic). */
+const baseAt = (d: Date): Want | null => pickMusic({ place: placeMusic(), island: musicAt(d) });
+
 /** What the settings' note and the Now Playing tile say about the music (null: none). */
 export function playingLabel(playing: Playing, hour: number, kk: string | null = sound.kk): string | null {
   if (playing === 'opening') return t('sound.opening');
@@ -155,7 +169,7 @@ function startCutIn(want: Want & { kk?: string }, maxMs?: number): boolean {
   const s = sound.settings;
   if (!musicOn(s) || s.volume <= 0 || !engine?.ctx || document.hidden) return false;
   clearTimeout(cutInTimer);
-  const base = musicAt(now());
+  const base = baseAt(now());
   cutIn = want;
   sound.kk = want.kk ?? null;
   // keep the interrupted track (coming back starts at once) and, during the chase, the sting that may follow
@@ -183,7 +197,10 @@ function syncMusic(): void {
   e.muffle(coveredBy() && !opening);
   const d = now();
   const { hour, month } = jst(d);
-  const want: Want | null = opening && AUDIO.opening ? { key: 'opening', track: AUDIO.opening, playing: 'opening', loop: false } : cutIn ?? musicAt(d);
+  const island = musicAt(d), inside = placeMusic();
+  const want = pickMusic<Want>({ opening: opening && AUDIO.opening ? { key: 'opening', track: AUDIO.opening, playing: 'opening', loop: false } : null, cutIn, place: inside, island });
+  // indoors, the island's file stays (leaving starts it at once); a cut-in pins its own
+  if (!cutIn) e.pin(want === inside && island ? [island.track.file] : []);
   sound.playing = want?.playing ?? null;
   void e.setTrack(want?.key ?? null, want?.track ?? null, want?.loop, want?.cut);
   nowPlaying(playingLabel(sound.playing, hour));
@@ -243,7 +260,7 @@ function prefetchFirst(): void {
   if (silent(s)) return;
   const e = eng();
   e.warm();
-  const tr = musicOn(s) && !e.ctx ? musicAt(now()) : null;
+  const tr = musicOn(s) && !e.ctx ? baseAt(now()) : null;
   if (tr) e.prefetch(tr.track.file);
 }
 
@@ -253,7 +270,7 @@ const hourClock = new HourClock(
   now,
   (at) => {
     const s = sound.settings;
-    const tr = musicAt(at);
+    const tr = baseAt(at);
     if (tr && s.music && s.volume > 0 && engine?.ctx && !document.hidden) engine.prefetch(tr.track.file);
   },
   syncMusic
@@ -298,7 +315,7 @@ export function waspMusic(phase: 'nest' | 'chase' | 'caught' | 'stung'): void {
     // caught or stung: the chase ends either way
     endCutIn();
     if (phase === 'stung' && stung && startCutIn({ key: 'event/bee-stung', track: stung, playing: 'bee-stung', loop: false, cut: true })) return;
-    const base = musicAt(now());
+    const base = baseAt(now());
     if (base && engine?.ctx) void engine.setTrack(base.key, base.track, base.loop, true);
     syncMusic();
   }
@@ -317,6 +334,21 @@ export function stopKK(): void {
   if (!cutIn?.kk) return;
   endCutIn();
   syncMusic();
+}
+
+/** The player is in a building's room (places.ts PlaceId), or back out (null): the room's track replaces the island's
+ *  with the hour's crossfade, and leaving hands back the same way. A room without a file keeps the island's music.
+ *  Only a value: nothing is created or fetched while ミュージック is off. */
+export function setPlace(id: PlaceId | null): void {
+  if (place === id) return;
+  place = id;
+  syncMusic();
+}
+
+/** Fetch a room's track ahead (its door tapped: the door's black covers the fetch), when ミュージック can sound. */
+export function prefetchPlace(id: PlaceId): void {
+  const tr = placeTrack(id, AUDIO.places);
+  if (tr && musicOn(sound.settings) && sound.settings.volume > 0 && engine?.ctx && !document.hidden) engine.prefetch(tr.file);
 }
 
 /** Once, in the root layout. `muffled`: a sheet, the phone or the harvest is up (the music goes soft and dull under

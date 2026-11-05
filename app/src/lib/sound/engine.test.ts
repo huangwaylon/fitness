@@ -303,3 +303,30 @@ describe('ambience', () => {
     expect(loops.every((s) => s.stopped === 'now')).toBe(true);
   });
 });
+
+describe('a room’s music (places.ts)', () => {
+  it('crossfades in over the hour’s and back out; the hour’s file stays while pinned, the room’s is let go', async () => {
+    const { e, decks } = await unlocked();
+    const ROOM: MusicTrack = { file: 'places/shop.m4a', start: 0 };
+    void e.setTrack('sunny/10', HOUR);
+    await settle();
+    const hourDeck = decks.find((d) => !d.paused)!;
+    const hourSrc = hourDeck.src;
+    e.pin([HOUR.file]); // indoors: the island's track kept (sound.svelte.ts syncMusic)
+    void e.setTrack('place/shop', ROOM);
+    await settle();
+    const roomDeck = decks.find((d) => d !== hourDeck)!;
+    expect([e.track, roomDeck.paused]).toEqual(['place/shop', false]);
+    const roomSrc = roomDeck.src;
+    await vi.advanceTimersByTimeAsync(4000);
+    expect(hourDeck.paused).toBe(true); // faded out, then paused
+    expect(URL.revokeObjectURL).not.toHaveBeenCalled();
+    const fetches = vi.mocked(fetch).mock.calls.length;
+    e.pin([]);
+    void e.setTrack('sunny/10', HOUR); // out of the door
+    await settle();
+    expect(vi.mocked(fetch).mock.calls.length).toBe(fetches); // from memory: no wait on the network
+    expect([e.track, hourDeck.src, hourDeck.paused]).toEqual(['sunny/10', hourSrc, false]);
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith(roomSrc);
+  });
+});
