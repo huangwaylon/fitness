@@ -636,10 +636,12 @@
     say(t('visitor.kk-slider'), t('chat.sp.kk-slider.which'), target, { colour, choices: [...two.map((s) => ({ label: titleOf(s), pick: () => void perform(s, colour) })), ...more] });
   }
 
-  /** A tap on the scene (client px): true when the visitor took it. A tap elsewhere on the island now and then
-   *  draws a glance that way. */
+  /** A tap on the scene (client px): true when the visitor took it. `body`: only a tap on its figure itself (what's
+   *  exactly under the finger wins: SceneTaps asks this first, then the small things' own boxes, then its reach: a
+   *  finger's slack round the figure and its spot). A tap elsewhere on the island now and then draws a glance that
+   *  way. */
   let lastGlance = 0;
-  export function tap(px: number, py: number): boolean {
+  export function tap(px: number, py: number, body = false): boolean {
     const id = shown, a = art();
     if (!id || !a || !spot || phase === 'leave' || !enabled()) return false;
     const pad = 8; // a finger's slack around the figure (px)
@@ -656,7 +658,9 @@
     };
     // on screen: in view, its feet clear of the horizon (a speck sunk behind it is out of reach)
     const seen = (x: number, z: number) => w.inView(x, z, 20) && w.screenAt(x, z).sy > w.view.horizon + 24;
-    const onFigure = seen(now[0], now[1]) && inside(a.getBoundingClientRect());
+    const fig = a.getBoundingClientRect();
+    if (body && !(seen(now[0], now[1]) && px >= fig.left && px <= fig.right && py >= fig.top && py <= fig.bottom)) return false;
+    const onFigure = seen(now[0], now[1]) && inside(fig);
     const onSpot = seen(spot.x, spot.z) && inside(box(spot.x, spot.z));
     if (!onFigure && !onSpot) {
       const at = w.worldAtClient(px, py);

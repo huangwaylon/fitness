@@ -1053,7 +1053,9 @@ stars](#shooting-stars)); the campfire is poked where it is (its logs shift, fiv
 crackle: `crackle`, synthesized).
 
 **Tap targets** (`island/hitbox.ts`, `e2e/hits.spec.ts`): everything tappable answers on its whole visible body,
-base included, at least 44 × 44px about its middle; in front wins. A tree is its leaves (Scenery's `.hit`, the canopy
+base included, at least 44 × 44px about its middle; in front wins. What's exactly under the finger wins over a
+character's loose reach: a visitor's figure answers first, then the small things' own boxes (a weed, a find, a present),
+and only then the visitor's reach (a finger's slack round it, its spot: SceneTaps, 2026-11-05). A tree is its leaves (Scenery's `.hit`, the canopy
 button) and its trunk down to a little below its foot (`.hit-trunk`, a goal tree's `.trunk-btn`; ≥ 44px wide on
 screen: `--inv`); a building (the campsite, a home, the museum, the shop) its model's silhouette as the camera sees it
 now (camera.svelte.ts `body`: the hull of its model's outermost points, `things.ts` outline; a house built of parts,
