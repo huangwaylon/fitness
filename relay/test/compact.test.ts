@@ -255,7 +255,8 @@ describe('the record’s compaction', () => {
     console.log('a synthetic year', JSON.stringify(res));
     expect(res.after.metrics).toBeLessThan(res.before.metrics * 0.2);
     expect(runs).toBeLessThanOrEqual(Math.ceil((res.before.metrics - res.after.metrics) / COMPACT_MAX) + 1);
-  });
+    // (a year's rows through SQLite: ~2 s here, over 5 s on a CI runner)
+  }, 30_000);
 
   it('runs on the cron’s 04:15 Tokyo tick only', () => {
     expect(isCompactTick(Date.parse('2026-11-04T19:15:00.000Z'))).toBe(true);
