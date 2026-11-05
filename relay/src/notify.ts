@@ -32,6 +32,15 @@ export async function notifySecret(keys: Keys): Promise<string | null> {
 /** A request's signature: HMAC-SHA256(key = secret, "<t>.<body>"), hex. */
 export const notifySig = (secret: string, t: string, body: string): Promise<string> => hmacHex(secret, `${t}.${body}`);
 
+/** A call, and once more if it fails (a reset between two objects: the room's `changed`); the second's error if both do. */
+export async function twice<T>(f: () => Promise<T>): Promise<T> {
+  try {
+    return await f();
+  } catch {
+    return f();
+  }
+}
+
 /** Whether `sig` signs `body` at `t` (ms since the epoch, as text) within the window around `now`. */
 export async function verifyNotify(keys: Keys, t: string | null, sig: string | null, body: string, now: number): Promise<boolean> {
   if (!t || !sig || !/^\d{13}$/.test(t) || !/^[0-9a-f]{64}$/.test(sig)) return false;

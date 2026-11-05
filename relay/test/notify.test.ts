@@ -1,7 +1,7 @@
 import { createHmac } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { parseNotice } from '../../app/src/lib/contract/live-protocol.ts';
-import { NOTIFY_LABEL, NOTIFY_WINDOW_MS, notifySecret, notifySig, verifyNotify } from '../src/notify.ts';
+import { NOTIFY_LABEL, NOTIFY_WINDOW_MS, notifySecret, notifySig, twice, verifyNotify } from '../src/notify.ts';
 
 const KEY_A = 'a1'.repeat(16);
 const KEY_B = 'b2'.repeat(16);
@@ -53,5 +53,15 @@ describe('a signed notify', () => {
     }
     expect(parseNotice('nope')).toBeNull();
     expect(parseNotice(JSON.stringify({ ...JSON.parse(body), pad: 'x'.repeat(300) }))).toBeNull();
+  });
+});
+
+describe('twice', () => {
+  it('tries a failed call once more, then gives up with its error', async () => {
+    let n = 0;
+    expect(await twice(async () => (++n === 1 ? Promise.reject(new Error('reset')) : 'ok'))).toBe('ok');
+    expect(n).toBe(2);
+    n = 0;
+    await expect(twice(async () => (++n, Promise.reject(new Error(`no ${n}`))))).rejects.toThrow('no 2');
   });
 });

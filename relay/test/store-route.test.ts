@@ -102,7 +102,8 @@ describe('/admin', () => {
     const ok = await adminRoute(await signed(body), () => room, () => NOW);
     expect(await ok.json()).toEqual({ ok: true, metrics: 1, events: 0, uploads: 0, skipped: 0, counts: { metrics: 1, events: 0, ids: 0, uploads: 0 } });
     expect(await (await adminRoute(await signed(body), () => room, () => NOW)).json()).toMatchObject({ metrics: 0 }); // again: nothing new
-    expect(told).toEqual([]); // a load tells no phone (a restore starts a new epoch instead)
+    // a load that added rows tells the phones (once: the second added nothing)
+    expect(told).toEqual([{ what: 'ingest', who: 'A', at: '2026-11-01T00:00:00.000Z', rev: 'e1' }]);
     expect((await adminRoute(new Request('https://relay.example/admin', { method: 'POST', body }), () => room, () => NOW)).status).toBe(401);
     expect((await adminRoute(await signed(body, NOW - 10 * 60_000), () => room, () => NOW)).status).toBe(401);
     const s = await signed(body);

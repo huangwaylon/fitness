@@ -86,6 +86,22 @@ describe('ingest', () => {
   });
 });
 
+describe('a new epoch', () => {
+  it('tells the phones: a `changed` with the new rev (each refetches everything)', () => {
+    // 2026-11-05 review: `rev` (and a restore's) told nobody: a phone open on the island kept its cache till its next poll
+    a('event', { id: 'p1', type: 'pref', data: { key: 'locale', value: 'en' } });
+    notices = [];
+    expect(store.bumpRev()).toBe('e2');
+    expect(notices).toEqual([{ what: 'ingest', who: 'A', at: '2026-11-02T03:00:00.000Z', rev: 'e2' }]);
+    // an empty record: the time now
+    db = memSql();
+    store = make();
+    notices = [];
+    store.bumpRev();
+    expect(notices).toEqual([{ what: 'ingest', who: 'A', at: new Date(now).toISOString(), rev: 'e2' }]);
+  });
+});
+
 describe('the ingest audit', () => {
   it('keeps 60 days: an ingest lets older audit rows go', () => {
     // 2026-11-05 review: the `uploads` table was never pruned (~50 rows a day, each up to ~2.3 KB)

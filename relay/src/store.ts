@@ -133,11 +133,18 @@ export class StoreCore {
     return this.meta('rev') ?? 'e1';
   }
 
-  /** Start a new epoch: every phone drops its cache and fetches everything on its next snapshot. */
+  /** Start a new epoch: every phone drops its cache and fetches everything, at once when it is open (the notice). */
   bumpRev(): string {
     const n = Number(/^e(\d+)$/.exec(this.rev())?.[1] ?? 0) + 1;
     this.setMeta('rev', `e${n}`);
+    this.tellAll();
     return `e${n}`;
+  }
+
+  /** The admin's change (a new epoch, a load) to the open phones: `changed` at the newest `at` (`ingest`, never
+   *  skipped as a phone's own event; a phone refetches when the rev or the `at` is new to it). */
+  private tellAll(): void {
+    this.io.notify({ what: 'ingest', who: 'A', at: this.newestAt() ?? new Date(this.io.now()).toISOString(), rev: this.rev() });
   }
 
   /** The next `at`: strictly after every one handed out before. */
@@ -229,7 +236,9 @@ export class StoreCore {
   load(o: Rec): Record<string, unknown> {
     const rows = o.rows;
     if (!isRec(rows) || !(['metrics', 'events', 'uploads'] as const).every((k) => rows[k] === undefined || Array.isArray(rows[k]))) return { ok: false, error: 'bad_request' };
-    return { ok: true, ...this.import(rows as ImportRows), counts: this.counts() };
+    const r = this.import(rows as ImportRows);
+    if (r.metrics + r.events) this.tellAll();
+    return { ok: true, ...r, counts: this.counts() };
   }
 
   private route(body: unknown, bytes: number): Reply {

@@ -13,6 +13,8 @@ import { keyOwner } from './auth.ts';
 import { relaySink } from './logRoute.ts';
 import type { RelayEvent } from './log.ts';
 import { isToken } from '../../app/src/lib/contract/log.ts';
+import { twice } from './notify.ts';
+import { errName } from './log.ts';
 
 export class IslandStore extends DurableObject<Env> implements StoreRoom {
   private core: StoreCore;
@@ -40,9 +42,17 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     relaySink(() => this.logObj(), (p) => this.ctx.waitUntil(p), Date.now)(evs);
   }
 
+  /** The record changed: the room passes `changed` to the open phones (after the commit, off the reply's path; once
+   *  more, on a fresh stub, if the first call fails: a phone's push is otherwise only caught up by its next poll). */
   private tellRoom(n: Notice): void {
-    const room = this.env.ROOM.get(this.env.ROOM.idFromName('island'));
-    this.ctx.waitUntil(Promise.resolve(room.notify(n)).then(() => undefined, (e) => console.warn('notify the room', e)));
+    const room = () => this.env.ROOM.get(this.env.ROOM.idFromName('island'));
+    this.ctx.waitUntil(twice(() => Promise.resolve(room().notify(n))).then(() => undefined, (e) => console.warn('notify the room', errName(e))));
+  }
+
+  /** RPC from the room's alarm after a restore (index.ts restoring): this is the restored record's first session, so
+   *  a new epoch (every phone drops its cache and refetches; bumpRev tells the open ones). */
+  restored(): { ok: true; rev: string } {
+    return { ok: true, rev: this.core.bumpRev() };
   }
 
   api(text: string): string {
@@ -99,8 +109,11 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       case 'restore': {
         if (typeof o.bookmark !== 'string') return { ok: false, error: 'bad_request' };
         await storage.onNextSessionRestoreBookmark(o.bookmark);
+        // the room calls `restored` a few seconds after the restart (a new epoch: every phone refetches); its own
+        // storage, since this object's is about to be the bookmark's
+        const told = await this.env.ROOM.get(this.env.ROOM.idFromName('island')).restoring().then(() => true, (e) => (console.warn('restoring', errName(e)), false));
         setTimeout(() => this.ctx.abort('restoring a bookmark'), 200); // after the reply
-        return { ok: true, restoring: o.bookmark, note: 'after it restarts, run {op:"rev"} so the phones refetch' };
+        return { ok: true, restoring: o.bookmark, note: told ? 'a new epoch follows by itself in a few seconds (counts shows the rev)' : 'the room was not told: after it restarts, run {op:"rev"} so the phones refetch' };
       }
       case 'rev':
         return { ok: true, rev: this.core.bumpRev() };

@@ -53,6 +53,13 @@ const HELD = 'held';
 const GONE = 'gone';
 /** The real weather (weather.ts WxState): the timeline and the failures since the last good fetch. */
 const WX = 'wx';
+/** A restore of the record under way (storeObject.ts restore): when to tell the restored record to start a new epoch,
+ *  and how many tries so far. */
+const RESTORE = 'restore';
+/** The record restarts on its bookmark ~200 ms after its reply: the room calls it this long after. */
+const RESTORE_AFTER_MS = 5_000;
+const RESTORE_RETRY_MS = 30_000;
+const RESTORE_TRIES = 10;
 export class IslandRoom extends DurableObject<Env> {
   private core!: RoomCore<WebSocket>;
   private wx: WxState = WX_EMPTY;
@@ -97,8 +104,22 @@ export class IslandRoom extends DurableObject<Env> {
     const { 0: client, 1: server } = new WebSocketPair();
     this.ctx.acceptWebSocket(server);
     this.core.open(server);
-    if ((await this.ctx.storage.getAlarm()) === null) await this.ctx.storage.setAlarm(Date.now() + HELLO_MS);
+    await this.alarmBy(Date.now() + HELLO_MS);
     return new Response(null, { status: 101, webSocket: client });
+  }
+
+  /** The alarm at `at` at the latest (one alarm: the hello sweep's and a restore's share it). */
+  private async alarmBy(at: number): Promise<void> {
+    const cur = await this.ctx.storage.getAlarm();
+    if (cur === null || at < cur) await this.ctx.storage.setAlarm(at);
+  }
+
+  /** RPC from the record: it is restoring a bookmark. A few seconds on, the alarm tells the restored record to start
+   *  a new epoch (`restored`), so every phone refetches; kept in the room's storage (the record's is the bookmark's). */
+  async restoring(): Promise<void> {
+    const due = Date.now() + RESTORE_AFTER_MS;
+    await this.ctx.storage.put(RESTORE, { due, tries: 0 });
+    await this.alarmBy(due);
   }
 
   webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void {
@@ -178,7 +199,24 @@ export class IslandRoom extends DurableObject<Env> {
   }
 
   async alarm(): Promise<void> {
-    const next = this.core.sweep();
+    let next = this.core.sweep();
+    const r = await this.ctx.storage.get<{ due: number; tries: number }>(RESTORE);
+    if (r) {
+      let due: number | null = r.due;
+      if (r.due <= Date.now()) {
+        try {
+          const { rev } = await this.env.STORE.get(this.env.STORE.idFromName('record')).restored();
+          console.log('restored', rev);
+          due = null;
+        } catch (e) {
+          console.warn('restored', errName(e));
+          due = r.tries + 1 < RESTORE_TRIES ? Date.now() + RESTORE_RETRY_MS : null;
+        }
+        if (due === null) await this.ctx.storage.delete(RESTORE);
+        else await this.ctx.storage.put(RESTORE, { due, tries: r.tries + 1 });
+      }
+      if (due !== null) next = next === null ? due : Math.min(next, due);
+    }
     if (next !== null) await this.ctx.storage.setAlarm(next);
   }
 }
