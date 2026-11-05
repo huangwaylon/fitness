@@ -373,7 +373,7 @@ way to turn its own house).
 ## Phone editing (phase 5)
 
 `components/layoutEdit/IslandEdit.svelte`: the island's もようがえ on the phone, the tent's way (TentEdit's tray, bar
-and buttons). The tray's tabs (き, かんぼく, はな, いわ, あかり, かぐ, はし・さか) over every placeable kind (the ten
+and buttons). The tray's tabs (き, かんぼく, はな, いわ, あかり, かぐ, ジム (the gym: design.md "Decorating"), はし・さか) over every placeable kind (the ten
 decorations of island/decor.ts are layout kinds now too: いしどうろう … いちりんしゃ, cards of their renders in 3D until
 they have models); a tap on one puts it down as a ghost on the free tile nearest the view's middle, its footprint on
 the ground green or red, the bar saying why (the checks' reason); a finger on it, or on any placed thing (picked up,

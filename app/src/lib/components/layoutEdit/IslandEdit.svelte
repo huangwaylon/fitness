@@ -1,7 +1,7 @@
 <script lang="ts">
   // The island's もようがえ on the phone (docs/island-layout.md "Phone editing"): NH's outdoor arranging, one-handed, on
   // the island's layout (store/layout.svelte.ts), the tent's way (tent/TentEdit.svelte). The tray at the foot: its tabs
-  // (き, かんぼく, はな, いわ, あかり, かぐ, はし・さか) over each kind's icon; a tap puts that kind down as a ghost on the
+  // (き, かんぼく, はな, いわ, あかり, かぐ, ジム, はし・さか) over each kind's icon; a tap puts that kind down as a ghost on the
   // free tile nearest the middle of the view, its footprint on the ground green or red (and why, in the bar); a finger
   // on it, or on a placed thing (it's picked up), drags it a tile at a time; a tap on the ground moves it there; ↻ turns
   // it; ✓ puts it down; 🗑 しまう takes a placed one away (the island's one-offs, the goal trees, the homes never); ✕
@@ -43,7 +43,7 @@
   let { stage, relay, me, ondone }: Props = $props();
 
   type Facing = Obj['f'];
-  const TABS = ['tree', 'bush', 'flower', 'rock', 'light', 'furniture', 'structure', 'building'] as const;
+  const TABS = ['tree', 'bush', 'flower', 'rock', 'light', 'furniture', 'gym', 'structure', 'building'] as const;
   /** A kind's or an issue's name in this phone's language. */
   const say = (x: { ja: string; en: string }) => (i18n.locale === 'ja' ? x.ja : x.en);
   let tab = $state('tree');
@@ -368,7 +368,9 @@
 </div>
 
 <style>
-  .ie { position: absolute; inset: 0; z-index: 5; pointer-events: none; font: 700 var(--fs-s, 14px)/1.2 var(--font-ui, system-ui); }
+  /* (over every world node: their z-index is their depth, geom.ts zIndexAt, up to ~8M; at 5 a tree's tap area near the
+     camera took a tap meant for the tray's icon over it) */
+  .ie { position: absolute; inset: 0; z-index: 100000000; pointer-events: none; font: 700 var(--fs-s, 14px)/1.2 var(--font-ui, system-ui); }
   .over { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
   .over polygon { fill: rgba(110, 208, 122, 0.35); stroke: #6ed07a; stroke-width: 2.5; stroke-linejoin: round; }
   .over polygon.bad { fill: rgba(255, 90, 70, 0.35); stroke: #ff5a46; }

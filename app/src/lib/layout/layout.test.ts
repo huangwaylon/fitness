@@ -108,6 +108,12 @@ describe('the default layout (today island on the grid)', () => {
     expect(l.tile(8, 55).tier).toBe(1);
     expect(l.tile(8, 38).tier).toBe(0);
   });
+  test('a kind this phone doesn\'t know (a newer phone\'s piece, the gym\'s on an older app) is kept but ignored: no block, no issue', () => {
+    const l = layoutOf([as('A', { sc: 'o', id: 'onew1', at: T0, k: 'hover-board', x: 6, z: 12, f: 1 })]);
+    expect(l.objects.get('onew1')?.k).toBe('hover-board');
+    expect(validate(l).filter((i) => i.ids.includes('onew1'))).toEqual([]);
+    expect(walkable(navOf(l), ...objMid(l, l.objects.get('onew1')!))).toBe(true);
+  });
   test('every kind on the catalogue has a footprint and a height', () => {
     for (const d of KIND_LIST) {
       expect(d.w).toBeGreaterThan(0);

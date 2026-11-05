@@ -61,7 +61,8 @@ Seats and beds (`villager3d/seats3d.ts`, `seats3d.json`; `npm run seat-anchors`,
 piece a villager sits or lies on (the tent's and the homes' furniture with NH's `interact`, and the island's park
 bench, log bench, log stools and hammock) has its seat or bed found from its converted model (the rays down of
 room-surfaces-page.js; scripts/room-surfaces.ts seatOf, bedOf), an OVERRIDES table for the odd ones (the hammocks
-sway): a seat's top, its middles across (a sofa's or a bench's two), its back edge, front edge and back's height; a
+sway; the gym's weight bench pressed on: `use`), the gym's pieces used in place by hand (USE: a `u` point, the feet's or the
+hips', its facing and where one gets on from; the bike, the ball, the treadmill, the bag, the pull-up bar): a seat's top, its middles across (a sofa's or a bench's two), its back edge, front edge and back's height; a
 bed's mattress top, the axis it's lain along, the pillow's end, a double bed's two places. `anchorsOf(shape, place)`
 turns one into Anchors where the piece stands; `v.sitAt(anchor)` (villager3d.ts) turns, steps onto it and sits down
 (SIT_MS, 420 ms; an arc over a seat's back when it comes from behind, as at the island's benches, whose seat spots are
@@ -132,7 +133,7 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 ## The inventory
 
 <!-- assets:start -->
-541 keys, 423 models, 5.33 MB in all.
+589 keys, 435 models, 5.50 MB in all.
 
 | kind | keys | models | KB | loads |
 | --- | --- | --- | --- | --- |
@@ -145,7 +146,7 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 | fish | 83 | 83 | 891.5 | lazily (fish) |
 | deco | 48 | 39 | 895.5 | with the island |
 | event | 6 | 6 | 115.2 | lazily (event) |
-| decor | 40 | 10 | 198.7 | with the island |
+| decor | 88 | 22 | 372.8 | with the island |
 | flower | 42 | 42 | 551.5 | with the island |
 | fruit | 4 | 4 | 47.9 | with the island |
 | fx | 15 | 15 | 45.8 | with the island |
@@ -614,6 +615,10 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 
 | key | model | scale | anchor | foot | hit | KB | notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| decor/barbell-0 | decor/barbell | 3 | feet | 2×1 | 29 | 12 |  |
+| decor/barbell-1 | decor/barbell | 3 | feet | 2×1 | 29 | 12 | yaw 90° |
+| decor/barbell-2 | decor/barbell | 3 | feet | 2×1 | 29 | 12 | yaw 180° |
+| decor/barbell-3 | decor/barbell | 3 | feet | 2×1 | 29 | 12 | yaw 270° |
 | decor/birdbath-0 | decor/birdbath | 3 | feet | 1×1 | 12 | 14.2 |  |
 | decor/birdbath-1 | decor/birdbath | 3 | feet | 1×1 | 12 | 14.2 | yaw 90° |
 | decor/birdbath-2 | decor/birdbath | 3 | feet | 1×1 | 12 | 14.2 | yaw 180° |
@@ -622,6 +627,22 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 | decor/brick-well-1 | decor/brick-well | 3 | feet | 2×2 | 22 | 23.6 | yaw 90° |
 | decor/brick-well-2 | decor/brick-well | 3 | feet | 2×2 | 22 | 23.6 | yaw 180° |
 | decor/brick-well-3 | decor/brick-well | 3 | feet | 2×2 | 22 | 23.6 | yaw 270° |
+| decor/climbing-wall-0 | decor/climbing-wall | 3 | feet | 2×1 | 30 | 12.7 |  |
+| decor/climbing-wall-1 | decor/climbing-wall | 3 | feet | 2×1 | 30 | 12.7 | yaw 90° |
+| decor/climbing-wall-2 | decor/climbing-wall | 3 | feet | 2×1 | 30 | 12.7 | yaw 180° |
+| decor/climbing-wall-3 | decor/climbing-wall | 3 | feet | 2×1 | 30 | 12.7 | yaw 270° |
+| decor/digital-scale-0 | decor/digital-scale | 3 | feet | 1×1 | 12 | 8.7 |  |
+| decor/digital-scale-1 | decor/digital-scale | 3 | feet | 1×1 | 12 | 8.7 | yaw 90° |
+| decor/digital-scale-2 | decor/digital-scale | 3 | feet | 1×1 | 12 | 8.7 | yaw 180° |
+| decor/digital-scale-3 | decor/digital-scale | 3 | feet | 1×1 | 12 | 8.7 | yaw 270° |
+| decor/exercise-ball-0 | decor/exercise-ball | 3 | feet | 1×1 | 12 | 6.1 |  |
+| decor/exercise-ball-1 | decor/exercise-ball | 3 | feet | 1×1 | 12 | 6.1 | yaw 90° |
+| decor/exercise-ball-2 | decor/exercise-ball | 3 | feet | 1×1 | 12 | 6.1 | yaw 180° |
+| decor/exercise-ball-3 | decor/exercise-ball | 3 | feet | 1×1 | 12 | 6.1 | yaw 270° |
+| decor/exercise-bike-0 | decor/exercise-bike | 3 | feet | 1×1 | 14 | 16.5 | lit |
+| decor/exercise-bike-1 | decor/exercise-bike | 3 | feet | 1×1 | 14 | 16.5 | lit, yaw 90° |
+| decor/exercise-bike-2 | decor/exercise-bike | 3 | feet | 1×1 | 14 | 16.5 | lit, yaw 180° |
+| decor/exercise-bike-3 | decor/exercise-bike | 3 | feet | 1×1 | 14 | 16.5 | lit, yaw 270° |
 | decor/garden-wagon-0 | decor/garden-wagon | 3 | feet | 2×1 | 29 | 45.4 |  |
 | decor/garden-wagon-1 | decor/garden-wagon | 3 | feet | 2×1 | 29 | 45.4 | yaw 90° |
 | decor/garden-wagon-2 | decor/garden-wagon | 3 | feet | 2×1 | 29 | 45.4 | yaw 180° |
@@ -634,10 +655,22 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 | decor/iron-table-1 | decor/iron-table | 3 | feet | 1×1 | 14 | 13.4 | yaw 90° |
 | decor/iron-table-2 | decor/iron-table | 3 | feet | 1×1 | 14 | 13.4 | yaw 180° |
 | decor/iron-table-3 | decor/iron-table | 3 | feet | 1×1 | 14 | 13.4 | yaw 270° |
+| decor/kettlebell-0 | decor/kettlebell | 3 | feet | 1×1 | 12 | 8.8 |  |
+| decor/kettlebell-1 | decor/kettlebell | 3 | feet | 1×1 | 12 | 8.8 | yaw 90° |
+| decor/kettlebell-2 | decor/kettlebell | 3 | feet | 1×1 | 12 | 8.8 | yaw 180° |
+| decor/kettlebell-3 | decor/kettlebell | 3 | feet | 1×1 | 12 | 8.8 | yaw 270° |
 | decor/monstera-0 | decor/monstera | 3 | feet | 1×1 | 15 | 20.6 |  |
 | decor/monstera-1 | decor/monstera | 3 | feet | 1×1 | 15 | 20.6 | yaw 90° |
 | decor/monstera-2 | decor/monstera | 3 | feet | 1×1 | 15 | 20.6 | yaw 180° |
 | decor/monstera-3 | decor/monstera | 3 | feet | 1×1 | 15 | 20.6 | yaw 270° |
+| decor/protein-shaker-0 | decor/protein-shaker | 3 | feet | 1×1 | 12 | 17.3 |  |
+| decor/protein-shaker-1 | decor/protein-shaker | 3 | feet | 1×1 | 12 | 17.3 | yaw 90° |
+| decor/protein-shaker-2 | decor/protein-shaker | 3 | feet | 1×1 | 12 | 17.3 | yaw 180° |
+| decor/protein-shaker-3 | decor/protein-shaker | 3 | feet | 1×1 | 12 | 17.3 | yaw 270° |
+| decor/punching-bag-0 | decor/punching-bag | 3 | feet | 1×1 | 14 | 14.5 |  |
+| decor/punching-bag-1 | decor/punching-bag | 3 | feet | 1×1 | 14 | 14.5 | yaw 90° |
+| decor/punching-bag-2 | decor/punching-bag | 3 | feet | 1×1 | 14 | 14.5 | yaw 180° |
+| decor/punching-bag-3 | decor/punching-bag | 3 | feet | 1×1 | 14 | 14.5 | yaw 270° |
 | decor/signpost-0 | decor/signpost | 3 | feet | 1×1 | 13 | 13 |  |
 | decor/signpost-1 | decor/signpost | 3 | feet | 1×1 | 13 | 13 | yaw 90° |
 | decor/signpost-2 | decor/signpost | 3 | feet | 1×1 | 13 | 13 | yaw 180° |
@@ -650,6 +683,22 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 | decor/tanuki-1 | decor/tanuki | 3 | feet | 1×1 | 13 | 17.7 | yaw 90° |
 | decor/tanuki-2 | decor/tanuki | 3 | feet | 1×1 | 13 | 17.7 | yaw 180° |
 | decor/tanuki-3 | decor/tanuki | 3 | feet | 1×1 | 13 | 17.7 | yaw 270° |
+| decor/treadmill-0 | decor/treadmill | 3 | feet | 2×1 | 25 | 20.5 | lit |
+| decor/treadmill-1 | decor/treadmill | 3 | feet | 2×1 | 25 | 20.5 | lit, yaw 90° |
+| decor/treadmill-2 | decor/treadmill | 3 | feet | 2×1 | 25 | 20.5 | lit, yaw 180° |
+| decor/treadmill-3 | decor/treadmill | 3 | feet | 2×1 | 25 | 20.5 | lit, yaw 270° |
+| decor/upright-locker-0 | decor/upright-locker | 3 | feet | 1×1 | 12 | 13.9 |  |
+| decor/upright-locker-1 | decor/upright-locker | 3 | feet | 1×1 | 12 | 13.9 | yaw 90° |
+| decor/upright-locker-2 | decor/upright-locker | 3 | feet | 1×1 | 12 | 13.9 | yaw 180° |
+| decor/upright-locker-3 | decor/upright-locker | 3 | feet | 1×1 | 12 | 13.9 | yaw 270° |
+| decor/water-cooler-0 | decor/water-cooler | 3 | feet | 1×1 | 12 | 21.6 |  |
+| decor/water-cooler-1 | decor/water-cooler | 3 | feet | 1×1 | 12 | 21.6 | yaw 90° |
+| decor/water-cooler-2 | decor/water-cooler | 3 | feet | 1×1 | 12 | 21.6 | yaw 180° |
+| decor/water-cooler-3 | decor/water-cooler | 3 | feet | 1×1 | 12 | 21.6 | yaw 270° |
+| decor/weight-bench-0 | decor/weight-bench | 3 | feet | 2×1 | 27 | 21.5 |  |
+| decor/weight-bench-1 | decor/weight-bench | 3 | feet | 2×1 | 27 | 21.5 | yaw 90° |
+| decor/weight-bench-2 | decor/weight-bench | 3 | feet | 2×1 | 27 | 21.5 | yaw 180° |
+| decor/weight-bench-3 | decor/weight-bench | 3 | feet | 2×1 | 27 | 21.5 | yaw 270° |
 | decor/wheelbarrow-0 | decor/wheelbarrow | 3 | feet | 1×1 | 15 | 17.2 |  |
 | decor/wheelbarrow-1 | decor/wheelbarrow | 3 | feet | 1×1 | 15 | 17.2 | yaw 90° |
 | decor/wheelbarrow-2 | decor/wheelbarrow | 3 | feet | 1×1 | 15 | 17.2 | yaw 180° |

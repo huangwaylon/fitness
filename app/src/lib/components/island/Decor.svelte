@@ -2,13 +2,14 @@
   // The island's decorations (docs/design.md "Decorating"): the layout's objects of the decorations' kinds, each an
   // upright world node at its feet (its tap area over the 3D island's model, world3d/objects.ts), in the one depth
   // order; the walk has them already (layout/nav.ts). Outside the もようがえ (IslandEdit) a tap jiggles it where it
-  // stands (my villager turns to it, no walk). The partner's change, just made, puffs where it lands.
+  // stands (my villager turns to it, no walk), but for a seat or a piece of the gym one uses (`sit`: IslandScene
+  // sitOn, island/sitting.ts): my villager walks up to it and on. The partner's change, just made, puffs where it lands.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { art } from '#lib/art.ts';
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { decorArt, decorH, type DecorItem, type Facing } from './decor.ts';
+  import { decorArt, decorH, DECOR_KINDS, type Facing } from './decor.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import PLACES from './models.json';
   import { onMount } from 'svelte';
@@ -17,30 +18,31 @@
   import { layout } from '#lib/store/layout.svelte.ts';
   import { objMid } from '#lib/layout/model.ts';
   import { castMe } from '#lib/ui-state/cast.ts';
-  import { DECOR_ITEMS } from './decor.ts';
 
   interface Props {
     /** The もようがえ is on (IslandEdit's): a tap does nothing here. */
     editing?: boolean;
+    /** A tap on a seat or a gym piece (its id): true when my villager went to it (IslandScene sitOn). */
+    sit?: (id: string) => boolean;
   }
-  let { editing = false }: Props = $props();
+  let { editing = false, sit }: Props = $props();
   const w = useWorld();
 
   // The layout's objects of the decorations' kinds (the old もようがえ's moved in as `m-<id>`, the phone's
-  // もようがえ's new ones).
-  const KINDS: ReadonlySet<string> = new Set(DECOR_ITEMS);
-  const items = $derived.by((): readonly { id: string; item: DecorItem; x: number; z: number; f: Facing }[] => {
+  // もようがえ's new ones, the gym's).
+  const KINDS: ReadonlySet<string> = new Set(DECOR_KINDS);
+  const items = $derived.by((): readonly { id: string; item: string; x: number; z: number; f: Facing }[] => {
     const l = site.layout;
     if (!l) return [];
     return [...l.objects.values()].filter((o) => KINDS.has(o.k)).map((o) => {
       const [x, z] = objMid(l, o);
-      return { id: o.id, item: o.k as DecorItem, x: Math.round(x), z: Math.round(z), f: o.f as Facing };
+      return { id: o.id, item: o.k, x: Math.round(x), z: Math.round(z), f: o.f as Facing };
     });
   });
   const P = PLACES as unknown as Record<string, { ax: number; ay: number; mu?: [number, number] }>;
   /** A render stands on its feet point (models.json), its height decorH; its width the art's, else the model's box
    *  (models.json mu: the turned looks have no 2D art, only the 3D island draws them). */
-  function look(item: DecorItem, f: Facing) {
+  function look(item: string, f: Facing) {
     const key = decorArt(item, f), h = decorH(item, f), a = art(key), p = P[key];
     const wd = a ? (h * a.w) / a.h : p?.mu ? (h * p.mu[0]) / p.mu[1] : h;
     return { key, h, wd, style: p ? `left:calc(${-p.ax * wd} * var(--u));bottom:calc(${-(1 - p.ay) * h} * var(--u))` : '' };
@@ -51,8 +53,10 @@
     for (const a of el.getAnimations()) if (a.id === 'jiggle') a.cancel();
     el.animate([{ scale: '1 1' }, { scale: '1.08 .9', offset: 0.25 }, { scale: '.96 1.06', offset: 0.55 }, { scale: '1 1' }], { duration: 380, easing: 'ease-out', id: 'jiggle' });
   }
-  function tap(e: MouseEvent, x: number) {
+  function tap(e: MouseEvent, id: string, x: number) {
     if (editing) return;
+    // a seat or a gym piece: walked up to and on (all taken: its boop)
+    if (sit?.(id)) return;
     jiggle(e.currentTarget as Element);
     cue('tick');
     turnTo(x);
@@ -80,7 +84,7 @@
   <div class="spr" data-decor-node={p.id} data-scenery-id={p.id} {@attach w.at({ x: p.x, z: p.z, h: l.h, inv: true })}>
     <button type="button" class="deco" class:editing data-nopan={editing || undefined} data-decor={p.id} data-item={p.item} data-x={p.x} data-z={p.z} data-f={p.f} data-sfx="self" aria-label={t(`decor.item.${p.item}`)}
       style={l.style} style:height="calc({l.h} * var(--u))" style:width="calc({l.wd} * var(--u))"
-      onclick={(e) => tap(e, p.x)}>
+      onclick={(e) => tap(e, p.id, p.x)}>
       <OfficialArt key={l.key} size="calc({l.h} * var(--u))" />
     </button>
   </div>
