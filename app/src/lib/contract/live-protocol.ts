@@ -123,7 +123,11 @@ export type Intent =
   | { kind: 'fish'; ph: FishPhase; id?: string; pt?: Pt; from?: Pt; s?: number }
   /** ききみみ クイズ (docs/kikimimi.md "Sync"), presence only: never kept, acked or replayed, to everyone here. `g` the
    *  game; QuizWire's ops. */
-  | ({ kind: 'quiz' } & QuizWire);
+  | ({ kind: 'quiz' } & QuizWire)
+  /** ききみみ's games, every one (docs/kikimimi-framework.md §4, 2026-11-06): the quiz's successor, the same presence
+   *  only (never kept, acked or replayed, to everyone here); `gm` names the game, which the relay never checks against
+   *  a list. PlayWire's ops. */
+  | ({ kind: 'play' } & PlayWire);
 
 /** A quiz op (docs/kikimimi.md "Sync"): `open` a lobby (the host: `seed` and `lv` make the deck on every phone,
  *  `same` おなじへや: only the host's phone speaks), `join` / `leave` it or the game, `go` the game starts at `at`
@@ -145,6 +149,26 @@ export type QuizLv = 1 | 2 | 3 | 4 | 5;
 export const QUIZ_QS = 8;
 /** @public (kikimimi/) */
 export const QUIZ_MAX_S = 1040;
+
+/** A game op (docs/kikimimi-framework.md §4.1): `g` the game's id, `gm` which game (`quiz`, `ladder`, `tile`...).
+ *  `open` a lobby: `cv` the content version (a phone with another can't join), `seed`, `f` flags (bit 0 おなじへや,
+ *  bit 1 たいせん, bit 2 reserved), `o` the game's options (≤ 4 ints 0-255), `u` a unit, `ids` a shared review deck's
+ *  item ids (≤ 8). `join` (`tr` the player's tier), `leave`, `end`; `go` at `at` with the players `pl` (A 1, B 2, G 4);
+ *  `a` my answer to round `i` (`k` a choice 0-255, or 1-12 tiles 0-63; `rp` replays, `s` my running total); `skip` the
+ *  host's position (round `i` 0-32 starts at `at`; 32 at most: the results); `ev` reserved (a buzz-in, a synced ▶︎).
+ *  @public (kikimimi/) */
+export type PlayWire =
+  | { g: string; gm: string; op: 'open'; cv: string; seed: number; f: number; o: number[]; u?: string; ids?: number[] }
+  | { g: string; gm: string; op: 'join'; tr?: number }
+  | { g: string; gm: string; op: 'leave' | 'end' }
+  | { g: string; gm: string; op: 'go'; at: number; pl: number }
+  | { g: string; gm: string; op: 'a'; i: number; k: number | number[]; rp: number; s: number }
+  | { g: string; gm: string; op: 'skip'; i: number; at: number }
+  | { g: string; gm: string; op: 'ev'; i: number; e: number; x?: number };
+/** A game's most rounds (`a`'s and `ev`'s `i` 0-31, `skip`'s 0-32) and its most points (`s`). @public (kikimimi/) */
+export const PLAY_ROUNDS = 32;
+/** @public (kikimimi/) */
+export const PLAY_MAX_S = 9999;
 
 /** A decor op on the wire: the island's decorations (no scope, contract/decor.ts), a home's room (`sc` t, u, v,
  *  contract/tent.ts) or the island's layout (`sc` o, c, r, h, contract/layout.ts); checked here again (the Worker
@@ -480,6 +504,8 @@ function intentOf(o: Obj): Intent | null {
       };
     case 'quiz':
       return quizOf(o);
+    case 'play':
+      return playOf(o);
     case 'say': {
       const text = cleanSay(o.text);
       if (o.sc !== undefined && !SAY_SCOPES.includes(o.sc as SayScope)) return null;
@@ -509,6 +535,43 @@ function quizOf(o: Obj): Intent | null {
       return within(o.i, [0, QUIZ_QS]) && isTime(o.at) ? { kind: 'quiz', g, op: 'skip', i: o.i as number, at: o.at } : null;
     default:
       return { kind: 'quiz', g, op: o.op as 'join' | 'leave' | 'end' };
+  }
+}
+
+const PLAY_GM = /^[a-z][a-z0-9]{1,7}$/;
+const PLAY_CV = /^[0-9a-f]{6}$/;
+const PLAY_U = /^[a-z0-9-]{1,12}$/;
+const PLAY_OPS: readonly unknown[] = ['open', 'join', 'leave', 'go', 'a', 'skip', 'end', 'ev'];
+const ints = (x: unknown, lo: number, hi: number, min: number, max: number): x is number[] =>
+  Array.isArray(x) && x.length >= min && x.length <= max && x.every((n) => within(n, [lo, hi]));
+/** A game op's fields (known ones only, by its op), or null (docs/kikimimi-framework.md §4.1). `gm` is a shape only:
+ *  the relay doesn't know the games. */
+function playOf(o: Obj): Intent | null {
+  if (typeof o.g !== 'string' || !QUIZ_G.test(o.g) || typeof o.gm !== 'string' || !PLAY_GM.test(o.gm) || !PLAY_OPS.includes(o.op)) return null;
+  const { g, gm } = o;
+  switch (o.op) {
+    case 'open':
+      if (typeof o.cv !== 'string' || !PLAY_CV.test(o.cv) || !within(o.seed, [0, 0xffff_ffff]) || !within(o.f, [0, 7]) || !ints(o.o, 0, 255, 0, 4)) return null;
+      if ((o.u !== undefined && (typeof o.u !== 'string' || !PLAY_U.test(o.u))) || (o.ids !== undefined && !ints(o.ids, 0, 99_999, 0, 8))) return null;
+      return {
+        kind: 'play', g, gm, op: 'open', cv: o.cv, seed: o.seed as number, f: o.f as number, o: o.o,
+        ...(o.u !== undefined ? { u: o.u as string } : {}), ...(o.ids !== undefined ? { ids: o.ids as number[] } : {})
+      };
+    case 'join':
+      if (o.tr !== undefined && !within(o.tr, [0, 3])) return null;
+      return { kind: 'play', g, gm, op: 'join', ...(o.tr !== undefined ? { tr: o.tr as number } : {}) };
+    case 'go':
+      return isTime(o.at) && within(o.pl, [1, 7]) ? { kind: 'play', g, gm, op: 'go', at: o.at, pl: o.pl as number } : null;
+    case 'a':
+      if (!within(o.i, [0, PLAY_ROUNDS - 1]) || !(within(o.k, [0, 255]) || ints(o.k, 0, 63, 1, 12)) || !within(o.rp, [0, 99]) || !within(o.s, [0, PLAY_MAX_S])) return null;
+      return { kind: 'play', g, gm, op: 'a', i: o.i as number, k: o.k as number | number[], rp: o.rp as number, s: o.s as number };
+    case 'skip':
+      return within(o.i, [0, PLAY_ROUNDS]) && isTime(o.at) ? { kind: 'play', g, gm, op: 'skip', i: o.i as number, at: o.at } : null;
+    case 'ev':
+      if (!within(o.i, [0, PLAY_ROUNDS - 1]) || !within(o.e, [0, 255]) || (o.x !== undefined && !within(o.x, [0, 65_535]))) return null;
+      return { kind: 'play', g, gm, op: 'ev', i: o.i as number, e: o.e as number, ...(o.x !== undefined ? { x: o.x as number } : {}) };
+    default:
+      return { kind: 'play', g, gm, op: o.op as 'leave' | 'end' };
   }
 }
 
@@ -637,14 +700,14 @@ export const HIGHFIVE_HOLD_MS = 24 * 3600_000;
 
 /**
  * What the guest's phone may send (docs/backend.md#the-guest): a walk, an act, the shared world's claims (a catch, a
- * pick-up, a put: a bug out of a bush, a present landing; a shake), a phrase, a high-five, its line's steps, a quiz's ops, the tent and its own home
+ * pick-up, a put: a bug out of a bush, a present landing; a shake), a phrase, a high-five, its line's steps, a quiz's or a game's ops, the tent and its own home
  * (inside, a drag, their rooms' decor, its home's look). Not the island's decor or its layout, a world op (watering, a
  * wish), an emote or a `saved` nudge: the room drops
  * those from the guest. @public (relay/, sync/live.ts)
  */
 export function guestMaySend(i: Intent): boolean {
   switch (i.kind) {
-    case 'walk': case 'act': case 'catch': case 'pick': case 'put': case 'shake': case 'say': case 'highfive': case 'tent': case 'drag': case 'fish': case 'quiz':
+    case 'walk': case 'act': case 'catch': case 'pick': case 'put': case 'shake': case 'say': case 'highfive': case 'tent': case 'drag': case 'fish': case 'quiz': case 'play':
       return true;
     case 'decor':
       return scopeMaySend('G', i.sc, i.id);

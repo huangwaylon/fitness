@@ -6,8 +6,9 @@
 import { isLocalDate, isPersonId } from './api.ts';
 import type { LocalDate, Who } from '../types.ts';
 
-/** One answer: the item's id, right (1) or not (0), the authored choice picked (−1: timed out), the replays before it
- *  (🔁 and 🐢 alike; 0 is a first listen). */
+/** One answer: the item's id, right (1) or not (0), the authored choice picked (−1: timed out; another game's, up to
+ *  4095: a tile round's bitmask of wrong slots, a memo's per-slot result, docs/kikimimi-framework.md §4.4), the replays
+ *  before it (🔁 and 🐢 alike; 0 is a first listen). */
 type ListenAnswer = [id: string, ok: 0 | 1, pick: number, rp: number];
 
 export interface ListenRow {
@@ -15,7 +16,11 @@ export interface ListenRow {
   d: LocalDate;
   /** The game (the session's id). */
   g: string;
-  /** Its level (the protocol's 1-5). */
+  /** Which game (docs/kikimimi-framework.md §4.4, the protocol's `gm`); absent: the quiz. */
+  gm?: string;
+  /** Its unit, if the game has units. */
+  u?: string;
+  /** Its level (the protocol's 1-5: the stage). */
   lv: number;
   /** The players in it (1-3). */
   n: number;
@@ -35,14 +40,16 @@ const LISTEN_MAX_Q = 12;
 const LISTEN_MAX_MS = 60 * 60 * 1000;
 const GAME_RE = /^[a-z0-9]{4,12}$/;
 const ITEM_RE = /^[a-z0-9][a-z0-9-]{0,31}$/;
-const KEYS = new Set(['d', 'g', 'lv', 'n', 'ms', 'p', 'r']);
+const GM_RE = /^[a-z][a-z0-9]{1,7}$/;
+const UNIT_RE = /^[a-z0-9-]{1,12}$/;
+const KEYS = new Set(['d', 'g', 'gm', 'u', 'lv', 'n', 'ms', 'p', 'r']);
 
 const int = (v: unknown, lo: number, hi: number): v is number => Number.isInteger(v) && (v as number) >= lo && (v as number) <= hi;
 
 function answerOf(a: unknown): ListenAnswer | null {
   if (!Array.isArray(a) || a.length !== 4) return null;
   const [id, ok, pick, rp] = a as unknown[];
-  return typeof id === 'string' && ITEM_RE.test(id) && (ok === 0 || ok === 1) && int(pick, -1, 3) && int(rp, 0, 99) ? [id, ok, pick, rp] : null;
+  return typeof id === 'string' && ITEM_RE.test(id) && (ok === 0 || ok === 1) && int(pick, -1, 4095) && int(rp, 0, 99) ? [id, ok, pick, rp] : null;
 }
 
 /** A row as sent or kept, or null when it isn't one (an unknown key, a field out of range). Its day's bound (not after
@@ -53,6 +60,8 @@ export function listenOf(d: unknown): ListenRow | null {
   if (Object.keys(o).some((k) => !KEYS.has(k))) return null;
   if (!isLocalDate(o.d) || typeof o.g !== 'string' || !GAME_RE.test(o.g) || !int(o.lv, 1, 5) || !int(o.n, 1, 3) || !int(o.ms, 0, LISTEN_MAX_MS)) return null;
   if (o.p !== undefined && o.p !== 1) return null;
+  if (o.gm !== undefined && (typeof o.gm !== 'string' || !GM_RE.test(o.gm))) return null;
+  if (o.u !== undefined && (typeof o.u !== 'string' || !UNIT_RE.test(o.u))) return null;
   if (!Array.isArray(o.r) || o.r.length < 1 || o.r.length > LISTEN_MAX_Q) return null;
   const r: ListenAnswer[] = [];
   for (const a of o.r) {
@@ -60,7 +69,7 @@ export function listenOf(d: unknown): ListenRow | null {
     if (!x) return null;
     r.push(x);
   }
-  return { d: o.d, g: o.g, lv: o.lv, n: o.n, ms: o.ms, ...(o.p === 1 && { p: 1 as const }), r };
+  return { d: o.d, g: o.g, ...(o.gm !== undefined && { gm: o.gm as string }), ...(o.u !== undefined && { u: o.u as string }), lv: o.lv, n: o.n, ms: o.ms, ...(o.p === 1 && { p: 1 as const }), r };
 }
 
 /** A summary as the other member's phone gets it (`r` absent), or null. */

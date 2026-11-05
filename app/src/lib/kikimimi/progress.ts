@@ -43,7 +43,8 @@ export interface OtherGame {
 const BY_ID: ReadonlyMap<string, Item> = new Map(BANK.map((it) => [it.id, it]));
 export const itemOf = (id: string): Item | undefined => BY_ID.get(id);
 
-/** My games (in the order played) and the others' summaries, from the `listen` rows this phone holds. A game id
+/** My games (in the order played) and the others' summaries, from the `listen` rows this phone holds; of mine, only
+ *  the answers whose items this build knows (none: not a game here). A game id
  *  written twice (left mid-way and joined again: the record keeps both rows, append-only) is one game: its answers once
  *  each (the first kept), its minutes summed, the most players, when it was first kept. */
 export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; others: OtherGame[] } {
@@ -60,7 +61,9 @@ export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; oth
       const x = listenOf(data);
       if (!x) continue;
       const p = x.p === 1;
-      const r = x.r.map(([id, ok, pick, rp]): Answer => ({ id, ok: ok === 1, pick, rp, d: x.d, g: x.g, lv: x.lv, p }));
+      // only the items this build knows: a newer game's row (docs/kikimimi-framework.md §4.4) leaves the stats as they were
+      const r = x.r.filter(([id]) => BY_ID.has(id)).map(([id, ok, pick, rp]): Answer => ({ id, ok: ok === 1, pick, rp, d: x.d, g: x.g, lv: x.lv, p }));
+      if (!r.length) continue;
       const was = mine.get(x.g);
       if (!was) mine.set(x.g, { d: x.d, g: x.g, lv: x.lv, n: x.n, ms: x.ms, p, at, r });
       else {
