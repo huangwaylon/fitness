@@ -120,7 +120,27 @@ export type Intent =
    *  tap on another phone doesn't take it). `s` when the line went out (the relay's clock). Presence only, like a
    *  phrase: never kept or replayed; a phone that comes while it's out hears the step again (its angler's phone sends
    *  it when it sees them come), and an angler whose phone goes is no longer fishing. */
-  | { kind: 'fish'; ph: FishPhase; id?: string; pt?: Pt; from?: Pt; s?: number };
+  | { kind: 'fish'; ph: FishPhase; id?: string; pt?: Pt; from?: Pt; s?: number }
+  /** ききみみ クイズ (docs/kikimimi.md "Sync"), presence only: never kept, acked or replayed, to everyone here. `g` the
+   *  game; QuizWire's ops. */
+  | ({ kind: 'quiz' } & QuizWire);
+
+/** A quiz op (docs/kikimimi.md "Sync"): `open` a lobby (the host: `seed` and `lv` make the deck on every phone,
+ *  `same` おなじへや: only the host's phone speaks), `join` / `leave` it or the game, `go` the game starts at `at`
+ *  (the relay's clock), `a` my answer to question `i` (choice `k`, `rp` replayed or slowed, `s` my running total),
+ *  `skip` question `i` starts at `at` (the host: everyone answered, or つぎへ), `end` the host cancelled it. */
+export type QuizWire =
+  | { g: string; op: 'open'; seed: number; lv: QuizLv; same: boolean }
+  | { g: string; op: 'join' | 'leave' | 'end' }
+  | { g: string; op: 'go'; at: number }
+  | { g: string; op: 'a'; i: number; k: number; rp: boolean; s: number }
+  | { g: string; op: 'skip'; i: number; at: number };
+/** A quiz's level. @public (kikimimi/) */
+export type QuizLv = 1 | 2 | 3;
+/** A quiz's questions (`i` 0-7), choices (`k` 0-3) and the most a game scores (8 × (100 + 30)). @public (kikimimi/) */
+export const QUIZ_QS = 8;
+/** @public (kikimimi/) */
+export const QUIZ_MAX_S = 1040;
 
 /** A decor op on the wire: the island's decorations (no scope, contract/decor.ts), a home's room (`sc` t, u, v,
  *  contract/tent.ts) or the island's layout (`sc` o, c, r, h, contract/layout.ts); checked here again (the Worker
@@ -454,6 +474,8 @@ function intentOf(o: Obj): Intent | null {
         kind: 'fish', ph: o.ph, ...(o.id !== undefined ? { id: o.id as string } : {}), ...(o.pt !== undefined ? { pt: o.pt as Pt } : {}),
         ...(o.from !== undefined ? { from: o.from as Pt } : {}), ...(o.s !== undefined ? { s: o.s as number } : {})
       };
+    case 'quiz':
+      return quizOf(o);
     case 'say': {
       const text = cleanSay(o.text);
       if (o.sc !== undefined && !SAY_SCOPES.includes(o.sc as SayScope)) return null;
@@ -461,6 +483,28 @@ function intentOf(o: Obj): Intent | null {
     }
     default:
       return null;
+  }
+}
+
+const QUIZ_G = /^[a-z0-9]{4,8}$/;
+const QUIZ_OPS: readonly unknown[] = ['open', 'join', 'leave', 'go', 'a', 'skip', 'end'];
+/** A quiz op's fields (known ones only, by its op), or null. */
+function quizOf(o: Obj): Intent | null {
+  if (typeof o.g !== 'string' || !QUIZ_G.test(o.g) || !QUIZ_OPS.includes(o.op)) return null;
+  const g = o.g;
+  switch (o.op) {
+    case 'open':
+      if (!Number.isInteger(o.seed) || (o.seed as number) < 0 || (o.seed as number) > 0xffff_ffff || !within(o.lv, [1, 3]) || typeof o.same !== 'boolean') return null;
+      return { kind: 'quiz', g, op: 'open', seed: o.seed as number, lv: o.lv as QuizLv, same: o.same };
+    case 'go':
+      return isTime(o.at) ? { kind: 'quiz', g, op: 'go', at: o.at } : null;
+    case 'a':
+      if (!within(o.i, [0, QUIZ_QS - 1]) || !within(o.k, [0, 3]) || typeof o.rp !== 'boolean' || !within(o.s, [0, QUIZ_MAX_S])) return null;
+      return { kind: 'quiz', g, op: 'a', i: o.i as number, k: o.k as number, rp: o.rp, s: o.s as number };
+    case 'skip':
+      return within(o.i, [0, QUIZ_QS - 1]) && isTime(o.at) ? { kind: 'quiz', g, op: 'skip', i: o.i as number, at: o.at } : null;
+    default:
+      return { kind: 'quiz', g, op: o.op as 'join' | 'leave' | 'end' };
   }
 }
 
@@ -589,14 +633,14 @@ export const HIGHFIVE_HOLD_MS = 24 * 3600_000;
 
 /**
  * What the guest's phone may send (docs/backend.md#the-guest): a walk, an act, the shared world's claims (a catch, a
- * pick-up, a put: a bug out of a bush, a present landing; a shake), a phrase, a high-five, its line's steps, the tent and its own home
+ * pick-up, a put: a bug out of a bush, a present landing; a shake), a phrase, a high-five, its line's steps, a quiz's ops, the tent and its own home
  * (inside, a drag, their rooms' decor, its home's look). Not the island's decor or its layout, a world op (watering, a
  * wish), an emote or a `saved` nudge: the room drops
  * those from the guest. @public (relay/, sync/live.ts)
  */
 export function guestMaySend(i: Intent): boolean {
   switch (i.kind) {
-    case 'walk': case 'act': case 'catch': case 'pick': case 'put': case 'shake': case 'say': case 'highfive': case 'tent': case 'drag': case 'fish':
+    case 'walk': case 'act': case 'catch': case 'pick': case 'put': case 'shake': case 'say': case 'highfive': case 'tent': case 'drag': case 'fish': case 'quiz':
       return true;
     case 'decor':
       return scopeMaySend('G', i.sc, i.id);
