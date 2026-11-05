@@ -29,10 +29,13 @@ class Client {
     // Node's WebSocket (undici) takes headers; a browser sends its page's Origin by itself.
     this.ws = new WebSocket(URL_, { headers: { Origin: origin } } as never);
     this.ws.addEventListener('message', (e) => {
-      const m = JSON.parse(String(e.data)) as Msg;
-      const w = this.waiters.findIndex((x) => x.pred(m));
-      if (w >= 0) this.waiters.splice(w, 1)[0].res(m);
-      else this.inbox.push(m);
+      const msg = JSON.parse(String(e.data)) as Msg;
+      // (a `replay`: the day's changes, each heard in its place)
+      for (const m of msg.kind === 'replay' ? (msg.es as Msg[]) : [msg]) {
+        const w = this.waiters.findIndex((x) => x.pred(m));
+        if (w >= 0) this.waiters.splice(w, 1)[0].res(m);
+        else this.inbox.push(m);
+      }
     });
     this.closed = new Promise((r) => this.ws.addEventListener('close', (e) => r(e.code)));
   }
@@ -42,8 +45,8 @@ class Client {
       this.ws.addEventListener('error', () => rej(new Error('connect failed')));
     });
   }
-  /** The protocol version this client speaks (live-protocol.ts LIVE_VERSIONS). */
-  v = 1;
+  /** The protocol version this client speaks (live-protocol.ts LIVE_VS). */
+  v = 3;
   send(m: object) {
     this.ws.send(JSON.stringify({ v: this.v, ...m }));
   }
@@ -142,7 +145,7 @@ for (let i = 0; i < N; i++) {
 console.log(`     A→B→A relay loop: ${stats(loops)}`);
 check(true, `one-way to the partner ≈ ${(stats(loops.map((x) => x / 2)))}`);
 
-a.send({ kind: 'world', op: 'weed-pulled', id: 'smoke' });
+a.send({ kind: 'world', op: 'watered', id: 'smoke' });
 const w = await b.next((m) => m.kind === 'world');
 check(w.who === 'A' && w.id === 'smoke', 'a world op reaches B stamped from A');
 const since = (w.t as number) - 1;
@@ -202,60 +205,27 @@ for (let i = 0; i < Math.min(N, 10); i++) {
 }
 console.log(`     saved nudge B → A: ${stats(nudges)}`);
 
-// Notifications are gone (2026-11-02): an old app's /push/* gets 410 Gone, readable by the page (CORS).
-for (const p of ['/push/subscribe', '/push/unsubscribe', '/push/goal']) {
-  const res = await fetch(new URL(p, http), { method: 'POST', headers: { Origin: ORIGIN, 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ key: KEY_A }) });
-  check(res.status === 410 && res.headers.get('Access-Control-Allow-Origin') === ORIGIN, `${p} is gone (410), with CORS for the page`);
-}
-
 a2.ws.close(1000);
 b2.ws.close(1000);
 
-// Protocol versions (docs/backend.md#live-relay, "Versions"): a v2 phone beside a v1 one hears the shared kinds in its
-// own version, never the other's walks; a v2 walk reaches a v2 partner; a version nobody speaks is closed 4004.
-const v4 = new Client();
-await v4.open();
-v4.v = 4;
-v4.send({ kind: 'hello', key: KEY_A });
-check((await v4.closed) === 4004, 'a v4 hello is closed with 4004');
-
-const a3 = new Client();
-await a3.open();
-a3.send({ kind: 'hello', key: KEY_A });
-await a3.next((m) => m.kind === 'welcome');
-const b3 = new Client();
-b3.v = 2;
-await b3.open();
-b3.send({ kind: 'hello', key: KEY_B });
-const wb3 = await b3.next((m) => m.kind === 'welcome');
-check(wb3.v === 2 && wb3.peer === true, 'a v2 hello is welcomed in v2');
-a3.send({ kind: 'walk', to: [120, 340] });
-a3.send({ kind: 'emote', emote: 'glee' });
-const e3 = await b3.next((m) => m.kind === 'emote' || m.kind === 'walk');
-check(e3.kind === 'emote' && e3.v === 2 && e3.who === 'A', "v1 → v2: the emote arrives in v2, the stage walk doesn't");
-const a4 = new Client();
-a4.v = 2;
-await a4.open();
-a4.send({ kind: 'hello', key: KEY_A });
-await a4.next((m) => m.kind === 'welcome');
-check((await a3.closed) === 4002, 'a v2 A replaces the v1 one (4002)');
-a4.send({ kind: 'walk', to: [195, 860] });
-const w4 = await b3.next((m) => m.kind === 'walk');
-check(w4.v === 2 && (w4.to as number[])[1] === 860 && w4.who === 'A', 'v2 → v2: a world walk arrives');
-a4.ws.close(1000);
-b3.ws.close(1000);
+// Protocol versions (docs/backend.md#live-relay): v3 only (v1 and v2 went on 2026-11-05); another is closed 4004.
+for (const v of [1, 2, 4]) {
+  const old = new Client();
+  await old.open();
+  old.v = v;
+  old.send({ kind: 'hello', key: KEY_A });
+  check((await old.closed) === 4004, `a v${v} hello is closed with 4004`);
+}
 
 // The shared world (docs/backend.md#shared-world): a claim's first comes through, a second of the same id goes nowhere;
 // the day's world reaches a phone that opens later; one nest per tree per hour. Ids unique per run (the test room keeps
 // its day).
 const run = Date.now().toString(36);
 const sa = new Client();
-sa.v = 2;
 await sa.open();
 sa.send({ kind: 'hello', key: KEY_A });
 await sa.next((m) => m.kind === 'welcome');
 const sb = new Client();
-sb.v = 2;
 await sb.open();
 sb.send({ kind: 'hello', key: KEY_B });
 await sb.next((m) => m.kind === 'welcome');
@@ -288,7 +258,6 @@ const sinceDay = Date.now() - 60_000;
 sb.ws.close(1000);
 await sa.next((m) => m.kind === 'presence' && m.on === false);
 const sb2 = new Client();
-sb2.v = 2;
 await sb2.open();
 const tl = performance.now();
 sb2.send({ kind: 'hello', key: KEY_B, since: sinceDay });
@@ -299,18 +268,10 @@ check(late.who === 'A' && (lastWalk.to as number[])[1] === 900, `a phone opening
 sa.ws.close(1000);
 sb2.ws.close(1000);
 
-// The guest (docs/backend.md#the-guest), when the test copy has a KEY_C: v3 only, both members hear it come, its walk
-// reaches them, what it may not send goes nowhere, a v2 member never hears of it, and the record leaves the からだ out.
+// The guest (docs/backend.md#the-guest), when the test copy has a KEY_C: both members hear it come, its walk reaches
+// them, what it may not send goes nowhere, and the record leaves the からだ out.
 if (KEY_C) {
-  const old = new Client();
-  await old.open();
-  old.v = 2;
-  old.send({ kind: 'hello', key: KEY_C });
-  check((await old.closed) === 4004, 'a guest speaking v2 is closed with 4004');
   const ga = new Client(), gb = new Client(), g = new Client();
-  ga.v = 3;
-  gb.v = 2;
-  g.v = 3;
   await Promise.all([ga.open(), gb.open(), g.open()]);
   ga.send({ kind: 'hello', key: KEY_A });
   await ga.next((m) => m.kind === 'welcome');
@@ -319,13 +280,11 @@ if (KEY_C) {
   g.send({ kind: 'hello', key: KEY_C });
   const wg = await g.next((m) => m.kind === 'welcome');
   check(wg.me === 'G' && wg.peer === true && JSON.stringify(wg.here) === '["A","B"]', 'the guest is welcomed as G with A and B here');
-  check((await ga.next((m) => m.kind === 'presence' && m.who === 'G')).on === true, 'a v3 member hears the guest arrive');
+  check((await ga.next((m) => m.kind === 'presence' && m.who === 'G')).on === true, 'a member hears the guest arrive');
   g.send({ kind: 'walk', to: [100, 900] });
-  check((await ga.next((m) => m.kind === 'walk')).who === 'G', "the guest's walk reaches a v3 member");
+  check((await ga.next((m) => m.kind === 'walk' && m.who === 'G')).who === 'G' && (await gb.next((m) => m.kind === 'walk' && m.who === 'G')).who === 'G', "the guest's walk reaches both members");
   g.send({ kind: 'world', op: 'watered', id: 'fl:1:2', c: Date.now() });
   check((await g.next((m) => m.kind === 'ack')).ok === false, "a world op from the guest is refused");
-  await pause(300);
-  check(!gb.inbox.some((m) => m.who === 'G' || (m.kind === 'presence' && m.who === 'G')), 'a v2 member never hears of the guest');
   const api = (key: string, action: string, extra: object = {}) =>
     fetch(new URL('/api', http), { method: 'POST', headers: { Origin: ORIGIN }, body: JSON.stringify({ key, action, ...extra }) }).then((r) => r.json() as Promise<Record<string, unknown>>);
   const snap = await api(KEY_C, 'snapshot');
@@ -335,8 +294,8 @@ if (KEY_C) {
   for (const c of [ga, gb, g]) c.ws.close(1000);
 }
 
-// The real weather (docs/backend.md "The real weather"): a fixture timeline put in by a signed /admin reaches a v3
-// phone after its welcome and when it changes (never a v2 one), a fetch now from Open-Meteo (JMA's models) gives 30+
+// The real weather (docs/backend.md "The real weather"): a fixture timeline put in by a signed /admin reaches a phone
+// after its welcome and when it changes, a fetch now from Open-Meteo (JMA's models) gives 30+
 // hours, and /health says how old it is.
 {
   const admin = async (body: object): Promise<Record<string, unknown>> => {
@@ -346,27 +305,20 @@ if (KEY_C) {
   };
   const put = await admin({ op: 'wx', s: 'rrohsc', fx: [2] });
   check(put.ok === true && (put.wx as { src?: string })?.src === 'fx', 'an /admin wx fixture is put in');
-  const w3 = new Client(), w2 = new Client();
-  w3.v = 3;
-  w2.v = 2;
-  await Promise.all([w3.open(), w2.open()]);
+  const w3 = new Client();
+  await w3.open();
   w3.send({ kind: 'hello', key: KEY_A });
   await w3.next((m) => m.kind === 'welcome');
   const first = await w3.next((m) => m.kind === 'wx');
-  check(first.s === 'rrohsc' && JSON.stringify(first.fx) === '[2]' && first.src === 'fx', 'a v3 phone gets the fixture sky after its welcome');
-  w2.send({ kind: 'hello', key: KEY_B });
-  await w2.next((m) => m.kind === 'welcome');
+  check(first.s === 'rrohsc' && JSON.stringify(first.fx) === '[2]' && first.src === 'fx', 'a phone gets the fixture sky after its welcome');
   const t0 = performance.now();
   const live = (await admin({ op: 'wx', refresh: true })) as { ok?: boolean; fail?: string; health?: { src: string; hours: number; age: number } };
   check(live.ok === true && live.health?.src === 'om' && live.health.hours >= 30, `a fetch from Open-Meteo now: ${live.health?.hours ?? 0} hours (${(performance.now() - t0).toFixed(0)} ms${live.fail ? `, ${live.fail}` : ''})`);
   const real = await w3.next((m) => m.kind === 'wx' && m.src === 'om');
   check(/^[corhs]{30,48}$/.test(String(real.s)), `the phone hears the real sky when it changes (${String(real.s).slice(0, 12)}…)`);
-  await pause(300);
-  check(!w2.inbox.some((m) => m.kind === 'wx'), 'a v2 phone never hears wx');
   const h = await fetch(new URL('/health', http)).then((r) => r.json() as Promise<{ wx?: { src: string; age: number } }>);
   check(h.wx?.src === 'om' && h.wx.age <= 1, `/health has the weather's age (${h.wx?.age} min)`);
   w3.ws.close(1000);
-  w2.ws.close(1000);
 }
 
 // The log (docs/ops/observability.md): a phone's batch with a forced error, and an /api request with its request id,

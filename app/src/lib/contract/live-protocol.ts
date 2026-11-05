@@ -4,11 +4,9 @@
 // sides. No imports: the Worker bundles this file as is.
 
 export const LIVE_V = 3;
-/** @public (relay/) The versions the relay still speaks: v1 phones (before the rolling-log world) keep their push and presence; only a
- *  walk, whose target changed meaning (stage units in v1, world units in v2), never crosses from v1. v3 is v2 with a
- *  third person (the guest, `G`: docs/backend.md#the-guest): `who` may be `G`, the welcome lists who is `here`, a
- *  high-five names whom it is `to`; a v2 phone hears nothing of the guest. */
-export const LIVE_VS = [1, 2, 3] as const;
+/** @public (relay/) The versions the relay speaks: v3 only (the rolling-log world with the guest, `G`:
+ *  docs/backend.md#the-guest). v1 and v2 went on 2026-11-05, once every phone's hello said v3 (the log's `ws.hello`). */
+export const LIVE_VS = [3] as const;
 /** @public (relay/, sync/live.ts) */
 export type LiveV = (typeof LIVE_VS)[number];
 /** Anything longer is dropped unread by both sides (but a `replay`, the relay's day in one message: REPLAY_BYTES). */
@@ -21,18 +19,15 @@ export const VIA_MAX = 10;
 const WALK_MS_MAX = 60_000;
 
 /**
- * The world's extent (world units): a v2 walk's point lies within it. island/world.ts PLAN lies inside it (its test):
+ * The world's extent (world units): a walk's point lies within it. island/world.ts PLAN lies inside it (its test):
  * the two-section island's plan is shorter than the extent the deployed relay checks, which stays as it was. Here
  * because the Worker bundles this file alone (and sync/ may not import components/).
  */
 export const WORLD_X = [-230, 620] as const;
 export const WORLD_Z = [-460, 2650] as const;
 
-/** Who is on the island: the two members, and the guest (`G`, v3 only). */
+/** Who is on the island: the two members, and the guest (`G`). */
 export type Who = 'A' | 'B' | 'G';
-
-/** Whether a walk of version `a` means the same on a phone of version `b`: v2 and v3 are both world units. @public (relay/) */
-export const sameWalk = (a: LiveV, b: LiveV): boolean => a === b || (a >= 2 && b >= 2);
 
 /** What my villager did with a tap (the partner's villager plays it too: the tool, the motion): `id` names the thing (a
  *  bush, the rock, a shadow being cast at), `pt` where it is (a world point). `wake`: a dozing villager woke (`id` whose,
@@ -42,8 +37,8 @@ export type Act = (typeof ACTS)[number];
 
 /** A change to the shared island (docs/backend.md#shared-world): `watered` a flower (world.ts FLOWERS id), `wished` on a
  *  shooting star (its id the morning the fragment comes), `woke` a sleeping visitor woken for the day (its id:
- *  `gulliver`), the rest kept for older phones. */
-export const WORLD_OPS = ['weed-pulled', 'fruit-collected', 'dug', 'present-opened', 'watered', 'shaken', 'wished', 'woke'] as const;
+ *  `gulliver`). */
+export const WORLD_OPS = ['watered', 'wished', 'woke'] as const;
 export type WorldOp = (typeof WORLD_OPS)[number];
 
 /** How a critter left the island (a `catch`): netted, reeled in, dived for, dug up (a mole cricket), netted out of the
@@ -51,7 +46,7 @@ export type WorldOp = (typeof WORLD_OPS)[number];
 export const HOWS = ['net', 'rod', 'dive', 'dig', 'swarm', 'flee'] as const;
 export type How = (typeof HOWS)[number];
 
-/** A line's step (a `fish`, v3): `cast` it went out (the float landing at `pt`, the line from `from`, at a shadow `id`),
+/** A line's step (a `fish`): `cast` it went out (the float landing at `pt`, the line from `from`, at a shadow `id`),
  *  `nibble` the float dipped, `bite` it went under, `reel` reeled in (a catch is its `catch`), `off` the line came in
  *  without one (it got away, nobody came, the angler left). @public (relay/) */
 export const FISH_PHASES = ['cast', 'nibble', 'bite', 'reel', 'off'] as const;
@@ -68,19 +63,18 @@ export const FACES = ['home', 'in', 'l', 'r'] as const;
 /** @public (relay/, sync/live.ts) */
 export type Face = (typeof FACES)[number];
 
-/** A world point (v2: integer world units within the plan). */
+/** A world point (integer world units within the plan). */
 export type Pt = readonly [number, number];
 
-/** A walk-graph node id or a point: v2 a world point [x, z] (integers within WORLD_X × WORLD_Z), v1 a stage point
- *  (integers, |n| ≤ 100,000). */
+/** A walk-graph node id or a world point [x, z] (integers within WORLD_X × WORLD_Z). */
 export type Target = string | readonly [number, number];
 
 /** The intents a client sends; the relay stamps `who` and `t` and passes them to the other person only. The shared
- *  world's (v2, docs/backend.md#shared-world): `catch` (a critter by its shared id: caught or gone, first wins), `pick`
+ *  world's (docs/backend.md#shared-world): `catch` (a critter by its shared id: caught or gone, first wins), `pick`
  *  (a thing on the ground by its id: picked up, dug, pulled or opened, first wins), `put` (something this phone put in
  *  the world: a present landed, a bug out of a bush), `shake` (a tree's outcome), and `act`'s `pt` (where to play it). */
 export type Intent =
-  /** A villager's walk (v2): to `to`; with `from`, `via` (the waypoints between, ≤ VIA_MAX), `s` (when it set off, the
+  /** A villager's walk: to `to`; with `from`, `via` (the waypoints between, ≤ VIA_MAX), `s` (when it set off, the
    *  relay's clock) and `ms` (how long it takes; 0: put there), the partner's phone plays the very same walk at the same
    *  time (docs/backend.md#shared-world "Villagers"), facing `f` at the end; its end (`s` + `ms`) is when it sits, on a
    *  seat there (of two on one, the earlier keeps it: island/sitting.ts yieldsSeat). */
@@ -92,7 +86,6 @@ export type Intent =
   /** `at`: when the shaker's phone shook it (its own clock), the shake's identity on both phones and in the sheet's
    *  day row, so a shake heard twice (the relay, the row) is one. */
   | { kind: 'shake'; tree: string; drop: Drop; at?: number }
-  | { kind: 'emote'; emote: string }
   | { kind: 'world'; op: WorldOp; id: string }
   /** I just wrote rows to the sheet (an event was acked): the partner refetches the snapshot now. */
   | { kind: 'saved' }
@@ -110,18 +103,18 @@ export type Intent =
    *  model units of the room, set off at `s` on the relay's clock, `ms` long), or where it stands (`to` alone); sitting
    *  or lying on a piece (`seat`: its id, `n`: which of its seats, `lie`), since `s`. */
   | { kind: 'tent'; in: boolean; to?: Pt; from?: Pt; via?: Pt[]; s?: number; ms?: number; seat?: string; n?: number; lie?: true; sc?: 'u' | 'v' | 'm' | 's' }
-  /** A phrase my villager says (v2; docs/design.md "Villager taps"): its speech balloon over it on both phones for a
+  /** A phrase my villager says (docs/design.md "Villager taps"): its speech balloon over it on both phones for a
    *  few seconds. Presence only: never kept, never replayed, never in the sheet. `text` as cleanSay leaves it. `sc`
    *  (additive): where the speaker is, a home's room (`t` the tent, `u` うめ's, `v` the guest's), the museum (`m`; none: the island), so
    *  it shows only to phones in the same place (one place at a time; an older phone, which sends none, is on the island). */
   | { kind: 'say'; text: string; sc?: SayScope }
-  /** A high-five to the partner (v2; docs/design.md "Villager taps"): `at` when it was tapped, the relay's clock (its
+  /** A high-five to the partner (docs/design.md "Villager taps"): `at` when it was tapped, the relay's clock (its
    *  identity on both phones: a second hearing of it is the same one). Numbered (acked, sent again after a reconnect);
    *  relayed live, and while the partner is away the room holds the last one for them (HIGHFIVE_HOLD_MS), handing it
-   *  over at their next hello until their phone says `got`. Never in the sheet. `to` (v3): whose villager was tapped
+   *  over at their next hello until their phone says `got`. Never in the sheet. `to`: whose villager was tapped
    *  (absent: the partner, member to member); the guest's always names it, and a member's to the guest does. */
   | { kind: 'highfive'; at: number; to?: Who }
-  /** My line (v3; docs/design.md "Shared world"): each step as it happens (FISH_PHASES), so every phone shows who is
+  /** My line (docs/design.md "Shared world"): each step as it happens (FISH_PHASES), so every phone shows who is
    *  fishing: my villager's rod, the line from it to the float at `pt` (the bank's `from` when it isn't in reach), the
    *  dips and the plunge, the reel; the shadow it's cast at (`id`, the critter's shared id) is mine while it's out (a
    *  tap on another phone doesn't take it). `s` when the line went out (the relay's clock). Presence only, like a
@@ -140,14 +133,14 @@ type DecorWire =
   | { sc: 'r'; id: 'reset'; at: number }
   | { sc: 'h'; id: string; at: number; m: string; w?: string; r?: string; d?: string; f?: number };
 
-/** Client → relay. `hello` must come first (the person key; `since` = the last world event's `t` it has seen; `batch`:
- *  the day's world as `replay` messages, mine included; `build`: the app's version, `2026-11-05.ef93d8b`, for the log's
+/** Client → relay. `hello` must come first (the person key; `since` = the last world event's `t` it has seen: the day's
+ *  world after it comes as `replay` messages, mine included; `build`: the app's version, `2026-11-05.ef93d8b`, for the log's
  *  `ws.hello`; absent from a phone before 2026-11-05). An intent's `c` (this phone's sequence number, increasing
  *  through the day) asks for an `ack`, and makes a resend of it (after a reconnect) the same intent, not a second. */
 export type ClientMsg =
-  | { v: LiveV; kind: 'hello'; key: string; since?: number; batch?: true; build?: string }
+  | { v: LiveV; kind: 'hello'; key: string; since?: number; build?: string }
   | { v: LiveV; kind: 'ping'; c: number }
-  /** (v2) I heard the partner's high-five `at` (the one the room held for me goes). */
+  /** I heard the partner's high-five `at` (the one the room held for me goes). */
   | { v: LiveV; kind: 'got'; at: number }
   | ({ v: LiveV; c?: number } & Intent);
 
@@ -157,8 +150,8 @@ export type Relayed = Intent & { v: LiveV; who: Who; t: number };
 /** Relay → client. `ack`: my intent `c` reached the room at `t` (`ok` false: refused, a claim already made, a nest too
  *  soon, a walk older than one it holds). `replay`: today's world since the hello's `since`, in the room's order. */
 export type ServerMsg =
-  /** `peer`: a member's partner is here (the guest's: either member). `here` (v3): everyone else who is. `gone`
-   *  (v3, 2026-11): when the room last saw each person's last socket close, on its clock, for those not here (mine:
+  /** `peer`: a member's partner is here (the guest's: either member). `here`: everyone else who is. `gone`
+   *  (2026-11): when the room last saw each person's last socket close, on its clock, for those not here (mine:
    *  my previous one's): one gone quiet inside a room is out of it a while after (store/where.svelte.ts). */
   | { v: LiveV; kind: 'welcome'; me: Who; peer: boolean; t: number; rec?: RecordMark; here?: Who[]; gone?: Gone }
   | { v: LiveV; kind: 'pong'; c: number; t: number }
@@ -166,7 +159,7 @@ export type ServerMsg =
   | { v: LiveV; kind: 'replay'; es: Relayed[]; t: number }
   | { v: LiveV; kind: 'presence'; who: Who; on: boolean; t: number }
   | ({ v: LiveV; kind: 'changed'; t: number } & Notice)
-  /** (v3, 2026-11) Tokyo's real sky by the hour (Wx): after the welcome, and to everyone when it changes. */
+  /** (2026-11) Tokyo's real sky by the hour (Wx): after the welcome, and to everyone when it changes. */
   | ({ v: LiveV; kind: 'wx'; t: number } & Wx)
   | Relayed;
 
@@ -292,14 +285,12 @@ const isTime = (x: unknown): x is number => typeof x === 'number' && Number.isFi
 const isId = (x: unknown): x is string => typeof x === 'string' && ID.test(x);
 const isWhat = (x: unknown): x is string => typeof x === 'string' && WHAT.test(x);
 const isSeq = (x: unknown): x is number => Number.isInteger(x) && (x as number) > 0 && (x as number) < 1e15;
-const isCoord = (x: unknown): x is number => Number.isInteger(x) && Math.abs(x as number) <= 100_000;
 const within = (x: unknown, [lo, hi]: readonly [number, number]): boolean => Number.isInteger(x) && (x as number) >= lo && (x as number) <= hi;
 /** A world point within the plan's extent. @public (tests) */
 export const isWorldPt = (x: unknown): x is readonly [number, number] =>
   Array.isArray(x) && x.length === 2 && within(x[0], WORLD_X) && within(x[1], WORLD_Z);
-/** A walk's target in version `v`: a node id, or a point in that version's units. */
-const isTarget = (x: unknown, v: LiveV): x is Target =>
-  isId(x) || (v === 1 ? Array.isArray(x) && x.length === 2 && isCoord(x[0]) && isCoord(x[1]) : isWorldPt(x));
+/** A walk's target: a node id, or a world point. */
+const isTarget = (x: unknown): x is Target => isId(x) || isWorldPt(x);
 const isWalkMs = (x: unknown): x is number => Number.isInteger(x) && (x as number) >= 0 && (x as number) <= WALK_MS_MAX;
 const isVia = (x: unknown): x is Pt[] => Array.isArray(x) && x.length <= VIA_MAX && x.every(isWorldPt);
 const opt = <T>(o: Obj, k: string, ok: (x: unknown) => x is T): boolean => o[k] === undefined || ok(o[k]);
@@ -354,13 +345,12 @@ export function scopeMaySend(who: Who, sc: string | undefined, id: string): bool
   }
 }
 
-/** The intent in `o` (of version `v`), rebuilt from its known fields only (anything extra is dropped), or null. */
-function intentOf(o: Obj, v: LiveV): Intent | null {
+/** The intent in `o`, rebuilt from its known fields only (anything extra is dropped), or null. */
+function intentOf(o: Obj): Intent | null {
   switch (o.kind) {
     case 'walk': {
-      if (!isTarget(o.to, v) || !opt(o, 'at', isTime)) return null;
-      // the very walk (v2): where from, the way, when and how long
-      if (v === 1 && (o.from !== undefined || o.via !== undefined || o.s !== undefined || o.ms !== undefined || o.f !== undefined)) return null;
+      if (!isTarget(o.to) || !opt(o, 'at', isTime)) return null;
+      // the very walk: where from, the way, when and how long
       if ((o.from !== undefined && !isWorldPt(o.from)) || !opt(o, 's', isTime) || !opt(o, 'ms', isWalkMs) || !opt(o, 'via', isVia) || !opt(o, 'f', oneOf(FACES))) return null;
       return {
         kind: 'walk', to: o.to, ...(o.at !== undefined ? { at: o.at as number } : {}), ...(o.from !== undefined ? { from: o.from as Pt } : {}),
@@ -369,33 +359,28 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
       };
     }
     case 'act':
-      if (!oneOf(ACTS)(o.act) || !opt(o, 'id', isId) || !opt(o, 'at', isTime) || (v === 1 && o.pt !== undefined) || !opt(o, 'pt', isWorldPt)) return null;
+      if (!oneOf(ACTS)(o.act) || !opt(o, 'id', isId) || !opt(o, 'at', isTime) || !opt(o, 'pt', isWorldPt)) return null;
       return { kind: 'act', act: o.act, ...(o.id !== undefined ? { id: o.id as string } : {}), ...(o.at !== undefined ? { at: o.at as number } : {}), ...(o.pt !== undefined ? { pt: o.pt as Pt } : {}) };
     case 'catch':
       if (!isId(o.what) || !opt(o, 'id', isId)) return null;
-      // where and how are the shared world's (v2)
-      if (v === 1 && (o.at !== undefined || o.how !== undefined)) return null;
       if (!opt(o, 'at', isWorldPt) || !opt(o, 'how', oneOf(HOWS))) return null;
       return { kind: 'catch', what: o.what, ...(o.id !== undefined ? { id: o.id as string } : {}), ...(o.at !== undefined ? { at: o.at as Pt } : {}), ...(o.how !== undefined ? { how: o.how as How } : {}) };
     case 'pick':
-      if (v === 1 || !isId(o.id) || !isWhat(o.what) || !opt(o, 'at', isWorldPt)) return null;
+      if (!isId(o.id) || !isWhat(o.what) || !opt(o, 'at', isWorldPt)) return null;
       return { kind: 'pick', id: o.id, what: o.what, ...(o.at !== undefined ? { at: o.at as Pt } : {}) };
     case 'put':
-      if (v === 1 || !isId(o.id) || !isWhat(o.what) || !isWorldPt(o.at)) return null;
+      if (!isId(o.id) || !isWhat(o.what) || !isWorldPt(o.at)) return null;
       return { kind: 'put', id: o.id, what: o.what, at: o.at };
     case 'shake':
-      if (v === 1 || !isId(o.tree) || !oneOf(DROPS)(o.drop) || !opt(o, 'at', isTime)) return null;
+      if (!isId(o.tree) || !oneOf(DROPS)(o.drop) || !opt(o, 'at', isTime)) return null;
       return { kind: 'shake', tree: o.tree, drop: o.drop, ...(o.at !== undefined ? { at: o.at as number } : {}) };
-    case 'emote':
-      if (typeof o.emote !== 'string' || !TOKEN.test(o.emote)) return null;
-      return { kind: 'emote', emote: o.emote };
     case 'world':
       if (!oneOf(WORLD_OPS)(o.op) || !isId(o.id)) return null;
       return { kind: 'world', op: o.op, id: o.id };
     case 'saved':
       return { kind: 'saved' };
     case 'decor': {
-      if (v === 1 || typeof o.id !== 'string' || !isTime(o.at)) return null;
+      if (typeof o.id !== 'string' || !isTime(o.at)) return null;
       const lay = layoutWire(o);
       if (lay !== undefined) return lay && { kind: 'decor', ...lay };
       if (!DECOR_ID.test(o.id) || (o.sc !== undefined && !ROOMS.includes(o.sc))) return null;
@@ -413,7 +398,7 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
       };
     }
     case 'drag': {
-      if (v === 1 || typeof o.id !== 'string' || (o.sc !== undefined && o.sc !== 'u' && o.sc !== 'v' && o.sc !== 'o')) return null;
+      if (typeof o.id !== 'string' || (o.sc !== undefined && o.sc !== 'u' && o.sc !== 'v' && o.sc !== 'o')) return null;
       // an outdoor object's drag is in world units (its middle), a room piece's in the room's model units
       const out = o.sc === 'o';
       if (!(out ? OBJ_ID : DECOR_ID).test(o.id) || !within(o.x, out ? WORLD_X : TENT_U) || !within(o.z, out ? WORLD_Z : TENT_U) || !within(o.f, [0, 3])) return null;
@@ -426,7 +411,7 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
     case 'tent': {
       // (the museum's points over its own extent)
       const isPt = o.sc === 'm' ? isMuseumPt : isTentPt;
-      if (v === 1 || typeof o.in !== 'boolean' || !opt(o, 'to', isPt) || (o.from !== undefined && !isPt(o.from)) || !opt(o, 's', isTime) || !opt(o, 'ms', isWalkMs)) return null;
+      if (typeof o.in !== 'boolean' || !opt(o, 'to', isPt) || (o.from !== undefined && !isPt(o.from)) || !opt(o, 's', isTime) || !opt(o, 'ms', isWalkMs)) return null;
       if (o.via !== undefined && !(Array.isArray(o.via) && o.via.length <= VIA_MAX && o.via.every(isPt))) return null;
       if ((o.seat !== undefined && (typeof o.seat !== 'string' || !DECOR_ID.test(o.seat))) || !opt(o, 'n', (x): x is number => within(x, [0, 7])) || (o.lie !== undefined && o.lie !== true)) return null;
       if (o.sc !== undefined && o.sc !== 'u' && o.sc !== 'v' && o.sc !== 'm' && o.sc !== 's') return null;
@@ -440,16 +425,16 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
       };
     }
     case 'highfive':
-      if (v === 1 || !isTime(o.at) || (o.to !== undefined && (v < 3 || !isWho(o.to)))) return null;
+      if (!isTime(o.at) || (o.to !== undefined && !isWho(o.to))) return null;
       return { kind: 'highfive', at: o.at, ...(o.to !== undefined ? { to: o.to as Who } : {}) };
     case 'fish':
-      if (v < 3 || !oneOf(FISH_PHASES)(o.ph) || !opt(o, 'id', isId) || !opt(o, 'pt', isWorldPt) || (o.from !== undefined && !isWorldPt(o.from)) || !opt(o, 's', isTime)) return null;
+      if (!oneOf(FISH_PHASES)(o.ph) || !opt(o, 'id', isId) || !opt(o, 'pt', isWorldPt) || (o.from !== undefined && !isWorldPt(o.from)) || !opt(o, 's', isTime)) return null;
       return {
         kind: 'fish', ph: o.ph, ...(o.id !== undefined ? { id: o.id as string } : {}), ...(o.pt !== undefined ? { pt: o.pt as Pt } : {}),
         ...(o.from !== undefined ? { from: o.from as Pt } : {}), ...(o.s !== undefined ? { s: o.s as number } : {})
       };
     case 'say': {
-      const text = v === 1 ? null : cleanSay(o.text);
+      const text = cleanSay(o.text);
       if (o.sc !== undefined && !SAY_SCOPES.includes(o.sc as SayScope)) return null;
       return text ? { kind: 'say', text, ...(o.sc !== undefined ? { sc: o.sc as SayScope } : {}) } : null;
     }
@@ -468,22 +453,22 @@ function parseObj(raw: unknown, versions: readonly number[] = [LIVE_V], max = MA
   }
 }
 
-/** A client message as the relay accepts it (any version in LIVE_VS, kept on it), or null (another version, too big,
+/** A client message as the relay accepts it (a version in LIVE_VS, kept on it), or null (another version, too big,
  *  unknown kind or a bad field). */
 export function parseClient(raw: unknown): ClientMsg | null {
   const o = parseObj(raw, LIVE_VS);
   if (!o) return null;
   const v = o.v as LiveV;
   if (o.kind === 'hello') {
-    if (typeof o.key !== 'string' || !KEY.test(o.key) || !opt(o, 'since', isTime) || (o.batch !== undefined && o.batch !== true)) return null;
+    if (typeof o.key !== 'string' || !KEY.test(o.key) || !opt(o, 'since', isTime)) return null;
     // (a build that isn't one is left out, never the hello refused)
     const build = typeof o.build === 'string' && BUILD.test(o.build) ? o.build : undefined;
-    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}), ...(o.batch ? { batch: true as const } : {}), ...(build ? { build } : {}) };
+    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}), ...(build ? { build } : {}) };
   }
   if (o.kind === 'ping') return isTime(o.c) ? { v, kind: 'ping', c: o.c } : null;
-  if (o.kind === 'got') return v !== 1 && isTime(o.at) ? { v, kind: 'got', at: o.at } : null;
+  if (o.kind === 'got') return isTime(o.at) ? { v, kind: 'got', at: o.at } : null;
   if (!opt(o, 'c', isSeq)) return null;
-  const i = intentOf(o, v);
+  const i = intentOf(o);
   return i && { v, ...(o.c !== undefined ? { c: o.c as number } : {}), ...i };
 }
 
@@ -520,7 +505,7 @@ export function parseNotice(raw: unknown): Notice | null {
 /** A relayed intent from `o`, or null. */
 function relayedOf(o: unknown): Relayed | null {
   if (!isObj(o) || !isWho(o.who) || !isTime(o.t)) return null;
-  const i = intentOf(o, LIVE_V);
+  const i = intentOf(o);
   return i && { ...i, v: LIVE_V, who: o.who, t: o.t };
 }
 

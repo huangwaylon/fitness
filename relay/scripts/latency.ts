@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 const URL_ = process.env.RELAY_URL ?? 'wss://island-fund-relay-test.island-fund-relay.workers.dev/room';
 const ORIGIN = 'https://island-fund.pages.dev';
 const N = Number(process.env.N ?? 30);
-const V = 2;
+const V = 3;
 
 function keys(): { KEY_A: string; KEY_B: string } {
   if (process.env.KEY_A && process.env.KEY_B) return { KEY_A: process.env.KEY_A, KEY_B: process.env.KEY_B };
@@ -89,7 +89,7 @@ const run = Date.now().toString(36).slice(-5);
 async function hello(key: string, since?: number): Promise<{ c: Client; welcome: { m: Msg; at: number }; sent: number }> {
   const c = new Client();
   await c.open();
-  const s = c.send({ kind: 'hello', key, ...(since !== undefined ? { since } : {}), batch: true });
+  const s = c.send({ kind: 'hello', key, ...(since !== undefined ? { since } : {}) });
   const welcome = await c.next((m) => m.kind === 'welcome');
   return { c, welcome, sent: s.at };
 }

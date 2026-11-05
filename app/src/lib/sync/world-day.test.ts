@@ -46,11 +46,11 @@ function island() {
     waiting: { c: number; i: Intent }[] = [];
     seq = 0;
     constructor(public who: Who) {}
-    open(since = dayStart(DAY), batch = false) {
+    open(since = dayStart(DAY)) {
       const s = new Sock();
       socks.push(s);
       room.open(s);
-      room.message(s, JSON.stringify({ v: 3, kind: 'hello', key: this.who === 'A' ? KEY_A : KEY_B, since, ...(batch ? { batch } : {}) }));
+      room.message(s, JSON.stringify({ v: 3, kind: 'hello', key: this.who === 'A' ? KEY_A : KEY_B, since }));
       this.sock = s;
       this.drain();
       for (const w of this.waiting.splice(0)) this.send(w);
@@ -72,6 +72,8 @@ function island() {
     }
     /** A change of mine: folded at once (my clock), then sent. */
     act(i: Intent): boolean {
+      // a shake carries when it was shaken, its identity (store/world.svelte.ts share)
+      if (i.kind === 'shake') i = { ...i, at: i.at ?? clock };
       const e = { ...i, who: this.who, t: clock } as DayEvent;
       const a = apply(this.day, e, this.who);
       if (!a.fresh) return false;
@@ -187,7 +189,7 @@ describe('the shared day: two phones on the relay', () => {
     A.close();
     // A's phone again, its storage gone: the day comes back from the relay (mine too, batched)
     const A2 = new (Object.getPrototypeOf(A).constructor)('A') as typeof A;
-    A2.open(dayStart(DAY), true);
+    A2.open(dayStart(DAY));
     expect(taken(A2.day, 'pa1')?.who).toBe('A');
     expect(lying(A2.day).map((p) => p.id)).toEqual(['pa2']);
     expect(A2.act({ kind: 'pick', id: 'pa1', what: 'present:item:sword' })).toBe(false);
@@ -231,7 +233,7 @@ describe('the shared day: two phones on the relay', () => {
     }
     both();
     const C = new (Object.getPrototypeOf(B).constructor)('B') as typeof B;
-    C.open(dayStart(DAY), true);
+    C.open(dayStart(DAY));
     const hashes = [A, B, C].map((p) => hash(canonical(p.day)));
     expect(new Set(hashes).size).toBe(1);
     expect(Object.keys(A.day.claims).length).toBeGreaterThan(10);
@@ -251,7 +253,7 @@ describe('the shared day: two phones on the relay', () => {
     }
     A.drain();
     B.drain();
-    // B's phone reloads with nothing but its own kept changes; the relay replays A's
+    // B's phone reloads with nothing but its own kept changes; the relay replays the day (A's, and B's again: one each)
     const B2 = new (Object.getPrototypeOf(B).constructor)('B') as typeof B;
     for (const e of B.mine) apply(B2.day, e, 'B');
     B.close();

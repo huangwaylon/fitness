@@ -91,7 +91,7 @@ describe('live: connecting', () => {
     live = createLive({ url: 'wss://x', key: () => KEY, build: () => '2026-11-05.ef93d8b', WebSocket: FakeWS as never, env });
     live.start();
     last().open();
-    expect(last().sent[0]).toMatchObject({ v: 3, kind: 'hello', key: KEY, batch: true, build: '2026-11-05.ef93d8b' });
+    expect(last().sent[0]).toMatchObject({ v: 3, kind: 'hello', key: KEY, build: '2026-11-05.ef93d8b' });
   });
 
   it('connects while visible, says hello with the key, and reports the welcome', () => {
@@ -101,7 +101,7 @@ describe('live: connecting', () => {
     expect(FakeWS.all).toHaveLength(1);
     last().open();
     // a page's first hello asks for today's whole shared world (from Tokyo midnight)
-    expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: dayStart(tokyoDay(Date.now())), batch: true });
+    expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: dayStart(tokyoDay(Date.now())) });
     last().recv({ kind: 'welcome', me: 'A', peer: false, t: Date.now() });
     expect(live.status()).toEqual({ connected: true, me: 'A', peer: false, here: [], gone: {} });
     expect(seen.at(-1)).toEqual({ connected: true, me: 'A', peer: false, here: [], gone: {} });
@@ -155,7 +155,7 @@ describe('live: connecting', () => {
     live = make('');
     live.start();
     expect(FakeWS.all).toHaveLength(0);
-    expect(live.send({ kind: 'emote', emote: 'glee' })).toBe(false);
+    expect(live.send({ kind: 'act', act: 'tap' })).toBe(false);
   });
 
   it('closes when hidden (zero cost) and reconnects when shown', () => {
@@ -234,29 +234,29 @@ describe('live: connecting', () => {
 describe('live: messages', () => {
   it('sends intents only while the partner is there, the shared world (and walks) whenever connected', () => {
     live.start();
-    expect(live.send({ kind: 'emote', emote: 'glee' })).toBe(false); // not connected
+    expect(live.send({ kind: 'act', act: 'tap' })).toBe(false); // not connected
     last().welcome(false);
-    expect(live.send({ kind: 'emote', emote: 'glee' })).toBe(false); // partner away
+    expect(live.send({ kind: 'act', act: 'tap' })).toBe(false); // partner away
     expect(live.send({ kind: 'walk', to: [10, 20] })).toBe(true); // kept: where my villager stands
-    expect(live.send({ kind: 'world', op: 'weed-pulled', id: 'w1' })).toBe(true); // kept for their reconnect
+    expect(live.send({ kind: 'world', op: 'watered', id: 'w1' })).toBe(true); // kept for their reconnect
     expect(live.send({ kind: 'pick', id: 's1', what: 'shell:conch' })).toBe(true);
     expect(live.send({ kind: 'catch', what: 'koi' })).toBe(false); // no id: nothing the room keeps
     last().recv({ kind: 'presence', who: 'B', on: true, t: Date.now() });
     expect(live.status().peer).toBe(true);
-    expect(live.send({ kind: 'emote', emote: 'glee' })).toBe(true);
+    expect(live.send({ kind: 'act', act: 'tap' })).toBe(true);
     // the kept ones numbered (their acks), in order
     const out = last().sent.slice(1);
     expect(out.map(({ c: _c, ...m }) => m)).toEqual([
       { v: 3, kind: 'walk', to: [10, 20] },
-      { v: 3, kind: 'world', op: 'weed-pulled', id: 'w1' },
+      { v: 3, kind: 'world', op: 'watered', id: 'w1' },
       { v: 3, kind: 'pick', id: 's1', what: 'shell:conch' },
-      { v: 3, kind: 'emote', emote: 'glee' }
+      { v: 3, kind: 'act', act: 'tap' }
     ]);
     const cs = out.map((m) => m.c as number | undefined);
     expect(cs[3]).toBeUndefined();
     expect(cs[0]! < cs[1]! && cs[1]! < cs[2]!).toBe(true);
     last().recv({ kind: 'presence', who: 'B', on: false, t: Date.now() });
-    expect(live.send({ kind: 'emote', emote: 'glee' })).toBe(false);
+    expect(live.send({ kind: 'act', act: 'tap' })).toBe(false);
   });
 
   it('a high-five goes numbered with the partner away (the room holds it), and one heard is answered `got`', () => {
@@ -320,7 +320,7 @@ describe('live: messages', () => {
     expect(live.send({ kind: 'act', act: 'explode' } as never)).toBe(false);
     expect(live.send({ kind: 'catch', what: 'x'.repeat(300) })).toBe(false);
     last().bufferedAmount = 10_000;
-    expect(live.send({ kind: 'emote', emote: 'glee' })).toBe(false);
+    expect(live.send({ kind: 'act', act: 'tap' })).toBe(false);
   });
 
   it('delivers the partner\'s intents, ignores junk and my own echoes, and survives a throwing listener', () => {
@@ -346,13 +346,13 @@ describe('live: messages', () => {
   it('asks for the shared world it missed since the last change it heard, across a reload too', () => {
     live.start();
     last().welcome();
-    last().recv({ kind: 'world', op: 'dug', id: 'd1', who: 'B', t: 1_790_000_000_500 });
+    last().recv({ kind: 'world', op: 'wished', id: 'd1', who: 'B', t: 1_790_000_000_500 });
     last().recv({ kind: 'pick', id: 'w1', what: 'weed', who: 'B', t: 1_790_000_000_600 });
     last().recv({ kind: 'emote', emote: 'glee', who: 'B', t: 1_790_000_000_700 }); // not the world's
     last().drop();
     vi.advanceTimersByTime(2000);
     last().open();
-    expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: 1_790_000_000_600, batch: true });
+    expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: 1_790_000_000_600 });
     // the page reloads: the kept since
     live.stop();
     live = make();

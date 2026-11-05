@@ -98,6 +98,10 @@ same version. Any other version, or a switch mid-socket, is closed 4004 with a r
 reload. Why: the two phones update at different times (a service worker update waits for the next open), so a hard
 switch would cut presence and the push for whichever updates last, and a stage point can't be mapped to the world.
 The order is fixed: deploy the relay with the new version first, then the app; drop the old one once both run it.
+Done for v1 and v2 on 2026-11-05: the relay logged every welcomed hello's version and build (`ws.hello`), A's and
+B's phones (and the guest, which only ever spoke v3) all said v3 on that day's builds, so `LIVE_VS` is `[3]`, and the
+shims went with them (the per-socket version, the version-split walks, the guest's v3 gate, the non-batch replay, the
+old held high-five format, five dead world ops, `emote`).
 
 ### Push through the relay
 When the record changes, it tells the room (`{what, who, at, rev}`), which tells the open phones to fetch now, and
@@ -138,7 +142,8 @@ to open phones (not Web Push) stay. Why (the user's): nobody used it, and it was
 hard-to-test machinery. The removal went in the side-by-side order: the app first (a phone that had it on lets its
 subscription go on its next open, `sync/pushGone.ts`, and forgets `island.push` / `island.goalSent`), then the relay
 (`/push/*` answers 410 to an old build, so it fails quietly; the room drops its `push_subs` and `push_sent` tables),
-then the `VAPID_PRIVATE` secrets.
+then the `VAPID_PRIVATE` secrets. The app's unsubscribing and the relay's 410 went too on 2026-11-05, every phone
+having run a later build.
 
 ### Profile (2026-11-05)
 Each person's sex, birth date and BMI standard are prefs on the record (the user asked for the calculations to account

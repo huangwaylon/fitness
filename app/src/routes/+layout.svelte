@@ -27,7 +27,6 @@
   import { startTaps } from '#lib/sound/taps.ts';
   import { startExactTaps } from '#lib/ui-state/exactTaps.ts';
   import { startModality } from '#lib/components/ui/modality.ts';
-  import { dropPush } from '#lib/sync/pushGone.ts';
   import { count, startLog } from '#lib/sync/log.ts';
   import { logUrl } from '#lib/sync/transport.ts';
   import { queued } from '#lib/sync/queue.ts';
@@ -83,8 +82,6 @@
     const stopTheme = startTheme();
     const stopWeather = startWeather();
     week.init();
-    // つうち is gone: a phone that had it on lets its Web Push subscription go (sync/pushGone.ts)
-    void dropPush();
     if (!routeOf(location.pathname).startsWith('/pair')) week.refresh();
     const onVisible = () => {
       if (document.visibilityState === 'visible' && !routeOf(location.pathname).startsWith('/pair')) week.refresh({ background: true });

@@ -302,50 +302,46 @@ catches an offline phone up.
   Production `wss://island-fund-relay.island-fund-relay.workers.dev/room`; a test copy, `island-fund-relay-test`, with
   its own secrets and room for the smoke test. `GET /health` → `{ok, v, versions, t, wx}` (`wx`: the real weather's
   `{at, src, age, hours, fails}`, [The real weather](#the-real-weather)); `POST /api` and `/admin`
-  ([The record](#the-record)); `POST /notify` ([Push](#push)); `/push/*`: 410 Gone (the old notifications'
-  routes, for an app build from before their removal: `relay/src/pushGone.ts`).
+  ([The record](#the-record)); `POST /notify` ([Push](#push)).
 - **Admission:** the Worker accepts `/room` upgrades only from `ALLOWED_ORIGINS` (`https://island-fund.pages.dev`) and
   `http://localhost|127.0.0.1`; everything else 403. The origin only keeps other sites out; the key is the auth.
-- **Auth:** the first message is `hello {key, since?, batch?, build?}` (`build`, 2026-11-05: the app's version, ≤ 24 of
+- **Auth:** the first message is `hello {key, since?, build?}` (`build`, 2026-11-05: the app's version, ≤ 24 of
   `[0-9A-Za-z.-]`, else left out; the room logs each welcomed hello as `ws.hello {v, build}` with who:
   [observability](ops/observability.md)). The room compares it in constant time with the secrets
-  `KEY_A`/`KEY_B`/`KEY_C` (unset = nobody gets in) and answers `welcome {me, peer, t, rec?, here?, gone?}` (`rec`: the record's
-  last change; `here`, v3: everyone else who is here; `gone`, v3: when the room saw each person's last socket close,
+  `KEY_A`/`KEY_B`/`KEY_C` (unset = nobody gets in) and answers `welcome {me, peer, t, rec?, here, gone?}` (`rec`: the record's
+  last change; `here`: everyone else who is here; `gone`: when the room saw each person's last socket close,
   for those not here and my own last one, kept in its storage: one gone quiet inside a room leaves it then,
   `store/where.svelte.ts`), or
   closes 4001. No hello within 10 s (a DO alarm sweeps): 4003. A second socket of the same person replaces the first
   (4002, no presence flicker). At most 8 sockets.
 - **Protocol** (`app/src/lib/contract/live-protocol.ts`, imported by both sides and checked by the same parsers): JSON,
-  `v: 3` (v2, the rolling-log world, with the guest: `who` may be `G`, the welcome's `here`, a high-five's `to`; the
-  relay still speaks `v: 2` and `v: 1` to an older phone, answering each socket in the version of its hello, and a phone
-  before v3 never hears of the guest; a walk crosses between v2 and v3, never from v1), ≤ 256 bytes (an intent ~60–100; a `replay` ≤ 16,000). Intents: `walk {to: node id | [x, z], at?,
-  from?, via?, s?, ms?, f?}` (v2: world units, where the villager is going, and with `from`, `via` (≤ 10 waypoints), `s`
+  `v: 3` (the rolling-log world with the guest: `who` may be `G`, the welcome's `here`, a high-five's `to`; v1 and v2
+  went on 2026-11-05, once every phone's hello said v3: the log's `ws.hello`), ≤ 256 bytes (an intent ~60–100; a `replay` ≤ 16,000). Intents: `walk {to: node id | [x, z], at?,
+  from?, via?, s?, ms?, f?}` (world units, where the villager is going, and with `from`, `via` (≤ 10 waypoints), `s`
   (when it set off, the relay's clock), `ms` (how long, ≤ 60 s; 0 = put there) and `f` (the facing at its end: `home`,
   `in`, `l`, `r`) the very walk, [Shared
   world](#shared-world) "Villagers"; integers within the plan `WORLD_X` −230…620 × `WORLD_Z` −400…2500, equal to
-  `island/world.ts` PLAN; v1: stage units, |n| ≤ 100,000; a walk never crosses versions), `act {act, id?, at?, pt?}`,
-  `catch {what, id?, at?, how?}`, `emote {emote}`, `world {op, id}` (`weed-pulled`, `fruit-collected`, `dug`,
-  `present-opened`, `watered`, `shaken`, `wished`, `woke`), `saved {}` ([Push](#push)), `decor {id, at, item, x, z, f, p} | {id, at, rm}` (v2: a decoration set or removed, as the record's `decor` op, the tent's with `sc: 't'`; kept for the day and replayed, never claimed: the merge is commutative), `drag {id, x, z, f, it?, end?}` (v2: a tent piece under the finger, ~10 a second while it moves, ≤ 60 bytes; presence only: relayed while the partner is there, never kept, replayed or written), `tent {in, to?, from?, via?, s?, ms?, seat?, n?, lie?, sc?}` (v2: my villager in the tent, its walk there in the room's model units, or seated on a piece's seat `n` since `s` (rooms/seating.ts: the earlier sit keeps a seat); `sc` `u` / `v` another home's room, `m` the museum (`seat` a bench: `dmbench1`/`2`), its points within ±320, `s` the shop, no points (2026-11-04: an
-older phone or relay drops it, and shows the villager at the shop's door as before); presence only) `highfive {at}` (v2: a high-five, `at` the tap on the relay's clock, numbered; relayed live, and with the partner away the room holds the last one for them in its storage (`held`, one per recipient, a newer one replacing it), sends it after the welcome of their next v2 hello, and lets it go at their `got {at}` or after a day; never the record; see [decisions](decisions.md#a-high-five-goes-over-the-relay-only-2026-11-02)) `fish {ph, id?, pt?, from?, s?}` (v3: a line's step, `ph` one of `cast`, `nibble`, `bite`, `reel`, `off`; `pt` its float, `from` the angler's feet (its line runs from the rod there), world points; `id` the shadow at the float now, its shared id (a `cast` again at the same `pt` says a shadow noticed it, or with none that it got away and the float is back up); `s` when it went out; presence only: relayed live to everyone here, never kept, replayed, acked or written; the angler's phone sends its step again when someone comes, and a phone drops an angler's line at their presence off; [Shared world](design.md#shared-world)) and `say {text, sc?}` (v2: a phrase over my villager, [Villager taps](design.md#villager-taps); `sc` where it was said, a home's room `t`, `u` or `v`, the museum `m`, none the island: the phones show it only in the same place, an unknown `sc` refused; presence only: relayed live to a v2 partner, never kept, replayed or sent to the record; `text` cleaned on both sides by `cleanSay`: NFC, no control, newline or bidi characters, blanks squeezed, trimmed, ≤ 20 code points, else dropped; the room passes one per person per second, the phone one per 1.5 s); the shared world's (v2 only, [Shared
-  world](#shared-world)): `pick {id, what, at?}`, `put {id, what, at}`, `shake {tree, drop}`. Relay-only: `changed {what, who, at, rev}`, `wx {h0, s, fx?, at, src, rev}` (v3: [The real weather](#the-real-weather)). The room drops any client-sent `who`/`t`, stamps its own (`t` strictly increasing) and sends it
+  `island/world.ts` PLAN), `act {act, id?, at?, pt?}`,
+  `catch {what, id?, at?, how?}`, `world {op, id}` (`watered`, `wished`, `woke`), `saved {}` ([Push](#push)), `decor {id, at, item, x, z, f, p} | {id, at, rm}` (a decoration set or removed, as the record's `decor` op, the tent's with `sc: 't'`; kept for the day and replayed, never claimed: the merge is commutative), `drag {id, x, z, f, it?, end?}` (a tent piece under the finger, ~10 a second while it moves, ≤ 60 bytes; presence only: relayed while the partner is there, never kept, replayed or written), `tent {in, to?, from?, via?, s?, ms?, seat?, n?, lie?, sc?}` (my villager in the tent, its walk there in the room's model units, or seated on a piece's seat `n` since `s` (rooms/seating.ts: the earlier sit keeps a seat); `sc` `u` / `v` another home's room, `m` the museum (`seat` a bench: `dmbench1`/`2`), its points within ±320, `s` the shop, no points (2026-11-04: an
+older phone or relay drops it, and shows the villager at the shop's door as before); presence only) `highfive {at}` (a high-five, `at` the tap on the relay's clock, numbered; relayed live, and with the partner away the room holds the last one for them in its storage (`held`, one per recipient, a newer one replacing it), sends it after the welcome of their next hello, and lets it go at their `got {at}` or after a day; never the record; see [decisions](decisions.md#a-high-five-goes-over-the-relay-only-2026-11-02)) `fish {ph, id?, pt?, from?, s?}` (a line's step, `ph` one of `cast`, `nibble`, `bite`, `reel`, `off`; `pt` its float, `from` the angler's feet (its line runs from the rod there), world points; `id` the shadow at the float now, its shared id (a `cast` again at the same `pt` says a shadow noticed it, or with none that it got away and the float is back up); `s` when it went out; presence only: relayed live to everyone here, never kept, replayed, acked or written; the angler's phone sends its step again when someone comes, and a phone drops an angler's line at their presence off; [Shared world](design.md#shared-world)) and `say {text, sc?}` (a phrase over my villager, [Villager taps](design.md#villager-taps); `sc` where it was said, a home's room `t`, `u` or `v`, the museum `m`, none the island: the phones show it only in the same place, an unknown `sc` refused; presence only: relayed live to the others, never kept, replayed or sent to the record; `text` cleaned on both sides by `cleanSay`: NFC, no control, newline or bidi characters, blanks squeezed, trimmed, ≤ 20 code points, else dropped; the room passes one per person per second, the phone one per 1.5 s); the shared world's ([Shared
+  world](#shared-world)): `pick {id, what, at?}`, `put {id, what, at}`, `shake {tree, drop}`. Relay-only: `changed {what, who, at, rev}`, `wx {h0, s, fx?, at, src, rev}` ([The real weather](#the-real-weather)). The room drops any client-sent `who`/`t`, stamps its own (`t` strictly increasing) and sends it
   to the other person only. Any intent may carry `c`, the phone's sequence number (increasing through the day: its
   `Date.now()` at sending, or one more): the room answers the sender `ack {c, t, ok}` (`t` its stamp; `ok` false when
   the world refused it: a claim already made, a nest too soon, a walk numbered before the one it keeps), and a resend
   of a kept intent with the same `c` (after a reconnect) is acked again, never relayed or kept twice. It relays to
   the partner before it writes the day to storage (a message sent after a write waits for it: the output gate), so a
   kept intent reaches the partner as fast as a passing one; its ack goes after the write (an ack is durable).
-  `ping {c}` → `pong {c, t}`; `got {at}` (v2: my phone heard the partner's high-five `at`: the one held for me goes); `presence {who, on}` when the partner comes or goes (the island
+  `ping {c}` → `pong {c, t}`; `got {at}` (my phone heard the partner's high-five `at`: the one held for me goes); `presence {who, on}` when the partner comes or goes (the island
   stands Wilbur on the dock while it's on). A `v` the relay doesn't know closes 4004, before or after the hello, with
-  the reason `protocol version N unsupported (relay speaks 1, 2)`, and so does a message (or a second hello) in
-  another version than the socket's hello; the client waits for the next show, i.e. a reload. `GET /health` lists
-  `versions`. Deploy order for a version bump: the relay first (it speaks both), then the app. Dropping v1 once both
-  phones run the world: take 1 out of `LIVE_VS` and redeploy (a phone still on v1 is closed 4004, reloads, updates).
+  the reason `protocol version N unsupported (relay speaks 3)`; the client waits for the next show, i.e. a reload.
+  `GET /health` lists `versions`. Deploy order for a version bump: the relay first, speaking both (`LIVE_VS`), then
+  the app; the old one goes once the log's `ws.hello` (`npm run logs -- report`, *Live hellos*) shows every phone on
+  the new one.
 - **Limits:** per socket a token bucket of 20, refilled 20/s; beyond it messages are dropped, not queued.
 - **Replay:** the room keeps today's shared world in DO storage ([Shared world](#shared-world)); a hello with `since`
-  (the last such `t` that phone heard, kept across reloads: `island.liveSince`) gets the newer ones after the welcome:
-  with `batch: true` (today's app) all of them, mine too (a phone that lost its record gets it back), in `replay {es}`
-  messages of ≤ 16,000 bytes (~150 changes each) in the room's order; without it (an older app) one message each, the
-  partner's only.
+  (the last such `t` that phone heard, kept across reloads: `island.liveSince`) gets the newer ones after the welcome,
+  all of them, mine too (a phone that lost its record gets it back), in `replay {es}` messages of ≤ 16,000 bytes (~150
+  changes each) in the room's order.
 - **Cost:** the Hibernation API (`ctx.acceptWebSocket`): an idle socket keeps no DO in memory. Free plan: 100k
   requests/day (incoming WebSocket messages count 20:1), 13,000 GB-s/day; two people tapping are far below.
 - **Client** (`app/src/lib/sync/live.ts`, `createLive({key})`): connects while the page is visible and online, closes
@@ -356,8 +352,8 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
   `onStatus()` `{connected, me, peer}`. URL: `LIVE_URL`, overridable by `VITE_LIVE_URL` (empty = off). What the room
   keeps (`isStored`: the shared world's intents and walks) goes even with the partner away, numbered (`c`), and waits
   in an outbox (≤ 120, a walk replacing the walk before it) until its `ack`: sent offline or lost with a dropped
-  socket, it goes again after the next welcome (12 at once, then one every 60 ms; another day's dropped). The hello
-  asks for the day as `replay` (`batch`), each change delivered in order, mine too. `metrics()`: messages and bytes
+  socket, it goes again after the next welcome (12 at once, then one every 60 ms; another day's dropped). The day
+  comes as `replay`, each change delivered in order, mine too. `metrics()`: messages and bytes
   each way, resends, the last acks' round trips, what's waiting.
 - **Measured** (`npm run smoke` from a Mac in Tokyo, edge NRT): connect ~65 ms, ping RTT median 18–21 ms (p90 23–40),
   partner one-way median 19 ms (p90 44), clock offset ±9 ms. `npm run latency` (2026-11-01, the test copy, both
@@ -402,9 +398,8 @@ Tokyo's sky by the hour for the island ([design](design.md#weather); decisions: 
 - **Locks:** an hour that has begun (and the next one, once a fetch came after :45) keeps the sky it had; a fetch
   rewrites only the hours after. The sky changes at most once an hour, at :00, and a phone that cached it before the
   hour shows the same as one that's online.
-- **To the phones:** `wx` after the welcome (v3 only, while the timeline serves: fetched within 36 h and covering the
-  hour) and to every v3 phone when its `rev` changes; ≤ ~190 bytes. An older phone drops the unknown kind and keeps
-  the seeded weather. The phone keeps the newest one and caches it (`island.wx`).
+- **To the phones:** `wx` after the welcome (while the timeline serves: fetched within 36 h and covering the hour)
+  and to every phone when its `rev` changes; ≤ ~190 bytes. The phone keeps the newest one and caches it (`island.wx`).
 - **The phones:** in ほんもの mode (`pref weatherMode`: one island-wide row in the record, slot `pref|island|weatherMode`,
   the last a member set; the guest's refused) the hour's sky comes from the timeline while it serves, else from the
   seeded day; winter's snow, the event nights held fine, the seeded fog and aurora, and the rainbow are the phone's
@@ -416,9 +411,9 @@ Tokyo's sky by the hour for the island ([design](design.md#weather); decisions: 
   showers, a rainy-season day, a downpour, a typhoon, the snow of 2024-02-05 and that day's forecast, against golden
   timelines; no one-hour flicker; the dead bands, fog, the gap fill, the strict parse, the locks, the revisions, when
   it's due, the backoff; a 500, a bad body, a timeout and no network keeping the good timeline, with a fake fetch and
-  a fixed clock), `room.test.ts` (`wx` after the welcome, v3 only, on change), `store.test.ts` / `guest.test.ts` (the
+  a fixed clock), `room.test.ts` (`wx` after the welcome, on change), `store.test.ts` / `guest.test.ts` (the
   mode's row); the app's `island/realWeather.test.ts`; `e2e/realweather.spec.ts`; `npm run smoke` (a fixture reaches a
-  v3 phone; a fetch from Open-Meteo; `/health`'s age).
+  phone; a fetch from Open-Meteo; `/health`'s age).
 
 ## The guest
 
@@ -435,13 +430,13 @@ claims, the ずかん, the tent's decor, pairing.
   `pref` `locale` / `villagerName` / `villager` / `look` / `savedLooks`, the meal log's goals and its profile (`sex`, `birth`, `bmiStd`; its own: no `person`). Anything else, and `ingest` / `uploads`, is `forbidden` (the queue drops
   it). Its rows are the record's like anyone's: one tally per day (`tally|G|<date>`), its prefs' own slots, the tent's
   merge order A < B < G; the dump carries them with `person = G`.
-- **The room** (v3 only: a guest's hello in v1/v2 is closed 4004): the guest may `walk`, `act`, `catch`, `pick`, `put`,
+- **The room:** the guest may `walk`, `act`, `catch`, `pick`, `put`,
   `shake`, `say`, `highfive`, `tent`, `drag`, `fish` and the tent's `decor` (`guestMaySend`); anything else is refused (acked
-  `ok: false`, never relayed). Its intents reach both members' v3 phones; theirs reach it. Presence is per person: each
+  `ok: false`, never relayed). Its intents reach both members' phones; theirs reach it. Presence is per person: each
   join and leave is told to everyone else who can hear of it; `peer` stays the partner for a member (the guest never
   counts) and either member for the guest. A high-five names whom it is for (`to`; a member's to the partner may leave
   it out), and the room holds the last one per (sender, recipient) pair for a recipient who is away (`Held`, `<from>><to>`).
-- **Push:** the members' `changed` notices reach it like anyone's (its own writes only to v3 phones).
+- **Push:** the members' `changed` notices reach it like anyone's, and its own reach every phone.
 - **The phones** ([design](design.md#the-guest)): a member's draws the guest's villager while it's `here`, as a third
   villager actor (`ui-state/cast.ts`: `mine`, `partner`, `third`; on the guest's phone `third` is B); the guest's
   phone guards what it sends by the same rules (`week.send` by `guestMayWrite`, the socket by `guestMaySend`), so
@@ -524,7 +519,7 @@ a person does is a small intent over the relay, kept by the room for the day, fo
 - **The room** (`relay/src/room.ts`): keeps today's world (Tokyo's day on the relay clock, a new day starts empty but
   for each person's last walk, carried in with a new stamp so a phone opening asks for it: their villager stays where
   it was left, however long ago): the last 400 changes (`world`, `catch` with an id, `pick`, `put`, `shake`; past
-  that the oldest that isn't a walk goes) and each person's last v2 `walk` (replacing the one before), in DO storage, its claims and nests rebuilt after a hibernation. It refuses a claim it already
+  that the oldest that isn't a walk goes) and each person's last `walk` (replacing the one before), in DO storage, its claims and nests rebuilt after a hibernation. It refuses a claim it already
   holds today and a second nest from a tree within the hour (`NEST_GAP_MS`). A hello's `since` replays the partner's
   after it; a page's first hello asks from Tokyo midnight (or the kept `since`), so a phone opening later hears the
   day.
@@ -667,12 +662,9 @@ meal log: ~300 bytes a row, ~11k rows a year for three people at ~10 meals a day
 
 ## Notifications
 
-None ([decisions](decisions.md#no-notifications-2026-11-02)). What is left of them: on open the app
-unsubscribes any Web Push subscription its service worker holds and forgets `island.push` and `island.goalSent`
-(`app/src/lib/sync/pushGone.ts`, its test; `e2e/no-notify.spec.ts`), and the relay answers an old build's
-`/push/subscribe`, `/push/unsubscribe` and `/push/goal` 410 Gone with CORS for the page (`relay/src/pushGone.ts`,
-`relay/test/pushGone.test.ts`, `npm run smoke`), keeping nothing. Both can go once neither phone runs a build from
-before (an app build's `/push/*` call would then 404, which it also ignores).
+None ([decisions](decisions.md#no-notifications-2026-11-02); `e2e/no-notify.spec.ts`: nothing asks, subscribes or
+calls `/push`). The app's unsubscribing of an old Web Push subscription and the relay's 410 for an old build's `/push/*`
+went on 2026-11-05, once both phones ran builds from after (their `/push/*` would now 404).
 
 ## Service worker
 

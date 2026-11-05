@@ -142,8 +142,7 @@ describe('the record and the guest', () => {
       ev('x7', 'pref', { key: 'villagerName', value: 'うめ', person: 'B' }),
       ev('x7w', 'pref', { key: 'weatherMode', value: 'game' }), // the island's weather: the members'
       ev('x8', 'decor', { id: 'dabc1234', at: T0, item: 'tanuki', x: 100, z: 200, f: 0, p: T0 }),
-      ev('x9', 'island', { date: '2026-11-02', taken: [], puts: [], shakes: [], watered: [], wishes: {} }),
-      ev('x10', 'highfive', {})
+      ev('x9', 'island', { date: '2026-11-02', taken: [], puts: [], shakes: [], watered: [], wishes: {} })
     ];
     for (const e of refused) expect(g('event', e), e.id).toEqual({ ok: false, error: 'forbidden' });
     const batch = g('events', { events: refused.map((e) => ({ ...e, id: `${e.id}b` })) });
@@ -190,14 +189,14 @@ describe('the room with three villagers (v3)', () => {
     held = {};
     room = new RoomCore(io());
   });
-  const join = (key: string, v = 3) => {
+  const join = (key: string) => {
     const s = new FakeSock();
     socks.push(s);
     room.open(s);
-    room.message(s, JSON.stringify({ v, kind: 'hello', key, since: 0, batch: true }));
+    room.message(s, JSON.stringify({ v: 3, kind: 'hello', key, since: 0 }));
     return s;
   };
-  const say = (s: FakeSock, m: object, v = 3) => room.message(s, JSON.stringify({ v, ...m }));
+  const say = (s: FakeSock, m: object) => room.message(s, JSON.stringify({ v: 3, ...m }));
   const bye = (s: FakeSock) => {
     s.close();
     room.close(s);
@@ -218,22 +217,7 @@ describe('the room with three villagers (v3)', () => {
     expect(of(b2, 'presence').at(-1)).toMatchObject({ who: 'G', on: false });
   });
 
-  it('the guest speaks v3 only; a v2 member’s phone never hears of it', () => {
-    const old = join(KEY_C, 2);
-    expect(old.closed?.code).toBe(CLOSE.version);
-    const a2 = join(KEY_A, 2);
-    const g = join(KEY_C);
-    expect(g.sent[0]).toMatchObject({ peer: true, here: ['A'] });
-    expect(of(a2, 'presence')).toEqual([]);
-    say(g, { kind: 'walk', to: [100, 900], c: 5 });
-    say(g, { kind: 'say', text: 'こんにちは' });
-    expect(a2.sent.filter((m) => m.kind !== 'welcome')).toEqual([]);
-    // nor in a replay
-    const a2b = join(KEY_A, 2);
-    expect(a2b.sent.filter((m) => m.kind === 'replay').flatMap((m) => (m as { es: { who: string }[] }).es).some((e) => e.who === 'G')).toBe(false);
-  });
-
-  it('a line’s steps (`fish`) go live to everyone here, never kept, never replayed; a v2 phone never sends one', () => {
+  it('a line’s steps (`fish`) go live to everyone here, never kept, never replayed', () => {
     const a = join(KEY_A), g = join(KEY_C);
     for (const s of [a, g]) s.sent = [];
     say(a, { kind: 'fish', ph: 'cast', id: 'hook:fish', pt: [150, -60], from: [150, 20], s: now });
@@ -247,10 +231,6 @@ describe('the room with three villagers (v3)', () => {
     expect(a.sent).toEqual([]); // (nothing to ack: presence only)
     const b = join(KEY_B);
     expect(b.sent.filter((m) => m.kind === 'replay').flatMap((m) => (m as { es: { kind: string }[] }).es).some((e) => e.kind === 'fish')).toBe(false);
-    const a2 = join(KEY_A, 2);
-    g.sent = [];
-    say(a2, { kind: 'fish', ph: 'cast', pt: [150, -60] }, 2);
-    expect(g.sent).toEqual([]);
   });
 
   it('the guest’s walks, catches, phrases and tent go to both members; theirs reach the guest', () => {
@@ -275,12 +255,11 @@ describe('the room with three villagers (v3)', () => {
     expect(a.sent.at(-1)).toMatchObject({ kind: 'ack', c: 10, ok: false });
   });
 
-  it('refuses what the guest may not do: the island’s decor, world ops, emotes, nudges', () => {
+  it('refuses what the guest may not do: the island’s decor, world ops, nudges', () => {
     const a = join(KEY_A), g = join(KEY_C);
     a.sent = [];
     say(g, { kind: 'decor', id: 'dabc1234', at: now, item: 'tanuki', x: 100, z: 200, f: 0, p: now, c: 1 });
     say(g, { kind: 'world', op: 'watered', id: 'fl:1:2', c: 2 });
-    say(g, { kind: 'emote', emote: 'glee' });
     say(g, { kind: 'saved' });
     expect(a.sent).toEqual([]);
     expect(of(g, 'ack').map((m) => (m as { ok: boolean }).ok)).toEqual([false, false]);
@@ -308,13 +287,11 @@ describe('the room with three villagers (v3)', () => {
     expect(g.sent.at(-1)).toMatchObject({ kind: 'ack', c: 5, ok: false });
   });
 
-  it('a record change reaches the guest too; the guest’s own write only phones that know of it', () => {
-    const a2 = join(KEY_A, 2), b = join(KEY_B), g = join(KEY_C);
+  it('a record change reaches the guest too, and the guest’s own write every phone', () => {
+    const a = join(KEY_A), b = join(KEY_B), g = join(KEY_C);
     expect(room.notify({ what: 'ingest', who: 'A', at: '2026-11-02T03:00:00.000Z', rev: 'e1' })).toBe(3);
-    expect(room.notify({ what: 'event', who: 'G', at: '2026-11-02T03:00:01.000Z', rev: 'e1' })).toBe(2);
-    expect(of(a2, 'changed')).toHaveLength(1);
-    expect(of(b, 'changed')).toHaveLength(2);
-    expect(of(g, 'changed')).toHaveLength(2);
+    expect(room.notify({ what: 'event', who: 'G', at: '2026-11-02T03:00:01.000Z', rev: 'e1' })).toBe(3);
+    for (const s of [a, b, g]) expect(of(s, 'changed')).toHaveLength(2);
   });
 });
 
@@ -392,7 +369,7 @@ describe('the room and the layout', () => {
     const s = new FakeSock();
     socks.push(s);
     room.open(s);
-    room.message(s, JSON.stringify({ v: 3, kind: 'hello', key, since: 0, batch: true }));
+    room.message(s, JSON.stringify({ v: 3, kind: 'hello', key, since: 0 }));
     return s;
   };
   const say = (s: FakeSock, m: object) => room.message(s, JSON.stringify({ v: 3, ...m }));

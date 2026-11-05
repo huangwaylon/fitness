@@ -99,8 +99,8 @@ describe('events', () => {
     expect(events().map((r) => r[1])).toEqual(['p1', 't2']);
   });
 
-  it('checks shapes as the sheet did; a highfive is acknowledged and kept nowhere', () => {
-    expect(a('event', ev('h1', 'highfive', {}))).toEqual({ ok: true });
+  it('checks shapes as the sheet did; a highfive (the room’s only, since 2026-11-02) is no event', () => {
+    expect(a('event', ev('h1', 'highfive', {}))).toEqual({ ok: false, error: 'bad_request' });
     expect(a('event', ev('x1', 'nope', {}))).toEqual({ ok: false, error: 'bad_request' });
     expect(a('event', ev('x2', 'spend', { spendId: 's', item: 'snack', bells: 1 }))).toEqual({ ok: false, error: 'bad_request' });
     // the old prices (おやつ 8, 外食 15: a phone still on the old app) are refused
@@ -222,7 +222,7 @@ describe('events (a batch)', () => {
       { id: 'v1', ok: true, at: '2026-11-02T03:00:01.000Z' },
       { id: 's1', ok: true, duplicate: true },
       { id: 'x1', ok: false, error: 'bad_request' },
-      { id: 'h1', ok: true },
+      { id: 'h1', ok: false, error: 'bad_request' },
       { id: 'v2', ok: true, duplicate: true },
       { id: null, ok: false, error: 'bad_request' },
       { id: 'p1', ok: true, at: '2026-11-02T03:00:01.001Z' }
@@ -330,10 +330,10 @@ describe('import (rows that already have their `at`)', () => {
 });
 
 describe('telemetry', () => {
-  it('an app from before the log (2026-11-05) is acknowledged and nothing is kept: the old table is gone', () => {
+  it('is gone (the log has it since 2026-11-05): a request is a bad one, and the old table is dropped', () => {
     db.db.exec('CREATE TABLE telemetry (seq INTEGER PRIMARY KEY, at TEXT NOT NULL, kind TEXT NOT NULL, data TEXT NOT NULL)');
     store = make();
-    expect(a('telemetry', { kind: 'error', data: { msg: 'x' } })).toEqual({ ok: true, kept: false });
+    expect(a('telemetry', { kind: 'error', data: { msg: 'x' } })).toEqual({ ok: false, error: 'bad_request' });
     expect(store.handle({ action: 'telemetry', kind: 'error' }, 10)).toEqual({ ok: false, error: 'unauthorized' });
     expect(db.db.prepare("SELECT name FROM sqlite_master WHERE name = 'telemetry'").all()).toEqual([]);
   });

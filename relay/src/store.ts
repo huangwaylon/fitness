@@ -245,8 +245,6 @@ export class StoreCore {
       case 'snapshot': return this.snapshot(me, body);
       case 'uploads': return this.uploads(me);
       case 'whoami': return { ok: true, me, build: STORE_BUILD };
-      // the old telemetry (an app from before the log, 2026-11-05): acknowledged, not kept
-      case 'telemetry': return { ok: true, kept: false };
       default: return fail('bad_request');
     }
   }
@@ -370,8 +368,6 @@ export class StoreCore {
   private keep(me: Who, body: Rec): Reply & { at?: string } {
     const id = body.id;
     if (!isId(id)) return fail('bad_request');
-    // High-fives go over the room only (2026-11-02): one still queued on a phone from before is acknowledged, not kept
-    if (body.type === 'highfive') return me === 'G' ? fail('forbidden') : { ok: true };
     if (typeof body.type !== 'string' || !(EVENT_TYPES as readonly string[]).includes(body.type)) return fail('bad_request');
     const sent = body.data === undefined ? {} : body.data;
     if (!isRec(sent)) return fail('bad_request');
