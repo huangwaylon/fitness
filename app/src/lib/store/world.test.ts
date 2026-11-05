@@ -53,6 +53,25 @@ describe('the shared island on this phone', () => {
     expect(caught(world.day, 'fresh:99')?.who).toBe('B');
   });
 
+  it('a catch goes on my day row too; the partner’s row has a critter caught: my try at it is refused, nothing sent', () => {
+    const r = fakeRelay();
+    world.attach(r.live, 'A');
+    const rows: { taken: string[] }[] = [];
+    world.sink = (_date, row) => rows.push(row);
+    expect(world.share({ kind: 'catch', what: 'koi', id: 'fresh:7', how: 'net' }).fresh).toBe(true);
+    expect(rows.at(-1)?.taken).toEqual(['catch:fresh:7']);
+    // B caught fresh:8 offline; its row reached the record, its intent not yet the relay
+    world.rows([{ at: T0 - 5000, person: 'B', data: { date: '2026-11-01', taken: ['catch:fresh:8', 'w9'], puts: [], shakes: [], watered: [], wishes: {} } }]);
+    expect(caught(world.day, 'fresh:8')?.who).toBe('B');
+    const n = r.sent.length;
+    expect(world.share({ kind: 'catch', what: 'koi', id: 'fresh:8', how: 'net' }).fresh).toBe(false);
+    expect(world.share({ kind: 'pick', id: 'w9', what: 'weed' }).fresh).toBe(false);
+    expect(r.sent).toHaveLength(n);
+    // the relay's own word on it (B's catch, at last) is still B's
+    r.hear({ kind: 'catch', what: 'koi', id: 'fresh:8', how: 'net', who: 'B', t: T0 - 6000 });
+    expect(caught(world.day, 'fresh:8')).toMatchObject({ who: 'B', what: 'koi' });
+  });
+
   it('hears the partner: played when it just happened, only folded when it\'s the day\'s replay; a repeat is nothing', () => {
     const r = fakeRelay();
     world.attach(r.live, 'A');

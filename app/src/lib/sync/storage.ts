@@ -18,6 +18,9 @@ export const LIVE = {
   /** `{ day, t }`: the relay time of the last shared-world change this phone heard that Tokyo day (sync/live.ts: the
    *  hello's `since`, so a reload hears only what's new). */
   since: 'island.liveSince',
+  /** `{ k, es }`: the live socket's kept intents not yet acked (sync/live.ts's outbox: ≤ 120, today's), whose person key
+   *  by its hash `k`: a kill or a reload offline loses none, they go after the next welcome. */
+  outbox: 'island.liveOutbox',
   /** `{ day, events }`: today's shared world as this phone folded it (store/world.svelte.ts: mine and the partner's). */
   world: 'island.world',
   /** `{ <morning>: { A?, B? } }`: both people's wishes on shooting stars by the morning each brings its fragment

@@ -294,6 +294,23 @@ describe('the shared day: two phones on the relay', () => {
     }
   });
 
+  it('a catch is on the day row too: a phone that never heard it (made offline) has it caught, by its catcher', () => {
+    const d = emptyDay(DAY);
+    apply(d, { kind: 'catch', what: 'koi', id: 'fresh:99', how: 'net', who: 'A', t: T0 }, 'A');
+    apply(d, { kind: 'pick', id: 'w1', what: 'weed', who: 'A', t: T0 }, 'A');
+    // (a claim too long for the row's ids stays off it)
+    apply(d, { kind: 'catch', what: 'koi', id: 'x'.repeat(30), how: 'net', who: 'A', t: T0 }, 'A');
+    const row = rowOf(d, 'A');
+    expect(row.taken).toEqual(['fresh:99', 'w1'].map((id) => (id === 'w1' ? id : `catch:${id}`)));
+    const b = emptyDay(DAY);
+    applyRow(b, row, 'A', T0 + 60_000, 'B');
+    expect(caught(b, 'fresh:99')?.who).toBe('A');
+    expect(taken(b, 'w1')?.who).toBe('A');
+    // A's own, heard from the relay at last, is the same claim (B's own try is world.share's to refuse: store/world.test)
+    expect(apply(b, { kind: 'catch', what: 'koi', id: 'fresh:99', how: 'net', who: 'A', t: T0 }, 'B')).toEqual({ fresh: true, beat: null });
+    expect(caught(b, 'fresh:99')).toMatchObject({ who: 'A', what: 'koi', how: 'net' });
+  });
+
   it('ignores another day’s changes, and repeats', () => {
     const d = emptyDay(DAY);
     expect(apply(d, { kind: 'pick', id: 'w1', what: 'weed', who: 'A', t: dayStart(DAY) - 1 }, 'B').fresh).toBe(false);

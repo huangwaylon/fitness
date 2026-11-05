@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { LIVE_URL, backoff, bestOffset, createLive, type Live, type LiveEnv, type LiveStatus, type SinceStore } from './live.ts';
+import { LIVE_URL, backoff, bestOffset, createLive, type KeptOut, type Live, type LiveEnv, type LiveStatus, type OutboxStore, type SinceStore } from './live.ts';
 import { dayStart, tokyoDay, type Relayed } from '../contract/live-protocol.ts';
+import { configureStorage, type KV } from './storage.ts';
 
 const KEY = 'ab'.repeat(32);
 
@@ -597,5 +598,75 @@ describe('live: liveness (a socket open but carrying nothing)', () => {
     vi.advanceTimersByTime(10_000);
     expect(FakeWS.all).toHaveLength(2);
     live.stop();
+  });
+});
+
+describe('live: the outbox kept across a kill', () => {
+  /** The test's own outbox store (as localStorage would keep it), by key. */
+  let disk: Record<string, KeptOut[]>;
+  const outbox: OutboxStore = { get: (k) => structuredClone(disk[k ?? ''] ?? []), set: (k, es) => void (disk[k ?? ''] = structuredClone([...es])) };
+  const boot = () => createLive({ url: 'wss://relay.test/room', key: () => key, WebSocket: FakeWS as never, env, since, outbox });
+  beforeEach(() => {
+    disk = {};
+  });
+
+  it('an intent made offline survives the app being killed, goes after the next welcome with its number, and leaves once acked', async () => {
+    const a = boot();
+    a.start();
+    online = false;
+    fire();
+    expect(a.send({ kind: 'world', op: 'watered', id: 'fl:1:2' })).toBe(false);
+    expect(a.send({ kind: 'walk', to: [3, 4] })).toBe(false);
+    await Promise.resolve();
+    expect(disk[KEY].map((e) => (e.m as { kind: string }).kind)).toEqual(['world', 'walk']);
+    const c = disk[KEY][0].c;
+    // killed: nothing more runs; opened again, online
+    a.stop();
+    online = true;
+    const b = boot();
+    expect(b.metrics!().pending).toBe(2);
+    b.start();
+    last().welcome();
+    const sent = last().sent.filter((m) => m.kind === 'world' || m.kind === 'walk') as { c: number }[];
+    expect(sent.map((m) => m.c)).toEqual(disk[KEY].map((e) => e.c));
+    expect(sent[0].c).toBe(c);
+    // a new intent's number comes after the kept ones'
+    b.send({ kind: 'world', op: 'watered', id: 'fl:5:6' });
+    expect((last().sent.at(-1) as { c: number }).c).toBeGreaterThan(Math.max(...sent.map((m) => m.c)));
+    for (const m of last().sent.filter((m) => 'c' in m && m.kind !== 'ping')) last().recv({ kind: 'ack', c: m.c, t: Date.now(), ok: true });
+    await Promise.resolve();
+    expect(b.metrics!().pending).toBe(0);
+    expect(disk[KEY]).toEqual([]);
+  });
+
+  it('another key’s outbox (paired as someone else) and another day’s are dropped; at most 120 kept', async () => {
+    disk = { [KEY]: [{ c: 5, d: tokyoDay(Date.now()) - 1, m: { v: 3, c: 5, kind: 'world', op: 'watered', id: 'fl:1:1' } }] };
+    disk['cd'.repeat(32)] = [{ c: 6, d: tokyoDay(Date.now()), m: { v: 3, c: 6, kind: 'world', op: 'watered', id: 'fl:1:3' } }];
+    const a = boot();
+    expect(a.metrics!().pending).toBe(1);
+    a.start();
+    last().welcome();
+    expect(last().sent.some((m) => m.kind === 'world')).toBe(false);
+    expect(a.metrics!().pending).toBe(0);
+    for (let i = 0; i < 130; i++) a.send({ kind: 'world', op: 'watered', id: `fl:${i}:0` });
+    await Promise.resolve();
+    expect(disk[KEY]).toHaveLength(120);
+  });
+
+  it('in localStorage: under the key’s hash (never the key), read back only for that key', async () => {
+    const m = new Map<string, string>();
+    const kv: KV = { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => void m.set(k, v), removeItem: (k) => void m.delete(k) };
+    configureStorage({ local: kv });
+    const make = () => createLive({ url: 'wss://relay.test/room', key: () => key, WebSocket: FakeWS as never, env, since });
+    online = false;
+    make().send({ kind: 'world', op: 'watered', id: 'fl:1:2' });
+    await Promise.resolve();
+    const raw = m.get('island.liveOutbox')!;
+    expect(raw).not.toContain(KEY);
+    expect(JSON.parse(raw).es).toHaveLength(1);
+    expect(make().metrics!().pending).toBe(1);
+    key = 'cd'.repeat(32);
+    expect(make().metrics!().pending).toBe(0);
+    configureStorage({ local: null });
   });
 });
