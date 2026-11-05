@@ -27,6 +27,8 @@
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import { doorReady, provideDoor } from '#lib/ui-state/doorTransition.ts';
   import { cue } from '#lib/sound/cues.ts';
+  import { setPlace } from '#lib/sound/sound.svelte.ts';
+  import { MUSEUM_MUSIC, Settle, type PlaceId } from '#lib/sound/places.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
@@ -40,7 +42,7 @@
   import type { Intent, Pt as WirePt, Relayed } from '#lib/sync/live-protocol.ts';
   import { hook } from '../island/devHooks.ts';
   import { now } from '#lib/time/clock.ts';
-  import { ENTRANCE, type Pt } from './plan.ts';
+  import { ENTRANCE, wingHeld, type Pt, type Wing } from './plan.ts';
   import { onShow, type Specimen } from './species.ts';
   import { CURATOR, curatorLine } from './lines.ts';
   import { benchSeats, seatOf, type MuseumSeat } from './seats.ts';
@@ -109,6 +111,17 @@
     if (then) arriving = setTimeout(then, ms + 30);
   }
   let walkPathOf: (from: Pt, to: Pt) => Pt[] = () => [];
+
+  // ---- the music: each room its own (sound/places.ts), as in NH; it changes once my villager has gone through a
+  // doorway and stayed (wingHeld, then Settle), read on the frames drawn (none while nothing moves) ----
+  let wing: Wing = 'hall';
+  const music = new Settle<PlaceId>(setPlace);
+  function heardMusic() {
+    const at = eng?.at(me);
+    if (!at) return;
+    wing = wingHeld(wing, at[0]);
+    music.to(MUSEUM_MUSIC[wing]);
+  }
 
   // ---- the benches (seats.ts): walk up to the nearest free seat, then on; one villager a seat, the first keeps it ----
   const seats = createSeating<MuseumSeat>(me);
@@ -358,6 +371,7 @@
 
   onMount(() => {
     let alive = true;
+    music.now(MUSEUM_MUSIC.hall);
     islandLayout.attach(relay, me, demo);
     shared.attach(relay, me, demo);
     own?.start();
@@ -393,7 +407,7 @@
         e.put(me, [ENTRANCE[0] + sideX(me), ENTRANCE[1] + 6], Math.PI);
         e.firstPerson(fpv, true);
         // (the balloons carried with their speakers while the camera moves: Talk.track, Says.track)
-        e.onDrawn(() => (talk?.track(), says?.track()));
+        e.onDrawn(() => (talk?.track(), says?.track(), heardMusic()));
         eng = e;
         othersShown();
         walkTo([ENTRANCE[0] + sideX(me), ENTRANCE[1] - 14]);
@@ -409,6 +423,8 @@
     if (canvas) ro.observe(canvas);
     return () => {
       alive = false;
+      music.stop();
+      setPlace(null);
       send({ kind: 'tent', in: false });
       // (a walk to a bench still on its way: no sit or its sound once out)
       clearTimeout(arriving);

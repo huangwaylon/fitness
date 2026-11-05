@@ -2252,6 +2252,29 @@ crossfade at the boundaries:
 Chased by Bees loops from the nest's fall; a net brings the island's music back; a sting plays Stung by Bees once. K.K.'s
 songs are cut-ins too. The settings' note and the Now Playing tile name the event track or song.
 
+### Place music
+
+As in NH, a building's room plays its own track in place of the island's (`places.ts`, `sound.svelte.ts setPlace`),
+with the hour's 3 s crossfade going in and coming back out. What sounds, first there wins (`pickMusic`): the opening
+theme, a cut-in (K.K., the wasps), the room's track, the island's (the event's on its day, else the hour's). So indoors
+on an event day the room's music plays, as in NH; a cut-in still plays over a room.
+
+| Where | Track (`places.<id>`) |
+| --- | --- |
+| The museum's hall / bug wing / aquarium | `museum-hall` 博物館（エントランス） / `museum-bugs` / `museum-fish` |
+| The shop | `shop` タヌキ商店 |
+| The tent and the homes | none: NH's houses play the hour's music |
+
+The museum's room is my villager's, read on the frames drawn (none while nothing moves): it changes once the villager is
+6 units through an opening (`plan.ts wingHeld`) and has stayed 0.6 s (`Settle`), so a doorway never flaps. The shop has
+no hours or upgrade, so `shop-closing` and `shop-big` aren't used; a variant without a file plays its main room's
+(`shop-big` → `shop`, `museum-fossils` / `museum-art` → `museum-hall`). `able-sisters`, `resident-*`, `redd` and
+`dreaming` have no room yet (the closet is a level of せってい, under the sheet's muffle: it keeps whatever plays). A room
+without a file keeps the island's music. Tapping the museum's or the shop's door fetches its track while the villager
+walks up (`prefetchPlace`); indoors the island's file stays in memory (pinned) so leaving starts it at once, and the
+room's is released on the way out. Nothing is fetched while ミュージック is off. The settings' note and the Now Playing
+tile name the room's track (`sound.title.<id>`, NH's names).
+
 ### K.K. Slider
 
 `kk.ts kkTracks`: K.K.'s songs from the manifest's `kk` list (`{ id, ja, en, file, gain }`, NH's official titles),
@@ -2309,7 +2332,7 @@ Buses: music 0.30, ambience 0.28, effects 0.90; master 音量 squared (default 0
 ### Audio files
 
 `static/audio/manifest.json` (bundled by `manifest.ts`): `sfx.<id>`, `music.<weather>.<00–23>` = `{file, start, end?,
-gain?}`, `opening`, `ambient.<id>`, `events.<id>` (the same shape) and `kk[]`. Add a file and its entry, no code change;
+gain?}`, `opening`, `ambient.<id>`, `events.<id>`, `places.<id>` (the same shape) and `kk[]`. Add a file and its entry, no code change;
 a missing effect keeps its placeholder, missing ambience its procedural bed, missing music is silence. `sound.test.ts`:
 files exist and are named, ≤ 1 MB a looped track, ≤ 20 MB for `music/`, ≤ 1.2 MB a K.K. song, ≤ 12 MB for `kk/`. `npm
 run audio:music -- <dir>` (`scripts/music.ts`, ffmpeg) builds the hours from the user's MP3s (finds the loop, appends the

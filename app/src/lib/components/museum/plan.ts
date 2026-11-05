@@ -90,6 +90,12 @@ export function wingAt(x: number): Wing {
   if (x > HALL.x1 + 4) return 'fish';
   return 'hall';
 }
+/** The wing a player is in, sticky at the openings (its music: sound/places.ts): another wing only once `x` is
+ *  `band` past the opening's line, so standing in the doorway keeps the room one came from. */
+export function wingHeld(prev: Wing, x: number, band = 6): Wing {
+  const a = wingAt(x - band), b = wingAt(x + band);
+  return a === b ? a : prev;
+}
 
 // ---- the walk ------------------------------------------------------------------------------------------------------
 

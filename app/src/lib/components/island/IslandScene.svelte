@@ -81,6 +81,7 @@
   import { addDays } from '#lib/time/dates.ts';
   import { actors, addFx, applyStep, busy, eventsQuiet, inMotion, react, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
+  import { prefetchPlace } from '#lib/sound/sound.svelte.ts';
   import { walkGeo, walkable } from './walkGraph.ts';
   import { weedsAt } from './care.ts';
   import { mushroomSpots } from './mushrooms.ts';
@@ -946,6 +947,8 @@
     if (covered || entering || (id !== 'campsite' && !BUILDINGS.some((b) => b.id === id))) return;
     const door = doorAt(id), at = livePos('mine');
     const goIn = () => goInto(id);
+    // the room's music fetched on the way (sound/places.ts; the door's black covers what's left)
+    if (id === 'museum' || id === 'shop') prefetchPlace(id === 'shop' ? 'shop' : 'museum-hall');
     clearTimeout(walkingIn);
     if (Math.hypot(at[0] - door[0], at[1] - door[1]) <= TENT_NEAR_U) return goIn();
     const p = sendTo(door[0], door[1]);
