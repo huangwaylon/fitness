@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { lazy, newWorker, reloadUnlessLeaving, RELOAD_WINDOW_MS, safeReload } from './reload.ts';
+import { isChunkError, lazy, newWorker, reloadUnlessLeaving, RELOAD_WINDOW_MS, safeReload } from './reload.ts';
 
 const reload = vi.fn();
 beforeEach(() => {
@@ -55,6 +55,28 @@ describe('lazy', () => {
     }
     await new Promise((r) => setTimeout(r, 0));
     expect(reload).not.toHaveBeenCalled();
+  });
+});
+
+describe('isChunkError (only a chunk not fetched reloads)', () => {
+  it('the browsers\' module-load TypeErrors and Vite\'s CSS preload', () => {
+    for (const m of ['Failed to fetch dynamically imported module: https://x/_app/immutable/chunks/a.js', 'Importing a module script failed.', 'error loading dynamically imported module: https://x/a.js'])
+      expect(isChunkError(new TypeError(m)), m).toBe(true);
+    expect(isChunkError(new Error('Unable to preload CSS for /_app/immutable/assets/a.css'))).toBe(true);
+  });
+  it('not a module that threw as it ran, nor anything else', () => {
+    for (const e of [new TypeError("Cannot read properties of undefined (reading 'x')"), new TypeError('undefined is not an object'), new Error('boom'), new SyntaxError('Unexpected token'), 'x', null, undefined])
+      expect(isChunkError(e), String(e)).toBe(false);
+  });
+  it('lazy reloads nothing for a module that threw (the sound\'s renderer, a JSON chunk), still forgets it', async () => {
+    const load = vi.fn().mockRejectedValueOnce(new TypeError("Cannot read properties of undefined (reading 'ctx')")).mockResolvedValue('mod');
+    const deployedNow = vi.fn(async () => 'next');
+    const get = lazy(load, deployedNow);
+    await expect(get()).rejects.toThrow(TypeError);
+    await new Promise((r) => setTimeout(r, 0));
+    expect(deployedNow).not.toHaveBeenCalled();
+    expect(reload).not.toHaveBeenCalled();
+    expect(await get()).toBe('mod');
   });
 });
 

@@ -848,7 +848,9 @@ with gzip at Fast 4G, Chromium 393 × 852 at 4× CPU, `?demo`):
   `_app/version.json` names another version than the running one, once that version a session (sessionStorage
   `island.chunkReloadFor`), and only once its service worker controls the page. A chunk of the running build that
   keeps failing reloads nothing (it reloaded every 30-60 s for good: each retry's failure, and Vite's
-  `vite:preloadError` again).
+  `vite:preloadError` again). Only a chunk not fetched (`isChunkError`: the browsers' module-load TypeErrors, Vite's
+  CSS preload's): the preload helper reports every lazy import that rejects, a module that threw as it ran too (the
+  sound's renderer, the birthdays, K.K.'s songs), which a reload doesn't cure.
 - **Static files keep Pages' default cache** (revalidated): `/room/*`, `/terrain/*` and `/art/*` are not
   content-hashed by name (a `?v=` on some, none on the tent's walls and floors, the terrain's strata, the art), and
   `_headers` can't match a query string.

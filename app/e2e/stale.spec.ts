@@ -62,3 +62,18 @@ test('a chunk of the running build that keeps failing reloads nothing (the deplo
   expect(navs).toEqual([]);
   expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt'))).toBeNull();
 });
+
+test('a chunk that loads but throws as it runs reloads nothing, even with a newer build deployed', { tag: '@chromium' }, async ({ page }) => {
+  await page.goto('?demo&critter=none&visitor=none&date=2026-11-04T12:00');
+  await expect(hudMenu(page)).toBeVisible();
+  await is3d(page);
+  await unfoldMenu(page);
+  await page.route('**/_app/immutable/**/*.js', (route) => route.fulfill({ contentType: 'text/javascript', body: 'throw new TypeError("e2e: a module that throws");' }));
+  await page.route('**/_app/version.json', (route) => route.fulfill({ contentType: 'application/json', body: '{"version":"next"}' }));
+  const navs: string[] = [];
+  page.on('framenavigated', (f) => f === page.mainFrame() && navs.push(f.url()));
+  await hudBells(page).click();
+  await page.waitForTimeout(2000);
+  expect(navs).toEqual([]);
+  expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt'))).toBeNull();
+});
