@@ -15,7 +15,7 @@ export const GOAL_DIRS = ['atLeast', 'atMost', 'target'] as const satisfies read
 export type GoalGroup = 'activity' | 'body' | 'food';
 
 /** Every goal, in the screens' order: かつどう, からだ, then ごはん (kcal and the nutrients: a snapshot's keys). */
-export const GOAL_IDS = ['steps', 'move', 'exercise', 'stand', 'weight', 'body_fat_pct', 'bmi', 'lean_kg', 'k', 'p', 'fa', 'c', 's'] as const;
+export const GOAL_IDS = ['steps', 'move', 'exercise', 'stand', 'weight', 'body_fat_pct', 'bmi', 'lean_kg', 'k', 'p', 'fa', 'c', 's', 'fi', 'al'] as const;
 export type GoalId = (typeof GOAL_IDS)[number];
 
 export interface GoalDef {
@@ -39,8 +39,9 @@ export interface GoalDef {
   fallback: number | Readonly<Record<'A' | 'B', number>> | null;
   /** A default computed from the person's data where `fallback` has none (model/food.ts foodDefault): `protein` (1.6 g ×
    *  the latest weigh-in, at least the 推奨量), `energy` (the daily energy from the profile, less a deficit while
-   *  losing: model/profile.ts kcalDefault), `salt` (食事摂取基準's ceiling by sex: saltDefault). Never over a set goal. */
-  derived?: 'protein' | 'energy' | 'salt';
+   *  losing: model/profile.ts kcalDefault), `salt` (食事摂取基準's ceiling by sex: saltDefault), `fibre` (its 目標量 by
+   *  sex and age: fibreDefault). Never over a set goal. */
+  derived?: 'protein' | 'energy' | 'salt' | 'fibre';
   /** `target` only: met within ± this share of the goal (0.1: 2,000 kcal ± 200). */
   band?: number;
   /** Whether the ベル read it (the stamp card: steps and Move). Exercise and Stand earn on config/rules.ts RULES.goals' fixed values
@@ -54,7 +55,8 @@ export interface GoalDef {
  * - からだ: 体重 and BMI near a value (a cut and a bulk both aim at a number: neither side of it is "good", and a lower
  *   weight is never rewarded: *Weight never earns*); 体脂肪率 at most; 除脂肪体重 (muscle) at least.
  * - ごはん: kcal near a value (±10 %: a low day is no win, the lifter's surplus no fault); protein at least; fat at most;
- *   carbs near a value (±15 %: fuel for training, less on a cut); salt at most.
+ *   carbs near a value (±15 %: fuel for training, less on a cut); salt at most; fibre at least (食事摂取基準's 目標量 is
+ *   a floor); alcohol at most (20 g until set: 厚労省's 節度ある適度な飲酒, docs/decisions.md "Fibre and alcohol").
  */
 const DEFS = {
   steps: { group: 'activity', key: 'stepsGoal', dir: 'atLeast', min: 1000, max: 30000, step: 500, history: 'daily', clearable: false, fallback: 8000, earns: true },
@@ -69,7 +71,9 @@ const DEFS = {
   p: { group: 'food', key: 'proteinGoal', dir: 'atLeast', min: 10, max: 400, step: 5, history: 'latest', clearable: true, fallback: null, derived: 'protein' },
   fa: { group: 'food', key: 'fatGoal', dir: 'atMost', min: 10, max: 300, step: 5, history: 'latest', clearable: true, fallback: null },
   c: { group: 'food', key: 'carbsGoal', dir: 'target', min: 20, max: 800, step: 5, history: 'latest', clearable: true, fallback: null, band: 0.15 },
-  s: { group: 'food', key: 'saltGoal', dir: 'atMost', min: 1, max: 20, step: 0.5, history: 'latest', clearable: true, fallback: null, derived: 'salt' }
+  s: { group: 'food', key: 'saltGoal', dir: 'atMost', min: 1, max: 20, step: 0.5, history: 'latest', clearable: true, fallback: null, derived: 'salt' },
+  fi: { group: 'food', key: 'fibreGoal', dir: 'atLeast', min: 5, max: 60, step: 1, history: 'latest', clearable: true, fallback: null, derived: 'fibre' },
+  al: { group: 'food', key: 'alcoholGoal', dir: 'atMost', min: 1, max: 100, step: 1, history: 'latest', clearable: true, fallback: 20 }
 } as const satisfies Record<GoalId, GoalDef>;
 export const GOALS: Readonly<Record<GoalId, GoalDef>> = DEFS;
 /** A goal's `pref` key; `LatestGoalKey` those kept as the latest only (model/state.ts Prefs). */

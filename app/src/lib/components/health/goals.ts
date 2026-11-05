@@ -39,9 +39,9 @@ export interface GoalSpec {
 }
 
 /** What the editor's −/＋ add, by goal: rounder than the record's grid where that is 1 or 0.1. */
-const NUDGE: Record<GoalId, number> = { steps: 500, move: 10, exercise: 5, stand: 10, weight: 0.5, body_fat_pct: 0.5, bmi: 0.5, lean_kg: 0.5, k: 50, p: 5, fa: 5, c: 5, s: 0.5 };
+const NUDGE: Record<GoalId, number> = { steps: 500, move: 10, exercise: 5, stand: 10, weight: 0.5, body_fat_pct: 0.5, bmi: 0.5, lean_kg: 0.5, k: 50, p: 5, fa: 5, c: 5, s: 0.5, fi: 1, al: 5 };
 /** Where −/＋ start with none set: about a usual day's (the body ones start from the period's average, the card's). */
-const START: Record<GoalId, number> = { steps: 8000, move: 500, exercise: 60, stand: 120, weight: 60, body_fat_pct: 20, bmi: 22, lean_kg: 50, k: 2000, p: 100, fa: 60, c: 250, s: 7.5 };
+const START: Record<GoalId, number> = { steps: 8000, move: 500, exercise: 60, stand: 120, weight: 60, body_fat_pct: 20, bmi: 22, lean_kg: 50, k: 2000, p: 100, fa: 60, c: 250, s: 7.5, fi: 20, al: 20 };
 /** The lowest kcal goal ごはん offers (the coach: 1,200 is the usual unsupervised floor; the record takes 1,000). */
 const KCAL_GOAL_MIN = 1200;
 
@@ -101,7 +101,7 @@ function spec(id: GoalId): GoalSpec {
     hint: () => t('goal.range', { min: num(min), max: num(g.max), step: num(NUDGE[id]), u: t(`goal.u.${id}`) }),
     // a goal a day keeps: from today on (the past keeps its own); Exercise and Stand: the ベル still go by the fixed ones
     note: fixed !== null ? () => t('goal.note.fixed', { g: valueText(id, fixed) }) : g.history === 'daily' ? () => t('goal.note.today')
-      : id === 'p' || id === 'k' || id === 's' ? () => t(`food.goalNote.${id}`) : undefined
+      : id === 'p' || id === 'k' || id === 's' || id === 'fi' || id === 'al' ? () => t(`food.goalNote.${id}`) : undefined
   };
 }
 const SPECS = {} as Record<GoalId, GoalSpec>;

@@ -24,14 +24,14 @@ describe('the goal registry', () => {
     expect([...GOAL_PREF_KEYS].sort()).toEqual([...GOAL_KEYS].sort());
     expect(GOAL_KEYS.every((k) => PREF_KEYS.includes(k))).toBe(true);
     expect([goalKeysOf('body'), goalKeysOf('food')]).toEqual([
-      ['goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean'], ['kcalGoal', 'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal']
+      ['goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean'], ['kcalGoal', 'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'fibreGoal', 'alcoholGoal']
     ]);
   });
   it('the directions chosen (docs/decisions.md "Goal directions")', () => {
     expect(Object.fromEntries(GOAL_IDS.map((id) => [id, GOALS[id].dir]))).toEqual({
       steps: 'atLeast', move: 'atLeast', exercise: 'atLeast', stand: 'atLeast',
       weight: 'target', body_fat_pct: 'atMost', bmi: 'target', lean_kg: 'atLeast',
-      k: 'target', p: 'atLeast', fa: 'atMost', c: 'target', s: 'atMost'
+      k: 'target', p: 'atLeast', fa: 'atMost', c: 'target', s: 'atMost', fi: 'atLeast', al: 'atMost'
     });
   });
   it('values: in range, on the grid; clearing only where it may', () => {

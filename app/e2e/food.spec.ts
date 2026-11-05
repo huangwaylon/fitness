@@ -274,7 +274,7 @@ test('グラフ on the guest’s phone: its own kcal only, a member’s too', as
   await openFood(page, '&as=G');
   await sheet(page).locator('[data-tab=chart]').click();
   // nothing logged yet: each intake card says so under its goal (the guest's own, set there)
-  await expect(sheet(page).locator('[data-food-chart] [data-food-empty]')).toHaveCount(5);
+  await expect(sheet(page).locator('[data-food-chart] [data-food-empty]')).toHaveCount(7);
   await expect(sheet(page).locator('[data-food-chart=k] button[data-goal]')).toHaveCount(1);
   await expect(sheet(page).locator('[data-metric]')).toHaveCount(0);
   await sheet(page).locator('select[data-pick=who]').selectOption('A');
@@ -335,14 +335,15 @@ test('the goals: set in place on my cards (kcal, protein, salt), shown on the da
   await expect(sheet(page).locator('[data-nutrient=s] small')).toHaveText(/^目標 7\.5\sg\s以下$/);
   await expect(sheet(page).locator('[data-nutrient=fa] small, [data-nutrient=c] small')).toHaveCount(0);
 
-  // グラフ: a card each, kcal, protein, fat, carbs, salt; each with its goal's chip
+  // グラフ: a card each, kcal, protein, fat, carbs, salt, fibre, alcohol; each with its goal's chip
   await sheet(page).locator('[data-tab=chart]').click();
   const cards = sheet(page).locator('[data-food-chart]');
-  await expect(cards).toHaveCount(5);
-  expect(await cards.evaluateAll((cs) => cs.map((c) => c.getAttribute('data-food-chart')))).toEqual(['k', 'p', 'fa', 'c', 's']);
-  await expect(sheet(page).locator('[data-food-chart] h3')).toHaveText(['たべた カロリー', 'たんぱく質', '脂質', '炭水化物', '塩分']);
-  // each its direction: kcal near a value, protein at least, fat at most, carbs near a value, salt at most
-  expect(await cards.evaluateAll((cs) => cs.map((c) => c.getAttribute('data-goal-dir')))).toEqual(['target', 'atLeast', 'atMost', 'target', 'atMost']);
+  await expect(cards).toHaveCount(7);
+  expect(await cards.evaluateAll((cs) => cs.map((c) => c.getAttribute('data-food-chart')))).toEqual(['k', 'p', 'fa', 'c', 's', 'fi', 'al']);
+  await expect(sheet(page).locator('[data-food-chart] h3')).toHaveText(['たべた カロリー', 'たんぱく質', '脂質', '炭水化物', '塩分', '食物繊維', 'アルコール']);
+  // each its direction: kcal near a value, protein at least, fat at most, carbs near a value, salt at most, fibre at
+  // least, alcohol at most
+  expect(await cards.evaluateAll((cs) => cs.map((c) => c.getAttribute('data-goal-dir')))).toEqual(['target', 'atLeast', 'atMost', 'target', 'atMost', 'atLeast', 'atMost']);
   await expect(sheet(page).locator('[data-food-chart=k] [data-goal-line]')).toHaveText(/^目標 2,250\skcal\s前後$/);
   await expect(sheet(page).locator('[data-food-chart=k] button[data-goal]')).toHaveText('目標 2,250 kcal 前後');
   const protein = sheet(page).locator('[data-food-chart=p]');
@@ -383,7 +384,7 @@ test('the goals: set in place on my cards (kcal, protein, salt), shown on the da
   await sheet(page).locator('select[data-pick=who]').selectOption('B');
   await expect(sheet(page).locator('span[data-goal=kcal-goal]')).toHaveText('目標 1,700 kcal 前後');
   await sheet(page).locator('[data-tab=chart]').click();
-  await expect(sheet(page).locator('[data-food-chart] span[data-goal]')).toHaveCount(5);
+  await expect(sheet(page).locator('[data-food-chart] span[data-goal]')).toHaveCount(7);
   await expect(sheet(page).locator('[data-food-chart] button[data-goal]')).toHaveCount(0);
 });
 

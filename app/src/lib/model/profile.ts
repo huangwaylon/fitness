@@ -120,6 +120,16 @@ export function saltDefault(s: State, who: Who, t: number): number | null {
   return sex && (age === null || age >= 15) ? SALT_LIMIT[sex] : null;
 }
 
+/** Fibre's 目標量 a day (g, at least), 日本人の食事摂取基準（2025年版）, adults (18–64): men 20 (22 from 30), women 18. */
+export const fibreTarget = (sex: Sex, age: number | null): number => (sex === 'f' ? 18 : age !== null && age >= 30 && age < 65 ? 22 : 20);
+
+/** `who`'s default fibre floor (fibreTarget by their sex and age; no birth date: the 18–29 value), or null without a
+ *  sex or under 18 (the 目標量 above is the adults'). */
+export function fibreDefault(s: Pick<State, 'prefs'>, who: Who, t: number): number | null {
+  const { sex } = profileOf(s, who), age = ageAt(s, who, t);
+  return sex && (age === null || age >= 18) ? fibreTarget(sex, age) : null;
+}
+
 /** Protein's 推奨量 (RDA) a day (g), 食事摂取基準 2025, adults: men 65 (60 from 65), women 50. */
 export const proteinRda = (sex: Sex, age: number): number => (sex === 'f' ? 50 : age >= 65 ? 60 : 65);
 

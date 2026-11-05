@@ -69,7 +69,11 @@ export const halfWidth = (text: string): string => text.replace(/[０-９．，]
 export function itemOf(f: FoodSnap, db: FoodDb | null, g?: number): Item {
   const it = db?.entries.find((e) => e.it.id === f.id)?.it;
   const own = it ? null : snapPortion(f.u, g);
-  return { ...(it ?? {}), ...(own ? { portions: [own] } : {}), id: f.id, name: f.n, kcal: f.k, p: f.p, f: f.fa, c: f.c, salt: f.s };
+  return { ...(it ?? {}), ...(own ? { portions: [own] } : {}), id: f.id, name: f.n, ...snapValues(f) };
+}
+/** A snapshot's values as an item's (fibre and alcohol only when known). */
+function snapValues(f: FoodSnap): Pick<Item, 'kcal' | 'p' | 'f' | 'c' | 'salt' | 'fib' | 'alc'> {
+  return { kcal: f.k, p: f.p, f: f.fa, c: f.c, salt: f.s, ...(typeof f.fi === 'number' ? { fib: f.fi } : {}), ...(typeof f.al === 'number' ? { alc: f.al } : {}) };
 }
 /** The portion an entry's label and grams name (「茶碗1杯×2」 of 300 g → 茶碗1杯 of 150 g); none for 100 g or typed grams. */
 function snapPortion(u: string | undefined, g: number | undefined): Portion | null {
@@ -188,7 +192,7 @@ export function recipeItem(r: Recipe): Item {
   const portions: Portion[] = [{ label: one.label, g: one.g }];
   const all = f.sv ? one.g * r.sv : r.total.g;
   if (r.sv > 1 && all <= FOOD_GRAMS.max) portions.push({ label: 'ぜんぶ', g: all });
-  return { id: f.id, name: f.n, kcal: f.k, p: f.p, f: f.fa, c: f.c, salt: f.s, portions };
+  return { id: f.id, name: f.n, ...snapValues(f), portions };
 }
 
 /** Whether a recipe logs by the serving (an ingredient of no known weight: its snapshot `sv`). */
@@ -203,7 +207,7 @@ export interface RecipeDraft { n: string; sv: number; it: RepeatItem[] }
  *  it when its weight is known). With no weight its one portion is a nominal 100 g: FoodAmount's `serving` mode. */
 export function customItem(c: FoodCustom): Item {
   const f = customSnap(c);
-  return { id: f.id, name: f.n, kcal: f.k, p: f.p, f: f.fa, c: f.c, salt: f.s, portions: customPortions(c) };
+  return { id: f.id, name: f.n, ...snapValues(f), portions: customPortions(c) };
 }
 
 /** A custom food's serving in words: 「1食」, 「1パック（120g）」. */

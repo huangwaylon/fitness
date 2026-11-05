@@ -249,3 +249,34 @@ describe('food_custom', () => {
   });
 });
 
+describe('fibre and alcohol (`fi`, `al`: optional, since 2026-11-05)', () => {
+  const BEER = { id: 'mext:16006', n: 'ビール', k: 39, p: 0.3, fa: 0, c: 3.1, s: 0, fi: 0, al: 3.7 };
+  const op = (f: unknown) => foodOp({ id: 'fabcdef1', at: T, d: '2026-11-03', m: 'd', g: 350, f }) as Extract<FoodOp, { d: string }> | null;
+  const round2 = (v: number | null) => (v === null ? null : Math.round(v * 100) / 100);
+  it('a snapshot keeps them when known, drops them when null or absent; an old-format one reads as before', () => {
+    const { fi: _fi, al: _al, ...bare } = BEER;
+    const got = [
+      op(BEER)?.f, op({ ...BEER, fi: null, al: undefined })?.f, op(RICE)?.f, op({ ...BEER, fi: 100, al: 0 })?.f,
+      (foodRepeatOp({ id: 'rabcdef1', at: T, m: 'b', it: [{ g: 350, f: BEER }], w: 127, from: '2026-11-03' }) as Extract<RepeatOp, { m: string }>).it[0].f, Object.keys(op(RICE)!.f)
+    ];
+    expect(got).toEqual([BEER, bare, RICE, { ...BEER, fi: 100, al: 0 }, BEER, ['id', 'n', 'k', 'p', 'fa', 'c', 's']]);
+  });
+  it('refuses them out of bounds or not numbers (a serving’s, `sv`, up to 500 g)', () => {
+    const bad = [{ ...BEER, fi: -0.1 }, { ...BEER, al: 100.1 }, { ...BEER, fi: '2' }, { ...BEER, al: Infinity }, { ...BEER, al: true }, { ...BEER, sv: true, al: 501 }];
+    expect([...bad.map((f) => op(f)), op({ ...BEER, sv: true, al: 500 })?.f.al]).toEqual([null, null, null, null, null, null, 500]);
+  });
+  it('a recipe sums them (absent when no ingredient knows one), a custom food takes them per serving', () => {
+    const it = [{ g: 350, f: BEER }, { g: 150, f: RICE }];
+    const t = recipeTotals(it);
+    const snap = recipeSnap({ id: 'cabcdef1', n: 'ビールとごはん', sv: 1, it });
+    const plain = recipeSnap({ id: 'cabcdef1', n: 'ごはん', sv: 1, it: [{ g: 150, f: RICE }] });
+    const c = foodCustomOp({ id: 'mabcdef1', at: T, n: 'ハイボール', u: '1杯', g: 350, k: 150, p: 0, fa: 0, c: 0, s: 0, fi: null, al: 28 }) as Extract<CustomOp, { n: string }>;
+    const got = [
+      [t.fi, round2(t.al)], [snap.fi, snap.al], 'fi' in plain || 'al' in plain, customSnap(c), 'fi' in c,
+      foodCustomOp({ id: 'mabcdef1', at: T, n: 'x', u: '1杯', k: 1, p: null, fa: null, c: null, s: null, al: 501 }),
+      foodCustomOp({ id: 'mabcdef1', at: T, n: 'x', u: '1杯', g: 10, k: 1, p: null, fa: null, c: null, s: null, fi: 11 })
+    ];
+    expect(got).toEqual([[0, 12.95], [0, 2.59], false, { id: 'custom:mabcdef1', n: 'ハイボール', k: 42.9, p: 0, fa: 0, c: 0, s: 0, al: 8 }, false, null, null]);
+  });
+});
+

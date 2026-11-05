@@ -36,7 +36,7 @@ describe('foodDay: a day’s meals and their totals', () => {
     // 156 × 1.5 + 190 × 0.5; salt: natto's unknown
     expect(day).toMatchObject({ kcal: 329, p: 12, fa: 5.5, c: 61.7, s: 0 });
     expect(foodDay(s, 'B', '2026-11-03').entries.map((e) => e.id)).toEqual(['fmeal005']);
-    expect(foodDay(s, 'G', '2026-11-03')).toEqual({ entries: [], kcal: 0, p: 0, fa: 0, c: 0, s: 0 });
+    expect(foodDay(s, 'G', '2026-11-03')).toEqual({ entries: [], kcal: 0, p: 0, fa: 0, c: 0, s: 0, fi: null, al: 0 });
   });
 
   it('shows a queued op at once (foldEvents), the guest’s own too', () => {

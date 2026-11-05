@@ -16,14 +16,15 @@ import { isPersonId, isRec, type EventRow } from '#lib/contract/api.ts';
 import type { State } from './state.ts';
 import { rowAt } from './snapshot.ts';
 import { weighIns } from './weight.ts';
-import { kcalDefault, profileOf, ageAt, proteinRda, saltDefault } from './profile.ts';
+import { fibreDefault, kcalDefault, profileOf, ageAt, proteinRda, saltDefault } from './profile.ts';
 import { addDays, daysBetween } from '#lib/time/dates.ts';
-import { GOALS, goalMet, type LatestGoalKey } from '#lib/contract/goals.ts';
+import { goalFallback, GOALS, goalMet, type LatestGoalKey } from '#lib/contract/goals.ts';
 import type { DaySeries } from './health.ts';
 
-/** A day's entries and what they add up to: kcal (whole), protein, fat, carbs and salt (g, one decimal; an unknown
- *  nutrient counts as none). */
-export interface FoodDay { entries: FoodEntry[]; kcal: number; p: number; fa: number; c: number; s: number }
+/** A day's entries and what they add up to: kcal (whole), protein, fat, carbs, salt and alcohol (g, one decimal; an
+ *  unknown nutrient counts as none), and fibre (g, one decimal; null when no entry knows its fibre: an older snapshot
+ *  has none, and most products' labels don't say). */
+export interface FoodDay { entries: FoodEntry[]; kcal: number; p: number; fa: number; c: number; s: number; fi: number | null; al: number }
 
 /** Protein to aim for per kg of body weight a day (g). */
 const PROTEIN_PER_KG = 1.6;
@@ -189,20 +190,25 @@ export function foodDay(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, date: L
   const real = entriesOf(s).filter((e) => e.who === who && e.d === date);
   const reps = repeatsOf(s).filter((r) => r.who === who && repeatCovers(r, date));
   const entries = MEALS.flatMap((m) => [...reps.filter((r) => r.m === m).flatMap((r) => repeatEntries(r, date)), ...real.filter((e) => e.m === m)]);
-  let kcal = 0, p = 0, fa = 0, c = 0, salt = 0;
-  for (const { g, f } of entries) {
-    const x = g / 100;
-    kcal += f.k * x;
-    p += (f.p ?? 0) * x;
-    fa += (f.fa ?? 0) * x;
-    c += (f.c ?? 0) * x;
-    salt += (f.s ?? 0) * x;
-  }
-  return { entries, kcal: Math.round(kcal), p: round1(p), fa: round1(fa), c: round1(c), s: round1(salt) };
+  const t = emptyTotals();
+  for (const { g, f } of entries) addTo(t, g, f);
+  return { entries, kcal: Math.round(t.k), p: round1(t.p), fa: round1(t.fa), c: round1(t.c), s: round1(t.s), fi: t.fi === null ? null : round1(t.fi), al: round1(t.al) };
 }
 
-/** A day's unrounded totals: kcal and each nutrient (g), as a snapshot's keys. */
-type Totals = Record<FoodGoalOf, number>;
+/** A day's unrounded totals: kcal and each nutrient (g), as a snapshot's keys; fibre null while no entry knows it. */
+type Totals = Record<Exclude<FoodGoalOf, 'fi'>, number> & { fi: number | null };
+const emptyTotals = (): Totals => ({ k: 0, p: 0, fa: 0, c: 0, s: 0, fi: null, al: 0 });
+/** `g` grams of `f` into a day's totals (an unknown nutrient as none; fibre known once any entry knows it). */
+function addTo(t: Totals, g: number, f: FoodSnap): void {
+  const x = g / 100;
+  t.k += f.k * x;
+  t.p += (f.p ?? 0) * x;
+  t.fa += (f.fa ?? 0) * x;
+  t.c += (f.c ?? 0) * x;
+  t.s += (f.s ?? 0) * x;
+  t.al += (f.al ?? 0) * x;
+  if (f.fi !== undefined && f.fi !== null) t.fi = (t.fi ?? 0) + f.fi * x;
+}
 const totalsMemo = new WeakMap<object, Map<string, Map<LocalDate, Totals>>>();
 
 /**
@@ -220,13 +226,8 @@ function dayTotals(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, today: Local
   const totals = new Map<LocalDate, Totals>();
   const add = (d: LocalDate, g: number, f: FoodSnap) => {
     let t = totals.get(d);
-    if (!t) totals.set(d, (t = { k: 0, p: 0, fa: 0, c: 0, s: 0 }));
-    const x = g / 100;
-    t.k += f.k * x;
-    t.p += (f.p ?? 0) * x;
-    t.fa += (f.fa ?? 0) * x;
-    t.c += (f.c ?? 0) * x;
-    t.s += (f.s ?? 0) * x;
+    if (!t) totals.set(d, (t = emptyTotals()));
+    addTo(t, g, f);
   };
   for (const e of entriesOf(s)) if (e.who === who && e.d <= today) add(e.d, e.g, e.f);
   for (const r of repeatsOf(s)) {
@@ -259,7 +260,7 @@ export function foodSeries(s: State, who: Who, today: LocalDate, n: FoodGoalOf =
     const vals: (number | null)[] = [];
     for (let i = 0, d = from, days = daysBetween(from, today); i <= days; i++, d = addDays(d, 1)) {
       const v = totals.get(d)?.[n];
-      vals.push(v === undefined ? null : n === 'k' ? Math.round(v) : round1(v));
+      vals.push(v === undefined || v === null ? null : n === 'k' ? Math.round(v) : round1(v));
     }
     byKey.set(key, (hit = { from, to: today, first: from, vals }));
   }
@@ -306,17 +307,19 @@ export function setGoal(s: Pick<State, 'prefs'>, who: Who, n: FoodGoalOf): numbe
   return s.prefs[who][FOOD_GOALS[n].key as LatestGoalKey] ?? null;
 }
 
-/** `who`'s daily goal of `n`: theirs as set, else its default: protein's (proteinDefault), and with a profile kcal's
- *  and salt's (model/profile.ts kcalDefault, saltDefault); fat and carbs have none until set (docs/design.md "Gohan":
+/** `who`'s daily goal of `n`: theirs as set, else its default: protein's (proteinDefault), with a profile kcal's, salt's
+ *  and fibre's (model/profile.ts kcalDefault, saltDefault, fibreDefault), alcohol's 20 g; fat and carbs have none until set (docs/design.md "Gohan":
  *  what they should be depends on the plan). A default never overrides a goal that's set. */
 export function foodGoal(s: State, who: Who, n: FoodGoalOf, t: number): number | null {
   return setGoal(s, who, n) ?? foodDefault(s, who, n, t);
 }
 
-/** `who`'s default goal of `n` (shown while none is set): the registry's computed one (contract/goals.ts `derived`), or null. */
+/** `who`'s default goal of `n` (shown while none is set): the registry's computed one (contract/goals.ts `derived`), else
+ *  its fixed one (`fallback`: alcohol's 20 g), or null. */
 function foodDefault(s: State, who: Who, n: FoodGoalOf, t: number): number | null {
   const d = GOALS[n].derived;
-  return d === 'protein' ? proteinDefault(s, who, t) : d === 'energy' ? kcalDefault(s, who, t) : d === 'salt' ? saltDefault(s, who, t) : null;
+  return d === 'protein' ? proteinDefault(s, who, t) : d === 'energy' ? kcalDefault(s, who, t) : d === 'salt' ? saltDefault(s, who, t)
+    : d === 'fibre' ? fibreDefault(s, who, t) : goalFallback(n, who);
 }
 
 /** A member's default daily protein target (g, whole): PROTEIN_PER_KG × the latest weigh-in as of `t` (a lifter's
