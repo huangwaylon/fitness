@@ -1266,11 +1266,22 @@ decorations' map, `contract/decor.ts`, moved into the layout once as `m-<id>`: l
   world3d/benchBar.ts, no allocation) through poses.ts `press` (1.8 s a rep: up 0.72 s, a pause at the top, down 0.81 s,
   the elbows bending on the way down), and goes back onto the rack as it gets up (RACK_MS 420) or dozes off. Villagers
   and human players alike (the same Hand_L / Hand_R bones). Nothing new on the relay: the use is the seat's, so both
-  phones draw the same; nobody on it, the bar is on the rack as before. Cost: while one presses, +1 draw call (its bar on
-  its own, no shadow), one matrix a frame; at rest none (the bar is the bench's instanced part: +1 draw for all benches).
-  e2e/gym.spec.ts (the bar at the hands over a rep, on both phones; up, racked); benchBar.test.ts (the split's node and
-  bounds, the blend). iOS Simulator (own iPhone 16, iOS 26.5, local build): the bar at the hands' middle (0 u off)
-  through the rep, player and villager, back on the rack once up; 197–208 calls, CPU 1–3 ms. The rest are to look at
+  phones draw the same; nobody on it, the bar is on the rack as before. **What's pressed is the gym's barbell** (the
+  user: "use the larger barbell model, and just hide the small included barbell when we're benching"): as it lies down
+  the bench's small bar leaves the rack and the gym's standalone barbell (catalogue `barbell`, NH's, benchBar.ts HELD)
+  is on the rack in its place, its middle the small bar's and along it; it's lifted from there and put back there, and
+  once it's up (RACK_MS) the barbell goes and the small bar is back. A swap on the rack, not in mid-air: the lift-off
+  and the return keep their blend, and the swap is hidden in the lying down and the getting up. Its size 1.25 × NH's
+  (HELD_SCALE): at NH's own, its 36 u grip fits a villager's hands (23–28 u apart pressing) but not a human player's
+  (32–39 u, in the plates); at 1.25 the grip is 45 u, every presser's hands on it and the plates outside them and
+  outside the rack's uprights. Its model loaded once a mount (things.ts lift `held`: its geometry and the things' bent
+  materials, shared by every bench's; till it's in, the small bar stays on the rack). Cost: while one presses, +1 draw
+  call (the barbell on its own, no shadow; Chromium: 208 calls with it drawn, 207 with it hidden), one matrix a frame; at rest none (the
+  small bar is the bench's instanced part: +1 draw for all benches). e2e/gym.spec.ts (a human player and a villager:
+  the barbell at the hands over a rep, the small bar off the rack, the hands on the grip, on both phones; up, the small
+  bar racked and no barbell); benchBar.test.ts (the split's node and bounds, the blend, the barbell in the bar's frame,
+  its grip). iOS Simulator (own iPhone 16, iOS 26.5, local build): the barbell at the hands' middle (0 u off) through
+  the rep, player and villager, the small bar back on the rack once up; 206–212 calls, CPU p50 2 ms. The rest are to look at
   (a tap jiggles them). **Cost:** a piece is the decorations' instanced model (a
   repeated one adds no draw); its use is the villager's own pose, stepped at the island's ambient rate (the frames it
   draws anyway while a villager shows: `villager3d` `looping()`), never the full one. iOS Simulator (own iPhone 16, iOS

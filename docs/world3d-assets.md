@@ -61,7 +61,9 @@ and texture: +1 draw for every bench on the island), its geometry about its midd
 assets.json's `part` say where it rests (−6.28, 14.29, 0: over the head's end, across the bench along z, 9.95 long).
 gltfpack keeps the nodes and the extras for these (`-kn -ke`). At runtime (world3d/things.ts lift/rest) the bar is
 drawn on the rack with the bench's instances; pressed (world3d/benchBar.ts), that instance's bar is emptied and drawn as
-a mesh of its own (the instanced geometry and bent material, no shadow while off) at the presser's hands.
+a mesh of its own (the instanced geometry and bent material, no shadow while off); what's drawn there is the gym's
+standalone barbell instead (`decor/barbell`, its longest side along the part's axis, its middle at the part's, 1.25 ×
+its own: lift's `held`), on the rack as the presser lies down and at its hands while it presses.
 
 Held tools and accessories: the bug net, the rod and its bobber (NH's wooden ones: the plain ones have no textures
 in the files; the fishing line is the runtime's, a line from the rod's tip), the birthday's cake hats (pink, blue)

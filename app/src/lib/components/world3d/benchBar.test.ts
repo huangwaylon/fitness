@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Matrix4, Quaternion, Vector3 } from 'three';
-import { ASSET_MODELS } from './assets.ts';
-import { barAt, barK, GRAB_MS, RACK_MS } from './benchBar.ts';
+import { ASSET_KEYS, ASSET_MODELS } from './assets.ts';
+import { barAt, barK, GRAB_MS, HELD, HELD_SCALE, heldIn, RACK_MS } from './benchBar.ts';
 
 const GLB = join(import.meta.dirname, '../../../../static/room/world3d/decor/weight-bench.glb');
 /** A GLB's JSON chunk. */
@@ -62,5 +62,31 @@ describe('benchBar', () => {
     const p = new Vector3();
     barAt(new Matrix4(), rest, 'z', l, r, 0.5).decompose(p, new Quaternion(), new Vector3());
     expect(p.distanceTo(new Vector3(5, 35.5, -2.5))).toBeLessThan(1e-6);
+  });
+});
+
+describe('the gym\'s barbell pressed in the small bar\'s place (benchBar HELD)', () => {
+  const m = ASSET_MODELS[HELD], part = ASSET_MODELS['decor/weight-bench'].part!;
+  it('is the gym catalogue\'s barbell, its own model, longer than the bench\'s bar', () => {
+    expect(HELD).toBe('decor/barbell');
+    expect(ASSET_KEYS['decor/barbell-0'].m).toBe(HELD);
+    expect(m.max[0] - m.min[0]).toBeGreaterThan(part.len * 1.5);
+  });
+  it('in the bar\'s frame: its middle at the frame\'s, its length along the bar\'s axis, its own size × HELD_SCALE, up kept', () => {
+    const into = heldIn(new Matrix4(), part.axis, m.min, m.max, HELD_SCALE);
+    const mid = new Vector3((m.min[0] + m.max[0]) / 2, (m.min[1] + m.max[1]) / 2, (m.min[2] + m.max[2]) / 2);
+    expect(mid.clone().applyMatrix4(into).length()).toBeLessThan(1e-6);
+    // its ends (along its x) on the bar's z, as long as it is (scaled)
+    const end = new Vector3(m.max[0], mid.y, mid.z).applyMatrix4(into);
+    expect(Math.abs(end.z)).toBeCloseTo(((m.max[0] - m.min[0]) / 2) * HELD_SCALE);
+    expect(Math.hypot(end.x, end.y)).toBeLessThan(1e-6);
+    const up = new Vector3(mid.x, m.max[1], mid.z).applyMatrix4(into);
+    expect(up.y).toBeCloseTo(((m.max[1] - m.min[1]) / 2) * HELD_SCALE);
+  });
+  it('its grip (between the inner plates, 12 model units) holds a player\'s hands pressing (≤ 39 u apart at the island\'s 3); a villager\'s too', () => {
+    const grip = 12 * 3 * HELD_SCALE;
+    expect(grip).toBeGreaterThan(39 + 4);
+    // (not so long it's twice NH's own)
+    expect(HELD_SCALE).toBeLessThan(1.5);
   });
 });
