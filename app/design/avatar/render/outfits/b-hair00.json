@@ -1,0 +1,22 @@
+{
+ "name": "b-hair00",
+ "skin": "#f6cfa8",
+ "hair": "PlayerHair00",
+ "hairColor": "#2f241d",
+ "eye": "PlayerEye22",
+ "eyeColor": "#3d2416",
+ "mouth": "PlayerMouth01",
+ "mouthFrame": 1,
+ "nose": 0,
+ "cheek": 1,
+ "top": {
+  "mesh": "PlayerTopsTopYshirtsH",
+  "tex": "TopsTexTopYshirtsHPolo7"
+ },
+ "bottom": {
+  "mesh": "PlayerBottomsSkirtLong",
+  "tex": "BottomsTexSkirtLongDenim3"
+ },
+ "shoes": "ShoesLowcutRubbertoe7",
+ "socks": "SocksTexDailysocks1"
+}

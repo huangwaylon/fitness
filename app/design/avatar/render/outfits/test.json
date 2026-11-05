@@ -1,0 +1,4 @@
+{ "name": "test", "skin": "#f6cfae", "hair": "PlayerHair00", "hairColor": "#3a271b", "eye": "PlayerEye00", "mouth": "PlayerMouth00", "nose": 0,
+  "top": { "mesh": "PlayerTopsTopOuterL", "tex": "TopsTexTopOuterLAran0" },
+  "bottom": { "mesh": "PlayerBottomsPantsNormal", "tex": "BottomsTexPantsNormalSlacks0" },
+  "shoes": "ShoesHighcutBasket0", "glasses": "AccessoryGlassCircle0" }
