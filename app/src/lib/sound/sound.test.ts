@@ -49,24 +49,27 @@ describe('audio manifest (static/audio/manifest.json)', () => {
   it('parses cleanly: no unknown ids, hours or weathers', () => {
     expect(parseManifest(raw).problems).toEqual([]);
   });
-  it('every file it names exists, and the music stays small (≤ 1 MB a looped track, ≤ 1.2 MB a K.K. song, ≤ 20 MB and ≤ 12 MB in all)', () => {
-    const paths = [
-      ...Object.values(AUDIO.sfx),
-      ...Object.values(AUDIO.ambient),
-      ...Object.values(AUDIO.music).flatMap((h) => Object.values(h ?? {}).map((t) => t!.file)),
-      ...(AUDIO.opening ? [AUDIO.opening.file] : []),
-      ...Object.values(AUDIO.events).map((t) => t!.file),
-      ...Object.values(AUDIO.places).map((t) => t!.file),
-      ...AUDIO.kk.map((k) => k.file)
-    ] as string[];
+  // Per folder: the most one file and all of them may weigh (MB). Every file streams on its own (never precached), so
+  // one file's cap is what a phone waits for; the folder's is what the repo carries.
+  const BUDGET_MB: Record<string, [file: number, all: number]> = {
+    'music/': [1, 64],
+    'kk/': [1.2, 12]
+  };
+  it('every file it names exists, and the music stays small (each folder under its budget)', () => {
+    // every path in the manifest: the sfx and ambience strings, every `file` at any depth (keys the parser doesn't
+    // read yet included)
+    const walk = (o: unknown): string[] =>
+      typeof o === 'string' ? [o] : o && typeof o === 'object' ? Object.entries(o).flatMap(([k, v]) => (k === '_readme' ? [] : walk(v))) : [];
+    const paths = walk(raw).filter((p) => p.includes('/'));
     const missing = paths.filter((p) => !existsSync(join(STATIC, p)));
     expect(missing).toEqual([]);
-    const sizes = paths.filter((p) => p.startsWith('music/')).map((p) => statSync(join(STATIC, p)).size);
-    for (const s of sizes) expect(s).toBeLessThan(1024 * 1024);
-    expect(sizes.reduce((a, b) => a + b, 0)).toBeLessThan(20 * 1024 * 1024);
-    const kk = paths.filter((p) => p.startsWith('kk/')).map((p) => statSync(join(STATIC, p)).size);
-    for (const s of kk) expect(s).toBeLessThan(1.2 * 1024 * 1024);
-    expect(kk.reduce((a, b) => a + b, 0)).toBeLessThan(12 * 1024 * 1024);
+    for (const p of paths) expect(Object.keys(BUDGET_MB).some((d) => p.startsWith(d)), p).toBe(true);
+    for (const [dir, [file, all]] of Object.entries(BUDGET_MB)) {
+      const sizes = paths.filter((p) => p.startsWith(dir) && !Object.keys(BUDGET_MB).some((d) => d !== dir && d.startsWith(dir) && p.startsWith(d)))
+        .map((p) => statSync(join(STATIC, p)).size);
+      for (const s of sizes) expect(s, dir).toBeLessThan(file * 1024 * 1024);
+      expect(sizes.reduce((a, b) => a + b, 0), dir).toBeLessThan(all * 1024 * 1024);
+    }
     // and every audio file on disk is named (nothing ships unused)
     const onDisk = readdirSync(STATIC, { recursive: true, withFileTypes: true })
       .filter((d) => d.isFile() && d.name !== 'manifest.json')

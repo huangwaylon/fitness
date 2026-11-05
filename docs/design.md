@@ -2383,12 +2383,15 @@ first play (it waits up to 2.5 s for the file, else plays the placeholder) and k
 ### Audio files
 
 `static/audio/manifest.json` (bundled by `manifest.ts`): `sfx.<id>`, `music.<weather>.<00–23>` = `{file, start, end?,
-gain?}`, `opening`, `ambient.<id>`, `events.<id>`, `places.<id>` (the same shape) and `kk[]`. Add a file and its entry, no code change;
-a missing effect keeps its placeholder, missing ambience its procedural bed, missing music is silence. `sound.test.ts`:
-files exist and are named, ≤ 1 MB a looped track, ≤ 20 MB for `music/`, ≤ 1.2 MB a K.K. song, ≤ 12 MB for `kk/`. `npm
-run audio:music -- <dir>` (`scripts/music.ts`, ffmpeg) builds the hours from the user's MP3s (finds the loop, appends the
-copy, AAC 64 kbps, `gain` to −16 LUFS); `-- --extras <dir>` does the event loops and one-shots. Audio is never
-precached ([backend.md](backend.md#service-worker)).
+gain?}`, `opening`, `ambient.<id>`, `events.<id>`, `places.<id>` (the same shape), `kk[]` and `kkAircheck.<id>`. Add a
+file and its entry, no code change; a missing effect keeps its placeholder, missing ambience its procedural bed, missing
+music is silence. `npm run audio:music -- <dir> [--only <key regex>]` (`scripts/music.ts`, ffmpeg) builds every entry
+from the user's MP3s by its track number (`CATALOGUE`): loops (finds the period, cuts it where both passes are the same
+samples, appends the copy), one-shots (silence trimmed), AAC 64 kbps, `gain` to −16 LUFS. The rain and snow rips hold
+one pass and a few seconds of the next, so they loop with their sunny hour's period; rain and snow at 4 PM have no
+exact repeat in the rip and wrap with a 2 s blend. `sound.test.ts`: files exist and are named, each folder under its
+budget (one file / all): `music/` 1 / 64 MB, `kk/` 1.2 / 12 MB. Audio is never precached
+([backend.md](backend.md#service-worker)).
 
 ### Sound settings
 
