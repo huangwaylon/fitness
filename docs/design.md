@@ -1968,15 +1968,21 @@ DEFAULT_LOOKS, the signed-off looks), assembled at runtime from parts converted 
 - **Parts:** one GLB per mesh (`mesh/<key>.glb`: each hairstyle with its greyscale texture, each top's and bottom's
   shape, each shoe's, glasses' and ornament's geometry, their colours sharing it), bound to the body's joints by name;
   one WebP per item (`tex/<id>.webp`, its colour baked, ~1 KB). A colour change of a part is a texture swap.
-- **The part table** (`parts.json`): per item its slot, mesh, textures (per material: file, cutout or see-through,
-  tinted by the hair or the skin), colour line (its id without the digit) and closet icon (the catalogue's
-  `static/art/finds/items/<icon>.webp`, by the community's item names: `scripts/players3d-map.json`). `partIds.json` is
-  every id the app has: `store/look.ts` gives it to `usePartTable`, so a look naming another part (a newer app's) reads
-  as いつもの's part. The relay keeps the form check only (an older relay keeps a newer phone's part).
-- **The first closet:** every hairstyle (37, with NH's 16 under-a-hat cuts), eye (26) and mouth (4), and every colour
-  of the art scout's lines (237 items: 10 tops, 9 bottoms, 6 shoes, 3 socks, 6 glasses and 5 hair-ornament lines):
-  2.9 MB under `/room/player/`, all lazy. An outfit is ~60 KB over the body. `--all` converts the whole closet the sweep
-  found clean (4.7k items, ~19 MB).
+- **The part table:** per item its slot, mesh, textures (per material: file, cutout or see-through, tinted by the hair
+  or the skin), colour line (its id without the digit), swatch `sw` (its texture's own dominant colour: the closet's
+  dot and colour filter, the pixels shared by its line's other colours left out) and closet icon (the catalogue's
+  `static/art/finds/items/<icon>.webp`, by the community's item names: `scripts/players3d-map.json`; `icons` each
+  icon's own colour). Two of it: the whole table beside the parts (`static/room/player/parts.json`, ~1 MB: fetched
+  once when a player is drawn, `parts.ts loadParts`), and the first closet's in the bundle
+  (`components/player3d/parts.json`, 72 KB: what the closet lists now, with the whole one's hash).
+  `contract/partIds.json` is every id the app has (compact: an id ending in a digit by its line), given to
+  `usePartTable` by `store/look.ts`, so a look naming another part (a newer app's) reads as いつもの's part. The relay
+  keeps the form check only (an older relay keeps a newer phone's part).
+- **What's converted:** every hairstyle (37, with NH's 16 under-a-hat cuts), eye (26) and mouth (4), and every
+  top, bottom, shoe, sock, pair of glasses and hair ornament the closet sweep wore cleanly (3,917 items: 272 meshes
+  3.1 MB, textures 11.7 MB, all under `/room/player/`, lazy). The first closet (the bundled table) is every colour of
+  the art scout's lines (237 items). Hats (`--hats`) are converted and worn (over NH's cut-down hair) but not yet
+  listed. An outfit is ~60 KB over the body.
 
 **The runtime** (`components/player3d/`: `player3d.ts`, `tune.ts`, `parts.ts`, `portrait.ts`):
 - `createPlayer(id, look, asset('/room/player'), seed)` → a `Player3D`: villager3d's `Villager3D` (the same

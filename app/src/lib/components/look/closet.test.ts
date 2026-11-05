@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_LOOKS, isOnepiece, isPlayerLook, type PlayerLook } from '#lib/contract/look.ts';
 import PARTS from '../player3d/parts.json' with { type: 'json' };
-import SWATCHES from './swatches.json' with { type: 'json' };
 import { closet, closetFrom, GARMENT_KINDS, hueOf, HUES, itemKey, wear, wornIn, type ClosetKind } from './closet.ts';
 
 const KINDS: ClosetKind[] = ['eye', 'mouth', 'hair', 'top', 'onepiece', 'bottom', 'socks', 'shoes', 'glasses', 'ornament'];
@@ -79,10 +78,11 @@ describe('the part table’s closet (components/player3d/parts.json)', () => {
     expect(new Set(listed)).toEqual(new Set(Object.keys(ITEMS)));
   });
 
-  it('measured every garment’s colour and every icon’s (else: npm run look:swatches)', () => {
-    for (const [id, it] of Object.entries(ITEMS)) {
-      expect(SWATCHES.items[id as keyof typeof SWATCHES.items], id).toMatch(/^#[0-9a-f]{6}$/);
-      if (it.icon) expect(SWATCHES.icons[it.icon as keyof typeof SWATCHES.icons], it.icon).toMatch(/^#[0-9a-f]{6}$/);
+  it('measured every garment’s colour and every icon’s (the pipeline’s sw and icons: npm run players3d)', () => {
+    const icons = (PARTS as { icons: Record<string, string> }).icons;
+    for (const [id, it] of Object.entries(ITEMS) as [string, { sw?: string; icon: string | null }][]) {
+      expect(it.sw, id).toMatch(/^#[0-9a-f]{6}$/);
+      if (it.icon) expect(icons[it.icon], it.icon).toMatch(/^#[0-9a-f]{6}$/);
     }
   });
 

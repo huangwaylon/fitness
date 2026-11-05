@@ -6,17 +6,18 @@
 //   static/room/player/mesh/<key>.glb        each part's mesh alone (a hairstyle with its greyscale texture; a top's
 //                                            shape, a shoe's, a glasses' frame…), bound to the body's joints by name
 //   static/room/player/tex/<id>[.<material>].webp   each item's baked albedo (its colour; tints stay at runtime)
-//   src/lib/components/player3d/parts.json   the part table: every id → its slot, mesh, textures, colour line, icon
+//   src/lib/components/player3d/parts.json   the part table: every id → its slot, mesh, textures, colour line, icon,
+//                                            swatch (the closet's dot); each icon's colour (the closet tints it)
 // Under /room/: the service worker caches what a phone wears on first use, never at install.
 //
 // Which items: the first closet (STARTER below: every hairstyle, eye and mouth, and every colour of the lines the art
 // scout curated, design/avatar/catalog.md), or --all (every item the closet sweep wore cleanly: ~19 MB). The sweep's
 // exclusions are kept (customs designs, underwater variants, NPC aprons, placeholders; umbrellas aren't worn).
 //
-// Usage (from app/): NH_MODELS=~/Downloads/Model node scripts/players3d-models.ts [--all] [--map]
+// Usage (from app/): NH_MODELS=~/Downloads/Model node scripts/players3d-models.ts [--all] [--hats] [--map]
 // The model folder is untrusted input and never part of the repo: only the named folders' .dae and .png files are
 // copied into a scratch dir (three.js reads them in the page; nothing in them is run). Needs Google Chrome (Playwright's
-// channel 'chrome'), cwebp; gltfpack from node_modules. --map refetches the community's item names (Norviah's
+// channel 'chrome'), cwebp and dwebp; gltfpack from node_modules. --map refetches the community's item names (Norviah's
 // animal-crossing data: the closet icons' names) into scripts/players3d-map.json.
 import { chromium } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
@@ -51,9 +52,10 @@ const STARTER: Record<string, RegExp> = {
   shoes: /^Shoes(LowcutRubbertoe|HighcutRubbertoe|LowcutLeathersneker|LowcutSlipon|LowcutLoafers|LowcutSuede)\d$/,
   socks: /^SocksTex(Dailysocks|Line|Footcover)\d$/,
   glasses: /^AccessoryGlass(Circle|Oval|Thurmont|Octagon|Square|Round)\d$/,
-  ornament: /^CapOrnament(LRibbon|TRibbon|LHearthairpin|LFlowerhairpin|LStarhairpin)\d$/
+  ornament: /^CapOrnament(LRibbon|TRibbon|LHearthairpin|LFlowerhairpin|LStarhairpin)\d$/,
+  hat: /^CapHat(Beret|Knitcap)\d$/
 };
-const SLOT_PREFIX: [string, string][] = [['top', 'TopsTex'], ['bottom', 'BottomsTex'], ['shoes', 'Shoes'], ['socks', 'SocksTex'], ['glasses', 'AccessoryGlass'], ['ornament', 'CapOrnament']];
+const SLOT_PREFIX: [string, string][] = [['top', 'TopsTex'], ['bottom', 'BottomsTex'], ['shoes', 'Shoes'], ['socks', 'SocksTex'], ['glasses', 'AccessoryGlass'], ['ornament', 'CapOrnament'], ['hat', 'CapHat']];
 /** The closet sweep's exclusions (design/avatar/closet/excluded.json), and its by-design odd glasses kept out of a
  *  first closet. */
 const excluded = (id: string) => /mydesign|Preview|3ds|UnderWater|apron|Apron|Plt\d|Glassmouth/.test(id) || /^AccessoryGlass(Monocle|PilotDoc|MirrorGray)/.test(id);
@@ -65,7 +67,8 @@ interface Item { id: string; slot: string; mesh: string | null; onepiece?: boole
 const items: Item[] = [];
 for (const id of NAMES) {
   const slot = SLOT_PREFIX.find(([, p]) => id.startsWith(p))?.[0];
-  if (!slot || excluded(id) || (!all && !STARTER[slot].test(id))) continue;
+  // (hats only with --hats: the runtime wears them over NH's cut-down hair, the closet hasn't their grid yet)
+  if (!slot || excluded(id) || (slot === 'hat' && !process.argv.includes('--hats')) || (!all && !STARTER[slot].test(id))) continue;
   if (slot === 'glasses' && id.startsWith('AccessoryGlassmouth')) continue;
   let mesh: string | null = null;
   if (slot === 'top') mesh = topsMeshes.find((m) => id.slice(7).startsWith(m.slice(10))) ?? null;
@@ -196,7 +199,7 @@ function pack(r: { gltf: string }, out: string) {
 
 for (const f of ['PlayerBody', 'PlayerEye00', 'PlayerMouth00']) copy(f);
 await call('init', files);
-const table: Record<string, unknown> = { _: 'scripts/players3d-models.ts: the player parts (static/room/player/…: KB, content hash v), and per item its slot, mesh, textures (material → file), colour line, icon (static/art/finds/items/<icon>.webp)' };
+const table: Record<string, unknown> = { _: 'scripts/players3d-models.ts: the player parts (static/room/player/…: KB, content hash v), and per item its slot, mesh, textures (material → file), colour line, icon (static/art/finds/items/<icon>.webp), swatch sw (its own colour); icons: each catalogue icon\'s own colour' };
 
 // the body
 const b = await call<{ gltf: string; tris: number }>('bodyGltf');
@@ -234,6 +237,7 @@ let texKB = 0;
 for (const it of items) {
   const more = { ...copy(it.id), ...(it.mesh ? copy(it.mesh) : {}) };
   const value = it.slot === 'top' ? { mesh: it.mesh, tex: it.id, onepiece: it.onepiece } : it.slot === 'bottom' ? { mesh: it.mesh, tex: it.id } : it.id;
+  // (player.js wears an ornament, as a hat, in its hat slot: on the crown)
   const slot = it.slot === 'ornament' ? 'hat' : it.slot;
   const mats = await call<Record<string, { png: string | null; cut: boolean; glass: boolean; opacity: number; color: string | null; tint: string | null }>>('itemTex', slot, value, more);
   const tex: Record<string, unknown> = {};
@@ -249,16 +253,97 @@ for (const it of items) {
 table.items = out;
 await browser.close();
 
+// ---- the closet's colours (its dots, its colour filter): per item its texture's dominant colour, only the pixels its
+// own among its line's colours (a loafer's black sole, a shirt's buttons are every colour's), lifted as the island's
+// light lifts an albedo (gamma 0.85); per catalogue icon its own (the closet tints a line's icon to a colour). The
+// dominant: the opaque pixels binned at 4 bits a channel, the fullest bin's mean (a knit's cables don't drag it grey).
+function pixels(file: string, from = 0): Uint8Array {
+  const pam = execFileSync('dwebp', ['-quiet', '-pam', file, '-o', '-'], { maxBuffer: 1 << 26 });
+  const end = pam.indexOf('ENDHDR\n');
+  const w = Number(/WIDTH (\d+)/.exec(pam.toString('latin1', 0, end))?.[1]), h = Number(/HEIGHT (\d+)/.exec(pam.toString('latin1', 0, end))?.[1]);
+  if (end < 0 || !w || !h) throw new Error(`${file}: not a PAM`);
+  return new Uint8Array(pam.buffer, pam.byteOffset + end + 7 + Math.floor(h * from) * w * 4);
+}
+/** Where a slot's colour is, as rows from a fraction down: a sock's top is its darker cuff. */
+const FROM: Record<string, number> = { socks: 0.45 };
+const hexOf = (r: number, g: number, b: number) => '#' + [r, g, b].map((c) => Math.round(c).toString(16).padStart(2, '0')).join('');
+function dominant(px: Uint8Array, keep?: Uint8Array, lift = 1): string {
+  const bins = new Map<number, [number, number, number, number]>();
+  for (let i = 0; i + 3 < px.length; i += 4) {
+    if (px[i + 3] < 128 || (keep && !keep[i >> 2])) continue;
+    const k = ((px[i] >> 4) << 8) | ((px[i + 1] >> 4) << 4) | (px[i + 2] >> 4);
+    const b = bins.get(k) ?? [0, 0, 0, 0];
+    b[0] += px[i]; b[1] += px[i + 1]; b[2] += px[i + 2]; b[3]++;
+    bins.set(k, b);
+  }
+  let best: [number, number, number, number] | null = null;
+  for (const b of bins.values()) if (!best || b[3] > best[3]) best = b;
+  if (!best) return '#808080';
+  const up = (c: number) => 255 * (c / best![3] / 255) ** lift;
+  return hexOf(up(best[0]), up(best[1]), up(best[2]));
+}
+/** A colour's own pixels: not the same (within 24 a channel) in 40% or more of its line's others; null: one colour, or
+ *  under 2% left. */
+function own(all: Uint8Array[], v: number): Uint8Array | null {
+  if (all.length < 2 || all.some((p) => p.length !== all[0].length)) return null;
+  const n = all[0].length >> 2, keep = new Uint8Array(n), me = all[v], need = (all.length - 1) * 0.4;
+  let count = 0;
+  for (let j = 0, i = 0; j < n; j++, i += 4) {
+    let same = 0;
+    for (const p of all) if (p !== me && Math.abs(p[i] - me[i]) <= 24 && Math.abs(p[i + 1] - me[i + 1]) <= 24 && Math.abs(p[i + 2] - me[i + 2]) <= 24) same++;
+    if (same < need) { keep[j] = 1; count++; }
+  }
+  return count > n * 0.02 ? keep : null;
+}
+type OutItem = { slot: string; mesh?: string; line: string; icon: string | null; tex: Record<string, { file?: string; glass?: number }>; sw?: string };
+const lines = new Map<string, [string, Uint8Array][]>();
+const icons: Record<string, string> = {};
+for (const [id, it] of Object.entries(out as Record<string, OutItem>)) {
+  const t = Object.values(it.tex).find((x) => x.file && x.glass === undefined) ?? Object.values(it.tex).find((x) => x.file);
+  if (t?.file) lines.set(it.line, [...(lines.get(it.line) ?? []), [id, pixels(join(OUT, 'tex', t.file), FROM[it.slot])]]);
+  if (it.icon && !(it.icon in icons)) icons[it.icon] = dominant(pixels(join(ICONS, `${it.icon}.webp`)));
+}
+for (const line of lines.values()) {
+  const all = line.map(([, px]) => px);
+  line.forEach(([id, px], v) => ((out as Record<string, OutItem>)[id].sw = dominant(px, own(all, v) ?? undefined, 0.85)));
+}
+table.icons = Object.fromEntries(Object.entries(icons).sort(([a], [b]) => a.localeCompare(b)));
+
 const sorted = (o: Record<string, unknown>) => Object.fromEntries(Object.entries(o).sort(([a], [b]) => a.localeCompare(b)));
 for (const k of ['face', 'mesh', 'hair', 'items'] as const) table[k] = sorted(table[k] as Record<string, unknown>);
 mkdirSync(dirname(TABLE), { recursive: true });
 // (one entry a line: a diff shows what changed)
 const block = (v: unknown) => v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length > 3
   ? `{\n${Object.entries(v).map(([k, x]) => `  ${JSON.stringify(k)}: ${JSON.stringify(x)}`).join(',\n')}\n }` : JSON.stringify(v);
-writeFileSync(TABLE, `{\n${Object.entries(table).map(([k, v]) => ` ${JSON.stringify(k)}: ${block(v)}`).join(',\n')}\n}\n`);
-// every part id the app knows (contract/look.ts usePartTable: store/look.ts), small enough for the main bundle
+const write = (f: string, t: Record<string, unknown>) => writeFileSync(f, `{\n${Object.entries(t).map(([k, v]) => ` ${JSON.stringify(k)}: ${block(v)}`).join(',\n')}\n}\n`);
+// the whole table, fetched when a player is drawn (static/room/player/parts.json: lazy, as the parts); the app's bundle
+// carries the first closet's (components/player3d/parts.json: what the closet lists now), and the whole one's hash
+const FULL = join(OUT, 'parts.json');
+write(FULL, table);
+const fullV = hash(FULL);
+const itemsAll = table.items as Record<string, OutItem & { mesh?: string }>;
+const starter = Object.fromEntries(Object.entries(itemsAll).filter(([id, it]) => STARTER[it.slot === 'ornament' ? 'ornament' : it.slot]?.test(id)));
+const keepMesh = new Set([...hairs, ...caps, ...Object.values(starter).flatMap((it) => (it.mesh ? [it.mesh] : []))]);
+const keepIcon = new Set(Object.values(starter).flatMap((it) => (it.icon ? [it.icon] : [])));
+write(TABLE, {
+  ...table,
+  _: `${table._}. The first closet's: the whole table is static/room/player/parts.json (full)`,
+  full: { v: fullV, items: Object.keys(itemsAll).length },
+  mesh: Object.fromEntries(Object.entries(table.mesh as Record<string, unknown>).filter(([k]) => keepMesh.has(k))),
+  items: starter,
+  icons: Object.fromEntries(Object.entries(table.icons as Record<string, string>).filter(([k]) => keepIcon.has(k)))
+});
+// every part id the app knows (contract/look.ts usePartTable: store/look.ts), compact for the main bundle: an id that
+// ends in a digit by its line (the id less its digit: its digits), the rest as they are
 const ids = [...hairs, ...eyes, ...mouths, ...items.map((it) => it.id)].sort();
-writeFileSync(join(APP, 'src', 'lib', 'contract', 'partIds.json'), `[\n${ids.map((i) => JSON.stringify(i)).join(',\n')}\n]\n`);
+const lineIds: Record<string, string> = {};
+const exact: string[] = [];
+for (const id of ids) {
+  const m = /^(.*\D)(\d)$/.exec(id);
+  if (m && !/^Player/.test(id)) lineIds[m[1]] = (lineIds[m[1]] ?? '') + m[2];
+  else exact.push(id);
+}
+writeFileSync(join(APP, 'src', 'lib', 'contract', 'partIds.json'), `{\n "exact": ${JSON.stringify(exact)},\n "lines": {\n${Object.entries(lineIds).map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(',\n')}\n }\n}\n`);
 const meshKB = Object.values(meshes).reduce((t: number, m) => t + (m as { kb: number }).kb, 0);
 console.log(`${items.length} items, ${hairs.length} hairstyles (+${caps.length} caps), ${eyes.length} eyes, ${mouths.length} mouths; meshes ${Object.keys(meshes).length} (${(meshKB / 1024).toFixed(2)} MB), item textures ${(texKB / 1024).toFixed(2)} MB`);
 rmSync(scratch, { recursive: true, force: true });
