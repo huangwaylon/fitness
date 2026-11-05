@@ -317,9 +317,10 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   read-only. Levels slide in (240 ms, as けんこう's); ‹ comes back where the day was scrolled, the focus on what
   opened it. Confirmations are short (「夜ごはんに ついかしました」) and docked low, never over the level they land on.
 - **Search:** a 16px field (no search mid-IME composition), its ✕ the app's 44px lipped round button; under it, side
-  by side (half the row each, on 393 px too), ＋ レシピを つくる (a meal's search only) and ＋ 食品を つくる; empty,
-  さいきん (my latest entry of each food, as I had it); typed, the best matches: the name, ✓n when n independent
-  sources agree on its kcal, a product's brand and kcal per 100 g, and its default portion (with its weight) and kcal;
+  by side (half the row each, on 393 px too), ＋ レシピを つくる (a meal's search only) and ＋ 食品を つくる, hidden once
+  something is typed (room for the results over the keyboard; nothing found, its card has じぶんで つくる); empty,
+  さいきん (my latest entry of each food, as I had it); typed, the best matches: the name, 「✓n 一致」 when n independent
+  sources agree on its kcal (in words on the row: an iPhone never shows a title), a product's brand and kcal per 100 g, and its default portion (with its weight) and kcal;
   the same name, brand and kcal shown once. ー counts (カレー is not かれい). Offline: 「データを よみこめませんでした
   （オフライン？）」, もういちど, and さいきん still under it (a recent pick keeps its portion). **Ranking** (`food/search.ts`
   tierOf, each curated pop level worth 0.6 of a tier): the name exact, or its head (up to a bracket or space: 水 finds
@@ -330,7 +331,8 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   プロテイン · おにぎり · ラーメン · うどん · 水 …) pin the first result, and no product above a generic food in the top
   three. A keystroke's search over the 20k items takes ~0.7 ms in Playwright's WebKit on a Mac (expect 2–3× on an iPhone).
 - **Amount:** the food's values per 100 g; its portions as chips (100 g last), −/＋ by a whole portion for the things
-  counted (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック · ジョッキ …) and by half for 茶碗, 人前 and weights (±10 g once
+  counted (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック · ジョッキ …, and the 1人前 of a food eaten by the piece: おにぎり,
+  むすび, ゆで卵, 目玉焼き, ハンバーグ …: foodUi.ts PIECE) and by half for 茶碗, 人前 and weights (±10 g once
   grams are typed), a grams field (ml for a drink; typing grams leaves the portions); kcal and P/F/C/salt live; which
   meal; ついか, or ほぞん / けす for my entry (けす at once, its banner's とりけす logs it again).
 - **A level's actions** (the amount, マイ食品, マイレシピ, いつもの; theme.css `.level-acts`): at its end, held at the
@@ -370,8 +372,8 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   existing database"):** everyone's custom foods (`food_custom`, contract/food.ts `customSnap`), a food typed in as one
   serving. Both searches (a meal's and a recipe's ingredient) list them under マイ食品 (all after さいきん / マイレシピ,
   the matching ones above the catalog's); ＋ 食品を つくる under the field, and when nothing matches a card saying so with
-  a line on what it is for and 「＋ じぶんで つくる」, open the editor, the typed text its name. The editor (`FoodCustom`): なまえ, 1食の めやす (「1食」 unless
-  typed) and その重さ g (may stay blank: then it logs by the serving), カロリー kcal (needed) and P/F/C/塩分 g (only
+  a line on what it is for and 「＋ じぶんで つくる」, open the editor, the typed text its name. The editor (`FoodCustom`): なまえ, 1食の めやす (「1食」 its
+  placeholder, not a value: typing 1杯 gives 1杯; blank logs as 1食) and その重さ g (may stay blank: then it logs by the serving), カロリー kcal (needed) and P/F/C/塩分 g (only
   what is known), all per serving, full-width digits welcome; a weight too light for its values (denser than any food:
   `customDensityOk`) is refused before ほぞん. ほぞん goes on where it came from: its amount (a meal's ついか, or the
   ingredient's); a custom food's amount (from the search) has 「マイ食品を ひらく」: mine in the editor (ほぞん and けす,

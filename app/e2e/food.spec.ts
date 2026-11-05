@@ -631,6 +631,14 @@ test('＋ focuses the search; counted portions step whole, rice by half; drinks 
   await expect(sheet(page).locator('.mult')).toHaveText('×1.5'); // 茶碗: by half
   await sheet(page).getByRole('button', { name: 'もどる' }).click();
 
+  // a piece food's 1人前 steps by the piece: おにぎり ＋ is two of them, not ×1.5
+  await sheet(page).locator('[data-food-q]').fill('おにぎり');
+  await sheet(page).locator('[data-food-results] [data-item="dishes:onigiri-shake"]').click();
+  await expect(sheet(page).locator('.chip[aria-pressed=true]')).toContainText('1人前');
+  await sheet(page).locator('[data-step="1"]').click();
+  await expect(sheet(page).locator('.mult')).toHaveText('×2');
+  await sheet(page).getByRole('button', { name: 'もどる' }).click();
+
   await sheet(page).locator('[data-food-q]').fill('生ビール');
   const beer = sheet(page).locator('[data-food-results] button', { hasText: '生ビール' }).first();
   await expect(beer).toBeVisible();
@@ -676,12 +684,16 @@ test('whose day is kept for the session; an empty past day says きろく なし
   await expect(sheet(page).locator('[data-nutrient]')).toHaveCount(0);
 });
 
-test('search rows: a product’s brand on its second line, the same name, brand and kcal once', async ({ page }) => {
+test('search rows: a product’s brand on its second line, the same name, brand and kcal once; ✓n says 一致; no つくる while typing', async ({ page }) => {
   await openFood(page);
   await sheet(page).locator('[data-add=s]').click();
+  await expect(sheet(page).locator('[data-recipe-new]')).toBeVisible();
   await sheet(page).locator('[data-food-q]').fill('サラダチキン');
+  await expect(sheet(page).locator('[data-recipe-new], [data-custom-new]')).toHaveCount(0); // room for the results
   const rows = sheet(page).locator('[data-food-results] button');
   await expect(rows.first()).toBeVisible({ timeout: 15_000 });
+  // ✓n in words on the row itself (a title alone never shows on an iPhone)
+  await expect(sheet(page).locator('[data-food-results] [data-verified]').first()).toHaveText(/^✓\d+ 一致$/);
   await expect.poll(() => sheet(page).locator('[data-food-results] [data-brand]').count(), { timeout: 20_000 }).toBeGreaterThan(0); // the products, lazily
   const keys = await rows.evaluateAll((bs) => bs.map((b) => `${b.querySelector('.nm')?.textContent}|${b.querySelector('[data-brand]')?.textContent ?? ''}|${b.querySelector('.meta')?.textContent?.match(/(\d[\d,]*) kcal/)?.[1]}`));
   expect(new Set(keys).size).toBe(keys.length);
@@ -706,7 +718,8 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   const lv = sheet(page).locator('[data-custom-level=edit]');
   const save = lv.locator('[data-custom-save]');
   await expect(lv.locator('[data-custom-n]')).toHaveValue('会社の弁当');
-  await expect(lv.locator('[data-custom-u]')).toHaveValue('1食');
+  await expect(lv.locator('[data-custom-u]')).toHaveValue(''); // 1食 its placeholder: typing 1杯 gives 1杯, not 1食1杯
+  await expect(lv.locator('[data-custom-u]')).toHaveAttribute('placeholder', '1食');
   await expect(lv.locator('[data-custom-g]')).toHaveValue('');
   await expect(save).toHaveAttribute('aria-disabled', 'true'); // no kcal yet
   await expect(lv.locator('[data-custom-remove]')).toHaveCount(0);

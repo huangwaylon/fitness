@@ -117,10 +117,15 @@ export function startOf(ps: readonly Portion[], g0?: number, u0?: string): { pi:
   return m ? { ...m, custom: false } : { pi: 0, mult: 1, custom: true };
 }
 
-/** −/＋'s step for a portion: a whole one for the things you count (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック …), a half
- *  for 茶碗 (rice), 人前 and the rest (a weight). */
-export function stepOf(label: string): 0.5 | 1 {
-  if (/茶碗|人前|^\s*[\d.]+\s*(g|ml)\s*$/i.test(label.normalize('NFKC'))) return 0.5;
+/** Foods eaten by the piece whose data gives a serving (「1人前」): おにぎり, 目玉焼き, ゆで卵 … step whole pieces too. */
+const PIECE = /おにぎり|むすび|天むす|ゆで卵|温泉卵|目玉焼き|ハンバーグ|ホットドッグ|コロッケ|メンチカツ|まんじゅう|大福|ドーナツ|バーガー|梅干し/;
+
+/** −/＋'s step for a portion: a whole one for the things you count (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック …, and a
+ *  piece food's 1人前: `name` PIECE), a half for 茶碗 (rice), 人前 and the rest (a weight). */
+export function stepOf(label: string, name = ''): 0.5 | 1 {
+  const l = label.normalize('NFKC');
+  if (/人前/.test(l) && PIECE.test(name)) return 1;
+  if (/茶碗|人前|^\s*[\d.]+\s*(g|ml)\s*$/i.test(l)) return 0.5;
   return /本|個|杯|缶|枚|切れ|貫|パック|ジョッキ|袋|粒|尾|丁|玉|カップ|皿/.test(label) ? 1 : 0.5;
 }
 
@@ -209,9 +214,10 @@ export interface CustomDraft { n: string; u: string; g: string; k: string; p: st
 const NUTS = ['p', 'fa', 'c', 's'] as const;
 const num1 = (v: number | null | undefined): string => (v === null || v === undefined ? '' : gramsText(v));
 
-/** A new custom food's fields (the name: what was typed in the search), or a saved one's. */
+/** A new custom food's fields (the name: what was typed in the search; the serving's label blank: 「1食」 is its field's
+ *  placeholder, never a value typed after), or a saved one's. */
 export function customDraft(c: FoodCustom | null, name = ''): CustomDraft {
-  if (!c) return { n: name.trim().slice(0, CUSTOM.nameChars), u: t('food.my.one'), g: '', k: '', p: '', fa: '', c: '', s: '' };
+  if (!c) return { n: name.trim().slice(0, CUSTOM.nameChars), u: '', g: '', k: '', p: '', fa: '', c: '', s: '' };
   return { n: c.n, u: c.u, g: num1(c.g), k: String(c.k), p: num1(c.p), fa: num1(c.fa), c: num1(c.c), s: num1(c.s) };
 }
 

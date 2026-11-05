@@ -34,6 +34,7 @@
   "food.none": "Nothing found for “{q}”",
   "food.per100": "{k} kcal per 100 g",
   "food.verified": "the same in {n} sources",
+  "food.verifiedBadge": "✓{n} agree",
   "food.amount": "Amount",
   "food.grams": "Grams",
   "food.ml": "millilitres",

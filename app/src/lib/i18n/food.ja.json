@@ -34,6 +34,7 @@
   "food.none": "「{q}」は 見つかりませんでした",
   "food.per100": "100gあたり {k} kcal",
   "food.verified": "{n}つの データで 同じ",
+  "food.verifiedBadge": "✓{n} 一致",
   "food.amount": "量",
   "food.grams": "グラム",
   "food.ml": "ミリリットル",

@@ -124,7 +124,8 @@
       oninput={onInput} oncompositionend={() => (q = text)} />
     {#if text}<button type="button" class="x" data-sfx="tick" aria-label={t('food.clear')} onclick={clear}>✕</button>{/if}
   </form>
-  {#if onnewrecipe || oncreate}
+  {#if (onnewrecipe || oncreate) && !text}
+    <!-- hidden while typing: room for the results over the keyboard (nothing found: its card's じぶんで つくる) -->
     <div class="new">
       {#if onnewrecipe}<button type="button" class="btn paper small make" data-sfx="page" data-recipe-new onclick={onnewrecipe}>{@render plus()}{t('food.rcp.make')}</button>{/if}
       {#if oncreate}<button type="button" class="btn paper small make" data-sfx="page" data-custom-new onclick={() => oncreate(q.trim())}>{@render plus()}{t('food.my.new')}</button>{/if}
@@ -184,7 +185,7 @@
         {@const p = defaultPortion(it)}
         {@const v = verifyOf(db, it.id)}
         <li><button type="button" class="card it" data-sfx="page" data-item={it.id} onclick={() => onpick(it)}>
-          <span class="nm">{it.name}{#if v && v.n >= 2}<i class="ok" role="img" title={t('food.verified', { n: v.n })} aria-label={t('food.verified', { n: v.n })}>✓{v.n}</i>{/if}</span>
+          <span class="nm">{it.name}{#if v && v.n >= 2}<i class="ok" role="img" data-verified={v.n} aria-label={t('food.verified', { n: v.n })}>{t('food.verifiedBadge', { n: v.n })}</i>{/if}</span>
           <small class="meta">{#if it.brand}<span class="br" data-brand>{it.brand}</span>{' · '}{/if}{t('food.per100', { k: formatNum(it.kcal) })}</small>
           <span class="kc"><b class="money">{kcalText(p.kcal)}</b><small>{p.label}</small></span>
         </button></li>
