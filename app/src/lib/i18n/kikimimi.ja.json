@@ -117,7 +117,7 @@
   "kiki.stage.s3": "やま",
   "kiki.prog.level": "いまの ちから",
   "kiki.prog.measuring": "はかっている とちゅう（あと {n}もん）",
-  "kiki.prog.comfort": "つぎの いっぽ: {stars} {name}（レベル {lv}）が ちょうど いい",
+  "kiki.prog.comfort": "つぎは {stars} {name} が ちょうど いい",
   "kiki.prog.skills": "とくい・にがて",
   "kiki.prog.notYet": "まだ",
   "kiki.prog.trend": "1かいで せいかい",
