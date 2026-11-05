@@ -79,6 +79,21 @@ interface QuizInvite {
   started: boolean;
 }
 
+/** A multiplayer game's team result (co-op, the default: docs/kikimimi.md "Co-op and たいせん"), over the questions
+ *  revealed so far: `right` those at least one player got right (the team covers it: 「ふたりで n/8」), `all` those
+ *  every player who had the question got right (「そろって せいかい」), `done` the questions counted. From what this
+ *  phone heard (a lost `a` costs that question's credit here only). Never who missed. */
+interface QuizTeam {
+  right: number;
+  all: number;
+  done: number;
+}
+
+/** たいせん (ranking) rides on the `open`'s seed: its lowest bit (1: たいせん; a new lobby's seed is even, co-op). No
+ *  new field, so no relay deploy (the relay passes known fields only); flipping it deals a new deck, never seen yet. */
+export const versus = (seed: number): boolean => (seed & 1) === 1;
+const withVersus = (seed: number, vs: boolean): number => ((seed & ~1) | (vs ? 1 : 0)) >>> 0;
+
 /** Why my game went away: the host cancelled it, the host left the lobby, or it was never started. */
 export type QuizNotice = 'cancelled' | 'host-left' | 'stale';
 
@@ -93,6 +108,8 @@ export interface QuizView {
   lv: QuizLv;
   same: boolean;
   seed: number;
+  /** たいせん: points and a ranking (else co-op: the team's tally, no one's score shown to the others). */
+  vs: boolean;
   /** Whether this phone plays the clips (おなじへや: the host's only). */
   speaks: boolean;
   /** Who joined, A B G order. */
@@ -113,6 +130,10 @@ export interface QuizView {
   /** My answer to each question (null: none), for the reveal and the review list. */
   answers: (QuizAnswer | null)[];
   scores: Partial<Record<Who, number>>;
+  /** The team's tally so far (counted in the reveal and the results). */
+  team: QuizTeam;
+  /** In a reveal: how many players got this question right (「2にん せいかい」). */
+  rightNow: number;
   /** The host may tap つぎへ (its reveal). */
   canNext: boolean;
   invite: QuizInvite | null;
@@ -300,7 +321,7 @@ export class QuizSession {
 
   /** Open a lobby of mine (せってい's あそぶ), on this phone only until I invite the others: I'm its host. Leaves the
    *  game I was in. */
-  open(o: { lv: QuizLv; same?: boolean }, now: number): QuizOut[] {
+  open(o: { lv: QuizLv; same?: boolean; vs?: boolean }, now: number): QuizOut[] {
     const out = this.leave(now);
     this.notice = null;
     let g = '';
@@ -308,7 +329,7 @@ export class QuizSession {
       g = '';
       for (let n = 0; n < 6; n++) g += GAME_ID[Math.floor(this.random() * GAME_ID.length) % GAME_ID.length];
     } while (this.games.has(g));
-    const seed = Math.floor(this.random() * 2 ** 32) >>> 0;
+    const seed = withVersus(Math.floor(this.random() * 2 ** 32), !!o.vs);
     const gm = this.game(g, this.me, seed, o.lv, o.same ?? false, now);
     gm.local = true;
     return out;
@@ -324,12 +345,12 @@ export class QuizSession {
     return [this.opening(gm)];
   }
 
-  /** The host changes its lobby's level or おなじへや (sent again as an `open` once announced). */
-  configure(o: { lv?: QuizLv; same?: boolean }, now: number): QuizOut[] {
+  /** The host changes its lobby's level, おなじへや or たいせん (sent again as an `open` once announced). */
+  configure(o: { lv?: QuizLv; same?: boolean; vs?: boolean }, now: number): QuizOut[] {
     this.prune(now);
     const gm = this.mine();
     if (!gm || gm.host !== this.me || gm.goAt !== undefined) return [];
-    this.setup(gm, gm.seed, o.lv ?? gm.lv, o.same ?? gm.same);
+    this.setup(gm, o.vs === undefined ? gm.seed : withVersus(gm.seed, o.vs), o.lv ?? gm.lv, o.same ?? gm.same);
     return this.send(gm, this.opening(gm));
   }
 
@@ -409,8 +430,9 @@ export class QuizSession {
     this.prune(now);
     const gm = this.mine();
     const none: QuizView = {
-      phase: 'idle', g: null, host: null, amHost: false, local: false, lv: 1, same: false, seed: 0, speaks: true, players: [], i: -1, n: 0, from: 0,
-      until: Infinity, playAt: 0, playEnd: 0, limit: 0, out: false, answers: [], scores: {}, canNext: false, invite: null, notice: this.notice
+      phase: 'idle', g: null, host: null, amHost: false, local: false, lv: 1, same: false, seed: 0, vs: false, speaks: true, players: [], i: -1, n: 0,
+      from: 0, until: Infinity, playAt: 0, playEnd: 0, limit: 0, out: false, answers: [], scores: {}, team: { right: 0, all: 0, done: 0 }, rightNow: 0,
+      canNext: false, invite: null, notice: this.notice
     };
     if (!gm) {
       const o = this.offer(now);
@@ -430,6 +452,8 @@ export class QuizSession {
     const mine = gm.answers.get(this.me);
     return {
       ...none, phase: at.phase, g: gm.g, host: gm.host, amHost: gm.host === this.me, local: !!gm.local, lv: gm.lv, same: gm.same, seed: gm.seed,
+      vs: versus(gm.seed), team: this.team(gm, at.phase === 'results' ? gm.n : reveal ? at.i + 1 : Math.max(0, at.i)),
+      rightNow: at.phase === 'reveal' ? players.filter((p) => p.pick?.ok).length : 0,
       speaks: !gm.same || gm.host === this.me, players, i: at.i, n: gm.n, from: at.from, until: at.until, playAt: at.playAt, playEnd: at.playEnd,
       limit: at.limit, out: at.out, answers: Array.from({ length: gm.n }, (_, i) => mine?.get(i) ?? null), scores,
       canNext: gm.host === this.me && at.phase === 'reveal'
@@ -618,6 +642,29 @@ export class QuizSession {
     let s = 0;
     for (const [i, a] of gm.answers.get(w) ?? []) s += points(a.k === gm.deck.answer(i), a.rp || gm.same);
     return s;
+  }
+
+  /** The team's tally over questions 0 … upto − 1: right by at least one player, right by every player who had it
+   *  (answered it, or was in the game for it and let it time out; a player who joined later and has no answer from
+   *  then on doesn't hold it back). */
+  private team(gm: Game, upto: number): QuizTeam {
+    const t: QuizTeam = { right: 0, all: 0, done: 0 };
+    for (let i = 0; i < Math.min(upto, gm.n); i++) {
+      const picks = [...gm.joined].map((w) => gm.answers.get(w)?.get(i));
+      const oks = picks.map((a) => !!a && a.k === gm.deck.answer(i));
+      t.done++;
+      if (oks.some(Boolean)) t.right++;
+      // everyone in it right: each player answered it right, or (joined later: no answer to it nor before) wasn't in it
+      if (oks.some(Boolean) && [...gm.joined].every((w, n) => oks[n] || !this.hadQuestion(gm, w, i))) t.all++;
+    }
+    return t;
+  }
+
+  /** Whether a player was in question i (an answer to it or one before; me: not sat out). */
+  private hadQuestion(gm: Game, w: Who, i: number): boolean {
+    if (w === this.me) return this.times(gm, i).playAt >= gm.inAt;
+    const mine = gm.answers.get(w);
+    return !!mine && [...mine.keys()].some((j) => j <= i);
   }
 
   /** Mine counted here; another's their latest running total (else what I heard of theirs). */

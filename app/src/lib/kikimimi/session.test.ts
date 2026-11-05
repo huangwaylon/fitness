@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { points } from './score.ts';
-import { FAST_WINDOWS, QuizSession, WINDOWS, quizLink, wireQuiz, type QuizDeck, type QuizIn, type QuizOut } from './session.ts';
+import { FAST_WINDOWS, QuizSession, WINDOWS, quizLink, versus, wireQuiz, type QuizDeck, type QuizIn, type QuizOut } from './session.ts';
 import type { LiveStatus } from '../sync/live.ts';
 import type { Relayed, Who } from '../contract/live-protocol.ts';
 
@@ -254,6 +254,62 @@ describe('ききみみ session: the schedule', () => {
     const s0 = T0 + WINDOWS.countdown;
     expect(s.view(s0 + 1500 + DUR + FAST_WINDOWS.answer)).toMatchObject({ phase: 'reveal' });
     expect(s.view(s0 + 1500 + DUR + FAST_WINDOWS.answer + FAST_WINDOWS.reveal)).toMatchObject({ phase: 'lead', i: 1 });
+  });
+});
+
+describe('ききみみ session: co-op and たいせん', () => {
+  it('a new lobby is co-op (its seed even); the host’s たいせん flips the seed’s low bit, sent as a new open, and every phone sees it', () => {
+    const r = room();
+    r.act('A', (x, n) => x.open({ lv: 2 }, n));
+    expect(r.view('A')).toMatchObject({ vs: false });
+    expect(r.view('A').seed % 2).toBe(0);
+    r.act('A', (x, n) => x.invite(n));
+    r.act('B', (x, n) => x.join(n));
+    const seed = r.view('A').seed;
+    expect(r.s.B.configure({ vs: true }, r.now)).toEqual([]); // the host's only
+    r.act('A', (x, n) => x.configure({ vs: true }, n));
+    expect(r.sent.at(-1)!.m).toMatchObject({ op: 'open', seed: seed + 1, lv: 2 });
+    expect(versus(seed + 1)).toBe(true);
+    for (const w of ['A', 'B'] as const) expect(r.view(w)).toMatchObject({ vs: true, seed: seed + 1 });
+    r.act('A', (x, n) => x.configure({ vs: false }, n));
+    for (const w of ['A', 'B'] as const) expect(r.view(w)).toMatchObject({ vs: false, seed });
+    // open() can start one in たいせん (もういっかい keeps the mode)
+    const s = new QuizSession({ me: 'G', deckOf: () => deck, random: seq(5) });
+    s.open({ lv: 1, vs: true }, T0);
+    expect(s.view(T0)).toMatchObject({ vs: true });
+  });
+
+  it('the team’s tally: a question counts when anyone got it right, そろって when everyone in it did; the reveal says how many got it, never who', () => {
+    const r = room();
+    const s0 = started(r);
+    // question i's right choice is i % 4; B misses the odd ones, G misses 3 and 5, A misses 3: 3 is nobody's
+    const wrong: Record<Who, number[]> = { A: [3], B: [1, 3, 5, 7], G: [3, 5] };
+    let t = s0;
+    for (let i = 0; i < 8; i++) {
+      r.now = t + 1500 + DUR + 500;
+      for (const w of ['A', 'B', 'G'] as const) r.act(w, (x, n) => x.answer(wrong[w].includes(i) ? (i + 1) % 4 : i % 4, false, n));
+      const v = r.view('B');
+      expect(v).toMatchObject({ phase: 'reveal', i, rightNow: 3 - (['A', 'B', 'G'] as const).filter((w) => wrong[w].includes(i)).length });
+      expect(v.team.done).toBe(i + 1);
+      t = r.now + WINDOWS.reveal;
+    }
+    r.now = t;
+    for (const w of ['A', 'B', 'G'] as const) expect(r.view(w)).toMatchObject({ phase: 'results', team: { right: 7, all: 4, done: 8 }, rightNow: 0 });
+  });
+
+  it('a player who joined mid-game doesn’t hold back そろって for the questions before', () => {
+    const r = room(['A', 'B']);
+    r.act('A', (x, n) => x.open({ lv: 1 }, n));
+    r.act('A', (x, n) => x.invite(n));
+    r.act('A', (x, n) => x.go(n));
+    const s0 = r.now + WINDOWS.countdown;
+    r.now = s0 + 1500 + DUR + 500;
+    r.act('A', (x, n) => x.answer(0, false, n));
+    r.act('B', (x, n) => x.join(n)); // in from question 1 (A alone was in: its reveal at once, 8 s)
+    r.now += WINDOWS.reveal + 1500 + DUR + 500;
+    r.act('A', (x, n) => x.answer(1, false, n));
+    r.act('B', (x, n) => x.answer(1, false, n));
+    for (const w of ['A', 'B'] as const) expect(r.view(w).team).toEqual({ right: 2, all: 2, done: 2 });
   });
 });
 

@@ -111,9 +111,9 @@ export class QuizGame {
   // ---------- taps ----------
 
   /** Open a lobby (I host it), on this phone only until `invite`. */
-  open(lv: Level, same = false): void {
+  open(lv: Level, same = false, vs = false): void {
     this.practicing = false;
-    this.#act((s, now) => s.open({ lv, same }, now));
+    this.#act((s, now) => s.open({ lv, same, vs }, now));
   }
   /** にがて れんしゅう: my lobby kept alone starts at once with `items` (srs.ts practiceDeck) as its deck. */
   practice(items: Item[]): void {
@@ -128,7 +128,7 @@ export class QuizGame {
   invite(): void {
     this.#act((s, now) => s.invite(now));
   }
-  configure(o: { lv?: Level; same?: boolean }): void {
+  configure(o: { lv?: Level; same?: boolean; vs?: boolean }): void {
     this.#act((s, now) => s.configure(o, now));
   }
   join(g?: string): void {

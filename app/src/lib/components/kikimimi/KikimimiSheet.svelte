@@ -113,10 +113,10 @@
    *  back to the invite (the host's next). */
   function again() {
     if (!game || !v) return;
-    const host = v.amHost, lv = v.lv, same = v.same, shared = !v.local, practicing = game.practicing;
+    const host = v.amHost, lv = v.lv, same = v.same, vs = v.vs, shared = !v.local, practicing = game.practicing;
     game.close();
     if (host || !game.view.invite) {
-      game.open(lv as Level, same);
+      game.open(lv as Level, same, vs);
       if (host && shared) game.invite();
       else if (practicing) practice();
     }

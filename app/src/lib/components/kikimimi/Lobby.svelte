@@ -1,8 +1,8 @@
 <script lang="ts">
   // ききみみ クイズ's lobby (docs/kikimimi.md "UI"): しずえ's welcome, the level (the host picks; the others see it),
   // 🔊 「きこえる？」 (with 音量 0's hint). My lobby starts on this phone alone: 「ひとりで はじめる」, or 「みんなを さそう」
-  // (the invite goes out); once shared, who's here and who joined, 「おなじ へやで あそぶ」 (only the host's phone speaks)
-  // and the host's 「はじめる（Nにん）」 (the others wait for it).
+  // (the invite goes out); once shared, who's here and who joined, 「おなじ へやで あそぶ」 (only the host's phone speaks),
+  // 「たいせん」 (a ranking; off: co-op, the team's tally) and the host's 「はじめる（Nにん）」 (the others wait for it).
   import type { Who } from '#lib/types.ts';
   import { ORDER } from '#lib/kikimimi/session.ts';
   import type { Level } from '#lib/kikimimi/bank.ts';
@@ -34,6 +34,11 @@
   function same() {
     cue(v.same ? 'toggle-off' : 'toggle-on');
     game.configure({ same: !v.same });
+  }
+  /** たいせん (ranking) or co-op (the default: the team's tally). */
+  function versus() {
+    cue(v.vs ? 'toggle-off' : 'toggle-on');
+    game.configure({ vs: !v.vs });
   }
   async function test() {
     tested = true;
@@ -76,9 +81,15 @@
         <span class="rl">{t('kiki.same')}{#if v.same}<small>{t('kiki.sameOn')}</small>{/if}</span>
         <span class="sw" aria-hidden="true"><i></i></span>
       </button>
+      <button type="button" class="row" role="switch" aria-checked={v.vs} data-kiki-vs data-sfx="self" onclick={versus}>
+        <span class="rl">{t('kiki.vs')}<small>{t(v.vs ? 'kiki.vsOn' : 'kiki.vsOff')}</small></span>
+        <span class="sw" aria-hidden="true"><i></i></span>
+      </button>
     {:else}
       <p class="row static"><span class="rl">{t('kiki.same')}{#if v.same}<small>{t('kiki.sameOn')}</small>{/if}</span>
         <span class="flag">{v.same ? '✓' : '—'}</span></p>
+      <p class="row static" data-kiki-vs-flag={v.vs}><span class="rl">{t('kiki.vs')}<small>{t(v.vs ? 'kiki.vsOn' : 'kiki.vsOff')}</small></span>
+        <span class="flag">{v.vs ? '✓' : '—'}</span></p>
     {/if}
   {/if}
 

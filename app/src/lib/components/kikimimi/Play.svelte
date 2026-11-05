@@ -29,6 +29,8 @@
   const canHear = $derived(v.speaks && !v.out && (v.phase === 'answer' || reveal));
   const slowOk = $derived((game.items[v.i]?.lv ?? v.lv) <= 2); // the item's level (にがて れんしゅう mixes levels)
   const solo = $derived(v.players.length <= 1);
+  /** Co-op (a game of several, not たいせん): no one's score or right / wrong on the others' chips, only how many got it. */
+  const coop = $derived(!solo && !v.vs);
   const name = (id: RosterId) => (i18n.locale === 'ja' ? ROSTER[id].nameJa : ROSTER[id].nameEn);
 
   /** The bubble's bar: a replay sounding, else the first play (on every phone: おなじへや's others hear the host's). */
@@ -46,7 +48,7 @@
   const verdict = $derived(v.out ? 'out' : right ? 'right' : mine ? 'wrong' : 'none');
 
   function chip(p: (typeof v.players)[number]): 'answered' | 'right' | 'wrong' | 'away' | null {
-    if (reveal) return p.pick ? (p.pick.ok ? 'right' : 'wrong') : null;
+    if (reveal) return coop ? (p.pick ? 'answered' : null) : p.pick ? (p.pick.ok ? 'right' : 'wrong') : null;
     if (p.answered) return 'answered';
     return p.here ? null : 'away';
   }
@@ -62,7 +64,7 @@
   <div class="q" data-kiki-q={v.i} data-type={it.type} data-phase={v.phase}>
     {#if !solo}
       <div class="players">
-        {#each v.players as p (p.who)}<PlayerChip who={p.who} state={chip(p)} note={t('kiki.points', { n: p.score })} size={36} />{/each}
+        {#each v.players as p (p.who)}<PlayerChip who={p.who} state={chip(p)} note={coop ? null : t('kiki.points', { n: p.score })} size={36} />{/each}
       </div>
     {/if}
 
@@ -108,6 +110,7 @@
             {:else}<span class="sym" aria-hidden="true">×</span>{mine ? t('kiki.wrong') : t('kiki.timeUp')}{/if}
           </p>
           {#if right && !mine?.rp && !v.same}<span class="bonus" data-kiki-bonus>{t('kiki.firstTry', { n: FIRST_LISTEN })}</span>{/if}
+          {#if coop}<span class="team-now" data-kiki-team-now={v.rightNow}>{v.rightNow ? t('kiki.teamNow', { n: v.rightNow }) : t('kiki.teamNone')}</span>{/if}
           {#if !right && it.type === 'pic'}<span class="answer-is">{t('kiki.answerIs', { a: PIC_JA[it.choices[it.answer]] ?? '' })}</span>{/if}
         {/if}
       </div>
@@ -187,6 +190,8 @@
   .verdict .sym { font-size: 1.2em; }
   /* 「1かいで」's +30, its own pill beside the +100 */
   .bonus { padding: 4px 12px; border-radius: var(--r-pill); background: var(--c-yuzu); color: var(--c-ink); font: 700 var(--fs-s)/1.2 var(--font-ui); animation: pop-in 320ms var(--ease-bounce) 200ms both; }
+  /* co-op: how many of us got it (never who) */
+  .team-now { padding: 4px 12px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-leaf) 30%, var(--card)); color: var(--text); font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .answer-is { font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--text); }
 
   .choices { display: grid; gap: 10px; transition: opacity var(--dur-quick); }
