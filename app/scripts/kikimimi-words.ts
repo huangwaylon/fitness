@@ -6,7 +6,8 @@
 // whisper-cli (large-v3-turbo, ~/.cache/whisper/ggml-large-v3-turbo.bin or WHISPER_MODEL) hears each clip word by word
 // (`-ml 1 -sow`, DTW token timestamps); its words are matched to the shown words (a DP over normalised spellings:
 // "gonna" is heard where "going to" is shown, a number may come as digits or words), and the shown words it didn't
-// match are spread between their neighbours by their letters. Only the normal clips (the karaoke replays those). A clip
+// match are spread between their neighbours by their letters. Only the normal clips (the karaoke replays those) and
+// スピード はしご's rungs. A clip
 // mixed with a speech condition (noise, a phone line, a PA's hall: docs/kikimimi.md "Conditions") is aligned on its
 // clean take, which the audio script keeps under .cache/tts/clean/ with the speech's offset in the mixed clip.
 import { execFileSync } from 'node:child_process';
@@ -19,6 +20,7 @@ registerHooks({
   load: (url, ctx, next) => (url.endsWith('.json') ? next(url, { ...ctx, importAttributes: { type: 'json' } }) : next(url, ctx))
 });
 const { BANK, clipItems } = await import('../src/lib/kikimimi/bank.ts');
+const { RUNG_ITEMS } = await import('../src/lib/kikimimi/ladder.ts');
 const { wordSpans } = await import('../src/lib/kikimimi/marks.ts');
 
 const APP = join(import.meta.dirname, '..');
@@ -33,7 +35,8 @@ const only = onlyAt > 0 ? new RegExp(process.argv[onlyAt + 1]) : null;
 
 type Row = [string, ...number[]];
 const words: Record<string, Row> = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')) : {};
-const clips = BANK.flatMap(clipItems).filter((c) => CLIPS[c.id] && (!only || only.test(c.id)));
+// (スピード はしご's rung clips too: each the ladder's line at its speed, its karaoke at the top rung's reveal)
+const clips = [...BANK.flatMap(clipItems), ...RUNG_ITEMS].filter((c) => CLIPS[c.id] && (!only || only.test(c.id)));
 const todo = clips.filter((c) => force || words[c.id]?.[0] !== CLIPS[c.id].hash);
 console.log(`${clips.length} clips, ${todo.length} to align`);
 

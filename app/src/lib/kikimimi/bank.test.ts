@@ -8,6 +8,7 @@ import { CAST } from './bank4.ts';
 import { LEVELS, MIX, mixes } from './deck.ts';
 import { CLIPS } from './clips.ts';
 import { DIALOGUES } from './dialogues.ts';
+import { RUNG_ITEMS } from './ladder.ts';
 
 const STATIC = join(import.meta.dirname, '../../../static');
 const words = (s: string) => s.toLowerCase().match(/[a-z0-9',]+/g) ?? [];
@@ -239,17 +240,20 @@ describe('kikimimi bank', () => {
         expect(existsSync(join(STATIC, 'audio/kikimimi', `${id}-slow.m4a`)), id).toBe(slow);
       }
     }
-    const ids = new Set(BANK.flatMap((it) => clipIds(it)));
+    // (and スピード はしご's rungs: ladder.test)
+    const ids = new Set([...BANK.flatMap((it) => clipIds(it)), ...RUNG_ITEMS.map((it) => it.id)]);
     expect(Object.keys(CLIPS).filter((id) => !ids.has(id))).toEqual([]);
   });
 
-  it('ships no other files, and the clips stay small (each under 60 KB, the アナウンス pack’s long announcements 100 KB; all under 10 MB)', () => {
+  it('ships no other files, and the clips stay small (each under 60 KB, the アナウンス pack’s long announcements 100 KB, a ladder rung 80 KB; all under 14 MB)', () => {
     const dir = join(STATIC, 'audio/kikimimi');
-    const want = new Set(BANK.flatMap((it) => clipIds(it).flatMap((id) => [`${id}.m4a`, ...(it.lv <= 2 ? [`${id}-slow.m4a`] : [])])));
+    const rungs = new Set(RUNG_ITEMS.map((it) => `${it.id}.m4a`));
+    const want = new Set([...BANK.flatMap((it) => clipIds(it).flatMap((id) => [`${id}.m4a`, ...(it.lv <= 2 ? [`${id}-slow.m4a`] : [])])), ...rungs]);
     const files = readdirSync(dir);
     expect(files.filter((f) => !want.has(f))).toEqual([]);
     const sizes = files.map((f) => statSync(join(dir, f)).size);
-    for (const [k, f] of files.entries()) expect(sizes[k], f).toBeLessThan((f.startsWith('a5-') ? 100 : 60) * 1024);
-    expect(sizes.reduce((a, b) => a + b, 0)).toBeLessThan(10 * 1024 * 1024);
+    // (a ladder rung is a whole 5-9 s line, slowed at its foot: 2 a game, 8 clips, ~280 KB fetched in the lobby)
+    for (const [k, f] of files.entries()) expect(sizes[k], f).toBeLessThan((f.startsWith('a5-') ? 100 : rungs.has(f) ? 80 : 60) * 1024);
+    expect(sizes.reduce((a, b) => a + b, 0)).toBeLessThan(14 * 1024 * 1024);
   });
 });

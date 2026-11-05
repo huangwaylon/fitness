@@ -9,6 +9,7 @@ import { BANK, CHANNELS, SCENE_IDS, channelOf, isDialogue, type SoundMark } from
 import { MARKS, PLACES } from './staging.ts';
 import { findWords, markKinds, placeMark, soundLine, wordSpans } from './marks.ts';
 import { CLIPS, wordTimes } from './clips.ts';
+import { RUNG_ITEMS } from './ladder.ts';
 import aligned from './words.json';
 
 const STATIC = join(import.meta.dirname, '../../../static');
@@ -112,7 +113,10 @@ describe('kikimimi sound marks', () => {
 
 describe('kikimimi karaoke timings', () => {
   const W = aligned as unknown as Record<string, [string, ...number[]]>;
-  const texts = new Map(BANK.flatMap((it) => (isDialogue(it) ? it.lines.map((l, n) => [`${it.id}-${n + 1}`, l.en] as const) : [[it.id, it.en] as const])));
+  const texts = new Map([
+    ...BANK.flatMap((it) => (isDialogue(it) ? it.lines.map((l, n) => [`${it.id}-${n + 1}`, l.en] as const) : [[it.id, it.en] as const])),
+    ...RUNG_ITEMS.map((it) => [it.id, it.en] as const) // スピード はしご's rungs: the line at each speed
+  ]);
 
   it('words.json: each current clip one start per shown word and its end, never backwards, within the clip', () => {
     for (const [id, [hash, ...cs]] of Object.entries(W)) {
