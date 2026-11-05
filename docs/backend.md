@@ -259,9 +259,11 @@ an ack without a row (a duplicate) is followed by a `fresh` re-read 1.5 s later.
   ever accepted), `uploads` (the ingest audit), `meta` (`last_at`, `rev`).
 - **API:** `POST /api` (`{key, action, ...}` as text/plain JSON; `ingest`, `event`,
   `snapshot`, `uploads`, `whoami`, keyless `health` → `{ok, build: 'relay-1'}`), every reply JSON with status 200;
-  CORS for the allowed origins, none needed for a Shortcut. The Worker checks the origin, method and size
-  only and hands the body to the object, which parses it, checks the key and answers (the Free plan gives a Worker ~10
-  ms of CPU per request; the object far more). Rate limit 120 per key per minute.
+  CORS for the allowed origins, none needed for a Shortcut. The Worker checks the origin, method and size, and that
+  the body carries a person's key (`storeRoute.ts keyGate`: a bounded scan for a top-level `"key": "<hex>"`, not a
+  parse; a body with none goes on only when it is ≤ 512 characters, keyless `health`), else `unauthorized` there, so a
+  stranger's body never costs a Durable Object request; then it hands the body to the object, which parses it, checks
+  the key again and answers (the Free plan gives a Worker ~10 ms of CPU per request; the object far more). Rate limit 120 per key per minute.
 - **Rules** (`app/src/lib/contract/record.ts`): the shape checks (`validEventData`); `at` =
   max(now, last + 1 ms), one per ingest, one per event; an event id once, forever (`ids`: a late retry of a replaced
   event is still a duplicate); **slots**, a later event of a slot replacing it: a
@@ -281,7 +283,8 @@ an ack without a row (a duplicate) is followed by a `fresh` re-read 1.5 s later.
   poll also returns late rows that arrived after `since` − 10 s, so no phone misses one (the merge dedupes it).
 - **Revision:** `rev` is an epoch (`e1`, `e2`, …), changed only when the record is rebuilt (`node scripts/record.ts
   rev`, after a restore). Nothing edits the record by hand.
-- **Admin:** `POST /admin`, signed like `/notify` ([Push](#push) "Auth"), takes the record tool's ops (`{op}`: counts
+- **Admin:** `POST /admin`, signed like `/notify` ([Push](#push) "Auth"; the Worker refuses a missing or malformed
+  signature or a time outside the 5-minute window with 401 before the object, which checks the signature), takes the record tool's ops (`{op}`: counts
   and who came which way, bookmarks, a restore, a new epoch, a dump, the log (`logs`, `logstats`, `logpurge`: the log's own object, [observability](ops/observability.md)), the weather, and `load`: rows that already have
   their `at`, by the same rules, idempotent).
 - **Push-driven:** after a write the object tells the room (`changed`, [Push](#push)); the room keeps the last one

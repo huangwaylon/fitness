@@ -190,7 +190,7 @@ describe('/api’s req meta', () => {
 
   it('an object still on the old code (no apiMeta yet: the seconds after a deploy) is asked the plain way', async () => {
     const s = store();
-    const room: StoreRoom = { api: (t) => s.handleText(t), apiMeta: () => { throw new TypeError('no such method'); }, adminSigned: () => ({ status: 404, body: '' }) };
+    const room: StoreRoom = { api: (t) => s.handleText(t), apiMeta: () => { throw new TypeError('The RPC receiver does not implement the method "apiMeta".'); }, adminSigned: () => ({ status: 404, body: '' }) };
     const res = await apiRoute(new Request('https://r/api', { method: 'POST', body: JSON.stringify({ key: KEY_A, action: 'whoami' }) }), '', () => room, () => {});
     expect(((await res.json()) as { me: string }).me).toBe('A');
   });
