@@ -9,7 +9,8 @@ workers_dev = true
 preview_urls = false
 
 [vars]
-ALLOWED_ORIGINS = "https://huangwaylon.github.io"
+# the app's page origins (src/auth.ts): Cloudflare Pages, and GitHub Pages until both phones have moved (runbook §14)
+ALLOWED_ORIGINS = "https://island-fund.pages.dev,https://huangwaylon.github.io"
 # The record's one-way export to the sheet (docs/backend.md#the-record "Export"): the Apps Script web app's /exec URL.
 EXPORT_URL = "https://script.google.com/macros/s/AKfycbwAMHDa69-GmAEmhrO7WXiRhkQoJLzCImiBkwV7itHbSATMC_wtHFEgy4Tn5eXzKjGU/exec"
 # The real weather's point (relay/src/weather.ts, docs/backend.md "The real weather"): central Tokyo, by the 東京 AMeDAS
@@ -63,7 +64,7 @@ crons = []
 
 [env.test.vars]
 EXPORT_URL = ""
-ALLOWED_ORIGINS = "https://huangwaylon.github.io"
+ALLOWED_ORIGINS = "https://island-fund.pages.dev,https://huangwaylon.github.io"
 WX_LAT = "35.69"
 WX_LON = "139.75"
 
