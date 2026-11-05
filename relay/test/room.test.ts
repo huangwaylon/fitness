@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CLOSE, parseServer, type ServerMsg, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
-import { HELLO_MS, MAX_SOCKETS, RING_MAX, RoomCore, type Held, type Meta, type RoomIO } from '../src/room.ts';
+import { HELLO_MS, MAX_PENDING, RING_MAX, RoomCore, type Held, type Meta, type RoomIO } from '../src/room.ts';
 
 const KEY_A = 'a1'.repeat(16);
 const KEY_B = 'b2'.repeat(16);
+const KEY_C = 'c3'.repeat(16);
 
 class FakeSock {
   /** What it heard, a `replay`'s changes each in its place (`raw`: as sent). */
@@ -37,7 +38,7 @@ function io(): RoomIO<FakeSock> {
     sockets: () => socks.filter((s) => !s.closed),
     meta: (s) => s.meta,
     setMeta: (s, m) => void (s.meta = m),
-    keys: { KEY_A, KEY_B },
+    keys: { KEY_A, KEY_B, KEY_C },
     now: () => now,
     save: (r) => void saved.push(structuredClone(r)),
     hold: (h) => void (held = structuredClone(h))
@@ -76,7 +77,7 @@ describe('the island room', () => {
   });
 
   it('closes an unknown key, and anything before hello', () => {
-    const x = join('c3'.repeat(16));
+    const x = join('d4'.repeat(16));
     expect(x.closed?.code).toBe(CLOSE.unauthorized);
     const y = join();
     say(y, { kind: 'act', act: 'tap' });
@@ -239,17 +240,18 @@ describe('the island room', () => {
     expect(a3.sent[0]).not.toHaveProperty('gone');
   });
 
-  it('closes sockets that never say hello within 10 s and says when to look again', () => {
+  it('closes sockets that never say hello within 3 s and says when to look again', () => {
     const quiet = join();
-    now += 4000;
+    now += 1000;
     const later = join();
     const a = join(KEY_A);
-    expect(room.sweep()).toBe(now - 4000 + HELLO_MS);
-    now += HELLO_MS - 4000;
-    expect(room.sweep()).toBe(now + 4000);
+    expect(HELLO_MS).toBe(3000);
+    expect(room.sweep()).toBe(now - 1000 + HELLO_MS);
+    now += HELLO_MS - 1000;
+    expect(room.sweep()).toBe(now + 1000);
     expect(quiet.closed?.code).toBe(CLOSE.timeout);
     expect(later.closed).toBeNull();
-    now += 4000;
+    now += 1000;
     expect(room.sweep()).toBeNull();
     expect(later.closed?.code).toBe(CLOSE.timeout);
     expect(a.closed).toBeNull();
@@ -294,11 +296,32 @@ describe('the island room', () => {
     expect(join(KEY_A).sent[0]).toMatchObject({ kind: 'welcome', rec: { at: '2026-11-01T01:02:03.456Z', rev: 'e1' } });
   });
 
-  it('holds at most 8 sockets', () => {
-    for (let i = 0; i < MAX_SOCKETS; i++) join();
-    expect(room.roomFor()).toBe(false);
-    now += HELLO_MS;
-    expect(room.roomFor()).toBe(true); // the silent ones were swept
+  it('silent sockets never lock the phones out: at most 4 wait for their hello, the oldest let go for a new one', () => {
+    // 2026-11-05 review: 8 sockets that never said hello filled the room (MAX 8 counted them) and both phones got 503
+    const enter = (key?: string) => {
+      room.makeRoom();
+      return join(key);
+    };
+    const silent: FakeSock[] = [];
+    for (let i = 0; i < 8; i++) {
+      now += 10;
+      silent.push(enter());
+    }
+    expect(silent.filter((s) => !s.closed)).toHaveLength(MAX_PENDING);
+    expect(silent.slice(0, 4).every((s) => s.closed?.code === CLOSE.timeout)).toBe(true);
+    // a hello on a socket already let go (it was closing) is no welcome
+    silent[0].closed = null;
+    say(silent[0], { kind: 'hello', key: KEY_A });
+    expect(silent[0].sent).toEqual([]);
+    silent[0].closed = { code: CLOSE.timeout };
+    const a = enter(KEY_A), b = enter(KEY_B), g = enter(KEY_C);
+    expect(a.sent[0]).toMatchObject({ kind: 'welcome', me: 'A' });
+    expect(b.sent[0]).toMatchObject({ kind: 'welcome', me: 'B', peer: true });
+    expect(g.sent[0]).toMatchObject({ kind: 'welcome', me: 'G' });
+    // more silent ones push out only silent ones, never a welcomed socket
+    for (let i = 0; i < 6; i++) enter();
+    expect([a, b, g].every((s) => s.closed === null)).toBe(true);
+    expect(socks.filter((s) => !s.closed && !s.meta?.who)).toHaveLength(MAX_PENDING);
   });
 
   it('a phrase (`say`) goes live to the partner, cleaned, at most one a second, and is never kept', () => {
