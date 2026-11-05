@@ -25,10 +25,10 @@ type Hooks = {
 const hooks = <R,>(page: Page, fn: (h: Hooks) => R) => page.evaluate(`(${fn.toString()})(window)`) as Promise<R>;
 type Pt = [number, number, number];
 
-async function open(page: Page, layout: 'default' | 'user') {
+async function open(page: Page, layout: 'default' | 'user', date = '2026-11-04') {
   if (layout === 'user') await page.addInitScript((ops) => localStorage.setItem('island-demo.layout', ops), JSON.stringify(USER_LAYOUT));
   await page.addInitScript(() => ((window as unknown as Hooks).__cues = []));
-  await page.goto('?demo&visitor=none&critter=none&date=2026-11-04T12:00');
+  await page.goto(`?demo&visitor=none&critter=none&date=${date}T12:00`);
   expect(await is3d(page)).toBe(true);
   await quiet(page);
 }
@@ -141,7 +141,9 @@ for (const layout of ['default', 'user'] as const) {
 
   test(`${layout} island, the camera at its far stop: a tap on the sea beside a find by the back beach casts, a tap on it picks it up`, async ({ page }) => {
     test.slow();
-    await open(page, layout);
+    // (a day with a find by the back beach on each island: the day's spots are drawn from the layout's open ground,
+    // so a new piece on the island, K.K.'s stool, draws them anew)
+    await open(page, layout, layout === 'user' ? '2026-11-09' : '2026-11-07');
     const url = page.url();
     let tried = 0, last: { k: number; x?: number; pt: Pt } | null = null;
     for (const [k, x] of VIEWS) {

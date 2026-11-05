@@ -259,8 +259,13 @@
     motion: null, motionN: 0, emote: null, stung: false, shown: false, hat: null, tool: null, away: false
   }));
   let visN = 0;
+  // K.K. on his stool (island/KKSlider.svelte): one more, the director's 'kk' actor, seated on it, facing its way
+  const kkSpec: VSpec = { ...visSpecs[0], slot: 'kk' };
+  /** K.K. is out (his node registered), and has been in view: his model loads the first time he is (never fetched for
+   *  an island opened and left without a look at him), then stays, hidden while he's out of view. */
+  let kkOn = false, kkLoad = false;
   function visSpec(s: VSpec, id: string, x: number, z: number, v: V3, shown: boolean) {
-    const a = actors.visitor;
+    const a = actors[v.actor ?? 'visitor'];
     s.id = id;
     s.x = x;
     s.z = z;
@@ -274,8 +279,16 @@
     s.emote = a.emote;
     s.shown = shown;
     s.away = v.away() || inFocusWay(x, z);
+    s.seat = v.seat ?? null;
+    s.yaw = v.yaw;
+    s.asleep = !!v.asleep?.();
   }
   const onV3 = (v: V3, x: number, z: number, shown: boolean) => {
+    if (v.actor === 'kk') {
+      visSpec(kkSpec, v.id, x, z, v, shown);
+      kkOn = true;
+      return;
+    }
     if (visN) return; // (one visitor at a time)
     const half = v.also ? v.also.dx / 2 : 0;
     visSpec(visSpecs[0], v.id, x - half, z, v, shown);
@@ -303,8 +316,10 @@
     // day's visitor (no card: drawn once its model is in)
     const specs: VSpec[] = [];
     visN = 0;
+    kkOn = false;
     world.eachV3(onV3);
     for (let i = 0; i < visN; i++) specs.push(visSpecs[i]);
+    if (kkOn && (kkLoad ||= kkSpec.shown)) specs.push(kkSpec);
     const people = cast();
     // each person's model and spot once a frame (both loops read them)
     const ps = people.map((c) => person3(c.person, c.look, c.villager, dirs)), at = people.map((c) => livePos(c.id));
@@ -367,7 +382,7 @@
   /** How far toward the camera a character's sparkles start (u): clear of its head. */
   const SPARKLE_NEAR = 12;
   function actorFx(e: Island3, t: number) {
-    for (const id of ['mine', 'partner', 'third', 'visitor'] as const) {
+    for (const id of ['mine', 'partner', 'third', 'visitor', 'kk'] as const) {
       const a = actors[id];
       if (!a.fx.length) continue;
       const [x, z] = livePos(id);

@@ -140,6 +140,7 @@
     {"id":"mid-fl-4","k":"flower","x":12,"z":30,"f":0,"s":"c3"},
     {"id":"mid-fl-5","k":"flower","x":13,"z":31,"f":0,"s":"c3"},
     {"id":"mid-fl-6","k":"flower","x":12,"z":31,"f":0,"s":"c3"},
+    {"id":"kk-slider","k":"kk-stool","x":6,"z":22,"f":0},
     {"id":"spot-villager-A","k":"spot","x":7,"z":10,"f":0,"s":"villager-a"},
     {"id":"spot-villager-B","k":"spot","x":11,"z":10,"f":0,"s":"villager-b"},
     {"id":"spot-stage","k":"spot","x":8,"z":45,"f":0,"s":"stage"},

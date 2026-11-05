@@ -10,7 +10,7 @@ import { hudMenu } from './hud.ts';
 test.use({ viewport: { width: 390, height: 844 } });
 /** The visitor's 3D model's state (world3d/villagers.ts: villager3d's idle, walk, prone…), or null till it's in. */
 const model = (page: Page) => page.evaluate(() => (window as unknown as { __villagers3: { state(s: string): string | null } }).__villagers3.state('visitor'));
-const NIGHT = new Set(['wisp', 'celeste', 'kk-slider', 'jack']);
+const NIGHT = new Set(['wisp', 'celeste', 'jack']);
 /** Where each stands: Gulliver on the beach (まえ), the rest at centre stage (the layout's plaza). */
 const camOf = async (page: Page, id: string) => (id === 'gulliver' ? 30 : await stageCam(page));
 /** The visitor node's transform (the projector's: where its feet are on screen). */
@@ -18,7 +18,7 @@ const feet = (page: Page, id: string) => page.locator(`[data-visitor="${id}"]`).
 
 // (one of each kind: a roster special by day and at night, the one lying down, a model outside the roster, the pair;
 // that every visitor the schedule brings has its model is visitors.test's, the GLBs' villager3d.test's)
-for (const id of ['daisy-mae', 'kk-slider', 'wisp', 'gulliver', 'jack', 'reese'])
+for (const id of ['daisy-mae', 'wisp', 'gulliver', 'jack', 'reese'])
   test(`${id}: on its spot as NH's own 3D model (no card, no render), posed as the villagers are`, async ({ page }) => {
     await page.goto(`?demo&date=2026-11-04T${NIGHT.has(id) ? '21' : '12'}:00&visitor=${id}&critter=none`);
     await expect(hudMenu(page)).toBeVisible();
@@ -114,7 +114,21 @@ test('arriving: from the campsite on foot along the paths (?arrive); leaving to 
   await until(async () => (await page.locator('[data-visitor]').count()) === 0, 30);
 });
 
-for (const [id, way] of [['wisp', 'float'], ['celeste', 'fly'], ['jack', 'spook'], ['kk-slider', 'appear']] as const)
+test('K.K. on his stool: NH’s own 3D model sitting on it by day, nodded off on it at night (zzz)', async ({ page }) => {
+  const kk = () => page.evaluate(() => (window as unknown as { __villagers3: { state(s: string): string | null } }).__villagers3.state('kk'));
+  await page.goto('?demo&date=2026-11-04T12:00&visitor=none&critter=none');
+  await expect(hudMenu(page)).toBeVisible();
+  await camTo(page, (await geo(page)).CAMS.mae, false);
+  await expect(page.locator('[data-kk="day"] .art')).toBeVisible();
+  await expect.poll(kk, { timeout: 15_000 }).toBe('sit');
+  await page.goto('?demo&date=2026-11-05T02:00&visitor=none&critter=none');
+  await expect(hudMenu(page)).toBeVisible();
+  await camTo(page, (await geo(page)).CAMS.mae, false);
+  await expect(page.locator('[data-kk="asleep"] .fxa.zzz')).toHaveCount(1);
+  await expect.poll(kk, { timeout: 15_000 }).toBe('nap');
+});
+
+for (const [id, way] of [['wisp', 'float'], ['celeste', 'fly'], ['jack', 'spook']] as const)
   test(`${id} arrives and leaves by ${way}`, async ({ page }) => {
     // (each phase watched from the start: on a slow GPU the island may be up only once one has gone by)
     const phase = (p: string) => `[data-visitor="${id}"][data-phase="${p}"]`;

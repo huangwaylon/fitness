@@ -1,9 +1,11 @@
-// Visitors (docs/design.md "Visitors"), after NH, where a special visitor comes nearly every day: K.K. Slider plays on
-// Saturday nights (18:00–24:00), Daisy Mae comes on Sunday mornings (05:00–12:00), and Monday to Saturday one of NH's
+// Visitors (docs/design.md "Visitors"), after NH, where a special visitor comes nearly every day: Daisy Mae comes on
+// Sunday mornings (05:00–12:00), and Monday to Saturday one of NH's
 // weekday visitors (`ROTATION`: each at most once a week, now and then a quiet day): Gulliver washed up on the beach
 // (06:00–18:00), Wisp at night (20:00–04:00), the others in the plaza (06:00–22:00: Kicks, Label, Saharah, Leif, Redd,
 // C.J., Flick). Pure and seeded by the date (daySeed.ts dayRand, the week's by its Monday): both phones see the same
-// visitor. A tap gives a line (no trading, no ベル); K.K. plays a short song if the music is on. On Halloween night
+// visitor. A tap gives a line (no trading, no ベル). K.K. Slider isn't one of them any more: he lives on the island,
+// on his stool (kkSlider.ts, KKSlider.svelte), and Saturday evening (18:00–24:00) is his show, the plaza's: no other
+// visitor then (NH's Saturday night is K.K.'s). On Halloween night
 // (events.ts: Oct 31 17:00–24:00) Jack comes instead of anyone else and asks for candy (a choice: a treat, or his
 // trick). On a meteor shower's night (meteor.ts, at most once a week) Celeste comes to watch it, 20:00–04:00. NH's
 // holiday hosts take the slot on their day (events.ts): Franklin on Turkey Day (he asks for a fish), Jingle on Toy Day,
@@ -22,9 +24,9 @@ import { coupleAt } from './wedding.ts';
 import { washedUp } from '#lib/layout/spots.ts';
 import type { Layout } from '#lib/layout/model.ts';
 
-export type VisitorId = 'kk-slider' | 'daisy-mae' | 'wisp' | 'gulliver' | 'kicks' | 'label' | 'saharah' | 'leif' | 'redd' | 'cj' | 'flick'
+export type VisitorId = 'daisy-mae' | 'wisp' | 'gulliver' | 'kicks' | 'label' | 'saharah' | 'leif' | 'redd' | 'cj' | 'flick'
   | 'jack' | 'celeste' | 'franklin' | 'jingle' | 'zipper' | 'reese';
-export const VISITORS: readonly VisitorId[] = ['kk-slider', 'daisy-mae', 'wisp', 'gulliver', 'kicks', 'label', 'saharah', 'leif', 'redd', 'cj',
+export const VISITORS: readonly VisitorId[] = ['daisy-mae', 'wisp', 'gulliver', 'kicks', 'label', 'saharah', 'leif', 'redd', 'cj',
   'flick', 'jack', 'celeste', 'franklin', 'jingle', 'zipper', 'reese'];
 /** Each event's host (NH), in the visitor slot from its main part's hour. */
 export const HOSTS: Partial<Record<EventId, VisitorId>> = { halloween: 'jack', 'turkey-day': 'franklin', 'toy-day': 'jingle', 'bunny-day': 'zipper' };
@@ -45,14 +47,15 @@ export function dayVisitor(date: string, weekday: number, seed = ISLAND_SEED): V
 
 /** Who visits at this Tokyo moment. `prevDate`: the day before (Wisp's night runs past midnight). `ev`: the event now
  *  (Halloween night brings Jack, even on a Saturday: the event comes first, as in NH). `shower`: a meteor shower is on
- *  (Celeste comes to watch it, before K.K. or Wisp: she's the rarest). */
+ *  (Celeste comes to watch it, even at K.K.'s show, before Wisp: she's the rarest). */
 export function visitorAt(date: string, prevDate: string, hour: number, weekday: number, seed = ISLAND_SEED,
   ev: EventNow | null = eventAt(date, hour), shower = showerAt(date, prevDate, hour, seed)): VisitorId | null {
   const host = ev?.night ? HOSTS[ev.id] : undefined;
   if (host) return host;
   if (coupleAt(date, hour)) return 'reese';
   if (shower) return 'celeste';
-  if (weekday === 6 && hour >= 18) return 'kk-slider';
+  // Saturday evening is K.K.'s show on his stool (kkSlider.ts): the plaza's his
+  if (weekday === 6 && hour >= 18) return null;
   if (weekday === 0 && hour >= 5 && hour < 12) return 'daisy-mae';
   // Wisp's night: from 20:00 on his day to 04:00 the next morning (none on a Saturday: K.K.'s night)
   if (hour < 4) return weekday !== 0 && dayVisitor(prevDate, weekday - 1, seed) === 'wisp' ? 'wisp' : null;

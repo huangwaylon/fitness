@@ -123,7 +123,12 @@ for (const layout of ['default', 'user'] as const)
       expect(pts.length, 'water on screen').toBeGreaterThan(2);
       for (const [x, y] of pts.slice(0, 14)) {
         // (still nothing of the island's over it: a house's tap area follows its model in as it loads)
-        if (await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building]'), [x, y] as const)) continue;
+        // (nor K.K. on his stool by the river: the scene asks him, a tap within his box is his)
+        if (await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building]')
+          || [...document.querySelectorAll('[data-kk] .art')].some((el) => {
+            const b = el.getBoundingClientRect();
+            return x > b.left - 14 && x < b.right + 14 && y > b.top - 14 && y < b.bottom + 14;
+          }), [x, y] as const)) continue;
         const n0 = (await cues(page)).length;
         // (a click, the tap's own path: WebKit moves a touch that comes within a double tap's time of the last one to
         // where that one was, and these come one after another)

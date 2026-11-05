@@ -1,6 +1,6 @@
 // The visitors' life on the island (docs/design.md "Visitors: life"), the pure part. Every visitor breathes and looks
 // about (its 3D model's idle pose, as the villagers'); on idle life's beat (motion/idleLife.svelte.ts, the villagers' scheduler) one small
-// thing: its NH signature (K.K. strums on, Jack twirls, Zipper hops, Celeste looks up at the stars, …), an
+// thing: its NH signature (Jack twirls, Zipper hops, Celeste looks up at the stars, …), an
 // emote of its own, a look toward the nearest villager, a stroll for the ones who roam in NH (Daisy Mae, Franklin,
 // Zipper, Celeste, within a small radius of their spot) or, now and then, a villager comes over to say hello
 // (island/avatar.ts meetVisitor). Gulliver sleeps face down until he's been nudged five times (NH). They arrive (walk
@@ -13,11 +13,11 @@ import type { VisitorId } from './visitors.ts';
 import type { Pt } from './walkGraph.ts';
 
 /** How a visitor comes and goes: from the campsite on foot (or hopping), floating or flying down from the sky (and back
- *  up), appearing where they stand (K.K. on his stool, Gulliver already washed up), or Jack's spooky puff. */
+ *  up), appearing where they stand (Gulliver already washed up), or Jack's spooky puff. */
 export type Way = 'walk' | 'hop' | 'float' | 'fly' | 'appear' | 'spook';
 
 export interface Behaviour {
-  /** How far from their spot they stroll (u); 0: they stay put (NH: K.K. on his stool, Gulliver, Jack…). */
+  /** How far from their spot they stroll (u); 0: they stay put (NH: Gulliver, Jack…). */
   roam: number;
   arrive: Way;
   leave: Way;
@@ -30,8 +30,6 @@ export interface Behaviour {
 }
 
 export const BEHAVIOUR: Record<VisitorId, Behaviour> = {
-  // K.K. on his stool: strums (CSS), a nod to the beat now and then, notes floating off the guitar
-  'kk-slider': { roam: 0, arrive: 'appear', leave: 'appear', emotes: ['mark-note', 'glee'], signature: { motion: 'nod', fx: 'notes' }, hello: 'mark-note' },
   // Daisy Mae: shifts the turnip bundle on her head and hums; strolls about selling (NH: she walks around the island)
   'daisy-mae': { roam: 64, arrive: 'walk', leave: 'walk', emotes: ['mark-note', 'glee', 'mark-sweat'], signature: { motion: 'wiggle', fx: 'notes' }, hello: 'glee' },
   // Wisp: floats and drifts with a flicker (CSS); a shy little wobble
@@ -82,8 +80,6 @@ export interface BeatState {
   sinceMeet: number;
   /** A villager is free to come over (home, awake, not busy, nobody walking). */
   villagerFree: boolean;
-  /** K.K. is playing a song: the beat is the music's. */
-  playing?: boolean;
 }
 
 /** A villager comes over at most once per this long (ms). */
@@ -94,7 +90,7 @@ const W: Record<VisitorAct, number> = { signature: 4, emote: 3, look: 3, wander:
 /** One beat: what the visitor does now (null: nothing, it's speaking or walking). */
 export function pickAct(id: VisitorId, s: BeatState, rnd: () => number): VisitorAct | null {
   if (s.speaking || s.walking) return null;
-  if (s.asleep || s.playing) return 'signature';
+  if (s.asleep) return 'signature';
   const b = BEHAVIOUR[id];
   const pool: [VisitorAct, number][] = [['signature', W.signature], ['emote', W.emote], ['look', W.look]];
   if (b.roam && !s.away) pool.push(['wander', W.wander]);
@@ -124,8 +120,8 @@ export function strollSpots(home: Pt, roam: number, rnd: () => number): Pt[] {
   return out;
 }
 
-/** The little move before a line (a hop; K.K. nods from his stool, Wisp wobbles, Gulliver starts). */
-export const tapMotion = (id: VisitorId): Motion => (id === 'kk-slider' ? 'nod' : id === 'wisp' ? 'wiggle' : id === 'gulliver' ? 'surprise' : 'hop');
+/** The little move before a line (a hop; Wisp wobbles, Gulliver starts). */
+export const tapMotion = (id: VisitorId): Motion => (id === 'wisp' ? 'wiggle' : id === 'gulliver' ? 'surprise' : 'hop');
 
 /** Strolling speed (u/s): slower than a villager's wander (NH's visitors amble); arriving from the campsite at the
  *  world's stroll (spec §4: 90 u/s); back to their spot before a line, briskly. */

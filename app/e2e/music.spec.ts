@@ -69,12 +69,13 @@ test('the wasps: Chased by Bees cuts in as they come out, Stung by Bees after th
 
 test('K.K.: his request prompt, then おまかせ plays one of his songs (not the placeholder tune)', async ({ page }) => {
   const audio = await open(page, '2026-11-07T20:00'); // a Saturday
-  // he plays on centre stage, the campsite's clearing (おく)
+  // he plays on his stool (the layout's piece, まえ's lawn)
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await page.waitForTimeout(400);
-  await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(642));
+  const z = await page.evaluate(() => (window as unknown as { __layout: { pos(id: string): [number, number] } }).__layout.pos('kk-slider')[1]);
+  await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z - 120), z);
   await page.waitForTimeout(400);
-  const kk = page.locator('[data-visitor="kk-slider"] .art');
+  const kk = page.locator('[data-kk] .art');
   await expect(kk).toBeVisible();
   const r = (await kk.boundingBox())!;
   await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);

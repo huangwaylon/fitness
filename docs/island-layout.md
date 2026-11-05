@@ -31,9 +31,15 @@ editor; the homes, their looks and their rooms; the phone's もようがえ. Pho
   `bush` and `hedge` (variant: the species, `month-a|b` the month's pair), `flower` (`c<n>`: the scatter's clump n,
   its kind the season's), rocks (`rock` the shovel's, `flat-rock`, `garden-rock`), lights, NH's outdoor furniture,
   the seasonal spots (`beach-chair`, `sandcastle`, `snowboy`), NH's bulletin board (`board`: 2 × 1, one on the
-  island, used from the tile in front of it, which must stay clear and reachable like a home's door), the pieces that
-  join terrain (`bridge` over water, `stairs` up a cliff), the homes (`home`) and named spots (`spot`: `villager-a|b`
-  the villagers' home spots; `stage`, the old fixed visitors' spot, kept but unused: the stage is derived).
+  island, used from the tile in front of it, which must stay clear and reachable like a home's door), K.K. Slider's
+  stool (`kk-stool`, id `kk-slider`: 1 × 1, one on the island, never deleted, moved and turned in the editor and
+  もようがえ, he faces its way; its front tile clear and reachable, as the board's, `front-kk-slider`; the default puts it
+  on まえ's lawn west of the main path at tile 6 × 22, behind the visitors' stage, its tile and front free on the
+  user's island too (the record's, its museum and shop where the user put them), so an island arranged before him has
+  him there with no op; docs/design.md "K.K. on his stool"), the
+  pieces that join terrain (`bridge` over water, `stairs` up a cliff), the homes (`home`) and named spots (`spot`:
+  `villager-a|b` the villagers' home spots; `stage`, the old fixed visitors' spot, kept but unused: the stage is
+  derived).
   Each: `id`, kind `k`, tile `x, z` (its footprint's lowest column and row), facing `f` 0–3 (0 toward the camera, −z;
   1 +x, 2 away, 3 −x), variant `s`. A footprint is `w × d` tiles, turned by `f` for the kinds that `turn` (a bench);
   for the others an odd `f` only mirrors the look.
@@ -418,7 +424,7 @@ and taken away, Kicks on it on both phones; a bench on it: red, the warning, the
   `inRiver`, `onLand`, `onGrass`) and `setWorld` swaps them in (ES live bindings; a cache keys on `worldGen()`; a DOM
   overlay reads `site.rev`). Before it's applied (and in the unit tests), world.ts's own.
 - **The walk:** layout/nav.ts's (`nav.ts walkNav()`: the layout's grid with the island's named spots, `homeA`,
-  `homeB`, `centreStage`, `door-home-A|B|G`, the default's seats, `front-<id>`) for a tap; walkGraph.ts's geo for the
+  `homeB`, `centreStage`, `door-home-A|B|G`, the default's seats, `front-<id>`: the board's, K.K.'s stool's `front-kk-slider`) for a tap; walkGraph.ts's geo for the
   idle walks and the visitors.
 - **The decorations:** Decor.svelte draws the layout's decoration objects as tap areas only (placeObjects draws them).
 - The e2e: `e2e/layout-island.spec.ts`; unit: `island/layoutWorld.test.ts`.

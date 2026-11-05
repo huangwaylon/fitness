@@ -600,6 +600,16 @@ the confirmed spot crosses).
 The visitor moves through the same director, idle life and walk graph as the villagers, with CSS loops for continuous
 life. Why: one animation system, and pausing under a sheet or a hidden page already applies.
 
+### K.K. lives on the island, on a piece of the layout (2026-11-05)
+K.K. Slider is no longer a Saturday visitor: he sits on his stool, a fixed piece of the layout (`kk-stool`, one to an
+island, never deleted, moved and turned in the editor; design.md "K.K. on his stool"), every day; Saturday 18:00–24:00
+is his show (no visitor in the plaza then), by day he strums quietly and still plays a song on request, 00:00–06:00 he
+dozes. His default spot is free on the record's island too, so no op was needed to place him; were it taken, he'd
+stand there flagged in the editor, as the museum and the shop would (no automatic move: the user places pieces
+themselves). The tent's music players play his airchecks through the same cut-in (`playKK(id, 'aircheck')`). Why: the
+user ("I would like to make kkrider a permanent addition to the island - also make him movable/placeable via the
+editor"); a resident who played only once a week would be scenery, so he plays on request any time he's awake.
+
 ### A villager's phrase is presence (2026-11-02)
 A tap on my villager opens a phrase picker (six presets, my own last few, a 20-character field; since 2026-11-03 no
 presets: my own last four and the field); the pick shows over my villager on both phones for 4 s through one small

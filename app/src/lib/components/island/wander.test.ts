@@ -23,6 +23,12 @@ describe('points of interest', () => {
     const more = walkGeo({ nodes: { lookout: [300, 420] } });
     expect(pois(more, false).map((p) => p.name)).toContain('lookout');
   });
+  it('never the step in front of K.K.’s stool (a villager there hides him); the board’s front is one', () => {
+    const more = walkGeo({ nodes: { 'front-kk-slider': [195, 210], 'front-board': [150, 90] } });
+    const names = pois(more, false).map((p) => p.name);
+    expect(names).not.toContain('front-kk-slider');
+    expect(names).toContain('front-board');
+  });
   it('the pick is never where it already stands', () => {
     const list = pois(g, false);
     const at = list[0].at;

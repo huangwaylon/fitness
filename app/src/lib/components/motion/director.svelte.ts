@@ -49,13 +49,13 @@ const blank = (): ActorState => ({
   busyUntil: 0
 });
 
-export const actors = $state<Record<ActorId, ActorState>>({ mine: blank(), partner: blank(), third: blank(), host: blank(), visitor: blank() });
+export const actors = $state<Record<ActorId, ActorState>>({ mine: blank(), partner: blank(), third: blank(), host: blank(), visitor: blank(), kk: blank() });
 
 const EMOTE_MS = 2200;
 let fxN = 0;
 /** Pending timers per actor → an optional "dropped" hook, called when cancel() / resetAll() drops it. */
 type Dropped = (() => void) | undefined;
-const timers: Record<ActorId, Map<ReturnType<typeof setTimeout>, Dropped>> = { mine: new Map(), partner: new Map(), third: new Map(), host: new Map(), visitor: new Map() };
+const timers: Record<ActorId, Map<ReturnType<typeof setTimeout>, Dropped>> = { mine: new Map(), partner: new Map(), third: new Map(), host: new Map(), visitor: new Map(), kk: new Map() };
 /** Last time any event reaction ran (idle life waits 3 s after one). */
 export const lastEvent = { at: 0 };
 
@@ -395,7 +395,7 @@ export function onStep(fn: (id: ActorId, x: number, y: number) => void): () => v
 }
 export const STEP_GAP_MS = 320;
 /** Walk timers per actor (a new walk drops the last one's; so do cancel() and place()). */
-const walks: Record<ActorId, Set<() => void>> = { mine: new Set(), partner: new Set(), third: new Set(), host: new Set(), visitor: new Set() };
+const walks: Record<ActorId, Set<() => void>> = { mine: new Set(), partner: new Set(), third: new Set(), host: new Set(), visitor: new Set(), kk: new Set() };
 
 interface WalkOpts {
   /** Total duration (ms), shared between the segments by length; else from `speed`. */
@@ -566,7 +566,7 @@ export function resetAll() {
   if (drainTimer) clearTimeout(drainTimer);
   drainTimer = null;
   eventUntil = 0;
-  for (const id of ['mine', 'partner', 'third', 'host', 'visitor'] as const) {
+  for (const id of ['mine', 'partner', 'third', 'host', 'visitor', 'kk'] as const) {
     const { present, home } = actors[id];
     cancel(id);
     Object.assign(actors[id], blank(), { present, home, x: home[0], y: home[1], from: home });

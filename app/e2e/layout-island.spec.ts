@@ -171,21 +171,21 @@ test('the editor moves うめ’s home: the phone’s door, walk and tap area fo
   await expect.poll(off).toBeLessThan(30);
 });
 
-test('a visitor on the long layout: K.K. at the layout’s centre stage on the front lawn, and a tap talks to him', async ({ page }) => {
-  await page.goto('./?demo&critter=none&date=2026-10-24T19:00'); // a Saturday evening: K.K.
+test('K.K. on the long layout: on his stool (the layout’s piece) on the front lawn, and a tap talks to him', async ({ page }) => {
+  await page.goto('./?demo&critter=none&date=2026-10-24T19:00'); // a Saturday evening: his show
   expect(await is3d(page)).toBe(true);
-  const { stage } = await site(page);
+  const stage = await page.evaluate(() => (window as unknown as { __layout: { pos(id: string): [number, number] } }).__layout.pos('kk-slider'));
   await world(page, `go(${stage[1] - 120})`);
   await settled(page); // (its nodes placed for the camera at rest: their boxes are read)
-  const art = page.locator('[data-visitor="kk-slider"] .art');
+  const art = page.locator('[data-kk] .art');
   await expect(art).toBeAttached();
-  // his feet (the node's origin) on centre stage
+  // his feet (the node's origin) on his stool
   await expect.poll(() => page.evaluate(([x, z]) => {
-    const r = document.querySelector('[data-visitor="kk-slider"]')!.getBoundingClientRect();
+    const r = document.querySelector('[data-kk]')!.getBoundingClientRect();
     const [px, py] = (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x, z);
     return Math.hypot(r.left - px, r.top - py);
   }, stage)).toBeLessThan(4);
-  // (a visitor is the scene's tap, not a DOM target: a tap on his middle)
+  // (he's the scene's tap, as a visitor is, not a DOM target: a tap on his middle)
   const r = (await art.boundingBox())!;
   await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('とたけけ');

@@ -32,11 +32,12 @@ const FIXED = new Set(['homeA', 'homeB', 'midA', 'midB', 'centre', 'stairS', 'st
 const POI_RANGE = 600;
 
 /** Where a villager may wander now (within POI_RANGE of `home`, when given). With a visitor on the island, centre stage
- *  (a visitor's spot) and the shore in front of it are left to them. Doors aren't points of interest. */
+ *  (a visitor's spot) and the shore in front of it are left to them. Doors aren't points of interest, nor the step in
+ *  front of K.K.'s stool (a villager standing there would hide him: KKSlider.svelte). */
 export function pois(g: WalkGeo, visitor: boolean, home?: Pt): Poi[] {
   const out: Poi[] = [];
   for (const [name, at] of Object.entries(g.nodes)) {
-    const kind = BASE_POIS[name] ?? (FIXED.has(name) || name.startsWith('door-') ? null : 'spot');
+    const kind = BASE_POIS[name] ?? (FIXED.has(name) || name.startsWith('door-') || name.startsWith('front-kk') ? null : 'spot');
     if (!kind) continue;
     if (home && Math.hypot(at[0] - home[0], at[1] - home[1]) > POI_RANGE) continue;
     if (visitor && (name === 'centreStage' || name === 'shoreC')) continue;

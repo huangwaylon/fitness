@@ -2078,13 +2078,14 @@ line-up is the 3D engine's to tune (the spec's fixme).
 
 `island/Visitor.svelte`, `island/visitors.ts`, `e2e/visitors.spec.ts`. NH's visitors, one at a time, each NH's own 3D
 model (the user: "only 3D models; no model, not included": a character with none never comes),
-seeded by the date, so a visitor comes most days as in NH: **K.K. Slider** on Saturday nights 18:00–24:00, **Daisy
+seeded by the date, so a visitor comes most days as in NH: **Daisy
 Mae** on Sunday mornings 05:00–12:00, and Monday to Saturday one of NH's weekday visitors (`ROTATION`, each at most
 once a week, drawn by the week's Monday, with about one quiet day in ten): **Kicks**, **Label**, **Saharah**,
 **Leif**, **Redd**, **C.J.** and **Flick** 06:00–22:00, **Gulliver** 06:00–18:00, **Wisp** that night 20:00–04:00
-(none on a Saturday: K.K.'s); **Jack** on Halloween night, **Celeste** on a meteor shower's night, the holiday hosts on
+(none on a Saturday night, and nobody at all on Saturday from 18:00: K.K.'s show, the plaza's; K.K. himself is no
+visitor now, he lives on the island: [K.K. on his stool](#kk-on-his-stool)); **Jack** on Halloween night, **Celeste** on a meteor shower's night, the holiday hosts on
 their days, the wedding couple on its days. Priority (`visitorAt`): the event's host (Jack included), the wedding
-couple, Celeste, K.K., Daisy Mae, then the day's. `?visitor=none`: nobody. They stand on centre stage in the plaza
+couple, Celeste, (Saturday evening: nobody), Daisy Mae, then the day's. `?visitor=none`: nobody. They stand on centre stage in the plaza
 (ひろば: `stageOf`, the layout's: where we put **おきゃくさんの ばしょ** in the もようがえ's おきゃくさん tab, else derived; it
 moves with a もようがえ, a visitor out then on the new spot at once), its skinned model converted as the villagers'
 are (`scripts/villagers3d-models.ts`: the special characters, and `VISITOR_ONLY` for the hosts, Jack and the wedding's
@@ -2094,11 +2095,36 @@ where we put **ジョニーの ばしょ**, else a new stretch of sand some days
 island-layout.md "The visitors' spots"), lying face down on the sand, his head to the left (villager3d's `prone`). A tap (while they're on screen): my villager turns to
 them where it stands, then their introduction the first time, then one of their lines. No trading, no ベル.
 
-**K.K.'s show:** with ミュージック on, a tap is his greeting with NH's choice box, **リクエスト** (up to four songs) or
-**おまかせ**. The island's music stops for the song ([K.K. Slider](#kk-slider)), he strums harder, ♪ float up, the
-villagers sway and a 「♪ けけボッサ」 caption sits by him. A tap mid-song offers ストップ / つづけて. At its end his
-sign-off and the island's music returns. With no song files he says he's tuning his guitar; with the music off he only
-talks.
+### K.K. on his stool
+
+`island/KKSlider.svelte`, `island/kkSlider.ts`, `e2e/visitors.spec.ts`, `e2e/visitor-life.spec.ts`. The user: "make
+kkrider a permanent addition to the island - also make him movable/placeable via the editor". K.K. Slider (とたけけ) lives here,
+on his **stool**: a piece of the layout (`kk-stool`, id `kk-slider`; [island-layout.md](island-layout.md): one on the
+island, never deleted, moved and turned in the editor and もようがえ, synced as any piece; its front tile kept clear
+and reachable for his listeners). The default stool stands on まえ's lawn west of the main path (tile 6 × 22), behind the
+visitors' stage and off to its side, a clump of flowers before him, facing the camera, nothing tall in front of him,
+off the villagers' ways between their home spots; an island arranged before him
+(the record's, with the museum and the shop where the user put them) has him there too, with no op (his tile and its
+front free there); where an island's own pieces take that tile, the editor flags it and he's moved by hand, as the
+museum and the shop are. He's no visitor any more (`visitors.ts`: not in the schedule, so never
+twice), and he's there every day, NH's own model (the visitors' GLB, 58 KB, loaded the first time he's in view, then
+kept, hidden out of view) sitting on NH's log stool and facing its way (`world3d/villagers.ts` slot `kk`, the
+director's actor `kk`; posed only while something moves, as the villagers are). What he's up to goes by the Tokyo
+clock (`kkMode`; `?kk=show|day|asleep` in dev or `?demo`):
+- **His show, Saturday 18:00–24:00** (NH's concert; the plaza has no visitor then): with ミュージック on, a tap is his
+  greeting with NH's choice box, **リクエスト** (two songs, or ほかの 曲) or **おまかせ**. The island's music stops for
+  the song ([K.K. Slider](#kk-slider): his live file), he strums harder, ♪ float up, the villagers sway and a
+  「♪ けけボッサ」 caption sits by him. A tap mid-song offers ストップ / つづけて. At its end his sign-off (「また 来週の
+  土曜に な」) and the island's music returns.
+- **By day** (06:00–24:00 the rest of the week): he strums quietly to himself, no sound (a nod to the beat on idle
+  life's beat, an emote now and then). NH's K.K. only plays on Saturdays; here he lives on the island, so a tap is a
+  chat that offers a song all the same (「なにか 一曲 どうだい？」, リクエスト / おまかせ, the same song flow; his
+  sign-off 「また いつでも 来いよ」). Decided so: a resident who never played but once a week would just be scenery.
+- **Asleep, 00:00–06:00** (after the show too): nodded off on his stool (villager3d's `nap`, a sleepy face, zzz); a
+  tap is a mumble (「…ムニャ… もう 店じまい さ…」), no song; his song stops at midnight.
+- With no song files he's tuning his guitar; with the music off he only chats (his introduction, then his lines). A
+  tap turns my villager to him where it stands (he's an interactable: no walk). Leaving the island, or bedtime, stops
+  his song (`stopKK('live')`: never a stereo's).
 
 ### Visitors: life
 
@@ -2108,7 +2134,7 @@ emotes, fx and facing use the villagers' calls, and idle life gives it a beat on
 
 - **Always:** the villagers' idle pose (villager3d `idle`: breathing, a look about), held still when nothing moves as
   theirs is; the director's motions are its actions (a hop, a wave, NH's three stretches with the villagers).
-- **Signatures (NH):** K.K. nods with notes; Wisp floats a little off the ground in his glow; Jack twirls with a spooky
+- **Signatures (NH):** Wisp floats a little off the ground in his glow; Jack twirls with a spooky
   glint; Daisy Mae hums; Franklin flaps and looks about; Jingle hops with a sparkle; Zipper hops; Celeste looks up and
   points (a wave) when a shooting star crosses (`island:star`); Reese and Cyrus side by side, hearts; Kicks and Flick
   nod, Label strikes a pose, Saharah hums, Leif sways, Redd looks about, C.J. hops.
@@ -2124,8 +2150,8 @@ emotes, fx and facing use the villagers' calls, and idle life gives it a beat on
 - **A tap:** my villager turns to them where it stands; the visitor walks back to its spot if it strolled, turns to
   my villager with a little hop and speaks, standing still until the balloon closes. A tap elsewhere now and then draws a glance.
 - **Arriving and leaving:** when a visit starts or ends with the island open: walkers come from the campsite along
-  the paths (and go back there, fading at the door), Wisp floats down, Celeste flies down (`liftNow`), K.K. and Gulliver
-  appear, Jack in his spooky puff; they leave the same way (up again, or fading). On a page's first paint they're simply there.
+  the paths (and go back there, fading at the door), Wisp floats down, Celeste flies down (`liftNow`), Gulliver
+  appears, Jack in his spooky puff; they leave the same way (up again, or fading). On a page's first paint they're simply there.
 - **Cost:** one more skinned character on the villagers' code and materials (its GLB ≤ 100 KB, loaded on its first
   visit and cached), its spec written over each frame (no allocation); the director's timers; paused with the scene.
 
@@ -2255,6 +2281,7 @@ Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/previe
 | `?wx=rain-pm\|clears\|typhoon\|snow\|fog\|cloudy\|stale` | A canned real-weather timeline on the scene clock's hours (`island/wxFixtures.ts`): rain 12:00–18:00; rain until 14:00 then fine (a rainbow); a downpour; snow; foggy mornings; overcast; one fetched 37 h ago (the seeded day) |
 | `?event=<id>` | Show an event (the preview's ids: `halloween`, `cherry`, `birthday-A`, `wedding`…; its main part on; Bunny Day's eggs too) |
 | `?visitor=<id>\|none`, `?arrive`, `?leave=<ms>`, `?stroll`, `?meet` | A visitor; its arrival; its departure; a stroll; the partner's hello |
+| `?kk=show`, `?kk=day`, `?kk=asleep` | K.K. on his stool: his show, his day, asleep (whatever the clock) |
 | `?critter=fish\|pond\|<fish>\|<pond fish>\|<bug>\|none`, `&coast=front\|back\|left\|right`, `?sea=<id>\|pearl`, `?flea` | A critter now (kept until caught; ambient visits off), a sea fish off that side; a dive spot; a flea on every villager tap |
 | `?shake=nest\|branch\|bagworm\|spider` | The next shake drops that |
 | `?rock=clonk\|sparkle\|bug` | Every rock tap has that outcome |
@@ -2487,8 +2514,11 @@ tile name the room's track (`sound.title.<id>`, NH's names).
 ### K.K. Slider
 
 `kk.ts kkTracks`: K.K.'s songs from the manifest's `kk` list (`{ id, ja, en, file, gain }`, NH's official titles),
-one-shots under `audio/kk/`. `playKK(id)` plays one over the island's music, `stopKK()` ends it, `sound.kk` is the song
-playing; `kkPick` never repeats the last one.
+one-shots under `audio/kk/`; their airchecks (NH's stereo versions) at `kkAircheck.<id>` (`{ file, start: 0, gain }`).
+`playKK(id, source)` plays one over the island's (or a room's) music: `live` K.K. on his stool, `aircheck` a room's
+stereo ([the tent's stereos](#the-tent): its aircheck, else the live file, `kkFile`); `stopKK(source?)` ends it (only
+a song from that source), `sound.kk` is the song playing and `sound.kkFrom` where from; `kkPick` never repeats the
+last one. One cut-in path for both: the room's or the island's music stops for it and comes back after.
 
 ### Ambience
 

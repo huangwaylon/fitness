@@ -56,10 +56,13 @@ test('a tap on a weed pulls it where it is: my villager stays put', async ({ pag
       const w2 = window as unknown as { __world: { cam(): number } };
       return Math.abs(w2.__world.cam() - 300) < 1 && (w.__world3d ? w.__world3d.camStill() : w.__world.idle());
     })).toBe(true);
+    await expect(page.locator('[data-kk] .art')).toBeVisible(); // (K.K. on his stool: his chunk in, his node placed)
     const p = await page.locator('[data-care="weed"]').evaluateAll((els) => els.filter((el) => el.checkVisibility({ visibilityProperty: true })).map((el) => [el, el.getBoundingClientRect()] as const)
       .map(([el, r]) => ({ uid: (el as HTMLElement).dataset.uid, x: r.left + r.width / 2, y: r.top + r.height / 2 })).filter((q) => q.y > 150 && q.y < innerHeight - 30)
       // (nothing else's tap area over it: a flower, a tree, a dig spot beside it)
       .filter((q) => !document.elementFromPoint(q.x, q.y - 4)?.closest('button, [data-flower], [data-tree], [data-bush], [data-fixture], [data-sit], [data-find], [data-visitor], [data-actor]'))
+      // (nor behind the day's visitor or K.K. on his stool: their figures stand over it, the scene asks them)
+      .filter((q) => [...document.querySelectorAll('[data-visitor] .art, [data-kk] .art')].every((k) => { const b = k.getBoundingClientRect(); return q.x < b.left - 14 || q.x > b.right + 14 || q.y < b.top - 14 || q.y > b.bottom + 14; }))
       .sort((a, b) => Math.abs(a.y - innerHeight * 0.5) - Math.abs(b.y - innerHeight * 0.5))[0]);
     const mine = () => page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
     const at0 = await mine();

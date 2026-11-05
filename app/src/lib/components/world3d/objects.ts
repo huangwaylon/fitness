@@ -16,6 +16,7 @@ import type { Season } from '#lib/ui-state/theme.svelte.ts';
 import { kindDef } from '#lib/layout/catalog.ts';
 import { doorOf, facingVec, footOf, objMid, type Layout } from '#lib/layout/model.ts';
 import { WHO_OF_HOME, homePorch, type HomeStyle } from '#lib/layout/homes.ts';
+import { KK_STOOL_H } from '../island/kkSlider.ts';
 
 /** A model (static/room/world3d/<name>.glb). */
 export type ModelName = string;
@@ -195,6 +196,11 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
       case 'tape-deck':
         // NH's boom box at the villagers' scale (assets.json deco/tape-deck), as NH has it beside them
         thing('tape-deck', assetFor('deco/tape-deck')?.s ?? DECOR_U);
+        break;
+      case 'kk-stool':
+        // K.K.'s stool: the log stool at its own height (K.K. sits on it: island/KKSlider.svelte, his model the 3D
+        // villagers' slot `kk`)
+        thing('log-stool', scaleOf('deco/log-stool', 'log-stool', KK_STOOL_H));
         break;
       case 'garden-lantern': {
         const key = o.s === 'white' ? 'deco/garden-lantern-white' : 'deco/garden-lantern', m = PROP[key];

@@ -45,10 +45,12 @@ const balloon = (page: Page) => expect(page.locator('[data-fx="talk"].placed')).
 test.use({ viewport: { width: 390, height: 844 } });
 for (const [v, at] of [['gulliver', '12:00'], ['kk-slider', '21:00'], ['wisp', '22:00'], ['jack', '21:00'], ['reese', '12:00'], ['daisy-mae', '09:00']] as const)
   test(`${v}: the balloon by their head, not floated above the campsite`, async ({ page }) => {
-    await page.goto(`?demo&date=2026-11-04T${at}&visitor=${v}&critter=none`);
-    const art = `[data-visitor="${v}"] .art`;
+    // (K.K. on his stool, no visitor: in view from まえ)
+    const kk = v === 'kk-slider';
+    await page.goto(`?demo&date=2026-11-04T${at}&visitor=${kk ? 'none' : v}&critter=none`);
+    const art = kk ? '[data-kk] .art' : `[data-visitor="${v}"] .art`;
     // Gulliver washes up on the front beach and Daisy Mae wanders the front lawn (まえ); the rest take centre stage
-    if (v !== 'gulliver' && v !== 'daisy-mae') await camTo(page, 642, false);
+    if (v !== 'gulliver' && v !== 'daisy-mae' && !kk) await camTo(page, 642, false);
     await expect(page.locator(art)).toBeVisible();
     if (v === 'gulliver') await wakeGulliver(page, art);
     else await tapFigure(page, art, 0.3);

@@ -80,6 +80,10 @@ export const KIND_LIST: readonly KindDef[] = [
   k({ k: 'shishiodoshi', group: 'furniture', ja: 'ししおどし', en: 'Shishi-odoshi', w: 1, d: 1, block: true, foot: [26, 18], on: 'land', h: 28, icon: 'deco/shishiodoshi', turns: true }),
   k({ k: 'firewood', group: 'furniture', ja: 'まき', en: 'Firewood', w: 1, d: 1, block: true, foot: [18, 12], on: 'land', h: 18, icon: 'deco/firewood' }),
   k({ k: 'tape-deck', group: 'furniture', ja: 'ラジカセ', en: 'Tape deck', w: 1, d: 1, block: true, foot: [34, 20], on: 'land', h: 40, icon: 'deco/tape-deck', fixed: true }),
+  // K.K. Slider's spot (とたけけ: island/KKSlider.svelte, docs/design.md "K.K. Slider"): his stool, with him on it with
+  // his guitar every day, one on the island, never deleted; moved and turned (he faces its way); listeners stand on the
+  // tile in front of it, which stays clear and reachable (`front`). Its height is his, seated.
+  k({ k: 'kk-stool', group: 'furniture', ja: 'とたけけ', en: 'K.K. Slider', w: 1, d: 1, block: true, foot: [24, 16], on: 'land', h: 75, icon: 'villagers/kk-slider-icon', turns: true, fixed: true, front: true }),
   // the decorations NH's outdoor furniture the phones put down (island/decor.ts's ten), on the layout's tiles now
   k({ k: 'stone-lantern', group: 'furniture', ja: 'いしどうろう', en: 'Stone lantern', w: 1, d: 1, block: true, foot: [24, 20], on: 'land', h: 40, icon: 'decor/stone-lantern-0', turns: true }),
   k({ k: 'birdbath', group: 'furniture', ja: 'バードバス', en: 'Birdbath', w: 1, d: 1, block: true, foot: [24, 20], on: 'land', h: 30, icon: 'decor/birdbath-0', turns: true }),

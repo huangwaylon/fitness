@@ -27,31 +27,29 @@ describe('visitor life (NH behaviours)', () => {
       if (b.signature.motion) expect(MOTION_MS[b.signature.motion], id).toBeGreaterThan(0);
     }
   });
-  it('the ones who roam in NH stroll (Daisy Mae, Franklin, Zipper, Celeste); K.K., Gulliver, Jack and the rest stay put', () => {
+  it('the ones who roam in NH stroll (Daisy Mae, Franklin, Zipper, Celeste); Gulliver, Jack and the rest stay put', () => {
     for (const id of ['daisy-mae', 'franklin', 'zipper', 'celeste'] as const) {
       expect(BEHAVIOUR[id].roam, id).toBeGreaterThan(0);
       expect(BEHAVIOUR[id].roam, id).toBeLessThanOrEqual(80);
       expect(acts(id).has('wander'), id).toBe(true);
     }
-    for (const id of ['kk-slider', 'gulliver', 'jack', 'wisp', 'jingle', 'reese'] as const) {
+    for (const id of ['gulliver', 'jack', 'wisp', 'jingle', 'reese'] as const) {
       expect(BEHAVIOUR[id].roam, id).toBe(0);
       expect(acts(id).has('wander'), id).toBe(false);
     }
   });
-  it('signatures after NH: Jack twirls, Zipper hops, Celeste looks up, K.K. nods with notes, Reese and Cyrus nuzzle', () => {
+  it('signatures after NH: Jack twirls, Zipper hops, Celeste looks up, Reese and Cyrus nuzzle', () => {
     expect(BEHAVIOUR.jack.signature.motion).toBe('twirl');
     expect(BEHAVIOUR.zipper.signature.motion).toBe('hop2');
     expect(BEHAVIOUR.celeste.signature.motion).toBe('lookup');
-    expect(BEHAVIOUR['kk-slider'].signature).toEqual({ motion: 'nod', fx: 'notes' });
     expect(BEHAVIOUR.reese.signature.fx).toBe('hearts');
     expect(BEHAVIOUR.franklin.signature.motion).toBe('flap');
     expect(BEHAVIOUR['daisy-mae'].signature.fx).toBe('notes'); // she hums
   });
-  it('a beat: nothing while speaking or walking; asleep or mid-song, only the signature', () => {
+  it('a beat: nothing while speaking or walking; asleep, only the signature', () => {
     expect(acts('daisy-mae', { speaking: true })).toEqual(new Set([null]));
     expect(acts('daisy-mae', { walking: true })).toEqual(new Set([null]));
     expect(acts('gulliver', { asleep: true })).toEqual(new Set(['signature']));
-    expect(acts('kk-slider', { playing: true })).toEqual(new Set(['signature']));
   });
   it('a beat: signature, emote and look always; home only when away; a villager comes over at most once per MEET_GAP, when one is free', () => {
     const base = acts('celeste');
@@ -120,13 +118,11 @@ describe('visitor life (NH behaviours)', () => {
     expect(BEHAVIOUR.wisp.arrive).toBe('float');
     expect(BEHAVIOUR.celeste.arrive).toBe('fly');
     expect(BEHAVIOUR.jack.arrive).toBe('spook');
-    expect(BEHAVIOUR['kk-slider'].arrive).toBe('appear'); // on his stool
     expect(BEHAVIOUR.zipper.arrive).toBe('hop');
     expect(BEHAVIOUR.gulliver.leave).toBe('fly'); // off with his crew
   });
-  it('the little move before a line: a hop, K.K. nods on his stool, Wisp wobbles, Gulliver starts', () => {
+  it('the little move before a line: a hop, Wisp wobbles, Gulliver starts', () => {
     expect(tapMotion('daisy-mae')).toBe('hop');
-    expect(tapMotion('kk-slider')).toBe('nod');
     expect(tapMotion('wisp')).toBe('wiggle');
     expect(tapMotion('gulliver')).toBe('surprise');
   });

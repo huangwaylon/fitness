@@ -4,18 +4,12 @@
 </script>
 
 <script lang="ts">
-  // Visitors (docs/design.md "Visitors"), after NH: K.K. Slider with his guitar on Saturday nights, Daisy Mae on Sunday
-  // mornings, Wisp floating by on some nights (see-through, a slow bob), Gulliver on some days. Most stand at centre
+  // Visitors (docs/design.md "Visitors"), after NH: Daisy Mae on Sunday mornings, Wisp floating by on some nights (see-through, a slow bob), Gulliver on some days. Most stand at centre
   // stage (world.ts CENTRE_STAGE: the layout's plaza, a clear patch of lawn behind the villagers' spots, in view as the
   // island opens); Gulliver lies washed up on the front beach, as in NH. Each is one world node (camera.svelte.ts) at the
   // villagers' scale: NH's own model, drawn and posed by the 3D island as the villagers are (world3d/villagers.ts; the
   // node here its tap area, its balloon's anchor, its emotes). A tap: their introduction the first time, then one of
   // their lines (no trading, no ベル).
-  // K.K.'s show (NH's Saturday concert): with ミュージック on, a tap is his greeting and 「リクエストは あるかな？」
-  // (リクエスト: a few of his songs to pick from; おまかせ: one at random); the island's music stops for the song
-  // (sound/kk.ts, sound.svelte.ts playKK), he strums harder, ♪ float up, the villagers sway, a 「♪ title」 caption
-  // shows; a tap meanwhile offers ストップ; at the end his sign-off and the island's music comes back. With no songs
-  // he's still tuning his guitar.
   // On Halloween night (events.ts) Jack comes instead and asks for candy: 「キャンディを あげる」 delights him (joy, the
   // candy pops up over a spooky sparkle), 「なにも あげない」 earns his trick (my villager's face goes goofy for a minute:
   // `ontrick`). No inventory, no ベル.
@@ -32,8 +26,7 @@
   // `?arrive` (dev or ?demo): the arrival plays on load; `?leave=<ms>`: the visit ends after that long; `?stroll`: a
   // stroll now; `?meet`: the partner comes over now.
   import { dayRecord } from './dayRecord.ts';
-  import { shuffle } from '#lib/random.ts';
-  import { tick, untrack } from 'svelte';
+  import { untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { tall3d } from '../villager3d/manifest.ts';
   import Emote from '../characters/Emote.svelte';
@@ -43,14 +36,13 @@
   import type { Motion } from '../motion/reactions.ts';
   import { BEHAVIOUR, EDGE_FADE_MS, MUMBLES, POP_MS, VISITOR_SPEED, WAY_MS, nudge, pickAct, pickEmote, strollSpots, tapMotion, wayMs, type Way } from './visitorLife.ts';
   import type { Pt } from './walkGraph.ts';
-  import { i18n, t } from '#lib/i18n/index.ts';
+  import { t } from '#lib/i18n/index.ts';
   import { dayKey, minuteNow, now } from '#lib/time/clock.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { kkPick, kkTracks, type KKTrack } from '#lib/sound/kk.ts';
-  import { eventJingle, playKK, sound, stopKK } from '#lib/sound/sound.svelte.ts';
+  import { eventJingle } from '#lib/sound/sound.svelte.ts';
   import { sceneSfx } from './sceneTaps.ts';
-  import { EDGE, clearAt, guardsU, place, stageGeo } from './placement.ts';
+  import { EDGE, clearAt, guardsU, stageGeo } from './placement.ts';
   import { zodiacOf } from './beach.ts';
   import { hook, hookFlag, islandSeed } from './devHooks.ts';
   import { meetVisitor, turnTo, presence, villagerFree, visitorRoute, visitorWalkable } from './avatar.ts';
@@ -217,7 +209,7 @@
         later('visitor', EDGE_FADE_MS, () => (edge = false));
         walkTo('visitor', pts, { speed: VISITOR_SPEED.arrive, from, face: 'home', then: () => {
           phase = 'here';
-          setMotion('visitor', id === 'kk-slider' ? 'nod' : 'hop');
+          setMotion('visitor', 'hop');
         } });
         return;
       }
@@ -282,7 +274,7 @@
     if (!id || !s || phase !== 'here' || !enabled()) return;
     const act = pickAct(id, {
       speaking: speaking(), asleep: sleeping, walking: st.walking, away: awayFromHome('visitor'),
-      sinceMeet: lastMeet ? Date.now() - lastMeet : Infinity, villagerFree: meetable(s) && villagerFree(), playing: !!playing
+      sinceMeet: lastMeet ? Date.now() - lastMeet : Infinity, villagerFree: meetable(s) && villagerFree()
     }, r);
     if (!act) return;
     if (act === 'signature') signature(id);
@@ -371,7 +363,7 @@
   function meet(id: VisitorId): boolean {
     const ok = meetVisitor(where(), (x) => {
       faceToward('visitor', x);
-      setMotion('visitor', id === 'kk-slider' ? 'nod' : 'hop');
+      setMotion('visitor', 'hop');
       later('visitor', 500, () => setEmote('visitor', BEHAVIOUR[id].hello));
       later('visitor', 3600, () => !speaking() && (st.face = 'home'));
     });
@@ -439,58 +431,8 @@
   const awayNow = () => edge || (phase === 'leave' && way !== 'walk' && way !== 'hop' && performance.now() - wayT0 > WAY_MS[way] * 0.5);
   /** Visitors who introduced themselves this session. */
   const met = new Set<VisitorId>();
-  let last: string | undefined;
-  /** K.K.'s song playing now (sound.kk), and the caption's place (stage px). */
-  const playing = $derived<KKTrack | null>(sound.kk ? (kkTracks.find((k) => k.id === sound.kk) ?? null) : null);
-  let caption = $state<{ x: number; y: number; placed: boolean } | null>(null);
-  let capEl = $state<HTMLElement>();
-  /** The show this visit started (its sign-off comes when the song is over); the name tag's colour for it. */
-  let ours: { id: string; colour?: string } | null = null;
-  let lastSong: string | undefined;
-
-  // The show sways the villagers (IslandScene: `.if-scene[data-show]`).
-  $effect(() => {
-    const s = scene, on = !!playing;
-    s?.toggleAttribute('data-show', on);
-    return () => s?.removeAttribute('data-show');
-  });
-  // the song is over (its end, ストップ, the music turned off): his sign-off, and the caption goes
-  $effect(() => {
-    const id = sound.kk;
-    untrack(() => {
-      if (id || !ours) return;
-      const c = ours.colour;
-      ours = null;
-      caption = null;
-      const a = art();
-      if (a) say(t('visitor.kk-slider'), t('chat.sp.kk-slider.bye'), a, { colour: c });
-    });
-  });
-  // his show is over (midnight) or the island is left: his song stops and the island's music comes back
-  $effect(() => {
-    const here = who === 'kk-slider';
-    untrack(() => !here && stopKK());
-    return () => untrack(stopKK);
-  });
-
-  const titleOf = (s: KKTrack) => (i18n.locale === 'en' ? s.en : s.ja);
   const art = () => el?.querySelector('.art') ?? null;
-
-  /** K.K. plays `song`: the island's music stops for it; its end (or ストップ) brings his sign-off. */
-  async function perform(song: KKTrack, colour?: string) {
-    const target = art();
-    if (!target) return;
-    if (!playKK(song.id)) return say(t('visitor.kk-slider'), t('chat.sp.kk-slider.2'), target, { colour });
-    ours = { id: song.id, colour };
-    lastSong = song.id;
-    // the 「♪ title」 caption: measured hidden, then placed by K.K. clear of every control
-    caption = { x: 0, y: 0, placed: false };
-    await tick();
-    const st = scene?.querySelector('.stage')?.getBoundingClientRect(), c = capEl?.getBoundingClientRect(), a = target.getBoundingClientRect();
-    if (!scene || !st || !c) return;
-    const p = place(scene, c.width, c.height, a.left + a.width / 2, a.top, [{ x0: a.left, x1: a.right, y0: a.top, y1: a.bottom }]);
-    caption = p ? { x: p.x - st.left, y: p.y - st.top, placed: true } : null;
-  }
+  let last: string | undefined;
 
   /** Jack got his candy this session (then he just chats); `treat` replays his joy (Franklin's too, with his fish). */
   let treated = false;
@@ -602,19 +544,6 @@
     if (id === 'reese') return couple(target);
     // their name tag in their own NH colour (the roster, loaded on the first visit's tap)
     const colour = TAG[id] ?? ((await import('#lib/villagers/roster.ts')).ROSTER as Record<string, { colour?: string }>)[id]?.colour;
-    if (id === 'kk-slider') {
-      // mid-song: nothing disruptive, but he'll stop if asked
-      if (playing)
-        return say(name, t('chat.sp.kk-slider.playing'), target, { colour, choices: [
-          { label: t('visitor.stop'), pick: stopKK }, { label: t('visitor.keep'), pick: () => {} }
-        ] });
-      if (sound.settings.music && kkTracks.length)
-        return say(name, t('chat.sp.kk-slider.hello'), target, { colour, choices: [
-          { label: t('visitor.request'), pick: () => request(colour) },
-          { label: t('visitor.surprise'), pick: () => { const s = kkPick(Math.random, lastSong); if (s) void perform(s, colour); } }
-        ] });
-      if (sound.settings.music) return say(name, t('chat.sp.kk-slider.tuning'), target, { colour }); // no songs yet
-    }
     // the first tap of a visit: their introduction (a few pages, as NH's visitors open)
     if (!met.has(id)) {
       met.add(id);
@@ -624,16 +553,6 @@
     // Celeste names the season's sign (its zodiac fragment is the likelier one after tonight's wishes)
     const sign = zodiacOf(localDateAt(now().getTime())).replace(/-fragment$/, '');
     say(name, t(last, { sign: t(`zodiac.${sign}`) }), target, { colour });
-  }
-  /** リクエスト: two of his songs to pick from, or 「ほかの 曲」 for two others (NH lets you name one). */
-  function request(colour?: string, from: readonly KKTrack[] = []) {
-    const target = art();
-    if (!target) return;
-    const rest = kkTracks.filter((s) => !from.includes(s));
-    const pool = rest.length >= 2 ? rest : kkTracks;
-    const two = shuffle([...pool], Math.random).slice(0, 2);
-    const more = kkTracks.length > 2 ? [{ label: t('visitor.other'), pick: () => request(colour, [...from, ...two]) }] : [];
-    say(t('visitor.kk-slider'), t('chat.sp.kk-slider.which'), target, { colour, choices: [...two.map((s) => ({ label: titleOf(s), pick: () => void perform(s, colour) })), ...more] });
   }
 
   /** A tap on the scene (client px): true when the visitor took it. `body`: only a tap on its figure itself (what's
@@ -762,9 +681,8 @@
   <!-- one world node at the feet (camera.svelte.ts): its live position is the director's while it walks; the 3D island
        draws its model there (v3), the node's .art its tap area and its balloon's anchor -->
   <span class="visitor {shown}" aria-hidden="true" {@attach w.at({ x: spot.x, z: spot.z, h: spot.h + 40, live: () => livePos('visitor'), always: true, inv: true,
-        m3: playing ? { key: '', emit: { kind: 'notes', every: 1100, lift: spot.h * 0.9 }, art: () => el?.querySelector('.notes') } : null,
         v3: { id: shown, lift: liftNow, prone: proneNow, away: awayNow, also: shown === 'reese' ? { id: 'cyrus', dx: spot.h * PAIR_DX } : undefined } })}
-      class:show={!!playing} class:walking={st.walking} data-visitor={shown} data-stage={spot.stage || undefined}
+      class:walking={st.walking} data-visitor={shown} data-stage={spot.stage || undefined}
       data-phase={phase} data-way={way} data-asleep={sleeping ? (spot.lie ? 'lie' : 'stand') : undefined} data-motion={st.motion ?? undefined} bind:this={el}
       style:--h={su(spot.h)} style:--lift={su(FLOAT[shown] ?? 0)} style:--wide={WIDE[shown] ?? 1}>
       {#if shown === 'wisp'}<i class="glow"></i>{/if}
@@ -781,7 +699,6 @@
         {/each}
         {#if mumble}{#key mumble.n}<span class="mumble if-caption" data-mumble bind:this={mumbleEl} style:--shift="{mumbleShift}px">{t(mumble.key)}</span>{/key}{/if}
       </span>
-      {#if playing}<span class="notes">{#each [0, 1, 2] as i (i)}<i style:--i={i}>♪</i>{/each}</span>{/if}
       {#if treat}
         <!-- Jack's joy at a treat: the candy pops up over his head in a little spooky sparkle -->
         {#key treat}
@@ -792,9 +709,6 @@
         {/key}
       {/if}
   </span>
-{/if}
-{#if playing && caption}
-  <span class="caption if-caption" class:placed={caption.placed} data-fx="kk-caption" bind:this={capEl} style:left="{caption.x}px" style:top="{caption.y}px">♪ {titleOf(playing)}</span>
 {/if}
 
 <!-- the heart float: a pink heart balloon on a string, a highlight on its upper left (NH's soft item style) -->
@@ -842,16 +756,6 @@
   .float .hb { fill: #FF7FAE; } .float .hl { fill: none; stroke: #FFE3EE; stroke-width: 3; stroke-linecap: round; }
   .float .string { fill: none; stroke: rgba(255, 255, 255, .85); stroke-width: 1.4; }
   @keyframes bob { from { transform: translateY(0) rotate(-3deg); } to { transform: translateY(calc(var(--h) * -.06)) rotate(3deg); } }
-  /* ♪ float up off his guitar while he plays */
-  .notes { left: calc(var(--h) * .18); top: calc(var(--h) * -.62); }
-  .notes i {
-    position: absolute; font: 700 calc(var(--h) * .17) / 1 var(--font-ui); font-style: normal; color: #FFF6C8;
-    text-shadow: 0 1px 2px rgba(60, 40, 20, .5); animation: note 1.8s ease-out calc(var(--i) * .6s) infinite;
-  }
-  @keyframes note {
-    from { transform: translate(0, 0) rotate(-10deg); opacity: 0; } 20% { opacity: 1; }
-    to { transform: translate(calc(var(--h) * .14), calc(var(--h) * -.3)) rotate(12deg); opacity: 0; }
-  }
   /* Jack's treat: the candy hops up over his pumpkin head, five orange and purple glints burst around it */
   .treat { left: 0; top: calc(var(--h) * -1.1); }
   .candy :global(.official) { max-width: none; }
@@ -870,7 +774,4 @@
     from { transform: rotate(var(--a)) translateX(0) scale(.4); opacity: 0; } 30% { opacity: 1; }
     to { transform: rotate(var(--a)) translateX(calc(16 * var(--su))) scale(1); opacity: 0; }
   }
-  /* 「♪ title」 */
-  .caption { z-index: var(--z-taps); translate: -50% -50%; animation: v-appear .4s ease-out both; }
-  .caption:not(.placed) { visibility: hidden; }
 </style>
