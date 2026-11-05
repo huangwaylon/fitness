@@ -2028,7 +2028,8 @@ DEFAULT_LOOKS, the signed-off looks), assembled at runtime from parts converted 
   dot and colour filter, the pixels shared by its line's other colours left out) and closet icon (the catalogue's
   `static/art/finds/items/<icon>.webp`, by the community's item names: `scripts/players3d-map.json`; `icons` each
   icon's own colour). Two of it: the whole table beside the parts (`static/room/player/parts.json`, ~1 MB: fetched
-  once when a player is drawn, `parts.ts loadParts`), and the first closet's in the bundle
+  once, only when a look wears a part the bundled table hasn't: `parts.ts covers`, `loadParts`; createPlayer and
+  dress() draw from the bundled one otherwise, so the island never waits for it), and the first closet's in the bundle
   (`components/player3d/parts.json`, 72 KB: what the closet lists now, with the whole one's hash).
   `contract/partIds.json` is every id the app has (compact: an id ending in a digit by its line), given to
   `usePartTable` by `store/look.ts`, so a look naming another part (a newer app's) reads as いつもの's part. The relay
