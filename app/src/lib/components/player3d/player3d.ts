@@ -21,6 +21,7 @@ import { animateModel, type Villager3D } from '../villager3d/villager3d.ts';
 import { PARTS, bodyUrl, covers, faceUrl, irisUrl, loadParts, meshUrl, texUrl, type ItemSpec, type PartTable, type TexSpec } from './parts.ts';
 import { sharedSkin } from './skin.ts';
 import { playerKind } from './tune.ts';
+import { hooksOn } from '#lib/ui-state/preview.ts';
 
 /** @public (the 2D heads' portraits, the closet's tiles) */
 export { portrait } from './portrait.ts';
@@ -76,6 +77,49 @@ function glb(url: string): Promise<GLTF> {
   }
   return p;
 }
+/** How many of the parts' meshes worn each part's GLB is (by URL; the body's is never counted: every player's), and
+ *  the ones none wears, the least recently worn first: GLB_KEEP of those stay decoded (back in a look at once, the
+ *  closet's way back and forth), the older let go of (geometry, images closed; fetched again if worn again). Before,
+ *  every hairstyle, top and hat ever tried on stayed for the page's life (the reviewer's closet run: 377 GLBs). */
+const GLB_KEEP = 16;
+const glbUsers = new Map<string, number>(), glbIdle = new Set<string>();
+/** A part's GLB taken (before its load is awaited: an idle one's eviction never frees what a put is about to clone). */
+function useGlb(url: string) {
+  glbUsers.set(url, (glbUsers.get(url) ?? 0) + 1);
+  glbIdle.delete(url);
+}
+function unuseGlb(url: string) {
+  const n = (glbUsers.get(url) ?? 1) - 1;
+  if (n > 0) return void glbUsers.set(url, n);
+  glbUsers.delete(url);
+  glbIdle.add(url);
+  for (const old of glbIdle) {
+    if (glbIdle.size <= GLB_KEEP) break;
+    glbIdle.delete(old);
+    const p = glbs.get(old);
+    glbs.delete(old);
+    void p?.then(freeGlb, () => {});
+  }
+}
+/** An evicted part's model let go of: its geometries' GPU copies (and, through skin.ts's WeakMap on them, the remapped
+ *  copies), its textures' and their decoded images. */
+function freeGlb(g: GLTF) {
+  g.scene.traverse((n) => {
+    const m = n as Mesh;
+    if (!m.isMesh) return;
+    m.geometry.dispose();
+    for (const mat of ([] as Material[]).concat(m.material)) {
+      for (const v of Object.values(mat)) {
+        if (!(v instanceof Texture)) continue;
+        v.dispose();
+        (v.image as { close?: () => void } | null)?.close?.();
+      }
+      mat.dispose();
+    }
+  });
+}
+/** @public (tests) The parts' GLBs kept: in use (worn), and decoded but worn by none. */
+export const glbStats = () => ({ cached: glbs.size, worn: glbUsers.size, idle: glbIdle.size });
 /** A texture (once per address, while some player wears it: `uses`). */
 function tex(url: string): Promise<Texture> {
   let p = texs.get(url);
@@ -103,6 +147,10 @@ function letGo(t: Texture) {
   const n = (uses.get(t) ?? 1) - 1;
   if (n > 0) return void uses.set(t, n);
   uses.delete(t);
+  drop(t);
+}
+/** A texture no player holds let go of: its GPU copies and, a file's, its place in the cache. */
+function drop(t: Texture) {
   t.dispose();
   const u = cachedAt.get(t);
   if (u) {
@@ -110,6 +158,11 @@ function letGo(t: Texture) {
     texs.delete(u);
   }
 }
+/** @public (tests) The textures some player holds (`refs`: the holds), and the files' textures cached. */
+export const texStats = () => ({ held: uses.size, refs: [...uses.values()].reduce((a, b) => a + b, 0), cached: texs.size });
+// (the leak probe's and the console's: dev builds and ?demo)
+if (typeof window !== 'undefined' && hooksOn(new URLSearchParams(location.search)))
+  (window as unknown as { __player3d: unknown }).__player3d = { glbs: glbStats, texs: texStats };
 /** The textures a material draws: its maps, and those its shader takes from elsewhere (userData: the iris, the bare
  *  legs; world3d/release.ts resourcesOf finds them there too). */
 function texturesOf(m: Material, into: Set<Texture>) {
@@ -161,7 +214,7 @@ function partMaterial(name: string, map: Texture | null, spec: { color?: string;
   return m;
 }
 
-interface Worn { key: string; meshes: SkinnedMesh[]; bones: Bone[]; mats: Material[] }
+interface Worn { key: string; url: string | null; meshes: SkinnedMesh[]; bones: Bone[]; mats: Material[] }
 
 /**
  * @public (the scenes, the すがた preview)
@@ -223,12 +276,22 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   /** The body's own: the skin, the legs (bare: the skin; in socks: their texture), the face patches, the noses. */
   const bodyMat = new Map<string, MeshLambertMaterial>();
   const faceTex: Partial<Record<'mEye' | 'mMouth' | 'mCheek', Texture>> = {};
+  /** The cached atlases the face's copies show (their source): held while shown, so a face's sheet no one wears any
+   *  more goes (hold), where only the copy was counted and every eye sheet ever tried stayed decoded. */
+  const faceBase: Partial<Record<'mEye' | 'mMouth' | 'mCheek', Texture>> = {};
+  /** Disposed (dispose()): a dress() queued or under way stops at its next await (GONE), and what it made is swept. */
+  let gone = false;
+  const GONE = new Error('player: disposed');
+  const alive = () => {
+    if (gone) throw GONE;
+  };
   const faceFile = (n: 'mEye' | 'mMouth' | 'mCheek') => (n === 'mEye' ? cur.eye : n === 'mMouth' ? cur.mouth : `cheek${cur.cheek}`);
   const loadFace = async (n: 'mEye' | 'mMouth' | 'mCheek') => {
     const u = faceUrl(faceFile(n), dir);
     if (!u) throw new Error(`player: no face ${faceFile(n)}`);
     // (its own copy: the cell is this player's offset)
-    const t = (await tex(u)).clone();
+    const base = await tex(u), t = base.clone();
+    faceBase[n] = base;
     t.needsUpdate = true;
     return t;
   };
@@ -311,7 +374,15 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   async function put(slot: Slot, p: { key: string; item: ItemSpec | null; anchor: AnchorKind | null }): Promise<Worn> {
     const u = meshUrl(p.key, dir, T);
     if (!u) throw new Error(`player: no mesh ${p.key}`);
-    const g = await glb(u);
+    useGlb(u);
+    let g: GLTF;
+    try {
+      g = await glb(u);
+      alive();
+    } catch (e) {
+      unuseGlb(u);
+      throw e;
+    }
     const part = cloneSkinned(g.scene);
     part.updateMatrixWorld(true);
     const ms: SkinnedMesh[] = [];
@@ -350,8 +421,15 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
       rigSkin.bind(m, to);
       bound(m);
     }
-    const w: Worn = { key: p.key, meshes: ms, bones: added, mats: [] };
-    await dressPart(slot, w, p.item);
+    const w: Worn = { key: p.key, url: u, meshes: ms, bones: added, mats: [] };
+    try {
+      await dressPart(slot, w, p.item);
+    } catch (e) {
+      // (gone mid-way: its meshes and materials swept with the rest)
+      if (e === GONE) dressing.add(w);
+      else unwear(w);
+      throw e;
+    }
     return w;
   }
   /** A worn part's materials: its item's textures (a hairstyle's own, tinted). */
@@ -368,6 +446,11 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
       } else {
         const spec: TexSpec = item.tex[n] ?? Object.values(item.tex)[0] ?? {};
         const map = spec.file ? await tex(texUrl(spec, dir)!) : null;
+        if (gone) {
+          // (fetched for a player since disposed: none holds it)
+          if (map && !uses.has(map)) drop(map);
+          throw GONE;
+        }
         mat = partMaterial(n, map, spec, spec.tint === 'hair' ? hair : spec.tint === 'skin' ? skin : null);
         // a near-black garment (B's polo and long skirt): its self-light a flat charcoal, not its texture's (black: no
         // light of its own at all, a black hole on a phone's island at dusk; NH's blacks read as charcoal)
@@ -388,6 +471,13 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
     if (i >= 0) owned.splice(i, 1);
     m.dispose();
   }
+  /** A part's GLB no longer worn by it (once). */
+  function unwear(w: Worn) {
+    if (w.url) unuseGlb(w.url);
+    w.url = null;
+  }
+  /** Parts put while dispose() ran (not yet worn): swept with the rest. */
+  const dressing = new Set<Worn>();
   function remove(slot: Slot) {
     const w = worn.get(slot);
     if (!w) return;
@@ -396,6 +486,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
       rigSkin.drop(m);
     }
     for (const m of w.mats) disposeMat(m);
+    unwear(w);
     worn.delete(slot);
     // its own joints go, but those another part binds to too (a top's hem joints under a long skirt's): theirs now
     for (const b of w.bones.reverse()) {
@@ -408,17 +499,25 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
       if (bones.get(b.name) === b) bones.delete(b.name);
     }
   }
-  for (const slot of SLOTS) {
-    const p = partOf(slot, cur);
-    if (p) worn.set(slot, await put(slot, p));
+  try {
+    for (const slot of SLOTS) {
+      const p = partOf(slot, cur);
+      if (p) worn.set(slot, await put(slot, p));
+    }
+  } catch (e) {
+    // (a part missing: those put let go of, as the caller keeps its stand-in)
+    for (const w of worn.values()) unwear(w);
+    throw e;
   }
 
   /** The textures this player's materials draw, each counted once in `uses` (taken stock of once it's dressed: what
    *  a swap left behind goes then, what it kept is never let go of in between). */
   let held = new Set<Texture>();
   const hold = () => {
+    if (gone) return;
     const now = new Set<Texture>();
     for (const m of owned) texturesOf(m, now);
+    for (const t of Object.values(faceBase)) if (t) now.add(t);
     for (const t of now) if (!held.has(t)) uses.set(t, (uses.get(t) ?? 0) + 1);
     for (const t of held) if (!now.has(t)) letGo(t);
     held = now;
@@ -436,7 +535,9 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   };
   let busy: Promise<void> = Promise.resolve();
   const dress = async (next: PlayerLook) => {
+    alive();
     T = await table(next, T);
+    alive();
     const prev = cur;
     cur = { ...next };
     tints();
@@ -447,16 +548,30 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
       // (the image swapped under the same texture: the cell it shows, its offset, is the face's)
       const u = faceUrl(faceFile(n), dir);
       if (!u) continue;
-      const src = (await tex(u)).source, t = faceTex[n]!;
+      const base = await tex(u);
+      if (gone) {
+        if (!uses.has(base)) drop(base);
+        throw GONE;
+      }
+      const src = base.source, t = faceTex[n]!;
+      faceBase[n] = base;
       // (its GPU copy let go of first, three's by its image: another size of image needs a new one; disposed after the
       // swap it let go of the new image's, another player's face if it wore that one, and orphaned its own)
       t.dispose();
       t.source = src;
       t.needsUpdate = true;
     }
-    if (prev.eye !== cur.eye) bodyMat.get('mEye')!.userData.iris = irisMap.value = await loadIris();
+    if (prev.eye !== cur.eye) {
+      const iris = await loadIris();
+      if (gone && iris && !uses.has(iris)) drop(iris);
+      alive();
+      bodyMat.get('mEye')!.userData.iris = irisMap.value = iris;
+    }
     if (prev.socks !== cur.socks) {
-      socks = await socksTex();
+      const s = await socksTex();
+      if (gone && s && !uses.has(s)) drop(s);
+      alive();
+      socks = s;
       const mat = bodyMat.get('mSocks')!;
       mat.map = socks ?? (mat.userData.bare as Texture);
       mat.emissiveMap = mat.map;
@@ -487,13 +602,34 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   const baseCell = kind.cell!;
   kind.cell = (part, i, face) => (part === 'mouth' && i === 0 && face !== 'sleepy' ? restMouth.value : baseCell(part, i, face));
   const dispose = v.dispose;
+  /** What a dress() under way made after dispose(): its materials, the textures only they drew, its parts' meshes and
+   *  their GLBs' counts. */
+  const sweep = () => {
+    const ts = new Set<Texture>();
+    for (const m of owned) {
+      texturesOf(m, ts);
+      m.dispose();
+    }
+    owned.length = 0;
+    for (const t of Object.values(faceBase)) if (t) ts.add(t);
+    for (const t of ts) if (!uses.has(t)) drop(t);
+    for (const w of [...worn.values(), ...dressing]) unwear(w);
+    rigSkin.dispose([...allSkinned(), ...[...dressing].flatMap((w) => w.meshes)]);
+    dressing.clear();
+  };
   return Object.assign(v, {
     dress(next: PlayerLook) {
-      busy = busy.then(() => dress(next));
+      // (a failed one, a part missing, doesn't stop the next)
+      busy = busy.catch(() => {}).then(() => dress(next).catch((e: unknown) => {
+        if (e !== GONE) throw e;
+        sweep();
+      }));
       return busy;
     },
     look: () => ({ ...cur }),
     dispose() {
+      if (gone) return;
+      gone = true;
       dispose();
       // (every texture it drew let go of on every renderer, though another player still wears it: that one's renderer
       // uploads it again, where kept it held this one's renderer, the room's or the すがた page's, alive)
@@ -505,6 +641,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
       rigSkin.dispose(allSkinned());
       for (const m of owned) m.dispose();
       for (const t of Object.values(faceTex)) t?.dispose();
+      for (const w of worn.values()) unwear(w);
     }
   }) as Player3D;
 }

@@ -8,7 +8,7 @@
 // tops and their colours worn, then いつもの; the island's and the room's textures must not grow), picker (いえを かえる; Q='&as=B'), vis (hidden ⇄ visible), sim (the
 // page's clock 10 sim minutes a cycle from SIM_AT, default 23:00: the island's day running and rolling over; LOGIC=1:
 // not drawn), days (DAY_H sim hours a cycle, fast-forwarded: the visitors coming and going), idle (IDLE_MS of real
-// time; DWELL: ms in a room, default 1500), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells). Inside the museum: eye (the eye
+// time; DWELL: ms in a room, default 1500), dressrace (すがた closed while a top it was tapped for still loads), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells). Inside the museum: eye (the eye
 // button on, off), bench (sit on a bench, a tap on the floor), curator (IDLE_MS there), hours (the aquarium's hour on x3), rebuild (a find kept off
 // and let back x2: the aquarium rebuilt as a new find rebuilds it).
 // FILL=1 (a room flow): the room furnished with the starter set first. --snap: heap snapshots at cycle SNAP_AT (default 3; 0: none, the end's whole heap) and the end, diffed by constructor; --path=<name>: the retainer
@@ -243,6 +243,10 @@ let fishAt: [number, number] | null = null;
 const stageTex: number[][] = [];
 /** The look flow's turn (its villager by turns). */
 let looks = 0;
+/** The dressrace flow's turn (its top), and the players' texture holds after each (player3d.ts texStats refs). */
+let races = 0;
+const playerRefs: number[] = [];
+if (flow === 'dressrace') await page.route(/\/room\/player\/(mesh|tex)\//, async (r) => { await new Promise((ok) => setTimeout(ok, 600)); await r.continue(); });
 let snap0: Map<string, [number, number]> | null = SNAP && process.env.SNAP_AT === '0' ? new Map() : null;
 const cycle = async () => {
   if (flow in ROOMS) {
@@ -303,6 +307,20 @@ const cycle = async () => {
     await sheet.locator('[data-look-chip="usual"]').click(); await page.waitForTimeout(500);
     await sheet.locator('.titlebar .back').click(); await page.waitForTimeout(300);
     await page.keyboard.press('Escape'); await page.waitForFunction(() => !document.querySelector('dialog[open]'), null, { timeout: 10_000 }); await page.waitForTimeout(2000);
+  } else if (flow === 'dressrace') {
+    // せってい → すがた: a top not worn yet tapped and the page closed at once, while its mesh and texture still load
+    // (held back 600 ms): the preview's queued dress must keep nothing once it lands (player3d.ts gone)
+    const sheet = page.locator('dialog[open]').first();
+    await SHEETS.settings(); await sel('[data-push=look]'); await sheet.locator('[data-push=look]').click(); await sel('[data-look-page]');
+    await sheet.locator('[data-look-tab=wear]').click();
+    await sel('[data-look-preview][data-look-3d=on]');
+    await sheet.locator('[data-closet=top] [data-item]:not([data-item=none])').nth(1 + (races++ % 6)).click();
+    await sheet.locator('.titlebar .back').click(); await page.waitForTimeout(300);
+    await page.keyboard.press('Escape'); await page.waitForFunction(() => !document.querySelector('dialog[open]'), null, { timeout: 10_000 });
+    await page.waitForTimeout(Number(process.env.RACE_WAIT ?? 2500));
+    const st = await page.evaluate(() => (window as unknown as { __player3d: { texs(): { refs: number } } }).__player3d.texs());
+    console.log('player3d', JSON.stringify(st));
+    playerRefs.push(st.refs);
   } else if (flow === 'eye') {
     // the eye button inside: first person on (at the eyes) and off (the room's camera)
     await inMuseum();
@@ -448,6 +466,15 @@ if (flow === 'look' || flow === 'clothes') {
   const grown = stageTex.slice(1).map((s) => s[s.length - 1] - s[0]); // (the warm cycle's first portraits and the shots' own player made)
   console.log(`WebGL contexts ${first.gl} → ${last.gl}; stage textures by top, each cycle ${JSON.stringify(stageTex)}`);
   if (last.gl > first.gl || grown.some((g) => g > 0)) {
+    console.log('LEAK');
+    process.exitCode = 1;
+  }
+}
+// dressrace: the island's player alone holds textures after each cycle (its own top's few, one top or another): the
+// holds no more at the end than after the first
+if (flow === 'dressrace') {
+  console.log(`player texture holds by cycle ${JSON.stringify(playerRefs)}`);
+  if (playerRefs.at(-1)! > playerRefs[0] + 4) {
     console.log('LEAK');
     process.exitCode = 1;
   }
