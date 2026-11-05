@@ -5,7 +5,7 @@ import { DurableObject } from 'cloudflare:workers';
 import { HB_PING, HB_PONG, LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type RecordMark, type Gone } from '../../app/src/lib/contract/live-protocol.ts';
 import { admission, originAllowed, subprotocolOf, TICKET_HEADER } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
-import { HELLO_MS, PROBE_AFTER_MS, RoomCore, type Acked, type DayIndex, type Held, type Kept, type Meta } from './room.ts';
+import { HELLO_MS, RoomCore, SILENT_MS, type Acked, type DayIndex, type Held, type Kept, type Meta } from './room.ts';
 import { IslandStore } from './storeObject.ts';
 import { isCompactTick } from './store.ts';
 import { IslandLog } from './logObject.ts';
@@ -107,7 +107,7 @@ export class IslandRoom extends DurableObject<Env> {
           // each phone's protocol version and build (the log's ws.hello: which phones speak what)
           this.log([{ e: 'ws.hello', l: 1, role: who, d: { v, ...(build ? { build } : {}) } }]);
           // the ghosts' watch (room.ts sweepSilent) while anyone is in
-          void this.alarmBy(Date.now() + PROBE_AFTER_MS).catch((e) => console.warn('alarm', errName(e)));
+          void this.alarmBy(Date.now() + SILENT_MS).catch((e) => console.warn('alarm', errName(e)));
           void this.weatherTick().catch((e) => console.warn('wx-fail', e));
         }
       }, ring, rec, held, gone, this.wx.wx, day, recG, acked);

@@ -150,7 +150,9 @@ export const HB_PONG = '{"v":3,"kind":"hb","t":0}';
  *  `ws.hello`; absent from a phone before 2026-11-05). An intent's `c` (this phone's sequence number, increasing
  *  through the day) asks for an `ack`, and makes a resend of it (after a reconnect) the same intent, not a second. */
 export type ClientMsg =
-  | { v: LiveV; kind: 'hello'; key: string; since?: number; build?: string }
+  /** `beat` (2026-11-05): this phone sends something, the heartbeat at least, whenever it has sent nothing for 20 s, so
+   *  the room may take a minute's silence for a ghost (relay/src/room.ts sweepSilent). */
+  | { v: LiveV; kind: 'hello'; key: string; since?: number; build?: string; beat?: true }
   | { v: LiveV; kind: 'ping'; c: number }
   /** I heard the partner's high-five `at` (the one the room held for me goes). */
   | { v: LiveV; kind: 'got'; at: number }
@@ -482,7 +484,7 @@ export function parseClient(raw: unknown): ClientMsg | null {
     if (typeof o.key !== 'string' || !KEY.test(o.key) || !opt(o, 'since', isTime)) return null;
     // (a build that isn't one is left out, never the hello refused)
     const build = typeof o.build === 'string' && BUILD.test(o.build) ? o.build : undefined;
-    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}), ...(build ? { build } : {}) };
+    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}), ...(build ? { build } : {}), ...(o.beat === true ? { beat: true as const } : {}) };
   }
   if (o.kind === 'ping') return isTime(o.c) ? { v, kind: 'ping', c: o.c } : null;
   if (o.kind === 'got') return isTime(o.at) ? { v, kind: 'got', at: o.at } : null;
