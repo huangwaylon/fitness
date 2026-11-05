@@ -3,7 +3,7 @@
 // stand, its drawn height (u: the 2D sprites' and the 3D models' size), its palette icon (an art key) and its names.
 // The editor's palette, the validation, the nav and the 3D placement (world3d/objects.ts) all read this one table.
 
-type Group = 'tree' | 'bush' | 'flower' | 'rock' | 'light' | 'furniture' | 'gym' | 'season' | 'structure' | 'building' | 'home' | 'spot';
+type Group = 'tree' | 'bush' | 'flower' | 'rock' | 'light' | 'furniture' | 'gym' | 'season' | 'structure' | 'building' | 'home' | 'spot' | 'visitor';
 /** Where a kind may stand: any land tile (`land`), on grass only (`grass`: a tree, a flower), over water with land at
  *  both ends (`span`: a bridge), in front of a cliff one tier up (`cliff`: stairs). */
 type On = 'land' | 'grass' | 'span' | 'cliff';
@@ -31,6 +31,8 @@ export interface KindDef {
   turns?: boolean;
   /** One per variant on the island, never deleted (the goal trees, the homes, the named spots); moved freely. */
   fixed?: boolean;
+  /** One on the island at most, but it may be taken away: placing another moves the one there (the visitors' spots). */
+  one?: boolean;
   /** Not on the palette (only the default places it). */
   hidden?: boolean;
   /** A villager stands in front of it to use it (NH's bulletin board): the tile(s) before its front must stay clear and
@@ -126,6 +128,11 @@ export const KIND_LIST: readonly KindDef[] = [
   k({ k: 'shop', group: 'building', ja: 'タヌキ商店', en: "Nook's Cranny", w: 7, d: 4, block: true, on: 'land', h: 118, icon: 'host/timmy-tommy', turns: true, fixed: true, door: true }),
   // the homes (their footprint is their style's: layout/homes.ts)
   k({ k: 'home', group: 'home', ja: 'いえ', en: 'Home', w: 3, d: 2, block: true, on: 'land', h: 80, icon: 'deco/campsite', fixed: true, turns: true, hidden: true }),
+  // the visitors' spots (docs/design.md "Visitors"): where the visitors stand, NH's plaza (spots.ts stageOf), and where
+  // Gulliver lies washed up (spots.ts washedUp), the members' choice in the もようがえ; a mark on the ground only in it,
+  // nothing in play. Without one (or where it can't be used now) the island's own spot, derived from the layout.
+  k({ k: 'plaza', group: 'visitor', ja: 'おきゃくさんの ばしょ', en: "Visitors' spot", w: 1, d: 1, block: false, on: 'land', h: 0, icon: 'deco/campsite-sign', one: true }),
+  k({ k: 'beach-spot', group: 'visitor', ja: 'ジョニーの ばしょ', en: "Gulliver's spot", w: 1, d: 1, block: false, on: 'land', h: 0, icon: 'villagers/gulliver-icon', one: true }),
   // named spots: where a villager stands at home, nothing drawn ('stage': the old fixed visitors' spot, kept so the
   // layouts fold as they did; the visitors' stage is derived now, spots.ts stageOf)
   k({ k: 'spot', group: 'spot', ja: 'ばしょ', en: 'Spot', w: 1, d: 1, block: false, on: 'land', h: 0, icon: '', variants: ['villager-a', 'villager-b', 'stage'], fixed: true, hidden: true })
@@ -134,6 +141,8 @@ export const KIND_LIST: readonly KindDef[] = [
 const KINDS: Readonly<Record<string, KindDef>> = Object.fromEntries(KIND_LIST.map((d) => [d.k, d]));
 export const kindDef = (k: string): KindDef | undefined => KINDS[k];
 /** Whether one goes into it at its door: a home, or a building of the island's (the museum, the shop). */
+/** A visitors' spot (a mark, never drawn in play, standing on nothing: nothing's ground is taken by it). */
+export const isMarker = (k: string): boolean => KINDS[k]?.group === 'visitor';
 export const goesIn = (k: string): boolean => k === 'home' || !!KINDS[k]?.door;
 
 /** A kind's footprint (tiles) in a facing: [across, deep]. */

@@ -162,6 +162,26 @@
     untrack(() => arrive(id, s));
   });
   $effect(() => () => untrack(() => cancel('visitor')));
+  // the stage moved under them (the island's layout came in after they arrived, or a もようがえ moved the visitors'
+  // spot, spots.ts stageOf): they're on the new one at once, as on their next appearance
+  let arrivedAt = '';
+  $effect(() => {
+    const id = shown, s = spot;
+    if (!id || !s || arrivedFor !== id) return;
+    const key = `${id}|${s.x},${s.z}`;
+    if (key === arrivedAt) return;
+    const first = !arrivedAt.startsWith(`${id}|`);
+    arrivedAt = key;
+    if (first) return;
+    untrack(() => {
+      if (phase === 'leave') return;
+      cancel('visitor');
+      st.home = [s.x, s.z];
+      placeActor('visitor', s.x, s.z);
+      w.kick();
+      if (phase === 'arrive' || phase === 'pop') phase = 'here';
+    });
+  });
 
   const st = actors.visitor;
   const rand = (a: number, b: number) => a + Math.random() * (b - a);

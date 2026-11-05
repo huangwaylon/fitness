@@ -247,8 +247,8 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         out.push({ id: `${o.id}:lily-flower`, model: 'proc/lily-flower' as ModelName, x: fx, z: fz, lift: POND_Y + 0.1, scale: 1.7 });
         break;
       }
-      case 'stairs': case 'spot':
-        break; // the stairs are the ground's (terrain.ts); a spot is never drawn
+      case 'stairs': case 'spot': case 'plaza': case 'beach-spot':
+        break; // the stairs are the ground's (terrain.ts); a spot, a visitors' spot (IslandEdit marks it), is never drawn
       default: {
         // the fixed decor's spots: the day's piece there (a seasonal spot empty out of its season), else its own look
         const piece = pieces?.get(o.id);

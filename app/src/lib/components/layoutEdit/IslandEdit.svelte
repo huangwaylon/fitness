@@ -1,15 +1,19 @@
 <script lang="ts">
   // The island's もようがえ on the phone (docs/island-layout.md "Phone editing"): NH's outdoor arranging, one-handed, on
   // the island's layout (store/layout.svelte.ts), the tent's way (tent/TentEdit.svelte). The tray at the foot: its tabs
-  // (き, かんぼく, はな, いわ, あかり, かぐ, ジム, はし・さか) over each kind's icon; a tap puts that kind down as a ghost on the
+  // (き, かんぼく, はな, いわ, あかり, かぐ, ジム, はし・さか, たてもの, おきゃくさん) over each kind's icon; a tap puts that kind down as a ghost on the
   // free tile nearest the middle of the view, its footprint on the ground green or red (and why, in the bar); a finger
   // on it, or on a placed thing (it's picked up), drags it a tile at a time; a tap on the ground moves it there; ↻ turns
   // it; ✓ puts it down; 🗑 しまう takes a placed one away (the island's one-offs, the goal trees, the homes never); ✕
   // puts it back. While a finger holds it the other phones see it move (`drag`, `sc: 'o'`); a drop is one action,
   // its ops at once (every phone's island, the editor). The members' only: the guest never arranges the outdoors.
-  // The terrain (paths, water, cliffs) is the desktop editor's for now.
+  // The terrain (paths, water, cliffs) is the desktop editor's for now. The visitors' spots (おきゃくさん: the plaza's, where
+  // the visitors stand, and Gulliver's on the beach; docs/design.md "Visitors") are marks only here: one each, a tap on
+  // one in the tray picks up the one there; the visitors' usual spot (spots.ts stageOf) shows as a dashed ring while
+  // no plaza is put down, and a mark nobody can stand at now (something put on it) shows red, its reason in the bar.
   //   stage: the island's projection (world ⇄ the host's px) and the model to hide while it's held
-  import { kindDef, KIND_LIST, type KindDef } from '#lib/layout/catalog.ts';
+  import { isMarker, kindDef, KIND_LIST, type KindDef } from '#lib/layout/catalog.ts';
+  import { markerOf, markerSpot, stageOf } from '#lib/layout/spots.ts';
   import { GRID, TILE } from '#lib/layout/grid.ts';
   import { footOf, newObjId, objMid, opsBetween, originOf, withChanges, type Layout, type Obj } from '#lib/layout/model.ts';
   import { validate } from '#lib/layout/validate.ts';
@@ -43,7 +47,8 @@
   let { stage, relay, me, ondone }: Props = $props();
 
   type Facing = Obj['f'];
-  const TABS = ['tree', 'bush', 'flower', 'rock', 'light', 'furniture', 'gym', 'structure', 'building'] as const;
+  const TABS = ['tree', 'bush', 'flower', 'rock', 'light', 'furniture', 'gym', 'structure', 'building', 'visitor'] as const;
+  const MARKS = ['plaza', 'beach-spot'] as const;
   /** A kind's or an issue's name in this phone's language. */
   const say = (x: { ja: string; en: string }) => (i18n.locale === 'ja' ? x.ja : x.en);
   let tab = $state('tree');
@@ -72,7 +77,8 @@
     if (!h) return void (why = null);
     const [w, d] = footOf(h.l, h.l.objects.get(h.id)!), [x0, z0] = originOf(h.l, h.l.objects.get(h.id)!);
     if (x0 < 0 || z0 < 0 || x0 + w > GRID.cols || z0 + d > GRID.rows) return void (why = t('decor.island.outside'));
-    const mine = validate(h.l).filter((i) => i.level === 'error' && i.ids.includes(h.id) && i.code !== 'unreachable');
+    // (a visitors' spot: where nobody can stand is no place for it)
+    const mine = validate(h.l).filter((i) => (i.level === 'error' || i.code === 'visitor-spot') && i.ids.includes(h.id) && i.code !== 'unreachable');
     why = mine[0] ? say(mine[0]) : null;
   }
 
@@ -95,8 +101,10 @@
     const [cx, cz] = viewCentre();
     const f: Facing = 0;
     let [x, z] = anchorFor(def.k, f, cx, cz);
+    // (one of it on the island: the one there is picked up, to go where it's put down now)
+    const one = def.one ? markerOf(store.current, def.k as (typeof MARKS)[number]) : null;
     // the free tile nearest the middle (rings outward)
-    sel = { id: null, k: def.k, s: def.variants?.[0], x, z, f };
+    sel = one ? { id: one.id, k: def.k, x, z, f, orig: one } : { id: null, k: def.k, s: def.variants?.[0], x, z, f };
     check();
     for (let r = 1; why && r <= 6; r++)
       for (let dz = -r; dz <= r && why; dz++)
@@ -140,7 +148,9 @@
     const same = sel.orig && sel.orig.x === o.x && sel.orig.z === o.z && sel.orig.f === o.f && !sel.orig.n;
     // a home's turn is its owner's look (an `h` op the record lets only them send)
     const who = WHO_OF_HOME[id];
-    const next = who && who === me && o.f !== sel.orig?.f ? withChanges(before, { set: [o], homes: { [who]: { ...before.homes[who], f: o.f } } }) : withChanges(before, { set: [o] });
+    // (one of it on the island: any other a phone put down at the same time goes)
+    const extra = kindDef(o.k)?.one ? [...before.objects.values()].filter((p) => p.k === o.k && p.id !== id).map((p) => p.id) : [];
+    const next = who && who === me && o.f !== sel.orig?.f ? withChanges(before, { set: [o], homes: { [who]: { ...before.homes[who], f: o.f } } }) : withChanges(before, { set: [o], remove: extra });
     if (!same) store.apply(opsBetween(before, next, store.stamp()));
     stage.hide?.(null);
     sayDrag(true);
@@ -191,7 +201,8 @@
     if (!onHeld) {
       const g = stage.toGround(sx, sy);
       const o = g && objectAt(store.current, ...tileOf(g[0], g[1]));
-      if (o && kindDef(o.k) && o.k !== 'spot') {
+      // (a visitors' spot is a mark on the ground: with something held, a tap there puts it there)
+      if (o && kindDef(o.k) && o.k !== 'spot' && !(sel && isMarker(o.k))) {
         pickUp(o);
         onHeld = true;
       }
@@ -260,10 +271,36 @@
     const top = stage.toScreen(mx, mz, Math.min(60, kindDef(sel.k)?.h ?? 30)), foot = stage.toScreen(mx, mz, 0);
     return { poly: pts.map((p) => p!.join(',')).join(' '), top, foot };
   });
+  // ---- the visitors' spots: their marks on the ground (nothing in play), the usual spot while no plaza's put down ----
+  const marks = $derived.by(() => {
+    const l = store.current;
+    const out: { id: string; k: string; x: number; z: number; ok: boolean }[] = [];
+    for (const k of MARKS) {
+      const m = markerSpot(l, k), o = m && l.objects.get(m.id);
+      if (o) out.push({ id: o.id, k, x: GRID.x0 + (o.x + 0.5) * TILE, z: GRID.z0 + (o.z + 0.5) * TILE, ok: !!m.at });
+    }
+    const st = markerSpot(l, 'plaza')?.at ? null : stageOf(l);
+    if (st) out.push({ id: 'usual', k: 'usual', x: st[0], z: st[1], ok: true });
+    return out;
+  });
+  /** A mark nobody can stand at now: why (the bar says it while nothing's held). */
+  const markWhy = $derived.by(() => {
+    const bad = validate(store.current).find((i) => i.code === 'visitor-spot');
+    return bad ? say(bad) : null;
+  });
+  const markShown = $derived.by(() => {
+    void rev;
+    return marks.filter((m) => m.id !== sel?.id && !(m.k === 'usual' && sel?.k === 'plaza')).map((m) => {
+      const h = TILE / 2, pts = [[m.x - h, m.z - h], [m.x + h, m.z - h], [m.x + h, m.z + h], [m.x - h, m.z + h]].map(([x, z]) => stage.toScreen(x, z, 1));
+      const at = stage.toScreen(m.x, m.z, 0);
+      return pts.some((p) => !p) || !at ? null : { ...m, poly: pts.map((p) => p!.join(',')).join(' '), at };
+    }).filter((m) => !!m);
+  });
+
   let raf = 0;
   $effect(() => {
-    // the camera may move under a held thing (a pinch): its footprint follows
-    if (!sel) return;
+    // the camera may move under a held thing (a pinch), and under the marks: they follow
+    if (!sel && !marks.length) return;
     const tick = () => {
       rev++;
       raf = requestAnimationFrame(tick);
@@ -311,10 +348,19 @@
 <!-- the taps over the island are the mode's (a drag on empty ground still reaches the island under it) -->
 <div class="ie" data-island-edit>
   <svg class="over" viewBox={`0 0 ${size[0]} ${size[1]}`} aria-hidden="true">
+    {#each markShown as m (m.id)}
+      <polygon points={m.poly} class="mark" class:usual={m.k === 'usual'} class:bad={!m.ok} />
+    {/each}
     {#if ghost}
       <polygon points={ghost.poly} class:bad={!!why} />
     {/if}
   </svg>
+  {#each markShown as m (m.id)}
+    {@const icon = m.k === 'usual' ? null : artUrl(kindDef(m.k)?.icon ?? '')}
+    <div class="pin" class:bad={!m.ok} style:left={`${m.at[0]}px`} style:top={`${m.at[1]}px`} data-mark={m.k} data-mark-ok={m.ok}>
+      {#if icon}<img src={icon} alt="" draggable="false" />{:else}<span class="usual">{t('decor.island.usual')}</span>{/if}
+    </div>
+  {/each}
   {#if ghost?.top && ghost.foot && def}
     {@const icon = def.icon ? artUrl(sel?.k === 'bush' && sel.s && !sel.s.startsWith('month') ? `bushes/${sel.s}` : def.icon) : null}
     {@const ih = Math.max(22, ghost.foot[1] - ghost.top[1])}
@@ -342,7 +388,7 @@
         </button>
       </div>
     {:else}
-      <div class="bar hint" data-island-hint>{t('decor.island.hint')}</div>
+      <div class="bar hint" class:bad={!!markWhy} data-island-hint data-island-warn={markWhy ?? undefined}>{markWhy ?? t('decor.island.hint')}</div>
     {/if}
     <div class="tray">
       <div class="tabs" role="tablist" aria-label={t('panel.decor')}>
@@ -374,6 +420,15 @@
   .over { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
   .over polygon { fill: rgba(110, 208, 122, 0.35); stroke: #6ed07a; stroke-width: 2.5; stroke-linejoin: round; }
   .over polygon.bad { fill: rgba(255, 90, 70, 0.35); stroke: #ff5a46; }
+  /* the visitors' spots: a soft tile on the ground and its sign over it; the usual spot a dashed ring */
+  .over polygon.mark { fill: rgba(255, 236, 170, 0.45); stroke: #e0a42c; stroke-width: 2; }
+  .over polygon.mark.usual { fill: none; stroke: rgba(255, 255, 255, 0.85); stroke-dasharray: 6 5; }
+  .over polygon.mark.bad { fill: rgba(255, 90, 70, 0.3); stroke: #ff5a46; }
+  .pin { position: absolute; transform: translate(-50%, -100%); filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.25)); }
+  .pin img { display: block; height: 34px; width: auto; }
+  .pin.bad img { filter: grayscale(0.6) opacity(0.75); }
+  .pin .usual { display: block; padding: 2px 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.85); color: var(--c-ink-soft); font-size: 11px; white-space: nowrap; }
+  .hint.bad { color: #d23c2a; }
   .lift { position: absolute; transform: translate(-50%, -10px); filter: drop-shadow(0 6px 4px rgba(0, 0, 0, 0.25)); animation: bob 1.4s ease-in-out infinite; }
   .lift img { display: block; width: auto; max-width: 140px; object-fit: contain; }
   .glyph { font-size: 28px; }
