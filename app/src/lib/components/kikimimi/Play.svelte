@@ -13,7 +13,12 @@
   // A staged item (level 4: a scene, or a phone, PA or video call) shows the scene card instead of the plain stage from
   // the lead-in to the reveal (scene/SceneCard.svelte); at the reveal the English carries its sound marks and the karaoke
   // as it replays (scene/SoundLine.svelte), the marks' key under it.
-  import type { QuizGame } from './game.svelte.ts';
+  // A スピード はしご rung: the ladder over the stage (its four speeds as rising steps: climbed, this one, ahead, or
+  // stopped), the question in Japanese (rung 4: the line with its chunk blanked); at a rung's reveal whether it climbed
+  // (right on the first listen, every rung under it climbed: +100), and below the top no line and no replay (the next
+  // rung's listen is the next, faster one); the top's reveal the line, its marks and how high the ladder went.
+  import { hidesLine, type QuizGame } from './game.svelte.ts';
+  import { RUNG_POINTS, SPEEDS, laddersIn, rungState, sx } from '#lib/kikimimi/ladder.ts';
   import { PIC_JA, isDialogue, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
   import Transcript from './Transcript.svelte';
   import SceneCard from './scene/SceneCard.svelte';
@@ -47,8 +52,23 @@
   const right = $derived(!!mine && !!it && mine.k === it.answer);
   /** The choices take a tap: the answer window, not answered, not sat out. */
   const open = $derived(v.phase === 'answer' && !mine && !v.out);
-  /** 🔁 / 🐢 once the first play is over, on a phone that speaks. */
-  const canHear = $derived(v.speaks && !v.out && (v.phase === 'answer' || reveal));
+  /** 🔁 / 🐢 once the first play is over, on a phone that speaks (not at a ladder rung's reveal below the top). */
+  const canHear = $derived(v.speaks && !v.out && (v.phase === 'answer' || (reveal && !hidesLine(it))));
+  /** A スピード はしご rung: where it is on its ladder, which ladder of the game, and whether this rung climbs. */
+  const rs = $derived(it?.rung ? rungState(game.items, v.answers, v.i) : null);
+  const ladders = $derived(it?.rung ? laddersIn(game.items) : []);
+  const ladderNo = $derived(ladders.findIndex((l) => l.ladder === it?.rung?.ladder) + 1);
+  /** This rung climbed (its reveal): right on the first listen with every rung under it climbed. */
+  const climbed = $derived(!!rs && reveal && rs.open && right && !mine?.rp);
+  /** The ladder's height after this rung (its reveal): the rungs under it, and this one if it climbed. */
+  const height = $derived(rs ? rs.below + (climbed ? 1 : 0) : 0);
+  /** A step's look on the ladder: climbed, stopped (a miss or a replay under it), this one, or ahead. */
+  function step(k: number): 'up' | 'off' | 'now' | 'ahead' {
+    if (!rs) return 'ahead';
+    if (k < rs.n - 1) return k < rs.below ? 'up' : 'off';
+    if (k === rs.n - 1) return reveal ? (climbed ? 'up' : 'off') : 'now';
+    return 'ahead';
+  }
   const slowOk = $derived((game.items[v.i]?.lv ?? v.lv) <= 2); // the item's level (にがて れんしゅう mixes levels)
   const solo = $derived(v.players.length <= 1);
   /** Co-op (a game of several, not たいせん): no one's score or right / wrong on the others' chips, only how many got it. */
@@ -82,7 +102,7 @@
 </script>
 
 {#snippet hearRow()}
-  {#if (v.speaks || game.listenOnly) && !v.out}
+  {#if (v.speaks || game.listenOnly) && !v.out && !(reveal && hidesLine(it))}
     <!-- 🔁 / 🐢 under the bubble, the clip's own controls (おなじへや on another's phone: shown, never live; the host's phone plays them for the room) -->
     <div class="hear">
       <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(false)}>🔁 {t('kiki.replay')}</button>
@@ -97,6 +117,16 @@
     {#if !solo}
       <div class="players">
         {#each v.players as p (p.who)}<PlayerChip who={p.who} state={chip(p)} note={coop ? null : t('kiki.points', { n: p.score })} size={36} />{/each}
+      </div>
+    {/if}
+
+    {#if rs}
+      <!-- the ladder: its four speeds as rising steps -->
+      <div class="ladder" data-kiki-rung={rs.n} data-kiki-ladder={it.rung!.ladder}>
+        <span class="lname">{t('kiki.rung.which', { k: ladderNo, n: ladders.length })}</span>
+        <ol class="steps" aria-label={t('kiki.rung.label', { x: sx(SPEEDS[rs.n - 1]), n: rs.n, of: rs.of })}>
+          {#each SPEEDS as x, k (k)}<li data-step={step(k)} style:--h="{40 + k * 20}%"><span>{sx(x)}×</span></li>{/each}
+        </ol>
       </div>
     {/if}
 
@@ -126,7 +156,12 @@
           {#if reveal && dlg}
             <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
             {#if it.note}<p class="note" data-kiki-note>{it.note}</p>{/if}
+          {:else if reveal && hidesLine(it)}
+            <!-- a rung below the top: the line stays a secret till the top's reveal -->
+            <p class="notes" aria-label={t('kiki.listen')}>♪…</p>
+            <p class="later" data-kiki-later>{t('kiki.rung.later', { x: sx(SPEEDS[it.rung!.n]) })}</p>
           {:else if reveal && parts}
+            {#if rs}<p class="height" data-kiki-height={height}>{height ? t('kiki.rung.height', { x: sx(SPEEDS[height - 1]) }) : t('kiki.rung.none')}</p>{/if}
             <p class="en" data-kiki-en><SoundLine en={it.en} focus={it.focus} marks={it.marks} clip={it.id} from={playFrom} {clock} /></p>
             <p class="ja">{#each jaLines(it) as l, n (n)}<span>{l}</span>{/each}</p>
             <!-- the accent and the marks' key on one row (the key wraps under it when long) -->
@@ -155,11 +190,25 @@
       <div class="verdict" class:ok={right} data-kiki-verdict={verdict}>
         {#if v.out}<p>{t('kiki.out')}</p>
         {:else}
+          {#if rs}
+            <!-- a rung: climbed (+100), or right but not climbed (a replay, or the ladder stopped under it), or missed -->
+            <p data-kiki-climb={climbed ? 'up' : right ? 'held' : 'stop'}>
+              {#if right}<span class="sym" aria-hidden="true">○</span>{t('kiki.right')}{#if climbed} <b>+{RUNG_POINTS}</b>{/if}
+              {:else}<span class="sym" aria-hidden="true">×</span>{mine ? t('kiki.wrong') : t('kiki.timeUp')}{/if}
+            </p>
+            <span class="climb" class:up={climbed}>
+              {#if climbed}{t(rs.n === rs.of ? 'kiki.rung.top' : 'kiki.rung.up', { x: sx(SPEEDS[rs.n - 1]) })}
+              {:else if right && rs.open}{t('kiki.rung.replayed')}
+              {:else if rs.open}{t('kiki.rung.stop', { x: sx(SPEEDS[rs.n - 1]) })}
+              {:else}{t('kiki.rung.held')}{/if}
+            </span>
+          {:else}
           <p>
             {#if right}<span class="sym" aria-hidden="true">○</span>{t('kiki.right')} <b>+{RIGHT}</b>
             {:else}<span class="sym" aria-hidden="true">×</span>{mine ? t('kiki.wrong') : t('kiki.timeUp')}{/if}
           </p>
           {#if right && !mine?.rp && !v.same}<span class="bonus" data-kiki-bonus>{t('kiki.firstTry', { n: FIRST_LISTEN })}</span>{/if}
+          {/if}
           {#if coop}<span class="team-now" data-kiki-team-now={v.rightNow}>{v.rightNow ? t('kiki.teamNow', { n: v.rightNow }) : t('kiki.teamNone')}</span>{/if}
           {#if !right && it.type === 'pic'}<span class="answer-is">{t('kiki.answerIs', { a: PIC_JA[it.choices[it.answer]] ?? '' })}</span>{/if}
         {/if}
@@ -173,7 +222,7 @@
         <button type="button" class="ch" data-choice={k} data-mark={m ?? undefined} aria-pressed={mine?.k === k}
           aria-disabled={!open} aria-label={it.type === 'pic' ? (PIC_JA[c] ?? '') : undefined} data-sfx={open ? 'choice-pick' : 'none'}
           onclick={() => open && game.answer(k)}>
-          {#if it.type === 'pic'}<OfficialArt key={c} size="min(22vw, 92px)" eager />{:else}<span class="tx" lang={it.type === 'num' ? undefined : 'en'}>{c}</span>{/if}
+          {#if it.type === 'pic'}<OfficialArt key={c} size="min(22vw, 92px)" eager />{:else}<span class="tx" lang={it.type === 'num' || (it.rung && it.type !== 'word') ? undefined : 'en'}>{c}</span>{/if}
           {#if m === 'right'}<span class="sym ok" aria-hidden="true">○</span>{:else if m === 'wrong'}<span class="sym ng" aria-hidden="true">×</span>{/if}
         </button>
         {/if}
@@ -288,12 +337,28 @@
   /* つぎへ: the host's one action at the foot */
   .level-acts [data-kiki-next] { min-height: var(--cta-h); font-size: var(--fs-talk); }
 
+  /* スピード はしご: the ladder's four speeds as steps rising left to right (climbed leaf, this one yuzu, stopped coral) */
+  .ladder { display: flex; align-items: flex-end; justify-content: center; gap: 12px; }
+  .lname { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); padding-bottom: 2px; }
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 46px); align-items: end; gap: 4px; height: 44px; }
+  .steps li {
+    height: var(--h); border-radius: 8px 8px 4px 4px; display: grid; align-items: end; justify-items: center; padding-bottom: 2px;
+    background: var(--ctl-off); color: var(--text-soft); font: 700 11px/1 var(--font-num, var(--font-ui));
+  }
+  .steps li[data-step='up'] { background: var(--c-leaf); color: var(--c-ink); }
+  .steps li[data-step='now'] { background: var(--c-yuzu); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge); }
+  .steps li[data-step='off'] { background: color-mix(in srgb, var(--c-coral) 35%, var(--card)); color: var(--c-ink); }
+  .climb { padding: 4px 12px; border-radius: var(--r-pill); background: var(--ctl-off); color: var(--text); font: 700 var(--fs-s)/1.3 var(--font-ui); text-align: center; }
+  .climb.up { background: var(--c-yuzu); color: var(--c-ink); animation: pop-in 320ms var(--ease-bounce) 200ms both; }
+  .later, .height { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink-soft); position: relative; }
+  .height { color: var(--c-ink); }
+
   @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   @keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
   @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
   @keyframes pop-in { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) {
-    .speaker.pop, .speaker.talk, .duo .one.talk, .react, .bonus { animation: none; }
+    .speaker.pop, .speaker.talk, .duo .one.talk, .react, .bonus, .climb.up { animation: none; }
     .choices { transition: none; }
   }
 </style>

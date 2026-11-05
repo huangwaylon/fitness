@@ -6,7 +6,8 @@
 // length, clips.ts itemDur). Loaded with the sheet only.
 import { BANK, clipIds, isDialogue, type Item, type Level } from '#lib/kikimimi/bank.ts';
 import { clipDur, clipUrl, itemDur, sequenceStarts } from '#lib/kikimimi/clips.ts';
-import { FAST_WINDOWS, QuizSession, quizLink, wireQuiz, type DeckOf, type QuizIn, type QuizLink, type QuizOut, type QuizView } from '#lib/kikimimi/session.ts';
+import { SPEEDS, ladderPoints } from '#lib/kikimimi/ladder.ts';
+import { FAST_WINDOWS, QuizSession, isLadder, quizLink, wireQuiz, type DeckOf, type QuizIn, type QuizLink, type QuizOut, type QuizView } from '#lib/kikimimi/session.ts';
 import type { Live } from '#lib/sync/live.ts';
 import type { Who } from '#lib/types.ts';
 import { loadVoice, playVoice } from '#lib/sound/sound.svelte.ts';
@@ -28,9 +29,15 @@ const deckOf: DeckOf = (seed, lv) => {
       return itemsOf(seed, lv).length;
     },
     dur: (i) => Math.round((at(i) ? (itemDur(at(i)) ?? 2) : 2) * 1000),
-    answer: (i) => at(i)?.answer ?? -1
+    answer: (i) => at(i)?.answer ?? -1,
+    // スピード はしご: the rungs climbed (ladder.ts), not each answer's points
+    ...(isLadder(seed) && { score: (a: ReadonlyMap<number, { k: number; rp: boolean }>) => ladderPoints(itemsOf(seed, lv), a) })
   };
 };
+
+/** A スピード はしご rung below its ladder's top: its reveal keeps the line hidden and silent (no replay, no transcript),
+ *  so the next, faster rung is a listen of its own. */
+export const hidesLine = (it: Item | undefined): boolean => !!it?.rung && it.rung.n < SPEEDS.length;
 
 /** A dialogue's lines' lengths (s, clips.json; 2 s while one has no clip). */
 const lineDurs = (it: Item): number[] => clipIds(it).map((id) => clipDur(id) ?? 2);
@@ -108,9 +115,9 @@ export class QuizGame {
   // ---------- taps ----------
 
   /** Open a lobby (I host it), on this phone only until `invite`. */
-  open(lv: Level, same = false, vs = false): void {
+  open(lv: Level, same = false, vs = false, ladder = false): void {
     this.practicing = false;
-    this.#act((s, now) => s.open({ lv, same, vs }, now));
+    this.#act((s, now) => s.open({ lv, same, vs, ladder }, now));
   }
   /** にがて れんしゅう: my lobby kept alone starts at once with `items` (srs.ts practiceDeck) as its deck. */
   practice(items: Item[]): void {
@@ -125,7 +132,7 @@ export class QuizGame {
   invite(): void {
     this.#act((s, now) => s.invite(now));
   }
-  configure(o: { lv?: Level; same?: boolean; vs?: boolean }): void {
+  configure(o: { lv?: Level; same?: boolean; vs?: boolean; ladder?: boolean }): void {
     this.#act((s, now) => s.configure(o, now));
   }
   join(g?: string): void {
@@ -270,7 +277,8 @@ export class QuizGame {
     }
     if (v.phase === 'reveal' && this.#revealed !== v.i) {
       this.#revealed = v.i;
-      if (v.speaks && !v.out) void this.#playNow(it, v.i, false);
+      // (a スピード はしご rung below the top: no replay, the next rung's listen is the next, faster one)
+      if (v.speaks && !v.out && !hidesLine(it)) void this.#playNow(it, v.i, false);
     }
   }
 

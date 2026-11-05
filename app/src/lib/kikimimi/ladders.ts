@@ -14,10 +14,10 @@ import type { RosterId } from '#lib/villagers/roster.ts';
 import type { SceneId, SoundMark, Tags } from './bank.ts';
 
 /** A rung's question: what to listen for (Japanese), its choices (the right one first), `num` for a number's. */
-export type Ask = readonly [ask: string, choices: readonly string[], type?: 'num'];
+type Ask = readonly [ask: string, choices: readonly string[], type?: 'num'];
 
 /** A new line (not one of level 4's). */
-export interface LineSrc {
+interface LineSrc {
   who: RosterId;
   en: string;
   tts?: string;
@@ -277,7 +277,7 @@ export const LADDER_SRC: readonly LadderSrc[] = [
   { id: 'sp-rain-later',
     line: { who: 'celeste', en: "Tomorrow will start dry, but heavy rain's expected from mid-afternoon, so if you're heading out, you'll want an umbrella.",
       tts: "Tomorrow'll start dry, but heavy rain's expected from mid-afternoon, so if you're headin' out, you'll want an umbrella.",
-      ja: '明日は晴れて始まりますが、昼過ぎから強い雨の予報です。お出かけなら傘があるといいでしょう。',
+      ja: '明日は晴れて始まりますが、昼過ぎから強い雨の予報です。お出かけならかさがあるといいでしょう。',
       note: "you'll want＝〜があるといい（すすめ）", tags: tg(60, 'broadcast', 'literal', [], ['contraction', 'weak-form']), scene: 'living',
       marks: [['say', 'Tomorrow will', "tomorrow'll"], g('heading')] },
     asks: [['なんの ほうそう？', ['てんきよほう', 'こうつう じょうほう', 'ニュースの まとめ']],

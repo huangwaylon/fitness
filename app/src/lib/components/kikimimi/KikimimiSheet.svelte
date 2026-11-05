@@ -119,10 +119,10 @@
    *  back to the invite (the host's next). */
   function again() {
     if (!game || !v) return;
-    const host = v.amHost, lv = v.lv, same = v.same, vs = v.vs, shared = !v.local, practicing = game.practicing;
+    const host = v.amHost, lv = v.lv, same = v.same, vs = v.vs, ladder = v.ladder, shared = !v.local, practicing = game.practicing;
     game.close();
     if (host || !game.view.invite) {
-      game.open(lv as Level, same, vs);
+      game.open(lv as Level, same, vs, ladder);
       if (host && shared) game.invite();
       else if (practicing) practice();
     }
@@ -131,6 +131,7 @@
   function practice(focus: Focus = null) {
     const r = currentReport();
     if (!game || !r) return;
+    if (game.view.ladder) game.configure({ ladder: false }); // (a quiz's: from a recommendation in スピード はしご's lobby)
     game.practice(practiceFor(r, LEVELS, game.view.seed, focus));
   }
   /** The lobby's tab: あそぶ or きろく (back to あそぶ whenever the lobby is left). */
@@ -144,8 +145,11 @@
     if (!game || !v?.amHost || !v.local) return;
     tab = 'play';
     if (r.kind === 'level') {
-      game.configure({ lv: r.lv });
+      game.configure({ lv: r.lv, ladder: false });
       keepLv(r.lv);
+      game.go();
+    } else if (r.kind === 'speed') {
+      game.configure({ ladder: true });
       game.go();
     } else practice(r.kind === 'skill' || r.kind === 'try' ? { skill: r.skill } : r.kind === 'accent' ? { accent: r.accent } : null);
   }
@@ -172,7 +176,7 @@
           <Host size={96} />
           {#if v.invite}
             <div class="invite card" data-kiki-invite={v.invite.g}>
-              <p class="say">{t('kiki.invited', { name: hostName(v.invite.host) })}<small>{levelMark(v.invite.lv)} {t(`kiki.lv.${v.invite.lv}`)}{#if v.invite.started} · {t('kiki.started')}{/if}</small></p>
+              <p class="say">{t('kiki.invited', { name: hostName(v.invite.host) })}<small>{#if v.invite.ladder}{t('kiki.mode.ladder')}{:else}{levelMark(v.invite.lv)} {t(`kiki.lv.${v.invite.lv}`)}{/if}{#if v.invite.started} · {t('kiki.started')}{/if}</small></p>
               <button type="button" class="btn" data-kiki-join data-sfx="confirm" onclick={() => game?.join(v.invite!.g)}>{t('kiki.joinIt')}</button>
             </div>
           {/if}

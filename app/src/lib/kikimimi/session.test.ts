@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { points } from './score.ts';
-import { FAST_WINDOWS, QuizSession, WINDOWS, quizLink, versus, wireQuiz, type QuizDeck, type QuizIn, type QuizOut } from './session.ts';
+import { FAST_WINDOWS, QuizSession, WINDOWS, isLadder, quizLink, versus, wireQuiz, withLadder, type DeckOf, type QuizDeck, type QuizIn, type QuizOut } from './session.ts';
+import { ladderDeck, ladderPoints } from './ladder.ts';
 import type { LiveStatus } from '../sync/live.ts';
 import type { Relayed, Who } from '../contract/live-protocol.ts';
 import { DIALOGUES } from './dialogues.ts';
@@ -14,9 +15,10 @@ const FULL = WINDOWS.lead + DUR + WINDOWS.answer + WINDOWS.reveal; // 26.5 s
 const T0 = 1_793_527_000_000;
 
 /** Three phones on one fake relay: each one's outputs go to the others here (unless dropped). */
-function room(whos: Who[] = ['A', 'B', 'G'], dk: QuizDeck = deck) {
+function room(whos: Who[] = ['A', 'B', 'G'], dk: QuizDeck | DeckOf = deck) {
   let now = T0;
-  const s = Object.fromEntries(whos.map((w, n) => [w, new QuizSession({ me: w, deckOf: () => dk, random: seq(n) })])) as Record<Who, QuizSession>;
+  const deckOf: DeckOf = typeof dk === 'function' ? dk : () => dk;
+  const s = Object.fromEntries(whos.map((w, n) => [w, new QuizSession({ me: w, deckOf, random: seq(n) })])) as Record<Who, QuizSession>;
   const here = new Set<Who>(whos);
   const sent: { from: Who; m: QuizOut }[] = [];
   /** Deliver `out` from `from` to everyone else here (drop: those who don't hear it). */
@@ -277,6 +279,65 @@ describe('ききみみ session: dialogues', () => {
       expect(r.s[w].view(s1 + WINDOWS.lead + seqMs).phase).toBe('answer');
       expect(r.s[w].view(s1 + WINDOWS.lead + seqMs + WINDOWS.answer + WINDOWS.reveal)).toMatchObject({ phase: 'lead', i: 2 });
     }
+  });
+});
+
+describe('ききみみ session: スピード はしご', () => {
+  /** The ladder deck as the game builds it (game.svelte.ts deckOf): its rungs' lengths, answers and climb points. */
+  const ladderDeckOf = (seed: number): QuizDeck => {
+    const items = isLadder(seed) ? ladderDeck(seed) : [];
+    return isLadder(seed)
+      ? { count: items.length, dur: () => DUR, answer: (i) => items[i].answer, score: (a) => ladderPoints(items, a) }
+      : deck;
+  };
+  const ladderRoom = () => room(['A', 'B'], ladderDeckOf);
+
+  it('the mode rides on the open’s seed (bit 1): a quiz lobby has it clear; the host flips it by a new open; the invite says so', () => {
+    const r = ladderRoom();
+    r.act('A', (x, n) => x.open({ lv: 3 }, n));
+    const seed = r.view('A').seed;
+    expect(isLadder(seed)).toBe(false);
+    expect(r.view('A')).toMatchObject({ ladder: false, n: 8 });
+    r.act('A', (x, n) => x.invite(n));
+    r.act('A', (x, n) => x.configure({ ladder: true }, n));
+    expect(r.sent.at(-1)!.m).toMatchObject({ op: 'open', seed: withLadder(seed, true), lv: 3 });
+    expect(r.view('B').invite).toMatchObject({ ladder: true, lv: 3 });
+    // たいせん keeps the mode, and the mode たいせん
+    r.act('A', (x, n) => x.configure({ vs: true }, n));
+    expect(r.view('A')).toMatchObject({ ladder: true, vs: true });
+    r.act('A', (x, n) => x.configure({ ladder: false }, n));
+    expect(r.view('A')).toMatchObject({ ladder: false, vs: true });
+    // open() can start one in the mode (もういっかい keeps it)
+    const s = new QuizSession({ me: 'G', deckOf: ladderDeckOf, random: seq(5) });
+    s.open({ lv: 1, ladder: true }, T0);
+    expect(s.view(T0)).toMatchObject({ ladder: true, vs: false });
+  });
+
+  it('two players climb: the points are the rungs climbed in order on the first listen (a replay or a miss stops a ladder), the same on both phones', () => {
+    const r = ladderRoom();
+    r.act('A', (x, n) => x.open({ lv: 4, ladder: true }, n));
+    r.act('A', (x, n) => x.invite(n));
+    r.act('B', (x, n) => x.join(n));
+    r.act('A', (x, n) => x.go(n));
+    const items = ladderDeck(r.view('A').seed);
+    expect(items).toHaveLength(8);
+    // A: all right, a replay on rung 3 of ladder 2; B: a miss on rung 2 of ladder 1, then right
+    const plan: Record<'A' | 'B', (i: number) => [boolean, boolean]> = {
+      A: (i) => [true, i === 6],
+      B: (i) => [i !== 1, false]
+    };
+    let t = r.now + WINDOWS.countdown;
+    for (let i = 0; i < 8; i++) {
+      r.now = t + WINDOWS.lead + DUR + 500;
+      for (const w of ['A', 'B'] as const) {
+        const [right, rp] = plan[w](i);
+        r.act(w, (x, n) => x.answer(right ? items[i].answer : (items[i].answer + 1) % 3, rp, n));
+      }
+      t = r.now + WINDOWS.reveal;
+    }
+    r.now = t;
+    // A: ladder 1 all 4, ladder 2 rungs 1-2 (the replay on 3 stops it); B: ladder 1 rung 1, ladder 2 all 4
+    for (const w of ['A', 'B'] as const) expect(r.view(w)).toMatchObject({ phase: 'results', scores: { A: 600, B: 500 } });
   });
 });
 
