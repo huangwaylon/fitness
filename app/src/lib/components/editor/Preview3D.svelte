@@ -16,7 +16,7 @@
   import { diffLayouts } from '#lib/layout/diff.ts';
   import { lookOf, type Look } from '../world3d/groundLook.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
-  import { drawOff } from '#lib/ui-state/testMode.ts';
+  import { drawOff, shaderChecks } from '#lib/ui-state/testMode.ts';
   import type { EditStage } from '../layoutEdit/IslandEdit.svelte';
   import type { Material, Mesh, Object3D } from 'three';
 
@@ -44,17 +44,21 @@
         if (gone || !canvas) return;
         let renderer: InstanceType<typeof T.WebGLRenderer>;
         try {
-          renderer = new T.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+          // (no preserveDrawingBuffer: a copy of the frame kept each draw, at DPR 2 with AA dear on a phone; nothing reads
+          // the canvas back, a screenshot is the page's)
+          renderer = new T.WebGLRenderer({ canvas, antialias: true });
         } catch (e) {
           console.warn('preview', e);
           failed = true;
           return;
         }
         renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1));
+        // (no per-program link check on a live phone: testMode.ts shaderChecks)
+        renderer.debug.checkShaderErrors = shaderChecks();
         renderer.outputColorSpace = T.SRGBColorSpace;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = T.PCFSoftShadowMap;
-        // (the shadow map redrawn only with a frame that has a change: kick())
+        // (the shadow map redrawn only with a frame that changed what casts or where the sun is: kick(), not kick(false))
         renderer.shadowMap.autoUpdate = false;
         const scene = new T.Scene();
         scene.background = new T.Color(0x9fd8fb);
@@ -83,11 +87,15 @@
 
         // a frame when something changed, then as long as something still moves (the controls' damping, a wobble,
         // K.K. settling onto his stool): never on a timer
-        let raf = 0, dirty = true, frames = 0;
+        let raf = 0, dirty = true, shade = true, frames = 0, shadowFrames = 0;
         // (the e2e's logic mode: nothing drawn)
         const off = drawOff();
-        const kick = () => {
+        /** A frame to draw; `shadows`: and the shadow map with it (a model in or moved, a layout change, the phone view's
+         *  sun moved with its camera); the orbit's turn and zoom only move the camera, the shadow camera stays. (things'
+         *  changed(shadows) is this.) */
+        const kick = (shadows = true) => {
           dirty = true;
+          if (shadows) shade = true;
           if (!raf && !gone) raf = requestAnimationFrame(frame);
         };
 
@@ -105,7 +113,7 @@
         const things = createThings(scene, ground.heightAt, kick);
         things.tod(0, 0.32);
         void things.place(placeObjects(cur, day()).insts);
-        void ground.ready.then(kick);
+        void ground.ready.then(() => kick());
         // the homes, bridges, stairs and ponds: the island's own (built.ts); a replaced or removed one's resources (the
         // models' cache's) let go of with the rest at the end
         const gone3: ReturnType<typeof resourcesOf> = new Set();
@@ -164,7 +172,7 @@
                 scene.add(o);
                 kick();
                 return () => (scene.remove(o), kick());
-              }, asset('room/villagers3d/' as Parameters<typeof asset>[0]), kick);
+              }, asset('room/villagers3d/' as Parameters<typeof asset>[0]), () => kick());
               vil.lift(0.32);
               kick();
             }, (e) => console.warn('preview: K.K.', e));
@@ -241,7 +249,7 @@
             camera.position.add(was.subVectors(t, was));
             inertia._panOffset?.set(0, 0, 0);
           }
-          kick();
+          kick(false);
         });
         // space held: a left drag pans (the plan's way); shift / ctrl / ⌘ and a right drag pan already (OrbitControls)
         const typing = (e: KeyboardEvent) => (e.target as HTMLElement | null)?.closest?.('input, textarea, select, [contenteditable]');
@@ -294,23 +302,29 @@
           raf = 0;
           let more = false;
           if (m === 'orbit' && controls.update()) more = true;
-          if (things.frame(t)) more = true;
-          if (vil && vil.frame(t, kkOn ? [kkSpec] : [], false).moving) more = true;
+          // (a wobble, a fade, K.K. settling: what casts moves)
+          if (things.frame(t)) more = shade = true;
+          if (vil && vil.frame(t, kkOn ? [kkSpec] : [], false).moving) more = shade = true;
           if (dirty || more) {
             waterU.uTime.value = (t / 1000) % 3600;
             waterFog(fog);
-            renderer.shadowMap.needsUpdate = true;
+            if (shade) shadowFrames++;
+            renderer.shadowMap.needsUpdate = shade;
+            shade = false;
             // (the e2e's logic mode: the frame's work done, nothing drawn: CI's software GL took seconds a frame)
             if (!off) renderer.render(scene, camera);
             frames++;
             dirty = false;
           }
-          if (more) kick();
+          // (what moved set shade already: the controls' damping alone redraws no shadow)
+          if (more) kick(false);
         }
         kick();
         // the e2e's view of it: the frames drawn, the camera, the groups built and K.K.
         const hook = {
           frames: () => frames,
+          /** Of them, those that redrew the shadow map. */
+          shadowFrames: () => shadowFrames,
           cam: () => (m === 'orbit' ? { mode: m, x: controls.target.x, z: -controls.target.z, zoom: 1 } : { mode: m, x: camX, z: camZ, zoom }),
           groups: () => [...groups.keys()],
           kk: () => (kkOn ? { x: kkSpec.x, z: kkSpec.z, yaw: kkSpec.yaw ?? 0, shown: kkSpec.shown, model: !!vil } : null)

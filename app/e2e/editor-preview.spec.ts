@@ -9,6 +9,7 @@ test.use({ viewport: { width: 1440, height: 900 } });
 
 type P = {
   frames(): number;
+  shadowFrames(): number;
   cam(): { mode: string; x: number; z: number; zoom: number };
   groups(): string[];
   kk(): { x: number; z: number; yaw: number; shown: boolean; model: boolean } | null;
@@ -123,4 +124,29 @@ test("the phone view's もようがえ: a press on a piece picks it up (no pan),
   await page.mouse.up();
   expect((await pv(page, (p) => p.cam())).z).toBeGreaterThan(cam0.z + 20);
   expect(await page.evaluate(() => (window as unknown as { __islandEdit: { sel(): { id: string } | null } }).__islandEdit.sel()?.id ?? null)).toBe('tape-deck');
+});
+
+test("the orbit view's turn and zoom redraw the frame, not the shadow map (its sun and shadow camera stay put)", async ({ page }) => {
+  await page.goto(`editor/?demo&date=${DATE}`);
+  await page.waitForFunction(() => (window as unknown as { __preview3d?: unknown }).__preview3d);
+  await expect.poll(() => kkModel(page), { timeout: 20_000 }).toBe('kk-slider');
+  await expect.poll(() => pv(page, (p) => p.cam().mode)).toBe('orbit');
+  // (settled: no frame drawn)
+  let was = -1;
+  await expect.poll(async () => {
+    const n = await pv(page, (p) => p.frames()), still = n === was;
+    was = n;
+    return still;
+  }, { intervals: [700], timeout: 20_000 }).toBe(true);
+  const s0 = await pv(page, (p) => p.shadowFrames());
+  const box = (await page.locator('[data-preview] canvas').boundingBox())!;
+  const [cx, cy] = [box.x + box.width / 2, box.y + box.height / 2];
+  // a turn (a left drag) and a zoom (the wheel)
+  await page.mouse.move(cx, cy);
+  await page.mouse.down();
+  for (let i = 1; i <= 6; i++) await page.mouse.move(cx + i * 15, cy);
+  await page.mouse.up();
+  await page.mouse.wheel(0, -200);
+  await expect.poll(() => pv(page, (p) => p.frames())).toBeGreaterThan(was + 2);
+  expect(await pv(page, (p) => p.shadowFrames())).toBe(s0);
 });
