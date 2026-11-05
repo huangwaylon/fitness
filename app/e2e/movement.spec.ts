@@ -45,7 +45,9 @@ const overlaps = (page: Page, id = 'mine') =>
 
 test('a tap on a weed pulls it where it is: my villager stays put', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await open(page);
+    // (no visitor: since the day's weeds keep off the buildings' ground (88cdb2c5) the one nearest the middle grows
+    // within the day's visitor's reach, which answers a tap before the weeds do: SceneTaps)
+    await open(page, '&visitor=none');
     const weeds = page.locator('[data-care="weed"]');
     // the lawn runs on up to the campsite: the camera half way up it, then the weed nearest the screen's middle
     await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(300));
