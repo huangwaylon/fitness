@@ -461,7 +461,9 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       if (busy && inView) moving = true;
       // posed (its breathing, its moment, its walk) while anything moves; still, it holds its pose and only its face
       // changes (a blink: a texture's offset and one redraw), so the island idles as it did
-      if (!inView) w.posing = true;
+      // (out of view it isn't posed, but for an angler with its line out: the float in view draws its line from the
+      // rod's tip, which holds where it last was otherwise; as the bench's bar below)
+      if (!inView && !angling) w.posing = true;
       else if (active || busy || w.posing) {
         // (posed till it settles: a state's crossfade, an action, and once more after it stops)
         const going = v.step(t, s.walking ? moved : 0, s.walking ? (moved / Math.max(1, dt)) * 1000 : 0);
