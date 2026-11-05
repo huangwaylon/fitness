@@ -117,7 +117,7 @@
   "kiki.stage.s3": "Mountain",
   "kiki.prog.level": "Where you are",
   "kiki.prog.measuring": "Still measuring ({n} more)",
-  "kiki.prog.comfort": "Next step: {stars} {name} (level {lv}) feels about right",
+  "kiki.prog.comfort": "Next step: {stars} {name} feels about right",
   "kiki.prog.skills": "Strengths and weak spots",
   "kiki.prog.notYet": "Not yet",
   "kiki.prog.trend": "Right on the first listen",

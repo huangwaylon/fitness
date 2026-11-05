@@ -54,7 +54,7 @@
       {#if stage}
         <p class="stage"><span class="stars" aria-hidden="true">{'★'.repeat(stage.stage.stars)}</span>{t(`kiki.stage.${stage.stage.id}`)}<small>{stage.stage.cefr}</small></p>
         <div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow={pct(stage.into)} aria-label={t(`kiki.stage.${stage.stage.id}`)}><i style:width="{Math.max(4, pct(stage.into))}%"></i></div>
-        <p class="note">{s.measuring ? t('kiki.prog.measuring', { n: 16 - s.answers }) : t('kiki.prog.comfort', { lv: comfy, stars: '★'.repeat(comfy), name: t(`kiki.lv.${comfy}`) })}</p>
+        <p class="note">{s.measuring ? t('kiki.prog.measuring', { n: 16 - s.answers }) : t('kiki.prog.comfort', { stars: '★'.repeat(comfy), name: t(`kiki.lv.${comfy}`) })}</p>
       {/if}
     </section>
 
