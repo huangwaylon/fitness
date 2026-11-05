@@ -163,7 +163,7 @@ and the next opening starts at its top. Its own chunk, loaded on the first tap.
 <a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/ClosetGrid.svelte`, `look/closet.ts`, `store/look.ts`,
 `e2e/look.spec.ts`; [design/avatar/customization.md](../app/design/avatar/customization.md) §3, the user's 2026-11-05
 sign-off): each person's NH human player, the whole closet free (no ベル, no shop, no unlocks), for A, B and the guest alike.
-- **The head** (pinned): the preview (a tap hops it), よびな, and **もどす** once something changed this visit (back to
+- **The head** (pinned): the preview (3D: a drag turns it, a tap hops it), よびな, and **もどす** once something changed this visit (back to
   what was worn on opening).
 - **コーデ** (one sideways row of 60px portraits, names under them): **★いつもの** first (the signed-off default; one tap
   wears it; never stored, so it can't be overwritten or deleted; the guest's is its villager), then the saved ones newest
@@ -191,8 +191,22 @@ sign-off): each person's NH human player, the whole closet free (no ベル, no s
   colour nearest the icon's it shows as it is; on the others it's tinted (grey, brightened so its main colour reads near
   white, times the swatch, masked to its shape; a tube sock's stripes tint with its leg). A face part's or hairstyle's
   tile is its number. closet.test keeps both いつもの looks' parts, every grid non-empty and every swatch measured.
-  The preview and portraits are still a flat stand-in figure (`look/PlayerFigure.svelte`) until `LookPreview` /
-  `LookPortrait` take the 3D player and its portraits.
+- **The preview in 3D** (`look/LookPreview.svelte`, `look/preview3d.ts`): the look as NH's human player
+  (`createPlayer`, [Players](#players)) on a small canvas of its own, idling and blinking; every edit is `dress()`ed on
+  in place; a drag turns it (a flick spins a little, it stays turned 2.5 s, then eases back to the front), a tap hops it.
+  Its renderer, made when the level opens and let go of when it closes (the player, the portraits' player, the
+  renderer, `forceContextLoss`), is the level's one WebGL context (the island's sleeps under the sheet, as for the
+  tent). Frames on demand, at most 30 a second: only while the player moves (a step or a blink says so) or turns; none
+  hidden. three.js and the player come in their own chunk on opening; until they're up (or with no WebGL, or a part
+  missing) the flat stand-in (`look/PlayerFigure.svelte`) stands there. A villager is its official render (the 3D kept,
+  hidden, for the portraits). The logic mode builds it and draws nothing.
+- **Portraits** (`look/portraits.svelte.ts`, `look/LookPortrait.svelte`): a player's round head (the コーデ chips, the
+  せってい row) is `portrait()` through the preview's renderer (a second player kept for the shots, never a second
+  context), 128 px, kept by the look's hash in memory and in localStorage (`look.portraits`, the latest 24; quota:
+  fewer, never the user's data's room). Asked for as a chip shows, and the look being edited 0.7 s after its last edit,
+  so the せってい row has it once the level is closed (outside すがた nothing draws them: a look never drawn shows the
+  stand-in). iOS Simulator (iPhone 17 Pro, iOS 26.5, a local build's demo, すがた open over the island): idle 59 fps,
+  frame p95 17 ms, 1 long frame in 5 s, no errors.
 
 <a id="profile"></a>**プロフィール** (`panel/ProfileSection.svelte`, `model/profile.ts`, `e2e/profile.spec.ts`; the user: "store the
 user's gender and birthdate so that the calculations and recommendations can account for that"): one card. Whose, in
