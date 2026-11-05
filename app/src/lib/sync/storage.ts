@@ -96,7 +96,10 @@ export const DEVICE = {
   /** localStorage: `30` | `60`: the 3D engines' full frame rate (store/frameRate.svelte.ts; 30 by default). */
   fps: 'island.fps',
   /** localStorage: `1` | `0`: the rooms' and the museum's first-person view (store/firstPerson.svelte.ts; off by default). */
-  fpv: 'island.fpv'
+  fpv: 'island.fpv',
+  /** localStorage: the Tokyo date whose midnight Happy New Year! this phone played (lib/sound/sound.svelte.ts: once,
+   *  not again after a reload). */
+  newYearIntro: 'island.newYearIntro'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */

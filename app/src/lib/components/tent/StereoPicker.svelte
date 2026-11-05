@@ -2,13 +2,16 @@
   // A music player's song list (tent/stereo.ts; docs/design.md "The tent: stereos"), NH's: おまかせ (any song but the
   // last one), or one of K.K.'s songs by name; ✕ or a tap outside closes it. The song plays as its aircheck
   // (sound.svelte.ts playKK(id, 'aircheck')): `onpick` gets it.
-  import { i18n, t } from '#lib/i18n/index.ts';
-  import { kkPick, kkTracks, type KKTrack } from '#lib/sound/kk.ts';
+  import { t } from '#lib/i18n/index.ts';
+  import { kkPick, kkTitle, loadKK, type KKTrack } from '#lib/sound/kk.ts';
+  import { prefetchKK } from '#lib/sound/sound.svelte.ts';
 
   let { last = null, onpick, onclose }: { last?: string | null; onpick: (song: KKTrack) => void; onclose: () => void } = $props();
-  const titleOf = (s: KKTrack) => (i18n.locale === 'en' ? s.en : s.ja);
+  /** The songs (kk.ts: their own chunk, loaded as the list opens; null until then). */
+  let kkTracks = $state.raw<readonly KKTrack[] | null>(null);
+  $effect(() => void loadKK().then((l) => (kkTracks = l.tracks)));
   function surprise() {
-    const s = kkPick(Math.random, last);
+    const s = kkPick(Math.random, last, kkTracks ?? []);
     if (s) onpick(s);
   }
 </script>
@@ -17,14 +20,15 @@
 <div class="scrim" aria-hidden="true" onpointerdown={onclose}></div>
 <div class="picker" role="dialog" aria-label={t('tent.stereo.title')} data-stereo-picker>
   <p class="title">{t('tent.stereo.title')}</p>
-  {#if kkTracks.length}
+  {#if kkTracks?.length}
     <button type="button" class="song any" data-sfx="confirm" data-song="any" onclick={surprise}>{t('tent.stereo.any')}</button>
     <ul>
       {#each kkTracks as s (s.id)}
-        <li><button type="button" class="song" class:last={s.id === last} data-sfx="confirm" data-song={s.id} onclick={() => onpick(s)}>{titleOf(s)}</button></li>
+        <!-- (its aircheck fetched on the press: the click that picks it then starts it at once) -->
+        <li><button type="button" class="song" class:last={s.id === last} data-sfx="confirm" data-song={s.id} onpointerdown={() => prefetchKK(s.id, 'aircheck')} onclick={() => onpick(s)}>{kkTitle(s)}</button></li>
       {/each}
     </ul>
-  {:else}
+  {:else if kkTracks}
     <p class="none">{t('tent.stereo.none')}</p>
   {/if}
   <button type="button" class="close" data-sfx="back" aria-label={t('tent.stereo.close')} onclick={onclose}>✕</button>

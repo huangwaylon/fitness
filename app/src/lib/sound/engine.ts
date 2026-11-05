@@ -13,7 +13,7 @@
 // the loop never relies on `<audio loop>`'s seek at the end. Effects are small decoded buffers.
 import { SOUNDS, SYNTH_IDS, type Bus, type SoundId, type SynthId } from './ids.ts';
 import { LEVELS, VoiceLimiter, duckPlan, jitterRate } from './mix.ts';
-import { crossfadePlan, trackLevel, type MusicTrack } from './hourly.ts';
+import { crossfadePlan, trackLevel, type Fade, type MusicTrack } from './hourly.ts';
 import { AUDIO, audioUrl } from './manifest.ts';
 import { IdleTimer, QUEUED_DROP_MS, WRAP, canSound, gestureAction, needsFadeIn, needsUnlock, wrapTarget, type Gesture } from './session.ts';
 import type { AmbientLayer } from './ambient.ts';
@@ -25,8 +25,11 @@ const MUFFLE_HZ = 900;
 const LATE_MS = 400;
 /** A lazy file (ids.ts `lazy`: the day's radio jingle) fetched at its first play sounds if it arrives within this long. */
 const LAZY_LATE_MS = 2500;
-/** Lazy files kept decoded at once (a 6 s stereo jingle is ~2 MB of PCM): the oldest goes first. */
-const LAZY_CAP = 4;
+/** Lazy files kept decoded at once: the oldest goes first. A radio jingle is 7.6–14.5 s mono, decoded at the context's
+ *  rate (48 kHz on an iPhone) as 32-bit floats: 1.5–2.8 MB of PCM each. */
+const LAZY_CAP = 2;
+/** After ミュージック goes off (release), the files are let go once the fade-out is over. */
+const RELEASE_MS = 1000;
 /** A lazy file that failed (offline) isn't asked for again for this long: its placeholder plays meanwhile. */
 const LAZY_RETRY_MS = 5 * 60_000;
 
@@ -145,6 +148,7 @@ export class Engine {
   #wrapTimer: ReturnType<typeof setTimeout> | undefined;
   #wrapToken = 0;
   #wrapping = false;
+  #releaseTimer: ReturnType<typeof setTimeout> | undefined;
   /** Paused from outside (holdMusic): no track sounds again until a tap (unlock) or the Media Session's ▶ (unhold). */
   #held = false;
   /** Called when a one-shot track (the opening, a jingle, a sting, a K.K. song) ends. */
@@ -316,9 +320,10 @@ export class Engine {
     }
   }
 
-  /** Real files from the manifest replace their placeholders as they decode. */
+  /** Real files from the manifest replace their placeholders as they decode (only while 効果音 is on: nothing is fetched
+   *  or decoded for effects nobody hears; turning it on loads them, setLevels). */
   #loadFiles(): void {
-    if (this.#files || !this.ctx) return;
+    if (this.#files || !this.ctx || !this.#levels?.sfx) return;
     const entries = (Object.entries(AUDIO.sfx) as [SoundId, string][]).filter(([id]) => !SOUNDS[id].lazy);
     let failed = false;
     this.#files = Promise.all(
@@ -493,6 +498,7 @@ export class Engine {
     set(this.#bus.music.gain, s.music ? LEVELS.music : 0);
     set(this.#bus.ambient.gain, s.music ? LEVELS.ambient : 0);
     set(this.#bus.sfx.gain, s.sfx ? LEVELS.sfx : 0);
+    this.#loadFiles();
   }
 
   /** A music file as a blob URL. The whole file (0.4–0.9 MB) is fetched through the service worker's audio cache
@@ -526,6 +532,23 @@ export class Engine {
     for (const p of paths) void this.#blob(p);
   }
 
+  /** ミュージック off (or everything): nothing will play the files soon, so once the fade-out is over the blobs and their
+   *  object URLs go (a track kept for hours off is ~1 MB held), and the idle decks let go of their media (src removed,
+   *  load()). Pins go too. A track started again meanwhile keeps everything. */
+  release(): void {
+    this.#pinned = [];
+    clearTimeout(this.#releaseTimer);
+    this.#releaseTimer = setTimeout(() => {
+      if (this.track) return;
+      this.#trimBlobs([]);
+      for (const d of this.#decks) {
+        if (d.key || !d.el.paused || !d.el.getAttribute('src')) continue;
+        d.el.removeAttribute('src');
+        d.el.load();
+      }
+    }, RELEASE_MS);
+  }
+
   /** Drop every blob but these paths (and the pinned ones). */
   #trimBlobs(keep: string[]): void {
     for (const [path, p] of this.#blobs) {
@@ -539,8 +562,8 @@ export class Engine {
   /** Play `track` under `key` (an hour like 'sunny/07', or 'opening'), crossfading from the one playing
    *  (hourly.ts crossfadePlan). The same key again fades it back in where it is if it isn't audibly up (paused, or
    *  played by iOS at gain 0 while hidden). Looping tracks wrap seamlessly; a one-shot calls `onended`. Null = fade
-   *  out to silence. `cut`: the quick swap of a cut-in (hourly.ts CUT). */
-  async setTrack(key: string | null, track: MusicTrack | null, loop = true, cut = false): Promise<void> {
+   *  out to silence. `fade`: the hour's crossfade, a cut-in's quick swap, a doorway's (hourly.ts). */
+  async setTrack(key: string | null, track: MusicTrack | null, loop = true, fade: Fade = 'hour'): Promise<void> {
     const ctx = this.ctx;
     if (!ctx || !this.#decks.length || (key && this.#held)) return; // held: not even a cue's wake or coming back
     const cur = this.#decks[this.#front];
@@ -552,7 +575,7 @@ export class Engine {
     const token = ++this.#token;
     this.#cancelWrap();
     const playing = !!cur.key && !cur.el.paused;
-    const plan = crossfadePlan(ctx.currentTime, playing, cut);
+    const plan = crossfadePlan(ctx.currentTime, playing, fade);
     this.#fadeOut(cur, plan.outFrom, plan.outTo);
     if (!key || !track) return;
     // Already fetched (prefetched at launch, or heard this session): no await, so when this runs inside a tap the
@@ -887,9 +910,10 @@ export class Engine {
     this.#sleepTimer = setTimeout(() => this.pause(), 800);
   }
 
-  /** Everything off: no music, no ambience, a suspended context. */
+  /** Everything off: no music, no ambience, a suspended context, the files let go. */
   sleep(): void {
     this.stopMusic();
+    this.release();
     void this.setAmbient([]);
     clearTimeout(this.#sleepTimer);
     this.#sleepTimer = setTimeout(() => void this.ctx?.suspend().catch(() => {}), 800);

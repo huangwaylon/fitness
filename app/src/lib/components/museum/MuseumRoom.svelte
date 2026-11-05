@@ -29,7 +29,7 @@
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import { doorReady, provideDoor } from '#lib/ui-state/doorTransition.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { setPlace } from '#lib/sound/sound.svelte.ts';
+  import { prefetchPlace, setPlace } from '#lib/sound/sound.svelte.ts';
   import { MUSEUM_MUSIC, Settle, type PlaceId } from '#lib/sound/places.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
@@ -118,6 +118,8 @@
   // doorway and stayed (wingHeld, then Settle), read on the frames drawn (none while nothing moves) ----
   let wing: Wing = 'hall';
   const music = new Settle<PlaceId>(setPlace);
+  /** The wings' tracks are fetched this long after the hall opens (its own first). */
+  const WINGS_AHEAD_MS = 4000;
   function heardMusic() {
     const at = eng?.at(me);
     if (!at) return;
@@ -385,6 +387,8 @@
   onMount(() => {
     let alive = true;
     music.now(MUSEUM_MUSIC.hall);
+    // the wings' tracks once the hall's has started (a first walk into one then changes at once)
+    const wings = setTimeout(() => (prefetchPlace(MUSEUM_MUSIC.fish), prefetchPlace(MUSEUM_MUSIC.bug)), WINGS_AHEAD_MS);
     islandLayout.attach(relay, me, demo);
     shared.attach(relay, me, demo);
     own?.start();
@@ -436,6 +440,7 @@
     if (canvas) ro.observe(canvas);
     return () => {
       alive = false;
+      clearTimeout(wings);
       music.stop();
       setPlace(null);
       send({ kind: 'tent', in: false });

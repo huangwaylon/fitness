@@ -53,8 +53,12 @@ describe('crossfade schedule', () => {
     expect(crossfadePlan(5, false)).toEqual({ outFrom: 5, outTo: 5, inFrom: 5, inTo: 5 + FADE_IN });
   });
   it('a cut-in (the wasps, K.K.) swaps at once: out in a quarter second as the new one comes up', () => {
-    expect(crossfadePlan(10, true, true)).toEqual({ outFrom: 10, outTo: 10.25, inFrom: 10, inTo: 10.25 });
-    expect(crossfadePlan(10, false, true)).toEqual({ outFrom: 10, outTo: 10, inFrom: 10, inTo: 10.25 });
+    expect(crossfadePlan(10, true, 'cut')).toEqual({ outFrom: 10, outTo: 10.25, inFrom: 10, inTo: 10.25 });
+    expect(crossfadePlan(10, false, 'cut')).toEqual({ outFrom: 10, outTo: 10, inFrom: 10, inTo: 10.25 });
+    // through a door: under its black, 0.65 s in all
+    const d = crossfadePlan(10, true, 'door');
+    expect([d.outTo - 10, d.inFrom - 10, d.inTo - 10].map((x) => Math.round(x * 100) / 100)).toEqual([0.35, 0.15, 0.65]);
+    expect(crossfadePlan(10, false, 'door').inTo).toBe(10.5);
   });
 });
 

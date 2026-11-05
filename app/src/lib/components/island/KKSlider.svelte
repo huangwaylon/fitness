@@ -17,11 +17,11 @@
   import Fx from '../characters/Fx.svelte';
   import { villagerEmote, type EmoteIcon } from '#lib/art.ts';
   import { actors, addFx, cancel, place as placeActor, removeFx, setEmote, setMotion } from '../motion/director.svelte.ts';
-  import { i18n, t } from '#lib/i18n/index.ts';
+  import { t } from '#lib/i18n/index.ts';
   import { jst, minuteNow } from '#lib/time/clock.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { kkPick, kkTracks, type KKTrack } from '#lib/sound/kk.ts';
-  import { playKK, sound, stopKK } from '#lib/sound/sound.svelte.ts';
+  import { kkPick, kkTitle, loadKK, type KKTrack } from '#lib/sound/kk.ts';
+  import { playKK, prefetchKK, sound, stopKK } from '#lib/sound/sound.svelte.ts';
   import { tall3d } from '../villager3d/manifest.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { place } from './placement.ts';
@@ -84,8 +84,11 @@
     rawSay?.(t('visitor.kk-slider'), parts, from, { colour: COLOUR, ...o, ondone: () => (speakingUntil = 0) });
   }
 
+  /** His songs (kk.ts: their own chunk, loaded as he first shows). */
+  let kkTracks = $state.raw<readonly KKTrack[]>([]);
+  $effect(() => void loadKK().then((l) => (kkTracks = l.tracks)));
   /** His song playing now (sound.kk, his own: a stereo's isn't), and the caption's place (stage px). */
-  const playing = $derived<KKTrack | null>(sound.kk && sound.kkFrom === 'live' ? (kkTracks.find((k) => k.id === sound.kk) ?? null) : null);
+  const playing = $derived<KKTrack | null>(sound.kk?.from === 'live' ? (kkTracks.find((k) => k.id === sound.kk?.id) ?? null) : null);
   let caption = $state<{ x: number; y: number; placed: boolean } | null>(null);
   let capEl = $state<HTMLElement>();
   /** The song he started (its sign-off comes when it's over), and the last one he played. */
@@ -142,7 +145,6 @@
 
   let el = $state<HTMLElement>();
   const art = () => el?.querySelector('.art') ?? null;
-  const titleOf = (s: KKTrack) => (i18n.locale === 'en' ? s.en : s.ja);
 
   /** He plays `song`: the island's music stops for it; its end (or ストップ) brings his sign-off. */
   async function perform(song: KKTrack) {
@@ -168,8 +170,9 @@
     const rest = kkTracks.filter((s) => !from.includes(s));
     const pool = rest.length >= 2 ? rest : kkTracks;
     const two = shuffle([...pool], Math.random).slice(0, 2);
+    for (const s of two) prefetchKK(s.id, 'live'); // the pick then starts at once
     const more = kkTracks.length > 2 ? [{ label: t('visitor.other'), pick: () => request([...from, ...two]) }] : [];
-    say(t('chat.sp.kk-slider.which'), target, { choices: [...two.map((s) => ({ label: titleOf(s), pick: () => void perform(s) })), ...more] });
+    say(t('chat.sp.kk-slider.which'), target, { choices: [...two.map((s) => ({ label: kkTitle(s), pick: () => void perform(s) })), ...more] });
   }
 
   /** He introduced himself this session (with the music off: then his lines). */
@@ -191,7 +194,7 @@
     if (!g.asks) return say(t(g.key), target);
     say(t(g.key), target, { choices: [
       { label: t('visitor.request'), pick: () => request() },
-      { label: t('visitor.surprise'), pick: () => { const s = kkPick(Math.random, lastSong); if (s) void perform(s); } }
+      { label: t('visitor.surprise'), pick: () => { const s = kkPick(Math.random, lastSong, kkTracks); if (s) void perform(s); } }
     ] });
   }
 
@@ -242,7 +245,7 @@
   </span>
 {/if}
 {#if playing && caption}
-  <span class="caption if-caption" class:placed={caption.placed} data-fx="kk-caption" bind:this={capEl} style:left="{caption.x}px" style:top="{caption.y}px">♪ {titleOf(playing)}</span>
+  <span class="caption if-caption" class:placed={caption.placed} data-fx="kk-caption" bind:this={capEl} style:left="{caption.x}px" style:top="{caption.y}px">♪ {kkTitle(playing)}</span>
 {/if}
 
 <style>
