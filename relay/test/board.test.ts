@@ -43,6 +43,19 @@ describe('the board in the record', () => {
     expect(posts(KEY_C)).toMatchObject([{ id: 'bpost001', who: 'A', t: 'こんにちは！' }]);
   });
 
+  it('a corrupt stored row is skipped and told to the log (once a request), never silently; the post still goes in', () => {
+    const told: string[] = [];
+    store = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => now, notify: (n) => notices.push(n), corrupt: (w) => void told.push(w) });
+    for (const [id, data] of [['bad1', '{"id":"bpost0'], ['bad2', 'null']])
+      db.sql.exec("INSERT INTO events (id, at, person, type, data) VALUES (?, '2026-11-02T02:00:00.000Z', 'A', 'board', ?)", id, data);
+    expect(post('A', 'bpost009', 'まだ')).toMatchObject({ ok: true });
+    expect(told).toEqual(['board']);
+    expect((call(KEY_A, 'snapshot').rows.events as string[][]).filter((r) => r[4].includes('bpost009'))).toHaveLength(1);
+    // the next request tells it again
+    expect(post('B', 'bpost010', 'もう')).toMatchObject({ ok: true });
+    expect(told).toEqual(['board', 'board']);
+  });
+
   it('sanitises the text: trimmed, control characters gone, at most 4 lines and 100 characters', () => {
     expect(post('B', 'bpost002', '  あ\u0007い\u202eう\r\nふたつめ\n\n\n3\n4\n5  ')).toMatchObject({ ok: true });
     expect(posts()[0].t).toBe('あいう\nふたつめ\n\n3 4 5');

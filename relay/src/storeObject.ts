@@ -11,6 +11,7 @@ import type { Env } from './index.ts';
 import { apiWithMeta, type ReqMeta } from './reqMeta.ts';
 import { keyOwner } from './auth.ts';
 import { relaySink } from './logRoute.ts';
+import type { RelayEvent } from './log.ts';
 import { isToken } from '../../app/src/lib/contract/log.ts';
 
 export class IslandStore extends DurableObject<Env> implements StoreRoom {
@@ -23,12 +24,20 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       tx: (fn) => ctx.storage.transactionSync(fn),
       keys: { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C },
       now: () => Date.now(),
-      notify: (n) => this.tellRoom(n)
+      notify: (n) => this.tellRoom(n),
+      // a stored row that isn't JSON, skipped by a fold: a warning in the log (store.ts rowRec)
+      corrupt: (where) => this.log([{ e: 'store.corrupt', l: 2, d: { where } }])
     });
   }
 
   private logObj() {
     return this.env.LOG.get(this.env.LOG.idFromName('log'));
+  }
+
+  /** The record's own events to the log (logRoute.ts relaySink: best effort, off the reply's path). */
+  private log(evs: RelayEvent[]): void {
+    if (this.env.LOG_OFF === '1') return;
+    relaySink(() => this.logObj(), (p) => this.ctx.waitUntil(p), Date.now)(evs);
   }
 
   private tellRoom(n: Notice): void {
@@ -51,11 +60,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     const v = await this.core.signedOp(text, t, sig);
     if ('status' in v) return v;
     // each signed op in the log (an audit: its name and outcome)
-    const audit = (st: string) => {
-      if (this.env.LOG_OFF === '1') return;
-      const op = isToken(v.op.op) ? v.op.op : 'other';
-      relaySink(() => this.logObj(), (p) => this.ctx.waitUntil(p), Date.now)([{ e: 'admin', l: st === 'ok' ? 1 : 2, d: { op, st } }]);
-    };
+    const audit = (st: string) => this.log([{ e: 'admin', l: st === 'ok' ? 1 : 2, d: { op: isToken(v.op.op) ? v.op.op : 'other', st } }]);
     try {
       const r = await this.admin(v.op);
       audit(r.ok === true ? 'ok' : String(r.error ?? 'refused'));

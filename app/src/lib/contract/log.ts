@@ -59,6 +59,7 @@ export const LOG_EVENTS = {
   "ws.hello": { src: 'r', f: { v: 'n', build: 't' } },
   "cron.wx": { src: 'r', f: { ok: 'b', fetched: 'b', fail: 't', hours: 'n', age: 'n', ms: 'n' } },
   "do.error": { src: 'r', f: { where: 't', name: 't', msg: 'msg' } },
+  "store.corrupt": { src: 'r', f: { where: ['spend', 'board', 'food', 'tally', 'shop', 'decor'] } },
   admin: { src: 'r', f: { op: 't', st: 't' } },
   "log.cap": { src: 'r', f: { bucket: 't' } }
 } as const satisfies Record<string, { src: 'c' | 'r'; f: Fields }>;
