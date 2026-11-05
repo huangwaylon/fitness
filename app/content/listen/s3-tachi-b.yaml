@@ -1,0 +1,113 @@
+# たちぎき S3 やま (b): two passengers and one agent at a desk, a pub quiz, office days after a new policy, "I'm easy"
+# when someone isn't, picking a venue for a 30th on a group call.
+schema: 1
+unit: s3-tachi-b
+game: tachi
+stage: 4
+track: people
+seeds: [8, 36, 38, 50, 55]
+features: { primary: overlap, review: intonation }
+cando: "3人の 速い かいわで 皮肉や 本音を ききわけられる"
+status: draft
+items:
+  - kind: tachi
+    id: tachi-two-seats
+    ask: "空港の カウンター。席は 2つだけ"
+    scene: gate
+    lines:
+      - { who: orville, at: 0, en: "Okay, folks, the Singapore connection's gone, I'm afraid. I've got two seats on the eleven forty tonight, and that's it.", ja: "皆さま、申し訳ありませんが、シンガポール行きの乗り継ぎ便は出てしまいました。今夜11時40分の便に2席だけございます。" }
+      - { who: brewster, at: -0.2, en: "I'll take one. I've got a meeting at nine tomorrow.", tts: "I'll take one. I've got a meetin' at nine tomorrow.", ja: "1席ください。明日9時に会議があるんです。" }
+      - { who: whitney, at: -0.3, en: "Sorry, I was actually here first. And I've got a toddler with me.", tts: "Sorry, I was actually 'ere first. An' I've got a toddler with me.", ja: "すみません、実は私が先に並んでいたんです。それに小さい子どもがいて。" }
+      - { who: orville, at: 0.2, en: "Ma'am, with your little one, you'd need both seats.", ja: "お客様、お子様連れですと2席とも必要になります。" }
+      - { who: brewster, at: 0.3, en: "Which leaves me with nothing. Marvellous.", ja: "つまり私には何も残らない、と。素晴らしいね。" }
+      - { who: orville, at: 0.3, en: "Not quite, sir. There's a seven o'clock tomorrow morning via Hong Kong, and I can get you into the lounge tonight.", ja: "そうでもございません。明朝7時の香港経由便がございまして、今夜はラウンジをご利用いただけます。" }
+      - { who: brewster, at: -0.4, en: "The lounge? With a shower? ...Actually, that's not bad. I'll move the meeting.", ja: "ラウンジ？シャワー付き？…実はそれ、悪くないな。会議はずらすよ。" }
+      - { who: whitney, at: 0.3, en: "Thank you. Honestly. I owe you a drink.", ja: "ありがとうございます。本当に。一杯おごりますね。" }
+    rounds:
+      - { type: opinions, claims: ["先に 並んでいたのは 自分", "子ども連れは 2席 必要", "会議は ずらせる"], answer: [whitney, orville, brewster] }
+      - { type: changed, answer: brewster }
+      - { type: plan, ask: "どう なった？", choices: ["They each get one seat tonight.", "The mother takes both seats tonight, and the man flies via Hong Kong in the morning.", "The man takes a seat tonight and moves his meeting."], answer: 1, ja: "母親が今夜の2席を使い、男性は朝の香港経由便で行く。" }
+    note: "Marvellous は皮肉。Actually の後で気が変わる"
+    tags: { seed: 8, register: service, pragmatic: sarcasm, conditions: [desk], features: [overlap, h-drop, intonation] }
+
+  - kind: tachi
+    id: tachi-pub-quiz
+    ask: "パブクイズの 相談"
+    scene: cafe
+    lines:
+      - { who: kappn, at: 0, en: "Question seven. Which country has the most time zones? We've got thirty seconds.", ja: "第7問。タイムゾーンがいちばん多い国は？30秒ある。" }
+      - { who: audie, at: -0.2, en: "Russia. Easy. It's huge.", ja: "ロシア。簡単。めちゃくちゃ広いし。" }
+      - { who: apollo, at: 0.2, en: "It's France, actually. Because of all the overseas bits. Twelve, I think.", ja: "実はフランスなんだ。海外領土がたくさんあるから。12だったと思う。" }
+      - { who: audie, at: 0.3, en: "France? Come on. That's a trick answer.", ja: "フランス？まさか。ひっかけでしょ。" }
+      - { who: kappn, at: 0.3, en: "Nah, he's right, I reckon. I read that somewhere. Tahiti and that.", tts: "Nah, he's right, I reckon. I read that somewhere. Tahiti an' that.", ja: "いや、合ってると思うよ。どこかで読んだ。タヒチとかさ。" }
+      - { who: audie, at: -0.4, en: "Ugh, fine. But if it's Russia, you're both buying the next round.", tts: "Ugh, fine. But if it's Russia, you're both buyin' the next round.", ja: "もう、わかった。でもロシアだったら、次の一杯は二人のおごりね。" }
+      - { who: apollo, at: 0.2, en: "Deal. Writing France.", ja: "乗った。フランスって書くよ。" }
+      - { who: kappn, at: -0.3, en: "Quick, quick, they're collecting the sheets!", ja: "早く早く、回答用紙を集めてる！" }
+    rounds:
+      - { type: opinions, claims: ["海外領土が あるから フランス", "どこかで 読んだ ことが ある", "ロシアなら 次は おごり"], answer: [apollo, kappn, audie] }
+      - { type: changed, answer: audie }
+      - { type: plan, ask: "答えは？", choices: ["They write Russia.", "They skip the question.", "They write France, and if it's Russia, two of them buy drinks."], answer: 2, ja: "フランスと書く。ロシアだったら二人がおごる。" }
+    note: "Tahiti and that＝タヒチとか（豪の口語）"
+    tags: { seed: 55, register: friend, pragmatic: humour, conditions: [party], features: [overlap, ellipsis, idiom] }
+
+  - kind: tachi
+    id: tachi-office-days
+    ask: "出社の 新ルールに ついて"
+    scene: office
+    lines:
+      - { who: kid-cat, at: 0, en: "So did you see the email? Three days a week in the office from April.", ja: "メール見た？4月から週3日出社だって。" }
+      - { who: fauna, at: 0.3, en: "I saw. I don't mind, to be honest. I get more done here than at home with the cat on my keyboard.", ja: "見た。正直、私は構わないかな。家だと猫がキーボードに乗ってくるから、ここのほうがはかどるの。" }
+      - { who: saharah, at: -0.3, en: "That's because you live ten minutes away. My commute's an hour and a half each way.", tts: "That's 'cause you live ten minutes away. My commute's an hour an' a half each way.", ja: "それは家が10分の距離だからでしょ。私は片道1時間半よ。" }
+      - { who: kid-cat, at: 0.3, en: "Same. And for what? To sit on video calls with people in Osaka?", ja: "僕も。しかも何のため？大阪の人たちとビデオ会議するために？" }
+      - { who: fauna, at: 0.3, en: "Fair point. Although it's nice to actually see people. I'd forgotten what you two looked like.", ja: "一理あるわね。でも実際に人に会えるのはいいものよ。あなたたちの顔、忘れかけてたもの。" }
+      - { who: saharah, at: 0.3, en: "Okay, I'll admit the coffee's better here. But three days is too many. Two, I could live with.", ja: "まあ、コーヒーはここのほうがおいしいって認める。でも3日は多すぎ。2日なら我慢できる。" }
+      - { who: kid-cat, at: -0.4, en: "Let's put that in the team survey, then. Two days, flexible.", ja: "じゃあそれをチームのアンケートに書こう。週2日、柔軟に。" }
+      - { who: fauna, at: 0.2, en: "Fine, I'll back it. But I'm still coming in four.", tts: "Fine, I'll back it. Bu' I'm still comin' in four.", ja: "いいわ、賛成する。でも私は週4で来るけどね。" }
+    rounds:
+      - { type: opinions, claims: ["家より 会社の ほうが はかどる", "大阪と ビデオ会議なら 意味が ない", "週2日 なら 我慢できる"], answer: [fauna, kid-cat, saharah] }
+      - { type: changed, answer: saharah }
+      - { type: plan, ask: "どうする？", choices: ["Agree to three days from April.", "Ask for two flexible office days in the team survey.", "Refuse to come in at all."], answer: 1, ja: "チームのアンケートで、週2日の柔軟な出社を求める。" }
+    note: "I could live with＝それなら我慢できる"
+    tags: { seed: 38, register: colleague, pragmatic: attitude, features: [overlap, numbers, h-drop] }
+
+  - kind: tachi
+    id: tachi-im-easy
+    ask: "日曜の 予定を 決めている"
+    scene: living
+    lines:
+      - { who: bob, at: 0, en: "So what are we doing Sunday? I'm easy.", tts: "So whadda we doin' Sunday? I'm easy.", ja: "日曜、何する？僕は何でもいいよ。" }
+      - { who: wilbur, at: 0.3, en: "There's that craft beer festival in Yokohama. The sun's meant to be out.", ja: "横浜でクラフトビールのフェスがあるよ。晴れるらしいし。" }
+      - { who: bob, at: -0.3, en: "Yokohama's a bit of a trek, though, isn't it? And it'll be packed.", tts: "Yokohama's a bit of a trek, though, isn't it? An' it'll be packed.", ja: "でも横浜はちょっと遠くない？それに混むよね。" }
+      - { who: maple, at: 0.3, en: "See, this is what you do. You say you're easy, and then you shoot everything down.", ja: "ほら、いつもこれ。何でもいいって言って、全部却下するんだから。" }
+      - { who: bob, at: 0.2, en: "I'm not shooting it down! I'm just... raising concerns.", tts: "I'm not shootin' it down! I'm just... raisin' concerns.", ja: "却下してないよ！ただ…懸念を伝えてるだけ。" }
+      - { who: wilbur, at: -0.4, en: "Mate. What do you actually want to do?", tts: "Mate. Whaddaya actually wanna do?", ja: "おい。本当は何がしたいの？" }
+      - { who: bob, at: 0.3, en: "...Honestly? Stay in, order pizza, and finish that series.", ja: "…正直？家にいて、ピザ頼んで、あのドラマを見終わりたい。" }
+      - { who: maple, at: 0.3, en: "Ha! Finally. Okay, compromise. The beer festival in the afternoon, back by six, then pizza and the series.", ja: "はは！やっと言った。じゃあ折衷案。午後はビールフェス、6時までに帰って、そのあとピザとドラマ。" }
+      - { who: bob, at: -0.3, en: "...Fine. But we leave at six. Not six thirty.", ja: "…わかった。でも6時には帰るからね。6時半じゃなく。" }
+    rounds:
+      - { type: opinions, claims: ["横浜の ビールフェスに 行きたい", "「なんでも いい」と 言って 全部 却下する、と 指摘", "本当は 家で ピザと ドラマ"], answer: [wilbur, maple, bob] }
+      - { type: changed, answer: bob }
+      - { type: plan, ask: "日曜の 予定は？", choices: ["A whole day in Yokohama.", "Stay in all day with pizza.", "The festival in the afternoon, then home by six for pizza."], answer: 2, ja: "午後はフェスに行き、6時までに帰ってピザ。" }
+    note: "I'm easy と言いつつ、本音は別にある"
+    tags: { seed: 36, register: partner, pragmatic: indirect, features: [overlap, chain, clock] }
+
+  - kind: tachi
+    id: tachi-thirtieth
+    ask: "グループ通話で 誕生日の 店を 決める"
+    scene: living
+    channel: video
+    lines:
+      - { who: label, at: 0, en: "Okay, Yui's thirtieth. I've narrowed it down to three. Karaoke, the rooftop bar in Ebisu, or that omakase place.", ja: "さて、ユイの30歳の誕生日。3つに絞ったよ。カラオケ、恵比寿のルーフトップバー、あとあのおまかせの店。" }
+      - { who: julian, at: 0.3, en: "Omakase's ¥20,000 a head. For ten people? That's a big ask.", tts: "Omakase's twenty thousand a head. For ten people? That's a big ask.", ja: "おまかせは1人2万円だよ。10人で？それはなかなか無理がある。" }
+      - { who: cherry, at: -0.3, en: "Karaoke, obviously. She's been talking about doing Celine Dion for weeks.", tts: "Karaoke, obviously. She's been talkin' about doin' Celine Dion for weeks.", ja: "カラオケでしょ、どう考えても。何週間もセリーヌ・ディオンを歌うって言ってるし。" }
+      - { who: label, at: 0.3, en: "I don't know, karaoke feels a bit... last year. The rooftop's got a view, and it's only five thousand with a drink.", tts: "I dunno, karaoke feels a bit... last year. The rooftop's got a view, an' it's only five thousand with a drink.", ja: "うーん、カラオケってちょっと…去年っぽい。ルーフトップは眺めがいいし、ドリンク付きで5千円だけ。" }
+      - { who: julian, at: 0.3, en: "A rooftop in November, though? We'll freeze.", ja: "でも11月にルーフトップ？凍えるよ。" }
+      - { who: label, at: -0.4, en: "They've got heaters. And blankets.", ja: "ヒーターもあるし、ブランケットもあるよ。" }
+      - { who: cherry, at: 0.3, en: "Okay, what if we do the rooftop first, then karaoke after? Everyone's happy.", ja: "じゃあ、先にルーフトップ、そのあとカラオケは？みんなハッピー。" }
+      - { who: julian, at: 0.3, en: "Now that I can get behind. As long as I'm not doing a duet.", ja: "それなら賛成できる。僕がデュエットしなくていいならね。" }
+    rounds:
+      - { type: opinions, claims: ["おまかせは 高すぎる", "カラオケは 去年っぽい", "主役が 歌いたがっている"], answer: [julian, label, cherry] }
+      - { type: changed, answer: cherry }
+      - { type: plan, ask: "誕生日は どうする？", choices: ["The rooftop bar first, then karaoke.", "Omakase for ten people.", "Karaoke only, all night."], answer: 0, ja: "先にルーフトップバー、そのあとカラオケ。" }
+    note: "a big ask＝無理なお願い。get behind＝賛成する"
+    tags: { seed: 50, register: friend, pragmatic: attitude, conditions: [video], features: [overlap, numbers, idiom] }

@@ -1,0 +1,112 @@
+# たちぎき S2 もり (a): three friends or colleagues talk over each other (negative `at`), say what they think, and one
+# of them changes their mind. Rounds: who thinks what (each claim's speaker), who changed their mind, the plan.
+schema: 1
+unit: s2-tachi-a
+game: tachi
+stage: 3
+track: people
+seeds: [27, 38, 50, 52]
+features: { primary: overlap, review: t-glottal }
+cando: "3人の かいわで だれが どう 思っているか ききわけられる"
+status: draft
+items:
+  - kind: tachi
+    id: tachi-shibuya-dinner
+    ask: "3人で 夕ごはんを 決めている"
+    scene: street
+    lines:
+      - { who: cherry, at: 0, en: "Okay, it's nearly eight. Are we doing ramen or what?", tts: "Okay, it's nearly eight. Are we doin' ramen or what?", ja: "よし、もうすぐ8時。ラーメンにする？それとも？" }
+      - { who: dom, at: 0.3, en: "I'm still up for ramen. That place by the station's open late.", ja: "僕はラーメンでいいよ。駅のそばの店、遅くまでやってるし。" }
+      - { who: raymond, at: -0.3, en: "Not ramen again. We had it on Tuesday. What about that izakaya with the yakitori?", tts: "No' ramen again. We 'ad it on Tuesday. Wha' about that izakaya with the yakitori?", ja: "またラーメンはやめよう。火曜に食べたじゃないか。焼き鳥のあの居酒屋は？" }
+      - { who: cherry, at: 0.2, en: "The one on the hill? You'd need a booking there on a Friday, surely.", tts: "The one on the hill? Ya'd need a booking there on a Friday, surely.", ja: "坂の上のとこ？金曜だと、さすがに予約がいるでしょ。" }
+      - { who: raymond, at: 0.4, en: "I'll ring them. Worst case, they say no.", ja: "電話してみるよ。最悪、断られるだけだし。" }
+      - { who: dom, at: -0.4, en: "Actually, yeah, yakitori sounds good. I could do with a beer anyway.", ja: "いや、やっぱり焼き鳥いいね。どうせビール飲みたかったし。" }
+      - { who: cherry, at: 0.3, en: "Fine by me, as long as we're not waiting an hour. If they're full, it's ramen, no arguments.", tts: "Fine by me, as long as we're not waitin' an hour. If they're full, it's ramen, no arguments.", ja: "私はいいよ、1時間待ちとかじゃなければ。満席ならラーメン、文句なしね。" }
+      - { who: raymond, at: 0.2, en: "Deal. Ringing now.", ja: "決まり。今かける。" }
+    rounds:
+      - { type: opinions, claims: ["待つのは いや。満席なら ラーメン", "ラーメンは また？ 焼き鳥が いい", "ビールが 飲みたい"], answer: [cherry, raymond, dom] }
+      - { type: changed, answer: dom }
+      - { type: plan, ask: "このあと どうなる？", choices: ["They'll call the izakaya and fall back on ramen if it's full.", "They'll go straight to the ramen place by the station.", "They'll book the izakaya for next Tuesday."], answer: 0, ja: "居酒屋に電話して、満席ならラーメンにする。" }
+    note: "Actually, yeah で意見が変わる。no arguments＝文句なし"
+    tags: { seed: 50, register: friend, pragmatic: attitude, conditions: [street], features: [overlap, t-glottal, h-drop] }
+
+  - kind: tachi
+    id: tachi-hanami-spot
+    ask: "お花見の 場所を 決めている"
+    scene: cafe
+    lines:
+      - { who: rosie, at: 0, en: "So, hanami this Saturday. Meguro River, right? The lanterns are so pretty at night.", ja: "で、今週土曜のお花見。目黒川でいいよね？夜の提灯がすごくきれいなの。" }
+      - { who: apollo, at: 0.3, en: "Pretty, yes. Also completely rammed. You can't sit down there, you just shuffle along.", tts: "Pretty, yes. Also completely rammed. You can't sit down there, ya just shuffle along.", ja: "きれいだけどね。めちゃくちゃ混んでるよ。座れないし、ぞろぞろ歩くだけ。" }
+      - { who: coco, at: -0.3, en: "That's what I was going to say. I'd rather have a picnic somewhere. Shinjuku Gyoen?", tts: "That's what I was gonna say. I'd rather have a picnic somewhere. Shinjuku Gyoen?", ja: "それ言おうと思ってた。どこかでピクニックしたいな。新宿御苑は？" }
+      - { who: apollo, at: 0.2, en: "Gyoen doesn't allow alcohol, though. Just so you know.", ja: "でも御苑はお酒禁止だよ。いちおう言っとくけど。" }
+      - { who: coco, at: 0.3, en: "Oh, right. Yoyogi, then. You can bring whatever you like.", tts: "Oh, right. Yoyogi, then. Ya can bring whatever ya like.", ja: "あ、そっか。じゃあ代々木。何でも持ち込めるし。" }
+      - { who: rosie, at: 0.4, en: "Hmm. Okay, fine, a picnic does sound nicer. But can we at least walk down the river after? Just for the lanterns?", ja: "うーん。わかった、ピクニックのほうがよさそう。でも、せめてそのあと川沿いを歩かない？提灯だけ見に。" }
+      - { who: apollo, at: -0.5, en: "If we must. I'll bring the sheet.", ja: "仕方ないな。シートは持っていくよ。" }
+      - { who: coco, at: 0.2, en: "And I'll grab drinks. Let's say Yoyogi at one?", tts: "An' I'll grab drinks. Let's say Yoyogi at one?", ja: "飲み物は私が買ってくる。代々木に1時でどう？" }
+    rounds:
+      - { type: opinions, claims: ["夜の ちょうちんが 見たい", "目黒川は 混みすぎ", "お酒も 持ちこめる 公園が いい"], answer: [rosie, apollo, coco] }
+      - { type: changed, answer: rosie }
+      - { type: plan, ask: "土曜の 予定は？", choices: ["A picnic in Shinjuku Gyoen with drinks.", "A picnic in Yoyogi at one, then the river in the evening.", "Meguro River all afternoon, then Yoyogi."], answer: 1, ja: "1時に代々木でピクニック、そのあと夜に川沿いへ。" }
+    note: "rammed＝ぎゅうぎゅう（英口語）。If we must＝仕方ない"
+    tags: { seed: 50, register: friend, pragmatic: attitude, conditions: [cafe], features: [overlap, idiom, gonna] }
+
+  - kind: tachi
+    id: tachi-film-verdict
+    ask: "映画の あと、感想を 言いあっている"
+    scene: street
+    lines:
+      - { who: kid-cat, at: 0, en: "Okay, be honest. What did everyone think?", ja: "よし、正直に。みんなどうだった？" }
+      - { who: ankha, at: 0.3, en: "Oh, it was brilliant. Three hours, and I could've told you the ending after twenty minutes.", tts: "Oh, it was brilliant. Three hours, an' I could've told ya the ending after twenty minutes.", ja: "いやあ、最高だったわ。3時間もあって、結末は20分で読めたけど。" }
+      - { who: punchy, at: -0.2, en: "Harsh! I thought the ending was the best bit. I didn't see the twist coming at all.", tts: "Harsh! I thought the ending was the best bit. I didn't see the twist comin' at all.", ja: "きびしいなあ！僕は結末がいちばん良かったけど。どんでん返し、全然読めなかった。" }
+      - { who: kid-cat, at: 0.3, en: "I'm with Ankha, honestly. The middle dragged. I nearly fell asleep.", ja: "正直、アンカに同意。中盤がだらだらしてて。寝そうになった。" }
+      - { who: punchy, at: 0.3, en: "But the twist, though! The sister was the one sending the letters the whole time!", ja: "でもあのどんでん返しだよ！手紙を送ってたのはずっと妹だったんだよ！" }
+      - { who: kid-cat, at: -0.4, en: "Wait, the sister? I thought it was the neighbour.", ja: "待って、妹？隣の人だと思ってた。" }
+      - { who: ankha, at: 0.3, en: "Ha! See? He was asleep.", ja: "ほら！やっぱり寝てたのよ。" }
+      - { who: kid-cat, at: 0.4, en: "Okay, if it was the sister, that's actually pretty clever. Fine, I take it back. It was good.", ja: "そっか、妹だったなら、それはかなりうまいね。わかった、撤回する。良かったよ。" }
+      - { who: punchy, at: 0.2, en: "Right. Ramen's on me, and I'll walk you through it from the start.", tts: "Right. Ramen's on me, an' I'll walk ya through it from the start.", ja: "よし。ラーメンおごるから、最初から説明してあげる。" }
+    rounds:
+      - { type: opinions, claims: ["結末が すぐ 読めた", "結末が いちばん よかった", "中盤が 長くて 眠かった"], answer: [ankha, punchy, kid-cat] }
+      - { type: changed, answer: kid-cat }
+      - { type: plan, ask: "このあと どうする？", choices: ["They'll buy tickets to see it again.", "They'll go home because it's late.", "They'll get ramen while one of them explains the plot."], answer: 2, ja: "ラーメンを食べながら、1人が話の筋を説明する。" }
+    note: "brilliant は皮肉。I take it back＝前言撤回"
+    tags: { seed: 52, register: friend, pragmatic: sarcasm, conditions: [street], features: [overlap, intonation, contraction] }
+
+  - kind: tachi
+    id: tachi-farewell-dinner
+    ask: "送別会の 日を 決めている"
+    scene: office
+    lines:
+      - { who: goldie, at: 0, en: "So, Kenji's farewell. Are we still doing Thursday?", ja: "で、ケンジの送別会。まだ木曜でいくの？" }
+      - { who: julian, at: 0.3, en: "I'd rather not, to be honest. The Osaka deck's due Friday morning, and Thursday night is when it all goes wrong.", tts: "I'd rather no', to be honest. The Osaka deck's due Friday mornin', an' Thursday night's when it all goes wrong.", ja: "正直、できれば避けたい。大阪向けの資料が金曜の朝締め切りで、木曜の夜って大体何か起きるから。" }
+      - { who: whitney, at: -0.3, en: "Fair, but it's his last week. On Friday he's already off.", ja: "わかるけど、最終週なのよ。金曜はもう休みだし。" }
+      - { who: goldie, at: 0.3, en: "What about Wednesday? Same place, the Thai one.", ja: "水曜はどう？同じ店、あのタイ料理の。" }
+      - { who: julian, at: 0.2, en: "Wednesday works for me.", ja: "水曜なら大丈夫。" }
+      - { who: whitney, at: 0.3, en: "Wednesday's my kid's school thing. I could come late, maybe half eight?", ja: "水曜は子どもの学校の行事なの。遅れてなら行けるかな、8時半とか？" }
+      - { who: goldie, at: -0.4, en: "Then let's do Wednesday, and we'll save you a seat. Better late than never.", ja: "じゃあ水曜にして、席を取っておくよ。来ないよりずっといい。" }
+      - { who: whitney, at: 0.2, en: "Go on, then. Wednesday. I'll be the one still wearing the PTA lanyard.", tts: "Go on, then. Wednesday. I'll be the one still wearin' the P T A lanyard.", ja: "わかった、水曜ね。PTAの名札を下げたまま行くわ。" }
+    rounds:
+      - { type: opinions, claims: ["木曜は 締め切り前で 避けたい", "水曜なら 遅れて 行ける", "水曜に して 席を 取っておく"], answer: [julian, whitney, goldie] }
+      - { type: changed, answer: whitney }
+      - { type: plan, ask: "送別会は？", choices: ["Thursday, with one of them joining after work.", "Wednesday at the Thai place, with one of them arriving late.", "Friday lunch, as a surprise."], answer: 1, ja: "水曜にタイ料理の店で。1人は遅れて来る。" }
+    note: "I'd rather not＝できれば避けたい。遠回しな反対"
+    tags: { seed: 38, register: colleague, pragmatic: hedge, features: [overlap, t-glottal, clock] }
+
+  - kind: tachi
+    id: tachi-split-the-bill
+    ask: "お会計を どう 分けるか"
+    scene: cafe
+    lines:
+      - { who: sherb, at: 0, en: "Right, the bill's here. ¥12,600. Split three ways?", tts: "Right, the bill's here. Twelve thousand six hundred. Split three ways?", ja: "よし、お会計来た。1万2600円。3人で割る？" }
+      - { who: molly, at: 0.3, en: "Um, I only had the salad and a soda. Just saying.", tts: "Um, I only had the salad an' a soda. Just sayin'.", ja: "えっと、私サラダとソーダだけなんだけど。いちおう言っとく。" }
+      - { who: brewster, at: -0.2, en: "And I didn't touch the wine.", tts: "An' I didn't touch the wine.", ja: "それに私はワインには手をつけていないよ。" }
+      - { who: sherb, at: 0.3, en: "Fair enough. The wine was mostly me, I'll admit. So what, I pay half and you two split the rest?", ja: "まあそうだね。ワインはほとんど俺だ、認めるよ。じゃあ俺が半分払って、残りを二人で割る？" }
+      - { who: molly, at: 0.3, en: "That works. That's ¥6,300 for you, and ¥3,150 each for us.", tts: "That works. That's six thousand three hundred for you, an' three thousand one fifty each for us.", ja: "それでいいよ。だと、あなたが6300円で、私たちは3150円ずつ。" }
+      - { who: brewster, at: 0.4, en: "Hang on, I had the steak, though. That's a bit generous to me. Let me put in four thousand.", tts: "'Ang on, I 'ad the steak, though. That's a bit generous to me. Lemme put in four thousand.", ja: "待って、私はステーキを食べたからね。それだと私が得しすぎだ。4000円出すよ。" }
+      - { who: molly, at: -0.3, en: "So I'm paying less? Ha, fine by me.", ja: "じゃあ私はもっと少なくていいの？はは、大歓迎。" }
+      - { who: sherb, at: 0.2, en: "Let's not overthink it. I'll pay on my card, and you lot send me yours on PayPay.", tts: "Let's not overthink it. I'll pay on my card, an' you lot send me yours on PayPay.", ja: "考えすぎるのはやめよう。俺がカードで払うから、みんなはPayPayで送って。" }
+    rounds:
+      - { type: opinions, claims: ["サラダと ソーダだけ だった", "自分は もっと 払う べき", "ワインは ほとんど 自分"], answer: [molly, brewster, sherb] }
+      - { type: changed, answer: brewster }
+      - { type: plan, ask: "どう 払う？", choices: ["They split it evenly, ¥4,200 each.", "Each pays for their own food at the till.", "One pays by card, and the others send money by app."], answer: 2, ja: "1人がカードで払い、ほかの二人はアプリで送金する。" }
+    note: "Just saying＝遠回しな主張。you lot＝君たち（英）"
+    tags: { seed: 27, register: friend, pragmatic: indirect, conditions: [cafe], features: [numbers, overlap, h-drop] }

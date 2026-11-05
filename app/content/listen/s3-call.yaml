@@ -1,0 +1,124 @@
+# ようじ でんわ S3 やま: support calls with fast speech and more than one complication: a blocked card and an old
+# address, roaming charges after two transfers, a retention script, a quote with extras, three rebooking options.
+schema: 1
+unit: s3-call
+game: call
+stage: 4
+track: life
+seeds: [8, 21, 22, 29, 33]
+features: { primary: self-repair, review: chain }
+cando: "サポートの でんわで 条件と 最終的な 結論を ききとって メモできる"
+status: draft
+cast: { me: us-m3 }
+items:
+  - kind: call
+    id: call-card-blocked
+    ask: "カード会社と でんわ"
+    scene: living
+    channel: phone
+    lines:
+      - { who: maple, en: "Thanks for holding. You're through to card services, this is Maple. Can I start with your date of birth?", tts: "Thanks for holdin'. You're through ta card services, this is Maple. Can I start with yer date of birth?", ja: "お待たせしました。カードサービス担当のメイプルです。まず生年月日をお願いできますか？" }
+      - { who: me, en: "Sure, it's the 6th of October.", tts: "Sure, it's the sixth of October.", ja: "はい、10月6日です。" }
+      - { who: maple, en: "Thank you. So I can see we put a hold on your card this morning. There was a charge from an electronics store in Lisbon, for €189.", tts: "Thank you. So I can see we put a hold on yer card this morning. There was a charge from an electronics store in Lisbon, for a hundred eighty-nine euros.", ja: "ありがとうございます。今朝、お客様のカードを一時停止しております。リスボンの家電店から189ユーロの請求がありまして。" }
+      - { who: me, en: "That wasn't me. I've never even been to Portugal.", ja: "それは私じゃありません。ポルトガルに行ったこともないです。" }
+      - { who: maple, en: "Okay, so I'll cancel that card and send you a new one. It'll go to your address in Setagaya, and it should be there in five to seven business days.", tts: "Okay, so I'll cancel that card an' send ya a new one. It'll go ta yer address in Setagaya, an' it should be there in five ta seven business days.", ja: "承知しました。そのカードは停止して新しいカードをお送りします。世田谷のご住所宛てで、5〜7営業日で届く予定です。" }
+      - { who: me, en: "Oh, sorry, I moved. It's Nakano now. I thought I'd updated it.", ja: "あ、すみません、引っ越したんです。今は中野です。更新したと思ってたんですが。", repair: true }
+      - { who: maple, en: "Hmm, it's not showing. I can't change the address over the phone, I'm afraid, so you'd need to do that in the app first, then call us back and we'll send the card.", tts: "Hmm, it's not showin'. I can't change the address over the phone, I'm afraid, so you'd need ta do that in the app first, then call us back an' we'll send the card.", ja: "うーん、反映されていませんね。申し訳ありませんが電話では住所変更ができないので、先にアプリで変更していただいて、それから改めてお電話ください。カードをお送りします。" }
+    half: [0, 0, 0, 0, 1, 1, 1]
+    memo:
+      - slots:
+          - { ask: "止められた 理由は？", options: ["リスボンでの 189ユーロの 請求", "支払いの 遅れ", "暗証番号の まちがい"], answer: 0 }
+          - { ask: "新しい カードは？", options: ["すぐ 世田谷に 届く", "住所を 変えてから 送られる", "支店で 受けとる"], answer: 1 }
+          - { ask: "次に すること？", options: ["アプリで 住所を 変えて でんわ", "支店に 行く", "なにも しなくて いい"], answer: 0 }
+    note: "can't の後の so you'd need to が本題"
+    tags: { seed: 21, register: service, pragmatic: refusal, conditions: [phone], features: [numbers, can-cant, self-repair] }
+
+  - kind: call
+    id: call-roaming-refund
+    ask: "携帯会社と でんわ。ローミング料金"
+    scene: living
+    channel: phone
+    lines:
+      - { who: raymond, en: "Hello, you're through to roaming support. I gather you've been transferred a couple of times, so apologies for that.", tts: "Hello, you're through ta roamin' support. I gather you've been transferred a couple of times, so apologies for that.", ja: "ローミングサポートです。何度か転送されたとのことで、申し訳ございません。" }
+      - { who: me, en: "That's okay. I was charged ¥23,000 for data in Seoul, but I had the travel pass.", tts: "That's okay. I was charged twenty-three thousand yen for data in Seoul, but I had the travel pass.", ja: "大丈夫です。ソウルでのデータ通信で23,000円請求されたんですが、トラベルパスに入っていたんです。" }
+      - { who: raymond, en: "Right, let me have a look. So the pass was active from the 3rd, but you landed on the 2nd, and it's that first day that's been charged.", tts: "Right, lemme 'ave a look. So the pass was active from the third, bu' you landed on the second, an' it's that first day tha's been charged.", ja: "お調べします。パスは3日から有効でしたが、ご到着は2日で、その初日分が請求されていますね。" }
+      - { who: me, en: "But I bought it before I flew.", ja: "でも出発前に買いましたよ。" }
+      - { who: raymond, en: "You did, yes, but it starts at midnight Japan time, I'm afraid. Unfortunately, that's in the terms.", tts: "You did, yes, bu' it starts at midnigh' Japan time, I'm afraid. Unfortunately, tha's in the terms.", ja: "はい、ご購入はされていますが、日本時間の午前0時開始なんです。あいにく規約にそう記載がありまして。" }
+      - { who: raymond, en: "What I can do, as a one-off, is knock off half. So that'd be ¥11,500. Actually, let me make it the full amount, since you've been passed around twice.", tts: "What I can do, as a one-off, is knock off half. So that'd be eleven thousand five hundred. Actually, lemme make it the full amount, since you've been passed around twice.", ja: "今回限りの対応として、半額お引きできます。そうすると11,500円ですね。いえ、二度も転送させてしまったので、全額にしましょう。", repair: true }
+      - { who: me, en: "Oh! That's very kind. Thank you.", ja: "えっ！ありがとうございます。助かります。" }
+    half: [0, 0, 0, 1, 1, 1, 1]
+    memo:
+      - slots:
+          - { ask: "請求の 理由は？", options: ["パスが 3日から だった", "パスを 買っていない", "通話料"], answer: 0 }
+          - { ask: "返金は？", options: ["なし", "半額 （11,500円）", "全額"], answer: 2 }
+          - { ask: "請求額は？", options: ["11,500円", "23,000円", "32,000円"], answer: 1 }
+    note: "Actually の後が最終回答。半額でなく全額"
+    tags: { seed: 22, register: service, pragmatic: formula, conditions: [phone], features: [numbers, t-glottal, self-repair] }
+
+  - kind: call
+    id: call-gym-cancel
+    ask: "ジムを 解約する でんわ"
+    scene: living
+    channel: phone
+    lines:
+      - { who: me, en: "Hi, I'd like to cancel my gym membership, please.", ja: "ジムの会員を解約したいんですが。" }
+      - { who: audie, en: "Oh, I'm sorry to hear that! Can I ask why? Is it the price? Because I can do three months at half price.", tts: "Oh, I'm sorry ta hear that! Can I ask why? Is it the price? 'Cause I c'n do three months at half price.", ja: "それは残念です！理由を伺ってもいいですか？料金でしょうか？3か月半額にできますよ。" }
+      - { who: me, en: "No, thanks. I'm moving, and there isn't a branch near my new place.", ja: "いえ、結構です。引っ越すんですが、新居の近くに店舗がないので。" }
+      - { who: audie, en: "Totally get it. You know, we do have a home workout app, though. That's just ¥980 a month.", tts: "Totally get it. Y'know, we do have a home workout app, though. That's just nine-eighty a month.", ja: "わかります。でも、自宅トレーニングのアプリもあるんですよ。月980円だけです。" }
+      - { who: me, en: "I'm sure it's great, but I'd just like to cancel.", ja: "いいとは思いますが、解約だけでお願いします。" }
+      - { who: audie, en: "Of course. So your last day will be the 30th, and you'll be charged for this month. Oh, sorry, there's a one-month notice period, so it'll actually be the end of next month.", tts: "Of course. So yer last day'll be the thirtieth, an' you'll be charged for this month. Oh, sorry, there's a one-month notice period, so it'll actually be the end of next month.", ja: "かしこまりました。最終日は30日で、今月分は請求されます。あ、すみません、1か月前の予告が必要なので、実際は来月末になります。", repair: true }
+      - { who: me, en: "Seriously? Fine. Can you email me a confirmation?", ja: "本当に？わかりました。確認のメールを送ってもらえますか？" }
+    half: [0, 0, 0, 1, 1, 1, 1]
+    memo:
+      - slots:
+          - { ask: "最終日は？", options: ["今月 30日", "来月末", "今日"], answer: 1 }
+          - { ask: "1つめの 提案は？", options: ["3か月 半額", "アプリ 月980円", "1か月 無料"], answer: 0 }
+          - { ask: "2つめの 提案は？", options: ["3か月 半額", "アプリ 月980円", "近くの 店舗"], answer: 1 }
+    note: "notice period＝解約予告期間。来月末まで有料"
+    tags: { seed: 29, register: service, pragmatic: formula, conditions: [phone], features: [numbers, self-repair, chain] }
+
+  - kind: call
+    id: call-moving-quote
+    ask: "引っ越し業者から でんわ。見積もり"
+    scene: living
+    channel: phone
+    lines:
+      - { who: roald, en: "G'day, it's Roald from Swift Removals, following up on your quote. So for a one-bedroom, Nakano to Kichijoji, we're looking at ¥65,000.", tts: "G'day, it's Roald from Swift Removals, followin' up on yer quote. So for a one-bedroom, Nakano to Kichijoji, we're lookin' at sixty-five thousand.", ja: "どうも、スウィフト引越センターのロアルドです。お見積もりの件です。1LDKで中野から吉祥寺まで、6万5千円ほどになります。" }
+      - { who: me, en: "Okay, that's within budget.", ja: "それなら予算内です。" }
+      - { who: roald, en: "Great. Now, that's assuming there's a lift at both ends. Is there?", tts: "Great. Now, that's assumin' there's a lift at both ends. Is there?", ja: "よかった。ただ、両方の建物にエレベーターがある前提なんですが、ありますか？" }
+      - { who: me, en: "Not at the new place. It's on the third floor.", ja: "新居にはないです。3階です。" }
+      - { who: roald, en: "Ah, righto. Stairs are an extra ¥8,000 a floor after the first, so that's another sixteen.", tts: "Ah, righto. Stairs are an extra eight thousand a floor after the first, so that's another sixteen.", ja: "あー、なるほど。階段は2階から1フロアごとに8千円追加なので、プラス1万6千円ですね。" }
+      - { who: roald, en: "And you said the 22nd, yeah? That's a Saturday, so add ten per cent. Actually, hang on, you said the 21st. Friday. No weekend rate, then.", tts: "An' you said the twenty-second, yeah? That's a Saturday, so add ten per cent. Actually, hang on, you said the twenty-first. Friday. No weekend rate, then.", ja: "それと22日でしたよね？土曜なので10%増しです。あ、待って、21日って言ってましたね。金曜。じゃあ週末料金はなしです。", repair: true }
+      - { who: me, en: "Right, the 21st. So what's the total?", tts: "Right, the twenty-first. So what's the total?", ja: "そう、21日です。それで合計は？" }
+    half: [0, 0, 0, 0, 1, 1, 1]
+    memo:
+      - slots:
+          - { ask: "引っ越し日は？", options: ["21日 （金）", "22日 （土）", "23日 （日）"], answer: 0 }
+          - { ask: "階段の 追加料金は？", options: ["なし", "8,000円", "16,000円"], answer: 2 }
+          - { ask: "合計は？", options: ["65,000円", "81,000円", "89,100円"], answer: 1 }
+    note: "hang on で訂正。週末料金はなくなる"
+    tags: { seed: 33, register: service, pragmatic: hedge, conditions: [phone], features: [numbers, self-repair, ellipsis] }
+
+  - kind: call
+    id: call-missed-connection
+    ask: "航空会社と でんわ。乗り継ぎに 遅れた"
+    scene: gate
+    channel: phone
+    lines:
+      - { who: orville, en: "Okay, so you've missed the connection to Haneda. I've got three options for you.", tts: "Okay, so you've missed the connection ta Haneda. I've got three options for ya.", ja: "はい、羽田への乗り継ぎ便には間に合いませんでしたね。選択肢が3つございます。" }
+      - { who: orville, en: "There's a direct flight tonight at 9:50, but it's economy only, and the only seats left are middle seats.", tts: "There's a direct flight tonight at nine fifty, but it's economy only, an' the only seats left are middle seats.", ja: "今夜9時50分の直行便がありますが、エコノミーのみで、残っているのは真ん中の席だけです。" }
+      - { who: orville, en: "Or tomorrow morning at 7:10, via Seoul. That gets in about three hours later, but we'd put you up in a hotel tonight.", tts: "Or tomorrow morning at seven ten, via Seoul. That gets in about three hours later, but we'd put ya up in a hotel tonight.", ja: "または明朝7時10分のソウル経由便。到着は3時間ほど遅くなりますが、今夜のホテルはこちらでご用意します。" }
+      - { who: orville, en: "Or tomorrow at noon, direct, in business. That one's an upgrade, but you'd be paying for your own hotel.", tts: "Or tomorrow at noon, direct, in business. That one's an upgrade, but you'd be payin' for yer own hotel.", ja: "あるいは明日正午の直行便、ビジネスクラス。アップグレードになりますが、ホテル代はご自身の負担です。" }
+      - { who: me, en: "I need to be in Tokyo by Thursday evening. Which one's the safest?", ja: "木曜の夜までに東京に着かないといけないんです。いちばん確実なのは？" }
+      - { who: orville, en: "Honestly? Tonight's. Oh, wait, scratch that. It's just come up as delayed two hours. Then I'd say the 7:10.", tts: "Honestly? Tonight's. Oh, wait, scratch that. It's just come up as delayed two hours. Then I'd say the seven ten.", ja: "正直に言えば今夜の便です。あ、待ってください、今のは取り消します。たった今2時間遅れと出ました。でしたら7時10分の便ですね。", repair: true }
+      - { who: me, en: "Okay, the 7:10, then. With the hotel.", tts: "Okay, the seven ten, then. With the hotel.", ja: "わかりました、じゃあ7時10分の便で。ホテル付きで。" }
+    half: [0, 0, 1, 1, 0, 1, 1]
+    memo:
+      - slots:
+          - { ask: "えらんだ 便は？", options: ["今夜 9時50分", "あした 7時10分", "あした 正午"], answer: 1 }
+          - { ask: "その 便の 条件は？", options: ["ソウル経由で ホテル付き", "真ん中の 席だけ", "ホテル代は 自分"], answer: 0 }
+      - slots:
+          - { ask: "正午の 便の 欠点は？", options: ["ホテル代が 自分もち", "経由便", "エコノミーのみ"], answer: 0 }
+          - { ask: "今夜の 便は どう なった？", options: ["2時間 遅れ", "欠航", "満席"], answer: 0 }
+    note: "scratch that＝今のは取り消し。7時10分に変更"
+    tags: { seed: 8, register: service, pragmatic: literal, conditions: [phone, desk], features: [clock, self-repair, numbers] }
