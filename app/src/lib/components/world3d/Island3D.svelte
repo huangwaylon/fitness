@@ -283,6 +283,18 @@
     if (v.also) visSpec(visSpecs[visN++], v.also.id, x + half, z - 1, v, shown);
   };
 
+  /** Each person's DOM node on the island (IslandScene's `.actor`), kept between frames: looked up again only once it's
+   *  gone (the node is made anew when its villager comes back), never a query every frame. */
+  const actorNodes = new Map<string, HTMLElement>();
+  function actorNode(id: string): HTMLElement | null {
+    const had = actorNodes.get(id);
+    if (had?.isConnected) return had;
+    const node = scene.querySelector<HTMLElement>(`.actor[data-actor="${id}"]`);
+    if (node) actorNodes.set(id, node);
+    else actorNodes.delete(id);
+    return node;
+  }
+
   function villagerCards(t: number, active: boolean): boolean {
     if (!eng) return false;
     let moving = false;
@@ -293,10 +305,13 @@
     visN = 0;
     world.eachV3(onV3);
     for (let i = 0; i < visN; i++) specs.push(visSpecs[i]);
-    for (const c of cast()) {
-      const a = actors[c.id], p = person3(c.person, c.look, c.villager, dirs);
+    const people = cast();
+    // each person's model and spot once a frame (both loops read them)
+    const ps = people.map((c) => person3(c.person, c.look, c.villager, dirs)), at = people.map((c) => livePos(c.id));
+    for (let i = 0; i < people.length; i++) {
+      const c = people[i], a = actors[c.id], p = ps[i];
       if (!p.has3d) continue;
-      const [x, z] = livePos(c.id);
+      const [x, z] = at[i];
       specs.push({
         slot: c.id, id: p.villager, model: p, x, z, y: feetOf(x, z), walking: a.walking, face: a.face, side: c.side, asleep: a.asleep,
         seat: c.seat ? seatTop(c.seat) : null, lift: c.rep ? pullLift(t) : 0, motion: a.motion, motionN: a.motionN, emote: a.emote, stung: c.stung, shown: c.shown,
@@ -305,26 +320,26 @@
     }
     const r = vil3?.frame(t, specs, active) ?? { cards: new Set<string>(specs.map((s) => s.slot)), moving: false };
     moving = r.moving;
-    for (const c of cast()) {
-      const a = actors[c.id], p = person3(c.person, c.look, c.villager, dirs), look = resolveLook({ villager: p.villager, person: c.person });
+    for (let i = 0; i < people.length; i++) {
+      const c = people[i], a = actors[c.id], p = ps[i], look = resolveLook({ villager: p.villager, person: c.person });
+      const [x, z] = at[i];
       const card = !p.has3d || r.cards.has(c.id);
       // drawn in 3D: its marks too (the DOM's hidden: IslandScene's [data-v3])
-      const in3 = c.shown && !card, node = scene.querySelector(`.actor[data-actor="${c.id}"]`);
-      // (checked each frame: the node is the DOM island's, made anew when its villager comes back)
+      const in3 = c.shown && !card, node = actorNode(c.id);
       if (node && node.hasAttribute('data-v3') !== in3) node.toggleAttribute('data-v3', in3);
       // its tap area its model's core (IslandScene's [data-v3] .vil, in u), not the 2D render's: in front of the tent's
-      // door it covered most of it (docs/world3d-gaps.md 2)
+      // door it covered most of it (docs/design.md "Tap targets", "Players")
       const sz = in3 ? vil3?.size(c.id) : null;
-      if (node instanceof HTMLElement && sz) {
+      if (node && sz) {
         // (a thumb's least, 44 px on screen either way: hitbox.ts MIN_HIT, with a margin: the node is placed a frame behind a walker)
-        const k = eng.at(...livePos(c.id), 0).k, least = k > 0 ? 50 / k : 0;
+        const k = eng.at(x, z, 0).k, least = k > 0 ? 50 / k : 0;
         const [w, h] = sz.map((v) => String(Math.ceil(Math.max(v, least) * 2) / 2));
         if (node.style.getPropertyValue('--v3w') !== w) node.style.setProperty('--v3w', w);
         if (node.style.getPropertyValue('--v3h') !== h) node.style.setProperty('--v3h', h);
       }
-      if (in3) marks3(eng, t, c.id, ...livePos(c.id));
+      if (in3) marks3(eng, t, c.id, x, z);
       // (a player: nothing till its model is in, never its villager's render)
-      const base = c.shown && card && p.kind === 'villager' && !inFocusWay(...livePos(c.id)) ? artCard(villagerArt(look.id) ?? '', VILLAGER.h) : null;
+      const base = c.shown && card && p.kind === 'villager' && !inFocusWay(x, z) ? artCard(villagerArt(look.id) ?? '', VILLAGER.h) : null;
       if (!base) {
         eng.cards.set(`v:${c.id}`, null);
         continue;
@@ -336,7 +351,6 @@
       if (mp || a.walking) moving = true;
       const f = a.face, wantRight = f === 'l' ? false : f === 'r' ? true : f === 'in' ? c.side === 'left' : null;
       const flip = !(wantRight === null || look.noMirror || wantRight === look.looksRight);
-      const [x, z] = livePos(c.id);
       const sway = swaying ? Math.sin(t / 420 + (c.id === 'partner' ? Math.PI : 0)) * 0.05 : 0;
       eng.cards.set(`v:${c.id}`, {
         ...base, x, z, flip, shadow: 17,
