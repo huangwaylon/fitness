@@ -1220,6 +1220,13 @@ goes with the leaving).
   step. A tap on the floor walks mine there (A* on half tiles round the furniture, rugs walkable, the corners pulled
   straight; 45 units a second); a tap on a villager hops it (only where it's drawn, its alpha); a tap on a piece acts
   in place (my villager turns to it, it jiggles, a lamp switches); the doormat or ‹ 島へ goes back out.
+- **Stereos** (`tent/stereo.ts`, `tent/StereoPicker.svelte`, e2e `tent.spec.ts`): NH's music players in any room (the
+  hi-fi, high-end and retro stereos, the jukebox, the phonograph, the record and cassette players, the pro tape recorder,
+  the tape deck, the skull radio) play K.K.'s songs as NH's do. A tap opens the song list (おまかせ: any but the last
+  one; or one by name); the song is his **aircheck** (manifest `kkAircheck.<id>`; a song with none yet plays its live
+  file), through `playKK(id, 'aircheck')`, the same cut-in as K.K.'s own, so the room's music stops for it and comes back
+  after; Now Playing says 「♪ いまは「…」（ステレオ）」. A tap on the one playing stops it; leaving the room, or putting
+  the player away, stops it too. This phone's music only (the partner's phone hears its own).
 - **The partner's villager** is theirs to move while they're in the tent (each walk of mine goes over the relay as the
   `tent` intent, the very walk: from, the way, when, how long; a join hears where I am); while they're away (not on the
   relay) their villager rests in the room where it last stood; while they're on the island it isn't here.

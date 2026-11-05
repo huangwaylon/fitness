@@ -28,6 +28,9 @@ interface AudioManifest {
   /** A building's room's music (places.ts): loops like the hours, played indoors in place of the island's. */
   places: Partial<Record<PlaceId, MusicTrack>>;
   kk: KKTrack[];
+  /** The aircheck of a K.K. song (NH's stereo version, the tent's stereos play it), by its `kk` id: a one-shot
+   *  (`start` 0). A song with none plays its live file. */
+  kkAircheck: Partial<Record<string, MusicTrack>>;
 }
 
 const HOURS = new Set(Array.from({ length: 24 }, (_, h) => hourKey(h)));
@@ -96,7 +99,13 @@ export function parseManifest(json: unknown): { manifest: AudioManifest; problem
     if (t && str(o.id) && str(o.ja) && str(o.en) && !kk.some((k) => k.id === o.id)) kk.push({ id: o.id, ja: o.ja, en: o.en, ...t, start: 0 });
     else problems.push(`kk.${i}`);
   });
-  return { manifest: { sfx, opening: opening && { ...opening, start: 0 }, music, ambient, events, places, kk }, problems };
+  const kkAircheck: AudioManifest['kkAircheck'] = {};
+  for (const [k, v] of Object.entries(obj(root.kkAircheck))) {
+    const t = track(v);
+    if (t && /^[a-z0-9-]+$/.test(k)) kkAircheck[k] = { ...t, start: 0 };
+    else problems.push(`kkAircheck.${k}`);
+  }
+  return { manifest: { sfx, opening: opening && { ...opening, start: 0 }, music, ambient, events, places, kk, kkAircheck }, problems };
 }
 
 export const AUDIO = parseManifest(raw).manifest;
