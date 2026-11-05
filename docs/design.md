@@ -825,6 +825,9 @@ with gzip at Fast 4G, Chromium 393 × 852 at 4× CPU, `?demo`):
   chunk and its static imports (`scripts/headers.ts`, after the build: Kit's fallback page preloads only the root
   layout's), and `+layout.ts` load() starts the 3D island's import (three.js and its scene) on `/` while the page
   reads the week from IndexedDB (IslandScene imports it only once the week is in).
+- **The ground's fields:** the layout's distance fields in a worker from `+layout.ts` load()
+  ([island-layout](island-layout.md): the distance fields); the river stems' field with `Math.sqrt`, not
+  `Math.hypot`, in its hot loop (the same numbers).
 - **three.js:** imported by name everywhere (`world3d/threePreview.ts` for the editor's preview and the home picker: a
   whole-module `import('three')` kept all of three in the shared chunk, 680 → 526 KB raw, 171 → 131 KB gzipped).
 
