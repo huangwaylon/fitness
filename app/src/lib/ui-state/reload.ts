@@ -27,31 +27,42 @@ export function safeReload(now = Date.now(), why: 'update' | 'chunk' | 'other' =
   return true;
 }
 
-/** How long a deploy's reload waits for its service worker (installing the new build's chunks) before reloading anyway. */
-const WORKER_WAIT_MS = 15_000;
-
-const waits = new WeakMap<ServiceWorkerContainer, Promise<void>>();
+const waits = new WeakMap<ServiceWorkerContainer, Promise<boolean>>();
 /**
- * A new deploy seen: resolves once the page's service worker is the new build's, so the reload is served its shell (the
- * worker serves navigations from its own cache first: service-worker/index.ts). Asks for the update (a deploy changes
- * the worker), waits for the new one to install, skip waiting and claim the page (`controllerchange`), at most
- * `waitMs`. At once with no worker in control (a first visit, the e2e) or when it is already the newest. Once a page.
+ * A new deploy seen: resolves true once the page's service worker is the new build's, so a reload is served its shell
+ * (the worker serves navigations from its own cache first: service-worker/index.ts). Asks for the update (a deploy
+ * changes the worker) and waits for the new one to install, skip waiting and claim the page (`controllerchange`),
+ * however long its install takes: a reload before it would be served the old build's cached shell again. False when
+ * it can't be had now (offline, its script not fetched, its install failed): no reload, and the next call asks again
+ * (the next time the app comes to the front). True at once with no worker in control (a first visit, the e2e: the
+ * reload goes to the network) or when the worker in control is already the newest. One ask in flight a page.
  */
-export function newWorker(sw: ServiceWorkerContainer | undefined = globalThis.navigator?.serviceWorker, waitMs = WORKER_WAIT_MS): Promise<void> {
-  if (!sw?.controller) return Promise.resolve();
+export function newWorker(sw: ServiceWorkerContainer | undefined = globalThis.navigator?.serviceWorker): Promise<boolean> {
+  if (!sw?.controller) return Promise.resolve(true);
   let w = waits.get(sw);
   if (!w) {
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const late = new Promise<void>((ok) => (timer = setTimeout(ok, waitMs)));
-    // (the whole of it bounded: an update() queued behind another worker's install waits for it)
-    const ready = (async () => {
+    const mine = (async () => {
       const reg = await sw.getRegistration().catch(() => undefined);
-      if (!reg) return;
-      const changed = new Promise<void>((ok) => sw.addEventListener('controllerchange', () => ok(), { once: true }));
-      await reg.update().catch(() => {});
-      if (reg.installing || reg.waiting) await changed;
+      if (!reg) return false;
+      const changed = new Promise<boolean>((ok) => sw.addEventListener('controllerchange', () => ok(true), { once: true }));
+      try {
+        await reg.update();
+      } catch {
+        return false;
+      }
+      const next = reg.installing ?? reg.waiting;
+      if (!next) return true;
+      const failed = new Promise<boolean>((ok) => {
+        const gone = () => next.state === 'redundant' && ok(false);
+        next.addEventListener('statechange', gone);
+        gone();
+      });
+      return Promise.race([changed, failed]);
     })();
-    waits.set(sw, (w = Promise.race([ready, late]).finally(() => clearTimeout(timer))));
+    waits.set(sw, (w = mine));
+    void mine.then((ok) => {
+      if (!ok && waits.get(sw) === mine) waits.delete(sw);
+    });
   }
   return w;
 }
@@ -66,8 +77,8 @@ async function reachable(): Promise<boolean> {
 /** A chunk failed to load: reload once, unless the page is leaving (or offline: the next open retries). */
 export async function reloadUnlessLeaving(alive: () => Promise<boolean> = reachable): Promise<boolean> {
   if (!(await alive().catch(() => false))) return false;
-  // (a stale build's chunk: into the new build's worker first, as a deploy's reload)
-  await newWorker();
+  // (a stale build's chunk: into the new build's worker first, as a deploy's reload; none till it's in)
+  if (!(await newWorker())) return false;
   return safeReload(Date.now(), 'chunk');
 }
 

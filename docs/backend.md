@@ -852,8 +852,11 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
 `app/src/service-worker/` (pure rules in `caches.ts`).
 
 - **Install:** precaches built JS/CSS and static files except fonts, audio, the art manifest, the app icons, villager art
-  beyond the two defaults and the critters', finds' and presents' art (all cached on first use). Non-hashed files and the shell are fetched with `cache: 'reload'` (past the HTTP
-  cache).
+  beyond the two defaults and the critters', finds' and presents' art (all cached on first use). Non-hashed files and the shell are fetched with `cache: 'no-cache'` (revalidated past the HTTP
+  cache). The hashed chunks (an older shell's copy where it has one, else fetched) are all or nothing (`addAll`): one
+  not fetched fails the install, and the page asks again later. The static files (~300: the art, the manifest) each
+  on its own (`allSettled`): one that fails is served from the previous shell or the network, and no longer fails the
+  install (one flaky fetch of ~370 did, and each resume's update with it).
 - **Activate:** keeps the current shell (`island-shell-<version>`), the previous one (an old page loads its lazy chunks
   from it) and the runtime caches; deletes the rest.
 - **Navigations:** stale-while-revalidate: this version's cached shell at once (installed with its chunks, so the HTML
@@ -864,9 +867,14 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
   and it is this build's HTML, so an old worker never stores a newer build's.
 - **Updates:** Kit's `_app/version.json` check (on focus and on coming back to the front) sets `updated`; the layout
   then waits for the new build's worker (`ui-state/reload.ts newWorker`: `registration.update()`, the new worker
-  installs, skips waiting and claims the page, `controllerchange`; at most 15 s) and reloads once nothing is open, so
-  the reload is served the new build's shell. A stale chunk's reload waits the same way. `e2e/sw-update.spec.ts`
-  (Chromium; `scripts/serve-build.ts /__e2e/deploy` stands in for a deploy).
+  installs, skips waiting and claims the page, `controllerchange`, however long its install takes) and reloads once
+  nothing is open, so the reload is served the new build's shell. Never on a timer: it waited at most 15 s and then
+  reloaded anyway, into the old build's cached shell (a wasted reload on every resume while an install was slow or
+  failing). An install that fails (the worker redundant) or an update not fetched (offline) reloads nothing; the next
+  time the app comes to the front asks again. A stale chunk's reload waits the same way. `e2e/sw-update.spec.ts`
+  (Chromium; `scripts/serve-build.ts /__e2e/deploy` stands in for a deploy): the cached shell at once, a deploy's
+  reload after its worker is in, an install that fails (no reload; the next resume installs and reloads), a slow one
+  (20 s: no reload before it's in) and a static file that 404s (the install still whole).
 - **Notifications:** none (no `push` or `notificationclick` handler: [decisions](decisions.md#no-notifications-2026-11-02)).
 - **Runtime:** fonts, villager, critter, find and present art cache-first on first use; audio (`island-audio-v1`)
   cache-first and never revalidated: every audio URL carries its file's content hash (`?v=`, `lib/sound/manifest.ts`;

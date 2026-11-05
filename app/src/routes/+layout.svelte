@@ -65,11 +65,14 @@
   });
 
   // A new deploy (Kit checks _app/version.json when the app comes back to the front): reload into it once nothing
-  // is open, so a resident PWA never keeps running an old build against new chunks. Once the new build's service
-  // worker controls the page (newWorker): it serves the reload its own shell, from its cache.
+  // is open, so a resident PWA never keeps running an old build against new chunks. Only once the new build's service
+  // worker controls the page (newWorker): it serves the reload its own shell, from its cache (before, the reload was
+  // the old build's cached shell again). Its install failed or can't be had now: asked again as the app comes back.
   let workerReady = $state(false);
+  let askWorker = $state(0);
   $effect(() => {
-    if (updated.current) void newWorker().then(() => (workerReady = true));
+    void askWorker;
+    if (updated.current && !workerReady) void newWorker().then((ok) => (workerReady = ok));
   });
   $effect(() => {
     if (workerReady && !onPair && !showHarvest && !ui.sheets.length) safeReload(Date.now(), 'update');
@@ -89,6 +92,7 @@
     week.init();
     if (!routeOf(location.pathname).startsWith('/pair')) week.refresh();
     const onVisible = () => {
+      if (document.visibilityState === 'visible') askWorker++;
       if (document.visibilityState === 'visible' && !routeOf(location.pathname).startsWith('/pair')) week.refresh({ background: true });
     };
     document.addEventListener('visibilitychange', onVisible);
