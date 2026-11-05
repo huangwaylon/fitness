@@ -18,18 +18,20 @@ export function olderShells(keys: readonly string[], current: string): string[] 
 
 /** The audio runtime cache (docs/design.md#engine-lifecycle). Every audio URL carries its file's content hash (`?v=`,
  *  lib/sound/manifest.ts), so a hit is never stale and is served without asking the network; a re-cut file is a new
- *  URL, and the old one ages out of its class's LRU. Three classes, each keeping its most recently used few: the music
+ *  URL, and the old one ages out of its class's LRU. Four classes, each keeping its most recently used few: the music
  *  (the hours, the event music, the rooms: 0.1–1.1 MB each), K.K.'s songs (a song or two heard: they never push the
- *  hours out) and the rest (the effects and beds: small). */
+ *  hours out), ききみみ's spoken clips (a game's deck or three: ~25 KB each, never pushing the effects out) and the rest
+ *  (the effects and beds: small). */
 export const AUDIO_CACHE = 'island-audio-v1';
 export const isAudio = (path: string): boolean => path.includes('/audio/');
 export const isMusic = (path: string): boolean => path.includes('/audio/music/') || path.includes('/audio/places/');
 const isKK = (path: string): boolean => path.includes('/audio/kk/');
-type AudioClass = 'music' | 'kk' | 'sfx';
-const KEEP: Record<AudioClass, number> = { music: 3, kk: 2, sfx: 8 };
+const isKiki = (path: string): boolean => path.includes('/audio/kikimimi/');
+type AudioClass = 'music' | 'kk' | 'kiki' | 'sfx';
+const KEEP: Record<AudioClass, number> = { music: 3, kk: 2, kiki: 24, sfx: 8 };
 const classOf = (url: string): AudioClass => {
   const p = new URL(url, 'https://x/').pathname;
-  return isMusic(p) ? 'music' : isKK(p) ? 'kk' : 'sfx';
+  return isMusic(p) ? 'music' : isKK(p) ? 'kk' : isKiki(p) ? 'kiki' : 'sfx';
 };
 
 /** Least recently used first out: `keys` in use order (oldest first: a hit is re-put at the end); which to delete so
