@@ -9,8 +9,10 @@
   //    playKK, his live file), he strums harder, ♪ float up, the villagers sway, a 「♪ title」 caption shows; a tap
   //    meanwhile offers ストップ; at the end his sign-off and the island's music comes back
   //  - day: he strums quietly to himself (a nod now and then, no sound); a tap is a chat that offers a song all the same
-  //  - asleep (00:00–06:00): nodded off on his stool, zzz; a tap is a sleepy mumble
-  // With the music off he only chats (his introduction, then his lines); with no songs yet he's tuning his guitar.
+  //  - asleep (00:00–06:00): nodded off on his stool, zzz; a tap wakes him groggily and he offers one all the same
+  //    (awake while it plays, back to sleep after)
+  // Anyone may ask, any time (A, B, the guest: nothing here goes by who's tapping), whatever ミュージック is: picking a
+  // song turns it on (the tap that asked for a song wants to hear it). With no songs yet he's tuning his guitar.
   import { tick, untrack } from 'svelte';
   import { shuffle } from '#lib/random.ts';
   import Emote from '../characters/Emote.svelte';
@@ -21,7 +23,8 @@
   import { jst, minuteNow } from '#lib/time/clock.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { kkPick, kkTitle, loadKK, type KKTrack } from '#lib/sound/kk.ts';
-  import { playKK, prefetchKK, sound, stopKK } from '#lib/sound/sound.svelte.ts';
+  import { playKK, prefetchKK, setSound, sound, stopKK } from '#lib/sound/sound.svelte.ts';
+  import { count } from '#lib/sync/log.ts';
   import { tall3d } from '../villager3d/manifest.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { place } from './placement.ts';
@@ -30,9 +33,7 @@
   import { su, VILLAGER } from './scene.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { KK_MODES, KK_SEAT, kkAct, kkEmote, kkGreeting, kkMode, kkSpot, type KKMode } from './kkSlider.ts';
-  import { VISITOR_LINES } from './visitors.ts';
-  import { pickOne } from '#lib/random.ts';
+  import { KK_MODES, KK_SEAT, kkAct, kkBye, kkEmote, kkGreeting, kkMode, kkSpot, type KKMode } from './kkSlider.ts';
   import type { Choice } from './pager.ts';
 
   interface Props {
@@ -66,14 +67,6 @@
       st.face = 'home';
     });
   });
-  $effect(() => {
-    const asleep = mode === 'asleep';
-    untrack(() => {
-      st.asleep = asleep;
-      if (asleep && !st.fx.some((f) => f.kind === 'zzz')) addFx('kk', 'zzz');
-      if (!asleep) st.fx = st.fx.filter((f) => f.kind !== 'zzz');
-    });
-  });
   $effect(() => () => untrack(() => cancel('kk')));
 
   /** A line of his is in the balloon (until it closes, or 20 s at most: another speaker may replace it). */
@@ -89,6 +82,16 @@
   $effect(() => void loadKK().then((l) => (kkTracks = l.tracks)));
   /** His song playing now (sound.kk, his own: a stereo's isn't), and the caption's place (stage px). */
   const playing = $derived<KKTrack | null>(sound.kk?.from === 'live' ? (kkTracks.find((k) => k.id === sound.kk?.id) ?? null) : null);
+  /** Dozing: asleep by the clock and not playing (woken for a song, he's up till it's over). */
+  const dozing = $derived(mode === 'asleep' && !playing);
+  $effect(() => {
+    const asleep = dozing;
+    untrack(() => {
+      st.asleep = asleep;
+      if (asleep && !st.fx.some((f) => f.kind === 'zzz')) addFx('kk', 'zzz');
+      if (!asleep) st.fx = st.fx.filter((f) => f.kind !== 'zzz');
+    });
+  });
   let caption = $state<{ x: number; y: number; placed: boolean } | null>(null);
   let capEl = $state<HTMLElement>();
   /** The song he started (its sign-off comes when it's over), and the last one he played. */
@@ -133,10 +136,10 @@
       ours = null;
       caption = null;
       const a = art();
-      if (a) say(t(m === 'show' ? 'chat.sp.kk-slider.bye' : 'chat.sp.kk-slider.byeDay'), a);
+      if (a) say(t(kkBye(m)), a);
     });
   });
-  // bedtime, or the island left: his song stops and the island's music comes back (a stereo's never: stopKK's source)
+  // bedtime (the clock reaching midnight mid-song: a song asked for at night plays on), or the island left: his song stops and the island's music comes back (a stereo's never: stopKK's source)
   $effect(() => {
     const up = mode !== 'asleep';
     untrack(() => !up && stopKK('live'));
@@ -146,11 +149,17 @@
   let el = $state<HTMLElement>();
   const art = () => el?.querySelector('.art') ?? null;
 
-  /** He plays `song`: the island's music stops for it; its end (or ストップ) brings his sign-off. */
+  /** He plays `song` (from the pick's tap): ミュージック turned on if it's off (asking him for a song is asking to hear
+   *  it); the island's music stops for it; its end (or ストップ) brings his sign-off. */
   async function perform(song: KKTrack) {
     const target = art();
     if (!target) return;
-    if (!playKK(song.id, 'live')) return say(t('chat.sp.kk-slider.2'), target);
+    if (!sound.settings.music) setSound({ music: true });
+    if (!playKK(song.id, 'live')) {
+      count('act:kk.mute');
+      return say(t('chat.sp.kk-slider.noSound'), target);
+    }
+    count(`act:kk.song.${mode}`);
     ours = { id: song.id, mode };
     lastSong = song.id;
     setMotion('kk', 'nod');
@@ -175,21 +184,14 @@
     say(t('chat.sp.kk-slider.which'), target, { choices: [...two.map((s) => ({ label: kkTitle(s), pick: () => void perform(s) })), ...more] });
   }
 
-  /** He introduced himself this session (with the music off: then his lines). */
-  let met = false;
-  let lastLine: string | undefined;
   function talk() {
     const target = art();
     if (!target) return;
     sceneSfx('visitor');
+    count(`act:kk.tap.${mode}`);
     // mid-song: nothing disruptive, but he'll stop if asked
     if (playing)
       return say(t('chat.sp.kk-slider.playing'), target, { choices: [{ label: t('visitor.stop'), pick: () => stopKK('live') }, { label: t('visitor.keep'), pick: () => {} }] });
-    if (!sound.settings.music && mode !== 'asleep') {
-      if (!met) return (met = true), say(t('chat.sp.kk-slider.intro'), target);
-      const keys = Array.from({ length: VISITOR_LINES }, (_, i) => `chat.sp.kk-slider.${i}`).filter((k) => k !== lastLine);
-      return say(t((lastLine = pickOne(keys, Math.random))), target);
-    }
     const g = kkGreeting(mode, kkTracks.length > 0);
     if (!g.asks) return say(t(g.key), target);
     say(t(g.key), target, { choices: [
@@ -211,8 +213,8 @@
     // in place (only a tap on empty ground walks): my villager turns to him, he looks up (a nod; a start, asleep)
     if (talkTimer) return true;
     turnTo(s.x);
-    if (mode === 'asleep') cue('villager-tap');
-    setMotion('kk', mode === 'asleep' ? 'twitch' : 'nod');
+    if (dozing) cue('villager-tap');
+    setMotion('kk', dozing ? 'twitch' : 'nod');
     speakingUntil = Date.now() + 20_000;
     talkTimer = setTimeout(() => {
       talkTimer = undefined;
@@ -231,7 +233,7 @@
        node's .art his tap area and his balloon's anchor -->
   <span class="kk" aria-hidden="true" {@attach w.at({ x: spot.x, z: spot.z, h: TOP + 40, inv: true,
         m3: playing ? { key: '', emit: { kind: 'notes', every: 1100, lift: TOP * 0.9 }, art: () => el?.querySelector('.notes') } : null,
-        v3: { id: ID, actor: 'kk', seat: KK_SEAT, yaw: spot.yaw, lift: () => 0, prone: () => false, away: () => false, asleep: () => mode === 'asleep' } })}
+        v3: { id: ID, actor: 'kk', seat: KK_SEAT, yaw: spot.yaw, lift: () => 0, prone: () => false, away: () => false, asleep: () => dozing } })}
       class:show={!!playing} data-kk={mode} data-motion={st.motion ?? undefined} bind:this={el} style:--h={su(TOP)}>
       <span class="art"></span>
       <!-- emotes and fx over the head -->

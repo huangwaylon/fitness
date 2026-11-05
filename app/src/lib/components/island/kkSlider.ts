@@ -4,9 +4,12 @@
 //   show    Saturday 18:00–24:00, NH's concert: his greeting asks for a request, the villagers sway to his song, ♪ off
 //           his guitar while he plays, his sign-off till next Saturday
 //   day     the rest of his waking hours: he strums quietly to himself (a nod to the beat now and then, no sound); a tap
-//           is a chat and, with ミュージック on, a song on request too (NH's K.K. only plays on Saturdays; here he's a
-//           resident, so he'll play one any time he's up)
-//   asleep  00:00–06:00 (after the show too): nodded off on his stool, zzz; a tap is a sleepy mumble, no song
+//           is a chat and a song on request too (NH's K.K. only plays on Saturdays; here he's a resident, so he'll play
+//           one any time)
+//   asleep  00:00–06:00 (after the show too): nodded off on his stool, zzz; a tap wakes him groggily and he'll still
+//           play one (the user: "everyone should be able to request songs at any time"), awake while it plays
+// Anyone may ask (A, B or the guest), whatever ミュージック is: picking a song turns it on (KKSlider.svelte). The song is
+// this phone's own, as a stereo's is (nothing of it goes through the relay).
 // island/KKSlider.svelte draws and plays him; the 3D island poses NH's model of him sitting on the stool (the villagers'
 // code, slot `kk`, the director's actor `kk`).
 import { pickOne } from '#lib/random.ts';
@@ -49,12 +52,13 @@ export type KKAct = 'strum' | 'emote' | 'snore';
 /** His emotes now and then (a note, glee, a sparkle at the show). */
 const EMOTES: Record<KKMode, readonly EmoteIcon[]> = { show: ['mark-note', 'glee', 'mark-sparkle'], day: ['mark-note', 'glee'], asleep: [] };
 
-/** One beat: asleep a snore (a twitch and zzz), else mostly a strum (a nod to the beat, ♪ at the show or while he
- *  plays: he sits facing his stool's way, so no looks about) or an emote; nothing while he speaks. */
+/** One beat: while he plays a strum (a nod to the beat, ♪ at the show or while he plays: he sits facing his stool's
+ *  way, so no looks about), even woken at night; asleep a snore (a twitch and zzz); else mostly a strum or an emote;
+ *  nothing while he speaks. */
 export function kkAct(mode: KKMode, s: { speaking: boolean; playing: boolean }, rnd: () => number): KKAct | null {
   if (s.speaking) return null;
-  if (mode === 'asleep') return 'snore';
   if (s.playing) return 'strum';
+  if (mode === 'asleep') return 'snore';
   return rnd() < 0.65 ? 'strum' : 'emote';
 }
 
@@ -64,11 +68,14 @@ export function kkEmote(mode: KKMode, rnd: () => number, last?: EmoteIcon | null
   return list.length ? pickOne(list, rnd) : null;
 }
 
-/** His line on a tap (an i18n key) with ミュージック on, by the mode: the show's greeting asks for a request, by day a
- *  chat that offers one (no songs yet: he's tuning up); asleep a mumble. `asks`: the line comes with リクエスト /
- *  おまかせ. (With the music off he only chats: his introduction, then his lines.) */
+/** His line on a tap (an i18n key), by the mode: the show's greeting asks for a request, by day a chat that offers
+ *  one, asleep he wakes groggily and offers one all the same; with no songs yet he's tuning up (asleep: a mumble).
+ *  `asks`: the line comes with リクエスト / おまかせ. The same for everyone, whatever ミュージック is (a pick turns it on). */
 export function kkGreeting(mode: KKMode, songs: boolean): { key: string; asks: boolean } {
-  if (mode === 'asleep') return { key: 'chat.sp.kk-slider.asleep', asks: false };
-  if (!songs) return { key: 'chat.sp.kk-slider.tuning', asks: false };
-  return { key: mode === 'show' ? 'chat.sp.kk-slider.hello' : 'chat.sp.kk-slider.dayHello', asks: true };
+  if (!songs) return { key: mode === 'asleep' ? 'chat.sp.kk-slider.asleep' : 'chat.sp.kk-slider.tuning', asks: false };
+  return { key: mode === 'show' ? 'chat.sp.kk-slider.hello' : mode === 'asleep' ? 'chat.sp.kk-slider.wake' : 'chat.sp.kk-slider.dayHello', asks: true };
 }
+
+/** His sign-off when the song he started is over: the show's till next Saturday, by day any time, woken a sleepy one. */
+export const kkBye = (mode: KKMode): string =>
+  mode === 'show' ? 'chat.sp.kk-slider.bye' : mode === 'asleep' ? 'chat.sp.kk-slider.byeNight' : 'chat.sp.kk-slider.byeDay';

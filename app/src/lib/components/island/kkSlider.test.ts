@@ -10,7 +10,7 @@ import { stageOf } from '#lib/layout/spots.ts';
 import { validate } from '#lib/layout/validate.ts';
 import { tileMid } from '#lib/layout/grid.ts';
 import { move, remove, removable, rotate } from '../editor/edits.ts';
-import { KK_SEAT, KK_STOOL_H, kkAct, kkEmote, kkGreeting, kkMode, kkSpot } from './kkSlider.ts';
+import { KK_MODES, KK_SEAT, KK_STOOL_H, kkAct, kkBye, kkEmote, kkGreeting, kkMode, kkSpot } from './kkSlider.ts';
 import { visitorAt } from './visitors.ts';
 import ja from '#lib/i18n/ja.json';
 import en from '#lib/i18n/en.json';
@@ -87,19 +87,24 @@ describe('his week', () => {
       expect(v === null || v === 'jack', `${d} ${h}`).toBe(true); // (Halloween night's Jack comes even so)
     }
   });
-  test('a tap: the show’s greeting asks for a request, by day too; no songs yet, tuning; asleep a mumble', () => {
+  test('a tap: anyone may ask for a song at any time: the show’s greeting, by day, and asleep he wakes groggily and offers one; no songs yet, tuning', () => {
     expect(kkGreeting('show', true)).toEqual({ key: 'chat.sp.kk-slider.hello', asks: true });
     expect(kkGreeting('day', true)).toEqual({ key: 'chat.sp.kk-slider.dayHello', asks: true });
+    expect(kkGreeting('asleep', true)).toEqual({ key: 'chat.sp.kk-slider.wake', asks: true });
     expect(kkGreeting('day', false)).toEqual({ key: 'chat.sp.kk-slider.tuning', asks: false });
-    expect(kkGreeting('asleep', true)).toEqual({ key: 'chat.sp.kk-slider.asleep', asks: false });
-    for (const k of ['hello', 'dayHello', 'tuning', 'asleep', 'bye', 'byeDay', 'intro', '0', '1', '2', '3'])
+    expect(kkGreeting('asleep', false)).toEqual({ key: 'chat.sp.kk-slider.asleep', asks: false });
+    // every hour of every day offers a song (the bug: a request only some of the time, for some of the phones)
+    for (let wd = 0; wd < 7; wd++) for (let h = 0; h < 24; h++) expect(kkGreeting(kkMode(wd, h), true).asks, `${wd} ${h}`).toBe(true);
+    expect(KK_MODES.map(kkBye)).toEqual(['chat.sp.kk-slider.bye', 'chat.sp.kk-slider.byeDay', 'chat.sp.kk-slider.byeNight']);
+    for (const k of ['hello', 'dayHello', 'wake', 'tuning', 'asleep', 'bye', 'byeDay', 'byeNight', 'noSound', 'which', 'playing'])
       for (const c of [ja, en] as Record<string, string>[]) expect(c[`chat.sp.kk-slider.${k}`], k).toBeTruthy();
   });
-  test('a beat: asleep a snore; playing a strum; else a strum or an emote; nothing while he speaks', () => {
+  test('a beat: asleep a snore; playing a strum (woken at night too); else a strum or an emote; nothing while he speaks', () => {
     const acts = (mode: Parameters<typeof kkAct>[0], s = { speaking: false, playing: false }) =>
       new Set(Array.from({ length: 40 }, (_, i) => kkAct(mode, s, () => i / 40)));
     expect(acts('asleep')).toEqual(new Set(['snore']));
     expect(acts('day', { speaking: false, playing: true })).toEqual(new Set(['strum']));
+    expect(acts('asleep', { speaking: false, playing: true })).toEqual(new Set(['strum']));
     expect(acts('day')).toEqual(new Set(['strum', 'emote']));
     expect(acts('show', { speaking: true, playing: false })).toEqual(new Set([null]));
     expect(kkEmote('asleep', Math.random)).toBeNull();
