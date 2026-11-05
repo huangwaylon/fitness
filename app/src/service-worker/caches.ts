@@ -168,13 +168,18 @@ export function precachable(path: string): boolean {
   return !isVillagerArt(p) || PRECACHED_VILLAGERS.test(p);
 }
 
+/** Whether a shell's HTML is `version`'s build (Kit writes the version into its inline bootstrap): a shell served from a
+ *  version's cache must be the one its cached chunks were built with. */
+export const isShellOf = (html: string, version: string): boolean => html.includes(`version: ${JSON.stringify(version)}`);
+
 /**
- * A navigation's response becomes this version's offline shell only if the version has none yet (offline at
- * install). Never over one: right after a deploy the old worker still answers navigations, and the new build's
- * HTML in the old cache would point at chunks no cache holds, a blank screen offline if the new worker's install
- * then fails. Each version's install caches its own shell.
+ * A navigation's response becomes this version's shell only if the version has none yet (offline at install) and it
+ * is this version's own HTML (isShellOf). Never over one, nor another build's: right after a deploy the old worker
+ * still answers a navigation from the network, and the new build's HTML in the old cache would point at chunks no
+ * cache holds (navigations are served from the cache first: a blank screen offline, the old build's chunks never
+ * matching). Each version's install caches its own shell.
  */
-export async function keepShell(cache: Pick<Cache, 'match' | 'put'>, scope: string, res: Response): Promise<void> {
-  if (res.ok && !(await cache.match(scope))) return cache.put(scope, res);
+export async function keepShell(cache: Pick<Cache, 'match' | 'put'>, scope: string, res: Response, version: string): Promise<void> {
+  if (res.ok && !(await cache.match(scope)) && isShellOf(await res.clone().text(), version)) return cache.put(scope, res);
   await res.body?.cancel().catch(() => {}); // the unused copy: don't buffer it
 }
