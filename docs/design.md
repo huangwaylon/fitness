@@ -1612,7 +1612,7 @@ Names of everything catchable live in their own catalog (`i18n/catch.ts`), loade
 ### The museum
 
 `museum/` (`MuseumRoom.svelte`, `engine.ts`, `plan.ts`, `species.ts`, `exhibits.ts`, `MuseumCard.svelte`),
-`routes/museum`, `layout/buildings.ts`, `e2e/museum.spec.ts`. NH's museum (はくぶつかん) is a building on the layout
+`routes/museum`, `e2e/museum.spec.ts`. NH's museum (はくぶつかん) is a building on the layout
 (docs/island-layout.md "The island's buildings"): NH's own model (StrcMuseumA02, the built-up museum with its banners),
 7 × 4 tiles, one to an island, at the back on the clifftop behind the campsite by default; the members move and turn it
 in the editor and on the phone's もようがえ, never take it away. A tap on it walks my villager up to its door and goes in

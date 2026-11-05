@@ -6,7 +6,6 @@
 import { describe, expect, test } from 'vitest';
 import RECORD from '#lib/layout/record-2026-11-03.json' with { type: 'json' };
 import { layoutOpOf, mergeLayout, type LayoutEntry } from '#lib/contract/layout.ts';
-import { buildingOps } from '#lib/layout/buildings.ts';
 import { defaultLayout, layoutOf } from '#lib/layout/model.ts';
 import { validate } from '#lib/layout/validate.ts';
 import { placeObjects } from './objects.ts';
@@ -18,11 +17,21 @@ const entries = (RECORD as Record<string, unknown>[]).map((r) => {
   const op = layoutOpOf(d);
   return op ? ({ ...op, who } as LayoutEntry) : null;
 });
-/** The record's island, the museum and the shop put on their free spots once as a member's phone does (layout/buildings.ts). */
+/** Where the user put the museum and the shop (the live record, 2026-11-05: the editor's moves), clearing what stood
+ *  there first: two oaks and four flowers off the museum's spot and a bench off its door, the campfire, its firewood and
+ *  a lantern off the shop's, the other lantern moved aside. Without the shop's op it stands at its default, on ウェイ's
+ *  home. */
+const PLACED: LayoutEntry[] = [
+  ...['oak-m1', 'ofix008', 'ofix023', 'ofix024', 'ofix025', 'ofix026', 'ofix072', 'campfire', 'lantern-4', 'ofix075'].map((id, i) => ({ who: 'A', sc: 'o', id, at: 1.8e12 + i, rm: true }) as LayoutEntry),
+  { who: 'A', sc: 'o', id: 'lantern-2', at: 1.8e12 + 20, k: 'garden-lantern', x: 10, z: 47, f: 0 },
+  { who: 'A', sc: 'o', id: 'museum', at: 1.8e12 + 21, k: 'museum', x: 9, z: 18, f: 0 },
+  { who: 'A', sc: 'o', id: 'shop', at: 1.8e12 + 22, k: 'shop', x: 6, z: 49, f: 0 }
+];
+/** The record's island, the museum and the shop where the user put them. */
 const record = () => {
   const m = new Map<string, LayoutEntry>();
   for (const e of entries) if (e) mergeLayout(m, e);
-  for (const op of buildingOps(m, 'A', 1.8e12)) mergeLayout(m, { ...op, who: 'A' } as LayoutEntry);
+  for (const e of PLACED) mergeLayout(m, e);
   return layoutOf(m);
 };
 
@@ -33,8 +42,8 @@ describe("the record's layout", () => {
     expect(ops.filter((e) => e.sc === 'o' && !('k' in e)).every((e) => 'rm' in e && e.rm)).toBe(true);
     const l = record();
     const count = (k: string) => [...l.objects.values()].filter((o) => o.k === k).length;
-    expect(l.objects.size).toBe(121); // (the museum and the shop among them, a flower cleared for the museum)
-    expect([count('oak'), count('cedar'), count('bush'), count('hedge'), count('flower')]).toEqual([4, 8, 7, 0, 55]);
+    expect(l.objects.size).toBe(112); // (the museum and the shop among them, the ten pieces they cleared gone)
+    expect([count('oak'), count('cedar'), count('bush'), count('hedge'), count('flower')]).toEqual([2, 8, 7, 0, 52]);
     expect(validate(l).filter((i) => i.level === 'error')).toEqual([]);
   });
 
@@ -47,6 +56,7 @@ describe("the record's layout", () => {
 
   test("every oak and bush is a model on the phones, in every season (the island's scenery looks passed in)", () => {
     const l = record();
+    const oak = [...l.objects.values()].find((o) => o.k === 'oak')!.id;
     for (const day of phoneDays(l)) {
       const { insts, standins } = placeObjects(l, day);
       const drawn = new Map(insts.map((i) => [i.id, i.model]));
@@ -58,7 +68,7 @@ describe("the record's layout", () => {
       // (the bulletin board's card is its own DOM node's model: board.ts)
       expect(standins.map((s) => s.id).filter((id) => id !== 'board')).toEqual([]);
       // an oak in winter is NH's snowy one, the season's otherwise
-      expect(drawn.get('oak-m1')).toBe({ spring: 'oak-spring', summer: 'oak-summer', autumn: 'oak-fall', winter: 'trees/oak-winter' }[day.season]);
+      expect(drawn.get(oak)).toBe({ spring: 'oak-spring', summer: 'oak-summer', autumn: 'oak-fall', winter: 'trees/oak-winter' }[day.season]);
     }
   });
 
