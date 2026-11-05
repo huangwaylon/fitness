@@ -1,15 +1,11 @@
-// けんこう's formatters: a metric's value with its unit, the axis numbers, the range label and the period change.
+// The charts' formatters: the axis numbers, the range label, a bucket's title and a period's change (a value with its
+// unit: goals.ts valueText).
 import type { LocalDate } from '#lib/types.ts';
-import type { BodyMetric } from '#lib/contract/api.ts';
-import type { Metric, Range } from '#lib/model/health.ts';
+import type { GoalId } from '#lib/contract/goals.ts';
+import type { Range } from '#lib/model/health.ts';
 import { formatNum, i18n, t } from '#lib/i18n/index.ts';
-import { md } from '#lib/i18n/format.ts';
-
-/** `620 kcal` · `45分` · `9,214歩` (rounded down, as the tree popup shows them). */
-export function metricText(m: Metric, v: number): string {
-  const n = formatNum(Math.floor(v));
-  return m === 'move' ? t('kiroku.kcal', { n }) : m === 'steps' ? t('kiroku.steps', { n }) : t('kiroku.min', { n });
-}
+import { formatDate, md } from '#lib/i18n/format.ts';
+import { valueText } from './goals.ts';
 
 /** An axis number: `600`, `8,000`, `12k`, `2.5` (a step under 1: ごはん's salt). */
 export const axisNum = (v: number): string =>
@@ -63,15 +59,15 @@ export function pctText(c: number): string {
   return `${r < 0 ? '−' : r > 0 ? '+' : '±'}${Math.abs(r)}%`;
 }
 
-/** A body metric with its unit, one decimal: `22.3%` · `22.8` (BMI has none) · `52.1 kg`. */
-export function bodyText(m: BodyMetric, v: number): string {
-  const s = v.toFixed(1);
-  return m === 'body_fat_pct' ? t('health.body.pct', { v: s }) : m === 'lean_kg' ? t('weight.kg', { kg: s }) : s;
-}
-
-/** A body metric's change: `−0.4%`, `+0.2`, `±0.0 kg` (a true minus sign); `–` when there's none yet. */
-export function bodyDelta(m: BodyMetric, d: number | null): string {
+/** A change in the card's unit: `−0.4%`, `+0.2`, `±0.0 kg` (a true minus sign, one decimal); `–` when there's none yet. */
+export function deltaText(id: GoalId, d: number | null): string {
   if (d === null) return '–';
   const r = Math.round(d * 10) / 10;
-  return (r < 0 ? '−' : r > 0 ? '+' : '±') + bodyText(m, Math.abs(r));
+  return (r < 0 ? '−' : r > 0 ? '+' : '±') + valueText(id, Math.abs(r), 1);
+}
+
+/** A bucket's title, for its callout: the day (`11/4(水)`), or a week's or month's days (`10/27–11/2`). */
+export function bucketTitle(r: Range, i: number, today: LocalDate): string {
+  const b = r.buckets[i];
+  return r.unit === 'day' ? formatDate(b.from) : rangeLabel({ ...r, from: b.from, to: b.to, unit: 'day' }, today);
 }

@@ -12,6 +12,7 @@
 //   change over the days between the two weeks' middles (their weigh-ins' mean date), from 7 days apart.
 // - The goal date (project) extends that weekly pace from the last week's average; only from two weeks, not toward a
 //   goal it is moving away from, too slow (WEIGHT.minPacePerWeek) or too far out (WEIGHT.projectMaxWeeks).
+import type { GoalDir } from '#lib/contract/goals.ts';
 import type { LocalDate, PersonId } from '#lib/types.ts';
 import { WEIGHT } from '#lib/config/rules.ts';
 import { addDays, daysBetween, localDateAt } from '#lib/time/dates.ts';
@@ -80,9 +81,11 @@ export function plainChange(days: readonly WeighIn[]): PlainChange | null {
 }
 
 /** Where the period's pace meets the goal: reached once the end is at or past it (seen from the start). */
-export function project(c: PlainChange, goal: number): WeightProjection {
-  const losing = goal <= c.from;
-  if (losing ? c.to <= goal : c.to >= goal) return { kind: 'reached' };
+export function project(c: PlainChange, goal: number, dir: GoalDir = 'target', band = 0): WeightProjection {
+  // a ceiling is reached once under it and a floor once over it, whichever side the period started on; a value to
+  // stay near once within its band, or once crossed on the way to it
+  const crossed = goal <= c.from ? c.to <= goal : c.to >= goal;
+  if (dir === 'atMost' ? c.to <= goal : dir === 'atLeast' ? c.to >= goal : crossed || Math.abs(c.to - goal) <= goal * band) return { kind: 'reached' };
   const diff = goal - c.to;
   const pace = c.basis === 'weeks' ? c.perWeek : null;
   if (pace === null || Math.abs(pace) < WEIGHT.minPacePerWeek || Math.sign(pace) !== Math.sign(diff)) return { kind: 'none' };

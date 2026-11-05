@@ -213,43 +213,50 @@ Health data over time for the personal trainer, one person at a time, computed o
   (`art.ts` BODY_ART, 24px, decorative: the heading names it): 体重 the red kitchen scale (a scale, but NH's, and
   readable on the cream and the night cards), 体脂肪率 the protein shaker, BMI the exercise bike, 除脂肪体重 the
   weight bench (muscle): the user's picks.
-- **A card per activity metric**: the goal (at the upper right: [Goals in place](#goals-in-place)); 1日の平均 with 前の期間より ↑/↓ %;
+- **One card for every chart** (`ChartCard`: the icon, the name, the goal chip at the upper right: [Goals in place](#goals-in-place);
+  with nothing recorded yet, 「まだ きろくが ないよ」 under it). **A card per activity metric** (`BarCard`): 1日の平均 with 前の期間より ↑/↓ %;
   目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key.
 - **No Health data yet** (a new couple, `?demo&health=none`): every card is still there with its goal chip (set from it),
   over one line, 「まだ きろくが ないよ」: no numbers, chart or footnote.
-- **Chart** (`BarChart`, SVG): a bar per day (1週, 1か月), per week (3か月: 13) or per calendar month (1年), each
+- **Chart** (`BarChart` in `ChartFrame`, SVG; the frame is every chart's: the grid, the dates, the goal line and its words, the
+  slide and drag, the picked bucket's band and callout): a bar per day (1週, 1か月), per week (3か月: 13) or per calendar month (1年), each
   the bucket's daily average, in the person's colour (ウェイ blue `--person-a`, うめ orange `--person-b`); solid when
-  the goal was met, pale when not; today outlined; a finished bucket with no row gets a short hatched stub (記録なし).
-  The goal dashed (stepped when the Move or steps goal changed). On 1週 each bar carries its value. A tap shows one value; a
+  the goal was met the goal's way (at least / at most / near: [Goal directions](#goal-directions)), paler the fewer of its days did; today outlined; a finished bucket with no row gets a short hatched stub (記録なし).
+  The goal dashed (stepped when it changed) with its words over its right end, as the chip reads them (「目標 8,000歩 以上」); the axis always reaches it. On 1週 each bar carries its value. A tap shows one value; a
   horizontal drag turns the page (right = older); vertical drags scroll the panel.
-- **体重** (`WeightCard`, `DotChart`): its goal at the upper right; 平均 (n回の記録), 期間の変化 ([Weight](#weight)), the chart on an axis fitted
-  to the weights (dots joined by a thin line; the goal dashed, or a 「目標 66.0 ↓」 label when far off) and the goal
-  month at that pace (only when the period ends today).
-- **体脂肪率 · BMI · 除脂肪体重** (`BodyCard`, `DotChart`): as 体重 (体脂肪率 with its own goal, `goalBodyFat`, drawn
-  and keyed exactly as the weight goal: the dashed yuzu line, 「目標 19.5」 or the ↑/↓ label when far off, the axis
-  fitted to it when near, 「- - 目標」 in the key, and the goal month at that pace; BMI and 除脂肪体重 have none;
-  unset = no line): 平均 (n回の記録; BMI's with its category by the person's standard, 「普通体重（アジア基準）」: under 18.5
-  低体重, then アジア 23 過体重 and 25 肥満 (JASSO, WHO's Asian cut-offs) or WHO 25 and 30; [Profile](#profile)), 期間の変化 (the same
-  plain change, in the metric's unit: `−0.4%`, `+0.2`, `−0.3 kg`) and per week, and the dot chart on an axis fitted to the
-  values (at least 2 points of body fat or 2 kg, 1 of BMI). A day with no measurement has no dot; 記録なし when the
-  period has none. Never earns, no good / bad colours.
-- <a id="goals-in-place"></a>**Goals in place** (`GoalEdit`, `goals.ts`; the user: "every metric card that has a goal gets a
-  tappable goal there"): each goal sits at its card's upper right as a chip, 「- - 目標 8,000歩 ✎」 (the swatch the chart's
-  goal line: soft on the bar charts, yuzu on the dot charts; 「目標 まだ」 when none). A tap opens its editor in place: a tan
+- **体重 · 体脂肪率 · BMI · 除脂肪体重** (`BodyCard`, `DotChart` in `ChartFrame`; one card for the four): each its own goal at the upper
+  right (`goalWeight`, `goalBodyFat`, `goalBmi`, `goalLean`, each optional), 平均 (n回の記録; BMI's with its category by the
+  person's standard, 「普通体重（アジア基準）」: under 18.5 低体重, then アジア 23 過体重 and 25 肥満 (JASSO, WHO's Asian
+  cut-offs) or WHO 25 and 30; [Profile](#profile)), 期間の変化 ([Weight](#weight): the
+  plain change in the card's unit, `−0.4%`, `+0.2`, `−0.3 kg`) and per week, the dot chart on an axis fitted to the values (at
+  least 2 kg or 2 points of body fat, 1 of BMI; 2–5 grid lines at a round step) with the goal dashed yuzu and its words
+  (「目標 66.0 kg 前後」), or at that edge with ↑/↓ when far off, and the goal month at that pace (only when the period ends today;
+  the goal's way: reached once under a ceiling, over a floor, or near a value). A day with no measurement has no dot; 記録なし when the
+  period has none. Never earns, no good / bad colours on the dots.
+- <a id="goals-in-place"></a>**Goals in place** (`GoalEdit`, `health/goals.ts` GOAL_SPECS over the registry `contract/goals.ts`
+  GOALS; the user: "for every single graph that we show in gohan and kenkou, I want to be able to set a goal"): every
+  chart's card has its goal at the upper right as a chip, 「- - 目標 8,000歩 以上 ✎」: the value with its direction (以上 /
+  以下 / 前後; "at least" / "at most" / "about"), the swatch the chart's goal line (soft on the bar charts, yuzu on the dot charts);
+  「目標 まだ」 when none. A tap opens its editor in place: a tan
   tray across the card under the header, its notch under the chip (the chart moves down; nothing is covered, and Safari
   scrolls the field above the keyboard): the goal's title (with きょうから for the goals a day keeps), −/＋ by the goal's
   step around a 16px field with its keypad (nothing focused on opening, so no keyboard until the field is tapped; −/＋
-  start from the goal, else the period's average for 体重 and 体脂肪率), the range in words (coral after a refused
-  けってい), then 目標をなくす (once set, for the goals that may be cleared), やめる and けってい (dimmed until the field
+  start from the goal, else the period's average for the からだ goals), the range in words (「10〜600分、10分ずつで入れてね」,
+  coral after a refused けってい), then 目標をなくす (once set, for the goals that may be cleared), やめる and けってい (dimmed until the field
   holds a goal). One open at a time; Esc, やめる or a tap anywhere else close it unchanged, the focus back on the chip;
-  saved, a banner says so. The same control sets ごはん's goals ([Gohan](#gohan)). The goals, per person, for whose data is shown (either
+  saved, a banner says so (「エクササイズの目標を かえました」). The same control sets ごはん's goals ([Gohan](#gohan)). The goals, per person, for whose data is shown (either
   person sets either person's):
-  - 🍎 歩数: 1,000–30,000 in 500s, from today on; 8,000 for both until set. 🍐 ムーブ: 100–2,000 kcal (−/＋ by 10),
-    from today on. The chip shows the goal at the period's end (a past period's own); the editor starts from today's.
-    🍑 エクササイズ and 🍒 スタンド: fixed, the chip read-only.
-  - 体重 (目標体重: 20–300 kg, ±0.5) and 体脂肪率 (目標体脂肪率: 3–60 %, 「3〜60%で 入れてね」, ±0.5): one decimal in a
-    decimal field, clearable; shown only, never earn.
-  - The guest's phone: the chips read-only (and no からだ card, so no からだ goal).
+  - かつどう, each from today on (a day keeps its own; the chip shows the goal at the period's end, the editor starts from
+    today's): 🍎 歩数 1,000–30,000 in 500s (8,000 until set), 🍐 ムーブ 100–2,000 kcal (−/＋ by 10; ウェイ 600, うめ 400
+    until set), 🍑 エクササイズ 5–300 min in 5s (60 until set), 🍒 スタンド 10–600 min in 10s (120 until set). The ベル keep
+    Exercise and Stand at the fixed 60 / 120 ([Goals](#goals)): their editor says so (「きょうから · ベルは 60分のまま」).
+  - からだ, one decimal in a decimal field, clearable, shown only, never earn (±0.5): 体重 20–300 kg, 体脂肪率 3–60 %,
+    BMI 15–40, 除脂肪体重 10–150 kg.
+  - The guest's phone: the chips read-only (and no からだ card, so no からだ goal: the record never sends it one).
+- <a id="goal-directions"></a>**Goal directions** (`contract/goals.ts` GOALS `dir`, why: [decisions](decisions.md#goal-directions)):
+  at least: 歩数, ムーブ, エクササイズ, スタンド, 除脂肪体重, たんぱく質; at most: 体脂肪率, 脂質, 塩分; near a value
+  (前後, met within a band): 体重 (±1.5 %), BMI (±4 %), カロリー (±10 %), 炭水化物 (±15 %). The chip, the chart's line
+  words, the bar shading, 目標 n/N日, ごはん's tiles and the goal month all follow it.
 - **Rules:** a day's value is Health's latest, as reported: every day with a row counts, whatever its value; 記録なし is
   a day with no row (counted from the first activity record); today is drawn but not counted; the previous period is
   the same length just before. The footnote says so.
@@ -274,20 +281,21 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   Then (きろく) a sticky row: ‹ the day (「11/4(水)」) › and きょう; › goes past today only to tomorrow, and only when a
   いつもの fills it (read-only: a look at what comes).
 - **Summary card:** この日の カロリー, the day's kcal large; the person's kcal goal at the upper right (「- - 目標 2,200
-  kcal ✎」, set there on my day: けんこう's [goals in place](#goals-in-place)) and, with one, a bar in the person's
+  kcal 前後 ✎」, set there on my day: けんこう's [goals in place](#goals-in-place)) and, with one, a bar in the person's
   colour and, today, あと N kcal / N kcal オーバー, a past day 目標より N kcal 少なめ / 多め; coral only past 20 % over
-  (the lifter's surplus is no fault). Then たんぱく質 · 脂質 · 炭水化物 · 塩分 in grams, each with its goal when there is
-  one (「目標 N g 以上」 protein, 「目標 N g」 fat and carbs, 「目標 N g 以下」 salt; set on グラフ) and a small bar,
-  salt's coral once past it. A day with nothing logged: no tiles; a past one 「きろく なし」 (not 0 kcal).
-- **Goals** (`contract/food.ts` FOOD_GOALS, prefs per person, as the health goals: [backend](backend.md#events)): kcal
+  (the lifter's surplus is no fault). Then たんぱく質 · 脂質 · 炭水化物 · 塩分 in grams, each with its goal and direction when there is
+  one (「目標 110 g 以上」, 「目標 60 g 以下」, 「目標 250 g 前後」, 「目標 7.0 g 以下」; set on グラフ; it wraps only after 目標) and a small bar, coral once past
+  a ceiling (an at-most goal, or a near-a-value one past its band: `goalOver`). A day with nothing logged: no tiles; a past one 「きろく なし」 (not 0 kcal).
+- **Goals** (the registry `contract/goals.ts` GOALS, prefs per person, as the health goals: [backend](backend.md#events)): kcal
   1,200–5,000 by 50 (the record takes 1,000+), protein, fat and carbs in g by 5 (10–400, 10–300, 20–800), salt 1–20 g
-  by 0.5; each set and cleared (目標をなくす) with けんこう's control (`health/GoalEdit`, `foodUi.ts`
-  FOOD_GOAL_SPECS) on my own cards only, anyone else's shown read-only (the guest has its own). **Defaults:** protein
+  by 0.5; each set and cleared (目標をなくす) with けんこう's control (`health/GoalEdit`, `health/goals.ts`
+  GOAL_SPECS) on my own cards only, anyone else's shown read-only (the guest has its own). Directions: kcal near a value
+  (±10 %: a low day is no win, the lifter's surplus no fault), protein at least, fat at most, carbs near a value (±15 %), salt at most
+  ([Goal directions](#goal-directions)). **Defaults:** protein
   1.6 g × the latest weigh-in (a lifter's usual aim; a member with a weight, until set, and again once cleared:
   「なしなら 体重×1.6 g」; at least the 推奨量 with a profile); with a profile ([Profile](#profile)) kcal from the daily
-  energy and salt the 食事摂取基準's ceiling by sex (「なしなら からだと 活動からの めやす」); none for fat and carbs
-  (they depend on the plan). A default never overrides a goal that's set. Salt's is a ceiling (「これより
-  ひかえめに」).
+  energy and salt the 食事摂取基準's ceiling by sex (「なしなら からだと 活動からの めやす」, 「なしなら 食事摂取基準の めやす」);
+  none for fat and carbs (they depend on the plan). A default never overrides a goal that's set.
 - **Meals:** 朝ごはん · 昼ごはん · 夜ごはん · おやつ, a card each with its kcal and a row per entry (the food, its
   amount in one format, a weight once: 「茶碗1杯（150g）」, 「1パック（110g）」, 「中ジョッキ×2（700ml）」; kcal). On my
   day ＋ → the search (its field focused in the same tap, so the iPhone's keyboard comes up), an entry → its amount
@@ -317,14 +325,13 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   day looks the same, its items now the repeat's). One name, いつもの, for the title, the chip, the marks and the
   verbs. Tapping one of its items opens it; ほぞん or けす changes that day only: the day leaves the repeat then (its
   items become its own, in one go; unmarked under the same chip); ‹ changes nothing.
-- **グラフ (the グラフ tab;** what was eaten only; the calories burned are けんこう's 🍐 ムーブ card**):** its range row (`health/RangeNav`, swipe paging) with けんこう's period dropdown (`health/Pick`) after きょう (the
-  range's unit wraps in the narrower middle), then たべた カロリー (`FoodIntake`, けんこう's
-  `BarChart` and MetricCard's layout; `model/food.ts` foodSeries, one pass over the record up to today, read by
+- **グラフ (the グラフ tab;** what was eaten only; the calories burned are けんこう's 🍐 ムーブ card**):** its range row (`health/RangeNav`, `RangeLabel`, `RangePager`: けんこう's paging, swipe included) with けんこう's period dropdown (`health/Pick`) after きょう (the
+  range's unit wraps in the narrower middle), then たべた カロリー (けんこう's `BarCard`, `BarChart` and `ChartCard`; `model/food.ts` foodSeries, one pass over the record up to today, read by
   health.ts's bucket and stat rules): a bar per day (foodDay's total, repeats included) or per week / month (the daily
-  average of its days with a meal), every bar solid in the person's colour (no goal-met shading: the kcal goal isn't
-  a target to hit, and a low day is never rewarded); today outlined and uncounted; a day with nothing logged is
-  記録なし (the stub, never a 0). 1日の平均（n日分） and 期間の合計 over the finished days with a meal; 記録 n日 ·
-  記録なし m日; the goal at the upper right (GoalEdit) and dashed on the chart, the average a flat solid line (「平均」 in
+  average of its days with a meal), in the person's colour, solid when the goal was met its way (as けんこう's; every bar
+  solid without a goal); today outlined and uncounted; a day with nothing logged is
+  記録なし (the stub, never a 0). 1日の平均（n日分） and 期間の合計 over the finished days with a meal; 目標 n/N日 (with a goal) · 記録 n日 ·
+  記録なし m日; the goal at the upper right (GoalEdit) and dashed on the chart with its words, the average a flat solid line (「平均」 in
   the key). Then the same card for たんぱく質, 脂質, 炭水化物 and 塩分 (grams, one decimal; foodSeries per nutrient from the same
   pass; salt's bars one decimal), each with its catalogue icon (`art.ts` NUTRIENT_ART: the barbecue, the cream and
   sugar, the sticky rice, the spice rack) and its goal; with nothing logged yet, each card its goal chip over 「まだ きろくが ないよ」
@@ -389,7 +396,8 @@ Lists follow Apple's ring order, Move, Exercise, Stand, then steps (`RING_FRUITS
 
 The Move and steps goals on a day are the last ones set on or before that Tokyo date (a change never re-prices an
 earlier day). Everything that reads a goal reads that day's: the ベル, the tree's popup, けんこう's goal
-line and goal days.
+line and goal days. The ベル price Exercise and Stand at the fixed 60 / 120 min (`RULES.goals`) whatever is set in けんこう:
+there `exerciseGoal` / `standGoal` (per person, per day like Move) only draw its line and its goal days, 60 / 120 until set.
 
 **がんばり (stretch):** +1 more for each goal reached at 1.5× (`STRETCH.multiplier`): 🍐 1.5 × that day's Move goal,
 🍑 90 min, 🍒 180 min, 🍎 1.5 × that day's steps goal (12,000 for 8,000); at most **+2 a person a day** (`STRETCH.cap`, paid to the first in
@@ -468,8 +476,8 @@ to the goal at ≥ 0.05 kg a week within 156 weeks (else 「あせらず、ゆ�
 
 The body metrics (`body_fat_pct` %, `bmi`, `lean_kg` kg; `State.body`, apart from the activity rows like weight) are
 read the same way: a day's latest row, one decimal, within their bounds (body fat 2–70 %, BMI 10–60, lean 10–150 kg);
-けんこう's 期間の変化 is the same plain change. Body fat has a goal (`goalBodyFat`, 3–60 %, one decimal, per person,
-the latest only), its goal month worked out as weight's; BMI and lean mass have none. They never earn: bells.ts reads only the activity metrics, and
+けんこう's 期間の変化 is the same plain change. Each has a goal (`goalBodyFat` 3–60 %, `goalBmi` 15–40, `goalLean` 10–150 kg; one decimal, per person,
+the latest only: the registry, `contract/goals.ts`), its goal month worked out as weight's, the goal's way. They never earn: bells.ts reads only the activity metrics, and
 the cache keeps only their newest row per day once the week has locked, like weight.
 
 ## Island scene

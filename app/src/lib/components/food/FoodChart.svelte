@@ -1,22 +1,23 @@
 <script lang="ts">
   // ごはん's グラフ tab (docs/design.md "Gohan"): けんこう's range row (‹ the range › きょう, then けんこう's period
-  // dropdown, Food's period; a horizontal drag on a chart turns the page), then the kcal eaten (FoodIntake: a bar per day / the daily
-  // average per week or month, the flat average line), then protein, fat, carbs and salt the same way (FoodIntake, in g). Each intake card's goal at its upper right, mine to set
-  // (GoalEdit), anyone else's read-only. One callout open.
+  // dropdown, Food's period; a horizontal drag on a chart turns the page: RangePager), then the kcal eaten and protein,
+  // fat, carbs and salt (BarCard, けんこう's card: a bar per day / the daily average per week or month, met the goal's
+  // way, the flat average line). Each card's goal at its upper right, mine to set (GoalEdit), anyone else's read-only.
+  // One callout open.
   import '#lib/i18n/kenkou.ts'; // けんこう's strings: the periods, the range row
   import type { LocalDate, Who } from '#lib/types.ts';
-    import { canShift, PERIODS, rangeFor, shiftAnchor, type Period } from '#lib/model/health.ts';
+  import { PERIODS, type Period } from '#lib/model/health.ts';
   import { foodSeries, setGoal } from '#lib/model/food.ts';
-  import { FOOD_GOAL_OF, type FoodGoalOf } from '#lib/contract/food.ts';
+  import { FOOD_GOAL_OF } from '#lib/contract/food.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { cue } from '#lib/sound/cues.ts';
   import RangeNav from '../health/RangeNav.svelte';
+  import RangeLabel from '../health/RangeLabel.svelte';
   import Pick from '../health/Pick.svelte';
-  import { rangeLabel } from '../health/fmt.ts';
-  import FoodIntake from './FoodIntake.svelte';
-  import { saveFoodGoal } from './foodUi.ts';
+  import BarCard from '../health/BarCard.svelte';
+  import { goalName, saveGoal } from '../health/goals.ts';
+  import { RangePager } from '../health/pager.svelte.ts';
 
   let { who, name, period, onperiod }: { who: Who; name: string; period: Period; onperiod: (p: Period) => void } = $props();
 
@@ -24,80 +25,40 @@
   const today = $derived<LocalDate>(m ? localDateAt(m.now) : '');
   /** Each intake's days: kcal, then the nutrients (one pass over the record for all: model/food.ts dayTotals). */
   const all = $derived(m ? FOOD_GOAL_OF.map((n) => ({ n, ds: foodSeries(m.state, who, today, n, m.now) })) : null);
-  const ds = $derived(all?.[0].ds ?? null);
   /** My own goals take a tap; anyone else's are shown. */
   const mine = $derived(who === week.view?.viewer);
-  const any = $derived(!!ds?.vals.some((v) => v !== null));
+  /** Nothing logged at all yet: each card holds its goal (set there) over one line. */
+  const any = $derived(!!all?.[0].ds.vals.some((v) => v !== null));
 
-  /** The last day shown (null: today, following the clock). */
-  let anchor = $state<LocalDate | null>(null);
-  let slide = $state<-1 | 0 | 1>(0);
-  let sel = $state<{ k: FoodGoalOf; i: number } | null>(null);
+  const pager = new RangePager(() => ({ period, today, first: all?.[0].ds.first ?? today }));
   /** A new period: no slide, no callout (as けんこう's setPeriod). */
   let shown: Period | null = null;
   $effect.pre(() => {
     if (period === shown) return;
-    if (shown !== null) (slide = 0), (sel = null);
+    if (shown !== null) pager.reset();
     shown = period;
   });
-
-  const range = $derived(today ? rangeFor(period, anchor ?? today) : null);
-  /** ‹ goes back while there's an older meal. */
-  const first = $derived(ds?.first ?? today);
-  const can = $derived(range ? canShift(range, first, today) : { back: false, on: false });
-
-  function go(dir: -1 | 1, swiped = false) {
-    if (!range || !(dir < 0 ? can.back : can.on)) return;
-    const next = shiftAnchor(period, anchor ?? today, dir, today);
-    anchor = next >= today ? null : next;
-    slide = dir < 0 ? -1 : 1;
-    sel = null;
-    if (swiped) cue('tick');
-  }
-  function jumpToday() {
-    if (anchor === null) return;
-    anchor = null;
-    slide = 1;
-    sel = null;
-  }
-  const swipe = (dir: -1 | 1) => go(dir, true);
-  function pick(k: FoodGoalOf, i: number | null) {
-    sel = i === null ? null : { k, i };
-    if (i !== null) cue('tick');
-  }
 </script>
 
-{#if ds && range}
-  <RangeNav earlier={t('health.earlier')} later={t('health.later')} today={t('health.today')} canBack={can.back} canOn={can.on} atToday={anchor === null}
-    onback={() => go(-1)} onon={() => go(1)} ontoday={jumpToday}>
-    <span class="rl" aria-live="polite">
-      <b class="money" data-food-range>{#each rangeLabel(range, today).split('–') as part, i (i)}{#if i}–<wbr />{/if}<span>{part}</span>{/each}</b>
-      <small>{t(`health.unit.${range.unit}`)}</small>
-    </span>
+{#if all && m && pager.range}
+  {@const range = pager.range}
+  <RangeNav earlier={t('health.earlier')} later={t('health.later')} today={t('health.today')} canBack={pager.can.back} canOn={pager.can.on} atToday={pager.anchor === null}
+    onback={() => pager.go(-1)} onon={() => pager.go(1)} ontoday={() => pager.jumpToday()}>
+    <RangeLabel {range} {today} />
     {#snippet end()}
       <span class="per"><Pick kind="period" value={period} options={PERIODS.map((id) => ({ id, label: t(`health.period.${id}`) }))} label={t('health.period')} onpick={onperiod} compact /></span>
     {/snippet}
   </RangeNav>
 
-  {#snippet intake(n: FoodGoalOf, d: typeof ds)}
-    {#if d && m}
-      <FoodIntake {n} ds={d} {range} {today} p={who} {name} {slide} onswipe={swipe} selected={sel?.k === n ? sel.i : null} onselect={(i) => pick(n, i)}
-        set={mine ? { value: setGoal(m.state, who, n), onsave: (v) => saveFoodGoal(who, n, v) } : null} />
-    {/if}
-  {/snippet}
-  {#if all}
-    {#each all as x (x.n)}{@render intake(x.n, x.ds)}{/each}
-  {/if}
+  {#each all as { n, ds } (n)}
+    <BarCard id={n} {ds} {range} {today} p={who} {name} title={n === 'k' ? t('food.chart.head') : goalName(n)} empty={!any} food
+      now={setGoal(m.state, who, n)} start={ds.goal(0)} onsave={mine ? (v) => saveGoal(n, who, v) : null}
+      selected={pager.selected(n)} onselect={(i) => pager.pick(n, i)} onswipe={pager.swipe} slide={pager.slide} />
+  {/each}
   {#if any}<p class="note">{t('food.chart.note')}</p>{/if}
 {/if}
 
 <style>
-  /* けんこう's range label (Health.svelte) */
-  .rl { flex: 1; min-width: 0; display: grid; justify-items: center; gap: 3px; text-align: center; }
-  .rl b { font-size: var(--fs-talk); line-height: 1.1; text-wrap: balance; }
-  .rl b span { white-space: nowrap; }
-  /* (the period beside きょう leaves the range a narrow middle: its unit wraps, 「1か月ごとの / 1日平均」) */
-  .rl small { font-size: var(--fs-s); font-weight: 700; line-height: 1.2; color: var(--text-soft); text-wrap: balance; }
   .per { flex: none; display: flex; }
   .note { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

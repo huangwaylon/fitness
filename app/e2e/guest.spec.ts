@@ -36,9 +36,9 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   await expect(panel.locator('.card').first()).toBeVisible();
   for (const text of ['からだ', '体重', '体脂肪率', 'BMI', '除脂肪体重', 'kg']) await expect(panel, text).not.toContainText(text);
   // each card's goal, the shown person's: read-only (no chip to tap), no weight or body fat goal
-  await expect(panel.locator('.mc[data-metric=move] header [data-goal]')).toHaveText(/^目標 [\d,]+ kcal$/);
+  await expect(panel.locator('.mc[data-metric=move] header [data-goal]')).toHaveText(/^目標 [\d,]+\skcal\s以上$/);
   await expect(panel.locator('.mc span[data-goal]')).toHaveCount(4);
-  await expect(panel.locator('button[data-goal], [data-goal=weight-goal], [data-goal=fat-goal]')).toHaveCount(0);
+  await expect(panel.locator('button[data-goal], [data-goal=weight-goal], [data-goal=body_fat_pct-goal], [data-goal=bmi-goal], [data-goal=lean_kg-goal]')).toHaveCount(0);
   await whoSel.selectOption('B');
   await expect(panel.locator('.mc[data-metric=steps]')).toHaveAttribute('data-person', 'B');
   await expect(panel.locator('.mc span[data-goal]')).toHaveCount(4);

@@ -6,16 +6,16 @@ import type { SendResult } from './backend.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
-import type { LocalDate, PersonId, ShopItemId, Who } from '#lib/types.ts';
-import { isWeatherMode, isWeightKg, nextDay, roundKg, type FindKind, type WeatherMode } from '#lib/contract/api.ts';
+import type { LocalDate, ShopItemId, Who } from '#lib/types.ts';
+import { isWeatherMode, nextDay, type FindKind, type WeatherMode } from '#lib/contract/api.ts';
 import { findKey, findsView } from '#lib/model/finds.ts';
 import { addToTally, dayTallies } from '#lib/model/tally.ts';
 import { localDateAt } from '#lib/time/dates.ts';
 import { shopPrice } from '#lib/config/rules.ts';
-import { isGoalValue } from '#lib/contract/goals.ts';
+import { GOALS, isGoalValue, type GoalId } from '#lib/contract/goals.ts';
 import {
-  customSnap, FOOD_GOALS, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, isFoodGoal, newCustomId, newFoodId, newRecipeId, newRepeatId, recipeSnap, repeatCovers,
-  type FoodEntry, type FoodGoalOf, type FoodRepeat, type FoodSnap, type Meal, type RepeatItem, type RepeatOp
+  customSnap, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, newCustomId, newFoodId, newRecipeId, newRepeatId, recipeSnap, repeatCovers,
+  type FoodEntry, type FoodRepeat, type FoodSnap, type Meal, type RepeatItem, type RepeatOp
 } from '#lib/contract/food.ts';
 import { customs, foodDay, foodEntries, recipes, repeats } from '#lib/model/food.ts';
 import { buyPrice, sellPrice, stockOf } from '#lib/contract/shop.ts';
@@ -66,16 +66,8 @@ export function undoSpend(spendId: string): SendResult {
   return week.send('spend_void', { spendId }, { holdMs: UNDO_MS });
 }
 
-// ---- The goals, in けんこう's 目標 card: either person sets either person's (`person`). Health data itself is never
-// entered here: Apple Health is the source of truth.
-
-/** A goal weight in kg (one decimal), or null to clear it. Both of us see it; it never earns. */
-export function setGoalWeight(person: PersonId, kg: number | null): SendResult {
-  if (kg === null) return week.send('pref', { person, key: 'goalWeight', value: null });
-  const value = roundKg(kg);
-  if (!isWeightKg(value)) return { ok: false };
-  return week.send('pref', { person, key: 'goalWeight', value });
-}
+// ---- The goals (contract/goals.ts GOALS), set where their charts are (けんこう, ごはん's グラフ). Health data itself is
+// never entered here: Apple Health is the source of truth.
 
 /**
  * A profile pref (せってい → プロフィール: `sex`, `birth`, `bmiStd`; contract/profile.ts), or null to clear it: a member
@@ -88,31 +80,18 @@ export function setProfile(who: Who, key: ProfileKey, value: string | null): Sen
   return week.send('pref', who === 'G' ? { key, value } : { person: who, key, value });
 }
 
-/** A body fat goal in % (one decimal), or null to clear it. Both of us see it; it never earns. */
-export function setGoalBodyFat(person: PersonId, pct: number | null): SendResult {
-  if (pct === null) return week.send('pref', { person, key: 'goalBodyFat', value: null });
-  const value = roundKg(pct);
-  if (!isGoalValue('body_fat_pct', value)) return { ok: false };
-  return week.send('pref', { person, key: 'goalBodyFat', value });
-}
-
 /**
- * A daily Move goal in kcal: an integer within MOVE_GOAL (100–2,000), rounded. It applies from today
- * on, never to earlier days. `{ok:false}` for a value outside the bounds.
+ * `who`'s goal of `id`, or null to clear it (a clearable one): rounded to its grid's decimals, in its range and on its
+ * grid (`{ok:false}` for anything else). A member sets either member's (`person`); the guest only its own meal-log
+ * goals (no `person`), never another goal. A goal a day keeps applies from today on, never to earlier days.
  */
-export function setMoveGoal(person: PersonId, kcal: number): SendResult {
-  const value = Math.round(kcal);
-  if (!isGoalValue('move', value)) return { ok: false };
-  return week.send('pref', { person, key: 'moveGoal', value });
-}
-
-/**
- * A daily steps goal: a whole STEPS_GOAL.step (500) in 1,000–30,000. It applies from today on, never to earlier days.
- * `{ok:false}` for anything else.
- */
-export function setStepsGoal(person: PersonId, steps: number): SendResult {
-  if (!isGoalValue('steps', steps)) return { ok: false };
-  return week.send('pref', { person, key: 'stepsGoal', value: steps });
+export function setGoal(id: GoalId, who: Who, v: number | null): SendResult {
+  const g = GOALS[id];
+  const me = week.model?.me;
+  if (g.group === 'food' ? !me || (me === 'G') !== (who === 'G') : who === 'G' || me === 'G') return { ok: false };
+  const value = v === null ? null : g.step < 1 ? Math.round(v * 10) / 10 : Math.round(v);
+  if (value === null ? !g.clearable : !isGoalValue(id, value)) return { ok: false };
+  return week.send('pref', who === 'G' ? { key: g.key, value } : { person: who, key: g.key, value });
 }
 
 export function setLanguage(locale: Locale) {
@@ -523,13 +502,3 @@ export function logCustom(e: { customId: string; d: LocalDate; m: Meal; g: numbe
   return c ? logFood({ d: e.d, m: e.m, g: e.g, f: customSnap(c, e.u ?? c.u) }) : { ok: false };
 }
 
-/**
- * A meal-log daily goal of `n` (kcal or a nutrient: contract/food.ts FOOD_GOALS, in its range and step), or null to
- * clear it. A member sets either member's (`person`); the guest only its own. `{ok:false}` for anything else.
- */
-export function setFoodGoal(who: Who, n: FoodGoalOf, v: number | null): SendResult {
-  const me = week.model?.me;
-  if (!me || (me === 'G') !== (who === 'G') || (v !== null && !isFoodGoal(n, v))) return { ok: false };
-  const key = FOOD_GOALS[n].key;
-  return week.send('pref', who === 'G' ? { key, value: v } : { person: who, key, value: v });
-}

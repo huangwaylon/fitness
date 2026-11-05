@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GOAL_PREF_KEYS, PREF_KEYS } from './api.ts';
-import { GOAL_DIRS, GOAL_IDS, GOAL_KEYS, GOALS, goalFallback, goalKeysOf, goalMet, goalOfKey, goalPrefTaken, isGoalValue } from './goals.ts';
+import { GOAL_DIRS, GOAL_IDS, GOAL_KEYS, GOALS, goalFallback, goalKeysOf, goalMet, goalOfKey, goalOver, goalPrefTaken, isGoalValue } from './goals.ts';
 
 describe('the goal registry', () => {
   it('every goal has a direction, a range on its grid, a key of its own and a default in range', () => {
@@ -50,6 +50,8 @@ describe('the goal registry', () => {
       goalMet('k', 2200, 2000), goalMet('k', 1800, 2000), goalMet('k', 2201, 2000), goalMet('k', 1700, 2000), goalMet('weight', 66.9, 66)
     ];
     expect(got).toEqual([true, false, false, true, true, false, true, true, true, false, false, true]);
+    // past a ceiling (ごはん's coral): at most over it, near a value over its band; a floor never
+    expect([goalOver('s', 7.5, 7), goalOver('s', 7, 7), goalOver('c', 290, 250), goalOver('c', 280, 250), goalOver('p', 300, 100)]).toEqual([true, false, true, false, false]);
   });
   it('defaults: Move per member, the fixed rings, none for the optional ones', () => {
     expect([goalFallback('move', 'A'), goalFallback('move', 'B'), goalFallback('move', 'G'), goalFallback('steps', 'G'), goalFallback('exercise', 'A'), goalFallback('stand', 'B'), goalFallback('weight', 'A')])

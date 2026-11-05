@@ -11,11 +11,12 @@
 // - Weight: the period's weigh-ins, their average and the plain change (model/weight.ts plainChange: the first week's
 //   average → the last week's, else the first weigh-in → the last), and from it the goal month.
 // - Body fat %, BMI, lean body mass (the body metrics): like weight, a day's latest row, sparse; the period's
-//   measurements, their average and the same plain change; body fat % has its own goal (`goalBodyFat`), shown and
-//   projected as weight's is.
+//   measurements, their average and the same plain change. Each からだ card has its own optional goal (`goalWeight`,
+//   `goalBodyFat`, `goalBmi`, `goalLean`), shown and projected the goal's way (contract/goals.ts GOALS dir).
 // - Today is still running (a partial day): it is drawn (an outlined bar) but stays out of the stats.
-// - A goal is met as on the stamp card: kcal ≥ that day's Move goal, exercise ≥ 60, whole Stand minutes ≥ 120, steps ≥
-//   that day's steps goal (8,000 unless set). Days met / days recorded.
+// - A goal is met the goal's way (contract/goals.ts goalMet; every activity goal at least: whole Stand minutes, as the
+//   stamp card) against that day's goal (dailyGoalOn: steps 8,000, Move the member's, Exercise 60, Stand 120 until
+//   set; the ベル keep Exercise and Stand at the fixed 60 / 120). Days met / days recorded.
 // - Periods end on an anchor day (today until ‹): 1週 = 7 days and 1か月 = 30 days by day, 3か月 = 13 weeks by week
 //   (ending on the anchor), 1年 = 12 calendar months by month. The previous period is the same length just before
 //   (1年: the 12 months before).
@@ -23,7 +24,7 @@ import type { LocalDate, PersonId, RingFruit } from '#lib/types.ts';
 import { addDays, daysBetween, localDateAt } from '#lib/time/dates.ts';
 import type { ActivityMetric, BodyMetric } from '#lib/contract/api.ts';
 import { dailyGoalOn, latestAt, type State } from './state.ts';
-import { goalMet } from '#lib/contract/goals.ts';
+import { goalMet, GOALS, type LatestGoalKey } from '#lib/contract/goals.ts';
 import { metricAsOf } from './inputs.ts';
 import { plainChange, project, weighIns, type PlainChange, type WeighIn, type WeightProjection } from './weight.ts';
 
@@ -32,6 +33,9 @@ const METRICS = ['steps', 'move', 'exercise', 'stand'] as const;
 export type Metric = (typeof METRICS)[number];
 /** The body metrics' cards (からだ, after 体重): body fat %, BMI, lean body mass. */
 const BODY = ['body_fat_pct', 'bmi', 'lean_kg'] as const satisfies readonly BodyMetric[];
+/** からだ's cards: 体重, then the body metrics (each a sparse series with an optional goal). */
+const BODY_IDS = ['weight', ...BODY] as const;
+export type BodyId = (typeof BODY_IDS)[number];
 /** けんこう's two card groups, picked under the period: かつどう (activity) and からだ (body). */
 export const GROUPS = ['activity', 'body'] as const;
 export type Group = (typeof GROUPS)[number];
@@ -40,7 +44,7 @@ export type Group = (typeof GROUPS)[number];
  * the activity tab"): かつどう 🍎 Steps, 🍐 Move, 🍑 Exercise, 🍒 Stand; からだ 体重, 体脂肪率, BMI, 除脂肪体重 (what a scale
  * writes at one weigh-in).
  */
-export const CARDS = { activity: METRICS, body: ['weight', ...BODY] } as const satisfies Record<Group, readonly (Metric | 'weight' | BodyMetric)[]>;
+export const CARDS = { activity: METRICS, body: BODY_IDS } as const satisfies Record<Group, readonly (Metric | BodyId)[]>;
 export const METRIC_FRUIT: Record<Metric, RingFruit> = { move: 'pear', exercise: 'peach', stand: 'cherry', steps: 'apple' };
 const ROW: Record<Metric, ActivityMetric> = { move: 'move_kcal', exercise: 'exercise_min', stand: 'stand_min', steps: 'steps' };
 
@@ -54,14 +58,10 @@ interface PersonSeries {
   values: Record<Metric, (number | null)[]>;
   /** Each metric's goal in force on day i (model/state.ts dailyGoalOn). */
   goals: Record<Metric, number[]>;
-  /** That day's weigh-in (kg), null without one. */
-  kg: (number | null)[];
-  /** That day's body metrics (latest row), null without one. */
-  body: Record<BodyMetric, (number | null)[]>;
-  /** The weight goal (shown only). */
-  goalWeight: number | null;
-  /** The body fat goal in % (shown only). */
-  goalBodyFat: number | null;
+  /** That day's weigh-in (kg) and body metrics (latest row), null without one. */
+  dots: Record<BodyId, (number | null)[]>;
+  /** The からだ goals (`goalWeight`, `goalBodyFat`, `goalBmi`, `goalLean`; shown only), null: none. */
+  bodyGoals: Record<BodyId, number | null>;
 }
 
 export interface HealthSeries {
@@ -102,17 +102,17 @@ function buildSeries(s: State, to: LocalDate, now: number): HealthSeries {
     const values = { move: [], exercise: [], stand: [], steps: [] } as Record<Metric, (number | null)[]>;
     const goals = { move: [], exercise: [], stand: [], steps: [] } as Record<Metric, number[]>;
     const kgBy = new Map(weighIns(s, p, now).map((x) => [x.date, x.kg] as const));
-    const kg: (number | null)[] = [];
-    const body = { body_fat_pct: [], bmi: [], lean_kg: [] } as Record<BodyMetric, (number | null)[]>;
+    const dots = { weight: [], body_fat_pct: [], bmi: [], lean_kg: [] } as Record<BodyId, (number | null)[]>;
     for (let i = 0, d = from; i < n; i++, d = addDays(d, 1)) {
       for (const m of METRICS) {
         values[m].push(metricAsOf(s, p, d, ROW[m], now));
         goals[m].push(dailyGoalOn(s, p, m, d));
       }
-      kg.push(kgBy.get(d) ?? null);
-      for (const b of BODY) body[b].push(latestAt(s.body[p][b].get(d), now) ?? null);
+      dots.weight.push(kgBy.get(d) ?? null);
+      for (const b of BODY) dots[b].push(latestAt(s.body[p][b].get(d), now) ?? null);
     }
-    return { values, goals, kg, body, goalWeight: s.prefs[p].goalWeight ?? null, goalBodyFat: s.prefs[p].goalBodyFat ?? null };
+    const bodyGoals = Object.fromEntries(BODY_IDS.map((b) => [b, s.prefs[p][GOALS[b].key as LatestGoalKey] ?? null])) as Record<BodyId, number | null>;
+    return { values, goals, dots, bodyGoals };
   };
   return { from, to, activityFrom, any, people: { A: person('A'), B: person('B') } };
 }
@@ -207,8 +207,8 @@ export interface DaySeries {
   met?: (v: number, i: number) => boolean;
 }
 
-/** A metric's days as a DaySeries (its goal per day, the stamp card's rule for met). */
-function metricSeries(hs: HealthSeries, p: PersonId, m: Metric): DaySeries {
+/** A metric's days as a DaySeries (its goal per day, met the goal's way). */
+export function metricSeries(hs: HealthSeries, p: PersonId, m: Metric): DaySeries {
   const ps = hs.people[p];
   return {
     from: hs.from, to: hs.to, first: hs.activityFrom, vals: ps.values[m],
@@ -284,18 +284,18 @@ export function seriesStats(ds: DaySeries, from: LocalDate, to: LocalDate): Seri
   return { avg: days ? sum / days : null, sum, days, met, missing, best };
 }
 
-function rawStats(hs: HealthSeries, p: PersonId, m: Metric, from: LocalDate, to: LocalDate) {
-  const { avg, days, met, missing, best } = seriesStats(metricSeries(hs, p, m), from, to);
-  return { avg, days, missing, met, best };
+/** A period's numbers of a series, with the change of its average against the previous period's. */
+export function periodStats(ds: DaySeries, r: Range): SeriesStats & { change: number | null } {
+  const cur = seriesStats(ds, r.from, r.to);
+  const prevR = previousRange(r);
+  const prev = prevR.to >= ds.from ? seriesStats(ds, prevR.from, prevR.to) : null;
+  return { ...cur, change: cur.avg !== null && prev?.avg ? (cur.avg - prev.avg) / prev.avg : null };
 }
 
 /** A period's numbers for one person and metric, with the change against the previous period. */
 export function metricStats(hs: HealthSeries, p: PersonId, m: Metric, r: Range): MetricStats {
-  const cur = rawStats(hs, p, m, r.from, r.to);
-  const prevR = previousRange(r);
-  const prev = prevR.to >= hs.from ? rawStats(hs, p, m, prevR.from, prevR.to) : null;
-  const change = cur.avg !== null && prev?.avg ? (cur.avg - prev.avg) / prev.avg : null;
-  return { ...cur, change };
+  const { avg, days, met, missing, best, change } = periodStats(metricSeries(hs, p, m), r);
+  return { avg, days, missing, met, best, change };
 }
 
 // ---------- weight ----------
@@ -318,8 +318,8 @@ function dotBuckets(hs: HealthSeries, vals: (number | null)[], r: Range): DotBuc
   });
 }
 
-export const weightBuckets = (hs: HealthSeries, p: PersonId, r: Range): DotBucket[] => dotBuckets(hs, hs.people[p].kg, r);
-export const bodyBuckets = (hs: HealthSeries, p: PersonId, m: BodyMetric, r: Range): DotBucket[] => dotBuckets(hs, hs.people[p].body[m], r);
+/** A からだ card's buckets: the average of each one's measurements. */
+export const dotSeries = (hs: HealthSeries, p: PersonId, id: BodyId, r: Range): DotBucket[] => dotBuckets(hs, hs.people[p].dots[id], r);
 
 /** A sparse series' measurements in the period (today's included), ascending; `kg` holds the value (plainChange's shape). */
 function dotDays(hs: HealthSeries, vals: (number | null)[], r: Range): WeighIn[] {
@@ -334,38 +334,23 @@ function dotDays(hs: HealthSeries, vals: (number | null)[], r: Range): WeighIn[]
 }
 const avg1 = (days: WeighIn[]): number | null => (days.length ? Math.round((days.reduce((a, d) => a + d.kg, 0) / days.length) * 10) / 10 : null);
 
-export interface WeightStats {
-  /** Weigh-ins in the period. */
+export interface DotStats {
+  /** Measurements in the period. */
   n: number;
   /** Their average. */
   avg: number | null;
-  /** The plain change over the period (null under two weigh-ins). */
+  /** The plain change over the period (null under two measurements). */
   change: PlainChange | null;
-  /** With a goal and a change: reached, the month at the period's pace, or none. */
+  /** With a goal and a change: reached (the goal's way: under a ceiling, over a floor, near a value), the month at the
+   *  period's pace, or none. */
   projection: WeightProjection | null;
 }
 
-export function weightStats(hs: HealthSeries, p: PersonId, r: Range): WeightStats {
-  const ps = hs.people[p];
-  const days = dotDays(hs, ps.kg, r);
+/** A からだ card's numbers over a period: weight's or a body metric's, the same rules (model/weight.ts plainChange). */
+export function dotStats(hs: HealthSeries, p: PersonId, id: BodyId, r: Range): DotStats {
+  const days = dotDays(hs, hs.people[p].dots[id], r);
   const change = plainChange(days);
-  return {
-    n: days.length,
-    avg: avg1(days),
-    change,
-    projection: ps.goalWeight === null || !change ? null : project(change, ps.goalWeight)
-  };
-}
-
-/** A body metric over a period: as weight's numbers; a projection only for body fat with its goal. */
-export type BodyStats = WeightStats;
-
-/** A body metric's goal: body fat's (`goalBodyFat`); BMI and lean mass have none. */
-export const bodyGoal = (hs: HealthSeries, p: PersonId, m: BodyMetric): number | null => (m === 'body_fat_pct' ? hs.people[p].goalBodyFat : null);
-
-export function bodyStats(hs: HealthSeries, p: PersonId, m: BodyMetric, r: Range): BodyStats {
-  const days = dotDays(hs, hs.people[p].body[m], r);
-  const change = plainChange(days);
-  const goal = bodyGoal(hs, p, m);
-  return { n: days.length, avg: avg1(days), change, projection: goal === null || !change ? null : project(change, goal) };
+  const goal = hs.people[p].bodyGoals[id];
+  const g = GOALS[id];
+  return { n: days.length, avg: avg1(days), change, projection: goal === null || !change ? null : project(change, goal, g.dir, g.band) };
 }

@@ -206,6 +206,23 @@ person's own Fitness goal.
 from the Tokyo day they are set. Why: Move kcal depend on body size and a day's walking on the person, and the past
 must not re-price.
 
+### Goal directions
+(2026-11-05, the user: "for every single graph … I want to be able to set a goal"; "for each type of metric, also identify
+and store whether the goal should be at least or at most".) One registry (`contract/goals.ts` GOALS) holds every goal:
+its pref, range, history and direction, read by the record, the model and both screens. Every chart has one; each is a
+pref per person. Directions, shown on the chip and the chart (以上 / 以下 / 前後) and used for met:
+- **At least:** 歩数, ムーブ, エクササイズ, スタンド (more movement is the point), 除脂肪体重 (muscle kept or gained),
+  たんぱく質 (a lifter's floor).
+- **At most:** 体脂肪率 (nobody aims higher), 脂質 (a cap is the usual advice), 塩分 (a doctor's limit is a ceiling).
+- **Near a value (前後, a band):** 体重 ±1.5 % and BMI ±4 % (a cut and a bulk both aim at a number; neither side is
+  "good", and a lower weight is never rewarded: *Weight never earns*), カロリー ±10 % (a low day is no win and the
+  lifter's surplus no fault: the summary's coral stays at 20 % over), 炭水化物 ±15 % (fuel for training, less on a cut).
+Why: a chip that says which way reads at a glance, and met shading, goal days, the goal month and ごはん's coral need
+it. Not done: flipping a direction per person (a pref per metric and the relay again, for a choice the defaults cover);
+revisit if one of us wants a weight floor (a bulk) or a kcal ceiling. **Exercise and Stand:** their goals
+(`exerciseGoal`, `standGoal`, per person per day like Move, 60 / 120 until set) are けんこう's lines only: the ベル keep
+the fixed 60 / 120 (*Four automatic fruits*), so a goal set low can't buy anything.
+
 ### Harvest and week lock
 Sunday 19:30 the recap opens (ceremony only); the Wednesday 04:00 after, the week's earnings lock (spends never do).
 The lock is internal. Why: late syncs get a grace period, then the past stays put; it also lets the client compact and

@@ -111,7 +111,7 @@ export const isRec = (v: unknown): v is Record<string, unknown> => typeof v === 
 
 /** Ingest's upper bounds for the activity metrics (inclusive): a higher value is skipped. @public (relay/src/parse.ts) */
 export const METRIC_BOUNDS = { steps: 100_000, exercise_min: 1_440, move_kcal: 10_000, stand_min: 1_440 } as const;
-/** A plausible body weight in kg (inclusive): ingest skips anything else, a `goalWeight` outside it is refused. */
+/** A plausible body weight in kg (inclusive): ingest skips anything else (a goal's range: contract/goals.ts). */
 export const WEIGHT_KG = { min: 20, max: 300 } as const;
 
 /** A plausible value of each body metric (inclusive): ingest skips anything else, the model ignores it. */
@@ -123,10 +123,6 @@ export const BODY_BOUNDS: Record<BodyMetric, { min: number; max: number }> = {
 
 /** kg to one decimal (how weights are stored; the body metrics too). */
 export const roundKg = (v: number): number => Math.round(v * 10) / 10;
-
-/** A weight in kg: finite, within WEIGHT_KG, at most one decimal. */
-export const isWeightKg = (v: unknown): v is number =>
-  typeof v === 'number' && Number.isFinite(v) && v >= WEIGHT_KG.min && v <= WEIGHT_KG.max && Math.abs(v * 10 - Math.round(v * 10)) < 1e-6;
 
 /** `snapshot` rows: compact arrays in tab column order. `at` is ISO 8601 UTC with milliseconds (`…T…:…:….sssZ`). */
 export type MetricRow = [at: string, person: PersonId, date: string, metric: MetricKey, value: number];

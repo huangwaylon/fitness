@@ -2,8 +2,9 @@
   // ごはん's summary card for one person's day: the day's kcal large, against their daily goal when set (a bar in the
   // person's colour; beside it today あと N / N オーバー, a past day 目標より N 少なめ / 多め, coral only past 20 %
   // over: goalChip; the goal at the upper right, GoalEdit, set there on my own day), then protein, fat, carbs and salt,
-  // each with its goal when there is one (グラフ sets them; protein's default 1.6 g × the latest weigh-in, a member's
-  // with a weight) and a small bar, salt's coral once past it. MetricCard's layout and tokens, one row of four. A day with nothing logged: 「きろく
+  // each with its goal and its direction when there is one (「目標 110 g 以上」: グラフ sets them; protein's default
+  // 1.6 g × the latest weigh-in, a member's with a weight) and a small bar, coral once past a ceiling (salt and fat at
+  // most, carbs past their band: contract/goals.ts goalOver). BarCard's tokens, one row of four. A day with nothing logged: 「きろく
   // なし」 on a past one (not 0 kcal, which reads as eaten nothing), 0 kcal today; no nutrient tiles either way.
   import type { Who } from '#lib/types.ts';
   import type { FoodDay } from '#lib/model/food.ts';
@@ -11,7 +12,9 @@
   import type { FoodGoalOf } from '#lib/contract/food.ts';
   import { kcalText } from '../kiroku/fmt.ts';
   import GoalEdit from '../health/GoalEdit.svelte';
-  import { FOOD_GOAL_SPECS, foodGoalText, goalChip } from './foodUi.ts';
+  import { goalOver } from '#lib/contract/goals.ts';
+  import { GOAL_SPECS, goalLabel } from '../health/goals.ts';
+  import { goalChip } from './foodUi.ts';
 
   interface Props {
     day: FoodDay;
@@ -36,7 +39,7 @@
 <section class="card sum p{who}" data-food-summary aria-labelledby="fs-h">
   <header>
     <h3 id="fs-h">{t('food.kcalHead')}</h3>
-    <GoalEdit id="kcal-goal" spec={FOOD_GOAL_SPECS.k} text={goal === null ? null : foodGoalText('k', goal)} value={goal} onsave={onsavegoal} />
+    <GoalEdit id="kcal-goal" spec={GOAL_SPECS.k} label={goalLabel('k', goal)} value={goal} onsave={onsavegoal} />
   </header>
   <div class="srow">
     {#if empty && when === 'past'}
@@ -53,8 +56,8 @@
     {#each cells as c (c.k)}
       <div class="cell" data-nutrient={c.k}>
         <dt>{t(`food.${c.k}`)}</dt>
-        <dd class="money">{gText(c.v)}{#if c.goal !== null}<small>{t(`food.cellGoal.${c.k}`, { g: c.k === 's' ? c.goal.toFixed(1) : c.goal })}</small>{/if}</dd>
-        {#if c.goal}<div class="bar mini" class:over={c.k === 's' && c.v > c.goal} role="presentation"><i style:width="{Math.min(1, c.v / c.goal) * 100}%"></i></div>{/if}
+        <dd class="money">{gText(c.v)}{#if c.goal !== null}<small>{goalLabel(c.k, c.goal)}</small>{/if}</dd>
+        {#if c.goal}<div class="bar mini" class:over={goalOver(c.k, c.v, c.goal)} data-over={goalOver(c.k, c.v, c.goal) || undefined} role="presentation"><i style:width="{Math.min(1, c.v / c.goal) * 100}%"></i></div>{/if}
       </div>
     {/each}
   </dl>{/if}

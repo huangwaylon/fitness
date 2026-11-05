@@ -1,6 +1,4 @@
-// Small formatters shared by the きろく screens (the day title, numbers, weights, the goal fields); dates: i18n/format.ts.
-import { isWeightKg } from '#lib/contract/api.ts';
-import { isGoalValue } from '#lib/contract/goals.ts';
+// Small formatters shared by the きろく screens (the day title, numbers, kcal, a month); dates: i18n/format.ts.
 import { formatNum, i18n, t } from '#lib/i18n/index.ts';
 import { weekdayOf } from '#lib/i18n/format.ts';
 
@@ -10,56 +8,6 @@ export const num = (n: number | null) => (n === null ? '–' : formatNum(n));
 
 /** Calories: `1,234 kcal`. */
 export const kcalText = (n: number): string => t('kiroku.kcal', { n: formatNum(n) });
-
-/** A weight: `68.4 kg`. */
-export const kgText = (kg: number): string => t('weight.kg', { kg: kg.toFixed(1) });
-
-/** A weight change: `−0.3 kg`, `+0.2 kg`, `±0.0 kg` (a true minus sign); `–` when there's none yet. */
-export function kgDelta(d: number | null): string {
-  if (d === null) return '–';
-  const r = Math.round(d * 10) / 10;
-  const sign = r < 0 ? '−' : r > 0 ? '+' : '±';
-  return t('weight.kg', { kg: sign + Math.abs(r).toFixed(1) });
-}
-
-/**
- * What was typed in a weight field → kg (one decimal), or null: `68.4`, `68,4` (decimal comma), full-width `６８．４`,
- * a trailing `kg`. 20–300 kg only; more than one decimal is rounded.
- */
-export function parseKgInput(text: string): number | null {
-  const s = text.trim().replace(/[０-９．，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/\s*kg$/i, '').replace(',', '.');
-  if (!/^\d{1,3}(\.\d+)?$/.test(s)) return null;
-  const kg = Math.round(Number(s) * 10) / 10;
-  return isWeightKg(kg) ? kg : null;
-}
-
-/**
- * What was typed in a body fat goal field → % (one decimal), or null: `22.5`, `22,5`, full-width `２２．５`, a trailing
- * `%` / `％`. 3–60 % only; more than one decimal is rounded.
- */
-export function parsePctInput(text: string): number | null {
-  const s = text.trim().replace(/[０-９．，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/\s*[%％]$/, '').replace(',', '.');
-  if (!/^\d{1,2}(\.\d+)?$/.test(s)) return null;
-  const v = Math.round(Number(s) * 10) / 10;
-  return isGoalValue('body_fat_pct', v) ? v : null;
-}
-
-/** What was typed as a Move goal → whole kcal, or null: `600`, `1,200`, full-width `６００`, a trailing `kcal`. */
-export function parseKcalInput(text: string): number | null {
-  const s = text.trim().replace(/[０-９，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/\s*kcal$/i, '').replace(/,/g, '');
-  if (!/^\d{1,4}$/.test(s)) return null;
-  const n = Number(s);
-  return isGoalValue('move', n) ? n : null;
-}
-
-/** What was typed as a steps goal → steps, or null: `8000`, `10,000`, full-width `８０００`, a trailing `歩` or
- *  `steps`; 1,000–30,000 in whole 500s only. */
-export function parseStepsInput(text: string): number | null {
-  const s = text.trim().replace(/[０-９，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/\s*(歩|steps?)$/i, '').replace(/,/g, '');
-  if (!/^\d{1,5}$/.test(s)) return null;
-  const n = Number(s);
-  return isGoalValue('steps', n) ? n : null;
-}
 
 /** A month, for a projected goal date: `2027年3月` / `Mar 2027`. */
 export function monthText(d: string): string {
