@@ -508,3 +508,11 @@ export function boxOf(obj) {
   return b;
 }
 export { matName };
+
+/** The material bakers on their own (scripts/players3d-page.js, the 3D player's pipeline: each item's albedo as NH's
+ *  files have it, its fabric detail and cavities baked in), with the files they read from. */
+export const bake = { cloth: clothMat, plain: plainMat, hair: hairMat, tint: tintMat };
+export function useFiles(files, base = '/src/') {
+  FILES = files;
+  BASE = base;
+}

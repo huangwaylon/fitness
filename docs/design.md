@@ -1893,6 +1893,29 @@ today's heard ones on that phone, by their tap's time). A tap while one is under
 once plays one (each phone its own). Relay down: the moment plays here, the partner hears nothing. Their numbers and when their data last arrived are on their tree's popup (the card's one line about their
 day went with it). Off screen, the edge chip by the screen's side (「うめの ほうへ」) still brings the camera to them.
 
+### Players
+
+`scripts/players3d-models.ts` (+ `players3d-page.js`), `components/player3d/parts.json`, `contract/partIds.json`,
+`design/avatar/` (tech-notes.md, closet/feasibility.md). A and B are NH's human players by default (`contract/look.ts`
+DEFAULT_LOOKS, the signed-off looks), assembled at runtime from parts converted from the game files the user supplied:
+- **The body** (`static/room/player/body.glb`, 57 KB, 3.6k tris: NH's player skeleton, skin, legs, the three face
+  patches, ears, the three noses) loads once per page. Its skin and face patches carry their tint mask in the
+  texture's alpha: the skin colour, like the hair colour, is a tint, never bytes.
+- **Faces:** each eye type's 16 frames and each mouth type's 9 as one atlas (`face/<PlayerEyeNN|PlayerMouthNN>.webp`,
+  ~12 KB), swapped by texture offset as the villagers' are; the three blush shapes `face/cheek<n>.webp`.
+- **Parts:** one GLB per mesh (`mesh/<key>.glb`: each hairstyle with its greyscale texture, each top's and bottom's
+  shape, each shoe's, glasses' and ornament's geometry, their colours sharing it), bound to the body's joints by name;
+  one WebP per item (`tex/<id>.webp`, its colour baked, ~1 KB). A colour change of a part is a texture swap.
+- **The part table** (`parts.json`): per item its slot, mesh, textures (per material: file, cutout or see-through,
+  tinted by the hair or the skin), colour line (its id without the digit) and closet icon (the catalogue's
+  `static/art/finds/items/<icon>.webp`, by the community's item names: `scripts/players3d-map.json`). `partIds.json` is
+  every id the app has: `store/look.ts` gives it to `usePartTable`, so a look naming another part (a newer app's) reads
+  as いつもの's part. The relay keeps the form check only (an older relay keeps a newer phone's part).
+- **The first closet:** every hairstyle (37, with NH's 16 under-a-hat cuts), eye (26) and mouth (4), and every colour
+  of the art scout's lines (237 items: 10 tops, 9 bottoms, 6 shoes, 3 socks, 6 glasses and 5 hair-ornament lines):
+  2.9 MB under `/room/player/`, all lazy. An outfit is ~60 KB over the body. `--all` converts the whole closet the sweep
+  found clean (4.7k items, ~19 MB).
+
 ### Visitors
 
 `island/Visitor.svelte`, `island/visitors.ts`, `e2e/visitors.spec.ts`. NH's visitors, one at a time, each NH's own 3D
