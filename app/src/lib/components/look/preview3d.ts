@@ -3,7 +3,8 @@
 // it, a tap hopping it, every edit dressed on in place. Its renderer is the level's one WebGL context: the closet's
 // portraits (the コーデ chips, the せってい row) are drawn through it too (player3d portrait: a render target, a
 // second player kept for the shots), never another context. Frames on demand: only while the player moves (a step or
-// a blink says so) or turns, at most 30 a second, none while the page is hidden; everything let go of on dispose.
+// a blink says so) or turns, at most 30 a second, none while the page is hidden; at rest no frame is even asked for
+// till its next blink (a timer); everything let go of on dispose.
 import {
   Box3, DirectionalLight, Group, HemisphereLight, PerspectiveCamera, Scene, SRGBColorSpace, Vector3, WebGLRenderer
 } from 'three';
@@ -86,29 +87,53 @@ export async function createPreview(canvas: HTMLCanvasElement, look: PlayerLook,
     if (nw < 8 || nh < 8 || (nw === cw && nh === ch)) return;
     frameTo(nw, nh);
     dirty = true;
+    kick();
   });
   resized.observe(canvas);
 
   let yaw = 0, spin = 0, held = false, letGo = -1e9, dirty = true, last = 0, raf = 0, gone = false;
-  function frame(t: number) {
+  /** The next frame's timer while nothing moves (its next blink, or the end of the stay turned): no frame till then. */
+  let wake: ReturnType<typeof setTimeout> | undefined;
+  /** A frame asked for (an edit, a drag, a hop, a resize, a shot, the page back in front, a blink's time). */
+  function kick() {
+    if (gone || raf) return;
+    clearTimeout(wake);
+    wake = undefined;
     raf = requestAnimationFrame(frame);
-    if (document.hidden || t - last < FRAME_MS) return;
+  }
+  function frame(t: number) {
+    raf = 0;
+    // (hidden: none till it's back, onVis)
+    if (document.hidden) return;
+    if (t - last < FRAME_MS) return void (raf = requestAnimationFrame(frame));
     last = t;
-    let moved = player.step(t);
-    moved = player.blink(t) || moved;
+    const stepping = player.step(t);
+    let moved = player.blink(t) || stepping;
+    let wait = Infinity;
     if (!held) {
       // let go: a flick's spin runs out, it stays turned a while (a look at the back), then eases back to the front
       if (Math.abs(spin) > 0.001) (yaw += spin), (spin *= 0.8), (letGo = t);
-      else if (t - letGo < BACK_MS) spin = 0;
-      else if (Math.abs(yaw) > 0.002) yaw += Math.atan2(Math.sin(-yaw), Math.cos(-yaw)) * 0.12;
+      else if (t - letGo < BACK_MS) {
+        spin = 0;
+        if (yaw !== 0) wait = letGo + BACK_MS - t;
+      } else if (Math.abs(yaw) > 0.002) yaw += Math.atan2(Math.sin(-yaw), Math.cos(-yaw)) * 0.12;
       else yaw = 0;
     }
     if (pivot.rotation.y !== yaw) (pivot.rotation.y = yaw), (moved = true);
-    if (!moved && !dirty) return;
-    dirty = false;
-    if (!noDraw) renderer.render(scene, camera);
+    if (moved || dirty) {
+      dirty = false;
+      if (!noDraw) renderer.render(scene, camera);
+    }
+    // on, frame by frame, while it moves on its own (a step's crossfade or a hop, a spin, the ease back) or is held;
+    // else asleep till its next blink (or the end of its stay turned): an idle すがた wakes for its blinks only, where it
+    // ran a frame (a step, a blink check) 30 times a second and asked for one every vsync
+    const easing = !held && (Math.abs(spin) > 0.001 || (wait === Infinity && yaw !== 0));
+    if (stepping || held || easing) raf = requestAnimationFrame(frame);
+    else wake = setTimeout(kick, Math.max(FRAME_MS, Math.min(wait, player.nextBlink(t))));
   }
-  raf = requestAnimationFrame(frame);
+  const onVis = () => void (document.hidden || kick());
+  document.addEventListener('visibilitychange', onVis);
+  kick();
 
   // the portraits' own player (the preview's stays as it is on screen), made on the first shot
   let shooter: Promise<Player3D> | null = null;
@@ -118,19 +143,23 @@ export async function createPreview(canvas: HTMLCanvasElement, look: PlayerLook,
     async dress(next) {
       await player.dress(next);
       dirty = true;
+      kick();
     },
     hop() {
       player.act('hop');
+      kick();
     },
     turn(dx) {
       held = true;
       const a = dx * TURN;
       yaw += a;
       spin = a;
+      kick();
     },
     release() {
       held = false;
       letGo = performance.now();
+      kick();
     },
     portrait(l, px) {
       const run = queue.then(async () => {
@@ -143,6 +172,7 @@ export async function createPreview(canvas: HTMLCanvasElement, look: PlayerLook,
         if (gone) return null;
         const url = portrait(renderer, p, px, null).toDataURL('image/png');
         dirty = true; // the shot's render target came and went: draw the preview again
+        kick();
         return url;
       });
       queue = run.catch(() => null);
@@ -153,6 +183,8 @@ export async function createPreview(canvas: HTMLCanvasElement, look: PlayerLook,
       gone = true;
       resized.disconnect();
       cancelAnimationFrame(raf);
+      clearTimeout(wake);
+      document.removeEventListener('visibilitychange', onVis);
       scene.remove(pivot);
       player.dispose();
       void shooter?.then((p) => p.dispose()).catch(() => {});
