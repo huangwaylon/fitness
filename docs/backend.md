@@ -250,7 +250,13 @@ and while the app is on screen whenever the relay says the record changed ([Push
 queue, then fetches. **Not when current:** on launch and on becoming visible the phone waits up to 2 s for the relay's
 `welcome`, whose `rec {at, rev}` is the record's last change the room heard of (kept across its restarts); when the
 cache has it (same `rev`, `at` ≤ `since`) and was fetched within 15 minutes, it only flushes the queue. No welcome, no
-socket or an older cache: it fetches. **After an ack:** the record answers each event with its stored row's `at`, and
+socket or an older cache: it fetches. **On every welcome** (2026-11-05; each reconnect: back from the app switcher,
+the relay restarting with 1012, a dropped network) the phone compares its `rec` with the cache at once, not only when a
+refresh runs: past the cache, it fetches (gathered with a push, once per mark, so a guest's filtered snapshot that never
+reaches the mark can't fetch at each reconnect), and becoming visible inside the 30 s floor fetches when the welcome
+says the cache is behind; the opening's own refresh compares its first welcome itself (one fetch, not two), and a
+welcome during a fetch is looked at again when it's done. A change made while the socket was down was otherwise only
+fetched at the next open or sync tap (`e2e/live-sync.spec.ts` E14, E15). **After an ack:** the record answers each event with its stored row's `at`, and
 that row goes into the cache at once (`since` unmoved, so the next poll still brings everything written after it); only
 an ack without a row (a duplicate) is followed by a `fresh` re-read 1.5 s later.
 
