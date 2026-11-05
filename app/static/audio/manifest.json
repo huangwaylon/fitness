@@ -1,5 +1,5 @@
 {
-  "_readme": "Audio files for the app (docs/design.md#audio-files). Paths are relative to static/audio/. Add a file and its entry here; no code change. sfx.<id> = a file for a sound id in src/lib/sound/ids.ts (without one, the id plays its procedural placeholder from src/lib/sound/synth.ts): AAC .m4a, mono 44.1 kHz ~64 kbps, under 3 s. music.<sunny|rain|snow>.<00-23> = the Tokyo hour's track, { file, start, end?, gain? }: one seamless loop period (start = the second where the loop begins musically; playback starts there), plus a 3 s copy of the period's start when `end` (where the period ends) is given, for the engine's deck hand-off; without `end` the file is just the period and `<audio loop>` wraps it. gain = dB to the common loudness (-16 LUFS). Written by `npm run audio:music -- <dir>` (scripts/music.ts) from the user's own files: AAC-LC stereo 64 kbps; `npm run audio:music -- --gains` re-measures only the gains. opening = the opening theme (one-shot), { file, start: 0, gain }. ambient.<waves|birds|cicadas|higurashi|crickets|wind|rain> = mono loops of 10-30 s. events.<id> = the event music (src/lib/sound/events.ts: halloween, turkey-day, new-year-0am, new-year-2am, new-years-day and bee-chase loop like the hours; happy-new-year and bee-stung are one-shots); kk = K.K.'s songs in NH's order, [{ id, ja, en, file, gain }] (ja/en: NH's official titles; one-shots under kk/). Both written by `npm run audio:music -- --extras <dir>`.The music files are user-provided and committed by the user's decision (docs/design.md#audio-files). Do not commit downloaded effects.",
+  "_readme": "Audio files for the app (docs/design.md#audio-files). Paths are relative to static/audio/. Add a file and its entry here; no code change. Every entry is built by `npm run audio:music -- <dir> [--only <key regex>]` (scripts/music.ts, its CATALOGUE: source track number -> key) from the user's own files; `npm run audio:music -- --gains` re-measures only the gains. A music entry is { file, start, end?, gain }: a loop is one seamless period (start = the second where the loop begins musically; playback starts there) plus a 3 s copy of the period's start, `end` = where the period ends (the engine's two decks hand over inside the copy); a one-shot has start 0 and no `end`. gain = dB to the common loudness (-16 LUFS). Music: AAC-LC stereo 44.1 kHz, 64 kbps (K.K.'s, from the GameCube rip, 48). music.<sunny|rain|snow>.<00-23> = the Tokyo hour's loop (music/hour-HH, rain-HH, snow-HH). opening = the opening theme (one-shot). events.<id> = the event music and cut-ins (src/lib/sound/events.ts EVENT_MUSIC_IDS), music/<id>. places.<id> = a room's loop (src/lib/sound/places.ts), places/<id>. kk = K.K.'s live songs in NH's order, [{ id, ja, en, file, start, gain }] (ja/en: NH's official titles; one-shots under kk/); kkAircheck.<id> = the same song's aircheck (the stereo's recording), kk/aircheck/<id>. sfx.<id> = a file for a sound id in src/lib/sound/ids.ts (without one, the id plays its procedural placeholder from src/lib/sound/synth.ts or its `like`'s): AAC .m4a, mono 44.1 kHz 64 kbps, a plain path (no gain: the jingles from the OST, sfx/<id>, are trimmed, faded and normalised to -16 LUFS in the file). ambient.<waves|birds|cicadas|higurashi|crickets|wind|rain> = mono loops of 10-30 s. The music files are user-provided and committed by the user's decision (docs/design.md#audio-files). Do not commit downloaded effects.",
   "sfx": {},
   "opening": {
     "file": "music/opening.m4a",
@@ -153,8 +153,298 @@
         "gain": -2.3
       }
     },
-    "rain": {},
-    "snow": {}
+    "rain": {
+      "10": {
+        "file": "music/rain-10.m4a",
+        "start": 60.333,
+        "end": 69.333333,
+        "gain": 0.5
+      },
+      "11": {
+        "file": "music/rain-11.m4a",
+        "start": 77.385,
+        "end": 79.384626,
+        "gain": -0.6
+      },
+      "12": {
+        "file": "music/rain-12.m4a",
+        "start": 64.217,
+        "end": 65.21737,
+        "gain": -1.9
+      },
+      "13": {
+        "file": "music/rain-13.m4a",
+        "start": 45.885,
+        "end": 55.384626,
+        "gain": 1
+      },
+      "14": {
+        "file": "music/rain-14.m4a",
+        "start": 82.721,
+        "end": 83.72093,
+        "gain": 0.7
+      },
+      "15": {
+        "file": "music/rain-15.m4a",
+        "start": 55.342,
+        "end": 56.842109,
+        "gain": -0.1
+      },
+      "16": {
+        "file": "music/rain-16.m4a",
+        "start": 34.519,
+        "end": 50.519048,
+        "gain": 2.1
+      },
+      "17": {
+        "file": "music/rain-17.m4a",
+        "start": 89.13,
+        "end": 98.630136,
+        "gain": -0.1
+      },
+      "18": {
+        "file": "music/rain-18.m4a",
+        "start": 51.13,
+        "end": 54.130431,
+        "gain": 2.8
+      },
+      "19": {
+        "file": "music/rain-19.m4a",
+        "start": 96.784,
+        "end": 103.783787,
+        "gain": 2.6
+      },
+      "20": {
+        "file": "music/rain-20.m4a",
+        "start": 53,
+        "end": 54,
+        "gain": 0.7
+      },
+      "21": {
+        "file": "music/rain-21.m4a",
+        "start": 53.296,
+        "end": 56.296281,
+        "gain": 1.1
+      },
+      "22": {
+        "file": "music/rain-22.m4a",
+        "start": 65.667,
+        "end": 66.666667,
+        "gain": -0.2
+      },
+      "23": {
+        "file": "music/rain-23.m4a",
+        "start": 71,
+        "end": 72,
+        "gain": 3.4
+      },
+      "00": {
+        "file": "music/rain-00.m4a",
+        "start": 68.767,
+        "end": 69.767438,
+        "gain": 1.5
+      },
+      "01": {
+        "file": "music/rain-01.m4a",
+        "start": 83,
+        "end": 84,
+        "gain": 0.5
+      },
+      "02": {
+        "file": "music/rain-02.m4a",
+        "start": 100.353,
+        "end": 102.352948,
+        "gain": 2.8
+      },
+      "03": {
+        "file": "music/rain-03.m4a",
+        "start": 49.526,
+        "end": 50.526304,
+        "gain": 1.5
+      },
+      "04": {
+        "file": "music/rain-04.m4a",
+        "start": 48.857,
+        "end": 54.857188,
+        "gain": 3.8
+      },
+      "05": {
+        "file": "music/rain-05.m4a",
+        "start": 95,
+        "end": 96,
+        "gain": 3.5
+      },
+      "06": {
+        "file": "music/rain-06.m4a",
+        "start": 60.622,
+        "end": 61.621633,
+        "gain": 3.7
+      },
+      "07": {
+        "file": "music/rain-07.m4a",
+        "start": 74,
+        "end": 75,
+        "gain": 0.7
+      },
+      "08": {
+        "file": "music/rain-08.m4a",
+        "start": 69.714,
+        "end": 70.714263,
+        "gain": -2.2
+      },
+      "09": {
+        "file": "music/rain-09.m4a",
+        "start": 55.784,
+        "end": 58.784104,
+        "gain": -2
+      }
+    },
+    "snow": {
+      "10": {
+        "file": "music/snow-10.m4a",
+        "start": 59.333,
+        "end": 69.333333,
+        "gain": 0.6
+      },
+      "11": {
+        "file": "music/snow-11.m4a",
+        "start": 77.385,
+        "end": 79.384626,
+        "gain": -0.5
+      },
+      "12": {
+        "file": "music/snow-12.m4a",
+        "start": 61.217,
+        "end": 65.21746,
+        "gain": -0.7
+      },
+      "13": {
+        "file": "music/snow-13.m4a",
+        "start": 51.885,
+        "end": 55.384626,
+        "gain": 1.3
+      },
+      "14": {
+        "file": "music/snow-14.m4a",
+        "start": 82.721,
+        "end": 83.72093,
+        "gain": 0.2
+      },
+      "15": {
+        "file": "music/snow-15.m4a",
+        "start": 54.842,
+        "end": 56.842109,
+        "gain": -0.9
+      },
+      "16": {
+        "file": "music/snow-16.m4a",
+        "start": 34.519,
+        "end": 50.51907,
+        "gain": 0.4
+      },
+      "17": {
+        "file": "music/snow-17.m4a",
+        "start": 89.13,
+        "end": 98.630136,
+        "gain": -0.4
+      },
+      "18": {
+        "file": "music/snow-18.m4a",
+        "start": 53.13,
+        "end": 54.130431,
+        "gain": 2.6
+      },
+      "19": {
+        "file": "music/snow-19.m4a",
+        "start": 99.784,
+        "end": 103.783787,
+        "gain": 2.2
+      },
+      "20": {
+        "file": "music/snow-20.m4a",
+        "start": 53,
+        "end": 54,
+        "gain": 1.4
+      },
+      "21": {
+        "file": "music/snow-21.m4a",
+        "start": 53.296,
+        "end": 56.296281,
+        "gain": 1.4
+      },
+      "22": {
+        "file": "music/snow-22.m4a",
+        "start": 65.667,
+        "end": 66.666667,
+        "gain": -0.2
+      },
+      "23": {
+        "file": "music/snow-23.m4a",
+        "start": 71,
+        "end": 72,
+        "gain": 2
+      },
+      "00": {
+        "file": "music/snow-00.m4a",
+        "start": 68.767,
+        "end": 69.767438,
+        "gain": 2.8
+      },
+      "01": {
+        "file": "music/snow-01.m4a",
+        "start": 83,
+        "end": 84,
+        "gain": 0.5
+      },
+      "02": {
+        "file": "music/snow-02.m4a",
+        "start": 97.353,
+        "end": 102.352971,
+        "gain": 3.6
+      },
+      "03": {
+        "file": "music/snow-03.m4a",
+        "start": 49.526,
+        "end": 50.526304,
+        "gain": 0.4
+      },
+      "04": {
+        "file": "music/snow-04.m4a",
+        "start": 46.857,
+        "end": 54.857143,
+        "gain": 2.2
+      },
+      "05": {
+        "file": "music/snow-05.m4a",
+        "start": 95,
+        "end": 96,
+        "gain": 2.8
+      },
+      "06": {
+        "file": "music/snow-06.m4a",
+        "start": 60.622,
+        "end": 61.621633,
+        "gain": 2.2
+      },
+      "07": {
+        "file": "music/snow-07.m4a",
+        "start": 74,
+        "end": 75,
+        "gain": 0.8
+      },
+      "08": {
+        "file": "music/snow-08.m4a",
+        "start": 64.714,
+        "end": 70.714263,
+        "gain": -2.5
+      },
+      "09": {
+        "file": "music/snow-09.m4a",
+        "start": 55.784,
+        "end": 58.784104,
+        "gain": -1.8
+      }
+    }
   },
   "ambient": {},
   "events": {

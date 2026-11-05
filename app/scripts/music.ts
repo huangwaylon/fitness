@@ -1,16 +1,19 @@
-// The hourly music, from the user's own files to static/audio/music/ (docs/design.md#audio-files). The files are
+// The app's music and jingles, from the user's own files to static/audio/ (docs/design.md#audio-files). The files are
 // user-provided and committed by the user's decision; this script never downloads anything.
-//   node scripts/music.ts <source dir> [--dry]
-// Source: "1-01. Opening Theme.mp3", then "1-02. 1200 AM (Sunny).mp3" … "1-25. 1100 PM (Sunny).mp3" (one per hour).
-// Each OST rip plays its loop about twice and fades out. For each hour: find the loop period (the lag at which the
+//   node scripts/music.ts <source dir> [--only <regex over manifest keys>] [--dry]
+//   node scripts/music.ts --gains    only re-measure the committed files and rewrite their `gain`
+// Source: the NH OST rip ("1-02. 1200 AM (Sunny).mp3": disc 1 sunny hours, 2 rain and snow, 3 places, 4 events and
+// jingles) and the GameCube / e+ rip ("150 - K.K. Chorale (LIVE).mp3"), each file named by its track number in
+// CATALOGUE. Loops: each OST rip plays its loop about twice and fades out. Find the loop period (the lag at which the
 // track repeats itself longest, from a spectral self-similarity scan, then sample-exact by cross-correlation), cut one
 // period from a point where both passes are identical (so `<audio loop>` wraps without a seam), and record where in
 // that file the loop begins musically (manifest `start`: playback starts there). The file is that period plus a copy
 // of its first TAIL seconds (manifest `end` = where the period ends): the engine's two decks hand over inside the copy,
 // where both hold the same samples, instead of relying on `<audio loop>` (WebKit seeks to 0 at the end, which can
-// drop out). Then each file's loudness is measured and its `gain` written (see trackGain). Output: AAC-LC 64 kbps
-// stereo 44.1 kHz .m4a with +faststart, and the `music.sunny` / `opening` entries of static/audio/manifest.json.
-//   node scripts/music.ts --gains    only re-measure the committed files and rewrite their `gain`
+// drop out). One-shots are trimmed of silence; jingles (sfx) also mono, faded at both ends, with their loudness baked
+// in (sfx entries have no `gain`). Then each music file's loudness is measured and its `gain` written (trackGain).
+// Output: AAC-LC stereo 44.1 kHz .m4a with +faststart (64 kbps; K.K.'s rip, 32 kHz GameCube audio, at 48), and the
+// entries of static/audio/manifest.json (the rest of the file is kept as is).
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -18,12 +21,14 @@ import { tmpdir } from 'node:os';
 import { LEVELS } from '../src/lib/sound/mix.ts';
 
 const FFMPEG = process.env.FFMPEG ?? '/opt/homebrew/bin/ffmpeg';
-const OUT = join(import.meta.dirname, '../static/audio/music');
+const OUT = join(import.meta.dirname, '../static/audio');
 const MANIFEST = join(import.meta.dirname, '../static/audio/manifest.json');
 const SR = 44100;
 /** Analysis rate and frame (≈ 93 ms hop). */
 const ASR = 11025, FRAME = 2048, HOP = 1024, BANDS = 32;
-const XFADE = Math.round(0.25 * SR);
+/** The blend at the wrap (s): short where both passes are the same samples, long where the rip's second pass is a
+ *  variation (rain at 4 PM: the same phrase, other samples, and no exact repeat in the rip). */
+const XFADE_S = 0.25, XFADE_VARIED_S = 2;
 /** The copy of the period's start after its end (s): room for the engine to line the incoming deck up. */
 const TAIL = 3;
 /** Stung by Bees is heard once: its first pass (the intro and one 10.3 s loop), faded out. */
@@ -137,21 +142,26 @@ function findLoop(f: Float64Array[], thr = 0.8, minLagS = 20): Loop | null {
   return loops.filter((l) => l.lag >= maxLag - ASR / HOP).sort((a, b) => b.sim - a.sim)[0];
 }
 
+/** How alike 1 s of audio at `at` is to the audio `lag` samples later (normalised correlation: 1 = identical). */
+function match(x: Float32Array, at: number, lag: number): number {
+  let c = 0, e1 = 0, e2 = 0;
+  for (let i = 0; i < SR; i += 3) {
+    const a = x[at + i], b = x[at + lag + i];
+    c += a * b;
+    e1 += a * a;
+    e2 += b * b;
+  }
+  return c / (Math.sqrt(e1 * e2) || 1);
+}
+
 /** Sample-exact period: the lag (within ±150 ms of `approx`) that best lines up 1 s of audio at `at` with the audio
  *  one period later, and how well (1 = identical: the rip's loops are bit-for-bit repeats once past the first pass's
  *  opening, which lacks the reverb that spills over from the loop's end). */
 function refine(x: Float32Array, at: number, approx: number): [number, number] {
-  const N = SR, span = Math.round(0.15 * SR);
+  const span = Math.round(0.15 * SR);
   let best = approx, bestC = -Infinity;
   for (let d = -span; d <= span; d++) {
-    let c = 0, e1 = 0, e2 = 0;
-    for (let i = 0; i < N; i += 3) {
-      const a = x[at + i], b = x[at + approx + d + i];
-      c += a * b;
-      e1 += a * a;
-      e2 += b * b;
-    }
-    c /= Math.sqrt(e1 * e2) || 1;
+    const c = match(x, at, approx + d);
     if (c > bestC) (bestC = c), (best = approx + d);
   }
   return [best, bestC];
@@ -169,30 +179,41 @@ function encode(pcm: Float32Array, out: string): void {
   if (r.status !== 0) throw new Error(`ffmpeg failed for ${out}`);
 }
 
-/** One loop period of an OST rip, written to static/audio/music/<name>: the period plus a copy of its first TAIL s,
+/** One loop period of an OST rip, written to static/audio/<name>: the period plus a copy of its first TAIL s,
  *  and its manifest entry (`start` where the loop begins musically, `end` where the period ends). `minLagS`: the
- *  shortest loop to look for (the wasps' chase loops in seconds). */
-function looped(path: string, file: string, name: string, dry: boolean, minLagS = 20): Entry {
-  const loop = findLoop(features(decode(path, ASR, 1)), 0.8, minLagS);
-  if (!loop) throw new Error(`${file}: no repeat found; cut it by hand`);
+ *  shortest loop to look for (the wasps' chase loops in seconds). `periodS`: the period, known (a rain or snow hour
+ *  has its sunny hour's: their rips hold one pass and a few seconds of the next, too little to find it in). */
+function looped(path: string, file: string, name: string, dry: boolean, minLagS = 20, periodS?: number): Entry {
   const mono = decode(path, SR, 1);
+  const first = onset(mono);
+  let runAt: number, lag: number;
+  if (periodS) {
+    // the loop begins where the audio first matches itself one period later
+    lag = Math.round(periodS * SR);
+    runAt = first;
+    for (let t = first; t + lag + 1.2 * SR < mono.length; t += SR / 2) if (refine(mono, t, lag)[1] >= 0.98) (runAt = t), (t = Infinity);
+  } else {
+    const loop = findLoop(features(decode(path, ASR, 1)), 0.8, minLagS);
+    if (!loop) throw new Error('no repeat found; cut it by hand');
+    runAt = Math.round((loop.start * HOP * SR) / ASR);
+    lag = Math.round((loop.lag * HOP * SR) / ASR);
+  }
   // The musical start of the loop: the first sound when the loop begins within 3 s of it (no intro), else where
   // the repeat begins (after an intro).
-  const runAt = Math.round((loop.start * HOP * SR) / ASR);
-  const first = onset(mono);
   const musical = runAt - first < 3 * SR ? Math.min(first, runAt) : runAt;
-  // Cut one period from a point where both passes are identical (≥ 8 s into the loop, or ≥ 1 s for a short one), so
-  // the wrap is seamless.
-  const lag = Math.round((loop.lag * HOP * SR) / ASR);
+  // Cut one period from a point where both passes are identical on both sides (the wrap blends the second pass's
+  // last moments into the first's just before the cut), so the wrap is seamless: the earliest such second.
   let cut = 0, period = 0, corr = -1;
-  for (const off of minLagS >= 20 ? [8, 12, 16, 20] : [1, 2, 3, 4]) {
+  for (let off = 1; off <= (minLagS >= 20 ? 24 : 4); off++) {
     const at = runAt + off * SR;
     if (at + lag + 1.2 * SR > mono.length) break;
     const [p, c] = refine(mono, at, lag);
-    if (c > corr) [cut, period, corr] = [at, p, c];
-    if (c > 0.995) break;
+    const m = Math.min(c, match(mono, at - SR, p));
+    if (m > corr) [cut, period, corr] = [at, p, m];
+    if (m > 0.995) break;
   }
-  if (corr < 0.98) console.warn(`  ! ${file}: best loop match only ${corr.toFixed(4)}`);
+  if (corr < 0.98) console.warn(`  ! ${file}: best loop match only ${corr.toFixed(4)}: a ${XFADE_VARIED_S} s blend`);
+  const XFADE = Math.round((corr < 0.98 ? XFADE_VARIED_S : XFADE_S) * SR);
   const st = decode(path, SR, 2);
   const tail = TAIL * SR;
   const pcm = new Float32Array((period + tail) * 2);
@@ -212,77 +233,113 @@ function looped(path: string, file: string, name: string, dry: boolean, minLagS 
   const kb = dry ? 0 : Math.round(statSync(join(OUT, name)).size / 1024);
   console.log(`${name}  ${file}  ${(mono.length / SR).toFixed(1)}s → period ${(period / SR).toFixed(3)}s cut at ${(cut / SR).toFixed(2)}s ` +
     `(match ${corr.toFixed(4)}), plays from ${start.toFixed(2)}s` + (dry ? '' : `  ${kb} KB`));
-  return { file: `music/${name}`, start: Math.round(start * 1000) / 1000, end: Math.round((period / SR) * 1e6) / 1e6 };
+  return { file: name, start: Math.round(start * 1000) / 1000, end: Math.round((period / SR) * 1e6) / 1e6 };
 }
 
-/** A one-shot (the opening, a jingle, a K.K. song): as is, minus the silence at both ends; `seconds` keeps only that
- *  long, faded out over its last 1.5 s. */
-function oneShot(path: string, out: string, dry: boolean, seconds?: number): void {
-  const trim = 'silenceremove=start_periods=1:start_threshold=-60dB,areverse,silenceremove=start_periods=1:start_threshold=-60dB,areverse';
+
+const TRIM = 'silenceremove=start_periods=1:start_threshold=-60dB,areverse,silenceremove=start_periods=1:start_threshold=-60dB,areverse';
+
+/** A one-shot (the opening, an event's jingle, a K.K. song): as is, minus the silence at both ends; `seconds` keeps
+ *  only that long, faded out over its last 1.5 s. */
+function oneShot(path: string, out: string, dry: boolean, kbps: number, seconds?: number): void {
   const cut = seconds ? `,atrim=0:${seconds},afade=t=out:st=${seconds - 1.5}:d=1.5` : '';
   if (dry) return;
-  execFileSync(FFMPEG, ['-v', 'error', '-y', '-i', path, '-vn', '-af', trim + cut,
-    '-c:a', 'aac', '-b:a', '64k', '-ac', '2', '-ar', String(SR), '-movflags', '+faststart', out]);
+  execFileSync(FFMPEG, ['-v', 'error', '-y', '-i', path, '-vn', '-af', TRIM + cut,
+    '-c:a', 'aac', '-b:a', `${kbps}k`, '-ac', '2', '-ar', String(SR), '-movflags', '+faststart', out]);
 }
 
-/** The event music and the wasps' (`--extras`): the OST title (after "4-NN. ") → its `events.<id>` entry. Loops are
- *  cut like the hours; one-shots are trimmed. NH's Chased by Bees loops for as long as the wasps chase; Stung by
- *  Bees is heard once after the sting (its first pass: intro and one loop, `seconds`). */
-const EVENT_FILES: Record<string, { id: string; loop?: { minLagS: number }; seconds?: number }> = {
-  Halloween: { id: 'halloween', loop: { minLagS: 20 } },
-  'Turkey Day': { id: 'turkey-day', loop: { minLagS: 20 } },
-  'New Year (Happy New Year)': { id: 'happy-new-year' },
-  'New Year (1200 AM)': { id: 'new-year-0am', loop: { minLagS: 20 } },
-  'New Year (200 AM)': { id: 'new-year-2am', loop: { minLagS: 20 } },
-  "New Year's Day": { id: 'new-years-day', loop: { minLagS: 20 } },
-  'Chased by Bee': { id: 'bee-chase', loop: { minLagS: 4 } },
-  'Stung by Bee': { id: 'bee-stung', seconds: STUNG_S }
-};
+/** A jingle as an effect file: trimmed, 10 ms in and 80 ms out, mono, its loudness gain applied to the samples. */
+function jingle(path: string, out: string, dry: boolean): void {
+  if (dry) return;
+  const wav = join(tmpdir(), `jingle-${process.pid}.wav`);
+  execFileSync(FFMPEG, ['-v', 'error', '-y', '-i', path, '-vn', '-af', TRIM, '-ac', '1', '-ar', String(SR), wav]);
+  const s = statSync(wav).size / 2 / SR; // 16-bit mono
+  const g = trackGain(loudness(wav));
+  execFileSync(FFMPEG, ['-v', 'error', '-y', '-i', wav, '-af', `volume=${g}dB,afade=t=in:d=0.01,afade=t=out:st=${Math.max(0, s - 0.08)}:d=0.08`,
+    '-c:a', 'aac', '-b:a', '64k', '-movflags', '+faststart', out]);
+  rmSync(wav);
+}
 
-/** K.K.'s songs (`--extras`): the file's title (after "NN. ") → id and NH's official titles (Nookipedia: the
- *  Japanese is the game's own; the files' "K.K. Hymn" and "K.K.'s Rock 'n' Roll" are literal translations of
- *  けけさんびか and けけのロケンロール, officially K.K. Chorale and Rockin' K.K.). In NH's song-list order. */
-const KK_FILES: Record<string, { id: string; ja: string; en: string }> = {
-  'K.K. Hymn': { id: 'kk-chorale', ja: 'けけさんびか', en: 'K.K. Chorale' },
-  'K.K. March': { id: 'kk-march', ja: 'けけマーチ', en: 'K.K. March' },
-  'K.K. Waltz': { id: 'kk-waltz', ja: 'けけワルツ', en: 'K.K. Waltz' },
-  'K.K. Swing': { id: 'kk-swing', ja: 'けけスウィング', en: 'K.K. Swing' },
-  'K.K. Bossa': { id: 'kk-bossa', ja: 'けけボッサ', en: 'K.K. Bossa' },
-  'K.K. Salsa': { id: 'kk-salsa', ja: 'けけサルサ', en: 'K.K. Salsa' },
-  'K.K. Reggae': { id: 'kk-reggae', ja: 'けけレゲエ', en: 'K.K. Reggae' },
-  'K.K. Rock': { id: 'kk-rock', ja: 'けけロック', en: 'K.K. Rock' },
-  "K.K.'s Rock 'n' Roll": { id: 'kk-rockin', ja: 'けけのロケンロール', en: "Rockin' K.K." }
-};
+type Kind = 'loop' | 'once' | 'sfx';
+/** A manifest entry to build: its dotted key (`music.rain.07`, `events.halloween`, `sfx.get-fanfare`), its file under
+ *  static/audio/, and how. `minLagS`: the shortest loop to look for (the wasps' chase loops in seconds); `seconds`:
+ *  a one-shot cut to that long; `kbps`: a one-shot's bitrate (64); `periodOf`: the key of an entry whose period this
+ *  loop shares. */
+interface Row { key: string; file: string; kind: Kind; minLagS?: number; seconds?: number; kbps?: number; periodOf?: string }
 
-function extras(src: string, dry: boolean): void {
-  const man = JSON.parse(readFileSync(MANIFEST, 'utf8'));
-  const events: Record<string, Entry> = { ...man.events };
-  const kk: (Entry & { id: string; ja: string; en: string })[] = [];
-  mkdirSync(join(OUT, '../kk'), { recursive: true });
+const hh = (h: number) => String(h).padStart(2, '0');
+/** A disc's 24 hours, 00..23 from track `first` (rain and snow loop with the sunny hour's period). */
+const hours = (disc: number, first: number, weather: string, name: (h: string) => string): [string, Row][] =>
+  Array.from({ length: 24 }, (_, h) => [`${disc}-${hh(first + h)}`, {
+    key: `music.${weather}.${hh(h)}`, file: name(hh(h)), kind: 'loop', periodOf: weather === 'sunny' ? undefined : `music.sunny.${hh(h)}`
+  }]);
+
+/** Every file the app ships, by the source's track number ("2-01", "516"). Loops where NH loops them, one-shots
+ *  otherwise. NH's Chased by Bees loops for as long as the wasps chase; Stung by Bees is heard once after the sting
+ *  (its first pass: intro and one loop, `seconds`). */
+const CATALOGUE = new Map<string, Row>([
+  ['1-01', { key: 'opening', file: 'music/opening.m4a', kind: 'once' }],
+  ...hours(1, 2, 'sunny', (h) => `music/hour-${h}.m4a`),
+  ...hours(2, 1, 'rain', (h) => `music/rain-${h}.m4a`),
+  ...hours(2, 25, 'snow', (h) => `music/snow-${h}.m4a`),
+  ['4-07', { key: 'events.halloween', file: 'music/halloween.m4a', kind: 'loop' }],
+  ['4-08', { key: 'events.turkey-day', file: 'music/turkey-day.m4a', kind: 'loop' }],
+  ['4-17', { key: 'events.happy-new-year', file: 'music/happy-new-year.m4a', kind: 'once' }],
+  ['4-18', { key: 'events.new-year-0am', file: 'music/new-year-0am.m4a', kind: 'loop' }],
+  ['4-19', { key: 'events.new-year-2am', file: 'music/new-year-2am.m4a', kind: 'loop' }],
+  ['4-20', { key: 'events.new-years-day', file: 'music/new-years-day.m4a', kind: 'loop' }],
+  ['4-36', { key: 'events.bee-chase', file: 'music/bee-chase.m4a', kind: 'loop', minLagS: 4 }],
+  ['4-37', { key: 'events.bee-stung', file: 'music/bee-stung.m4a', kind: 'once', seconds: STUNG_S }]
+]);
+
+type Entry = { file: string; start: number; end?: number; gain?: number };
+type Manifest = Record<string, unknown> & { kk?: (Entry & { id: string })[] };
+
+/** Put an entry at a dotted key (`kk.<id>` updates that song in the list, keeping its titles). */
+function put(man: Manifest, key: string, value: Entry | string): void {
+  const [top, ...rest] = key.split('.');
+  if (top === 'kk') return void Object.assign((man.kk ?? []).find((s) => s.id === rest[0]) ?? {}, value);
+  if (!rest.length) return void (man[top] = value);
+  let o = (man[top] ??= {}) as Record<string, unknown>;
+  for (const p of rest.slice(0, -1)) o = (o[p] ??= {}) as Record<string, unknown>;
+  o[rest.at(-1)!] = value;
+}
+
+/** Build the catalogue's files found in `src` whose key matches `only`, and write their manifest entries. */
+function build(src: string, only: RegExp, dry: boolean): void {
+  const man = JSON.parse(readFileSync(MANIFEST, 'utf8')) as Manifest;
+  const built: Entry[] = [];
   for (const file of readdirSync(src).filter((f) => f.endsWith('.mp3')).sort()) {
-    const path = join(src, file);
-    const title = file.replace(/^[\d-]+\.\s*/, '').replace(/\.mp3$/, '');
-    const ev = EVENT_FILES[title], song = KK_FILES[title];
-    if (ev) {
-      const name = `${ev.id}.m4a`;
-      if (ev.loop) events[ev.id] = looped(path, file, name, dry, ev.loop.minLagS);
-      else {
-        oneShot(path, join(OUT, name), dry, ev.seconds);
-        events[ev.id] = { file: `music/${name}`, start: 0 };
-        console.log(`${name}  ${file}  one-shot`);
+    const num = file.match(/^(\d+-\d+)\. |^(\d+) - /);
+    const row = CATALOGUE.get(num?.[1] ?? num?.[2] ?? '');
+    if (!row || !only.test(row.key)) continue;
+    const path = join(src, file), out = join(OUT, row.file);
+    mkdirSync(join(out, '..'), { recursive: true });
+    try {
+      if (row.kind === 'sfx') {
+        jingle(path, out, dry);
+        put(man, row.key, row.file);
+        console.log(`${row.file}  ${file}  jingle`);
+        continue;
       }
-    } else if (song) {
-      const name = `${song.id}.m4a`;
-      oneShot(path, join(OUT, '../kk', name), dry);
-      kk.push({ ...song, file: `kk/${name}`, start: 0 });
-      console.log(`kk/${name}  ${file}`);
-    } else console.log(`skipped       ${file}`);
+      let e: Entry;
+      if (row.kind === 'loop') {
+        const like = row.periodOf?.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], man) as Entry | undefined;
+        e = looped(path, file, row.file, dry, row.minLagS, like?.end);
+      }
+      else {
+        oneShot(path, out, dry, row.kbps ?? 64, row.seconds);
+        e = { file: row.file, start: 0 };
+        console.log(`${row.file}  ${file}  one-shot`);
+      }
+      put(man, row.key, e);
+      built.push(e);
+    } catch (err) {
+      console.warn(`  ! ${file}: ${(err as Error).message}; skipped`);
+    }
   }
   if (dry) return;
-  const order = Object.values(KK_FILES).map((k) => k.id);
-  man.events = events;
-  if (kk.length) man.kk = kk.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
-  writeGains(man);
+  for (const e of built) e.gain = trackGain(loudness(join(OUT, e.file)));
   writeFileSync(MANIFEST, JSON.stringify(man, null, 2) + '\n');
 }
 
@@ -300,66 +357,35 @@ function trackGain({ i, tp }: { i: number; tp: number }): number {
   return Math.round(Math.min(6, Math.max(-12, g)) * 10) / 10;
 }
 
-type Entry = { file: string; start: number; end?: number; gain?: number };
+/** Every music entry in the manifest: the objects with a `file`, at any depth (sfx are plain paths). */
+function entries(o: unknown, at = ''): [string, Entry][] {
+  if (!o || typeof o !== 'object') return [];
+  if (typeof (o as Entry).file === 'string') return [[at, o as Entry]];
+  return Object.entries(o).flatMap(([k, v]) => entries(v, at ? `${at}.${k}` : k));
+}
 
 /** Measure every music file in the manifest and write its `gain`. */
-function writeGains(man: { opening?: string | Entry | null; music?: Record<string, Record<string, Entry>>; events?: Record<string, Entry>; kk?: (Entry & { id: string })[] }): void {
-  const entries: [string, Entry][] = Object.entries(man.music ?? {}).flatMap(([w, hours]) => Object.entries(hours).map(([h, e]) => [`${w}/${h}`, e] as [string, Entry]));
-  entries.push(...Object.entries(man.events ?? {}), ...(man.kk ?? []).map((k): [string, Entry] => [k.id, k]));
-  if (man.opening) {
-    const o: Entry = typeof man.opening === 'string' ? { file: man.opening, start: 0 } : man.opening;
-    man.opening = o;
-    entries.unshift(['opening', o]);
-  }
-  for (const [name, e] of entries) {
-    const l = loudness(join(OUT, '..', e.file));
+function writeGains(man: Manifest): void {
+  for (const [name, e] of entries(man)) {
+    const l = loudness(join(OUT, e.file));
     e.gain = trackGain(l);
-    console.log(`${name.padEnd(9)} ${l.i.toFixed(1)} LUFS  ${l.tp >= 0 ? '+' : ''}${l.tp.toFixed(1)} dBTP  → gain ${e.gain >= 0 ? '+' : ''}${e.gain.toFixed(1)} dB` +
+    console.log(`${name.padEnd(24)} ${l.i.toFixed(1)} LUFS  ${l.tp >= 0 ? '+' : ''}${l.tp.toFixed(1)} dBTP  → gain ${e.gain >= 0 ? '+' : ''}${e.gain.toFixed(1)} dB` +
       `  (${(l.i + e.gain).toFixed(1)} LUFS)`);
   }
 }
 
 function main(): void {
-  const [src, ...flags] = process.argv.slice(2);
-  if (src === '--gains') {
-    const man = JSON.parse(readFileSync(MANIFEST, 'utf8'));
+  const args = process.argv.slice(2).filter((a) => a !== '--extras'); // --extras: the old name of the same build
+  if (args[0] === '--gains') {
+    const man = JSON.parse(readFileSync(MANIFEST, 'utf8')) as Manifest;
     writeGains(man);
     writeFileSync(MANIFEST, JSON.stringify(man, null, 2) + '\n');
     return;
   }
-  if (src === '--extras') return extras(flags[0], flags.includes('--dry'));
-  if (!src) throw new Error('usage: node scripts/music.ts <source dir> [--dry] | --extras <source dir> [--dry] | --gains');
-  const dry = flags.includes('--dry');
-  mkdirSync(OUT, { recursive: true });
-  const files = readdirSync(src).filter((f) => f.endsWith('.mp3')).sort();
-  const hours: Record<string, Entry> = {};
-  let opening = false;
-  for (const file of files) {
-    const path = join(src, file);
-    const m = file.match(/^\d+-(\d+)\. /);
-    const idx = m ? Number(m[1]) : NaN;
-    if (idx === 1) {
-      // the opening theme is a one-shot: as is, minus trailing silence
-      if (!dry) {
-        execFileSync(FFMPEG, ['-v', 'error', '-y', '-i', path, '-vn', '-af', 'areverse,silenceremove=start_periods=1:start_threshold=-60dB,areverse',
-          '-c:a', 'aac', '-b:a', '64k', '-ac', '2', '-ar', String(SR), '-movflags', '+faststart', join(OUT, 'opening.m4a')]);
-      }
-      opening = true;
-      console.log(`opening       ${file}`);
-      continue;
-    }
-    const hour = idx - 2;
-    if (!(hour >= 0 && hour < 24)) continue;
-    const name = `hour-${String(hour).padStart(2, '0')}.m4a`;
-    hours[String(hour).padStart(2, '0')] = looped(path, file, name, dry);
-  }
-  if (dry) return;
-  // static/audio/manifest.json: the sunny hours and the opening (the rest of the file is kept as is)
-  const man = JSON.parse(readFileSync(MANIFEST, 'utf8'));
-  man.music = { ...man.music, sunny: hours };
-  if (opening) man.opening = { file: 'music/opening.m4a', start: 0 };
-  writeGains(man);
-  writeFileSync(MANIFEST, JSON.stringify(man, null, 2) + '\n');
+  const [src] = args;
+  if (!src || src.startsWith('--')) throw new Error('usage: node scripts/music.ts <source dir> [--only <regex>] [--dry] | --gains');
+  const only = args.indexOf('--only');
+  build(src, new RegExp(only > 0 ? args[only + 1] : '.'), args.includes('--dry'));
 }
 
 main();
