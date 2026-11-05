@@ -2,14 +2,14 @@
   // A custom food (マイ食品; a level over a search or its amount, docs/design.md "Gohan"): a food not in the data,
   // typed in as one serving. Mine or a new one: its name, 1食の めやす (the serving's label, 「1食」 unless typed) and
   // its weight in g (may stay blank: then it is logged by the serving, never by grams), カロリー (needed) and
-  // たんぱく質 · 脂質 · 炭水化物 · 塩分 in g (each may stay blank), all for one serving; full-width digits welcome
+  // たんぱく質 · 脂質 · 炭水化物 · 塩分 · 食物繊維 · アルコール in g (each may stay blank), all for one serving; full-width digits welcome
   // (foodUi parseAmount). Then けす (a saved one; tapped twice: ほんとうに けす？) and ほぞん (waiting until something
   // changed). Anyone else's: the same, read-only, with who made it, 「コピーして へんしゅう」 and 「ごはんに ついか」.
   import type { Who } from '#lib/types.ts';
   import { CUSTOM } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import Avatar from '../characters/Avatar.svelte';
-  import { customErrors, customOf, servingText, type CustomDraft } from './foodUi.ts';
+  import { CUSTOM_NUTS, customErrors, customOf, servingText, type CustomDraft } from './foodUi.ts';
 
   interface Props {
     draft: CustomDraft;
@@ -31,7 +31,7 @@
   const ok = $derived(bad.size === 0 && !clean);
   /** A field shows as wrong once something is typed in it that doesn't read (ほぞん waits for the name and kcal). */
   const wrong = (k: keyof CustomDraft) => bad.has(k) && draft[k].trim() !== '';
-  const NUTS = ['p', 'fa', 'c', 's'] as const;
+  const NUTS = CUSTOM_NUTS;
   let removing = $state(false);
 
   function save() {

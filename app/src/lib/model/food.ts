@@ -268,6 +268,71 @@ export function foodSeries(s: State, who: Who, today: LocalDate, n: FoodGoalOf =
   return { ...hit, goal: () => goal, met: goal === null ? undefined : (v) => goalMet(n, v, goal) };
 }
 
+/** The days a week's average on きろく covers. */
+const WEEK_DAYS = 7;
+
+/** A week's daily averages (きろく's weekly card): `from`…`to` the days it covers, `days` those with a meal (記録 n日),
+ *  kcal (whole) and each nutrient (g, one decimal) over them; fibre over the days that know it (null: none does). */
+export interface FoodWeek { from: LocalDate; to: LocalDate; days: number; kcal: number; p: number; fa: number; c: number; s: number; fi: number | null; al: number }
+
+/**
+ * `who`'s average day over the WEEK_DAYS finished days up to `end` (a day with nothing logged left out, as グラフ's
+ * averages: 記録なし, never a 0; a day's repeats counted), or null with no meal in them. The weekly card passes the day
+ * shown, or yesterday when that's today: today is never finished.
+ */
+export function foodWeek(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, end: LocalDate): FoodWeek | null {
+  const totals = dayTotals(s, who, end);
+  const from = addDays(end, 1 - WEEK_DAYS);
+  const sum = emptyTotals();
+  let days = 0, fiDays = 0;
+  for (let d = from; d <= end; d = addDays(d, 1)) {
+    const t = totals.get(d);
+    if (!t) continue;
+    days += 1;
+    for (const k of ['k', 'p', 'fa', 'c', 's', 'al'] as const) sum[k] += t[k];
+    if (t.fi !== null) (sum.fi = (sum.fi ?? 0) + t.fi), (fiDays += 1);
+  }
+  if (!days) return null;
+  const avg = (v: number) => round1(v / days);
+  return {
+    from, to: end, days, kcal: Math.round(sum.k / days), p: avg(sum.p), fa: avg(sum.fa), c: avg(sum.c), s: avg(sum.s),
+    fi: sum.fi === null ? null : round1(sum.fi / fiDays), al: avg(sum.al)
+  };
+}
+
+/** The 食事摂取基準（2025年版）'s 目標量 for the share of energy (%E, adults): protein 13–20 (the lower bound 14 from 50,
+ *  15 from 65: the adults' here), fat 20–30, carbohydrate 50–65. */
+export const PFC_RANGES = { p: [13, 20], fa: [20, 30], c: [50, 65] } as const;
+export type PfcOf = keyof typeof PFC_RANGES;
+/** kcal per gram: protein and carbohydrate 4, fat 9 (Atwater), alcohol 7. */
+const ATWATER = { p: 4, fa: 9, c: 4, al: 7 } as const;
+
+/** Each one's share of the energy (%E, unrounded) and where it sits against PFC_RANGES (as rounded to a whole %: −1
+ *  under, 0 within, 1 over); alcohol's share too (no range: it's no nutrient to aim for). */
+export interface PfcShare { p: number; fa: number; c: number; al: number; at: Record<PfcOf, -1 | 0 | 1> }
+
+/**
+ * Protein, fat and carbohydrate as shares of energy, from their grams (and alcohol's): each one's Atwater energy over
+ * their sum, so the shares add up to 100 and a bar of them is whole (a source's kcal is measured otherwise, and fibre
+ * in the carbohydrate is counted at 4: close enough for a share). Alcohol is its own share, never P, F or C's. Null
+ * with no energy from any.
+ */
+export function pfcShare(g: { p: number; fa: number; c: number; al?: number }): PfcShare | null {
+  const e = { p: g.p * ATWATER.p, fa: g.fa * ATWATER.fa, c: g.c * ATWATER.c, al: (g.al ?? 0) * ATWATER.al };
+  const all = e.p + e.fa + e.c + e.al;
+  if (!(all > 0)) return null;
+  const pct = (v: number) => (v * 100) / all;
+  const out = { p: pct(e.p), fa: pct(e.fa), c: pct(e.c), al: pct(e.al) };
+  const at = (n: PfcOf): -1 | 0 | 1 => {
+    const v = Math.round(out[n]), [lo, hi] = PFC_RANGES[n];
+    return v < lo ? -1 : v > hi ? 1 : 0;
+  };
+  return { ...out, at: { p: at('p'), fa: at('fa'), c: at('c') } };
+}
+
+/** What a meal's entries hold of protein (g, one decimal; an unknown one as none): its chip on きろく. */
+export const mealProtein = (entries: readonly { g: number; f: FoodSnap }[]): number => round1(entries.reduce((s, { g, f }) => s + ((f.p ?? 0) * g) / 100, 0));
+
 /** What a recipe, or one serving of it, adds up to: `g` grams, kcal (whole), protein, fat, carbs and salt (g, one
  *  decimal; null: no ingredient knows it). */
 interface RecipeSums { g: number; kcal: number; p: number | null; fa: number | null; c: number | null; s: number | null }

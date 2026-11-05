@@ -21,7 +21,8 @@
   import { flushSync, tick, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
   import { customSnap, FOOD_GOAL_OF, MEALS, type FoodCustom as Custom, type FoodEntry, type FoodGoalOf, type FoodSnap, type Meal } from '#lib/contract/food.ts';
-  import { customs, foodDay, foodEntries, foodGoal, recipes, repeatOn, repeats, type Recipe } from '#lib/model/food.ts';
+  import { customs, foodDay, foodEntries, foodGoal, foodWeek, recipes, repeatOn, repeats, type Recipe } from '#lib/model/food.ts';
+  import { mealProteinTarget } from '#lib/model/profile.ts';
   import {
     detachDay, editFood, logCustom, logFood, logRecipe, removeCustom, removeFood, removeRecipe, saveCustom, saveRecipe, startRepeat,
     stopRepeat, updateRepeat
@@ -42,6 +43,7 @@
   import FoodSummary from './FoodSummary.svelte';
   import { kcalWarn, saveGoal } from '../health/goals.ts';
   import FoodMeal from './FoodMeal.svelte';
+  import FoodWeek from './FoodWeek.svelte';
   import FoodSearch from './FoodSearch.svelte';
   import FoodAmount from './FoodAmount.svelte';
   import FoodCredits from './FoodCredits.svelte';
@@ -98,6 +100,10 @@
   const day = $derived(m && date ? foodDay(m.state, who, date) : null);
   /** Whose goals, kcal and each nutrient (protein's default included). */
   const goals = $derived(Object.fromEntries(FOOD_GOAL_OF.map((n) => [n, m ? foodGoal(m.state, who, n, m.now) : null])) as Record<FoodGoalOf, number | null>);
+  /** A meal's protein to aim for: a third of the day's (profile.ts mealProteinTarget). */
+  const ptarget = $derived(mealProteinTarget(goals.p));
+  /** The week's average day: the 7 finished days to the day shown (today's not finished: to yesterday). */
+  const avgWeek = $derived(m && date ? foodWeek(m.state, who, date < today ? date : addDays(today, -1)) : null);
   const byMeal = (k: Meal) => day?.entries.filter((e) => e.m === k) ?? [];
   const recent = $derived(m ? recentOf(foodEntries(m.state, me)) : []);
   /** My repeat of a meal still going (the one to manage; an ended one only fills its days). */
@@ -470,8 +476,9 @@
           {@const live = mine ? liveRepeat(k) : null}
           {@const r = live ?? repeatOn(m.state, who, k, date)}
           <FoodMeal meal={k} entries={byMeal(k)} {mine} days={r?.w ?? null} onadd={() => openSearch(k)}
-            onrepeat={mine && (live || (!r && date === today)) ? () => go({ k: 'repeat', meal: k }, `[data-repeat="${k}"], [data-repeat-new="${k}"]`) : null} onpick={edit} />
+            onrepeat={mine && (live || (!r && date === today)) ? () => go({ k: 'repeat', meal: k }, `[data-repeat="${k}"], [data-repeat-new="${k}"]`) : null} onpick={edit} {ptarget} />
         {/each}
+        {#if avgWeek}<FoodWeek week={avgWeek} {goals} />{/if}
         <FoodCredits />
       {/if}
     {/if}

@@ -214,15 +214,17 @@ export function customItem(c: FoodCustom): Item {
 export const servingText = (c: Pick<FoodCustom, 'u' | 'g'>): string => (c.g === undefined ? c.u : portionText(c.u, c.g));
 
 /** The custom food editor's fields, as typed (numbers as text: full-width digits welcome). */
-export interface CustomDraft { n: string; u: string; g: string; k: string; p: string; fa: string; c: string; s: string }
-const NUTS = ['p', 'fa', 'c', 's'] as const;
+export interface CustomDraft { n: string; u: string; g: string; k: string; p: string; fa: string; c: string; s: string; fi: string; al: string }
+/** The editor's nutrients: the four, then fibre and alcohol (each may stay blank: unknown). */
+export const CUSTOM_NUTS = ['p', 'fa', 'c', 's', 'fi', 'al'] as const;
+const NUTS = CUSTOM_NUTS;
 const num1 = (v: number | null | undefined): string => (v === null || v === undefined ? '' : gramsText(v));
 
 /** A new custom food's fields (the name: what was typed in the search; the serving's label blank: 「1食」 is its field's
  *  placeholder, never a value typed after), or a saved one's. */
 export function customDraft(c: FoodCustom | null, name = ''): CustomDraft {
-  if (!c) return { n: name.trim().slice(0, CUSTOM.nameChars), u: '', g: '', k: '', p: '', fa: '', c: '', s: '' };
-  return { n: c.n, u: c.u, g: num1(c.g), k: String(c.k), p: num1(c.p), fa: num1(c.fa), c: num1(c.c), s: num1(c.s) };
+  if (!c) return { n: name.trim().slice(0, CUSTOM.nameChars), u: '', g: '', k: '', p: '', fa: '', c: '', s: '', fi: '', al: '' };
+  return { n: c.n, u: c.u, g: num1(c.g), k: String(c.k), p: num1(c.p), fa: num1(c.fa), c: num1(c.c), s: num1(c.s), fi: num1(c.fi), al: num1(c.al) };
 }
 
 /** A typed amount → a number to one decimal within [min, max]; '' → null (left blank); undefined when it isn't one.
@@ -250,12 +252,14 @@ export function customErrors(d: CustomDraft): Set<keyof CustomDraft> {
   return bad;
 }
 
-/** The editor's fields as saveCustom takes them (customErrors empty first): kcal whole, a blank label 1食. */
-export function customOf(d: CustomDraft): { n: string; u: string; g?: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null } {
+/** The editor's fields as saveCustom takes them (customErrors empty first): kcal whole, a blank label 1食; fibre and
+ *  alcohol only when typed. */
+export function customOf(d: CustomDraft): { n: string; u: string; g?: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi?: number; al?: number } {
   const g = parseAmount(d.g, CUSTOM.grams.min, CUSTOM.grams.max) ?? undefined;
   const nut = (x: (typeof NUTS)[number]) => parseAmount(d[x], 0, CUSTOM.nutrientMax) ?? null;
+  const fi = nut('fi'), al = nut('al');
   return {
     n: d.n.trim(), u: d.u.trim() || t('food.my.one'), ...(g === undefined ? {} : { g }), k: Math.round(parseAmount(d.k, 0, CUSTOM.kcalMax) ?? 0),
-    p: nut('p'), fa: nut('fa'), c: nut('c'), s: nut('s')
+    p: nut('p'), fa: nut('fa'), c: nut('c'), s: nut('s'), ...(fi === null ? {} : { fi }), ...(al === null ? {} : { al })
   };
 }
