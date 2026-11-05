@@ -21,7 +21,8 @@ import jaCatalog from '#lib/i18n/catalog.ja.json';
 import enCatalog from '#lib/i18n/catalog.en.json';
 import jaTent from '#lib/i18n/tent.ja.json';
 import enTent from '#lib/i18n/tent.en.json';
-import { artKeys, REACTIONS, sceneArt } from '#lib/art.ts';
+import { artKeys, REACTIONS } from '#lib/art.ts';
+import { sceneArt } from '#lib/components/kikimimi/scene/stage.ts';
 import { SCENE_IDS } from '#lib/kikimimi/bank.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
@@ -142,7 +143,7 @@ describe('official art (static/art/manifest.json)', () => {
     ...RING_FRUITS.map((f) => `fruit3d/${f}`),
     ...ROSTER_IDS.flatMap((id) => [`villagers/${id}`, `villagers/${id}-icon`]),
     ...REACTIONS.map((r) => `reactions/${r}`),
-    // ききみみ's scene backdrops (kikimimi/bank.ts SCENE_IDS, art.ts sceneArt)
+    // ききみみ's scene backdrops (kikimimi/bank.ts SCENE_IDS, kikimimi/scene/stage.ts sceneArt)
     ...SCENE_IDS.map(sceneArt),
     // the scene's catches (island/critters.ts critterArt)
     ...[...Object.keys(FISH), ...Object.keys(POND_FISH), ...Object.keys(BUGS), ...JUNK, ...Object.keys(SEA)].map((id) => critterArt(id as keyof typeof FISH)),

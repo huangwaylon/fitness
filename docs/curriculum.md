@@ -294,6 +294,8 @@ Everything uses the app's paper theme (cream paper, rounded cards, the NH brown 
 | **Stamp card and ずかん** | Can-do stamps per stage (Nook Miles style); a phrase ずかん filled when a chunk is heard in 3 contexts; a "sounds I can hear" collection. | existing paper components |
 | **Generated illustrations** (optional) | Richer backdrops for news and podcasts. | Feasible offline on the M5 Max (an open-weights image model), styled as paper watercolour backgrounds only. **Licence:** never generate NH characters or imitate Nintendo assets; check the model's licence for the outputs. The NH art itself is Nintendo's and stays as the app already uses it (a private app; the repo goes private after the hosting move). Start with the SVG kit; add generated backdrops only if the kit feels thin. |
 
+**As built (increment 5, 2026-11-06):** the backdrops are painted (Z-Image-Turbo, Apache-2.0; 8 scenes, docs/kikimimi.md "Visuals") rather than the SVG kit, with the channel frames in CSS/SVG and the karaoke timed by whisper's word alignment.
+
 **Rule:** no visual may show the answer before the reveal. Scene cards show the setting, never the outcome; transcripts and marks appear only at the reveal.
 
 ## 9. Audio and script rules for TTS

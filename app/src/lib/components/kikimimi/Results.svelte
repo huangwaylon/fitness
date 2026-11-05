@@ -107,7 +107,7 @@
           <span class="sym" class:ok={r.ok} aria-label={r.ok ? t('kiki.right') : t('kiki.wrong')}>{r.ok ? '○' : '×'}</span>
           <div class="txt">
             {#if isDialogue(r.it)}
-              <Transcript it={r.it} compact talk={game.talk?.i === -1 && game.talk.at === r.it.id ? game.talk.k : -1} />
+              <Transcript it={r.it} compact talk={game.talk?.i === -1 && game.talk.at === r.it.id ? game.talk.k : -1} from={game.talk?.from ?? null} clock={() => game.clock()} />
               {#if r.it.type === 'gist'}<p class="ans" lang="en">→ {r.it.choices[r.it.answer]}<span>{r.it.ja}</span></p>{/if}
             {:else}
               <p class="en" lang="en">{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</p>

@@ -2,33 +2,35 @@
   // A dialogue's transcript (docs/kikimimi.md "Dialogues"), at the reveal and in the review list: each line a bubble by
   // its speaker's head, the first speaker's on the left and the other's on the right, its English (the item's focus
   // marked in the line that has it) and its Japanese; the line being spoken (a replay) lifted. A `next` item's right
-  // answer closes it as the next line, from the speaker whose turn it is (dashed: it was never said).
+  // answer closes it as the next line, from the speaker whose turn it is (dashed: it was never said). Each line carries
+  // its sound marks and, while it's spoken (`talk`, started at `from`), its karaoke (scene/SoundLine.svelte); the marks'
+  // key under it.
   import type { Item, Line } from '#lib/kikimimi/bank.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
+  import SoundLine from './scene/SoundLine.svelte';
+  import MarkLegend from './scene/MarkLegend.svelte';
   import { villagerArt } from '#lib/art.ts';
   import { ROSTER, type RosterId } from '#lib/villagers/roster.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
 
-  let { it, talk = -1, compact = false }: { it: Item & { lines: readonly Line[] }; talk?: number; compact?: boolean } = $props();
+  let { it, talk = -1, from = null, clock = () => Date.now(), compact = false }: {
+    it: Item & { lines: readonly Line[] }; talk?: number; from?: number | null; clock?: () => number; compact?: boolean;
+  } = $props();
   const first = $derived(it.lines[0].who);
   const other = $derived(it.lines.find((l) => l.who !== first)?.who ?? first);
   const name = (id: RosterId) => (i18n.locale === 'ja' ? ROSTER[id].nameJa : ROSTER[id].nameEn);
-  /** The line around the focus: [before, focus, after] when it's in this line. */
-  const parts = (en: string): [string, string, string] => {
-    const f = it.focus, at = f ? en.indexOf(f) : -1;
-    return !f || at < 0 ? [en, '', ''] : [en.slice(0, at), f, en.slice(at + f.length)];
-  };
+  /** Every line's marks (the key's). */
+  const marks = $derived(it.lines.flatMap((l) => l.marks ?? []));
   /** A `next` item's answer, said by whoever didn't say the last line. */
   const next = $derived(it.type === 'next' ? { who: it.lines.at(-1)!.who === first ? other : first, en: it.choices[it.answer] } : null);
 </script>
 
 <ol class="tr" class:compact data-kiki-transcript={it.id}>
   {#each it.lines as l, k (k)}
-    {@const [pre, focus, post] = parts(l.en)}
     <li class="ln" class:right={l.who !== first} class:talk={talk === k} data-line={k}>
       <span class="head"><OfficialArt key={villagerArt(l.who, true)} alt={name(l.who)} size={compact ? 28 : 36} /></span>
       <div class="b">
-        <p class="en" lang="en">{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</p>
+        <p class="en"><SoundLine en={l.en} focus={it.focus} marks={l.marks} clip="{it.id}-{k + 1}" from={talk === k ? from : null} {clock} /></p>
         <p class="ja">{l.ja}</p>
       </div>
     </li>
@@ -44,6 +46,7 @@
     </li>
   {/if}
 </ol>
+{#if marks.length && !compact}<div class="key"><MarkLegend {marks} /></div>{/if}
 
 <style>
   .tr { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
@@ -61,7 +64,7 @@
   .next .b { background: transparent; box-shadow: none; outline: 2px dashed var(--c-leaf-edge); outline-offset: -2px; }
   .b small { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--leaf-text); }
   .en { margin: 0; font: 700 max(16px, var(--fs-body))/1.4 var(--font-ui); }
-  .en mark { background: linear-gradient(transparent 55%, color-mix(in srgb, var(--c-yuzu) 85%, transparent) 55%); color: inherit; padding: 0 1px; }
+  .key { margin-top: -2px; display: flex; justify-content: center; }
   .ja { margin: 0; font: 700 var(--fs-xs)/1.4 var(--font-ui); color: var(--c-ink-soft); }
   .compact .en { font-size: 15px; }
   .compact .b { padding: 6px 10px; }

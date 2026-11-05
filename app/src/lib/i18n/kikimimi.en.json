@@ -181,5 +181,22 @@
   "kiki.f.numbers": "big numbers",
   "kiki.f.ellipsis": "dropped words",
   "kiki.f.idiom": "idioms",
-  "kiki.f.intonation": "intonation"
+  "kiki.f.intonation": "intonation",
+  "kiki.scene.cafe": "Café",
+  "kiki.scene.platform": "Platform",
+  "kiki.scene.pharmacy": "Pharmacy",
+  "kiki.scene.office": "Office",
+  "kiki.scene.door": "Front door",
+  "kiki.scene.gate": "Airport gate",
+  "kiki.scene.street": "High street",
+  "kiki.scene.living": "Home",
+  "kiki.chan.phone": "Phone call",
+  "kiki.chan.voicemail": "Voicemail",
+  "kiki.chan.pa": "Announcement",
+  "kiki.chan.video": "Video call",
+  "kiki.chan.calling": "On a call",
+  "kiki.mark.say": "Said as",
+  "kiki.mark.link": "Linked",
+  "kiki.mark.drop": "Dropped",
+  "kiki.mark.stress": "Stressed"
 }

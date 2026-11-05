@@ -15,6 +15,7 @@ import { audioUrl } from '#lib/sound/manifest.ts';
 import { cue } from '#lib/sound/cues.ts';
 import { localDateAt } from '#lib/contract/tokyo.ts';
 import type { ListenRow } from '#lib/contract/listen.ts';
+import { preloadStage } from './scene/stage.ts';
 
 /** The last decks built (the session's and the UI's are the same items), by seed and level. */
 const decks = new Map<string, Item[]>();
@@ -75,9 +76,9 @@ export class QuizGame {
   replayed = $state<boolean[]>([]);
   /** A replay sounding (🔁, 🐢, the reveal's), on the relay's clock: the bubble's bar. */
   sounding = $state.raw<{ i: number; from: number; until: number; slow: boolean } | null>(null);
-  /** A dialogue's line being spoken (its speaker bobs): question i (-1: a review row), line k of item `at`; on every
-   *  phone, from the schedule (おなじへや's others hear the host's). */
-  talk = $state.raw<{ i: number; k: number; at: string } | null>(null);
+  /** A dialogue's line being spoken (its speaker bobs, its karaoke runs): question i (-1: a review row), line k of item
+   *  `at`, started at `from` (the relay's clock); on every phone, from the schedule (おなじへや's others hear the host's). */
+  talk = $state.raw<{ i: number; k: number; at: string; from: number } | null>(null);
   /** Who else has the island open (the lobby's list). */
   here = $state.raw<readonly Who[]>([]);
   /** おなじへや on a phone that doesn't speak: 🔁 / 🐢 shown disabled (「ホストの スマホで ながれます」), and no
@@ -191,6 +192,11 @@ export class QuizGame {
     void this.#playNow(it, -1, slow);
   }
 
+  /** The relay's clock now (ms): the karaoke's frame loop reads it (SoundLine.svelte). */
+  clock(): number {
+    return this.#link.now();
+  }
+
   /** The lobby's 🔊 「きこえる？」: whether a clip could play (false: no voice session, interrupted). */
   async test(): Promise<boolean> {
     const buf = await loadVoice(clipUrl(TEST_CLIP));
@@ -253,6 +259,7 @@ export class QuizGame {
       this.#fetched = `${v.seed}:${v.lv}`;
       for (const id of items.flatMap((it) => clipIds(it))) void fetch(audioUrl(clipUrl(id))).then((r) => (this.#gone ? null : r.arrayBuffer())).catch(() => {});
       if (v.speaks) void loadVoice(clipUrl(clipIds(items[0])[0]));
+      preloadStage(items[0]);
     }
     if (v.phase === 'idle' || v.phase === 'lobby' || v.phase === 'results') {
       if (this.#planned || this.#handles.size) this.#stopAll();
@@ -276,6 +283,8 @@ export class QuizGame {
       // the next question's (first) clip decoded meanwhile (the engine keeps the last 4)
       const after = items[v.i + 1];
       if (after) void loadVoice(clipUrl(clipIds(after)[0]));
+      // and its scene card's art (one question ahead: one backdrop on screen, the next in the image cache)
+      preloadStage(after);
     }
     // a dialogue's turns (the speaker who bobs), from the schedule, on every phone
     if (first && !v.out && isDialogue(it) && this.#talked !== `${v.i}:${v.playAt}`) {
@@ -352,7 +361,7 @@ export class QuizGame {
       const start = t, end = t + d * 1000;
       t = end + LINE_GAP * 1000;
       if (end <= now) return;
-      this.#talkTimers.push(setTimeout(() => !this.#gone && (this.talk = { i, k, at: it.id }), Math.max(0, start - now)));
+      this.#talkTimers.push(setTimeout(() => !this.#gone && (this.talk = { i, k, at: it.id, from: start }), Math.max(0, start - now)));
     });
     this.#talkTimers.push(setTimeout(() => !this.#gone && (this.talk = null), Math.max(0, t - LINE_GAP * 1000 - now)));
   }
