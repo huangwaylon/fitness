@@ -1,5 +1,8 @@
 # ききみみ UX: the hub, the menu, progression (design, 2026-11-06)
 
+> **The user's decisions (2026-11-06):** the design is approved for building. **No かいがら:** English practice pays nothing in the island economy, so drop every reward amount below and keep the stamps, the ずかん, friendship, gifts and letters as the rewards. The weekly target defaults to **3 days**. A stage's reward comes **only when it's cleared unit by unit**, never when the placement test skips it.
+
+
 This is the lead product designer's synthesis of the UI/UX round on the English-listening feature. The inputs were the brief (the user: "overhaul the menu and UI design… make it intuitive and reorganize features", and "take inspiration from Duolingo and other language-learning game apps"), the IA and wireframes (UX), the game team's study of Duolingo and the island's loops, and the copy and naming review (a UX writer with the ウェイ / うめ panel). It builds on docs/kikimimi.md (as built), docs/curriculum.md §3, §7, §7.1, §11 and §14, and docs/kikimimi-framework.md §5 and §7. Nothing here is built yet. Builders follow this document and update it as they go. Settled choices move into docs/decisions.md as they land.
 
 A clickable static prototype of every screen below was built alongside this doc (plain HTML, the app's tokens, fonts and art, screenshots at 393×852 in WebKit). It isn't in the repo. The wireframes here are the reference.
