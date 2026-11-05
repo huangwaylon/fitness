@@ -11,7 +11,7 @@
   import type { Rec } from '#lib/kikimimi/advice.ts';
   import { stageOf } from '#lib/kikimimi/progress.ts';
   import { SKILLS } from '#lib/kikimimi/tags.ts';
-  import type { Accent, ItemType } from '#lib/kikimimi/bank.ts';
+  import { levelMark, type Accent, type ItemType } from '#lib/kikimimi/bank.ts';
   import Host from '../characters/Host.svelte';
   import { recWords } from './progress.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -35,7 +35,7 @@
   const details = $derived([
     ['byType', TYPES.filter((x) => s.byType[x]).map((x) => [t(`kiki.type.${x}`), s.byType[x]!] as const)],
     ['byAccent', ACCENTS.filter((x) => s.byAccent[x]).map((x) => [t(`kiki.accent.${x}`), s.byAccent[x]!] as const)],
-    ['byLevel', levels.map((x) => [`★${x}`, s.byLevel[x]!] as const)]
+    ['byLevel', levels.map((x) => [x === 5 ? `${levelMark(x)} ${t('kiki.lv.5')}` : `★${x}`, s.byLevel[x]!] as const)]
   ] as const);
 </script>
 

@@ -13,7 +13,8 @@ import aligned from './words.json';
 
 const STATIC = join(import.meta.dirname, '../../../static');
 const SCRIPT = JSON.parse(readFileSync(join(import.meta.dirname, '../../../scripts/scenes/scenes.json'), 'utf8')) as { scenes: Record<string, string> };
-const L4 = BANK.filter((it) => it.lv === 4);
+/** Levels 4 and 5 (the アナウンス pack): the staged levels. */
+const L4 = BANK.filter((it) => it.lv >= 4);
 
 describe('kikimimi scenes', () => {
   it('every scene has its three webps, its manifest entry at the card size, and its prompt', () => {
@@ -24,7 +25,7 @@ describe('kikimimi scenes', () => {
     }
   });
 
-  it('every level-4 item is staged: a known scene or none, a valid channel', () => {
+  it('every level-4 and level-5 item is staged: a known scene or none, a valid channel', () => {
     expect(Object.keys(PLACES).sort()).toEqual(L4.map((it) => it.id).sort());
     for (const it of L4) {
       if (it.scene) expect(SCENE_IDS, it.id).toContain(it.scene);
@@ -53,7 +54,7 @@ describe('kikimimi sound marks', () => {
   /** Every clip's text and marks: an item's, or each dialogue line's. */
   const clips = L4.flatMap((it) => (isDialogue(it) ? it.lines.map((l, n) => ({ id: `${it.id}-${n + 1}`, en: l.en, tts: l.tts, marks: l.marks })) : [{ id: it.id, en: it.en, tts: it.tts, marks: it.marks }]));
 
-  it('every level-4 item and line with a tts respelling has marks, and only those (by their clip ids)', () => {
+  it('every level-4 and level-5 item and line with a tts respelling has marks, and only those (by their clip ids)', () => {
     expect(clips.filter((c) => c.tts && !c.marks?.length).map((c) => c.id)).toEqual([]);
     expect(Object.keys(MARKS).filter((id) => !clips.some((c) => c.id === id && c.tts))).toEqual([]);
   });

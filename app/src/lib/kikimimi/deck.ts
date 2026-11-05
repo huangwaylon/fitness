@@ -1,7 +1,7 @@
 // ききみみ クイズ: a game's 8 questions from {seed, lv} (docs/kikimimi.md "Content"). Pure and deterministic: every
 // phone builds the same deck from the `open` intent's seed and level, so no text goes on the wire.
 import { mulberry32, shuffle } from '#lib/random.ts';
-import { BANK, DIALOGUE_TYPES, type Item, type ItemType, type Level } from './bank.ts';
+import { BANK, isDialogue, type Item, type ItemType, type Level } from './bank.ts';
 import { CLIPS, voiced } from './clips.ts';
 
 export const DECK_SIZE = 8;
@@ -9,12 +9,14 @@ export const DECK_SIZE = 8;
 type Mix = Readonly<Partial<Record<ItemType, number>>>;
 type Mixes = Readonly<Partial<Record<Level, Mix>>>;
 
-/** How many of each type a level's game has (8 in all). Level 5 has none yet (the protocol's room for the next). */
+/** How many of each type a level's game has (8 in all). Level 5 is the アナウンス pack (bank5.ts): numbers that matter,
+ *  what's going on, what it means, what to say back. */
 const BASE: Mixes = {
   1: { pic: 3, word: 3, num: 2 },
   2: { pic: 2, word: 2, num: 2, reply: 2 },
   3: { pic: 1, word: 2, num: 2, reply: 3 },
-  4: { word: 2, num: 2, reply: 2, mean: 2 }
+  4: { word: 2, num: 2, reply: 2, mean: 2 },
+  5: { num: 3, gist: 2, mean: 2, reply: 1 }
 };
 /** Level 4 once its dialogues have their clips (every line: dialogues.ts): one `gist` and one `next` a game. */
 const WITH_DIALOGUES: Mix = { word: 2, num: 1, reply: 1, mean: 2, gist: 1, next: 1 };
@@ -22,7 +24,7 @@ const WITH_DIALOGUES: Mix = { word: 2, num: 1, reply: 1, mean: 2, gist: 1, next:
 /** The mixes for a set of clips: level 4 takes dialogues only once every dialogue item is voiced (they wait for the
  *  neural pipeline apart from level 4's single lines, so either can land first). */
 export function mixes(clips: Readonly<Record<string, unknown>>): Mixes {
-  const ready = BANK.filter((it) => DIALOGUE_TYPES.includes(it.type)).every((it) => voiced(it, clips));
+  const ready = BANK.filter(isDialogue).every((it) => voiced(it, clips));
   return ready ? { ...BASE, 4: WITH_DIALOGUES } : BASE;
 }
 export const MIX: Mixes = mixes(CLIPS);

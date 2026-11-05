@@ -19,7 +19,7 @@
   import type { Focus } from '#lib/kikimimi/srs.ts';
   import type { Rec } from '#lib/kikimimi/advice.ts';
   import { heardQuiz, quizLive } from './invite.svelte.ts';
-  import { BANK, type Level } from '#lib/kikimimi/bank.ts';
+  import { BANK, levelMark, type Level } from '#lib/kikimimi/bank.ts';
   import { LEVELS } from '#lib/kikimimi/deck.ts';
   import type { QuizPhase } from '#lib/kikimimi/session.ts';
   import { voice, voiceSession } from '#lib/sound/sound.svelte.ts';
@@ -172,7 +172,7 @@
           <Host size={96} />
           {#if v.invite}
             <div class="invite card" data-kiki-invite={v.invite.g}>
-              <p class="say">{t('kiki.invited', { name: hostName(v.invite.host) })}<small>{'★'.repeat(v.invite.lv)} {t(`kiki.lv.${v.invite.lv}`)}{#if v.invite.started} · {t('kiki.started')}{/if}</small></p>
+              <p class="say">{t('kiki.invited', { name: hostName(v.invite.host) })}<small>{levelMark(v.invite.lv)} {t(`kiki.lv.${v.invite.lv}`)}{#if v.invite.started} · {t('kiki.started')}{/if}</small></p>
               <button type="button" class="btn" data-kiki-join data-sfx="confirm" onclick={() => game?.join(v.invite!.g)}>{t('kiki.joinIt')}</button>
             </div>
           {/if}

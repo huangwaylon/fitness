@@ -13,6 +13,7 @@
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { QuizLv } from '../contract/live-protocol.ts';
 import { BANK4 } from './bank4.ts';
+import { BANK5 } from './bank5.ts';
 import { DIALOGUES } from './dialogues.ts';
 
 /** `mean` (level 4): what the speaker really means, from 3 English paraphrases (the literal reading, the opposite and
@@ -21,9 +22,15 @@ import { DIALOGUES } from './dialogues.ts';
 export type ItemType = 'pic' | 'word' | 'num' | 'reply' | 'mean' | 'gist' | 'next';
 /** The dialogue types (an item with `lines`). */
 export const DIALOGUE_TYPES: readonly ItemType[] = ['gist', 'next'];
-/** The protocol's levels (1-5); the bank has 1-4 (5 is room for the next without a relay deploy). */
+/** The protocol's levels (1-5): 1-4 the stages' quiz, 5 the アナウンス pack (bank5.ts: announcements, voicemails and
+ *  phone menus through their channels, about level 4's band). */
 export type Level = QuizLv;
 export type Accent = 'us' | 'uk' | 'au';
+/** A level's place on the stages' ladder (progress.ts difficulty, advice.ts nudges): 1-4 themselves; 5, the アナウンス
+ *  pack, sits beside level 4 (its band, B1+ → B2), never above it. */
+export const levelRank = (lv: number): number => (lv === 5 ? 4 : lv);
+/** A level's mark beside its name: its ★s (the stage's count), the pack 📢. */
+export const levelMark = (lv: number): string => (lv === 5 ? '📢' : '★'.repeat(lv));
 /** A cast voice of the neural TTS (docs/curriculum.md §9; 12 voices, US weighted: speech.ts SLOTS lists the ones that
  *  exist, scripts/tts/cast.json describes them): accent, gender, slot. Each villager speaks with one for good (bank4.ts
  *  CAST). */
@@ -517,5 +524,6 @@ export const BANK: readonly Item[] = [
   ...NUM.flatMap(numItems),
   ...REPLY.map(([lv, ...r]) => make(lv, 'reply')(r)),
   ...BANK4,
-  ...DIALOGUES
+  ...DIALOGUES,
+  ...BANK5
 ];

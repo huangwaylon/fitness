@@ -82,6 +82,7 @@ FOLD = [(r"\bgonna\b", 'going to'), (r"\bwanna\b", 'want to'), (r"\bgotta\b", 'g
         (r"\bshoulda\b", 'should have'), (r"\bwoulda\b", 'would have'), (r"\bcoulda\b", 'could have'),
         (r"\bdidja\b", 'did you'), (r"\bd'you\b", 'do you'), (r"\bya\b", 'you'), (r"\b'em\b", 'them'),
         (r"\b'n'\b", 'and'), (r"(?<=\w)in'(?=\s|$|[,.?!])", 'ing'), (r"\bwouldn't've\b", "wouldn't have"),
+        (r"\benquir", 'inquir'), (r"\badviser", 'advisor'), (r"\bkm/h\b", 'kilometres an hour'), (r"\bkm\b", 'kilometres'),
         (r"\bbells\b", 'bell'), (r"\bokay\b", 'ok')]
 # not "content": articles and fillers (a dropped "the" or an added "oh" isn't a mishearing of the line)
 MINOR = {'a', 'an', 'the', 'um', 'uh', 'er', 'ah', 'oh', 'hm', 'hmm', 'mm', 'so', 'well'}
