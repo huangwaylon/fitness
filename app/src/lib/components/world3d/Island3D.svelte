@@ -264,6 +264,16 @@
   /** K.K. is out (his node registered), and has been in view: his model loads the first time he is (never fetched for
    *  an island opened and left without a look at him), then stays, hidden while he's out of view. */
   let kkOn = false, kkLoad = false;
+  /** A character at (x, z) on screen or near it: its feet or its head inside the canvas, a margin of its height and a
+   *  finger's round it (the log bends the far ones down: their head may show over its horizon). Off it, it's hidden
+   *  and not posed (villagers.ts VSpec seen). */
+  function onScreen(e: Island3, x: number, z: number): boolean {
+    for (const lift of [0, VILLAGER.h * 1.3]) {
+      const p = e.at(x, z, lift), m = 40 + p.k * VILLAGER.h;
+      if (p.depth > 1 && p.sx > -m && p.sx < cw + m && p.sy > -m && p.sy < ch + m) return true;
+    }
+    return false;
+  }
   function visSpec(s: VSpec, id: string, x: number, z: number, v: V3, shown: boolean) {
     const a = actors[v.actor ?? 'visitor'];
     s.id = id;
@@ -282,6 +292,7 @@
     s.seat = v.seat ?? null;
     s.yaw = v.yaw;
     s.asleep = !!v.asleep?.();
+    s.seen = !eng || onScreen(eng, x, z);
   }
   const onV3 = (v: V3, x: number, z: number, shown: boolean) => {
     if (v.actor === 'kk') {
@@ -333,7 +344,7 @@
       specs.push({
         slot: c.id, id: p.villager, model: p, x, z, y: feetOf(x, z), walking: a.walking, face: a.face, side: c.side, asleep: a.asleep,
         seat: c.seat ? seatTop(c.seat) : null, lift: c.rep ? pullLift(t) : 0, motion: a.motion, motionN: a.motionN, emote: a.emote, stung: c.stung, shown: c.shown,
-        away: inFocusWay(x, z), hat: c.hat, tool: c.id === 'mine' && fishing ? 'tools/rod' : null
+        away: inFocusWay(x, z), hat: c.hat, tool: c.id === 'mine' && fishing ? 'tools/rod' : null, seen: onScreen(eng, x, z)
       });
     }
     if (!vil3) {

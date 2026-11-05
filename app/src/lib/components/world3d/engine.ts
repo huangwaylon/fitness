@@ -15,7 +15,7 @@
 //   World's step runs in each frame before it draws, so the DOM moves with the picture.
 // Plain TS; world3d/Island3D.svelte drives it.
 import {
-  Box3, Color, DirectionalLight, Fog, HemisphereLight, Mesh, PerspectiveCamera, Scene, SRGBColorSpace, Texture, Vector3,
+  Box3, Color, DirectionalLight, Fog, Frustum, HemisphereLight, Matrix4, Mesh, PerspectiveCamera, Scene, Sphere, SRGBColorSpace, Texture, Vector3,
   WebGLRenderer, PCFSoftShadowMap, type Material, type Object3D
 } from 'three';
 import { bend, bendPoint, bendU, unbendRay } from './bend.ts';
@@ -757,7 +757,29 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   /** The last frame's: something moved (the full rate), only the ambience did. */
   let busy = false, ambience = false, paused = false, inFrame = false;
   let hook: ((t: number) => Want) | null = null;
-  const groupsPlaced = new Map<string, { obj: Object3D; off: () => void }>();
+  const groupsPlaced = new Map<string, { obj: Object3D; off: () => void; ball: Sphere }>();
+  /** The placed groups (a home, a bridge, a pond: still, bounds known) culled with the camera, as three can't: their
+   *  meshes are bent in the shader, so each group's ball is bent here (its middle; its radius doubled, for the shadow
+   *  it casts into view) and tested against the view (once a camera rev, or a group placed). */
+  const frustum = new Frustum(), viewProj = new Matrix4(), bentBall = new Sphere();
+  let culledRev = -1;
+  function cullGroups() {
+    if (culledRev === rev) return;
+    culledRev = rev;
+    viewProj.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    frustum.setFromProjectionMatrix(viewProj);
+    const R = bendU.uBendR.value, pz = -camZ;
+    for (const g of groupsPlaced.values()) {
+      const c = g.ball.center, [x, y, z] = bendPoint(c.x, c.y, c.z, pz, R);
+      bentBall.center.set(x, y, z);
+      bentBall.radius = g.ball.radius * 2 + 20;
+      const on = frustum.intersectsSphere(bentBall);
+      if (g.obj.visible !== on) {
+        g.obj.visible = on;
+        shadowsDirty = true;
+      }
+    }
+  }
   /** A placed group's resources once it was replaced or removed (a もようがえ's home, bridge or pond: the models'
    *  cache's, maybe in nothing else in the scene by the end): let go of with the scene's at the end, or they keep this
    *  renderer alive. */
@@ -865,6 +887,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       else want(g, 'ground');
     }
     want(lights.frame(t, camX, camZ + 110, bendU.uBendR.value, -camZ), 'lights');
+    cullGroups();
     if (opts.shadows && shadowsDirty) {
       renderer.shadowMap.needsUpdate = true;
       shadowsDirty = false;
@@ -996,7 +1019,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
         obj.position.set(at.x, at.y ?? src.height(at.x, at.z), -at.z);
         obj.rotation.y = at.yaw ?? 0;
         obj.updateMatrixWorld(true);
-        groupsPlaced.set(id, { obj, off: addObj(obj) });
+        groupsPlaced.set(id, { obj, off: addObj(obj), ball: new Box3().setFromObject(obj).getBoundingSphere(new Sphere()) });
+        culledRev = -1;
       }
       shadowsDirty = true;
       kick();
