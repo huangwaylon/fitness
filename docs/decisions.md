@@ -21,19 +21,18 @@ record were checked equal first. Not done: high-fives (relay-only now) and super
 over; duplicate finds stay (the ずかん reads the first); an edge cache of the snapshot (the record already answers in
 ~60 ms from Tokyo's edge).
 
-### The sheet is an export
-The bound Google Sheet is a one-way copy: the relay's cron rewrites its tabs from the record after each change (within
-15 minutes) and every night, and a README tab and a note on each header say it is read-only. Its Apps Script web app
-only takes that export (it forwarded the old `/exec` URL's requests to the record for the day of the move, until both
-phones were seen posting to the relay alone). The relay pushes (signed in the body, since Apps Script can't read headers) rather than Apps Script pulling,
-so no installable trigger or new Google scope was needed and the relay holds no Google credential. Why: a backup and
-something to look at, in the place the user already knows, without a second path for data of record. Not done:
-writing back from the sheet (an edit there goes nowhere); an installable time trigger pulling deltas (a possible later
-step if the push ever fails often).
+### Sheet export removed (2026-11-05)
+The record is no longer copied to a Google Sheet: the relay's export cron and its signing, the Apps Script web app's
+code (`app/gas/`, `app/apps-script/`, clasp) and its docs are gone. Why: the user ("get rid of the Google Sheets
+export"); nobody read the sheet once the record moved to the relay, it was a second copy of every row (health data
+included) in another account, the largest reader of the relay's rows (a dump every change), and an anonymous web app
+signed with a secret from both keys, on the way to making the repo private. The backups are point-in-time recovery
+(30 days) and `node scripts/record.ts dump` (runbook §7). The sheet and the script's deployment were left in the
+Google account for the user to delete. (Before: the sheet was a one-way export, rewritten from the record within 15
+minutes of a change and nightly, its web app taking only that export, signed in the body.)
 
 ### Per-person keys
-Two keys, `KEY_A` and `KEY_B`, as Worker secrets (and Script Properties, which derive the export's signature); a key
-identifies the person. It travels in the POST body, never the URL; requests are `text/plain` (no CORS preflight). A
+Two keys, `KEY_A` and `KEY_B`, as Worker secrets (the guest's `KEY_C` too); a key identifies the person. It travels in the POST body, never the URL; requests are `text/plain` (no CORS preflight). A
 phone pairs with a `#key=…` link or by typing the key. Why: no accounts for two people.
 
 ### Append-only, computed on read
@@ -287,10 +286,15 @@ row, 2026-11-02). Why: one home per datum.
 
 ## App and hosting
 
-### PWA on GitHub Pages
-A static SvelteKit SPA (adapter-static, base `/fitness`), installed to the home screen, with a strict CSP allowing
-only our origin and the Apps Script origins. The repo is public (free Pages); without a key the site shows only
-pairing or `?demo`. Why: free hosting, data never on the site.
+### PWA on Cloudflare Pages (2026-11-05)
+A static SvelteKit SPA (adapter-static, at the root of https://island-fund.pages.dev, a Cloudflare Pages project fed by
+direct upload from CI after the gate), installed to the home screen, with a strict CSP (the `<meta>` and a header,
+`build-pages/_headers`) allowing only our origin and the relay's, and nosniff, no-referrer, a Permissions-Policy, no
+framing, HSTS. Without a key the site shows only pairing or `?demo`. Why: the pairing key is in localStorage, and on
+https://huangwaylon.github.io/fitness the origin was shared with the account's other GitHub Pages sites (any of them
+could read it); GitHub Pages can't set headers; Cloudflare's free plan already hosts the relay. The move: both
+URLs serve the same build and the relay lets both origins in until each phone is paired on the new one (runbook §14);
+then GitHub Pages goes and the repo goes private.
 
 ### Offline shell
 The service worker precaches the build (not audio, fonts or art beyond the defaults), loads pages network-first with a

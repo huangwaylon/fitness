@@ -23,7 +23,7 @@ describe('an island day (contract/island.ts)', () => {
     ]) expect(isIslandDay(bad as Record<string, unknown>), JSON.stringify(bad).slice(0, 80)).toBe(false);
   });
 
-  it('its plan is the relay protocol\'s (the Apps Script bundles this file alone)', () => {
+  it('its plan is the relay protocol\'s', () => {
     expect([PLAN_X, PLAN_Z]).toEqual([WORLD_X, WORLD_Z]);
   });
 

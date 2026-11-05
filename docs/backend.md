@@ -1,8 +1,7 @@
 # Island Fund: backend
 
-The record (a Durable Object's SQLite on the relay), the Google Sheet it is exported to, the Apps Script web app in
-front of the sheet, and the client's sync. The contract (tabs, row tuples, reply shapes, bounds) is
-`app/src/lib/contract/api.ts`, shared by the record (`relay/src/store.ts`), the script (`app/gas/`) and the client.
+The record (a Durable Object's SQLite on the relay) and the client's sync. The contract (tables, row tuples, reply
+shapes, bounds) is `app/src/lib/contract/api.ts`, shared by the record (`relay/src/store.ts`) and the client.
 
 ## Overview
 
@@ -10,15 +9,12 @@ The record is an append-only log with slots (a later tally of the same day repla
 relay's `IslandStore` ([The record](#the-record)) is its only reader and writer. It authenticates, validates shapes,
 stamps `at` and appends; there is no server-side economy and no config: the client caches the rows and derives every
 number on read. User actions are `event` rows sent through a persisted queue and shown at once; health data comes from
-each phone's Shortcut (`ingest`). The Google Sheet is a one-way export of the record, rewritten by the relay's cron
-(a backup to look at; an edit there goes nowhere). Its Apps Script web app (`app/gas/main.ts` → `Code.js`) only
-takes the export (a keyed request there is refused with the record's URL). `appsscript.json`: V8, `Asia/Tokyo`, scope
-`spreadsheets.currentonly` (no outgoing requests); the web app accepts anonymous calls (the relay's signature is the
-auth).
+each phone's Shortcut (`ingest`). Nothing is exported (the Google Sheet export went on 2026-11-05: [decisions](decisions.md#sheet-export-removed-2026-11-05));
+the backups are point-in-time recovery and the dump ([runbook §7](ops/runbook.md#7-backups)).
 
-## Tabs
+## Tables
 
-The record's tables mirror the sheet's tabs ([The record](#the-record) "Where"). `at` is the record's time, ISO 8601
+The record's tables ([The record](#the-record) "Where"). `at` is the record's time, ISO 8601
 UTC with milliseconds, strictly increasing (all rows of one ingest share it). Dates are `YYYY-MM-DD` (Tokyo).
 
 | Tab | Columns | Written by |
@@ -27,11 +23,9 @@ UTC with milliseconds, strictly increasing (all rows of one ingest share it). Da
 | `events` | `at`, `person`, `id`, `type`, `data` (JSON text) | `event` / `events`; `id` client-generated |
 | `uploads` | `at`, `person`, `status`, `bytes`, `error` | `ingest`'s audit: `ok` / `partial` / `error`, size, warnings and the body's shape (never the body or key) |
 
-`metrics` and `events` are synced to the client; `uploads` is read only by the `uploads` action. **The sheet:** the
-same three tabs, rewritten whole by each export (row 1 the header, bold and frozen, with a note that the sheet is a
-read-only export; columns text or number as `NUMERIC_COLUMNS` has them, so Sheets never turns a date into a Date), and a
-`README` tab saying so in English and Japanese, with the export's time, the newest row's `at`, the revision and the
-row counts.
+`metrics` and `events` are synced to the client; `uploads` is read only by the `uploads` action. Until 2026-11-05 a
+Google Sheet held a copy of the three, rewritten by the relay's cron; that export is gone
+([decisions](decisions.md#sheet-export-removed-2026-11-05)).
 
 ## Events
 
@@ -93,7 +87,7 @@ preflight; a Shortcut's `application/json` is fine), `{key, action, ...}`. Every
 | `snapshot` | `since?` (ISO: the max `at` cached) | `{ok, me, now, rev, rows:{metrics, events}}`: compact arrays in column order, rows with `at > since`, both people |
 | `uploads` | | `{ok, rows:[{at, status, bytes, notes}]}`: the caller's last 20 audit rows, newest first |
 | `whoami` | | `{ok, me, build}` (pairing) |
-| `health` | no `key` | `{ok, build: 'relay-1'}` (the Apps Script's `/exec` answers its own: `{ok, build}`, the first 12 hex chars of SHA-256 over `Code.js`, also on its line 3) |
+| `health` | no `key` | `{ok, build: 'relay-1'}` |
 
 An unreadable `since` is `bad_request`; an unknown action too.
 
@@ -117,7 +111,7 @@ committed (the output gate).
 `rev` is the record's epoch (`e1`, `e2`, …): it changes only when the record is rebuilt (a restore, or `node
 scripts/record.ts rev`). A `snapshot` whose `rev` or `me` differs from the cache's makes the client drop the cache
 (never the unsent queue) and fetch everything; the first read from the record after the sheet did the same once.
-Locked weeks' earnings are memoised per `rev`. Nothing edits the record by hand (the sheet's tabs are a copy), so
+Locked weeks' earnings are memoised per `rev`. Nothing edits the record by hand, so
 there is no `onEdit` and no `resync` any more.
 
 ## Ingest
@@ -244,7 +238,7 @@ steps, each deployed and green before the next, the old path working through eac
    the old one forwarded;
 5. **export**: the sheet is rewritten from the record; the script's own record code went, and with no forwarded
    request since both phones moved (A 125 and B 95 straight to `/api`, 0 through Apps Script by 05:38Z), the forward
-   and the script's external-request scope went too.
+   and the script's external-request scope went too. (The export itself was removed on 2026-11-05.)
 
 - **Where:** `relay/src/store.ts` (`StoreCore`, free of the Workers runtime), in its own SQLite-backed Durable Object,
   `IslandStore` (`idFromName('record')`, `storeObject.ts`), apart from the island room. Tables: `metrics` (`seq`, `at`,
@@ -276,16 +270,9 @@ steps, each deployed and green before the next, the old path working through eac
 - **Revision:** `rev` is an epoch (`e1`, `e2`, …), changed only when the record is rebuilt (`node scripts/record.ts
   rev`, after a restore). Nothing edits the record by hand.
 - **Admin:** `POST /admin`, signed like `/notify` ([Push](#push) "Auth"), takes the record tool's ops (`{op}`: counts
-  and who came which way, bookmarks, a restore, a new epoch, the export, a dump, and `load`: rows that already have
+  and who came which way, bookmarks, a restore, a new epoch, a dump, the telemetry, the weather, and `load`: rows that already have
   their `at`, by the same rules, idempotent). During step 1 the same signed path took the script's copy of each write
   (sent as ASCII: a Shortcut's dates carry U+202F, and a copy with it failed the signature until it was escaped).
-- **Export:** a cron (`*/15 * * * *` and `0 18 * * *`, `wrangler.toml`) asks the object to export: when `last_at` moved
-  since the last export (or nightly, whatever changed) it POSTs every row to the `/exec` URL (`EXPORT_URL`; the test
-  copy has none) as `{action: 'export', t, sig, data}`, `data` the rows as ASCII JSON text and `sig` its signature
-  (Apps Script can't read request headers); the script checks it (10 minutes' window) and rewrites the tabs under its
-  lock ([Tabs](#tabs)). 2026-11-02: 482 metrics, 267 events, 13 uploads in one call. Every event row goes as it is, so a new pref
-  (`goalBodyFat`, 2026-11-02) is in the `events` tab with no change to the script. The relay keeps no Google
-  credential.
 - **Push-driven:** after a write the object tells the room (`changed`, [Push](#push)); the room keeps the last one
   (`rec {at, rev}`, in its storage) and hands it to each phone in its `welcome`, so a phone that has it needn't fetch
   on opening ([When it syncs](#when-it-syncs)).
@@ -414,7 +401,7 @@ Tokyo's sky by the hour for the island ([design](design.md#weather); decisions: 
   rules (pure, by the date: both phones agree).
 - **Ops:** `GET /health` → `wx {at, src, age (min), hours (ahead), fails}`. The signed `/admin` op `wx` (via the
   record's object): `{refresh: true}` fetches now, `{s, fx?}` puts a fixture timeline in from the current hour (the
-  smoke test), `{}` says how it is. Weather is never written to the record or the Sheet; only the mode is.
+  smoke test), `{}` says how it is. Weather is never written to the record; only the mode is.
 - **Tests:** `relay/test/weather.test.ts` (Open-Meteo responses recorded 2026-11-04, a clear winter day, spring
   showers, a rainy-season day, a downpour, a typhoon, the snow of 2024-02-05 and that day's forecast, against golden
   timelines; no one-hour flicker; the dead bands, fog, the gap fill, the strict parse, the locks, the revisions, when
@@ -437,7 +424,7 @@ claims, the ずかん, the tent's decor, pairing.
 - **What it writes** (`guestMayWrite`): `find` and `tally` (credited to `G`), a `sell` and a `buy` at the shop (its own pocket and かいがら), a `board` note (its own to edit and take down), a `food` entry, a `food_repeat`, a `food_recipe` and a `food_custom` (its own meals, repeats, recipes and custom foods; only its own to edit, end and remove; anyone's recipe or custom food it logs as its own entry), the tent's `decor` (`sc: 't'`), its own home's room and look (`sc` `v`, `h` with `hG`; never the outdoors), its own
   `pref` `locale` / `villagerName` / `villager`, the meal log's goals and its profile (`sex`, `birth`, `bmiStd`; its own: no `person`). Anything else, and `ingest` / `uploads`, is `forbidden` (the queue drops
   it). Its rows are the record's like anyone's: one tally per day (`tally|G|<date>`), its prefs' own slots, the tent's
-  merge order A < B < G; the sheet's export carries them with `person = G`.
+  merge order A < B < G; the dump carries them with `person = G`.
 - **The room** (v3 only: a guest's hello in v1/v2 is closed 4004): the guest may `walk`, `act`, `catch`, `pick`, `put`,
   `shake`, `say`, `highfive`, `tent`, `drag`, `fish` and the tent's `decor` (`guestMaySend`); anything else is refused (acked
   `ok: false`, never relayed). Its intents reach both members' v3 phones; theirs reach it. Presence is per person: each
@@ -656,17 +643,15 @@ writes/day (unused). A generous day for two phones:
 | Record reads: snapshots (opens not current, pushes, taps; ~5 rows each, a full one ~750) | ~300 | 300 | 300 | ~30 | ~3,000 | |
 | Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
 | Shortcut ingests (2 phones, ~24 runs each; ~300 rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
-| The export (cron every 15 min; a dump when changed, ≤ 96, waiting ~3–8 s on Apps Script) | 97 | 97 | 97 | ~100 | ~75,000 | ~100 |
 | The real weather (the same cron: the room's tick, a fetch at :15 and :45, a `wx` on change) | 96 ticks, ~48 fetches | 0 | 96 | ~10 | | ~48 (one storage key) |
-| **Total** (Free plan limit) | | **~670 (0.7 % of 100,000)** | **~1,030 (1.0 % of 100,000)** | **~710 (5 % of 13,000)** | **~95,000 (1.9 % of 5 M)** | **~4,650 (4.7 % of 100,000)** |
+| **Total** (Free plan limit) | | **~570 (0.6 % of 100,000)** | **~930 (0.9 % of 100,000)** | **~610 (4.7 % of 13,000)** | **~20,000 (0.4 % of 5 M)** | **~4,550 (4.6 % of 100,000)** |
 
 Measured 2026-11-01 (a UTC day, test traffic included, before the record): Worker 1.8k requests, DO 9.9k (the
 smoke and latency runs), 3.7k rows written, 346 rows read, ~25 GB-s. Duration stays the binding limit and under a
-tenth of it even with the island's presence ten times busier; the export is the largest reader (a dump each time) and
-could send only the changed rows if it ever mattered. Storage: ~150 bytes a row, ~1 MB a year against 5 GB, plus the
+tenth of it even with the island's presence ten times busier (the sheet's export, until 2026-11-05, read ~75,000 rows a
+day: a dump each time). Storage: ~150 bytes a row, ~1 MB a year against 5 GB, plus the
 meal log: ~300 bytes a row, ~11k rows a year for three people at ~10 meals a day (~3 MB a year in a full snapshot,
-0.8 MB gzipped; on a phone ~4 MB a year of cache, written a segment at a time). Apps
-Script's side: ≤ 96 exports a day (web app requests, no trigger time, no UrlFetch).
+0.8 MB gzipped; on a phone ~4 MB a year of cache, written a segment at a time).
 
 ## Notifications
 
@@ -691,11 +676,10 @@ before (an app build's `/push/*` call would then 404, which it also ignores).
 - **Notifications:** none (no `push` or `notificationclick` handler: [decisions](decisions.md#no-notifications-2026-11-02)).
 - **Runtime:** fonts, villager, critter, find and present art cache-first on first use; audio (`island-audio-v1`) cache-first with the 3 most
   recent music files (the hours, event music, K.K.'s songs) kept; Range requests pass through. The food data (`/food/*.json`, `island-food-v1`) cache-first by its `?v=<index.version>`, stored after it answers; `index.json` from the network within 2.5 s, else (or offline) its cached copy. A newer `index.json` waits beside the cached one until every file it names is cached; only then does it replace it and the older version's files go, so going offline mid-update leaves the last whole version, never a mix. Other GETs: this version's cache, the previous one, then the
-  network. The Apps Script backend is cross-origin and always live.
+  network. The relay is cross-origin and always live.
 
 ## Tests
 
 `relay/test/store.test.ts`, `store-route.test.ts` and `ingest-golden.test.ts` (the record on node:sqlite);
-`gas/main.test.ts` (the export, on a fake of the Apps Script services in `gas/fakes.ts`),
-`relay/test/parse.test.ts`, `gas/bundle.test.ts`; queue (`queue-batch.test.ts`: the record's batches), cache, sync and store tests; the golden fixtures (`GOLDEN_UPDATE=1` to regenerate) and
+`relay/test/parse.test.ts`; queue (`queue-batch.test.ts`: the record's batches), cache, sync and store tests; the golden fixtures (`GOLDEN_UPDATE=1` to regenerate) and
 `npm run bench` for the model at year-3 volume.

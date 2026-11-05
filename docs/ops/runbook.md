@@ -1,14 +1,11 @@
 # Runbook
 
-Three pieces, no server of our own:
+Two pieces, no server of our own:
 - **The relay** (`relay/`, a Cloudflare Worker on the Free plan, §10): the record (metrics, events, the ingest audit in
   a Durable Object's SQLite, §13), the live room (presence and the day's shared world). No notifications (§12).
 - **The app:** a static PWA on Cloudflare Pages (https://island-fund.pages.dev/, project `island-fund`; until the phones
   have moved, also https://huangwaylon.github.io/fitness/) that computes everything in the browser from the record's rows.
-- **The sheet:** the Google Sheet *Island Fund*, a read-only export of the record (§9), and its Apps Script web app (one
-  `/exec` URL) that takes the export.
-
-The sheet's setup: [google-setup.md](google-setup.md). How it works: [backend.md](../backend.md).
+No Google Sheet any more: its export was removed on 2026-11-05 (§2). How it works: [backend.md](../backend.md).
 
 ## 1. Deploy the UI
 Push to `main`. Any change under `app/**` (or to the workflow) runs `.github/workflows/pages.yml`:
@@ -34,22 +31,12 @@ A red step stops the deploy (a flaky test, one that fails and then passes once m
 [testing.md](testing.md)); pull requests run steps 1–2 only. Re-run: Actions → *Deploy UI to GitHub Pages* →
 **Run workflow**. Before a model change, also run `npm run bench` (year 3 compacted ≤ 15 ms).
 
-## 2. Redeploy the Apps Script
-After any change to `app/gas/**` or the code it imports:
-
-1. `cd app && npm run gas:build`. It rewrites `app/apps-script/Code.js` and prints the **build** (12 hex: a hash of
-   the bundle, also line 3 of `Code.js`). `npx vitest run` fails if the committed `Code.js` is stale.
-2. Commit and push.
-3. `cd app && npm run gas:deploy`. It refuses a stale `Code.js`, then pushes it, cuts a version, points the existing
-   deployment at it and waits until `health` answers the new build. Once per machine: `npx @google/clasp login`
-   (the Island Fund account; the Apps Script API on at script.google.com/home/usersettings) and
-   `app/apps-script/.clasp.json` (gitignored: the repo is public) with
-   `{"scriptId":"<Project Settings>","rootDir":".","deploymentId":"<the /exec one, Deploy → Manage deployments>"}`.
-
-By hand instead: paste `Code.js` into the editor's `Code.gs` and save, then **Deploy → Manage deployments** → pencil on
-the existing deployment → **Version: New version** → **Deploy** (saving alone changes nothing: a deployment is pinned
-to a version), then check `health` (§3). **Never** *New deployment*: it makes a new `/exec` URL that nothing calls. A
-change that needs a new OAuth scope also needs the editor once (Google asks you to authorize it).
+## 2. The Google Sheet (removed 2026-11-05)
+The record was exported to a Google Sheet (*Island Fund*) by an Apps Script web app (project *Island Fund web app*)
+until 2026-11-05 ([decisions](../decisions.md#sheet-export-removed-2026-11-05)). The relay sends Google nothing now,
+and the repo has no Apps Script code. The sheet and the script's deployment still sit in that Google account,
+unwritten, as of that day; delete them there when they're no longer wanted (Drive: the sheet; script.google.com: the
+project, Deploy → Manage deployments → archive). The backups are §7.
 
 ## 3. Check the backend
 ```sh
@@ -61,34 +48,24 @@ the owner) unless both are ok. The relay's `wx` is the real weather ([backend](.
 `age` (minutes since the last good fetch) under ~35 and `hours` ahead over 30 is normal. An older one or `fails` > 0
 means Open-Meteo is failing (`npx wrangler tail` shows `wx-fail <why>`); the phones keep the last timeline for 36
 hours, then the game's weather. The workflow warns past 3 hours. A fetch now: the signed `/admin` op
-`{"op":"wx","refresh":true}` (signed as `relay/scripts/smoke.ts` signs it). The sheet's export: its `README` tab's time (≤ 15 minutes after the last change, and
-every night), or `node scripts/record.ts export` (§13); the script's own health:
-
-```sh
-curl -sSL 'https://script.google.com/macros/s/…/exec' -H 'Content-Type: text/plain;charset=utf-8' --data '{"action":"health"}'
-```
-`{"ok":true,"build":B}` with B = line 3 of `app/apps-script/Code.js`; HTML = its authorization lapsed
-([google-setup §6](google-setup.md#6-day-8-authorization-check)): only the export stops.
+`{"op":"wx","refresh":true}` (signed as `relay/scripts/smoke.ts` signs it).
 
 ## 4. Rotate a key
 Lost phone, leak, any doubt:
 1. `openssl rand -hex 32`, store it in the password manager.
 2. The relay first (it is the record): from `relay/`, `npx wrangler secret put KEY_A` (or `KEY_B`); it takes effect
    at once, the old key gets `unauthorized`.
-3. Script editor → **Project Settings → Script Properties** → edit the same key → **Save** (no redeploy): the sheet's
-   export is signed with a secret derived from both keys, so until the two sides match the export is refused (§13).
-4. That person's app opens the pairing screen: paste the new key. Put it in their Shortcut's **Key** text too.
+3. That person's app opens the pairing screen: paste the new key. Put it in their Shortcut's **Key** text too.
 
 The guest's key (`KEY_C`, §14) is the relay's only: `npx wrangler secret put KEY_C` (from `relay/`, it prompts) and the
-guest pastes the new one. No Script Property, no Shortcut, and the export's signature never involves it. To end the
+guest pastes the new one. No Shortcut, and the server-to-server signature (`/admin`, `/notify`) never involves it. To end the
 guest's visits: `npx wrangler secret delete KEY_C` (the next request is `unauthorized`: their app shows the pairing
 screen).
 
 ## 5. A new epoch (rev)
 The record's `rev` (`e1`, `e2`, …) is the data revision: when it changes, each phone drops its cache and refetches
 every row on its next sync. Nothing changes it by itself (nobody edits the record by hand); after a restore (§13),
-`node scripts/record.ts rev`. The sheet's tabs are a copy: an edit there is overwritten by the next export and never
-reaches a phone.
+`node scripts/record.ts rev`.
 
 ## 6. When sync fails
 | Symptom | Check |
@@ -102,7 +79,7 @@ reaches a phone.
 
 **The `uploads` audit.** Each `ingest` appends `status` (`ok`, `partial` = lines skipped, `error` = `bad_request`),
 `bytes`, and in `error` the warnings, then ` | ` and the body's shape (each field's type, line count, first line:
-`steps:text[31] "8564"`; never the key). Read the sheet's `uploads` tab (as of the last export), or your last 20:
+`steps:text[31] "8564"`; never the key). Read your last 20:
 
 ```sh
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data "{\"key\":\"$KEY\",\"action\":\"uploads\"}"
@@ -113,17 +90,13 @@ Shortcut fixes: [shortcut §6](shortcut-health-sync.md#6-troubleshooting).
 
 ## 7. Backups
 The record on the relay is the only copy of buys and goal changes (health numbers come from Apple Health and can be
-re-sent: [shortcut §5](shortcut-health-sync.md#5-one-time-baseline-optional)). Three layers:
+re-sent: [shortcut §5](shortcut-health-sync.md#5-one-time-baseline-optional)). Two layers:
 
 - **Point-in-time recovery** (the Durable Object's, on the Free plan, the last 30 days): §13 `bookmark` / `restore`.
-- **The sheet:** every row, rewritten from the record after each change (≤ 15 minutes) and every night (§9). Google's
-  version history (File → Version history) keeps its past states.
-- **Off-Google copy:** monthly, `node scripts/record.ts dump > island-record-YYYY-MM-DD.json` from `relay/` (§13),
+- **The dump:** monthly, `node scripts/record.ts dump > island-record-YYYY-MM-DD.json` from `relay/` (§13),
   kept somewhere private (never in the repo).
 
-**Restore** after a bad change: the record to a bookmark from before it (§13), then `rev`. From a dump or the sheet
-into a new, empty record: `load <file>` (a dump), or the sheet's tabs as a dump (`{"rows": {"metrics": [...], "events":
-[...], "uploads": [...]}}`, each row its columns in order), then `rev`.
+**Restore** after a bad change: the record to a bookmark from before it (§13), then `rev`. From a dump into a new, empty record: `load <file>`, then `rev`.
 
 ## 8. Refresh the official art
 The art in `app/static/art/` comes from Nookipedia. Edit `SPECS` in `app/scripts/fetch-assets.ts`, then
@@ -139,12 +112,7 @@ folders it names into a scratch dir, renders them in Chrome and writes `static/a
 (source "rendered") and `src/lib/components/island/models.json`; ~4 s for all. Never commit anything from the model
 folder itself. `assets:fetch` keeps rendered entries; a key moved to the renders leaves `SPECS`.
 
-## 9. What the sheet should hold
-`README` (what the sheet is: a read-only export, in English and Japanese, the last export's time, the newest row, the
-revision, the row counts) and `metrics`, `events` and `uploads`, each with the header in
-[backend.md](../backend.md#tabs) and every row of the record. The relay rewrites them whole: anything typed there, or
-any other tab's rows put in them, is gone at the next export. The README's time older than a day means the export
-fails: §13.
+## 9. (The sheet: removed 2026-11-05, §2)
 
 ## 10. Deploy the live relay
 The Cloudflare Worker in `relay/` ([backend.md](../backend.md#live-relay)), on the Workers Free plan of the
@@ -157,7 +125,7 @@ umeway1122@gmail.com account. Once per machine: `npx wrangler login`. Then, from
    or 6-minute-old one gets 401).
 3. `npm run deploy` (production). `curl https://island-fund-relay.island-fund-relay.workers.dev/health` → `ok:true`.
 
-**Keys:** the relay's `KEY_A`/`KEY_B` are the record's keys; Script Properties' must equal them (the export's signature). Set or rotate (§4) with
+**Keys:** the relay's `KEY_A`/`KEY_B` are the record's keys. Set or rotate (§4) with
 `npx wrangler secret put KEY_A` and `npx wrangler secret put KEY_B` from `relay/` (it prompts; takes effect at once,
 open sockets keep their session until they reconnect). Without them the relay lets nobody in and the app simply has no
 live presence. **Logs:** `npx wrangler tail`. **Off switch:** build the app with `VITE_LIVE_URL=` (empty), or
@@ -184,9 +152,6 @@ the repo): `KEY_A=… KEY_B=… node scripts/record.ts <command>` (`--test`: the
 keys). It signs `POST /admin` with the server-to-server secret.
 
 - **`counts`**: rows per table, the revision (`e1`, `e2`, …: the epoch), the newest `at`.
-- **`export`**: the export to the sheet now (`{"ok":true,"written":{"metrics":…,"events":…,"uploads":…}}`); the cron
-  does it every 15 minutes when the record changed, and nightly at 03:00 Tokyo. `unauthorized`: Script Properties'
-  keys differ from the relay's (§4). HTML in the log, or `HTTP …`: the script's authorization (§3).
 - **Backups:** point-in-time recovery works on the Free plan (checked 2026-11-02 on the test relay: a bookmark from
   before an ingest restored the empty record). `bookmark [ms]` prints the bookmark now and `ms` ago (any moment of the
   last 30 days); `restore <bookmark>` restarts the object on it; then `rev`, so every phone refetches. Beyond 30 days:

@@ -1,4 +1,4 @@
-// The week store's data source: the live Apps Script sync or the demo. The store only composes
+// The week store's data source: the live record's sync or the demo. The store only composes
 // and shows; everything that differs between the two lives behind this interface, so no demo branch can reach live
 // storage, the queue or the network.
 import type { EventType } from '#lib/contract/api.ts';

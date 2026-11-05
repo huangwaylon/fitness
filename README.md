@@ -2,8 +2,8 @@
 
 A cozy Animal Crossing–style fitness game for a couple in Tokyo. Each iPhone's daily steps, exercise, Move and
 stand minutes grow fruit and earn ベル into one shared wallet, spent on small luxuries the couple prices themselves.
-Japanese-first PWA; its server is a Cloudflare relay (`relay/`: the record in a Durable Object, and the live room),
-with a Google Sheet as a one-way export (an Apps Script web app).
+Japanese-first PWA on Cloudflare Pages; its server is a Cloudflare relay (`relay/`: the record in a Durable Object, and
+the live room).
 
 **App:** https://island-fund.pages.dev/ (demo data: add `?demo`; the old https://huangwaylon.github.io/fitness/ until the phones have moved)
 
@@ -17,7 +17,6 @@ npm run check      # svelte-check
 npm run build      # → build-pages/
 npm run e2e        # Playwright (WebKit) against the build (run npm run build first; docs/ops/testing.md)
 npm run bench      # model timing at years 1 and 3
-npm run gas:build  # bundle app/gas → app/apps-script/Code.js
 npm run knip       # unused files, exports, dependencies
 ```
 Needs Node ≥ 24.
@@ -33,12 +32,11 @@ python3 -I -m unittest discover -s food-data/scripts/tests
 ## Layout
 | Path | Contents |
 |---|---|
-| `app/src/lib/model/` | Sheet rows → the week view, the wallet, きろく |
+| `app/src/lib/model/` | The record's rows → the week view, the wallet, きろく |
 | `app/src/lib/config/`, `scoring/` | The rules as data, versioned by week; ベル and badges |
 | `app/src/lib/contract/` | The record's API and rules, shared with the relay |
 | `app/src/lib/sync/`, `store/` | The relay's client (record and live socket), write queue, cache, pairing; the stores |
 | `app/src/lib/components/`, `app/src/routes/` | The UI |
-| `app/gas/` → `app/apps-script/` | The sheet's exporter (Apps Script) and its bundle |
 | `relay/` | The Cloudflare Worker: the record, the live room, the Shortcut parser |
 | `app/scripts/` | Asset scripts and the benchmark |
 | `food-data/` | The food data pipeline (Python): `scripts/` builds `out/` from `raw/` (gitignored) and `data_src/`; `npm run food:data` ships it |
@@ -46,4 +44,4 @@ python3 -I -m unittest discover -s food-data/scripts/tests
 
 ## Docs
 - [Design](docs/design.md) · [Backend](docs/backend.md) · [Decisions](docs/decisions.md) · [Food data](docs/food-data.md)
-- [Runbook](docs/ops/runbook.md) · [Testing](docs/ops/testing.md) · [Google setup](docs/ops/google-setup.md) · [Health sync Shortcut](docs/ops/shortcut-health-sync.md)
+- [Runbook](docs/ops/runbook.md) · [Testing](docs/ops/testing.md) · [Health sync Shortcut](docs/ops/shortcut-health-sync.md)

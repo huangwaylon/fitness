@@ -8,7 +8,7 @@ import { addToTally, countOf, dayTallies, tallyTotals, type TallyRow } from './t
 
 const row = (at: number, person: PersonId, date: string, counts: Record<string, number>): TallyRow => ({ at, person, date, counts });
 
-describe('a tally’s data (contract/tally.ts isTally: the Apps Script and the model)', () => {
+describe('a tally’s data (contract/tally.ts isTally: the record and the model)', () => {
   const ok = { date: '2026-11-01', counts: { 'fish:sea-bass': 3, 'item:froggy-chair': 1, 'recipe:mush-lamp': 1, 'fragment:star-fragment': 2 } };
   it('takes a day and its counts', () => {
     expect(isTally(ok)).toBe(true);
