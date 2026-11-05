@@ -260,16 +260,30 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
             map.delete(src!);
             for (const x of [r.m, r.front]) {
               if (!x) continue;
-              x.dispose();
+              retire(x);
               for (const arr of [lit, lifted]) if (arr.includes(x)) arr.splice(arr.indexOf(x), 1);
             }
-            r.depth.dispose();
+            retire(r.depth);
           }
         });
         free(g);
       }
       if (!disposed) unuse(urlOf(name), true);
     });
+  }
+
+  /** One let-go material per shader variant (its kind, its program key: fade, flap, grey; its side, see-through,
+   *  cut-out, maps), kept undisposed with its maps let go of (never drawn again): three deletes a program once no
+   *  material has it, so each species' release cost its next one a compile (a 28-31 ms frame on the iOS Simulator:
+   *  the critters' instanced programs built 12 times in 90 s idle, 3 before the lazy release). The rest are disposed. */
+  const kept = new Map<string, Material>();
+  function retire(x: Material) {
+    const t = x as MeshLambertMaterial & { alphaTest: number };
+    const k = [x.type, x.customProgramCacheKey(), x.side, x.transparent, t.alphaTest > 0, !!t.map, !!t.emissiveMap].join('|');
+    if (kept.has(k)) return void x.dispose();
+    kept.set(k, x);
+    t.map = null;
+    if ('emissiveMap' in t) t.emissiveMap = null;
   }
 
   // ---- materials: each model's once ----
@@ -844,6 +858,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
         front?.dispose();
         depth.dispose();
       }
+      for (const x of kept.values()) x.dispose();
+      kept.clear();
       // (now, not once every load is in: a model still loading was never on this renderer, and the next island may
       // already have the shared ones on its own: a late dispose would drop its copies too)
       for (const g of got) free(g);
