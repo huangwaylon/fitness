@@ -2,13 +2,18 @@ import { describe, expect, it, vi } from 'vitest';
 import { flushSync } from 'svelte';
 import { DEFAULT_LOOKS } from '#lib/contract/look.ts';
 
-// a localStorage (node has none), holding the old format's list (one head drawn by an older build)
-const kv = new Map<string, string>([['look.portraits', JSON.stringify([['old1', 'data:image/png;base64,OLD'], ['bad', 'nope']])]]);
+// a localStorage (node has none), holding the old format's list (one head drawn by an older build), and a head no
+// index names (a write of the index that failed)
+const kv = new Map<string, string>([['look.portraits', JSON.stringify([['old1', 'data:image/png;base64,OLD'], ['bad', 'nope']])], ['look.portrait.orphan', 'data:image/png;base64,LOST'], ['other', 'x']]);
 const reads: string[] = [];
 vi.stubGlobal('localStorage', {
   getItem: (k: string) => (reads.push(k), kv.get(k) ?? null),
   setItem: (k: string, v: string) => void kv.set(k, v),
-  removeItem: (k: string) => void kv.delete(k)
+  removeItem: (k: string) => void kv.delete(k),
+  key: (i: number) => [...kv.keys()][i] ?? null,
+  get length() {
+    return kv.size;
+  }
 });
 const { portraitOf, usePainter } = await import('./portraits.svelte.ts');
 
@@ -26,6 +31,9 @@ describe('the players’ portraits', () => {
     // (the first ask split the old list: each head under its own key, the list the hashes)
     expect(kv.get('look.portrait.old1')).toBe('data:image/png;base64,OLD');
     expect(JSON.parse(kv.get('look.portraits')!)).toEqual(['old1']);
+    // (and swept the head no index names; nothing else of the storage's)
+    expect(kv.has('look.portrait.orphan')).toBe(false);
+    expect(kv.get('other')).toBe('x');
     usePainter(async (l, px) => {
       asked.push(l.glasses ?? 'none');
       expect(px).toBeGreaterThan(48);

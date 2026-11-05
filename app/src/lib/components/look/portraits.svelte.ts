@@ -44,10 +44,29 @@ const remember = (key: string, url: string) => {
 };
 
 let migrated = false;
-/** The kept hashes, newest last; the old format (`look.portraits` the [hash, data URL] pairs) split once. */
+/** The kept hashes, newest last; the old format (`look.portraits` the [hash, data URL] pairs) split once. The first
+ *  read sweeps the heads the index doesn't name (an index unreadable, or a write of it failed: their entries, ~19 KB
+ *  each, were never removed). */
 function index(): string[] {
   const ls = storage();
   if (!ls) return [];
+  if (swept) return read(ls);
+  swept = true;
+  const keys = read(ls);
+  try {
+    const keep = new Set(keys.map((k) => PREFIX + k)), orphans: string[] = [];
+    for (let i = 0; i < (ls.length ?? 0); i++) {
+      const k = ls.key(i);
+      if (k?.startsWith(PREFIX) && !keep.has(k)) orphans.push(k);
+    }
+    for (const k of orphans) ls.removeItem(k);
+  } catch {
+    /* unreadable: next time */
+  }
+  return keys;
+}
+let swept = false;
+function read(ls: Storage): string[] {
   try {
     const raw = JSON.parse(ls.getItem(STORE) ?? '[]') as unknown[];
     if (!Array.isArray(raw)) return [];
