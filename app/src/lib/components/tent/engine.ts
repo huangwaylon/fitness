@@ -21,6 +21,7 @@ import { seatOf } from '../villager3d/poses.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
 import { drawOff, shaderChecks } from '../../ui-state/testMode.ts';
 import { lean } from '../world3d/release.ts';
+import { keepUsed } from '../world3d/keepUsed.ts';
 import { plainImages } from '../world3d/gltf.ts';
 import { due, frameRate } from '#lib/store/frameRate.svelte.ts';
 import { along, roomScreen, walkLens, type Walk } from '../rooms/view.ts';
@@ -182,7 +183,7 @@ export interface Tent {
   loading(): number;
   /** Frames drawn, and the last frame's draw calls and triangles (the e2e's budget); `queued`: a frame is asked for
    *  (something moves: a walk, a camera glide, a model popping in); `mem`: the GPU's geometries, textures and programs. */
-  stats(): { frames: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; mem: [number, number, number] };
+  stats(): { frames: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; mem: [number, number, number]; models: ReturnType<typeof modelStats> };
   /** The first frame was drawn (the room on screen). */
   ready: Promise<void>;
   dispose(): void;
@@ -256,8 +257,42 @@ function matTexture(): CanvasTexture {
 /** The furniture as loaded (fetched, decoded: CPU-side), by item, kept across the rooms' visits as the island keeps its
  *  models (world3d/things.ts): back in the tent, or in another's home, it builds at once, with no fetch, meshopt or
  *  image decode again. Kept without the loader's parser (release.ts lean). Each room's GPU copies go with its renderer
- *  (dispose: three uploads them again to the next). A failed load isn't kept. */
+ *  (dispose: three uploads them again to the next). A failed load isn't kept. Bounded: the rooms using each (by item)
+ *  are counted, and of those no room uses, the MODEL_KEEP last used stay (a room's whole furniture back at once), the
+ *  older let go of (geometry, textures, images closed; fetched again if placed again), where every one of the 440 ever
+ *  shown stayed for the page's life. */
 const models = new Map<string, Promise<GLTF | null>>();
+/** The same, loaded (what a room's dispose lets go of at once: no wait on the loads still under way). */
+const modelsIn = new Map<string, GLTF>();
+const MODEL_KEEP = 48;
+const modelUse = keepUsed<string>(MODEL_KEEP, (code) => {
+  const g = modelsIn.get(code);
+  models.delete(code);
+  modelsIn.delete(code);
+  if (g) freeModel(g.scene, true);
+});
+/** A model's GPU copies let go of on every renderer (its geometries, materials and their textures); `close`: its
+ *  decoded images too (evicted: it's not to be drawn again). `seen`: what's already let go of. */
+function freeModel(root: Object3D, close = false, seen = new Set<object>()) {
+  root.traverse((n) => {
+    const m = n as Mesh;
+    if (m.geometry && !seen.has(m.geometry)) (seen.add(m.geometry), m.geometry.dispose());
+    const ms = (m.material ? (Array.isArray(m.material) ? m.material : [m.material]) : []) as Material[];
+    for (const x of ms) {
+      if (seen.has(x)) continue;
+      seen.add(x);
+      for (const v of Object.values(x)) {
+        if (!(v instanceof Texture) || seen.has(v)) continue;
+        seen.add(v);
+        v.dispose();
+        if (close) (v.image as { close?: () => void } | null)?.close?.();
+      }
+      x.dispose();
+    }
+  });
+}
+/** The furniture's models kept: loaded, used by a room, kept unused. */
+const modelStats = () => ({ loaded: modelsIn.size, ...modelUse.stats() });
 let loader: GLTFLoader | null = null;
 function loadModel(code: string): Promise<GLTF | null> {
   let p = models.get(code);
@@ -284,10 +319,11 @@ function loadModel(code: string): Promise<GLTF | null> {
       };
       m.material = Array.isArray(m.material) ? (m.material as MeshStandardMaterial[]).map(lam) : lam(m.material as MeshStandardMaterial);
     });
+    if (models.get(code) === p) modelsIn.set(code, g);
     return lean(g);
   }, (e: unknown) => {
     console.warn('tent: model', code, e);
-    models.delete(code);
+    if (models.get(code) === p) models.delete(code);
     return null;
   });
   models.set(code, p);
@@ -458,7 +494,12 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   scene.add(gridLines);
 
   // ---- the furniture ----
-  const model = loadModel;
+  /** The items this room has asked for (each counted once: useModel), handed back on dispose. */
+  const used = new Set<string>();
+  const model = (code: string) => {
+    if (!used.has(code)) (used.add(code), modelUse.use(code));
+    return loadModel(code);
+  };
   interface Live {
     spot: Placed;
     root: Group;
@@ -1771,7 +1812,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     walk, walking: (who) => !!villagers.get(who)?.path, face, hop, headPoint, hit, floorAt, client, orbit, zoom, resetView, isDefault, moving, centre,
     loading: () => pending,
     stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: cost.slice(), queued: !!raf,
-      mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0] }),
+      mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0], models: modelStats() }),
     ready,
     dispose() {
       disposed = true;
@@ -1782,19 +1823,15 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       clearTimeout(warmT);
       for (const w of villagers.values()) w.v3?.dispose();
       const seen = new Set<object>();
-      const free = (o: Object3D) => o.traverse((n) => {
-        const m = n as Mesh;
-        if (m.geometry && !seen.has(m.geometry)) (seen.add(m.geometry), m.geometry.dispose());
-        const ms = (m.material ? (Array.isArray(m.material) ? m.material : [m.material]) : []) as Material[];
-        for (const x of ms) {
-          if (seen.has(x)) continue;
-          seen.add(x);
-          for (const v of Object.values(x)) if (v instanceof Texture && !seen.has(v)) (seen.add(v), v.dispose());
-          x.dispose();
-        }
-      });
-      free(scene);
-      void Promise.all(models.values()).then((gs) => gs.forEach((g) => g && free(g.scene)));
+      freeModel(scene, false, seen);
+      // the models it asked for, at once (a quick way back in must not have its new room's uploads let go of a tick
+      // later, as a wait on every load did), and handed back (the unused past MODEL_KEEP evicted)
+      for (const c of used) {
+        const g = modelsIn.get(c);
+        if (g) freeModel(g.scene, false, seen);
+        modelUse.unuse(c);
+      }
+      used.clear();
       disc.dispose();
       renderer.dispose();
       renderer.forceContextLoss();

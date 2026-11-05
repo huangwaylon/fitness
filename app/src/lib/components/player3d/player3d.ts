@@ -17,6 +17,7 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
+import { keepUsed } from '../world3d/keepUsed.ts';
 import { animateModel, type Villager3D } from '../villager3d/villager3d.ts';
 import { PARTS, bodyUrl, covers, faceUrl, irisUrl, loadParts, meshUrl, texUrl, type ItemSpec, type PartTable, type TexSpec } from './parts.ts';
 import { sharedSkin } from './skin.ts';
@@ -82,25 +83,13 @@ function glb(url: string): Promise<GLTF> {
  *  closet's way back and forth), the older let go of (geometry, images closed; fetched again if worn again). Before,
  *  every hairstyle, top and hat ever tried on stayed for the page's life (the reviewer's closet run: 377 GLBs). */
 const GLB_KEEP = 16;
-const glbUsers = new Map<string, number>(), glbIdle = new Set<string>();
-/** A part's GLB taken (before its load is awaited: an idle one's eviction never frees what a put is about to clone). */
-function useGlb(url: string) {
-  glbUsers.set(url, (glbUsers.get(url) ?? 0) + 1);
-  glbIdle.delete(url);
-}
-function unuseGlb(url: string) {
-  const n = (glbUsers.get(url) ?? 1) - 1;
-  if (n > 0) return void glbUsers.set(url, n);
-  glbUsers.delete(url);
-  glbIdle.add(url);
-  for (const old of glbIdle) {
-    if (glbIdle.size <= GLB_KEEP) break;
-    glbIdle.delete(old);
-    const p = glbs.get(old);
-    glbs.delete(old);
-    void p?.then(freeGlb, () => {});
-  }
-}
+/** (a part's GLB taken before its load is awaited: an idle one's eviction never frees what a put is about to clone) */
+const glbUse = keepUsed<string>(GLB_KEEP, (url) => {
+  const p = glbs.get(url);
+  glbs.delete(url);
+  void p?.then(freeGlb, () => {});
+});
+const useGlb = glbUse.use, unuseGlb = glbUse.unuse;
 /** An evicted part's model let go of: its geometries' GPU copies (and, through skin.ts's WeakMap on them, the remapped
  *  copies), its textures' and their decoded images. */
 function freeGlb(g: GLTF) {
@@ -119,7 +108,7 @@ function freeGlb(g: GLTF) {
   });
 }
 /** @public (tests) The parts' GLBs kept: in use (worn), and decoded but worn by none. */
-export const glbStats = () => ({ cached: glbs.size, worn: glbUsers.size, idle: glbIdle.size });
+export const glbStats = () => ((s) => ({ cached: glbs.size, worn: s.used, idle: s.idle }))(glbUse.stats());
 /** A texture (once per address, while some player wears it: `uses`). */
 function tex(url: string): Promise<Texture> {
   let p = texs.get(url);

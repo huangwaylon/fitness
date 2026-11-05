@@ -105,7 +105,8 @@ async function measure(label: string) {
     const st = W.__world3d?.stats?.();
     // (a room's renderer.info: geometries/textures/programs)
     const room = (W.__museum ?? W.__tent) as { stats?(): { mem?: number[] } } | undefined;
-    return [st?.textures, st?.geometries, st?.fx, document.querySelectorAll('*').length].join('/') + (room?.stats?.()?.mem ? ` room ${room.stats().mem!.join('/')}` : '');
+    const ms = (room?.stats?.() as { models?: Record<string, number> } | undefined)?.models;
+    return [st?.textures, st?.geometries, st?.fx, document.querySelectorAll('*').length].join('/') + (room?.stats?.()?.mem ? ` room ${room.stats().mem!.join('/')}` : '') + (ms ? ` models ${ms.loaded}/${ms.used}/${ms.idle}` : '');
   }).catch(() => null);
   // (rAF a second, over a real second: none under the sim's clock)
   const rafs = SIM ? 0 : await page.evaluate(() => new Promise<number>((ok) => { const W = window as unknown as { __rafs(): number }, r0 = W.__rafs(); setTimeout(() => ok(W.__rafs() - r0), 1000); }));
