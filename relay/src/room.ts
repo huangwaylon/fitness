@@ -41,6 +41,8 @@ export interface RoomIO<S extends Sock> {
   hold?(held: Held): void;
   /** Persist when each person's phone last left (fire and forget). */
   saveGone?(gone: Gone): void;
+  /** Persist what the room acked but doesn't keep (fire and forget): a resend after a wake is acked again. */
+  saveAcked?(acked: Acked): void;
   /** Persist the day's claims and nests (fire and forget): they outlive the ring's trimming and a restart. */
   saveDay?(d: DayIndex): void;
   /** When the runtime last answered this socket's heartbeat (ms; the auto-response's timestamp: HB_PING never reaches
@@ -55,6 +57,9 @@ export interface RoomIO<S extends Sock> {
  *  the last one only, a newer one of the pair replacing it; when it was tapped (`at`, its identity) and when the room
  *  heard it (`t`). */
 export type Held = Partial<Record<string, { from: Who; to: Who; at: number; t: number }>>;
+
+/** What the room acked but doesn't keep, as its storage holds it: `[<who>:<c>, {same, t}]`, oldest first. */
+export type Acked = [string, { same: string; t: number }][];
 
 /** The day's claims (who made each, its stamp and sequence number: a resend of it is acked again) and each tree's
  *  last nest, kept apart from the ring so that trimming the ring, and a restart after it, never lets a claim be made
@@ -114,8 +119,9 @@ export class RoomCore<S extends Sock> {
   private nests = new Map<string, number>();
   private day = -1;
   /** The numbered intents the room acked but doesn't keep (a high-five), the last ACKED_MAX: `<who>:<c>` → the intent
-   *  and its stamp, so a resend after a reconnect is acked again, not delivered twice. In memory (a wake forgets it). */
-  private acked = new Map<string, { same: string; t: number }>();
+   *  and its stamp, so a resend after a reconnect is acked again, not delivered twice. Kept in storage (saveAcked:
+   *  a wake from hibernation remembers it; 2026-11-05, relay review R2). */
+  private acked: Map<string, { same: string; t: number }>;
   /** When each person's last phrase went out (presence only: not kept). */
   private said = new Map<Who, number>();
 
@@ -126,7 +132,8 @@ export class RoomCore<S extends Sock> {
   /** Tokyo's real sky by the hour (weather.ts), sent after each welcome and to everyone when it changes. */
   private wx: Wx | null;
 
-  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}, wx: Wx | null = null, private kept: DayIndex | null = null, private recG: RecordMark | null = null) {
+  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}, wx: Wx | null = null, private kept: DayIndex | null = null, private recG: RecordMark | null = null, acked: Acked = []) {
+    this.acked = new Map(Array.isArray(acked) ? acked.slice(-ACKED_MAX) : []);
     this.wx = wx;
     this.held = { ...held };
     this.gone = { ...gone };
@@ -282,6 +289,7 @@ export class RoomCore<S extends Sock> {
     else if (c !== undefined) {
       this.acked.set(`${who}:${c}`, { same: JSON.stringify(intent), t: out.t });
       if (this.acked.size > ACKED_MAX) this.acked.delete(this.acked.keys().next().value!);
+      this.io.saveAcked?.([...this.acked]);
     }
     if (c !== undefined) this.ack(s, c, out.t, true);
   }
