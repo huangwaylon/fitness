@@ -98,7 +98,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    * - `shopcheck {fix?}`: each person's running shop ledger against the full fold of their rows (store.ts shopCheck);
    * - `held {person?}`: the values an ingest held back (a past day's 0 over a value above it: never served);
    *   `promote {person, date, metric, value?}`: one made a row of the day's history (its latest now);
-   * - `dump {limit?, after?}`: every row (the backup, docs/ops/runbook.md#13-the-record); with `limit`, a page of it
+   * - `dump {limit?, after?, all?}`: the rows a page at a time (the backup, docs/ops/runbook.md#13-the-record; `all`: at once)
    *   (`next`: the `after` of the next page; the audit on the first);
    * - `compact {confirm: 'delete-health-history', max?, rev?}`: the record's compaction now (store.ts compactOp: it
    *   deletes Health history rows, refused without the confirm; `rev: true` starts a new epoch after it);

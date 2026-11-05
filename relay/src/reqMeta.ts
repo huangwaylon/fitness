@@ -24,6 +24,8 @@ export interface ReqMeta {
   sk?: number;
   w?: number;
   exc?: string;
+  /** A snapshot's page size (0: unpaged, an app from before paging). */
+  pg?: number;
 }
 
 const utf8 = new TextEncoder();
@@ -77,6 +79,7 @@ export function apiWithMeta(core: StoreCore, text: string, roleOf: (key: unknown
       meta.why = ruleOf(isRec(sent[i]) ? sent[i].type : undefined, x);
     }
   } else if (action === 'event' && r.duplicate === true) meta.dup = 1;
+  else if (action === 'snapshot') meta.pg = typeof b.page === 'number' ? b.page : 0;
   else if (action === 'ingest') {
     meta.m = typeof r.metrics === 'number' ? r.metrics : 0;
     if (typeof r.skipped === 'number') meta.sk = r.skipped;

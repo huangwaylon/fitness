@@ -63,6 +63,9 @@ export interface StoreIO {
 export const STORE_BUILD = 'relay-2';
 export const MAX_BODY_CHARS = 1_000_000;
 export const RATE_PER_MINUTE = 120;
+/** A snapshot's later pages (`after`) per key per minute: their own budget, so a cold fetch of a big record (a page
+ *  each SNAPSHOT_PAGE rows) never spends the writes' (O9). */
+export const PAGES_PER_MINUTE = 600;
 const MAX_EVENT_DATA_CHARS = 20_000;
 const UPLOADS_SHOWN = 20;
 /** The ingest audit keeps this long (ms): each ingest lets older rows go. */
@@ -164,6 +167,7 @@ type DumpRows = Required<Omit<ImportRows, 'held'>> & Pick<ImportRows, 'held'>;
 export class StoreCore {
   private lastAt: number;
   private rate = { minute: 0, A: 0, B: 0, G: 0 };
+  private pages = { minute: 0, A: 0, B: 0, G: 0 };
   private exc: string | null = null;
   /** The places a corrupt row was skipped this request (each told once). */
   private told = new Set<string>();
@@ -260,10 +264,13 @@ export class StoreCore {
     return ms < this.lastAt;
   }
 
-  private underRateLimit(me: Who): boolean {
+  /** Within the key's minute: RATE_PER_MINUTE requests, and apart from them PAGES_PER_MINUTE snapshot pages after
+   *  the first (`page`: a later page's). */
+  private underRateLimit(me: Who, page = false): boolean {
     const minute = Math.floor(this.io.now() / 60_000);
-    if (this.rate.minute !== minute) this.rate = { minute, A: 0, B: 0, G: 0 };
-    return ++this.rate[me] <= RATE_PER_MINUTE;
+    const b = page ? this.pages : this.rate;
+    if (b.minute !== minute) Object.assign(b, { minute, A: 0, B: 0, G: 0 });
+    return ++b[me] <= (page ? PAGES_PER_MINUTE : RATE_PER_MINUTE);
   }
 
   /** Set while a restore is under way (storeObject.ts restore): every request is `unavailable` (the phones retry) until
@@ -370,7 +377,7 @@ export class StoreCore {
     if (body.action === 'health' && body.key === undefined) return { ok: true, build: STORE_BUILD };
     const me = typeof body.key === 'string' && KEY_RE.test(body.key) ? keyOwner(body.key, this.io.keys) : null;
     if (!me) return fail('unauthorized');
-    if (!this.underRateLimit(me)) return fail('busy');
+    if (!this.underRateLimit(me, body.action === 'snapshot' && body.page !== undefined && body.after !== undefined)) return fail('busy');
     // the guest (docs/backend.md#the-guest): no health data in, no audit to read
     if (me === 'G' && (body.action === 'ingest' || body.action === 'uploads')) return fail('forbidden');
     switch (body.action) {
@@ -393,7 +400,9 @@ export class StoreCore {
       if (Number.isNaN(ms)) return fail('bad_request');
       since = new Date(ms).toISOString();
     } else if (body.since !== undefined && body.since !== null && body.since !== '') return fail('bad_request');
-    // paged (`page`: rows at most, `after`: the last page's `next`); without `page` every row at once, as before
+    // paged (`page`: rows at most, `after`: the last page's `next`); without `page` every row at once, as before: an
+    // app from before paging (5a40fa6c, 2026-11-05) never reads `next`, so a reply cut short would lose rows for good
+    // (O7: kept unpaged for them; the log's `req` says `pg` 0, so their end shows in `npm run logs`)
     let page: { limit: number; after: Cursor | null } | null = null;
     if (body.page !== undefined) {
       const after = body.after === undefined ? null : cursorOf(body.after);
@@ -1131,13 +1140,17 @@ export class StoreCore {
     return h.length ? { held: h.map((x) => [x.at, x.person, x.date, x.metric, x.value, x.last, x.n, x.promoted]) } : {};
   }
 
-  /** The admin's `dump {limit?, after?}`: with `limit`, a page of the dump (the metrics and events as rowsPage pages
-   *  them, the audit on the first page, `next` the `after` of the next); without, every row at once (dump). */
+  /** The admin's `dump {limit?, after?, all?}`: a page of the dump (`limit` rows, SNAPSHOT_PAGE_MAX by default: the
+   *  metrics and events as rowsPage pages them, the audit and the held values on the first page, `next` the `after` of
+   *  the next); `all: true`, every row at once (dump). */
   dumpPage(o: Rec): { ok: true; rows: DumpRows; next?: string } | Fail {
-    if (o.limit === undefined && o.after === undefined) return { ok: true, ...this.dump() };
+    // paged by default (SNAPSHOT_PAGE_MAX rows): a whole year at once is past what one reply should carry; `all: true`
+    // the whole at once (record.ts always pages)
+    if (o.all === true) return { ok: true, ...this.dump() };
     const after = o.after === undefined ? null : cursorOf(o.after);
-    if (after === undefined || !isPageSize(o.limit)) return fail('bad_request');
-    const p = this.rowsPage('', after, o.limit);
+    const limit = o.limit === undefined ? SNAPSHOT_PAGE_MAX : o.limit;
+    if (after === undefined || !isPageSize(limit)) return fail('bad_request');
+    const p = this.rowsPage('', after, limit);
     return { ok: true, rows: { ...p.rows, uploads: after ? [] : this.uploadRows(), ...(after ? {} : this.heldDump()) }, ...(p.next ? { next: p.next } : {}) };
   }
 

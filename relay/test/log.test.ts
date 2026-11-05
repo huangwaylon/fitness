@@ -176,6 +176,8 @@ describe('/api’s req meta', () => {
     const ing = call({ key: KEY_A, action: 'ingest', dates: 'Oct 1, 2026\nOct 2, 2026', steps: '4000\n99999999', weight: '68.4\n' });
     expect(ing.meta).toMatchObject({ action: 'ingest', st: 'ok', m: expect.any(Number) });
     expect(JSON.stringify(ing.meta)).not.toMatch(/68\.4|4000|99999999/);
+    // a snapshot's page size (0: an app from before paging asked for every row at once)
+    expect([call({ key: KEY_A, action: 'snapshot' }).meta.pg, call({ key: KEY_A, action: 'snapshot', page: 4000 }).meta.pg]).toEqual([0, 4000]);
     expect([call({ action: 'whoami', key: 'f'.repeat(64) }).meta.st, apiWithMeta(s, '{x', roleOf).meta.st, call({ key: KEY_C, action: 'ingest' }).meta]).toEqual(['unauthorized', 'bad_request', expect.objectContaining({ st: 'forbidden', role: 'G' })]);
   });
 

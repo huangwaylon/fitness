@@ -108,7 +108,7 @@ preflight; a Shortcut's `application/json` is fine), `{key, action, ...}`. Every
 | `ingest` | the Shortcut's fields ([Ingest](#ingest)) | `{ok, metrics, skipped?, warnings?}` |
 | `event` | `id, type, data` | `{ok, duplicate?}`: a repeated `id` is acked as a duplicate, so retries are safe |
 | `events` | `events: [{id, type, data}, …]` (≤ 50) | `{ok, results: [{id, ok, duplicate?, at?} \| {id, ok: false, error, detail?}]}`: each kept in order as `event` would, `at` its stored row's; one whose write throws is `{id, ok: false, error: 'unavailable'}` alone (nothing of it kept), the others go on and the notice tells of what committed |
-| `snapshot` | `since?` (ISO: the max `at` cached); `page?` (1–10,000 rows a reply), `after?` (the last page's `next`) | `{ok, me, now, rev, rows:{metrics, events}, next?}`: compact arrays in column order, rows with `at > since`, both people. With `page` (2026-11-05), at most that many rows in (at, table, seq) order and `next` (a cursor `<at>\|m\|<seq>` or `…\|e\|…`) while there are more: the pages together are the whole reply, and a row written between two pages is in a later one. Without `page`, every row at once (as before) |
+| `snapshot` | `since?` (ISO: the max `at` cached); `page?` (1–10,000 rows a reply), `after?` (the last page's `next`) | `{ok, me, now, rev, rows:{metrics, events}, next?}`: compact arrays in column order, rows with `at > since`, both people. With `page` (2026-11-05), at most that many rows in (at, table, seq) order and `next` (a cursor `<at>\|m\|<seq>` or `…\|e\|…`) while there are more: the pages together are the whole reply, and a row written between two pages is in a later one. Without `page`, every row at once (as before, and kept so: an app from before paging, 5a40fa6c of 2026-11-05, never reads `next`, so a cut reply would lose rows for good; the log's `req` says `pg` 0 for such a request, so when they stop shows in `npm run logs`) |
 | `uploads` | | `{ok, rows:[{at, status, bytes, notes}]}`: the caller's last 20 audit rows, newest first |
 | `whoami` | | `{ok, me, build}` (pairing) |
 | `health` | no `key` | `{ok, build: 'relay-2'}` |
@@ -121,7 +121,7 @@ An unreadable `since`, a `page` out of range, an `after` that isn't a cursor (or
   [The guest](#the-guest)), in constant time; a key that isn't 32–128 hex characters is refused before any comparison.
   `KEY_A` and `KEY_B` also derive the server-to-server secret that signs `/notify` and `/admin` (never `KEY_C`): a
   rotation updates the admin tools' keys file too ([runbook §4](ops/runbook.md#4-rotate-a-key)).
-- **Rate limit:** 120 requests per key per minute (in the record's memory). Over it: `busy`.
+- **Rate limit:** 120 requests per key per minute (in the record's memory). Over it: `busy`. A snapshot's later pages (`page` with `after`) have their own 600 a minute (2026-11-05, relay review O9: a cold fetch of a big record spent the writes' budget); a first page counts as a request.
 
 ## Record state
 

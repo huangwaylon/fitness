@@ -4,7 +4,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { COMPACT_CONFIRM, COMPACT_MAX, isCompactTick, StoreCore } from '../src/store.ts';
 import { compactKeep, weekLockMs } from '../../app/src/lib/contract/compact.ts';
-import type { EventRow, MetricRow } from '../../app/src/lib/contract/api.ts';
+import { SNAPSHOT_PAGE_MAX, type EventRow, type MetricRow } from '../../app/src/lib/contract/api.ts';
 import { memSql } from './sqlite.ts';
 
 const KEY_A = 'a'.repeat(64);
@@ -162,6 +162,10 @@ describe('the paged snapshot', () => {
     expect(rows).toEqual(whole);
     expect(pages).toBeGreaterThan(2);
     expect(store.dumpPage({ limit: 0 })).toEqual({ ok: false, error: 'bad_request' });
+    // paged by default (O7): at most SNAPSHOT_PAGE_MAX rows a reply, `all` the whole at once
+    const first = store.dumpPage({}) as { rows: { metrics: unknown[]; events: unknown[] }; next?: string };
+    expect(first.rows.metrics.length + first.rows.events.length).toBe(Math.min(SNAPSHOT_PAGE_MAX, store.counts().metrics + store.counts().events));
+    expect(store.dumpPage({ all: true })).toEqual({ ok: true, ...store.dump() });
     expect(store.dumpPage({ after: 'x', limit: 5 })).toEqual({ ok: false, error: 'bad_request' });
   });
 });
