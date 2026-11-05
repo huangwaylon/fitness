@@ -6,7 +6,9 @@
   // its own entries, unmarked, under the same chip); on my today a meal with entries and no repeat ends with a small
   // 「いつものに する」 link (not a ＋-sized button: it is for one meal of the four, if any). Under the header, with
   // entries, the meal's protein as a chip (「たんぱく質 28g」, the leaf's once at the per-meal target: profile.ts
-  // mealProteinTarget).
+  // mealProteinTarget). On my day an empty meal offers its copies (`copies`), small links of いつものに する's weight:
+  // 「きのうと おなじ」 (my own the day before) and 「〇〇と おなじ」 (another's that day), each with what it holds; one tap
+  // copies it in.
   import type { FoodEntry, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { amountText, daysText } from './foodUi.ts';
@@ -27,8 +29,10 @@
     onpick: (e: FoodEntry) => void;
     /** A meal's protein to aim for (g): its chip turns the leaf's at it. */
     ptarget: number;
+    /** Meals to copy into this one (shown while it is empty on my day): their words, what they hold, the copy. */
+    copies?: readonly { key: string; label: string; meta: string; run: () => void }[];
   }
-  let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget }: Props = $props();
+  let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget, copies = [] }: Props = $props();
   const protein = $derived(mealProtein(entries));
   const kcalOf = (e: FoodEntry) => Math.round((e.f.k * e.g) / 100);
   const total = $derived(entries.reduce((s, e) => s + (e.f.k * e.g) / 100, 0));
@@ -77,6 +81,15 @@
         </li>
       {/each}
     </ul>
+  {/if}
+  {#if mine && !entries.length && copies.length}
+    <div class="copies" data-copies={meal}>
+      {#each copies as c (c.key)}
+        <button type="button" class="rep new copy" data-sfx="confirm" data-copy={c.key} onclick={c.run}>
+          <span>{c.label}</span><small>{c.meta}</small>
+        </button>
+      {/each}
+    </div>
   {/if}
   {#if days === null && onrepeat && entries.length}
     <button type="button" class="rep new" data-sfx="page" data-repeat-new={meal} aria-label={t('food.rep.newOf', { meal: label })} onclick={onrepeat}>
@@ -136,4 +149,9 @@
     color: var(--text-soft); font-size: var(--fs-s); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px;
   }
   button.rep.new:active { transform: none; box-shadow: none; color: var(--text); }
+  /* the copies: いつものに する's links, side by side as they fit, what each holds after it (not underlined) */
+  .copies { display: flex; flex-wrap: wrap; column-gap: 12px; margin: -4px 0 0; }
+  button.rep.new.copy { gap: 6px; }
+  .copy span { overflow: visible; }
+  .copy small { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); }
 </style>

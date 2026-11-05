@@ -156,5 +156,10 @@
   "food.quickAdd": "「{name}」を そのまま ついか",
   "food.addedHead": "ついかした もの（{n}）",
   "food.finish": "おわり",
-  "food.unadd": "「{name}」を けす"
+  "food.unadd": "「{name}」を けす",
+  "food.copy.yesterday": "きのうと おなじ",
+  "food.copy.prev": "前の日と おなじ",
+  "food.copy.of": "{name}と おなじ",
+  "food.copy.meta": "{n}品 {k} kcal",
+  "food.copied": "{meal}に {n}品 コピーしました"
 }

@@ -1013,3 +1013,50 @@ test('the balance views: a meal’s protein chip, the PFC bar, the week’s aver
   await s.locator('[data-tab=log]').click();
   await expect(s.locator('[data-food-summary] [data-nutrient=fi] small')).toHaveText(/^目標 25\sg\s以上$/);
 });
+
+// Copy a meal (the user approved, 2026-11-05): on my day an empty meal offers 「きのうと おなじ」 (my own the day
+// before) and 「〇〇と おなじ」 (another's that day: everyone sees every meal, so the guest too), each with what it holds;
+// one tap copies it in as new entries of mine, its banner's とりけす takes them out again.
+test('copy a meal: the members’ on the guest’s phone, きのうと おなじ on mine; one tap, new entries of mine; とりけす', async ({ page }) => {
+  await openFood(page, '&as=G');
+  const s = sheet(page);
+  const lunch = s.locator('section[data-meal=l]');
+  await expect(lunch.locator('[data-entry]')).toHaveCount(0);
+  await expect(lunch.locator('[data-copy]')).toHaveCount(2); // ウェイ's and うめ's lunches; no day before of its own
+  const a = lunch.locator('[data-copy=A]');
+  await expect(a).toContainText('と おなじ');
+  await expect(a).toContainText(/1品 \d+ kcal/);
+  expect(await overflowOf(page)).toEqual([]);
+  const before = await kcalOf(page).catch(() => 0);
+
+  await a.click();
+  await expect(lunch.locator('[data-entry]')).toHaveCount(1);
+  await expect(lunch.locator('[data-entry]')).toContainText('カレーライス（チキン）');
+  await expect(lunch.locator('[data-copy]')).toHaveCount(0); // not empty any more
+  const banner = s.locator('.banner');
+  await expect(banner).toContainText('昼ごはんに 1品 コピーしました');
+  await expect.poll(() => kcalOf(page)).toBeGreaterThan(before);
+  await banner.getByRole('button', { name: 'とりけす' }).click();
+  await expect(lunch.locator('[data-entry]')).toHaveCount(0);
+
+  await lunch.locator('[data-copy=B]').click();
+  await expect(lunch.locator('[data-entry]')).toContainText('おにぎり（鮭）');
+  // mine: it opens its amount (ほぞん / けす)
+  await lunch.locator('[data-entry]').click();
+  await expect(s.locator('[data-done]')).toHaveText('ほぞん');
+  await s.getByRole('button', { name: 'もどる' }).click();
+  // うめ's day is untouched, read-only, nothing to copy there
+  await s.locator('select[data-pick=who]').selectOption('B');
+  await expect(s.locator('section[data-meal=l] [data-entry]')).toHaveCount(1);
+  await expect(s.locator('[data-copy]')).toHaveCount(0);
+
+  // my own the day before: ウェイ's dinner yesterday (焼き鮭定食)
+  await openFood(page);
+  const dinner = sheet(page).locator('section[data-meal=d]');
+  await expect(dinner.locator('[data-entry]')).toHaveCount(0);
+  const prev = dinner.locator('[data-copy=prev]');
+  await expect(prev).toContainText('きのうと おなじ');
+  await prev.click();
+  await expect(dinner.locator('[data-entry]')).toHaveCount(1);
+  await expect(dinner.locator('[data-entry]')).toContainText('焼き鮭定食');
+});
