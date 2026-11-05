@@ -16,11 +16,12 @@
   // (mine to edit, anyone else's to copy). A recipe's ingredient search offers the custom foods and 食品を つくる too.
   // Several foods a trip: a new entry logged from a meal's search (its amount's ついか, a row's own ＋, a recipe's or a
   // custom food's) comes back to that search, listed at its top (each with ✕), its field focused; おわり ends the trip.
+  // クイック (the search's ⚡, or a kcal typed): kcal and what else is known as one entry (FoodCustom `quick`), no food saved.
   import '#lib/i18n/food.ts'; // the meal log's strings, loaded with it
   import '#lib/i18n/kenkou.ts'; // けんこう's: the period dropdown
   import { flushSync, tick, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
-  import { customSnap, FOOD_GOAL_OF, MEALS, type FoodCustom as Custom, type FoodEntry, type FoodGoalOf, type FoodSnap, type Meal } from '#lib/contract/food.ts';
+  import { customGrams, customSnap, FOOD_GOAL_OF, MEALS, newFoodId, type FoodCustom as Custom, type FoodEntry, type FoodGoalOf, type FoodSnap, type Meal } from '#lib/contract/food.ts';
   import { copySources, customs, foodDay, foodEntries, foodGoal, foodWeek, recipes, repeatOn, repeats, type CopySource, type Recipe } from '#lib/model/food.ts';
   import { mealProteinTarget } from '#lib/model/profile.ts';
   import {
@@ -53,7 +54,7 @@
   import FoodCustom from './FoodCustom.svelte';
   import {
     customDraft, customItem, customOf, DAYS, foodDb, foodDbNow, foodLast, itemOf, portionLabel, recentOf, recipeItem,
-    recipeServing, sameItems, servingOnly, type CustomDraft, type RecipeDraft
+    quickDraft, quickSnap, recipeServing, sameItems, servingOnly, type CustomDraft, type RecipeDraft
   } from './foodUi.ts';
 
   let { title = $bindable(''), back = $bindable(null), lead = $bindable(null) }: {
@@ -119,6 +120,7 @@
     | { k: 'search'; meal: Meal; added: string[] }
     | ({ k: 'amount'; meal: Meal; g0?: number; u0?: string; entry?: FoodEntry } & Picked)
     | { k: 'custom'; id: string | null; then: Then }
+    | { k: 'quick'; meal: Meal }
     | { k: 'repeat'; meal: Meal }
     | { k: 'recipe'; id: string | null }
     | { k: 'rsearch' }
@@ -134,7 +136,7 @@
     title = !top ? '' : top.k === 'repeat' ? t('food.rep.title', { meal: t(`food.meal.${top.meal}`) })
       : top.k === 'recipe' ? t(top.id ? 'food.rcp.title' : 'food.rcp.new') : top.k === 'rsearch' ? t('food.rcp.addItem')
       : top.k === 'ritem' ? t('food.rcp.item') : top.k === 'rlog' ? t('food.rcp.log')
-      : top.k === 'custom' ? t(top.id ? 'food.my.head' : 'food.my.newTitle') : t(`food.meal.${top.meal}`);
+      : top.k === 'custom' ? t(top.id ? 'food.my.head' : 'food.my.newTitle') : top.k === 'quick' ? t('food.quick.title') : t(`food.meal.${top.meal}`);
     back = top ? up : null;
     lead = !top ? whoPill : null;
   });
@@ -210,6 +212,29 @@
       said('food.added', { meal: t(`food.meal.${meal}`) });
       const l = top;
       if (l?.k === 'search') l.added = [...l.added, r.id];
+    }
+  }
+  // ---- クイック: one entry of kcal (and what else is known), no food saved (foodUi.ts quickSnap: an `sv` snapshot)
+  let qdraft = $state<CustomDraft>(quickDraft());
+  /** The quick form, its kcal field focused in the tap (`k`: a kcal typed in the search). */
+  function openQuick(meal: Meal, k?: number) {
+    qdraft = quickDraft(k === undefined ? '' : String(k));
+    go({ k: 'quick', meal }, k === undefined ? '[data-quick-new]' : '[data-quick-row]');
+    flushSync();
+    root?.querySelector<HTMLInputElement>('[data-custom-k]')?.focus({ preventScroll: true });
+  }
+  const logQuick = (meal: Meal, d: CustomDraft) => logFood({ d: date, m: meal, g: 100, f: quickSnap(d, newFoodId(Date.now(), 'q')) });
+  function quickDone(l: Extract<Level, { k: 'quick' }>) {
+    const r = logQuick(l.meal, qdraft);
+    if (r.ok) said('food.added', { meal: mealName(l.meal) });
+    logged(r.id);
+  }
+  /** A kcal typed, its ＋: logged at once as クイック. */
+  function quickNow(meal: Meal, k: number) {
+    const r = logQuick(meal, quickDraft(String(k)));
+    if (r.ok && r.id) {
+      said('food.added', { meal: mealName(meal) });
+      if (top?.k === 'search') top.added = [...top.added, r.id];
     }
   }
   /** ✕ on one of this trip's: removed (it was only just logged; no とりけす). */
@@ -392,6 +417,12 @@
     said('food.my.saved', { name: v.n });
     if (!l.then) return toSearch();
     const c: Custom = { ...v, id: res.id, at: 0, who: me };
+    if ('meal' in l.then && !l.id) {
+      // ほぞんして ついか: one serving logged too, back to the meal's search
+      const r = logCustom({ customId: res.id, d: date, m: l.then.meal, g: customGrams(c), u: c.u });
+      if (r.ok) said('food.added', { meal: mealName(l.then.meal) });
+      return logged(r.id);
+    }
     const p: Picked = { item: customItem(c), cid: res.id, sv: c.g === undefined };
     swap('meal' in l.then ? { k: 'amount', meal: l.then.meal, ...p } : { k: 'ritem', ...p });
   }
@@ -453,7 +484,11 @@
       <FoodSearch {recent} onpick={(item, g, u, f) => add(item, meal, g, u, f)} recipes={allRecipes} {names} onrecipe={(r) => go({ k: 'rlog', r, meal })}
         onnewrecipe={() => openRecipe(null)} customs={allCustoms} oncustom={(c) => go({ k: 'amount', meal, ...pickOf(customItem(c)) })}
         oncreate={(n) => openCustom(null, { meal }, '[data-custom-new]', n)} onquick={(item, g, u, f) => quick(item, meal, g, u, f)}
-        oncustomquick={(c) => quick(customItem(c), meal)} added={addedOf(top.added)} onunadd={unadd} onfinish={home} />
+        oncustomquick={(c) => quick(customItem(c), meal)} added={addedOf(top.added)} onunadd={unadd} onfinish={home}
+        onquicknew={(k) => openQuick(meal, k)} onquicklog={(k) => quickNow(meal, k)} />
+    {:else if top?.k === 'quick'}
+      {@const l = top}
+      <FoodCustom bind:draft={qdraft} quick onsave={() => quickDone(l)} />
     {:else if top?.k === 'amount'}
       {@const l = top}
       {#key l}
@@ -479,6 +514,7 @@
       {@const theirs = c && c.who !== me ? c : null}
       {#key l.id}
         <FoodCustom bind:draft={cdraft} owner={theirs ? ownerOf(theirs) : null} saved={!!c && !theirs} clean={cclean} onsave={() => customSave(l)}
+          andLog={!l.id && !!l.then && 'meal' in l.then}
           onremove={() => l.id && customRemove(l.id)} oncopy={() => customCopy(l)}
           onlog={up} />
       {/key}

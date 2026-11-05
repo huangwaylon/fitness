@@ -373,6 +373,16 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   with what it holds (「2品 322 kcal」; `model/food.ts` copySources). One tap copies it in: each item (a いつもの's too) a
   new entry of mine, its snapshot as logged (`store/actions.ts` copyMeal: ordinary `food` ops, nothing new on the
   record); its banner (「昼ごはんに 2品 コピーしました」) has とりけす.
+  **クイック** (quick add, the user approved 2026-11-05: eating out, kcal is all you know): in a meal's search, ⚡ クイック
+  ついか（カロリーだけ） under the つくる row (hidden while typing, as they are) opens the form, its kcal field focused in
+  the tap: なまえ (blank: 「クイック」), カロリー (needed) and the nutrients (each optional), then ついか: one entry by the
+  serving (「1食」), back to the search's trip. A kcal typed in the search (「650」, 「６５０kcal」: foodUi.ts typedKcal)
+  offers itself above the catalog's rows as 「クイック 650 kcal」: the row opens the form with it, its ＋ logs it at
+  once. Nothing is saved as a マイ食品: the entry's snapshot is a custom food's form with an id of its own
+  (`quick:<id>`, `sv`: foodUi.ts quickSnap), so the record takes it as it is (no relay change).
+  **Tap counts** from the open sheet (e2e food.spec, Playwright WebKit as an iPhone 15; before → now): the same meal as
+  yesterday 3 a food from さいきん → 1; a new 3-item breakfast (ご飯 · みそ汁 · 卵) 9 + 7 characters → 5 + 7; a konbini
+  lunch (おにぎり ×2 · サラダチキン) 8 + 10 → 6 + 10; a 650 kcal meal out 4 + 8 (a new マイ食品) → 3 + 3.
 - **The week** (`FoodWeek`, `model/food.ts` foodWeek), after the four meals: さいきん 7日の 平均, the 7 finished days to the
   day shown (to yesterday on today: today is never finished; 「10/28〜11/3 · 記録 n日」), a day with nothing logged left out
   as グラフ's averages: the average day's kcal against the goal (目標の はんい within its band, else 目標より N kcal 少なめ /
@@ -438,8 +448,8 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   a line on what it is for and 「＋ じぶんで つくる」, open the editor, the typed text its name. The editor (`FoodCustom`): なまえ, 1食の めやす (「1食」 its
   placeholder, not a value: typing 1杯 gives 1杯; blank logs as 1食) and その重さ g (may stay blank: then it logs by the serving), カロリー kcal (needed) and P/F/C/塩分/食物繊維/アルコール g (only
   what is known), all per serving, full-width digits welcome; a weight too light for its values (denser than any food:
-  `customDensityOk`) is refused before ほぞん. ほぞん goes on where it came from: its amount (a meal's ついか, or the
-  ingredient's); a custom food's amount (from the search) has 「マイ食品を ひらく」: mine in the editor (ほぞん and けす,
+  `customDensityOk`) is refused before ほぞん. A new one made from a meal's search saves and logs one serving in one
+  tap, 「ほぞんして ついか」 (back to the search's trip); one made for a recipe's ingredient goes on to its amount; a custom food's amount (from the search) has 「マイ食品を ひらく」: mine in the editor (ほぞん and けす,
   asked twice, go back to the search), anyone else's read-only with 「コピーして へんしゅう」 and 「ごはんに ついか」 (back to
   its amount). With no weight the amount steps whole servings, no grams field and no weight shown anywhere (the
   entry's snapshot says `sv`: 「1食」, 「1食×2」, a nominal 100 g a serving underneath; a recipe with such an ingredient

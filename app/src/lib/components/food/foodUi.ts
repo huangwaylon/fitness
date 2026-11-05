@@ -263,3 +263,30 @@ export function customOf(d: CustomDraft): { n: string; u: string; g?: number; k:
     p: nut('p'), fa: nut('fa'), c: nut('c'), s: nut('s'), ...(fi === null ? {} : { fi }), ...(al === null ? {} : { al })
   };
 }
+
+// ---- クイック (quick add: eating out): kcal, and whatever else is known, as one entry; no food saved
+
+/** A quick entry's fields: the custom food editor's (FoodCustom `quick`), its serving and weight unused; `k` the kcal
+ *  to start from (typed in the search). */
+export const quickDraft = (k = ''): CustomDraft => ({ ...customDraft(null), k });
+
+/** Which of a quick entry's fields don't read: kcal is needed, the name may stay blank (then クイック). */
+export function quickErrors(d: CustomDraft): Set<keyof CustomDraft> {
+  return customErrors({ ...d, n: d.n.trim() || 'x', u: '', g: '' });
+}
+
+/** A quick entry's snapshot: one serving (`sv`: a nominal 100 g, shown as 「1食」) as typed, customSnap's form with no
+ *  food saved, its id `quick:<id>` (its own), its name クイック unless typed. The record takes it as any custom food's
+ *  (contract/food.ts snapOf: `sv`'s limits), so nothing new on the relay. */
+export function quickSnap(d: CustomDraft, id: string): FoodSnap {
+  const v = customOf({ ...d, n: d.n.trim() || t('food.quick.name'), u: '', g: '' });
+  return { ...customSnap({ ...v, id }, v.u), id: `quick:${id}` };
+}
+
+/** A kcal typed in the search (「650」, 「６５０kcal」, 「1,200」): offered as a quick entry; null for anything else. */
+export function typedKcal(q: string): number | null {
+  const s = q.trim();
+  if (!/^[\d０-９][\d０-９,，.．]*\s*(kcal)?$/i.test(s)) return null;
+  const v = parseAmount(s, 1, CUSTOM.kcalMax);
+  return v ? Math.round(v) : null;
+}

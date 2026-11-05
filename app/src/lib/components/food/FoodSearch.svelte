@@ -12,7 +12,8 @@
   // a card says so, with じぶんで つくる (the same editor). From a meal's ＋ (`onquick`), each food row has a ＋ of its
   // own beside it: one tap logs it as it comes (its default portion; a recent one as I had it), the field cleared and
   // focused for the next; the foods added on this trip (`added`) are listed under the field, each with ✕, with おわり
-  // (back to the day).
+  // (back to the day). A meal's search also has ⚡ クイック (`onquicknew`: kcal only, eating out) under the つくる row, and a
+  // kcal typed (「650」) offers itself as a quick entry above the catalog's rows (its row the form, its ＋ logged at once).
   import type { Who } from '#lib/types.ts';
   import type { FoodCustom, FoodEntry } from '#lib/contract/food.ts';
   import type { Recipe } from '#lib/model/food.ts';
@@ -20,7 +21,7 @@
   import { searchKey } from '#lib/food/text.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
-  import { amountText, defaultPortion, foodDb, itemOf, servingText, uniqueItems } from './foodUi.ts';
+  import { amountText, defaultPortion, foodDb, itemOf, servingText, typedKcal, uniqueItems } from './foodUi.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
@@ -45,10 +46,13 @@
     added?: readonly FoodEntry[];
     onunadd?: (e: FoodEntry) => void;
     onfinish?: () => void;
+    /** クイック: the quick entry's form (`k`: a kcal typed), or one logged at once with that kcal (`onquicklog`). */
+    onquicknew?: (k?: number) => void;
+    onquicklog?: (k: number) => void;
   }
   let {
     recent, onpick, recipes = [], names, onrecipe, onnewrecipe, customs = [], oncustom, oncreate, onquick, oncustomquick, added = [], onunadd,
-    onfinish
+    onfinish, onquicknew, onquicklog
   }: Props = $props();
 
   let db = $state.raw<FoodDb | null>(null);
@@ -77,6 +81,8 @@
     if (matchMedia('(hover: hover)').matches) input?.focus();
   });
 
+  /** A kcal typed, offered as a quick entry. */
+  const kcalTyped = $derived(onquicknew ? typedKcal(q) : null);
   const results = $derived.by(() => {
     void more;
     return db && q.trim() ? uniqueItems(searchFoods(db, q, 40)) : [];
@@ -120,6 +126,8 @@
 
 {#snippet plus()}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5 V19 M5 12 H19" /></svg>{/snippet}
 
+{#snippet bolt()}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3 L6 13 H11 L10 21 L18 10 H13 Z" /></svg>{/snippet}
+
 <!-- a row's own ＋: logged as it comes, in one tap -->
 {#snippet qa(name: string, run: () => void)}
   <button type="button" class="qa" data-sfx="confirm" data-quick aria-label={t('food.quickAdd', { name })} onclick={() => quick(run)}>{@render plus()}</button>
@@ -154,6 +162,9 @@
       {#if onnewrecipe}<button type="button" class="btn paper small make" data-sfx="page" data-recipe-new onclick={onnewrecipe}>{@render plus()}{t('food.rcp.make')}</button>{/if}
       {#if oncreate}<button type="button" class="btn paper small make" data-sfx="page" data-custom-new onclick={() => oncreate(q.trim())}>{@render plus()}{t('food.my.new')}</button>{/if}
     </div>
+    {#if onquicknew}
+      <button type="button" class="btn paper small make" data-sfx="page" data-quick-new onclick={() => onquicknew()}>{@render bolt()}{t('food.quick.make')}</button>
+    {/if}
   {/if}
 
   {#if onfinish && added.length}
@@ -180,6 +191,15 @@
     {@render recipeRows()}
     {@render customRows()}
   {:else}
+    {#if kcalTyped !== null}
+      <ul class="list" data-food-quick>
+        <li class:rw={!!onquicklog}><button type="button" class="card it" data-sfx="page" data-quick-row onclick={() => onquicknew?.(kcalTyped!)}>
+          <span class="nm">{t('food.quick.name')}</span>
+          <small class="meta">{t('food.quick.row')}</small>
+          <b class="kc money">{kcalText(kcalTyped)}</b>
+        </button>{#if onquicklog}{@render qa(t('food.quick.of', { k: formatNum(kcalTyped) }), () => onquicklog(kcalTyped!))}{/if}</li>
+      </ul>
+    {/if}
     {@render recipeRows()}
     {@render customRows()}
     {@render catalog()}
@@ -288,7 +308,7 @@
   .new { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; }
   .make { margin: 0; width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
   .new .make { min-width: 0; padding: 0 8px; gap: 4px; white-space: nowrap; }
-  .make svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
+  .make svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
   /* a row with its own ＋ beside it (FoodMeal's ＋ object) */
   .rw { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
   .qa {
