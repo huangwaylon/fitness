@@ -94,6 +94,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    * - `bookmark {ms?}`: point-in-time recovery's bookmark now and `ms` ago (default 1 h);
    * - `restore {bookmark}`: restore the record to that bookmark (the object restarts; every phone refetches: a new epoch);
    * - `rev`: start a new epoch (every phone drops its cache and fetches everything);
+   * - `decorcheck {fix?}`: the decor caps' kept counts against the rows' (store.ts decorCheck);
    * - `shopcheck {fix?}`: each person's running shop ledger against the full fold of their rows (store.ts shopCheck);
    * - `held {person?}`: the values an ingest held back (a past day's 0 over a value above it: never served);
    *   `promote {person, date, metric, value?}`: one made a row of the day's history (its latest now);
@@ -139,6 +140,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       // the running shop ledgers against the full fold of the rows (`fix`: the fold's taken)
       case 'shopcheck':
         return this.core.shopCheck(o);
+      // the decor caps' kept counts against the rows' (`fix`: the rows' taken)
+      case 'decorcheck':
+        return this.core.decorCheck(o);
       case 'load':
         return this.core.load(o);
       case 'dump':

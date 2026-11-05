@@ -23,8 +23,8 @@ import {
 import { compactKeep, weekLockMs } from '../../app/src/lib/contract/compact.ts';
 import { localDateAt } from '../../app/src/lib/contract/tokyo.ts';
 import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contract/decor.ts';
-import { tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
-import { isRoomScope, isVoid, layoutAccept, layoutOpOf, scopeMayWrite, type LayoutEntry } from '../../app/src/lib/contract/layout.ts';
+import { isTentPiece, tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
+import { isRoomScope, isStanding, layoutAccept, layoutOpOf, scopeMayWrite, type LayoutEntry } from '../../app/src/lib/contract/layout.ts';
 import { BOARD_MAX, boardAccept, boardOpOf, cleanText, type BoardEntry } from '../../app/src/lib/contract/board.ts';
 import { foodAccept, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, repeatAccept, repeatNext, type RepeatOpBy } from '../../app/src/lib/contract/food.ts';
 import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
@@ -674,10 +674,12 @@ export class StoreCore {
       if (drop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', `board|${drop}`);
       if (type === 'decor' && data.sc === 'r' && typeof data.at === 'number') this.dropVoided(data.at);
       const slot = eventSlot(type, me, subject, data, Date.parse(at));
+      const wasDecor = type === 'decor' && slot ? this.io.sql.exec<{ person: string; data: string }>('SELECT person, data FROM events WHERE slot = ?', slot).toArray()[0] ?? null : null;
       // the running shop ledger (shopNote): a tally's or a give-back's change is the kept row less the one it replaces
       const was = (type === 'tally' || type === 'tally_back') && slot ? this.slotTally(slot) : null;
       this.put(id, at, me, type, kept, slot, null);
       if (type === 'tally' || type === 'tally_back' || type === 'sell' || type === 'buy') this.shopNote(me, type, kept, was);
+      if (type === 'decor') this.decorNote(me, data, wasDecor);
       if (type === 'board' && data.rm === true) this.pruneBoard();
       return { ok: true, at };
     });
@@ -711,19 +713,95 @@ export class StoreCore {
   }
 
   /** A decor op against the record's (each id's latest op, per scope): `stale`, `full` or `append` (contract/decor.ts
-   *  decorAccept, contract/tent.ts tentAccept, contract/layout.ts layoutAccept). */
+   *  decorAccept, contract/tent.ts tentAccept, contract/layout.ts layoutAccept). Only the op's own slots' rows are read
+   *  (the piece's and its light switch's, the layout's reset) and the cap's count is the record's own (decorLive);
+   *  until 2026-11-05 every op parsed every decor row. */
   private decorTarget(me: Who, d: Rec): 'append' | 'stale' | 'full' {
     const kind = d.sc === undefined ? 'island' : isRoomScope(d.sc) ? 'room' : 'layout';
     const parse = (x: Rec) => (kind === 'room' ? tentOpOf(x) : kind === 'layout' ? layoutOpOf(x) : decorOpOf(x));
     const e = { ...parse(d)!, who: me };
+    const sc = typeof d.sc === 'string' ? d.sc : '';
+    const slots = kind === 'room' ? [`decor|${sc}|${String(d.id)}`, `decor|${sc}|${String(d.id)}|l`] : kind === 'layout' ? [`decor|${sc}|${String(d.id)}`, 'decor|r|reset'] : [`decor||${String(d.id)}`];
     const held: (DecorEntry | TentEntry | LayoutEntry)[] = [];
-    for (const r of this.decorRows()) {
-      const op = parse(r.d);
+    for (const r of this.io.sql.exec<{ person: string; data: string }>(`SELECT person, data FROM events WHERE slot IN (${slots.map(() => '?').join(', ')})`, ...slots).toArray()) {
+      const x = this.rowRec(r.data, 'decor');
+      const op = x && isWho(r.person) ? parse(x) : null;
       if (op) held.push({ ...op, who: r.person } as DecorEntry | TentEntry | LayoutEntry);
     }
-    if (kind === 'room') return tentAccept(held as TentEntry[], e as TentEntry);
-    if (kind === 'layout') return layoutAccept(held as LayoutEntry[], e as LayoutEntry);
-    return decorAccept(held as DecorEntry[], e as DecorEntry);
+    const fam = kind === 'island' ? '' : kind === 'room' ? sc : sc === 'o' ? 'o' : null;
+    const live = fam === null ? undefined : this.decorLive()[fam] ?? 0;
+    if (kind === 'room') return tentAccept(held as TentEntry[], e as TentEntry, live);
+    if (kind === 'layout') return layoutAccept(held as LayoutEntry[], e as LayoutEntry, live);
+    return decorAccept(held as DecorEntry[], e as DecorEntry, live);
+  }
+
+  /** What counts toward a decor cap, per family (`''` the island's decorations, `t` `u` `v` the rooms' pieces, `o` the
+   *  outdoors' pieces standing): meta `decor_live`, kept by each decor op (decorNote), counted from the rows when it
+   *  isn't there (after a load or a reset). */
+  private decorLive(): Record<string, number> {
+    const raw = this.meta('decor_live');
+    if (raw) {
+      try {
+        const x = JSON.parse(raw) as unknown;
+        if (isRec(x)) return x as Record<string, number>;
+      } catch { /* counted again */ }
+    }
+    const n: Record<string, number> = { '': 0, t: 0, u: 0, v: 0, o: 0 };
+    const reset = this.layoutReset();
+    for (const r of this.decorRows()) {
+      const f = this.decorFamily(r.d, r.person, reset);
+      if (f?.live) n[f.fam]++;
+    }
+    this.setMeta('decor_live', JSON.stringify(n));
+    return n;
+  }
+
+  /** The layout's reset in force (its `at`; 0: none). */
+  private layoutReset(): number {
+    const r = this.io.sql.exec<{ data: string }>("SELECT data FROM events WHERE slot = 'decor|r|reset'").toArray()[0];
+    const x = r ? this.rowRec(r.data, 'decor') : null;
+    const op = x ? layoutOpOf(x) : null;
+    return op?.sc === 'r' ? op.at : 0;
+  }
+
+  /** A decor row's cap family and whether it counts there (null: no cap of its own: a chunk, a reset, a home's look). */
+  private decorFamily(d: Rec, who: Who, reset: number): { fam: string; live: boolean } | null {
+    if (d.sc === undefined) {
+      const op = decorOpOf(d);
+      return op ? { fam: '', live: !op.rm } : null;
+    }
+    if (isRoomScope(d.sc)) {
+      const op = tentOpOf(d);
+      return op ? { fam: d.sc, live: isTentPiece({ ...op, who } as TentEntry) } : null;
+    }
+    const op = d.sc === 'o' ? layoutOpOf(d) : null;
+    return op ? { fam: 'o', live: isStanding({ ...op, who } as LayoutEntry, reset) } : null;
+  }
+
+  /** A kept decor op into the caps' counts (`was`: the row its slot held before): its family's count moves by what it
+   *  stands for less what that row did. A reset lets the counts go (counted again, once, at the next op). */
+  private decorNote(me: Who, d: Rec, was: { person: string; data: string } | null): void {
+    if (d.sc === 'r') return void this.io.sql.exec("DELETE FROM meta WHERE k = 'decor_live'");
+    const raw = this.meta('decor_live');
+    if (!raw) return;
+    const reset = d.sc === 'o' ? this.layoutReset() : 0;
+    const now = this.decorFamily(d, me, reset);
+    const wx = was ? this.rowRec(was.data, 'decor') : null;
+    const before = wx && was && isWho(was.person) ? this.decorFamily(wx, was.person, reset) : null;
+    const delta = (now?.live ? 1 : 0) - (before?.live ? 1 : 0);
+    if (!delta || !now) return;
+    const n = JSON.parse(raw) as Record<string, number>;
+    n[now.fam] = (n[now.fam] ?? 0) + delta;
+    this.setMeta('decor_live', JSON.stringify(n));
+  }
+
+  /** The admin's `decorcheck`: the caps' kept counts against the rows' (`fix`: the rows' taken). */
+  decorCheck(o: Rec = {}): Record<string, unknown> {
+    const kept = this.meta('decor_live');
+    this.io.sql.exec("DELETE FROM meta WHERE k = 'decor_live'");
+    const counted = this.decorLive();
+    if (kept && o.fix !== true) this.setMeta('decor_live', kept);
+    return { ok: true, kept: kept ? JSON.parse(kept) : null, counted };
   }
 
   /** Every board row's op (each post's latest), with who sent it. */
@@ -901,12 +979,13 @@ export class StoreCore {
     return out;
   }
 
-  /** A layout reset's rows: the objects' and the chunks' ops it voids are dropped (their ids stay known). */
+  /** A layout reset's rows: the objects' and the chunks' ops it voids are dropped (their ids stay known): by their
+   *  slots' range and their `at`, no row parsed here (a row that isn't JSON is left). */
   private dropVoided(at: number): void {
-    for (const r of this.decorRows()) {
-      const op = layoutOpOf(r.d);
-      if (op && isVoid({ ...op, who: r.person }, at)) this.io.sql.exec('DELETE FROM events WHERE seq = ?', r.seq);
-    }
+    this.io.sql.exec(
+      `DELETE FROM events WHERE type = 'decor' AND ((slot >= 'decor|o|' AND slot < 'decor|o}') OR (slot >= 'decor|c|' AND slot < 'decor|c}'))
+       AND (CASE WHEN json_valid(data) THEN json_extract(data, '$.at') END) <= ?`, at
+    );
   }
 
   // ---------------------------------------------------------------- import
@@ -933,8 +1012,11 @@ export class StoreCore {
         if (v === 'added') out[tab] = (out[tab] ?? 0) + 1;
         else if (v === 'skipped') out.skipped++;
       }
-      // (rows the running shop ledgers never saw: folded again at the next sale)
-      if (out.events) this.shopForget();
+      // (rows the running shop ledgers and the caps' counts never saw: folded again at the next op)
+      if (out.events) {
+        this.shopForget();
+        this.io.sql.exec("DELETE FROM meta WHERE k = 'decor_live'");
+      }
       return out;
     });
   }
@@ -982,6 +1064,7 @@ export class StoreCore {
       return 'had';
     }
     const slot = eventSlot(type, person, subject, d, Date.parse(at));
+    const wasDecor = type === 'decor' && slot ? sql.exec<{ person: string; data: string }>('SELECT person, data FROM events WHERE slot = ?', slot).toArray()[0] ?? null : null;
     if (slot && type !== 'decor' && type !== 'board' && !isFoodType(type)) {
       const held = sql.exec<{ at: string }>('SELECT at FROM events WHERE slot = ?', slot).toArray()[0];
       if (held && held.at >= at) {
@@ -991,6 +1074,7 @@ export class StoreCore {
       if (type === 'tally' || type === 'tally_back') json = this.tallyKept(person, d, type); // with the larger counts of the row it replaces
     }
     this.put(id, at, person, type, json, slot, this.seeAt(at) ? arrived : null);
+    if (type === 'decor') this.decorNote(person, d, wasDecor); // (the caps right within the load's batch)
     return 'added';
   }
 

@@ -82,15 +82,18 @@ export function decorLayout(entries: Iterable<DecorEntry>): Placed[] {
 
 /** What the record does with a new op, given the rows it holds (each id's latest, with who sent it): `stale` (an op that
  *  beats it is there: acknowledged, nothing appended), `full` (a new item past the cap: refused), or `append` (and the
- *  rows of the same id it replaces are deleted). */
-export function decorAccept(held: readonly DecorEntry[], e: DecorEntry): 'append' | 'stale' | 'full' {
+ *  rows of the same id it replaces are deleted). `live`: the items set and not removed, when the caller counts them
+ *  (the record's meta: relay/src/store.ts), so `held` need only hold the op's own id's rows. */
+export function decorAccept(held: readonly DecorEntry[], e: DecorEntry, live?: number): 'append' | 'stale' | 'full' {
   const same = held.filter((h) => h.id === e.id);
   if (same.some((h) => !beats(e, h))) return 'stale';
   if (!e.rm && !same.length) {
-    const m = new Map<string, DecorEntry>();
-    for (const h of held) mergeDecor(m, h);
-    let n = 0;
-    for (const h of m.values()) if (!h.rm) n++;
+    let n = live ?? 0;
+    if (live === undefined) {
+      const m = new Map<string, DecorEntry>();
+      for (const h of held) mergeDecor(m, h);
+      for (const h of m.values()) if (!h.rm) n++;
+    }
     if (n >= DECOR_MAX) return 'full';
   }
   return 'append';

@@ -99,6 +99,9 @@ export function mergeTent(m: Map<string, TentEntry>, e: TentEntry): boolean {
 }
 
 const isSurface = (id: string) => id === TENT_WALL || id === TENT_FLOOR || id === TENT_ROOM;
+/** Whether an entry is a piece in its room that counts toward TENT_MAX: set, not removed, not a light's switch nor a
+ *  surface. @public (relay/src/store.ts) */
+export const isTentPiece = (e: TentEntry): boolean => !e.rm && e.lt === undefined && !isSurface(e.id);
 
 /** The room: every piece set and not removed (the oldest TENT_MAX by when they were first placed, then by id), and
  *  the wallpaper and the floor (null: the tent's own). */
@@ -131,8 +134,9 @@ export function tentLayout(entries: Iterable<TentEntry>): { pieces: TentPiece[];
 
 /** What the record does with a new op, given the tent's rows it holds: `stale` (an op that beats it is there; a light's
  *  switch of a piece the room doesn't hold, or holds removed), `full` (a new piece past the cap: refused) or `append`
- *  (the same entry's older rows are deleted: its slot, contract/record.ts eventSlot). */
-export function tentAccept(held: readonly TentEntry[], e: TentEntry): 'append' | 'stale' | 'full' {
+ *  (the same entry's older rows are deleted: its slot, contract/record.ts eventSlot). `live`: the room's pieces
+ *  (isTentPiece) when the caller counts them (the record's meta), so `held` need only hold the op's own rows. */
+export function tentAccept(held: readonly TentEntry[], e: TentEntry, live?: number): 'append' | 'stale' | 'full' {
   held = held.filter((h) => h.sc === e.sc);
   const same = held.filter((h) => tentKey(h) === tentKey(e));
   if (same.some((h) => !tentBeats(e, h))) return 'stale';
@@ -143,10 +147,12 @@ export function tentAccept(held: readonly TentEntry[], e: TentEntry): 'append' |
     return p && !p.rm && !isSurface(e.id) ? 'append' : 'stale';
   }
   if (!e.rm && !same.length && !isSurface(e.id)) {
-    const m = new Map<string, TentEntry>();
-    for (const h of held) mergeTent(m, h);
-    let n = 0;
-    for (const h of m.values()) if (!h.rm && h.lt === undefined && !isSurface(h.id)) n++;
+    let n = live ?? 0;
+    if (live === undefined) {
+      const m = new Map<string, TentEntry>();
+      for (const h of held) mergeTent(m, h);
+      for (const h of m.values()) if (isTentPiece(h)) n++;
+    }
     if (n >= TENT_MAX) return 'full';
   }
   return 'append';
