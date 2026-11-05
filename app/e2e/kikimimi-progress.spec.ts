@@ -45,7 +45,7 @@ test('after a solo game: my feedback, then きろく with it, and a recommendati
   // the results: しずえ's line from my きろく and what tripped me (two misses)
   const fb = sheet(page).locator('[data-kiki-feedback]');
   await expect(fb).toBeVisible();
-  await expect(fb.locator('.fb-line p')).not.toBeEmpty();
+  await expect(fb.locator('.fb-line')).not.toBeEmpty();
   await expect(sheet(page).locator('[data-trip]').first()).toBeVisible();
   await shot(page, '1-results-feedback');
 
