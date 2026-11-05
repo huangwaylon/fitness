@@ -1,7 +1,6 @@
 # The 3D island's assets (NH's models for every island art key)
 
-Status: **converted**. The island's switch to true 3D draws NH's own models where the 2D island draws a render or a
-sprite. This file is the inventory: every art key the island renders, its model, and the keys left without one. The
+Status: **converted**. The island draws NH's own models for its art keys. This file is the inventory: every art key the island renders, its model, and the keys left without one. The
 3D integration reads `app/src/lib/components/world3d/assets.json` (typed: `world3d/assets.ts`).
 
 ## How they're made
@@ -27,15 +26,15 @@ sprite. This file is the inventory: every art key the island renders, its model,
   ground; `centre`: the bounds' centre at a height: a flying bug, a held fish, a balloon; `joint`: the origin is NH's
   hand or head joint: a held tool, a hat, the party glasses), `foot` (tiles of 30u,
   unturned), `hit` (tap radius, u; at least 12), `shadow` (casts one; not the flat things), `lit`, `yaw` (a
-  decoration's facing: one model for its four 2D facings), `winter` (the key of its winter look), `lazy` (loaded with
+  decoration's facing: one model for its four facings), `winter` (the key of its winter look), `lazy` (loaded with
   its group: `bug`, `fish`, `sea` per the month's critters, `event`, `visitor`), `standIn` (another's model).
 - `budgetKb` per kind (the unit test, `world3d/assets.test.ts`, holds every file to it and the whole to 15 MB) and
   `kb`, the total per kind.
 
 Scales: NH's furniture scale is the island's (`world.ts` DECOR_U = 3u a model unit; a tile is 10 model units). The
 critters and the visitors are at the villagers' scale, 5.4 (an NH villager is 14.9 units, the island's 80u), so they
-keep NH's proportions to the villagers (the 2D island's bugs are about as big). The finds, the fruit, the shadows and
-the presents are drawn at today's 2D sizes (`h` in the map: the model's longest side).
+keep NH's proportions to the villagers. The finds, the fruit, the shadows and the presents are drawn at their art's
+sizes (`h` in the map: the model's longest side).
 
 Colours: NH's gray albedo + gradient materials take their colour from the gradient's row (the POC's foliage fix,
 everywhere): the flowers per colour (each colour its own model, its own row: no runtime tint), the bushes, the star
@@ -43,11 +42,11 @@ fragments (the normal star, then Capricorn to Sagittarius in the calendar's orde
 pumpkin. Albedos whose alpha isn't an opacity (the mushrooms', the coconut's) are read raw and made opaque.
 
 Animation: none. NH's files have no clips (the .dae files hold the bind pose only), so the critters' idle motion
-(a flutter, a bob, a swim) stays the runtime's, as the 2D's. The visitors' arms are lowered from the bind pose.
+(a flutter, a bob, a swim) stays the runtime's. The visitors' arms are lowered from the bind pose.
 
 Effects: the seasons' falling leaves, petals and snowflakes are NH's own (the ones a net catches: InsectAutumnLeaf,
 InsectSakurapetal, InsectSnowCrystal). NH's files have no effect models (no Eff*/Emo*), so the sparkle, the 「！」,
-the dust puff, the splash and its ripple are small stylised meshes in the 2D's colours, unlit, 2 KB each
+the dust puff, the splash and its ripple are small stylised meshes in the art's colours, unlit, 2 KB each
 (`scripts/world3d-fx.ts`, the `fx/*` keys; flat ones face +z for the runtime to turn to the camera). So are the
 zzz, the sweat drop, the confetti, the campfire's flame (`lit`) and the pond's lily pad; the heart and the ♪ are
 NH's own (its item icons UnitIconLove, UnitIconMusic). The rain's streaks and rings and the snow's flakes have no assets: they're drawn in their shaders
@@ -66,7 +65,7 @@ hips', its facing and where one gets on from; the bike, the ball, the treadmill,
 bed's mattress top, the axis it's lain along, the pillow's end, a double bed's two places. `anchorsOf(shape, place)`
 turns one into Anchors where the piece stands; `v.sitAt(anchor)` (villager3d.ts) turns, steps onto it and sits down
 (SIT_MS, 420 ms; an arc over a seat's back when it comes from behind, as at the island's benches, whose seat spots are
-behind them for the 2D island), hips on the seat and back to its back, feet down or dangling by the seat's height
+behind them), hips on the seat and back to its back, feet down or dangling by the seat's height
 (poses.ts sitOn), or lies on its back along the bed, head on the pillow end (a hammock rocks); `sitAt(null)` gets up
 to wherever the caller puts it next. The tent's seats (tent/seats.ts), the museum's benches (museum/seats.ts: the park bench's, at 1.2×) and the island's (world3d/villagers.ts, by
 world.ts SEATS's names) pass their anchors; a piece with no shape keeps the old placement.
@@ -74,7 +73,7 @@ world.ts SEATS's names) pass their anchors; a piece with no shape keeps the old 
 Fishing (`world3d/fishing3d.ts`): Critters.svelte says each step of my line (cast, wait, bite, reel) and where its
 float is; my 3D villager (world3d/villagers.ts) holds NH's rod while the line is out (`VSpec.tool`, Island3D's), turned
 in its hand to point out over the water in the fishing pose, swings it out on the cast, is tugged at
-the bite and reels in (the rod kept in hand till the reel is over), however far its float (no reach: a cast goes to
+the bite and reels in (the rod kept in hand till the reel is over), however far its float (a cast goes to
 any water). Which way
 (`world3d/facing.ts`, the same on every phone from the same steps): standing, it turns to the float, NH's quick smooth
 turn (~0.2 s), and keeps facing it, square on from the rod's hand, the rod pointed at it; seated or lying it doesn't
@@ -87,8 +86,8 @@ moves on my line's steps (`floatLift`, read each frame by the bobber node's `liv
 nibble; at the bite a little hop and a plunge 7u under, a splash and a big
 ring (the rings and the splash are emitters on the water's surface: `m3.emit` on a node of their own), and NH's 「！」
 pops over the angler's head (`world3d/biteMark.ts`, from the angler's step: mine, and the others' on their phones'
-islands too): one quad a villager, made at its first bite and then shown and hidden, its art a canvas drawn once (the
-2D one's cream disc, red rim and ！). **Where**: over the head as it's posed this frame (villager3d `crown()`: the rest
+islands too): one quad a villager, made at its first bite and then shown and hidden, its art a canvas drawn once (NH's
+cream disc, red rim and ！). **Where**: over the head as it's posed this frame (villager3d `crown()`: the rest
 pose's highest point carried by the head bone; the head taken as the ball from the bone to its top, the mark OVER_U 3u
 over the ball's highest point), so standing it's over the head's top, seated on its head on the bench, lying over the
 head's side; a card's (no model yet) over the card. **Bend and facing**: its own vertex shader bends only its anchor
@@ -97,10 +96,8 @@ upright (the camera never rolls) and square on at every pitch; a bent quad leane
 turned only about the world's up (cylindrical) is squashed to about half by the camera's 40–63° look down.
 **Size**: 20u in the world (it grows with the head as a pinch zooms in), held to 30–52 px on screen (the widest zoom
 draws 20u at 19 px, too small to read; fully in, 60). **On top**: no depth test, drawn last: NH's is over everything,
-and it's the cue to tap. Its pop is the 2D one's overshoot (320 ms), a small hop while held, 140 ms out at the reel or
-the miss (a bite reeled at once still pops in whole). Before, it was an `fx/bang` particle spawned once at the feet's
-ground + 98u (a standing head's guess: off seated, never on the others' phones), turned with the camera's whole
-turn, its corners bent (leaning back with the curve), depth-tested and 19 px wide at the widest zoom.
+and it's the cue to tap. Its pop overshoots (320 ms), a small hop while held, 140 ms out at the reel or
+the miss (a bite reeled at once still pops in whole).
 `__world3d.bite(slot)` (dev and ?demo): a mark as drawn (canvas px: its bottom, top and sides, its size) and its head's
 on screen; `__world3d.pinBite(slot)` holds one up (e2e/bite-mark.spec.ts). Frames run at
 full rate while the float is out (`moveStart`), the ambient rate again once it's gone. `window.__fx3` (dev and ?demo):
@@ -829,9 +826,9 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 | --- | --- |
 | villagers/* | not here: the villagers and the visitors are skinned models of their own (scripts/villagers3d-models.ts); a villager with none is its card |
 | bushes/white-plumeria, bushes/pink-plumeria | no plumeria in NH’s files (no other name either): NH’s hibiscus (the closest shape) in the plumeria’s white and pink (`standIn`) |
-| trees/*-canopy, trees/*-trunk | 2D only: the 2D oak’s two layers; the 3D tree is one model |
+| trees/*-canopy, trees/*-trunk | kept for the DOM: the oak's tap-area clips (Scenery's two layers); the 3D tree is one model |
 | reactions/* | billboard: the villagers’ emotes |
-| fx/* (sparkle, bang, dust, splash, ripple) | not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the 2D’s colours (scripts/world3d-fx.ts) |
+| fx/* (sparkle, bang, dust, splash, ripple) | not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the art’s colours (scripts/world3d-fx.ts) |
 | deco/airport | not on the island: the pairing page’s map icon |
 | host/*, items/snack, items/dinner, money/* | not on the island: the panels’ and the HUD’s art |
 | finds/items/*, finds/recipes/* | not on the island: the balloon catalogue’s icons, on the catch plate |

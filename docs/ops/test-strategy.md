@@ -4,33 +4,13 @@ How we test しまの貯金箱 now that it's a three.js game with a lot of inter
 rules for a stable spec) is in [testing.md](testing.md). This page covers what goes in which layer, and how CI gates the
 deploy.
 
-## Where we started (Nov 2026)
+## Why the tiers
 
-- Of the last 40 runs on `main`: **2 green, 22 red, 14 cancelled.** A green push took **~5 min** to go live: build
-  35 s, then the 8 drawn e2e shards (75–210 s each, split by test count, so one shard holding the 3D specs ran 3× as
-  long as another), then the deploy (20–30 s).
-- The red came from a handful of 3D specs: board's 3D face (10 of 22 red runs), fishing3d ×3 (7), world3d's camera and
-  tap tests (7, 6, 5, 4), say-rooms in the tent (4). They timed out, or `page.evaluate` hung for 60 s.
-- **The cause:** CI's Linux runners have no GPU. Chromium draws WebGL in software (SwiftShader), and one
-  `renderer.render` takes from hundreds of ms to seconds. The island's gameplay step (`world.step`, the villagers, the
-  rod's pose) runs *inside* the 3D engine's frame. So under software GL the game itself runs slowly, and the main
-  thread is blocked while it draws. Each 3D spec was testing SwiftShader's speed more than our game.
-- Each newer push cancelled the older run, so in a burst of agent pushes nothing finished, and a red run blocked every
-  deploy until someone fixed it.
-
-## Where we are (Nov 3, the first 11 runs on the new gate)
-
-| | Before (last 40 runs) | After (11 runs) |
-|---|---|---|
-| Runs green / red / cancelled | 2 / 22 / 14 | 10 / 1 / 0 |
-| A run, first job to live | ~5 min (4–6) | **~2.4 min** (median 146 s) |
-| Push to live, waiting behind the run before it included | ~5 min when green, hours when red | median 3.8 min (2.4–5.8) |
-| The gate's e2e (critical path) | 8 drawn shards, 75–235 s each, split by count | 12 logic shards ~80–110 s (timed) ∥ the drawn smoke ~100 s |
-| Red runs from 3D specs under SwiftShader | most of them | none so far (they pass with drawing off) |
-| Runs with a test rerun as flaky | about 2 in 3 (1–4 tests a run) | all 11 (3–5 of ~400 tests a run), mostly 2D specs with short waits: the next thing to fix |
-
-The single red run was popups' catch plate: its reel missed the 1.6 s bite window, now fixed in four specs by
-`reelOnBite` (it has since left the quarantine; none is quarantined as of Nov 4).
+CI's Linux runners have no GPU: Chromium draws WebGL in software (SwiftShader), and one `renderer.render` takes from
+hundreds of ms to seconds. The island's gameplay step (`world.step`, the villagers, the rod's pose) runs *inside* the
+3D engine's frame, so under software GL the game itself runs slowly and a drawn 3D spec tests SwiftShader's speed more
+than the game. So the gate runs the game without drawing (logic mode), and drawing is judged on the iOS Simulator and
+the phones. On that gate a run takes ~2.4 min from its first job to live (8 drawn shards took ~5 min, mostly red).
 
 ## The pyramid for this game
 
@@ -105,15 +85,15 @@ hard-coded coordinate, a hook is missing.
 Two phones are two tabs of one context, synced through `sync/live-local.ts` (a BroadcastChannel plays the relay's
 room in-process). Nothing goes over the network, and it's deterministic. In logic mode neither tab draws, so a sync
 spec costs two DOMs, not two GPUs. Keep it that way: never two drawn 3D tabs in one test. The real relay is checked
-apart (`RELAY_E2E=1`, nightly or on demand), not on every push.
+apart (`RELAY_E2E=1`, on demand: `e2e/sync-harness.spec.ts`), not on every push.
 
 ## CI (`.github/workflows/pages.yml`)
 
 - **GPU runners aren't worth it here.** GitHub's GPU runners (T4) are paid larger runners, and its macOS arm64 VMs
   have no GPU passthrough, so WebGL is software there too. Logic mode removes the cost instead: SwiftShader only draws
   the 7 drawn tests, at DPR 1 with shadows off (already automatic on a software renderer).
-- **The gate** (what deploys): build ∥ checks (svelte-check, knip, vitest) ∥ the logic tier (12 shards) ∥ the drawn
-  smoke (1 runner). **The full tier** (`e2e-full.yml`: every test drawn, the quarantine, later the visuals) runs as its
+- **The gate** (what deploys): build ∥ checks (svelte-check, knip, vitest) ∥ the logic tier (12 shards). The drawn
+  smoke (1 runner) runs beside it, advisory. **The full tier** (`e2e-full.yml`: every test drawn, the quarantine, later the visuals) runs as its
   own workflow after each deploy run, and flags failures in its summary. It never blocks the deploy, and a cancelled
   full tier never makes a deployed run look cancelled.
 - **Shards by time, not count** (scripts/e2e-shards.ts): each logic shard plans Playwright test lists from the
@@ -157,6 +137,5 @@ auto-rollback at this size. A red full tier is the next agent's first job, just 
 3. **Rules into vitest:** the rule parts of holidays, celeste, finds, critters, bugs, weather and seasonal (above).
 4. **Visual snapshots:** a handful in the full tier, with baselines made on CI's image (a `--update-snapshots` run on
    demand, its PNGs committed).
-5. **The full tier drawn on the layout's 3D island** (the layout specs time out drawn; they pass in logic mode). (Every
-   test is on the 3D island on its layout since the 2D island went: no `E2E_ISLAND` / `E2E_LAYOUT`, no `?island`.)
+5. **The full tier drawn on the layout's 3D island** (the layout specs time out drawn; they pass in logic mode).
 6. **Test impact analysis** on PRs (`--only-changed`) if the gate grows past ~3 min again.
