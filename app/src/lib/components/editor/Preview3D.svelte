@@ -16,6 +16,7 @@
   import { diffLayouts } from '#lib/layout/diff.ts';
   import { lookOf, type Look } from '../world3d/groundLook.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
+  import { drawOff } from '#lib/ui-state/testMode.ts';
   import type { EditStage } from '../layoutEdit/IslandEdit.svelte';
   import type { Material, Mesh, Object3D } from 'three';
 
@@ -82,7 +83,9 @@
 
         // a frame when something changed, then as long as something still moves (the controls' damping, a wobble,
         // K.K. settling onto his stool): never on a timer
-        let raf = 0, dirty = true;
+        let raf = 0, dirty = true, frames = 0;
+        // (the e2e's logic mode: nothing drawn)
+        const off = drawOff();
         const kick = () => {
           dirty = true;
           if (!raf && !gone) raf = requestAnimationFrame(frame);
@@ -297,13 +300,13 @@
             waterU.uTime.value = (t / 1000) % 3600;
             waterFog(fog);
             renderer.shadowMap.needsUpdate = true;
-            renderer.render(scene, camera);
+            // (the e2e's logic mode: the frame's work done, nothing drawn: CI's software GL took seconds a frame)
+            if (!off) renderer.render(scene, camera);
             frames++;
             dirty = false;
           }
           if (more) kick();
         }
-        let frames = 0;
         kick();
         // the e2e's view of it: the frames drawn, the camera, the groups built and K.K.
         const hook = {
