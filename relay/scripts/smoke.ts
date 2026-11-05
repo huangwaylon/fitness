@@ -6,7 +6,9 @@ import { createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
 const URL_ = process.env.RELAY_URL ?? 'wss://island-fund-relay-test.island-fund-relay.workers.dev/room';
-const ORIGIN = 'https://huangwaylon.github.io';
+// the app's page (Cloudflare Pages); the old one, GitHub Pages, is let in until both phones have moved (runbook §14)
+const ORIGIN = 'https://island-fund.pages.dev';
+const OLD_ORIGIN = 'https://huangwaylon.github.io';
 const N = Number(process.env.N ?? 30);
 
 /** The test copy's keys (KEY_C, the guest's, optional: its checks run when it's there). */
@@ -80,6 +82,10 @@ const bad = await fetch(http, { headers: { Origin: 'https://evil.test' } });
 check(bad.status === 403, `a foreign origin is refused (${bad.status})`);
 const evil = await new Client('https://evil.test').open().then(() => 'opened', () => 'refused');
 check(evil === 'refused', `a foreign origin's socket is refused (${evil})`);
+const gh = new Client(OLD_ORIGIN);
+const oldOpen = await gh.open().then(() => 'opened', () => 'refused');
+gh.ws.close();
+check(oldOpen === 'opened', `the old page's origin (GitHub Pages) still opens a socket (${oldOpen})`);
 
 const stranger = new Client();
 await stranger.open();
