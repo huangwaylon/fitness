@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { lazy, newWorker, RELOAD_WINDOW_MS, safeReload } from './reload.ts';
+import { lazy, newWorker, reloadUnlessLeaving, RELOAD_WINDOW_MS, safeReload } from './reload.ts';
 
 const reload = vi.fn();
 beforeEach(() => {
@@ -39,22 +39,44 @@ describe('lazy', () => {
     expect(load).toHaveBeenCalledTimes(1);
   });
 
-  it('forgets a failed load (the next call retries) and reloads once', async () => {
+  it('forgets a failed load (the next call retries) and reloads once into a newer deployed build', async () => {
     const load = vi.fn().mockRejectedValueOnce(new TypeError('Failed to fetch dynamically imported module')).mockResolvedValue('mod');
-    const get = lazy(load, async () => true);
+    const get = lazy(load, async () => 'next');
     await expect(get()).rejects.toThrow(TypeError);
     await vi.waitFor(() => expect(reload).toHaveBeenCalledTimes(1));
     expect(await get()).toBe('mod');
     expect(load).toHaveBeenCalledTimes(2);
   });
 
-  it('reloads nothing on a page that is leaving (or offline): its next request fails too', async () => {
-    for (const alive of [async () => false, async () => { throw new TypeError('Load failed'); }]) {
-      const get = lazy(vi.fn().mockRejectedValue(new TypeError('Importing a module script failed.')), alive);
+  it('reloads nothing on a page that is leaving (or offline): version.json not fetched', async () => {
+    for (const deployedNow of [async () => null, async () => { throw new TypeError('Load failed'); }]) {
+      const get = lazy(vi.fn().mockRejectedValue(new TypeError('Importing a module script failed.')), deployedNow);
       await expect(get()).rejects.toThrow(TypeError);
     }
     await new Promise((r) => setTimeout(r, 0));
     expect(reload).not.toHaveBeenCalled();
+  });
+});
+
+describe('reloadUnlessLeaving (a chunk that failed)', () => {
+  it('reloads nothing when the deployed build is the running one (a reload into it cures nothing)', async () => {
+    expect(await reloadUnlessLeaving(async () => 'v1', 'v1')).toBe(false);
+    expect(reload).not.toHaveBeenCalled();
+  });
+  it('once a deployed version a session, however many failures and windows', async () => {
+    vi.useFakeTimers();
+    try {
+      expect(await reloadUnlessLeaving(async () => 'v2', 'v1')).toBe(true);
+      // (the reload came back to the old build: the old shell still cached, the chunk still failing)
+      vi.advanceTimersByTime(10 * RELOAD_WINDOW_MS);
+      for (let i = 0; i < 5; i++) expect(await reloadUnlessLeaving(async () => 'v2', 'v1')).toBe(false);
+      expect(reload).toHaveBeenCalledTimes(1);
+      // a newer deploy still gets its one
+      expect(await reloadUnlessLeaving(async () => 'v3', 'v1')).toBe(true);
+      expect(reload).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

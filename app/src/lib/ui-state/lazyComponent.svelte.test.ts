@@ -7,7 +7,7 @@ vi.mock('./reload.ts', () => ({
     return () => (p ??= load().catch((e: unknown) => ((p = null), Promise.reject(e))));
   }
 }));
-const { lazyComponent } = await import('./lazyComponent.svelte.ts');
+const { lazyComponent, MAX_TRIES } = await import('./lazyComponent.svelte.ts');
 
 afterEach(() => vi.useRealTimers());
 
@@ -32,5 +32,18 @@ describe('lazyComponent', () => {
     lc.get(true);
     await vi.advanceTimersByTimeAsync(10);
     expect([loads, lc.get(true)]).toEqual([2, C]);
+  });
+  it('gives up after MAX_TRIES loads a page (a chunk that keeps failing is not asked for forever)', async () => {
+    vi.useFakeTimers();
+    let loads = 0;
+    const lc = lazyComponent(async () => {
+      loads++;
+      throw new Error('gone');
+    });
+    for (let i = 0; i < 20; i++) {
+      lc.get(true);
+      await vi.advanceTimersByTimeAsync(61_000);
+    }
+    expect(loads).toBe(MAX_TRIES);
   });
 });
