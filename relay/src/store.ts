@@ -51,6 +51,9 @@ export interface StoreIO {
   now(): number;
   /** Tell the open phones the record changed (the room's `changed`); best effort, after the commit. */
   notify(n: Notice): void;
+  /** A stored row that isn't JSON (or not an object) was skipped, at `where` (a fold's name): the log's warning
+   *  (`store.corrupt`), once a request per place. */
+  corrupt?(where: string): void;
 }
 
 /** What the store answers to `health` and `whoami` (`build`): bumped with the store's code. */
@@ -107,6 +110,8 @@ export class StoreCore {
   private lastAt: number;
   private rate = { minute: 0, A: 0, B: 0, G: 0 };
   private exc: string | null = null;
+  /** The places a corrupt row was skipped this request (each told once). */
+  private told = new Set<string>();
 
   constructor(private io: StoreIO) {
     for (const s of SCHEMA) io.sql.exec(s);
@@ -160,6 +165,7 @@ export class StoreCore {
   /** An API request's parsed body (`bytes`: its size, for the audit). Never throws. */
   handle(body: unknown, bytes: number): Reply {
     this.exc = null;
+    this.told.clear();
     try {
       return this.route(body, bytes);
     } catch (e) {
@@ -173,6 +179,24 @@ export class StoreCore {
   /** The class of what the last request threw (its `unavailable`), or null: the log's `req` (reqMeta.ts). */
   lastError(): string | null {
     return this.exc;
+  }
+
+  /** A stored row's data as an object, or null when it isn't one: a corrupt row, skipped by the fold `where` and told
+   *  to the log (never silently: the record's own writes are always JSON objects, so one that isn't is a bug or
+   *  damage). */
+  private rowRec(data: string, where: string): Rec | null {
+    let x: unknown;
+    try {
+      x = JSON.parse(data);
+    } catch {
+      x = undefined;
+    }
+    if (isRec(x)) return x;
+    if (!this.told.has(where)) {
+      this.told.add(where);
+      this.io.corrupt?.(where);
+    }
+    return null;
   }
 
   /** An `/api` body as sent → its JSON reply. Never throws. */
@@ -444,9 +468,8 @@ export class StoreCore {
       "SELECT type, data FROM events WHERE type IN ('spend', 'spend_void') AND instr(data, ?) > 0", JSON.stringify(spendId)
     ).toArray();
     for (const r of rows) {
-      let d: unknown;
-      try { d = JSON.parse(r.data); } catch { continue; }
-      if (!isRec(d) || d.spendId !== spendId) continue;
+      const d = this.rowRec(r.data, 'spend');
+      if (!d || d.spendId !== spendId) continue;
       if (r.type === 'spend_void') return 'voided';
       found = true;
     }
@@ -473,9 +496,8 @@ export class StoreCore {
   private boardRows(): (BoardEntry & { seq: number })[] {
     const out: (BoardEntry & { seq: number })[] = [];
     for (const r of this.io.sql.exec<{ seq: number; person: string; data: string }>("SELECT seq, person, data FROM events WHERE type = 'board'").toArray()) {
-      let x: unknown;
-      try { x = JSON.parse(r.data); } catch { continue; }
-      const op = isRec(x) ? boardOpOf(x) : null;
+      const x = this.rowRec(r.data, 'board');
+      const op = x ? boardOpOf(x) : null;
       if (op && isWho(r.person)) out.push({ ...op, who: r.person, seq: r.seq });
     }
     return out;
@@ -515,32 +537,22 @@ export class StoreCore {
   private foodHeld(type: FoodType, id: string): (NonNullable<ReturnType<(typeof FOOD_PARSE)[FoodType]>> & { who: Who }) | null {
     const r = this.io.sql.exec<{ person: string; data: string }>('SELECT person, data FROM events WHERE slot = ?', `${type}|${id}`).toArray()[0];
     if (!r || !isWho(r.person)) return null;
-    let x: unknown;
-    try { x = JSON.parse(r.data); } catch { x = null; }
-    const op = FOOD_PARSE[type](x);
+    const op = FOOD_PARSE[type](this.rowRec(r.data, 'food'));
     return op ? { ...op, who: r.person } : null;
   }
 
   /** A `tally` of `who`'s as its slot keeps it (JSON): merged with the day's row held (contract/tally.ts mergeTally). */
   private tallyKept(who: Who, d: Rec): string {
     const held = this.io.sql.exec<{ data: string }>('SELECT data FROM events WHERE slot = ?', `tally|${who}|${String(d.date)}`).toArray()[0];
-    let h: unknown;
-    try { h = held ? JSON.parse(held.data) : null; } catch { h = null; }
-    if (!isRec(h) || !isTally(h) || !isTally(d)) return JSON.stringify(d);
+    const h = held ? this.rowRec(held.data, 'tally') : null;
+    if (!h || !isTally(h) || !isTally(d)) return JSON.stringify(d);
     return JSON.stringify({ date: d.date, counts: mergeTally(h.counts, d.counts) });
   }
 
   /** Why a sell or a buy of `me`'s isn't covered by their rows (contract/shop.ts shopRefusal), or null. The fold reads
    *  their day tallies (one row a day: ≤ 366 a year) and their shop rows, in the object, never the Worker. */
   private shopTarget(me: Who, type: 'sell' | 'buy', d: Rec): 'pocket' | 'wallet' | 'owned' | null {
-    const parse = (raw: string): Rec | null => {
-      try {
-        const x: unknown = JSON.parse(raw);
-        return isRec(x) ? x : null;
-      } catch {
-        return null;
-      }
-    };
+    const parse = (raw: string): Rec | null => this.rowRec(raw, 'shop');
     const caught = new Map<string, number>();
     for (const r of this.io.sql.exec<{ data: string }>("SELECT data FROM events WHERE type = 'tally' AND person = ?", me).toArray()) {
       const t = parse(r.data);
@@ -562,9 +574,8 @@ export class StoreCore {
   private decorRows(): { seq: number; person: Who; d: Rec }[] {
     const out: { seq: number; person: Who; d: Rec }[] = [];
     for (const r of this.io.sql.exec<{ seq: number; person: string; data: string }>("SELECT seq, person, data FROM events WHERE type = 'decor'").toArray()) {
-      let x: unknown;
-      try { x = JSON.parse(r.data); } catch { continue; }
-      if (isRec(x) && isWho(r.person)) out.push({ seq: r.seq, person: r.person, d: x });
+      const x = this.rowRec(r.data, 'decor');
+      if (x && isWho(r.person)) out.push({ seq: r.seq, person: r.person, d: x });
     }
     return out;
   }
