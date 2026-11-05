@@ -381,6 +381,20 @@ describe('snapshot cache', () => {
       expect((await loadCache())?.rows.events).toHaveLength(5);
     });
 
+    it('a record of more than 200 pages comes whole (no fixed cap: all of Apple Health is kept); a cursor that doesn’t move on fails', async () => {
+      handler = paged(Array.from({ length: 450 }, (_, i) => ev(i)));
+      const r = await refreshSnapshot();
+      expect(calls).toHaveLength(225);
+      expect(r.ok && r.cache.rows.events).toHaveLength(450);
+      // a record whose `next` repeats (a bug): the fetch stops there, failed, the cache as it was
+      calls = [];
+      handler = () => ({ ok: true, me: 'A', rev: 'e1', now: '2026-11-02T02:00:00.000Z', rows: { metrics: [], events: [ev(500)] }, next: 'x' });
+      const s = await refreshSnapshot();
+      expect(s.ok).toBe(false);
+      expect(calls.length).toBeLessThanOrEqual(3);
+      expect((await loadCache())?.rows.events).toHaveLength(450);
+    });
+
     it('a page that fails leaves the cache as it was: nothing of the pages before it is applied', async () => {
       handler = paged([0, 1].map(ev));
       await refreshSnapshot();
