@@ -168,6 +168,8 @@ export function createLights(scene: Scene): Lights {
     }
   }
 
+  /** A fire this near the view's centre (u, as the lights' ranking measures) flickers on screen. */
+  const FIRE_SEEN = 650;
   function frame(t: number, cx: number, cz: number, R: number, pivotZ: number): boolean | 'ambient' {
     const dt = last ? Math.min(100, t - last) : 16;
     last = t;
@@ -212,7 +214,9 @@ export function createLights(scene: Scene): Lights {
     // the halos and the pools: always on with the lamps (a fire's breathe with it)
     let fire = false;
     spots.forEach((s, k) => {
-      const flick = s.kind === 'fire' ? ((fire = true), 0.85 + 0.15 * Math.sin(t / 110 + s.seed)) : 1;
+      const flick = s.kind === 'fire' ? 0.85 + 0.15 * Math.sin(t / 110 + s.seed) : 1;
+      // (a fire in reach of the view keeps the ambience going: one at the island's far end needs no frames)
+      if (s.kind === 'fire' && !fire && Math.hypot(s.x - cx, (s.z - cz) * 0.85) < FIRE_SEEN) fire = true;
       halo.i[k] = lvl * (s.kind === 'window' ? 0.55 : 0.8) * flick;
       pool.i[k] = lvl * (s.kind === 'window' ? 0.35 : 0.5) * flick;
     });

@@ -308,6 +308,9 @@
     return node;
   }
 
+  /** The villagers' frame wanted the ambience (a gym piece's loop, a card's breathing), and its next blink (ms). */
+  let vilAmbient = false, vilWake = Infinity;
+  const noVillagers = { cards: new Set<string>(), moving: false, ambient: false, wake: Infinity };
   function villagerCards(t: number, active: boolean): boolean {
     if (!eng) return false;
     let moving = false;
@@ -333,8 +336,14 @@
         away: inFocusWay(x, z), hat: c.hat, tool: c.id === 'mine' && fishing ? 'tools/rod' : null
       });
     }
-    const r = vil3?.frame(t, specs, active) ?? { cards: new Set<string>(specs.map((s) => s.slot)), moving: false };
+    if (!vil3) {
+      noVillagers.cards.clear();
+      for (const s of specs) noVillagers.cards.add(s.slot);
+    }
+    const r = vil3?.frame(t, specs, active) ?? noVillagers;
     moving = r.moving;
+    vilAmbient = r.ambient;
+    vilWake = r.wake;
     for (let i = 0; i < people.length; i++) {
       const c = people[i], a = actors[c.id], p = ps[i], look = resolveLook({ villager: p.villager, person: c.person });
       const [x, z] = at[i];
@@ -364,6 +373,8 @@
       const mp = a.motion ? motionPose(a.motion, t - motionAt[c.id]!.t0) : null;
       const ip = idlePose(t, a.walking, a.asleep, a.stepMs || 640, c.id === 'partner' ? 1.2 : c.id === 'third' ? 0.6 : 0);
       if (mp || a.walking) moving = true;
+      // (a card breathes: idlePose, the ambient rate)
+      vilAmbient = true;
       const f = a.face, wantRight = f === 'l' ? false : f === 'r' ? true : f === 'in' ? c.side === 'left' : null;
       const flip = !(wantRight === null || look.noMirror || wantRight === look.looksRight);
       const sway = swaying ? Math.sin(t / 420 + (c.id === 'partner' ? Math.PI : 0)) * 0.05 : 0;
@@ -461,6 +472,9 @@
     const f = fieldOf(l);
     return f.surfaceAt(x, z) === 'sea' ? LAYOUT_SEA_Y + 0.2 : f.tierAt(x, z) * TIER_H + GRASS_Y - LAYOUT_DROP + 0.2;
   };
+  /** Water at (x, z) (the engine draws its ambience only while some is in view): the sea's, a river's or a pond's
+   *  surface over the ground there. */
+  const isWater = (x: number, z: number) => waterY(x, z) > heightOf(x, z) + 0.1;
   /** The ponds put down on a layout (their water's ovals), once a layout; a pond's own a little past its rim (a
    *  shadow's model is placed by its head, which noses up to the stones). */
   const pondsOf = new WeakMap<Layout, ReturnType<typeof pondOval>[]>();
@@ -692,6 +706,7 @@
       e.glows((lamps3 = standinLamps(st)));
       lground?.look(lookNow());
       builtOn(e, lay);
+      e.water(isWater);
       fitEnds(e);
     });
   });
@@ -944,9 +959,11 @@
         falling = p3.frame(t, cv.camX, z, cv.zoom, e.at(cv.camX, z, 0).depth, ch);
       }
       if (posed || more || moving === true) return true;
-      // the ambience (the ambient rate): a slow move, the season's fall, the stream's floats, an emitter, a blink, the
-      // balloon drifting over
-      return moving || falling || ambient3.kind || floatsOn || emitting || b3?.shown() || visN > 0 || cast().some((c) => c.shown) ? 'ambient' : false;
+      // a still villager's next blink: one frame then (not the ambient rate's for as long as it stands still)
+      e.wake(vilWake);
+      // the ambience (the ambient rate): a slow move, the season's fall, the stream's floats, an emitter, a gym
+      // piece's loop or a card's breathing, the balloon drifting over
+      return moving || falling || ambient3.kind || floatsOn || emitting || vilAmbient || b3?.shown() ? 'ambient' : false;
     });
     // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
     listenFx3((kind, x, z, lift, o) => e.fx(kind, x, z, lift, o));
@@ -958,8 +975,9 @@
     const offLayout = layoutStore.on(({ diff }) => {
       if (!lground || !diff.chunks.length) return;
       lground.rebuild(layoutNow(), diff.chunks);
-      e.kick();
+      e.water(isWater);
     });
+    e.water(isWater);
     listen3d((id, k) => {
       if (e.things.has(id)) e.things.jiggle(id, k);
       else e.cards.jiggle(`s:${id}`, k);
