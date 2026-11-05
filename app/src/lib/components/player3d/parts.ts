@@ -57,15 +57,18 @@ export function covers(look: PlayerLook, t: PartTable = PARTS): boolean {
 }
 
 let whole: Promise<PartTable> | null = null;
-/** The whole table (room/player/parts.json, once a page; the bundled one if it can't be had). */
+/** The whole table (room/player/parts.json, once a page; the bundled one if it can't be had, and then asked for again
+ *  the next time: a reply that isn't ok, a 404 or a 5xx at a deploy's moment, as a network error, never kept for the
+ *  page's life). */
 export function loadParts(dir: string): Promise<PartTable> {
   if (!PARTS.full) return Promise.resolve(PARTS);
+  const again = () => {
+    whole = null;
+    return PARTS;
+  };
   whole ??= fetch(`${dir.replace(/\/?$/, '/')}parts.json?v=${PARTS.full.v}`)
-    .then((r) => (r.ok ? (r.json() as Promise<PartTable>) : PARTS))
-    .catch(() => {
-      whole = null;
-      return PARTS;
-    });
+    .then((r) => (r.ok ? (r.json() as Promise<PartTable>) : again()))
+    .catch(again);
   return whole;
 }
 

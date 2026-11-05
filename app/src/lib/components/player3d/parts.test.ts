@@ -1,10 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import PARTS from './parts.json' with { type: 'json' };
 import PART_IDS from '#lib/contract/partIds.json' with { type: 'json' };
 import { DEFAULT_LOOKS, PART_SLOTS, isOnepiece } from '#lib/contract/look.ts';
-import { covers, type PartTable } from './parts.ts';
+import { PARTS as BUNDLED, covers, loadParts, type PartTable } from './parts.ts';
 
 /** Every id partIds.json holds (its lines unpacked). */
 const IDS = [...PART_IDS.exact, ...Object.entries(PART_IDS.lines as Record<string, string>).flatMap(([l, ds]) => [...ds].map((d) => l + d))];
@@ -80,5 +80,24 @@ describe('the player parts (scripts/players3d-models.ts)', () => {
     expect(covers({ ...DEFAULT_LOOKS.A, top: missing }, B)).toBe(false);
     expect(covers({ ...DEFAULT_LOOKS.A, top: missing }, full)).toBe(true);
     expect(covers({ ...DEFAULT_LOOKS.A, hair: 'PlayerHairNone' }, full)).toBe(false);
+  });
+});
+
+describe('loadParts (the whole table)', () => {
+  it('a reply that isn\'t ok is the bundled table for now, and asked for again the next time (as a network error)', async () => {
+    const whole = { ...PARTS, items: {} } as unknown as PartTable;
+    const replies = [new Response('', { status: 503 }), new Response(JSON.stringify(whole), { status: 200 })];
+    const fetch = vi.fn(async () => replies.shift()!);
+    vi.stubGlobal('fetch', fetch);
+    try {
+      expect(await loadParts('/room/player/')).toBe(BUNDLED);
+      const got = await loadParts('/room/player/');
+      expect(got).not.toBe(BUNDLED);
+      expect(got.items).toEqual({});
+      expect(await loadParts('/room/player/')).toBe(got);
+      expect(fetch).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
