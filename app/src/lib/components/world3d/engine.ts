@@ -285,7 +285,6 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   sun.shadow.mapSize.set(2048, 2048);
   sun.shadow.bias = -0.0006;
   sun.shadow.normalBias = 1.2;
-  sun.shadow.radius = 3;
   scene.add(hemi, sun, sun.target);
   let todLook = TOD.day;
 
