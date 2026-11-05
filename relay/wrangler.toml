@@ -9,8 +9,8 @@ workers_dev = true
 preview_urls = false
 
 [vars]
-# the app's page origins (src/auth.ts): Cloudflare Pages, and GitHub Pages until both phones have moved (runbook §14)
-ALLOWED_ORIGINS = "https://island-fund.pages.dev,https://huangwaylon.github.io"
+# the app's page origin (src/auth.ts): Cloudflare Pages (GitHub Pages' was dropped 2026-11-05)
+ALLOWED_ORIGINS = "https://island-fund.pages.dev"
 # The real weather's point (relay/src/weather.ts, docs/backend.md "The real weather"): central Tokyo, by the 東京 AMeDAS
 # station, rounded to ~1 km. Open-Meteo sees only this (and a Cloudflare IP).
 WX_LAT = "35.69"
@@ -76,7 +76,7 @@ name = "island-fund-relay-test"
 crons = []
 
 [env.test.vars]
-ALLOWED_ORIGINS = "https://island-fund.pages.dev,https://huangwaylon.github.io"
+ALLOWED_ORIGINS = "https://island-fund.pages.dev"
 WX_LAT = "35.69"
 WX_LON = "139.75"
 

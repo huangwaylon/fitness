@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 
 const URL_ = process.env.RELAY_URL ?? 'wss://island-fund-relay-test.island-fund-relay.workers.dev/room';
-const ORIGIN = 'https://huangwaylon.github.io';
+const ORIGIN = 'https://island-fund.pages.dev';
 const N = Number(process.env.N ?? 30);
 const V = 2;
 
