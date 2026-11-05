@@ -67,10 +67,32 @@ class TentRoom {
     const e = { ...op, who } as TentEntry;
     return mergeTent(this.#map, e) ? e : null;
   }
+  /** Another tab's ops in storage merged into mine (commutative): true when any was news. */
+  #fold(kept: unknown): boolean {
+    let more = false;
+    if (Array.isArray(kept)) for (const k of kept) if (this.#merge(k)) more = true;
+    return more;
+  }
   #changed(): void {
+    // a second tab of the app keeps the same copy: its ops merged in before mine are written, never written over
+    this.#fold(readJson<unknown[]>(localKV(), this.#key()));
     this.#layout = tentLayout(this.#map.values());
     writeJson(localKV(), this.#key(), [...this.#map.values()]);
     this.rev++;
+  }
+  #listening = false;
+  /** Another tab's writes, folded in as they land (the `storage` event: only other tabs' writes fire it). */
+  #listen(): void {
+    if (this.#listening || typeof window === 'undefined') return;
+    this.#listening = true;
+    window.addEventListener('storage', (e) => {
+      if (e.key !== this.#key() || !this.#loaded || !e.newValue) return;
+      try {
+        if (this.#fold(JSON.parse(e.newValue))) this.#changed();
+      } catch {
+        /* not ours */
+      }
+    });
   }
 
   #room() {
@@ -121,6 +143,7 @@ class TentRoom {
     this.#me = me;
     this.#demo = demo;
     if (relay) this.#off = relay.on((m) => this.#heard(m));
+    this.#listen();
     this.rev++;
   }
 

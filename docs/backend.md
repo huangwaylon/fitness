@@ -260,6 +260,12 @@ fetched at the next open or sync tap (`e2e/live-sync.spec.ts` E14, E15). **After
 that row goes into the cache at once (`since` unmoved, so the next poll still brings everything written after it); only
 an ack without a row (a duplicate) is followed by a `fresh` re-read 1.5 s later.
 
+**Two tabs** (2026-11-05): two tabs (or a PWA and a Safari tab) of one phone share its localStorage, and the
+second's hello replaces the first's socket (4002), so the first hears nothing of the second. The layout and the
+rooms (`store/layout.svelte.ts`, `store/tent.svelte.ts`: every op's winning entry, a commutative merge) merge what's
+in storage before they write, never writing a stale whole map over the other tab's ops, and fold the other tab's
+writes as their `storage` events land.
+
 <a id="the-record"></a>
 ## The record
 
