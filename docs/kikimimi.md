@@ -7,7 +7,7 @@ Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX design
 ## The game
 
 - **Host and speakers.** しずえ (Isabelle) hosts. Each question is spoken by a villager. Their icon bobs with an NH speech bubble that stays empty (「♪…」) and a thin progress bar the clip's length. The text is never shown before the reveal.
-- **Length.** A game is **8 questions** at level 1, 2 or 3.
+- **Length.** A game is **8 questions** at level 1, 2 or 3 (or 4, once its clips exist: "Level 4" below).
 - **Countdown.** A 3-2-1 runs once, at the start. Each question then has a ~1.5 s lead-in: the villager pops in with a chime.
 - **Answering.**
   - The choices show dimmed while the clip plays. They unlock when its first play ends.
@@ -39,9 +39,17 @@ Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX design
   - Check each pair in the voice's accent.
 - **`num`**: prices in ベル, times and dates, as text choices with close distractors: 2:15 / 2:50, quarter past / to, 1,500 / 15,000 ベル, the 13th / 30th. These are built from **templates** (speaker × phrase × number), which also makes the bank big cheaply.
 - **`reply`**: a villager asks something, and you pick the best reply from 3 written replies (like TOEIC Part 2). Example: "What're you up to?" → "Just fishing." This is level 2 and 3 only.
-- **Later (v2):** `mean` with hard distractors, level 3 chunk tiles, co-op mode 「ふたりで」 (a combined grade against しずえ), bests, and missed items drawn more often.
+- **`mean`** (level 4): what the speaker really means, from 3 English paraphrases. The distractors are the literal reading, the opposite and a plausible wrong inference. Its `ask` is 「つまり、どういうこと？」; it renders like `reply`.
+- **Later (v2):** level 3 chunk tiles, co-op mode 「ふたりで」 (a combined grade against しずえ), bests, and missed items drawn more often.
 
-**Mix per 8 questions.** L1: 3 pic, 3 word, 2 num. L2: 2 pic, 2 word, 2 num, 2 reply. L3: 1 pic, 2 word, 2 num, 3 reply.
+**Mix per 8 questions.** L1: 3 pic, 3 word, 2 num. L2: 2 pic, 2 word, 2 num, 2 reply. L3: 1 pic, 2 word, 2 num, 3 reply. L4: 2 word, 2 num, 2 reply, 2 mean.
+
+## Level 4 「かわ・もり」 (docs/curriculum.md §14, increment 1)
+
+- **Content.** `bank4.ts`: 67 items for B1+ → B2 (21 reply, 18 mean, 15 word, 13 num), each cut from a scenario seed of docs/curriculum.md §5.5 (travel, health, phone support and services, home and the landlord, work, plans), with its register, speech conditions and pragmatic layer in `tags`. Real places and money (yen, dollars, pounds), villagers playing adults; natural speed, reductions, indirect replies, self-corrections, understatement, sarcasm. No `pic` (the art is island things).
+- **New fields** (level 4): `tts` spells what's said (gonna, lemme, d'you; every number written out, never a digit); `note`, the trap in Japanese (≤ 40 字, for the reveal); `cast`, an abstract voice id (accent, gender, slot: `us-f1` … `au-m2`, 12 core voices, one per villager for good, `CAST`) for the neural TTS being chosen; `tags` `{seed, register, pragmatic, conditions?, features?}`.
+- **The gate.** `deck.ts` `LEVELS` (= `playable(CLIPS)`) is the levels a phone offers: those with a mix and a clip for every item. The lobby lists only those, and the last level kept on the phone falls back to 1 if it isn't one. Level 4 has no clips (`say` never speaks it: the robotic voices were rejected), so it stays hidden until the neural cast's clips land, and main stays shippable. `deck(seed, lv)` still builds a level-4 deck (tests), and a level with no mix (5) is an empty deck.
+- **Not done yet:** showing `note` at the reveal and collapsing the Japanese at L4 (Play.svelte, with the UI polish); the clips.
 
 ## Content: `app/src/lib/kikimimi/`
 
@@ -51,7 +59,7 @@ Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX design
   - `ask` (pic, num) is a short Japanese question shown while the clip plays (「なにが つれた？」): a pic sentence names several of its pictures, so it says what to listen for.
   - `pic` choices are art keys (`critters/squid`, `finds/items/blue-umbrella`, `decor/kettlebell-0`…); `PIC_JA` gives each its Japanese label (VoiceOver, the review list).
   - `word` items' `focus` is the answer as it appears in `en` (the blank before the reveal). `reply` items' `ja` is the question → the right reply.
-  - `tts` is what `say` reads when it isn't `en` as written (unused so far).
+  - `tts` is what's spoken when it isn't `en` as written (level 4: reductions and numbers, docs/curriculum.md §9).
   - Aim for **≥ 40 items per level in v1**, templates included. Grow towards 80 or more. v1 has 46 / 49 / 49 (144 items).
 - **`deck.ts`**: `deck(seed, lv): Item[]` is pure and deterministic. It follows the per-level mix, never puts the same type more than twice in a row, and shuffles the choices by the seed. Every phone builds the same deck from `{seed, lv}`, so no text goes on the wire. The returned items are copies: `choices` is the shuffled order and `answer` the right choice's index in it. Num items from the same template aren't drawn together while the pool allows.
 - **`score.ts`**: pure scoring: `points(right, replayed)` (the most a game scores is the protocol's `QUIZ_MAX_S`, 1040; deck.test checks it and `QUIZ_QS` against the deck).
@@ -99,7 +107,7 @@ Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX design
 
 Field validation:
 - `g`: `/^[a-z0-9]{4,8}$/`
-- `lv`: 1-3
+- `lv`: 1-5 (4 かわ・もり; 5 room for the next level without a relay deploy; a phone offers only the levels it has every clip of)
 - `i`: 0-7 (`a`), 0-8 (`skip`; 8 is the end, added 2026-11-05: the relay must be deployed for it)
 - `k`: 0-3
 - `s`: 0-1040

@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { ROSTER } from '#lib/villagers/roster.ts';
 import { villagerArt } from '#lib/art.ts';
 import { BANK, PIC_JA, type ItemType, type Level } from './bank.ts';
+import { CAST } from './bank4.ts';
+import { LEVELS, MIX } from './deck.ts';
 import { CLIPS } from './clips.ts';
 
 const STATIC = join(import.meta.dirname, '../../../static');
@@ -18,13 +20,16 @@ describe('kikimimi bank', () => {
   });
 
   it('has at least 40 items per level, enough of each type for a game', () => {
-    for (const lv of [1, 2, 3] as Level[]) {
+    for (const lv of [1, 2, 3, 4] as Level[]) {
       const items = BANK.filter((it) => it.lv === lv);
       expect(items.length, `level ${lv}`).toBeGreaterThanOrEqual(40);
       const n = (t: ItemType) => items.filter((it) => it.type === t).length;
-      expect(n('pic') && n('word') && n('num')).toBeGreaterThanOrEqual(6);
-      expect(n('reply') === 0).toBe(lv === 1); // reply is levels 2 and 3 only
+      // each type a game draws: 3× what one game takes at least (variety between games); the others none
+      for (const [t, k] of Object.entries(MIX[lv]!) as [ItemType, number][])
+        if (k) expect(n(t), `level ${lv} ${t}`).toBeGreaterThanOrEqual(Math.max(6, 3 * k));
+        else expect(n(t), `level ${lv} ${t}`).toBe(0);
     }
+    expect(BANK.filter((it) => it.lv === 5)).toEqual([]);
   });
 
   it("every speaker is a roster villager with art, never the host (しずえ)", () => {
@@ -35,14 +40,14 @@ describe('kikimimi bank', () => {
     }
   });
 
-  it('accents: level 1 US only, level 2 adds UK, level 3 adds AU (and uses all three)', () => {
-    const allowed = { 1: ['us'], 2: ['us', 'uk'], 3: ['us', 'uk', 'au'] };
+  it('accents: level 1 US only, level 2 adds UK, level 3 adds AU (and uses all three), level 4 all three', () => {
+    const allowed: Partial<Record<Level, string[]>> = { 1: ['us'], 2: ['us', 'uk'], 3: ['us', 'uk', 'au'], 4: ['us', 'uk', 'au'] };
     for (const it of BANK) expect(allowed[it.lv], it.id).toContain(it.voice);
-    for (const lv of [1, 2, 3] as Level[]) expect(new Set(BANK.filter((it) => it.lv === lv).map((it) => it.voice)).size).toBe(lv);
+    for (const lv of [1, 2, 3, 4] as Level[]) expect(new Set(BANK.filter((it) => it.lv === lv).map((it) => it.voice)).size).toBe(Math.min(lv, 3));
   });
 
   it('answers are in range, choices distinct, counts per type', () => {
-    const count: Record<ItemType, number> = { pic: 4, word: 3, num: 3, reply: 3 };
+    const count: Record<ItemType, number> = { pic: 4, word: 3, num: 3, reply: 3, mean: 3 };
     for (const it of BANK) {
       expect(it.choices.length, it.id).toBe(count[it.type]);
       expect(new Set(it.choices).size, it.id).toBe(it.choices.length);
@@ -63,11 +68,47 @@ describe('kikimimi bank', () => {
     }
   });
 
-  it("every focus is in its sentence; pic and num say what to listen for", () => {
+  it("every focus is in its sentence; pic, num and mean say what to listen for", () => {
     for (const it of BANK) {
       if (it.focus) expect(it.en, it.id).toContain(it.focus);
-      if (it.type === 'pic' || it.type === 'num') expect(it.ask, it.id).toBeTruthy();
+      if (it.type === 'pic' || it.type === 'num' || it.type === 'mean') expect(it.ask, it.id).toBeTruthy();
     }
+  });
+
+  it('level 4: a cast voice of its accent and its speaker’s gender, one per villager, all 12 used', () => {
+    const l4 = BANK.filter((it) => it.lv === 4);
+    for (const it of l4) {
+      expect(it.cast, it.id).toBe(CAST[it.speaker]);
+      expect(it.cast, it.id).toMatch(/^(us|uk|au)-[fm][12]$/);
+      expect(it.cast!.slice(0, 2), it.id).toBe(it.voice);
+      expect(it.cast![3], it.id).toBe(ROSTER[it.speaker].gender);
+    }
+    for (const [id, cast] of Object.entries(CAST)) expect(cast![3], id).toBe(ROSTER[id as keyof typeof ROSTER].gender);
+    expect(new Set(l4.map((it) => it.cast)).size).toBe(12);
+    // every cast villager speaks (no stale entries), and levels 1-3 have no cast yet
+    expect(Object.keys(CAST).filter((id) => !l4.some((it) => it.speaker === id))).toEqual([]);
+    for (const it of BANK.filter((it) => it.lv !== 4)) expect(it.cast, it.id).toBeUndefined();
+  });
+
+  it('level 4: a scenario (seed 1-66, register, pragmatics), a note ≤ 40 字, and no reused distractor', () => {
+    for (const it of BANK.filter((it) => it.lv === 4)) {
+      expect(it.tags, it.id).toBeDefined();
+      expect(Number.isInteger(it.tags!.seed) && it.tags!.seed >= 1 && it.tags!.seed <= 66, it.id).toBe(true);
+      expect(it.tags!.register && it.tags!.pragmatic, it.id).toBeTruthy();
+      expect(it.note, it.id).toBeTruthy();
+      expect([...it.note!].length, `${it.id}: ${it.note}`).toBeLessThanOrEqual(40);
+      expect(it.ja, it.id).toMatch(/[ぁ-んァ-ン一-龯]/);
+      if (it.type === 'reply' || it.type === 'mean') expect(it.ja, it.id).toContain('→');
+    }
+  });
+
+  it('what’s spoken (`tts`, §9): only when it differs from `en`, never a digit or symbol; level 4 numbers always written out', () => {
+    for (const it of BANK.filter((it) => it.tts)) {
+      expect(it.tts, it.id).not.toBe(it.en);
+      expect(it.tts, it.id).not.toMatch(/[0-9£$¥%]/);
+      expect(it.tts!.trim(), it.id).toBe(it.tts);
+    }
+    for (const it of BANK.filter((it) => it.lv === 4)) expect(/[0-9£$¥%]/.test(it.en) ? it.tts : 'none', it.id).toBeTruthy();
   });
 
   it('pic choices are existing art with a Japanese label', () => {
@@ -80,24 +121,28 @@ describe('kikimimi bank', () => {
     expect(Object.keys(PIC_JA).filter((k) => !used.has(k))).toEqual([]);
   });
 
-  it('every item has its clip (and levels 1 and 2 a slow one) on disk and in clips.json', () => {
+  it('every item of an offered level has its clip (and levels 1 and 2 a slow one) on disk and in clips.json', () => {
+    // a level is offered (deck.ts LEVELS) only once all of its clips exist: level 4's wait for the neural cast
+    expect(LEVELS).toEqual(expect.arrayContaining([1, 2, 3]));
     for (const it of BANK) {
       const c = CLIPS[it.id];
+      if (!LEVELS.includes(it.lv) && !c) continue;
       expect(c, it.id).toBeDefined();
       expect(c.dur, it.id).toBeGreaterThan(0.5);
       expect(c.dur, it.id).toBeLessThan(8);
       expect(c.hash).toMatch(/^[0-9a-f]{8}$/);
       expect(existsSync(join(STATIC, 'audio/kikimimi', `${it.id}.m4a`)), it.id).toBe(true);
-      const slow = it.lv !== 3;
+      const slow = it.lv <= 2;
       expect(Boolean(c.slow), it.id).toBe(slow);
       expect(existsSync(join(STATIC, 'audio/kikimimi', `${it.id}-slow.m4a`)), it.id).toBe(slow);
     }
-    expect(Object.keys(CLIPS).sort()).toEqual(BANK.map((it) => it.id).sort());
+    const ids = new Set(BANK.map((it) => it.id));
+    expect(Object.keys(CLIPS).filter((id) => !ids.has(id))).toEqual([]);
   });
 
   it('ships no other files, and the clips stay small (each under 60 KB, all under 6 MB)', () => {
     const dir = join(STATIC, 'audio/kikimimi');
-    const want = new Set(BANK.flatMap((it) => [`${it.id}.m4a`, ...(it.lv !== 3 ? [`${it.id}-slow.m4a`] : [])]));
+    const want = new Set(BANK.flatMap((it) => [`${it.id}.m4a`, ...(it.lv <= 2 ? [`${it.id}-slow.m4a`] : [])]));
     const files = readdirSync(dir);
     expect(files.filter((f) => !want.has(f))).toEqual([]);
     const sizes = files.map((f) => statSync(join(dir, f)).size);

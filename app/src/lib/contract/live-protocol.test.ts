@@ -369,12 +369,20 @@ describe('live protocol: ききみみ クイズ (`quiz`, presence only)', () => 
     expect(parseClient(j({ kind: 'quiz', g, op: 'a', i: 0, k: 0, rp: false, s: 0 }))).toEqual({ v: 3, kind: 'quiz', g, op: 'a', i: 0, k: 0, rp: false, s: 0 });
   });
 
+  it('levels 1-5 (4 かわ・もり, 5 room for the next: the relay passes them before the phones offer them)', () => {
+    for (const lv of [1, 2, 3, 4, 5]) {
+      const o = { kind: 'quiz', g, op: 'open', seed: 7, lv, same: false };
+      expect(parseClient(j(o)), String(lv)).toEqual({ v: 3, ...o });
+      expect(parseServer(j({ ...o, who: 'A', t: T })), String(lv)).toEqual({ v: 3, ...o, who: 'A', t: T });
+    }
+  });
+
   it('refuses junk: a bad game id, op or field', () => {
     const [open, , , go, a, skip] = ops;
     const bad = [
       { ...open, g: 'abc' }, { ...open, g: 'abcdefghi' }, { ...open, g: 'ABCD' }, { ...open, g: 'ab-cd' }, { ...open, g: 1234 }, { kind: 'quiz', op: 'join' },
       { ...open, op: 'start' }, { ...open, op: undefined },
-      { ...open, seed: -1 }, { ...open, seed: 4_294_967_296 }, { ...open, seed: 1.5 }, { ...open, seed: '1' }, { ...open, lv: 0 }, { ...open, lv: 4 }, { ...open, lv: 1.5 }, { ...open, same: 1 }, { ...open, same: undefined },
+      { ...open, seed: -1 }, { ...open, seed: 4_294_967_296 }, { ...open, seed: 1.5 }, { ...open, seed: '1' }, { ...open, lv: 0 }, { ...open, lv: 6 }, { ...open, lv: 1.5 }, { ...open, same: 1 }, { ...open, same: undefined },
       { ...go, at: -1 }, { ...go, at: 'now' }, { ...go, at: undefined },
       { ...a, i: 8 }, { ...a, i: -1 }, { ...a, k: 4 }, { ...a, k: 0.5 }, { ...a, rp: 0 }, { ...a, s: 1041 }, { ...a, s: -1 }, { ...a, s: undefined },
       { ...skip, i: 9 }, { ...skip, i: -1 }, { ...skip, at: undefined }

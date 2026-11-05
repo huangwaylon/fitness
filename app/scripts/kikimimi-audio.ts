@@ -17,7 +17,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { BANK, type Accent, type Item, type Level } from '../src/lib/kikimimi/bank.ts';
+import { BANK as ALL, type Accent, type Item } from '../src/lib/kikimimi/bank.ts';
 import { ROSTER } from '../src/lib/villagers/roster.ts';
 import type { Clip } from '../src/lib/kikimimi/clips.ts';
 
@@ -28,10 +28,13 @@ const CLIPS = join(import.meta.dirname, '../src/lib/kikimimi/clips.json');
 const SRCS = join(import.meta.dirname, 'kikimimi-clips.src.json');
 /** Bump to regenerate everything after a change to the processing below. */
 const PIPELINE = 1;
+/** Levels 1-3 only: level 4 (bank4.ts) waits for the neural cast (docs/curriculum.md §9) and is never spoken by `say`; the
+ *  lobby hides it till its clips exist (deck.ts LEVELS). */
+const BANK = ALL.filter((it) => it.lv <= 3);
 /** Words per minute by level: a little slow for level 1, natural for 3. Slow clips at ~70%. */
-const RATE: Record<Level, number> = { 1: 160, 2: 175, 3: 185 };
+const RATE: Readonly<Record<number, number>> = { 1: 160, 2: 175, 3: 185 };
 const SLOW = 0.7;
-const hasSlow = (it: Item): boolean => it.lv !== 3;
+const hasSlow = (it: Item): boolean => it.lv <= 2;
 
 /** Best first; the last of each is the stock fallback. */
 const VOICES: Record<Accent, Record<'f' | 'm', string[]>> = {

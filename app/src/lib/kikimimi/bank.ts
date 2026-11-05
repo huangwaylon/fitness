@@ -6,13 +6,37 @@
 // number) with close distractors. `reply` is TOEIC Part 2: the traps repeat a word or a sound of the question, answer
 // another wh-question, or say yes/no to a wh-question.
 //   Accents: level 1 is US only, level 2 adds UK, level 3 adds AU. Jock villagers say gym lines.
-//   Every item is spoken by scripts/kikimimi-audio.ts (macOS `say`) into static/audio/kikimimi/<id>.m4a; changing an
-// item's `en`, `tts` or `voice` regenerates its clip. Ids are file names: keep them stable.
+//   Levels 1-3 are spoken by scripts/kikimimi-audio.ts (macOS `say`) into static/audio/kikimimi/<id>.m4a; changing an
+// item's `en`, `tts` or `voice` regenerates its clip. Ids are file names: keep them stable. Level 4 (かわ・もり,
+// bank4.ts) waits for the neural cast (docs/curriculum.md §9): `say` never speaks it, and the lobby offers a level only
+// once every item of it has a clip (deck.ts LEVELS).
 import type { RosterId } from '#lib/villagers/roster.ts';
+import type { QuizLv } from '../contract/live-protocol.ts';
+import { BANK4 } from './bank4.ts';
 
-export type ItemType = 'pic' | 'word' | 'num' | 'reply';
-export type Level = 1 | 2 | 3;
+/** `mean` (level 4): what the speaker really means, from 3 English paraphrases (the literal reading, the opposite and
+ *  a plausible wrong inference as distractors). */
+export type ItemType = 'pic' | 'word' | 'num' | 'reply' | 'mean';
+/** The protocol's levels (1-5); the bank has 1-4 (5 is room for the next without a relay deploy). */
+export type Level = QuizLv;
 export type Accent = 'us' | 'uk' | 'au';
+/** A cast voice, for the neural TTS being chosen (docs/curriculum.md §9: ≥ 2 voices per accent × gender): accent,
+ *  gender, slot. Each villager speaks with one for good (bank4.ts CAST). */
+export type CastId = `${Accent}-${'f' | 'm'}${1 | 2}`;
+
+/** The scenario generator's dimensions an item was made from (docs/curriculum.md §5): they drive the levers, review
+ *  and coverage later. */
+export interface Tags {
+  /** The scenario seed (docs/curriculum.md §5.5, 1-66): its setting, goal and complication. */
+  seed: number;
+  register: 'service' | 'colleague' | 'boss' | 'friend' | 'partner' | 'neighbour' | 'stranger' | 'official' | 'broadcast';
+  pragmatic: 'literal' | 'indirect' | 'refusal' | 'hedge' | 'understatement' | 'sarcasm' | 'humour' | 'formula' | 'ritual' | 'attitude' | 'deception';
+  /** Speech conditions for the mix (none: studio clean). */
+  conditions?: readonly ('phone' | 'voicemail' | 'pa' | 'video' | 'cafe' | 'station' | 'desk')[];
+  /** The sound features it trains (curriculum §3). */
+  features?: readonly ('contraction' | 'weak-form' | 'flap' | 'yod' | 'gonna' | 'wanna' | 'gotta' | 'lemme' | 'dunno' | 'kinda' |
+    'can-cant' | 't-glottal' | 'teen-ty' | 'self-repair' | 'numbers' | 'ellipsis' | 'idiom' | 'intonation')[];
+}
 
 export interface Item {
   /** Stable: the clip's file name. */
@@ -36,8 +60,15 @@ export interface Item {
   focus?: string;
   /** The question shown in Japanese while it plays (`pic`, `num`): what to listen for. */
   ask?: string;
-  /** What `say` reads, when it isn't `en` as written. */
+  /** What's spoken, when it isn't `en` as written (docs/curriculum.md §9): reductions spelled as said (gonna, lemme,
+   *  d'you), numbers written out. */
   tts?: string;
+  /** Level 4: why the sound or the logic fools you, in Japanese (≤ 40 字), shown at the reveal. */
+  note?: string;
+  /** Level 4: the cast voice (its accent is `voice`, its gender the speaker's). */
+  cast?: CastId;
+  /** Level 4: the scenario it was made from. */
+  tags?: Tags;
 }
 
 /** Japanese names of the `pic` art (the choices' VoiceOver labels and the review list: the English isn't given away). */
@@ -373,5 +404,6 @@ export const BANK: readonly Item[] = [
   ...PIC.map(([lv, ...r]) => make(lv, 'pic')(r)),
   ...WORD.map(([lv, ...r]) => word(lv)(r)),
   ...NUM.flatMap(numItems),
-  ...REPLY.map(([lv, ...r]) => make(lv, 'reply')(r))
+  ...REPLY.map(([lv, ...r]) => make(lv, 'reply')(r)),
+  ...BANK4
 ];

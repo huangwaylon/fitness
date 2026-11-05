@@ -2,15 +2,23 @@
 // phone builds the same deck from the `open` intent's seed and level, so no text goes on the wire.
 import { mulberry32, shuffle } from '#lib/random.ts';
 import { BANK, type Item, type ItemType, type Level } from './bank.ts';
+import { CLIPS } from './clips.ts';
 
 export const DECK_SIZE = 8;
 
-/** How many of each type a level's game has (8 in all). */
-export const MIX: Readonly<Record<Level, Readonly<Record<ItemType, number>>>> = {
-  1: { pic: 3, word: 3, num: 2, reply: 0 },
-  2: { pic: 2, word: 2, num: 2, reply: 2 },
-  3: { pic: 1, word: 2, num: 2, reply: 3 }
+/** How many of each type a level's game has (8 in all). Level 5 has none yet (the protocol's room for the next). */
+export const MIX: Readonly<Partial<Record<Level, Readonly<Record<ItemType, number>>>>> = {
+  1: { pic: 3, word: 3, num: 2, reply: 0, mean: 0 },
+  2: { pic: 2, word: 2, num: 2, reply: 2, mean: 0 },
+  3: { pic: 1, word: 2, num: 2, reply: 3, mean: 0 },
+  4: { pic: 0, word: 2, num: 2, reply: 2, mean: 2 }
 };
+
+/** The levels a phone offers (the lobby's): those with a mix and a clip for every item, so a level whose audio isn't
+ *  made yet (level 4 till the neural cast, docs/curriculum.md §14) stays hidden and main stays shippable. */
+export const playable = (clips: Readonly<Record<string, unknown>>): Level[] =>
+  ([1, 2, 3, 4, 5] as const).filter((lv) => MIX[lv] && BANK.some((it) => it.lv === lv) && BANK.every((it) => it.lv !== lv || it.id in clips));
+export const LEVELS: readonly Level[] = playable(CLIPS);
 
 /** Never more than this many of one type in a row. */
 const MAX_RUN = 2;
@@ -36,9 +44,11 @@ function pick(pool: readonly Item[], n: number, r: () => number): Item[] {
  * and `answer` the right choice's index in it.
  */
 export function deck(seed: number, lv: Level): Item[] {
+  const mix = MIX[lv];
+  if (!mix) return []; // a level this bank hasn't (another phone's newer one): no questions
   const r = mulberry32((seed ^ Math.imul(lv, 0x9e3779b9)) >>> 0);
   const byType = new Map<ItemType, Item[]>();
-  for (const [type, n] of Object.entries(MIX[lv]) as [ItemType, number][])
+  for (const [type, n] of Object.entries(mix) as [ItemType, number][])
     if (n) byType.set(type, pick(BANK.filter((it) => it.lv === lv && it.type === type), n, r));
   // the order of the types: reshuffled till no run is too long (most shuffles pass; the mixes always allow one)
   const types = [...byType].flatMap(([t, items]) => items.map(() => t));
