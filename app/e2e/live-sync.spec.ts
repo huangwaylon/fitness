@@ -262,4 +262,9 @@ test('burst: 40 layout ops at once cost each phone one rebuild, not forty', asyn
   const fb = await framesDone(b);
   console.log(`burst of 40: A ${ms.sync} ms (${ms.frame} ms through its next frame); B's longest frame ${fb.max} ms, ${fb.over} ms over budget`);
   expect(ms.sync).toBeLessThan(400);
+  // every op reaches B live (numbered: those over the room's rate limit hear `busy` and go again), not only the first
+  // 20 (the demo's phones have no record to bring the rest)
+  for (const id of [ids[19], ids[20], ids[39]]) {
+    await expect.poll(() => lay(b, (l, i) => l.obj(i)?.x, id), { timeout: 10_000 }).toBe(await lay(a, (l, i) => l.obj(i)?.x, id));
+  }
 });

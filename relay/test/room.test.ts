@@ -521,6 +521,25 @@ describe('the shared world (docs/backend.md#shared-world)', () => {
     expect(kept).not.toHaveProperty('c');
   });
 
+  it('a numbered layout op (an editor’s save) is acked, relayed once, never kept; over the rate limit it hears `busy`', () => {
+    const a = join(KEY_A), b = join(KEY_B);
+    a.sent = [];
+    b.sent = [];
+    const op = (i: number) => ({ kind: 'decor', sc: 'o', id: `palm${i}`, at: 1_793_000_000_000 + i, k: 'palm', x: 10, z: 10 + i, f: 0, c: 100 + i });
+    for (let i = 0; i < 25; i++) say(a, op(i));
+    // (the hello took one of the burst of 20)
+    expect(b.sent.filter((m) => m.kind === 'decor')).toHaveLength(19);
+    expect(a.sent.filter((m) => m.kind === 'ack').map((m) => (m as { c: number }).c)).toEqual(Array.from({ length: 19 }, (_, i) => 100 + i));
+    expect(a.sent.filter((m) => m.kind === 'busy').map((m) => (m as { c: number }).c)).toEqual([119, 120, 121, 122, 123, 124]);
+    // a second later the rest go again, and one already relayed (its ack lost) is acked again, not relayed twice
+    now += 1000;
+    for (let i = 18; i < 25; i++) say(a, op(i));
+    expect(b.sent.filter((m) => m.kind === 'decor').map((m) => (m as unknown as { id: string }).id)).toEqual(Array.from({ length: 25 }, (_, i) => `palm${i}`));
+    expect(a.sent.filter((m) => m.kind === 'ack')).toHaveLength(26);
+    // never in the day's world
+    expect(join(KEY_B, 0).sent.some((m) => m.kind === 'decor')).toBe(false);
+  });
+
   it('relays to the partner before it keeps (a send after a storage write waits for it)', () => {
     const order: string[] = [];
     const base = io();

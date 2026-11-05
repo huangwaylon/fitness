@@ -6,7 +6,7 @@ import { LIVE, getKey, localKV, readJson, remove, writeJson } from './storage.ts
 import { fnv1a } from '../random.ts';
 import { log } from './log.ts';
 import { takeWx } from './wx.ts';
-import { CLOSE, LIVE_V, MAX_BYTES, dayStart, guestMaySend, isAcked, isStored, parseClient, parseServer, tokyoDay, type Gone, type Intent, type Notice, type RecordMark, type Relayed, type Who } from '../contract/live-protocol.ts';
+import { CLOSE, LIVE_V, MAX_BYTES, dayStart, guestMaySend, isAcked, isLayoutIntent, isStored, parseClient, parseServer, tokyoDay, type Gone, type Intent, type Notice, type RecordMark, type Relayed, type Who } from '../contract/live-protocol.ts';
 
 /** The relay's socket URL; VITE_LIVE_URL overrides it (empty = live off). */
 export const LIVE_URL: string = (import.meta.env?.VITE_LIVE_URL as string | undefined) ?? 'wss://island-fund-relay.island-fund-relay.workers.dev/room';
@@ -585,7 +585,9 @@ export function createLive(o: LiveOptions): Live {
       // what the room keeps (the shared world, a walk; a high-five, held for them) goes even with the partner away (they
       // hear it when they open), numbered, and is kept here until its ack: offline or dropped, it goes again after the
       // next welcome
-      const kept = isAcked(i);
+      // a layout op too while someone is here to hear it: numbered, so one of an editor's save over the room's rate
+      // limit hears `busy` and goes again (unnumbered, the room dropped it: only the record's push brought it)
+      const kept = isAcked(i) || (isLayoutIntent(i) && st.connected && st.here.length > 0);
       // the guest's phone sends only what it may (the room would refuse the rest: live-protocol guestMaySend)
       if (st.me === 'G' && !guestMaySend(i)) return false;
       if (!kept && (!st.connected || !st.here.length)) return false;
