@@ -22,7 +22,7 @@
   import MuseumCard from './MuseumCard.svelte';
   import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '../island/say.ts';
   import { url3d } from '../villager3d/manifest.ts';
-  import { person3 } from '../person3d/person3d.ts';
+  import { person3, type Dirs } from '../person3d/person3d.ts';
   import { drawOff } from '#lib/ui-state/testMode.ts';
   import { lookOf as wornOf } from '#lib/store/look.ts';
   import type { WeekView } from '#lib/types.ts';
@@ -139,10 +139,12 @@
 
   // ---- the others: each here only while they're in the museum (store/where.svelte.ts) ----
   const theirAt = new Map<Who, Pt>(others.map((w) => [w, [ENTRANCE[0] + sideX(w), ENTRANCE[1] - 10] as Pt]));
+  /** The villagers' GLBs and the players' parts (person3d). */
+  const DIRS: Dirs = { villagers: asset('room/villagers3d/' as Parameters<typeof asset>[0]), player: asset('room/player/' as Parameters<typeof asset>[0]) };
   /** Who draws them (person3d: the look they wear, their villager or their human player). */
   function lookOf(w: Who) {
     const villager = w === 'G' ? view.guest.villager : view.people[w].villager;
-    return person3(w, wornOf(w), villager, asset('room/villagers3d/' as Parameters<typeof asset>[0]));
+    return person3(w, wornOf(w), villager, DIRS);
   }
   // a look changed (on leaving すがた, or the partner's phone): the model swapped where it is
   $effect(() => {

@@ -1034,7 +1034,11 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     }
     // a seat (the nearest box on the ray, nearer than the first wall)
     let seat: string | null = null, seatD = Infinity;
+    // (at the eyes, not the bench I'm sitting on: the ray from my head to the floor in front of it may cross its seat,
+    // more so the further back the eyes sit (a human player's): a tap there is a step off it)
+    const me = eyes ? villagers.get(followed) : undefined, on = me?.seat ? spotOf(me) : null;
     for (const s of seatBoxes) {
+      if (on && on[0] >= s.box.min.x && on[0] <= s.box.max.x && on[1] >= s.box.min.z && on[1] <= s.box.max.z) continue;
       const p = ray.ray.intersectBox(s.box, hitV), d = p ? camera.position.distanceTo(p) : Infinity;
       if (d < seatD && nearer(hitV.x, hitV.y, hitV.z)) (seat = s.id), (seatD = d);
     }

@@ -19,22 +19,26 @@ async function phone(browser: Browser, rec: Rec, who: 'A' | 'B' | 'G') {
   return page;
 }
 
-type V3 = { model(slot: string): string | null; last(slot: string): { x: number; z: number } | null };
+type V3 = { model(slot: string): string | null; player(slot: string): boolean; last(slot: string): { x: number; z: number } | null };
 /** The island's model for a slot (mine, partner, third): person3d's key, null till one is in. */
 const model = (page: Page, slot: string) =>
   page.evaluate((s) => (window as unknown as { __villagers3?: V3 }).__villagers3?.model(s) ?? null, slot);
 const settings = (page: Page) => page.locator('dialog[open]').first();
 const back = (page: Page) => settings(page).locator('.titlebar .back').click();
 
-test('the look picks the model; a new look swaps it where it stands', async ({ browser }) => {
-  test.setTimeout(60_000);
+test('the look picks the model: A and B human players, a villager look its villager; a new look swaps it where it stands', async ({ browser }) => {
+  test.setTimeout(90_000);
   const rec = newRecord();
   const a = await phone(browser, rec, 'A');
-  // いつもの: the human player (until the player runtime is on, the villager: A's goldie, B's anchovy)
-  await expect.poll(() => model(a, 'mine'), { timeout: 30_000 }).toBe('v:goldie');
-  await expect.poll(() => model(a, 'partner'), { timeout: 30_000 }).toBe('v:anchovy');
+  // いつもの: each their human player (their own look, so two keys)
+  await expect.poll(() => model(a, 'mine'), { timeout: 30_000 }).toMatch(/^p:/);
+  await expect.poll(() => model(a, 'partner'), { timeout: 30_000 }).toMatch(/^p:/);
+  const usualA = await model(a, 'mine'), usualB = await model(a, 'partner');
+  expect(usualA).not.toBe(usualB);
+  // (drawn as players: their parts all there, no stand-in)
+  expect(await a.evaluate(() => ['mine', 'partner'].map((s) => (window as unknown as { __villagers3: V3 }).__villagers3.player(s)))).toEqual([true, true]);
 
-  // むらびとの すがた: Raymond
+  // むらびとの すがた: Raymond, swapped in place
   await fromMenu(a, 'settings');
   await settings(a).locator('[data-push=look]').click();
   await settings(a).locator('[data-push=villager]').click();
@@ -50,12 +54,50 @@ test('the look picks the model; a new look swaps it where it stands', async ({ b
   // (in place: where it stood)
   const now = await a.evaluate(() => (window as unknown as { __villagers3: V3 }).__villagers3.last('mine'));
   expect(Math.hypot(now!.x - was!.x, now!.z - was!.z)).toBeLessThan(1);
-  expect(await model(a, 'partner')).toBe('v:anchovy');
+  expect(await model(a, 'partner')).toBe(usualB);
 
   // a phone opening later draws it too
   const b = await phone(browser, rec, 'B');
   await expect.poll(() => model(b, 'partner'), { timeout: 30_000 }).toBe('v:raymond');
-  await expect.poll(() => model(b, 'mine'), { timeout: 30_000 }).toBe('v:anchovy');
+  await expect.poll(() => model(b, 'mine'), { timeout: 30_000 }).toBe(usualB);
+
+  // B's phone: another top (a player's look changed: a new player)
+  await fromMenu(b, 'settings');
+  await settings(b).locator('[data-push=look]').click();
+  await settings(b).locator('[data-cat=tops]').click();
+  await settings(b).locator('[data-closet=top] [data-item=TopsTexTopOuterLAran]').click();
+  await back(b);
+  await b.keyboard.press('Escape');
+  await expect(settings(b)).toBeHidden();
+  await expect.poll(() => model(b, 'mine'), { timeout: 30_000 }).toMatch(/^p:/);
+  await expect.poll(() => model(b, 'mine'), { timeout: 30_000 }).not.toBe(usualB);
+
+  // A back to いつもの: its player again
+  await fromMenu(a, 'settings');
+  await settings(a).locator('[data-push=look]').click();
+  await settings(a).locator('[data-look-chip="usual"]').click();
+  await back(a);
+  await a.keyboard.press('Escape');
+  await expect.poll(() => model(a, 'mine'), { timeout: 30_000 }).toBe(usualA);
   await a.context().close();
   await b.context().close();
+});
+
+test('in the tent and the museum: my human player, and my villager once I wear it', async ({ browser }) => {
+  test.setTimeout(90_000);
+  const rec = newRecord();
+  const a = await phone(browser, rec, 'A');
+  await expect.poll(() => model(a, 'mine'), { timeout: 30_000 }).toMatch(/^p:/);
+  const usual = await model(a, 'mine');
+  type Room = { model(w: string): string | null };
+  const inRoom = (hook: '__tent' | '__museum') => a.evaluate((h) => (window as unknown as Record<string, Room | undefined>)[h]?.model('A') ?? null, hook);
+  await a.goto('tent?critter=none&visitor=none');
+  await expect.poll(() => inRoom('__tent'), { timeout: 30_000 }).toBe(usual);
+  await a.goto('museum?critter=none&visitor=none');
+  await expect.poll(() => inRoom('__museum'), { timeout: 30_000 }).toBe(usual);
+  rec.event('A', 'pref', { key: 'villager', value: 'raymond' });
+  rec.event('A', 'pref', { key: 'look', value: { kind: 'villager' } });
+  await a.goto('tent?critter=none&visitor=none');
+  await expect.poll(() => inRoom('__tent'), { timeout: 30_000 }).toBe('v:raymond');
+  await a.context().close();
 });
