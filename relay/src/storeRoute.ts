@@ -5,7 +5,7 @@
 //   as text/plain JSON, a simple request: no preflight from a page, no key in a URL or a header); every reply is
 //   JSON with status 200, as Apps Script's were (`{ok:false, error}` included), so a client tells a refusal from an outage.
 // - `POST /admin`: the record tool's operations (relay/scripts/record.ts: counts, bookmarks, restore, a new epoch, the
-//   export, a dump, a load), signed like `/notify` (notify.ts): only who holds both keys can sign.
+//   a dump, a load, telemetry, the weather), signed like `/notify` (notify.ts): only who holds both keys can sign.
 import { originAllowed } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER } from './notify.ts';
 import { MAX_BODY_CHARS } from './store.ts';

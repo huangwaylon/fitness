@@ -5,9 +5,9 @@ name: Relay checks
 on:
   push:
     branches: [main]
-    paths: ['relay/**', 'app/src/lib/sync/live-protocol.ts', 'app/src/lib/contract/**', 'app/src/lib/model/**', 'app/gas/**', '.github/workflows/relay.yml']
+    paths: ['relay/**', 'app/src/lib/sync/live-protocol.ts', 'app/src/lib/contract/**', 'app/src/lib/model/**', '.github/workflows/relay.yml']
   pull_request:
-    paths: ['relay/**', 'app/src/lib/sync/live-protocol.ts', 'app/src/lib/contract/**', 'app/src/lib/model/**', 'app/gas/**', '.github/workflows/relay.yml']
+    paths: ['relay/**', 'app/src/lib/sync/live-protocol.ts', 'app/src/lib/contract/**', 'app/src/lib/model/**', '.github/workflows/relay.yml']
   workflow_dispatch:
 
 permissions:

@@ -11,17 +11,14 @@ preview_urls = false
 [vars]
 # the app's page origins (src/auth.ts): Cloudflare Pages, and GitHub Pages until both phones have moved (runbook §14)
 ALLOWED_ORIGINS = "https://island-fund.pages.dev,https://huangwaylon.github.io"
-# The record's one-way export to the sheet (docs/backend.md#the-record "Export"): the Apps Script web app's /exec URL.
-EXPORT_URL = "https://script.google.com/macros/s/AKfycbwAMHDa69-GmAEmhrO7WXiRhkQoJLzCImiBkwV7itHbSATMC_wtHFEgy4Tn5eXzKjGU/exec"
 # The real weather's point (relay/src/weather.ts, docs/backend.md "The real weather"): central Tokyo, by the 東京 AMeDAS
 # station, rounded to ~1 km. Open-Meteo sees only this (and a Cloudflare IP).
 WX_LAT = "35.69"
 WX_LON = "139.75"
 
-# Every 15 minutes the export when the record changed (18:00 UTC, 03:00 Tokyo, whatever changed) and the real weather
-# when it's due (at :15 and :45).
+# Every 15 minutes: the real weather when it's due (at :15 and :45).
 [triggers]
-crons = ["*/15 * * * *", "0 18 * * *"]
+crons = ["*/15 * * * *"]
 
 [[durable_objects.bindings]]
 name = "ROOM"
@@ -58,12 +55,11 @@ head_sampling_rate = 0.1
 [env.test]
 name = "island-fund-relay-test"
 
-# the test copy exports nowhere (no EXPORT_URL) and runs no cron (a hello fetches the weather when it's due)
+# the test copy runs no cron (a hello fetches the weather when it's due)
 [env.test.triggers]
 crons = []
 
 [env.test.vars]
-EXPORT_URL = ""
 ALLOWED_ORIGINS = "https://island-fund.pages.dev,https://huangwaylon.github.io"
 WX_LAT = "35.69"
 WX_LON = "139.75"

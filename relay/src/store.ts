@@ -26,7 +26,7 @@ import { isRoomScope, isVoid, layoutAccept, layoutOpOf, scopeMayWrite, type Layo
 import { BOARD_MAX, boardAccept, boardOpOf, cleanText, type BoardEntry } from '../../app/src/lib/contract/board.ts';
 import { foodAccept, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, repeatAccept, repeatNext, type RepeatOpBy } from '../../app/src/lib/contract/food.ts';
 import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
-import { notifySecret, notifySig, verifyNotify } from './notify.ts';
+import { verifyNotify } from './notify.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
 import { buyOf, sellOf, shopLedger, shopRefusal, type ShopRow } from '../../app/src/lib/contract/shop.ts';
@@ -701,32 +701,11 @@ export class StoreCore {
     return { metrics: n('metrics'), events: n('events'), ids: n('ids'), uploads: n('uploads') };
   }
 
-  /** Every row, as `load` takes them (a backup, and what the sheet's export writes): the load of a dump is the record. */
+  /** Every row, as `load` takes them (the backup, docs/ops/runbook.md#7-backups): the load of a dump is the record. */
   dump(): { rows: Required<ImportRows> } {
     const all = this.rowsSince('');
     const uploads = this.io.sql.exec<{ at: string; person: string; status: string; bytes: number; notes: string }>('SELECT at, person, status, bytes, notes FROM uploads ORDER BY seq').toArray()
       .map((r) => [r.at, r.person, r.status, r.bytes, r.notes]);
     return { rows: { metrics: all.metrics, events: all.events, uploads } };
-  }
-
-  /**
-   * The sheet's export (docs/backend.md#the-record "Export"): when the record changed since the last one (or `force`),
-   * the body to POST to the Apps Script web app: `{action: 'export', t, sig, data}`, `data` every row as JSON text
-   * (ASCII: anything past it escaped), `sig` = HMAC-SHA256(notify secret, "<t>.<data>") (Apps Script reads no
-   * headers). Null when there's nothing new. `exported(upto)` once the sheet took it.
-   */
-  async exportBody(force: boolean): Promise<{ body: string; upto: number } | null> {
-    const upto = this.lastAt;
-    if (!force && upto <= Number(this.meta('exported_upto') ?? 0)) return null;
-    const secret = await notifySecret(this.io.keys);
-    if (!secret) return null;
-    const data = JSON.stringify({ ...this.dump(), rev: this.rev(), upto: upto ? new Date(upto).toISOString() : null, at: new Date(this.io.now()).toISOString() })
-      .replace(/[^\x20-\x7e]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
-    const t = String(this.io.now());
-    return { body: JSON.stringify({ action: 'export', t, sig: await notifySig(secret, t, data), data }), upto };
-  }
-
-  exported(upto: number): void {
-    this.setMeta('exported_upto', String(upto));
   }
 }
