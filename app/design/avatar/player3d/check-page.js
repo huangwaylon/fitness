@@ -40,6 +40,8 @@ window.run = async () => {
   a.set('walk'); b.set('walk');
   for (let t = 3000; t < 3400; t += 16) { a.step(t, 1.5, 120); b.step(t, 1.5, 120); }
   out.walk = shot(45, 420, 0, 0.9);
+  a.set('fish'); b.set('fish'); step(5000); step(5600);
+  out.fish = shot(45, 300, -55, -0.6);
   a.set('lie'); b.set('lie'); step(6000);
   out.lie = shot(30, 420, 0, 1.2);
   a.set('idle'); b.set('idle'); step(9000);

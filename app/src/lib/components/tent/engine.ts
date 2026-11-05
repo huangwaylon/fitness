@@ -8,7 +8,7 @@ import {
   AmbientLight, BoxGeometry, CanvasTexture, CircleGeometry, Color, DirectionalLight, DoubleSide, Group, HemisphereLight,
   LineBasicMaterial, LineSegments, BufferGeometry, Float32BufferAttribute, Material, Mesh, MeshBasicMaterial, MeshStandardMaterial,
   Box3, Object3D, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, PointLight, Raycaster, RepeatWrapping, Scene, Sprite,
-  SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector3, WebGLRenderer
+  SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector3, WebGLRenderer, type SkinnedMesh
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -1361,6 +1361,27 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     }
     return rug;
   }
+  /** Whether a 3D model is drawn under client px, or within a finger of it (a human player has no render to read its
+   *  outline off: its skinned meshes as posed, raycast, the ray put back as it was). */
+  const FINGER = 12;
+  function modelUnder(v: Villager3D, cx: number, cy: number): boolean {
+    const meshes: Object3D[] = [];
+    v.group.traverse((o) => {
+      const m = o as SkinnedMesh;
+      if (!m.isMesh || !m.visible) return;
+      // (its bounds as posed now: three keeps a skinned mesh's from its first raycast)
+      if (m.isSkinnedMesh) (m as { boundingSphere: unknown }).boundingSphere = null;
+      meshes.push(m);
+    });
+    const at = ray.ray.clone();
+    let on = false;
+    for (const [dx, dy] of [[0, 0], [FINGER, 0], [-FINGER, 0], [0, FINGER], [0, -FINGER]]) {
+      screen.aim(ray, cx + dx, cy + dy);
+      if (ray.intersectObjects(meshes, false).length) { on = true; break; }
+    }
+    ray.ray.copy(at);
+    return on;
+  }
   function hit(cx: number, cy: number): Hit | null {
     toNdc(cx, cy);
     // (at my villager's eyes, not itself; the closed door in the doorway goes out as the doormat does)
@@ -1381,7 +1402,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
             if (x >= 0 && y >= 0 && x < aw && y < ah && a[y * aw + x] > 40) solid = true;
           }
           if (!solid) continue;
-        }
+        } else if (w?.v3 && w.look.cardless && !modelUnder(w.v3, cx, cy)) continue;
         return { kind: 'villager', who: h.object.userData.who as Who };
       }
       const id = h.object.userData.id as string | undefined;
