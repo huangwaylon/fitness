@@ -133,7 +133,10 @@ const MIGRATIONS: readonly ((sql: Sql) => void)[] = [
       SELECT person, date, metric, at, seq, value FROM (
         SELECT person, date, metric, at, seq, value, row_number() OVER (PARTITION BY person, date, metric ORDER BY at DESC, seq DESC) AS rn FROM metrics
       ) WHERE rn = 1`);
-  }
+  },
+  // 3 (2026-11-05): the values an ingest holds back rather than append (a past day's 0 over a value above it: a run
+  // that read nothing, or a real correction), kept for good, never served; the admin lists and promotes them (R3)
+  (sql) => void sql.exec('CREATE TABLE IF NOT EXISTS metrics_held (person TEXT NOT NULL, date TEXT NOT NULL, metric TEXT NOT NULL, value REAL NOT NULL, at TEXT NOT NULL, last TEXT NOT NULL, n INTEGER NOT NULL, promoted TEXT, PRIMARY KEY (person, date, metric, value)) WITHOUT ROWID')
 ];
 export const SCHEMA_V = MIGRATIONS.length;
 
@@ -142,11 +145,19 @@ export interface ImportRows {
   metrics?: unknown[][];
   events?: unknown[][];
   uploads?: unknown[][];
+  /** metrics_held's rows: `[at, person, date, metric, value, last, n, promoted]` (HeldRow). */
+  held?: unknown[][];
 }
 
-export interface ImportResult { metrics: number; events: number; uploads: number; skipped: number }
+export interface ImportResult { metrics: number; events: number; uploads: number; skipped: number; held?: number }
+
+/** A value an ingest held back (metrics_held): first held at `at`, last seen at `last`, `n` times; `promoted` when the
+ *  admin made it a row of `metrics` (null: never). */
+export interface HeldRow { person: string; date: string; metric: string; value: number; at: string; last: string; n: number; promoted: string | null }
 
 type Reply = Rec & { ok: boolean };
+/** A dump's rows: the held values only when there are some. */
+type DumpRows = Required<Omit<ImportRows, 'held'>> & Pick<ImportRows, 'held'>;
 
 export class StoreCore {
   private lastAt: number;
@@ -330,7 +341,7 @@ export class StoreCore {
   /** The admin `load {rows}`: rows that already have their `at` (a dump's), by the record's rules. */
   load(o: Rec): Record<string, unknown> {
     const rows = o.rows;
-    if (!isRec(rows) || !(['metrics', 'events', 'uploads'] as const).every((k) => rows[k] === undefined || Array.isArray(rows[k]))) return { ok: false, error: 'bad_request' };
+    if (!isRec(rows) || !(['metrics', 'events', 'uploads', 'held'] as const).every((k) => rows[k] === undefined || Array.isArray(rows[k]))) return { ok: false, error: 'bad_request' };
     const r = this.import(rows as ImportRows);
     if (r.metrics + r.events) this.tellAll();
     return { ok: true, ...r, counts: this.counts() };
@@ -470,6 +481,9 @@ export class StoreCore {
         const k = `${m.date}|${m.metric}`;
         if (latest.get(k) === m.value) continue;
         if (m.value === 0 && m.date < today && (latest.get(k) ?? 0) > 0) {
+          // held, never thrown away (the user's rule: keep all Health data): apart from the history, never served,
+          // the admin's to promote (heldRows, promoteHeld)
+          this.hold(me, m.date, m.metric, m.value, at, 1, null);
           zeros++;
           continue;
         }
@@ -478,7 +492,7 @@ export class StoreCore {
         n++;
         act ||= isActivityMetric(m.metric);
       }
-      const notes = [zeros ? `${zeros} past zeros ignored` : '', auditNotes(parsed)].filter(Boolean).join('; ');
+      const notes = [zeros ? `${zeros} past zeros held` : '', auditNotes(parsed)].filter(Boolean).join('; ');
       this.audit(auditRow(at, me, parsed.skipped ? 'partial' : 'ok', bytes, notes, body));
       return n ? { n, at, act } : { n, at: null, act };
     });
@@ -489,6 +503,45 @@ export class StoreCore {
       ...(parsed.skipped ? { skipped: parsed.skipped } : {}),
       ...(parsed.warnings.length ? { warnings: parsed.warnings } : {})
     };
+  }
+
+  /** A held value (metrics_held) seen at `at` (`n` times; a load's row brings its own `last`, `n` and mark). */
+  private hold(person: string, date: string, metric: string, value: number, at: string, n: number, promoted: string | null, last = at): void {
+    this.io.sql.exec(
+      `INSERT INTO metrics_held (person, date, metric, value, at, last, n, promoted) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT (person, date, metric, value) DO UPDATE SET last = max(last, excluded.last), n = CASE WHEN excluded.last > last THEN n + excluded.n ELSE max(n, excluded.n) END, promoted = coalesce(promoted, excluded.promoted)`,
+      person, date, metric, value, at, last, n, promoted
+    );
+  }
+
+  /** The held values (the admin's `held {person?}`), oldest first. */
+  heldRows(person?: string): HeldRow[] {
+    const q = 'SELECT person, date, metric, value, at, last, n, promoted FROM metrics_held';
+    return (person ? this.io.sql.exec<HeldRow & Record<string, Bind>>(`${q} WHERE person = ? ORDER BY at, date, metric`, person) : this.io.sql.exec<HeldRow & Record<string, Bind>>(`${q} ORDER BY at, date, metric`))
+      .toArray().map((r) => ({ person: r.person, date: r.date, metric: r.metric, value: r.value, at: r.at, last: r.last, n: Number(r.n), promoted: r.promoted ?? null }));
+  }
+
+  /** The admin's `promote {person, date, metric, value?}`: a held value made a row of `metrics` (the day's latest
+   *  now, as an ingest's), the held row kept with its mark. `value`: which, when more than one is held (else the
+   *  last seen). */
+  promoteHeld(o: Rec): Record<string, unknown> {
+    if (!isPersonId(o.person) || typeof o.date !== 'string' || !isMetricKey(o.metric) || (o.value !== undefined && typeof o.value !== 'number')) return fail('bad_request');
+    const { person, date, metric } = o as { person: PersonId; date: string; metric: string };
+    const r = this.io.tx(() => {
+      const h = this.io.sql.exec<{ value: number }>(
+        `SELECT value FROM metrics_held WHERE person = ? AND date = ? AND metric = ?${o.value !== undefined ? ' AND value = ?' : ''} ORDER BY last DESC LIMIT 1`,
+        ...([person, date, metric, ...(o.value !== undefined ? [o.value as number] : [])] as Bind[])
+      ).toArray()[0];
+      if (!h) return fail('bad_request', 'nothing held');
+      const cur = this.io.sql.exec<{ value: number }>('SELECT value FROM metrics_latest WHERE person = ? AND date = ? AND metric = ?', person, date, metric).toArray()[0];
+      if (cur && cur.value === h.value) return fail('bad_request', 'is the latest');
+      const at = this.nextAt();
+      this.addMetric(at, person, date, metric, h.value, null);
+      this.io.sql.exec('UPDATE metrics_held SET promoted = ? WHERE person = ? AND date = ? AND metric = ? AND value = ?', at, person, date, metric, h.value);
+      return { ok: true as const, at, value: h.value };
+    });
+    if (r.ok) this.io.notify({ what: 'ingest', who: person, at: (r as { at: string }).at, rev: this.rev() }, isActivityMetric(metric));
+    return r;
   }
 
   /** An ingest's audit row, and the rows older than UPLOADS_KEEP_MS let go (the (at, person) key's index). */
@@ -785,15 +838,16 @@ export class StoreCore {
     const all = [
       ...(rows.metrics ?? []).map((r) => ({ tab: 'metrics' as const, r })),
       ...(rows.events ?? []).map((r) => ({ tab: 'events' as const, r })),
-      ...(rows.uploads ?? []).map((r) => ({ tab: 'uploads' as const, r }))
+      ...(rows.uploads ?? []).map((r) => ({ tab: 'uploads' as const, r })),
+      ...(rows.held ?? []).map((r) => ({ tab: 'held' as const, r }))
     ].map((x, i) => ({ ...x, i, at: Array.isArray(x.r) ? String(x.r[0]) : '' }))
       .sort((x, y) => (x.at < y.at ? -1 : x.at > y.at ? 1 : x.i - y.i));
     return this.io.tx(() => {
-      const out: ImportResult = { metrics: 0, events: 0, uploads: 0, skipped: 0 };
+      const out: ImportResult = { metrics: 0, events: 0, uploads: 0, skipped: 0, ...(rows.held ? { held: 0 } : {}) };
       const arrived = this.io.now();
       for (const { tab, r } of all) {
-        const v = !Array.isArray(r) ? 'skipped' : tab === 'metrics' ? this.importMetric(r, arrived) : tab === 'events' ? this.importEvent(r, arrived) : this.importUpload(r);
-        if (v === 'added') out[tab]++;
+        const v = !Array.isArray(r) ? 'skipped' : tab === 'metrics' ? this.importMetric(r, arrived) : tab === 'events' ? this.importEvent(r, arrived) : tab === 'held' ? this.importHeld(r) : this.importUpload(r);
+        if (v === 'added') out[tab] = (out[tab] ?? 0) + 1;
         else if (v === 'skipped') out.skipped++;
       }
       return out;
@@ -855,6 +909,14 @@ export class StoreCore {
     return 'added';
   }
 
+  private importHeld(r: unknown[]): 'added' | 'skipped' {
+    const [at, person, date, metric, value, last, n, promoted] = r;
+    if (typeof at !== 'string' || !ISO_AT.test(at) || !isPersonId(person) || typeof date !== 'string' || !isMetricKey(metric) || typeof value !== 'number' || !Number.isFinite(value)) return 'skipped';
+    const lastAt = typeof last === 'string' && ISO_AT.test(last) ? last : at;
+    this.hold(person, date, metric, value, at, Number.isInteger(n) && (n as number) > 0 ? (n as number) : 1, typeof promoted === 'string' && ISO_AT.test(promoted) ? promoted : null, lastAt);
+    return 'added';
+  }
+
   private importUpload(r: unknown[]): 'added' | 'skipped' {
     const [at, person, status, bytes, notes] = r;
     if (typeof at !== 'string' || !ISO_AT.test(at) || !isPersonId(person)) return 'skipped';
@@ -874,18 +936,24 @@ export class StoreCore {
   }
 
   /** Every row, as `load` takes them (the backup, docs/ops/runbook.md#7-backups): the load of a dump is the record. */
-  dump(): { rows: Required<ImportRows> } {
-    return { rows: { ...this.rowsSince(''), uploads: this.uploadRows() } };
+  dump(): { rows: DumpRows } {
+    return { rows: { ...this.rowsSince(''), uploads: this.uploadRows(), ...this.heldDump() } };
+  }
+
+  /** The held values as the dump carries them (only when there are some: a dump from before them reads the same). */
+  private heldDump(): { held?: unknown[][] } {
+    const h = this.heldRows();
+    return h.length ? { held: h.map((x) => [x.at, x.person, x.date, x.metric, x.value, x.last, x.n, x.promoted]) } : {};
   }
 
   /** The admin's `dump {limit?, after?}`: with `limit`, a page of the dump (the metrics and events as rowsPage pages
    *  them, the audit on the first page, `next` the `after` of the next); without, every row at once (dump). */
-  dumpPage(o: Rec): { ok: true; rows: Required<ImportRows>; next?: string } | Fail {
+  dumpPage(o: Rec): { ok: true; rows: DumpRows; next?: string } | Fail {
     if (o.limit === undefined && o.after === undefined) return { ok: true, ...this.dump() };
     const after = o.after === undefined ? null : cursorOf(o.after);
     if (after === undefined || !isPageSize(o.limit)) return fail('bad_request');
     const p = this.rowsPage('', after, o.limit);
-    return { ok: true, rows: { ...p.rows, uploads: after ? [] : this.uploadRows() }, ...(p.next ? { next: p.next } : {}) };
+    return { ok: true, rows: { ...p.rows, uploads: after ? [] : this.uploadRows(), ...(after ? {} : this.heldDump()) }, ...(p.next ? { next: p.next } : {}) };
   }
 
   private uploadRows(): unknown[][] {

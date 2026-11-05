@@ -10,6 +10,8 @@
 //   dump                every row as JSON on stdout (a backup: `> island-record-YYYY-MM-DD.json`), fetched in pages
 //   compact [max] [rev] the record's compaction now (the cron runs it daily); `rev`: a new epoch after it
 //   load <file>         a dump into the record (its rows by the record's rules, in chunks; what it has is skipped)
+//   held [A|B]          the values an ingest held back (a past day's 0 over a value above it), never served
+//   promote <person> <date> <metric> [value]   a held value made a row of the day's history (its latest now)
 // (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
 import { readFileSync } from 'node:fs';
 import { signed } from './admin.ts';
@@ -23,19 +25,19 @@ const DUMP_PAGE = 5000;
 /** The dump, a page at a time, as one `{ok, rev, rows}` (what `load` takes); started again if the epoch changes under it. */
 async function dump(): Promise<Record<string, unknown>> {
   for (let tries = 0; tries < 3; tries++) {
-    const rows = { metrics: [] as unknown[], events: [] as unknown[], uploads: [] as unknown[] };
+    const rows = { metrics: [] as unknown[], events: [] as unknown[], uploads: [] as unknown[], held: [] as unknown[] };
     let after: unknown, rev: unknown = null, pages = 0;
     do {
       const r = (await signed({ op: 'dump', limit: DUMP_PAGE, ...(after ? { after } : {}) })) as { ok: boolean; rev: string; next?: string; rows: typeof rows };
       if (!r.ok) throw new Error(`dump: ${JSON.stringify(r)}`);
       if (rev !== null && r.rev !== rev) break;
       rev = r.rev;
-      for (const k of ['metrics', 'events', 'uploads'] as const) rows[k].push(...r.rows[k]);
+      for (const k of ['metrics', 'events', 'uploads', 'held'] as const) rows[k].push(...(r.rows[k] ?? []));
       after = r.next;
       pages++;
     } while (after);
     if (!after) {
-      console.error(`dump: ${pages} pages, ${rows.metrics.length} metrics, ${rows.events.length} events, ${rows.uploads.length} uploads, rev ${String(rev)}`);
+      console.error(`dump: ${pages} pages, ${rows.metrics.length} metrics, ${rows.events.length} events, ${rows.uploads.length} uploads, ${rows.held.length} held, rev ${String(rev)}`);
       return { ok: true, rev, rows };
     }
     console.error('dump: a new epoch under it, again');
@@ -44,13 +46,13 @@ async function dump(): Promise<Record<string, unknown>> {
 }
 
 /** Rows into the record in `at` order, CHUNK at a time (the object's CPU per request stays small). */
-async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads?: unknown[][] }): Promise<void> {
-  const all = (['metrics', 'events', 'uploads'] as const).flatMap((tab) => (rows[tab] ?? []).map((r) => ({ tab, r })));
+async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads?: unknown[][]; held?: unknown[][] }): Promise<void> {
+  const all = (['metrics', 'events', 'uploads', 'held'] as const).flatMap((tab) => (rows[tab] ?? []).map((r) => ({ tab, r })));
   all.sort((x, y) => String(x.r[0]).localeCompare(String(y.r[0])));
   let sum = { metrics: 0, events: 0, uploads: 0, skipped: 0 };
   let last: unknown = null;
   for (let i = 0; i < all.length; i += CHUNK) {
-    const part: Record<string, unknown[][]> = { metrics: [], events: [], uploads: [] };
+    const part: Record<string, unknown[][]> = { metrics: [], events: [], uploads: [], held: [] };
     for (const { tab, r } of all.slice(i, i + CHUNK)) part[tab].push(r);
     const r = (await signed({ op: 'load', rows: part })) as typeof sum & { counts: unknown; ok: boolean };
     if (!r.ok) throw new Error(`load: ${JSON.stringify(r)}`);
@@ -78,10 +80,18 @@ switch (cmd) {
   case 'compact':
     console.log(JSON.stringify(await signed({ op: 'compact', ...(arg && arg !== 'rev' ? { max: Number(arg) } : {}), ...(args.includes('rev') ? { rev: true } : {}) })));
     break;
+  case 'held':
+    console.log(JSON.stringify(await signed({ op: 'held', ...(arg ? { person: arg } : {}) })));
+    break;
+  case 'promote': {
+    const [, person, date, metric, value] = args;
+    console.log(JSON.stringify(await signed({ op: 'promote', person, date, metric, ...(value !== undefined ? { value: Number(value) } : {}) })));
+    break;
+  }
   case 'load':
     await load((JSON.parse(readFileSync(arg, 'utf8')) as { rows: Record<string, unknown[][]> }).rows);
     break;
   default:
-    console.error('commands: counts | bookmark [ms] | restore <bookmark> | rev | dump | compact [max] [rev] | load <file>  [--test]');
+    console.error('commands: counts | bookmark [ms] | restore <bookmark> | rev | dump | compact [max] [rev] | load <file> | held [person] | promote <person> <date> <metric> [value]  [--test]');
     process.exit(1);
 }
