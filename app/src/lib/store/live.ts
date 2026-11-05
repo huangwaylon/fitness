@@ -10,6 +10,7 @@ import { ackedEvents, enqueue, flush, holdEvent, keepAcked, nextRetryAt, queued,
 import { addOwnRows, loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { keyFromHash } from '#lib/sync/pairing.ts';
 import { LIVE_URL, liveRelay, type Live, type SheetChange } from '#lib/sync/live.ts';
+import type { RecordMark } from '#lib/contract/live-protocol.ts';
 import { log, persistLog } from '#lib/sync/log.ts';
 import { pendingAcked } from './view.ts';
 import { world } from './world.svelte.ts';
@@ -25,6 +26,9 @@ const PUSH_GATHER_MS = 300;
 const WELCOME_WAIT_MS = 2000;
 /** A cache fetched longer ago than this is fetched again on opening, whatever the welcome says. */
 const CURRENT_MAX_MS = 15 * 60_000;
+
+/** A record mark's identity. */
+const markOf = (r: RecordMark): string => `${r.rev}|${r.at}`;
 
 export class LiveBackend implements Backend {
   #host: Host;
@@ -44,6 +48,12 @@ export class LiveBackend implements Backend {
   #opened = false;
   /** Storage problems already shown this session. */
   #told = new Set<StorageProblem>();
+  /** A fetch of the record is under way (#fetch); a welcome meanwhile is looked at again once it's done. */
+  #fetching = false;
+  #recheck = false;
+  /** The welcome's record mark last fetched for (`rev|at`): one fetch per mark, so a mark the cache never reaches (the
+   *  guest's snapshot leaves out rows it may not read) can't fetch at every reconnect. */
+  #fetchedFor = '';
 
   constructor(host: Host) {
     this.#host = host;
@@ -78,6 +88,13 @@ export class LiveBackend implements Backend {
     if (LIVE_URL) {
       this.#live = liveRelay();
       this.#live.onChange((c) => this.#sheetChanged(c));
+      // each welcome (a reconnect: back from the background, the relay restarted) says the record's last change: what
+      // was written while the socket was down is fetched now, not at the next open (docs/backend.md#live-sync)
+      let up = false;
+      this.#live.onStatus((s) => {
+        if (s.connected && !up) this.#welcomed();
+        up = s.connected;
+      });
       // the shared island hears the partner even while another tab of the app is on screen (docs/backend.md#shared-world)
       world.attach(this.#live, getStoredMe());
       this.#live.start();
@@ -110,7 +127,8 @@ export class LiveBackend implements Backend {
         h.lastSync = new Date(c.fetchedAt);
       }
     }
-    if (opts.background && Date.now() - this.#lastFetch < REFRESH_FLOOR_MS) return;
+    // (within the floor, unless the welcome already says the cache is behind)
+    if (opts.background && Date.now() - this.#lastFetch < REFRESH_FLOOR_MS && !this.#behind()) return;
     // opening the app, or coming back to it: no fetch when the relay's welcome says the cache has the record's last
     // change (docs/backend.md#the-record "Push-driven"); a sync tap, a push or a retry always fetches
     const opening = !this.#opened;
@@ -126,15 +144,27 @@ export class LiveBackend implements Backend {
     const seq = ++this.#refreshSeq;
     h.syncing = true;
     let r: Awaited<ReturnType<typeof refreshSnapshot>>;
+    const rec = this.#live?.status().rec;
+    this.#fetching = true;
+    // a gathered push or welcome waiting: this fetch brings what it would (`fresh`: not one already in flight)
+    const gathered = !!this.#pushTimer;
+    if (this.#pushTimer) clearTimeout(this.#pushTimer);
+    this.#pushTimer = null;
     try {
       await this.#flush(false);
-      r = await refreshSnapshot(Date.now, opts.fresh);
+      r = await refreshSnapshot(Date.now, opts.fresh || gathered);
     } catch (e) {
       // never leave the pill spinning and the sync buttons disabled
       console.warn('refresh failed', e);
       r = { ok: false, error: 'unavailable' };
     } finally {
       if (seq === this.#refreshSeq) h.syncing = false; // else a newer refresh owns `syncing`
+      this.#fetching = false;
+    }
+    if (r.ok && rec) this.#fetchedFor = markOf(rec);
+    if (this.#recheck) {
+      this.#recheck = false;
+      queueMicrotask(() => this.#welcomed());
     }
     if (seq !== this.#refreshSeq) return; // a newer refresh owns the view
     if (r.ok) {
@@ -164,6 +194,7 @@ export class LiveBackend implements Backend {
     keepAcked([]);
     this.#lastFetch = 0;
     this.#pushWorks = false;
+    this.#fetchedFor = '';
     // paired as someone else: the socket speaks for the old key
     if (this.#live) {
       this.#live.stop();
@@ -188,6 +219,32 @@ export class LiveBackend implements Backend {
     }, PUSH_GATHER_MS);
   }
 
+  /** Whether the welcome's record mark is past the cache (false without a welcome, a mark or a cache). */
+  #behind(rec: RecordMark | undefined = this.#live?.status().rec): boolean {
+    const c = this.#cache;
+    return !!rec && !!c && !(c.rev === rec.rev && c.since !== null && rec.at <= c.since);
+  }
+
+  /** A welcome: when its record mark is past the cache, fetch (gathered, as a push), once per mark. The opening's
+   *  refresh compares the first welcome itself (#current); a fetch under way looks again when it's done. */
+  #welcomed(): void {
+    const rec = this.#live?.status().rec;
+    if (!this.#opened || !rec || !this.#behind(rec) || markOf(rec) === this.#fetchedFor) return;
+    if (this.#waiting) return;
+    if (this.#fetching) {
+      this.#recheck = true;
+      return;
+    }
+    this.#fetchedFor = markOf(rec);
+    if (this.#pushTimer) return;
+    this.#pushTimer = setTimeout(() => {
+      this.#pushTimer = null;
+      void this.refresh({ fresh: true });
+    }, PUSH_GATHER_MS);
+  }
+  /** The opening's refresh is waiting for the first welcome (#current). */
+  #waiting = false;
+
   /**
    * Whether the cache already has the record's last change, as the relay's welcome tells it (waited for up to
    * WELCOME_WAIT_MS): the same revision, its `at` not after the cache's `since`, and the cache fetched within
@@ -197,6 +254,7 @@ export class LiveBackend implements Backend {
     const live = this.#live, c0 = this.#cache;
     if (!live || !c0 || Date.now() - c0.fetchedAt > CURRENT_MAX_MS) return false;
     if (!live.status().connected) {
+      this.#waiting = true;
       await new Promise<void>((done) => {
         let off: () => void = () => {};
         const timer = setTimeout(() => (off(), done()), WELCOME_WAIT_MS);
@@ -207,6 +265,7 @@ export class LiveBackend implements Backend {
           done();
         });
       });
+      this.#waiting = false;
     }
     const rec = live.status().rec, c = this.#cache;
     return !!rec && !!c && c.rev === rec.rev && c.since !== null && rec.at <= c.since;
