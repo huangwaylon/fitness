@@ -481,6 +481,31 @@ describe('the island room', () => {
     expect(join(KEY_B, 0).kinds()).not.toContain('say');
   });
 
+  it('a quiz op (`quiz`, ききみみ) goes live to everyone else here, the guest’s too; never kept, acked or replayed', () => {
+    const a = join(KEY_A), b = join(KEY_B), g = join(KEY_C);
+    for (const s of [a, b, g]) s.sent = [];
+    const T = 1_793_527_259_353;
+    say(a, { kind: 'quiz', g: 'k3x9a2', op: 'open', seed: 12345, lv: 2, same: true, extra: 1 });
+    say(g, { kind: 'quiz', g: 'k3x9a2', op: 'join' });
+    say(a, { kind: 'quiz', g: 'k3x9a2', op: 'go', at: T });
+    say(g, { kind: 'quiz', g: 'k3x9a2', op: 'a', i: 0, k: 2, rp: false, s: 130 });
+    say(b, { kind: 'quiz', g: 'k3x9a2', op: 'a', i: 0, k: 9, rp: false, s: 0 }); // no such choice: dropped
+    say(a, { kind: 'quiz', g: 'k3x9a2', op: 'skip', i: 1, at: T + 30_000 });
+    expect(b.sent).toEqual([
+      { v: 3, kind: 'quiz', g: 'k3x9a2', op: 'open', seed: 12345, lv: 2, same: true, who: 'A', t: expect.any(Number) },
+      { v: 3, kind: 'quiz', g: 'k3x9a2', op: 'join', who: 'G', t: expect.any(Number) },
+      { v: 3, kind: 'quiz', g: 'k3x9a2', op: 'go', at: T, who: 'A', t: expect.any(Number) },
+      { v: 3, kind: 'quiz', g: 'k3x9a2', op: 'a', i: 0, k: 2, rp: false, s: 130, who: 'G', t: expect.any(Number) },
+      { v: 3, kind: 'quiz', g: 'k3x9a2', op: 'skip', i: 1, at: T + 30_000, who: 'A', t: expect.any(Number) }
+    ]);
+    expect(a.sent.map((m) => [m.kind, (m as { who?: string }).who])).toEqual([['quiz', 'G'], ['quiz', 'G']]);
+    expect(g.sent.map((m) => [(m as { op?: string }).op, (m as { who?: string }).who])).toEqual([['open', 'A'], ['go', 'A'], ['skip', 'A']]);
+    expect(saved).toEqual([]);
+    for (const s of [a, b, g]) expect(s.closed).toBeNull();
+    // a phone opening later hears none of it
+    expect(join(KEY_B, 0).kinds()).not.toContain('quiz');
+  });
+
   it('relays walks only to points within the world plan', () => {
     const a = join(KEY_A);
     const b = join(KEY_B);
