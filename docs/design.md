@@ -180,10 +180,18 @@ sign-off): each person's NH human player, the whole closet free (no ベル, no s
 - **Sending:** wearing only changes the preview; the look goes out once, one `look` pref, when the level is left (‹, ✕,
   Esc, the backdrop, or the app going to the background), and only if it changed. A member's いつもの is sent as null.
   コーデ edits go out as they're made, the whole `savedLooks` list ([backend](backend.md#events)).
-- **Until the closet pipeline lands:** the grid reads `look/closet.ts`'s `Closet` interface, today a stub (every
-  hairstyle, eye and mouth, the default looks' garments and the art scout's palette, swatches by hand, no icons), and the
-  preview and portraits are a flat stand-in figure (`look/PlayerFigure.svelte`); `useCloset` takes the part table's, and
-  `LookPreview` / `LookPortrait` the 3D player and its portraits.
+- **The closet is the part table's** ([Players](#players): `player3d/parts.json`, through `look/closet.ts`'s `Closet`
+  interface): every hairstyle, eye and mouth, and each garment line a tile with its colours as dots, in the table's
+  order. The table has no colours, so `scripts/look-swatches.ts` (`npm run look:swatches`, after `players3d`; dwebp)
+  measures them into `look/swatches.json`: per item its texture's dominant colour over the pixels its own among its
+  line's colours (a loafer's sole, a shirt's buttons are every colour's; a sock's foot, not its cuff), lifted a little
+  (gamma 0.85: the textures are albedo); per catalogue icon its own. The dots and the colour filter use them. A tile is
+  the line's catalogue icon (`static/art/finds/items/<icon>.webp`, one per line, drawn in one of its colours): on the
+  colour nearest the icon's it shows as it is; on the others it's tinted (grey, brightened so its main colour reads near
+  white, times the swatch, masked to its shape; a tube sock's stripes tint with its leg). A face part's or hairstyle's
+  tile is its number. closet.test keeps both いつもの looks' parts, every grid non-empty and every swatch measured.
+  The preview and portraits are still a flat stand-in figure (`look/PlayerFigure.svelte`) until `LookPreview` /
+  `LookPortrait` take the 3D player and its portraits.
 
 <a id="profile"></a>**プロフィール** (`panel/ProfileSection.svelte`, `model/profile.ts`, `e2e/profile.spec.ts`; the user: "store the
 user's gender and birthdate so that the calculations and recommendations can account for that"): one card. Whose, in

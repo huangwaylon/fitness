@@ -1,9 +1,13 @@
 // The closet behind せってい → すがた (design/avatar/customization.md §3): what the grid lists, as one small interface, so
-// the level doesn't care where the parts come from. Until the closet pipeline's part table lands (static/room/player/,
-// a manifest of part ids → mesh, texture, colour group, icon), `stubCloset` lists the parts of DEFAULT_LOOKS and the art
-// scout's palette (design/avatar/catalog.md), each variant with a hand-picked swatch and no icon; useCloset swaps in the
-// real one. The wear rules (a one-piece clears the bottoms, a bottom clears a one-piece) are here too, pure.
+// the level doesn't care where the parts come from. The closet is the part table's (components/player3d/parts.json, the
+// 3D engineer's pipeline: every hairstyle, eye and mouth and each garment's colour line, with its catalogue icon) and its
+// colours as measured from the parts' own textures (swatches.json: scripts/look-swatches.ts); a bigger table (the
+// pipeline's --all) is the same code. The wear rules (a one-piece clears the bottoms, a bottom clears a one-piece) are
+// here too, pure.
 import { isOnepiece, type Hex, type PartId, type PlayerLook } from '#lib/contract/look.ts';
+import { artUrl } from '#lib/art.ts';
+import PARTS from '../player3d/parts.json' with { type: 'json' };
+import SWATCHES from './swatches.json' with { type: 'json' };
 
 /** The level's category chips, in order (かお · かみ · トップス · ボトムス · ワンピース · くつした · くつ · こもの). */
 export const CATEGORIES = ['face', 'hair', 'tops', 'bottoms', 'onepiece', 'socks', 'shoes', 'acc'] as const;
@@ -25,8 +29,10 @@ export const GARMENT_KINDS: ReadonlySet<ClosetKind> = new Set(['top', 'onepiece'
 export const HUES = ['red', 'yellow', 'green', 'blue', 'purple', 'pink', 'brown', 'white', 'black'] as const;
 export type Hue = (typeof HUES)[number];
 
-/** One colour variant of an item: its part id, a swatch (the dot), its hue bucket and its icon (null: none yet). */
-export interface Variant { id: PartId; swatch: Hex; hue: Hue; icon: string | null }
+/** One colour variant of an item: its part id, a swatch (the dot), its hue bucket, its icon (a URL; null: none) and how
+ *  the icon is tinted to its colour (null: the icon is this colour already; else the grey icon's brightness factor
+ *  before the swatch multiplies it: ClosetGrid). */
+export interface Variant { id: PartId; swatch: Hex; hue: Hue; icon: string | null; tint: number | null }
 /** One tile: a base item (a shape and pattern) and its colour variants. */
 export interface ClosetItem { key: string; kind: ClosetKind; variants: Variant[] }
 
@@ -39,10 +45,14 @@ export interface Closet {
   colours: { hairColor: readonly Hex[]; eyeColor: readonly Hex[]; skin: readonly Hex[] };
 }
 
+const rgb = (hex: Hex): [number, number, number] => {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+};
+
 /** A colour's bucket for the filter: its hue, or white / black / brown by lightness and saturation. */
 export function hueOf(hex: Hex): Hue {
-  const n = parseInt(hex.slice(1), 16);
-  const r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+  const [r, g, b] = rgb(hex);
   const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
   const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
   if (s < 0.15 || d < 0.06) return l >= 0.5 ? 'white' : 'black';
@@ -57,81 +67,107 @@ export function hueOf(hex: Hex): Hue {
   return 'pink';
 }
 
-/** An item's key: its variant's id without the trailing colour digits (`TopsTexTopOuterLAran3` → `…Aran`). */
+/** An item's key: its variant's id without the trailing colour digits (`TopsTexTopOuterLAran3` → `…Aran`), the part
+ *  table's colour line. */
 export const itemKey = (id: PartId): string => id.replace(/\d+$/, '');
 
-/** A closet from a list of kinds and their variants (the stub's and, until it brings its own, any table's). */
-export function closetFrom(
-  parts: Partial<Record<ClosetKind, [PartId, Hex][]>>,
-  colours: Closet['colours'],
-  icon: (id: PartId) => string | null = () => null
-): Closet {
+/** A colour's grey as CSS grayscale() makes it (Rec. 709 weights). */
+const grey = (hex: Hex) => {
+  const [r, g, b] = rgb(hex);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const dist = (a: Hex, b: Hex) => {
+  const [x, y] = [rgb(a), rgb(b)];
+  return (x[0] - y[0]) ** 2 + (x[1] - y[1]) ** 2 + (x[2] - y[2]) ** 2;
+};
+
+/** One entry of a closet: a part id, its swatch, and its line's catalogue icon (a URL) with the icon's own colour. */
+export interface Entry { id: PartId; swatch: Hex; icon?: { url: string; colour: Hex } | null }
+
+/**
+ * A closet from a list of kinds and their entries. Garments group by colour line (itemKey), a face part or hairstyle
+ * is a tile of its own. An item's icon is its line's (the catalogue has one per item, drawn in one of its colours): the
+ * variant nearest the icon's colour shows it as it is, the others tint it (grey, brightened so its main colour reads
+ * near white, times the swatch).
+ */
+export function closetFrom(parts: Partial<Record<ClosetKind, Entry[]>>, colours: Closet['colours']): Closet {
   const byKind = new Map<ClosetKind, ClosetItem[]>();
   const byId = new Map<PartId, { item: ClosetItem; variant: Variant }>();
-  for (const [kind, list] of Object.entries(parts) as [ClosetKind, [PartId, Hex][]][]) {
+  for (const [kind, list] of Object.entries(parts) as [ClosetKind, Entry[]][]) {
     const items: ClosetItem[] = [];
+    const icons = new Map<ClosetItem, NonNullable<Entry['icon']>>();
     const byKey = new Map<string, ClosetItem>();
-    for (const [id, swatch] of list) {
-      if (byId.has(id)) continue;
-      const key = GARMENT_KINDS.has(kind) ? itemKey(id) : id;
+    for (const e of list) {
+      if (byId.has(e.id)) continue;
+      const key = GARMENT_KINDS.has(kind) ? itemKey(e.id) : e.id;
       let item = byKey.get(key);
-      if (!item) byKey.set(key, (item = { key, kind, variants: [] })), items.push(item);
-      const variant = { id, swatch, hue: hueOf(swatch), icon: icon(id) };
+      if (!item) {
+        byKey.set(key, (item = { key, kind, variants: [] }));
+        items.push(item);
+        if (e.icon) icons.set(item, e.icon);
+      }
+      const variant: Variant = { id: e.id, swatch: e.swatch, hue: hueOf(e.swatch), icon: icons.get(item)?.url ?? null, tint: null };
       item.variants.push(variant);
-      byId.set(id, { item, variant });
+      byId.set(e.id, { item, variant });
+    }
+    for (const [item, icon] of icons) {
+      const own = item.variants.reduce((a, v) => (dist(v.swatch, icon.colour) < dist(a.swatch, icon.colour) ? v : a));
+      const k = Math.round(Math.min(4, Math.max(1, 0.94 / Math.max(grey(icon.colour), 0.01))) * 100) / 100;
+      for (const v of item.variants) v.tint = v === own ? null : k;
     }
     byKind.set(kind, items);
   }
   return { items: (kind) => byKind.get(kind) ?? [], find: (id) => (id ? byId.get(id) ?? null : null), colours };
 }
 
-const num = (prefix: string, n: number): PartId[] => Array.from({ length: n }, (_, i) => `${prefix}${String(i).padStart(2, '0')}`);
-const plain = (ids: PartId[], swatch: Hex): [PartId, Hex][] => ids.map((id) => [id, swatch]);
+/** The part table's shape, as far as the closet reads it. */
+interface Table {
+  face: Record<string, unknown>;
+  hair: Record<string, unknown>;
+  items: Record<string, { slot: string; onepiece?: boolean; icon: string | null }>;
+}
+/** The measured colours (swatches.json): per item, per catalogue icon. */
+interface Swatches { items: Record<string, Hex>; icons: Record<string, Hex> }
+/** The kind of a part table item by its slot (a `top` that's a one-piece has its own grid). */
+const KIND_OF: Record<string, ClosetKind> = {
+  top: 'top', bottom: 'bottom', socks: 'socks', shoes: 'shoes', glasses: 'glasses', ornament: 'ornament'
+};
 
-/** The stand-in closet: every hairstyle, eye and mouth of the dump, the default looks' garments and the art scout's
- *  palette (catalog.md "Curated customization palette"), their swatches judged from its sheets. */
-export const stubCloset: Closet = closetFrom({
-  hair: plain(num('PlayerHair', 37), '#3b2619'),
-  eye: plain(num('PlayerEye', 26), '#3d2416'),
-  mouth: plain(num('PlayerMouth', 4), '#c0504d'),
-  top: [
-    ['TopsTexTopOuterLAran3', '#3f6b45'], ['TopsTexTopOuterLAran1', '#ece2c8'], ['TopsTexTopOuterLSweat1', '#4f7a4a'],
-    ['TopsTexTopOuterLArancardigan0', '#c9a77a'], ['TopsTexTopTshirtsLVnecksweater2', '#2a2a2a'],
-    ['TopsTexTopYshirtsHPolo7', '#262626'], ['TopsTexTopYshirtsHStandard0', '#f4f4f0'], ['TopsTexTopTshirtsHPocketshirts0', '#f6f6f2']
-  ],
-  onepiece: [
-    ['TopsTexOnepieceAlineHLinen0', '#232323'], ['TopsTexOnepieceAlineHLinen3', '#efe6d2'], ['TopsTexOnepieceBoxLShirt1', '#d9c6a5'],
-    ['TopsTexOnepieceBalloonHDolly0', '#f2a9bf'], ['TopsTexOnepieceBalloonHLace7', '#1e1e1e']
-  ],
-  bottom: [
-    ['BottomsTexPantsNormalSlacks0', '#3a3a3e'], ['BottomsTexPantsNormalSlacks6', '#d8d3c6'], ['BottomsTexPantsNormalChino0', '#cdb48d'],
-    ['BottomsTexPantsNormalDenim0', '#4c6c9a'], ['BottomsTexPantsNormalDenim3', '#242424'], ['BottomsTexPantsNormalSweat0', '#b9a6d6'],
-    ['BottomsTexPantsWideChino1', '#cfb68f'], ['BottomsTexSkirtLongDenim3', '#1f1f1f'], ['BottomsTexSkirtLongPleats4', '#8c8c8c'],
-    ['BottomsTexSkirtLongChino0', '#cbb28a'], ['BottomsTexSkirtLongMaone1', '#3b3b3b'], ['BottomsTexSkirtAlineFlare1', '#222222']
-  ],
-  socks: [
-    ['SocksTexDailysocks1', '#222222'], ['SocksTexDailysocks5', '#f4f4f4'], ['SocksTexLine0', '#dfe3ea'], ['SocksTexFootcover6', '#262626']
-  ],
-  shoes: [
-    ['ShoesLowcutRubbertoe7', '#222222'], ['ShoesHighcutRubbertoe7', '#222222'], ['ShoesHighcutRubbertoe0', '#2c3a5c'],
-    ['ShoesLowcutLeathersneker0', '#f2f2ee'], ['ShoesLowcutSlipon6', '#ede3cc'], ['ShoesLowcutLoafers1', '#2a2220'], ['ShoesLowcutSuede1', '#3d5a99']
-  ],
-  glasses: [
-    ['AccessoryGlassCircle0', '#4a4a4a'], ['AccessoryGlassCircle3', '#7a5634'], ['AccessoryGlassOval6', '#a0706a'],
-    ['AccessoryGlassThurmont0', '#3a2a20'], ['AccessoryGlassOctagon4', '#3d3d3d'], ['AccessoryGlassSquare1', '#2b2b2b']
-  ],
-  ornament: [['CapOrnamentLRibbon7', '#1d1d1d'], ['CapOrnamentLHearthairpin0', '#e2506a']]
-}, {
+/** The closet of a part table and its measured colours: every hairstyle, eye and mouth, and every garment in the
+ *  table's order, grouped by line. An item without a measured colour isn't listed (swatches.json is behind the table:
+ *  npm run look:swatches). */
+function tableCloset(table: Table, swatches: Swatches): Closet {
+  const parts: Partial<Record<ClosetKind, Entry[]>> = { hair: [], eye: [], mouth: [] };
+  for (const id of Object.keys(table.hair)) parts.hair!.push({ id, swatch: HAIR });
+  for (const id of Object.keys(table.face)) {
+    if (id.startsWith('PlayerEye')) parts.eye!.push({ id, swatch: INK });
+    else if (id.startsWith('PlayerMouth')) parts.mouth!.push({ id, swatch: INK });
+  }
+  for (const [id, it] of Object.entries(table.items)) {
+    const kind = it.onepiece ? 'onepiece' : KIND_OF[it.slot];
+    const swatch = swatches.items[id];
+    if (!kind || !swatch) continue;
+    const url = it.icon ? artUrl(`finds/items/${it.icon}`) : null;
+    const colour = it.icon ? swatches.icons[it.icon] : undefined;
+    (parts[kind] ??= []).push({ id, swatch, icon: url && colour ? { url, colour } : null });
+  }
+  return closetFrom(parts, COLOURS);
+}
+
+const HAIR = '#3b2619';
+const INK = '#3d2416';
+/** The hair, eye and skin swatches (the art scout's palette, design/avatar/catalog.md). */
+const COLOURS: Closet['colours'] = {
   hairColor: ['#2f241d', '#2a1b12', '#3b2619', '#6b4129', '#9a6a43', '#c79a5b', '#8d8a86', '#7a3324', '#d99aa5'],
   eyeColor: ['#3d2416', '#5a3a28', '#2b2018', '#7a5a2e', '#4f6378'],
   skin: ['#f9dcc0', '#f6cfa8', '#e8b48a', '#c98e62', '#9a6440', '#6b432b']
-});
+};
 
-let current: Closet = stubCloset;
-/** The closet the level lists. */
-export const closet = (): Closet => current;
-/** Swap the closet (the part table's, once it lands). @public */
-export function useCloset(c: Closet): void {
+let current: Closet | null = null;
+/** The closet the level lists: the part table's, unless another was set (useCloset). */
+export const closet = (): Closet => (current ??= tableCloset(PARTS as Table, SWATCHES));
+/** Swap the closet (a test's; null: back to the part table's). @public */
+export function useCloset(c: Closet | null): void {
   current = c;
 }
 

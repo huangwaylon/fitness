@@ -2,9 +2,10 @@
   // One grid of the すがた level's closet (customization.md §3.4), NH's wardrobe way: a tile per item (in the variant
   // worn, else the one last chosen, else the first; the colour filter's when one is set), a tap wears it and opens a
   // row of colour dots under that tile's row (its variants: a dot wears that one; toggle buttons, not radios, so the
-  // grid's roving keeps to its tiles). A なし tile first where the slot may
-  // be empty. Built a slice per frame (a few hundred tops at once is a long task on a phone); icons load lazily. The
-  // closet's items have no names: a tile is 「トップス 3」 to a screen reader, a dot its colour.
+  // grid's roving keeps to its tiles). A なし tile first where the slot may be empty. Built a slice per frame (a few
+  // hundred tops at once is a long task on a phone); a garment's tile is its catalogue icon, loaded lazily and tinted to
+  // the colour shown (closet.ts Variant.tint); a face part's or hairstyle's its number. The closet's items have no
+  // names: a tile is 「トップス 3」 to a screen reader, a dot its colour.
   import type { PartId, PlayerLook } from '#lib/contract/look.ts';
   import { roving } from '../ui/roving.ts';
   import { closet, GARMENT_KINDS, OPTIONAL_KINDS, wornIn, type ClosetItem, type ClosetKind, type Hue, type Variant } from './closet.ts';
@@ -68,7 +69,15 @@
   {#if !tile.item || !tile.v}
     <svg class="none" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2.4" /><path d="M6.5 17.5 17.5 6.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg>
   {:else if tile.v.icon}
-    <img src={tile.v.icon} alt="" width="96" height="96" loading="lazy" decoding="async" draggable="false" />
+    {@const tint = tile.v.tint}
+    <span class="ico">
+      <img src={tile.v.icon} alt="" width="96" height="96" loading="lazy" decoding="async" draggable="false"
+        style:filter={tint === null ? null : `grayscale(1) brightness(${tint})`} />
+      {#if tint !== null}
+        {@const mask = `url("${tile.v.icon}") center / contain no-repeat`}
+        <span class="tint" style:background={tile.v.swatch} style:-webkit-mask={mask} style:mask></span>
+      {/if}
+    </span>
   {:else if garment}
     <span class="sw" style:background={tile.v.swatch}></span><span class="n">{tile.n}</span>
   {:else}
@@ -114,7 +123,11 @@
   }
   .tile:active { transform: scale(1.06, .92); transition-duration: var(--dur-tap); }
   .tile[aria-checked='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: 0 0 0 3px var(--c-leaf-edge); }
-  .tile img { width: 86%; height: 86%; object-fit: contain; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+  /* the catalogue's icon, one per line in one of its colours: another colour tints it (grey, brightened so its
+     main colour is near white, times the swatch, masked to the icon's shape) */
+  .ico { position: relative; width: 86%; height: 86%; isolation: isolate; pointer-events: none; }
+  .ico img { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+  .tint { position: absolute; inset: 0; mix-blend-mode: multiply; }
   .sw { width: 54%; height: 54%; border-radius: 30%; box-shadow: inset 0 0 0 2px rgb(0 0 0 / .14); grid-area: 1 / 1; }
   .n { position: absolute; right: 6px; bottom: 5px; font-size: 11px; opacity: .7; }
   .n.big { position: static; font-size: var(--fs-body); opacity: 1; }
