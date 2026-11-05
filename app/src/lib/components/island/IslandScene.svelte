@@ -62,6 +62,7 @@
   import { CAMS, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, SEAT_DROP, flowerById, freshWhere, seatAt, surfaceAt, worldGen, BUILDINGS, LAWN_SPOTS, type BuildingId } from './world.ts';
   import { GUEST_ARRIVAL, guestSpot, doorAt, outOf, partnerOnline } from './buildings.ts';
   import { site } from './site.svelte.ts';
+  import { kkSpot } from './kkSlider.ts';
   import { digSpots, spotsOn } from './beach.ts';
   import * as W from './world.ts';
   import { provideDoor } from '#lib/ui-state/doorTransition.ts';
@@ -674,6 +675,7 @@
         const near = (ps: readonly (readonly [number, number])[], d: number) => ps.some(([px, pz]) => Math.hypot(px - x, pz - z) < d);
         return walkable(walkGeo(), x, z) && !([[0, 0], [20, 0], [-20, 0], [0, 20], [0, -20]] as const).some(([dx, dz]) => buildingAt(x + dx, z + dz)) && !near([...weedsAt(today, ms, seed).map((w) => [w.x, w.y] as const), ...digSpots(today, new Set(), seed).map((d) => [d.x, d.y] as const), ...mushroomSpots()], away)
           && !near([...W.SCENERY, ...W.DECOR_SLOTS].map((t) => [t.x, t.z] as const), 30) && !near([W.ROCK, W.TAPE_DECK, ...W.BUILDINGS.map((b) => [b.x, b.z + b.depth / 2] as const)], 40)
+          && !near(((s) => (s ? [[s.x, s.z] as const] : []))(site.layout && kkSpot(site.layout)), 40)
           && !near(W.FLOWERS.map((f) => [f.x, f.z] as const), 32);
       },
       /** The trunks a bug perches on (critters.ts perches: the island's trees as they stand) and the ground's height

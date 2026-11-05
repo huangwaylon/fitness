@@ -18,7 +18,7 @@ describe('visitors (NH)', () => {
     // (each one's model on its spot, posed: visitor-life.spec, for one of each kind)
     expect([...VISITORS, 'cyrus'].filter((id) => !has3d(id))).toEqual([]);
   });
-  it('Jack on Halloween night, 17:00 to midnight, before anyone else (K.K. on a Saturday Halloween too)', () => {
+  it('Jack on Halloween night, 17:00 to midnight, before anyone else (on a Saturday Halloween, K.K.’s show, too)', () => {
     expect(at('2026-10-31', 16, 6)).not.toBe('jack'); // 16:59
     expect(at('2026-10-31', 17, 6)).toBe('jack'); // 17:00
     expect(at('2026-10-31', 18, 6)).toBe('jack'); // K.K.'s hour, but Halloween
@@ -28,10 +28,12 @@ describe('visitors (NH)', () => {
     expect(at('2026-11-04', 20, 3, { id: 'halloween', night: true })).toBe('jack'); // forced (?event=halloween)
     expect(at('2026-10-24', 17, 6)).not.toBe('jack');
   });
-  it('K.K. on Saturday nights, Daisy Mae on Sunday mornings', () => {
-    expect(at('2026-10-24', 18, 6)).toBe('kk-slider');
-    expect(at('2026-10-24', 23, 6)).toBe('kk-slider');
-    expect(at('2026-10-24', 17, 6)).not.toBe('kk-slider');
+  it('K.K. is no visitor (he lives on his stool): Saturday evening is his show, nobody else then; Daisy Mae on Sunday mornings', () => {
+    expect(VISITORS).not.toContain('kk-slider');
+    expect(at('2026-10-24', 18, 6)).toBeNull();
+    expect(at('2026-10-24', 23, 6)).toBeNull();
+    // (the day's visitor before it: one of the rotation, if any, on the Saturday's own draw)
+    expect(at('2026-10-24', 17, 6)).toBe(dayVisitor('2026-10-24', 6) === 'wisp' ? null : dayVisitor('2026-10-24', 6));
     expect(at('2026-11-01', 5, 0)).toBe('daisy-mae');
     expect(at('2026-11-01', 11, 0)).toBe('daisy-mae');
     expect(at('2026-11-01', 12, 0)).not.toBe('daisy-mae');
@@ -98,8 +100,9 @@ describe('visitors (NH)', () => {
         last = k;
       }
     }
-    // K.K.'s show: his greeting asks for a request; his sign-off; tuning when he has no songs yet
-    for (const k of ['hello', 'which', 'tuning', 'playing', 'bye']) for (const c of [ja, en] as Record<string, string>[]) expect(c[`chat.sp.kk-slider.${k}`], k).toBeTruthy();
+    // K.K. (kkSlider.ts): the show's greeting asks for a request, by day too; his sign-offs; tuning when he has no songs
+    // yet; asleep a mumble
+    for (const k of ['hello', 'dayHello', 'which', 'tuning', 'playing', 'bye', 'byeDay', 'asleep', 'intro']) for (const c of [ja, en] as Record<string, string>[]) expect(c[`chat.sp.kk-slider.${k}`], k).toBeTruthy();
     expect((ja as Record<string, string>)['chat.sp.kk-slider.hello']).toContain('リクエスト');
   });
 });

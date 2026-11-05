@@ -222,7 +222,12 @@ export async function toTheWater(page: Page, water: string, zoom = 1): Promise<[
         const g = w.__world3d.ground(x, y), s = g && w.__world.ground(g.x, g.z).surface;
         // (on screen; for the sea, the sea's: a clifftop pool by the back beach is water too)
         if (x < 8 || x > innerWidth - 8 || y < 8 || y > innerHeight - 8) continue;
-        if ((water === 'sea' ? s === 'sea' : s === 'water' || s === 'sea') && !document.elementFromPoint(x, y)?.closest(TAPS)) return [x, y] as [number, number];
+        // (K.K.'s art takes no pointer, the scene asks him: a tap within his box is his)
+        const figure = [...document.querySelectorAll('[data-kk] .art')].some((el) => {
+          const b = el.getBoundingClientRect();
+          return x > b.left - 14 && x < b.right + 14 && y > b.top - 14 && y < b.bottom + 14;
+        });
+        if ((water === 'sea' ? s === 'sea' : s === 'water' || s === 'sea') && !figure && !document.elementFromPoint(x, y)?.closest(TAPS)) return [x, y] as [number, number];
       }
     return null;
   }, water);
@@ -305,8 +310,8 @@ export async function openNear(page: Page, x: number, z: number, away = 45, onSc
         const el = document.elementFromPoint(sx + dx, sy + dy);
         return !!el && !el.closest(TAPS);
       })) return false;
-      // (a visitor's art takes no pointer, the scene asks it: a tap within its box, a thumb round it, is theirs)
-      if ([...document.querySelectorAll('[data-visitor] .art')].some((el) => {
+      // (a visitor's art and K.K.'s take no pointer, the scene asks them: a tap within its box, a thumb round it, is theirs)
+      if ([...document.querySelectorAll('[data-visitor] .art, [data-kk] .art')].some((el) => {
         const r = el.getBoundingClientRect();
         return sx > r.left - 14 && sx < r.right + 14 && sy > r.top - 14 && sy < r.bottom + 14;
       })) return false;

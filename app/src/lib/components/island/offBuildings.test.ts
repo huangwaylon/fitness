@@ -101,7 +101,8 @@ describe('nothing is dropped or spawned on a building’s ground (layout/clear.t
     ['the default island', () => def],
     ['the user’s island (the record, the museum and the shop where they placed them)', () => user],
     ['the default with the museum beside its trees', () => movedBeside(def, 'museum', treeTiles(def))],
-    ['the user’s with the museum beside its trees', () => movedBeside(user, 'museum', treeTiles(user))],
+    // (K.K.'s stool aside: the one spot by the user's trees the museum fits is his)
+    ['the user’s with the museum beside its trees', () => movedBeside(withChanges(user, { remove: ['kk-slider'] }), 'museum', treeTiles(user))],
     ['the default with the shop on the front beach', () => onTheBeach(def)]
   ];
   for (const [name, get] of cases)

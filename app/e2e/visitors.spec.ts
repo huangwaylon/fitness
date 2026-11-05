@@ -4,7 +4,7 @@
 // opens at まえ), Gulliver on the front beach, never under a control; a tap gives a line (an introduction first), no
 // trading, no ベル.
 import { expect, test, type Page } from '@playwright/test';
-import { camTo, controlsUnder, geo, offFrom, tapFigure } from './island.ts';
+import { camTo, controlsUnder, geo, offFrom, quiet, tapFigure } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
 /** Press a balloon's choice where it is on screen (a locator click would first scroll it "into view": the stage is
@@ -34,21 +34,39 @@ async function readOut(page: Page) {
   await expect(page.locator('.choices.asking')).toBeVisible();
 }
 
-test('K.K. comes on Saturday from 18:00 (not on Friday); with the music on he asks for a request and plays (NH)', async ({ page }) => {
+/** A tap on K.K. where nothing else takes it (a villager wandering past in front of him is theirs). */
+async function tapKK(page: Page) {
+  const pt = await page.evaluate(() => {
+    const r = document.querySelector('[data-kk] .art')!.getBoundingClientRect();
+    for (const fy of [0.5, 0.35, 0.65, 0.2, 0.8]) for (const fx of [0.5, 0.3, 0.7]) {
+      const x = r.left + r.width * fx, y = r.top + r.height * fy;
+      if (!document.elementFromPoint(x, y)?.closest('button, [data-actor], [data-visitor]')) return [x, y];
+    }
+    return null;
+  });
+  expect(pt, 'a bare spot on K.K.').not.toBeNull();
+  await page.mouse.click(pt![0], pt![1]);
+}
+
+/** K.K.'s stool on the page's layout (its middle, u). */
+const kkAt = (page: Page) => page.evaluate(() => (window as unknown as { __layout: { pos(id: string): [number, number] } }).__layout.pos('kk-slider'));
+
+test('K.K. lives on his stool, every day (a Friday evening too); on Saturday from 18:00 his show: with the music on he asks for a request and plays (NH)', async ({ page }) => {
   await music(page);
-  await page.goto('?demo&date=2026-10-23T19:00&critter=none'); // a Friday
+  await page.goto('?demo&date=2026-10-23T19:00&critter=none'); // a Friday: there, strumming to himself
   await expect(hudMenu(page)).toBeVisible();
-  await expect(page.locator('[data-visitor="kk-slider"]')).toHaveCount(0);
+  await expect(page.locator('[data-kk]')).toHaveAttribute('data-kk', 'day');
   await page.goto('?demo&date=2026-10-24T19:00&critter=none'); // a Saturday (not Halloween: Jack's night)
   await expect(hudMenu(page)).toBeVisible();
+  await expect(page.locator('[data-kk]')).toHaveAttribute('data-kk', 'show');
   const bells = await hudBells(page).getAttribute('aria-label');
-  // at centre stage, in view as the island opens (まえ)
+  // on his stool (the layout's), in view as the island opens (まえ)
   const g = await geo(page);
   await camTo(page, g.CAMS.mae, false);
-  await expect(page.locator('[data-visitor="kk-slider"] .art')).toBeVisible();
-  expect(await offFrom(page, '[data-visitor="kk-slider"]', ...g.CENTRE_STAGE)).toBeLessThan(2);
-  expect(await controlsUnder(page, '[data-visitor="kk-slider"] .art')).toEqual([]);
-  await tapFigure(page, '[data-visitor="kk-slider"] .art');
+  await expect(page.locator('[data-kk] .art')).toBeVisible();
+  expect(await offFrom(page, '[data-kk]', ...(await kkAt(page)))).toBeLessThan(2);
+  expect(await controlsUnder(page, '[data-kk] .art')).toEqual([]);
+  await tapFigure(page, '[data-kk] .art');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('とたけけ');
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('リクエストは あるかな？');
   await readOut(page);
@@ -60,9 +78,9 @@ test('K.K. comes on Saturday from 18:00 (not on Friday); with the music on he as
   // the show: the caption, the villagers sway, he strums harder
   await expect(page.locator('[data-fx="kk-caption"].placed')).toHaveText(`♪ ${song}`);
   await expect(page.locator('.if-scene[data-show]')).toHaveCount(1);
-  await expect(page.locator('[data-visitor="kk-slider"].show')).toHaveCount(1);
+  await expect(page.locator('[data-kk].show')).toHaveCount(1);
   // a tap mid-song: nothing disruptive, but ストップ ends it with his sign-off
-  await tapFigure(page, '[data-visitor="kk-slider"] .art');
+  await tapFigure(page, '[data-kk] .art');
   await readOut(page);
   await choose(page, page.locator('.choice', { hasText: 'ストップ' }));
   await expect(page.locator('[data-fx="kk-caption"]')).toHaveCount(0);
@@ -71,12 +89,31 @@ test('K.K. comes on Saturday from 18:00 (not on Friday); with the music on he as
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
 });
 
+test('K.K. by day asks for a request too; asleep at night he only mumbles', async ({ page }) => {
+  await music(page);
+  await page.goto('?demo&date=2026-11-04T15:00&critter=none&visitor=none'); // a Wednesday afternoon
+  await expect(hudMenu(page)).toBeVisible();
+  await camTo(page, (await geo(page)).CAMS.mae, false);
+  await quiet(page); // (the opening beats over)
+  await tapKK(page);
+  await expect(page.locator('[data-fx="talk"] .sr')).toContainText('一曲 どうだい？');
+  await readOut(page);
+  await expect(page.locator('.choice')).toHaveText(['リクエスト', 'おまかせ']);
+  await page.goto('?demo&date=2026-11-05T02:00&critter=none'); // 2 a.m.
+  await expect(hudMenu(page)).toBeVisible();
+  await expect(page.locator('[data-kk]')).toHaveAttribute('data-kk', 'asleep');
+  await camTo(page, (await geo(page)).CAMS.mae, false);
+  await tapKK(page);
+  await expect(page.locator('[data-fx="talk"] .sr')).toContainText('ムニャ');
+  await expect(page.locator('.choice')).toHaveCount(0);
+});
+
 test('K.K. with the music off just introduces himself', async ({ page }) => {
   await page.goto('?demo&date=2026-10-24T20:00&critter=none');
   await expect(hudMenu(page)).toBeVisible();
   await camTo(page, (await geo(page)).CAMS.mae, false);
-  await tapFigure(page, '[data-visitor="kk-slider"] .art');
-  await expect(page.locator('[data-fx="talk"].placed')).toHaveAttribute('data-pages', '2');
+  await tapFigure(page, '[data-kk] .art');
+  await expect(page.locator('[data-fx="talk"].placed')).toHaveAttribute('data-pages', '3');
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('とたけけ だ');
 });
 

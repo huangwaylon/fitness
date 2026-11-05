@@ -47,6 +47,8 @@ export interface VSpec {
   prone?: boolean;
   /** On a seat: how high its top is (u), or null. */
   seat: number | null;
+  /** The way it faces when it looks as drawn (three's yaw; K.K. on his stool, turned with it), else toward the camera. */
+  yaw?: number;
   /** Lifted (a pull-up's rep). */
   lift: number;
   motion: Motion | null;
@@ -328,7 +330,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       // (fishing: toward the float)
       // (face down: its head to the left, along the shore)
       let want = s.prone ? -Math.PI / 2 : s.walking && moved > 0.05 ? Math.atan2(dx, -dz)
-        : s.face === 'l' ? -1.1 : s.face === 'r' ? 1.1 : s.face === 'in' ? (s.side === 'left' ? 0.6 : -0.6) : 0;
+        : s.face === 'l' ? -1.1 : s.face === 'r' ? 1.1 : s.face === 'in' ? (s.side === 'left' ? 0.6 : -0.6) : (s.yaw ?? 0);
       // (fishing, standing: straight at the float, NH's quick smooth turn as the cast goes out, and kept on it; square
       // on from the rod's hand, so the facing, the rod and the line are one line in plan. Seated or lying: no body
       // turn, the rod the way it faces: facing.ts)
@@ -342,7 +344,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       // on a seat: its anchor's way (a turned chair, the bike and the treadmill side on), so it isn't turning to the
       // front each frame only to be put back (that kept the island at its full rate)
       const anchor = s.seat !== null ? anchorAt(s) : null;
-      const to = anchor ? anchor.yaw : s.seat !== null ? 0 : want;
+      const to = anchor ? anchor.yaw : s.seat !== null ? (s.yaw ?? 0) : want;
       w.yaw = turn(w.yaw, to, dt, s.walking ? 14 : aiming ? FACE_FLOAT_K : 6);
       const turning = Math.abs(Math.atan2(Math.sin(to - w.yaw), Math.cos(to - w.yaw))) > 0.005;
       // its state, and its moment (the director's motion, once each)
@@ -362,7 +364,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
           w.busyUntil = t + 1800;
         }
       }
-      v.face(faceOf(s.emote, s.stung) ?? (anchor && s.asleep ? 'sleepy' : null));
+      v.face(faceOf(s.emote, s.stung) ?? (s.seat !== null && s.asleep ? 'sleepy' : null));
       // on its seat: its hips on the seat's top, its feet hanging in front
       if (anchor) {
         v.sitAt(anchor);

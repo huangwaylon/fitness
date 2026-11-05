@@ -60,14 +60,13 @@ test('Nov 1: no Halloween', async ({ page }) => {
   await expect(page.locator('[data-visitor="jack"]')).toHaveCount(0);
 });
 
-test('Halloween night: lanterns lit, Jack at centre stage (not K.K. on this Saturday), a treat delights him', async ({ page }) => {
+test('Halloween night: lanterns lit, Jack at centre stage (K.K. on his own stool, no visitor), a treat delights him', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('?demo&date=2026-10-31T19:00&critter=none');
   await expect(hudMenu(page)).toBeVisible();
   const bells = await hudBells(page).getAttribute('aria-label');
   await camera(page, await stageCam(page));
   await expect(page.locator('[data-halloween="night"] .glow:visible').first()).toBeVisible();
-  await expect(page.locator('[data-visitor="kk-slider"]')).toHaveCount(0);
   const jack = page.locator('[data-visitor="jack"] .art');
   await expect(jack).toBeVisible();
   expect(await under(page, '[data-visitor="jack"] .art')).toEqual([]);

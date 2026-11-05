@@ -126,14 +126,17 @@
   let finds = $state<ReturnType<typeof Finds>>();
   let care = $state<ReturnType<typeof Care>>();
   let visitor = $state<{ tap(px: number, py: number, body?: boolean): boolean }>();
+  let kk = $state<{ tap(px: number, py: number): boolean }>();
   let deck = $state<{ tap(px: number, py: number, seen?: Seen): boolean }>();
   let cakeEl = $state<{ tap(px: number, py: number, seen?: Seen): boolean }>();
   // Loaded the first time they're due (their chunks stay out of the first load), then kept: a visitor (who leaves
   // the way they came), the tape deck (a fixed piece of the layout, there every day: its tap says when it plays), a
   // birthday's cake.
-  const visitorC = lazyComponent(() => import('./Visitor.svelte')), deckC = lazyComponent(() => import('./TapeDeck.svelte')), cakeC = lazyComponent(() => import('./Cake.svelte'));
+  const visitorC = lazyComponent(() => import('./Visitor.svelte')), kkC = lazyComponent(() => import('./KKSlider.svelte')), deckC = lazyComponent(() => import('./TapeDeck.svelte')), cakeC = lazyComponent(() => import('./Cake.svelte'));
   const VisitorC = $derived(visitorC.get(!!visitorNow(minuteNow())));
   const TapeDeckC = $derived(deckC.get(true));
+  // K.K. on his stool (a piece of the layout, there every day: KKSlider.svelte)
+  const KKC = $derived(kkC.get(true));
   const CakeC = $derived(cakeC.get(cake));
   /** The shooting star crossing now: a tap in the sky before `until` is a wish on it (NH), once. */
   let streak: { until: number; wished: boolean } | null = null;
@@ -231,7 +234,7 @@
     const t = e.target;
     // a visitor standing in front of the campsite (K.K. and Jack at night) over its door: theirs, not the door's (the
     // door's handler is delegated to the root, after this one; the 3D island's camera shows the door small behind them)
-    if (t instanceof Element && t.closest('[data-building] .door') && visitor?.tap(e.clientX, e.clientY)) return void e.stopPropagation();
+    if (t instanceof Element && t.closest('[data-building] .door') && (visitor?.tap(e.clientX, e.clientY) || kk?.tap(e.clientX, e.clientY))) return void e.stopPropagation();
     // my line out: a tap anywhere on the island is its reel (NH's A button: my villager, a tree, a seat, the water), but
     // a building's door, which one goes through with it (the line ends there)
     if (critters?.lineOut() && t instanceof Element && scene?.querySelector('.stage')?.contains(t) && !t.closest('[data-building] .door')) {
@@ -269,13 +272,15 @@
     if (deck?.tap(cx, cy)) return;
     // a birthday's cake: a music box, the candles out
     if (cakeEl?.tap(cx, cy)) return;
-    // what's exactly under the finger wins: a tap on a visitor's figure answers with a line (K.K. with a song); then
-    // the day's finds (a shell, a fragment, the bottle, a dig spot, a present) and the island's care (a weed to pull,
-    // the rock) on their own boxes; only then the visitor's reach (a finger's slack round it, its spot)
+    // what's exactly under the finger wins: a tap on a visitor's figure answers with a line; then the day's finds (a
+    // shell, a fragment, the bottle, a dig spot, a present) and the island's care (a weed to pull, the rock) on their
+    // own boxes; then the visitor's reach (a finger's slack round it, its spot); then K.K. on his stool with a chat or a
+    // song (his figure's box is wider than he is: a shell by his stool is the shell's)
     if (visitor?.tap(cx, cy, true)) return;
     if (finds?.tap(cx, cy)) return;
     if (care?.tap(cx, cy)) return;
     if (visitor?.tap(cx, cy)) return;
+    if (kk?.tap(cx, cy)) return;
     // the water under the finger, nothing of the island's over it (a canopy over the pond shakes its tree): a cast from
     // where my villager stands (NH), however far
     if (!t.closest('[data-tree], [data-bush], [data-campfire], [data-sit], [data-fixture], [data-flower]') && critters?.fish(cx, cy)) return;
@@ -592,6 +597,7 @@
 <Finds bind:this={finds} {scene} {enabled} />
 <Care bind:this={care} {scene} {enabled} rockBug={(x, z) => critters?.fromRock(x, z)} />
 {#if VisitorC}<VisitorC bind:this={visitor} {scene} {enabled} {say} {ontrick} />{/if}
+{#if KKC}<KKC bind:this={kk} {scene} {enabled} {say} />{/if}
 {#if TapeDeckC}<TapeDeckC bind:this={deck} {enabled} {exercise} {say} />{/if}
 {#if CakeC}<CakeC bind:this={cakeEl} {enabled} on={cake} />{/if}
 

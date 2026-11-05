@@ -238,6 +238,12 @@ mid('mid-lamp-1', 'streetlamp', 8, 27);
 mid('mid-lamp-2', 'streetlamp', 10, 32);
 for (const [i, [c, r, n]] of ([[3, 33, 0], [6, 33, 0], [4, 33, 0], [12, 30, 3], [13, 31, 3], [12, 31, 3]] as const).entries())
   mid(`mid-fl-${i + 1}`, 'flower', c, r, `c${n}`);
+// K.K. Slider on his stool (NH's plaza show, every day here): on まえ's lawn west of the main path, behind the visitors'
+// stage and off to its side (a tap on him is never the visitor's), a clump of flowers before him, facing the camera,
+// nothing tall in front of him, off the villagers' ways between their home spots; his tile and the one in front free
+// on the user's island too (record-2026-11-03.json, its museum and shop where the user put them), so he needs no op to
+// stand clear there; the default's stage stays where it was
+mid('kk-slider', 'kk-stool', 6, 22);
 // a home's (x, z) is its door's tile (model.ts originOf): the front row's middle, the left of two
 for (const o of objects) if (o.k === 'home') o.x += Math.floor((homeFoot(DEFAULT_HOMES[o.id.slice(-1) as 'A']).at(0)! - 1) / 2);
 put('spot-villager-A', 'spot', HOMES.A[0], HOMES.A[1], { s: 'villager-a' });
@@ -248,7 +254,7 @@ for (const f of FLOWERS) put(f.id, 'flower', f.x, f.z, { s: `c${f.clump}` });
 // ---- on the grid, nothing over anything: each piece where it snapped, else the nearest free tile round it ----
 {
   /** The order pieces claim their tiles: what can't move first (the homes and what joins terrain), the flowers last. */
-  const RANK: Record<string, number> = { home: 0, museum: 0, shop: 0, stairs: 0, bridge: 0, 'goal-tree': 1, board: 1, spot: 1, rock: 2, flower: 9 };
+  const RANK: Record<string, number> = { home: 0, museum: 0, shop: 0, 'kk-stool': 0, stairs: 0, bridge: 0, 'goal-tree': 1, board: 1, spot: 1, rock: 2, flower: 9 };
   const rank = (o: Out) => RANK[o.k] ?? (kindDef(o.k)!.group === 'tree' ? 3 : kindDef(o.k)!.group === 'bush' ? 5 : 4);
   const footOfOut = (o: Out): [number, number, number, number] => {
     const [w, d] = o.k === 'home' ? homeFoot(DEFAULT_HOMES[o.id.slice(-1) as 'A']) : footprintOf(kindDef(o.k)!, o.f);
