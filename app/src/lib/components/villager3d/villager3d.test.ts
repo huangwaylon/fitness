@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import MANIFEST from './villagers.json' with { type: 'json' };
 import MAP from '../../../../scripts/villagers3d-map.json' with { type: 'json' };
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
-import { ACTION_MS, FADE_MS, GYM_USES, REP_MS, STRIDE, action, base, idle, mix, over, sit, walk, type Body } from './poses.ts';
+import { ACTION_MS, FADE_MS, GYM_USES, REP_MS, STRIDE, action, base, idle, mix, over, poseBuf, sit, walk, type Body } from './poses.ts';
 import { BLINK, FACES, cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { has3d, url3d } from './manifest.ts';
 
@@ -121,6 +121,24 @@ describe('the villagers’ motion (poses.ts)', () => {
     const m = mix(a, b, 0.5);
     expect(m.y).toBeCloseTo((a.y + b.y) / 2);
     expect(m.j.Leg_1_L![0]).toBeCloseTo(((a.j.Leg_1_L?.[0] ?? 0) + b.j.Leg_1_L![0]) / 2);
+  });
+
+  it('mixes and lays an action over into a buffer of its own, as a new pose would be, no joint left from before', () => {
+    const o = { phase: 0, speed: 0, body: BODY, seed: 0 };
+    const a = base('idle', 500, o), b = base('sit', 500, o), out = poseBuf(), arr = () => out.j.Leg_1_L;
+    expect(mix(a, b, 0.3, out)).toBe(out);
+    expect(out).toEqual(mix(a, b, 0.3));
+    const leg = arr();
+    // (the next frame's into the same arrays)
+    mix(base('walk', 900, { ...o, phase: 0.4, speed: 60 }), b, 0.6, out);
+    expect(arr()).toBe(leg);
+    expect(out).toEqual(mix(base('walk', 900, { ...o, phase: 0.4, speed: 60 }), b, 0.6));
+    // a joint neither names goes
+    out.j.Crest_L = [1, 2, 3];
+    mix(a, b, 0.5, out);
+    expect(out.j.Crest_L).toBeUndefined();
+    const act = action('wave', 800).p, o2 = poseBuf();
+    expect(over(b, act, 0.7, o2)).toEqual(over(b, act, 0.7));
   });
 
   it('plays an action once over the state, fading in and out', () => {

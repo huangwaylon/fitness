@@ -11,7 +11,7 @@
   import { art, artUrl, villagerArt } from '#lib/art.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import type { Look as Worn } from '#lib/contract/look.ts';
-  import { createPainter, person3, type Dirs } from '../person3d/person3d.ts';
+  import { createPainter, person3, type Dirs, type Person3 } from '../person3d/person3d.ts';
   import { useIdlePainter } from '../look/portraits.svelte.ts';
   import type { Who } from '#lib/types.ts';
   import type { VillagerActor } from '#lib/ui-state/cast.ts';
@@ -319,6 +319,8 @@
     return node;
   }
 
+  /** The frame's specs, the people's models and spots, and each person's spec (kept from frame to frame). */
+  const specs: VSpec[] = [], ps: Person3[] = [], at: (readonly [number, number])[] = [], personSpecs = new Map<string, VSpec>();
   /** The villagers' frame wanted the ambience (a gym piece's loop, a card's breathing), and its next blink (ms). */
   let vilAmbient = false, vilWake = Infinity;
   const noVillagers = { cards: new Set<string>(), moving: false, ambient: false, wake: Infinity };
@@ -328,24 +330,46 @@
     const swaying = scene.hasAttribute('data-show');
     // NH's own 3D villagers where they have one (world3d/villagers.ts); a card for the rest, and while one loads; the
     // day's visitor (no card: drawn once its model is in)
-    const specs: VSpec[] = [];
+    specs.length = 0;
     visN = 0;
     kkOn = false;
     world.eachV3(onV3);
     for (let i = 0; i < visN; i++) specs.push(visSpecs[i]);
     if (kkOn && (kkLoad ||= kkSpec.shown)) specs.push(kkSpec);
     const people = cast();
-    // each person's model and spot once a frame (both loops read them)
-    const ps = people.map((c) => person3(c.person, c.look, c.villager, dirs)), at = people.map((c) => livePos(c.id));
+    // each person's model and spot once a frame (both loops read them), into arrays and specs kept from frame to frame
+    ps.length = at.length = 0;
+    for (const c of people) {
+      ps.push(person3(c.person, c.look, c.villager, dirs));
+      at.push(livePos(c.id));
+    }
     for (let i = 0; i < people.length; i++) {
       const c = people[i], a = actors[c.id], p = ps[i];
       if (!p.has3d) continue;
       const [x, z] = at[i];
-      specs.push({
-        slot: c.id, id: p.villager, model: p, x, z, y: feetOf(x, z), walking: a.walking, face: a.face, side: c.side, asleep: a.asleep,
-        seat: c.seat ? seatTop(c.seat) : null, lift: c.rep ? pullLift(t) : 0, motion: a.motion, motionN: a.motionN, emote: a.emote, stung: c.stung, shown: c.shown,
-        away: inFocusWay(x, z), hat: c.hat, tool: c.id === 'mine' && fishing ? 'tools/rod' : null, seen: onScreen(eng, x, z)
-      });
+      let s = personSpecs.get(c.id);
+      if (!s) personSpecs.set(c.id, (s = { ...visSpecs[0], slot: c.id, prone: false, yaw: undefined }));
+      s.id = p.villager;
+      s.model = p;
+      s.x = x;
+      s.z = z;
+      s.y = feetOf(x, z);
+      s.walking = a.walking;
+      s.face = a.face;
+      s.side = c.side;
+      s.asleep = a.asleep;
+      s.seat = c.seat ? seatTop(c.seat) : null;
+      s.lift = c.rep ? pullLift(t) : 0;
+      s.motion = a.motion;
+      s.motionN = a.motionN;
+      s.emote = a.emote;
+      s.stung = c.stung;
+      s.shown = c.shown;
+      s.away = inFocusWay(x, z);
+      s.hat = c.hat;
+      s.tool = c.id === 'mine' && fishing ? 'tools/rod' : null;
+      s.seen = onScreen(eng, x, z);
+      specs.push(s);
     }
     if (!vil3) {
       noVillagers.cards.clear();

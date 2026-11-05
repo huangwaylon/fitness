@@ -519,25 +519,45 @@ export function action(a: Action, u: number): { p: Pose; w: number } {
 
 // ---- blending --------------------------------------------------------------------------------------------------------
 
-/** a → b by k (0 … 1): each joint's rotation, the lift, the squash and the pitch. */
-export function mix(a: Pose, b: Pose, k: number): Pose {
-  if (k <= 0) return a;
-  if (k >= 1) return b;
-  const j: Pose['j'] = {};
-  for (const n of new Set([...Object.keys(a.j), ...Object.keys(b.j)]) as Set<Joint>) {
-    const x = a.j[n] ?? [0, 0, 0], y = b.j[n] ?? [0, 0, 0];
-    j[n] = [x[0] + (y[0] - x[0]) * k, x[1] + (y[1] - x[1]) * k, x[2] + (y[2] - x[2]) * k];
-  }
-  return { j, y: a.y + (b.y - a.y) * k, sq: a.sq + (b.sq - a.sq) * k, pitch: a.pitch + (b.pitch - a.pitch) * k };
+/** A pose to write into (mix's and over's `out`: a character's own, kept from frame to frame). */
+export const poseBuf = (): Pose => ({ j: {}, y: 0, sq: 1, pitch: 0 });
+const ZERO: V3 = [0, 0, 0];
+/** out.j[n] = x + (y − x) · k, in out's own array for the joint (made once). */
+function lerpJ(out: Pose, n: Joint, x: V3, y: V3, k: number) {
+  const o = (out.j[n] ?? (out.j[n] = [0, 0, 0])) as [number, number, number];
+  o[0] = x[0] + (y[0] - x[0]) * k;
+  o[1] = x[1] + (y[1] - x[1]) * k;
+  o[2] = x[2] + (y[2] - x[2]) * k;
 }
 
-/** An action over a base by its weight: the joints it names replace the base's, its lift adds, its squash multiplies. */
-export function over(b: Pose, a: Pose, w: number): Pose {
-  if (w <= 0) return b;
-  const j = { ...b.j };
-  for (const n of Object.keys(a.j) as Joint[]) {
-    const x = b.j[n] ?? [0, 0, 0], y = a.j[n]!;
-    j[n] = [x[0] + (y[0] - x[0]) * w, x[1] + (y[1] - x[1]) * w, x[2] + (y[2] - x[2]) * w];
+/** a → b by k (0 … 1): each joint's rotation, the lift, the squash and the pitch. Into `out` (a buffer of the
+ *  caller's, neither a nor b; a new pose without one), its joints neither names let go. */
+export function mix(a: Pose, b: Pose, k: number, out: Pose = poseBuf()): Pose {
+  if (k <= 0) return a;
+  if (k >= 1) return b;
+  for (const n of JOINTS) {
+    const x = a.j[n], y = b.j[n];
+    if (x || y) lerpJ(out, n, x ?? ZERO, y ?? ZERO, k);
+    else if (out.j[n]) delete out.j[n];
   }
-  return { j, y: b.y + a.y * w, sq: b.sq * (1 + (a.sq - 1) * w), pitch: b.pitch };
+  out.y = a.y + (b.y - a.y) * k;
+  out.sq = a.sq + (b.sq - a.sq) * k;
+  out.pitch = a.pitch + (b.pitch - a.pitch) * k;
+  return out;
+}
+
+/** An action over a base by its weight: the joints it names replace the base's, its lift adds, its squash multiplies.
+ *  Into `out` (a buffer of the caller's, neither b nor a; a new pose without one). */
+export function over(b: Pose, a: Pose, w: number, out: Pose = poseBuf()): Pose {
+  if (w <= 0) return b;
+  for (const n of JOINTS) {
+    const x = b.j[n], y = a.j[n];
+    if (y) lerpJ(out, n, x ?? ZERO, y, w);
+    else if (x) lerpJ(out, n, x, x, 0);
+    else if (out.j[n]) delete out.j[n];
+  }
+  out.y = b.y + a.y * w;
+  out.sq = b.sq * (1 + (a.sq - 1) * w);
+  out.pitch = b.pitch;
+  return out;
 }

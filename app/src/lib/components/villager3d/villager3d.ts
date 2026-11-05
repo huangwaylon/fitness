@@ -18,7 +18,7 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
-import { ACTION_MS, FADE_MS, action, base, isGym, mix, over, strideOf, type Action, type Body, type Pose, type State } from './poses.ts';
+import { ACTION_MS, FADE_MS, action, base, isGym, mix, over, poseBuf, strideOf, type Action, type Body, type Pose, type State } from './poses.ts';
 import { cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { rigOf, type Rig, type RigOpts } from './rig.ts';
 import type { Anchor } from './seats3d.ts';
@@ -291,6 +291,8 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
   let cur: State = 'idle', prev: State = 'idle', since = -1e9, faceSet: Face | null = null;
   let act: { a: Action; t0: number } | null = null, phase = 0, lastT = 0, speed = 0, held: Pose | null = null;
   const o: { phase: number; speed: number; body: typeof rig.body; seed: number; seatH?: number; back?: boolean; sway?: number } = { phase: 0, speed: 0, body: { ...rig.body, ...kind.body }, seed };
+  /** The crossfade's and the action's poses, written over each step (no new pose and joint arrays a frame). */
+  const mixed = poseBuf(), acted = poseBuf();
   /** A state's pose: poses.ts's, then the kind's own. */
   const baseOf = (st: State, t: number): Pose => (kind.pose ? kind.pose(st, base(st, t, o)) : base(st, t, o));
   /** A transform in the group's parent's space. */
@@ -509,13 +511,13 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
       if (!seat && !(leaving && t - leaving.t0 < SIT_MS)) o.seatH = undefined;
       // (a held pose alone: none of the states' computed under it)
       let p: Pose = held ?? baseOf(cur, t);
-      if (!held && k < 1) p = mix(baseOf(prev, t), p, k);
+      if (!held && k < 1) p = mix(baseOf(prev, t), p, k, mixed);
       if (!held && act) {
         const u = t - act.t0;
         if (u >= ACTION_MS[act.a]) act = null;
         else {
           const r = (kind.action ?? action)(act.a, u);
-          p = over(p, r.p, r.w);
+          p = over(p, r.p, r.w, acted);
         }
       }
       rig.apply(p);
