@@ -4,7 +4,8 @@
 // island's renderer.info.
 //   npm run leak -- <flow> [cycles] [--snap] [--path=<name>]     (the build served at E2E_PORT, default 4693)
 // flows: shop tent home museum fpv (the museum in first person) editor (the island ⇄ there), all (the four rooms), food
-// health zukan settings bells sheets (open, close), look (すがた: a villager's look, then いつもの), picker (いえを かえる; Q='&as=B'), vis (hidden ⇄ visible), sim (the
+// health zukan settings bells sheets (open, close), look (すがた: a villager's look, then いつもの), clothes (すがた: four
+// tops and their colours worn, then いつもの; the island's and the room's textures must not grow), picker (いえを かえる; Q='&as=B'), vis (hidden ⇄ visible), sim (the
 // page's clock 10 sim minutes a cycle from SIM_AT, default 23:00: the island's day running and rolling over; LOGIC=1:
 // not drawn), days (DAY_H sim hours a cycle, fast-forwarded: the visitors coming and going), idle (IDLE_MS of real
 // time; DWELL: ms in a room, default 1500), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells). Inside the museum: eye (the eye
@@ -68,6 +69,14 @@ await ctx.addInitScript(() => {
   const raf0 = requestAnimationFrame;
   W.requestAnimationFrame = (f: FrameRequestCallback) => (rafs++, raf0(f));
   W.__rafs = () => rafs;
+  // each context's live textures (the clothes flow: the すがた stage's, the newest)
+  const texN = new WeakMap<object, number>();
+  for (const P of [WebGLRenderingContext.prototype, WebGL2RenderingContext.prototype] as unknown as Record<string, (...a: unknown[]) => unknown>[]) {
+    const c0 = P.createTexture, d0 = P.deleteTexture;
+    P.createTexture = function (this: object, ...a: unknown[]) { texN.set(this, (texN.get(this) ?? 0) + 1); return c0.apply(this, a); };
+    P.deleteTexture = function (this: object, ...a: unknown[]) { if (a[0]) texN.set(this, (texN.get(this) ?? 0) - 1); return d0.apply(this, a); };
+  }
+  W.__newestTex = () => { const c = gls.map((r) => r.deref()).filter(Boolean).at(-1); return c ? texN.get(c) ?? 0 : 0; };
   W.__probe = () => ({ gl: gls.filter((r) => r.deref()).length, ivs: ivs.size, ls: Object.fromEntries([...net].filter(([, n]) => n > 0)) });
 });
 const page = await ctx.newPage();
@@ -230,6 +239,8 @@ const rows = [];
 /** The fish flow's taps, by what each did (__fish.why()). */
 const fished: Record<string, number> = {};
 let fishAt: [number, number] | null = null;
+/** The clothes flow's stage textures, a cycle's after each top. */
+const stageTex: number[][] = [];
 /** The look flow's turn (its villager by turns). */
 let looks = 0;
 let snap0: Map<string, [number, number]> | null = SNAP && process.env.SNAP_AT === '0' ? new Map() : null;
@@ -268,10 +279,30 @@ const cycle = async () => {
       await page.keyboard.press('Escape'); await page.waitForFunction(() => !document.querySelector('dialog[open]'), null, { timeout: 10_000 }); await page.waitForTimeout(2000);
     };
     await visit(async () => {
-      await sheet.locator('[data-push=villager]').click(); await sheet.getByRole('searchbox').fill(name);
-      await sheet.getByRole('radio', { name }).click(); await sheet.locator('.titlebar .back').click(); await page.waitForTimeout(300);
+      await sheet.locator('[data-look-tab=villager]').click(); await sheet.getByRole('searchbox').fill(name);
+      await sheet.getByRole('radio', { name }).click(); await page.waitForTimeout(300);
     });
-    await visit(() => sheet.locator('[data-look-chip="usual"]').click());
+    await visit(async () => { await sheet.locator('[data-look-tab=coord]').click(); await sheet.locator('[data-look-chip="usual"]').click(); });
+  } else if (flow === 'clothes') {
+    // せってい → すがた: four tops, each in two of its colours, on the stage (its renderer's textures and the island's
+    // player's), then いつもの; out, the island's player dressed back in its own
+    const sheet = page.locator('dialog[open]').first();
+    await SHEETS.settings(); await sel('[data-push=look]'); await sheet.locator('[data-push=look]').click(); await sel('[data-look-page]');
+    await sheet.locator('[data-look-tab=wear]').click();
+    const tiles = sheet.locator('[data-closet=top] [data-item]:not([data-item=none])');
+    const stage: number[] = [];
+    for (let k = 1; k <= 4; k++) {
+      await tiles.nth(k).click(); await page.waitForTimeout(500);
+      const cs = sheet.locator('[data-colours] [data-part]');
+      await cs.nth(Math.min(1, (await cs.count()) - 1)).click(); await page.waitForTimeout(500);
+      stage.push(await page.evaluate(() => (window as unknown as { __newestTex(): number }).__newestTex()));
+    }
+    // (the stage's live textures: each top's let go of as the next goes on)
+    stageTex.push(stage);
+    await sheet.locator('[data-look-tab=coord]').click();
+    await sheet.locator('[data-look-chip="usual"]').click(); await page.waitForTimeout(500);
+    await sheet.locator('.titlebar .back').click(); await page.waitForTimeout(300);
+    await page.keyboard.press('Escape'); await page.waitForFunction(() => !document.querySelector('dialog[open]'), null, { timeout: 10_000 }); await page.waitForTimeout(2000);
   } else if (flow === 'eye') {
     // the eye button inside: first person on (at the eyes) and off (the room's camera)
     await inMuseum();
@@ -409,4 +440,16 @@ if (SNAP && snap0) {
   for (const [k, n, sz] of d) console.log(`${String(n).padStart(7)} ${String(sz).padStart(10)}  ${k.slice(0, 120)}`);
 }
 writeFileSync(`/tmp/leak-${flow}${WK ? '-wk' : ''}.json`, JSON.stringify(rows));
+// a look swapped (look, clothes): no WebGL context left (the すがた page's renderer let go of: a texture still holding it
+// held the whole page); clothes: the stage's textures no more after the fourth top than after the first (each top's
+// let go of; the island's own drift a texture a cycle or so, idle too: not counted)
+if (flow === 'look' || flow === 'clothes') {
+  const [first, last] = [rows[0], rows[rows.length - 1]];
+  const grown = stageTex.slice(1).map((s) => s[s.length - 1] - s[0]); // (the warm cycle's first portraits and the shots' own player made)
+  console.log(`WebGL contexts ${first.gl} → ${last.gl}; stage textures by top, each cycle ${JSON.stringify(stageTex)}`);
+  if (last.gl > first.gl || grown.some((g) => g > 0)) {
+    console.log('LEAK');
+    process.exitCode = 1;
+  }
+}
 await browser.close();

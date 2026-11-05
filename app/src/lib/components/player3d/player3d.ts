@@ -72,7 +72,7 @@ function glb(url: string): Promise<GLTF> {
   }
   return p;
 }
-/** A texture (once per address). */
+/** A texture (once per address, while some player wears it: `uses`). */
 function tex(url: string): Promise<Texture> {
   let p = texs.get(url);
   if (!p) {
@@ -81,12 +81,35 @@ function tex(url: string): Promise<Texture> {
       t.wrapS = t.wrapT = RepeatWrapping;
       t.colorSpace = SRGBColorSpace;
       t.anisotropy = 4;
+      cachedAt.set(t, url);
       return t;
     });
     p.catch(() => texs.delete(url));
     texs.set(url, p);
   }
   return p;
+}
+/** How many players' materials draw each texture (a garment's, a GLB's own, the iris, the bare legs under socks). At
+ *  none it's let go of: its GPU copies on every renderer (three's dispose listener holds the renderer that drew it:
+ *  a swapped-out top's kept the すがた page's renderer alive) and, a file's, its place in the cache (fetched again if
+ *  worn again). */
+const uses = new Map<Texture, number>();
+const cachedAt = new Map<Texture, string>();
+function letGo(t: Texture) {
+  const n = (uses.get(t) ?? 1) - 1;
+  if (n > 0) return void uses.set(t, n);
+  uses.delete(t);
+  t.dispose();
+  const u = cachedAt.get(t);
+  if (u) {
+    cachedAt.delete(t);
+    texs.delete(u);
+  }
+}
+/** The textures a material draws: its maps, and those its shader takes from elsewhere (userData: the iris, the bare
+ *  legs; world3d/release.ts resourcesOf finds them there too). */
+function texturesOf(m: Material, into: Set<Texture>) {
+  for (const v of [...Object.values(m), ...Object.values(m.userData ?? {})]) if (v instanceof Texture) into.add(v);
 }
 
 /** A material whose texture's alpha says where it takes the tint (255 − 127 × the tint's share: never 0, where a
@@ -214,7 +237,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
       socksMask.value = socks ? 0 : 1;
     } else if (n === 'mEye' || n === 'mMouth' || n === 'mCheek') {
       mat = maskMaterial(n, faceTex[n]!, skin, faceMask, n === 'mEye' ? { map: irisMap, colour: eyeColour } : null);
-      mat.userData = { ...s.userData };
+      mat.userData = { ...s.userData, ...(n === 'mEye' ? { iris: irisMap.value } : {}) };
     } else mat = partMaterial(n, s.map, {}, null);
     bodyMat.set(n, mat);
     owned.push(mat);
@@ -375,6 +398,17 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
     if (p) worn.set(slot, await put(slot, p));
   }
 
+  /** The textures this player's materials draw, each counted once in `uses` (taken stock of once it's dressed: what
+   *  a swap left behind goes then, what it kept is never let go of in between). */
+  let held = new Set<Texture>();
+  const hold = () => {
+    const now = new Set<Texture>();
+    for (const m of owned) texturesOf(m, now);
+    for (const t of now) if (!held.has(t)) uses.set(t, (uses.get(t) ?? 0) + 1);
+    for (const t of held) if (!now.has(t)) letGo(t);
+    held = now;
+  };
+  hold();
   const kind = playerKind(model, cur.mouthFrame);
   const v = animateModel(id, model, seed, kind);
   const tints = () => {
@@ -396,12 +430,13 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
       const u = faceUrl(faceFile(n), dir);
       if (!u) continue;
       const src = (await tex(u)).source, t = faceTex[n]!;
-      t.source = src;
-      // (its GPU copy let go of: another size of image needs a new one)
+      // (its GPU copy let go of first, three's by its image: another size of image needs a new one; disposed after the
+      // swap it let go of the new image's, another player's face if it wore that one, and orphaned its own)
       t.dispose();
+      t.source = src;
       t.needsUpdate = true;
     }
-    if (prev.eye !== cur.eye) irisMap.value = await loadIris();
+    if (prev.eye !== cur.eye) bodyMat.get('mEye')!.userData.iris = irisMap.value = await loadIris();
     if (prev.socks !== cur.socks) {
       socks = await socksTex();
       const mat = bodyMat.get('mSocks')!;
@@ -425,6 +460,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
     if (skeletal) kind.rebind();
     // (the resting mouth: the face's next frame)
     restMouth.value = cur.mouthFrame;
+    hold();
   };
   const restMouth = { value: cur.mouthFrame };
   const baseCell = kind.cell!;
@@ -438,6 +474,13 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
     look: () => ({ ...cur }),
     dispose() {
       dispose();
+      // (every texture it drew let go of on every renderer, though another player still wears it: that one's renderer
+      // uploads it again, where kept it held this one's renderer, the room's or the すがた page's, alive)
+      for (const t of held) {
+        t.dispose();
+        letGo(t);
+      }
+      held.clear();
       for (const m of owned) m.dispose();
       for (const t of Object.values(faceTex)) t?.dispose();
     }

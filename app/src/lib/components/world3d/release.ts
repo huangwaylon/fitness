@@ -14,7 +14,8 @@ export function resourcesOf(root: Object3D, into = new Set<Res>()): Set<Res> {
     if (m.geometry) into.add(m.geometry);
     for (const mat of m.material ? ([] as Material[]).concat(m.material) : []) {
       into.add(mat);
-      for (const v of Object.values(mat)) if (v instanceof Texture) into.add(v);
+      // (and those a shader takes from its userData: a player's iris, its bare legs under socks)
+      for (const v of [...Object.values(mat), ...Object.values(mat.userData ?? {})]) if (v instanceof Texture) into.add(v);
     }
   });
   return into;
