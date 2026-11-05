@@ -989,6 +989,22 @@ agree on, more traffic) and the host only re-sending on presence (a lost skip mi
 「みんなを さそう」; in おなじへや the first-listen bonus is off for everyone, since only the host's phone can replay. Why:
 the review's repro and the game designer's P0s (an accidental invite to the whole island; an unfair +30).
 
+### ききみみ クイズ: an untimed reveal, a lobby timer on the seed, いっぱつ a badge (2026-11-06)
+The user asked for a longer answer timer settable per session, no timer on the reveal ("i want time to read and the
+answers") and a review of the ones they got wrong; and decided the first-listen bonus becomes a badge. The answer window
+is now 30 s by default, with 20 / 60 s and none (the reveal once everyone joined and here has answered) as a lobby
+setting, carried on the `open`'s seed bits 2-3 next to たいせん's bit 0 and スピード はしご's bit 1: no new field, so no relay deploy, and every phone
+computes the same limit. The reveal holds till つぎへ, so the schedule no longer knows a next question's start until the
+host's skip: unfixed starts are Infinity, and the host-as-clock rules (adopt the host's position, beacons, late = sat out)
+stand unchanged around it. A player's `skip`, which the old code ignored, carries their よみおわった (the question they're
+in) or, with the host gone, their つぎへ (the next question): again no protocol change, and an older phone ignores it.
+Phones re-send their answer and よみおわった on a join or someone's return, so a phone back from a lock into an untimed
+reveal sees the others' answers; a host back after the players moved on adopts their position (a player answers its stale
+beacon with theirs). Rejected: a new `ready` op or an `open` field (a relay deploy and a mixed-version window for one
+bit of state), auto-advancing once everyone is ready (the user wants time; the host decides), and keeping the bonus as
+points beside the badge. The results open on the misses, with a solo replay of just those (a local deck, recorded as
+practice like にがて れんしゅう, feeding the SRS as before).
+
 ### ききみみ クイズ level 4: content before its voices, hidden till its clips exist (2026-11-05)
 Level 4 「かわ・もり」 (docs/curriculum.md §14, increment 1) landed as content only: 67 real-life items (`bank4.ts`) with
 `tts`, `note`, an abstract `cast` voice id per villager and the scenario `tags`, and no audio. The lobby offers a level

@@ -2340,7 +2340,8 @@ on the scene's one Live (`relay ?? demoRelay`, never a second) that keeps the qu
 sheet's session as it opens: a host re-sends only when someone comes back) and shows another's new lobby as a banner
 through the one toast host, 「ウェイが ききとりクイズに さそっています」 [さんか] (that game joined).
 - **Lobby** (`Lobby.svelte`): しずえ's welcome, the level (★ やさしい / ★★ ふつう / ★★★ むずかしい; the host's pick, the last
-  kept on the phone), 「おなじへや」 (only the host's phone speaks), who's here and who joined, 🔊 「きこえる？」 (a clip from no
+  kept on the phone), 「こたえる じかん」 (20 / 30 / 60 びょう / なし: the host's, 30 by default, the last kept on the phone),
+  「おなじへや」 (only the host's phone speaks), who's here and who joined, 🔊 「きこえる？」 (a clip from no
   game; 音量 0 says so), the host's はじめる (the others wait for it). Opening it with someone's lobby waiting shows that
   invite and 「じぶんで はじめる」 instead.
 - **A question** (`Play.svelte`): 「よーい」 then 3-2-1 once, then each question's speaker pops in with a little pop, bobbing while
@@ -2349,9 +2350,11 @@ through the one toast host, 「ウェイが ききとりクイズに さそっ�
   until the first play ends; one tap is final. 🔁 もういちど and 🐢 ゆっくり (levels 1-2) after the first play, on a phone
   that speaks; each player's chip gets ✓ as they answer. The reveal: ○ on the right choice, × on a wrong pick, the
   English in the bubble (its `focus` marked yuzu), the Japanese and the accent chip, the clip again, the speaker's and
-  each chip's ✨ / 💦, the sparkle or oops cue; the host's つぎへ cuts it short.
+  each chip's ✨ / 💦, the sparkle or oops cue, the 「いっぱつ！」 stamp (no points). The reveal is untimed: the host's
+  つぎへ (「よみおわった 1/2」), the others' 「よみおわった」 (📖 on their chip); solo, my つぎへ.
 - **Results** (`Results.svelte`): しずえ's line (the winner, a tie, or the solo score), the ranking, then the review list
-  (every sentence's English and Japanese, ○ / ×, ▶︎ and 🐢, 「まちがえた だけ」), おわる / もういちど.
+  (opening on the misses, each row folding open to its marks, karaoke, note, ▶︎ and 🐢; 「まちがえた だけ」), 「まちがえた
+  もんだいを もういちど」 (those again, solo, as practice), おわる / もういちど.
 - **Closing**: mid-game a backdrop tap or Esc keeps the sheet (Sheet's `ondismiss`) and ✕ asks 「やめる？」; the lobby
   closes at once (the host's lobby is cancelled for everyone). Closing ends the voice session and drops every clip. While
   the voice is on but suspended (a lock, an app switch) a 「タップして つづける」 card wakes it.
@@ -2359,7 +2362,7 @@ through the one toast host, 「ウェイが ききとりクイズに さそっ�
 - `game.svelte.ts` wires the pure `kikimimi/session.ts` to the Live (or to nothing, solo without a relay): the view at
   each phase's end and each message; each question's clip at its start on the relay's clock (`playVoice` relayAt), the
   next one decoded meanwhile, the deck's clips fetched into the cache in the lobby. `?kikimimi=fast` (hooks on) shortens
-  the answer and reveal windows on every phone; `window.__kiki` (hooks on) is the e2e's view and right answer.
+  the timed answer windows on every phone; `window.__kiki` (hooks on) is the e2e's view and right answer.
 
 ### Seasonal preview
 

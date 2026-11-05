@@ -11,19 +11,19 @@ Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX design
 - **Countdown.** 「よーい」 then 3-2-1 runs once, at the start (4 s: よーい for the first second). Each question then has a ~1.5 s lead-in: the villager pops in with a chime.
 - **Answering.**
   - The choices show dimmed while the clip plays. They unlock when its first play ends.
-  - One tap, final. Then the time limit runs: 15 s from the end of the first play.
+  - One tap, final. Then the time limit runs from the end of the first play: the lobby's **「こたえる じかん」**, 20 / **30** (the default) / 60 びょう or なし (untimed: the question waits until everyone joined and here has answered; solo, until you answer). The host sets it and the others see it; each phone remembers its last as the next lobby's default (`DEVICE.kikimimiTimer`). It rides on the `open`'s seed (bits 2-3, "Sync"). Raised from 15 s at the user's request (2026-11-06: "increase timer for questions, also make it a setting you can set for a session").
   - 🔁 replay is allowed as often as you like. 🐢 slow is levels 1 and 2 only (slowed TTS undoes level 3's reductions).
 - **Showing who answered.** Each player's avatar chip gets a ✓ when they answer, without showing what they chose (in the lobby a joined player's chip has no badge: PlayerChip `here`).
-- **Reveal.** It starts once everyone joined has answered, or at the time limit. It holds about 8 s:
+- **Reveal.** It starts once everyone joined has answered, or at the time limit. It is **untimed** (the user's, 2026-11-06: "dont set a timer when reviewing each round results, i want time to read"): it stays until the host taps つぎへ (solo: you do). Each other player taps **「よみおわった」** (📖 on their chip); the host's button reads 「つぎへ（よみおわった 1/2）」 but the host can always go on. With the host gone ("Sync"), every remaining player gets つぎへ instead. In it:
   - the right choice shows with ○, and a wrong pick with ×, so colour isn't the only signal;
   - the English sentence shows at ≥ 17 px with the key word (`focus`) highlighted, and the clip plays once automatically;
   - below it are the Japanese and the voice's accent (US / UK / AU);
   - the speaker reacts (✨ or 💦), and so does each player's chip.
-- **Scoring.** A correct answer is **100**, plus **30 if it was answered with no replay or slow play** (「1かいで！」). Wrong or timed out is 0. There's no speed bonus: it rewarded guessing.
+- **Scoring.** A correct answer is **100**; wrong or timed out is 0. There's no speed bonus (it rewarded guessing) and, since 2026-11-06, no first-listen bonus either (the user's decision, curriculum §7.1): **「いっぱつ！」**, right with no replay or slow play, is a stamp on the reveal, on the review's rows and in the results' count (「いっぱつ 7もん」), never points. おなじへや never gives it (only the host's phone can replay). The wire's `s` bound stays 1040 so a phone from before still validates.
 - **Results.**
   - しずえ reads them out like the morning broadcast: co-op (the default with several), the team's 「ふたりで n/8」; たいせん, a ranking with reactions ("Co-op and たいせん" below).
-  - Then a **review list** of every sentence: its English, its Japanese, ▶︎ and 🐢 (L1/L2). A 「まちがえた だけ」 filter shows only the missed ones.
-  - The review list is the main learning moment.
+  - Then a **review list** of every sentence, the main learning moment. With any misses it **opens on them** (「まちがえた だけ」 on, the first missed row open; the user's, 2026-11-06: "for the ones i got wrong i want to review"). Each row folds: ○ / ×, the sentence, the いっぱつ stamp; tapped open, the English with its sound marks and the karaoke as ▶︎ plays it (a dialogue: its whole two-sided transcript), the marks' key, the Japanese, the answer, the trap's `note`, the skills it tripped, what I picked, ▶︎ and 🐢 (L1/L2).
+  - **「まちがえた もんだいを もういちど」** (with any misses): a solo replay of just those items, a local deck in a lobby kept alone (nothing on the wire, as にがて れんしゅう), the reveal untimed, its answers recorded as practice (`p: 1`), so they feed the SRS like any (srs.ts: a miss is `again`, box 0, due at once; checked 2026-11-06).
 - **Solo** works the same way, with one player.
 - **Who can play.** A, B and the guest (G) can all host and join. There's no ベル or economy tie in v1.
 - **「おなじへや」 (same room).** A lobby toggle, set by the host, makes only the host's phone speak. Without it, three phones a little out of sync sound like a chorus. Without it, suggest earphones.
@@ -133,7 +133,7 @@ Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX design
   - `tts` is what's spoken when it isn't `en` as written (level 4: reductions and numbers, docs/curriculum.md §9).
   - Aim for **≥ 40 items per level in v1**, templates included. Grow towards 80 or more. v1 has 46 / 49 / 49 (144 items).
 - **`deck.ts`**: `deck(seed, lv): Item[]` is pure and deterministic. It follows the per-level mix, never puts the same type more than twice in a row, and shuffles the choices by the seed. Every phone builds the same deck from `{seed, lv}`, so no text goes on the wire. The returned items are copies: `choices` is the shuffled order and `answer` the right choice's index in it. Num items from the same template aren't drawn together while the pool allows.
-- **`score.ts`**: pure scoring: `points(right, replayed)` (the most a game scores is the protocol's `QUIZ_MAX_S`, 1040; deck.test checks it and `QUIZ_QS` against the deck).
+- **`score.ts`**: pure scoring: `points(right)` (100 or 0) and `firstListen(right, replayed, same)` (the いっぱつ badge); the protocol's `QUIZ_MAX_S` stays 1040, an upper bound for older phones (deck.test checks it covers 8 × 100, and `QUIZ_QS` against the deck).
 - **`clips.ts`**: `clipUrl(id, slow?)`, the path under audio/ that `loadVoice` takes (`kikimimi/<id>.m4a?v=<hash>`), and `clipDur(id)`, from clips.json.
 
 ## Audio
@@ -171,11 +171,12 @@ Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX design
 
 | op | sender | fields | meaning |
 |---|---|---|---|
-| `open` | host | `g, seed, lv, same` | a lobby is open to the others (sent on みんなを さそう, never for a lobby kept alone); they see an invite banner (TTL: dropped if the host leaves or after 10 min). The seed's lowest bit is たいせん, its bit 1 スピード はしご |
+| `open` | host | `g, seed, lv, same` | a lobby is open to the others (sent on みんなを さそう, never for a lobby kept alone); they see an invite banner (TTL: dropped if the host leaves or after 10 min). The seed's lowest bit is たいせん, its bit 1 スピード はしご, bits 2-3 こたえる じかん |
 | `join` / `leave` | anyone | `g` | joining or leaving the lobby or game |
 | `go` | host | `g, at` | the game starts at relay time `at` (now + 4 s) |
 | `a` | player | `g, i, k, rp, s` | the answer to question i: choice k, `rp` whether it replayed, `s` the sender's running total |
-| `skip` | host | `g, i, at` | the host's position: question i starts at `at` (i = 8: the results). Sent when it changes (everyone answered, つぎへ, the next question on the schedule) and every 3 s while a game runs (the beacon) |
+| `skip` | host | `g, i, at` | the host's position: question i starts at `at` (i = 8: the results). Sent when it changes (つぎへ) and every 3 s while a game runs (the beacon) |
+| `skip` | player | `g, i, at` | (2026-11-06) `i` the question the sender is in: its **よみおわった** (`at` that question's start); `i` the next one: its **つぎへ with the host gone** (`at` its now). A phone from before ignores a player's skip |
 | `end` | host | `g` | the game is cancelled |
 
 Field validation:
@@ -183,23 +184,24 @@ Field validation:
 - `lv`: 1-5 (4 かわ・もり; 5 room for the next level without a relay deploy; a phone offers only the levels it has every clip of)
 - `i`: 0-7 (`a`), 0-8 (`skip`; 8 is the end, added 2026-11-05: the relay must be deployed for it)
 - `k`: 0-3
-- `s`: 0-1040
-- `seed`: a 32-bit unsigned int
+- `s`: 0-1040 (8 × 130 from the first-listen bonus's days; now at most 800, the bound kept for older phones)
+- `seed`: a 32-bit unsigned int. **Bit 0 たいせん, bit 1 スピード はしご, bits 2-3 こたえる じかん** (2026-11-06; session.ts `TIMERS`, `timerOf`): 0 → 30 s (the default), 1 → 20 s, 2 → 60 s, 3 → none. No new field, so **no relay deploy** (the relay passes known fields only); every phone computes the same limit from the `open`, and changing it deals a new deck like たいせん. A phone from before reads any seed as a 15 s limit: it follows the host's beacons (a reveal may bounce back for a moment); update both phones
 
 **The host is the clock** (2026-11-05, after a review reproduced drift with two sessions on one clock).
-- Every phone has the deck and each clip's `dur`. So from `go.at` it computes every question's start on its own: the lead (1.5 s) + `dur` + the answer window (15 s) + the reveal (8 s).
-- The host's `skip` is its position: question i starts at `at`. The host sends it as it changes (its reveal ending early: everyone answered, or つぎへ; the end after the last question, i = 8) and every 3 s while a game runs. Every other phone **adopts** it, even for a question already under way there or one it got past by itself (it goes back). Starts never decrease: a start fixed sooner than the schedule had cuts the questions before it short, and the phone shows the last question started, never an old one.
-- A lost `skip` costs at most one beacon (3 s), not the rest of the game. A lost `a` is corrected by the next `s`.
-- Players only move on by themselves when the host has really gone: its `leave`, or its presence gone for 15 s (`hostGrace`). Then each phone moves on once everyone left has answered (the next question at its reveal's end, nothing sent), and the game finishes. A host back after that is adopted again. A phone whose own socket is down ignores presence (who's here is unknown, nobody counts as gone).
+- Every phone has the deck and each clip's `dur`. Question 0 starts at `go.at`; within a question every phone computes the lead (1.5 s), the clip (`dur`) and the answer window (こたえる じかん, from the seed; none: Infinity). The reveal starts at the limit or once everyone joined and here has answered (each phone from the `a`s it heard; nothing sent), and it is **untimed** (2026-11-06): the next question's start is only ever known from a `skip`, so until one comes it's Infinity (session.ts `schedule`).
+- The host's `skip` is its position: question i starts at `at`. The host sends it as it changes (its つぎへ; the end after the last question, i = 8) and every 3 s while a game runs. Every other phone **adopts** it, even for a question already under way there or one it got past by itself (it goes back). Starts never decrease: a start fixed cuts the questions before it short, and the phone shows the last question started, never an old one. A skip heard before this phone's own reveal ends the question there at once.
+- A lost `skip` leaves that phone in its reveal for at most one beacon (3 s). A lost `a` is corrected by the next `s`; the reveal there waits for the time limit or the host's つぎへ.
+- **よみおわった**: a player's skip to the question it's in (above). The host's view counts the others here who tapped it (`ready {n, of}`, each player's `ready`); a player's skip is never a position while the host is here.
+- **The host gone** (its `leave`, or its presence gone for 15 s, `hostGrace`): nobody moves on by the clock. Every remaining phone shows つぎへ (`canNext`); a tap moves that phone on and sends its skip to the next question, which the others follow (rebased, only sooner), and a phone that sees the host gone a moment later follows it then (`advance`, `tick`). A host back after that adopts the players' position: a player hearing the host's beacon behind where they moved on answers with its skip, the host's phone adopts it and beacons it, and nobody goes back. A phone whose own socket is down ignores presence (who's here is unknown, nobody counts as gone).
 
-**Late messages.** The host's times are kept as sent. A question whose clip began more than 5 s before its start was heard (a late `go`, a lock, a join mid-game) is sat out (`out`, not answerable); one heard sooner is played (its clip whole from then) on the host's answer window.
+**Late messages.** The host's times are kept as sent. A question whose clip began more than 5 s before its start was heard (a late `go`, a lock, a join mid-game) is sat out (`out`, not answerable); one heard sooner is played (its clip whole from then) on the host's answer window. A phone doesn't wait for itself on a question it sits out, and nobody waits for a player whose `join` came after its clip began. With こたえる じかん なし nothing is sat out: no hurry, the clip plays once from now as the phone comes in, and 🔁 as often as wanted.
 
-**Re-sends.** When someone's presence comes back (and to everyone when this phone's own socket comes back) the host re-sends `open`, and once the game has started `go` plus its position; a player re-sends `join`. So a phone back from a lock rejoins the host's clock at once.
+**Re-sends.** When someone's presence comes back (and to everyone when this phone's own socket comes back) the host re-sends `open`, and once the game has started `go` plus its position; a player re-sends `join`. Everyone also re-sends its `a` for the question under way and, in a reveal, its よみおわった (and on hearing a `join`), so a phone back from a lock into an untimed reveal sees the others' answers and the host's count is right. So a phone back from a lock rejoins the host's clock at once.
 
 **The client state machine.** `kikimimi/session.ts` is pure. It folds intents and the clock into `{phase: idle|lobby|countdown|lead|play|answer|reveal|results, players, answers, scores, i}`. It's unit-tested with fake time and covers: lost `a`/`skip`, the beacon, the host gone (left, or away past the grace) and locked (no racing ahead, adopted when back), my own short disconnect, a stale `open`, a late `go`, a phone back from a lock (the host's question, sat out, never an old one), the end broadcast. The Svelte UI only renders it.
-- Built: `new QuizSession({me, deckOf, windows?})`, `deckOf(seed, lv)` → `{count, dur(i) (ms), answer(i)}` (the deck's interface, not the bank). In: `receive(m, now)`, `presence(here | null, now)`, `tick(now)` (the host's beacon; a player's moving on with the host gone). Taps: `open({lv, same}, now)` (on this phone only), `invite` (みんなを さそう: the `open`), `configure`, `join`, `leave` (the host's lobby: `end`; a game going goes on), `go`, `answer(k, rp, now)`, `next` (つぎへ), `close`. Each returns the intents to send; `now` is the relay's clock. `view(now)` gives `{phase, i, n, from, until, playAt, playEnd, limit, out, local, players, answers, had, scores, speaks, canNext, invite, notice}`. `quizLink(live)` (here: null while disconnected) and `wireQuiz(session, link, changed)` (`act`, `tick`) do the wiring; game.svelte.ts wakes at least every 3 s. `WINDOWS` / `FAST_WINDOWS` (`?kikimimi=fast`, on every phone: a 1.5 s reveal; the answer window 8 s, as a tab behind is throttled).
-- As built: a lobby whose host has been away 15 s is dropped (a moment's reconnect keeps it). The host's skip on everyone answered is `at` = its reveal's start + 8 s, sent as the reveal starts; after the last question it's i = 8, the results on every phone, as is つぎへ on the last reveal. Players re-send `join` when someone comes back too, so a phone back from a lock knows who to wait for. A lobby kept alone and its game send nothing at all.
-- Scoring in おなじへや: no first-listen bonus for anyone (only the host's phone can replay), so 100 a right answer.
+- Built: `new QuizSession({me, deckOf, windows?})`, `deckOf(seed, lv)` → `{count, dur(i) (ms), answer(i)}` (the deck's interface, not the bank). In: `receive(m, now)`, `presence(here | null, now)`, `tick(now)` (the host's beacon; a player's moving on with the host gone). Taps: `open({lv, same, vs, timer}, now)` (on this phone only), `invite` (みんなを さそう: the `open`), `configure({lv, same, vs, timer})`, `join`, `leave` (the host's lobby: `end`; a game going goes on), `go`, `answer(k, rp, now)`, `next` (つぎへ: the host's, anyone's with the host gone), `ready` (よみおわった), `close`. Each returns the intents to send; `now` is the relay's clock. `view(now)` gives `{phase, i, n, from, until, playAt, playEnd, limit, out, local, timer, players (with `ready`), answers, had, scores, speaks, canNext, canReady, ready, invite, notice}`. `quizLink(live)` (here: null while disconnected) and `wireQuiz(session, link, changed)` (`act`, `tick`) do the wiring; game.svelte.ts wakes at least every 3 s. `WINDOWS` (`answers` by the seed's code: 30, 20, 60 s, Infinity) / `FAST_WINDOWS` (`?kikimimi=fast`, on every phone: the timed windows 8 s, as a tab behind is throttled; none stays none).
+- As built: a lobby whose host has been away 15 s is dropped (a moment's reconnect keeps it). Everyone answered sends nothing (2026-11-06: the reveal holds); つぎへ on the last reveal is i = 8, the results on every phone. Players re-send `join` when someone comes back too, so a phone back from a lock knows who to wait for. A lobby kept alone and its game send nothing at all.
+- Scoring: 100 a right answer for everyone (いっぱつ a badge; in おなじへや not even that, only the host's phone can replay).
 
 **The demo relay.** The banner and the sheet reuse the island's existing Live (`relay ?? demoRelay`, IslandScene). They never create a second one: a second local live sends its own hi/bye.
 
@@ -224,7 +226,7 @@ Field validation:
   - e2e: `app/e2e/kikimimi.spec.ts` (solo, やめる？, two players from the banner to both results).
 - **Polish (phase 3, game/UX review):**
   - Play: 🔁 / 🐢 sit in a small row under the bubble (on おなじへや's other phones shown off, 「ホストの スマホで ながれます」); the foot holds only the host's つぎへ. The question takes the scroller's room with its content centred (no gap under it on a tall phone); choices `clamp(56px, 8vh, 72px)` tall. An item without `ask` gets its type's: word 「きこえた ことばは？」, reply 「なんて こたえる？」.
-  - Reveal: 「せいかい！ +100」 and a 「いっぱつ せいかい！ +30」 pill apart; a missed picture names the right one (「こたえ: イカ」, PIC_JA); a reply's Japanese on two lines (the question, then 「→ the reply」: bank.ts `jaLines`); しずえ's head with a word per verdict under the choices; 「よく きいてね！」 over 「よーい」 then 3-2-1. The accent pill and the marks' key on one row in the bubble.
+  - Reveal: 「せいかい！ +100」 and a 「いっぱつ！」 stamp apart (no points since 2026-11-06); a missed picture names the right one (「こたえ: イカ」, PIC_JA); a reply's Japanese on two lines (the question, then 「→ the reply」: bank.ts `jaLines`); しずえ's head with a word per verdict under the choices; 「よく きいてね！」 over 「よーい」 then 3-2-1. The accent pill and the marks' key on one row in the bubble.
   - Results: 「8もん中 6もん せいかい」 under しずえ's line; the winner's row a yuzu ribbon with 🏆; a missed row shows 「えらんだ: … ×」 under the right answer; 「もういっかい あそぶ」.
   - bank.ts `splitFocus(item)` → [before, focus, after], shared by Play and Results. theme.css `.level-acts::after` covers the scroller's bottom padding, so rows scrolling under a sheet's sticky buttons don't show again below them.
 
@@ -311,7 +313,7 @@ The user asked for "a mechanic for progress and improvement and learning trackin
 - **e2e (logic tier, chromium):**
   - a two-player game over `?demo` and `?demo&as=B`, from the invite through the results;
   - solo;
-  - a hook, `?kikimimi=fast`, shortens the answer and reveal windows for tests.
+  - a hook, `?kikimimi=fast`, shortens the timed answer windows for tests; the specs tap つぎへ (and B よみおわった) through the untimed reveals, set こたえる じかん, and replay the misses; `KIKI_SHOTS=1` writes `/tmp/kikimimi-shots/timers/`.
 
 ## History
 
