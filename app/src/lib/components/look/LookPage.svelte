@@ -238,13 +238,13 @@
   const garment = $derived(tab === 'wear' || tab === 'acc');
   /** The colour filter, per sub for the visit. */
   const hues = $state<Partial<Record<Sub, Hue | null>>>({});
-  const hue = $derived(tab === 'wear' && sub ? (hues[sub] ?? null) : null);
-  let villagerOpened = $state(untrack(() => tab === 'villager'));
+  /** The tabs opened this visit: each kept (hidden) once opened, so a switch is a show and a hide. */
+  const visited = $state<Partial<Record<Tab, true>>>({ [untrack(() => tab)]: true });
   let panel = $state<HTMLElement | null>(null);
   function goTab(t: Tab) {
     if (t === tab) return;
     tab = t;
-    if (t === 'villager') villagerOpened = true;
+    visited[t] = true;
     panel?.scrollTo({ top: 0 });
   }
   function goSub(s: Sub) {
@@ -324,6 +324,81 @@
   </div>
 {/snippet}
 
+{#snippet tabBody(tb: Tab)}
+  {@const sb = subs[tb]}
+  {@const kd = tb === 'hair' ? 'hair' : sb ? KIND_OF[sb] : null}
+  {@const hu = tb === 'wear' && sb ? (hues[sb] ?? null) : null}
+  {#if SUBS[tb].length}
+    <div class="subs" role="radiogroup" aria-label={t(`look.tab.${tb}`)} {@attach roving}>
+      {#each SUBS[tb] as s (s)}
+        {@const on = sb === s}
+        <button type="button" class="sb" role="radio" aria-checked={on} tabindex={on ? 0 : -1} data-look-sub={s} data-cat={SUB_CAT[s]}
+          data-sfx={on ? 'none' : 'tick'} onclick={() => goSub(s)}>{subLabel(s)}</button>
+      {/each}
+    </div>
+  {/if}
+
+  {#if tb === 'coord'}
+    <ul class="coords" data-looks>
+      <li class="coord" class:on={picked === 'usual'}>
+        <button type="button" class="pick" aria-pressed={picked === 'usual'} data-look-chip="usual" data-sfx={picked === 'usual' && !pickedEdited ? 'none' : 'tick'}
+          onclick={() => wearChip('usual')}>
+          <LookPortrait {who} look={guest ? { kind: 'villager', villager: wornVillager ?? begunVillager } : usual} size={64} />
+          <span class="cn"><span class="star" aria-hidden="true">★</span>{t('look.usual')}</span>
+          {#if picked === 'usual' && pickedEdited}<i class="ed" aria-hidden="true"></i>{/if}
+        </button>
+      </li>
+      {#each saved as s (s.id)}
+        <li class="coord" class:on={picked === s.id}>
+          <button type="button" class="pick" aria-pressed={picked === s.id} data-look-chip={s.id} data-sfx={picked === s.id && !pickedEdited ? 'none' : 'tick'}
+            onclick={() => wearChip(s.id)}>
+            <LookPortrait {who} look={{ kind: 'player', ...s.look }} size={64} />
+            <span class="cn">{s.name}</span>
+            {#if picked === s.id && pickedEdited}<i class="ed" aria-hidden="true"></i>{/if}
+          </button>
+        </li>
+      {/each}
+      <li class="coord">
+        <!-- full or a villager worn: sunk but still taking the tap, to say why -->
+        <button type="button" class="pick add" class:off={saved.length >= LOOK_LIMITS.saved || draft.kind !== 'player'} data-look-save
+          data-sfx={saved.length >= LOOK_LIMITS.saved || draft.kind !== 'player' ? 'none' : 'open'} onclick={askSave}>
+          <span class="plus" aria-hidden="true">＋</span>
+          <span class="cn">{t('look.save')}</span>
+        </button>
+      </li>
+    </ul>
+    {#if pickedSaved}
+      <div class="acts" data-look-acts>
+        <p>{pickedEdited ? t('look.differs', { name: pickedSaved.name }) : pickedSaved.name}</p>
+        {#if pickedEdited && draft.kind === 'player'}
+          <button type="button" class="btn small" data-look-overwrite data-sfx="confirm" onclick={doOverwrite}>{t('look.overwriteNow')}</button>
+        {/if}
+        <button type="button" class="btn small paper" data-look-rename data-sfx="open" onclick={askRename}>{t('look.renameShort')}</button>
+        <button type="button" class="btn small paper" data-look-delete data-sfx="open" onclick={() => openCard('confirm')}>{t('look.delete')}</button>
+      </div>
+    {/if}
+  {:else if tb === 'face' && sb === 'skin'}
+    {@render swatchRow('skin', true)}
+  {:else if tb === 'face' && (sb === 'nose' || sb === 'cheek')}
+    {@render shapes(sb)}
+  {:else if kd}
+    {#if tb === 'wear' && sb}
+      <div class="hues" role="radiogroup" aria-label={t('look.filter')} {@attach roving}>
+        {#each [null, ...HUES] as h (h)}
+          {@const on = hu === h}
+          <button type="button" class="hue" class:all={!h} role="radio" aria-checked={on} tabindex={on ? 0 : -1} data-hue={h ?? 'all'}
+            aria-label={t(`look.hue.${h ?? 'all'}`)} data-sfx={on ? 'none' : 'tick'} onclick={() => (hues[sb] = h)}>
+            {#if h}<i class="hd hue-{h}" aria-hidden="true"></i>{:else}{t('look.hue.all')}{/if}
+          </button>
+        {/each}
+      </div>
+    {/if}
+    {#key kd}
+      <ClosetGrid kind={kd} look={human} hue={hu} {chosen} onwear={put} ontap={(item) => onTap(kd, item)} />
+    {/key}
+  {/if}
+{/snippet}
+
 {#snippet tabIcon(id: Tab)}
   <svg viewBox="0 0 24 24" aria-hidden="true">
     {#if id === 'coord'}<path d="M12 6a2 2 0 1 1 2 2c-1 .3-2 1-2 2v1M3 18l9-6 9 6z" />
@@ -353,87 +428,20 @@
 
   <div class="panel" bind:this={panel} onscroll={scrolled}
     onfocusin={(e) => (searching = (e.target as HTMLElement).matches('input[type=search]'))} onfocusout={() => (searching = false)}>
-    {#if tab !== 'villager'}
-      <div class="tp" role="tabpanel" id="look-panel-{tab}" aria-labelledby="look-tab-{tab}" data-cat-panel={sub ?? tab}>
-        {#if wornVillager && tab !== 'coord'}
-          <p class="vnote" data-look-villager-note>
-            <LookPortrait {who} look={draft} size={40} />
-            <span>{t('look.villagerNow', { name: vName(wornVillager) })}</span>
-          </p>
-        {/if}
-
-        {#if SUBS[tab].length}
-          <div class="subs" role="radiogroup" aria-label={t(`look.tab.${tab}`)} {@attach roving}>
-            {#each SUBS[tab] as s (s)}
-              {@const on = sub === s}
-              <button type="button" class="sb" role="radio" aria-checked={on} tabindex={on ? 0 : -1} data-look-sub={s} data-cat={SUB_CAT[s]}
-                data-sfx={on ? 'none' : 'tick'} onclick={() => goSub(s)}>{subLabel(s)}</button>
-            {/each}
-          </div>
-        {/if}
-
-        {#if tab === 'coord'}
-          <ul class="coords" data-looks>
-            <li class="coord" class:on={picked === 'usual'}>
-              <button type="button" class="pick" aria-pressed={picked === 'usual'} data-look-chip="usual" data-sfx={picked === 'usual' && !pickedEdited ? 'none' : 'tick'}
-                onclick={() => wearChip('usual')}>
-                <LookPortrait {who} look={guest ? { kind: 'villager', villager: wornVillager ?? begunVillager } : usual} size={64} />
-                <span class="cn"><span class="star" aria-hidden="true">★</span>{t('look.usual')}</span>
-                {#if picked === 'usual' && pickedEdited}<i class="ed" aria-hidden="true"></i>{/if}
-              </button>
-            </li>
-            {#each saved as s (s.id)}
-              <li class="coord" class:on={picked === s.id}>
-                <button type="button" class="pick" aria-pressed={picked === s.id} data-look-chip={s.id} data-sfx={picked === s.id && !pickedEdited ? 'none' : 'tick'}
-                  onclick={() => wearChip(s.id)}>
-                  <LookPortrait {who} look={{ kind: 'player', ...s.look }} size={64} />
-                  <span class="cn">{s.name}</span>
-                  {#if picked === s.id && pickedEdited}<i class="ed" aria-hidden="true"></i>{/if}
-                </button>
-              </li>
-            {/each}
-            <li class="coord">
-              <!-- full or a villager worn: sunk but still taking the tap, to say why -->
-              <button type="button" class="pick add" class:off={saved.length >= LOOK_LIMITS.saved || draft.kind !== 'player'} data-look-save
-                data-sfx={saved.length >= LOOK_LIMITS.saved || draft.kind !== 'player' ? 'none' : 'open'} onclick={askSave}>
-                <span class="plus" aria-hidden="true">＋</span>
-                <span class="cn">{t('look.save')}</span>
-              </button>
-            </li>
-          </ul>
-          {#if pickedSaved}
-            <div class="acts" data-look-acts>
-              <p>{pickedEdited ? t('look.differs', { name: pickedSaved.name }) : pickedSaved.name}</p>
-              {#if pickedEdited && draft.kind === 'player'}
-                <button type="button" class="btn small" data-look-overwrite data-sfx="confirm" onclick={doOverwrite}>{t('look.overwriteNow')}</button>
-              {/if}
-              <button type="button" class="btn small paper" data-look-rename data-sfx="open" onclick={askRename}>{t('look.renameShort')}</button>
-              <button type="button" class="btn small paper" data-look-delete data-sfx="open" onclick={() => openCard('confirm')}>{t('look.delete')}</button>
-            </div>
-          {/if}
-        {:else if tab === 'face' && sub === 'skin'}
-          {@render swatchRow('skin', true)}
-        {:else if tab === 'face' && (sub === 'nose' || sub === 'cheek')}
-          {@render shapes(sub)}
-        {:else if kind}
-          {#if tab === 'wear' && sub}
-            <div class="hues" role="radiogroup" aria-label={t('look.filter')} {@attach roving}>
-              {#each [null, ...HUES] as h (h)}
-                {@const on = hue === h}
-                <button type="button" class="hue" class:all={!h} role="radio" aria-checked={on} tabindex={on ? 0 : -1} data-hue={h ?? 'all'}
-                  aria-label={t(`look.hue.${h ?? 'all'}`)} data-sfx={on ? 'none' : 'tick'} onclick={() => (hues[sub] = h)}>
-                  {#if h}<i class="hd hue-{h}" aria-hidden="true"></i>{:else}{t('look.hue.all')}{/if}
-                </button>
-              {/each}
-            </div>
-          {/if}
-          {#key kind}
-            <ClosetGrid {kind} look={human} {hue} {chosen} onwear={put} ontap={(item) => onTap(kind, item)} />
-          {/key}
-        {/if}
-      </div>
+    {#if wornVillager && tab !== 'coord' && tab !== 'villager'}
+      <p class="vnote" data-look-villager-note>
+        <LookPortrait {who} look={draft} size={40} />
+        <span>{t('look.villagerNow', { name: vName(wornVillager) })}</span>
+      </p>
     {/if}
-    {#if villagerOpened}
+    {#each TABS as tb (tb)}
+      {#if tb !== 'villager' && visited[tb]}
+        <div class="tp" role="tabpanel" id="look-panel-{tb}" aria-labelledby="look-tab-{tb}" data-cat-panel={subs[tb] ?? tb} hidden={tab !== tb}>
+          {@render tabBody(tb)}
+        </div>
+      {/if}
+    {/each}
+    {#if visited.villager}
       <div class="tp" role="tabpanel" id="look-panel-villager" aria-labelledby="look-tab-villager" hidden={tab !== 'villager'}>
         <VillagerGrid {who} current={wornVillager} onpick={pickVillager} root={panel} />
       </div>
@@ -506,7 +514,7 @@
 
   /* a villager worn: the human tabs say what a pick does */
   .vnote {
-    margin: 0; display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 18px;
+    margin: 0 0 12px; display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 18px;
     background: color-mix(in srgb, var(--c-yuzu) 30%, var(--c-card)); box-shadow: inset 0 0 0 2px var(--c-yuzu-lip);
     font: 700 var(--fs-s)/1.5 var(--font-ui); color: var(--c-ink);
   }

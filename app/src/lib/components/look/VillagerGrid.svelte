@@ -34,7 +34,7 @@
   // The first screenful at once, then STEP more each frame (440 heads at once is a long task on a phone, when the tab
   // first opens and when the search is cleared). A new result list starts over.
   const FIRST = 40;
-  const STEP = 80;
+  const STEP = 40;
   let limit = $derived.by(() => {
     void shown;
     return FIRST;
