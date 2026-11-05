@@ -209,9 +209,23 @@ const baseOf = (page: Page, sel: string, fy = 0.85) =>
     return null;
   }, fy);
 
-test('a goal tree’s trunk and base answer a tap as its leaves do: the popup opens, a quick run shakes it', { tag: '@quarantine', annotation: { type: 'quarantine', description: 'owner: the tree-taps owner (FruitTree.svelte), 2026-11-05: the goal tree’s .trunk-btn is under its .canopy and .row-btn (2 of 240 sampled points its own on WebKit, 4 on Chromium), so baseOf finds no point on WebKit and Chromium passes by a 3px sliver; a tap on the trunk area is the fruit row’s, which never counts toward a shake. Decide whether the trunk should take its own taps (then raise it over the row) or the spec should tap the row' } }, async ({ page }) => {
+/** A point low on the goal tree's trunk (`fy` of the way down) the finger reaches: the trunk's own button or the fruit
+ *  row lying over its base (off a fallen fruit, the row's tap counts toward a shake as the trunk's does). */
+const trunkOf = (page: Page, who: string, fy = 0.85) =>
+  page.locator(`[data-tree-node="${who}"] .trunk-btn`).evaluate((el, [who, fy]) => {
+    const b = el.getBoundingClientRect(), cx = b.left + b.width / 2;
+    const row = document.querySelector(`[data-tree-row="${who}"]`);
+    for (let y = b.top + b.height * (fy as number); y > b.top; y -= 3)
+      for (const dx of [0, -6, 6, -12, 12]) {
+        const at = document.elementFromPoint(cx + dx, y);
+        if (at === el || at === row) return { x: cx + dx, y, w: b.width };
+      }
+    return null;
+  }, [who, fy] as const);
+
+test('a goal tree’s trunk and base answer a tap as its leaves do: the popup opens, a quick run shakes it', async ({ page }) => {
   await open(page, '&shake=branch');
-  const p = (await baseOf(page, '[data-tree-node="A"] .trunk-btn'))!;
+  const p = (await trunkOf(page, 'A'))!;
   expect(p).not.toBeNull();
   expect(p.w).toBeGreaterThanOrEqual(44);
   await page.mouse.click(p.x, p.y);
