@@ -9,8 +9,12 @@
 //   await island.demo(context, 'B')              the demo's phone (`demoUrl('B')`: its hooks on) on this island's room
 //   island.drop('A', 1012) / dead('A') / offline('A', true)
 //   island.fetches('A')                          how many record fetches (snapshot) the phone made
+//   island.ctl.drop / lag / sweep                a phone's message dropped without a word (a relay that can't parse it),
+//                                                one-way latency both ways, the room's real hello sweep
+// Each page's socket keeps a browser's `bufferedAmount` (Playwright's routed socket says 0 always): a send adds its
+// bytes at once and they drain a task later, as Chromium and WebKit do, so a burst of sends in one task sees it grow.
 import type { BrowserContext, Page, WebSocketRoute } from '@playwright/test';
-import { RoomCore, type Meta } from '../../relay/src/room.ts';
+import { HELLO_MS, RoomCore, type Meta } from '../../relay/src/room.ts';
 import { StoreCore } from '../../relay/src/store.ts';
 import { memSql } from '../../relay/test/sqlite.ts';
 
@@ -53,6 +57,9 @@ export function newIsland() {
   const fetchesOf: Record<Who, number> = { A: 0, B: 0, G: 0 };
   /** What each phone said to the room, by kind (pings, hellos, intents). */
   const saidOf: Record<Who, Record<string, number>> = { A: {}, B: {}, G: {} };
+  /** `drop(who, text)`: the room never hears that message (no ack, no word back); `lag`: ms each way; `sweep`: the room
+   *  closes a socket whose hello didn't come within HELLO_MS of it opening (the Worker's alarm). */
+  const ctl = { drop: null as null | ((who: Who, text: string) => boolean), lag: 0, sweep: false };
 
   const socket = (who: Who, ws: WebSocketRoute) => {
     if (offlineOf.has(who)) return void ws.close({ code: 1006, reason: 'offline' });
@@ -60,7 +67,9 @@ export function newIsland() {
       who, route: ws, meta: null, closed: false, dead: false,
       send(d) {
         if (s.closed) throw new Error('closed');
-        if (!s.dead) ws.send(d);
+        if (s.dead) return;
+        if (ctl.lag) setTimeout(() => void (s.closed || ws.send(d)), ctl.lag);
+        else ws.send(d);
       },
       close(code, reason) {
         if (s.closed) return;
@@ -70,6 +79,11 @@ export function newIsland() {
     };
     socks.push(s);
     room.open(s);
+    if (ctl.sweep) {
+      // (the room saw it open a one-way earlier than the phone did)
+      if (s.meta) s.meta = { ...s.meta, opened: s.meta.opened - ctl.lag };
+      setTimeout(() => room.sweep(), HELLO_MS - ctl.lag + 50);
+    }
     ws.onMessage((m) => {
       if (s.closed || s.dead) return;
       const text = String(m);
@@ -77,7 +91,9 @@ export function newIsland() {
         const k = (JSON.parse(text) as { kind?: string }).kind ?? '?';
         saidOf[who][k] = (saidOf[who][k] ?? 0) + 1;
       } catch { /* not JSON */ }
-      room.message(s, text);
+      if (ctl.drop?.(who, text)) return;
+      if (ctl.lag) setTimeout(() => void (s.closed || room.message(s, text)), ctl.lag);
+      else room.message(s, text);
     });
     ws.onClose(() => {
       if (s.closed) return;
@@ -98,15 +114,18 @@ export function newIsland() {
   };
 
   return {
+    ctl,
     /** A context's phones paired as `who` (the live app, its record and its socket this island's). */
     async pair(context: BrowserContext, who: Who) {
       await context.addInitScript((key) => localStorage.setItem('island.key', key), KEY_OF[who]);
       await context.routeWebSocket(/\/room$/, (ws) => socket(who, ws));
+      await context.addInitScript(buffered);
       await api(context, who);
     },
     /** A context's demo phones (`demoUrl(who)`) talking to this island's room. */
     async demo(context: BrowserContext, who: Who) {
       await context.routeWebSocket(DEMO_WS, (ws) => socket(who, ws));
+      await context.addInitScript(buffered);
     },
     /** The demo's URL for `who` on this island (the hooks on; `extra`: more of the query). */
     demoUrl(who: Who, extra = '') {
@@ -147,6 +166,22 @@ export function newIsland() {
     reset() {
       socks = [];
     }
+  };
+}
+
+/** In the page (after the route's own socket is in): each socket's `bufferedAmount` as a browser keeps it, its sends'
+ *  bytes until a task after each (Chromium and WebKit grow it inside send(); 0 again once the network took them). */
+function buffered(): void {
+  const send = WebSocket.prototype.send;
+  WebSocket.prototype.send = function (this: WebSocket & { __buf?: number }, d: Parameters<WebSocket['send']>[0]) {
+    send.call(this, d);
+    if (this.__buf === undefined) {
+      this.__buf = 0;
+      Object.defineProperty(this, 'bufferedAmount', { configurable: true, get: () => this.__buf });
+    }
+    const n = typeof d === 'string' ? new TextEncoder().encode(d).length : 'size' in d ? d.size : d.byteLength;
+    this.__buf += n;
+    setTimeout(() => void (this.__buf = Math.max(0, this.__buf! - n)), 0);
   };
 }
 

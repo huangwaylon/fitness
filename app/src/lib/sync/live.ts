@@ -59,18 +59,22 @@ export interface LiveOptions {
   outbox?: OutboxStore;
 }
 
-/** A kept intent as the outbox store keeps it: its number, the message as sent, its Tokyo day of making. */
+/** A kept intent as the outbox store keeps it: its number, the message as sent, its Tokyo day of making, and how often
+ *  its ack went overdue on a socket that was alive (`n`, absent: never). */
 export interface KeptOut {
   c: number;
   m: object;
   d: number;
+  n?: number;
 }
 
 /** Where the outbox is kept: `get(key)` what was waiting for this person key (another key's is dropped), `set` it all
- *  again after each change. */
+ *  again after each change; `watch(fn)`: `fn` when another tab of the app wrote it (its `storage` event). Two tabs share
+ *  the one copy: each merges the other's entries in before it writes (docs/backend.md#live-sync "Two tabs"). */
 export interface OutboxStore {
   get(key: string | null): KeptOut[];
   set(key: string | null, es: readonly KeptOut[]): void;
+  watch?(fn: () => void): () => void;
 }
 
 /** Where `since` is kept: `get()` the last heard today (or today's start: the whole day), `set(t)` after each one. */
@@ -100,6 +104,12 @@ const storedOutbox: OutboxStore = {
   set(key, es) {
     if (!es.length) remove(localKV(), LIVE.outbox);
     else if (key) writeJson(localKV(), LIVE.outbox, { k: keyTag(key), es });
+  },
+  watch(fn) {
+    if (typeof window === 'undefined') return () => {};
+    const on = (e: StorageEvent) => void (e.key === LIVE.outbox && fn());
+    window.addEventListener('storage', on);
+    return () => window.removeEventListener('storage', on);
   }
 };
 /** A person key's tag (never the key itself in storage twice): its FNV-1a hash. */
@@ -118,6 +128,10 @@ export interface LiveMetrics {
   ackMs: number[];
   /** Kept intents still waiting for their ack. */
   pending: number;
+  /** Kept intents the socket's buffer turned away (over MAX_BUFFERED): waiting to go on this socket as it drains. */
+  held: number;
+  /** Kept intents given up on: their ack never came on a socket that was alive, TRIES_MAX times (`ws.unacked`). */
+  unacked: number;
   /** The last close's code (0: none yet; 4000 a socket given up on as dead). */
   closed: number;
   /** `busy` heard: kept intents the room's rate limit turned away (sent again after a backoff). */
@@ -143,6 +157,9 @@ export interface Live {
   serverNow(): number;
   /** Counters (optional: the demo's relay has none). */
   metrics?(): LiveMetrics;
+  /** A kept intent the room refused (its `ack` said `ok: false`: a claim already made, a nest too soon, one it couldn't
+   *  read): called with the intent as sent (optional: the demo's relay has none). */
+  onRefused?(fn: (i: Intent) => void): () => void;
 }
 
 /** Reconnect delays: 1 s doubling to 60 s, ±25 % jitter. */
@@ -157,30 +174,49 @@ const PING_EVERY_MS = 20_000;
 const CLOCK_EVERY_MS = 5 * 60_000;
 /** After a ping, nothing at all heard for this long: the socket is dead (closed here, and a new one opened at once). */
 const PONG_WAIT_MS = 10_000;
-/** A kept intent's ack is due within this long; overdue with nothing heard since it went, the socket is dead; with the
- *  socket alive (a relay that dropped it over its limit without saying `busy`), it goes again, the wait doubling. */
+/** A kept intent's ack is due within this long; overdue with nothing heard since it went, the socket is asked whether it's
+ *  alive (a probe, its answer due within ACK_MS: only no answer gives the socket up); with the socket alive (a relay that
+ *  dropped it without a word: over its limit, or one it couldn't read), it goes again, the wait doubling, TRIES_MAX
+ *  times in all across sockets and reloads, then it's dropped (`ws.unacked`: the record's day row still has a catch). */
 const ACK_MS = 5000;
 const ACK_MAX_MS = 60_000;
-/** The close code for a socket given up on as dead (the client's own; the relay logs it). */
+const TRIES_MAX = 4;
+/** The close code for a socket given up on as dead (the client's own; the relay logs it), and for one whose welcome
+ *  never came. */
 const STALE = 4000;
+const NO_WELCOME = 4010;
+/** From making a socket to its welcome at most this long (×2, ×3 after failures: a slow network gets longer), else it's
+ *  dropped and another made after the backoff; one still waiting this long when the app comes back to front (react,
+ *  wake) is replaced at once. */
+const WELCOME_MS = 10_000;
+const STUCK_MS = 4000;
+/** A kept intent the socket's buffer turned away goes as it drains: looked at again this often while any wait. */
+const DRAIN_MS = 30;
 /** Offset samples kept; the one with the shortest round trip wins. */
 const SAMPLES = 8;
 /** Beyond this much unsent, send() drops (a stalled socket never piles up). */
 const MAX_BUFFERED = 4096;
-/** Kept intents waiting for their ack at most (the oldest go first: the sheet's day row still has them). */
+/** Kept intents waiting for their ack at most: past it, the oldest layout op goes first (an editor's big save must
+ *  never push out a catch; the record carries the layout), else the oldest (the sheet's day row still has them). */
 const OUTBOX_MAX = 120;
 /** After a reconnect the waiting ones go again, this many at once, then one every RESEND_GAP_MS (the relay's bucket). */
 const RESEND_BURST = 12;
 const RESEND_GAP_MS = 60;
 const ACKS_KEPT = 20;
 
-/** The kept clock offset is rewritten only when it moved this much (ms); one further off than a day is no offset. */
+/** The kept clock offset is rewritten when it moved this much (ms), or its measure is this old; one further off than a
+ *  day is no offset, and one measured over OFFSET_TTL_MS ago (or "later" than now: the device's clock was set back
+ *  since) is trusted no more. */
 const OFFSET_KEEP_MS = 50;
+const OFFSET_REFRESH_MS = 30 * 60_000;
 const OFFSET_MAX_MS = 86_400_000;
-/** The relay's clock offset as last measured on this phone (localStorage `island.liveOffset` = `{off}`), else 0. */
-function keptOffset(): number {
-  const o = readJson<{ off?: unknown }>(localKV(), LIVE.offset);
-  return o && typeof o.off === 'number' && Number.isFinite(o.off) && Math.abs(o.off) < OFFSET_MAX_MS ? o.off : 0;
+const OFFSET_TTL_MS = 6 * 3_600_000;
+/** The relay's clock offset as last measured on this phone (localStorage `island.liveOffset` = `{off, at}`: `at` the
+ *  device's clock when measured) while it's fresh, else 0. */
+function keptOffset(now = Date.now()): { off: number; at: number } {
+  const o = readJson<{ off?: unknown; at?: unknown }>(localKV(), LIVE.offset);
+  const ok = o && typeof o.off === 'number' && Number.isFinite(o.off) && Math.abs(o.off) < OFFSET_MAX_MS && typeof o.at === 'number' && o.at <= now && now - o.at < OFFSET_TTL_MS;
+  return ok ? { off: o.off as number, at: o.at as number } : { off: 0, at: 0 };
 }
 
 /** Retry delay after `n` consecutive failures (n ≥ 0); `r` in [0, 1). */
@@ -249,12 +285,15 @@ export function createLive(o: LiveOptions): Live {
   /** The relay's clock less the device's: the last one measured, kept across reloads, so what this phone stamps before
    *  the first welcome (a layout or a room op made offline, or in the second after opening) is on the relay's clock
    *  too: a device clock running fast can't win every conflict with it. */
-  let offset = keptOffset();
-  let savedOffset = offset;
+  const was = keptOffset();
+  let offset = was.off;
+  let savedOffset = offset, savedAt = was.at;
   const keepOffset = () => {
-    if (Math.abs(offset - savedOffset) < OFFSET_KEEP_MS) return;
+    const now = Date.now();
+    if (Math.abs(offset - savedOffset) < OFFSET_KEEP_MS && now >= savedAt && now - savedAt < OFFSET_REFRESH_MS) return;
     savedOffset = offset;
-    writeJson(localKV(), LIVE.offset, { off: Math.round(offset) });
+    savedAt = now;
+    writeJson(localKV(), LIVE.offset, { off: Math.round(offset), at: now });
   };
   /** The last shared-world change heard (the hello's `since`): read when the page loads, so a later open hears the day. */
   let lastWorld = since.get(Date.now());
@@ -267,27 +306,60 @@ export function createLive(o: LiveOptions): Live {
   /** Kept intents sent (or not yet: offline) and not acked, by their sequence number, in order: they go again after a
    *  reconnect (the relay knows a resend by its number). A walk replaces the walk before it. */
   const outbox = new Map<number, Out>();
+  const kept = (e: KeptOut): Out => ({ m: e.m, d: e.d, at: 0, due: Infinity, n: 0, tries: typeof e.n === 'number' ? e.n : 0, off: false, busy: false });
   // what a reload or a kill left unsent (≤ OUTBOX_MAX): it goes after the first welcome, as a reconnect's would
   const keptKey = o.key();
-  for (const e of store.get(keptKey).slice(-OUTBOX_MAX)) outbox.set(e.c, { m: e.m, d: e.d, at: 0, due: Infinity, n: 0 });
+  for (const e of store.get(keptKey).slice(-OUTBOX_MAX)) outbox.set(e.c, kept(e));
   let seq = Math.max(0, ...outbox.keys());
-  /** The outbox written once per burst of changes. */
+  /** Two tabs, one stored outbox: the numbers it held as this tab last read or wrote it, and those this tab took out
+   *  since (acked, dropped) that another tab's copy may still hold. */
+  let stored = new Set(outbox.keys());
+  const gone = new Set<number>();
+  const forget = (c: number) => {
+    outbox.delete(c);
+    gone.add(c);
+    if (gone.size > 4 * OUTBOX_MAX) gone.delete(gone.values().next().value!);
+  };
+  /** The stored outbox as another tab left it, merged into mine: what it took out (acked on its socket) goes here too,
+   *  what it added comes in (sent on my socket if it's up; the room acks a repeat of one without relaying it twice). */
+  const adopt = (es: readonly KeptOut[]) => {
+    const there = new Set(es.map((e) => e.c));
+    for (const c of [...outbox.keys()]) if (stored.has(c) && !there.has(c)) outbox.delete(c);
+    const fresh: Out[] = [];
+    for (const e of es) {
+      if (outbox.has(e.c) || gone.has(e.c)) continue;
+      const k = kept(e);
+      outbox.set(e.c, k);
+      fresh.push(k);
+      if (e.c > seq) seq = e.c;
+    }
+    stored = there;
+    if (st.connected) for (const k of fresh) put(k, Date.now(), ACK_MS);
+    if (fresh.length && !ackTimer) armAcks();
+  };
+  /** The outbox written once per burst of changes (another tab's entries since merged in first, never written over). */
   let saving = false;
   const save = () => {
     if (saving) return;
     saving = true;
     queueMicrotask(() => {
       saving = false;
-      store.set(o.key(), [...outbox].map(([c, e]) => ({ c, m: e.m, d: e.d })));
+      const key = o.key();
+      if (key === keptKey) adopt(store.get(key));
+      store.set(key, [...outbox].map(([c, e]) => ({ c, m: e.m, d: e.d, ...(e.tries ? { n: e.tries } : {}) })));
+      stored = new Set(outbox.keys());
     });
   };
   const nextSeq = () => (seq = Math.max(Date.now(), seq + 1));
-  const mx: LiveMetrics = { sent: 0, sentBytes: 0, recv: 0, recvBytes: 0, resent: 0, ackMs: [], pending: 0, closed: 0, busy: 0 };
+  const mx: LiveMetrics = { sent: 0, sentBytes: 0, recv: 0, recvBytes: 0, resent: 0, ackMs: [], pending: 0, held: 0, unacked: 0, closed: 0, busy: 0 };
+  const refusedSubs = new Set<(i: Intent) => void>();
   let resend: ReturnType<typeof setTimeout>[] = [];
   /** When the socket last heard anything (liveness), the pong's wait after a probe, the acks' look. */
   let heardAt = 0;
   let pongWait: ReturnType<typeof setTimeout> | null = null;
   let ackTimer: ReturnType<typeof setTimeout> | null = null;
+  let drainTimer: ReturnType<typeof setTimeout> | null = null;
+  let welcomeTimer: ReturnType<typeof setTimeout> | null = null;
 
   const setStatus = (s: Partial<LiveStatus>) => {
     const next = { ...st, ...s };
@@ -310,6 +382,10 @@ export function createLive(o: LiveOptions): Live {
     pongWait = null;
     if (ackTimer) clearTimeout(ackTimer);
     ackTimer = null;
+    if (drainTimer) clearTimeout(drainTimer);
+    drainTimer = null;
+    if (welcomeTimer) clearTimeout(welcomeTimer);
+    welcomeTimer = null;
   };
 
   const raw = (m: object): boolean => {
@@ -335,8 +411,8 @@ export function createLive(o: LiveOptions): Live {
   };
 
   /** Ask the socket whether it's alive: the heartbeat (the room left asleep) or, for the clock every CLOCK_EVERY_MS
-   *  and to a room without it, a ping; nothing at all heard within PONG_WAIT_MS gives it up. */
-  const probe = () => {
+   *  and to a room without it, a ping; nothing at all heard within `wait` gives it up. */
+  const probe = (wait = PONG_WAIT_MS) => {
     if (!st.connected) return;
     const at = Date.now();
     if (hbOk && at - lastTimed < CLOCK_EVERY_MS) beat();
@@ -345,7 +421,7 @@ export function createLive(o: LiveOptions): Live {
     pongWait = setTimeout(() => {
       pongWait = null;
       if (heardAt < at) stale();
-    }, PONG_WAIT_MS);
+    }, wait);
   };
 
   /** The heartbeat: exactly HB_PING (the runtime answers only that very text). */
@@ -378,7 +454,7 @@ export function createLive(o: LiveOptions): Live {
     connect();
   };
 
-  /** Look at the outbox when its next ack is due (connected only). */
+  /** Look at the outbox when its next ack is due (connected only; what never went on the wire has none). */
   const armAcks = () => {
     if (ackTimer) clearTimeout(ackTimer);
     ackTimer = null;
@@ -388,26 +464,82 @@ export function createLive(o: LiveOptions): Live {
     if (next === Infinity) return;
     ackTimer = setTimeout(acks, Math.max(0, next - Date.now()));
   };
-  /** The overdue acks: nothing heard since one went, the socket is dead; else (a relay that dropped them over its limit
-   *  without a word, or said `busy`) they go again, each one's wait doubling. */
+  /** The overdue acks: nothing heard since one went, the socket is asked (a probe: only no answer gives it up; a slow
+   *  link's late ack or a frozen tab isn't a dead socket); else (alive, and the room said nothing: over its limit, or it
+   *  couldn't read it) they go again, each one's wait doubling, each such miss a try: TRIES_MAX and it's dropped. One
+   *  the room turned away (`busy`) is no try. */
   const acks = () => {
     ackTimer = null;
     const now = Date.now();
-    let n = 0;
-    for (const o of outbox.values()) {
+    let n = 0, ask = false;
+    for (const [c, o] of outbox) {
       if (!o.at || o.due > now) continue;
-      if (heardAt < o.at) return stale();
-      if (n++ >= RESEND_BURST) break;
+      if (heardAt < o.at) {
+        ask = true;
+        o.due = now + ACK_MS + 100; // looked at again after the probe's verdict
+        continue;
+      }
+      if (n >= RESEND_BURST) break;
+      if (o.busy) o.busy = false;
+      else if (++o.tries >= TRIES_MAX) {
+        forget(c);
+        mx.unacked++;
+        log('ws.unacked', { kind: (o.m as Intent).kind, tries: o.tries }, 2);
+        save();
+        continue;
+      }
+      save();
+      n++;
       again(o, now);
     }
+    if (ask) probe(ACK_MS);
     armAcks();
   };
   /** Send a kept intent again on this socket, its next wait doubled. */
   const again = (o: Out, now: number) => {
     o.n++;
-    o.at = now;
-    o.due = now + Math.min(ACK_MAX_MS, ACK_MS * 2 ** o.n);
-    if (raw(o.m)) mx.resent++;
+    if (put(o, now, Math.min(ACK_MAX_MS, ACK_MS * 2 ** o.n))) mx.resent++;
+  };
+  /** Put a kept intent on the wire, its ack due in `wait`: false when the socket's buffer turned it away (over
+   *  MAX_BUFFERED: an editor's big save in one go), and then it waits (`off`: no ack due, never stale) and goes as the
+   *  buffer drains, in order: nothing kept goes ahead of one waiting. */
+  const put = (o: Out, now: number, wait: number): boolean => {
+    if (!o.off && !holding() && raw(o.m)) {
+      o.at = now;
+      o.due = now + wait;
+      return true;
+    }
+    o.at = 0;
+    o.due = Infinity;
+    o.off = st.connected;
+    if (o.off) drainSoon();
+    return false;
+  };
+  const holding = () => {
+    for (const o of outbox.values()) if (o.off) return true;
+    return false;
+  };
+  const drainSoon = () => {
+    if (!drainTimer && st.connected) drainTimer = setTimeout(drain, DRAIN_MS);
+  };
+  /** What the buffer turned away, sent as it drains (in order, until it's full again). */
+  const drain = () => {
+    drainTimer = null;
+    if (!st.connected) return;
+    const now = Date.now();
+    let left = false;
+    for (const o of outbox.values()) {
+      if (!o.off) continue;
+      if (left || !raw(o.m)) {
+        left = true;
+        continue;
+      }
+      o.off = false;
+      o.at = now;
+      o.due = now + ACK_MS;
+    }
+    if (left) drainSoon();
+    armAcks();
   };
 
   const drop = (code = 1000, reason = 'bye') => {
@@ -450,6 +582,13 @@ export function createLive(o: LiveOptions): Live {
     ws = s;
     madeAt = Date.now();
     welcomedAt = 0;
+    // no welcome in time (a handshake or a hello lost on a bad link, a socket iOS froze while it opened): another
+    welcomeTimer = setTimeout(() => {
+      welcomeTimer = null;
+      if (ws !== s || welcomedAt) return;
+      noWelcome('late');
+      schedule();
+    }, Math.min(3, 1 + fails) * WELCOME_MS);
     s.onopen = () => {
       const key = o.key();
       if (!key) return drop();
@@ -469,6 +608,8 @@ export function createLive(o: LiveOptions): Live {
       switch (m.kind) {
         case 'welcome': {
           welcomedAt = Date.now();
+          if (welcomeTimer) clearTimeout(welcomeTimer);
+          welcomeTimer = null;
           log('ws.open', { ms: welcomedAt - madeAt, retries: fails });
           fails = 0;
           offset = m.t - Date.now(); // a first guess until the pings refine it
@@ -483,13 +624,13 @@ export function createLive(o: LiveOptions): Live {
           // what never got its ack goes again (the relay acks a repeat without relaying it twice); another day's is
           // that day's, gone
           const today = tokyoDay(m.t);
-          for (const [k, o] of outbox) if (o.d !== today) (outbox.delete(k), save());
-          [...outbox.values()].forEach((o, i) => {
+          for (const [k, o] of outbox) if (o.d !== today) (forget(k), save());
+          for (const o of outbox.values()) o.off = false;
+          [...outbox].forEach(([c, o], i) => {
             const go = () => {
+              if (outbox.get(c) !== o) return; // acked or dropped meanwhile
               o.n = 0;
-              o.at = Date.now();
-              o.due = o.at + ACK_MS;
-              if (raw(o.m)) mx.resent++;
+              if (put(o, Date.now(), ACK_MS)) mx.resent++;
               if (!ackTimer) armAcks();
             };
             if (i < RESEND_BURST) go();
@@ -500,10 +641,12 @@ export function createLive(o: LiveOptions): Live {
         case 'ack': {
           const o = outbox.get(m.c);
           if (!o) return;
-          outbox.delete(m.c);
+          forget(m.c);
           save();
-          mx.ackMs = [...mx.ackMs, Date.now() - o.at].slice(-ACKS_KEPT);
+          if (o.at) mx.ackMs = [...mx.ackMs, Date.now() - o.at].slice(-ACKS_KEPT);
           armAcks();
+          // refused (a claim already made: a race lost whose winner this phone never heard, the room's ring past it)
+          if (!m.ok) for (const f of refusedSubs) safe(() => f(o.m as Intent));
           return;
         }
         case 'replay':
@@ -543,6 +686,7 @@ export function createLive(o: LiveOptions): Live {
           const o = outbox.get(m.c);
           if (!o) return;
           mx.busy++;
+          o.busy = true;
           o.due = Date.now() + backoff(o.n);
           armAcks();
           return;
@@ -574,6 +718,13 @@ export function createLive(o: LiveOptions): Live {
     };
   }
 
+  /** The socket's welcome never came: given up on (logged as a close of the client's own). */
+  const noWelcome = (why: string) => {
+    log('ws.close', { code: NO_WELCOME, secs: Math.round((Date.now() - madeAt) / 1000), welcomed: false });
+    mx.closed = NO_WELCOME;
+    drop(NO_WELCOME, why);
+  };
+
   const react = () => {
     const vis = env.visible();
     if (vis && !wasVisible) {
@@ -586,6 +737,8 @@ export function createLive(o: LiveOptions): Live {
       clearTimeout(retry);
       retry = null;
     }
+    // a socket still opening long after it was made (frozen in the background, its handshake lost): a new one now
+    if (ws && !welcomedAt && Date.now() - madeAt > STUCK_MS) noWelcome('stuck');
     connect();
   };
 
@@ -597,7 +750,9 @@ export function createLive(o: LiveOptions): Live {
       const offWatch = env.watch(react);
       // back in front (pageshow, focus): a socket that looks open is asked whether it still is
       const offWake = env.wake?.(() => (st.connected ? probe() : react()));
-      unwatch = () => (offWatch(), offWake?.());
+      // another tab's write of the outbox we share
+      const offStore = store.watch?.(() => void (o.key() === keptKey && adopt(store.get(keptKey))));
+      unwatch = () => (offWatch(), offWake?.(), offStore?.());
       react();
     },
     stop() {
@@ -621,15 +776,16 @@ export function createLive(o: LiveOptions): Live {
       const s = JSON.stringify(m);
       if (s.length > MAX_BYTES || !parseClient(s)) return false;
       const now = Date.now();
-      const went = st.connected && raw(m);
-      if (c !== undefined) {
-        if (i.kind === 'walk') for (const [k, o] of outbox) if ((o.m as Intent).kind === 'walk') outbox.delete(k);
-        outbox.set(c, { m, d: tokyoDay(now + offset), at: went ? now : 0, due: went ? now + ACK_MS : Infinity, n: 0 });
-        while (outbox.size > OUTBOX_MAX) outbox.delete(outbox.keys().next().value!);
-        save();
-        if (went && !ackTimer) armAcks();
-      }
-      return went;
+      if (c === undefined) return st.connected && raw(m);
+      if (i.kind === 'walk') for (const [k, o] of outbox) if ((o.m as Intent).kind === 'walk') forget(k);
+      const e: Out = { m, d: tokyoDay(now + offset), at: 0, due: Infinity, n: 0, tries: 0, off: false, busy: false };
+      outbox.set(c, e);
+      const went = st.connected && put(e, now, ACK_MS);
+      while (outbox.size > OUTBOX_MAX) forget(oldest());
+      save();
+      if (went && !ackTimer) armAcks();
+      // (one the buffer turned away goes as it drains: on its way all the same)
+      return went || (e.off && outbox.has(c));
     },
     on(fn) {
       subs.add(fn);
@@ -646,8 +802,18 @@ export function createLive(o: LiveOptions): Live {
     },
     status: () => st,
     serverNow: () => Date.now() + offset,
-    metrics: () => ({ ...mx, pending: outbox.size })
+    metrics: () => ({ ...mx, pending: outbox.size, held: [...outbox.values()].filter((o) => o.off).length }),
+    onRefused(fn) {
+      refusedSubs.add(fn);
+      return () => void refusedSubs.delete(fn);
+    }
   };
+
+  /** The outbox's first to go when it's full: its oldest layout op, else its oldest. */
+  function oldest(): number {
+    for (const [c, o] of outbox) if (isLayoutIntent(o.m as Intent)) return c;
+    return outbox.keys().next().value!;
+  }
 }
 
 /** A kept intent waiting for its ack (the outbox's): `at` when it last went (0: not yet), `due` when its ack is
@@ -659,6 +825,12 @@ interface Out {
   at: number;
   due: number;
   n: number;
+  /** How often its ack went overdue on a socket that was alive, across sockets and reloads (kept: KeptOut `n`). */
+  tries: number;
+  /** Turned away by the socket's buffer while connected: never on the wire, waiting for it to drain (put, drain). */
+  off: boolean;
+  /** The room said `busy` for it: its next resend is no try. */
+  busy: boolean;
 }
 
 /** Whether two `gone`s say the same. */

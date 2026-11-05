@@ -426,8 +426,22 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
   a ping gives it up (closed with the client's own 4000, logged as `ws.close`) and opens a new one at once, whose
   welcome sends the outbox again; `pageshow` and `focus` ping a socket that looks open (iOS can bring a page back
   `visible` with a dead socket). A kept intent's ack is due within 5 s: overdue with nothing heard since it went, the
-  socket is dead (as above); heard from (an older relay that dropped it over its limit without a word), it goes again
-  on the socket, the wait doubling to 60 s; `busy {c}` resends it after a backoff (1 s doubling). Idle traffic while
+  socket is asked (a probe, its answer due within 5 s: only no answer gives the socket up; 2026-11-05, it was given up
+  at once, so an intent a relay dropped without a word reconnected every 5 s for good, the outbox kept across reloads);
+  heard from (a relay that dropped it over its limit, or one it couldn't read, without a word), it goes again on the
+  socket, the wait doubling to 60 s, each such miss a try kept with the entry across sockets and reloads, and after 4
+  it's dropped (`ws.unacked`: a catch is still in the record's day row); `busy {c}` resends it after a backoff (1 s
+  doubling, no try). `ack {ok: false}` (refused: a claim already made, one it couldn't read) takes it out and tells
+  `onRefused` (store/world.svelte.ts: a refused claim is a race lost). **The socket's buffer** (2026-11-05): Chromium
+  and WebKit grow `bufferedAmount` inside `send()`, so an editor's save of 40 ops in one task found it past 4 KB after
+  ~27 and the rest were kept unsent with no ack due until the next welcome; now one the buffer turns away waits on this
+  socket (`held` in `metrics()`, no ack due, never taken for a dead socket) and goes as it drains (looked at every 30
+  ms), in order: nothing kept goes ahead of it. The outbox full (120), its oldest layout op goes first, never a catch
+  for an editor's save. **The welcome** is due within 10 s of making the socket (20 s, 30 s after failures): else it's
+  dropped (the client's own 4010, `ws.close`) and another made after the backoff; one still opening 4 s after it was
+  made when the app comes back to front (a visibility change, `pageshow`, `focus`) is replaced at once (iOS can freeze a
+  socket mid-handshake). The kept clock offset (`island.liveOffset` `{off, at}`) is trusted for 6 hours after it was
+  measured, never when the device's clock is now behind `at` (set back since). Idle traffic while
   shown: 3 probes and 3 answers a minute on a quiet socket (was 1 and 1), none while anything else is heard; since
   2026-11-05 a probe to a room whose welcome said `hb` is the heartbeat (`HB_PING`, answered by the runtime with the room
   asleep: no duration), and a timed ping goes at most 5 minutes apart for the clock (`CLOCK_EVERY_MS`); an older room
@@ -442,7 +456,10 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
   socket, it goes again after the next welcome (12 at once, then one every 60 ms; another day's dropped). The outbox
   is kept in localStorage (`island.liveOutbox`, 2026-11-05: written once per burst, under the person key's hash, read
   back at startup for that key only), so an intent made offline survives the app being killed; the relay knows a
-  resend by its number and acks it without relaying it twice. The day
+  resend by its number and acks it without relaying it twice. Two tabs share that one copy: each merges the other's
+  entries in before it writes (by number; what it took out itself stays out), and takes the other's writes as their
+  `storage` events land: what the other tab added it sends on its own socket if that's the one up, what the other had
+  acked leaves it too. The day
   comes as `replay`, each change delivered in order, mine too. `metrics()`: messages and bytes
   each way, resends, the last acks' round trips, what's waiting.
 - **Measured** (`npm run smoke` from a Mac in Tokyo, edge NRT): connect ~65 ms, ping RTT median 18–21 ms (p90 23–40),

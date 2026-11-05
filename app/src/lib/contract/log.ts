@@ -47,6 +47,7 @@ export const LOG_EVENTS = {
   "ws.open": { src: 'c', f: { ms: 'n', retries: 'n' } },
   "ws.close": { src: 'c', f: { code: 'n', secs: 'n', welcomed: 'b' } },
   "ws.park": { src: 'c', f: { code: 'n' } },
+  "ws.unacked": { src: 'c', f: { kind: 't', tries: 'n' } },
   "gl.lost": { src: 'c', f: { where: ['island', 'tent', 'other'], restored: 'b' } },
   "chunk.fail": { src: 'c', f: { reloaded: 'b' } },
   "storage.fail": { src: 'c', f: { store: ['ls', 'idb', 'log'], kind: ['full', 'unavailable', 'blocked', 'other'] } },

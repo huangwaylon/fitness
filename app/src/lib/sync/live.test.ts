@@ -20,9 +20,15 @@ class FakeWS {
   }
   /** Answer each ping at once (a live relay). */
   pongs = false;
+  /** Keep `bufferedAmount` as a browser does: a send's bytes at once, drained a task later. */
+  grows = false;
   send(d: string) {
     const m = JSON.parse(d) as Record<string, unknown>;
     this.sent.push(m);
+    if (this.grows) {
+      this.bufferedAmount += d.length;
+      setTimeout(() => (this.bufferedAmount -= d.length), 0);
+    }
     if (this.pongs && m.kind === 'ping') this.recv({ kind: 'pong', c: m.c, t: Date.now() });
   }
   close(code?: number) {
@@ -401,7 +407,7 @@ describe('live: days open (nothing piles up)', () => {
     const timers = vi.getTimerCount();
     for (let i = 0; i < 100; i++) {
       last().drop();
-      vi.advanceTimersByTime(30_000); // past the backoff: a new socket
+      vi.advanceTimersByTime(5000); // past the backoff (1 s ± 25 %): a new socket
       last().welcome();
     }
     expect(FakeWS.all).toHaveLength(101);
@@ -561,7 +567,7 @@ describe('live: liveness (a socket open but carrying nothing)', () => {
     expect(live.status().connected).toBe(true);
   });
 
-  it('a kept intent unacked for 5 s with nothing heard since: the socket is dead, a new one sends it again', () => {
+  it('a kept intent unacked for 5 s with nothing heard since: the socket is asked, no answer in 5 s more and it is dead, a new one sends it again', () => {
     live.start();
     const ws = last();
     ws.welcome();
@@ -570,7 +576,12 @@ describe('live: liveness (a socket open but carrying nothing)', () => {
     const c = (ws.sent.at(-1) as { c: number }).c;
     vi.advanceTimersByTime(4900);
     expect(FakeWS.all).toHaveLength(1);
+    const n = ws.sent.length;
     vi.advanceTimersByTime(200);
+    // overdue: a probe, not a new socket
+    expect(ws.sent.length).toBe(n + 1);
+    expect(ws.closed).toBeNull();
+    vi.advanceTimersByTime(4900);
     expect(ws.closed?.code).toBe(4000);
     const ws2 = last();
     expect(ws2).not.toBe(ws);
@@ -739,3 +750,200 @@ describe('live: the relay clock kept across reloads', () => {
   });
 });
 
+
+describe('live: the socket’s buffer (an editor’s big save in one go)', () => {
+  const op = (i: number) => ({ kind: 'decor', sc: 'o', id: `o${i}abcdef`, at: 1_790_000_000_000 + i, k: 'flower-tulip', x: 10 + (i % 20), z: 20, f: 0 }) as never;
+
+  it('what the buffer turned away goes as it drains, in order, never taken for a dead socket', () => {
+    live.start();
+    const ws = last();
+    ws.grows = true;
+    ws.pongs = true;
+    ws.welcome();
+    vi.advanceTimersByTime(2100);
+    const n0 = ws.sent.length;
+    const went = Array.from({ length: 40 }, (_, i) => live.send(op(i)));
+    expect(went.every(Boolean)).toBe(true);
+    // (a browser's buffer grows inside send(): past 4 KB in the loop, the rest wait)
+    const first = ws.sent.length - n0;
+    expect(first).toBeLessThan(40);
+    expect(live.metrics!().held).toBe(40 - first);
+    vi.advanceTimersByTime(1000);
+    const ops = ws.sent.slice(n0).filter((m) => m.kind === 'decor') as { id: string; c: number }[];
+    expect(ops.map((m) => m.id)).toEqual(Array.from({ length: 40 }, (_, i) => `o${i}abcdef`));
+    expect(live.metrics!().held).toBe(0);
+    for (const m of ops) ws.recv({ kind: 'ack', c: m.c, t: Date.now(), ok: true });
+    expect(live.metrics!().pending).toBe(0);
+    vi.advanceTimersByTime(60_000);
+    expect(FakeWS.all).toHaveLength(1);
+  });
+
+  it('a catch made while the save waits goes after it, and a full outbox lets layout ops go before a catch', async () => {
+    live.start();
+    const ws = last();
+    ws.grows = true;
+    ws.welcome();
+    vi.advanceTimersByTime(2100);
+    const n0 = ws.sent.length;
+    for (let i = 0; i < 40; i++) live.send(op(i));
+    live.send({ kind: 'catch', what: 'koi', id: 'k1', how: 'rod' });
+    vi.advanceTimersByTime(500);
+    expect((ws.sent.slice(n0).at(-1) as { kind: string }).kind).toBe('catch');
+    // a save of 130 more with the catch unacked: the catch stays
+    for (let i = 40; i < 170; i++) live.send(op(i));
+    expect(live.metrics!().pending).toBe(120);
+    vi.advanceTimersByTime(2000);
+    const c = (ws.sent.find((m) => m.kind === 'catch') as { c: number }).c;
+    ws.recv({ kind: 'ack', c, t: Date.now(), ok: true });
+    expect(live.metrics!().pending).toBe(119);
+  });
+});
+
+describe('live: an intent never acked (a relay that drops it without a word)', () => {
+  it('on a socket that answers: sent again on it, the wait doubling, then dropped after 4 tries (`ws.unacked`); never a reconnect loop', () => {
+    live.start();
+    const ws = last();
+    ws.welcome();
+    ws.pongs = true;
+    vi.advanceTimersByTime(2100);
+    live.send({ kind: 'world', op: 'watered', id: 'fl:1:2' });
+    vi.advanceTimersByTime(5 * 60_000);
+    expect(FakeWS.all).toHaveLength(1);
+    expect(ws.sent.filter((m) => m.kind === 'world')).toHaveLength(4);
+    expect(live.metrics!()).toMatchObject({ pending: 0, unacked: 1, closed: 0 });
+  });
+
+  it('its tries are kept across a reload: one tried 3 times before goes once more, then it is dropped', async () => {
+    let disk: KeptOut[] = [{ c: 5, d: tokyoDay(Date.now()), n: 3, m: { v: 3, c: 5, kind: 'world', op: 'watered', id: 'fl:1:1' } }];
+    const outbox: OutboxStore = { get: () => structuredClone(disk), set: (_k, es) => void (disk = structuredClone([...es])) };
+    const a = createLive({ url: 'wss://relay.test/room', key: () => key, WebSocket: FakeWS as never, env, since, outbox });
+    a.start();
+    last().welcome();
+    last().pongs = true;
+    vi.advanceTimersByTime(6000);
+    await Promise.resolve();
+    expect(last().sent.filter((m) => m.kind === 'world')).toHaveLength(1);
+    expect(a.metrics!()).toMatchObject({ pending: 0, unacked: 1 });
+    expect(disk).toEqual([]);
+    a.stop();
+  });
+
+  it('a refused one (`ack ok:false`: a claim already made) is told with the intent as sent', () => {
+    const refused: unknown[] = [];
+    live.onRefused!((i) => refused.push(i));
+    live.start();
+    last().welcome();
+    live.send({ kind: 'catch', what: 'koi', id: 'k9', how: 'rod' });
+    const c = (last().sent.at(-1) as { c: number }).c;
+    last().recv({ kind: 'ack', c, t: Date.now(), ok: false });
+    expect(refused).toEqual([expect.objectContaining({ kind: 'catch', id: 'k9', c })]);
+    expect(live.metrics!().pending).toBe(0);
+  });
+});
+
+describe('live: a socket whose welcome never comes', () => {
+  it('dropped 10 s after it was made and another opened after the backoff; one stuck opening is replaced when the app is back', () => {
+    let wake = () => {};
+    live = createLive({ url: 'wss://relay.test/room', key: () => key, WebSocket: FakeWS as never, env: { ...env, wake: (fn) => ((wake = fn), () => (wake = () => {})) }, since });
+    live.start();
+    const ws = last();
+    ws.open(); // its hello goes, nothing comes back
+    vi.advanceTimersByTime(9900);
+    expect(FakeWS.all).toHaveLength(1);
+    vi.advanceTimersByTime(200);
+    expect(ws.closed?.code).toBe(4010);
+    expect(live.metrics!().closed).toBe(4010);
+    vi.advanceTimersByTime(1300);
+    expect(FakeWS.all).toHaveLength(2);
+    // this one never even opens (frozen in the background); back in front 5 s on: a new one at once
+    vi.advanceTimersByTime(5000);
+    wake();
+    expect(FakeWS.all).toHaveLength(3);
+    expect(FakeWS.all[1].closed?.code).toBe(4010);
+    last().welcome();
+    expect(live.status().connected).toBe(true);
+    last().pongs = true;
+    vi.advanceTimersByTime(60_000);
+    expect(FakeWS.all).toHaveLength(3);
+  });
+});
+
+describe('live: two tabs, one stored outbox', () => {
+  let disk: KeptOut[];
+  /** One tab's view of the stored outbox: another tab's write is told to it a task later (the `storage` event). */
+  const tabs = new Set<() => void>();
+  const store = (events: boolean): OutboxStore => {
+    let mine: (() => void) | null = null;
+    return {
+      get: () => structuredClone(disk),
+      set: (_k, es) => {
+        disk = structuredClone([...es]);
+        for (const f of tabs) if (f !== mine) setTimeout(f, 0);
+      },
+      ...(events ? { watch: (fn: () => void) => (tabs.add((mine = fn)), () => void tabs.delete(fn)) } : {})
+    };
+  };
+  const boot = (s: OutboxStore) => createLive({ url: 'wss://relay.test/room', key: () => key, WebSocket: FakeWS as never, env, since, outbox: s });
+  beforeEach(() => {
+    disk = [];
+    tabs.clear();
+  });
+
+  it('neither tab’s write drops the other’s entries (no event heard between them)', async () => {
+    online = false;
+    const a = boot(store(false)), b = boot(store(false));
+    a.start();
+    b.start();
+    a.send({ kind: 'world', op: 'watered', id: 'fl:1:1' });
+    await Promise.resolve();
+    vi.advanceTimersByTime(1); // (another ms: two tabs number by the clock)
+    b.send({ kind: 'world', op: 'watered', id: 'fl:2:2' });
+    await Promise.resolve();
+    expect(disk.map((e) => (e.m as { id: string }).id).sort()).toEqual(['fl:1:1', 'fl:2:2']);
+    a.stop();
+    b.stop();
+  });
+
+  it('what one tab kept, the other sends on its socket; acked there, it leaves the first tab too', async () => {
+    online = false;
+    const a = boot(store(true)), b = boot(store(true));
+    a.start();
+    b.start();
+    a.send({ kind: 'world', op: 'watered', id: 'fl:1:1' });
+    await vi.advanceTimersByTimeAsync(10);
+    expect(b.metrics!().pending).toBe(1);
+    // b comes online (a's socket was replaced by b's: a stays as it is, hearing nothing of the network)
+    online = true;
+    fire();
+    last().welcome();
+    const w = last().sent.find((m) => m.kind === 'world') as { c: number; id: string };
+    expect(w.id).toBe('fl:1:1');
+    last().recv({ kind: 'ack', c: w.c, t: Date.now(), ok: true });
+    await vi.advanceTimersByTimeAsync(10);
+    expect(disk).toEqual([]);
+    expect(a.metrics!().pending).toBe(0);
+    a.stop();
+    b.stop();
+  });
+});
+
+describe('live: the kept relay clock goes stale', () => {
+  it('trusted for 6 hours after it was measured, and never once the device’s clock went back past it', () => {
+    const m = new Map<string, string>();
+    configureStorage({ local: { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => void m.set(k, v), removeItem: (k) => void m.delete(k) } });
+    const make = () => createLive({ url: 'wss://relay.test/room', key: () => key, WebSocket: FakeWS as never, env, since });
+    const a = make();
+    a.start();
+    last().welcome(true, Date.now() - 3_600_000);
+    a.stop();
+    online = false;
+    vi.setSystemTime(Date.now() + 5 * 3_600_000);
+    expect(make().serverNow() - Date.now()).toBe(-3_600_000);
+    vi.setSystemTime(Date.now() + 2 * 3_600_000);
+    expect(make().serverNow() - Date.now()).toBe(0);
+    // measured "in the future" (the clock was set back since): not trusted
+    m.set('island.liveOffset', JSON.stringify({ off: -3_600_000, at: Date.now() + 60_000 }));
+    expect(make().serverNow() - Date.now()).toBe(0);
+    configureStorage({ local: null });
+  });
+});

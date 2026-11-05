@@ -45,7 +45,8 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `auth.lost` | warn | `from` (refresh, flush, ws), `code` | the key was refused (→ pairing) |
 | `sync.fail` | info offline / warn | `err`, `cached` | a refresh failed |
 | `queue.retry` / `queue.drop` | warn / error | `type`, `err`, `tries` | the write queue backs off (1st and every 5th) / drops an event |
-| `ws.open` / `ws.close` / `ws.park` | info / info / warn | `ms`, `retries`; `code`, `secs`, `welcomed`; `code` | the live socket (closes the relay or the network made) |
+| `ws.open` / `ws.close` / `ws.park` | info / info / warn | `ms`, `retries`; `code`, `secs`, `welcomed`; `code` | the live socket (closes the relay or the network made; the client's own: 4000 dead, 4010 no welcome in time) |
+| `ws.unacked` | warn | `kind`, `tries` | a kept intent dropped: its ack never came on a socket that answered, 4 tries (sync/live.ts) |
 | `gl.lost` | warn | `where`, `restored` | WebGL context lost / back |
 | `chunk.fail` | warn | | a chunk failed to load |
 | `storage.fail` | warn | `store`, `kind` | storage refused a write |
