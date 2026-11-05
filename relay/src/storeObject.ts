@@ -8,6 +8,10 @@ import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
 import { StoreCore, type Sql } from './store.ts';
 import type { StoreRoom } from './storeRoute.ts';
 import type { Env } from './index.ts';
+import { apiWithMeta, type ReqMeta } from './reqMeta.ts';
+import { keyOwner } from './auth.ts';
+import { relaySink } from './logRoute.ts';
+import { isToken } from '../../app/src/lib/contract/log.ts';
 
 export class IslandStore extends DurableObject<Env> implements StoreRoom {
   private core: StoreCore;
@@ -23,6 +27,10 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     });
   }
 
+  private logObj() {
+    return this.env.LOG.get(this.env.LOG.idFromName('log'));
+  }
+
   private tellRoom(n: Notice): void {
     const room = this.env.ROOM.get(this.env.ROOM.idFromName('island'));
     this.ctx.waitUntil(Promise.resolve(room.notify(n)).then(() => undefined, (e) => console.warn('notify the room', e)));
@@ -32,13 +40,28 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     return this.core.handleText(text);
   }
 
+  /** The same, with the request's meta for the log's `req` (reqMeta.ts; the Worker times it and sends it). */
+  apiMeta(text: string): { body: string; meta: ReqMeta } {
+    const keys = { KEY_A: this.env.KEY_A, KEY_B: this.env.KEY_B, KEY_C: this.env.KEY_C };
+    return apiWithMeta(this.core, text, (k) => (typeof k === 'string' && /^[0-9a-fA-F]{32,128}$/.test(k) ? keyOwner(k, keys) : null));
+  }
+
   /** A signed `/admin` body (storeRoute.ts): `{op, ...}` → its status and JSON reply. */
   async adminSigned(text: string, t: string | null, sig: string | null): Promise<{ status: number; body: string }> {
     const v = await this.core.signedOp(text, t, sig);
     if ('status' in v) return v;
+    // each signed op in the log (an audit: its name and outcome)
+    const audit = (st: string) => {
+      if (this.env.LOG_OFF === '1') return;
+      const op = isToken(v.op.op) ? v.op.op : 'other';
+      relaySink(() => this.logObj(), (p) => this.ctx.waitUntil(p), Date.now)([{ e: 'admin', l: st === 'ok' ? 1 : 2, d: { op, st } }]);
+    };
     try {
-      return { status: 200, body: JSON.stringify(await this.admin(v.op)) };
+      const r = await this.admin(v.op);
+      audit(r.ok === true ? 'ok' : String(r.error ?? 'refused'));
+      return { status: 200, body: JSON.stringify(r) };
     } catch (e) {
+      audit('unavailable');
       return { status: 200, body: JSON.stringify({ ok: false, error: 'unavailable', detail: String(e) }) };
     }
   }
@@ -51,6 +74,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    * - `dump`: every row (the backup, docs/ops/runbook.md#13-the-record);
    * - `load {rows: {metrics?, events?, uploads?}}`: rows that already have their `at` (a dump's) into the record, by
    *   its rules (idempotent: what it has is skipped);
+   * - `logs {since?, until?, after?, before?, desc?, lvl?, ev?, role?, sid?, rid?, src?, build?, limit?}`: the log's
+   *   events (log.ts query; relay/scripts/logs.ts); `logstats`: its health; `logpurge {before?, role?}`: deletes;
    * - `wx {refresh?, s?, fx?}`: the room's real weather (index.ts wxAdmin): fetch it now, put a fixture timeline in, or
    *   say how it is.
    */
@@ -78,8 +103,13 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return this.core.load(o);
       case 'dump':
         return { ok: true, rev: this.core.rev(), ...this.core.dump() };
-      case 'telemetry':
-        return { ok: true, rows: this.core.telemetryRows(typeof o.n === 'number' ? o.n : 100) };
+      // the log (docs/ops/observability.md): its own object's
+      case 'logs':
+        return { ok: true, ...(await this.logObj().query(o)) };
+      case 'logstats':
+        return { ...(await this.logObj().stats()) };
+      case 'logpurge':
+        return { ...(await this.logObj().purge(o)) };
       default:
         return { ok: false, error: 'bad_request' };
     }

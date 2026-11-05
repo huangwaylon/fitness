@@ -368,3 +368,30 @@ if (KEY_C) {
   w3.ws.close(1000);
   w2.ws.close(1000);
 }
+
+// The log (docs/ops/observability.md): a phone's batch with a forced error, and an /api request with its request id,
+// both read back through the signed admin op as `npm run logs` reads them; a stranger's batch is refused by the Worker.
+{
+  const admin = async (body: object): Promise<Record<string, unknown>> => {
+    const text = JSON.stringify(body), t = String(Date.now());
+    const r = await fetch(new URL('/admin', http), { method: 'POST', headers: { 'X-Island-Time': t, 'X-Island-Sig': createHmac('sha256', secret).update(`${t}.${text}`).digest('hex') }, body: text });
+    return r.json() as Promise<Record<string, unknown>>;
+  };
+  const id = () => Math.random().toString(36).slice(2, 12).padEnd(10, '0');
+  const sid = id(), rid = id(), since = Date.now() - 60_000;
+  const logUrl = new URL('/log', http);
+  const post = (o: object) => fetch(logUrl, { method: 'POST', headers: { Origin: ORIGIN, 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(o) }).then((r) => r.json() as Promise<Record<string, unknown>>);
+  const batch = { v: 1, key: KEY_A, b: id(), s: sid, build: 'smoke', os: 'node', es: [{ t: Date.now(), l: 3, e: 'js.error', q: 1, d: { kind: 'error', msg: `smoke: forced error 68.4 ${KEY_A}`, stack: 'smoke@https://x/smoke.js:1:2' } }] };
+  const sent = await post(batch);
+  check(sent.ok === true && sent.kept === 1, `/log takes a phone's batch (${JSON.stringify(sent)})`);
+  check((await post(batch)).dup === true, '/log takes a batch id once');
+  check((await post({ ...batch, key: 'c3'.repeat(32), b: id() })).error === 'unauthorized', '/log refuses a stranger');
+  await fetch(new URL('/api', http), { method: 'POST', headers: { Origin: ORIGIN, 'Content-Type': 'text/plain' }, body: JSON.stringify({ key: KEY_A, action: 'whoami', rid, sid }) });
+  await pause(1500); // (the relay's req event goes in the background)
+  const got = (await admin({ op: 'logs', since, sid })) as { ok?: boolean; rows?: { ev: string; role: string; rid: string | null; d: Record<string, unknown> }[] };
+  const err = got.rows?.find((r) => r.ev === 'js.error'), req = got.rows?.find((r) => r.ev === 'req' && r.rid === rid);
+  check(err?.role === 'A' && err.d.msg === 'smoke: forced error # <id>' && err.d.stack === 'smoke@smoke.js:1:2', `the forced error is in the log, scrubbed (${JSON.stringify(err?.d)})`);
+  check(req?.d.action === 'whoami' && req.d.st === 'ok' && typeof req.d.ms === 'number', `the /api request is in the log by its id (${req?.d.ms} ms)`);
+  const stats = await admin({ op: 'logstats' });
+  check(stats.ok === true && typeof stats.e1h === 'number', `the log's stats (${stats.e1h} errors this hour, ${stats.budgetPct} % of the day's cap)`);
+}

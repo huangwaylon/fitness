@@ -11,14 +11,11 @@ OUT = os.path.join(ROOT, 'out')                     # build output (gitignored);
 MEXT_XLSX = os.path.join(RAW, 'mext', 'main_2023_ch2.xlsx')
 
 NUTS = ('kcal', 'p', 'f', 'c', 'salt')
-# optional per 100 g, written only when known: fibre (MEXT 食物繊維総量) and alcohol (drinks only: tidy)
-EXTRA = ('fib', 'alc')
-ALL_NUTS = NUTS + EXTRA
 CATS = ('主食', '麺', '丼・定食', '主菜', '副菜', '汁物', '寿司', 'パン', '肉', '魚介', '卵', '大豆・豆', '野菜', '果物',
         'きのこ', '海藻', '乳製品', '菓子・デザート', '飲料', '酒', '調味料', '油脂', 'ナッツ・種', 'いも', 'コンビニ',
         '外食', 'その他')
 META_KEYS = ('source', 'label', 'attribution', 'license', 'url')
-ITEM_KEYS = {'id', 'name', 'full', 'en', 'aliases', 'cat', 'kcal', 'p', 'f', 'c', 'salt', 'fib', 'alc', 'portions', 'jan',
+ITEM_KEYS = {'id', 'name', 'full', 'en', 'aliases', 'cat', 'kcal', 'p', 'f', 'c', 'salt', 'portions', 'jan',
              'brand', 'note', 'pop'}
 
 
@@ -93,13 +90,12 @@ def xlsx_rows(path, sheet):
 
 
 # ---------------------------------------------------------------- MEXT 八訂増補2023 (sheet 表全体)
-MEXT_CODES = {'ENERC_KCAL': 'kcal', 'PROT-': 'p', 'FAT-': 'f', 'CHOCDF-': 'c', 'NACL_EQ': 'salt', 'FIB-': 'fib', 'ALC': 'alc'}
+MEXT_CODES = {'ENERC_KCAL': 'kcal', 'PROT-': 'p', 'FAT-': 'f', 'CHOCDF-': 'c', 'NACL_EQ': 'salt'}
 
 
 def mext_num(s):
-    """MEXT cell -> float. Markers: 'Tr'/'(Tr)' -> 0, '(1.2)' (estimated) -> 1.2, '-'/'' -> None; a footnote mark
-    ('14.0†': 還元水あめ's fibre, by another method) is dropped."""
-    s = s.strip().rstrip('†')
+    """MEXT cell -> float. Markers: 'Tr'/'(Tr)' -> 0, '(1.2)' (estimated) -> 1.2, '-'/'' -> None."""
+    s = s.strip()
     if s in ('', '-'):
         return None
     return 0.0 if s in ('Tr', '(Tr)') else float(s.strip('()'))
@@ -132,7 +128,7 @@ def mext_rows(path=MEXT_XLSX):
 
 
 def mext_foods(rows):
-    """{食品番号: {name, kcal, p, f, c, salt, fib, alc}} with parsed numbers (for recipe sums)."""
+    """{食品番号: {name, kcal, p, f, c, salt}} with parsed numbers (for recipe sums)."""
     out = {}
     for r in rows:
         rec = {'name': re.sub(r'\s+', ' ', r['name'].replace('　', ' ')).strip()}
@@ -239,12 +235,12 @@ def split_portion(name):
 
 
 def per100(parts, foods):
-    """parts = [(食品番号 | 'water', grams)] -> ({nutrient: value per 100 g}, total grams), fibre and alcohol too.
+    """parts = [(食品番号 | 'water', grams)] -> ({nutrient: value per 100 g}, total grams).
     A nutrient is None only when every non-water ingredient lacks it; otherwise missing values count as 0."""
     total = sum(g for _, g in parts)
     out = {}
-    for n in ALL_NUTS:
-        vals = [(foods[fid].get(n), g) for fid, g in parts if fid != 'water']
+    for n in NUTS:
+        vals = [(foods[fid][n], g) for fid, g in parts if fid != 'water']
         if vals and all(v is None for v, _ in vals):
             out[n] = None
         else:
@@ -253,10 +249,8 @@ def per100(parts, foods):
 
 
 def nutrients(per):
-    """Rounded item fields from a per-100 g dict: the five always (None: unknown), fibre and alcohol only when known."""
-    out = {n: kcal_int(per[n]) if n == 'kcal' else r1(per[n]) for n in NUTS}
-    out.update({n: r1(per[n]) for n in EXTRA if per.get(n) is not None})
-    return out
+    """Rounded item fields from a per-100 g dict."""
+    return {n: kcal_int(per[n]) if n == 'kcal' else r1(per[n]) for n in NUTS}
 
 
 # ---------------------------------------------------------------- aliases (Wikidata CC0 / Wikipedia readings)
@@ -306,14 +300,8 @@ class Aliases:
                 item['aliases'] = al + add
 
 
-DRINK_CATS = ('酒',)
-
-
 def tidy(item):
-    """Drop aliases equal to the name, duplicate aliases and empty alias lists; alcohol off anything but a drink (a
-    dish's or a seasoning's みりん or 料理酒 mostly cooks off, and would read as drinking: docs/food-data.md)."""
-    if item.get('cat') not in DRINK_CATS:
-        item.pop('alc', None)
+    """Drop aliases equal to the name, duplicate aliases and empty alias lists."""
     if 'aliases' in item:
         seen, al = {item['name']}, []
         for a in item['aliases']:
@@ -369,12 +357,6 @@ def _item_errors(it, source):
         v = it.get(k, 'missing')
         if v is not None and (isinstance(v, bool) or not isinstance(v, (int, float)) or v < 0):
             e.append('%s: bad %s' % (iid, k))
-    for k in EXTRA:   # optional: absent when unknown, else 0-100 g per 100 g (the app's snapshot limits)
-        v = it.get(k)
-        if k in it and (isinstance(v, bool) or not isinstance(v, (int, float)) or not 0 <= v <= 100):
-            e.append('%s: bad %s' % (iid, k))
-    if 'alc' in it and it.get('cat') not in DRINK_CATS:
-        e.append('%s: alc on a non-drink' % iid)
     al = it.get('aliases')
     if al is not None and (not isinstance(al, list) or not al or not all(isinstance(a, str) and a for a in al)
                            or it.get('name') in al):

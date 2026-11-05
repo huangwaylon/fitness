@@ -330,23 +330,11 @@ describe('import (rows that already have their `at`)', () => {
 });
 
 describe('telemetry', () => {
-  it('keeps a known record anonymously (its fields bounded, no person), the admin reads the newest first', () => {
-    expect(a('telemetry', { kind: 'session', data: { loadMs: 1234.56, p95: 21.04, os: 'iOS 27.1', standalone: true, person: 'A', junk: { x: 1 } } })).toEqual({ ok: true, kept: true });
-    tick();
-    expect(call(KEY_B, 'telemetry', { kind: 'error', data: { msg: 'x'.repeat(500), stack: 'at f (a.js:1:2)' } })).toEqual({ ok: true, kept: true });
-    const rows = store.telemetryRows();
-    expect(rows.map((r) => r.kind)).toEqual(['error', 'session']);
-    expect(rows[1].data).toEqual({ loadMs: 1234.6, p95: 21, os: 'iOS 27.1', standalone: true });
-    expect((rows[0].data.msg as string).length).toBe(200);
-    expect(JSON.stringify(rows)).not.toMatch(/"person"|"A"|"B"/);
-  });
-  it("a bad kind is refused; past the day's cap it is dropped quietly", () => {
-    expect(a('telemetry', { kind: 'secrets' })).toEqual({ ok: false, error: 'bad_request' });
+  it('an app from before the log (2026-11-05) is acknowledged and nothing is kept: the old table is gone', () => {
+    db.db.exec('CREATE TABLE telemetry (seq INTEGER PRIMARY KEY, at TEXT NOT NULL, kind TEXT NOT NULL, data TEXT NOT NULL)');
+    store = make();
+    expect(a('telemetry', { kind: 'error', data: { msg: 'x' } })).toEqual({ ok: true, kept: false });
     expect(store.handle({ action: 'telemetry', kind: 'error' }, 10)).toEqual({ ok: false, error: 'unauthorized' });
-    for (let i = 0; i < 205; i++) {
-      if (i % 50 === 0) tick(61_000); // (the rate limit's minute)
-      a('telemetry', { kind: 'error', data: { msg: String(i) } });
-    }
-    expect(store.telemetryRows(500).length).toBe(200);
+    expect(db.db.prepare("SELECT name FROM sqlite_master WHERE name = 'telemetry'").all()).toEqual([]);
   });
 });

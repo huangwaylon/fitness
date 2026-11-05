@@ -260,11 +260,7 @@ def build_tokyo_hokeniryo(b):
 # ---------------------------------------------------------------- school lunch (自治体標準データセット 学校給食献立情報)
 LUNCH_COLS = {'name': ['料理名称'], 'lid': ['料理ID'], 'date': ['提供年月日'], 'g': ['分量', '分量（g）'],
               'kcal': ['エネルギー', 'エネルギー（kcal）'], 'p': ['たんぱく質', 'たんぱく質（g）'], 'f': ['脂質', '脂質（g）'],
-              'c': ['炭水化物', '炭水化物（g）'], 'salt': ['食塩相当量', '食塩相当量（g）'], 'fib': ['食物繊維', '食物繊維（g）'],
-              'fid': ['食品番号', '食品ID']}
-# MEXT food groups with fibre (cereals, potatoes, pulses, nuts, vegetables, fruit, mushrooms, seaweed): a blank 食物繊維
-# cell of theirs is unknown, of any other group none (Kumagaya leaves meat, milk, oil and seasoning rows blank)
-PLANT_GROUPS = ('01', '02', '04', '05', '06', '07', '08', '09')
+              'c': ['炭水化物', '炭水化物（g）'], 'salt': ['食塩相当量', '食塩相当量（g）'], 'fid': ['食品番号', '食品ID']}
 LUNCH_SKIP_BASE = r'牛乳|ごはん|玄米入りごはん|.*パン.*|.*ふりかけ.*|.*ソース|ソース ?クラス.*|.*(?<!シュー)クリーム|チルドチョコ|.*ドレッシング|タルタルソース|ミルククリーム|.*ジャム.*|.*マーガリン.*'
 LUNCH = {
     # fid_is_mext: 食品番号 column is the MEXT 食品番号 (Kumagaya's 食品ID are city-local codes, e.g. 01192 = its
@@ -367,8 +363,7 @@ def blank_null(rs, tot, share=0.2):
     a zero only where the row needs none: salt, in a row with no protein (oil, sugar); carbohydrate, in a row whose
     energy protein and fat explain. When rows with a telling blank hold >= `share` of the dish's kcal, the nutrient is
     unknown (None), not 0 (さわらの西京焼 salt 0, いかフライ C 0.5); salt only when the rest adds up to none. So are P/F/C when a row's protein and fat alone
-    exceed its energy (a typo: ホッケみりん干し 40 g, 47 kcal, P 14.6). Fibre is unknown when plant rows (PLANT_GROUPS) with
-    a blank cell hold >= `share` of the kcal, or every cell is blank (no column)."""
+    exceed its energy (a typo: ホッケみりん干し 40 g, 47 kcal, P 14.6)."""
     kcal = tot['kcal'] or 0
     if kcal <= 0:
         return
@@ -384,10 +379,6 @@ def blank_null(rs, tot, share=0.2):
         tot['salt'] = None
     if c_gap >= share * kcal and tot['c'] is not None:
         tot['c'] = None
-    if tot.get('fib') is not None:
-        fib_gap = sum(v(r, 'kcal') for r in rs if blank(r, 'fib') and lunch_fid(r['fid'])[:2] in PLANT_GROUPS)
-        if fib_gap >= share * kcal or all(blank(r, 'fib') for r in rs):
-            tot['fib'] = None
     if typo >= 0.1 * kcal or any(4 * v(r, 'p') + 9 * v(r, 'f') > 1.3 * v(r, 'kcal') + 5 and v(r, 'p') >= 3 for r in rs):
         tot.update(p=None, f=None, c=None)
 
@@ -413,7 +404,7 @@ def build_lunch(b, city):
             if not name or skip.match(name) or name in dishes:
                 continue
             raw_w = w = sum(lib.fnum(r['g'], 0.0) for r in rs)
-            tot = {k: sum(lib.fnum(r[k], 0.0) for r in rs) for k in NUTS + ('fib',)}
+            tot = {k: sum(lib.fnum(r[k], 0.0) for r in rs) for k in NUTS}
             if w < 5 or tot['kcal'] <= 0:
                 continue
             if prof['fid_is_mext']:

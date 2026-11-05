@@ -29,6 +29,11 @@ class_name = "IslandRoom"
 name = "STORE"
 class_name = "IslandStore"
 
+# The log (docs/ops/observability.md): the phones' and the relay's events, 30 days.
+[[durable_objects.bindings]]
+name = "LOG"
+class_name = "IslandLog"
+
 # The Free plan has only SQLite-backed Durable Objects: new_sqlite_classes, never new_classes.
 [[migrations]]
 tag = "v1"
@@ -48,9 +53,20 @@ new_sqlite_classes = ["ExpeditionRoom"]
 tag = "v4"
 deleted_classes = ["ExpeditionRoom"]
 
+[[migrations]]
+tag = "v5"
+new_sqlite_classes = ["IslandLog"]
+
+# Workers Logs (docs/ops/observability.md): the relay's console lines only (each a class or a count, never a body),
+# 3 days. No invocation logs: they hold each request's IP, headers and place.
 [observability]
 enabled = true
-head_sampling_rate = 0.1
+head_sampling_rate = 1
+redact_query_string = true
+
+[observability.logs]
+enabled = true
+invocation_logs = false
 
 [env.test]
 name = "island-fund-relay-test"
@@ -72,6 +88,10 @@ class_name = "IslandRoom"
 name = "STORE"
 class_name = "IslandStore"
 
+[[env.test.durable_objects.bindings]]
+name = "LOG"
+class_name = "IslandLog"
+
 [[env.test.migrations]]
 tag = "v1"
 new_sqlite_classes = ["IslandRoom"]
@@ -87,3 +107,7 @@ new_sqlite_classes = ["ExpeditionRoom"]
 [[env.test.migrations]]
 tag = "v4"
 deleted_classes = ["ExpeditionRoom"]
+
+[[env.test.migrations]]
+tag = "v5"
+new_sqlite_classes = ["IslandLog"]

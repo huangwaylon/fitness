@@ -8,7 +8,7 @@ Recipes are kept only if every non-negligible ingredient was mapped and quantifi
 import html, os, re, unicodedata
 
 import maff_ingredients as MI
-from lib import ALL_NUTS, SOUP_WORDS, cat_guess, nutrients, read_csv
+from lib import NUTS, SOUP_WORDS, cat_guess, nutrients, read_csv
 
 EXTRA_GAIN = {'05034': 1.0, '05044': 1.0, '09017': 0.0, '01151': 0.8}  # dry peanuts simmered ~x2 etc. (estimates)
 
@@ -133,15 +133,15 @@ def servings_of(head):
 
 
 def add_food(tot, food, g):
-    for k in ALL_NUTS:
-        tot[k] += (food.get(k) or 0) * g / 100
+    for k in NUTS:
+        tot[k] += (food[k] or 0) * g / 100
 
 
 def compute(rec, foods, gain):
     """-> (nutrient totals, cooked weight, vinegared rice?) or None if an ingredient cannot be quantified."""
     title = rec['title']
     soup = any(k in title for k in SOUP_WORDS) and 'カレー' not in title
-    tot = dict.fromkeys(ALL_NUTS, 0.0)
+    tot = dict.fromkeys(NUTS, 0.0)
     weight = flour_w = plain_water = fry_base = dry_soy = 0.0
     fry = has_rice = has_vin = salt_unknown = False
     unmapped = []   # grams of ingredients with no MEXT match (None = amount unknown)
