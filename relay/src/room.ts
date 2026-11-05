@@ -68,6 +68,8 @@ const PER_SEC = 20;
 /** At most this many sockets waiting for their hello: a new one lets the oldest go. Welcomed sockets have no cap of
  *  their own and never count here: a person's hello replaces their earlier socket, so there are at most three. */
 export const MAX_PENDING = 4;
+/** How many acked-but-not-kept intents the room remembers for resends (room.ts acked). */
+const ACKED_MAX = 64;
 /** A person's phrases (`say`) at most one this often (ms): a newer one within it goes nowhere (the phone waits 1.5 s). */
 const SAY_GAP_MS = 1000;
 
@@ -79,6 +81,9 @@ export class RoomCore<S extends Sock> {
   private claims = new Map<string, { who: Who; t: number; c?: number }>();
   private nests = new Map<string, number>();
   private day = -1;
+  /** The numbered intents the room acked but doesn't keep (a high-five), the last ACKED_MAX: `<who>:<c>` → the intent
+   *  and its stamp, so a resend after a reconnect is acked again, not delivered twice. In memory (a wake forgets it). */
+  private acked = new Map<string, { same: string; t: number }>();
   /** When each person's last phrase went out (presence only: not kept). */
   private said = new Map<Who, number>();
 
@@ -195,6 +200,10 @@ export class RoomCore<S extends Sock> {
       const mine = k ? this.claims.get(k) : undefined;
       if (mine && mine.who === who && mine.c === c) return this.ack(s, c, mine.t, true);
     }
+    if (!stored && c !== undefined) {
+      const was = this.acked.get(`${who}:${c}`);
+      if (was && was.same === JSON.stringify(intent)) return this.ack(s, c, was.t, true);
+    }
     if (intent.kind === 'say') {
       // presence only, gently limited (the room's bucket is for bursts of world taps)
       if (now - (this.said.get(who) ?? -Infinity) < SAY_GAP_MS) return;
@@ -220,6 +229,10 @@ export class RoomCore<S extends Sock> {
       this.io.hold?.(this.held);
     }
     if (stored) this.keep(c !== undefined ? { ...out, c } : out);
+    else if (c !== undefined) {
+      this.acked.set(`${who}:${c}`, { same: JSON.stringify(intent), t: out.t });
+      if (this.acked.size > ACKED_MAX) this.acked.delete(this.acked.keys().next().value!);
+    }
     if (c !== undefined) this.ack(s, c, out.t, true);
   }
 
